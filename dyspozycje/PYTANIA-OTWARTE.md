@@ -15004,7 +15004,15 @@ dotknięta zmianą zweryfikowana w pełni niezależnie dwa razy. Worktree `fix-m
 usunięty, Evaluator dispatchowany.
 
 
-## ⛔ ZALEGŁOŚĆ PROCESOWA: `main` jest DWIE fale w tyle — FALE 268 i 269 nigdy nie scalone (2026-08-12, znalezione przez agenta deployu FALI 270) · STATUS: **OTWARTE — czeka na wyraźną zgodę właściciela na scalenie do `main`**
+## ⛔ ZALEGŁOŚĆ PROCESOWA: `main` jest DWIE fale w tyle — FALE 268 i 269 nigdy nie scalone (2026-08-12, znalezione przez agenta deployu FALI 270) · STATUS: **ZAMKNIĘTE — obie zaległości nadgonione**
+
+**ZAMKNIĘCIE (2026-08-12/13).** FALA 268+269 scalona do `main` na wyraźną zgodę właściciela
+("możemy zrobić scalenie 268 i 269 zostawiając tylko 270 bez scalenia") — merge `0a261731`.
+Kolejna zaległość (FALA 270+271) powstała tym samym mechanizmem (rytm "jedna fala do tyłu") i
+została scalona w tej samej sesji, też na wyraźną zgodę ("możesz scalić do main 270 i 271") —
+merge `e723cb0e`, do commitu deployu FALI 271 (`94a17910`, obejmuje FALĘ 270 jako przodka).
+`main` dziś na `e723cb0e`. FALA 272 (najnowsza) świadomie NIE scalona — zostaje do testów,
+zgodnie z rytmem, aż powstanie FALA 273.
 
 **Znalezisko (rejestruję zanim naprawię, zgodnie z §0b — uczciwe przyznanie, nie ukrywanie).**
 Przy deployu FALI 270 sprawdziłem stan `main`: stoi na `99974173` („merge: dogonienie main
@@ -15430,7 +15438,7 @@ pop=5 → −5 Szczęście, −5% Rozwój. Przy starej stawce 1,0 tego efektu ni
 edge case'u (rejestr, linia ~12943) — Operator odpowiedział tylko połowicznie ("zero wymogu, nie
 luka"), przeoczył że zerowy wymóg jest punktowany jako pełne pokrycie i NAGRADZANY.
 
-**⛔ NOWE PYTANIE ABC, STATUS: OTWARTE — dotyka kanonu kary binarnej (ECHO Q3=A)**
+**⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** — dotyka kanonu kary binarnej (ECHO Q3=A)**
 
 `P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`: czy populacja z `need=0` (poniżej progu zaokrąglenia)
 powinna liczyć się jako NEUTRALNA (0 Szczęścia, 0% kara) zamiast obecnej PREMII? Semantycznie
@@ -15572,7 +15580,7 @@ no-op na froncie bezpieczny, kolejka 1-elementowa bezpieczna, `rekrutacja` nietk
 save/load czysty. 8/8 mutacji własnych złapanych. `promote-to-front-test.cjs` 22/22, `logic-test`
 213/213 potwierdzone wykonaniem.
 
-**⛔ NOWE PYTANIE ABC, STATUS: OTWARTE — niezatwierdzona decyzja gameplayowa, nie koliduje z
+**⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** — niezatwierdzona decyzja gameplayowa, nie koliduje z
 żadną wcześniejszą literą (§1a: sprawdzone, brak kolizji).** `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1`:
 zamiana pozycji na front dziś KASUJE zebrany postęp danej pozycji bezpowrotnie (zmierzone: Cud
 1000 Pracy, 500 Pracy zebrane w 10 tur → klik ⇈ → postęp=0, utrata całości). Operator wybrał ten
@@ -15873,7 +15881,7 @@ dokumentacji + wzmocnienie testu + jedna nowa, łagodna, udokumentowana granica)
    1-2-turowy artefakt" jest NIEPRAWDĄ; realnie stabilny cykl o okresie 22 (2 miasta) / 44 (3
    miasta), bronione miasto nieosiągnięte w 300 turach. NIE regresja (przed naprawą było tak samo
    źle), ale overclaim do sprostowania w PL+EN.
-2. **⛔ NOWE PYTANIE ABC, STATUS: OTWARTE (Evaluator A)** — `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`:
+2. **⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** (Evaluator A)** — `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`:
    czy krążenie jednostki między ≥2 niebronionymi miastami bez dotarcia do bronionego (na
    normal/easy) jest akceptowalne? Na hard problem znika sam (przejęcie usuwa miasto z puli).
 3. **Nowy, łagodny defekt do zarejestrowania (Evaluator C, 4. oś tabeli pominięta: OSIĄGALNOŚĆ)**
@@ -16269,3 +16277,47 @@ wyjęty z buildera HTML do `render()` (1 wywołanie zamiast 2). N2: usunięty ma
 wszystkie realne błędy naprawione i zweryfikowane. Zero otwartych FAIL. Dispatch finalnego deployu
 FALA 272 w toku (na polecenie właściciela: "jak ostatni temat zostanie zakończony, rób ostatni
 deploy do roboczej").
+
+## ⛔ Porządki po serii C-030/C-031: 3 pytania ABC bez kanonicznego formatu nagłówka (2026-08-13)
+
+Kontrolny audyt `grep 'STATUS: \*\*OTWARTE'` na całym pliku wykrył że 3 pytania ABC zarejestrowane
+w TEJ SESJI (`P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`, `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1`,
+`P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`) były zapisane jako `STATUS: OTWARTE` BEZ podwójnej
+gwiazdki bezpośrednio przy słowie (gwiazdki były gdzie indziej w tym samym zdaniu) — dokładnie
+ten sam błąd formatowania, przed którym ostrzega procedura C-030/C-031 i który już raz złapano
+w tej sesji (patrz incydent przy C-031 w playbooku). Wszystkie 3 poprawione do kanonicznego
+`STATUS: **OTWARTE**`, zweryfikowane ponownym grepem — teraz widoczne. Żaden z tych tematów nie
+został przeoczony w praktyce (wszystkie trzy były aktywnie śledzone w tej sesji), ale gdyby sesja
+się urwała w tym momencie, byłyby niewidoczne dla audytu następcy.
+
+## PODSUMOWANIE SESJI (2026-08-12/13) — zamknięcie długiej tury AutoBot
+
+Zamknięte w tej turze (chronologicznie, nie wyczerpująco — pełne szczegóły w powyższych wpisach):
+retreat-garnizon r2, mapgen threshold 3.72, klaster miast barbarzyńców (tematy 7-10, 4 rundy
+recenzji), IndexedDB B1+B2+B3, cała reszta audytu #1 (16 tematów: a79bae29, 5448eb51, ad4b1e8d,
+8a3a3d29, 76514613 U1+U2+U3, 1208eb6c r2, 0651d65e, 810d5917+F-1, deccc6b4, b32b52ea, 3a3b11da,
+26b684af+test, 7b02eb2d+N1-3, fc17538f dodawanie+edycja, 3dc9d650+test, ecbddda8+N1-3+5,
+89c16ec1), mechanizm `clearedCityIds` miast barbarzyńców (rundy 4-7, pierwszy raz bez FAIL),
+guard NaN promoteToFront, dyplomacja U1+U2 (asymetria PW obu kierunków).
+
+Deploye: FALA 271 (md5 `ea51ac51`) i FALA 272 (md5 `5343a5f4`), obie zweryfikowane `VERIFY OK`,
+obie na gałęzi sesji, `main` nietknięty przy deployach. Scalenia do `main`: FALA 268+269
+(wcześniej w sesji) i FALA 270+271 (na końcu tej tury) — main dziś na `e723cb0e`.
+
+**Otwarte pytania ABC czekające na odpowiedź właściciela** (litera + ID): `P-GARNIZON-KONIUNKCJA-
+CZY-SAMO-INGARNIZON-Q1`, `P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`, `P-PROMOCJA-FRONT-RESET-
+POSTEPU-Q1`, `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1` — żaden nie blokuje bieżącej gry (wszystkie
+dotyczą drobnych, nieszkodliwych dziś niespójności lub decyzji o wariancie).
+
+**Cicho zarejestrowane, nieblokujące, do przyszłej pracy:** `fortifyRuchSnapshot` (retreat-
+garnizon), U2 EOT (duplikat karty w panelu), 7 pozostałych nierozróżnialnych par nazw jednostek,
+N4 ecbddda8 (2 budynki zaczęły działać po zmianie stawki — do wiedzy właściciela), F-2/F-3 IDB
+(niepilne UX), kolizja worktree+scratchpad (potwierdzona 6× niezależnie, przyczyna nadal
+nieustalona — do zbadania w przyszłości, mitygacja: jawna weryfikacja `pwd` w KROK 0 + unikalne
+nazwy plików roboczych z ID tematu w scratchpadzie).
+
+Aktualizacja: skille `AUTOBOT-UNIVERSAL.md` i `.claude/skills/civ-autobot/SKILL.md` dostają
+w tej samej turze nowe sekcje z wnioskami z tej sesji (worktree/scratchpad kolizja, race
+równoległego `git commit`, wzorzec extract-to-pure-function domykający tautologie testowe,
+audyt "nigdy-nie-ewaluowanych" commitów jako cykliczna higiena, wartość weryfikacji krzyżowej
+między tematami tej samej sesji).
