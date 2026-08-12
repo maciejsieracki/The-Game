@@ -15914,3 +15914,34 @@ istniejącego fallbacku obywateli. Zadanie 3: test 60→100 asercji, 3 nowe sekc
 wykonaniem (nie dopasowaniem tekstu) — end-to-end preview→breakdown→HTML, scenariusz niedoboru.
 6/6 mutacji własnych potwierdzone złapane. `tsc` 0 błędów, `citizen-resource-upkeep-test` 109/109
 (niepogorszone), `logic-test` 213/213. **ZAMKNIĘTE** (commit `9c0cd04d`).
+
+## Nagłówek "Dyplomacja" w EOT (7b02eb2d) — Evaluator: PASS-WITH-NOTES, naprawa drobna dispatchowana
+
+Naprawa potwierdzona na realnym wykonaniu (własny harness bundlujący `eot-event-defer.ts` +
+`sidePanelEventFilter.ts`, 91/91 asercji): wszystkie 4 call site'y w `main.ts` dostają poprawny
+nagłówek "Dyplomacja"/`kind:'diplo'` bez `origin:'other-civs'`, filtr "Inne cywilizacje" działa
+poprawnie w obu stanach, marker handlu AI-AI nietknięty, 10 przypadków negatywnych poprawnie
+odrzuconych.
+
+**N1 — realna luka (potwierdzona mutacją M4): brak sprzężenia producent↔konsument.**
+`DIPLOMACY_MSG_PREFIX` NIE jest eksportowany z `eot-event-defer.ts` — `main.ts` ma 4 zahardkodowane
+literały `'Dyplomacja: '`. Żaden test nie bundluje `main.ts`, więc literówka w którymkolwiek z 4
+miejsc cicho przywraca buga i WSZYSTKIE bramki zostają zielone. Naprawa: eksportować stałą, użyć
+jej w 4 miejscach — rozjazd staje się błędem kompilacji zamiast cichej regresji.
+
+**N2 — luka testu (mutacja M6):** brak przypadku negatywnego z prefiksem w środku zdania,
+`startsWith`→`includes` przechodzi 15/15. Dopisać jedną asercję.
+
+**N3 — teoretyczna kolizja obu reguł (dziś nieosiągalna):** komunikat zaczynający się od
+"Dyplomacja:" i zawierający " handluje z " dostałby `origin:'other-civs'` (marker AI-AI wygrywa)
+→ byłby ukryty mimo intencji naprawy. Żadna z 8 wartości `diploPendingTitle`/4 `negotiationStillValid`
+nie zawiera tego markera dziś — wart komentarza w kodzie, nie zmiany logiki.
+
+**Zarejestrowane osobno (nowy temat, cicho, §2, NIE naprawiać w tym temacie):** N4 — pre-istniejący
+duplikat karty (ta sama propozycja gracz↔AI generuje 2 wpisy w panelu EOT: `warEventLog` +
+inbox/negocjacje) jest bardziej mylący PO tej naprawie, bo oba teraz mówią "Dyplomacja" z tą samą
+niebieską obwódką (przed fixem różniły się wizualnie). Repo ma jawny precedens odwrotnego
+rozwiązania (main.ts:4190, przemarsz graniczny — świadomie brak drugiego wpisu). Dotyczy 2 z 4
+call site'ów (propozycja przychodząca), nie dotyczy "wygasła propozycja" (wpis usuwany z tablicy).
+
+**STATUS: dispatch naprawy N1+N2+N3 w toku** (drobny zakres, ten sam plik).
