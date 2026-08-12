@@ -15156,3 +15156,30 @@ zwraca null dla wybranego celu, spróbować kolejnego kandydata zamiast zamiera�
 planszy MIESZANEJ (bronione+niebronione) na ścieżce resetu, żeby M8 przestało przechodzić
 niezłapane.**
 
+
+## Zaległość scalenia do `main` — ROZWIĄZANA (Maciej: "zrobię scalenie 268 i 269, zostawiając 270 bez scalenia")
+
+Wykonane: `git checkout main` → `merge --no-ff 23216527` (FALA 268, md5 `3bc0236b`) → push
+(`b466fa17`) → `merge --no-ff 0c1f7c37` (FALA 269, md5 `799827ad`) → push (`0a261731`) →
+`git checkout claude/sprawdzenie-funkcjonalnosci-ek4ra0`. Oba scalenia bez konfliktów. `main`
+dogonione do FALI 269. FALA 270 świadomie NIE scalona — zostaje na gałęzi sesji do testów,
+zgodnie z `R-MERGE-MAIN-RYTM-Q1` (scalenie dopiero przy powstaniu FALI 271). **ZAMKNIĘTE.**
+
+## Próg coastRatio mapgen (b83e6141) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `a0d778cf89e8ad5bc`: pomiary Operatora potwierdzone co do 4 miejsca po przecinku.
+**Kluczowe pytanie generalizacji rozstrzygnięte jednoznacznie** — na 24 seedach (5 z pliku + 19
+dodatkowych) próg 3.72 daje 0% odrzuceń (stary 3.8 odrzucał 62,5%). Kalibracja symetryczna
+względem `bboxFill<0.87` (3,28 sd poniżej średniej vs 3,19 sd powyżej dla bboxFill). Test
+syntetycznych kształtów skrajnych: `coastRatio` i `bboxFill` są ORTOGONALNE, nie redundantne —
+dla degeneracji "obwarzankowej" (okrągły blob, dokładnie po to powstała ta sekcja) `bboxFill`
+przechodzi z dużym zapasem, jedynym strażnikiem jest `coastRatio`.
+
+**Nota N2 — do poprawy, nieblokująca ale ważna:** komentarz w kodzie (odziedziczony z
+wcześniejszej rundy) twierdzi "realną ochronę kształtu Pangei daje `bboxFill<0.87`, nie
+`coastRatio`" — to jest OBALONE przez powyższy test i ryzykowne: mogłoby zostać zacytowane przy
+przyszłej próbie usunięcia `coastRatio`, co otworzyłoby dokładnie tę degenerację, przeciw której
+sekcja powstała. Do skorygowania przy najbliższej okazji dotknięcia tego pliku (nie wymaga
+osobnego dispatchu). Nota N1 (margines liczony tylko na 5 seedach, realny mniejszy: 0.0355 nie
+0.058) — kosmetyczna. **ZAMKNIĘTE.**
+
