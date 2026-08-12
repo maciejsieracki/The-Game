@@ -826,7 +826,22 @@ export function availableProduction(
   // --- units -------------------------------------------------------------
   const built = new Set(builtList);
   for (const u of data.units) {
-    if (epochNumber(u.Epoka) > epoch) continue;
+    // R-EPOKA-KASKADA-JEDNA-Q1 (Maciej 2026-08-12, ECHO commit 1d9691b0): rekrutacja
+    // pokazuje jednostki BIEZACEJ epoki ORAZ dokladnie JEDNEJ epoki nizszej -- NIE pelna
+    // kaskade w dol jak wczesniej (bledne zrozumienie zasady projektu, podwazone tutaj;
+    // patrz nagłówek tools/epoka-merge-recruit-test.cjs). WYJATEK: Zwiadowca -- jedyna
+    // jednostka Typ='Civilian' w units.json (zweryfikowane empirycznie na pelnych danych,
+    // 2026-08-12) -- dostepny we WSZYSTKICH epokach, bo to jednostka cywilna zwiadu, nie
+    // wojskowa (potwierdzone explicite przez wlasciciela).
+    // EN: recruitment shows the CURRENT epoch's units PLUS exactly one epoch below -- not
+    // a full downward cascade as before (incorrect reading of the project rule, overturned
+    // here; see header of tools/epoka-merge-recruit-test.cjs). EXCEPTION: Zwiadowca -- the
+    // only Typ='Civilian' unit in units.json (verified empirically against the full dataset,
+    // 2026-08-12) -- is always available regardless of epoch, being a civilian scout unit,
+    // not a military one (explicitly confirmed by the owner).
+    const unitEpoch = epochNumber(u.Epoka);
+    const isZwiadowcaException = (u.Typ ?? '').toString().trim() === 'Civilian';
+    if (!isZwiadowcaException && (unitEpoch > epoch || unitEpoch < epoch - 1)) continue;
     const nacja = (u.Nacja ?? '').toString().trim();
     if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) continue;
     const zamiast = (u['W zamian za'] ?? '').toString().trim();
