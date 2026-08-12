@@ -12505,3 +12505,120 @@ skalująca się nieliniowo z liczbą miast/jednostek zamiast liniowo. **STATUS: 
 Sonnet 5 (worktree) NATYCHMIAST, priorytet nad resztą listy playtestu. Zakres: profilowanie
 (np. dodanie tymczasowych console.time/performance.now() wokół głównych faz tury, DevTools
 Performance/Memory snapshot jeśli możliwe w headless) + identyfikacja źródła + naprawa.**
+
+## P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI (Maciej, zrzut z gry, 2026-08-12) · STATUS: **PYTANIE ABC GOTOWE — czeka na literę**
+
+Rozbicie „Mocy" (Power): składnik Armia dominuje (44% całości). Rozpoznanie + wagi w kodzie +
+trzy warianty rebalansu z wyliczeniami zarejestrowane niżej jako `P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI-Q1`.
+Zgodnie z CLAUDE.md pkt 2 (zakaz otwierania nowego wątku pytaniem) — zarejestrowane, NIE
+zadane w czacie; czeka na turę ABC.
+
+**Dokładne miejsce wag w kodzie:** `gra/data/power-params.json` → `skladniki.<klucz>.pkt`
+(JSON, źródło prawdy, edytowalne bez ryzyka regresji silnika — czytane dynamicznie przez
+`loadPowerCoefficients()`); fallback identycznych wartości domyślnych w
+`gra/src/game/power-objective.ts:97-109` (stała `DEFAULT_COEFF`), używany WYŁĄCZNIE gdy JSON
+brakuje/ma niepoprawną wartość. Sumowanie ważone (rawCount × coefficient per składnik) w
+`computeObjectivePower()`, `gra/src/game/power-objective.ts:152-190` (wiersz Armii:
+`row('armia', 'Armia', Math.max(0, input.jednostki), coeff.jednostkaWojskowa)`, linia 163).
+`input.jednostki` = suma M_pole (siła bojowa) całej armii polowej imperium (`sumArmyMForOwner`
+w `main.ts:1830`), NIE liczba jednostek.
+
+---
+
+**[TEMAT: Rebalans wagi składnika Armia w Mocy (Power) — dziś 44% wyniku] P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI-Q1**
+
+**Sytuacja:** Zrzut z gry (Maciej, 2026-08-12) pokazuje rozbicie Mocy jednego imperium: Armia
+(suma M_pole floty polowej) = 483 pkt siły × 25 pkt/jedn. = 12 075 pkt = **44%** całości Mocy;
+pozostałe 11 składników razem = 15 233 pkt = 56% (Wygrane bitwy 461×1=461=2%, Obywatele
+285×5=1425=5%, Rekruci 281×5=1405=5%, Miasta 49×50=2450=9%, Terytorium 2540×0,5=1270=5%,
+Infrastruktura 341×5=1705=6%, Odkrycia 23×20=460=2%, Ulepszenia terenu 615×5=3075=11%, Kultura
+2634×0,5=1317=5%, Jedność religii 49×25=1225=4%, Zdobycze 440×1=440=2%). Razem Moc = 27 308 pkt.
+
+**Odniesienie do wcześniejszej decyzji (CLAUDE.md pkt 1a):** sam `gra/data/power-params.json`
+(sekcja `kalibracja`, kanon **P-A**, Maciej 2026-06-26) deklaruje CEL „Żaden składnik nie
+dominuje (~8–17% bazy)" przy scenariuszu wzorcowym. Dzisiejszy zrzut pokazuje, że ten własny cel
+kalibracji kanonu P-A jest dziś złamany dla Armii (44% ≫ górna granica 17%). To pytanie **NIE
+cofa** decyzji P-A (obiektywny Power = suma ważona, bez mnożnika epoki) ani P-B (mnożnik epoki
+odrzucony) ani P-C2-DEF (model bitwy = suma M_pole wroga) — dostraja WYŁĄCZNIE wartości
+mnożników tak, by spełnić cel kalibracji, który P-A samo sobie wyznaczyło.
+
+**Cel pytania:** wybrać sposób obniżenia udziału Armii w Mocy do ok. **25–30%** przy typowych
+wartościach z przykładu, bez psucia rankingu Mocy/Respektu (dyplomacja, `computeRespekt`) dla
+pozostałych graczy.
+
+**Dlaczego teraz:** Moc napędza RESPEKT w dyplomacji — dopóki jeden składnik (wojsko) stanowi
+44%, ranking Mocy/Respekt de facto mierzy głównie wielkość armii, nie całość imperium
+(gospodarkę, terytorium, kulturę), sprzecznie z deklarowanym celem kalibracji P-A.
+
+**A — obniżyć mnożnik Armii (`jednostka_wojskowa` w `power-params.json`) z 25 do ok. 11–13
+pkt/jedn.** (jedna liczba w JSON, żadna zmiana kodu).
+Wyliczenie (reszta stała = 15 233 pkt, rawArmia = 483): X=13 → 483×13=6279, suma=21 512,
+udział=**29,2%**. X=12 → 483×12=5796, suma=21 029, udział=**27,6%**. X=11 → 483×11=5313,
+suma=20 546, udział=**25,9%**. Cały przedział 25–30% mieści się w X≈11–13.
+Za: jedna zmiana w danych, zero ryzyka regresji silnika (współczynnik czytany dynamicznie już
+dziś przez `loadPowerCoefficients()`). Za: efekt identyczny niezależnie od wielkości armii —
+przewidywalny, łatwy do wytłumaczenia graczowi jednym zdaniem.
+Przeciw: realna redukcja wagi wojska o ~50% może być odebrana jako osłabienie sensu budowania
+armii dla prestiżu/Respektu. Przeciw: nie adresuje ewentualnego przyszłego skrajnego
+„stackowania" (bardzo duża armia nadal rośnie liniowo, tylko wolniej dochodzi do 44%+).
+
+**B — podnieść mnożniki pozostałych składników (Miasta, Infrastruktura, Kultura, Terytorium,
+Ulepszenia terenu, Rekruci), zostawić Armię = 25 (12 075 pkt bez zmian).**
+Wyliczenie: żeby Armia spadła do 30% BEZ zmiany jej mnożnika, suma pozostałych musi wzrosnąć z
+15 233 do 28 175 pkt (12075/0,30 − 12075) — skala ×1,85 na WSZYSTKIE pozostałe razem; dla 25%
+trzeba aż 36 225 pkt (×2,38). Przykład rozłożenia na 6 składników (Miasto 50→90, Infrastruktura
+5→10, Kultura 0,5→1,2, Ulepszenia 5→8, Terytorium 0,5→1,0, Rekruci 5→8): suma pozostałych
+rośnie do ~24 700 pkt → udział Armii spada tylko do **~32,8%** (nadal poza pasmem 25–30%,
+potrzeba jeszcze mocniejszych podwyżek).
+Za: wojsko zachowuje pełną dzisiejszą wagę — brak wrażenia osłabienia armii u gracza
+militarnego. Za: wprost podnosi wagę gospodarki/kultury w Mocy, odpowiadając na istotę
+zgłoszenia Macieja („żeby wojsko nie przeważało nad gospodarką").
+Przeciw: wymaga jednoczesnej zmiany 5–6 różnych mnożników zamiast jednego — więcej miejsc do
+błędu, więcej do przetestowania (`power-objective.ts` + panel Excel `panele-sterowania`,
+kierunek JSON→Excel). Przeciw: podnosi całą sumę Mocy każdego gracza (scenariusz kalibracji
+„~3020 pkt" w tym samym JSON przestaje być aktualne) i zmienia relacje MIĘDZY tymi składnikami
+nawzajem, nie tylko względem Armii — większe ryzyko efektów ubocznych w innych układach (np.
+imperium „turtle" z wieloma miastami i małą armią mogłoby przeskoczyć w rankingu militarne).
+
+**C — pułap / malejące przyrosty (diminishing returns) dla bardzo dużych armii, bez zmiany
+wagi przy małych/średnich armiach.**
+Przykładowa formuła: `pkt_armia = 25 × min(M, próg) + 25 × sqrt(max(0, M − próg))`, próg=200
+jedn. Przy M=483: 25×200=5000 + 25×√283≈421 → **5421 pkt**; suma=5421+15233=20654,
+udział=**26,2%** (w paśmie 25–30%, ale TYLKO dla tej armii). Mniejsza armia (np. M=150, poniżej
+progu) nie zmienia się WCALE — nadal liniowo 150×25=3750 pkt, identycznie jak dziś.
+Za: nie karze małych/średnich armii (obrona miasta, wczesna gra) — działa wyłącznie na skrajne
+stackowanie, spójne z ideą „wojsko ma się liczyć, ale nie dominować przy przesadnej kumulacji".
+Za: nie rusza pozostałych 11 mnożników — jeden nowy wzór w jednym miejscu.
+Przeciw: to zmiana KODU (`power-objective.ts`), nie samego JSON — większe ryzyko niż A/B, wymaga
+nowych testów jednostkowych i re-weryfikacji bramek dot. Power (np. `unit-power-test.cjs`,
+`logic-test.cjs`). Przeciw: dokłada drugi parametr do wytłumaczenia graczowi (próg + kształt
+spadku) zamiast jednej liczby — trudniej opisać w tooltipie/wiki niż prosty mnożnik.
+
+**Rekomendacja: A** — najmniejsza zmiana (jedna liczba w `power-params.json`:
+`jednostka_wojskowa.pkt` 25 → 12), zero ryzyka dla silnika (współczynnik już czytany
+dynamicznie), zgodna z zasadą projektu „najprostsze rozwiązanie, które spełnia wymaganie,
+wygrywa" (CLAUDE.md pkt 7). Realizuje własny zadeklarowany cel kalibracji kanonu P-A (~8–17% na
+składnik) najbliżej środka pasma 25–30% ze wszystkich trzech wariantów, bez dotykania
+pozostałych 10 mnożników ani kodu silnika. Wariant C zostaje jako osobny, przyszły temat, gdyby
+po wdrożeniu A gracze zaczęli świadomie „stackować" ekstremalnie duże armie wyłącznie pod
+ranking Mocy/Respekt (dziś brak na to dowodu w zgłoszeniu).
+
+## P-DREWNO-BRAMKA-RYZYKO-STARTU — POTWIERDZONE playtestem (2026-08-12), było "do potwierdzenia"
+
+Powiązane z punktem 7 batcha (rekrutacja Brąz pokazująca tylko Zwiadowcę). Recon (Sonnet 5)
+potwierdził: **to NIE regresja**. Filtr epoki (`production.ts:829`, `epochNumber(u.Epoka) >
+epoch → continue`) działa poprawnie od commitu `13419757` (2026-07-09), niezmieniony —
+epoka niższa i bieżąca zawsze przechodzą (zweryfikowane wykonaniem: miasto z zapasem
+Drewna/Brązu pokazuje 12 jednostek naraz, epoki Kamień+Brąz razem). Prawdziwa przyczyna: miasto
+zawsze startuje z PUSTYM magazynem (`cities.ts:415`), a bramka `empireStockHas(stock,
+'drewno'/'braz')` (dodana `5682c0664`, 2026-08-08, komentarz w kodzie: "świadome ryzyko blokady
+startu gry bez Drewna w zapasie") wymaga >0 sztuk w magazynie PAŃSTWA — z 75 jednostek tylko
+Zwiadowca ma `Surowiec=null`. Drewno/Brąz pojawiają się dopiero po kilku turach (Tartak/heksy/
+konwertery). To DOKŁADNIE materializacja ryzyka opisanego już w tym samym pliku (linia ~2679,
+nota Evaluatora 2026-08-08, status "DO WIEDZY — do potwierdzenia playtestem, czy to realnie
+blokuje wczesną grę"). **STATUS: POTWIERDZONE — pytanie ABC gotowe do zadania razem z
+P-MOC-BALANS-Q1 (nie osobno, zgodnie z limitem 3 pytań/turę CLAUDE.md §1):**
+- A: zostawić jak jest (obywatel gry akceptuje kilkutorowe opóźnienie startu rekrutacji poza
+  Zwiadowcą, świadoma decyzja z 2026-08-08 pozostaje w mocy)
+- B: dodać próg startowy Drewna/Brązu w magazynie miasta przy założeniu
+- C: darmowy "Tartak startowy"/jednorazowy zapas surowca przy założeniu miasta
