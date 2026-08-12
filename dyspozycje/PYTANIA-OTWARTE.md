@@ -15479,3 +15479,140 @@ kierunku `own` (gracz proponujący NAP/wasal przy Rel=61 widzi "Brakuje PW" mimo
 akceptuje, 7 przypadków) — świadomie poza zakresem tego commita, test wprost to utrwala jako
 "zachowanie niezmienione". Do przyszłej naprawy, osobny temat.
 
+
+## Chip "Obywatele" w HUD (0651d65e) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt: funkcjonalność potwierdzona niezależnym harnessem jsdom + realny `hud.ts` — liczba
+zgadza się z sumą populacji miast własnej cywilizacji (wyklucza obce), aktualizuje się na żywo
+przy wzroście populacji/założeniu/utracie miasta (w tym spadku do 0), klik otwiera ten sam panel
+co chip "Miasta", dostępny z klawiatury. **ZAMKNIĘTE.**
+
+Noty nieblokujące: (N1) własny test repo nigdy realnie nie renderuje — 2 z jego asercji "formuły"
+są tautologiczne, testują kopie funkcji zdefiniowane w samym pliku testowym, nie kod produkcyjny;
+(N2) brak `Math.floor`/`Math.round` na wyświetlanej liczbie, dziś defensywnie bezpieczne, ale bez
+gwarancji; **(N3) usterka nienaprawiona:** commit naprawił wspólny bug IKONY między chipami
+"Miasta" i "Obywatele", ale zostawił oba pokazujące IDENTYCZNĄ wartość tempa wzrostu "+2" przy
+RÓŻNYCH liczbach — potwierdzone mutacyjnie, myląca duplikacja; (N4) "jedyne miejsce sumowania"
+węższe niż deklarowane — 3 inne niezwiązane sumowania populacji istnieją gdzie indziej w
+`main.ts`, nieszkodliwe; (N5) bramka nie jest wpięta do `package.json`/listy bramek
+CLAUDE.md/CI, uruchamiana wyłącznie ręcznie.
+
+Kolejne (piąte) niezależne potwierdzenie kolizji worktree `eval-audit3-8` — zlecenie kazało
+pracować w `eval-audit2-5`, sesja wystartowała w `eval-audit3-8`. Wzorzec systemowy potwierdzony
+na 5/5 sprawdzonych dispatchy z tej ósemki audytu; przyczyna nadal nierozpoznana.
+
+## ⛔ WŁASNY BŁĄD (§0b): dwa dispatche fixów zapisane jako "w toku" nigdy nie zostały wywołane
+
+Kontrola (`git worktree list`) potwierdza: nie istnieje żaden worktree dla fixu `a79bae29`
+(szczegóły zużycia surowców) ani dla fixu U1+U3 `76514613` (etykieta oferty PW) — oba wpisy w tym
+pliku deklarujące "dispatch w toku" były nieprawdziwe w momencie zapisu, dokładnie ta klasa błędu,
+przed którą ostrzega precedens `P-ARMIA-CHIP-PELNE-JEDNOSTKI`. Naprawa: oba dispatchowane TERAZ
+(patrz commit z tej samej tury) w osobnych worktree z jawną weryfikacją `pwd` przed startem.
+
+## Klaster miast barbarzyńców (93db72e8) — 3x Evaluator: A=w toku, B=PASS-WITH-NOTES, C=FAIL
+
+**Evaluator B (lens: temat 9 limit pościgu + temat 10 koszt ruchu onSplit) — PASS-WITH-NOTES.**
+Mechanizm licznika `orphanedAtTurn` zweryfikowany poprawny (ustawiany raz, nie odświeżany co
+turę, granica dokładna, po wygaśnięciu `aggroRadius` nie zamarcie, brak pułapki falsy-zero,
+save/load bezpieczny). Temat 10 (koszt ruchu `onSplit` liczony przez `computePath`+`pathCost`)
+zweryfikowany jako liczbowo identyczny ze zwykłym ruchem gracza na terenie kosztu 1 i 2.
+
+**Defekt do naprawy przed deployem:** `barbarzyncy_limit_tur_osierocony` NIE ISTNIEJE w
+`gra/data/ai-params.json` — jedyny z 10 kluczy `barbarzyncy_*`, którego brakuje w JSON (jest
+tylko zahardkodowany fallback 10 w `barbarians.ts`). Właściciel nie może wyregulować limitu z
+panelu (narusza CLAUDE.md §2). Komunikat commita twierdzi błędnie że klucz jest w `ai-params.json`
+— to twierdzenie nieprawdziwe (§0b). Ryzyko runtime zerowe (fallback działa poprawnie), defekt
+warstwy danych/dokumentacji. Naprawa: dopisać do `ai-params.json` + `gen-panel-d.py::barbarzyncy_rows()`
++ wiersz w `Civ-AI/Spec-AI-architektura.md`.
+
+Noty nieblokujące: limit nie jest bezwzględny (jednostka blisko INNEGO żywego obozu odzyskuje
+`Infinity` przez fallback proximity — uznane za poprawne konstrukcyjnie, ale niedokumentowane);
+po wygaśnięciu `raidReady=false` odblokowuje dryf do obcego obozu (nowe, niedokumentowane
+zachowanie); ranna jednostka nigdy nie zapisuje licznika (mechanizm odwrotu ma `continue` przed
+blokiem licznika — trwale ranna jednostka odwleka limit bez końca, brzegowy przypadek).
+
+**Evaluator C (lens: pokrycie mutacyjne + jakość dowodu dla CAŁEGO klastra) — FAIL.**
+9/12 mutacji złapanych, ale tylko 5/12 (42%) BEHAWIORALNIE — reszta to dopasowanie tekstu źródła.
+
+**⛔ Ucieczka krytyczna M7.1 — dotyka decyzji `P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B`
+("wyłącznie hard").** Usunięcie `&& barbAllowCityCapture` z koniunkcji w `main.ts:26446` daje
+`tsc` czysty i **89/89 zielone** — bramka trudności NIE JEST realnie strzeżona testem. Skutek w
+grze: na easy/normal barbarzyńcy wchodziliby do każdego niebronionego miasta — odwrotność
+podjętej decyzji. Trzy asercje deklarujące pokrycie (1c, 1d, 1e) nie chronią tej linii: 1c testuje
+WŁASNĄ kopię formuły zdefiniowaną w pliku testowym (nie kod produkcyjny — dowód: mutacja M7.3
+skasowała produkcyjne wywołanie przejęcia, 1c dalej przeszła), 1d dopasowuje string z deklaracji
+zmiennej (nie z miejsca użycia), 1e nie dotyka tej linii.
+
+**Ucieczka M10.3** — `pathCost(...)` zastąpiony stałą `1` (ignoruje teren): `tsc` czysty, 89/89
+zielone. Analogiczny problem tautologii w 4a/4b (test liczy TO SAMO wyrażenie dwa razy pod
+różnymi nazwami zmiennych i porównuje kopię z kopią).
+
+**Pozorna asercja 2h potwierdzona** (kontynuacja wzorca z poprzednich rund tego mechanizmu):
+sonda cofająca naprawę czyszczenia `cityProd` przy przejęciu barbarzyńskim zostawia dopasowywany
+tekst źródła nietknięty — `tsc` czysty, 89/89 zielone, mimo że deklarowana konsekwencja (budynek
+dokończy się pod barbarzyńską flagą) faktycznie wraca.
+
+**Interakcje międzytematowe zweryfikowane bez kolizji** (T9×T7, T10×T7). Jeden nieudokumentowany
+skutek uboczny znaleziony: po wygaśnięciu limitu T9 (`raidReady=false`) jednostka osierocona
+zaczyna dryfować do CUDZEGO żywego obozu — zachowanie niepokryte żadną asercją T9 (wszystkie
+używają `camps: []`).
+
+**Commit `93db72e8` NIE wszedł jeszcze do zdeployowanej ROBOCZA** (powstał po FALA 270, deploy
+`028ff459`) — błąd bramki trudności nie jest dziś aktywny w graniu, ale musi być naprawiony przed
+kolejnym deployem/scaleniem do main. **STATUS: dispatch naprawy w toku** (patrz commit z tej
+samej tury) — zakres: wyciągnąć koniunkcję `barbCanWalkIntoEmptyCity` i `splitCampMoveCost` do
+eksportowanych czystych funkcji w `barbarians.ts` (import i przez `main.ts`, i przez test — ten
+sam zabieg który już raz zamknął analogiczną lukę dla `shouldAllowBarbCityCapture`), naprawić
+pozorność 2h/4a-4b, dopisać brakujący klucz do `ai-params.json` (Evaluator B).
+
+## Przycisk "zamień z frontem kolejki" (fcd31209) — Evaluator: PASS-WITH-NOTES, częściowo dispatchowane
+
+Rdzeń potwierdzony solidny: kolejność pozostałych pozycji zachowana (to SWAP nie move-to-front),
+no-op na froncie bezpieczny, kolejka 1-elementowa bezpieczna, `rekrutacja` nietknięta poprawnie,
+save/load czysty. 8/8 mutacji własnych złapanych. `promote-to-front-test.cjs` 22/22, `logic-test`
+213/213 potwierdzone wykonaniem.
+
+**⛔ NOWE PYTANIE ABC, STATUS: OTWARTE — niezatwierdzona decyzja gameplayowa, nie koliduje z
+żadną wcześniejszą literą (§1a: sprawdzone, brak kolizji).** `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1`:
+zamiana pozycji na front dziś KASUJE zebrany postęp danej pozycji bezpowrotnie (zmierzone: Cud
+1000 Pracy, 500 Pracy zebrane w 10 tur → klik ⇈ → postęp=0, utrata całości). Operator wybrał ten
+wariant anty-exploit bez pytania ABC. Silnik już zna przenoszenie Pracy między pozycjami przy
+naturalnym ukończeniu (`remainder` przechodzi na kolejny element) — kontrargument nieuwzględniony
+w uzasadnieniu Operatora. Warianty: A) pełna utrata (dziś) B) pole postępu per-pozycja (zmiana
+schematu+migracja save) C) utrata procentowa D) okno potwierdzenia. Powiązane: funkcja nazywa się
+`promoteToFront` ale robi SWAP nie move-to-front — rozjazd niewidoczny w przykładzie właściciela
+(sąsiednie pozycje), widoczny dopiero od index≥2; do rozstrzygnięcia w tym samym pytaniu.
+
+**STATUS: dispatch naprawy technicznej (nie gameplayowej) w toku** — zakres wyłącznie: guard
+`index<1||index>=length` otwiera się na `NaN`/`undefined`/ułamek (`Number.isInteger` brakuje) →
+`kolejka[NaN]` wstawia `undefined` na front → crash downstream w `frontItem(...).id`; dziś
+nieosiągalne z UI (idx zawsze liczba całkowita z pętli), ale funkcja eksportowana z rdzenia gry.
+Fix jednolinijkowy, potwierdzony przez mutację M5 Evaluatora. Noty UX nieblokujące (brak
+potwierdzenia dla akcji nieodwracalnej, przejęcie strzałki ↑ na 1. pozycji, brak testu logiki UI)
+zarejestrowane do backlogu, nie dispatchowane.
+
+## Runda 6 miast barbarzyńców (`clearedCityIds`) — Operator zakończony, czeka na scalenie + 3x Evaluator
+
+Operator dostarczył tabelę 12 reżimów PRZED kodem (wymóg proceduralny tej rundy) — reżimy 5/6
+(1 miasto niebronione + ≥1 bronione) to dokładny scenariusz Usterki 1 (livelock), reżim 9/10
+(≥2 niebronione + ≥1 bronione) to uogólnienie ponad wąski przypadek 1-miastowy, reżimy 3/7/8
+dowiedzione jako bit-identyczne przed/po naprawie (fallback maskuje różnicę w tej samej turze).
+
+F1 (livelock): reset `clearedCityIds` do `[ostatnio_odwiedzone]` zamiast `[]` — naprawa DOKŁADNIE
+wg propozycji Evaluatora A rundy 5. F2 (wydajność): nowe `computeLandComponents()`/
+`destComponentIds()` (flood-fill spójnych składowych terenu, ta sama funkcja kosztu co
+`computePath`, liczone raz na turę nie raz na jednostkę×cel) jako tani filtr O(1) odrzucający
+dowiedlnie nieosiągalne cele przed próbą Dijkstry. Zmierzone: 9797ms→420ms (~23,3× przyspieszenie)
+na scenariuszu 1 wyspa domowa ~10000 heksów + 39 wysp archipelagu z 117 nieosiągalnymi miastami,
+12 jednostek. F3: sprostowany fałszywy komentarz (dotyczył WYŁĄCZNIE jednostek nie-raidReady,
+błędnie uogólniony na wszystkie) — świadomie NIE naprawiono leżącego pod spodem, starszego,
+poza-zakresowego zachowania `if(raidReady) continue`.
+
+Bramki: `barb-city-behavior-test.cjs` 164/164 (było 142/142) + dowody mutacyjne sekcji 6f (F1) i
+12 (F2, nowa bramka wydajnościowa) obie z przypiętym wzorcem `FAIL:` (nie tylko exit code — nauka
+z incydentu `map-gen-regression` §0b). `tsc` 0 błędów. `barb-camp-destruction` 82/82,
+`capital-capture` 86/86, `post-capture-law` 11/11, `logic-test` 213/213, `barbarians-test` 167/167.
+
+**STATUS: scalenie do drzewa głównego wykonane w tej samej turze** (patrz commit), po nim
+dispatch 3x adwersarialnej reewaluacji (runda 6) — piąta z rzędu porażka na tym mechanizmie
+oznacza że runda 6 wymaga szczególnie sceptycznej weryfikacji zanim zostanie uznana za zamkniętą.
