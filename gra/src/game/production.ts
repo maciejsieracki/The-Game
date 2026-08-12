@@ -1123,6 +1123,11 @@ export function dequeue(prod: CityProduction, index = 0): CityProduction {
  * furtką do nadużycia: zbieranie Pracy na drogim froncie, a potem zamiana na
  * tani element z kolejki, żeby dokończyć go od razu za darmo.
  * Out-of-range `index` (< 1 lub >= kolejka.length) to no-op (shallow copy).
+ * Nie-całkowity `index` (NaN, undefined, wartość ułamkowa) to TEŻ no-op --
+ * bez `Number.isInteger` oba porównania `< 1` i `>= length` są `false` dla
+ * NaN/undefined, guard przepuszcza, a `kolejka[NaN]` wstawia `undefined` na
+ * front kolejki. Wzorzec spójny z `bindBuildQueueDragReorder` w
+ * ui/cityPanel.ts (tam `Number.isFinite`).
  * / EN: Swap a waiting-queue position (`index` >= 1) with the currently
  * building front item (`index` 0) -- "promote to the very top". Fixes
  * P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI: the ↑↓ arrows only reorder
@@ -1138,9 +1143,15 @@ export function dequeue(prod: CityProduction, index = 0): CityProduction {
  * also be an exploit: bank Praca on an expensive front item, then swap in a
  * cheap queued item to finish it instantly for free.
  * An out-of-range `index` (< 1 or >= kolejka.length) is a no-op (shallow copy).
+ * A non-integer `index` (NaN, undefined, fractional) is ALSO a no-op --
+ * without `Number.isInteger`, both `< 1` and `>= length` are `false` for
+ * NaN/undefined, so the guard would let it through and `kolejka[NaN]` would
+ * splice `undefined` into the front slot. Pattern kept consistent with
+ * `bindBuildQueueDragReorder` in ui/cityPanel.ts (which uses
+ * `Number.isFinite`).
  */
 export function promoteToFront(prod: CityProduction, index: number): CityProduction {
-  if (index < 1 || index >= prod.kolejka.length) {
+  if (!Number.isInteger(index) || index < 1 || index >= prod.kolejka.length) {
     return {
       kolejka: [...prod.kolejka],
       postep: prod.postep,

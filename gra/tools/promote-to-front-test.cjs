@@ -147,5 +147,35 @@ console.log('-- 6. podwójna zamiana (round-trip): powrót do oryginalnego front
   eq(prod.postep, 0, 'postęp resetuje się przy KAŻDEJ zamianie, także przy powrocie do poprzedniego frontu');
 }
 
+console.log('-- 7. index nie-całkowity (NaN / undefined / ułamkowy) = no-op odporny, nie crash i nie wstawienie undefined --');
+{
+  // Bez Number.isInteger w guardzie: `NaN < 1` i `NaN >= length` są OBA false, więc guard
+  // przepuszczał, a kolejka[NaN] dawało undefined -- ten undefined lądował na froncie kolejki.
+  const prod = { kolejka: [item('A', 10), item('B', 20), item('C', 30)], postep: 7 };
+
+  const viaNaN = M.promoteToFront(prod, NaN);
+  eq(ids(viaNaN.kolejka), 'A,B,C', 'index=NaN: kolejka niezmieniona, brak undefined wstawionego na front');
+  eq(viaNaN.postep, 7, 'index=NaN: postęp niezmieniony (prawdziwy no-op, nie reset)');
+  assert(viaNaN.kolejka.every(it => it !== undefined), 'index=NaN: żaden element kolejki nie jest undefined');
+  assert(!!M.frontItem(viaNaN), 'index=NaN: frontItem() nie rzuca (front nie jest undefined)');
+  eq(M.frontItem(viaNaN).id, 'A', 'index=NaN: front pozostaje oryginalnym elementem A');
+
+  const viaUndefined = M.promoteToFront(prod, undefined);
+  eq(ids(viaUndefined.kolejka), 'A,B,C', 'index=undefined: kolejka niezmieniona');
+  eq(viaUndefined.postep, 7, 'index=undefined: postęp niezmieniony');
+  assert(viaUndefined.kolejka.every(it => it !== undefined), 'index=undefined: żaden element kolejki nie jest undefined');
+  assert(!!M.frontItem(viaUndefined), 'index=undefined: frontItem() nie rzuca');
+
+  const viaFractional = M.promoteToFront(prod, 1.5);
+  eq(ids(viaFractional.kolejka), 'A,B,C', 'index=1.5 (ułamkowy, w zakresie): kolejka niezmieniona -- brak "prawie trafienia"');
+  eq(viaFractional.postep, 7, 'index=1.5: postęp niezmieniony');
+  assert(viaFractional.kolejka.every(it => it !== undefined), 'index=1.5: żaden element kolejki nie jest undefined');
+  assert(!!M.frontItem(viaFractional), 'index=1.5: frontItem() nie rzuca');
+
+  // oryginalny obiekt wejściowy nadal nietknięty po wszystkich trzech wywołaniach
+  eq(ids(prod.kolejka), 'A,B,C', 'oryginalny prod.kolejka nie jest mutowany przez żadne z powyższych wywołań');
+  eq(prod.postep, 7, 'oryginalny prod.postep nie jest mutowany');
+}
+
 console.log(`\npromote-to-front-test: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
