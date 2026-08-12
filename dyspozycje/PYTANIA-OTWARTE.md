@@ -13921,3 +13921,16 @@ oba tematy dotykają `barbarians.ts`), higiena (tech-tree/research/unit-replace)
 
 **Scalone przez orkiestratora — dispatch 3x Evaluator adwersaryjny (runda 4 weryfikacji, próg
 niezmieniony po jednomyślnym FAIL rundy 2) w toku.**
+
+## `2dabc0e2` domknięcie luki — battle-loot/trade-flow strażniki — SCALONE, Evaluator: **PASS**
+
+2 nowe sekcje w `surow-civ-storage-test.cjs` (10 asercji: obecność wywołania z 5. argumentem
+cap + dokładny kształt `ownerResourceCap(..., empireEpochForOwner(X))` dla battle-loot i
+trade-flow). Evaluator niezależnie zweryfikował punkt odniesienia (`git checkout HEAD --` na
+plik testowy: baseline 43/14 → po zmianie 53/14, dokładnie +10/+0) i wykonał WŁASNE dodatkowe
+3 mutacje poza tymi które testował Operator (usunięcie samego 5. argumentu z wywołania
+`creditOwnerResourceStock`, nie tylko z deklaracji `cap` — złapane; podstawienie złej zmiennej
+jako cap — nie złapane przez strażnik, ale złapane przez `tsc` jako TS2304, więc bezpieczne).
+Zero zmian w `main.ts` — czysto testowe zadanie, zakres dotrzymany.
+Bramki: `tsc` 0, `logic-test` 213/213, `surow-civ-storage-test` **53/14** (identyczne 14
+pre-istniejących niezwiązanych porażek). **Temat w pełni zamknięty.**
