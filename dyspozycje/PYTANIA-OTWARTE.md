@@ -16390,3 +16390,23 @@ dotkniętych liczb (plik:linia, PRZED zmianą) w stylu tabeli reżimów, potem z
 na skalę (dotyka ekonomii całej gry) — po Operatorze osobny, dokładny Evaluator sprawdzający
 KOMPLETNOŚĆ (czy żaden surowiec/koszt nie został pominięty) i SPÓJNOŚĆ (czy proporcje
 rzeczywiście zostały zachowane, nie tylko poszczególne liczby zmienione).
+
+## P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1 · STATUS: **ZAMKNIĘTE — zastąpione decyzją R-EKONOMIA-SUROWCE-SKALA-5X-Q1**
+
+Pytanie o premię/neutralność przy `need=0` jest teraz nieaktualne — decyzja właściciela o
+powrocie stawki drenażu obywateli do 1,0/obywatela (część `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`)
+eliminuje problem u źródła: `floor(1×1,0)=1`, `need` nigdy nie zeruje się dla populacji ≥1.
+Nie wymaga osobnej odpowiedzi. Zamknięte bez dalszego działania.
+
+## NUMER: R-CIVPEDIA-OPISY-AUDYT-Q1 — przegląd CivPedii i wszystkich „szczegółów"/ściąg w grze (2026-08-13)
+
+Polecenie właściciela (samodzielna praca, właściciel nieobecny przez jakiś czas): przejrzeć
+CivPedię oraz wszystkie panele „szczegóły"/„ściąga" w grze (przykład z rozmowy: panel
+„Zamożność — ściąga" w mieście — wzory, progi, mechanika w formie tabeli) pod kątem: (a) czy
+wszystko co jest pokazane jest rzeczywiście potrzebne, (b) czy wyjaśnienia są wystarczająco
+jasne, (c) czy jest to czytelne/przejrzyste. **Etap 1 (na razie): WYŁĄCZNIE przegląd i
+rekomendacje, bez wdrażania zmian** — dopiero po zebraniu pełnego obrazu i (jeśli trzeba)
+turze ABC dla zmian merytorycznych, wejdzie w fazę wykonania przez normalną pętlę AutoBot.
+
+**STATUS: dispatch agenta rozpoznawczego (katalogowanie wszystkich takich paneli/tekstów w
+kodzie) w toku — pierwszy krok przed jakąkolwiek oceną jakości.**
