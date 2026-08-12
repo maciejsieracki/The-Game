@@ -15691,3 +15691,13 @@ Po zamknięciu tematu NaN-guard (promoteToFront) zwolniony slot uzupełniony Eva
 `3a3b11da` (epoka w kompaktowej liście rekrutacji) — pierwszy z 7 pozostałych merge'owanych,
 nigdy-nie-ewaluowanych commitów z audytu #3 (3a3b11da, 26b684af, 7b02eb2d, fc17538f, 3dc9d650,
 ecbddda8, 89c16ec1). Pozostałe 6 do dispatchu sukcesywnie w miarę zwalniania slotów.
+
+## Naprawa U1+U3 dyplomacji (fix-diplomacy-u1-76514613) — ZAMKNIĘTE
+
+U1: warunek nowej etykiety rozszerzony o `&& relOk` — dowód przed/po (AI proponuje `nap`, Relacja=40,
+próg 50): przed fixem etykieta "możesz przyjąć bez dopłaty" mimo `accepted=false`; po fixie
+"Spełnia warunki (0 PW)" bez sprzeczności z realnym stanem odrzucenia. U3: dopisana asercja
+`netPw===-20` dla `umowa_handlowa`/140 Relacji, zweryfikowana jako dyskryminująca (stara błędna
+ścieżka dałaby +12, różnica 32 PW). `diplomacy-acceptance-points-test.cjs` 240→241/241. `tsc`
+0 błędów, `logic-test` 213/213. Kierunek `own` (U2) nietknięty, jak zaplanowano. **ZAMKNIĘTE**
+(commit `19bdb411`).
