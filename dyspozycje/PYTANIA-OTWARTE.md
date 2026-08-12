@@ -13494,3 +13494,31 @@ self-ocena — worktree odizolowany, brak commitu/deployu z tej sesji). Punkt 7
 (świadoma luka battle-loot/trade-flow/drewno-wyrąb cap bez era) i decyzja o
 NIEZMIENIONej bazie `magazyn_bonus_surowce_na_budynek` — do potwierdzenia przez
 Evaluatora/właściciela, nie zgadywane dalej.**
+
+**SCALONE 2026-08-12 (commit `26707dcf`)** — bramki niezależnie zweryfikowane przez
+orkiestratora przed commitem (tsc 0, logic-test 213/213, oba nowe testy 87/87 +
+57/57, testy dotknięte bezpośrednio zielone poza 2 pre-istniejącymi awariami
+potwierdzonymi identycznymi na `git stash` bazowym). Evaluator dispatched (Opus 5,
+worktree `eval-pool-4`) — w toku.
+
+---
+
+## Batch dispatch 2026-08-12 (po scaleniu 469f3152-fix i konwertery/magazyn): 4 Evaluatorzy + 1 Operator
+
+Registrowane zbiorczo, żeby nie plodzic 5 osobnych naglowkow dla tego samego zdarzenia:
+- **Evaluator (eval-pool-1, Opus 5)**: commit `4e62c4f6` (building-panel detail-side fix,
+  hotfix orkiestratora — wymaga Evaluatora wg zasady 0b, orkiestrator nie ocenia sam siebie).
+- **Evaluator (eval-pool-2, Opus 5)**: commit `3b851610` (porzadek-panel -0 fix, hotfix
+  orkiestratora — jw.).
+- **Evaluator (eval-pool-3, Opus 5)**: commit `a2f4d535` (P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE,
+  domkniecie szczelin 5+6 z rundy 1 Evaluatora, hotfix orkiestratora — jw.).
+- **Evaluator (eval-pool-4, Opus 5)**: commit `26707dcf` (P-KONWERTERY-PRZEPUSTOWOSC-Q1 +
+  P-MAGAZYN-SKALOWANIE-EPOKA-Q1, praca Operatora scalona przez orkiestratora).
+- **Operator (worktree `fix-gpu-dispose-v2`, Opus 5 — reguła render/**)**: runda 2 naprawy
+  `e702d982` (GPU dispose) wg rekomendacji Evaluatora rundy 1 (pelny raport w
+  `/tmp/.../scratchpad/fail-e702d982.txt`): rozszerzenie `merge-decor-no-regress-test.cjs`
+  o pokrycie krytycznego niezmiennika + 4 brakujące call site w `syncVillageMeshes`/
+  `syncCampMeshes` + zamkniecie luki T5. Wyciek `styledOverlays` w `scene.ts` swiadomie
+  POZA zakresem tej rundy — do osobnego zgloszenia.
+
+**STATUS: wszystkie 5 W TOKU (dispatch tej samej tury).**
