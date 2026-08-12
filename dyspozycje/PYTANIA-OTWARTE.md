@@ -12674,6 +12674,28 @@ ograniczyć WIDOCZNOŚĆ do właściwej zakładki.
 
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
 
+**ZAMKNIĘTE (commit `469f3152`), Evaluator runda 1 = FAIL (wąski, zachowanie w grze poprawne,
+dziurawa ochrona przed regresją — 2 szczeliny), runda 2 domknięta bez dispatchu (naprawa testowa,
+zero zmian logiki):**
+- Fix wdrożony poprawnie: `econSliderVisibilityForOnlyEconId` (`empirePanelSectionMap.ts`) +
+  dwa warunkowe wywołania w `empireDetailPanel.ts:1377-1379` (`if (sliderVis.showTaxSplit)` /
+  `if (sliderVis.showLaborSplit)`). Evaluator potwierdził wykonaniem: żaden regres z `b80426ff`
+  nie wrócił, pokrycie wszystkich 7 osiągalnych zakładek (nie tylko 3 zgłoszonych) kompletne.
+- **Szczelina 5 (blokująca)** — nowy test badał wyłącznie czystą funkcję decyzyjną, nigdy nie
+  czytał `empireDetailPanel.ts`; mutacja usuwająca oba `if` (dosłowny zgłoszony błąd) przechodziła
+  wszystkie bramki zielono. **Naprawione**: `empire-panel-econ-slider-visibility-test.cjs` dostał
+  Wymóg 4 — czyta źródło `empireDetailPanel.ts` wprost, dowodzi mutacją+subprocess-em, że
+  usunięcie guardów jest łapane czerwono (60/60 asercji zielono po naprawie).
+- **Szczelina 6** — stary `empire-panel-sliders-always-visible-test.cjs` (z `b80426ff`) dalej
+  stał zielony i asertował ODWROTNY kontrakt („suwaki muszą się renderować ZAWSZE"). **Naprawione**:
+  przepisany na dzisiejszy kontrakt z jawną notą `SUPERSEDED przez P-EMPIRE-PANEL-SUWAKI-
+  DUPLIKOWANE (469f3152)` w nagłówku (8/8 zielono).
+- **Domknięty sprawdzony negatyw z rejestru**: „Zamożność" **NIE jest osobną zakładką** — to
+  wiersz WEWNĄTRZ suwaka "Domyślny podział podatek" (`procentLuksus`). Wymóg „sprawdzić
+  systematycznie także Zamożność" jest więc spełniony pusto — nie ma takiej zakładki do
+  sprawdzenia (`grep "zamoznosc|Zamożność" gra/src/ui/hud.ts` → 0 trafień poza etykietami
+  wiersza suwaka). Nie wracać do tego pytania.
+
 ## P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE — KRYTYCZNE, REGRESJA NA WDROZONYM ROBOCZA (Evaluator, 2026-08-12)
 
 **Werdykt Evaluatora migracji IndexedDB (`798f3c17`): FAIL, blokujące.** Zweryfikowane A/B na

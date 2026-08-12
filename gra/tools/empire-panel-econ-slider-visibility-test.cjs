@@ -162,6 +162,72 @@ function main() {
   assert('Nauka NIE pokazuje zestawu Pracy (nauka nie jest finansowana przez podział Pracy)',
     JSON.stringify(naukaVis) !== JSON.stringify(pracaVis));
 
+  // ---------------------------------------------------------------------------
+  // Wymóg 4 (Evaluator FAIL 469f3152, szczelina 5): dotąd test badał WYŁĄCZNIE czystą funkcję
+  // econSliderVisibilityForOnlyEconId w izolacji — nic nie wymuszało, żeby empireDetailPanel.ts
+  // w ogóle konsumował jej werdykt. Mutacja usuwająca oba `if` w empireDetailPanel.ts (dosłowne
+  // przywrócenie zgłoszonego błędu) przechodziła WSZYSTKIE bramki zielono. Ten blok czyta
+  // źródło empireDetailPanel.ts wprost i dowodzi wykonaniem (mutacja + subprocess), że regres
+  // jest łapany czerwono.
+  //
+  // EN: until now this test only exercised the pure decision function in isolation — nothing
+  // forced empireDetailPanel.ts to actually consume its verdict. A mutation removing both `if`
+  // guards (the literal originally-reported bug) passed every gate green. This block reads
+  // empireDetailPanel.ts source directly and proves via mutation+subprocess execution that the
+  // regression is caught red.
+  // ---------------------------------------------------------------------------
+  console.log('\n-- Wymóg 4: empireDetailPanel.ts faktycznie konsumuje econSliderVisibilityForOnlyEconId --');
+  const PANEL_TS = path.join(__dirname, '..', 'src', 'ui', 'empireDetailPanel.ts');
+  const panelSrc = fs.readFileSync(PANEL_TS, 'utf8');
+
+  const sectionMarker = 'ZASOBY IMPERIUM (STAN + PRZYROST)';
+  const markerIdx = panelSrc.indexOf(sectionMarker);
+  assert('znaleziono nagłówek sekcji "ZASOBY IMPERIUM" w empireDetailPanel.ts', markerIdx >= 0);
+  const footMarker = 'Duża liczba = stan · zielone = netto.';
+  const footIdx = markerIdx >= 0 ? panelSrc.indexOf(footMarker, markerIdx) : -1;
+  assert('znaleziono stopkę sekcji ZASOBY IMPERIUM (civ-emp-foot)', footIdx > markerIdx);
+  const sectionBody = markerIdx >= 0 && footIdx > markerIdx ? panelSrc.slice(markerIdx, footIdx) : '';
+
+  assert('econSliderVisibilityForOnlyEconId(onlyEconId) jest faktycznie wywołane w sekcji ZASOBY IMPERIUM',
+    /const sliderVis = econSliderVisibilityForOnlyEconId\(onlyEconId\);/.test(sectionBody));
+
+  const taxCallCount = (sectionBody.match(/renderDefaultHandelSplitSection\(\);/g) || []).length;
+  const taxGuardedCount = (sectionBody.match(/if\s*\(sliderVis\.showTaxSplit\)\s*zasoby \+= renderDefaultHandelSplitSection\(\);/g) || []).length;
+  assert('renderDefaultHandelSplitSection() występuje w sekcji dokładnie raz', taxCallCount === 1);
+  assert('...i WYŁĄCZNIE pod warunkiem if(sliderVis.showTaxSplit) (nie bezwarunkowo)', taxGuardedCount === 1 && taxCallCount === taxGuardedCount);
+
+  const laborCallCount = (sectionBody.match(/renderDefaultPodzialPracySection\(\);/g) || []).length;
+  const laborGuardedCount = (sectionBody.match(/if\s*\(sliderVis\.showLaborSplit\)\s*zasoby \+= renderDefaultPodzialPracySection\(\);/g) || []).length;
+  assert('renderDefaultPodzialPracySection() występuje w sekcji dokładnie raz', laborCallCount === 1);
+  assert('...i WYŁĄCZNIE pod warunkiem if(sliderVis.showLaborSplit) (nie bezwarunkowo)', laborGuardedCount === 1 && laborCallCount === laborGuardedCount);
+
+  // Mutacja: przywrócenie dosłownego zgłoszonego błędu (MUT3 z raportu Evaluatora) — oba wywołania
+  // bez guardu. Test MUSI złapać to czerwono. Pomijana w trybie --self-check-skip-mutation, żeby
+  // uniknąć nieskończonej rekurencji (ten tryb uruchamia TEN SAM plik na zmutowanym źródle i
+  // oczekuje, że powyższe asercje złapią to czerwono).
+  if (!process.argv.includes('--self-check-skip-mutation')) {
+    console.log('\n-- Wymóg 4 / mutacja MUT3: przywrócenie bezwarunkowych wywołań suwaków --');
+    const backup = panelSrc;
+    const mutated = panelSrc.replace(
+      'if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();\n  if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();',
+      'zasoby += renderDefaultHandelSplitSection();\n  zasoby += renderDefaultPodzialPracySection();',
+    );
+    assert('mutacja MUT3 faktycznie zmieniła źródło (kotwica zamiany istnieje)', mutated !== backup);
+
+    fs.writeFileSync(PANEL_TS, mutated, 'utf8');
+    const { execSync } = require('child_process');
+    let mutantFailed = false;
+    try {
+      execSync(`node ${__filename} --self-check-skip-mutation`, { cwd: __dirname, stdio: 'pipe' });
+    } catch (e) {
+      mutantFailed = true;
+    } finally {
+      fs.writeFileSync(PANEL_TS, backup, 'utf8');
+    }
+    assert('mutacja MUT3 (bezwarunkowe wywołania, dosłowny zgłoszony błąd) łapana czerwono przez Wymóg 4', mutantFailed);
+    assert('empireDetailPanel.ts przywrócony do stanu oryginalnego po mutacji', fs.readFileSync(PANEL_TS, 'utf8') === backup);
+  }
+
   console.log(`\n${pass} pass · ${fail} fail`);
   process.exit(fail > 0 ? 1 : 0);
 }
