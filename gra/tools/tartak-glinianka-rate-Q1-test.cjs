@@ -90,12 +90,20 @@ eq(terrainImprovements.kamieniolom.surowiec_ilosc_tura, 10, 'JSON: kamieniolom.s
 console.log('\n-- B. territoryResourceYieldForImprovement (silnik, SUROW-TERYT-01) --\n');
 const tartakYield = M.territoryResourceYieldForImprovement('tartak');
 const glinianKaYield = M.territoryResourceYieldForImprovement('glinianka');
+const kamieniolomYield = M.territoryResourceYieldForImprovement('kamieniolom');
 ok(!!tartakYield, 'tartak: territoryResourceYieldForImprovement zwraca wpis');
 ok(!!glinianKaYield, 'glinianka: territoryResourceYieldForImprovement zwraca wpis');
+ok(!!kamieniolomYield, 'kamieniolom: territoryResourceYieldForImprovement zwraca wpis');
 eq(tartakYield && tartakYield.resourceKey, 'drewno', 'tartak: resourceKey = drewno');
 eq(tartakYield && tartakYield.amount, 10, 'silnik: tartak amount === 10 (NIE stara wartosc 4)');
 eq(glinianKaYield && glinianKaYield.resourceKey, 'glina', 'glinianka: resourceKey = glina');
 eq(glinianKaYield && glinianKaYield.amount, 10, 'silnik: glinianka amount === 10 (NIE stara wartosc 4)');
+// N5 (Maciej 2026-08-12, dispatch po ecbddda8): luka pokrycia -- kamieniolom mial
+// dotad asercje TYLKO na poziomie JSON (sekcja A wyzej), NIE na poziomie silnika.
+// EN: coverage gap -- kamieniolom previously had assertions ONLY at the JSON level
+// (section A above), NOT at the engine level.
+eq(kamieniolomYield && kamieniolomYield.resourceKey, 'kamien', 'kamieniolom: resourceKey = kamien');
+eq(kamieniolomYield && kamieniolomYield.amount, 10, 'silnik: kamieniolom amount === 10 (odczyt z JSON, nie hardkod)');
 
 console.log('\n-- C. Integracja: advanceCityEconomy -- Tartak/Glinianka w terytorium +10/ture do magazynu --\n');
 

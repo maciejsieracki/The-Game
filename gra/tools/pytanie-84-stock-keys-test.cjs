@@ -54,6 +54,19 @@ const zlotoYield = M.territoryResourceYieldForImprovement('kopalnia_zlota');
 ok(zlotoYield?.resourceKey === 'zloto' && zlotoYield.amount === 1,
   `kopalnia_zlota → zloto 1/t (ma: ${JSON.stringify(zlotoYield)})`);
 
+// N5 (Maciej 2026-08-12, dispatch po ecbddda8): luka pokrycia -- kopalnia_miedzi
+// i kopalnia_zelaza mialy dotad asercje TYLKO na poziomie JSON, NIE na poziomie
+// silnika (territoryResourceYieldForImprovement).
+// EN: coverage gap -- kopalnia_miedzi and kopalnia_zelaza previously had assertions
+// ONLY at the JSON level, NOT at the engine level.
+const miedzYield = M.territoryResourceYieldForImprovement('kopalnia_miedzi');
+ok(miedzYield?.resourceKey === 'ruda' && miedzYield.amount === 4,
+  `kopalnia_miedzi → ruda 4/t (silnik, nie hardkod; ma: ${JSON.stringify(miedzYield)})`);
+
+const zelazaYield = M.territoryResourceYieldForImprovement('kopalnia_zelaza');
+ok(zelazaYield?.resourceKey === 'ruda_zelaza' && zelazaYield.amount === 4,
+  `kopalnia_zelaza → ruda_zelaza 4/t (silnik, nie hardkod; ma: ${JSON.stringify(zelazaYield)})`);
+
 console.log('-- D. Mount rekrutacja +5 kon (U-15 stock keys) --');
 const mountCost = M.unitStockCost({ Typ: 'Mount', Jednostka: 'Łucznik konny', Surowiec: 'Brąz', 'Surowiec (ilość)': 1 });
 ok(mountCost.kon === M.MOUNT_UNIT_HORSE_STOCK_COST,
