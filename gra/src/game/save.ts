@@ -588,6 +588,28 @@ export async function saveToLocal(slot: string, s: SaveGame): Promise<SaveToLoca
     // STALE meta key (best-effort -- idbRemoveItem never rejects), so a
     // MISSING key (not a stale one) drives the correct fallback.
     await idbRemoveItem(saveMetaKey(slot));
+    // P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE, znalezisko F2 (Evaluator, 2026-08-12):
+    // czyszczenie samego klucza IDB nie wystarcza -- loadSaveSlotMeta() po
+    // nieudanym odczycie z IDB (raw === null) SPADA na legacy localStorage pod
+    // TYM SAMYM kluczem (saveMetaKey(slot)). Jeśli ten slot miał kiedyś zapis
+    // meta sprzed migracji IDB, stary wpis w localStorage "zmartwychwstaje" --
+    // dialog "Wczytaj grę" pokazuje STARĄ etykietę/turę dla NOWSZEGO zapisu
+    // (sama treść zapisu w IDB jest poprawna, tylko wyświetlane metadane są
+    // przestarzałe). Czyścimy więc RÓWNIEŻ legacy klucz localStorage, tym samym
+    // wzorcem co deleteLocal() niżej (best-effort, nie rzuca).
+    // / EN: P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE, finding F2 (Evaluator,
+    // 2026-08-12): clearing the IDB key alone is not enough -- after a failed
+    // IDB read (raw === null), loadSaveSlotMeta() FALLS BACK to legacy
+    // localStorage under the SAME key (saveMetaKey(slot)). If this slot ever
+    // had a pre-IDB-migration meta entry, that stale localStorage entry
+    // "resurrects" -- the "Load game" dialog shows the OLD label/turn for the
+    // NEWER save (the save body in IDB is fine, only the displayed metadata is
+    // stale). So also clear the legacy localStorage key, same pattern as
+    // deleteLocal() below (best-effort, never throws).
+    const storage = getStorage();
+    if (storage !== null) {
+      try { storage.removeItem(saveMetaKey(slot)); } catch { /* ignore -- best-effort */ }
+    }
   }
   return { ok: true };
 }

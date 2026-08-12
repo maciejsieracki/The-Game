@@ -28717,7 +28717,31 @@ async function boot(): Promise<void> {
     // definicja wyżej) -- odpalone tu, żeby był gotowy zanim gracz zdąży
     // otworzyć menu główne/pauzy (stale-while-revalidate poniżej i tak by go
     // ostatecznie uzupełnił, ale to dodatkowo skraca okno "jeszcze nie wiem").
-    void refreshHasAnySaveSlotCache();
+    //
+    // P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE (Evaluator, 2026-08-12): menu startowe
+    // buduje się PONIŻEJ w TYM SAMYM synchronicznym ticku (openStartupMainMenu()),
+    // więc odczyt IndexedDB (async) nie zdążył się rozwiązać -- mainMenu.build()
+    // czyta hasSave() RAZ i zawsze widzi cachedHasAnySaveSlot === false: przyciski
+    // "Kontynuuj"/"Wczytaj grę" wychodzą trwale wyszarzone (btn() w mainMenu.ts
+    // w ogóle nie podpina handlera kliknięcia, gdy enabled=false przy budowie --
+    // menu się samo nie naprawia). Naprawa: gdy cache się rozwiąże, przebuduj
+    // menu główne (jeśli gracz wciąż na nim stoi) i odśwież stan przycisku
+    // "Wczytaj grę" w menu pauzy (no-op, gdy menu pauzy zamknięte -- funkcja
+    // sama to sprawdza).
+    // / EN: P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE (Evaluator, 2026-08-12): the
+    // startup menu builds BELOW in the SAME synchronous tick
+    // (openStartupMainMenu()), so the async IndexedDB read hasn't resolved yet --
+    // mainMenu.build() reads hasSave() ONCE and always sees
+    // cachedHasAnySaveSlot === false: the "Continue"/"Load game" buttons come
+    // up permanently greyed out (btn() in mainMenu.ts doesn't even attach a
+    // click handler when enabled=false at build time -- the menu doesn't
+    // self-heal). Fix: once the cache resolves, rebuild the main menu (if the
+    // player is still on it) and refresh the pause menu's "Load game" button
+    // state (no-op when the pause menu is closed -- the function checks itself).
+    void refreshHasAnySaveSlotCache().then(() => {
+      if (isMainMenuOpen()) showMainMenu();
+      refreshGamePauseMenuLoadState();
+    });
 
     if (demoUlepszeniaUrl) {
       void (async () => { await doStartPlaytestMapaSwiata(); seedDemoUlepszenia(); })();
