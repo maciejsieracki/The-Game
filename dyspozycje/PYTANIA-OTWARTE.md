@@ -14533,3 +14533,19 @@ blokery, oba udowodnione wykonaniem, oba niepokryte testem:
 przestarzały known-fail w map-snapshot-load-test, brak `onversionchange`, duplikacja fallbacku
 5×, cache niedoczyszczany po delete ostatniego zapisu, luka pokrycia `saveToLocal ok:true`,
 brak sprzątania legacy). **STATUS: dispatch naprawy B1+B2 (+B3 minimum) w toku.**
+
+## ECHO — kategoria 6 raportu ZAWIESZONA (Maciej, 2026-08-12)
+
+Właściciel zauważył że raport wyglądał inaczej niż pamiętał i poprosił o sprawdzenie w historii,
+co dokładnie miał na myśli prosząc o „numer 6". Sprawdzone wyczerpująco: `git log -- CLAUDE.md`
+(komity `db7edb75` = oryginalne 5 kategorii 2026-08-10, `30b4112c` = dopisanie kategorii 6
+2026-08-12) + pełny transkrypt tej sesji (~59 tys. linii, wszystkie punkty kompaktowania).
+**Ustalenie: dosłowna, oryginalna wypowiedź właściciela nie jest odzyskiwalna** — nawet
+najwcześniejszy zachowany zapis to już parafraza z wcześniejszego kompaktowania kontekstu, nie
+cytat surowy. Właściciel po zapoznaniu się z tym co jest zachowane, z pamięci potwierdził:
+„W numerze 6 miały być po prostu wszystkie tematy, niezależnie od tego, w której są części,
+wypisane, wylistowane od ostatniej fali." — czyli DOKŁADNIE definicja jaką kategoria 6 już miała.
+**Decyzja: SKORO te same tematy są i tak widoczne rozbite na kategorie 1-5, kategoria 6 zostaje
+ZAWIESZONA (nie usunięta z pamięci projektu) do czasu aż właściciel znajdzie dla niej inne
+zastosowanie.** CLAUDE.md §10 zaktualizowane — hasło `raport` wraca do 5 kategorii. Zero zmian w
+kodzie gry, czysto proceduralne.

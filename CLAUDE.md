@@ -193,9 +193,10 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 9. **Komentarze w kodzie (`gra/src/**`) dwujęzyczne PL+EN (Maciej 2026-08-09).** Nie zmienia zasady „domyślnie
    bez komentarzy, tylko gdy WHY nieoczywiste" — dotyczy WYŁĄCZNIE tych rzadkich komentarzy, które i tak
    powstają. Format: polska wersja, potem `/ EN: ...` w tej samej linii/bloku.
-10. **HASŁO „raport" — status pracy w 6 kategoriach (Maciej, 2026-08-10; kategoria 6 dopisana
-    2026-08-12).** Na słowo `raport` (w dowolnym momencie, niezależnie od wątku) dostarcz
-    zestawienie w DOKŁADNIE tych 6 kategoriach, w tej kolejności:
+10. **HASŁO „raport" — status pracy w 5 kategoriach (Maciej, 2026-08-10; kategoria 6 dopisana
+    2026-08-12, ZAWIESZONA 2026-08-12 po sprostowaniu właściciela — patrz nota niżej).** Na słowo
+    `raport` (w dowolnym momencie, niezależnie od wątku) dostarcz zestawienie w DOKŁADNIE tych
+    5 kategoriach, w tej kolejności:
     1. **Gotowe do deploy do ROBOCZA i czekające** (scalone na gałąź sesji, bramki zielone, deploy jeszcze
        nie wykonany).
     2. **W trakcie — Operator pracuje** (dispatchowany, jeszcze bez dostarczonego raportu).
@@ -207,17 +208,22 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
     5. **Odłożone świadomie** (z udokumentowanym w tym samym pliku powodem — cytat właściciela, „do
        backlogu", „pre-istniejące nie blokuje" itp., NIE samoocena „niepilne" agenta rejestrującego —
        to nie liczy się jako świadome odłożenie).
-    6. **Wszystkie nowe zlecenia od ostatniej fali** (Maciej, 2026-08-12: „Raport powinien obejmować
-       zawsze wszystkie nowe zlecenia od ostatniej fali.") — pełna lista tematów zarejestrowanych w
-       `PYTANIA-OTWARTE.md` od ostatniego deployu/promocji fali ROBOCZA (patrz `WERSJE.md` dla daty/
-       commitu ostatniej fali), NIEZALEŻNIE od tego, do której z kategorii 1-5 dany temat trafia —
-       to jest przekrojowa lista „co nowego doszło", nie kolejna klasyfikacja statusu. Cel: żaden nowo
-       zgłoszony temat nie ginie w podziale na kategorie 1-5.
     Źródło danych zawsze `dyspozycje/PYTANIA-OTWARTE.md` (pełny przegląd nagłówków `## `, nie próbka z
-    pamięci sesji) + stan aktywnie dispatchowanych agentów + `dyspozycje/WERSJE.md` (dla kategorii 6,
-    ustalenie granicy „od ostatniej fali"). Format odpowiedzi: krótko, per temat ID/nazwa + 1 zdanie
-    stanu — bez wklejania pełnych raportów Operatora/Evaluatora. Jeśli plik rejestru jest duży,
+    pamięci sesji) + stan aktywnie dispatchowanych agentów. Format odpowiedzi: krótko, per temat ID/nazwa +
+    1 zdanie stanu — bez wklejania pełnych raportów Operatora/Evaluatora. Jeśli plik rejestru jest duży,
     dispatchuj subagenta (Explore/general-purpose) do systematycznego audytu zamiast zgadywać z pamięci.
+
+    **Nota o kategorii 6 (ZAWIESZONA, 2026-08-12).** Kategoria 6 „wszystkie nowe zlecenia od
+    ostatniej fali" została dopisana 2026-08-12 na podstawie zdania właściciela „Raport powinien
+    obejmować zawsze wszystkie nowe zlecenia od ostatniej fali" — ale to zdanie okazało się
+    dotyczyć czegoś innego: właściciel sprostował (2026-08-12, po dochodzeniu w historii sesji —
+    zobacz link do pytania w rejestrze), że chodziło mu o **wszystkie tematy zarejestrowane od
+    ostatniej fali, wypisane wprost, niezależnie od tego, do której kategorii 1-5 trafiają** —
+    czyli DOKŁADNIE to, co kategoria 6 już robiła. Ponieważ jednak te same tematy i tak są
+    widoczne rozbite na kategorie 1-5, właściciel zdecydował: **nie utrzymywać osobnej kategorii 6
+    na razie, dopóki nie znajdzie się dla niej inne zastosowanie.** Jeśli w przyszłości padnie
+    nowe polecenie „dodaj kategorię 6" — dopytaj wprost co ma zawierać, nie zakładaj że to ten
+    sam koncept.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)
