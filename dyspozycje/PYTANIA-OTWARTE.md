@@ -16336,3 +16336,10 @@ odpowiedział wyłącznie na pytanie o reset postępu, nie na to powiązane pyta
 zostaje bez zmian do czasu osobnej decyzji; dispatch obejmuje wyłącznie przeniesienie postępu.
 
 **STATUS: dispatch Operatora (Sonnet 5) w toku.**
+
+## ECHO P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 = A (Maciej, 2026-08-13)
+
+Akceptowalne — na `normal`/`easy` krążenie jednostki barbarzyńskiej między ≥2 niebronionymi
+miastami bez dotarcia do bronionego jest świadomie zaakceptowanym zachowaniem, nie błędem do
+naprawy. Runda 8 mechanizmu `clearedCityIds` NIE jest potrzebna. Zero kodu do zmiany —
+**ZAMKNIĘTE**. Mechanizm patrolu barbarzyńców (rundy 1-7) uznany za kompletny.
