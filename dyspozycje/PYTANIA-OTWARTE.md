@@ -14402,3 +14402,40 @@ dokładnie ten typ pomyłki przed którym ostrzega §0c. **Dispatch 6 Evaluator�
 ISTNIEJĄCYM, już zmergowanym kodzie (nie nowa implementacja) — w toku, ręcznie tworzone worktree.**
 
 **STATUS: W NAPRAWIE.**
+
+## ⛔ AUDYT WŁASNY #3 — 11 KOLEJNYCH commitów bez Evaluatora, znalezionych przez systematyczne
+## krzyżowanie KAŻDEGO hasha commitu (nie tylko nagłówków) od FALA 269 (2026-08-12, ultracode)
+
+Na wyraźne polecenie właściciela („sprawdź czy każdy temat z listy jest zaopiekowany, masz
+możliwość puszczenia przynajmniej 10 subagentów") — pełny, systematyczny przegląd: `git log
+--oneline 0c1f7c37..HEAD` (wszystkie commity od FALA 269), odfiltrowane wpisy czysto
+dokumentacyjne (`Rejestr:`/`Kanal:`/`WIP:`/`Deploy`), dla KAŻDEGO pozostałego hasha grep w
+rejestrze — nie tylko czy ma własny nagłówek „SCALONE", ale czy GDZIEKOLWIEK pada słowo
+„Evaluator" w jego kontekście. Wynik: **11 commitów z zerowym śladem niezależnej recenzji**,
+w tym 7 które NAWET nie mają własnego nagłówka domykającego z hashem (kod istnieje, rejestr
+milczy całkowicie — gorszy przypadek niż audyty #1/#2, gdzie przynajmniej był nagłówek
+„SCALONE"):
+
+1. `0651d65e` — P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD (nowy chip „Obywatele")
+2. `ad4b1e8d` — P-DYPLOMACJA-STOL-NEGOCJACJI-ZABLOKOWANY (actionableNegotiationIdsForPair)
+3. `3a3b11da` — P-NAZWY-JEDNOSTEK-MYLACO-PODOBNE (epoka w liście rekrutacji)
+4. `fcd31209` — P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI (przycisk zamiany z frontem kolejki)
+5. `26b684af` — P-TARGOWISKO-BLEDNA-BRAMKA-BADAN (techPrereqChain dla AND-prereqów)
+6. `7b02eb2d` — P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK
+7. `fc17538f` — P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE
+8. `3dc9d650` — P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (ma nagłówek „SCALONE, czeka na Evaluatora" — nigdy nie doczekał)
+9. `ecbddda8` — R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 (wartości produkcji terenowej)
+10. `89c16ec1` — P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (tabela Miast)
+11. `810d5917` — **P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE** (KRYTYCZNE, regresja na WDROŻONYM
+    ROBOCZA — fix F1/F2 istnieje, notatka dopisana wstecznie przy audycie „raport", ale NIGDY
+    nie dostał Evaluatora mimo że to najwyższy-ryzyka temat z całej jedenastki — martwe
+    Kontynuuj/Wczytaj na starcie gry). F3/F4/F5 ze specyfikacji świadomie odłożone, nie
+    dispatchowane, nadal otwarte jeśli ktoś zechce je podjąć (niepilne, nie blokują F1/F2).
+
+Dodatkowo niepewny, niski priorytet: `5448eb51` (fix wycieku placeholdera HUD Surowce) reaguje
+wprost na finding Evaluatora `9594e4ac`, ale sam fix nigdy nie dostał świeżego spojrzenia —
+dołączony do dispatchu jako najmniejszy z 12.
+
+**Dispatch 11 Evaluatorów (+1 mały, 12 razem) w toku, Opus 5, na istniejącym kodzie.**
+
+**STATUS: W NAPRAWIE.**
