@@ -15728,3 +15728,30 @@ domknięty — F1/F2 (Evaluator PASS-WITH-NOTES) + F-1 fantom (ta naprawa); F-2/
 Kolejny slot uzupełniony Evaluatorem dla `7b02eb2d` (nagłówek "Dyplomacja" dla notatek EOT
 gracz↔AI). Trzeci z 5 pozostałych merge'owanych, nigdy-nie-ewaluowanych commitów audytu #3
 (7b02eb2d, fc17538f, 3dc9d650, ecbddda8, 89c16ec1).
+
+## Runda 6 miast barbarzyńców — Evaluator B (lens F2 wydajność): PASS-WITH-NOTES
+
+Zweryfikował samodzielnie na WŁASNYM scenariuszu (70×140 ląd domowy, 45 wysp, 91 miast, 14
+jednostek): **39,8× przyspieszenie** (12352ms→310ms), komendy bajt-identyczne przed/po. 15/15
+własnych asercji poprawności (ta sama składowa+occupied, `unitComp===undefined` fallback, zgodność
+z `configureTerrainMovement()` w runtime, cache współdzielone per turę bez przecieku między turami).
+Dowód analityczny (nie tylko empiryczny) że filtr NIGDY nie odrzuca celu osiągalnego dla Dijkstry.
+
+**2/5 mutacji własnych PRZEŻYWA bramkę repo** (luka pokrycia, nie błąd w kodzie — kod jest
+poprawny, ale niechroniony testem): M2b (etykietowanie terenu OSTRZEJSZE niż runtime, np.
+Wzgórza nieprzechodnie w etykietowaniu a przechodnie w `computePath`) — DOKŁADNIE tryb awarii
+ostrzegany w komentarzu kodu (fałszywe odrzucenie osiągalnego celu), niewykryty bo wszystkie mapy
+bramki są jednolitą łąką; M3 (usunięcie fallbacku dla `unitComp===undefined`) daje **0 komend** —
+odtwarza klasę błędu "jednostka zamiera na stałe" z rundy 5, niewykryte bo żadna jednostka w
+bramce nie stoi na terenie o nieskończonym koszcie. Rekomendacja: dołożyć 2 przypadki testowe
+(ściana Wzgórz nie dzieli składowej + jednostka na Górach dostaje komendę).
+
+Noty nieblokujące: (N2) narzut BFS nawet gdy niepotrzebny — do +100ms/turę na największych mapach
+(60k+ heksów), wciąż mocno na plus (oszczędza 10-24s), sugestia: odłożyć BFS do PIERWSZEJ porażki
+`firstStep` zamiast liczyć zawsze; (N3) `HEX_NEIGHBORS` zduplikowane prywatnie w `barbarians.ts`
+zamiast importu z `setup.ts` — dziś identyczne, cichy rozjazd w przyszłości byłby niewidoczny;
+(N4, proces) potwierdzenie już zarejestrowanego własnego błędu — praca rundy 6 wmieszana w commit
+`044aa26d` o cudzym tytule (drenaż obywateli), utrudnia selektywny revert.
+
+Czekam na Evaluatorów A (lens F1 livelock) i C (lens pokrycie mutacyjne całości + tabela 12
+reżimów) przed werdyktem zbiorczym rundy 6.
