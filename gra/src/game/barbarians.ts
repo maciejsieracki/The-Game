@@ -103,27 +103,51 @@ export interface BarbUnit extends RuntimeUnit {
    */
   seaRaider?: boolean;
   /**
-   * P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 RUNDA 2 (Evaluator, punkt 3): id miasta,
-   * które TA jednostka ostatnio uznała za "oczyszczone" (bez obrońcy na heksie,
-   * niemożliwe do zaatakowania ani wejścia -- patrz canUnitOccupyCityHex). Mutowane
-   * bezpośrednio przez decideBarbarianMoves (jedyne świadome odejście od "moduł nigdy
-   * nie mutuje stanu" -- pole czysto informacyjne per-jednostka, identyczny wzorzec do
-   * `campId`/`healthFrac`, bez którego pamięć musiałaby wędrować przez main.ts tam i z
-   * powrotem co turę). Samo-wygasa: gdy miasto odzyska obrońcę, filtr (patrz krok 3)
-   * przestaje je wykluczać niezależnie od tej wartości -- nie trzeba osobnego licznika
-   * TTL. Optional -- stare save'y i testy legacy bez tego pola = brak pamięci, identyczne
+   * P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 RUNDA 4 (3x jednomyślny Evaluator FAIL na
+   * rundach 1-3, powód: pojedynczy slot `recentlyClearedCityId` strukturalnie nie
+   * mógł wyrazić "odwiedziłem już A i B" -- zapis B kasował A, A wracał do puli,
+   * jednostka drgała między A i B w nieskończoność, trzecie miasto NIGDY nie było
+   * odwiedzane). Zastąpione ZBIOREM: id WSZYSTKICH miast, które TA jednostka uznała
+   * za "oczyszczone" (bez obrońcy na heksie, niemożliwe do zaatakowania ani wejścia
+   * -- patrz canUnitOccupyCityHex). Tablica, NIE `Set` -- `save.ts::serializeGame`
+   * serializuje `units: RuntimeUnit[]` wprost przez `JSON.stringify` (patrz
+   * `setAwareReplacer`, który owszem zamienia `Set` na tablicę PRZY ZAPISIE, ale
+   * `deserializeGame` nie ma odwrotnego revivera -- po wczytaniu pole byłoby zwykłą
+   * tablicą mimo deklarowanego typu `Set`, cichy rozjazd typu z rzeczywistością).
+   * Zwykła tablica `string[]` przechodzi round-trip identycznie jak `campId`/
+   * `healthFrac`, bez żadnej specjalnej obsługi. Mutowane bezpośrednio przez
+   * decideBarbarianMoves (jedyne świadome odejście od "moduł nigdy nie mutuje
+   * stanu" -- pole czysto informacyjne per-jednostka, ten sam wzorzec co
+   * `campId`/`healthFrac`). Samo-wygasa PER MIASTO: gdy miasto odzyska obrońcę,
+   * filtr (patrz krok 3) przestaje je wykluczać niezależnie od obecności w tym
+   * zbiorze. Gdy zbiór wyklucza WSZYSTKIE dostępne (niebronione) miasta -- jednostka
+   * odwiedziła każde z nich -- zbiór jest RESETOWANY (patrz krok 3), więc patrol
+   * zaczyna kolejne okrążenie zamiast zamarznąć na pełnym zbiorze na stałe. Optional
+   * -- stare save'y i testy legacy bez tego pola = brak pamięci, identyczne
    * zachowanie do pierwszego napotkania niebronionego miasta.
-   * / EN: id of the city THIS unit most recently deemed "cleared" (no defender on its
-   * hex, unattackable and unenterable -- see canUnitOccupyCityHex). Mutated directly by
-   * decideBarbarianMoves (the one deliberate exception to "this module never mutates
-   * state" -- a purely informational per-unit field, same pattern as `campId`/
-   * `healthFrac`; without it the memory would have to round-trip through main.ts every
-   * turn). Self-expiring: once the city regains a defender the step-3 filter stops
-   * excluding it regardless of this value -- no separate TTL counter needed. Optional --
-   * legacy saves/tests without this field simply have no memory yet, identical
-   * behaviour up to the first undefended city encountered.
+   * / EN: id of EVERY city THIS unit has deemed "cleared" (no defender on its hex,
+   * unattackable and unenterable -- see canUnitOccupyCityHex). Replaces the single
+   * `recentlyClearedCityId` slot from rounds 2-3 (3x unanimous Evaluator FAIL: a
+   * single slot cannot express "I've already visited A AND B" -- writing B erased
+   * A, A came back into the pool, the unit oscillated between A and B forever, a
+   * third city was NEVER visited). Array, NOT a real `Set` -- `save.ts::
+   * serializeGame` serializes `units: RuntimeUnit[]` straight through
+   * `JSON.stringify` (see `setAwareReplacer`, which does turn a `Set` into an array
+   * ON WRITE, but `deserializeGame` has no reviver going back -- after a load the
+   * field would silently become a plain array despite the declared `Set` type, a
+   * quiet type/reality drift). A plain `string[]` round-trips exactly like
+   * `campId`/`healthFrac`, no special handling needed. Mutated directly by
+   * decideBarbarianMoves (the one deliberate exception to "this module never
+   * mutates state" -- a purely informational per-unit field, same pattern as
+   * `campId`/`healthFrac`). Self-expires PER CITY: once a city regains a defender,
+   * the step-3 filter stops excluding it regardless of membership in this set.
+   * When the set would exclude EVERY available (undefended) city -- the unit has
+   * visited each one -- the set is RESET (see step 3), so the patrol starts another
+   * lap instead of freezing on a permanently-full set. Optional -- legacy saves/
+   * tests without this field simply have no memory yet, identical behaviour up to
+   * the first undefended city encountered.
    */
-  recentlyClearedCityId?: string;
+  clearedCityIds?: string[];
 }
 
 /**
@@ -473,11 +497,11 @@ function firstStep(
 /**
  * A city-like input for spacing / movement blocking.
  * RUNDA 2 (Evaluator, punkt 3): `id` dodane, żeby decideBarbarianMoves mogło
- * per-jednostkowo zapamiętać "które miasto ta jednostka ostatnio uznała za
- * oczyszczone" (patrz BarbUnit.recentlyClearedCityId) -- realny `City` (main.ts)
+ * per-jednostkowo zapamiętać "które miasta ta jednostka uznała za oczyszczone"
+ * (patrz BarbUnit.clearedCityIds, zbiór od RUNDY 4) -- realny `City` (main.ts)
  * ZAWSZE ma `id: string`, więc to nie zawęża istniejących wywołań produkcyjnych.
- * / EN: `id` added so decideBarbarianMoves can remember, per unit, "which city
- * did THIS unit most recently deem cleared" (see BarbUnit.recentlyClearedCityId)
+ * / EN: `id` added so decideBarbarianMoves can remember, per unit, "which cities
+ * THIS unit has deemed cleared" (see BarbUnit.clearedCityIds, a set as of ROUND 4)
  * -- a real `City` (main.ts) ALWAYS has `id: string`, so this doesn't narrow any
  * existing production call site.
  */
@@ -1100,6 +1124,47 @@ export function destroyCampAt(
  *   -- with an explicit fallback: when the filtered list would be empty, the filter is
  *   skipped entirely (full city list as candidates), so a unit never freezes for lack
  *   of any target.
+ *
+ *   RUNDA 3 (Evaluator A/B/C jednomyślnie, livelock) -- zapamiętanie zaczęło czekać
+ *   na faktyczne DOTARCIE (hexDistance<=1), nie na sam wybór celu w danej turze. To
+ *   WYDŁUŻYŁO okres oscylacji A<->B, ale jej NIE usunęło -- pojedynczy slot wciąż
+ *   mógł zapamiętać tylko JEDNO miasto naraz, więc zapis B kasował A, A wracało do
+ *   puli, trzecie miasto NIGDY nie było odwiedzane (3x jednomyślny FAIL).
+ *   / EN: ROUND 3 (Evaluator A/B/C unanimous, livelock) -- the memory write started
+ *   waiting for the unit to actually REACH (hexDistance<=1) the target, not merely
+ *   pick it as this turn's target. This LENGTHENED the A<->B oscillation period but
+ *   did NOT remove it -- a single slot could still remember only ONE city at a
+ *   time, so writing B erased A, A came back into the pool, a third city was NEVER
+ *   visited (3x unanimous FAIL).
+ *
+ *   RUNDA 4 -- pojedynczy slot (`recentlyClearedCityId`) zastąpiony ZBIOREM
+ *   (`unit.clearedCityIds`, patrz BarbUnit) zdolnym pamiętać WIELE odwiedzonych
+ *   miast naraz. Fallback z rundy 2 NIEZMIENIONY (`civCities = filtered.length > 0
+ *   ? filtered : civCitiesBase`) -- gdy zbiór wyklucza WSZYSTKIE dostępne
+ *   (niebronione) miasta, jednostka odwiedziła każde z nich; zbiór jest wtedy
+ *   RESETOWANY, żeby patrol zaczął kolejne okrążenie zamiast zamarznąć na trwale
+ *   pełnym zbiorze (patrz komentarz przy resetowaniu niżej). WYNIK: ograniczony,
+ *   ale realny postęp -- jednostka odwiedza WSZYSTKIE niebronione miasta po kolei,
+ *   cyklicznie, zamiast utknąć w wahadle 2 miast. To NIE jest pełne zakończenie
+ *   tematu: main.ts:26273 pokazuje, że przejęcie miasta przez barbarzyńcę idzie
+ *   WYŁĄCZNIE przez komendę `attack` na przyległego wroga -- miasto bez obrońcy nie
+ *   ma czego atakować, więc dla tej jednostki nie istnieje stan terminalny (ABC
+ *   "puste miasto trwale odporne na przejęcie", nierozstrzygnięte, poza zakresem tej
+ *   rundy -- patrz PYTANIA-OTWARTE.md, runda 3 tego tematu).
+ *   / EN: ROUND 4 -- the single slot (`recentlyClearedCityId`) is replaced by a SET
+ *   (`unit.clearedCityIds`, see BarbUnit) able to remember MULTIPLE visited cities
+ *   at once. The round-2 fallback is UNCHANGED (`civCities = filtered.length > 0 ?
+ *   filtered : civCitiesBase`) -- when the set excludes EVERY available
+ *   (undefended) city, the unit has visited each one; the set is then RESET so the
+ *   patrol starts another lap instead of freezing on a permanently-full set (see
+ *   the reset comment below). RESULT: limited but real progress -- the unit visits
+ *   EVERY undefended city in turn, cyclically, instead of getting stuck in a
+ *   2-city pendulum. This is NOT a full close-out of the topic: main.ts:26273 shows
+ *   that a barbarian capturing a city only ever happens via an `attack` command on
+ *   an adjacent enemy -- an undefended city has nothing to attack, so there is no
+ *   terminal state for this unit (open ABC "undefended city permanently immune to
+ *   capture", out of scope for this round -- see PYTANIA-OTWARTE.md, round 3 of
+ *   this topic).
  */
 export function decideBarbarianMoves(
   barbUnits: BarbUnit[],
@@ -1166,24 +1231,53 @@ export function decideBarbarianMoves(
     const civCitiesBase = cities.filter(c => !(c.ownerId !== undefined && isBarbarian(c.ownerId)));
     let civCities = civCitiesBase;
     if (skipDefenselessCities) {
-      // RUNDA 2 (Evaluator, punkty 2+3): wykluczenie PER JEDNOSTKA (nie globalnie) --
-      // miasto bez obrońcy wypada z celów TYLKO gdy to konkretnie ta jednostka je
-      // ostatnio tak zapamiętała (`unit.recentlyClearedCityId`); inne niebronione
+      // RUNDA 4: wykluczenie PER JEDNOSTKA przez ZBIÓR (nie pojedynczy slot) --
+      // miasto bez obrońcy wypada z celów gdy jego id jest w `unit.clearedCityIds`
+      // (dowolne z wielu odwiedzonych, nie tylko "ostatnie"); inne niebronione
       // miasta (nigdy nieodwiedzone przez TĘ jednostkę, albo odzyskały obrońcę)
       // zostają poprawnymi celami. Patrz komentarz `difficulty` przy sygnaturze.
-      // / EN: PER-UNIT exclusion (not global) -- a defenceless city drops out of
-      // targets ONLY when THIS unit specifically remembered it that way; other
-      // undefended cities (never visited by THIS unit, or now defended again) stay
-      // valid targets. See the `difficulty` comment on the signature.
+      // / EN: ROUND 4: PER-UNIT exclusion via a SET (not a single slot) -- a
+      // defenceless city drops out of targets once its id is in
+      // `unit.clearedCityIds` (any of potentially many visited, not just "the last
+      // one"); other undefended cities (never visited by THIS unit, or now
+      // defended again) stay valid targets. See the `difficulty` comment on the
+      // signature.
+      const clearedSet = unit.clearedCityIds ?? [];
       const filtered = civCitiesBase.filter(c => {
         const undefended = !enemies.some(e => e.q === c.q && e.r === c.r);
         if (!undefended) return true;
-        return c.id !== unit.recentlyClearedCityId;
+        return !clearedSet.includes(c.id);
       });
-      // Punkt 2: filtr dałby pustą listę -- NIE stosuj go dla tej decyzji (pełna
-      // lista jako fallback), żeby jednostka raid-ready nigdy nie zamarła bez celu.
-      // / EN: point 2: the filter would yield an empty list -- do NOT apply it for
-      // this decision (full list as fallback), so a raid-ready unit never freezes
+      if (filtered.length === 0 && civCitiesBase.length > 0) {
+        // RUNDA 4: zbiór wykluczyłby WSZYSTKIE dostępne (niebronione) miasta -- ta
+        // jednostka odwiedziła już każde z nich. Reset zbioru = patrol zaczyna
+        // KOLEJNE OKRĄŻENIE (A -> B -> C -> A -> ...), zamiast trwale zamarznąć na
+        // pełnym zbiorze (co dawałoby: fallback niżej ZAWSZE aktywny, cel = zawsze
+        // dosłownie najbliższe miasto, czyli w praktyce jednostka na stałe "obozuje"
+        // przy ostatnio odwiedzonym, nigdy nie wracając do pozostałych). To jest
+        // ŚWIADOMY, OGRANICZONY wynik tej rundy (odwiedza wszystkie miasta po
+        // kolei, cyklicznie), NIE pełne zakończenie tematu -- patrz doc-comment
+        // "RUNDA 4" przy sygnaturze funkcji (ABC "puste miasto trwale odporne na
+        // przejęcie" pozostaje otwarte, poza zakresem).
+        // / EN: the set would exclude EVERY available (undefended) city -- this
+        // unit has already visited each one. Resetting the set = the patrol starts
+        // ANOTHER LAP (A -> B -> C -> A -> ...) instead of freezing permanently on
+        // a full set (which would mean: the fallback below is ALWAYS active,
+        // target = always literally the nearest city, i.e. in practice the unit
+        // permanently "camps" next to the last one visited, never returning to the
+        // others). This is a DELIBERATE, LIMITED outcome of this round (visits
+        // every city in turn, cyclically), NOT a full close-out of the topic --
+        // see the "ROUND 4" doc-comment on the function signature (the open ABC
+        // "undefended city permanently immune to capture" stays open, out of
+        // scope).
+        unit.clearedCityIds = [];
+      }
+      // Fallback niezmieniony od rundy 2 (potwierdzony przez 3 rundy Evaluatorów):
+      // gdy przefiltrowana lista wyszłaby pusta, filtr się NIE stosuje (pełna lista
+      // jako fallback), żeby jednostka raid-ready nigdy nie zamarła bez celu.
+      // / EN: fallback unchanged since round 2 (confirmed across 3 rounds of
+      // Evaluators): when the filtered list would come out empty, the filter is
+      // NOT applied (full list as fallback), so a raid-ready unit never freezes
       // with no target at all.
       civCities = filtered.length > 0 ? filtered : civCitiesBase;
     }
@@ -1213,7 +1307,18 @@ export function decideBarbarianMoves(
     if (skipDefenselessCities && nearestCity !== undefined
         && hexDistance(unit.q, unit.r, nearestCity.q, nearestCity.r) <= 1
         && !enemies.some(e => e.q === nearestCity.q && e.r === nearestCity.r)) {
-      unit.recentlyClearedCityId = nearestCity.id;
+      // RUNDA 4: dopisz do ZBIORU zamiast nadpisać pojedynczy slot -- poprzednio
+      // odwiedzone miasta (np. A po dotarciu do B) NIE są kasowane. `unit.
+      // clearedCityIds` mogło zostać właśnie zresetowane wyżej (pełne okrążenie) --
+      // stąd `?? []`, nie zakładaj że tablica już istnieje.
+      // / EN: append to the SET instead of overwriting a single slot -- previously
+      // visited cities (e.g. A, after reaching B) are NOT erased. `unit.
+      // clearedCityIds` may have just been reset above (a full lap completed) --
+      // hence `?? []`, don't assume the array already exists.
+      if (unit.clearedCityIds === undefined) unit.clearedCityIds = [];
+      if (!unit.clearedCityIds.includes(nearestCity.id)) {
+        unit.clearedCityIds.push(nearestCity.id);
+      }
     }
     const targets: { q: number; r: number; d: number }[] = [];
     if (nearestEnemyUnit !== undefined) {

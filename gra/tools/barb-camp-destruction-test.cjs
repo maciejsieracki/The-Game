@@ -463,14 +463,14 @@ const CALL_SITES = [
 //    pliku testowym tematu obozów -- dziś (przed tą sekcją) ten wspólny fix nie miał TU żadnej
 //    asercji blokującej, więc przyszła zmiana w temacie obozów mogłaby po cichu cofnąć fallback
 //    przy zielonych bramkach obozowych. EXECUTION: jedyne miasto na mapie, niebronione,
-//    jednostka JUŻ ma je zapamiętane jako `recentlyClearedCityId` -- per-jednostkowy filtr
-//    wykluczyłby je (lista pusta), fallback (`filtered.length > 0 ? filtered : civCitiesBase`)
+//    jednostka JUŻ ma je zapamiętane w `clearedCityIds` (zbiór, RUNDA 4) -- per-jednostkowy
+//    filtr wykluczyłby je (lista pusta), fallback (`filtered.length > 0 ? filtered : civCitiesBase`)
 //    musi mimo to dać komendę ruchu w jego stronę, zamiast zamrożenia jednostki bez rozkazu.
 // ============================================================================================
 {
   const map = makeMap(15, 3);
   const onlyCity = { id: 'onlyCity', q: 9, r: 1, ownerId: 0, name: 'onlyCity' };
-  const unit = barb('raider1', 5, 1, { recentlyClearedCityId: 'onlyCity' });
+  const unit = barb('raider1', 5, 1, { clearedCityIds: ['onlyCity'] });
   const cmds = decideBarbarianMoves([unit], /* enemies */ [], [onlyCity], /* camps */ [], map, P, undefined, 'hard');
   assert(cmds.length === 1,
     '8: fallback (punkt 1, freeze fix) -- jedyny niebroniony cel już "zapamiętany" jako oczyszczony ' +

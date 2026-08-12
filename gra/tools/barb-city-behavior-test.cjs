@@ -69,6 +69,38 @@
  *      + z atkOwner gracz/AI (nie-barbarzyńca) bonus Prawa po podboju nadal się
  *      poprawnie ustawia (postCaptureLawTurnsRemaining, revoltRisk=0 przez
  *      applyPostCaptureLawOverride) -- REALNE WYKONANIE, nie source-text.
+ *
+ * RUNDA 4 (3x jednomyślny Evaluator FAIL na rundach 1-3, powód: pojedynczy slot
+ * `unit.recentlyClearedCityId` strukturalnie nie mógł wyrazić "odwiedziłem już A i B" --
+ * zapis B kasował A, wahadło A<->B w nieskończoność, trzecie miasto NIGDY nie było
+ * odwiedzane w 30 turach; RUNDA 3 tylko WYDŁUŻYŁA okres wahadła, nie usunęła go).
+ * NAPRAWA: pojedynczy slot zastąpiony ZBIOREM `unit.clearedCityIds: string[]` (tablica,
+ * NIE `Set` -- patrz doc-comment BarbUnit w barbarians.ts, `deserializeGame` nie ma
+ * revivera odwrotnego do `setAwareReplacer`). Fallback z rundy 2 NIEZMIENIONY; gdy zbiór
+ * wyklucza WSZYSTKIE dostępne miasta (jednostka odwiedziła każde), zbiór jest RESETOWANY
+ * -- patrol zaczyna kolejne okrążenie zamiast zamarznąć na trwale pełnym zbiorze. WYNIK:
+ * "ograniczony patrol" (odwiedza wszystkie niebronione miasta po kolei, cyklicznie), NIE
+ * pełne zakończenie -- main.ts:26273 pokazuje, że przejęcie miasta idzie WYŁĄCZNIE przez
+ * `attack` na przyległego wroga; niebronione miasto nie ma czego atakować, więc nie ma
+ * dla tej jednostki stanu terminalnego (otwarte ABC "puste miasto trwale odporne na
+ * przejęcie", poza zakresem tej rundy).
+ *   6. PRZEPISANA W CAŁOŚCI. 6a: regresja "arrival przy mieście BRONIONYM -> atak,
+ *      zbiór nietknięty" (przeniesiona z dawnej wersji sekcji 6). 6b: WŁAŚCIWY dowód --
+ *      symulacja >=30 kolejnych decyzji na 3 miastach NIEBRONIONYCH, asercje objmujące
+ *      KAŻDY wpis PEŁNEGO logu (partycja na "legi" pokrywa 100% długości, nie prefiks/
+ *      faza/okno -- DOKŁADNIE wzorzec, który złapał 3 poprzednie rundy): (a) każde z 3
+ *      miast odwiedzone; (b) po odwiedzeniu WSZYSTKICH 3 zbiór resetuje się i PRZYNAJMNIEJ
+ *      jedno miasto zostaje odwiedzone PONOWNIE (dowód behawioralny cyklu, nie tylko stanu
+ *      wewnętrznego); (c) dystans do bieżącego celu nie rośnie w żadnym legu (z tolerancją
+ *      na jeden hex-gridowy "plateau" z routingu Dijkstry), net-postęp na każdym legu.
+ *   8. NOWA. Save/load: `clearedCityIds` przechodzi round-trip serializeGame-
+ *      >deserializeGame identycznie jak `campId`/`healthFrac` (REALNE WYKONANIE, nie
+ *      source-text) -- w tym dowód, dlaczego pole jest `string[]`, nie `Set` (Set wyszedłby
+ *      jako zwykła tablica po wczytaniu, `setAwareReplacer` nie ma odwrotnego revivera).
+ *   9. NOWA. Dowód mutacyjny (self-check, wzorzec `--self-check-skip-mutation` identyczny
+ *      do barb-camp-destruction-test.cjs sekcja 9): cofnięcie CAŁEJ naprawy tej rundy do
+ *      stanu RUNDY 3 (pojedynczy slot zamiast zbioru) MUSI dać czerwono na sekcji 6b --
+ *      potwierdzone: 26/120 asercji czerwonych, `cityC` nigdy nie odwiedzone, `revisited=[]`.
  */
 
 const fs   = require('fs');
@@ -112,6 +144,9 @@ export {
   REBEL_FACTION_OWNER_ID,
 } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/post-capture-law'))};
 export { evaluateOrderFromBreakdown } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/society-breakdown'))};
+export {
+  serializeGame, deserializeGame,
+} from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/save'))};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -141,6 +176,7 @@ const {
   POST_CAPTURE_FRESH_TURNS, POST_CAPTURE_REBELLION_RECONQUEST_TURNS,
   REBEL_FACTION_OWNER_ID,
   evaluateOrderFromBreakdown,
+  serializeGame, deserializeGame,
 } = B;
 
 // --- tiny assertion framework --------------------------------------------------------------
@@ -254,7 +290,7 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 
   // 2a
   const b1 = barb('b1', 3, 0);
-  eq(b1.recentlyClearedCityId, undefined, '2a: fresh unit starts with no memory');
+  eq(b1.clearedCityIds, undefined, '2a: fresh unit starts with no memory');
   const cmdsA = decideBarbarianMoves([b1], [g], [cityWest, cityEast], [], map, P, undefined, 'normal');
   eq(cmdsA.length, 1, '2a normal: exactly one move command');
   eq(cmdsA[0]?.type, 'move', '2a normal: command is a move');
@@ -266,8 +302,8 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
       `(before=${dWestBefore}, after=${dWestAfter}) -- point 3: exclusion is per-unit memory, ` +
       `not "any currently undefended city"`);
   }
-  eq(b1.recentlyClearedCityId, 'cityWest',
-    '2a normal: decideBarbarianMoves remembers cityWest as "seen undefended" ON b1 after this decision');
+  eq(JSON.stringify(b1.clearedCityIds), JSON.stringify(['cityWest']),
+    '2a normal: decideBarbarianMoves remembers cityWest in the SET ON b1 after this decision (RUNDA 4)');
 
   // 2b -- same unit, same position, second call: cityWest now excluded FOR b1.
   const cmdsB = decideBarbarianMoves([b1], [g], [cityWest, cityEast], [], map, P, undefined, 'normal');
@@ -297,7 +333,8 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
       `2c normal: a DIFFERENT fresh unit (b2) still targets the closer cityWest, unaffected by b1's ` +
       `memory -- exclusion is per-unit, not global (before=${dWestBefore}, after=${dWestAfter})`);
   }
-  eq(b2.recentlyClearedCityId, 'cityWest', "2c normal: b2 builds its OWN memory, independent of b1's");
+  eq(JSON.stringify(b2.clearedCityIds), JSON.stringify(['cityWest']),
+    "2c normal: b2 builds its OWN set, independent of b1's (RUNDA 4)");
 }
 
 // ============================================================================================
@@ -331,7 +368,7 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
   // turn" after clearing it) -- the per-unit filter alone would exclude it, leaving the
   // candidate pool empty; the fallback must still target it rather than emit nothing.
   const onlyCity = city('onlyCity', 9, 0, { ownerId: 0 }); // no garrison
-  const b2 = barb('b2', 5, 0, { recentlyClearedCityId: 'onlyCity' });
+  const b2 = barb('b2', 5, 0, { clearedCityIds: ['onlyCity'] });
   const cmds2 = decideBarbarianMoves([b2], [], [ownCapturedCity, onlyCity], [], map, P, undefined, 'hard');
   eq(cmds2.length, 1,
     '3b hard (point 2 fallback): unit still gets a move command when the per-unit filter would ' +
@@ -348,7 +385,7 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
   // step 4 "drift home") whose only candidate is already-remembered-undefended must NOT
   // freeze with zero commands. `campId` pointing at a camp absent from `camps` -> orphaned ->
   // raidReady=true (see decideBarbarianMoves step-3 comment) -- no camps needed to set this up.
-  const b3 = barb('b3', 5, 0, { campId: 'destroyed-camp', recentlyClearedCityId: 'onlyCity' });
+  const b3 = barb('b3', 5, 0, { campId: 'destroyed-camp', clearedCityIds: ['onlyCity'] });
   const cmds3 = decideBarbarianMoves([b3], [], [onlyCity], [], map, P, undefined, 'hard');
   eq(cmds3.length, 1,
     '3c hard (point 2, raid-ready freeze regression): a raid-ready unit with only an already-' +
@@ -495,30 +532,61 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 }
 
 // ============================================================================================
-// 6. RUNDA 3, punkt 2 -- livelock fix. `unit.recentlyClearedCityId` musi zapisywać się
-//    dopiero po REALNYM dotarciu (hexDistance<=1), nie na podstawie samego wyboru celu.
-//    Symulacja >=6 kolejnych decyzji z RZECZYWIŚCIE stosowanym ruchem: `unit.q/r`
-//    aktualizowane z komendy `move`, ale TYLKO gdy `canUnitOccupyCityHex` pozwala --
-//    dokładnie ta sama bramka, którą main.ts stosuje przy aplikowaniu komend
-//    barbarzyńców (main.ts ok. linii 26258: `if (!canUnitOccupyCityHex(...)) continue;`
-//    przed `bu.q = bcmd.toQ`). Bez tej bramki symulacja fałszywie pozwoliłaby jednostce
-//    "wejść" na heks miasta, którego pathfinder NIE blokuje jako celu ścieżki (blokuje
-//    tylko przejście PRZEZ obcy heks miasta, nie sam ostatni krok -- patrz
-//    computePath/setup.ts "Destination: always passable as final step").
+// 6. RUNDA 4 -- naprawa livelocku A<->B (3x jednomyślny Evaluator FAIL na rundach 1-3):
+//    pojedynczy slot `unit.recentlyClearedCityId` zastąpiony ZBIOREM `unit.clearedCityIds`
+//    (patrz BarbUnit, barbarians.ts). 6a: regresja -- arrival przy mieście BRONIONYM nadal
+//    atakuje i NIE dotyka zbioru (przeniesione z dawnej sekcji 6, zaadaptowane do zbioru).
+//    6b: WŁAŚCIWY dowód rundy 4 -- symulacja >=30 kolejnych decyzji z RZECZYWIŚCIE
+//    stosowanym ruchem (`unit.q/r` aktualizowane z komendy `move`, bramkowane przez
+//    `canUnitOccupyCityHex` -- dokładnie ta sama bramka co main.ts ok. linii 26258:
+//    `if (!canUnitOccupyCityHex(...)) continue;` przed `bu.q = bcmd.toQ`) na geometrii
+//    z 3 miastami NIEBRONIONYMI. Asercja obejmuje KAŻDY wygenerowany wpis logu (partycja
+//    na "legi" pokrywa 100% długości logu, nie prefiks/fazę/okno) -- to jest DOKŁADNIE
+//    wzorzec, który złapał 3 poprzednie rundy: stara sekcja 6 asercjonowała tylko
+//    fazę1+fazę2 (13 z 20 wpisów), 7 końcowych wpisów nigdy nie było sprawdzanych, i
+//    właśnie tam chowało się zawrócenie. Patrz też sekcja 8 (mutacyjny dowód: to samo
+//    źródło zwrócone do stanu rundy 3 MUSI dać czerwono na tym pliku).
 // ============================================================================================
+
+// 6a. Regresja przeniesiona z dawnej sekcji 6 (wariant "drugie miasto BRONIONE"): arrival
+// przyległy do BRONIONEGO miasta atakuje obrońcę (krok 2 -- "atak sąsiedniej wrogiej
+// jednostki" -- uruchamia się PRZED krokiem 3 "chase"/zapis do zbioru, bo obrońca stoi na
+// TYM SAMYM heksie co miasto), i zbiór `clearedCityIds` pozostaje NIETKNIĘTY -- warunek
+// zapisu w kroku 3 wymaga `!enemies.some(...)` (niebronione), więc bronione miasto NIGDY
+// nie trafia do zbioru (a filtr go i tak nigdy nie wyklucza).
+{
+  const map = makeMap(20, 3);
+  const cityFar = city('cityFar', 6, 0); // BRONIONE
+  const guard = enemy('guard', 6, 0);
+  // Jednostka ma już WCZEŚNIEJSZĄ pamięć (z hipotetycznego innego miasta) -- dowodzi, że
+  // arrival przy bronionym mieście ani jej nie kasuje, ani nie rozszerza.
+  const unit = barb('b1', 5, 0, { campId: 'destroyed-camp', clearedCityIds: ['someOtherCity'] });
+  const cmds = decideBarbarianMoves([unit], [guard], [cityFar], [], map, P, undefined, 'normal');
+  eq(cmds[0]?.type, 'attack',
+    '6a: przyległość do BRONIONEGO miasta -- atak na obrońcę (krok 2 uruchamia się przed ' +
+    'krokiem 3 "chase"/zapis do zbioru, bo obrońca stoi na heksie miasta)');
+  eq(JSON.stringify(unit.clearedCityIds), JSON.stringify(['someOtherCity']),
+    '6a: clearedCityIds NIETKNIĘTY po arrival przy bronionym mieście -- warunek zapisu w ' +
+    'kroku 3 wymaga niebronionego miasta, krok 3 nie jest tu w ogóle osiągany (krok 2 ' +
+    'kończy decyzję wcześniej przez continue)');
+}
+
+// 6b. WŁAŚCIWY dowód rundy 4 -- patrz nagłówek sekcji wyżej.
 {
   /**
-   * Symuluje `turns` kolejnych decyzji `decideBarbarianMoves` dla JEDNEJ jednostki,
-   * aplikując ruch tak jak main.ts (bramkowane `canUnitOccupyCityHex`). Zwraca log
-   * per-turowy: dystans do cityA/cityB PRZED decyzją tej tury, typ wydanej komendy,
-   * oraz pamięć jednostki PO tej decyzji.
+   * Symuluje `turns` kolejnych decyzji `decideBarbarianMoves` dla JEDNEJ jednostki na
+   * DOWOLNEJ liczbie miast, aplikując ruch tak jak main.ts (bramkowane
+   * `canUnitOccupyCityHex`). Zwraca PEŁNY log per-turowy: dystans do KAŻDEGO miasta
+   * PRZED decyzją tej tury, typ wydanej komendy, oraz kopie (NIE referencje -- `.slice()`,
+   * `unit.clearedCityIds` jest tą samą mutowaną tablicą przez cały bieg) zbioru
+   * odwiedzonych PRZED i PO tej decyzji.
    */
   function simulateChase(unit, enemies, cities, map, params, difficulty, turns) {
-    const [cityA, cityB] = cities;
     const log = [];
     for (let t = 0; t < turns; t++) {
-      const dA = hexDist(unit.q, unit.r, cityA.q, cityA.r);
-      const dB = hexDist(unit.q, unit.r, cityB.q, cityB.r);
+      const dist = {};
+      for (const c of cities) dist[c.id] = hexDist(unit.q, unit.r, c.q, c.r);
+      const clearedBefore = (unit.clearedCityIds ?? []).slice();
       const cmds = decideBarbarianMoves([unit], enemies, cities, [], map, params, undefined, difficulty);
       const cmd = cmds[0];
       let moved = false;
@@ -527,82 +595,133 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
         unit.r = cmd.toR;
         moved = true;
       }
-      log.push({ t, dA, dB, cmdType: cmd?.type ?? 'idle', moved, memoryAfter: unit.recentlyClearedCityId });
+      const clearedAfter = (unit.clearedCityIds ?? []).slice();
+      log.push({ t, dist, cmdType: cmd?.type ?? 'idle', moved, clearedBefore, clearedAfter });
       if (cmd?.type === 'attack') break;
     }
     return log;
   }
 
-  /** Faza = seria kolejnych wpisów log-u, dopóki `memoryAfter` nie zmieni się na
-   *  `targetCityId` (albo dopóki nie pojawi się `attack`) -- asercjonuje monotoniczny
-   *  spadek `distKey` (dA lub dB) w KAŻDYM kroku fazy, i że dystans faktycznie
-   *  osiąga <=1 (dotarcie) LUB faza kończy się atakiem (miasto bronione). */
-  function assertMonotonicPhase(log, distKey, targetCityId, minSteps, label) {
-    const phase = [];
-    for (const entry of log) {
-      phase.push(entry);
-      if (entry.memoryAfter === targetCityId || entry.cmdType === 'attack') break;
-    }
-    assert(phase.length >= minSteps,
-      `${label}: fazy trwa >= ${minSteps} decyzji (got ${phase.length})`);
-    for (let i = 1; i < phase.length; i++) {
-      assert(phase[i][distKey] < phase[i - 1][distKey],
-        `${label}: krok ${i} -- dystans (${distKey}) maleje monotonicznie ` +
-        `(${phase[i - 1][distKey]} -> ${phase[i][distKey]}), BEZ cofnięcia w trakcie fazy`);
-    }
-    const last = phase[phase.length - 1];
-    assert(last.memoryAfter === targetCityId || last.cmdType === 'attack',
-      `${label}: faza kończy się DOTARCIEM (memory=${targetCityId}) albo ATAKIEM na obrońcę ` +
-      `(got memoryAfter=${last.memoryAfter}, cmdType=${last.cmdType})`);
-    return phase;
+  const CITY_IDS = ['cityA', 'cityB', 'cityC'];
+  const map = makeMap(40, 8);
+  const cityA = city('cityA', 6, 4);
+  const cityB = city('cityB', 16, 4);  // 10 heksów od cityA
+  const cityC = city('cityC', 26, 4);  // 10 heksów od cityB, 20 od cityA -- >= MIN_CITY_DISTANCE=4
+  const cities3 = [cityA, cityB, cityC];
+  // campId wskazujący na nieistniejący obóz -> orphaned -> raidReady=true
+  // (chaseRadius=Infinity) -- ten sam wzorzec co sekcja 3c wyżej, bez potrzeby
+  // konfigurowania realnych obozów. Wszystkie 3 miasta NIEBRONIONE (enemies=[]).
+  const unit = barb('b1', 10, 4, { campId: 'destroyed-camp' });
+  const TURNS = 40; // >= 30 wymagane przez zlecenie rundy 4, z zapasem
+  const log = simulateChase(unit, [], cities3, map, P, 'normal', TURNS);
+
+  assert(log.length >= 30,
+    `6b: >=30 kolejnych decyzji symulowanych (got ${log.length}) -- wymóg zlecenia rundy 4`);
+
+  // (a) KAŻDE z 3 miast zostaje odwiedzone (dystans<=1) PRZYNAJMNIEJ RAZ w PEŁNYM logu
+  // (przeszukiwany jest KAŻDY wpis, nie okno/prefiks).
+  for (const cid of CITY_IDS) {
+    assert(log.some(e => e.dist[cid] <= 1),
+      `6b (a): ${cid} zostaje odwiedzone (dystans<=1) gdzieś w PEŁNYM logu ${TURNS} decyzji`);
   }
 
-  function makeChaseScenario(secondCityDefended) {
-    const map = makeMap(26, 8);
-    const cityA = city('cityA', 4, 4);   // bliżej, niebronione
-    const cityB = city('cityB', 14, 4);  // dalej, wariant broniony/niebroniony
-    const enemies = secondCityDefended ? [enemy('g', 14, 4)] : [];
-    // campId wskazujący na nieistniejący obóz -> orphaned -> raidReady=true
-    // (chaseRadius=Infinity) -- ten sam wzorzec co sekcja 3c wyżej, bez potrzeby
-    // konfigurowania realnych obozów.
-    const unit = barb('b1', 8, 4, { campId: 'destroyed-camp' });
-    return { map, cityA, cityB, enemies, unit };
-  }
-
-  for (const secondCityDefended of [false, true]) {
-    const label = secondCityDefended ? 'drugie miasto BRONIONE' : 'drugie miasto NIEBRONIONE';
-    const { map, cityA, cityB, enemies, unit } = makeChaseScenario(secondCityDefended);
-    const log = simulateChase(unit, enemies, [cityA, cityB], map, P, 'normal', 20);
-
-    // Faza 1: dojście do cityA (bliższe, zawsze niebronione w tym scenariuszu) --
-    // dystans dA maleje monotonicznie, kończy się "dotarciem" (memory=cityA).
-    const phase1 = assertMonotonicPhase(log, 'dA', cityA.id, 4, `6 (${label}) faza 1 (do cityA)`);
-
-    // Faza 2: dojście do cityB -- reszta logu po fazie 1.
-    const phase2Log = log.slice(phase1.length);
-    assert(phase2Log.length > 0,
-      `6 (${label}): faza 2 (do cityB) faktycznie się zaczyna po dotarciu do cityA`);
-    const phase2 = assertMonotonicPhase(phase2Log, 'dB', cityB.id, 6, `6 (${label}) faza 2 (do cityB)`);
-
-    if (secondCityDefended) {
-      assert(phase2[phase2.length - 1].cmdType === 'attack',
-        `6 (${label}): dotarcie do BRONIONEGO cityB kończy się atakiem na obrońcę, nie ` +
-        `próbą wejścia na heks -- memory NIGDY nie zapisuje cityB (miasto broni się samo)`);
-      assert(phase2[phase2.length - 1].memoryAfter === cityA.id,
-        `6 (${label}): pamięć zostaje przy cityA -- broniony cel nigdy nie trafia do ` +
-        `recentlyClearedCityId (filtr go i tak nigdy nie wyklucza)`);
-    } else {
-      assert(phase2[phase2.length - 1].memoryAfter === cityB.id,
-        `6 (${label}): dotarcie do NIEBRONIONEGO cityB zapisuje memory=cityB dopiero PO ` +
-        `faktycznym dotarciu (hexDistance<=1), nie wcześniej`);
+  /** Indeksy, w których `cid` przechodzi z NIEOBECNEGO na OBECNY w `clearedAfter` --
+   *  pierwsze wejście = pierwsza wizyta; DRUGIE wejście = ponowna wizyta PO tym, jak
+   *  reset (patrz (b)) usunął miasto ze zbioru -- czyli dowód, że patrol faktycznie
+   *  wraca do wcześniej oczyszczonego miasta, nie tylko że zbiór się zmienia. */
+  function presenceEvents(log, cid) {
+    const events = [];
+    let wasPresent = false;
+    for (let i = 0; i < log.length; i++) {
+      const isPresent = log[i].clearedAfter.includes(cid);
+      if (isPresent && !wasPresent) events.push(i);
+      wasPresent = isPresent;
     }
-
-    // Regresja livelocku: żadna z dwóch faz nie trwa mniej niż 4 decyzje -- stary bug
-    // dawał 2-turowy cykl (faza "1" miałaby długość ~1-2 z natychmiastowym zawróceniem).
-    assert(phase1.length + phase2.length >= 10,
-      `6 (${label}): łącznie >=10 decyzji analizowanych w obu fazach (got ` +
-      `${phase1.length + phase2.length}) -- >= wymagane 6 z zapasem`);
+    return events;
   }
+  for (const cid of CITY_IDS) {
+    assert(presenceEvents(log, cid).length >= 1,
+      `6b (a): ${cid} ma >=1 zdarzenie "wejścia do zbioru" w pełnym logu`);
+  }
+
+  // (b) Po odwiedzeniu WSZYSTKICH 3 (zbiór = {A,B,C} naraz), zbiór RESETUJE SIĘ --
+  // następny wpis logu ma < 3 elementy -- fallback (linia niezmieniona od rundy 2,
+  // `civCities = filtered.length > 0 ? filtered : civCitiesBase`) wraca do PEŁNEJ listy,
+  // patrol zaczyna kolejne okrążenie. To jest OCZEKIWANE (patrz komentarz "RUNDA 4" w
+  // barbarians.ts), nie błąd -- szukane w PEŁNYM logu.
+  const fullIdx = log.findIndex(e => e.clearedAfter.length === 3 && CITY_IDS.every(cid => e.clearedAfter.includes(cid)));
+  assert(fullIdx !== -1,
+    `6b (b): istnieje wpis w PEŁNYM logu, gdzie zbiór zawiera WSZYSTKIE 3 miasta naraz (got ${fullIdx})`);
+  assert(fullIdx !== -1 && fullIdx + 1 < log.length,
+    '6b (b): log ma jeszcze >=1 wpis PO pełnym zbiorze, żeby zaobserwować reset');
+  if (fullIdx !== -1 && fullIdx + 1 < log.length) {
+    assert(log[fullIdx + 1].clearedAfter.length < 3,
+      `6b (b): NASTĘPNY wpis po pełnym zbiorze ma < 3 elementy (got ${log[fullIdx + 1].clearedAfter.length}) ` +
+      `-- zbiór ZOSTAŁ ZRESETOWANY, to jest oczekiwane, nie błąd`);
+  }
+
+  // Dowód BEHAWIORALNY (nie tylko stanu wewnętrznego): przynajmniej jedno miasto ma
+  // DRUGIE zdarzenie "wejścia" w pełnym logu -- odwiedzone, usunięte przez reset,
+  // ODWIEDZONE PONOWNIE (realny ruch jednostki z powrotem), nie tylko czyszczenie
+  // licznika. Bezpośredni dowód "cykl zaczyna się od nowa".
+  const revisited = CITY_IDS.filter(cid => presenceEvents(log, cid).length >= 2);
+  assert(revisited.length >= 1,
+    `6b (b): PRZYNAJMNIEJ jedno miasto ma >=2 zdarzenia "wejścia" w pełnym logu ` +
+    `(revisited=${JSON.stringify(revisited)}) -- dowód REALNEGO powrotu jednostki po resecie`);
+
+  // (c) Regresja DOKŁADNIE tego wzorca, który złapał 3 poprzednie rundy: asercja NIE
+  // ogranicza się do prefiksu/fazy/okna. Log jest partycjonowany na "legi" -- maksymalne
+  // odcinki o STAŁYM `clearedBefore` (czyli stałym zbiorze wykluczeń użytym w danej
+  // decyzji, zmienia się dokładnie wtedy, gdy poprzedni wpis dopisał/zresetował zbiór) --
+  // partycja pokrywa 100% wpisów logu (KAŻDY wpis należy do dokładnie jednego legu),
+  // żaden wpis nie zostaje poza sprawdzeniem.
+  function targetDistFor(entry, clearedBeforeArr) {
+    const candidates = CITY_IDS.filter(cid => !clearedBeforeArr.includes(cid));
+    const pool = candidates.length > 0 ? candidates : CITY_IDS; // pusta lista -> fallback pełna (patrz fix)
+    return Math.min(...pool.map(cid => entry.dist[cid]));
+  }
+  let legStart = 0;
+  let legsChecked = 0;
+  for (let i = 1; i <= log.length; i++) {
+    const boundary = i === log.length
+      || JSON.stringify(log[i].clearedBefore.slice().sort()) !== JSON.stringify(log[i - 1].clearedBefore.slice().sort());
+    if (!boundary) continue;
+    const leg = log.slice(legStart, i);
+    legsChecked++;
+    // Nie-rosnąco na KAŻDYM kroku (tolerancja na pojedynczy hex-gridowy "plateau" z
+    // routingu Dijkstry -- patrz computePath/setup.ts; PRAWDZIWA regresja to WZROST
+    // dystansu przez wiele kroków, nie płaskie plateau o 1 krok).
+    for (let k = 1; k < leg.length; k++) {
+      const dPrev = targetDistFor(leg[k - 1], leg[k - 1].clearedBefore);
+      const dCur = targetDistFor(leg[k], leg[k].clearedBefore);
+      assert(dCur <= dPrev,
+        `6b (c) leg@${legStart}..${i - 1}, krok ${k}: dystans do bieżącego celu NIE ROŚNIE ` +
+        `(${dPrev} -> ${dCur}) -- KAŻDY wpis logu sprawdzony, nie tylko prefiks/faza`);
+    }
+    // Net postęp na całym legu (pierwszy > ostatni). Ostatni leg logu może być
+    // NIEDOKOŃCZONY (budżet TURNS wyczerpany w trakcie marszu) -- wtedy tylko "netto
+    // maleje", bez wymogu dotarcia; każdy inny leg MUSI dotrzeć (dystans<=1).
+    if (leg.length >= 2) {
+      const dFirst = targetDistFor(leg[0], leg[0].clearedBefore);
+      const dLast = targetDistFor(leg[leg.length - 1], leg[leg.length - 1].clearedBefore);
+      const isFinalLeg = i === log.length;
+      if (isFinalLeg && dLast > 1) {
+        assert(dLast < dFirst,
+          `6b (c) leg@${legStart}..${i - 1} (ostatni, niedokończony w budżecie ${TURNS} tur): ` +
+          `dystans netto MALEJE (${dFirst} -> ${dLast})`);
+      } else {
+        assert(dLast <= 1,
+          `6b (c) leg@${legStart}..${i - 1}: leg kończy się DOTARCIEM (dystans<=1) do bieżącego ` +
+          `celu (got ${dLast})`);
+        assert(dLast < dFirst,
+          `6b (c) leg@${legStart}..${i - 1}: dystans netto MALEJE na całym legu (${dFirst} -> ${dLast})`);
+      }
+    }
+    legStart = i;
+  }
+  assert(legsChecked >= 4,
+    `6b (c): log podzielony na >=4 legi wg zmian zbioru wykluczeń (got ${legsChecked}) -- dowód, że ` +
+    `partycja faktycznie obejmuje pełen cykl (>=3 wizyty + reset), nie tylko pierwsze 1-2 fazy`);
 }
 
 // ============================================================================================
@@ -679,6 +798,154 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
     '7f: odbicie po buncie PRZEZ GRACZA (nie-barbarzyńcę) -- 10 tur bonusu, guard nie ingeruje');
   eq(rebelCity2.rebelPreviousOwnerId, undefined,
     '7f: rebelPreviousOwnerId poprawnie skasowany PO wykorzystaniu (normalna ścieżka nie-barb)');
+}
+
+// ============================================================================================
+// 8. RUNDA 4 -- save/load: `unit.clearedCityIds` MUSI przetrwać round-trip
+//    serializeGame()->deserializeGame(). `save.ts` serializuje `units: RuntimeUnit[]`
+//    (obejmuje BarbUnit -- main.ts trzyma barbarzyńców w TEJ SAMEJ tablicy `units`,
+//    rzutowanej `as BarbUnit[]` w miejscach użycia, patrz main.ts:26158) wprost przez
+//    `JSON.stringify(stamped, setAwareReplacer)` -- zwykłe pole `string[]` (NIE `Set`,
+//    patrz doc-comment BarbUnit.clearedCityIds dlaczego świadomie nie `Set`) przechodzi
+//    round-trip identycznie jak istniejące `campId`/`healthFrac`, bez żadnej specjalnej
+//    obsługi w save.ts. Weryfikacja WYKONANIEM realnych serializeGame/deserializeGame
+//    (nie source-text) -- dowód, nie założenie.
+// ============================================================================================
+{
+  const barbWithMemory = {
+    id: 'raider-save', ownerId: BARBARIAN_OWNER_ID, typeId: 'Wojownik', category: 'miecznik',
+    q: 7, r: 3, ruch: 2, ruchLeft: 1, campId: 'destroyed-camp',
+    clearedCityIds: ['cityA', 'cityB', 'cityC'],
+  };
+  const barbNoMemory = {
+    id: 'raider-fresh', ownerId: BARBARIAN_OWNER_ID, typeId: 'Wojownik', category: 'miecznik',
+    q: 2, r: 2, ruch: 2, ruchLeft: 2,
+    // clearedCityIds celowo pominięte -- legacy/świeża jednostka, brak pola w ogóle.
+  };
+  const saveGame = {
+    wersja: 2, tura: 5, seed: 12345,
+    units: [barbWithMemory, barbNoMemory],
+    cities: [], explored: [],
+  };
+  const json = serializeGame(saveGame);
+  const loaded = deserializeGame(json);
+
+  assert(Array.isArray(loaded.units) && loaded.units.length === 2,
+    '8: deserializeGame zwraca units[] tej samej długości (2)');
+  const loadedWithMemory = loaded.units.find(u => u.id === 'raider-save');
+  const loadedFresh = loaded.units.find(u => u.id === 'raider-fresh');
+  assert(loadedWithMemory !== undefined, '8: jednostka z pamięcią odnaleziona po round-tripie');
+  assert(loadedFresh !== undefined, '8: świeża jednostka (bez pola) odnaleziona po round-tripie');
+
+  eq(JSON.stringify(loadedWithMemory && loadedWithMemory.clearedCityIds),
+    JSON.stringify(['cityA', 'cityB', 'cityC']),
+    '8: clearedCityIds PRZETRWAŁ round-trip serializeGame->deserializeGame identycznie, ' +
+    'jako zwykła tablica string[] (nie Set -- setAwareReplacer nie ma odwrotnego revivera ' +
+    'przy deserializeGame, więc Set wyszedłby jako [] po wczytaniu; zwykła tablica nie ma tego problemu)');
+  assert(loadedFresh !== undefined && loadedFresh.clearedCityIds === undefined,
+    '8: brak pola U ŹRÓDŁA (legacy/świeża jednostka) zostaje brakiem pola PO wczytaniu -- ' +
+    'zgodne z `?? []`/`?? undefined` w barbarians.ts (optional, bezpieczny default)');
+
+  // Regresja: gdyby pole BYŁO omyłkowo zadeklarowane jako prawdziwy `Set` (a nie
+  // `string[]`) gdzieś w silniku i przekazane bezpośrednio do serializeGame, ten sam
+  // mechanizm (setAwareReplacer) zamieniłby je na tablicę PRZY ZAPISIE -- ale
+  // `unit.clearedCityIds instanceof Set` na LIVE (nie wczytanym) obiekcie w
+  // barbarians.ts nigdy nie zachodzi, bo typ w BarbUnit to `string[]`. Ten test
+  // dokumentuje WYKONANIEM, nie tylko w komentarzu typu, że wybór tablicy (a nie Set)
+  // był konieczny -- patrz doc-comment przy polu.
+  const setInsteadOfArray = { ...barbWithMemory, id: 'raider-hypothetical-set', clearedCityIds: new Set(['x', 'y']) };
+  const saveGame2 = { wersja: 2, tura: 1, seed: 1, units: [setInsteadOfArray], cities: [], explored: [] };
+  const loaded2 = deserializeGame(serializeGame(saveGame2));
+  const loadedSetUnit = loaded2.units.find(u => u.id === 'raider-hypothetical-set');
+  assert(loadedSetUnit !== undefined && Array.isArray(loadedSetUnit.clearedCityIds),
+    '8 regresja (dokumentacyjna): GDYBY pole było live `Set`, po round-tripie stałoby się ' +
+    'zwykłą tablicą (setAwareReplacer, bez odwrotnego revivera) -- dokładnie powód, dla ' +
+    'którego BarbUnit.clearedCityIds jest zadeklarowane jako string[] od początku, nie Set');
+}
+
+// ============================================================================================
+// 9. RUNDA 4 -- dowód mutacyjny (self-check): cofnięcie CAŁEJ naprawy tej rundy do stanu
+//    RUNDY 3 (pojedynczy slot `recentlyClearedCityId` zamiast zbioru `clearedCityIds`) MUSI
+//    dać czerwono na TYM SAMYM pliku testowym -- w szczególności na sekcji 6b (3 poprzednie
+//    rundy paliły się DOKŁADNIE na tym: trzecie miasto nigdy nie odwiedzone / zawrócenie poza
+//    oknem asercji). Wzorzec `--self-check-skip-mutation` identyczny do
+//    barb-camp-destruction-test.cjs sekcja 9: mutuje barbarians.ts NA DYSKU, odpala TEN SAM
+//    plik w podprocesie z flagą (unika nieskończonej rekurencji -- ta flaga pomija całą tę
+//    sekcję), oczekuje niezerowego kodu wyjścia, PRZYWRACA oryginał w `finally` (nawet przy
+//    wyjątku w środku).
+// ============================================================================================
+if (!process.argv.includes('--self-check-skip-mutation')) {
+  const { execSync } = require('child_process');
+  const barbariansSrcPath = path.join(GRA_ROOT, 'src/game/barbarians.ts');
+  const barbariansOriginal = fs.readFileSync(barbariansSrcPath, 'utf8');
+
+  function expectSelfCheckFails(mutations, label) {
+    const backups = new Map();
+    for (const [p] of mutations) backups.set(p, fs.readFileSync(p, 'utf8'));
+    let mutantFailed = false;
+    try {
+      for (const [p, content] of mutations) fs.writeFileSync(p, content, 'utf8');
+      execSync(`node ${JSON.stringify(__filename)} --self-check-skip-mutation`, {
+        cwd: __dirname, stdio: 'pipe', timeout: 60000,
+      });
+    } catch (e) {
+      mutantFailed = true;
+    } finally {
+      for (const [p, orig] of backups) fs.writeFileSync(p, orig, 'utf8');
+    }
+    assert(mutantFailed, `mutacja [${label}] złapana czerwono przez self-check podproces (niezerowy exit code)`);
+    return mutantFailed;
+  }
+
+  console.log('\n-- Sekcja 9 / dowód mutacyjny: cofnięcie CAŁEJ naprawy RUNDY 4 do stanu RUNDY 3 --');
+  {
+    const filterStartMarker = 'if (skipDefenselessCities) {';
+    const filterEndMarker = 'const nearestCity = nearest(unit.q, unit.r, civCities);';
+    const writeStartMarker = 'if (skipDefenselessCities && nearestCity !== undefined';
+    const writeEndMarker = 'const targets: { q: number; r: number; d: number }[] = [];';
+
+    const filterStartIdx = barbariansOriginal.indexOf(filterStartMarker);
+    const filterEndIdx = filterStartIdx === -1 ? -1 : barbariansOriginal.indexOf(filterEndMarker, filterStartIdx);
+    const writeStartIdx = barbariansOriginal.indexOf(writeStartMarker);
+    const writeEndIdx = writeStartIdx === -1 ? -1 : barbariansOriginal.indexOf(writeEndMarker, writeStartIdx);
+    assert(filterStartIdx !== -1 && filterEndIdx !== -1,
+      'mutacja-setup: blok filtra (RUNDA 4) odnaleziony w barbarians.ts');
+    assert(writeStartIdx !== -1 && writeEndIdx !== -1,
+      'mutacja-setup: blok zapisu pamięci (RUNDA 4) odnaleziony w barbarians.ts');
+
+    if (filterStartIdx !== -1 && filterEndIdx !== -1 && writeStartIdx !== -1 && writeEndIdx !== -1) {
+      // Dokładny stan RUNDY 3 (funkcjonalnie -- komentarze pominięte, esbuild i tak je
+      // usuwa): pojedynczy slot `unit.recentlyClearedCityId`, ZERO zbioru, ZERO resetu.
+      const OLD_FILTER_BLOCK =
+        'if (skipDefenselessCities) {\n'
+        + '      const filtered = civCitiesBase.filter(c => {\n'
+        + '        const undefended = !enemies.some(e => e.q === c.q && e.r === c.r);\n'
+        + '        if (!undefended) return true;\n'
+        + '        return c.id !== unit.recentlyClearedCityId;\n'
+        + '      });\n'
+        + '      civCities = filtered.length > 0 ? filtered : civCitiesBase;\n'
+        + '    }\n    ';
+      const OLD_WRITE_BLOCK =
+        'if (skipDefenselessCities && nearestCity !== undefined\n'
+        + '        && hexDistance(unit.q, unit.r, nearestCity.q, nearestCity.r) <= 1\n'
+        + '        && !enemies.some(e => e.q === nearestCity.q && e.r === nearestCity.r)) {\n'
+        + '      unit.recentlyClearedCityId = nearestCity.id;\n'
+        + '    }\n    ';
+
+      // Splice od końca pliku ku początkowi (write block ma wyższy offset niż filter
+      // block), żeby wcześniejsze indeksy zostały ważne.
+      let mutated = barbariansOriginal.slice(0, writeStartIdx) + OLD_WRITE_BLOCK + barbariansOriginal.slice(writeEndIdx);
+      const mFilterStartIdx = mutated.indexOf(filterStartMarker);
+      const mFilterEndIdx = mutated.indexOf(filterEndMarker, mFilterStartIdx);
+      mutated = mutated.slice(0, mFilterStartIdx) + OLD_FILTER_BLOCK + mutated.slice(mFilterEndIdx);
+
+      assert(mutated !== barbariansOriginal, 'mutacja-setup: cofnięcie faktycznie zmieniło źródło barbarians.ts');
+      expectSelfCheckFails(new Map([[barbariansSrcPath, mutated]]),
+        'cofnięcie CAŁEJ naprawy RUNDY 4 do stanu RUNDY 3 (pojedynczy slot recentlyClearedCityId ' +
+        'zamiast zbioru clearedCityIds) -- trzecie miasto NIE powinno być odwiedzane w >=30 turach, ' +
+        'sekcja 6b MUSI to złapać');
+    }
+  }
 }
 
 // --- summary ----------------------------------------------------------------------------------
