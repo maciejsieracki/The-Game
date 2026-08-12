@@ -101,6 +101,24 @@
  *      do barb-camp-destruction-test.cjs sekcja 9): cofnięcie CAŁEJ naprawy tej rundy do
  *      stanu RUNDY 3 (pojedynczy slot zamiast zbioru) MUSI dać czerwono na sekcji 6b --
  *      potwierdzone: 26/120 asercji czerwonych, `cityC` nigdy nie odwiedzone, `revisited=[]`.
+ *
+ * RUNDA 7 (Evaluator B, werdykt zbiorczy 3x PASS-WITH-NOTES rundy 6, punkt 4 -- 2/5 mutacji
+ * własnych Evaluatora B PRZEŻYWAŁY bramkę repo, luka pokrycia nie błąd w kodzie: wszystkie mapy
+ * bramki były jednolitą łąką, żaden test nie stawiał jednostki na terenie o nieskończonym
+ * koszcie):
+ *   15. NOWA, M2b. Teren o ZRÓŻNICOWANYM koszcie (ściana Wzgórz, koszt 2 SKOŃCZONY -- nie
+ *       jednolita łąka) -- dowód, że computeLandComponents (etykietowanie F2-PERF) używa
+ *       DOKŁADNIE tej samej funkcji kosztu co computePath, więc Wzgórza NIE przerywają spójnej
+ *       składowej: jednostka po jednej stronie dostaje komendę ruchu w stronę bronionego
+ *       miasta po drugiej. Dowód mutacyjny niżej: zaostrzenie etykietowania (Wzgórza
+ *       nieprzechodnie TYLKO w komponentach, nadal przechodnie w computePath) MUSI dać
+ *       czerwono -- dokładny tryb awarii ostrzegany w doc-commencie computeLandComponents.
+ *   16. NOWA, M3. Jednostka stoi na terenie o NIESKOŃCZONYM koszcie (Góry) -- `unitComp`
+ *       wychodzi `undefined`, fallback musi pominąć filtr CAŁKOWICIE, jednostka dostaje >=1
+ *       komendę (NIE 0). Dowód mutacyjny niżej: cofnięcie fallbacku (filtr stosowany
+ *       bezwarunkowo nawet dla `unitComp===undefined`) MUSI dać czerwono -- `Set.has(undefined)`
+ *       zawsze `false` odrzuca KAŻDEGO kandydata, odtwarzając klasę błędu "jednostka zamiera na
+ *       stałe" z rundy 5.
  */
 
 const fs   = require('fs');
@@ -1208,6 +1226,65 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 }
 
 // ============================================================================================
+// 15. RUNDA 7, M2b (Evaluator B) -- teren o ZRÓŻNICOWANYM koszcie (nie jednolita łąka, powód
+//    dla którego bramka rundy 6 nie łapała tej klasy błędu). Ściana Wzgórz (koszt 2, SKOŃCZONY
+//    -- patrz DEFAULT_TERRAIN_COSTS w units/setup.ts) w pełnej wysokości mapy (r=0..2) dzieli
+//    planszę na "zachód"/"wschód" GEOMETRYCZNIE, ale NIE topologicznie: computeLandComponents
+//    używa DOKŁADNIE tej samej funkcji kosztu co computePath (terrainMoveCost), więc Wzgórza
+//    (koszt skończony) NIE przerywają spójnej składowej -- jednostka po zachodniej stronie
+//    MUSI dostać komendę ruchu w stronę bronionego miasta po wschodniej stronie, z malejącym
+//    dystansem, przez ścianę Wzgórz. Regresyjny dla M2b: gdyby etykietowanie kiedyś zaostrzono
+//    (Wzgórza jako nieprzechodnie w computeLandComponents, ale NADAL przechodnie w
+//    computePath), filtr fałszywie odrzuciłby ten, w pełni osiągalny cel -- dokładnie tryb
+//    ostrzegany w doc-commencie computeLandComponents. Dowód mutacyjny niżej (self-check).
+// ============================================================================================
+{
+  const mapHills = makeMap(11, 3);
+  for (let r = 0; r < 3; r++) {
+    mapHills.hexes[`5,${r}`].terenBazowy = 'wzgorza'; // ściana Wzgórz w pełnej wysokości, koszt 2 (SKOŃCZONY)
+  }
+  const cityHills = city('cityHills', 10, 1);   // BRONIONE, po WSCHODNIEJ stronie ściany
+  const guardHills = enemy('guardHills', 10, 1);
+  const unitHills = barb('bM2b', 0, 1); // BEZ campId -- nie raid-ready
+  const PHills = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 20 });
+
+  const cmdsHills = decideBarbarianMoves([unitHills], [guardHills], [cityHills], [], mapHills, PHills, undefined, 'normal');
+  eq(cmdsHills.length, 1, '15 (M2b): jednostka po zachodniej stronie ściany Wzgórz dostaje DOKŁADNIE 1 komendę');
+  eq(cmdsHills[0]?.type, 'move', '15 (M2b): komenda to ruch (nie zamrożenie -- Wzgórza są SKOŃCZONYM kosztem, nie barierą)');
+  if (cmdsHills[0]?.type === 'move') {
+    const dBefore = hexDist(unitHills.q, unitHills.r, cityHills.q, cityHills.r);
+    const dAfter = hexDist(cmdsHills[0].toQ, cmdsHills[0].toR, cityHills.q, cityHills.r);
+    assert(dAfter < dBefore,
+      `15 (M2b): krok zbliża się do bronionego miasta za ścianą Wzgórz (before=${dBefore}, after=${dAfter}) ` +
+      '-- etykietowanie NIE odrzuca fałszywie osiągalnego celu za terenem o skończonym koszcie');
+  }
+}
+
+// ============================================================================================
+// 16. RUNDA 7, M3 (Evaluator B) -- jednostka stoi na terenie o NIESKOŃCZONYM koszcie (Góry,
+//    `terrainMoveCost===Infinity`) -- `unitComp` wychodzi `undefined` z computeLandComponents
+//    (heks pominięty przy etykietowaniu). W praktyce miasta/jednostki zawsze stoją na terenie
+//    przechodnim (canFoundCity odrzuca Góry), ale ten test dokumentuje BRZEGOWY przypadek
+//    (np. teren zmieniony pod jednostką po jej powstaniu) -- fallback musi POMINĄĆ filtr
+//    CAŁKOWICIE zamiast fałszywie odrzucać WSZYSTKICH kandydatów (co dałoby 0 komend,
+//    odtwarzając klasę błędu "jednostka zamiera na stałe" z rundy 5). Dowód mutacyjny niżej.
+// ============================================================================================
+{
+  const mapMountain = makeMap(6, 1);
+  mapMountain.hexes['0,0'].terenBazowy = 'gory'; // jednostka stoi na terenie o NIESKOŃCZONYM koszcie
+  const cityMountain = city('cityMountain', 5, 0);
+  const guardMountain = enemy('guardMountain', 5, 0);
+  const unitMountain = barb('bM3', 0, 0);
+  const PMountain = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 20 });
+
+  const cmdsMountain = decideBarbarianMoves([unitMountain], [guardMountain], [cityMountain], [], mapMountain, PMountain, undefined, 'normal');
+  assert(cmdsMountain.length >= 1,
+    '16 (M3): jednostka na terenie o nieskończonym koszcie dostaje >=1 komendę (fallback pomija ' +
+    `filtr składowych zamiast fałszywie odrzucać wszystkich kandydatów) (got ${cmdsMountain.length})`);
+  eq(cmdsMountain[0]?.type, 'move', '16 (M3): komenda to ruch, nie zamrożenie');
+}
+
+// ============================================================================================
 // 9. RUNDA 4 -- dowód mutacyjny (self-check): cofnięcie CAŁEJ naprawy tej rundy do stanu
 //    RUNDY 3 (pojedynczy slot `recentlyClearedCityId` zamiast zbioru `clearedCityIds`) MUSI
 //    dać czerwono na TYM SAMYM pliku testowym -- w szczególności na sekcji 6b (3 poprzednie
@@ -1437,6 +1514,65 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
         'niezmieniona) -- bramka wydajnościowa sekcji 12 (archipelag nieosiągalnych miast) MUSI ' +
         'przekroczyć budżet czasowy bez filtra',
         /FAIL:\s+12/);
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------
+  // 15. RUNDA 7, M2b (Evaluator B) -- dowód mutacyjny: zaostrzenie etykietowania
+  //    computeLandComponents tak, żeby TEŻ traktowało Wzgórza jako nieprzechodnie (podczas gdy
+  //    computePath, przez terrainMoveCost w units/setup.ts, NADAL je przechodzi -- koszt 2,
+  //    skończony) MUSI dać czerwono na sekcji 15 (ściana Wzgórz fałszywie dzieli planszę na
+  //    dwie składowe, osiągalny cel po drugiej stronie zostaje odrzucony przez filtr PRZED
+  //    próbą Dijkstry).
+  // ----------------------------------------------------------------------------------------
+  console.log('-- M2b (runda 7) / dowód mutacyjny: zaostrzenie etykietowania (Wzgórza nieprzechodnie tylko w etykiecie) --');
+  {
+    const M2B_OWN_OLD = 'if (hex === undefined || terrainMoveCost(hex) === Infinity) continue;';
+    const M2B_OWN_NEW = "if (hex === undefined || terrainMoveCost(hex) === Infinity || hex.terenBazowy === 'wzgorza') continue;";
+    const M2B_NEIGH_OLD = 'if (nHex === undefined || terrainMoveCost(nHex) === Infinity) continue;';
+    const M2B_NEIGH_NEW = "if (nHex === undefined || terrainMoveCost(nHex) === Infinity || nHex.terenBazowy === 'wzgorza') continue;";
+    const ownOccurrences = barbariansOriginal.split(M2B_OWN_OLD).length - 1;
+    const neighOccurrences = barbariansOriginal.split(M2B_NEIGH_OLD).length - 1;
+    assert(ownOccurrences === 1,
+      `mutacja-setup M2b: linia kosztu własnego heksu (computeLandComponents) odnaleziona DOKŁADNIE RAZ w barbarians.ts (got ${ownOccurrences})`);
+    assert(neighOccurrences === 1,
+      `mutacja-setup M2b: linia kosztu sąsiada (computeLandComponents) odnaleziona DOKŁADNIE RAZ w barbarians.ts (got ${neighOccurrences})`);
+    if (ownOccurrences === 1 && neighOccurrences === 1) {
+      const mutatedM2b = barbariansOriginal
+        .replace(M2B_OWN_OLD, M2B_OWN_NEW)
+        .replace(M2B_NEIGH_OLD, M2B_NEIGH_NEW);
+      assert(mutatedM2b !== barbariansOriginal, 'mutacja-setup M2b: zaostrzenie faktycznie zmieniło źródło barbarians.ts');
+      expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedM2b]]),
+        'M2b: etykietowanie spójnych składowych traktuje Wzgórza jako nieprzechodnie (computePath ' +
+        'nadal je przechodzi, koszt 2) -- sekcja 15 (ściana Wzgórz) MUSI dać czerwono, bo filtr ' +
+        'fałszywie odrzuca w pełni osiągalny cel PRZED próbą Dijkstry',
+        /FAIL:\s+15/);
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------
+  // 16. RUNDA 7, M3 (Evaluator B) -- dowód mutacyjny: cofnięcie fallbacku "unitComp===undefined
+  //    pomija filtr CAŁKOWICIE" tak, żeby filtr stosował się BEZWARUNKOWO (nawet gdy
+  //    unitComp===undefined) MUSI dać czerwono na sekcji 16 (jednostka na Górach) --
+  //    `Set.has(undefined)` jest zawsze `false`, więc KAŻDY kandydat zostaje fałszywie
+  //    odrzucony, jednostka dostaje 0 komend zamiast oczekiwanego >=1 -- odtwarza klasę błędu
+  //    "jednostka zamiera na stałe" z rundy 5.
+  // ----------------------------------------------------------------------------------------
+  console.log('-- M3 (runda 7) / dowód mutacyjny: cofnięcie fallbacku unitComp===undefined --');
+  {
+    const M3_OLD_LINE = 'if (unitComp !== undefined) {';
+    const M3_NEW_LINE = 'if (true) {';
+    const m3Occurrences = barbariansOriginal.split(M3_OLD_LINE).length - 1;
+    assert(m3Occurrences === 1,
+      `mutacja-setup M3: guard fallbacku unitComp odnaleziony DOKŁADNIE RAZ w barbarians.ts (got ${m3Occurrences})`);
+    if (m3Occurrences === 1) {
+      const mutatedM3 = barbariansOriginal.replace(M3_OLD_LINE, M3_NEW_LINE);
+      assert(mutatedM3 !== barbariansOriginal, 'mutacja-setup M3: cofnięcie faktycznie zmieniło źródło barbarians.ts');
+      expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedM3]]),
+        'M3: cofnięcie fallbacku "unitComp===undefined pomija filtr" do stosowania filtra ' +
+        'bezwarunkowo -- sekcja 16 (jednostka na Górach) MUSI dać czerwono, Set.has(undefined) ' +
+        'zawsze false odrzuca KAŻDEGO kandydata, 0 komend zamiast >=1',
+        /FAIL:\s+16/);
     }
   }
 }

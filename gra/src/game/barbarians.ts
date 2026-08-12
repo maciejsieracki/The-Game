@@ -1705,9 +1705,18 @@ export function decideBarbarianMoves(
         // element `clearedSet`, bo krok zapisu niżej zawsze dopisuje na koniec
         // przez `.push`) -- jednostka nie odbija się z powrotem na miasto, które
         // WŁAŚNIE opuściła, tylko idzie dalej (do bronionego, jeśli nic innego nie
-        // zostało). Przy >=2 miastach niebronionych i >=1 bronionym to dodatkowo
-        // usuwa analogiczny, choć samo-gojący się, 1-2-turowy "odbij się od
-        // ostatniego miasta" artefakt (patrz tabela 12 reżimów w raporcie rundy 6).
+        // zostało). SPROSTOWANIE (RUNDA 7, Evaluator A -- poprzednia wersja tego zdania
+        // twierdziła błędnie, że to "dodatkowo usuwa" pełen problem): przy >=2 miastach
+        // niebronionych i >=1 bronionym reżim POZOSTAJE NIEROZWIĄZANY. Zweryfikowane
+        // wykonaniem: 2 miasta niebronione dają STABILNY cykl o OKRESIE 22 tur (potwierdzone
+        // na 300 turach), bronione miasto NIGDY nie zostaje osiągnięte bliżej niż 14 heksów;
+        // 3 miasta niebronione dają okres 44 tur, min. 19 heksów. Mechanizm: reset
+        // zostawiający WYŁĄCZNIE "ostatnio odwiedzone" natychmiast odsłania "przedostatnie" --
+        // 2-cykl zamiast oczekiwanego 3-cyklu. Ta naprawa rozwiązuje WYŁĄCZNIE wąski
+        // przypadek DOKŁADNIE 1 miasta niebronionego (patrz tabela 12 reżimów w raporcie
+        // rundy 6, rozszerzona niżej w rundzie 7; otwarte pytanie
+        // P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 -- NIE regresja tej rundy, przed naprawą
+        // było identycznie źle w tym reżimie).
         // Przy 0 bronionych (RUNDA 4/6b, `filtered` wychodzi puste i tak wraca do
         // fallbacku `civCitiesBase` w TEJ SAMEJ turze) wynik jest DOWIEDLIWIE
         // identyczny co przed tą poprawką -- zapis "arrival" w kroku niżej i tak
@@ -1728,10 +1737,20 @@ export function decideBarbarianMoves(
         // most-recently-visited city excluded (the set's last element, since the
         // write step below always `.push`es onto the end) -- the unit does not
         // bounce straight back onto the city it just left, it moves on instead
-        // (to the defended one, if nothing else remains). With >=2 undefended
-        // cities and >=1 defended one this additionally removes an analogous,
-        // though self-healing, 1-2-turn "bounce off the last city" artifact (see
-        // the 12-regime table in the round-6 report). With 0 defended cities
+        // (to the defended one, if nothing else remains). CORRECTION (ROUND 7,
+        // Evaluator A -- the previous version of this sentence wrongly claimed this
+        // "additionally removes" the whole problem): with >=2 undefended cities and
+        // >=1 defended one the regime STAYS UNSOLVED. Verified by execution: 2
+        // undefended cities produce a STABLE cycle with PERIOD 22 turns (confirmed
+        // over 300 turns), the defended city is NEVER reached closer than 14 hexes;
+        // 3 undefended cities give a period of 44 turns, min. 19 hexes. Mechanism: a
+        // reset that leaves ONLY the "most-recently-visited" city excluded
+        // immediately exposes the "second-to-last" one -- a 2-cycle instead of the
+        // expected 3-cycle. This fix resolves ONLY the narrow case of EXACTLY 1
+        // undefended city (see the 12-regime table in the round-6 report, extended
+        // below in round 7; open question
+        // P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 -- NOT a regression of this round,
+        // it was equally broken in this regime before the fix). With 0 defended cities
         // (ROUND 4/6b, `filtered` comes out empty and falls straight back to the
         // `civCitiesBase` fallback within the SAME turn) the outcome is PROVABLY
         // identical to before this fix -- the "arrival" write below immediately
@@ -1740,6 +1759,51 @@ export function decideBarbarianMoves(
         // the difference between "clear to []" and "clear to [last]" vanishes
         // within the same turn -- section 6b in barb-city-behavior-test.cjs stays
         // green unchanged.
+        //
+        // RUNDA 7 (Evaluator C) -- rozszerzenie tabeli 12 reżimów o 4. oś i pełną listę
+        // bit-identycznych. Oś 4 (pominięta w rejestrze operatora rundy 6): OSIĄGALNOŚĆ
+        // bronionego miasta (osiągalne / nieosiągalne -- inna wyspa, brak lądowego ani
+        // morskiego połączenia). Lista reżimów bit-identycznych przed/po tej naprawie:
+        // zweryfikowana wykonaniem jako WSZYSTKIE reżimy z 0 miast bronionych, niezależnie
+        // od liczby niebronionych i stanu raidReady -- realnie 8, nie 3 jak wcześniej
+        // wymieniono w rejestrze rundy 6 (fallback `civCitiesBase` w tej samej turze
+        // czyni różnicę "wyczyść do []" vs "wyczyść do [ostatnie]" niewidoczną, patrz
+        // akapit "Przy 0 bronionych" wyżej -- ten dowód obejmuje KAŻDĄ kombinację
+        // niebronione x raidReady przy 0 bronionych, nie tylko 3 wybrane wcześniej próbki).
+        //
+        // Nowy, łagodny brzegowy przypadek (Evaluator C, NIE naprawiony, tylko
+        // udokumentowany): reżim "1 miasto niebronione OSIĄGALNE + >=1 bronione
+        // NIEOSIĄGALNE" -- ta naprawa F1 zamienia dawny 3-turowy livelock na TRWAŁE
+        // zamrożenie jednostki bez własnego obozu (zweryfikowane: bezczynna od tury 5,
+        // 23/25 tur idle). To NIE jest nowa ścieżka błędu wprowadzona przez F1 -- to
+        // POSZERZENIE zasięgu już znanego, świadomie-poza-zakresem defektu
+        // `if (raidReady) continue` (ten sam, który dokumentuje sprostowanie F3 niżej)
+        // na reżim, w którym stary (błędny) reset do `[]` PRZYPADKIEM ciągle odsłaniał
+        // osiągalny cel (jedyne niebronione miasto), maskując ten defekt. Naprawa F1
+        // zamieniła jeden błąd (livelock) na inny (zamrożenie) -- to NIE jest regresja
+        // netto, ale wymaga jawnej dokumentacji, nie ciszy.
+        // / EN: ROUND 7 (Evaluator C) -- extends the 12-regime table with a 4th axis and
+        // the full bit-identical list. Axis 4 (omitted from the round-6 operator report):
+        // REACHABILITY of the defended city (reachable / unreachable -- different island,
+        // no land or sea connection). The list of regimes bit-identical before/after this
+        // fix: verified by execution as ALL regimes with 0 defended cities, regardless of
+        // the number of undefended cities or raidReady state -- actually 8, not 3 as
+        // earlier listed in the round-6 report (the `civCitiesBase` fallback within the
+        // same turn makes the "clear to []" vs "clear to [last]" difference invisible,
+        // see the "With 0 defended cities" paragraph above -- that proof covers EVERY
+        // undefended x raidReady combination at 0 defended, not just the 3 sampled
+        // originally).
+        //
+        // New, mild edge case (Evaluator C, NOT fixed, only documented): the regime
+        // "1 undefended city REACHABLE + >=1 defended city UNREACHABLE" -- this F1 fix
+        // turns the former 3-turn livelock into a PERMANENT freeze for a unit with no
+        // camp of its own (verified: idle from turn 5, 23/25 idle turns). This is NOT a
+        // new failure path introduced by F1 -- it WIDENS the reach of the already-known,
+        // deliberately-out-of-scope `if (raidReady) continue` defect (the same one the F3
+        // correction below documents) into a regime where the old (buggy) reset to `[]`
+        // HAPPENED to keep exposing a reachable target (the sole undefended city), masking
+        // that defect. The F1 fix swapped one bug (livelock) for another (freeze) -- not a
+        // net regression, but it requires explicit documentation, not silence.
         const lastVisited = clearedSet[clearedSet.length - 1];
         unit.clearedCityIds = lastVisited !== undefined ? [lastVisited] : [];
       }
@@ -1912,6 +1976,15 @@ export function decideBarbarianMoves(
     // rundy -- naprawiamy TYLKO fałszywy opis, NIE zachowanie `raidReady`
     // (osobny, nieotwarty jeszcze temat).
     //
+    // RUNDA 7 DOPRECYZOWANIE (Evaluator C): powyższe "REALNIE zero komend do końca
+    // gry" jest PRZEUOGÓLNIENIEM -- trzyma się WYŁĄCZNIE dla jednostki z żywym,
+    // WŁASNYM obozem. Dla jednostki OSIEROCONEJ (`orphaned`, patrz `orphanedActive`
+    // wyżej) `raidReady` liczone przez ten człon jest CZASOWE: po
+    // `orphanedChaseTurnLimit` turach `orphanedChaseExpired` staje się `true`,
+    // `orphanedActive` przechodzi na `false`, `raidReady` przestaje wymuszać
+    // pominięcie kroku 4 (o ile brak żywego obozu w zasięgu) -- dla TAKIEJ jednostki
+    // krok 4 (dryf) w końcu się odblokowuje, "zero komend na zawsze" NIE zachodzi.
+    //
     // F2-PERF (RUNDA 6, Evaluator B) -- KRYTYCZNA regresja wydajności: przy
     // nieosiągalnym najbliższym kandydacie ta pętla próbowała KOLEJNEGO z
     // WSZYSTKICH miast na planszy, każda próba = pełne wywołanie
@@ -1964,6 +2037,15 @@ export function decideBarbarianMoves(
     // any prior round (the `if(raidReady) continue` code predates F2) and is
     // DELIBERATELY OUT OF SCOPE for this round -- we fix ONLY the false
     // description here, NOT `raidReady` behaviour (a separate, still-open topic).
+    //
+    // ROUND 7 CLARIFICATION (Evaluator C): the "really does mean zero commands for
+    // the rest of the game" claim above is an OVERGENERALIZATION -- it holds ONLY
+    // for a unit with a live, OWN camp. For an ORPHANED unit (`orphaned`, see
+    // `orphanedActive` above) the `raidReady` this clause computes is TEMPORARY:
+    // after `orphanedChaseTurnLimit` turns `orphanedChaseExpired` becomes `true`,
+    // `orphanedActive` flips to `false`, and `raidReady` stops forcing step 4 to be
+    // skipped (absent a live camp in range) -- for SUCH a unit step 4 (drift)
+    // eventually unblocks, so "zero commands forever" does NOT hold.
     //
     // F2-PERF (ROUND 6, Evaluator B) -- CRITICAL performance regression: when the
     // nearest candidate was unreachable, this loop tried the NEXT of ALL cities
