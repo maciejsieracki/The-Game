@@ -10616,6 +10616,10 @@ async function boot(): Promise<void> {
       reconcileAllWorkedTiles(cities, buildAllTerritoryNodes());
       finalizeCityFounding(c, q, r);
       seedCityOwnerDefaults(c);
+      // P-AUTO-WYZYWIENIE-BUG2: świeżo założone miasto gracza -- ustaw bezpieczny poziom
+      // Racji od razu (no-op dziś, bo default jest bezpieczny dla Ludność 1, ale spójne z
+      // pozostałymi zdarzeniami zmiany właściciela poniżej).
+      applyLiveSafeRationForCity(c.id);
       spawnPendingSameTypeRivals(q, r);
       spawnPendingForeignClusters();
       refreshFog();
@@ -11467,6 +11471,9 @@ async function boot(): Promise<void> {
         // zresetować override i zsynchronizować pola z globalnym defaultem NOWEGO
         // właściciela (nie zostać przy wartościach POPRZEDNIEGO).
         seedCityOwnerDefaults(city);
+        // P-AUTO-WYZYWIENIE-BUG2: kapitulacja głodowa może przekazać miasto graczowi --
+        // no-op dla AI (applyLiveSafeRationForCity sprawdza ownerId !== 0 na starcie).
+        applyLiveSafeRationForCity(city.id);
         city.population = Math.max(1, city.population);
         for (let i = units.length - 1; i >= 0; i--) {
           const u = units[i]!;
@@ -21579,6 +21586,9 @@ async function boot(): Promise<void> {
         // B2 (Evaluator RUNDA 1: FAIL): dyplomatyczne wchłonięcie musi zresetować
         // override i zsynchronizować pola z globalnym defaultem NOWEGO właściciela.
         seedCityOwnerDefaults(city);
+        // P-AUTO-WYZYWIENIE-BUG2: wchłonięcie może dotyczyć gracza (annexerId===0) --
+        // no-op dla AI.
+        applyLiveSafeRationForCity(city.id);
       }
       cityRenderer.sync(cities, _cityRenderOpts());
       syncUnitsRender();
@@ -21933,7 +21943,16 @@ async function boot(): Promise<void> {
         // B2 (Evaluator RUNDA 1: FAIL): zdobycie miasta w bitwie musi zresetować
         // override i zsynchronizować okolicaFocus/budowaFocus/budowaTryb/podzialPracy
         // z globalnym defaultem NOWEGO właściciela (nie zostać przy wartościach starego).
-        { civKeyForOwner: civKeyForOwnerId, onOwnerChanged: seedCityOwnerDefaults },
+        {
+          civKeyForOwner: civKeyForOwnerId,
+          // P-AUTO-WYZYWIENIE-BUG2: podbój w bitwie może dotyczyć gracza (nowy właściciel
+          // atkOwner===0) -- applyLiveSafeRationForCity no-opuje dla AI, więc wołanie tu
+          // jest bezpieczne bez dodatkowego warunku.
+          onOwnerChanged: (c: City): void => {
+            seedCityOwnerDefaults(c);
+            applyLiveSafeRationForCity(c.id);
+          },
+        },
       );
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
       // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
@@ -24611,6 +24630,11 @@ async function boot(): Promise<void> {
                 ownerEraByOwner: new Map(
                   [...new Set(cities.map(c => c.ownerId))].map(oid => [oid, empireEpochForOwner(oid)]),
                 ),
+                // P-AUTO-WYZYWIENIE-BUG2 (Maciej ECHO A): przelicz bezpieczny poziom Racji
+                // PO faktycznym przyroście populacji tej tury -- `applyLiveSafeRationForCity`
+                // no-opuje sama dla miast AI (city.ownerId !== 0), więc callback jest tu
+                // bezpieczny dla wszystkich właścicieli.
+                onCityPopulationChanged: cityId => applyLiveSafeRationForCity(cityId),
               });
             }
             // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe --
