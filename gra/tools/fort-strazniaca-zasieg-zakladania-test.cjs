@@ -594,6 +594,91 @@ console.log('\n--- D1: main.ts applyFortTakeoverAndEvacuation (F2) -- straznik t
   assert(fnBody.includes('isBarbarian('), 'D1c: wywolanie checkBarbCampDestroyedAt jest bramkowane !isBarbarian(u.ownerId), tak jak we wzorcu evictForeignUnitsFromCityHexes');
 }
 
+// ============================================================================
+// D2/D3 (runda 3, werdykt Evaluatora rundy 2 -- FAIL): dyspozycja rundy 2 mowila
+// "strazniki tekstowe main.ts dla 3 newralgicznych miejsc", wykonano 1/3 (D1
+// wyzej, F2). BRAKOWALO 2: (a) main.ts:8578 (wowczas), wewnatrz
+// foundingTerritoryOpts -- literalne wywolanie foundingNodesForOwner(ownerId,
+// nodes, fortNodes) (F1, "fort rozszerza zasieg zakladania"); (b) main.ts:10487
+// (wowczas), literalne uzycie isHexReservedByRivalFort (F3, "kontestacja cudzym
+// fortem w chwili budowy"). Luka byla krytyczna: mutacja rundy 1
+// (main.ts:8578 -> `const extendedNodes = nodes;`, czyli wylaczenie realnego
+// rozszerzenia zasiegu przez forty na poziomie wpiecia) przechodzila WSZYSTKIE
+// 67 ondczesnych asercji tego pliku bez ani jednej czerwonej -- Sekcje A-C
+// wyzej testuja jednostkowo PRAWDZIWA logike (foundingNodesForOwner,
+// isHexReservedByRivalFort jako czyste, eksportowane funkcje z game/*.ts) i
+// planCityFounding AI na wyizolowanym gridzie, ale ZADNA z nich nie sprawdza,
+// czy main.ts faktycznie WOLA te funkcje we wpieciu produkcyjnym -- dokladnie
+// ta sama klasa luki, ktora D1 juz domyka dla F2.
+// / EN: round-2 dispatch said "text guards in main.ts for 3 critical spots",
+// only 1/3 was done (D1 above, F2). Missing 2: (a) main.ts:8578 (at the time),
+// inside foundingTerritoryOpts -- literal call to foundingNodesForOwner(ownerId,
+// nodes, fortNodes) (F1, "fort extends founding range"); (b) main.ts:10487 (at
+// the time), literal use of isHexReservedByRivalFort (F3, "contestation by a
+// rival fort at build time"). The gap was critical: the round-1 mutation
+// (main.ts:8578 -> `const extendedNodes = nodes;`, i.e. disabling the real
+// range extension by forts at the wiring level) passed ALL 67 assertions of
+// this file at the time without a single red one -- Sections A-C above unit-
+// test the REAL logic (foundingNodesForOwner, isHexReservedByRivalFort as
+// pure, exported functions from game/*.ts) and AI's planCityFounding on an
+// isolated grid, but NONE of them checks whether main.ts actually CALLS these
+// functions in the production wiring -- the exact same class of gap D1
+// already closes for F2.
+// ============================================================================
+console.log('\n--- D2: main.ts foundingTerritoryOpts (F1) -- straznik tekstowy dla wpiecia realnego rozszerzenia zasiegu przez forty ---');
+{
+  const mainTsSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+  const fnMarker = 'function foundingTerritoryOpts(ownerId: number)';
+  const fnStart = mainTsSrc.indexOf(fnMarker);
+  assert(fnStart !== -1, 'D2-sanity: foundingTerritoryOpts nadal istnieje w main.ts');
+  const nextFnRel = fnStart !== -1 ? mainTsSrc.indexOf('\n    function ', fnStart + fnMarker.length) : -1;
+  const fnBody = fnStart !== -1
+    ? mainTsSrc.slice(fnStart, nextFnRel !== -1 ? nextFnRel : fnStart + 1200)
+    : '';
+
+  // Pozytyw: musi istniec realne przypisanie extendedNodes z foundingNodesForOwner,
+  // z fortNodes jako argumentem (nie tylko wywolanie gdziekolwiek w pliku -- MUSI
+  // byc to WEWNATRZ ciala foundingTerritoryOpts, zeby faktycznie zasilac
+  // withinTerritory zwracane z tej funkcji).
+  const guardedAssignRe = /const\s+extendedNodes\s*=\s*foundingNodesForOwner\([^;]*fortNodes[^;]*\)\s*;/;
+  assert(guardedAssignRe.test(fnBody),
+    'D2a (F1): foundingTerritoryOpts musi przypisywac extendedNodes = foundingNodesForOwner(ownerId, nodes, fortNodes) -- realne rozszerzenie zasiegu zakladania przez wlasne, nie-skontestowane forty/posterunki');
+
+  // Negatyw celowany: dokladnie mutacja rundy 1 (Evaluator rundy 2, FAIL) --
+  // gole przypisanie extendedNodes = nodes (bez przejscia przez
+  // foundingNodesForOwner) wylacza fort na poziomie wpiecia, a mimo to
+  // withinTerritory nadal dziala (dla nodes bez rozszerzenia) -- stad brak
+  // jakiejkolwiek czerwonej asercji gdziekolwiek indziej w tym pliku.
+  const bareAssignRe = /const\s+extendedNodes\s*=\s*nodes\s*;/;
+  assert(!bareAssignRe.test(fnBody),
+    'D2b (F1): foundingTerritoryOpts NIE MOZE zawierac golego `const extendedNodes = nodes;` (dokladnie mutacja rundy 1 -- wylacza realne rozszerzenie zasiegu przez forty, mimo poprawnej logiki w game/fort-territory.ts)');
+}
+
+console.log('\n--- D3: main.ts registerFortNodeIfNeeded (F3) -- straznik tekstowy dla kontestacji cudzym fortem w chwili budowy ---');
+{
+  const mainTsSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+  const fnMarker = 'function registerFortNodeIfNeeded(';
+  const fnStart = mainTsSrc.indexOf(fnMarker);
+  assert(fnStart !== -1, 'D3-sanity: registerFortNodeIfNeeded nadal istnieje w main.ts');
+  const nextFnRel = fnStart !== -1 ? mainTsSrc.indexOf('\n    function ', fnStart + fnMarker.length) : -1;
+  const fnBody = fnStart !== -1
+    ? mainTsSrc.slice(fnStart, nextFnRel !== -1 ? nextFnRel : fnStart + 1200)
+    : '';
+
+  // Pozytyw: contestedUseless musi pochodzic z realnego wywolania
+  // isHexReservedByRivalFort(q, r, ownerId, fortNodes) -- ustalane RAZ, w chwili
+  // budowy (komentarz "Regula 1/3" w main.ts), nie np. na sztywno `false`.
+  const guardedCallRe = /isHexReservedByRivalFort\(\s*q\s*,\s*r\s*,\s*ownerId\s*,\s*fortNodes\s*\)/;
+  assert(guardedCallRe.test(fnBody),
+    'D3a (F3): registerFortNodeIfNeeded musi wolac isHexReservedByRivalFort(q, r, ownerId, fortNodes) do ustalenia contestedUseless w chwili budowy (fort fizycznie stoi, ale kontestowany nie liczy sie do WLASNEGO zasiegu zakladania)');
+
+  // Negatyw celowany: gole `false` zamiast realnego wywolania dawaloby zawsze
+  // "nie skontestowany", niezaleznie od stanu rywalizujacych fortow na mapie.
+  const bareFalseRe = /const\s+contestedUseless\s*=\s*false\s*;/;
+  assert(!bareFalseRe.test(fnBody),
+    'D3b (F3): registerFortNodeIfNeeded NIE MOZE zawierac golego `const contestedUseless = false;` (wylaczaloby kontestacje cudzym fortem)');
+}
+
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) { /* noop */ }
 try { fs.unlinkSync(BUNDLE_FILE); } catch (e) { /* noop */ }
 
