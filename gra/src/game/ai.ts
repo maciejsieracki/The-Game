@@ -1945,7 +1945,10 @@ function planCityImprovements(
  * gdy AI ma WŁASNĄ jednostkę (nie w garnizonie) stojącą poza obecnym zasięgiem
  * zakładania (miasta+forty razem, `isHexWithinAnyCityReach`) i poza terytorium
  * INNEJ cywilizacji, na lądzie, a AI ma nadwyżkę Pracy — zbuduj tam Posterunek
- * (tańszy z dwóch węzłów) RAZ NA TURĘ, żeby otworzyć nowy kierunek ekspansji
+ * (F5 -- Evaluator runda 1, 2026-08-13: NIE "tańszy z dwóch węzłów" -- wg
+ * terrain-improvements.json koszt_praca posterunek=30 > fort=25, posterunek jest
+ * DROŻSZY; realna przewaga to wcześniejsza dostępność w grze -- epoka 2, bez
+ * wymogu technologii -- nie cena) RAZ NA TURĘ, żeby otworzyć nowy kierunek ekspansji
  * (Q1=B: fizyczna obecność jednostki + brak fog — spełnione z definicji, skoro
  * ta jednostka tam już stoi).
  *
@@ -1965,13 +1968,31 @@ function planCityImprovements(
  * "AI actively plans and sends a unit to build a fort at a chosen spot" is
  * OUT OF SCOPE for this round.
  */
-function planExpansionFortBuilding(
+// export tylko dla testu regresyjnego (F3/F4, fort-strazniaca-zasieg-zakladania-test.cjs) --
+// bez zmiany zachowania, wywolania produkcyjne (planCityFounding/decideDefensiveCopyTurn
+// nizej w tym pliku) nietkniete.
+// / EN: exported for the regression test (F3/F4) only -- no behavior change,
+// production call sites unchanged.
+export function planExpansionFortBuilding(
   playerId: number,
   myCities: AICity[],
   myUnits: readonly RuntimeUnit[],
   map: GameMap,
   opts: AITurnOpts,
 ): AICmdBuildImprovement | null {
+  // F4 fix (Evaluator runda 1, 2026-08-13): przywraca wzorzec konsekwentny w calym
+  // pliku -- Miasta-Panstwa/kopie obronne (opts.defensiveCopy) sa wylaczone z
+  // ekspansji terytorialnej (patrz planCityFounding wyzej: `if (opts.defensiveCopy)
+  // return null;`, analogicznie zwiadowcy wczesnej fazy). Ta funkcja byla wpieta
+  // TAKZE w decideDefensiveCopyTurn BEZ tej bramki -- niezadeklarowana zmiana
+  // zachowania frakcji MP (zaczely budowac forty ekspansyjne), nie nowa decyzja
+  // gameplayowa.
+  // / EN: restores the pattern consistent across this file -- City-States/defensive
+  // copies (opts.defensiveCopy) are excluded from territorial expansion (see
+  // planCityFounding above). This function was wired into decideDefensiveCopyTurn
+  // WITHOUT this gate -- an undeclared behavior change for the City-State faction,
+  // not a new gameplay decision.
+  if (opts.defensiveCopy) return null;
   if (myCities.length === 0) return null; // brak wlasnego terytorium do rozszerzenia (parytet z founding)
   const pracaAvailable = opts.pracaAvailable ?? 0;
   const meta = getImprovementMeta('posterunek');
@@ -1991,6 +2012,21 @@ function planExpansionFortBuilding(
     if (!hex) continue;
     const t = hex.terenBazowy as string;
     if (t === 'morze' || t === 'wybrzeze' || t === 'gory') continue;
+    // F3 fix (Evaluator runda 1, 2026-08-13): heks juz majacy fort LUB posterunek
+    // (dowolny wlasciciel -- `qualifies()` w improvement-build.ts odrzuca druga
+    // budowe tego samego klucza na tym samym hexie bez wzgledu na wlasciciela)
+    // odrzuci komende budowy nizej po cichu -- `continue` zamiast `return` tej
+    // samej doomed komendy co tura, zeby nie marnowac calego slotu ekspansji AI.
+    // / EN: a hex that already carries a fort OR outpost (any owner --
+    // `qualifies()` rejects a second placement of the same key regardless of
+    // ownership) would silently fail the build command below -- `continue`
+    // instead of `return`ing that same doomed command every turn, so the AI's
+    // single expansion slot isn't wasted.
+    const layers = opts.placedImprovements?.get(`${q},${r}`);
+    const hasFortOrOutpost = Array.isArray(layers)
+      ? (layers.includes('fort') || layers.includes('posterunek'))
+      : (layers === 'fort' || layers === 'posterunek');
+    if (hasFortOrOutpost) continue;
     // Już w zasięgu (miasto lub fort) -- fort tu niczego by nie dodał.
     if (isHexWithinAnyCityReach(q, r, myCities, myFortNodes)) continue;
     const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;

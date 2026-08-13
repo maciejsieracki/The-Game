@@ -51,8 +51,9 @@ export {
 } from ${JSON.stringify(SRC + '/game/fort-territory')};
 export { isInTerritory, cityTerritoryRadius, axialDistance } from ${JSON.stringify(SRC + '/map/territory')};
 export { buildImprovementQualifier } from ${JSON.stringify(SRC + '/map/improvement-build')};
+export { canUnitOccupyCityHex } from ${JSON.stringify(SRC + '/game/city-hex-movement')};
 export { TerenBazowy, Nakladka } from ${JSON.stringify(SRC + '/types/hex')};
-export { planCityFounding } from ${JSON.stringify(SRC + '/game/ai')};
+export { planCityFounding, planExpansionFortBuilding } from ${JSON.stringify(SRC + '/game/ai')};
 export { hexDistance } from ${JSON.stringify(SRC + '/units/setup')};
 export { MIN_CITY_DISTANCE } from ${JSON.stringify(SRC + '/game/cities')};
 export { AI_FOUNDING_SOURCE_MIN_POP } from ${JSON.stringify(SRC + '/game/city-founding')};
@@ -87,9 +88,11 @@ const {
   isInTerritory,
   cityTerritoryRadius,
   buildImprovementQualifier,
+  canUnitOccupyCityHex,
   TerenBazowy,
   Nakladka,
   planCityFounding,
+  planExpansionFortBuilding,
   hexDistance,
   MIN_CITY_DISTANCE,
   AI_FOUNDING_SOURCE_MIN_POP,
@@ -157,6 +160,44 @@ console.log('\n--- A4: applyFortTakeoverOnCityFounded — regula 4 przejecie ---
   eq(untouched.ownerId, 1, 'A4g: fort poza zasiegiem NIE przejety');
 }
 
+console.log('\n--- A4b: applyFortTakeoverOnCityFounded (F1) — fort DOKLADNIE na hexie nowego miasta znika CALKOWICIE ---');
+{
+  // Przypadek WLASNY: miasto zakladane na hexie WLASNEGO fortu -- przed F1 ten
+  // fort byl calkowicie pomijany przez glowna petle (f.ownerId === newCity.ownerId
+  // -> continue) i zostawal jako wezel-widmo NA ZAWSZE.
+  const fortsOwn = [{ q: 0, r: 0, ownerId: 2, type: 'posterunek' }];
+  const eventsOwn = applyFortTakeoverOnCityFounded({ q: 0, r: 0, ownerId: 2, population: 10 }, fortsOwn);
+  eq(eventsOwn.length, 0, 'A4b-own-1: brak zdarzenia ewakuacji (wlasny fort, brak "obcego" wlasciciela)');
+  eq(fortsOwn.length, 0, 'A4b-own-2: fortNodes NIE zawiera juz wpisu na hexie miasta (wlasny fort)');
+
+  // Przypadek CUDZY: miasto zakladane na hexie CUDZEGO fortu -- przed F1
+  // ownerId byl przepisywany na nowego wlasciciela (fort "przejety" i
+  // fizycznie ZOSTAWAL w rejestrze), mimo ze improvement zostal fizycznie
+  // skasowany z mapy (Macierz B, main.ts finalizeCityFounding).
+  const fortsRival = [{ q: 0, r: 0, ownerId: 1, type: 'fort' }];
+  const eventsRival = applyFortTakeoverOnCityFounded({ q: 0, r: 0, ownerId: 2, population: 10 }, fortsRival);
+  eq(eventsRival.length, 1, 'A4b-rival-1: zdarzenie ewakuacji WCIAZ generowane (cudzy fort mial jednostki do ewakuacji)');
+  if (eventsRival.length === 1) {
+    eq(eventsRival[0].prevOwnerId, 1, 'A4b-rival-2: poprzedni wlasciciel poprawny w zdarzeniu');
+    eq(eventsRival[0].newOwnerId, 2, 'A4b-rival-3: nowy wlasciciel poprawny w zdarzeniu');
+  }
+  eq(fortsRival.length, 0, 'A4b-rival-4: fortNodes NIE zawiera juz wpisu na hexie miasta (cudzy fort, mimo zdarzenia przejecia)');
+
+  // Sasiedni fort (NIE na hexie miasta, ale w promieniu) zachowuje sie jak
+  // dotychczas -- przejety (ownerId przepisany), NIE usuniety z rejestru.
+  const fortsMixed = [
+    { q: 0, r: 0, ownerId: 1, type: 'fort' },   // na hexie miasta -> znika
+    { q: 3, r: 0, ownerId: 1, type: 'fort' },   // w promieniu, INNY hex -> przejety, zostaje
+  ];
+  const eventsMixed = applyFortTakeoverOnCityFounded({ q: 0, r: 0, ownerId: 2, population: 10 }, fortsMixed);
+  eq(eventsMixed.length, 2, 'A4b-mixed-1: 2 zdarzenia (oba forty mialy obcego wlasciciela)');
+  eq(fortsMixed.length, 1, 'A4b-mixed-2: TYLKO fort na hexie miasta usuniety -- sasiedni zostaje w rejestrze');
+  if (fortsMixed.length === 1) {
+    eq(fortsMixed[0].q, 3, 'A4b-mixed-3: pozostaly wezel to ten POZA hexem miasta');
+    eq(fortsMixed[0].ownerId, 2, 'A4b-mixed-4: pozostaly wezel MA przejetego wlasciciela (regula 4 normalna)');
+  }
+}
+
 console.log('\n--- A5: findEvacuationHexOutsideCity — regula 5/Q3=A ewakuacja ---');
 {
   const w = 40, h = 40;
@@ -174,6 +215,58 @@ console.log('\n--- A5: findEvacuationHexOutsideCity — regula 5/Q3=A ewakuacja 
   }
   const destBlocked = findEvacuationHexOutsideCity(fortQ, fortR, newCityNode, map, () => false, 3);
   eq(destBlocked, null, 'A5c: brak wolnych heksow (isFree zawsze false) -> null (jednostka zostaje)');
+}
+
+console.log('\n--- A5b: findEvacuationHexOutsideCity + canUnitOccupyCityHex (F2a) -- ewakuacja NIE lqduje na hexie CUDZEGO miasta ---');
+{
+  // newCityNode celowo BARDZO daleko od fortu -- kazdy hex kandydujacy w poblizu
+  // fortu jest z definicji "poza promieniem nowego miasta" (axialDistance ogromny),
+  // wiec JEDYNYM czynnikiem rozstrzygajacym wybor w tym tescie jest predykat isFree
+  // -- dokladnie ta kompozycja co main.ts applyFortTakeoverAndEvacuation.
+  const w = 60, h = 60;
+  const hexes = {};
+  for (let q = 0; q < w; q++) for (let r = 0; r < h; r++) hexes[`${q},${r}`] = { coords: { q, r } };
+  const map = { hexes };
+  const fortQ = 20, fortR = 20;
+  const distantCityNode = { q: 1000, r: 1000, pop: 10, level: 1 };
+  const evacuatedUnitOwnerId = 1; // wlasciciel ewakuowanej jednostki (byly wlasciciel fortu)
+  const thirdCivOwnerId = 3;      // trzecia cywilizacja, WLASCICIEL miasta w poblizu
+
+  // Krok 1: baseline BEZ zadnej bramki miejskiej -- ustal, ktory hex algorytm
+  // wybralby "naturalnie" (najblizszy wolny) -- deterministyczne wg tie-breaku
+  // findEvacuationHexOutsideCity, niezalezne od wewnetrznej implementacji hexKeysWithinRadius.
+  const baselineDest = findEvacuationHexOutsideCity(
+    fortQ, fortR, distantCityNode, map, () => true,
+  );
+  assert(baselineDest !== null, 'A5b-sanity: baseline znajduje jakis hex (mapa nie jest pusta)');
+
+  const citiesWithThirdCivAtBaseline = baselineDest
+    ? [{ q: baselineDest.q, r: baselineDest.r, ownerId: thirdCivOwnerId }]
+    : [];
+
+  // Krok 2: PRZED F2 -- isFree byl `isHexPassableForUnit && brak innej jednostki`,
+  // BEZ canUnitOccupyCityHex -- odtwarzamy dokladnie ten stary predykat. Musi
+  // wciaz wyladowac na hexie trzeciej cywilizacji (reprodukuje defekt F2a).
+  const oldStyleIsFree = () => true; // "isHexPassableForUnit && brak jednostki", tu zawsze true
+  const destOldBug = findEvacuationHexOutsideCity(
+    fortQ, fortR, distantCityNode, map, oldStyleIsFree,
+  );
+  eq(destOldBug?.q, baselineDest?.q, 'A5b-repro-q: STARY predykat (bez canUnitOccupyCityHex) ladowalby na hexie miasta trzeciej cywilizacji (q)');
+  eq(destOldBug?.r, baselineDest?.r, 'A5b-repro-r: to samo (r) -- reprodukcja defektu F2a przed poprawka');
+
+  // Krok 3: PO F2 -- main.ts komponuje isFree jako
+  // `isHexPassableForUnit(...) && canUnitOccupyCityHex(u.ownerId, ...) && brak jednostki`.
+  // Odtwarzamy TA SAMA kompozycje z prawdziwym, eksportowanym canUnitOccupyCityHex.
+  const newStyleIsFree = (nq, nr) =>
+    canUnitOccupyCityHex(evacuatedUnitOwnerId, nq, nr, citiesWithThirdCivAtBaseline);
+  const destFixed = findEvacuationHexOutsideCity(
+    fortQ, fortR, distantCityNode, map, newStyleIsFree,
+  );
+  assert(destFixed !== null, 'A5b-fixed-sanity: wciaz istnieje jakis legalny hex ewakuacji poza zablokowanym');
+  if (destFixed && baselineDest) {
+    const landedOnForeignCity = destFixed.q === baselineDest.q && destFixed.r === baselineDest.r;
+    assert(!landedOnForeignCity, 'A5b: F2a fix -- ewakuacja z canUnitOccupyCityHex NIE laduje na hexie miasta trzeciej cywilizacji');
+  }
 }
 
 // ============================================================================
@@ -379,14 +472,27 @@ console.log('\n--- C3: planCityFounding -- CUDZY (kontestowany) fort AI NIE licz
     ekspansja_min_dystans_miast: { wartosc: MIN_CITY_DISTANCE, sekcja: 'test', opis: '' },
     ekspansja_min_score_hex: { wartosc: 1, sekcja: 'test', opis: '' },
   });
+  // Bez bajty -- teren jednolity 'laka' identyczny jak w C1, ktory na tym samym
+  // gridzie/MIN_CITY_DISTANCE/progu wyniku GWARANTUJE cmd !== null (patrz C1a).
+  // Zamiast tolerowac "brak hexu" jako rownie akceptowalny wynik (co maskowaloby
+  // regresje: gdyby cudzy/skontestowany fort ZACZAL bezprawnie rozszerzac zasieg,
+  // test dalej przechodzilby przez galaz "brak legalnego hexu"), wymagamy
+  // twardo cmd !== null i tylko wtedy weryfikujemy promien -- realnie
+  // rozrozniajaca asercja zamiast samo-zaliczajacej sie galezi.
+  // / EN: no bait needed -- uniform 'laka' terrain, identical to C1, GUARANTEES
+  // cmd !== null on this same grid/MIN_CITY_DISTANCE/score threshold (see C1a).
+  // Instead of tolerating "no hex found" as an equally acceptable outcome
+  // (which would mask a regression: if a rival/contested fort started
+  // illegally extending reach, the test would still pass via the "no hex"
+  // branch), hard-require cmd !== null and only then check the radius -- a
+  // genuinely discriminating assertion instead of a self-passing branch.
   const cmd = planCityFounding(
     1, [city], map, data, baseOpts, MIN_CITY_DISTANCE, [], [], fortNodesRival,
   );
+  assert(cmd !== null, 'C3-sanity: founding zwraca komende (identyczny grid jak C1, ktory tez zawsze zwraca)');
   if (cmd) {
     const dist = hexDistance(cmd.q, cmd.r, city.q, city.r);
     assert(dist <= cityRadius, `C3: cudzy fort NIE rozszerza zasiegu -- wybrany hex nadal w promieniu WLASNEGO miasta (dist=${dist} <= ${cityRadius})`);
-  } else {
-    assert(true, 'C3: (brak legalnego hexu w ogole tez akceptowalne -- cudzy fort na pewno nie zostal uzyty)');
   }
 
   // Wlasny, ale SKONTESTOWANY fort (contestedUseless) rowniez nie powinien liczyc sie.
@@ -394,12 +500,98 @@ console.log('\n--- C3: planCityFounding -- CUDZY (kontestowany) fort AI NIE licz
   const cmd2 = planCityFounding(
     1, [city], map, data, baseOpts, MIN_CITY_DISTANCE, [], [], fortNodesContested,
   );
+  assert(cmd2 !== null, 'C3b-sanity: founding zwraca komende (identyczny grid jak C1)');
   if (cmd2) {
     const dist2 = hexDistance(cmd2.q, cmd2.r, city.q, city.r);
     assert(dist2 <= cityRadius, `C3b: wlasny SKONTESTOWANY fort NIE rozszerza zasiegu (dist=${dist2} <= ${cityRadius})`);
-  } else {
-    assert(true, 'C3b: (brak legalnego hexu tez akceptowalne)');
   }
+}
+
+console.log('\n--- C4: planExpansionFortBuilding (F3) -- heks z JUZ postawionym fortem/posterunkiem odrzucony, ale AI probuje KOLEJNA jednostke ---');
+{
+  const map = makeMap(60, 60);
+  const city = makeCity('c1', 5, 0, 0, 10); // radius 10 (pop>=10)
+  const occupiedHexKey = '40,40'; // daleko poza zasiegiem miasta, juz ma posterunek
+  const cleanHexKey = '45,45';    // rowniez daleko, czysty
+  const unitOnOccupied = { id: 'u1', ownerId: 5, q: 40, r: 40, inGarnizon: false };
+  const unitOnClean = { id: 'u2', ownerId: 5, q: 45, r: 45, inGarnizon: false };
+  const opts = {
+    ...baseOpts,
+    pracaAvailable: 1000,
+    improvementTechs: new Set(['Obróbka drewna', 'Murarstwo']),
+    placedImprovements: new Map([[occupiedHexKey, 'posterunek']]),
+  };
+  const cmd = planExpansionFortBuilding(5, [city], [unitOnOccupied, unitOnClean], map, opts);
+  assert(cmd !== null, 'C4a: AI wciaz znajduje komende (kolejna jednostka), mimo ze pierwsza odrzucona');
+  if (cmd) {
+    eq(cmd.q, 45, 'C4b: wybrany hex to CZYSTY hex drugiej jednostki (q)');
+    eq(cmd.r, 45, 'C4c: wybrany hex to CZYSTY hex drugiej jednostki (r)');
+    assert(!(cmd.q === 40 && cmd.r === 40), 'C4d: odrzucony hex (juz ma posterunek) NIE zostal wybrany');
+  }
+
+  // Kontrola: gdy WSZYSTKIE kandydackie hexy juz maja fort/posterunek -- null, nie awaria.
+  const optsAllOccupied = {
+    ...opts,
+    placedImprovements: new Map([[occupiedHexKey, 'posterunek'], [cleanHexKey, ['fort']]]),
+  };
+  const cmdNone = planExpansionFortBuilding(5, [city], [unitOnOccupied, unitOnClean], map, optsAllOccupied);
+  eq(cmdNone, null, 'C4e: wszystkie kandydackie hexy juz zajete -- brak komendy (nie crash, nie odrzucona-ale-wyslana)');
+}
+
+console.log('\n--- C5: planExpansionFortBuilding (F4) -- Miasto-Panstwo (opts.defensiveCopy) NIE buduje fortow ekspansyjnych ---');
+{
+  const map = makeMap(60, 60);
+  const city = makeCity('c1', 7, 0, 0, 10); // radius 10
+  const unit = { id: 'u1', ownerId: 7, q: 40, r: 40, inGarnizon: false }; // poza zasiegiem, teren czysty
+  const baseTestOpts = {
+    ...baseOpts,
+    pracaAvailable: 1000,
+    improvementTechs: new Set(['Obróbka drewna', 'Murarstwo']),
+  };
+
+  // Kontrola pozytywna: DOKLADNIE ta sama sytuacja BEZ defensiveCopy -- MUSI zwrocic
+  // komende (dowod, ze setup faktycznie wyzwala budowe, gdyby bramka F4 zniknela --
+  // asercja C5b nizej realnie by lapala regresje, a nie przechodzila przez przypadek).
+  const cmdNormal = planExpansionFortBuilding(7, [city], [unit], map, baseTestOpts);
+  assert(cmdNormal !== null, 'C5a-sanity: BEZ defensiveCopy AI normalnie buduje fort ekspansyjny w tym samym setupie');
+
+  // Wlasciwy przypadek: Miasto-Panstwo (opts.defensiveCopy=true) -- MUSI byc null.
+  const cmdCityState = planExpansionFortBuilding(7, [city], [unit], map, { ...baseTestOpts, defensiveCopy: true });
+  eq(cmdCityState, null, 'C5b: opts.defensiveCopy=true -> planExpansionFortBuilding zwraca null (parytet z planCityFounding)');
+}
+
+// ============================================================================
+// SEKCJA D — main.ts strażniki tekstowe (F2b: checkBarbCampDestroyedAt).
+// applyFortTakeoverAndEvacuation zyje w domknieciu main.ts (dostep do `units`,
+// `map`, `cities`, `syncUnitsRender` calej gry) -- NIE da sie jej wyeksportowac
+// do izolowanego bundla jak reszty tego testu bez odtwarzania calego silnika.
+// Sekcje A/A5b powyzej pokrywaja jednostkowo prawdziwa logike decyzyjna
+// (findEvacuationHexOutsideCity + canUnitOccupyCityHex, F2a) na PRAWDZIWYCH,
+// eksportowanych funkcjach -- ten straznik domyka WYLACZNIE F2b (wywolanie
+// checkBarbCampDestroyedAt), ktorego nie da sie odizolowac tak samo.
+// / EN: applyFortTakeoverAndEvacuation lives inside main.ts's closure (access
+// to `units`, `map`, `cities`, `syncUnitsRender` of the whole game) -- cannot
+// be exported into an isolated bundle like the rest of this test without
+// recreating the whole engine. Sections A/A5b above unit-test the real
+// decision logic (findEvacuationHexOutsideCity + canUnitOccupyCityHex, F2a) on
+// REAL, exported functions -- this guard closes ONLY the F2b gap (the
+// checkBarbCampDestroyedAt call), which cannot be isolated the same way.
+// ============================================================================
+console.log('\n--- D1: main.ts applyFortTakeoverAndEvacuation (F2) -- straznik tekstowy dla obu zabezpieczen ---');
+{
+  const mainTsSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+  const fnStart = mainTsSrc.indexOf('function applyFortTakeoverAndEvacuation(');
+  assert(fnStart !== -1, 'D1-sanity: applyFortTakeoverAndEvacuation nadal istnieje w main.ts');
+  // Koniec funkcji: nastepna deklaracja `function ` na poziomie wciecia funkcji
+  // (heurystyka wystarczajaca -- funkcje w tym pliku nie sa zagniezdzone w
+  // funkcjach lokalnych na tym poziomie).
+  const nextFnRel = mainTsSrc.indexOf('\n    function ', fnStart + 40);
+  const fnBody = fnStart !== -1
+    ? mainTsSrc.slice(fnStart, nextFnRel !== -1 ? nextFnRel : fnStart + 4000)
+    : '';
+  assert(fnBody.includes('canUnitOccupyCityHex('), 'D1a (F2, zabezpieczenie a): applyFortTakeoverAndEvacuation woła canUnitOccupyCityHex (blokada ladowania na hexie CUDZEGO miasta)');
+  assert(fnBody.includes('checkBarbCampDestroyedAt('), 'D1b (F2, zabezpieczenie b): applyFortTakeoverAndEvacuation woła checkBarbCampDestroyedAt (rozliczenie wejscia na oboz barbarzynski)');
+  assert(fnBody.includes('isBarbarian('), 'D1c: wywolanie checkBarbCampDestroyedAt jest bramkowane !isBarbarian(u.ownerId), tak jak we wzorcu evictForeignUnitsFromCityHexes');
 }
 
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) { /* noop */ }

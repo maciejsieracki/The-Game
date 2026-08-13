@@ -10460,7 +10460,12 @@ async function boot(): Promise<void> {
      * JAWNYM, mutowalnym `ownerId` -- patrz komentarz w game/fort-territory.ts
      * (dlaczego OSOBNO od placedImprovements/territoryOwnerAt: fort budowany
      * POZA istniejacym terytorium nie ma zadnego innego zrodla wlasciciela).
-     * Zapis/odczyt save — patrz game/save.ts (`fortNodes`).
+     * Zapis/odczyt save — pole `meta.fortNodes` budowane TU w main.ts (nie w
+     * game/save.ts, gdzie fortNodes nie wystepuje): zapis ok. main.ts:23028
+     * (`fortNodes: fortNodes.slice()`), odczyt main.ts:29825-29826.
+     * / EN: save write/read -- `meta.fortNodes` is built HERE in main.ts (not
+     * in game/save.ts, which has no fortNodes field): write around
+     * main.ts:23028, read at main.ts:29825-29826.
      */
     const fortNodes: FortNode[] = [];
     const improvementMeshes = new Map<string, THREE.Group>();
@@ -10503,6 +10508,22 @@ async function boot(): Promise<void> {
      * wycofanie z heksu miasta obcego właściciela).
      */
     function applyFortTakeoverAndEvacuation(c: City): void {
+      // F1 fix (Evaluator runda 1, 2026-08-13): miasto zakladane NA hexie fortu/
+      // posterunka (WLASNEGO lub CUDZEGO) fizycznie kasuje improvement (Macierz B,
+      // patrz finalizeCityFounding) -- applyFortTakeoverOnCityFounded usuwa TAKI
+      // wezel z `fortNodes` calkowicie (nie tylko przepisuje wlasciciela), patrz
+      // komentarz "F1 fix" w game/fort-territory.ts. Bez tego zostawal wezel-widmo
+      // (wlasny fort na hexie miasta nigdy nie trafial do `events` -- glowna petla
+      // pomija f.ownerId === newCity.ownerId), dalej liczony do promienia
+      // zakladania, dalej rezerwujacy heksy przeciw cudzym fortom i zapisywany do save.
+      // / EN: a city founded ON a fort/outpost hex (OWN or FOREIGN) physically
+      // clears the improvement (Matrix B, see finalizeCityFounding) --
+      // applyFortTakeoverOnCityFounded removes such a node from `fortNodes`
+      // entirely (not just reassigns owner), see the "F1 fix" comment in
+      // game/fort-territory.ts. Without it a ghost node remained (an own fort on
+      // the city hex never appeared in `events` -- the main loop skips
+      // f.ownerId === newCity.ownerId), still counting toward founding radius,
+      // still reserving hexes against rival forts, still persisted to the save.
       const events: FortTakeoverEvent[] = applyFortTakeoverOnCityFounded(
         { q: c.q, r: c.r, ownerId: c.ownerId, population: c.population },
         fortNodes,
@@ -10518,12 +10539,21 @@ async function boot(): Promise<void> {
           const dest = findEvacuationHexOutsideCity(
             ev.q, ev.r, newCityNode, map,
             (nq, nr) => isHexPassableForUnit(nq, nr)
+              && canUnitOccupyCityHex(u.ownerId, nq, nr, cities)
               && !units.some(o => o.id !== u.id && o.q === nq && o.r === nr && o.inGarnizon !== true),
           );
           if (dest) {
             u.q = dest.q;
             u.r = dest.r;
             moved = true;
+            // F2 fix (Evaluator runda 1, 2026-08-13): wzorzec evictForeignUnitsFromCityHexes
+            // (main.ts ok. linii 9480) rozlicza wejscie na zywy oboz barbarzynski przy KAZDYM
+            // wymuszonym wejsciu na nowy heks -- ewakuacja z przejmowanego fortu to ten sam
+            // przypadek "entrata" i pomijala ten hak.
+            // / EN: the evictForeignUnitsFromCityHexes pattern accounts for entering a living
+            // barbarian camp on EVERY forced move onto a new hex -- fort-takeover evacuation is
+            // the same kind of "entry" and was missing this hook.
+            if (!isBarbarian(u.ownerId)) checkBarbCampDestroyedAt(dest.q, dest.r);
           }
           // Brak celu w maxRing (20) — jednostka zostaje na miejscu (Q3=A nie
           // precyzuje "co gdy brak miejsca"; bezpieczniejsze niz teleport donikad,
@@ -23743,6 +23773,22 @@ async function boot(): Promise<void> {
             let autoRationAnyAdjusted = false;
             for (const ownerId of ownerIdsForAutoRation) {
               const foodSt = empireFoodStates.get(ownerId) ?? freshEmpireFoodState();
+              // R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13, ECHO doprecyzowania właściciela):
+              // "bezpieczny poziom" ma znaczyć PRZYROST ZAPASÓW tej tury ≥0, nie tylko bilans
+              // miast/rezerwę bez wojska -- policz koszt żywności armii TĄ SAMĄ funkcją i tymi
+              // samymi jednostkami (`econUnits`), którymi za chwilę policzy go `advanceEmpireFood`
+              // (empire-food.ts:269) -- brak `opts` (solArmyOverride) odczytuje ten sam świeży
+              // runtime stan Soli co advanceEmpireFood poniżej, ustawiony wcześniej w tym samym
+              // ticku (turn-economy.ts:1622-1634).
+              // EN: "safe level" now means this turn's STOCKPILE increase ≥0, not just the
+              // cities' balance/reserve without the army -- compute the army's food cost with the
+              // SAME function and SAME units (`econUnits`) that `advanceEmpireFood` will use right
+              // after (empire-food.ts:269) -- omitting `opts` (solArmyOverride) reads the same
+              // fresh Sol runtime state advanceEmpireFood reads below, set earlier this same tick
+              // (turn-economy.ts:1622-1634).
+              const kosztArmiiForOwner = militaryFoodConsumptionWithSpichlerz(
+                econUnits, ownerId, upkeepParams, unitFoodTbl,
+              );
               const autoRationResult = autoBalanceRationsToSolvency({
                 ownerId,
                 cities,
@@ -23757,6 +23803,7 @@ async function boot(): Promise<void> {
                 // EN: player-only (finding #4): target is this turn's flow >=0, not just
                 // stock-based reserve coverage — AI keeps prior behavior.
                 requireFlowBalance: ownerId === 0,
+                kosztArmii: kosztArmiiForOwner,
               });
               if (autoRationResult.adjusted) {
                 autoRationAnyAdjusted = true;
@@ -23775,6 +23822,7 @@ async function boot(): Promise<void> {
                   spichlerzByCity: spichlerzByCityForAuto,
                   requireProductionSurplus: ownerId === 0,
                   onlyAutoManaged: ownerId === 0,
+                  kosztArmii: kosztArmiiForOwner,
                 });
                 if (raiseResult.adjusted) {
                   autoRationAnyAdjusted = true;

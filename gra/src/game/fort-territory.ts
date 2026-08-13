@@ -120,6 +120,26 @@ export interface FortTakeoverEvent {
  * wczesniejszego stanu kontestacji regula 3). MUTUJE `forts` in-place.
  * Zwraca zdarzenia przejecia (stary wlasciciel + polozenie) do wyzwolenia
  * ewakuacji jednostek starego wlasciciela (regula 5).
+ *
+ * F1 fix (Evaluator runda 1, 2026-08-13): WYJATEK od "przejecie" powyzej —
+ * gdy fort/posterunek stoi DOKLADNIE na hexie nowo zakladanego miasta
+ * (wlasny LUB cudzy), main.ts (finalizeCityFounding, Macierz B) fizycznie
+ * kasuje improvement z mapy. Taki wezel NIE moze przetrwac jako "przejety"
+ * (nie ma juz czego przejmowac) — jest USUWANY z `forts` calkowicie, nie
+ * tylko przepisywany na nowego wlasciciela. Wlasne forty na hexie miasta
+ * (ownerId === newCity.ownerId) byly dotad calkowicie pomijane przez ta
+ * funkcje (ponizsza glowna petla ma `if (f.ownerId === newCity.ownerId)
+ * continue`) — zostawaly jako wezly-widma, dalej liczone do promienia
+ * zakladania. Ten wyjatek dziala PRZED tamtym warunkiem wlasciciela.
+ * / EN: EXCEPTION to "takeover" above — when a fort/outpost sits EXACTLY on
+ * the newly founded city's hex (own OR foreign), main.ts (finalizeCityFounding,
+ * Matrix B) physically clears the improvement off the map. Such a node cannot
+ * survive as "taken over" (nothing left to take over) — it is REMOVED from
+ * `forts` entirely, not just reassigned to the new owner. Own forts on the
+ * city hex (ownerId === newCity.ownerId) used to be skipped entirely by this
+ * function (the main loop below has `if (f.ownerId === newCity.ownerId)
+ * continue`) — they became ghost nodes, still counting toward founding
+ * radius. This exception runs BEFORE that ownership check.
  */
 export function applyFortTakeoverOnCityFounded(
   newCity: NewCityFoundingInfo,
@@ -128,7 +148,17 @@ export function applyFortTakeoverOnCityFounded(
   const cityNode: CityNode = { q: newCity.q, r: newCity.r, pop: newCity.population, level: 1 };
   const radius = cityTerritoryRadius(cityNode);
   const events: FortTakeoverEvent[] = [];
-  for (const f of forts) {
+  for (let i = forts.length - 1; i >= 0; i--) {
+    const f = forts[i]!;
+    if (f.q === newCity.q && f.r === newCity.r) {
+      // F1: hex fortu == hex nowego miasta -> improvement fizycznie skasowany,
+      // wezel znika calkowicie (bez wzgledu na wlasciciela).
+      if (f.ownerId !== newCity.ownerId) {
+        events.push({ q: f.q, r: f.r, type: f.type, prevOwnerId: f.ownerId, newOwnerId: newCity.ownerId });
+      }
+      forts.splice(i, 1);
+      continue;
+    }
     if (f.ownerId === newCity.ownerId) continue;
     if (axialDistance(newCity.q, newCity.r, f.q, f.r) > radius) continue;
     events.push({ q: f.q, r: f.r, type: f.type, prevOwnerId: f.ownerId, newOwnerId: newCity.ownerId });
