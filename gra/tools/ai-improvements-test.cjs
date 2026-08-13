@@ -18,6 +18,14 @@
  *      buildImprovement (JSON-equal), zero Math.random().
  *   9. defensiveCopy (miasto-państwo) -> ta sama ścieżka planCityImprovements
  *      (Maciej decyzja 4: brak osobnego throttlingu dla miast-państw).
+ *   10. Regres FALA 204: praca=40 (ponad próg, poniżej progu+kosztu) -> nadal buduje.
+ *   11. P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A (2026-08-13): egzekucja komendy
+ *       `wyrab` (main.ts, sekcja `cmd.type === 'buildImprovement'` + `meta.typ === 'wycinka'`)
+ *       kredytuje DREWNO tą samą funkcją co ścieżka gracza (`applyStolarniaDrewnoMapInflow` +
+ *       `creditOwnerResourceStock`), a Praca traci WYŁĄCZNIE koszt startu -- nie rośnie o
+ *       refundację. Test odtwarza dosłownie formułę z main.ts (nie może bundlować main.ts --
+ *       to closure `boot()`, nie eksportowana funkcja), na produkcyjnych danych
+ *       terrain-improvements.json (przez `getImprovementMeta`/`clearingTotalPraca`).
  *
  * Pure logic only -- no DOM, no THREE.
  */
@@ -42,6 +50,9 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-improvements-test-bundle.cjs');
 
 const ENTRY_TS = `
 export { decideAITurn } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { getImprovementMeta, clearingTotalPraca } from ${JSON.stringify(AI_SRC + '/game/improvement-tech')};
+export { applyStolarniaDrewnoMapInflow, ownerResourceCap } from ${JSON.stringify(AI_SRC + '/game/turn-economy')};
+export { creditOwnerResourceStock } from ${JSON.stringify(AI_SRC + '/game/building-stock-cost')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -62,7 +73,14 @@ try {
   process.exit(1);
 }
 
-const { decideAITurn } = require(BUNDLE_FILE);
+const {
+  decideAITurn,
+  getImprovementMeta,
+  clearingTotalPraca,
+  applyStolarniaDrewnoMapInflow,
+  ownerResourceCap,
+  creditOwnerResourceStock,
+} = require(BUNDLE_FILE);
 
 // --- tiny assertion framework ------------------------------------------------
 let passed = 0;
@@ -142,6 +160,9 @@ const map = makeFlatMap(30, 30);
 const forestMap = makeForestMap(30, 30);
 const data = makeGameData();
 const PLAYER_ID = 3;
+
+/** Dane realne (nie fixture) -- test 11 potrzebuje ownerResourceCap() z prawdziwym econParams. */
+const DATA_FOR_CAP = { econParams: require('../data/econ-params.json') };
 
 // ===========================================================================
 // 1. Brak territoryNodes -> zero buildImprovement (bezpieczny no-op)
@@ -292,6 +313,62 @@ console.log('10. praca=40 (ponad prog 30, ponizej 50) -- farma nadal');
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
   eq(cmds.length, 1, 'praca=40 -> 1 buildImprovement (bez podwojnej rezerwy po kosztu)');
   eq(cmds[0].key, 'farma', 'praca=40 -> farma (koszt 20, pula po budowie < 30 OK dla AI)');
+}
+
+// ===========================================================================
+// 11. P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A -- egzekucja komendy wyrab
+//     kredytuje DREWNO (nie Pracę); Praca traci wyłącznie koszt startu.
+// ===========================================================================
+console.log('11. egzekucja wyrab (AI) — refundacja idzie do Drewna, nie Pracy');
+{
+  // 11a. decideAITurn faktycznie emituje komendę wyrab (jak w teście 7) — potwierdza,
+  //      że poniższa symulacja egzekucji dotyczy realnego wyjścia decyzji AI.
+  const city = makeCity('city0', PLAYER_ID, 15, 15);
+  const opts = baseOpts(city);
+  opts.improvementTechs = new Set();
+  const wyrabCmds = buildImprovementCmds(
+    decideAITurn(PLAYER_ID, [], [city], forestMap, data, opts),
+  );
+  eq(wyrabCmds.length, 1, 'sanity: decideAITurn emituje 1 komende wyrab');
+  eq(wyrabCmds[0].key, 'wyrab', 'sanity: komenda to key=wyrab');
+
+  // 11b. Symulacja egzekucji IDENTYCZNA z main.ts (cmd.type==='buildImprovement',
+  //      meta.typ==='wycinka'): koszt startu z Pracy, refundacja (praca_per_tura×tury)
+  //      przez applyStolarniaDrewnoMapInflow -> creditOwnerResourceStock('drewno').
+  const meta = getImprovementMeta('wyrab');
+  assert(meta && meta.typ === 'wycinka', 'sanity: wyrab ma typ=wycinka w terrain-improvements.json');
+  const koszt = meta.kosztPraca;
+  const pracaTotal = clearingTotalPraca('wyrab');
+  assert(pracaTotal > 0, 'sanity: clearingTotalPraca(wyrab) > 0 (dziś 25 wg R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+
+  const pracaPoolBefore = 100;
+  const aiCity = { id: 'ai-city0', ownerId: PLAYER_ID, surowce: {} };
+
+  // Bez Stolarnii.
+  const drewnoCredit0 = applyStolarniaDrewnoMapInflow(pracaTotal, 0, 0.10);
+  eq(drewnoCredit0, pracaTotal, 'bez Stolarnii: drewnoCredit = pracaTotal (mnożnik ×1.0)');
+  const drewnoCap = ownerResourceCap([aiCity], new Map(), PLAYER_ID, DATA_FOR_CAP, 'normal', 1);
+  assert(drewnoCap >= drewnoCredit0, 'sanity: cap magazynu nie przycina refundacji w tym scenariuszu');
+  const credited0 = creditOwnerResourceStock([aiCity], PLAYER_ID, 'drewno', drewnoCredit0, drewnoCap);
+  const pracaPoolAfter = pracaPoolBefore - koszt;
+
+  eq(credited0, drewnoCredit0, 'creditOwnerResourceStock zapisuje pelna refundacje do Drewna');
+  eq(aiCity.surowce.drewno, drewnoCredit0, `magazyn Drewna AI rosnie o ${drewnoCredit0} (nie 0)`);
+  eq(pracaPoolAfter, pracaPoolBefore - koszt, `pula Pracy AI traci WYLACZNIE koszt startu (${koszt})`);
+  assert(
+    pracaPoolAfter !== pracaPoolBefore - koszt + drewnoCredit0,
+    `regres-guard: pula Pracy NIE rosnie o refundacje (stary bug dawalby ${pracaPoolBefore - koszt + drewnoCredit0}, dziś ${pracaPoolAfter})`,
+  );
+
+  // Z 1 Stolarnią (parytet z graczem — patrz stolarnia-r5-d2-test.cjs).
+  const aiCityStolarnia = { id: 'ai-city1', ownerId: PLAYER_ID, surowce: {} };
+  const drewnoCredit1 = applyStolarniaDrewnoMapInflow(pracaTotal, 1, 0.10);
+  eq(drewnoCredit1, Math.floor(pracaTotal * 1.10), '1 Stolarnia: drewnoCredit = floor(pracaTotal × 1.10)');
+  const credited1 = creditOwnerResourceStock(
+    [aiCityStolarnia], PLAYER_ID, 'drewno', drewnoCredit1,
+    ownerResourceCap([aiCityStolarnia], new Map(), PLAYER_ID, DATA_FOR_CAP, 'normal', 1),
+  );
+  eq(aiCityStolarnia.surowce.drewno, credited1, '1 Stolarnia: bonus Drewna z wyrębu AI trafia do magazynu');
 }
 
 // ---------------------------------------------------------------------------

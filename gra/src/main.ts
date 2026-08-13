@@ -26245,21 +26245,48 @@ async function boot(): Promise<void> {
                   // warstwa -- nie idzie do `placedImprovements` (patrz applyBuildRequest gracza
                   // wyżej, sekcja `req.action === 'wycinka'`). AI nie ma per-owner wieloturowego
                   // `hexClearingStates` (tick niżej w pętli tury liczy WYŁĄCZNIE ownerId 0 /
-                  // gracza), więc AI commituje efekt końcowy od razu: usuwa nakładkę lasu,
-                  // netto-zero Pracy (koszt startu zwracany przez `wycinka.praca_per_tura ×
-                  // tury` z terrain-improvements.json -- dziś 5×1=5, czyli symetryczne z kosztem).
+                  // gracza), więc AI commituje efekt końcowy od razu: usuwa nakładkę lasu.
+                  // P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A (Maciej 2026-08-13): plon
+                  // wyrębu (`wycinka.praca_per_tura × tury`) kredytuje DREWNO -- identycznie jak
+                  // ścieżka gracza (applyStolarniaDrewnoMapInflow wołane z tickHexClearing wyżej,
+                  // ~linia 23595) -- NIE Pracę. Koszt startu (`koszt`) nadal odejmowany z puli
+                  // Pracy AI; bez tej poprawki AI zyskiwało netto +20 Pracy z każdego wyrębu.
+                  // EN: clearing yield credits WOOD -- exactly like the player path
+                  // (applyStolarniaDrewnoMapInflow called from tickHexClearing above, ~line
+                  // 23595) -- NOT Praca. Start cost still deducted from the AI Praca pool;
+                  // without this fix AI netted +20 Praca per clearing.
                   if (meta?.typ === 'wycinka') {
                     if (hexForImprovement.nakladka !== Nakladka.Las) continue; // już wycięte (wyścig miast)
-                    const refund = meta.clearing
+                    aiPracaPoolByOwner.set(ownerId, poolBefore - koszt);
+                    const pracaTotal = meta.clearing
                       ? meta.clearing.pracaPerTura * meta.clearing.tury
                       : 0;
-                    aiPracaPoolByOwner.set(ownerId, poolBefore - koszt + refund);
+                    let stolarniaCountAi = 0;
+                    for (const c of cities) {
+                      if (c.ownerId !== ownerId) continue;
+                      if ((cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCountAi++;
+                    }
+                    const stolarniaBonusAi = loadThroughput(
+                      data.econParams as unknown as Parameters<typeof loadThroughput>[0],
+                      'budynek_stolarnia_bonus_drewna_civ',
+                      _menuDifficulty,
+                      0.10,
+                    );
+                    const drewnoCredit = applyStolarniaDrewnoMapInflow(
+                      pracaTotal, stolarniaCountAi, stolarniaBonusAi,
+                    );
+                    const drewnoCap = ownerResourceCap(
+                      cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
+                    );
+                    const drewnoCredited = creditOwnerResourceStock(
+                      cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
+                    );
                     hexForImprovement.nakladka = Nakladka.Brak;
                     stripForestDependentImprovements(hexKey);
                     hideDecorAtHex(hexKey);
                     syncResourceOverlayAtHex(hexKey);
                     console.log(
-                      `[AI ${ownerId}] Wyrąb @ (${cmd.q},${cmd.r}) (-${koszt}+${refund} Pracy, netto ${refund - koszt})`,
+                      `[AI ${ownerId}] Wyrąb @ (${cmd.q},${cmd.r}) (-${koszt} Pracy, +${drewnoCredited} Drewna)`,
                     );
                     continue;
                   }
