@@ -19362,3 +19362,30 @@ proszę o korektę, w przeciwnym razie wdrażam oba naraz jako jedną spójną z
 celować w to nowe kryterium.
 
 **STATUS: dispatch Operatora (Sonnet 5) w toku.**
+
+## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (053debc9) — Evaluator runda 2: PASS-WITH-NOTES, N-A warunkiem zamknięcia (2026-08-13)
+
+Blokujące znalezisko rundy 1 NAPRAWIONE realnie — łańcuch 6 ogniw (`newGameFlow.ts`→`main.ts`
+×2→`cluster-start.ts`→`cluster-spawn.ts`→`clusters.ts`) potwierdzony ręcznie przez Evaluatora,
+efekt zweryfikowany na 78 prawdziwie wygenerowanych mapach (0 pudeł), regresja wykluczona bitową
+zgodnością 24 planów z commitem-rodzicem, 12 czerwonych w `cluster-start-test` potwierdzone
+identyczne pre-istniejące (diff pusty). Mutacja cofająca mechanizm łapana przez 6 asercji.
+
+**N-A (WARUNEK ZAMKNIĘCIA, nie opcjonalne):** przepisanie testu w rundzie 2 usunęło JEDYNE
+pokrycie `preferredCivIds` w `civ-roster.ts`/`pickActiveCivPool` — ta ścieżka NIE jest martwa,
+nadal realnie konsumowana przez `repairAiRosterFromMap` (naprawa sejwu) i `restoreAiRosterFromSave`
+(gałąź legacy). Mutacja Evaluatora (`if (false && preferredValid.length > 0)` — całkowite
+wyłączenie obsługi preferencji w `pickActiveCivPool`) przechodzi 99/0 i 37/0 bez ani jednej
+czerwonej. Ta sama klasa błędu co w temacie tech-chip, tylko odwrotnie: kod żyje, bramka zniknęła.
+
+**N-B (mocno rekomendowane):** brak strażnika tekstowego na wpięciu `preferredCivIds` w
+`main.ts` (wzorem `ai-founding-territory-test.cjs` blok B1) — bez tego trzecia runda tego samego
+błędu jest kwestią czasu.
+
+Niepilne: N-C (scenariusz end-to-end nie testuje filtra epoki na prawdziwej ścieżce), N-D
+(teoretyczne ryzyko cichego zniknięcia typu przy specyficznym układzie dominance, niereprodukowane
+w 78 mapach), N-E (limit UI≠silnik z rundy 1 nadal otwarte, do backlogu).
+
+**STATUS: dispatch Operatora rundy 3 (Sonnet 5, wąski zakres testowy) w toku** — przywrócić
+asercje `pickActiveCivPool(..., preferredCivIds)` (cap/fill-in/filtr epoki, usunięte przy
+przepisaniu rundy 2) + dodać strażnik tekstowy main.ts (N-B).
