@@ -19992,3 +19992,32 @@ wzorzec do skopiowania później. N-D/N-E drobne, opisane w pełnym raporcie Eva
 **TEMAT ZAMKNIĘTY.** 4 rundy: R1 implementacja → R2 naprawa F1-F6 (+ incydent procesowy, naprawiony
 osobno) → R3 text-guardy + odkrycie regresji testu → R4 naprawa testu + domknięcie 2 luk. Zero
 otwartych blokad.
+
+## Panel Skarbiec CSS fix (9cbfc8ae) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-14)
+
+Wszystkie 3 zgłoszone rozjazdy CSS (kolor gałki suwaka, kolor etykiety suwaka, wyrównanie tabeli)
+zweryfikowane jako naprawione **dowodem pikselowym** (screenshot + odczyt piksela Pillow) i
+**dowodem CSSOM** (enumeracja `sheet.cssRules` w Chromium headless), nie tylko odczytem źródła.
+Bug okazał się SZERSZY niż opis: przed naprawą WSZYSTKIE 3 etykiety suwaka (nie tylko neutral)
+dziedziczyły `#e8ebf0` z korzenia panelu, bo `.gold`/`.blue` nie miały żadnej reguły. Pułapka
+`-webkit`/`-moz` w jednej regule potwierdzona empirycznie (przed naprawą: 4 połączone reguły → 0
+przetrwało parsowanie Chromium; po naprawie: 8 osobnych → 4 poprawne). `tsc` czysty,
+`empire-skarbiec-panel-coverage-test` 12/12, wszystkie sąsiednie bramki zielone. Jedna czerwona
+(`empire-panel-moc-scroll-preserve-test`, 38/9) potwierdzona pre-istniejąca (identyczna na
+commicie-rodzicu) — **luka dokumentacyjna: brak w CLAUDE.md §BRAMKI, do dopisania osobno**.
+
+**Uwagi nieblokujące:** (1) sama naprawa CSS (sedno commita) ma ZERO pokrycia bramkowego — 6 z 8
+własnych mutacji Evaluatora (cofnięcie kolorów gałek/etykiet, scalenie z powrotem `-webkit`+`-moz`,
+usunięcie wyrównania tabeli) przechodzi wszystkie bramki na zielono, tylko M2 (routing/niepusta
+treść) jest chronione; (2) commit message ma 3 drobne nieścisłości: (a) "unieważnia regułę w OBU
+przeglądarkach" zweryfikowane tylko w Chromium (brak Gecko w środowisku), (b) opis testu M2 jako
+dowodu "niepustej treści" jest mocniejszy niż to co test faktycznie dowodzi (nagłówek samego
+pliku testu jest w tej sprawie uczciwszy niż commit message), (c) tytuł mówi "3 rozjazdy", treść
+wymienia 4. Żadna nie jest fabrykacją w stylu poprzedniego "1:1 confirmed" — to precyzyjne
+niedopowiedzenia, nie fałsz. (3) 2 martwe reguły CSS `.civ-emp-slider.green` (żaden markup ich
+nie używa, pre-istniejące). (4) Naprawa już procentuje poza Skarbcem — commit `9a539197` (Faza 2)
+reużywa `.civ-emp-slider-label`/`.civ-emp-slider` bez modyfikacji, w 4 zakładkach zamiast 1.
+
+**TEMAT ZAMKNIĘTY.** Rekomendacja Evaluatora (test source-text przypinający 8 reguł per-vendor +
+hexy + wywołanie funkcji) zanotowana jako opcjonalne domknięcie pokrycia, nieblokujące — do
+rozważenia w przyszłej rundzie, nie teraz.
