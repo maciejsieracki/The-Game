@@ -17726,3 +17726,43 @@ surowiec.
 **Nie kodować — dispatch rozpoznania technicznego (bez zmian w kodzie) NASTĘPUJE**, żeby ustalić
 dokładny zasięg zmiany (ile miejsc w kodzie trzeba dotknąć, czy jest bezpieczny pojedynczy punkt
 zaczepienia analogiczny do `territory-work.ts`) przed zadaniem ABC.
+
+---
+
+## R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA — SPROSTOWANIE: temat zgubiony, Maciej słusznie przypomniał (2026-08-13)
+
+Maciej: „poza tym zwracałem uwagę, że jeżeli chodzi o umowę wymiany surowców można dać
+nieograniczoną ilość propozycji jedna pod drugą, a nie tylko jedną. To nie zostało zrobione,
+chociaż było zgłaszane." **Potwierdzone przeszukaniem rejestru: ma rację.** Temat zarejestrowany
+2026-08-10 (linia 10420), zapowiedziano dispatch rozpoznania „równolegle z trzema innymi
+tematami tego samego wątku" — ale w całym pliku istnieje TYLKO jeden wpis tego tematu, żadna
+dostawa rozpoznania nigdy nie wróciła pod tą nazwą (zweryfikowane grepem — zero innych trafień).
+Zgubione między wątkami tamtej sesji, nigdy nie podjęte ponownie. Self-correction per CLAUDE.md
+§0b: to jest realna luka procesowa tej sesji, nie fałszywy alarm.
+
+**Rozpoznanie wykonane teraz (orkiestrator, czytanie kodu, bez zmian):**
+- Blokada „już na stole" (`gra/src/ui/diplomacyAudience.ts:1498-1520`, `dealsColumnHtml`) jest
+  JEDNOLITA dla WSZYSTKICH typów umów — `ownOnTable` to `Set` zbudowany z `uiActionId` istniejących
+  wierszy `direction==='own'`; każdy typ (w tym `actionId '14'` = Umowa wymiany surowców) blokuje
+  się sam dla siebie po dodaniu pierwszej instancji.
+- **Dobra wiadomość — model danych JUŻ wspiera wiele wierszy tego samego typu.**
+  `pendingNegotiations` to zwykła tablica wierszy z własnym `id` (nie kluczowana po `uiActionId`)
+  — wszystkie odczyty/wyszukiwania w pliku idą przez `.find(r => r.id === ...)`, nigdy po typie.
+  Bilans PW i przycisk Przyjmij/Odrzuć (`negotiationActionBarHtml`,
+  `balancePanelDataFromRows(st.pendingNegotiations ?? [])`) już dziś agreguje PO CAŁEJ TABLICY,
+  niezależnie od typu — mechanizm „jeden bilans PW — jedno Przyjmij/Odrzuć" (cytat z UI,
+  `da-package-hint`) jest UŻ zaprojektowany pod wiele jednoczesnych umów.
+- **Wniosek: blokerem jest jedna, wąska reguła w jednym miejscu** (`dealsColumnHtml`), nie
+  architektura silnika. Naprawa = pozwolić `actionId '14'` ominąć regułę „locked gdy onTable"
+  (dodać wyjątek analogicznie do już istniejących pól `a.locked`/`a.enabled`/`a.active`).
+- **Do zweryfikowania przez Operatora przy implementacji (nie zakładam):** czy ponowne kliknięcie
+  „Umowa wymiany surowców" gdy jedna już leży na stole poprawnie otwiera PUSTY nowy formularz
+  (nową instancję), a nie przypadkowo edytuje/nadpisuje istniejący wiersz; czy warstwa silnika
+  (`diplomacy-proposals.ts`) przy SKŁADANIU nowej propozycji tego samego `actionId` nie ma gdzieś
+  osobnej reguły "zastąp istniejącą tego typu" (`R-PROPOZYCJA-BRAK-EDYCJI` z tego samego dnia
+  dotykała pokrewnego obszaru — `canCounter`/`direction==='own'` — warto sprawdzić czy nie
+  koliduje).
+
+**Kierunek jasny, dispatch Operatora NASTĘPUJE bez dodatkowego ABC** (to nie nowa decyzja
+projektowa — to dokończenie czegoś, co Maciej już raz zamówił 10 sierpnia; rozpoznanie usunęło
+niepewność co do zakresu).
