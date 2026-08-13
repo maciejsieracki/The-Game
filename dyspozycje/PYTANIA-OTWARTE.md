@@ -17974,3 +17974,39 @@ Inne noty (save-scumming omija limit — pre-istniejąca ogólna słabość, nie
 mirror zamiast realnego kodu, wzorzec już przyjęty w projekcie) — zapisane, niepilne.
 
 **STATUS: ZAMKNIĘTE.**
+
+---
+
+## R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA + P-HANDEL-TECH-CHIP — Evaluator: PASS-WITH-NOTES, runda 2 w toku (2026-08-13)
+
+Zero defektów blokujących, oba tematy działają zgodnie z zamówieniem, wszystkie 41 plików
+`diplomacy-*.cjs` zielone (Operator błędnie policzył 38). Ale znalezione:
+
+**SPROSTOWANIE (Operator podał nieprawdziwą notatkę):** Operator napisał, że odblokowanie
+silnikowe „pozwala też drugiemu darowi (gift) się dołożyć, ale UI-warstwa trzyma dar zablokowany
+jak dawniej". **To fałsz, zweryfikowany niezależnie.** Dar (`actionId '13'`) NIGDY nie był
+blokowany przez UI — wiersz stołu dla daru dostaje `uiActionId='14'` (współdzielony z handlem przez
+`CYW_ACTION_TO_UI_ID`), więc `ownOnTable.has('13')` zawsze było `false`. Jedyną blokadą drugiego
+daru była bramka SILNIKOWA, którą ta naprawa usunęła (bo silnik kluczuje po wspólnym
+`ProposalActionId='handel'`, nie po UI `actionId`). **Skutek: dar da się teraz dołożyć wielokrotnie
+normalną ścieżką UI (kafelek + ikona paska szybkich akcji), nie tylko teoretyczną ścieżką inną niż
+UI, jak sugerował Operator.** Ocena szkodliwości: NISKA — zysk Zaufania z darów ma limit na turę
+(`trustPnGainedThisTurn`), więc rozbicie na N wpisów nie mnoży Zaufania, brak oczywistego
+exploita — ale to NIEZAMÓWIONA zmiana zakresu, wymaga decyzji, nie cichej akceptacji.
+
+**Defekt UX (nieblokujący, do naprawy w rundzie 2):** kafelek „Umowa wymiany surowców" gdy jest już
+wpis na stole nadal renderuje się jak ZABLOKOWANY (przyciemniony, obramowanie kreskowane, tooltip
+„Ta umowa już leży na stole... użyj Przyjmij lub Odrzuć") mimo że jest KLIKALNY i realnie dodaje
+kolejną instancję — bo styl/notka/tooltip w `dealsColumnHtml` nadal czytają surowe `onTable`, nie
+nowe `onTableBlocks`. UI komunikuje odwrotność zamówionej funkcji.
+
+**Luka pokrycia testowego (nieblokująca, ale realna):** własna mutacja Evaluatora — usunięcie OBU
+wywołań predykatu w `diplomacyAudience.ts` (cofnięcie odblokowania w warstwie UI, zostawienie
+samych predykatów nietkniętych) — **NIEZŁAPANA przez żaden z 41 testów**. Test dowodzi, że
+predykat zwraca poprawną wartość, nie że ktokolwiek go faktycznie woła.
+
+**Do decyzji (dar '13'):** czy dar ma zostać wielokrotny (spójnie z handlem, bo dzielą ten sam
+engine actionId, prostsza naprawa) czy wrócić do singletona (wymaga rozróżnienia na poziomie
+payloadu — handel i dar przestają dzielić `allowsMultipleOwnOutgoingNegotiations`). **ABC do
+zadania właścicielowi.** Dispatch rundy 2 dla defektu UX + luki testowej NASTĘPUJE od razu (kierunek
+jednoznaczny, nie wymaga ABC — poprawka dokańcza już zamówioną funkcję).
