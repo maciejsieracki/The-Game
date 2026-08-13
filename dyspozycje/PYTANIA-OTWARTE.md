@@ -18010,3 +18010,46 @@ engine actionId, prostsza naprawa) czy wrócić do singletona (wymaga rozróżni
 payloadu — handel i dar przestają dzielić `allowsMultipleOwnOutgoingNegotiations`). **ABC do
 zadania właścicielowi.** Dispatch rundy 2 dla defektu UX + luki testowej NASTĘPUJE od razu (kierunek
 jednoznaczny, nie wymaga ABC — poprawka dokańcza już zamówioną funkcję).
+
+---
+
+## R-SUROWIEC-CYNA-DO-BRAZU — ECHO doprecyzowane, pełna specyfikacja (2026-08-13)
+
+Maciej odpowiedział na wszystkie 5 pytań projektowych zebranych przy rozpoznaniu jednym, pełnym
+opisem:
+
+1. **Teren złoża:** te same miejsca co miedź i żelazo — Wzgórza/Góry.
+2. **Poziom gate'u:** na poziomie MAPY (jak żelazo — wymóg fizycznego dostępu do złoża/kopalni w
+   terytorium, nie tylko budynku).
+3. **`FAIR_PLAY_DEPOSIT_IDS`:** TAK, złoże cyny wchodzi do mechanizmu sprawiedliwego rozstawiania,
+   ale ma być **5× rzadsze niż złoże miedzi**.
+4. **Pośredni surowiec:** TAK — analogicznie do Rudy/Rudy żelaza, powstaje **Ruda cyny** (nowa
+   **Kopalnia cyny** na złożu, wzorem Kopalni miedzi/żelaza). Cytat: „nie mówimy o cynie, tylko o
+   rudzie cyny — czyli będzie ruda miedzi, ruda żelaza i ruda cyny."
+5. **Relacja do miedzi:** cyna NICZEGO NIE ZASTĘPUJE — jest DODATKOWYM, trzecim wymaganym
+   surowcem obok miedzi i drewna w recepturze Odlewni brązu. Proporcja: **na każde 10 jednostek
+   wyprodukowanego Brązu potrzeba 1 jednostki Cyny** (przykład ilustrujący: „10 miedzi, 10 drewna,
+   1 cyna" — czyli Cyna zużywana 10× wolniej niż Miedź/Drewno w dzisiejszej recepturze 1:1:1).
+
+**⛔ NAZWANE WPROST — kolizja z wcześniejszą decyzją (CLAUDE.md §1a):** to ustalenie **częściowo
+odwraca** `DOSTEP-SUROWCE-Q1` (2026-07-29), która świadomie USUNĘŁA twardy wymóg terenowy z
+dostępu do Brązu (dziś liczy się tylko magazyn > 0 + budynek). Teraz Brąz DOSTAJE z powrotem
+twardy wymóg terenowy — ale tylko przez NOWY surowiec (Cyna), nie przez przywrócenie starego
+wymogu na Miedź. Maciej — masz świadomość, że to częściowe cofnięcie tamtej decyzji dla nowego
+surowca (nie dla istniejącego modelu Miedzi, ten zostaje bez zmian)?
+
+**Zakres implementacji (do dispatchu):**
+1. Nowe złoże `zloze_cyny` w generatorze mapy (Wzgórza/Góry, 5× rzadsze niż miedź) +
+   `FAIR_PLAY_DEPOSIT_IDS`.
+2. Nowy surowiec `Ruda cyny` w `resources.json`.
+3. Nowe ulepszenie terenu „Kopalnia cyny" w `terrain-improvements.json` (wzorem Kopalni
+   miedzi/żelaza — tech unlock, teren Wzgórza/Góry + złoże, produkcja Rudy cyny na mapę
+   terytorialną).
+4. Odlewnia brązu (`converters.ts`, recepta `odlewnia_brazu`) — nowy trzeci input: Ruda cyny w
+   proporcji 1:10 względem dzisiejszego 1:1 Ruda:Drewno (czyli throughput ograniczony też przez
+   dostępność Cyny, znacznie rzadszej).
+5. Sprawdzić kaskadę do Odlewni żelaza/Wielkiej odlewni (te budynki nadal produkują Brąz jako
+   jeden z równoległych konwerterów — muszą dziedziczyć tę samą nową recepturę 3-składnikową).
+
+**Dispatch rozpoznania technicznego (bez kodowania) NASTĘPUJE** — żeby ustalić dokładne miejsca w
+kodzie przed implementacją (wzorem poprzednich tematów tej sesji), po czym dispatch Operatora.
