@@ -747,7 +747,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
-  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront,
+  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
@@ -3373,14 +3373,41 @@ async function boot(): Promise<void> {
       console.log(`[Rekrutacja] ${city.name}: anulowano — zwrot ${koszt} ¤ + MP`);
     }
 
+    /**
+     * P-SANITIZE-POSTEP-TRANSFER-Q1=B (Maciej 2026-08-13): gdy filtr usuwa item
+     * będący FRONTEM kolejki (np. Cud, którego rywal właśnie ukończył --
+     * wonderGateOk zwraca false), jego zbankowany aktywny `postep` NIE zostaje
+     * już przypadkowo przy nowym, niepowiązanym froncie (dokładnie ten
+     * niezmiennik "postęp nigdy nie przeskakuje między różnymi itemami"
+     * ustabilizowała P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B) -- zamiast tego
+     * wraca jako `forfeitedPostep` z `filterQueue()` (production.ts) i jest
+     * dopisywany do CENTRALNEJ puli Pracy imperium (ownerPracaPool/
+     * setOwnerPracaPool -- ta sama pula co "duża liczba" na chipie 🔨 w HUD,
+     * patrz buildTopBarPracaDetailCard w ui/cityPanel.ts). Jeśli front NIE
+     * jest usuwany (filtr trafił coś w środku kolejki) -- zachowanie bez
+     * zmian, nic do transferu.
+     * / EN: when the filter removes the item that IS the queue's front (e.g.
+     * a Wonder a rival just finished -- wonderGateOk returns false), its
+     * banked active `postep` no longer accidentally stays with the new,
+     * unrelated front (exactly the "progress never jumps between different
+     * items" invariant P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B established) --
+     * instead it comes back as `forfeitedPostep` from `filterQueue()`
+     * (production.ts) and is credited to the CENTRAL empire Praca pool
+     * (ownerPracaPool/setOwnerPracaPool -- the same pool as the "big number"
+     * on the 🔨 HUD chip, see buildTopBarPracaDetailCard in ui/cityPanel.ts).
+     * If the front is NOT removed (the filter hit something mid-queue) --
+     * unchanged behaviour, nothing to transfer.
+     */
     function sanitizeProductionQueue(ownerId: number, prod: CityProduction): CityProduction {
-      const kolejka = prod.kolejka.filter((item) => {
+      const { prod: sanitized, forfeitedPostep } = filterQueue(prod, (item) => {
         const wid = parseWonderProdId(item.id);
         if (!wid) return true;
         return wonderGateOk(ownerId, wid);
       });
-      if (kolejka.length === prod.kolejka.length) return prod;
-      return { ...prod, kolejka };
+      if (forfeitedPostep > 0) {
+        setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + forfeitedPostep);
+      }
+      return sanitized;
     }
 
     function setCityProduction(cityId: string, prod: CityProduction): void {
