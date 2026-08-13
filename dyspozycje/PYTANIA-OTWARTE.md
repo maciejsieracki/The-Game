@@ -17615,3 +17615,40 @@ gry, populacja=1).
 
 **Nie kodować — dispatch rozpoznania technicznego (bez zmian w kodzie) w toku, żeby ustalić
 realną przyczynę przed ABC.**
+
+---
+
+## P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT — rozpoznanie dostarczone, przyczyna ustalona, NIE regresja (2026-08-13)
+
+**Przyczyna (obu objawów — jedna wspólna):** system auto-korekty Racji waliduje bilans żywności
+RAZ, w jednym momencie przetwarzania tury (`autoBalanceRationsToSolvency`/`autoRaiseRationsForGrowth`
+→ clamp Q3=A → `advanceEmpireFood`). Wzrost populacji nalicza się DOPIERO POTEM, w tej samej turze
+(`applyPostCentralPopulationGrowth`), i NIC nie wyzwala ponownej walidacji poziomu Racji po tym
+wzroście. Koszt Racji skaluje się liniowo z populacją (`populacja × poziom × 2`), a populacja rośnie
+niemal zawsze przy Ludności 1 (bonus „Małe miasto" +5 p.p. niezależny od poziomu Racji) — więc
+poziom uznany za bezpieczny w turze N staje się deficytowy w turze N+1, mimo że gracz nic nie
+zmienił. Stąd: (1) Bilans ujemny mimo Auto Wyżywienie WŁ — to NIE wyczerpanie opcji (przy poziomie
+minimalnym koszt zawsze=0, więc bezpieczny poziom ZAWSZE istnieje), tylko nieaktualna walidacja
+względem AKTUALNEJ populacji; (2) ręczna korekta nie utrzymuje się, bo każdy koniec tury z realnym
+wzrostem ludności unieważnia poprzednie ustawienie od nowa.
+
+**Status: NIE regresja naprawy `R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY` z 2026-08-10 (`3f76022d`)**
+— ten fix nadal działa poprawnie i adresował węższy, inny problem (przestrzelenie kroku w GÓRĘ
+wewnątrz jednej walidacji). To jest **nawrót/nigdy-nie-naprawiona część** tego samego wątku z tego
+dnia: rozpoznanie #3 (linia 10224-10259) już zidentyfikowało dokładnie ten mechanizm jako punkty
+„A2" (założenie miasta nie wyzwala live-recalc) i „A3" (wzrost populacji nie wyzwala live-recalc),
+wyraźnie oznaczone jako NIEZALEŻNE od tego, co faktycznie naprawiono (dispatch #4 objął tylko węższy
+problem). A2/A3 zostały zarejestrowane i porzucone, gdy uwaga sesji przeszła dalej — nigdy nie
+trafiły do osobnego dispatchu naprawy. To dokładnie to, o co Maciej prosił w ECHO A dla
+`P-AUTO-WYZYWIENIE-BUG1-MECHANIZM-RAZ-NA-TURE` (linia 9369: „przeliczać na żywo przy KAŻDEJ zmianie
+wpływającej na produkcję żywności") — implementacja tego dnia pokryła tylko dyskretne zdarzenia UI
+(klik na polu, ukończenie budynku), NIE wzrost populacji ani założenie miasta.
+
+**Drugorzędna, niepotwierdzona hipoteza** (do weryfikacji przy implementacji, nie ustalona
+przyczyna): możliwy dodatkowy rozjazd panel↔silnik w `cityPanel.ts` przy odczycie „bezpiecznego"
+poziomu na żywo — do sprawdzenia w praktyce, nie zakładać.
+
+**ABC zadane Maciejowi w czacie** (3 kierunki: A — dodać wzrost populacji + założenie miasta jako
+trigger `applyLiveSafeRationForCity`, zamyka A2+A3 zgodnie z pierwotnym poleceniem; B — uwzględnić
+koszt armii w kryterium „bezpieczny poziom", dziś całkowicie pomijany przez funkcje liczące
+wypłacalność; C — bufor bezpieczeństwa zamiast celowania w Bilans=0). Czeka na odpowiedź.
