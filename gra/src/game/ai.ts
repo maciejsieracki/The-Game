@@ -2761,6 +2761,39 @@ function decideDefensiveCopyTurn(
   let reinforcementsSentThisTurn = 0;
   let offensiveMovesThisTurn = 0;
 
+  // P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (Maciej 2026-08-13): Miasta-Państwa dziś w ogóle nie
+  // maszerują po chatki ze skarbami — ani skautów (nie mają ich w standardowym składzie),
+  // ani zwykłych jednostek wojskowych. Jego słowa: „Nawet na swoim terytorium to jest
+  // minimum, co powinni zrobić. Nie muszą tego mieć skautów, mogą to robić jednostkami
+  // wojskowymi." Zakres CELOWO węższy niż w decideAITurn (krok 4d, który biegnie do
+  // NAJBLIŻSZEJ wioski bez względu na terytorium) — tu filtrujemy do chatek WE WŁASNYM
+  // terytorium MP (isHexWithinAnyCityReach, ten sam promień co withinTerritory przy
+  // zakładaniu miast), bo to dosłowny, węższy zakres ze zgłoszenia ("minimum"), nie pełny
+  // parytet ze zwykłym AI. Liczone leniwie i raz na turę (wzorem getNeutralVillages w
+  // decideAITurn), nie per-jednostka.
+  // / EN: city-states currently never march toward goodie huts — not even with plain
+  // military units (they have no scouts in their standard roster). Scope is DELIBERATELY
+  // narrower than decideAITurn's step 4d (which races to the nearest hut regardless of
+  // territory) — here we filter to huts WITHIN OWN city-state territory
+  // (isHexWithinAnyCityReach, same radius as the withinTerritory city-founding rule),
+  // matching the owner's literal "minimum" framing rather than full parity with normal AI.
+  // Computed lazily once per turn (mirrors getNeutralVillages in decideAITurn), not per unit.
+  let neutralVillagesInTerritoryCache: { q: number; r: number }[] | null = null;
+  const getNeutralVillagesInTerritory = (): { q: number; r: number }[] => {
+    if (neutralVillagesInTerritoryCache === null) {
+      neutralVillagesInTerritoryCache = [];
+      for (const key of Object.keys(map.hexes)) {
+        const hex = map.hexes[key];
+        if (hex === undefined) continue;
+        if (!hex.wioska.istnieje) continue;
+        if (hex.wlasciciel !== null) continue;
+        if (!isHexWithinAnyCityReach(hex.coords.q, hex.coords.r, myCities)) continue;
+        neutralVillagesInTerritoryCache.push(hex.coords);
+      }
+    }
+    return neutralVillagesInTerritoryCache;
+  };
+
   const enemyCitiesAtWar = cities.filter(
     c => c.ownerId !== playerId
       && aiCanEngageOwner(opts, c.ownerId)
@@ -2894,6 +2927,23 @@ function decideDefensiveCopyTurn(
         if (offStep !== null) {
           commands.push({ type: 'move', unitId: unit.id, toQ: offStep.q, toR: offStep.r });
           offensiveMovesThisTurn++;
+          continue;
+        }
+      }
+    }
+
+    // CHATKI: brak pilniejszego zadania powyżej (atak/riposta domowa/posiłek dla siostry/
+    // marsz ofensywny) — jednostka MP idzie po najbliższą wolną chatkę WE WŁASNYM terytorium,
+    // zanim wróci pod miasto (P-MP-CHATKI-SKARBOW-NIE-ZBIERANE, patrz komentarz przy
+    // getNeutralVillagesInTerritory wyżej). / EN: no more urgent task above — the city-state
+    // unit marches toward the nearest free hut WITHIN OWN territory before falling back to
+    // patrol-near-home (see comment at getNeutralVillagesInTerritory above).
+    {
+      const villageTarget = findNearestVillage(unit, getNeutralVillagesInTerritory());
+      if (villageTarget !== null) {
+        const step = firstStep(unit, map, villageTarget.q, villageTarget.r, units);
+        if (step !== null) {
+          commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
           continue;
         }
       }
