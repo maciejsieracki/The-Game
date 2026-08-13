@@ -20054,3 +20054,44 @@ równolegle scalonym tematem Dróg w tym samym `main.ts` (`road-connectivity-tes
 scaleniu obu).
 
 **STATUS: dispatch Evaluatora.**
+
+## R-AUTO-PRACA-BUDZET-PROCENT (2bf4318a) — Evaluator: WERDYKT FAIL, dispatch runda 2 (2026-08-14)
+
+**ZNALEZISKO BLOKUJĄCE:** procent liczony jest PER MIASTO od PEŁNEJ puli imperium, nie jako
+JEDEN wspólny budżet imperium. `cityBudget = pct% × pełnaPula`, osobno dla KAŻDEGO miasta —
+sumarycznie automat może wydać N×pct% puli. Zmierzone: przy domyślnych 33% i 4 miastach automat
+zabiera 98,7% puli (2960 z 3000), graczowi zostaje 40 — wprost przeciwnie do słów właściciela
+"ile ma być zostawione dla gracza". Górna część suwaka jest martwa przy N≥3 miast (nasycenie
+przy 33% już dla 4 miast, przy 15% dla 10 miast) — dokładnie tam, gdzie właściciel chciał
+kontroli na późnym etapie gry ("trzy usprawnienia to za mało"). Flat-rezerwa 30 zostaje jedynym
+realnym hamulcem. Komentarze w kodzie ("ten % to sposób gracza na «zostaw mi część Pracy»")
+są FAŁSZYWE dla N≥2 miast — to nie brak funkcji, to funkcja opisana inaczej niż działa.
+
+**Test 12 utrwala wadę jako poprawność** — asercjonuje wprost że przy 2 miastach × 50% każde
+dostaje 50% PEŁNEJ puli (razem 100%). Mutacja Evaluatora (budżet wspólny dla imperium — czyli
+to, o co prosił właściciel) WYWALA test 12, mimo że daje dokładnie deklarowaną gwarancję.
+
+**Zweryfikowane POZYTYWNIE (uczciwa robota Operatora, nie do zmiany w rundzie 2):** semantyka
+"koniec tury nie przyrost" poprawna (wywołanie po całej ekonomii tury); AI `maxItemsPerCity=1`
+to prawdziwe ujawnienie dawnego niejawnego zachowania (`git log -S"maxPerCity"` potwierdza AI
+nigdy tego nie przekazywało); wszystkie 6 bramek zgodne co do liczby; save/load OK; wiring
+suwaka dobry (input=podgląd, change=commit); naprawia PRE-ISTNIEJĄCĄ czerwoną bramkę (14/1→21/0).
+
+**Dodatkowe luki (do domknięcia w tej samej rundzie, nie osobno):** flat-rezerwa nietestowana
+(mutacja reserve=0 → 21/21 nadal zielone, mimo nierównoważnej zmiany zachowania przy małych
+pulach); domyślne 33% nieprzypięte (test porównuje stałą z samą sobą, tautologia); opis commita
+mówi "na START tury" a kod/komentarze poprawnie "na KONIEC tury" — trzy różne sformułowania
+tego samego w trzech miejscach, ujednolicić na "koniec tury".
+
+**DECYZJA (bez nowego ABC — kierunek jednoznaczny z już ustalonych słów właściciela):** budżet
+ma być JEDEN, wspólny dla całego imperium (dosłownie "% całego budżetu... reszta zostaje dla
+gracza" z oryginalnego zgłoszenia), nie duplikowany per miasto. To nie jest nowa decyzja
+wymagająca ABC — to korekta implementacji do już wyrażonego zamiaru, analogicznie do innych
+napraw tej nocy bez blokowania na odpowiedzi właściciela.
+
+**STATUS: dispatch runda 2 — przerobić na jeden wspólny budżet imperium (suma wydatków wszystkich
+miast ograniczona do pct%×pula, nie każde miasto osobno), przerobić test 12 zgodnie z nową
+semantyką (zachowując niezależność od kolejności miast — to jedyne co dziś słusznie chroni),
+dopiąć asercję flat-rezerwy (reserve=0 musi łapać), przypiąć literał 33% dla wartości domyślnej,
+ujednolicić opis na "koniec tury" wszędzie, usunąć/poprawić komentarz "zostaw mi część Pracy"
+żeby odpowiadał rzeczywistemu zachowaniu.
