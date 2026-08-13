@@ -19140,3 +19140,29 @@ Spichlerz centralny jako „Wojsko −20") i czy TEN mechanizm (nie rekrutacja/u
 został przypadkiem przeskalowany.
 
 **STATUS: dispatch agenta rozpoznawczego (Sonnet 5) w toku, bez zmiany kodu.**
+
+## P-WOJSKO-ZUZYCIE-ZYWNOSCI-PO-SKALI-5X — Rozpoznanie: koszt żywności armii NIE wzrósł, przyczyna inna (2026-08-13)
+
+Recon (`a1ead951c6c0710ea`) potwierdził przez `git diff` całego zakresu 3 rund
+`R-EKONOMIA-SUROWCE-SKALA-5X-Q1`: pole `żywność/turę` w `units.json` ma **zero zmienionych
+linii** (74 jednostki, wszystkie identyczne PRZED/PO). Mnożnik ×4 w formule kosztu żywności
+armii (`unitFoodPerTurn()`, `economy-upkeep.ts:1035`, stała `R_STAWKI_FALA1_FALA2_MULT` w
+`r-stawki-strojenie.ts:12`) pochodzi z decyzji sprzed tygodnia (`R-STAWKI-STROJENIE`
+2026-08-03/`R-NADMIAR-POOLS FALA2` 2026-08-04), całkowicie niezwiązanej z dzisiejszą skalą ×5.
+`terrain-yields.json` pole Żywność i `econ-params.json` (`zywnosc_jednostka_ruch`,
+`zywnosc_mnoznik_*`, `zywnosc_zuzytka_populacja`) — zero zmian, zgodnie z literalnym zakresem
+decyzji (punkt 2 wymienia wyłącznie surowce fizyczne: Drewno/Kamień/Glina/Miedź/Żelazo/Sól, bez
+Żywności; punkt 4 "utrzymanie surowcowe jednostek" dotyczy pola `Utrzymanie surowiec (ilość)`
+czyli fizycznych surowców typu Drewno, potwierdzone ×5 — NIE pola `żywność/turę`, które są w
+danych i kodzie jednoznacznie rozdzielone).
+
+**Wniosek: to NIE jest błąd zakresu wdrożenia ×5 — implementacja jest zgodna z tekstem decyzji.**
+Realny, ale ODDZIELNY problem: cała reszta ekonomii (produkcja fizycznych surowców, koszty
+budowy/rekrutacji, magazyny) urosła ×5, a cały łańcuch żywnościowy (produkcja terenowa,
+konsumpcja obywateli, konsumpcja armii) pozostał na starej skali — na tle 5× większej reszty
+gospodarki niezmieniony koszt "Wojsko" rzuca się w oczy i pogłębia odczuwalny niedobór żywności.
+To pytanie PRODUKTOWE (czy żywność też powinna być ×5 — świadomie pominięte przez właściciela w
+oryginalnej decyzji, nie oczywiste przeoczenie), nie regresja kodu do naprawienia bez decyzji.
+
+**STATUS: zamknięte jako rozpoznanie — zgłoszone właścicielowi wprost, czeka na jego decyzję czy
+skalować też łańcuch żywnościowy ×5, czy zostawić jak jest.**
