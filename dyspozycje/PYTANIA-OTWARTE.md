@@ -18674,3 +18674,14 @@ religia, zdrowie, szczęście, prawo i inne aspekty wpływające na mieszkańcó
 proponowanej zawartości obu (co dokładnie pokazywać w Mieście, co w Obywatelach).** Lista
 dostarczona w czacie, czeka na akceptację/korektę Macieja przed dalszą pracą nad tymi dwiema
 zakładkami. Praca nad zakładką Skarbiec (Q1) toczy się niezależnie i równolegle.
+
+## R-DESIGN-11-ZAKLADEK — lista zawartości Miasto/Obywatele ZATWIERDZONA (Maciej, 2026-08-13)
+
+Maciej zatwierdził obie listy z jedną korektą: **w zakładce Miasto NIE pokazywać kosztu
+utrzymania jednostek** — utrzymanie wojska jest kosztem całej cywilizacji (schodzi z głównego
+skarbca/magazynu imperium), nie kosztem per-miasto. Reszta listy Miasto zatwierdzona bez zmian.
+Zakładka Obywatele zatwierdzona w całości, bez korekt — „jeżeli w przyszłości będzie czegoś
+brakować to zawsze jeszcze dopowiem."
+
+**STATUS: listy zawartości gotowe do użycia, gdy rollout dotrze do tych dwóch zakładek** (po
+zakładce Skarbiec, zgodnie z kolejnością „zrób jeden, poczekaj na potwierdzenie, potem kolejne").
