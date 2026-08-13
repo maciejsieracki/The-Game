@@ -79,32 +79,35 @@ function deepEq(a, b, msg) {
 // ===========================================================================
 console.log('\n-- A. citizenUpkeepDisplayLines -- łączne zużycie miasta (populacja × stawka) --');
 {
-  eq(M.CITIZEN_UPKEEP_RATE_PER_CITIZEN, 0.2, 'kanon: stawka = 0,2 sztuki surowca / obywatela / turę (ta sama co computeCitizenResourceDrain, Maciej 2026-08-12)');
+  eq(M.CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1.0, 'kanon: stawka = 1,0 sztuka surowca / obywatela / turę (ta sama co computeCitizenResourceDrain, PRZYWRÓCONA Maciej 2026-08-13, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
 
   const cov = { available: ['drewno', 'glina'], missing: ['kamien'] };
 
-  // Math.floor(20 * 0.2) = 4 -- wybrane tak, by dawało niezerowy, łatwy do ręcznej weryfikacji wynik.
+  // Math.floor(20 * 1,0) = 20 -- wybrane tak, by dawało niezerowy, łatwy do ręcznej weryfikacji wynik.
   const pop20 = M.citizenUpkeepDisplayLines(cov, 20);
   deepEq(
     pop20,
     [
-      { key: 'drewno', value: 4, available: true },
-      { key: 'glina', value: 4, available: true },
-      { key: 'kamien', value: -4, available: false },
+      { key: 'drewno', value: 20, available: true },
+      { key: 'glina', value: 20, available: true },
+      { key: 'kamien', value: -20, available: false },
     ],
-    'populacja=20: wartość = ±Math.floor(populacja × 0,2) = ±4 dla KAŻDEGO surowca, kolejność dostępne->brakujące',
+    'populacja=20: wartość = ±Math.floor(populacja × 1,0) = ±20 dla KAŻDEGO surowca, kolejność dostępne->brakujące',
   );
 
-  // Math.floor(35 * 0.2) = 7 -- inna populacja, żeby dowieść skalowania (nie stała).
+  // Math.floor(35 * 1,0) = 35 -- inna populacja, żeby dowieść skalowania (nie stała).
   const pop35 = M.citizenUpkeepDisplayLines(cov, 35);
-  eq(pop35[0].value, 7, 'populacja=35: wartość dostępnego surowca = 7, NIE stały +1 (regresja do stawki per capita)');
-  eq(pop35[2].value, -7, 'populacja=35: wartość brakującego surowca = -7, NIE stały -1');
-  assert(pop35[0].value !== pop20[0].value, 'wartość SKALUJE SIĘ z populacją miasta (7 ≠ 4) -- dowód że to nie jest stała kary Szczęścia');
+  eq(pop35[0].value, 35, 'populacja=35: wartość dostępnego surowca = 35, NIE stały +1 (regresja do stawki per capita)');
+  eq(pop35[2].value, -35, 'populacja=35: wartość brakującego surowca = -35, NIE stały -1');
+  assert(pop35[0].value !== pop20[0].value, 'wartość SKALUJE SIĘ z populacją miasta (35 ≠ 20) -- dowód że to nie jest stała kary Szczęścia');
 
-  // Math.floor(1 * 0.2) = 0 -- przy tak niskiej stawce mała populacja daje zero (zamierzone, patrz
-  // JSDoc modułu citizen-resource-upkeep.ts, ta sama granulacja co computeCitizenResourceDrain).
+  // R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): przy stawce 0,2 (2026-08-12) mała
+  // populacja floorowała do zera -- DOKŁADNIE ten problem usuwa powrót do stawki 1,0 (patrz
+  // JSDoc modułu citizen-resource-upkeep.ts). Test odwrócony: populacja=1 daje TERAZ
+  // niezerowe zapotrzebowanie (Math.floor(1*1,0)=1), nie zero -- dowód że naprawa granulacji
+  // faktycznie działa, nie tylko dokumentacja.
   const pop1 = M.citizenUpkeepDisplayLines(cov, 1);
-  eq(pop1[0].value, 0, 'populacja=1: Math.floor(1*0,2)=0 -- przy stawce 0,2 mała populacja daje zero zapotrzebowania (zamierzone, nie luka granulacji)');
+  eq(pop1[0].value, 1, 'populacja=1: Math.floor(1*1,0)=1 -- stawka 1,0 NIE floruje do zera dla populacji ≥1 (naprawiony problem granulacji z ery stawki 0,2)');
 
   const pop0 = M.citizenUpkeepDisplayLines(cov, 0);
   eq(pop0[0].value, 0, 'populacja=0: zero zapotrzebowania -> wartość 0 (nie crash, nie stała ±1)');
@@ -115,9 +118,9 @@ console.log('\n-- A. citizenUpkeepDisplayLines -- łączne zużycie miasta (popu
   const popNaN = M.citizenUpkeepDisplayLines(cov, NaN);
   eq(popNaN[0].value, 0, 'populacja NaN traktowana jak 0');
 
-  // Math.floor(34.9) = 34 (obcięcie populacji), potem Math.floor(34 * 0.2) = 6.
+  // Math.floor(34.9) = 34 (obcięcie populacji), potem Math.floor(34 * 1,0) = 34.
   const popFrac = M.citizenUpkeepDisplayLines(cov, 34.9);
-  eq(popFrac[0].value, 6, 'populacja ułamkowa ścinana w dół (Math.floor) PRZED przemnożeniem przez stawkę, spójnie z computeCitizenResourceDrain');
+  eq(popFrac[0].value, 34, 'populacja ułamkowa ścinana w dół (Math.floor) PRZED przemnożeniem przez stawkę, spójnie z computeCitizenResourceDrain');
 
   eq(M.citizenUpkeepDisplayLines({ available: [], missing: [] }, 10).length, 0, 'brak wymaganych surowców -> pusta lista wierszy');
 }
@@ -271,8 +274,12 @@ console.log('\n-- C-H. cityPanel.ts (tekst): format blokowy + wiring populacji/%
   // -------------------------------------------------------------------------
   // I. FIX (Evaluator FAIL, 2026-08-12): -0 w gałęzi "missing" renderował się jako zielone "+0"
   //    (dostępny) zamiast czerwone "brakujący", bo appendBreakdownLines klasyfikował status
-  //    wyłącznie po znaku value (`value >= 0`), a `-0 >= 0` jest w JS PRAWDĄ. Przy populacji
-  //    miasta 1-4 (Math.floor(pop*0.2)===0) to normalna sytuacja na starcie KAŻDEJ rozgrywki.
+  //    wyłącznie po znaku value (`value >= 0`), a `-0 >= 0` jest w JS PRAWDĄ. Przy stawce
+  //    0,2 (stan na 2026-08-12) populacja miasta 1-4 (Math.floor(pop*0,2)===0) była normalną
+  //    sytuacją na starcie KAŻDEJ rozgrywki; PO R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (2026-08-13,
+  //    stawka wróciła do 1,0) ten konkretny wyzwalacz już nie zachodzi dla populacji ≥1 --
+  //    -0 nadal MOŻE wystąpić przy populacji dokładnie 0 (floor(0×1,0)=0), więc test poniżej
+  //    (wejścia syntetyczne, nie liczone z realnej populacji) zostaje w pełni zasadny.
   //    Naprawa: BreakdownLine.neg (opcjonalny), appendCitizenUpkeepBlock przekazuje
   //    neg: !l.available jawnie zamiast polegać na znaku.
   // -------------------------------------------------------------------------
@@ -307,8 +314,9 @@ console.log('\n-- C-H. cityPanel.ts (tekst): format blokowy + wiring populacji/%
   // -------------------------------------------------------------------------
   // I9-I12 (Evaluator, 2026-08-12): kolor (I1-I8 wyżej) naprawiony wcześniej (3b851610),
   // ale SAM TEKST liczby w czerwonym wierszu nadal czytał się "+0" dla -0 -- `l.value >= 0`
-  // jest w JS PRAWDĄ dla -0, więc znak "+" trafiał do wiersza status "brak" (populacja
-  // miasta 1-4, `Math.floor(pop*0,2)===0`). Naprawa: `showAsZero = isNeg &&
+  // jest w JS PRAWDĄ dla -0, więc znak "+" trafiał do wiersza status "brak" (przy stawce 0,2
+  // ówczesną normalną sytuacją była populacja miasta 1-4, `Math.floor(pop*0,2)===0`; po
+  // R-EKONOMIA-SUROWCE-SKALA-5X-Q1 2026-08-13 -- populacja dokładnie 0). Naprawa: `showAsZero = isNeg &&
   // Math.abs(l.value) === 0` -- gdy true, tekst to "0" bez znaku (ani + ani -0); dla
   // zwykłych wartości (dodatnich i ujemnych różnych od zera) formuła nie zmienia wyniku.
   // Dowód wykonaniem: wycięta REALNA formuła tekstu z appendBreakdownLines, uruchomiona

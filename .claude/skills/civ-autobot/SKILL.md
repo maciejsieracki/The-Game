@@ -87,6 +87,22 @@ proporcji i czytelności bryły z kąta kamery gry. **Fable 5 zablokowany** —
 `R-FABLE-RETENCJA-NASTER = B`: wymaga 30-dniowej retencji, wymagania NASTER nieustalone;
 zgoda na model ≠ potwierdzenie retencji, potrzebne oba.
 
+**⛔ DOMYŚLNIE ZAWSZE 1x Evaluator, Opus 5 — `R-EVALUATOR-3X-ZGODA-Q1` (Maciej 2026-08-13,
+koryguje `R-EVALUATOR-3X-MODEL-KOSZT-Q1` z tego samego dnia).** Wzorzec 3x niezależny
+Evaluator NIE jest już progiem automatycznym (nawet dla combat-adjacent/P0) — kosztuje za
+dużo tokenów przy rutynowym stosowaniu. Jego słowa: „nie przepalajmy niepotrzebnie
+tokenów... jeżeli miałbyś odpalać kiedykolwiek 3 ewaluatory to po prostu napisz do mnie o
+zgodę. To w wyjątkowych tylko sytuacjach. Na ten moment przyjmujemy jeden ewaluator opus
+5." **Zanim dispatchujesz 3x — zapytaj właściciela wprost, opisz dlaczego temat jest
+wyjątkowo ciężki/wysokiego ryzyka, i czekaj na jego zgodę.** Nie zgaduj i nie dispatchuj
+z góry na podstawie samej kategorii tematu (combat-adjacent itd.) — to już nie wystarcza
+jako uzasadnienie bez pytania.
+
+**Gdy zgoda na 3x padnie** — przydział modeli: Evaluator #1 i #2 na Sonnet 5, Evaluator #3
+(ostatni) na Opus 5. Powód: koszt/limit trzech Opus 5 naraz jest wysoki. Nie zmniejsza to
+liczby Evaluatorów ani rygoru — trzy niezależne perspektywy zostają, zmienia się tylko
+model dwóch pierwszych.
+
 ## 2. NUMER → ABC → COMMIT → DEPLOY
 
 Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
@@ -213,6 +229,39 @@ dostępny, więc „nie było kogo zapytać" nigdy nie jest tu usprawiedliwienie
 **Self-check przed „gotowe":** był Operator? był Evaluator? był final? playbook
 i guardrails uszanowane? Choć jedno „nie" → nie zamykaj paczki.
 
+**Wzorzec domykania tautologii testowej: extract-to-pure-function.** Powtarzający się
+wzorzec ucieczki mutacyjnej (2026-08-12, ≥4 niezależne przypadki: `shouldAllowBarbCityCapture`,
+`canBarbarianWalkIntoEmptyCity`, `splitCampMoveCost`, `appendBreakdownLines`) — logika
+żyje INLINE w dużej, niewyeksportowanej funkcji (typowo `main.ts`), a test odtwarza tę samą
+formułę jako WŁASNĄ KOPIĘ zamiast importować prawdziwy kod. Mutacja psująca produkcyjną
+logikę przechodzi bramkę, bo test i tak sprawdza tylko swoją kopię. Naprawa, która za
+każdym razem faktycznie zamyka lukę: wyciągnąć sporny fragment do eksportowanej, CZYSTEJ
+funkcji w module domenowym, zaimportować JĄ SAMĄ i w miejscu użycia (`main.ts`), i w teście
+— zero duplikacji formuły. Evaluator sprawdzający naprawę tego typu: potwierdź że test
+faktycznie importuje tę samą jednostkę modułu co produkcja (nie odtwarza formuły), inaczej
+naprawa tylko przenosi problem.
+
+**Audyt „nigdy-nie-ewaluowanych" commitów jako cykliczna higiena, nie jednorazowa akcja.**
+Systematyczny przegląd historii gałęzi (`git log --oneline <punkt-odniesienia>..HEAD`,
+odfiltrowane wpisy czysto dokumentacyjne, dla KAŻDEGO pozostałego commita grep w rejestrze
+czy PADA słowo „Evaluator" gdziekolwiek w jego kontekście — nie tylko czy ma własny
+nagłówek „SCALONE") wielokrotnie znajdował realne, wysyłalne błędy w kodzie już
+zmergowanym i grywalnym (2026-08-12: 12/12 nigdy-nie-ewaluowanych commitów dostało
+recenzję, większość miała ≥1 realne znalezisko, w tym błąd gubienia danych i błąd
+bramki trudności niechroniony testem). Wniosek: „SCALONE" bez wzmianki o Evaluatorze
+w rejestrze nie jest dowodem jakości — jest dowodem, że nikt jeszcze nie sprawdził.
+Powtarzaj ten audyt cyklicznie (np. przy każdym większym domknięciu tury), nie tylko po
+znalezieniu pierwszej luki.
+
+**Kontrola spójności MIĘDZY tematami tej samej sesji, nie tylko poprawności wewnętrznej.**
+Evaluator sprawdzający temat X powinien sprawdzić, czy decyzja podjęta w INNYM, niedawnym
+temacie tej samej sesji nie została naruszona. Realny przypadek (2026-08-12): naprawa
+etykiety „zapotrzebowanie" vs „zużycie" w panelu Surowców (`a79bae29`→`9c0cd04d`) nie
+została propagowana do analogicznej kolumny w Tabeli Miast (`89c16ec1`), która nadal
+mówiła „utrzymanie" dla tej samej, niezaklamrowanej wielkości — dwa panele tej samej gry
+przeczyły sobie, jeden ekran od siebie. Złapane dopiero, bo Evaluator drugiego tematu
+świadomie sprawdził zgodność z wcześniejszą decyzją, nie tylko wewnętrzną poprawność.
+
 **Twarde progi liczbowe guardrails** (`R-PROC-AUTOBOT` §Spec v1 · `dyspozycje/autobot/src/guardrails.ts`,
 `src/feature-pruning.ts`):
 
@@ -286,6 +335,25 @@ scalenie → zgoda właściciela przy kolizji z cudzą pracą → bramki → bui
   wcześniejszej notyfikacji `completed`.
 - **Przed KAŻDĄ dłuższą serią zmian** (pracą dłuższą niż jedna operacja, gdy inna sesja może w tym czasie commitować) — **wpis-blokada w `KANAL-PRACA.md` przed startem, a po zakończeniu wpis `ODBLOKOWANE`** (`C-007`). Obowiązuje **niezależnie od izolacji** — worktree chroni przed konfliktem plików, nie przed tym, że druga sesja robi równolegle to samo zadanie. Gdy izolacja jest niemożliwa, blokada wymienia dodatkowo REZERWOWANE PLIKI, a commitujesz **wyłącznie pliki zamkniętego zlecenia**.
 - **Nigdy `git add -A`** (`C-008`, recydywa czterokrotna) · commituj każdą ukończoną grupę natychmiast (`C-003`) · nie raportuj wyniku subagenta bez własnej weryfikacji na dysku (`C-006`) · status pracy w tle oceniaj po znacznikach czasu plików, nie po etykiecie systemu (`C-005`).
+- **Katalog `scratchpad` współdzielony między RÓWNOLEGŁYMI subagentami koliduje na
+  generycznych nazwach plików** (potwierdzone ≥6× niezależnie 2026-08-12/13, m.in.
+  `eval-harness.cjs` nadpisany między Evaluatorami dwóch różnych tematów w tej samej
+  turze). To osobny, SZERSZY mechanizm niż znana kolizja worktree (`KROK 0` wyżej) —
+  dotyczy nawet agentów pracujących w poprawnych, odrębnych worktree. Zweryfikowany
+  skutek dotychczas nieszkodliwy (nadpisania łapane przez agentów, powtarzali pomiar
+  pod unikalną nazwą), ale przyczyna nieustalona. Mitygacja przy zlecaniu: każ
+  subagentowi nazywać pliki robocze w scratchpadzie z prefiksem ID tematu/commita
+  (np. `scratchpad/<ID-tematu>/harness.cjs`), nie generyczną nazwą.
+- **`git add`+`git commit` dla DWÓCH niepowiązanych zmian jako dwa równoległe wywołania
+  narzędzia w tej samej turze = race condition.** Zweryfikowany realny przypadek
+  2026-08-12: dwa niezależne scalenia (`git add <pliki A>` + `git commit`, `git add
+  <pliki B>` + `git commit`) wysłane jako dwa równoległe tool-calle w jednej wiadomości
+  — oba zestawy plików wylądowały w JEDNYM commicie (ten, którego `git commit` wykonał
+  się jako drugi, po tym jak oba `git add` już się zakończyły), z komunikatem opisującym
+  tylko jedną z dwóch zmian. Zawartość była kompletna i poprawna (zero utraty pracy),
+  ale historia commitów wprowadzała w błąd. Zasada: `git add`+`git commit` dla
+  niepowiązanych zmian ZAWSZE sekwencyjnie, nigdy jako równoległe wywołania w jednej
+  turze — nawet gdy oba zestawy plików są rozłączne.
 
 ## 6. Twarde zakazy (złamanie = utrata pracy)
 

@@ -1,3 +1,13 @@
+## [10:44 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 273 md5 `03a2f038`
+
+ROBOCZA md5 `03a2f038accd7160dfe91ae6b7127b0f` · stempel `ROBOCZA · 588e752e · 2026-08-13 08:43` UTC · **VERIFY OK**.
+|- Build z HEAD `ef76b833` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, commit deployu na `410825e2` — 44 commity od FALI 272 (`4ee4b9d8`), 32 pliki w `gra/src`+`gra/data`+`gra/tools` (`+1602/−671`).
+|- Zawartość: (1) **promocja frontu kolejki produkcji** — postęp bankuje się zamiast ginąć, 5 rund, 3 realne blokery (w tym parytet gracz-AI w `queueJump`) + bramka strukturalna na `main.ts`; (2) **ekonomia surowcowa ×5** — produkcja/koszty/utrzymanie/magazyny, drenaż obywateli 0,2→1,0; **złoto bez zmian**.
+|- Bramki: `tsc` 0 błędów · `logic-test` 213/213 · `promote-to-front-test` 105/105 · `ekonomia-5x-inwariant-test` 246/246 · `hex-plony-magazyn-test` 11/11 · `tartak-glinianka-rate` 1281/0 · `citizen-resource-upkeep` 109/0 · `ai-cud-priorytet-b3` 46/0 · `tech-tree` 19/0 · `research` 33/0 · `unit-replace` 13/13.
+|- `map-gen-regression-test` zabity po 300 s (nieukończony w czasie, **nie FAIL** — zero linii FAIL w wypisanej części). Pre-istniejące czerwone `grupa-b-lane` 45/4 i `mennica-magazyn` 38/3 — liczby bez zmian, brak nowej regresji.
+|- Scalenie do `main` NIE wykonane (rytm „jedna fala do tyłu", `R-MERGE-MAIN-RYTM-Q1`) — FALA 272 kwalifikuje się do scalenia, wymaga zgody właściciela. Zaległości: FALE 270, 271, 272.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `03a2f038`".
+
 ## [18:xx PL, 2026-08-10] CHMURA → main — dogonienie o FALA 267 (rytm "jedna fala do tyłu")
 
 Po deployu FALA 268 (md5 `3bc0236b`, zalogowany osobno wyżej), zgodnie z `R-MERGE-MAIN-RYTM-Q1`

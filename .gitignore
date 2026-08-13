@@ -1,5 +1,8 @@
 # Dependencies
 node_modules/
+# Symlink (worktree'y AutoBot dziela node_modules przez symlink, CLAUDE.md 4a) -
+# wzorzec "node_modules/" (ze slashem) nie dopasowuje symlinkow, tylko realne katalogi.
+node_modules
 
 # Build outputs (OneDrive often blocks gra/dist/)
 gra/dist

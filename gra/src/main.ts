@@ -747,7 +747,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
-  buildingUnlockFlagFor, buildingTypeQueued,
+  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
@@ -3212,12 +3212,19 @@ async function boot(): Promise<void> {
       );
       if (!d.ok) {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: brak Manpower — odlozono ${completed.id}`);
+        // RUNDA 3, naprawa B2 (P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B): `prodAfterAdvance`
+        // przychodzi już PO advanceProduction/dropFrontItem -- jego scalar `postep`
+        // należy do NOWEGO frontu (`prodAfterAdvance.kolejka[0]`, np. Cud, który
+        // odzyskał swój zbankowany postęp bo `completed` właśnie zszedł). `completed`
+        // (np. Wojownik) wraca na front, bo Manpower zabrakło -- ale gołe nadpisanie
+        // scalara wartością `completed.koszt` (poprzedni kod) po cichu gubiło postęp
+        // Cudu. `insertAtFront` bankuje go NAJPIERW na `kolejka[0]`, dokładnie jak
+        // `promoteToFront`/`dropFrontItem`. / EN: round-3 fix for B2 -- `prodAfterAdvance`
+        // already went through advanceProduction/dropFrontItem, so its `postep` scalar
+        // belongs to the NEW front (`prodAfterAdvance.kolejka[0]`), not to `completed`;
+        // `insertAtFront` banks it there before putting `completed` back on top.
         return {
-          prod: {
-            ...prodAfterAdvance,
-            kolejka: [completed, ...prodAfterAdvance.kolejka],
-            postep: completed.koszt,
-          },
+          prod: insertAtFront(prodAfterAdvance, completed, completed.koszt),
           requeueManpower: true,
         };
       }
@@ -25766,17 +25773,23 @@ async function boot(): Promise<void> {
                       const wProd0 = cityProd.get(wonderDecision.cityId) ?? { kolejka: [], postep: 0 };
                       const wItem = wonderProductionItem(wDef);
                       // queueJump (B3, wymuszacz): wstaw na FRONT kolejki zamiast na koniec --
-                      // przerywa (bez zwrotu Pracy) element aktualnie budowany, spójne z
-                      // production.ts:dequeue (postep liczony tylko dla frontu, front zmienia
-                      // się -> zerujemy). Poza wymuszaczem queueJump zawsze false/undefined
-                      // (city.queueEmpty gwarantowane przez ścieżkę bez forcePriority).
+                      // element schodzący z frontu (wProd0.kolejka[0], jeśli istnieje) BANKUJE
+                      // swój dotychczasowy postęp zamiast go tracić -- ten sam kontrakt co
+                      // insertAtFront używany już w applyProductionCompleted (runda 3), zgodnie
+                      // z P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B (runda 4, naprawa B3). Item nie
+                      // jest anulowany (zostaje w kolejce) -- to NIE przypadek dequeue, dawny
+                      // komentarz o zerowaniu "spójnym z dequeue" był nieaktualny. Aktywny
+                      // postęp dla wchodzącego cudu (wItem) startuje od 0, jak dotychczas.
+                      // / EN: queueJump (B3, forcer): insert at queue FRONT instead of the tail
+                      // -- the item losing front status (wProd0.kolejka[0], if any) now BANKS
+                      // its progress instead of losing it, same contract as insertAtFront
+                      // already used in applyProductionCompleted (round 3), per
+                      // P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B (round 4, B3 fix). The item is not
+                      // cancelled (stays queued) -- this is NOT the dequeue case, the old
+                      // comment citing dequeue was stale. The incoming Wonder's (wItem) active
+                      // progress still starts at 0, unchanged.
                       const wProd1 = wonderDecision.queueJump
-                        ? {
-                            kolejka: [wItem, ...wProd0.kolejka],
-                            postep: 0,
-                            wstrzymana: wProd0.wstrzymana,
-                            rekrutacja: wProd0.rekrutacja ? [...wProd0.rekrutacja] : undefined,
-                          }
+                        ? insertAtFront(wProd0, wItem, 0)
                         : enqueue(wProd0, wItem);
                       cityProd.set(wonderDecision.cityId, wProd1);
                       const wCity = myCitiesForWonder.find(c => c.id === wonderDecision.cityId);

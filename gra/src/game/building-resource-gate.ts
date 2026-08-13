@@ -322,10 +322,14 @@ export { MENNICA_ZLOTO_DRAIN_PER_TURN };
 // Drain B6/B7/B8 ze skarbca państwa po wpływie surowców w tej samej turze (R2).
 // ---------------------------------------------------------------------------
 
-/** B6/B8 — Spichlerz I i II (tor ludności). */
-export const SPICHLERZ_DRAIN_CERAMIKA_PER_TURN = 5;
-/** B7 — Spichlerz II (tor wojska, imperium-wide gdy ≥1 płaci). */
-export const SPICHLERZ_DRAIN_SOL_PER_TURN = 5;
+/** B6/B8 — Spichlerz I i II (tor ludności). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej
+ *  2026-08-13): ×5, było 5 (utrzymanie surowcowe budynków — Ceramika to surowiec
+ *  fizyczny, nie waluta). / EN: ×5, was 5 (building resource upkeep — Ceramika is a
+ *  physical resource, not currency). */
+export const SPICHLERZ_DRAIN_CERAMIKA_PER_TURN = 25;
+/** B7 — Spichlerz II (tor wojska, imperium-wide gdy ≥1 płaci). R-EKONOMIA-SUROWCE-SKALA-5X-Q1
+ *  (Maciej 2026-08-13): ×5, było 5. */
+export const SPICHLERZ_DRAIN_SOL_PER_TURN = 25;
 
 export interface SpichlerzDrainPayResult {
   ceramikaPaid: boolean;

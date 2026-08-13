@@ -103,10 +103,10 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
   const w = worked.get(city.id);
-  ok(w && w.drewno === 2 && w.kamien === 1, 'Równina centrum: worked drewno=2 kamien=1');
+  ok(w && w.drewno === 10 && w.kamien === 5, 'Równina centrum: worked drewno=10 kamien=5');
   const stock = runTick(city, [], map);
-  eq(stock.drewno, 2, 'magazyn: Równina bez Tartaku → 2 drewna');
-  eq(stock.kamien, 1, 'magazyn: Równina bez Kamieniołomu → 1 kamień');
+  eq(stock.drewno, 10, 'magazyn: Równina bez Tartaku → 10 drewna');
+  eq(stock.kamien, 5, 'magazyn: Równina bez Kamieniołomu → 5 kamień');
 }
 
 // Tartak + las na obrabianym heksie — drewno > sam Tartak
@@ -153,9 +153,9 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
   const w = worked.get(city.id);
-  ok(w && w.glina === 2, 'Rzeka na centrum: worked glina=2');
+  ok(w && w.glina === 10, 'Rzeka na centrum: worked glina=10');
   const stock = runTick(city, [], map);
-  eq(stock.glina, 2, 'magazyn: heks przy rzece → +2 glina/t');
+  eq(stock.glina, 10, 'magazyn: heks przy rzece → +10 glina/t');
 }
 
 // Sąsiad z 👤 (tryb ręczny) — Łąka +1 drewno, nie tylko centrum miasta
@@ -184,9 +184,9 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
   const w = worked.get(city.id);
-  ok(w && w.drewno === 3, 'centrum+👤 Łąka: drewno 2+1=3');
+  ok(w && w.drewno === 15, 'centrum+👤 Łąka: drewno 10+5=15');
   const stock = runTick(city, [], map);
-  eq(stock.drewno, 3, 'magazyn: plony z obrabianego sąsiada addytywnie');
+  eq(stock.drewno, 15, 'magazyn: plony z obrabianego sąsiada addytywnie');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
