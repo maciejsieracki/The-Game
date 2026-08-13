@@ -19238,3 +19238,21 @@ do ewakuacji, (3) bramka `opts.defensiveCopy` w `planExpansionFortBuilding` (prz
 wzorca reszty pliku, NIE nowa decyzja gameplayowa), (4) `continue` zamiast `return` + pominięcie
 heksów z już-fortem, (5) strażniki tekstowe main.ts dla 3 newralgicznych miejsc, (6) poprawki F5/F6,
 (7) usunięcie samo-zaliczających gałęzi testu.
+
+## R-DESIGN-11-ZAKLADEK — Paczka designera odebrana: 11/11 klatek, wysoka jakość (2026-08-13)
+
+Paczka `Ulepszenie_infografik.zip` odebrana i przejrzana (standalone HTML, 9 zrzutów pełnej
+strony sprawdzonych Playwrightem + PNG Skarbca w rozdzielczości 2x). Ocena: znaczący, realny
+redesign (nie kosmetyka) — hero-liczby na starcie każdej sekcji, spójna paleta 3b, tabele z
+wyróżnioną kolumną wartości, suwaki w kolorach zasobu, alerty callout, zero emoji (zamienione na
+SVG). Wyraźnie różni się od nieudanej wcześniejszej próby orkiestratora.
+
+Otwarte decyzje przekazane właścicielowi w czacie: chip Religia (A/B), ujednolicenie nagłówków
+Handel/Kultura → eyebrow, przycisk "Otwórz hub badań" w Nauce, kolejność cięcia zakresu Miasto
+(jeśli potrzebna), plakietki stanu w Surowcach. Strukturalne info dla przyszłego wdrożenia (już
+zgodne z notatką w `DESIGN-ZLECENIE-11-ZAKLADEK...md`): Skarbiec/Praca/Nauka/Religia potrzebują
+własnych bloków render() (dziś współdzielą filtrowany blok `ekonomia`), `econ-miasta` rozchodzi
+się na `miasto`+`obywatele` (2 nowe chipy HUD).
+
+**STATUS: czeka na decyzje właściciela — brak akcji kodowej. Plik przekazany właścicielowi
+(SendUserFile) do bezpośredniego obejrzenia.**
