@@ -16914,3 +16914,29 @@ kodem że B1/B2 są naprawione (żaden kanał produkcji surowców fizycznych nie
 2 znalezione czerwone testy są rzeczywiście pre-istniejące (niezależna weryfikacja, nie tylko
 zaufanie do mojego stwierdzenia). Jeśli PASS — `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` zamykany
 ostatecznie.
+
+---
+
+## R-CIVPEDIA-OPISY-AUDYT-Q1 — Etap 1 ZAKOŃCZONY, dokument finalny scalony (2026-08-13)
+
+Dokument syntezy `dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md` (224 linie,
+commit `a78e987b`) — pełna struktura: streszczenie, 2 znaleziska systemowe (rozjazd aktualności
+~75% wszystkich problemów; powielony boilerplate „Przykład liczbowy/Strategia/Typowe błędy" w
+Poradniku, 19-39% objętości niektórych rozdziałów, momentami z fabrykowanymi liczbami
+przypisanymi złemu obiektowi gry), tabela ~118 znalezisk wg priorytetu, werdykty per rozdział
+Poradnika (wszystkie 22, pełny odczyt) i per kategoria CivPedii (wszystkie 136 haseł, głęboka
+lektura pełna dla większości, próbka ~15-17/51 dla kategorii Jednostki — jawnie zaznaczone),
+katalog 27 paneli ściąga w UI (10 z pełnym werdyktem, 17 tylko skatalogowanych — jawnie
+zaznaczone jako otwarty punkt Etapu 2), rekomendacje priorytetowe, jawna sekcja „co NIE zostało
+zrobione".
+
+**Najpilniejsze znaleziska (do wglądu właściciela, ŻADNE nie wdrożone):** Poradnik rozdz. 06 i
+CivPedia „Spichlerz" opisują martwy mechanizm wzrostu ludności (usunięty z silnika 2026-07-30);
+Poradnik rozdz. 57 — 47/47 wartości „Moc w polu" błędne; CivPedia „Cuda świata" — błędny
+mechanizm bonusu powtórzony we wszystkich 19 kartach; CivPedia „Budynki" — 11/25 haseł kosztu
+zaniżone dokładnie ×5 po dzisiejszym rebalansie ekonomii (nie zsynchronizowane, spodziewane,
+świeże).
+
+**STATUS: ETAP 1 ZAKOŃCZONY.** Zero zmian w kodzie/danych/treści gry wykonanych — zgodnie z
+wyraźnym poleceniem właściciela. Czeka na jego decyzję o zakresie/priorytecie Etapu 2
+(implementacja) po powrocie.
