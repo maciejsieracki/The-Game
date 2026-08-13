@@ -436,5 +436,67 @@ console.log('-- 17. RUNDA 4 (luka pokrycia Evaluatora): guard insertAtFront -- p
   }
 }
 
+console.log('-- 18. RUNDA 5, naprawa N2: insertAtFront egzekwuje swój własny niezmiennik -- item WCHODZĄCY na front z zdefiniowanym postep na WEJŚCIU trafia na front BEZ tego pola --');
+{
+  // Przed naprawą N2 funkcja ufała wywołującemu (docstring obiecywał niezmiennik, kod go nie
+  // egzekwował) -- dziś nieszkodliwe, bo obie żywe ścieżki main.ts wołają z item bez postep,
+  // ale to fałszywa gwarancja pisemna. Ten test dowodzi, że funkcja SAMA czyści pole, niezależnie
+  // od tego co przekaże wywołujący.
+  // / EN: before the N2 fix the function trusted the caller (the docstring promised the
+  // invariant, the code did not enforce it) -- harmless today since both live main.ts call
+  // sites pass an item without postep, but it was a false written guarantee. This test proves
+  // the function itself strips the field, regardless of what the caller passes in.
+  const dirtyItem = { ...item('Cud-C', 300), postep: 250 }; // item wejściowy Z postep -- nie powinien tego przenieść na front
+  const prod = { kolejka: [item('X', 10)], postep: 7 };
+  const next = M.insertAtFront(prod, dirtyItem, 0);
+  eq(next.kolejka[0].id, 'Cud-C', 'Cud-C (wstawiany) jest nowym frontem');
+  eq(next.kolejka[0].postep, undefined, 'N2 NAPRAWIONY: front (Cud-C) nie niesie już postep=250 z wejścia -- funkcja go zdejmuje, niezależnie od wywołującego');
+  eq(next.postep, 0, 'aktywny postęp = przekazany activePostep (0), nie wartość postep z wejściowego itemu');
+}
+
+console.log('-- 19. RUNDA 5, naprawa N1: bramka STRUKTURALNA (regex na main.ts) -- B2/B3 NIE są cicho cofalne do ręcznego klepania kolejki/postep --');
+{
+  // promote-to-front-test.cjs testuje WYŁĄCZNIE funkcje production.ts importowane bezpośrednio
+  // (esbuild entry powyżej) -- main.ts nigdy nie jest tu odpalane, więc żadna z asercji 1-18
+  // wykryłaby cofnięcie napraw B2 (main.ts::applyProductionCompleted, gałąź !d.ok) albo B3
+  // (main.ts AI queueJump) z powrotem do ręcznego `postep: completed.koszt` / `postep: 0`.
+  // Wzorzec identyczny jak era-cud-main-ts-integracja-test.cjs / ai-cud-priorytet-b3-test.cjs
+  // sekcja 5-STRUKTURA: fs.readFileSync + regex na TEKST main.ts, kotwiczony na nazwę gałęzi/
+  // zmiennej (odporny na przeformatowanie białych znaków, ale łapie powrót do starego wzorca).
+  // Zweryfikowane mutacją (patrz raport Operatora): cofnięcie KAŻDEJ z dwóch napraw osobno w
+  // main.ts powoduje FAIL tej sekcji z jasnym komunikatem, przywrócenie -- powrót do PASS.
+  // / EN: this file exercises ONLY production.ts functions imported directly -- main.ts is
+  // never run here, so none of assertions 1-18 would catch B2/B3 being silently reverted back
+  // to manual queue/postep splicing. Same pattern as era-cud-main-ts-integracja-test.cjs /
+  // ai-cud-priorytet-b3-test.cjs section 5-STRUKTURA: fs.readFileSync + regex on main.ts TEXT,
+  // anchored on the branch/variable name (resilient to whitespace reformatting, but catches a
+  // reversion to the old pattern). Verified by mutation (see Operator's report): reverting
+  // either fix in main.ts alone fails this section with a clear message; restoring it passes again.
+  const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
+  const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
+
+  // 19a-b: B2 -- applyProductionCompleted, gałąź `!d.ok` (brak Manpower), ok. linii 3213-3227.
+  const RE_B2_INSERTATFRONT =
+    /if \(!d\.ok\) \{[\s\S]{0,1500}?prod: insertAtFront\(prodAfterAdvance, completed, completed\.koszt\),/;
+  assert(RE_B2_INSERTATFRONT.test(mainSrc),
+    '19a: B2 (applyProductionCompleted, gałąź !d.ok) woła insertAtFront(prodAfterAdvance, completed, completed.koszt) w main.ts');
+
+  const RE_B2_OLD_MANUAL_LITERAL =
+    /\{\s*\.\.\.prodAfterAdvance\s*,\s*kolejka:\s*\[\s*completed/;
+  assert(!RE_B2_OLD_MANUAL_LITERAL.test(mainSrc),
+    '19b: B2 -- ŻADEN ślad starego ręcznego literału `{...prodAfterAdvance, kolejka: [completed` (sprzed naprawy) w main.ts');
+
+  // 19c-d: B3 -- AI wonderDecision.queueJump, ok. linii 25775-25792.
+  const RE_B3_INSERTATFRONT =
+    /wonderDecision\.queueJump[\s\S]{0,600}?insertAtFront\(wProd0, wItem, 0\)/;
+  assert(RE_B3_INSERTATFRONT.test(mainSrc),
+    '19c: B3 (AI wonderDecision.queueJump) woła insertAtFront(wProd0, wItem, 0) w main.ts');
+
+  const RE_B3_OLD_MANUAL_LITERAL =
+    /kolejka:\s*\[\s*wItem\s*,\s*\.\.\.wProd0\.kolejka\s*\]\s*,\s*postep:\s*0/;
+  assert(!RE_B3_OLD_MANUAL_LITERAL.test(mainSrc),
+    '19d: B3 -- ŻADEN ślad starego ręcznego literału `{ kolejka: [wItem, ...wProd0.kolejka], postep: 0` (sprzed naprawy) w main.ts');
+}
+
 console.log(`\npromote-to-front-test: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

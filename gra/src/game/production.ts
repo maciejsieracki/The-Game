@@ -1377,8 +1377,20 @@ export function insertAtFront(
   if (kolejka.length > 0 && Number.isFinite(prod.postep) && prod.postep > 0) {
     kolejka[0] = { ...(kolejka[0] as ProductionItem), postep: prod.postep };
   }
+  // Egzekwuj niezmiennik z docstringa wyżej (RUNDA 5, N2): item wchodzący na
+  // front NIGDY nie ma zdefiniowanego pola `postep`, nawet gdyby wywołujący
+  // przekazał je przez pomyłkę -- destrukturyzacja jak w `promoteToFront`,
+  // zamiast po prostu ufać wywołującemu. Dziś obie żywe ścieżki (main.ts)
+  // wołają z itemem bez tego pola, więc to twarda gwarancja na przyszłość,
+  // nie naprawa istniejącej regresji. / EN: enforce the invariant documented
+  // above (round 5, N2): the item entering the front NEVER carries a defined
+  // `postep`, even if a caller passed one by mistake -- destructuring, same
+  // as `promoteToFront`, instead of just trusting the caller. Today both live
+  // call sites (main.ts) pass an item without this field, so this is a
+  // forward-looking guarantee, not a fix for an existing regression.
+  const { postep: _incomingItemPostep, ...itemClean } = item;
   return {
-    kolejka: [item, ...kolejka],
+    kolejka: [itemClean, ...kolejka],
     postep: activePostep,
     wstrzymana: prod.wstrzymana,
     rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
