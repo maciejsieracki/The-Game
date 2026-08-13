@@ -18600,3 +18600,25 @@ pre-istniejąco, potwierdzone identyczne na baseline `fc04d65b` (sprzed tego tem
 dotąd na liście: `budynek-civ-bonus-u17-test.cjs` 3/3, `empire-food-b5-test.cjs` 25/3,
 `mennica-magazyn-test.cjs` 38/3 (już udokumentowane gdzie indziej w tym pliku, ale nie w
 CLAUDE.md), `trade-routes-income-test.cjs` 52/1.
+
+## ECHO P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1 (Maciej, 2026-08-13)
+
+**Decyzja: A.** Jednostka w garnizonie miasta (`inGarnizon===true`) ma pozostać zablokowana
+przed darmowym wycofaniem z bitwy — sam warunek `inGarnizon`, bez koniunkcji z
+`ufortyfikowanyWPolu`. Potwierdzone wprost: „Tak jednostka, która jest w mieście zgarnizonowana
+nie może się wycofać." Zgodne z dzisiejszym stanem kodu, zero zmian.
+
+**Drugie, powiązane pytanie — odpowiedź: bez zmian, potwierdzone jako zamierzone.** Jednostka
+ufortyfikowana W POLU (poza miastem, z bonusem +50% Obrony) może się wycofać z bitwy bezstratnie,
+ale **tylko raz** w tej samej turze. Właściciel: „tak jednostka może się wycofać jeżeli jest
+ukopana w terenie, bezstratnie. ale tylko raz."
+
+**Zweryfikowane w kodzie (`main.ts:20946-20952`) — już dziś dokładnie tak działa, ZERO zmiany
+kodu potrzebne.** Ograniczenie „tylko raz w turze" (`retreatedThisTurn`/`retreatExhaustedThisTurn`,
+temat `R-WYCOFANIE-LIMIT-JEDNORAZOWY` z tej samej sesji) jest **osobnym, uniwersalnym
+mechanizmem** — dotyczy KAŻDEJ jednostki obrony niezależnie od tego, czy jest w garnizonie, czy
+ufortyfikowana w polu, czy żadne z nich. Blokada garnizonu (`defenderLockedByGarnizon`) i limit
+jednorazowości (`retreatExhaustedThisTurn`) to dwa niezależne gate'y z osobnymi komunikatami —
+jednostka w polu nie ma blokady garnizonu, ale ma limit jednorazowości tak jak każda inna.
+
+**STATUS: ZAMKNIĘTE — potwierdzenie stanu już zaimplementowanego, brak pracy do wykonania.**
