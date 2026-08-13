@@ -17090,3 +17090,32 @@ ewolatorów, bo będziesz miał ciężki temat, to wtedy 2 sonety i 1 obwóz."
    Evaluator #1 i #2 na Sonnet 5, Evaluator #3 (ostatni) na Opus 5.
 
 **STATUS: WDROŻONE natychmiast** — zaktualizowano `.claude/skills/civ-autobot/SKILL.md`.
+
+---
+
+## P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B — Evaluator finalny runda 5: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY OSTATECZNIE po 5 rundach (2026-08-13)
+
+Wszystkie 3 notatki rundy 4 potwierdzone domknięte niezależną weryfikacją: **N1** — 3 własne
+mutacje (nie kopie Operatora, w tym nowa: podmiana 3. argumentu `insertAtFront` na 0, cicho
+niszcząca bankowanie) złapane; kluczowy dowód: regresja B3 cofnięta do starego kodu przechodzi
+przez `tsc` I przez dedykowaną bramkę `ai-cud-priorytet-b3-test.cjs` (46/46) BEZ ŚLADU — sekcja
+19 jest JEDYNĄ rzeczą w repo, która ją łapie. **N2** — własny niezależny harness (12/12,
+kontrole ostrzejsze niż test projektu: `in` zamiast `undefined`, brak mutacji obiektu
+wywołującego, `postep:0` też zdejmowane). **N4** — nowy komentarz uczciwszy od starego,
+logika testu nietknięta. **Audyt kompletności własny** (nie na słowo rundy 4) — 2 dodatkowe
+kandydaci sprawdzeni i czyści (strzałki/drag UI twardo `index<1`; `wonder-map-build.ts postep`
+to inna struktura). Bramki: `tsc` 0, `promote-to-front-test.cjs` 105/105, `logic-test` 213/213,
+`ai-cud-priorytet-b3-test.cjs` 46/46 — wszystkie dosłownie potwierdzone.
+
+**Notatka niepilna, do backlogu (NIE runda 6):** asercje 19a/19c w `promote-to-front-test.cjs`
+(regex na `main.ts`) mają za ciasne okno — 1500 znaków wykorzystane już w 72% (1082/1500),
+dopisanie komentarza dwujęzycznego (wymaganego zasadą 9 CLAUDE.md) w tej luce PODNOSI dystans do
+1822 i wywraca asercję przy zerowej zmianie semantyki (3 fałszywe alarmy zademonstrowane:
+zamiana kolejności pól, złamanie argumentów na linie, dopisanie komentarza PL+EN). Tryb awarii
+bezpieczny (czerwona głośna bramka, nigdy ciche przepuszczenie błędu) — nie blokuje. Gotowa
+poprawka (2 linie, zweryfikowana na 6 wariantach) w pełnym raporcie Evaluatora
+`a9f274b04c755f235` — do zastosowania przy najbliższej pracy dotykającej ten plik.
+
+**STATUS: TEMAT ZAMKNIĘTY OSTATECZNIE** po 5 rundach — B1, B2, B3 naprawione i przypięte
+testami, parytet gracz-AI przywrócony, niezmiennik anty-exploit potwierdzony nienaruszony przez
+cały mechanizm (promoteToFront/dropFrontItem/insertAtFront×3/AI queueJump).
