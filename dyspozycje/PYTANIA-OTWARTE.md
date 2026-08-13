@@ -19256,3 +19256,33 @@ się na `miasto`+`obywatele` (2 nowe chipy HUD).
 
 **STATUS: czeka na decyzje właściciela — brak akcji kodowej. Plik przekazany właścicielowi
 (SendUserFile) do bezpośredniego obejrzenia.**
+
+## P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13, zgłoszenie Macieja, zrzut ekranu) · STATUS: **OTWARTE — dispatch naprawy**
+
+Właściciel przesłał zrzut ekranu "Edytuj swoją propozycję" (kontroferta, partner Inkowie):
+205 Glina + 105 Drewno → ekran pokazuje **MY ODDAJEMY: 515 PW, BILANS (ONI): +515 PW**.
+
+**Policzone niezależnie: 515 = 205×2 (cena_glina, STARA cena/szt.) + 105×1 (cena_drewno, STARA
+cena/szt.) — dokładnie stara formuła (ilość surowa × cena/szt.) zastosowana do NOWYCH (5×
+większych) ilości, BEZ podziału na bloki po 5 szt.** Oczekiwana wartość wg mechanizmu
+`R-DYPLO-CENNIK-SKALA-5X-Q1` (krok wymiany 1→5, `diplomacyHandelSurowiecKrok`/
+`diplomacyNormalizeSurowiecIlosc` w `diplomacy-value-catalog.ts`): `(205÷5)×2 + (105÷5)×1 =
+82+21 = 103 PW` — **dokładnie 5× mniej niż pokazane**. Właściciel miał rację — to nie
+subiektywne wrażenie, liczby matematycznie się zgadzają z hipotezą "stara formuła na nowych
+ilościach", nie z zamierzonym mechanizmem.
+
+Ekran "Edytuj swoją propozycję" to `openCounterNegotiationModal` w `diplomacyAudience.ts:460-470`
+(dialog tytuł "Edytuj swoją propozycję" dla `isOwnEdit`). Ten konkretny ekran/ścieżka PN NIE
+została jeszcze zidentyfikowana wśród 7 plików dotkniętych przez `R-DYPLO-CENNIK-SKALA-5X-Q1`
+(`diplomacy-value-catalog.ts`, `diplomacy-proposals.ts`, `diplomacy-ai-offer-balance.ts`,
+`diplomacy-resource-trade-pick.ts`, `diplomacy-pn-engine.ts`, `main.ts` 3 miejsca) — podejrzenie:
+ta ścieżka liczy PN bezpośrednio (ilość × cena) bez przejścia przez
+`diplomacyNormalizeSurowiecIlosc`/`diplomacyHandelSurowiecKrok`, więc naprawa z tamtej decyzji jej
+nie objęła.
+
+**STATUS: dispatch agenta naprawczego (Sonnet 5) w toku** — namierzyć DOKŁADNĄ funkcję liczącą
+"PUNKTY WYMIANY"/"MY ODDAJEMY"/"BILANS (ONI)" na ekranie edycji/kontroferty własnej propozycji,
+potwierdzić że pomija normalizację kroku 5, naprawić przez przepuszczenie przez
+`diplomacyNormalizeSurowiecIlosc` (albo dzielenie przez krok w formule PN) analogicznie do
+pozostałych 7 już naprawionych miejsc, dodać test regresyjny odtwarzający dokładnie ten scenariusz
+(205 Glina + 105 Drewno = 103 PW, nie 515).
