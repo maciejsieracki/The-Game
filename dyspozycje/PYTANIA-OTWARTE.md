@@ -18500,3 +18500,33 @@ sąsiadowi") mógł nie być przewidziany przy wyborze litery — FYI, nie wymag
 **STATUS: dispatch Operator runda 2 — Nota A (blokująca, dociągnąć `excludeHexKeys` przez nowy
 hook w panelu, wzorem istniejącego `cfg.getCityHealth`) + Nota B i D (jedno-linijkowe wołania,
 tania okazja do domknięcia w tej samej rundzie). Nota C bez zmian. Noty E/F/G do backlogu.**
+
+## R-SUROWIEC-CYNA-DO-BRAZU — Evaluator runda 3: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY PO 3 RUNDACH (2026-08-13)
+
+Evaluator (Opus 5, `aa73b9707bfb9fce9`) potwierdził commit `d6b8400c` (runda 3). Odwrócenie 3 asercji
+w `surowce-katalog-kolejnosc-test.cjs` zweryfikowane wprost w kodzie produkcyjnym (`main.ts:2845` —
+karta Rudy cyny bez pola `placeholder`, etykieta czysta; `resources.json:39-41` zawiera wpis).
+**Nowa norma testu to 62 pass/0 fail, NIE 61/0** — zweryfikowana niezależnie (przywrócenie samego
+`continue` daje 61, bez niego 62 — delta to dokładnie jedna dodatkowa iteracja pętli po katalogu,
+bo CATALOG ma 14 kart; Operator podał to poprawnie, nie sfałszował). **Każda przyszła sesja
+porównująca do "baseline 61" zobaczy fantomowy rozjazd — 62/0 jest poprawną normą.**
+
+4 mutacje kontrolne w kodzie produkcyjnym (nie w teście) — wszystkie złapane przez odpowiednie
+asercje. Skumulowany diff testów całego tematu (`67cc36fd`→`d6b8400c`): +943/−17, wszystkie 5
+usuniętych linii rozliczone jako zaostrzenia, zero skasowanych/rozluźnionych asercji. Wszystkich
+7 punktów rundy 1 domkniętych (poza formalnie otwartym, nieblokującym C-011).
+
+**Temat `R-SUROWIEC-CYNA-DO-BRAZU` ZAMKNIĘTY PO 3 RUNDACH.** Zostają wyłącznie nieblokujące:
+C-011 (`map-gen-regression-test.cjs` niekompletny, dowód zastępczy determinizmu stoi), ikona Rudy
+cyny (placeholder dzielony z Żelazem), pytanie ABC do właściciela o kolizję "rzadkość=miedź/5" vs
+"gwarancja fair-play" (0,77× częstości miedzi zamiast 0,20×, w tym samym rejestrze wyżej).
+
+**Nota do backlogu (N-A, dług testowy, niepilne):** 17/62 asercji w
+`surowce-katalog-kolejnosc-test.cjs` (sekcje B:1/C:1/D:11/E:4) strzegą infrastruktury
+placeholderów, której dziś żadna żywa karta katalogu nie wykonuje (Ruda cyny była ostatnim
+placeholderem). Do świadomej decyzji: zostawić pod przyszłe karty czy usunąć.
+
+**Znalezisko dokumentacyjne (N-B), do dopisania w CLAUDE.md §BRAMKI:** `prereq-budynkow-test.cjs`
+— 51 pass/8 fail, exit 1 — potwierdzone identyczne na baseline `67cc36fd`, PRE-ISTNIEJĄCE, nie
+regresja tego tematu, ale nie było dotąd na udokumentowanej liście znanych czerwonych bramek —
+dopisuję teraz, żeby przyszła sesja nie wzięła tego za świeżą regresję.
