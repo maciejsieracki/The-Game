@@ -19294,3 +19294,27 @@ CZĘŚĆ E domyka dokładnie defekt z rundy 1 — wiązanie pokryte w 3 miejscac
 złapana). Bramki komplet zielone (tsc 0, 66/66, logic 213/213, 41 plików diplomacy-*.cjs zero
 czerwonych). N1 sprostowane poprawnie (15 nie 22). Uwagi U1-U3 niepilne, bez rundy 3.
 **ZAMKNIĘTE.**
+
+## Dispatch 3 Operatorów/agentów równoległych (2026-08-13, po poleceniu "odpalaj subagentów i wdrażaj")
+
+1. Fort/straznica krok2 runda 2 (worktree `fort-krok2-r2`) — naprawa F1/F2/F4 blokujących z
+   werdyktu Evaluatora + F3/F5/F6 przy okazji.
+2. Recon: `P-PANEL-MIASTO-NIECZYTELNY-PRZY-PRZYBLIZENIU` (znalezisko audytu §0c, bez aktywnego
+   wykonawcy, dispatch bez pytania o zgodę zgodnie z C-027) — WYŁĄCZNIE rozpoznanie, ustalić czy
+   mechanizm jest w `render/**` (Opus 5 wymagany do naprawy) czy w warstwie DOM/UI.
+3. **R-DESIGN-11-ZAKLADEK: FAZA 1 wdrożenia realnego** (worktree `panel-11tabs-f1`) — po
+   poleceniu właściciela "odpalaj subagentów i wdrażaj te nowe wyglądy do gry" (nie tylko do
+   obejrzenia). Zakres tej fazy: (A) nowy dedykowany blok `skarbiec` w routingu
+   `empirePanelSectionMap.ts`/`empireDetailPanel.ts` (prerequisite architektoniczny z handoffu
+   designera §3.1), (B) pełna implementacja zakładki Skarbiec wg dostarczonej makiety (stan A,
+   netto dodatnie) — hero, boxy Wpływy/Koszty, tabela bilansu, tabela per miasto, suwak podatku
+   w nowym stylu, (C) nowe klasy CSS z makiety (`.civ-emp-hero`, `.civ-emp-alert`,
+   `.civ-emp-slider`, `.civ-emp-tbl-sum`). Kolejne fazy (Praca/Nauka/Religia/Miasto+Obywatele/
+   pozostałe reskiny) dispatchowane sekwencyjnie po scaleniu tej — wszystkie dotykają tego samego
+   pliku `empireDetailPanel.ts`, więc pełna równoległość niemożliwa bez konfliktów scalania.
+
+**Domyślne decyzje przyjęte przeze mnie na czas implementacji** (właściciel poprosił o działanie,
+nie kolejne pytania) — do ewentualnej korekty po zobaczeniu wyniku: chip Religia zostaje (wariant
+A z makiety, mniejsze ryzyko strukturalne niż usuwanie chipa z HUD), nagłówki Handel/Kultura
+ujednolicone w stronę eyebrow (zgodne z rekomendacją designera), przycisk "Otwórz hub badań" w
+Nauce ODŁOŻONY do czasu potwierdzenia przez właściciela że taki hub ma istnieć jako cel linku.
