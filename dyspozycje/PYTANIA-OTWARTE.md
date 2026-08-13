@@ -19567,7 +19567,7 @@ właścicielowi (SendUserFile).
 kolejnych 10 zakładek (Praca/Nauka/Spichlerz/Surowce/Handel/Armia/Miasto/Obywatele/Kultura/
 Religia) — Skarbiec (Faza 1) już zaimplementowany i naprawiony (9cbfc8ae).**
 
-## R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień) · STATUS: **SYGNAŁ DO PODJĘCIA OTRZYMANY — dispatch runda 2**
+## R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień) · STATUS: **ZABLOKOWANE NA ABC (Q2) — kod scalony i bezpieczny, liczby wymagają potwierdzenia**
 
 **AKTUALIZACJA (2026-08-14, sygnał właściciela):** Maciej: „pracuj autonomicznie teraz przez całą
 noc, wypnij wszystkie tematy" — to jest wprost sygnał odblokowujący wszystkie tematy zapisane
@@ -19895,3 +19895,71 @@ brak powtórki incydentu procesowego z rundy 2.
 
 **STATUS: dispatch świeżego Evaluatora — to ma być OSTATNIA runda tego tematu, pierwsza która
 dostaje czysty werdykt od zera (bez dziedziczonego FAIL z poprzednich rund).**
+
+## Barbarzyńcy skala niezależna (0811319c) — Evaluator: WERDYKT PASS-WITH-NOTES, ABC blokujące (2026-08-14)
+
+**Kod POPRAWNY I BEZPIECZNY** — architektura trafiona (`BarbariansLevel` własne pole w `advOpts`,
+wzorowane na `cityStateDifficultyOverride`, testy 11a dowodzą strukturalnie niezależności od
+trudności gry), migracja wsteczna mocna (fuzz 30 wejść, 0 wyjątków), worktree-na-main incydent
+bez realnego wpływu (zweryfikowane niezależnie: `barbarians.ts` 0 commitów między bazą a HEAD,
+diff chirurgiczny). Bramki zielone: `tsc` 0, `barbarians-test` 201/0, `barb-camp-destruction`
+84/0 (naprawione równolegle przez Fort R4), `barb-city-behavior` 178/0, `barb-city-capture-cluster`
+94/0, `ai-home-defense-vs-barbarians` 38/0, `logic-test` 213/213.
+
+**⛔ GŁÓWNE ZNALEZISKO — liczby trafiają specyfikację TYLKO na osi obozów, nie na osi realnej
+liczby jednostek na mapie** (`maxCamps × unitsPerCamp` — to jest metryka, którą silnik faktycznie
+egzekwuje jako limit stanu, `barbarians.ts:1154`):
+
+| Poziom | camps×units/camp | Stan realny | vs baseline (12) | Spec właściciela |
+|---|---|---|---|---|
+| Normalny | 2×1 | **2** | **6× mniej** | prosił o 4× mniej |
+| Trudny | 12×3 | **36** | **3,0× więcej** | prosił o "do ok. 2× więcej" |
+
+Warianty trafiające specyfikację DOKŁADNIE na osi jednostek (Evaluator obliczył): Normalny
+`maxCamps×0,5(=3) + unitsPerCamp−1(=1)` → 3 jednostki = dokładnie 4× mniej. Trudny
+`maxCamps×2(=12) + unitsPerCamp bez zmian(=2)` → 24 = dokładnie 2× więcej.
+
+**Dodatkowe uwagi nieblokujące:** sentinel wyłączenia zmieniony `wylaczeni`→`brak` bez klamry
+obronnej w `barbariansEnabledForLevel` na stary string (dziś szczelne — jeden konsument, migruje
+przed użyciem — ale przyszły niezmigrowany zapis mógłby po cichu włączyć barbarzyńców graczowi
+który ich wyłączył). `unitsPerCamp`/`spawnInterval` sprzężone też z Ludami Morza, nieudokumentowane
+w JSDoc. Bateria mutacji 5/8 złapane — `spawnInterval`/`unitsPerCamp` całkowicie niechronione w
+testach (test pinuje wyłącznie `maxCamps`), domyślny poziom kreatora też niechroniony.
+
+## ECHO ABC R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI-Q2 (2026-08-14) — CZEKA NA ODPOWIEDŹ
+
+[TEMAT: Metryka "4× mniej / 2× więcej" barbarzyńców — obozy czy jednostki na mapie?]
+
+**Sytuacja:** zaimplementowane liczby (Normalny 2 obozy/1 jedn., Trudny 12 obozów/3 jedn.) trafiają
+Twoją specyfikację "Normalny 4× mniej, Trudny do 2× więcej" TYLKO licząc same obozy. Realna liczba
+barbarzyńców na mapie (`maxCamps × unitsPerCamp`, to jest twardy limit egzekwowany przez silnik)
+wychodzi: Normalny **6× mniej** (za łagodnie), Trudny **3× więcej** (za ostro, o 50% ponad Twój
+pułap "do ok. 2×").
+
+**Cel pytania:** ustalić, czy "4×/2×" miało dotyczyć liczby OBOZÓW, czy liczby JEDNOSTEK na mapie
+— to dwie różne metryki dziś rozjechane w kodzie, bo `unitsPerCamp` też się zmienia (Normalny
+2→1, Trudny 2→3).
+
+**Nie podważa żadnej wcześniejszej decyzji (§1a)** — to pierwsza implementacja tego tematu, nie ma
+tu nic do cofania, tylko doprecyzowanie interpretacji już podanych liczb.
+
+**A)** Licz od JEDNOSTEK NA MAPIE (rekomendacja Evaluatora) — Normalny: `maxCamps=3, unitsPerCamp=1`
+(3 jednostki = dokładnie 4× mniej). Trudny: `maxCamps=12, unitsPerCamp=2` (bez zmian, 24 jednostki
+= dokładnie 2× więcej).
+Za: trafia Twoje liczby dosłownie na metryce, którą gracz faktycznie widzi na mapie (ile
+barbarzyńców realnie chodzi). Przeciw: wymaga małej poprawki kodu (zmiana 2 stałych + testy).
+
+**B)** Zostaw jak jest — licz od OBOZÓW, akceptując że realna liczba jednostek wychodzi 6×/3× a
+nie 4×/2×.
+Za: zero dodatkowej pracy, kod już scalony i działa bezpiecznie. Przeciw: nie trafia dosłownie
+Twoich słów "4× mniej"/"do 2× więcej" na metryce którą realnie widać w grze.
+
+**C)** Inna kombinacja liczb — podaj własne wartości dla obu poziomów.
+
+**Rekomendacja: A.**
+
+**STATUS: czeka na odpowiedź `R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI-Q2 + litera`.**
+Kod scalony w `0811319c` jest bezpieczny i można go zostawić w ROBOCZA do czasu odpowiedzi (nie
+crashuje, nie psuje nic innego) — tylko dokładne wartości Normalny/Trudny mogą się jeszcze
+zmienić. Dodatkowo do zrobienia (nieblokujące, osobna runda): domknąć testy dla
+`spawnInterval`/`unitsPerCamp`/domyślnego poziomu kreatora, klamra obronna na legacy `wylaczeni`.
