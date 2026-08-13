@@ -18563,3 +18563,40 @@ liczby Operatora. Dodatkowo (rozszerzenie bezpieczeństwa ze względu na dotkni�
 **STATUS: dispatch Evaluator (Opus 5) — poproszony o szczególną uwagę na `turn-economy.ts` jako
 plik dotknięty poza pierwotną listą (uzasadnienie Operatora do zweryfikowania niezależnie, nie
 tylko przyjęcia na słowo).**
+
+## P-HEKS-CENTRUM-OBCEGO-MIASTA + P-HEKS-SPOR-SASIAD — Evaluator runda 2: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY PO 2 RUNDACH (2026-08-13)
+
+Evaluator (Opus 5, `abe46ac434b63f9d0`) potwierdził commit `80f6f3d5`. **Szczególna uwaga na
+`turn-economy.ts` (plik poza pierwotną listą) — zweryfikowana jako bezpieczna trzema
+niezależnymi metodami:** brak zależności danych między przestawianymi liniami (dowód typowy +
+odczyt źródła + weryfikacja empiryczna serializacji przed/po), potwierdzenie że bez tego
+przestawienia Nota D odpalałaby się tylko przy zakładaniu miasta (dokładnie 2 wołania
+`reconcileAllWorkedTiles` w całym `src/`), i dodatkowy argument ZA (nieznaleziony przez
+Operatora): przestawienie samoleczy nieświeżość zbioru spornych pól w pętli wzrostu populacji
+w NASTĘPNEJ turze.
+
+**Nota A zamknięta i zweryfikowana BEHAWIORALNIE** (nie tylko tekstowo) — odtworzony scenariusz
+z werdyktu R1 na realnym silniku: panel dawał A=4/B=2 (zgodnie z R1), teraz A=3/B=2, identycznie
+z silnikiem. Parytet z konstrukcji (dosłownie ten sam wyraz), nie przypadku.
+
+Bramki: 16/16 zielone, liczby identyczne z raportem Operatora. 4 mutacje kontrolne — 3 złapane
+(Nota A złapana w OBU miejscach, lepiej niż zgłoszono; Noty B i D złapane), **1 nieopakowana:
+cofnięcie kolejności w `turn-economy.ts` przechodzi 34 bramki bez śladu** (to samo co Nota E z
+rundy 1, teraz szersza — brak strażnika integracji Noty D z silnikiem tury, do osobnego
+zlecenia backlogowego).
+
+**Nowe znalezisko (N-2, nieblokujące, FYI):** kasowanie wpisów `okolicaReczne` przez Notę D jest
+NIEODWRACALNE — gdy sporne miasto zostaje zdobyte przez wroga i spór znika, skasowany ręczny
+wpis NIE wraca automatycznie (przed rundą 2 wracał sam, odczyt był fail-closed). Dosłowna
+realizacja punktu 5 ECHO A, spójna z dwiema istniejącymi warstwami czyszczenia.
+
+**Temat `P-HEKS-CENTRUM-OBCEGO-MIASTA` + `P-HEKS-SPOR-SASIAD` (dublowanie heksów) ZAMKNIĘTY PO 2
+RUNDACH.** Do backlogu: N-1 (strażnik integracji silnika tury, priorytet), N-2 (nieodwracalność
+kasowania, FYI właściciela), N-3 (Nota C zamknięta bez naprawy), N-5 (memoizacja, narzut wciąż
+trywialny).
+
+**Znalezisko dokumentacyjne (N-4), do dopisania w CLAUDE.md §BRAMKI:** 4 bramki czerwone
+pre-istniejąco, potwierdzone identyczne na baseline `fc04d65b` (sprzed tego tematu), nieobecne
+dotąd na liście: `budynek-civ-bonus-u17-test.cjs` 3/3, `empire-food-b5-test.cjs` 25/3,
+`mennica-magazyn-test.cjs` 38/3 (już udokumentowane gdzie indziej w tym pliku, ale nie w
+CLAUDE.md), `trade-routes-income-test.cjs` 52/1.
