@@ -16978,3 +16978,17 @@ commitach — to twierdzenie było prawdziwe.
 powrotem do 11/11; (2) zalecane: dopiąć `terrain-yields.json`/`terrain-improvements.json`
 (glinianka/kamieniołom bonus, wyrąb) do `ekonomia-5x-inwariant-test.cjs`, żeby luka pokrycia nie
 powtórzyła się trzeci raz.
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA (2026-08-13, znalezisko Operatora ekonomii ×5 przy okazji) · STATUS: **OTWARTE — do ABC, nie blokuje**
+
+`gra/src/main.ts:26216-26217`: ścieżka AI dla `wyrab` (wyrąb lasu) refunduje
+`wycinka.praca_per_tura × tury` jako **Pracę**, podczas gdy ścieżka gracza poprawnie kredytuje
+**Drewno** (asymetria gracz/AI, pre-istniejący błąd nazewnictwa/typu pola, NIE wprowadzony przez
+tę sesję). Przed rundą 2 (B2) było to efektywnie neutralne — koszt startu 5 Pracy, refundacja
+„5" też Pracy, netto zero. Po B2 (`praca_per_tura` 5→25) AI zyskuje netto **+20 Pracy za każdy
+wyrąb** — realny efekt balansowy ujawniony przez zmianę wartości, nie wprowadzony logicznie przez
+tę rundę. Nie naprawione (poza zakresem rundy 2/3), wymaga pytania ABC: naprawić refundację na
+Drewno (parytet z graczem) czy to świadomy bonus AI do rekompensaty innej asymetrii? Do
+rozpoznania przy najbliższej turze ABC.
