@@ -19473,3 +19473,37 @@ N3/N4 niepilne (rozjazd Sola panel/silnik świadomy; `pnPerUnit`/`CenaJednostkow
 — cena jest ZA BLOK nie za sztukę, bezpośrednia przyczyna tego incydentu).
 
 **STATUS: dispatch Operatora (Sonnet 5) domknięcia N1/N2/N4 w toku.**
+
+## Panel 11 zakladek Faza 1 - Skarbiec (6afdde92) — Evaluator: PASS-WITH-NOTES, 3 rozjazdy wizualne + nieprawdziwe twierdzenie commita (2026-08-13)
+
+Bramki komplet zielone (tsc 0, wszystkie testy panelu, 11/11 zakładek żyje bez błędów konsoli w
+Playwright), etykiety tekstowe i arytmetyka suwaków sprawdzone znak-w-znak zgodne z makietą.
+Ale 3 realne rozjazdy wizualne + jedno fałszywe twierdzenie w komunikacie commita:
+
+**Do naprawy:**
+1. **Suwaki — wszystkie 3 uchwyty ZŁOTE zamiast złoty/niebieski/szary.** Przyczyna: regułki
+   `.civ-emp-slider.gold::-webkit-...` i `.civ-emp-slider.gold::-moz-...` połączone w JEDNEJ liście
+   selektorów CSS — nieznany pseudo-element jednego dostawcy unieważnia CAŁĄ regułę w drugim.
+   Dowód z CSSOM Chrome: z 7 zapisanych regułek przyjęte tylko 2 (gold, bo to jedyna bez
+   konfliktu). Naprawa: rozbić 4 warianty (gold/blue/neutral/green) na 8 osobnych regułek,
+   po jednej per dostawca (`-webkit`/`-moz` osobno).
+2. **Etykiety suwaków (Skarb/Nauka/Zamożność) bez koloru** — `class="gold"/"blue"` na `<span>`
+   to martwe atrybuty, arkusz ma tylko selektory zakresowane do innych komponentów. Zmierzone:
+   wszystkie trzy `#e8ebf0` zamiast złoty/`#8ec5ff`/`#cfd5de`.
+3. **Tabela per miasto — wiersze danych do lewej, wiersz SUMA do prawej** — dwie konwencje w
+   jednej tabeli, makieta wyrównuje wszystko do prawej.
+
+**Do sprostowania:** komunikat commita `6afdde92` twierdzi "Zgodnosc wizualna... potwierdzona 1:1"
+— NIEPRAWDZIWE (§0b), 3 rozjazdy wyżej istniały już wtedy. Nie wyłapano ich przy oryginalnej
+weryfikacji.
+
+**Luka pokrycia (M2):** żadna bramka nie sprawdza, że blok `skarbiec` w ogóle renderuje TREŚĆ —
+usunięcie `if (block === 'skarbiec') body += skarbiec;` przechodzi przez wszystkie 6 bramek
+zielono (panel renderuje się CAŁKOWICIE PUSTY, niewykryte).
+
+**Nie usterki (sprawdzone i wykluczone):** znaki minus (U+2212, poprawne), rozjazd `border-top`
+tabeli Miasto (pre-istniejący z 2026-08-12, nie ten commit), stan B (świadomie poza zakresem
+Fazy 1) — poza jedną niespójnością wewnątrz stanu A: przy netto ujemnym hero robi się czerwony,
+ale wiersz "Netto skarbiec" w tabeli zostaje złoty (brak wariantu `.neg` na tym elemencie).
+
+**STATUS: dispatch Operatora (Sonnet 5) naprawy 3 rozjazdów CSS + M2 pokrycie w toku.**
