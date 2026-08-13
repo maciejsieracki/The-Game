@@ -18530,3 +18530,36 @@ placeholderem). Do świadomej decyzji: zostawić pod przyszłe karty czy usuną�
 — 51 pass/8 fail, exit 1 — potwierdzone identyczne na baseline `67cc36fd`, PRE-ISTNIEJĄCE, nie
 regresja tego tematu, ale nie było dotąd na udokumentowanej liście znanych czerwonych bramek —
 dopisuję teraz, żeby przyszła sesja nie wzięła tego za świeżą regresję.
+
+## P-HEKS-CENTRUM-OBCEGO-MIASTA + P-HEKS-SPOR-SASIAD runda 2 (80f6f3d5) — Operator dostarczył, dispatch Evaluator (2026-08-13)
+
+Operator (Sonnet 5) domknął wszystkie 3 zadania z werdyktu Evaluatora rundy 1:
+- **Nota A (blokująca):** nowy hak `getExcludeHexKeys?` w `CityPanelConfig`, wpięty w
+  `computeView` i `resolveCityHealth` (`cityPanel.ts`), wpięty w obu wywołaniach
+  `configureCityPanel` w `main.ts` przez `siblingClaimedHexKeysForCity` — ten sam mechanizm co
+  już działający `getCityHealth`.
+- **Nota B:** nowy `excludeHexKeysByCity` w `PostCentralGrowthOpts`, przekazany do
+  `rebalanceWorkersAfterPopulationChange` w `population-growth-v85.ts`, liczony raz w `main.ts`
+  przed wywołaniem.
+- **Nota D:** `reconcileWorkedTilesForOwner`/`reconcileAllWorkedTiles` przyjmują nowy
+  `lostToSiblingByCity?` — druga warstwa czyszczenia `okolicaReczne` (poza centrami).
+
+**Komplikacja zgłoszona wprost przez Operatora, nie ukryta:** żeby Nota D działała CO TURĘ (nie
+tylko przy zakładaniu miasta), Operator dotknął `gra/src/game/turn-economy.ts` — plik POZA
+pierwotnie dozwoloną listą. Diff to przestawienie kolejności dwóch już istniejących linii
+(`computeLostToNearerSiblingByCity` liczone PRZED `reconcileAllWorkedTiles` zamiast po) +
+przekazanie już obliczonej wartości jako nowy parametr. Bez tego Zadanie 3 działałoby tylko przy
+zakładaniu nowego miasta, co czyniłoby naprawę pozorną.
+
+Bramki uruchomione samodzielnie przez orkiestratora (nie tylko odczyt raportu Operatora): `tsc`
+0 błędów, `okolica-multi-city-overlap-test` **55/55** (było 30/30, +25 nowych asercji w
+Sekcjach 3-5), `logic-test` 213/213, oraz 8 innych bramek terytorium/miasta zielonych — dokładnie
+liczby Operatora. Dodatkowo (rozszerzenie bezpieczeństwa ze względu na dotknięcie
+`turn-economy.ts` poza listą): `ekonomia-5x-inwariant-test` 246/0, `ai-improvements-test` 33/0,
+`converters-test` 46/0, `auto-manage-test` 45/0 — wszystkie zielone, zero regresji.
+`population-growth-v85-test` 48/2 — 2 porażki potwierdzone identyczne z pre-istniejącym długiem
+`R-STAWKI`×2.
+
+**STATUS: dispatch Evaluator (Opus 5) — poproszony o szczególną uwagę na `turn-economy.ts` jako
+plik dotknięty poza pierwotną listą (uzasadnienie Operatora do zweryfikowania niezależnie, nie
+tylko przyjęcia na słowo).**
