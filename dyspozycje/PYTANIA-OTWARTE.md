@@ -18804,3 +18804,36 @@ kodu niż ta, którą dotknął wcześniejszy filtr.
 dokładnie który komponent renderuje „CO DODAJESZ → Technologia" na ekranie Umowy wymiany
 surowców, sprawdzić czy korzysta z tego samego mechanizmu filtrowania co wcześniej naprawiony
 `diplomacyTradeBasket.ts`, i albo dociągnąć filtr, albo naprawić go jeśli jest złamany.**
+
+## P-SPICHLERZ-PANEL-VS-SILNIK-ROZJAZD-BILANS — rozpoznanie dostarczone, PRZYCZYNA ZNALEZIONA (2026-08-13)
+
+Recon (Explore, `a9cbf3e2adf1df253`) namierzył dokładną przyczynę, zreprodukowaną skryptem 1:1 do
+zrzutów ekranu Macieja (Ateny: silnik Produkcja=33/Bilans=+1, panel Produkcja=29/Bilans=−3,
+różnica dokładnie 4 = populacja(4) × zywnosc_zuzytka_populacja(1 na normal)).
+
+**Hipoteza właściciela (Spichlerz stolicy +1 / Przyrost zapasów +1) — OBALONA.** Te dwie linie są
+liczone PO zbudowaniu tabeli per-miasto (`advanceEmpireFood()`), jednokierunkowo, zero wpływu
+zwrotnego na kolumnę Produkcja. Zbieżność +1/+1 to przypadek niepowiązany.
+
+**Prawdziwa przyczyna: bug w panelu miasta, NIE zmiana/regresja z żadnego niedawnego tematu tej
+sesji.** `gra/src/ui/cityPanel.ts:1177` czyta `y.zywnosc` (martwe, przedwerbjne pole z modelu
+konsumpcji żywności sprzed systemu Wyżywienia V85 — flat 1 żywność/mieszkańca/turę, niezależne od
+V85/Racji) zamiast `y.zywnoscBrutto` (którego poprawnie używa silnik tury w dwóch miejscach:
+`previewCityEconomy` i `advanceCityEconomy`). Skutek: **podwójne odjęcie konsumpcji żywności** w
+panelu — raz przez martwy model flat wewnątrz `y.zywnosc`, drugi raz przez prawdziwy koszt Racji
+(V85) liczony osobno w tej samej funkcji panelu. Wprowadzone commitem `297c60cc6` (2026-07-27,
+dopinanie V85 do panelu) — silnik tury przestawiono poprawnie na `zywnoscBrutto`, panel
+przeoczono. **Tooltip chipa "Produkcja" w panelu miasta (`cityPanel.ts:4884`) już opisuje go jako
+"brutto" — intencja UI jest poprawna, tylko kod jej nie dostarcza.**
+
+**Która liczba jest prawdziwa:** tabela MIASTA w panelu "Spichlerz centralny" (33/+1) — zgodna z
+tym, co realnie liczy silnik i co trafia do bilansu magazynu. **Panel miasta (29/−3) jest błędny**
+i pokazuje odwrócony znak bilansu żywnościowego per miasto.
+
+**Naprawa (poza zakresem tego zadania — czyste rozpoznanie):** jedna linia w `cityPanel.ts:1177`,
+`y.zywnosc` → `y.zywnoscBrutto`, analogicznie do `turn-economy.ts:1855`/`2412`. Dodatkowo do
+rozważenia: pole `zywnosc` w `CityYieldResult` (`economy.ts`) jest dziś martwe w całym silniku
+poza tym jednym błędnym odczytem — ryzyko powtórki tej pomyłki gdzie indziej w przyszłości.
+
+**Nie wymaga ABC** — przywrócenie zgodności panelu z silnikiem do wartości, którą sam panel już
+deklaruje jako intencję (tooltip "brutto"), nie zmiana balansu. Dispatch Operator bezpośrednio.
