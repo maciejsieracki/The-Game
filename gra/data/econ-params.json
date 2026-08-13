@@ -450,7 +450,7 @@
       "normal": 3,
       "hard": 2,
       "jednostka": "Drewno/turę",
-      "opis": "Bonus Drewna z nakładki Las."
+      "opis": "Bonus Drewna z nakładki Las. ⚠️ MARTWY KLUCZ (Operator R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13): żaden kod w src/ nie czyta tego pola JSON (zweryfikowano grepem całego src/ dla całej grupy `teren_mapa`) — realny bonus Drewna z lasu to `terrain_modifiers` → \"Las (nakładka)\" w data/terrain-yields.json (Drewno=15 po ×5 tej samej rundy), czytany przez terrainModifier()/FOREST_MODIFIER w economy.ts. Wartość TU celowo NIE przeskalowana (BEZ ZMIAN, wciąż 3/normal) — zmiana nie miałaby żadnego obserwowalnego efektu w grze; zgłoszone jako dług techniczny (martwa ścieżka do wyczyszczenia lub podłączenia)."
     },
     "teren_las_praca": {
       "easy": 2.5,

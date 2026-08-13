@@ -109,11 +109,11 @@
     "epoka": 2,
     "bonus": {
       "praca": 1,
-      "glina": 2,
+      "glina": 10,
       "handel": 2
     },
     "surowiecOdblokowany": "glina",
-    "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). NIE bonus.glina (2) -- osobne pola. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
+    "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). NIE bonus.glina (2) -- osobne pola. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13, B1): bonus.glina x5 → 10 (bylo 2) -- ten kanal (plon TileYield przez applyImprovementBonus) byl pominiety w Rundzie 1, ktora skalowala tylko surowiec_ilosc_tura wyzej.",
     "surowiec_ilosc_tura": 50,
     "teren": "złoże Gliny",
     "warunek": "glina → cegła (ważne w brązie)",
@@ -126,11 +126,11 @@
     "epoka": 1,
     "bonus": {
       "praca": 1,
-      "kamien": 1,
+      "kamien": 5,
       "handel": 2
     },
     "surowiecOdblokowany": "kamien",
-    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; brak pola id — propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu — DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
+    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; brak pola id — propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu — DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13, B1): bonus.kamien x5 → 5 (bylo 1) -- ten kanal (plon TileYield przez applyImprovementBonus) byl pominiety w Rundzie 1, ktora skalowala tylko surowiec_ilosc_tura wyzej.",
     "surowiec_ilosc_tura": 50,
     "teren": "Wzgórza, Góry (kamień)",
     "warunek": "budulec — mury, budynki",
@@ -164,11 +164,11 @@
     },
     "surowiecOdblokowany": null,
     "teren": "Las",
-    "warunek": "koszt 5 Pracy na start; plon +5 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
+    "warunek": "koszt 5 Pracy na start; plon +25 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24; R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B2: x5 -> 25, bylo 5 -- koszt startu 5 Pracy NIE jest surowcem budowlanym, zostaje bez zmian); potem teren bazowy bez lasu",
     "koszt_praca": 5,
     "tech": null,
     "wycinka": {
-      "praca_per_tura": 5,
+      "praca_per_tura": 25,
       "tury": 1,
       "usuwa_nakladke": "las"
     },

@@ -151,7 +151,8 @@ function runTick(city, builtIds, map) {
 
 {
   // Glinianka na zlozu gliny -- territoryYield izolowany (Glinianka nie ma
-  // drewna/kamien w tileYield, tylko bonus.glina=2 osobno w worked -- tu
+  // drewna/kamien w tileYield, tylko bonus.glina=10 osobno w worked, x5 po
+  // R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2/B1 -- bylo 2 -- tu
   // sprawdzamy WYLACZNIE territoryYield/magazyn panstwa SUROW-TERYT-01).
   const city = makeCity({ population: 1 });
   const map = {

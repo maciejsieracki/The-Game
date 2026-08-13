@@ -20,10 +20,11 @@
  *     „magazyn > 0 → dostępny" (NIE liczy realnego zapotrzebowania 1:1 per obywatel, NIE
  *     odejmuje). Używana tam, gdzie liczy się tylko podgląd (np. UI podglądu miasta przed turą) —
  *     zostaje jako jest, celowo NIE zamieniona.
- *   • `computeCitizenResourceDrain()` — REALNY DRENAŻ (Maciej 2026-08-11; stawka zmniejszona
- *     2026-08-12, patrz niżej): stawka **0,2 sztuki surowca na 1 obywatela na turę**
- *     (`CITIZEN_UPKEEP_RATE_PER_CITIZEN`), per wymagany surowiec epoki. `required =
- *     Math.floor(population × 0,2)`, `drained = min(required, stock[key] ?? 0)` — magazyn NIGDY nie schodzi poniżej zera, przy
+ *   • `computeCitizenResourceDrain()` — REALNY DRENAŻ (Maciej 2026-08-11; historia stawki —
+ *     0,2 2026-08-12, PRZYWRÓCONA 1,0 2026-08-13, patrz niżej): stawka BIEŻĄCA **1,0 sztuki
+ *     surowca na 1 obywatela na turę** (`CITIZEN_UPKEEP_RATE_PER_CITIZEN`), per wymagany
+ *     surowiec epoki. `required = Math.floor(population × 1,0)`, `drained = min(required,
+ *     stock[key] ?? 0)` — magazyn NIGDY nie schodzi poniżej zera, przy
  *     niedoborze drenuje się ile jest, NIE blokuje się całkowicie. Zwraca też `deductions` —
  *     mapę do realnego odjęcia z magazynu przez wołającego. Kara nadal BINARNA (ECHO Q3=A,
  *     niezmieniona semantyka): „dostępny" = zapotrzebowanie pokryte W PEŁNI (`drained >= required`),
@@ -37,25 +38,34 @@
  *     turę, tak jak `makeOwnerEmpireStockResolver()`).
  *
  * ⚠️ ZAOKRĄGLENIE `required` W DÓŁ DO SZTUK CAŁKOWITYCH (Maciej 2026-08-12, decyzja świadoma,
- * nie luka): przy stawce 0,2 suma `population × 0,2` jest z reguły ułamkowa (np. 53 obywateli →
- * 10,6). Sprawdzono resztę silnika: `City.surowce` jest wszędzie indziej magazynowane i mutowane
- * w SZTUKACH CAŁKOWITYCH — `creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw *
+ * nie luka; STAWKA OD 2026-08-13 = 1,0, patrz `CITIZEN_UPKEEP_RATE_PER_CITIZEN` niżej —
+ * poniższy opis mechanizmu floor pozostaje aktualny, ale PRZYKŁAD LICZBOWY jest HISTORYCZNY,
+ * z okresu gdy stawka wynosiła 0,2, PRZED `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`): przy stawce 0,2
+ * suma `population × 0,2` była z reguły ułamkowa (np. 53 obywateli → 10,6). Sprawdzono resztę
+ * silnika: `City.surowce` jest wszędzie indziej magazynowane i mutowane w SZTUKACH
+ * CAŁKOWITYCH — `creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw *
  * mult), cap)` w `turn-economy.ts` (kredytowanie magazynu z ułamkowego mnożnika terenu/bonusu) i
  * `computeTradeRouteResourceFlow()` w `trade-routes.ts` (jawny komentarz: „Math.floor — surowiec
  * liczy się w sztukach całkowitych, zgodnie z resztą City.surowce"). Dla SPÓJNOŚCI z tym wzorcem
  * `computeCitizenResourceDrain()` też floruje `required` w dół (`Math.floor`, NIE `Math.round`
  * ani `Math.ceil`) — ten sam kierunek zaokrąglenia co przy kredytowaniu magazynu, więc obywatele
- * nigdy nie są obciążani WIĘCEJ niż wynika z czystej stawki. Skutek przy małej populacji (przykład
- * Macieja: pop=1 → 1×0,2=0,2 → floor=0): zero zapotrzebowania, zero kary — nie błąd granulacji,
- * tylko naturalna konsekwencja trzymania magazynu w sztukach całkowitych przy niecałkowitej
- * stawce (ten sam mechanizm co przy każdym innym niecałkowitym dopływie surowca w tym silniku).
+ * nigdy nie są obciążani WIĘCEJ niż wynika z czystej stawki. PRZY DZISIEJSZEJ STAWCE 1,0 problem
+ * zaokrąglenia-do-zera ZNIKNĄŁ: `floor(population × 1,0)` nigdy nie floruje do zera dla
+ * populacji ≥ 1 (np. pop=1 → floor(1×1,0)=1 — jest zapotrzebowanie, jest ewentualna kara).
+ * HISTORYCZNIE, przy nieaktualnej już stawce 0,2 (przykład Macieja: pop=1 → 1×0,2=0,2 →
+ * floor=0), floor dawał zero zapotrzebowania — to był ten sam mechanizm zaokrąglenia, po prostu
+ * przy niższej granulacji stawki; `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` (2026-08-13) rozwiązało to
+ * podnosząc stawkę z powrotem do 1,0 zamiast zmieniać kierunek zaokrąglenia.
  * / EN: `required` is rounded DOWN to whole units (Math.floor, not round/ceil) — kept consistent
  * with the rest of the engine, which stores/mutates `City.surowce` exclusively in whole units
  * (see the same Math.floor pattern crediting territory yield in `turn-economy.ts` and the
  * explicit "whole units, consistent with the rest of City.surowce" comment in
- * `computeTradeRouteResourceFlow()`, `trade-routes.ts`). At a very small population (e.g. pop=1 →
- * 1×0.2=0.2) this floors to need=0 — zero demand, zero penalty; a deliberate consequence of
- * whole-unit storage at a fractional rate, not a granularity bug.
+ * `computeTradeRouteResourceFlow()`, `trade-routes.ts`). AT TODAY'S RATE OF 1.0 the
+ * zero-rounding problem is GONE: `floor(population × 1.0)` never floors to zero for
+ * population ≥ 1. HISTORICALLY, at the now-superseded rate of 0.2 (e.g. pop=1 →
+ * 1×0.2=0.2), this floored to need=0 — the same floor mechanism, just at lower rate
+ * granularity; `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` (2026-08-13) fixed this by restoring the
+ * rate to 1.0 rather than changing the rounding direction.
  *
  * AI (duża + Państwa-Miasta) objęte identycznie jak gracz (ECHO Q2=A) — funkcje tu są
  * ownerId-agnostyczne, ten sam wzorzec co `building-stock-cost.ts` (SUROW-CIV-01).
@@ -68,8 +78,9 @@
  * TWO FUNCTIONS, TWO DIFFERENT CONTRACTS: `resolveCitizenResourceCoverage()` is a PURE PREVIEW
  * (no side effects, binary "stock > 0 → available" gate, no real per-capita demand, no
  * deduction) — kept as-is for UI preview use elsewhere. `computeCitizenResourceDrain()` is the
- * REAL drain (rate: 0.2 units of resource per citizen per turn, reduced from 1.0 on 2026-08-12 —
- * `CITIZEN_UPKEEP_RATE_PER_CITIZEN`), `required = Math.floor(population × 0.2)`,
+ * REAL drain (current rate: 1.0 units of resource per citizen per turn — reduced to 0.2 on
+ * 2026-08-12, RESTORED to 1.0 on 2026-08-13 as part of `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` —
+ * `CITIZEN_UPKEEP_RATE_PER_CITIZEN`), `required = Math.floor(population × 1.0)`,
  * `drained = min(required, stock)`, never goes below zero, and returns a `deductions` map for
  * the caller to actually mutate the stockpile. The binary penalty is unchanged (ECHO Q3=A):
  * "available" means demand was FULLY covered, "missing" otherwise — still not scaled by the
@@ -213,9 +224,10 @@ export interface CitizenResourceDrainResult extends CitizenUpkeepCoverage {
 }
 
 /**
- * Realny drenaż magazynu centralnego imperium przez obywateli (Maciej 2026-08-11; stawka
- * zmniejszona 2026-08-12, „DECYZJA: STAWKA 1→0,2", punkt 1): stawka
- * **`CITIZEN_UPKEEP_RATE_PER_CITIZEN` (0,2 sztuki surowca na 1 obywatela na turę)**, per
+ * Realny drenaż magazynu centralnego imperium przez obywateli (Maciej 2026-08-11; historia
+ * stawki: zmniejszona 2026-08-12 „DECYZJA: STAWKA 1→0,2" punkt 1, PRZYWRÓCONA 2026-08-13
+ * `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`): stawka BIEŻĄCA
+ * **`CITIZEN_UPKEEP_RATE_PER_CITIZEN` (1,0 sztuki surowca na 1 obywatela na turę)**, per
  * wymagany surowiec danej epoki.
  *
  * `population` MUSI być sumą populacji WSZYSTKICH miast ownera (nie populacją jednego miasta z

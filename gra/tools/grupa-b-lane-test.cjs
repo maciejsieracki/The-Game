@@ -105,7 +105,8 @@ const yForestPlain = M.tileYield({
 ok(yForestPlain.zywnosc === 1, 'las rownina: zywnosc 2-1');
 ok(yForestPlain.handel === 0, 'las rownina: handel 1-1 floored');
 ok(yForestPlain.praca === 5, 'las rownina: praca 2+3 (Praca Rownina=2, data/terrain-yields.json)');
-ok(yForestPlain.drewno === 5, 'las rownina: drewno 2+3');
+// R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13, B1): Rownina drewno 2->10, Las drewno 3->15.
+ok(yForestPlain.drewno === 25, 'las rownina: drewno 10+15 (x5, bylo 2+3=5)');
 
 ok(M.resolveOwnCultureShare({ ownCultureShare: 0.4 }) === 0.4, 'culture share resolve');
 const rel = M.isForeignReligionDominant(
@@ -165,9 +166,9 @@ ok(aff.ok && aff.sourceCityId === 'c2', 'evaluate afford subsequent city');
 const affFirst = M.evaluateFoundCityAffordance(0, [], 0);
 ok(affFirst.ok && affFirst.kosztPraca === 0, 'FOUND Q2A first city free');
 const clr = M.freshClearingState('wyrab', 0);
-ok(clr && clr.turnsLeft === 1, 'clearing 1 turn (decyzja Maciej 2026-07-24: 1 tura, 5 Drewna)');
+ok(clr && clr.turnsLeft === 1, 'clearing 1 turn (decyzja Maciej 2026-07-24: 1 tura, 25 Drewna po x5 R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, bylo 5)');
 const t1 = M.tickHexClearing(clr);
-ok(t1.pracaGrant === 5 && t1.expired === true, 'clearing tick 5, expired po 1 turze');
+ok(t1.pracaGrant === 25 && t1.expired === true, 'clearing tick 25 (B2, bylo 5), expired po 1 turze');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 
