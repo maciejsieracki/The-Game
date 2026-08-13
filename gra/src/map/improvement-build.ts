@@ -233,6 +233,9 @@ const SEKTOR_OF: Record<string, string> = {
   // bok 1 — surowce + ich ulepszenia
   glinianka: 'surowiec',
   stadnina: 'surowiec', kopalnia_miedzi: 'surowiec', kopalnia_zelaza: 'surowiec',
+  // Cyna (Maciej 2026-08-13): jak kopalnia miedzi/żelaza — jedno złoże na heks (placeDeposits
+  // break po pierwszym trafieniu), więc nigdy nie koliduje z pozostałymi kopalniami rudy.
+  kopalnia_cyny: 'surowiec',
   // Maciej 2026-07-25: Kopalnia złota — dedykowane ulepszenie jak kopalnia_miedzi (tylko na
   // hex.zloze==='zloto'); sektor 'surowiec' jest tu bezpieczny bo tylko JEDNO złoże może
   // istnieć na heksie (placeDeposits — break po pierwszym trafieniu), więc nigdy nie koliduje
@@ -377,6 +380,8 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
   // gen-helpers.ts id='zloto').
   kopalnia_zlota: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
+  // Maciej 2026-08-13: cyna — Wzgórza/Góry, jak złoto (DEPOSIT_RULES gen-helpers.ts id='cyna').
+  kopalnia_cyny: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
 };
 
 /**
@@ -446,6 +451,8 @@ export function depositAllowsPlayerImprovement(
       return zloze === 'zelazo';
     case 'kopalnia_zlota': // kopalnia złota — TYLKO złoże złota (Maciej 2026-07-25)
       return zloze === 'zloto';
+    case 'kopalnia_cyny': // kopalnia cyny — TYLKO złoże cyny (Maciej 2026-08-13)
+      return zloze === 'cyna';
     case 'bydlo':
       return nakladka === Nakladka.ZlozeBydla;
     case 'owce':
@@ -734,6 +741,11 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = inPlayerTerritory(q, r)
           && (teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory)
           && zloze === 'zloto';
+        break;
+      case 'kopalnia_cyny':
+        terrainOk = inPlayerTerritory(q, r)
+          && (teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory)
+          && zloze === 'cyna';
         break;
       case 'tarasy':
         terrainOk = inPlayerTerritory(q, r)

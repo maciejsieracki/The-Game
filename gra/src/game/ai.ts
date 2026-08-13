@@ -1739,6 +1739,7 @@ const AI_IMPROVEMENT_FOR_DEFICIT: Readonly<Record<string, readonly ImprovementKe
   glina: ['glinianka'],
   ruda: ['kopalnia_miedzi'],
   ruda_zelaza: ['kopalnia_zelaza'],
+  ruda_cyny: ['kopalnia_cyny'],
 };
 
 /** P-AI-011: budynki miejskie pod brakujący surowiec. */
@@ -1756,7 +1757,9 @@ const AI_BUILDING_FOR_DEFICIT: Readonly<Record<string, readonly string[]>> = {
 
 /** Gdy brakuje produktu przetworzonego — boost także surowca źródłowego (kopalnia/tartak). */
 const UPSTREAM_FOR_PROCESSED_RESOURCE: Readonly<Record<string, readonly string[]>> = {
-  braz: ['ruda'],
+  // Maciej 2026-08-13: 'ruda_cyny' dopisana — Brąz od R-CYNA-BRAZ ma TRZY inputy
+  // (ruda + drewno + ruda_cyny), więc deficyt Brązu ma boostować budowę OBU kopalni.
+  braz: ['ruda', 'ruda_cyny'],
   zelazo: ['ruda_zelaza'],
   cegla: ['glina', 'drewno'],
 };

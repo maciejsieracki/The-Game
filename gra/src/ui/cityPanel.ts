@@ -5753,7 +5753,7 @@ function ownerSurowcePoolFor(city: City): Record<string, number> {
  * STOCK_RESOURCE_LABEL (game/building-stock-cost.ts).
  */
 const CS_RES_STRIP_ORDER: readonly string[] = [
-  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'cegla', 'braz', 'zelazo', 'stal',
+  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'braz', 'zelazo', 'stal',
 ];
 
 /** Rdzeń paska budowy — ZAWSZE widoczny, także przy 0 (podstawowe materiały budowlane),

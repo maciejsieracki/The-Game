@@ -57,6 +57,7 @@ const ZLOZE_LABEL: Record<string, string> = {
   zelazo:   'Ruda żelaza',
   stal:     'Stal',
   zloto:    'Złoto',
+  cyna:     'Ruda cyny',
 };
 
 /** Klucze ASCII z terrain-improvements.json → etykieta panelu (resources.json Surowiec). */
@@ -66,6 +67,7 @@ const SUROWIEC_KEY_LABEL: Record<string, string> = {
   glina:  'Glina',
   ruda:   'Ruda',
   ruda_zelaza: 'Ruda żelaza',
+  ruda_cyny: 'Ruda cyny',
   zelazo: 'Żelazo',
   stal:   'Stal',
   bydlo:  'Trzoda (krowa/świnia)',
@@ -161,7 +163,7 @@ function improvementKeysOnPlacedHex(imp: string | readonly string[]): string[] {
 
 /** Ulepszenia wymagające złoża na heksie (terrain-improvements.json). */
 const DEPOSIT_LINKED_IMPROVEMENTS = new Set<string>([
-  'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'warzelnia_soli', 'stadnina',
+  'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'warzelnia_soli', 'stadnina',
 ]);
 
 /** Hodowla Model B — aktywny dostęp bez złoża (2026-07-09). */

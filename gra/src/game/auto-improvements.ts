@@ -40,7 +40,7 @@ export interface AutoImprovementPick {
 /** Kolejność priorytetów AI / profil Zrównoważone (determinizm A=B). */
 export const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
   'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'oboz_lowiecki', 'lodzie_rybackie',
-  'irygacja', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kamieniolom', 'glinianka', 'stadnina',
+  'irygacja', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny', 'kamieniolom', 'glinianka', 'stadnina',
   'warzelnia_soli', 'tartak', 'posterunek', 'droga', 'droga_brukowana', 'fort',
   'wyrab',
 ];
@@ -50,7 +50,7 @@ const ULEPSZENIA_FOCUS_ZYWNOSC: readonly ImprovementKey[] = [
 ];
 
 const ULEPSZENIA_FOCUS_SUROWCE: readonly ImprovementKey[] = [
-  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza',
+  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny',
   'stadnina', 'warzelnia_soli',
 ];
 

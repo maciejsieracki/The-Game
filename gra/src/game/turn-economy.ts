@@ -1555,6 +1555,7 @@ function tickEmpireResourcePipeline(
     if (!terrYield) continue;
     creditTerritory('ruda', terrYield.ruda);
     creditTerritory('ruda_zelaza', terrYield.ruda_zelaza);
+    creditTerritory('ruda_cyny', terrYield.ruda_cyny);
     creditTerritory('sol', terrYield.sol);
     creditTerritory('zloto', terrYield.zloto);
     creditTerritory('kon', terrYield.kon);

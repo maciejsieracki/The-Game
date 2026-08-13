@@ -121,6 +121,7 @@ eq(D.diplomacyHandelSurowiecCenaJednostkowa('glina'), 2, 'glina 2 PN/szt.');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('kamien'), 3, 'kamien 3 PN/szt.');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda'), 5, 'ruda miedzi 5 PN/szt.');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda_zelaza'), 10, 'ruda_zelaza 10 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda_cyny'), 10, 'ruda_cyny 10 PN/szt. (R-CYNA-BRAZ, Maciej 2026-08-13)');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('cegla'), 5, 'cegla 5 PN/szt.');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('sol'), 2, 'sol 2 PN/szt.');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('kon'), 5, 'kon 5 PN/szt.');
@@ -159,7 +160,9 @@ eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 137, 137), 135, 'normalize: 137 s
 eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 3, 137), 0, 'normalize: żądanie 3 < krok(5) -> 0, nie 3');
 eq(D.diplomacyNormalizeSurowiecIlosc('wegiel', 137, 137), 137, 'normalize: wegiel krok 1 -> max przechodzi bez zmian');
 const handelCat = D.diplomacyHandelSurowceCatalog();
-ok(Object.keys(handelCat).length === 14, 'katalog handlu: 14 surowców ilościowych');
+// R-CYNA-BRAZ (Maciej 2026-08-13): 14 -> 15, doszła ruda_cyny (wymienialna dyplomatycznie
+// jak miedź/żelazo, patrz asercja diplomacyHandelSurowiecCenaJednostkowa('ruda_cyny') wyżej).
+ok(Object.keys(handelCat).length === 15, 'katalog handlu: 15 surowców ilościowych (było 14, +ruda_cyny)');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

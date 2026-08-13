@@ -769,6 +769,7 @@ import {
   missingStockFor, stockResourceLabel,
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
+import { empireHasKopalniaNaZlozuCyny, cityHasOdlewniaForCyna } from './game/cyna-access';
 import {
   bestBuildingProgressAfterCityVisit,
   applyCityVisitBonusGain, formatBuildingBonusGainHint,
@@ -2530,6 +2531,29 @@ async function boot(): Promise<void> {
           }
         }
       }
+      // Ruda cyny (Maciej 2026-08-13): analogiczny empire-wide fallback do Żelaza wyżej —
+      // empireActiveResourceLabelsForOwner (resource-access.ts) jest ograniczone do zasięgu
+      // wzroku KAŻDEGO miasta z osobna, więc Kopalnia cyny poza zasięgiem żadnego miasta
+      // (rzadki przypadek bootstrap fair-play) nie dawałaby etykiety mimo realnego dostępu
+      // gdziekolwiek w imperium. UWAGA: celowo NIE przez hasCynaAccess(bool, builtIds) — ten
+      // sam wzorzec przy Żelazie wyżej przekazuje `hasKopalniaZelazo` (boolean) w miejsce
+      // `empireStock` (Record), co w hasZelazoAccess/hasCynaAccess zeruje `stock` (typeof
+      // 'boolean' -> undefined) i czyni wynik zawsze `false` — pre-istniejący, poza zakresem
+      // tego zlecenia stan w zelazo-access.ts (nie naprawiane tutaj, patrz raport). Tu wprost:
+      // dostęp mapowy (kopalnia gdziekolwiek) AND odlewnia w tym mieście.
+      if (!labels.has('Ruda cyny')) {
+        const ownImprovements = placedImprovementsForOwner(ownerId);
+        const hasKopalniaCyny = empireHasKopalniaNaZlozuCyny(ownImprovements, map);
+        if (hasKopalniaCyny) {
+          for (const c of cities) {
+            if (c.ownerId !== ownerId) continue;
+            if (cityHasOdlewniaForCyna(cityBuilt.get(c.id) ?? [])) {
+              labels.add('Ruda cyny');
+              break;
+            }
+          }
+        }
+      }
       return [...labels];
     }
 
@@ -2813,12 +2837,12 @@ async function boot(): Promise<void> {
         { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
         { id: 'braz',        label: 'Brąz',        icon: '🥉', typ: 'przetworzony' },
         { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
-        // Placeholder (P-SUROWCE-KOLEJNOSC-KART): "Ruda cyny" NIE ISTNIEJE w
-        // resources.json — karta wyszarzona/nieaktywna, bez realnych danych silnika.
-        // NIE dodawaj tego id do resources.json ani żadnej innej tabeli danych gry.
-        // EN: "Ruda cyny" (tin ore) does NOT exist in resources.json — dimmed/inactive
-        // card only, no real engine data. Do not add this id to any game data table.
-        { id: 'ruda_cyny',   label: 'Ruda cyny — wkrótce', icon: '⛏️', typ: 'surowy', placeholder: true },
+        // R-CYNA-BRAZ (Maciej 2026-08-13): "Ruda cyny" wdrożona do resources.json — komentarz
+        // placeholder POWYŻSZY (P-SUROWCE-KOLEJNOSC-KART) był NIEAKTUALNY od tej zmiany; karta
+        // teraz aktywna, dane realne (stock/produkcja/dostęp jak pozostałe surowce ilościowe).
+        // EN: "Ruda cyny" (tin ore) is now implemented in resources.json — the placeholder note
+        // above is stale as of this change; card is active with real engine data.
+        { id: 'ruda_cyny',   label: 'Ruda cyny',   icon: '⛏️', typ: 'surowy' },
         { id: 'zelazo',      label: 'Żelazo',      icon: '⚙️', typ: 'przetworzony' },
         { id: 'stal',        label: 'Stal',        icon: '🔩', typ: 'przetworzony' },
         { id: 'kon',         label: 'Koń',         icon: '🐎', typ: 'hodowla' },
