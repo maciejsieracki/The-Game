@@ -17952,3 +17952,25 @@ NIEZWIĄZANE z tym commitem (identyczne na commicie rodzica).
 
 **Dispatch Operatora rundy 2 (Sonnet 5) NASTĘPUJE** — obie noty, kierunek jednoznaczny (poprawki
 techniczne dopinające zamówioną naprawę, nie nowa decyzja projektowa).
+
+---
+
+## R-WYCOFANIE-LIMIT-JEDNORAZOWY — Evaluator: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-13)
+
+Zero blokujących. Zweryfikowane niezależnie: 213/213 logic-test, 6/6 combat-test, 33/33 nowy test —
+własnymi 8 mutacjami (nie na słowo Operatora), wszystkie złapane. Potwierdzone: `.some()` (blokada
+gdy KTÓRAKOLWiek jednostka w rosterze obrony już się wycofała) jest jedyną poprawną opcją, bo
+`applyDefenderPreBattleRetreat` fizycznie przesuwa CAŁY roster promienia 1 heksa naraz — węższy
+warunek stworzyłby dziurę pozwalającą pociągnąć tę samą jednostkę drugi raz przy ataku na inną
+jednostkę z tego samego rosteru. Zakres ograniczony wyłącznie do obrony gracza (nie atakującego,
+nie AI jako obrońcy) potwierdzony jako właściwy — AI/miasta-państwa jako obrońca nigdy nie mają
+ekranu przed-bitewnego z Wycofaj, świadomie udokumentowane w kodzie ("PARYTET AI").
+
+**Nota do backlogu (nieblokująca):** komunikat mówi "ta jednostka wycofała się już w tej turze",
+ale realny zasięg blokady to CAŁY rejon 1 heksa wokół wycofanego rosteru — jednostka C stojąca
+obok, która sama nigdy się nie wycofała, dostanie tę samą blokadę i ten sam (mylący dla niej)
+komunikat. Możliwe źródło przyszłego zgłoszenia z playtestu, do rozważenia osobno.
+Inne noty (save-scumming omija limit — pre-istniejąca ogólna słabość, nie regresja; część testu
+mirror zamiast realnego kodu, wzorzec już przyjęty w projekcie) — zapisane, niepilne.
+
+**STATUS: ZAMKNIĘTE.**
