@@ -300,5 +300,66 @@ function foreignTypesOf(placement) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// (f) RUNDA 3 (Evaluator, nota N-B, 2026-08-13): strażnik tekstowy main.ts --
+// wywołanie applyClusterStartPlan() wewnątrz doStartGame (ścieżka realnej
+// nowej gry) MUSI przekazywać preferredCivIds: _menuSelectedAiCivIds. Bramka
+// z sekcji (b) wyżej testuje ZACHOWANIE przez wywołanie funkcji z modułu --
+// nie złapałaby regresji typu "ktoś usunął to wpięcie przy refaktorze
+// main.ts", bo esbuild entry importuje wprost buildClusterStartPlan, nie
+// main.ts. Wzorem ai-founding-territory-test.cjs sekcja "B1: strażnik
+// tekstowy main.ts" -- grep źródła main.ts jako tekstu, nie test zachowania.
+// / EN: text guard on main.ts -- the applyClusterStartPlan() call inside
+// doStartGame (real new-game path) MUST pass preferredCivIds:
+// _menuSelectedAiCivIds. Scenario (b) above tests BEHAVIOUR by calling the
+// module function directly -- it would not catch a regression where someone
+// removes this wiring during a main.ts refactor, since the esbuild entry
+// imports buildClusterStartPlan directly, not main.ts. Modelled on
+// ai-founding-territory-test.cjs's "B1: text guard main.ts" section -- grep
+// main.ts source as text, not a behaviour test.
+// ---------------------------------------------------------------------------
+console.log('\n--- (f) strażnik tekstowy main.ts -- applyClusterStartPlan w doStartGame ---');
+{
+  const mainTsPath = path.join(GRA, 'src/main.ts');
+  const mainSrc = fs.readFileSync(mainTsPath, 'utf8');
+
+  const fnMarker = 'async function doStartGame(params: NewGameParams): Promise<void> {';
+  const fnStart = mainSrc.indexOf(fnMarker);
+  assert(fnStart !== -1, '(f)-pre: doStartGame nie znaleziony w main.ts');
+
+  const callMarker = 'applyClusterStartPlan(';
+  const callIdx = fnStart !== -1 ? mainSrc.indexOf(callMarker, fnStart) : -1;
+  assert(callIdx !== -1 && callIdx > fnStart, '(f)-pre: wywołanie applyClusterStartPlan(...) nie znalezione wewnątrz doStartGame');
+
+  // Balansuje nawiasy klamrowe od podanego indeksu '{' i zwraca indeks TUZ ZA
+  // dopasowanym '}' -- odporne na reformat/dopisanie kolejnych opcji do obiektu.
+  function balancedBraceEnd(src, openBraceIdx) {
+    let depth = 0;
+    let i = openBraceIdx;
+    for (; i < src.length; i++) {
+      if (src[i] === '{') depth++;
+      else if (src[i] === '}') {
+        depth--;
+        if (depth === 0) { i++; break; }
+      }
+    }
+    return i;
+  }
+
+  let block = '';
+  if (callIdx !== -1) {
+    const openBraceIdx = mainSrc.indexOf('{', callIdx);
+    assert(openBraceIdx !== -1, '(f)-pre: obiekt opcji applyClusterStartPlan(...) nie znaleziony');
+    const closeBraceIdx = openBraceIdx !== -1 ? balancedBraceEnd(mainSrc, openBraceIdx) : callIdx;
+    block = mainSrc.slice(callIdx, closeBraceIdx);
+  }
+
+  assert(
+    /preferredCivIds\s*:\s*_menuSelectedAiCivIds/.test(block),
+    '(f): wywołanie applyClusterStartPlan w doStartGame musi przekazywać preferredCivIds: _menuSelectedAiCivIds '
+      + '(regresja klasy błędu z rundy 1 -- wpięcie usunięte przy refaktorze main.ts, żaden test behawioralny tego nie łapie)',
+  );
+}
+
 console.log('\nciv-configurator-opponent-test:', passed, 'passed,', failed, 'failed');
 if (failed) process.exit(1);

@@ -99,6 +99,83 @@ for (const id of mapKamien.values()) {
 }
 
 // ---------------------------------------------------------------------------
+// RUNDA 3 (Evaluator R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2,
+// warunek zamkniecia N-A, 2026-08-13): przy przepisaniu
+// civ-configurator-opponent-test.cjs w rundzie 2 (40 -> 37 asercji, przejscie
+// na testowanie computeClusters()/buildClusterStartPlan() zamiast martwej
+// scieżki) zniknelo PRZY OKAZJI jedyne pokrycie preferredCivIds bezposrednio
+// na pickActiveCivPool()/assignAiCivTypes() z civ-roster.ts -- ale ta funkcja
+// NIE jest martwa: uzywa jej repairAiRosterFromMap() (naprawa sejwu z
+// brakujacym ownerem) i restoreAiRosterFromSave() (galaz legacy wczytywania
+// starych zapisow) w main.ts. Przywracamy 3 scenariusze z oryginalnego testu
+// (git show f0baeacd -- gra/tools/civ-configurator-opponent-test.cjs),
+// przeniesione tutaj bo to tutaj pickActiveCivPool jest juz bezposrednio
+// bundlowana i testowana.
+// / EN: rewriting civ-configurator-opponent-test.cjs in round 2 accidentally
+// dropped the only coverage of preferredCivIds directly on
+// pickActiveCivPool()/assignAiCivTypes() -- but that function is NOT dead:
+// repairAiRosterFromMap() (save repair for a missing owner) and
+// restoreAiRosterFromSave() (legacy load path) in main.ts still call it.
+// Restoring the 3 scenarios from the original test, here because this file
+// already bundles and tests pickActiveCivPool directly.
+// ---------------------------------------------------------------------------
+{
+  // (b) fill-in: preferowanych mniej niz potrzeba -> reszta dobrana z puli
+  // (deterministyczny fill-in z shuffle).
+  const partial = M.pickActiveCivPool(ALL, 'rzymianie', 5, 6, 2, ['egipt']);
+  assert(partial.length === 5, 'R3(b) fill-in: 5 typow mimo tylko 1 preferowanego (got ' + partial.length + ')');
+  assert(partial.includes('egipt'), 'R3(b) fill-in: preferowany typ nadal obecny');
+  assert(partial.includes('rzymianie'), 'R3(b) fill-in: gracz nadal obecny');
+  assert(new Set(partial).size === partial.length, 'R3(b) fill-in: unikalne typy');
+  const partial2 = M.pickActiveCivPool(ALL, 'rzymianie', 5, 6, 2, ['egipt']);
+  assert(
+    JSON.stringify(partial) === JSON.stringify(partial2),
+    'R3(b) fill-in: deterministyczny (ten sam seed -> te same dobrane typy)',
+  );
+
+  // (c) silnik: pula obcieta do civTypesCount=3 mimo 5 preferowanych --
+  // pierwsze (typesNeeded-1) w kolejnosci zaznaczenia, reszta odrzucona bez bledu.
+  const tooMany = ['egipt', 'grecy', 'celtowie', 'hetyci', 'babilonia'];
+  const poolCapped = M.pickActiveCivPool(ALL, 'rzymianie', 3, 6, 5, tooMany);
+  assert(poolCapped.length === 3, 'R3(c) silnik: pula obcieta do civTypesCount=3 mimo 5 preferowanych (got ' + poolCapped.length + ')');
+  assert(
+    poolCapped.includes('egipt') && poolCapped.includes('grecy'),
+    'R3(c) silnik: pierwsze preferowane zachowane w kolejnosci zaznaczenia (got ' + JSON.stringify(poolCapped) + ')',
+  );
+  assert(!poolCapped.includes('babilonia'), 'R3(c) silnik: nadmiarowe preferowane (5.) odrzucone bez bledu');
+  assert(poolCapped.includes('rzymianie'), 'R3(c) silnik: gracz nadal w puli mimo obciecia');
+
+  // (e) assignAiCivTypes: przypisany typ zawsze w puli epoki Kamienia, nawet
+  // gdy preferredCivIds zawiera przestarzala preferencje spoza tej puli
+  // (np. stare wybory z gry w epoce Zelaza po cofnieciu do Kamienia).
+  const zelazoPool = M.civIdsAvailableAtGameEpoch(civs.cywilizacje, 'zelazo');
+  const zelazoOnly = zelazoPool.find((id) => !kamienPool.includes(id));
+  assert(!!zelazoOnly, 'R3(e) test setup: istnieje typ dostepny w Zelazie a nie w Kamieniu');
+
+  const poolKamienWithStalePreferred = M.pickActiveCivPool(
+    kamienPool, 'egipt', 5, 3, 42, ['egipt', zelazoOnly, 'grecy'],
+  );
+  assert(
+    !poolKamienWithStalePreferred.includes(zelazoOnly),
+    'R3(e) silnik: przestarzala preferencja spoza puli epoki odfiltrowana, brak wywalenia',
+  );
+  assert(poolKamienWithStalePreferred.includes('grecy'), 'R3(e) silnik: pozostala poprawna preferencja nadal dziala');
+
+  const mapKamienPreferred = M.assignAiCivTypes({
+    allCivIds: kamienPool,
+    playerCivId: 'egipt',
+    aiOwnerIds: [1, 2, 3],
+    aktywneTypy: 4,
+    seed: 555,
+    preferredCivIds: ['grecy', zelazoOnly],
+  });
+  for (const id of mapKamienPreferred.values()) {
+    assert(kamienPool.includes(id), 'R3(e) assignAiCivTypes: przypisany typ ' + id + ' zawsze w puli epoki Kamienia mimo preferredCivIds spoza puli');
+  }
+  assert([...mapKamienPreferred.values()].includes('grecy'), 'R3(e) assignAiCivTypes: poprawna preferencja (grecy) faktycznie przypisana');
+}
+
+// ---------------------------------------------------------------------------
 // N1 (Evaluator R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2, 2026-08-13):
 // rotatePreferredForRepairSeed — repairAiRosterFromMap() z 1 brakującym ownerem
 // nie może zawsze kolapsować do preferredValid[0].
