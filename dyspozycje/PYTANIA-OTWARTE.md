@@ -17557,3 +17557,22 @@ skilli AutoBot (reguła 3x Evaluator za zgodą).
 **Stan po tej operacji:** `main` = `f438edfb` (zawiera FALE 270-273). FALA 274 (`ad0f160c`, md5
 `81ae686d`) zostaje na gałęzi roboczej — kwalifikuje się do scalenia dopiero po powstaniu FALI
 275.
+
+---
+
+## P-PANEL-MIASTO-NIECZYTELNY-PRZY-PRZYBLIZENIU (2026-08-13, zgłoszenie z playtestu, screenshot) · STATUS: **OTWARTE — do rozpoznania**
+
+Maciej (ze screenshotem — pasek nazwy miasta "ATENY 8,5% [1]" nad heksem, mocno przybliżona
+kamera): „Nadal pozostaje temat otwarty bardzo niskiej jakości paneru nad miastem po
+przybliżeniu. Praktycznie wszystko jest nieczytelne, przy takim przybliżeniu trzeba byłoby
+przygotować wersję pełną, a po oddaleniu po prostu by się zmniejszała, a nie na odwrót."
+
+**Interpretacja (do potwierdzenia przy rozpoznaniu, nie zakładać):** dziś panel nad miastem
+prawdopodobnie skaluje się/rozmywa się ODWROTNIE do oczekiwań — przy dużym przybliżeniu
+(najwięcej miejsca na ekranie) tekst/ikony są rozmyte/nieczytelne, zamiast pokazać pełny,
+szczegółowy wariant. Właściciel proponuje: osobna, pełna wersja panelu dla bliskiego zoomu,
+która przy oddalaniu kamery ma się PROPORCJONALNIE ZMNIEJSZAĆ (nie odwrotnie).
+
+Nie rozpoznane jeszcze technicznie (czy to problem skalowania DOM/CSS vs canvas, czy renderowanie
+tekstu w Three.js/sprite o stałej rozdzielczości, czy coś innego) — do zbadania osobno, poza
+zakresem tej sesji (koniec pracy autonomicznej). Zarejestrowane do podjęcia przy następnej turze.
