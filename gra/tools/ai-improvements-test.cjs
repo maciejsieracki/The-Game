@@ -26,6 +26,20 @@
  *       refundację. Test odtwarza dosłownie formułę z main.ts (nie może bundlować main.ts --
  *       to closure `boot()`, nie eksportowana funkcja), na produkcyjnych danych
  *       terrain-improvements.json (przez `getImprovementMeta`/`clearingTotalPraca`).
+ *   12. RUNDA 2 (Evaluator P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA, 2026-08-13): straznik
+ *       tekstowy main.ts -- wzorem B1 w ai-founding-territory-test.cjs. Test 11 SYMULUJE
+ *       formule lokalnie (nie wykonuje kodu main.ts, closure `boot()` niebundlowalna wprost),
+ *       wiec dwie jego asercje ("regres-guard") okazaly sie tautologiami: porownywaly zmienna
+ *       z jej wlasna definicja (X===X, X!==X+cokolwiek) -- PASS niezaleznie od tresci main.ts
+ *       (dowod mutacyjny Evaluatora: podmiana main.ts na pelny stary bug nadal dawala 30/30).
+ *       Obie tautologie USUNIETE z testu 11 (nizej), zastapione MERYTORYCZNIE przez test 12,
+ *       ktory czyta TEKST main.ts (blok `if (meta?.typ === 'wycinka') { ... }` w AI
+ *       buildImprovement, balansowanie nawiasow klamrowych) i asercjonuje: (a) obecnosc
+ *       `creditOwnerResourceStock(..., 'drewno', ...)` -- plon trafia do Drewna; (b) brak
+ *       wzorca `poolBefore - koszt + ` -- stary bug (`a530d48b^`) dopisywal refundacje do puli
+ *       Pracy tym dokladnie wzorcem. Nie-jalowosc zweryfikowana recznie: tymczasowe
+ *       przywrocenie starego bloku z `a530d48b^` powoduje PADNIECIE 12b z jasnym komunikatem;
+ *       aktualny main.ts wraca do zielonego.
  *
  * Pure logic only -- no DOM, no THREE.
  */
@@ -337,11 +351,9 @@ console.log('11. egzekucja wyrab (AI) — refundacja idzie do Drewna, nie Pracy'
   //      przez applyStolarniaDrewnoMapInflow -> creditOwnerResourceStock('drewno').
   const meta = getImprovementMeta('wyrab');
   assert(meta && meta.typ === 'wycinka', 'sanity: wyrab ma typ=wycinka w terrain-improvements.json');
-  const koszt = meta.kosztPraca;
   const pracaTotal = clearingTotalPraca('wyrab');
   assert(pracaTotal > 0, 'sanity: clearingTotalPraca(wyrab) > 0 (dziś 25 wg R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
 
-  const pracaPoolBefore = 100;
   const aiCity = { id: 'ai-city0', ownerId: PLAYER_ID, surowce: {} };
 
   // Bez Stolarnii.
@@ -350,15 +362,18 @@ console.log('11. egzekucja wyrab (AI) — refundacja idzie do Drewna, nie Pracy'
   const drewnoCap = ownerResourceCap([aiCity], new Map(), PLAYER_ID, DATA_FOR_CAP, 'normal', 1);
   assert(drewnoCap >= drewnoCredit0, 'sanity: cap magazynu nie przycina refundacji w tym scenariuszu');
   const credited0 = creditOwnerResourceStock([aiCity], PLAYER_ID, 'drewno', drewnoCredit0, drewnoCap);
-  const pracaPoolAfter = pracaPoolBefore - koszt;
 
   eq(credited0, drewnoCredit0, 'creditOwnerResourceStock zapisuje pelna refundacje do Drewna');
   eq(aiCity.surowce.drewno, drewnoCredit0, `magazyn Drewna AI rosnie o ${drewnoCredit0} (nie 0)`);
-  eq(pracaPoolAfter, pracaPoolBefore - koszt, `pula Pracy AI traci WYLACZNIE koszt startu (${koszt})`);
-  assert(
-    pracaPoolAfter !== pracaPoolBefore - koszt + drewnoCredit0,
-    `regres-guard: pula Pracy NIE rosnie o refundacje (stary bug dawalby ${pracaPoolBefore - koszt + drewnoCredit0}, dziś ${pracaPoolAfter})`,
-  );
+  // RUNDA 2 (Evaluator): tu byly 2 tautologiczne asercje ("pracaPoolAfter" zdefiniowane
+  // jako "pracaPoolBefore - koszt" i porownywane samo ze soba / samo+staly skladnik) --
+  // PASS niezaleznie od tresci main.ts, bo test 11 nie wykonuje main.ts, tylko symuluje
+  // formule lokalnie. Usuniete; realna asercja "main.ts nie dodaje refundacji do puli
+  // Pracy" zyje teraz w tescie 12 nizej (straznik tekstowy, czyta blok main.ts wprost).
+  // EN: 2 tautological assertions used to live here (compared a variable against its own
+  // definition) -- PASS regardless of main.ts content since test 11 never executes
+  // main.ts. Removed; the real "main.ts doesn't add refund to Praca pool" assertion now
+  // lives in test 12 below (textual guard reading the main.ts block directly).
 
   // Z 1 Stolarnią (parytet z graczem — patrz stolarnia-r5-d2-test.cjs).
   const aiCityStolarnia = { id: 'ai-city1', ownerId: PLAYER_ID, surowce: {} };
@@ -369,6 +384,71 @@ console.log('11. egzekucja wyrab (AI) — refundacja idzie do Drewna, nie Pracy'
     ownerResourceCap([aiCityStolarnia], new Map(), PLAYER_ID, DATA_FOR_CAP, 'normal', 1),
   );
   eq(aiCityStolarnia.surowce.drewno, credited1, '1 Stolarnia: bonus Drewna z wyrębu AI trafia do magazynu');
+}
+
+// ===========================================================================
+// 12. Straznik tekstowy main.ts -- blok AI `if (meta?.typ === 'wycinka') { ... }`
+//     w sekcji `cmd.type === 'buildImprovement'`. Test 11 wyzej NIE wykonuje
+//     main.ts (closure `boot()`, niebundlowalny wprost) -- symuluje formule
+//     lokalnie, wiec nie moze wykryc regresji w main.ts samym. Wzorem B1
+//     w ai-founding-territory-test.cjs: czytamy TEKST main.ts i asercjonujemy
+//     obecnosc/nieobecnosc konkretnych wzorcow w bloku wycinka.
+//     EN: main.ts textual guard for the AI clearing block -- test 11 never
+//     executes main.ts, so it can't catch a regression written there; this
+//     reads the source text instead (same pattern as B1 in
+//     ai-founding-territory-test.cjs).
+// ===========================================================================
+console.log("12. straznik tekstowy main.ts -- blok AI wycinka kredytuje Drewno, nie dokłada refundacji do Pracy");
+{
+  const mainTsPath = path.resolve(GRA_ROOT, 'src/main.ts');
+  const mainSrc = fs.readFileSync(mainTsPath, 'utf8');
+
+  const blockStartMarker = "if (cmd.type === 'buildImprovement') {";
+  const blockStartIdx = mainSrc.indexOf(blockStartMarker);
+  assert(blockStartIdx !== -1, '12-pre: marker startu bloku AI buildImprovement nie znaleziony w main.ts');
+
+  const wycinkaMarker = "if (meta?.typ === 'wycinka') {";
+  const wycinkaIdx = blockStartIdx !== -1 ? mainSrc.indexOf(wycinkaMarker, blockStartIdx) : -1;
+  assert(wycinkaIdx !== -1 && wycinkaIdx > blockStartIdx,
+    '12-pre: marker bloku wycinka (AI, meta?.typ === "wycinka") nie znaleziony w main.ts');
+
+  // Balansuje nawiasy klamrowe od podanego indeksu '{' i zwraca indeks TUZ ZA dopasowanym '}'
+  // (identyczny helper jak B1 w ai-founding-territory-test.cjs).
+  function balancedBraceEnd(src, openBraceIdx) {
+    let depth = 0;
+    let i = openBraceIdx;
+    for (; i < src.length; i++) {
+      if (src[i] === '{') depth++;
+      else if (src[i] === '}') {
+        depth--;
+        if (depth === 0) { i++; break; }
+      }
+    }
+    return i;
+  }
+
+  let wycinkaBlock = '';
+  if (wycinkaIdx !== -1) {
+    const openBraceIdx = wycinkaIdx + wycinkaMarker.length - 1; // pozycja '{' na koncu markera
+    const wycinkaBlockEnd = balancedBraceEnd(mainSrc, openBraceIdx);
+    wycinkaBlock = mainSrc.slice(wycinkaIdx, wycinkaBlockEnd);
+  }
+  assert(wycinkaBlock.length > 0, '12-pre: blok wycinka (AI) pusty -- balansowanie nawiasow klamrowych nie powiodlo sie');
+
+  // (1) OBECNOSC: plon wyrebu kredytuje Drewno przez creditOwnerResourceStock(..., 'drewno', ...).
+  const creditDrewnoRe = /creditOwnerResourceStock\([^;]*'drewno'/;
+  assert(creditDrewnoRe.test(wycinkaBlock),
+    "12a: blok wycinka (AI) musi wolac creditOwnerResourceStock(..., 'drewno', ...) -- plon wyrebu trafia do magazynu Drewna");
+
+  // (2) NIEOBECNOSC: stary bug (a530d48b^) dopisywal refundacje wprost do puli Pracy AI --
+  // "aiPracaPoolByOwner.set(ownerId, poolBefore - koszt + refund);". Ten wzorzec
+  // ("poolBefore - koszt + ") jest specyficzny dla bledu -- poprawiony kod konczy sie na
+  // "poolBefore - koszt);" (bez dalszego dodawania), wiec regex nie zlapie false-positive.
+  const oldBuggyPoolRe = /poolBefore\s*-\s*koszt\s*\+\s*/;
+  assert(!oldBuggyPoolRe.test(wycinkaBlock),
+    '12b: blok wycinka (AI) NIE MOZE dodawac niczego do "poolBefore - koszt" -- stary bug '
+    + '(a530d48b^) doliczal refundacje wyrebu do puli Pracy AI zamiast kredytowac Drewno '
+    + '(regres P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA)');
 }
 
 // ---------------------------------------------------------------------------
