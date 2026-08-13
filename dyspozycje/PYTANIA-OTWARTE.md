@@ -17189,3 +17189,32 @@ kolejce). Gdy `sanitizeProductionQueue` usuwa front bo przegrany wyścig o cud �
 scalar Pracy ma trafić do puli imperium, analogicznie do `remainder` przy naturalnym ukończeniu
 itemu. Spójne z zasadą przyjętą w 5-rundowej naprawie `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B`
 (bankuj, nigdy nie przenoś między różnymi itemami). Dispatch w toku.
+
+---
+
+## KOREKTA: R-DYPLO-CENNIK-SKALA-5X-Q1 — doprecyzowanie mechanizmu (Maciej, 2026-08-13)
+
+**Zastępuje sposób implementacji z poprzedniego ECHO** (kierunek decyzji — cena ma efektywnie
+spaść 5× — pozostaje ten sam, zmienia się WYŁĄCZNIE mechanizm techniczny). Zgłoszony problem:
+÷5 na `cena_*` daje ułamki dla tanich surowców (Drewno 1→0,2, Glina 2→0,4, Kamień 3→0,6,
+Sól 2→0,4) — dokładnie ten sam floor-do-zera, który cały `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` miał
+wyeliminować.
+
+**Decyzja właściciela (dosłowna):** „c + możliwość wymiany co 5 szt zamiast co 1 szt wtedy nie
+będzie ułamków czyli stara jedna szt to wartościowo dla handlu nowe 5 szt."
+
+**Mechanizm:** `handel_surowce.cena_*` w `econ-params.json` zostają **NUMERYCZNIE BEZ ZMIAN**
+(Drewno=1, Glina=2, Kamień=3, Ruda=5, Ruda żelaza=10, Cegła=5, Sól=2, Koń=5, Ceramika=5,
+Brąz=15, Żelazo=20, Stal=25, Węgiel=20 — sprawdzić czy Węgiel był objęty ×5 produkcji, jeśli
+NIE — nie dotykać jego ceny wcale, zgodnie z tą samą logiką co Złoto). Zamiast dzielić cenę,
+**minimalny krok/inkrement wymiany handlowej rośnie z 1 szt. na 5 szt.** — 5 sztuk NOWEJ skali
+(po ×5 produkcji) jest wartościowo równe 1 sztuce STAREJ skali, więc cena za blok 5 sztuk = stara
+cena za 1 sztukę (liczba całkowita, żadnych ułamków). Efekt ekonomiczny identyczny do ÷5 per
+sztuka, ale osiągnięty zmianą granulacji handlu (dokładnie ta sama technika co w głównej decyzji
+`R-EKONOMIA-SUROWCE-SKALA-5X-Q1`: nie zmieniać proporcji, tylko granulację jednostki).
+
+**Do ustalenia przez Operatora (rozpoznanie kodu, nie zgadywanie):** gdzie dziś jest
+egzekwowany/wyświetlany krok ilości w koszyku handlu (`gra/src/ui/diplomacyTradeBasket.ts` i
+pokrewne pliki `diplomacy-*.ts`) — czy jest tam już jakiś stepper/increment UI do dostosowania na
+5, i czy silnik (nie tylko UI) ma gdzieś twardy wymóg wielokrotności (np. walidacja przy
+zatwierdzaniu koszyka, nie tylko kontrolka suwaka). Dispatch w toku.
