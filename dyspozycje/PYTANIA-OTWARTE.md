@@ -18272,3 +18272,25 @@ Brązu w jednym wywołaniu silnika).
 
 **Dispatch Operatora rundy 2 (Sonnet 5) NASTĘPUJE** — 3 poprawki blokujące + 4 realne luki, zero
 nowych decyzji projektowych.
+
+---
+
+## Rozjazd danych „Petra" — rozpoznanie dostarczone, ABC gotowe (2026-08-13)
+
+Potwierdzone niezależnie: Petra (cud Fenicjan) to JEDYNY spośród 19 cudów, gdzie wymagana
+technologia (Inżynieria, epoka 3) jest z epoki WYŻSZEJ niż `epokaWejscia` samego cudu (2) — więc
+Petra strukturalnie nie może być zbudowana wcześniej niż na sam koniec epoki Brąz (tech epoki 3
+staje się badalna dopiero gdy cała epoka 2 jest ukończona). To już raz spowodowało realny bug
+silnikowy (nieskończona pętla AI, 2026-08-10) — naprawiony punktowo w `main.ts`/`ai.ts`, ale sam
+rozjazd w danych źródłowych pozostał nietknięty, świadomie odłożony do „decyzji właściciela osobno".
+
+Dokumentacja projektu jest w tej sprawie NIESPÓJNA między dwoma warstwami reguł: formalna decyzja
+`D-CUD-TECH-WEJSCIA` (2026-07-03, zamknięta) mówi o epoce technologii względem epoki PAŃSTWA
+(civs.json) i explicite wymienia Petrę jako zgodny przykład — ale mechanizm, który realnie tworzy
+problem (`R-EPOKA-CUD-WARUNEK-AWANSU`, 2026-08-09), patrzy na epokę CUDU (wonders.json), nie
+państwa — inne pole, inna reguła, powstała 5 tygodni później, fizycznie nie mogła być przewidziana
+przy tamtej decyzji.
+
+**Do rozstrzygnięcia (niepilne, nie blokuje bieżącej gry):** czy `wonders.json` → `petra.epokaWejscia`
+zmienić z 2 na 3 (zrównanie z resztą wzorca), czy zostawić jako świadomy projekt „cud wyprzedzający
+epokę". Czeka na Twoją decyzję, bez pośpiechu — osobny wątek od dzisiejszej głównej pracy.
