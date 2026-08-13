@@ -14236,6 +14236,49 @@ async function boot(): Promise<void> {
           maSpichlerzIIPop: tk.maSpichlerzII ?? false,
         });
       }
+      // R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): "bezpieczny poziom" = przyrost zapasów
+      // (Nadwyżka miast − kosztArmii) ≥0, nie sama Nadwyżka miast (dawne zachowanie). Ten sam
+      // wzorzec liczenia kosztu armii co `projectPlayerFoodProjection` niżej w tym pliku, ale
+      // ZAMIERZENIE zduplikowany tutaj (nie wyodrębniony do wspólnej funkcji): ciało tej funkcji
+      // jest w całości wycinane i wykonywane samodzielnie przez
+      // `tools/auto-wyzywienie-live-recalc-test.cjs` (Część 9, `sliceFunctionBody` +
+      // `new Function`) — odwołanie do funkcji zdefiniowanej POZA tym ciałem tam by się nie
+      // rozwiązało (ReferenceError w harnessie). `preview.perCity` = ten sam przebieg
+      // `previewCityEconomy`, żaden dodatkowy.
+      // EN: "safe level" = the stockpile's net increase (cities' Nadwyżka − army cost) ≥0, not
+      // just Nadwyżka (old behavior). Same computation pattern as `projectPlayerFoodProjection`
+      // further down, but INTENTIONALLY duplicated here rather than factored into a shared
+      // helper: this function's whole body is sliced out and executed standalone by
+      // `tools/auto-wyzywienie-live-recalc-test.cjs` (Part 9, `sliceFunctionBody` + `new
+      // Function`) — a reference to a function defined OUTSIDE this body would not resolve there
+      // (harness ReferenceError). `preview.perCity` = the same previewCityEconomy pass, no extra
+      // call.
+      const upkeepParamsForArmy = loadUpkeepParams(data.econParams, _menuDifficulty);
+      const territoryNodesForArmyCost = buildAllTerritoryNodes();
+      const solCityIdsForArmy = new Set<string>();
+      for (const tk of preview.perCity) {
+        if (tk.ownerId !== 0 || !tk.spichlerzSol) continue;
+        solCityIdsForArmy.add(tk.cityId);
+      }
+      const uchwalaSolAktywnaForArmy = solCityIdsForArmy.size > 0 || spichlerzSolArmyBonusActive(0);
+      const playerUnitsForArmy: (EconUnit & { inGarnizon?: boolean; garrisonCityId?: string })[] =
+        units
+          .filter(u => u.ownerId === 0)
+          .map(u => ({
+            ownerId: u.ownerId,
+            typeId: u.typeId,
+            camping: isCampingForFoodDiscount(u),
+            onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForArmyCost) === u.ownerId,
+            inGarnizon: u.inGarnizon === true,
+            garrisonCityId: u.inGarnizon ? cityAtUnit(u)?.id : undefined,
+          }));
+      const kosztArmiiForMaxSafe = militaryFoodConsumptionWithSpichlerz(
+        playerUnitsForArmy,
+        0,
+        upkeepParamsForArmy,
+        unitFoodTbl,
+        { solArmyOverride: uchwalaSolAktywnaForArmy, solCityIdsOverride: solCityIdsForArmy },
+      );
       // N1 (runda 4, Evaluator): wypełnij cache dla WSZYSTKICH miast gracza na raz, nie tylko
       // dla `cityId`. `preview` (previewCityEconomy) -- krok, który realnie kosztuje -- jest
       // już policzony wyżej dla CAŁEGO imperium gracza; pętla `maxSafePoziomRacjiForCity` per
@@ -14264,6 +14307,7 @@ async function boot(): Promise<void> {
           zapasyPrzed: foodSt.zapasyPanstwa,
           rationParams: efParams.rationParams,
           spichlerzByCity,
+          kosztArmii: kosztArmiiForMaxSafe,
         });
         _maxSafeRationCache.set(pc.id, maxSafeForCity);
         if (pc.id === cityId) { maxSafe = maxSafeForCity; foundInPlayerCities = true; }
@@ -14292,6 +14336,7 @@ async function boot(): Promise<void> {
           zapasyPrzed: foodSt.zapasyPanstwa,
           rationParams: efParams.rationParams,
           spichlerzByCity,
+          kosztArmii: kosztArmiiForMaxSafe,
         });
       }
       return maxSafe;

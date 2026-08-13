@@ -451,13 +451,30 @@ export function simulateCityFoodCentralPool(
   return central;
 }
 
-/** Czy po rozliczeniu miast Spichlerz nie jest ujemny z powodu racji (wojsko osobno). */
+/**
+ * Czy po rozliczeniu miast Spichlerz nie jest ujemny.
+ *
+ * R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A, z doprecyzowaniem właściciela (2026-08-13, ECHO
+ * `dyspozycje/PYTANIA-OTWARTE.md`): `kosztArmii` (domyślnie 0, kompatybilność wsteczna dla
+ * wywołań, które go jeszcze nie liczą w danym momencie tury) jest teraz odejmowany od kryterium
+ * — dawniej funkcja nazywała się "solvent" ale liczyła TYLKO bilans miast + rezerwę, ignorując
+ * że ta sama rezerwa w tej samej turze ma jeszcze pokryć żywność wojska (`central -= kosztArmii`
+ * w `advanceEmpireFood`, linia ~270) — więc "solvent" według starej definicji nie gwarantowało
+ * że PRZYROST ZAPASÓW (stan magazynu PO turze) faktycznie będzie ≥0, jeśli wojsko było drogie.
+ * EN: `kosztArmii` (default 0, backward-compat for callers that don't compute it yet at that
+ * point in the turn) is now subtracted from the criterion — the function used to be named
+ * "solvent" but only counted the cities' balance + reserve, ignoring that the same reserve this
+ * same turn still has to cover the army's food (`central -= kosztArmii` in `advanceEmpireFood`,
+ * line ~270) — so "solvent" under the old definition did not guarantee that the stockpile's net
+ * change (state AFTER the turn) would actually be ≥0 when the army was expensive.
+ */
 export function isEmpireCityFoodSolvent(
   zapasyPrzed: number,
   perCity: ReadonlyArray<CityFoodTickLike>,
   ownerId: number,
+  kosztArmii: number = 0,
 ): boolean {
-  return computeEmpireCityFoodNadwyzka(perCity, ownerId) + zapasyPrzed >= 0;
+  return computeEmpireCityFoodNadwyzka(perCity, ownerId) + zapasyPrzed - kosztArmii >= 0;
 }
 
 /**
@@ -474,17 +491,33 @@ export function isEmpireCityFoodSolvent(
  * is true (player ONLY, ownerId===0) — FLOW-based: this turn alone must balance
  * (computeEmpireCityFoodNadwyzka >= 0), reserve does not count as coverage — otherwise
  * auto-raise/backstop silently drains the granary turn after turn.
+ *
+ * R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): `kosztArmii` (domyślnie 0) dodany do OBU
+ * gałęzi — flow-based (gracz) liczyła dotąd samą Nadwyżkę miast, stock-based (`isEmpireCityFoodSolvent`)
+ * liczyła Nadwyżkę+rezerwę, żadna nie odejmowała kosztu wojska. Efekt: kryterium mogło uznać
+ * poziom Racji za "bezpieczny", mimo że w tej samej turze `advanceEmpireFood` i tak odejmie
+ * `kosztArmii` od tej samej puli — rzeczywisty PRZYROST ZAPASÓW mógł wyjść ujemny mimo
+ * "spełnionego" kryterium. Właściciela słowa (doprecyzowanie, ważniejsze niż litera A/B):
+ * wyznacznikiem ma być rzeczywisty przyrost zapasów za turę, zawsze ≥0, NIE stan bufora.
+ * EN: `kosztArmii` (default 0) added to BOTH branches — flow-based (player) only counted the
+ * cities' Nadwyżka, stock-based (`isEmpireCityFoodSolvent`) counted Nadwyżka+reserve, neither
+ * subtracted the army's cost. Effect: the criterion could call a ration level "safe" even though
+ * `advanceEmpireFood` still subtracts `kosztArmii` from that same pool this same turn — the
+ * actual stockpile net change could still come out negative despite a "met" criterion. Owner's
+ * words (clarification, more important than the A/B letter): the determinant must be the actual
+ * per-turn stockpile increase, always ≥0, NOT the buffer's size.
  */
 function isRationBalanceTargetMet(
   zapasyPrzed: number,
   perCity: ReadonlyArray<CityFoodTickLike>,
   ownerId: number,
   requireFlowBalance?: boolean,
+  kosztArmii: number = 0,
 ): boolean {
   if (requireFlowBalance) {
-    return computeEmpireCityFoodNadwyzka(perCity, ownerId) >= 0;
+    return computeEmpireCityFoodNadwyzka(perCity, ownerId) - kosztArmii >= 0;
   }
-  return isEmpireCityFoodSolvent(zapasyPrzed, perCity, ownerId);
+  return isEmpireCityFoodSolvent(zapasyPrzed, perCity, ownerId, kosztArmii);
 }
 
 export interface AutoBalanceRationsOpts {
@@ -505,6 +538,15 @@ export interface AutoBalanceRationsOpts {
    * does not disappear until the reserve nears zero. Player ONLY; AI/city-states stay
    * stock-based (omit/false). */
   requireFlowBalance?: boolean;
+  /** R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): koszt żywności armii tej tury
+   * (`militaryFoodConsumptionWithSpichlerz`) — odejmowany od kryterium bezpiecznego poziomu, żeby
+   * PRZYROST ZAPASÓW (nie tylko bilans miast/rezerwa) był ≥0. Domyślnie 0 — kompatybilność
+   * wsteczna dla wywołań, gdzie koszt armii nie jest jeszcze policzalny w danym momencie tury
+   * (0 odtwarza dawne zachowanie, kryterium ignoruje wojsko dokładnie jak przed tą zmianą).
+   * EN: this turn's army food cost — subtracted from the safe-level criterion so the STOCKPILE'S
+   * net increase (not just cities' balance/reserve) is ≥0. Default 0 for backward compat where
+   * army cost isn't computable yet at that point in the turn (0 reproduces prior behavior). */
+  kosztArmii?: number;
 }
 
 /**
@@ -514,14 +556,14 @@ export interface AutoBalanceRationsOpts {
 export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): AutoRationAdjustResult {
   const {
     ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity, onlyAutoManaged,
-    requireFlowBalance,
+    requireFlowBalance, kosztArmii = 0,
   } = opts;
   const ownerCities = ownerCitiesForAutoAdjust(cities, ownerId, onlyAutoManaged);
   if (ownerCities.length === 0) {
     return { adjusted: false, changes: [] };
   }
 
-  if (isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance)) {
+  if (isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance, kosztArmii)) {
     return { adjusted: false, changes: [] };
   }
 
@@ -533,7 +575,7 @@ export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): Auto
 
   const maxSteps = Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 2;
   for (let step = 0; step < maxSteps; step++) {
-    if (isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance)) break;
+    if (isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance, kosztArmii)) break;
 
     let lowered = false;
     for (const c of ownerCities) {
@@ -571,6 +613,9 @@ export interface AutoRaiseRationsOpts {
   requireProductionSurplus?: boolean;
   /** Gracz Q5=A: tylko miasta z autoWyzywienie === true. */
   onlyAutoManaged?: boolean;
+  /** R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): koszt żywności armii tej tury — patrz
+   * `AutoBalanceRationsOpts.kosztArmii`, ten sam kontrakt (domyślnie 0, wsteczna kompatybilność). */
+  kosztArmii?: number;
 }
 
 /**
@@ -582,14 +627,14 @@ export interface AutoRaiseRationsOpts {
 export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRationAdjustResult {
   const {
     ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity,
-    requireProductionSurplus, onlyAutoManaged,
+    requireProductionSurplus, onlyAutoManaged, kosztArmii = 0,
   } = opts;
   const ownerCities = ownerCitiesForAutoAdjust(cities, ownerId, onlyAutoManaged);
   if (ownerCities.length === 0) {
     return { adjusted: false, changes: [] };
   }
 
-  if (!isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) {
+  if (!isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId, kosztArmii)) {
     return { adjusted: false, changes: [] };
   }
 
@@ -642,7 +687,9 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
     // overshot by one step (WYZYWIENIE_STEP) beyond what current production can sustain, silently
     // financed from the reserve. AI (requireProductionSurplus false) keeps the old stock-based
     // criterion (isRationBalanceTargetMet without the flag).
-    const targetMet = isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireProductionSurplus);
+    const targetMet = isRationBalanceTargetMet(
+      zapasyPrzed, econ.perCity, ownerId, requireProductionSurplus, kosztArmii,
+    );
     if (pool < 0 || !targetMet) {
       for (const c of ownerCities) {
         c.poziomRacji = levelsBeforeRaise.get(c.id)!;
@@ -675,8 +722,13 @@ export function maxSafePoziomRacjiForCity(opts: {
   zapasyPrzed: number;
   rationParams: RationParams;
   spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
+  /** R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): koszt żywności armii tej tury — patrz
+   * `AutoBalanceRationsOpts.kosztArmii`, ten sam kontrakt (domyślnie 0, wsteczna kompatybilność). */
+  kosztArmii?: number;
 }): PoziomRacji {
-  const { cityId, ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity } = opts;
+  const {
+    cityId, ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity, kosztArmii = 0,
+  } = opts;
   const city = cities.find(c => c.id === cityId);
   if (!city || city.ownerId !== ownerId) return WYZYWIENIE_MIN;
 
@@ -703,7 +755,9 @@ export function maxSafePoziomRacjiForCity(opts: {
     city.poziomRacji = level;
     recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
     const pool = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
-    const targetMet = isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance);
+    const targetMet = isRationBalanceTargetMet(
+      zapasyPrzed, econ.perCity, ownerId, requireFlowBalance, kosztArmii,
+    );
     if (pool >= 0 && targetMet) {
       maxSafe = level;
     }
