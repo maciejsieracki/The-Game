@@ -5,7 +5,7 @@
 **Data:** 2026-08-13
 **ZLECENIE-ID:** `11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13`
 **Priorytet:** P1 — brak reskinu, gra grywalna, ale wygląd niespójny z resztą HUD
-**Kontekst decyzji:** `dyspozycje/PYTANIA-OTWARTE.md`, grep `R-DESIGN-11-ZAKLADEK` (ABC właściciela, decyzja Q1=A/Q2=B, zatwierdzona lista zawartości Miasto/Obywatele, notatka o nieudanej próbie samodzielnego reskinu Skarbca — zbyt subtelna zmiana, stąd to zlecenie dla człowieka)
+**Kontekst decyzji:** `dyspozycje/PYTANIA-OTWARTE.md`, grep `R-DESIGN-11-ZAKLADEK` (ABC właściciela, decyzja Q1=A/Q2=B, zatwierdzona lista zawartości Miasto/Obywatele, notatka o samodzielnej próbie reskinu Skarbca przez orkiestratora — wynikowa zmiana wizualna okazała się zbyt mała, żeby stanowić realny redesign, stąd pivot na to zlecenie dla człowieka)
 
 ---
 
@@ -134,7 +134,7 @@ Ta sama sekcja, opisana przez właściciela jako *„jedyna, która naprawdę wy
 | Czerwony (ujemne/alert) | `#e07a7a` | `#c84040` |
 | Niebieski (info/nauka) | `#8ec5ff` | `#5a9bd4` |
 | Czcionka | **wyłącznie** `'Segoe UI', system-ui, sans-serif` (13px/1.45) — **brak Georgii w ogóle** w tym pliku | Georgia (nagłówki) + Segoe UI (treść) |
-| Promień rogów | `7–9px` (karty), panel bez zaokrąglenia (przyklejony do prawej krawędzi ekranu) | `12–14px` |
+| Promień rogów | `7–8px` (karty/boxy — `.civ-emp-chip`/`.civ-emp-box`/`.civ-emp-res-card` mają `8px`, `.civ-emp-mini`/`.civ-emp-colfilter` mają `7px`; `9px` nigdzie nie występuje), panel bez zaokrąglenia (przyklejony do prawej krawędzi ekranu) | `12–14px` |
 
 **Rekomendacja dla tego zlecenia:** traktuj **paletę 3b (faktycznie wdrożoną) jako praktyczny,
 wiążący cel** dla reskinu tych 11 zakładek — to ta wersja została uznana przez właściciela za
@@ -169,7 +169,8 @@ razu stan gry z założonym miastem na mapie świata:
 ...?playtest=mapa
 ```
 
-(zaimplementowane w `gra/src/game/playtestMapaSwiata.ts` — obsługiwane przez `mapLoadingOverlay.ts`).
+(zaimplementowane w `gra/src/game/playtestMapaSwiata.ts` — konsumowane przez `gra/src/main.ts`,
+funkcja `buildPlaytestMapaSwiata` importowana ~linia 388, wywoływana ~linia 28942).
 
 Stamtąd: kliknij dowolny chip zasobu na górnym pasku HUD (Skarbiec / Praca / Nauka / Żywność /
 Surowce / Handel / Armia / Kultura / Religia / Miasta) albo przycisk „Moc" — panel wysuwa się z
@@ -211,7 +212,7 @@ linie 235–443). Gotowe komponenty do ponownego użycia (nie wymyślaj nowych o
 |---|---|
 | `.civ-emp-sect` (+ `.sep` = z górną linią-separatorem) | kontener jednej sekcji panelu |
 | `.civ-emp-eyebrow` | mała etykieta sekcji, 11px, litery rozstrzelone, kolor wyciszony |
-| `.civ-emp-title` | alternatywny nagłówek sekcji, 14px, złoty, pogrubiony (używany przez Handel i Kulturę zamiast eyebrow) |
+| `.civ-emp-title` | alternatywny nagłówek sekcji, 14px, złoty, pogrubiony (używany przez Handel, Kulturę i Moc — nagłówek rankingu „Ranking {Moc}", linia ~1361 — zamiast eyebrow) |
 | `.civ-emp-chip` / `.civ-emp-meta` (grid 2 kol.) | karty klucz-wartość (sekcja Parametry globalne) |
 | `.civ-emp-box` / `.civ-emp-two` (grid 2 kol.) | dwie karty podsumowania obok siebie (Moc: Miasta/Rekruci) |
 | `.civ-emp-tbl` / `.civ-emp-tbl-h` / `.civ-emp-tbl-r` | tabela 5-kolumnowa z wyróżnioną kolumną PKT (jedyna tabela z „ciężką" stylistyką — używana tylko w Mocy) |
@@ -278,8 +279,9 @@ nie jako layout tej konkretnej zakładki.
     (pogrubione).
   - Tabela per miasto: MIASTO · DO SKARBCA · UTRZYMANIE.
   - Suwak „DOMYŚLNY PODZIAŁ {DANINA}" (Skarb / Nauka / Zamożność, %) — to jest **próba
-    reskinu, którą właściciel uznał za zbyt subtelną** i cofnął pomysł samodzielnego dokończenia —
-    dokładnie ta próba jest powodem tego zlecenia.
+    reskinu, którą orkiestrator podjął samodzielnie zgodnie z Q1=A; wynikowa zmiana wizualna
+    okazała się zbyt mała, żeby stanowić realny redesign** — dokładnie ta próba jest powodem
+    tego zlecenia.
 - **Stylowanie dziś:** wyłącznie generyczne `.civ-emp-mini`/`.civ-emp-zrow` — brak dużej liczby
   „hero" na start (jak „Moc {N}"), brak wizualnego wyróżnika najważniejszej liczby (Netto
   skarbiec). To jest DOKŁADNIE typ problemu, który reskin ma naprawić.
@@ -313,12 +315,12 @@ nie jako layout tej konkretnej zakładki.
   wierszy: Uprawa i hodowla · Wyżywienie ludności · Nadwyżka · Pomoc miastom · Spichlerz stolicy ·
   Wojsko · Przyrost zapasów), tabela per miasto (MIASTO · PRODUKCJA · KOSZT RACJI · BILANS ·
   WZROST%), suwak „DOMYŚLNE WYŻYWIENIE".
-- **⚠️ Do naprawienia przy reskinie (nie tylko kosmetyka):** ta sekcja jest **jedynym miejscem w
-  całym panelu, które łamie regułę „zero emoji"** z kanonu — używa dosłownie znaku 🍞 (emoji
-  chleba) w kilkunastu miejscach (`foodSignedTxt()`, linie ~790–813) zamiast ikony SVG. Kod ma już
-  gotowe rozwiązywanie ikon surowców przez `mapResourceIconSvg()`/`brandIconSvg()` (używane w
-  Surowcach, §8.5) — reskin tej sekcji powinien zamienić 🍞 na tę samą rodzinę ikon SVG, nie tylko
-  przemalować kolory dookoła.
+- **⚠️ Do naprawienia przy reskinie (nie tylko kosmetyka):** ta sekcja jest **jednym z kilku
+  miejsc (🍞 występuje 9× w całym pliku, w tym w sekcji Armia — patrz §8.7) łamiących regułę
+  „zero emoji"** z kanonu — używa dosłownie znaku 🍞 (emoji chleba) w kilkunastu miejscach
+  (`foodSignedTxt()`, linie ~790–813) zamiast ikony SVG. Kod ma już gotowe rozwiązywanie ikon
+  surowców przez `mapResourceIconSvg()`/`brandIconSvg()` (używane w Surowcach, §8.5) — reskin tej
+  sekcji powinien zamienić 🍞 na tę samą rodzinę ikon SVG, nie tylko przemalować kolory dookoła.
 - **Stylowanie dziś:** ma najwięcej danych ze wszystkich 11 zakładek, ale wszystko w tych samych
   generycznych klasach `.civ-emp-mini`/`.civ-emp-zrow`/`.civ-emp-bar` — brak hierarchii wizualnej
   między „stan magazynu" (najważniejsze) a resztą.
@@ -352,7 +354,8 @@ nie jako layout tej konkretnej zakładki.
 - **Stylowanie dziś:** to **najbardziej rozbudowana wizualnie** z 11 zakładek (karty z paskami,
   kolorowe stany) — ale nadal bez spójnego złotego akcentu jak w Mocy, bardziej „dashboard
   techniczny" niż „imperialny" w duchu 1E. Istnieje dedykowany mockup kanonu:
-  `mockupy/The Game - Surowce magazyn i formy v1 (1E).dc.html` (wg mapy w `CANON.md`) — sprawdź
+  `docs/ux/claude-design/01-propozycje-z-design/brand-book/SUROWCE-IKONY-MAKIETA-2026-07-24/brand-book/KANON/mockupy/The Game - Surowce magazyn i formy v1 (1E).dc.html`
+  (wg mapy w `CANON.md`) — sprawdź
   format przed czytaniem (§5), nie zweryfikowano w tym przeglądzie czy jest czytelny jako tekst
   czy w formacie bundlera.
 
@@ -383,6 +386,9 @@ nie jako layout tej konkretnej zakładki.
   armii/turę, stan magazynu państwa, ostrzeżenie „Głód wojska" jeśli aktywny), uchwały
   cywilizacyjne aktywne (jeśli są).
 - **Stylowanie dziś:** generyczne, bez wyróżnika.
+- **⚠️ Ta sama poprawka emoji co §8.3:** sekcja zawiera znak 🍞 w dwóch miejscach (linie
+  ~1466–1467, „Koszt żywności armii: −X 🍞" / „W magazynie państwa: … 🍞") — do usunięcia jako
+  część tego samego zlecenia (zamiana na ikonę SVG z tej samej rodziny co Surowce, §8.5).
 
 ### 8.8 Kultura
 
@@ -442,8 +448,9 @@ nie jako layout tej konkretnej zakładki.
   mechanizmu (a nie wymyślanie nowego) na budynki/surowce pogrupowane wg poniższej listy jest
   prawdopodobnie najprostszą ścieżką realizacji „zaznacz i zobacz ile w sumie w całej cywilizacji".
 
-**ZATWIERDZONA ZAWARTOŚĆ (decyzja właściciela, `PYTANIA-OTWARTE.md` §`R-DESIGN-11-ZAKLADEK`,
-2026-08-13 — wklejone dosłownie, nie parafrazowane):**
+**ZATWIERDZONA ZAWARTOŚĆ (lista przedstawiona właścicielowi w czacie 2026-08-13, zatwierdzona z
+jedną korektą do listy Miasto — potwierdzenie zatwierdzenia w `dyspozycje/PYTANIA-OTWARTE.md`
+§`R-DESIGN-11-ZAKLADEK`):**
 
 > Zakładka Miasto (kąt produkcyjno-ekonomiczny — wszystko co miasto PRODUKUJE, z możliwością
 > zaznaczenia i zobaczenia sumy w całej cywilizacji):
@@ -475,7 +482,9 @@ Produkcja surowców · Żywność.
 - **Kod dzisiaj:** identycznie jak Miasto (§8.10) — dzieli tę samą sekcję `econ-miasta` i tę samą
   funkcję `cityMiastaMiniDetail()`. Zero osobnej treści społecznej wydzielonej dziś w kodzie.
 
-**ZATWIERDZONA ZAWARTOŚĆ (decyzja właściciela, ta sama sekcja rejestru, wklejone dosłownie):**
+**ZATWIERDZONA ZAWARTOŚĆ (lista przedstawiona właścicielowi w czacie 2026-08-13, ta sama sekcja
+rejestru, zatwierdzona bez korekt — potwierdzenie zatwierdzenia w `dyspozycje/PYTANIA-OTWARTE.md`
+§`R-DESIGN-11-ZAKLADEK`):**
 
 > Zakładka Obywatele (kąt społeczny — aspekty wpływające na mieszkańców):
 > - Kultura (poziom, przyrost, próg rozszerzenia granic)
@@ -519,8 +528,9 @@ konwencji):
 | 4 | ZIP | `11-ZAKLADEK-PANEL-IMPERIUM-{DATA}.zip` |
 
 **Kolejność pracy zalecana przez właściciela** (z historii tego tematu w `PYTANIA-OTWARTE.md`):
-zacząć od jednej zakładki (np. Skarbiec, bo to ta, która była już próbowana i uznana za zbyt
-subtelną), pokazać zrzut ekranu / mockup, poczekać na potwierdzenie przed przejściem do kolejnych
+zacząć od jednej zakładki (np. Skarbiec, bo to ta, którą orkiestrator już samodzielnie próbował
+reskinować — wynik uznano za zmianę zbyt małą), pokazać zrzut ekranu / mockup, poczekać na
+potwierdzenie przed przejściem do kolejnych
 10 — nie oddawać wszystkich 11 na raz bez feedbacku po pierwszej.
 
 **Po stronie integratora (nie Designera):** port CSS/markupu do `empireDetailPanel.ts`,
