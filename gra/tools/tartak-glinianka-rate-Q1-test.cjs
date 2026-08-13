@@ -82,10 +82,10 @@ function eq(a, b, msg) {
   ok(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`);
 }
 
-console.log('\n-- A. terrain-improvements.json: surowiec_ilosc_tura po korekcie 2026-08-12 --\n');
-eq(terrainImprovements.tartak.surowiec_ilosc_tura, 10, 'JSON: tartak.surowiec_ilosc_tura === 10');
-eq(terrainImprovements.glinianka.surowiec_ilosc_tura, 10, 'JSON: glinianka.surowiec_ilosc_tura === 10');
-eq(terrainImprovements.kamieniolom.surowiec_ilosc_tura, 10, 'JSON: kamieniolom.surowiec_ilosc_tura === 10 (R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, tez zmieniony)');
+console.log('\n-- A. terrain-improvements.json: surowiec_ilosc_tura po korekcie 2026-08-13 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, x5 vs 2026-08-12) --\n');
+eq(terrainImprovements.tartak.surowiec_ilosc_tura, 50, 'JSON: tartak.surowiec_ilosc_tura === 50 (bylo 10)');
+eq(terrainImprovements.glinianka.surowiec_ilosc_tura, 50, 'JSON: glinianka.surowiec_ilosc_tura === 50 (bylo 10)');
+eq(terrainImprovements.kamieniolom.surowiec_ilosc_tura, 50, 'JSON: kamieniolom.surowiec_ilosc_tura === 50 (R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 -> R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
 
 console.log('\n-- B. territoryResourceYieldForImprovement (silnik, SUROW-TERYT-01) --\n');
 const tartakYield = M.territoryResourceYieldForImprovement('tartak');
@@ -95,17 +95,17 @@ ok(!!tartakYield, 'tartak: territoryResourceYieldForImprovement zwraca wpis');
 ok(!!glinianKaYield, 'glinianka: territoryResourceYieldForImprovement zwraca wpis');
 ok(!!kamieniolomYield, 'kamieniolom: territoryResourceYieldForImprovement zwraca wpis');
 eq(tartakYield && tartakYield.resourceKey, 'drewno', 'tartak: resourceKey = drewno');
-eq(tartakYield && tartakYield.amount, 10, 'silnik: tartak amount === 10 (NIE stara wartosc 4)');
+eq(tartakYield && tartakYield.amount, 50, 'silnik: tartak amount === 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
 eq(glinianKaYield && glinianKaYield.resourceKey, 'glina', 'glinianka: resourceKey = glina');
-eq(glinianKaYield && glinianKaYield.amount, 10, 'silnik: glinianka amount === 10 (NIE stara wartosc 4)');
+eq(glinianKaYield && glinianKaYield.amount, 50, 'silnik: glinianka amount === 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
 // N5 (Maciej 2026-08-12, dispatch po ecbddda8): luka pokrycia -- kamieniolom mial
 // dotad asercje TYLKO na poziomie JSON (sekcja A wyzej), NIE na poziomie silnika.
 // EN: coverage gap -- kamieniolom previously had assertions ONLY at the JSON level
 // (section A above), NOT at the engine level.
 eq(kamieniolomYield && kamieniolomYield.resourceKey, 'kamien', 'kamieniolom: resourceKey = kamien');
-eq(kamieniolomYield && kamieniolomYield.amount, 10, 'silnik: kamieniolom amount === 10 (odczyt z JSON, nie hardkod)');
+eq(kamieniolomYield && kamieniolomYield.amount, 50, 'silnik: kamieniolom amount === 50 (odczyt z JSON, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
 
-console.log('\n-- C. Integracja: advanceCityEconomy -- Tartak/Glinianka w terytorium +10/ture do magazynu --\n');
+console.log('\n-- C. Integracja: advanceCityEconomy -- Tartak/Glinianka w terytorium +50/ture do magazynu --\n');
 
 function makeCity(overrides = {}) {
   return {
@@ -146,12 +146,13 @@ function runTick(city, builtIds, map) {
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const terr = M.computeTerritoryResourceYieldByCity([city], map, nodes);
   const terrDrewno = terr.get(city.id)?.drewno ?? 0;
-  eq(terrDrewno, 10, 'computeTerritoryResourceYieldByCity: Tartak solo terrYield drewno = 10/ture');
+  eq(terrDrewno, 50, 'computeTerritoryResourceYieldByCity: Tartak solo terrYield drewno = 50/ture (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
 }
 
 {
   // Glinianka na zlozu gliny -- territoryYield izolowany (Glinianka nie ma
-  // drewna/kamien w tileYield, tylko bonus.glina=2 osobno w worked -- tu
+  // drewna/kamien w tileYield, tylko bonus.glina=10 osobno w worked, x5 po
+  // R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2/B1 -- bylo 2 -- tu
   // sprawdzamy WYLACZNIE territoryYield/magazyn panstwa SUROW-TERYT-01).
   const city = makeCity({ population: 1 });
   const map = {
@@ -169,7 +170,7 @@ function runTick(city, builtIds, map) {
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const terr = M.computeTerritoryResourceYieldByCity([city], map, nodes);
   const terrGlina = terr.get(city.id)?.glina ?? 0;
-  eq(terrGlina, 10, 'computeTerritoryResourceYieldByCity: Glinianka terrYield glina = 10/ture');
+  eq(terrGlina, 50, 'computeTerritoryResourceYieldByCity: Glinianka terrYield glina = 50/ture (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
 }
 
 console.log('\n-- D. Regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO: cap panstwa nadal klamruje przy 10/ture --\n');

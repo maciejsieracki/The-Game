@@ -173,6 +173,19 @@ async function main() {
     ok(give.length === 2, 'surowiec_ilosc: inny surowiec (inny id) → osobna pozycja');
   }
 
+  // --- 7b. R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): suma przycięta do maxQty NIEBĘDĄCEGO
+  // wielokrotnością kroku (5 szt.) floruje w dół dodatkowo, po przycięciu — 137 (nie 135/140).
+  {
+    const ctx = baseCtx({
+      giveQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 137 }],
+    });
+    let give = addOrMergeBasketItem([], { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 100 }, 'give', ctx);
+    give = addOrMergeBasketItem(give, { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 100 }, 'give', ctx);
+    ok(give.length === 1, 'surowiec_ilosc krok5: 2x dodanie → 1 pozycja');
+    ok(give[0].ilosc === 135,
+      'surowiec_ilosc krok5: suma 100+100=200 przycięta do maxQty 137, floor do 135 (got ' + give[0].ilosc + ')');
+  }
+
   // --- 8) zywnosc: sumuje TYLKO dla tego samego miasta; inne miasto = osobna pozycja ---
   {
     let give = addOrMergeBasketItem([], { typ: 'zywnosc', id: 'city1', cityId: 'city1', ilosc: 40 }, 'give', baseCtx());

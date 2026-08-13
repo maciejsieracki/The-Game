@@ -202,11 +202,12 @@ assert(y1.drewno > 0, `tileYield: Las daje drewno > 0 (got ${y1.drewno})`);
 const yldForest = M.cityYieldPerTurn(city, [forestTile, forestTile], [], pNormal, makeCtx({}));
 eq(yldForest.drewnoTerenu, y1.drewno * 2, 'cityYieldPerTurn: drewnoTerenu = suma drewna z 2 pol lasu');
 
-// Rownina bazowo JUZ ma drewno=2/kamien=1 na pole w terrain-yields.json (przed E1
-// nigdzie nieodczytywane w cityYieldPerTurn) -- weryfikujemy sume z 6 pol.
+// Rownina bazowo JUZ ma drewno=10/kamien=5 na pole w terrain-yields.json (x5,
+// R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B1 -- bylo drewno=2/kamien=1;
+// przed E1 nigdzie nieodczytywane w cityYieldPerTurn) -- weryfikujemy sume z 6 pol.
 const yldNoForest = M.cityYieldPerTurn(city, tiles6, [], pNormal, makeCtx({}));
-eq(yldNoForest.drewnoTerenu, 12, 'cityYieldPerTurn: 6 pol Rownina (baza drewno=2) -> drewnoTerenu = 12');
-eq(yldNoForest.kamienTerenu, 6, 'cityYieldPerTurn: 6 pol Rownina (baza kamien=1) -> kamienTerenu = 6');
+eq(yldNoForest.drewnoTerenu, 60, 'cityYieldPerTurn: 6 pol Rownina (baza drewno=10, x5) -> drewnoTerenu = 60');
+eq(yldNoForest.kamienTerenu, 30, 'cityYieldPerTurn: 6 pol Rownina (baza kamien=5, x5) -> kamienTerenu = 30');
 
 const seaTile = { terenBazowy: 'morze', nakladka: 'brak', maRzeke: false };
 const yldSea = M.cityYieldPerTurn(city, [seaTile, seaTile], [], pNormal, makeCtx({}));
@@ -256,19 +257,20 @@ assert(buildingIds.has('cegielnia') && buildingIds.has('garncarnia') && building
   'Cegielnia/Garncarnia/odlewnia_brazu MAJA budynek (Garncarnia = konwerter Ceramiki, PYTANIE-84)');
 
 // ---------------------------------------------------------------------------
-// G. GLINA-Q1=A (2026-07-20): glinianka daje 2 glina/ture, dokladnie jak drewno/kamien
+// G. GLINA-Q1=A (2026-07-20): glinianka daje glina/ture, dokladnie jak drewno/kamien
+// (bonus.glina x5 -> 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B1; bylo 2)
 // ---------------------------------------------------------------------------
 console.log('\n-- G. cityYieldPerTurn: glinaTerenu z glinianki (GLINA-Q1=A) --');
 const clayTile = { terenBazowy: 'rownina', nakladka: 'brak', maRzeke: false, ulepszenieKey: 'glinianka' };
 const yClay = M.tileYield(clayTile);
-eq(yClay.glina, 2, 'tileYield: glinianka daje glina=2 (bonus stala ilosc, GLINA-Q1=A)');
+eq(yClay.glina, 10, 'tileYield: glinianka daje glina=10 (bonus stala ilosc x5, bylo 2)');
 
 const plainTile = { terenBazowy: 'rownina', nakladka: 'brak', maRzeke: false };
 const yPlain = M.tileYield(plainTile);
 eq(yPlain.glina, 0, 'tileYield: teren bez glinianki -> glina=0 (baza terenu nie daje gliny)');
 
 const yldClay = M.cityYieldPerTurn(city, [clayTile, clayTile], [], pNormal, makeCtx({}));
-eq(yldClay.glinaTerenu, 4, 'cityYieldPerTurn: 2 pola z glinianka -> glinaTerenu = 4 (2 x 2/ture)');
+eq(yldClay.glinaTerenu, 20, 'cityYieldPerTurn: 2 pola z glinianka -> glinaTerenu = 20 (2 x 10/ture, x5)');
 
 // ---------------------------------------------------------------------------
 // H. Cegielnia + Garncarnia produkują z gliny+drewna (PYTANIE-84 U-14);

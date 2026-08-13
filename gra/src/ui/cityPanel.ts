@@ -7500,17 +7500,25 @@ function appendBuildQueueSection(
       // sam szczyt (zamieniając ją z aktualnie budowanym elementem). "⇈" zamienia od razu z
       // frontem z dowolnej pozycji; na 1. pozycji kolejki (idx===1) robi to teraz też ↑ -- była
       // martwa (zawsze disabled, i<=1), więc "utykała na granicy" zamiast dokończyć ruch.
-      // Postęp Pracy frontu (prod.postep) resetuje się do 0 przy zamianie -- patrz promoteToFront().
-      // / EN: until now ↑↓ only reordered WITHIN the waiting queue -- nothing could be "pulled" all
-      // the way to the top (swapped with the currently-building item). "⇈" swaps any row straight
-      // to the front; on the first queue row (idx===1) ↑ now does the same -- it used to be dead
-      // (always disabled, i<=1), so it "got stuck at the boundary" instead of finishing the move.
-      // The front's Praca progress (prod.postep) resets to 0 on swap -- see promoteToFront().
+      // P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B (Maciej 2026-08-13): postęp Pracy frontu
+      // (prod.postep) NIE resetuje się już do 0 przy zamianie -- jest bankowany NA itemie,
+      // który schodzi z frontu (patrz promoteToFront() -- pole ProductionItem.postep), i wraca
+      // do niego w całości, gdy ten wróci na front. RUNDA 2 (naprawa B1, dropFrontItem):
+      // powrót na front działa TAKŻE przy naturalnym dokończeniu poprzedzającego elementu
+      // (advanceProduction) i przy wykupie (rushProduction), nie tylko przy ponownej ręcznej
+      // zamianie -- tooltip niżej odzwierciedla wszystkie trzy ścieżki.
+      // / EN: the front's Praca progress (prod.postep) no longer resets to 0 on swap -- it is
+      // banked ON the item leaving the front (see promoteToFront() -- ProductionItem.postep)
+      // and returns to it in full once it becomes the front again. ROUND 2 (B1 fix,
+      // dropFrontItem): the return also happens on the preceding item's natural completion
+      // (advanceProduction) and on rush-buy (rushProduction), not only on a manual re-swap --
+      // the tooltip below reflects all three paths.
       const promote = el('button', 'btn btn-sm', '⇈');
       promote.style.cssText = 'padding:0 0.35em;';
       promote.title =
         `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}" ` +
-        `(zebrana Praca frontu: ${Math.round(prod.postep)}/${front.koszt} zostanie utracona)`;
+        `(zebrana Praca „${front.nazwa}": ${Math.round(prod.postep)}/${front.koszt} — zostanie zachowana i wróci na front, ` +
+        `gdy ten element ponownie stanie się aktualnie budowanym — czy to przez kolejną zamianę, czy przez naturalne dokończenie poprzedzającego elementu)`;
       promote.addEventListener('click', () => { setProd(city.id, promoteToFront(getProd(city.id), idx)); rerender(); });
       const up = el('button', 'btn btn-sm', '↑');
       up.style.cssText = 'padding:0 0.35em;';

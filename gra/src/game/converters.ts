@@ -65,17 +65,30 @@ export interface ConverterRecipe {
 // łańcucha, share'ujące throughputParamKey) przepustowość 5 (było 1). / EN: new base
 // throughput values -- Brickworks/Pottery 10 (was 3/6), all Foundry-chain variants
 // (sharing a throughputParamKey) 5 (was 1).
+// R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 na WSZYSTKIE throughputFallback
+// powyżej -- Cegielnia/Garncarnia 10→50, Odlewnie (wszystkie warianty) 5→25. Receptury
+// (inputs/outputAmount, np. glina:2+drewno:1→cegla:1) ŚWIADOMIE NIE przeskalowane -- to
+// są PROPORCJE konwersji, nie ilości produkcji; skalowanie throughput (cap cykli/turę)
+// ×5 wystarcza do 5× wyższej produkcji cegły/ceramiki/brązu/żelaza/stali, bo cykle =
+// min(throughput, limit wejścia, limit wyjścia) i limit wejścia rośnie automatycznie
+// wraz z ×5'owaną produkcją glina/drewno/ruda z terytorium. Zmiana proporcji zamiast
+// throughput złamałaby zasadę zadania „proporcje między produkcją/kosztem/utrzymaniem
+// zostają identyczne względem siebie”. / EN: ×5 on ALL throughputFallback values above.
+// Recipe ratios (inputs/outputAmount) deliberately UNCHANGED -- those are conversion
+// PROPORTIONS, not production amounts; scaling only the throughput cap ×5 is sufficient
+// to get 5× output, since cycles = min(throughput, input limit, output limit) and the
+// input limit already scales automatically with the ×5'd territorial resource production.
 export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
-  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 10 },
-  { id: 'garncarnia',             inputs: { glina: 1, drewno: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc',     throughputFallback: 10 },
+  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 50 },
+  { id: 'garncarnia',             inputs: { glina: 1, drewno: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc',     throughputFallback: 50 },
   // 'mielerz' USUNIĘTY (Maciej 2026-07-23): Paliwo usunięte całkowicie; konwertery biorą drewno 1:1.
-  { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 5 },
-  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 5 },
-  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 5 },
-  { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 5 },
-  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 5 },
-  { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 5 },
-  { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 5 },
+  { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
+  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
+  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
+  { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 25 },
+  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
+  { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 25 },
+  { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 25 },
 ];
 
 // ---------------------------------------------------------------------------

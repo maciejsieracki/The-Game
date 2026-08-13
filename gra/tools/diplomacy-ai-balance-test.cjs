@@ -29,6 +29,15 @@ export {
   buildClampedAiTradeAgreementPayload,
 } from '../src/game/diplomacy-ai-balance.ts';
 
+// R-DYPLO-CENNIK-KROK5-Q1 runda 2: potrzebne do zweryfikowania, że ilość zwrócona
+// przez clampAiResourceTradeCommand jest tą SAMĄ ilością, dla której liczy się cena/PN
+// (bez rozjazdu surowa-ilość vs zflorowana-ilość) — patrz testy niżej.
+export {
+  diplomacyNormalizeSurowiecIlosc,
+  diplomacyPnSurowiecIlosc,
+  diplomacyHandelSurowiecCenaJednostkowa,
+} from '../src/game/diplomacy-value-catalog.ts';
+
 `, 'utf8');
 
 
@@ -130,16 +139,21 @@ const baseCmd = {
 
 
 // per_turn: magazyn nie podbija stawki — tylko produkcja
+// R-DYPLO-CENNIK-KROK5-Q1 runda 2: production(75)/pakiet(10)=7 pakietów, poniżej żądania (20)
+// -> produkcja jest wiążącym ograniczeniem (nie zapas 500), a wynik 7 floruje dodatkowo
+// do kroku 5 (drewno objęte krokiem 5) — test pokazuje oba mechanizmy naraz.
 
 {
 
-  const ctx = { ...baseCtx, aiStock: { drewno: 500 }, aiResourceRates: { drewno: 25 } };
+  const ctx = { ...baseCtx, aiStock: { drewno: 500 }, aiResourceRates: { drewno: 75 } };
 
-  const out = B.clampAiResourceTradeCommand(baseCmd, ctx);
+  const cmd = { ...baseCmd, pakietyPerTura: 20 };
 
-  ok(out != null && out.pakietyPerTura === 2,
+  const out = B.clampAiResourceTradeCommand(cmd, ctx);
 
-    `per_turn cap from production only (got ${out?.pakietyPerTura}, want 2)`);
+  ok(out != null && out.pakietyPerTura === 5,
+
+    `per_turn cap from production (7 pakietów), floored to step 5 (got ${out?.pakietyPerTura}, want 5)`);
 
 }
 
@@ -246,6 +260,8 @@ const baseCmd = {
 
 
 // per_turn: production enables offer without relying on stock
+// R-DYPLO-CENNIK-KROK5-Q1 runda 2: production(90)/pakiet(10)=9 pakietów mimo zerowego
+// zapasu; wynik 9 floruje dodatkowo do kroku 5 (jak wyżej — oba mechanizmy naraz).
 
 {
 
@@ -255,15 +271,17 @@ const baseCmd = {
 
     aiStock: { drewno: 0 },
 
-    aiResourceRates: { drewno: 10 },
+    aiResourceRates: { drewno: 90 },
 
   };
 
-  const out = B.clampAiResourceTradeCommand(baseCmd, ctx);
+  const cmd = { ...baseCmd, pakietyPerTura: 20 };
 
-  ok(out != null && out.pakietyPerTura === 1,
+  const out = B.clampAiResourceTradeCommand(cmd, ctx);
 
-    `production enables 1 pakiet/turę bez zapasu (got ${out?.pakietyPerTura})`);
+  ok(out != null && out.pakietyPerTura === 5,
+
+    `production enables 9 pakietów bez zapasu, floored to step 5 (got ${out?.pakietyPerTura})`);
 
 }
 
@@ -426,6 +444,69 @@ const baseCmd = {
 }
 
 
+
+// ---------------------------------------------------------------------------
+// R-DYPLO-CENNIK-KROK5-Q1 runda 2 (Evaluator FAIL, luka easy trudność):
+// clampAiResourceTradeCommand jest DRUGĄ ścieżką generującą 'zaproponuj_handel_surowiec'
+// (enqueueNegotiationFromAiCmd, main.ts:12982) — bez floora do kroku 5 tu, AI na trudności
+// Łatwej (gdzie aiOfferTargetsZeroBalance('easy')===false, więc trimResourcePaymentTradeForZeroBalance
+// NIE dotyka payloadu) mogło zaproponować np. 7 lub 9 szt./turę zamiast wielokrotności 5,
+// co dawało rozjazd: deal SAYS 7-9, downstream dostawa floruje do 5, cena zostaje dla 7-9.
+// / EN: exact reproduction of the Evaluator's blocking-gap scenario — production rate not
+// a multiple of the trade step must be floored INSIDE this function, unconditionally
+// (no difficulty gate), so the deal's own quantity always matches what gets delivered.
+console.log('R-DYPLO-CENNIK-KROK5-Q1 runda 2 — clampAiResourceTradeCommand floor do kroku 5');
+
+for (const rawRate of [7, 9]) {
+  // Konfiguracja realna z main.ts buildAiResourceTradeClampCtx: pakietWielkosc=1
+  // (R-DYP-PAKIET-USUN — pakietyPerTura to dziś sztuki wprost, bez mnożnika pakietu).
+  const ctx = {
+    ...baseCtx,
+    pakietWielkosc: 1,
+    aiStock: { drewno: 500 },
+    aiResourceRates: { drewno: rawRate },
+  };
+  // AI oferuje całą swoją produkcję (typowy handel nadwyżką) — żądanie = stawka surowa,
+  // NIEBĘDĄCA wielokrotnością kroku 5, dokładnie jak w rejestrze Evaluatora.
+  const cmd = { ...baseCmd, pakietyPerTura: rawRate };
+  const out = B.clampAiResourceTradeCommand(cmd, ctx);
+
+  ok(out != null, `easy: produkcja ${rawRate} szt./turę -> oferta nie jest null (got ${JSON.stringify(out)})`);
+  ok(out != null && out.pakietyPerTura === 5,
+    `easy: produkcja ${rawRate} szt./turę floruje do kroku 5 (got ${out?.pakietyPerTura}, want 5)`);
+  ok(out != null && out.pakietyPerTura % 5 === 0,
+    `wynikowa ilość jest wielokrotnością kroku 5 (got ${out?.pakietyPerTura})`);
+
+  // Pokazana ilość == dostarczana ilość: diplomacyNormalizeSurowiecIlosc to TEN SAM
+  // mechanizm, który stosuje transfer wykonawczy przy realnej dostawie surowca (patrz
+  // docstring w diplomacy-value-catalog.ts) — floor na już zflorowanej wartości jest
+  // no-opem, więc brak dalszej redukcji dowodzi braku rozjazdu.
+  const reFloored = out != null ? B.diplomacyNormalizeSurowiecIlosc('drewno', out.pakietyPerTura) : null;
+  ok(out != null && reFloored === out.pakietyPerTura,
+    `pokazana ilość == dostarczana ilość, brak rozjazdu (${out?.pakietyPerTura} -> ${reFloored})`);
+
+  // Cena/PN liczona dla TEJ SAMEJ już zflorowanej ilości (5), nie dla surowej ${rawRate}:
+  // cmd.pakietyPerTura zwrócone przez clampAiResourceTradeCommand jest JEDYNYM polem ilości,
+  // które aiCommandToPendingProposal (diplomacy-proposals.ts) wstawia do payloadu
+  // (receiveItems/giveItems ilosc: cmd.pakietyPerTura) — więc cokolwiek dalej liczy
+  // cenę/PN z tego payloadu, robi to już z ilości 5, nigdy z surowej ${rawRate}.
+  const cena = B.diplomacyHandelSurowiecCenaJednostkowa('drewno');
+  const pnDlaZflorowanej = out != null ? B.diplomacyPnSurowiecIlosc('drewno', out.pakietyPerTura) : null;
+  ok(cena != null && cena > 0, 'drewno ma dodatnią cenę jednostkową w cenniku (przesłanka do sensownej asercji)');
+  ok(pnDlaZflorowanej === Math.round(5 * (cena ?? 0)),
+    `PN payloadu liczone dla dostarczanej ilości 5 (got ${pnDlaZflorowanej}, want ${Math.round(5 * (cena ?? 0))})`);
+}
+
+// Guard <=0 (linia ok. 289) domyka oferty PONIŻEJ jednego kroku (floor do 0) zamiast
+// wysyłać wadliwą propozycję "0 szt./turę" — zweryfikowane realnym kodem, nie założone.
+{
+  const ctx = { ...baseCtx, pakietWielkosc: 1, aiStock: { drewno: 500 }, aiResourceRates: { drewno: 4 } };
+  const cmd = { ...baseCmd, pakietyPerTura: 4 };
+  const out = B.clampAiResourceTradeCommand(cmd, ctx);
+  ok(out === null,
+    `produkcja 4 szt./turę (< krok 5) floruje do 0 -> guard zwraca null (got ${JSON.stringify(out)})`);
+}
+// ---------------------------------------------------------------------------
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

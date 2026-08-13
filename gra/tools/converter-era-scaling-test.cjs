@@ -96,31 +96,31 @@ function recipe(id) {
 // A. Wartości bazowe (throughputFallback) -- P-KONWERTERY-PRZEPUSTOWOSC-Q1
 // ===========================================================================
 console.log('\n-- A. throughputFallback bazowe (DEFAULT_CONVERTER_RECIPES) --');
-eq(recipe('cegielnia').throughputFallback, 10, 'cegielnia: fallback 10 (bylo 3)');
-eq(recipe('garncarnia').throughputFallback, 10, 'garncarnia: fallback 10 (bylo 6)');
-eq(recipe('huta').throughputFallback, 5, 'huta: fallback 5 (bylo 1)');
-eq(recipe('odlewnia_brazu').throughputFallback, 5, 'odlewnia_brazu: fallback 5 (bylo 1)');
-eq(recipe('odlewnia_zelaza__braz').throughputFallback, 5, 'odlewnia_zelaza__braz: fallback 5 (bylo 1)');
-eq(recipe('odlewnia_zelaza__zelazo').throughputFallback, 5, 'odlewnia_zelaza__zelazo: fallback 5 (bylo 1)');
-eq(recipe('wielka_odlewnia__braz').throughputFallback, 5, 'wielka_odlewnia__braz: fallback 5 (bylo 1)');
-eq(recipe('wielka_odlewnia__zelazo').throughputFallback, 5, 'wielka_odlewnia__zelazo: fallback 5 (bylo 1)');
-eq(recipe('wielka_odlewnia__stal').throughputFallback, 5, 'wielka_odlewnia__stal: fallback 5 (bylo 1)');
+eq(recipe('cegielnia').throughputFallback, 50, 'cegielnia: fallback 50 (bylo 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('garncarnia').throughputFallback, 50, 'garncarnia: fallback 50 (bylo 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('huta').throughputFallback, 25, 'huta: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('odlewnia_brazu').throughputFallback, 25, 'odlewnia_brazu: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('odlewnia_zelaza__braz').throughputFallback, 25, 'odlewnia_zelaza__braz: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('odlewnia_zelaza__zelazo').throughputFallback, 25, 'odlewnia_zelaza__zelazo: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('wielka_odlewnia__braz').throughputFallback, 25, 'wielka_odlewnia__braz: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('wielka_odlewnia__zelazo').throughputFallback, 25, 'wielka_odlewnia__zelazo: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+eq(recipe('wielka_odlewnia__stal').throughputFallback, 25, 'wielka_odlewnia__stal: fallback 25 (bylo 5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
 
 // ===========================================================================
 // B. Wartości bazowe w REALNYM econ-params.json (wszystkie trudności)
 // ===========================================================================
 console.log('\n-- B. econ-params.json: wartosci realne, wszystkie trudnosci --');
 for (const diff of ['easy', 'normal', 'hard']) {
-  eq(M.loadThroughput(econParamsRaw, 'budynek_cegielnia_przepustowosc', diff, -1), 10,
-    `econ-params.json budynek_cegielnia_przepustowosc.${diff} = 10`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_garncarnia_przepustowosc', diff, -1), 10,
-    `econ-params.json budynek_garncarnia_przepustowosc.${diff} = 10`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_huta_przepustowosc', diff, -1), 5,
-    `econ-params.json budynek_huta_przepustowosc.${diff} = 5`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_odlewnia_zelaza_przepustowosc', diff, -1), 5,
-    `econ-params.json budynek_odlewnia_zelaza_przepustowosc.${diff} = 5`);
-  eq(M.loadThroughput(econParamsRaw, 'budynek_wielka_odlewnia_przepustowosc', diff, -1), 5,
-    `econ-params.json budynek_wielka_odlewnia_przepustowosc.${diff} = 5`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_cegielnia_przepustowosc', diff, -1), 50,
+    `econ-params.json budynek_cegielnia_przepustowosc.${diff} = 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_garncarnia_przepustowosc', diff, -1), 50,
+    `econ-params.json budynek_garncarnia_przepustowosc.${diff} = 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_huta_przepustowosc', diff, -1), 25,
+    `econ-params.json budynek_huta_przepustowosc.${diff} = 25 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_odlewnia_zelaza_przepustowosc', diff, -1), 25,
+    `econ-params.json budynek_odlewnia_zelaza_przepustowosc.${diff} = 25 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)`);
+  eq(M.loadThroughput(econParamsRaw, 'budynek_wielka_odlewnia_przepustowosc', diff, -1), 25,
+    `econ-params.json budynek_wielka_odlewnia_przepustowosc.${diff} = 25 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)`);
 }
 
 // ===========================================================================
@@ -178,17 +178,17 @@ console.log('\n-- D. Regresja: dowod, ze scaling realnie zmienia produkcje wzgle
 {
   const cegielniaRecipe = recipe('cegielnia');
   const baseThroughput = M.loadThroughput(econParamsRaw, cegielniaRecipe.throughputParamKey, 'normal', cegielniaRecipe.throughputFallback);
-  eq(baseThroughput, 10, 'baseThroughput (normal, real econ-params.json) = 10');
+  eq(baseThroughput, 50, 'baseThroughput (normal, real econ-params.json) = 50 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
 
   const era1Throughput = M.converterThroughputForEra('cegielnia', baseThroughput, 1);
   const era3Throughput = M.converterThroughputForEra('cegielnia', baseThroughput, 3);
   assert(era3Throughput > era1Throughput,
     `regresja: przepustowosc epoka3 (${era3Throughput}) MUSI byc wieksza niz epoka1 (${era1Throughput}) -- na starym kodzie (brak skalowania) byloby rowne`);
 
-  const r1 = M.runConverter(cegielniaRecipe, { glina: 100, drewno: 100 }, era1Throughput, 500);
-  const r3 = M.runConverter(cegielniaRecipe, { glina: 100, drewno: 100 }, era3Throughput, 500);
-  eq(r1.produced, 10, 'produkcja realna epoka1: 10 cegiel/ture');
-  eq(r3.produced, 12, 'produkcja realna epoka3: 12 cegiel/ture (+20% wzgledem epoki1)');
+  const r1 = M.runConverter(cegielniaRecipe, { glina: 500, drewno: 500 }, era1Throughput, 500);
+  const r3 = M.runConverter(cegielniaRecipe, { glina: 500, drewno: 500 }, era3Throughput, 500);
+  eq(r1.produced, 50, 'produkcja realna epoka1: 50 cegiel/ture (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
+  eq(r3.produced, 60, 'produkcja realna epoka3: 60 cegiel/ture (+20% wzgledem epoki1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
 }
 
 // ===========================================================================
@@ -227,9 +227,11 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era1, AI era3), Cegie
 
     // Zapas wejsciowy hojny (>> potrzeba throughput-owa) -- produkcja limitowana
     // WYLACZNIE przepustowoscia, nie brakiem gliny/drewna/rudy (odporne na szum
-    // z plonow terenu w Fazie 1).
-    cPlayer.surowce = { glina: 1000, drewno: 1000, ruda: 1000 };
-    cAi.surowce     = { glina: 1000, drewno: 1000, ruda: 1000 };
+    // z plonow terenu w Fazie 1). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13):
+    // zapas podniesiony 1000->5000, żeby zostać komfortowo ponad nowy throughput ×5
+    // (Cegielnia era3 = 60/ture, wymaga glina=120/ture przy recepturze 2:1).
+    cPlayer.surowce = { glina: 5000, drewno: 5000, ruda: 5000 };
+    cAi.surowce     = { glina: 5000, drewno: 5000, ruda: 5000 };
 
     const builtByCity = new Map([
       [cPlayer.id, ['cegielnia', 'garncarnia', 'odlewnia_brazu']],
@@ -248,16 +250,16 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era1, AI era3), Cegie
     );
     assert(!!econ, 'advanceCityEconomy nie rzuca wyjatku (2 ownerow, era1 vs era3)');
 
-    eq(cPlayer.surowce.cegla, 10, 'gracz (era1): 10 cegiel/ture (baza, bez bonusu epoki)');
-    eq(cPlayer.surowce.ceramika, 10, 'gracz (era1): 10 ceramiki/ture (baza, bez bonusu epoki)');
-    eq(cAi.surowce.cegla, 12, 'AI (era3): 12 cegiel/ture (+20% bazy -- MECHANIZM DZIALA DLA AI)');
-    eq(cAi.surowce.ceramika, 12, 'AI (era3): 12 ceramiki/ture (+20% bazy -- MECHANIZM DZIALA DLA AI)');
+    eq(cPlayer.surowce.cegla, 50, 'gracz (era1): 50 cegiel/ture (baza, bez bonusu epoki, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
+    eq(cPlayer.surowce.ceramika, 50, 'gracz (era1): 50 ceramiki/ture (baza, bez bonusu epoki, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10)');
+    eq(cAi.surowce.cegla, 60, 'AI (era3): 60 cegiel/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
+    eq(cAi.surowce.ceramika, 60, 'AI (era3): 60 ceramiki/ture (+20% bazy -- MECHANIZM DZIALA DLA AI; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 12)');
 
     // Odlewnia_brazu: PLASKA dla OBU ownerow mimo roznych epok -- to jest sedno
     // "Odlewnie NIE skaluja sie" zweryfikowane w REALNYM silniku, nie tylko w
     // izolowanej funkcji czystej (sekcja C wyzej).
-    eq(cPlayer.surowce.braz, 5, 'gracz (era1): 5 brazu/ture (Odlewnia plaska)');
-    eq(cAi.surowce.braz, 5, 'AI (era3): 5 brazu/ture (Odlewnia plaska -- BEZ bonusu mimo epoki3)');
+    eq(cPlayer.surowce.braz, 25, 'gracz (era1): 25 brazu/ture (Odlewnia plaska, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)');
+    eq(cAi.surowce.braz, 25, 'AI (era3): 25 brazu/ture (Odlewnia plaska -- BEZ bonusu mimo epoki3; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 5)');
   }
 }
 

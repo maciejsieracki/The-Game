@@ -240,9 +240,11 @@ async function main() {
     const buildingsUpkeep = M.totalBuildingResourceUpkeep(buildings);
     const unitsUpkeep = M.totalUnitResourceUpkeep(units, resolveUnitDef);
 
-    // Sanity na wejściu: buildingResourceUpkeep to 1 SZT./TYP obecny w koszt_surowce (nie kwota kosztu).
-    eq(buildingsUpkeep.drewno, 2, 'buildings: 2 budynki mają "drewno" w koszt_surowce -> 1+1=2 (nie suma kwot 5+1)');
-    eq(buildingsUpkeep.kamien, 1, 'buildings: 1 budynek ma "kamien" w koszt_surowce -> 1');
+    // Sanity na wejściu: buildingResourceUpkeep to BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE=5
+    // SZT./TYP obecny w koszt_surowce (nie kwota kosztu) -- R-EKONOMIA-SUROWCE-SKALA-5X-Q1
+    // (Maciej 2026-08-13), było 1.
+    eq(buildingsUpkeep.drewno, 10, 'buildings: 2 budynki mają "drewno" w koszt_surowce -> 5+5=10 (nie suma kwot 5+1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)');
+    eq(buildingsUpkeep.kamien, 5, 'buildings: 1 budynek ma "kamien" w koszt_surowce -> 5 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, było 1)');
     assert(!('zelazo' in buildingsUpkeep), 'buildings: żaden budynek nie kosztuje żelaza -> brak klucza');
     eq(unitsUpkeep.zelazo, 2, 'units: Hastati utrzymanie 2 żelaza/turę');
     eq(unitsUpkeep.drewno, 4, 'units: Triarii utrzymanie 4 drewna/turę');
@@ -256,9 +258,9 @@ async function main() {
       const u = unitsUpkeep[key] ?? 0;
       eq(merged[key], b + u, `inwariant per klucz "${key}": merged = buildings + units (${b}+${u})`);
     }
-    eq(merged.drewno, 2 + 4, 'drewno: 2 (budynki) + 4 (wojsko, Triarii) = 6 -- dokładnie to co odejmuje deductBuildingStockCostAcrossCities');
+    eq(merged.drewno, 10 + 4, 'drewno: 10 (budynki, R-EKONOMIA-SUROWCE-SKALA-5X-Q1) + 4 (wojsko, Triarii) = 14 -- dokładnie to co odejmuje deductBuildingStockCostAcrossCities');
     eq(merged.zelazo, 0 + 2, 'zelazo: 0 (budynki) + 2 (wojsko, Hastati) = 2');
-    eq(merged.kamien, 1 + 0, 'kamien: 1 (budynki) + 0 (wojsko) = 1');
+    eq(merged.kamien, 5 + 0, 'kamien: 5 (budynki, R-EKONOMIA-SUROWCE-SKALA-5X-Q1) + 0 (wojsko) = 5');
   }
 
   // ===========================================================================
@@ -510,13 +512,14 @@ async function main() {
     ]);
 
     const owner0Buildings = M.previewOwnerBuildingResourceUpkeep(0, cities, buildingCatalog, builtByCity);
-    // c1: kuznia{zelazo:1,drewno:1} + tartak{drewno:1} = {zelazo:1,drewno:2}; c2: kuznia{zelazo:1,drewno:1}.
-    // owner 0 total = {zelazo:2, drewno:3}.
-    eq(owner0Buildings.zelazo, 2, 'I1: owner 0 (c1+c2, każde ma kuznia) -> zelazo = 1+1 = 2');
-    eq(owner0Buildings.drewno, 3, 'I2: owner 0 -> drewno = (kuznia 1 + tartak 1 w c1) + (kuznia 1 w c2) = 3');
+    // R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE
+    // = 5 (bylo 1). c1: kuznia{zelazo:5,drewno:5} + tartak{drewno:5} = {zelazo:5,drewno:10};
+    // c2: kuznia{zelazo:5,drewno:5}. owner 0 total = {zelazo:10, drewno:15}.
+    eq(owner0Buildings.zelazo, 10, 'I1: owner 0 (c1+c2, każde ma kuznia) -> zelazo = 5+5 = 10 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 2)');
+    eq(owner0Buildings.drewno, 15, 'I2: owner 0 -> drewno = (kuznia 5 + tartak 5 w c1) + (kuznia 5 w c2) = 15 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 3)');
 
     const owner1Buildings = M.previewOwnerBuildingResourceUpkeep(1, cities, buildingCatalog, builtByCity);
-    eq(owner1Buildings.drewno, 1, 'I3: owner 1 (c3, tylko tartak) -> drewno = 1');
+    eq(owner1Buildings.drewno, 5, 'I3: owner 1 (c3, tylko tartak) -> drewno = 5 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1)');
     assert(!('zelazo' in owner1Buildings), 'I4: owner 1 nie ma kuzni -> brak klucza zelazo');
 
     const units = [
@@ -568,10 +571,10 @@ async function main() {
     const citizenDeductions = { zelazo: 4 }; // np. z fallbackowego computeCitizenResourceDrain (już testowane osobno, sekcja K).
 
     const usage = M.resourceUsageBreakdownFor('zelazo', citizenDeductions, ownerBuildingResUpkeep, ownerUnitResUpkeep);
-    eq(usage.buildings, 1, 'J1: zelazo.buildings = 1 (kuznia w c1, ZAWSZE 1/typ obecny, niezależnie od kwoty 5 w koszt_surowce)');
+    eq(usage.buildings, 5, 'J1: zelazo.buildings = 5 (kuznia w c1, ZAWSZE BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE/typ obecny, niezależnie od kwoty 5 w koszt_surowce -- R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1)');
     eq(usage.citizens, 4, 'J2: zelazo.citizens = 4 (drenaż obywateli)');
     eq(usage.units, 3, 'J3: zelazo.units = 3 (Triarii utrzymanie żelaza)');
-    eq(M.resourceUsageTotal(usage), 8, 'J4: total = 1+4+3 = 8');
+    eq(M.resourceUsageTotal(usage), 12, 'J4: total = 5+4+3 = 12 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 8)');
 
     const row = {
       id: 'zelazo', label: 'Żelazo', icon: '⚙️', stock: 20, ratePerTurn: 2, typ: 'przetworzony',
@@ -580,10 +583,10 @@ async function main() {
     const html = M.resUsageDetailsHtml(row);
     assert(html.length > 0, 'J5: HTML NIEPUSTY -- panel po save-load NIE jest myląco pusty (rdzeń naprawy zadania 2)');
     const parsed = parseUsageRows(html);
-    eq(parsed['Budynki (zapotrzebowanie)'], 1, 'J6: wiersz Budynki w wyrenderowanym HTML = 1 (parsowane z realnego wywołania, nie z tekstu źródła)');
+    eq(parsed['Budynki (zapotrzebowanie)'], 5, 'J6: wiersz Budynki w wyrenderowanym HTML = 5 (parsowane z realnego wywołania, nie z tekstu źródła; R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1)');
     eq(parsed['Obywatele (drenaż realny)'], 4, 'J7: wiersz Obywatele w wyrenderowanym HTML = 4');
     eq(parsed['Wojsko (zapotrzebowanie)'], 3, 'J8: wiersz Wojsko w wyrenderowanym HTML = 3');
-    eq(parsed['Suma rozbicia tej tury'], 8, 'J9: wiersz sumy w wyrenderowanym HTML = 8 (1+4+3), zgodny z resourceUsageTotal(usage) w J4');
+    eq(parsed['Suma rozbicia tej tury'], 12, 'J9: wiersz sumy w wyrenderowanym HTML = 12 (5+4+3), zgodny z resourceUsageTotal(usage) w J4 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 8)');
   }
 
   // ===========================================================================

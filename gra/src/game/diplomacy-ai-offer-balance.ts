@@ -9,6 +9,7 @@ import type { BasketItem } from './diplomacy-pn-engine';
 import type { ProposalPayload } from './diplomacy-proposals';
 import {
   diplomacyFairGivePn,
+  diplomacyHandelSurowiecKrok,
   diplomacyPnPraca,
   diplomacyPnSurowiecIlosc,
   diplomacyPnZloto,
@@ -225,30 +226,70 @@ export function trimResourcePaymentTradeForZeroBalance(
   if (!aiOfferTargetsZeroBalance(difficulty) || !hasResourcePaymentTrade(payload)) {
     return payload;
   }
-  const tolerance = aiOfferPwSurplusTolerance(difficulty);
-  if (aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts) <= tolerance) {
-    return payload;
-  }
 
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): normalizuj ilosc surowiec_ilosc do wielokrotności
+  // kroku handlu PRZED jakąkolwiek oceną nadwyżki — inaczej ilość poniżej kroku (np. 1 szt.
+  // zelaza, krok=5) wycenia się jako 0 PN (diplomacyPnSurowiecIlosc floruje wewnętrznie), co
+  // fałszywie zaniża "żądanie" strony oddającej surowiec i wczesny early-return niżej uznawał
+  // taką (nieprawidłową) ofertę za już wyrównaną zamiast ją wycofać.
   let giveItems = [...(payload.giveItems ?? [])];
   let receiveItems = [...(payload.receiveItems ?? [])];
+  const resGiveIdx0 = giveItems.findIndex(i => i.typ === 'surowiec_ilosc');
+  const resRecvIdx0 = receiveItems.findIndex(i => i.typ === 'surowiec_ilosc');
+  const resSide0: 'give' | 'receive' | null =
+    resGiveIdx0 >= 0 ? 'give' : resRecvIdx0 >= 0 ? 'receive' : null;
+  if (resSide0) {
+    const idx0 = resSide0 === 'give' ? resGiveIdx0 : resRecvIdx0;
+    const arr0 = resSide0 === 'give' ? giveItems : receiveItems;
+    const item0 = arr0[idx0]!;
+    const krok0 = diplomacyHandelSurowiecKrok(item0.id);
+    const floored0 = Math.floor((item0.ilosc ?? 0) / krok0) * krok0;
+    if (floored0 < krok0) {
+      // Nawet 1 blok (krok) się nie mieści w podanej ilości — nie ma czego wyrównywać,
+      // wycofaj cały handel surowcem (spójne z ostatecznym `best < 1` niżej).
+      return { ...payload, giveItems: undefined, receiveItems: undefined };
+    }
+    if (floored0 !== item0.ilosc) {
+      const arrN = [...arr0];
+      arrN[idx0] = { ...item0, ilosc: floored0 };
+      if (resSide0 === 'give') giveItems = arrN; else receiveItems = arrN;
+    }
+  }
+  const normalizedPayload: ProposalPayload = { ...payload, giveItems, receiveItems };
+
+  const tolerance = aiOfferPwSurplusTolerance(difficulty);
+  if (aiProposalPlayerBenefitSurplus(normalizedPayload, relTotal, pnOpts) <= tolerance) {
+    return normalizedPayload;
+  }
 
   const resGiveIdx = giveItems.findIndex(i => i.typ === 'surowiec_ilosc');
   const resRecvIdx = receiveItems.findIndex(i => i.typ === 'surowiec_ilosc');
   const resSide: 'give' | 'receive' | null =
     resGiveIdx >= 0 ? 'give' : resRecvIdx >= 0 ? 'receive' : null;
-  if (!resSide) return payload;
+  if (!resSide) return normalizedPayload;
 
   const resIdx = resSide === 'give' ? resGiveIdx : resRecvIdx;
   const resArr = resSide === 'give' ? giveItems : receiveItems;
   const resItem = resArr[resIdx]!;
   const currentPkts = resItem.ilosc ?? 1;
 
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): binary search TYLKO nad wielokrotnościami
+  // kroku handlu (`krok`, np. 5 szt. dla zelazo) — szukanie w jednostkach 1 szt. mogłoby
+  // wylądować na ilości poniżej kroku (np. 1 szt. zelaza), która przy realnej wycenie
+  // (diplomacyPnSurowiecIlosc) floruje do 0 PN. To dawało FAŁSZYWIE niski `trialSurplus`
+  // (surowiec "za darmo" bo niewycenialny) i binary search "znajdywał" ilość, która przy
+  // faktycznym transferze i tak floruje do zera — pozycja zostawała w koszyku z pozorną
+  // (nie realną) ilością zamiast zostać wycofana. Szukanie w krokach eliminuje tę lukę
+  // u źródła: każdy `mid` jest już z definicji wielokrotnością kroku.
+  const krok = diplomacyHandelSurowiecKrok(resItem.id);
+  const hiSteps = Math.floor(currentPkts / krok);
+
   let lo = 1;
-  let hi = currentPkts;
+  let hi = hiSteps;
   let best = -1;
   while (lo <= hi) {
-    const mid = Math.floor((lo + hi) / 2);
+    const midSteps = Math.floor((lo + hi) / 2);
+    const mid = midSteps * krok;
     const trialResArr = [...resArr];
     trialResArr[resIdx] = { ...resItem, ilosc: mid };
     const trialPayload: ProposalPayload = {
@@ -259,9 +300,9 @@ export function trimResourcePaymentTradeForZeroBalance(
     const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts);
     if (trialSurplus <= tolerance) {
       best = mid;
-      lo = mid + 1;
+      lo = midSteps + 1;
     } else {
-      hi = mid - 1;
+      hi = midSteps - 1;
     }
   }
 

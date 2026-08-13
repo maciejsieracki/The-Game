@@ -92,7 +92,19 @@ export function applyImprovementBonus(yld: TileYield, improvementKey: string | u
   if (b.glina)   yld.glina   += b.glina;
 }
 
-/** Ilość rudy wydobywanej z kopalni na turę (analogicznie do glina=2 z glinianki). */
+/**
+ * Ilość rudy wydobywanej z kopalni na turę (analogicznie do glina=2 z glinianki).
+ * ⚠️ MARTWY KOD (znalezisko R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13):
+ * konsumowany wyłącznie przez `oreYieldFromImprovements()` → `tileYield().ruda/ruda_zelaza`
+ * → `cityYieldPerTurn().rudaTerenu` (economy.ts) — `rudaTerenu` NIGDZIE nie jest czytane
+ * poza economy.ts (zweryfikowano grepem całego `src/`), więc nie wpływa na żaden realny
+ * magazyn/stan gry. ŚWIADOMIE NIE przeskalowane ×5 — zmiana nie miałaby żadnego
+ * obserwowalnego efektu w grze; zgłoszone do `dyspozycje/PYTANIA-OTWARTE.md` jako osobny
+ * dług techniczny (martwa ścieżka do wyczyszczenia lub podłączenia).
+ * / EN: DEAD CODE — only consumed by a chain whose final field (`rudaTerenu`) is never
+ * read outside economy.ts. Deliberately NOT scaled ×5 (no observable game effect);
+ * flagged separately as tech debt.
+ */
 export const ORE_YIELD_PER_MINE = 2;
 
 /**
@@ -131,13 +143,16 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 // workedTiles (BEZ ZMIAN).
 //
 // Stawki: pole "surowiec_ilosc_tura" w terrain-improvements.json per ulepszenie.
-// Wartosci REALNE (terrain-improvements.json; korekta balansu Maciej 2026-08-12,
-// R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, ZASTEPUJE korekte 2026-08-09 nizej):
-//   Tartak->drewno 10 · Glinianka->glina 10 · Kamieniolom->kamien 10 ·
-//   Kopalnia miedzi->ruda 4 · Kopalnia (zloze zelaza)->ruda_zelaza 4.
-// EN: rates above are current as of 2026-08-12 (R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1);
+// Wartosci REALNE (terrain-improvements.json; R-EKONOMIA-SUROWCE-SKALA-5X-Q1,
+// Maciej 2026-08-13, ×5 vs stan sprzed tej decyzji -- ZASTEPUJE korekte 2026-08-12 nizej;
+// zloto WYLACZONE ze skalowania -- waluta, nie surowiec budowlany):
+//   Tartak->drewno 50 (bylo 10) · Glinianka->glina 50 (bylo 10) · Kamieniolom->kamien 50 (bylo 10) ·
+//   Kopalnia miedzi->ruda 20 (bylo 4) · Kopalnia (zloze zelaza)->ruda_zelaza 20 (bylo 4) ·
+//   Warzelnia soli->sol 50 (bylo 10) · Stadnina->kon 25 (bylo 5) · Kopalnia zlota->zloto 1 (BEZ ZMIAN).
+// EN: rates above are current as of 2026-08-13 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, ×5 vs the
+// prior state; gold excluded -- currency, not a construction resource);
 // see terrain-improvements.json surowiec_ilosc_tura per improvement for source of truth.
-// Domyslny fallback (gdy pole nieobecne w JSON) = 2/ture -- czysto bezpieczenstwo,
+// Domyslny fallback (gdy pole nieobecne w JSON) = 10/ture (bylo 2) -- czysto bezpieczenstwo,
 // nie stawka docelowa; do dalszego strojenia w panelu Excel jesli potrzeba.
 // ---------------------------------------------------------------------------
 
@@ -156,9 +171,14 @@ const TERRITORY_YIELD_IMPROVEMENTS: ReadonlySet<string> = new Set([
   'warzelnia_soli', 'stadnina', 'kopalnia_zlota',
 ]);
 
-/** Fallback bezpieczenstwa gdy JSON nie ma pola `surowiec_ilosc_tura` (wszystkie 5
- *  ulepszen produkcyjnych maja dzis jawna wartosc w JSON -- patrz komentarz wyzej). */
-export const TERRITORY_YIELD_DEFAULT_AMOUNT = 2;
+/** Fallback bezpieczenstwa gdy JSON nie ma pola `surowiec_ilosc_tura` (wszystkie 7
+ *  ulepszen produkcyjnych maja dzis jawna wartosc w JSON -- patrz komentarz wyzej;
+ *  galaz NIEOSIAGALNA w praktyce dzis, ale skalowana x5 dla spojnosci --
+ *  R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13, bylo 2).
+ *  / EN: safety fallback when JSON lacks `surowiec_ilosc_tura` (all 7 production
+ *  improvements have an explicit JSON value today, so this branch is unreachable
+ *  in practice -- scaled x5 for consistency with the live rates, was 2). */
+export const TERRITORY_YIELD_DEFAULT_AMOUNT = 10;
 
 function territoryYieldAmountForKey(key: string): number {
   const row = IMPROVEMENTS[key];

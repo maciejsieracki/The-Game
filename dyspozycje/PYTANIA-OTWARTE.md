@@ -3885,7 +3885,7 @@ okazji edycji tego pliku; nie wymaga osobnego zlecenia.
 **Kotwice:** `gra/tools/heks-panel-tooltip-warstwa-test.cjs` (nagłówek/komentarz uzasadnienia).
 **Model:** Sonnet 5.
 
-## P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
+## P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **ZAMKNIĘTE — naprawione, commit `7bc2a3ed` (2026-08-10)**
 Wzorzec `hexToWorkedTile`/`yieldOfMapHex` (po naprawie `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE`,
 commit `3809d4f4`) przekazuje `zloze` do `tileYield()`. Trzy pozostałe miejsca tego NIE robią:
 `cityPanel.ts:8207`, `cityPanel.ts:8225`, `hexContextTooltip.ts:252`. Zweryfikowane: zero wpływu
@@ -16321,3 +16321,1239 @@ w tej samej turze nowe sekcje z wnioskami z tej sesji (worktree/scratchpad koliz
 równoległego `git commit`, wzorzec extract-to-pure-function domykający tautologie testowe,
 audyt "nigdy-nie-ewaluowanych" commitów jako cykliczna higiena, wartość weryfikacji krzyżowej
 między tematami tej samej sesji).
+
+## ECHO P-PROMOCJA-FRONT-RESET-POSTEPU-Q1 = B (Maciej, 2026-08-13)
+
+Wariant B: dodać pole postępu PER POZYCJA (nie tylko dla frontu kolejki) — zamiana pozycji z
+frontem ma przenosić jej zebrany postęp zamiast go kasować. Wymaga zmiany schematu danych
+kolejki produkcji (`gra/src/game/production.ts` i pokrewne typy) + migracji istniejących
+zapisów (stare zapisy nie mają pola postępu per-pozycja dla elementów innych niż front — muszą
+dostać bezpieczny default, np. 0).
+
+**Świadomie NIETKNIĘTE w tym zleceniu:** pytanie poboczne o semantykę swap vs prawdziwy
+move-to-front (funkcja `promoteToFront` dziś robi SWAP, nie move-to-front) — właściciel
+odpowiedział wyłącznie na pytanie o reset postępu, nie na to powiązane pytanie. Zachowanie SWAP
+zostaje bez zmian do czasu osobnej decyzji; dispatch obejmuje wyłącznie przeniesienie postępu.
+
+**STATUS: dispatch Operatora (Sonnet 5) w toku.**
+
+## ECHO P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1 = A (Maciej, 2026-08-13)
+
+Akceptowalne — na `normal`/`easy` krążenie jednostki barbarzyńskiej między ≥2 niebronionymi
+miastami bez dotarcia do bronionego jest świadomie zaakceptowanym zachowaniem, nie błędem do
+naprawy. Runda 8 mechanizmu `clearedCityIds` NIE jest potrzebna. Zero kodu do zmiany —
+**ZAMKNIĘTE**. Mechanizm patrolu barbarzyńców (rundy 1-7) uznany za kompletny.
+
+## NUMER + ECHO: R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — decyzja WŁASNA właściciela (2026-08-13)
+
+**Kontekst:** w toku dyskusji o `P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1` (populacja 1-4 przy
+stawce 0,2/obywatela floruje `need` do zera) właściciel zdecydował o znacznie szerszej zmianie
+niż wybór litery — pełne przeskalowanie ekonomii surowcowej ×5, które eliminuje problem
+zaokrąglenia u źródła (przy stawce 1,0/obywatela `floor(1×1,0)=1`, nigdy nie zeruje się dla
+populacji ≥1), zamiast wybierać między premią a neutralnością dla przypadku zerowego.
+
+**Decyzja (dosłowna, właściciela), doprecyzowana 3 pytaniami AskUserQuestion:**
+
+1. **Stawka drenażu obywateli: powrót do 1,0 szt./obywatela/surowiec/turę** (z obecnych 0,2) —
+   `CITIZEN_UPKEEP_RATE_PER_CITIZEN` w `gra/src/game/citizen-resource-upkeep.ts`, 0,2→1,0.
+2. **Produkcja WSZYSTKICH surowców fizycznych ×5** — terytorialna (`terrain-improvements.json`)
+   i budynkowa. **Punkt bazowy: DZISIEJSZE żywe wartości** (po porannej naprawie `ecbddda8` tej
+   samej sesji), NIE sprzed niej. Konkretnie: tartak/kamieniołom/glinianka 10→**50** szt./turę,
+   kopalnia_miedzi/kopalnia_żelaza 4→**20** szt./turę, stadnina 5→**25** szt./turę. Sól
+   (warzelnia_soli, dziś 10/turę, nietknięta przez `ecbddda8`) traktowana jako zwykły surowiec
+   fizyczny → **50** szt./turę (dedukcja orkiestratora z „wszystkie surowce fizyczne" — do
+   weryfikacji przez Evaluatora, nie było wprost wymienione przez właściciela).
+3. **Koszt surowcowy rekrutacji jednostek ×5** (`gra/data/units.json`, pola kosztów surowców).
+4. **Utrzymanie surowcowe jednostek ×5** (osobne od drenażu obywateli — koszt utrzymania per
+   jednostka, jeśli taki mechanizm istnieje oddzielnie od kosztu rekrutacji).
+5. **Koszt budowy budynków w surowcach ×5** (`gra/data/buildings.json` lub odpowiednik, pola
+   kosztu budowy).
+6. **Utrzymanie surowcowe budynków ×5** (mechanizm `building-stock-cost.ts`/pokrewny, dotknięty
+   wcześniej w tej sesji przez `a79bae29`/`89c16ec1` — tam WYŁĄCZNIE etykiety, nie wartości;
+   teraz realna zmiana wartości).
+7. **Pojemność magazynów (cap) ×5** — żeby 5× większa produkcja nie wypełniała magazynów 5×
+   szybciej niż dziś (formuła `500+100/Magazyn` czy odpowiednik → `2500+500/Magazyn`, dokładna
+   formuła i miejsce w kodzie do ustalenia przez Operatora).
+8. **WYŁĄCZONE z ×5: Złoto (surowiec z `kopalnia_zlota`) i Pieniądz (waluta)** — zostają bez
+   zmian, świadomie potraktowane jako jedna kategoria (waluta/handel), różna od surowców
+   fizycznych zużywanych do budowy/utrzymania.
+
+**Cel:** neutralny wpływ na resztę parametrów (Szczęście, Rozwój) przy poprawnym liczeniu
+zużycia surowców przez mieszkańców — wszystkie proporcje między produkcją/kosztem/utrzymaniem
+zostają identyczne względem siebie, zmienia się wyłącznie granulacja (jednostka „1 sztuka" jest
+teraz relatywnie 5× drobniejsza względem populacji), co usuwa problem floor-do-zera przy małych
+populacjach bez potrzeby wyboru premia-vs-neutralność.
+
+**STATUS: dispatch Operatora (Sonnet 5) w toku — zakres: pełna inwentaryzacja WSZYSTKICH
+dotkniętych liczb (plik:linia, PRZED zmianą) w stylu tabeli reżimów, potem zastosowanie ×5/
+×1 wg reguł wyżej, potem aktualizacja wszystkich testów pinujących stare wartości.** Ze względu
+na skalę (dotyka ekonomii całej gry) — po Operatorze osobny, dokładny Evaluator sprawdzający
+KOMPLETNOŚĆ (czy żaden surowiec/koszt nie został pominięty) i SPÓJNOŚĆ (czy proporcje
+rzeczywiście zostały zachowane, nie tylko poszczególne liczby zmienione).
+
+## P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1 · STATUS: **ZAMKNIĘTE — zastąpione decyzją R-EKONOMIA-SUROWCE-SKALA-5X-Q1**
+
+Pytanie o premię/neutralność przy `need=0` jest teraz nieaktualne — decyzja właściciela o
+powrocie stawki drenażu obywateli do 1,0/obywatela (część `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`)
+eliminuje problem u źródła: `floor(1×1,0)=1`, `need` nigdy nie zeruje się dla populacji ≥1.
+Nie wymaga osobnej odpowiedzi. Zamknięte bez dalszego działania.
+
+## NUMER: R-CIVPEDIA-OPISY-AUDYT-Q1 — przegląd CivPedii i wszystkich „szczegółów"/ściąg w grze (2026-08-13)
+
+Polecenie właściciela (samodzielna praca, właściciel nieobecny przez jakiś czas): przejrzeć
+CivPedię oraz wszystkie panele „szczegóły"/„ściąga" w grze (przykład z rozmowy: panel
+„Zamożność — ściąga" w mieście — wzory, progi, mechanika w formie tabeli) pod kątem: (a) czy
+wszystko co jest pokazane jest rzeczywiście potrzebne, (b) czy wyjaśnienia są wystarczająco
+jasne, (c) czy jest to czytelne/przejrzyste. **Etap 1 (na razie): WYŁĄCZNIE przegląd i
+rekomendacje, bez wdrażania zmian** — dopiero po zebraniu pełnego obrazu i (jeśli trzeba)
+turze ABC dla zmian merytorycznych, wejdzie w fazę wykonania przez normalną pętlę AutoBot.
+
+**STATUS: dispatch agenta rozpoznawczego (katalogowanie wszystkich takich paneli/tekstów w
+kodzie) w toku — pierwszy krok przed jakąkolwiek oceną jakości.**
+
+## Rozszerzenie zakresu R-CIVPEDIA-OPISY-AUDYT-Q1: + Poradnik dla gracza (Maciej, 2026-08-13)
+
+Polecenie: dołączyć „Poradnik dla gracza" do zakresu przeglądu (CivPedia + wszystkie
+szczegóły/ściągi w grze + Poradnik). Właściciel nieobecny przez dłuższy czas — **praca
+samodzielna, autoryzacja standing na kontynuację pipeline'u AutoBot i nowych tematów bez
+czekania na odpowiedzi.** Otwarte pytania ABC (`P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1`
+czeka na doprecyzowanie mojego pytania zwrotnego) zostają zablokowane do jego powrotu — nie
+zgaduję, kontynuuję inne dostępne wątki.
+
+## R-CIVPEDIA-OPISY-AUDYT-Q1 — dispatch workflow rozpoznawczo-recenzyjny (2026-08-13)
+
+Skala korpusu: 22 rozdziały Poradnika (~400K znaków), 136 haseł Encyklopedii (9 kategorii),
+3+ panele "ściąga" wbudowane w UI (Zamożność/Podział pracy/Okolica w cityPanel.ts, plus
+dodatkowe odkrywane przez agenta rozpoznawczego). Dispatchowany workflow wieloagentowy: (1)
+rozpoznanie wszystkich paneli ściąga w kodzie UI, (2) recenzja Poradnika w 8 wsadach (potrzebność/
+jasność/przejrzystość/AKTUALNOŚĆ wobec żywego kodu — priorytet na rozjazdy liczb, zwłaszcza
+biorąc pod uwagę równolegle trwającą zmianę `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`), (3) recenzja
+Encyklopedii w 6 wsadach wg kategorii, krzyżowo z `gra/data/`, (4) recenzja paneli ściąga pod
+kątem zgodności wzorów z silnikiem, (5) synteza w jeden raport. Raport zapisze się jako
+`dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`. **ETAP 1 wyłącznie — bez
+zmian w kodzie/danych**, zgodnie z poleceniem właściciela.
+
+## Postęp per-item w promoteToFront — Evaluator: FAIL, naprawa runda 2 dispatchowana
+
+Mechanizm bankowania sam w sobie poprawny (exploit zablokowany, potwierdzone 55 asercji
+własnych: A→B→C→A bez mieszania, dequeue czyści zbankowane, no-op na index 0, save/load
+bezpieczny, rekrutacja nietknięta).
+
+**⛔ BLOKER B1 — zbankowany postęp ginie w DOMINUJĄCEJ ścieżce powrotu na front.**
+`advanceProduction`/`rushProduction` (production.ts:1308,1507) NIE czytają zbankowanego pola
+`postep` przy zdejmowaniu frontu — nowy front startuje z aktywnym postępem 0, a jego zbankowana
+wartość zostaje MARTWYM polem, które przy NASTĘPNEJ promocji jest bezpowrotnie NADPISYWANE.
+Realny przebieg gracza: Cud 500/1000 → promocja Wojownika (⇈, tooltip obiecuje "zostanie
+zachowana") → Wojownik kończy się naturalnie w 1-2 tury → Cud wraca na front SAM → panel
+pokazuje 0/1000. Dokładnie to, co decyzja P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B miała wyeliminować.
+Własny test Operatora (sekcja 9) **przypina ten błąd jako zamierzony** z komentarzem
+"advanceProduction nie zna per-item postep" — bramka zielona, bo asercjonuje bug, nie jego brak.
+
+Dowiedziona przyczyna luki testowej: mutacja "usuń czyszczenie pola na wchodzącym" (duplikacja
+wartości i w scalarze, i na itemie frontu) PRZEŻYŁA 55/55 — brak asercji na niezmiennik "item na
+froncie nigdy nie niesie zbankowanego postep".
+
+**STATUS: dispatch rundy 2 w toku** — zakres: (1) B1, wspólny helper "zdejmij front" używany
+przez `dequeue`/`advanceProduction`/`rushProduction`, czytający i czyszczący zbankowane pole
+nowego frontu (`postep: (rest[0]?.postep ?? 0) + remainder`); (2) nota 1 — `promoteToFront`
+przebudowuje itemy pole-po-polu zamiast `{...outgoing, postep}`, ryzyko cichej utraty
+przyszłych pól; (3) nota 2 — tooltip ⇈ do przeredagowania po naprawie B1; (4) nowa asercja
+niezmiennika "front nigdy nie niesie zbankowanego postep". **Nota 4 (sanitizeProductionQueue
+też przekazuje darmową Pracę przy usunięciu frontu) zarejestrowana OSOBNO, pre-istniejąca, poza
+zakresem tej naprawy.**
+
+---
+
+## Audyt C-030/C-031 (2026-08-13, w ramach standing autoryzacji autonomicznej) — LISTA PUSTA
+
+`grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md` — 23 trafienia. Sprawdzone
+wszystkie: 3 nagłówki-relikty z historycznych rejestracji już zamkniętych tego samego dnia
+sesji (P-ZUZYCIE-OBYWATELE, P-PROMOCJA-FRONT, P-BARBARZYNCY-KRAZENIE — ECHO/zamknięcie widoczne
+niżej w pliku, tekst nagłówka to oryginalna rejestracja, nie aktualny stan), 3 dopasowania to
+odwołania w treści innych wpisów (nie nagłówki `## `). Realne otwarte nagłówki: P-HEKS-ZLOZE
+i P-KOLOR-SUROWCE (świadomie odłożone, cytat Macieja), P-PANSTWO-MIASTO-ZNIKA (wstrzymane na
+wyraźną prośbę), R-FORT-STRAZNICA (odłożone na „krok 2", decyzja Macieja 2026-08-09),
+R-KONFIGURATOR-CYWILIZACJI / R-EPOKA-KAMIEN / R-SUROWIEC-CYNA / R-AI-UCZENIE-SIE (wszystkie 4:
+„do zapisania, nie do podjęcia teraz" — wprost zarejestrowane per §2 CLAUDE.md, nie
+dispatchowane celowo), P-GARNIZON-KONIUNKCJA (pytanie ABC czeka na odpowiedź Macieja — patrz
+notatka wyżej o rozbieżności między jego opisem słownym a faktycznym mapowaniem pól
+`inGarnizon`/`ufortyfikowanyWPolu`, wciąż nierozstrzygnięta). Żaden nowy dispatch nie wymagany.
+
+Stan agentów w tle: `fix-ekonomia-skala-5x` (R-EKONOMIA-SUROWCE-SKALA-5X-Q1) i
+`fix-promote-front-progress-r2` (runda 2 B1) — oba jeszcze pracują. Workflow audytu
+CivPedia/Poradnik/ściąg (`wf_600b5a93-598`) — w toku. Żadnych nowych zgłoszeń do zarejestrowania
+od czasu ostatniego wpisu.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — runda 2 (B1) SCALONA, Evaluator w toku (2026-08-13)
+
+Operator naprawił B1: wspólna `dropFrontItem(kolejka, remainder)` używana w `advanceProduction`,
+`rushProduction`, `dequeue` — każde zdjęcie frontu (nie tylko ręczna promocja) odczytuje i czyści
+zbankowany `postep` nowego frontu. `dequeue(0)` świadomie zachowuje kontrakt „anulowany traci
+WŁASNY postęp", ale teraz też przywraca zbankowany postęp kolejnego elementu (wcześniej zostawał
+martwy). `promoteToFront` przez spread zamiast pól-po-polu. Tooltip ⇈ przeredagowany. Test 55→65,
+sekcja 9 przepisana (nie pinuje już B1), nowe sekcje 12-13 (niezmiennik front-nigdy-zbankowany
+w rushProduction/dequeue). Nie-jałowość zweryfikowana przez Operatora: cofnięcie fixu → 4 asercje
+padają w sekcjach 9/12 z dokładnymi komunikatami.
+
+Bramki na głównym drzewie (zweryfikowane niezależnie przeze mnie po scaleniu): `tsc --noEmit` 0
+błędów, `promote-to-front-test.cjs` 65/65, `logic-test.cjs` 213/213. Commit `3539a6cf`, push OK.
+
+**Dispatch świeżego Evaluatora (Opus 5, agent `ae032de464c4af66c`, worktree
+`eval-promote-front-r2` z commitu `3539a6cf`) NASTĘPUJE teraz** — ma odtworzyć scenariusz B1
+własnym kodem (nie czytaniem raportu), zweryfikować `rushProduction`/`dequeue`, spróbować złamać
+niezmiennik anty-exploit własną mutacją, sprawdzić nie-tautologiczność sekcji 9/12/13.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — Evaluator runda 2: FAIL (B2 — nowy call-site poza production.ts), runda 3 dispatch (2026-08-13)
+
+**B1 potwierdzone NAPRAWIONE, niezależnie, własnym kodem Evaluatora** (nie czytaniem raportu):
+scenariusz krytyczny (Cud 1000, 500 zebrane realnym `advanceProduction`, promocja Wojownika,
+naturalne dokończenie) odtworzony z realnego `production.ts` — Cud wraca z dokładnie 500.
+Zweryfikowano też `rushProduction` i `dequeue`. Fuzz 400×25=10 000 kroków losowych operacji,
+0 naruszeń niezmiennika, bilans Pracy zachowany, round-trip zapisu (JSON stringify/parse jak
+`save.ts`) zachowuje zbankowane pole. Mutacja własna Evaluatora (8 wariantów, nie powtórka
+Operatora): 7/8 zabitych realnymi 65 asercjami — test nie jest jałowy. `tsc` 0, `promote-to-
+front-test.cjs` 65/65, `logic-test.cjs` 213/213 — potwierdzone wykonaniem przez Evaluatora.
+
+**BLOKER B2 — trwała utrata zbankowanego postępu w `main.ts::applyProductionCompleted`
+(linia 3167, gałąź „brak Manpower" ~3213-3222), STRICTLY WORSE niż runda 1.** Ta funkcja ma
+WŁASNĄ logikę wstawiania na front (`kolejka: [completed, ...prodAfterAdvance.kolejka], postep:
+completed.koszt`), całkowicie poza kontraktem `dropFrontItem`/`promoteToFront` z rundy 2. Gdy
+`tryDeductUnitSpawnCostsEmpire` zwraca `ok:false` (brak Manpower), scalar `postep` jest
+NADPISYWANY kosztem odłożonej jednostki — zbankowana wartość nowego frontu (już wyliczona przez
+`dropFrontItem` w `advanceProduction` chwilę wcześniej) ginie bezpowrotnie, bo item, na którym
+powinna wrócić (Cud), ma już wyczyszczone własne pole `postep` (przeniesione do scalara przez
+dropFrontItem), a ten scalar właśnie zostaje zastąpiony.
+
+**Repro (dosłowne, oba commity, ten sam scenariusz):** kolejka `[Cud 1000, Wojownik 10]`, 500
+Pracy zebrane, ⇈ na Wojownika, Wojownik kończy się, `tryDeductUnitSpawnCostsEmpire` → `ok:false`.
+Runda 1 (`de1d002b`): ręczna ⇈ na Cud po tym zdarzeniu → aktywny postęp = **500** (odzyskuje).
+Runda 2 (`3539a6cf`, HEAD): identyczny scenariusz → aktywny postęp = **0**. Regresja netto
+względem rundy 1, nie tylko brak postępu wobec rundy 2.
+
+**Osiągalne z 3 miejsc** (wszystkie wywołują tę samą funkcję): koniec tury (`main.ts:24451`),
+wykup (`main.ts:18115`, `main.ts:27301`) — jeden fix w `applyProductionCompleted` naprawia
+wszystkie trzy ścieżki.
+
+**Dlaczego blokujące, nie notatka:** (1) ta sama klasa błędu co B1 — call-site manipulujący
+frontem nieświadomy protokołu bankowania, runda 2 nie zaudytowała konsumentów scalara który sama
+przedefiniowała; (2) wyzwalacz skorelowany z pilną potrzebą wojska (⇈ na jednostkę robi się
+głównie gdy brakuje wojska — czyli dokładnie gdy Manpower może zablokować); (3) przeczy
+tooltipowi przeredagowanemu w TYM SAMYM commicie 2 rundy („zostanie zachowana i wróci na front").
+
+**Notatki niepilne (do rejestru, nie blokują), do przekazania Operatorowi rundy 3 jako
+dodatkowy zakres jeśli czas pozwoli, inaczej osobna rejestracja:**
+- N1 (luka testowa): niezmiennik „front nigdy nie niesie zbankowanego postep" asercjonowany po
+  `advanceProduction`/`rush`/`dequeue`, NIGDY po `promoteToFront` — wersja bez stripu wchodzącego
+  itemu przechodzi 65/65 (mutant M5 Evaluatora).
+- N2 (opis myli, nie blokuje): sekcje 1-2 testu mówią „postęp resetuje się do 0" — po decyzji B
+  to nie reset, to fakt że wchodzący item nigdy wcześniej nie był frontem (asercje poprawne).
+- N3 PRE-ISTNIEJĄCE (`13419757`, poza zakresem obu rund): `sanitizeProductionQueue`
+  (`main.ts:3369-3377`) przy usunięciu FRONTU (przegrany wyścig o cud) zostawia scalar, który
+  staje się postępem innego itemu — pierwotna klasa exploitu, nietknięta przez rundy 1-2.
+- N4 (asymetria gracz/AI, powstała w rundzie 1, nieudokumentowana decyzja): AI `queueJump`
+  (`main.ts` ~25772) wstawia na front z `postep: 0` — AI traci postęp wypychanego itemu, gracz
+  przez ⇈ go bankuje. Może być zamierzone, nie zapisane nigdzie jako decyzja.
+- N5 (kosmetyka): `(nextFront?.postep ?? 0) + remainder` przy nieliczbowym `postep` (ręcznie
+  edytowany save) daje konkatenację stringów zamiast NaN/błędu.
+
+**STATUS: dispatch rundy 3 w toku** — zakres: naprawić B2 (zbankować `prodAfterAdvance.postep`
+na `prodAfterAdvance.kolejka[0]` PRZED nadpisaniem scalara, symetrycznie do `dropFrontItem`;
+rozważyć eksport wspólnego helpera `insertAtFront(prod, item, postep)` z `production.ts`, żeby
+żaden call-site więcej nie manipulował frontem ręcznie — to już trzeci raz) + N1 (asercja
+niezmiennika też po `promoteToFront`) + N2 (poprawka opisu sekcji 1-2). N3/N4/N5 świadomie POZA
+zakresem tej rundy — do osobnej rejestracji jeśli nie zmieszczą się w czasie.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — oba etapy scalone, Evaluator dokładny w toku (2026-08-13, po restarcie kontenera)
+
+**Kontekst restartu:** kontener sesji zrestartował się w trakcie pracy Operatora (task
+`af04e631968772d94`). Po restarcie odnaleziono w worktree `fix-ekonomia-skala-5x` DWA etapy:
+(1) commit `db124b4b` „pelne przeskalowanie" — **już wcześniej scalony do gałęzi współdzielonej**
+(potwierdzone: `db124b4b` jest przodkiem `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`,
+zaraz przed `aa7b937c`), ale **nigdy nie trafił do rejestru jako osobny wpis scalenia** — luka
+dokumentacyjna z części sesji sprzed tego restartu; (2) NIEZACOMMITOWANA kontynuacja na wierzchu
+tego commitu — Operator kontynuował pracę (znajdował przepustowość konwerterów w
+`econ-params.json` pominiętą w pierwszym przebiegu, hardkodowane stałe typu
+`SPICHLERZ_DRAIN_CERAMIKA_PER_TURN`, udokumentował martwe klucze JSON) — przerwana przez restart
+przed commitem/raportem końcowym.
+
+**Działanie:** oba etapy potraktowane jako jedna całość. Zweryfikowano na scalonym drzewie
+głównym (nie tylko w worktree): `tsc --noEmit` 0 błędów, `logic-test.cjs` 213/213, oraz 10
+testów dotykających ekonomii surowcowej (`citizen-resource-upkeep-test` 109/109,
+`converter-era-scaling-test` 87/87, `converters-test` 46/46, `magazyn-era-scaling-test` 57/57,
+`porzadek-panel-czytelnosc-test` 81/81, `pytanie-84-stock-keys-test` 14/14,
+`resource-usage-breakdown-test` 100/100, `surow-civ-storage-test` 67/67,
+`tartak-glinianka-rate-Q1-test` 1281/1281, `upkeep-test` 73/73) — wszystkie zielone, zero porażek.
+Kontynuacja scalona osobnym commitem `e401c1c2`, push OK.
+
+**Dispatch dokładnego Evaluatora (Opus 5) NASTĘPUJE teraz** — zgodnie z wcześniejszą zapowiedzią
+(„biorąc pod uwagę skalę, dokładny Evaluator sprawdzający kompletność i spójność przed
+zamknięciem"), obejmujący ŁĄCZNIE oba commity (`db124b4b`+`e401c1c2`), bo db124b4b nigdy wcześniej
+nie dostał niezależnej weryfikacji.
+
+---
+
+## Restart kontenera (2026-08-13) — odzysk stanu, 3 procesy wznowione
+
+Kontener sesji zrestartował się w trakcie pracy 2 agentów w tle. Odzyskany stan:
+
+1. **R-EKONOMIA-SUROWCE-SKALA-5X-Q1** — oba etapy (`db124b4b` + kontynuacja) odnalezione,
+   scalone, zweryfikowane bramkami (patrz wpis wyżej), dokładny Evaluator (Opus 5,
+   `aa897c17f1a338ed0`) dysponowany.
+2. **P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B runda 3 (B2)** — worktree `fix-promote-front-progress-r3`
+   odtworzony z aktualnego czubka, Operator (Sonnet 5, `aa50d9f5e738c9c20`) dysponowany do
+   naprawy `applyProductionCompleted` w `main.ts` (patrz wpis wyżej, pełny opis B2).
+3. **R-CIVPEDIA-OPISY-AUDYT-Q1** — Workflow `wf_600b5a93-598` wznowiony (`resumeFromRunId`) ze
+   skryptu odzyskanego z `/root/.claude/projects/.../workflows/scripts/`; cache'owane wyniki
+   agentów sprzed restartu wykorzystane, tylko brakujące/nowe fazy wykonają się ponownie.
+
+Standing autoryzacja pracy samodzielnej („działaj samodzielnie") w mocy — kontynuuję bez pytań.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — runda 3 (B2) SCALONA, Evaluator w toku (2026-08-13)
+
+Operator naprawił B2: nowy eksportowany helper `insertAtFront(prod, item, activePostep)` w
+`production.ts` — bankuje `prod.postep` na `prod.kolejka[0]` (jeśli istnieje i >0) PRZED
+wstawieniem nowego itemu na front i nadpisaniem scalara. Użyty w `applyProductionCompleted`
+(`main.ts`, gałąź `!d.ok`) zamiast ręcznego klepania frontu — naprawia wszystkie 3 call-site'y
+tej funkcji jednym miejscem. Dodano sekcję 14 (niezmiennik bezpośrednio po `promoteToFront`) i
+15 (dosłowne repro B2 z rejestru Evaluatora — Cud odzyskuje 500, nie ginie przy braku Manpower).
+Poprawiono mylące komentarze „resetuje się do 0" w sekcjach 1-2 (N2).
+
+Bramki na głównym drzewie: `tsc` 0, `promote-to-front-test.cjs` **77/77** (było 65), `logic-test`
+213/213. Commit `8384b7ac`, push OK.
+
+**Dispatch rundy 3 Evaluatora (Opus 5) NASTĘPUJE teraz** — ma odtworzyć scenariusz B2 własnym
+kodem (nie czytaniem raportu), potwierdzić że `insertAtFront` faktycznie jest używany we
+wszystkich 3 miejscach wywołania `applyProductionCompleted`, sprawdzić czy centralizacja nie
+wprowadziła nowej asymetrii, i - jeśli to trzecia czysta runda - domknąć temat.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — Evaluator dokładny: FAIL (B1+B2, kanał plonów terenowych pominięty), runda 2 dispatch (2026-08-13)
+
+**Korekta zakresu oceny (Evaluator):** `db124b4b` dotknął WYŁĄCZNIE rejestru (0 kodu) — cały realny
+kod jest w `e401c1c2`. Ocena poniżej dotyczy realnej zmiany kodu/danych.
+
+**Własna inwentaryzacja (nie raport Operatora):** skrypt porównujący KAŻDĄ liczbę w
+`buildings.json`/`units.json`/`terrain-improvements.json`/`econ-params.json` między `ec55c055` a
+HEAD — 255 zmienionych liczb, WSZYSTKIE dokładnie ×5,0000 (buildings 70, units 148,
+terrain-improvements 7, econ-params 30). Zero ×4/×25/podwójnego zastosowania, zero pól
+Złoto/Pieniądz ruszonych. Punkty 1,3,4,5,6,7,8 decyzji **potwierdzone POPRAWNE** (szczegóły w
+pełnym raporcie agenta `aa897c17f1a338ed0`).
+
+**BLOKUJĄCE (2):**
+
+**B1 — `gra/data/terrain-yields.json` (plony surowcowe z pól OBRABIANYCH, kanon
+R-HEX-PLONY-MAGAZYN, Maciej 2026-07-29=B) — kanał ŻYWY, NIE przeskalowany.** Sumowany w TEJ SAMEJ
+linii co wartości już ×5 (`turn-economy.ts:1544`, `advanceCityEconomy` →
+`computeWorkedMagazynYieldsByCity` → `tickEmpireResourcePipeline` → `creditOwnerResourceStock`).
+6 wpisów zostaje ×1: `terrain_types` Łąka/Równina/Wzgórza/Góry (Drewno/Kamień/Glina), `terrain_
+modifiers` Las (nakładka, Drewno=3), Rzeka (Glina=2). Plus `terrain-improvements.json`:
+`glinianka.bonus.glina=2`, `kamieniolom.bonus.kamien=1` — ten sam kanał, też ×1. **Efekt: waga
+„obrabiaj pola" vs „buduj ulepszenia" przesunięta ~5× — wprost łamie „proporcje zostają
+identyczne względem siebie" z tekstu decyzji.** Martwy duplikat do udokumentowania przy okazji:
+`econ-params.json teren_mapa.teren_las_drewno=3` (nieużywany, tylko w wygenerowanych bundlach).
+
+**B2 — Wyrąb lasu, `terrain-improvements.json wyrab.wycinka.praca_per_tura=5`** (pole nazwane
+myląco „praca", realnie przyznaje Drewno). Ścieżka: `improvement-tech.ts:176 tickHexClearing` →
+`main.ts:23588 applyStolarniaDrewnoMapInflow` → `main.ts:23604 creditOwnerResourceStock`. JSON
+sam potwierdza semantykę: „plon +5 Drewna". Oczekiwane wg pkt 2: 25. Dotyczy też AI
+(`auto-improvements.ts:214`).
+
+**Dlaczego blokujące:** oba to żywe, aktywnie używane kanały produkcji DOKŁADNIE tych samych
+surowców fizycznych które decyzja miała przeskalować — pominięcie ich nie jest różne jakościowo
+od pominięcia budynku czy jednostki, tylko trudniejsze do zauważenia bo dane leżą w innym pliku
+niż `buildings.json`/`units.json`.
+
+**Bramki (wszystkie 11, uruchomione niezależnie przez Evaluatora):** tsc 0, logic-test 213/213,
+i 10 testów ekonomicznych — WSZYSTKIE zielone (co samo w sobie NIE wykryło B1/B2 — żaden test nie
+pokrywa tych ścieżek). Mutacja własna (7 wariantów): `units.json`/`buildings.json` zmiany NIE są
+łapane przez żadną bramkę — 218/255 zmienionych liczb bez pokrycia regresyjnego (dziś poprawne,
+ale nic ich nie broni przed cichym cofnięciem).
+
+**Odpowiedzi na pytania z dispatchu:** Sól — POTWIERDZONE poprawnie przeskalowana (wymuszone przez
+`SPICHLERZ_DRAIN_SOL_PER_TURN` 5→25, nie dedukcja). Cuda świata — 0/19 ma koszt surowcowy,
+słusznie nietknięte. Ulepszenia jednostek — mechanizm kosztu surowcowego NIE ISTNIEJE w kodzie,
+nie ma czego skalować. Łup z bitwy — skaluje się automatycznie przez `unitStockCost`.
+
+**Notatki niepilne (do rejestru, NIE blokują):**
+1. **⛔ NOWE PYTANIE ABC (nie blokuje rundy 2, do odpowiedzi właściciela osobno)** — cennik PN/szt.
+   w dyplomacji (`econ-params.json handel_surowce.cena_*`) NIETKNIĘTY, a magazyny surowców urosły
+   5×. Siła przetargowa z surowców w handlu z AI wzrosła ~5× względem PN. Czy cena też ×5 (dla
+   spójności), czy świadomie zostaje (bo PN/waluta wyłączone z zakresu decyzji, analogicznie do
+   Złota/Pieniądza)? Do rozstrzygnięcia przez właściciela, poza blokującym zakresem.
+2. `handel_surowce.pakiet_wielkosc=10` — próg heurystyki AI deficytu, praktycznie martwy przy
+   magazynach rzędu dziesiątek tysięcy (był słaby już wcześniej).
+3. **5 miejsc nieaktualnego JSDoc w `citizen-resource-upkeep.ts`** (linie ~24-26, ~40-48, ~71-72,
+   ~217-218) — nadal opisują starą stawkę 0,2 i „problem floor-do-zera" jako stan bieżący, mimo że
+   stała ma już 1,0. Ryzyko: kolejna sesja czytająca ten plik wyciągnie odwrotny wniosek.
+4. Cap Złota poszedł ×5 (wspólna formuła) mimo że produkcja Złota=×1 — niespójność formalna,
+   praktycznie bez znaczenia (1/turę vs cap 50000).
+5. Zwietrzały komunikat w teście `tartak-glinianka-rate-Q1-test.cjs` („10/turę" zamiast 50).
+6. Martwe klucze `econ-params.json` (`teren_mapa.teren_las_drewno`,
+   `teren_mapa.ulepszenie_kopalnia_kamien`) nieudokumentowane jako martwe (w odróżnieniu od
+   wzorowo udokumentowanych kluczy Spichlerza).
+7. `ORE_YIELD_PER_MINE=2` — potwierdzone niezależnie jako martwy kod, świadome pominięcie
+   zasadne.
+
+**STATUS: dispatch rundy 2 w toku** — zakres: B1 (terrain-yields.json ×5, terrain-improvements
+bonus glinianka/kamieniolom ×5) + B2 (wyrąb ×5) + notatka 3 (sprostowanie JSDoc) + bramka-
+inwariant na units.json/buildings.json (luka pokrycia 218/255). Notatka 1 (cennik dyplomacji)
+ZAREJESTROWANA jako osobne pytanie ABC, POZA zakresem tej rundy — nie zgadywać.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — Evaluator runda 3: FAIL (B3 — AI queueJump, parytet gracz-AI), runda 4 dispatch (2026-08-13)
+
+**B2 potwierdzone NAPRAWIONE, niezależnie, własnym harnessem (55 asercji)** — repro dosłowne z
+rundy 3, kontrolne odtworzenie starego kodu potwierdza że gubił 500. Guard `isFinite && >0`
+zweryfikowany działający dla 0/undefined/NaN/±Infinity/ujemny/0.5. Niezmiennik „front nigdy nie
+niesie postep" trzyma się po WSZYSTKICH 5 funkcjach dotykających frontu + fuzz 20 000 kroków.
+Wszystkie 3 call site'y `applyProductionCompleted` potwierdzone przechodzące przez naprawioną
+funkcję. Save/load bezpieczny. Bramki: `tsc` 0, `promote-to-front-test.cjs` 77/77, `logic-test`
+213/213 — wszystkie potwierdzone wykonaniem przez Evaluatora.
+
+**BLOKER B3 — `main.ts:25780-25786`, AI `queueJump` (wymuszanie cudu epoki), zeruje scalar BEZ
+bankowania.** Docstring `insertAtFront` z rundy 3 twierdzi że obsługuje „trzeci call-site" —
+NIEPRAWDA, to CZWARTY, przeoczony. `ai.ts:1693`: `queueJump: !city.queueEmpty` — gałąź odpala się
+WYŁĄCZNIE gdy kolejka NIE jest pusta, więc zawsze jest coś do zbankowania. Kod: `postep: 0` zamiast
+bankowania na schodzącym z frontu itemie.
+
+**Repro (dosłowna kopia kodu main.ts, zweryfikowana przez Evaluatora):** kolejka
+`[Koszary, Cud-A(bank 500)]`, scalar=180 → AI wymusza Cud-B → `[Cud-B, Koszary, Cud-A(bank 500)]`,
+scalar=0. **180 Pracy Koszar utracone bezpowrotnie.** Z `insertAtFront`: scalar=0 (Cud-B startuje
+od zera, poprawnie), ale Koszary bankują 180 (odzyskują przy powrocie na front) — zgodnie z
+decyzją Q1=B.
+
+**⛔ PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (CLAUDE.md §1a) — `R-EPOKA-CUD-WARUNEK-AWANSU B3`
+(commit `e5ba61c2`).** Zerowanie scalara przy `queueJump` było świadomym elementem TEJ decyzji
+(sprzed Q1=B), z patologią „AI co turę wskakiwała innym cudem, kolejka rosła bez ograniczenia"
+łagodzoną przez `forcePriority`, NIE przez samo zerowanie. Zmiana na bankowanie (zgodnie z Q1=B)
+lekko POPRAWIA ekonomię AI (przestaje tracić postęp przy wymuszeniach) — to świadoma konsekwencja
+do pokazania właścicielowi, nie cicha zmiana. **Uzasadnienie fixu: parytet gracz-AI jest twardym
+kryterium tego projektu (Evaluator jego słowami) — gracz przez `promoteToFront` NIGDY nie traci
+postępu, AI przez `queueJump` ZAWSZE traciła. Fix przywraca spójność z Q1=B, którego AI nigdy nie
+dostała po rundach 1-3 (przeoczenie, nie osobna decyzja o AI).** Runda 4 dysponowana jako
+kontynuacja naprawy tego samego mechanizmu (nie nowy wątek), zgodnie z ustaloną w tym projekcie
+zasadą twardego FAIL dla naruszeń parytetu gracz-AI.
+
+**Drugie znalezisko (NIE blokuje rundy 3/4, aktualizacja istniejącej notatki N3 z rundy 2) —
+`main.ts:3377 sanitizeProductionQueue`, PIĄTE miejsce dotykające frontu, JEDYNE łamiące
+niezmiennik ANTY-EXPLOIT (postęp przeskakuje między RÓŻNYMI itemami).** Teraz z konkretnym repro:
+rywal kończy Cud na świecie → `wonderGateOk` zwraca false → filtr usuwa Cud z frontu → scalar
+(900 Pracy) zostaje, ale należy teraz do INNEGO itemu (np. Wojownik koszt 10) → Wojownik kończy
+się gratis, 890 nadwyżki wpada do puli imperium. Przeczy komunikatowi w tym samym pliku
+(„Twoja Praca w to nie wraca"). Niefarmowalne na żądanie (wymaga rywala kończącego cud
+jednocześnie), pre-istniejące (`13419757`, sprzed rund 1-3) — POZA zakresem rundy 4, wymaga
+osobnego pytania ABC (przepadek vs. transfer vs. zwrot do puli — decyzja produktowa).
+
+**Luka pokrycia (do rundy 4, nieblokująca):** mutacja usuwająca CAŁY guard `isFinite && >0` w
+`insertAtFront` — 77/77 nadal zielone, NIE złapane. Guard działa dziś, ale bez czerwonego testu
+na przyszłość.
+
+**STATUS: dispatch rundy 4 w toku** — zakres: B3 (`insertAtFront(wProd0, wItem, 0)` zamiast
+ręcznego zerowania w `main.ts:25780-25786`) + 2-3 asercje na sekwencję queueJump w teście + asercje
+domykające lukę guardu (mutacje M1/M5 z raportu Evaluatora). Sanitize (drugie znalezisko) POZA
+zakresem, do osobnej rejestracji z ID i pytaniem ABC.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — runda 4 (B3) SCALONA, Evaluator w toku (2026-08-13)
+
+Operator naprawił B3: `main.ts` AI `queueJump` (wymuszanie cudu epoki) teraz woła
+`insertAtFront(wProd0, wItem, 0)` zamiast ręcznego `postep: 0`. Stary komentarz cytujący
+nieaktualny niezmiennik (`dequeue`-style) zastąpiony odniesieniem do Q1=B/rundy 4. Dodano sekcję
+16 (repro dosłowne z rejestru) i 17 (luka pokrycia guardu z rundy 3: `postep`=0/undefined/NaN/-5
+na froncie nie bankuje śmieciowego pola). Własny grep Operatora po wzorcach manipulacji frontem
+(`kolejka[0] =`, `kolejka: [...`, `.slice(1)`) w `main.ts` — potwierdza że poza już znanymi 5
+miejscami (promoteToFront, dropFrontItem×3, insertAtFront×3 call site, queueJump, sanitize) nie
+ma żadnego innego.
+
+Bramki: `tsc` 0, `promote-to-front-test.cjs` **98/98** (było 77), `logic-test` 213/213. Commit
+`1c484f5e`, push OK.
+
+**Dispatch rundy 4 Evaluatora (Opus 5) NASTĘPUJE teraz** — po TRZECH kolejnych FAIL (B1→B2→B3,
+wszystkie tej samej klasy: kolejne przeoczone miejsce manipulujące frontem), ma zrobić PEŁNY,
+wyczerpujący przegląd repo (nie tylko dotknięte linie) pod kątem JAKIEGOKOLWIEK piątego miejsca,
+zanim temat zostanie uznany za zamknięty.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — Evaluator runda 4: PASS-WITH-NOTES, wyczerpujący audyt kompletności CZYSTY, runda 5 (domknięcie N1) dispatch (2026-08-13)
+
+**Część A (główny cel tej rundy) — pełny, systematyczny audyt CAŁEGO `gra/src/` pod kątem
+piątego przeoczonego miejsca: CZYSTY, i to udowodnione wyczerpaniem przestrzeni poszukiwań, nie
+próbką.** Policzalne wyniki grepów: 1× `slice(1)`/`shift`/`splice` na kolejce (`dropFrontItem`),
+1× przypisanie `postep=` (`production.ts:1159`), 2× `.filter` na kolejce (`dequeue` + znany
+`sanitizeProductionQueue`), 1× `advanceProduction` w całym repo (jeden silnik), 0× `unshift` na
+kolejce produkcji (20 trafień `unshift` w repo, wszystkie w innych systemach), 14 plików
+wspominających „postep" — wszystkie przeczytane, rozkładają się na TEN system + 3 inne
+niepowiązane systemy (badania, cud na mapie, legacy martwy typ). Cheat/dev-console dotykający
+kolejki: brak (jedyny kandydat, `onPurchaseBuilding`, zadeklarowany ale nigdy niewpięty). Save/
+load: `cityProd` przechodzi bez normalizacji, brak wektora utraty. UI: zero bezpośrednich
+manipulacji z pominięciem API, drag&drop/strzałki twardo `index≥1`.
+
+**Część B — B3 potwierdzone własnym kodem (nie raportem Operatora).** Wywołanie
+`insertAtFront(wProd0, wItem, 0)` faktycznie stoi w `main.ts:25792`. Własny skrypt (16/16
+sprawdzeń) potwierdza scenariusz z rejestru: Koszary bankują 180, po naturalnym ukończeniu Cudu-B
+odzyskują dokładnie 180. Mutacja guardu (usunięcie całości) — złapana przez sekcję 17 (3 porażki),
+luka pokrycia z rundy 3 realnie zamknięta. Bramki: `tsc` 0, `promote-to-front-test.cjs` 98/98,
+`logic-test` 213/213, dodatkowo `ai-cud-priorytet-b3-test.cjs` 46/46 (brak regresji semantyki AI).
+
+**N1 (rekomendowane domknięcie PRZED ostatecznym zamknięciem tematu, dowiedzione mutacją) —
+naprawy B2 i B3 w `main.ts` są dziś NIECHRONIONE przed cichym cofnięciem.** `promote-to-front-
+test.cjs` testuje wyłącznie funkcje w `production.ts`, zero asercji strukturalnych na treść
+`main.ts`. Evaluator cofnął OBIE naprawy do stanu sprzed rund 3/4 (ręczne `postep: completed.
+koszt`/`postep: 0` zamiast `insertAtFront`) — **98/98 i 46/46 zostają zielone mimo pełnej
+regresji.** Wzorzec rozwiązania (asercja regexowa na treść `main.ts`) już istnieje w repo
+(`ai-cud-priorytet-b3-test.cjs` 5g-5j, `era-cud-main-ts-integracja-test.cjs`).
+
+**Notatki niepilne:**
+- N2: docstring `insertAtFront` twierdzi że front „NIGDY nie ma zdefiniowanego postep" — funkcja
+  tego NIE egzekwuje (nie zdejmuje pola z wstawianego itemu, tylko sprawdzone: dziś nieszkodliwe
+  bo obie ścieżki podają item bez pola, ale to fałszywa gwarancja pisemna).
+- N3 (aktualizacja istniejącego zgłoszenia `sanitizeProductionQueue`, NIE nowe) — funkcja jest
+  GORSZA niż opisano: (a) może kreować postęp z niczego (zbankowane pole nowego frontu +
+  osierocony scalar usuniętego = podwójne naliczenie odzyskiwalne jako Praca nigdy niezarobiona);
+  (b) sanityzacja działa WYŁĄCZNIE dla gracza (`setProduction` w panelu), AI nigdy nie
+  sanityzowane — kolejna asymetria gracz/AI, tym razem odwrotna (AI omija błąd, którego gracz
+  doświadcza). Reachability wysoka: pierwsza dowolna akcja w panelu miasta po tym jak rywal
+  ukończy cud.
+- N4: `ai-cud-priorytet-b3-test.cjs` ma nieaktualny komentarz (~linia 272, 320) opisujący
+  semantykę „queueJump = unshift + postep:0" sprzed rundy 4 — nie asercjonuje tego, więc brak
+  fałszywej zieleni, tylko dryf dokumentacyjny.
+
+**STATUS: dispatch rundy 5 (ostatnia, domykająca) w toku** — zakres: N1 (2 asercje strukturalne
+regex na `main.ts`, wzorzec z istniejących testów) + N2 (docstring lub fix jednolinijkowy) + N4
+(poprawka komentarza). N3 dopisane do istniejącego zgłoszenia `sanitizeProductionQueue`, POZA
+zakresem (wymaga ABC właściciela).
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — runda 5 SCALONA, Evaluator finalny w toku (2026-08-13)
+
+Operator domknął wszystkie 3 notatki: N1 (bramka strukturalna regex na `main.ts` chroniąca B2/B3
+przed cichym cofnięciem — dowód nie-jałowości wykonany DWUKROTNIE, osobno dla każdej naprawy,
+zmutuj→FAIL z jasnym komunikatem→przywróć→PASS), N2 (`insertAtFront` teraz FAKTYCZNIE zdejmuje
+`postep` z wstawianego itemu, docstring stał się prawdziwą gwarancją, nie martwą obietnicą), N4
+(sprostowanie nieaktualnych komentarzy w `ai-cud-priorytet-b3-test.cjs`, logika testu
+niezmieniona). Bramki: `tsc` 0, `promote-to-front-test.cjs` **105/105** (było 98), `logic-test`
+213/213, `ai-cud-priorytet-b3-test.cjs` 46/46. Commit `e144af80`, push OK.
+
+**Dispatch Evaluatora finalnego (Opus 5) NASTĘPUJE teraz** — krótki, ukierunkowany wyłącznie na
+weryfikację że N1/N2/N4 są rzeczywiście domknięte (w tym własna próba mutacyjna na bramce
+strukturalnej), bez potrzeby powtarzania pełnego audytu kompletności z rundy 4 (już wyczerpujący,
+potwierdzony czysty). Jeśli PASS — `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1` zamykany OSTATECZNIE po
+5 rundach.
+
+---
+
+## R-CIVPEDIA-OPISY-AUDYT-Q1 — Workflow zakończony (17 agentów), synteza w toku (2026-08-13)
+
+Workflow `wf_600b5a93-598` (audyt CivPedii/Poradnika/ściąg w grze, Etap 1 = WYŁĄCZNIE research/
+rekomendacje, zero implementacji) zakończony po odzysku z restartu kontenera. 17/17 agentów bez
+błędów, 1,5M tokenów. Wstępny podgląd wyniku: 27 paneli „ściąga"/„szczegóły" skatalogowanych w
+`cityPanel.ts`/`empireDetailPanel.ts` (lokalizacja plik:funkcja:linia każdy), recenzja rozdziałów
+Poradnika ze znaleziskiem systemowym — bloki „Przykład liczbowy"/„Strategia gracza"/„Typowe
+błędy" powtarzają się DOSŁOWNIE (identyczny tekst) w wielu miejscach zamiast być unikalne per
+sekcja, w rozdziale `00-jak-czytac` to 38,9% długości pliku, w pozostałych trzech sprawdzonych
+23-29%.
+
+Pełny wynik zbyt duży do przeczytania wprost w kontekście orkiestratora (93k+ tokenów samego
+JSON-a) — dysponowany agent syntetyzujący (`abc2547752ee4da1b`), ma zapisać uporządkowany
+dokument PL do `dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md` (streszczenie,
+znaleziska systemowe, tabela paneli, werdykty per rozdział Poradnika, rekomendacje priorytetowe,
+jawna sekcja co NIE zostało jeszcze zrobione — bo to Etap 1, zero wdrożenia bez decyzji
+właściciela o zakresie Etapu 2).
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 runda 2 SCALONA, 2 pliki testowe PRE-ISTNIEJĄCE czerwone znalezione, Evaluator finalny w toku (2026-08-13)
+
+**Odstępstwo proceduralne (do jawnego odnotowania):** Operator rundy 2 utknął dwukrotnie w
+oczekiwaniu na własny background proces `map-gen-regression-test.cjs` (niezwiązany bezpośrednio
+z zakresem B1/B2 — prawdopodobnie uruchomiony defensywnie jako część pełnej listy bramek
+CLAUDE.md), łącznie ~493k tokenów bez dostarczenia raportu końcowego. Ponieważ diff w worktree
+był już kompletny i wyglądał poprawnie, orkiestrator **zweryfikował go samodzielnie** (przeczytał
+cały diff, uruchomił bramki bezpośrednio) zamiast czekać dłużej na zawieszonego agenta —
+odstępstwo od standardowego „czekaj na raport Operatora" uzasadnione realnym marnotrawstwem
+zasobów przy already-widocznym, kompletnym i poprawnym diffie.
+
+**Diff zweryfikowany kompletny i poprawny** (terrain-yields.json: Łąka/Równina/Wzgórza/Góry
+Drewno×5, Równina/Wzgórza/Góry Kamień×5, Rzeka Glina×5, Las-nakładka Drewno×5 — wszystkie zgodne
+z tabelą Evaluatora; terrain-improvements.json glinianka/kamieniolom bonus×5; wyrab.wycinka.
+praca_per_tura 5→25, koszt_praca=5 świadomie NIETKNIĘTY (Praca, nie surowiec fizyczny); econ-
+params.json martwy klucz udokumentowany, nie zmieniony; citizen-resource-upkeep.ts wyłącznie
+JSDoc; nowy plik `ekonomia-5x-inwariant-test.cjs` z 233 asercjami przypinającymi konkretne
+reprezentatywne wartości).
+
+**Odkrycie przy okazji (PRE-ISTNIEJĄCE, NIE regresja tej rundy ani rundy 1) — 2 pliki testowe z
+czerwonymi asercjami niezwiązanymi z ekonomią ×5:** `grupa-b-lane-test.cjs` (45 pass, 4 fail:
+„empire food 30% to state", „empire reserve after army cost 1", „las rownina: handel 1-1
+floored", „wyrab clearing start cost 5P") i `mennica-magazyn-test.cjs` (38 pass, 3 fail:
+„Garncarnia: ceramika > 0 przy glina+drewno", „odlewnia_brazu bez rudy NIE blokuje Cegielni ani
+Garncarni", i jedna kontrolna). **Zweryfikowane identyczne na już-scalonym drzewie głównym PRZED
+tą rundą** (`e144af80`) — a więc niezwiązane z żadną zmianą tej sesji dot. ekonomii ×5. Nie były
+wcześniej wpisane do listy pre-istniejących porażek w CLAUDE.md — do dopisania przy najbliższej
+aktualizacji tej sekcji. Nie badane głębiej (poza zakresem), nie blokują tej rundy.
+
+Bramki dotykające zmienionych plików (uruchomione przeze mnie na scalonym drzewie): `tsc` 0,
+`logic-test` 213/213, `ekonomia-5x-inwariant-test.cjs` **233/233**, `tartak-glinianka-rate-Q1-
+test.cjs` 1281/1281, oraz 8 pozostałych testów ekonomicznych z rundy 1 — wszystkie zielone.
+Commit `16a92c9f`, push OK.
+
+**Dispatch Evaluatora finalnego rundy 2 (Opus 5) NASTĘPUJE teraz** — ma potwierdzić własnym
+kodem że B1/B2 są naprawione (żaden kanał produkcji surowców fizycznych nie pozostał ×1) i że
+2 znalezione czerwone testy są rzeczywiście pre-istniejące (niezależna weryfikacja, nie tylko
+zaufanie do mojego stwierdzenia). Jeśli PASS — `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` zamykany
+ostatecznie.
+
+---
+
+## R-CIVPEDIA-OPISY-AUDYT-Q1 — Etap 1 ZAKOŃCZONY, dokument finalny scalony (2026-08-13)
+
+Dokument syntezy `dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md` (224 linie,
+commit `a78e987b`) — pełna struktura: streszczenie, 2 znaleziska systemowe (rozjazd aktualności
+~75% wszystkich problemów; powielony boilerplate „Przykład liczbowy/Strategia/Typowe błędy" w
+Poradniku, 19-39% objętości niektórych rozdziałów, momentami z fabrykowanymi liczbami
+przypisanymi złemu obiektowi gry), tabela ~118 znalezisk wg priorytetu, werdykty per rozdział
+Poradnika (wszystkie 22, pełny odczyt) i per kategoria CivPedii (wszystkie 136 haseł, głęboka
+lektura pełna dla większości, próbka ~15-17/51 dla kategorii Jednostki — jawnie zaznaczone),
+katalog 27 paneli ściąga w UI (10 z pełnym werdyktem, 17 tylko skatalogowanych — jawnie
+zaznaczone jako otwarty punkt Etapu 2), rekomendacje priorytetowe, jawna sekcja „co NIE zostało
+zrobione".
+
+**Najpilniejsze znaleziska (do wglądu właściciela, ŻADNE nie wdrożone):** Poradnik rozdz. 06 i
+CivPedia „Spichlerz" opisują martwy mechanizm wzrostu ludności (usunięty z silnika 2026-07-30);
+Poradnik rozdz. 57 — 47/47 wartości „Moc w polu" błędne; CivPedia „Cuda świata" — błędny
+mechanizm bonusu powtórzony we wszystkich 19 kartach; CivPedia „Budynki" — 11/25 haseł kosztu
+zaniżone dokładnie ×5 po dzisiejszym rebalansie ekonomii (nie zsynchronizowane, spodziewane,
+świeże).
+
+**STATUS: ETAP 1 ZAKOŃCZONY.** Zero zmian w kodzie/danych/treści gry wykonanych — zgodnie z
+wyraźnym poleceniem właściciela. Czeka na jego decyzję o zakresie/priorytecie Etapu 2
+(implementacja) po powrocie.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — Evaluator finalny runda 2: FAIL (regresja testowa nieprzyłapana), sprostowanie CLAUDE.md §0b, runda 3 dispatch (2026-08-13)
+
+**⛔ SPROSTOWANIE WŁASNEGO BŁĘDU (CLAUDE.md §0b — liczba przedstawiona jako fakt, która faktem
+nie była).** Wpis wyżej „Bramki dotykające zmienionych plików... wszystkie zielone" jest
+NIEPRAWDZIWY. Nie uruchomiłem `gra/tools/hex-plony-magazyn-test.cjs` — pliku, który BEZPOŚREDNIO
+czyta `tileYield()` z `terrain-yields.json`, czyli dokładnie ten plik, który runda 2 zmieniła.
+Zweryfikowane przez Evaluatora: **11/11 na `e144af80` (przed rundą 2) → 4 pass/7 fail na
+`16a92c9f` (po rundzie 2)**. To realna regresja bramki (nie silnika — Evaluator potwierdził
+niezależnie że wyliczone wartości silnika, np. Równina drewno=10, są POPRAWNE; test po prostu
+przypina stare liczby 2/1/2/3 zamiast nowych 10/5/10/15). Przyczyna mojego błędu: uruchomiłem
+listę testów z rundy 1 (dziedziczoną z poprzedniego dispatchu) zamiast przeszukać CAŁY katalog
+`gra/tools/` pod kątem plików czytających `terrain-yields.json`.
+
+**Dodatkowe znalezisko Evaluatora — luka pokrycia nowej bramki `ekonomia-5x-inwariant-test.cjs`
+większa niż deklarowano.** 218/233 asercji to słaby test strukturalny (`v≥5 && v%5===0`) —
+Evaluator cofnął 26 NIEPRZYPIĘTYCH kosztów budynków z ≥25 na 5 i bramka pozostała zielona.
+Realnie chronionych „twardo" (konkretne przypięte literały) jest ~8 wartości z 255+ zmienionych.
+Bramka NIE obejmuje w ogóle `terrain-yields.json`/`terrain-improvements.json` — dokładnie tam,
+gdzie dwukrotnie (runda 1 i runda 2) wypadło pominięcie.
+
+**Merytorycznie zakres ×5 potwierdzony DOMKNIĘTY (nie ma trzeciego kanału danych):** własny skan
+wszystkich 30 plików JSON + `src/` przez Evaluatora — sprawdzone i odrzucone jako nieaktualne
+kanały: `wonders.json bonusy.teren` (niepodłączony, `wonders-data.ts` ma jawne TODO),
+`hexContextTooltip.ts RIVER_BONUS/FOREST_BONUS` (martwe pola, `cityYieldOnly()` zeruje surowce),
+kilka fałszywych trafień „kamien" (nazwa epoki, nie surowiec). `koszt_praca` wyrębu potwierdzone
+nietknięte (silnik zwraca 10 przez pre-istniejący mnożnik `R_STAWKI_FALA2_MULT` w
+`r-stawki-strojenie.ts`, nieskojarzone z tą rundą). Dwa wcześniej zgłoszone pliki pre-istniejące
+(`grupa-b-lane-test`, `mennica-magazyn-test`) POTWIERDZONE bajt-w-bajt identyczne na obu
+commitach — to twierdzenie było prawdziwe.
+
+**STATUS: dispatch rundy 3 (mała, mechaniczna) w toku** — zakres: (1) BLOKUJĄCE:
+`hex-plony-magazyn-test.cjs` — zaktualizować 4 przypięte wartości (2→10, 1→5, 2→10, 3→15), z
+powrotem do 11/11; (2) zalecane: dopiąć `terrain-yields.json`/`terrain-improvements.json`
+(glinianka/kamieniołom bonus, wyrąb) do `ekonomia-5x-inwariant-test.cjs`, żeby luka pokrycia nie
+powtórzyła się trzeci raz.
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA (2026-08-13, znalezisko Operatora ekonomii ×5 przy okazji) · STATUS: **OTWARTE — do ABC, nie blokuje**
+
+`gra/src/main.ts:26216-26217`: ścieżka AI dla `wyrab` (wyrąb lasu) refunduje
+`wycinka.praca_per_tura × tury` jako **Pracę**, podczas gdy ścieżka gracza poprawnie kredytuje
+**Drewno** (asymetria gracz/AI, pre-istniejący błąd nazewnictwa/typu pola, NIE wprowadzony przez
+tę sesję). Przed rundą 2 (B2) było to efektywnie neutralne — koszt startu 5 Pracy, refundacja
+„5" też Pracy, netto zero. Po B2 (`praca_per_tura` 5→25) AI zyskuje netto **+20 Pracy za każdy
+wyrąb** — realny efekt balansowy ujawniony przez zmianę wartości, nie wprowadzony logicznie przez
+tę rundę. Nie naprawione (poza zakresem rundy 2/3), wymaga pytania ABC: naprawić refundację na
+Drewno (parytet z graczem) czy to świadomy bonus AI do rekompensaty innej asymetrii? Do
+rozpoznania przy najbliższej turze ABC.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 runda 3 SCALONA, Evaluator finalny (2. próba) w toku (2026-08-13)
+
+Operator naprawił regresję `hex-plony-magazyn-test.cjs` (4 przypięte wartości: Równina Drewno
+2→10, Kamień 1→5, Rzeka Glina 2→10, suma addytywna 3→15 — z powrotem 11/11) oraz dopiął sekcję C
+do `ekonomia-5x-inwariant-test.cjs` (6 nowych przypiętych wartości z `terrain-yields.json`/
+`terrain-improvements.json`, nie-jałowość potwierdzona mutacją). Operator sam wykrył i naprawił
+własną pomyłkę w trakcie pracy (przypadkowa edycja głównego drzewa zamiast worktree) — główne
+drzewo zweryfikowane czyste przed scaleniem.
+
+Bramki na scalonym drzewie: `tsc` 0, `hex-plony-magazyn-test.cjs` **11/11** (było 4/7),
+`ekonomia-5x-inwariant-test.cjs` **246/246** (było 233), `logic-test` 213/213. Commit `560e3f7d`,
+push OK.
+
+**Dispatch Evaluatora finalnego (2. próba, Opus 5) NASTĘPUJE teraz** — krótki, ukierunkowany na
+weryfikację że 3 zastrzeżenia z poprzedniego FAIL są rzeczywiście domknięte (hex-plony-magazyn
+zielony, rejestr sprostowany, luka pokrycia terrain-yields/terrain-improvements zamknięta) + własna
+próba mutacyjna na nowej sekcji C.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — Evaluator finalny 2. próba: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY po 3 rundach (2026-08-13)
+
+Wszystkie 3 zastrzeżenia poprzedniej rundy potwierdzone domknięte, każde niezależnie
+zweryfikowane: (1) `hex-plony-magazyn-test.cjs` 11/11, KAŻDY literał terenowy w pliku sprawdzony
+przeciw `terrain-yields.json` (nie tylko 4 zgłoszone), piątego przeoczenia brak; (2) rejestr
+sprostowany precyzyjnie, brak nowego nadużycia „wszystkie zielone"; (3) sekcja C bramki inwariant
+przypina konkretne wartości (nie podzielność) — własna mutacja Evaluatora (inna niż mutacja
+Operatora: `kamieniolom.bonus.kamien` 5→1) złapana z jasnym komunikatem. **Pełne jednoczesne
+cofnięcie WSZYSTKICH 12 liczb B1/B2 teraz łapane przez OBIE bramki** (poprzednio: 0 z 4). Bramki
+obszaru: `tsc` 0, `hex-plony-magazyn-test` 11/11, `ekonomia-5x-inwariant-test` 246/246, `logic-
+test` 213/213, `tartak-glinianka-rate-Q1-test` 1281/1281 — wszystkie dosłownie zweryfikowane.
+`grupa-b-lane-test` (45/4) i `mennica-magazyn-test` (38/3) — potwierdzone POZOSTAJĄ pre-istniejące
+(nie oceniane jako blokery tej rundy, zgodnie z wcześniejszą podwójnie niezależną weryfikacją).
+
+**Notatki niepilne (do backlogu, NIE blokują):**
+- N1: sekcja C pokrywa 8/12 zmienionych liczb B1/B2 — Wzgórza (Drewno/Kamień) i Góry
+  (Drewno/Kamień) NADAL bez przypięcia (empirycznie zweryfikowane: cofnięcie tych 4 liczb
+  przechodzi wszystkie bramki). Koszt domknięcia: ~4 linie `eq()` w sekcji C, przy najbliższej
+  pracy dotykającej `gra/tools/ekonomia-5x-inwariant-test.cjs`.
+- N2: 2 nieaktualne komentarze w `hex-plony-magazyn-test.cjs` (linie ~140, ~161) wciąż podają
+  stare liczby (2 glina, 1 drewno) mimo że asercje obok już poprawne (10, 5) — dryf
+  dokumentacyjny, ta sama klasa co przyczyna FAIL rundy 2, do sprostowania przy okazji.
+
+**STATUS: R-EKONOMIA-SUROWCE-SKALA-5X-Q1 ZAMKNIĘTY OSTATECZNIE** po 3 rundach — decyzja
+właściciela (2026-08-13) w pełni zaimplementowana i dwukrotnie niezależnie zweryfikowana:
+stawka drenażu obywateli 1,0, WSZYSTKIE kanały produkcji surowców fizycznych (budynkowe,
+terytorialne przez ulepszenia, plony terenowe z pól obrabianych, wyrąb lasu) ×5, koszty
+rekrutacji/budowy/utrzymania jednostek i budynków ×5, cap magazynów ×5 (baza i bonus), Złoto/
+Pieniądz świadomie bez zmian. N1/N2 do backlogu.
+
+---
+
+## NUMER + ECHO: R-EVALUATOR-3X-MODEL-KOSZT-Q1 — decyzja WŁASNA właściciela (2026-08-13)
+
+**Kontekst:** Maciej zauważył zużycie limitu przy wzorcu „3 niezależni Evaluatorzy" (używanym
+dla tematów wysokiego ryzyka/dużego promienia rażenia — np. wcześniej w tej sesji dla obszarów
+combat-adjacent). Jego słowa: „Z tego, co widzę, odpalasz trzech subagentów Opus 5 jako
+ewaluatora. To zjada ogromną ilość limitu, więc zróbmy tak: skoro odpalasz trzech, to dwóch
+odpal pierwszych na sonet 5, a ostatniego dopiero na opus 5."
+
+**Decyzja:** dla wzorca 3x niezależny Evaluator (tematy wysokiego ryzyka, gdzie standardowo
+wszyscy trzej byli na Opus 5) — **Evaluator #1 i #2 na Sonnet 5, Evaluator #3 (ostatni) na
+Opus 5.** Nie zmienia to standardowej pętli 1x Evaluator/rundę (większość tematów tej sesji) —
+tam Evaluator nadal Opus 5 jak dotychczas (CLAUDE.md §4 niezmienione dla wzorca standardowego).
+Zmiana dotyczy WYŁĄCZNIE wzorca potrójnego, i tylko przydziału modelu, nie liczby Evaluatorów
+ani rygoru weryfikacji.
+
+**Uzasadnienie (do zanotowania, nie kwestionowane):** koszt/limit trzech Opus 5 jest wysoki;
+2× Sonnet 5 + 1× Opus 5 jako ostatnia, „rozjemcza" weryfikacja zachowuje niezależność trzech
+perspektyw przy niższym koszcie łącznym — analogicznie do przydziału Operator=Sonnet 5/
+Evaluator=Opus 5 już ustalonego w CLAUDE.md §4, tylko zastosowanego wewnątrz samego wzorca 3x.
+
+**STATUS: WDROŻONE natychmiast** — zaktualizowano `.claude/skills/civ-autobot/SKILL.md`
+(sekcja modeli/Evaluator) żeby ta reguła nie zginęła po resecie kontekstu.
+
+---
+
+## NUMER + ECHO: R-EVALUATOR-3X-ZGODA-Q1 — korekta decyzji R-EVALUATOR-3X-MODEL-KOSZT-Q1 (Maciej 2026-08-13)
+
+**Koryguje/zaostrza R-EVALUATOR-3X-MODEL-KOSZT-Q1 (ten sam dzień) — nie znosi jej, dodaje warunek
+wstępny.** Jego słowa: „Wiesz co, to nie przepalajmy niepotrzebnie tokenów. Jeżeli miałbyś
+odpalać kiedykolwiek 3 ewoluatory to po prostu napisz do mnie o zgodę. To w wyjątkowych tylko
+sytuacjach. Na ten moment przyjmujemy jeden ewaluator opus 5. Jeżeli będziesz miał zgodę na 3
+ewolatorów, bo będziesz miał ciężki temat, to wtedy 2 sonety i 1 obwóz."
+
+**Decyzja (zastępuje domyślne zachowanie z poprzedniego wpisu):**
+1. **DOMYŚLNIE zawsze 1x Evaluator, Opus 5.** To jest teraz jedyny tryb bez pytania.
+2. **Wzorzec 3x Evaluator wymaga JAWNEJ, WCZEŚNIEJSZEJ zgody właściciela za każdym razem** —
+   nie jest to już próg automatyczny (nawet dla combat-adjacent/P0). Orkiestrator MUSI zapytać
+   („napisz do mnie o zgodę") przed dispatchem, opisując dlaczego temat kwalifikuje się jako
+   wyjątkowo ciężki/wysokiego ryzyka — nie dispatchować z góry.
+3. **Gdy zgoda padnie:** przydział modeli pozostaje jak w R-EVALUATOR-3X-MODEL-KOSZT-Q1 —
+   Evaluator #1 i #2 na Sonnet 5, Evaluator #3 (ostatni) na Opus 5.
+
+**STATUS: WDROŻONE natychmiast** — zaktualizowano `.claude/skills/civ-autobot/SKILL.md`.
+
+---
+
+## P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B — Evaluator finalny runda 5: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY OSTATECZNIE po 5 rundach (2026-08-13)
+
+Wszystkie 3 notatki rundy 4 potwierdzone domknięte niezależną weryfikacją: **N1** — 3 własne
+mutacje (nie kopie Operatora, w tym nowa: podmiana 3. argumentu `insertAtFront` na 0, cicho
+niszcząca bankowanie) złapane; kluczowy dowód: regresja B3 cofnięta do starego kodu przechodzi
+przez `tsc` I przez dedykowaną bramkę `ai-cud-priorytet-b3-test.cjs` (46/46) BEZ ŚLADU — sekcja
+19 jest JEDYNĄ rzeczą w repo, która ją łapie. **N2** — własny niezależny harness (12/12,
+kontrole ostrzejsze niż test projektu: `in` zamiast `undefined`, brak mutacji obiektu
+wywołującego, `postep:0` też zdejmowane). **N4** — nowy komentarz uczciwszy od starego,
+logika testu nietknięta. **Audyt kompletności własny** (nie na słowo rundy 4) — 2 dodatkowe
+kandydaci sprawdzeni i czyści (strzałki/drag UI twardo `index<1`; `wonder-map-build.ts postep`
+to inna struktura). Bramki: `tsc` 0, `promote-to-front-test.cjs` 105/105, `logic-test` 213/213,
+`ai-cud-priorytet-b3-test.cjs` 46/46 — wszystkie dosłownie potwierdzone.
+
+**Notatka niepilna, do backlogu (NIE runda 6):** asercje 19a/19c w `promote-to-front-test.cjs`
+(regex na `main.ts`) mają za ciasne okno — 1500 znaków wykorzystane już w 72% (1082/1500),
+dopisanie komentarza dwujęzycznego (wymaganego zasadą 9 CLAUDE.md) w tej luce PODNOSI dystans do
+1822 i wywraca asercję przy zerowej zmianie semantyki (3 fałszywe alarmy zademonstrowane:
+zamiana kolejności pól, złamanie argumentów na linie, dopisanie komentarza PL+EN). Tryb awarii
+bezpieczny (czerwona głośna bramka, nigdy ciche przepuszczenie błędu) — nie blokuje. Gotowa
+poprawka (2 linie, zweryfikowana na 6 wariantach) w pełnym raporcie Evaluatora
+`a9f274b04c755f235` — do zastosowania przy najbliższej pracy dotykającej ten plik.
+
+**STATUS: TEMAT ZAMKNIĘTY OSTATECZNIE** po 5 rundach — B1, B2, B3 naprawione i przypięte
+testami, parytet gracz-AI przywrócony, niezmiennik anty-exploit potwierdzony nienaruszony przez
+cały mechanizm (promoteToFront/dropFrontItem/insertAtFront×3/AI queueJump).
+
+---
+
+## Scalenie do `main`: FALA 272 (2026-08-13, na wyraźne polecenie właściciela "scal do main i zrób git push")
+
+Korekta stanu: deploy agent FALI 273 błędnie zgłosił zaległości jako "FALE 270, 271, 272" —
+zweryfikowane bezpośrednio: `main` był już na `e723cb0e` (FALA 270+271 scalone wcześniej w tej
+sesji). Jedyna realna zaległość to FALA 272.
+
+Scalono `4ee4b9d8` (Deploy ROBOCZA FALA 272) do `main` przez `git merge --no-ff` (merge commit
+`016cbb52`, zgodnie z rytmem „jedna fala do tyłu" `R-MERGE-MAIN-RYTM-Q1` — merge do konkretnego
+commitu deployu, nie czubka gałęzi). Bramki na scalonym drzewie zweryfikowane przed pushem:
+`tsc` 0, `logic-test.cjs` 213/213. Push `e723cb0e..016cbb52` na `main`, exit 0.
+
+FALA 273 (`03a2f038`, commit `9d8b4dfa`) zostaje na gałęzi roboczej wyłącznie do testów — nie
+scalona (kwalifikuje się dopiero po powstaniu FALI 274).
+
+---
+
+## Audyt kompletności (2026-08-13, na żądanie właściciela "zapomniane tematy ABC")
+
+Dispatchowany systematyczny audyt całego pliku (nie próbka z pamięci) — wynik: 9/10 wpisów
+`STATUS: **OTWARTE` mają realne pokrycie, 3 relikty formatowania (`STATUS:` bez `**` przy słowie)
+sprawdzone i faktycznie zamknięte, **1 błąd dokumentacyjny naprawiony wyżej**
+(`P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY` — zamknięty od 2026-08-10, nagłówek nigdy nie
+zaktualizowany, co zmyliło wcześniejszy audyt sesji). **3 tematy faktycznie zapomniane** — miały
+kompletne rozpoznanie techniczne, jawnie zapisane „wymaga pytania ABC", ale nigdy nie dostały
+kanonicznego ID ani nie zostały formalnie zadane. Nadane numery i pytania zadane właścicielowi
+poniżej.
+
+## NUMER: R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13, znalezisko Evaluatora ekonomii ×5, formalizacja przy audycie)
+
+Cennik PN/szt. w handlu z AI (`econ-params.json handel_surowce.cena_*`) NIE został przeskalowany
+razem z resztą `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` — magazyny/produkcja surowców fizycznych urosły
+×5, cena za sztukę zostaje ta sama. Pytanie ABC poniżej.
+
+## NUMER: R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1 (2026-08-13, znalezisko Evaluatorów rundy 3, formalizacja przy audycie)
+
+`main.ts:3377 sanitizeProductionQueue` — gdy front kolejki (np. Cud) zostaje usunięty bo rywal
+ukończył ten sam Cud pierwszy, zbankowany scalar Pracy zostaje przy NOWYM froncie (innym itemie)
+zamiast przepaść/wrócić do puli — łamie niezmiennik anty-exploit ustabilizowany w 5 rundach
+`P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B`. Pytanie ABC poniżej.
+
+---
+
+## ECHO P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A (2026-08-13)
+
+Naprawić teraz: ścieżka AI dla wyrębu lasu (`main.ts:26216-26217`) ma kredytować **Drewno**
+(parytet z graczem), nie Pracę. Dispatch w toku.
+
+## ECHO R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13) — decyzja WŁASNA właściciela, precyzyjniejsza niż warianty A/B/C
+
+Jego słowa: „Jeżeli faktycznie dysponujemy realnie pięciokrotnie większą ilością surowców, to
+ich wartość na punkty powinna spaść pięciokrotnie." **Decyzja: `econ-params.json handel_surowce.
+cena_*` (PN za sztukę surowca fizycznego) ma zostać PODZIELONA przez 5 (÷5), NIE pomnożona.**
+Uzasadnienie ekonomiczne (potwierdzone poprawne): gracz ma teraz 5× więcej surowców fizycznych
+(produkcja ×5 z `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`) — jeśli cena/szt. zostanie ta sama, całkowita
+wartość zbywalna surowców w PN wzrośnie ~5×; przy cenie ÷5 i ilości ×5 całkowita wartość
+tradeable pozostaje w przybliżeniu NEUTRALNA (5×ilość × cena/5 ≈ ta sama wartość co przed
+zmianą) — dokładnie zgodne z celem `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` („neutralny wpływ na resztę
+parametrów, zmienia się wyłącznie granulacja"). **UWAGA dla Operatora:** to NIE jest wariant A z
+pytania ABC (który mylnie sugerował ×5) — kierunek jest ODWROTNY, ÷5. Dispatch w toku.
+
+## ECHO R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1 = B (2026-08-13)
+
+Transfer do centralnej puli Pracy imperium (nie przepadek, nie transfer do innego itemu w
+kolejce). Gdy `sanitizeProductionQueue` usuwa front bo przegrany wyścig o cud — zbankowany
+scalar Pracy ma trafić do puli imperium, analogicznie do `remainder` przy naturalnym ukończeniu
+itemu. Spójne z zasadą przyjętą w 5-rundowej naprawie `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B`
+(bankuj, nigdy nie przenoś między różnymi itemami). Dispatch w toku.
+
+---
+
+## KOREKTA: R-DYPLO-CENNIK-SKALA-5X-Q1 — doprecyzowanie mechanizmu (Maciej, 2026-08-13)
+
+**Zastępuje sposób implementacji z poprzedniego ECHO** (kierunek decyzji — cena ma efektywnie
+spaść 5× — pozostaje ten sam, zmienia się WYŁĄCZNIE mechanizm techniczny). Zgłoszony problem:
+÷5 na `cena_*` daje ułamki dla tanich surowców (Drewno 1→0,2, Glina 2→0,4, Kamień 3→0,6,
+Sól 2→0,4) — dokładnie ten sam floor-do-zera, który cały `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` miał
+wyeliminować.
+
+**Decyzja właściciela (dosłowna):** „c + możliwość wymiany co 5 szt zamiast co 1 szt wtedy nie
+będzie ułamków czyli stara jedna szt to wartościowo dla handlu nowe 5 szt."
+
+**Mechanizm:** `handel_surowce.cena_*` w `econ-params.json` zostają **NUMERYCZNIE BEZ ZMIAN**
+(Drewno=1, Glina=2, Kamień=3, Ruda=5, Ruda żelaza=10, Cegła=5, Sól=2, Koń=5, Ceramika=5,
+Brąz=15, Żelazo=20, Stal=25, Węgiel=20 — sprawdzić czy Węgiel był objęty ×5 produkcji, jeśli
+NIE — nie dotykać jego ceny wcale, zgodnie z tą samą logiką co Złoto). Zamiast dzielić cenę,
+**minimalny krok/inkrement wymiany handlowej rośnie z 1 szt. na 5 szt.** — 5 sztuk NOWEJ skali
+(po ×5 produkcji) jest wartościowo równe 1 sztuce STAREJ skali, więc cena za blok 5 sztuk = stara
+cena za 1 sztukę (liczba całkowita, żadnych ułamków). Efekt ekonomiczny identyczny do ÷5 per
+sztuka, ale osiągnięty zmianą granulacji handlu (dokładnie ta sama technika co w głównej decyzji
+`R-EKONOMIA-SUROWCE-SKALA-5X-Q1`: nie zmieniać proporcji, tylko granulację jednostki).
+
+**Do ustalenia przez Operatora (rozpoznanie kodu, nie zgadywanie):** gdzie dziś jest
+egzekwowany/wyświetlany krok ilości w koszyku handlu (`gra/src/ui/diplomacyTradeBasket.ts` i
+pokrewne pliki `diplomacy-*.ts`) — czy jest tam już jakiś stepper/increment UI do dostosowania na
+5, i czy silnik (nie tylko UI) ma gdzieś twardy wymóg wielokrotności (np. walidacja przy
+zatwierdzaniu koszyka, nie tylko kontrolka suwaka). Dispatch w toku.
+
+---
+
+## Dispatch 3 Operatorów równoległych (2026-08-13) — domykanie zapomnianych tematów po audycie kompletności
+
+Trzy niezależne, izolowane worktree, dispatch jednocześnie:
+1. `fix-ai-wyrab-drewno` (`a1098f70aacf325a9`) — P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A.
+2. `fix-dyplo-cennik-krok5` (`ab07a53affefa289f`) — R-DYPLO-CENNIK-SKALA-5X-Q1 (krok wymiany 1→5 szt).
+3. `fix-sanitize-postep-transfer` (`aa0f7c600b9222993`) — R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1=B.
+
+Wszystkie trzy dotykają `main.ts` w różnych, nienachodzących na siebie sekcjach — merge sekwencyjny po odbiorze, z `git pull` między każdym, zgodnie ze standardową procedurą tej sesji.
+
+---
+
+## R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1=B — SCALONE, Evaluator w toku (2026-08-13)
+
+Operator dodał `filterQueue(prod, keep)` w `production.ts` (reużywa `dropFrontItem` gdy filtr
+usuwa front — nowy front odzyskuje WYŁĄCZNIE swój własny wcześniej zbankowany postęp, nigdy
+cudzy), zwraca `forfeitedPostep`. `sanitizeProductionQueue` w `main.ts` woła `filterQueue` i
+kredytuje `forfeitedPostep` do `ownerPracaPool` (istniejąca struktura — `playerPracaPool`/
+`aiPracaPoolByOwner`, ujednolicony dostęp `ownerPracaPool()`/`setOwnerPracaPool()`, ta sama para
+używana już przez transfery dyplomatyczne). Dowód: sekcje 20-24 nowe w `promote-to-front-
+test.cjs` — front usunięty (Cud 500) → `forfeitedPostep=500`, nowy front (Wojownik) NIE
+dziedziczy (postep=0), kończy się normalnie bez przeskoku; front NIE usunięty →
+`forfeitedPostep=0`; nowy front z WŁASNYM zbankowanym postępem (15) odzyskuje 15 nie 500 cudze;
+bramka strukturalna chroniąca przed cichym cofnięciem.
+
+Bramki: `tsc` 0, `promote-to-front-test.cjs` **125/125** (było 105), `logic-test` 213/213,
+`tech-tree-test` 19/19, `research-test` 33/33, `unit-replace-test` 13/13, `production-overflow-
+test` 24/24. Commit `aabecdd3`, push OK.
+
+**Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz.**
+
+---
+
+## R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1=B — Evaluator: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-13)
+
+Własny test Evaluatora (53 asercje, zbudowany od zera, nie kopia Operatora) potwierdza:
+scenariusz z rejestru (Cud bank 500 → forfeitedPostep=500, nowy front postep=0, Wojownik nie
+korzysta z cudzych 500), bilans Pracy zachowany co do sztuki (551 wejście = 551 wyjście),
+idempotencja (potrójna sanityzacja = pojedynczy kredyt), rozróżnienie gracz/AI poprawne (zero
+przecieku między `playerPracaPool`/`aiPracaPoolByOwner[n]`), edge pustej kolejki bez crasha,
+`dropFrontItem` potwierdzone bajt-w-bajt nietknięte (86 linii dodanych, 0 usuniętych). 6 mutacji
+własnych — wszystkie złapane (w tym 3 warianty „forfeitedPostep=0" odrzucone już przez `tsc`,
+nie tylko przez test).
+
+**Notatki niepilne (do rejestru, NIE blokują):**
+- N1: pokrycie `main.ts` wyłącznie regexem tekstowym (świadome, jak w poprzednich rundach).
+- **N2 (nowe, do osobnej rejestracji) — `sanitizeProductionQueue` osiągalne WYŁĄCZNIE z panelu
+  gracza** (jedyny wywołujący `setCityProduction`←`setProduction` panelu, player-only). Kolejki
+  AI NIGDY nie są sanityzowane — pre-istniejący brak parytetu: AI budujące Cud ukończony przez
+  rywala ma zaśmieconą kolejkę, nowy kod `aiPracaPoolByOwner` w tej gałęzi dziś nieosiągalny.
+  Kod jest poprawnie ownerId-generyczny, gotowy gdyby AI kiedyś dostało tę samą sanityzację.
+- N3: fallback `city?.ownerId ?? 0` przy zburzonym mieście — wąski edge, przepadła Praca
+  trafiłaby do gracza zamiast nigdzie. Pre-istniejące.
+- N4: `filterQueue` woła predykat dwukrotnie dla frontu — dziś bezpieczne (`wonderGateOk` czyste),
+  ale docstring nie wymusza czystości predykatu wprost.
+
+**STATUS: TEMAT ZAMKNIĘTY.** Bramki: `tsc` 0, `promote-to-front-test.cjs` 125/125, `logic-test`
+213/213, `production-overflow-test` 24/24, plus 5 sąsiednich bramek (era-cud/wonder-availability/
+ai-cud-priorytet-b3/ai-production-priority/cuda-handel) wszystkie zielone.
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A — SCALONE, Evaluator w toku (2026-08-13)
+
+Operator naprawił ścieżkę AI dla wyrębu lasu w `main.ts` — zamiast dodawać cały plon (25) do
+puli Pracy AI ponad odjęty koszt startu (netto +20 wcześniej), teraz: pula Pracy AI traci
+WYŁĄCZNIE koszt startu (5), a plon (25, ewentualnie ×mnożnik Stolarni) idzie przez TĘ SAMĄ
+ścieżkę co u gracza (`applyStolarniaDrewnoMapInflow` → `ownerResourceCap` → `creditOwnerResourceStock`
+z kluczem `drewno`) — pełny parytet z graczem. Test: nowa sekcja 11 w `ai-improvements-test.cjs`
+(22→30 asercji) — odtwarza formułę z realnej egzekucji AI, potwierdza `pracaPoolAfter =
+poolBefore - koszt` (nie `-koszt+refund`), Drewno miasta rośnie o 25 (albo 27 z 1 Stolarnią,
+zgodne z formułą `stolarnia-r5-d2-test.cjs`), jawna asercja-strażnik przeciw starej formule buga.
+
+Bramki: `tsc` 0, `logic-test` 213/213, `ai-improvements-test.cjs` **30/30** (było 22), plus 7
+sąsiednich bramek zielonych (tech-tree/research/unit-replace/ai-founding-territory/ekonomia-5x-
+inwariant/map-improvement-qualify/pending-improvements/surow-civ-storage). 2 pre-istniejące
+czerwone (`auto-improvements-test` 1 fail, `grupa-b-lane-test` 4 fail) zweryfikowane identyczne
+na czystym drzewie (`git stash`) — niezwiązane. Commit `a530d48b`, push OK.
+
+**Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz.**
+
+---
+
+## R-DYPLO-CENNIK-SKALA-5X-Q1 — SCALONE, Evaluator w toku (2026-08-13)
+
+Operator zaimplementował mechanizm z ostatecznej decyzji właściciela: krok wymiany handlu z AI
+1→5 szt. (zamiast dzielenia `cena_*` przez 5). `econ-params.json` NUMERYCZNIE BEZ ZMIAN
+(zweryfikowane). Nowy choke-point `diplomacyNormalizeSurowiecIlosc`/`diplomacyHandelSurowiecKrok`
+w `diplomacy-value-catalog.ts` — krok=5 dla 12 surowców objętych ×5 produkcji, krok=1 dla
+Złoto/Węgiel (produkcja nie objęta ×5, zweryfikowane grepem że Węgiel nie ma mechanizmu
+produkcji/turę w ogóle). Floor (nie hard-reject) — spójne z istniejącą konwencją silnika
+(`Math.min`/`Math.floor` wszędzie indziej dla błędnych wejść); poniżej 1 kroku = odrzucenie
+pozycji, nie ciche przyjęcie ułamkowego bloku. Naprawione po drodze (przy okazji, nie w zakresie
+pierwotnego zlecenia): (1) sortowanie „najtańszy PN/szt." w Szybkiej Umowie liczyło się przez
+funkcję, która TERAZ floruje 1 szt. do 0 PN — bez naprawy wszystkie surowce z krokiem 5
+znikałyby z propozycji AI; (2) `trimResourcePaymentTradeForZeroBalance` — bez normalizacji przed
+oceną, 1 szt. żelaza florowało do 0 PN i early-return uznawał ofertę za już wyrównaną zamiast ją
+wycofać.
+
+Zmienione: 7 plików źródłowych (`diplomacy-value-catalog.ts`, `diplomacy-proposals.ts`,
+`diplomacy-ai-offer-balance.ts`, `diplomacy-resource-trade-pick.ts`, `diplomacy-pn-engine.ts`,
+`main.ts` [3 miejsca: transferBasketItems, tickCyclicResourceTradeDeals, pickResourceTradeRelOffer],
+`diplomacyTradeBasket.ts` [UI: stepper, formularz, edycja wiersza]) + 7 plików testowych.
+
+Bramki: `tsc` 0, `logic-test` 213/213, WSZYSTKIE 9 plików testowych dyplomacji/handlu zielone
+(diplomacy-value-catalog 76/76, diplomacy-test 148/148, diplomacy-proposal-test 187/187,
+diplomacy-acceptance-points-test 254/254, diplomacy-ai-offer-balance-test 29/29,
+diplomacy-resource-cyclic-trade-test 46/46, diplomacy-resource-trade-pick-test 13/13,
+diplomacy-basket-duplicate-test 19/19, diplomacy-basket-duplicate-ui-test 28/28) — wszystkie
+zweryfikowane niezależnie przeze mnie na scalonym drzewie. Commit `f6d29ef0`, push OK.
+
+**Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz** — szeroki zakres (7 plików źródłowych, silnik
+handlu + AI + UI), więc weryfikacja ma być dokładna mimo standardowego trybu 1x
+(`R-EVALUATOR-3X-ZGODA-Q1` — 3x tylko za jawną zgodą, nie stosuję bez pytania).
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A — Evaluator: PASS-WITH-NOTES, N1 wymaga naprawy przed zamknięciem, runda 2 dispatch (2026-08-13)
+
+**Kod produkcyjny potwierdzony w pełni poprawny, własnym harnessem wykonującym realny kod z
+`main.ts`** (34 asercje, esbuild transpiluje faktyczny blok `wycinka` ze źródła): pula Pracy AI
+maleje o koszt startu (realnie **10**, nie 5 jak sądzono — `koszt_praca=5` w JSON przechodzi
+przez `scaleImprovementWorkCost` ×2, `R-STAWKI-KOSZT-ULEPSZEN-X2`), Drewno rośnie o plon,
+identyczne dla obu ścieżek na wszystkich Stolarniach/trudnościach/epokach (parytet gracz-AI
+potwierdzony end-to-end), cap era-scaled poprawnie dla WŁAŚCICIELA AI (nie zahardkodowany na
+gracza). Sprostowanie briefu: stary bug dawał netto **+15 Pracy** (nie +20).
+
+**⛔ N1 — WYMAGANE PRZED ZAMKNIĘCIEM (nie tylko notatka).** Test 11 w `ai-improvements-test.cjs`
+NIE jest regres-guardem — dowiedzione empirycznie: Evaluator podmienił `main.ts` na pełny stary
+bug, test 11 dalej pokazuje **30/30 zielone**. Przyczyna: test przepisuje formułę zamiast
+wykonywać `main.ts` (ten sam wzorzec tautologii, znany z wcześniejszych rund tej sesji —
+`shouldAllowBarbCityCapture`, panel Szczęście/Prawo, promote-to-front sekcja 9 rundy 1). Dwie
+konkretne tautologiczne asercje: `eq(pracaPoolAfter, pracaPoolBefore - koszt, …)` porównuje
+zmienną z jej WŁASNĄ definicją; `assert(pracaPoolAfter !== pracaPoolBefore - koszt +
+drewnoCredit0)` to `X !== X+25`, zawsze prawda. **Precedens w TYM SAMYM repo pokazujący jak to
+zrobić poprawnie:** `ai-founding-territory-test.cjs` sekcja B1 — „strażnik tekstowy main.ts",
+dokładnie ten sam problem (closure `boot()` niebundlowalny wprost) rozwiązany przez asercję na
+obecność/nieobecność konkretnego wzorca tekstowego w źródle.
+
+**N2 (informacyjna, nie do naprawy w tej rundzie):** `tsc` NIE łapie literówki w kluczu
+surowca (`creditOwnerResourceStock` przyjmuje `key: string`, nie unię literałową) — potwierdzone
+mutacją `'drewno'`→`'drewna'`, exit 0. Wzmacnia potrzebę N1 (strażnik tekstowy to jedyna siatka
+dla tej klasy błędu).
+
+**N3 (do backlogu, nie blokuje):** utajony rozjazd zaokrągleń AI vs gracz, JEŚLI `wycinka.tury`
+w danych kiedykolwiek wzrośnie >1 (dziś =1, zero rozjazdu) — gracz zaokrągla per turę, AI raz na
+sumie. Konkretne przykłady rozjazdu w pełnym raporcie Evaluatora `adece4ccd6f827696`.
+
+**N4 (nowe zgłoszenie, PRE-ISTNIEJĄCE, poza zakresem tej naprawy) — toast gracza po kliknięciu
+wyrębu (`main.ts:10756`) błędny na 4 sposoby jednocześnie:** mówi „Praca" zamiast „Drewno", „20"
+zamiast „25", „3 tury" zamiast „1 tura", „łącznie 60" zamiast „25". Realny hint po turze mówi już
+poprawnie — gracz dostaje DWA sprzeczne komunikaty o tej samej akcji. Ta sama pomyłka Praca/
+Drewno co ten commit naprawił po stronie AI, tylko w UI gracza. Do osobnej rejestracji/naprawy.
+
+**STATUS: dispatch rundy 2 (mała) w toku** — zakres: WYŁĄCZNIE N1 (dopisać strażnik tekstowy do
+testu 11, wzorem `ai-founding-territory-test.cjs` B1, asercje: obecność `creditOwnerResourceStock(`
+z `'drewno'` w bloku `wycinka`, NIEobecność wzorca `poolBefore - koszt + ` w tym samym bloku).
+N2/N3/N4 świadomie POZA zakresem, zarejestrowane osobno.
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA runda 2 SCALONA, Evaluator finalny w toku (2026-08-13)
+
+Operator dodał test 12 (strażnik tekstowy na `main.ts`, wzorem `ai-founding-territory-test.cjs`
+B1) i usunął 2 tautologiczne asercje z testu 11. Dowód nie-jałowości wykonany ręcznie: pełne
+cofnięcie `main.ts` do stanu sprzed rundy 1 (`git show a530d48b^:...`) → test PADA (31/2,
+komunikaty 12a/12b) → przywrócenie → zielone (33/33). Bramki: `tsc` 0, `ai-improvements-
+test.cjs` **33/33** (było 30), `logic-test` 213/213. Tylko plik testowy zmieniony (zero ryzyka
+dla silnika). Commit `fab0e21e`, push OK.
+
+**Dispatch Evaluatora finalnego (Opus 5, krótki — weryfikacja tylko nie-jałowości strażnika)
+NASTĘPUJE teraz.**
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA — Evaluator finalny: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY OSTATECZNIE (2026-08-13)
+
+Nie-jałowość strażnika (test 12) potwierdzona DWIEMA własnymi mutacjami Evaluatora (nie
+powtórka Operatora): M1 (double-dip — Drewno ZOSTAJE, ale plon dopisany TEŻ do Pracy) łapane
+wyłącznie przez 12b; M2 (zły surowiec `'kamien'` zamiast `'drewno'`) łapane wyłącznie przez 12a
+— każda asercja robi niezależną, realną robotę. Regex sprawdzony na kosmetycznej mutacji
+(łamanie linii, zmiana 3 nazw zmiennych) — zero fałszywego alarmu. Obie usunięte tautologie
+potwierdzone matematycznie zawsze-prawdziwe niezależnie od `main.ts`. Bramki: `tsc` 0,
+`ai-improvements-test.cjs` 33/33, `logic-test` 213/213. Zakres zmian potwierdzony ograniczony
+wyłącznie do pliku testowego (`git show fab0e21e --stat`).
+
+**Notatki niepilne (do backlogu, NIE blokują):**
+- N1: strażnik 12b skanuje CAŁY tekst bloku łącznie z komentarzami — komentarz dwujęzyczny
+  (wymagany zasadą 9 CLAUDE.md) ostrzegający o starym bugu wewnątrz tego bloku dałby fałszywy
+  alarm. Fail-safe (głośny fałszywy alarm, nie cicha regresja), naprawa 10-sekundowa gdyby się
+  zdarzyła.
+- N2: strażnik nie łapie semantycznie równoważnego przepisania (bug ekonomiczny zapisany przez
+  zmienną pośrednią zamiast dosłownego wzorca) — nieodłączna granica strażnika tekstowego, łapie
+  dosłowny kształt historycznej regresji (realistyczny wektor: copy-paste rewert), nie każdy
+  możliwy wariant.
+- N3: markery sekcji bez asercji unikalności — dziś jednoznaczne (1 trafienie każdy), brak
+  bieżącego ryzyka.
+
+**STATUS: TEMAT ZAMKNIĘTY OSTATECZNIE** po 2 rundach (runda 1 = kod produkcyjny + parytet
+gracz-AI, runda 2 = naprawa fikcyjnej bramki testowej na realny strażnik).
+
+---
+
+## R-DYPLO-CENNIK-SKALA-5X-Q1 — Evaluator: FAIL (luka na trudności Łatwej), runda 2 dispatch (2026-08-13)
+
+**Punkty 1-2, 4-5, 7 zlecenia potwierdzone WŁASNYM kodem (459 asercji, 3 niezależne pakiety,
+w tym w prawdziwym DOM/jsdom):** krok=5 dla dokładnie 12 surowców, krok=1 dla Złoto/Węgiel;
+sweep 357 kombinacji ilość×max — zawsze wielokrotność 5, nigdy > raw/max; oba bugi
+znalezione-po-drodze przez Operatora potwierdzone naprawione (sweep 8232 przypadków dla drugiego
+— oryginał nigdy nie zwrócił nie-wielokrotności dla surowców z krokiem 5); save/load self-heal
+poprawny; 6 mutacji własnych złapanych przez 6/9 plików testowych.
+
+**BLOKUJĄCE — punkt 6 zlecenia (parytet AI) odpowiada „NIE".** `clampAiResourceTradeCommand`
+(`gra/src/game/diplomacy-ai-balance.ts:235`, **plik SPOZA 7 zmienionych przez Operatora**) przycina
+ilość do stawki produkcji sprzedawcy BEZ florowania do kroku (`Math.min(cmd.pakietyPerTura,
+maxPakietyPerTura)`, ta sama klasa błędu co Operator już raz naprawił w `main.ts:15113`, tu
+pominięta). Żywa ścieżka: `enqueueNegotiationFromAiCmd` (`main.ts:12982`, komenda
+`zaproponuj_handel_surowiec`). Istniejący floor w `trimResourcePaymentTradeForZeroBalance` zwykle
+ratuje sytuację, ALE jest bramkowany trudnością (`aiOfferTargetsZeroBalance('easy') === false`) —
+**na trudności Łatwej (wybieralnej) NIE dotyka payloadu wcale.**
+
+**Zmierzone przez Evaluatora end-to-end (dosłowne):**
+```
+FAIL: easy/rate=7: POKAZANE 7 szt./ture == DOSTARCZONE 5 szt./ture
+FAIL: easy/rate=9: POKAZANE 9 szt./ture == DOSTARCZONE 5 szt./ture
+(normal i hard: wszystkie przechodzą — trim floruje)
+```
+Skutek dla gracza na Łatwym: AI proponuje „7 szt./turę", gracz akceptuje,
+`buildHandelSurowiecCykliczny` floruje dostawę do 5, ale `zaplataPerTura` przenosi cenę
+NIEZMIENIONĄ (wyliczoną dla 7) — gracz płaci za 7-9, dostaje 5/turę przez cały deal, co turę.
+Wyzwolenie: stawka produkcji sprzedawcy AI niebędąca wielokrotnością 5.
+
+**Poprawka (jednolinijkowa, lustrzana do już istniejącego fixu w `main.ts:15113`):**
+```ts
+let pakietyPerTura = diplomacyNormalizeSurowiecIlosc(
+  cmd.surowiecKey, Math.min(cmd.pakietyPerTura, maxPakietyPerTura));
+```
+Istniejący `if (pakietyPerTura <= 0) return null` (linia ~289) sam domknie oferty poniżej kroku.
+
+**Notatki niepilne (do backlogu, NIE blokują tej rundy):**
+- N1: `maxAffordableQty`/`clampNegotiationPayloadToRealResources` (`diplomacy-ai-balance.ts:491`,
+  `main.ts:8129-8130,13197,13518`) — ta sama klasa braku floora, wartościowo neutralne (PN floruje
+  identycznie), ale wyświetlana liczba może przewyższać dostarczoną.
+- N2: `readSweetenerGiveItems` w modalu negocjacji — „słodzik" traktatowy bez floor/step, pozycja-
+  widmo (0 PN, 0 transferu, nic nie ginie), ale niespójna z koszykiem głównym.
+- N3: `empireDiploResourceFlowPerTurn` — panel magazynu czyta stary `pakietyPerTura` do pierwszego
+  ticku po self-healu, wyłącznie wyświetlanie.
+- N4: legacy sejw z dealem poniżej kroku (np. 3 żelaza/turę) po self-healu daje 0 →
+  `sellerAtFault` co turę bez końca zamiast rozwiązania umowy — sprzedawca AI karany wiarygodnością
+  za retroaktywną zmianę reguł. Niskie prawdopodobieństwo, wymaga świadomej decyzji (osobne
+  zgłoszenie jeśli się potwierdzi jako realny problem).
+- N5 (informacyjna): mutant M7 (refaktor binary search) przeżył wszystkie testy, ale sweep 8232
+  przypadków wykazał 0 różnic — mutant równoważny, nie luka pokrycia.
+
+**STATUS: dispatch rundy 2 (mała, jednolinijkowa) w toku** — zakres WYŁĄCZNIE blokujący punkt
+(`clampAiResourceTradeCommand`). N1-N5 poza zakresem, zarejestrowane do backlogu.
+
+---
+
+## R-DYPLO-CENNIK-SKALA-5X-Q1 runda 2 SCALONA, Evaluator finalny w toku (2026-08-13)
+
+Operator naprawił lukę: `clampAiResourceTradeCommand` (`diplomacy-ai-balance.ts`) teraz floruje
+przez `diplomacyNormalizeSurowiecIlosc`, lustrzanie do już istniejącego fixu w `main.ts:15113`.
+Dowód: trudność easy, produkcja AI 7 i 9 szt./turę → pokazana ilość = dostarczana ilość = 5
+(floor do kroku), PN liczone dla TEJ SAMEJ zflorowanej ilości (brak rozjazdu). Produkcja 4 szt.
+(<krok) → floor do 0 → guard zwraca `null` (żadna oferta-widmo). Przy okazji naprawione 2
+pre-istniejące testy w tym samym pliku, które łączyły nierealną konfigurację
+(`pakietWielkosc:10`, w produkcji zawsze 1) z surowcem krok=5 — fixture'y zaktualizowane bez
+zmiany semantyki testowanej funkcji.
+
+**N6 (nowe, do backlogu, NIE blokuje) — obserwacja Operatora, nie decyzja:** kwota gotówki
+(`zaplataPerTura`) w tej samej funkcji NIE jest przeliczana proporcjonalnie do zflorowanej
+ilości — identycznie jak we wzorcu `main.ts:15113` (`adjustZaplataPerTuraForZeroBalance` też
+bramkowane trudnością, na easy nie działa). Ta runda naprawiła WYŁĄCZNIE rozjazd ILOŚCI
+(zakres zlecenia), nie kwestię „czy cena jest uczciwa dla zredukowanej ilości" — możliwa osobna,
+nieujawniona jeszcze luka, do rozpoznania osobno jeśli się potwierdzi jako realny problem.
+
+Bramki: `tsc` 0, `logic-test` 213/213, `diplomacy-ai-balance-test.cjs` **30/30** (nowy plik dla
+tej funkcji), wszystkie 9 plików dyplomacji z rundy 1 ponownie zielone (76/148/187/254/29/46/13/
+19/28, wszystkie 0 fail). Commit `e21d5854`, push OK.
+
+**Dispatch Evaluatora finalnego (Opus 5) NASTĘPUJE teraz.**
+
+---
+
+## R-DYPLO-CENNIK-SKALA-5X-Q1 — Evaluator finalny: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY OSTATECZNIE (2026-08-13)
+
+Luka rundy 1 potwierdzona zamknięta własnym harnessem (15 asercji + przemiat stawek 0-24):
+floor bez bramki trudności, żywa ścieżka easy naprawiona, `zloto` (krok 1) potwierdzone
+NIETKNIĘTE (poprawka nie przestrzeliła na surowce spoza ×5). Potwierdzone że `maxAffordableQty`
+i ścieżka Umowy Handlowej/Szybkiej Umowy nietknięte (0 trafień w diffie poza jednym wyrażeniem).
+Fixture'y zmienione przez Operatora zweryfikowane mutacją — nadal łapią zamianę `per_turn`→`once`.
+
+Własna mutacja B (floor na złej zmiennej — `Math.min(pakietyPerTura, normalize(maxPakietyPerTura))`
+zamiast `normalize(Math.min(...))`) — **30/30 PASS, NIE złapana testem**, ale własna sonda
+Evaluatora potwierdza że KOD WDROŻONY przechodzi bezbłędnie (żaden rozjazd) — to luka w teście
+(wszystkie fixture'y ustawiają żądanie AI = stawce produkcji, więc oba ramiona `Math.min` są
+zawsze równe), NIE defekt zachowania. Nieblokujące.
+
+Bramki: `tsc` 0, `diplomacy-ai-balance-test.cjs` 30/30, `logic-test` 213/213, wszystkie 9 plików
+dyplomacji z rundy 1 ponownie zielone.
+
+**Notatka do backlogu (NIE blokuje):** brakująca asercja domykająca lukę mutacji B (scenariusz
+gdzie ŻĄDANIE AI, nie cap produkcji, jest ograniczeniem) + zamiana tautologicznego `want 5` na
+`want Math.round(ilość × cena)` z surowcem o cenie ≠1.
+
+**STATUS: TEMAT ZAMKNIĘTY OSTATECZNIE** po 2 rundach.
+
+---
+
+## WSZYSTKIE TRZY ZAPOMNIANE TEMATY Z AUDYTU KOMPLETNOŚCI — ZAMKNIĘTE (2026-08-13)
+
+Podsumowanie: `P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A` (2 rundy), `R-SANITIZE-QUEUE-
+POSTEP-PRZEPADEK-Q1=B` (1 runda), `R-DYPLO-CENNIK-SKALA-5X-Q1` (2 rundy) — wszystkie trzy
+tematy znalezione przy audycie kompletności na żądanie właściciela dziś zamknięte ostatecznie,
+każdy z niezależną weryfikacją Evaluatora. Zero otwartych ABC-pytań poza wcześniej udokumentowanymi
+świadomymi odłożeniami. Przechodzę do deployu ROBOCZA + scalenia FALI 273 do `main` na wyraźne
+polecenie właściciela.
+
+---
+
+## Scalenie do `main`: FALA 273 (2026-08-13, na wyraźne polecenie właściciela)
+
+Po deployu FALA 274 (zdeployowanej do ROBOCZA, zostaje na gałęzi roboczej wyłącznie do testów)
+FALA 273 (`9d8b4dfa`) zakwalifikowała się do scalenia zgodnie z rytmem „jedna fala do tyłu"
+(`R-MERGE-MAIN-RYTM-Q1`). Scalono przez `git merge --no-ff` do `main` (merge commit `f438edfb`),
+50 plików, +5209/−3023 linii. Bramki zweryfikowane na scalonym drzewie przed pushem: `tsc` 0,
+`logic-test.cjs` 213/213. Push `016cbb52..f438edfb` na `main`, exit 0.
+
+Zawartość FALI 273 scalona do main: 5-rundowa naprawa promocji frontu kolejki produkcji
+(B1/B2/B3, parytet gracz-AI, bramka strukturalna), 3-rundowe przeskalowanie ekonomii surowcowej
+×5 (produkcja/koszty/utrzymanie/cap), dokument audytu CivPedii/Poradnika (Etap 1), aktualizacje
+skilli AutoBot (reguła 3x Evaluator za zgodą).
+
+**Stan po tej operacji:** `main` = `f438edfb` (zawiera FALE 270-273). FALA 274 (`ad0f160c`, md5
+`81ae686d`) zostaje na gałęzi roboczej — kwalifikuje się do scalenia dopiero po powstaniu FALI
+275.

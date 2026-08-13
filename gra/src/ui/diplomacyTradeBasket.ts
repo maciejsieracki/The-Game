@@ -26,6 +26,8 @@ import {
   diplomacyResourceAccessCatalog,
   diplomacyHandelZaufaniePerTura,
   diplomacyHandelSurowceCatalog,
+  diplomacyHandelSurowiecKrok,
+  diplomacyNormalizeSurowiecIlosc,
   type WartoscPozycjaTyp,
 } from '../game/diplomacy-value-catalog';
 import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
@@ -144,24 +146,37 @@ function formatCompactQty(n: number): string {
   return String(v);
 }
 
+/**
+ * `step` (R-DYPLO-CENNIK-SKALA-5X-Q1, 2026-08-13): krok wymiany handlowej — domyślnie 1
+ * (turnusy/gotówka/Praca/żywność, bez zmian), 5 dla surowców ilościowych dotkniętych ×5
+ * (patrz diplomacyHandelSurowiecKrok). Przyciski +N/+10N/+100N skalują się razem z krokiem
+ * (step=5 -> +5/+50/+500) — te same relatywne skoki co dawniej (×10, ×100), tylko w nowej
+ * jednostce. `min` domyślnie = step, żeby natywny spinner/klawiatura nie schodziły poniżej
+ * jednego bloku (twarda walidacja i tak jest w readItemFromForm/applyRowQtyChange).
+ */
 function qtyStepperHtml(
   inputClass: string,
   side: string,
   value: number,
   min = 1,
   max?: number,
+  step = 1,
 ): string {
   const maxAttr = max != null ? ' max="' + max + '"' : '';
+  const stepAttr = step > 1 ? ' step="' + step + '"' : '';
+  const d1 = step;
+  const d2 = step * 10;
+  const d3 = step * 100;
   return (
     '<div class="cdb-qty-stepper">'
     + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
-    + '" data-target="' + inputClass + '" data-delta="1">+1</button>'
+    + '" data-target="' + inputClass + '" data-delta="' + d1 + '">+' + d1 + '</button>'
     + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
-    + '" data-target="' + inputClass + '" data-delta="10">+10</button>'
+    + '" data-target="' + inputClass + '" data-delta="' + d2 + '">+' + d2 + '</button>'
     + '<button type="button" class="cdb-qty-step dip-muted-btn" data-side="' + side
-    + '" data-target="' + inputClass + '" data-delta="100">+100</button>'
+    + '" data-target="' + inputClass + '" data-delta="' + d3 + '">+' + d3 + '</button>'
     + '<input type="number" class="' + inputClass + '" data-side="' + side
-    + '" value="' + value + '" min="' + min + '"' + maxAttr + ' />'
+    + '" value="' + value + '" min="' + min + '"' + maxAttr + stepAttr + ' />'
     + '</div>'
   );
 }
@@ -1424,14 +1439,17 @@ export function buildAddForm(
     );
   }).join('');
   const qtyResFirstMax = qtyResources.find(r => r.id === defaultResId)?.maxQty ?? qtyResources[0]?.maxQty ?? 1;
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): krok/domyślna ilość zależą od surowca aktualnie
+  // wybranego chipem (defaultResId) — 5 szt. dla surowców dotkniętych ×5, 1 dla Złota/Węgla.
+  const defaultResKrok = diplomacyHandelSurowiecKrok(defaultResId || 'x');
 
   const zywnHint = diplomacyZywnoscNaPn();
 
   const initialQty = (editTyp === 'zloto' || editTyp === 'praca') ? Math.max(1, editItem!.item.ilosc ?? 10) : 10;
   const initialFoodQty = editTyp === 'zywnosc' ? Math.max(1, editItem!.item.ilosc ?? 10) : 10;
   const initialResQty = editTyp === 'surowiec_ilosc'
-    ? Math.min(qtyResFirstMax, Math.max(1, editItem!.item.ilosc ?? 1))
-    : 1;
+    ? (diplomacyNormalizeSurowiecIlosc(defaultResId, editItem!.item.ilosc ?? defaultResKrok, qtyResFirstMax) || defaultResKrok)
+    : defaultResKrok;
 
   const editAttrs = editItem ? ' data-edit-idx="' + editItem.idx + '"' : '';
   const submitLabel = editItem ? 'Zapisz zmiany' : '+ Dodaj propozycję';
@@ -1466,8 +1484,9 @@ export function buildAddForm(
     + '<label>Surowiec</label>'
     + '<div class="cdb-chip-grid cdb-resqty-chips">' + qtyResChips + '</div>'
     + '<input type="hidden" class="cdb-res-qty-sel" data-side="' + prefix + '" value="' + esc(defaultResId) + '" data-max="' + qtyResFirstMax + '" />'
-    + '<label>Ilość (sztuki)</label>'
-    + qtyStepperHtml('cdb-res-qty-num', prefix, initialResQty, 1, qtyResFirstMax)
+    + '<label>Ilość (sztuki) <span class="cdb-res-qty-krok-hint" data-side="' + prefix + '" style="color:#7a8494">'
+    + (defaultResKrok > 1 ? '(krok ' + defaultResKrok + ' szt.)' : '') + '</span></label>'
+    + qtyStepperHtml('cdb-res-qty-num', prefix, initialResQty, defaultResKrok, qtyResFirstMax, defaultResKrok)
     + '</div>'
     + '<div class="cdb-add-btn-row">'
     + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '"' + editAttrs + '>' + esc(submitLabel) + '</button>'
@@ -1499,6 +1518,26 @@ function basketItemMaxQty(
     return found?.maxQty ?? qty;
   }
   return undefined;
+}
+
+/**
+ * Przycina `rawQty` do zapasu (`basketItemMaxQty`) — dla `surowiec_ilosc` DODATKOWO floruje
+ * do wielokrotności kroku handlu (R-DYPLO-CENNIK-SKALA-5X-Q1, 2026-08-13). Wspólny punkt
+ * dla `addOrMergeBasketItem`/`applyBasketItemEdit`/`applyRowQtyChange` — bez tego przycięcie
+ * do `max` (zapas rzadko jest wielokrotnością 5) mogłoby zostawić ilość niebędącą
+ * wielokrotnością kroku w koszyku.
+ */
+function clampQtyForItem(
+  item: BasketItem,
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+  rawQty: number,
+): number {
+  const max = basketItemMaxQty(item, side, ctx);
+  if (item.typ === 'surowiec_ilosc') {
+    return diplomacyNormalizeSurowiecIlosc(item.id, rawQty, max);
+  }
+  return max != null ? Math.min(max, rawQty) : rawQty;
 }
 
 /**
@@ -1541,8 +1580,8 @@ export function addOrMergeBasketItem(
   if (!basketItemQtyEditable(newItem)) return items; // blokada duplikatu — bez zmian
   const existing = items[idx]!;
   const summedQty = (existing.ilosc ?? 0) + (newItem.ilosc ?? 0);
-  const max = basketItemMaxQty(existing, side, ctx);
-  const clamped = max != null ? Math.min(max, summedQty) : summedQty;
+  const clamped = clampQtyForItem(existing, side, ctx, summedQty);
+  if (clamped <= 0) return items; // po przycięciu/floorowaniu za mało nawet na 1 blok — bez zmian
   return items.map((it, i) => (i === idx ? { ...existing, ilosc: clamped } : it));
 }
 
@@ -1590,8 +1629,8 @@ export function applyBasketItemEdit(
   if (!basketItemQtyEditable(newItem)) return items; // blokada duplikatu — edycja się nie stosuje
   const existing = items[collideIdx]!;
   const summedQty = (existing.ilosc ?? 0) + (newItem.ilosc ?? 0);
-  const max = basketItemMaxQty(existing, side, ctx);
-  const clamped = max != null ? Math.min(max, summedQty) : summedQty;
+  const clamped = clampQtyForItem(existing, side, ctx, summedQty);
+  if (clamped <= 0) return items; // po przycięciu/floorowaniu za mało nawet na 1 blok — edycja no-op
   return items
     .map((it, i) => (i === collideIdx ? { ...existing, ilosc: clamped } : it))
     .filter((_, i) => i !== editIdx);
@@ -1603,14 +1642,19 @@ function basketRowQtyStepperHtml(
   idx: number,
   ctx: NegotiationModalContext,
 ): string {
-  const qty = Math.max(1, item.ilosc ?? 1);
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): krok wiersza już-w-koszyku = krok surowca
+  // (5 szt. dla dotkniętych ×5), 1 dla wszystkich innych typów (zloto/praca/zywnosc, jak
+  // dotychczas).
+  const krok = item.typ === 'surowiec_ilosc' ? diplomacyHandelSurowiecKrok(item.id) : 1;
+  const qty = Math.max(krok, item.ilosc ?? krok);
   const max = basketItemMaxQty(item, side, ctx);
   const maxAttr = max != null ? ' max="' + max + '"' : '';
+  const stepAttr = krok > 1 ? ' step="' + krok + '"' : '';
   return (
     '<div class="cdb-row-qty" data-side="' + side + '" data-idx="' + idx + '">'
-    + '<button type="button" class="cdb-row-qty-step dip-muted-btn" data-delta="-1" title="Zmniejsz">−</button>'
-    + '<input type="number" class="cdb-row-qty-inp" value="' + qty + '" min="1"' + maxAttr + ' />'
-    + '<button type="button" class="cdb-row-qty-step dip-muted-btn" data-delta="1" title="Zwiększ">+</button>'
+    + '<button type="button" class="cdb-row-qty-step dip-muted-btn" data-delta="-' + krok + '" title="Zmniejsz">−</button>'
+    + '<input type="number" class="cdb-row-qty-inp" value="' + qty + '" min="' + krok + '"' + maxAttr + stepAttr + ' />'
+    + '<button type="button" class="cdb-row-qty-step dip-muted-btn" data-delta="' + krok + '" title="Zwiększ">+</button>'
     + '</div>'
   );
 }
@@ -1858,7 +1902,11 @@ export function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Ne
         10,
       );
       if (!(rawQty > 0)) return null;
-      const qty = maxAttr > 0 ? Math.min(rawQty, maxAttr) : rawQty;
+      // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): floor do wielokrotności kroku handlu (5 szt.
+      // dla surowców dotkniętych ×5) — odrzuca (null) ilość poniżej jednego bloku zamiast
+      // po cichu przyjąć niepoprawną wartość (spójne z odrzuceniem qty<=0 wyżej).
+      const qty = diplomacyNormalizeSurowiecIlosc(id, rawQty, maxAttr > 0 ? maxAttr : undefined);
+      if (qty <= 0) return null;
       return { typ, id, ilosc: qty };
     }
     default:
@@ -2247,14 +2295,34 @@ export function showTradeBasketModal(
     box.querySelectorAll('.cdb-chip-resqty').forEach(btn => {
       btn.addEventListener('click', () => {
         const side = btn.getAttribute('data-side');
-        selectChipInGroup(btn, 'cdb-chip-resqty', '.cdb-res-qty-sel', (_value, max) => {
-          if (side && max != null) {
-            const inp = box.querySelector('.cdb-res-qty-num[data-side="' + side + '"]') as HTMLInputElement | null;
-            if (inp) {
-              inp.max = String(max);
-              if (parseInt(inp.value, 10) > max) inp.value = String(max);
+        selectChipInGroup(btn, 'cdb-chip-resqty', '.cdb-res-qty-sel', (value, max) => {
+          if (!side) return;
+          // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): krok handlu zależy od WYBRANEGO
+          // surowca (5 szt. dla dotkniętych ×5, 1 dla Złota/Węgla) — przełączenie chipa
+          // musi przestawić min/step inputu I przeliczyć jego bieżącą wartość na
+          // najbliższą poprawną wielokrotność nowego kroku (UWAGA: wcześniejszy stan
+          // pola mógł być poprawną wielokrotnością POPRZEDNIEGO kroku, nie nowego).
+          const krok = diplomacyHandelSurowiecKrok(value);
+          const inp = box.querySelector('.cdb-res-qty-num[data-side="' + side + '"]') as HTMLInputElement | null;
+          if (inp) {
+            if (max != null) inp.max = String(max);
+            inp.min = String(krok);
+            inp.step = String(krok);
+            const cur = parseInt(inp.value, 10) || krok;
+            const normalized = diplomacyNormalizeSurowiecIlosc(value, cur, max) || krok;
+            inp.value = String(normalized);
+            const stepper = inp.closest('.cdb-qty-stepper');
+            if (stepper) {
+              const mults = [1, 10, 100];
+              stepper.querySelectorAll('.cdb-qty-step').forEach((b, i) => {
+                const d = krok * (mults[i] ?? 1);
+                b.setAttribute('data-delta', String(d));
+                b.textContent = '+' + d;
+              });
             }
           }
+          const hint = box.querySelector('.cdb-res-qty-krok-hint[data-side="' + side + '"]');
+          if (hint) hint.textContent = krok > 1 ? '(krok ' + krok + ' szt.)' : '';
         });
       });
     });
@@ -2407,8 +2475,12 @@ export function showTradeBasketModal(
       const list = sideAttr === 'give' ? giveItems : receiveItems;
       const item = list[idx];
       if (!item || !basketItemQtyEditable(item)) return;
-      const max = basketItemMaxQty(item, sideAttr === 'give' ? 'give' : 'receive', ctx);
-      const clamped = max != null ? Math.min(max, newQty) : newQty;
+      // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): clampQtyForItem floruje surowiec_ilosc do
+      // wielokrotności kroku PO przycięciu do zapasu — jeśli wynik < 1 (za mało nawet na
+      // 1 blok po zaokrągleniu w dół), odrzuć edycję (koszyk bez zmian), tak samo jak przy
+      // starym `newQty < 1` dla zloto/praca/zywnosc.
+      const clamped = clampQtyForItem(item, sideAttr === 'give' ? 'give' : 'receive', ctx, newQty);
+      if (clamped < 1) return;
       const updated = { ...item, ilosc: clamped };
       if (sideAttr === 'give') {
         giveItems = giveItems.map((it, i) => (i === idx ? updated : it));

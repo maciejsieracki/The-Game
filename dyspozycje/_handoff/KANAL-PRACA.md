@@ -1,3 +1,23 @@
+## [13:07 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 274 md5 `81ae686d`
+
+ROBOCZA md5 `81ae686d3ee3bec7f5de01b06907c773` · stempel `ROBOCZA · 5a0d96b0 · 2026-08-13 11:07` UTC · **VERIFY OK**.
+|- Build z HEAD `322b2259` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — 21 commitów od FALI 273 (`9d8b4dfa`), 19 plików w `gra/src`+`gra/tools` (`+1035/−102`). **`gra/data` nietknięte.**
+|- Zawartość: (1) **sanityzacja kolejki produkcji** — przepadający postęp frontu (przegrany wyścig o cud) wraca do **puli Pracy imperium** zamiast doczepiać się do przypadkowego itemu, + bramka strukturalna; (2) **AI przy wyrębie lasu kredytuje Drewno, nie Pracę** (parytet z graczem); (3) **krok handlu z AI 1→5 szt.** dla surowców objętych skalą ×5, ceny bez zmian, Złoto/Węgiel krokiem 1; naprawiona luka na **trudności Easy** (pokazana ilość ≠ dostarczana).
+|- Bramki (17, wszystkie exit 0): `tsc` 0 błędów · `logic-test` 213/213 · `promote-to-front-test` 125/125 · `ai-improvements-test` 33/33 · `diplomacy-ai-balance` 30/30 · `production-overflow` 24/24 · `diplomacy-value-catalog` 76/76 · `diplomacy-test` 148/148 · `diplomacy-proposal` 187/187 · `diplomacy-acceptance-points` 254/254 · `diplomacy-ai-offer-balance` 29/29 · `diplomacy-resource-cyclic-trade` 46/46 · `diplomacy-resource-trade-pick` 13/13 · `diplomacy-basket-duplicate` 19/19 · `-ui` 28/28 · `tech-tree` 19/0 · `research` 33/0 · `unit-replace` 13/13.
+|- `map-gen-regression-test` zabity po 300 s (nieukończony w czasie, **nie FAIL** — zero linii FAIL w wypisanej części; fala nie dotyka `gra/src/map/**`). Pre-istniejące czerwone `grupa-b-lane` 45/4, `mennica-magazyn` 38/3, `auto-improvements` 14/1 — liczby bez zmian, brak nowej regresji.
+|- Scalenie do `main` NIE wykonane (rytm „jedna fala do tyłu", `R-MERGE-MAIN-RYTM-Q1`) — FALA 274 zostaje na gałęzi do testów; kwalifikuje **FALĘ 273** (`9d8b4dfa`) do scalenia, wykona orkiestrator osobno. Zweryfikowane: FALE 270/271/272 **już scalone**, niescalona wyłącznie 273.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `81ae686d`".
+
+## [10:44 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 273 md5 `03a2f038`
+
+ROBOCZA md5 `03a2f038accd7160dfe91ae6b7127b0f` · stempel `ROBOCZA · 588e752e · 2026-08-13 08:43` UTC · **VERIFY OK**.
+|- Build z HEAD `ef76b833` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, commit deployu na `410825e2` — 44 commity od FALI 272 (`4ee4b9d8`), 32 pliki w `gra/src`+`gra/data`+`gra/tools` (`+1602/−671`).
+|- Zawartość: (1) **promocja frontu kolejki produkcji** — postęp bankuje się zamiast ginąć, 5 rund, 3 realne blokery (w tym parytet gracz-AI w `queueJump`) + bramka strukturalna na `main.ts`; (2) **ekonomia surowcowa ×5** — produkcja/koszty/utrzymanie/magazyny, drenaż obywateli 0,2→1,0; **złoto bez zmian**.
+|- Bramki: `tsc` 0 błędów · `logic-test` 213/213 · `promote-to-front-test` 105/105 · `ekonomia-5x-inwariant-test` 246/246 · `hex-plony-magazyn-test` 11/11 · `tartak-glinianka-rate` 1281/0 · `citizen-resource-upkeep` 109/0 · `ai-cud-priorytet-b3` 46/0 · `tech-tree` 19/0 · `research` 33/0 · `unit-replace` 13/13.
+|- `map-gen-regression-test` zabity po 300 s (nieukończony w czasie, **nie FAIL** — zero linii FAIL w wypisanej części). Pre-istniejące czerwone `grupa-b-lane` 45/4 i `mennica-magazyn` 38/3 — liczby bez zmian, brak nowej regresji.
+|- Scalenie do `main` NIE wykonane (rytm „jedna fala do tyłu", `R-MERGE-MAIN-RYTM-Q1`) — FALA 272 kwalifikuje się do scalenia, wymaga zgody właściciela. Zaległości: FALE 270, 271, 272.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `03a2f038`".
+
 ## [18:xx PL, 2026-08-10] CHMURA → main — dogonienie o FALA 267 (rytm "jedna fala do tyłu")
 
 Po deployu FALA 268 (md5 `3bc0236b`, zalogowany osobno wyżej), zgodnie z `R-MERGE-MAIN-RYTM-Q1`
@@ -6762,6 +6782,20 @@ kwalifikuje **FALĘ 271** (`94a17910`) do scalenia do `main` — wymaga wyraźne
 Niescalone: **FALA 270** (`028ff459`) i **FALA 271** (`94a17910`).
 **SESJA LOKALNA: pull na dysk właściciela** (testuj `5343a5f4`).
 CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 270+271 do `main`.
+
+## [09:00 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — scalenie FALA 272 do main
+Na wyraźne polecenie właściciela: `4ee4b9d8` (Deploy FALA 272) scalone do `main` przez
+`git merge --no-ff` → merge commit `016cbb52`, push `e723cb0e..016cbb52`. Bramki na scalonym
+drzewie zweryfikowane przed pushem: `tsc` 0, `logic-test` 213/213. Poprzedni stan `main` już
+zawierał FALA 270+271 (scalone wcześniej tej sesji, `e723cb0e`) — korekta błędnego zgłoszenia
+agenta deployu FALI 273, który mylnie wskazał 270/271/272 jako zaległe.
+Dodatkowo: FALA 273 (`03a2f038`, commit `9d8b4dfa`) zdeployowana do ROBOCZA — promocja frontu
+kolejki produkcji (5 rund) + ekonomia surowcowa ×5 (3 rundy), oba tematy zamknięte ostatecznie.
+Zostaje na gałęzi roboczej wyłącznie do testów (rytm „jedna fala do tyłu"), kwalifikuje się do
+scalenia dopiero po powstaniu FALI 274.
+**SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `03a2f038`; `main` zsynchronizowany
+do `016cbb52`).
+CZEKAM-NA: sesja lokalna (pull + playtest FALI 273) · zgoda na kolejne scalenie po powstaniu FALI 274.
 
 ## [10:40 PL, 2026-08-13] SESJA LOKALNA → CHMURA — POTWIERDZENIE: `5343a5f4` (FALA 272) na dysku właściciela
 

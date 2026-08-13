@@ -268,8 +268,15 @@ console.log('\n--- 5-STRUKTURA. dryf main.ts (fs.readFileSync + regex, jak era-c
 // ---------------------------------------------------------------------------
 // 6. Reprodukcja DOKŁADNEGO defektu Evaluatora rundy 1 -- Fenicjanie, awans Brąz→Żelazo,
 //    Petra (epokaWejscia=2) wymaga techUnlock="Inżynieria" (epoka Żelazo) -- niebudowalna
-//    mimo kompletu technologii Brązu. Symulacja 12 tur pętli main.ts (kolejka/postep lokalnie,
-//    identyczna semantyka jak production.ts: queueJump = unshift + postep:0, enqueue = push).
+//    mimo kompletu technologii Brązu. Symulacja 12 tur pętli main.ts (kolejka lokalnie;
+//    queueJump = unshift na front, enqueue = push na koniec). Ta lokalna symulacja NIE
+//    reprodukuje bankowania postępu przez insertAtFront (naprawa RUNDY 4, B3) -- w tym
+//    konkretnym scenariuszu (Fenicjanie/Petra) queueJump nigdy faktycznie nie zapada
+//    (patrz asercja 6g: queueJumpCount===0), więc gałąź `if (decision.queueJump)` niżej
+//    jest tu martwa i wartość jej `postep: 0` nie wpływa na wynik testu ani nie jest
+//    asercjonowana -- realne zachowanie main.ts (bankowanie, nie zerowanie) pokrywa
+//    promote-to-front-test.cjs (sekcja 16) i bramka strukturalna promote-to-front-test.cjs
+//    (sekcja 19).
 // ---------------------------------------------------------------------------
 console.log('\n--- 6. reprodukcja defektu — Fenicjanie/Petra, 12 tur (przed naprawą: kolejka rosła bez ograniczenia) ---');
 {
@@ -316,6 +323,14 @@ console.log('\n--- 6. reprodukcja defektu — Fenicjanie/Petra, 12 tur (przed na
 
     if (decision) {
       if (decision.queueJump) {
+        // Uproszczona symulacja lokalna -- NIE odtwarza bankowania insertAtFront (main.ts
+        // realnie woła insertAtFront(wProd0, wItem, 0), patrz RUNDA 4/B3). Nieszkodliwe tu:
+        // w tym scenariuszu (Fenicjanie/Petra) ta gałąź nigdy się nie wykonuje (6g:
+        // queueJumpCount===0), a test i tak nie asercjonuje postep. / EN: simplified local
+        // simulation -- does NOT replicate insertAtFront's banking (main.ts really calls
+        // insertAtFront(wProd0, wItem, 0), see round 4/B3). Harmless here: in this scenario
+        // (Phoenicians/Petra) this branch never actually runs (6g: queueJumpCount===0), and
+        // the test doesn't assert postep anyway.
         queueJumpCount++;
         cityProd = { kolejka: [{ id: decision.wonderId }, ...cityProd.kolejka], postep: 0 };
       } else {

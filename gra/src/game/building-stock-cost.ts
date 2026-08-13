@@ -289,8 +289,13 @@ function stripDiacriticsLower(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
 }
 
-/** PYTANIE-84 U-15 / R10: koszt Koni ze skarbca państwa przy rekrucie jednostek jezdnych. */
-export const MOUNT_UNIT_HORSE_STOCK_COST = 5;
+/** PYTANIE-84 U-15 / R10: koszt Koni ze skarbca państwa przy rekrucie jednostek jezdnych.
+ *  R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5, było 5 — koszt surowcowy
+ *  rekrutacji jednostek (Koń to surowiec fizyczny), spójnie z units.json „Surowiec (ilość)”
+ *  przeskalowanym w tym samym zadaniu. / EN: ×5, was 5 — unit recruit resource cost
+ *  (Koń/horse is a physical resource), consistent with units.json "Surowiec (ilość)"
+ *  scaled in the same task. */
+export const MOUNT_UNIT_HORSE_STOCK_COST = 25;
 export const MOUNT_UNIT_HORSE_STOCK_KEY = 'kon';
 /** Jednostka wyłączona z kosztu Koni (rydwan na wołach, nie konie). */
 export const MOUNT_HORSE_EXEMPT_UNIT = 'Rydwan (woły)';

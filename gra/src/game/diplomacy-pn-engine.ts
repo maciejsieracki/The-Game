@@ -16,6 +16,9 @@ import {
   diplomacySumPn,
   diplomacyPnZloto,
   diplomacyPnSurowiecIlosc,
+  diplomacyNormalizeSurowiecIlosc,
+  diplomacyHandelSurowiecKrok,
+  diplomacyHandelSurowiecCenaJednostkowa,
   type DiplomacySumPnOptions,
   type WartoscPozycjaTyp,
   type PnRelacjaParams,
@@ -381,8 +384,13 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
   let receivePn = 0;
 
   // SUROW-TERYT: partner oddaje sztuki surowca (nie trwały dostęp civ-wide).
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): cena JEDNOSTKOWA (PN/szt., bez krok-floor) do
+  // sortowania/filtrowania „najtańszy pierwszy" — `diplomacyPnSurowiecIlosc(id, 1)` floruje
+  // TERAZ 1 szt. do 0 dla surowców z krokiem 5, co fałszywie wykluczyłoby WSZYSTKIE takie
+  // surowce z „Szybkiej umowy" (pnPerUnit>0 filter). `diplomacyHandelSurowiecCenaJednostkowa`
+  // to surowa stawka z cennika, niezależna od kroku — dokładnie to, czego tu trzeba.
   const theirQtyPriced = (input.theirQuantityResourceOptions ?? [])
-    .map(o => ({ ...o, pnPerUnit: diplomacyPnSurowiecIlosc(o.id, 1) ?? 0 }))
+    .map(o => ({ ...o, pnPerUnit: diplomacyHandelSurowiecCenaJednostkowa(o.id) ?? 0 }))
     .filter(o => o.pnPerUnit > 0 && o.maxQty > 0)
     .sort((a, b) => a.pnPerUnit - b.pnPerUnit);
   if (theirQtyPriced.length > 0) {
@@ -391,9 +399,14 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
     // „1 pakiet" = 10 sztuk — samo usunięcie pojęcia pakietu bez korekty tej stałej
     // cichutko skurczyłoby domyślną propozycję „Szybkiej umowy" 10×. Kotwica = 10 sztuk
     // (ten sam realny wolumen co dawniej), przycięta do realnego zapasu partnera.
-    const seedQty = Math.min(10, pick.maxQty);
-    receiveItems.push({ typ: 'surowiec_ilosc', id: pick.id, ilosc: seedQty });
-    receivePn = diplomacyPnSurowiecIlosc(pick.id, seedQty) ?? 0;
+    // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): dodatkowo floor do wielokrotności kroku
+    // handlu (5 szt. dla surowców dotkniętych ×5) — ilość WIDOCZNA w koszyku „Szybkiej
+    // umowy" i ilość FAKTYCZNIE wyceniona muszą się zgadzać.
+    const seedQty = diplomacyNormalizeSurowiecIlosc(pick.id, Math.min(10, pick.maxQty));
+    if (seedQty > 0) {
+      receiveItems.push({ typ: 'surowiec_ilosc', id: pick.id, ilosc: seedQty });
+      receivePn = diplomacyPnSurowiecIlosc(pick.id, seedQty) ?? 0;
+    }
   }
 
   const giveItems: BasketItem[] = [];
@@ -416,18 +429,22 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
 
   // C-DYP-SUROWCE-Q1=B: dopełniacz z surowców ILOŚCIOWYCH (sztuki) — tanie, dobrze
   // domykają bilans granularnie, zanim sięgniemy po złoto. Najtańszy PN/szt. pierwszy.
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): pnPerUnit z cennika surowego (bez krok-floor,
+  // patrz komentarz przy theirQtyPriced wyżej) — pętla przyrasta o KROK, nie o 1 szt., żeby
+  // `qty` zawsze wychodził już jako poprawna wielokrotność (5 dla surowców dotkniętych ×5).
   if (giveSum < fairMin && input.ourQuantityResourceOptions?.length) {
     const ourQtyPriced = input.ourQuantityResourceOptions
-      .map(o => ({ ...o, pnPerUnit: diplomacyPnSurowiecIlosc(o.id, 1) ?? 0 }))
-      .filter(o => o.pnPerUnit > 0 && o.maxQty > 0)
+      .map(o => ({ ...o, pnPerUnit: diplomacyHandelSurowiecCenaJednostkowa(o.id) ?? 0, krok: diplomacyHandelSurowiecKrok(o.id) }))
+      .filter(o => o.pnPerUnit > 0 && o.maxQty >= o.krok)
       .sort((a, b) => a.pnPerUnit - b.pnPerUnit);
 
     for (const item of ourQtyPriced) {
       if (giveSum >= fairMin) break;
       let qty = 0;
-      while (qty < item.maxQty && giveSum < fairMin) {
-        qty += 1;
-        giveSum += item.pnPerUnit;
+      const pnPerKrok = item.pnPerUnit * item.krok;
+      while (qty + item.krok <= item.maxQty && giveSum < fairMin) {
+        qty += item.krok;
+        giveSum += pnPerKrok;
       }
       if (qty > 0) giveItems.push({ typ: 'surowiec_ilosc', id: item.id, ilosc: qty });
     }
