@@ -18450,3 +18450,53 @@ runda 2 domknęła).
 
 **STATUS: temat R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA zamknięty merytorycznie (runda 1 + runda 2 UX
 oba PASS-WITH-NOTES). N3/N2/N4 to drobne poprawki do rundy 3, niepilne, nie blokują.**
+
+## P-HEKS-CENTRUM-OBCEGO-MIASTA + P-HEKS-SPOR-SASIAD (e4f1d893) — Evaluator: WERDYKT PASS-WITH-NOTES, 1 nota BLOKUJĄCA deploy, runda 2 dispatch (2026-08-13)
+
+Evaluator (Opus 5, `a1844d2fe3dcb5c27`) potwierdził rdzeń obu napraw: mechanizmy rozłączne
+(MUT-A/MUT-B izolowane do własnych sekcji nowego testu, zweryfikowane niezależnie), reguła
+"najbliższe miasto wygrywa" deterministyczna i stabilna także dla 3+ miast naraz (0 heksów-sierot,
+0 naruszeń), zero regresji wydajności (8,7ms dla 50 miast pop 8, brak ścieżki co-klatkowej — tylko
+w `updateHud()`/dblclick). Dosłowne zgłoszenie właściciela (centrum obcego miasta) zamknięte we
+wszystkich ścieżkach łącznie z panelem. Bramki: 10/10 zielone, dokładnie liczby Operatora.
+
+**⛔ NOTA A — BLOKUJĄCA deploy, panel miasta liczy BEZ reguły sąsiedzkiej, silnik Z NIĄ.**
+`gra/src/ui/cityPanel.ts:1083` (`computeView`) i `:3010` (`resolveCityHealth`) wołają
+`cityWorkedTilesForEconomy` BEZ 4. argumentu `excludeHexKeys`. Zmierzony rozjazd: silnik liczy
+A=3/B=2 pól, panel liczy A=4/B=2 — panel pokazuje tempo (Praca/Żywność/Złoto/Nauka/Kultura na
+górnym pasku miasta + plakietka wzrostu) niezgodne z własnym overlayem 👤 w tym samym panelu
+(który JEST poprawny). Wykluczenie centrum działa w panelu poprawnie — brakuje wyłącznie
+szerszej reguły sąsiedzkiej. Nie było zadeklarowane w nocie ograniczeń Operatora (nota
+wymieniała tylko 2 pliki, faktycznie niewpięte są 4 miejsca wołania).
+
+**NOTA B — osiągalna, potwierdzona empirycznie, mniejszy skutek niż w opisie Operatora:**
+`population-growth-v85.ts:446` bez `excludeHexKeys` — rebalans po wzroście populacji może
+posadzić 👤 na spornym polu, ale odczyt jest fail-closed (brak podwójnego liczenia), realny
+skutek: jeden slot robotnika marnowany po cichu. Sam parametr działa (kontrolowane), brakuje
+wyłącznie przekazania w tym jednym wołaniu.
+
+**NOTA C — nieszkodliwa, można zamknąć bez naprawy:** `auto-manage.ts:320-328` bez
+`excludeHexKeys`, ale wynik (`workedTiles`/`pracaSplit`) nigdzie nieużywany w repo poza
+`enqueue`.
+
+**NOTA D — niezadeklarowana, dziś nieszkodliwa (odczyt fail-closed):** punkt 5 zakresu ECHO A
+(czyszczenie kolizji WEWNĄTRZ-właścicielskich w `okolicaReczne`, nie tylko centrów) niewykonany
+w `reconcileWorkedTilesForOwner` — brudny wpis zostaje w save, ale nieszkodliwy.
+
+**NOTA E (dług testowy, do osobnego zlecenia):** wpięcie w silnik tury (`advanceCityEconomy`/
+`previewCityEconomy`) nie ma żadnego strażnika — mutacja usuwająca `excludeHexKeys` z obu
+przechodzi wszystkie 10 bramek bez śladu.
+
+**NOTA F (kosmetyczna, do backlogu):** `siblingClaimedHexKeysForCity` bez memoizacji (trywialny
+narzut), martwy strażnik `isOutpost`/`isFort` w `okolica.ts:116` (żadne dzisiejsze dane go nie
+ustawiają).
+
+**NOTA G (konsekwencja projektowa zgodna z ECHO A, do świadomości właściciela, NIE błąd):**
+reguła ma semantykę REZERWACJI, nie użycia — bliższe, mniejsze miasto blokuje sporne pole nawet
+gdy samo go nie obrabia (zmierzone: pole między A pop 3 i B pop 1 nie obrabia NIKT). Dosłowna,
+poprawna realizacja zatwierdzonego zakresu ECHO A, ale skutek ("małe miasto blokuje pole dużemu
+sąsiadowi") mógł nie być przewidziany przy wyborze litery — FYI, nie wymaga nowej decyzji.
+
+**STATUS: dispatch Operator runda 2 — Nota A (blokująca, dociągnąć `excludeHexKeys` przez nowy
+hook w panelu, wzorem istniejącego `cfg.getCityHealth`) + Nota B i D (jedno-linijkowe wołania,
+tania okazja do domknięcia w tej samej rundzie). Nota C bez zmian. Noty E/F/G do backlogu.**
