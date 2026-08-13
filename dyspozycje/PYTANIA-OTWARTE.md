@@ -18294,3 +18294,27 @@ przy tamtej decyzji.
 **Do rozstrzygnięcia (niepilne, nie blokuje bieżącej gry):** czy `wonders.json` → `petra.epokaWejscia`
 zmienić z 2 na 3 (zrównanie z resztą wzorca), czy zostawić jako świadomy projekt „cud wyprzedzający
 epokę". Czeka na Twoją decyzję, bez pośpiechu — osobny wątek od dzisiejszej głównej pracy.
+
+---
+
+## P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY — rozpoznanie dostarczone, przyczyna ustalona (2026-08-13)
+
+**Nie regresja kodu — martwe progi testu, nigdy nie przeliczone po świadomej decyzji.** Limit 7s
+(mapa standardowa) ustalony 2026-07-27 (`R-MAPGEN-KOLEJNOSC-Q3=A`, „jakość reliefu > czas"), ale
+6 dni później (2026-08-02, `AC-RZEKI-BEZ-LIMITERA`, świadoma decyzja właściciela) usunięto twarde
+capy generacji rzek — próg testu NIGDY nie został przeliczony po tej zmianie. Pomiar własny
+(2026-08-13, ten sam kontener): mapa standardowa 76s vs limit 7s (~11×), spójne z wcześniejszą
+obserwacją 114s (2026-08-12) — ten sam rząd wielkości, rozjazd potwierdzony i utrzymuje się.
+87-93% czasu to realna praca CPU w fazach `riversMain`+`riversFill`, nie oczekiwanie w kolejce —
+kontencja współdzielonego kontenera (inne sesje/agenty pracujące równolegle) to czynnik wtórny
+(~20-30%), nie dominujący. Dodatkowo: skalowanie `riversFill` wygląda na NADLINIOWE (2× heksów →
+19-24× czasu) — osobny, realny temat optymalizacyjny, pokrywający się z nierozwiązanym
+`PERF-SUPER-HUGE-PANGEA-80` w backlogu.
+
+**Bramka jest TWARDA (blokująca, exit 1)** — w przeciwieństwie do analogicznej sekcji `coastRatio`
+w tym samym pliku, którą już wcześniej świadomie złagodzono do `console.warn`.
+
+**Rekomendacja rozpoznania (nie decyzja, do ABC przy osobnej okazji, niepilne):** zaktualizować
+progi `STANDARD_GEN_MS_LIMIT`/`DUZY_GEN_MS_LIMIT` albo złagodzić je do miękkiego ostrzeżenia,
+wzorem już zastosowanego wzorca dla `coastRatio`. Nie blokuje bieżącej gry ani żadnego z ośmiu
+głównych tematów dzisiejszej sesji — czeka w tle.
