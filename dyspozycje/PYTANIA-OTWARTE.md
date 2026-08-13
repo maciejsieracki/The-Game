@@ -20021,3 +20021,36 @@ reużywa `.civ-emp-slider-label`/`.civ-emp-slider` bez modyfikacji, w 4 zakładk
 **TEMAT ZAMKNIĘTY.** Rekomendacja Evaluatora (test source-text przypinający 8 reguł per-vendor +
 hexy + wywołanie funkcji) zanotowana jako opcjonalne domknięcie pokrycia, nieblokujące — do
 rozważenia w przyszłej rundzie, nie teraz.
+
+## R-DROGA-WZOR-6-RAMION (0caa4471) — SCALONE, dispatch Evaluatora (2026-08-14)
+
+Implementacja zgodna ze specyfikacją designerską (patrz wpis wyżej): maska 6 bitów, jeden
+algorytm proceduralny, rekomputacja przez pojedynczy hook w `spawnImprovementMesh`. Bramki:
+`tsc` 0, `road-connectivity-test` 99/0 (pełny przegląd 64 masek + dowód geometryczny styku
+portów), 6 sąsiednich bramek zielonych, `logic-test` 213/213, mutacje 3/3 złapane.
+
+**Odstępstwo od spec-u zgłoszone przez Operatora (do potwierdzenia przy playteście, NIE
+blokujące):** maska=0 (droga bez żadnego sąsiada z drogą) rysuje mały placyk zamiast dosłownego
+"0 bitów = 0 ramion" z dokumentu — inaczej pierwszy postawiony odcinek drogi byłby całkowicie
+niewidoczny mimo zapłaconej Pracy. Predykat w `roadMaskIsLonePatch`, testowany, jednolinijkowe
+wycofanie jeśli właściciel uzna że powinno być dosłownie zgodne z dokumentem.
+
+**STATUS: dispatch Evaluatora (Opus 5, render/**).**
+
+## R-AUTO-PRACA-BUDZET-PROCENT (2bf4318a) — SCALONE wariant B, dispatch Evaluatora (2026-08-14)
+
+Implementacja zgodna z decyzją `Q1=B`: zastępuje WYŁĄCZNIE `UlepszeniaPerTurn` (przyciski 1/2/3)
+suwakiem 0-100%, liczonym od skumulowanej puli Pracy NA START tury. Flat-rezerwa 30 zostaje
+niezależnym dolnym progiem. AI dostał osobny parametr `maxItemsPerCity=1` — Operator odkrył że
+dawny domyślny limit AI (1 sztuka/miasto/turę) był NIEJAWNY (AI nigdy nie przekazywał
+`getMaxPerCity`, polegał na domyślnej wartości funkcji) i ujawnił go explicite zamiast wymuszać
+AI przez nowy mechanizm %, bo koszt-bazowy % nie odtwarza twardej gwarancji liczby (ważne dla
+determinizmu `ai-improvements-test`).
+
+Bramki: `tsc` 0, `auto-improvements-test` przepisany 21/21, nowy `ulepszenia-praca-percent-test`
+26/26 (migracja 1→33%/2→66%/3→100%, idempotentna), `ai-improvements-test` 33/33,
+`build-mode-hud-affordability-test` 7/7, `logic-test` 213/213. Potwierdzone współistnienie z
+równolegle scalonym tematem Dróg w tym samym `main.ts` (`road-connectivity-test` 99/0 po
+scaleniu obu).
+
+**STATUS: dispatch Evaluatora.**
