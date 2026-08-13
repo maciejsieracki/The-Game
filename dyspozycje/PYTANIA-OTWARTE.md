@@ -17420,3 +17420,59 @@ wyłącznie do pliku testowego (`git show fab0e21e --stat`).
 
 **STATUS: TEMAT ZAMKNIĘTY OSTATECZNIE** po 2 rundach (runda 1 = kod produkcyjny + parytet
 gracz-AI, runda 2 = naprawa fikcyjnej bramki testowej na realny strażnik).
+
+---
+
+## R-DYPLO-CENNIK-SKALA-5X-Q1 — Evaluator: FAIL (luka na trudności Łatwej), runda 2 dispatch (2026-08-13)
+
+**Punkty 1-2, 4-5, 7 zlecenia potwierdzone WŁASNYM kodem (459 asercji, 3 niezależne pakiety,
+w tym w prawdziwym DOM/jsdom):** krok=5 dla dokładnie 12 surowców, krok=1 dla Złoto/Węgiel;
+sweep 357 kombinacji ilość×max — zawsze wielokrotność 5, nigdy > raw/max; oba bugi
+znalezione-po-drodze przez Operatora potwierdzone naprawione (sweep 8232 przypadków dla drugiego
+— oryginał nigdy nie zwrócił nie-wielokrotności dla surowców z krokiem 5); save/load self-heal
+poprawny; 6 mutacji własnych złapanych przez 6/9 plików testowych.
+
+**BLOKUJĄCE — punkt 6 zlecenia (parytet AI) odpowiada „NIE".** `clampAiResourceTradeCommand`
+(`gra/src/game/diplomacy-ai-balance.ts:235`, **plik SPOZA 7 zmienionych przez Operatora**) przycina
+ilość do stawki produkcji sprzedawcy BEZ florowania do kroku (`Math.min(cmd.pakietyPerTura,
+maxPakietyPerTura)`, ta sama klasa błędu co Operator już raz naprawił w `main.ts:15113`, tu
+pominięta). Żywa ścieżka: `enqueueNegotiationFromAiCmd` (`main.ts:12982`, komenda
+`zaproponuj_handel_surowiec`). Istniejący floor w `trimResourcePaymentTradeForZeroBalance` zwykle
+ratuje sytuację, ALE jest bramkowany trudnością (`aiOfferTargetsZeroBalance('easy') === false`) —
+**na trudności Łatwej (wybieralnej) NIE dotyka payloadu wcale.**
+
+**Zmierzone przez Evaluatora end-to-end (dosłowne):**
+```
+FAIL: easy/rate=7: POKAZANE 7 szt./ture == DOSTARCZONE 5 szt./ture
+FAIL: easy/rate=9: POKAZANE 9 szt./ture == DOSTARCZONE 5 szt./ture
+(normal i hard: wszystkie przechodzą — trim floruje)
+```
+Skutek dla gracza na Łatwym: AI proponuje „7 szt./turę", gracz akceptuje,
+`buildHandelSurowiecCykliczny` floruje dostawę do 5, ale `zaplataPerTura` przenosi cenę
+NIEZMIENIONĄ (wyliczoną dla 7) — gracz płaci za 7-9, dostaje 5/turę przez cały deal, co turę.
+Wyzwolenie: stawka produkcji sprzedawcy AI niebędąca wielokrotnością 5.
+
+**Poprawka (jednolinijkowa, lustrzana do już istniejącego fixu w `main.ts:15113`):**
+```ts
+let pakietyPerTura = diplomacyNormalizeSurowiecIlosc(
+  cmd.surowiecKey, Math.min(cmd.pakietyPerTura, maxPakietyPerTura));
+```
+Istniejący `if (pakietyPerTura <= 0) return null` (linia ~289) sam domknie oferty poniżej kroku.
+
+**Notatki niepilne (do backlogu, NIE blokują tej rundy):**
+- N1: `maxAffordableQty`/`clampNegotiationPayloadToRealResources` (`diplomacy-ai-balance.ts:491`,
+  `main.ts:8129-8130,13197,13518`) — ta sama klasa braku floora, wartościowo neutralne (PN floruje
+  identycznie), ale wyświetlana liczba może przewyższać dostarczoną.
+- N2: `readSweetenerGiveItems` w modalu negocjacji — „słodzik" traktatowy bez floor/step, pozycja-
+  widmo (0 PN, 0 transferu, nic nie ginie), ale niespójna z koszykiem głównym.
+- N3: `empireDiploResourceFlowPerTurn` — panel magazynu czyta stary `pakietyPerTura` do pierwszego
+  ticku po self-healu, wyłącznie wyświetlanie.
+- N4: legacy sejw z dealem poniżej kroku (np. 3 żelaza/turę) po self-healu daje 0 →
+  `sellerAtFault` co turę bez końca zamiast rozwiązania umowy — sprzedawca AI karany wiarygodnością
+  za retroaktywną zmianę reguł. Niskie prawdopodobieństwo, wymaga świadomej decyzji (osobne
+  zgłoszenie jeśli się potwierdzi jako realny problem).
+- N5 (informacyjna): mutant M7 (refaktor binary search) przeżył wszystkie testy, ale sweep 8232
+  przypadków wykazał 0 różnic — mutant równoważny, nie luka pokrycia.
+
+**STATUS: dispatch rundy 2 (mała, jednolinijkowa) w toku** — zakres WYŁĄCZNIE blokujący punkt
+(`clampAiResourceTradeCommand`). N1-N5 poza zakresem, zarejestrowane do backlogu.
