@@ -19202,3 +19202,39 @@ konkretnym zakresie linii (7 vs "kilkunastu"), do wyrównania przy okazji; (2) F
 main.ts przesunięte o 4/34 po commicie 053debc9 wstawionym między — treść merytoryczna
 prawdziwa, tylko liczby lekko nieaktualne, do odświeżenia przy najbliższej okazji. Żadna nie
 blokuje odbioru przez designera. **ZAMKNIĘTE.**
+
+## Fort/straznica krok 2 (a31c4164) — Evaluator: WERDYKT FAIL, dispatch runda 2 (2026-08-13)
+
+Bramki komplet zielone (39/39 nowy test, 213/213 logic, wszystkie sąsiednie), logika
+`foundingNodesForOwner`/`isHexReservedByRivalFort`/wpięcie 3 miejsc budowy/save-load
+POPRAWNE — 3 z 8 mutacji kontrolnych złapane. Ale 5 z 8 NIE złapanych, w tym mutacja
+kluczowa: **wyłączenie CAŁEJ funkcji (fort przestaje rozszerzać zasięg zakładania) przechodzi
+przez 39/39, 28/28, 213/213 bez ani jednej czerwonej asercji.**
+
+**BLOKUJĄCE:**
+- **F1** — gdy miasto powstaje NA heksie WŁASNEGO fortu/posterunka (najbardziej naturalne użycie
+  — "postaw posterunek, żeby tam założyć miasto"), Macierz B kasuje improvement z mapy, ale
+  NIKT nie usuwa wpisu z `fortNodes` — zostaje węzeł-widmo, dalej liczony do zasięgu (promień 10),
+  dalej rezerwujący heksy przeciw cudzym fortom, zapisywany do save.
+- **F2** — `applyFortTakeoverAndEvacuation` pomija 2 zabezpieczenia z wzorca do którego się sam
+  odwołuje (`evictForeignUnitsFromCityHexes`): brak `canUnitOccupyCityHex` (jednostka może
+  wylądować na heksie CUDZEGO miasta) i brak `checkBarbCampDestroyedAt` (może wylądować na żywym
+  obozie barbarzyńskim bez rozliczenia) — plus skala teleportu 5-15 heksów zamiast 1 (sąsiedni),
+  bez sprawdzania przejezdności trasy.
+- **F4** — `planExpansionFortBuilding` wpięte TAKŻE w `decideDefensiveCopyTurn` (Miasta-Państwa)
+  BEZ bramki `opts.defensiveCopy`, wbrew konsekwentnemu wzorcowi reszty `ai.ts` gdzie MP są
+  wyłączone z ekspansji. Niezadeklarowana zmiana zachowania frakcji bez decyzji właściciela.
+
+**Do naprawy przy okazji:** F3 (AI `return` zamiast `continue` przy odrzuconym heksie → co turę
+ta sama, zawsze odrzucana komenda, zmarnowany slot ekspansji), F5 (komentarz "posterunek tańszy"
+fałszywy — koszt_praca posterunek=30 > fort=25, realna przewaga to dostępność wcześniej w grze
+nie cena), F6 (odsyłacz do `game/save.ts` pusty, meta faktycznie w `main.ts:23008`), F7 (edge
+`contestedUseless` nigdy nie przeliczane, świadome ale do odnotowania), test C3/C3b ma
+samo-zaliczające się gałęzie `else assert(true)`.
+
+**STATUS: dispatch Operatora rundy 2 (Sonnet 5) w toku** — kolejność wg kosztu: (1) czyszczenie
+`fortNodes` na heksie nowego miasta, (2) dopięcie `canUnitOccupyCityHex`+`checkBarbCampDestroyedAt`
+do ewakuacji, (3) bramka `opts.defensiveCopy` w `planExpansionFortBuilding` (przywrócenie
+wzorca reszty pliku, NIE nowa decyzja gameplayowa), (4) `continue` zamiast `return` + pominięcie
+heksów z już-fortem, (5) strażniki tekstowe main.ts dla 3 newralgicznych miejsc, (6) poprawki F5/F6,
+(7) usunięcie samo-zaliczających gałęzi testu.
