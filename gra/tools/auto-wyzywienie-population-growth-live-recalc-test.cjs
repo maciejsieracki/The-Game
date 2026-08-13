@@ -53,6 +53,23 @@ function sliceFunctionBody(source, sigMarker) {
   return bodyStart >= 0 && bodyEnd > bodyStart ? source.slice(bodyStart, bodyEnd) : null;
 }
 
+// RUNDA 2 (Nota A): wycina CAŁĄ instrukcję blokową (np. `for (...) { ... }`) zaczynającą się od
+// headerMarker, WŁĄCZNIE z nawiasami klamrowymi -- do wykonania jako prawdziwy fragment main.ts
+// (nie reimplementacja), analogicznie do sliceFunctionBody powyżej (ciała funkcji).
+function sliceStatementBlock(source, headerMarker) {
+  const headerIdx = source.indexOf(headerMarker);
+  if (headerIdx < 0) return null;
+  const braceOpen = source.indexOf('{', headerIdx);
+  if (braceOpen < 0) return null;
+  let depth = 0, end = -1;
+  for (let i = braceOpen; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  return end >= 0 ? source.slice(headerIdx, end + 1) : null;
+}
+
 // ---------------------------------------------------------------------------
 // Część 1: wiring statyczny -- population-growth-v85.ts woła onCityPopulationChanged
 // WEWNĄTRZ `if (city.population !== before)`, PO rebalanceWorkersAfterPopulationChange/
@@ -90,13 +107,17 @@ function sliceFunctionBody(source, sigMarker) {
 }
 
 // ---------------------------------------------------------------------------
-// Część 2: wiring main.ts -- wywołanie applyPostCentralPopulationGrowth({...}) przekazuje
-// onCityPopulationChanged, który woła applyLiveSafeRationForCity.
+// Część 2 (RUNDA 2, Nota A -- Evaluator P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT):
+// wywołanie applyPostCentralPopulationGrowth({...}) w main.ts NIE woła applyLiveSafeRationForCity
+// PER-MIASTO od razu w callbacku (to był błąd rundy 1 -- miasta B..N mają wtedy jeszcze STARE
+// populacje w previewCityEconomy wołanym dla miasta A) -- callback ma TYLKO zbierać cityId do
+// Setu; realne zbiorcze przeliczenie musi stać PO wywołaniu applyPostCentralPopulationGrowth,
+// czyli PO zakończeniu CAŁEJ pętli wzrostu (wszystkie miasta mają już finalną populację).
 // ---------------------------------------------------------------------------
 {
   const callIdx = src.indexOf('applyPostCentralPopulationGrowth({');
   ok(callIdx >= 0, 'znaleziono wywołanie applyPostCentralPopulationGrowth({...}) w main.ts');
-  let argsBody = '';
+  let argsBody = '', bodyEndIdx = -1;
   if (callIdx >= 0) {
     const braceOpen = src.indexOf('{', callIdx);
     let depth = 0, bodyStart = -1, bodyEnd = -1;
@@ -106,19 +127,33 @@ function sliceFunctionBody(source, sigMarker) {
       else if (ch === '}') { depth--; if (depth === 0) { bodyEnd = i; break; } }
     }
     argsBody = bodyStart >= 0 && bodyEnd > bodyStart ? src.slice(bodyStart, bodyEnd) : '';
+    bodyEndIdx = bodyEnd;
   }
-  ok(argsBody.includes('onCityPopulationChanged:') && argsBody.includes('applyLiveSafeRationForCity('),
-    'wywołanie applyPostCentralPopulationGrowth w main.ts przekazuje onCityPopulationChanged, który woła applyLiveSafeRationForCity');
+  ok(argsBody.includes('onCityPopulationChanged:'),
+    'wywołanie applyPostCentralPopulationGrowth w main.ts przekazuje onCityPopulationChanged');
+  ok(argsBody.includes('grownCityIdsForLiveRation.add(cityId)'),
+    'NOTA A: onCityPopulationChanged W ARGUMENTACH WOŁANIA (podczas pętli wzrostu) TYLKO zbiera cityId do Setu -- nie woła applyLiveSafeRationForCity od razu');
+  ok(!argsBody.includes('applyLiveSafeRationForCity('),
+    'NOTA A: argumenty applyPostCentralPopulationGrowth NIE wołają applyLiveSafeRationForCity bezpośrednio (to był błąd rundy 1)');
+
+  // Zbiorcza pętla PO wywołaniu (poza argsBody, w kodzie następującym PO zamknięciu wywołania).
+  const afterCall = bodyEndIdx >= 0 ? src.slice(bodyEndIdx, bodyEndIdx + 1000) : '';
+  ok(afterCall.includes('for (const grownCityId of grownCityIdsForLiveRation)'),
+    'NOTA A: PO applyPostCentralPopulationGrowth następuje pętla po grownCityIdsForLiveRation (zbiorcze przeliczenie)');
+  ok(afterCall.includes('applyLiveSafeRationForCity(grownCityId)'),
+    'NOTA A: pętla PO applyPostCentralPopulationGrowth woła applyLiveSafeRationForCity dla każdego zebranego miasta');
 }
 
 // ---------------------------------------------------------------------------
-// Część 3: wiring 4 miejsc `seedCityOwnerDefaults(...)`, które mogą przekazać miasto graczowi
+// Część 3: wiring miejsc `seedCityOwnerDefaults(...)`, które mogą przekazać miasto graczowi
 // -- każde woła applyLiveSafeRationForCity w bezpośrednim sąsiedztwie (max 400 znaków dalej).
+// UWAGA (RUNDA 2, Nota B): `resolveSiegeSurrender` NIE jest już w tej pętli -- jej wywołanie
+// applyLiveSafeRationForCity zostało PRZENIESIONE daleko od seedCityOwnerDefaults (za
+// endMapSiege, patrz Część 3b niżej), więc test "sąsiedztwa 400 znaków" celowo go pomija.
 // ---------------------------------------------------------------------------
 {
   const seedCallSites = [
     { label: 'tryFoundPlayerCityAt (founding gracza)', marker: 'function tryFoundPlayerCityAt(' },
-    { label: 'resolveSiegeSurrender (kapitulacja głodowa)', marker: 'function resolveSiegeSurrender(' },
     { label: 'annexCityStateToOwner (wchłonięcie dyplomatyczne)', marker: 'function annexCityStateToOwner(' },
   ];
   for (const site of seedCallSites) {
@@ -129,6 +164,31 @@ function sliceFunctionBody(source, sigMarker) {
     const window = body && seedIdx >= 0 ? body.slice(seedIdx, seedIdx + 400) : '';
     ok(window.includes('applyLiveSafeRationForCity('),
       `${site.label}: applyLiveSafeRationForCity(...) w sąsiedztwie seedCityOwnerDefaults(...) (max 400 znaków dalej)`);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Część 3b (NOTA B, runda 2 Evaluatora): w `resolveSiegeSurrender` applyLiveSafeRationForCity
+  // musi stać PO endMapSiege(cityId) (miasto ma wtedy już oblegane=false -> trafia do filtra
+  // `playerCities` w getMaxSafePoziomRacjiForPlayerCity, zamiast liczyć się zdegenerowanym
+  // fallbackiem), i PO ustaleniu finalnej populacji miasta (city.population = Math.max(1, ...)
+  // w gałęzi przejęcia) -- "najpierw ustal finalny stan miasta, potem przelicz na tej podstawie".
+  // ---------------------------------------------------------------------------
+  {
+    const body = sliceFunctionBody(src, 'function resolveSiegeSurrender(cityId: string): void {');
+    ok(body !== null, 'znaleziono funkcję resolveSiegeSurrender (Nota B)');
+
+    const lastEndMapSiegeIdx = body ? body.lastIndexOf('endMapSiege(cityId);') : -1;
+    const applyIdx = body ? body.indexOf('applyLiveSafeRationForCity(cityId)') : -1;
+    const popFixIdx = body ? body.indexOf('city.population = Math.max(1, city.population);') : -1;
+
+    ok(lastEndMapSiegeIdx >= 0, 'resolveSiegeSurrender: woła endMapSiege(cityId) (Nota B)');
+    ok(applyIdx >= 0, 'resolveSiegeSurrender: woła applyLiveSafeRationForCity(cityId) (Nota B)');
+    ok(popFixIdx >= 0, 'resolveSiegeSurrender: ustawia city.population = Math.max(1, city.population) (Nota B)');
+
+    ok(popFixIdx >= 0 && lastEndMapSiegeIdx >= 0 && popFixIdx < lastEndMapSiegeIdx,
+      'NOTA B: city.population = Math.max(1, ...) w resolveSiegeSurrender ustawiane PRZED endMapSiege(cityId) (finalny stan miasta przed przeliczeniem)');
+    ok(applyIdx >= 0 && lastEndMapSiegeIdx >= 0 && applyIdx > lastEndMapSiegeIdx,
+      'NOTA B: applyLiveSafeRationForCity(cityId) w resolveSiegeSurrender stoi PO (ostatnim) endMapSiege(cityId), NIE przed -- inaczej miasto ma jeszcze oblegane=true i wypada z filtra playerCities');
   }
 
   // applyCityCaptureToMap (podbój w bitwie): return type z brace-delimited obiektem POPRZEDZA
@@ -272,6 +332,182 @@ if (fnBody && M.applyPostCentralPopulationGrowth) {
   ok(dirtyCalls === 1, `markCityStateDirty wołane dokładnie raz w trakcie tego przeliczenia (got=${dirtyCalls})`);
 } else {
   ok(false, 'Część 4 pominięta -- brak fnBody lub M.applyPostCentralPopulationGrowth (patrz FAIL wyżej)');
+}
+
+// ---------------------------------------------------------------------------
+// Część 5 (RUNDA 2, NOTA A -- Evaluator P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT):
+// SCENARIUSZ WIELOMIASTOWY. DWA miasta gracza rosną w TEJ SAMEJ turze, w JEDNYM wywołaniu
+// applyPostCentralPopulationGrowth. Bug rundy 1: `getMaxSafePoziomRacjiForPlayerCity` liczy
+// previewCityEconomy CAŁEGO imperium gracza -- gdy wołana PER-MIASTO W TRAKCIE pętli wzrostu
+// (stary wzorzec), miasto przetworzone jako PIERWSZE (tu: cA) widzi jeszcze STARĄ (sprzed-
+// wzrostu) populację miasta przetwarzanego PO nim (tu: cB). Naprawa: callback tylko zbiera
+// cityId do Setu; realne przeliczenie (pętla WYCIĘTA z main.ts, nie reimplementacja -- patrz
+// forLoopStmt niżej) startuje dopiero PO zakończeniu CAŁEJ pętli wzrostu, gdy WSZYSTKIE miasta
+// mają już finalną populację.
+//
+// Test dowodzi tego NAJBEZPOŚREDNIEJ możliwej rzeczy: jaką populację miasta cB "widzi"
+// przeliczenie maxSafe dla miasta cA w chwili wywołania -- bez polegania na dalszych,
+// sekwencyjnie zależnych efektach (kolejność w Secie wpływa też na to, jaki poziomRacji ma
+// SĄSIEDNIE miasto w danym momencie -- to osobna, wcześniej istniejąca właściwość wspólnej
+// puli imperium, nie przedmiot Noty A).
+// ---------------------------------------------------------------------------
+{
+  const forLoopMarker = 'for (const grownCityId of grownCityIdsForLiveRation) {';
+  const forLoopStmt = sliceStatementBlock(src, forLoopMarker);
+  ok(forLoopStmt !== null,
+    'main.ts: znaleziono zbiorczą pętlę PO applyPostCentralPopulationGrowth (Nota A, Część 5) -- cofnięcie fixu usuwa ten fragment i wywala tę sekcję');
+
+  function makeTwoCityFixture() {
+    const cA = {
+      id: 'cA', ownerId: 0, population: 1, poziomRacji: 6,
+      rationMigratedV114: true, wzrostUlamkowy: 0.99, turyBezDoplaty: 0,
+      autoWyzywienie: true, manpower: 0,
+    };
+    const cB = {
+      id: 'cB', ownerId: 0, population: 1, poziomRacji: 6,
+      rationMigratedV114: true, wzrostUlamkowy: 0.99, turyBezDoplaty: 0,
+      autoWyzywienie: true, manpower: 0,
+    };
+    const cities2 = [cA, cB];
+    const mkTick = (cityId) => ({
+      cityId, ownerId: 0, oblegany: false,
+      zywnoscBrutto: 12, kosztRacji: 12, bilansLokalny: 0, zdrowie: 0,
+      spichlerzCeramika: false, spichlerzSol: false, maSpichlerz: false, maSpichlerzII: false,
+    });
+    const econ2 = { perCity: [mkTick('cA'), mkTick('cB')], growth: 0, starved: 0 };
+    const efResult2 = {
+      perOwner: [{
+        perCityRows: [{ cityId: 'cA' }, { cityId: 'cB' }],
+        fedByCityId: new Map([['cA', true], ['cB', true]]),
+      }],
+    };
+    return { cities2, econ2, efResult2 };
+  }
+  const rationParams2 = { r0: 0, r1: 6, r2: 12, r3: 20, r4: 30, r5: 42, r6: 56 };
+  const growthOpts2 = {
+    map: {}, territoryNodes: [],
+    econParams: { akweduktProgLudnosci: 5, spichlerzProgLudnosci: 8, akweduktMaxLudnosci: 12 },
+    rationParams: rationParams2,
+  };
+
+  // --- Scenariusz "PRZED Notą A" (runda 1): applyLiveSafeRationForCity wołane NATYCHMIAST w
+  // callbacku, W TRAKCIE pętli wzrostu -- odtwarza dokładnie błąd zgłoszony przez Evaluatora.
+  let bugSnapshotCbPopWhenAProcessed = null;
+  {
+    const { cities2, econ2, efResult2 } = makeTwoCityFixture();
+    const snapshots = [];
+    M.applyPostCentralPopulationGrowth({
+      cities: cities2, econ: econ2, efResult: efResult2, ...growthOpts2,
+      onCityPopulationChanged: (cityId) => {
+        // Podglądamy populację WSZYSTKICH miast w chwili wywołania -- dokładnie to, co
+        // getMaxSafePoziomRacjiForPlayerCity/previewCityEconomy realnie widzą.
+        snapshots.push({
+          forCity: cityId,
+          cBPopulation: cities2.find(c => c.id === 'cB').population,
+        });
+      },
+    });
+    ok(snapshots.length === 2,
+      `(wzorzec SPRZED Noty A) 2 wywołania onCityPopulationChanged podczas pętli wzrostu (got=${snapshots.length})`);
+    const cAsnap = snapshots.find(s => s.forCity === 'cA');
+    ok(!!cAsnap, '(wzorzec SPRZED Noty A) wywołanie zaszło dla cA');
+    bugSnapshotCbPopWhenAProcessed = cAsnap ? cAsnap.cBPopulation : null;
+    ok(bugSnapshotCbPopWhenAProcessed === 1,
+      `BUG (wzorzec SPRZED Noty A): przy przeliczaniu cA (przetworzone PIERWSZE w pętli), cB ma jeszcze STARĄ populację 1 zamiast finalnej 2 (got=${bugSnapshotCbPopWhenAProcessed})`);
+  }
+
+  // --- Scenariusz "PO Nocie A" (ten test celowo wykonuje PRAWDZIWY fragment main.ts wycięty
+  // powyżej -- forLoopStmt -- nie reimplementację): callback TYLKO zbiera cityId do Setu;
+  // zbiorcza pętla startuje PO zakończeniu applyPostCentralPopulationGrowth.
+  let fixedSnapshotCbPopWhenAProcessed = null;
+  {
+    const { cities2, econ2, efResult2 } = makeTwoCityFixture();
+    const snapshots = [];
+    const grownCityIdsForLiveRation = new Set();
+    M.applyPostCentralPopulationGrowth({
+      cities: cities2, econ: econ2, efResult: efResult2, ...growthOpts2,
+      onCityPopulationChanged: cityId => grownCityIdsForLiveRation.add(cityId),
+    });
+    if (forLoopStmt) {
+      const spyApplyLiveSafeRationForCity = (cityId) => {
+        snapshots.push({
+          forCity: cityId,
+          cBPopulation: cities2.find(c => c.id === 'cB').population,
+        });
+      };
+      const runLoop = new Function(
+        'grownCityIdsForLiveRation', 'applyLiveSafeRationForCity', forLoopStmt,
+      );
+      runLoop(grownCityIdsForLiveRation, spyApplyLiveSafeRationForCity);
+    }
+    ok(snapshots.length === 2,
+      `(NOTA A, naprawione) 2 wywołania w zbiorczej pętli PO applyPostCentralPopulationGrowth (got=${snapshots.length})`);
+    const cAsnap = snapshots.find(s => s.forCity === 'cA');
+    ok(!!cAsnap, '(NOTA A, naprawione) wywołanie zaszło dla cA');
+    fixedSnapshotCbPopWhenAProcessed = cAsnap ? cAsnap.cBPopulation : null;
+    ok(fixedSnapshotCbPopWhenAProcessed === 2,
+      `NAPRAWIONE (Nota A): przy przeliczaniu cA (nadal PIERWSZE w Secie, ale PO całej pętli wzrostu), cB ma już FINALNĄ populację 2, nie STARĄ 1 (got=${fixedSnapshotCbPopWhenAProcessed})`);
+  }
+
+  // SEDNO ZGŁOSZENIA (kontrast buggy vs naprawione): to WYŁĄCZNIE zmiana MOMENTU wywołania
+  // (Nota A) zmienia, jaką populację cB "widzi" przeliczenie dla cA -- ten sam fixture, ten
+  // sam callback wewnętrznie, jedyna różnica to czy applyLiveSafeRationForCity woła się W
+  // TRAKCIE czy PO pętli wzrostu.
+  ok(bugSnapshotCbPopWhenAProcessed !== null && fixedSnapshotCbPopWhenAProcessed !== null
+    && bugSnapshotCbPopWhenAProcessed !== fixedSnapshotCbPopWhenAProcessed,
+    `SEDNO: naprawa Noty A faktycznie ZMIENIA obserwowaną populację cB w momencie przeliczania cA (przed=${bugSnapshotCbPopWhenAProcessed}, po=${fixedSnapshotCbPopWhenAProcessed}) -- dowód, że test wykrywa TĘ konkretną poprawkę`);
+
+  // Dodatkowo, PO naprawionym (zbiorczym) przebiegu, RZECZYWISTE applyLiveSafeRationForCity
+  // (ciało wycięte z main.ts w Części 4, `fnBody`) uruchomione dla OBU miast musi zejść z
+  // domyślnego poziomu 6 -- przy wspólnej puli imperium przynajmniej JEDNO z dwóch miast musi
+  // pokryć deficyt wynikający z podwojonej populacji obu miast (12 produkcji vs 24 kosztu przy
+  // niezmienionym poziomie 6 dla KAŻDEGO z nich x2 miasta = korekta nieunikniona).
+  if (fnBody) {
+    const { cities2, econ2, efResult2 } = makeTwoCityFixture();
+    const grownCityIdsForLiveRation = new Set();
+    M.applyPostCentralPopulationGrowth({
+      cities: cities2, econ: econ2, efResult: efResult2, ...growthOpts2,
+      onCityPopulationChanged: cityId => grownCityIdsForLiveRation.add(cityId),
+    });
+    ok(cities2.every(c => c.population === 2),
+      `(kontrola założenia Część 5) OBA miasta faktycznie urosły do Ludność 2 w tym samym wywołaniu (got=${cities2.map(c => c.population).join(',')})`);
+    if (forLoopStmt) {
+      const realApplyLiveSafeRationForCity = (cityId) => {
+        const ctx = {
+          cities: cities2,
+          isCityAutoWyzywienieEnabled: M.isCityAutoWyzywienieEnabled,
+          ensureCityRationDefaults: M.ensureCityRationDefaults,
+          getCityRationLevel: M.getCityRationLevel,
+          markCityStateDirty: () => {},
+          getMaxSafePoziomRacjiForPlayerCity: (cid) => M.maxSafePoziomRacjiForCity({
+            cityId: cid, ownerId: 0, cities: cities2, econ: econ2, zapasyPrzed: 0,
+            rationParams: rationParams2,
+          }),
+        };
+        const fn = new Function(
+          'cities', 'isCityAutoWyzywienieEnabled', 'ensureCityRationDefaults',
+          'getCityRationLevel', 'markCityStateDirty', 'getMaxSafePoziomRacjiForPlayerCity', 'cityId',
+          fnBody,
+        );
+        fn(
+          ctx.cities, ctx.isCityAutoWyzywienieEnabled, ctx.ensureCityRationDefaults,
+          ctx.getCityRationLevel, ctx.markCityStateDirty, ctx.getMaxSafePoziomRacjiForPlayerCity, cityId,
+        );
+      };
+      const runLoop = new Function(
+        'grownCityIdsForLiveRation', 'applyLiveSafeRationForCity', forLoopStmt,
+      );
+      runLoop(grownCityIdsForLiveRation, realApplyLiveSafeRationForCity);
+      const cAFinal = cities2.find(c => c.id === 'cA').poziomRacji;
+      const cBFinal = cities2.find(c => c.id === 'cB').poziomRacji;
+      ok(cAFinal < 6 || cBFinal < 6,
+        `NAPRAWIONE: PO zbiorczym przeliczeniu OBU miast, przynajmniej jedno ma poziom Racji obniżony poniżej startowego 6 (żeby pokryć realny wspólny deficyt Ludność 2 dla obu miast) (cA=${cAFinal}, cB=${cBFinal})`);
+    } else {
+      ok(false, 'Część 5 (kontrola realnej pętli) pominięta -- brak forLoopStmt (patrz FAIL wyżej)');
+    }
+  } else {
+    ok(false, 'Część 5 (kontrola realnej pętli) pominięta -- brak fnBody (patrz FAIL w Części 4)');
+  }
 }
 
 // Sprzątanie plików tymczasowych esbuild.

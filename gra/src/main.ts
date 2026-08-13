@@ -11452,6 +11452,16 @@ async function boot(): Promise<void> {
         return;
       }
       const newOwner = besiegerOwnerForCity(city);
+      // NOTA B (runda 2, Evaluator): flaga zamiast wywołania applyLiveSafeRationForCity TU w
+      // miejscu -- wywołanie przenosimy PO endMapSiege (patrz niżej), żeby nie liczyć
+      // maxSafe, gdy miasto ma jeszcze `oblegane=true` (wypada wtedy z filtra
+      // `playerCities` w getMaxSafePoziomRacjiForPlayerCity i liczy się zdegenerowanym
+      // fallbackiem). / EN: flag instead of calling applyLiveSafeRationForCity here in
+      // place -- the call moves to AFTER endMapSiege below, so maxSafe is never computed
+      // while the city still has `oblegane=true` (which drops it out of the
+      // `playerCities` filter in getMaxSafePoziomRacjiForPlayerCity and falls back to a
+      // degenerate result).
+      let citySiegeOwnerChanged = false;
       if (newOwner !== null && newOwner !== city.ownerId) {
         const oldOwner = city.ownerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
@@ -11473,7 +11483,9 @@ async function boot(): Promise<void> {
         seedCityOwnerDefaults(city);
         // P-AUTO-WYZYWIENIE-BUG2: kapitulacja głodowa może przekazać miasto graczowi --
         // no-op dla AI (applyLiveSafeRationForCity sprawdza ownerId !== 0 na starcie).
-        applyLiveSafeRationForCity(city.id);
+        // NOTA B: samo wywołanie przeniesione PO endMapSiege -- tu tylko odnotowujemy, że
+        // ta gałąź (zmiana właściciela) zaszła.
+        citySiegeOwnerChanged = true;
         city.population = Math.max(1, city.population);
         for (let i = units.length - 1; i >= 0; i--) {
           const u = units[i]!;
@@ -11503,6 +11515,11 @@ async function boot(): Promise<void> {
         showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
       }
       endMapSiege(cityId);
+      // NOTA B: applyLiveSafeRationForCity woła się TU -- PO ustaleniu finalnego stanu
+      // miasta (population fix wyżej w gałęzi przejęcia) I PO endMapSiege (city.oblegane
+      // już false, więc miasto trafia do filtra `playerCities` w
+      // getMaxSafePoziomRacjiForPlayerCity zamiast liczyć się zdegenerowanym fallbackiem).
+      if (citySiegeOwnerChanged) applyLiveSafeRationForCity(cityId);
       syncUnitsRender();
       cityRenderer.sync(cities, _cityRenderOpts());
       refreshFog();
@@ -24651,6 +24668,22 @@ async function boot(): Promise<void> {
                 });
               }
               const efParamsGrowth = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+              // NOTA A (runda 2, Evaluator P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT):
+              // zbieraj cityId rosnących miast zamiast wołać applyLiveSafeRationForCity
+              // PER-MIASTO w trakcie tej pętli -- getMaxSafePoziomRacjiForPlayerCity liczy
+              // previewCityEconomy CAŁEGO imperium gracza, więc wywołanie dla miasta A W
+              // TRAKCIE pętli widziałoby jeszcze STARE (sprzed-wzrostu) populacje miast B..N,
+              // zaniżając ich koszt Racji i zawyżając maxSafe dla A. Zbiorcze przeliczenie
+              // (patrz pętla PO wywołaniu poniżej) startuje dopiero, gdy WSZYSTKIE miasta w
+              // tej turze mają już finalną populację.
+              // / EN: collect growing cities' cityId instead of calling
+              // applyLiveSafeRationForCity PER-CITY during this loop --
+              // getMaxSafePoziomRacjiForPlayerCity computes previewCityEconomy for the
+              // player's WHOLE empire, so calling it for city A DURING the loop would still
+              // see cities B..N's STALE (pre-growth) population, understating their ration
+              // cost and overstating A's maxSafe. The batched recompute (loop right after the
+              // call below) only starts once EVERY city has its final population this turn.
+              const grownCityIdsForLiveRation = new Set<string>();
               applyPostCentralPopulationGrowth({
                 cities,
                 econ,
@@ -24667,12 +24700,17 @@ async function boot(): Promise<void> {
                 ownerEraByOwner: new Map(
                   [...new Set(cities.map(c => c.ownerId))].map(oid => [oid, empireEpochForOwner(oid)]),
                 ),
-                // P-AUTO-WYZYWIENIE-BUG2 (Maciej ECHO A): przelicz bezpieczny poziom Racji
-                // PO faktycznym przyroście populacji tej tury -- `applyLiveSafeRationForCity`
-                // no-opuje sama dla miast AI (city.ownerId !== 0), więc callback jest tu
-                // bezpieczny dla wszystkich właścicieli.
-                onCityPopulationChanged: cityId => applyLiveSafeRationForCity(cityId),
+                // P-AUTO-WYZYWIENIE-BUG2 (Maciej ECHO A): tylko ZBIERZ cityId tu -- realne
+                // przeliczenie (applyLiveSafeRationForCity) czeka na koniec CAŁEJ pętli
+                // wzrostu (patrz NOTA A wyżej i pętla poniżej).
+                onCityPopulationChanged: cityId => grownCityIdsForLiveRation.add(cityId),
               });
+              // NOTA A: zbiorcze przeliczenie PO zakończeniu applyPostCentralPopulationGrowth
+              // -- applyLiveSafeRationForCity no-opuje sama dla miast AI (city.ownerId !== 0),
+              // więc wołanie tu jest bezpieczne dla wszystkich właścicieli zebranych w Set.
+              for (const grownCityId of grownCityIdsForLiveRation) {
+                applyLiveSafeRationForCity(grownCityId);
+              }
             }
             // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe --
             // odjęcie RAZ na turę (nie per-miasto) z globalnej puli produkcji, PO tym jak
