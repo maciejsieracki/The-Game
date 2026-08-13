@@ -348,6 +348,69 @@ function findOwnOutgoingNegotiationRow(
 }
 
 /**
+ * P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU (2026-08-13): dla akcji zezwalających
+ * na WIELE własnych wpisów na stole naraz (dziś wyłącznie aid '14' — patrz
+ * uiActionAllowsMultipleOwnOnTable) każda KOLEJNA instancja koszyka startuje z pustymi
+ * giveItems/receiveItems (R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA) — lokalny filtr „już w koszyku"
+ * w `buildAddForm` (diplomacyTradeBasket.ts, P-HANDEL-TECH-CHIP-BEZ-FILTRU-JUZ-DODANE) nie ma
+ * więc czego odfiltrować, mimo że ta sama technologia widnieje już w INNYM, wcześniej wysłanym
+ * własnym wierszu tego samego aid (widocznym w koszyku OFERUJEMY). Zbiera id technologii już
+ * zaangażowanych w takich wierszach; `excludeRowId` pomija wiersz aktualnie edytowany/
+ * kontrowany (jego własne pozycje trafiają do lokalnego filtra przez `existingItems`, nie
+ * powinny więc same siebie wykluczać tutaj).
+ * EN: for UI actions allowing multiple own table entries at once (today only aid '14'), each
+ * new basket instance starts with EMPTY giveItems/receiveItems, so buildAddForm's local
+ * already-in-basket filter has nothing to filter against — even though the same tech already
+ * sits in ANOTHER, previously submitted own row of the same aid (visible in the OFERUJEMY
+ * basket). Collects tech ids already committed in such rows; `excludeRowId` skips the row
+ * currently being edited/countered (its own items already reach the local filter via
+ * `existingItems`, so it must not exclude itself here).
+ */
+function techIdsCommittedInOtherOwnRows(
+  st: DiplomacyAudienceState,
+  aid: string,
+  excludeRowId?: string,
+): { give: Set<string>; receive: Set<string> } {
+  const give = new Set<string>();
+  const receive = new Set<string>();
+  for (const r of st.pendingNegotiations ?? []) {
+    if (r.direction !== 'own' || r.uiActionId !== aid || r.id === excludeRowId) continue;
+    for (const it of r.dealPayload?.giveItems ?? []) {
+      if (it.typ === 'tech') give.add(it.id);
+    }
+    for (const it of r.dealPayload?.receiveItems ?? []) {
+      if (it.typ === 'tech') receive.add(it.id);
+    }
+  }
+  return { give, receive };
+}
+
+/**
+ * Nakłada `techIdsCommittedInOtherOwnRows` na `ctx.giveTechOptions`/`receiveTechOptions` —
+ * patrz komentarz przy `techIdsCommittedInOtherOwnRows` dla pełnego uzasadnienia.
+ * Eksport WYŁĄCZNIE do testu (`diplomacy-tech-chip-filter-and-multi-deal-test.cjs` CZĘŚĆ D,
+ * P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU) — potwierdza, że filtr faktycznie
+ * usuwa z `ctx` technologie już zaangażowane w innych własnych wpisach stołu, z zachowaniem
+ * wyjątku dla wiersza aktualnie edytowanego.
+ * EN: exported ONLY for the test — confirms the filter actually strips techs already committed
+ * in other own table rows from `ctx`, while keeping the exception for the row being edited.
+ */
+export function withOwnTableTechFilter(
+  negCtx: NegotiationModalContext,
+  st: DiplomacyAudienceState,
+  aid: string,
+  excludeRowId?: string,
+): NegotiationModalContext {
+  const { give, receive } = techIdsCommittedInOtherOwnRows(st, aid, excludeRowId);
+  if (give.size === 0 && receive.size === 0) return negCtx;
+  return {
+    ...negCtx,
+    giveTechOptions: negCtx.giveTechOptions?.filter(t => !give.has(t.id)),
+    receiveTechOptions: negCtx.receiveTechOptions?.filter(t => !receive.has(t.id)),
+  };
+}
+
+/**
  * Blokuje duplikat na stole: ich wpis → kontroferta; nasz → ignoruj klik.
  * R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): dla „Umowa wymiany surowców" (aid '14') NIE
  * blokuj ponownego kliknięcia z powodu istniejącego NASZEGO wpisu tego samego typu — kolejny
@@ -394,7 +457,7 @@ function openCounterNegotiationModal(
     showTradeBasketModal(
       getTradeBasketMode(row.uiActionId),
       syntheticAction,
-      mergeBasketCtx(negCtx),
+      withOwnTableTechFilter(mergeBasketCtx(negCtx), st, row.uiActionId, isOwnEdit ? row.id : undefined),
       (payload) => isOwnEdit
         ? cfg!.onEditOwnNegotiation?.(row.id, payload)
         : cfg!.onCounterNegotiation?.(row.id, payload),
@@ -2017,7 +2080,7 @@ function render(): void {
           showTradeBasketModal(
             getTradeBasketMode(aid),
             action,
-            mergeBasketCtx(negCtx),
+            withOwnTableTechFilter(mergeBasketCtx(negCtx), st, aid),
             (payload) => cfg!.onAction(cfg!.ownerId, aid, payload),
             () => { /* anulowano */ },
           );
@@ -2057,7 +2120,7 @@ function render(): void {
     if (!negCtx) return;
     openQuickDealBasket(
       handel,
-      mergeBasketCtx(negCtx),
+      withOwnTableTechFilter(mergeBasketCtx(negCtx), st, '14'),
       (payload) => cfg!.onAction(cfg!.ownerId, '14', payload),
       () => { /* anulowano */ },
     );

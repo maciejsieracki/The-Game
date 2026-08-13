@@ -443,6 +443,316 @@ export {
     }
   }
 
+  // =========================================================================
+  // CZĘŚĆ D — P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU (2026-08-13):
+  // ekran „Umowa wymiany surowców" (aid '14') dopuszcza WIELE własnych wpisów na stole
+  // (R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA, CZĘŚĆ B/C wyżej) — każda KOLEJNA instancja koszyka
+  // startuje z PUSTYMI giveItems/receiveItems, więc filtr CZĘŚCI A (lokalny, `existingItems`
+  // w `buildAddForm`) nie ma czego odfiltrować: technologia widniejąca już w INNYM,
+  // wcześniej wysłanym własnym wierszu (widoczna w koszyku OFERUJEMY) nadal pokazuje się
+  // jako wybieralny chip w NOWYM formularzu. Naprawa: `withOwnTableTechFilter`
+  // (diplomacyAudience.ts) zbiera id technologii z `dealPayload.giveItems/receiveItems`
+  // WSZYSTKICH innych własnych wierszy tego samego aid i usuwa je z `ctx.giveTechOptions`/
+  // `receiveTechOptions` PRZED przekazaniem do koszyka — tak że nawet pusty `existingItems`
+  // nowej instancji i tak nie pokaże już zaangażowanej technologii.
+  // =========================================================================
+  {
+    console.log('CZĘŚĆ D — withOwnTableTechFilter: technologia z INNEGO własnego wiersza stołu znika z listy nowej instancji');
+
+    const STUB_DIR = path.resolve(__dirname, '.stubs');
+    fs.mkdirSync(STUB_DIR, { recursive: true });
+    const stubs = {
+      music: path.resolve(STUB_DIR, 'own-table-filter-music-stub.ts'),
+      diploUiSkin: path.resolve(STUB_DIR, 'own-table-filter-diplouiskin-stub.ts'),
+      negotiationModal: path.resolve(STUB_DIR, 'own-table-filter-negotiationmodal-stub.ts'),
+      tradeBasket: path.resolve(STUB_DIR, 'own-table-filter-tradebasket-stub.ts'),
+      leaderPortraits: path.resolve(STUB_DIR, 'own-table-filter-leaderportraits-stub.ts'),
+      civBrandDisplay: path.resolve(STUB_DIR, 'own-table-filter-civbranddisplay-stub.ts'),
+      brandAssets: path.resolve(STUB_DIR, 'own-table-filter-brandassets-stub.ts'),
+    };
+    fs.writeFileSync(stubs.music, [
+      "export function startDiplomacyMusic() {}",
+      "export function stopDiplomacyMusic() {}",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.diploUiSkin, [
+      "export function civLeaderMedallionHtmlById() { return ''; }",
+      "export function dipBrandIconHtml() { return ''; }",
+      "export function dipCapitalLocateBtnHtml() { return ''; }",
+      "export const DIPLO_1E_SHARED_CSS = '';",
+      "export function ensureDiploBrandScope() {}",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.negotiationModal, [
+      "export function actionNeedsNegotiation() { return false; }",
+      "export function showNegotiationModal() {}",
+      "export function proposalActionIdFromPayload() { return undefined; }",
+    ].join('\n'), 'utf8');
+    // `withOwnTableTechFilter` samo nie WOŁA żadnej z tych funkcji (są w tym module tylko
+    // dla INNYCH funkcji w diplomacyAudience.ts) — zaślepienie jest bezpieczne dla testu
+    // TEJ konkretnej, czystej funkcji. Prawdziwy `buildAddForm` (CZĘŚĆ A/E) bundlowany jest
+    // OSOBNO, żeby end-to-end sklejenie w teście używało realnej implementacji obu stron.
+    fs.writeFileSync(stubs.tradeBasket, [
+      "export function actionUsesTradeBasket() { return false; }",
+      "export function getTradeBasketMode() { return 'trade'; }",
+      "export function showTradeBasketModal() {}",
+      "export function hideTradeBasketModal() {}",
+      "export function openQuickDealBasket() {}",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.leaderPortraits, [
+      "export function civCardDisplayName(label) { return label; }",
+      "export function leaderName() { return null; }",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.civBrandDisplay, "export function civBrandLineForKey() { return ''; }\n", 'utf8');
+    fs.writeFileSync(stubs.brandAssets, [
+      "export function brandIconSvg() { return ''; }",
+      "export function mapResourceIconSvg() { return ''; }",
+    ].join('\n'), 'utf8');
+
+    const ENTRY = path.resolve(__dirname, '.dip-own-table-filter-entry.ts');
+    const BUNDLE = path.resolve(__dirname, '.dip-own-table-filter-bundle.cjs');
+    fs.writeFileSync(ENTRY, `export { withOwnTableTechFilter } from '../src/ui/diplomacyAudience.ts';\n`, 'utf8');
+
+    await esbuild.build({
+      entryPoints: [ENTRY],
+      bundle: true,
+      platform: 'node',
+      format: 'cjs',
+      target: 'node18',
+      outfile: BUNDLE,
+      absWorkingDir: path.resolve(__dirname, '..'),
+      logLevel: 'silent',
+      loader: { '.json': 'json' },
+      plugins: [{
+        name: 'stub-vite-assets-own-table-filter',
+        setup(build) {
+          build.onResolve({ filter: /audio\/muzyka-antyczna$/ }, () => ({ path: stubs.music }));
+          build.onResolve({ filter: /diploUiSkin$/ }, () => ({ path: stubs.diploUiSkin }));
+          build.onResolve({ filter: /diplomacyNegotiationModal$/ }, () => ({ path: stubs.negotiationModal }));
+          build.onResolve({ filter: /diplomacyTradeBasket$/ }, () => ({ path: stubs.tradeBasket }));
+          build.onResolve({ filter: /leaderPortraits$/ }, () => ({ path: stubs.leaderPortraits }));
+          build.onResolve({ filter: /civBrandDisplay$/ }, () => ({ path: stubs.civBrandDisplay }));
+          build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: stubs.brandAssets }));
+        },
+      }],
+    });
+
+    const { withOwnTableTechFilter } = require(BUNDLE);
+
+    const TECH_OPTS = [
+      { id: 'Obróbka drewna', label: 'Obróbka drewna', suggestedPrice: 50 },
+      { id: 'Rolnictwo', label: 'Rolnictwo', suggestedPrice: 40 },
+      { id: 'Oswojenie zwierząt', label: 'Oswojenie zwierząt', suggestedPrice: 40 },
+      { id: 'Łowiectwo', label: 'Łowiectwo', suggestedPrice: 30 },
+    ];
+    function baseCtx(over) {
+      return Object.assign({ civName: 'Inkowie', giveTechOptions: TECH_OPTS, receiveTechOptions: TECH_OPTS }, over || {});
+    }
+    /** Wiersz stołu jak w main.ts (patrz `dealPayload: p`, main.ts ok. linia 13865). */
+    function ownRow(id, aid, giveItems, receiveItems) {
+      return {
+        id, direction: 'own', uiActionId: aid, actionLabel: 'Umowa wymiany surowców', summary: 'x',
+        round: 1, maxRounds: 3, expiresInTurns: 5, canCounter: true,
+        dealPayload: { giveItems: giveItems || [], receiveItems: receiveItems || [] },
+      };
+    }
+
+    // 1) Odtworzenie DOKŁADNEGO zgłoszenia: koszyk OFERUJEMY ma już "Obróbka drewna" i
+    //    "Rolnictwo" (jeden własny wiersz stołu, aid '14') — NOWA, pusta instancja koszyka nie
+    //    powinna już oferować tych dwóch technologii.
+    {
+      const st = { pendingNegotiations: [
+        ownRow('n1', '14', [{ typ: 'tech', id: 'Obróbka drewna' }, { typ: 'tech', id: 'Rolnictwo' }], []),
+      ] };
+      const filtered = withOwnTableTechFilter(baseCtx(), st, '14');
+      const ids = filtered.giveTechOptions.map(t => t.id);
+      ok(!ids.includes('Obróbka drewna'), 'give: "Obróbka drewna" (już w koszyku OFERUJEMY) znika z nowej instancji');
+      ok(!ids.includes('Rolnictwo'), 'give: "Rolnictwo" (już w koszyku OFERUJEMY) znika z nowej instancji');
+      ok(ids.includes('Oswojenie zwierząt') && ids.includes('Łowiectwo'),
+        'give: technologie NIEUŻYTE w żadnym wierszu zostają wybieralne — dokładnie stan ze zgłoszenia (2 z 4 chipów)');
+    }
+
+    // 2) Wiele osobnych własnych wierszy (kolejne instancje R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA)
+    //    sumują się do wspólnego wykluczenia, nie tylko ostatni wiersz.
+    {
+      const st = { pendingNegotiations: [
+        ownRow('n1', '14', [{ typ: 'tech', id: 'Obróbka drewna' }], []),
+        ownRow('n2', '14', [{ typ: 'tech', id: 'Rolnictwo' }], []),
+      ] };
+      const filtered = withOwnTableTechFilter(baseCtx(), st, '14');
+      const ids = filtered.giveTechOptions.map(t => t.id);
+      ok(!ids.includes('Obróbka drewna') && !ids.includes('Rolnictwo'),
+        'dwa OSOBNE własne wiersze: obie technologie (po jednej z każdego) wykluczone razem');
+    }
+
+    // 3) Strona 'receive' filtrowana NIEZALEŻNIE od 'give' (analogicznie do CZĘŚCI A pkt 3).
+    {
+      const st = { pendingNegotiations: [
+        ownRow('n1', '14', [], [{ typ: 'tech', id: 'Obróbka drewna' }]),
+      ] };
+      const filtered = withOwnTableTechFilter(baseCtx(), st, '14');
+      ok(!filtered.receiveTechOptions.map(t => t.id).includes('Obróbka drewna'),
+        'receive: technologia już DOSTAWANA w innym wierszu (receiveItems) znika z listy receive');
+      ok(filtered.giveTechOptions.map(t => t.id).includes('Obróbka drewna'),
+        'receive-only wpis NIE filtruje strony give (niezależne tablice, jak w buildAddForm)');
+    }
+
+    // 4) Wiersz INNEGO typu akcji (nie aid '14') NIE wpływa na filtr — kontrola negatywna.
+    {
+      const st = { pendingNegotiations: [
+        ownRow('n1', '6', [{ typ: 'tech', id: 'Obróbka drewna' }], []),
+      ] };
+      const filtered = withOwnTableTechFilter(baseCtx(), st, '14');
+      ok(filtered.giveTechOptions.map(t => t.id).includes('Obróbka drewna'),
+        'wiersz innego aid ("6") nie wyklucza technologii z filtra dla aid "14"');
+    }
+
+    // 5) Wiersz PRZYCHODZĄCY (direction 'incoming', propozycja AI) NIE wpływa na filtr —
+    //    dotyczy wyłącznie WŁASNYCH ("own") zobowiązań gracza.
+    {
+      const st = { pendingNegotiations: [
+        { id: 'n1', direction: 'incoming', uiActionId: '14', actionLabel: 'x', summary: 'x',
+          round: 1, maxRounds: 3, expiresInTurns: 5, canCounter: true,
+          dealPayload: { giveItems: [{ typ: 'tech', id: 'Obróbka drewna' }], receiveItems: [] } },
+      ] };
+      const filtered = withOwnTableTechFilter(baseCtx(), st, '14');
+      ok(filtered.giveTechOptions.map(t => t.id).includes('Obróbka drewna'),
+        'wiersz przychodzący (AI) nie wyklucza technologii — filtr patrzy WYŁĄCZNIE na direction "own"');
+    }
+
+    // 6) WYJĄTEK EDYCJI: `excludeRowId` = id wiersza aktualnie edytowanego/kontrowanego — jego
+    //    WŁASNE technologie nie mogą same siebie wykluczyć (inaczej edycja własnej pozycji
+    //    chowałaby jej chip, tak samo jak wymóg z CZĘŚCI A pkt 5 dla filtra lokalnego).
+    {
+      const st = { pendingNegotiations: [
+        ownRow('n1', '14', [{ typ: 'tech', id: 'Obróbka drewna' }], []),
+        ownRow('n2', '14', [{ typ: 'tech', id: 'Rolnictwo' }], []),
+      ] };
+      const filtered = withOwnTableTechFilter(baseCtx(), st, '14', 'n1');
+      const ids = filtered.giveTechOptions.map(t => t.id);
+      ok(ids.includes('Obróbka drewna'),
+        'excludeRowId="n1": własna technologia wiersza n1 NIE jest wykluczana (edycja nie chowa sama siebie)');
+      ok(!ids.includes('Rolnictwo'),
+        'excludeRowId="n1": technologia INNEGO wiersza (n2) nadal wykluczona');
+    }
+
+    // 7) MUTACJA: bez żadnych własnych wierszy na stole — `ctx` wraca BEZ ZMIAN (ten sam obiekt
+    //    referencyjnie, dowód że filtr jest no-opem gdy nie ma czego wykluczyć).
+    {
+      const st = { pendingNegotiations: [] };
+      const ctx = baseCtx();
+      const filtered = withOwnTableTechFilter(ctx, st, '14');
+      ok(filtered === ctx, 'brak własnych wierszy na stole: ctx zwrócony BEZ ZMIAN (no-op, dowód że filtr czyta stan, nie zawsze kopiuje)');
+    }
+
+    // 8) Integracja z prawdziwym `buildAddForm` (CZĘŚĆ A) — sklejenie end-to-end: wynik
+    //    `withOwnTableTechFilter` podany do REALNEGO renderu koszyka odtwarza dokładnie stan ze
+    //    zrzutu ekranu zgłoszenia (2 z 4 chipów widoczne).
+    {
+      // buildAddForm (diplomacyTradeBasket.ts) potrzebuje PEŁNIEJSZEGO stubu leaderPortraits/
+      // brandAssets niż CZĘŚĆ D wyżej (diploUiSkin.ts importuje `civIconSvg`/`leaderPortraitUrl`
+      // itd., których stub CZĘŚCI D celowo nie ma — wystarczał tam do zaślepienia importu bez
+      // wykonania) — reużycie DOKŁADNIE stubów z CZĘŚCI A (buildAddForm bundlowany tam identycznie).
+      const LEADER_PORTRAITS_STUB_A = path.resolve(STUB_DIR, 'own-table-filter-e2e-leaderportraits-stub.ts');
+      const BRAND_ASSETS_STUB_A = path.resolve(STUB_DIR, 'own-table-filter-e2e-brandassets-stub.ts');
+      fs.writeFileSync(
+        LEADER_PORTRAITS_STUB_A,
+        [
+          "export function leaderPortraitUrl() { return null; }",
+          "export function leaderName() { return null; }",
+          "export function leaderNameFromPool() { return null; }",
+          "export function civDisplayNameFromKey() { return null; }",
+          "export function civCardDisplayName(label) { return label; }",
+          "export function civIconIdFromCivLabel() { return null; }",
+        ].join('\n'),
+        'utf8',
+      );
+      fs.writeFileSync(
+        BRAND_ASSETS_STUB_A,
+        [
+          "export function brandIconSvg() { return ''; }",
+          "export function improvementIconSvg() { return ''; }",
+          "export function mapResourceIconSvg() { return ''; }",
+          "export function terrainIconSvg() { return ''; }",
+          "export function buildingIconSvg() { return ''; }",
+          "export function unitIconSvg() { return ''; }",
+          "export function civIconSvg() { return ''; }",
+          "export function epochIconSvg() { return ''; }",
+          "export function settingIconSvg() { return ''; }",
+          "export function brandMenuComponentsCss() { return ''; }",
+          "export function menuIconSvg() { return ''; }",
+          "export function brandMenuEmblemSvg() { return ''; }",
+          "export function newGameIntroEmblemSvg() { return ''; }",
+          "export function brandMotionCss() { return ''; }",
+          "export function brandMenuBackgroundCss() { return ''; }",
+          "export function svgThumbHtml() { return ''; }",
+        ].join('\n'),
+        'utf8',
+      );
+
+      const BUNDLE_A = path.resolve(__dirname, '.dip-own-table-filter-buildaddform-bundle.cjs');
+      const ENTRY_A = path.resolve(__dirname, '.dip-own-table-filter-buildaddform-entry.ts');
+      fs.writeFileSync(ENTRY_A, `export { buildAddForm } from '../src/ui/diplomacyTradeBasket.ts';\n`, 'utf8');
+      await esbuild.build({
+        entryPoints: [ENTRY_A],
+        bundle: true,
+        platform: 'node',
+        format: 'cjs',
+        outfile: BUNDLE_A,
+        absWorkingDir: path.resolve(__dirname, '..'),
+        logLevel: 'silent',
+        loader: { '.json': 'json', '.svg': 'text', '.css': 'text' },
+        plugins: [{
+          name: 'stub-vite-assets-e2e',
+          setup(build) {
+            build.onResolve({ filter: /leaderPortraits$/ }, () => ({ path: LEADER_PORTRAITS_STUB_A }));
+            build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_ASSETS_STUB_A }));
+          },
+        }],
+      });
+      const { buildAddForm } = require(BUNDLE_A);
+
+      let JSDOM;
+      try { ({ JSDOM } = require('jsdom')); }
+      catch (e) { console.error('jsdom missing — npm i -D jsdom'); process.exit(1); }
+      const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
+      global.document = dom.window.document;
+      global.window = dom.window;
+      global.HTMLElement = dom.window.HTMLElement;
+      global.Element = dom.window.Element;
+      function mount(html) {
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        return div;
+      }
+
+      const st = { pendingNegotiations: [
+        ownRow('n1', '14', [{ typ: 'tech', id: 'Obróbka drewna' }, { typ: 'tech', id: 'Rolnictwo' }], []),
+      ] };
+      const filteredCtx = withOwnTableTechFilter(
+        baseCtx({ relacjaTotal: 200, progHandelRelacja: 100 }), st, '14',
+      );
+      // NOWA (pusta) instancja koszyka: existingItems=[] — dokładnie jak przy kolejnym kliku
+      // „Umowa wymiany surowców" (R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA).
+      const html = buildAddForm('give', filteredCtx, 'trade', '14', undefined, undefined, []);
+      const box = mount(html);
+      ok(box.querySelector('.cdb-chip-tech[data-value="Obróbka drewna"]') === null,
+        'E2E: chip "Obróbka drewna" (w koszyku OFERUJEMY) NIEOBECNY w prawdziwym renderze nowej instancji');
+      ok(box.querySelector('.cdb-chip-tech[data-value="Rolnictwo"]') === null,
+        'E2E: chip "Rolnictwo" (w koszyku OFERUJEMY) NIEOBECNY w prawdziwym renderze nowej instancji');
+      ok(box.querySelector('.cdb-chip-tech[data-value="Oswojenie zwierząt"]') !== null,
+        'E2E: chip "Oswojenie zwierząt" (nieużyta technologia) nadal WIDOCZNY');
+      ok(box.querySelector('.cdb-chip-tech[data-value="Łowiectwo"]') !== null,
+        'E2E: chip "Łowiectwo" (nieużyta technologia) nadal WIDOCZNY');
+
+      for (const f of [ENTRY_A, BUNDLE_A, LEADER_PORTRAITS_STUB_A, BRAND_ASSETS_STUB_A]) {
+        try { fs.unlinkSync(f); } catch (_) { /* ok */ }
+      }
+    }
+
+    for (const f of Object.values(stubs).concat([ENTRY, BUNDLE])) {
+      try { fs.unlinkSync(f); } catch (_) { /* ok */ }
+    }
+  }
+
   console.log(`\n${pass}/${pass + fail} PASS`);
   process.exit(fail ? 1 : 0);
 }
