@@ -17502,3 +17502,39 @@ tej funkcji), wszystkie 9 plików dyplomacji z rundy 1 ponownie zielone (76/148/
 19/28, wszystkie 0 fail). Commit `e21d5854`, push OK.
 
 **Dispatch Evaluatora finalnego (Opus 5) NASTĘPUJE teraz.**
+
+---
+
+## R-DYPLO-CENNIK-SKALA-5X-Q1 — Evaluator finalny: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY OSTATECZNIE (2026-08-13)
+
+Luka rundy 1 potwierdzona zamknięta własnym harnessem (15 asercji + przemiat stawek 0-24):
+floor bez bramki trudności, żywa ścieżka easy naprawiona, `zloto` (krok 1) potwierdzone
+NIETKNIĘTE (poprawka nie przestrzeliła na surowce spoza ×5). Potwierdzone że `maxAffordableQty`
+i ścieżka Umowy Handlowej/Szybkiej Umowy nietknięte (0 trafień w diffie poza jednym wyrażeniem).
+Fixture'y zmienione przez Operatora zweryfikowane mutacją — nadal łapią zamianę `per_turn`→`once`.
+
+Własna mutacja B (floor na złej zmiennej — `Math.min(pakietyPerTura, normalize(maxPakietyPerTura))`
+zamiast `normalize(Math.min(...))`) — **30/30 PASS, NIE złapana testem**, ale własna sonda
+Evaluatora potwierdza że KOD WDROŻONY przechodzi bezbłędnie (żaden rozjazd) — to luka w teście
+(wszystkie fixture'y ustawiają żądanie AI = stawce produkcji, więc oba ramiona `Math.min` są
+zawsze równe), NIE defekt zachowania. Nieblokujące.
+
+Bramki: `tsc` 0, `diplomacy-ai-balance-test.cjs` 30/30, `logic-test` 213/213, wszystkie 9 plików
+dyplomacji z rundy 1 ponownie zielone.
+
+**Notatka do backlogu (NIE blokuje):** brakująca asercja domykająca lukę mutacji B (scenariusz
+gdzie ŻĄDANIE AI, nie cap produkcji, jest ograniczeniem) + zamiana tautologicznego `want 5` na
+`want Math.round(ilość × cena)` z surowcem o cenie ≠1.
+
+**STATUS: TEMAT ZAMKNIĘTY OSTATECZNIE** po 2 rundach.
+
+---
+
+## WSZYSTKIE TRZY ZAPOMNIANE TEMATY Z AUDYTU KOMPLETNOŚCI — ZAMKNIĘTE (2026-08-13)
+
+Podsumowanie: `P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A` (2 rundy), `R-SANITIZE-QUEUE-
+POSTEP-PRZEPADEK-Q1=B` (1 runda), `R-DYPLO-CENNIK-SKALA-5X-Q1` (2 rundy) — wszystkie trzy
+tematy znalezione przy audycie kompletności na żądanie właściciela dziś zamknięte ostatecznie,
+każdy z niezależną weryfikacją Evaluatora. Zero otwartych ABC-pytań poza wcześniej udokumentowanymi
+świadomymi odłożeniami. Przechodzę do deployu ROBOCZA + scalenia FALI 273 do `main` na wyraźne
+polecenie właściciela.
