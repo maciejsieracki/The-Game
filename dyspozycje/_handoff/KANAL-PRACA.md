@@ -1,3 +1,14 @@
+## [19:38 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 275 md5 `b06aec9a`
+
+ROBOCZA md5 `b06aec9afc462c14cd4726240438b90e` · stempel `ROBOCZA · 8647114a · 2026-08-13 17:38` UTC · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 275, na górze).
+|- Build z HEAD `716653e1` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — 37 commitów od FALI 274 (`322b2259`), 50 plików w `gra/src`+`gra/data`+`gra/tools` (`+3010/−70`). **`gra/data` RUSZONE** (4 pliki) — pierwsza od kilku fal, która realnie zmienia dane gry.
+|- Zawartość (7 tematów): (1) **nowy surowiec Ruda cyny** — trzeci wymagany składnik Odlewni brązu (1 cyna / 10 brązu), złoże na Wzgórzach/Górach 5× rzadsze niż miedź ale **gwarantowane każdej cywilizacji**, Kopalnia cyny na Brązownictwie, 2 rundy; (2) **kreator: Zasięg ruchu ×1/×3/×6** — tylko mapa świata, bitwa nietknięta; (3) **limit wycofania z bitwy raz na turę**; (4) **LOD plakietki miasta** przy przybliżeniu kamery; (5) **dyplomacja** — filtr technologii w koszyku + wielokrotna Umowa wymiany surowców (⚠️ efekt uboczny: **Dar też wielokrotny**, świadoma decyzja); (6) **Auto Wyżywienie** — wzrost populacji przelicza poziom Racji, 2 rundy.
+|- Bramki (13, wszystkie exit 0): `tsc` 0 błędów · `logic-test` 213/213 · `cyna-surowiec` 78/78 · `converter-era-scaling` 87/0 · `city-badge-zoom-lod` 67/0 · `ruch-swiata-tempo` 35/0 · `pre-battle-retreat-exhausted` 33/0 · `diplomacy-tech-chip-filter-and-multi-deal` 33/33 · `auto-wyzywienie-population-growth-live-recalc` 42/0 · `combat` 6/6 · `unit-replace` 13/13 · `tech-tree` 19/0 · `research` 33/0. Build 817 modułów.
+|- `map-gen-regression-test` nieukończony w czasie, przerwany po ~11 min (`MAPGEN_EXIT=143` = SIGTERM, **nie FAIL** — zero linii FAIL, zero podsumowania; mała 51,05 s, standardowa 97,70 s; znany artefakt wolnego sandboksa, `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`, dodatkowo równoległy Operator liczył swój mapgen w worktree). ⚠️ Ta fala **dotyka generatora** (złoże cyny) — pokrycie zapewnia `cyna-surowiec-test` 78/78. Pre-istniejące czerwone `mennica-magazyn` 38/3, `grupa-b-lane` 45/4, `auto-improvements` 14/1 — liczby bez zmian, brak nowej regresji.
+|- **NIE weszły** (nadal w toku u Operatora, wejdą do FALI 276): dublowanie heksów między miastami; runda 2 UX koszyka handlu (kafelek Umowy wygląda na zablokowany mimo że działa — **nie zgłaszać ponownie z playtestu**).
+|- Scalenie do `main` NIE wykonane (rytm „jedna fala do tyłu", `R-MERGE-MAIN-RYTM-Q1`) — FALA 275 zostaje na gałęzi do testów; kwalifikuje **FALĘ 274** (`322b2259`) do scalenia, wykona orkiestrator osobno zaraz po tym deployu.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `b06aec9a`".
+
 ## [13:07 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 274 md5 `81ae686d`
 
 ROBOCZA md5 `81ae686d3ee3bec7f5de01b06907c773` · stempel `ROBOCZA · 5a0d96b0 · 2026-08-13 11:07` UTC · **VERIFY OK**.
