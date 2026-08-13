@@ -40,8 +40,10 @@ import {
 } from './ai-threat-mode';
 import type { CivAiProfile } from './civ-ai-data';
 import type { ImprovementKey } from '../render/improvements';
-import type { TerritoryNode } from '../map/territory';
-import { cityTerritoryRadius } from '../map/territory';
+import type { TerritoryNode, CityNode } from '../map/territory';
+import { cityTerritoryRadius, territoryOwnerAt } from '../map/territory';
+import { type FortNode, fortNodeAsCityNode } from './fort-territory';
+import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
 import {
   epochGateMet,
   epochTierGateMet,
@@ -327,6 +329,14 @@ export interface AITurnOpts {
    * `planCityImprovements` nic nie planuje (bezpieczny no-op, zero regresji).
    */
   territoryNodes?: readonly TerritoryNode[];
+  /**
+   * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
+   * rejestr WSZYSTKICH postawionych Fort/Posterunek (dowolny wlasciciel) --
+   * silnik podaje main.ts `fortNodes`. `planCityFounding` filtruje do WLASNYCH,
+   * nie-skontestowanych wezlow (foundingNodesForOwner semantyka). Brak -- zero
+   * rozszerzenia zasiegu, identyczne zachowanie jak przed krokiem 2.
+   */
+  fortNodes?: readonly FortNode[];
   /**
    * D-IMPROVEMENTS: heks → warstwy ulepszeń już postawionych NA MAPIE (ta sama
    * mapa co dla gracza -- ulepszenia stoją na terenie, nie per-owner). Silnik
@@ -828,14 +838,28 @@ function aiHasColonizationReadyCity(
   return hasColonizationSource(myCities, poziomTrudnosci);
 }
 
+/**
+ * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
+ * `fortNodes` = WLASNE, nie-skontestowane forty/posterunki AI (Q1/Q2=B) —
+ * rozszerzaja zasieg zakladania DOKLADNIE jak wlasne miasta, obok nich, bez
+ * zadnego innego skutku (granice/praca terenu bez zmian). Domyslnie pusta
+ * lista -- identyczne zachowanie jak przed krokiem 2.
+ * / EN: `fortNodes` = the AI's OWN, non-contested forts/outposts (Q1/Q2=B) --
+ * extend city-founding reach exactly like own cities, alongside them, with no
+ * other effect. Defaults to empty -- identical to pre-step-2 behaviour.
+ */
 function isHexWithinAnyCityReach(
   q: number,
   r: number,
   allCities: ReadonlyArray<{ q: number; r: number; population: number }>,
+  fortNodes: readonly CityNode[] = [],
 ): boolean {
   for (const c of allCities) {
     const node = { q: c.q, r: c.r, pop: c.population, level: 1 };
     if (hexDistance(q, r, c.q, c.r) <= cityTerritoryRadius(node)) return true;
+  }
+  for (const f of fortNodes) {
+    if (hexDistance(q, r, f.q, f.r) <= cityTerritoryRadius(f)) return true;
   }
   return false;
 }
@@ -1915,6 +1939,67 @@ function planCityImprovements(
   }));
 }
 
+/**
+ * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09) —
+ * heurystyka MINIMALNA (runda 1, zakres zawężony -- patrz raport Operatora):
+ * gdy AI ma WŁASNĄ jednostkę (nie w garnizonie) stojącą poza obecnym zasięgiem
+ * zakładania (miasta+forty razem, `isHexWithinAnyCityReach`) i poza terytorium
+ * INNEJ cywilizacji, na lądzie, a AI ma nadwyżkę Pracy — zbuduj tam Posterunek
+ * (tańszy z dwóch węzłów) RAZ NA TURĘ, żeby otworzyć nowy kierunek ekspansji
+ * (Q1=B: fizyczna obecność jednostki + brak fog — spełnione z definicji, skoro
+ * ta jednostka tam już stoi).
+ *
+ * Celowo NIE przesuwa/nie wysyła jednostek (zero nowej logiki ruchu/
+ * pathfindingu ekspansyjnego) — działa WYŁĄCZNIE oportunistycznie na
+ * jednostkach już tam stojących z innych powodów (zwiadowca eksplorujący,
+ * eskorta). Pełne "AI aktywnie planuje i wysyła jednostkę zbudować fort w
+ * konkretnym, wybranym miejscu" jest POZA zakresem tej rundy — opisane w
+ * raporcie Operatora jako zawężenie zakresu rundy 1.
+ * / EN: MINIMAL heuristic (round 1, narrowed scope -- see Operator report):
+ * when the AI has an OWN unit (not garrisoned) standing outside its current
+ * founding reach (cities+forts combined) and outside another civ's territory,
+ * on land, with a Praca surplus — build an Outpost there (cheaper of the two)
+ * ONCE PER TURN, to open a new expansion direction. Deliberately does NOT
+ * move/dispatch units (no new movement/pathfinding logic) — purely
+ * opportunistic on units already standing there for other reasons. Full
+ * "AI actively plans and sends a unit to build a fort at a chosen spot" is
+ * OUT OF SCOPE for this round.
+ */
+function planExpansionFortBuilding(
+  playerId: number,
+  myCities: AICity[],
+  myUnits: readonly RuntimeUnit[],
+  map: GameMap,
+  opts: AITurnOpts,
+): AICmdBuildImprovement | null {
+  if (myCities.length === 0) return null; // brak wlasnego terytorium do rozszerzenia (parytet z founding)
+  const pracaAvailable = opts.pracaAvailable ?? 0;
+  const meta = getImprovementMeta('posterunek');
+  if (!meta) return null;
+  if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
+  if (!isImprovementTechUnlocked('posterunek', opts.improvementTechs ?? new Set())) return null;
+
+  const territoryNodes = opts.territoryNodes ?? [];
+  const myFortNodes = (opts.fortNodes ?? [])
+    .filter(f => f.ownerId === playerId && !f.contestedUseless)
+    .map(fortNodeAsCityNode);
+
+  for (const u of myUnits) {
+    if (u.inGarnizon) continue;
+    const { q, r } = u;
+    const hex = map.hexes[`${q},${r}`];
+    if (!hex) continue;
+    const t = hex.terenBazowy as string;
+    if (t === 'morze' || t === 'wybrzeze' || t === 'gory') continue;
+    // Już w zasięgu (miasto lub fort) -- fort tu niczego by nie dodał.
+    if (isHexWithinAnyCityReach(q, r, myCities, myFortNodes)) continue;
+    const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
+    if (owner !== null && owner !== playerId) continue; // teren INNEJ cywilizacji (regula 1)
+    return { type: 'buildImprovement', ownerId: playerId, q, r, key: 'posterunek' };
+  }
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // City founding (C-AI-EKSP-Q1/Q2 — panel budowy, bez osadnika)
 // ---------------------------------------------------------------------------
@@ -1942,6 +2027,10 @@ export function planCityFounding(
   minCityDist: number,
   units: readonly RuntimeUnit[] = [],
   excludeHexes: readonly { q: number; r: number }[] = [],
+  /** Krok 2 (Maciej 2026-08-09): rejestr fort/posterunek WSZYSTKICH cywilizacji —
+   * domyslnie pusty, wiec wywolania bez tego argumentu (istniejace testy) maja
+   * IDENTYCZNE zachowanie jak przed krokiem 2. */
+  fortNodes: readonly FortNode[] = [],
 ): AICmdFoundCityAt | null {
   if (opts.defensiveCopy) return null;
   const myCities = cities.filter(c => c.ownerId === playerId);
@@ -1974,6 +2063,9 @@ export function planCityFounding(
   // EN: AI now gets the same hard withinTerritory requirement as the player — a new city
   // must lie within reach of one of the AI's OWN existing cities. No own cities yet (first
   // city) -> no restriction, matching the player's isAwaitingFirstPlayerCity parity.
+  const myFortNodes = fortNodes
+    .filter(f => f.ownerId === playerId && !f.contestedUseless)
+    .map(fortNodeAsCityNode);
   const targetHex = findCityFoundingHex(
     map,
     cities,
@@ -1981,7 +2073,7 @@ export function planCityFounding(
     data,
     minCityDist,
     opts,
-    { excludeHexes, myCities, applyMinScore: myCities.length > 0 },
+    { excludeHexes, myCities, myFortNodes, applyMinScore: myCities.length > 0 },
   );
   if (targetHex === null) return null;
 
@@ -2217,6 +2309,7 @@ export function decideAITurn(
   for (let fi = 0; fi < maxFoundingPerTurn; fi++) {
     const foundingCmd = planCityFounding(
       playerId, cities, map, data, opts, minCityDist, myUnits, foundingExcludeHexes,
+      opts.fortNodes ?? [],
     );
     if (foundingCmd === null) break;
     commands.push(foundingCmd);
@@ -2253,6 +2346,9 @@ export function decideAITurn(
   for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
     commands.push(cmd);
   }
+  // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
+  const expansionFortCmd = planExpansionFortBuilding(playerId, myCities, myUnits, map, opts);
+  if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
   // -------------------------------------------------------------------------
   // Step 4: UNIT MOVEMENT AND ATTACK
@@ -2721,6 +2817,9 @@ function decideDefensiveCopyTurn(
   for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
     commands.push(cmd);
   }
+  // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
+  const expansionFortCmd = planExpansionFortBuilding(playerId, myCities, myUnits, map, opts);
+  if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
   // ---------------------------------------------------------------------------
   // POSIŁKI W KLASTRZE (D-START pkt c/e; Maciej 2026-07-21 przeróbka ZMIANA 1 —
@@ -2987,6 +3086,8 @@ function findCityFoundingHex(
     excludeHexes?: readonly { q: number; r: number }[];
     /** Wlasne miasta AI (ownerId===playerId) — twardy wymog withinTerritory wzgledem NICH. */
     myCities?: readonly AICity[];
+    /** Krok 2: wlasne, nie-skontestowane forty/posterunki AI — rozszerzaja ten sam wymog. */
+    myFortNodes?: readonly CityNode[];
     applyMinScore?: boolean;
   } = {},
 ): { q: number; r: number } | null {
@@ -3025,7 +3126,7 @@ function findCityFoundingHex(
     // EN: hard withinTerritory requirement against the AI's OWN cities (not any civ's) — no
     // own cities yet (first city) means no restriction, matching the player's parity rule.
     if (hexOpts.myCities !== undefined && hexOpts.myCities.length > 0
-      && !isHexWithinAnyCityReach(q, r, hexOpts.myCities)) continue;
+      && !isHexWithinAnyCityReach(q, r, hexOpts.myCities, hexOpts.myFortNodes ?? [])) continue;
 
     let score = hexCityScore(hex, q, r, data, enemyCities, opts) * ekspansjaScale;
     if (powerGoalBoost) score += 25;
