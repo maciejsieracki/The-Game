@@ -18081,3 +18081,18 @@ Brązownictwo), `cyna-access.ts` (wzorem `zelazo-access.ts`), `TerritoryResource
 (input `cyna: 0.1`, POMIJAJĄC martwą `huta`), `building-stock-cost.ts`, `resource-access.ts`,
 `ai.ts` (`UPSTREAM_FOR_PROCESSED_RESOURCE.braz`), `diplomacy-value-catalog.ts` (handel), `cityPanel.ts`,
 odblokowanie placeholder karty `ruda_cyny` w `main.ts:2805-2839`.
+
+---
+
+## Efekt uboczny „Dar wielokrotny" — decyzja autonomiczna orkiestratora (2026-08-13)
+
+Maciej: „pracuj samodzielnie nad tymi tematami, postaraj się je pozamykać i wypchnąć najszybciej
+jak to jest możliwe" — bez wyraźnej odpowiedzi na wcześniej zadane pytanie o Dar ('13'). Zgodnie z
+tym poleceniem, przyjmuję domyślną, bezpieczną decyzję zamiast dalej blokować temat: **zostawiam
+Dar jako wielokrotny** (skutek uboczny naprawy `R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA`), NIE cofam.
+Uzasadnienie: (a) ocena ryzyka Evaluatora — niegroźne, zysk Zaufania z darów ma twardy limit na
+turę, brak exploita; (b) rozdzielenie Daru od Handlu w silniku (dziś dzielą wspólny
+`ProposalActionId='handel'`) wymagałoby dodatkowej, nietrywialnej pracy inżynieryjnej, sprzecznej z
+poleceniem „najszybciej jak to możliwe"; (c) to zmiana w kierunku WIĘKSZEJ elastyczności dla
+gracza, nie regresji. Jeśli w playteście okaże się niepożądane — łatwe do cofnięcia osobnym
+zgłoszeniem. Nie wymaga dalszego dispatchu.
