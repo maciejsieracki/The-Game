@@ -18685,3 +18685,12 @@ brakować to zawsze jeszcze dopowiem."
 
 **STATUS: listy zawartości gotowe do użycia, gdy rollout dotrze do tych dwóch zakładek** (po
 zakładce Skarbiec, zgodnie z kolejnością „zrób jeden, poczekaj na potwierdzenie, potem kolejne").
+
+## R-DESIGN-11-ZAKLADEK — uzupełnienie listy Obywatele (Maciej, 2026-08-13)
+
+Dodatkowa pozycja do zatwierdzonej listy zakładki Obywatele: **zużycie surowców przez
+obywateli, per miasto** — ile surowca zużywa populacja danego miasta (mechanika już istnieje w
+grze, `gra/src/game/citizen-resource-upkeep.ts`, temat `R-ZUZYCIE-SUROWCOW-OBYWATELE` z
+wcześniej tej samej sesji — dziś 1 szt./obywatela/surowiec/turę po decyzji
+`R-EKONOMIA-SUROWCE-SKALA-5X-Q1`). Dopisane do listy zawartości zakładki Obywatele, nie wymaga
+osobnego dispatchu — czeka razem z resztą listy na rollout po zatwierdzeniu Skarbca.
