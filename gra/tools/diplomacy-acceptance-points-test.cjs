@@ -298,17 +298,22 @@ ok(goldEasyReceive.receivePn === 60, 'player gives 40¤ easy (AI proposal) → �
 // Maciej 2026-07-29: surowiec_ilosc PN/szt. w koszyku akceptacji
 // R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk podaje sztuki wprost — PN = sztuki ×
 // cena_PN/szt., bez ×10 pakietu. Wartości poniżej = cena_PN/szt. z econ-params.json
-// (cena_braz=15, cena_zloto=50, cena_drewno=1), przy ilosc=1 sztuka.
+// (cena_braz=15, cena_zloto=50, cena_drewno=1).
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): braz/drewno mają krok handlu 5 szt. (dotknięte
+// ×5 rebalansem produkcji) — 1 szt. floruje do 0 PN, więc te dwie asercje testują teraz
+// ilosc=5 (najmniejsza poprawna ilość) zamiast ilosc=1. Zloto/wegiel świadomie WYŁĄCZONE
+// z ×5 -> zostają przy krok=1, ilosc=1 nadal działa bez floorowania.
 ok(mod.diplomacyHandelSurowiecCenaJednostkowa('sol') === 2, 'acceptance: sol 2 PN/szt.');
-ok(mod.diplomacyPnSurowiecIlosc('braz', 1) === 15, 'acceptance: 1 szt. braz = 15 PN');
+ok(mod.diplomacyPnSurowiecIlosc('braz', 5) === 75, 'acceptance: 5 szt. braz (krok 5) = 75 PN (5×15)');
+ok(mod.diplomacyPnSurowiecIlosc('braz', 1) === 0, 'acceptance: 1 szt. braz (< krok 5) floruje do 0 PN');
 ok(mod.diplomacyHandelSurowiecCenaJednostkowa('zloto') === 50, 'acceptance: zloto-surowiec 50 PN/szt.');
 ok(mod.diplomacyHandelSurowiecCenaJednostkowa('wegiel') === 20, 'acceptance: wegiel 20 PN/szt.');
-ok(mod.diplomacyPnSurowiecIlosc('zloto', 1) === 50, 'acceptance: 1 szt. zloto = 50 PN');
+ok(mod.diplomacyPnSurowiecIlosc('zloto', 1) === 50, 'acceptance: 1 szt. zloto (krok 1, wyłączone z ×5) = 50 PN');
 const woodTradePn = mod.resolveProposalPn({
-  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 5 }],
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
 }, { difficulty: 'normal', proposerOwnerId: 0, playerOwnerId: 0 });
-ok(woodTradePn.givePn === 1, 'resolveProposalPn: 1 szt. drewno = 1 PN');
+ok(woodTradePn.givePn === 5, 'resolveProposalPn: 5 szt. drewno (krok 5) = 5 PN');
 
 // Pokój @ rel 77 — asymetria: gracz 385 PW, partner 500 PW (baza)
 ok(mod.effectiveTreatyPnRequired(500, 77) === 385, 'pokój @ rel 77: traktat gracz 385 PW');
@@ -433,9 +438,12 @@ ok(underpayPanel.includes('da-pn-balance-bar no'), 'incoming underpay panel: ton
 ok(underpayPanel.includes('nieuczciwa'), 'incoming underpay panel: unfair message');
 
 // BUG: outgoing handel — their.accepted musi być false gdy partner traci (nie odwrócone pnDealAcceptedByAi)
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): drewno ma krok handlu 5 szt. — 1 vs 3 szt.
+// floorowałyby OBIE do 0 PN (0=0, nie 1v3). 5 vs 15 zachowuje ten sam stosunek 1:3
+// wartości, ale już jako poprawne wielokrotności kroku.
 const woodUnfair = {
-  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
-  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 3 }],
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 5 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 15 }],
 };
 const woodOut = mod.computePlayerAcceptanceSides('handel', woodUnfair, 100, false);
 ok(!woodOut.their.accepted, 'outgoing 1v3 drewno: their.accepted false');
@@ -443,8 +451,8 @@ ok(woodOut.their.statusLabel.includes('nieuczciwa'), 'outgoing 1v3: status nieuc
 
 // Silnik: bilateral gate odrzuca nawet gdy pnDealAcceptedByAi @ wysokiej Relacji przechodzi
 const woodHighRel = {
-  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
-  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 3 }],
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 5 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 15 }],
 };
 const ctx300 = {
   relation: { zaufanie: 150, respekt: 150, status: 'pokoj' },

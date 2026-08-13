@@ -9,6 +9,7 @@
  */
 
 import type { TradeGoodEntry } from './diplomacy-goods';
+import { diplomacyNormalizeSurowiecIlosc } from './diplomacy-value-catalog';
 
 export interface QuantityTradableOption {
   id: string;
@@ -53,7 +54,13 @@ function buildOffer(
   maxPakietyPerTura: number,
   pricePerPakiet: (key: string, pakiety: number) => number | null,
 ): Omit<ResourceTradePickResult, 'sellerOwnerId' | 'buyerOwnerId' | 'powod'> | null {
-  const pakiety = Math.max(1, Math.min(maxPakietyPerTura, sellerOpt.maxQty));
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): floor do wielokrotności kroku handlu — bez
+  // tego `pricePerPakiet` (diplomacyPnSurowiecIlosc) floruje WEWNĘTRZNIE przy wycenie, ale
+  // `pakiety` echowane w wyniku (i pokazywane graczowi w treści propozycji AI) zostałoby
+  // niewielokrotnością — cena i wyświetlana ilość rozjechałyby się.
+  const rawPakiety = Math.max(1, Math.min(maxPakietyPerTura, sellerOpt.maxQty));
+  const pakiety = diplomacyNormalizeSurowiecIlosc(surowiecKey, rawPakiety);
+  if (pakiety <= 0) return null;
   const zaplata = pricePerPakiet(surowiecKey, pakiety) ?? 0;
   if (zaplata <= 0) return null;
   // BUGFIX (Evaluator 2026-08-08, blocker 2): sellerOpt.label to CZYSTA nazwa surowca

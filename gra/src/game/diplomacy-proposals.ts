@@ -39,7 +39,9 @@ import {
   type BasketItem,
   type ResolveProposalPnOptions,
 } from './diplomacy-pn-engine';
-import { diplomacyProgDarRelacja, diplomacyFairGivePn } from './diplomacy-value-catalog';
+import {
+  diplomacyProgDarRelacja, diplomacyFairGivePn, diplomacyNormalizeSurowiecIlosc,
+} from './diplomacy-value-catalog';
 import {
   isCurrencyProposalForbiddenDuringWar,
 } from './diplomacy-war-gates';
@@ -430,10 +432,14 @@ export function buildHandelSurowiecCykliczny(
   const recvRes = receiveItems.find(i => i.typ === 'surowiec_ilosc' && (i.ilosc ?? 0) > 0);
   const recvPayment = receiveItems.find(i => i.typ === 'zloto' || i.typ === 'praca');
 
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): pakietyPerTura zostaje ZAMROŻONE na cały czas
+  // trwania dealu cyklicznego (tickCyclicResourceTradeDeals transferuje tę samą wartość co
+  // turę, bez ponownej walidacji kroku) — floor do wielokrotności kroku handlu MUSI więc
+  // nastąpić TU, przy budowie dealu, nie tylko przy jednorazowym transferze.
   if (giveRes) {
     out.push({
       surowiecKey: giveRes.id,
-      pakietyPerTura: Math.floor(giveRes.ilosc ?? 0),
+      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(giveRes.id, giveRes.ilosc ?? 0),
       sellerOwnerId: proposerId,
       buyerOwnerId: responderId,
       zaplataTyp: recvPayment?.typ as 'zloto' | 'praca' | undefined,
@@ -443,7 +449,7 @@ export function buildHandelSurowiecCykliczny(
   if (recvRes) {
     out.push({
       surowiecKey: recvRes.id,
-      pakietyPerTura: Math.floor(recvRes.ilosc ?? 0),
+      pakietyPerTura: diplomacyNormalizeSurowiecIlosc(recvRes.id, recvRes.ilosc ?? 0),
       sellerOwnerId: responderId,
       buyerOwnerId: proposerId,
       zaplataTyp: givePayment?.typ as 'zloto' | 'praca' | undefined,

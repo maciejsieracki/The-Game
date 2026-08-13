@@ -88,7 +88,10 @@ const CTX = {
   ],
   receiveTechOptions: [],
   cityOptions: [{ id: 'c1', label: 'Roma', spichlerz: 200 }, { id: 'c2', label: 'Ostia', spichlerz: 150 }],
-  giveQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 300 }],
+  giveQuantityResourceOptions: [
+    { id: 'drewno', label: 'Drewno', maxQty: 300 },
+    { id: 'wegiel', label: 'Węgiel', maxQty: 300 },
+  ],
 };
 const ACTION = { id: '14', label: 'Umowa wymiany surowców' };
 
@@ -124,6 +127,17 @@ function addFood(cityId, qty) {
   click(chip('cdb-chip-typ', 'zywnosc'));
   click(chip('cdb-chip-city', cityId));
   qa('.cdb-food-qty').find(i => i.getAttribute('data-side') === 'give').value = String(qty);
+  click(addButton());
+}
+function resQtyInput() { return qa('.cdb-res-qty-num').find(i => i.getAttribute('data-side') === 'give'); }
+/** Bez wpisywania ilości — sprawdza WARTOŚĆ DOMYŚLNĄ ustawioną przez renderer po wyborze surowca. */
+function selectResourceChip(resId) {
+  click(chip('cdb-chip-typ', 'surowiec_ilosc'));
+  click(chip('cdb-chip-resqty', resId));
+}
+function addResource(resId, qty) {
+  selectResourceChip(resId);
+  resQtyInput().value = String(qty);
   click(addButton());
 }
 /** Klika „✎ Edytuj" na wierszu `idx` po stronie „daję" — otwiera formularz edycji (editingItem). */
@@ -270,6 +284,44 @@ async function main() {
       `edycja bez kolizji (zmiana ilości złota): liczba wierszy niezmieniona (${beforeLen}→${giveRows().length})`);
     ok(rowQtyValues().includes('77'),
       `edycja bez kolizji: nowa ilość złota 77 widoczna w koszyku (widoczne ilości: ${rowQtyValues().join(',')})`);
+  }
+
+  // 8) R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): koszyk „+ Dodaj propozycję" dla surowiec_ilosc
+  // — krok 5 wymuszony w PRAWDZIWYM DOM (nie tylko na czystej funkcji), z realnymi kliknięciami
+  // chipów jak scenariusze 1-7 wyżej.
+  {
+    // 8a) Wybór surowca dotkniętego ×5 (drewno) — pole ilości domyślnie startuje na 5 (kroku),
+    // nie na 1, i ma atrybuty min/step=5 (natywny spinner nie schodzi poniżej bloku).
+    selectResourceChip('drewno');
+    const inp = resQtyInput();
+    ok(inp.value === '5', `surowiec_ilosc (drewno): domyślna ilość = krok (5), nie 1 (got ${inp.value})`);
+    ok(inp.min === '5' && inp.step === '5',
+      `surowiec_ilosc (drewno): input min=5 step=5 (got min=${inp.min}, step=${inp.step})`);
+
+    // 8b) Wpisanie ilości NIEBĘDĄCEJ wielokrotnością kroku (23) i kliknięcie "Dodaj" —
+    // silnik floruje w dół do 20 (nie odrzuca cicho 23, nie zaokrągla w górę do 25).
+    const beforeLen = giveRows().length;
+    addResource('drewno', 23);
+    ok(giveRows().length === beforeLen + 1, `surowiec_ilosc: "Dodaj" z ilością 23 tworzy 1 nowy wiersz (got ${giveRows().length - beforeLen})`);
+    ok(giveRowQty(beforeLen) === '20',
+      `surowiec_ilosc: 23 szt. drewna floruje do 20 szt. w koszyku (got ${giveRowQty(beforeLen)})`);
+
+    // 8c) Dodanie tego samego surowca ponownie SUMUJE (merge, jak złoto/żywność wyżej) i floruje
+    // sumę: 20 + 23(→floor 20) = 40, wielokrotność 5 — bez zmiany liczby wierszy.
+    addResource('drewno', 23);
+    ok(giveRows().length === beforeLen + 1, `surowiec_ilosc: drugie dodanie tego samego surowca SCALA, nie tworzy wiersza (got ${giveRows().length - beforeLen})`);
+    ok(giveRowQty(beforeLen) === '40',
+      `surowiec_ilosc: scalenie 20+20=40 (got ${giveRowQty(beforeLen)})`);
+
+    // 8d) Węgiel (krok=1, wyłączony z ×5) — chip switch NIE resetuje wartości do minimum
+    // (spójne z dotychczasowym zachowaniem chipów ilości — patrz `max` clamp bez resetu
+    // wyżej), tylko przestawia min/step na 1 (bez wymogu wielokrotności 5).
+    selectResourceChip('wegiel');
+    const inpW = resQtyInput();
+    ok(inpW.min === '1', `surowiec_ilosc (wegiel): input min=1, bez wymogu wielokrotności 5 (got ${inpW.min})`);
+    addResource('wegiel', 7);
+    ok(giveRowQty(beforeLen + 1) === '7',
+      `surowiec_ilosc (wegiel): 7 szt. NIE floruje (krok 1) — wiersz pokazuje dokładnie 7 (got ${giveRowQty(beforeLen + 1)})`);
   }
 
   for (const f of [ENTRY, BUNDLE, LEADER_STUB, BRAND_STUB]) {

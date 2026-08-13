@@ -28,6 +28,7 @@ export {
 } from '../src/game/diplomacy-ai-offer-balance.ts';
 export { computePlayerAcceptanceSides } from '../src/game/diplomacy-acceptance-points.ts';
 export { diplomacyPnZloto } from '../src/game/diplomacy-value-catalog.ts';
+export { computeQuickDealBasket } from '../src/game/diplomacy-pn-engine.ts';
 `);
 
 esbuild.buildSync({
@@ -149,6 +150,61 @@ ok(
   !cyclicClamped.giveItems?.length && !cyclicClamped.receiveItems?.length,
   'po clamp 1¤: oferta wycofana (nie 1 szt. zelaza za 1¤)',
 );
+
+// --- computeQuickDealBasket: R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13) ---
+// Ewaluator zgłosił: `pnPerUnit` do sortowania/filtrowania liczony przez
+// diplomacyPnSurowiecIlosc(id, 1) floruje TERAZ 1 szt. do 0 dla surowców z krokiem 5 —
+// bez naprawy WSZYSTKIE takie surowce znikałyby z „Szybkiej umowy" (filter pnPerUnit>0).
+{
+  const receiveDrewno = M.computeQuickDealBasket({
+    relacjaTotal: 60,
+    ourGoldAvailable: 500,
+    ourResourceOptions: [],
+    theirResourceOptions: [],
+    theirQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 200 }],
+  });
+  ok(receiveDrewno.receiveItems.length === 1 && receiveDrewno.receiveItems[0].id === 'drewno',
+    `Szybka umowa: drewno (krok 5) NIE znika z propozycji (got ${JSON.stringify(receiveDrewno.receiveItems)})`);
+  ok(receiveDrewno.receiveItems[0].ilosc === 10,
+    `Szybka umowa: seedQty drewna = min(10, maxQty) = 10, już wielokrotność kroku (got ${receiveDrewno.receiveItems[0].ilosc})`);
+
+  // Partner ma TYLKO 7 szt. (poniżej kotwicy 10, ale powyżej kroku 5) -> floor do 5.
+  const receiveLowStock = M.computeQuickDealBasket({
+    relacjaTotal: 60,
+    ourGoldAvailable: 500,
+    ourResourceOptions: [],
+    theirResourceOptions: [],
+    theirQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 7 }],
+  });
+  ok(receiveLowStock.receiveItems[0]?.ilosc === 5,
+    `Szybka umowa: partner ma 7 szt. -> min(10,7)=7 floruje do 5 (got ${receiveLowStock.receiveItems[0]?.ilosc})`);
+
+  // Partner ma TYLKO 3 szt. (poniżej kroku 5) -> brak oferty surowcowej, fallback do gestu złota.
+  const receiveBelowKrok = M.computeQuickDealBasket({
+    relacjaTotal: 60,
+    ourGoldAvailable: 500,
+    ourResourceOptions: [],
+    theirResourceOptions: [],
+    theirQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 3 }],
+  });
+  ok(receiveBelowKrok.receiveItems.length === 0,
+    `Szybka umowa: partner ma 3 szt. (< krok 5) -> brak pozycji surowcowej (got ${JSON.stringify(receiveBelowKrok.receiveItems)})`);
+  ok(receiveBelowKrok.giveItems.some(i => i.typ === 'zloto'),
+    'Szybka umowa: bez wycenialnego surowca partnera -> fallback gest złota');
+
+  // Dopełniacz z NASZYCH surowców (giveItems) — pętla przyrasta o krok, qty zawsze wielokrotnością 5.
+  const giveFiller = M.computeQuickDealBasket({
+    relacjaTotal: 100,
+    ourGoldAvailable: 0,
+    ourResourceOptions: [],
+    theirResourceOptions: [],
+    ourQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 200 }],
+    theirQuantityResourceOptions: [{ id: 'zelazo', label: 'Żelazo', maxQty: 50 }],
+  });
+  const drewnoGive = giveFiller.giveItems.find(i => i.id === 'drewno');
+  ok(drewnoGive != null && drewnoGive.ilosc % 5 === 0 && drewnoGive.ilosc > 0,
+    `Szybka umowa: dopełniacz drewna wielokrotnością 5, >0 (got ${drewnoGive?.ilosc})`);
+}
 
 console.log(`\ndiplomacy-ai-offer-balance-test: ${pass} passed, ${fail} failed`);
 process.exit(fail > 0 ? 1 : 0);

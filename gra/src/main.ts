@@ -1178,6 +1178,7 @@ import {
   diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowceCatalog,
   diplomacyPnSurowiecIlosc,
+  diplomacyNormalizeSurowiecIlosc,
 } from './game/diplomacy-value-catalog';
 import {
   collectUnauthorizedBorderPairs,
@@ -8308,7 +8309,13 @@ async function boot(): Promise<void> {
           case 'surowiec_ilosc': {
             // R-DYP-PAKIET-USUN (2026-08-08): `qty` z koszyka to SZTUKI wprost (dawniej
             // liczba pakietów × pakiet_wielkosc — usunięte na życzenie właściciela).
-            const totalUnits = qty;
+            // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): floor do wielokrotności kroku handlu
+            // TU, w faktycznym wykonaniu transferu — niezależnie od tego, czy `item.ilosc`
+            // dotarł już poprawnie znormalizowany (koszyk UI) czy z INNEGO źródła (deal
+            // cykliczny zbudowany przed tą zmianą, ręcznie edytowany save, przyszły refaktor).
+            // Ten sam floor stosuje diplomacyPnSurowiecIlosc przy wycenie PN — transfer i
+            // zapłata muszą się zgadzać, więc oba miejsca floorują IDENTYCZNIE.
+            const totalUnits = diplomacyNormalizeSurowiecIlosc(item.id, qty);
             const capId = capitalCityIdForOwner(toOwnerId);
             const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
             const result = transferSurowiecIlosc(item.id, totalUnits, fromOwnerId, toOwnerId, capId, refs);
@@ -15097,10 +15104,19 @@ async function boot(): Promise<void> {
       // R-DYP-PAKIET-USUN (2026-08-08): sellerRate to już sztuki/turę — bez dzielenia
       // przez wielkość pakietu (usunięta z handlu, patrz diplomacy-value-catalog.ts).
       const maxFromProduction = Math.floor(sellerRate);
-      let pakietyPerTura = Math.min(
-        pick.pakietyPerTura,
-        maxFromProduction,
-        AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
+      // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): `pick.pakietyPerTura` już wychodzi z
+      // buildOffer/diplomacy-resource-trade-pick.ts jako wielokrotność kroku, ALE ten
+      // Math.min z maxFromProduction (stawka produkcji/turę — rzadko sama wielokrotność 5)
+      // może ją ponownie zepsuć — floor JESZCZE RAZ na samym końcu, żeby ostateczna
+      // ilość pokazana w treści propozycji AI (buildHandelSurowiecCmdFromOffer) i faktycznie
+      // wyceniona (diplomacyPnSurowiecIlosc niżej) zawsze się zgadzały.
+      let pakietyPerTura = diplomacyNormalizeSurowiecIlosc(
+        pick.surowiecKey,
+        Math.min(
+          pick.pakietyPerTura,
+          maxFromProduction,
+          AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
+        ),
       );
       if (pakietyPerTura <= 0) return null;
       const handlowosc = proposerHandlowosc ?? 0.5;
@@ -15743,10 +15759,26 @@ async function boot(): Promise<void> {
         const items = deal.handelSurowiecCykliczny;
         if (!items?.length) continue;
 
+        // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): self-heal — dealy cykliczne mogą
+        // przetrwać z sejwa zapisanego PRZED tą zmianą (pakietyPerTura wtedy nie musiał być
+        // wielokrotnością kroku). Floor w miejscu, RAZ na turę, PRZED sprawdzeniem zapasów
+        // sprzedawcy (sellerOkOf) i faktycznym transferem — oba muszą widzieć TĘ SAMĄ,
+        // już poprawną ilość.
+        for (const it of items) {
+          const normalized = diplomacyNormalizeSurowiecIlosc(it.surowiecKey, it.pakietyPerTura);
+          if (normalized !== it.pakietyPerTura) it.pakietyPerTura = normalized;
+        }
+
         const handled = new Set<number>();
         // R-DYP-PAKIET-USUN (2026-08-08): pakietyPerTura to sztuki/turę wprost.
+        // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): `pakietyPerTura > 0` jawnie — po
+        // self-healu wyżej może wynosić 0 (legacy deal z sejwa sprzed tej zmiany, ilość
+        // poniżej kroku). Bez tego warunku dostawa "0 szt." liczyłaby się jako spełniona
+        // (0 >= 0), a kupujący i tak płaciłby zaplataPerTura za fizycznie NIC — traktujemy
+        // to jak zwykłe niedotrzymanie (sellerAtFault), bez transferu i bez zapłaty.
         const sellerOkOf = (item: HandelSurowiecCyklicznyItem): boolean =>
           item.sellerOwnerId !== item.buyerOwnerId
+          && item.pakietyPerTura > 0
           && ownerResourceStock(item.sellerOwnerId, item.surowiecKey) >= item.pakietyPerTura;
 
         for (let i = 0; i < items.length; i++) {
