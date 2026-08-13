@@ -18151,3 +18151,30 @@ warto obejrzeć koszt BFS na Ogromnej mapie i zasięg najazdu barbarzyńców; N6
 zapisane, niepilne.
 
 **STATUS: ZAMKNIĘTE.**
+
+---
+
+## P-PANEL-MIASTO-NIECZYTELNY-PRZY-PRZYBLIZENIU — Evaluator (Opus 5): PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-13)
+
+Zero blokujących. Matematyka progów przeliczona niezależnie od zera (kąt FOV, minDist, worldH z
+kodu, nie z pamięci) — zgadza się co do cyfry z Operatorem. Sufit `BADGE_MAX_TOTAL_SCALE=4`
+potwierdzony NOŚNY (bez niego dpr=3×LOD=3 dałoby 3222px > limit WebGL2 2048px). Sprzątanie cache
+potwierdzone bezpieczne Z KONSTRUKCJI (jedno globalne pole poziomu, nie per-miasto — kolizja
+poziomów matematycznie niemożliwa), wyścig przy szybkim zoomie sprawdzony w kolejce ładowania
+obrazków — bezpieczny (każde domknięcie maluje własną przechwyconą kanwę).
+
+**Nota materialna do backlogu — LOD jest GLOBALNY (per-kamera), nie per-miasto:** przybliżenie do
+JEDNEGO miasta podnosi rozdzielczość WSZYSTKICH odkrytych miast na mapie naraz — świadomie
+nieobjęte (frustum culling to poszerzenie zakresu). Realne ryzyko: przy dużym imperium (100+
+odkrytych miast) jedno kliknięcie kółkiem myszy przez próg unieważnia klucz wszystkich plakietek
+naraz → jednoczesne przemalowanie wszystkich (dawniej rozłożone w czasie per-miasto). Do
+zweryfikowania w praktycznym playteście na dużej mapie z rozwiniętym imperium — jeśli zacięcie
+będzie odczuwalne, temat frustum culling do osobnego zgłoszenia.
+
+Inne noty: brak histerezy na progach (drobne kliknięcie kółkiem w okolicy progu = pełny
+teardown/rebuild), na dpr≥2 sufit ×4 sprawia że LOD 1 i LOD 2 dają identyczny wynik (strata bez
+zysku — poprawka jednoliniowa możliwa, ale zmienia format klucza cache, nieaplikowana), liczba
+„0,11-0,72 ms/miasto" w istniejącym komentarzu `cities.ts` bez udokumentowanego źródła pomiaru
+(pre-istniejące, nie z tego commitu) — zapisane, niepilne.
+
+**STATUS: ZAMKNIĘTE.**
