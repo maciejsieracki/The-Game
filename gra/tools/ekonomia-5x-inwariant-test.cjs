@@ -26,6 +26,8 @@
 
 const buildings = require('../data/buildings.json');
 const units = require('../data/units.json');
+const terrainYields = require('../data/terrain-yields.json');
+const terrainImprovements = require('../data/terrain-improvements.json');
 
 let passed = 0;
 let failed = 0;
@@ -138,6 +140,66 @@ if (swietyZastep) {
     'PRZYPIĘTE: Hieros Lochos "Surowiec (ilość)" === 75 (x5, bylo 15)');
   eq(swietyZastep['Utrzymanie surowiec (ilość)'], 15,
     'PRZYPIĘTE: Hieros Lochos "Utrzymanie surowiec (ilość)" === 15 (x5, bylo 3)');
+}
+
+// ---------------------------------------------------------------------------
+// C. Inwariant przypięty: terrain-yields.json / terrain-improvements.json (Runda 3,
+//    Maciej 2026-08-13). Znalezisko Evaluatora rundy 2: te DWA pliki nie były w ogóle
+//    objęte tą bramką, mimo że dokładnie w nich wypadło pominięcie skalowania ×5
+//    DWUKROTNIE z rzędu (Runda 1 pominęła plony terenowe całkowicie; Runda 2 doskalowała
+//    surowiec_ilosc_tura ale przegapiła kanał bonus.{glina,kamien} w terrain-improvements.json
+//    aż do własnej korekty). Warstwa A (podzielność przez 5) tu NIE wystarcza -- większość
+//    liczb w tych plikach (Żywność, Praca, Podatek, epoka, koszt_praca...) NIE jest surowcem
+//    budowlanym i nie podlega konwencji ×5, więc ogólny inwariant strukturalny by się nie dał
+//    zastosować bez fałszywych alarmów. Stąd wyłącznie przypięcie konkretnych pól.
+// ---------------------------------------------------------------------------
+console.log('\n-- C. Inwariant przypięty: terrain-yields.json / terrain-improvements.json (Runda 3) --\n');
+
+function findTerrain(nazwa) {
+  return terrainYields.terrain_types.find(t => t['Teren'] === nazwa);
+}
+function findModifier(nazwa) {
+  return terrainYields.terrain_modifiers.find(m => m['Modyfikator'] === nazwa);
+}
+
+const rownina = findTerrain('Równina');
+ok(!!rownina, 'sanity: teren "Równina" istnieje w terrain-yields.json');
+if (rownina) {
+  eq(rownina['Drewno'], 10, 'PRZYPIĘTE: terrain-yields Równina.Drewno === 10 (x5, bylo 2)');
+  eq(rownina['Kamień'], 5, 'PRZYPIĘTE: terrain-yields Równina.Kamień === 5 (x5, bylo 1)');
+}
+
+const rzeka = findModifier('Rzeka');
+ok(!!rzeka, 'sanity: modyfikator "Rzeka" istnieje w terrain-yields.json');
+if (rzeka) {
+  eq(rzeka['Glina'], 10, 'PRZYPIĘTE: terrain-yields Rzeka.Glina === 10 (x5, bylo 2)');
+}
+
+const lasNakladka = findModifier('Las (nakładka)');
+ok(!!lasNakladka, 'sanity: modyfikator "Las (nakładka)" istnieje w terrain-yields.json');
+if (lasNakladka) {
+  eq(lasNakladka['Drewno'], 15, 'PRZYPIĘTE: terrain-yields Las (nakładka).Drewno === 15 (x5, bylo 3)');
+}
+
+const glinianka = terrainImprovements.glinianka;
+ok(!!glinianka, 'sanity: ulepszenie "glinianka" istnieje w terrain-improvements.json');
+if (glinianka) {
+  eq(glinianka.bonus && glinianka.bonus.glina, 10,
+    'PRZYPIĘTE: terrain-improvements glinianka.bonus.glina === 10 (x5, bylo 2)');
+}
+
+const kamieniolom = terrainImprovements.kamieniolom;
+ok(!!kamieniolom, 'sanity: ulepszenie "kamieniolom" istnieje w terrain-improvements.json');
+if (kamieniolom) {
+  eq(kamieniolom.bonus && kamieniolom.bonus.kamien, 5,
+    'PRZYPIĘTE: terrain-improvements kamieniolom.bonus.kamien === 5 (x5, bylo 1)');
+}
+
+const wyrab = terrainImprovements.wyrab;
+ok(!!wyrab, 'sanity: ulepszenie "wyrab" istnieje w terrain-improvements.json');
+if (wyrab) {
+  eq(wyrab.wycinka && wyrab.wycinka.praca_per_tura, 25,
+    'PRZYPIĘTE: terrain-improvements wyrab.wycinka.praca_per_tura === 25 (x5, bylo 5)');
 }
 
 console.log(`\nekonomia-5x-inwariant-test: ${passed} passed, ${failed} failed`);
