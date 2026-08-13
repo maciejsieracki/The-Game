@@ -1290,6 +1290,16 @@ async function boot(): Promise<void> {
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
     let _menuRivals: number = 6; // default rival count (skalowane w kreatorze)
     let _menuCivTypesCount: number = 7;
+    /**
+     * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: typy AI wybrane w kreatorze
+     * (multi-select krok 4), kolejność zaznaczenia. Puste = losowy dobór jak
+     * dotychczas (backward-compatible). Karmi `assignAiCivTypes` przy nowej grze,
+     * naprawie rosteru (repairAiRosterFromMap) i legacy-load bez meta rosteru.
+     * / EN: AI types picked in the wizard (step 4 multi-select), selection order.
+     * Empty = today's random pick (backward-compatible). Feeds `assignAiCivTypes`
+     * on new game, roster repair, and legacy loads without a saved roster.
+     */
+    let _menuSelectedAiCivIds: string[] = [];
     let _menuCityStates: number = 6;
     let _menuTypSwiata: TypSwiata = 'kontynenty';
     let _menuEpochId: string = 'kamien';
@@ -1722,6 +1732,7 @@ async function boot(): Promise<void> {
         aiOwnerIds: missing,
         aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
         seed: (_gameSeed ^ missing.reduce((a, b) => a ^ b, 0)) >>> 0,
+        preferredCivIds: _menuSelectedAiCivIds,
       });
       for (const [oid, civ] of aiMap) aiOwnerCivMap.set(oid, civ);
       syncOwnerDisplayNamesFromCities();
@@ -6684,6 +6695,7 @@ async function boot(): Promise<void> {
         aiOwnerIds,
         aktywneTypy,
         seed: rosterSeed,
+        preferredCivIds: _menuSelectedAiCivIds,
       });
       for (const [oid, civ] of aiMap) {
         aiOwnerCivMap.set(oid, civ);
@@ -6714,6 +6726,7 @@ async function boot(): Promise<void> {
           aiOwnerIds: ownerIds,
           aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
           seed: saved.seed ?? _gameSeed,
+          preferredCivIds: _menuSelectedAiCivIds,
         });
         for (const [oid, civ] of aiMap) aiOwnerCivMap.set(oid, civ);
         diagWarn('load', `legacy save — roster AI z ownerId (${ownerIds.length} nacji)`);
@@ -27490,6 +27503,7 @@ async function boot(): Promise<void> {
       _menuCivId = params.civId || 'rzymianie';
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);
+      _menuSelectedAiCivIds = Array.isArray(params.selectedAiCivIds) ? [...params.selectedAiCivIds] : [];
       _menuCityStates = clampMiastaPanstwaCount(
         params.cityStatesCount
         || parseInt(String(params.rivals), 10)

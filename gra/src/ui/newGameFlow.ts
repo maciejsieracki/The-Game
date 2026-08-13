@@ -47,6 +47,12 @@ import {
   type WorldGenerationPreset,
 } from '../map/newGameMapDefaults';
 import { buildStartPreview, startPreviewSummaryRows, type StartPreview } from '../game/start-preview';
+import {
+  aiCivSelectionCap,
+  aiCivCandidateIds,
+  sanitizeAiCivSelection,
+  isAiCivCardDisabled,
+} from './aiCivPicker';
 import type { BuildingCostPace } from '../game/building-cost-tempo';
 import type { KosztJednostekPace } from '../game/unit-cost-tempo';
 import type { WzrostLudnosciPace } from '../game/population-growth-tempo';
@@ -119,6 +125,14 @@ export interface NewGameParams {
   landFractionPercent: number;
   /** Podgląd startu klastra (E1/D-START) — z kreatora do SILNIK. */
   startPreview?: StartPreview;
+  /**
+   * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: konkretne typy cywilizacji
+   * przeciwnika wybrane przez gracza (multi-select, kolejność zaznaczenia).
+   * Puste/undefined = dobór losowy jak dotychczas (backward-compatible).
+   * / EN: specific opponent civ types chosen by the player (multi-select,
+   * selection order). Empty/undefined = today's random pick (backward-compatible).
+   */
+  selectedAiCivIds?: string[];
 }
 
 /** Decyzja B — modal „Zaawansowane opcje” krok 4. */
@@ -174,7 +188,7 @@ const NEWGAME_PREFS_KEY = 'civ-new-game-prefs-v1';
 const NEWGAME_PREFS_KEY_LEGACY = 'civ-newgame-prefs-v2';
 
 interface SavedNewGamePrefs {
-  v: 3;
+  v: 3 | 4;
   selEpoch: string;
   selCiv: string | null;
   /** Indeksy opcji (legacy / fallback). */
@@ -182,6 +196,13 @@ interface SavedNewGamePrefs {
   /** Etykiety PL opcji — preferowane przy wczytywaniu (odporne na skalowanie mapy). */
   settingLabels: Record<string, string>;
   advanced: NewGameAdvancedOptions;
+  /**
+   * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (v4): typy AI wybrane w kreatorze,
+   * kolejność zaznaczenia. Brak pola (prefs v3 i starsze) = [] = losowo jak dziś.
+   * / EN: (v4) AI types picked in the wizard, selection order. Missing field (v3
+   * and older prefs) = [] = today's random pick.
+   */
+  selAiCivIds?: string[];
 }
 
 /** Zapis tylko po zmianie użytkownika — unikamy nadpisywania prefs domyślnymi przy otwarciu kreatora. */
@@ -214,12 +235,13 @@ function saveNewGamePrefs(): void {
       settingLabels[s.key] = s.opts[s.idx] ?? '';
     }
     const payload: SavedNewGamePrefs = {
-      v: 3,
+      v: 4,
       selEpoch,
       selCiv,
       settings,
       settingLabels,
       advanced: { ...advOpts },
+      selAiCivIds: [...selAiCivIds],
     };
     storage.setItem(NEWGAME_PREFS_KEY, JSON.stringify(payload));
     prefsDirty = false;
@@ -312,6 +334,9 @@ function loadNewGamePrefs(): void {
     const parsed = JSON.parse(raw) as SavedNewGamePrefs & { v?: number; settingLabels?: Record<string, string> };
     if (parsed.selEpoch && EPOCHS.some(e => e.id === parsed.selEpoch)) selEpoch = parsed.selEpoch;
     if (parsed.selCiv) selCiv = parsed.selCiv;
+    if (Array.isArray(parsed.selAiCivIds)) {
+      selAiCivIds = parsed.selAiCivIds.filter((id): id is string => typeof id === 'string' && id.length > 0);
+    }
     if (parsed.settings && typeof parsed.settings === 'object') {
       applySettingFromPrefs(parsed, 'map_size');
       syncMapScaleOptions();
@@ -326,6 +351,7 @@ function loadNewGamePrefs(): void {
     migrateAdvLandFractionFromLegacy();
     syncAdvLandFromWorldType();
     ensureSelCivForEpoch();
+    sanitizeSelAiCivIds();
   } catch {
     /* ignore corrupt prefs — nie zapisuj domyślnych nadpisując stare dane */
   }
@@ -487,6 +513,37 @@ function ensureSelCivForEpoch(): void {
   }
 }
 
+/**
+ * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: kandydaci na cywilizację
+ * przeciwnika — pula epoki (`civsForEpoch`) bez nacji gracza. Cienki wrapper nad
+ * `aiCivCandidateIds` (aiCivPicker.ts) — filtrowanie po id, wynik z powrotem jako
+ * `CivOption[]` (potrzebne do renderu: nazwa, kolorHex).
+ * / EN: opponent civ candidates — thin wrapper over the pure `aiCivCandidateIds`,
+ * mapped back to `CivOption[]` for rendering (name, kolorHex).
+ */
+function aiCivCandidatesForEpoch(): CivOption[] {
+  const pool = civsForEpoch(selEpoch);
+  const ids = new Set(aiCivCandidateIds(pool.map(c => c.id), selCiv));
+  return pool.filter(c => ids.has(c.id));
+}
+
+/** Cienki wrapper nad `aiCivSelectionCap` (aiCivPicker.ts) — czyta suwak z SETT. */
+function currentAiSelectionCap(): number {
+  return aiCivSelectionCap(parseInt(settingValue('civ_types_count'), 10));
+}
+
+/**
+ * Domyka `selAiCivIds` po KAŻDEJ zmianie, która mogła unieważnić wybór: epoka
+ * (pula węższa), nacja gracza (kandydat stał się graczem), `civ_types_count`
+ * (limit spadł). Cienki wrapper nad `sanitizeAiCivSelection` (aiCivPicker.ts).
+ * / EN: closes `selAiCivIds` after ANY change that could invalidate the picks —
+ * thin wrapper over the pure `sanitizeAiCivSelection`.
+ */
+function sanitizeSelAiCivIds(): void {
+  const candidateIds = aiCivCandidatesForEpoch().map(c => c.id);
+  selAiCivIds = sanitizeAiCivSelection(selAiCivIds, candidateIds, currentAiSelectionCap());
+}
+
 interface EpochOption { id: string; name: string; icon: string; flavor: string; avail: boolean; badge: string; }
 const EPOCHS: EpochOption[] = [
   { id: 'kamien', name: 'Epoka Kamienia', icon: 'K', flavor: 'Pierwsze osady, kamienne narzedzia. Fundamenty imperium.', avail: true, badge: 'Dostepna' },
@@ -627,6 +684,13 @@ let rootEl: HTMLDivElement | null = null;
 let curStep = 1;
 let selCiv: string | null = null;
 let selEpoch = 'kamien';
+/**
+ * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: typy AI wybrane w kreatorze (krok
+ * 4, multi-select), w kolejności zaznaczenia. Puste = losowy dobór jak dotychczas.
+ * / EN: AI types picked in the wizard (step 4, multi-select), in selection order.
+ * Empty = today's random pick.
+ */
+let selAiCivIds: string[] = [];
 
 // ---------------------------------------------------------------------------
 // Style (scoped .civ-newgame)
@@ -808,6 +872,12 @@ function ensureStyles(): void {
 .civ-newgame .btn-adv{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);font-size:12px;letter-spacing:.15em;text-transform:uppercase;padding:9px 28px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
 .civ-newgame .btn-adv:hover{color:var(--tx);background:rgba(255,255,255,.03);}
 .civ-newgame .sett-note{font-size:11px;color:var(--tx-muted);text-align:center;max-width:700px;margin:.35rem clamp(24px,8vw,120px) 0 auto;font-family:Arial,sans-serif;line-height:1.4;}
+.civ-newgame .ai-civ-picker{max-width:700px;}
+.civ-newgame .ai-civ-picker .ai-civ-hint{text-align:left;margin:0 0 .6rem;max-width:none;}
+.civ-newgame .ai-civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;}
+.civ-newgame .ai-civ-grid .card{padding:10px 6px;}
+.civ-newgame .card.disabled{opacity:.35;cursor:not-allowed;}
+.civ-newgame .card.disabled:hover{border-color:var(--bd-sub);background:var(--bg-card);transform:none;}
 .civ-newgame .adv-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:flex-end;padding:1rem 2rem 1rem 1rem;overflow-y:auto;}
 .civ-newgame .adv-overlay.open{display:flex;}
 .civ-newgame .adv-modal{background:#12121A;border:1px solid var(--bd-mid);border-radius:var(--radius-lg);max-width:520px;width:100%;max-height:calc(100vh - 2rem);display:flex;flex-direction:column;overflow:hidden;margin-left:auto;flex-shrink:0;}
@@ -1219,12 +1289,63 @@ function showAdvancedModal(): void {
   overlay.classList.add('open');
 }
 
+/**
+ * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: multi-select cywilizacji
+ * przeciwnika (krok 4), wzorzec wizualny kroku 3 (`renderCivStep`/`civMedallionHtml`).
+ * Pula = epoka (`aiCivCandidatesForEpoch`); limit = `civ_types_count` − 1. Pusty
+ * wybór = losowy dobór silnika jak dotychczas (backward-compatible).
+ * / EN: opponent civ multi-select (step 4), visual pattern from step 3. Pool =
+ * epoch; cap = `civ_types_count` − 1. Empty selection = today's random engine
+ * pick (backward-compatible).
+ */
+function renderAiCivPicker(host: HTMLElement): void {
+  sanitizeSelAiCivIds();
+  const candidates = aiCivCandidatesForEpoch();
+  const cap = currentAiSelectionCap();
+  const box = el('div', 'start-preview ai-civ-picker');
+  box.appendChild(el('div', 'kh', 'Cywilizacje przeciwnika (opcjonalnie)'));
+  const hint = candidates.length === 0
+    ? 'Brak dostępnych cywilizacji przeciwnika w tej epoce.'
+    : selAiCivIds.length === 0
+      ? 'Nic nie zaznaczono — silnik dobierze przeciwników losowo (jak dotychczas).'
+      : `Wybrano ${selAiCivIds.length} z ${cap} możliwych przy obecnym ustawieniu „Liczba cywilizacji”.`;
+  box.appendChild(el('div', 'sett-note ai-civ-hint', hint));
+  if (candidates.length > 0) {
+    const grid = el('div', 'civ-grid ai-civ-grid');
+    for (const c of candidates) {
+      const isSel = selAiCivIds.includes(c.id);
+      const atCap = isAiCivCardDisabled(isSel, selAiCivIds.length, cap);
+      const card = el('div', 'card' + (isSel ? ' sel' : '') + (atCap ? ' disabled' : ''));
+      card.innerHTML = civMedallionHtml(c.id, isSel, 'card', c.kolorHex) + '<div class="cn">' + c.name + '</div>';
+      if (atCap) {
+        (card as HTMLElement).title = 'Limit „Liczba cywilizacji” (' + cap + ') osiągnięty — zwiększ suwak albo odznacz inną cywilizację.';
+      } else {
+        card.addEventListener('click', () => {
+          if (isSel) {
+            selAiCivIds = selAiCivIds.filter(id => id !== c.id);
+          } else if (selAiCivIds.length < cap) {
+            selAiCivIds = [...selAiCivIds, c.id];
+          } else {
+            return;
+          }
+          markNewGamePrefsDirtyAndSave();
+          render();
+        });
+      }
+      grid.appendChild(card);
+    }
+    box.appendChild(grid);
+  }
+  host.appendChild(box);
+}
+
 function renderSettStep(host: HTMLElement): void {
   syncMapScaleOptions();
   syncAdvLandFromWorldType();
   renderSettingRows(host, [
     'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
   ]);
+  renderAiCivPicker(host);
 
   const preview = currentStartPreview();
   if (preview) {
@@ -1256,6 +1377,7 @@ function settingValue(key: string): string {
 }
 
 function buildParams(): NewGameParams {
+  sanitizeSelAiCivIds();
   const c = selectedCiv();
   const ep = EPOCHS.find(e => e.id === selEpoch);
   const worldLabel = settingValue('world_type');
@@ -1324,6 +1446,7 @@ function buildParams(): NewGameParams {
     landFractionPercent: advOpts.landFractionPercent,
     advanced: { ...advOpts },
     startPreview,
+    selectedAiCivIds: [...selAiCivIds],
   };
 }
 
@@ -1556,6 +1679,7 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
   curStep = 1;
   selCiv = DEFAULT_PLAYER_CIV_ID;
   selEpoch = DEFAULT_START_EPOCH_ID;
+  selAiCivIds = [];
   ensureSelCivForEpoch();
   resetSettingsFromParams();
   loadNewGamePrefs();
