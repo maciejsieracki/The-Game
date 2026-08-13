@@ -16852,3 +16852,23 @@ weryfikację że N1/N2/N4 są rzeczywiście domknięte (w tym własna próba mut
 strukturalnej), bez potrzeby powtarzania pełnego audytu kompletności z rundy 4 (już wyczerpujący,
 potwierdzony czysty). Jeśli PASS — `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1` zamykany OSTATECZNIE po
 5 rundach.
+
+---
+
+## R-CIVPEDIA-OPISY-AUDYT-Q1 — Workflow zakończony (17 agentów), synteza w toku (2026-08-13)
+
+Workflow `wf_600b5a93-598` (audyt CivPedii/Poradnika/ściąg w grze, Etap 1 = WYŁĄCZNIE research/
+rekomendacje, zero implementacji) zakończony po odzysku z restartu kontenera. 17/17 agentów bez
+błędów, 1,5M tokenów. Wstępny podgląd wyniku: 27 paneli „ściąga"/„szczegóły" skatalogowanych w
+`cityPanel.ts`/`empireDetailPanel.ts` (lokalizacja plik:funkcja:linia każdy), recenzja rozdziałów
+Poradnika ze znaleziskiem systemowym — bloki „Przykład liczbowy"/„Strategia gracza"/„Typowe
+błędy" powtarzają się DOSŁOWNIE (identyczny tekst) w wielu miejscach zamiast być unikalne per
+sekcja, w rozdziale `00-jak-czytac` to 38,9% długości pliku, w pozostałych trzech sprawdzonych
+23-29%.
+
+Pełny wynik zbyt duży do przeczytania wprost w kontekście orkiestratora (93k+ tokenów samego
+JSON-a) — dysponowany agent syntetyzujący (`abc2547752ee4da1b`), ma zapisać uporządkowany
+dokument PL do `dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md` (streszczenie,
+znaleziska systemowe, tabela paneli, werdykty per rozdział Poradnika, rekomendacje priorytetowe,
+jawna sekcja co NIE zostało jeszcze zrobione — bo to Etap 1, zero wdrożenia bez decyzji
+właściciela o zakresie Etapu 2).
