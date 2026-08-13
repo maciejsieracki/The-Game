@@ -17279,3 +17279,24 @@ nie tylko przez test).
 **STATUS: TEMAT ZAMKNIĘTY.** Bramki: `tsc` 0, `promote-to-front-test.cjs` 125/125, `logic-test`
 213/213, `production-overflow-test` 24/24, plus 5 sąsiednich bramek (era-cud/wonder-availability/
 ai-cud-priorytet-b3/ai-production-priority/cuda-handel) wszystkie zielone.
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A — SCALONE, Evaluator w toku (2026-08-13)
+
+Operator naprawił ścieżkę AI dla wyrębu lasu w `main.ts` — zamiast dodawać cały plon (25) do
+puli Pracy AI ponad odjęty koszt startu (netto +20 wcześniej), teraz: pula Pracy AI traci
+WYŁĄCZNIE koszt startu (5), a plon (25, ewentualnie ×mnożnik Stolarni) idzie przez TĘ SAMĄ
+ścieżkę co u gracza (`applyStolarniaDrewnoMapInflow` → `ownerResourceCap` → `creditOwnerResourceStock`
+z kluczem `drewno`) — pełny parytet z graczem. Test: nowa sekcja 11 w `ai-improvements-test.cjs`
+(22→30 asercji) — odtwarza formułę z realnej egzekucji AI, potwierdza `pracaPoolAfter =
+poolBefore - koszt` (nie `-koszt+refund`), Drewno miasta rośnie o 25 (albo 27 z 1 Stolarnią,
+zgodne z formułą `stolarnia-r5-d2-test.cjs`), jawna asercja-strażnik przeciw starej formule buga.
+
+Bramki: `tsc` 0, `logic-test` 213/213, `ai-improvements-test.cjs` **30/30** (było 22), plus 7
+sąsiednich bramek zielonych (tech-tree/research/unit-replace/ai-founding-territory/ekonomia-5x-
+inwariant/map-improvement-qualify/pending-improvements/surow-civ-storage). 2 pre-istniejące
+czerwone (`auto-improvements-test` 1 fail, `grupa-b-lane-test` 4 fail) zweryfikowane identyczne
+na czystym drzewie (`git stash`) — niezwiązane. Commit `a530d48b`, push OK.
+
+**Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz.**
