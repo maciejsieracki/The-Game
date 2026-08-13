@@ -4934,7 +4934,13 @@ osobno" (prawdopodobnie okolice army-merge / stack-split w `gra/src/game/**` lub
 por. istniejący wzorzec `army-merge-dismiss-bounce-test.cjs`) i ustalić czy to founded bug w logice
 rozstawienia po odrzuceniu połączenia, zanim przedstawię ABC/naprawę.
 
-## P-PANSTWO-MIASTO-ZNIKA-PO-NAJEZDZIE-BEZ-BITWY (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — WSTRZYMANE na prośbę Macieja, nie podejmować pracy**
+## P-PANSTWO-MIASTO-ZNIKA-PO-NAJEZDZIE-BEZ-BITWY (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **ZAMKNIĘTE TRWALE (2026-08-13) — nie podjąć ponownie bez nowego zgłoszenia**
+
+**Zamknięcie ostateczne (Maciej, 2026-08-13):** „Temat »znikające państwo« miasto możesz usunąć
+trwale, bo to się nie potwierdziło." Zgłoszenie nigdy nie zostało powtórzone ani potwierdzone od
+2026-08-09 — pozostaje wyłącznie jako historyczny ślad w tym pliku (bez usuwania tekstu, zgodnie z
+append-only charakterem rejestru), ale NIE jest już tematem do podjęcia. Jeśli objaw kiedyś
+wróci, traktować jako NOWE zgłoszenie z osobnym ID, nie reaktywację tego wpisu.
 
 **⛔ Maciej wycofał zgłoszenie do czasu potwierdzenia (dosłowny cytat):** „Co do tego znikającego
 miasta? Na razie nic z tym nie rób. Możliwe że to była chatka ze skarbami i omyłkowo pomyślałem że
