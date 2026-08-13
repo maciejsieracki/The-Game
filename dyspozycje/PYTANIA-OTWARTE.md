@@ -18877,3 +18877,32 @@ wycofania deployu (brak crashu/regresji, tylko brak efektu).
 
 **STATUS: dispatch Operator runda 2 — przepięcie mechanizmu na ścieżkę klastrową wg kierunku
 Evaluatora, plus N1/N2 przy okazji.**
+
+## P-MILET-ATENY-PRACOWNICY-NA-CUDZYM-HEKSIE (2026-08-13, zgłoszenie Macieja, screenshot, FRUSTRACJA — "przecież to zgłaszałem") · STATUS: OTWARTE — rozpoznanie dispatchowane PILNIE
+
+**Zgłoszenie (dosłowne):** „nadal nie został naprawiony problem, że miasto trzyma swoich
+pracowników w innym mieście, na terenie HEXa innego miasta. Czyli miasto Millet trzyma swoich
+obywateli w mieście Ateny. W ogóle to bzdura. Przecież to zgłaszałem, miało być to niby
+naprawione, czemu to jest nie naprawione?"
+
+**Kontekst — możliwa rozbieżność zakresu z wcześniej zamkniętym tematem tej sesji.** Dziś
+zamknięty (2 rundy, PASS-WITH-NOTES, w FALI 276) temat `P-HEKS-CENTRUM-OBCEGO-MIASTA` +
+`P-HEKS-SPOR-SASIAD` miał DWA elementy:
+1. Centrum KAŻDEGO miasta wykluczone bezwarunkowo z puli pól obrabianych przez INNE miasto —
+   **niezależnie od właściciela** (dosłowny zapis ECHO A: „centrum każdego miasta wykluczone
+   bezwarunkowo... niezależnie od score/priorytetu").
+2. Reguła "najbliższe miasto wygrywa" dla ZWYKŁYCH (nie-centrum) pól — **WYŁĄCZNIE dla miast
+   TEGO SAMEGO właściciela** (dosłowny zapis ECHO A: „przy zachodzeniu terytoriów TEGO SAMEGO
+   właściciela").
+
+**Do pilnego ustalenia rozpoznaniem:** (a) czy Millet i Ateny należą do TEGO SAMEGO właściciela,
+czy do RÓŻNYCH cywilizacji, (b) czy sporny heks to CENTRUM miasta Ateny, czy zwykłe pole w jego
+terytorium, (c) jeśli różni właściciele + zwykłe pole — **to NIGDY nie było w zakresie
+dzisiejszej naprawy** (P-HEKS-SPOR-SASIAD explicite ograniczony do tego samego właściciela) —
+oznacza to fundamentalnie inny, głębszy problem: czy `withinTerritory`/silnik przydziału pól w
+ogóle zabrania miastu pracować na polach w terytorium INNEJ cywilizacji, czy ten wymóg nigdy nie
+istniał, (d) jeśli ten sam właściciel + zwykłe pole — to realna regresja/luka w dzisiejszej
+naprawie, wymaga pilnego zbadania dlaczego bramki (55/55 zielone) tego nie złapały.
+
+**STATUS: dispatch Explore NATYCHMIAST — priorytet, właściciel czeka na konkretną odpowiedź, nie
+domysł.**
