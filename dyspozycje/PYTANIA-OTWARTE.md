@@ -17839,3 +17839,40 @@ a wycofanie powinno być wyszarzone."
   23223`, ten sam wzorzec zidentyfikowany wcześniej dziś przy rozpoznaniu tematu Zasięgu Ruchu).
 
 **Dispatch Operatora (Sonnet 5, worktree izolowany) NASTĘPUJE.**
+
+---
+
+## P-OKOLICA-DUBLOWANIE-HEKSA-MIEDZY-MIASTAMI — ECHO A (2026-08-13)
+
+Maciej wybrał **A: najbliższe miasto wygrywa** (ten sam wzorzec co `nearestOwnerCityId` w
+`computeTerritoryResourceYieldByCity`, `turn-economy.ts:778-787` — odległość `hexDistance`, remis
+→ pierwsze miasto w tablicy `cities`).
+
+**Zakres implementacji (z rozpoznania):**
+1. `gra/src/game/turn-economy.ts` — `advanceCityEconomy` (pętla ~2254) i `previewCityEconomy`
+   (pętla ~1710): zbudować narastający `Set<string>` zajętych heksów per-owner PRZED/W TRAKCIE
+   iteracji po `cities`, w kolejności „najbliższe miasto do danego heksu ma pierwszeństwo" —
+   wymaga dwuetapowego podejścia (nie prostej pętli w kolejności `cities`): dla każdego spornego
+   heksu (należącego do promienia >1 miasta tego samego ownera) wybrać najbliższe miasto, dopiero
+   potem przydzielić pozostałe pola każdemu miastu w normalnej kolejności rankingu.
+2. `cityWorkedTilesForEconomy`, `workedHexCoordsForCity` (`turn-economy.ts`) — nowy opcjonalny
+   parametr (zbiór zajętych heksów per-owner) przekazywany do `resolveWorkedTiles`.
+3. `computeWorkedMagazynYieldsByCity` (`turn-economy.ts:853-875`) — też podwójnie liczy
+   drewno/kamień/glinę przy konflikcie, wymaga tego samego zbioru.
+4. `okolica.ts` — `resolveWorkedTiles`/`assignWorkedTiles` — dodać opcjonalny predykat/zbiór „hex
+   zajęty przez inne miasto ownera" do filtra `isWorkable`.
+5. `territory-work.ts` — `reconcileWorkedTilesForOwner`/`reconcileAllWorkedTiles` — rozszerzyć o
+   czyszczenie kolizji WEWNĄTRZ-właścicielskich w `okolicaReczne` (dziś czyści tylko cross-owner).
+6. UI trybu ręcznego: `okolica.ts` (`adjustTileWorker`, `toggleTileWorker`), `main.ts`
+   (`applyOkolicaTileAdjust:4633`, `okolicaWorkedKeySet:4576`) — dociągnąć info o heksach zajętych
+   przez inne miasta tego samego właściciela, żeby gracz widział konflikt PRZED kliknięciem, nie
+   dopiero po przeliczeniu tury.
+7. AI dostaje naprawę „za darmo" (ta sama pętla `advanceCityEconomy` obsługuje wszystkich
+   właścicieli) — potwierdzone, AI nie ma osobnej ścieżki `resolveWorkedTiles`.
+
+**Ryzyko wydajnościowe do zweryfikowania przez Operatora:** obliczanie „najbliższe miasto per
+sporny heks" dla WSZYSTKICH heksów w zasięgu WSZYSTKICH miast każdego właściciela, każdą turę —
+sprawdzić czy nie wprowadza regresji na dużych mapach z wieloma miastami (analogicznie do
+wcześniejszych regresji wydajnościowych tej sesji, np. barbarzyńcy 118×).
+
+**Dispatch Operatora (Sonnet 5, worktree izolowany) NASTĘPUJE.**
