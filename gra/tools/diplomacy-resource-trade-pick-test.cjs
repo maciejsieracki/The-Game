@@ -45,6 +45,39 @@ const price = (key, p) => p * 5;
 
 console.log('diplomacy-resource-trade-pick-test');
 
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): drewno/glina/kamien mają krok handlu 5 szt.
+// (diplomacyHandelSurowiecKrok) — buildOffer floruje `pakiety` do tej wielokrotności PRZED
+// wyceną, więc `maxPakietyPerTura`/`maxQty` niżej muszą być ≥5, żeby oferta się nie zerowała.
+// Osobne przypadki brzegowe dla samego mechanizmu kroku:
+ok(
+  pickResourceDeficitForOwnerPair({
+    buyerOwnerId: 1,
+    sellerOwnerId: 0,
+    goodsBuyer: [{ key: 'drewno', label: 'Drewno', ilosc: 0 }],
+    goodsSeller: [{ key: 'drewno', label: 'Drewno', ilosc: 100 }],
+    sellerOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 10 }],
+    pricedKeys: priced,
+    pakietWielkosc: pakiet,
+    maxPakietyPerTura: 3, // < krok(5) -> floruje do 0 -> brak oferty (null), nie 3 szt.
+    pricePerPakiet: price,
+  }) === null,
+  'krok5: maxPakietyPerTura=3 (< krok 5) floruje do 0 -> brak oferty (nie 3 szt. wycenione jak 3)',
+);
+ok(
+  pickResourceDeficitForOwnerPair({
+    buyerOwnerId: 1,
+    sellerOwnerId: 0,
+    goodsBuyer: [{ key: 'drewno', label: 'Drewno', ilosc: 0 }],
+    goodsSeller: [{ key: 'drewno', label: 'Drewno', ilosc: 100 }],
+    sellerOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 23 }], // zapas NIE jest wielokrotnością 5
+    pricedKeys: priced,
+    pakietWielkosc: pakiet,
+    maxPakietyPerTura: 30,
+    pricePerPakiet: price,
+  })?.pakietyPerTura === 20,
+  'krok5: maxQty=23 (nie wielokrotność 5) -> oferta floruje do 20 szt., nie 23',
+);
+
 ok(
   detectPricedResourceDeficits(
     [{ key: 'drewno', label: 'Drewno', ilosc: 2 }, { key: 'glina', label: 'Glina', ilosc: 50 }],
@@ -63,7 +96,7 @@ const deficitPick = pickResourceTradeBetweenOwners({
   sellerOptionsB: [{ id: 'drewno', label: 'Drewno ×10', maxQty: 10 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
-  maxPakietyPerTura: 3,
+  maxPakietyPerTura: 5,
   pricePerPakiet: price,
 });
 ok(deficitPick?.powod === 'deficyt', 'priorytet deficyt');
@@ -82,7 +115,7 @@ const deficitDirect = pickResourceDeficitForOwnerPair({
   sellerOptions: [{ id: 'glina', label: 'Glina ×10', maxQty: 10 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
-  maxPakietyPerTura: 3,
+  maxPakietyPerTura: 5,
   pricePerPakiet: price,
 });
 ok(deficitDirect?.powod === 'deficyt' && deficitDirect.surowiecKey === 'glina', 'pickResourceDeficitForOwnerPair: glina 0 -> kupno');
@@ -100,7 +133,7 @@ const surplusPick = pickResourceTradeBetweenOwners({
   sellerOptionsB: [{ id: 'glina', label: 'Glina ×10', maxQty: 8 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
-  maxPakietyPerTura: 3,
+  maxPakietyPerTura: 5,
   pricePerPakiet: price,
 });
 ok(surplusPick?.powod === 'nadwyzka', 'bez deficytu -> nadwyzka');

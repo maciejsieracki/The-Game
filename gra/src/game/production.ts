@@ -1220,6 +1220,92 @@ export function dequeue(prod: CityProduction, index = 0): CityProduction {
   };
 }
 
+/** Wynik `filterQueue()` -- patrz jego docstring. / EN: result of `filterQueue()`, see its docstring. */
+export interface FilterQueueResult {
+  prod: CityProduction;
+  /**
+   * Praca zbankowana na froncie (`prod.postep`), który sam filtr odrzucił --
+   * 0 gdy front PRZETRWAŁ filtr (nic do oddania) albo nic nie miał
+   * zbankowane. Wywołujący decyduje co z tym zrobić (np. dopisać do puli
+   * Pracy imperium) -- ten moduł celowo nic nie wie o takiej puli.
+   * / EN: Praca banked on the front (`prod.postep`) that the filter itself
+   * rejected -- 0 when the front SURVIVED the filter (nothing to hand back)
+   * or had nothing banked. The caller decides what to do with it (e.g. credit
+   * an empire Praca pool) -- this module deliberately knows nothing about
+   * such a pool.
+   */
+  forfeitedPostep: number;
+}
+
+/**
+ * Usuń z kolejki każdy item, dla którego `keep` zwraca false (np. Cud, który
+ * inna cywilizacja właśnie ukończyła -- wonderGateOk przechodzi na false).
+ * Czysta/generyczna funkcja: predykat (i wszystko czego potrzebuje -- ownerId,
+ * stan świata) to sprawa wywołującego; ten moduł nie wie nic o Cudach.
+ *
+ * Obsługa frontu (P-SANITIZE-POSTEP-TRANSFER-Q1=B, Maciej 2026-08-13): gdy
+ * `keep` odrzuca AKTUALNY front (`kolejka[0]`), jego aktywny `prod.postep`
+ * NIE przechodzi na to, co zostanie nowym frontem -- P-PROMOCJA-FRONT-RESET-
+ * POSTEPU-Q1=B ustabilizowało niezmiennik, że postęp wraca WYŁĄCZNIE do TEGO
+ * SAMEGO itemu, nigdy nie przeskakuje na inny. Zamiast tego wraca jako
+ * `forfeitedPostep` scalar (ten sam wzorzec co `overflowToPool` w
+ * `AdvanceProductionResult`) -- wywołujący sam bankuje go gdzie trzeba. Nowy
+ * front (jeśli przetrwał `keep`) i tak odzyskuje WYŁĄCZNIE swój WŁASNY
+ * zbankowany `ProductionItem.postep` -- logika dzielona z `dropFrontItem`
+ * (ten sam kod co `dequeue(0)`), zero duplikacji.
+ *
+ * Jeśli front NIE jest usuwany (filtr odrzucił coś dalej w kolejce), postęp
+ * jest całkiem nietknięty -- front kontynuuje jak wcześniej.
+ * / EN: Drop every item from the queue for which `keep` returns false (e.g. a
+ * Wonder another civ just finished -- wonderGateOk flips to false). Pure/
+ * generic: the predicate (and everything it needs -- owner id, world state)
+ * is the caller's job; this module knows nothing about Wonders.
+ *
+ * Front handling (P-SANITIZE-POSTEP-TRANSFER-Q1=B, Maciej 2026-08-13): when
+ * `keep` rejects the CURRENT front (`kolejka[0]`), its active `prod.postep`
+ * does NOT carry over to whatever becomes the new front --
+ * P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B established the invariant that progress
+ * only ever returns to the SAME item, never jumps to a different one. Instead
+ * it comes back as the `forfeitedPostep` scalar (same pattern as
+ * `overflowToPool` on `AdvanceProductionResult`) -- the caller banks it
+ * wherever appropriate. The new front (if it survives `keep`) still gets back
+ * ONLY its OWN banked `ProductionItem.postep` -- logic shared with
+ * `dropFrontItem` (the same code `dequeue(0)` uses), zero duplication.
+ *
+ * If the front is NOT removed (the filter rejected something further down
+ * the queue), progress is entirely untouched -- the front carries on as before.
+ */
+export function filterQueue(
+  prod: CityProduction,
+  keep: (item: ProductionItem) => boolean,
+): FilterQueueResult {
+  const kolejka = prod.kolejka.filter(keep);
+  if (kolejka.length === prod.kolejka.length) {
+    return { prod, forfeitedPostep: 0 };
+  }
+  const frontRemoved = prod.kolejka.length > 0 && !keep(prod.kolejka[0] as ProductionItem);
+  if (!frontRemoved) {
+    return {
+      prod: { ...prod, kolejka },
+      forfeitedPostep: 0,
+    };
+  }
+  // `kolejka` już wyklucza stary front (odrzucony przez `keep`) plus każdy
+  // inny nieważny item dalej w kolejce -- doklejenie jednorazowego elementu
+  // na start pozwala `dropFrontItem` (jego `slice(1)`) ustawić resztę z
+  // powrotem bez duplikowania jego logiki czyszczenia frontu.
+  // EN: `kolejka` already excludes the old front (rejected by `keep`) plus
+  // any other invalid item further down the queue -- padding a throwaway head
+  // element lets `dropFrontItem` (its `slice(1)`) line the rest back up
+  // without duplicating its front-clean logic.
+  const dropped = dropFrontItem([prod.kolejka[0] as ProductionItem, ...kolejka], 0);
+  const forfeitedPostep = Number.isFinite(prod.postep) && prod.postep > 0 ? prod.postep : 0;
+  return {
+    prod: { ...prod, kolejka: dropped.kolejka, postep: dropped.postep },
+    forfeitedPostep,
+  };
+}
+
 /**
  * Zamień pozycję kolejki oczekujących (`index` >= 1) miejscami z aktualnie
  * budowanym elementem (`index` 0) -- "podnieś na samą górę". Rozwiązuje

@@ -279,6 +279,71 @@ function readHandelSurowceParam(rowKey: string, fallback: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 }
 
+// ---------------------------------------------------------------------------
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (Maciej 2026-08-13): po ×5 rebalansie produkcji surowców
+// fizycznych (R-EKONOMIA-SUROWCE-SKALA-5X-Q1) właściciel odrzucił dzielenie cena_* przez 5
+// (dawałoby ułamki — Drewno 1→0,2 itd., dokładnie ten sam floor-do-zera, który rebalans miał
+// wyeliminować). Zamiast tego cena_* zostaje NUMERYCZNIE bez zmian, a minimalny krok/
+// wielokrotność wymiany handlowej rośnie z 1 szt. na 5 szt.: „stara 1 szt. to wartościowo
+// nowe 5 szt." (Maciej, dosłownie). Złoto (surowiec w magazynie, id `zloto` — odrębne od
+// Pieniądza/¤) i Węgiel zostają przy kroku 1 — Złoto świadomie WYŁĄCZONE z ×5
+// (R-EKONOMIA-SUROWCE-SKALA-5X-Q1 pkt 8), Węgiel nie ma ŻADNEJ produkcji objętej ×5
+// rebalansem (brak wpisów w terrain-improvements.json/buildings.json — sprawdzone grepem),
+// więc jego cena/krok też zostają nietknięte z tego samego powodu co Złoto.
+// / EN: after the ×5 physical-resource production rebalance, the owner rejected dividing
+// cena_* by 5 (fractions again). Instead cena_* stays numerically unchanged and the minimum
+// trade increment becomes 5 units for resources actually touched by ×5 — Gold and Coal (never
+// touched by ×5) keep step 1.
+// ---------------------------------------------------------------------------
+
+/** Surowce ilościowe dotknięte ×5 rebalansem produkcji — krok handlu 5 szt. (patrz wyżej). */
+const HANDEL_SUROWCE_KROK5: ReadonlySet<string> = new Set([
+  'drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'cegla', 'sol', 'kon',
+  'ceramika', 'braz', 'zelazo', 'stal',
+]);
+
+/**
+ * Minimalny krok/wielokrotność wymiany handlowej (szt.) dla danego surowca ilościowego.
+ * 5 dla surowców fizycznych dotkniętych ×5 (patrz `HANDEL_SUROWCE_KROK5`), 1 dla
+ * Złota/Węgla (świadomie wyłączone z ×5) i dla wszystkiego spoza katalogu (bezpieczny
+ * fallback — brak krotności = brak ograniczenia).
+ */
+export function diplomacyHandelSurowiecKrok(surowiecKey: string): number {
+  return HANDEL_SUROWCE_KROK5.has(surowiecKey.trim().toLowerCase()) ? 5 : 1;
+}
+
+/**
+ * Normalizuje `rawQty` sztuk surowca `surowiecKey` do wielokrotności kroku handlu
+ * (`diplomacyHandelSurowiecKrok`) — floor W DÓŁ, nigdy w górę (żeby przycięcie do `max`
+ * zapasu nigdy nie przekroczyło go). Gdy podany jest `max` (zapas dostępny), przycina
+ * do niego PRZED floorowaniem — floorowanie PO przycięciu jest konieczne, bo `max` sam
+ * w sobie zwykle NIE jest wielokrotnością 5 (magazyn miejski rośnie/maleje o dowolne
+ * ilości z produkcji minus zużycie, nie tylko o wielokrotności 5).
+ * Zwraca 0, gdy wynik < kroku (za mało nawet na jeden blok) — spójne z istniejącym
+ * traktowaniem ilosc<=0 jako "brak/nieprawidłowa pozycja" w readItemFromForm/
+ * diplomacyPnSurowiecIlosc (nigdy nie zaokrągla w GÓRĘ do minimalnego bloku — to byłoby
+ * cichym PODWYŻSZENIEM ilości ponad to, co gracz/AI faktycznie zażądali).
+ * Używane przez WSZYSTKIE punkty decydujące o ilości surowiec_ilosc (UI koszyka, silnik PN,
+ * transfer wykonawczy, generatory ofert AI/Szybkiej umowy) — jeden wspólny mechanizm zamiast
+ * duplikowanej logiki floor/clamp w każdym miejscu z osobna.
+ * / EN: normalizes rawQty down to the nearest multiple of the trade step for surowiecKey,
+ * flooring AFTER capping to max (max itself is rarely already a multiple of 5). Returns 0
+ * when the result is below one step — never rounds UP to the minimum block, which would
+ * silently inflate a requested quantity.
+ */
+export function diplomacyNormalizeSurowiecIlosc(
+  surowiecKey: string,
+  rawQty: number,
+  max?: number,
+): number {
+  if (!Number.isFinite(rawQty)) return 0;
+  const capped = max != null && Number.isFinite(max) ? Math.min(rawQty, max) : rawQty;
+  if (!(capped > 0)) return 0;
+  const krok = diplomacyHandelSurowiecKrok(surowiecKey);
+  if (krok <= 1) return Math.floor(capped);
+  return Math.floor(capped / krok) * krok;
+}
+
 /**
  * R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk handlu NIE liczy już w pakietach —
  * gracz podaje sztuki wprost (patrz diplomacyPnSurowiecIlosc, main.ts transferBasketItems).
@@ -304,12 +369,19 @@ export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): num
  * R-DYP-PAKIET-USUN (2026-08-08): `iloscSztuk` to SZTUKI wprost — spójne z polem
  * `ilosc` w BasketItem (dawniej „pakiety", usunięte na życzenie właściciela: „podajemy
  * sztuki. Jeden, dziesięć, sto — żadnych pakietów").
+ * R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): `iloscSztuk` przechodzi PRZEZ
+ * `diplomacyNormalizeSurowiecIlosc` — floor do wielokrotności kroku handlu (5 szt. dla
+ * surowców dotkniętych ×5, patrz wyżej) — ZANIM policzona zostanie cena. To jest jedyny
+ * choke-point, przez który przechodzi KAŻDA wycena PN pozycji surowiec_ilosc (UI koszyka,
+ * generatory ofert AI, Szybka umowa, walidacja przy zatwierdzeniu) — więc dowolna ilość
+ * niebędąca wielokrotnością 5, z DOWOLNEGO źródła (w tym ręcznie edytowany save), jest tu
+ * bezpiecznie przycinana w dół, NIGDY cicho zaakceptowana jako-jest.
  */
 export function diplomacyPnSurowiecIlosc(surowiecKey: string, iloscSztuk: number): number | null {
   const cena = diplomacyHandelSurowiecCenaJednostkowa(surowiecKey);
   if (cena == null) return null;
-  const sztuki = Math.floor(iloscSztuk);
-  if (!Number.isFinite(sztuki) || sztuki <= 0) return 0;
+  const sztuki = diplomacyNormalizeSurowiecIlosc(surowiecKey, iloscSztuk);
+  if (sztuki <= 0) return 0;
   return Math.max(0, Math.round(sztuki * cena));
 }
 

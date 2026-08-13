@@ -35,6 +35,8 @@ export {
   diplomacyHandelSurowiecCenaJednostkowa,
   diplomacyHandelSurowceCatalog,
   diplomacyHandelSurowcePakietWielkosc,
+  diplomacyHandelSurowiecKrok,
+  diplomacyNormalizeSurowiecIlosc,
 } from '../src/game/diplomacy-value-catalog';
 `, 'utf8');
 
@@ -130,12 +132,32 @@ eq(D.diplomacyHandelSurowiecCenaJednostkowa('zloto'), 50, 'zloto-surowiec 50 PN/
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('wegiel'), 20, 'wegiel 20 PN/szt.');
 // R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk handlu podaje sztuki wprost — bez
 // pakietów, bez ×10. PN pozycji = sztuki × cena_PN/szt., nic więcej.
-eq(D.diplomacyPnSurowiecIlosc('drewno', 1), 1, '1 szt. drewno = 1 PN (1×1)');
-eq(D.diplomacyPnSurowiecIlosc('drewno', 4), 4, '4 szt. drewno = 4 PN (4×1) — „wpisujesz 4, dostajesz 4”');
-eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 2), 20, '2 szt. ruda_zelaza = 20 PN (2×10)');
-eq(D.diplomacyPnSurowiecIlosc('stal', 1), 25, '1 szt. stal = 25 PN (1×25)');
-eq(D.diplomacyPnSurowiecIlosc('zloto', 1), 50, '1 szt. zloto = 50 PN (1×50)');
-eq(D.diplomacyPnSurowiecIlosc('wegiel', 1), 20, '1 szt. wegiel = 20 PN (1×20)');
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): drewno/ruda_zelaza/stal (i pozostałe surowce
+// dotknięte ×5 rebalansem produkcji) handlują się WYŁĄCZNIE wielokrotnościami 5 szt. —
+// diplomacyPnSurowiecIlosc floruje w dół do najbliższej wielokrotności PRZED przemnożeniem
+// przez cenę. Złoto (surowiec)/Węgiel świadomie WYŁĄCZONE z ×5 -> zostają przy kroku 1 szt.
+eq(D.diplomacyPnSurowiecIlosc('drewno', 5), 5, '5 szt. drewno = 5 PN (5×1) — krok 5 spełniony');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 20), 20, '20 szt. drewno = 20 PN (20×1)');
+eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 10), 100, '10 szt. ruda_zelaza = 100 PN (10×10)');
+eq(D.diplomacyPnSurowiecIlosc('stal', 5), 125, '5 szt. stal = 125 PN (5×25)');
+eq(D.diplomacyPnSurowiecIlosc('zloto', 1), 50, '1 szt. zloto = 50 PN (1×50) — Złoto krok 1, bez zmian');
+eq(D.diplomacyPnSurowiecIlosc('wegiel', 1), 20, '1 szt. wegiel = 20 PN (1×20) — Węgiel krok 1, bez zmian');
+// Przypadki brzegowe kroku 5: ilość niebędąca wielokrotnością floruje w DÓŁ (nigdy w górę),
+// a ilość poniżej jednego bloku (5 szt.) jest odrzucana jako 0 PN — spójne z istniejącym
+// traktowaniem ilosc<=0 (nigdy nie zaakceptowana po cichu jako-jest).
+eq(D.diplomacyPnSurowiecIlosc('drewno', 4), 0, '4 szt. drewno (< 1 kroku) = 0 PN — odrzucone, nie zaokrąglone w górę');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 7), 5, '7 szt. drewno floruje do 5 szt. = 5 PN (nie 7 PN)');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 9), 5, '9 szt. drewno floruje do 5 szt. = 5 PN');
+eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 23), 200, '23 szt. ruda_zelaza floruje do 20 szt. = 200 PN (nie 230 PN)');
+eq(D.diplomacyPnSurowiecIlosc('wegiel', 3), 60, '3 szt. wegiel (krok 1) = 60 PN — bez floorowania, Węgiel nietknięty');
+eq(D.diplomacyHandelSurowiecKrok('drewno'), 5, 'krok(drewno) = 5 szt.');
+eq(D.diplomacyHandelSurowiecKrok('ruda_zelaza'), 5, 'krok(ruda_zelaza) = 5 szt.');
+eq(D.diplomacyHandelSurowiecKrok('braz'), 5, 'krok(braz) = 5 szt.');
+eq(D.diplomacyHandelSurowiecKrok('zloto'), 1, 'krok(zloto-surowiec) = 1 szt. — wyłączone z ×5');
+eq(D.diplomacyHandelSurowiecKrok('wegiel'), 1, 'krok(wegiel) = 1 szt. — wyłączone z ×5 (brak produkcji objętej rebalansem)');
+eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 137, 137), 135, 'normalize: 137 szt. dostępne (nie mult. 5) floruje do 135');
+eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 3, 137), 0, 'normalize: żądanie 3 < krok(5) -> 0, nie 3');
+eq(D.diplomacyNormalizeSurowiecIlosc('wegiel', 137, 137), 137, 'normalize: wegiel krok 1 -> max przechodzi bez zmian');
 const handelCat = D.diplomacyHandelSurowceCatalog();
 ok(Object.keys(handelCat).length === 14, 'katalog handlu: 14 surowców ilościowych');
 

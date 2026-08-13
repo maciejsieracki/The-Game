@@ -10,7 +10,11 @@ import type { AIDiplomacyCommand } from './ai';
 
 import type { BasketItem, QuickDealResult } from './diplomacy-pn-engine';
 
-import { diplomacyPnPraca, diplomacyPnZloto } from './diplomacy-value-catalog';
+import {
+  diplomacyPnPraca,
+  diplomacyPnZloto,
+  diplomacyNormalizeSurowiecIlosc,
+} from './diplomacy-value-catalog';
 
 import {
   AI_TRADE_AGREEMENT_SWEETENER_MAX,
@@ -232,7 +236,18 @@ export function clampAiResourceTradeCommand(
 
   const maxPakietyPerTura = maxResourcePakiety('per_turn', sellerHave, sellerRate, pakiet);
 
-  let pakietyPerTura = Math.min(cmd.pakietyPerTura, maxPakietyPerTura);
+  // R-DYPLO-CENNIK-KROK5-Q1 runda 2: lustrzana poprawka do main.ts (buildOffer AI↔gracz) —
+  // ta funkcja jest DRUGĄ, wcześniej pominiętą ścieżką generującą 'zaproponuj_handel_surowiec'
+  // (enqueueNegotiationFromAiCmd). Bez floora ilość mogła zostać niewielokrotnością kroku 5
+  // dla surowców objętych ×5 — cena/PN w payloadzie liczona jest z TEJ samej wartości niżej,
+  // więc floor PRZED budową payloadu eliminuje rozjazd pokazana-ilość vs dostarczana-ilość.
+  // / EN: mirrors the existing main.ts fix — floors the final per-turn quantity to the trade
+  // step (5 units for ×5-affected resources) BEFORE it is used to build the deal payload/price,
+  // so the displayed quantity always matches what actually gets delivered.
+  let pakietyPerTura = diplomacyNormalizeSurowiecIlosc(
+    cmd.surowiecKey,
+    Math.min(cmd.pakietyPerTura, maxPakietyPerTura),
+  );
 
 
 

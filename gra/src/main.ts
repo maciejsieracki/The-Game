@@ -747,7 +747,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
-  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront,
+  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
@@ -1178,6 +1178,7 @@ import {
   diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowceCatalog,
   diplomacyPnSurowiecIlosc,
+  diplomacyNormalizeSurowiecIlosc,
 } from './game/diplomacy-value-catalog';
 import {
   collectUnauthorizedBorderPairs,
@@ -3373,14 +3374,41 @@ async function boot(): Promise<void> {
       console.log(`[Rekrutacja] ${city.name}: anulowano — zwrot ${koszt} ¤ + MP`);
     }
 
+    /**
+     * P-SANITIZE-POSTEP-TRANSFER-Q1=B (Maciej 2026-08-13): gdy filtr usuwa item
+     * będący FRONTEM kolejki (np. Cud, którego rywal właśnie ukończył --
+     * wonderGateOk zwraca false), jego zbankowany aktywny `postep` NIE zostaje
+     * już przypadkowo przy nowym, niepowiązanym froncie (dokładnie ten
+     * niezmiennik "postęp nigdy nie przeskakuje między różnymi itemami"
+     * ustabilizowała P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B) -- zamiast tego
+     * wraca jako `forfeitedPostep` z `filterQueue()` (production.ts) i jest
+     * dopisywany do CENTRALNEJ puli Pracy imperium (ownerPracaPool/
+     * setOwnerPracaPool -- ta sama pula co "duża liczba" na chipie 🔨 w HUD,
+     * patrz buildTopBarPracaDetailCard w ui/cityPanel.ts). Jeśli front NIE
+     * jest usuwany (filtr trafił coś w środku kolejki) -- zachowanie bez
+     * zmian, nic do transferu.
+     * / EN: when the filter removes the item that IS the queue's front (e.g.
+     * a Wonder a rival just finished -- wonderGateOk returns false), its
+     * banked active `postep` no longer accidentally stays with the new,
+     * unrelated front (exactly the "progress never jumps between different
+     * items" invariant P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B established) --
+     * instead it comes back as `forfeitedPostep` from `filterQueue()`
+     * (production.ts) and is credited to the CENTRAL empire Praca pool
+     * (ownerPracaPool/setOwnerPracaPool -- the same pool as the "big number"
+     * on the 🔨 HUD chip, see buildTopBarPracaDetailCard in ui/cityPanel.ts).
+     * If the front is NOT removed (the filter hit something mid-queue) --
+     * unchanged behaviour, nothing to transfer.
+     */
     function sanitizeProductionQueue(ownerId: number, prod: CityProduction): CityProduction {
-      const kolejka = prod.kolejka.filter((item) => {
+      const { prod: sanitized, forfeitedPostep } = filterQueue(prod, (item) => {
         const wid = parseWonderProdId(item.id);
         if (!wid) return true;
         return wonderGateOk(ownerId, wid);
       });
-      if (kolejka.length === prod.kolejka.length) return prod;
-      return { ...prod, kolejka };
+      if (forfeitedPostep > 0) {
+        setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + forfeitedPostep);
+      }
+      return sanitized;
     }
 
     function setCityProduction(cityId: string, prod: CityProduction): void {
@@ -8281,7 +8309,13 @@ async function boot(): Promise<void> {
           case 'surowiec_ilosc': {
             // R-DYP-PAKIET-USUN (2026-08-08): `qty` z koszyka to SZTUKI wprost (dawniej
             // liczba pakietów × pakiet_wielkosc — usunięte na życzenie właściciela).
-            const totalUnits = qty;
+            // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): floor do wielokrotności kroku handlu
+            // TU, w faktycznym wykonaniu transferu — niezależnie od tego, czy `item.ilosc`
+            // dotarł już poprawnie znormalizowany (koszyk UI) czy z INNEGO źródła (deal
+            // cykliczny zbudowany przed tą zmianą, ręcznie edytowany save, przyszły refaktor).
+            // Ten sam floor stosuje diplomacyPnSurowiecIlosc przy wycenie PN — transfer i
+            // zapłata muszą się zgadzać, więc oba miejsca floorują IDENTYCZNIE.
+            const totalUnits = diplomacyNormalizeSurowiecIlosc(item.id, qty);
             const capId = capitalCityIdForOwner(toOwnerId);
             const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
             const result = transferSurowiecIlosc(item.id, totalUnits, fromOwnerId, toOwnerId, capId, refs);
@@ -15070,10 +15104,19 @@ async function boot(): Promise<void> {
       // R-DYP-PAKIET-USUN (2026-08-08): sellerRate to już sztuki/turę — bez dzielenia
       // przez wielkość pakietu (usunięta z handlu, patrz diplomacy-value-catalog.ts).
       const maxFromProduction = Math.floor(sellerRate);
-      let pakietyPerTura = Math.min(
-        pick.pakietyPerTura,
-        maxFromProduction,
-        AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
+      // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): `pick.pakietyPerTura` już wychodzi z
+      // buildOffer/diplomacy-resource-trade-pick.ts jako wielokrotność kroku, ALE ten
+      // Math.min z maxFromProduction (stawka produkcji/turę — rzadko sama wielokrotność 5)
+      // może ją ponownie zepsuć — floor JESZCZE RAZ na samym końcu, żeby ostateczna
+      // ilość pokazana w treści propozycji AI (buildHandelSurowiecCmdFromOffer) i faktycznie
+      // wyceniona (diplomacyPnSurowiecIlosc niżej) zawsze się zgadzały.
+      let pakietyPerTura = diplomacyNormalizeSurowiecIlosc(
+        pick.surowiecKey,
+        Math.min(
+          pick.pakietyPerTura,
+          maxFromProduction,
+          AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA,
+        ),
       );
       if (pakietyPerTura <= 0) return null;
       const handlowosc = proposerHandlowosc ?? 0.5;
@@ -15716,10 +15759,26 @@ async function boot(): Promise<void> {
         const items = deal.handelSurowiecCykliczny;
         if (!items?.length) continue;
 
+        // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): self-heal — dealy cykliczne mogą
+        // przetrwać z sejwa zapisanego PRZED tą zmianą (pakietyPerTura wtedy nie musiał być
+        // wielokrotnością kroku). Floor w miejscu, RAZ na turę, PRZED sprawdzeniem zapasów
+        // sprzedawcy (sellerOkOf) i faktycznym transferem — oba muszą widzieć TĘ SAMĄ,
+        // już poprawną ilość.
+        for (const it of items) {
+          const normalized = diplomacyNormalizeSurowiecIlosc(it.surowiecKey, it.pakietyPerTura);
+          if (normalized !== it.pakietyPerTura) it.pakietyPerTura = normalized;
+        }
+
         const handled = new Set<number>();
         // R-DYP-PAKIET-USUN (2026-08-08): pakietyPerTura to sztuki/turę wprost.
+        // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): `pakietyPerTura > 0` jawnie — po
+        // self-healu wyżej może wynosić 0 (legacy deal z sejwa sprzed tej zmiany, ilość
+        // poniżej kroku). Bez tego warunku dostawa "0 szt." liczyłaby się jako spełniona
+        // (0 >= 0), a kupujący i tak płaciłby zaplataPerTura za fizycznie NIC — traktujemy
+        // to jak zwykłe niedotrzymanie (sellerAtFault), bez transferu i bez zapłaty.
         const sellerOkOf = (item: HandelSurowiecCyklicznyItem): boolean =>
           item.sellerOwnerId !== item.buyerOwnerId
+          && item.pakietyPerTura > 0
           && ownerResourceStock(item.sellerOwnerId, item.surowiecKey) >= item.pakietyPerTura;
 
         for (let i = 0; i < items.length; i++) {
@@ -26218,21 +26277,48 @@ async function boot(): Promise<void> {
                   // warstwa -- nie idzie do `placedImprovements` (patrz applyBuildRequest gracza
                   // wyżej, sekcja `req.action === 'wycinka'`). AI nie ma per-owner wieloturowego
                   // `hexClearingStates` (tick niżej w pętli tury liczy WYŁĄCZNIE ownerId 0 /
-                  // gracza), więc AI commituje efekt końcowy od razu: usuwa nakładkę lasu,
-                  // netto-zero Pracy (koszt startu zwracany przez `wycinka.praca_per_tura ×
-                  // tury` z terrain-improvements.json -- dziś 5×1=5, czyli symetryczne z kosztem).
+                  // gracza), więc AI commituje efekt końcowy od razu: usuwa nakładkę lasu.
+                  // P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A (Maciej 2026-08-13): plon
+                  // wyrębu (`wycinka.praca_per_tura × tury`) kredytuje DREWNO -- identycznie jak
+                  // ścieżka gracza (applyStolarniaDrewnoMapInflow wołane z tickHexClearing wyżej,
+                  // ~linia 23595) -- NIE Pracę. Koszt startu (`koszt`) nadal odejmowany z puli
+                  // Pracy AI; bez tej poprawki AI zyskiwało netto +20 Pracy z każdego wyrębu.
+                  // EN: clearing yield credits WOOD -- exactly like the player path
+                  // (applyStolarniaDrewnoMapInflow called from tickHexClearing above, ~line
+                  // 23595) -- NOT Praca. Start cost still deducted from the AI Praca pool;
+                  // without this fix AI netted +20 Praca per clearing.
                   if (meta?.typ === 'wycinka') {
                     if (hexForImprovement.nakladka !== Nakladka.Las) continue; // już wycięte (wyścig miast)
-                    const refund = meta.clearing
+                    aiPracaPoolByOwner.set(ownerId, poolBefore - koszt);
+                    const pracaTotal = meta.clearing
                       ? meta.clearing.pracaPerTura * meta.clearing.tury
                       : 0;
-                    aiPracaPoolByOwner.set(ownerId, poolBefore - koszt + refund);
+                    let stolarniaCountAi = 0;
+                    for (const c of cities) {
+                      if (c.ownerId !== ownerId) continue;
+                      if ((cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCountAi++;
+                    }
+                    const stolarniaBonusAi = loadThroughput(
+                      data.econParams as unknown as Parameters<typeof loadThroughput>[0],
+                      'budynek_stolarnia_bonus_drewna_civ',
+                      _menuDifficulty,
+                      0.10,
+                    );
+                    const drewnoCredit = applyStolarniaDrewnoMapInflow(
+                      pracaTotal, stolarniaCountAi, stolarniaBonusAi,
+                    );
+                    const drewnoCap = ownerResourceCap(
+                      cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
+                    );
+                    const drewnoCredited = creditOwnerResourceStock(
+                      cities, ownerId, 'drewno', drewnoCredit, drewnoCap,
+                    );
                     hexForImprovement.nakladka = Nakladka.Brak;
                     stripForestDependentImprovements(hexKey);
                     hideDecorAtHex(hexKey);
                     syncResourceOverlayAtHex(hexKey);
                     console.log(
-                      `[AI ${ownerId}] Wyrąb @ (${cmd.q},${cmd.r}) (-${koszt}+${refund} Pracy, netto ${refund - koszt})`,
+                      `[AI ${ownerId}] Wyrąb @ (${cmd.q},${cmd.r}) (-${koszt} Pracy, +${drewnoCredited} Drewna)`,
                     );
                     continue;
                   }

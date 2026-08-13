@@ -71,25 +71,34 @@ function prop(actionId, a, b, payload) {
 console.log('diplomacy-resource-cyclic-trade-test');
 
 // -- 1. buildHandelSurowiecCykliczny: give surowiec + receive zloto --
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): pakietyPerTura floruje do wielokrotności kroku
+// handlu (5 szt. dla drewno) TU, przy budowie dealu — zamrożone dla całego cyklu.
 let items = buildHandelSurowiecCykliczny(0, 2, [
-  { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 3 },
+  { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 5 },
 ], [
   { typ: 'zloto', id: 'zloto', ilosc: 10 },
 ]);
 ok(items.length === 1, 'buildHandelSurowiecCykliczny: 1 wpis (give)');
-ok(items[0].surowiecKey === 'drewno' && items[0].pakietyPerTura === 3, 'wpis: drewno x3 pakiety/ture');
+ok(items[0].surowiecKey === 'drewno' && items[0].pakietyPerTura === 5, 'wpis: drewno x5 pakiety/ture');
 ok(items[0].sellerOwnerId === 0 && items[0].buyerOwnerId === 2, 'wpis: sprzedawca=proposer, kupujacy=responder');
 ok(items[0].zaplataTyp === 'zloto' && items[0].zaplataPerTura === 10, 'wpis: zaplata zloto 10/ture (z receiveItems)');
 
 // -- 1b. barter dwustronny (oba kierunki naraz) --
 items = buildHandelSurowiecCykliczny(5, 7, [
-  { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 2 },
+  { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 10 },
 ], [
-  { typ: 'surowiec_ilosc', id: 'kamien', ilosc: 1 },
+  { typ: 'surowiec_ilosc', id: 'kamien', ilosc: 5 },
 ]);
 ok(items.length === 2, 'buildHandelSurowiecCykliczny: barter -> 2 wpisy');
-ok(items.some(i => i.surowiecKey === 'drewno' && i.sellerOwnerId === 5 && i.buyerOwnerId === 7), 'barter: drewno 5->7');
-ok(items.some(i => i.surowiecKey === 'kamien' && i.sellerOwnerId === 7 && i.buyerOwnerId === 5), 'barter: kamien 7->5');
+ok(items.some(i => i.surowiecKey === 'drewno' && i.sellerOwnerId === 5 && i.buyerOwnerId === 7 && i.pakietyPerTura === 10), 'barter: drewno 5->7, 10 szt.');
+ok(items.some(i => i.surowiecKey === 'kamien' && i.sellerOwnerId === 7 && i.buyerOwnerId === 5 && i.pakietyPerTura === 5), 'barter: kamien 7->5, 5 szt.');
+
+// -- 1d. ilość niebędąca wielokrotnością kroku floruje w dół do 0 (odrzucona, nie zaokrąglona w górę) --
+items = buildHandelSurowiecCykliczny(0, 2, [
+  { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 3 },
+], []);
+ok(items.length === 1 && items[0].pakietyPerTura === 0,
+  'buildHandelSurowiecCykliczny: 3 szt. drewno (< krok 5) -> pakietyPerTura 0, nie 3');
 
 // -- 1c. brak surowca w koszyku -> pusta tablica --
 ok(buildHandelSurowiecCykliczny(0, 1, [{ typ: 'zloto', id: 'zloto', ilosc: 5 }], []).length === 0,
@@ -119,8 +128,11 @@ ok(r.deal?.handelSurowiecCykliczny?.[0]?.sellerOwnerId === 0
 ok(r.deal?.handelPayload === undefined, 'handel per_turn: BRAK handelPayload (nie duplikuje jednorazowego transferu)');
 
 // -- 2b. ownerId-agnostyczne: AI (owner=3) proponuje graczowi (owner=0) — ten sam kod --
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): ilosc musi być wielokrotnością kroku handlu
+// (5 szt. dla drewno) — 4 szt. floruje do 0 PN (diplomacyPnSurowiecIlosc), co unieważniało
+// tę ofertę jako niewycenialną. 5 szt. jest najmniejszą poprawną ilością.
 r = evaluateProposal(prop('handel', 3, 0, {
-  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 4 }],
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 5 }],
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
   resourceTradeMode: 'per_turn',
   turns: 8,

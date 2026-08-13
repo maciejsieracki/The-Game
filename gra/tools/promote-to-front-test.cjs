@@ -53,7 +53,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.promote-to-front-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.promote-to-front-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { promoteToFront, frontItem, advanceProduction, enqueue, dequeue, rushProduction, insertAtFront } from '../src/game/production';
+export { promoteToFront, frontItem, advanceProduction, enqueue, dequeue, rushProduction, insertAtFront, filterQueue } from '../src/game/production';
 `, 'utf8');
 
 try {
@@ -496,6 +496,103 @@ console.log('-- 19. RUNDA 5, naprawa N1: bramka STRUKTURALNA (regex na main.ts) 
     /kolejka:\s*\[\s*wItem\s*,\s*\.\.\.wProd0\.kolejka\s*\]\s*,\s*postep:\s*0/;
   assert(!RE_B3_OLD_MANUAL_LITERAL.test(mainSrc),
     '19d: B3 -- ŻADEN ślad starego ręcznego literału `{ kolejka: [wItem, ...wProd0.kolejka], postep: 0` (sprzed naprawy) w main.ts');
+}
+
+console.log('-- 20. P-SANITIZE-POSTEP-TRANSFER-Q1=B: filterQueue() forfeits the removed FRONT\'s active postep instead of leaving it on the new front --');
+{
+  // Repro z dyspozycji: kolejka [Cud (bank 500 aktywne), Wojownik], rywal kończy ten sam Cud --
+  // sanitizeProductionQueue (main.ts) usuwa Cud z frontu przez filterQueue(). Testowana tu jest
+  // CZYSTA funkcja production.ts (main.ts owija ją, dopisując forfeitedPostep do
+  // ownerPracaPool -- patrz sekcja 21, test strukturalny na main.ts, bo main.ts nie da się
+  // odpalić w izolacji z tym harnessem).
+  // / EN: repro from the work order: queue [Wonder (500 active banked), Warrior], a rival
+  // finishes the same Wonder -- sanitizeProductionQueue (main.ts) drops the Wonder from the
+  // front via filterQueue(). This section exercises the PURE production.ts function (main.ts
+  // wraps it, crediting forfeitedPostep to ownerPracaPool -- see section 21, a structural test
+  // on main.ts, since main.ts cannot be run in isolation with this harness).
+  const prod = { kolejka: [item('Cud', 1000), item('Wojownik', 10, 'jednostka')], postep: 500 };
+  const keepNotCud = (it) => it.id !== 'Cud';
+  const result = M.filterQueue(prod, keepNotCud);
+
+  // (a) pula Pracy imperium wzrasta o 500: filterQueue() nie zna pojęcia "pula imperium" (moduł
+  // czysty, bez efektów ubocznych) -- oddaje dokładnie tę kwotę jako forfeitedPostep, którą
+  // main.ts (sanitizeProductionQueue) dopisuje 1:1 do ownerPracaPool przez
+  // setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + forfeitedPostep). Zmierzenie tej kwoty
+  // tutaj jest więc dokładnym dowodem "+500 do puli" bez konieczności odpalania main.ts.
+  eq(result.forfeitedPostep, 500, '(a) forfeitedPostep = dokładnie 500 -- kwota, którą main.ts dopisze do ownerPracaPool');
+
+  // (b) nowy front (Wojownik) NIE dziedziczy 500.
+  eq(M.frontItem(result.prod).id, 'Wojownik', 'Wojownik (jedyny ocalały item) staje się nowym frontem');
+  eq(result.prod.postep, 0, '(b) Wojownik NIE dziedziczy 500 Pracy Cudu -- startuje z zbankowanym 0 (nigdy wcześniej nie był frontem)');
+  eq(M.frontItem(result.prod).postep, undefined, 'niezmiennik: front (Wojownik) w zwróconej kolejce nie niesie własnego pola postep');
+
+  // (c) Wojownik kończący się normalnie NIE korzysta z cudzych 500 -- dokładnie tyle Pracy ile
+  // realnie włożone (10 = jego koszt) kończy go, ani grosza więcej z puli.
+  const { prod: afterAdv, completed } = M.advanceProduction(result.prod, 10);
+  eq(completed && completed.id, 'Wojownik', '(c) Wojownik kończy się dokładnie za swoje 10 Pracy (koszt), zero przeskoku z cudzych 500');
+  eq(afterAdv.postep, 0, '(c) po dokończeniu Wojownika kolejka jest pusta -- postep=0, żadna nadwyżka z cudzych 500 się nie pojawiła');
+  assert(M.frontItem(afterAdv) === null, '(c) kolejka pusta po Wojowniku -- Cud był usunięty (rywal go ukończył), nie ma czego promować dalej');
+}
+
+console.log('-- 21. filterQueue(): front PRZETRWAŁ filtr (usunięto coś w środku) = zero transferu, postęp frontu bez zmian --');
+{
+  // "Jeśli front NIE jest usuwany (filtr usunął coś w środku kolejki, nie front) -- zachowanie
+  // bez zmian, nic do transferu" (z dyspozycji, pkt 4).
+  const prod = { kolejka: [item('Spichlerz', 80), item('Cud', 1000), item('Studnia', 40)], postep: 33 };
+  const keepNotCud = (it) => it.id !== 'Cud';
+  const result = M.filterQueue(prod, keepNotCud);
+  eq(result.forfeitedPostep, 0, 'front (Spichlerz) przetrwał filtr -- nic do transferu');
+  eq(M.frontItem(result.prod).id, 'Spichlerz', 'front bez zmian (Spichlerz)');
+  eq(result.prod.postep, 33, 'aktywny postęp frontu (33) całkiem nietknięty');
+  eq(ids(result.prod.kolejka), 'Spichlerz,Studnia', 'Cud (środek kolejki) usunięty, reszta w tej samej kolejności');
+}
+
+console.log('-- 22. filterQueue(): nic nie usunięte = zwraca dokładnie ten sam obiekt prod (referencyjnie), forfeitedPostep=0 --');
+{
+  const prod = { kolejka: [item('A', 10), item('B', 20)], postep: 4 };
+  const result = M.filterQueue(prod, () => true);
+  assert(result.prod === prod, 'nic do usunięcia -- ten sam obiekt prod zwrócony bez kopiowania');
+  eq(result.forfeitedPostep, 0, 'nic do usunięcia -- forfeitedPostep=0');
+}
+
+console.log('-- 23. filterQueue(): front usunięty, ocalały nowy front ODZYSKUJE swój WŁASNY wcześniej zbankowany postep (nie 0, nie cudze) --');
+{
+  // Cud (front, 500 aktywne) + Wojownik z WŁASNYM zbankowanym postep=15 (był kiedyś promowany,
+  // potem zdjęty z powrotem -- normalny przypadek promoteToFront). Rywal kończy Cud -> filtr go
+  // usuwa. Wojownik jako nowy front musi odzyskać SWOJE 15, nie 500 Cudu i nie 0.
+  const prod = { kolejka: [item('Cud', 1000), { ...item('Wojownik', 10, 'jednostka'), postep: 15 }], postep: 500 };
+  const result = M.filterQueue(prod, (it) => it.id !== 'Cud');
+  eq(result.forfeitedPostep, 500, 'Cud (front usunięty) oddaje swoje 500 jako forfeitedPostep');
+  eq(M.frontItem(result.prod).id, 'Wojownik', 'Wojownik jedynym ocalałym -- nowy front');
+  eq(result.prod.postep, 15, 'Wojownik odzyskuje SWOJE WŁASNE zbankowane 15 -- nie 500 Cudu, nie 0');
+  eq(M.frontItem(result.prod).postep, undefined, 'niezmiennik: front w zwróconej kolejce nie niesie własnego pola postep');
+}
+
+console.log('-- 24. STRUKTURA (regex na main.ts): sanitizeProductionQueue woła filterQueue() i kredytuje forfeitedPostep do ownerPracaPool, nie gubi go po cichu --');
+{
+  // Wzorzec identyczny jak sekcja 19 -- filterQueue() (i całe production.ts) nie wie nic o
+  // ownerPracaPool/setOwnerPracaPool, więc żadna asercja 20-23 nie wykryłaby main.ts cicho
+  // ignorującego forfeitedPostep (np. wołając filterQueue ale nigdy nie czytając wyniku).
+  // / EN: same pattern as section 19 -- filterQueue() (and all of production.ts) knows nothing
+  // about ownerPracaPool/setOwnerPracaPool, so none of assertions 20-23 would catch main.ts
+  // silently ignoring forfeitedPostep (e.g. calling filterQueue but never reading the result).
+  const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
+  const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
+
+  const RE_SANITIZE_USES_FILTERQUEUE =
+    /function sanitizeProductionQueue\(ownerId: number, prod: CityProduction\): CityProduction \{[\s\S]{0,400}?filterQueue\(prod, \(item\) => \{/;
+  assert(RE_SANITIZE_USES_FILTERQUEUE.test(mainSrc),
+    '24a: sanitizeProductionQueue woła filterQueue(prod, ...) zamiast ręcznego prod.kolejka.filter(...)');
+
+  const RE_CREDITS_POOL =
+    /forfeitedPostep > 0\) \{[\s\S]{0,200}?setOwnerPracaPool\(ownerId, ownerPracaPool\(ownerId\) \+ forfeitedPostep\)/;
+  assert(RE_CREDITS_POOL.test(mainSrc),
+    '24b: forfeitedPostep > 0 kredytuje setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + forfeitedPostep) -- transfer do puli, nie przepadek');
+
+  const RE_OLD_NAIVE_FILTER =
+    /const kolejka = prod\.kolejka\.filter\(\(item\) => \{\s*const wid = parseWonderProdId\(item\.id\);\s*if \(!wid\) return true;\s*return wonderGateOk\(ownerId, wid\);\s*\}\);\s*if \(kolejka\.length === prod\.kolejka\.length\) return prod;\s*return \{ \.\.\.prod, kolejka \};/;
+  assert(!RE_OLD_NAIVE_FILTER.test(mainSrc),
+    '24c: ŻADEN ślad starej naiwnej implementacji (filter + spread bez transferu postep) w main.ts');
 }
 
 console.log(`\npromote-to-front-test: ${passed} passed, ${failed} failed`);
