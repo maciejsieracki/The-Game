@@ -18386,3 +18386,37 @@ miasto (kapitulacja/podbój na rzecz AI), pozostałe miasta gracza nie dostają 
 **STATUS: nowe zgłoszenie `P-ANEKSJA-MIASTO-PANSTWO-RACJA-STARY-WLASCICIEL` — OTWARTE, niepilne,
 do backlogu, brak dowodu dzisiejszej regresji, nie blokuje niczego.**
 
+
+## R-SUROWIEC-CYNA-DO-BRAZU — Evaluator runda 2: WERDYKT FAIL wąskiego zakresu, dispatch runda 3 (2026-08-13)
+
+Evaluator (Opus 5, `aa64098df490b60a5`) ocenił commit `716653e1` (runda 2) niezależnie od Evaluatora
+rundy 1 (konflikt interesu — runda 2 powstała w odpowiedzi na jego raport). Wszystkich 6 przypisanych
+punktów (1, 2, 4, 5, 6, 7 z listy R1) potwierdzone jako realnie naprawione — zweryfikowane własnym
+harnessem behawioralnym + 6 niezależnymi mutacjami kontrolnymi (MUT-A..F), nie tylko odczytem opisu
+commitu. Diff testów `67cc36fd`↔`716653e1` to wyłącznie dopisanie surowca do dwóch fixture'ów, zero
+osłabionych/skasowanych asercji.
+
+**BLOKUJĄCE — ósma bramka, przeoczona przez Operatora R1, Evaluatora R1 i Operatora R2:**
+`gra/tools/surowce-katalog-kolejnosc-test.cjs`. Baseline `67cc36fd` (przed tematem Cyna): **61 pass/0
+fail, exit 0**. Runda 1 `2ebd0d7f`: **58 pass/3 fail, exit 1** — regresja powstała tu, nienaprawiona
+przez rundę 2. Trzy porażki: `ruda_cyny.placeholder === true` (oczekiwane, jest false), etykieta ma
+sygnalizować "wkrótce" (nie sygnalizuje), `resources.json` NIE ma zawierać "cyna" (a zawiera).
+
+**Przyczyna: test asercjonuje STARĄ decyzję `P-SUROWCE-KOLEJNOSC-KART` (2026-08-12,
+`PYTANIA-OTWARTE.md:12829` — Ruda cyny jako placeholder/nieaktywna karta UI), którą NOWSZA decyzja
+`R-SUROWIEC-CYNA-DO-BRAZU` (2026-08-13, ten temat) jawnie unieważniła — Maciej zdecydował że cyna to
+REALNY, aktywny surowiec produkujący brąz, nie karta-zapowiedź. Evaluator ocenił nadrzędność nowszej
+decyzji nad starszą jako jednoznaczną, naprawa czysto mechaniczna (odwrócenie 3 asercji + zdjęcie
+wyjątku pomijającego ruda_cyny w pętli), zero nowej decyzji projektowej — nie wymaga osobnego ABC.**
+
+**Nota N1 (nieblokująca, do domknięcia przy okazji rundy 3):** dwie poprawki rundy 2 (dopisanie
+`ruda_cyny` do `HANDEL_SUROWCE_KROK5` i do `OWNER_CAPPED_RESOURCE_KEYS`) nie mają własnego testu
+strażniczego — cofnięcie którejkolwiek przechodzi dziś przez wszystkie bramki repo na zielono
+(potwierdzone uruchomieniem). Ta sama luka co pkt 7 rundy 1 (AI), zamknięta wtedy tylko dla AI.
+
+Inne noty nieblokujące (N2, N3, N4) — ikona nadal placeholder (opis commitu "dedykowana" jest
+nieścisły, kod jest uczciwy), gracz nadal nie odróżni cyny od żelaza wizualnie (już zarejestrowane
+przez R1), sekcja K testuje strukturę AI a nie decyzję AI (autor to jawnie deklaruje).
+
+**STATUS: dispatch Operator runda 3 — naprawa mechaniczna `surowce-katalog-kolejnosc-test.cjs` +
+2 asercje strażnicze N1, bez ABC.**
