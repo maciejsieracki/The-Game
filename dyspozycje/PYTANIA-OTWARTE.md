@@ -19397,3 +19397,15 @@ koniec tury kończył się na minusie. Także to trafna uwaga, trzeba to zmieni�
 liczona do kosztów." Potwierdza wprost implikację odnotowaną przy ECHO Q1 wyżej — koszt armii
 wchodzi do kryterium bezpieczeństwa Auto Wyżywienie. Już w implementacji (Operator
 `aac8cb34fb06c79a8`, ten sam dispatch co Q1, jedna spójna zmiana).
+
+## ECHO R-EKONOMIA-ZYWNOSC-SKALA-Q1 = A (2026-08-13)
+
+Jego słowa: „zmienialiśmy dla jednostek tylko i wyłącznie zużycie surowców razy pięć. Nie
+zwiększaliśmy [...] zużycia jedzenia, więc nie ma potrzeby zwiększania produkcji żywności, ani
+innych elementów, dlatego że [...] w miastach nie zwiększaliśmy też pięciokrotnie kosztu
+budynków jeżeli chodzi o pracę ani nie zwiększaliśmy pięciokrotnie kosztów badań i tak dalej."
+Potwierdza zamierzony, spójny zakres decyzji `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`: ×5 dotyczy
+WYŁĄCZNIE surowców fizycznych (produkcja/koszt/utrzymanie), NIE Pracy (budynki, badania) ani
+Żywności. Żadna zmiana kodu — stan zgodny z decyzją od początku (potwierdzone recon-em
+`P-WOJSKO-ZUZYCIE-ZYWNOSCI-PO-SKALI-5X` — zero zmian w `units.json` pole żywność/turę,
+`terrain-yields.json` pole Żywność, `econ-params.json` żywnościowe). **ZAMKNIĘTE, bez akcji.**
