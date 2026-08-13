@@ -18837,3 +18837,43 @@ poza tym jednym błędnym odczytem — ryzyko powtórki tej pomyłki gdzie indzi
 
 **Nie wymaga ABC** — przywrócenie zgodności panelu z silnikiem do wartości, którą sam panel już
 deklaruje jako intencję (tooltip "brutto"), nie zmiana balansu. Dispatch Operator bezpośrednio.
+
+## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (f0baeacd) — Evaluator: WERDYKT FAIL BLOKUJĄCY, dispatch runda 2 (2026-08-13)
+
+Evaluator (Opus 5, `ad9dae36f90c72619`) potwierdził rzemiosło (bitowa zgodność bez wyboru — 380400
+porównań 0 różnic, 5/6 mutacji kontrolnych złapanych, prefs v3→v4 bezpieczne, wszystkie bramki
+zielone) — **ale znalazł, że funkcja jest wpięta w NIEAKTYWNĄ ścieżkę kodu przy nowej grze.**
+
+**⛔ ZNALEZISKO BLOKUJĄCE.** Wybór gracza trafia do `assignAiCivTypes`/`civ-roster.ts`
+(`fillAiOwnerCivMap`), ale przy realnym starcie nowej gry `doStartGame` **bezwarunkowo** woła
+POTEM `applyClusterStartPlan`, która **zeruje `aiOwnerCivMap.clear()`** i wypełnia ją na nowo z
+`plan.aiOwnerCivMap` — wynikiem zupełnie OSOBNEJ ścieżki (`cluster-start.ts`→`clusters.ts`,
+`assignTypesToClusterCenters`, własny `shuffleInPlace` z zaszytej stałej `ROSTER_KLUCZE`). Grep
+`selectedAiCivIds|preferredCivIds` w `cluster-start.ts`/`cluster-spawn.ts`/`clusters.ts` = **zero
+trafień**. Skutek: gracz zaznacza w kreatorze konkretne cywilizacje, klika Start — i dostaje
+klastry dobrane po staremu, losowo, bez żadnego efektu wyboru. **40 asercji nowego testu zielone,
+ale testują moduł, który na tej ścieżce w ogóle się nie wykonuje** ("zielona bramka, martwa
+funkcja"). Jedyne miejsce gdzie `preferredCivIds` cokolwiek robi to `repairAiRosterFromMap`
+(naprawa uszkodzonego rosteru przy wczytaniu zapisu) — dokładna odwrotność intencji zgłoszenia.
+
+**Nota N1 (do domknięcia razem):** `repairAiRosterFromMap` z 1 brakującym ownerem daje
+deterministyczny kolaps — zawsze `preferredValid[0]`, gubi dawną różnorodność z seeda. Realne
+ale drugorzędne wobec głównego bloku.
+**Nota N2 (do domknięcia razem):** limit UI (`civTypesCount−1`) ≠ limit silnika w
+`repairAiRosterFromMap`, nadmiar cicho ucinany bez komunikatu.
+**Nota N3 (kosmetyka, opcjonalna):** martwy warunek `id !== playerCivId` w `civ-roster.ts:91`
+(już pokryty przez `othersSet`).
+
+**Kierunek naprawy wskazany przez Evaluatora:** `preferredCivIds` musi trafić do
+`BuildClusterStartInput` → `buildClusterSpawnPlan` → `rozmiescKlastry`, sterując kolejnością
+`rosterBezGracza` przekazywaną do `assignTypesToClusterCenters` (preferowane na początek, reszta
+z dotychczasowego `shuffleInPlace`) — NIE do `assignAiCivTypes`/`civ-roster.ts`. Test musi
+asercjonować na wyjściu `buildClusterStartPlan().aiOwnerCivMap`, nie na `civ-roster.ts`.
+
+**⚠️ Uwaga: ten commit jest już scalony (`f0baeacd`) i wszedł do FALI 276 (zdeployowanej do
+ROBOCZA).** Funkcja jest nieszkodliwa (cicho ignorowana, nie crashuje), ale nie działa zgodnie z
+zgłoszeniem — do naprawy w rundzie 2 przed uznaniem tematu za zamknięty. Nie wymaga awaryjnego
+wycofania deployu (brak crashu/regresji, tylko brak efektu).
+
+**STATUS: dispatch Operator runda 2 — przepięcie mechanizmu na ścieżkę klastrową wg kierunku
+Evaluatora, plus N1/N2 przy okazji.**
