@@ -17766,3 +17766,26 @@ Zgubione między wątkami tamtej sesji, nigdy nie podjęte ponownie. Self-correc
 **Kierunek jasny, dispatch Operatora NASTĘPUJE bez dodatkowego ABC** (to nie nowa decyzja
 projektowa — to dokończenie czegoś, co Maciej już raz zamówił 10 sierpnia; rozpoznanie usunęło
 niepewność co do zakresu).
+
+---
+
+## P-HANDEL-TECH-CHIP-BEZ-FILTRU-JUZ-DODANE (2026-08-13, zgłoszenie Macieja ze zrzutem)
+
+Maciej: „W wypadku wymiany technologii przydałoby się taki efekt, że w momencie, gdy jakąś
+technologię już wybieramy do prezentu, to powinna znikać z opcji, tylko powinny być te, które
+jeszcze pozostały." Zrzut: „Umowa wymiany surowców", Garncarstwo już dodane do OFERUJEMY (z
+przyciskiem Edytuj/X), a sekcja „Technologia" niżej w „DODAJ DO OFERTY" nadal pokazuje oba chipy
+(Garncarstwo + Murarstwo), Garncarstwo wciąż podświetlone jako wybrane.
+
+**Potwierdzone w kodzie:** `techs` w `buildAddForm` (`gra/src/ui/diplomacyTradeBasket.ts:1386-1410`)
+pochodzi z `ctx.giveTechOptions`/`receiveTechOptions` — filtrowane tylko wg
+`R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE" (technologia nieznana obu stronom), BEZ ŻADNEGO filtru
+względem tego, co już jest w bieżącym koszyku (`giveItems`/`receiveItems`, dostępne w wyższym
+zakresie funkcji budującej cały modal, `~linia 965+`, ale nieprzekazywane do `buildAddForm`).
+
+**Nie wymaga ABC — czysto techniczny bug UI, kierunek jednoznaczny.** Naprawa: przekazać listę
+już-dodanych `id` technologii (z `giveItems`/`receiveItems` odpowiedniej strony, typ `'tech'`) do
+`buildAddForm`, odfiltrować je z `techs` PRZED budową `techChips` — z wyjątkiem edytowanej pozycji
+(`editTechId`), która ma zostać widoczna i zaznaczona (żeby edycja własnej pozycji nie znikała jej
+z listy). Dispatch Operatora razem z `R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA` (ten sam plik, ten sam
+obszar, jeden worktree).
