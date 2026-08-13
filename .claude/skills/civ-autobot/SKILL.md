@@ -87,6 +87,15 @@ proporcji i czytelności bryły z kąta kamery gry. **Fable 5 zablokowany** —
 `R-FABLE-RETENCJA-NASTER = B`: wymaga 30-dniowej retencji, wymagania NASTER nieustalone;
 zgoda na model ≠ potwierdzenie retencji, potrzebne oba.
 
+**Wzorzec 3x niezależny Evaluator (tematy wysokiego ryzyka/dużego promienia rażenia) —
+`R-EVALUATOR-3X-MODEL-KOSZT-Q1` (Maciej 2026-08-13): Evaluator #1 i #2 na Sonnet 5,
+Evaluator #3 (ostatni) na Opus 5.** Jego słowa: „skoro odpalasz trzech, to dwóch odpal
+pierwszych na sonet 5, a ostatniego dopiero na opus 5" — powód: koszt/limit trzech Opus 5
+naraz jest wysoki. Dotyczy WYŁĄCZNIE wzorca potrójnego (nie standardowej pętli 1x
+Evaluator/rundę, gdzie Evaluator zostaje na Opus 5 bez zmian). Nie zmniejsza liczby
+Evaluatorów ani rygoru — trzy niezależne perspektywy zostają, zmienia się tylko model
+dwóch pierwszych.
+
 ## 2. NUMER → ABC → COMMIT → DEPLOY
 
 Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
