@@ -18642,3 +18642,10 @@ multi-select cywilizacji przeciwnika, ograniczonego pulą epoki (`EPOCH_CIV_TYPE
 
 Wszystkie trzy Operatory (2, 3, 4) dispatchowane w izolowanych worktree, równolegle, bez
 nakładania się na wspólne pliki (weryfikacja zakresu plików przed dispatchem).
+
+## R-DESIGN-11-ZAKLADEK — pełne ABC zadane (2026-08-13)
+
+Pełna treść dwóch pytań ABC przedstawiona Maciejowi w czacie, zgodnie z formatem z
+`PAMIEC-ROBOCZA-CIV.md §1` (nagłówek [TEMAT]+ID, Sytuacja, Cel pytania, Dlaczego teraz, A/B/C
+z Za≥2/Przeciw≥2, Rekomendacja). Czeka na odpowiedź w formie `R-DESIGN-11-ZAKLADEK-Q1=<litera>`,
+`R-DESIGN-11-ZAKLADEK-Q2=<litera>`.
