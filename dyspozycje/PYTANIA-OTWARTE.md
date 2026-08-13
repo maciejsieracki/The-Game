@@ -19881,3 +19881,17 @@ przy okazji — już dopracowane, POZA zakresem, nie wymaga designu.
 
 **STATUS: dokument gotowy, do przekazania Designerowi przez właściciela (poza pętlą AutoBot —
 to deliverable dla człowieka, nie kod).**
+
+## Fort/straznica krok2 (c3fe813d) — runda 4 SCALONA, dispatch Evaluatora (2026-08-14)
+
+Naprawia dokładnie zakres z rundy 4 (patrz wpis wyżej): `barb-camp-destruction-test.cjs`
+inwentarz 11→12 wpięć, powrót do zielonego (84/0, +2 nad historycznym baseline 82 — Operator
+wyjaśnił: lista rośnie o 1 wpis × 2 generyczne pętle asercji skalujące się z długością listy, nie
+błąd). Nowy `fort-nodes-save-load-test.cjs` (18/0, domyka MUT-6). Nowa sekcja E w
+`fort-strazniaca-zasieg-zakladania-test.cjs` (12 asercji, 85/0, domyka MUT-5). D3 etykieta
+F3→F7. Bramki: `tsc` 0, wszystkie 4 pliki zielone. Operator poprawnie wykrył że jego worktree
+bazował na `main`, sam skorygował tworząc branch na `9cae3b64` (właściwy punkt feature brancha) —
+brak powtórki incydentu procesowego z rundy 2.
+
+**STATUS: dispatch świeżego Evaluatora — to ma być OSTATNIA runda tego tematu, pierwsza która
+dostaje czysty werdykt od zera (bez dziedziczonego FAIL z poprzednich rund).**
