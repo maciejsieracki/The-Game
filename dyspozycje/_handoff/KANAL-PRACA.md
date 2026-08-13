@@ -6734,3 +6734,17 @@ kwalifikuje **FALĘ 271** (`94a17910`) do scalenia do `main` — wymaga wyraźne
 Niescalone: **FALA 270** (`028ff459`) i **FALA 271** (`94a17910`).
 **SESJA LOKALNA: pull na dysk właściciela** (testuj `5343a5f4`).
 CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 270+271 do `main`.
+
+## [09:00 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — scalenie FALA 272 do main
+Na wyraźne polecenie właściciela: `4ee4b9d8` (Deploy FALA 272) scalone do `main` przez
+`git merge --no-ff` → merge commit `016cbb52`, push `e723cb0e..016cbb52`. Bramki na scalonym
+drzewie zweryfikowane przed pushem: `tsc` 0, `logic-test` 213/213. Poprzedni stan `main` już
+zawierał FALA 270+271 (scalone wcześniej tej sesji, `e723cb0e`) — korekta błędnego zgłoszenia
+agenta deployu FALI 273, który mylnie wskazał 270/271/272 jako zaległe.
+Dodatkowo: FALA 273 (`03a2f038`, commit `9d8b4dfa`) zdeployowana do ROBOCZA — promocja frontu
+kolejki produkcji (5 rund) + ekonomia surowcowa ×5 (3 rundy), oba tematy zamknięte ostatecznie.
+Zostaje na gałęzi roboczej wyłącznie do testów (rytm „jedna fala do tyłu"), kwalifikuje się do
+scalenia dopiero po powstaniu FALI 274.
+**SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `03a2f038`; `main` zsynchronizowany
+do `016cbb52`).
+CZEKAM-NA: sesja lokalna (pull + playtest FALI 273) · zgoda na kolejne scalenie po powstaniu FALI 274.
