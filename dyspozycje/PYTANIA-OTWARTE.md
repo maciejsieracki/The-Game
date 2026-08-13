@@ -17817,3 +17817,25 @@ MA — to nowa funkcja do zaprojektowania od zera, nie naprawa istniejącego bug
 
 **ABC do zadania Maciejowi** (zakres A: reset co turę / B: reset po łańcuchu pościgu / C: bez
 resetu, raz na całą grę) — zanim dispatch implementacji.
+
+---
+
+## R-WYCOFANIE-LIMIT-JEDNORAZOWY — ECHO A, doprecyzowane bez formalnego ABC (2026-08-13)
+
+Maciej odpowiedział wprost, zanim formalne ABC zostało zadane (odpowiedzi mid-turn):
+„tylko oczywiście mówimy o wycofaniu w tej samej turze. W następnej turze znowu się może wycofać."
+„czyli wycofać się w danej turze można tylko raz." „jeżeli inna jednostka lub ta sama znowu nas
+zaatakuje, nie ma możliwości wycofania się, trzeba rozstrzygnąć [bitwę] automatycznie lub ręcznie,
+a wycofanie powinno być wyszarzone."
+
+**Reguła ostateczna (jednoznaczna, bez dalszych pytań):**
+- Jednostka (obrończa), która RAZ wycofała się w danej turze (kliknięcie Wycofaj na ekranie
+  przed-bitewnym), przy KOLEJNYM ataku na nią W TEJ SAMEJ TURZE — niezależnie czy atakuje ta sama
+  jednostka wroga czy inna — NIE MOŻE się wycofać ponownie. Przycisk Wycofaj ma być WYRAŹNIE
+  wyszarzony (disabled), z jasnym komunikatem tłumaczącym dlaczego (wzorem już istniejącego
+  komunikatu przy blokadzie garnizonowej). Gracz musi rozstrzygnąć bitwę (Auto lub ręcznie/Bitwa).
+- Reset: na początku KOLEJNEJ tury flaga wraca do stanu „może się wycofać" — analogicznie do
+  istniejącego resetu `ruchLeft = ruch` w centralnym punkcie końca tury gracza (`main.ts:23216-
+  23223`, ten sam wzorzec zidentyfikowany wcześniej dziś przy rozpoznaniu tematu Zasięgu Ruchu).
+
+**Dispatch Operatora (Sonnet 5, worktree izolowany) NASTĘPUJE.**
