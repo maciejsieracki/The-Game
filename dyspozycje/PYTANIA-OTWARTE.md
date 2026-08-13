@@ -17300,3 +17300,37 @@ czerwone (`auto-improvements-test` 1 fail, `grupa-b-lane-test` 4 fail) zweryfiko
 na czystym drzewie (`git stash`) — niezwiązane. Commit `a530d48b`, push OK.
 
 **Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz.**
+
+---
+
+## R-DYPLO-CENNIK-SKALA-5X-Q1 — SCALONE, Evaluator w toku (2026-08-13)
+
+Operator zaimplementował mechanizm z ostatecznej decyzji właściciela: krok wymiany handlu z AI
+1→5 szt. (zamiast dzielenia `cena_*` przez 5). `econ-params.json` NUMERYCZNIE BEZ ZMIAN
+(zweryfikowane). Nowy choke-point `diplomacyNormalizeSurowiecIlosc`/`diplomacyHandelSurowiecKrok`
+w `diplomacy-value-catalog.ts` — krok=5 dla 12 surowców objętych ×5 produkcji, krok=1 dla
+Złoto/Węgiel (produkcja nie objęta ×5, zweryfikowane grepem że Węgiel nie ma mechanizmu
+produkcji/turę w ogóle). Floor (nie hard-reject) — spójne z istniejącą konwencją silnika
+(`Math.min`/`Math.floor` wszędzie indziej dla błędnych wejść); poniżej 1 kroku = odrzucenie
+pozycji, nie ciche przyjęcie ułamkowego bloku. Naprawione po drodze (przy okazji, nie w zakresie
+pierwotnego zlecenia): (1) sortowanie „najtańszy PN/szt." w Szybkiej Umowie liczyło się przez
+funkcję, która TERAZ floruje 1 szt. do 0 PN — bez naprawy wszystkie surowce z krokiem 5
+znikałyby z propozycji AI; (2) `trimResourcePaymentTradeForZeroBalance` — bez normalizacji przed
+oceną, 1 szt. żelaza florowało do 0 PN i early-return uznawał ofertę za już wyrównaną zamiast ją
+wycofać.
+
+Zmienione: 7 plików źródłowych (`diplomacy-value-catalog.ts`, `diplomacy-proposals.ts`,
+`diplomacy-ai-offer-balance.ts`, `diplomacy-resource-trade-pick.ts`, `diplomacy-pn-engine.ts`,
+`main.ts` [3 miejsca: transferBasketItems, tickCyclicResourceTradeDeals, pickResourceTradeRelOffer],
+`diplomacyTradeBasket.ts` [UI: stepper, formularz, edycja wiersza]) + 7 plików testowych.
+
+Bramki: `tsc` 0, `logic-test` 213/213, WSZYSTKIE 9 plików testowych dyplomacji/handlu zielone
+(diplomacy-value-catalog 76/76, diplomacy-test 148/148, diplomacy-proposal-test 187/187,
+diplomacy-acceptance-points-test 254/254, diplomacy-ai-offer-balance-test 29/29,
+diplomacy-resource-cyclic-trade-test 46/46, diplomacy-resource-trade-pick-test 13/13,
+diplomacy-basket-duplicate-test 19/19, diplomacy-basket-duplicate-ui-test 28/28) — wszystkie
+zweryfikowane niezależnie przeze mnie na scalonym drzewie. Commit `f6d29ef0`, push OK.
+
+**Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz** — szeroki zakres (7 plików źródłowych, silnik
+handlu + AI + UI), więc weryfikacja ma być dokładna mimo standardowego trybu 1x
+(`R-EVALUATOR-3X-ZGODA-Q1` — 3x tylko za jawną zgodą, nie stosuję bez pytania).
