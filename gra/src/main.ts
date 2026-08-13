@@ -20843,6 +20843,17 @@ async function boot(): Promise<void> {
       // alike (see allDefendersFortifiedInGarnizon in armyMerge.ts for the full
       // rationale, incl. why the predicate checks ONLY `inGarnizon`).
       const defenderLockedByGarnizon = allDefendersFortifiedInGarnizon(defRosterRef);
+      // P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca, który już RAZ
+      // wycofał się z bitwy w tej turze (dowolna jednostka rostera obrony), nie może
+      // się wycofać ponownie przy KOLEJNYM ataku na niego w tej samej turze -- musi
+      // rozstrzygnąć bitwę. Osobny powód blokady od garnizonu (defenderLockedByGarnizon)
+      // -- inny komunikat i inny stan wizualny przycisku w preBattle.ts (widoczny,
+      // ale wyszarzony, nie ukryty). / EN: a defender who already retreated ONCE this
+      // turn (any unit in the defending roster) cannot retreat again on the NEXT
+      // attack this same turn -- must resolve the battle. Separate reason from the
+      // garrison lock (defenderLockedByGarnizon) -- different message and different
+      // button visual state in preBattle.ts (visible but greyed out, not hidden).
+      const retreatExhaustedThisTurn = defRosterRef.some(u => u.retreatedThisTurn === true);
 
       const pbInfo: PreBattleInfo = {
         atakujacy: preBattleSideFromRoster(atkRosterRef, atkSideTitle, atkCivLabel),
@@ -20855,7 +20866,8 @@ async function boot(): Promise<void> {
         lokacja: placeInfo.lokacja,
         tura: turn,
         canRetreat: false,
-        defenderCanRetreat: playerDefends && !defenderLockedByGarnizon,
+        defenderCanRetreat: playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn,
+        retreatExhaustedThisTurn: playerDefends && !defenderLockedByGarnizon && retreatExhaustedThisTurn,
         warunki: cityDefenseBreakdownFor(defRosterRef, terrain),
       };
 
@@ -20991,10 +21003,17 @@ async function boot(): Promise<void> {
           // Obrona-w-głąb: powtórz WARUNEK z defenderCanRetreat (nie tylko widoczność
           // przycisku w UI) -- gdyby onCancel został kiedyś wywołany inną drogą niż
           // klik/Esc (np. test, przyszły skrót), garnizon i tak zostaje na miejscu.
-          // / EN: defense-in-depth -- repeat the SAME condition as defenderCanRetreat
-          // (not just UI button visibility) -- if onCancel is ever invoked another way
-          // than click/Esc (test, future shortcut), a garnizoned defender still can't flee.
-          if (playerDefends && !defenderLockedByGarnizon) {
+          // Analogicznie dołączony warunek !retreatExhaustedThisTurn -- P-WYCOFANIE-
+          // JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca, który już wycofał się w tej
+          // turze, nie może się wycofać drugi raz, nawet gdyby onCancel został
+          // wywołany mimo wyszarzonego przycisku. / EN: defense-in-depth -- repeat the
+          // SAME condition as defenderCanRetreat (not just UI button visibility) -- if
+          // onCancel is ever invoked another way than click/Esc (test, future
+          // shortcut), a garnizoned defender still can't flee. Same for
+          // !retreatExhaustedThisTurn -- a defender who already retreated this turn
+          // can't retreat a second time even if onCancel fires despite the greyed-out
+          // button.
+          if (playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn) {
             applyDefenderPreBattleRetreat({
               units,
               battleQ: battleHex.q,
@@ -21004,6 +21023,12 @@ async function boot(): Promise<void> {
               isPassableHex: mapHexPassableForUnit,
               isUnitAt: isOccupiedHex,
             });
+            // P-WYCOFANIE-JEDNORAZOWE-TURA: oznacz cały roster obrony jako "wycofany
+            // w tej turze" -- blokuje kolejne wycofanie przy następnym ataku na te
+            // jednostki w tej samej turze (patrz RuntimeUnit.retreatedThisTurn).
+            // / EN: mark the whole defending roster "retreated this turn" -- blocks a
+            // further retreat on the next attack against these units this same turn.
+            for (const u of defRosterRef) u.retreatedThisTurn = true;
             showHintMessage('Wycofano się z bitwy.', 3000);
           }
           finishIncomingBattleUi();
@@ -23239,6 +23264,11 @@ async function boot(): Promise<void> {
           if (u.oblegaCityId) u.ruchLeft = 0;
           // Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md): raz na turę na jednostkę.
           if (u.replaceUsedThisTurn) u.replaceUsedThisTurn = false;
+          // P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): reset blokady ponownego
+          // wycofania obrońcy — na nową turę znów może się wycofać raz.
+          // / EN: reset the defender's "already retreated" lock — a new turn grants
+          // one fresh retreat again.
+          if (u.retreatedThisTurn) u.retreatedThisTurn = false;
         }
         clearPlayerUnitSelectionStateOnly();
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);

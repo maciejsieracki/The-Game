@@ -150,6 +150,36 @@ export interface RuntimeUnit {
    * dokładnie fallback opisany wyżej, bez żadnej migracji.
    */
   stackGroupId?: string;
+  /**
+   * P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca, który RAZ wycofał się
+   * z bitwy (przycisk „Wycofaj" na ekranie preBattle) w danej turze, nie może się
+   * wycofać ponownie przy KOLEJNYM ataku na niego W TEJ SAMEJ TURZE — musi rozstrzygnąć
+   * bitwę (Auto lub ręcznie). Ustawiane w main.ts (onCancel handler
+   * launchIncomingMapFieldBattle) na wszystkich jednostkach rostera obrony, które się
+   * wycofały. Czytane przy budowie PreBattleInfo.retreatExhaustedThisTurn (main.ts) —
+   * patrz tam pełny kontrakt UI (przycisk widoczny, ale wyszarzony, z osobnym
+   * komunikatem). Resetowane na false na starcie kolejnej tury gracza (main.ts, obok
+   * resetu ruchLeft/replaceUsedThisTurn). Stare zapisy bez pola = undefined = false
+   * (może się wycofać), jak każde inne pole opcjonalne tutaj. PARYTET AI: pole jest
+   * ownerId-agnostyczne (ta sama flaga działa identycznie dla dowolnego obrońcy), ale
+   * dotyczy WYŁĄCZNIE scenariusza „gracz broni się przed AI/barbarzyńcą" — AI dziś nie
+   * ma UI preBattle ani przycisku Wycofaj, więc w praktyce flaga jest dziś ustawiana
+   * tylko na jednostkach gracza.
+   * / EN: a defender who retreated ONCE from a battle (the "Retreat" button on the
+   * preBattle screen) in a given turn cannot retreat again on the NEXT attack against
+   * them in the SAME turn — must resolve the battle (Auto or manual). Set in main.ts
+   * (onCancel handler of launchIncomingMapFieldBattle) on every unit in the defending
+   * roster that retreated. Read when building PreBattleInfo.retreatExhaustedThisTurn
+   * (main.ts) — see there for the full UI contract (button visible but greyed out,
+   * with a distinct message). Reset to false at the start of the next player turn
+   * (main.ts, alongside the ruchLeft/replaceUsedThisTurn reset). Old saves without
+   * this field = undefined = false (can retreat), like every other optional field
+   * here. AI PARITY: the field is ownerId-agnostic (same flag works identically for
+   * any defender), but the scenario this covers is ONLY "player defends against
+   * AI/barbarian" — AI has no preBattle UI/Retreat button today, so in practice the
+   * flag is only ever set on the player's units.
+   */
+  retreatedThisTurn?: boolean;
 }
 
 /** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */
