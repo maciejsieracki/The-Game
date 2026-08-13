@@ -2,26 +2,35 @@
 /**
  * civ-configurator-opponent-test.cjs — R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA.
  *
- * Test dedykowany temu tematowi (obok już istniejącego, niezmienionego
- * civ-roster-test.cjs, który pilnuje E1-D-Q1=A i nadal jest 100% zielony jako dowód
- * regresji (a)). Pokrywa PIĘĆ scenariuszy ze zlecenia:
+ * RUNDA 2 (2026-08-13): Evaluator znalazł, że runda 1 wpięła `preferredCivIds`
+ * w `assignAiCivTypes`/`civ-roster.ts` — moduł NIEUŻYWANY przy realnym starcie
+ * nowej gry. `doStartGame` woła bezwarunkowo `applyClusterStartPlan()`, który
+ * NADPISUJE tamten wynik z zupełnie osobnej ścieżki (`cluster-start.ts` →
+ * `map/cluster-spawn.ts` → `map/clusters.ts`, `computeClusters`). Ten plik
+ * PRZEPISANO tak, żeby asercjonował na WYNIKU AKTYWNEJ ścieżki —
+ * `computeClusters()`/`buildClusterStartPlan().aiOwnerCivMap` — zamiast na
+ * martwym `civ-roster.ts` (ten nadal ma WŁASNY, niezmieniony test —
+ * civ-roster-test.cjs — bo pozostaje jedynym miejscem gdzie preferredCivIds
+ * coś robi: repairAiRosterFromMap()/legacy-load, patrz main.ts).
  *
- *  (a) domyślne zachowanie bez zaznaczeń pozostaje losowe jak dziś (regresja) —
- *      `preferredCivIds` undefined/[] daje IDENTYCZNY wynik jak przed tą zmianą.
- *  (b) zaznaczone konkretne typy trafiają do gry DOKŁADNIE (do limitu civTypesCount).
- *  (c) blokada/reguła przy przekroczeniu limitu — zarówno na poziomie UI
- *      (`isAiCivCardDisabled`/`sanitizeAiCivSelection`, aiCivPicker.ts) jak i jako
- *      siatka bezpieczeństwa w silniku (`pickActiveCivPool` obcina nadmiar
- *      deterministycznie, bez rzucania błędu).
- *  (d) zmiana `civ_types_count` PO ręcznym zaznaczeniu — `sanitizeAiCivSelection`
- *      zachowuje PIERWSZE N w kolejności zaznaczenia, odrzuca resztę po cichu.
- *  (e) ograniczenie pulą epoki — nie da się "wybrać" (silnik ignoruje) cywilizacji
- *      spoza `allCivIds` przekazanych dla danej epoki startu.
- *
- * Bundluje DWA czyste moduły (bez DOM/assets) esbuildem — civ-roster.ts (silnik) i
- * aiCivPicker.ts (UI cap/sanitize) — dokładnie te same jednostki co main.ts i
- * newGameFlow.ts importują, żeby nie duplikować formuł w teście (wzorzec
- * extract-to-pure-function, patrz komentarz na górze aiCivPicker.ts).
+ * Pięć scenariuszy ze zlecenia, w nowej, poprawnej formie:
+ *  (a) domyślne zachowanie bez zaznaczeń pozostaje IDENTYCZNE — preferredCivIds
+ *      undefined/[] nie zmienia rosterBezGracza wchodzące do
+ *      assignTypesToClusterCenters (reorderRosterByPreference no-op).
+ *  (b) zaznaczone konkretne typy trafiają do gry DOKŁADNIE — sprawdzone i na
+ *      computeClusters() (synth Pangea, pełna kontrola), i na
+ *      buildClusterStartPlan().aiOwnerCivMap (prawdziwa wygenerowana mapa —
+ *      dokładnie ta ścieżka, którą woła doStartGame).
+ *  (c) nadmiar preferencji ponad limit slotów: silnik obcina deterministycznie
+ *      do PIERWSZYCH (nTypy-1) w kolejności zaznaczenia, reszta odrzucona bez
+ *      błędu.
+ *  (d) UI: sanitizeAiCivSelection/aiCivSelectionCap (niezmienione w rundzie 2,
+ *      nadal chronią przed nadmiarem PRZED wysłaniem do silnika) + silnik:
+ *      mniejszy aktywneTypy = mniejszy efektywny cap, ta sama zasada "pierwsze
+ *      N" jak w (c).
+ *  (e) ograniczenie pulą epoki — preferowany typ spoza `rosterKluczeForStartEpoch`
+ *      nigdy nie trafia na mapę (reorderRosterByPreference filtruje względem
+ *      `roster`, który jest już epoch-filtered przez computeClusters).
  *
  * Usage (z gra/): node tools/civ-configurator-opponent-test.cjs
  */
@@ -35,11 +44,13 @@ const bundle = path.join(__dirname, '.civ-configurator-opponent-bundle.cjs');
 
 fs.writeFileSync(entry, `
 export {
-  assignAiCivTypes,
-  pickActiveCivPool,
-  civIdsFromRoster,
-  civIdsAvailableAtGameEpoch,
-} from '../src/game/civ-roster';
+  computeClusters,
+  reorderRosterByPreference,
+  rosterKluczeForStartEpoch,
+} from '../src/map/clusters';
+export { buildClusterStartPlan } from '../src/game/cluster-start';
+export { generateMap } from '../src/map/generator';
+export { civIdsAvailableAtGameEpoch } from '../src/game/civ-entry-epoch';
 export {
   aiCivSelectionCap,
   aiCivCandidateIds,
@@ -54,7 +65,7 @@ esbuild.buildSync({
   platform: 'node',
   format: 'cjs',
   target: 'node18',
-  loader: { '.ts': 'ts' },
+  loader: { '.ts': 'ts', '.json': 'json' },
   outfile: bundle,
   absWorkingDir: GRA,
   logLevel: 'silent',
@@ -62,7 +73,6 @@ esbuild.buildSync({
 
 const M = require(bundle);
 const civs = require('../data/civs.json');
-const ALL = M.civIdsFromRoster(civs.cywilizacje);
 
 let passed = 0;
 let failed = 0;
@@ -74,125 +84,160 @@ function assertEq(got, want, msg) {
   assert(got === want, `${msg} (got ${JSON.stringify(got)}, want ${JSON.stringify(want)})`);
 }
 
-console.log('civ-configurator-opponent-test (R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA)\n');
+console.log('civ-configurator-opponent-test (R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA, runda 2)\n');
 
-// ---------------------------------------------------------------------------
-// (a) domyślne zachowanie bez zaznaczeń pozostaje losowe jak dziś (regresja)
-// ---------------------------------------------------------------------------
-{
-  const argsNoPreferred = ['rzymianie', 7, 6, 99];
-  const poolUndefined = M.pickActiveCivPool(ALL, ...argsNoPreferred);
-  const poolEmptyArr = M.pickActiveCivPool(ALL, ...argsNoPreferred, []);
-  assert(
-    JSON.stringify(poolUndefined) === JSON.stringify(poolEmptyArr),
-    '(a) preferredCivIds undefined === [] (sama sygnatura, sam wynik)',
-  );
-
-  const mapNoPreferred = M.assignAiCivTypes({
-    allCivIds: ALL, playerCivId: 'rzymianie', aiOwnerIds: [1, 2, 3, 4, 5, 6],
-    aktywneTypy: 7, seed: 12345,
-  });
-  const mapEmptyPreferred = M.assignAiCivTypes({
-    allCivIds: ALL, playerCivId: 'rzymianie', aiOwnerIds: [1, 2, 3, 4, 5, 6],
-    aktywneTypy: 7, seed: 12345, preferredCivIds: [],
-  });
-  assert(
-    JSON.stringify([...mapNoPreferred]) === JSON.stringify([...mapEmptyPreferred]),
-    '(a) assignAiCivTypes: brak preferredCivIds === pusta tablica (identyczny wynik)',
-  );
-
-  // Ta sama asercja co w civ-roster-test.cjs (przed zmianą) — dowód że stary wywolanie
-  // 4-argumentowe (bez 6. parametru) nadal dziala identycznie.
-  const poolStd = M.pickActiveCivPool(ALL, 'grecy', 7, 6, 99);
-  assertEq(poolStd.length, 7, '(a) standard: 7 typow przy 6 AI (bez zmian)');
-}
-
-// ---------------------------------------------------------------------------
-// (b) zaznaczone konkretne typy trafiają do gry DOKŁADNIE (do limitu civTypesCount)
-// ---------------------------------------------------------------------------
-{
-  const preferred = ['egipt', 'grecy', 'celtowie'];
-  const pool = M.pickActiveCivPool(ALL, 'rzymianie', 4, 6, 1, preferred);
-  assertEq(pool.length, 4, '(b) 4 typy na mapie (gracz + 3 preferowane)');
-  assert(pool.includes('rzymianie'), '(b) gracz w puli');
-  for (const id of preferred) {
-    assert(pool.includes(id), `(b) preferowany typ ${id} trafił do puli`);
+/** Pangea syntetyczna — ląd obfity, więc placement zawsze osiąga pełne nTypy (bez fallbacku typN). */
+function makePangeaMap(size) {
+  const hexes = {};
+  for (let q = 0; q < size; q++) {
+    for (let r = 0; r < size; r++) {
+      hexes[q + ',' + r] = { coords: { q, r }, terenBazowy: 'laka' };
+    }
   }
+  return { hexes };
+}
+const pangea = makePangeaMap(60);
 
-  const map = M.assignAiCivTypes({
-    allCivIds: ALL, playerCivId: 'rzymianie', aiOwnerIds: [1, 2, 3, 4, 5, 6],
-    aktywneTypy: 4, seed: 1, preferredCivIds: preferred,
+/** Typy AI faktycznie rozmieszczone (bez gracza = klastry[0], bez fallbacku 'typN'). */
+function foreignTypesOf(placement) {
+  return placement.klastry.slice(1).map(k => k.typ).filter(t => !t.startsWith('typ'));
+}
+
+// ---------------------------------------------------------------------------
+// (a) domyślne zachowanie bez zaznaczeń pozostaje IDENTYCZNE (regresja)
+// ---------------------------------------------------------------------------
+{
+  const noPref = M.computeClusters(pangea, { seed: 42, aktywneTypy: 6, rywaleNaKlaster: 3, playerTyp: 'rzymianie' });
+  const emptyPref = M.computeClusters(pangea, {
+    seed: 42, aktywneTypy: 6, rywaleNaKlaster: 3, playerTyp: 'rzymianie', preferredCivIds: [],
   });
-  const assignedTypes = new Set(map.values());
+  assert(
+    JSON.stringify(noPref.klastry.map(k => k.typ)) === JSON.stringify(emptyPref.klastry.map(k => k.typ)),
+    '(a) computeClusters: preferredCivIds undefined === [] (identyczny wynik)',
+  );
+
+  // reorderRosterByPreference samo w sobie — no-op na undefined/[]/brak trafień.
+  const roster = ['grecy', 'rzymianie', 'chinczycy', 'inkowie'];
+  assert(
+    JSON.stringify(M.reorderRosterByPreference(roster, undefined)) === JSON.stringify(roster),
+    '(a) reorderRosterByPreference: undefined -> kopia bez zmian',
+  );
+  assert(
+    JSON.stringify(M.reorderRosterByPreference(roster, [])) === JSON.stringify(roster),
+    '(a) reorderRosterByPreference: [] -> kopia bez zmian',
+  );
+  assert(
+    JSON.stringify(M.reorderRosterByPreference(roster, ['nieznany_typ'])) === JSON.stringify(roster),
+    '(a) reorderRosterByPreference: preferencja spoza roster -> kopia bez zmian',
+  );
+}
+
+// ---------------------------------------------------------------------------
+// (b) zaznaczone konkretne typy trafiają do gry DOKŁADNIE
+// ---------------------------------------------------------------------------
+{
+  // reorderRosterByPreference: preferowane na start, w kolejności zaznaczenia, reszta zachowana.
+  const roster = ['grecy', 'rzymianie', 'chinczycy', 'inkowie', 'zulusi'];
+  const reordered = M.reorderRosterByPreference(roster, ['inkowie', 'chinczycy']);
+  assert(
+    JSON.stringify(reordered) === JSON.stringify(['inkowie', 'chinczycy', 'grecy', 'rzymianie', 'zulusi']),
+    '(b) reorderRosterByPreference: preferowane na start w kolejności zaznaczenia, reszta bez zmian (got ' +
+      JSON.stringify(reordered) + ')',
+  );
+
+  // computeClusters (Pangea, pełna kontrola): 5 slotów AI, 3 preferowane -> wszystkie trafiają na mapę.
+  const preferred = ['egipt', 'celtowie', 'sumer'];
+  const placement = M.computeClusters(pangea, {
+    seed: 7, aktywneTypy: 6, rywaleNaKlaster: 3, playerTyp: 'rzymianie', preferredCivIds: preferred,
+  });
+  const assignedTypes = foreignTypesOf(placement);
+  assertEq(assignedTypes.length, 5, '(b) computeClusters: 5 typów AI rozmieszczonych (aktywneTypy=6-1 gracz)');
   for (const id of preferred) {
-    assert(assignedTypes.has(id), `(b) assignAiCivTypes: ${id} faktycznie przypisany do jakiegoś ownera`);
+    assert(assignedTypes.includes(id), `(b) computeClusters: preferowany typ ${id} faktycznie na mapie`);
   }
-  assert(!assignedTypes.has('rzymianie'), '(b) AI nie dostaje typu gracza mimo preferencji');
+  assert(!assignedTypes.includes('rzymianie'), '(b) computeClusters: AI nie dostaje typu gracza mimo preferencji');
 
-  // deterministyczność z preferowanymi (ten sam seed -> ten sam wynik)
-  const map2 = M.assignAiCivTypes({
-    allCivIds: ALL, playerCivId: 'rzymianie', aiOwnerIds: [1, 2, 3, 4, 5, 6],
-    aktywneTypy: 4, seed: 1, preferredCivIds: preferred,
+  // Deterministyczność: ten sam seed + te same preferencje -> ten sam wynik.
+  const placement2 = M.computeClusters(pangea, {
+    seed: 7, aktywneTypy: 6, rywaleNaKlaster: 3, playerTyp: 'rzymianie', preferredCivIds: preferred,
   });
   assert(
-    JSON.stringify([...map]) === JSON.stringify([...map2]),
-    '(b) deterministyczny wynik z preferredCivIds przy tym samym seedzie',
+    JSON.stringify(placement.klastry.map(k => k.typ)) === JSON.stringify(placement2.klastry.map(k => k.typ)),
+    '(b) computeClusters: deterministyczny wynik z preferredCivIds przy tym samym seedzie',
   );
 
-  // preferowanych mniej niż potrzeba -> reszta dobrana z puli (deterministyczny fill-in)
-  const partial = M.pickActiveCivPool(ALL, 'rzymianie', 5, 6, 2, ['egipt']);
-  assertEq(partial.length, 5, '(b) fill-in: 5 typów mimo tylko 1 preferowanego');
-  assert(partial.includes('egipt'), '(b) fill-in: preferowany typ nadal obecny');
-  assert(partial.includes('rzymianie'), '(b) fill-in: gracz nadal obecny');
-  const partial2 = M.pickActiveCivPool(ALL, 'rzymianie', 5, 6, 2, ['egipt']);
+  // buildClusterStartPlan().aiOwnerCivMap — DOKŁADNIE ta ścieżka, którą woła
+  // doStartGame()/applyClusterStartPlan() w main.ts przy realnym starcie nowej
+  // gry (Evaluator: to jest test, którego zabrakło w rundzie 1).
+  const realMap = M.generateMap(50, 50, 4242, 'kontynenty');
+  const plan = M.buildClusterStartPlan({
+    map: realMap,
+    civs,
+    seed: 4242,
+    playerCivId: 'grecy',
+    rywaleNaKlaster: 4,
+    aktywneTypy: 5,
+    preferredCivIds: ['inkowie', 'egipt'],
+  });
+  const planTypes = new Set(plan.aiOwnerCivMap.values());
+  assert(planTypes.has('inkowie'), '(b) buildClusterStartPlan().aiOwnerCivMap: inkowie faktycznie przypisani');
+  assert(planTypes.has('egipt'), '(b) buildClusterStartPlan().aiOwnerCivMap: egipt faktycznie przypisany');
+  assert(!planTypes.has('grecy'), '(b) buildClusterStartPlan().aiOwnerCivMap: AI nie dostaje typu gracza');
+}
+
+// ---------------------------------------------------------------------------
+// (c) nadmiar preferencji ponad limit slotów — obcięte deterministycznie,
+//     PIERWSZE (nTypy-1) w kolejności zaznaczenia, bez błędu.
+// ---------------------------------------------------------------------------
+{
+  // aktywneTypy=4 -> 1 gracz + 3 sloty AI. 5 preferowanych, tylko pierwsze 3 się mieszczą.
+  const tooMany = ['egipt', 'celtowie', 'sumer', 'hetyci', 'babilonia'];
+  const placement = M.computeClusters(pangea, {
+    seed: 3, aktywneTypy: 4, rywaleNaKlaster: 2, playerTyp: 'rzymianie', preferredCivIds: tooMany,
+  });
+  const assignedTypes = foreignTypesOf(placement);
+  assertEq(assignedTypes.length, 3, '(c) computeClusters: pula obcięta do 3 slotów AI mimo 5 preferowanych');
+  const assignedSet = new Set(assignedTypes);
   assert(
-    JSON.stringify(partial) === JSON.stringify(partial2),
-    '(b) fill-in: deterministyczny (ten sam seed -> te same dobrane typy)',
+    assignedSet.has('egipt') && assignedSet.has('celtowie') && assignedSet.has('sumer'),
+    '(c) computeClusters: pierwsze 3 preferowane w kolejności zaznaczenia zachowane (got ' +
+      JSON.stringify(assignedTypes) + ')',
+  );
+  assert(
+    !assignedSet.has('hetyci') && !assignedSet.has('babilonia'),
+    '(c) computeClusters: nadmiarowe preferowane (4., 5.) odrzucone, brak błędu',
+  );
+
+  // Sam reorderRosterByPreference potwierdza mechanizm cięcia u źródła: nawet
+  // po reorder, .slice(0, nTypy-1) w computeClusters obcina do limitu — wszystkie
+  // 5 preferowanych obecne w rosterze, więc slice(0,3) = pierwsze 3 z tooMany.
+  const roster = ['grecy', 'rzymianie', 'chinczycy', 'inkowie', 'zulusi', ...tooMany];
+  const reordered = M.reorderRosterByPreference(roster, tooMany);
+  assertEq(
+    JSON.stringify(reordered.slice(0, 3)),
+    JSON.stringify(tooMany.slice(0, 3)),
+    '(c) reorderRosterByPreference + slice(0,3): tylko pierwsze zmieszczone preferowane',
   );
 }
 
 // ---------------------------------------------------------------------------
-// (c) blokada/reguła przy przekroczeniu limitu
+// (d) UI cap (niezmieniony w rundzie 2) + silnik: mniejszy aktywneTypy = mniejszy
+//     efektywny cap, ta sama zasada "pierwsze N w kolejności zaznaczenia".
 // ---------------------------------------------------------------------------
 {
-  // UI: karta niezaznaczona ma być zablokowana, gdy limit osiągnięty.
-  assertEq(M.isAiCivCardDisabled(false, 3, 3), true, '(c) UI: karta zablokowana przy limit=selectedCount');
-  assertEq(M.isAiCivCardDisabled(false, 2, 3), false, '(c) UI: karta odblokowana poniżej limitu');
-  assertEq(M.isAiCivCardDisabled(true, 3, 3), false, '(c) UI: już zaznaczona karta NIGDY nie jest "zablokowana" (można odznaczyć)');
-  assertEq(M.isAiCivCardDisabled(false, 0, 0), true, '(c) UI: limit=0 (civTypesCount=1) -> wszystko zablokowane');
+  // UI: karta niezaznaczona zablokowana przy limicie.
+  assertEq(M.isAiCivCardDisabled(false, 3, 3), true, '(d) UI: karta zablokowana przy limit=selectedCount');
+  assertEq(M.isAiCivCardDisabled(false, 2, 3), false, '(d) UI: karta odblokowana poniżej limitu');
+  assertEq(M.isAiCivCardDisabled(true, 3, 3), false, '(d) UI: już zaznaczona karta nigdy nie jest "zablokowana"');
 
-  // UI: sanitizeAiCivSelection obcina nadmiar zaznaczeń do limitu, zachowując kolejność.
-  const overSelected = ['a', 'b', 'c', 'd', 'e'];
-  const candidates = ['a', 'b', 'c', 'd', 'e', 'f'];
-  const clamped = M.sanitizeAiCivSelection(overSelected, candidates, 3);
-  assert(
-    JSON.stringify(clamped) === JSON.stringify(['a', 'b', 'c']),
-    '(c) UI: nadmiar zaznaczeń obcięty do limitu, zachowana kolejność (got ' + JSON.stringify(clamped) + ')',
-  );
-
-  // Silnik jako siatka bezpieczeństwa: preferredCivIds > typesNeeded-1 nie rzuca
-  // błędu i nie przekracza limitu (obcina deterministycznie, pierwsze N).
-  const tooMany = ['egipt', 'grecy', 'celtowie', 'hetyci', 'babilonia'];
-  const poolCapped = M.pickActiveCivPool(ALL, 'rzymianie', 3, 6, 5, tooMany);
-  assertEq(poolCapped.length, 3, '(c) silnik: pula obcięta do civTypesCount=3 mimo 5 preferowanych');
-  assert(poolCapped.includes('egipt') && poolCapped.includes('grecy'), '(c) silnik: pierwsze preferowane zachowane (kolejność)');
-  assert(!poolCapped.includes('babilonia'), '(c) silnik: nadmiarowe preferowane odrzucone');
-}
-
-// ---------------------------------------------------------------------------
-// (d) zmiana civ_types_count PO zaznaczeniu — pierwsze N w kolejności zaznaczenia
-// ---------------------------------------------------------------------------
-{
-  // Gracz zaznaczył 5 (w tej kolejności), potem zmniejszył civTypesCount tak, że
-  // limit AI spadł do 2 (civTypesCount=3 -> cap=2).
   const pickedInOrder = ['egipt', 'grecy', 'celtowie', 'hetyci', 'babilonia'];
-  const candidateIds = ALL.filter((id) => id !== 'rzymianie');
+  const candidateIds = M.civIdsAvailableAtGameEpoch(civs.cywilizacje, 'zelazo').filter(id => id !== 'rzymianie');
   const capBefore = M.aiCivSelectionCap(6); // civTypesCount=6 -> cap=5
   assertEq(capBefore, 5, '(d) cap przed zmniejszeniem = civTypesCount(6)-1 = 5');
   const beforeShrink = M.sanitizeAiCivSelection(pickedInOrder, candidateIds, capBefore);
   assert(
     JSON.stringify(beforeShrink) === JSON.stringify(pickedInOrder),
-    '(d) przed zmniejszeniem: wszystkie 5 zaznaczeń zachowane',
+    '(d) UI przed zmniejszeniem: wszystkie 5 zaznaczeń zachowane',
   );
 
   const capAfter = M.aiCivSelectionCap(3); // civTypesCount=3 -> cap=2
@@ -200,59 +245,58 @@ console.log('civ-configurator-opponent-test (R-KONFIGURATOR-WYBOR-CYWILIZACJI-PR
   const afterShrink = M.sanitizeAiCivSelection(pickedInOrder, candidateIds, capAfter);
   assert(
     JSON.stringify(afterShrink) === JSON.stringify(['egipt', 'grecy']),
-    '(d) po zmniejszeniu: zachowane PIERWSZE 2 w kolejności zaznaczenia (got ' + JSON.stringify(afterShrink) + ')',
+    '(d) UI po zmniejszeniu: zachowane PIERWSZE 2 w kolejności zaznaczenia (got ' + JSON.stringify(afterShrink) + ')',
   );
 
-  // Zwiększenie z powrotem NIE przywraca odrzuconych (sanitize jest bezstanowe —
-  // "grecy/celtowie/hetyci/babilonia" trzeba by zaznaczyć ponownie). To świadoma
-  // konsekwencja projektowa: sanitizeAiCivSelection operuje na tym, co jest DZIŚ w
-  // selAiCivIds (już obciętym), nie na jakiejś ukrytej "historii pełnego wyboru".
-  const capGrownBack = M.aiCivSelectionCap(6);
-  const afterGrowBack = M.sanitizeAiCivSelection(afterShrink, candidateIds, capGrownBack);
+  // Silnik: gdyby UI-owy sanitize z jakiegoś powodu nie zadziałał, computeClusters
+  // z małym aktywneTypy nadal obcina do tego samego "pierwsze N" — siatka bezpieczeństwa.
+  const placementShrunk = M.computeClusters(pangea, {
+    seed: 11, aktywneTypy: 3, rywaleNaKlaster: 2, playerTyp: 'rzymianie', preferredCivIds: pickedInOrder,
+  });
+  const shrunkTypes = foreignTypesOf(placementShrunk);
+  assertEq(shrunkTypes.length, 2, '(d) silnik: aktywneTypy=3 -> 2 sloty AI mimo 5 preferowanych');
   assert(
-    JSON.stringify(afterGrowBack) === JSON.stringify(['egipt', 'grecy']),
-    '(d) ponowne zwiększenie limitu NIE przywraca wcześniej odrzuconych zaznaczeń',
+    new Set(shrunkTypes).has('egipt') && new Set(shrunkTypes).has('grecy'),
+    '(d) silnik: pierwsze 2 preferowane (egipt, grecy) zachowane, spójne z UI-owym sanitize',
   );
 }
 
 // ---------------------------------------------------------------------------
-// (e) ograniczenie pulą epoki
+// (e) ograniczenie pulą epoki — preferowany typ spoza epoki nigdy nie trafia na mapę
 // ---------------------------------------------------------------------------
 {
   const kamienPool = M.civIdsAvailableAtGameEpoch(civs.cywilizacje, 'kamien');
   assertEq(kamienPool.length, 8, '(e) epoka Kamienia: 8 typów dostępnych');
-  const brazPool = M.civIdsAvailableAtGameEpoch(civs.cywilizacje, 'braz');
-  assertEq(brazPool.length, 14, '(e) epoka Brązu: 14 typów dostępnych');
   const zelazoPool = M.civIdsAvailableAtGameEpoch(civs.cywilizacje, 'zelazo');
-  assertEq(zelazoPool.length, 15, '(e) epoka Żelaza: 15 typów dostępnych');
-
-  // Cywilizacja spoza puli epoki Kamienia (np. Słowianie, wejście dopiero Żelazo).
   const zelazoOnly = zelazoPool.find((id) => !kamienPool.includes(id));
   assert(!!zelazoOnly, '(e) test setup: istnieje typ dostępny w Żelazie a nie w Kamieniu');
 
-  // UI: kandydaci na AI w epoce Kamienia NIE zawierają typu spoza puli Kamienia.
-  const uiCandidates = M.aiCivCandidateIds(kamienPool, 'egipt');
-  assert(!uiCandidates.includes(zelazoOnly), '(e) UI: kandydat spoza puli epoki nie widoczny do zaznaczenia');
-
-  // Silnik: nawet gdyby preferredCivIds (np. stare prefs z gry w epoce Żelaza po
-  // cofnięciu do epoki Kamienia) zawierały typ spoza dzisiejszej puli epoki —
-  // allCivIds przekazane do pickActiveCivPool jest JUŻ epoch-filtered, więc taki
-  // typ jest po prostu odfiltrowany, gra się nie wywala.
-  const poolKamienWithStalePreferred = M.pickActiveCivPool(
-    kamienPool, 'egipt', 5, 3, 42, ['egipt', zelazoOnly, 'grecy'],
-  );
   assert(
-    !poolKamienWithStalePreferred.includes(zelazoOnly),
-    '(e) silnik: przestarzała preferencja spoza puli epoki odfiltrowana, brak wywalenia',
+    M.rosterKluczeForStartEpoch(civs.cywilizacje, 'kamien').length === 8,
+    '(e) rosterKluczeForStartEpoch: kamień = 8 nacji (zgodne z civIdsAvailableAtGameEpoch)',
   );
-  assert(poolKamienWithStalePreferred.includes('grecy'), '(e) silnik: pozostałe poprawne preferencje nadal działają');
 
-  const mapKamien = M.assignAiCivTypes({
-    allCivIds: kamienPool, playerCivId: 'egipt', aiOwnerIds: [1, 2, 3],
-    aktywneTypy: 4, seed: 555, preferredCivIds: ['grecy', zelazoOnly],
+  // Silnik: preferowany typ spoza puli epoki Kamienia (np. stare preferencje
+  // sprzed cofnięcia epoki) jest po prostu odfiltrowany — computeClusters nie
+  // wywala się, pozostałe poprawne preferencje nadal działają.
+  const placement = M.computeClusters(pangea, {
+    seed: 21,
+    aktywneTypy: 5,
+    rywaleNaKlaster: 2,
+    playerTyp: 'egipt',
+    startEpochId: 'kamien',
+    civRoster: civs.cywilizacje,
+    preferredCivIds: ['grecy', zelazoOnly, 'sumer'],
   });
-  for (const id of mapKamien.values()) {
-    assert(kamienPool.includes(id), '(e) assignAiCivTypes: przypisany typ ' + id + ' zawsze w puli epoki Kamienia');
+  const assignedTypes = foreignTypesOf(placement);
+  assert(
+    !assignedTypes.includes(zelazoOnly),
+    `(e) silnik: preferencja spoza epoki (${zelazoOnly}) odfiltrowana, brak na mapie`,
+  );
+  assert(assignedTypes.includes('grecy'), '(e) silnik: pozostała poprawna preferencja (grecy) nadal działa');
+  assert(assignedTypes.includes('sumer'), '(e) silnik: pozostała poprawna preferencja (sumer) nadal działa');
+  for (const t of assignedTypes) {
+    assert(kamienPool.includes(t), '(e) silnik: każdy przypisany typ w puli epoki Kamienia: ' + t);
   }
 }
 

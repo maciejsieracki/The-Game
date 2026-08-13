@@ -248,7 +248,11 @@ import {
   isHexInStartReveal as computeHexInStartReveal,
   validateFirstPlayerCityPlacement,
 } from './game/first-player-city';
-import { assignAiCivTypes, civIdsAvailableAtGameEpoch } from './game/civ-roster';
+import {
+  assignAiCivTypes,
+  civIdsAvailableAtGameEpoch,
+  rotatePreferredForRepairSeed,
+} from './game/civ-roster';
 import {
   civColorCssForOwner,
   civColorForOwner,
@@ -1735,13 +1739,16 @@ async function boot(): Promise<void> {
         data.civs.cywilizacje as Parameters<typeof civIdsAvailableAtGameEpoch>[0],
         _menuEpochId,
       );
+      const repairSeed = (_gameSeed ^ missing.reduce((a, b) => a ^ b, 0)) >>> 0;
       const aiMap = assignAiCivTypes({
         allCivIds,
         playerCivId: civId,
         aiOwnerIds: missing,
         aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
-        seed: (_gameSeed ^ missing.reduce((a, b) => a ^ b, 0)) >>> 0,
-        preferredCivIds: _menuSelectedAiCivIds,
+        seed: repairSeed,
+        // N1 (Evaluator 2026-08-13): rotacja lokalna do TEGO wywołania — patrz
+        // dokumentacja rotatePreferredForRepairSeed w civ-roster.ts.
+        preferredCivIds: rotatePreferredForRepairSeed(_menuSelectedAiCivIds, repairSeed),
       });
       for (const [oid, civ] of aiMap) aiOwnerCivMap.set(oid, civ);
       syncOwnerDisplayNamesFromCities();
@@ -7425,7 +7432,7 @@ async function boot(): Promise<void> {
       playerCivId: string,
       seed: number,
       rywaleNaKlaster: number,
-      opts?: { skipRenderRefresh?: boolean },
+      opts?: { skipRenderRefresh?: boolean; preferredCivIds?: readonly string[] },
     ): void {
       const plan = buildClusterStartPlan({
         map,
@@ -7436,6 +7443,13 @@ async function boot(): Promise<void> {
         aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
         startEpochId: _menuEpochId || 'kamien',
         cityNamesPools: data.cityNamesPools,
+        // R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2: wybór gracza z
+        // kreatora trafia TERAZ do ścieżki klastrowej (jedyna aktywna przy
+        // nowej grze) — zamiast martwego wpięcia w assignAiCivTypes z rundy 1.
+        // / EN: player's wizard selection now reaches the cluster path (the
+        // only active one on new-game start) — instead of round 1's dead wiring
+        // into assignAiCivTypes.
+        preferredCivIds: opts?.preferredCivIds,
       });
 
       playerStartHex = { ...plan.playerStartHex };
@@ -27688,6 +27702,23 @@ async function boot(): Promise<void> {
           player.civBonusy = [];
           console.warn(`[NewGame] Nacja '${_menuCivId}' nie znaleziona w civs.json — brak bonusów`);
         }
+        // Runda 2 R-KONFIGURATOR-...: ten wypełniacz jest nieszkodliwym stanem
+        // przejściowym — na ścieżce nowej gry `doStartGame` woła POTEM zawsze
+        // `applyClusterStartPlan()`, który robi `aiOwnerCivMap.clear()` i
+        // wypełnia mapę na nowo ze ścieżki klastrowej (patrz tamto wywołanie).
+        // Na ścieżce wczytania sejwu (`regenerateWorldForLoad`) analogicznie
+        // nadpisuje go `restoreAiRosterFromSave()`. Zostawione, bo daje sensowny
+        // domyślny stan `aiOwnerCivMap` w oknie między applyMenuParams a tym
+        // właściwym wypełnieniem (np. gdyby coś w trakcie ładowania odczytało
+        // aiOwnerCivMap wcześniej) — bez realnego kosztu.
+        // / EN: this fill-in is a harmless transitional state — on the new-game
+        // path `doStartGame` always calls `applyClusterStartPlan()` afterwards,
+        // which clears and refills `aiOwnerCivMap` from the cluster path (see
+        // that call site). On the save-load path (`regenerateWorldForLoad`) it
+        // is likewise overwritten by `restoreAiRosterFromSave()`. Left in place
+        // because it gives a sane default `aiOwnerCivMap` in the window between
+        // applyMenuParams and the real fill (e.g. if something reads
+        // aiOwnerCivMap mid-load) — at no real cost.
         fillAiOwnerCivMap(_menuCivId, _gameSeed);
         console.log(`[NewGame] AI nacje:`, Object.fromEntries(aiOwnerCivMap));
       }
@@ -28288,7 +28319,10 @@ async function boot(): Promise<void> {
       improvementMeshes.clear();
 
       await postSceneProgress(loading, 'plan klastra startowego', 7, POST_SCENE_STEPS);
-      applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, { skipRenderRefresh: true });
+      applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, {
+        skipRenderRefresh: true,
+        preferredCivIds: _menuSelectedAiCivIds,
+      });
       initAllAiOwnersForNewGame(params.epochId || 'kamien');
       reconcileAllOwnerErasFromResearch();
       endPostSceneStep('plan klastra startowego', postSceneSteps, stepWall);

@@ -174,6 +174,40 @@ function shuffleInPlace<T>(arr: T[], rand: () => number): void {
   }
 }
 
+/**
+ * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2 (Evaluator 2026-08-13):
+ * przestawia `roster` tak, żeby `preferred` (w kolejności zaznaczenia gracza w
+ * kreatorze, tylko wpisy faktycznie obecne w `roster`) trafiły na POCZĄTEK.
+ * Dalsza logika (`.slice(0, nTypy-1)` w computeClusters + `shuffleInPlace` w
+ * assignTypesToClusterCenters) wtedy wybiera z priorytetem dla preferowanych —
+ * reszta zostaje w dotychczasowej kolejności `ROSTER_KLUCZE`/epoki (deterministyczny
+ * fallback identyczny jak dziś, gdy brak preferencji). Zero dodatkowego losowania.
+ * / EN: moves `preferred` (in the player's wizard selection order, entries actually
+ * present in `roster` only) to the FRONT of `roster`. Downstream logic
+ * (`.slice(0, nTypy-1)` in computeClusters + `shuffleInPlace` in
+ * assignTypesToClusterCenters) then picks with priority for preferred — the rest
+ * stays in today's `ROSTER_KLUCZE`/epoch order (same deterministic fallback as
+ * without preferences). No extra randomness introduced.
+ */
+export function reorderRosterByPreference(
+  roster: readonly string[],
+  preferred: readonly string[] | undefined,
+): string[] {
+  if (!preferred || preferred.length === 0) return [...roster];
+  const rosterSet = new Set(roster);
+  const front: string[] = [];
+  const seen = new Set<string>();
+  for (const id of preferred) {
+    if (id && rosterSet.has(id) && !seen.has(id)) {
+      front.push(id);
+      seen.add(id);
+    }
+  }
+  if (front.length === 0) return [...roster];
+  const rest = roster.filter((id) => !seen.has(id));
+  return [...front, ...rest];
+}
+
 /** Min. pól lądu w masie, żeby rozważyć środek klastra (małe wysepki pomijamy). */
 const MIN_MASS_HEXES_FOR_CENTER = 12;
 /**
@@ -3269,6 +3303,14 @@ export function computeClusters(
     startEpochId?: string;
     /** Wiersze z civs.json — wymagane z startEpochId do filtra epoki. */
     civRoster?: readonly CivEntryEpochRow[];
+    /**
+     * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2: konkretne typy AI
+     * wybrane przez gracza w kreatorze (multi-select), w kolejności zaznaczenia.
+     * Puste/undefined = dotychczasowe zachowanie (deterministyczny ROSTER_KLUCZE).
+     * / EN: specific AI civ types chosen by the player in the wizard, in selection
+     * order. Empty/undefined = today's behaviour (deterministic ROSTER_KLUCZE).
+     */
+    preferredCivIds?: readonly string[];
   },
 ): ClusterPlacement {
   const seed             = opts?.seed ?? 42;
@@ -3427,7 +3469,12 @@ export function computeClusters(
   regiony = dominanceResult.regiony;
 
   // BUG-SPAWN-CLUSTER-KULTURA: typy przypisane do mas PO finalnych środkach (nie przed relokacją).
-  const rosterBezGracza = rosterSource.filter(k => k !== playerKlucz);
+  // Runda 2 R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: preferowane typy gracza na
+  // początek listy PRZED obcięciem do nTypy-1 — patrz reorderRosterByPreference wyżej.
+  const rosterBezGracza = reorderRosterByPreference(
+    rosterSource.filter(k => k !== playerKlucz),
+    opts?.preferredCivIds,
+  );
   let activeKlucze = assignTypesToClusterCenters(
     activeCentrumy,
     masses,

@@ -113,6 +113,36 @@ export function pickActiveCivPool(
   return [...new Set(active.filter((id): id is string => !!id))].slice(0, typesNeeded);
 }
 
+/**
+ * N1 (Evaluator, R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2, 2026-08-13):
+ * rotuje `preferred` deterministycznie wg `seed`. Jedyny użytkownik dziś to
+ * `repairAiRosterFromMap()` w main.ts (naprawa sejwu z brakującym ownerem) — bez
+ * tego, przy 1 brakującym ownerze `pickActiveCivPool` zawsze bierze
+ * `preferredValid[0]` (deterministyczny kolaps, gubi różnorodność, którą dawał
+ * dawny seedowany shuffle). CELOWO nieużywane przez `pickActiveCivPool` — kolejność
+ * zaznaczenia gracza w normalnej ścieżce startu (clusters.ts) i istniejące testy
+ * (civ-roster-test.cjs, civ-configurator-opponent-test.cjs scenariusz (c)) zostają
+ * nietknięte.
+ * / EN: deterministically rotates `preferred` by `seed`. Its only caller today is
+ * `repairAiRosterFromMap()` in main.ts (save-repair for a missing owner) —
+ * without it, with exactly 1 missing owner `pickActiveCivPool` always takes
+ * `preferredValid[0]` (deterministic collapse, losing the diversity the old
+ * seeded shuffle gave). Deliberately NOT used by `pickActiveCivPool` — the
+ * normal start path's (clusters.ts) selection-order guarantee and existing
+ * tests (civ-roster-test.cjs, civ-configurator-opponent-test.cjs scenario (c))
+ * stay untouched.
+ */
+export function rotatePreferredForRepairSeed(
+  preferred: readonly string[],
+  seed: number,
+): string[] {
+  if (preferred.length <= 1) return [...preferred];
+  const rng = makeRng(seed >>> 0);
+  const offset = Math.floor(rng() * preferred.length);
+  if (offset === 0) return [...preferred];
+  return preferred.map((_, i) => preferred[(i + offset) % preferred.length]!);
+}
+
 /** Mapa ownerId → ikonaId dla AI (E1-D-Q1=A). */
 export function assignAiCivTypes(input: AssignAiCivInput): Map<number, string> {
   const { allCivIds, playerCivId, aiOwnerIds, aktywneTypy, seed, preferredCivIds } = input;

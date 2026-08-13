@@ -15,6 +15,7 @@ export {
   pickActiveCivPool,
   civIdsFromRoster,
   civIdsAvailableAtGameEpoch,
+  rotatePreferredForRepairSeed,
 } from '../src/game/civ-roster';
 `, 'utf8');
 
@@ -95,6 +96,73 @@ const mapKamien = M.assignAiCivTypes({
 });
 for (const id of mapKamien.values()) {
   assert(kamienPool.includes(id), 'AI roster filtrowany po epoce Kamienia: ' + id);
+}
+
+// ---------------------------------------------------------------------------
+// N1 (Evaluator R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2, 2026-08-13):
+// rotatePreferredForRepairSeed — repairAiRosterFromMap() z 1 brakującym ownerem
+// nie może zawsze kolapsować do preferredValid[0].
+// ---------------------------------------------------------------------------
+{
+  const preferred = ['egipt', 'grecy', 'celtowie', 'hetyci'];
+  assert(
+    JSON.stringify(M.rotatePreferredForRepairSeed([], 1)) === '[]',
+    'N1: pusta preferencja -> pusta (no-op)',
+  );
+  assert(
+    JSON.stringify(M.rotatePreferredForRepairSeed(['egipt'], 999)) === JSON.stringify(['egipt']),
+    'N1: 1 preferowany -> bez rotacji (nic do rotowania)',
+  );
+
+  // Różne seedy repairu (np. różni brakujący ownerowie) NIE zawsze dają index 0
+  // jako pierwszy element rotowanej listy — bez tego repair z 1 slotem zawsze
+  // brałby preferredValid[0] (kolaps różnorodności, N1).
+  const firstElements = new Set();
+  for (let seed = 0; seed < 40; seed++) {
+    const rotated = M.rotatePreferredForRepairSeed(preferred, seed);
+    assert(rotated.length === preferred.length, `N1: rotacja zachowuje długość (seed=${seed})`);
+    assert(
+      new Set(rotated).size === preferred.length
+        && preferred.every(id => rotated.includes(id)),
+      `N1: rotacja to permutacja tego samego zbioru (seed=${seed})`,
+    );
+    firstElements.add(rotated[0]);
+  }
+  assert(
+    firstElements.size > 1,
+    'N1: pierwszy element rotowanej listy różni się między seedami (got ' +
+      JSON.stringify([...firstElements]) + ') — bez tego repair 1-ownera zawsze bierze preferredValid[0]',
+  );
+
+  // Deterministyczność: ten sam seed -> ta sama rotacja.
+  assert(
+    JSON.stringify(M.rotatePreferredForRepairSeed(preferred, 17))
+      === JSON.stringify(M.rotatePreferredForRepairSeed(preferred, 17)),
+    'N1: deterministyczna rotacja (ten sam seed -> ten sam wynik)',
+  );
+
+  // Integracja z assignAiCivTypes: 1 brakujący owner + preferencje > needOthers=1
+  // -> różne seedy repairu dają różne przypisane typy (nie zawsze preferred[0]).
+  const kamienPool = M.civIdsAvailableAtGameEpoch(civs.cywilizacje, 'braz');
+  const assignedFirsts = new Set();
+  for (let seed = 0; seed < 40; seed++) {
+    const rotated = M.rotatePreferredForRepairSeed(preferred, seed);
+    const map1owner = M.assignAiCivTypes({
+      allCivIds: kamienPool,
+      playerCivId: 'rzymianie',
+      aiOwnerIds: [99],
+      aktywneTypy: 5,
+      seed,
+      preferredCivIds: rotated,
+    });
+    assignedFirsts.add(map1owner.get(99));
+  }
+  assert(
+    assignedFirsts.size > 1,
+    'N1: assignAiCivTypes z 1 brakującym ownerem + rotatePreferredForRepairSeed -> ' +
+      'różnorodność przypisań między seedami (got ' + JSON.stringify([...assignedFirsts]) +
+      '), NIE zawsze preferred[0]="egipt"',
+  );
 }
 
 console.log('\nciv-roster-test:', passed, 'passed,', failed, 'failed');
