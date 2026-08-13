@@ -18963,3 +18963,180 @@ w wąskim oknie dystansu 2); możliwe rozmycie `R-MP-HARD-WAVE Q2` gdy jednostka
 potem implementacja zebrania po stronie silnika. NIE zamykać tematu, NIE liczyć jako
 zdeployowane mimo że kod jest już w FALI 276 — regresja nieszkodliwa (brak crasha), ale objaw
 nie zniknął i jest teraz gorzej widoczny.**
+
+## R-DESIGN-11-ZAKLADEK — Designer: Klatka 1/11 (Skarbiec) dostarczona, czeka na obraz + potwierdzenie (2026-08-13)
+
+Designer zgłosił (przekazane przez Macieja): Klatka 1/11 Skarbiec gotowa, zgodnie z §9 zlecenia
+zatrzymuje się i czeka na potwierdzenie przed pozostałymi 10. Paleta 3b (realna z
+`empireDetailPanel.ts`: `#141a24`/`#171e2a`/`#d9a441`, Segoe UI, róg 7–9px), bez mieszania z
+`tokens.css`. Zmiana hierarchii (hero „Netto +N / turę" jak „Moc {N}", dwa boxy Wpływy/Koszty,
+tabela `.civ-emp-tbl` z `.pos`/`.neg`, wiersz SUMA, suwaki z realną kwotą), nie odcienia — w
+odróżnieniu od wcześniejszej, zbyt subtelnej próby orkiestratora.
+
+Dwa punkty otwarte zgłoszone przez designera, odpowiedziane orkiestratora wprost w kanale do
+designera (bez zmiany kodu, brak decyzji Macieja wymaganej na tym etapie):
+1. Skarbiec (i potem Praca/Nauka/Religia) potrzebują WŁASNEGO bloku renderowania — dziś
+   współdzielą jeden generyczny blok `ekonomia` filtrowany `onlyEconId`, bez miejsca na hero.
+   To ograniczenie dokładnie zgodne z notatką architektoniczną w
+   `docs/ux/DESIGN-ZLECENIE-11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md`. Odpowiedź: designer ma
+   projektować zakładając osobny blok (jak Spichlerz/Surowce/Handel/Armia/Kultura/Moc już mają),
+   rozdzielenie bloku to praca deweloperska PO stronie tego repo, do zrobienia przy wdrażaniu.
+2. Chip Religia — zostaje nierozstrzygnięty (§8.9 dokumentu), do decyzji razem z podziałem
+   Obywatele/Religia. Nie blokuje odbioru Skarbca.
+
+**STATUS: czekamy na obraz/plik Klatki 1 od designera — bez podglądu wizualnego nie da się
+ocenić layoutu z samego opisu tekstowego.** Brak akcji kodowej po naszej stronie teraz.
+
+## P-MILET-ATENY-PRACOWNICY-NA-CUDZYM-HEKSIE — Rozpoznanie: BRAK regresji, kod bezwarunkowy i przetestowany (2026-08-13)
+
+Recon (agent `a455322935356a330`) przeszedł cały łańcuch po doprecyzowaniu (centrum miasta, nie
+zwykłe pole): `cityCenterKeysFromTerritoryNodes()` (`okolica.ts:110-120`) dodaje centrum KAŻDEGO
+miasta bez sprawdzania `ownerId`; `terrainAndTerritoryFilter`/`effectiveIsWorkable`
+(`okolica.ts:128-146`, `270-287`) odrzucają centrum PRZED jakimkolwiek sprawdzeniem `ownerId`;
+WSZYSTKIE punkty wpięcia (silnik tury `advanceCityEconomy`, HUD `previewCityEconomy`, panel
+miasta `cityPanel.ts`, overlay 👤, tryb ręczny) budują `territoryNodes` z PEŁNEJ listy `cities`
+(wszyscy właściciele), nie tylko własnych. Sekcja 1.5 `okolica-multi-city-overlap-test.cjs`
+testuje wprost scenariusz DWÓCH RÓŻNYCH właścicieli i przechodzi (55/55 całość). Deploy ROBOCZA
+FALA 276 (`58c0afe2`) zawiera obie rundy naprawy `P-HEKS-CENTRUM-OBCEGO-MIASTA`.
+
+**STATUS: zamknięte z rekomendacją — nie znaleziono kodu do naprawy.** Zgłoszony właścicielowi
+wprost w czacie z prośbą o dane repro (numer tury/zapis, dokładne współrzędne spornego heksu,
+czy obserwacja jest po odświeżeniu na FALA 276, źródło obserwacji — panel miasta / overlay mapy /
+ekran bitwy). Bez tego kolejna runda byłaby zgadywaniem.
+
+## P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU (6179c24b) — Evaluator: WERDYKT FAIL (zerowe pokrycie wiazania), dispatch runda 2 (2026-08-13)
+
+Logika `techIdsCommittedInOtherOwnRows()`/`withOwnTableTechFilter()` POPRAWNA (5/5 mutacji
+Evaluatora złapanych), 3 miejsca wpięcia POPRAWNE, test E2E realny (nie atrapa — mutacja F
+zapaliła obie asercje E2E). Bramki komplet zielone (`tsc` 0, nowy test 53/53, `logic-test`
+213/213, 41 plików `diplomacy-*.cjs` zero czerwonych).
+
+**BLOKUJĄCE:** cofnięcie `withOwnTableTechFilter(...)` we WSZYSTKICH TRZECH miejscach wpięcia
+(pozostaje wyłącznie definicja funkcji) → **53/53 PASS, zero czerwonych bramek** — bug ze
+zgłoszenia wraca w 100%, niewidocznie dla żadnego testu. To POWTÓRKA błędu opisanego w TYM SAMYM
+pliku 15 linii wyżej (CZĘŚĆ C poprzedniej rundy) — dowód że to nie ryzyko teoretyczne: trzecie
+miejsce wpięcia (`openQuickDealBasket`) zostało w pierwszym podejściu POMINIĘTE i znalezione
+dopiero ręcznym audytem.
+
+**Naprawa (tania, wzorzec CZĘŚCI C):** stub `diplomacyTradeBasket` w CZĘŚCI D już istnieje —
+`showTradeBasketModal`/`openQuickDealBasket` mają ZAPISYWAĆ przechwycony `ctx`, test renderuje
+prawdziwy `renderDiplomacyAudience` ze stanem „własny wiersz '14' z Obróbką drewna na stole",
+klika `button[data-aid="14"]` oraz `.da-quickdeal`, asercja że przechwycony `ctx.giveTechOptions`
+NIE zawiera „Obróbka drewna" — jedna asercja na każde z 3 wejść + jedna negatywna na kontrofertę
+cudzego wiersza (`excludeRowId` musi być `undefined`).
+
+**Noty niepilne do domknięcia razem:** N1 — sprostować liczbę asercji CZĘŚCI D: deklarowano „22",
+faktycznie **15**. N2 — komentarz mówi „wyłącznie aid '14'" ale filtr stosuje się do każdego aid
+(nieszkodliwe, `blockDuplicateNegotiationClick` i tak nie dopuszcza 2. własnego wiersza dla
+innych aid) — wyrównać opis lub kod. N3 — `giveTechOptions?.filter(...)` przy `undefined` cicho
+nie filtruje (dziś nieosiągalne, `main.ts:16846-16847` zawsze ustawia oba pola). N4 —
+`cityOptions`/`unitOptions`/`zlozeOptions` mają tę samą klasę buga między wierszami, dziś poza
+zakresem (pre-istniejące, zgodne ze zgłoszeniem), do zarejestrowania osobno.
+
+**STATUS: dispatch Operatora rundy 2 (Sonnet 5) w toku** — wąski zakres (4 asercje na
+przechwyconym `ctx`, stub już istnieje), sprostowanie N1 przy okazji.
+
+## DESIGN-ZLECENIE-11-ZAKLADEK dokument (4eeab854) — Evaluator fact-check: WERDYKT FAIL (2 przeinaczone cytaty + 1 fałszywe twierdzenie), dispatch poprawki (2026-08-13)
+
+Warstwa kodowa (numery linii, kolory hex, mapowanie chip→sekcja, format `.dc.html`, treści
+sekcji) zweryfikowana solidnie poprawna (~60 twierdzeń sprawdzonych, większość co do sztuki).
+Zawodzi w warstwie decyzji właściciela:
+
+**BLOKUJĄCE:**
+- **F1** — §8.10/§8.11 opatrzone nagłówkiem „ZATWIERDZONA ZAWARTOŚĆ (…`PYTANIA-OTWARTE.md`
+  §`R-DESIGN-11-ZAKLADEK`… wklejone dosłownie, nie parafrazowane)". **Ta lista NIE ISTNIEJE w
+  rejestrze** — rejestr mówi wprost „Lista dostarczona w czacie, czeka na akceptację". Treść
+  list jest merytorycznie zgodna z cytatem Q2=B i obiema korektami (zweryfikowane znak w znak),
+  ale etykieta źródła jest fałszywa — designer podążający wskazówką „sprawdź w pliku" niczego
+  tam nie znajdzie.
+- **F2** — dokument 3× przypisuje właścicielowi ocenę „zbyt subtelna zmiana" jako powód porzucenia
+  samodzielnej próby reskinu Skarbca. `grep "subteln"` w całym rejestrze → **zero trafień**.
+  Rejestr nie zawiera takiej oceny właściciela.
+- **F3** — §8.3 twierdzi że Spichlerz jest „jedynym miejscem łamiącym regułę zero emoji". Fałsz —
+  🍞 występuje 9× w pliku, w tym w sekcji ARMIA (l. 1466-1467), której §8.7 nie wspomina.
+
+**Do poprawienia przy okazji (niepilne):** F4 (błędna ścieżka mockupu Surowców — wierne
+przekazanie cudzego błędu z `CANON.md`, nie zmyślenie), F5 (`?playtest=mapa` obsługiwane przez
+`main.ts`, nie `mapLoadingOverlay.ts`), F6 (promień rogów `9px` nie występuje, realnie 6/7/8px),
+F7 (`.civ-emp-title` używany też przez Moc, nie tylko Handel/Kultura).
+
+**STATUS: dispatch Operatora poprawki dokumentu (Sonnet 5) w toku** — poprawić nagłówek §8.10/
+§8.11 (usunąć „wklejone dosłownie z rejestru", zastąpić prawdziwym opisem źródła: przedstawione
+w czacie 2026-08-13, zatwierdzone z 1 korektą, sama lista dopisana teraz do tego wpisu rejestru
+poniżej), usunąć motyw „zbyt subtelna" (zastąpić neutralnym opisem z rejestru: próba w toku,
+zmiana wizualnie zbyt mała, pivot na zlecenie dla człowieka), poprawić F3-F7.
+
+**Lista Miasto/Obywatele (dopisana tu, żeby przyszłe odniesienie z dokumentu było prawdziwe):**
+
+Miasto (kąt produkcyjno-ekonomiczny): budynki i ich produkcja, wpływy/podatki miasta, skarbiec
+miasta, produkcja nauki, produkowane surowce z możliwością zaznaczenia i zobaczenia sumy w całej
+cywilizacji. BEZ kosztu utrzymania jednostek (to koszt całej cywilizacji, schodzi z głównego
+skarbca/magazynu imperium, nie z miasta).
+
+Obywatele (kąt społeczny): kultura, religia, zdrowie, szczęście, prawo i inne aspekty wpływające
+na obywateli + zużycie surowców na obywatela w danym mieście.
+
+## Fort/straznica krok 2 — SCALONE do glownego drzewa (a31c4164), dispatch Evaluatora (2026-08-13)
+
+Operator dostarczyl w worktree `fort-krok2` (nieskomitowane zmiany — wynik znaleziony i scalony
+przez orkiestratora): nowy `gra/src/game/fort-territory.ts` (czysty, 184 linii: `FortNode`,
+`isHexReservedByRivalFort`, `foundingNodesForOwner`, `applyFortTakeoverOnCityFounded`,
+`findEvacuationHexOutsideCity`), zmiany w `improvement-build.ts` (3 realne miejsca budowy),
+`ai.ts` (minimalna opportunistyczna logika AI), `main.ts` (rejestr fortow, hook przejecia/
+ewakuacji przy `finalizeCityFounding`, zapis/odczyt `fortNodes`), nowy test
+`fort-strazniaca-zasieg-zakladania-test.cjs` (39/39).
+
+Bramki uruchomione przeze mnie na scalonym drzewie: `tsc` 0, `logic-test` 213/213,
+`ai-founding-territory-test` 28/28, nowy fort-test 39/39, `okolica-*`/`territory-*`/
+`fortify-pole`/`retreat-garnizon-fortyfikacja` wszystkie zielone; 2 czerwone
+(`auto-improvements-test` 14/1, `border-march-wygasanie-test` 22/4) potwierdzone
+PRE-ISTNIEJĄCE przez Operatora (git stash) — niezwiazane z tym tematem.
+
+**STATUS: commit `a31c4164` wypchniety, dispatch Evaluatora (Opus 5) w toku.**
+
+## P-AUTO-WYZYWIENIE-ZAPASY-NIE-STEROWANE (2026-08-13, zgłoszenie Macieja, 3 zrzuty ekranu) · STATUS: **OTWARTE — dispatch rozpoznania**
+
+Właściciel (dosłownie): „Tak działa auto wyżywienie, czyli de facto nie działa. Kompletnie nie
+steruje prawidłowo zapasami." Zrzuty ekranu: (1) HUD górny — Spichlerz **−38** (deficyt); (2)
+panel „Spichlerz centralny" (Grecy) — magazyn **0/1000**, baner „Realny niepokryty deficyt
+żywności — głód wojska — magazyn centralny na minusie po koszcie armii", podsumowanie tury:
+Uprawa i hodowla +63, Wyżywienie ludności −61, Nadwyżka +2, Pomoc miastom −4, Spichlerz stolicy
++2, Wojsko −20, Przyrost zapasów **0**; tabela miast: Ateny (Produkcja 46, Koszt racji 50, Bilans
+**−4**, Wzrost% 7%), Milet (Produkcja 17, Koszt racji 11, Bilans **+6**, Wzrost% 12%); domyślne
+Wyżywienie 5,5; (3) panel miasta pojedynczego — Ludność 5, Produkcja +41, Racje **−50**, Bilans
+**−9**, WZROST% 6,5%, przycisk „Auto Wyżywienie" **aktywny (zielony)**, Limit Spichlerza 5.
+
+Zapytanie do rozpoznania: dlaczego przy Auto Wyżywienie WŁĄCZONYM miasto/imperium akumuluje
+narastający deficyt zamiast utrzymać bilans nieujedny/zero — to dokładnie objaw, który miał
+naprawić `R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY` (2026-08-10, `3f76022d`) i doprecyzowanie
+`P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT` (2026-08-13, ZAMKNIĘTE PASS-WITH-NOTES) —
+sprawdzić czy to nowy scenariusz nieprzykryty przez tamte naprawy (np. limit spichlerza=5 zbyt
+niski względem populacji, mechanizm „maxSafe" nie sięga wystarczająco wysoko, albo realny
+niedobór — Racje potrzebne 50 > Produkcja 41 — którego Auto Wyżywienie STRUKTURALNIE nie jest w
+stanie pokryć, bo steruje TYLKO poziomem Wyżywienia/klapek konsumpcji, nie produkcją) — czy to
+regresja, czy oczekiwane zachowanie źle zakomunikowane w UI.
+
+**STATUS: dispatch agenta rozpoznawczego (Sonnet 5) w toku, bez zmiany kodu.**
+
+## P-WOJSKO-ZUZYCIE-ZYWNOSCI-PO-SKALI-5X (2026-08-13, zgłoszenie Macieja) · STATUS: **OTWARTE — dispatch rozpoznania**
+
+Właściciel (dosłownie): „zauważyłem duży błąd, wojska miały mieć powiększoną ilość zjadanych
+surowców, ale nie żywności, ponieważ produkcji żywności na HEX-ach nie zwiększaliśmy."
+
+Odniesienie do `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` (2026-08-13, ZAMKNIĘTE po 3 rundach): punkt 4
+decyzji to „Utrzymanie surowcowe jednostek ×5 (osobne od drenażu obywateli)" — punkt 2 mówi
+wprost „Produkcja WSZYSTKICH surowców FIZYCZNYCH ×5 — terytorialna i budynkowa" z przykładami
+Drewno/Kamień/Glina/Miedź/Żelazo/Sól, **BEZ wzmianki o Żywności/rolnictwie** — potwierdzone też
+przez wcześniejszy zapis rundy 2 (`terrain-yields.json`: Drewno/Kamień/Glina ×5, bez Żywności).
+
+Zapytanie do rozpoznania: czy koszt utrzymania żywnościowego jednostek (`units.json`, pole
+kosztu żywności/racji) faktycznie zostało pomnożone ×5 w ramach punktu 4 tej decyzji (co byłoby
+BŁĘDEM ZAKRESU — „surowcowe" w intencji właściciela zdaje się odnosić do surowców fizycznych typu
+Drewno/Kamień, nie do Żywności, skoro żywność jest osobną kategorią z osobnym, nietkniętym
+kanałem produkcji), czy zostało świadomie pominięte (co byłoby poprawne, ale wtedy trzeba
+wyjaśnić skąd wrażenie właściciela że wzrosło). Sprawdzić `units.json` diff z tego dnia dla pól
+kosztu żywności, oraz czy istnieje osobny mechanizm „koszt żywności armii" (widoczny w panelu
+Spichlerz centralny jako „Wojsko −20") i czy TEN mechanizm (nie rekrutacja/utrzymanie surowcowe)
+został przypadkiem przeskalowany.
+
+**STATUS: dispatch agenta rozpoznawczego (Sonnet 5) w toku, bez zmiany kodu.**
