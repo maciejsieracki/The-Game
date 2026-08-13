@@ -18178,3 +18178,17 @@ zysku — poprawka jednoliniowa możliwa, ale zmienia format klucza cache, nieap
 (pre-istniejące, nie z tego commitu) — zapisane, niepilne.
 
 **STATUS: ZAMKNIĘTE.**
+
+---
+
+## Sprostowanie procesowe (§0b) — Cyna dotknęła gra/src/render/** na Sonnet 5, nie Opus 5 (2026-08-13)
+
+CLAUDE.md §4: „modele 3D jednostek i CAŁA PRACA w `gra/src/render/**` idą na Opus 5" — bez
+wyjątku dla zmian mechanicznych. Operator implementujący `R-SUROWIEC-CYNA-DO-BRAZU` (dispatchowany
+domyślnie, Sonnet 5) musiał dotknąć `render/improvements.ts` i `render/robloxImprovements.ts`
+(rozszerzenie union type `ImprovementKey` o `kopalnia_cyny` wymuszało wyczerpujący switch/Record w
+tych plikach — bez tego `tsc` nie przechodził). Operator świadomie NIE stworzył dedykowanej bryły
+3D (reużył generycznej `kopalnia()`), ale sam fakt edycji plików w `render/**` na niewłaściwym
+modelu jest naruszeniem reguły, nie tylko kwestią artystyczną. Zarejestrowane jako luka procesowa
+tej sesji — Evaluator (Opus 5) dostał wprost polecenie szczególnie wnikliwie zweryfikować te dwa
+pliki, skoro nie przeszły przez właściwy model na etapie Operatora.
