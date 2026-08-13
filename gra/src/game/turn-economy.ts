@@ -146,6 +146,7 @@ import {
   reconcileAllWorkedTiles,
   hexKeysWithinRadius,
   isLandWorkableHex,
+  computeLostToNearerSiblingByCity,
   type TileYield as OkolicaTileYield,
 } from './okolica';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
@@ -668,6 +669,13 @@ export function cityWorkedTilesForEconomy(
   city: City,
   map: GameMap,
   territoryNodes?: readonly TerritoryNode[],
+  /**
+   * P-HEKS-SPOR-SASIAD (Maciej 2026-08-13): heksy w promieniu TEGO miasta przegrane na rzecz
+   * bliższego miasta TEGO SAMEGO właściciela — wynik
+   * `computeLostToNearerSiblingByCity(cities, map).get(city.id)`, liczony RAZ na tick
+   * przez wołającego (advanceCityEconomy/previewCityEconomy), nie tutaj.
+   */
+  excludeHexKeys?: ReadonlySet<string>,
 ): WorkedTile[] {
   const tiles: WorkedTile[] = [];
 
@@ -704,6 +712,7 @@ export function cityWorkedTilesForEconomy(
     territoryNodes,
     ownerId: city.ownerId,
     isWorkable: (q, r) => isLandWorkableHex(map, q, r),
+    excludeHexKeys,
   });
 
   // Konwertuj przypisane pozycje na WorkedTile.
@@ -720,6 +729,8 @@ export function workedHexCoordsForCity(
   city: City,
   map: GameMap,
   territoryNodes?: readonly TerritoryNode[],
+  /** P-HEKS-SPOR-SASIAD: patrz `cityWorkedTilesForEconomy`. */
+  excludeHexKeys?: ReadonlySet<string>,
 ): Array<{ q: number; r: number }> {
   const pop = Math.max(0, Math.floor(city.population ?? 0));
   if (pop <= 0) return [];
@@ -736,6 +747,7 @@ export function workedHexCoordsForCity(
     territoryNodes,
     ownerId: city.ownerId,
     isWorkable: (q, r) => isLandWorkableHex(map, q, r),
+    excludeHexKeys,
   });
   return assigned.map(t => ({ q: t.q, r: t.r }));
 }
@@ -854,10 +866,18 @@ export function computeWorkedMagazynYieldsByCity(
   cities: ReadonlyArray<Pick<City, 'id' | 'q' | 'r' | 'ownerId' | 'population'>>,
   map: GameMap,
   territoryNodes: readonly TerritoryNode[],
+  /**
+   * P-HEKS-SPOR-SASIAD: wynik `computeLostToNearerSiblingByCity(cities, map)` — gdy pominięty,
+   * liczony WEWNĘTRZNIE (fallback), żeby wołanie bez tego argumentu (istniejące testy/
+   * przyszli callerzy) dalej dawało poprawny wynik zamiast po cichu pomijać spór.
+   * `advanceCityEconomy` przekazuje go jawnie (liczony RAZ na tick, patrz tam).
+   */
+  lostToSiblingByCity?: ReadonlyMap<string, ReadonlySet<string>>,
 ): ReadonlyMap<string, WorkedMagazynYield> {
+  const lostMap = lostToSiblingByCity ?? computeLostToNearerSiblingByCity(cities, map);
   const out = new Map<string, WorkedMagazynYield>();
   for (const city of cities) {
-    const worked = cityWorkedTilesForEconomy(city as City, map, territoryNodes);
+    const worked = cityWorkedTilesForEconomy(city as City, map, territoryNodes, lostMap.get(city.id));
     let drewno = 0;
     let kamien = 0;
     let glina = 0;
@@ -1706,13 +1726,18 @@ export function previewCityEconomy(
     cities, builtByCity, false,
   );
 
+  // P-HEKS-SPOR-SASIAD (Maciej 2026-08-13): rozstrzygnięcie sporu o zwykły heks między miastami
+  // TEGO SAMEGO właściciela -- liczone RAZ dla całego podglądu (jak w advanceCityEconomy
+  // poniżej), bo zależy tylko od pozycji/populacji miast, nie od kolejności przetwarzania.
+  const lostToSiblingByCity = computeLostToNearerSiblingByCity(cities, map);
+
   const perCity: CityEconomyTick[] = [];
 
   for (const city of cities) {
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
 
-    const worked = cityWorkedTilesForEconomy(city, map, territoryNodes);
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodes, lostToSiblingByCity.get(city.id));
     const builtIds = builtByCity.get(city.id) ?? [];
     const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
       builtIds,
@@ -2067,7 +2092,16 @@ export function advanceCityEconomy(
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
 
   const territoryNodes = buildTerritoryNodesFromCities(cities);
-  reconcileAllWorkedTiles(cities, territoryNodes);
+
+  // P-HEKS-SPOR-SASIAD (Maciej 2026-08-13): rozstrzygnięcie sporu o zwykły heks
+  // między miastami TEGO SAMEGO właściciela -- liczone RAZ na tick (jak
+  // territoryResourceByCity/workedMagazynByCity ponizej), bo zalezy tylko od
+  // pozycji/populacji miast w tym ticku, nie od kolejnosci przetwarzania.
+  // Policzone PRZED reconcile (runda 2 nota D), zeby reconcile mogl tym samym
+  // zbiorem posprzatac tez kolizje wewnatrz-wlascicielskie na zwyklych polach,
+  // nie tylko wpisy na centrach.
+  const lostToSiblingByCity = computeLostToNearerSiblingByCity(cities, map);
+  reconcileAllWorkedTiles(cities, territoryNodes, lostToSiblingByCity);
 
   // SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne per ulepszenie w
   // terytorium, niezaleznie od workedTiles -- liczone RAZ dla calej tury (nie per-city).
@@ -2232,7 +2266,7 @@ export function advanceCityEconomy(
   const incomeByOwner = new Map<number, number>();
 
   // PYTANIE-84 R2: wpływ mapy → konwertery → drain Spichlerza PRZED plonami miast.
-  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes);
+  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes, lostToSiblingByCity);
   const spichlerzByCity = tickEmpireResourcePipeline(
     cities,
     builtByCity,
@@ -2256,7 +2290,7 @@ export function advanceCityEconomy(
     const isCapital = !capitalSeen.has(city.ownerId);
     capitalSeen.add(city.ownerId);
 
-    const worked    = cityWorkedTilesForEconomy(city, map, territoryNodes);
+    const worked    = cityWorkedTilesForEconomy(city, map, territoryNodes, lostToSiblingByCity.get(city.id));
     const builtIds  = builtByCity.get(city.id) ?? [];
     const runtimeBuiltIds = runtimeActiveBuiltIdsForCity(
       builtIds,

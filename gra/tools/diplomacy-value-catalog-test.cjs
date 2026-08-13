@@ -153,6 +153,10 @@ eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 23), 200, '23 szt. ruda_zelaza flor
 eq(D.diplomacyPnSurowiecIlosc('wegiel', 3), 60, '3 szt. wegiel (krok 1) = 60 PN — bez floorowania, Węgiel nietknięty');
 eq(D.diplomacyHandelSurowiecKrok('drewno'), 5, 'krok(drewno) = 5 szt.');
 eq(D.diplomacyHandelSurowiecKrok('ruda_zelaza'), 5, 'krok(ruda_zelaza) = 5 szt.');
+// R-SUROWIEC-CYNA-DO-BRAZU runda 3 (Maciej 2026-08-13) — test strażniczy Noty N1 z werdyktu
+// Evaluatora rundy 2: cofnięcie wpisu ruda_cyny w HANDEL_SUROWCE_KROK5 przechodziło dotąd
+// wszystkie bramki repo na zielono (brak własnej asercji). Wzorem ruda_zelaza wyżej.
+eq(D.diplomacyHandelSurowiecKrok('ruda_cyny'), 5, 'krok(ruda_cyny) = 5 szt. (R-SUROWIEC-CYNA-DO-BRAZU, test strażniczy N1)');
 eq(D.diplomacyHandelSurowiecKrok('braz'), 5, 'krok(braz) = 5 szt.');
 eq(D.diplomacyHandelSurowiecKrok('zloto'), 1, 'krok(zloto-surowiec) = 1 szt. — wyłączone z ×5');
 eq(D.diplomacyHandelSurowiecKrok('wegiel'), 1, 'krok(wegiel) = 1 szt. — wyłączone z ×5 (brak produkcji objętej rebalansem)');

@@ -857,7 +857,7 @@ import {
 } from './game/eot-event-defer';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
-import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex } from './game/okolica';
+import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
 import { cityCultureMixActive, cultureMixBreakdown, isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
 import {
@@ -3939,6 +3939,17 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * P-HEKS-SPOR-SASIAD (Maciej 2026-08-13): heksy w promieniu TEGO miasta przegrane
+     * na rzecz bliższego miasta TEGO SAMEGO właściciela (patrz
+     * `computeLostToNearerSiblingByCity` w okolica.ts) — do wpięcia jako
+     * `excludeHexKeys` w overlay/panel/tryb ręczny, tak żeby UI pokazywał sporne pole
+     * jako niedostępne PRZED kliknięciem, zgodnie z tą samą regułą co silnik ekonomii.
+     */
+    function siblingClaimedHexKeysForCity(city: City): ReadonlySet<string> | undefined {
+      return computeLostToNearerSiblingByCity(cities, map).get(city.id);
+    }
+
+    /**
      * Ulepszenia terenu (np. kopalnia miedzi / kopalnia na złożu żelaza) WYŁĄCZNIE w terytorium
      * danego ownera — audyt #33: placedImprovements to jedna globalna mapa bez ownera, więc
      * hasBrazAccess/empireHasKopalniaNaZlozuZelaza (wołane z globalną mapą) widziały kopalnie
@@ -4608,6 +4619,7 @@ async function boot(): Promise<void> {
         isWorkable: okolicaHexWorkable,
         territoryNodes: nodes,
         ownerId: city.ownerId,
+        excludeHexKeys: siblingClaimedHexKeysForCity(city),
       });
       return new Set(worked.map(t => t.key));
     }
@@ -4662,7 +4674,7 @@ async function boot(): Promise<void> {
     function applyOkolicaTileAdjust(cityId: string, q: number, r: number, _delta: number): void {
       const city = cities.find(c => c.id === cityId);
       if (!city || city.ownerId !== 0) return;
-      const res = toggleTileWorker(city, map, q, r, undefined, buildAllTerritoryNodes());
+      const res = toggleTileWorker(city, map, q, r, undefined, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
       if (res.ok) {
         city.okolicaReczne = res.reczne;
         city.okolicaTryb = 'reczny';
@@ -4682,6 +4694,7 @@ async function boot(): Promise<void> {
           centrum_miasta: 'Centrum miasta nie przyjmuje 👤 — wybierz pole obok.',
           brak_ludnosci: 'Miasto nie ma ludności do pracy w polu.',
           brak_robotnika: 'Na tym polu nie ma przypisanego 👤.',
+          zajete_przez_inne_miasto: 'To pole obrabia bliższe miasto tej samej cywilizacji.',
         };
         showHintMessage(msg[res.reason ?? ''] ?? 'Nie można zmienić przypisania pola.', 2800);
       }
@@ -6187,7 +6200,7 @@ async function boot(): Promise<void> {
         getWorkedTiles: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return undefined;
-          return workedHexCoordsForCity(city, map, buildAllTerritoryNodes());
+          return workedHexCoordsForCity(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
         },
         onOkolicaFocusChange: (cityId: string, focus: import('./game/cities').OkolicaFocus) => {
           const city = cities.find(c => c.id === cityId);
@@ -6256,7 +6269,7 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.okolicaTryb = 'reczny';
           const hasReczne = city.okolicaReczne && Object.values(city.okolicaReczne).some(n => n > 0);
-          if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map, buildAllTerritoryNodes());
+          if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
           // P-AUTO-WYZYWIENIE-BUG1: przejście auto -> ręczny może zmienić przydział pól
           // (seedReczneFromAuto) -> produkcja żywności tego miasta na żywo.
           applyLiveSafeRationForCity(cityId);
@@ -10648,7 +10661,10 @@ async function boot(): Promise<void> {
       }
       ensureCitySaveDefaults(c);
       cities.push(c);
-      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes());
+      // P-HEKS-SPOR-SASIAD runda 2 nota D: nowe miasto moze zmienic wynik sporu o
+      // zwykle pole miedzy istniejacymi miastami tego samego wlasciciela -- sprzataj
+      // od razu tym samym mechanizmem co silnik tury (advanceCityEconomy).
+      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
       finalizeCityFounding(c, q, r);
       seedCityOwnerDefaults(c);
       // P-AUTO-WYZYWIENIE-BUG2: świeżo założone miasto gracza -- ustaw bezpieczny poziom
@@ -18366,11 +18382,18 @@ async function boot(): Promise<void> {
         const city = cities.find(c => c.id === cityId);
         if (!city) return null;
         const builtIds = cityBuilt.get(cityId) ?? [];
-        const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes());
+        const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
         return computeCityHealthBreakdown(
           city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
           { city, map },
         );
+      },
+      // P-HEKS-SPOR-SASIAD runda 2 nota A: ten sam hak co getWorkedTiles/getCityHealth,
+      // zeby computeView/resolveCityHealth (fallback) w cityPanel.ts liczyly identycznie
+      // z silnikiem tury -- bez tego panel pomijal reguly "najblizsze miasto wygrywa".
+      getExcludeHexKeys: (cityId: string) => {
+        const city = cities.find(c => c.id === cityId);
+        return city ? siblingClaimedHexKeysForCity(city) : undefined;
       },
       ...extraCityPanelConfig(),
     });
@@ -24736,12 +24759,16 @@ async function boot(): Promise<void> {
               // cost and overstating A's maxSafe. The batched recompute (loop right after the
               // call below) only starts once EVERY city has its final population this turn.
               const grownCityIdsForLiveRation = new Set<string>();
+              // P-HEKS-SPOR-SASIAD runda 2 nota B: ten sam zbior co silnik tury/panel --
+              // liczone RAZ tu, przekazane per-cityId do rebalansu po wzroście populacji.
+              const excludeHexKeysByCityForGrowth = computeLostToNearerSiblingByCity(cities, map);
               applyPostCentralPopulationGrowth({
                 cities,
                 econ,
                 efResult: lastEfTickResult,
                 map,
                 territoryNodes: territoryNodesForFood,
+                excludeHexKeysByCity: excludeHexKeysByCityForGrowth,
                 econParams: buildEconParams(data, _menuDifficulty),
                 rationParams: efParamsGrowth.rationParams,
                 ownerCivByOwnerId: ownerCivMap,
@@ -24816,6 +24843,10 @@ async function boot(): Promise<void> {
               });
               if (autoImpCities.length > 0 && playerPracaPool > AUTO_ULEPSZENIA_PRACA_RESERVE) {
                 const territoryNodesAuto = buildAllTerritoryNodes();
+                // P-HEKS-SPOR-SASIAD: liczone RAZ przed pętlą po miastach (nie per-city
+                // wewnątrz getWorkedHexKeys niżej) -- ta sama wydajnościowa zasada co w
+                // advanceCityEconomy/collectWorkedHexOwnerMap.
+                const lostToSiblingByCityAuto = computeLostToNearerSiblingByCity(cities, map);
                 const playerCivArch = civTypeForOwner(0);
                 const workingPlaced = new Map(placedImprovements);
                 const empirePol = ulepszeniaEmpireForOwner(0);
@@ -24835,7 +24866,10 @@ async function boot(): Promise<void> {
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
                   getMaxPerCity: c => effectiveUlepszeniaForCity(c as City).perTurn,
                   getWorkedHexKeys: city => {
-                    const coords = workedHexCoordsForCity(city as City, map, territoryNodesAuto);
+                    const coords = workedHexCoordsForCity(
+                      city as City, map, territoryNodesAuto,
+                      lostToSiblingByCityAuto.get((city as City).id),
+                    );
                     return new Set(coords.map(({ q, r }) => `${q},${r}`));
                   },
                 });
@@ -27666,11 +27700,18 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
           const builtIds = cityBuilt.get(cityId) ?? [];
-          const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes());
+          const tiles = cityWorkedTilesForEconomy(city, map, buildAllTerritoryNodes(), siblingClaimedHexKeysForCity(city));
           return computeCityHealthBreakdown(
             city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
             { city, map },
           );
+        },
+        // P-HEKS-SPOR-SASIAD runda 2 nota A: ten sam hak co getWorkedTiles/getCityHealth,
+        // zeby computeView/resolveCityHealth (fallback) w cityPanel.ts liczyly identycznie
+        // z silnikiem tury -- bez tego panel pomijal reguly "najblizsze miasto wygrywa".
+        getExcludeHexKeys: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          return city ? siblingClaimedHexKeysForCity(city) : undefined;
         },
         ...extraCityPanelConfig(),
       });

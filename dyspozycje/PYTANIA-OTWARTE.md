@@ -18386,3 +18386,217 @@ miasto (kapitulacja/podbój na rzecz AI), pozostałe miasta gracza nie dostają 
 **STATUS: nowe zgłoszenie `P-ANEKSJA-MIASTO-PANSTWO-RACJA-STARY-WLASCICIEL` — OTWARTE, niepilne,
 do backlogu, brak dowodu dzisiejszej regresji, nie blokuje niczego.**
 
+
+## R-SUROWIEC-CYNA-DO-BRAZU — Evaluator runda 2: WERDYKT FAIL wąskiego zakresu, dispatch runda 3 (2026-08-13)
+
+Evaluator (Opus 5, `aa64098df490b60a5`) ocenił commit `716653e1` (runda 2) niezależnie od Evaluatora
+rundy 1 (konflikt interesu — runda 2 powstała w odpowiedzi na jego raport). Wszystkich 6 przypisanych
+punktów (1, 2, 4, 5, 6, 7 z listy R1) potwierdzone jako realnie naprawione — zweryfikowane własnym
+harnessem behawioralnym + 6 niezależnymi mutacjami kontrolnymi (MUT-A..F), nie tylko odczytem opisu
+commitu. Diff testów `67cc36fd`↔`716653e1` to wyłącznie dopisanie surowca do dwóch fixture'ów, zero
+osłabionych/skasowanych asercji.
+
+**BLOKUJĄCE — ósma bramka, przeoczona przez Operatora R1, Evaluatora R1 i Operatora R2:**
+`gra/tools/surowce-katalog-kolejnosc-test.cjs`. Baseline `67cc36fd` (przed tematem Cyna): **61 pass/0
+fail, exit 0**. Runda 1 `2ebd0d7f`: **58 pass/3 fail, exit 1** — regresja powstała tu, nienaprawiona
+przez rundę 2. Trzy porażki: `ruda_cyny.placeholder === true` (oczekiwane, jest false), etykieta ma
+sygnalizować "wkrótce" (nie sygnalizuje), `resources.json` NIE ma zawierać "cyna" (a zawiera).
+
+**Przyczyna: test asercjonuje STARĄ decyzję `P-SUROWCE-KOLEJNOSC-KART` (2026-08-12,
+`PYTANIA-OTWARTE.md:12829` — Ruda cyny jako placeholder/nieaktywna karta UI), którą NOWSZA decyzja
+`R-SUROWIEC-CYNA-DO-BRAZU` (2026-08-13, ten temat) jawnie unieważniła — Maciej zdecydował że cyna to
+REALNY, aktywny surowiec produkujący brąz, nie karta-zapowiedź. Evaluator ocenił nadrzędność nowszej
+decyzji nad starszą jako jednoznaczną, naprawa czysto mechaniczna (odwrócenie 3 asercji + zdjęcie
+wyjątku pomijającego ruda_cyny w pętli), zero nowej decyzji projektowej — nie wymaga osobnego ABC.**
+
+**Nota N1 (nieblokująca, do domknięcia przy okazji rundy 3):** dwie poprawki rundy 2 (dopisanie
+`ruda_cyny` do `HANDEL_SUROWCE_KROK5` i do `OWNER_CAPPED_RESOURCE_KEYS`) nie mają własnego testu
+strażniczego — cofnięcie którejkolwiek przechodzi dziś przez wszystkie bramki repo na zielono
+(potwierdzone uruchomieniem). Ta sama luka co pkt 7 rundy 1 (AI), zamknięta wtedy tylko dla AI.
+
+Inne noty nieblokujące (N2, N3, N4) — ikona nadal placeholder (opis commitu "dedykowana" jest
+nieścisły, kod jest uczciwy), gracz nadal nie odróżni cyny od żelaza wizualnie (już zarejestrowane
+przez R1), sekcja K testuje strukturę AI a nie decyzję AI (autor to jawnie deklaruje).
+
+**STATUS: dispatch Operator runda 3 — naprawa mechaniczna `surowce-katalog-kolejnosc-test.cjs` +
+2 asercje strażnicze N1, bez ABC.**
+
+## R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA runda 2 UX (07077cd3) — Evaluator: WERDYKT PASS-WITH-NOTES (2026-08-13)
+
+Evaluator (Opus 5, `a964328f365dab35a`) potwierdził commit `07077cd3`: zero regresji dla pozostałych
+13 typów akcji dyplomatycznych (dowód algebraiczny + empiryczny, 98 porównań kafelków, 0 różnic poza
+'14'), Część C testu bunduje i wykonuje REALNY kod produkcyjny (potwierdzone mutacyjnie — cofnięcie
+naprawy w pliku produkcyjnym zmienia wynik testu). Bramki: `tsc` 0, `38/38`, `logic-test` 213/213,
+wszystkie 41 plików `diplomacy-*.cjs` zielone. Klasa CSS `on-table-ok` istnieje i jest zdefiniowana.
+`onTableCountForType` liczy poprawnie wyłącznie bieżącego partnera (zweryfikowane w kodzie, nie
+zgadywane).
+
+**Sprostowanie N1 (rejestrowe, nie kodowe):** raport Operatora rundy 2 podał błędną liczbę — "36/38 z
+2 nowymi FAIL" przy cofnięciu naprawy w rzeczywistości pochodzi z mutacji WARSTWY RUNDY 1
+(`isLocked`), nie rundy 2. Mutacja właściwa dla rundy 2 (`cls`/`statusNote`/`hoverTip`) daje **37/38,
+jedną czerwoną asercję** — naprawa jest strzeżona przez dokładnie jedną asercję Części C, nie dwie.
+Twierdzenie z nagłówka testu że cofnięcie warstwy rundy 1 przechodzi przez wszystkie 41 bramek na
+zielono zostało zweryfikowane niezależnie jako prawdziwe (potwierdza realność luki pokrycia, którą
+runda 2 domknęła).
+
+**Nie blokujące, zalecane przed deployem (runda 3):**
+- **N3** — jednolinijkowy defekt UX: gdy kafelek '14' jest JEDNOCZEŚNIE na stole i zablokowany
+  (`locked`/`!enabled`), tekst zachęca "dodaj kolejną", a przycisk jest wyłączony — odwrócona wersja
+  wady, którą runda 2 naprawiała. Osiągalne w grze (`playerDiplomacyActionAllowed`). Naprawa:
+  `onTableAllowsMore = onTable && !onTableBlocks && !isLocked`.
+- **N2** — ścieżka pozytywna (`on-table-ok`, treść notatki "na stole: N", tooltip, poprawność licznika)
+  nie ma ŻADNEJ asercji — zepsucie licznika przechodzi bramkę na zielono. Brakuje 2-3 asercji.
+- **N4** — higiena: 7 plików `.stubs/deals-col-*-stub.ts` bez wpisu w `.gitignore`.
+
+**STATUS: temat R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA zamknięty merytorycznie (runda 1 + runda 2 UX
+oba PASS-WITH-NOTES). N3/N2/N4 to drobne poprawki do rundy 3, niepilne, nie blokują.**
+
+## P-HEKS-CENTRUM-OBCEGO-MIASTA + P-HEKS-SPOR-SASIAD (e4f1d893) — Evaluator: WERDYKT PASS-WITH-NOTES, 1 nota BLOKUJĄCA deploy, runda 2 dispatch (2026-08-13)
+
+Evaluator (Opus 5, `a1844d2fe3dcb5c27`) potwierdził rdzeń obu napraw: mechanizmy rozłączne
+(MUT-A/MUT-B izolowane do własnych sekcji nowego testu, zweryfikowane niezależnie), reguła
+"najbliższe miasto wygrywa" deterministyczna i stabilna także dla 3+ miast naraz (0 heksów-sierot,
+0 naruszeń), zero regresji wydajności (8,7ms dla 50 miast pop 8, brak ścieżki co-klatkowej — tylko
+w `updateHud()`/dblclick). Dosłowne zgłoszenie właściciela (centrum obcego miasta) zamknięte we
+wszystkich ścieżkach łącznie z panelem. Bramki: 10/10 zielone, dokładnie liczby Operatora.
+
+**⛔ NOTA A — BLOKUJĄCA deploy, panel miasta liczy BEZ reguły sąsiedzkiej, silnik Z NIĄ.**
+`gra/src/ui/cityPanel.ts:1083` (`computeView`) i `:3010` (`resolveCityHealth`) wołają
+`cityWorkedTilesForEconomy` BEZ 4. argumentu `excludeHexKeys`. Zmierzony rozjazd: silnik liczy
+A=3/B=2 pól, panel liczy A=4/B=2 — panel pokazuje tempo (Praca/Żywność/Złoto/Nauka/Kultura na
+górnym pasku miasta + plakietka wzrostu) niezgodne z własnym overlayem 👤 w tym samym panelu
+(który JEST poprawny). Wykluczenie centrum działa w panelu poprawnie — brakuje wyłącznie
+szerszej reguły sąsiedzkiej. Nie było zadeklarowane w nocie ograniczeń Operatora (nota
+wymieniała tylko 2 pliki, faktycznie niewpięte są 4 miejsca wołania).
+
+**NOTA B — osiągalna, potwierdzona empirycznie, mniejszy skutek niż w opisie Operatora:**
+`population-growth-v85.ts:446` bez `excludeHexKeys` — rebalans po wzroście populacji może
+posadzić 👤 na spornym polu, ale odczyt jest fail-closed (brak podwójnego liczenia), realny
+skutek: jeden slot robotnika marnowany po cichu. Sam parametr działa (kontrolowane), brakuje
+wyłącznie przekazania w tym jednym wołaniu.
+
+**NOTA C — nieszkodliwa, można zamknąć bez naprawy:** `auto-manage.ts:320-328` bez
+`excludeHexKeys`, ale wynik (`workedTiles`/`pracaSplit`) nigdzie nieużywany w repo poza
+`enqueue`.
+
+**NOTA D — niezadeklarowana, dziś nieszkodliwa (odczyt fail-closed):** punkt 5 zakresu ECHO A
+(czyszczenie kolizji WEWNĄTRZ-właścicielskich w `okolicaReczne`, nie tylko centrów) niewykonany
+w `reconcileWorkedTilesForOwner` — brudny wpis zostaje w save, ale nieszkodliwy.
+
+**NOTA E (dług testowy, do osobnego zlecenia):** wpięcie w silnik tury (`advanceCityEconomy`/
+`previewCityEconomy`) nie ma żadnego strażnika — mutacja usuwająca `excludeHexKeys` z obu
+przechodzi wszystkie 10 bramek bez śladu.
+
+**NOTA F (kosmetyczna, do backlogu):** `siblingClaimedHexKeysForCity` bez memoizacji (trywialny
+narzut), martwy strażnik `isOutpost`/`isFort` w `okolica.ts:116` (żadne dzisiejsze dane go nie
+ustawiają).
+
+**NOTA G (konsekwencja projektowa zgodna z ECHO A, do świadomości właściciela, NIE błąd):**
+reguła ma semantykę REZERWACJI, nie użycia — bliższe, mniejsze miasto blokuje sporne pole nawet
+gdy samo go nie obrabia (zmierzone: pole między A pop 3 i B pop 1 nie obrabia NIKT). Dosłowna,
+poprawna realizacja zatwierdzonego zakresu ECHO A, ale skutek ("małe miasto blokuje pole dużemu
+sąsiadowi") mógł nie być przewidziany przy wyborze litery — FYI, nie wymaga nowej decyzji.
+
+**STATUS: dispatch Operator runda 2 — Nota A (blokująca, dociągnąć `excludeHexKeys` przez nowy
+hook w panelu, wzorem istniejącego `cfg.getCityHealth`) + Nota B i D (jedno-linijkowe wołania,
+tania okazja do domknięcia w tej samej rundzie). Nota C bez zmian. Noty E/F/G do backlogu.**
+
+## R-SUROWIEC-CYNA-DO-BRAZU — Evaluator runda 3: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY PO 3 RUNDACH (2026-08-13)
+
+Evaluator (Opus 5, `aa73b9707bfb9fce9`) potwierdził commit `d6b8400c` (runda 3). Odwrócenie 3 asercji
+w `surowce-katalog-kolejnosc-test.cjs` zweryfikowane wprost w kodzie produkcyjnym (`main.ts:2845` —
+karta Rudy cyny bez pola `placeholder`, etykieta czysta; `resources.json:39-41` zawiera wpis).
+**Nowa norma testu to 62 pass/0 fail, NIE 61/0** — zweryfikowana niezależnie (przywrócenie samego
+`continue` daje 61, bez niego 62 — delta to dokładnie jedna dodatkowa iteracja pętli po katalogu,
+bo CATALOG ma 14 kart; Operator podał to poprawnie, nie sfałszował). **Każda przyszła sesja
+porównująca do "baseline 61" zobaczy fantomowy rozjazd — 62/0 jest poprawną normą.**
+
+4 mutacje kontrolne w kodzie produkcyjnym (nie w teście) — wszystkie złapane przez odpowiednie
+asercje. Skumulowany diff testów całego tematu (`67cc36fd`→`d6b8400c`): +943/−17, wszystkie 5
+usuniętych linii rozliczone jako zaostrzenia, zero skasowanych/rozluźnionych asercji. Wszystkich
+7 punktów rundy 1 domkniętych (poza formalnie otwartym, nieblokującym C-011).
+
+**Temat `R-SUROWIEC-CYNA-DO-BRAZU` ZAMKNIĘTY PO 3 RUNDACH.** Zostają wyłącznie nieblokujące:
+C-011 (`map-gen-regression-test.cjs` niekompletny, dowód zastępczy determinizmu stoi), ikona Rudy
+cyny (placeholder dzielony z Żelazem), pytanie ABC do właściciela o kolizję "rzadkość=miedź/5" vs
+"gwarancja fair-play" (0,77× częstości miedzi zamiast 0,20×, w tym samym rejestrze wyżej).
+
+**Nota do backlogu (N-A, dług testowy, niepilne):** 17/62 asercji w
+`surowce-katalog-kolejnosc-test.cjs` (sekcje B:1/C:1/D:11/E:4) strzegą infrastruktury
+placeholderów, której dziś żadna żywa karta katalogu nie wykonuje (Ruda cyny była ostatnim
+placeholderem). Do świadomej decyzji: zostawić pod przyszłe karty czy usunąć.
+
+**Znalezisko dokumentacyjne (N-B), do dopisania w CLAUDE.md §BRAMKI:** `prereq-budynkow-test.cjs`
+— 51 pass/8 fail, exit 1 — potwierdzone identyczne na baseline `67cc36fd`, PRE-ISTNIEJĄCE, nie
+regresja tego tematu, ale nie było dotąd na udokumentowanej liście znanych czerwonych bramek —
+dopisuję teraz, żeby przyszła sesja nie wzięła tego za świeżą regresję.
+
+## P-HEKS-CENTRUM-OBCEGO-MIASTA + P-HEKS-SPOR-SASIAD runda 2 (80f6f3d5) — Operator dostarczył, dispatch Evaluator (2026-08-13)
+
+Operator (Sonnet 5) domknął wszystkie 3 zadania z werdyktu Evaluatora rundy 1:
+- **Nota A (blokująca):** nowy hak `getExcludeHexKeys?` w `CityPanelConfig`, wpięty w
+  `computeView` i `resolveCityHealth` (`cityPanel.ts`), wpięty w obu wywołaniach
+  `configureCityPanel` w `main.ts` przez `siblingClaimedHexKeysForCity` — ten sam mechanizm co
+  już działający `getCityHealth`.
+- **Nota B:** nowy `excludeHexKeysByCity` w `PostCentralGrowthOpts`, przekazany do
+  `rebalanceWorkersAfterPopulationChange` w `population-growth-v85.ts`, liczony raz w `main.ts`
+  przed wywołaniem.
+- **Nota D:** `reconcileWorkedTilesForOwner`/`reconcileAllWorkedTiles` przyjmują nowy
+  `lostToSiblingByCity?` — druga warstwa czyszczenia `okolicaReczne` (poza centrami).
+
+**Komplikacja zgłoszona wprost przez Operatora, nie ukryta:** żeby Nota D działała CO TURĘ (nie
+tylko przy zakładaniu miasta), Operator dotknął `gra/src/game/turn-economy.ts` — plik POZA
+pierwotnie dozwoloną listą. Diff to przestawienie kolejności dwóch już istniejących linii
+(`computeLostToNearerSiblingByCity` liczone PRZED `reconcileAllWorkedTiles` zamiast po) +
+przekazanie już obliczonej wartości jako nowy parametr. Bez tego Zadanie 3 działałoby tylko przy
+zakładaniu nowego miasta, co czyniłoby naprawę pozorną.
+
+Bramki uruchomione samodzielnie przez orkiestratora (nie tylko odczyt raportu Operatora): `tsc`
+0 błędów, `okolica-multi-city-overlap-test` **55/55** (było 30/30, +25 nowych asercji w
+Sekcjach 3-5), `logic-test` 213/213, oraz 8 innych bramek terytorium/miasta zielonych — dokładnie
+liczby Operatora. Dodatkowo (rozszerzenie bezpieczeństwa ze względu na dotknięcie
+`turn-economy.ts` poza listą): `ekonomia-5x-inwariant-test` 246/0, `ai-improvements-test` 33/0,
+`converters-test` 46/0, `auto-manage-test` 45/0 — wszystkie zielone, zero regresji.
+`population-growth-v85-test` 48/2 — 2 porażki potwierdzone identyczne z pre-istniejącym długiem
+`R-STAWKI`×2.
+
+**STATUS: dispatch Evaluator (Opus 5) — poproszony o szczególną uwagę na `turn-economy.ts` jako
+plik dotknięty poza pierwotną listą (uzasadnienie Operatora do zweryfikowania niezależnie, nie
+tylko przyjęcia na słowo).**
+
+## P-HEKS-CENTRUM-OBCEGO-MIASTA + P-HEKS-SPOR-SASIAD — Evaluator runda 2: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY PO 2 RUNDACH (2026-08-13)
+
+Evaluator (Opus 5, `abe46ac434b63f9d0`) potwierdził commit `80f6f3d5`. **Szczególna uwaga na
+`turn-economy.ts` (plik poza pierwotną listą) — zweryfikowana jako bezpieczna trzema
+niezależnymi metodami:** brak zależności danych między przestawianymi liniami (dowód typowy +
+odczyt źródła + weryfikacja empiryczna serializacji przed/po), potwierdzenie że bez tego
+przestawienia Nota D odpalałaby się tylko przy zakładaniu miasta (dokładnie 2 wołania
+`reconcileAllWorkedTiles` w całym `src/`), i dodatkowy argument ZA (nieznaleziony przez
+Operatora): przestawienie samoleczy nieświeżość zbioru spornych pól w pętli wzrostu populacji
+w NASTĘPNEJ turze.
+
+**Nota A zamknięta i zweryfikowana BEHAWIORALNIE** (nie tylko tekstowo) — odtworzony scenariusz
+z werdyktu R1 na realnym silniku: panel dawał A=4/B=2 (zgodnie z R1), teraz A=3/B=2, identycznie
+z silnikiem. Parytet z konstrukcji (dosłownie ten sam wyraz), nie przypadku.
+
+Bramki: 16/16 zielone, liczby identyczne z raportem Operatora. 4 mutacje kontrolne — 3 złapane
+(Nota A złapana w OBU miejscach, lepiej niż zgłoszono; Noty B i D złapane), **1 nieopakowana:
+cofnięcie kolejności w `turn-economy.ts` przechodzi 34 bramki bez śladu** (to samo co Nota E z
+rundy 1, teraz szersza — brak strażnika integracji Noty D z silnikiem tury, do osobnego
+zlecenia backlogowego).
+
+**Nowe znalezisko (N-2, nieblokujące, FYI):** kasowanie wpisów `okolicaReczne` przez Notę D jest
+NIEODWRACALNE — gdy sporne miasto zostaje zdobyte przez wroga i spór znika, skasowany ręczny
+wpis NIE wraca automatycznie (przed rundą 2 wracał sam, odczyt był fail-closed). Dosłowna
+realizacja punktu 5 ECHO A, spójna z dwiema istniejącymi warstwami czyszczenia.
+
+**Temat `P-HEKS-CENTRUM-OBCEGO-MIASTA` + `P-HEKS-SPOR-SASIAD` (dublowanie heksów) ZAMKNIĘTY PO 2
+RUNDACH.** Do backlogu: N-1 (strażnik integracji silnika tury, priorytet), N-2 (nieodwracalność
+kasowania, FYI właściciela), N-3 (Nota C zamknięta bez naprawy), N-5 (memoizacja, narzut wciąż
+trywialny).
+
+**Znalezisko dokumentacyjne (N-4), do dopisania w CLAUDE.md §BRAMKI:** 4 bramki czerwone
+pre-istniejąco, potwierdzone identyczne na baseline `fc04d65b` (sprzed tego tematu), nieobecne
+dotąd na liście: `budynek-civ-bonus-u17-test.cjs` 3/3, `empire-food-b5-test.cjs` 25/3,
+`mennica-magazyn-test.cjs` 38/3 (już udokumentowane gdzie indziej w tym pliku, ale nie w
+CLAUDE.md), `trade-routes-income-test.cjs` 52/1.
