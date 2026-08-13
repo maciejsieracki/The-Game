@@ -19454,3 +19454,22 @@ auto-wyżywienia (kosmetyka rejestru, nie blokuje).
 Po deployu FALA 277 (`479021dd`, md5 `432cfa7e`), FALA 276 (`35d1d2e1`, md5 `58c0afe2`)
 kwalifikuje się do scalenia do `main`. Scalenie czyste (`--no-ff`), merge commit `bd9f07b1`,
 push OK. FALA 277 zostaje na gałęzi wyłącznie do testów, do scalenia po następnej fali.
+
+## Awaryjna naprawa (8b20c34d) — Evaluator: PASS-WITH-NOTES (2026-08-13)
+
+Obie naprawy (dokończenie merge auto-wyżywienia + poprawka PN ×5) potwierdzone MERYTORYCZNIE
+poprawne niezależnym scenariuszem na realnym kodzie (200 drewna → 40 PN = fair, mutacja cofająca
+→ 8 PN = 5× za mało, dokładnie jak zgłoszone). `tsc` czysty (prawdziwy kod wyjścia, nie
+`tail`-owy pułapek), merge kompletny w obu połowach (panel + realna ścieżka auto-wyżywienia),
+zero nowych regresji na przetestowanych przypadkach brzegowych.
+
+**N1/N2 (do domknięcia, NIE blokujące — deploy FALA 277 już wyszedł):** obie naprawy siedzą w
+MARTWYCH STREFACH POKRYCIA — cofnięcie każdej z osobna przechodzi przez komplet bramek na
+zielono. N1: zerowe pokrycie fairness `computeQuickDealBasket` (jedyna asercja sprawdza
+wielokrotność 5, nie wartość PN — 40 PN "zepsute" spełnia ją tak samo jak 200 PN "poprawne").
+N2: wiązanie `kosztArmii` w `main.ts` (ręcznie przepisany fragment orkiestratora) ma zerowe
+pokrycie — istniejący test woła silnik bezpośrednio z literałem, nigdy przez `main.ts`.
+N3/N4 niepilne (rozjazd Sola panel/silnik świadomy; `pnPerUnit`/`CenaJednostkowa` mylące nazwy
+— cena jest ZA BLOK nie za sztukę, bezpośrednia przyczyna tego incydentu).
+
+**STATUS: dispatch Operatora (Sonnet 5) domknięcia N1/N2/N4 w toku.**
