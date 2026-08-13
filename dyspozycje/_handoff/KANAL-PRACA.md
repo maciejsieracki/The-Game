@@ -6665,3 +6665,62 @@ a `git-merge-main` jest twardo zablokowany w `guardrails.ts` (bez furtki). Hasł
 **FALA 270 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu" — wejdzie przy FALI 271).
 CZEKAM-NA: sesja lokalna: pull na dysk właściciela (testuj `13a04632`) · Maciej: zgoda na
 scalenie FAL 268+269 do `main`.
+
+## [23:47 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 271**, md5 `ea51ac51`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`ea51ac51335652ce60732b600a82c70d`**, stempel
+`ROBOCZA · b91375a2 · 2026-08-12 21:44` (UTC). Build z HEAD **`b6159561`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**53 commity** od FALI 270, 17 plików w
+`gra/src`+`gra/data`, +1523/−120). **Commit deployu: `94a17910`**, wypchnięty na gałąź sesji.
+Bramki na tym czubku: `tsc` **0 błędów** · `logic-test` **213/213** · `combat-test` **6/6** ·
+`diplomacy-acceptance-points-test` **253/0** · `vite build` **815 modułów** ·
+`verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html` przegenerowane.
+**Tematy (fala domykająca, same naprawy — bez nowych funkcji):** klaster miast barbarzyńców rundy
+5-6-7 (temat ZAMKNIĘTY po 7 rundach) · IndexedDB B1+B2+B3 (re-entrancy, cache porażki, cichy
+fallback) · fantomowy slot `_lastPlayed` (martwe „Kontynuuj”/„Wczytaj” po skasowaniu WSZYSTKICH
+zapisów) · runda 2 retreat-garnizon · panel zużycia surowców (etykiety + żywy fallback po
+save-load) · drenaż obywateli r2 · **dyplomacja U1+U2+U3 — asymetria PW w pełni domknięta**
+(U2 `489b2661` wjechał w trakcie deployu, JEST w bundlu) + nagłówek EOT · guard `Number.isInteger`
+przy promocji na front kolejki.
+⚠️ **Bundel budowany 3× — wyścig z równoległymi sesjami na gałęzi.** Buildy `7bffe3dd`
+(HEAD `bf6d9d61`) i `3e956226` (HEAD `96166d19`) **porzucone, NIGDZIE nie opublikowane** —
+obowiązuje **wyłącznie `ea51ac51`**. Po każdym fetchu z nowymi commitami: rebase + pełna
+przebudowa od zera (nigdy podmiana samej pieczątki), żeby md5 odpowiadał czubkowi gałęzi.
+⛔ **Znany defekt historii:** commit `044aa26d` (komunikat: drenaż obywateli) zawiera także +284
+linie w `barbarians.ts` — wyścig commitów w współdzielonym drzewie. Obie zmiany poprawne
+i zweryfikowane osobno; historia nie przepisywana.
+**FALA 271 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu”). Powstanie FALI 271
+kwalifikuje **FALĘ 270** (`028ff459`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
+✅ **Zaległość z FALI 270 ZAMKNIĘTA przez inną sesję w trakcie tego deployu:** `main` stoi teraz na
+`0a261731` i zawiera **FALE 268 (`b466fa17`) i 269 (`0a261731`)** — zweryfikowane `git merge-base
+--is-ancestor`. Do scalenia pozostaje **FALA 270** (`028ff459`, NIE w main), kwalifikowana rytmem
+jedna fala do tyłu przez powstanie FALI 271. Scalenie NIE wykonane tutaj (poza zakresem deployu,
+wymaga wyraźnej zgody właściciela; `git-merge-main` zablokowany w `guardrails.ts`).
+ℹ️ **Commity, ktore weszly na galaz po buildzie, NIE sa w bundlu** — wiazacy build HEAD = `b6159561`, reszta wchodzi do FALI 272. Do momentu pushu doszly m.in. `7155d39d`/`0994753b`/`63bdf1b9` (rejestr + testy; kopalnia zlota odsprzegnieta do JSON, wartosc 1→1, zachowanie bez zmian) oraz `b923730a`/`af8fb9c6` (deduplikacja EDYCJI koszyka PW, 10→20/20 — **realna zmiana logiki, poza ta fala**). Bundel NIE byl przebudowywany 4. raz.
+**SESJA LOKALNA: pull na dysk właściciela** (testuj `ea51ac51`).
+CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FALI 270 do `main`.
+
+## [23:58 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 272**, md5 `5343a5f4`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`5343a5f45bb91510043740190f9beffa`**, stempel
+`ROBOCZA · 85027372 · 2026-08-12 21:58` (UTC). Build z HEAD **`ad946239`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**12 commitów** od FALI 271, 6 plików w
+`gra/src`+`gra/data`, +146/−20). Bramki na tym czubku: `tsc` **0 błędów** · `logic-test`
+**213/213** · `combat-test` **6/6** · `empire-miasta-table-test` **89/0** ·
+`diplomacy-basket-duplicate-ui-test` **20/20** · `porzadek-panel-czytelnosc-test` **81/0** ·
+`tartak-glinianka-rate-Q1-test` **281/0** · `vite build` **815 modułów** ·
+`verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html` (manifest 10 bundli) przegenerowane.
+**Tematy (fala domykająca AUDYT #3 — same naprawy, bez nowych funkcji):** **Tabela Miast** —
+złączenie po **indeksie zamiast po nazwie miasta** (realny bug: zdobyte miasta o tej samej nazwie
+gubiły dane w podsumowaniu), etykieta `SUROWCE`→**zapotrzebowanie**, `wireMiastaColFilter` wyjęty
+z buildera HTML do `render()` · **koszyk PW** — deduplikacja **ścieżki EDYCJI** (`applyBasketItemEdit`,
+10→20/20) · **produkcja terenowa** — hardkod stawki kopalni złota odsprzęgnięty do JSON
+(**1→1, zachowanie bez zmian**, zmiana architektoniczna) · **panel Szczęście/Prawo** — sekcje J i K
+w teście (67→81/81, zero zmian w `src/`).
+✅ **Bundel budowany RAZ** — w przeciwieństwie do FALI 271 gałąź nie przyjęła żadnego commitu
+w trakcie deployu (`git fetch` przed buildem i przed commitem: zero nowych), zero porzuconych md5.
+**FALA 272 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu”). Powstanie FALI 272
+kwalifikuje **FALĘ 271** (`94a17910`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
+Niescalone: **FALA 270** (`028ff459`) i **FALA 271** (`94a17910`).
+**SESJA LOKALNA: pull na dysk właściciela** (testuj `5343a5f4`).
+CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 270+271 do `main`.

@@ -126,6 +126,22 @@ function addFood(cityId, qty) {
   qa('.cdb-food-qty').find(i => i.getAttribute('data-side') === 'give').value = String(qty);
   click(addButton());
 }
+/** Klika „✎ Edytuj" na wierszu `idx` po stronie „daję" — otwiera formularz edycji (editingItem). */
+function editButton(idx) {
+  const b = qa('.cdb-edit-item').find(x => x.getAttribute('data-side') === 'give' && x.getAttribute('data-idx') === String(idx));
+  if (!b) throw new Error('brak przycisku "✎ Edytuj" dla idx=' + idx);
+  return b;
+}
+/** Przycisk „Zapisz zmiany" widoczny WYŁĄCZNIE gdy formularz jest w trybie edycji (ma data-edit-idx). */
+function saveEditButton() {
+  const b = qa('.cdb-add-btn').find(x => x.getAttribute('data-side') === 'give' && x.getAttribute('data-edit-idx') != null);
+  if (!b) throw new Error('brak przycisku "Zapisz zmiany" (formularz nie jest w trybie edycji?)');
+  return b;
+}
+function giveRowText(idx) {
+  const row = giveRows()[idx];
+  return row ? (row.querySelector('.da-deal-item')?.textContent ?? null) : null;
+}
 
 async function main() {
   await esbuild.build({
@@ -184,6 +200,77 @@ async function main() {
     `żywność Roma (wiersz 3): 20+10=30 pkt żywności w jednym wierszu (got ${giveRowQty(3)})`);
   ok(giveRowQty(4) === '15',
     `żywność Ostia (wiersz 4): nietknięte 15 pkt żywności, nie zlane z Romą (got ${giveRowQty(4)})`);
+
+  // 6) P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-EDYCJA — ŚCIEŻKA EDYCJI (nie dodawania). Diagnoza
+  // Evaluatora: handler „Zapisz zmiany" po edycji istniejącego wiersza podmieniał pozycję na
+  // miejscu BEZ sprawdzenia kolizji z INNYM, już istniejącym wierszem koszyka. Dokładna
+  // reprodukcja ze zgłoszenia: koszyk [Obróbka drewna, Garncarstwo] → Edytuj wiersz "Garncarstwo"
+  // → zmień technologię na "Obróbka drewna" (już w wierszu 0) → Zapisz → PRZED naprawą: dwa
+  // identyczne wiersze "Obróbka drewna". Wariant wybrany dla typów BEZ ilości (jak tech) to
+  // BLOKADA-JAKO-NO-OP (spójna z blokadą duplikatu w addOrMergeBasketItem — lista zostaje BEZ
+  // ZMIAN, nic nie znika, nic się nie duplikuje): PO naprawie koszyk wraca do stanu SPRZED
+  // edycji, edytowany wiersz "Garncarstwo" zostaje nietknięty na swoim miejscu.
+  {
+    const startLen = giveRows().length; // 5 (2 tech + złoto + 2 żywność) sprzed tego bloku
+    ok(giveRowText(0) === 'Obróbka drewna' && giveRowText(1) === 'Garncarstwo',
+      `stan wyjściowy do testu edycji: wiersz 0="Obróbka drewna", wiersz 1="Garncarstwo" (got ${giveRowText(0)}, ${giveRowText(1)})`);
+
+    click(editButton(1)); // otwórz edycję wiersza "Garncarstwo" (idx=1)
+    click(chip('cdb-chip-tech', 'Obróbka drewna')); // zmień technologię na tę z wiersza 0 → kolizja
+    click(saveEditButton()); // „Zapisz zmiany"
+
+    const techRows = giveRows().filter(r => {
+      const t = r.querySelector('.da-deal-item')?.textContent ?? '';
+      return t.includes('Obróbka drewna') || t.includes('Garncarstwo');
+    });
+    ok(techRows.length === 2 && techRows.some(r => r.querySelector('.da-deal-item')?.textContent === 'Obróbka drewna')
+        && techRows.some(r => r.querySelector('.da-deal-item')?.textContent === 'Garncarstwo'),
+      `edycja "Garncarstwo"→"Obróbka drewna" (koliduje z wierszem 0, typ BEZ ilości → blokada-no-op): `
+      + `nadal DWA RÓŻNE wiersze tech ("Obróbka drewna" + "Garncarstwo"), NIE dwa identyczne duplikaty `
+      + `(got ${techRows.length}: ${techRows.map(r => r.querySelector('.da-deal-item')?.textContent).join(', ')})`);
+    ok(giveRows().length === startLen,
+      `blokada-no-op: liczba wierszy koszyka niezmieniona względem sprzed edycji (${startLen}→${giveRows().length})`);
+    ok(giveRowText(0) === 'Obróbka drewna' && giveRowText(1) === 'Garncarstwo',
+      `blokada-no-op: wiersz 0="Obróbka drewna", wiersz 1="Garncarstwo" — edytowany wiersz wrócił do stanu sprzed edycji (got ${giveRowText(0)}, ${giveRowText(1)})`);
+  }
+
+  // 6b) Wariant SCALANIA dla typów Z ilością — użyj JUŻ ISTNIEJĄCYCH wierszy żywności z kroku 5
+  // (Roma=30 pkt, Ostia=15 pkt — patrz asercje kroku 5). Edytuj wiersz Ostii → zmień miasto na
+  // Roma (już obecne, inna tożsamość: zywnosc::c1 vs zywnosc::c2) → po naprawie: JEDEN wiersz
+  // żywności Roma z zsumowaną ilością 30+15=45, wiersz Ostii znika jako osobna pozycja (merge,
+  // analogicznie do addOrMergeBasketItem — patrz test 7 w diplomacy-basket-duplicate-test.cjs).
+  {
+    const beforeMerge = giveRows().length;
+    const ostiaIdx = giveRows().findIndex(r => r.querySelector('.cdb-row-qty-inp')?.value === '15');
+    ok(ostiaIdx >= 0, `wiersz żywności Ostia (15, z kroku 5) obecny przed testem scalania (idx=${ostiaIdx})`);
+
+    click(editButton(ostiaIdx));
+    click(chip('cdb-chip-city', 'c1')); // zmień miasto Ostia → Roma, gdzie już jest 30
+    click(saveEditButton());
+
+    ok(giveRows().length === beforeMerge - 1,
+      `scalanie (typ z ilością): edytowany wiersz zniknął jako osobna pozycja (${beforeMerge}→${beforeMerge - 1}, got ${giveRows().length})`);
+    ok(rowQtyValues().includes('45'),
+      `scalanie: żywność Roma pokazuje zsumowane 30+15=45 (widoczne ilości: ${rowQtyValues().join(',')})`);
+  }
+
+  // 7) Edycja BEZ kolizji musi dalej działać jak dotychczas — bez regresji z naprawy kolizji
+  // (6/6b). Edytuj wiersz złota zmieniając TYLKO ilość: tożsamość (zloto::zloto) się nie
+  // zmienia i jest jedynym wierszem złota w koszyku, więc `applyBasketItemEdit` nie znajduje
+  // kolizji z ŻADNYM innym wierszem i idzie zwykłą ścieżką podmiany na miejscu.
+  {
+    const beforeLen = giveRows().length;
+    const goldIdx = giveRows().findIndex(r => /¤/.test(r.querySelector('.da-deal-item')?.textContent ?? ''));
+    ok(goldIdx >= 0, `wiersz złota nadal obecny do testu edycji bez kolizji (idx=${goldIdx})`);
+    click(editButton(goldIdx));
+    const goldQtyInp = qa('.cdb-qty').find(i => i.getAttribute('data-side') === 'give');
+    if (goldQtyInp) goldQtyInp.value = '77';
+    click(saveEditButton());
+    ok(giveRows().length === beforeLen,
+      `edycja bez kolizji (zmiana ilości złota): liczba wierszy niezmieniona (${beforeLen}→${giveRows().length})`);
+    ok(rowQtyValues().includes('77'),
+      `edycja bez kolizji: nowa ilość złota 77 widoczna w koszyku (widoczne ilości: ${rowQtyValues().join(',')})`);
+  }
 
   for (const f of [ENTRY, BUNDLE, LEADER_STUB, BRAND_STUB]) {
     try { fs.unlinkSync(f); } catch (e) { /* ok */ }

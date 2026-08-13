@@ -577,7 +577,9 @@ function cityMiastaColFilterHtml(): string {
   return `<div class="civ-emp-colfilter" id="civ-emp-miasta-colfilter">${chips}</div>`;
 }
 
-function wireMiastaColFilter(): void {
+// Eksport dla testów -- patrz komentarz przy cityMiastaMiniDetail wyżej (ten sam powód: realna
+// symulacja checkboxów w jsdom zamiast dopasowania tekstu).
+export function wireMiastaColFilter(): void {
   const host = document.getElementById('civ-emp-miasta-colfilter');
   if (!host) return;
   for (const inp of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-miasta-col]'))) {
@@ -612,7 +614,13 @@ function miastaCellFor(r: {
   }
 }
 
-function cityMiastaMiniDetail(
+// Eksport dla testów (ten sam wzorzec co resUsageDetailsHtml wyżej) — pozwala testowi NAPRAWDĘ
+// zbundlować i wywołać tę funkcję (esbuild+jsdom, symulacja checkboxów filtra kolumn) zamiast
+// dopasowywać tekst w źródle (zadanie 3, empire-miasta-table-test.cjs sekcja L).
+// / EN: exported for tests (same pattern as resUsageDetailsHtml above) — lets the test REALLY
+// bundle and call this function (esbuild+jsdom, column-filter checkbox simulation) instead of
+// matching text in the source.
+export function cityMiastaMiniDetail(
   ce: EmpireDetailSnap['cityEcon'],
   cp: EmpireDetailSnap['cityPobor'],
   food: EmpireFoodSnap,
@@ -621,13 +629,26 @@ function cityMiastaMiniDetail(
   if (cp.length === 0) {
     return '<div class="civ-emp-empty">Brak miast — załóż osiedle na mapie.</div>';
   }
-  const foodByName = new Map(food.perCityRows.map(r => [r.name, r]));
+  const foodById = new Map(food.perCityRows.map(r => [r.cityId, r]));
   // Dane per miasto liczone RAZ — użyte zarówno do wierszy, jak i do wiersza podsumowania
   // (punkt c), żeby suma/średnia w stopce dokładnie odpowiadały temu, co widać w wierszach
   // powyżej (nie osobne, mogące się rozjechać przeliczenie).
-  const rows = cp.map(pob => {
-    const econ = ce.find(c => c.name === pob.name);
-    const fd = foodByName.get(pob.name);
+  // P-EMPIRE-MIASTA-JOIN-INDEX (naprawa F2, Evaluator FAIL na 89c16ec1): `ce` (cityEcon) i `cp`
+  // (cityPobor) powstają jako `pc.map(...)` z TEJ SAMEJ tablicy źródłowej w main.ts
+  // (buildEmpireDetailSnap) — są RÓWNOLEGŁE INDEKSOWO. Join po nazwie (`ce.find(c => c.name
+  // === pob.name)`) był błędny: nazwy miast NIE są unikalne w obrębie jednej cywilizacji
+  // (`captureCity()` w siege.ts zachowuje nazwę zdobytego miasta), więc dwa miasta tego samego
+  // ownera o tej samej nazwie dawały: oba wiersze dostawały dane PIERWSZEGO dopasowania, a
+  // wiersz podsumowania liczył podwójnie i gubił drugie miasto całkowicie. Food joinowane po
+  // cityId (patrz EmpireCityPoborRow.cityId, empireDetailTypes.ts) z tego samego powodu.
+  // / EN: `ce`/`cp` are index-parallel (built from the same `pc.map()` in main.ts) — joining by
+  // name was wrong because city names are not unique within one civilization (captureCity()
+  // keeps the conquered city's name); two same-owner cities sharing a name both got the FIRST
+  // match's data, and the summary row double-counted one and lost the other entirely. Food is
+  // joined by cityId for the same reason.
+  const rows = cp.map((pob, i) => {
+    const econ = ce[i];
+    const fd = foodById.get(pob.cityId);
     return {
       name: pob.name,
       obyw: pob.ludki,
@@ -686,13 +707,20 @@ function cityMiastaMiniDetail(
     + 'PIENIĄDZ = wpływ netto do skarbca po suwakach · '
     + 'ŻYWNOŚĆ = bilans lokalny miasta (produkcja − racje) · '
     + 'WZROST = szacowany % wzrostu ludności (szczegóły w panelu miasta) · '
-    + 'SUROWCE = utrzymanie surowcowe budynków wybudowanych W TYM mieście / turę — obywatele '
+    + 'SUROWCE = zapotrzebowanie surowcowe budynków wybudowanych W TYM mieście / turę (pełne, '
+    + 'bez klamrowania do zapasu magazynu — patrz „Zobacz szczegóły zużycia" niżej) — obywatele '
     + '(magazyn centralny) i wojsko (porusza się po mapie) są civ-wide, bez podziału na miasta; '
-    + 'pełne rozbicie budynki/obywatele/wojsko per surowiec: sekcja SUROWCE → karta surowca → '
-    + '„Zobacz szczegóły zużycia".</div>'
+    + 'to POPYT przypisany do miasta — faktyczny drenaż magazynu idzie z puli CAŁEGO imperium '
+    + '(surowiec może zejść z zapasu innego miasta); pełne rozbicie budynki/obywatele/wojsko per '
+    + 'surowiec: sekcja SUROWCE → karta surowca → „Zobacz szczegóły zużycia".</div>'
     + '<div class="civ-emp-foot">Wiersz „SUMA / ŚREDNIA" na dole — suma dla każdej kolumny, poza '
     + 'WZROST (tam średnia z miast, dla których wzrost jest znany).</div>';
-  queueMicrotask(wireMiastaColFilter);
+  // N1 (Evaluator, notatka na 89c16ec1): queueMicrotask(wireMiastaColFilter) NIE jest tu wołane —
+  // ta funkcja bywa wołana 2x na render() (patrz detailFor w render()), co podpinałoby listenery
+  // podwójnie. Wiring przeniesiony do JEDNEGO wywołania w render(), po bodyEl.innerHTML=.
+  // / EN: queueMicrotask(wireMiastaColFilter) intentionally NOT called here — this function used
+  // to be invoked twice per render() (see detailFor in render()), which would double-wire
+  // listeners. Wiring moved to a SINGLE call in render(), after bodyEl.innerHTML=.
   return h;
 }
 
@@ -1375,8 +1403,13 @@ function render(): void {
     skarbiec: cityEconMiniSkarbiec(ce, e),
     praca: cityEconMiniPraca(ce, e.pracaUpkeep),
     nauka: cityEconMiniNauka(ce),
+    // N1 (Evaluator, notatka na 89c16ec1): klucz 'ludnosc' USUNIĘTY — żaden wpis econRows nie ma
+    // id 'ludnosc' (patrz tablica econRows wyżej: praca/skarbiec/nauka/kultura/religia/miasta/
+    // rekruci), więc detailFor.ludnosc nigdy nie był czytany — tylko wołał cityMiastaMiniDetail()
+    // po raz drugi bez potrzeby (double-wiring przez queueMicrotask, patrz N1 w tej funkcji).
+    // / EN: 'ludnosc' key REMOVED — no econRows entry has id 'ludnosc', so detailFor.ludnosc was
+    // never read — it only called cityMiastaMiniDetail() a needless second time (double-wiring).
     miasta: cityMiastaMiniDetail(ce, cp, snap.food, e),
-    ludnosc: cityMiastaMiniDetail(ce, cp, snap.food, e),
     rekruci: cityPoborMiniRekruci(cp, p),
   };
   let zasoby = `<div class="civ-emp-sect sep" data-section="ekonomia">`
@@ -1489,6 +1522,15 @@ function render(): void {
   const prevScrollTop = bodyEl.scrollTop;
   bodyEl.innerHTML = body;
   wireMocViewButtons();
+  // N1 (Evaluator, notatka na 89c16ec1): JEDNO wywołanie na render() (przeniesione z wnętrza
+  // cityMiastaMiniDetail — patrz komentarz tam) — filtr kolumn tabeli Miasta istnieje w DOM
+  // tylko gdy blok 'ekonomia'/'all' jest w body; wireMiastaColFilter() jest null-safe
+  // (getElementById zwraca null poza tym blokiem, funkcja wtedy po prostu wraca).
+  // / EN: SINGLE call per render() (moved out of cityMiastaMiniDetail) — the Miasta column
+  // filter only exists in the DOM when the 'ekonomia'/'all' block is in body;
+  // wireMiastaColFilter() is null-safe (getElementById returns null otherwise, function
+  // returns early).
+  queueMicrotask(wireMiastaColFilter);
 
   // Scroll do podsekcji ma sens tylko w pełnym widoku; przy pojedynczym bloku i tak widać całość.
   const scrollTarget = block === 'all' ? pendingScrollSection : null;
