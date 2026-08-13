@@ -18622,3 +18622,23 @@ jednorazowości (`retreatExhaustedThisTurn`) to dwa niezależne gate'y z osobnym
 jednostka w polu nie ma blokady garnizonu, ale ma limit jednorazowości tak jak każda inna.
 
 **STATUS: ZAMKNIĘTE — potwierdzenie stanu już zaimplementowanego, brak pracy do wykonania.**
+
+## ECHO: cztery tematy z backlogu, decyzje Macieja (2026-08-13)
+
+**1. Mechanizm placeholderów w katalogu surowców — ECHO A.** Zostaje bez zmian, żadna praca
+kodowa nie jest potrzebna. `surowce-katalog-kolejnosc-test.cjs` pozostaje jak dziś (62/0),
+mechanizm kart-zapowiedzi zostaje w kodzie na wypadek przyszłego użycia. **ZAMKNIĘTE.**
+
+**2. Rozjazd danych „Petra" — ECHO A.** `wonders.json → petra.epokaWejscia` zmienić z 2 na 3,
+wyrównując z resztą wzorca (epoka wejścia = epoka technologii odblokowującej). Dispatch Operator.
+
+**3. R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA, krok 2 — sygnał do startu dany.** Wdrożenie
+turnieju Q1=B/Q2=B/Q3=A + doprecyzowań + rozbudowanej mechaniki kontestacji (5 reguł, sekcja
+„rozbudowana mechanika kontestowana" wyżej) rusza teraz. Dispatch Operator.
+
+**4. R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA — sygnał do startu dany.** Wdrożenie
+multi-select cywilizacji przeciwnika, ograniczonego pulą epoki (`EPOCH_CIV_TYPE_POOL`) i
+`civ_types_count`, zgodnie z doprecyzowaniem Macieja z 2026-08-10. Dispatch Operator.
+
+Wszystkie trzy Operatory (2, 3, 4) dispatchowane w izolowanych worktree, równolegle, bez
+nakładania się na wspólne pliki (weryfikacja zakresu plików przed dispatchem).
