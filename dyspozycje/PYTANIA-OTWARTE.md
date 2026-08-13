@@ -16940,3 +16940,41 @@ zaniżone dokładnie ×5 po dzisiejszym rebalansie ekonomii (nie zsynchronizowan
 **STATUS: ETAP 1 ZAKOŃCZONY.** Zero zmian w kodzie/danych/treści gry wykonanych — zgodnie z
 wyraźnym poleceniem właściciela. Czeka na jego decyzję o zakresie/priorytecie Etapu 2
 (implementacja) po powrocie.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — Evaluator finalny runda 2: FAIL (regresja testowa nieprzyłapana), sprostowanie CLAUDE.md §0b, runda 3 dispatch (2026-08-13)
+
+**⛔ SPROSTOWANIE WŁASNEGO BŁĘDU (CLAUDE.md §0b — liczba przedstawiona jako fakt, która faktem
+nie była).** Wpis wyżej „Bramki dotykające zmienionych plików... wszystkie zielone" jest
+NIEPRAWDZIWY. Nie uruchomiłem `gra/tools/hex-plony-magazyn-test.cjs` — pliku, który BEZPOŚREDNIO
+czyta `tileYield()` z `terrain-yields.json`, czyli dokładnie ten plik, który runda 2 zmieniła.
+Zweryfikowane przez Evaluatora: **11/11 na `e144af80` (przed rundą 2) → 4 pass/7 fail na
+`16a92c9f` (po rundzie 2)**. To realna regresja bramki (nie silnika — Evaluator potwierdził
+niezależnie że wyliczone wartości silnika, np. Równina drewno=10, są POPRAWNE; test po prostu
+przypina stare liczby 2/1/2/3 zamiast nowych 10/5/10/15). Przyczyna mojego błędu: uruchomiłem
+listę testów z rundy 1 (dziedziczoną z poprzedniego dispatchu) zamiast przeszukać CAŁY katalog
+`gra/tools/` pod kątem plików czytających `terrain-yields.json`.
+
+**Dodatkowe znalezisko Evaluatora — luka pokrycia nowej bramki `ekonomia-5x-inwariant-test.cjs`
+większa niż deklarowano.** 218/233 asercji to słaby test strukturalny (`v≥5 && v%5===0`) —
+Evaluator cofnął 26 NIEPRZYPIĘTYCH kosztów budynków z ≥25 na 5 i bramka pozostała zielona.
+Realnie chronionych „twardo" (konkretne przypięte literały) jest ~8 wartości z 255+ zmienionych.
+Bramka NIE obejmuje w ogóle `terrain-yields.json`/`terrain-improvements.json` — dokładnie tam,
+gdzie dwukrotnie (runda 1 i runda 2) wypadło pominięcie.
+
+**Merytorycznie zakres ×5 potwierdzony DOMKNIĘTY (nie ma trzeciego kanału danych):** własny skan
+wszystkich 30 plików JSON + `src/` przez Evaluatora — sprawdzone i odrzucone jako nieaktualne
+kanały: `wonders.json bonusy.teren` (niepodłączony, `wonders-data.ts` ma jawne TODO),
+`hexContextTooltip.ts RIVER_BONUS/FOREST_BONUS` (martwe pola, `cityYieldOnly()` zeruje surowce),
+kilka fałszywych trafień „kamien" (nazwa epoki, nie surowiec). `koszt_praca` wyrębu potwierdzone
+nietknięte (silnik zwraca 10 przez pre-istniejący mnożnik `R_STAWKI_FALA2_MULT` w
+`r-stawki-strojenie.ts`, nieskojarzone z tą rundą). Dwa wcześniej zgłoszone pliki pre-istniejące
+(`grupa-b-lane-test`, `mennica-magazyn-test`) POTWIERDZONE bajt-w-bajt identyczne na obu
+commitach — to twierdzenie było prawdziwe.
+
+**STATUS: dispatch rundy 3 (mała, mechaniczna) w toku** — zakres: (1) BLOKUJĄCE:
+`hex-plony-magazyn-test.cjs` — zaktualizować 4 przypięte wartości (2→10, 1→5, 2→10, 3→15), z
+powrotem do 11/11; (2) zalecane: dopiąć `terrain-yields.json`/`terrain-improvements.json`
+(glinianka/kamieniołom bonus, wyrąb) do `ekonomia-5x-inwariant-test.cjs`, żeby luka pokrycia nie
+powtórzyła się trzeci raz.
