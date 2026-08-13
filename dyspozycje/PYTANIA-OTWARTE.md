@@ -19524,3 +19524,16 @@ egzekutora AI (main.ts ~26100), analogicznie do `checkBarbCampDestructionAlongPa
 przez `pickVillageReward` sparametryzowane o ownerId. Naprawić też infinite-oscylację z rundy 1
 (jednostka MP wciąż chodziła do chatki bez mechanizmu zebrania) — teraz zebranie faktycznie
 kończy interakcję z hexem.
+
+## R-DESIGN-11-ZAKLADEK — Designer: paczka zaktualizowana z rejestrem decyzji (2026-08-14)
+
+Designer potwierdził wszystkie 4 decyzje przekazane przez orkiestratora + odłożenie hub badań:
+Klatka 11 oznaczona A=ZATWIERDZONY/B=ODRZUCONY, przycisk hub badań oznaczony ramką przerywaną +
+podpisem "element odłożony", handoff dostał sekcję "8. Rejestr decyzji · 2026-08-14" (tabela
+5 punktów). Punkty 2 (eyebrow Handel/Kultura) i 4 (plakietki stanu Surowce) były już zrealizowane
+w pierwszej wersji makiety — potwierdzenie nie wymagało przerysowania. Plik przekazany
+właścicielowi (SendUserFile).
+
+**STATUS: paczka designera KOMPLETNA i w pełni zgodna z decyzjami. Czeka na realną implementację
+kolejnych 10 zakładek (Praca/Nauka/Spichlerz/Surowce/Handel/Armia/Miasto/Obywatele/Kultura/
+Religia) — Skarbiec (Faza 1) już zaimplementowany i naprawiony (9cbfc8ae).**
