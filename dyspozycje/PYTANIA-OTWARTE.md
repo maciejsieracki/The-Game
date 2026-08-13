@@ -18748,3 +18748,34 @@ bez wymogu posiadania skauta.
 **Nie wymaga ABC** — to naprawa parytetu/kompletności (MP dostają zdolność, którą zwykłe AI już
 ma), nie strojenie balansu liczbowego. Zgłoszenie ma charakter dyrektywny, nie eksploracyjny.
 Dispatch Operator (Sonnet 5) bezpośrednio.
+
+## P-SPICHLERZ-PANEL-VS-SILNIK-ROZJAZD-BILANS (2026-08-13, zgłoszenie Macieja, 2 screeny) · STATUS: OTWARTE — rozpoznanie dispatchowane
+
+**Zgłoszenie (dosłowne, hipoteza właściciela):** „to mam rozwiązanie już zagadki, dlaczego
+spichlerz przy jednym mieście przy automatycznym ustawieniu wychodzi na minusie, a cała
+cywilizacja i tak jest na plusie. To jest jakieś przyrost zapasów plus jeden i jakiś spichlerz
+stolicy plus jeden i po prostu to niweluje ewentualnie czasem bilans."
+
+**Dane ze zrzutów ekranu (Ateny, ta sama tura):**
+- Panel miasta (górny pasek + rozwinięcie „WYŻYWIENIE I WZROST"): Żywność **−3**, Produkcja
+  **+29/t**, Racje **−32/t**, Bilans **−3/t**, Ludność 4, Wzrost 7,5%.
+- Panel „SPICHLERZ CENTRALNY" (rozwinięcie zasobów imperium): W magazynie 1/1000. Rozbicie tury:
+  Uprawa i hodowla +33, Wyżywienie ludności −32, Nadwyżka +1, Pomoc miastom −0, Spichlerz stolicy
+  +1, Wojsko −0, Przyrost zapasów +1. Tabela MIASTA: Ateny — Produkcja **33**, Koszt racji **32**,
+  Bilans **+1**, Wzrost 8%.
+
+**Rozjazd do wyjaśnienia:** „Racje"/„Koszt racji" zgadzają się (32=32), ale „Produkcja" różni się
+między dwoma panelami dla TEGO SAMEGO miasta w TEJ SAMEJ turze — panel miasta pokazuje 29, panel
+spichlerza centralnego pokazuje 33 dla Aten (różnica 4). To odwraca znak bilansu: panel miasta
+−3, panel centralny +1. Hipoteza właściciela wskazuje na linie „Spichlerz stolicy +1" i „Przyrost
+zapasów +1" jako źródło rozjazdu — **do zweryfikowania w kodzie, nie zakładać z góry że to
+wyjaśnienie jest poprawne** (te dwie linie są zagregowane na poziomie PAŃSTWA, nie per-miasto, więc
+mogą nie tłumaczyć bezpośrednio różnicy 33 vs 29 w kolumnie Produkcja per-miasto — wymaga
+namierzenia dokładnie skąd panel miasta i tabela spichlerza centralnego czerpią liczbę „Produkcja"
+dla tego samego miasta i czy to te same, czy dwie osobne ścieżki liczenia).
+
+**STATUS: dispatch rozpoznania (nie naprawy) — namierzyć dokładnie dwa miejsca w kodzie liczące
+„Produkcja"/„Uprawa i hodowla" dla miasta (panel miasta top-bar vs tabela MIASTA w spichlerzu
+centralnym), zdiffować krok po kroku który dodatkowy składnik (jeśli w ogóle) odpowiada za różnicę
+33 vs 29, potwierdzić lub obalić hipotezę właściciela, wrócić z konkretnym wyjaśnieniem (plik:linia,
+wzór) przed jakąkolwiek naprawą.**
