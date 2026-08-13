@@ -1,6 +1,38 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-13 ~00:15** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-13 ~14:30** · Projekt: Civ „The Game"
+
+> **Handoff sesji 2026-08-13 popołudnie (FALA 273+274, dokończenie maratonu + nowa zasada
+> AutoBot 3×Evaluator):** ROBOCZA **AKTUALNA `81ae686d`** (FALA 274, branch
+> `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, NIE `main`). `main` doganiany o FALĘ 273
+> (merge `f438edfb`) — FALA 274 świadomie NIESCALONA, zostaje do testów wg rytmu „jedna fala
+> do tyłu" (`R-MERGE-MAIN-RYTM-Q1`), scali się dopiero przy FALI 275.
+> **Zamknięte w tej sesji:** `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B` (5 rund — bankowanie
+> postępu przy zmianie frontu kolejki + parytet gracz-AI + transfer przepadającego postępu do
+> puli Pracy przy filtrowaniu kolejki), `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` (3 rundy — ×5 cała
+> produkcja/koszty/magazyny surowców fizycznych, drenaż obywateli 0,2→1,0/turę, złoto bez
+> zmian), `P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A` (AI dostaje za wyrąb Drewno, nie
+> Pracę — parytet z graczem), `R-DYPLO-CENNIK-SKALA-5X-Q1` (handel z AI krokiem 5 szt. zamiast
+> 1 szt. dla surowców objętych ×5, ceny bez zmian, złoto/węgiel nadal krokiem 1). **Nowa
+> zasada procesowa `R-EVALUATOR-3X-ZGODA-Q1`:** wzorzec 3× niezależny Evaluator wymaga
+> **jawnej zgody właściciela za każdym razem** (nie jest już auto-triggerowany dla tematów
+> combat-adjacent); domyślnie zawsze **1× Evaluator, Opus 5**; gdy zgoda udzielona — 2× Sonnet
+> 5 + 1× Opus 5 (ostatni). Zapisane w `dyspozycje/PYTANIA-OTWARTE.md` i
+> `.claude/skills/civ-autobot/SKILL.md` §1.
+> **Nowe zgłoszenie, bez rozpoznania:** `P-PANEL-MIASTO-NIECZYTELNY-PRZY-PRZYBLIZENIU` — panel
+> nazwy miasta nad heksem nieczytelny przy dużym przybliżeniu kamery (odwrotnie niż
+> oczekiwane — powinien być pełnowymiarowy blisko, mniejszy z oddali). Zgłoszone ze
+> screenshotem (ATENY), do rozpoznania technicznego przy następnej turze pracy.
+> **Odłożone świadomie, z udokumentowanym powodem (nie ruszać bez wyraźnego polecenia):**
+> kolory surowców miasto-vs-mapa, znikające miasto-państwo (wycofane przez właściciela),
+> Fort/Strażnica rozszerzająca zasięg zakładania miast (decyzja Q1/Q2/Q3 GOTOWA, czeka na
+> słowo „krok 2"), konfigurator wyboru cywilizacji przeciwnika (czeka na doprecyzowanie pojęcia
+> „slot"), podział epoki Kamień na Paleolit/Neolit („na razie zostaw"), Cyna do Brązu (ECHO A,
+> ale koliduje z `DOSTEP-SUROWCE-Q1` — 5 pytań projektowych czeka na rozstrzygnięcie przed
+> ABC), AI uczące się na błędach (ECHO A+B, gotowa martwa heurystyka czeka na podłączenie),
+> optymalizacja generowania mapy na dużych ustawieniach (BUG-SCENA-PERF-FALA138 +
+> PERF-SUPER-HUGE-PANGEA-80, czeka na pomiar właściciela). Pełne rozpisanie każdego tematu w
+> podpunktach: `dyspozycje/PYTANIA-OTWARTE.md` (audyt z 2026-08-13 popołudnie).
 
 > **Handoff sesji 2026-08-12/13 (FALA 271+272, maraton AutoBot — domknięcie audytu #3 +
 > miasta barbarzyńców):** ROBOCZA **AKTUALNA `5343a5f4`** (FALA 272, branch
