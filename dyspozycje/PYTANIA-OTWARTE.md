@@ -19448,3 +19448,9 @@ weryfikacji retroaktywnej); (b) dispatch Evaluatora/rundy 2 dla poprawki `diplom
 (jednoliniowa, ale ekonomicznie istotna — wpływa na każdą Szybką Umowę i ofertę AI); (c) rozliczyć
 zakres `66be754f` — czy 3 stray hunki main.ts mają formalnie należeć do tematu fortów, czy do
 auto-wyżywienia (kosmetyka rejestru, nie blokuje).
+
+## Scalono FALA 276 do main (rytm "jedna fala do tylu") (2026-08-13)
+
+Po deployu FALA 277 (`479021dd`, md5 `432cfa7e`), FALA 276 (`35d1d2e1`, md5 `58c0afe2`)
+kwalifikuje się do scalenia do `main`. Scalenie czyste (`--no-ff`), merge commit `bd9f07b1`,
+push OK. FALA 277 zostaje na gałęzi wyłącznie do testów, do scalenia po następnej fali.
