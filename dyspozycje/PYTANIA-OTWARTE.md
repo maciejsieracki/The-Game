@@ -17069,3 +17069,24 @@ Evaluator=Opus 5 już ustalonego w CLAUDE.md §4, tylko zastosowanego wewnątrz 
 
 **STATUS: WDROŻONE natychmiast** — zaktualizowano `.claude/skills/civ-autobot/SKILL.md`
 (sekcja modeli/Evaluator) żeby ta reguła nie zginęła po resecie kontekstu.
+
+---
+
+## NUMER + ECHO: R-EVALUATOR-3X-ZGODA-Q1 — korekta decyzji R-EVALUATOR-3X-MODEL-KOSZT-Q1 (Maciej 2026-08-13)
+
+**Koryguje/zaostrza R-EVALUATOR-3X-MODEL-KOSZT-Q1 (ten sam dzień) — nie znosi jej, dodaje warunek
+wstępny.** Jego słowa: „Wiesz co, to nie przepalajmy niepotrzebnie tokenów. Jeżeli miałbyś
+odpalać kiedykolwiek 3 ewoluatory to po prostu napisz do mnie o zgodę. To w wyjątkowych tylko
+sytuacjach. Na ten moment przyjmujemy jeden ewaluator opus 5. Jeżeli będziesz miał zgodę na 3
+ewolatorów, bo będziesz miał ciężki temat, to wtedy 2 sonety i 1 obwóz."
+
+**Decyzja (zastępuje domyślne zachowanie z poprzedniego wpisu):**
+1. **DOMYŚLNIE zawsze 1x Evaluator, Opus 5.** To jest teraz jedyny tryb bez pytania.
+2. **Wzorzec 3x Evaluator wymaga JAWNEJ, WCZEŚNIEJSZEJ zgody właściciela za każdym razem** —
+   nie jest to już próg automatyczny (nawet dla combat-adjacent/P0). Orkiestrator MUSI zapytać
+   („napisz do mnie o zgodę") przed dispatchem, opisując dlaczego temat kwalifikuje się jako
+   wyjątkowo ciężki/wysokiego ryzyka — nie dispatchować z góry.
+3. **Gdy zgoda padnie:** przydział modeli pozostaje jak w R-EVALUATOR-3X-MODEL-KOSZT-Q1 —
+   Evaluator #1 i #2 na Sonnet 5, Evaluator #3 (ostatni) na Opus 5.
+
+**STATUS: WDROŻONE natychmiast** — zaktualizowano `.claude/skills/civ-autobot/SKILL.md`.
