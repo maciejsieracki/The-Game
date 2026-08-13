@@ -19537,3 +19537,37 @@ właścicielowi (SendUserFile).
 **STATUS: paczka designera KOMPLETNA i w pełni zgodna z decyzjami. Czeka na realną implementację
 kolejnych 10 zakładek (Praca/Nauka/Spichlerz/Surowce/Handel/Armia/Miasto/Obywatele/Kultura/
 Religia) — Skarbiec (Faza 1) już zaimplementowany i naprawiony (9cbfc8ae).**
+
+## R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień) · STATUS: **ODŁOŻONE ŚWIADOMIE — "zanotuj", nie do podjęcia teraz**
+
+Zrzut: panel ustawień na początku gry, sekcja "BARBARZYŃCY", suwak z wartością "Wielu",
+podpis "Gęstość frakcji barbarzyńskich na mapie."
+
+Jego słowa (dosłownie): „żebyśmy przypisali wszystkie rodzaje trudności i wpływu barbarzyńców
+na rozgrywkę w panelu sterowania i ustawień na początku gry. Czyli tutaj niezależnie od trybu
+wybranej trudności te ustawienia powinny działać niezależnie tak samo jak dla trudności
+państw miast. I trzeba będzie to zmienić. Dodatkowo trzeba zmienić system z obecnego wielu,
+wielu, niewielu i tam coś na łatwy, normalny, trudny i brak. Czyli zawsze będą barbarzyńcy na
+łatwym, po prostu będzie ich bardzo mało. ale będzie też można wyłączyć całkowicie
+barbarzyńców. Na przykład 4 razy mniej niż obecnie na normalnym trybie, a w wypadku
+najtrudniejszego poziomu nie będzie 2 razy więcej niż obecnie w najgorszym wypadku. Jak ma być
+trudno, to ma być trudno."
+
+**Wymagania (dosłowna specyfikacja liczbowa już podana, do przyszłej implementacji):**
+1. Ustawienie gęstości barbarzyńców ma być NIEZALEŻNE od głównego poziomu trudności gry —
+   osobny wybór w panelu startowym, analogicznie do już istniejącego osobnego ustawienia
+   trudności Miast-Państw (precedens, sprawdzić dokładny mechanizm tamtego ustawienia jako wzorzec).
+2. Zmiana skali z obecnej ("wielu/wielu/niewielu" — zdaniem właściciela myląca/zduplikowana
+   nazwa) na: **Łatwy / Normalny / Trudny / Brak**.
+3. **Łatwy** — zawsze jacyś barbarzyńcy, nigdy zero (zero wyłącznie przez osobną opcję "Brak").
+4. **Brak** — całkowite wyłączenie barbarzyńców.
+5. **Normalny** — ok. 4× mniej niż dzisiejsza wartość (baseline do ustalenia przy implementacji
+   — prawdopodobnie dzisiejsze "Wielu"/domyślna gęstość).
+6. **Trudny** — do ok. 2× więcej niż dzisiejszy najgorszy/maksymalny przypadek ("Jak ma być
+   trudno, to ma być trudno").
+
+**STATUS: zapisane do backlogu na wyraźne życzenie właściciela ("zanotuj") — NIE dispatchowane,
+NIE wymaga teraz pytania ABC (numery już podane właścicielem, ABC prawdopodobnie potrzebne
+dopiero przy konkretach implementacji — np. dokładny mechanizm/plik generujący gęstość
+barbarzyńców, czy stary zapis z poprzednim ustawieniem ma migrację). Do podjęcia gdy właściciel
+da sygnał.**
