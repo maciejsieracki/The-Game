@@ -6769,3 +6769,20 @@ scalenia dopiero po powstaniu FALI 274.
 **SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `03a2f038`; `main` zsynchronizowany
 do `016cbb52`).
 CZEKAM-NA: sesja lokalna (pull + playtest FALI 273) · zgoda na kolejne scalenie po powstaniu FALI 274.
+
+## [17:45 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — FALA 275 zdeployowana + FALA 274 scalona do main
+**FALA 275** (md5 `b06aec9a`, commit `0d68c80a`) zdeployowana do ROBOCZA: nowy surowiec Ruda cyny
+(trzeci składnik Odlewni brązu), opcja kreatora Zasięg ruchu ×1/×3/×6, limit wycofania z bitwy raz
+na turę, LOD plakietki miasta przy przybliżeniu, dyplomacja (filtr technologii w koszyku + wielokrotna
+Umowa wymiany surowców), Auto Wyżywienie reaguje na wzrost populacji. `VERIFY OK`, 13 bramek testowych
+zielone, pre-istniejące czerwone bez wzrostu. `map-gen-regression-test` nieukończony (nieblokujące,
+CPU dzielone z równoległym Operatorem) — traktowane jak dotąd jako C-011/dług, nie regresja.
+Zostaje na gałęzi roboczej wyłącznie do testów (rytm „jedna fala do tyłu").
+
+Na wcześniej udzieloną zgodę właściciela: **FALA 274** (`322b2259`) scalona do `main` →
+`git merge --no-ff` → merge commit `b2709d1c`, push `f438edfb..b2709d1c`. Bramki na scalonym
+drzewie zweryfikowane przed pushem: `tsc` 0, `logic-test` 213/213.
+
+**SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `b06aec9a`; `main` zsynchronizowany
+do `b2709d1c`).
+CZEKAM-NA: sesja lokalna (pull + playtest FALI 275) · zgoda na kolejne scalenie po powstaniu FALI 276.
