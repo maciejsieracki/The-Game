@@ -17682,3 +17682,47 @@ rozpoznania #3 z 2026-08-10, zgodnie z pierwotnym poleceniem właściciela tego 
    dopiero po kolejnej.
 
 **Dispatch Operatora (Sonnet 5, worktree izolowany) NASTĘPUJE.**
+
+---
+
+## P-OKOLICA-DUBLOWANIE-HEKSA-MIEDZY-MIASTAMI (2026-08-13, zgłoszenie Macieja) · STATUS: **potwierdzone w kodzie, ABC do zadania**
+
+Maciej: „zauważyłem jeszcze jeden błąd, sąsiednie miasto może wyznaczyć sobie jako HEX do
+produkcji, HEX innego miasta, czyli tak, by miasto było eksploatowane dwukrotnie. Z możliwości
+ułożenia jednostek do produkcji powinien być wyłączony teren HEX-a innego miasta."
+
+**Potwierdzone czytaniem kodu (orkiestrator, bez zmian).** `cityWorkedTilesForEconomy()`
+(`gra/src/game/turn-economy.ts:667-716`) liczy przypisanie pól OSOBNO per miasto — brak
+jakiegokolwiek kroku łączącego wszystkie miasta jednego właściciela i pilnującego, żeby ten sam
+heks nie trafił do dwóch list naraz. Filtr `isWorkable` (`resolveWorkedTiles`/`assignWorkedTiles`,
+`okolica.ts`) sprawdza wyłącznie: (a) teren nie jest Morzem/Górami, (b) heks należy do TERYTORIUM
+tego samego WŁAŚCICIELA (`isTerritoryHexOwnedBy`, `territory-work.ts:26-34` — overlap MIĘDZY
+RÓŻNYMI właścicielami rozstrzyga „najbliższe miasto", ale to dotyczy tylko granicy cywilizacja
+vs cywilizacja). **Nie ma żadnego sprawdzenia „czy ten heks już pracuje dla INNEGO miasta TEGO
+SAMEGO właściciela"** — dwa sąsiednie miasta jednej cywilizacji z zachodzącymi na siebie
+promieniami okolicy (`cityRangeForPopulation`, dziś 5–15 heksów) mogą obie wybrać ten sam heks
+jako swój najlepszy plon, zarówno w trybie automatycznym (score-based), jak i ręcznym
+(`okolicaReczne` — nic nie blokuje wpisania tego samego klucza w dwóch miastach). Skutek: plon
+tego jednego heksu liczy się PODWÓJNIE do ekonomii (Żywność/Praca/Podatek), efektywnie duplikując
+surowiec.
+
+**Zakres do ustalenia przed implementacją (nie zgaduję):**
+1. Reguła rozstrzygania konfliktu — analogicznie do już istniejącego wzorca międzywłaścicielskiego
+   (`territoryOwnerAt` = „najbliższe centrum wygrywa") najbliższe miasto danego właściciela
+   dostaje pierwszeństwo do spornego heksu, czy inna reguła (np. wyższa populacja / miasto
+   założone wcześniej / to, które już historycznie heks obrabiało — stabilność między turami)?
+2. Tryb ręczny (`okolicaReczne`) — czy gracz ma być fizycznie zablokowany przed wybraniem heksu
+   już przypisanego innemu jego miastu (UI grayed-out z komunikatem), czy dozwolone wybrać, a
+   silnik cicho przyzna go zwycięskiemu miastu wg reguły z pkt 1 (drugie miasto dostaje inny
+   heks/traci slot)?
+3. Zakres zmiany silnika — dziś każde miasto liczy `cityWorkedTilesForEconomy` NIEZALEŻNIE; naprawa
+   wymaga przetwarzania WSZYSTKICH miast jednego właściciela RAZEM (śledzenie zbioru już-zajętych
+   heksów), zamiast per-miasto w izolacji — realna zmiana architektoniczna w pętli tury, nie
+   punktowa poprawka.
+4. Czy to dotyczy tylko miast GRACZA, czy też AI/miast-państw (AI ma dziś ten sam brak filtru —
+   pytanie czy warto naprawiać oba naraz, czy najpierw gracza, wzorem wcześniejszych napraw
+   „parytet gracz-AI" w tej sesji).
+
+**Nie kodować — dispatch rozpoznania technicznego (bez zmian w kodzie) NASTĘPUJE**, żeby ustalić
+dokładny zasięg zmiany (ile miejsc w kodzie trzeba dotknąć, czy jest bezpieczny pojedynczy punkt
+zaczepienia analogiczny do `territory-work.ts`) przed zadaniem ABC.
