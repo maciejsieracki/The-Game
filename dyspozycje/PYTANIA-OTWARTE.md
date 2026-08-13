@@ -8562,7 +8562,7 @@ Nie dispatchowane, wyłącznie zarejestrowane per §2 CLAUDE.md.
 
 ---
 
-## R-SUROWIEC-CYNA-DO-BRAZU (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+## R-SUROWIEC-CYNA-DO-BRAZU (2026-08-10, propozycja Macieja) · STATUS: ZAMKNIĘTE — patrz „Evaluator runda 3: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY PO 3 RUNDACH" niżej w pliku (nagłówek tu nie zaktualizowany w porę)
 
 **Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** wprowadzenie cyny jako nowego
 surowca wymaganego do produkcji Brązu (dziś prawdopodobnie sam Brąz/miedź bez cyny jako
@@ -8598,7 +8598,7 @@ Temat już scalony (`ac07e79e`), Evaluator wyłącznie potwierdził post-factum.
 
 ---
 
-## R-AI-UCZENIE-SIE-NA-BLEDACH (2026-08-10, pytanie eksploracyjne Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+## R-AI-UCZENIE-SIE-NA-BLEDACH (2026-08-10, pytanie eksploracyjne Macieja) · STATUS: ODŁOŻONE ŚWIADOMIE — ECHO A+B dostarczone (rozpoznanie `a2e22f01e949ef408`, l. ~9516), ale explicite „do zapisania, nie do podjęcia teraz" (l. ~16482, §2 CLAUDE.md) — brak dalszego dispatchu do decyzji właściciela
 
 **Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** czy da się dodać AI
 cywilizacji „uczące się na błędach", coraz trudniejsze — lepsze prowadzenie wojen,
@@ -14964,7 +14964,7 @@ naprawy przed zamknięciem tematu:
    kod robi inaczej, nic tego nie odnotowuje — audyt właściciela (`grep STATUS: **OTWARTE`, §0c)
    by tego nie złapał.
 
-## P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1 (2026-08-12, nota Evaluatora `aa77297798dc1e166`) · STATUS: **OTWARTE — pytanie ABC czeka na odpowiedź, PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (zasada §1a)**
+## P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1 (2026-08-12, nota Evaluatora `aa77297798dc1e166`) · STATUS: ZAMKNIĘTE — patrz „ECHO P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1 (Maciej, 2026-08-13)" niżej w pliku (nagłówek tu nie zaktualizowany w porę)
 
 Zaimplementowana reguła (blokada na samym
 `inGarnizon===true`, bez wymogu `ufortyfikowanyWPolu===true` jednocześnie) **podważa dosłowny
@@ -15444,7 +15444,7 @@ pop=5 → −5 Szczęście, −5% Rozwój. Przy starej stawce 1,0 tego efektu ni
 edge case'u (rejestr, linia ~12943) — Operator odpowiedział tylko połowicznie ("zero wymogu, nie
 luka"), przeoczył że zerowy wymóg jest punktowany jako pełne pokrycie i NAGRADZANY.
 
-**⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** — dotyka kanonu kary binarnej (ECHO Q3=A)**
+**⛔ NOWE PYTANIE ABC, STATUS: ZAMKNIĘTE — zastąpione decyzją `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` (l. ~16400, dawny nagłówek tu nie zaktualizowany w porę), dotykało kanonu kary binarnej (ECHO Q3=A)**
 
 `P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`: czy populacja z `need=0` (poniżej progu zaokrąglenia)
 powinna liczyć się jako NEUTRALNA (0 Szczęścia, 0% kara) zamiast obecnej PREMII? Semantycznie
@@ -15586,7 +15586,7 @@ no-op na froncie bezpieczny, kolejka 1-elementowa bezpieczna, `rekrutacja` nietk
 save/load czysty. 8/8 mutacji własnych złapanych. `promote-to-front-test.cjs` 22/22, `logic-test`
 213/213 potwierdzone wykonaniem.
 
-**⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** — niezatwierdzona decyzja gameplayowa, nie koliduje z
+**⛔ NOWE PYTANIE ABC, STATUS: ZAMKNIĘTE — patrz „ECHO P-PROMOCJA-FRONT-RESET-POSTEPU-Q1 = B" (l. ~16331) i finalne zamknięcie po 5 rundach (l. ~17102), nagłówek tu nie zaktualizowany w porę — niezatwierdzona decyzja gameplayowa, nie koliduje z
 żadną wcześniejszą literą (§1a: sprawdzone, brak kolizji).** `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1`:
 zamiana pozycji na front dziś KASUJE zebrany postęp danej pozycji bezpowrotnie (zmierzone: Cud
 1000 Pracy, 500 Pracy zebrane w 10 tur → klik ⇈ → postęp=0, utrata całości). Operator wybrał ten
@@ -16987,7 +16987,7 @@ powtórzyła się trzeci raz.
 
 ---
 
-## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA (2026-08-13, znalezisko Operatora ekonomii ×5 przy okazji) · STATUS: **OTWARTE — do ABC, nie blokuje**
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA (2026-08-13, znalezisko Operatora ekonomii ×5 przy okazji) · STATUS: ZAMKNIĘTE — patrz „Evaluator finalny: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY OSTATECZNIE" (l. ~17404), nagłówek tu nie zaktualizowany w porę
 
 `gra/src/main.ts:26216-26217`: ścieżka AI dla `wyrab` (wyrąb lasu) refunduje
 `wycinka.praca_per_tura × tury` jako **Pracę**, podczas gdy ścieżka gracza poprawnie kredytuje
@@ -17585,7 +17585,7 @@ zakresem tej sesji (koniec pracy autonomicznej). Zarejestrowane do podjęcia prz
 
 ---
 
-## P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT (2026-08-13, zgłoszenie z playtestu, 2 screeny) · STATUS: **OTWARTE — rozpoznanie dispatchowane**
+## P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT (2026-08-13, zgłoszenie z playtestu, 2 screeny) · STATUS: ZAMKNIĘTE — patrz „Evaluator runda 2: WERDYKT PASS-WITH-NOTES, temat ZAMKNIĘTY" (l. ~18358), nagłówek tu nie zaktualizowany w porę
 
 Maciej (miasto ATENY, Ludność 1, panel „Wyżywienie i wzrost" + HUD): „autowyżywienie nadal
 wprowadza stan miasta na minusie. Ale to jeszcze pół biedy, że miasto bo to mogło mieć miejsce,
@@ -19118,7 +19118,7 @@ regresja, czy oczekiwane zachowanie źle zakomunikowane w UI.
 
 **STATUS: dispatch agenta rozpoznawczego (Sonnet 5) w toku, bez zmiany kodu.**
 
-## P-WOJSKO-ZUZYCIE-ZYWNOSCI-PO-SKALI-5X (2026-08-13, zgłoszenie Macieja) · STATUS: **OTWARTE — dispatch rozpoznania**
+## P-WOJSKO-ZUZYCIE-ZYWNOSCI-PO-SKALI-5X (2026-08-13, zgłoszenie Macieja) · STATUS: ZAMKNIĘTE — rozpoznanie niżej + ECHO R-EKONOMIA-ZYWNOSC-SKALA-Q1=A, bez zmian kodu (nagłówek tu nie zaktualizowany w porę)
 
 Właściciel (dosłownie): „zauważyłem duży błąd, wojska miały mieć powiększoną ilość zjadanych
 surowców, ale nie żywności, ponieważ produkcji żywności na HEX-ach nie zwiększaliśmy."
