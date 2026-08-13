@@ -17378,3 +17378,17 @@ Drewno co ten commit naprawił po stronie AI, tylko w UI gracza. Do osobnej reje
 testu 11, wzorem `ai-founding-territory-test.cjs` B1, asercje: obecność `creditOwnerResourceStock(`
 z `'drewno'` w bloku `wycinka`, NIEobecność wzorca `poolBefore - koszt + ` w tym samym bloku).
 N2/N3/N4 świadomie POZA zakresem, zarejestrowane osobno.
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA runda 2 SCALONA, Evaluator finalny w toku (2026-08-13)
+
+Operator dodał test 12 (strażnik tekstowy na `main.ts`, wzorem `ai-founding-territory-test.cjs`
+B1) i usunął 2 tautologiczne asercje z testu 11. Dowód nie-jałowości wykonany ręcznie: pełne
+cofnięcie `main.ts` do stanu sprzed rundy 1 (`git show a530d48b^:...`) → test PADA (31/2,
+komunikaty 12a/12b) → przywrócenie → zielone (33/33). Bramki: `tsc` 0, `ai-improvements-
+test.cjs` **33/33** (było 30), `logic-test` 213/213. Tylko plik testowy zmieniony (zero ryzyka
+dla silnika). Commit `fab0e21e`, push OK.
+
+**Dispatch Evaluatora finalnego (Opus 5, krótki — weryfikacja tylko nie-jałowości strażnika)
+NASTĘPUJE teraz.**
