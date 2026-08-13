@@ -19508,6 +19508,35 @@ ale wiersz "Netto skarbiec" w tabeli zostaje złoty (brak wariantu `.neg` na tym
 
 **STATUS: dispatch Operatora (Sonnet 5) naprawy 3 rozjazdów CSS + M2 pokrycie w toku.**
 
+## P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (c57cd41d) — Evaluator runda 2: WERDYKT PASS-WITH-NOTES (2026-08-13, zamknięte)
+
+Zarzut z rundy 1 (brak JAKIEJKOLWIEK ścieżki zebrania dla `ownerId≠0` → nieskończona oscylacja,
+dowiedziona symulacją 12 tur) jest **domknięty i zweryfikowany niezależnie** symulacją 10-turową
+z kontrolą negatywną. Wszystkie 4 obszary owner-aware (złoto, badania, jednostka, era) piszą do
+właściwego ownera przez akcesory już używane przez przejęcie stolicy i coroczne badania AI.
+Bramki: `tsc` 0 błędów, `logic-test` 213/213, `villages-test` 94/94 (+12), `ai-improvements-test`
+33/33, `ai-test` 285/8 (+5 T7D-p, te same 8 pre-istniejące), `barb-camp-destruction-test` 81/1
+pre-istniejące (zweryfikowane niezależnie na commicie-rodzicu — identyczne). Mutacje kontrolne:
+5/6 złapane (a1/a2/b/c/e); (d) owner-aware `era`→`player.era` NIEZŁAPANA kodowo, ale zamknięta
+symulacją Evaluatora na czas tej oceny — luka testowa, nie wada silnika.
+
+**Uwagi nieblokujące (N1-N7), zarejestrowane, nie dispatchowane teraz (nieblokujące):**
+- N1: brak testu behawioralnego end-to-end dla wpięcia w `main.ts` (dziś tylko strażnik tekstowy).
+- N2: asymetria złota AI-vs-gracz przy deficycie (AI podłogowane do 0, gracz nie) — wąski przypadek.
+- N3: `exploredHexes` gracza przekazywane też dla AI/MP — tylko tie-break spawnu, kosmetyka.
+- **N4 — korekta liczbowa (§0b):** commit i komentarz testu mówią „4 istniejące wywołania gracza"
+  — poprawnie jest **5** (`main.ts` 19087, 23578, 23612, 27570, 27579), dowiedzione 5×TS2554 w
+  mutacji (c). Czysto redakcyjne, koryguję tu zgodnie z zasadą prawdziwych liczb.
+- N5: chatka nie jest zbierana przez wejście na hex walką/eviction — pre-istniejące, symetryczne
+  gracz+AI, nie regresja. Do osobnej rejestracji jeśli będzie priorytetem.
+- N6: fallback do złota przy braku aktywnego badania AI jest ostrożniejszy niż konieczne (mógłby
+  sam wybrać tech przez `chooseAIResearch`) — świadoma decyzja architektury, nie błąd.
+- N7: `barb-camp-destruction-test` czerwony pre-istniejąco ujawnia 12 realnych wpięć vs 11 na
+  liście `CALL_SITES` — dług testowy niezwiązany z tym tematem, do osobnego zgłoszenia.
+
+**Temat zamknięty.** N1/N5/N7 mogą zostać podjęte jako osobne, mniejsze zlecenia w przyszłości —
+nie blokują tego tematu ani deployu.
+
 ## ECHO P-MP-CHATKI-SKARBOW-NIE-ZBIERANE — nagroda dla MP/AI (2026-08-13)
 
 Jego słowa: „Zarówno AI jak i miasta państwa po odkryciu chatek mają takie same skarby jak
@@ -19538,7 +19567,14 @@ właścicielowi (SendUserFile).
 kolejnych 10 zakładek (Praca/Nauka/Spichlerz/Surowce/Handel/Armia/Miasto/Obywatele/Kultura/
 Religia) — Skarbiec (Faza 1) już zaimplementowany i naprawiony (9cbfc8ae).**
 
-## R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień) · STATUS: **ODŁOŻONE ŚWIADOMIE — "zanotuj", nie do podjęcia teraz**
+## R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień) · STATUS: **SYGNAŁ DO PODJĘCIA OTRZYMANY — dispatch runda 2**
+
+**AKTUALIZACJA (2026-08-14, sygnał właściciela):** Maciej: „pracuj autonomicznie teraz przez całą
+noc, wypnij wszystkie tematy" — to jest wprost sygnał odblokowujący wszystkie tematy zapisane
+jako „odłożone do sygnału", w tym ten. Runda 1 Operatora (poniżej) słusznie zatrzymała się na
+starym statusie „ODŁOŻONE ŚWIADOMIE" (dyscyplina §7 — nie zgaduj), ale rekonesans wykonała w
+całości i jest gotowy do wykorzystania bez powtarzania. Runda 2 dispatchowana z tym rekonesansem
++ jawną adnotacją o odblokowaniu.
 
 Zrzut: panel ustawień na początku gry, sekcja "BARBARZYŃCY", suwak z wartością "Wielu",
 podpis "Gęstość frakcji barbarzyńskich na mapie."
@@ -19571,3 +19607,53 @@ NIE wymaga teraz pytania ABC (numery już podane właścicielem, ABC prawdopodob
 dopiero przy konkretach implementacji — np. dokładny mechanizm/plik generujący gęstość
 barbarzyńców, czy stary zapis z poprzednim ustawieniem ma migrację). Do podjęcia gdy właściciel
 da sygnał.**
+
+## R-RUCH-JEDNOSTEK-USTAWIENIE-BRAK (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień nowej gry) · STATUS: **OTWARTE — rekonesans w toku**
+
+Zrzut: pełny panel ustawień nowej gry (Pustynie/Las/Góry i Wzgórza/Udział lądu/Warunki
+zwycięstwa/Trudność Miast-Państw/Barbarzyńcy/Bitwy/Koszty budynków/Koszty jednostek/Wzrost
+ludności).
+
+Jego słowa (dosłownie): „poza tym miał być panel w wyborze jak dużo ruchów chcemy mieć dla
+jednostek. Nie widzę tego wyboru."
+
+Interpretacja: brakuje ustawienia liczby punktów ruchu jednostek (prawdopodobnie mnożnik/skala
+`movementPoints` globalnie dla wszystkich jednostek, analogicznie do "Koszty jednostek" czy
+"Wzrost ludności" — osobny suwak w tym samym panelu). Nie wiadomo, czy to ustawienie:
+(a) było kiedyś planowane/omówione a nigdy nie trafiło do UI, (b) istnieje gdzieś indziej w
+kodzie ale nie w tym panelu, (c) jest zupełnie nowym pomysłem właściciela.
+
+**STATUS: dispatch rekonesansu (Explore, read-only) — grep całego repo (kod + `dyspozycje/**`)
+pod kątem "ruch jednostek"/"punkty ruchu"/"movementPoints"/ustawienie skalujące, żeby ustalić
+czy to nowa prośba czy zapomniana funkcja. Po rekonesansie: jeśli nowa — ABC do właściciela
+(zakres/skala nie jest jeszcze sprecyzowany, w przeciwieństwie do barbarzyńców); jeśli
+zapomniana — dispatch bezpośredni implementacji.**
+
+## R-AUTO-PRACA-BUDZET-PROCENT (2026-08-14, zgłoszenie Macieja) · STATUS: **OTWARTE — rekonesans w toku**
+
+Jego słowa (dosłownie, dwie wiadomości pod rząd): „jeszcze jedna ważna kwestia, bo zapomniałem.
+Na późniejszym etapie gry trzy usprawnienia dla pracy w terenie automatyczne to jest za mało.
+I trzeba po prostu wprowadzić, jaki procent całego budżetu ma być wykorzystany na automatyczną
+pracę, a ile ma być zostawione dla gracza, na jego jakieś działania. No i tu po prostu powinien
+być suwak między od zera do 100%. 0% na pracę dla autonomiczne albo i 100% budżetu. ale nie
+liczymy tego od przyrostu tylko od koniec tury ile nam zostało w pracy" + „to ma zastąpić ten
+obecny system 1, 2, 3, naturę".
+
+Interpretacja robocza (do potwierdzenia rekonesansem, nie zgadywać dalej niż to):
+- Istnieje dziś system automatycznego zarządzania pracą/przydziałem obywateli do heksów z
+  poziomami "1, 2, 3, natura" (prawdopodobnie tryby auto-manage obywateli w mieście —
+  `gra/src/game/auto-manage*.ts` / `cityPanel.ts`, do zlokalizowania rekonesansem).
+- Ma zostać ZASTĄPIONY suwakiem 0-100%: 0% = cała praca ręczna gracza, 100% = cała automatyczna,
+  wartości pośrednie = ten % budżetu pracy (prawdopodobnie surowca "Praca"/`praca` na turę)
+  przekazany autonomicznemu zarządcy, reszta zostaje do ręcznego dysponowania przez gracza.
+- Kluczowe zastrzeżenie właściciela: **kryterium liczone "od końca tury ile nam zostało w
+  pracy"** — czyli od STANU KOŃCOWEGO/resztki budżetu Pracy po turze, NIE od przyrostu
+  (`przyrost`/delta) — analogiczna dyscyplina do niedawnej korekty `R-AUTO-WYZYWIENIE-KRYTERIUM-Q1`
+  (przyrost zapasów żywności, nie bufor) — warto zwrócić uwagę Operatorowi na spójność wzorca,
+  ale to NIE jest to samo ustawienie (żywność vs Praca), nie mylić.
+
+**Zakres nieprecyzyjny — WYMAGA ABC przed implementacją** (np.: czy suwak jest globalny dla
+całego imperium czy per miasto? co dokładnie oznacza "zostawione dla gracza" — czy to blokuje
+gracza przed ręcznym przydziałem powyżej jego %, czy tylko ustawia priorytet kolejki
+auto-managera?). Rekonesans najpierw (znaleźć dzisiejszy system "1,2,3,natura" i zrozumieć jego
+mechanikę), potem ABC z pełną specyfikacją opcji na bazie tego, co rekonesans znajdzie.
