@@ -17789,3 +17789,31 @@ już-dodanych `id` technologii (z `giveItems`/`receiveItems` odpowiedniej strony
 (`editTechId`), która ma zostać widoczna i zaznaczona (żeby edycja własnej pozycji nie znikała jej
 z listy). Dispatch Operatora razem z `R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA` (ten sam plik, ten sam
 obszar, jeden worktree).
+
+---
+
+## R-WYCOFANIE-LIMIT-JEDNORAZOWY (2026-08-13, propozycja Macieja, ekran przed-bitewny)
+
+Maciej (po dopytaniu, doprecyzowanie): chodzi o NOWĄ regułę, której dziś nie ma w kodzie — jednostka,
+która raz się już wycofała (np. w poprzednim starciu/turze z tym samym wrogiem), przy KOLEJNYM ataku
+na nią nie powinna móc wycofać się ponownie — musi rozstrzygnąć bitwę. Gdy ta reguła zablokuje
+Wycofaj, przycisk ma być WYRAŹNIE wyszarzony z jasną informacją dlaczego (nie cichy/niejasny stan).
+
+**Sprawdzone (orkiestrator, bez zmian):** dziś w kodzie (`gra/src/ui/preBattle.ts`,
+`gra/src/main.ts` wywołania `canRetreat`/`defenderCanRetreat`) JEDYNY istniejący powód
+zablokowania Wycofaj to pełne ufortyfikowanie obrońców w garnizonie miasta
+(`defenderLockedByGarnizon`, `allDefendersFortifiedInGarnizon`) — ten przypadek już ma wyraźny
+komunikat ("Wycofanie niedostępne — to wróg wybrał bitwę"). Mechanizmu „już raz się wycofał" NIE
+MA — to nowa funkcja do zaprojektowania od zera, nie naprawa istniejącego bugu.
+
+**Otwarte pytania projektowe przed implementacją:**
+1. Zakres śledzenia — flaga per jednostka, per turę (reset jak `ruchLeft`, wzorem istniejącego
+   mechanizmu resetu na koniec przetwarzania tury gracza) czy per starcie/łańcuch pościgu (trudniej
+   zdefiniować „koniec łańcucha")?
+2. Co liczy się jako „wycofanie" do tej reguły — tylko kliknięcie Wycofaj na ekranie przed-bitewnym,
+   czy też ewentualne wycofanie W TRAKCIE samej bitwy (inny ekran, jeszcze niezbadany)?
+3. Czy dotyczy WYŁĄCZNIE jednostek gracza, czy też AI/barbarzyńców (parytet, wzorem innych napraw
+   tej sesji)?
+
+**ABC do zadania Maciejowi** (zakres A: reset co turę / B: reset po łańcuchu pościgu / C: bez
+resetu, raz na całą grę) — zanim dispatch implementacji.
