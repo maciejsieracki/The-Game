@@ -19847,3 +19847,37 @@ commity. N-3 (ten wpis) domyka brak nagłówków rundy 3/werdyktu R2 w rejestrze
 2. [mocno rekomendowane] Test round-trip save→load dla `fortNodes` (domyka MUT-6).
 3. [rekomendowane] Asercja behawioralna dla F2 obok strażnika tekstowego D1 (domyka MUT-5).
 4. [kosmetyka] N-1 (etykieta D3 F3→F7), N-2 (numery linii w komentarzu).
+
+## P-PLAKIETKA-MIASTA-ZOOM-BRAK-ZMIANY (2026-08-14, zgłoszenie Macieja ze zrzutem "ATENY" po przybliżeniu) · STATUS: **PRAWDOPODOBNIE TA SAMA PRZYCZYNA CO R-RUCH-JEDNOSTEK — stale local build**
+
+Maciej: „nadal po przybliżeniu nie widzę żadnej zmiany w jakości panera na mieście" (zrzut:
+banderola "ATENY" po przybliżeniu, rozmyta).
+
+**Weryfikacja:** funkcja LOD plakietki miasta przy przybliżeniu (`city-badge-zoom-lod-test`,
+67/0) to część tej samej dostawy co "Zasięg ruchu" (patrz `P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK`
+wyżej) — weszła do ROBOCZA w **FALA 275** (2026-08-13 17:38 UTC), potwierdzone dalej żywe w
+FALA 277 (obecna). Kod: `gra/src/render/cities.ts`, `gra/src/render/zoomLod.ts`,
+`gra/src/render/cityMapStatChip.ts`.
+
+**Robocza hipoteza (silna, ale NIE zweryfikowana wprost na zrzucie Macieja — wymagałoby
+porównania z konkretnym oczekiwanym wyglądem "po" LOD):** to najprawdopodobniej TEN SAM problem
+co zgłoszenie "Zasięg ruchu" — lokalny dysk właściciela testuje bundle sprzed FALI 275, więc
+zmiana faktycznie nie mogła być widoczna, bo jej tam nie ma. Nie rejestruję jako osobny bug do
+naprawy w kodzie, dopóki właściciel nie zsynchronizuje dysku i nie potwierdzi że problem
+utrzymuje się na aktualnym buildzie (FALA 277+).
+
+**STATUS: czeka na potwierdzenie właściciela po zsynchronizowaniu dysku (patrz zalecenie w
+`P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK` — sync/„push" sesji lokalnej). Nie dispatchowane do naprawy
+kodu — brak dowodu na realny bug, tylko na stary build.**
+
+## Design brief: panele Miasta/Armie (lewa lista mapy) dla Designera (2026-08-14) — DOSTARCZONE
+
+Zlecenie Macieja: „Przygotuj też wytyczne dla Designera, żeby zmienił, tak jak poprzednio zmienił
+panele: surowcy, prace itd. To zmienię surowy panel po lewej stronie: miasta i Armie są
+przestarzałe i nie były nigdy zmienione." Dostarczone: `docs/ux/DESIGN-ZLECENIE-MIASTA-ARMIE-PANEL-LEWY-2026-08-14.md`
+— pełny brief (kod: `cityListHud.ts`/`armyListHud.ts`, paleta trzecia niespójna wersja
+`#e0b24a` vs 3b `#d9a441`, zawartość obu paneli, DoD). Menu pauzy (`gamePauseMenu.ts`) sprawdzone
+przy okazji — już dopracowane, POZA zakresem, nie wymaga designu.
+
+**STATUS: dokument gotowy, do przekazania Designerowi przez właściciela (poza pętlą AutoBot —
+to deliverable dla człowieka, nie kod).**
