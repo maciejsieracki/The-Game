@@ -6809,3 +6809,23 @@ z rytmem "jedna fala do tyłu").
 **SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `58c0afe2`; `main` zsynchronizowany
 do `16a88c7b`).
 CZEKAM-NA: sesja lokalna (pull + playtest FALI 276) · zgoda na kolejne scalenie po powstaniu FALI 277.
+
+## [23:48 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — deploy FALA 277
+**FALA 277** (md5 `432cfa7e`, build z HEAD `8b20c34d`) zdeployowana do ROBOCZA: fort/strażnica
+rozszerza zasięg zakładania miast (2 rundy), konfigurator wyboru cywilizacji przeciwnika w kreatorze
+(3 rundy, wpięty też w ścieżkę klastrową), Petra epokaWejscia 2→3, MP zbierają chatki ze skarbami,
+dyplomacja (filtr technologii między osobnymi wierszami stołu + naprawa formuły PN surowców), panel
+miasta bez podwójnego odjęcia zużycia żywności. `VERIFY OK`, 15 bramek zielonych (`tsc` 0,
+`logic-test` 213/213), 8 pre-istniejących czerwonych **dokładnie** na punkcie odniesienia, zero wzrostu.
+
+⚠️ **Deploy był raz ZATRZYMANY:** gałąź była CZERWONA na `tsc` (2× TS2353) — `66be754f` (fort runda 2)
+zgarnął z **współdzielonego drzewa głównego** 3 hunki `main.ts` z równoległego tematu Auto Wyżywienia
+bez odpowiednika w `empire-food.ts`. Wzorzec `b9867b3` (`CLAUDE.md` §4a) + naruszenie C-025. Naprawione
+commitem `8b20c34d`, który przy okazji usunął **realną regresję ×5 w Szybkiej Umowie i generatorze ofert
+AI** (`diplomacy-pn-engine.ts:444` — AI proponowało umowy 5× poniżej fair). **Do rozliczenia osobno:
+w tej sesji nie respektowano `isolation: "worktree"` — to bezpośrednia przyczyna obu problemów.**
+
+**SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `432cfa7e`). W playteście priorytet:
+ceny w Szybkiej Umowie/ofertach AI (nie 5× za tanie). Znane, NIE zgłaszać: oscylacja jednostek MP przy
+chatce (temat FAIL, czeka na ABC właściciela, w grze od FALI 276).
+CZEKAM-NA: sesja lokalna (pull + playtest FALI 277) · polecenie właściciela ws. scalenia FALI 276 do `main`.
