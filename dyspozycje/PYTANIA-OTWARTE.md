@@ -18318,3 +18318,71 @@ w tym samym pliku, którą już wcześniej świadomie złagodzono do `console.wa
 progi `STANDARD_GEN_MS_LIMIT`/`DUZY_GEN_MS_LIMIT` albo złagodzić je do miękkiego ostrzeżenia,
 wzorem już zastosowanego wzorca dla `coastRatio`. Nie blokuje bieżącej gry ani żadnego z ośmiu
 głównych tematów dzisiejszej sesji — czeka w tle.
+
+## R-SUROWIEC-CYNA-DO-BRAZU — Evaluator runda 1: werdykt końcowy po dociągnięciu długich bramek (2026-08-13)
+
+Evaluator (Opus 5, `a23e8025013eae958`) domknął ocenę commitu `2ebd0d7f` (runda 1): **FAIL wąskiego
+zakresu podtrzymany** — logika poprawna i niezależnie zweryfikowana (symulacja własna, `ruda_cyny`
+potwierdzone jako jedyny poprawny klucz), ale dostarczenie niekompletne w chwili oceny. Długie bramki
+(`map-gen-regression-test.cjs`, `relief-grid-coverage-test.cjs`) nie zdążyły się dokończyć w budżecie
+czasu — CPU dzielone z równoległą sesją (worktree `agent-a12ccb3aa41cbfc29`), zatrzymane świadomie
+przez Evaluatora żeby zwolnić zasoby. Zastępczy dowód determinizmu (rozkład terenu BASE↔HEAD
+identyczny + A=B bajt w bajt) mocniejszy niż sam test — **C-011 pozostaje formalnie otwarty**,
+niepilne, do dokończenia gdy nie biegnie równolegle druga sesja.
+
+**Runda 2 (`716653e1`) — punktowa weryfikacja bramek przez tego samego Evaluatora (NIE werdykt —
+konflikt interesu: runda 2 powstała w odpowiedzi na jego własny raport, samoocena zakazana §0b):**
+`converter-era-scaling-test` 87/0 (przywrócone), `mennica-magazyn-test` 38 pass/3 fail (dokładnie
+pre-istniejący baseline), `cyna-surowiec-test` 78/0 (+5 asercji), `tsc` 0 błędów, 9 pozostałych bramek
+exit 0. Diff rundy 2 minimalny i celny. **Runda 2 wymaga własnego, niezależnego Evaluatora** —
+dispatchowany osobno.
+
+**Dwie noty rundy 2, nie zamknięte:**
+1. Ikona rudy cyny to placeholder dzielony teraz z Rudą żelaza (`res-iron-ore`) zamiast z Rudą miedzi
+   — w grze nadal nierozróżnialne wizualnie od żelaza. Autor jawnie oznaczył jako placeholder.
+2. **Pytanie ABC do właściciela (niepilne, do backlogu — kolizja specyfikacji, nie bug):** parametr
+   rzadkości cyny = miedź/5 jest spełniony matematycznie, ale gwarancja fair-play (100% pokrycia
+   siatki każdej cywilizacji) sprawia, że na mapie cyna faktycznie występuje ~0,77× częstości miedzi
+   (nie 0,20×) i 3× częściej niż złoto. To realna kolizja dwóch punktów oryginalnej specyfikacji
+   (pkt 1 "rzadkość = miedź/5" vs pkt 2 "gwarantowana każdej cywilizacji") — właściciel powinien
+   świadomie wybrać, który parametr nadrzędny, nie odziedziczyć wypadkowej. Nie blokuje niczego dziś.
+
+Inne noty niskiej wagi z raportu głównego (nieblokujące, do backlogu): dryf IEEE754 przy współczynniku
+0.1 (≤1 cykl/turę), asymetria `zlozeMinEra` (cyna polega wyłącznie na fallbacku JSON), martwy eksport
+`hasCynaAccess`, pre-istniejący martwy fallback etykiety "Żelazo" w `zelazo-access.ts` (potwierdzony
+niezależnie, Operator słusznie go nie powielił, poza zakresem tego tematu).
+
+Drzewo główne nietknięte przez Evaluatora (żadnych zmian, żadnego builda, worktree'e kontrolne
+usunięte).
+
+## P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT — Evaluator runda 2: WERDYKT PASS-WITH-NOTES, temat ZAMKNIĘTY (2026-08-13)
+
+Evaluator (Opus 5, `ae5d1f5ef8d1949fa`) potwierdził commit `d0262d04` (runda 2): obie noty rundy 1
+(A — kolejność batch w `main.ts`, B — `resolveSiegeSurrender`) naprawione poprawnie, potwierdzone
+niezależnie odczytem kodu + własnymi mutacjami (`MUT-A`, `MUT-B`, `MUT-B2` — wszystkie łapane przez
+test) + uruchomieniem bramek (`tsc` 0 błędów, `logic-test` 213/213, 12 bramek tematycznych zielonych,
+`population-growth-v85-test` 48/2 — 2 porażki potwierdzone identyczne z commitem-rodzicem, pre-istniejące,
+już udokumentowany dług `R-STAWKI`×2). **Temat zamknięty po 2 rundach.**
+
+**Nowy, osobny problem tej samej rodziny — znaleziony, NIE naprawiony w tej rundzie (poza zakresem):**
+`annexCityStateToOwner` (`gra/src/main.ts:21632-21641`) ma dokładnie ten sam antywzorzec co Nota A
+rundy 1 — `city.ownerId = annexerId` i `applyLiveSafeRationForCity(city.id)` w TEJ SAMEJ pętli po
+`csCities`. Przy aneksji miasta-państwa z >1 miastem przez gracza: w chwili przeliczania miasta #1,
+miasta #2..N mają jeszcze stary `ownerId`, więc wypadają z filtra `playerCities` w
+`getMaxSafePoziomRacjiForPlayerCity` — koszt ich Racji nie wchodzi do `previewCityEconomy`, maxSafe
+dla miasta #1 jest zawyżony, przeliczenie tylko obniża (nigdy nie podnosi) → zbyt wysoki poziom
+zostaje zatwierdzony. Ta sama rodzina błędu co pierwotne zgłoszenie ("nawracający deficyt").
+
+**Osiągalność dziś: niska, nie zerowa.** Ścieżka gracza (`wchloniecie`) ograniczona silnikowo do
+miast-państw (`diplomacy-proposals.ts:1302`), a miasto-państwo (MP) startuje z jednym miastem — ale
+nic strukturalnie nie gwarantuje `csCities.length === 1` (MP jest w `aiOwnerList`, może zdobyć miasto;
+ta sama funkcja jest już używana do wchłaniania major AI, `main.ts:25584`, gdzie wielomiastowość jest
+normą). Naprawa = ten sam wzorzec: najpierw pętla mutacji właściciela, potem osobna pętla przeliczeń.
+
+Dodatkowa mniejsza obserwacja tej samej rodziny (pre-istniejąca, nie regresja): gdy gracz TRACI
+miasto (kapitulacja/podbój na rzecz AI), pozostałe miasta gracza nie dostają żywego przeliczenia —
+łapie to dopiero klamra końca tury.
+
+**STATUS: nowe zgłoszenie `P-ANEKSJA-MIASTO-PANSTWO-RACJA-STARY-WLASCICIEL` — OTWARTE, niepilne,
+do backlogu, brak dowodu dzisiejszej regresji, nie blokuje niczego.**
+
