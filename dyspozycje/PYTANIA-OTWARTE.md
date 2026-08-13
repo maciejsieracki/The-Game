@@ -17218,3 +17218,14 @@ egzekwowany/wyświetlany krok ilości w koszyku handlu (`gra/src/ui/diplomacyTra
 pokrewne pliki `diplomacy-*.ts`) — czy jest tam już jakiś stepper/increment UI do dostosowania na
 5, i czy silnik (nie tylko UI) ma gdzieś twardy wymóg wielokrotności (np. walidacja przy
 zatwierdzaniu koszyka, nie tylko kontrolka suwaka). Dispatch w toku.
+
+---
+
+## Dispatch 3 Operatorów równoległych (2026-08-13) — domykanie zapomnianych tematów po audycie kompletności
+
+Trzy niezależne, izolowane worktree, dispatch jednocześnie:
+1. `fix-ai-wyrab-drewno` (`a1098f70aacf325a9`) — P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A.
+2. `fix-dyplo-cennik-krok5` (`ab07a53affefa289f`) — R-DYPLO-CENNIK-SKALA-5X-Q1 (krok wymiany 1→5 szt).
+3. `fix-sanitize-postep-transfer` (`aa0f7c600b9222993`) — R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1=B.
+
+Wszystkie trzy dotykają `main.ts` w różnych, nienachodzących na siebie sekcjach — merge sekwencyjny po odbiorze, z `git pull` między każdym, zgodnie ze standardową procedurą tej sesji.
