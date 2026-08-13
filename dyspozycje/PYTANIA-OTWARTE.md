@@ -18053,3 +18053,31 @@ surowca (nie dla istniejącego modelu Miedzi, ten zostaje bez zmian)?
 
 **Dispatch rozpoznania technicznego (bez kodowania) NASTĘPUJE** — żeby ustalić dokładne miejsca w
 kodzie przed implementacją (wzorem poprzednich tematów tej sesji), po czym dispatch Operatora.
+
+---
+
+## R-SUROWIEC-CYNA-DO-BRAZU — ECHO na 4 pytania otwarte z rozpoznania, decyzje kompletne (2026-08-13)
+
+Odpowiedzi Macieja (zrzut ekranu formularza, telefon — po incydencie z zawieszaniem się formularza
+AskUserQuestion na słabym łączu; Maciej poprosił o zaprzestanie używania formularza, odpowiedzi
+odtąd w tekście):
+
+1. **Technologia odblokowująca Kopalnię cyny: Brązownictwo** (reużycie istniejącej — rekomendowane).
+2. **Złoże Cyny: GWARANTOWANE każdej cywilizacji** (wchodzi do `FAIR_PLAY_DEPOSIT_IDS`, jak
+   miedź/żelazo/glina) — **NIE tak jak sugerowałem w tekście (rywalizacyjne jak złoto)**. Decyzja
+   Macieja jest ostateczna: mimo że złoże jest 5× rzadsze niż miedzi, KAŻDA cywilizacja ma mieć
+   gwarantowany dostęp do co najmniej jednego w swoim terytorium (fair-play grid coverage) —
+   rzadkość dotyczy TYLKO liczby złóż na mapie, nie gwarancji dostępu per cywilizacja.
+3. **Ruda cyny: wymienialna dyplomatycznie** (jak miedź/żelazo dziś) — tak, rekomendowane.
+4. **Martwa receptura „huta"** (budynek nieistniejący w `buildings.json`) — orkiestrator przyjmuje
+   bezpieczny domyślny wybór: NIE dotykać, zostaje jak jest (poza zakresem tego zgłoszenia, drobny
+   porządek do osobnej decyzji jeśli kiedyś będzie potrzebny).
+
+**Wszystkie decyzje projektowe kompletne. Dispatch Operatora (Sonnet 5, worktree izolowany)
+NASTĘPUJE** — pełny zakres z rozpoznania: nowe złoże `cyna` (Wzgórza+Góry, rarity=miedź/5, do
+`FAIR_PLAY_DEPOSIT_IDS`), `resources.json`, `terrain-improvements.json` (Kopalnia cyny, tech
+Brązownictwo), `cyna-access.ts` (wzorem `zelazo-access.ts`), `TerritoryResourceKey`+switch w
+`terrain-improvements.ts`, `creditTerritory` w `turn-economy.ts`, 3 recepty Brązu w `converters.ts`
+(input `cyna: 0.1`, POMIJAJĄC martwą `huta`), `building-stock-cost.ts`, `resource-access.ts`,
+`ai.ts` (`UPSTREAM_FOR_PROCESSED_RESOURCE.braz`), `diplomacy-value-catalog.ts` (handel), `cityPanel.ts`,
+odblokowanie placeholder karty `ruda_cyny` w `main.ts:2805-2839`.
