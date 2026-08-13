@@ -27313,6 +27313,16 @@ async function boot(): Promise<void> {
         const { dist } = camCtrl.getFocusState();
         const { minDist, maxDist } = camCtrl.getDistLimits();
         setZoomLod(dist, minDist, maxDist);
+        // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — plakietka miasta ma stałą wysokość w świecie
+        // (worldH 0,52 j.św.), więc przy zbliżeniu kamery jej tekstura jest rozciągana i
+        // rozmywa się. `setBadgeZoomLod` to samo porównanie poziomu — `true` wraca WYŁĄCZNIE
+        // na progu odległości, więc pętla renderu płaci tu jedno wywołanie na klatkę, a
+        // przemalowanie plakietek (droższe: `getCityGrowth` per miasto gracza) leci dopiero
+        // przy realnej zmianie poziomu. Ten sam wzorzec, co `setZoomLod` linijkę wyżej.
+        // / EN: per-frame comparison, repaint only when the LOD level actually changes.
+        if (cityRenderer.setBadgeZoomLod(dist)) {
+          cityRenderer.syncStatChips(cities, _cityRenderOpts());
+        }
       }
 
       if (ghostChipHex && buildModeOpen && chipOverCanvas) {

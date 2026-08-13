@@ -44,11 +44,13 @@ import { clientRectToNdc } from '../input/picker';
 import {
   cityMapBadgeKey,
   defenseTierFromWallKind,
+  disposeCityMapBadgeTexturesForOtherLod,
   makeCityMapBadgeSprite,
   disposeCityStatChipTextures,
   wallKindFromBuilt,
   type CityMapBadgeInput,
 } from './cityMapStatChip';
+import { cityBadgeLodLevelForDist, type CityBadgeLodLevel } from './zoomLod';
 import {
   buildCityMapOutline,
   disposeCityMapOutline,
@@ -411,6 +413,22 @@ export class CityRenderer {
   private statSpriteKeys: Map<string, string> = new Map();
   private statTexCache: Map<string, THREE.CanvasTexture> = new Map();
 
+  /**
+   * BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — bieżący poziom LOD plakietek (0 = dzisiejsza
+   * rozdzielczość). Jeden wspólny dla wszystkich miast, bo wynika z odległości KAMERY,
+   * a nie z odległości poszczególnego miasta. / EN: one shared level — it follows the
+   * camera distance, not per-city distance.
+   */
+  private badgeLodLevel: CityBadgeLodLevel = 0;
+
+  /**
+   * Poziom LOD zmienił się i cache czeka na zwolnienie tekstur z poprzedniego poziomu.
+   * Sprzątanie idzie NA KOŃCU `syncStatChips()`, czyli dopiero gdy każdy żywy sprite
+   * dostał już teksturę nowego poziomu — wcześniej zwolniłoby teksturę pod materiałem.
+   * / EN: purge deferred to the end of syncStatChips, after every sprite is re-keyed.
+   */
+  private badgeLodPurgePending = false;
+
   /** Delikatna obwódka heksu na mapie świata (poza panelem okolicy). */
   private mapOutlines: Map<string, THREE.Group> = new Map();
   private mapOutlineKeys: Map<string, string> = new Map();
@@ -551,6 +569,37 @@ export class CityRenderer {
         options,
       );
     }
+    if (this.badgeLodPurgePending) {
+      this.badgeLodPurgePending = false;
+      disposeCityMapBadgeTexturesForOtherLod(this.statTexCache, this.badgeLodLevel);
+    }
+  }
+
+  /**
+   * BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — ustaw poziom LOD plakietek z odległości kamery.
+   * Wołane CO KLATKĘ z pętli renderu (main.ts), więc samo w sobie musi być darmowe:
+   * jedno porównanie i wyjście. `true` leci WYŁĄCZNIE przy realnej zmianie poziomu, więc
+   * kosztowne przemalowanie (wywołujący robi wtedy `syncStatChips`, a to pyta
+   * `getCityGrowth` per miasto gracza — 0,11–0,72 ms/miasto) płacimy tylko na progu.
+   * Ten sam wzorzec „zmienił się poziom → dopiero wtedy pracuj", co `setZoomLod`
+   * w render/scene.ts (`if (level === currentZoomLod) return;`).
+   * / EN: called every frame but returns true only when the level actually changes —
+   * same early-exit pattern as setZoomLod in scene.ts.
+   *
+   * @param dist odległość kamery w jednostkach świata (camCtrl.getFocusState().dist)
+   * @returns czy poziom się zmienił — jeśli tak, wywołujący ma odświeżyć plakietki
+   */
+  setBadgeZoomLod(dist: number): boolean {
+    const level = cityBadgeLodLevelForDist(dist);
+    if (level === this.badgeLodLevel) return false;
+    this.badgeLodLevel = level;
+    this.badgeLodPurgePending = true;
+    return true;
+  }
+
+  /** Bieżący poziom LOD plakietek (0/1/2) — bramki i diagnostyka. */
+  getBadgeZoomLod(): CityBadgeLodLevel {
+    return this.badgeLodLevel;
   }
 
   /**
@@ -788,6 +837,12 @@ export class CityRenderer {
       isCityState: options?.isCityStateOwner?.(city.ownerId) ?? false,
       era: options?.getEra?.(city.ownerId) ?? 1,
       isCapital,
+      // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM: poziom LOD wchodzi do wejścia plakietki, więc
+      // dalej niesie go SAMA istniejąca maszyneria — `cityMapBadgeKey` zmienia klucz,
+      // `_syncStatChip` widzi inny klucz niż zapamiętany i przebudowuje sprite z teksturą
+      // w nowej rozdzielczości. Zero nowej ścieżki unieważniania.
+      // / EN: the LOD rides the existing key-based invalidation — no new code path.
+      lodLevel: this.badgeLodLevel,
     };
   }
 
