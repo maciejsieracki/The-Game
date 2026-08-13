@@ -32,7 +32,7 @@ export {
   diplomacyDobraWolaFromSurplus,
   diplomacyProgDarRelacja,
   diplomacyPnSurowiecIlosc,
-  diplomacyHandelSurowiecCenaJednostkowa,
+  diplomacyHandelSurowiecCenaZaBlok,
   diplomacyHandelSurowceCatalog,
   diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowiecKrok,
@@ -116,21 +116,21 @@ eq(gift.deltaZaufanie, 2, 'dar z limitem tury +2');
 
 // Maciej 2026-07-29: PN/szt. surowców magazynowych (handel_surowce)
 eq(D.diplomacyHandelSurowcePakietWielkosc(), 10, 'pakiet_wielkosc = 10 szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('drewno'), 1, 'drewno 1 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('glina'), 2, 'glina 2 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('kamien'), 3, 'kamien 3 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda'), 5, 'ruda miedzi 5 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda_zelaza'), 10, 'ruda_zelaza 10 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda_cyny'), 10, 'ruda_cyny 10 PN/szt. (R-CYNA-BRAZ, Maciej 2026-08-13)');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('cegla'), 5, 'cegla 5 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('sol'), 2, 'sol 2 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('kon'), 5, 'kon 5 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('ceramika'), 5, 'ceramika 5 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('braz'), 15, 'braz 15 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('zelazo'), 20, 'zelazo 20 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('stal'), 25, 'stal 25 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('zloto'), 50, 'zloto-surowiec 50 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('wegiel'), 20, 'wegiel 20 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('drewno'), 1, 'drewno 1 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('glina'), 2, 'glina 2 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('kamien'), 3, 'kamien 3 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('ruda'), 5, 'ruda miedzi 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('ruda_zelaza'), 10, 'ruda_zelaza 10 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('ruda_cyny'), 10, 'ruda_cyny 10 PN/szt. (R-CYNA-BRAZ, Maciej 2026-08-13)');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('cegla'), 5, 'cegla 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('sol'), 2, 'sol 2 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('kon'), 5, 'kon 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('ceramika'), 5, 'ceramika 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('braz'), 15, 'braz 15 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('zelazo'), 20, 'zelazo 20 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('stal'), 25, 'stal 25 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('zloto'), 50, 'zloto-surowiec 50 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('wegiel'), 20, 'wegiel 20 PN/szt.');
 // R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk handlu podaje sztuki wprost — bez
 // pakietów, bez ×10. PN pozycji = bloki × cena_PN/blok, nic więcej.
 // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): drewno/ruda_zelaza/stal (i pozostałe surowce
@@ -172,7 +172,7 @@ eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 3, 137), 0, 'normalize: żądanie
 eq(D.diplomacyNormalizeSurowiecIlosc('wegiel', 137, 137), 137, 'normalize: wegiel krok 1 -> max przechodzi bez zmian');
 const handelCat = D.diplomacyHandelSurowceCatalog();
 // R-CYNA-BRAZ (Maciej 2026-08-13): 14 -> 15, doszła ruda_cyny (wymienialna dyplomatycznie
-// jak miedź/żelazo, patrz asercja diplomacyHandelSurowiecCenaJednostkowa('ruda_cyny') wyżej).
+// jak miedź/żelazo, patrz asercja diplomacyHandelSurowiecCenaZaBlok('ruda_cyny') wyżej).
 ok(Object.keys(handelCat).length === 15, 'katalog handlu: 15 surowców ilościowych (było 14, +ruda_cyny)');
 
 // ---------------------------------------------------------------------------
