@@ -138,14 +138,16 @@ function main() {
 
   for (const c of hudCases) {
     const section = empireSectionFromHudAct(c.act);
-    // R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13): Skarbiec dostał WŁASNY blok top-level
-    // ('skarbiec', nie 'ekonomia') — zmiana zamierzona, patrz empirePanelSectionMap.ts. Reszta
-    // chipów w tej pętli (Praca/Nauka/Miasta/Ludność/Rekruci/Religia/pełny przegląd) zostaje na
-    // dawnym torze 'ekonomia' do kolejnych faz, więc oczekiwanie tu jest wciąż nienaruszone.
-    // EN: Treasury got its OWN top-level block ('skarbiec', not 'ekonomia') — intended change,
-    // see empirePanelSectionMap.ts. The rest of the chips in this loop stay on the old 'ekonomia'
-    // track for later phases, so the expectation there is still intact.
-    const expectedBlock = c.act === 'skarbiec' ? 'skarbiec' : 'ekonomia';
+    // R-DESIGN-11-ZAKLADEK faza 1+2 (Maciej 2026-08-13/1x): Skarbiec (faza 1) oraz Praca/Nauka/
+    // Religia (faza 2) dostały WŁASNE bloki top-level (nie 'ekonomia') — zmiana zamierzona, patrz
+    // empirePanelSectionMap.ts. Miasta/Ludność/Rekruci/pełny przegląd zostają na dawnym torze
+    // 'ekonomia' do kolejnej fazy, więc oczekiwanie tu jest wciąż nienaruszone.
+    // EN: Treasury (phase 1) and Labor/Science/Religion (phase 2) got their OWN top-level blocks
+    // (not 'ekonomia') — intended change, see empirePanelSectionMap.ts. Cities/Population/
+    // Recruits/full overview stay on the old 'ekonomia' track for the next phase, so the
+    // expectation there is still intact.
+    const OWN_BLOCK_BY_ACT = { skarbiec: 'skarbiec', praca: 'praca', nauka: 'nauka', religia: 'religia' };
+    const expectedBlock = OWN_BLOCK_BY_ACT[c.act] ?? 'ekonomia';
     assert(`chip "${c.act}" -> blok ${expectedBlock} (R-PANEL-SPLIT nienaruszone / R-DESIGN-11-ZAKLADEK faza 1)`,
       empirePanelBlockForSection(section) === expectedBlock);
     const onlyEconId = onlyEconIdFromAct(c.act);

@@ -493,6 +493,25 @@ function ensureStyles(): void {
 .civ-emp-skarbiec-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
 .civ-emp-skarbiec-city-tbl .civ-emp-mini-r>div:nth-child(2),
 .civ-emp-skarbiec-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
+
+/* — R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Praca/Nauka/Religia (§4 handoffu
+   designera: .civ-emp-split2 = "pasek podziału na dwa strumienie", Praca budynki/pula, Religia
+   własna/obca) — */
+.civ-emp-split2{display:flex;height:12px;border-radius:999px;overflow:hidden;background:#1f2733;
+  margin-top:12px;}
+.civ-emp-split2>span{display:block;height:100%;}
+.civ-emp-relig-medallion{flex:none;width:44px;height:44px;border-radius:9px;background:#1d2634;
+  border:1px solid #d9a441;display:flex;align-items:center;justify-content:center;}
+.civ-emp-relig-medallion svg{width:24px;height:24px;display:block;}
+.civ-emp-relig-name{display:block;font-size:18px;font-weight:800;color:#d9a441;line-height:1.15;}
+.civ-emp-relig-sub{display:block;font-size:11px;color:#7d8798;margin-top:2px;}
+.civ-emp-relig-fx-hdr{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;
+  font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a;}
+.civ-emp-relig-fx{display:flex;flex-direction:column;gap:3px;padding:9px 10px;border-radius:7px;
+  background:#1c2431;border:1px solid #2b3543;}
+.civ-emp-relig-fx-row{display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8;}
+.civ-emp-relig-fx-row .v{color:#78c95a;font-weight:600;}
+.civ-emp-relig-fx-row .v.neutral{color:#cfd5de;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -832,6 +851,300 @@ function cityEconMiniNauka(rows: EmpireDetailSnap['cityEcon']): string {
   let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'NAUKA'], grid)}`;
   for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.nauka)], grid);
   h += '</div><div class="civ-emp-foot">Nauka z miast trafia do banku badań. Hub badań — przycisk Nauka na lewym pasku.</div>';
+  return h;
+}
+
+/** Tor dwukolorowy statyczny (bez interakcji) — hero-pasek podziału na dwa strumienie
+ *  (Praca: Budynki/Pula, Religia: własna/obca religia). Odpowiednik wizualny `.civ-emp-split2`
+ *  z handoffu designera §4 — DWA niezależne odcinki gradientu, nie „fill do wartości" jak
+ *  `sliderFillStyle` (ten używany na suwakach interaktywnych, gdzie reszta toru = tło). */
+function split2BarHtml(
+  pctA: number, colorFromA: string, colorToA: string,
+  pctB: number, colorFromB: string, colorToB: string,
+): string {
+  const a = Math.max(0, Math.min(100, Math.round(pctA)));
+  const b = Math.max(0, Math.min(100, Math.round(pctB)));
+  return `<div class="civ-emp-split2"><span style="width:${a}%;background:linear-gradient(90deg,${colorFromA},${colorToA})"></span>`
+    + `<span style="width:${b}%;background:linear-gradient(90deg,${colorFromB},${colorToB})"></span></div>`;
+}
+
+/** Tor suwaka `.civ-emp-slider` z DWOMA odcinkami gradientu po obu stronach wartości `pctA` (%) —
+ *  odpowiednik `sliderFillStyle()` dla suwaka reprezentującego DWA strumienie na raz (Budynki
+ *  0..pctA w złocie, Pula imperium pctA..100 w błękicie), nie „wartość + puste tło" jak przy
+ *  pojedynczym zasobie (suwak podatku Skarbca). */
+function laborSliderFillStyle(pctBudynki: number): string {
+  const p = Math.max(0, Math.min(100, pctBudynki));
+  return `linear-gradient(90deg,#6a4010 0%,#d9a441 ${p}%,#3a4657 ${p}%,#8ec5ff 100%)`;
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Klatka 2: Praca dostaje własny blok
+ * top-level, wzorem Skarbca (faza 1). Hero = suma Pracy/turę imperium (Budynki+Pula tej tury,
+ * sumowane z `cityEcon`, NIE `economy.pracaRate` — ten opisuje przyrost NETTO puli po utrzymaniu,
+ * inna liczba, patrz box PULA IMPERIUM niżej gdzie `economy.pracaRate` jest pokazywany osobno,
+ * tak samo jak Skarbiec pokazuje „netto" osobno od sum tabeli per-miasto).
+ */
+function renderPracaSection(
+  rows: EmpireDetailSnap['cityEcon'],
+  economy: EmpireDetailSnap['economy'],
+): string {
+  let h = '<div class="civ-emp-sect" data-section="praca">'
+    + '<div class="civ-emp-eyebrow">PRACA IMPERIUM</div>';
+
+  if (rows.length === 0) {
+    h += '<div class="civ-emp-hero pos">0 Pracy / turę</div>'
+      + '<div class="civ-emp-empty">Brak miast — produkcja Pracy pojawi się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  let sumBudynki = 0;
+  let sumPula = 0;
+  for (const c of rows) { sumBudynki += c.pracaBudynki; sumPula += c.pracaPula; }
+  const total = sumBudynki + sumPula;
+  const pctBudynki = total > 0 ? Math.round((sumBudynki / total) * 100) : 0;
+  const pctPula = 100 - pctBudynki;
+  const upkeep = Math.round(economy.pracaUpkeep ?? 0);
+  const stock = Math.round(economy.praca ?? 0);
+  const rate = Math.round(economy.pracaRate ?? 0);
+
+  h += `<div class="civ-emp-hero pos">${total} Pracy / turę</div>`
+    + `<div class="civ-emp-hero-sub"><b>${sumBudynki}</b> do budynków · <b>${sumPula}</b> do puli imperium · `
+    + `${rows.length} ${miastoCountWord(rows.length)}</div>`;
+
+  h += split2BarHtml(pctBudynki, '#6a4010', '#d9a441', pctPula, '#2c4a6b', '#8ec5ff');
+  h += '<div style="display:flex;gap:8px;margin-top:6px;font-size:11px">'
+    + `<span style="flex:1" class="civ-emp-slider-label gold">Budynki ${pctBudynki}% · ${sumBudynki}</span>`
+    + `<span class="civ-emp-slider-label blue">Pula imperium ${pctPula}% · ${sumPula}</span></div>`;
+
+  h += '<div class="civ-emp-two">'
+    + `<div class="civ-emp-box"><div class="k">PULA IMPERIUM</div><div class="v">${stock} ${deltaHtml(rate)}</div></div>`
+    + `<div class="civ-emp-box"><div class="k">UTRZYMANIE ULEPSZEŃ</div>`
+    + `<div class="v"${upkeep > 0 ? ' style="color:#e07a7a"' : ''}>−${upkeep} `
+    + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>'
+    + '</div>';
+
+  const grid = '1fr 1fr 1fr';
+  let tblSumPula = 0;
+  let tblSumBud = 0;
+  h += `<div class="civ-emp-mini" style="margin-top:10px">${miniHeader(['MIASTO', 'DO PULI', 'DO BUDYNKÓW'], grid)}`;
+  for (const c of rows) {
+    tblSumPula += c.pracaPula;
+    tblSumBud += c.pracaBudynki;
+    h += miniRow([esc(c.name), signedTxt(c.pracaPula), signedTxt(c.pracaBudynki)], grid);
+  }
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+    + `<div>SUMA</div><div style="text-align:right">${signedTxt(tblSumPula)}</div>`
+    + `<div style="text-align:right">${signedTxt(tblSumBud)}</div></div>`;
+  h += '</div>';
+
+  h += '<div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
+  if (upkeep > 0) {
+    h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${upkeep} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
+  }
+
+  h += renderPracaSplitSection();
+  h += '</div>';
+  return h;
+}
+
+/**
+ * Suwak „Domyślny podział pracy" w nowym stylu `.civ-emp-slider` (Klatka 2 §C zlecenia) — WŁASNA
+ * funkcja, analogicznie do `renderSkarbiecTaxSplitSection` dla Skarbca (faza 1). NIE modyfikuje
+ * `renderDefaultPodzialPracySection()` wyżej, która nadal obsługuje ten sam suwak wewnątrz
+ * filtrowanego wiersza „Praca" w bloku `ekonomia` (pełny przegląd, gdy activeSection===null) —
+ * ten sam mechanizm danych (`empireGlobalDefaultsUi`), inny markup: tor suwaka dwukolorowy
+ * (złoto=Budynki, błękit=Pula imperium) przez `laborSliderFillStyle()`.
+ */
+function renderPracaSplitSection(): string {
+  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
+  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
+  if (!getDef || !onChange) return '';
+  const split = getDef(0) ?? { procentBudynki: 70 };
+  const id = 'emp-praca-tab-split';
+  const pctB = split.procentBudynki;
+  const pctU = 100 - pctB;
+  let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ PRACY</div>`
+    + '<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten podział.</div>';
+  h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:7px">'
+    + '<div style="display:flex;align-items:baseline;gap:8px">'
+    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label gold">Budynki</b> / '
+    + '<b class="civ-emp-slider-label blue">Do puli imperium</b></span>'
+    + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-praca-pct>${pctB}% / ${pctU}%</span></div>`
+    + `<input type="range" class="civ-emp-slider gold" min="0" max="100" step="${HANDEL_PCT_STEP}" `
+    + `value="${pctB}" style="background:${laborSliderFillStyle(pctB)}" data-praca-key="procentBudynki" /></div>`;
+  h += `<div class="civ-emp-foot">Kroki ${HANDEL_PCT_STEP}% · w lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.</div></div>`;
+  queueMicrotask(() => wirePracaSplitInputs(onChange));
+  return h;
+}
+
+function wirePracaSplitInputs(
+  onChange: (ownerId: number, split: CityPodzialPracy) => void,
+): void {
+  const host = document.getElementById('emp-praca-tab-split');
+  if (!host) return;
+  const inp = host.querySelector<HTMLInputElement>('input[data-praca-key="procentBudynki"]');
+  if (!inp) return;
+  inp.addEventListener('input', () => {
+    const pctB = snapHandelPct(Number(inp.value));
+    onChange(0, { procentBudynki: pctB });
+    inp.style.background = laborSliderFillStyle(pctB);
+    const lbl = host.querySelector('[data-praca-pct]');
+    if (lbl) lbl.textContent = `${pctB}% / ${100 - pctB}%`;
+  });
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 2 — Klatka 3: Nauka dostaje własny blok top-level. BEZ przycisku
+ * „Otwórz hub badań" (rejestr decyzji designera §5/§8, punkt 5, Maciej 2026-08-14: ODŁOŻONE —
+ * „do potwierdzenia, czy hub ma istnieć jako cel linku... bez niego klatka zostaje bez zmian") —
+ * pominięty CAŁKOWICIE w tej fazie, nie renderowany nawet jako placeholder. BEZ własnego suwaka
+ * podatku — Nauka finansowana z TEGO SAMEGO % co Skarbiec/Zamożność (jeden suwak, mieszka w
+ * `renderSkarbiecTaxSplitSection`, patrz `econSliderVisibilityForOnlyEconId` i box „ŹRÓDŁO
+ * FINANSOWANIA" niżej, który tylko WSKAZUJE suwak, nie duplikuje go).
+ */
+function renderNaukaSection(
+  rows: EmpireDetailSnap['cityEcon'],
+  economy: EmpireDetailSnap['economy'],
+  research: EmpireDetailSnap['research'],
+): string {
+  const rate = Math.round(economy.naukaRate ?? 0);
+  const bank = Math.floor(economy.nauka ?? 0);
+  const getDef = handelSplitUi.getOwnerDefault;
+  const split = getDef ? normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
+  const procentNauka = split ? split.procentNauka : 20;
+  const heroCls = rate < 0 ? 'neg' : 'pos';
+
+  let h = '<div class="civ-emp-sect" data-section="nauka">'
+    + '<div class="civ-emp-eyebrow">NAUKA IMPERIUM</div>'
+    + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`;
+
+  if (rows.length === 0) {
+    h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN</div>`
+      + '<div class="civ-emp-empty">Brak miast — produkcja Nauki pojawi się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN · finansowana <b>${procentNauka}%</b> podatku · `
+    + `${rows.length} ${miastoCountWord(rows.length)}</div>`;
+
+  h += '<div class="civ-emp-two">';
+  // Znalezisko przy tej fazie (NIE naprawiane tu, poza zakresem UI): playtest „?playtest=mapa"
+  // (main.ts ok. linii 29253) ustawia `player.badana = 'Metalurgia Brązu'` — nazwa niedopasowana
+  // do żadnego wpisu `data/tech.json` (dziś „Brązownictwo") — `getResearchState()` wtedy nie
+  // znajduje `def`, więc `kosztCelu` wraca 0. Guard niżej pokazuje w takiej sytuacji CZYSTY
+  // stan „nieznany koszt" zamiast mylącego „N / 0 PN" z paskiem sztucznie pełnym na 100%
+  // (dzielenie przez 0 w silniku daje `postepFraction=1`).
+  // EN: found during this phase (NOT fixed here, out of UI scope): the "?playtest=mapa" preset
+  // sets a stale tech name not matching today's tech.json, so the engine can't resolve `def` and
+  // returns kosztCelu=0. The guard below shows a clean "unknown cost" state instead of a
+  // misleading "N / 0 PN" with an artificially full bar (division by zero → postepFraction=1).
+  if (research && research.kosztCelu > 0) {
+    const pctBar = Math.max(0, Math.min(100, Math.round(research.postepFraction * 100)));
+    const etaTxt = research.turnsLeft == null
+      ? '—'
+      : (research.turnsLeft > 0 ? `${research.turnsLeft} tur` : '<1 tury');
+    h += '<div class="civ-emp-box"><div class="k">BADANE TERAZ</div>'
+      + `<div class="v">${esc(research.targetLabel)}</div>`
+      + `<div class="civ-emp-bar" style="margin-top:7px;height:6px;margin-bottom:0">`
+      + `<span class="fill" style="width:${pctBar}%;background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span></div>`
+      + `<div style="font-size:10.5px;color:#7d8798;margin-top:5px">${Math.round(research.pula)} / `
+      + `${Math.round(research.kosztCelu)} PN · ETA ${etaTxt}</div></div>`;
+  } else if (research) {
+    h += '<div class="civ-emp-box"><div class="k">BADANE TERAZ</div>'
+      + `<div class="v">${esc(research.targetLabel)}</div>`
+      + '<div style="font-size:10.5px;color:#7d8798;margin-top:7px">Koszt celu nieznany (dane techu '
+      + 'niedopasowane) · bank <b style="color:#e8ebf0">' + Math.round(research.pula) + '</b> PN</div></div>';
+  } else {
+    h += '<div class="civ-emp-box"><div class="k">BADANE TERAZ</div>'
+      + '<div class="v" style="color:#7d8798;font-size:12px;font-weight:600">Brak wybranego celu</div></div>';
+  }
+  h += '<div class="civ-emp-box"><div class="k">ŹRÓDŁO FINANSOWANIA</div>'
+    + `<div class="v" style="color:#8ec5ff">${procentNauka}% podatku</div>`
+    + '<div style="font-size:10.5px;color:#7d8798;margin-top:7px;line-height:1.4">Suwak Skarb / Nauka / '
+    + 'Zamożność — sekcja Skarbiec</div></div>';
+  h += '</div>';
+
+  const grid = '1fr 1fr';
+  let tblSum = 0;
+  h += `<div class="civ-emp-mini" style="margin-top:10px">${miniHeader(['MIASTO', 'NAUKA'], grid)}`;
+  for (const c of rows) { tblSum += c.nauka; h += miniRow([esc(c.name), signedTxt(c.nauka)], grid); }
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+    + `<div>SUMA</div><div style="text-align:right">${signedTxt(tblSum)}</div></div>`;
+  h += '</div>';
+
+  h += '<div class="civ-emp-foot">Nauka z miast trafia do banku badań. Hub badań — przycisk Nauka na lewym pasku.</div>';
+  h += '</div>';
+  return h;
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 2 — Klatka 11 (wariant A ZATWIERDZONY 2026-08-14): Religia dostaje
+ * własny blok top-level, kompletnie od zera (dotąd tylko jeden filtrowany wiersz `econRows`,
+ * `detailFor` bez klucza 'religia', patrz stary komentarz w `render()`).
+ *
+ * ⚠️ ROZBIEŻNOŚĆ ŚWIADOMA WOBEC MAKIETY — sekcja „Efekty" w makiecie pokazuje 3 pozycje
+ * (Zadowolenie/Porządek/Świątynie); tu są WYŁĄCZNIE 2 (Zadowolenie, Świątynie). Sprawdzone w
+ * silniku (`gra/src/game/culture-religion.ts`, `ReligionParams`): istnieje
+ * `zadowolenieDominujaca`/`karaObca` (religia → Zadowolenie) i `swiatyniaBonusSzerzenia` (religia
+ * → tempo szerzenia), ale ŻADEN parametr nie wiąże religii z Porządkiem wprost — `order.ts` bierze
+ * Porządek z zupełnie innych wag (`porzadek_waga_szczescie`/`porzadek_waga_prawo`), nie z religii.
+ * Wpisanie liczby przy „Porządek" byłoby wymyśloną wartością bez pokrycia w silniku (zakaz z
+ * CLAUDE.md §3 „każda liczba ma nazwany parametr" — nazwany parametr musi istnieć NAPRAWDĘ, nie
+ * tylko nazewniczo). Zgłoszone do rejestru pytań (nie ABC — brak realnej alternatywy do wyboru,
+ * to obserwacja o luce, nie decyzja produktowa) zamiast cichego zgadywania liczby.
+ */
+function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
+  let h = '<div class="civ-emp-sect" data-section="religia">'
+    + '<div class="civ-emp-eyebrow">RELIGIA IMPERIUM</div>';
+
+  if (religion.cities.length === 0) {
+    h += `<div class="civ-emp-hero pos">${esc(religion.stateReligionLabel)}</div>`
+      + '<div class="civ-emp-empty">Brak miast — wyznawcy pojawią się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  h += '<div style="display:flex;align-items:center;gap:12px;margin-top:4px">'
+    + `<span class="civ-emp-relig-medallion">${brandIconSvg('cp-religion', 24)}</span>`
+    + '<span style="flex:1;min-width:0">'
+    + `<span class="civ-emp-relig-name">${esc(religion.stateReligionLabel)}</span>`
+    + '<span class="civ-emp-relig-sub">religia państwowa · własna</span></span></div>';
+
+  h += '<div class="civ-emp-two">'
+    + `<div class="civ-emp-box"><div class="k">WYZNAWCY</div><div class="v">${formatManpower(religion.totalAdherents)} `
+    + `<span style="font-size:11px;color:#78c95a;font-weight:600">${religion.ownSharePct}%</span></div></div>`
+    + `<div class="civ-emp-box"><div class="k">WIARA / TURĘ</div><div class="v">${signedTxt(religion.faithRatePerTurn)}</div></div>`
+    + '</div>';
+
+  h += split2BarHtml(religion.ownSharePct, '#6a4010', '#d9a441', religion.foreignSharePct, '#3a4657', '#9aa4b2');
+  h += '<div style="display:flex;gap:8px;margin-top:6px;font-size:11px">'
+    + `<span style="flex:1" class="civ-emp-slider-label gold">${esc(religion.stateReligionLabel)} ${religion.ownSharePct}%</span>`;
+  if (religion.foreignSharePct > 0) {
+    h += `<span class="civ-emp-slider-label neutral">${esc(religion.foreignLabel ?? 'Inne religie')} ${religion.foreignSharePct}%</span>`;
+  }
+  h += '</div>';
+
+  h += '<div class="civ-emp-relig-fx-hdr">Efekty</div>'
+    + '<div class="civ-emp-relig-fx">'
+    + '<div class="civ-emp-relig-fx-row"><span>Zadowolenie (miasta z dominującą religią państwa)</span>'
+    + `<span class="v">+${religion.zadowolenieBonus}</span></div>`
+    + `<div class="civ-emp-relig-fx-row"><span>Świątynie</span><span class="v neutral">${religion.templeCount}</span></div>`
+    + '</div>';
+
+  const grid = '1fr 1.1fr 0.8fr';
+  h += '<div class="civ-emp-relig-fx-hdr">Miasta</div>'
+    + `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'RELIGIA', 'WYZNAWCY'], grid)}`;
+  for (const c of religion.cities) {
+    const relCell = c.religionLabel === '—'
+      ? '<span style="color:#6f7889">—</span>'
+      : `<span style="color:${c.isOwn ? '#d9a441' : '#9aa4b2'}">${esc(c.religionLabel)}</span>`;
+    h += miniRow([esc(c.name), relCell, formatManpower(c.adherents)], grid);
+  }
+  h += '</div>';
+
+  h += '<div class="civ-emp-foot">Pełne rozbicie per miasto — panel miasta, zakładka Religia. '
+    + '„Efekty" — bonusy religii państwa aktywne w mieście, gdzie ona dominuje.</div>';
+  h += '</div>';
   return h;
 }
 
@@ -1721,9 +2034,16 @@ function render(): void {
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — SKARBIEC (R-DESIGN-11-ZAKLADEK faza 1, Maciej 2026-08-13) — hero „Netto ±N / turę",
-  // własny blok top-level (patrz empirePanelSectionMap.ts). Praca/Nauka/Religia/Miasta zostają
-  // na dawnym torze `ekonomia` (kolejne fazy) — ce/e potrzebne tu tak samo jak w detailFor niżej.
+  // własny blok top-level (patrz empirePanelSectionMap.ts). Miasta zostają na dawnym torze
+  // `ekonomia` (kolejna faza) — ce/e potrzebne tu tak samo jak w detailFor niżej.
   const skarbiec = renderSkarbiecSection(ce, e);
+
+  // — PRACA / NAUKA / RELIGIA (R-DESIGN-11-ZAKLADEK faza 2, Maciej 2026-08-1x) — własne bloki
+  // top-level, wzorem Skarbca (faza 1). `snap.research`/`snap.religion` liczone raz w
+  // `buildEmpireDetailSnap()` (main.ts) i przekazane przez snapshot — panel tylko renderuje.
+  const praca = renderPracaSection(ce, e);
+  const nauka = renderNaukaSection(ce, e, snap.research);
+  const religia = renderReligiaSection(snap.religion);
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
   const spichlerz = renderSpichlerzCentralnySection(snap.food)
@@ -1789,6 +2109,9 @@ function render(): void {
   if (block === 'all' || block === 'moc') body += moc;
   if (block === 'all' || block === 'ekonomia') body += zasoby;
   if (block === 'skarbiec') body += skarbiec;
+  if (block === 'praca') body += praca;
+  if (block === 'nauka') body += nauka;
+  if (block === 'religia') body += religia;
   if (block === 'spichlerz') body += spichlerz;
   if (block === 'armia') body += armia;
   if (block === 'all' || block === 'kultura') body += kult;

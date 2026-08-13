@@ -12950,6 +12950,82 @@ async function boot(): Promise<void> {
       let rekruciMax = 0;
       for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka, maxMult);
       const unitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
+
+      // R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Klatka 3: box „BADANE TERAZ" w Nauce.
+      // TA SAMA czysta funkcja `getResearchState()` już wołana dla sciencePicker/scienceHubHud
+      // (patrz `getResearchState: (_ownerId) => getResearchState(player, data.tech, 0, ...)` w
+      // innym miejscu tego pliku) — tu z prawdziwym `economy.naukaRate` zamiast zaślepki 0,
+      // żeby ETA w turach było policzone naprawdę, nie zawsze `null`. Zero nowej logiki badań.
+      const researchState = getResearchState(player, data.tech, economy.naukaRate ?? 0, _menuDifficulty);
+      const research: EmpireDetailSnap['research'] = researchState.targetId
+        ? {
+          targetLabel: researchState.targetId,
+          kosztCelu: researchState.kosztCelu,
+          pula: researchState.pula,
+          postepFraction: researchState.postepFraction,
+          turnsLeft: researchState.turnsLeft,
+        }
+        : null;
+
+      // R-DESIGN-11-ZAKLADEK faza 2 — Klatka 11 (wariant A): karta religii państwowej. Wzorzec
+      // POŻYCZONY z `buildReligionOverlayData()` (ten sam plik, poniżej) — wiodąca religia per
+      // miasto liczona przez `religionCompositionBreakdown()` (max po `count`, NIE
+      // `dominantReligion()`, który zwraca null poniżej progu dominacji — Klatka 11 chce zawsze
+      // pokazać wiodącą wiarę miasta, nawet mieszaną, tak jak robi to tabela MIASTO/RELIGIA w
+      // makiecie). Bez fabrykowania „Porządku" — patrz JSDoc EmpireReligionSnap.
+      const relStateReligion = ownerReligionForOwnerId(0);
+      const relAggForSnap = aggregateReligionEmpire(
+        pc.map(c => ({
+          state: resolvedCityReligion(c),
+          spreadDelta: lastReligionSpreadByCity.get(c.id) ?? 0,
+        })),
+        relStateReligion,
+      );
+      const relParamsForSnap = loadReligionParams(data.societyParams, _menuDifficulty);
+      const religionCityRows: EmpireDetailSnap['religion']['cities'] = pc.map(c => {
+        const rel = resolvedCityReligion(c);
+        const breakdown = religionCompositionBreakdown(rel);
+        let leading: { name: string; count: number; pct: number } | null = null;
+        for (const b of breakdown) {
+          if (!leading || b.count > leading.count) leading = b;
+        }
+        return {
+          name: c.name,
+          religionLabel: leading?.name ?? '—',
+          isOwn: leading != null && relStateReligion != null && leading.name === relStateReligion,
+          adherents: leading?.count ?? 0,
+        };
+      });
+      // Najliczniejsza obca religia (etykieta paska własna/obca) — suma wyznawców per religia we
+      // WSZYSTKICH miastach gracza (nie tylko wiodąca per miasto), religia PAŃSTWOWA wykluczona.
+      const foreignAdherentTotals = new Map<string, number>();
+      for (const c of pc) {
+        const rel = resolvedCityReligion(c);
+        for (const [name, count] of Object.entries(rel.counts)) {
+          if (name === relStateReligion) continue;
+          if (typeof count === 'number' && count > 0) {
+            foreignAdherentTotals.set(name, (foreignAdherentTotals.get(name) ?? 0) + count);
+          }
+        }
+      }
+      let foreignLabel: string | null = null;
+      let foreignMax = 0;
+      for (const [name, count] of foreignAdherentTotals) {
+        if (count > foreignMax) { foreignMax = count; foreignLabel = name; }
+      }
+      const templeCount = pc.filter(c => (cityBuilt.get(c.id) ?? []).includes('swiatynia')).length;
+      const religion: EmpireDetailSnap['religion'] = {
+        stateReligionLabel: relStateReligion ?? '—',
+        totalAdherents: relAggForSnap.stateAdherents,
+        ownSharePct: relAggForSnap.sharePct,
+        foreignSharePct: Math.max(0, 100 - relAggForSnap.sharePct),
+        foreignLabel,
+        faithRatePerTurn: relAggForSnap.spreadRateTotal,
+        zadowolenieBonus: relParamsForSnap.zadowolenieDominujaca,
+        templeCount,
+        cities: religionCityRows,
+      };
+
       return {
         global: {
           civName,
@@ -12992,6 +13068,8 @@ async function boot(): Promise<void> {
         resources: buildEmpireResourceRows(0),
         trade: buildEmpireTradeSnap(),
         food: buildEmpireFoodSnap(),
+        research,
+        religion,
       };
     }
 
