@@ -17392,3 +17392,31 @@ dla silnika). Commit `fab0e21e`, push OK.
 
 **Dispatch Evaluatora finalnego (Opus 5, krótki — weryfikacja tylko nie-jałowości strażnika)
 NASTĘPUJE teraz.**
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA — Evaluator finalny: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY OSTATECZNIE (2026-08-13)
+
+Nie-jałowość strażnika (test 12) potwierdzona DWIEMA własnymi mutacjami Evaluatora (nie
+powtórka Operatora): M1 (double-dip — Drewno ZOSTAJE, ale plon dopisany TEŻ do Pracy) łapane
+wyłącznie przez 12b; M2 (zły surowiec `'kamien'` zamiast `'drewno'`) łapane wyłącznie przez 12a
+— każda asercja robi niezależną, realną robotę. Regex sprawdzony na kosmetycznej mutacji
+(łamanie linii, zmiana 3 nazw zmiennych) — zero fałszywego alarmu. Obie usunięte tautologie
+potwierdzone matematycznie zawsze-prawdziwe niezależnie od `main.ts`. Bramki: `tsc` 0,
+`ai-improvements-test.cjs` 33/33, `logic-test` 213/213. Zakres zmian potwierdzony ograniczony
+wyłącznie do pliku testowego (`git show fab0e21e --stat`).
+
+**Notatki niepilne (do backlogu, NIE blokują):**
+- N1: strażnik 12b skanuje CAŁY tekst bloku łącznie z komentarzami — komentarz dwujęzyczny
+  (wymagany zasadą 9 CLAUDE.md) ostrzegający o starym bugu wewnątrz tego bloku dałby fałszywy
+  alarm. Fail-safe (głośny fałszywy alarm, nie cicha regresja), naprawa 10-sekundowa gdyby się
+  zdarzyła.
+- N2: strażnik nie łapie semantycznie równoważnego przepisania (bug ekonomiczny zapisany przez
+  zmienną pośrednią zamiast dosłownego wzorca) — nieodłączna granica strażnika tekstowego, łapie
+  dosłowny kształt historycznej regresji (realistyczny wektor: copy-paste rewert), nie każdy
+  możliwy wariant.
+- N3: markery sekcji bez asercji unikalności — dziś jednoznaczne (1 trafienie każdy), brak
+  bieżącego ryzyka.
+
+**STATUS: TEMAT ZAMKNIĘTY OSTATECZNIE** po 2 rundach (runda 1 = kod produkcyjny + parytet
+gracz-AI, runda 2 = naprawa fikcyjnej bramki testowej na realny strażnik).
