@@ -18096,3 +18096,28 @@ turę, brak exploita; (b) rozdzielenie Daru od Handlu w silniku (dziś dzielą w
 poleceniem „najszybciej jak to możliwe"; (c) to zmiana w kierunku WIĘKSZEJ elastyczności dla
 gracza, nie regresji. Jeśli w playteście okaże się niepożądane — łatwe do cofnięcia osobnym
 zgłoszeniem. Nie wymaga dalszego dispatchu.
+
+---
+
+## P-PANEL-MIASTO-NIECZYTELNY-PRZY-PRZYBLIZENIU — rozpoznanie dostarczone, decyzja autonomiczna kierunku (2026-08-13)
+
+**Przyczyna potwierdzona:** plakietka miasta to tekstura canvas na sprite Three.js o STAŁEJ
+wysokości świata (`worldH=0,52`). Istniejący fix z 2026-08-08 (`24861c2c`, `badgePixelRatio()`)
+korygował rozdzielczość względem DPI EKRANU (`devicePixelRatio`), nie względem POWIĘKSZENIA przez
+zbliżenie kamery — to dwa niezależne mnożniki. Przy typowym monitorze desktop (dpr=1) tamten fix
+nie dawał żadnej poprawy w ogóle; przy najbliższym zoomie (minDist) tekstura jest rozciągana
+×1,6-4,7 (klasyczne rozmycie linear-filter). Stąd Maciej widzi dokładnie ten sam objaw mimo
+istniejącego, zdeployowanego commitu sprzed tygodnia.
+
+**Trzy kierunki oszacowane:** (a) podnieść bazową rozdzielczość na stałe — szybkie, ale
+niewystarczające przy ekstremalnym zoomie + koszt pamięciowy dla wszystkich plakietek naraz; (b)
+LOD zależny od odległości kamery, przemalowanie tekstury tej konkretnej plakietki przy progu
+zbliżenia — średni nakład, spójne z już istniejącym, działającym systemem `zoomLod.ts` (5
+poziomów LOD sterowanych `dist` kamery) i istniejącą infrastrukturą repaintu (`cityMapBadgeKey`,
+`needsUpdate`, kolejki); (c) DOM/HTML overlay zamiast tekstury 3D — największa zmiana
+architektoniczna, narusza spójność z resztą elementów mapy (sprite'y 3D).
+
+**Decyzja autonomiczna orkiestratora (Maciej: „pracuj samodzielnie, zamykaj najszybciej"):**
+kierunek **(b)**, zgodnie z rekomendacją techniczną rozpoznania — poprawny wydajnościowo (tylko
+plakietki widoczne z bliska płacą koszt przemalowania), reużywa istniejącą, sprawdzoną
+infrastrukturę zamiast budować nowy system od zera. Dispatch Operatora NASTĘPUJE.
