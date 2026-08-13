@@ -87,14 +87,21 @@ proporcji i czytelności bryły z kąta kamery gry. **Fable 5 zablokowany** —
 `R-FABLE-RETENCJA-NASTER = B`: wymaga 30-dniowej retencji, wymagania NASTER nieustalone;
 zgoda na model ≠ potwierdzenie retencji, potrzebne oba.
 
-**Wzorzec 3x niezależny Evaluator (tematy wysokiego ryzyka/dużego promienia rażenia) —
-`R-EVALUATOR-3X-MODEL-KOSZT-Q1` (Maciej 2026-08-13): Evaluator #1 i #2 na Sonnet 5,
-Evaluator #3 (ostatni) na Opus 5.** Jego słowa: „skoro odpalasz trzech, to dwóch odpal
-pierwszych na sonet 5, a ostatniego dopiero na opus 5" — powód: koszt/limit trzech Opus 5
-naraz jest wysoki. Dotyczy WYŁĄCZNIE wzorca potrójnego (nie standardowej pętli 1x
-Evaluator/rundę, gdzie Evaluator zostaje na Opus 5 bez zmian). Nie zmniejsza liczby
-Evaluatorów ani rygoru — trzy niezależne perspektywy zostają, zmienia się tylko model
-dwóch pierwszych.
+**⛔ DOMYŚLNIE ZAWSZE 1x Evaluator, Opus 5 — `R-EVALUATOR-3X-ZGODA-Q1` (Maciej 2026-08-13,
+koryguje `R-EVALUATOR-3X-MODEL-KOSZT-Q1` z tego samego dnia).** Wzorzec 3x niezależny
+Evaluator NIE jest już progiem automatycznym (nawet dla combat-adjacent/P0) — kosztuje za
+dużo tokenów przy rutynowym stosowaniu. Jego słowa: „nie przepalajmy niepotrzebnie
+tokenów... jeżeli miałbyś odpalać kiedykolwiek 3 ewaluatory to po prostu napisz do mnie o
+zgodę. To w wyjątkowych tylko sytuacjach. Na ten moment przyjmujemy jeden ewaluator opus
+5." **Zanim dispatchujesz 3x — zapytaj właściciela wprost, opisz dlaczego temat jest
+wyjątkowo ciężki/wysokiego ryzyka, i czekaj na jego zgodę.** Nie zgaduj i nie dispatchuj
+z góry na podstawie samej kategorii tematu (combat-adjacent itd.) — to już nie wystarcza
+jako uzasadnienie bez pytania.
+
+**Gdy zgoda na 3x padnie** — przydział modeli: Evaluator #1 i #2 na Sonnet 5, Evaluator #3
+(ostatni) na Opus 5. Powód: koszt/limit trzech Opus 5 naraz jest wysoki. Nie zmniejsza to
+liczby Evaluatorów ani rygoru — trzy niezależne perspektywy zostają, zmienia się tylko
+model dwóch pierwszych.
 
 ## 2. NUMER → ABC → COMMIT → DEPLOY
 
