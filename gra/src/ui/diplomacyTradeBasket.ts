@@ -1338,6 +1338,7 @@ export function buildAddForm(
   actionId = '14',
   tributeMode?: 'demand' | 'offer',
   editItem?: BasketEditItem,
+  existingItems: BasketItem[] = [],
 ): string {
   if (mode === 'gift' && side === 'receive') return '';
 
@@ -1383,10 +1384,19 @@ export function buildAddForm(
   // ma prawa pojawić się w żadnej z list. `techOptions` to legacy pojedynczy kierunek
   // (akcja '6'), NIE fallback dla strony receive — inaczej obie strony znów pokazałyby tę
   // samą listę (pierwotny bug ze zgłoszenia).
-  const techs = side === 'give'
+  const techsAll = side === 'give'
     ? (ctx.giveTechOptions ?? ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })))
     : (ctx.receiveTechOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })));
   const editTechId = editTyp === 'tech' ? editItem!.item.id : undefined;
+  // P-HANDEL-TECH-CHIP-BEZ-FILTRU-JUZ-DODANE (2026-08-13): technologia już dodana do koszyka
+  // (po tej samej stronie) ma zniknąć z listy do wyboru — poza edytowaną pozycją, która musi
+  // zostać widoczna i zaznaczona, żeby edycja własnego wpisu jej nie chowała.
+  // EN: a tech already added to the basket (this side) must drop out of the picker — except
+  // the item currently being edited, which must stay visible and selected.
+  const techIdsInBasket = new Set(
+    existingItems.filter(it => it.typ === 'tech' && it.id !== editTechId).map(it => it.id),
+  );
+  const techs = techsAll.filter(t => !techIdsInBasket.has(t.id));
   const defaultTech = (editTechId != null && techs.some(t => t.id === editTechId))
     ? editTechId
     : (techs[0]?.id ?? '');
@@ -2062,13 +2072,13 @@ function renderBasket(
   const giveCol =
     '<div class="cdb-col">' +
       '<div class="cdb-col-title">' + (mode === 'treaty' ? 'My oddajemy (opcjonalnie)' : 'Dodaj do oferty') + '</div>' +
-      (blocked ? '' : buildAddForm('give', ctx, basketModeForForm, action.id, treatyState.tributeMode, editItemFor('give'))) +
+      (blocked ? '' : buildAddForm('give', ctx, basketModeForForm, action.id, treatyState.tributeMode, editItemFor('give'), giveItems)) +
     '</div>';
 
   const recvCol = showReceiveCol
     ? '<div class="cdb-col">' +
         '<div class="cdb-col-title">' + (mode === 'treaty' ? 'Oni oddają (opcjonalnie)' : 'Dodaj do kontrpropozycji') + '</div>' +
-        (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm, action.id, treatyState.tributeMode, editItemFor('receive'))) +
+        (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm, action.id, treatyState.tributeMode, editItemFor('receive'), receiveItems)) +
       '</div>'
     : '';
 

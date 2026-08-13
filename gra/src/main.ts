@@ -1086,7 +1086,7 @@ import {
   type PendingNegotiation, createNegotiation, applyCounterOffer, applyOwnProposalEdit, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
-  hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
+  hasPendingNegotiationForPair, findOwnOutgoingNegotiation, allowsMultipleOwnOutgoingNegotiations,
   treatyEvalRelationTotal,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
 } from './game/diplomacy-proposals';
@@ -16362,7 +16362,14 @@ async function boot(): Promise<void> {
         handleNegotiationCounter(incoming.id, payload);
         return;
       }
-      if (findOwnOutgoingNegotiation(negotiationTable, ownerId, proposal.actionId)) {
+      // R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): allowsMultipleOwnOutgoingNegotiations
+      // (diplomacy-proposals.ts) zwalnia 'handel' (UI '14') z blokady „już na stole" —
+      // kolejna propozycja tego typu ma dołączyć jako OSOBNY wpis stołu, nie zastępować
+      // poprzedniego. EN: allowsMultipleOwnOutgoingNegotiations exempts 'handel' (UI '14')
+      // from the "already on the table" guard — another proposal of this type is appended as
+      // a SEPARATE table entry instead of replacing the earlier one.
+      if (!allowsMultipleOwnOutgoingNegotiations(proposal.actionId)
+        && findOwnOutgoingNegotiation(negotiationTable, ownerId, proposal.actionId)) {
         showHintMessage('Ta umowa jest już na stole — użyj Przyjmij w Punkty wymiany', 4000);
         updateDiplomacyAudience();
         return;

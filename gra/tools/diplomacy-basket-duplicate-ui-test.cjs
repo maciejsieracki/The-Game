@@ -182,9 +182,27 @@ async function main() {
   showTradeBasketModal('trade', ACTION, CTX, () => {}, () => {});
 
   // 1) DOKŁADNY przypadek ze zgłoszenia: 4× "Obróbka drewna" przez prawdziwy przycisk.
-  for (let i = 0; i < 4; i++) addTech('Obróbka drewna');
+  // P-HANDEL-TECH-CHIP-BEZ-FILTRU-JUZ-DODANE (2026-08-13): po tej naprawie chip technologii
+  // już dodanej do koszyka ZNIKA z listy do wyboru — nie da się go kliknąć po raz drugi
+  // normalną ścieżką UI (to pierwsza linia obrony, silniejsza niż dedup poniżej). Test
+  // zaktualizowany: 1. dodanie przez chip, potwierdzenie że chip zniknął, POTEM obejście
+  // filtra (bezpośredni zapis ukrytego pola `.cdb-tech`, jak `addGold`/`addFood` robią dla
+  // swoich pól) — weryfikuje że merge/dedup (`addOrMergeBasketItem`) nadal działa jako druga
+  // linia obrony, gdyby coś inne ominęło filtr chipów.
+  addTech('Obróbka drewna');
   ok(giveRows().length === 1,
-    `4x "+ Dodaj propozycję" dla tej samej technologii → 1 wiersz w koszyku (got ${giveRows().length})`);
+    `1x "+ Dodaj propozycję" dla technologii → 1 wiersz w koszyku (got ${giveRows().length})`);
+  ok(!qa('.cdb-chip-tech').some(c => c.getAttribute('data-side') === 'give' && c.getAttribute('data-value') === 'Obróbka drewna'),
+    'chip "Obróbka drewna" znika z listy „Co dodajesz" po dodaniu do koszyka (już dodana)');
+  for (let i = 0; i < 3; i++) {
+    click(chip('cdb-chip-typ', 'tech'));
+    const hiddenTech = qa('.cdb-tech').find(x => x.getAttribute('data-side') === 'give');
+    hiddenTech.value = 'Obróbka drewna';
+    click(addButton());
+  }
+  ok(giveRows().length === 1,
+    `merge/dedup (obroną w głębi, pomijając filtr chipów): powtórne dodanie tej samej `
+    + `technologii nadal 1 wiersz (got ${giveRows().length})`);
 
   // 2) Naprawa nie może sklejać RÓŻNYCH technologii.
   addTech('Garncarstwo');
@@ -224,13 +242,21 @@ async function main() {
   // BLOKADA-JAKO-NO-OP (spójna z blokadą duplikatu w addOrMergeBasketItem — lista zostaje BEZ
   // ZMIAN, nic nie znika, nic się nie duplikuje): PO naprawie koszyk wraca do stanu SPRZED
   // edycji, edytowany wiersz "Garncarstwo" zostaje nietknięty na swoim miejscu.
+  // P-HANDEL-TECH-CHIP-BEZ-FILTRU-JUZ-DODANE (2026-08-13): „Obróbka drewna" jest już w
+  // koszyku (wiersz 0, NIE edytowany tutaj) → jej chip też znika z listy podczas edycji
+  // wiersza "Garncarstwo" (pierwsza linia obrony — nie da się jej już wybrać przez UI). Test
+  // potwierdza to, POTEM obchodzi filtr chipów bezpośrednim zapisem ukrytego pola `.cdb-tech`
+  // (jak w kroku 1), żeby dalej sprawdzić drugą linię obrony — blokadę-no-op w handlerze edycji.
   {
     const startLen = giveRows().length; // 5 (2 tech + złoto + 2 żywność) sprzed tego bloku
     ok(giveRowText(0) === 'Obróbka drewna' && giveRowText(1) === 'Garncarstwo',
       `stan wyjściowy do testu edycji: wiersz 0="Obróbka drewna", wiersz 1="Garncarstwo" (got ${giveRowText(0)}, ${giveRowText(1)})`);
 
     click(editButton(1)); // otwórz edycję wiersza "Garncarstwo" (idx=1)
-    click(chip('cdb-chip-tech', 'Obróbka drewna')); // zmień technologię na tę z wiersza 0 → kolizja
+    ok(!qa('.cdb-chip-tech').some(c => c.getAttribute('data-side') === 'give' && c.getAttribute('data-value') === 'Obróbka drewna'),
+      'podczas edycji "Garncarstwo": chip "Obróbka drewna" (inny, już istniejący wiersz) niedostępny do wyboru');
+    const hiddenTechEdit = qa('.cdb-tech').find(x => x.getAttribute('data-side') === 'give');
+    hiddenTechEdit.value = 'Obróbka drewna'; // obejście filtra chipów — zmień technologię na tę z wiersza 0 → kolizja
     click(saveEditButton()); // „Zapisz zmiany"
 
     const techRows = giveRows().filter(r => {
