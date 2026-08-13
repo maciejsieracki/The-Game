@@ -171,16 +171,60 @@ export type UlepszeniaFocus = 'zywnosc' | 'surowce' | 'infrastruktura' | 'zrowno
 /** auto = gra buduje ulepszenia na końcu tury; reczny = gracz klika na mapie. */
 export type UlepszeniaTryb = 'auto' | 'reczny';
 
-/** R-AUTO-ULEPSZENIA-Q2=B: ile auto-ulepszeń / miasto / turę (1–3). */
-export type UlepszeniaPerTurn = 1 | 2 | 3;
+/**
+ * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (2026-08-14): % (0–100) skumulowanej puli Pracy imperium
+ * NA KONIEC TURY dostępny auto-managerowi ulepszeń terenu. 0 = auto-ulepszenia wyłączone (cała
+ * Praca zostaje dla gracza), 100 = auto-manager może wydać całą dostępną pulę (do flat-rezerwy
+ * AUTO_ULEPSZENIA_PRACA_RESERVE — patrz auto-improvements.ts). Liczone od puli w momencie wejścia
+ * w blok auto-ulepszeń tej tury, NIE od przyrostu tej tury (wprost wykluczone przez właściciela).
+ * Zastępuje dawny UlepszeniaPerTurn (1|2|3 sztuk ulepszeń/miasto/turę).
+ * / EN: % (0-100) of the empire's cumulative Work pool AT TURN END available to the terrain
+ * auto-improvement manager. 0 = auto-improvements disabled (all Work stays with the player), 100
+ * = the auto-manager may spend the whole available pool (down to the flat reserve floor
+ * AUTO_ULEPSZENIA_PRACA_RESERVE — see auto-improvements.ts). Computed from the pool at the moment
+ * the auto-improvement block runs this turn, NOT from this turn's increment (explicitly ruled out
+ * by the owner). Replaces the old UlepszeniaPerTurn (1|2|3 items/city/turn).
+ */
+export type UlepszeniaPracaPercent = number;
 
 export const DEFAULT_ULEPSZENIA_FOCUS: UlepszeniaFocus = 'zrownowazone';
 export const DEFAULT_ULEPSZENIA_TRYB: UlepszeniaTryb = 'reczny';
-export const DEFAULT_ULEPSZENIA_PER_TURN: UlepszeniaPerTurn = 1;
+/** Domyślny % dla świeżej polityki (nowa gra) — odpowiednik dawnego DEFAULT_ULEPSZENIA_PER_TURN=1
+ *  po migracji 1→33% (patrz migrateUlepszeniaPerTurnToPercent). */
+export const DEFAULT_ULEPSZENIA_PRACA_PERCENT: UlepszeniaPracaPercent = 33;
 
-export function clampUlepszeniaPerTurn(n: number | undefined | null): UlepszeniaPerTurn {
-  if (n === 2 || n === 3) return n;
-  return 1;
+export function clampUlepszeniaPracaPercent(n: number | undefined | null): UlepszeniaPracaPercent {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
+  return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+/**
+ * Migracja starego pola `perTurn`/`ulepszeniaPerTurn` (1|2|3 sztuk/miasto/turę) → nowy %.
+ * Mapowanie liniowe do starego maksimum (3 sztuk = 100%): 1→33%, 2→66%, 3→100%.
+ * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B — decyzja Operatora (nie było ustalonej reguły właściciela),
+ * udokumentowana w raporcie Operatora.
+ */
+export function migrateUlepszeniaPerTurnToPercent(n: 1 | 2 | 3): UlepszeniaPracaPercent {
+  if (n === 1) return 33;
+  if (n === 2) return 66;
+  return 100;
+}
+
+/**
+ * Odczytuje % budżetu Pracy z surowego obiektu zapisu, obsługując OBA kształty: nowy
+ * (`pracaAutoPercent`/`ulepszeniaPracaPercent`, w zależności od kontekstu wywołania) i stary
+ * (`perTurn`/`ulepszeniaPerTurn`, wartość 1|2|3). Nowe pole ma pierwszeństwo, gdy oba obecne
+ * (stabilne pod wielokrotnym wywołaniem migracji na tym samym obiekcie). Brak obu → domyślny %.
+ */
+export function resolveUlepszeniaPracaPercentFromRaw(
+  newVal: unknown,
+  legacyPerTurn: unknown,
+): UlepszeniaPracaPercent {
+  if (typeof newVal === 'number') return clampUlepszeniaPracaPercent(newVal);
+  if (legacyPerTurn === 1 || legacyPerTurn === 2 || legacyPerTurn === 3) {
+    return migrateUlepszeniaPerTurnToPercent(legacyPerTurn);
+  }
+  return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
 }
 
 /** Domyślna polityka auto-ulepszeń imperium (R-AUTO-V2-Q3=C). */
@@ -188,7 +232,7 @@ export interface UlepszeniaEmpirePolicy {
   focus: UlepszeniaFocus;
   tryb: UlepszeniaTryb;
   onlyWorked: boolean;
-  perTurn: UlepszeniaPerTurn;
+  pracaAutoPercent: UlepszeniaPracaPercent;
 }
 
 export function freshUlepszeniaEmpirePolicy(): UlepszeniaEmpirePolicy {
@@ -196,7 +240,7 @@ export function freshUlepszeniaEmpirePolicy(): UlepszeniaEmpirePolicy {
     focus: DEFAULT_ULEPSZENIA_FOCUS,
     tryb: DEFAULT_ULEPSZENIA_TRYB,
     onlyWorked: false,
-    perTurn: DEFAULT_ULEPSZENIA_PER_TURN,
+    pracaAutoPercent: DEFAULT_ULEPSZENIA_PRACA_PERCENT,
   };
 }
 
@@ -205,7 +249,7 @@ export interface EffectiveUlepszeniaSettings {
   focus: UlepszeniaFocus;
   tryb: UlepszeniaTryb;
   onlyWorked: boolean;
-  perTurn: UlepszeniaPerTurn;
+  pracaAutoPercent: UlepszeniaPracaPercent;
   override: boolean;
 }
 
@@ -218,7 +262,7 @@ export function resolveEffectiveUlepszenia(
       focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
       tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
       onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-      perTurn: clampUlepszeniaPerTurn(city.ulepszeniaPerTurn),
+      pracaAutoPercent: clampUlepszeniaPracaPercent(city.ulepszeniaPracaPercent),
       override: true,
     };
   }
@@ -226,7 +270,7 @@ export function resolveEffectiveUlepszenia(
     focus: empire.focus,
     tryb: empire.tryb,
     onlyWorked: empire.onlyWorked,
-    perTurn: empire.perTurn,
+    pracaAutoPercent: empire.pracaAutoPercent,
     override: false,
   };
 }
@@ -410,7 +454,19 @@ export function ensureCitySaveDefaults(city: City): void {
     if (!city.ulepszeniaFocus) city.ulepszeniaFocus = DEFAULT_ULEPSZENIA_FOCUS;
     if (!city.ulepszeniaTryb) city.ulepszeniaTryb = DEFAULT_ULEPSZENIA_TRYB;
     if (city.ulepszeniaOnlyWorked == null) city.ulepszeniaOnlyWorked = false;
-    city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(city.ulepszeniaPerTurn);
+    // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: migracja starego `ulepszeniaPerTurn` (1|2|3 sztuk) →
+    // nowy `ulepszeniaPracaPercent` (0-100%). Stary zapis ma tylko `ulepszeniaPerTurn` (bez
+    // typu w City — czytany surowo), nowy tylko `ulepszeniaPracaPercent`; nowe pole ma
+    // pierwszeństwo, więc powtórne wywołanie tej migracji na tym samym mieście jest stabilne.
+    // / EN: migrate the old `ulepszeniaPerTurn` (1|2|3 items) → the new `ulepszeniaPracaPercent`
+    // (0-100%). An old save only has `ulepszeniaPerTurn` (no longer typed on City — read raw), a
+    // new one only `ulepszeniaPracaPercent`; the new field wins, so re-running this migration on
+    // the same city is idempotent.
+    const rawCity = city as unknown as { ulepszeniaPracaPercent?: unknown; ulepszeniaPerTurn?: unknown };
+    city.ulepszeniaPracaPercent = resolveUlepszeniaPracaPercentFromRaw(
+      rawCity.ulepszeniaPracaPercent,
+      rawCity.ulepszeniaPerTurn,
+    );
   }
   const buf = readCityFoodBuffer(city.magazynZywnosci);
   if (city.magazynZywnosci !== buf) city.magazynZywnosci = buf;
@@ -570,8 +626,11 @@ export interface City {
   ulepszeniaTryb?: UlepszeniaTryb;
   /** Gdy true — auto tylko na heksach z 👤 (workedTiles) — gdy override. */
   ulepszeniaOnlyWorked?: boolean;
-  /** R-AUTO-ULEPSZENIA-Q2=B: ile ulepszeń auto / turę (1–3) — gdy override. */
-  ulepszeniaPerTurn?: UlepszeniaPerTurn;
+  /** R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: % (0–100) budżetu Pracy dla auto-ulepszeń — gdy override.
+   *  Stary `ulepszeniaPerTurn` (1|2|3 sztuk) NIE jest już typowany tu — migrowany surowo w
+   *  ensureCitySaveDefaults (resolveUlepszeniaPracaPercentFromRaw), zapisy sprzed migracji nadal
+   *  mogą mieć to pole na dysku, ale kod go nie czyta poza migracją. */
+  ulepszeniaPracaPercent?: UlepszeniaPracaPercent;
   /** B2-Q12=C: tury grace przed rebelią AI (null = brak). */
   revoltGraceRemaining?: number | null;
   /** Miasto pod kontrolą rebeliantów. */

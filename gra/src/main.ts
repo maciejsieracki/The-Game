@@ -185,8 +185,8 @@ import {
   loadBudowaListaBiblioteka,
   DEFAULT_ULEPSZENIA_TRYB,
   DEFAULT_ULEPSZENIA_FOCUS,
-  DEFAULT_ULEPSZENIA_PER_TURN,
-  clampUlepszeniaPerTurn,
+  clampUlepszeniaPracaPercent,
+  resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
   resolveEffectiveUlepszenia,
   normalizePodzialHandlu,
@@ -200,7 +200,7 @@ import {
   type OkolicaFocus,
   type UlepszeniaFocus,
   type UlepszeniaTryb,
-  type UlepszeniaPerTurn,
+  type UlepszeniaPracaPercent,
   type UlepszeniaEmpirePolicy,
   type EffectiveUlepszeniaSettings,
 } from './game/cities';
@@ -18226,12 +18226,12 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
-          onUlepszeniaEmpirePerTurnChange: (perTurn: UlepszeniaPerTurn) => {
+          onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
             const pol = ulepszeniaEmpireForOwner(0);
-            pol.perTurn = clampUlepszeniaPerTurn(perTurn);
+            pol.pracaAutoPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             pol.tryb = 'auto';
             ulepszeniaEmpireByOwner.set(0, pol);
-            showHintMessage(`Państwo: auto ulepszenia · ${pol.perTurn}/turę`, 2800);
+            showHintMessage(`Państwo: auto ulepszenia · ${pol.pracaAutoPercent}% budżetu Pracy`, 2800);
             refreshD1bHud();
           },
           getUlepszeniaCityOverride: (cityId: string) => {
@@ -18247,7 +18247,9 @@ async function boot(): Promise<void> {
               city.ulepszeniaFocus = city.ulepszeniaFocus ?? pol.focus;
               city.ulepszeniaTryb = city.ulepszeniaTryb ?? pol.tryb;
               city.ulepszeniaOnlyWorked = city.ulepszeniaOnlyWorked ?? pol.onlyWorked;
-              city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(city.ulepszeniaPerTurn ?? pol.perTurn);
+              city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
+                city.ulepszeniaPracaPercent ?? pol.pracaAutoPercent,
+              );
             }
             showHintMessage(
               override
@@ -18298,13 +18300,16 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
-          onUlepszeniaCityPerTurnChange: (cityId: string, perTurn: UlepszeniaPerTurn) => {
+          onUlepszeniaCityPracaPercentChange: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => {
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
-            city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(perTurn);
+            city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             city.ulepszeniaTryb = 'auto';
-            showHintMessage(`${city.name}: auto ulepszenia · ${city.ulepszeniaPerTurn}/turę`, 2800);
+            showHintMessage(
+              `${city.name}: auto ulepszenia · ${city.ulepszeniaPracaPercent}% budżetu Pracy`,
+              2800,
+            );
             refreshD1bHud();
           },
         },
@@ -25327,7 +25332,7 @@ async function boot(): Promise<void> {
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
-                  getMaxPerCity: c => effectiveUlepszeniaForCity(c as City).perTurn,
+                  getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(
                       city as City, map, territoryNodesAuto,
@@ -29961,14 +29966,18 @@ async function boot(): Promise<void> {
       const savedPoziomRacji = saved.meta?.ownerDefaultPoziomRacji as Array<[number, PoziomRacji]> | undefined;
       migratePoziomRacjiOnLoad(cities, ownerDefaultPoziomRacji, savedPoziomRacji);
       ulepszeniaEmpireByOwner.clear();
-      const savedUlepszenia = saved.meta?.ulepszeniaEmpireByOwner as Array<[number, UlepszeniaEmpirePolicy]> | undefined;
+      // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: `pol` może pochodzić ze starego zapisu (pole `perTurn`,
+      // 1|2|3) LUB z nowego (`pracaAutoPercent`, 0-100) — typujemy surowo (Record) i migrujemy
+      // przez resolveUlepszeniaPracaPercentFromRaw, żeby stary zapis nie crashował.
+      const savedUlepszenia = saved.meta?.ulepszeniaEmpireByOwner as
+        Array<[number, Record<string, unknown>]> | undefined;
       if (savedUlepszenia?.length) {
         for (const [oid, pol] of savedUlepszenia) {
           ulepszeniaEmpireByOwner.set(oid, {
-            focus: pol.focus ?? DEFAULT_ULEPSZENIA_FOCUS,
-            tryb: pol.tryb ?? DEFAULT_ULEPSZENIA_TRYB,
-            onlyWorked: pol.onlyWorked ?? false,
-            perTurn: clampUlepszeniaPerTurn(pol.perTurn),
+            focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
+            tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
+            onlyWorked: (pol.onlyWorked as boolean) ?? false,
+            pracaAutoPercent: resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
           });
         }
       } else {
