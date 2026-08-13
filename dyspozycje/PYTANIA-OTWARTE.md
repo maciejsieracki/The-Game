@@ -17538,3 +17538,22 @@ tematy znalezione przy audycie kompletności na żądanie właściciela dziś za
 każdy z niezależną weryfikacją Evaluatora. Zero otwartych ABC-pytań poza wcześniej udokumentowanymi
 świadomymi odłożeniami. Przechodzę do deployu ROBOCZA + scalenia FALI 273 do `main` na wyraźne
 polecenie właściciela.
+
+---
+
+## Scalenie do `main`: FALA 273 (2026-08-13, na wyraźne polecenie właściciela)
+
+Po deployu FALA 274 (zdeployowanej do ROBOCZA, zostaje na gałęzi roboczej wyłącznie do testów)
+FALA 273 (`9d8b4dfa`) zakwalifikowała się do scalenia zgodnie z rytmem „jedna fala do tyłu"
+(`R-MERGE-MAIN-RYTM-Q1`). Scalono przez `git merge --no-ff` do `main` (merge commit `f438edfb`),
+50 plików, +5209/−3023 linii. Bramki zweryfikowane na scalonym drzewie przed pushem: `tsc` 0,
+`logic-test.cjs` 213/213. Push `016cbb52..f438edfb` na `main`, exit 0.
+
+Zawartość FALI 273 scalona do main: 5-rundowa naprawa promocji frontu kolejki produkcji
+(B1/B2/B3, parytet gracz-AI, bramka strukturalna), 3-rundowe przeskalowanie ekonomii surowcowej
+×5 (produkcja/koszty/utrzymanie/cap), dokument audytu CivPedii/Poradnika (Etap 1), aktualizacje
+skilli AutoBot (reguła 3x Evaluator za zgodą).
+
+**Stan po tej operacji:** `main` = `f438edfb` (zawiera FALE 270-273). FALA 274 (`ad0f160c`, md5
+`81ae686d`) zostaje na gałęzi roboczej — kwalifikuje się do scalenia dopiero po powstaniu FALI
+275.
