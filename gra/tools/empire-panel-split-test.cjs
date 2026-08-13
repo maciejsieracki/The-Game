@@ -64,7 +64,11 @@ function main() {
   assert('ekonomia → ekonomia (nie all)', empirePanelBlockForSection('ekonomia') === 'ekonomia');
   assert('surowce → surowce', empirePanelBlockForSection('surowce') === 'surowce');
   assert('econ-nauka → ekonomia + filtr wiersza', empirePanelBlockForSection('econ-nauka') === 'ekonomia');
-  assert('econ-skarbiec → ekonomia', empirePanelBlockForSection('econ-skarbiec') === 'ekonomia');
+  // R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13): Skarbiec dostał WŁASNY blok top-level
+  // ('skarbiec'), analogicznie do spichlerz/armia/handel niżej — zmiana zamierzona.
+  // EN: Treasury got its OWN top-level block ('skarbiec'), like spichlerz/armia/handel below —
+  // intended change.
+  assert('econ-skarbiec → skarbiec (R-DESIGN-11-ZAKLADEK faza 1)', empirePanelBlockForSection('econ-skarbiec') === 'skarbiec');
   assert('spichlerz → spichlerz', empirePanelBlockForSection('spichlerz') === 'spichlerz');
   assert('armia → armia', empirePanelBlockForSection('armia') === 'armia');
   assert('handel → handel', empirePanelBlockForSection('handel') === 'handel');

@@ -435,6 +435,32 @@ function ensureStyles(): void {
 .civ-emp-res-legend i.good{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
 .civ-emp-res-legend i.warn{background:linear-gradient(90deg,#6a4010,#d9a441);}
 .civ-emp-res-legend i.bad{background:linear-gradient(90deg,#5a2020,#e07a7a);}
+
+/* — R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13) — klasy uogólnione z sekcji Moc na
+   wszystkie 11 zakładek panelu (§4 handoffu designera), pierwsze użycie: Skarbiec — */
+.civ-emp-hero{font-size:20px;font-weight:800;color:#d9a441;margin-top:8px;}
+.civ-emp-hero.pos{color:#d9a441;}
+.civ-emp-hero.neg{color:#e07a7a;}
+.civ-emp-hero-sub{font-size:12px;color:#9aa4b2;margin-top:3px;}
+.civ-emp-hero-sub b{color:#d9a441;}
+.civ-emp-alert{margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid #4a2a2a;
+  background:rgba(224,122,122,.07);font-size:12px;color:#e6c4c4;line-height:1.45;}
+.civ-emp-alert b{color:#e07a7a;}
+.civ-emp-slider{-webkit-appearance:none;-moz-appearance:none;appearance:none;width:100%;height:8px;
+  border-radius:999px;cursor:pointer;margin:0 0 6px;background:#1f2733;display:block;}
+.civ-emp-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;border:2px solid #141a24;box-shadow:0 1px 4px rgba(0,0,0,.6);cursor:pointer;
+  background:#d9a441;}
+.civ-emp-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;border:2px solid #141a24;
+  box-shadow:0 1px 4px rgba(0,0,0,.6);cursor:pointer;background:#d9a441;}
+.civ-emp-slider::-moz-range-track{height:8px;border-radius:999px;background:transparent;}
+.civ-emp-slider.gold::-webkit-slider-thumb,.civ-emp-slider.gold::-moz-range-thumb{background:#d9a441;}
+.civ-emp-slider.blue::-webkit-slider-thumb,.civ-emp-slider.blue::-moz-range-thumb{background:#8ec5ff;}
+.civ-emp-slider.neutral::-webkit-slider-thumb,.civ-emp-slider.neutral::-moz-range-thumb{background:#9aa4b2;}
+.civ-emp-slider.green::-webkit-slider-thumb,.civ-emp-slider.green::-moz-range-thumb{background:#78c95a;}
+.civ-emp-tbl-sum{display:grid;column-gap:6px;align-items:baseline;padding:11px 0 9px;}
+.civ-emp-tbl-sum>div:first-child{font-size:13px;color:#e8ebf0;font-weight:700;}
+.civ-emp-tbl-sum>div:last-child{text-align:right;font-size:15px;color:#d9a441;font-weight:800;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -535,6 +561,226 @@ function cityEconMiniSkarbiec(
   h += '</div>';
   h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>';
   return h;
+}
+
+/** Odmiana „miasto/miasta/miast" wg liczby (bez sufiksu „niedokarmione", inaczej niż
+ *  `miastoNiedokarmioneWord` niżej — ten sam wzorzec gramatyczny, inne zastosowanie).
+ *  EN: "miasto/miasta/miast" (city, cities, of cities) grammatical form by count — same
+ *  pattern as `miastoNiedokarmioneWord` below, different use site. */
+function miastoCountWord(n: number): string {
+  if (n === 1) return 'miasto';
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'miasta';
+  return 'miast';
+}
+
+/** Kolorowana wartość w tabeli bilansu Skarbca (zielony/czerwony/szary wg znaku). */
+function tblValTxt(n: number): string {
+  const r = Math.round(n);
+  const color = r > 0 ? '#78c95a' : r < 0 ? '#e07a7a' : '#6f7889';
+  return `<span style="color:${color};font-weight:700">${treasuryBalanceSignedTxt(r)}</span>`;
+}
+
+/** Jak `formatResourceUpkeepEmpireLine`, ale kolorowana/łamana wierszami — dla tabeli bilansu
+ *  Skarbca (klatka 1, R-DESIGN-11-ZAKLADEK), gdzie sąsiaduje z kolorowanymi kwotami złota. */
+function formatResourceUpkeepEmpireLineColored(resources: Record<string, number> | undefined): string {
+  const keys = Object.keys(resources ?? {});
+  if (keys.length === 0) return '<span style="color:#6f7889">—</span>';
+  const lines = keys.map(k => `−${resources![k]} ${stockResourceLabel(k)}`).join('<br>');
+  return `<span style="font-size:11.5px;color:#e07a7a;font-weight:600;line-height:1.35">${lines}</span>`;
+}
+
+/** Tor suwaka `.civ-emp-slider` częściowo wypełniony gradientem do wartości `pct` (%),
+ *  reszta toru w kolorze tła — natywny input[type=range] z `-webkit-appearance:none` renderuje
+ *  swoje tło wprost jako tor, więc to jedyne, czego trzeba do wizualnego „wypełnienia". */
+function sliderFillStyle(pct: number, colorFrom: string, colorTo: string): string {
+  const p = Math.max(0, Math.min(100, pct));
+  return `background:linear-gradient(90deg,${colorFrom} 0%,${colorTo} ${p}%,#1f2733 ${p}%,#1f2733 100%)`;
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13) — Klatka 1 makiety designera: Skarbiec dostaje
+ * własny blok top-level (jak Spichlerz/Surowce/Handel/Armia/Kultura/Moc), z hero-liczbą „Netto
+ * ±N / turę" analogiczną do `.civ-emp-moc-big` w sekcji Moc. Wzorzec organizacji kodu skopiowany
+ * z `renderSpichlerzCentralnySection()` (nested `.civ-emp-sect` dla suwaka na końcu) — treść
+ * własna, 1:1 z etykietami `cityEconMiniSkarbiec()` wyżej (ta funkcja NIE jest usuwana — nadal
+ * używana w pełnym przeglądzie „ZASOBY IMPERIUM", blok `ekonomia`, gdy activeSection === null).
+ * EN: Treasury gets its own top-level block (like Granary/Resources/Trade/Army/Culture/Power),
+ * with a hero number "Net ±N / turn" analogous to `.civ-emp-moc-big` in the Power section. Code
+ * organization pattern copied from `renderSpichlerzCentralnySection()` (nested `.civ-emp-sect`
+ * for the slider at the end) — content is new, labels 1:1 with `cityEconMiniSkarbiec()` above
+ * (that function is NOT removed — still used in the full "ZASOBY IMPERIUM" overview, `ekonomia`
+ * block, when activeSection is null).
+ */
+function renderSkarbiecSection(
+  rows: EmpireDetailSnap['cityEcon'],
+  economy: EmpireDetailSnap['economy'],
+): string {
+  const wplywy = Math.round(economy.bogactwoWplywyBrutto ?? 0);
+  const handel = Math.round(economy.bogactwoHandel ?? 0);
+  const daninaBud = wplywy - handel;
+  const utrzB = Math.round(economy.bogactwoUtrzymanieBudynkow ?? 0);
+  const utrzRes = economy.bogactwoUtrzymanieSurowcowBudynkow ?? {};
+  const utrzJ = Math.round(economy.bogactwoUtrzymanieJednostek ?? 0);
+  const koszty = utrzB + utrzJ;
+  const netto = Math.round(economy.bogactwoRate ?? 0);
+  const stan = Math.round(economy.bogactwo ?? 0);
+  const nettoCls = netto < 0 ? 'neg' : 'pos';
+
+  let h = '<div class="civ-emp-sect" data-section="skarbiec">'
+    + '<div class="civ-emp-eyebrow">SKARBIEC IMPERIUM</div>'
+    + `<div class="civ-emp-hero ${nettoCls}">Netto ${treasuryBalanceSignedTxt(netto)} / turę</div>`;
+
+  if (rows.length === 0) {
+    h += `<div class="civ-emp-hero-sub">Stan skarbca <b>${stan}</b></div>`
+      + '<div class="civ-emp-empty">Brak miast — dochód pojawi się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  h += `<div class="civ-emp-hero-sub">Stan skarbca <b>${stan}</b> · wpływy <b>${wplywy}</b> − koszty `
+    + `<b>${koszty}</b> · ${rows.length} ${miastoCountWord(rows.length)}</div>`;
+
+  if (netto < 0) {
+    h += '<div class="civ-emp-alert"><b>Skarbiec się wyczerpuje</b> — koszty przewyższają wpływy. '
+      + 'Przy zerze utrzymanie budynków przestaje być pokrywane.</div>';
+  }
+
+  const wplywySub = handel > 0
+    ? `<span style="font-size:11px;color:#78c95a;font-weight:600">+${handel} handel</span>`
+    : '<span style="font-size:11px;color:#7d8798;font-weight:600">bez handlu</span>';
+  const kosztySub = utrzB > 0
+    ? `<span style="font-size:11px;color:#e07a7a;font-weight:600">${utrzB} budynki</span>` : '';
+  h += '<div class="civ-emp-two">'
+    + `<div class="civ-emp-box"><div class="k">WPŁYWY / TURĘ</div><div class="v">${wplywy} ${wplywySub}</div></div>`
+    + `<div class="civ-emp-box"${netto < 0 ? ' style="border-color:#4a2a2a"' : ''}><div class="k">KOSZTY / TURĘ</div>`
+    + `<div class="v"${netto < 0 ? ' style="color:#e07a7a"' : ''}>${koszty} ${kosztySub}</div></div>`
+    + '</div>';
+
+  // TABELA BILANSU — .civ-emp-tbl (dziś tylko w Mocy) z gridem 2-kolumnowym przez inline
+  // override (klasy `.civ-emp-tbl-h`/`.civ-emp-tbl-r` mają grid-template-columns 5-kolumnowy
+  // zaszyty w CSS dla tabeli Mocy — inline style nadpisuje go z wyższym priorytetem kaskady).
+  const bg = '1fr 0.62fr';
+  h += `<div class="civ-emp-tbl"><div class="civ-emp-tbl-h" style="grid-template-columns:${bg}">`
+    + '<div>SKARBIEC IMPERIUM — BILANS / TURĘ</div><div>ZŁOTO</div></div>';
+  const balRow = (label: string, sub: string | null, valueHtml: string): string =>
+    `<div class="civ-emp-tbl-r" style="grid-template-columns:${bg}"><div><div class="nm">${label}</div>`
+    + `${sub ? `<div class="src">${sub}</div>` : ''}</div><div style="text-align:right">${valueHtml}</div></div>`;
+  h += balRow('Wpływy brutto (podatek + budynki)', null, tblValTxt(daninaBud));
+  h += balRow('Handel ze szlaków', null, tblValTxt(handel));
+  h += balRow('Utrzymanie budynków', null, tblValTxt(-utrzB));
+  h += balRow('Utrzymanie surowców budynków', 'z magazynu państwa, nie ze złota',
+    formatResourceUpkeepEmpireLineColored(utrzRes));
+  h += balRow('Utrzymanie jednostek', null, tblValTxt(-utrzJ));
+  h += `<div class="civ-emp-tbl-sum" style="grid-template-columns:${bg}"><div>Netto skarbiec</div>`
+    + `<div>${treasuryBalanceSignedTxt(netto)}</div></div>`;
+  h += '</div>';
+
+  // TABELA PER MIASTO — wzorzec `.civ-emp-mini`/`miniHeader`/`miniRow` (jak reszta panelu),
+  // wiersz SUMA w `.civ-emp-mini-summary` — mechanizm już istnieje dla tabeli Miasta.
+  const grid = '1fr 0.7fr 0.9fr';
+  let sumSkarbiec = 0;
+  let sumUtrz = 0;
+  h += `<div class="civ-emp-mini" style="margin-top:10px">${miniHeader(['MIASTO', 'DO SKARBCA', 'UTRZYMANIE'], grid)}`;
+  for (const c of rows) {
+    const doSkarbca = c.pieniadz;
+    const utrzymanie = -(c.utrzymanieBudynkow ?? 0);
+    sumSkarbiec += doSkarbca;
+    sumUtrz += utrzymanie;
+    h += miniRow([esc(c.name), tblValTxt(doSkarbca), tblValTxt(utrzymanie)], grid);
+  }
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+    + `<div>SUMA</div><div style="text-align:right">${treasuryBalanceSignedTxt(sumSkarbiec)}</div>`
+    + `<div style="text-align:right">${treasuryBalanceSignedTxt(sumUtrz)}</div></div>`;
+  h += '</div>';
+
+  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie '
+    + 'budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi '
+    + 'z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie '
+    + 'per miasto w tabeli.</div>';
+
+  h += renderSkarbiecTaxSplitSection(daninaBud);
+  h += '</div>';
+  return h;
+}
+
+/**
+ * Suwak „Domyślny podział podatku" w nowym stylu `.civ-emp-slider` (Klatka 1, §C zlecenia) —
+ * WŁASNA funkcja, NIE modyfikuje `renderDefaultHandelSplitSection()` wyżej, która nadal obsługuje
+ * suwak podatku wewnątrz filtrowanego wiersza „Nauka" w bloku `ekonomia` (poza zakresem tej fazy).
+ * Ten sam mechanizm danych (`handelSplitUi`, `adjustHandelSplit`), inny markup: kwota „≈ ±N/turę"
+ * obok procentu, tor suwaka kolorowany wg zasobu (`.gold`/`.blue`/`.neutral`).
+ * EN: "Default tax split" slider in the new `.civ-emp-slider` style — its OWN function, does NOT
+ * modify `renderDefaultHandelSplitSection()` above, which still serves the tax slider inside the
+ * filtered "Science" row of the `ekonomia` block (out of this phase's scope). Same data mechanism,
+ * different markup: an "≈ ±N/turn" amount next to the percentage, slider track colored by resource.
+ */
+function renderSkarbiecTaxSplitSection(baseAmount: number): string {
+  const getDef = handelSplitUi.getOwnerDefault;
+  const onChange = handelSplitUi.onOwnerDefaultChange;
+  if (!getDef || !onChange) return '';
+  const split = normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
+  const id = 'emp-skarbiec-tax-split';
+  const rows: { key: keyof CityPodzialHandlu; label: string; cls: string; from: string; to: string }[] = [
+    { key: 'procentPieniadz', label: 'Skarb', cls: 'gold', from: '#6a4010', to: '#d9a441' },
+    { key: 'procentNauka', label: 'Nauka', cls: 'blue', from: '#2c4a6b', to: '#8ec5ff' },
+    { key: 'procentLuksus', label: 'Zamożność', cls: 'neutral', from: '#3a4657', to: '#9aa4b2' },
+  ];
+  let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ ${esc(daninaLbl.toUpperCase())}</div>`
+    + '<div class="civ-emp-note">Nowe miasta dziedziczą ten podział. W panelu miasta możesz włączyć własny override.</div>';
+  h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:12px">';
+  for (const row of rows) {
+    const pct = split[row.key];
+    const amount = Math.round((baseAmount * pct) / 100);
+    const clsAttr = row.cls === 'gold' ? 'gold' : row.cls === 'blue' ? 'blue' : '';
+    h += '<div>'
+      + '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">'
+      + `<span style="flex:1;font-size:12px;font-weight:600" class="${clsAttr}">${row.label}</span>`
+      + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-pct="${row.key}"><b>${pct}%</b></span>`
+      + `<span style="font-size:11px;color:#7d8798" data-amt="${row.key}">≈ ${amount >= 0 ? '+' : ''}${amount}/turę</span></div>`
+      + `<input type="range" class="civ-emp-slider ${row.cls}" min="0" max="100" step="${HANDEL_PCT_STEP}" `
+      + `value="${pct}" style="${sliderFillStyle(pct, row.from, row.to)}" data-handel-key="${row.key}" `
+      + `data-grad-from="${row.from}" data-grad-to="${row.to}" /></div>`;
+  }
+  h += '<div style="display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid #232b38">'
+    + '<span style="flex:1;font-size:10.5px;color:#7d8798">Suma <b style="color:#cfd5de">100%</b> · kroki '
+    + `${HANDEL_PCT_STEP}%</span><span data-sum-ok style="font-size:9.5px;font-weight:700;letter-spacing:.04em;`
+    + 'color:#78c95a;background:rgba(120,201,90,.14);border-radius:999px;padding:2px 8px">SUMA OK</span></div>';
+  h += `</div><div class="civ-emp-foot">Suma = 100% · kroki ${HANDEL_PCT_STEP}% · dotyczy wszystkich miast bez własnego override.</div></div>`;
+  queueMicrotask(() => wireSkarbiecTaxSplitInputs(split, baseAmount, onChange));
+  return h;
+}
+
+function wireSkarbiecTaxSplitInputs(
+  initial: CityPodzialHandlu,
+  baseAmount: number,
+  onChange: (ownerId: number, split: CityPodzialHandlu) => void,
+): void {
+  const host = document.getElementById('emp-skarbiec-tax-split');
+  if (!host) return;
+  let current = { ...initial };
+  for (const inp of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
+    inp.addEventListener('input', () => {
+      const key = inp.dataset.handelKey as keyof CityPodzialHandlu;
+      current = adjustHandelSplit(current, key, Number(inp.value));
+      onChange(0, { ...current });
+      for (const other of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
+        const k = other.dataset.handelKey as keyof CityPodzialHandlu;
+        const pct = current[k];
+        other.value = String(pct);
+        other.style.background = sliderFillStyle(pct, other.dataset.gradFrom ?? '#6a4010', other.dataset.gradTo ?? '#d9a441');
+        const pctEl = host.querySelector(`[data-pct="${k}"] b`);
+        if (pctEl) pctEl.textContent = `${pct}%`;
+        const amtEl = host.querySelector(`[data-amt="${k}"]`);
+        if (amtEl) {
+          const amount = Math.round((baseAmount * pct) / 100);
+          amtEl.textContent = `≈ ${amount >= 0 ? '+' : ''}${amount}/turę`;
+        }
+      }
+    });
+  }
 }
 
 function cityEconMiniPraca(rows: EmpireDetailSnap['cityEcon'], upkeep?: number): string {
@@ -1443,6 +1689,11 @@ function render(): void {
   if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
+  // — SKARBIEC (R-DESIGN-11-ZAKLADEK faza 1, Maciej 2026-08-13) — hero „Netto ±N / turę",
+  // własny blok top-level (patrz empirePanelSectionMap.ts). Praca/Nauka/Religia/Miasta zostają
+  // na dawnym torze `ekonomia` (kolejne fazy) — ce/e potrzebne tu tak samo jak w detailFor niżej.
+  const skarbiec = renderSkarbiecSection(ce, e);
+
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
   const spichlerz = renderSpichlerzCentralnySection(snap.food)
     .replace('data-section="spichlerz-centralny"', 'data-section="spichlerz"')
@@ -1506,6 +1757,7 @@ function render(): void {
   if (block === 'all' || block === 'parametry') body += params;
   if (block === 'all' || block === 'moc') body += moc;
   if (block === 'all' || block === 'ekonomia') body += zasoby;
+  if (block === 'skarbiec') body += skarbiec;
   if (block === 'spichlerz') body += spichlerz;
   if (block === 'armia') body += armia;
   if (block === 'all' || block === 'kultura') body += kult;

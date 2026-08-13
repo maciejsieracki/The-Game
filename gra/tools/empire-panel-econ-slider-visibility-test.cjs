@@ -138,8 +138,16 @@ function main() {
 
   for (const c of hudCases) {
     const section = empireSectionFromHudAct(c.act);
-    assert(`chip "${c.act}" -> blok ekonomia (R-PANEL-SPLIT nienaruszone)`,
-      empirePanelBlockForSection(section) === 'ekonomia');
+    // R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13): Skarbiec dostał WŁASNY blok top-level
+    // ('skarbiec', nie 'ekonomia') — zmiana zamierzona, patrz empirePanelSectionMap.ts. Reszta
+    // chipów w tej pętli (Praca/Nauka/Miasta/Ludność/Rekruci/Religia/pełny przegląd) zostaje na
+    // dawnym torze 'ekonomia' do kolejnych faz, więc oczekiwanie tu jest wciąż nienaruszone.
+    // EN: Treasury got its OWN top-level block ('skarbiec', not 'ekonomia') — intended change,
+    // see empirePanelSectionMap.ts. The rest of the chips in this loop stay on the old 'ekonomia'
+    // track for later phases, so the expectation there is still intact.
+    const expectedBlock = c.act === 'skarbiec' ? 'skarbiec' : 'ekonomia';
+    assert(`chip "${c.act}" -> blok ${expectedBlock} (R-PANEL-SPLIT nienaruszone / R-DESIGN-11-ZAKLADEK faza 1)`,
+      empirePanelBlockForSection(section) === expectedBlock);
     const onlyEconId = onlyEconIdFromAct(c.act);
     const vis = econSliderVisibilityForOnlyEconId(onlyEconId);
     assert(`chip "${c.act}" (onlyEconId=${JSON.stringify(onlyEconId)}): podatek ${c.wantTax ? 'WIDOCZNY' : 'UKRYTY'}`,

@@ -12,7 +12,8 @@ export type EmpirePanelBlock =
   | 'surowce'
   | 'spichlerz'
   | 'armia'
-  | 'handel';
+  | 'handel'
+  | 'skarbiec';
 
 /** Sekcja panelu → który TOP-LEVEL blok pokazać. 'all' = pełny panel (brak section). */
 export function empirePanelBlockForSection(section: string | null): EmpirePanelBlock {
@@ -25,6 +26,15 @@ export function empirePanelBlockForSection(section: string | null): EmpirePanelB
   if (section === 'kultura') return 'kultura';
   if (section === 'moc') return 'moc';
   if (section === 'parametry') return 'parametry';
+  // R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13): Skarbiec dostaje własny, odizolowany blok
+  // (hero-nagłówek „Netto ±N / turę" nie mieści się w schemacie filtrowanego wiersza wspólnej
+  // sekcji „ekonomia") — wyjątek MUSI być sprawdzony PRZED ogólnym `startsWith('econ-')` niżej.
+  // Praca/Nauka/Religia/Miasta zostają na dawnym torze `ekonomia` do kolejnych faz.
+  // EN: Treasury gets its own isolated block (a hero header "Net ±N / turn" doesn't fit the
+  // filtered-row scheme of the shared "ekonomia" section) — this exception MUST be checked
+  // BEFORE the generic `startsWith('econ-')` below. Labor/Science/Religion/Cities stay on the
+  // old `ekonomia` track for later phases.
+  if (section === 'econ-skarbiec') return 'skarbiec';
   if (section.startsWith('econ-')) return 'ekonomia';
   return 'ekonomia';
 }
