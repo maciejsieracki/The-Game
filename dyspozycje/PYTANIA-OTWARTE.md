@@ -19650,7 +19650,61 @@ czy to nowa prośba czy zapomniana funkcja. Po rekonesansie: jeśli nowa — ABC
 (zakres/skala nie jest jeszcze sprecyzowany, w przeciwieństwie do barbarzyńców); jeśli
 zapomniana — dispatch bezpośredni implementacji.**
 
-## R-AUTO-PRACA-BUDZET-PROCENT (2026-08-14, zgłoszenie Macieja) · STATUS: **OTWARTE — rekonesans w toku**
+## R-AUTO-PRACA-BUDZET-PROCENT (2026-08-14, zgłoszenie Macieja) · STATUS: **ZABLOKOWANE NA PYTANIU ABC (R-AUTO-PRACA-BUDZET-PROCENT-Q1) — rekonesans zakończony**
+
+**REKONESANS ZAKOŃCZONY (Explore, 2026-08-14):** "system 1,2,3,natura" nie jest jedną rzeczą w
+kodzie — to najprawdopodobniej `UlepszeniaPerTurn` (przyciski 1/2/3 w `buildModeHud.ts`, limit
+LICZBY auto-ulepszeń terenu na turę, nie limit Pracy) + ewentualnie `UlepszeniaFocus`
+(Żywność/Surowce/Infra/**Zrównoważone** — brak literalnego "Natura" w kodzie, najbliższe
+dopasowanie to "Zrównoważone"). Trzeci, NIEZALEŻNY mechanizm (`autoManageCities` toggle +
+`udzialBudynki` 70/30 split Pracy miasta budynki/pula) to JEDYNE miejsce gdzie już dziś istnieje
+koncept "% budżetu Pracy" — ale dzieli Pracę między dwa cele silnika, nie między automat a
+gracza. Pełny raport z lokalizacjami plików/linii: patrz notatka Explore w historii sesji
+2026-08-14 (do wglądu przy dispatchu — nie duplikować rekonesansu).
+
+## ECHO R-AUTO-PRACA-BUDZET-PROCENT-Q1 (2026-08-14) — CZEKA NA ODPOWIEDŹ WŁAŚCICIELA
+
+[TEMAT: Suwak % budżetu Pracy dla auto-managera zamiast "1,2,3,natura"]
+
+**Sytuacja:** rekonesans ustalił że "1,2,3,natura" odpowiada dziś trzem NIEZALEŻNYM mechanizmom
+o różnych jednostkach: (1) `UlepszeniaPerTurn` 1/2/3 = limit SZTUK auto-ulepszeń terenu/turę,
+nie limit Pracy; (2) `UlepszeniaFocus` — 4 przyciski, brak literalnego "Natura", najbliższe to
+"Zrównoważone"; (3) `autoManageCities`+`udzialBudynki` = już dziś istniejący % Pracy, ale dzieli
+ją między kolejkę-budynków a pulę-imperium, NIE między automat a gracza.
+
+**Cel pytania:** ustalić który/które z tych mechanizmów suwak 0-100% ma zastąpić, i potwierdzić
+że % liczy się od SKUMULOWANEJ puli Pracy imperium na koniec tury (nie od przyrostu tej tury) —
+zgodnie z Twoimi słowami "nie liczymy tego od przyrostu tylko od koniec tury ile nam zostało w
+pracy".
+
+**Dlaczego teraz:** te 3 mechanizmy mają różne jednostki (sztuki/procent/Praca absolutna) i różne
+zakresy (per-miasto vs per-imperium) — zły wybór dziś = przebudowa architektury później.
+
+**A)** Zastąp WSZYSTKIE 3 mechanizmy jednym globalnym suwakiem 0-100% (per-imperium + override
+per-miasto jak dziś `UlepszeniaEmpirePolicy`), % od skumulowanej puli Pracy na koniec tury.
+Za: jeden spójny model "% dla mnie / % dla automatu", dosłownie zgodny z Twoim opisem. Przeciw:
+największy zakres — 3 różne pętle silnika naraz, najdłuższy czas realizacji.
+
+**B)** Zastąp WYŁĄCZNIE `UlepszeniaPerTurn` (przyciski 1/2/3 w panelu "Na turę:") suwakiem %, od
+skumulowanej puli Pracy na koniec tury.
+Za: najmniejszy, najbardziej izolowany zakres (jeden plik silnika + jeden panel UI), szybka
+realizacja, nie rusza `autoManageCities`/przydziału obywateli które działają inaczej. Przeciw:
+może nie odpowiadać w pełni jeśli miałeś na myśli też podział budynki/pula.
+
+**C)** Jak (B), ale % liczone od PRZYROSTU Pracy w tej turze, nie od skumulowanej puli —
+analogia do niedawnej poprawki kryterium Auto-Wyżywienia.
+Za: spójność z ostatnią decyzją o kryterium żywnościowym. Przeciw: **Twoje własne słowa
+("nie liczymy tego od przyrostu") wprost WYKLUCZAJĄ tę opcję dla TEGO tematu** — zostawiam
+wyłącznie jako punkt kontrastu, to NIE jest rekomendacja.
+
+**Rekomendacja: B.** Najciaśniejszy zakres zgodny dosłownie z opisem (jeden realny dzisiejszy
+przełącznik 1/2/3), liczony od skumulowanej puli zgodnie z Twoim wprost wyrażonym zastrzeżeniem.
+Jeśli chodziło Ci też o podział budynki/pula (`udzialBudynki`) albo o przydział obywateli do
+heksów (`assignWorkedTiles` — to przydział BINARNY per-heks, nie da się go łatwo sparametryzować
+procentem budżetu bez głębszej przebudowy mechaniki) — powiedz wprost, to osobne, większe tematy.
+
+**STATUS: czeka na odpowiedź `R-AUTO-PRACA-BUDZET-PROCENT-Q1 + litera`. Nie dispatchowane do
+implementacji.**
 
 Jego słowa (dosłownie, dwie wiadomości pod rząd): „jeszcze jedna ważna kwestia, bo zapomniałem.
 Na późniejszym etapie gry trzy usprawnienia dla pracy w terenie automatyczne to jest za mało.
@@ -19678,3 +19732,47 @@ całego imperium czy per miasto? co dokładnie oznacza "zostawione dla gracza" �
 gracza przed ręcznym przydziałem powyżej jego %, czy tylko ustawia priorytet kolejki
 auto-managera?). Rekonesans najpierw (znaleźć dzisiejszy system "1,2,3,natura" i zrozumieć jego
 mechanikę), potem ABC z pełną specyfikacją opcji na bazie tego, co rekonesans znajdzie.
+
+## R-DROGA-WZOR-6-RAMION (2026-08-14, zlecenie Macieja z załącznikiem `Droga_wzor_6_ramion_standalone.html`) · STATUS: **DISPATCH BEZPOŚREDNI (render/**, Opus 5), bez ABC**
+
+Załącznik to gotowy, w pełni dopracowany dokument designerski (nie luźny pomysł) — screenshoty w
+`/tmp/claude-0/.../scratchpad/droga-6-ramion.png` i `droga-full.png` w tej sesji. Treść:
+
+**Zasada:** każde ramię drogi kończy się dokładnie w połowie ścianki heksa. Heks ma 6 ścianek →
+pełny wzór to sześcioramienna gwiazda. Każdy kafel łączy się z każdym sąsiadem, bo obie strony
+schodzą się w tym samym punkcie na wspólnej krawędzi. Brak "wariantów obrotu" — rysuje się jedno
+ramię na aktywny kierunek.
+
+**Geometria (2D rzut z góry, do przełożenia na obecny render Three.js):** heks 108×60px, ramię
+szerokości 15px (zakończenie płaskie, nie zaokrąglone), węzeł promień 11px (rysowany TYLKO przy
+3+ ramionach — przy 1-2 ramionach droga jest po prostu przejazdem bez węzła). Środek heksa (0,0),
+promień poziomy 54, pionowy 30. Sześć portów (środki ścianek, jedyne punkty styku): N(0,-30) ·
+NE(40.5,-15) · SE(40.5,15) · S(0,30) · SW(-40.5,15) · NW(-40.5,-15). Sąsiedzi w siatce: przez
+ściankę N/S przesunięcie (0,±60), przez skośne (±81,±30). Port jednego kafla i port sąsiada to
+TEN SAM PUNKT — szew niewidoczny bez dopasowywania grafiki.
+
+**Implementacja (kod, nie dane):** kafel drogi trzyma maskę 6 bitów (jeden na sąsiada z drogą).
+Rysowanie: dla każdego ustawionego bitu jedno ramię do jego portu, na końcu węzeł jeśli bitów≥3.
+Zero sprite'ów per kształt, zero tabeli 64 wariantów — jeden algorytm generuje wszystkie 13
+kształtów po obrocie (64 kombinacje bitów → 13 unikalnych kształtów geometrycznie, ale kod NIE
+potrzebuje tabeli kształtów, tylko maski + portów). Maska aktualizuje się przy budowie/zniszczeniu
+drogi na heksie SĄSIEDNIM — czyli budowa/zniszczenie 1 drogi to 2 zmiany maski (siebie + sąsiada).
+Droga rysowana POD propsami kafla (budynki, drzewa) i NAD teksturą terenu.
+
+**Wiele typów dróg (żwir vs brukowana itd.):** właściciel chce różne grafiki 3D w zależności od
+tego skąd droga przybywa i gdzie się kończy — do doprecyzowania w implementacji: prawdopodobnie
+osobna maska/rendering per typ drogi (`droga` vs `droga_brukowana`, już dziś 2 klucze w
+`ImprovementKey`), niekoniecznie osobne kształty na skrzyżowaniu dwóch różnych typów (rzadki
+przypadek, do decyzji Operatora — nie blokować na tym, zanotować jako otwarty szczegół jeśli
+napotkane).
+
+**DZISIEJSZY STAN (potwierdzony rekonesansem, potwierdza że to realna, nie kosmetyczna zmiana):**
+`gra/src/render/improvements.ts` — `DROGA_KEYS = new Set(['droga','droga_brukowana'])`, funkcje
+`droga()`/`drogaBrukowana()` (linie 55-70) budują STAŁY pas przez środek heksa góra-dół (N-S),
+niezależnie od realnej sąsiedztwa/kierunku (linie 399-490, komentarz Macieja z 2026-07-09 wprost:
+*"Łączenie dróg rozwiążemy inaczej w przyszłości"* — to jest dokładnie ta przyszłość). Logika
+ruchu/bonusu prędkości już istnieje osobno w `gra/src/map/road-movement.ts` (`bonus_ruch`,
+domyślnie ×2 dla `droga_brukowana`) — NIE dotykać tej logiki, tylko rendering wizualny.
+
+**STATUS: dispatch bezpośredni do Operatora Opus 5 (render/**, wyjątek §4 CLAUDE.md stosuje się
+zawsze, bez wyjątku).** Spec jest kompletny i jednoznaczny — nie wymaga ABC. Worktree izolacja.
