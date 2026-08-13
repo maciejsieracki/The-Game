@@ -19631,6 +19631,18 @@ wyeksponować ten suwak wyżej na liście albo do głównej siatki kroku 4, skor
 zauważalności okazał się problemem — do zarejestrowania jako osobny temat jeśli Maciej to
 potwierdzi jako priorytet.
 
+**KOREKTA 2026-08-14 (Maciej przesłał zrzut ekranu swojego panelu):** hipoteza „po prostu nie
+doprzewinął modala" była BŁĘDNA — zrzut ekranu Macieja pokazuje modal doprzewinięty do samego
+dołu (widoczny przycisk „ZAMKNIJ" zaraz po „WZROST LUDNOŚCI"), a wiersza „Zasięg ruchu" tam
+NIE MA. Weryfikacja: `48375ce1` (kod źródłowy) faktycznie JEST przodkiem `8b20c34d` (HEAD builda
+FALA 277, `git merge-base --is-ancestor` potwierdza) — kod w repo jest poprawny i kompletny.
+Rzeczywista przyczyna: `dyspozycje/_handoff/KANAL-PRACA.md` pokazuje, że KAŻDY deploy od FALI 275
+(gdzie ta funkcja weszła, 17:45 PL 2026-08-13) kończy się wpisem „CZEKAM-NA: sesja lokalna (pull
++ playtest FALI ...)" — i **żaden z tych wpisów nie ma potwierdzenia, że sesja lokalna faktycznie
+wykonała pull/sync** na dysk właściciela. Maciej najpewniej testuje bundle sprzed FALI 275 —
+nieaktualną, zbuforowaną lokalnie kopię, nie brak funkcji w kodzie. Zalecenie przekazane
+Maciejowi: uruchomić sync ("push") sesji lokalnej albo pobrać świeży bundle ROBOCZA.
+
 Zrzut: pełny panel ustawień nowej gry (Pustynie/Las/Góry i Wzgórza/Udział lądu/Warunki
 zwycięstwa/Trudność Miast-Państw/Barbarzyńcy/Bitwy/Koszty budynków/Koszty jednostek/Wzrost
 ludności).
@@ -19703,8 +19715,10 @@ Jeśli chodziło Ci też o podział budynki/pula (`udzialBudynki`) albo o przydz
 heksów (`assignWorkedTiles` — to przydział BINARNY per-heks, nie da się go łatwo sparametryzować
 procentem budżetu bez głębszej przebudowy mechaniki) — powiedz wprost, to osobne, większe tematy.
 
-**STATUS: czeka na odpowiedź `R-AUTO-PRACA-BUDZET-PROCENT-Q1 + litera`. Nie dispatchowane do
-implementacji.**
+**STATUS: ECHO — Maciej odpowiedział `R-AUTO-PRACA-BUDZET-PROCENT-Q1 = B` (2026-08-14, w nocy,
+tuż przed snem).** Zastępujemy WYŁĄCZNIE `UlepszeniaPerTurn` (przyciski 1/2/3, panel "Na turę:")
+suwakiem 0-100%, liczonym od SKUMULOWANEJ puli Pracy imperium na koniec tury. Dispatch do
+implementacji poniżej.
 
 Jego słowa (dosłownie, dwie wiadomości pod rząd): „jeszcze jedna ważna kwestia, bo zapomniałem.
 Na późniejszym etapie gry trzy usprawnienia dla pracy w terenie automatyczne to jest za mało.
