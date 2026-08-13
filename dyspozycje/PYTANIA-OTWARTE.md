@@ -18420,3 +18420,33 @@ przez R1), sekcja K testuje strukturę AI a nie decyzję AI (autor to jawnie dek
 
 **STATUS: dispatch Operator runda 3 — naprawa mechaniczna `surowce-katalog-kolejnosc-test.cjs` +
 2 asercje strażnicze N1, bez ABC.**
+
+## R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA runda 2 UX (07077cd3) — Evaluator: WERDYKT PASS-WITH-NOTES (2026-08-13)
+
+Evaluator (Opus 5, `a964328f365dab35a`) potwierdził commit `07077cd3`: zero regresji dla pozostałych
+13 typów akcji dyplomatycznych (dowód algebraiczny + empiryczny, 98 porównań kafelków, 0 różnic poza
+'14'), Część C testu bunduje i wykonuje REALNY kod produkcyjny (potwierdzone mutacyjnie — cofnięcie
+naprawy w pliku produkcyjnym zmienia wynik testu). Bramki: `tsc` 0, `38/38`, `logic-test` 213/213,
+wszystkie 41 plików `diplomacy-*.cjs` zielone. Klasa CSS `on-table-ok` istnieje i jest zdefiniowana.
+`onTableCountForType` liczy poprawnie wyłącznie bieżącego partnera (zweryfikowane w kodzie, nie
+zgadywane).
+
+**Sprostowanie N1 (rejestrowe, nie kodowe):** raport Operatora rundy 2 podał błędną liczbę — "36/38 z
+2 nowymi FAIL" przy cofnięciu naprawy w rzeczywistości pochodzi z mutacji WARSTWY RUNDY 1
+(`isLocked`), nie rundy 2. Mutacja właściwa dla rundy 2 (`cls`/`statusNote`/`hoverTip`) daje **37/38,
+jedną czerwoną asercję** — naprawa jest strzeżona przez dokładnie jedną asercję Części C, nie dwie.
+Twierdzenie z nagłówka testu że cofnięcie warstwy rundy 1 przechodzi przez wszystkie 41 bramek na
+zielono zostało zweryfikowane niezależnie jako prawdziwe (potwierdza realność luki pokrycia, którą
+runda 2 domknęła).
+
+**Nie blokujące, zalecane przed deployem (runda 3):**
+- **N3** — jednolinijkowy defekt UX: gdy kafelek '14' jest JEDNOCZEŚNIE na stole i zablokowany
+  (`locked`/`!enabled`), tekst zachęca "dodaj kolejną", a przycisk jest wyłączony — odwrócona wersja
+  wady, którą runda 2 naprawiała. Osiągalne w grze (`playerDiplomacyActionAllowed`). Naprawa:
+  `onTableAllowsMore = onTable && !onTableBlocks && !isLocked`.
+- **N2** — ścieżka pozytywna (`on-table-ok`, treść notatki "na stole: N", tooltip, poprawność licznika)
+  nie ma ŻADNEJ asercji — zepsucie licznika przechodzi bramkę na zielono. Brakuje 2-3 asercji.
+- **N4** — higiena: 7 plików `.stubs/deals-col-*-stub.ts` bez wpisu w `.gitignore`.
+
+**STATUS: temat R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA zamknięty merytorycznie (runda 1 + runda 2 UX
+oba PASS-WITH-NOTES). N3/N2/N4 to drobne poprawki do rundy 3, niepilne, nie blokują.**
