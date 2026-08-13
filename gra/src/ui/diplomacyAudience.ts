@@ -744,6 +744,13 @@ ${DIPLO_1E_SHARED_CSS}
 .da-deal.locked .da-note{color:#e08a8a;}
 .da-deal.on-table{opacity:.72;border-style:dashed;}
 .da-deal.on-table .da-note{color:#8ab4e8;}
+/* Runda 2 (2026-08-13): stan „na stole, ale WOLNO dodać kolejną" (np. Umowa wymiany surowców,
+   id '14') — kafelek ma wyglądać na normalnie klikalny (bez przyciemnienia/kreski), notatka
+   informacyjna (nie ostrzegawcza) w kolorze pozytywnym, nie niebieskim „ostrzegawczym" jak wyżej.
+   EN: „on the table but allowed to add another" state — tile stays visually normal (no dimming/
+   dashing), note is informational (not a warning), positive color, distinct from the blue warning
+   note above. */
+.da-deal.on-table-ok .da-note{color:#8ec9a0;}
 .da-multi-deal-hint{font-size:0.62em;color:#8a8070;line-height:1.45;margin-top:6px;padding:6px 8px;
   border-radius:6px;border:1px dashed rgba(232,216,138,.2);background:rgba(0,0,0,.18);}
 .da-deal.active{border-color:rgba(142,197,255,.5);background:linear-gradient(180deg,rgba(142,197,255,.09),rgba(12,16,24,.75));cursor:default;}
@@ -1505,8 +1512,17 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
   return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
 }
 
-/** FAZA 2 pkt 3 kol.1 (lewo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
-function dealsColumnHtml(st: DiplomacyAudienceState): string {
+/**
+ * FAZA 2 pkt 3 kol.1 (lewo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest).
+ * Eksport WYŁĄCZNIE do testu warstwy wiązania (Runda 2, 2026-08-13,
+ * `diplomacy-tech-chip-filter-and-multi-deal-test.cjs` CZĘŚĆ C) — potwierdza, że render
+ * faktycznie CZYTA `onTableBlocks`/`uiActionAllowsMultipleOwnOnTable`, nie tylko że te
+ * predykaty zwracają poprawną wartość w oderwaniu (to już pokrywają inne testy).
+ * EN: exported ONLY for the binding-layer test — confirms the render actually READS
+ * `onTableBlocks`/`uiActionAllowsMultipleOwnOnTable`, not just that the predicates return the
+ * right value in isolation (already covered elsewhere).
+ */
+export function dealsColumnHtml(st: DiplomacyAudienceState): string {
   const visible = st.actions.filter(a => a.id !== '1');
   const ownOnTable = new Set(
     (st.pendingNegotiations ?? []).filter(r => r.direction === 'own').map(r => r.uiActionId),
@@ -1522,17 +1538,36 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
     // placed on the table multiple times per negotiation, summing into one shared PW balance.
     // All other deal types stay blocked by `onTable` as before.
     const onTableBlocks = onTable && !uiActionAllowsMultipleOwnOnTable(a.id);
+    // Runda 2 (Evaluator, 2026-08-13): dla typów, które WOLNO dodać wielokrotnie (dziś '14'),
+    // kafelek MUSI wyglądać na normalnie klikalny — `cls`/`statusNote`/`hoverTip` czytają
+    // `onTableBlocks`, nigdy surowe `onTable`. Wcześniej kafelek wyglądał zablokowany
+    // (przyciemniony, kreskowana ramka, ostrzegawczy tooltip) mimo że kliknięcie faktycznie
+    // dodawało kolejną pozycję — UI komunikował odwrotność prawdy.
+    // EN: for types that MAY be added multiple times (today '14'), the tile MUST look
+    // normally clickable — `cls`/`statusNote`/`hoverTip` read `onTableBlocks`, never raw
+    // `onTable`. Previously the tile looked blocked (dimmed, dashed border, warning tooltip)
+    // even though clicking it actually added another entry — the UI said the opposite of
+    // the truth.
+    const onTableAllowsMore = onTable && !onTableBlocks;
+    const onTableCountForType = onTableAllowsMore
+      ? (st.pendingNegotiations ?? []).filter(r => r.direction === 'own' && r.uiActionId === a.id).length
+      : 0;
     const isLocked = a.locked || !a.enabled || a.active === true || onTableBlocks;
     let cls = isLocked ? 'da-deal locked' : 'da-deal';
     if (a.active) cls += ' active';
-    if (onTable) cls += ' on-table';
-    const statusNote = audienceActionStatusNote(a, onTable);
+    if (onTableBlocks) cls += ' on-table';
+    if (onTableAllowsMore) cls += ' on-table-ok';
+    const statusNote = onTableAllowsMore
+      ? 'na stole: ' + onTableCountForType + ' — dodaj kolejną'
+      : audienceActionStatusNote(a, onTableBlocks);
     const lockReason = a.lockNote || (isLocked && a.tooltip ? a.tooltip : '');
-    const hoverTip = onTable
+    const hoverTip = onTableBlocks
       ? 'Ta umowa już leży na stole negocjacji — użyj Przyjmij przy panelu PW lub Odrzuć, aby wycofać'
-      : a.active
-        ? 'Umowa już zawarta'
-        : (a.opis || lockReason || a.tooltip || a.label);
+      : onTableAllowsMore
+        ? 'Na stole jest już ' + onTableCountForType + ' tego typu — możesz dodać kolejną umowę'
+        : a.active
+          ? 'Umowa już zawarta'
+          : (a.opis || lockReason || a.tooltip || a.label);
     const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
     const endIc = a.active
       ? dipBrandIconHtml('ui-check', 13, 'da-checkic')

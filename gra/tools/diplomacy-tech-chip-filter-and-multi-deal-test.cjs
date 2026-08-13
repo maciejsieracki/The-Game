@@ -30,6 +30,18 @@
  *      jak w main.ts, żeby asercja odzwierciedlała realną decyzję bramki, nie tylko samą
  *      funkcję w oderwaniu.
  *
+ * CZĘŚĆ C — Runda 2 (Evaluator, 2026-08-13): CZĘŚĆ B wyżej sprawdza WYŁĄCZNIE że
+ * `uiActionAllowsMultipleOwnOnTable`/`allowsMultipleOwnOutgoingNegotiations` ZWRACAJĄ poprawną
+ * wartość w oderwaniu — nie że `dealsColumnHtml` (diplomacyAudience.ts) faktycznie z nich
+ * KORZYSTA przy renderze. Zweryfikowane mutacyjnie przez Evaluatora: cofnięcie
+ * `onTableBlocks`→`onTable` w `dealsColumnHtml` (predykaty NIETKNIĘTE) przeszło przez WSZYSTKIE
+ * 41 testów `diplomacy-*.cjs` bez ani jednej czerwonej asercji — luka w pokryciu. CZĘŚĆ C
+ * renderuje PRAWDZIWY `dealsColumnHtml` (wyeksportowany wyłącznie do tego testu — patrz
+ * komentarz nad definicją w diplomacyAudience.ts) ze stanem „Umowa wymiany surowców (id 14)
+ * już na stole" i asertuje na PRAWDZIWYM HTML-u: kafelek '14' NIE ma `disabled` (naprawa
+ * działa) + kontrola negatywna, inny typ (id '2', Pokój — NIE dopuszcza wielokrotności) NADAL
+ * ma `disabled` (bez regresji dla wszystkich pozostałych typów).
+ *
  * Usage (z gra/): node tools/diplomacy-tech-chip-filter-and-multi-deal-test.cjs
  */
 const fs = require('fs');
@@ -288,6 +300,145 @@ export {
     }
 
     for (const f of [entryFile, BUNDLE]) {
+      try { fs.unlinkSync(f); } catch (_) { /* ok */ }
+    }
+  }
+
+  // =========================================================================
+  // CZĘŚĆ C — Runda 2: warstwa WIĄZANIA — `dealsColumnHtml` faktycznie CZYTA
+  // `onTableBlocks`/`uiActionAllowsMultipleOwnOnTable`, nie tylko że te predykaty są poprawne
+  // w oderwaniu (patrz komentarz nagłówkowy pliku).
+  // =========================================================================
+  {
+    console.log('CZĘŚĆ C — dealsColumnHtml: kafelek "14" na stole NIE jest disabled (warstwa wiązania)');
+
+    const STUB_DIR = path.resolve(__dirname, '.stubs');
+    fs.mkdirSync(STUB_DIR, { recursive: true });
+    /** Moduły UI-owe BEZ związku z `dealsColumnHtml` (muzyka, koszyk, modal negocjacji,
+     *  portrety, ikony brandowe) — zaślepione, żeby bundlować WYŁĄCZNIE realny kod
+     *  dyplomacji (`diplomacy-audience-actions.ts`, `diplomacy-proposals.ts`, ...), bez
+     *  wciągania plików audio (`import.meta.glob`, znany pre-istniejący limit bundlera —
+     *  patrz CLAUDE.md) ani `?raw` importów SVG/CSS. */
+    const stubs = {
+      music: path.resolve(STUB_DIR, 'deals-col-music-stub.ts'),
+      diploUiSkin: path.resolve(STUB_DIR, 'deals-col-diplouiskin-stub.ts'),
+      negotiationModal: path.resolve(STUB_DIR, 'deals-col-negotiationmodal-stub.ts'),
+      tradeBasket: path.resolve(STUB_DIR, 'deals-col-tradebasket-stub.ts'),
+      leaderPortraits: path.resolve(STUB_DIR, 'deals-col-leaderportraits-stub.ts'),
+      civBrandDisplay: path.resolve(STUB_DIR, 'deals-col-civbranddisplay-stub.ts'),
+      brandAssets: path.resolve(STUB_DIR, 'deals-col-brandassets-stub.ts'),
+    };
+    fs.writeFileSync(stubs.music, [
+      "export function startDiplomacyMusic() {}",
+      "export function stopDiplomacyMusic() {}",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.diploUiSkin, [
+      "export function civLeaderMedallionHtmlById() { return ''; }",
+      "export function dipBrandIconHtml() { return ''; }",
+      "export function dipCapitalLocateBtnHtml() { return ''; }",
+      "export const DIPLO_1E_SHARED_CSS = '';",
+      "export function ensureDiploBrandScope() {}",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.negotiationModal, [
+      "export function actionNeedsNegotiation() { return false; }",
+      "export function showNegotiationModal() {}",
+      "export function proposalActionIdFromPayload() { return undefined; }",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.tradeBasket, [
+      "export function actionUsesTradeBasket() { return false; }",
+      "export function getTradeBasketMode() { return 'trade'; }",
+      "export function showTradeBasketModal() {}",
+      "export function hideTradeBasketModal() {}",
+      "export function openQuickDealBasket() {}",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.leaderPortraits, [
+      "export function civCardDisplayName(label) { return label; }",
+      "export function leaderName() { return null; }",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.civBrandDisplay, "export function civBrandLineForKey() { return ''; }\n", 'utf8');
+    fs.writeFileSync(stubs.brandAssets, [
+      "export function brandIconSvg() { return ''; }",
+      "export function mapResourceIconSvg() { return ''; }",
+    ].join('\n'), 'utf8');
+
+    const ENTRY = path.resolve(__dirname, '.dip-deals-col-entry.ts');
+    const BUNDLE = path.resolve(__dirname, '.dip-deals-col-bundle.cjs');
+    fs.writeFileSync(ENTRY, `export { dealsColumnHtml } from '../src/ui/diplomacyAudience.ts';\n`, 'utf8');
+
+    await esbuild.build({
+      entryPoints: [ENTRY],
+      bundle: true,
+      platform: 'node',
+      format: 'cjs',
+      target: 'node18',
+      outfile: BUNDLE,
+      absWorkingDir: path.resolve(__dirname, '..'),
+      logLevel: 'silent',
+      loader: { '.json': 'json' },
+      plugins: [{
+        name: 'stub-vite-assets-deals-col',
+        setup(build) {
+          build.onResolve({ filter: /audio\/muzyka-antyczna$/ }, () => ({ path: stubs.music }));
+          build.onResolve({ filter: /diploUiSkin$/ }, () => ({ path: stubs.diploUiSkin }));
+          build.onResolve({ filter: /diplomacyNegotiationModal$/ }, () => ({ path: stubs.negotiationModal }));
+          build.onResolve({ filter: /diplomacyTradeBasket$/ }, () => ({ path: stubs.tradeBasket }));
+          build.onResolve({ filter: /leaderPortraits$/ }, () => ({ path: stubs.leaderPortraits }));
+          build.onResolve({ filter: /civBrandDisplay$/ }, () => ({ path: stubs.civBrandDisplay }));
+          build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: stubs.brandAssets }));
+        },
+      }],
+    });
+
+    const { dealsColumnHtml } = require(BUNDLE);
+
+    /** Stan: „Umowa wymiany surowców" (id '14', dopuszcza wielokrotność) I „Pokój" (id '2',
+     *  NIE dopuszcza wielokrotności — kontrola negatywna) już leżą na stole gracza. */
+    function stateWithBothOnTable() {
+      return {
+        playerTitle: 'Gracz', playerCivName: 'Rzym', otherTitle: 'Rozmówca', otherCivName: 'Grecja',
+        zaufanie: 50, respekt: 50, tier: 1, layer: 'full', contactEstablished: true,
+        actions: [
+          { id: '14', label: 'Umowa wymiany surowców', enabled: true },
+          { id: '2', label: 'Pokój', enabled: true },
+        ],
+        pendingNegotiations: [
+          { id: 'n14', direction: 'own', uiActionId: '14', actionLabel: 'Umowa wymiany surowców',
+            summary: 'x', round: 1, maxRounds: 3, expiresInTurns: 5, canCounter: true },
+          { id: 'n2', direction: 'own', uiActionId: '2', actionLabel: 'Pokój',
+            summary: 'y', round: 1, maxRounds: 3, expiresInTurns: 5, canCounter: true },
+        ],
+      };
+    }
+
+    function tileHtml(html, aid) {
+      const re = new RegExp('<button[^>]*data-aid="' + aid + '"[^>]*>');
+      const m = re.exec(html);
+      return m ? m[0] : null;
+    }
+    /** Zwraca listę klas z `class="..."` kafelka — porównanie po TOKENACH, nie substringiem
+     *  (regex `\bon-table\b` łapałby też "on-table-ok" — myślnik jest znakiem niesłownym,
+     *  więc granica słowa wypada tuż po "table"). */
+    function tileClasses(tileHtmlStr) {
+      const m = /class="([^"]*)"/.exec(tileHtmlStr || '');
+      return m ? m[1].split(/\s+/) : [];
+    }
+
+    {
+      const html = dealsColumnHtml(stateWithBothOnTable());
+      const tile14 = tileHtml(html, '14');
+      const tile2 = tileHtml(html, '2');
+      ok(tile14 !== null, 'kafelek "14" (Umowa wymiany surowców) obecny w wygenerowanym HTML');
+      ok(tile2 !== null, 'kafelek "2" (Pokój) obecny w wygenerowanym HTML');
+      ok(tile14 !== null && !/\bdisabled\b/.test(tile14),
+        'kafelek "14" na stole (uiActionAllowsMultipleOwnOnTable=true): BRAK atrybutu disabled — kliknięcie faktycznie dodaje kolejną umowę (naprawa Rundy 2)');
+      const cls14 = tileClasses(tile14);
+      ok(!cls14.includes('on-table') && !cls14.includes('locked'),
+        'kafelek "14" na stole: BEZ klasy "on-table"/"locked" (klasy: ' + cls14.join(' ') + ') — nie wygląda wizualnie na zablokowany (Runda 2, naprawa UX)');
+      ok(tile2 !== null && /\bdisabled\b/.test(tile2),
+        'kontrola negatywna: kafelek "2" (Pokój, NIE dopuszcza wielokrotności) na stole NADAL ma disabled — bez regresji dla pozostałych typów');
+    }
+
+    for (const f of Object.values(stubs).concat([ENTRY, BUNDLE])) {
       try { fs.unlinkSync(f); } catch (_) { /* ok */ }
     }
   }
