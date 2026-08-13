@@ -34,7 +34,7 @@ const ENTRY_TS = `
 export { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, computeEarlyScoutProductionScore, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, computeMajorAiEarlyGame, AI_MAJOR_EARLY_MAX_TURN, AI_MAJOR_EARLY_MAX_TURN_L1, AI_MAJOR_EARLY_ECON_BUILDING_MULT, AI_EARLY_SCOUT_REPEAT_PENALTY } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP } from ${JSON.stringify(AI_SRC + '/game/city-founding')};
 export { isMajorAiOwner } from ${JSON.stringify(AI_SRC + '/game/owner-utils')};
-export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
+export { hexDistance, hexNeighborCoords } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
 `;
 
@@ -57,7 +57,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP, isMajorAiOwner, computeMajorAiEarlyGame, AI_MAJOR_EARLY_MAX_TURN, AI_MAJOR_EARLY_MAX_TURN_L1, AI_MAJOR_EARLY_ECON_BUILDING_MULT, AI_EARLY_SCOUT_REPEAT_PENALTY, computeEarlyScoutProductionScore } = AI;
+const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, hexNeighborCoords, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP, isMajorAiOwner, computeMajorAiEarlyGame, AI_MAJOR_EARLY_MAX_TURN, AI_MAJOR_EARLY_MAX_TURN_L1, AI_MAJOR_EARLY_ECON_BUILDING_MULT, AI_EARLY_SCOUT_REPEAT_PENALTY, computeEarlyScoutProductionScore } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -2265,6 +2265,67 @@ console.log('\n--- T7D-o: defensiveCopy -> chatka WE WLASNYM terytorium, MP bez 
   });
   const moves = result.filter(c => c.type === 'move' && c.unitId === 'w7o');
   assert(moves.length === 1, 'T7D-o: chatka dziala bez sister-city-states / offensiveSupport (Easy/Normal MP)');
+}
+
+console.log('\n--- T7D-p: runda 2 -- po ZEBRANIU chatki (wioska.istnieje=false) MP juz jej NIE goni (koniec oscylacji rundy 1) ---');
+{
+  // Repro dokladnie tego, co Evaluator rundy 1 zmierzyl symulacja 12 tur: silnik main.ts nigdy
+  // nie ustawial wioska.istnieje=false (brak sciezki zebrania dla ownerId!=0), wiec
+  // getNeutralVillagesInTerritory() ZAWSZE zwracalo te sama chatke -> MP wiecznie ja gonilo.
+  // Ten test dowodzi WARSTWY DECYZYJNEJ (ai.ts): gdy main.ts (naprawa rundy 2,
+  // checkVillageRewardsAlongPath wpiete w main.ts egzekutor ruchu AI/MP) faktycznie ustawia
+  // wioska.istnieje=false po dojsciu, decideDefensiveCopyTurn PRZESTAJE generowac ruch w strone
+  // tego heksu -- symulacja kilku kolejnych tur potwierdza stabilizacje, nie oscylacje.
+  const map7p = makeMap(15, 15);
+  const city = makeCity('c7p', 13, 7, 7); // population 2 -> cityTerritoryRadius = 5
+  const warrior = makeUnit('w7p', 13, 7, 8, 'miecznik');
+
+  // Chatka DOKLADNIE 1 heks od jednostki (sasiad realny, nie zgadywany offset) -> firstStep
+  // stawia ja wprost NA chatce w jednej turze, bez wieloturowego marszu.
+  const villageHex = hexNeighborCoords(warrior.q, warrior.r).find(n => {
+    const k = `${n.q},${n.r}`;
+    return map7p.hexes[k] !== undefined && hexDistance(n.q, n.r, city.q, city.r) <= 5;
+  });
+  assert(villageHex !== undefined, 'T7D-p setup: znaleziono sasiedni heks WE WLASNYM terytorium na testowej mapie');
+  const vk = `${villageHex.q},${villageHex.r}`;
+  if (villageHex !== undefined) {
+    map7p.hexes[vk].wioska = { istnieje: true, ludnosc: 1 };
+
+    // Tura 1: MP idzie DOKLADNIE na chatke (dystans 1 -> jeden krok wystarcza, jak T7D-l).
+    const r1 = decideAITurn(13, [warrior], [city], map7p, makeGameData(), { defensiveCopy: true });
+    const m1 = r1.filter(c => c.type === 'move' && c.unitId === 'w7p');
+    assert(m1.length === 1, 'T7D-p tura1: MP rusza w strone chatki');
+    if (m1.length === 1) {
+      eq(m1[0].toQ, villageHex.q, 'T7D-p tura1: krok laduje na Q chatki (dystans 1)');
+      eq(m1[0].toR, villageHex.r, 'T7D-p tura1: krok laduje na R chatki (dystans 1)');
+      warrior.q = m1[0].toQ;
+      warrior.r = m1[0].toR;
+    }
+
+    // Symulacja zebrania -- DOKLADNIE to, co main.ts::checkVillageRewardAt robi po dojsciu
+    // (runda 2 tej naprawy, main.ts ~26417): wioska.istnieje=false. ai.ts SAMO nie zbiera --
+    // to egzekutor main.ts (checkVillageRewardsAlongPath(path, u.ownerId) w bloku
+    // cmd.type==='move' AI/MP), ten test symuluje wylacznie JEGO SKUTEK na mapie.
+    map7p.hexes[vk].wioska.istnieje = false;
+
+    // Tury 2-5: BEZ chatki w puli (getNeutralVillagesInTerritory jej juz nie zwraca), MP NIE
+    // wraca na jej dawny heks w ZADNEJ z kolejnych tur -- koniec "wiecznej oscylacji" rundy 1
+    // (chatka wciagala, blok powrotu-pod-miasto odsuwal o 1, kolejna tura znowu wciagala).
+    const visitedAfterCollection = [];
+    for (let t = 0; t < 4; t++) {
+      const rN = decideAITurn(13, [warrior], [city], map7p, makeGameData(), { defensiveCopy: true });
+      const mN = rN.filter(c => c.type === 'move' && c.unitId === 'w7p');
+      if (mN.length === 1) {
+        warrior.q = mN[0].toQ;
+        warrior.r = mN[0].toR;
+      }
+      visitedAfterCollection.push(`${warrior.q},${warrior.r}`);
+    }
+    const revisits = visitedAfterCollection.filter(p => p === vk).length;
+    eq(revisits, 0,
+      `T7D-p tury2-5: po zebraniu MP NIGDY nie wraca na dawny heks chatki (${vk}) w kolejnych 4 turach -- ` +
+      `pozycje: ${visitedAfterCollection.join(' -> ')} (koniec oscylacji rundy 1)`);
+  }
 }
 
 // ============================================================================

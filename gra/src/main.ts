@@ -19186,7 +19186,21 @@ async function boot(): Promise<void> {
      * później) widzi już `istnieje === false` i funkcja wraca natychmiast.
      * Wołane raz na ZAKOŃCZONE przemieszczenie (nie per jednostka w stosie).
      */
-    function checkVillageRewardAt(q: number, r: number): boolean {
+    /**
+     * P-MP-CHATKI-SKARBOW-NIE-ZBIERANE runda 2 (ECHO 2026-08-13, Maciej): „Zarówno AI jak i
+     * miasta państwa po odkryciu chatek mają takie same skarby jak gracze." -- ta sama pula
+     * nagród i te same reguły losowania (pickVillageReward/villageGoldAmount/...), wyłącznie
+     * CEL ZAPISU jest owner-aware: gracz (ownerId===0) pisze wprost do `player.*` jak dotąd,
+     * AI/miasto-państwo (ownerId>0) pisze do map `ai*ByOwner` (ownerTreasury/ownerNaukaPool,
+     * ten sam wzorzec co przejęcie stolicy, linia ~21630) i do `runAiResearchForOwner` (ten sam
+     * resolver co coroczne bankowanie nauki AI, linia ~24270) zamiast do `researchStep(player,…)`.
+     * Toast/wpis w panelu WYDARZENIA to UI gracza — dla AI/MP zamiast tego jeden console.log.
+     * / EN: same reward pool/rules as the player; only the write target is owner-aware --
+     * player writes to `player.*` as before, AI/city-state writes to the `ai*ByOwner` maps via
+     * the same accessors capital-capture already uses. No player-UI toast for AI/MP, console.log
+     * instead.
+     */
+    function checkVillageRewardAt(q: number, r: number, ownerId: number = 0): boolean {
       const hex = map.hexes[keyOf(q, r)];
       if (!hex?.wioska?.istnieje) return false;
       hex.wioska.istnieje = false;
@@ -19196,6 +19210,11 @@ async function boot(): Promise<void> {
       // przy save/load wskrzesza wioskę (hex.wioska.istnieje wraca na true).
       lootedVillageHexKeys.add(keyOf(q, r));
 
+      const isPlayer = ownerId === 0;
+      // PARYTET AI: era do skalowania nagrody -- gracz z player.era, AI/MP przez ten sam
+      // resolver co reszta silnika (empireEpochForOwner), nie zahardkodowane player.era.
+      const era = isPlayer ? player.era : empireEpochForOwner(ownerId);
+
       // D: zbieramy JEDEN czytelny opis nagrody + ikonę + kind zdarzenia (zamiast
       // kilku nadpisujących się toastów). Na końcu: jeden toast + trwały wpis w WYDARZENIA.
       let summary = '';
@@ -19204,8 +19223,12 @@ async function boot(): Promise<void> {
       let villageEraAdvanced = false;
 
       const grantGold = (label: string): void => {
-        const amount = villageGoldAmount(player.era);
-        player.skarbiec += amount;
+        const amount = villageGoldAmount(era);
+        if (isPlayer) {
+          player.skarbiec += amount;
+        } else {
+          setOwnerTreasury(ownerId, ownerTreasury(ownerId) + amount);
+        }
         summary = 'Chatka (' + label + '): +' + amount + ' złota';
         icon = '\u{1F4B0}'; // 💰
         evKind = 'city';
@@ -19216,12 +19239,12 @@ async function boot(): Promise<void> {
       // SPAWNU (gdzie jednostka faktycznie stanie), NIE na heksie chatki (q, r) — bo to
       // spawn, nie chatka, liczy się jako naruszenie granicy. Wynik reużyty niżej w gałęzi
       // 'jednostka', żeby findVillageRewardSpawnHex nie było wołane dwa razy.
-      const rewardUnitTypeId = villageUnitForEra(player.era);
+      const rewardUnitTypeId = villageUnitForEra(era);
       const rewardUnitDest = rewardUnitTypeId
         ? findVillageRewardSpawnHex({
             hutQ: q,
             hutR: r,
-            ownerId: 0,
+            ownerId,
             units,
             cities,
             isPassable: isHexPassableForUnit,
@@ -19231,8 +19254,8 @@ async function boot(): Promise<void> {
       const excludeUnit = shouldExcludeUnitReward({
         hasSpawnHex: rewardUnitDest !== undefined,
         spawnHexOwnerId: rewardUnitDest ? territoryOwnerAtLive(rewardUnitDest.q, rewardUnitDest.r) : null,
-        playerOwnerId: 0,
-        rewardUnitIsMilitary: isVillageRewardUnitMilitary(player.era),
+        playerOwnerId: ownerId,
+        rewardUnitIsMilitary: isVillageRewardUnitMilitary(era),
       });
 
       const kind = pickVillageReward(Math.random(), { excludeUnit });
@@ -19240,32 +19263,45 @@ async function boot(): Promise<void> {
       if (kind === 'zloto') {
         grantGold('skarb');
       } else if (kind === 'tech') {
-        if (player.badana === null) {
+        // Aktualnie badana technologia właściciela -- gracz z player.badana, AI/MP z
+        // aiBadanaByOwner (ten sam magazyn co runAiResearchForOwner niżej czyta/pisze).
+        const ownerBadanaNow = isPlayer ? player.badana : (aiBadanaByOwner.get(ownerId) ?? null);
+        if (ownerBadanaNow === null) {
           grantGold('brak aktywnych badań, w zamian');
         } else {
-          const amount = villageTechProgress(player.era);
-          player.nauka += amount;
-          summary = 'Chatka: +' + amount + ' postępu badań (' + player.badana + ')';
+          const amount = villageTechProgress(era);
+          summary = 'Chatka: +' + amount + ' postępu badań (' + ownerBadanaNow + ')';
           icon = '\u{1F52C}'; // 🔬
           evKind = 'science';
-          const prevPlayerEra = player.era;
-          const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
-          // R-EPOKA-CUD-WARUNEK-AWANSU: era gracza przeliczana pełną bramką PO researchStep
-          // (komplet tech epoki + cud E), nie przez surowy awansDoEpoki ustawiony wewnątrz
-          // researchStep — ta sama ścieżka co koniec tury i handel technologiami.
-          reconcilePlayerEraFromResearch();
-          for (const done of step.completed) {
-            summary += ' \xb7 zbadano ' + done.id;
-          }
-          const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
-          villageEraAdvanced = eraAdvanced;
-          if (eraAdvanced) {
-            overlayDepositEra = player.era;
-            rebuildResourceOverlays();
-            setEra(player.era);
-          }
-          if (eraAdvanced) {
-            notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+          if (isPlayer) {
+            player.nauka += amount;
+            const prevPlayerEra = player.era;
+            const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+            // R-EPOKA-CUD-WARUNEK-AWANSU: era gracza przeliczana pełną bramką PO researchStep
+            // (komplet tech epoki + cud E), nie przez surowy awansDoEpoki ustawiony wewnątrz
+            // researchStep — ta sama ścieżka co koniec tury i handel technologiami.
+            reconcilePlayerEraFromResearch();
+            for (const done of step.completed) {
+              summary += ' \xb7 zbadano ' + done.id;
+            }
+            const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
+            villageEraAdvanced = eraAdvanced;
+            if (eraAdvanced) {
+              overlayDepositEra = player.era;
+              rebuildResourceOverlays();
+              setEra(player.era);
+            }
+            if (eraAdvanced) {
+              notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+            }
+          } else {
+            // AI/MP: dolicz do puli nauki ownera i odpal TEN SAM resolver co coroczne
+            // bankowanie nauki AI (runAiResearchForOwner, main.ts ~24270) -- konsumuje pulę,
+            // ewentualnie kończy technologię/awansuje epokę i sam wywołuje
+            // refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(ownerId)) wewnątrz.
+            // Nie duplikujemy tej logiki -- żadnego osobnego researchStep(aiState,...) tutaj.
+            setOwnerNaukaPool(ownerId, ownerNaukaPool(ownerId) + amount);
+            runAiResearchForOwner(ownerId);
           }
         }
       } else {
@@ -19278,13 +19314,15 @@ async function boot(): Promise<void> {
         } else {
           const def = lookupUnitDef(typeId);
           // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (produkcja jednostki).
+          // player.ruchSwiataPace jest globalnym ustawieniem tempa świata (nie per-owner) --
+          // ten sam wzorzec już stosowany dla jednostek produkowanych przez AI (main.ts ~24932).
           const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
           const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
           const isSuper = def['Super-jednostka'] === 'TAK';
           const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + Math.random().toString(36).slice(2);
           units.push({
             id: newUnitId,
-            ownerId: 0,
+            ownerId,
             typeId,
             category: categoryOf(typeId, role, isSuper, def['Typ']),
             q: dest.q,
@@ -19304,33 +19342,43 @@ async function boot(): Promise<void> {
       refreshFog({ skipVeteranEducation: true });
 
       if (summary) {
-        // Jeden trwały toast (5 s) + wpis w panelu WYDARZENIA (nie ginie jak toast).
-        // Awans epoki ma własny toast — nie nadpisuj go podsumowaniem chatki.
-        if (!villageEraAdvanced) {
-          showHintMessage(icon + ' ' + summary, 5000);
+        if (isPlayer) {
+          // Jeden trwały toast (5 s) + wpis w panelu WYDARZENIA (nie ginie jak toast).
+          // Awans epoki ma własny toast — nie nadpisuj go podsumowaniem chatki.
+          if (!villageEraAdvanced) {
+            showHintMessage(icon + ' ' + summary, 5000);
+          }
+          villageEventLog.unshift({
+            id: 'village-' + turn + '-' + q + '-' + r,
+            icon,
+            title: 'Odkryto chatkę',
+            subtitle: summary,
+            kind: evKind,
+          });
+          if (villageEventLog.length > 6) villageEventLog.length = 6;
+          refreshD1bHud();
+        } else {
+          // AI/miasto-państwo: brak UI gracza (toast/panel WYDARZENIA są jego widokiem) --
+          // console.log wzorem innych zdarzeń AI (np. „[AI ${ownerId}] Zalozono miasto…”).
+          console.log(`[Chatka] Owner ${ownerId}: ${summary}`);
         }
-        villageEventLog.unshift({
-          id: 'village-' + turn + '-' + q + '-' + r,
-          icon,
-          title: 'Odkryto chatkę',
-          subtitle: summary,
-          kind: evKind,
-        });
-        if (villageEventLog.length > 6) villageEventLog.length = 6;
-        refreshD1bHud();
       }
       return true;
     }
 
-    /** Sprawdza nagrody wioski na każdym unikalnym heksie ścieżki (gracz). */
-    function checkVillageRewardsAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): boolean {
+    /** Sprawdza nagrody wioski na każdym unikalnym heksie ścieżki (domyślnie gracz;
+     *  ownerId>0 -- AI/miasto-państwo, patrz checkVillageRewardAt). */
+    function checkVillageRewardsAlongPath(
+      hexes: ReadonlyArray<{ q: number; r: number }>,
+      ownerId: number = 0,
+    ): boolean {
       const seen = new Set<string>();
       let collected = false;
       for (const h of hexes) {
         const k = keyOf(h.q, h.r);
         if (seen.has(k)) continue;
         seen.add(k);
-        if (checkVillageRewardAt(h.q, h.r)) collected = true;
+        if (checkVillageRewardAt(h.q, h.r, ownerId)) collected = true;
       }
       return collected;
     }
@@ -26355,6 +26403,18 @@ async function boot(): Promise<void> {
                     // path (Dijkstra from computePath), not just the last hex, since AI
                     // "teleports" to `last` with ruchLeft=0 and passes camps along the way.
                     checkBarbCampDestructionAlongPath(path);
+                    // P-MP-CHATKI-SKARBOW-NIE-ZBIERANE runda 2 (ECHO 2026-08-13, Maciej):
+                    // „Zarówno AI jak i miasta-państwa... mają takie same skarby jak
+                    // gracze" -- ten sam egzekutor obsługuje ruch zwykłego AI I miast-
+                    // państw (decideAITurn deleguje do decideDefensiveCopyTurn dla MP,
+                    // ale obie ścieżki kończą w tej samej pętli commands/'move' tutaj),
+                    // więc jedno wpięcie pokrywa oba. Bez tego jednostka dochodziła do
+                    // chatki i NIGDY jej nie zbierała (nieskończona oscylacja, runda 1).
+                    // `u.ownerId` tu to zawsze prawdziwa cywilizacja/MP (1..N), nigdy
+                    // barbarzyńcy (patrz komentarz wyżej). / EN: same command executor
+                    // handles both regular AI and city-state movement -- one wiring point
+                    // covers both owners with actual military units reaching a hut.
+                    checkVillageRewardsAlongPath(path, u.ownerId);
                     if (applyCityVisitBonusesAlongPath([u], path, false)) {
                       syncUnitsRender();
                     }
