@@ -16783,3 +16783,54 @@ Bramki: `tsc` 0, `promote-to-front-test.cjs` **98/98** (było 77), `logic-test` 
 wszystkie tej samej klasy: kolejne przeoczone miejsce manipulujące frontem), ma zrobić PEŁNY,
 wyczerpujący przegląd repo (nie tylko dotknięte linie) pod kątem JAKIEGOKOLWIEK piątego miejsca,
 zanim temat zostanie uznany za zamknięty.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — Evaluator runda 4: PASS-WITH-NOTES, wyczerpujący audyt kompletności CZYSTY, runda 5 (domknięcie N1) dispatch (2026-08-13)
+
+**Część A (główny cel tej rundy) — pełny, systematyczny audyt CAŁEGO `gra/src/` pod kątem
+piątego przeoczonego miejsca: CZYSTY, i to udowodnione wyczerpaniem przestrzeni poszukiwań, nie
+próbką.** Policzalne wyniki grepów: 1× `slice(1)`/`shift`/`splice` na kolejce (`dropFrontItem`),
+1× przypisanie `postep=` (`production.ts:1159`), 2× `.filter` na kolejce (`dequeue` + znany
+`sanitizeProductionQueue`), 1× `advanceProduction` w całym repo (jeden silnik), 0× `unshift` na
+kolejce produkcji (20 trafień `unshift` w repo, wszystkie w innych systemach), 14 plików
+wspominających „postep" — wszystkie przeczytane, rozkładają się na TEN system + 3 inne
+niepowiązane systemy (badania, cud na mapie, legacy martwy typ). Cheat/dev-console dotykający
+kolejki: brak (jedyny kandydat, `onPurchaseBuilding`, zadeklarowany ale nigdy niewpięty). Save/
+load: `cityProd` przechodzi bez normalizacji, brak wektora utraty. UI: zero bezpośrednich
+manipulacji z pominięciem API, drag&drop/strzałki twardo `index≥1`.
+
+**Część B — B3 potwierdzone własnym kodem (nie raportem Operatora).** Wywołanie
+`insertAtFront(wProd0, wItem, 0)` faktycznie stoi w `main.ts:25792`. Własny skrypt (16/16
+sprawdzeń) potwierdza scenariusz z rejestru: Koszary bankują 180, po naturalnym ukończeniu Cudu-B
+odzyskują dokładnie 180. Mutacja guardu (usunięcie całości) — złapana przez sekcję 17 (3 porażki),
+luka pokrycia z rundy 3 realnie zamknięta. Bramki: `tsc` 0, `promote-to-front-test.cjs` 98/98,
+`logic-test` 213/213, dodatkowo `ai-cud-priorytet-b3-test.cjs` 46/46 (brak regresji semantyki AI).
+
+**N1 (rekomendowane domknięcie PRZED ostatecznym zamknięciem tematu, dowiedzione mutacją) —
+naprawy B2 i B3 w `main.ts` są dziś NIECHRONIONE przed cichym cofnięciem.** `promote-to-front-
+test.cjs` testuje wyłącznie funkcje w `production.ts`, zero asercji strukturalnych na treść
+`main.ts`. Evaluator cofnął OBIE naprawy do stanu sprzed rund 3/4 (ręczne `postep: completed.
+koszt`/`postep: 0` zamiast `insertAtFront`) — **98/98 i 46/46 zostają zielone mimo pełnej
+regresji.** Wzorzec rozwiązania (asercja regexowa na treść `main.ts`) już istnieje w repo
+(`ai-cud-priorytet-b3-test.cjs` 5g-5j, `era-cud-main-ts-integracja-test.cjs`).
+
+**Notatki niepilne:**
+- N2: docstring `insertAtFront` twierdzi że front „NIGDY nie ma zdefiniowanego postep" — funkcja
+  tego NIE egzekwuje (nie zdejmuje pola z wstawianego itemu, tylko sprawdzone: dziś nieszkodliwe
+  bo obie ścieżki podają item bez pola, ale to fałszywa gwarancja pisemna).
+- N3 (aktualizacja istniejącego zgłoszenia `sanitizeProductionQueue`, NIE nowe) — funkcja jest
+  GORSZA niż opisano: (a) może kreować postęp z niczego (zbankowane pole nowego frontu +
+  osierocony scalar usuniętego = podwójne naliczenie odzyskiwalne jako Praca nigdy niezarobiona);
+  (b) sanityzacja działa WYŁĄCZNIE dla gracza (`setProduction` w panelu), AI nigdy nie
+  sanityzowane — kolejna asymetria gracz/AI, tym razem odwrotna (AI omija błąd, którego gracz
+  doświadcza). Reachability wysoka: pierwsza dowolna akcja w panelu miasta po tym jak rywal
+  ukończy cud.
+- N4: `ai-cud-priorytet-b3-test.cjs` ma nieaktualny komentarz (~linia 272, 320) opisujący
+  semantykę „queueJump = unshift + postep:0" sprzed rundy 4 — nie asercjonuje tego, więc brak
+  fałszywej zieleni, tylko dryf dokumentacyjny.
+
+**STATUS: dispatch rundy 5 (ostatnia, domykająca) w toku** — zakres: N1 (2 asercje strukturalne
+regex na `main.ts`, wzorzec z istniejących testów) + N2 (docstring lub fix jednolinijkowy) + N4
+(poprawka komentarza). N3 dopisane do istniejącego zgłoszenia `sanitizeProductionQueue`, POZA
+zakresem (wymaga ABC właściciela).
