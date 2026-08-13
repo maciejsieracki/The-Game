@@ -18924,3 +18924,42 @@ Przekazane jako pilna redyrekcja do trwającego rozpoznania (`a455322935356a330`
 kierunek dochodzenia na: czy wykluczenie centrum jest faktycznie bezwarunkowe względem
 `ownerId` we WSZYSTKICH 4+ miejscach wpięcia, i czy dzisiejszy test w ogóle sprawdzał scenariusz
 różnych właścicieli dla centrum (nie tylko tego samego).
+
+## P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (d79a85a5) — Evaluator: WERDYKT FAIL, dispatch runda 2 (2026-08-13)
+
+Evaluator (Opus 5, `a10f42c74503045d2`) potwierdził rzemiosło (priorytet poprawny, zero
+podwójnych rozkazów, filtr terytorium właściwy, bramki 280/8 zgodne z pre-istniejącym stanem,
+wszystkie 3 mutacje kontrolne złapane) — **ale commit NIE usuwa zgłoszonego objawu i wprowadza
+nowy, gorszy artefakt.**
+
+**⛔ USTALENIE BLOKUJĄCE.** Runda 1 nauczyła MP CHODZIĆ do chatki, ale silnik **nie ma w ogóle
+ścieżki zebrania chatki dla właściciela ≠ gracz (ownerId≠0)**. Wszystkie wywołania
+`checkVillageRewardAt`/`checkVillageRewardsAlongPath` bramkowane `u.ownerId === 0`
+(`main.ts:18875/23312/23346/27248/27257`), sama funkcja pisana pod gracza (`player.skarbiec`,
+`player.era`, `player.badana`). Egzekutor komend AI (`main.ts:26087`) w ogóle nie obsługuje
+wioski. Skutek zmierzony symulacją 12 tur: jednostka MP **nieskończenie oscyluje** między
+chatką a heksem odsuwającym (chatka wciąga, blok powrotu-pod-miasto odsuwa o 1, kolejna tura
+znowu wciąga) — porzuca garnizon i widocznie drga co turę w playteście. Chatka nigdy nie znika.
+
+**Przyczyna procesowa:** rozpoznanie tego tematu przyjęło bez weryfikacji, że "dojście = zebranie"
+— ta sama klasa błędu co CLAUDE.md §0b katalogizuje. Ta sama wada dotyczy pre-istniejącego kroku
+4d w `decideAITurn` (pełne AI też formalnie nie zbiera przez ten mechanizm) — ale runda 1
+rozszerzyła widoczność tam, gdzie właściciel akurat patrzył.
+
+**Wymagane domknięcie rundy 2:** zebranie po stronie egzekutora AI (`main.ts` ~26100), analogicznie
+do `checkBarbCampDestructionAlongPath`: `wioska.istnieje=false` + `lootedVillageHexKeys.add`
+(inaczej save/load wskrzesi chatkę) + `villageHexKeyCache.delete` + nagroda do skarbca/badań
+WŁAŚCICIELA AI/MP, nie `player.*`. **Wymaga pytania ABC — jaka nagroda dla MP/AI (złoto? postęp
+badań? jednostka?), bo `pickVillageReward` jest dziś napisane wyłącznie pod gracza.**
+
+Noty niższej rangi (do domknięcia przy okazji rundy 2, niepilne): brak testu symulującego
+DOTARCIE do chatki (dokładnie miejsce wady); wydajność `Object.keys(map.hexes)` pełny skan mapy
+na MP/turę (nieistotne poza Superogromną, tam dziesiątki-setki ms); wąska regresja obronna przy
+`citySupportLevel='strong'` (jednostka może pójść po chatkę zamiast wrócić pod zagrożone miasto
+w wąskim oknie dystansu 2); możliwe rozmycie `R-MP-HARD-WAVE Q2` gdy jednostka wstrzymana przez
+`CS_WAVE_ATTACK_MIN_STACK` odejdzie po chatkę zamiast trwać w stosie.
+
+**STATUS: dispatch runda 2 — najpierw pytanie ABC do właściciela (nagroda dla MP/AI z chatki),
+potem implementacja zebrania po stronie silnika. NIE zamykać tematu, NIE liczyć jako
+zdeployowane mimo że kod jest już w FALI 276 — regresja nieszkodliwa (brak crasha), ale objaw
+nie zniknął i jest teraz gorzej widoczny.**
