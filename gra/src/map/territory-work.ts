@@ -46,8 +46,23 @@ export function makeTerritoryWorkableFilter(
 }
 
 /**
- * Usuwa z ręcznych przypisań (okolicaReczne) heksy poza terytorium właściciela miasta.
- * Zwraca true gdy cokolwiek zmieniono.
+ * Klucze "q,r" centrów WSZYSTKICH miast na mapie (dowolny właściciel) — do
+ * defensywnego sprzątania starych ręcznych wpisów sprzed naprawy
+ * P-HEKS-CENTRUM-OBCEGO-MIASTA (2026-08-13, patrz game/okolica.ts). Centrum miasta
+ * NIGDY nie może być legalnym wpisem w okolicaReczne — bezwarunkowo, niezależnie od
+ * tego, czyje jest centrum (własne lub cudze).
+ */
+function cityCenterKeys(cities: ReadonlyArray<Pick<City, 'q' | 'r'>>): Set<string> {
+  const out = new Set<string>();
+  for (const c of cities) out.add(`${c.q},${c.r}`);
+  return out;
+}
+
+/**
+ * Usuwa z ręcznych przypisań (okolicaReczne) heksy poza terytorium właściciela miasta
+ * ORAZ heksy, na których stoi centrum KTÓREGOKOLWIEK miasta (P-HEKS-CENTRUM-OBCEGO-
+ * MIASTA — bezwarunkowe, niezależnie od właściciela centrum; defensywne sprzątanie
+ * ewentualnych zapisów sprzed tej naprawy). Zwraca true gdy cokolwiek zmieniono.
  */
 export function reconcileWorkedTilesForOwner(
   cities: ReadonlyArray<City>,
@@ -55,6 +70,7 @@ export function reconcileWorkedTilesForOwner(
   ownerId: number,
 ): boolean {
   let changed = false;
+  const centers = cityCenterKeys(cities);
   for (const city of cities) {
     if (city.ownerId !== ownerId) continue;
     if (!city.okolicaReczne) continue;
@@ -65,6 +81,11 @@ export function reconcileWorkedTilesForOwner(
       const q = Number(parts[0]);
       const r = Number(parts[1]);
       if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
+      if (centers.has(key)) {
+        delete reczne[key];
+        cityChanged = true;
+        continue;
+      }
       if (!isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes)) {
         delete reczne[key];
         cityChanged = true;
