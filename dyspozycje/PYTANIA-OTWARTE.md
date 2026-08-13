@@ -18779,3 +18779,28 @@ dla tego samego miasta i czy to te same, czy dwie osobne ścieżki liczenia).
 centralnym), zdiffować krok po kroku który dodatkowy składnik (jeśli w ogóle) odpowiada za różnicę
 33 vs 29, potwierdzić lub obalić hipotezę właściciela, wrócić z konkretnym wyjaśnieniem (plik:linia,
 wzór) przed jakąkolwiek naprawą.**
+
+## P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU (2026-08-13, zgłoszenie Macieja, screenshot) · STATUS: OTWARTE — rozpoznanie dispatchowane
+
+**Zgłoszenie (dosłowne):** „nie wiem, jak to zrobiliście, ale miało znikać po wybraniu na
+przykład technologii. Te, które już przekazujemy, nie miały być możliwości wyboru ich ponownego.
+Ja winien się pojawiać do handlu tylko te które nie są w koszyku oferujemy."
+
+**Zrzut ekranu — ekran „Umowa wymiany surowców" (Inkowie, dwustronna):** koszyk OFERUJEMY już
+zawiera dwie technologie: Obróbka drewna, Rolnictwo. Sekcja niżej „CO DODAJESZ" → „Technologia"
+nadal pokazuje WSZYSTKIE 4 chipy technologii (Obróbka drewna, Rolnictwo, Oswojenie zwierząt,
+Łowiectwo) jako dostępne/wybieralne, w tym te dwie już będące w koszyku — chip „Obróbka drewna"
+wygląda na podświetlony/zaznaczony w liście mimo że jest już w OFERUJEMY.
+
+**Możliwy związek z wcześniej zamkniętym tematem tej samej sesji:** `P-HANDEL-TECH-CHIP-BEZ-
+FILTRU-JUZ-DODANE` (filtr chipów technologii w koszyku dyplomacji, `diplomacyTradeBasket.ts`,
+scalone `3fbf245f`, Evaluator PASS-WITH-NOTES `e1beca4f`) — **do zweryfikowania, czy to ta sama
+ścieżka kodu bez pokrycia dla tego konkretnego ekranu (Umowa wymiany surowców), czy osobny,
+nieznaleziony wcześniej defekt.** Ekran „Umowa wymiany surowców" to ten sam typ umowy, który
+dostał dziś rundę 2 (odblokowanie wielokrotności na stole) — możliwe że to inny plik/inna ścieżka
+kodu niż ta, którą dotknął wcześniejszy filtr.
+
+**STATUS: dispatch rozpoznania + naprawy (bez ABC — czysta poprawność UI, nie balans) — namierzyć
+dokładnie który komponent renderuje „CO DODAJESZ → Technologia" na ekranie Umowy wymiany
+surowców, sprawdzić czy korzysta z tego samego mechanizmu filtrowania co wcześniej naprawiony
+`diplomacyTradeBasket.ts`, i albo dociągnąć filtr, albo naprawić go jeśli jest złamany.**
