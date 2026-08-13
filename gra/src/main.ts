@@ -1031,7 +1031,7 @@ import {
 } from './ui/victoryScreen';
 import {
   loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
-  scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady,
+  scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady, migrateBarbariansLevel,
   BARBARIAN_OWNER_ID, isBarbarian,
   loadSeaBarbParams, spawnSeaPeoplesRaiders, purgeNavalCamps, decideSeaPeoplesRaids,
   collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
@@ -26904,7 +26904,16 @@ async function boot(): Promise<void> {
         setTurnTransition(94, 'Barbarzyńcy…', 'Barbarzyńcy', nextTurnNum);
         await yieldTurnTransitionUi();
         try {
-          const barbLevel = _menuAdvanced?.barbariansLevel ?? 'wielu';
+          // R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (Maciej 2026-08-13):
+          // migrateBarbariansLevel obsluguje zarowno brak wartosci (nowa gra bez
+          // wyboru = domyslny 'normalny'), jak i legacy stringi ('wielu' itp.)
+          // ktore moga wciaz przetrwac w starym newGameParams po wczytaniu save'u
+          // sprzed tej zmiany (_lastNewGameParams nie przechodzi migracji przy
+          // wczytaniu -- patrz restoreGameFromSave), bez crasha na nieznanym stringu.
+          // / EN: handles both "no value" (fresh game, no pick = default
+          // 'normalny') and legacy strings that may still linger in an old
+          // save's newGameParams after load, without crashing on an unknown string.
+          const barbLevel = migrateBarbariansLevel(_menuAdvanced?.barbariansLevel);
           const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel);
           if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
             const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
