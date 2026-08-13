@@ -17161,3 +17161,31 @@ razem z resztą `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` — magazyny/produkcja surowcó
 ukończył ten sam Cud pierwszy, zbankowany scalar Pracy zostaje przy NOWYM froncie (innym itemie)
 zamiast przepaść/wrócić do puli — łamie niezmiennik anty-exploit ustabilizowany w 5 rundach
 `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B`. Pytanie ABC poniżej.
+
+---
+
+## ECHO P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A (2026-08-13)
+
+Naprawić teraz: ścieżka AI dla wyrębu lasu (`main.ts:26216-26217`) ma kredytować **Drewno**
+(parytet z graczem), nie Pracę. Dispatch w toku.
+
+## ECHO R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13) — decyzja WŁASNA właściciela, precyzyjniejsza niż warianty A/B/C
+
+Jego słowa: „Jeżeli faktycznie dysponujemy realnie pięciokrotnie większą ilością surowców, to
+ich wartość na punkty powinna spaść pięciokrotnie." **Decyzja: `econ-params.json handel_surowce.
+cena_*` (PN za sztukę surowca fizycznego) ma zostać PODZIELONA przez 5 (÷5), NIE pomnożona.**
+Uzasadnienie ekonomiczne (potwierdzone poprawne): gracz ma teraz 5× więcej surowców fizycznych
+(produkcja ×5 z `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`) — jeśli cena/szt. zostanie ta sama, całkowita
+wartość zbywalna surowców w PN wzrośnie ~5×; przy cenie ÷5 i ilości ×5 całkowita wartość
+tradeable pozostaje w przybliżeniu NEUTRALNA (5×ilość × cena/5 ≈ ta sama wartość co przed
+zmianą) — dokładnie zgodne z celem `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` („neutralny wpływ na resztę
+parametrów, zmienia się wyłącznie granulacja"). **UWAGA dla Operatora:** to NIE jest wariant A z
+pytania ABC (który mylnie sugerował ×5) — kierunek jest ODWROTNY, ÷5. Dispatch w toku.
+
+## ECHO R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1 = B (2026-08-13)
+
+Transfer do centralnej puli Pracy imperium (nie przepadek, nie transfer do innego itemu w
+kolejce). Gdy `sanitizeProductionQueue` usuwa front bo przegrany wyścig o cud — zbankowany
+scalar Pracy ma trafić do puli imperium, analogicznie do `remainder` przy naturalnym ukończeniu
+itemu. Spójne z zasadą przyjętą w 5-rundowej naprawie `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B`
+(bankuj, nigdy nie przenoś między różnymi itemami). Dispatch w toku.
