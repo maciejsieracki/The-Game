@@ -18723,3 +18723,28 @@ ale go nie tworzy. Systemowo dotyczy 5 cudów ze złą epoką i ~9 ze złymi tec
 
 **STATUS: temat ZAMKNIĘTY.** N1 wymaga osobnego zameldowania właścicielowi (poniżej w czacie).
 N2 do osobnego zgłoszenia backlogowego, niepilne.
+
+## P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (2026-08-13, zgłoszenie Macieja) · STATUS: dispatch bezpośredni, bez ABC
+
+**Zgłoszenie:** „Państwa miasta [Miasta-Państwa], a nie inne cywilizacje nie zbierają chatek ze
+skarbami. Nawet na swoim terytorium to jest minimum, co powinni zrobić. Nie muszą tego mieć
+skautów, mogą to robić jednostkami wojskowymi."
+
+**Rozpoznanie (bez subagenta, szybki grep):** potwierdzone. `gra/src/game/ai.ts` ma DWIE osobne
+funkcje decyzyjne AI: `decideAITurn` (główna, dla normalnych cywilizacji AI) i
+`decideDefensiveCopyTurn` (dla Miast-Państw — komentarz w kodzie: „identyczna funkcja co dla
+zwykłego AI" ale tylko dla PRODUKCJI miast, nie ruchu jednostek). `decideAITurn` ma krok
+„4d: neutral village exploration" (linia ~2444, `findNearestVillage`/`getNeutralVillages`) jako
+PRIORYTET 3 w decyzji ruchu każdej jednostki wojskowej. `decideDefensiveCopyTurn` **W OGÓLE nie
+odwołuje się do wiosek/chatek** — cała logika ruchu jednostek MP omija ten krok całkowicie, nie
+tylko dla skautów (MP i tak nie mają skautów w standardowym składzie), ale dla WSZYSTKICH
+jednostek wojskowych MP, nawet w obrębie własnego terytorium.
+
+**Zakres naprawy:** dodać do `decideDefensiveCopyTurn` analogiczny krok „idź po najbliższą wolną
+chatkę" dla jednostek wojskowych MP, wzorem kroku 4d w `decideAITurn` — ograniczony przynajmniej
+do chatek w obrębie własnego terytorium (Maciej: „nawet na swoim terytorium to jest minimum"),
+bez wymogu posiadania skauta.
+
+**Nie wymaga ABC** — to naprawa parytetu/kompletności (MP dostają zdolność, którą zwykłe AI już
+ma), nie strojenie balansu liczbowego. Zgłoszenie ma charakter dyrektywny, nie eksploracyjny.
+Dispatch Operator (Sonnet 5) bezpośrednio.
