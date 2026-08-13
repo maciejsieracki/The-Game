@@ -17576,3 +17576,42 @@ która przy oddalaniu kamery ma się PROPORCJONALNIE ZMNIEJSZAĆ (nie odwrotnie)
 Nie rozpoznane jeszcze technicznie (czy to problem skalowania DOM/CSS vs canvas, czy renderowanie
 tekstu w Three.js/sprite o stałej rozdzielczości, czy coś innego) — do zbadania osobno, poza
 zakresem tej sesji (koniec pracy autonomicznej). Zarejestrowane do podjęcia przy następnej turze.
+
+---
+
+## P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT (2026-08-13, zgłoszenie z playtestu, 2 screeny) · STATUS: **OTWARTE — rozpoznanie dispatchowane**
+
+Maciej (miasto ATENY, Ludność 1, panel „Wyżywienie i wzrost" + HUD): „autowyżywienie nadal
+wprowadza stan miasta na minusie. Ale to jeszcze pół biedy, że miasto bo to mogło mieć miejsce,
+ale cały spichlerz daje na minusie. Nawet jeżeli w jednej turze zmienię ręcznie tak, żeby nie
+było na minusie, to w następnej turze znowu wprowadza stan spichlerza na minus."
+
+Ze screenshotu: Produkcja +10/t, Racje −11/t, **Bilans −1/t**, WZROST 12% (Wyżywienie +6% ·
+Małe miasto +5% · Szczęście +1%), przycisk „Auto Wyżywienie" **aktywny (podświetlony)**. HUD:
+Praca +7, **Żywność −1 (0)**, Skarbiec +10.
+
+Dwie oddzielne obserwacje do rozdzielenia przy rozpoznaniu:
+1. Auto Wyżywienie WŁ, a mimo to Bilans miasta jest ujemny (−1/t) — pytanie czy to oczekiwane
+   (np. najniższy poziom Racji nadal daje deficyt, więc auto-obniżanie nie ma już czego obniżać)
+   czy realny bug w mechanizmie auto-obniżania.
+2. **Poważniejsze:** ręczna korekta w jednej turze (tak, żeby bilans/spichlerz nie były na
+   minusie) NIE UTRZYMUJE SIĘ — w kolejnej turze spichlerz znów jest ujemny. To brzmi jak albo
+   (a) mechanizm auto-podnoszenia Racji (`autoRaiseRationsForGrowth`) cofa ręczną korektę z
+   powrotem w górę mimo że gracz zmniejszył ręcznie, albo (b) wzrost populacji/zmiana kosztu
+   Racji między turami odtwarza deficyt niezależnie od ustawienia gracza, albo (c) inna
+   interakcja (`applyLiveSafeRationForCity` / clamp Q3=A na końcu tury / `maxSafePoziomRacjiForCity`).
+
+Wstępny przegląd kodu (orkiestrator, bez zmian): logika żyje w `gra/src/game/empire-food.ts`
+(`autoBalanceRationsToSolvency`, `autoRaiseRationsForGrowth`, `maxSafePoziomRacjiForCity`,
+`isRationBalanceTargetMet`) i jest wołana z `gra/src/main.ts` w trzech miejscach: (1) na końcu
+tury `autoBalanceRationsToSolvency`+`autoRaiseRationsForGrowth` (linie ~23440-23480), (2) clamp
+Q3=A do `maxSafe` bezwarunkowo dla WSZYSTKICH miast gracza niezależnie od Auto Wyżywienie
+(~23485-23513), (3) `applyLiveSafeRationForCity` na żywo przy dyskretnych zdarzeniach (~14070,
+tylko OBNIŻA, nigdy nie podnosi). Istnieje już wcześniej zamknięty temat
+`R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY` (2026-08-10, rozpoznanie #4) opisujący dokładnie ten
+wzorzec „przestrzelenia" auto-podnoszenia ponad to, co produkcja udźwignie — możliwe że to
+regresja tamtej naprawy albo osobny, nieobjęty przypadek (np. przy pojedynczym mieście na starcie
+gry, populacja=1).
+
+**Nie kodować — dispatch rozpoznania technicznego (bez zmian w kodzie) w toku, żeby ustalić
+realną przyczynę przed ABC.**
