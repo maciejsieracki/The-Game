@@ -20095,3 +20095,34 @@ semantyką (zachowując niezależność od kolejności miast — to jedyne co dz
 dopiąć asercję flat-rezerwy (reserve=0 musi łapać), przypiąć literał 33% dla wartości domyślnej,
 ujednolicić opis na "koniec tury" wszędzie, usunąć/poprawić komentarz "zostaw mi część Pracy"
 żeby odpowiadał rzeczywistemu zachowaniu.
+
+## Panel 11 zakladek Faza 2 (9a539197) — Evaluator: WERDYKT PASS-WITH-NOTES, dispatch rundy naprawczej (2026-08-14)
+
+Bramki komplet zielone (weryfikowane niezależnie przez Evaluator: build+boot+klik chipów+
+`getComputedStyle` porównanie z makietą element-po-elemencie, nie czytanie CSS na wiarę), zero
+fałszywych liczb w commit message, reużycie `getResearchState`/`aggregateReligionEmpire` itd.
+potwierdzone jako te same funkcje (nie duplikaty), brak parametru religia→Porządek potwierdzony
+jako prawdziwy (zero martwych kluczy JSON dających się użyć bez zmyślania).
+
+**Wymagane przed deployem (3 punkty, mała runda naprawcza):**
+1. **F1 — RECYDYWA z Fazy 1.** Werdykt Fazy 1 (Evaluator) już raz kazał wyrównać całą tabelę per
+   miasto do prawej (dziś naprawione w Skarbcu klasą `.civ-emp-skarbiec-city-tbl`) — Faza 2
+   stworzyła 3 NOWE tabele (Praca/Nauka/Religia) i żadnej nie dała tej klasy, ten sam defekt
+   wraca (dane `start`, wiersz SUMA `right` — dwie konwencje w jednej tabeli).
+2. **F2** — kolumny tabeli Praca/Nauka mają dziedziczyć kolor semantyczny (DO PULI błękit,
+   DO BUDYNKÓW złoto, NAUKA błękit) tak jak wskazuje sama makieta w opisie zmian — dziś wszystkie
+   szare, bo `signedTxt()`/`signedPl()` zwraca goły tekst bez `<span>` do pokolorowania.
+3. **F3** — komentarz PL+EN przy guardzie `kosztCelu>0` w Nauce KŁAMIE o przyczynie (twierdzi że
+   dzielenie przez 0 daje `postepFraction=1`/pasek pełny — Evaluator zweryfikował buildem że
+   naprawdę daje 0/pasek pusty). Guard ma zostać (mylący tekst „200/0 PN" niezależnie od paska),
+   tylko uzasadnienie w komentarzu do sprostowania.
+
+**Do rejestru, nieblokujące teraz:** F6 (produkcja=0 → pasek Pracy w całości błękitny mimo
+zera), F7 ("−0 z puli" gdy upkeep=0), F8 (brak religii państwowej → "Inne religie 100%" na
+pełnym pasku), F9 (hero Pracy "0/turę" sprzeczny z chipem HUD "+28" obok — dwa różne źródła
+danych, udokumentowane w kodzie ale mylące wizualnie), brak ikony 14×14 przy eyebrow (znane,
+nieudokumentowane w commit message), przecinek/kropka niespójność w formatowaniu liczb Religii
+(pre-istniejący dług, nie do tej rundy), M1b/M3/M4 luki mutacyjne w pokryciu treści sekcji (dziś
+bramki dowodzą tylko routingu, nie treści — ten sam, świadomie zaakceptowany wzorzec co Faza 1).
+
+**STATUS: dispatch rundy naprawczej (F1/F2/F3 tylko).**
