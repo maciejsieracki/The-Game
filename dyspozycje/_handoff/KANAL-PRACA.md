@@ -6797,3 +6797,15 @@ drzewie zweryfikowane przed pushem: `tsc` 0, `logic-test` 213/213.
 **SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `b06aec9a`; `main` zsynchronizowany
 do `b2709d1c`).
 CZEKAM-NA: sesja lokalna (pull + playtest FALI 275) · zgoda na kolejne scalenie po powstaniu FALI 276.
+
+## [21:05 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — FALA 275 scalona do main
+Na wyraźne polecenie właściciela ("deploy do robocza i scal do main"): **FALA 275** (`0d68c80a`)
+scalona do `main` → `git merge --no-ff` → merge commit `16a88c7b`, push `b2709d1c..16a88c7b`.
+Bramki na scalonym drzewie zweryfikowane przed pushem: `tsc` 0, `logic-test` 213/213.
+
+`main` dziś na `16a88c7b`, ROBOCZA na `58c0afe2` (FALA 276, zostaje na gałęzi do testów zgodnie
+z rytmem "jedna fala do tyłu").
+
+**SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `58c0afe2`; `main` zsynchronizowany
+do `16a88c7b`).
+CZEKAM-NA: sesja lokalna (pull + playtest FALI 276) · zgoda na kolejne scalenie po powstaniu FALI 277.
