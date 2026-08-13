@@ -16872,3 +16872,45 @@ dokument PL do `dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md` (
 znaleziska systemowe, tabela paneli, werdykty per rozdział Poradnika, rekomendacje priorytetowe,
 jawna sekcja co NIE zostało jeszcze zrobione — bo to Etap 1, zero wdrożenia bez decyzji
 właściciela o zakresie Etapu 2).
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 runda 2 SCALONA, 2 pliki testowe PRE-ISTNIEJĄCE czerwone znalezione, Evaluator finalny w toku (2026-08-13)
+
+**Odstępstwo proceduralne (do jawnego odnotowania):** Operator rundy 2 utknął dwukrotnie w
+oczekiwaniu na własny background proces `map-gen-regression-test.cjs` (niezwiązany bezpośrednio
+z zakresem B1/B2 — prawdopodobnie uruchomiony defensywnie jako część pełnej listy bramek
+CLAUDE.md), łącznie ~493k tokenów bez dostarczenia raportu końcowego. Ponieważ diff w worktree
+był już kompletny i wyglądał poprawnie, orkiestrator **zweryfikował go samodzielnie** (przeczytał
+cały diff, uruchomił bramki bezpośrednio) zamiast czekać dłużej na zawieszonego agenta —
+odstępstwo od standardowego „czekaj na raport Operatora" uzasadnione realnym marnotrawstwem
+zasobów przy already-widocznym, kompletnym i poprawnym diffie.
+
+**Diff zweryfikowany kompletny i poprawny** (terrain-yields.json: Łąka/Równina/Wzgórza/Góry
+Drewno×5, Równina/Wzgórza/Góry Kamień×5, Rzeka Glina×5, Las-nakładka Drewno×5 — wszystkie zgodne
+z tabelą Evaluatora; terrain-improvements.json glinianka/kamieniolom bonus×5; wyrab.wycinka.
+praca_per_tura 5→25, koszt_praca=5 świadomie NIETKNIĘTY (Praca, nie surowiec fizyczny); econ-
+params.json martwy klucz udokumentowany, nie zmieniony; citizen-resource-upkeep.ts wyłącznie
+JSDoc; nowy plik `ekonomia-5x-inwariant-test.cjs` z 233 asercjami przypinającymi konkretne
+reprezentatywne wartości).
+
+**Odkrycie przy okazji (PRE-ISTNIEJĄCE, NIE regresja tej rundy ani rundy 1) — 2 pliki testowe z
+czerwonymi asercjami niezwiązanymi z ekonomią ×5:** `grupa-b-lane-test.cjs` (45 pass, 4 fail:
+„empire food 30% to state", „empire reserve after army cost 1", „las rownina: handel 1-1
+floored", „wyrab clearing start cost 5P") i `mennica-magazyn-test.cjs` (38 pass, 3 fail:
+„Garncarnia: ceramika > 0 przy glina+drewno", „odlewnia_brazu bez rudy NIE blokuje Cegielni ani
+Garncarni", i jedna kontrolna). **Zweryfikowane identyczne na już-scalonym drzewie głównym PRZED
+tą rundą** (`e144af80`) — a więc niezwiązane z żadną zmianą tej sesji dot. ekonomii ×5. Nie były
+wcześniej wpisane do listy pre-istniejących porażek w CLAUDE.md — do dopisania przy najbliższej
+aktualizacji tej sekcji. Nie badane głębiej (poza zakresem), nie blokują tej rundy.
+
+Bramki dotykające zmienionych plików (uruchomione przeze mnie na scalonym drzewie): `tsc` 0,
+`logic-test` 213/213, `ekonomia-5x-inwariant-test.cjs` **233/233**, `tartak-glinianka-rate-Q1-
+test.cjs` 1281/1281, oraz 8 pozostałych testów ekonomicznych z rundy 1 — wszystkie zielone.
+Commit `16a92c9f`, push OK.
+
+**Dispatch Evaluatora finalnego rundy 2 (Opus 5) NASTĘPUJE teraz** — ma potwierdzić własnym
+kodem że B1/B2 są naprawione (żaden kanał produkcji surowców fizycznych nie pozostał ×1) i że
+2 znalezione czerwone testy są rzeczywiście pre-istniejące (niezależna weryfikacja, nie tylko
+zaufanie do mojego stwierdzenia). Jeśli PASS — `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` zamykany
+ostatecznie.
