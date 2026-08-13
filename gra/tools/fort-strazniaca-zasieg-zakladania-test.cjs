@@ -57,6 +57,9 @@ export { planCityFounding, planExpansionFortBuilding } from ${JSON.stringify(SRC
 export { hexDistance } from ${JSON.stringify(SRC + '/units/setup')};
 export { MIN_CITY_DISTANCE } from ${JSON.stringify(SRC + '/game/cities')};
 export { AI_FOUNDING_SOURCE_MIN_POP } from ${JSON.stringify(SRC + '/game/city-founding')};
+// Sekcja E (runda 4, MUT-5): destroyCampAt/isBarbarian/BARBARIAN_OWNER_ID -- semantyka REALNA
+// obozow barbarzynskich, uzyta do sklejenia behawioralnego testu F2b (checkBarbCampDestroyedAt).
+export { destroyCampAt, isBarbarian, BARBARIAN_OWNER_ID } from ${JSON.stringify(SRC + '/game/barbarians')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -96,6 +99,9 @@ const {
   hexDistance,
   MIN_CITY_DISTANCE,
   AI_FOUNDING_SOURCE_MIN_POP,
+  destroyCampAt,
+  isBarbarian,
+  BARBARIAN_OWNER_ID,
 } = M;
 
 // ============================================================================
@@ -595,6 +601,148 @@ console.log('\n--- D1: main.ts applyFortTakeoverAndEvacuation (F2) -- straznik t
 }
 
 // ============================================================================
+// SEKCJA E (runda 4, domkniecie MUT-5): D1 wyzej jest WYLACZNIE straznikiem
+// tekstowym (dopasowanie literalu w zrodle) -- Evaluator rundy 3 Fort/straznicy
+// wprost nazwal to luka: "MUT-7/MUT-8 ... strazniki sa dopasowaniem literalu,
+// nie kontraktem behawioralnym" oraz zlecil rundzie 4 (pkt 3) "asercje
+// behawioralna dla F2 obok straznika tekstowego D1". D1 sam twierdzi (komentarz
+// wyzej), ze applyFortTakeoverAndEvacuation "zyje w domknieciu main.ts... NIE da
+// sie jej wyeksportowac do izolowanego bundla" -- prawda dla EKSPORTU modulu,
+// ale NIE dla techniki wyciecia ciala funkcji + wykonania przez `new Function`
+// z mockami zaleznosci (dokladnie ten wzorzec co
+// auto-wyzywienie-live-recalc-test.cjs Czesc 3/9 w tym repo -- PRAWDZIWY kod z
+// main.ts, nie reimplementacja-kopia).
+//
+// Scenariusz: fort NALEZY DO wlasciciela A; jednostka wlasciciela A stacjonuje
+// NA hexie fortu; wlasciciel B zaklada miasto W ZASIEGU fortu (nie NA jego
+// hexie -- to by trafilo w F1, usuniecie wezla, nie ewakuacje) -- fort zostaje
+// PRZEJETY (regula 4), jednostka A jest WYMUSZENIE ewakuowana na najblizszy
+// legalny heks POZA nowym terytorium (regula 5/Q3=A, findEvacuationHexOutsideCity
+// -- PRAWDZIWA funkcja), a na TYM WLASNIE docelowym heksie stoi zywy oboz
+// barbarzynski. Asercja: oboz FAKTYCZNIE znika (destroyCampAt -- PRAWDZIWA
+// funkcja z game/barbarians.ts -- realnie usuwa wpis z tablicy `camps`), nie
+// tylko ze tekst wywolania istnieje w zrodle main.ts.
+//
+// Uczciwie o zakresie mocka: `isHexPassableForUnit` i `checkBarbCampDestroyedAt`
+// SA mockami (main.ts's realne definicje siegaja glebiej w domkniecie -- render
+// terenu / refreshFog / campMeshes / DOM -- ta sama pre-istniejaca bariera co
+// map-field-battle-test.cjs/pre-battle-save-test.cjs, patrz CLAUDE.md §BRAMKI).
+// `checkBarbCampDestroyedAt` mock NIE jest jednak call-recorderem -- OPAKOWUJE
+// PRAWDZIWY `destroyCampAt`, wiec "oboz zostaje zniszczony" jest zweryfikowane
+// na prawdziwej semantyce niszczenia obozu, nie na zalozeniu. Wszystko inne
+// (applyFortTakeoverOnCityFounded, findEvacuationHexOutsideCity,
+// canUnitOccupyCityHex, isBarbarian, i sam extrahowany kod
+// applyFortTakeoverAndEvacuation z F2) jest PRAWDZIWE, wyciete z biezacego
+// main.ts, nie reimplementacja.
+// ============================================================================
+console.log('\n--- E: applyFortTakeoverAndEvacuation (F2) -- test BEHAWIORALNY: ewakuacja NA zywy oboz barbarzynski niszczy go naprawde ---');
+{
+  const mainTsSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+  const sigMarker = 'function applyFortTakeoverAndEvacuation(c: City): void {';
+  const sigIdx = mainTsSrc.indexOf(sigMarker);
+  assert(sigIdx !== -1, 'E-sanity: znaleziono sygnature applyFortTakeoverAndEvacuation w main.ts');
+
+  let fnBodyTs = '';
+  if (sigIdx !== -1) {
+    const braceOpen = sigIdx + sigMarker.length - 1; // '{' na koncu sygnatury
+    let depth = 0, bodyStart = -1, bodyEnd = -1;
+    for (let i = braceOpen; i < mainTsSrc.length; i++) {
+      const ch = mainTsSrc[i];
+      if (ch === '{') { depth++; if (depth === 1) bodyStart = i + 1; }
+      else if (ch === '}') { depth--; if (depth === 0) { bodyEnd = i; break; } }
+    }
+    assert(bodyStart >= 0 && bodyEnd > bodyStart, 'E-sanity: wycieto cialo applyFortTakeoverAndEvacuation liczac glebokosc klamer');
+    fnBodyTs = bodyStart >= 0 && bodyEnd > bodyStart ? mainTsSrc.slice(bodyStart, bodyEnd) : '';
+  }
+  // Skladnia TS-only w tresci (`FortTakeoverEvent[]`, `RuntimeUnit`) -- `new Function` (czysty
+  // JS) tego nie sparsuje. Transpiluj przez esbuild (loader 'ts'), tak jak build produkcyjny.
+  const fnBody = fnBodyTs ? esbuild.transformSync(fnBodyTs, { loader: 'ts', target: 'node18' }).code : '';
+  assert(!!fnBody, 'E-sanity: transpilacja ciala applyFortTakeoverAndEvacuation powiodla sie');
+
+  function runFortTakeoverAndEvacuation({ city, fortNodesState, unitsState, citiesState, campsState }) {
+    let syncCalled = 0;
+    const checkBarbCampDestroyedAtCalls = [];
+    // Mock, ale OPAKOWUJE PRAWDZIWY destroyCampAt -- patrz komentarz Sekcji E wyzej.
+    const checkBarbCampDestroyedAtMock = (q, r) => {
+      checkBarbCampDestroyedAtCalls.push({ q, r });
+      const res = destroyCampAt(campsState.camps, q, r);
+      campsState.camps = res.camps;
+      return res.destroyedCampId !== null;
+    };
+    const isHexPassableForUnitMock = () => true; // teren poza zakresem F2 -- mock jawnie zadeklarowany
+    const syncUnitsRenderMock = () => { syncCalled++; };
+
+    const fn = new Function(
+      'c', 'applyFortTakeoverOnCityFounded', 'fortNodes', 'units', 'findEvacuationHexOutsideCity',
+      'map', 'isHexPassableForUnit', 'canUnitOccupyCityHex', 'cities', 'checkBarbCampDestroyedAt',
+      'isBarbarian', 'syncUnitsRender',
+      fnBody,
+    );
+    fn(
+      city, applyFortTakeoverOnCityFounded, fortNodesState, unitsState, findEvacuationHexOutsideCity,
+      { hexes: mapHexesFull }, isHexPassableForUnitMock, canUnitOccupyCityHex, citiesState, checkBarbCampDestroyedAtMock,
+      isBarbarian, syncUnitsRenderMock,
+    );
+    return { syncCalled, checkBarbCampDestroyedAtCalls };
+  }
+
+  const mapHexesFull = {};
+  for (let q = 0; q < 60; q++) for (let r = 0; r < 60; r++) mapHexesFull[`${q},${r}`] = { coords: { q, r } };
+
+  // Fort wlasciciela A (ownerId=1) na (20,20); jednostka A stacjonuje NA tym hexie.
+  const fortQ = 20, fortR = 20;
+  const oldOwnerId = 1, newOwnerId = 2;
+  const fortNodesState = [{ q: fortQ, r: fortR, ownerId: oldOwnerId, type: 'fort', contestedUseless: false }];
+  const stationedUnit = { id: 'u-evac', ownerId: oldOwnerId, q: fortQ, r: fortR, inGarnizon: false };
+  const unitsState = [stationedUnit];
+  const citiesState = []; // brak innych miast -- canUnitOccupyCityHex wszedzie true
+
+  // Nowe miasto (ownerId=2) W ZASIEGU fortu (odleglosc 5), ale NIE na jego hexie -- F1 (usuniecie
+  // wezla) NIE aplikuje sie, zeby test trafial w gale ewakuacji (regula 4+5), nie w gale F1.
+  const newCity = { q: fortQ - 5, r: fortR, ownerId: newOwnerId, population: 10 };
+  const newCityNode = { q: newCity.q, r: newCity.r, pop: newCity.population, level: 1 };
+
+  // Ustal deterministycznie, ktory heks WYBRALABY findEvacuationHexOutsideCity dla TEJ SAMEJ
+  // kompozycji isFree co main.ts (isHexPassableForUnit mock zawsze true && canUnitOccupyCityHex
+  // z pustym cities zawsze true && brak innej jednostki) -- POTEM stawiamy tam oboz barbarzynski,
+  // zamiast zgadywac wspolrzedne na pietro.
+  const expectedDest = findEvacuationHexOutsideCity(
+    fortQ, fortR, newCityNode, { hexes: mapHexesFull },
+    (nq, nr) => canUnitOccupyCityHex(oldOwnerId, nq, nr, citiesState),
+  );
+  assert(expectedDest !== null, 'E-sanity: findEvacuationHexOutsideCity znajduje legalny cel ewakuacji w tym setupie');
+
+  const campsState = { camps: expectedDest ? [{ id: 'camp-evac', q: expectedDest.q, r: expectedDest.r, spawnCooldown: 0 }] : [] };
+
+  const { syncCalled, checkBarbCampDestroyedAtCalls } = runFortTakeoverAndEvacuation({
+    city: newCity, fortNodesState, unitsState, citiesState, campsState,
+  });
+
+  // 1) Fort FAKTYCZNIE przejety (regula 4 -- dowod, ze test trafil w galaz ewakuacji, nie w F1).
+  eq(fortNodesState.length, 1, 'E1: fort NADAL istnieje w rejestrze (przejety, nie usuniety -- F1 nie aplikuje sie)');
+  if (fortNodesState.length === 1) {
+    eq(fortNodesState[0].ownerId, newOwnerId, 'E1: fort przepisany na nowego wlasciciela (regula 4)');
+  }
+
+  // 2) Jednostka FAKTYCZNIE przesunieta z hexu fortu na wyliczony cel ewakuacji.
+  assert(stationedUnit.q === expectedDest.q && stationedUnit.r === expectedDest.r,
+    `E2: jednostka wlasciciela A ewakuowana z (${fortQ},${fortR}) na wyliczony cel (${expectedDest.q},${expectedDest.r}) (got q=${stationedUnit.q},r=${stationedUnit.r})`);
+  assert(syncCalled === 1, `E2b: syncUnitsRender wolane dokladnie raz (jednostka faktycznie sie poruszyla) (got ${syncCalled})`);
+
+  // 3) checkBarbCampDestroyedAt WOLANE z dokladnie tym hexem (nie tylko "gdzies").
+  eq(checkBarbCampDestroyedAtCalls.length, 1, 'E3: checkBarbCampDestroyedAt wolane dokladnie raz');
+  if (checkBarbCampDestroyedAtCalls.length === 1) {
+    eq(checkBarbCampDestroyedAtCalls[0].q, expectedDest.q, 'E3: wolane z poprawnym q (hex docelowy ewakuacji)');
+    eq(checkBarbCampDestroyedAtCalls[0].r, expectedDest.r, 'E3: wolane z poprawnym r (hex docelowy ewakuacji)');
+  }
+
+  // 4) SEDNO: oboz barbarzynski FAKTYCZNIE zniszczony -- PRAWDZIWY destroyCampAt usunal wpis z
+  // tablicy `camps` (nie tylko "tekst wywolania istnieje w zrodle main.ts", jak zarzucal
+  // Evaluator rundy 3 o MUT-5/MUT-7/MUT-8).
+  eq(campsState.camps.length, 0, `E4: oboz barbarzynski FAKTYCZNIE zniszczony (destroyCampAt usunal wpis, camps.length=0) (got ${campsState.camps.length})`);
+}
+
+// ============================================================================
 // D2/D3 (runda 3, werdykt Evaluatora rundy 2 -- FAIL): dyspozycja rundy 2 mowila
 // "strazniki tekstowe main.ts dla 3 newralgicznych miejsc", wykonano 1/3 (D1
 // wyzej, F2). BRAKOWALO 2: (a) main.ts:8578 (wowczas), wewnatrz
@@ -654,7 +802,7 @@ console.log('\n--- D2: main.ts foundingTerritoryOpts (F1) -- straznik tekstowy d
     'D2b (F1): foundingTerritoryOpts NIE MOZE zawierac golego `const extendedNodes = nodes;` (dokladnie mutacja rundy 1 -- wylacza realne rozszerzenie zasiegu przez forty, mimo poprawnej logiki w game/fort-territory.ts)');
 }
 
-console.log('\n--- D3: main.ts registerFortNodeIfNeeded (F3) -- straznik tekstowy dla kontestacji cudzym fortem w chwili budowy ---');
+console.log('\n--- D3: main.ts registerFortNodeIfNeeded (F7) -- straznik tekstowy dla kontestacji cudzym fortem w chwili budowy ---');
 {
   const mainTsSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
   const fnMarker = 'function registerFortNodeIfNeeded(';
@@ -670,13 +818,13 @@ console.log('\n--- D3: main.ts registerFortNodeIfNeeded (F3) -- straznik tekstow
   // budowy (komentarz "Regula 1/3" w main.ts), nie np. na sztywno `false`.
   const guardedCallRe = /isHexReservedByRivalFort\(\s*q\s*,\s*r\s*,\s*ownerId\s*,\s*fortNodes\s*\)/;
   assert(guardedCallRe.test(fnBody),
-    'D3a (F3): registerFortNodeIfNeeded musi wolac isHexReservedByRivalFort(q, r, ownerId, fortNodes) do ustalenia contestedUseless w chwili budowy (fort fizycznie stoi, ale kontestowany nie liczy sie do WLASNEGO zasiegu zakladania)');
+    'D3a (F7): registerFortNodeIfNeeded musi wolac isHexReservedByRivalFort(q, r, ownerId, fortNodes) do ustalenia contestedUseless w chwili budowy (fort fizycznie stoi, ale kontestowany nie liczy sie do WLASNEGO zasiegu zakladania)');
 
   // Negatyw celowany: gole `false` zamiast realnego wywolania dawaloby zawsze
   // "nie skontestowany", niezaleznie od stanu rywalizujacych fortow na mapie.
   const bareFalseRe = /const\s+contestedUseless\s*=\s*false\s*;/;
   assert(!bareFalseRe.test(fnBody),
-    'D3b (F3): registerFortNodeIfNeeded NIE MOZE zawierac golego `const contestedUseless = false;` (wylaczaloby kontestacje cudzym fortem)');
+    'D3b (F7): registerFortNodeIfNeeded NIE MOZE zawierac golego `const contestedUseless = false;` (wylaczaloby kontestacje cudzym fortem)');
 }
 
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) { /* noop */ }

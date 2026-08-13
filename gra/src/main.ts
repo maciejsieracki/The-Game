@@ -10461,11 +10461,14 @@ async function boot(): Promise<void> {
      * (dlaczego OSOBNO od placedImprovements/territoryOwnerAt: fort budowany
      * POZA istniejacym terytorium nie ma zadnego innego zrodla wlasciciela).
      * Zapis/odczyt save — pole `meta.fortNodes` budowane TU w main.ts (nie w
-     * game/save.ts, gdzie fortNodes nie wystepuje): zapis ok. main.ts:23028
-     * (`fortNodes: fortNodes.slice()`), odczyt main.ts:29825-29826.
+     * game/save.ts, gdzie fortNodes nie wystepuje): zapis ok. main.ts:23151
+     * (`fortNodes: fortNodes.slice()`), odczyt main.ts:29977-29979.
      * / EN: save write/read -- `meta.fortNodes` is built HERE in main.ts (not
      * in game/save.ts, which has no fortNodes field): write around
-     * main.ts:23028, read at main.ts:29825-29826.
+     * main.ts:23151, read at main.ts:29977-29979.
+     * (N-2, runda 4 2026-08-14: numery linii uaktualnione -- poprzednie
+     * 23028/29825-26 przesunely sie przez pozniejsze commity, patrz
+     * PYTANIA-OTWARTE.md "Fort/straznica krok2 (45f673af)".)
      */
     const fortNodes: FortNode[] = [];
     const improvementMeshes = new Map<string, THREE.Group>();
