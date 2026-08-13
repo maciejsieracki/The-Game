@@ -19608,7 +19608,28 @@ dopiero przy konkretach implementacji — np. dokładny mechanizm/plik generują
 barbarzyńców, czy stary zapis z poprzednim ustawieniem ma migrację). Do podjęcia gdy właściciel
 da sygnał.**
 
-## R-RUCH-JEDNOSTEK-USTAWIENIE-BRAK (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień nowej gry) · STATUS: **OTWARTE — rekonesans w toku**
+## R-RUCH-JEDNOSTEK-USTAWIENIE-BRAK (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień nowej gry) · STATUS: **ZAMKNIĘTE — funkcja już istnieje, ukryta w UI**
+
+**WYNIK REKONESANSU:** ustawienie **JUŻ ISTNIEJE i jest wdrożone** — nazywa się **„Zasięg ruchu"**
+(nie „Ruch jednostek"), 3 poziomy: Krótki ×1 (domyślny) / Normalny ×3 / Długi ×6. Wdrożone
+commitem `48375ce1` (2026-08-13 15:22 UTC), żywe w ROBOCZA od FALA 275, potwierdzone dalej żywe
+w FALA 277 (aktualny build w momencie zgłoszenia Macieja). Silnik: `gra/src/game/ruch-swiata-tempo.ts`
+(`applyRuchSwiataPace`), stosowany przy spawnie jednostki (gracz/AI/barbarzyńcy/nagrody chatek),
+persystencja `player.ruchSwiataPace` (`playerState.ts`) z fallbackiem `'krotki'` dla starych
+zapisów. Celowo nie dotyka ruchu w bitwie (osobny system).
+
+**PRZYCZYNA, DLA KTÓREJ MACIEJ GO NIE ZOBACZYŁ:** suwak siedzi jako **ostatni** (15.) wiersz
+przewijalnej listy `advancedSettingRows()` w `gra/src/ui/newGameFlow.ts`, ukryty za przyciskiem
+**„⚙ Zaawansowane opcje"** (nie w głównej siatce kroku 4 nowej gry, gdzie jest tylko
+trudność/rozmiar mapy/typ świata/tempo gry/liczba miast-państw/liczba cywilizacji). Lista, którą
+Maciej opisał w zgłoszeniu, kończy się dokładnie na „Wzrost ludności" — czyli jeden wiersz przed
+„Zasięg ruchu" — silnie wskazuje, że po prostu nie doprzewinął modala do końca, a nie że funkcja
+nie istnieje.
+
+**ZAMKNIĘTE bez zmian kodu.** Rekomendacja UX (do rozważenia osobno, nie teraz): przenieść/
+wyeksponować ten suwak wyżej na liście albo do głównej siatki kroku 4, skoro sam próg jego
+zauważalności okazał się problemem — do zarejestrowania jako osobny temat jeśli Maciej to
+potwierdzi jako priorytet.
 
 Zrzut: pełny panel ustawień nowej gry (Pustynie/Las/Góry i Wzgórza/Udział lądu/Warunki
 zwycięstwa/Trudność Miast-Państw/Barbarzyńcy/Bitwy/Koszty budynków/Koszty jednostek/Wzrost
