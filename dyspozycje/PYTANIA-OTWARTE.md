@@ -17476,3 +17476,29 @@ Istniejący `if (pakietyPerTura <= 0) return null` (linia ~289) sam domknie ofer
 
 **STATUS: dispatch rundy 2 (mała, jednolinijkowa) w toku** — zakres WYŁĄCZNIE blokujący punkt
 (`clampAiResourceTradeCommand`). N1-N5 poza zakresem, zarejestrowane do backlogu.
+
+---
+
+## R-DYPLO-CENNIK-SKALA-5X-Q1 runda 2 SCALONA, Evaluator finalny w toku (2026-08-13)
+
+Operator naprawił lukę: `clampAiResourceTradeCommand` (`diplomacy-ai-balance.ts`) teraz floruje
+przez `diplomacyNormalizeSurowiecIlosc`, lustrzanie do już istniejącego fixu w `main.ts:15113`.
+Dowód: trudność easy, produkcja AI 7 i 9 szt./turę → pokazana ilość = dostarczana ilość = 5
+(floor do kroku), PN liczone dla TEJ SAMEJ zflorowanej ilości (brak rozjazdu). Produkcja 4 szt.
+(<krok) → floor do 0 → guard zwraca `null` (żadna oferta-widmo). Przy okazji naprawione 2
+pre-istniejące testy w tym samym pliku, które łączyły nierealną konfigurację
+(`pakietWielkosc:10`, w produkcji zawsze 1) z surowcem krok=5 — fixture'y zaktualizowane bez
+zmiany semantyki testowanej funkcji.
+
+**N6 (nowe, do backlogu, NIE blokuje) — obserwacja Operatora, nie decyzja:** kwota gotówki
+(`zaplataPerTura`) w tej samej funkcji NIE jest przeliczana proporcjonalnie do zflorowanej
+ilości — identycznie jak we wzorcu `main.ts:15113` (`adjustZaplataPerTuraForZeroBalance` też
+bramkowane trudnością, na easy nie działa). Ta runda naprawiła WYŁĄCZNIE rozjazd ILOŚCI
+(zakres zlecenia), nie kwestię „czy cena jest uczciwa dla zredukowanej ilości" — możliwa osobna,
+nieujawniona jeszcze luka, do rozpoznania osobno jeśli się potwierdzi jako realny problem.
+
+Bramki: `tsc` 0, `logic-test` 213/213, `diplomacy-ai-balance-test.cjs` **30/30** (nowy plik dla
+tej funkcji), wszystkie 9 plików dyplomacji z rundy 1 ponownie zielone (76/148/187/254/29/46/13/
+19/28, wszystkie 0 fail). Commit `e21d5854`, push OK.
+
+**Dispatch Evaluatora finalnego (Opus 5) NASTĘPUJE teraz.**
