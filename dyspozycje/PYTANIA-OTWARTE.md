@@ -19963,3 +19963,32 @@ Kod scalony w `0811319c` jest bezpieczny i można go zostawić w ROBOCZA do czas
 crashuje, nie psuje nic innego) — tylko dokładne wartości Normalny/Trudny mogą się jeszcze
 zmienić. Dodatkowo do zrobienia (nieblokujące, osobna runda): domknąć testy dla
 `spawnInterval`/`unitsPerCamp`/domyślnego poziomu kreatora, klamra obronna na legacy `wylaczeni`.
+
+## Fort/straznica krok2 — TEMAT ZAMKNIĘTY po 4 rundach (c3fe813d, Evaluator PASS-WITH-NOTES, 2026-08-14)
+
+**WERDYKT: PASS-WITH-NOTES, żadna notatka nie blokuje.** Wszystkie zapowiedziane liczby
+zweryfikowane niezależnie (84/0, 85/0, 18/0, 213/213), obie luki testowe z R3 (MUT-5, MUT-6)
+realnie domknięte — Evaluator zrobił własną, niezależną powtórkę obu mutacji i potwierdził że
+nowe testy (sekcja E behawioralna, `fort-nodes-save-load-test.cjs`) łapią to, czego stary
+strażnik tekstowy nie łapał. `tsc` czysty. Diff `main.ts` w R4 to wyłącznie 9 linii wewnątrz
+komentarza — zero kodu produkcyjnego.
+
+**⛔ SPROSTOWANIE (§0b, zgłoszone przez Evaluatora):** teza "logika produkcyjna niezmieniona od
+R1" jest FAŁSZYWA — `git diff a31c4164 c3fe813d` pokazuje 69 wstawień/3 usunięcia w kodzie
+fortu, wprowadzone w R2 (`66be754f`, zamówione naprawy F1/F2/F4/F3/F5/F6 z werdyktu R1). Prawdziwa
+teza: logika produkcyjna niezmieniona **od R2**, nie od R1 (`git diff 66be754f c3fe813d` — pusty
+dla `fort-territory.ts`/`ai.ts`). Koryguję tu, żeby nie powielać nieścisłości w przyszłych
+odwołaniach do tego tematu.
+
+**Notatki nieblokujące (do rozważenia osobno, nie teraz):** N-A komentarz z numerami linii w
+`main.ts` znów nieaktualny (rozjazd +3/+12, bo commit 0811319c dołożył linie między worktree
+Operatora a HEAD) — rekomendacja: zastąpić numery odwołaniem do kotwic tekstowych zamiast liczb,
+tak jak robi to już nowy test tego samego commita. N-B martwy import `BARBARIAN_OWNER_ID` w
+teście. N-C `barb-camp-destruction-test.cjs` fizycznie zapisuje zmutowany `main.ts` na dysk 14×
+na przebieg (przywraca w finally) — ryzyko przy dwóch integratorach na współdzielonym drzewie
+(CLAUDE.md §6), kontrast: nowy `fort-nodes-save-load-test.cjs` mutuje wyłącznie w pamięci, lepszy
+wzorzec do skopiowania później. N-D/N-E drobne, opisane w pełnym raporcie Evaluatora.
+
+**TEMAT ZAMKNIĘTY.** 4 rundy: R1 implementacja → R2 naprawa F1-F6 (+ incydent procesowy, naprawiony
+osobno) → R3 text-guardy + odkrycie regresji testu → R4 naprawa testu + domknięcie 2 luk. Zero
+otwartych blokad.
