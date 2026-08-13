@@ -17250,3 +17250,32 @@ Bramki: `tsc` 0, `promote-to-front-test.cjs` **125/125** (było 105), `logic-tes
 test` 24/24. Commit `aabecdd3`, push OK.
 
 **Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz.**
+
+---
+
+## R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1=B — Evaluator: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-13)
+
+Własny test Evaluatora (53 asercje, zbudowany od zera, nie kopia Operatora) potwierdza:
+scenariusz z rejestru (Cud bank 500 → forfeitedPostep=500, nowy front postep=0, Wojownik nie
+korzysta z cudzych 500), bilans Pracy zachowany co do sztuki (551 wejście = 551 wyjście),
+idempotencja (potrójna sanityzacja = pojedynczy kredyt), rozróżnienie gracz/AI poprawne (zero
+przecieku między `playerPracaPool`/`aiPracaPoolByOwner[n]`), edge pustej kolejki bez crasha,
+`dropFrontItem` potwierdzone bajt-w-bajt nietknięte (86 linii dodanych, 0 usuniętych). 6 mutacji
+własnych — wszystkie złapane (w tym 3 warianty „forfeitedPostep=0" odrzucone już przez `tsc`,
+nie tylko przez test).
+
+**Notatki niepilne (do rejestru, NIE blokują):**
+- N1: pokrycie `main.ts` wyłącznie regexem tekstowym (świadome, jak w poprzednich rundach).
+- **N2 (nowe, do osobnej rejestracji) — `sanitizeProductionQueue` osiągalne WYŁĄCZNIE z panelu
+  gracza** (jedyny wywołujący `setCityProduction`←`setProduction` panelu, player-only). Kolejki
+  AI NIGDY nie są sanityzowane — pre-istniejący brak parytetu: AI budujące Cud ukończony przez
+  rywala ma zaśmieconą kolejkę, nowy kod `aiPracaPoolByOwner` w tej gałęzi dziś nieosiągalny.
+  Kod jest poprawnie ownerId-generyczny, gotowy gdyby AI kiedyś dostało tę samą sanityzację.
+- N3: fallback `city?.ownerId ?? 0` przy zburzonym mieście — wąski edge, przepadła Praca
+  trafiłaby do gracza zamiast nigdzie. Pre-istniejące.
+- N4: `filterQueue` woła predykat dwukrotnie dla frontu — dziś bezpieczne (`wonderGateOk` czyste),
+  ale docstring nie wymusza czystości predykatu wprost.
+
+**STATUS: TEMAT ZAMKNIĘTY.** Bramki: `tsc` 0, `promote-to-front-test.cjs` 125/125, `logic-test`
+213/213, `production-overflow-test` 24/24, plus 5 sąsiednich bramek (era-cud/wonder-availability/
+ai-cud-priorytet-b3/ai-production-priority/cuda-handel) wszystkie zielone.
