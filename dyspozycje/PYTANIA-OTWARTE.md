@@ -18224,3 +18224,51 @@ natychmiastowy dispatch".
 **Dodatkowo potwierdzone (nie zapomniane, kategoria b):** `P-GARNIZON-KONIUNKCJA-CZY-SAMO-
 INGARNIZON-Q1` (linia 14961) — pytanie ABC nadal czeka na odpowiedź właściciela, poprawnie
 prowadzone, tylko nierozstrzygnięte.
+
+---
+
+## R-SUROWIEC-CYNA-DO-BRAZU — Evaluator (Opus 5): FAIL wąski zakres, runda 2 w toku (2026-08-13)
+
+**Werdykt: logika funkcji POPRAWNA (zweryfikowana niezależnymi symulacjami, nie czytaniem asercji
+Operatora — klucz `ruda_cyny` w recepturze POTWIERDZONY jako jedyny poprawny wybór, mutacja na
+literalne `cyna` daje throughput=0 na zawsze), ale DOSTARCZENIE ma 3 blokujące braki:**
+
+1. **BLOKUJĄCE:** `converter-era-scaling-test.cjs` — 2 NOWE porażki (87→85 pass), fixture sekcji E
+   nie ma `ruda_cyny` w magazynie testowym.
+2. **BLOKUJĄCE:** `mennica-magazyn-test.cjs` — 1 NOWA porażka (38→37 pass), ten sam brak w innym
+   fixture.
+3. **BLOKUJĄCE (C-011):** `map-gen-regression-test.cjs` nie ukończony w budżecie czasu Operatora
+   ani Evaluatora (środowisko wolne — zgodne ze znanym `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`).
+   Evaluator dostarczył ZASTĘPCZY dowód (porównanie pełnych zrzutów terenu/złóż BASE vs HEAD na 3
+   konfiguracjach mapy + dwukrotne `generateMap` tym samym seedem) — determinizm A=B potwierdzony,
+   rozkład terenu identyczny, liczby złóż się przesuwają (nieunikniony efekt nowego rzutu PRNG per
+   heks) ale to nie jest regresja. Formalne dokończenie testu pozostaje do zrobienia.
+
+**Realne, niedoregulowane luki (do naprawy w rundzie 2, nie wymagają ABC — dokańczają już ustaloną
+specyfikację):**
+4. `HANDEL_SUROWCE_KROK5` nie zawiera `ruda_cyny` — krok handlu 1 zamiast 5, niespójne z
+   konwencją R-DYPLO-CENNIK-SKALA-5X-Q1 (surowce objęte ×5 = krok 5, WYŁĄCZNIE Złoto/Węgiel = krok 1).
+5. `OWNER_CAPPED_RESOURCE_KEYS` nie zawiera `ruda_cyny` — magazyn Rudy cyny BEZ LIMITU (zdobyta
+   łupem/handlem gromadzi się nieograniczenie, inne surowce mają cap).
+6. Ikony: Ruda cyny pokazuje dziś ikonę Rudy miedzi (dopasowanie substring w mapie ikon, brak
+   dedykowanego wpisu) — widoczne dla gracza po odblokowaniu karty w panelu.
+7. `AI_IMPROVEMENT_FOR_DEFICIT`/`UPSTREAM_FOR_PROCESSED_RESOURCE` dla cyny — wpięcie realne
+   (zweryfikowane czytaniem kodu), ale bez pokrycia testowego.
+
+**Do wiedzy właściciela, NIE blokujące, NIE wymaga zmiany kodu (inherentne napięcie dwóch
+własnych decyzji):** parametr rzadkości `0.02` (miedź/5) jest matematycznie poprawny, ale
+mechanizm gwarancji fair-play DOSYPUJE złoża do 100% pokrycia siatki — w praktyce cyna występuje
+~0,77× częstości miedzi (nie 0,20× jak sugerowałby sam parametr) i **3× częściej niż złoto**. To
+nieusuwalna konsekwencja połączenia „5× rzadsza" (pkt 1 specyfikacji) z „gwarantowana każdej
+cywilizacji" (pkt 2 specyfikacji) — nie da się mieć obu dosłownie naraz przy tak małej mapie.
+Zarejestrowane jako FYI, nie jako defekt do naprawy.
+
+**Potwierdzone bez zastrzeżeń:** `hasBrazAccess` nietknięty (gate na jednostki niezmieniony),
+FAIR_PLAY realne (100% pokrycia na 4 konfiguracjach mapy, mutacja usuwająca cynę z listy zbija do
+37%), render (`improvements.ts`/`robloxImprovements.ts`) czysty mimo niewłaściwego modelu na
+etapie Operatora — czyste reużycie istniejącej, zwalidowanej bryły, zero nowej geometrii, zero
+ryzyka mimo luki procesowej. Parytet AI potwierdzony (gracz i AI dostają identyczny throughput
+Brązu w jednym wywołaniu silnika).
+
+**Dispatch Operatora rundy 2 (Sonnet 5) NASTĘPUJE** — 3 poprawki blokujące + 4 realne luki, zero
+nowych decyzji projektowych.
