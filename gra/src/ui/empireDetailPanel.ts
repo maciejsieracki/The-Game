@@ -454,13 +454,45 @@ function ensureStyles(): void {
 .civ-emp-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;border:2px solid #141a24;
   box-shadow:0 1px 4px rgba(0,0,0,.6);cursor:pointer;background:#d9a441;}
 .civ-emp-slider::-moz-range-track{height:8px;border-radius:999px;background:transparent;}
-.civ-emp-slider.gold::-webkit-slider-thumb,.civ-emp-slider.gold::-moz-range-thumb{background:#d9a441;}
-.civ-emp-slider.blue::-webkit-slider-thumb,.civ-emp-slider.blue::-moz-range-thumb{background:#8ec5ff;}
-.civ-emp-slider.neutral::-webkit-slider-thumb,.civ-emp-slider.neutral::-moz-range-thumb{background:#9aa4b2;}
-.civ-emp-slider.green::-webkit-slider-thumb,.civ-emp-slider.green::-moz-range-thumb{background:#78c95a;}
+/* Rozbite na OSOBNE regułki -webkit/-moz per wariant (Evaluator, Panel 11 zakladek Faza 1
+   Skarbiec, 6afdde92): łączenie ::-webkit-slider-thumb i ::-moz-range-thumb w JEDNEJ liście
+   selektorów unieważnia CAŁĄ regułę w OBU przeglądarkach (nieznany pseudo-element jednego
+   dostawcy psuje parsowanie selektora dla drugiego) — dowód CSSOM: z 7 zapisanych regułek
+   przyjęte tylko 2 (gold, jedyna bez konfliktu). 8 regułek zamiast 4, po jednej per dostawca.
+   / EN: split into SEPARATE -webkit/-moz rules per variant — combining ::-webkit-slider-thumb
+   and ::-moz-range-thumb in ONE selector list invalidates the WHOLE rule in BOTH browsers
+   (an unknown vendor pseudo-element breaks selector parsing for the other vendor too). */
+.civ-emp-slider.gold::-webkit-slider-thumb{background:#d9a441;}
+.civ-emp-slider.gold::-moz-range-thumb{background:#d9a441;}
+.civ-emp-slider.blue::-webkit-slider-thumb{background:#8ec5ff;}
+.civ-emp-slider.blue::-moz-range-thumb{background:#8ec5ff;}
+.civ-emp-slider.neutral::-webkit-slider-thumb{background:#9aa4b2;}
+.civ-emp-slider.neutral::-moz-range-thumb{background:#9aa4b2;}
+.civ-emp-slider.green::-webkit-slider-thumb{background:#78c95a;}
+.civ-emp-slider.green::-moz-range-thumb{background:#78c95a;}
+/* Etykiety suwaków (Skarb/Nauka/Zamożność) — zakresowane pod .civ-emp-slider-label, żeby NIE
+   kolidować z niepowiązanymi .gold/.blue z innych komponentów (.civ-emp-chip .v.gold itp.).
+   / EN: slider labels — scoped under .civ-emp-slider-label so they don't collide with
+   unrelated .gold/.blue selectors from other components. */
+.civ-emp-slider-label.gold{color:#d9a441;}
+.civ-emp-slider-label.blue{color:#8ec5ff;}
+.civ-emp-slider-label.neutral{color:#cfd5de;}
 .civ-emp-tbl-sum{display:grid;column-gap:6px;align-items:baseline;padding:11px 0 9px;}
 .civ-emp-tbl-sum>div:first-child{font-size:13px;color:#e8ebf0;font-weight:700;}
 .civ-emp-tbl-sum>div:last-child{text-align:right;font-size:15px;color:#d9a441;font-weight:800;}
+.civ-emp-tbl-sum>div:last-child.pos{color:#d9a441;}
+.civ-emp-tbl-sum>div:last-child.neg{color:#e07a7a;}
+/* Tabela per miasto Skarbca — kolumny liczbowe (DO SKARBCA / UTRZYMANIE) wyrównane do prawej we
+   WSZYSTKICH wierszach (nagłówek + dane + SUMA), spójnie z makietą — poprzednio tylko wiersz
+   SUMA miał text-align:right inline, wiersze danych były do lewej. Zakresowane pod
+   .civ-emp-skarbiec-city-tbl, żeby nie ruszać innych tabel .civ-emp-mini w panelu.
+   / EN: Treasury per-city table — numeric columns right-aligned in ALL rows (header + data +
+   SUM), consistent with the mockup — previously only the SUM row had inline text-align:right.
+   Scoped under .civ-emp-skarbiec-city-tbl so other .civ-emp-mini tables are untouched. */
+.civ-emp-skarbiec-city-tbl .civ-emp-mini-h-cell:nth-child(2),
+.civ-emp-skarbiec-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
+.civ-emp-skarbiec-city-tbl .civ-emp-mini-r>div:nth-child(2),
+.civ-emp-skarbiec-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -673,7 +705,7 @@ function renderSkarbiecSection(
     formatResourceUpkeepEmpireLineColored(utrzRes));
   h += balRow('Utrzymanie jednostek', null, tblValTxt(-utrzJ));
   h += `<div class="civ-emp-tbl-sum" style="grid-template-columns:${bg}"><div>Netto skarbiec</div>`
-    + `<div>${treasuryBalanceSignedTxt(netto)}</div></div>`;
+    + `<div class="${nettoCls}">${treasuryBalanceSignedTxt(netto)}</div></div>`;
   h += '</div>';
 
   // TABELA PER MIASTO — wzorzec `.civ-emp-mini`/`miniHeader`/`miniRow` (jak reszta panelu),
@@ -681,7 +713,7 @@ function renderSkarbiecSection(
   const grid = '1fr 0.7fr 0.9fr';
   let sumSkarbiec = 0;
   let sumUtrz = 0;
-  h += `<div class="civ-emp-mini" style="margin-top:10px">${miniHeader(['MIASTO', 'DO SKARBCA', 'UTRZYMANIE'], grid)}`;
+  h += `<div class="civ-emp-mini civ-emp-skarbiec-city-tbl" style="margin-top:10px">${miniHeader(['MIASTO', 'DO SKARBCA', 'UTRZYMANIE'], grid)}`;
   for (const c of rows) {
     const doSkarbca = c.pieniadz;
     const utrzymanie = -(c.utrzymanieBudynkow ?? 0);
@@ -734,10 +766,9 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   for (const row of rows) {
     const pct = split[row.key];
     const amount = Math.round((baseAmount * pct) / 100);
-    const clsAttr = row.cls === 'gold' ? 'gold' : row.cls === 'blue' ? 'blue' : '';
     h += '<div>'
       + '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">'
-      + `<span style="flex:1;font-size:12px;font-weight:600" class="${clsAttr}">${row.label}</span>`
+      + `<span style="flex:1;font-size:12px;font-weight:600" class="civ-emp-slider-label ${row.cls}">${row.label}</span>`
       + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-pct="${row.key}"><b>${pct}%</b></span>`
       + `<span style="font-size:11px;color:#7d8798" data-amt="${row.key}">≈ ${amount >= 0 ? '+' : ''}${amount}/turę</span></div>`
       + `<input type="range" class="civ-emp-slider ${row.cls}" min="0" max="100" step="${HANDEL_PCT_STEP}" `
