@@ -19776,3 +19776,60 @@ domyślnie ×2 dla `droga_brukowana`) — NIE dotykać tej logiki, tylko renderi
 
 **STATUS: dispatch bezpośredni do Operatora Opus 5 (render/**, wyjątek §4 CLAUDE.md stosuje się
 zawsze, bez wyjątku).** Spec jest kompletny i jednoznaczny — nie wymaga ABC. Worktree izolacja.
+
+## Fort/straznica krok2 (45f673af) — Evaluator runda 3: WERDYKT FAIL, dispatch runda 4 (2026-08-14)
+
+**Ważne: commit `45f673af` sam w sobie jest poprawny** — wszystkie liczbowe twierdzenia
+zweryfikowane niezależnie i PRAWDZIWE (67→73 asercji, D2/D3 realnie domykają mutacje z rundy 1,
+0 obcych hunków, kod produkcyjny nietknięty). FAIL dotyczy domknięcia TEMATU, nie tego commita.
+
+**⛔ SPROSTOWANIE §0b — błędne twierdzenie w REJESTRZE (nie w kodzie):** wpis
+`P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (c57cd41d) — Evaluator runda 2` (wyżej w tym pliku) opisuje
+`barb-camp-destruction-test` 81/1 jako **„pre-istniejące — zweryfikowane niezależnie na commicie-
+rodzicu, identyczne"**. To PRAWDA lokalnie (identyczne na commicie-rodzicu `c57cd41d^`), ale
+FAŁSZYWE co do genezy: bisekcja Evaluatora rundy 3 Fort/straznicy dowodzi przyczynowo (usunięcie/
+przywrócenie jednej linii), że regresję wprowadził **`66be754f`** (Fort/straznica runda 2, fix F2:
+`applyFortTakeoverAndEvacuation` dodaje legalne, zamówione przez Evaluatora rundy 1 wywołanie
+`checkBarbCampDestroyedAt`), NIE stan zastany sprzed jakiegokolwiek tematu tej sesji. Baseline
+`63fcbaae` (sprzed Fort R1): **82/0**. Po Fort R2 (`66be754f`): **81/1**, niezmienne od tamtej
+pory (R3, incydent, deploy FALA 277). Przyczyna: `barb-camp-destruction-test.cjs` trzyma sztywny
+inwentarz call-site'ów (dziś twierdzi że jest ich 11, po F2 realnie jest 12) — dług testowy, NIE
+regresja silnika (logika gry jest poprawna, dokładnie to czego zażądał Evaluator rundy 1).
+Zakres błędu: dotyczy TYLKO etykiety „pre-istniejące" w rejestrze; sama liczba 81/1 i twierdzenie
+że jest identyczna na commicie-rodzicu `c57cd41d^` pozostają prawdziwe i nie wymagają korekty.
+
+**Bramki (baseline `63fcbaae` sprzed Fort R1 → dziś HEAD):** `tsc` czysty exit 0.
+`fort-strazniaca-zasieg-zakladania-test` 39→67→**73/0**. `ai-founding-territory` 28/0.
+`found-from-village` 24/24. `first-player-city` 16/0. `logic-test` 213/213. `okolica-multi-city-
+overlap` 55/55. `city-hex-movement` 7/0. `ai-improvements` 33/0. `city-state-alliance`/`cluster-
+diff`/`prod-audit` 67/0, 31/0, 17/0. `auto-improvements` 14/1 pre-istniejące (zweryfikowane na
+baseline). `ai-test` 285/8 (+5 z MP-chatki, te same 8 pre-istniejące). **`barb-camp-destruction`
+82/0 (baseline) → 81/1 (od 66be754f) — REGRESJA TEMATU, patrz sprostowanie wyżej.**
+
+**Mutacje kontrolne Evaluatora (8, izolowany worktree): 4/8 złapane.** MUT-1/MUT-2 (mutacje-
+zabójcy z rundy 1, D2/D3) złapane. MUT-3 (F1, węzeł-widmo) złapana. MUT-4 (F4, MP budują forty)
+złapana. **MUT-5 (F2 obejście semantyczne przy zachowanym tekście strażnika D1) NIEZŁAPANA** —
+jedyna rzecz reagująca na F2 to właśnie czerwona bramka barb-camp-destruction z powyższego
+sprostowania. **MUT-6 (zapis `fortNodes` do save wyzerowany) NIEZŁAPANA — zero pokrycia save-load
+w całym repo.** MUT-7/MUT-8 (obejścia D2/D3 przy zachowanym tokenie) NIEZŁAPANE — strażniki są
+dopasowaniem literału, nie kontraktem behawioralnym (akceptowalne jako tania ochrona przed
+powtórką konkretnej historycznej mutacji, nie jako pełne pokrycie).
+
+**Incydent procesowy — rozliczenie:** `a31c4164` (R1) i `45f673af` (R3) czysto odseparowane od
+tematu kosztArmii/empire-food (0 wystąpień). Obce hunki nadal fizycznie tkwią w treści `66be754f`
+(3 hunki, uzupełnione ale nie wycofane przez `8b20c34d`) — funkcjonalnie zdrowe, ale atrybucja w
+historii git trwale zmieszana. Nic po `45f673af` nie narusza kodu tematu (diff pusty dla
+`fort-territory.ts`/`ai.ts`/`improvement-build.ts`/pliku testu).
+
+**Uwagi nieblokujące:** N-1 sekcja D3 błędnie oznaczona "(F3)" — F3 już pokryte przez C4, D3
+faktycznie odpowiada F7 (edge `contestedUseless` nigdy nie przeliczane) — etykieta do poprawy.
+N-2 komentarz w `main.ts:10463-10467` odsyła do nieaktualnych numerów linii save (23028→realnie
+23151, 29825-26→realnie 29977-29979) — treść poprawna, numery przesunięte przez późniejsze
+commity. N-3 (ten wpis) domyka brak nagłówków rundy 3/werdyktu R2 w rejestrze.
+
+**RUNDA 4 (dispatch, mały zakres, zero kodu produkcyjnego poza testami):**
+1. [blokujące] `barb-camp-destruction-test.cjs`: dopisać inwentarz dla `applyFortTakeoverAndEvacuation`
+   (wywołanie `checkBarbCampDestroyedAt(dest.q, dest.r)` dodane w F2), licznik 11→12, powrót do 82/0.
+2. [mocno rekomendowane] Test round-trip save→load dla `fortNodes` (domyka MUT-6).
+3. [rekomendowane] Asercja behawioralna dla F2 obok strażnika tekstowego D1 (domyka MUT-5).
+4. [kosmetyka] N-1 (etykieta D3 F3→F7), N-2 (numery linii w komentarzu).
