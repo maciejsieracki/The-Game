@@ -19192,3 +19192,13 @@ BEZPOŚREDNIĄ, przewidzianą konsekwencją niewybrania opcji B w pytaniu 2 — 
 **STATUS: zamknięte jako rozpoznanie — 3 pytania ABC (w tym odświeżenie pytań 1-2 powyżej +
 nowe pytanie o skalę ×5 łańcucha żywnościowego, powiązane z równoległym tematem
 `P-WOJSKO-ZUZYCIE-ZYWNOSCI-PO-SKALI-5X`) zadane właścicielowi wprost w czacie.**
+
+## DESIGN-ZLECENIE-11-ZAKLADEK dokument (ddd61a78) — Evaluator poprawek: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-13)
+
+Wszystkie 7 poprawek (F1-F7) zweryfikowane niezależnie jako prawdziwe i kompletne, listy
+Miasto/Obywatele potwierdzone nietknięte (0 zmienionych linii cytatu blokowego). Dwie
+nieblokujące uwagi: (1) §8.3 zdanie o 🍞 nadal ma wewnętrzną niespójność liczby wystąpień w
+konkretnym zakresie linii (7 vs "kilkunastu"), do wyrównania przy okazji; (2) F5 numery linii
+main.ts przesunięte o 4/34 po commicie 053debc9 wstawionym między — treść merytoryczna
+prawdziwa, tylko liczby lekko nieaktualne, do odświeżenia przy najbliższej okazji. Żadna nie
+blokuje odbioru przez designera. **ZAMKNIĘTE.**
