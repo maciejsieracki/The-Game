@@ -16992,3 +16992,23 @@ wyrąb** — realny efekt balansowy ujawniony przez zmianę wartości, nie wprow
 tę rundę. Nie naprawione (poza zakresem rundy 2/3), wymaga pytania ABC: naprawić refundację na
 Drewno (parytet z graczem) czy to świadomy bonus AI do rekompensaty innej asymetrii? Do
 rozpoznania przy najbliższej turze ABC.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 runda 3 SCALONA, Evaluator finalny (2. próba) w toku (2026-08-13)
+
+Operator naprawił regresję `hex-plony-magazyn-test.cjs` (4 przypięte wartości: Równina Drewno
+2→10, Kamień 1→5, Rzeka Glina 2→10, suma addytywna 3→15 — z powrotem 11/11) oraz dopiął sekcję C
+do `ekonomia-5x-inwariant-test.cjs` (6 nowych przypiętych wartości z `terrain-yields.json`/
+`terrain-improvements.json`, nie-jałowość potwierdzona mutacją). Operator sam wykrył i naprawił
+własną pomyłkę w trakcie pracy (przypadkowa edycja głównego drzewa zamiast worktree) — główne
+drzewo zweryfikowane czyste przed scaleniem.
+
+Bramki na scalonym drzewie: `tsc` 0, `hex-plony-magazyn-test.cjs` **11/11** (było 4/7),
+`ekonomia-5x-inwariant-test.cjs` **246/246** (było 233), `logic-test` 213/213. Commit `560e3f7d`,
+push OK.
+
+**Dispatch Evaluatora finalnego (2. próba, Opus 5) NASTĘPUJE teraz** — krótki, ukierunkowany na
+weryfikację że 3 zastrzeżenia z poprzedniego FAIL są rzeczywiście domknięte (hex-plony-magazyn
+zielony, rejestr sprostowany, luka pokrycia terrain-yields/terrain-improvements zamknięta) + własna
+próba mutacyjna na nowej sekcji C.
