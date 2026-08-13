@@ -17012,3 +17012,35 @@ push OK.
 weryfikację że 3 zastrzeżenia z poprzedniego FAIL są rzeczywiście domknięte (hex-plony-magazyn
 zielony, rejestr sprostowany, luka pokrycia terrain-yields/terrain-improvements zamknięta) + własna
 próba mutacyjna na nowej sekcji C.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — Evaluator finalny 2. próba: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY po 3 rundach (2026-08-13)
+
+Wszystkie 3 zastrzeżenia poprzedniej rundy potwierdzone domknięte, każde niezależnie
+zweryfikowane: (1) `hex-plony-magazyn-test.cjs` 11/11, KAŻDY literał terenowy w pliku sprawdzony
+przeciw `terrain-yields.json` (nie tylko 4 zgłoszone), piątego przeoczenia brak; (2) rejestr
+sprostowany precyzyjnie, brak nowego nadużycia „wszystkie zielone"; (3) sekcja C bramki inwariant
+przypina konkretne wartości (nie podzielność) — własna mutacja Evaluatora (inna niż mutacja
+Operatora: `kamieniolom.bonus.kamien` 5→1) złapana z jasnym komunikatem. **Pełne jednoczesne
+cofnięcie WSZYSTKICH 12 liczb B1/B2 teraz łapane przez OBIE bramki** (poprzednio: 0 z 4). Bramki
+obszaru: `tsc` 0, `hex-plony-magazyn-test` 11/11, `ekonomia-5x-inwariant-test` 246/246, `logic-
+test` 213/213, `tartak-glinianka-rate-Q1-test` 1281/1281 — wszystkie dosłownie zweryfikowane.
+`grupa-b-lane-test` (45/4) i `mennica-magazyn-test` (38/3) — potwierdzone POZOSTAJĄ pre-istniejące
+(nie oceniane jako blokery tej rundy, zgodnie z wcześniejszą podwójnie niezależną weryfikacją).
+
+**Notatki niepilne (do backlogu, NIE blokują):**
+- N1: sekcja C pokrywa 8/12 zmienionych liczb B1/B2 — Wzgórza (Drewno/Kamień) i Góry
+  (Drewno/Kamień) NADAL bez przypięcia (empirycznie zweryfikowane: cofnięcie tych 4 liczb
+  przechodzi wszystkie bramki). Koszt domknięcia: ~4 linie `eq()` w sekcji C, przy najbliższej
+  pracy dotykającej `gra/tools/ekonomia-5x-inwariant-test.cjs`.
+- N2: 2 nieaktualne komentarze w `hex-plony-magazyn-test.cjs` (linie ~140, ~161) wciąż podają
+  stare liczby (2 glina, 1 drewno) mimo że asercje obok już poprawne (10, 5) — dryf
+  dokumentacyjny, ta sama klasa co przyczyna FAIL rundy 2, do sprostowania przy okazji.
+
+**STATUS: R-EKONOMIA-SUROWCE-SKALA-5X-Q1 ZAMKNIĘTY OSTATECZNIE** po 3 rundach — decyzja
+właściciela (2026-08-13) w pełni zaimplementowana i dwukrotnie niezależnie zweryfikowana:
+stawka drenażu obywateli 1,0, WSZYSTKIE kanały produkcji surowców fizycznych (budynkowe,
+terytorialne przez ulepszenia, plony terenowe z pól obrabianych, wyrąb lasu) ×5, koszty
+rekrutacji/budowy/utrzymania jednostek i budynków ×5, cap magazynów ×5 (baza i bonus), Złoto/
+Pieniądz świadomie bez zmian. N1/N2 do backlogu.
