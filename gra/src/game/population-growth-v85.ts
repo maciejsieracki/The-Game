@@ -369,6 +369,20 @@ export interface PostCentralGrowthOpts {
    * instead of importing main.ts -- avoids a circular import.
    */
   onCityPopulationChanged?: (cityId: string) => void;
+  /**
+   * P-HEKS-SPOR-SASIAD runda 2 nota B (Maciej 2026-08-13): heksy przegrane na rzecz
+   * bliższego miasta TEGO SAMEGO właściciela, per cityId —
+   * `computeLostToNearerSiblingByCity(cities, map)`, liczone RAZ przez wołającego
+   * (main.ts) przed wywołaniem tej funkcji. Bez tego hooka rebalans po wzroście
+   * populacji w trybie ręcznym mógł (rzadko) posadzić 👤 na spornym polu -- odczyt
+   * jest fail-closed (bez podwójnego liczenia), ale slot robotnika marnował się
+   * po cichu. Brak hooka -> undefined -> `rebalanceWorkersAfterPopulationChange`
+   * dostaje `excludeHexKeys=undefined`, zachowanie identyczne jak przed rundą 2.
+   * / EN: hexes lost to a closer same-owner sibling city, per cityId -- computed
+   * ONCE by the caller before this call. Without it the manual-mode rebalance
+   * after population growth could occasionally seat a worker on a contested tile.
+   */
+  excludeHexKeysByCity?: ReadonlyMap<string, ReadonlySet<string>>;
 }
 
 /** Wzrost ułamkowy + głód — po centrali (nakarmione z fedByCityId). */
@@ -377,7 +391,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
     cities, econ, efResult, map, territoryNodes, econParams, rationParams,
     ownerCivByOwnerId, spichlerzByCity, happinessByCityId, builtByCity,
     ownerEraByOwner, civBonusyByOwner, citizenGrowthPctByCityId,
-    onCityPopulationChanged,
+    onCityPopulationChanged, excludeHexKeysByCity,
   } = opts;
 
   for (const ownerTick of efResult.perOwner) {
@@ -443,7 +457,10 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
       tick.magazynPoTurze = city.wzrostUlamkowy;
 
       if (city.population !== before) {
-        rebalanceWorkersAfterPopulationChange(city, map, before, city.population, territoryNodes);
+        rebalanceWorkersAfterPopulationChange(
+          city, map, before, city.population, territoryNodes,
+          excludeHexKeysByCity?.get(city.id),
+        );
         const ownerEra = ownerEraByOwner?.get(city.ownerId) ?? 1;
         const mpMults = civManpowerMults(civBonusyByOwner?.get(city.ownerId));
         city.manpower = refreshManpowerAfterPopChange(city, ownerEra, before, mpMults.maxMult);

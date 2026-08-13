@@ -459,6 +459,17 @@ export interface CityPanelConfig {
    * UI podświetla te pola w kompaktowym podglądzie okolicy.
    */
   getWorkedTiles?: (cityId: string) => { q: number; r: number }[] | undefined;
+  /**
+   * P-HEKS-SPOR-SASIAD runda 2 nota A (Maciej 2026-08-13): heksy przegrane na rzecz
+   * bliższego miasta TEGO SAMEGO właściciela (`computeLostToNearerSiblingByCity`) —
+   * ten sam zbiór co `excludeHexKeys` w `getWorkedTiles`/silniku tury. Bez tego haka
+   * `cityWorkedTilesForEconomy` w panelu liczy bez reguły "najbliższe miasto wygrywa",
+   * podczas gdy silnik i overlay 👤 (getWorkedTiles) już ją stosują — rozjazd liczb.
+   * EN: hexes lost to a closer same-owner sibling city — same set the engine and the
+   * 👤 overlay already exclude; without this hook the panel's own economy read (top
+   * chips, growth badge) disagreed with them.
+   */
+  getExcludeHexKeys?: (cityId: string) => ReadonlySet<string> | undefined;
   /** Biezacy podzial Handlu per miasto (efektywny — global lub override). */
   getPodzialHandlu?: (cityId: string) => PodzialHandluSplit | null;
   /** Domyślny podział imperium (DYSPOZYCJA-85-SUWAK). */
@@ -1080,7 +1091,9 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // więc samo `built.includes('spichlerz')` gubi cap 8 po ulepszeniu.
     const maSpichlerz = cityHasSpichlerzBuilding(built);
     const maAkwedukt = built.includes('akwedukt');
-    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel());
+    // P-HEKS-SPOR-SASIAD runda 2 nota A: excludeHexKeys tak samo jak silnik tury /
+    // overlay 👤 (getWorkedTiles) -- bez tego panel liczyl A=4/B=2 zamiast A=3/B=2.
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id));
     const healthBd = computeCityHealthBreakdown(
       city.population,
       worked,
@@ -3007,7 +3020,9 @@ function resolveCityHealth(city: City, map: GameMap, data: GameData): { total: n
   const live = cfg.getCityHealth?.(city.id);
   if (live) return { ...live, fromEngine: true };
   const builtIds = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel());
+  // P-HEKS-SPOR-SASIAD runda 2 nota A: fallback (gdy cfg.getCityHealth nie odpowiedzial)
+  // musi liczyc tak samo jak silnik -- ta sama excludeHexKeys.
+  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id));
   const br = computeCityHealthBreakdown(
     city.population, tiles, builtIds, data.societyParams, cfg.difficulty ?? 'normal',
     { city, map },

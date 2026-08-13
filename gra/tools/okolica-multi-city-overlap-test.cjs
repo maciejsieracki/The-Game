@@ -53,11 +53,18 @@ export {
   cityRangeForPopulation,
   computeLostToNearerSiblingByCity,
   reconcileWorkedTilesForOwner,
+  reconcileAllWorkedTiles,
 } from '../src/game/okolica';
 export {
   cityWorkedTilesForEconomy,
   workedHexCoordsForCity,
 } from '../src/game/turn-economy';
+export {
+  applyPostCentralPopulationGrowth,
+} from '../src/game/population-growth-v85';
+export {
+  advanceEmpireFood,
+} from '../src/game/empire-food';
 `, 'utf8');
 
 try {
@@ -80,8 +87,10 @@ try {
 const {
   assignWorkedTiles, resolveWorkedTiles, toggleTileWorker, adjustTileWorker,
   buildTerritoryNodesFromCities, cityRangeForPopulation, computeLostToNearerSiblingByCity,
-  reconcileWorkedTilesForOwner,
+  reconcileWorkedTilesForOwner, reconcileAllWorkedTiles,
   cityWorkedTilesForEconomy, workedHexCoordsForCity,
+  applyPostCentralPopulationGrowth,
+  advanceEmpireFood,
 } = require(BUNDLE);
 
 // --- test harness ------------------------------------------------------------
@@ -351,6 +360,226 @@ console.log('\n2.5 wydajnosc: 50 zachodzacych miast tego samego wlasciciela, smo
   const elapsedMs = Date.now() - t0;
   ok(elapsedMs < 5000, `computeLostToNearerSiblingByCity(50 miast nachodzacych) < 5000ms (got ${elapsedMs}ms)`);
   ok(lost.size > 0, 'przy spacing=4 < 2*radius=20 realnie istnieja sporne heksy (mechanizm sie uruchamia)');
+}
+
+console.log('\n================ SEKCJA 3: RUNDA 2 NOTA A -- panel miasta liczy jak silnik ================\n');
+
+// Evaluator rundy 1 zmierzyl rozjazd: silnik (cityWorkedTilesForEconomy z excludeHexKeys)
+// liczyl A=3/B=2 pol, panel miasta (cityPanel.ts computeView/resolveCityHealth, wolal
+// cityWorkedTilesForEconomy BEZ excludeHexKeys) liczyl A=4/B=2 -- panel ignorowal regule
+// "najblizsze miasto wygrywa". Naprawa: nowy hak `cfg.getExcludeHexKeys` w CityPanelConfig,
+// wpiety w main.ts (siblingClaimedHexKeysForCity, ten sam mechanizm co juz istniejacy
+// getWorkedTiles/getCityHealth) i uzyty w OBU miejscach cityPanel.ts ktore licza worked
+// tiles (computeView + fallback resolveCityHealth). cityPanel.ts importuje DOM/THREE (nie
+// da sie go zbundlowac standalone w node bez jsdom) -- test tekstowy na zrodle, wzorem
+// juz istniejacego tools/spichlerz-cap-citypanel-wiring-test.cjs w tym repo. Liczby A=3
+// vs A=4 sa juz dowiedzione behawioralnie w SEKCJI 2.2/2.4 wyzej (cityWorkedTilesForEconomy/
+// assignWorkedTiles z i bez excludeHexKeys) -- tu weryfikujemy WYLACZNIE ze panel faktycznie
+// PRZEKAZUJE ten sam zestaw do TEJ SAMEJ funkcji silnika, nie ze reimplementuje formule.
+const CITY_PANEL_SRC = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui', 'cityPanel.ts'), 'utf8');
+const MAIN_TS_SRC = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.ts'), 'utf8');
+
+console.log('3.1 CityPanelConfig deklaruje hook getExcludeHexKeys');
+{
+  ok(/getExcludeHexKeys\?:\s*\(cityId: string\) => ReadonlySet<string> \| undefined;/.test(CITY_PANEL_SRC),
+    'CityPanelConfig ma pole getExcludeHexKeys?: (cityId: string) => ReadonlySet<string> | undefined');
+}
+
+console.log('\n3.2 computeView(...): worked tiles licza z cfg.getExcludeHexKeys?.(city.id)');
+{
+  const fnStartMarker = 'function computeView(city: City, map: GameMap, data: GameData): CityView | null {';
+  const fnStart = CITY_PANEL_SRC.indexOf(fnStartMarker);
+  ok(fnStart >= 0, 'znaleziono computeView(...) w cityPanel.ts');
+  const fnEndIdx = fnStart >= 0 ? CITY_PANEL_SRC.indexOf('\nfunction ', fnStart + fnStartMarker.length) : -1;
+  ok(fnEndIdx > fnStart, 'znaleziono koniec computeView(...) (kolejna top-level function)');
+  const fnBody = fnStart >= 0 && fnEndIdx > fnStart ? CITY_PANEL_SRC.slice(fnStart, fnEndIdx) : '';
+  const workedMatch = fnBody.match(/const worked = cityWorkedTilesForEconomy\(([^;]+)\);/);
+  ok(!!workedMatch, 'znaleziono wiersz `const worked = cityWorkedTilesForEconomy(...)` w computeView(...)');
+  const workedExpr = workedMatch ? workedMatch[1] : '';
+  ok(/cfg\.getExcludeHexKeys\?\.\(city\.id\)/.test(workedExpr),
+    `RUNDA 2 NOTA A: computeView przekazuje cfg.getExcludeHexKeys?.(city.id) -- wywolanie: "${workedExpr}"`);
+}
+
+console.log('\n3.3 resolveCityHealth(...) fallback: tiles licza z cfg.getExcludeHexKeys?.(city.id)');
+{
+  const fnStartMarker = 'function resolveCityHealth(city: City, map: GameMap, data: GameData): { total: number; lines: CityHealthLine[]; fromEngine: boolean } {';
+  const fnStart = CITY_PANEL_SRC.indexOf(fnStartMarker);
+  ok(fnStart >= 0, 'znaleziono resolveCityHealth(...) w cityPanel.ts');
+  const fnEndIdx = fnStart >= 0 ? CITY_PANEL_SRC.indexOf('\nfunction ', fnStart + fnStartMarker.length) : -1;
+  ok(fnEndIdx > fnStart, 'znaleziono koniec resolveCityHealth(...) (kolejna top-level function)');
+  const fnBody = fnStart >= 0 && fnEndIdx > fnStart ? CITY_PANEL_SRC.slice(fnStart, fnEndIdx) : '';
+  const tilesMatch = fnBody.match(/const tiles = cityWorkedTilesForEconomy\(([^;]+)\);/);
+  ok(!!tilesMatch, 'znaleziono wiersz `const tiles = cityWorkedTilesForEconomy(...)` w resolveCityHealth(...) (fallback, gdy cfg.getCityHealth nie odpowiedzial)');
+  const tilesExpr = tilesMatch ? tilesMatch[1] : '';
+  ok(/cfg\.getExcludeHexKeys\?\.\(city\.id\)/.test(tilesExpr),
+    `RUNDA 2 NOTA A: resolveCityHealth fallback przekazuje cfg.getExcludeHexKeys?.(city.id) -- wywolanie: "${tilesExpr}"`);
+}
+
+console.log('\n3.4 main.ts wpina getExcludeHexKeys w OBU configureCityPanel(...) przez siblingClaimedHexKeysForCity');
+{
+  const occurrences = MAIN_TS_SRC.split('getExcludeHexKeys: (cityId: string) => {').length - 1;
+  eq(occurrences, 2, 'main.ts definiuje getExcludeHexKeys DWA razy (jedna definicja na configureCityPanel(...) wywolanie)');
+  const wiredToSibling = (MAIN_TS_SRC.match(
+    /getExcludeHexKeys: \(cityId: string\) => \{[\s\S]{0,200}?siblingClaimedHexKeysForCity\(city\)/g,
+  ) || []).length;
+  eq(wiredToSibling, 2, 'obie definicje getExcludeHexKeys zwracaja siblingClaimedHexKeysForCity(city) -- ten sam mechanizm co getWorkedTiles/getCityHealth');
+}
+
+console.log('\n================ SEKCJA 4: RUNDA 2 NOTA B -- rebalans po wzroscie populacji ================\n');
+
+// NOTA B Evaluatora rundy 1: population-growth-v85.ts wolal
+// rebalanceWorkersAfterPopulationChange(...) BEZ excludeHexKeys -- auto-rebalans w trybie
+// recznym po wzroscie populacji mogl (rzadko) posadzic 👤 na spornym polu. Odczyt silnika
+// jest fail-closed (bez podwojnego liczenia), ale slot robotnika marnowal sie po cichu.
+// Naprawa: nowy opcjonalny `excludeHexKeysByCity` w PostCentralGrowthOpts, wpiety w main.ts
+// z computeLostToNearerSiblingByCity(cities, map) (ten sam mechanizm co silnik tury).
+// Test behawioralny (nie tekstowy) -- population-growth-v85.ts jest czysta logika (bez
+// DOM), bundlowalna standalone identycznie jak w tools/population-growth-v85-test.cjs.
+console.log('4.1 applyPostCentralPopulationGrowth + excludeHexKeysByCity: reczny rebalans NIE sadza 👤 na spornym polu');
+{
+  // Mapa rzadka: tylko '3,0' (sporne, jedyny legalny kandydat w promieniu cityA obok
+  // wlasnego centrum '0,0'), plus centrum cityB '5,0' (wykluczone bezwarunkowo przez
+  // SEKCJE 1, niezaleznie). Geometria identyczna jak SEKCJA 2.4: distA(3,0)=3 <= radiusA(5),
+  // distB(3,0)=2 <= radiusB(6) -- B blizej, A traci (3,0).
+  const map = buildSparseMap(['0,0', '3,0', '5,0']);
+  const cityA = {
+    id: 'cityA-pg', ownerId: 0, q: 0, r: 0, population: 2,
+    okolicaTryb: 'reczny', okolicaReczne: {},
+    poziomRacji: 4, wzrostUlamkowy: 0.95, turyBezDoplaty: 0, rationMigratedV114: true,
+  };
+  const cityB = { id: 'cityB-pg', ownerId: 0, q: 5, r: 0, population: 6 };
+  const territoryNodes = buildTerritoryNodesFromCities([cityA, cityB]);
+  const lost = computeLostToNearerSiblingByCity([cityA, cityB], map);
+  ok((lost.get('cityA-pg') ?? new Set()).has('3,0'), 'kontrola geometrii: cityA-pg traci sporne (3,0) na rzecz blizszego cityB-pg');
+
+  const econ = {
+    perCity: [{
+      cityId: 'cityA-pg', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 10, kosztRacji: 6, bilansLokalny: 4,
+      zdrowie: 0, ludnoscPrzed: 2, ludnoscPo: 2,
+    }],
+    growth: 0, starved: 0,
+  };
+  const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJednostkaOboz: 0.5 };
+  const efParams = {
+    centralCapBaza: 500, centralCapBonusMagazyn: 100,
+    glodWojskaHpFrac: 0.08, glodWojskaKarencjaTur: 3, glodWojskaStatMult: 0.75,
+    rationParams: { racjeZywnosc1: 2, racjeZywnosc2: 4, racjeZywnosc3: 6, racjeWzrostProc1: 3, racjeWzrostProc2: 5, racjeWzrostProc3: 7 },
+  };
+  const econParams = { akweduktProgLudnosci: 4, spichlerzProgLudnosci: 8, akweduktMaxLudnosci: 12 };
+  const states = new Map();
+  const ef = advanceEmpireFood(econ, [], states, upkeep, efParams);
+
+  const popBefore = cityA.population;
+  applyPostCentralPopulationGrowth({
+    cities: [cityA, cityB],
+    econ,
+    efResult: ef,
+    map,
+    territoryNodes,
+    econParams,
+    rationParams: efParams.rationParams,
+    builtByCity: new Map([['cityA-pg', []]]),
+    excludeHexKeysByCity: lost,
+  });
+  // Sanity NIEwacuowa -- jesli populacja nie urosla, rebalanceWorkersAfterPopulationChange
+  // nigdy sie nie wywoluje i asercja ponizej przeszlaby "za darmo" (bez realnej weryfikacji).
+  eq(cityA.population, popBefore + 1, 'precondition: cityA-pg faktycznie urosla o 1 w tym ticku (inaczej rebalans sie nie odpala)');
+  ok(!('3,0' in (cityA.okolicaReczne ?? {})), 'RUNDA 2 NOTA B: reczny rebalans z excludeHexKeysByCity NIE sadza 👤 na spornym (3,0)');
+
+  // Kontrola czulosci: BEZ excludeHexKeysByCity ten sam scenariusz SADZA 👤 na (3,0)
+  // (jedyny legalny kandydat w tej rzadkiej mapie) -- dowod ze test jest czuly na regresje,
+  // nie ze (3,0) jest po prostu nigdy nie wybierane z innego powodu.
+  const cityANoExclude = {
+    id: 'cityA-pg2', ownerId: 0, q: 0, r: 0, population: 2,
+    okolicaTryb: 'reczny', okolicaReczne: {},
+    poziomRacji: 4, wzrostUlamkowy: 0.95, turyBezDoplaty: 0, rationMigratedV114: true,
+  };
+  const econNoExclude = {
+    perCity: [{
+      cityId: 'cityA-pg2', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 10, kosztRacji: 6, bilansLokalny: 4,
+      zdrowie: 0, ludnoscPrzed: 2, ludnoscPo: 2,
+    }],
+    growth: 0, starved: 0,
+  };
+  const statesNoExclude = new Map();
+  const efNoExclude = advanceEmpireFood(econNoExclude, [], statesNoExclude, upkeep, efParams);
+  applyPostCentralPopulationGrowth({
+    cities: [cityANoExclude, cityB],
+    econ: econNoExclude,
+    efResult: efNoExclude,
+    map,
+    territoryNodes,
+    econParams,
+    rationParams: efParams.rationParams,
+    builtByCity: new Map([['cityA-pg2', []]]),
+    // celowo BRAK excludeHexKeysByCity
+  });
+  eq(cityANoExclude.population, popBefore + 1, 'kontrola: rowniez tu populacja urosla o 1 (ten sam scenariusz bazowy)');
+  ok('3,0' in (cityANoExclude.okolicaReczne ?? {}),
+    'kontrola czulosci: BEZ excludeHexKeysByCity rebalans TEZ sadza 👤 na (3,0) -- dokladnie bug ktory NOTA B naprawia');
+}
+
+console.log('\n================ SEKCJA 5: RUNDA 2 NOTA D -- reconcile czysci kolizje wewnatrz-wlascicielskie ================\n');
+
+// NOTA D Evaluatora rundy 1: zakres ECHO A wymagal tez czyszczenia starych wpisow
+// okolicaReczne wskazujacych na zwykle (nie-centralne) pole, ktore regula "najblizsze
+// miasto wygrywa" przypisala INNEMU miastu tego samego wlasciciela -- runda 1 domknela
+// tylko warstwe centrow. Naprawa: reconcileWorkedTilesForOwner/reconcileAllWorkedTiles
+// przyjmuja teraz opcjonalny `lostToSiblingByCity` (computeLostToNearerSiblingByCity) i
+// usuwaja tez te wpisy.
+console.log('5.1 reconcileWorkedTilesForOwner: usuwa stary wpis okolicaReczne na spornym (nie-centralnym) polu przegranym na rzecz blizszego miasta');
+{
+  const map = buildPlainsMap(-15, 15, -15, 15);
+  const cityA = {
+    id: 'cityA-r5', ownerId: 0, q: 0, r: 0, population: 8,
+    okolicaTryb: 'reczny',
+    // Symulacja zapisu SPRZED naprawy: wpis na (6,0) -- sporne pole, dzis przegrane na
+    // rzecz blizszego cityB -- plus jeden bezsporny legalny wpis (1,0).
+    okolicaReczne: { '6,0': 1, '1,0': 1 },
+  };
+  const cityB = { id: 'cityB-r5', ownerId: 0, q: 10, r: 0, population: 6 };
+  const nodes = buildTerritoryNodesFromCities([cityA, cityB]);
+  const lost = computeLostToNearerSiblingByCity([cityA, cityB], map);
+  ok((lost.get('cityA-r5') ?? new Set()).has('6,0'), 'kontrola geometrii: cityA-r5 traci sporne (6,0) na rzecz blizszego cityB-r5 (ten sam scenariusz co SEKCJA 2.1)');
+
+  const changed = reconcileWorkedTilesForOwner([cityA, cityB], nodes, 0, lost);
+  eq(changed, true, 'reconcile zglasza zmiane (usunieto sporny wpis)');
+  eq(Object.keys(cityA.okolicaReczne).length, 1, 'tylko bezsporny wpis (1,0) zostal');
+  ok(!('6,0' in cityA.okolicaReczne), 'sporny wpis (6,0), przegrany na rzecz cityB-r5, zostal usuniety');
+  ok('1,0' in cityA.okolicaReczne, 'bezsporny wpis (1,0) nietkniety');
+}
+
+console.log('\n5.2 kontrola czulosci: BEZ lostToSiblingByCity sporny wpis NIE jest usuwany (dowod ze SEKCJA 5.1 testuje realny mechanizm, nie efekt uboczny warstwy centrow)');
+{
+  const map = buildPlainsMap(-15, 15, -15, 15);
+  const cityA = {
+    id: 'cityA-r5b', ownerId: 0, q: 0, r: 0, population: 8,
+    okolicaTryb: 'reczny',
+    okolicaReczne: { '6,0': 1, '1,0': 1 },
+  };
+  const cityB = { id: 'cityB-r5b', ownerId: 0, q: 10, r: 0, population: 6 };
+  const nodes = buildTerritoryNodesFromCities([cityA, cityB]);
+  const changed = reconcileWorkedTilesForOwner([cityA, cityB], nodes, 0); // bez 4. argumentu
+  eq(changed, false, 'kontrola: bez lostToSiblingByCity reconcile nie zglasza zmiany (sporny wpis nie jest wykrywany bez tej warstwy)');
+  ok('6,0' in cityA.okolicaReczne, 'kontrola: sporny wpis (6,0) POZOSTAJE bez lostToSiblingByCity -- dowod czulosci na regresje');
+}
+
+console.log('\n5.3 reconcileAllWorkedTiles: przekazuje lostToSiblingByCity dalej do reconcileWorkedTilesForOwner');
+{
+  const map = buildPlainsMap(-15, 15, -15, 15);
+  const cityA = {
+    id: 'cityA-r5c', ownerId: 0, q: 0, r: 0, population: 8,
+    okolicaTryb: 'reczny',
+    okolicaReczne: { '6,0': 1, '1,0': 1 },
+  };
+  const cityB = { id: 'cityB-r5c', ownerId: 0, q: 10, r: 0, population: 6 };
+  const nodes = buildTerritoryNodesFromCities([cityA, cityB]);
+  const lost = computeLostToNearerSiblingByCity([cityA, cityB], map);
+  reconcileAllWorkedTiles([cityA, cityB], nodes, lost);
+  ok(!('6,0' in cityA.okolicaReczne), 'reconcileAllWorkedTiles(..., lostToSiblingByCity) usuwa sporny wpis przez cala funkcje zbiorcza');
+  ok('1,0' in cityA.okolicaReczne, 'bezsporny wpis (1,0) nietkniety przez reconcileAllWorkedTiles');
 }
 
 // --- summary -------------------------------------------------------------------

@@ -2092,13 +2092,16 @@ export function advanceCityEconomy(
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
 
   const territoryNodes = buildTerritoryNodesFromCities(cities);
-  reconcileAllWorkedTiles(cities, territoryNodes);
 
   // P-HEKS-SPOR-SASIAD (Maciej 2026-08-13): rozstrzygnięcie sporu o zwykły heks
   // między miastami TEGO SAMEGO właściciela -- liczone RAZ na tick (jak
   // territoryResourceByCity/workedMagazynByCity ponizej), bo zalezy tylko od
   // pozycji/populacji miast w tym ticku, nie od kolejnosci przetwarzania.
+  // Policzone PRZED reconcile (runda 2 nota D), zeby reconcile mogl tym samym
+  // zbiorem posprzatac tez kolizje wewnatrz-wlascicielskie na zwyklych polach,
+  // nie tylko wpisy na centrach.
   const lostToSiblingByCity = computeLostToNearerSiblingByCity(cities, map);
+  reconcileAllWorkedTiles(cities, territoryNodes, lostToSiblingByCity);
 
   // SUROW-TERYT-01 (Maciej 2026-07-23): surowce logistyczne per ulepszenie w
   // terytorium, niezaleznie od workedTiles -- liczone RAZ dla calej tury (nie per-city).

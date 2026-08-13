@@ -59,15 +59,29 @@ function cityCenterKeys(cities: ReadonlyArray<Pick<City, 'q' | 'r'>>): Set<strin
 }
 
 /**
- * Usuwa z ręcznych przypisań (okolicaReczne) heksy poza terytorium właściciela miasta
- * ORAZ heksy, na których stoi centrum KTÓREGOKOLWIEK miasta (P-HEKS-CENTRUM-OBCEGO-
- * MIASTA — bezwarunkowe, niezależnie od właściciela centrum; defensywne sprzątanie
- * ewentualnych zapisów sprzed tej naprawy). Zwraca true gdy cokolwiek zmieniono.
+ * Usuwa z ręcznych przypisań (okolicaReczne) heksy poza terytorium właściciela miasta,
+ * heksy, na których stoi centrum KTÓREGOKOLWIEK miasta (P-HEKS-CENTRUM-OBCEGO-MIASTA —
+ * bezwarunkowe, niezależnie od właściciela centrum; defensywne sprzątanie ewentualnych
+ * zapisów sprzed tej naprawy), ORAZ (runda 2 nota D, P-HEKS-SPOR-SASIAD, Maciej
+ * 2026-08-13) zwykłe (nie-centralne) heksy, które reguła "najbliższe miasto wygrywa"
+ * przypisała INNEMU miastu TEGO SAMEGO właściciela — dokończenie zakresu ECHO A, druga
+ * warstwa kolizji WEWNĄTRZ-właścicielskich obok już istniejącej warstwy centrów. Zwraca
+ * true gdy cokolwiek zmieniono.
+ * / EN: also strips ordinary (non-centre) hexes the "nearest city wins" rule assigned to
+ * a DIFFERENT city of the same owner — round 2 note D, second in-owner collision layer.
  */
 export function reconcileWorkedTilesForOwner(
   cities: ReadonlyArray<City>,
   territoryNodes: readonly TerritoryNode[],
   ownerId: number,
+  /**
+   * P-HEKS-SPOR-SASIAD runda 2 nota D: `computeLostToNearerSiblingByCity(cities, map)`
+   * z `game/okolica.ts`, liczone RAZ przez wołającego (przyjmowane jako dane, nie
+   * import funkcji — unika cyklu okolica.ts ↔ territory-work.ts, bo okolica.ts już
+   * importuje z tego pliku). Brak → zachowanie identyczne jak przed rundą 2 (tylko
+   * warstwa centrów).
+   */
+  lostToSiblingByCity?: ReadonlyMap<string, ReadonlySet<string>>,
 ): boolean {
   let changed = false;
   const centers = cityCenterKeys(cities);
@@ -76,6 +90,7 @@ export function reconcileWorkedTilesForOwner(
     if (!city.okolicaReczne) continue;
     const reczne = { ...city.okolicaReczne };
     let cityChanged = false;
+    const lostForCity = lostToSiblingByCity?.get(city.id);
     for (const key of Object.keys(reczne)) {
       const parts = key.split(',');
       const q = Number(parts[0]);
@@ -87,6 +102,11 @@ export function reconcileWorkedTilesForOwner(
         continue;
       }
       if (!isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes)) {
+        delete reczne[key];
+        cityChanged = true;
+        continue;
+      }
+      if (lostForCity?.has(key)) {
         delete reczne[key];
         cityChanged = true;
       }
@@ -103,9 +123,11 @@ export function reconcileWorkedTilesForOwner(
 export function reconcileAllWorkedTiles(
   cities: ReadonlyArray<City>,
   territoryNodes: readonly TerritoryNode[],
+  /** P-HEKS-SPOR-SASIAD runda 2 nota D: patrz `reconcileWorkedTilesForOwner`. */
+  lostToSiblingByCity?: ReadonlyMap<string, ReadonlySet<string>>,
 ): void {
   const owners = new Set(cities.map(c => c.ownerId));
   for (const oid of owners) {
-    reconcileWorkedTilesForOwner(cities, territoryNodes, oid);
+    reconcileWorkedTilesForOwner(cities, territoryNodes, oid, lostToSiblingByCity);
   }
 }

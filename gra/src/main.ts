@@ -10661,7 +10661,10 @@ async function boot(): Promise<void> {
       }
       ensureCitySaveDefaults(c);
       cities.push(c);
-      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes());
+      // P-HEKS-SPOR-SASIAD runda 2 nota D: nowe miasto moze zmienic wynik sporu o
+      // zwykle pole miedzy istniejacymi miastami tego samego wlasciciela -- sprzataj
+      // od razu tym samym mechanizmem co silnik tury (advanceCityEconomy).
+      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
       finalizeCityFounding(c, q, r);
       seedCityOwnerDefaults(c);
       // P-AUTO-WYZYWIENIE-BUG2: świeżo założone miasto gracza -- ustaw bezpieczny poziom
@@ -18385,6 +18388,13 @@ async function boot(): Promise<void> {
           { city, map },
         );
       },
+      // P-HEKS-SPOR-SASIAD runda 2 nota A: ten sam hak co getWorkedTiles/getCityHealth,
+      // zeby computeView/resolveCityHealth (fallback) w cityPanel.ts liczyly identycznie
+      // z silnikiem tury -- bez tego panel pomijal reguly "najblizsze miasto wygrywa".
+      getExcludeHexKeys: (cityId: string) => {
+        const city = cities.find(c => c.id === cityId);
+        return city ? siblingClaimedHexKeysForCity(city) : undefined;
+      },
       ...extraCityPanelConfig(),
     });
 
@@ -24749,12 +24759,16 @@ async function boot(): Promise<void> {
               // cost and overstating A's maxSafe. The batched recompute (loop right after the
               // call below) only starts once EVERY city has its final population this turn.
               const grownCityIdsForLiveRation = new Set<string>();
+              // P-HEKS-SPOR-SASIAD runda 2 nota B: ten sam zbior co silnik tury/panel --
+              // liczone RAZ tu, przekazane per-cityId do rebalansu po wzroście populacji.
+              const excludeHexKeysByCityForGrowth = computeLostToNearerSiblingByCity(cities, map);
               applyPostCentralPopulationGrowth({
                 cities,
                 econ,
                 efResult: lastEfTickResult,
                 map,
                 territoryNodes: territoryNodesForFood,
+                excludeHexKeysByCity: excludeHexKeysByCityForGrowth,
                 econParams: buildEconParams(data, _menuDifficulty),
                 rationParams: efParamsGrowth.rationParams,
                 ownerCivByOwnerId: ownerCivMap,
@@ -27691,6 +27705,13 @@ async function boot(): Promise<void> {
             city.population, tiles, builtIds, data.societyParams, _menuDifficulty,
             { city, map },
           );
+        },
+        // P-HEKS-SPOR-SASIAD runda 2 nota A: ten sam hak co getWorkedTiles/getCityHealth,
+        // zeby computeView/resolveCityHealth (fallback) w cityPanel.ts liczyly identycznie
+        // z silnikiem tury -- bez tego panel pomijal reguly "najblizsze miasto wygrywa".
+        getExcludeHexKeys: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          return city ? siblingClaimedHexKeysForCity(city) : undefined;
         },
         ...extraCityPanelConfig(),
       });
