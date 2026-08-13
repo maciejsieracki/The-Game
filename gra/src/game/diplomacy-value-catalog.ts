@@ -366,7 +366,7 @@ export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): num
 }
 
 /**
- * PN pozycji koszyka surowiec_ilosc = sztuki × cena_PN/szt.
+ * PN pozycji koszyka surowiec_ilosc = bloki × cena_PN/blok.
  * R-DYP-PAKIET-USUN (2026-08-08): `iloscSztuk` to SZTUKI wprost — spójne z polem
  * `ilosc` w BasketItem (dawniej „pakiety", usunięte na życzenie właściciela: „podajemy
  * sztuki. Jeden, dziesięć, sto — żadnych pakietów").
@@ -377,13 +377,28 @@ export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): num
  * generatory ofert AI, Szybka umowa, walidacja przy zatwierdzeniu) — więc dowolna ilość
  * niebędąca wielokrotnością 5, z DOWOLNEGO źródła (w tym ręcznie edytowany save), jest tu
  * bezpiecznie przycinana w dół, NIGDY cicho zaakceptowana jako-jest.
+ * NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): korekta ECHO `f838b599`
+ * mówi wprost „cena za blok 5 sztuk = stara cena za 1 sztukę" — `cena_*` w econ-params.json
+ * jest ceną PER BLOK (krok jednostek), NIE per pojedyncza (nowa, ×5) sztuka. Do tej naprawy
+ * ten choke-point mnożył PEŁNĄ (tylko floorowaną do wielokrotności kroku) liczbę sztuk razy
+ * `cena`, czyli efektywnie stosował STARĄ cenę/szt. do NOWYCH (5× większych) ilości —
+ * dokładnie ten sam błąd, który krok wymiany miał wyeliminować (dla 205 Glina: 205×2=410
+ * zamiast 41 bloków×2=82). Poprawka dzieli sflorowane sztuki przez `krok`, żeby dostać
+ * liczbę BLOKÓW — `sztuki` jest już wielokrotnością `krok` (floor w
+ * `diplomacyNormalizeSurowiecIlosc`), więc dzielenie jest zawsze całkowite, bez ułamków.
+ * / EN: bugfix — `cena_*` prices PER BLOCK of `krok` units, not per single new-scale unit;
+ * this chokepoint used to multiply the (step-floored) raw unit count by `cena` directly,
+ * silently re-applying the pre-rescale price to the post-×5 quantities. Now divides by
+ * `krok` first to get the block count (exact, since `sztuki` is already a multiple of it).
  */
 export function diplomacyPnSurowiecIlosc(surowiecKey: string, iloscSztuk: number): number | null {
   const cena = diplomacyHandelSurowiecCenaJednostkowa(surowiecKey);
   if (cena == null) return null;
   const sztuki = diplomacyNormalizeSurowiecIlosc(surowiecKey, iloscSztuk);
   if (sztuki <= 0) return 0;
-  return Math.max(0, Math.round(sztuki * cena));
+  const krok = diplomacyHandelSurowiecKrok(surowiecKey);
+  const bloki = krok <= 1 ? sztuki : sztuki / krok;
+  return Math.max(0, Math.round(bloki * cena));
 }
 
 /** Lista surowców ilościowych z ceną jednostkową (debug / UI fallback). */

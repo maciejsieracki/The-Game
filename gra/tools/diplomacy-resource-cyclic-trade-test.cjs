@@ -142,9 +142,14 @@ ok(r.accepted && r.deal?.handelSurowiecCykliczny?.[0]?.sellerOwnerId === 3
   'handel per_turn: AI(3)->gracz(0) dziala identycznie (ownerId-agnostyczne)');
 
 // -- 2c. AI odrzuca ofertę gracza poniżej fair (rule (a): AI ocenia i moze odrzucic) --
+// NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): PN surowca ilościowego
+// liczy się BLOKAMI (krok 5), nie sztukami wprost — 5 szt. drewna to dziś 1 blok = 1 PN,
+// więc żądanie 5 szt. za 1 zloto (1 PN) było już z grubsza fair (1:1), nie „poniżej fair".
+// 50 szt. drewna (10 bloków = 10 PN) za 1 zloto (1 PN) zachowuje oryginalny, wyraźnie
+// niesprawiedliwy stosunek 1:5 co przed naprawą (5 szt. × stara wadliwa cena 1 PN/szt.).
 r = evaluateProposal(prop('handel', 0, 1, {
   giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
-  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 5 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 50 }],
   resourceTradeMode: 'per_turn',
   turns: 10,
 }), ctx());
