@@ -19507,3 +19507,20 @@ Fazy 1) — poza jedną niespójnością wewnątrz stanu A: przy netto ujemnym h
 ale wiersz "Netto skarbiec" w tabeli zostaje złoty (brak wariantu `.neg` na tym elemencie).
 
 **STATUS: dispatch Operatora (Sonnet 5) naprawy 3 rozjazdów CSS + M2 pokrycie w toku.**
+
+## ECHO P-MP-CHATKI-SKARBOW-NIE-ZBIERANE — nagroda dla MP/AI (2026-08-13)
+
+Jego słowa: „Zarówno AI jak i miasta państwa po odkryciu chatek mają takie same skarby jak
+gracze." Decyzja: `pickVillageReward` (dziś napisane wyłącznie pod gracza — `player.skarbiec`,
+`player.era`, `player.badana`) ma być użyte identycznie dla AI/MP, tylko owner-aware zamiast
+zahardkodowane na gracza — ta sama pula nagród, te same reguły losowania, wyłącznie cel zapisu
+(skarbiec/postęp badań właściwego właściciela, nie zawsze gracza).
+
+**STATUS: dispatch Operatora rundy 2 (Sonnet 5) w toku** — zakres z werdyktu Evaluatora rundy 1
+(`P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (d79a85a5) — Evaluator: WERDYKT FAIL`): zebranie po stronie
+egzekutora AI (main.ts ~26100), analogicznie do `checkBarbCampDestructionAlongPath`:
+`wioska.istnieje=false` + `lootedVillageHexKeys.add` (inaczej save/load wskrzesi chatkę) +
+`villageHexKeyCache.delete` + nagroda do skarbca/badań WŁAŚCICIELA AI/MP (nie zawsze `player.*`)
+przez `pickVillageReward` sparametryzowane o ownerId. Naprawić też infinite-oscylację z rundy 1
+(jednostka MP wciąż chodziła do chatki bez mechanizmu zebrania) — teraz zebranie faktycznie
+kończy interakcję z hexem.
