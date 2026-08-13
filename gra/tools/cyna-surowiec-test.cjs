@@ -19,6 +19,10 @@
  *   I. hasBrazAccess (braz-access.ts) NIEZMIENIONY — nadal patrzy WYŁĄCZNIE na
  *      empireStock.braz > 0 + budynek, niezależnie od tego jak Brąz powstał (regresja);
  *   J. cyna-access.ts: empireHasKopalniaNaZlozuCyny / cityHasOdlewniaForCyna — jednostki.
+ *   K. Pokrycie AI (ai.ts): AI_IMPROVEMENT_FOR_DEFICIT['ruda_cyny'] zawiera 'kopalnia_cyny'
+ *      (AI buduje Kopalnię cyny gdy brakuje Rudy cyny) i UPSTREAM_FOR_PROCESSED_RESOURCE.braz
+ *      zawiera 'ruda_cyny' (deficyt Brązu boostuje też budowę Kopalni cyny, nie tylko
+ *      Kopalni miedzi) — proste asercje na strukturze danych, bez symulacji decyzji AI.
  *
  * Run from gra/: node tools/cyna-surowiec-test.cjs
  */
@@ -41,6 +45,7 @@ export { territoryResourceYieldForImprovement } from '../src/game/terrain-improv
 export { DEFAULT_CONVERTER_RECIPES, runConverter, runConverters } from '../src/game/converters';
 export { hasBrazAccess, empireHasKopalniaMiedzi, cityHasPiecHutniczy } from '../src/game/braz-access';
 export { empireHasKopalniaNaZlozuCyny, cityHasOdlewniaForCyna, hasCynaAccess } from '../src/game/cyna-access';
+export { AI_IMPROVEMENT_FOR_DEFICIT, UPSTREAM_FOR_PROCESSED_RESOURCE } from '../src/game/ai';
 export { TerenBazowy, Nakladka } from '../src/types/hex';
 `, 'utf8');
 
@@ -337,6 +342,26 @@ console.log('-- J. cyna-access.ts jednostki --');
   ok(M.hasCynaAccess({ ruda_cyny: 1 }, ['odlewnia_brazu']) === true, 'hasCynaAccess: stock + odlewnia -> true');
   ok(M.hasCynaAccess({ ruda_cyny: 0 }, ['odlewnia_brazu']) === false, 'hasCynaAccess: brak stocku -> false');
   ok(M.hasCynaAccess({ ruda_cyny: 1 }, []) === false, 'hasCynaAccess: stock bez odlewni -> false');
+}
+
+// ===========================================================================
+// K. Pokrycie AI (ai.ts): AI_IMPROVEMENT_FOR_DEFICIT + UPSTREAM_FOR_PROCESSED_RESOURCE.
+// ===========================================================================
+console.log('-- K. pokrycie AI (deficyt Rudy cyny -> Kopalnia cyny; deficyt Brazu -> upstream Cyna) --');
+{
+  ok(!!M.AI_IMPROVEMENT_FOR_DEFICIT.ruda_cyny,
+    "AI_IMPROVEMENT_FOR_DEFICIT ma klucz 'ruda_cyny'");
+  ok(Array.isArray(M.AI_IMPROVEMENT_FOR_DEFICIT.ruda_cyny)
+    && M.AI_IMPROVEMENT_FOR_DEFICIT.ruda_cyny.includes('kopalnia_cyny'),
+    `AI_IMPROVEMENT_FOR_DEFICIT['ruda_cyny'] zawiera 'kopalnia_cyny' (ma: ${JSON.stringify(M.AI_IMPROVEMENT_FOR_DEFICIT.ruda_cyny)})`);
+
+  ok(!!M.UPSTREAM_FOR_PROCESSED_RESOURCE.braz,
+    "UPSTREAM_FOR_PROCESSED_RESOURCE ma klucz 'braz'");
+  ok(Array.isArray(M.UPSTREAM_FOR_PROCESSED_RESOURCE.braz)
+    && M.UPSTREAM_FOR_PROCESSED_RESOURCE.braz.includes('ruda_cyny'),
+    `UPSTREAM_FOR_PROCESSED_RESOURCE.braz zawiera 'ruda_cyny' (ma: ${JSON.stringify(M.UPSTREAM_FOR_PROCESSED_RESOURCE.braz)})`);
+  ok(M.UPSTREAM_FOR_PROCESSED_RESOURCE.braz.includes('ruda'),
+    "UPSTREAM_FOR_PROCESSED_RESOURCE.braz nadal zawiera 'ruda' (regresja: Cyna dopisana, Miedz NIE usunieta)");
 }
 
 console.log(`\ncyna-surowiec-test: ${pass} pass, ${fail} fail`);

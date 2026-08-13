@@ -299,7 +299,7 @@ function readHandelSurowceParam(rowKey: string, fallback: number): number {
 
 /** Surowce ilościowe dotknięte ×5 rebalansem produkcji — krok handlu 5 szt. (patrz wyżej). */
 const HANDEL_SUROWCE_KROK5: ReadonlySet<string> = new Set([
-  'drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'cegla', 'sol', 'kon',
+  'drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'sol', 'kon',
   'ceramika', 'braz', 'zelazo', 'stal',
 ]);
 
