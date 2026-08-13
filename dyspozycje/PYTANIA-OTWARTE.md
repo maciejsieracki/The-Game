@@ -18192,3 +18192,29 @@ tych plikach — bez tego `tsc` nie przechodził). Operator świadomie NIE stwor
 modelu jest naruszeniem reguły, nie tylko kwestią artystyczną. Zarejestrowane jako luka procesowa
 tej sesji — Evaluator (Opus 5) dostał wprost polecenie szczególnie wnikliwie zweryfikować te dwa
 pliki, skoro nie przeszły przez właściwy model na etapie Operatora.
+
+---
+
+## AUDYT KOMPLETNOŚCI (§0c) — 2026-08-13, na hasło "raport", dwa tematy zapomniane znalezione
+
+Grep `STATUS: \*\*OTWARTE` (kanoniczny) + wariant bez `**` (pułapka formatowania C-030/C-031) na
+całym pliku (18194 linii). 15+35 trafień, każde prześledzone do kontynuacji. **Wynik: tylko 2
+tematy bez żadnego z trzech pokryć (aktywny wykonawca / ABC czekające / udokumentowane świadome
+odłożenie)** — reszta pliku (w tym duży batch playtestowy z 2026-08-11/12) poprawnie domknięta.
+
+1. **`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`** (linia 14318, 2026-08-12) — generator mapy w środowisku
+   sesji chmurowej 16-70× wolniejszy niż limity czasowe w kodzie (mapa standardowa 114s vs limit
+   7s). Zarejestrowane jako „niepilne" przez agenta, ale to samoocena wykonawcy, nie decyzja
+   właściciela — nie kwalifikuje się jako świadome odłożenie. Nigdy nie zbadano przyczyny (CPU
+   sandboksa vs sprzęt kalibracji limitów, czy coś innego).
+2. **Rozjazd danych „petra" (cud Fenicjan)** (linia 8203, 2026-08-10) — cud ma `epokaWejscia=2`,
+   ale wymaga technologii z epoki 3 (`Inżynieria`) — jedyny taki rozjazd wśród 19 cudów.
+   Explicite oznaczone „do decyzji właściciela osobno", ale nigdy nie dostało formalnego ID ABC.
+
+**Dispatch Explore (read-only, bez kodu) dla obu tematów NASTĘPUJE bez pytania o zgodę** (C-027) —
+niska waga, żaden nie blokuje bieżącej gry, ale zgodnie z regułą "brak wszystkich trzech pokryć =
+natychmiastowy dispatch".
+
+**Dodatkowo potwierdzone (nie zapomniane, kategoria b):** `P-GARNIZON-KONIUNKCJA-CZY-SAMO-
+INGARNIZON-Q1` (linia 14961) — pytanie ABC nadal czeka na odpowiedź właściciela, poprawnie
+prowadzone, tylko nierozstrzygnięte.
