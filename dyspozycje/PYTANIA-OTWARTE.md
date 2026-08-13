@@ -17119,3 +17119,19 @@ poprawka (2 linie, zweryfikowana na 6 wariantach) w pełnym raporcie Evaluatora
 **STATUS: TEMAT ZAMKNIĘTY OSTATECZNIE** po 5 rundach — B1, B2, B3 naprawione i przypięte
 testami, parytet gracz-AI przywrócony, niezmiennik anty-exploit potwierdzony nienaruszony przez
 cały mechanizm (promoteToFront/dropFrontItem/insertAtFront×3/AI queueJump).
+
+---
+
+## Scalenie do `main`: FALA 272 (2026-08-13, na wyraźne polecenie właściciela "scal do main i zrób git push")
+
+Korekta stanu: deploy agent FALI 273 błędnie zgłosił zaległości jako "FALE 270, 271, 272" —
+zweryfikowane bezpośrednio: `main` był już na `e723cb0e` (FALA 270+271 scalone wcześniej w tej
+sesji). Jedyna realna zaległość to FALA 272.
+
+Scalono `4ee4b9d8` (Deploy ROBOCZA FALA 272) do `main` przez `git merge --no-ff` (merge commit
+`016cbb52`, zgodnie z rytmem „jedna fala do tyłu" `R-MERGE-MAIN-RYTM-Q1` — merge do konkretnego
+commitu deployu, nie czubka gałęzi). Bramki na scalonym drzewie zweryfikowane przed pushem:
+`tsc` 0, `logic-test.cjs` 213/213. Push `e723cb0e..016cbb52` na `main`, exit 0.
+
+FALA 273 (`03a2f038`, commit `9d8b4dfa`) zostaje na gałęzi roboczej wyłącznie do testów — nie
+scalona (kwalifikuje się dopiero po powstaniu FALI 274).
