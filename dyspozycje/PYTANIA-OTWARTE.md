@@ -17229,3 +17229,24 @@ Trzy niezależne, izolowane worktree, dispatch jednocześnie:
 3. `fix-sanitize-postep-transfer` (`aa0f7c600b9222993`) — R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1=B.
 
 Wszystkie trzy dotykają `main.ts` w różnych, nienachodzących na siebie sekcjach — merge sekwencyjny po odbiorze, z `git pull` między każdym, zgodnie ze standardową procedurą tej sesji.
+
+---
+
+## R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1=B — SCALONE, Evaluator w toku (2026-08-13)
+
+Operator dodał `filterQueue(prod, keep)` w `production.ts` (reużywa `dropFrontItem` gdy filtr
+usuwa front — nowy front odzyskuje WYŁĄCZNIE swój własny wcześniej zbankowany postęp, nigdy
+cudzy), zwraca `forfeitedPostep`. `sanitizeProductionQueue` w `main.ts` woła `filterQueue` i
+kredytuje `forfeitedPostep` do `ownerPracaPool` (istniejąca struktura — `playerPracaPool`/
+`aiPracaPoolByOwner`, ujednolicony dostęp `ownerPracaPool()`/`setOwnerPracaPool()`, ta sama para
+używana już przez transfery dyplomatyczne). Dowód: sekcje 20-24 nowe w `promote-to-front-
+test.cjs` — front usunięty (Cud 500) → `forfeitedPostep=500`, nowy front (Wojownik) NIE
+dziedziczy (postep=0), kończy się normalnie bez przeskoku; front NIE usunięty →
+`forfeitedPostep=0`; nowy front z WŁASNYM zbankowanym postępem (15) odzyskuje 15 nie 500 cudze;
+bramka strukturalna chroniąca przed cichym cofnięciem.
+
+Bramki: `tsc` 0, `promote-to-front-test.cjs` **125/125** (było 105), `logic-test` 213/213,
+`tech-tree-test` 19/19, `research-test` 33/33, `unit-replace-test` 13/13, `production-overflow-
+test` 24/24. Commit `aabecdd3`, push OK.
+
+**Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz.**
