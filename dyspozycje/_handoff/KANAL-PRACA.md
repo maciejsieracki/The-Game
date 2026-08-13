@@ -1,3 +1,13 @@
+## [13:07 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 274 md5 `81ae686d`
+
+ROBOCZA md5 `81ae686d3ee3bec7f5de01b06907c773` · stempel `ROBOCZA · 5a0d96b0 · 2026-08-13 11:07` UTC · **VERIFY OK**.
+|- Build z HEAD `322b2259` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — 21 commitów od FALI 273 (`9d8b4dfa`), 19 plików w `gra/src`+`gra/tools` (`+1035/−102`). **`gra/data` nietknięte.**
+|- Zawartość: (1) **sanityzacja kolejki produkcji** — przepadający postęp frontu (przegrany wyścig o cud) wraca do **puli Pracy imperium** zamiast doczepiać się do przypadkowego itemu, + bramka strukturalna; (2) **AI przy wyrębie lasu kredytuje Drewno, nie Pracę** (parytet z graczem); (3) **krok handlu z AI 1→5 szt.** dla surowców objętych skalą ×5, ceny bez zmian, Złoto/Węgiel krokiem 1; naprawiona luka na **trudności Easy** (pokazana ilość ≠ dostarczana).
+|- Bramki (17, wszystkie exit 0): `tsc` 0 błędów · `logic-test` 213/213 · `promote-to-front-test` 125/125 · `ai-improvements-test` 33/33 · `diplomacy-ai-balance` 30/30 · `production-overflow` 24/24 · `diplomacy-value-catalog` 76/76 · `diplomacy-test` 148/148 · `diplomacy-proposal` 187/187 · `diplomacy-acceptance-points` 254/254 · `diplomacy-ai-offer-balance` 29/29 · `diplomacy-resource-cyclic-trade` 46/46 · `diplomacy-resource-trade-pick` 13/13 · `diplomacy-basket-duplicate` 19/19 · `-ui` 28/28 · `tech-tree` 19/0 · `research` 33/0 · `unit-replace` 13/13.
+|- `map-gen-regression-test` zabity po 300 s (nieukończony w czasie, **nie FAIL** — zero linii FAIL w wypisanej części; fala nie dotyka `gra/src/map/**`). Pre-istniejące czerwone `grupa-b-lane` 45/4, `mennica-magazyn` 38/3, `auto-improvements` 14/1 — liczby bez zmian, brak nowej regresji.
+|- Scalenie do `main` NIE wykonane (rytm „jedna fala do tyłu", `R-MERGE-MAIN-RYTM-Q1`) — FALA 274 zostaje na gałęzi do testów; kwalifikuje **FALĘ 273** (`9d8b4dfa`) do scalenia, wykona orkiestrator osobno. Zweryfikowane: FALE 270/271/272 **już scalone**, niescalona wyłącznie 273.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `81ae686d`".
+
 ## [10:44 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 273 md5 `03a2f038`
 
 ROBOCZA md5 `03a2f038accd7160dfe91ae6b7127b0f` · stempel `ROBOCZA · 588e752e · 2026-08-13 08:43` UTC · **VERIFY OK**.
