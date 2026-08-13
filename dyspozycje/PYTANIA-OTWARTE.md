@@ -19389,3 +19389,11 @@ w 78 mapach), N-E (limit UI≠silnik z rundy 1 nadal otwarte, do backlogu).
 **STATUS: dispatch Operatora rundy 3 (Sonnet 5, wąski zakres testowy) w toku** — przywrócić
 asercje `pickActiveCivPool(..., preferredCivIds)` (cap/fill-in/filtr epoki, usunięte przy
 przepisaniu rundy 2) + dodać strażnik tekstowy main.ts (N-B).
+
+## ECHO R-AUTO-WYZYWIENIE-KOSZT-ARMII-Q1 = B (2026-08-13, potwierdzenie wprost)
+
+Jego słowa: „prawdopodobnie ten mechanizm był powodem błędu, dla którego spichlerz wiecznie na
+koniec tury kończył się na minusie. Także to trafna uwaga, trzeba to zmienić, armia też musi być
+liczona do kosztów." Potwierdza wprost implikację odnotowaną przy ECHO Q1 wyżej — koszt armii
+wchodzi do kryterium bezpieczeństwa Auto Wyżywienie. Już w implementacji (Operator
+`aac8cb34fb06c79a8`, ten sam dispatch co Q1, jedna spójna zmiana).
