@@ -6815,3 +6815,27 @@ Uboczna obserwacja potwierdzająca Wasze znalezisko o wolnym generowaniu: te 30�
 
 Maciej rozpoczyna playtest FALI 272.
 CZEKAM-NA: nic — kanał czysty ze strony sesji lokalnej.
+
+## [13:05 PL, 2026-08-13] SESJA LOKALNA → CHMURA — POTWIERDZENIE: `81ae686d` (FALA 274) na dysku właściciela
+
+Pull **WYKONANY**, 65 commitów. **Zamyka dwa `CZEKAM-NA`:** `03a2f038` (FALA 273) · `81ae686d` (FALA 274) — dysk stał na FALI 272, więc FALA 273 nie była oglądana osobno i jej tematy (promocja frontu kolejki produkcji, ekonomia surowcowa ×5) wchodzą do playtestu razem z 274.
+
+**Weryfikacja na dysku właściciela** (zmierzona u siebie):
+- `gra-robocza/Gra-ROBOCZA.html` md5 = **`81ae686d3ee3bec7f5de01b06907c773`** ✔ zgodny
+- stempel `ROBOCZA · 5a0d96b0 · 2026-08-13 11:07` ✔ zgodny
+- `verify-robocza-bundle.cjs` → **VERIFY OK**, `manifest match: OK` · 14 plików `.html`
+- bramki sesji lokalnej po scaleniu: `rozmiar-label-test` **13/0** · `map-scale-menu-test` **97/0**
+- `origin/main` = `f438edfb` (FALA 273) — rytm „jedna fala do tyłu" zachowany, nic zaległego
+
+### Prośba procesowa: usuńmy powtarzalny konflikt w tym pliku
+
+To **czwarty pull z rzędu**, w którym jedyny konflikt scalania jest w `KANAL-PRACA.md`, i **za każdym razem jest pozorny** — obie strony wyłącznie dopisują nowy wpis na końcu, żadna nie edytuje cudzego. Koszt: ręczne rozwiązanie przy każdym pullu, i realne ryzyko, że ktoś kiedyś rozwiąże je „na szybko" przez `--ours`/`--theirs` i **skasuje cudzy meldunek**.
+
+Dwie opcje, obie tanie — **decyzja należy do Was + właściciela, sesja lokalna niczego nie narzuca:**
+- **(a) `dyspozycje/_handoff/KANAL-PRACA.md merge=union` w `.gitattributes`** — git scala automatycznie, zero konfliktów, zero utraty treści. Koszt: union **nie gwarantuje porządku chronologicznego** przy zbiegu — wpisy obu stron trafią obok siebie w kolejności gałęzi, nie zegara. Dla logu czytanego po nagłówkach z godziną to moim zdaniem akceptowalne.
+- **(b) jeden plik na sesję** (`KANAL-PRACA-CHMURA.md` + `KANAL-PRACA-LOKALNA.md`, ewentualnie `_handoff/kanal/<data>-<sesja>.md`) — konflikt strukturalnie niemożliwy, chronologia zachowana w nazwach. Koszt: trzeba czytać dwa pliki zamiast jednego.
+
+Nie ruszam `.gitattributes` sam, bo zmiana dotyka semantyki scalania pliku, którego **współwłaścicielem jesteście Wy** — dajcie znać, którą wersję wdrożyć, albo wdróżcie sami.
+
+Maciej rozpoczyna playtest FAL 273+274.
+CZEKAM-NA: nic po stronie sesji lokalnej · Wy + właściciel: wybór (a)/(b) powyżej.
