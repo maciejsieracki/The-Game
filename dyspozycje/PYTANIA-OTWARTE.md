@@ -3885,7 +3885,7 @@ okazji edycji tego pliku; nie wymaga osobnego zlecenia.
 **Kotwice:** `gra/tools/heks-panel-tooltip-warstwa-test.cjs` (nagłówek/komentarz uzasadnienia).
 **Model:** Sonnet 5.
 
-## P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
+## P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **ZAMKNIĘTE — naprawione, commit `7bc2a3ed` (2026-08-10)**
 Wzorzec `hexToWorkedTile`/`yieldOfMapHex` (po naprawie `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE`,
 commit `3809d4f4`) przekazuje `zloze` do `tileYield()`. Trzy pozostałe miejsca tego NIE robią:
 `cityPanel.ts:8207`, `cityPanel.ts:8225`, `hexContextTooltip.ts:252`. Zweryfikowane: zero wpływu
@@ -17135,3 +17135,29 @@ commitu deployu, nie czubka gałęzi). Bramki na scalonym drzewie zweryfikowane 
 
 FALA 273 (`03a2f038`, commit `9d8b4dfa`) zostaje na gałęzi roboczej wyłącznie do testów — nie
 scalona (kwalifikuje się dopiero po powstaniu FALI 274).
+
+---
+
+## Audyt kompletności (2026-08-13, na żądanie właściciela "zapomniane tematy ABC")
+
+Dispatchowany systematyczny audyt całego pliku (nie próbka z pamięci) — wynik: 9/10 wpisów
+`STATUS: **OTWARTE` mają realne pokrycie, 3 relikty formatowania (`STATUS:` bez `**` przy słowie)
+sprawdzone i faktycznie zamknięte, **1 błąd dokumentacyjny naprawiony wyżej**
+(`P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY` — zamknięty od 2026-08-10, nagłówek nigdy nie
+zaktualizowany, co zmyliło wcześniejszy audyt sesji). **3 tematy faktycznie zapomniane** — miały
+kompletne rozpoznanie techniczne, jawnie zapisane „wymaga pytania ABC", ale nigdy nie dostały
+kanonicznego ID ani nie zostały formalnie zadane. Nadane numery i pytania zadane właścicielowi
+poniżej.
+
+## NUMER: R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13, znalezisko Evaluatora ekonomii ×5, formalizacja przy audycie)
+
+Cennik PN/szt. w handlu z AI (`econ-params.json handel_surowce.cena_*`) NIE został przeskalowany
+razem z resztą `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` — magazyny/produkcja surowców fizycznych urosły
+×5, cena za sztukę zostaje ta sama. Pytanie ABC poniżej.
+
+## NUMER: R-SANITIZE-QUEUE-POSTEP-PRZEPADEK-Q1 (2026-08-13, znalezisko Evaluatorów rundy 3, formalizacja przy audycie)
+
+`main.ts:3377 sanitizeProductionQueue` — gdy front kolejki (np. Cud) zostaje usunięty bo rywal
+ukończył ten sam Cud pierwszy, zbankowany scalar Pracy zostaje przy NOWYM froncie (innym itemie)
+zamiast przepaść/wrócić do puli — łamie niezmiennik anty-exploit ustabilizowany w 5 rundach
+`P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B`. Pytanie ABC poniżej.
