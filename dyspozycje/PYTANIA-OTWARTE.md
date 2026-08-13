@@ -18694,3 +18694,32 @@ grze, `gra/src/game/citizen-resource-upkeep.ts`, temat `R-ZUZYCIE-SUROWCOW-OBYWA
 wcześniej tej samej sesji — dziś 1 szt./obywatela/surowiec/turę po decyzji
 `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`). Dopisane do listy zawartości zakładki Obywatele, nie wymaga
 osobnego dispatchu — czeka razem z resztą listy na rollout po zatwierdzeniu Skarbca.
+
+## Rozjazd danych „Petra" (5a873d7f) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-13)
+
+Evaluator (Opus 5, `a211c90605ef84b40`) potwierdził maszynowo (nie na słowo), że zmiany w
+`ai.ts`/`main.ts` to WYŁĄCZNIE komentarze — filtr po każdej zmienionej linii, zero linii kodu
+wykonywalnego. Koniunkcja ochronna `wonderRequiredBuildable` pozostaje i jest realnie potrzebna
+(niezależnie zweryfikowane: `wymagaTerenu` to osobna, żywa ścieżka do tej samej klasy awarii,
+nie tylko rozjazd epoki). Nowa generyczna bramka pokrywa 19/19 cudów z `epokaWejscia`, 0
+nierozwiązanych nazw technologii. Fixture w sekcji 6 NIE jest atrapą — własna mutacja Evaluatora
+(ai.ts całkowicie ignoruje `requiredWonderIds`) go wywala. Wszystkie 14 bramek zielone, dokładne
+liczby. 4 mutacje kontrolne, wszystkie złapane.
+
+**⛔ NOTA N1 — konsekwencja balansowa dotykająca wcześniejszej decyzji (§1a), do wiadomości
+Macieja, nie do naprawy w tym commicie.** Fenicjanie tracą bramkę cudu przy awansie epoki W
+CAŁOŚCI — Petra siedzi teraz w epoce 3, `cap=maxDefinedEra=3`, więc pętla awansu zatrzymuje się
+PRZED sprawdzeniem tej bramki. Stan po naprawie: **8 cywilizacji z aktywną bramką cudu** (Egipt
+ep.1; Asyria/Babilonia/Harappa/Hetyci/Inkowie/Sumer/Zulusi ep.2) i **7 bez** (Celtowie, Chińczycy,
+Germanie, Grecy, Rzymianie, Słowianie + od dziś Fenicjanie). To dotyka decyzji
+`R-EPOKA-CUD-WARUNEK-AWANSU=A` (2026-08-09) — odpowiadając „A" Maciej zdjął Fenicjanom wymóg
+progresji, prawdopodobnie o tym nie wiedząc (to była naturalna konsekwencja naprawy danych, nie
+sama decyzja A). Udokumentowane w testach, ale wymaga wprost zameldowania właścicielowi.
+
+**Nota N2 (pre-istniejący dług, nie regresja tego commitu, do backlogu):** CivPedia w grze
+(`wikiBundle.json`/`wikiHubHud.ts`) ma błędne dane dla Petry (epoka Kamień zamiast Brąz/Żelazo,
+złe technologie) — było błędne już przed tym commitem, ten commit poszerza rozjazd o jedną epokę
+ale go nie tworzy. Systemowo dotyczy 5 cudów ze złą epoką i ~9 ze złymi technologiami w wiki.
+
+**STATUS: temat ZAMKNIĘTY.** N1 wymaga osobnego zameldowania właścicielowi (poniżej w czacie).
+N2 do osobnego zgłoszenia backlogowego, niepilne.
