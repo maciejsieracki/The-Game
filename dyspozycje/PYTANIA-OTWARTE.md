@@ -17044,3 +17044,28 @@ stawka drenażu obywateli 1,0, WSZYSTKIE kanały produkcji surowców fizycznych 
 terytorialne przez ulepszenia, plony terenowe z pól obrabianych, wyrąb lasu) ×5, koszty
 rekrutacji/budowy/utrzymania jednostek i budynków ×5, cap magazynów ×5 (baza i bonus), Złoto/
 Pieniądz świadomie bez zmian. N1/N2 do backlogu.
+
+---
+
+## NUMER + ECHO: R-EVALUATOR-3X-MODEL-KOSZT-Q1 — decyzja WŁASNA właściciela (2026-08-13)
+
+**Kontekst:** Maciej zauważył zużycie limitu przy wzorcu „3 niezależni Evaluatorzy" (używanym
+dla tematów wysokiego ryzyka/dużego promienia rażenia — np. wcześniej w tej sesji dla obszarów
+combat-adjacent). Jego słowa: „Z tego, co widzę, odpalasz trzech subagentów Opus 5 jako
+ewaluatora. To zjada ogromną ilość limitu, więc zróbmy tak: skoro odpalasz trzech, to dwóch
+odpal pierwszych na sonet 5, a ostatniego dopiero na opus 5."
+
+**Decyzja:** dla wzorca 3x niezależny Evaluator (tematy wysokiego ryzyka, gdzie standardowo
+wszyscy trzej byli na Opus 5) — **Evaluator #1 i #2 na Sonnet 5, Evaluator #3 (ostatni) na
+Opus 5.** Nie zmienia to standardowej pętli 1x Evaluator/rundę (większość tematów tej sesji) —
+tam Evaluator nadal Opus 5 jak dotychczas (CLAUDE.md §4 niezmienione dla wzorca standardowego).
+Zmiana dotyczy WYŁĄCZNIE wzorca potrójnego, i tylko przydziału modelu, nie liczby Evaluatorów
+ani rygoru weryfikacji.
+
+**Uzasadnienie (do zanotowania, nie kwestionowane):** koszt/limit trzech Opus 5 jest wysoki;
+2× Sonnet 5 + 1× Opus 5 jako ostatnia, „rozjemcza" weryfikacja zachowuje niezależność trzech
+perspektyw przy niższym koszcie łącznym — analogicznie do przydziału Operator=Sonnet 5/
+Evaluator=Opus 5 już ustalonego w CLAUDE.md §4, tylko zastosowanego wewnątrz samego wzorca 3x.
+
+**STATUS: WDROŻONE natychmiast** — zaktualizowano `.claude/skills/civ-autobot/SKILL.md`
+(sekcja modeli/Evaluator) żeby ta reguła nie zginęła po resecie kontekstu.
