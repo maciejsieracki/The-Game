@@ -17876,3 +17876,44 @@ sprawdzić czy nie wprowadza regresji na dużych mapach z wieloma miastami (anal
 wcześniejszych regresji wydajnościowych tej sesji, np. barbarzyńcy 118×).
 
 **Dispatch Operatora (Sonnet 5, worktree izolowany) NASTĘPUJE.**
+
+---
+
+## P-OKOLICA-DUBLOWANIE-HEKSA-MIEDZY-MIASTAMI — SPROSTOWANIE: zgłoszenie dotyczyło centrum miasta, nie zwykłego heksa (2026-08-13)
+
+Maciej doprecyzował, ZANIM Operator zdążył ruszyć: „tutaj nawet nie chodziło o tego samego HEXa,
+tylko po prostu inne miasto wybrało HEX, na którym jest w ogóle inne miasto, czyli centrum miasta
+innego. To już w ogóle nie powinno być możliwe i to powinno być zakazane... na przykład miasto
+Ateny zaczęło sobie produkcję w mieście Sparta. Chociaż Sparta wykorzystuje ten teren pod miasto i
+produkcję w mieście."
+
+**To jest OSTRZEJSZY, prostszy do naprawienia przypadek niż ten, który rozpoznałem i na który padło
+ECHO A.** Sprawdzone w kodzie: `isLandWorkableHex()` (`okolica.ts:89-94`) sprawdza WYŁĄCZNIE teren
+(nie Morze/Góry) — **nic nigdzie nie sprawdza, czy dany heks jest CENTRUM (dowolnego) miasta**.
+`okolicaTiles()` (`okolica.ts:112-133`) wyklucza tylko WŁASNE centrum przetwarzanego miasta
+(`if (q === centerQ && rr === centerR) continue`) — **nie wyklucza centrum ŻADNEGO INNEGO miasta**,
+nawet jeśli to centrum leży w promieniu okolicy (5–15 heksów) miasta sąsiedniego. Skoro terytorium
+przy tym samym właścicielu przechodzi filtr własności bez przeszkód, sąsiednie miasto TEGO SAMEGO
+właściciela może dziś realnie wybrać HEKS CENTRUM INNEGO SWOJEGO MIASTA jako pole do obróbki —
+dokładnie zgłoszony przypadek Ateny/Sparta.
+
+**To NIE wymaga reguły „kto wygrywa" (ECHO A z poprzedniego wpisu nadal ma zastosowanie do zwykłych,
+spornych heksów terenu między dwoma promieniami) — centrum miasta ma być BEZWARUNKOWO wykluczone z
+puli „możliwe do obróbki" dla KAŻDEGO INNEGO miasta, bez wyjątku, niezależnie od odległości/priorytetu.**
+To prostszy, dodatkowy strażnik: `isLandWorkableHex`/filtr `isWorkable` używany w
+`resolveWorkedTiles`/`assignWorkedTiles` ma dodatkowo sprawdzać „czy na tym heksie stoi centrum
+JAKIEGOKOLWIEK miasta (own lub cudze)" i jeśli tak — zawsze `false`, bez wyjątków.
+
+**Zakres naprawy (rozszerzenie dispatchu Operatora, ECHO A pozostaje w mocy dla zwykłych heksów
+terenu, ale ta poprawka jest priorytetowa i prostsza — może iść jako pierwszy, samodzielny krok):**
+- Nowy predykat (np. w `okolica.ts` lub `cities.ts`) sprawdzający czy `(q,r)` pokrywa się z centrum
+  KTÓREGOKOLWIEK miasta na mapie (potrzebuje dostępu do pełnej listy `cities`, nie tylko przetwarzanego
+  miasta) — wpięty do `isLandWorkableHex`/`effectiveIsWorkable` w `okolica.ts`, tak żeby objął
+  WSZYSTKIE ścieżki (silnik ekonomii, tryb ręczny, overlay UI) jednym punktem zaczepienia, wzorem
+  istniejącego `isLandWorkableHex` jako „wspólnego źródła prawdy" (komentarz `P-HEKS-ISWORKABLE-
+  OVERLAY-VS-SILNIK-HIPOTEZA` w tym samym pliku, ten sam wzorzec do powielenia).
+- Dotyczy też trybu ręcznego (`okolicaReczne`) — istniejące ręczne wpisy wskazujące na cudze centrum
+  miasta (jeśli w ogóle da się to dziś ustawić) mają być czyszczone przy `reconcileAllWorkedTiles`.
+
+**Dispatch Operatora NASTĘPUJE — połączony z ECHO A (najbliższe miasto wygrywa dla zwykłych spornych
+heksów) w jednym zleceniu, bo to ten sam obszar kodu i ta sama sesja pracy.**
