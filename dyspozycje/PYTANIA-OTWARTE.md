@@ -17566,7 +17566,7 @@ skilli AutoBot (reguła 3x Evaluator za zgodą).
 
 ---
 
-## P-PANEL-MIASTO-NIECZYTELNY-PRZY-PRZYBLIZENIU (2026-08-13, zgłoszenie z playtestu, screenshot) · STATUS: **OTWARTE — do rozpoznania**
+## P-PANEL-MIASTO-NIECZYTELNY-PRZY-PRZYBLIZENIU (2026-08-13, zgłoszenie z playtestu, screenshot) · STATUS: ZAMKNIĘTE — patrz wpis niżej (l. 18163), nagłówek tu NIE zaktualizowany w porę → spowodował zduplikowany dispatch recon-agenta przy audycie §0c (2026-08-13, po fakcie)
 
 Maciej (ze screenshotem — pasek nazwy miasta "ATENY 8,5% [1]" nad heksem, mocno przybliżona
 kamera): „Nadal pozostaje temat otwarty bardzo niskiej jakości paneru nad miastem po
@@ -19318,3 +19318,15 @@ nie kolejne pytania) — do ewentualnej korekty po zobaczeniu wyniku: chip Relig
 A z makiety, mniejsze ryzyko strukturalne niż usuwanie chipa z HUD), nagłówki Handel/Kultura
 ujednolicone w stronę eyebrow (zgodne z rekomendacją designera), przycisk "Otwórz hub badań" w
 Nauce ODŁOŻONY do czasu potwierdzenia przez właściciela że taki hub ma istnieć jako cel linku.
+
+## P-PANEL-MIASTO-NIECZYTELNY-PRZY-PRZYBLIZENIU — recon dispatchowany §0c był ZBĘDNY, temat już zamknięty (2026-08-13)
+
+Audyt kompletności (§0c) trafił na nagłówek z l. 17569 wciąż oznaczony `STATUS: **OTWARTE`,
+mimo że temat został rozpoznany, naprawiony (commit `4b9eab58`, LOD tekstury plakietki wg
+odległości kamery — `gra/src/render/zoomLod.ts`+`cityMapStatChip.ts`+`cities.ts`) i formalnie
+zamknięty PASS-WITH-NOTES tego samego dnia (l. 18163) — po prostu nagłówek otwierający nie
+został zaktualizowany. Recon-agent (`a8313d3245cf54d04`) potwierdził niezależnie że fix jest już
+na czubku gałęzi (`git merge-base --is-ancestor 4b9eab58 HEAD` → yes) — zero nowej pracy, zero
+zmian potrzebnych. Nagłówek l. 17569 poprawiony wyżej, żeby przyszły grep §0c nie łapał już tego
+fałszywie. Jeśli Maciej nadal obserwuje ten sam objaw w grze — prawdopodobnie stary
+zbudowany bundle sprzed `4b9eab58`, nie regresja kodu.
