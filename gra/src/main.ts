@@ -519,6 +519,7 @@ import {
   placedImprovementsWithZlotoTradeGrant,
 } from './game/zloto-access';
 import { computeEmpireLivestockUnlocks } from './game/livestock-unlock';
+import { applyRuchSwiataPace } from './game/ruch-swiata-tempo';
 import {
   createPlayerState,
   researchStep,
@@ -3231,7 +3232,11 @@ async function boot(): Promise<void> {
       }
       city.manpower = d.manpower;
       const def = lookupUnitDef(completed.id);
-      const ruch = normFieldVal(def['Ruch'], 2);
+      // RUCH-SWIATA-TEMPO: mnoznik zasiegu ruchu z kreatora (krotki x1 domyslnie) —
+      // globalne ustawienie mapy, nie per-owner (patrz ruch-swiata-tempo.ts).
+      // EN: world-map movement multiplier from the creator (default short x1) —
+      // a global map setting, not per-owner (see ruch-swiata-tempo.ts).
+      const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
       const newUnitId = 'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36).slice(2);
@@ -7585,7 +7590,8 @@ async function boot(): Promise<void> {
     /** P-AI-MOC-BONUS=A: dodatkowe jednostki startowe major AI (stolica klastra). */
     function spawnDifficultyBonusUnit(ownerId: number, typeId: string, q: number, r: number): void {
       const def = lookupUnitDef(typeId);
-      const ruch = normFieldVal(def['Ruch'], 2);
+      // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (main.ts, produkcja jednostki).
+      const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
       const newUnitId = 'diffbonus_' + turn + '_' + ownerId + '_' + Math.random().toString(36).slice(2);
@@ -9466,7 +9472,12 @@ async function boot(): Promise<void> {
         name: u.typeId,
         icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
-        ruchMax: normFieldVal(def['Ruch'], u.ruch),
+        // RUCH-SWIATA-TEMPO: u.ruch (nie surowy def['Ruch']) — juz przemnozone przy
+        // spawnie, inaczej pasek ruchu w prompcie scalania pokazywalby bazowa wartosc
+        // gdy pace='normalny'/'dlugi'. / EN: use u.ruch (not raw def['Ruch']) — already
+        // multiplied at spawn, otherwise the merge-prompt move bar would show the base
+        // value when pace is 'normalny'/'dlugi'.
+        ruchMax: u.ruch,
       };
     }
 
@@ -16880,7 +16891,9 @@ async function boot(): Promise<void> {
         const udef = lookupUnitDef(u.typeId);
         const uCombat = unitCardCombatFor(u, udef);
         const hpMax = uCombat.hpMaxEffective;
-        const movMax = normFieldVal(udef['Ruch'], 2);
+        // RUCH-SWIATA-TEMPO: u.ruch (juz przemnozone przy spawnie), nie surowy
+        // normFieldVal(udef['Ruch'], 2) — patrz uzasadnienie przy mergeUnitRow.
+        const movMax = u.ruch;
         return {
           id: u.id,
           name: String(udef?.nazwa ?? udef?.Nazwa ?? u.typeId),
@@ -16911,7 +16924,8 @@ async function boot(): Promise<void> {
           cards,
           ...stackStatusBase,
           combat,
-          mov: normFieldVal(def['Ruch'], 2),
+          // RUCH-SWIATA-TEMPO: active.ruch (juz przemnozone), nie surowy def['Ruch'].
+          mov: active.ruch,
           rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
           hp: active.hp ?? combat.hpMaxEffective,
           actions: [],
@@ -17019,7 +17033,8 @@ async function boot(): Promise<void> {
         cards,
         ...stackStatusBase,
         combat,
-        mov: normFieldVal(def['Ruch'], 2),
+        // RUCH-SWIATA-TEMPO: active.ruch (juz przemnozone), nie surowy def['Ruch'].
+        mov: active.ruch,
         rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
         hp: active.hp ?? combat.hpMaxEffective,
         actions,
@@ -18399,7 +18414,16 @@ async function boot(): Promise<void> {
     }
 
     function perTurnMoveForUnit(u: RuntimeUnit): number {
-      return Math.max(1, normFieldVal(lookupUnitDef(u.typeId)['Ruch'], u.ruch));
+      // RUCH-SWIATA-TEMPO: preferuj u.ruch (juz przemnozone przez applyRuchSwiataPace
+      // przy spawnie) nad surowym def['Ruch'] -- inaczej planowanie trasy wieloturowej
+      // liczyloby ETA na bazowej (nieprzemnozonej) wartosci, mimo ze faktyczny ruch/ture
+      // jest wiekszy. def['Ruch'] zostaje jako fallback (jak wczesniej) na wypadek
+      // jednostki bez poprawnie ustawionego u.ruch. / EN: prefer u.ruch (already
+      // multiplied by applyRuchSwiataPace at spawn) over the raw def['Ruch'] --
+      // otherwise multi-turn march planning would estimate ETA off the base
+      // (unmultiplied) value even though the actual per-turn movement is larger.
+      // def['Ruch'] stays as a fallback (as before) for a unit without a valid u.ruch.
+      return Math.max(1, normFieldVal(u.ruch, normFieldVal(lookupUnitDef(u.typeId)['Ruch'], 2)));
     }
 
     function buildMarchFogContext(dest: PlannedMarchDest): MarchFogContext {
@@ -18981,7 +19005,8 @@ async function boot(): Promise<void> {
           grantGold('brak miejsca/jednostki, w zamian');
         } else {
           const def = lookupUnitDef(typeId);
-          const ruch = normFieldVal(def['Ruch'], 2);
+          // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (produkcja jednostki).
+          const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
           const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
           const isSuper = def['Super-jednostka'] === 'TAK';
           const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + Math.random().toString(36).slice(2);
@@ -21413,6 +21438,7 @@ async function boot(): Promise<void> {
         buildingCostPace: player.buildingCostPace,
         kosztJednostekPace: player.kosztJednostekPace,
         wzrostLudnosciPace: player.wzrostLudnosciPace,
+        ruchSwiataPace: player.ruchSwiataPace,
         civType: aiOwnerCivMap.get(ownerId) ?? 'grecy',
         civBonusy: [],
         rakietaWystrzelona: false,
@@ -22702,6 +22728,7 @@ async function boot(): Promise<void> {
           buildingCostPace: player.buildingCostPace,
           kosztJednostekPace: player.kosztJednostekPace,
           wzrostLudnosciPace: player.wzrostLudnosciPace,
+          ruchSwiataPace: player.ruchSwiataPace,
         },
         cityProd:       cityProdSave,
         cityBuilt:      cityBuiltSave,
@@ -24605,7 +24632,8 @@ async function boot(): Promise<void> {
               cityProd.set(cid, prodFinal);
               for (const rec of recResult.completed) {
                 const def = lookupUnitDef(rec.id);
-                const ruch = normFieldVal(def['Ruch'], 2);
+                // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (produkcja jednostki).
+                const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
                 const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
                 const isSuper = def['Super-jednostka'] === 'TAK';
                 const newUnitId = 'rec_' + turn + '_' + cid + '_' + Math.random().toString(36).slice(2);
@@ -26523,7 +26551,10 @@ async function boot(): Promise<void> {
             // Instantiate spawned barbarian units.
             for (const spawn of [...tickRes.spawns, ...seaRaiderSpawns]) {
               const def = (data.units as any[]).find((u: any) => u['Jednostka'] === spawn.typeId);
-              const ruch = def ? normFieldVal(def['Ruch'], 2) : 2;
+              // RUCH-SWIATA-TEMPO: globalne ustawienie mapy/gry, nie per-owner — te same
+              // punkty ruchu dla barbarzyncow co dla gracza/AI (patrz ruch-swiata-tempo.ts).
+              const ruchBazowy = def ? normFieldVal(def['Ruch'], 2) : 2;
+              const ruch = applyRuchSwiataPace(ruchBazowy, player.ruchSwiataPace ?? 'krotki');
               const newUnit: BarbUnit = {
                 id: 'barb_' + turn + '_' + spawn.campId + '_' + Math.random().toString(36).slice(2),
                 ownerId: BARBARIAN_OWNER_ID,
@@ -26596,7 +26627,9 @@ async function boot(): Promise<void> {
               }
               for (const gspawn of garrisonTick.spawns) {
                 const gdef = (data.units as any[]).find((u: any) => u['Jednostka'] === gspawn.typeId);
-                const gruch = gdef ? normFieldVal(gdef['Ruch'], 2) : 2;
+                // RUCH-SWIATA-TEMPO: patrz komentarz przy spawnie barbarzyncow z obozu (wyzej).
+                const gruchBazowy = gdef ? normFieldVal(gdef['Ruch'], 2) : 2;
+                const gruch = applyRuchSwiataPace(gruchBazowy, player.ruchSwiataPace ?? 'krotki');
                 const newGarrisonUnit: BarbUnit = {
                   id: 'barbcity_' + turn + '_' + gspawn.cityId + '_' + Math.random().toString(36).slice(2),
                   ownerId: BARBARIAN_OWNER_ID,
@@ -27433,6 +27466,7 @@ async function boot(): Promise<void> {
       player.buildingCostPace = params.advanced?.buildingCostPace ?? 'niski';
       player.kosztJednostekPace = params.advanced?.kosztJednostekPace ?? 'niski';
       player.wzrostLudnosciPace = params.advanced?.wzrostLudnosciPace ?? 'wysoki';
+      player.ruchSwiataPace = params.advanced?.ruchSwiataPace ?? 'krotki';
       _menuAdvanced = params.advanced ? { ...params.advanced } : undefined;
       _currentRenderOptions = mapRenderOptionsFromParams(params);
       const mqTier = mapQualityTierFromParams(params);
@@ -27442,6 +27476,7 @@ async function boot(): Promise<void> {
         '· kosztJednostekPace =', player.kosztJednostekPace,
         '· buildingCostPace =', player.buildingCostPace,
         '· wzrostLudnosciPace =', player.wzrostLudnosciPace,
+        '· ruchSwiataPace =', player.ruchSwiataPace,
         '· epoka=', player.era, '(' + (params.epochId || 'kamien') + ')',
         '· typSwiata=', _menuTypSwiata, '(' + (params.worldType || '') + ')',
         '· jakoscMapy=', qualityTierToLabel(mqTier),
@@ -29052,6 +29087,10 @@ async function boot(): Promise<void> {
         player.wzrostLudnosciPace = saved.gracz.wzrostLudnosciPace
           ?? (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.wzrostLudnosciPace
           ?? 'wysoki';
+        // RUCH-SWIATA-TEMPO: stary zapis bez pola -> 'krotki' (x1, zero zmiany zachowania).
+        player.ruchSwiataPace = saved.gracz.ruchSwiataPace
+          ?? (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.ruchSwiataPace
+          ?? 'krotki';
       }
       overlayDepositEra = player.era;
       cityProd.clear();

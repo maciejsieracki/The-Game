@@ -44,6 +44,7 @@ import { applyTempoKoszt, type TempoGry } from './tech-tempo';
 import type { BuildingCostPace } from './building-cost-tempo';
 import type { KosztJednostekPace } from './unit-cost-tempo';
 import type { WzrostLudnosciPace } from './population-growth-tempo';
+import type { RuchSwiataPace } from './ruch-swiata-tempo';
 import { scaledResearchCost, type GameDifficulty } from './difficulty-cost';
 import { researchGatesMet, type ResearchBuildingGate } from './research';
 
@@ -118,6 +119,14 @@ export interface PlayerState {
   /** Tempo wzrostu ludnosci z kreatora — wysoki/normalny/wolny (prog zywnosci). */
   wzrostLudnosciPace: WzrostLudnosciPace;
   /**
+   * Zasieg ruchu jednostek NA MAPIE SWIATA z kreatora — krotki/normalny/dlugi
+   * (krotki x1 / normalny x3 / dlugi x6, patrz ruch-swiata-tempo.ts). Globalne
+   * ustawienie mapy/gry (nie per-owner) — dotyczy WSZYSTKICH jednostek,
+   * gracza i AI/barbarzyncow jednakowo. NIE dotyka ruchu w bitwie (osobne pole
+   * "Ruch w bitwie" / mapFieldBattle.ts).
+   */
+  ruchSwiataPace: RuchSwiataPace;
+  /**
    * Typ cywilizacji gracza (ikonaId z civs.json, np. 'grecy', 'rzymianie').
    * Ustawiany w applyMenuParams przy starcie gry.
    */
@@ -146,6 +155,7 @@ export function createPlayerState(): PlayerState {
     buildingCostPace: 'niski',
     kosztJednostekPace: 'niski',
     wzrostLudnosciPace: 'wysoki',
+    ruchSwiataPace: 'krotki',
     civType: 'grecy',    // default: Grecy; nadpisywany przez applyMenuParams
     civBonusy: [],       // puste do czasu startu gry
     rakietaWystrzelona: false,
