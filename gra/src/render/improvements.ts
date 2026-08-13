@@ -17,7 +17,7 @@ import { buildKopalniaZlota } from './kopalnia-zlota-opus5';
 export type ImprovementKey =
   | 'farma' | 'bydlo' | 'owce' | 'lama' | 'kamieniolom' | 'oboz_lowiecki' | 'wyrab' | 'tartak'
   | 'lodzie_rybackie' | 'droga' | 'droga_brukowana' | 'posterunek' | 'stadnina' | 'pastwisko' | 'kopalnia_miedzi'
-  | 'kopalnia_zelaza' | 'kopalnia_zlota'
+  | 'kopalnia_zelaza' | 'kopalnia_zlota' | 'kopalnia_cyny'
   | 'irygacja' | 'pole_irygowane' | 'glinianka' | 'warzelnia_soli' | 'tarasy' | 'fort';
 
 export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }[] = [
@@ -30,6 +30,7 @@ export const IMPROVEMENTS: { key: ImprovementKey; label: string; epoka: number }
   { key: 'stadnina', label: 'Stadnina', epoka: 2 },
   { key: 'kopalnia_miedzi', label: 'Kopalnia miedzi', epoka: 2 },
   { key: 'kopalnia_zelaza', label: 'Kopalnia żelaza', epoka: 3 },
+  { key: 'kopalnia_cyny', label: 'Kopalnia cyny', epoka: 2 },
   { key: 'kamieniolom', label: 'Kamieniołom', epoka: 1 },
   { key: 'kopalnia_zlota', label: 'Kopalnia złota', epoka: 2 },
   { key: 'oboz_lowiecki', label: 'Obóz łowiecki', epoka: 1 }, { key: 'wyrab', label: 'Wyrąb', epoka: 1 },
@@ -377,6 +378,17 @@ export function buildImprovement(
     // Odkrywka z płytkim szybem: trójnóg z koszem, rynna płuczkowa z runem,
     // sadzawka, misa ze złotym pyłem. Uzasadnienie historyczne w nagłówku pliku.
     case 'kopalnia_zlota': return buildKopalniaZlota();
+    // Kopalnia cyny (2026-08-13): TYMCZASOWE reużycie generycznego modelu kopalni (jak
+    // kopalnia_zelaza) — wymagane, żeby ImprovementKey/przełącznik pozostał wyczerpujący
+    // (bez tego build TS pada). Własna bryła 3D to praca render/** zastrzeżona dla Opus 5
+    // (CLAUDE.md) — POZA zakresem tego zlecenia (Sonnet 5); do rozważenia jako osobne
+    // zlecenie, jak wcześniej kopalnia_zlota (patrz komentarz wyżej).
+    // EN: Kopalnia cyny (tin mine) TEMPORARILY reuses the generic mine model (like
+    // kopalnia_zelaza) — required so the ImprovementKey/switch stays exhaustive (otherwise
+    // TS build fails). A dedicated 3D shape is render/** work reserved for Opus 5
+    // (CLAUDE.md) — OUT OF SCOPE for this ticket (Sonnet 5); candidate for a follow-up,
+    // like kopalnia_zlota got earlier (see comment above).
+    case 'kopalnia_cyny': return kopalnia();
   }
 }
 
@@ -430,7 +442,7 @@ const CAT_ANGLE_DEG: Record<string, number> = {
 // Kamieniołom ma WŁASNY bok (kamien=300°), NIE w 'surowiec' — bo od 2026-07-24 współistnieje
 // z kopalnią rudy na tym samym heksie (C-SUR kamień=b); w jednym sektorze modele rysują się w
 // tym samym punkcie, więc rozdzielenie kątów zapobiega nachodzeniu grafik kamieniołom↔kopalnia.
-const SUROWIEC_KEYS = new Set(['kopalnia_zelaza', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi', 'kopalnia_zlota']);
+const SUROWIEC_KEYS = new Set(['kopalnia_zelaza', 'glinianka', 'warzelnia_soli', 'stadnina', 'kopalnia_miedzi', 'kopalnia_zlota', 'kopalnia_cyny']);
 const PASTWISKO_KEYS = new Set(['bydlo', 'owce', 'lama', 'pastwisko']);
 const FORT_KEYS = new Set(['fort', 'posterunek']);
 const DROGA_KEYS = new Set(['droga', 'droga_brukowana']);

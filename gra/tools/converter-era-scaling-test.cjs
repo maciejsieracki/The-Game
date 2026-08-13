@@ -230,8 +230,8 @@ console.log('\n-- E. advanceCityEconomy: PARYTET AI (gracz era1, AI era3), Cegie
     // z plonow terenu w Fazie 1). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13):
     // zapas podniesiony 1000->5000, żeby zostać komfortowo ponad nowy throughput ×5
     // (Cegielnia era3 = 60/ture, wymaga glina=120/ture przy recepturze 2:1).
-    cPlayer.surowce = { glina: 5000, drewno: 5000, ruda: 5000 };
-    cAi.surowce     = { glina: 5000, drewno: 5000, ruda: 5000 };
+    cPlayer.surowce = { glina: 5000, drewno: 5000, ruda: 5000, ruda_cyny: 5000 };
+    cAi.surowce     = { glina: 5000, drewno: 5000, ruda: 5000, ruda_cyny: 5000 };
 
     const builtByCity = new Map([
       [cPlayer.id, ['cegielnia', 'garncarnia', 'odlewnia_brazu']],

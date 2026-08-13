@@ -413,6 +413,11 @@ const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> 
   // WŁASNY model 3D (Opus 5, 2026-07-25) — koniec reużycia buildKopalnia(). Model jest już
   // zorientowany przodem do kamery (+Z), więc BEZ rotacji z ULEPSZENIA_P2_LAYOUT.
   kopalnia_zlota: g => { g.add(buildKopalniaZlota()); },
+  // Kopalnia cyny (2026-08-13): TYMCZASOWE reużycie buildKopalnia() (jak kopalnia_miedzi
+  // przed swoim dedykowanym modelu) — dedykowana bryła 3D to praca Opus 5 (CLAUDE.md),
+  // poza zakresem tego zlecenia (Sonnet 5). / EN: TEMPORARY reuse of the generic mine model
+  // — a dedicated 3D shape is Opus-5-reserved render work, out of scope here.
+  kopalnia_cyny: g => { const m = buildKopalnia(); m.rotation.y = ULEPSZENIA_P2_LAYOUT.kopalnia.budynek.rotY; g.add(m); },
 };
 
 export function buildRobloxImprovement(key: ImprovementKey, ownerCol = 0xffd54a): THREE.Group {

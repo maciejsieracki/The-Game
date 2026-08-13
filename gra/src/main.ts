@@ -519,6 +519,7 @@ import {
   placedImprovementsWithZlotoTradeGrant,
 } from './game/zloto-access';
 import { computeEmpireLivestockUnlocks } from './game/livestock-unlock';
+import { applyRuchSwiataPace } from './game/ruch-swiata-tempo';
 import {
   createPlayerState,
   researchStep,
@@ -768,6 +769,7 @@ import {
   missingStockFor, stockResourceLabel,
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
+import { empireHasKopalniaNaZlozuCyny, cityHasOdlewniaForCyna } from './game/cyna-access';
 import {
   bestBuildingProgressAfterCityVisit,
   applyCityVisitBonusGain, formatBuildingBonusGainHint,
@@ -1086,7 +1088,7 @@ import {
   type PendingNegotiation, createNegotiation, applyCounterOffer, applyOwnProposalEdit, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
-  hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
+  hasPendingNegotiationForPair, findOwnOutgoingNegotiation, allowsMultipleOwnOutgoingNegotiations,
   treatyEvalRelationTotal,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
 } from './game/diplomacy-proposals';
@@ -2529,6 +2531,29 @@ async function boot(): Promise<void> {
           }
         }
       }
+      // Ruda cyny (Maciej 2026-08-13): analogiczny empire-wide fallback do Żelaza wyżej —
+      // empireActiveResourceLabelsForOwner (resource-access.ts) jest ograniczone do zasięgu
+      // wzroku KAŻDEGO miasta z osobna, więc Kopalnia cyny poza zasięgiem żadnego miasta
+      // (rzadki przypadek bootstrap fair-play) nie dawałaby etykiety mimo realnego dostępu
+      // gdziekolwiek w imperium. UWAGA: celowo NIE przez hasCynaAccess(bool, builtIds) — ten
+      // sam wzorzec przy Żelazie wyżej przekazuje `hasKopalniaZelazo` (boolean) w miejsce
+      // `empireStock` (Record), co w hasZelazoAccess/hasCynaAccess zeruje `stock` (typeof
+      // 'boolean' -> undefined) i czyni wynik zawsze `false` — pre-istniejący, poza zakresem
+      // tego zlecenia stan w zelazo-access.ts (nie naprawiane tutaj, patrz raport). Tu wprost:
+      // dostęp mapowy (kopalnia gdziekolwiek) AND odlewnia w tym mieście.
+      if (!labels.has('Ruda cyny')) {
+        const ownImprovements = placedImprovementsForOwner(ownerId);
+        const hasKopalniaCyny = empireHasKopalniaNaZlozuCyny(ownImprovements, map);
+        if (hasKopalniaCyny) {
+          for (const c of cities) {
+            if (c.ownerId !== ownerId) continue;
+            if (cityHasOdlewniaForCyna(cityBuilt.get(c.id) ?? [])) {
+              labels.add('Ruda cyny');
+              break;
+            }
+          }
+        }
+      }
       return [...labels];
     }
 
@@ -2812,12 +2837,12 @@ async function boot(): Promise<void> {
         { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
         { id: 'braz',        label: 'Brąz',        icon: '🥉', typ: 'przetworzony' },
         { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
-        // Placeholder (P-SUROWCE-KOLEJNOSC-KART): "Ruda cyny" NIE ISTNIEJE w
-        // resources.json — karta wyszarzona/nieaktywna, bez realnych danych silnika.
-        // NIE dodawaj tego id do resources.json ani żadnej innej tabeli danych gry.
-        // EN: "Ruda cyny" (tin ore) does NOT exist in resources.json — dimmed/inactive
-        // card only, no real engine data. Do not add this id to any game data table.
-        { id: 'ruda_cyny',   label: 'Ruda cyny — wkrótce', icon: '⛏️', typ: 'surowy', placeholder: true },
+        // R-CYNA-BRAZ (Maciej 2026-08-13): "Ruda cyny" wdrożona do resources.json — komentarz
+        // placeholder POWYŻSZY (P-SUROWCE-KOLEJNOSC-KART) był NIEAKTUALNY od tej zmiany; karta
+        // teraz aktywna, dane realne (stock/produkcja/dostęp jak pozostałe surowce ilościowe).
+        // EN: "Ruda cyny" (tin ore) is now implemented in resources.json — the placeholder note
+        // above is stale as of this change; card is active with real engine data.
+        { id: 'ruda_cyny',   label: 'Ruda cyny',   icon: '⛏️', typ: 'surowy' },
         { id: 'zelazo',      label: 'Żelazo',      icon: '⚙️', typ: 'przetworzony' },
         { id: 'stal',        label: 'Stal',        icon: '🔩', typ: 'przetworzony' },
         { id: 'kon',         label: 'Koń',         icon: '🐎', typ: 'hodowla' },
@@ -3231,7 +3256,11 @@ async function boot(): Promise<void> {
       }
       city.manpower = d.manpower;
       const def = lookupUnitDef(completed.id);
-      const ruch = normFieldVal(def['Ruch'], 2);
+      // RUCH-SWIATA-TEMPO: mnoznik zasiegu ruchu z kreatora (krotki x1 domyslnie) —
+      // globalne ustawienie mapy, nie per-owner (patrz ruch-swiata-tempo.ts).
+      // EN: world-map movement multiplier from the creator (default short x1) —
+      // a global map setting, not per-owner (see ruch-swiata-tempo.ts).
+      const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
       const newUnitId = 'prod_' + turn + '_' + cityId + '_' + Math.random().toString(36).slice(2);
@@ -7585,7 +7614,8 @@ async function boot(): Promise<void> {
     /** P-AI-MOC-BONUS=A: dodatkowe jednostki startowe major AI (stolica klastra). */
     function spawnDifficultyBonusUnit(ownerId: number, typeId: string, q: number, r: number): void {
       const def = lookupUnitDef(typeId);
-      const ruch = normFieldVal(def['Ruch'], 2);
+      // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (main.ts, produkcja jednostki).
+      const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
       const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
       const isSuper = def['Super-jednostka'] === 'TAK';
       const newUnitId = 'diffbonus_' + turn + '_' + ownerId + '_' + Math.random().toString(36).slice(2);
@@ -9466,7 +9496,12 @@ async function boot(): Promise<void> {
         name: u.typeId,
         icon: unitIconSvg(def, u.typeId),
         ruchLeft: u.ruchLeft,
-        ruchMax: normFieldVal(def['Ruch'], u.ruch),
+        // RUCH-SWIATA-TEMPO: u.ruch (nie surowy def['Ruch']) — juz przemnozone przy
+        // spawnie, inaczej pasek ruchu w prompcie scalania pokazywalby bazowa wartosc
+        // gdy pace='normalny'/'dlugi'. / EN: use u.ruch (not raw def['Ruch']) — already
+        // multiplied at spawn, otherwise the merge-prompt move bar would show the base
+        // value when pace is 'normalny'/'dlugi'.
+        ruchMax: u.ruch,
       };
     }
 
@@ -10616,6 +10651,10 @@ async function boot(): Promise<void> {
       reconcileAllWorkedTiles(cities, buildAllTerritoryNodes());
       finalizeCityFounding(c, q, r);
       seedCityOwnerDefaults(c);
+      // P-AUTO-WYZYWIENIE-BUG2: świeżo założone miasto gracza -- ustaw bezpieczny poziom
+      // Racji od razu (no-op dziś, bo default jest bezpieczny dla Ludność 1, ale spójne z
+      // pozostałymi zdarzeniami zmiany właściciela poniżej).
+      applyLiveSafeRationForCity(c.id);
       spawnPendingSameTypeRivals(q, r);
       spawnPendingForeignClusters();
       refreshFog();
@@ -11448,6 +11487,16 @@ async function boot(): Promise<void> {
         return;
       }
       const newOwner = besiegerOwnerForCity(city);
+      // NOTA B (runda 2, Evaluator): flaga zamiast wywołania applyLiveSafeRationForCity TU w
+      // miejscu -- wywołanie przenosimy PO endMapSiege (patrz niżej), żeby nie liczyć
+      // maxSafe, gdy miasto ma jeszcze `oblegane=true` (wypada wtedy z filtra
+      // `playerCities` w getMaxSafePoziomRacjiForPlayerCity i liczy się zdegenerowanym
+      // fallbackiem). / EN: flag instead of calling applyLiveSafeRationForCity here in
+      // place -- the call moves to AFTER endMapSiege below, so maxSafe is never computed
+      // while the city still has `oblegane=true` (which drops it out of the
+      // `playerCities` filter in getMaxSafePoziomRacjiForPlayerCity and falls back to a
+      // degenerate result).
+      let citySiegeOwnerChanged = false;
       if (newOwner !== null && newOwner !== city.ownerId) {
         const oldOwner = city.ownerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
@@ -11467,6 +11516,11 @@ async function boot(): Promise<void> {
         // zresetować override i zsynchronizować pola z globalnym defaultem NOWEGO
         // właściciela (nie zostać przy wartościach POPRZEDNIEGO).
         seedCityOwnerDefaults(city);
+        // P-AUTO-WYZYWIENIE-BUG2: kapitulacja głodowa może przekazać miasto graczowi --
+        // no-op dla AI (applyLiveSafeRationForCity sprawdza ownerId !== 0 na starcie).
+        // NOTA B: samo wywołanie przeniesione PO endMapSiege -- tu tylko odnotowujemy, że
+        // ta gałąź (zmiana właściciela) zaszła.
+        citySiegeOwnerChanged = true;
         city.population = Math.max(1, city.population);
         for (let i = units.length - 1; i >= 0; i--) {
           const u = units[i]!;
@@ -11496,6 +11550,11 @@ async function boot(): Promise<void> {
         showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
       }
       endMapSiege(cityId);
+      // NOTA B: applyLiveSafeRationForCity woła się TU -- PO ustaleniu finalnego stanu
+      // miasta (population fix wyżej w gałęzi przejęcia) I PO endMapSiege (city.oblegane
+      // już false, więc miasto trafia do filtra `playerCities` w
+      // getMaxSafePoziomRacjiForPlayerCity zamiast liczyć się zdegenerowanym fallbackiem).
+      if (citySiegeOwnerChanged) applyLiveSafeRationForCity(cityId);
       syncUnitsRender();
       cityRenderer.sync(cities, _cityRenderOpts());
       refreshFog();
@@ -16355,7 +16414,14 @@ async function boot(): Promise<void> {
         handleNegotiationCounter(incoming.id, payload);
         return;
       }
-      if (findOwnOutgoingNegotiation(negotiationTable, ownerId, proposal.actionId)) {
+      // R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): allowsMultipleOwnOutgoingNegotiations
+      // (diplomacy-proposals.ts) zwalnia 'handel' (UI '14') z blokady „już na stole" —
+      // kolejna propozycja tego typu ma dołączyć jako OSOBNY wpis stołu, nie zastępować
+      // poprzedniego. EN: allowsMultipleOwnOutgoingNegotiations exempts 'handel' (UI '14')
+      // from the "already on the table" guard — another proposal of this type is appended as
+      // a SEPARATE table entry instead of replacing the earlier one.
+      if (!allowsMultipleOwnOutgoingNegotiations(proposal.actionId)
+        && findOwnOutgoingNegotiation(negotiationTable, ownerId, proposal.actionId)) {
         showHintMessage('Ta umowa jest już na stole — użyj Przyjmij w Punkty wymiany', 4000);
         updateDiplomacyAudience();
         return;
@@ -16849,7 +16915,9 @@ async function boot(): Promise<void> {
         const udef = lookupUnitDef(u.typeId);
         const uCombat = unitCardCombatFor(u, udef);
         const hpMax = uCombat.hpMaxEffective;
-        const movMax = normFieldVal(udef['Ruch'], 2);
+        // RUCH-SWIATA-TEMPO: u.ruch (juz przemnozone przy spawnie), nie surowy
+        // normFieldVal(udef['Ruch'], 2) — patrz uzasadnienie przy mergeUnitRow.
+        const movMax = u.ruch;
         return {
           id: u.id,
           name: String(udef?.nazwa ?? udef?.Nazwa ?? u.typeId),
@@ -16880,7 +16948,8 @@ async function boot(): Promise<void> {
           cards,
           ...stackStatusBase,
           combat,
-          mov: normFieldVal(def['Ruch'], 2),
+          // RUCH-SWIATA-TEMPO: active.ruch (juz przemnozone), nie surowy def['Ruch'].
+          mov: active.ruch,
           rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
           hp: active.hp ?? combat.hpMaxEffective,
           actions: [],
@@ -16988,7 +17057,8 @@ async function boot(): Promise<void> {
         cards,
         ...stackStatusBase,
         combat,
-        mov: normFieldVal(def['Ruch'], 2),
+        // RUCH-SWIATA-TEMPO: active.ruch (juz przemnozone), nie surowy def['Ruch'].
+        mov: active.ruch,
         rng: normFieldVal(def['Zasi\u0119g'] ?? def['Zasieg'], 0),
         hp: active.hp ?? combat.hpMaxEffective,
         actions,
@@ -18368,7 +18438,16 @@ async function boot(): Promise<void> {
     }
 
     function perTurnMoveForUnit(u: RuntimeUnit): number {
-      return Math.max(1, normFieldVal(lookupUnitDef(u.typeId)['Ruch'], u.ruch));
+      // RUCH-SWIATA-TEMPO: preferuj u.ruch (juz przemnozone przez applyRuchSwiataPace
+      // przy spawnie) nad surowym def['Ruch'] -- inaczej planowanie trasy wieloturowej
+      // liczyloby ETA na bazowej (nieprzemnozonej) wartosci, mimo ze faktyczny ruch/ture
+      // jest wiekszy. def['Ruch'] zostaje jako fallback (jak wczesniej) na wypadek
+      // jednostki bez poprawnie ustawionego u.ruch. / EN: prefer u.ruch (already
+      // multiplied by applyRuchSwiataPace at spawn) over the raw def['Ruch'] --
+      // otherwise multi-turn march planning would estimate ETA off the base
+      // (unmultiplied) value even though the actual per-turn movement is larger.
+      // def['Ruch'] stays as a fallback (as before) for a unit without a valid u.ruch.
+      return Math.max(1, normFieldVal(u.ruch, normFieldVal(lookupUnitDef(u.typeId)['Ruch'], 2)));
     }
 
     function buildMarchFogContext(dest: PlannedMarchDest): MarchFogContext {
@@ -18950,7 +19029,8 @@ async function boot(): Promise<void> {
           grantGold('brak miejsca/jednostki, w zamian');
         } else {
           const def = lookupUnitDef(typeId);
-          const ruch = normFieldVal(def['Ruch'], 2);
+          // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (produkcja jednostki).
+          const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
           const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
           const isSuper = def['Super-jednostka'] === 'TAK';
           const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + Math.random().toString(36).slice(2);
@@ -20836,6 +20916,17 @@ async function boot(): Promise<void> {
       // alike (see allDefendersFortifiedInGarnizon in armyMerge.ts for the full
       // rationale, incl. why the predicate checks ONLY `inGarnizon`).
       const defenderLockedByGarnizon = allDefendersFortifiedInGarnizon(defRosterRef);
+      // P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca, który już RAZ
+      // wycofał się z bitwy w tej turze (dowolna jednostka rostera obrony), nie może
+      // się wycofać ponownie przy KOLEJNYM ataku na niego w tej samej turze -- musi
+      // rozstrzygnąć bitwę. Osobny powód blokady od garnizonu (defenderLockedByGarnizon)
+      // -- inny komunikat i inny stan wizualny przycisku w preBattle.ts (widoczny,
+      // ale wyszarzony, nie ukryty). / EN: a defender who already retreated ONCE this
+      // turn (any unit in the defending roster) cannot retreat again on the NEXT
+      // attack this same turn -- must resolve the battle. Separate reason from the
+      // garrison lock (defenderLockedByGarnizon) -- different message and different
+      // button visual state in preBattle.ts (visible but greyed out, not hidden).
+      const retreatExhaustedThisTurn = defRosterRef.some(u => u.retreatedThisTurn === true);
 
       const pbInfo: PreBattleInfo = {
         atakujacy: preBattleSideFromRoster(atkRosterRef, atkSideTitle, atkCivLabel),
@@ -20848,7 +20939,8 @@ async function boot(): Promise<void> {
         lokacja: placeInfo.lokacja,
         tura: turn,
         canRetreat: false,
-        defenderCanRetreat: playerDefends && !defenderLockedByGarnizon,
+        defenderCanRetreat: playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn,
+        retreatExhaustedThisTurn: playerDefends && !defenderLockedByGarnizon && retreatExhaustedThisTurn,
         warunki: cityDefenseBreakdownFor(defRosterRef, terrain),
       };
 
@@ -20984,10 +21076,17 @@ async function boot(): Promise<void> {
           // Obrona-w-głąb: powtórz WARUNEK z defenderCanRetreat (nie tylko widoczność
           // przycisku w UI) -- gdyby onCancel został kiedyś wywołany inną drogą niż
           // klik/Esc (np. test, przyszły skrót), garnizon i tak zostaje na miejscu.
-          // / EN: defense-in-depth -- repeat the SAME condition as defenderCanRetreat
-          // (not just UI button visibility) -- if onCancel is ever invoked another way
-          // than click/Esc (test, future shortcut), a garnizoned defender still can't flee.
-          if (playerDefends && !defenderLockedByGarnizon) {
+          // Analogicznie dołączony warunek !retreatExhaustedThisTurn -- P-WYCOFANIE-
+          // JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca, który już wycofał się w tej
+          // turze, nie może się wycofać drugi raz, nawet gdyby onCancel został
+          // wywołany mimo wyszarzonego przycisku. / EN: defense-in-depth -- repeat the
+          // SAME condition as defenderCanRetreat (not just UI button visibility) -- if
+          // onCancel is ever invoked another way than click/Esc (test, future
+          // shortcut), a garnizoned defender still can't flee. Same for
+          // !retreatExhaustedThisTurn -- a defender who already retreated this turn
+          // can't retreat a second time even if onCancel fires despite the greyed-out
+          // button.
+          if (playerDefends && !defenderLockedByGarnizon && !retreatExhaustedThisTurn) {
             applyDefenderPreBattleRetreat({
               units,
               battleQ: battleHex.q,
@@ -20997,6 +21096,12 @@ async function boot(): Promise<void> {
               isPassableHex: mapHexPassableForUnit,
               isUnitAt: isOccupiedHex,
             });
+            // P-WYCOFANIE-JEDNORAZOWE-TURA: oznacz cały roster obrony jako "wycofany
+            // w tej turze" -- blokuje kolejne wycofanie przy następnym ataku na te
+            // jednostki w tej samej turze (patrz RuntimeUnit.retreatedThisTurn).
+            // / EN: mark the whole defending roster "retreated this turn" -- blocks a
+            // further retreat on the next attack against these units this same turn.
+            for (const u of defRosterRef) u.retreatedThisTurn = true;
             showHintMessage('Wycofano się z bitwy.', 3000);
           }
           finishIncomingBattleUi();
@@ -21357,6 +21462,7 @@ async function boot(): Promise<void> {
         buildingCostPace: player.buildingCostPace,
         kosztJednostekPace: player.kosztJednostekPace,
         wzrostLudnosciPace: player.wzrostLudnosciPace,
+        ruchSwiataPace: player.ruchSwiataPace,
         civType: aiOwnerCivMap.get(ownerId) ?? 'grecy',
         civBonusy: [],
         rakietaWystrzelona: false,
@@ -21579,6 +21685,9 @@ async function boot(): Promise<void> {
         // B2 (Evaluator RUNDA 1: FAIL): dyplomatyczne wchłonięcie musi zresetować
         // override i zsynchronizować pola z globalnym defaultem NOWEGO właściciela.
         seedCityOwnerDefaults(city);
+        // P-AUTO-WYZYWIENIE-BUG2: wchłonięcie może dotyczyć gracza (annexerId===0) --
+        // no-op dla AI.
+        applyLiveSafeRationForCity(city.id);
       }
       cityRenderer.sync(cities, _cityRenderOpts());
       syncUnitsRender();
@@ -21933,7 +22042,16 @@ async function boot(): Promise<void> {
         // B2 (Evaluator RUNDA 1: FAIL): zdobycie miasta w bitwie musi zresetować
         // override i zsynchronizować okolicaFocus/budowaFocus/budowaTryb/podzialPracy
         // z globalnym defaultem NOWEGO właściciela (nie zostać przy wartościach starego).
-        { civKeyForOwner: civKeyForOwnerId, onOwnerChanged: seedCityOwnerDefaults },
+        {
+          civKeyForOwner: civKeyForOwnerId,
+          // P-AUTO-WYZYWIENIE-BUG2: podbój w bitwie może dotyczyć gracza (nowy właściciel
+          // atkOwner===0) -- applyLiveSafeRationForCity no-opuje dla AI, więc wołanie tu
+          // jest bezpieczne bez dodatkowego warunku.
+          onOwnerChanged: (c: City): void => {
+            seedCityOwnerDefaults(c);
+            applyLiveSafeRationForCity(c.id);
+          },
+        },
       );
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
       // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
@@ -22634,6 +22752,7 @@ async function boot(): Promise<void> {
           buildingCostPace: player.buildingCostPace,
           kosztJednostekPace: player.kosztJednostekPace,
           wzrostLudnosciPace: player.wzrostLudnosciPace,
+          ruchSwiataPace: player.ruchSwiataPace,
         },
         cityProd:       cityProdSave,
         cityBuilt:      cityBuiltSave,
@@ -23220,6 +23339,11 @@ async function boot(): Promise<void> {
           if (u.oblegaCityId) u.ruchLeft = 0;
           // Mechanizm "Zastąp" (ZASTAP-JEDNOSTKI-PLAN.md): raz na turę na jednostkę.
           if (u.replaceUsedThisTurn) u.replaceUsedThisTurn = false;
+          // P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): reset blokady ponownego
+          // wycofania obrońcy — na nową turę znów może się wycofać raz.
+          // / EN: reset the defender's "already retreated" lock — a new turn grants
+          // one fresh retreat again.
+          if (u.retreatedThisTurn) u.retreatedThisTurn = false;
         }
         clearPlayerUnitSelectionStateOnly();
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
@@ -24532,7 +24656,8 @@ async function boot(): Promise<void> {
               cityProd.set(cid, prodFinal);
               for (const rec of recResult.completed) {
                 const def = lookupUnitDef(rec.id);
-                const ruch = normFieldVal(def['Ruch'], 2);
+                // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (produkcja jednostki).
+                const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
                 const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
                 const isSuper = def['Super-jednostka'] === 'TAK';
                 const newUnitId = 'rec_' + turn + '_' + cid + '_' + Math.random().toString(36).slice(2);
@@ -24595,6 +24720,22 @@ async function boot(): Promise<void> {
                 });
               }
               const efParamsGrowth = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+              // NOTA A (runda 2, Evaluator P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT):
+              // zbieraj cityId rosnących miast zamiast wołać applyLiveSafeRationForCity
+              // PER-MIASTO w trakcie tej pętli -- getMaxSafePoziomRacjiForPlayerCity liczy
+              // previewCityEconomy CAŁEGO imperium gracza, więc wywołanie dla miasta A W
+              // TRAKCIE pętli widziałoby jeszcze STARE (sprzed-wzrostu) populacje miast B..N,
+              // zaniżając ich koszt Racji i zawyżając maxSafe dla A. Zbiorcze przeliczenie
+              // (patrz pętla PO wywołaniu poniżej) startuje dopiero, gdy WSZYSTKIE miasta w
+              // tej turze mają już finalną populację.
+              // / EN: collect growing cities' cityId instead of calling
+              // applyLiveSafeRationForCity PER-CITY during this loop --
+              // getMaxSafePoziomRacjiForPlayerCity computes previewCityEconomy for the
+              // player's WHOLE empire, so calling it for city A DURING the loop would still
+              // see cities B..N's STALE (pre-growth) population, understating their ration
+              // cost and overstating A's maxSafe. The batched recompute (loop right after the
+              // call below) only starts once EVERY city has its final population this turn.
+              const grownCityIdsForLiveRation = new Set<string>();
               applyPostCentralPopulationGrowth({
                 cities,
                 econ,
@@ -24611,7 +24752,17 @@ async function boot(): Promise<void> {
                 ownerEraByOwner: new Map(
                   [...new Set(cities.map(c => c.ownerId))].map(oid => [oid, empireEpochForOwner(oid)]),
                 ),
+                // P-AUTO-WYZYWIENIE-BUG2 (Maciej ECHO A): tylko ZBIERZ cityId tu -- realne
+                // przeliczenie (applyLiveSafeRationForCity) czeka na koniec CAŁEJ pętli
+                // wzrostu (patrz NOTA A wyżej i pętla poniżej).
+                onCityPopulationChanged: cityId => grownCityIdsForLiveRation.add(cityId),
               });
+              // NOTA A: zbiorcze przeliczenie PO zakończeniu applyPostCentralPopulationGrowth
+              // -- applyLiveSafeRationForCity no-opuje sama dla miast AI (city.ownerId !== 0),
+              // więc wołanie tu jest bezpieczne dla wszystkich właścicieli zebranych w Set.
+              for (const grownCityId of grownCityIdsForLiveRation) {
+                applyLiveSafeRationForCity(grownCityId);
+              }
             }
             // ZADANIE 1 (Maciej 2026-07-23): upkeep Pracy civ-wide za ulepszenia surowcowe --
             // odjęcie RAZ na turę (nie per-miasto) z globalnej puli produkcji, PO tym jak
@@ -26424,7 +26575,10 @@ async function boot(): Promise<void> {
             // Instantiate spawned barbarian units.
             for (const spawn of [...tickRes.spawns, ...seaRaiderSpawns]) {
               const def = (data.units as any[]).find((u: any) => u['Jednostka'] === spawn.typeId);
-              const ruch = def ? normFieldVal(def['Ruch'], 2) : 2;
+              // RUCH-SWIATA-TEMPO: globalne ustawienie mapy/gry, nie per-owner — te same
+              // punkty ruchu dla barbarzyncow co dla gracza/AI (patrz ruch-swiata-tempo.ts).
+              const ruchBazowy = def ? normFieldVal(def['Ruch'], 2) : 2;
+              const ruch = applyRuchSwiataPace(ruchBazowy, player.ruchSwiataPace ?? 'krotki');
               const newUnit: BarbUnit = {
                 id: 'barb_' + turn + '_' + spawn.campId + '_' + Math.random().toString(36).slice(2),
                 ownerId: BARBARIAN_OWNER_ID,
@@ -26497,7 +26651,9 @@ async function boot(): Promise<void> {
               }
               for (const gspawn of garrisonTick.spawns) {
                 const gdef = (data.units as any[]).find((u: any) => u['Jednostka'] === gspawn.typeId);
-                const gruch = gdef ? normFieldVal(gdef['Ruch'], 2) : 2;
+                // RUCH-SWIATA-TEMPO: patrz komentarz przy spawnie barbarzyncow z obozu (wyzej).
+                const gruchBazowy = gdef ? normFieldVal(gdef['Ruch'], 2) : 2;
+                const gruch = applyRuchSwiataPace(gruchBazowy, player.ruchSwiataPace ?? 'krotki');
                 const newGarrisonUnit: BarbUnit = {
                   id: 'barbcity_' + turn + '_' + gspawn.cityId + '_' + Math.random().toString(36).slice(2),
                   ownerId: BARBARIAN_OWNER_ID,
@@ -27181,6 +27337,16 @@ async function boot(): Promise<void> {
         const { dist } = camCtrl.getFocusState();
         const { minDist, maxDist } = camCtrl.getDistLimits();
         setZoomLod(dist, minDist, maxDist);
+        // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — plakietka miasta ma stałą wysokość w świecie
+        // (worldH 0,52 j.św.), więc przy zbliżeniu kamery jej tekstura jest rozciągana i
+        // rozmywa się. `setBadgeZoomLod` to samo porównanie poziomu — `true` wraca WYŁĄCZNIE
+        // na progu odległości, więc pętla renderu płaci tu jedno wywołanie na klatkę, a
+        // przemalowanie plakietek (droższe: `getCityGrowth` per miasto gracza) leci dopiero
+        // przy realnej zmianie poziomu. Ten sam wzorzec, co `setZoomLod` linijkę wyżej.
+        // / EN: per-frame comparison, repaint only when the LOD level actually changes.
+        if (cityRenderer.setBadgeZoomLod(dist)) {
+          cityRenderer.syncStatChips(cities, _cityRenderOpts());
+        }
       }
 
       if (ghostChipHex && buildModeOpen && chipOverCanvas) {
@@ -27334,6 +27500,7 @@ async function boot(): Promise<void> {
       player.buildingCostPace = params.advanced?.buildingCostPace ?? 'niski';
       player.kosztJednostekPace = params.advanced?.kosztJednostekPace ?? 'niski';
       player.wzrostLudnosciPace = params.advanced?.wzrostLudnosciPace ?? 'wysoki';
+      player.ruchSwiataPace = params.advanced?.ruchSwiataPace ?? 'krotki';
       _menuAdvanced = params.advanced ? { ...params.advanced } : undefined;
       _currentRenderOptions = mapRenderOptionsFromParams(params);
       const mqTier = mapQualityTierFromParams(params);
@@ -27343,6 +27510,7 @@ async function boot(): Promise<void> {
         '· kosztJednostekPace =', player.kosztJednostekPace,
         '· buildingCostPace =', player.buildingCostPace,
         '· wzrostLudnosciPace =', player.wzrostLudnosciPace,
+        '· ruchSwiataPace =', player.ruchSwiataPace,
         '· epoka=', player.era, '(' + (params.epochId || 'kamien') + ')',
         '· typSwiata=', _menuTypSwiata, '(' + (params.worldType || '') + ')',
         '· jakoscMapy=', qualityTierToLabel(mqTier),
@@ -28953,6 +29121,10 @@ async function boot(): Promise<void> {
         player.wzrostLudnosciPace = saved.gracz.wzrostLudnosciPace
           ?? (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.wzrostLudnosciPace
           ?? 'wysoki';
+        // RUCH-SWIATA-TEMPO: stary zapis bez pola -> 'krotki' (x1, zero zmiany zachowania).
+        player.ruchSwiataPace = saved.gracz.ruchSwiataPace
+          ?? (saved.meta?.newGameParams as NewGameParams | undefined)?.advanced?.ruchSwiataPace
+          ?? 'krotki';
       }
       overlayDepositEra = player.era;
       cityProd.clear();

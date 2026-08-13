@@ -54,6 +54,7 @@ import type { ProposalPayload } from '../game/diplomacy-proposals';
 import {
   audienceActionBarLockNote,
   audienceActionStatusNote,
+  uiActionAllowsMultipleOwnOnTable,
 } from '../game/diplomacy-audience-actions';
 
 export interface AudienceAction {
@@ -346,7 +347,16 @@ function findOwnOutgoingNegotiationRow(
   );
 }
 
-/** Blokuje duplikat na stole: ich wpis → kontroferta; nasz → ignoruj klik. */
+/**
+ * Blokuje duplikat na stole: ich wpis → kontroferta; nasz → ignoruj klik.
+ * R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): dla „Umowa wymiany surowców" (aid '14') NIE
+ * blokuj ponownego kliknięcia z powodu istniejącego NASZEGO wpisu tego samego typu — kolejny
+ * klik ma otworzyć NOWY, pusty formularz (kolejną instancję), nie zignorować klik. Zachowanie
+ * dla przychodzącej (AI) oferty tego samego typu jest bez zmian — nadal idzie do kontroferty.
+ * EN: for the resource-exchange deal (aid '14'), a re-click must NOT be swallowed just because
+ * we already have our own row of that type on the table — it opens a fresh, empty add form
+ * (another instance) instead. Incoming (AI) offers of the same type keep going to counter-offer.
+ */
 function blockDuplicateNegotiationClick(
   st: DiplomacyAudienceState,
   aid: string,
@@ -359,6 +369,7 @@ function blockDuplicateNegotiationClick(
     }
     return true;
   }
+  if (uiActionAllowsMultipleOwnOnTable(aid)) return false;
   return findOwnOutgoingNegotiationRow(st, aid) != null;
 }
 
@@ -1503,7 +1514,15 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
   const ownPendingCount = (st.pendingNegotiations ?? []).filter(r => r.direction === 'own').length;
   const items = visible.map(a => {
     const onTable = ownOnTable.has(a.id);
-    const isLocked = a.locked || !a.enabled || a.active === true || onTable;
+    // R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): uiActionAllowsMultipleOwnOnTable —
+    // „Umowa wymiany surowców" (id '14') może trafić na stół wielokrotnie w jednej negocjacji,
+    // kilka osobnych wierszy sumujących się do wspólnego bilansu PW. Dla WSZYSTKICH innych
+    // typów `onTable` nadal blokuje ponowny wybór.
+    // EN: uiActionAllowsMultipleOwnOnTable — the resource-exchange deal (id '14') may be
+    // placed on the table multiple times per negotiation, summing into one shared PW balance.
+    // All other deal types stay blocked by `onTable` as before.
+    const onTableBlocks = onTable && !uiActionAllowsMultipleOwnOnTable(a.id);
+    const isLocked = a.locked || !a.enabled || a.active === true || onTableBlocks;
     let cls = isLocked ? 'da-deal locked' : 'da-deal';
     if (a.active) cls += ' active';
     if (onTable) cls += ' on-table';

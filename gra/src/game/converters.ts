@@ -83,10 +83,19 @@ export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
   { id: 'garncarnia',             inputs: { glina: 1, drewno: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc',     throughputFallback: 50 },
   // 'mielerz' USUNIĘTY (Maciej 2026-07-23): Paliwo usunięte całkowicie; konwertery biorą drewno 1:1.
   { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
-  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
-  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
+  // R-CYNA-BRAZ (Maciej 2026-08-13): trzeci input konwertera Brązu — Ruda cyny, proporcja
+  // 1 Ruda cyny / 10 cykli (0.1/cykl). Klucz `ruda_cyny` — TA SAMA nazwa co magazyn państwa
+  // zasilany przez Kopalnię cyny (turn-economy.ts creditTerritory('ruda_cyny', ...)) —
+  // ŚWIADOMIE NIE `cyna` (spec używał tej nazwy skrótowo w prozie) — inny klucz oznaczałby,
+  // że wydobyta Ruda cyny nigdy nie trafiałaby do puli, którą ten konwerter czyta, i Brąz
+  // przestałby się produkować całkowicie (patrz runConverter: limitWejscia = floor(have(k)/perCykl),
+  // have('cyna') zawsze 0 gdyby nic tego pola nie zasilało). Cyna NICZEGO nie zastępuje —
+  // to DODATKOWY wymóg obok ruda+drewno (brak Cyny w magazynie → throughput=0, mimo dostępnej
+  // Miedzi/Drewna — patrz cyna-surowiec-test.cjs).
+  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
+  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
   { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 25 },
-  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
+  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1, ruda_cyny: 0.1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 25 },
   { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 25 },
   { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 25 },
 ];

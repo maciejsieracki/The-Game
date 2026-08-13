@@ -116,6 +116,7 @@ const TERRITORY_RESOURCE_LABEL: Record<TerritoryResourceKey, string> = {
   glina: 'Glina',
   ruda: 'Ruda',
   ruda_zelaza: 'Ruda żelaza',
+  ruda_cyny: 'Ruda cyny',
   sol: 'Sól',
   zloto: 'Złoto',
   kon: 'Koń',

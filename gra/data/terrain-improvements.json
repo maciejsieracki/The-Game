@@ -327,6 +327,23 @@
     "odblokowuje": "Odlewnia żelaza (budynek miejski)",
     "uwagi": "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
   },
+  "kopalnia_cyny": {
+    "nazwa": "Kopalnia cyny",
+    "epoka": 2,
+    "bonus": {
+      "praca": 2,
+      "handel": 5
+    },
+    "surowiecOdblokowany": "ruda_cyny",
+    "surowiecOdblokowany_uwaga": "Ruda cyny (Odlewnia brązu — TRZECI input konwertera Brązu obok ruda+drewno). Ta sama stawka co Kopalnia miedzi/żelaza dziś (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13): 20/turę.",
+    "surowiec_ilosc_tura": 20,
+    "teren": "Wzgórza, Góry, złoże cyny (hex.zloze=cyna)",
+    "warunek": "ruda cyny → magazyn (Odlewnia brązu/żelaza/Wielka odlewnia)",
+    "koszt_praca": 22,
+    "tech": "Brązownictwo",
+    "odblokowuje": "",
+    "uwagi": "Maciej 2026-08-13: nowy surowiec Ruda cyny — GWARANTOWANY każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), złoże na Wzgórzach LUB Górach jak złoto (rzadkość = miedź/5). Reużywa technologii Brązownictwo, jak dziś Kopalnia miedzi."
+  },
   "kopalnia_zlota": {
     "nazwa": "Kopalnia złota",
     "epoka": 2,

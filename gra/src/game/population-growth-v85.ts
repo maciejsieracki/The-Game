@@ -354,6 +354,21 @@ export interface PostCentralGrowthOpts {
    * zmiany zachowania, wsteczna kompatybilność).
    */
   citizenGrowthPctByCityId?: ReadonlyMap<string, number>;
+  /**
+   * P-AUTO-WYZYWIENIE-BUG2 (Maciej ECHO A): wołany PO faktycznym przyroście populacji
+   * TEGO miasta w tej turze (nie tylko gdy zmienia się procent wzrostu) -- domyka lukę,
+   * w której `applyLiveSafeRationForCity` (main.ts) przeliczał bezpieczny poziom Racji
+   * RAZ, PRZED tym przyrostem, więc poziom uznany za bezpieczny w turze N stawał się
+   * deficytowy w N+1 (koszt Racji skaluje się z populacją). Callback zamiast importu
+   * main.ts -- population-growth-v85.ts nie zna `applyLiveSafeRationForCity` (uniknięcie
+   * cyklicznego importu main.ts <-> population-growth-v85.ts).
+   * / EN: called AFTER this city's population actually grew this turn (not merely when
+   * the growth percent is computed) -- closes the gap where `applyLiveSafeRationForCity`
+   * (main.ts) validated the safe ration level ONCE, BEFORE this growth, so a level judged
+   * safe in turn N became a deficit in N+1 (ration cost scales with population). Callback
+   * instead of importing main.ts -- avoids a circular import.
+   */
+  onCityPopulationChanged?: (cityId: string) => void;
 }
 
 /** Wzrost ułamkowy + głód — po centrali (nakarmione z fedByCityId). */
@@ -362,6 +377,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
     cities, econ, efResult, map, territoryNodes, econParams, rationParams,
     ownerCivByOwnerId, spichlerzByCity, happinessByCityId, builtByCity,
     ownerEraByOwner, civBonusyByOwner, citizenGrowthPctByCityId,
+    onCityPopulationChanged,
   } = opts;
 
   for (const ownerTick of efResult.perOwner) {
@@ -431,6 +447,10 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
         const ownerEra = ownerEraByOwner?.get(city.ownerId) ?? 1;
         const mpMults = civManpowerMults(civBonusyByOwner?.get(city.ownerId));
         city.manpower = refreshManpowerAfterPopChange(city, ownerEra, before, mpMults.maxMult);
+        // P-AUTO-WYZYWIENIE-BUG2: populacja TEGO miasta faktycznie się zmieniła w tej
+        // turze -- przelicz bezpieczny poziom Racji NA ŻYWO, PO przyroście (patrz komentarz
+        // przy `onCityPopulationChanged` w PostCentralGrowthOpts wyżej).
+        onCityPopulationChanged?.(city.id);
       }
 
       if (growth.wzrost) econ.growth += 1;

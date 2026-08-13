@@ -77,6 +77,7 @@ export const STOCK_RESOURCE_LABEL: Readonly<Record<string, string>> = {
   glina: 'Glina',
   ruda: 'Ruda',
   ruda_zelaza: 'Ruda żelaza',
+  ruda_cyny: 'Ruda cyny',
   cegla: 'Cegła',
   ceramika: 'Ceramika',
   braz: 'Brąz',
@@ -92,7 +93,7 @@ export const STOCK_RESOURCE_LABEL: Readonly<Record<string, string>> = {
  * Klucze magazynu państwa (City.surowce, suma civ-wide) — PYTANIE-84 R4/R6/R9/R10, U-20.
  */
 export const EMPIRE_STOCK_RESOURCE_KEYS: readonly string[] = [
-  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza',
+  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'ruda_cyny',
   'cegla', 'ceramika', 'braz', 'zelazo', 'stal',
   'sol', 'zloto', 'wegiel', 'kon',
 ] as const;

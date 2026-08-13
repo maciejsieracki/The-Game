@@ -1,5 +1,5 @@
 {
-  "note": "Etykieta zloza/surowca gry (resource-access.ts: hexDepositDisplayLabel / SUROWIEC_KEY_LABEL) → plik res-*.svg w resources-map/. Dopasowanie w brandAssets.mapResourceIconSvg jest case-insensitive: najpierw exact, potem substring z najdluzszym dopasowanym kluczem (jak resourceBrandKey w cityPanel), wiec klucze polskie z diakrytykami i warianty (np. 'Ruda zelaza', 'Bydlo (krowa/wol)') trafiaja poprawnie. Design v4 (2026-07-24): rudy rozdzielone na res-copper-ore (goly 'ruda' = Ruda miedzi, main.ts:1728 id:'ruda') i res-iron-ore ('ruda zelaza'/'ruda_zelaza' — dluzszy klucz wygrywa substring nad golym 'ruda'); braz/zelazo/stal/cegla/ceramika maja teraz wlasne ikony (wczesniej fallback na res-iron/res-clay).",
+  "note": "Etykieta zloza/surowca gry (resource-access.ts: hexDepositDisplayLabel / SUROWIEC_KEY_LABEL) → plik res-*.svg w resources-map/. Dopasowanie w brandAssets.mapResourceIconSvg jest case-insensitive: najpierw exact, potem substring z najdluzszym dopasowanym kluczem (jak resourceBrandKey w cityPanel), wiec klucze polskie z diakrytykami i warianty (np. 'Ruda zelaza', 'Bydlo (krowa/wol)') trafiaja poprawnie. Design v4 (2026-07-24): rudy rozdzielone na res-copper-ore (goly 'ruda' = Ruda miedzi, main.ts:1728 id:'ruda') i res-iron-ore ('ruda zelaza'/'ruda_zelaza' — dluzszy klucz wygrywa substring nad golym 'ruda'); braz/zelazo/stal/cegla/ceramika maja teraz wlasne ikony (wczesniej fallback na res-iron/res-clay). R-SUROWIEC-CYNA-DO-BRAZU runda 2 (2026-08-13): 'ruda cyny'/'ruda_cyny' dodane jawnie -> res-iron-ore (PLACEHOLDER, brak dedykowanej ikony cyny w repo -- podmienic gdy Design dostarczy wlasna grafike; bez tego wpisu substring 'ruda' fallowalby na res-copper-ore/Ruda miedzi). / EN: 'ruda cyny'/'ruda_cyny' added explicitly -> res-iron-ore placeholder (no dedicated tin icon in repo yet; swap when Design delivers one -- without this entry it would silently fall back to the copper-ore icon via substring match).",
   "map": {
     "złoto": "res-gold",
     "zloto": "res-gold",
@@ -12,6 +12,8 @@
     "ruda_miedzi": "res-copper-ore",
     "miedź": "res-copper-ore",
     "miedz": "res-copper-ore",
+    "ruda cyny": "res-iron-ore",
+    "ruda_cyny": "res-iron-ore",
     "ruda": "res-copper-ore",
     "stal": "res-steel",
     "brąz": "res-bronze",

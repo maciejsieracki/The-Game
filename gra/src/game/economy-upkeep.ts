@@ -401,7 +401,7 @@ export function magazynEraMultiplier(era: number): number {
  * osobny model per-miasto, poza zakresem tej skali.
  */
 export const OWNER_CAPPED_RESOURCE_KEYS = [
-  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza',
+  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'ruda_cyny',
   'cegla', 'ceramika', 'braz', 'zelazo', 'stal',
   'sol', 'zloto', 'kon',
 ] as const;

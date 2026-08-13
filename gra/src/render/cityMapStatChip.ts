@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import type { ProductionKind } from '../game/production';
 import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmblem';
+import { cityBadgeLodTextureScale } from './zoomLod';
 
 /** 0 = brak tarczy · 1 = palisada (szara) · 2 = mury lub cytadela (złota). */
 export type CityMapDefenseTier = 0 | 1 | 2;
@@ -61,6 +62,19 @@ export interface CityMapBadgeInput {
    * PARYTET AI: identycznie dla stolicy gracza i każdej stolicy AI.
    */
   isCapital?: boolean;
+  /**
+   * BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — poziom LOD plakietki z odległości kamery
+   * (`cityBadgeLodLevelForDist`, render/zoomLod.ts): 0 = dzisiejsza rozdzielczość kanwy,
+   * 1 = ×2 pikseli, 2 = ×3 pikseli. Brak pola = 0, więc każdy wywołujący, który o LOD nie
+   * wie (podglądy w `tools/`, legacy `drawCityMapBadgeCanvasLegacy`), dostaje DOKŁADNIE
+   * dzisiejszą teksturę.
+   * / EN: camera-distance badge LOD — 0 keeps today's canvas resolution byte for byte.
+   *
+   * Wielkość plakietki w ŚWIECIE się przez to nie zmienia: rosną OBA wymiary kanwy tym
+   * samym mnożnikiem, a `makeCityMapBadgeSprite` liczy `aspect` z ilorazu wymiarów.
+   * / EN: both canvas dimensions scale together, so the sprite's world size is unchanged.
+   */
+  lodLevel?: number;
 }
 
 const DEFENSE_COLORS: Record<1 | 2, { fill: string; stroke: string }> = {
@@ -92,6 +106,32 @@ const BADGE_MAX_DPR = 3;
 function badgePixelRatio(): number {
   const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
   return Math.min(Math.max(Number.isFinite(dpr) && dpr > 0 ? dpr : 1, 1), BADGE_MAX_DPR);
+}
+
+/**
+ * BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — twardy sufit na ŁĄCZNY mnożnik kanwy (DPI × LOD).
+ * Dwa niezależne mnożniki mnożą się (dpr 3 × LOD ×3 = 9), a najszersza możliwa pigułka ma
+ * ~427 px CSS (nazwa przycięta do 200 px + wszystkie sloty + wiersz hover), więc bez sufitu
+ * kanwa sięgnęłaby 3843 px — ponad gwarantowane w WebGL2 minimum MAX_TEXTURE_SIZE = 2048.
+ * Przy suficie 4 najszersza pigułka ma 1708 px i mieści się z zapasem na każdym sprzęcie.
+ * / EN: DPI and zoom multipliers compound; this ceiling keeps the widest badge under the
+ * 2048 px WebGL2 minimum guaranteed texture size (427 × 4 = 1708).
+ *
+ * Sufit NIE dotyka poziomu 0: `min(dpr, 4)` = `dpr`, bo `dpr` jest już przycięte do 3.
+ * / EN: at level 0 the ceiling is inert — today's texture stays byte-identical.
+ */
+const BADGE_MAX_TOTAL_SCALE = 4;
+
+/**
+ * Gęstość pikseli kanwy pigułki = DPI ekranu × mnożnik LOD z odległości kamery.
+ * To DWA NIEZALEŻNE powody, dla których tekstura potrzebuje więcej pikseli: `badgePixelRatio()`
+ * odpowiada za gęstość ekranu (fix z 2026-08-08), a `cityBadgeLodTextureScale()` za
+ * powiększenie przez zbliżenie kamery — żaden z nich nie zastępuje drugiego.
+ * / EN: screen DPI and camera zoom are independent reasons for more texels; neither
+ * substitutes for the other.
+ */
+function badgeCanvasScale(lodLevel?: number): number {
+  return Math.min(badgePixelRatio() * cityBadgeLodTextureScale(lodLevel ?? 0), BADGE_MAX_TOTAL_SCALE);
 }
 
 // --- MAP-UX-MARKER-Q1 = C — marker stolicy (obwódka + korona) --------------------
@@ -742,10 +782,15 @@ function paintCityMapBadgeOntoCanvas(
   );
   const H = baseH + (hasHoverDetail ? HOVER_ROW_H : 0);
 
-  // BUG-ETYKIETA-MIASTA-ROZMYTA: kanwa w pikselach fizycznych (W×dpr, H×dpr), rysowanie
+  // BUG-ETYKIETA-MIASTA-ROZMYTA: kanwa w pikselach fizycznych (W×skala, H×skala), rysowanie
   // dalej w px CSS dzięki przeskalowaniu kontekstu. Sprite liczy aspect z img.width/img.height,
   // a oba wymiary rosną tym samym mnożnikiem → wielkość plakietki w świecie bez zmian.
-  const dpr = badgePixelRatio();
+  // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM: `badgeCanvasScale` dokłada do gęstości DPI mnożnik LOD
+  // z odległości kamery. Cała GEOMETRIA niżej i wszystkie fonty zostają w px CSS — rośnie
+  // wyłącznie rozdzielczość rasteryzacji, więc układ pigułki jest co do piksela ten sam,
+  // a litery są rysowane ostrzej. Powiększanie fontu byłoby błędem: zmieniłoby układ.
+  // / EN: the LOD multiplier only raises rasterization density; layout stays in CSS px.
+  const dpr = badgeCanvasScale(input.lodLevel);
   canvas.width = Math.round(W * dpr);
   canvas.height = Math.round(H * dpr);
   const ctx = canvas.getContext('2d')!;
@@ -887,6 +932,15 @@ export function cityMapBadgeKey(
   const era = a.era != null
     ? `e${Math.max(1, Math.round(a.era) || 1)}`
     : 'e-';
+  // BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — poziom LOD w kluczu, bo to on decyduje o LICZBIE
+  // PIKSELI kanwy. Bez tego segmentu przejście progu odległości trafiałoby w teksturę
+  // z cache narysowaną w starej rozdzielczości i plakietka zostałaby rozmyta mimo zmiany
+  // poziomu (dokładnie ta sama klasa błędu, dla której do klucza weszły `hoverExpanded`
+  // i `isCapital`).
+  // ⚠️ Segment `l…` MUSI zostać OSTATNI — `disposeCityMapBadgeTexturesForOtherLod()`
+  // rozpoznaje poziom po SUFIKSIE klucza. / EN: the `l…` segment must stay last — the
+  // purge helper matches it by key suffix.
+  const lod = `l${cityBadgeLodSegment(a.lodLevel)}`;
   return [
     (a.cityName || '').trim(),
     pop,
@@ -899,7 +953,43 @@ export function cityMapBadgeKey(
     cs,
     era,
     cap,
+    lod,
   ].join('|');
+}
+
+/** Normalizacja poziomu LOD do segmentu klucza (brak / spoza zakresu → 0). */
+function cityBadgeLodSegment(lodLevel?: number): number {
+  return lodLevel === 1 || lodLevel === 2 ? lodLevel : 0;
+}
+
+/**
+ * BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM — zwalnia z cache tekstury narysowane w INNYM poziomie
+ * LOD niż podany. Bez tego każde przejście progu zoomu zostawiałoby w pamięci komplet
+ * tekstur w poprzedniej rozdzielczości NA STAŁE (cache żyje do `dispose()`), więc kilka
+ * przybliżeń i oddaleń mnożyłoby zajętość VRAM zamiast ją przenosić — a sedno tego
+ * podejścia jest właśnie takie, że koszt płacą WYŁĄCZNIE plakietki oglądane z bliska.
+ * / EN: frees textures painted at a different LOD, so zooming in and out MOVES the VRAM
+ * cost instead of accumulating it.
+ *
+ * ⚠️ Wolno wołać DOPIERO po pełnym przejściu po wszystkich miastach (`syncStatChips`),
+ * gdy każdy żywy sprite ma już teksturę bieżącego poziomu — inaczej zwolniłaby teksturę
+ * wciąż podpiętą do materiału. / EN: call only after every live sprite has been re-keyed.
+ *
+ * @returns liczba zwolnionych tekstur (do asercji w bramce).
+ */
+export function disposeCityMapBadgeTexturesForOtherLod(
+  cache: Map<string, THREE.CanvasTexture>,
+  lodLevel: number,
+): number {
+  const keep = `|l${cityBadgeLodSegment(lodLevel)}`;
+  let freed = 0;
+  for (const [key, tex] of [...cache]) {
+    if (key.endsWith(keep)) continue;
+    tex.dispose();
+    cache.delete(key);
+    freed++;
+  }
+  return freed;
 }
 
 /** @deprecated alias — używaj cityMapBadgeKey */

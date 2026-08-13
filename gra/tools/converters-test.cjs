@@ -77,10 +77,13 @@ r = C.runConverter(odlewniaZelZelazo, { ruda_zelaza: 2, drewno: 2 }, 2, 50);
 eq(r.produced, 2, 'odlewnia_zelaza__zelazo: 2 zelazo z ruda_zelaza');
 
 // Odlewnia zelaza: dual output (braz + zelazo rownolegle)
+// R-CYNA-BRAZ (Maciej 2026-08-13): odlewnia_zelaza__braz ma teraz TRZECI input ruda_cyny
+// (0.1/cykl) -- ruda_cyny: 1 wystarcza z zapasem na 2 cykle (limit realny = ruda/drewno, jak
+// przed zmianą; asercje produced=2 zostają identyczne).
 const dualRecipes = [odlewniaZelBraz, odlewniaZelZelazo];
 const dual = C.runConverters(
   dualRecipes,
-  { ruda: 3, ruda_zelaza: 3, drewno: 6 },
+  { ruda: 3, ruda_zelaza: 3, drewno: 6, ruda_cyny: 1 },
   { odlewnia_zelaza__braz: 2, odlewnia_zelaza__zelazo: 2 },
   () => 50,
 );

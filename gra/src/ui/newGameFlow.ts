@@ -50,6 +50,7 @@ import { buildStartPreview, startPreviewSummaryRows, type StartPreview } from '.
 import type { BuildingCostPace } from '../game/building-cost-tempo';
 import type { KosztJednostekPace } from '../game/unit-cost-tempo';
 import type { WzrostLudnosciPace } from '../game/population-growth-tempo';
+import type { RuchSwiataPace } from '../game/ruch-swiata-tempo';
 import { civIconSvg, epochIconSvg, newGameIntroEmblemSvg, settingIconSvg } from './icons/brandAssets';
 import heroIntroUrl from './assets/hero/hero-intro.png?url';
 
@@ -134,6 +135,11 @@ export interface NewGameAdvancedOptions {
   kosztJednostekPace: KosztJednostekPace;
   /** Wzrost ludnosci: wysoki x1 / normalny x2 / wolny x4 (bazowy prog = wysoki). */
   wzrostLudnosciPace: WzrostLudnosciPace;
+  /**
+   * Zasieg ruchu jednostek NA MAPIE SWIATA: krotki x1 (bez zmian) / normalny x3 /
+   * dlugi x6. Dotyczy WYŁĄCZNIE pola "Ruch" (mapa świata) — NIE "Ruch w bitwie".
+   */
+  ruchSwiataPace: RuchSwiataPace;
   /** Procent lądu (20–80); reszta morze. */
   landFractionPercent: LandFractionPercent;
   /** Gdy false — przy zmianie typu świata ustaw domyślny udział lądu. */
@@ -156,6 +162,7 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   buildingCostPace: 'niski',
   kosztJednostekPace: 'niski',
   wzrostLudnosciPace: 'wysoki',
+  ruchSwiataPace: 'krotki',
   landFractionPercent: 30,
   landFractionCustom: false,
   cityStateDifficultyOverride: null,
@@ -262,6 +269,9 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   }
   if (raw.wzrostLudnosciPace === 'wysoki' || raw.wzrostLudnosciPace === 'normalny' || raw.wzrostLudnosciPace === 'wolny') {
     base.wzrostLudnosciPace = raw.wzrostLudnosciPace;
+  }
+  if (raw.ruchSwiataPace === 'krotki' || raw.ruchSwiataPace === 'normalny' || raw.ruchSwiataPace === 'dlugi') {
+    base.ruchSwiataPace = raw.ruchSwiataPace;
   }
   if (
     raw.cityStateDifficultyOverride === 'easy'
@@ -1128,6 +1138,20 @@ function advancedSettingRows(): AdvSettingRow[] {
         advOpts.wzrostLudnosciPace = i === 1 ? 'normalny' : i === 2 ? 'wolny' : 'wysoki';
       },
     },
+    {
+      key: 'ruchSwiataPace',
+      lbl: 'Zasięg ruchu',
+      hint: 'Mnożnik punktów ruchu WSZYSTKICH jednostek na mapie świata — bitwa bez zmian. Bazowy = Krótki (×1).',
+      opts: ['Krótki', 'Normalny', 'Długi'],
+      getIdx: () => {
+        if (advOpts.ruchSwiataPace === 'normalny') return 1;
+        if (advOpts.ruchSwiataPace === 'dlugi') return 2;
+        return 0;
+      },
+      setIdx: (i) => {
+        advOpts.ruchSwiataPace = i === 1 ? 'normalny' : i === 2 ? 'dlugi' : 'krotki';
+      },
+    },
   ];
 }
 
@@ -1371,6 +1395,11 @@ function renderGenStep(host: HTMLElement): void {
       : p.advanced.wzrostLudnosciPace === 'wolny'
         ? 'Wolny (x4 prog)'
         : 'Wysoki (x1 prog)';
+    const ruchSwiataLabel = p.advanced.ruchSwiataPace === 'normalny'
+      ? 'Normalny (x3)'
+      : p.advanced.ruchSwiataPace === 'dlugi'
+        ? 'Długi (x6)'
+        : 'Krótki (x1)';
     const csOverride = p.advanced.cityStateDifficultyOverride;
     const csLabel = csOverride === 'easy'
       ? 'Łatwy'
@@ -1386,6 +1415,7 @@ function renderGenStep(host: HTMLElement): void {
       ['Koszty budynkow', costLabel],
       ['Koszty jednostek', unitCostLabel],
       ['Wzrost ludnosci', growthPaceLabel],
+      ['Zasieg ruchu', ruchSwiataLabel],
       ['Trudnosc miast-panstw', csLabel],
     );
   }

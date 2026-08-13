@@ -106,11 +106,13 @@
     "konie": { "rarity": 0.025 },
     "wegiel": { "rarity": 0, "_opis": "SUR-WEGIEL=B: ukryty — brak spawnu na mapie (dyplomacja bez zmian)" },
     "sol": { "rarity": 0.12 },
-    "zloto": { "rarity": 0.03 }
+    "zloto": { "rarity": 0.03 },
+    "cyna": { "rarity": 0.02, "_opis": "Maciej 2026-08-13: Ruda cyny — rzadkość = miedź (0.10) / 5. GWARANTOWANA każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), inaczej niż złoto." }
   },
   "metal_deposit_min_era": {
     "miedz": 2,
     "zelazo": 3,
-    "wegiel": 8
+    "wegiel": 8,
+    "cyna": 2
   }
 }
