@@ -16834,3 +16834,21 @@ regresji.** Wzorzec rozwiązania (asercja regexowa na treść `main.ts`) już is
 regex na `main.ts`, wzorzec z istniejących testów) + N2 (docstring lub fix jednolinijkowy) + N4
 (poprawka komentarza). N3 dopisane do istniejącego zgłoszenia `sanitizeProductionQueue`, POZA
 zakresem (wymaga ABC właściciela).
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — runda 5 SCALONA, Evaluator finalny w toku (2026-08-13)
+
+Operator domknął wszystkie 3 notatki: N1 (bramka strukturalna regex na `main.ts` chroniąca B2/B3
+przed cichym cofnięciem — dowód nie-jałowości wykonany DWUKROTNIE, osobno dla każdej naprawy,
+zmutuj→FAIL z jasnym komunikatem→przywróć→PASS), N2 (`insertAtFront` teraz FAKTYCZNIE zdejmuje
+`postep` z wstawianego itemu, docstring stał się prawdziwą gwarancją, nie martwą obietnicą), N4
+(sprostowanie nieaktualnych komentarzy w `ai-cud-priorytet-b3-test.cjs`, logika testu
+niezmieniona). Bramki: `tsc` 0, `promote-to-front-test.cjs` **105/105** (było 98), `logic-test`
+213/213, `ai-cud-priorytet-b3-test.cjs` 46/46. Commit `e144af80`, push OK.
+
+**Dispatch Evaluatora finalnego (Opus 5) NASTĘPUJE teraz** — krótki, ukierunkowany wyłącznie na
+weryfikację że N1/N2/N4 są rzeczywiście domknięte (w tym własna próba mutacyjna na bramce
+strukturalnej), bez potrzeby powtarzania pełnego audytu kompletności z rundy 4 (już wyczerpujący,
+potwierdzony czysty). Jeśli PASS — `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1` zamykany OSTATECZNIE po
+5 rundach.
