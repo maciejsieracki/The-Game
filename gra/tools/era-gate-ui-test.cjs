@@ -115,7 +115,8 @@ const era2Techs = tech.filter(t => t.Epoka === 'Brąz').map(t => t.Technologia).
 }
 
 // ---------------------------------------------------------------------------
-// (iii) Brak przypisanego cudu (warunek nieaktywny) — Fenicjanie epoka 1 (Petra jest w epoce 2)
+// (iii) Brak przypisanego cudu (warunek nieaktywny) — Fenicjanie epoka 1 (Petra jest w epoce 3
+// od naprawy ECHO A 2026-08-13, wcześniej epoka 2 — w obu przypadkach NIE epoka 1)
 // ---------------------------------------------------------------------------
 {
   const done = new Set(era1Techs);
@@ -126,7 +127,7 @@ const era2Techs = tech.filter(t => t.Epoka === 'Brąz').map(t => t.Technologia).
     civType: 'fenicjanie',
     completedWonderIds: [],
   });
-  assert(info.wonderRequired === false, '(iii) Fenicjanie epoka 1 → brak cudu przypisanego (Petra jest w epoce 2)');
+  assert(info.wonderRequired === false, '(iii) Fenicjanie epoka 1 → brak cudu przypisanego (Petra jest w epoce 3)');
   assert(info.wonders.length === 0, '(iii) wonders pusta lista');
   assert(info.wonderSatisfied === true, '(iii) wonderSatisfied=true — warunek nieaktywny');
   assert(info.techsComplete === true, '(iii) techsComplete=true (komplet tech epoki 1)');

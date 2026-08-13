@@ -219,7 +219,7 @@
       "cywilizacje": ["fenicjanie"],
       "techUnlock": ["Inżynieria"],
       "wymagaTerenu": ["pustynia"],
-      "epokaWejscia": 2,
+      "epokaWejscia": 3,
       "absolut": 6,
       "maxNaSwiecie": 1,
       "kosztBudowy": 165,

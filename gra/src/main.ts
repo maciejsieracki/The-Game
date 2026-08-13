@@ -25962,9 +25962,12 @@ async function boot(): Promise<void> {
                   });
                 });
                 // FIX (Evaluator runda 1, blokujący -- Fenicjanie Brąz→Żelazo): wymagany cud
-                // epoki może NIE być budowalny (np. petra wymaga tech z epoki Żelaza mimo
-                // epokaWejscia=2 -- rozjazd danych B2, osobna decyzja właściciela, NIE tu).
-                // Bez tej koniunkcji forcePriority wymuszał budowę PIERWSZEGO budowalnego cudu
+                // epoki może NIE być budowalny (np. dawniej petra wymagała tech z epoki Żelaza
+                // mimo epokaWejscia=2 -- rozjazd danych B2 NAPRAWIONY 2026-08-13, ECHO A,
+                // petra.epokaWejscia 2→3. Koniunkcja zostaje jako generyczna obrona w głąb --
+                // ten sam rodzaj rozjazdu (albo np. brak terenu `wymagaTerenu`) może wystąpić
+                // dla dowolnego innego cudu w przyszłości). Bez tej koniunkcji forcePriority
+                // wymuszał budowę PIERWSZEGO budowalnego cudu
                 // z listy (ordered[0] w ai.ts) zamiast cudu bramkującego awans -- AI co turę
                 // wskakiwała innym cudem na front kolejki (queueJump zeruje postęp), kolejka
                 // rosła bez ograniczenia, żywność drenowana co turę, wymagany cud NIGDY nie

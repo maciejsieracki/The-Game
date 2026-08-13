@@ -1656,13 +1656,17 @@ export function relaxedWonderCostThreshold(
  * `ordered[0]` (pierwszy budowalny). Bez tego AI potrafiła wymusić budowę
  * DOWOLNEGO innego budowalnego cudu, gdy cud faktycznie bramkujący awans epoki
  * nie był (jeszcze) budowalny (np. wymaga technologii spoza bieżącej epoki mimo
- * `epokaWejscia` wcześniejszej -- Fenicjanie/Petra, dane B2, poza zakresem tej
- * naprawy) -- co skutkowało co-turowym queueJump na inny cud, zerowaniem postępu
- * (`postep:0` przy każdym skoku) i kolejką rosnącą bez ograniczenia, a wymagany
- * cud NIGDY się nie kończył. Jeśli ŻADEN wymagany cud nie jest budowalny (lista
- * pusta lub brak przecięcia z `buildableWonders`) -- `null`, BEZ fallbacku na inny
- * cud (main.ts i tak nie powinien wtedy wołać z `forcePriority=true`, ale funkcja
- * jest bezpieczna sama w sobie -- obrona w głąb).
+ * `epokaWejscia` wcześniejszej -- Fenicjanie/Petra, dane B2, NAPRAWIONE 2026-08-13
+ * ECHO A: `petra.epokaWejscia` 2→3 w wonders.json, patrz PYTANIA-OTWARTE.md „Rozjazd
+ * danych Petra" -- ta funkcja zostaje jako obrona w głąb generyczna, bo ten sam
+ * rodzaj rozjazdu może wystąpić dla dowolnego przyszłego cudu, terenu wymaganego
+ * (`wymagaTerenu`) czy innego warunku budowalności) -- co skutkowało co-turowym
+ * queueJump na inny cud, zerowaniem postępu (`postep:0` przy każdym skoku) i
+ * kolejką rosnącą bez ograniczenia, a wymagany cud NIGDY się nie kończył. Jeśli
+ * ŻADEN wymagany cud nie jest budowalny (lista pusta lub brak przecięcia z
+ * `buildableWonders`) -- `null`, BEZ fallbacku na inny cud (main.ts i tak nie
+ * powinien wtedy wołać z `forcePriority=true`, ale funkcja jest bezpieczna sama w
+ * sobie -- obrona w głąb).
  */
 export function decideAiWonderBuild(
   turn: number,
