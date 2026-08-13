@@ -42,6 +42,25 @@
  * działa) + kontrola negatywna, inny typ (id '2', Pokój — NIE dopuszcza wielokrotności) NADAL
  * ma `disabled` (bez regresji dla wszystkich pozostałych typów).
  *
+ * CZĘŚĆ E — Runda 2 (Evaluator, 2026-08-13): CZĘŚĆ D sprawdza WYŁĄCZNIE że
+ * `withOwnTableTechFilter` w oderwaniu zwraca poprawny wynik — nie że KAŻDE z TRZECH miejsc
+ * wpięcia w diplomacyAudience.ts (`openCounterNegotiationModal`, handler nowego kliknięcia w
+ * `render()`, `openQuickDealBasket`) faktycznie WOŁA tę funkcję i przekazuje jej wynik dalej.
+ * Zweryfikowane mutacyjnie przez Evaluatora: cofnięcie wywołania `withOwnTableTechFilter(...)`
+ * we WSZYSTKICH TRZECH miejscach naraz (zostaje wyłącznie definicja funkcji) przechodziło przez
+ * WSZYSTKIE 53 ówczesne asercje pliku bez ani jednej czerwonej — DOKŁADNIE ta sama luka co w
+ * CZĘŚCI C (patrz komentarz tam), tym razem dla trzeciej, nowszej funkcji. CZĘŚĆ E renderuje
+ * PRAWDZIWY `showDiplomacyAudience`/`render()` (nie samą funkcję filtra w oderwaniu), klika trzy
+ * realne wejścia do koszyka i asertuje na PRZECHWYCONYM `ctx` przekazanym do prawdziwego
+ * `showTradeBasketModal`/`openQuickDealBasket` (moduł `diplomacyTradeBasket` zaślepiony tak, by
+ * ZAPISYWAŁ argument zamiast go ignorować — w odróżnieniu od zaślepki CZĘŚCI D, która była
+ * no-opem, bo tam testowaliśmy samą funkcję filtra, nie jej wiązanie).
+ *
+ * **Korekta N1 (Runda 2 Operatora, 2026-08-13):** raport Operatora z Rundy 1 błędnie zgłosił
+ * CZĘŚĆ D jako „22 asercje" — faktyczny, policzony przez `grep -c 'ok('` na blok CZĘŚCI D,
+ * stan **15**. CZĘŚĆ E dopisana w tej rundzie dokłada kolejnych 13 — łączny stan pliku po tej
+ * rundzie: 66 asercji (patrz `console.log` sumy na końcu pliku, liczony programowo, nie ręcznie).
+ *
  * Usage (z gra/): node tools/diplomacy-tech-chip-filter-and-multi-deal-test.cjs
  */
 const fs = require('fs');
@@ -748,6 +767,219 @@ export {
       }
     }
 
+    for (const f of Object.values(stubs).concat([ENTRY, BUNDLE])) {
+      try { fs.unlinkSync(f); } catch (_) { /* ok */ }
+    }
+  }
+
+  // =========================================================================
+  // CZĘŚĆ E — Runda 2: warstwa WIĄZANIA pełnego renderu — 3 realne wejścia do koszyka
+  // (nowy klik, edycja własnego wiersza, SZYBKA WYMIANA) + 1 negatywna (kontroferta cudzego
+  // wiersza). Patrz komentarz nagłówkowy pliku dla pełnego uzasadnienia.
+  // =========================================================================
+  {
+    console.log('CZĘŚĆ E — 3 realne wejścia do koszyka: wiązanie withOwnTableTechFilter z rendera/kliknięć');
+
+    const STUB_DIR = path.resolve(__dirname, '.stubs');
+    fs.mkdirSync(STUB_DIR, { recursive: true });
+    const stubs = {
+      music: path.resolve(STUB_DIR, 'wiring-music-stub.ts'),
+      diploUiSkin: path.resolve(STUB_DIR, 'wiring-diplouiskin-stub.ts'),
+      negotiationModal: path.resolve(STUB_DIR, 'wiring-negotiationmodal-stub.ts'),
+      tradeBasket: path.resolve(STUB_DIR, 'wiring-tradebasket-stub.ts'),
+      leaderPortraits: path.resolve(STUB_DIR, 'wiring-leaderportraits-stub.ts'),
+      civBrandDisplay: path.resolve(STUB_DIR, 'wiring-civbranddisplay-stub.ts'),
+      brandAssets: path.resolve(STUB_DIR, 'wiring-brandassets-stub.ts'),
+    };
+    fs.writeFileSync(stubs.music, [
+      "export function startDiplomacyMusic() {}",
+      "export function stopDiplomacyMusic() {}",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.diploUiSkin, [
+      "export function civLeaderMedallionHtmlById() { return ''; }",
+      "export function dipBrandIconHtml() { return ''; }",
+      "export function dipCapitalLocateBtnHtml() { return ''; }",
+      "export const DIPLO_1E_SHARED_CSS = '';",
+      "export function ensureDiploBrandScope() {}",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.negotiationModal, [
+      "export function actionNeedsNegotiation() { return false; }",
+      "export function showNegotiationModal() {}",
+      "export function proposalActionIdFromPayload() { return undefined; }",
+    ].join('\n'), 'utf8');
+    /** W ODRÓŻNIENIU od zaślepki CZĘŚCI C/D (no-op) — TA zaślepka ZAPISUJE przechwycony `ctx`
+     *  (3. argument obu funkcji — patrz sygnatury `showTradeBasketModal`/`openQuickDealBasket`
+     *  w diplomacyTradeBasket.ts) do `global.__wiringCaptured`, żeby asercje niżej mogły badać
+     *  DOKŁADNIE to, co realny kod produkcyjny faktycznie przekazał do koszyka — nie tylko że
+     *  COŚ przekazał. */
+    fs.writeFileSync(stubs.tradeBasket, [
+      "export function actionUsesTradeBasket(id) { return id === '14'; }",
+      "export function getTradeBasketMode() { return 'trade'; }",
+      "export function showTradeBasketModal(mode, action, ctx) { global.__wiringCaptured.push({ via: 'showTradeBasketModal', ctx }); }",
+      "export function hideTradeBasketModal() {}",
+      "export function openQuickDealBasket(action, ctx) { global.__wiringCaptured.push({ via: 'openQuickDealBasket', ctx }); }",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.leaderPortraits, [
+      "export function civCardDisplayName(label) { return label; }",
+      "export function leaderName() { return null; }",
+    ].join('\n'), 'utf8');
+    fs.writeFileSync(stubs.civBrandDisplay, "export function civBrandLineForKey() { return ''; }\n", 'utf8');
+    fs.writeFileSync(stubs.brandAssets, [
+      "export function brandIconSvg() { return ''; }",
+      "export function mapResourceIconSvg() { return ''; }",
+    ].join('\n'), 'utf8');
+
+    const ENTRY = path.resolve(__dirname, '.dip-wiring-entry.ts');
+    const BUNDLE = path.resolve(__dirname, '.dip-wiring-bundle.cjs');
+    fs.writeFileSync(ENTRY, `export { showDiplomacyAudience } from '../src/ui/diplomacyAudience.ts';\n`, 'utf8');
+
+    await esbuild.build({
+      entryPoints: [ENTRY],
+      bundle: true,
+      platform: 'node',
+      format: 'cjs',
+      target: 'node18',
+      outfile: BUNDLE,
+      absWorkingDir: path.resolve(__dirname, '..'),
+      logLevel: 'silent',
+      loader: { '.json': 'json' },
+      plugins: [{
+        name: 'stub-vite-assets-wiring',
+        setup(build) {
+          build.onResolve({ filter: /audio\/muzyka-antyczna$/ }, () => ({ path: stubs.music }));
+          build.onResolve({ filter: /diploUiSkin$/ }, () => ({ path: stubs.diploUiSkin }));
+          build.onResolve({ filter: /diplomacyNegotiationModal$/ }, () => ({ path: stubs.negotiationModal }));
+          build.onResolve({ filter: /diplomacyTradeBasket$/ }, () => ({ path: stubs.tradeBasket }));
+          build.onResolve({ filter: /leaderPortraits$/ }, () => ({ path: stubs.leaderPortraits }));
+          build.onResolve({ filter: /civBrandDisplay$/ }, () => ({ path: stubs.civBrandDisplay }));
+          build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: stubs.brandAssets }));
+        },
+      }],
+    });
+
+    const { showDiplomacyAudience } = require(BUNDLE);
+
+    let JSDOM;
+    try { ({ JSDOM } = require('jsdom')); }
+    catch (e) { console.error('jsdom missing — npm i -D jsdom'); process.exit(1); }
+    const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
+    global.document = dom.window.document;
+    global.window = dom.window;
+    global.HTMLElement = dom.window.HTMLElement;
+    global.Element = dom.window.Element;
+
+    function ownRow(id, aid, giveItems, direction) {
+      return {
+        id, direction: direction || 'own', uiActionId: aid, actionLabel: 'Umowa wymiany surowców', summary: 'x',
+        round: 1, maxRounds: 3, expiresInTurns: 5, canCounter: true,
+        dealPayload: { giveItems: giveItems || [], receiveItems: [] },
+      };
+    }
+    function baseState(pendingNegotiations) {
+      return {
+        playerTitle: 'Gracz', playerCivName: 'Rzym', otherTitle: 'Rozmówca', otherCivName: 'Grecja',
+        zaufanie: 50, respekt: 50, tier: 1, layer: 'full', contactEstablished: true,
+        actions: [{ id: '14', label: 'Umowa wymiany surowców', enabled: true }],
+        pendingNegotiations,
+      };
+    }
+    function negCtx() {
+      return {
+        civName: 'Inkowie',
+        giveTechOptions: [
+          { id: 'Obróbka drewna', label: 'Obróbka drewna', suggestedPrice: 50 },
+          { id: 'Garncarstwo', label: 'Garncarstwo', suggestedPrice: 40 },
+        ],
+        receiveTechOptions: [],
+        relacjaTotal: 200, progHandelRelacja: 100,
+      };
+    }
+    function click(el) { el.dispatchEvent(new dom.window.Event('click', { bubbles: true })); }
+    function open(state) {
+      global.__wiringCaptured = [];
+      showDiplomacyAudience({
+        ownerId: 1,
+        getState: () => state,
+        onAction: () => {},
+        onBack: () => {},
+        getNegotiationContext: () => negCtx(),
+      });
+    }
+
+    // (a) Świeży klik na aid '14' — otwiera NOWĄ, pustą instancję koszyka (kolejna umowa,
+    //     R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA). Na stole już leży własny wiersz n1 z „Obróbka
+    //     drewna" — call site: handler `button[data-aid]` w `render()` (linia ok. 2083).
+    {
+      open(baseState([ownRow('n1', '14', [{ typ: 'tech', id: 'Obróbka drewna' }])]));
+      const btn = document.querySelector('button[data-aid="14"]');
+      ok(btn !== null && !btn.disabled, '(a) świeży klik: przycisk aid "14" obecny i klikalny');
+      if (btn) click(btn);
+      ok(global.__wiringCaptured.length === 1, '(a) świeży klik: koszyk faktycznie się otworzył (1 przechwycone wywołanie)');
+      const ids = (global.__wiringCaptured[0]?.ctx.giveTechOptions ?? []).map(t => t.id);
+      ok(!ids.includes('Obróbka drewna'),
+        '(a) świeży klik na aid "14": ctx.giveTechOptions NIE zawiera "Obróbka drewna" (już committed w n1) — dowód wiązania handlera nowego kliknięcia w render()');
+    }
+
+    // (b) `openCounterNegotiationModal` dla WŁASNEGO wiersza (edycja n2) — n1 (inny własny
+    //     wiersz) trzyma "Obróbka drewna"; n2 (edytowany) trzyma "Garncarstwo". Poprawne
+    //     wiązanie: n1 dalej wykluczone (inny wiersz), n2 NIE wykluczone samo siebie
+    //     (excludeRowId=n2.id, wymóg CZĘŚCI D pkt 6).
+    {
+      open(baseState([
+        ownRow('n1', '14', [{ typ: 'tech', id: 'Obróbka drewna' }]),
+        ownRow('n2', '14', [{ typ: 'tech', id: 'Garncarstwo' }]),
+      ]));
+      const btn = document.querySelector('button[data-negot-act="edit"][data-negot-id="n2"]');
+      ok(btn !== null, '(b) edycja własnego wiersza n2: przycisk "Edytuj" obecny');
+      if (btn) click(btn);
+      ok(global.__wiringCaptured.length === 1, '(b) edycja n2: openCounterNegotiationModal faktycznie otworzył koszyk (1 przechwycone wywołanie)');
+      const ids = (global.__wiringCaptured[0]?.ctx.giveTechOptions ?? []).map(t => t.id);
+      ok(!ids.includes('Obróbka drewna'),
+        '(b) edycja n2: ctx.giveTechOptions NIE zawiera "Obróbka drewna" (committed w INNYM własnym wierszu n1) — dowód wiązania openCounterNegotiationModal');
+      ok(ids.includes('Garncarstwo'),
+        '(b) edycja n2: ctx.giveTechOptions ZAWIERA "Garncarstwo" (własna technologia n2 — excludeRowId poprawnie = n2.id, nie chowa sam siebie)');
+    }
+
+    // (c) `.da-quickdeal` / „SZYBKA WYMIANA" — call site: openQuickDealBasket (linia ok. 2123).
+    {
+      open(baseState([ownRow('n1', '14', [{ typ: 'tech', id: 'Obróbka drewna' }])]));
+      const btn = document.querySelector('.da-quickdeal');
+      ok(btn !== null && !btn.disabled, '(c) SZYBKA WYMIANA: przycisk obecny i klikalny');
+      if (btn) click(btn);
+      ok(global.__wiringCaptured.length === 1, '(c) SZYBKA WYMIANA: openQuickDealBasket faktycznie się otworzył (1 przechwycone wywołanie)');
+      const ids = (global.__wiringCaptured[0]?.ctx.giveTechOptions ?? []).map(t => t.id);
+      ok(!ids.includes('Obróbka drewna'),
+        '(c) SZYBKA WYMIANA: ctx.giveTechOptions NIE zawiera "Obróbka drewna" — dowód wiązania openQuickDealBasket');
+    }
+
+    // (d) NEGATYWNA: kontroferta do CUDZEGO (przychodzącego, AI) wiersza — `excludeRowId`
+    //     przekazany do filtra MUSI być `undefined`, nie id żadnego własnego wiersza
+    //     (isOwnEdit = row.direction === 'own', linia ok. 456/460). Id kolizyjne UMYŚLNIE: wiersz
+    //     przychodzący i własny wiersz z „Obróbka drewna" mają TEN SAM id ('shared'), przychodzący
+    //     PIERWSZY w tablicy — `.find(r => r.id === negotId)` w handlerze kliknięcia rozstrzyga
+    //     WYŁĄCZNIE po kolejności w tablicy `pendingNegotiations`, niezależnie od tego, który
+    //     DOM-owy przycisk fizycznie kliknięto, więc to bezpiecznie zwraca wiersz PRZYCHODZĄCY.
+    //     Gdyby kod błędnie przekazywał `excludeRowId = row.id` BEZ WARUNKU `isOwnEdit ? … :
+    //     undefined` (regresja identyczna do usunięcia samego warunku), `excludeRowId` wyszedłby
+    //     'shared' i przypadkowo wykluczyłby WŁASNY wiersz o tym samym id z listy zaangażowanych
+    //     technologii — "Obróbka drewna" wróciłaby jako wybieralna. W realnej grze id-y nigdy się
+    //     nie powtarzają, więc to jedyny sposób, by ten konkretny błąd ujawnił się przez wynik
+    //     `ctx`, a nie tylko przez podgląd samego argumentu.
+    {
+      open(baseState([
+        ownRow('shared', '14', [], 'incoming'),
+        ownRow('shared', '14', [{ typ: 'tech', id: 'Obróbka drewna' }], 'own'),
+      ]));
+      const btn = document.querySelector('button[data-negot-act="edit"][data-negot-id="shared"]');
+      ok(btn !== null, '(d) kontroferta cudzego wiersza: przycisk "Edytuj" obecny');
+      if (btn) click(btn);
+      ok(global.__wiringCaptured.length === 1, '(d) kontroferta cudzego wiersza: openCounterNegotiationModal faktycznie się otworzył (1 przechwycone wywołanie)');
+      const ids = (global.__wiringCaptured[0]?.ctx.giveTechOptions ?? []).map(t => t.id);
+      ok(!ids.includes('Obróbka drewna'),
+        '(d) NEGATYWNA: kontroferta PRZYCHODZĄCEGO wiersza — "Obróbka drewna" (committed w OSOBNYM własnym wierszu o tym samym id) nadal WYKLUCZONA, dowód że excludeRowId poszedł jako undefined, nie jako id własnego wiersza');
+    }
+
+    delete global.__wiringCaptured;
     for (const f of Object.values(stubs).concat([ENTRY, BUNDLE])) {
       try { fs.unlinkSync(f); } catch (_) { /* ok */ }
     }
