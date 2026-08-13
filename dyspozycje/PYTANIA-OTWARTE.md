@@ -19330,3 +19330,35 @@ na czubku gałęzi (`git merge-base --is-ancestor 4b9eab58 HEAD` → yes) — ze
 zmian potrzebnych. Nagłówek l. 17569 poprawiony wyżej, żeby przyszły grep §0c nie łapał już tego
 fałszywie. Jeśli Maciej nadal obserwuje ten sam objaw w grze — prawdopodobnie stary
 zbudowany bundle sprzed `4b9eab58`, nie regresja kodu.
+
+## ECHO R-AUTO-WYZYWIENIE-KRYTERIUM-Q1 = A, z doprecyzowaniem właściciela (2026-08-13)
+
+Jego słowa (dosłownie): „Nie suma żywności w Spichlerzu jest wyznacznikiem, czy może być
+[włączone] autowyżywienie. Tylko żeby w danej turze był minimalnie co najmniej przyrost 0 albo
+na plusie, a nie ujemny. Czyli np. mamy w Spichlerzu 500 jednostek żywności, to wszystkie miasta
+muszą dać łącznie, w najgorszym wypadku, 0, ewentualnie plus, a nigdy minusów całej cywilizacji w
+Spichlerzu Cywilizacji. A teraz zdarza się niekiedy tak, że z Spichlerza, jeżeli na przykład jest
+500 jednostek, to autowyżywienie powoduje, że może być na minusie, dopóki jeszcze jest żywność.
+Przyrost może być na minusie, jeżeli w Spichlerzu są jeszcze jednostki żywności."
+
+**Doprecyzowanie kryterium (ważniejsze niż litera A/B):** wyznacznikiem NIE jest stan magazynu
+(bufor > 0 pozwalający "wytrzymać" chwilowy minus), tylko **rzeczywisty PRZYROST ZAPASÓW za turę
+(net zmiana stanu Spichlerza centralnego)**, który ma być **zawsze ≥ 0**, niezależnie od tego ile
+zapasu jest w buforze. Dziś mechanizm pozwala żeby przyrost był ujemny, dopóki bufor > 0 —
+dokładnie to ma zniknąć.
+
+**Konsekwencja dla R-AUTO-WYZYWIENIE-KOSZT-ARMII-Q1 (Q2, zadane równolegle):** "przyrost
+zapasów" w sensie tej definicji to zmiana stanu magazynu centralnego PO odjęciu kosztu wojska
+(`central -= kosztArmii`, `empire-food.ts:270`) — nie da się utrzymać przyrostu ≥0 bez
+uwzględnienia kosztu armii w kryterium. **Traktuję to jako naturalną, wynikającą z tej samej
+odpowiedzi implikację, że Q2=B (koszt armii wchodzi do kryterium) — jeśli to nie jest zamierzone,
+proszę o korektę, w przeciwnym razie wdrażam oba naraz jako jedną spójną zmianę.**
+
+**Zakres implementacji:** `isRationBalanceTargetMet`/`isEmpireCityFoodSolvent`
+(`gra/src/game/empire-food.ts:455-487`) mają liczyć docelowy stan jako
+`Nadwyżka(produkcja−konsumpcja miast) − kosztArmii ≥ 0` (pełny "przyrost zapasów" z
+`advanceEmpireFood`, linia ~270-279), NIE tylko sumę bilansów miast bez wojska jak dziś.
+`autoBalanceRationsToSolvency`/`autoRaiseRationsForGrowth`/`maxSafePoziomRacjiForCity` mają
+celować w to nowe kryterium.
+
+**STATUS: dispatch Operatora (Sonnet 5) w toku.**
