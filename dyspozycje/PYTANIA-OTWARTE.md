@@ -18121,3 +18121,33 @@ architektoniczna, narusza spójność z resztą elementów mapy (sprite'y 3D).
 kierunek **(b)**, zgodnie z rekomendacją techniczną rozpoznania — poprawny wydajnościowo (tylko
 plakietki widoczne z bliska płacą koszt przemalowania), reużywa istniejącą, sprawdzoną
 infrastrukturę zamiast budować nowy system od zera. Dispatch Operatora NASTĘPUJE.
+
+---
+
+## R-RUCH-SWIATA-SKALA (Zasięg ruchu ×3/×6) — Evaluator: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-13)
+
+Zero blokujących. Niezależny sweep Evaluatora (wszystkich `units.push(` + osobny `ruch:` w całym
+`src/`) potwierdza kompletność pokrycia — 6 miejsc spawnu Operatora to WSZYSTKIE realne miejsca,
+zero 7. przeoczonego. Granica bitwa/mapa świata potwierdzona SZCZELNA głębiej niż wymagało
+zlecenie (bitwa w ogóle nie czyta pola `RuntimeUnit.ruch`, tylko `'Ruch w bitwie'` — systemy
+rozłączne na poziomie danych). `diplomacy-unit-transfer.ts` potwierdzone martwe (zero wywołań w
+całym repo). Save/load kompatybilność wsteczna potwierdzona.
+
+**Nota do backlogu — realna luka testowa (N1):** bramka liczy WYSTĄPIENIA wzorca (`spawnSiteCount
+>= 6`), nie MIEJSCA — własna mutacja Evaluatora (cofnięcie jednego realnego spawnu + dołożenie
+atrapy gdzie indziej) przeszła 35/35 zielono. Utwardzenie: asercja negatywna „zero nieprzemnożonych
+wzorców spawnu" zamiast liczenia wystąpień. Niepilne, bramka i tak łapie realną regresję dziś.
+
+**Nota do backlogu — decyzja gameplayowa do ABC (N2):** funkcja „Zastąp" (upgrade jednostki,
+`performUnitReplace`) nie aktualizuje `u.ruch` po awansie na szybszy typ — PRE-ISTNIEJĄCE, nie
+wprowadzone tą zmianą, ale ta naprawa PRZEWRACA stronę widoczności: dawniej HUD kłamał (pokazywał
+Ruch nowego typu, budżet zostawał stary), teraz HUD pokazuje prawdę — więc gracz zobaczy że awans
+NIE podnosi zasięgu ruchu, co wygląda jak bug mimo że jest tylko ujawnieniem starego. Do ABC przy
+osobnej okazji (czy „Zastąp" ma dawać ruch nowego typu — decyzja projektowa, nie techniczna).
+
+Inne noty (N3 brak strażnika na nieznany klucz pace → NaN przy ręcznie edytowanym zapisie — ta sama
+słabość co bratnie pola `*Pace`, nie regresja; N5 playtest — max 30 pkt ruchu/turę przy „Długi",
+warto obejrzeć koszt BFS na Ogromnej mapie i zasięg najazdu barbarzyńców; N6 martwy import) —
+zapisane, niepilne.
+
+**STATUS: ZAMKNIĘTE.**
