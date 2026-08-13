@@ -18649,3 +18649,28 @@ Pełna treść dwóch pytań ABC przedstawiona Maciejowi w czacie, zgodnie z for
 `PAMIEC-ROBOCZA-CIV.md §1` (nagłówek [TEMAT]+ID, Sytuacja, Cel pytania, Dlaczego teraz, A/B/C
 z Za≥2/Przeciw≥2, Rekomendacja). Czeka na odpowiedź w formie `R-DESIGN-11-ZAKLADEK-Q1=<litera>`,
 `R-DESIGN-11-ZAKLADEK-Q2=<litera>`.
+
+## ECHO R-DESIGN-11-ZAKLADEK-Q1=A, R-DESIGN-11-ZAKLADEK-Q2=B (Maciej, 2026-08-13)
+
+**Q1=A.** Nowy wygląd oparty o istniejący kanon projektowy. Maciej: „jeżeli jesteś w stanie
+wykonać to zgodnie z Game Brand Bookiem, to jak najbardziej możesz to sam zrobić." Polecenie:
+zrobić jeden panel jako pierwszy, wysłać zrzut ekranu, czekać na potwierdzenie zanim ruszą kolejne.
+**STATUS: w toku, zaczynam od zakładki Skarbiec (empireDetailPanel.ts) — sekcja „ZASOBY IMPERIUM"/
+„SKARBIEC IMPERIUM", która nie dostała reskinu zastosowanego już wcześniej do sekcji „Moc" tego
+samego panelu (komentarz w pliku: „Wygląd: mockup Panel Moc imperium v3 — RESKIN, nic nie
+usunięte" — dotyczy tylko sekcji Moc, nie Skarbca).**
+
+**Q2=B, doprecyzowanie właściciela (cytat pełny):** „dokładnie o to mnie chodziło czyli ujęcie w
+sumie miast ale z różnego punktu widzenia — miasto a bardziej pod kątem produkcji budynków,
+wpływów, skarbca, produkcji nauki, produkowane surowce. Wszystko co w mieście jest produkowane
+warto żeby można było zaznaczyć i zobaczyć ile w sumie w całej cywilizacji tego produktu idą. A
+obywatele to bardziej miasta, ale pod kątem kultury, religii, zdrowia, szczęścia, prawa i innych
+aspektów, które mają wpływ na obywateli." Czyli: zakładka **Miasto** = kąt produkcyjno-ekonomiczny
+(budynki, wpływy, skarbiec, nauka, surowce — wszystko co miasto produkuje, z opcją zaznaczenia i
+zobaczenia sumy cywilizacyjnej danego produktu). Zakładka **Obywatele** = kąt społeczny (kultura,
+religia, zdrowie, szczęście, prawo i inne aspekty wpływające na mieszkańców).
+
+**Polecenie: przed rozpoczęciem implementacji tych dwóch zakładek, przygotować pełną listę
+proponowanej zawartości obu (co dokładnie pokazywać w Mieście, co w Obywatelach).** Lista
+dostarczona w czacie, czeka na akceptację/korektę Macieja przed dalszą pracą nad tymi dwiema
+zakładkami. Praca nad zakładką Skarbiec (Q1) toczy się niezależnie i równolegle.
