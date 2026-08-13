@@ -18906,3 +18906,21 @@ naprawie, wymaga pilnego zbadania dlaczego bramki (55/55 zielone) tego nie złap
 
 **STATUS: dispatch Explore NATYCHMIAST — priorytet, właściciel czeka na konkretną odpowiedź, nie
 domysł.**
+
+## P-MILET-ATENY-PRACOWNICY-NA-CUDZYM-HEKSIE — doprecyzowanie Macieja: to CENTRUM miasta (2026-08-13)
+
+**Doprecyzowanie (dosłowne):** „nie, należą do tej samej cywilizacji oba miasta, ale jedno
+miasto nie może robić produkcji na terenie samego miasta innego, nawet nie na heksach w ogóle
+innego miasta, tylko na terenie samego miasta. Czyli po prostu tak Sparta produkuje w Atenach, w
+samym mieście, na heksie miasta Ateny. To jest bzdura jakaś."
+
+**To zawęża scenariusz do DOKŁADNIE tego, co Zadanie 1 dzisiejszej naprawy dublowania heksów
+(`P-HEKS-CENTRUM-OBCEGO-MIASTA`) miało naprawić BEZWARUNKOWO, niezależnie od właściciela** —
+przeszło przez 2 rundy Evaluatora, bramki 55/55, weryfikacja behawioralna w rundzie 2. Jeśli to
+się faktycznie powtarza, to albo (a) regresja/luka w czymś ocenionym jako pewne, albo (b) Maciej
+testuje na zapisie sprzed FALI 276 (przed naprawą). Priorytet: ustalić które.
+
+Przekazane jako pilna redyrekcja do trwającego rozpoznania (`a455322935356a330`) — zmieniony
+kierunek dochodzenia na: czy wykluczenie centrum jest faktycznie bezwarunkowe względem
+`ownerId` we WSZYSTKICH 4+ miejscach wpięcia, i czy dzisiejszy test w ogóle sprawdzał scenariusz
+różnych właścicieli dla centrum (nie tylko tego samego).
