@@ -37,4 +37,12 @@ Gra-FINALNA*.html  -text
 # UWAGA przy edycji: union scala LINIOWO. Jeśli obie strony zmienią TĘ SAMĄ
 # istniejącą linię, dostaniesz obie wersje obok siebie zamiast konfliktu.
 # Dlatego wpisy DOPISUJEMY, a cudzych nie przepisujemy.
+#
+# ZWERYFIKOWANE 2026-08-13 na izolowanym worktree, na tym pliku i tej regule:
+# odtworzony scenariusz „obie sesje dopisują wpis na końcu" →
+# `git check-attr merge` = union · markery konfliktu **0** · oba wpisy obecne.
+# Drobiazg wychwycony w teście: union DEDUPLIKUJE identyczne puste linie, więc
+# nagłówek drugiego wpisu może przykleić się bezpośrednio pod ostatnią linią
+# pierwszego (bez pustej linii). Czysto kosmetyczne — CommonMark pozwala
+# nagłówkowi ATX przerwać akapit, więc `##` nadal renderuje się jak nagłówek.
 dyspozycje/_handoff/KANAL-PRACA.md merge=union
