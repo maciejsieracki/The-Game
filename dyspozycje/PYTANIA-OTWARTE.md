@@ -17917,3 +17917,38 @@ terenu, ale ta poprawka jest priorytetowa i prostsza — może iść jako pierws
 
 **Dispatch Operatora NASTĘPUJE — połączony z ECHO A (najbliższe miasto wygrywa dla zwykłych spornych
 heksów) w jednym zleceniu, bo to ten sam obszar kodu i ta sama sesja pracy.**
+
+---
+
+## P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT — Evaluator: PASS-WITH-NOTES, runda 2 w toku (2026-08-13)
+
+Rdzeń naprawy (callback po wzroście populacji) potwierdzony poprawny 4 niezależnymi mutacjami
+Evaluatora (nie na słowo Operatora). Ale znalezione **dwa niedomknięcia, oba do naprawy przed
+zamknięciem tematu:**
+
+**NOTA A (materialna, wyjaśnia dlaczego bug może nadal wystąpić przy 2+ miastach gracza):**
+`getMaxSafePoziomRacjiForPlayerCity` liczy „bezpieczny poziom" dla miasta A na podstawie
+`previewCityEconomy` całego imperium, ale w momencie callbacku dla A pozostałe miasta B..N mają
+jeszcze STARE (sprzed-wzrostu) populacje — ich koszt Racji jest zaniżony, nadwyżka imperium
+zawyżona, maxSafe dla A wychodzi za wysoki. Poprawny wynik dostaje tylko miasto przetworzone jako
+OSTATNIE w pętli wzrostu. **Fix:** zamiast klamrowania per-miasto wewnątrz callbacku — zbierać
+`cityId` do zbioru, po zakończeniu CAŁEJ pętli wzrostu (`applyPostCentralPopulationGrowth`)
+wykonać JEDNO zbiorcze przeliczenie dla wszystkich zebranych miast (funkcja
+`getMaxSafePoziomRacjiForPlayerCity` już dziś liczy maxSafe dla WSZYSTKICH miast gracza naraz i
+cache'uje wynik — batch jest tańszy I poprawniejszy niż dzisiejsze wywołanie per-miasto).
+
+**NOTA B (latentna pułapka, dziś nieszkodliwa, bo `autoWyzywienie` nigdzie nie ma domyślnego
+`true`):** w `resolveSiegeSurrender` wywołanie `applyLiveSafeRationForCity` stoi PRZED
+`endMapSiege(cityId)` i przed `city.population = Math.max(1, city.population)` — dokładnie ten sam
+antywzorzec „licz przed mutacją", który ten commit miał naprawić. Miasto w tym momencie nadal ma
+`oblegane=true`, więc wypada z filtra `playerCities` i liczy się zdegenerowanym fallbackiem. **Fix:**
+przenieść wywołanie ZA `endMapSiege(cityId)`.
+
+Dodatkowo potwierdzone (nie wymaga fixu): 5 z 9 pominiętych miejsc `seedCityOwnerDefaults`
+faktycznie dotyczy wyłącznie AI/MP/rebelii (weryfikacja niezależna, kompletna — tylko 4 miejsca w
+całym repo przypisują `city.ownerId`, wszystkie pokryte). `markCityStateDirty()` w tym kontekście
+bezpieczne. Dwie pre-istniejące porażki `population-growth-v85-test.cjs` (48/2) potwierdzone
+NIEZWIĄZANE z tym commitem (identyczne na commicie rodzica).
+
+**Dispatch Operatora rundy 2 (Sonnet 5) NASTĘPUJE** — obie noty, kierunek jednoznaczny (poprawki
+techniczne dopinające zamówioną naprawę, nie nowa decyzja projektowa).
