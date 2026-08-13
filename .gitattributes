@@ -16,3 +16,25 @@
 gra-robocza/*.html -text
 gra-kanon/*.html   -text
 Gra-FINALNA*.html  -text
+
+# ── Kanał pracy między sesjami ──────────────────────────────────────────────
+# PROBLEM: cztery pulle z rzędu (2026-08-10 … 08-13) dały konflikt scalania
+# WYŁĄCZNIE w tym pliku i za każdym razem POZORNY — sesja chmurowa i sesja
+# lokalna tylko DOPISUJĄ nowy wpis na końcu, żadna nie edytuje cudzego. Koszt
+# to ręczne rozwiązywanie przy każdym pullu i realne ryzyko, że ktoś kiedyś
+# rozwiąże konflikt przez `--ours`/`--theirs` i SKASUJE cudzy meldunek.
+#
+# `merge=union` = wbudowany sterownik gita: przy konflikcie bierze linie z
+# OBU stron zamiast wstawiać markery. Dla logu dopisywanego na końcu to
+# dokładnie właściwe zachowanie — nic nie ginie, konflikt nie powstaje.
+#
+# ŚWIADOMY KOSZT (decyzja właściciela 2026-08-13, wariant „a"): union nie
+# gwarantuje porządku CHRONOLOGICZNEGO przy zbiegu — wpisy obu stron trafią
+# obok siebie w kolejności gałęzi, nie zegara. Log czyta się po nagłówkach
+# z godziną, więc to akceptowalne. Jeśli kiedyś zacznie przeszkadzać,
+# wariantem zapasowym jest osobny plik na sesję.
+#
+# UWAGA przy edycji: union scala LINIOWO. Jeśli obie strony zmienią TĘ SAMĄ
+# istniejącą linię, dostaniesz obie wersje obok siebie zamiast konfliktu.
+# Dlatego wpisy DOPISUJEMY, a cudzych nie przepisujemy.
+dyspozycje/_handoff/KANAL-PRACA.md merge=union
