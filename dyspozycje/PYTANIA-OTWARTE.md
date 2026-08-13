@@ -17652,3 +17652,33 @@ poziomu na żywo — do sprawdzenia w praktyce, nie zakładać.
 trigger `applyLiveSafeRationForCity`, zamyka A2+A3 zgodnie z pierwotnym poleceniem; B — uwzględnić
 koszt armii w kryterium „bezpieczny poziom", dziś całkowicie pomijany przez funkcje liczące
 wypłacalność; C — bufor bezpieczeństwa zamiast celowania w Bilans=0). Czeka na odpowiedź.
+
+---
+
+## P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT — ECHO A (2026-08-13)
+
+Maciej wybrał **A**: dodać wzrost populacji i założenie miasta jako zdarzenia wyzwalające
+przeliczenie poziomu Racji "na żywo" (`applyLiveSafeRationForCity`), tym samym mechanizmem co
+istniejące 9 dyskretnych triggerów UI (klik na polu, ukończenie budynku). Domyka punkty A2
+(`seedCityOwnerDefaults`, 7 miejsc wywołania) i A3 (`applyPostCentralPopulationGrowth`) z
+rozpoznania #3 z 2026-08-10, zgodnie z pierwotnym poleceniem właściciela tego dnia.
+
+**Zakres naprawy:**
+1. `applyPostCentralPopulationGrowth` (`gra/src/game/population-growth-v85.ts:360-440`) — po
+   faktycznym wzroście populacji miasta gracza, wywołać `applyLiveSafeRationForCity(city.id)`.
+2. `seedCityOwnerDefaults` (`gra/src/main.ts:4142-4168`) — dla miast gracza, po nadpisaniu
+   poziomu Racji globalnym domyślnym, wywołać `applyLiveSafeRationForCity(city.id)` — we
+   WSZYSTKICH 7 miejscach wywołania tej funkcji (founding gracza, AI, miasta-państwa, kapitulacja
+   głodowa, wchłonięcie dyplomatyczne, zmiany właściciela — filtrowane do `ownerId===0`).
+3. **Uwaga wydajnościowa (ta sama pułapka co Evaluator zgłosił dla `mousemove` w temacie
+   Auto-Wyżywienie z 10 sierpnia):** `applyLiveSafeRationForCity` woła pełny
+   `getMaxSafePoziomRacjiForPlayerCity` (cały `previewCityEconomy` + pętla 13 poziomów) — TYLKO
+   z dyskretnych zdarzeń, nigdy z gorącej ścieżki. Wzrost populacji i założenie miasta są z
+   definicji dyskretne (raz na turę/raz na akcję), więc to bezpieczne miejsce wywołania — ale
+   Operator ma to jawnie zweryfikować, nie zakładać.
+4. Test regresyjny mutacyjny (wzorem `auto-wyzywienie-flow-balance-test.cjs` z fixu #4) —
+   scenariusz: miasto Ludność 1, poziom Racji ustawiony ręcznie na bezpieczny, populacja rośnie
+   do 2 w tej samej turze — poziom ma zostać automatycznie obniżony PRZED końcem tej tury, nie
+   dopiero po kolejnej.
+
+**Dispatch Operatora (Sonnet 5, worktree izolowany) NASTĘPUJE.**
