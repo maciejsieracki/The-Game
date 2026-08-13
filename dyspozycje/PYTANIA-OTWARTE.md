@@ -19286,3 +19286,11 @@ potwierdzić że pomija normalizację kroku 5, naprawić przez przepuszczenie pr
 `diplomacyNormalizeSurowiecIlosc` (albo dzielenie przez krok w formule PN) analogicznie do
 pozostałych 7 już naprawionych miejsc, dodać test regresyjny odtwarzający dokładnie ten scenariusz
 (205 Glina + 105 Drewno = 103 PW, nie 515).
+
+## P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU (684d646c) — Evaluator runda 2: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY po 2 rundach (2026-08-13)
+
+CZĘŚĆ E domyka dokładnie defekt z rundy 1 — wiązanie pokryte w 3 miejscach, każde łapane osobno
+(własne mutacje Evaluatora MUT-1/2/3/4 + dodatkowa MUT-5 nietestowana przez Operatora, też
+złapana). Bramki komplet zielone (tsc 0, 66/66, logic 213/213, 41 plików diplomacy-*.cjs zero
+czerwonych). N1 sprostowane poprawnie (15 nie 22). Uwagi U1-U3 niepilne, bez rundy 3.
+**ZAMKNIĘTE.**
