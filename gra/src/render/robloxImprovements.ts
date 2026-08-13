@@ -17,10 +17,11 @@ import {
   buildLodzieRybackie, buildStadnina, ULEPSZENIA_P3A_LAYOUT,
 } from './ulepszenia-modele-p3a';
 import {
-  buildIrygacja, buildPoleIrygowane, buildFort, buildPosterunek,
-  buildDrogaNawierzchnia, buildDrogaBrukowanaNawierzchnia, ULEPSZENIA_P3B_LAYOUT,
+  buildIrygacja, buildPoleIrygowane, buildFort, buildPosterunek, ULEPSZENIA_P3B_LAYOUT,
 } from './ulepszenia-modele-p3b';
 import { buildKopalniaZlota } from './kopalnia-zlota-opus5';
+import { buildDrogaGwiazda } from './droga-6-ramion';
+import { ROAD_MASK_FULL } from '../map/road-network';
 
 function mat(c: number): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({ color: c, flatShading: true });
@@ -384,8 +385,12 @@ function rbxPosterunek(g: THREE.Group, ownerCol: number): void {
 }
 
 const BUILDERS: Record<ImprovementKey, (g: THREE.Group, owner: number) => void> = {
-  droga: g => { g.add(buildDrogaNawierzchnia()); },   // GRAFIKA-3D partia 3B
-  droga_brukowana: g => { g.add(buildDrogaBrukowanaNawierzchnia()); },
+  // R-DROGA-WZOR-6-RAMION: pojedyncze ulepszenie bez kontekstu mapy → pełna gwiazda
+  // (na mapie buildImprovementSectored woła buildDrogaGwiazda z realną maską sąsiedztwa).
+  // / EN: single improvement with no map context → full star; on the map the sectored builder
+  // passes the real neighbour mask.
+  droga: g => { g.add(buildDrogaGwiazda('droga', ROAD_MASK_FULL)); },
+  droga_brukowana: g => { g.add(buildDrogaGwiazda('droga_brukowana', ROAD_MASK_FULL)); },
   farma: g => { g.add(buildFarma({ wariant: 'solo' })); },   // GRAFIKA-3D partia 2
   bydlo: g => { g.add(buildTrzoda()); },   // TRZODA (krowa+świnia N-NE, środek wolny pod miasto) — Maciej 2026-07-09
   owce: g => { g.add(buildZlozeOwce()); },   // FIX GRAFIKA-TEREN-2: owce jak trzoda/złoże owiec (2 owce S-SW, środek wolny) — buildOwca z pastwisko-modele

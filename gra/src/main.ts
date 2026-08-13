@@ -672,6 +672,10 @@ import {
 } from './render/tradeRoutesOverlay';
 import { hideDiplomacyPendingModal, showDiplomacyPendingModal } from './ui/diplomacyPendingHud';
 import { getMinimapData, computeViewport } from './map/minimap';
+// R-DROGA-WZOR-6-RAMION: maska 6 bitów sąsiedztwa dróg (czysta logika, testowalna w Node).
+// / EN: 6-bit road neighbour mask (pure logic, Node-testable).
+import { computeRoadMask, roadHexesToRefresh } from './map/road-network';
+import { hexHasRoad, isRoadImprovementKey } from './map/road-movement';
 import {
   createImprovementBuildApi,
   collectRoadKeys,
@@ -2215,11 +2219,28 @@ async function boot(): Promise<void> {
       return [...keys];
     }
 
-    function buildImprovementVisual(layers: readonly string[], relief: SectorReliefOpts = {}): THREE.Group {
+    /**
+     * Czy heks (q,r) należy do sieci dróg — źródłem prawdy są pola `hex.ulepszenia`/`ulepszenie`,
+     * utrzymywane w zgodzie z `placedImprovements` przez syncHexUlepszenieFields (więc widzi
+     * też drogi AI i te z wczytanego zapisu). / EN: is (q,r) part of the road network.
+     */
+    function hexHasRoadAt(q: number, r: number): boolean {
+      const hex = map.hexes[keyOf(q, r)];
+      return !!hex && hexHasRoad(hex);
+    }
+
+    function buildImprovementVisual(
+      layers: readonly string[],
+      relief: SectorReliefOpts = {},
+      roadMask = 0, // domyślnie „brak sąsiadów" — dla warstw bez drogi bez znaczenia / EN: no-neighbour default
+    ): THREE.Group {
       if (layers.length === 0) return new THREE.Group();
       // Maciej 2026-07-09: układ sektorowy — każde ulepszenie w swoim boku heksa, mocno mniejsze,
-      // przy ściance, środek wolny pod miasto; droga = obwódka.
-      return buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R, relief);
+      // przy ściance, środek wolny pod miasto. Droga (R-DROGA-WZOR-6-RAMION) = gwiazda ramion
+      // wg maski sąsiedztwa — dlatego maskę liczy wołający, który jako jedyny widzi mapę.
+      // / EN: the road is a star of arms driven by the neighbour mask, so the caller — the only
+      // one that sees the map — computes it.
+      return buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R, relief, roadMask);
     }
 
     /** collapseToMergedMesh per heks to ~10–20 ms × tysiące złoże — tylko gdy grupa ciężka. */
@@ -10376,7 +10397,13 @@ async function boot(): Promise<void> {
       if (!ok) return;
       const hk = keyOf(q, r);
       const preview = [...new Set([...mergedImprovementLayers(hk), activeImprovementKey])];
-      const g = buildImprovementVisual(preview, improvementReliefOpts(q, r, preview));
+      // Duch pokazuje, JAK droga się połączy — maska z realnych sąsiadów, jeszcze przed budową.
+      // / EN: the ghost shows how the road WILL connect — mask from the real neighbours.
+      const g = buildImprovementVisual(
+        preview,
+        improvementReliefOpts(q, r, preview),
+        computeRoadMask(q, r, hexHasRoadAt),
+      );
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, preview), wp.z);
       applyGhostMaterial(g, true);
@@ -10472,6 +10499,20 @@ async function boot(): Promise<void> {
      */
     const fortNodes: FortNode[] = [];
     const improvementMeshes = new Map<string, THREE.Group>();
+    /**
+     * R-DROGA-WZOR-6-RAMION: heksy, dla których OSTATNIO wyrenderowano drogę. Służy wyłącznie do
+     * wykrycia ZMIANY sieci dróg (postawiono/zburzono) — wtedy trzeba przerysować sąsiadów, bo
+     * ich maska zyskała/straciła bit w tę stronę. Bez tego sąsiad zostaje z urwanym ramieniem.
+     * / EN: hexes whose last render included a road — used only to detect a road-network CHANGE,
+     * which is when the neighbours must be redrawn (their mask gained/lost a bit towards this hex).
+     */
+    const roadRenderedHexes = new Set<string>();
+    /**
+     * Odbudowa CAŁEJ mapy (wczytanie zapisu, tryb demo) — każdy heks i tak przechodzi przez
+     * spawnImprovementMesh z aktualnymi danymi, więc odświeżanie sąsiadów byłoby czystą stratą
+     * (podwojona liczba przebudów na starcie). / EN: full-map rebuild — every hex is rebuilt anyway.
+     */
+    let bulkImprovementRebuild = false;
     const clearingMeshes = new Map<string, THREE.Group>();
     const hexClearingStates = new Map<string, HexClearingState>();
     let pendingImprovementsTurn = new PendingImprovementsTurn();
@@ -10628,14 +10669,21 @@ async function boot(): Promise<void> {
     }
 
     function syncLivestockAndPlacedMeshes(): void {
-      for (const hexKey of Object.keys(map.hexes)) {
-        const hex = map.hexes[hexKey];
-        if (!hex) continue;
-        const hasDeposit = isLivestockDepositNakladka(hex.nakladka);
-        const hasPlaced = (placedImprovements.get(hexKey)?.length ?? 0) > 0;
-        if (hasDeposit || hasPlaced) {
-          spawnImprovementMesh(hexKey);
+      // Przebieg po CAŁEJ mapie — maski liczą się z gotowych danych, więc sąsiadów nie odświeżamy
+      // (patrz bulkImprovementRebuild). / EN: full-map pass — masks come from ready data.
+      bulkImprovementRebuild = true;
+      try {
+        for (const hexKey of Object.keys(map.hexes)) {
+          const hex = map.hexes[hexKey];
+          if (!hex) continue;
+          const hasDeposit = isLivestockDepositNakladka(hex.nakladka);
+          const hasPlaced = (placedImprovements.get(hexKey)?.length ?? 0) > 0;
+          if (hasDeposit || hasPlaced) {
+            spawnImprovementMesh(hexKey);
+          }
         }
+      } finally {
+        bulkImprovementRebuild = false;
       }
     }
 
@@ -11238,6 +11286,30 @@ async function boot(): Promise<void> {
       syncResourceOverlayAtHex(hexKey);
     }
 
+    /**
+     * R-DROGA-WZOR-6-RAMION — rekomputacja masek po zmianie sieci dróg na heksie (q,r).
+     * Przelicza się TYLKO gdy droga na tym heksie się pojawiła albo zniknęła, i dotyka wyłącznie
+     * tego heksa + jego sąsiadów Z DROGĄ (roadHexesToRefresh) — nigdy całej mapy. Typowe
+     * dociągnięcie odcinka do istniejącej sieci = 2 kafle, dokładnie jak w dokumencie właściciela.
+     * Rekurencja się nie rozbiega: przerysowany sąsiad ma niezmieniony stan drogi, więc wychodzi
+     * pierwszym `return`.
+     * / EN: recompute masks after the road network changed at (q,r). Runs only when a road appeared
+     * or disappeared here, and touches this hex plus its road-having neighbours only — never the
+     * whole map. Recursion terminates: a redrawn neighbour's road state is unchanged, so it returns
+     * on the first check.
+     */
+    function syncRoadNetworkAt(hexKey: string, q: number, r: number, layers: readonly string[]): void {
+      const hasRoad = layers.some(isRoadImprovementKey);
+      if (roadRenderedHexes.has(hexKey) === hasRoad) return;
+      if (hasRoad) roadRenderedHexes.add(hexKey);
+      else roadRenderedHexes.delete(hexKey);
+      if (bulkImprovementRebuild) return;
+      for (const nb of roadHexesToRefresh(q, r, hexHasRoadAt)) {
+        const nk = keyOf(nb.q, nb.r);
+        if (nk !== hexKey) spawnImprovementMesh(nk);
+      }
+    }
+
     function spawnImprovementMesh(hexKey: string): void {
       const parts = hexKey.split(',');
       if (parts.length !== 2) return;
@@ -11245,6 +11317,9 @@ async function boot(): Promise<void> {
       const r = parseInt(parts[1]!, 10);
       if (isNaN(q) || isNaN(r)) return;
       const layers = mergedImprovementLayers(hexKey);
+      // PRZED wcześniejszym `return` dla pustego heksa — zburzenie drogi też musi odświeżyć sąsiadów.
+      // / EN: before the empty-hex early return — removing a road must refresh neighbours too.
+      syncRoadNetworkAt(hexKey, q, r, layers);
       const oldMesh = improvementMeshes.get(hexKey);
       if (oldMesh) {
         scene.remove(oldMesh);
@@ -11272,7 +11347,11 @@ async function boot(): Promise<void> {
       const hex = map.hexes[hexKey];
       const isHill = hex?.terenBazowy === TerenBazowy.Wzgorza;
       const sectoredLayers = hasTarasy ? layers.filter(l => l !== 'tarasy') : layers;
-      const g = buildImprovementVisual(sectoredLayers, improvementReliefOpts(q, r, layers));
+      const g = buildImprovementVisual(
+        sectoredLayers,
+        improvementReliefOpts(q, r, layers),
+        computeRoadMask(q, r, hexHasRoadAt),
+      );
       if (hasTarasy && isHill) {
         const tv = tarasyWariantDlaHeksa(q, r, map.seed);
         const rotY = rotacjaDlaHeksa(q, r, map.seed);
@@ -11296,6 +11375,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
+      roadRenderedHexes.clear(); // sieć dróg odtwarza się z wczytanych warstw / EN: rebuilt from loaded layers
       if (entries?.length) {
         for (const [hexKey, raw] of entries) {
           const hex = map.hexes[hexKey];
@@ -11356,8 +11436,13 @@ async function boot(): Promise<void> {
         syncHexUlepszenieFields(key, layers);
         count++;
       }
-      for (const key of keys) {
-        if (placedImprovements.has(key)) spawnImprovementMesh(key);
+      bulkImprovementRebuild = true; // zasiew całej mapy — jak wyżej / EN: full-map seeding
+      try {
+        for (const key of keys) {
+          if (placedImprovements.has(key)) spawnImprovementMesh(key);
+        }
+      } finally {
+        bulkImprovementRebuild = false;
       }
       rebuildResourceOverlays();
       renderer.shadowMap.needsUpdate = true;

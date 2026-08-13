@@ -9,6 +9,8 @@ import { GAME_MAP_RENDER_STYLE, type MapRenderStyle, buildStyleTarasyTerrace } f
 import { buildRobloxImprovement, buildRobloxFoodStack } from './robloxImprovements';
 import { placeLivestockPair } from './styleResources';
 import { buildKopalniaZlota } from './kopalnia-zlota-opus5';
+import { buildDrogaGwiazda, type RoadTyp } from './droga-6-ramion';
+import { ROAD_MASK_FULL } from '../map/road-network';
 
 // ZLOTO-Q1 (Maciej 2026-07-25, wprowadzenie złota): 'kopalnia_zlota' dopisane jako typ +
 // metadane + dispatch. Model 3D ma od 2026-07-25 WŁASNĄ bryłę (render/kopalnia-zlota-opus5.ts,
@@ -52,25 +54,13 @@ const cyl = (rt: number, rb: number, h: number, c: number, seg = 8) => { const m
 const cone = (r: number, h: number, c: number, seg = 8) => { const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, seg), M(c)); m.castShadow = true; return m; };
 const sph = (r: number, c: number) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 8, 6), M(c)); m.castShadow = true; return m; };
 
-function droga(): THREE.Group {
-  const g = new THREE.Group();
-  const band = box(1.78, 0.03, 0.42, 0xb09766); band.position.y = 0.015; g.add(band);
-  for (const z of [-0.12, 0.12]) { const rut = box(1.78, 0.012, 0.04, COL.dirtDk); rut.position.set(0, 0.032, z); g.add(rut); }
-  for (let i = 0; i < 9; i++) { const s = box(0.09, 0.02, 0.09, i % 2 ? COL.stone : COL.stoneDk); s.position.set(-0.8 + i * 0.2, 0.03, (i % 2 ? 0.1 : -0.1)); g.add(s); }
-  return g;
-}
-function drogaBrukowana(): THREE.Group {
-  const g = new THREE.Group();
-  const band = box(1.78, 0.04, 0.48, 0x9a9080); band.position.y = 0.02; g.add(band);
-  for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 7; col++) {
-      const brick = box(0.22, 0.025, 0.12, (row + col) % 2 ? 0xc4b8a8 : 0xa89888);
-      brick.position.set(-0.66 + col * 0.22, 0.045, -0.12 + row * 0.12);
-      g.add(brick);
-    }
-  }
-  return g;
-}
+// DROGA (R-DROGA-WZOR-6-RAMION, Maciej 2026-08-14): stały pas 1.78 przez heks został
+// zastąpiony sześcioramienną gwiazdą sterowaną maską sąsiedztwa — render/droga-6-ramion.ts.
+// Tutaj (buildImprovement = pojedyncze ulepszenie bez kontekstu mapy, np. galeria/podgląd)
+// pokazujemy PEŁNY wzór, bo bez sąsiadów nie ma innej sensownej reprezentacji typu.
+// / EN: the fixed 1.78 band was replaced by a six-armed star driven by the neighbour mask
+// (render/droga-6-ramion.ts). Here — single improvement without map context (gallery/preview) —
+// we show the FULL pattern, as there is no neighbourhood to derive a partial one from.
 function addIrygacjaField(g: THREE.Group): void {
   const soil = box(1.42, 0.03, 1.22, COL.dirt);
   soil.position.y = 0.015;
@@ -352,8 +342,8 @@ export function buildImprovement(
 ): THREE.Group {
   if (style === 'roblox') return buildRobloxImprovement(key, ownerCol);
   switch (key) {
-    case 'droga': return droga();
-    case 'droga_brukowana': return drogaBrukowana();
+    case 'droga': return buildDrogaGwiazda('droga', ROAD_MASK_FULL);
+    case 'droga_brukowana': return buildDrogaGwiazda('droga_brukowana', ROAD_MASK_FULL);
     case 'irygacja': return irygacja();
     case 'pole_irygowane': return poleIrygowane();
     case 'farma': return farma();
@@ -396,8 +386,11 @@ export function buildImprovement(
 // Każde ulepszenie w SWOIM boku heksa, wyśrodkowane, MOCNO mniejsze, dosunięte do ścianki;
 // środek wolny pod miasto. Reużywa istniejących modeli — BEZ nowych grafik, tylko pomniejszenie + przesunięcie.
 // Boki: 1 surowce · 2 farma · 3 pastwisko/hodowla · 4 fort/posterunek · 5-6 rezerwa.
-// DROGA (Maciej 2026-07-09): pas przez ŚRODEK heksa góra–dół (symbol drogi); miasto ją przykryje.
-// Może kolidować z rzeką — zaakceptowane. Łączenie dróg rozwiążemy inaczej w przyszłości.
+// DROGA (Maciej 2026-07-09 → R-DROGA-WZOR-6-RAMION, 2026-08-14): BYŁO — pas przez ŚRODEK heksa
+// góra–dół, ten sam niezależnie od sąsiadów („Łączenie dróg rozwiążemy inaczej w przyszłości").
+// JEST — sześcioramienna gwiazda: ramię na każdy kierunek z maski sąsiedztwa, zakończone
+// w połowie ścianki (render/droga-6-ramion.ts). Miasto ją przykryje; kolizja z rzeką jak dotąd OK.
+// / EN: WAS a fixed N–S band ignoring neighbours; NOW a six-armed star driven by the neighbour mask.
 const SECTOR_R = 0.72;      // dosunięcie do ścianki (HEX_R=1)
 const SECTOR_SCALE = 0.30;  // znacząco mniejsze
 /**
@@ -470,29 +463,23 @@ export function buildImprovementSectored(
   style: MapRenderStyle = GAME_MAP_RENDER_STYLE,
   hexR = 1,
   relief: SectorReliefOpts = {},
+  roadMask: number = ROAD_MASK_FULL,
 ): THREE.Group {
   const g = new THREE.Group();
   const normalized = keys.filter(k => k && k !== 'brak');
   const box = new THREE.Box3();
   const c = new THREE.Vector3();
-  const sz = new THREE.Vector3();
   const bySector = new Map<number, string[]>();
+  // Droga rysowana JAKO PIERWSZA (najniżej w grupie) i tylko RAZ na heks — bruk ma
+  // pierwszeństwo nad gruntową (spójnie z priorytetem bonusu ruchu w map/road-movement.ts).
+  // / EN: the road is added FIRST (lowest in the group) and only ONCE per hex; cobblestone wins
+  // over dirt, consistently with the movement-bonus priority in map/road-movement.ts.
+  const roadTyp: RoadTyp | null = normalized.includes('droga_brukowana')
+    ? 'droga_brukowana'
+    : (normalized.includes('droga') ? 'droga' : null);
+  if (roadTyp) g.add(buildDrogaGwiazda(roadTyp, roadMask, hexR));
   for (const k of normalized) {
-    if (DROGA_KEYS.has(k)) {
-      // Droga = pas przez ŚRODEK heksa (góra–dół). Model istniejący, wyśrodkowany, obrócony na N–S
-      // i rozciągnięty do (prawie) wierzchołków. Miasto go przykryje. Może kolidować z rzeką (OK).
-      const road = buildImprovement(k as ImprovementKey, ownerCol, style);
-      box.setFromObject(road); box.getCenter(c); box.getSize(sz);
-      road.position.x -= c.x; road.position.z -= c.z; // środek w XZ (spód Y zostaje)
-      const wrap = new THREE.Group();
-      wrap.add(road);
-      const longLen = Math.max(sz.x, sz.z) || 1;
-      const target = 1.9 * hexR; // od górnego do dolnego wierzchołka
-      if (sz.x >= sz.z) { wrap.scale.x = target / longLen; wrap.rotation.y = Math.PI / 2; }
-      else { wrap.scale.z = target / longLen; }
-      g.add(wrap);
-      continue;
-    }
+    if (DROGA_KEYS.has(k)) continue;
     const ang = improvementSectorAngle(k);
     let arr = bySector.get(ang);
     if (!arr) { arr = []; bySector.set(ang, arr); }

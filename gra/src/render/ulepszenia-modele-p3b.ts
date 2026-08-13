@@ -18,11 +18,13 @@
  *  - buildPosterunek(ownerCol)       448 -> 428 tri — wieza obserwacyjna na
  *      pochylonych palach, drabina (+x), daszek, kosz ogniowy, balustrada,
  *      PROPORZEC W KOLORZE GRACZA na szczycie.
- *  - buildDrogaNawierzchnia()        324 -> 204 tri — WSTEGA przez heks (pas wzdluz
- *      osi X, dl. 1.78 = jak stare rbxDroga): jasniejszy pas, koleiny, pobocza,
- *      kamyczki, plamy ubitej ziemi.
- *  - buildDrogaBrukowanaNawierzchnia() 396 -> 288 tri — ta sama wstega; klockowe
- *      plyty w 2 odcieniach szarosci (uklad cegielki) + jasne obrzeze.
+ *  - buildDrogaNawierzchnia() / buildDrogaBrukowanaNawierzchnia() — USUNIETE
+ *      2026-08-14 (R-DROGA-WZOR-6-RAMION). Byly to WSTEGI przez heks (pas wzdluz osi X,
+ *      dl. 1.78), rysowane identycznie niezaleznie od sasiadow, wiec drogi sie nie laczyly.
+ *      Zastapione sescioramienna gwiazda sterowana maska sasiedztwa: render/droga-6-ramion.ts
+ *      (palete P.droga* / P.bruk* przeniesiono tam 1:1).
+ *      / EN: removed 2026-08-14 — fixed X-axis bands ignoring neighbours; replaced by the
+ *      neighbour-mask-driven six-armed star in render/droga-6-ramion.ts.
  *  - buildZlozeMiedz/Zelazo/Wegiel/Sol/Glina/Zloto() — 208/216/216/200/216/264 tri —
  *      wystajace z terenu klockowe mineraly w 4 skupiskach na obrzezu heksa
  *      (r 0.60-0.68); SRODEK WOLNY (r<0.45) — na tych heksach staje kopalnia.
@@ -42,22 +44,20 @@
  * maskuje `ownerCol & 0xffffff` i barwi proporzec/baner. W registry BUILDERS
  * sygnatura pozostaje (g, owner) => void — patrz nizej.
  *
- * INTERFEJS PRZEBIEGU DROGI (zachowany 1:1 ze starym rbxDroga :60 /
- * rbxDrogaBrukowana :73): droga w kanonie NIE ma lukow wejscie-wyjscie —
- * to prosty pas wzdluz osi swiata X przez srodek heksa (dl. 1.75-1.78),
- * a spawnImprovementMesh (main.ts:4303) stawia mesh w srodku heksa BEZ
- * rotacji (buildImprovementVisual main.ts:1013). Nowe nawierzchnie maja
- * ten sam footprint (1.78 x ~0.5-0.56, spod y=0) — zmieniony TYLKO wyglad.
+ * INTERFEJS PRZEBIEGU DROGI — NIEAKTUALNY od 2026-08-14 (R-DROGA-WZOR-6-RAMION).
+ * Bylo: prosty pas wzdluz osi swiata X przez srodek heksa (dl. 1.75-1.78), bez lukow
+ * wejscie-wyjscie. Jest: ramie na kazdy kierunek maski, konczace sie w polowie scianki
+ * (render/droga-6-ramion.ts). Przebieg NIE jest juz wlasnoscia modelu — wynika z sasiedztwa.
+ * / EN: obsolete since 2026-08-14 — the road layout is no longer a property of the model,
+ * it follows from the neighbour mask.
  *
  * JAK WPIAC (drzewo kanoniczne gra/src):
  *  1. Plik skopiowac do gra/src/render/ulepszenia-modele-p3b.ts.
  *  2. render/robloxImprovements.ts (registry BUILDERS ~linia 376):
  *       import { buildIrygacja, buildPoleIrygowane, buildFort, buildPosterunek,
- *                buildDrogaNawierzchnia, buildDrogaBrukowanaNawierzchnia,
  *                ULEPSZENIA_P3B_LAYOUT } from './ulepszenia-modele-p3b';
  *       const L3B = ULEPSZENIA_P3B_LAYOUT;
- *       droga:           g => { g.add(buildDrogaNawierzchnia()); },
- *       droga_brukowana: g => { g.add(buildDrogaBrukowanaNawierzchnia()); },
+ *       (droga / droga_brukowana — od 2026-08-14 z render/droga-6-ramion.ts, patrz wyzej)
  *       irygacja:        g => { const m = buildIrygacja(); m.rotation.y = L3B.irygacja.budynek.rotY; g.add(m); },
  *       pole_irygowane:  g => { const m = buildPoleIrygowane(); m.rotation.y = L3B.pole_irygowane.budynek.rotY; g.add(m); },
  *       fort:       (g, o) => { const m = buildFort(o); m.rotation.y = L3B.fort.budynek.rotY; g.add(m); },
@@ -358,60 +358,12 @@ export function buildPosterunek(ownerCol = 0xffd54a): THREE.Group {
   return g; // 428 tri
 }
 
-// ===================== DROGA — NAWIERZCHNIA GRUNTOWA =======================
-/**
- * WSTEGA przez heks jak stare rbxDroga: pas wzdluz osi X, dl. 1.78, srodek
- * w (0,0), spod y=0 — registry stawia bez rotacji (przebieg zachowany 1:1).
- * Jasniejszy pas z koleinami, poboczami i kamyczkami. 204 tri.
- */
-export function buildDrogaNawierzchnia(): THREE.Group {
-  const g = new THREE.Group();
-  const pasM = mat(P.drogaPas), koleinaM = mat(P.drogaKoleina), poboczeM = mat(P.drogaPobocze);
-  const plamaM = mat(P.drogaPlama), kamMs = [mat(P.kamien), mat(P.kamienHi), mat(P.kamienDk)];
-
-  B(g, 1.78, 0.045, 0.50, 0, 0.0225, 0, pasM);               // pas jezdny
-  B(g, 1.78, 0.028, 0.05, 0, 0.014, 0.265, poboczeM);        // pobocza
-  B(g, 1.78, 0.028, 0.05, 0, 0.014, -0.265, poboczeM);
-  B(g, 1.72, 0.012, 0.055, 0, 0.048, 0.105, koleinaM);       // koleiny
-  B(g, 1.72, 0.012, 0.055, 0, 0.048, -0.105, koleinaM);
-  for (const [px, pz, s2] of [[-0.62, 0.01, 1.2], [0.11, -0.02, 1.0], [0.66, 0.03, 1.15]] as const) {
-    B(g, 0.17 * s2, 0.01, 0.11 * s2, px, 0.048, pz, plamaM, 0, px, 0);  // plamy
-  }
-  const kamyki = [[-0.80, 0.19], [-0.55, -0.17], [-0.33, 0.21], [-0.10, -0.20],
-    [0.14, 0.185], [0.38, -0.16], [0.60, 0.20], [0.80, -0.19], [0.02, 0.02]] as const;
-  kamyki.forEach(([px, pz], i) => {
-    const s2 = 0.035 + (i % 3) * 0.009;
-    B(g, s2, 0.028, s2, px, 0.045, pz, kamMs[i % 3]!, 0, px * 3 + i, 0);
-  });
-  return g; // 204 tri
-}
-
-// ===================== DROGA BRUKOWANA — NAWIERZCHNIA ======================
-/**
- * Ta sama wstega przez heks co stare rbxDrogaBrukowana (pas wzdluz X, 1.78).
- * Klockowe plyty w 2 odcieniach szarosci (cegielka) + jasne obrzeze. 288 tri.
- */
-export function buildDrogaBrukowanaNawierzchnia(): THREE.Group {
-  const g = new THREE.Group();
-  const bazaM = mat(P.brukBaza), plytaA = mat(P.brukA), plytaB = mat(P.brukB), obrzezeM = mat(P.brukObrzeze);
-
-  B(g, 1.78, 0.055, 0.56, 0, 0.0275, 0, bazaM);              // podbudowa
-  for (const sz of [-1, 1] as const) {                       // obrzeze — po 3 segmenty
-    for (let i = 0; i < 3; i++) {
-      B(g, 0.56, 0.032, 0.05, -0.59 + i * 0.59, 0.062, sz * 0.255, obrzezeM);
-    }
-  }
-  for (let row = 0; row < 3; row++) {                        // plyty (cegielka)
-    const rz = -0.17 + row * 0.17;
-    const off = row === 1 ? 0.145 : 0;
-    for (let col = 0; col < 6; col++) {
-      const px = -0.725 + col * 0.29 + off;
-      if (px > 0.86) continue;
-      B(g, 0.26, 0.032, 0.145, px, 0.066, rz, (row + col) % 2 ? plytaA : plytaB);
-    }
-  }
-  return g; // 288 tri
-}
+// ===== DROGA — NAWIERZCHNIE: PRZENIESIONE (2026-08-14, R-DROGA-WZOR-6-RAMION) =====
+// buildDrogaNawierzchnia() / buildDrogaBrukowanaNawierzchnia() USUNIETE — rysowaly staly
+// pas 1.78 wzdluz osi X, taki sam niezaleznie od sasiadow (drogi sie nie laczyly).
+// Nastepca: render/droga-6-ramion.ts — buildDrogaGwiazda(typ, maska, hexR).
+// / EN: both road-surface builders removed; superseded by the neighbour-mask star in
+// render/droga-6-ramion.ts.
 
 // ===================== ZLOZA KOPALNE — NAKLADKI ============================
 /**
