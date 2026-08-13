@@ -17334,3 +17334,47 @@ zweryfikowane niezależnie przeze mnie na scalonym drzewie. Commit `f6d29ef0`, p
 **Dispatch Evaluatora (Opus 5) NASTĘPUJE teraz** — szeroki zakres (7 plików źródłowych, silnik
 handlu + AI + UI), więc weryfikacja ma być dokładna mimo standardowego trybu 1x
 (`R-EVALUATOR-3X-ZGODA-Q1` — 3x tylko za jawną zgodą, nie stosuję bez pytania).
+
+---
+
+## P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA=A — Evaluator: PASS-WITH-NOTES, N1 wymaga naprawy przed zamknięciem, runda 2 dispatch (2026-08-13)
+
+**Kod produkcyjny potwierdzony w pełni poprawny, własnym harnessem wykonującym realny kod z
+`main.ts`** (34 asercje, esbuild transpiluje faktyczny blok `wycinka` ze źródła): pula Pracy AI
+maleje o koszt startu (realnie **10**, nie 5 jak sądzono — `koszt_praca=5` w JSON przechodzi
+przez `scaleImprovementWorkCost` ×2, `R-STAWKI-KOSZT-ULEPSZEN-X2`), Drewno rośnie o plon,
+identyczne dla obu ścieżek na wszystkich Stolarniach/trudnościach/epokach (parytet gracz-AI
+potwierdzony end-to-end), cap era-scaled poprawnie dla WŁAŚCICIELA AI (nie zahardkodowany na
+gracza). Sprostowanie briefu: stary bug dawał netto **+15 Pracy** (nie +20).
+
+**⛔ N1 — WYMAGANE PRZED ZAMKNIĘCIEM (nie tylko notatka).** Test 11 w `ai-improvements-test.cjs`
+NIE jest regres-guardem — dowiedzione empirycznie: Evaluator podmienił `main.ts` na pełny stary
+bug, test 11 dalej pokazuje **30/30 zielone**. Przyczyna: test przepisuje formułę zamiast
+wykonywać `main.ts` (ten sam wzorzec tautologii, znany z wcześniejszych rund tej sesji —
+`shouldAllowBarbCityCapture`, panel Szczęście/Prawo, promote-to-front sekcja 9 rundy 1). Dwie
+konkretne tautologiczne asercje: `eq(pracaPoolAfter, pracaPoolBefore - koszt, …)` porównuje
+zmienną z jej WŁASNĄ definicją; `assert(pracaPoolAfter !== pracaPoolBefore - koszt +
+drewnoCredit0)` to `X !== X+25`, zawsze prawda. **Precedens w TYM SAMYM repo pokazujący jak to
+zrobić poprawnie:** `ai-founding-territory-test.cjs` sekcja B1 — „strażnik tekstowy main.ts",
+dokładnie ten sam problem (closure `boot()` niebundlowalny wprost) rozwiązany przez asercję na
+obecność/nieobecność konkretnego wzorca tekstowego w źródle.
+
+**N2 (informacyjna, nie do naprawy w tej rundzie):** `tsc` NIE łapie literówki w kluczu
+surowca (`creditOwnerResourceStock` przyjmuje `key: string`, nie unię literałową) — potwierdzone
+mutacją `'drewno'`→`'drewna'`, exit 0. Wzmacnia potrzebę N1 (strażnik tekstowy to jedyna siatka
+dla tej klasy błędu).
+
+**N3 (do backlogu, nie blokuje):** utajony rozjazd zaokrągleń AI vs gracz, JEŚLI `wycinka.tury`
+w danych kiedykolwiek wzrośnie >1 (dziś =1, zero rozjazdu) — gracz zaokrągla per turę, AI raz na
+sumie. Konkretne przykłady rozjazdu w pełnym raporcie Evaluatora `adece4ccd6f827696`.
+
+**N4 (nowe zgłoszenie, PRE-ISTNIEJĄCE, poza zakresem tej naprawy) — toast gracza po kliknięciu
+wyrębu (`main.ts:10756`) błędny na 4 sposoby jednocześnie:** mówi „Praca" zamiast „Drewno", „20"
+zamiast „25", „3 tury" zamiast „1 tura", „łącznie 60" zamiast „25". Realny hint po turze mówi już
+poprawnie — gracz dostaje DWA sprzeczne komunikaty o tej samej akcji. Ta sama pomyłka Praca/
+Drewno co ten commit naprawił po stronie AI, tylko w UI gracza. Do osobnej rejestracji/naprawy.
+
+**STATUS: dispatch rundy 2 (mała) w toku** — zakres: WYŁĄCZNIE N1 (dopisać strażnik tekstowy do
+testu 11, wzorem `ai-founding-territory-test.cjs` B1, asercje: obecność `creditOwnerResourceStock(`
+z `'drewno'` w bloku `wycinka`, NIEobecność wzorca `poolBefore - koszt + ` w tym samym bloku).
+N2/N3/N4 świadomie POZA zakresem, zarejestrowane osobno.
