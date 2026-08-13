@@ -19409,3 +19409,42 @@ WYŁĄCZNIE surowców fizycznych (produkcja/koszt/utrzymanie), NIE Pracy (budynk
 Żywności. Żadna zmiana kodu — stan zgodny z decyzją od początku (potwierdzone recon-em
 `P-WOJSKO-ZUZYCIE-ZYWNOSCI-PO-SKALI-5X` — zero zmian w `units.json` pole żywność/turę,
 `terrain-yields.json` pole Żywność, `econ-params.json` żywnościowe). **ZAMKNIĘTE, bez akcji.**
+
+## ⛔ INCYDENT PROCESOWY: gałąź czerwona na tsc + regresja x5 w PN, deploy zablokowany i uratowany na czas (2026-08-13)
+
+**Co się stało:** Fort/straznica krok2 runda 2 (`66be754f`) przypadkiem zgarnęła z współdzielonego
+drzewa 3 niedokończone hunki `main.ts` (linie ~23773-23822) należące do RÓWNOLEGLE pracującego
+Operatora `R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A` — ten sam wzorzec błędu co historyczny `b9867b3`
+(CLAUDE.md §4a). Odpowiadająca druga połowa zmiany (pole `kosztArmii` w interfejsach
+`AutoBalanceRationsOpts`/`AutoRaiseRationsOpts`, `empire-food.ts`) nigdy nie została
+skomitowana — gałąź `tsc` była czerwona (exit 2) od `66be754f` aż do teraz, złapane dopiero przez
+Evaluatora fortu rundy 2 (`afe5098e448849a83`, WERDYKT FAIL).
+
+**Równolegle:** Evaluator naprawy formuły PN (`a40b1501a10aa89a4`) znalazł, że commit `e7591ebb`
+(naprawa kroku-5, sama poprawna i zgodna z zatwierdzoną decyzją) wprowadził WŁASNĄ, nową regresję
+×5 w INNYM miejscu — `computeQuickDealBasket` (`diplomacy-pn-engine.ts:444`) mnożyło już-blokową
+cenę PONOWNIE przez krok, więc AI proponowało/akceptowało umowy handlowe 5× poniżej fair. Żadna
+z 41 bramek dyplomacji tego nie łapała (zerowe pokrycie tej konkretnej ścieżki).
+
+**Właściciel wydał hasło `deploy` w trakcie tego niezauważonego, podwójnego uszkodzenia gałęzi.**
+Dispatchowany agent deployu (Opus 5, `af769dc4078b58785`) **poprawnie zatrzymał się PRZED
+buildem** po wykryciu czerwonego `tsc` — nic nie zbudował, nie skopiował, nie zacommitował,
+`WERSJE.md`/`KANAL-PRACA.md` świadomie nie zaktualizowane (deploy by był fałszywy). Zero szkody.
+
+**Naprawa (orkiestrator, bezpośrednio, awaryjnie — poza zwykłą kolejnością Operator→Evaluator ze
+względu na aktywny deploy w locie):** dokończono merge `R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A`
+(brakujący blok `kosztArmiiForMaxSafe` w `main.ts` + pełny `empire-food.ts` z worktree, już
+przetestowany przez Operatora 17/17 nowy test + wszystkie auto-wyzywienie-*.cjs zielone) +
+jednoliniowa poprawka `diplomacy-pn-engine.ts:444` (`item.pnPerUnit * item.krok` →
+`item.pnPerUnit`, dokładnie fix wskazany przez Evaluatora). Wszystkie bramki zweryfikowane
+zielone przed commitem: `tsc` 0, `logic` 213/213, 41 plików `diplomacy-*.cjs` zero czerwonych,
+wszystkie `auto-wyzywienie-*.cjs` zielone, `fort-strazniaca`/`ai-founding-territory` zielone.
+Commit `8b20c34d`, push OK. Agent deployu zawiadomiony, wznowiony z instrukcją ponownego pull
+przed buildem.
+
+**Do zrobienia:** (a) dispatch Evaluatora dla scalenia `R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A` (kryterium
+"przyrost zapasów" — merge wykonany przeze mnie bez rundy Evaluatora ze względu na pilność, wymaga
+weryfikacji retroaktywnej); (b) dispatch Evaluatora/rundy 2 dla poprawki `diplomacy-pn-engine.ts:444`
+(jednoliniowa, ale ekonomicznie istotna — wpływa na każdą Szybką Umowę i ofertę AI); (c) rozliczyć
+zakres `66be754f` — czy 3 stray hunki main.ts mają formalnie należeć do tematu fortów, czy do
+auto-wyżywienia (kosmetyka rejestru, nie blokuje).
