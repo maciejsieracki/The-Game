@@ -19166,3 +19166,29 @@ oryginalnej decyzji, nie oczywiste przeoczenie), nie regresja kodu do naprawieni
 
 **STATUS: zamknięte jako rozpoznanie — zgłoszone właścicielowi wprost, czeka na jego decyzję czy
 skalować też łańcuch żywnościowy ×5, czy zostawić jak jest.**
+
+## P-AUTO-WYZYWIENIE-ZAPASY-NIE-STEROWANE — Rozpoznanie: mechanizm dziala zgodnie z projektem, ale projekt ma 2 znane, wczesniej nierozstrzygniete luki (2026-08-13)
+
+Recon (`a730e8bbcfd7760a2`) potwierdził: Auto Wyżywienie steruje WYŁĄCZNIE poziomem Racji, wg
+kryterium `isRationBalanceTargetMet`/`isEmpireCityFoodSolvent` (`empire-food.ts:455-487`) liczonego
+AGREGATOWO na poziomie CAŁEGO IMPERIUM (`computeEmpireCityFoodNadwyzka`), NIE per-miasto, i BEZ
+uwzględnienia kosztu żywności armii. Wszystkie liczby ze zrzutów (Ateny -4, Milet +6, Limit
+Spichlerza=5, Nadwyżka +2, Przyrost zapasów 0, magazyn 0/1000 po odjęciu Wojsko -20) zgadzają się
+co do grosza z tą logiką — mechanizm NIE jest zepsuty, realizuje dokładnie to kryterium, które ma
+zakodowane. Bramki `auto-wyzywienie-flow-balance` 17/17, `bilans-clamp` 22/22, `live-recalc` 57/57,
+`population-growth-live-recalc` 42/42 — wszystkie zielone, żadna regresja.
+
+**To NIE nowy bug — to dwa ZNANE, wcześniej postawione, nierozstrzygnięte na rzecz zgłoszonego
+dziś objawu pytania z TEJ SAMEJ sesji:**
+1. Agregat-imperium vs per-miasto (postawione 2026-08-10, Maciej odpowiedział „c + info" = zostań
+   przy dzisiejszym/agregat — nigdy formalnie nie wybrano B/per-miasto).
+2. Uwzględnienie kosztu armii w kryterium bezpieczeństwa (postawione dziś jako opcja B w
+   `P-AUTO-WYZYWIENIE-SPICHLERZ-NAWRACAJACY-DEFICYT`, Maciej wybrał **A** — trigger wzrostu
+   populacji, NIE B).
+
+Zgłoszony dziś objaw (magazyn 0/1000, głód wojska mimo zbalansowanych racji miast) jest
+BEZPOŚREDNIĄ, przewidzianą konsekwencją niewybrania opcji B w pytaniu 2 — nie nowym odkryciem.
+
+**STATUS: zamknięte jako rozpoznanie — 3 pytania ABC (w tym odświeżenie pytań 1-2 powyżej +
+nowe pytanie o skalę ×5 łańcucha żywnościowego, powiązane z równoległym tematem
+`P-WOJSKO-ZUZYCIE-ZYWNOSCI-PO-SKALI-5X`) zadane właścicielowi wprost w czacie.**
