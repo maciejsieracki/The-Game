@@ -298,15 +298,19 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   // wydać całą swoją część ze WSPÓLNEGO licznika `globalSpent`, zanim wspólny pułap w ogóle
   // wszedłby w grę — Evaluator zmierzył 80% CAŁEJ puli imperium wydane przy nominalnych 20%.
   // „Autopraca działa z budżetu całej cywilizacji, a nie z budżetu miasta" (słowa właściciela) —
-  // override miasta nie jest osobną kopertą, tylko udziałem WEWNĄTRZ tego pułapu.
+  // kolejność wydatku ustala WYŁĄCZNIE `id` miasta, NIE override; override zmienia efektywny
+  // pułap TEGO miasta (`imperiumBudgetCap` niżej) TYLKO gdy jest NIŻSZY niż polityka imperium —
+  // gdy jest WYŻSZY, nie daje ani pierwszeństwa, ani większego udziału.
   // / EN: OVERARCHING empire-wide cap, computed ONCE from `pracaBudgetPercent` (the empire
   // policy passed by the caller), NEVER from a per-city override returned by
   // `getPracaBudgetPercent`. Without this cap, one city with an override higher than the empire
   // policy (e.g. 80% vs a 20% policy) could spend its whole share of the SHARED `globalSpent`
   // counter before the shared cap ever kicked in — the Evaluator measured 80% of the WHOLE
   // empire pool spent at a nominal 20%. "Auto-work runs off the whole civilization's budget, not
-  // the city's" (owner's words) — a city's override is not a separate envelope, just a share
-  // WITHIN this cap.
+  // the city's" (owner's words) — spend order is decided ONLY by the city's `id`, NOT by the
+  // override; the override changes this city's effective cap (`imperiumBudgetCap` below) ONLY
+  // when it's LOWER than the empire policy — when it's HIGHER, it grants neither priority nor a
+  // bigger share.
   const imperiumPercentClamped = Math.max(0, Math.min(100, pracaBudgetPercent));
   const imperiumBudgetCap = (imperiumPercentClamped / 100) * globalPracaPulaAtEntry;
 

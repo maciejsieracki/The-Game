@@ -21395,3 +21395,45 @@ samym pliku (`hexContextTooltip.ts listTerrainPossibleImprovements()`), rozszerz
 `hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` o oba scenariusze. Commit WYŁĄCZNIE tego zakresu —
 nie mieszać z żadnym innym tematem (patrz sprostowanie N2 tego samego Evaluatora o zanieczyszczonym
 zakresie `ea0be32a`).**
+
+## Sprostowanie: commit ea0be32a niesie tez pliki z 2 innych tematow (integralnosc, nie tresc)
+
+Kontekst: `## Evaluator: Auto-praca N1-N3 (ea0be32a)` wyżej w tym pliku znalazł, że commit
+`ea0be32a` (temat Auto-praca N1-N3) fizycznie niesie też zmiany źródłowe **dwóch innych,
+niepowiązanych tematów** tej samej sesji — skutek `git commit -a` we współdzielonym drzewie
+(zakazany wzorzec, CLAUDE.md §4a). Ten wpis mapuje **plik → właściwy temat**, żeby przyszli
+Evaluatorzy tamtych dwóch tematów wiedzieli, że ich kod **już jest na gałęzi wewnątrz `ea0be32a`**
+i muszą go ocenić mimo braku własnego commita — inaczej wejdzie do fali bez żadnego przeglądu.
+
+**Temat „prototyp kreatora" (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, P-NEWGAME-OPISY-DO-TOOLTIP):**
+- `gra/src/ui/newGameFlow.ts` — `+129 / −20`
+- `gra/src/ui/hudTitleTooltip.ts` — `+6 / −0` (dopisany zasięg `.civ-newgame`)
+
+Kod tego tematu jest fizycznie w `ea0be32a`, nie w żadnym własnym commicie. **Nie ma wymienionej
+bramki dla tej zmiany** (opis `ea0be32a` wymienia wyłącznie bramki tematu Auto-praca) — wymaga
+oceny Evaluatora przed deployem (patrz punkt 3 sekcji „CO ZROBIĆ" w werdykcie wyżej).
+
+**Temat „hex tooltip filtr złóż" (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA):**
+- `gra/src/ui/hexContextTooltip.ts` — `+44 / −5`
+- `gra/src/map/improvement-build.ts` — `+3 / −1` (nowy eksport `hasAnimalDeposit`)
+
+Kod tego tematu jest fizycznie w `ea0be32a`. Komplikacja dodatkowa: commit-rodzeństwo `94977a20`
+(„Hex tooltip: filtr nakladka/zloze…", ten sam znacznik czasu 04:03:53, oceniony wyżej sekcją
+„Evaluator PASS-WITH-NOTES: hex tooltip filtr nakladka/zloze") niesie **wyłącznie plik testu**
+(`hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs`, `+257/−0`) — jego zmiany źródłowe zostały
+wcześniej zabrane przez `ea0be32a`. **Kto szuka tej naprawy przez `git show 94977a20` zobaczy
+tylko test, nie kod** — właściwy kod (dwa pliki wyżej) trzeba szukać w `ea0be32a`. Werdykt
+„Evaluator PASS-WITH-NOTES: hex tooltip filtr nakladka/zloze (94977a20)" pozostaje ważny jako
+ocena TREŚCI zmiany (test 36/0, zachowanie sprawdzone) — to sprostowanie dotyczy wyłącznie tego,
+**gdzie fizycznie leży kod**, nie jego poprawności.
+
+**Co NIE jest dotknięte:** nic nie zginęło, gałąź się buduje (`vite build` OK, `tsc` 0 błędów),
+oba zagarnięte tematy mają swoje testy zielone na gałęzi. To wyłącznie wada identyfikowalności
+commitów, nie funkcjonalna — pełne uzasadnienie i dowody w sekcji werdyktu `ea0be32a` wyżej.
+
+**N1 domknięte tym wpisem:** `auto-improvements.ts` — 4. miejsce (linia ~301 PL + bliźniacza EN),
+które nadal mówiło o override jako „udziale WEWNĄTRZ tego pułapu", poprawione tym samym stylem co
+pozostałe 3 miejsca w pliku: kolejność wydatku ustala wyłącznie `id` miasta; override zmienia
+efektywny pułap TEGO miasta tylko gdy jest NIŻSZY niż polityka imperium, nie daje ani
+pierwszeństwa, ani większego udziału gdy jest wyższy. Bramki: `npx tsc --noEmit` 0 błędów,
+`auto-improvements-test.cjs` 37/0 (bez zmiany — czysta poprawka komentarza, zero zmian logiki).
