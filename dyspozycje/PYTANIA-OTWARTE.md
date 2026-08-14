@@ -26694,4 +26694,7 @@ poziomie trudności niż wybrany.
    inny mechanizm — np. ograniczenie zasobów/populacji państwa-miasta niezwiązane z trudnością) i
    zaraportować z powrotem, nie zgadywać naprawy na siłę.
 
-**STATUS: DISPATCH W TOKU.**
+**STATUS: PRZENIESIONE do `dyspozycje/ZGLOSZENIA-CZEKAJACE-NA-LIMIT.md` (Maciej 2026-08-14: limit
+sesji prawie zjedzony, nowe zgłoszenia — chyba że wprost oznaczone jako krytyczne — tylko
+rejestrujemy, dispatch dopiero po odnowie limitu w przyszłą środę). NIE dispatchowane, zero kodu
+tknięte. Plan rekonesansu wyżej zostaje aktualny na później.**
