@@ -233,10 +233,7 @@ import {
   type BuildingRecord,
 } from '../game/economy';
 import {
-  DEFAULT_CONVERTER_RECIPES,
-  converterThroughputForEra,
-  converterBuildingIdForRecipe,
-  loadThroughput,
+  converterProductionDisplayForBuilding,
   type RawConverterParamsJson,
 } from '../game/converters';
 import { UI_PARAMS } from './uiParams';
@@ -2818,12 +2815,23 @@ ${UNIT_RECRUIT_CARD_CSS}
 .bld-owned-upkeep.muted{color:#6a6458;font-weight:500;}
 .bld-owned-bonus{display:inline-flex;flex-wrap:wrap;gap:0.18em 0.32em;min-width:0;justify-content:flex-end;}
 /* P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE: druga linia -- bilans produkcji
-   konwertera (wejscia na czerwono jak utrzymanie, wyjscie na zielono).
+   konwertera. N6 (werdykt runda 1): wejscia dostaja odcien ODROZNIALNY od
+   .bld-owned-upkeep (#e8a090 lososiowy) -- cieply pomarancz, zeby "koszt
+   utrzymania" i "koszt produkcji" nie wygladaly identycznie w dwoch
+   sasiadujacych liniach; wyjscie zostaje zielone bez zmian. Prefiks "Prod.:"
+   (.bld-owned-conv-label) jako dodatkowy sygnal semantyczny.
    flex-basis:100% wymusza zawijanie na wlasna linie w .bld-owned-row (flex-wrap). */
 .bld-owned-conv-row{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 0.4em;
   font-size:0.66em;line-height:1.25;margin-top:0.1em;}
-.bld-owned-conv-in{color:#e8a090;font-weight:600;white-space:nowrap;}
+.bld-owned-conv-label{flex:none;color:#a8a090;font-weight:700;margin-right:0.06em;}
+.bld-owned-conv-in{color:#e0973c;font-weight:600;white-space:nowrap;}
 .bld-owned-conv-out{color:var(--green);font-weight:600;white-space:nowrap;}
+/* N2 (werdykt runda 1): budynek runtime-nieaktywny nie wykonuje konwersji --
+   wyszarzenie analogiczne do .bld-owned-upkeep.muted, zeby gracz nie widzial
+   pelnej linii produkcji jakby budynek dzialal. */
+.bld-owned-conv-row--inactive .bld-owned-conv-in,
+.bld-owned-conv-row--inactive .bld-owned-conv-out,
+.bld-owned-conv-row--inactive .bld-owned-conv-label{color:#6a6458;font-weight:500;}
 .bld-owned-chip{display:inline-flex;align-items:center;gap:0.12em;color:#c8d8b0;white-space:nowrap;}
 .bld-owned-chip .civ-cs-chip-ic-wrap,.bld-owned-chip .civ-cs-inline-loaf{opacity:0.92;}
 .bld-owned-row .bld-upg{margin-left:auto;flex:none;font-size:0.72em;padding:0.1em 0.32em;line-height:1;border-radius:4px;
@@ -6335,76 +6343,92 @@ function formatResourceUpkeepSummary(resources: Record<string, number>): string 
 }
 
 /**
- * P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE (Maciej 2026-08-14): strona
- * PRODUKCYJNA budynku-konwertera (np. Garncarnia glina+drewno→ceramika) —
- * ODRĘBNA od `buildingUpkeepDisplay` (koszt utrzymania, koszt_surowce). Czyta
- * WPROST te same receptury/przepustowość co silnik (`DEFAULT_CONVERTER_RECIPES`
- * + `converterThroughputForEra`, `tickEmpireResourcePipeline` w turn-economy.ts) —
- * ta sama para funkcji, która już karmi licznik HUD imperium
- * (`empireConverterResourceRatesForOwner` w main.ts). Liczba jest CELOWO BRUTTO
- * (nominalna przepustowość, NIE pomniejszona o brak wejścia tej konkretnej
- * tury) — dokładnie ten sam wybór, który silnik już podjął dla licznika HUD
- * ("netto zbyt kosztowne, brutto OK", komentarz `empireConverterResourceRatesForOwner`);
- * pokazanie tu innej metodologii (np. netto) rozjechałoby ten wiersz z licznikiem
- * imperium bez uzasadnienia.
- * / EN: converter PRODUCTION side of a building (e.g. Pottery clay+wood→pottery) —
- * SEPARATE from `buildingUpkeepDisplay` (upkeep, build-cost resource drain). Reads
- * the SAME recipes/throughput as the engine (`DEFAULT_CONVERTER_RECIPES` +
- * `converterThroughputForEra`) — the same pair already feeding the empire HUD
- * counter. The number is DELIBERATELY BRUTTO (nominal throughput, not reduced
- * for this turn's actual input availability) — the same choice the engine already
- * made for the HUD counter; showing a different (netto) methodology here would
- * desync this row from the empire counter without justification.
+ * P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE (Maciej 2026-08-14, runda 2 po
+ * werdykcie FAIL Evaluatora — N1/N3): strona PRODUKCYJNA budynku-konwertera
+ * (np. Garncarnia glina+drewno→ceramika) — ODRĘBNA od `buildingUpkeepDisplay`
+ * (koszt utrzymania, koszt_surowce). Cienka otoczka wołająca WPROST czystą
+ * funkcję domenową `converterProductionDisplayForBuilding` z `../game/converters`
+ * (era/trudność właściciela z `cfg`) — cała logika (receptury, throughput,
+ * skalowanie epoką) żyje TYLKO w converters.ts, testowalna bez UI/DOM (N1).
+ * Liczba jest CELOWO BRUTTO (nominalna przepustowość, NIE pomniejszona o brak
+ * wejścia tej konkretnej tury).
+ * SPROSTOWANIE (Evaluator N3, runda 1): to NIE jest „ta sama para funkcji,
+ * która karmi licznik HUD imperium" — dopasowanie budynek↔receptura tutaj
+ * (`converterBuildingIdForRecipe`, jak `turn-economy.ts`) jest INNE niż w
+ * HUD-zie imperium (`empireConverterResourceRatesForOwner` w main.ts, przez
+ * `builtIds.includes(recipe.id)`), przez co HUD gubi część receptur (Odlewnia
+ * żelaza, Wielka odlewnia) — to osobny, już zarejestrowany błąd
+ * (`P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`), NIE ten temat. Spójność
+ * tej funkcji jest z SILNIKIEM (`runConverter`/`converterBuildingIdForRecipe`),
+ * nie z HUD-em.
+ * / EN: converter PRODUCTION side of a building (e.g. Pottery clay+wood→pottery)
+ * — SEPARATE from `buildingUpkeepDisplay` (upkeep). Thin wrapper calling the
+ * pure domain function `converterProductionDisplayForBuilding` from
+ * `../game/converters` directly — all logic (recipes, throughput, era scaling)
+ * lives ONLY in converters.ts, testable without UI/DOM (N1). The number is
+ * DELIBERATELY BRUTTO (nominal throughput, not reduced for this turn's actual
+ * input availability).
+ * CORRECTION (Evaluator N3, round 1): this is NOT "the same function pair
+ * feeding the empire HUD counter" — the building↔recipe matching here differs
+ * from the HUD's (`empireConverterResourceRatesForOwner` in main.ts), which is
+ * why the HUD drops some recipes (Iron/Great Foundry) — a separate, already
+ * registered bug (`P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`), not this
+ * one. This function is consistent with the ENGINE (`runConverter`/
+ * `converterBuildingIdForRecipe`), not the HUD.
  */
 function buildingConverterProductionDisplay(
   def: BuildingDef,
   city: City,
   data: GameData,
 ): { consumed: Record<string, number>; produced: Record<string, number> } | null {
-  const recipes = DEFAULT_CONVERTER_RECIPES.filter(
-    r => converterBuildingIdForRecipe(r) === def.id,
-  );
-  if (recipes.length === 0) return null;
   const era = cfg.getEpoch?.(city.ownerId) ?? 1;
   const difficulty = cfg.difficulty ?? 'normal';
   const rawParams = data.econParams as unknown as RawConverterParamsJson;
-  const consumed: Record<string, number> = {};
-  const produced: Record<string, number> = {};
-  for (const recipe of recipes) {
-    const baseThroughput = loadThroughput(
-      rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
-    );
-    const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
-    for (const [key, perCykl] of Object.entries(recipe.inputs)) {
-      if (!(perCykl > 0)) continue;
-      consumed[key] = (consumed[key] ?? 0) + perCykl * throughput;
-    }
-    if (recipe.outputAmount > 0) {
-      produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * throughput;
-    }
-  }
-  return { consumed, produced };
+  return converterProductionDisplayForBuilding(def.id, rawParams, difficulty, era);
 }
 
-/** Wiersz HTML „bilansu produkcji" konwertera — wejścia na czerwono, wyjście na zielono. */
+/**
+ * Formatuje jedną ilość wiersza produkcji: całkowite bez przecinka (np. „50"),
+ * niecałkowite z 1 miejscem po przecinku po polsku (np. Ruda cyny 2,5 → „2,5",
+ * nie zaokrąglone `Math.round` do „3" — N4, Maciej werdykt runda 1).
+ * / EN: formats one production-row amount: integers with no decimal (e.g. "50"),
+ * non-integers with 1 Polish decimal place (e.g. Tin ore 2.5 → "2,5", not
+ * rounded to "3" — N4).
+ */
+function formatConverterAmount(v: number): string {
+  const r1 = Math.round(v * 10) / 10;
+  return Number.isInteger(r1) ? String(r1) : fmtDecPl(r1, 1);
+}
+
+/**
+ * Wiersz HTML „bilansu produkcji" konwertera — wejścia na pomarańczowo, wyjście
+ * na zielono (N6, Maciej werdykt runda 1: odcień wejść odróżnialny od koloru
+ * utrzymania `bld-owned-upkeep`, plus prefiks „Prod.:" — rozdzielenie
+ * SEMANTYCZNE, nie tylko strukturalne, „kosztu utrzymania" od „kosztu
+ * produkcji"). Decyzja prowizoryczna orkiestratora pod presją czasu (Maciej
+ * upoważnił pracę autonomiczną bez ABC) — może zostać odwrócona na jego słowo.
+ */
 function formatConverterProductionRowHtml(
   display: { consumed: Record<string, number>; produced: Record<string, number> },
   compact: boolean,
 ): string {
   const parts: string[] = [];
   for (const [k, v] of Object.entries(display.consumed)) {
-    const amt = Math.round(v);
-    if (amt <= 0) continue;
-    const txt = compact ? `−${amt} ${stockResourceLabel(k)}` : `−${amt} ${stockResourceLabel(k)}/t`;
+    const r1 = Math.round(v * 10) / 10;
+    if (r1 <= 0) continue;
+    const amtTxt = formatConverterAmount(v);
+    const txt = compact ? `−${amtTxt} ${stockResourceLabel(k)}` : `−${amtTxt} ${stockResourceLabel(k)}/t`;
     parts.push(`<span class="bld-owned-conv-in">${txt}</span>`);
   }
   for (const [k, v] of Object.entries(display.produced)) {
-    const amt = Math.round(v);
-    if (amt <= 0) continue;
-    const txt = compact ? `+${amt} ${stockResourceLabel(k)}` : `+${amt} ${stockResourceLabel(k)}/t`;
+    const r1 = Math.round(v * 10) / 10;
+    if (r1 <= 0) continue;
+    const amtTxt = formatConverterAmount(v);
+    const txt = compact ? `+${amtTxt} ${stockResourceLabel(k)}` : `+${amtTxt} ${stockResourceLabel(k)}/t`;
     parts.push(`<span class="bld-owned-conv-out">${txt}</span>`);
   }
-  return parts.join(compact ? ' ' : ' · ');
+  if (parts.length === 0) return '';
+  return `<span class="bld-owned-conv-label">Prod.:</span>` + parts.join(compact ? ' ' : ' · ');
 }
 
 type BuildingReqChipKind = 'tech' | 'stock' | 'other';
@@ -8275,6 +8299,12 @@ function appendOwnedBuildingRow(
   if (def && (def.upgradeFrom ?? '').trim().length > 0) {
     upgradeChainTitle = upgradeChainSteps(def.id, data.buildings).map(c => c.nazwa).join(' → ');
   }
+  // N2 (werdykt Evaluatora, runda 1): hoisted na zasięg całej funkcji -- wiersz
+  // produkcji konwertera (dalej niżej) MUSI wiedzieć, czy budynek jest
+  // runtime-nieaktywny, i NIE liczyć tego drugi raz. / EN: hoisted to function
+  // scope -- the converter production row (further below) needs to know
+  // whether the building is runtime-inactive, without recomputing it.
+  let inactiveStatus: ReturnType<typeof resolveOwnedBuildingInactiveStatus> | undefined;
   if (def && city) {
     const builtIds = cfg.getBuiltBuildingIds?.(city.id) ?? [];
     const allCities = cfg.getCities?.() ?? [];
@@ -8295,7 +8325,7 @@ function appendOwnedBuildingRow(
       empireStock,
       { ownerId: city.ownerId, resolveOwnerZlotoAccess: cfg.getOwnerHasZlotoAccess },
     );
-    const inactiveStatus = resolveOwnedBuildingInactiveStatus(id, {
+    inactiveStatus = resolveOwnedBuildingInactiveStatus(id, {
       builtIds,
       allCities,
       ownerId: city.ownerId,
@@ -8359,8 +8389,17 @@ function appendOwnedBuildingRow(
     if (convDisplay) {
       const convHtml = formatConverterProductionRowHtml(convDisplay, compact);
       if (convHtml) {
-        const convRow = el('div', 'bld-owned-conv-row');
+        // N2 (werdykt Evaluatora, runda 1): budynek runtime-nieaktywny nie
+        // wykonuje konwersji -- wyszarz linię produkcji zamiast pokazywać ją
+        // jakby budynek działał; `inactiveStatus` już policzone wyżej (hoisted),
+        // bez ponownego liczenia. / EN: a runtime-inactive building performs no
+        // conversion -- grey out the production row instead of showing it as
+        // if the building were active; `inactiveStatus` already computed above
+        // (hoisted), not recomputed.
+        const convInactive = inactiveStatus?.inactive === true;
+        const convRow = el('div', 'bld-owned-conv-row' + (convInactive ? ' bld-owned-conv-row--inactive' : ''));
         convRow.innerHTML = convHtml;
+        if (convInactive && inactiveStatus?.tooltip) convRow.title = inactiveStatus.tooltip;
         row.appendChild(convRow);
       }
     }

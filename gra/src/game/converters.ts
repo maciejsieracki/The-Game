@@ -217,6 +217,54 @@ export function converterBuildingIdForRecipe(recipe: ConverterRecipe): string {
   return recipe.buildingId ?? recipe.id;
 }
 
+/**
+ * P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE runda 2 (Maciej 2026-08-14, po
+ * werdykcie FAIL Evaluatora N1): funkcja domenowa CZYSTA (bez DOM/UI) licząca
+ * bilans produkcji konwertera (wejścia na minus, wyjście na plus) dla danego
+ * budynku -- wyekstrahowana z `cityPanel.ts` (`buildingConverterProductionDisplay`)
+ * właśnie po to, żeby dało się ją testować i wołać BEZPOŚREDNIO z bramki
+ * testowej (`citypanel-konwerter-produkcja-test.cjs`), zamiast test miał WŁASNĄ
+ * kopię formuły (tautologia złapana przez Evaluatora w rundzie 1). `cityPanel.ts`
+ * woła TĘ SAMĄ funkcję -- nie ma po stronie UI żadnej reimplementacji tej logiki.
+ * Liczba jest CELOWO BRUTTO (nominalna przepustowość, nie pomniejszona o brak
+ * wejścia tej konkretnej tury) -- ten sam wybór, którego całą resztę logiki
+ * (receptury, throughput, skalowanie epoką) i tak już robi silnik.
+ * / EN: PURE domain function (no DOM/UI) computing a converter building's
+ * production balance (inputs negative, output positive) -- extracted from
+ * `cityPanel.ts` so the test gate can call it directly instead of keeping its
+ * own copy of the formula (the round-1 test tautology the Evaluator caught).
+ * `cityPanel.ts` now calls this exact function -- no UI-side reimplementation
+ * of this logic remains. The number is DELIBERATELY BRUTTO (nominal
+ * throughput, not reduced for this turn's actual input availability).
+ */
+export function converterProductionDisplayForBuilding(
+  buildingId: string,
+  rawParams: RawConverterParamsJson,
+  difficulty: Difficulty,
+  era: number,
+): { consumed: Record<string, number>; produced: Record<string, number> } | null {
+  const recipes = DEFAULT_CONVERTER_RECIPES.filter(
+    r => converterBuildingIdForRecipe(r) === buildingId,
+  );
+  if (recipes.length === 0) return null;
+  const consumed: Record<string, number> = {};
+  const produced: Record<string, number> = {};
+  for (const recipe of recipes) {
+    const baseThroughput = loadThroughput(
+      rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
+    );
+    const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
+    for (const [key, perCykl] of Object.entries(recipe.inputs)) {
+      if (!(perCykl > 0)) continue;
+      consumed[key] = (consumed[key] ?? 0) + perCykl * throughput;
+    }
+    if (recipe.outputAmount > 0) {
+      produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * throughput;
+    }
+  }
+  return { consumed, produced };
+}
+
 // ---------------------------------------------------------------------------
 // U-14b — Garncarnia: auto-efekt z nadwyżki Ceramiki (po drain Spichlerza)
 // ---------------------------------------------------------------------------
