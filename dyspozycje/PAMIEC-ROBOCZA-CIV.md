@@ -12,6 +12,13 @@ Maciej wymaga **pełnej formy** dla KAŻDEJ decyzji gameplayowej/produktowej/arc
 
 **Struktura każdego pytania — pełny tekst w czacie, dokładnie w tej kolejności:**
 0. **Nagłówek** — `[TEMAT: …]` lub `[EKRAN: …]` + **ID pytania** (np. `C-MAP-Q1`, `B2-Q7`). Obowiązkowe. **ID zawsze w formacie inline code** (pojedyncze `` ` ``) — Maciej 2026-08-14: „obok numeru pytania zawsze taki znaczek kopiowania", żeby dało się je łatwo skopiować i odpowiedzieć `ID + litera`.
+
+**⛔ Rozszerzenie (Maciej, 2026-08-14, tego samego dnia): to dotyczy NIE TYLKO pełnych pytań ABC.**
+Jego słowa: „zapisz tylko do reguł żeby zawsze podawać mi chociaż możliwość do skopiowania numeru
+pytania i żeby zawsze był numer pytania." KAŻDE pytanie do właściciela — także drobne, doprecyzowujące,
+bez pełnej struktury Sytuacja/Cel/A-B-C — dostaje jakiś identyfikator w inline code (`` ` ``): pełne ID
+tematu jeśli istnieje, w przeciwnym razie krótki ad-hoc token, żeby zawsze dało się go skopiować i
+jednoznacznie wskazać w odpowiedzi.
 1. **Sytuacja** — co jest DZIŚ w grze, językiem gracza, pełne nazwy, zero skrótów typu „P2"/gołych id. 2–4 zdania.
 2. **Cel pytania** — jaki efekt ma mieć decyzja. 1–2 zdania.
 3. **Dlaczego teraz** — blokada / ryzyko / zależność. 1–3 zdania.
