@@ -140,13 +140,20 @@ function main() {
     const section = empireSectionFromHudAct(c.act);
     // R-DESIGN-11-ZAKLADEK faza 1+2 (Maciej 2026-08-13/1x): Skarbiec (faza 1) oraz Praca/Nauka/
     // Religia (faza 2) dostały WŁASNE bloki top-level (nie 'ekonomia') — zmiana zamierzona, patrz
-    // empirePanelSectionMap.ts. Miasta/Ludność/Rekruci/pełny przegląd zostają na dawnym torze
-    // 'ekonomia' do kolejnej fazy, więc oczekiwanie tu jest wciąż nienaruszone.
+    // empirePanelSectionMap.ts. Miasta/Ludność/pełny przegląd zostają na dawnym torze 'ekonomia'
+    // do kolejnej fazy, więc oczekiwanie tu jest wciąż nienaruszone.
+    // P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK (Maciej 2026-08-14, naprawione commitem f536b792):
+    // Rekruci NIE zostaje na torze 'ekonomia' jak Miasta/Ludność — Armia ma już własny top-level
+    // blok, więc chip HUD „Rekruci" trafia w blok Armii. Ten sam duplikat asercji już
+    // zaktualizowano w empire-panel-split-test.cjs (commit f536b792); ta osobna asercja w tym
+    // pliku przeoczono przy tamtej naprawie — poprawiona teraz na to samo, poprawne zachowanie.
     // EN: Treasury (phase 1) and Labor/Science/Religion (phase 2) got their OWN top-level blocks
     // (not 'ekonomia') — intended change, see empirePanelSectionMap.ts. Cities/Population/
-    // Recruits/full overview stay on the old 'ekonomia' track for the next phase, so the
-    // expectation there is still intact.
-    const OWN_BLOCK_BY_ACT = { skarbiec: 'skarbiec', praca: 'praca', nauka: 'nauka', religia: 'religia' };
+    // full overview stay on the old 'ekonomia' track for the next phase, so the expectation there
+    // is still intact. Recruits does NOT stay on that track — Army already has its own top-level
+    // block, so the HUD "Recruits" chip lands on the Army block (fixed in f536b792; this was a
+    // duplicate assertion in a separate test file that got missed by that fix, now corrected).
+    const OWN_BLOCK_BY_ACT = { skarbiec: 'skarbiec', praca: 'praca', nauka: 'nauka', religia: 'religia', rekruci: 'armia' };
     const expectedBlock = OWN_BLOCK_BY_ACT[c.act] ?? 'ekonomia';
     assert(`chip "${c.act}" -> blok ${expectedBlock} (R-PANEL-SPLIT nienaruszone / R-DESIGN-11-ZAKLADEK faza 1)`,
       empirePanelBlockForSection(section) === expectedBlock);
