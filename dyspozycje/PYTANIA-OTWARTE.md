@@ -24242,3 +24242,169 @@ Dwie noty do domknięcia w osobnej turze, **żadna nie jest warunkiem deployu**:
   33/63 zostawiało**. Do sprostowania w komentarzu i w sekcji ECHO wyżej w tym pliku.
 
 STATUS: **OTWARTE — G1 i G2 do domknięcia (noty Evaluatora, nie blokują deployu)**
+
+## Evaluator: druga (wewnętrzna) obwódka granicy = relacja dyplomatyczna (`bf839f81`, `R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1`) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
+
+Zakres: `gra/src/game/civ-visual.ts`, `gra/src/render/rangeOverlay.ts`, `gra/src/main.ts`,
+`gra/tools/granice-relacja-dyplomatyczna-test.cjs`. Wszystko poniżej zmierzone **niezależnie**
+w izolowanym worktree (`git reset --hard` na `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`),
+przez URUCHOMIENIE prawdziwego kodu — nie przepisane z opisu commita. Blokad brak.
+
+### 1. Bramki — wszystkie zielone, zgodne co do liczby z opisem commita
+
+`tsc` uruchomiony dopiero po `ln -s` do `gra/node_modules` (C-029: bez symlinku worktree bierze
+TypeScript spoza projektu; wszystkie liczby niżej z projektowego **5.9.3**).
+
+| Bramka | Wynik | Zgodność z opisem commita |
+|---|---|---|
+| `npx tsc --noEmit` | 0 błędów, exit 0 | zgodne |
+| `granice-relacja-dyplomatyczna-test.cjs` (nowa) | 52 pass / 0 fail | zgodne |
+| `civ-visual-test.cjs` | 56 pass / 0 fail | zgodne |
+| `territory-border-test.cjs` | 9 pass / 0 fail | zgodne |
+| `territory-border-dense-settlement-test.cjs` | 15 pass / 0 fail | zgodne |
+| `tech-tree-test.cjs` | 19 pass / 0 fail | zgodne |
+| `research-test.cjs` | 33 pass / 0 fail | zgodne |
+| `unit-replace-test.cjs` | 13 / 13 | zgodne |
+| `vite build --outDir /tmp/eval-granice` | exit 0 | zgodne |
+
+`git show --stat`: **4 pliki, zero zanieczyszczenia** innymi tematami. Drzewo po pracy czyste.
+
+### 2. Geometria drugiego pasa — sprawdzona bit-po-bit własną rasteryzacją PRAWDZIWEGO wyjścia
+
+Zbudowałem `buildTerritoryBorderGroup` na prawdziwym kodzie i **zrasteryzowałem pokrycie** każdego
+pasa (test punkt-w-trójkącie na siatce 0,01), zamiast wierzyć opisowi.
+
+- **Ujemny `bandWidth` naprawdę idzie DO WEWNĄTRZ.** Promień od środka heksa: pas zewnętrzny
+  **1,0000–1,4078**, pas relacji **0,8051–1,0000**, przy inradiusie heksa **0,8660**. Przesunięcie
+  używa **tego samego** wektora z `segmentOutwardNormal`, tylko ze znakiem minus — nie ma odwrócenia
+  „czegoś innego". Sama `segmentOutwardNormal` (test względem centroidu pętli) **nie została
+  tknięta**, więc oba pasy dziedziczą identyczną normalną i nie mogą się rozjechać.
+- Konstrukcja z mitrowanymi narożami daje efektywną grubość w połowie krawędzi ≈0,34 (zewn.)
+  i ≈0,17 (wewn.) — **proporcja 2:1 zachowana**, co potwierdza też pomiar pikseli (34 px : 15 px).
+- **ODPOWIEDŹ NA GŁÓWNE PYTANIE DISPATCHU: NIE.** Dwa pasy WEWNĘTRZNE sąsiadujących terytoriów są
+  **geometrycznie rozłączne** (pole wspólne **0,0000 j²**) — leżą po przeciwnych stronach wspólnej
+  polilinii. Zmiana **nie wprowadza nowego z-fightingu** między sąsiednimi pasami wewnętrznymi.
+- Pas zewnętrzny i wewnętrzny **tego samego** właściciela też są rozłączne (0,0000 j²) — stykają się
+  wyłącznie wzdłuż linii obwodu.
+
+**N1 (nota, nie blokada) — uzasadnienie `TERRITORY_RELATION_Y_BUMP` w opisie commita i w komentarzu
+jest MERYTORYCZNIE BŁĘDNE, choć sama stała jest nieszkodliwa i pożyteczna.** Opis mówi, że różnica
+wysokości zapobiega z-fightingowi na wspólnej krawędzi. Dwa powody, że to nie ten mechanizm:
+(a) oba pasy jednego właściciela **w ogóle się nie nakładają** (zmierzone 0,0000 j²) — stykają się
+linią o zerowym polu; (b) **wszystkie** materiały pasów mają `depthWrite: false`, więc żaden nie
+zapisuje bufora głębi i z-fighting między nimi jest **niemożliwy konstrukcyjnie**, przy dowolnym `y`.
+Co ta stała robi NAPRAWDĘ (i to jest wartościowe): Three.js sortuje obiekty przezroczyste po
+rzutowanej głębokości **środka bounding-sphere geometrii**, z rozstrzygnięciem remisu przez
+`a.id - b.id` (odczytane przeze mnie z `node_modules/three/build/three.cjs`,
+`reversePainterSortStable`), więc podniesienie o 0,004 **przechyla sortowanie** tak, żeby pas relacji
+rysował się PO pasach zewnętrznych. Stałą zostawić, komentarz poprawić przy następnym dotknięciu.
+
+**N2 (nota, nie blokada) — realne nakładanie zachodzi gdzie indziej niż zakładał dispatch i jest
+ZALEŻNE OD KAMERY.** Zmierzone: pas wewnętrzny właściciela nakłada się na pas ZEWNĘTRZNY SĄSIADA
+(obie pary niezerowe). Ponieważ o kolejności rysowania decyduje głębokość środka bounding-sphere
+każdego pasa, to **która obwódka wygrywa na styku, zależy od położenia kamery**. Przy terytoriach
+stojących „obok siebie" (jak na moim zrzucie) drobne przechylenie z N1 wygrywa i **oba pasy relacji
+są na wierzchu — przypadek dobry, potwierdzony pikselami**. Ale dla kamery patrzącej WZDŁUŻ osi
+łączącej dwa terytoria różnica głębokości między nimi zdominuje przechylenie 0,004 i pas relacji
+dalszego terytorium może zostać przykryty pasem zewnętrznym bliższego. Nie blokuje (pas relacji i tak
+świeci wzdłuż całej reszty granicy, która zwykle graniczy z ziemią niczyją), ale **zrzut z jednego
+kąta tego nie wyklucza** — warto mieć na uwadze przy playteście.
+
+### 3. Weryfikacja wizualna — wykonana przeze mnie, na PIKSELACH (nie na grafie sceny)
+
+Bundle zbudowany do `/tmp/eval-granice` (exit 0), headless Chromium + SwiftShader, `?playtest=mapa`
+(seed 271828, Testpolis vs Ateny, `wrog=city_enemy_1`).
+
+- Granica renderuje się jako **realna dwuwarstwowa obwódka**, stosunek szerokości **34 px : 15 px
+  ≈ 2:1** — zgodny z 0,45 : 0,225.
+- Piksele na styku: **#f44e4d** — to `#FF5252` przy `opacity 0,7` na zielonym terenie, czyli
+  **kolor WOJNY dokładnie taki, jak zadeklarowano**. Druga warstwa **#71333a / #73343c** = Rzymianie
+  `#8B1A1A` po tym samym zmieszaniu.
+- **Istotna korekta metody Operatora:** Operator potwierdzał kolory **odczytem grafu sceny** (nazwy
+  meshy + kolory materiałów). To dowodzi, że meshe zostały ZBUDOWANE z właściwym kolorem — **nie
+  dowodzi, że są WIDOCZNE**. Przy `depthWrite: false` i sortowaniu przezroczystości to są dwie różne
+  rzeczy. Pomiar pikseli dokłada tę brakującą połowę i wypada pomyślnie.
+- Uboczna obserwacja: kolor tożsamościowy sąsiada (Ateny = Hetyci `#7B4B8A`, fiolet) **nie jest
+  widoczny na styku w ogóle** — patrz N4.
+
+### 4. Pokrycie statusów — pełne; typ jest jednak przepisany ręcznie (N3)
+
+`Relation['status']` (`game/diplomacy.ts:56`) = `'wojna' | 'pokoj' | 'sojusz' | 'neutralni'` —
+**dokładnie 4 wartości, wszystkie obsłużone**. `'pokoj'` i `'neutralni'` zlewają się w złoto
+**zgodnie ze specyfikacją właściciela** (wymienia tylko wrogów / sojuszników / neutralnych), a złoty
+fallback to ten sam, udokumentowany przypadek neutralny. **Żaden status nie wpada w NIEZAMIERZONY
+fallback.**
+
+**N3 (nota, nie blokada) — `RelationBorderStatus` to ręczna KOPIA unii, nie typ pochodny.**
+W `civ-visual.ts` stoi własne `export type RelationBorderStatus = 'wojna' | 'pokoj' | 'sojusz' |
+'neutralni'`, a parametr jest dodatkowo poszerzony do `RelationBorderStatus | string`. Skutek: gdyby
+ktoś zmienił nazwę statusu w `diplomacy.ts`, **`tsc` tego NIE zgłosi**, a wszystkie obwódki po cichu
+zrobią się złote; nowa bramka też tego nie złapie, bo asercjonuje literały wprost. Tani fix przy
+następnym dotknięciu: `import type { Relation }` i parametr `Relation['status']`, bez `| string`.
+
+### 5. Wpięcie w `setDiploRelation` — poprawne; sprawdziłem jego nośne założenie
+
+`if ((a === 0 || b === 0) && prevStatus !== rel.status) refreshTerritoryBorderOverlay();`
+
+- **AI↔AI pomijane słusznie** — `relationColorFn` czyta wyłącznie `getDiploRelation(0, …)`, więc para
+  bez gracza nie może zmienić koloru żadnej obwódki.
+- **Pary gracz↔AI NIE są pomijane przypadkiem** — jedyny warunek pominięcia to brak zmiany statusu,
+  co z definicji oznacza brak zmiany koloru. Pierwsze ustawienie relacji (`prevStatus === undefined`)
+  przechodzi i odświeża.
+- **Zweryfikowałem kluczową przesłankę komentarza** („w silniku nie ma dziś mutacji `rel.status`
+  w miejscu", więc `prevStatus` realnie czyta stan sprzed zapisu): `grep -rn "\.status = " src/`
+  zwraca **ZERO trafień**, każdy z ~18 callerów podaje świeży obiekt (`{...rel, status}` albo wynik
+  `applyDiploEventTracked`). **Twierdzenie PRAWDZIWE.**
+- **Koszt ZMIERZONY, nie oszacowany** (układ realistyczny: gracz 217 heksów + 6×AI po 61,
+  7 właścicieli): `buildTerritoryBorderGroup` **2,29 ms przed → 3,73 ms po (×1,63)**. Najgorszy
+  przypadek z dispatchu — seria 7 wypowiedzeń wojny w jednej turze — to **26,1 ms łącznie**
+  (przed zmianą byłoby 16,1 ms). To koszt zdarzeniowy, nie per-klatka: **brak odczuwalnego lagu**.
+
+### 6. Sygnatura `number` zamiast `string` — spójna w całym diffie
+
+Wszystkie wystąpienia (`relationColorFn`, `relationBorderColor`, `RELATION_BORDER_COLOR_*`) typowane
+`number`; kolor trafia do `new THREE.MeshBasicMaterial({ color })` **tą samą ścieżką co istniejące
+`colorFn`**; nigdzie nie ma formy stringowej ani konwersji; `tsc` 0 błędów. **Odejście Operatora od
+dispatchu było słuszne** — `civColorFn` faktycznie zwraca `number` (0xRRGGBB).
+
+### 7. Twarde FAIL-e §4 — sprawdzone, żaden nie zachodzi
+
+**#7 (sam happy-path)** — nie: bramka pokrywa wszystkie 4 statusy, fallback nieznanego statusu,
+kompatybilność wsteczną bez `relationColorFn` (1 mesh) i mierzy geometrię, a nie tylko istnienie.
+**#8 (parytet gracz/AI)** — feature jest **z definicji** relatywny do gracza (to treść specyfikacji
+właściciela), a nie gałąź logiki różnicująca AI; przypadek `ownerId === 0` to wprost zapis spec.
+**#9 (save/load)** — brak nowego trwałego pola stanu; kolor jest wyprowadzany z istniejącego stanu
+dyplomacji przy każdej przebudowie.
+
+### N4 — ZNALEZISKO PRE-ISTNIEJĄCE (osobny temat, NIE blokada tego werdyktu)
+
+Pas zewnętrzny jest rysowany **NA ZEWNĄTRZ własnego terytorium**, więc na styku dwóch cywilizacji
+kolor tożsamościowy każdej z nich ląduje na ziemi SĄSIADA i konkuruje tam z pasem relacji. Pomiar
+pikseli potwierdza skutek: **fiolet Hetytów `#7B4B8A` nie jest na styku widoczny w ogóle** — sąsiada
+nie da się tam zidentyfikować po kolorze. Zweryfikowałem, że mechanizm jest **pre-istniejący**
+(przesunięcie na zewnątrz i pokrywanie się pętli obwodu sąsiadów nie zostały tym commitem tknięte)
+i że **zmiana go nie pogłębia** — pas, który zajmuje nowa obwódka wewnętrzna, był już wcześniej
+obszarem spornym. Ocena Operatora („nie pogarsza") **się broni**.
+
+Dwa sprostowania do opisu Operatora, na przyszłość: (a) to **nie jest z-fighting** — przy
+`depthWrite: false` nie ma walki bufora głębi, tylko **deterministyczne, zależne od kamery
+przesłanianie**; (b) sformułowanie „w praktyce łagodzi" jest zbyt mocne — pas relacji faktycznie daje
+teraz sygnał na każdej granicy, ale **kosztem** widoczności koloru tożsamościowego sąsiada, więc to
+wymiana jednej informacji na drugą, nie poprawa obu naraz.
+
+**Zastrzeżenie do mojej własnej liczby:** pierwszy pomiar nakładania się pasów zewnętrznych
+(0,3064 j²) pochodził z sondy na terytoriach **jednoheksowych**, gdzie pas 0,45 jest ogromny wobec
+heksa; ta liczba jest zawyżona i dotyczy zawijania w narożach, a **nie** nakładania w połowie
+krawędzi (tam pasy zewnętrzne sąsiadów są rozłączne). Podaję to wprost, żeby nikt nie użył tej
+liczby poza kontekstem.
+
+### Wniosek
+
+**PASS-WITH-NOTES.** Zmiana robi dokładnie to, co opisuje: drugi pas idzie do wewnątrz, ma dokładnie
+połowę szerokości, jedzie po tej samej polilinii, koduje wszystkie 4 statusy, odświeża się
+natychmiast po zmianie relacji i nie psuje żadnej bramki. Główna obawa z dispatchu (nowy z-fighting
+między sąsiednimi pasami wewnętrznymi) **została obalona pomiarem**. Noty **N1** (błędne uzasadnienie
+stałej w komentarzu), **N2** (przesłanianie zależne od kamery) i **N3** (ręcznie przepisany typ
++ `| string`) to poprawki do zrobienia przy następnym dotknięciu tego kodu, nie osobna runda.
+**N4** to temat pre-istniejący do ewentualnej decyzji właściciela, jeśli zależy mu na czytelności
+koloru tożsamościowego sąsiada na styku terytoriów.
