@@ -20493,17 +20493,26 @@ audyt pełnego transkryptu dziś (2026-08-14) potwierdza, że nigdy nie trafiło
 Escape/overlayów, `escape-overlay-stack-test.cjs` już istnieje jako bramka pokrewna — możliwe że
 częściowo dotyczy tego samego stosu).**
 
-## P-MENU-START-MUZYKI-OPOZNIENIE (znalezisko audytu 2026-08-14, zgłoszenie Macieja z 2026-07-26 — nigdy niezarejestrowane) · STATUS: OTWARTE
+## P-MENU-START-MUZYKI-OPOZNIENIE — SPROSTOWANIE: JUŻ NAPRAWIONE WCZEŚNIEJ, dodano tylko strażnik (2026-08-14)
 
 Maciej (2026-07-26, dosłownie): „jakiś czas temu prosiłem żebyś przesunął start muzyki w menu
-głównym o dwie trzy sekundy bo niestety ścina początek zanim się właduje przeglądarka." —
-muzyka w menu głównym startuje natychmiast przy załadowaniu, zanim przeglądarka/strona są w
-pełni gotowe, więc początek utworu bywa ucięty. Ten sam raport zawierał zdanie „Oczywiście ani
-tego nie zarejestrowałeś ani nie wprowadziłeś do grę" — czyli już WTEDY (07-26) było to zgubione
-zgłoszenie; audyt dziś potwierdza że nadal nie ma go w tym pliku.
+głównym o dwie trzy sekundy bo niestety ścina początek zanim się właduje przeglądarka." Audyt
+transkryptu 2026-08-14 błędnie ocenił to jako „nigdy niezarejestrowane/nienaprawione" — **Operator
+dispatchowany do tego tematu ustalił (historia commitów, nie zgadywanie), że to zostało naprawione
+tego samego dnia w kolejnych iteracjach: `c922954f` (07-26, pierwsza wersja mechanizmu),
+`fb3ba24b` (07-27, zmiana na fade-in), `89b144ff` (08-05, dołożenie z powrotem
+`muzyka_opoznienie_startu_ms`).** Stan dziś: `resumeIntroMusic()` (`main.ts` ~9220-9236) czyta
+`UI_PARAMS.menu.muzyka_opoznienie_startu_ms` (`ui-params.json` = 2500ms, środek żądanego
+przedziału) i robi `setTimeout` przed pierwszym startem utworu, dodatkowo zabezpieczone fade-inem
+5000ms (`muzyka_fade_in_ms`) — potwierdzone też w żywym zdeployowanym bundlu
+`gra-robocza/Gra-ROBOCZA.html`. Mój wcześniejszy wpis w tym pliku (audyt dzisiejszy) był mylący —
+przepraszam za fałszywy alarm, poprawiam na podstawie realnej weryfikacji Operatora, nie samej
+obecności/braku frazy w transkrypcie.
 
-**STATUS: OTWARTE, drobna poprawka — do dispatchu Operatora (dodać opóźnienie 2-3s przed startem
-muzyki menu głównego, znaleźć plik odpowiedzialny za `Prayer_of_the_Sun_Stone.mp3`/playlistę menu).**
+**Jedyna zmiana:** nowy test regresyjny `gra/tools/menu-music-delay-test.cjs` (9/0, scalony
+`4d000cb1`→kolejny commit), dopinający ten stan na stałe. Zero zmian w `gra/src`/`gra/data`.
+
+**STATUS: ZAMKNIĘTE.**
 
 **Uwaga o „menu wczoraj do poprawy" (Maciej, 2026-08-14):** audyt pełnego transkryptu z dnia
 2026-08-13 (wczoraj względem dzisiejszej daty) **nie znalazł żadnej wiadomości wspominającej
