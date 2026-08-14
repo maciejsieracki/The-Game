@@ -20178,3 +20178,9 @@ rozstrzyga przypadku "kafel z drogą bez sąsiada", więc to wypełnienie luki, 
 (`hexHasRoadAt` patrzy tylko na ulepszenia) — samotny odcinek drogi przy własnym mieście pokaże
 placyk zamiast ramienia w stronę miasta. Dokument tego przypadku nie opisuje, do decyzji
 właściciela przy playteście.
+
+## Panel Faza 2 naprawa (1f5832d7) — SCALONA, dispatch Evaluatora (2026-08-14)
+
+F1/F2/F3 z rundy naprawczej zaimplementowane i zweryfikowane wizualnie (build + headless Chrome,
+screenshoty klik po chipach Praca/Nauka/Religia/Skarbiec, 3× zoom). Wszystkie 4 bramki pokrycia
+zielone, Faza 1 (Skarbiec) bez regresji. STATUS: dispatch Evaluatora.
