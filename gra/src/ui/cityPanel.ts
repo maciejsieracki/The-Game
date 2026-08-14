@@ -1174,7 +1174,17 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       if (orderMult.kulturaMult !== 1) y.kultura *= orderMult.kulturaMult;
     }
     y.praca = cityPracaInteger(y.praca);
-    const zywnoscBrutto = y.zywnosc;
+    // Naprawa P-SPICHLERZ-PANEL-VS-SILNIK-ROZJAZD-BILANS (2026-08-13): `y.zywnosc` to martwe,
+    // przedwerbjne pole modelu konsumpcji (flat 1 zywnosc/mieszkanca/ture), niezalezne od
+    // dzisiejszego systemu Wyzywienia V85 (Racje) -- czytanie go tu powodowalo PODWOJNE odjecie
+    // zuzycia zywnosci (raz przez ten martwy model, drugi raz przez `kosztRacji` liczony nizej).
+    // Silnik tury (`turn-economy.ts` `previewCityEconomy`/`advanceCityEconomy`) poprawnie czyta
+    // `y.zywnoscBrutto` (produkcja PRZED odjeciem konsumpcji) -- panel musi robic to samo.
+    // EN: `y.zywnosc` is a dead, pre-V85 consumption-model field (flat 1 food/citizen/turn),
+    // independent of today's V85 Rations system -- reading it here double-subtracted food
+    // consumption (once via that dead model, again via `kosztRacji` computed below). The turn
+    // engine correctly reads `y.zywnoscBrutto` (production BEFORE consumption); panel must match.
+    const zywnoscBrutto = y.zywnoscBrutto;
     const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
     const poziomRacji = getCityRationLevel(city);
     const allCities = cfg.getCities?.() ?? [];

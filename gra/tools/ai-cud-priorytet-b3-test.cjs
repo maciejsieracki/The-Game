@@ -266,43 +266,63 @@ console.log('\n--- 5-STRUKTURA. dryf main.ts (fs.readFileSync + regex, jak era-c
 }
 
 // ---------------------------------------------------------------------------
-// 6. Reprodukcja DOKŁADNEGO defektu Evaluatora rundy 1 -- Fenicjanie, awans Brąz→Żelazo,
-//    Petra (epokaWejscia=2) wymaga techUnlock="Inżynieria" (epoka Żelazo) -- niebudowalna
-//    mimo kompletu technologii Brązu. Symulacja 12 tur pętli main.ts (kolejka lokalnie;
-//    queueJump = unshift na front, enqueue = push na koniec). Ta lokalna symulacja NIE
-//    reprodukuje bankowania postępu przez insertAtFront (naprawa RUNDY 4, B3) -- w tym
-//    konkretnym scenariuszu (Fenicjanie/Petra) queueJump nigdy faktycznie nie zapada
-//    (patrz asercja 6g: queueJumpCount===0), więc gałąź `if (decision.queueJump)` niżej
-//    jest tu martwa i wartość jej `postep: 0` nie wpływa na wynik testu ani nie jest
-//    asercjonowana -- realne zachowanie main.ts (bankowanie, nie zerowanie) pokrywa
-//    promote-to-front-test.cjs (sekcja 16) i bramka strukturalna promote-to-front-test.cjs
-//    (sekcja 19).
+// 6. Reprodukcja KLASY defektu Evaluatora rundy 1 (FIXTURE, nie dane realne) --
+//    cud wymagany do awansu epoki, którego techUnlock należy do PÓŹNIEJSZEJ epoki
+//    niż epokaWejscia -- niebudowalny mimo kompletu technologii własnej epoki.
+//    Historycznie objawiło się to na realnych danych Petry (epokaWejscia=2,
+//    techUnlock="Inżynieria" epoki Żelazo) -- ten rozjazd NAPRAWIONY w danych
+//    2026-08-13 (ECHO A, petra.epokaWejscia 2→3, patrz PYTANIA-OTWARTE.md
+//    „Rozjazd danych Petra"), więc od naprawy realne wonders.json NIE reprodukuje
+//    już tego scenariusza (sanity 6c/6d niżej pilnują, że to się nie cofnie po
+//    cichu). Sekcja UŻYWA FIXTURE'A zamiast Petry, żeby ochrona w ai.ts
+//    (`wonderRequiredBuildable`, koniunkcja w main.ts) zostawała przetestowana
+//    jako generyczne zabezpieczenie przed KAŻDYM przyszłym podobnym rozjazdem
+//    danych -- guard w ai.ts/main.ts NIE jest martwy po naprawie danych, bo
+//    chroni też przed innymi przyczynami niebudowalności (np. `wymagaTerenu`
+//    niespełniony), patrz komentarz przy `requiredWonderIds` w ai.ts.
+//    Symulacja 12 tur pętli main.ts (kolejka lokalnie; queueJump = unshift na
+//    front, enqueue = push na koniec). Ta lokalna symulacja NIE reprodukuje
+//    bankowania postępu przez insertAtFront (naprawa RUNDY 4, B3) -- w tym
+//    scenariuszu (fixture) queueJump nigdy faktycznie nie zapada (patrz
+//    asercja 6f: queueJumpCount===0), więc gałąź `if (decision.queueJump)` niżej
+//    jest tu martwa i wartość jej `postep: 0` nie wpływa na wynik testu ani nie
+//    jest asercjonowana -- realne zachowanie main.ts (bankowanie, nie zerowanie)
+//    pokrywa promote-to-front-test.cjs (sekcja 16) i bramka strukturalna
+//    promote-to-front-test.cjs (sekcja 19).
 // ---------------------------------------------------------------------------
-console.log('\n--- 6. reprodukcja defektu — Fenicjanie/Petra, 12 tur (przed naprawą: kolejka rosła bez ograniczenia) ---');
+console.log('\n--- 6. reprodukcja KLASY defektu (fixture, dane realne Petry już naprawione) — 12 tur ---');
 {
   const era1Techs = tech.filter(t => t.Epoka === 'Kamień').map(t => t.Technologia).filter(Boolean);
   const era2Techs = tech.filter(t => t.Epoka === 'Brąz').map(t => t.Technologia).filter(Boolean);
   const doneBrazComplete = new Set([...era1Techs, ...era2Techs]); // komplet Kamień+Brąz, BRAK Inżynierii (Żelazo)
 
-  // Sanity na danych realnych (nie fixture) — dokładnie zgodne ze zgłoszeniem Evaluatora.
+  // Kontrola stanu danych realnych: Petra dziś NIE jest już cudem epoki 2 (naprawione) --
+  // pilnuje, żeby nikt nie cofnął ECHO A po cichu bez aktualizacji tego testu.
   const petraDef = wonders.find(w => w.id === 'petra');
   const inzynieria = tech.find(t => t.Technologia === 'Inżynieria');
-  assert(petraDef && petraDef.epokaWejscia === 2, '6a: sanity danych — petra.epokaWejscia=2 (Brąz)');
-  assert(petraDef && petraDef.techUnlock.includes('Inżynieria'), '6b: sanity danych — petra wymaga techUnlock Inżynieria');
-  assert(inzynieria && inzynieria.Epoka === 'Żelazo', '6c: sanity danych — Inżynieria jest epoki Żelazo (rozjazd B2 potwierdzony w danych, NIE naprawiany tu)');
-  assert(eraOwnWonderIds('fenicjanie', 2).includes('petra'), '6d: sanity — Petra to cud wyłączny Fenicjan epoki 2 (bramkuje awans Brąz→Żelazo)');
+  assert(petraDef && petraDef.epokaWejscia === 3, '6a: sanity danych realnych — petra.epokaWejscia=3 (naprawione, ECHO A 2026-08-13)');
+  assert(inzynieria && inzynieria.Epoka === 'Żelazo', '6b: sanity danych — Inżynieria jest epoki Żelazo (zgodna dziś z petra.epokaWejscia=3)');
+  assert(!eraOwnWonderIds('fenicjanie', 2).includes('petra'), '6c: sanity — Petra już NIE jest cudem wyłącznym Fenicjan epoki 2');
+  assert(eraOwnWonderIds('fenicjanie', 3).includes('petra'), '6d: sanity — Petra jest dziś cudem wyłącznym Fenicjan epoki 3');
+
+  // Fixture: cud-analog Petry SPRZED naprawy danych -- epokaWejscia=2 (Brąz), ale
+  // techUnlock z epoki Żelazo (nie w `done` dopóki nie zbadane). Odtwarza dokładnie
+  // ten rodzaj rozjazdu, niezależnie od dzisiejszego stanu wonders.json.
+  const FIXTURE_ID = 'fixture_epoch_mismatch_wonder';
+  const fixtureWonder = { id: FIXTURE_ID, cywilizacje: ['fenicjanie'], techUnlock: ['Inżynieria'], dostep: 'E', kosztBudowy: 165 };
 
   // buildableForAi minimalne wg REALNEJ bramki techUnlock (nie pełny listBuildableWondersForOwner
   // z main.ts, który wymaga całego stanu gry -- ale kryterium techUnlock⊆done jest identyczne
-  // i to WŁAŚNIE ono jest źródłem defektu, patrz zgłoszenie Evaluatora).
+  // i to WŁAŚNIE ono jest źródłem defektu, patrz zgłoszenie Evaluatora). Fixture dołączony
+  // obok realnych cudów Fenicjan (np. 'wyrocznia'), żeby test nadal łapał "AI wskakuje
+  // INNYM budowalnym cudem zamiast wymaganego" jak w oryginalnym defekcie.
   function buildableWithDoneTechs(done) {
-    return wonders
-      .filter(w => w.cywilizacje.includes('fenicjanie'))
+    return [...wonders.filter(w => w.cywilizacje.includes('fenicjanie')), fixtureWonder]
       .filter(w => w.techUnlock.every(t => done.has(t)))
       .map(w => ({ id: w.id, kosztBudowy: w.kosztBudowy, dostep: w.dostep }));
   }
 
-  const requiredIds = eraOwnWonderIds('fenicjanie', 2); // ['petra']
+  const requiredIds = [FIXTURE_ID]; // zajmuje miejsce dawnego eraOwnWonderIds('fenicjanie', 2) === ['petra']
   const wonderDiffParams = loadAiWonderParams(data, 2);
 
   // Stan lokalny miasta -- semantyka identyczna z production.ts (kolejka/postep).
@@ -313,7 +333,10 @@ console.log('\n--- 6. reprodukcja defektu — Fenicjanie/Petra, 12 tur (przed na
 
   for (let turn = 1; turn <= 12; turn++) {
     const buildableForAi = buildableWithDoneTechs(done);
-    const wonderEraGateForced = allEraTechsResearched(2, tech, done) && !eraOwnWonderSatisfied('fenicjanie', 2, []);
+    // wonderEraGateForced liczony jak main.ts, ale fixture zajmuje miejsce realnej
+    // eraOwnWonderSatisfied('fenicjanie', 2, ...) — dane realne nie mają już żadnego
+    // cudu wymaganego dla Fenicjan epoki 2, więc symulujemy warunek wprost.
+    const wonderEraGateForced = allEraTechsResearched(2, tech, done); // fixture nigdy nie "zbudowany" w tej pętli
     const alreadyBuilding = cityProd.kolejka.some(it => requiredIds.includes(it.id));
     const requiredBuildable = requiredIds.some(id => buildableForAi.some(w => w.id === id));
     const forcePriority = wonderEraGateForced && !alreadyBuilding && requiredBuildable; // == main.ts po naprawie
@@ -325,11 +348,11 @@ console.log('\n--- 6. reprodukcja defektu — Fenicjanie/Petra, 12 tur (przed na
       if (decision.queueJump) {
         // Uproszczona symulacja lokalna -- NIE odtwarza bankowania insertAtFront (main.ts
         // realnie woła insertAtFront(wProd0, wItem, 0), patrz RUNDA 4/B3). Nieszkodliwe tu:
-        // w tym scenariuszu (Fenicjanie/Petra) ta gałąź nigdy się nie wykonuje (6g:
+        // w tym scenariuszu (fixture) ta gałąź nigdy się nie wykonuje (6f:
         // queueJumpCount===0), a test i tak nie asercjonuje postep. / EN: simplified local
         // simulation -- does NOT replicate insertAtFront's banking (main.ts really calls
         // insertAtFront(wProd0, wItem, 0), see round 4/B3). Harmless here: in this scenario
-        // (Phoenicians/Petra) this branch never actually runs (6g: queueJumpCount===0), and
+        // (fixture) this branch never actually runs (6f: queueJumpCount===0), and
         // the test doesn't assert postep anyway.
         queueJumpCount++;
         cityProd = { kolejka: [{ id: decision.wonderId }, ...cityProd.kolejka], postep: 0 };
@@ -340,30 +363,24 @@ console.log('\n--- 6. reprodukcja defektu — Fenicjanie/Petra, 12 tur (przed na
     maxKolejkaLen = Math.max(maxKolejkaLen, cityProd.kolejka.length);
   }
 
-  assert(!wonders.filter(w => w.cywilizacje.includes('fenicjanie')).some(w => requiredIds.includes(w.id))
-    || buildableWithDoneTechs(doneBrazComplete).every(w => !requiredIds.includes(w.id)),
-    '6e: sanity — z tylko-Brąz technologiami petra NIE jest w buildableForAi (potwierdza przesłankę defektu)');
-
   assert(maxKolejkaLen <= 1,
-    `6f: PO NAPRAWIE — kolejka miasta NIE rośnie bez ograniczenia przez 12 tur (max długość ${maxKolejkaLen}, przed naprawą rosłaby o 1/turę → 12)`);
+    `6e: kolejka miasta NIE rośnie bez ograniczenia przez 12 tur (max długość ${maxKolejkaLen}, bez ochrony rosłaby o 1/turę → 12)`);
   assert(queueJumpCount === 0,
-    `6g: PO NAPRAWIE — zero queueJump w te 12 tur, bo wymagany cud (petra) niebudowalny → forcePriority zawsze false (queueJumpCount=${queueJumpCount}, przed naprawą byłoby 12× na 'wyrocznia')`);
+    `6f: zero queueJump w te 12 tur, bo wymagany cud (fixture) niebudowalny → forcePriority zawsze false (queueJumpCount=${queueJumpCount}, bez ochrony byłoby 12× na 'wyrocznia')`);
 
-  // 6h: kontrola pozytywna — gdy Inżynieria zostaje zbadana (petra staje się budowalna),
-  // wymuszacz aktywuje się i wybiera WŁAŚCIWY cud (petra), nie 'wyrocznia'/inny.
+  // 6g: kontrola pozytywna — gdy Inżynieria zostaje zbadana (fixture staje się budowalny),
+  // wymuszacz aktywuje się i wybiera WŁAŚCIWY cud (fixture), nie 'wyrocznia'/inny.
   const doneWithInzynieria = new Set([...doneBrazComplete, 'Inżynieria']);
   const buildableAfter = buildableWithDoneTechs(doneWithInzynieria);
   const requiredBuildableAfter = requiredIds.some(id => buildableAfter.some(w => w.id === id));
-  assert(requiredBuildableAfter, '6h1: sanity — po zbadaniu Inżynierii petra staje się budowalna');
-  const forcePriorityAfter = allEraTechsResearched(2, tech, doneWithInzynieria)
-    && !eraOwnWonderSatisfied('fenicjanie', 2, [])
-    && requiredBuildableAfter;
+  assert(requiredBuildableAfter, '6g1: sanity — po zbadaniu Inżynierii fixture staje się budowalny');
+  const forcePriorityAfter = allEraTechsResearched(2, tech, doneWithInzynieria) && requiredBuildableAfter;
   const decisionAfter = decideAiWonderBuild(
     13, 7, false, [{ cityId: 'c1', queueEmpty: true, pracaPerTurn: 10 }],
     buildableAfter, wonderDiffParams, forcePriorityAfter, requiredIds,
   );
-  eq(decisionAfter && decisionAfter.wonderId, 'petra',
-    '6h2: PO odblokowaniu Inżynierii — wymuszacz wybiera PETRA (wymagany cud), nie inny budowalny cud');
+  eq(decisionAfter && decisionAfter.wonderId, FIXTURE_ID,
+    '6g2: PO odblokowaniu Inżynierii — wymuszacz wybiera fixture (wymagany cud), nie inny budowalny cud');
 }
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

@@ -205,6 +205,15 @@ import {
   type EffectiveUlepszeniaSettings,
 } from './game/cities';
 import {
+  type FortNode,
+  type FortTakeoverEvent,
+  fortNodeAsCityNode,
+  foundingNodesForOwner,
+  isHexReservedByRivalFort,
+  applyFortTakeoverOnCityFounded,
+  findEvacuationHexOutsideCity,
+} from './game/fort-territory';
+import {
   migrateHandelSplitOnLoad,
   resolveCityPodzialHandlu,
   freshOwnerDefaultPodzialHandlu,
@@ -239,7 +248,11 @@ import {
   isHexInStartReveal as computeHexInStartReveal,
   validateFirstPlayerCityPlacement,
 } from './game/first-player-city';
-import { assignAiCivTypes, civIdsAvailableAtGameEpoch } from './game/civ-roster';
+import {
+  assignAiCivTypes,
+  civIdsAvailableAtGameEpoch,
+  rotatePreferredForRepairSeed,
+} from './game/civ-roster';
 import {
   civColorCssForOwner,
   civColorForOwner,
@@ -1290,6 +1303,16 @@ async function boot(): Promise<void> {
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
     let _menuRivals: number = 6; // default rival count (skalowane w kreatorze)
     let _menuCivTypesCount: number = 7;
+    /**
+     * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: typy AI wybrane w kreatorze
+     * (multi-select krok 4), kolejność zaznaczenia. Puste = losowy dobór jak
+     * dotychczas (backward-compatible). Karmi `assignAiCivTypes` przy nowej grze,
+     * naprawie rosteru (repairAiRosterFromMap) i legacy-load bez meta rosteru.
+     * / EN: AI types picked in the wizard (step 4 multi-select), selection order.
+     * Empty = today's random pick (backward-compatible). Feeds `assignAiCivTypes`
+     * on new game, roster repair, and legacy loads without a saved roster.
+     */
+    let _menuSelectedAiCivIds: string[] = [];
     let _menuCityStates: number = 6;
     let _menuTypSwiata: TypSwiata = 'kontynenty';
     let _menuEpochId: string = 'kamien';
@@ -1716,12 +1739,16 @@ async function boot(): Promise<void> {
         data.civs.cywilizacje as Parameters<typeof civIdsAvailableAtGameEpoch>[0],
         _menuEpochId,
       );
+      const repairSeed = (_gameSeed ^ missing.reduce((a, b) => a ^ b, 0)) >>> 0;
       const aiMap = assignAiCivTypes({
         allCivIds,
         playerCivId: civId,
         aiOwnerIds: missing,
         aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
-        seed: (_gameSeed ^ missing.reduce((a, b) => a ^ b, 0)) >>> 0,
+        seed: repairSeed,
+        // N1 (Evaluator 2026-08-13): rotacja lokalna do TEGO wywołania — patrz
+        // dokumentacja rotatePreferredForRepairSeed w civ-roster.ts.
+        preferredCivIds: rotatePreferredForRepairSeed(_menuSelectedAiCivIds, repairSeed),
       });
       for (const [oid, civ] of aiMap) aiOwnerCivMap.set(oid, civ);
       syncOwnerDisplayNamesFromCities();
@@ -6684,6 +6711,7 @@ async function boot(): Promise<void> {
         aiOwnerIds,
         aktywneTypy,
         seed: rosterSeed,
+        preferredCivIds: _menuSelectedAiCivIds,
       });
       for (const [oid, civ] of aiMap) {
         aiOwnerCivMap.set(oid, civ);
@@ -6714,6 +6742,7 @@ async function boot(): Promise<void> {
           aiOwnerIds: ownerIds,
           aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
           seed: saved.seed ?? _gameSeed,
+          preferredCivIds: _menuSelectedAiCivIds,
         });
         for (const [oid, civ] of aiMap) aiOwnerCivMap.set(oid, civ);
         diagWarn('load', `legacy save — roster AI z ownerId (${ownerIds.length} nacji)`);
@@ -7403,7 +7432,7 @@ async function boot(): Promise<void> {
       playerCivId: string,
       seed: number,
       rywaleNaKlaster: number,
-      opts?: { skipRenderRefresh?: boolean },
+      opts?: { skipRenderRefresh?: boolean; preferredCivIds?: readonly string[] },
     ): void {
       const plan = buildClusterStartPlan({
         map,
@@ -7414,6 +7443,13 @@ async function boot(): Promise<void> {
         aktywneTypy: _menuCivTypesCount || aktywneTypyFromMapLabel(_menuMapSize),
         startEpochId: _menuEpochId || 'kamien',
         cityNamesPools: data.cityNamesPools,
+        // R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2: wybór gracza z
+        // kreatora trafia TERAZ do ścieżki klastrowej (jedyna aktywna przy
+        // nowej grze) — zamiast martwego wpięcia w assignAiCivTypes z rundy 1.
+        // / EN: player's wizard selection now reaches the cluster path (the
+        // only active one on new-game start) — instead of round 1's dead wiring
+        // into assignAiCivTypes.
+        preferredCivIds: opts?.preferredCivIds,
       });
 
       playerStartHex = { ...plan.playerStartHex };
@@ -8528,13 +8564,21 @@ async function boot(): Promise<void> {
       );
     }
 
-    /** Opcje terytorium przy founding (D2=A plaster) — pierwsze miasto: tylko krąg startu. */
+    /**
+     * Opcje terytorium przy founding (D2=A plaster) — pierwsze miasto: tylko krąg startu.
+     * Krok 2 (Maciej 2026-08-09, ECHO Q1=B/Q2=B): `nodes` (WYŁĄCZNIE własne miasta,
+     * literalne wywołanie cityNodesForOwner(ownerId) — pilnowane tekstowym strażnikiem
+     * ai-founding-territory-test.cjs, sekcja B) rozszerzone o WŁASNE, nie-skontestowane
+     * forty/posterunki (foundingNodesForOwner, game/fort-territory.ts) — Q2=B: fort daje
+     * WYŁĄCZNIE dodatkowe węzły do tej listy, żadnego innego skutku terytorialnego.
+     */
     function foundingTerritoryOpts(ownerId: number): { withinTerritory?: (q: number, r: number) => boolean } {
       if (ownerId === 0 && isAwaitingFirstPlayerCity()) return {};
       const nodes = cityNodesForOwner(ownerId);
-      if (nodes.length === 0) return {};
+      const extendedNodes = foundingNodesForOwner(ownerId, nodes, fortNodes);
+      if (extendedNodes.length === 0) return {};
       return {
-        withinTerritory: (fq: number, fr: number) => isInTerritory(fq, fr, nodes),
+        withinTerritory: (fq: number, fr: number) => isInTerritory(fq, fr, extendedNodes),
       };
     }
 
@@ -10410,11 +10454,114 @@ async function boot(): Promise<void> {
       ghostChip.style.display = 'none';
     });
     const placedImprovements = new Map<string, PlacedLayers>();
+    /**
+     * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
+     * rejestr WSZYSTKICH postawionych Fortow/Posterunkow (dowolny wlasciciel) z
+     * JAWNYM, mutowalnym `ownerId` -- patrz komentarz w game/fort-territory.ts
+     * (dlaczego OSOBNO od placedImprovements/territoryOwnerAt: fort budowany
+     * POZA istniejacym terytorium nie ma zadnego innego zrodla wlasciciela).
+     * Zapis/odczyt save — pole `meta.fortNodes` budowane TU w main.ts (nie w
+     * game/save.ts, gdzie fortNodes nie wystepuje): zapis ok. main.ts:23028
+     * (`fortNodes: fortNodes.slice()`), odczyt main.ts:29825-29826.
+     * / EN: save write/read -- `meta.fortNodes` is built HERE in main.ts (not
+     * in game/save.ts, which has no fortNodes field): write around
+     * main.ts:23028, read at main.ts:29825-29826.
+     */
+    const fortNodes: FortNode[] = [];
     const improvementMeshes = new Map<string, THREE.Group>();
     const clearingMeshes = new Map<string, THREE.Group>();
     const hexClearingStates = new Map<string, HexClearingState>();
     let pendingImprovementsTurn = new PendingImprovementsTurn();
     let buildApi: ImprovementBuildCallbacks | null = null;
+
+    /**
+     * Regula 1/3 (Maciej 2026-08-09): rejestruje nowo postawiony Fort/Posterunek
+     * w `fortNodes`. Kontestacja ustalana RAZ, w chwili budowy — hex juz
+     * zarezerwowany (w promieniu) przez CUDZY, nie-skontestowany fort/posterunek
+     * daje `contestedUseless=true` od razu (fort fizycznie stoi — regula 2 — ale
+     * nie liczy sie do WLASNEGO zasiegu zakladania budowniczego).
+     */
+    function registerFortNodeIfNeeded(key: string, q: number, r: number, ownerId: number): void {
+      if (key !== 'fort' && key !== 'posterunek') return;
+      const type = key as 'fort' | 'posterunek';
+      const contestedUseless = isHexReservedByRivalFort(q, r, ownerId, fortNodes);
+      fortNodes.push({ q, r, ownerId, type, contestedUseless });
+    }
+
+    /** Cofniecie budowy (undo w tej samej turze, gracz) — usuwa wpis rejestru fortu. */
+    function unregisterFortNodeIfNeeded(key: string, q: number, r: number, ownerId: number): void {
+      if (key !== 'fort' && key !== 'posterunek') return;
+      const idx = fortNodes.findIndex(
+        f => f.q === q && f.r === r && f.ownerId === ownerId && f.type === key,
+      );
+      if (idx !== -1) fortNodes.splice(idx, 1);
+    }
+
+    /**
+     * Regula 4+5 / Q3=A (Maciej 2026-08-09): wołane z finalizeCityFounding dla
+     * KAŻDEGO nowo założonego miasta (gracz, AI, wioska, miasto-państwo — jeden
+     * wspólny hook) — przejmuje CUDZE forty/posterunki wpadające w zasięg nowego
+     * miasta (mutuje `fortNodes` in-place, patrz applyFortTakeoverOnCityFounded)
+     * i automatycznie ewakuuje jednostki POPRZEDNIEGO właściciela stacjonujące
+     * na przejętym hexie na najbliższy heks POZA granicami nowego miasta —
+     * analogia do istniejącego evictForeignUnitsFromCityHexes (wymuszone
+     * wycofanie z heksu miasta obcego właściciela).
+     */
+    function applyFortTakeoverAndEvacuation(c: City): void {
+      // F1 fix (Evaluator runda 1, 2026-08-13): miasto zakladane NA hexie fortu/
+      // posterunka (WLASNEGO lub CUDZEGO) fizycznie kasuje improvement (Macierz B,
+      // patrz finalizeCityFounding) -- applyFortTakeoverOnCityFounded usuwa TAKI
+      // wezel z `fortNodes` calkowicie (nie tylko przepisuje wlasciciela), patrz
+      // komentarz "F1 fix" w game/fort-territory.ts. Bez tego zostawal wezel-widmo
+      // (wlasny fort na hexie miasta nigdy nie trafial do `events` -- glowna petla
+      // pomija f.ownerId === newCity.ownerId), dalej liczony do promienia
+      // zakladania, dalej rezerwujacy heksy przeciw cudzym fortom i zapisywany do save.
+      // / EN: a city founded ON a fort/outpost hex (OWN or FOREIGN) physically
+      // clears the improvement (Matrix B, see finalizeCityFounding) --
+      // applyFortTakeoverOnCityFounded removes such a node from `fortNodes`
+      // entirely (not just reassigns owner), see the "F1 fix" comment in
+      // game/fort-territory.ts. Without it a ghost node remained (an own fort on
+      // the city hex never appeared in `events` -- the main loop skips
+      // f.ownerId === newCity.ownerId), still counting toward founding radius,
+      // still reserving hexes against rival forts, still persisted to the save.
+      const events: FortTakeoverEvent[] = applyFortTakeoverOnCityFounded(
+        { q: c.q, r: c.r, ownerId: c.ownerId, population: c.population },
+        fortNodes,
+      );
+      if (events.length === 0) return;
+      const newCityNode = { q: c.q, r: c.r, pop: c.population, level: 1 };
+      let moved = false;
+      for (const ev of events) {
+        const stranded = units.filter(
+          u => u.q === ev.q && u.r === ev.r && u.ownerId === ev.prevOwnerId,
+        );
+        for (const u of stranded) {
+          const dest = findEvacuationHexOutsideCity(
+            ev.q, ev.r, newCityNode, map,
+            (nq, nr) => isHexPassableForUnit(nq, nr)
+              && canUnitOccupyCityHex(u.ownerId, nq, nr, cities)
+              && !units.some(o => o.id !== u.id && o.q === nq && o.r === nr && o.inGarnizon !== true),
+          );
+          if (dest) {
+            u.q = dest.q;
+            u.r = dest.r;
+            moved = true;
+            // F2 fix (Evaluator runda 1, 2026-08-13): wzorzec evictForeignUnitsFromCityHexes
+            // (main.ts ok. linii 9480) rozlicza wejscie na zywy oboz barbarzynski przy KAZDYM
+            // wymuszonym wejsciu na nowy heks -- ewakuacja z przejmowanego fortu to ten sam
+            // przypadek "entrata" i pomijala ten hak.
+            // / EN: the evictForeignUnitsFromCityHexes pattern accounts for entering a living
+            // barbarian camp on EVERY forced move onto a new hex -- fort-takeover evacuation is
+            // the same kind of "entry" and was missing this hook.
+            if (!isBarbarian(u.ownerId)) checkBarbCampDestroyedAt(dest.q, dest.r);
+          }
+          // Brak celu w maxRing (20) — jednostka zostaje na miejscu (Q3=A nie
+          // precyzuje "co gdy brak miejsca"; bezpieczniejsze niz teleport donikad,
+          // patrz komentarz findEvacuationHexOutsideCity).
+        }
+      }
+      if (moved) syncUnitsRender();
+    }
 
     /** F-CITY-HEX: wyczyść hex + ukryj dekoracje terenu pod miastem. */
     function finalizeCityFounding(c: City, q: number, r: number): void {
@@ -10450,6 +10597,7 @@ async function boot(): Promise<void> {
       seedCityReligionAtFounding(c);
       seedWealthImmunityAtFounding(c);
       markCityStateDirty(); // D10: założenie miasta → przelicz ekonomię/moc państwa
+      applyFortTakeoverAndEvacuation(c); // regula 4+5/Q3=A: przejęcie cudzych fortów + ewakuacja
     }
 
     function reapplyCityHexDecorHides(): void {
@@ -10460,6 +10608,20 @@ async function boot(): Promise<void> {
       return cities
         .filter(c => c.ownerId === 0)
         .map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1 }));
+    }
+
+    /**
+     * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2, Q1=B doprecyzowanie
+     * (Maciej 2026-08-09): klucze "q,r" heksów, na których stoi WŁASNA jednostka
+     * `ownerId` — wymóg fizycznej obecności przy budowie fort/posterunek POZA
+     * własnym terytorium (patrz ImprovementBuildState.ownUnitHexKeys).
+     */
+    function ownUnitHexKeysForOwner(ownerId: number): Set<string> {
+      const out = new Set<string>();
+      for (const u of units) {
+        if (u.ownerId === ownerId) out.add(keyOf(u.q, u.r));
+      }
+      return out;
     }
 
     function syncLivestockAndPlacedMeshes(): void {
@@ -10532,6 +10694,10 @@ async function boot(): Promise<void> {
           // Temat #4: Stadnina bez własnego złoża konia, gdy gracz ma aktywny
           // grant "z trasy" na Konia (patrz ImprovementBuildState.tradeRouteKonUnlocked).
           tradeRouteKonUnlocked: hasTradeRouteResourceAccess(tradeRouteResourceGrants, 0, 'kon'),
+          // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2, Q1=B doprecyzowanie:
+          // wymóg fizycznej obecności WŁASNEJ jednostki przy budowie fort/posterunek
+          // POZA własnym terytorium.
+          ownUnitHexKeys: ownUnitHexKeysForOwner(0),
         },
         {
           activeKey: activeImprovementKey,
@@ -10734,6 +10900,7 @@ async function boot(): Promise<void> {
         }
         spawnImprovementMesh(req.hexKey);
         syncResourceOverlayAtHex(req.hexKey);
+        unregisterFortNodeIfNeeded(req.key, req.q, req.r, 0);
       }
 
       if (pending.kosztPraca > 0) {
@@ -10760,12 +10927,24 @@ async function boot(): Promise<void> {
       }
     }
 
-    function assertPlayerTerritoryForBuild(q: number, r: number): boolean {
+    function assertPlayerTerritoryForBuild(q: number, r: number, key?: ImprovementKey): boolean {
       const nodes = buildAllTerritoryNodes();
       if (nodes.length > 0) {
         if (isTerritoryHexOwnedBy(q, r, 0, nodes)) return true;
       } else if (isPlayerTerritoryHex(q, r, playerCityNodes(), nodes, 0)) {
         return true;
+      }
+      // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09,
+      // ECHO Q1=B): fort/posterunek POZA własnym terytorium są dozwolone (regula 1),
+      // pod warunkiem że hex NIE należy do INNEJ cywilizacji i stoi tam WŁASNA
+      // jednostka (Q1 doprecyzowanie) — ta sama bramka co buildImprovementQualifier
+      // (map/improvement-build.ts), duplikowana tu bo ten strażnik jest OSOBNY
+      // (drugi, redundantny gate za qualifies()/canBuild).
+      if (key === 'fort' || key === 'posterunek') {
+        const owner = nodes.length > 0 ? territoryOwnerAt(q, r, nodes) : null;
+        const rivalCityTerritory = owner !== null && owner !== 0;
+        const ownUnitHere = units.some(u => u.ownerId === 0 && u.q === q && u.r === r);
+        if (!rivalCityTerritory && ownUnitHere) return true;
       }
       showBuildTerritoryBlockedHint(q, r);
       return false;
@@ -10781,7 +10960,7 @@ async function boot(): Promise<void> {
       if (!hex) return;
 
       if (!pendingImprovementsTurn.has(req.hexKey, req.key)
-        && !assertPlayerTerritoryForBuild(req.q, req.r)) {
+        && !assertPlayerTerritoryForBuild(req.q, req.r, req.key)) {
         return;
       }
 
@@ -10901,6 +11080,7 @@ async function boot(): Promise<void> {
       const nextLayers: PlacedLayers = [...prev, req.key];
       placedImprovements.set(req.hexKey, nextLayers);
       syncHexUlepszenieFields(req.hexKey, nextLayers);
+      registerFortNodeIfNeeded(req.key, req.q, req.r, 0);
       pendingImprovementsTurn.add({
         hexKey: req.hexKey,
         key: req.key,
@@ -14056,6 +14236,49 @@ async function boot(): Promise<void> {
           maSpichlerzIIPop: tk.maSpichlerzII ?? false,
         });
       }
+      // R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13): "bezpieczny poziom" = przyrost zapasów
+      // (Nadwyżka miast − kosztArmii) ≥0, nie sama Nadwyżka miast (dawne zachowanie). Ten sam
+      // wzorzec liczenia kosztu armii co `projectPlayerFoodProjection` niżej w tym pliku, ale
+      // ZAMIERZENIE zduplikowany tutaj (nie wyodrębniony do wspólnej funkcji): ciało tej funkcji
+      // jest w całości wycinane i wykonywane samodzielnie przez
+      // `tools/auto-wyzywienie-live-recalc-test.cjs` (Część 9, `sliceFunctionBody` +
+      // `new Function`) — odwołanie do funkcji zdefiniowanej POZA tym ciałem tam by się nie
+      // rozwiązało (ReferenceError w harnessie). `preview.perCity` = ten sam przebieg
+      // `previewCityEconomy`, żaden dodatkowy.
+      // EN: "safe level" = the stockpile's net increase (cities' Nadwyżka − army cost) ≥0, not
+      // just Nadwyżka (old behavior). Same computation pattern as `projectPlayerFoodProjection`
+      // further down, but INTENTIONALLY duplicated here rather than factored into a shared
+      // helper: this function's whole body is sliced out and executed standalone by
+      // `tools/auto-wyzywienie-live-recalc-test.cjs` (Part 9, `sliceFunctionBody` + `new
+      // Function`) — a reference to a function defined OUTSIDE this body would not resolve there
+      // (harness ReferenceError). `preview.perCity` = the same previewCityEconomy pass, no extra
+      // call.
+      const upkeepParamsForArmy = loadUpkeepParams(data.econParams, _menuDifficulty);
+      const territoryNodesForArmyCost = buildAllTerritoryNodes();
+      const solCityIdsForArmy = new Set<string>();
+      for (const tk of preview.perCity) {
+        if (tk.ownerId !== 0 || !tk.spichlerzSol) continue;
+        solCityIdsForArmy.add(tk.cityId);
+      }
+      const uchwalaSolAktywnaForArmy = solCityIdsForArmy.size > 0 || spichlerzSolArmyBonusActive(0);
+      const playerUnitsForArmy: (EconUnit & { inGarnizon?: boolean; garrisonCityId?: string })[] =
+        units
+          .filter(u => u.ownerId === 0)
+          .map(u => ({
+            ownerId: u.ownerId,
+            typeId: u.typeId,
+            camping: isCampingForFoodDiscount(u),
+            onOwnTerritory: territoryOwnerAt(u.q, u.r, territoryNodesForArmyCost) === u.ownerId,
+            inGarnizon: u.inGarnizon === true,
+            garrisonCityId: u.inGarnizon ? cityAtUnit(u)?.id : undefined,
+          }));
+      const kosztArmiiForMaxSafe = militaryFoodConsumptionWithSpichlerz(
+        playerUnitsForArmy,
+        0,
+        upkeepParamsForArmy,
+        unitFoodTbl,
+        { solArmyOverride: uchwalaSolAktywnaForArmy, solCityIdsOverride: solCityIdsForArmy },
+      );
       // N1 (runda 4, Evaluator): wypełnij cache dla WSZYSTKICH miast gracza na raz, nie tylko
       // dla `cityId`. `preview` (previewCityEconomy) -- krok, który realnie kosztuje -- jest
       // już policzony wyżej dla CAŁEGO imperium gracza; pętla `maxSafePoziomRacjiForCity` per
@@ -14084,6 +14307,7 @@ async function boot(): Promise<void> {
           zapasyPrzed: foodSt.zapasyPanstwa,
           rationParams: efParams.rationParams,
           spichlerzByCity,
+          kosztArmii: kosztArmiiForMaxSafe,
         });
         _maxSafeRationCache.set(pc.id, maxSafeForCity);
         if (pc.id === cityId) { maxSafe = maxSafeForCity; foundInPlayerCities = true; }
@@ -14112,6 +14336,7 @@ async function boot(): Promise<void> {
           zapasyPrzed: foodSt.zapasyPanstwa,
           rationParams: efParams.rationParams,
           spichlerzByCity,
+          kosztArmii: kosztArmiiForMaxSafe,
         });
       }
       return maxSafe;
@@ -22870,6 +23095,12 @@ async function boot(): Promise<void> {
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
           ownerStartEraByOwner: Array.from(ownerStartEraByOwner.entries()),
           placedImprovements: Array.from(placedImprovements.entries()),
+          // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
+          // rejestr fort/posterunek z jawnym ownerId/contestedUseless -- patrz
+          // restoreGameFromSave niżej. Stary zapis (bez tego pola) wczytuje się z
+          // pustą tablicą = brak rozszerzenia zasięgu, identyczne zachowanie jak
+          // przed krokiem 2 (zero błędu, zero regresji na starych zapisach).
+          fortNodes: fortNodes.slice(),
           hexClearingStates: Array.from(hexClearingStates.entries()),
           pendingImprovementsTurn: pendingImprovementsTurn.toSave(),
           completedWorldWonders: completedWorldWonders.slice(),
@@ -23587,6 +23818,22 @@ async function boot(): Promise<void> {
             let autoRationAnyAdjusted = false;
             for (const ownerId of ownerIdsForAutoRation) {
               const foodSt = empireFoodStates.get(ownerId) ?? freshEmpireFoodState();
+              // R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A (2026-08-13, ECHO doprecyzowania właściciela):
+              // "bezpieczny poziom" ma znaczyć PRZYROST ZAPASÓW tej tury ≥0, nie tylko bilans
+              // miast/rezerwę bez wojska -- policz koszt żywności armii TĄ SAMĄ funkcją i tymi
+              // samymi jednostkami (`econUnits`), którymi za chwilę policzy go `advanceEmpireFood`
+              // (empire-food.ts:269) -- brak `opts` (solArmyOverride) odczytuje ten sam świeży
+              // runtime stan Soli co advanceEmpireFood poniżej, ustawiony wcześniej w tym samym
+              // ticku (turn-economy.ts:1622-1634).
+              // EN: "safe level" now means this turn's STOCKPILE increase ≥0, not just the
+              // cities' balance/reserve without the army -- compute the army's food cost with the
+              // SAME function and SAME units (`econUnits`) that `advanceEmpireFood` will use right
+              // after (empire-food.ts:269) -- omitting `opts` (solArmyOverride) reads the same
+              // fresh Sol runtime state advanceEmpireFood reads below, set earlier this same tick
+              // (turn-economy.ts:1622-1634).
+              const kosztArmiiForOwner = militaryFoodConsumptionWithSpichlerz(
+                econUnits, ownerId, upkeepParams, unitFoodTbl,
+              );
               const autoRationResult = autoBalanceRationsToSolvency({
                 ownerId,
                 cities,
@@ -23601,6 +23848,7 @@ async function boot(): Promise<void> {
                 // EN: player-only (finding #4): target is this turn's flow >=0, not just
                 // stock-based reserve coverage — AI keeps prior behavior.
                 requireFlowBalance: ownerId === 0,
+                kosztArmii: kosztArmiiForOwner,
               });
               if (autoRationResult.adjusted) {
                 autoRationAnyAdjusted = true;
@@ -23619,6 +23867,7 @@ async function boot(): Promise<void> {
                   spichlerzByCity: spichlerzByCityForAuto,
                   requireProductionSurplus: ownerId === 0,
                   onlyAutoManaged: ownerId === 0,
+                  kosztArmii: kosztArmiiForOwner,
                 });
                 if (raiseResult.adjusted) {
                   autoRationAnyAdjusted = true;
@@ -24891,6 +25140,7 @@ async function boot(): Promise<void> {
                   placedImprovements.set(hexKey, nextLayers);
                   workingPlaced.set(hexKey, nextLayers);
                   syncHexUlepszenieFields(hexKey, nextLayers);
+                  registerFortNodeIfNeeded(pick.key, pick.q, pick.r, 0);
                   spawnImprovementMesh(hexKey);
                   syncResourceOverlayAtHex(hexKey);
                   const meta = getImprovementMeta(pick.key);
@@ -25178,6 +25428,10 @@ async function boot(): Promise<void> {
               // territoryNodes świeże per owner (odzwierciedla miasta założone wcześniej W TEJ
               // SAMEJ turze przez inne AI, jak refreshBuildApi() dla gracza).
               territoryNodes: buildAllTerritoryNodes(),
+              // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
+              // rejestr fort/posterunek świeży (jak territoryNodes wyżej) — planCityFounding
+              // filtruje do WŁASNYCH, nie-skontestowanych węzłów tego ownera.
+              fortNodes,
               placedImprovements,
               improvementTechs: aiResearchDone.get(ownerId) ?? new Set<string>(),
               pracaAvailable: aiPracaPoolByOwner.get(ownerId) ?? 0,
@@ -25962,9 +26216,12 @@ async function boot(): Promise<void> {
                   });
                 });
                 // FIX (Evaluator runda 1, blokujący -- Fenicjanie Brąz→Żelazo): wymagany cud
-                // epoki może NIE być budowalny (np. petra wymaga tech z epoki Żelaza mimo
-                // epokaWejscia=2 -- rozjazd danych B2, osobna decyzja właściciela, NIE tu).
-                // Bez tej koniunkcji forcePriority wymuszał budowę PIERWSZEGO budowalnego cudu
+                // epoki może NIE być budowalny (np. dawniej petra wymagała tech z epoki Żelaza
+                // mimo epokaWejscia=2 -- rozjazd danych B2 NAPRAWIONY 2026-08-13, ECHO A,
+                // petra.epokaWejscia 2→3. Koniunkcja zostaje jako generyczna obrona w głąb --
+                // ten sam rodzaj rozjazdu (albo np. brak terenu `wymagaTerenu`) może wystąpić
+                // dla dowolnego innego cudu w przyszłości). Bez tej koniunkcji forcePriority
+                // wymuszał budowę PIERWSZEGO budowalnego cudu
                 // z listy (ordered[0] w ai.ts) zamiast cudu bramkującego awans -- AI co turę
                 // wskakiwała innym cudem na front kolejki (queueJump zeruje postęp), kolejka
                 // rosła bez ograniczenia, żywność drenowana co turę, wymagany cud NIGDY nie
@@ -26451,7 +26708,27 @@ async function boot(): Promise<void> {
                   if (!hexForImprovement) continue;
 
                   const territoryGate = buildAllTerritoryNodes();
-                  if (!isTerritoryHexOwnedBy(cmd.q, cmd.r, ownerId, territoryGate)) {
+                  // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09,
+                  // ECHO Q1=B): fort/posterunek NIE wymagają już własnego terytorium miasta --
+                  // dozwolone wszędzie poza terenem NALEŻĄCYM JUŻ do innej cywilizacji (regula 1),
+                  // ale poza własnym terytorium wymagają fizycznej obecności WŁASNEJ jednostki na
+                  // hexie (Q1 doprecyzowanie) -- ta sama bramka co dla gracza (buildImprovementQualifier).
+                  const isFortOrOutpost = cmd.key === 'fort' || cmd.key === 'posterunek';
+                  if (isFortOrOutpost) {
+                    const owner = territoryGate.length > 0
+                      ? territoryOwnerAt(cmd.q, cmd.r, territoryGate) : null;
+                    const rivalCityTerritory = owner !== null && owner !== ownerId;
+                    const ownTerritory = owner === ownerId;
+                    const ownUnitHere = !ownTerritory
+                      && units.some(u => u.ownerId === ownerId && u.q === cmd.q && u.r === cmd.r);
+                    if (rivalCityTerritory || (!ownTerritory && !ownUnitHere)) {
+                      console.warn(
+                        `[AI ${ownerId}] Build skipped (fort/posterunek: cudze terytorium lub brak `
+                        + `wlasnej jednostki): ${cmd.key} @ (${cmd.q},${cmd.r})`,
+                      );
+                      continue;
+                    }
+                  } else if (!isTerritoryHexOwnedBy(cmd.q, cmd.r, ownerId, territoryGate)) {
                     console.warn(
                       `[AI ${ownerId}] Build skipped (obce terytorium): ${cmd.key} @ (${cmd.q},${cmd.r})`,
                     );
@@ -26516,6 +26793,7 @@ async function boot(): Promise<void> {
                   const nextLayers: PlacedLayers = [...prevLayers, cmd.key];
                   placedImprovements.set(hexKey, nextLayers);
                   syncHexUlepszenieFields(hexKey, nextLayers);
+                  registerFortNodeIfNeeded(cmd.key, cmd.q, cmd.r, ownerId);
                   spawnImprovementMesh(hexKey);
                   // Perf (patrz raport pkt d): O(1) sync zamiast pełnomapowego
                   // rebuildResourceOverlays() -- AI buduje to co turę, dla wielu właścicieli.
@@ -27487,6 +27765,7 @@ async function boot(): Promise<void> {
       _menuCivId = params.civId || 'rzymianie';
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);
+      _menuSelectedAiCivIds = Array.isArray(params.selectedAiCivIds) ? [...params.selectedAiCivIds] : [];
       _menuCityStates = clampMiastaPanstwaCount(
         params.cityStatesCount
         || parseInt(String(params.rivals), 10)
@@ -27516,6 +27795,23 @@ async function boot(): Promise<void> {
           player.civBonusy = [];
           console.warn(`[NewGame] Nacja '${_menuCivId}' nie znaleziona w civs.json — brak bonusów`);
         }
+        // Runda 2 R-KONFIGURATOR-...: ten wypełniacz jest nieszkodliwym stanem
+        // przejściowym — na ścieżce nowej gry `doStartGame` woła POTEM zawsze
+        // `applyClusterStartPlan()`, który robi `aiOwnerCivMap.clear()` i
+        // wypełnia mapę na nowo ze ścieżki klastrowej (patrz tamto wywołanie).
+        // Na ścieżce wczytania sejwu (`regenerateWorldForLoad`) analogicznie
+        // nadpisuje go `restoreAiRosterFromSave()`. Zostawione, bo daje sensowny
+        // domyślny stan `aiOwnerCivMap` w oknie między applyMenuParams a tym
+        // właściwym wypełnieniem (np. gdyby coś w trakcie ładowania odczytało
+        // aiOwnerCivMap wcześniej) — bez realnego kosztu.
+        // / EN: this fill-in is a harmless transitional state — on the new-game
+        // path `doStartGame` always calls `applyClusterStartPlan()` afterwards,
+        // which clears and refills `aiOwnerCivMap` from the cluster path (see
+        // that call site). On the save-load path (`regenerateWorldForLoad`) it
+        // is likewise overwritten by `restoreAiRosterFromSave()`. Left in place
+        // because it gives a sane default `aiOwnerCivMap` in the window between
+        // applyMenuParams and the real fill (e.g. if something reads
+        // aiOwnerCivMap mid-load) — at no real cost.
         fillAiOwnerCivMap(_menuCivId, _gameSeed);
         console.log(`[NewGame] AI nacje:`, Object.fromEntries(aiOwnerCivMap));
       }
@@ -28109,13 +28405,17 @@ async function boot(): Promise<void> {
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       placedImprovements.clear();
+      fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
       for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
 
       await postSceneProgress(loading, 'plan klastra startowego', 7, POST_SCENE_STEPS);
-      applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, { skipRenderRefresh: true });
+      applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, {
+        skipRenderRefresh: true,
+        preferredCivIds: _menuSelectedAiCivIds,
+      });
       initAllAiOwnersForNewGame(params.epochId || 'kamien');
       reconcileAllOwnerErasFromResearch();
       endPostSceneStep('plan klastra startowego', postSceneSteps, stepWall);
@@ -28368,6 +28668,7 @@ async function boot(): Promise<void> {
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       placedImprovements.clear();
+      fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
       for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
@@ -28617,6 +28918,7 @@ async function boot(): Promise<void> {
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       placedImprovements.clear();
+      fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
       for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
@@ -28843,6 +29145,7 @@ async function boot(): Promise<void> {
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
       placedImprovements.clear();
+      fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
       for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
@@ -29608,6 +29911,12 @@ async function boot(): Promise<void> {
       }
       const savedImps = saved.meta?.placedImprovements as Array<[string, ImprovementKey]> | undefined;
       restorePlacedImprovementsFromSave(savedImps);
+      // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09):
+      // rejestr fort/posterunek -- brak w starych zapisach = pusta tablica (brak
+      // rozszerzenia zasięgu, identyczne zachowanie jak przed krokiem 2).
+      fortNodes.length = 0;
+      const savedFortNodes = saved.meta?.fortNodes as FortNode[] | undefined;
+      if (savedFortNodes?.length) fortNodes.push(...savedFortNodes);
       clearAllHexClearing();
       pendingImprovementsTurn = PendingImprovementsTurn.fromSave(
         saved.meta?.pendingImprovementsTurn as PendingImprovementEntry[] | undefined,

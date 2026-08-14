@@ -189,9 +189,16 @@ export {
 export {
   ensureCityRationDefaults, getCityRationLevel, clampPoziomRacji, rationGrowthPercent,
 } from '../src/game/population-growth-v85';
-export { recomputeCityFoodBalancesInEcon } from '../src/game/turn-economy';
+export {
+  recomputeCityFoodBalancesInEcon, militaryFoodConsumptionWithSpichlerz,
+  spichlerzSolArmyBonusActive,
+} from '../src/game/turn-economy';
 export { buildEmpireFoodParams, freshEmpireFoodState } from '../src/game/empire-food';
 export { WYZYWIENIE_MAX, WYZYWIENIE_MIN } from '../src/game/population-growth-v85';
+// R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A: getMaxSafePoziomRacjiForPlayerCity (Część 9 niżej) liczy
+// teraz koszt żywności armii inline w swoim ciele -- potrzebuje loadUpkeepParams (prawdziwa
+// funkcja z economy-upkeep.ts, nie mock).
+export { loadUpkeepParams } from '../src/game/economy-upkeep';
 `, 'utf8');
 esbuild.buildSync({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs',
@@ -480,7 +487,9 @@ const gmsBody = gmsBodyTs
   ? esbuild.transformSync(gmsBodyTs, { loader: 'ts', target: 'node18' }).code
   : null;
 
-function runGetMaxSafePoziomRacjiForPlayerCity({ cityId, cities, previewPerCity, zapasyPrzed }) {
+function runGetMaxSafePoziomRacjiForPlayerCity({
+  cityId, cities, previewPerCity, zapasyPrzed, units: unitsOverride,
+}) {
   const previewCityEconomy = () => ({ perCity: previewPerCity });
   const player = { civType: 'grecy', era: 'kamien', zbadane: new Set() };
   const map = {};
@@ -499,6 +508,17 @@ function runGetMaxSafePoziomRacjiForPlayerCity({ cityId, cities, previewPerCity,
   const ownerDefaultPodzialPracy = 0.5;
   const empireFoodStates = new Map([[0, { zapasyPanstwa: zapasyPrzed, turyUjemnychZapasow: 0 }]]);
   const _maxSafeRationCache = new Map();
+  // R-AUTO-WYZYWIENIE-KRYTERIUM-Q1=A: ciało teraz liczy kosztArmii inline (patrz komentarz przy
+  // ENTRY wyżej). `units` domyślnie [] -- scenariusze E/F (blokada 2, oblężenie/insolvent) nie
+  // testują koszt armii, więc brak wojska (kosztArmii=0) odtwarza dokładnie ich dotychczasowe
+  // oczekiwane wartości. `cityAtUnit`/`isCampingForFoodDiscount`/`territoryOwnerAt` są tylko
+  // odwoływane WEWNĄTRZ `units.map(...)` -- z pustą tablicą nigdy się nie wykonują, ale i tak
+  // dajemy nieszkodliwe zaślepki (odporność na przyszłe scenariusze z niepustą `units`).
+  const units = unitsOverride ?? [];
+  const unitFoodTbl = {};
+  const cityAtUnit = () => undefined;
+  const isCampingForFoodDiscount = () => false;
+  const territoryOwnerAt = () => undefined;
 
   const fn = new Function(
     'cityId', 'cities', 'WYZYWIENIE_MAX', 'player', 'previewCityEconomy', 'map', 'data',
@@ -507,6 +527,8 @@ function runGetMaxSafePoziomRacjiForPlayerCity({ cityId, cities, previewPerCity,
     'makeOwnerRuntimeActiveLabelsResolver', 'makeOwnerEmpireStockResolver', 'ownerDefaultPodzialHandlu',
     'ownerDefaultPodzialPracy', 'buildEmpireFoodParams', 'empireFoodStates', 'freshEmpireFoodState',
     'maxSafePoziomRacjiForCity', '_maxSafeRationCache',
+    'loadUpkeepParams', 'militaryFoodConsumptionWithSpichlerz', 'spichlerzSolArmyBonusActive',
+    'units', 'unitFoodTbl', 'cityAtUnit', 'isCampingForFoodDiscount', 'territoryOwnerAt',
     gmsBody,
   );
   const result = fn(
@@ -516,6 +538,8 @@ function runGetMaxSafePoziomRacjiForPlayerCity({ cityId, cities, previewPerCity,
     makeOwnerRuntimeActiveLabelsResolver, makeOwnerEmpireStockResolver, ownerDefaultPodzialHandlu,
     ownerDefaultPodzialPracy, M.buildEmpireFoodParams, empireFoodStates, M.freshEmpireFoodState,
     M.maxSafePoziomRacjiForCity, _maxSafeRationCache,
+    M.loadUpkeepParams, M.militaryFoodConsumptionWithSpichlerz, M.spichlerzSolArmyBonusActive,
+    units, unitFoodTbl, cityAtUnit, isCampingForFoodDiscount, territoryOwnerAt,
   );
   return { result, _maxSafeRationCache };
 }

@@ -441,7 +441,13 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
     for (const item of ourQtyPriced) {
       if (giveSum >= fairMin) break;
       let qty = 0;
-      const pnPerKrok = item.pnPerUnit * item.krok;
+      // P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (Evaluator, 2026-08-13): `item.pnPerUnit` to
+      // JUŻ cena za blok (krok szt.), nie cena za 1 sztukę — mnożenie przez `item.krok` tu
+      // dawało cenę ×5 za każdy blok, więc AI proponowało/akceptowało transakcje 5× poniżej fair.
+      // EN: `item.pnPerUnit` is ALREADY the price per block (krok units), not per single unit —
+      // multiplying by `item.krok` here priced every block ×5 too cheap, so AI proposed/accepted
+      // deals 5x below fair.
+      const pnPerKrok = item.pnPerUnit;
       while (qty + item.krok <= item.maxQty && giveSum < fairMin) {
         qty += item.krok;
         giveSum += pnPerKrok;

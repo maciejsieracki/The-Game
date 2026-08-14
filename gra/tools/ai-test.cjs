@@ -2201,6 +2201,72 @@ console.log('\n--- T7D-f: bez defensiveCopy -> foundCityAt gdy stac (regresja) -
   assert(found.length === 1, 'T7D-f: ekspansyjny AI zaklada miasto przez foundCityAt');
 }
 
+// ---------------------------------------------------------------------------
+// P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (Maciej 2026-08-13): MP maszerują po wolne chatki
+// ze skarbami we własnym terytorium jednostkami wojskowymi (bez wymogu skauta).
+// ---------------------------------------------------------------------------
+
+console.log('\n--- T7D-l: defensiveCopy -> MP idzie po wolna chatke WE WLASNYM terytorium ---');
+{
+  const map7l = makeMap(15, 15);
+  const city = makeCity('c7l', 8, 7, 7); // population 2 -> cityTerritoryRadius = 5
+  // Warrior stoi 1 heks od miasta (dystans do domu <=1 -> gałąź "powrót do domu" NIC by nie
+  // wyemitowała) -- jedyny mozliwy 'move' w tym scenariuszu (brak wrogow/posilkow/ofensywy)
+  // to wlasnie krok do chatki.
+  const warrior = makeUnit('w7l', 8, 7, 8, 'miecznik');
+  map7l.hexes['7,11'].wioska = { istnieje: true, ludnosc: 1 }; // dystans do miasta = 4 <= 5 (w terytorium)
+  const result = decideAITurn(8, [warrior], [city], map7l, makeGameData(), { defensiveCopy: true });
+  const moves = result.filter(c => c.type === 'move' && c.unitId === 'w7l');
+  assert(moves.length === 1, 'T7D-l: MP wydaje ruch w strone chatki (jedyny mozliwy powod ruchu w tym scenariuszu)');
+  if (moves.length === 1) {
+    const distBefore = hexDistance(warrior.q, warrior.r, 7, 11);
+    const distAfter = hexDistance(moves[0].toQ, moves[0].toR, 7, 11);
+    assert(distAfter < distBefore, 'T7D-l: ruch skraca dystans do chatki (7,11)');
+  }
+}
+
+console.log('\n--- T7D-m: defensiveCopy -> chatka POZA wlasnym terytorium MP jest ignorowana ---');
+{
+  const map7m = makeMap(20, 20);
+  const city = makeCity('c7m', 9, 2, 2); // population 2 -> cityTerritoryRadius = 5
+  const warrior = makeUnit('w7m', 9, 2, 2, 'miecznik'); // na miescie -> brak ruchu "do domu"
+  map7m.hexes['18,18'].wioska = { istnieje: true, ludnosc: 1 }; // dystans do miasta >> 5, poza terytorium
+  const result = decideAITurn(9, [warrior], [city], map7m, makeGameData(), { defensiveCopy: true });
+  const moves = result.filter(c => c.type === 'move' && c.unitId === 'w7m');
+  assert(moves.length === 0, 'T7D-m: MP NIE rusza w strone chatki poza wlasnym terytorium');
+}
+
+console.log('\n--- T7D-n: defensiveCopy -> atak na sasiedniego wroga wygrywa priorytetem nad chatka ---');
+{
+  const map7n = makeMap(15, 15);
+  const city = makeCity('c7n', 10, 7, 7);
+  const warrior = makeUnit('w7n', 10, 5, 5, 'miecznik');
+  const enemy = makeUnit('e7n', 11, 6, 5, 'miecznik'); // sasiaduje z warrior
+  map7n.hexes['5,8'].wioska = { istnieje: true, ludnosc: 1 }; // chatka w zasiegu, ale atak ma priorytet
+  const result = decideAITurn(10, [warrior, enemy], [city], map7n, makeGameData(), { defensiveCopy: true });
+  const attacks = result.filter(c => c.type === 'attack' && c.unitId === 'w7n');
+  const moves = result.filter(c => c.type === 'move' && c.unitId === 'w7n');
+  assert(attacks.length === 1, 'T7D-n: MP atakuje sasiedniego wroga zamiast isc po chatke');
+  assert(moves.length === 0, 'T7D-n: MP nie wydaje ruchu (bo zaatakowala), priorytet zachowany');
+}
+
+console.log('\n--- T7D-o: defensiveCopy -> chatka WE WLASNYM terytorium, MP bez miasta-siostry (brak posilkow) ---');
+{
+  // Regresja: upewnij sie, ze krok chatki nie wymaga sisterCityStates ani offensiveSupport --
+  // dziala w "goly" scenariuszu Easy/Normal (offensiveSupport=false domyslnie).
+  const map7o = makeMap(15, 15);
+  const city = makeCity('c7o', 11, 7, 7);
+  const warrior = makeUnit('w7o', 11, 7, 8, 'miecznik');
+  map7o.hexes['7,10'].wioska = { istnieje: true, ludnosc: 1 };
+  const result = decideAITurn(11, [warrior], [city], map7o, makeGameData(), {
+    defensiveCopy: true,
+    cityStateOffensiveSupport: false,
+    sisterCityStates: [],
+  });
+  const moves = result.filter(c => c.type === 'move' && c.unitId === 'w7o');
+  assert(moves.length === 1, 'T7D-o: chatka dziala bez sister-city-states / offensiveSupport (Easy/Normal MP)');
+}
+
 // ============================================================================
 // TESTY T8: R-AI-KOLONIZACJA — pop≥5, dystans 4, surge MP
 // ============================================================================

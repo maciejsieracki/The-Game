@@ -129,17 +129,41 @@ assert(computeMainCivEraFromResearch(1, new Set(era1Techs), tech, 'egipt', ['pir
 assert(computeMainCivEraFromResearch(1, new Set(era1Techs.slice(1)), tech, 'grecy', []) === 1,
   'main-civ: Grecja, brak 1 tech epoki 1 → nadal era 1 (tech ważniejszy niż cud)');
 
+// AKTUALIZACJA 2026-08-13 (ECHO A, rozjazd danych „Petra"): petra.epokaWejscia
+// przesunięte 2→3 w wonders.json (był JEDYNYM z 19 cudów, gdzie techUnlock
+// (Inżynieria, epoka 3) był z epoki WYŻSZEJ niż epokaWejscia cudu (2) -- Fenicjanie
+// strukturalnie nie mogli opuścić epoki 2 bez technologii, której formalnie
+// jeszcze nie mieli prawa badać jako "swojej epoki"). Petra bramkuje dziś epokę 3,
+// NIE epokę 2 -- Fenicjanie epoki 2 są dokładnie jak Grecja epoki 1 (brak cudu
+// wymaganego, patrz linia 120-121 wyżej).
 const doneUpTo2NoWonder = new Set([...era1Techs, ...era2Techs]);
-assert(computeMainCivEraFromResearch(1, doneUpTo2NoWonder, tech, 'fenicjanie', []) === 2,
-  'main-civ: Fenicjanie, komplet epok 1+2, Petra (epoka 2) NIE zbudowana → BLOKADA na epoce 2');
+assert(eraOwnWonderIds('fenicjanie', 2).length === 0,
+  'kanon (po naprawie ECHO A): Fenicjanie epoka 2 → BRAK cudu wymaganego (Petra przesunięta na epokę 3)');
+assert(computeMainCivEraFromResearch(1, doneUpTo2NoWonder, tech, 'fenicjanie', []) === 3,
+  'main-civ: Fenicjanie, komplet epok 1+2, Petra NIE zbudowana → awans do 3 mimo to (cud nie gate-uje już epoki 2)');
 assert(computeMainCivEraFromResearch(1, doneUpTo2NoWonder, tech, 'fenicjanie', ['petra']) === 3,
-  'main-civ: Fenicjanie, komplet epok 1+2 + Petra zbudowana → epoka 3');
+  'main-civ: Fenicjanie, komplet epok 1+2 + Petra zbudowana → identycznie epoka 3 (bez zmiany wyniku)');
+
+assert(JSON.stringify(eraOwnWonderIds('fenicjanie', 3)) === JSON.stringify(['petra']),
+  'eraOwnWonderIds: Fenicjanie epoka 3 → Petra (po naprawie ECHO A, epokaWejscia 2→3)');
+assert(eraOwnWonderSatisfied('fenicjanie', 3, []) === false,
+  'eraOwnWonderSatisfied: Petra przypisana epoce 3, nic zbudowane → false');
+assert(eraOwnWonderSatisfied('fenicjanie', 3, ['petra']) === true,
+  'eraOwnWonderSatisfied: Petra zbudowana → true');
 
 const doneAll = new Set([...era1Techs, ...era2Techs, ...era3Techs]);
 assert(computeMainCivEraFromResearch(1, doneAll, tech, 'grecy', []) === 3,
   'main-civ: Grecja, komplet 1+2, Kolos (epoka 3) NIE zbudowany → CAP na maxDefinedEra=3, nie wyżej');
 assert(computeMainCivEraFromResearch(1, doneAll, tech, 'grecy', ['kolos']) === 3,
   'main-civ: Grecja, komplet wszystkich epok + Kolos zbudowany → wciąż CAP=3 (brak epoki 4 w danych)');
+
+// Ten sam wzorzec CAP dla Fenicjan/Petry (po naprawie ECHO A, epokaWejscia 2→3): bramka
+// własnego cudu epoki 3 (Petra) formalnie ISTNIEJE (eraOwnWonderIds wyżej), ale w praktyce
+// NIGDY nie jest dziś sprawdzana przez computeMainCivEraFromResearch, bo maxDefinedEra=3
+// zatrzymuje pętlę na progu epoki 3, zanim doszłoby do warunku "epoka 3 → 4". Petra nie
+// blokuje już NIC w tym mechanizmie -- konsekwencja naprawy, nie założenie.
+assert(computeMainCivEraFromResearch(1, doneAll, tech, 'fenicjanie', []) === 3,
+  'main-civ: Fenicjanie, komplet WSZYSTKICH epok (w tym Inżynieria), Petra NIE zbudowana → nadal CAP=3 (bramka epoki 3 nigdy sprawdzana, brak epoki 4)');
 
 assert(computeMainCivEraFromResearch(2, doneAll, tech, 'sumer', []) === 2,
   'main-civ: start Brąz(2), komplet 1+2, Ziggurat (epoka 2) NIE zbudowany → BLOKADA na starcie (2)');
