@@ -20381,7 +20381,7 @@ znacząco wysokość każdej karty.
 plik `newGameFlow.ts`, ten sam ekran, warto zrobić razem — skrócenie kart tooltipami też pomaga
 z problemem zasłaniania). Zbudować, zrobić zrzuty przed/po, wysłać do przeglądu przed scaleniem.**
 
-## P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (2026-08-14, zgłoszenie Macieja ze zrzutem tooltipa Łąka) · STATUS: **NAPRAWIONE** — kod `ea0be32a`, test `94977a20`; Evaluator **PASS-WITH-NOTES** (2026-08-14, sekcja „Evaluator: hex tooltip filtr złoża (94977a20)" na końcu pliku). Nietknięte, do osobnego dispatchu: `irygacja`/`droga_brukowana` (ta sama klasa, nota N4) oraz `stadnina`/`kopalnia_cyny` (klasa odwrotna, nota N5).
+## P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (2026-08-14, zgłoszenie Macieja ze zrzutem tooltipa Łąka) · STATUS: **NAPRAWIONE** — kod `ea0be32a`, test `94977a20`; Evaluator **PASS-WITH-NOTES** (2026-08-14, sekcja „Evaluator: hex tooltip filtr złoża (94977a20)" na końcu pliku). Nietknięte, do osobnego dispatchu: `irygacja`/`droga_brukowana` (ta sama klasa, nota N4) oraz `stadnina`/`kopalnia_cyny` (klasa odwrotna, nota N5). **AKTUALIZACJA 2026-08-14 (runda 3):** nota N4 zdispatchowana commitem `ec089e9a` — `droga_brukowana` **zamknięta poprawnie**, `irygacja` **NIE** (Evaluator **FAIL**, sekcja „Evaluator: hex tooltip — `droga_brukowana` + `irygacja` (commit `ec089e9a`, Dispatch N4)" na końcu pliku; wymagana runda 4). Nota N5 (`stadnina`/`kopalnia_cyny`) nadal nietknięta.
 
 Maciej (dosłownie, ze zrzutem tooltipa "Pole mapy — kliknięty heks", Łąka, "Surowce/zasoby: brak
 złoża", brak lasu/rzeki): „w jednym z pytań prosiłem też żebyś sprawdził czy w HEX-ach prawidłowo
@@ -22223,3 +22223,130 @@ Do dispatchu rundy 2 (Operator, Sonnet 5), w tej kolejności:
 **Nie deployować `a7de65b0` do ROBOCZA przed domknięciem N1** — w wariancie ataku AI podczas
 otwartej audiencji ryzyko (podwójna faza AI) jest większe niż naprawiany objaw (dwa modale
 naraz na ekranie).
+---
+
+## Evaluator: hex tooltip — `droga_brukowana` + `irygacja` (commit `ec089e9a`, Dispatch N4) · werdykt **FAIL**
+
+Runda 3 tematu `P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA` (runda 1 kod `ea0be32a`,
+runda 2 test `94977a20` = PASS-WITH-NOTES z notą N4; ten commit to dispatch tej noty).
+Evaluator: Opus 5, gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, worktree izolowany.
+
+**Werdykt: FAIL.** Nic nie uległo regresji i połowa zlecenia (`droga_brukowana`) jest zrobiona
+poprawnie, ale **główny cel dispatchu — odtworzenie warunku `isRiverAdjacent()` — NIE został
+osiągnięty**, a commit twierdzi jako fakt dwie rzeczy, które weryfikacja obala (§F1, §F2).
+Wymagana runda 4.
+
+### Bramki — zweryfikowane niezależnie, wszystkie zgodne z opisem commita
+| Bramka | Opis commita | Realny wynik (uruchomiony) | Zgodność |
+|---|---|---|---|
+| `npx tsc --noEmit` | 0 błędów | exit 0, 0 błędów | ✅ |
+| `hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` | 50 pass / 0 fail | **50 passed, 0 failed** | ✅ |
+| `map-improvement-qualify-test.cjs` | 112 pass / 0 fail, „nietknięty" | **112 pass, 0 fail** (dokładnie 112) | ✅ |
+| `danina-podatek-tooltip-ui-test.cjs` (drugi realny wołający, w opisie niewymieniony) | — | **12 pass, 0 fail** | ✅ (dosprawdzone) |
+
+**Czystość zakresu (`git show --stat ec089e9a`): ✅ bez zanieczyszczenia.** Dokładnie 3 pliki,
+wszystkie w zakresie tematu: `gra/src/main.ts` (+1 linia), `gra/src/ui/hexContextTooltip.ts`
+(+63/−8), `gra/tools/hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` (+130). Żadnego śladu
+problemu z `ea0be32a`.
+
+### F1 (BLOKUJĄCE) — `hexHasRiverAccess()` NIE jest lustrzanym odbiciem `isRiverAdjacent()`
+Komentarz w kodzie (`hexContextTooltip.ts:395`) i opis commita mówią „lustrzane odbicie
+`isRiverAdjacent()`" / „mirrors `isRiverAdjacent()`". **To nieprawda.** Predykaty różnią się tym,
+CO liczy się jako rzeka na SĄSIEDZIE:
+
+* **Silnik** (`improvement-build.ts:636-644`): sam heks → `hex.rzeka.obecna` **LUB** `riverHexSet`;
+  sąsiedzi → **wyłącznie `riverHexSet`**, czyli zbiór zbudowany z `map.riverPaths`
+  (`buildRiverHexSet`, linia 563).
+* **Tooltip** (`hexContextTooltip.ts:402-410`): sam heks → `hex.rzeka.obecna`; sąsiedzi →
+  **`hex.rzeka.obecna` sąsiada**. `map.riverPaths` w ogóle nie jest czytane.
+
+Te dwa zbiory nie są równe i **nie mogą być**: `syncRiverEdgeBonusHexes()`
+(`gen-helpers.ts:7241`) świadomie ROZLEWA znacznik `rzeka.obecna` na brzegi — jego własny
+komentarz brzmi „każdy heks stykający się z rzeką jednym bokiem → obecna". Zbiór
+`{rzeka.obecna}` jest więc ściśle większy od `{riverPaths}`.
+
+**Pomiar (nie rozumowanie) — `generujSwiat(seed, 'standardowy', 'kontynenty')`, porównanie obu
+predykatów heks po heksie, ograniczone do bramki terenu `FLAT_IRR` (Łąka/Równina/Pustynia — jedyne
+tereny, na których `irygacja` może się w ogóle pojawić):**
+
+| seed | heksy FLAT_IRR (szt.) | zgodne (szt.) | **tooltip TAK / silnik NIE (szt.)** | udział rozbieżności (%) | tooltip NIE / silnik TAK |
+|---|---|---|---|---|---|
+| 42 | 4608 | 4298 | **310** | **6,7 %** | 0 |
+| 123 | 4689 | 4368 | **321** | **6,8 %** | 0 |
+| 777 | 4546 | 4212 | **334** | **7,3 %** | 0 |
+
+Źródło rozjazdu, zmierzone na tych samych mapach: **1322–1394 heksów** (szt., per mapa) ma
+`rzeka.obecna === true`, nie będąc w `map.riverPaths`; w drugą stronę **0 heksów** (dlatego zero
+fałszywych negatywów).
+
+**Skutek dla gracza:** na ~310–334 heksach standardowej mapy tooltip nadal obiecuje „Irygacja",
+której silnik nie pozwoli zbudować — czyli **dokładnie ta klasa błędu, którą zgłosił Maciej
+(„groch z kapustą")**, tylko zawężona z 100 % heksów FLAT_IRR do ~7 %. Poprawa jest realna, ale
+zlecenie brzmiało „warunek lustrzany", nie „warunek węższy".
+
+**Uwaga do rundy 4:** poprawka to czytanie `map.riverPaths` (jak silnik), nie `rzeka.obecna`
+sąsiadów. Osobno — czy SILNIK powinien dla irygacji używać `riverPaths` czy rozlanego
+`rzeka.obecna` — to pytanie gameplayowe do właściciela (ABC), ale tooltip nie może odpowiadać na
+nie po cichu inaczej niż silnik.
+
+### F2 (BLOKUJĄCE) — bramka nie ma zębów na PRODUKCYJNYM `hexHasRiverAccess()`
+Test **reimplementuje** funkcję u siebie (`hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs:188`)
+zamiast ją importować, więc scenariusze [4]/[5] i „mutacja" [3b] sprawdzają **kopię testową**,
+nie kod, który jedzie do gracza. Zweryfikowane mutacją kontrolną na prawdziwym pliku źródłowym:
+
+| Mutacja produkcyjnego `hexHasRiverAccess()` | Wynik bramki | Ocena |
+|---|---|---|
+| **B** — usunięta CAŁA pętla po sąsiadach (zostaje `return true`, czyli odtworzony zgłoszony bug „irygacja wszędzie") | **50 passed, 0 failed** | ❌ nie łapie |
+| **A** — wypatroszone całe ciało (`return true;` od pierwszej linii) | 48 passed, **2 failed** | łapie, ale wyłącznie przez przypięcia tekstowe [1b] |
+
+Czyli: jedyną ochroną nowej funkcji są dwa `includes()` na stringach
+(`'if (hex.rzeka?.obecna) return true;'`, `'if (!map) return false;'`). **Pętla po sąsiadach — czyli
+cała istota naprawy N4 — nie jest chroniona ani zachowaniem, ani tekstem.** Zdanie z opisu commita
+o „mutacji [3b] odtwarzającej oba zgłoszone błędy" jest prawdziwe dla `droga_brukowana`
+(warunek żyje w pętli przypiętej regexem), ale dla `irygacja` dotyczy pliku testu, nie produkcji.
+
+### N1 (nota) — 4 kopie offsetów sąsiadów, zero strażnika
+`HEX_NEIGHBOR_OFFSETS` istnieje teraz w 4 miejscach: `improvement-build.ts:555` (`hexNeighbors`),
+`units/setup.ts` (`hexNeighborCoords`), `hexContextTooltip.ts:410` (nowa) i `…-zloze-test.cjs:185`.
+Same offsety **są dziś identyczne** (sprawdzone parami: `{q±1,r}`, `{q,r±1}`, `{q+1,r−1}`,
+`{q−1,r+1}`), identyczne jest też zachowanie na krawędzi mapy (obie strony indeksują słownik i
+traktują brak klucza jako „bez rzeki"). Ale **nie ma żadnego testu-strażnika**, który zaświeciłby
+na czerwono, gdyby geometria heksów zmieniła się w jednym miejscu — jest tylko komentarz opisowy.
+Świadomy wybór Operatora (unik importu `units/setup.ts` → `map/startScoring`) jest sam w sobie
+rozsądny; brakuje mu tylko asercji równości. Do rundy 4 razem z F1.
+
+### N2 (nota) — `map?` opcjonalna: ścieżki produkcyjne OK, ale typ nigdy nie ostrzeże
+Grep całego repo: **produkcyjny wołający jest dokładnie jeden** — `main.ts:4879` — i `map`
+przekazuje ✅. Pozostałe trafienia: `danina-podatek-tooltip-ui-test.cjs` (8 wywołań **bez** `map`
+— przechodzi cicho węższą ścieżką `!map → return false`; dla tamtych asercji o Daninie/Podatku
+bez znaczenia, bramka zielona 12/0) oraz `gra-robocza/srcKopiaMaster/` i `gra-kanon/srcKopiaMaster/`
+(migawki źródeł przy bundlach, nie żywe ścieżki wykonania). Ryzyko na przyszłość: skoro parametr
+jest opcjonalny, przyszłe zapomniane wywołanie **nie wywali się na `tsc`**, tylko po cichu wróci
+do zaniżonego wyniku. Alternatywa (wymagany parametr) była do rozważenia przy jednym realnym
+wołającym.
+
+### N3 (nota pozytywna) — `droga_brukowana` odtworzona wiernie
+Porównanie bit-po-bit z `createQualifier()` (`improvement-build.ts:660-667`):
+`TERENY_LADU.has(teren)` ⇔ `galleryTerrainEligible('droga_brukowana', teren)` (linia 866 zwraca
+**dokładnie** `TERENY_LADU.has(teren)`) ✅ · `hasDroga` ⇔ nowy warunek z linii 447 ✅ ·
+`!hasBruk` ⇔ istniejące `if (active.has(key)) continue;` z linii 423 ✅. Nieodtworzony pozostaje
+tylko `inPlayerTerritory(q, r)` — ale to **jednolita, pre-istniejąca** właściwość całej tej funkcji
+(nie ma go też przy `farma`, `irygacja`, `bydlo`, `owce`), nie regresja tego commita. Ta połowa
+zlecenia jest zrobiona dobrze.
+
+### Sprawdzone i ODRZUCONE jako nie-problem
+* `hasBlockingDepositForFarm(hex)` — trzeci koniunkt warunku `irygacja` w silniku (linia 685) —
+  **nie jest** luką w tooltipie: funkcja (`improvement-build.ts:424-428`) to dziś zaślepka
+  zwracająca zawsze `false` (decyzja „wolne współistnienie", Maciej 2026-07-09). Pominięcie jej
+  w tooltipie jest bez skutku behawioralnego.
+* Hipoteza fałszywych negatywów przez ujścia rzek do Morza (heks w `riverPaths`, ale
+  `canReceiveRiverYieldMark()` odmawia znacznika heksom Morza) — **nie materializuje się**:
+  pomiar dał `pathNoMark = 0` na wszystkich 3 seedach.
+
+**STATUS: **OTWARTE** — wymagana runda 4 (Operator Sonnet 5): (1) `hexHasRiverAccess()` ma czytać
+`map.riverPaths` tak jak `buildRiverHexSet()`/`isRiverAdjacent()` w silniku, nie `rzeka.obecna`
+sąsiadów; (2) test ma **importować** produkcyjną funkcję (albo przypiąć pętlę po sąsiadach
+tekstowo), tak żeby mutacja B świeciła na czerwono; (3) przy okazji asercja równości 4 kopii
+offsetów (N1). Sprostowanie do opisu commita `ec089e9a`: sformułowania „lustrzany"/„lustrzane
+odbicie `isRiverAdjacent()`" są nieścisłe — poprawnie „warunek węższy niż wcześniej, wciąż szerszy
+niż silnik o ~7 % heksów FLAT_IRR".
