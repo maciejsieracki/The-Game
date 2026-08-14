@@ -47,6 +47,17 @@ export function empirePanelBlockForSection(section: string | null): EmpirePanelB
   if (section === 'econ-praca') return 'praca';
   if (section === 'econ-nauka') return 'nauka';
   if (section === 'econ-religia') return 'religia';
+  // P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK (Maciej 2026-08-14): chip HUD „Rekruci" mapuje na
+  // `econ-rekruci`, ale Armia ma już własny top-level blok (patrz `armia` w empireDetailPanel.ts,
+  // sekcja ARMIA) — bez tego wyjątku wpadał w ogólny `startsWith('econ-')` i pokazywał stary,
+  // wspólny widok „ZASOBY IMPERIUM (STAN + PRZYROST)" zamiast już istniejącego bloku Armii.
+  // Wyjątek MUSI być sprawdzony PRZED ogólnym `startsWith('econ-')` niżej, tak jak pozostałe.
+  // EN: HUD chip "Recruits" maps to `econ-rekruci`, but Army already has its own top-level block
+  // (see `armia` in empireDetailPanel.ts) — without this exception it fell into the generic
+  // `startsWith('econ-')` and showed the old, shared "EMPIRE RESOURCES" view instead of the
+  // already-existing Army block. This exception MUST be checked BEFORE the generic
+  // `startsWith('econ-')` below, same as the others.
+  if (section === 'econ-rekruci') return 'armia';
   if (section.startsWith('econ-')) return 'ekonomia';
   return 'ekonomia';
 }
