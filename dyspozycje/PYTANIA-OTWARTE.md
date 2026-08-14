@@ -4455,7 +4455,7 @@ przełącznika bez danych za nim (zgodnie z zakazem martwego UI, CLAUDE.md). Pyt
 żebym teraz dodała tę trzecią kategorię (wymaga nowego typu zdarzenia w silniku dla wojen/pokoi
 AI↔AI), czy zostaje odłożone.
 
-## R-GRANICE-ZULUSI-KOLOR-NIEWIDOCZNY — zaimplementowane w worktree, jeszcze NIE scalone do gałęzi (2026-08-09)
+## R-GRANICE-ZULUSI-KOLOR-NIEWIDOCZNY — **SCALONE** (etykieta przestemplowana 2026-08-14, audyt §0c — commit `64852db1` potwierdzony jako przodek czubka gałęzi przez `git merge-base --is-ancestor`; nagłówek błędnie wisiał na „NIE scalone" mimo scalenia)
 
 **⛔ KOREKTA LICZB (2026-08-09, niezależna weryfikacja Evaluatora Opus 5 — pierwotny meldunek
 Operatora zawierał błędy):** Kolor Zulusów zmieniony `#2E7D32` (ciemna zieleń) → `#C8E838`
@@ -4478,6 +4478,12 @@ Operatora na kolorze Celtów) — mimo korekty liczby, wniosek pozostaje ten sam
 Zulusi przed poprawką i poniżej progu JND. Operator świadomie NIE ruszył Celtów — kolor
 tożsamościowy, wymaga tej samej rozmowy co Zulusi. Pytanie: chcesz żebym teraz też poprawiła kolor
 Celtów (ta sama metoda), czy najpierw zobaczysz Zulusów w grze?
+
+**STATUS pytania Celtowie (dopisane 2026-08-14, audyt §0c): `R-GRANICE-CELTOWIE-KOLOR-Q1` —
+NIGDY nie trafiło do Macieja jako pytanie w czacie (Zulusi scalono `64852db1`, ale follow-up o
+Celtach zgubiony razem ze scaleniem). Zostaje niedodane do czatu teraz — właściciel nieobecny,
+zasada zakazu otwierania nowych wątków pod jego nieobecność — ale oznaczone jednoznacznie jako
+pytanie ABC czekające na zadanie, nie jako zapomniane bez dyspozycji.**
 
 ---
 
@@ -18749,7 +18755,7 @@ bez wymogu posiadania skauta.
 ma), nie strojenie balansu liczbowego. Zgłoszenie ma charakter dyrektywny, nie eksploracyjny.
 Dispatch Operator (Sonnet 5) bezpośrednio.
 
-## P-SPICHLERZ-PANEL-VS-SILNIK-ROZJAZD-BILANS (2026-08-13, zgłoszenie Macieja, 2 screeny) · STATUS: OTWARTE — rozpoznanie dispatchowane
+## P-SPICHLERZ-PANEL-VS-SILNIK-ROZJAZD-BILANS (2026-08-13, zgłoszenie Macieja, 2 screeny) · STATUS: **ZAMKNIĘTE** (nagłówek przestemplowany 2026-08-14, audyt §0c — fix realnie w kodzie od 2026-08-13, `cityPanel.ts:1177` `y.zywnosc`→`y.zywnoscBrutto`, wpis zamykający zgubiony, task „Napraw cityPanel.ts:1177")
 
 **Zgłoszenie (dosłowne, hipoteza właściciela):** „to mam rozwiązanie już zagadki, dlaczego
 spichlerz przy jednym mieście przy automatycznym ustawieniu wychodzi na minusie, a cała
@@ -20527,7 +20533,7 @@ backlog**, tylko dziś potwierdzony konkretnym zrzutem i dokładną lokalizacją
 samą kolejność co pozostałe nieprzerobione zakładki; specyfikacja projektowa już istnieje, nie
 trzeba nowego zlecenia dla Designera).**
 
-## P-ZNACZNIK-POWER-HUD-CIV-EMBLEM (2026-08-14, zgłoszenie Macieja: „do wymiany jest też znacznik power") · STATUS: OTWARTE — hipoteza z kodu, czeka na potwierdzenie
+## P-ZNACZNIK-POWER-HUD-CIV-EMBLEM (2026-08-14, zgłoszenie Macieja: „do wymiany jest też znacznik power") · STATUS: **ZAMKNIĘTE** (nagłówek przestemplowany 2026-08-14, audyt §0c) — kandydaci C+D naprawione commitem `d2dd4b89` (task „Fix: znacznik ⚜ zamiast SVG w chipie/nagłówku Mocy", w FALA 279); kandydat A/B (`hud.ts powerCenterIconHtml()`) poniżej **OBALONY** przez Evaluatora rundy 2 („5. Runda 2 (`hud.ts`)" w sekcji „Evaluator: ikona władcy w nagłówku panelu" dalej w pliku) — to nie glif, tylko portret władcy + świadomy sygnet 12px, kod od FALI 23-25. Poniższy opis kandydata A zostawiony jako historia rozpoznania, nie jako aktualna diagnoza.
 
 Maciej (2026-08-14, w czacie): „pisałem, że do wymiany jest też znacznik power. Tego nie
 zanotowałeś." — audyt sesji (pełny transkrypt + rejestr) NIE znalazł dosłownego wcześniejszego
