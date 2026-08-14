@@ -24445,3 +24445,234 @@ zasila którykolwiek panel Excel (`panele-sterowania/gen-panel-*.py`) — jeśli
 jako osobny krok doganiania JSON→Excel (`CLAUDE.md` §2), nie wykonywać automatycznie bez potwierdzenia zakresu.
 
 **STATUS: WDROŻENIE W TOKU** (Workflow Operator Sonnet 5 → Evaluator Opus 5, dispatch 2026-08-14).
+
+---
+
+## Evaluator: reset trybu okolicy przy zmianie właściciela (`0d50bb81`, `R-OKOLICA-TRYB-RESET-PO-ZMIANIE-WLASCICIELA-Q1 = A`) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
+
+**STATUS: **ZAMKNIĘTE** (werdykt wydany) — ale **N1 pozostaje OTWARTE jako osobny temat**, patrz sekcja
+`P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE` niżej.
+
+Weryfikacja niezależna, na commicie `0d50bb81` (rodzic: `c438af75`). Wszystko poniżej zmierzone
+własnoręcznym uruchomieniem, nie przepisane z raportu Operatora.
+
+### 1. Bramki — wszystkie 7 zgodne co do liczby z opisem commita
+
+| Bramka | Wynik zmierzony | Opis commita | Zgodność |
+|---|---|---|---|
+| `npx tsc --noEmit` | 0 błędów, exit 0 | 0 błędów | ✅ |
+| `okolica-tryb-reset-ownership-change-test.cjs` | **18 pass / 0 fail**, exit 0 | 18/18 | ✅ |
+| `okolica-ownership-change-reconcile-test.cjs` | **15 pass / 0 fail** | 15/15 | ✅ |
+| `okolica-load-reconcile-test.cjs` | **11 pass / 0 fail** | 11/11 | ✅ |
+| `okolica-test.cjs` | **72 pass / 0 fail** | 72/72 | ✅ |
+| `tech-tree-test.cjs` | **19 pass / 0 fail** | 19/19 | ✅ |
+| `research-test.cjs` | **33 pass / 0 fail** | 33/33 | ✅ |
+
+Żadnej rozbieżności — w odróżnieniu od kilku wcześniejszych commitów tej sesji (patrz sprostowania
+liczb przy `4fc770ee`/`c3a5652c` w CLAUDE.md), tutaj opis commita mówi prawdę co do jednej asercji.
+
+### 2. Czy istnieje PIĄTA ścieżka zmiany właściciela, omijająca `seedCityOwnerDefaults`? — NIE
+
+Przeszukałem **cały** `gra/src`, nie tylko `main.ts`. Realnych mutacji `city.ownerId` jest **cztery**
+(reszta trafień grepa to jednostki, forty, parametry funkcji i komentarze):
+
+| # | Miejsce | Zdarzenie | Dociera do `seedCityOwnerDefaults`? |
+|---|---|---|---|
+| 1 | `main.ts:12070` `city.ownerId = newOwner` | kapitulacja z głodu | ✅ bezpośrednio, `main.ts:12085` |
+| 2 | `main.ts:22555` `city.ownerId = annexerId` | aneksja dyplomatyczna | ✅ bezpośrednio, `main.ts:22559` |
+| 3 | `main.ts:25485` `city.ownerId = REBEL_FACTION_OWNER_ID` | bunt | ✅ bezpośrednio, `main.ts:25488` |
+| 4 | **`src/game/post-battle-map.ts:485`** `city.ownerId = atkOwner` | podbój w bitwie | ✅ przez callback `onOwnerChanged` → `main.ts:22923` |
+
+Ścieżka 4 leży w **innym pliku** i biegnie przez opcjonalny łańcuch
+`captureOpts?.onOwnerChanged?.(city)` — to jedyne realne miejsce, w którym naprawa mogłaby zostać
+ominięta, gdyby ktoś zawołał `applyCityCaptureAfterBattle` bez przekazania callbacku. Sprawdziłem:
+w kodzie produkcyjnym ta funkcja ma **dokładnie jednego** wywołującego (`main.ts:22908`, wewnątrz
+`applyCityCaptureToMap`) i on callback przekazuje. Pozostałe wywołania to wyłącznie harnessy
+testowe (`post-battle-map-test.cjs`, `barb-city-behavior-test.cjs`). **Luki nie ma.**
+
+### 3. Czy reset nie wywala ustawień gracza POZA zmianą właściciela? — NIE, sprawdzone wszystkie 9 call site'ów
+
+To było moje główne podejrzenie regresyjne: `seedCityOwnerDefaults` kasuje teraz ręczne ustawienia,
+więc gdyby była wołana z jakiejś ścieżki cyklicznej (koniec tury, odświeżenie panelu), gracz
+traciłby przypisania 👤 bez powodu. Przejrzałem **każdy** z 9 call site'ów:
+
+- **5 × założenie miasta** — `7833` (miasto-państwo na starcie), `7903` (kolonia z bonusu trudności),
+  `7942` (obcy klaster), `11168` (gracz zakłada miasto), `27188` (AI zakłada miasto),
+- **4 × zmiana właściciela** — `12085`, `22559`, `22923`, `25488` (tabela w §2).
+
+**Żadnej ścieżki cyklicznej/odświeżeniowej.** Dodatkowo sprawdziłem, że przy zakładaniu reset jest
+czystym no-opem: ani `foundCityAt`, ani `finalizeCityFounding` nie ustawiają `okolicaTryb` /
+`okolicaReczne` (grep po `src/game/cities.ts` — pola występują wyłącznie jako deklaracje typu w
+interfejsie `City` i w migracji `ensureCitySaveDefaults`). Świeże miasto ma oba pola `undefined`.
+
+### 4. `DEFAULT_OKOLICA_TRYB` — import poprawny, wartość faktycznie `'auto'`
+
+`src/game/cities.ts:45`: `export const DEFAULT_OKOLICA_TRYB: OkolicaTryb = 'auto';`. Import w
+`main.ts:178` z `'./game/cities'` — ta sama ścieżka, z której `main.ts` bierze pozostałe stałe
+`DEFAULT_*`. Nie jest to nazwa zgadnięta; `tsc` by ją zresztą obalił.
+
+### 5. `delete c.okolicaReczne` — bezpieczne, także dla `reconcileAllWorkedTiles` w tej samej funkcji
+
+`seedCityOwnerDefaults` najpierw kasuje pole (linia 4598), a **na końcu tej samej funkcji** (4646)
+woła `reconcileAllWorkedTiles`, które przechodzi po `okolicaReczne` **wszystkich** miast.
+Sprawdziłem `src/map/territory-work.ts:123` — pętla zaczyna się od `if (!city.okolicaReczne) continue;`,
+więc `undefined` jest obsłużone wprost, bez wyjątku. Twierdzenie z opisu commita, że kolejność
+reset-vs-reconcile nie ma znaczenia funkcjonalnego, **potwierdzam** — reconcile nie czyta ani nie
+pisze `okolicaTryb` w ogóle (własny grep po pliku: zero trafień).
+
+### 6. Miasta AI, które nigdy nie miały trybu ręcznego — reset jest semantycznym no-opem
+
+Pole zmienia się z `undefined` na `'auto'`. Sprawdziłem **wszystkich** czytelników `okolicaTryb`
+w `src/`: `okolica.ts:346/451/564/645` używają `?? DEFAULT_OKOLICA_TRYB`, `cityPanel.ts:9035`
+używa `?? 'auto'`, `cities.ts:414` używa `if (!city.okolicaTryb)`. Dla każdego z nich `undefined`
+i `'auto'` są nierozróżnialne. Jedyny realny skutek to nieco większy plik zapisu (pole zawsze
+obecne). **Bez efektu ubocznego.**
+
+### 7. Jakość nowego testu — asercje nietautologiczne, ale SEKCJA 1 nie dowodzi wpięcia
+
+Test ma repro buga (1.1), kontrolę czułości (1.2), przypadek po naprawie (1.3), przypadek graniczny
+„gracz odzyskuje własne miasto" (1.4) oraz mutację kontrolną (2.5) — czyli spełnia STRICT-EDGE
+(nie jest happy-path-only). Uczciwie odnotowuję jednak ograniczenie, które sam autor opisał
+w nagłówku (patrz **N3**): **SEKCJA 1 nie wykonuje prawdziwego `seedCityOwnerDefaults`** — ręcznie
+odtwarza jego dwie linie na obiekcie testowym. Gdyby ktoś wyciął naprawę z `main.ts`, SEKCJA 1
+przeszłaby **w 100%**; regresję złapałyby wyłącznie asercje 2.1/2.2 (strażnik tekstowy) i 2.5.
+To ten sam wzorzec i to samo ograniczenie co w przyjętym już `okolica-ownership-change-reconcile-test.cjs`
+(`main.ts` ciągnie DOM/THREE, nie da się go zbundlować w node) — akceptuję, ale zapisuję, żeby
+nikt nie przecenił wagi SEKCJI 1.
+
+### N1 ⚠️ — LUKA SAVE/LOAD: stary zapis zostaje w trybie ręcznym NA ZAWSZE (potwierdzone własnym harnessem)
+
+**To jest najważniejsze znalezisko tej recenzji.** Naprawa domyka wyłącznie zmianę właściciela
+**w bieżącej grze**. Ścieżka wczytania zapisu (`main.ts`, ~30253-30286) robi
+`ensureCitySaveDefaults(c)` + `reconcileAllWorkedTiles(...)` — i **żadne z nich nie rusza `okolicaTryb`**:
+
+- `cities.ts:414` to `if (!city.okolicaTryb) city.okolicaTryb = DEFAULT_OKOLICA_TRYB;` — `'reczny'`
+  jest wartością **prawdziwą**, więc migracja go **zachowuje**, bez filtra właściciela;
+- `reconcileAllWorkedTiles` nie zna pojęcia `okolicaTryb` (dowodzi tego asercja **2.6 tego samego
+  commita**).
+
+Zbudowałem własny harness (poza repo, na prawdziwych `resolveWorkedTiles` + `ensureCitySaveDefaults`)
+odtwarzający zapis zrobiony PRZED naprawą — miasto gracza w trybie ręcznym, przejęte przez AI(3),
+zapisane. Wynik po wczytaniu na wersji **Z** naprawą:
+
+```
+--- stan PO ensureCitySaveDefaults (migracja zapisu) ---
+okolicaTryb = reczny
+populacja        = 6
+obrobione kafle  = 2
+BEZCZYNNI        = 4
+WNIOSEK: LUKA POTWIERDZONA
+kontrola (to samo przejęcie W BIEŻĄCEJ GRZE): obrobione = 6, bezczynni = 0
+```
+
+Czyli **dokładnie ten sam objaw, który commit deklaruje jako zabity** („AI nie ma ścieżki powrotu
+do auto, obywatele stali bezczynnie"), żyje dalej — tylko wchodzi drzwiami load'u zamiast drzwiami
+podboju. Dotyczy każdego zapisu z bieżącej ROBOCZEJ, w którym gracz stracił ręcznie zarządzane miasto.
+Zapisy zrobione **po** tej naprawie są czyste (żadne nowe zablokowane miasto już nie powstanie).
+
+**Dlaczego mimo to NIE jest to twarde FAIL #9 (STRICT-SAVE):** `R-PROC-AUTOBOT-EVAL-STRICT-SAVE`
+definiuje FAIL #9 jako *nowe trwałe pole bez snapshot/restore* albo *restore bez `?? default`*.
+Ten commit **nie dodaje żadnego trwałego pola**, a `okolicaTryb` ma poprawny `?? default` w każdym
+miejscu odczytu. Sytuacja podpada pod wiersz wyjątków „**Pre-existing baseline poza tematem →
+PASS-WITH-NOTES**": zablokowany stan w starych zapisach powstał przed tym commitem, a decyzja
+właściciela `Q1 = A` mówiła o **zmianie właściciela**, nie o migracji zapisu.
+
+**Ale precedens jest jednoznaczny i dlatego zostawiam to jako temat otwarty:** commit
+bezpośrednio poprzedzający (`3f1a2f85` + jego dogrywka) domknął **dokładnie taką samą lukę load'u**
+dla pola siostrzanego `okolicaReczne` — właśnie po nocie **N2** Evaluatora. Jedno pole dostało
+migrację load'u, drugie nie. Rekomendacja: dołożyć w tym samym miejscu ścieżki load'u reset
+`okolicaTryb = DEFAULT_OKOLICA_TRYB` + `delete okolicaReczne` **dla miast o `ownerId !== 0`**
+(nie dla miast gracza — jego własne ustawienia mają przetrwać zapis/wczytanie, inaczej złamalibyśmy
+podstawową funkcję trybu ręcznego). To ~2 linie + asercja w `okolica-load-reconcile-test.cjs`.
+
+### N2 ⚠️ — uzasadnienie w komentarzu i opisie commita jest MOCNIEJSZE niż kod
+
+Komentarz w `main.ts:4578-4581`, opis commita i nagłówek testu twierdzą zgodnie, że **wszystkie 4**
+callbacki zmiany trybu są „dostępne **WYŁĄCZNIE** graczowi (`ownerId===0`)". Sprawdziłem każdy:
+
+| Callback | Miejsce | Twardy guard `ownerId` w kodzie? |
+|---|---|---|
+| `applyOkolicaTileAdjust` | `main.ts:4819` | ✅ `if (!city \|\| city.ownerId !== 0) return;` |
+| `onOkolicaFocusChange` | `main.ts:6406` | ❌ tylko `if (!city) return;` |
+| `onOkolicaEnterManual` | `main.ts:6468` | ❌ tylko `if (!city) return;` |
+| `onOkolicaRestoreAuto` | `main.ts:6485` | ❌ tylko `if (!city) return;` |
+
+Trzy z czterech opierają się wyłącznie na tym, że panel miasta nie wystawia tych przycisków dla
+cudzego miasta (`cityPanel.ts:10049-10068` warunkuje je **obecnością callbacku**, nie właścicielem,
+a sama sekcja Okolicy w `cityPanel.ts:9084/9090` nie ma testu `ownerId === 0`) — czyli na bramce
+**UI**, nie na bramce w logice, i nigdzie nie asercjonowanej. **Naprawy to nie podważa** (reset przy
+zmianie właściciela jest poprawny niezależnie od tego, kto może przestawić tryb), ale twierdzenie
+zapisane w kodzie produkcyjnym jako fakt jest zbyt mocne — a CLAUDE.md §0b wymaga, żeby każde
+twierdzenie przedstawione jako fakt było prawdziwe. Do poprawienia przy następnym dotknięciu:
+albo dopisać guard `ownerId !== 0` do tych trzech (spójnie z `applyOkolicaTileAdjust`), albo
+przeredagować komentarz na „dostępne graczowi przez panel miasta".
+
+### N3 — SEKCJA 1 testu nie dowodzi wpięcia (opisane w §7 wyżej)
+
+Nie wymaga osobnej rundy; wymaga tylko, żeby nikt nie cytował „18/18" jako dowodu, że naprawa
+**jest w `main.ts`** — tego dowodzą wyłącznie asercje 2.1, 2.2 i mutacja 2.5.
+
+### N4 — koszt wariantu A jest realny i będzie widoczny w playteście
+
+Gracz odzyskujący własne miasto kontratakiem traci swoje wcześniejsze przypisania 👤 (test 1.4
+przypina to zachowanie). To **świadomy wybór właściciela** (`Q1 = A`, nie `C`), nie przeoczenie —
+odnotowuję wyłącznie dlatego, że przy playteście objawi się jako „miasto zapomniało moje ustawienia"
+i warto nie zgłosić tego drugi raz jako buga.
+
+### Werdykt
+
+**PASS-WITH-NOTES.** Zmiana robi dokładnie to, o co prosiła decyzja `Q1 = A`, i robi to kompletnie
+dla **każdej** ścieżki zmiany właściciela w bieżącej grze — w tym dla tej najłatwiejszej do
+przeoczenia, leżącej w innym pliku (`post-battle-map.ts`) i biegnącej przez opcjonalny callback.
+Piątej ścieżki omijającej naprawę nie ma. Reset nie może zadziałać przypadkiem poza zmianą
+właściciela (wszystkie 9 call site'ów to zakładanie miasta albo zmiana właściciela), jest
+bezpieczny dla `undefined` i nie psuje kolejności z `reconcileAllWorkedTiles`. Wszystkie 7 bramek
+zmierzyłem sam i wszystkie zgadzają się co do jednej asercji z opisem commita. **N1 (luka load'u)
+to jedyne znalezisko o realnej wadze gameplayowej** — nie blokuje tego commita (temat decyzji był
+węższy, a FAIL #9 literalnie nie zachodzi), ale zostaje otwarty jako osobne zlecenie poniżej,
+bo inaczej ten sam bug przetrwa w zapisach graczy. **N2** to nieprawdziwe (za mocne) uzasadnienie
+w komentarzu, **N3** i **N4** są informacyjne.
+
+---
+
+## `P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE` — miasto AI z zapisu sprzed `0d50bb81` zostaje w trybie ręcznym na zawsze
+
+**STATUS: **OTWARTE** — zgłoszone przez Evaluatora `0d50bb81` (nota N1), do dispatchu Operatora.
+
+**Objaw:** wczytanie zapisu zrobionego przed `0d50bb81`, w którym miasto gracza w trybie ręcznym
+zostało przejęte przez AI/rebeliantów → miasto nadal ma `okolicaTryb: 'reczny'`, obywatele stoją
+bezczynnie mimo wolnych heksów. Zmierzone: populacja 6, obrobione kafle 2, **bezczynnych 4**.
+
+**Przyczyna:** ścieżka load'u (`main.ts` ~30253-30286) woła `ensureCitySaveDefaults` +
+`reconcileAllWorkedTiles`; pierwsze ustawia domyślny tryb tylko gdy pole jest **puste**
+(`cities.ts:414`, `'reczny'` jest wartością prawdziwą), drugie `okolicaTryb` w ogóle nie zna
+(asercja 2.6 w `okolica-tryb-reset-ownership-change-test.cjs`). Naprawa `0d50bb81` siedzi wyłącznie
+w `seedCityOwnerDefaults`, której load nie woła.
+
+**Proponowana naprawa (~2 linie + test):** w ścieżce load'u, przy tej samej pętli po `saved.cities`,
+dla miast o `ownerId !== 0` ustawić `okolicaTryb = DEFAULT_OKOLICA_TRYB` i skasować `okolicaReczne`.
+**Filtr `ownerId !== 0` jest istotny** — miasta gracza muszą zachować swój tryb ręczny przez
+zapis/wczytanie, inaczej tryb ręczny przestaje działać między sesjami. Asercję dołożyć do
+`okolica-load-reconcile-test.cjs` (ten plik zamyka analogiczną lukę load'u dla `okolicaReczne`,
+więc jest naturalnym miejscem).
+
+**Precedens:** identyczna luka load'u dla pola siostrzanego `okolicaReczne` została już domknięta
+po nocie N2 Evaluatora przy `3f1a2f85` — to ta sama rodzina naprawy, tylko drugie pole.
+
+---
+
+## Porządek w rejestrze: wpis-źródło tego tematu nadal wisi jako `OTWARTE` (do zamknięcia przez orkiestratora)
+
+**Nie zmieniam tego sam** — to cudzy wpis i bookkeeping orkiestratora, nie zakres werdyktu Evaluatora.
+Zgłaszam, bo generuje **fałszywy alarm w obowiązkowym audycie `CLAUDE.md` §0c**.
+
+Sekcja **`### N1 — okolicaTryb NIE resetowany: rezydualny problem REALNY, ale PRE-ISTNIEJĄCY`**
+(ok. linii 21826) ma `STATUS: **OTWARTE** — do ABC właściciela`. To ABC **już się odbyło**:
+właściciel odpowiedział `R-OKOLICA-TRYB-RESET-PO-ZMIANIE-WLASCICIELA-Q1 = A`, a commit `0d50bb81`
+je wdrożył i właśnie dostał werdykt wyżej. Wpis należy przestawić na **ZAMKNIĘTE** z odsyłaczem do
+`0d50bb81`, inaczej `grep -n 'STATUS: \*\*OTWARTE'` będzie przy każdym audycie pokazywał temat już
+rozstrzygnięty i kusił do zbędnego dispatchu.
+
+**Uwaga:** zamknięcie tamtego wpisu **nie** zamyka `P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE` powyżej —
+to dwie różne rzeczy (tamto: czy resetować przy zmianie właściciela → rozstrzygnięte;
+to: czy migrować stare zapisy → nierozstrzygnięte).
