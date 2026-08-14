@@ -20803,3 +20803,48 @@ tej decyzji, to nie jest oczywisty bug do poprawienia.**
 
 **STATUS: rozpoznanie ZAMKNIĘTE. Czeka na decyzję właściciela czy/jak to zaadresować (osobne
 pytanie ABC, do zadania gdy Maciej wróci).**
+
+## Rozpoznanie zakończone: Milet trzyma pracowników na heksie Aten — LUKA ZNALEZIONA, w wyświetlaniu nie w przydziale (2026-08-14)
+
+Stary, PILNE zgłoszenie (task #105), utknęło wcześniej bez danych repro od Macieja. **Podejście z
+innej strony bez czekania na repro — zbadany zakres istniejącej ochrony:**
+
+**Przydział/silnik jest szczelny między różnymi właścicielami — potwierdzone kodem I testem.**
+`cityCenterKeysFromTerritoryNodes()` (`gra/src/game/okolica.ts:110-120`) wyklucza centrum KAŻDEGO
+miasta bezwarunkowo, bez filtra `ownerId` — zweryfikowane niezależnym testem (`okolica-multi-city-
+overlap-test.cjs:213-232`, scenariusz owner=0 vs owner=1 z "bait yield" 999/999/999 na centrum AI,
+mimo to wykluczone). `advanceCityEconomy` buduje `territoryNodes` WEWNĘTRZNIE — nie da się tego
+ominąć przez zapomnienie wołającego. `toggleTileWorker` (ścieżka pisania) też szczelna — nie da
+się dziś KLIKNIĘCIEM przypisać pracownika na centrum, własne ani obce.
+
+**Kontekst z logu 08-13: Maciej sam doprecyzował, że Milet i Ateny to TA SAMA cywilizacja**
+(„Sparta produkuje w Atenach, w samym mieście") — więc scenariusz różnych właścicieli był bardziej
+hipotetyczny niż dosłownym opisem zgłoszenia, ale i tak zweryfikowany w kodzie.
+
+**Rzeczywista luka — w WYŚWIETLANIU, nie w przydziale.** `cityPanel.ts::renderWorkedPreview`
+(~linie 8812-8988) w trybie ręcznym (`okolicaTryb==='reczny'`) czyta SUROWY `city.okolicaReczne`
+(linia 8875), całkowicie z pominięciem `resolveWorkedTiles`/`effectiveIsWorkable` — czyli
+pomijając zarówno filtr własności terytorium JAK I wykluczenie centrum. To świadoma, udokumentowana
+decyzja z INNEGO tematu (`R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`, Maciej 2026-08-09) — panel ma
+pokazywać stary/nielegalny wpis jako zajęty, żeby dało się go kliknięciem usunąć — ale nie
+rozróżnia POWODU nielegalności, więc identycznie pokazuje stary wpis na Morzu i wpis leżący dziś
+na centrum innego miasta.
+
+**Dwa konkretne źródła takiego wpisu w danych:**
+1. Stary zapis sprzed naprawy — `reconcileAllWorkedTiles` wołane wyłącznie z `advanceCityEconomy`
+   (koniec tury) i zakładania miasta, NIE przy wczytaniu save'a.
+2. **Zdobycie miasta** — `seedCityOwnerDefaults()` (`main.ts:4537-4563`) resetuje kilka pól przy
+   przejęciu miasta, ale NIE `okolicaTryb`/`okolicaReczne`, i reconcile nie jest wołane przy
+   podboju — stare wpisy (dla przejętego miasta lub sąsiadów, których terytorium się przesunęło)
+   mogą wisieć aż do końca tury.
+
+Oba scenariusze wymagają trybu `reczny`, dostępnego wyłącznie dla własnych miast gracza — spójne
+z doprecyzowaniem Macieja.
+
+**STATUS: dispatch Operatora (Sonnet 5) — (1) wołać `reconcileAllWorkedTiles`/
+`reconcileWorkedTilesForOwner` także po zdobyciu miasta (`seedCityOwnerDefaults` albo miejsce
+wołające), nie tylko po założeniu i co turę; (2) sanityzacja `okolicaReczne` przy wczytaniu save'a;
+(3) rozważyć wizualne odróżnienie w panelu „legalne pracujące" od „stary/nielegalny wpis" zamiast
+identycznego pokazywania obu jako zajęte (nota już zostawiona w kodzie, `cityPanel.ts:8870-8874`).
+Napisać test odtwarzający scenariusz: zdobycie miasta z aktywnym trybem ręcznym i wpisem
+`okolicaReczne` wskazującym na (teraz nieprawidłowy) heks centrum sąsiada.**
