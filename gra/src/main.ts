@@ -20619,8 +20619,17 @@ async function boot(): Promise<void> {
       } else if (selectedId !== null && cu !== null && cu.ownerId !== 0) {
         // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad LUB w zasięgu ataku
         // dystansowego — P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE) → preBattle C-01
+        // N1 (P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE, runda 2):
+        // sprawdź mgłę PRZED zaakceptowaniem ataku — symetria z tryLaunchMarchAttack
+        // (main.ts:19315) i refreshHoverPathPreview (hoverVis); bez tego wystarczy
+        // JEDEN łucznik w stosie, żeby klik na zamglony heks po cichu zamienił się
+        // w atak zamiast marszu. / EN: check fog BEFORE accepting the attack —
+        // symmetry with tryLaunchMarchAttack (main.ts:19315) and
+        // refreshHoverPathPreview (hoverVis); without this, one archer anywhere in
+        // the stack silently turned a move onto a fogged hex into an attack.
         const atkUnit = units.find(x => x.id === selectedId);
         if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
+            currentVisible().has(keyOf(cu.q, cu.r)) &&
             isTargetWithinStackAttackRange(atkUnit, cu.q, cu.r)) {
           withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
         } else if (atkUnit && atkUnit.ownerId === 0) {
