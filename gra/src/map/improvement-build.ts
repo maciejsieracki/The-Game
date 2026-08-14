@@ -580,7 +580,9 @@ const NAKLADKI_ZWIERZECZE = new Set<Nakladka>([
   Nakladka.ZlozeBydla, Nakladka.ZlozeLamy,
 ]);
 
-function hasAnimalDeposit(nakladka: Nakladka): boolean {
+/** Nakladka ze zlozem zwierzecym (kon/owce/bydlo/lama) — uzywane m.in. przez obóz łowiecki.
+ * EN: overlay with an animal deposit (horse/sheep/cattle/llama) — used e.g. by the hunting camp. */
+export function hasAnimalDeposit(nakladka: Nakladka): boolean {
   return NAKLADKI_ZWIERZECZE.has(nakladka);
 }
 

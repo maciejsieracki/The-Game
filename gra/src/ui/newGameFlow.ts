@@ -59,6 +59,7 @@ import type { WzrostLudnosciPace } from '../game/population-growth-tempo';
 import type { RuchSwiataPace } from '../game/ruch-swiata-tempo';
 import { civIconSvg, epochIconSvg, newGameIntroEmblemSvg, settingIconSvg } from './icons/brandAssets';
 import heroIntroUrl from './assets/hero/hero-intro.png?url';
+import { installHudTitleTooltips } from './hudTitleTooltip';
 
 // ---------------------------------------------------------------------------
 // Typy publiczne
@@ -779,6 +780,7 @@ function ensureStyles(): void {
 .civ-newgame.hero-flow .civ-grid-panel,
 .civ-newgame.hero-flow .epoch-info,
 .civ-newgame.hero-flow .gp,
+.civ-newgame.hero-flow .ai-civ-panel,
 .civ-newgame.hero-flow .gen-visual,
 .civ-newgame.hero-flow .start-preview{background:rgba(18,18,26,.84);backdrop-filter:blur(8px);}
 .civ-newgame.hero-flow .card.sel,
@@ -856,19 +858,34 @@ function ensureStyles(): void {
 .civ-newgame .ec.sel .bdg{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.1);}
 .civ-newgame .ec .fl{flex:1;width:100%;font-size:11px;color:var(--tx2);font-style:italic;line-height:1.45;min-height:4.35em;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
 .civ-newgame .sett-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;max-width:720px;margin:0 auto;align-items:stretch;}
+/* PROTOTYP ZMIANA 1 (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, wariant A): siatka 2×3
+   (lewo) + Cywilizacje przeciwnika (prawo) obok siebie. align-items:start — oba
+   dzieci mierzone na WŁASNEJ, naturalnej wysokości (nie rozciągnięte do wspólnego
+   wiersza) tak, żeby JS (syncSettLayoutHeight w render()) mogło zmierzyć prawdziwą
+   wysokość lewej siatki i dociąć do niej prawy panel (patrz .ai-civ-panel niżej).
+   / EN: 2×3 grid (left) + opponent-civ panel (right) side by side. align-items:start
+   so BOTH children report their own natural height (not row-stretched) — lets JS
+   measure the left grid's true height and clamp the right panel to match. */
+.civ-newgame .sett-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,300px);gap:1.25rem;max-width:960px;margin:0 auto;align-items:start;}
+.civ-newgame .sett-layout .sett-grid{max-width:none;margin:0;}
 .civ-newgame .qual-sect{max-width:700px;margin:1.1rem auto 0;text-align:center;}
 .civ-newgame .qual-sect h3{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--tx2);margin-bottom:.65rem;font-family:Arial,sans-serif;font-weight:400;}
 .civ-newgame .qual-hint{color:#E8C060;font-size:12px;line-height:1.55;margin:.75rem auto 0;max-width:520px;font-family:Arial,sans-serif;}
-.civ-newgame .srow{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);padding:14px 16px;display:flex;flex-direction:column;gap:10px;height:100%;min-height:124px;box-sizing:border-box;}
-.civ-newgame .srow-hdr{display:flex;align-items:center;gap:10px;min-height:34px;}
-.civ-newgame .srow-ic{width:34px;height:34px;border-radius:8px;border:1px solid var(--bd-mid);display:flex;align-items:center;justify-content:center;font-size:17px;background:rgba(201,168,76,.07);flex-shrink:0;color:var(--gold-light);}
-.civ-newgame .srow-ic svg{display:block;width:20px;height:20px;}
+.civ-newgame .srow{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);padding:12px 16px;display:flex;flex-direction:column;gap:8px;height:100%;min-height:76px;box-sizing:border-box;}
+.civ-newgame .srow-hdr{display:flex;align-items:center;gap:8px;min-height:28px;}
+.civ-newgame .srow-ic{width:28px;height:28px;border-radius:8px;border:1px solid var(--bd-mid);display:flex;align-items:center;justify-content:center;font-size:17px;background:rgba(201,168,76,.07);flex-shrink:0;color:var(--gold-light);}
+.civ-newgame .srow-ic svg{display:block;width:18px;height:18px;}
 .civ-newgame .sl{font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;line-height:1.3;flex:1;}
 .civ-newgame .sctl{display:flex;align-items:center;gap:10px;flex:1;}
 .civ-newgame .arr{width:28px;height:28px;border:1px solid var(--bd-mid);background:transparent;color:var(--gold);cursor:pointer;border-radius:4px;font-size:15px;font-family:Arial,sans-serif;flex-shrink:0;}
 .civ-newgame .arr:hover{border-color:var(--gold);background:rgba(201,168,76,.1);}
-.civ-newgame .sv{flex:1;text-align:center;font-size:15px;min-height:2.75em;display:flex;flex-direction:column;justify-content:center;}
-.civ-newgame .sv .d{display:-webkit-box;font-size:10px;color:var(--tx-muted);font-style:italic;font-family:Arial,sans-serif;margin-top:2px;line-height:1.3;min-height:2.6em;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.civ-newgame .sv{flex:1;text-align:center;font-size:15px;display:flex;flex-direction:column;justify-content:center;}
+/* PROTOTYP P-NEWGAME-OPISY-DO-TOOLTIP: opis pod wartością -> ikona (i) + title (patrz makeInfoIcon).
+   / EN: description under the value -> (i) icon + title (see makeInfoIcon). */
+.civ-newgame .ng-info{flex-shrink:0;width:16px;height:16px;line-height:14px;text-align:center;
+  border-radius:50%;border:1px solid var(--bd-mid);color:var(--tx2);font-size:11px;
+  cursor:help;font-family:Arial,sans-serif;}
+.civ-newgame .ng-info:hover,.civ-newgame .ng-info:focus{border-color:var(--gold);color:var(--gold-light);outline:none;}
 .civ-newgame .gen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:340px;gap:1rem;text-align:center;}
 .civ-newgame .gen-visual{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;max-width:220px;padding:10px;background:rgba(201,168,76,.04);border:1px solid var(--bd-sub);border-radius:var(--radius-lg);}
 .civ-newgame .gen-hex{width:28px;height:32px;background:rgba(201,168,76,.12);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);animation:cng-pulse 1.6s ease-in-out infinite;}
@@ -902,9 +919,18 @@ function ensureStyles(): void {
 .civ-newgame .btn-adv{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);font-size:12px;letter-spacing:.15em;text-transform:uppercase;padding:9px 28px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
 .civ-newgame .btn-adv:hover{color:var(--tx);background:rgba(255,255,255,.03);}
 .civ-newgame .sett-note{font-size:11px;color:var(--tx-muted);text-align:center;max-width:700px;margin:.35rem auto 0;font-family:Arial,sans-serif;line-height:1.4;}
-.civ-newgame .ai-civ-picker{max-width:700px;}
-.civ-newgame .ai-civ-picker .ai-civ-hint{text-align:left;margin:0 0 .6rem;max-width:none;}
-.civ-newgame .ai-civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;}
+/* PROTOTYP ZMIANA 1: prawa kolumna kroku 4 — panel Cywilizacje przeciwnika.
+   overflow:hidden + .ai-civ-scroll{flex:1;overflow-y:auto} = ten sam wzorzec co
+   .adv-modal/.adv-modal-body (kolumna z limitem wysokości, scroll TYLKO wewnątrz
+   listy ikon, nigdy strony). max-height panelu ustawia JS (syncSettLayoutHeight).
+   / EN: step 4's right column — opponent-civ panel. Same capped-height + inner-
+   scroll pattern as .adv-modal/.adv-modal-body. Panel's max-height set by JS. */
+.civ-newgame .ai-civ-panel{background:rgba(201,168,76,.05);border:1px solid var(--bd-mid);border-radius:var(--radius-lg);padding:14px 16px;text-align:left;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;}
+.civ-newgame .ai-civ-panel .kh{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-dim);font-family:Arial,sans-serif;margin-bottom:.5rem;flex-shrink:0;}
+.civ-newgame .ai-civ-panel .ai-civ-hint{text-align:left;margin:0 0 .6rem;max-width:none;flex-shrink:0;}
+.civ-newgame .ai-civ-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:2px;}
+/* "Rozbijemy to na dwie części" (Maciej) — ZAWSZE 2 kolumny, nie auto-fill. */
+.civ-newgame .ai-civ-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;align-content:start;}
 .civ-newgame .ai-civ-grid .card{padding:10px 6px;}
 .civ-newgame .card.disabled{opacity:.35;cursor:not-allowed;}
 .civ-newgame .card.disabled:hover{border-color:var(--bd-sub);background:var(--bg-card);transform:none;}
@@ -915,10 +941,10 @@ function ensureStyles(): void {
 .civ-newgame .adv-modal h3{font-size:18px;font-weight:400;letter-spacing:.12em;color:var(--gold-light);margin-bottom:4px;}
 .civ-newgame .adv-sub{font-size:11px;color:var(--tx-muted);font-family:Arial,sans-serif;margin-bottom:.75rem;line-height:1.45;}
 .civ-newgame .adv-modal-body{flex:1;overflow-y:auto;padding:.5rem 1.4rem;min-height:0;}
-.civ-newgame .adv-row{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;}
+.civ-newgame .adv-row{background:var(--bg-card);border:1px solid var(--bd-sub);border-radius:var(--radius);padding:8px 12px;margin-bottom:6px;}
 .civ-newgame .adv-row .sv{min-height:auto;font-size:14px;}
-.civ-newgame .adv-row .sv .d{min-height:auto;-webkit-line-clamp:3;}
-.civ-newgame .adv-lbl{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;margin-bottom:6px;}
+.civ-newgame .adv-lbl-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.civ-newgame .adv-lbl{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--tx2);font-family:Arial,sans-serif;}
 .civ-newgame .adv-modal-foot{flex-shrink:0;padding:.85rem 1.4rem 1.2rem;border-top:1px solid var(--bd-sub);background:#12121A;}
 .civ-newgame .adv-btns{display:flex;justify-content:flex-end;}
 .civ-newgame .adv-close{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);padding:8px 20px;border-radius:var(--radius);cursor:pointer;font-family:Arial,sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;}
@@ -938,6 +964,25 @@ function el(tag: string, cls?: string, html?: string): HTMLElement {
   if (cls) n.className = cls;
   if (html !== undefined) n.innerHTML = html;
   return n;
+}
+
+/**
+ * PROTOTYP (P-NEWGAME-OPISY-DO-TOOLTIP, 2026-08-14): ikona informacji (ⓘ) zamiast
+ * zawsze-widocznego opisu pod wartością ustawienia. `title` renderowany ładniejszym
+ * hoverem ze wspólnego wzorca `hudTitleTooltip.ts` (zasięg `.civ-newgame` dopisany
+ * tam celowo dla tego ekranu — patrz installHudTitleTooltips w showNewGameFlow).
+ * / EN: info icon (ⓘ) instead of an always-visible description under a setting's
+ * value. `title` rendered via the shared nicer-hover pattern in hudTitleTooltip.ts.
+ */
+function makeInfoIcon(text: string): HTMLSpanElement {
+  const icon = document.createElement('span');
+  icon.className = 'ng-info';
+  icon.innerHTML = '&#9432;';
+  icon.title = text;
+  icon.tabIndex = 0;
+  icon.setAttribute('role', 'img');
+  icon.setAttribute('aria-label', 'Informacja: ' + text);
+  return icon;
 }
 
 const STEP_LABELS = ['Intro', 'Epoka', 'Cywilizacja', 'Ustawienia', 'Start'];
@@ -1074,13 +1119,19 @@ function renderSettingRows(host: HTMLElement, keys: string[]): void {
     if (!s) continue;
     const row = el('div', 'srow');
     row.innerHTML = '<div class="srow-hdr"><div class="srow-ic">' + settingIcon(s.key) + '</div><div class="sl">' + s.lbl + '</div></div><div class="sctl"></div>';
+    const hdr = row.querySelector('.srow-hdr') as HTMLElement;
+    const infoIcon = makeInfoIcon(s.descs[s.idx] ?? '');
+    hdr.appendChild(infoIcon);
     const ctl = row.querySelector('.sctl') as HTMLElement;
     const left = el('button', 'arr', '&#8249;');
     const sv = el('div', 'sv');
-    sv.innerHTML = (s.opts[s.idx] ?? '') + '<span class="d">' + (s.descs[s.idx] ?? '') + '</span>';
+    sv.textContent = s.opts[s.idx] ?? '';
     const right = el('button', 'arr', '&#8250;');
     const refreshSv = () => {
-      sv.innerHTML = (s.opts[s.idx] ?? '') + '<span class="d">' + (s.descs[s.idx] ?? '') + '</span>';
+      sv.textContent = s.opts[s.idx] ?? '';
+      const desc = s.descs[s.idx] ?? '';
+      infoIcon.title = desc;
+      infoIcon.setAttribute('aria-label', 'Informacja: ' + desc);
     };
     const ch = (d: number) => {
       s.idx = (s.idx + d + s.opts.length) % s.opts.length;
@@ -1285,13 +1336,16 @@ function showAdvancedModal(): void {
   const rows = advancedSettingRows();
   for (const row of rows) {
     const box = el('div', 'adv-row');
-    box.appendChild(el('div', 'adv-lbl', row.lbl));
+    const lblRow = el('div', 'adv-lbl-row');
+    lblRow.appendChild(el('span', 'adv-lbl', row.lbl));
+    lblRow.appendChild(makeInfoIcon(row.hint));
+    box.appendChild(lblRow);
     const ctl = el('div', 'sctl');
     const left = el('button', 'arr', '&#8249;');
     const sv = el('div', 'sv');
     const refresh = () => {
       const i = row.getIdx();
-      sv.innerHTML = (row.opts[i] ?? '') + '<span class="d">' + row.hint + '</span>';
+      sv.textContent = row.opts[i] ?? '';
     };
     refresh();
     const right = el('button', 'arr', '&#8250;');
@@ -1333,7 +1387,13 @@ function renderAiCivPicker(host: HTMLElement): void {
   sanitizeSelAiCivIds();
   const candidates = aiCivCandidatesForEpoch();
   const cap = currentAiSelectionCap();
-  const box = el('div', 'start-preview ai-civ-picker');
+  // PROTOTYP ZMIANA 1 (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, wariant A): panel
+  // przenosi się do prawej kolumny obok siatki 2×3 (patrz renderSettStep/.sett-layout)
+  // — własna klasa `ai-civ-panel` zamiast dawnego `start-preview` (ten drugi ma
+  // margin/max-width myślane pod pełną szerokość, tu jest kolumną grid).
+  // / EN: panel moves to the right column next to the 2×3 grid — dedicated
+  // `ai-civ-panel` class instead of the old full-width `start-preview`.
+  const box = el('div', 'ai-civ-panel');
   box.appendChild(el('div', 'kh', 'Cywilizacje przeciwnika (opcjonalnie)'));
   const hint = candidates.length === 0
     ? 'Brak dostępnych cywilizacji przeciwnika w tej epoce.'
@@ -1342,6 +1402,12 @@ function renderAiCivPicker(host: HTMLElement): void {
       : `Wybrano ${selAiCivIds.length} z ${cap} możliwych przy obecnym ustawieniu „Liczba cywilizacji”.`;
   box.appendChild(el('div', 'sett-note ai-civ-hint', hint));
   if (candidates.length > 0) {
+    // "Rozbijemy to na dwie części" (Maciej) — siatka ikon ZAWSZE 2 kolumny (nie
+    // auto-fill jak dawniej), żeby kolumna była węższa i wyższa zamiast szerokiej
+    // i niskiej przy wielu wybranych cywilizacjach.
+    // / EN: icon grid is ALWAYS 2 columns (not auto-fill) — narrower, taller
+    // column instead of a wide, short one with many civs selected.
+    const gridWrap = el('div', 'ai-civ-scroll');
     const grid = el('div', 'civ-grid ai-civ-grid');
     for (const c of candidates) {
       const isSel = selAiCivIds.includes(c.id);
@@ -1365,7 +1431,8 @@ function renderAiCivPicker(host: HTMLElement): void {
       }
       grid.appendChild(card);
     }
-    box.appendChild(grid);
+    gridWrap.appendChild(grid);
+    box.appendChild(gridWrap);
   }
   host.appendChild(box);
 }
@@ -1373,10 +1440,23 @@ function renderAiCivPicker(host: HTMLElement): void {
 function renderSettStep(host: HTMLElement): void {
   syncMapScaleOptions();
   syncAdvLandFromWorldType();
-  renderSettingRows(host, [
+  // PROTOTYP ZMIANA 1 (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, wariant A, Maciej
+  // 2026-08-14): „damy to na prawą stronę i wyjustujemy... I rozbijemy to na dwie
+  // części." — siatka 2×3 ustawień (lewo) i Cywilizacje przeciwnika (prawo) jako
+  // dwie kolumny OBOK siebie, wysokość prawej dopasowana do lewej (syncSettLayoutHeight
+  // w render(), bo wymaga zmierzonej wysokości w żywym DOM — content w tym miejscu
+  // jeszcze nie jest zamontowany). "Twój start" + akcje zostają POD całym blokiem,
+  // zawsze na tej samej wysokości niezależnie od liczby wybranych cywilizacji.
+  // / EN: 2×3 settings grid (left) and opponent-civ picker (right) as two columns
+  // side by side; right column's height matched to the left one (measured in the
+  // live DOM after mount — see syncSettLayoutHeight in render()). "Your start" +
+  // actions stay BELOW the whole block, always at the same height.
+  const layout = el('div', 'sett-layout');
+  renderSettingRows(layout, [
     'difficulty', 'map_size', 'world_type', 'game_speed', 'city_states_count', 'civ_types_count',
   ]);
-  renderAiCivPicker(host);
+  renderAiCivPicker(layout);
+  host.appendChild(layout);
 
   const preview = currentStartPreview();
   if (preview) {
@@ -1699,6 +1779,30 @@ function render(): void {
     flowBody.appendChild(nav);
   }
   rootEl.appendChild(flowBody);
+  if (curStep === 4) syncSettLayoutHeight();
+}
+
+/**
+ * PROTOTYP ZMIANA 1 (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, wariant A): dopina
+ * wysokość prawej kolumny (Cywilizacje przeciwnika) do ZMIERZONEJ, naturalnej
+ * wysokości lewej siatki 2×3 — musi biec PO zamontowaniu do żywego DOM (`content`
+ * w renderSettStep/render() jest budowany poza drzewem, offsetHeight tam zwróci 0).
+ * Przy nadmiarze kandydatów panel przewija się wewnątrz (.ai-civ-scroll), więc
+ * całkowita wysokość bloku nigdy nie rośnie ponad wysokość samej siatki ustawień —
+ * to dokładnie to, o co prosił właściciel ("Twój start" + akcje zawsze widoczne,
+ * niezależnie od liczby wybranych cywilizacji).
+ * / EN: clamps the right column's (opponent-civ panel) height to the MEASURED
+ * natural height of the left 2×3 grid — must run AFTER mounting into the live DOM.
+ * Excess candidates scroll inside the panel, so total block height never grows
+ * past the settings grid's own height.
+ */
+function syncSettLayoutHeight(): void {
+  if (!rootEl) return;
+  const grid = rootEl.querySelector('.sett-layout .sett-grid') as HTMLElement | null;
+  const panel = rootEl.querySelector('.sett-layout .ai-civ-panel') as HTMLElement | null;
+  if (!grid || !panel) return;
+  const h = grid.offsetHeight;
+  if (h > 0) panel.style.maxHeight = h + 'px';
 }
 
 // ---------------------------------------------------------------------------
@@ -1717,6 +1821,11 @@ export function showNewGameFlow(config: NewGameFlowConfig): void {
   resetSettingsFromParams();
   loadNewGamePrefs();
   ensureStyles();
+  // PROTOTYP P-NEWGAME-OPISY-DO-TOOLTIP: idempotentne — hud.ts woła to samo przy
+  // wejściu do gry; kreator działa PRZED tym momentem, więc włącza je tu sam.
+  // / EN: idempotent — hud.ts calls the same on game entry; the wizard runs
+  // before that point, so it installs it itself.
+  installHudTitleTooltips();
   if (rootEl === null) {
     rootEl = document.createElement('div');
     rootEl.className = 'civ-newgame';

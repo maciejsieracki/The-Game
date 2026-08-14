@@ -139,7 +139,7 @@ export interface PickAutoImprovementsOpts {
    * `maxPerCity` (item-count cap) as the PLAYER'S choice mechanism; AI has its OWN, independent
    * throttle — see `maxItemsPerCity`.
    *
-   * R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14, decyzja właściciela): to jest RÓWNIEŻ
+   * R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14, decyzja właściciela): to jest RÓWNIEŻ
    * źródło NADRZĘDNEGO pułapu całego imperium (`imperiumBudgetCap` niżej), liczonego RAZ z TEJ
    * wartości (polityki imperium przekazanej przez wołającego), NIGDY z per-miasto override
    * zwróconego przez `getPracaBudgetPercent`. Wołający MUSI tu przekazać wartość polityki
@@ -162,12 +162,14 @@ export interface PickAutoImprovementsOpts {
    * kopertą. Przy jednakowym % dla wszystkich miast (typowy przypadek — brak override) to i tak
    * daje dokładnie jeden wspólny budżet `pct% × pula`.
    *
-   * R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14): override tego miasta NIE może przebić
+   * R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14): override tego miasta NIE może przebić
    * `imperiumBudgetCap` (policzonego z `pracaBudgetPercent` — polityki imperium, patrz wyżej).
    * „Autopraca działa z budżetu całej cywilizacji, a nie z budżetu miasta" (słowa właściciela) —
-   * override decyduje WYŁĄCZNIE o kolejności/udziale WEWNĄTRZ wspólnego pułapu imperium, nigdy o
-   * przebiciu sumy całego wywołania ponad `pracaBudgetPercent% × pula`. Efektywny pułap TEGO
-   * miasta w pętli niżej to `min(cityBudgetCap, imperiumBudgetCap)` — patrz `effectiveCityCap`.
+   * kolejność wydatku ustala WYŁĄCZNIE `id` miasta, NIE override. Override ma realny skutek tylko
+   * gdy jest NIŻSZY niż polityka imperium (zaciska pułap TEGO miasta poniżej wspólnego limitu);
+   * gdy jest WYŻSZY, nie daje ani pierwszeństwa, ani większego udziału — nigdy nie przebija sumy
+   * całego wywołania ponad `pracaBudgetPercent% × pula`. Efektywny pułap TEGO miasta w pętli
+   * niżej to `min(cityBudgetCap, imperiumBudgetCap)` — patrz `effectiveCityCap`.
    * / EN: % (0-100) PER CITY — overrides `pracaBudgetPercent` for THIS city (e.g. a player
    * override in the city panel, `city.ulepszeniaPracaPercent`). NOTE: this does NOT create an
    * extra budget alongside the shared pool — this city's % is its OWN ceiling on the SHARED,
@@ -175,12 +177,14 @@ export interface PickAutoImprovementsOpts {
    * With the same % for every city (the typical case — no override) this still yields exactly
    * one shared budget of `pct% × pool`.
    *
-   * R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14): this city's override can NEVER exceed
+   * R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14): this city's override can NEVER exceed
    * `imperiumBudgetCap` (computed from `pracaBudgetPercent` — the empire policy, see above).
-   * "Auto-work runs off the whole civilization's budget, not the city's" (owner's words) — the
-   * override decides ONLY the order/share WITHIN the shared empire cap, never a breach of the
-   * whole call's total above `pracaBudgetPercent% × pool`. This city's effective cap in the loop
-   * below is `min(cityBudgetCap, imperiumBudgetCap)` — see `effectiveCityCap`.
+   * "Auto-work runs off the whole civilization's budget, not the city's" (owner's words) — spend
+   * order is decided ONLY by the city's `id`, NOT by the override. The override has a real effect
+   * only when it's LOWER than the empire policy (it clamps this city's cap below the shared
+   * limit); when it's HIGHER, it grants neither priority nor a bigger share — it never breaches
+   * the whole call's total above `pracaBudgetPercent% × pool`. This city's effective cap in the
+   * loop below is `min(cityBudgetCap, imperiumBudgetCap)` — see `effectiveCityCap`.
    */
   getPracaBudgetPercent?: (city: AutoImprovementCity) => number;
   /**
@@ -225,13 +229,16 @@ export interface PickAutoImprovementsOpts {
  * rezerwa `pracaSurplusThreshold` (np. AUTO_ULEPSZENIA_PRACA_RESERVE) to DODATKOWY dolny próg
  * bezpieczeństwa na CAŁEJ puli imperium — auto-manager nigdy nie schodzi poniżej niej, niezależnie
  * od %/liczby miast.
- * R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14): per-miasto override (`getPracaBudgetPercent`)
+ * R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14): per-miasto override (`getPracaBudgetPercent`)
  * NIGDY nie przebija `pracaBudgetPercent`% × `globalPracaPulaAtEntry` (nadrzędny pułap imperium,
  * `imperiumBudgetCap`) — nawet jeśli override JEDNEGO miasta jest wyższy niż polityka imperium
  * (np. override 80% przy polityce 20%), łączny wydatek CAŁEGO wywołania nadal nie przekracza 20%
- * puli. Override decyduje wyłącznie o PIERWSZEŃSTWIE/UDZIALE w ramach tego wspólnego pułapu, nie o
- * jego przebiciu (właściciel: „Autopraca działa z budżetu całej cywilizacji, a nie z budżetu
- * miasta").
+ * puli. Kolejność wydatku ustala WYŁĄCZNIE `id` miasta (patrz `orderedCities` niżej) — override
+ * NIE daje pierwszeństwa ani większego udziału, gdy jest WYŻSZY niż polityka imperium (efektywny
+ * pułap tego miasta to `min(cityBudgetCap, imperiumBudgetCap)`, a `imperiumBudgetCap` jest wspólny
+ * dla wszystkich miast — patrz `effectiveCityCap` niżej). Override ma realny skutek tylko gdy jest
+ * NIŻSZY niż polityka imperium — wtedy zaciska pułap TEGO miasta poniżej wspólnego limitu
+ * (właściciel: „Autopraca działa z budżetu całej cywilizacji, a nie z budżetu miasta").
  * Determinizm: miasta po id, heksy po (q,r), typy wg profilu.
  */
 export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
@@ -284,7 +291,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   // N×pct%).
   let globalSpent = 0;
 
-  // R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14, decyzja właściciela): pułap NADRZĘDNY
+  // R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14, decyzja właściciela): pułap NADRZĘDNY
   // całego imperium, policzony RAZ z `pracaBudgetPercent` (polityka imperium przekazana przez
   // wołającego), NIGDY z per-miasto override zwróconego przez `getPracaBudgetPercent`. Bez tego
   // pułapu jedno miasto z override wyższym niż polityka imperium (np. 80% vs polityka 20%) mogło
@@ -341,18 +348,23 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     // case) this still yields exactly one shared budget of pct%×pool.
     const cityPercent = Math.max(0, Math.min(100, getPracaBudgetPercent?.(city) ?? pracaBudgetPercent));
     const cityBudgetCap = (cityPercent / 100) * globalPracaPulaAtEntry;
-    // R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14): pułap tego miasta na WSPÓLNY licznik
+    // R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14): pułap tego miasta na WSPÓLNY licznik
     // globalSpent NIGDY nie może przebić nadrzędnego pułapu imperium (`imperiumBudgetCap`,
-    // policzonego z polityki imperium — patrz komentarz przy jego deklaracji). Override miasta
-    // (`cityBudgetCap` wyżej może być wyższy niż `imperiumBudgetCap`, np. 80% vs polityka 20%)
-    // decyduje wtedy WYŁĄCZNIE o tym, że TO miasto ma pierwszeństwo do reszty wspólnej puli
-    // imperium (w ramach kolejności po id) — nie o przebiciu sumy całego wywołania.
+    // policzonego z polityki imperium — patrz komentarz przy jego deklaracji). Kolejność wydatku
+    // (które miasto pierwsze sięgnie po resztę wspólnej puli) ustala WYŁĄCZNIE `id` miasta
+    // (`orderedCities`), NIE override. Override miasta (`cityBudgetCap` wyżej może być wyższy niż
+    // `imperiumBudgetCap`, np. 80% vs polityka 20%) w takim wypadku nie daje ani pierwszeństwa,
+    // ani większego udziału — `effectiveCityCap` i tak zaciska się do `imperiumBudgetCap`.
+    // Override ma realny skutek tylko gdy jest NIŻSZY niż `imperiumBudgetCap` — wtedy to on jest
+    // ciaśniejszym pułapem tego miasta.
     // / EN: this city's ceiling on the SHARED globalSpent counter can NEVER exceed the
     // overarching empire cap (`imperiumBudgetCap`, computed from the empire policy — see its
-    // declaration comment). A city's override (`cityBudgetCap` above may be higher than
-    // `imperiumBudgetCap`, e.g. 80% vs a 20% policy) then decides ONLY that THIS city gets
-    // priority for the rest of the shared empire pool (within id ordering) — never a breach of
-    // the whole call's total.
+    // declaration comment). Spend order (which city gets first crack at the rest of the shared
+    // pool) is decided ONLY by the city's `id` (`orderedCities`), NOT by the override. A city's
+    // override (`cityBudgetCap` above may be higher than `imperiumBudgetCap`, e.g. 80% vs a 20%
+    // policy) grants neither priority nor a bigger share in that case — `effectiveCityCap` still
+    // clamps down to `imperiumBudgetCap`. The override has a real effect only when it's LOWER
+    // than `imperiumBudgetCap` — then it becomes this city's tighter cap.
     const effectiveCityCap = Math.min(cityBudgetCap, imperiumBudgetCap);
 
     const radius = cityTerritoryRadius({ q: city.q, r: city.r, pop: city.population, level: 1 }) + 1;

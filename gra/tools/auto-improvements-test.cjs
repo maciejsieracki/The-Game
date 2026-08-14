@@ -20,7 +20,7 @@
  * (łapie mutację 30→0 — stare testy 9/11 porównują stałą z samą sobą, tautologia). Nowy test 14
  * potwierdza wprost sedno naprawy: łączny wydatek dla tego samego % NIE zależy od liczby miast N.
  *
- * R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14, decyzja właściciela, follow-up ABC rundy 2):
+ * R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14, decyzja właściciela, follow-up ABC rundy 2):
  * runda 2 zostawiła znalezisko — override per-miasto (`getPracaBudgetPercent`) mógł przebić
  * politykę imperium (`pracaBudgetPercent`), bo pułap liczył się od WŁASNEGO % miasta, nie od
  * polityki imperium (zmierzone: override 80% przy polityce 20% → automat wydawał 80% CAŁEJ puli
@@ -420,7 +420,7 @@ console.log('14. laczny wydatek NIEZALEZNY od liczby miast N (1 vs 4 miasta, ten
   assert(spentFour <= 0.3 * 1000, `laczny wydatek (${spentFour}) <= 30% z puli 1000 (300), niezaleznie od N=4 miast`);
 }
 
-// 15. R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14, decyzja właściciela) — scenariusz
+// 15. R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14, decyzja właściciela) — scenariusz
 // DOKŁADNIE ten, który zmierzył Evaluator: polityka imperium 20% (`pracaBudgetPercent`), miasto
 // cA ma override 80% (`getPracaBudgetPercent`), miasto cB nie ma override — dziedziczy politykę
 // imperium 20%. Pula 1000, rezerwa 30. PRZED tą naprawą: cA liczyło swój pułap OD SWOJEGO
@@ -466,7 +466,7 @@ console.log('15. Q3=B — polityka imperium 20% jest TWARDYM pułapem SUMY mimo 
   eq(picksB, 0, 'cB (dziedziczy polityke imperium 20%): 0 pickow — pulap imperium (200) juz wyczerpany przez cA, mimo ze panel obiecuje mu 20% Pracy');
 }
 
-// 16. R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B — REGRESSION GUARD: gdy WSZYSTKIE miasta mają TĘ
+// 16. R-AUTO-PRACA-BUDZET-PROCENT-Q3=B — REGRESSION GUARD: gdy WSZYSTKIE miasta mają TĘ
 // SAMĄ politykę (żadne nie ma własnego override, różnego od polityki imperium),
 // `imperiumBudgetCap` i suma `cityBudgetCap` dają DOKŁADNIE ten sam wynik co przed tą naprawą
 // (Q1=B, runda 2) — nowy nadrzędny pułap jest wtedy zawsze RÓWNY pułapowi per-miasto, więc
@@ -509,6 +509,43 @@ console.log('16. Q3=B REGRESSION GUARD — bez override (wszystkie miasta = poli
 
   eq(spentNoOverrideFn, 80, 'bez override: laczny wydatek = 80 (2 farmy cA x 40) — jak test 12 przed ta naprawa (niezmienione)');
   eq(spentExplicitSame, spentNoOverrideFn, 'getPracaBudgetPercent zwracajacy TA SAMA wartosc co polityka imperium daje IDENTYCZNY wynik jak brak override — nowy pulap imperium nie zmienia zachowania gdy brak realnego override');
+}
+
+console.log('-- 17. N2 (Evaluator, R-AUTO-PRACA-BUDZET-PROCENT-Q3=B): STRUKTURA (regex na main.ts) — jedyne wywolanie pickAutoImprovements() przekazuje pracaBudgetPercent: empirePol.pracaAutoPercent --');
+{
+  // N2 z werdyktu Evaluatora (PYTANIA-OTWARTE.md, R-AUTO-PRACA-BUDZET-PROCENT-Q3=B
+  // PASS-WITH-NOTES): main.ts jest JEDYNYM miejscem laczacym polityke gracza
+  // (empirePol.pracaAutoPercent, panel Praca) z silnikiem budzetu imperium (imperiumBudgetCap w
+  // auto-improvements.ts). Cichy revert tego jednego parametru (literowka, refaktor, zly merge)
+  // przechodzi tsc BEZ bledu — pracaBudgetPercent ma domyslna wartosc 100 w funkcji, wiec brak
+  // parametru = "bez ograniczenia %", nie blad kompilacji — i przechodzi wszystkie istniejace
+  // bramki 1-16 powyzej, bo ten plik testuje WYLACZNIE game/auto-improvements.ts w izolacji
+  // (main.ts nigdy sie tu nie uruchamia). Ten test jest jedynym straznikiem: bramka
+  // STRUKTURALNA (regex na TEKST main.ts), wzorem promote-to-front-test.cjs sekcja 24
+  // (fs.readFileSync + regex, kotwiczony na nazwe zmiennej/wywolania, odporny na
+  // przeformatowanie bialych znakow, lapie powrot do braku parametru).
+  // / EN: N2 from the Evaluator's verdict (PYTANIA-OTWARTE.md, R-AUTO-PRACA-BUDZET-PROCENT-Q3=B
+  // PASS-WITH-NOTES): main.ts is the ONLY place wiring the player's policy
+  // (empirePol.pracaAutoPercent, the Praca panel) into the empire budget engine
+  // (imperiumBudgetCap in auto-improvements.ts). Silently reverting this one parameter (a typo,
+  // a refactor, a bad merge) passes tsc CLEANLY — pracaBudgetPercent defaults to 100 in the
+  // function, so a missing parameter means "no % restriction", not a compile error — and it
+  // passes every existing gate 1-16 above, since this file exercises ONLY
+  // game/auto-improvements.ts in isolation (main.ts never runs here). This test is the only
+  // guard: a STRUCTURAL gate (regex on main.ts TEXT), same pattern as
+  // promote-to-front-test.cjs section 24 (fs.readFileSync + regex, anchored on the
+  // variable/call name, resilient to whitespace reformatting, catches a reversion to a missing
+  // parameter).
+  const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
+  const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
+
+  const RE_CALL_PASSES_EMPIRE_POLICY =
+    /const picks = pickAutoImprovements\(\{[\s\S]{0,2000}?pracaBudgetPercent: empirePol\.pracaAutoPercent,/;
+  assert(RE_CALL_PASSES_EMPIRE_POLICY.test(mainSrc),
+    '17a: jedyne wywolanie pickAutoImprovements() w main.ts przekazuje pracaBudgetPercent: empirePol.pracaAutoPercent (polityke imperium, zrodlo imperiumBudgetCap) -- bez tego parametru automat uzywa domyslnych 100% (brak ograniczenia)');
+
+  const CALL_COUNT = (mainSrc.match(/pickAutoImprovements\(/g) || []).length;
+  eq(CALL_COUNT, 1, '17b: dokladnie JEDNO wywolanie pickAutoImprovements() w main.ts -- jesli ta liczba sie zmieni, straznik 17a nie pokrywa automatycznie nowego wywolania i wymaga rewizji');
 }
 
 console.log(`\nauto-improvements-test: ${passed} passed, ${failed} failed`);
