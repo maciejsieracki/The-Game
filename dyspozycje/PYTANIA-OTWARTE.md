@@ -25764,7 +25764,9 @@ mutacje kontrolne i własny harness pomiarowy wykonane w izolowanym worktree i u
 
 ## P-DROGI-PUSTYNIA-KOSZT-2-SPROSTOWANIE (nota N1 werdyktu dla `a3f61973`, 2026-08-14)
 
-**STATUS: **OTWARTE** — do dispatchu subagenta (sprostowanie faktu, bez zmiany mechaniki).
+**STATUS: ZAMKNIĘTE** (2026-08-14, `5ad9819c`, orkiestrator — sprostowanie komentarza w
+`road-movement.ts`, zero zmian mechaniki, `tsc` czysty). Tabele w opisach historycznych commitów
+zostają nieskorygowane (są niezmienialną historią gita), ale nie mylą już nikogo w przyszłości.
 
 **Problem:** w trzech miejscach utrwalono nieprawdziwe przypisanie Pustyni do kosztu bazowego
 ruchu 1: (a) komentarz produkcyjny `gra/src/map/road-movement.ts` linia 37
