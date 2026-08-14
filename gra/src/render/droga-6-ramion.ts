@@ -25,10 +25,15 @@
  * midpoints instead of the mockup's raw pixels.
  *
  * KONWENCJE: spód nawierzchni na y=0 (wierzch kafla), jednostki znormalizowane do HEX_R=1,
- * MeshLambert + flatShading (styl roblox), grubość < 0.07 → droga zostaje POD propsami
- * kafla (budynki/drzewa startują od y=0 i są o rząd wielkości wyższe) i NAD teksturą terenu.
- * / EN: surface bottom at y=0, units normalised to HEX_R=1, thickness < 0.07 so the road
- * stays UNDER tile props and ABOVE the terrain surface.
+ * MeshLambert + flatShading (styl roblox). NAJWYŻSZY punkt całej gwiazdy = 0.0736 przy HEX_R=1
+ * (pełna gwiazda BRUKOWANA: płyta węzła 0.052+0.011+0.014/2 = 0.070 plus 6×0.0006 mikro-schodka
+ * przeciw z-fightingowi); gruntowa jest niższa. Dzięki temu droga zostaje POD propsami kafla
+ * (budynki/drzewa startują od y=0 i są o rząd wielkości wyższe) i NAD teksturą terenu.
+ * Liczbę pilnuje `tools/droga-6-ramion-geom-test.cjs` — poprzednia wersja tego komentarza
+ * deklarowała „< 0.07", czyli mniej niż realne maksimum (znalezisko Evaluatora 2026-08-14).
+ * / EN: surface bottom at y=0, units normalised to HEX_R=1; the tallest point of the whole star
+ * is 0.0736 at HEX_R=1 (full COBBLED star), so the road stays UNDER tile props and ABOVE the
+ * terrain surface. The figure is pinned by tools/droga-6-ramion-geom-test.cjs.
  */
 import * as THREE from 'three';
 import {

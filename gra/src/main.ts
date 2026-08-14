@@ -674,7 +674,7 @@ import { hideDiplomacyPendingModal, showDiplomacyPendingModal } from './ui/diplo
 import { getMinimapData, computeViewport } from './map/minimap';
 // R-DROGA-WZOR-6-RAMION: maska 6 bitów sąsiedztwa dróg (czysta logika, testowalna w Node).
 // / EN: 6-bit road neighbour mask (pure logic, Node-testable).
-import { computeRoadMask, roadHexesToRefresh } from './map/road-network';
+import { ROAD_MASK_NONE, computeRoadMask, roadHexesToRefresh } from './map/road-network';
 import { hexHasRoad, isRoadImprovementKey } from './map/road-movement';
 import {
   createImprovementBuildApi,
@@ -2229,10 +2229,23 @@ async function boot(): Promise<void> {
       return !!hex && hexHasRoad(hex);
     }
 
+    /**
+     * OBA parametry są WYMAGANE świadomie (Evaluator R-DROGA-WZOR-6-RAMION, 2026-08-14):
+     * ta funkcja rysuje heks W KONTEKŚCIE MAPY, więc maska sąsiedztwa jest zawsze znana
+     * wołającemu. Wcześniej miała domyślne `roadMask = 0`, sprzeczne z domyślnym
+     * `ROAD_MASK_FULL` w buildImprovementSectored, które wprost opakowuje — dwie różne
+     * ciche odpowiedzi na to samo pytanie. Zamiast wybierać „mniej zły" literał, defaultu
+     * tu po prostu nie ma: TypeScript nie pozwoli przyszłemu wołającemu pominąć maski
+     * i dostać po cichu złego kształtu drogi.
+     * / EN: both params are deliberately REQUIRED — this draws a hex WITH map context, so the
+     * caller always knows the neighbour mask. The old `roadMask = 0` default contradicted the
+     * `ROAD_MASK_FULL` default of the function it wraps; removing the default (rather than
+     * picking a literal) makes the compiler catch a forgotten mask.
+     */
     function buildImprovementVisual(
       layers: readonly string[],
-      relief: SectorReliefOpts = {},
-      roadMask = 0, // domyślnie „brak sąsiadów" — dla warstw bez drogi bez znaczenia / EN: no-neighbour default
+      relief: SectorReliefOpts,
+      roadMask: number,
     ): THREE.Group {
       if (layers.length === 0) return new THREE.Group();
       // Maciej 2026-07-09: układ sektorowy — każde ulepszenie w swoim boku heksa, mocno mniejsze,
@@ -10519,6 +10532,31 @@ async function boot(): Promise<void> {
     let buildApi: ImprovementBuildCallbacks | null = null;
 
     /**
+     * JEDYNY punkt kasowania stanu RENDERU ulepszeń (meshe + pamięć sieci dróg). Woła go
+     * KAŻDA ścieżka restartu rozgrywki (nowa gra, 3 playtesty z huba) oraz wczytanie zapisu —
+     * 5 miejsc, bo żadne z nich nie przeładowuje strony, więc każdy stan pominięty tutaj
+     * przeżywa restart jako zombie.
+     *
+     * Powód wydzielenia (Evaluator R-DROGA-WZOR-6-RAMION, 2026-08-14): `roadRenderedHexes`
+     * był czyszczony TYLKO przy wczytaniu zapisu, a 4 pozostałe ścieżki kasowały same
+     * `improvementMeshes`. Stary wpis przeżywał restart → wczesny `return` w
+     * syncRoadNetworkAt („stan drogi się nie zmienił") blokował odświeżenie SĄSIADA heksa,
+     * który miał drogę w POPRZEDNIEJ rozgrywce tej samej sesji przeglądarki, i drogi
+     * przestawały się stykać (sąsiad rysował placyk zamiast ramienia). Ta sama klasa błędu
+     * co audyt #43 (cityRelig/autoManageCities). Trzymanie obu kasowań w JEDNEJ funkcji
+     * sprawia, że dołożenie kolejnego stanu renderu nie wymaga pamiętania o 5 miejscach.
+     * / EN: the ONLY place that clears improvement RENDER state (meshes + road-network memory).
+     * Called from all 5 restart paths (new game, 3 playtests, save load) — none of them reloads
+     * the page, so anything missed here survives as a zombie. Extracted after `roadRenderedHexes`
+     * was found to be cleared on the save path only.
+     */
+    function resetImprovementRenderState(): void {
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
+      improvementMeshes.clear();
+      roadRenderedHexes.clear();
+    }
+
+    /**
      * Regula 1/3 (Maciej 2026-08-09): rejestruje nowo postawiony Fort/Posterunek
      * w `fortNodes`. Kontestacja ustalana RAZ, w chwili budowy — hex juz
      * zarezerwowany (w promieniu) przez CUDZY, nie-skontestowany fort/posterunek
@@ -11242,7 +11280,10 @@ async function boot(): Promise<void> {
       if (isNaN(q) || isNaN(r)) return;
       removeClearingMesh(hexKey);
       const layers: readonly string[] = ['wyrab'];
-      const g = buildImprovementVisual(layers);
+      // Ikona wyrębu nie zawiera warstwy drogi, więc maska nie ma tu żadnego skutku — podana
+      // jawnie, bo funkcja nie ma (celowo) domyślnej. / EN: no road layer here, so the mask is
+      // inert; passed explicitly because the function deliberately has no default.
+      const g = buildImprovementVisual(layers, {}, ROAD_MASK_NONE);
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
       scene.add(g);
@@ -11373,9 +11414,7 @@ async function boot(): Promise<void> {
       entries: Array<[string, ImprovementKey | PlacedLayers]> | undefined,
     ): void {
       placedImprovements.clear();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
-      roadRenderedHexes.clear(); // sieć dróg odtwarza się z wczytanych warstw / EN: rebuilt from loaded layers
+      resetImprovementRenderState(); // meshe + sieć dróg odtwarzają się z wczytanych warstw / EN: rebuilt from loaded layers
       if (entries?.length) {
         for (const [hexKey, raw] of entries) {
           const hex = map.hexes[hexKey];
@@ -28648,8 +28687,7 @@ async function boot(): Promise<void> {
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState();
 
       await postSceneProgress(loading, 'plan klastra startowego', 7, POST_SCENE_STEPS);
       applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, {
@@ -28911,8 +28949,7 @@ async function boot(): Promise<void> {
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState();
       refreshBuildApi();
       overlayDepositEra = player.era;
       rebuildResourceOverlays();
@@ -29161,8 +29198,7 @@ async function boot(): Promise<void> {
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState();
 
       cityBuilt.set(preset.playerCityId, ['koszary']);
       cityProd.set(preset.playerCityId, { ...preset.initialProduction, kolejka: [...preset.initialProduction.kolejka] });
@@ -29388,8 +29424,7 @@ async function boot(): Promise<void> {
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState();
 
       cityBuilt.set(preset.playerCityId, ['koszary', 'spichlerz']);
       cityProd.set(preset.playerCityId, {

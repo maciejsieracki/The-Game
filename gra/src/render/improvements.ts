@@ -463,6 +463,13 @@ export function buildImprovementSectored(
   style: MapRenderStyle = GAME_MAP_RENDER_STYLE,
   hexR = 1,
   relief: SectorReliefOpts = {},
+  // Domyślna PEŁNA gwiazda = ta sama konwencja co reszta renderów bez kontekstu mapy
+  // (buildImprovement 'droga'/'droga_brukowana' niżej w tym pliku, BUILDERS w
+  // robloxImprovements.ts): brak wiedzy o sąsiadach → pokaż drogę jako drogę, nie placyk.
+  // Wołający Z mapy (main.ts) ma maskę wymaganą przez typ, więc nie może tu wpaść przypadkiem.
+  // / EN: the FULL-star default matches every other context-free road render in the repo —
+  // no neighbour knowledge → draw a road as a road, not a lone patch. Map-context callers
+  // pass a required mask, so they cannot fall into this default by accident.
   roadMask: number = ROAD_MASK_FULL,
 ): THREE.Group {
   const g = new THREE.Group();
