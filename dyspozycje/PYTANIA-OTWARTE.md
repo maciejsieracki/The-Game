@@ -26269,7 +26269,159 @@ czy jednostka dystansowa może kontratakować z dystansu gdy jest atakowana z bl
 miasta (mechanika `city.oblegane`) wymaga nadal fizycznej adiacencji niezależnie od tego fixu
 (prawdopodobnie TAK — oblężenie to inna mechanika niż pojedynczy atak, nie mylić).
 
-**STATUS: DISPATCH W TOKU.**
+**STATUS: DISPATCH WYKONANY — Evaluator zwrócił FAIL, patrz sekcja niżej.**
+
+### WERDYKT EVALUATORA (2026-08-14, Opus 5) dla `9e25ea77` + `5ed4e083` — **FAIL**
+
+Oceniane commity: `9e25ea77` (WIP, implementacja) + `5ed4e083` (test). Punkt odniesienia
+(commit-rodzic) `9e96370a`. Wszystkie liczby niżej **zmierzone przez uruchomienie w izolowanym
+worktree**, nie przepisane z opisów commitów.
+
+#### 1. Bramki — uruchomione niezależnie
+
+| Bramka | Wynik na `b53510c4` | Wynik na `9e96370a` (baseline) | Ocena |
+|---|---|---|---|
+| `npx tsc --noEmit` | exit 0, 0 błędów | — | ZIELONA |
+| `atak-dystansowy-mapa-test.cjs` (nowy) | 54 pass / 0 fail | n/d | ZIELONA |
+| `combat-test.cjs` | 6 / 6 | — | ZIELONA |
+| `map-attack-city-test.cjs` | 8 ok / 0 fail | 8 ok / 0 fail | ZIELONA, wsteczna zgodność opcjonalnego parametru potwierdzona |
+| `unit-power-test.cjs` | 4 pass / 2 fail | 4 pass / 2 fail | PRE-ISTNIEJĄCE, **bez pogorszenia** |
+| `ai-test.cjs` | 285 pass / 8 fail | 285 pass / 8 fail | PRE-ISTNIEJĄCE, **bez pogorszenia** |
+| `tech-tree-test.cjs` | 19 pass / 0 fail | — | ZIELONA |
+| `research-test.cjs` | 33 / 0 | — | ZIELONA |
+
+Baseline `9e96370a` zmierzony realnie: cztery pliki źródłowe cofnięte do commita-rodzica,
+bramki uruchomione, pliki przywrócone (drzewo robocze czyste, `git diff HEAD` pusty).
+
+#### 2. Jakość testu `atak-dystansowy-mapa-test.cjs` — **NIE jest tautologiczny (6/6 mutacji złapanych)**
+
+Mutacje przeprowadzone przez Evaluatora **niezależnie**, na prawdziwych plikach źródłowych
+(każda przywrócona przez `git checkout --` po pomiarze):
+
+| # | Mutacja | Wynik | Złapana? |
+|---|---|---|---|
+| MUT-1 | `combat.ts:181` `unitMapAttackRangeHex` → `return 0` | 49 pass / **5 fail** | TAK |
+| MUT-2 | `ai.ts:743` `isWithinAttackRange` → cofnięcie do `hexDistance === 1` | 48 pass / **5 fail** | TAK (asercje parytetu (d)) |
+| MUT-3 | `map-attack-city.ts:73` usunięcie `if (city.maMur) return false;` | 52 pass / **3 fail** | TAK (asercja (f)) |
+| MUT-4 | `main.ts:19245` `<=` → `<` (off-by-one) | 44 pass / **8 fail** | TAK |
+| MUT-5 | usunięcie `unitAttackRangeHex` z 1 z 2 wywołań `resolveEnemyCityClick` | 53 pass / **1 fail** | TAK (strażnik strukturalny) |
+| MUT-6 | usunięcie early-return hover-preview (`main.ts:19308-19311`) | 53 pass / **1 fail** | TAK (strażnik strukturalny) |
+
+Metoda testu (wycinanie funkcji z prawdziwego `main.ts`/`ai.ts` po sygnaturze + `new Function`
+z prawdziwymi zależnościami, zero reimplementacji formuły) jest poprawna i odporna. **To NIE jest
+powtórka problemu z tematu `P-CITYPANEL`** — test realnie wykonuje kod produkcyjny.
+
+#### 3. Co działa poprawnie (potwierdzone, nie założone)
+
+- **Atak na jednostkę z dystansu** — działa, `main.ts:19239-19247` (`isTargetWithinAttackRange`),
+  wpięte we wszystkie 3 ścieżki inicjacji (`tryLaunchMarchAttack` 19249, klik jednostka→jednostka
+  20559-20560, hover-preview 19308).
+- **Jednostki zwarcia bez regresji** — `Math.max(1, unitAttackRangeHex(...))` (`main.ts:19245`)
+  odwzorowuje zasięg 0 → 1, czyli **dokładnie** dawne `hexDistance(...) > 1 return false`
+  (włącznie z dystansem 0). Identyczna konstrukcja po stronie AI (`ai.ts:744`) — parytet zwarcia
+  zachowany. Zweryfikowane wykonaniem, nie odczytem.
+- **Oblężenie NIETKNIĘTE** — `mapSiegeDetect.ts:74-81` (`canInitiateSiege` wymaga muru
+  ORAZ adiacencji) i `map-attack-city.ts:102-107` (wyszukanie oblegającego nadal `=== 1`).
+  Brak podwójnego liczenia.
+- **Miasto Z MUREM nadal wymaga przyległości** — `map-attack-city.ts:73`, potwierdzone
+  wykonaniem (Łucznik zasięg 3 @ dystans 3 od miasta z murem → `hint_no_adjacent`).
+- **Egzekucja rozkazu ataku AI nie ma drugiej bramki adiacencji** (`main.ts:27239-27292`) —
+  czyli zmiana w `ai.ts` faktycznie działa, nie jest martwym kodem.
+- **Brak wpływu na save/load** — zasięg liczony za każdym razem z `units.json`, zero nowego
+  stanu w zapisie.
+- Twierdzenie z komentarza `combat.ts:163-176` („każda jednostka z `Atak dystansowy` > 0 ma
+  wypełnione `Zasięg ataku (hex)`, więc fallback niepotrzebny") — **zweryfikowane skanem
+  `units.json`: 0 takich jednostek, twierdzenie PRAWDZIWE na dziś.**
+
+#### 4. Powody FAIL
+
+**F1 — ZŁAMANY PARYTET GRACZ↔AI DLA ATAKU NA MIASTO (twardy warunek FAIL).**
+`ai.ts:2514-2518` — jedyna ścieżka AI do ataku na wrogie miasto nadal używa
+`isAdjacent(unit.q, unit.r, ec.q, ec.r)`, **niezmieniona**. Tymczasem gracz dostał zasięg dla
+miast bez muru (`map-attack-city.ts:71-74`, wpięte w `main.ts:20475` i `main.ts:20526`).
+Skutek: gracz może z 3-6 heksów zaatakować / zdobyć wrogie miasto bez muru, **AI nie może**.
+To dokładnie ten warunek, który wpis zgłoszenia wyżej nazywa „twardym warunkiem FAIL Evaluatora
+z `R-PROC-AUTOBOT-EVAL-STRICT-SAVE`". Opis commita `9e25ea77` deklaruje „PARYTET" — deklaracja
+jest prawdziwa **wyłącznie** dla ataku jednostka→jednostka, nie dla miast.
+Test tego nie łapie i **nie może** — jego asercje parytetu (d) porównują wyłącznie
+`isTargetWithinAttackRange` vs `isWithinAttackRange` dla celów-jednostek, a strażnik strukturalny
+„DOKŁADNIE 2 miejsca wołają `isWithinAttackRange`" wręcz **utrwala** tę lukę jako stan pożądany.
+
+**F2 — ZDOBYCIE PUSTEGO MIASTA Z DYSTANSU (poza żądaniem właściciela).**
+`map-attack-city.ts:148-150` — gdy miasto bez muru nie ma obrońców, `resolveEnemyCityClick`
+zwraca `capture_empty`, a ta ścieżka jest teraz osiągalna **z dystansu**. Dalej
+`main.ts:20428-20434` → `captureCityWithoutBattle` → `post-battle-map.ts:439-443`, gdzie
+jednostka jest **przestawiana na heks miasta**.
+Zmierzone wykonaniem (sonda Evaluatora, prawdziwy `resolveEnemyCityClick` +
+`applyCityCaptureAfterBattle`): Łucznik (zasięg 3) na (0,0), puste miasto bez muru na (3,0) →
+`kind = capture_empty`; po przejęciu `city.ownerId = 0`, jednostka **@ (3,0)**, `ruchLeft` 2 → 1.
+Żądanie właściciela brzmiało „**atak** z daleka", nie „**zdobycie** miasta z daleka".
+Test świadomie omija ten przypadek — komentarz w `atak-dystansowy-mapa-test.cjs:269-272`
+wprost mówi, że do miasta wstawiono obrońcę, „bo bez niego pusty cel daje `capture_empty`".
+Autor testu widział ten wariant i go **obszedł, zamiast go zaasercjonować**.
+
+**F3 — TELEPORT ZWYCIĘSKIEGO ATAKUJĄCEGO O DO 6 HEKSÓW (nowa, nieprojektowana mechanika).**
+`post-battle-map.ts:283-304` (`moveAtkRosterOntoBattleHex`) przy wygranej atakującego ustawia
+`u.q = battleQ; u.r = battleR` **bez sprawdzania dystansu, przejezdności terenu ani kosztu ruchu**
+(`isPassableHex` jest przekazywane w `PostBattleMapInput`, ale w tej funkcji **nieużywane**),
+a `spendAttackMpOnLive` (`post-battle-map.ts:318-328`) odejmuje tylko **1 punkt ruchu**.
+Zmierzone wykonaniem: Łucznik na (0,0) atakuje obrońcę na (3,0), wygrywa → Łucznik **@ (3,0)**,
+`ruchLeft` 2 → 1, czyli **przeskok o 3 heksy za 1 PR**.
+Przed tą zmianą atakujący ZAWSZE stał w adiacencji, więc było to klasyczne wejście o 1 heks —
+przeskok wieloheksowy jest **nowy**. Realna skala z `units.json`: **Katapulta = 6**,
+Procarz (Huaracoc) i Łucznik nubijski = **5**, cztery łuczniki narodowe = **4**.
+Komentarz `main.ts:21176-21182` powołuje się na *tę samą funkcję* jako dowód, że „atak z dystansu
+nie wymaga żadnego dodatkowego kroku ruchu" — co jest prawdą **przed** bitwą, ale przemilcza,
+że **po** wygranej ta funkcja robi z tego teleport. Zgłoszenie wyżej wprost rezerwowało tę
+kwestię dla właściciela („czy jednostka atakująca z dystansu zużywa cały ruch tej tury, czy może
+się potem jeszcze przesunąć … **NIE rozstrzygać samodzielnie bez zaznaczenia w commicie**") —
+nie została ani rozstrzygnięta przez właściciela, ani zaznaczona w commicie, ani pokryta testem.
+Uwaga: mechanika jest **symetryczna** (AI teleportuje się tak samo), więc F3 samo w sobie nie
+łamie parytetu — jest nieprojektowaną zmianą mechaniki, nie nierównością stron.
+
+#### 5. Noty (nie blokują same z siebie, ale do rozstrzygnięcia w RUNDZIE 2)
+
+- **N1 — zasięg wzięty z INNEJ siatki bez przeliczenia.** `battleScene.ts:1287-1307`
+  dokumentuje, że to pole czyta się jako liczbę **pól kwadratowej siatki taktycznej**
+  („on the square grid it is simply read as a count of tiles"), z progiem `reach >= 2` = dystansowa
+  i fallbackiem `DEFAULT_RANGED_REACH = 2`. `combat.ts:181` bierze tę samą liczbę **wprost jako
+  heksy mapy świata**, bez konwersji. Komentarz `combat.ts:163-176` sam przyznaje, że tamta funkcja
+  „ma WŁASNĄ skalę" — i mimo to wartość jest użyta 1:1. Czy „6" katapulty ma oznaczać 6 heksów
+  mapy świata, to decyzja produktowa (ABC), nigdy właścicielowi nie zadana.
+- **N2 — brak fallbacku jest dziś bezpieczny, ale krucho.** Skan potwierdza 0 jednostek
+  z `Atak dystansowy > 0` i pustym zasięgiem, więc `combat.ts:181` działa. Ale `battleScene.ts`
+  ma fallback właśnie dlatego, że takie wiersze historycznie występowały. Dodanie w przyszłości
+  nowego strzelca bez wypełnionego pola da jednostkę **dystansową w bitwie taktycznej i zwarciową
+  na mapie**, po cichu. Brak bramki pilnującej tego niezmiennika.
+- **N3 — brak sprawdzenia mgły na ścieżce kliku.** `main.ts:20559-20560` (gałąź ataku) nie woła
+  `currentVisible()` — sprawdzenie mgły siedzi dopiero w gałęzi `else` (`main.ts:20565`),
+  a `unitAtRepresentative` (`armyMerge.ts:448-460`) nie filtruje po widoczności. `tryLaunchMarchAttack`
+  (`main.ts:19246`) **sprawdza** widoczność. Dwie ścieżki tej samej funkcji, dwie różne reguły mgły.
+  Pre-istniejące przy dystansie 1, ale zmiana rozszerza powierzchnię tego do 6 heksów.
+- **N4 — podgląd hover niespójny z klikiem.** `main.ts:19308` wygasza trasę tylko dla wrogich
+  **jednostek** (`hoverEnemy`), nie dla wrogich **miast** — najechanie na miasto bez muru w zasięgu
+  nadal rysuje trasę marszu, choć klik odpali atak/zdobycie natychmiast. Dodatkowo warunek nie
+  sprawdza `stackCanMove`, więc jednostka bez ruchu pokazuje „trasa niepotrzebna", a po kliku
+  dostaje „Brak ruchu".
+- **N5 — luki pokrycia testu** (mimo że test jest dobry): brak asercji dla `capture_empty`
+  z dystansu (F2), brak jakiejkolwiek asercji o pozycji jednostki **po** bitwie (F3), brak asercji
+  parytetu AI dla ataku na miasto (F1).
+
+#### 6. Zalecenie
+
+Implementacja ataku jednostka→jednostka z dystansu jest **poprawna i dobrze przetestowana** —
+tę część można zachować. Do RUNDY 2:
+1. **Domknąć parytet** — dać AI tę samą bramkę zasięgu dla miast co gracz (`ai.ts:2514-2518`),
+   albo — jeśli właściciel zdecyduje inaczej — **cofnąć zasięg dla miast po stronie gracza**,
+   żeby obie strony miały tę samą regułę. Dopisać asercję parytetu miast do bramki.
+2. **Rozstrzygnąć F2 i F3 pytaniem ABC do właściciela** (zgłoszenie samo je zarezerwowało):
+   czy zwycięski atak z dystansu ma przesuwać jednostkę na heks celu (i za jaki koszt ruchu),
+   oraz czy puste miasto bez muru ma dać się zdobyć bez wejścia na jego heks.
+3. **N1 — zapytać o skalę zasięgu na mapie świata** (Katapulta 6 heksów?) zamiast dziedziczyć
+   liczbę z siatki taktycznej bez konwersji.
+
+**STATUS: **OTWARTE** — Evaluator FAIL, wymagana RUNDA 2 (parytet AI dla miast) + pytania ABC do
+właściciela dla F2/F3/N1. Zmiana **nie jest gotowa do deployu**.**
 
 ---
 
