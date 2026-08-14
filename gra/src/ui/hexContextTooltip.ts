@@ -458,6 +458,17 @@ function listTerrainPossibleImprovements(
     if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
     if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
     if (key === 'lama' && nakladka !== Nakladka.ZlozeLamy) continue;
+    // N5 (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA): stadnina wymaga złoża konia NA TYM
+    // heksie -- silnik (createQualifier) dodatkowo pozwala budować stadninę BEZ złoża, gdy imperium
+    // ma już odblokowane 'kon' gdzie indziej (isLivestockUnlockedForPlacement/empireUnlocks) -- to
+    // stan gracza/imperium, nie własność heksu, więc świadomie POMINIĘTE tu, tak samo jak
+    // terytorium/tech są pominięte w całej tej funkcji (patrz docstring wyżej).
+    // EN: stadnina requires a horse deposit ON THIS hex -- the engine additionally allows building
+    // it WITHOUT a deposit once the empire already unlocked 'kon' elsewhere
+    // (isLivestockUnlockedForPlacement/empireUnlocks) -- that is player/empire state, not a hex
+    // property, so it's deliberately SKIPPED here, same as territory/tech are skipped throughout
+    // this function (see docstring above).
+    if (key === 'stadnina' && nakladka !== Nakladka.ZlozeKonia) continue;
     if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
     if (key === 'tartak' && nakladka !== Nakladka.Las) continue;
     if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;
