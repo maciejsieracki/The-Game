@@ -1234,6 +1234,7 @@ import {
   DEFAULT_CONVERTER_RECIPES,
   loadThroughput,
   converterThroughputForEra,
+  converterBuildingIdForRecipe,
   type RawConverterParamsJson,
 } from './game/converters';
 
@@ -2768,10 +2769,24 @@ async function boot(): Promise<void> {
           rawForConverters, recipe.throughputParamKey, _menuDifficulty, recipe.throughputFallback,
         );
         const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
+        // P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (Maciej 2026-08-14): dopasowanie
+        // budynek->receptura MUSI iść przez `converterBuildingIdForRecipe` (recipe.buildingId
+        // gdy ustawione, inaczej recipe.id), NIE przez recipe.id wprost -- dla receptur typu
+        // 'odlewnia_zelaza__zelazo' (buildingId: 'odlewnia_zelaza') `recipe.id !== buildingId`,
+        // więc `builtIds.includes(recipe.id)` NIGDY nie trafiał i HUD zwracał {} zamiast
+        // realnej produkcji Odlewni żelaza/Wielkiej odlewni. Ten sam wzorzec dopasowania co
+        // silnik tury (turn-economy.ts::advanceCityEconomy, `runtimeBuiltIds.includes(
+        // converterBuildingIdForRecipe(r))`) -- zero rozjazdu HUD vs silnik.
+        // / EN: building<->recipe matching MUST go through `converterBuildingIdForRecipe`
+        // (recipe.buildingId when set, else recipe.id), not recipe.id directly -- for recipes
+        // like 'odlewnia_zelaza__zelazo' (buildingId: 'odlewnia_zelaza') recipe.id never equals
+        // the built building id, so the old check never matched and the HUD returned {} instead
+        // of real Iron Foundry/Great Foundry output. Mirrors the turn engine's pattern
+        // (turn-economy.ts::advanceCityEconomy) so the HUD never drifts from the engine.
         for (const c of cities) {
           if (c.ownerId !== ownerId) continue;
           const builtIds = cityBuilt.get(c.id) ?? [];
-          if (!builtIds.includes(recipe.id)) continue;
+          if (!builtIds.includes(converterBuildingIdForRecipe(recipe))) continue;
           out[recipe.output] = (out[recipe.output] ?? 0) + throughput * recipe.outputAmount;
         }
       }

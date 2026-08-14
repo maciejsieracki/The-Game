@@ -26930,3 +26930,82 @@ poziomie trudności niż wybrany.
 sesji prawie zjedzony, nowe zgłoszenia — chyba że wprost oznaczone jako krytyczne — tylko
 rejestrujemy, dispatch dopiero po odnowie limitu w przyszłą środę). NIE dispatchowane, zero kodu
 tknięte. Plan rekonesansu wyżej zostaje aktualny na później.**
+
+---
+
+## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — RAPORT NAPRAWY (Operator, agent `a415dfdd8dcb90060`)
+
+**⚠️ Uwaga procesowa orkiestratora (dopisane przy scalaniu, 2026-08-14):** ten agent pracował na
+worktree, który wystartował od `main`, NIE od gałęzi sesji (znany, wcześniej udokumentowany
+mechanizm — patrz nota „stackGroupId runda 2" wyżej w pliku) — inaczej niż agent city-panel runda 2
+(`a69e4d607a272d7e1`), który ten sam problem zauważył i sam się poprawił (`git reset` na właściwą
+gałąź) PRZED rozpoczęciem pracy. Skutek: commity `9482117f`+`913b74f6` wylądowały PROSTO na `main`,
+z pominięciem gałęzi sesji i BEZ Evaluatora — złamanie rytmu „jedna fala do tyłu" oraz zasady, że
+nieocenionej pracy nie ma na `main`. Kod źródłowy zweryfikowany osobiście przy scalaniu (diff
+`9482117f` — 1 linia dopasowania + import + komentarz PL/EN, wzorzec identyczny z
+`turn-economy.ts:1604`) — wygląda poprawnie, ale **formalnie nadal czeka na Evaluatora**, teraz
+już na gałęzi sesji po scaleniu `origin/main`. Traktować jako dług procesu, nie dług merytoryczny.
+
+**Sytuacja:** `empireConverterResourceRatesForOwner` (`gra/src/main.ts`, licznik HUD imperium
+
+**Sytuacja:** `empireConverterResourceRatesForOwner` (`gra/src/main.ts`, licznik HUD imperium,
+suma stawek konwerterów gracza/AI do panelu Surowców i do `mergedResourceRatesForOwner`
+używanego przy cap-ie handlu dyplomatycznego) dopasowywał budynek↔receptura konwertera przez
+`builtIds.includes(recipe.id)`. To trafia TYLKO gdy `recipe.id === buildingId`. Dla receptur,
+gdzie `recipe.buildingId` (`DEFAULT_CONVERTER_RECIPES`, `gra/src/game/converters.ts`) różni się
+od `recipe.id` — `odlewnia_zelaza__braz`/`odlewnia_zelaza__zelazo` (buildingId
+`odlewnia_zelaza`) i `wielka_odlewnia__braz`/`wielka_odlewnia__zelazo`/`wielka_odlewnia__stal`
+(buildingId `wielka_odlewnia`) — dopasowanie NIGDY nie trafiało. HUD zwracał `{}` zamiast
+realnej produkcji dla Odlewni żelaza i Wielkiej odlewni (5 z 10 receptur ogółem), mimo że
+silnik tury (`turn-economy.ts::advanceCityEconomy`) liczył je poprawnie — rozjazd klasy
+HUD-SKARBIEC (ta sama klasa błędu, którą P-KONWERTERY-PRZEPUSTOWOSC-Q1 nazwał wprost, ale nie
+objęła akurat tego dopasowania).
+
+**Naprawa (Operator Sonnet 5, worktree izolowany `agent-a415dfdd8dcb90060`):**
+1. `gra/src/main.ts` — import `converterBuildingIdForRecipe` z `./game/converters` (funkcja już
+   istniała, eksportowana, `recipe.buildingId ?? recipe.id`); dopasowanie w
+   `empireConverterResourceRatesForOwner` zmienione z `builtIds.includes(recipe.id)` na
+   `builtIds.includes(converterBuildingIdForRecipe(recipe))` — DOKŁADNIE ten sam wzorzec co
+   `turn-economy.ts:1604` (`runtimeBuiltIds.includes(converterBuildingIdForRecipe(r))`).
+   Komentarz PL+EN przy zmianie odsyła do tego wzorca. Zero zmian w `converters.ts`/
+   `turn-economy.ts` — poprawka wyłącznie punktowa w `main.ts`, zgodnie z C-025 (drugie
+   miejsce, `cityPanel.ts`, wspomniane w zleceniu jako już poprawne — nie znaleziono w nim
+   dziś żadnego odwołania do `DEFAULT_CONVERTER_RECIPES`/`converterBuildingIdForRecipe`; jeśli
+   to osobny, nie-scalony jeszcze temat, poza zakresem tej naprawy).
+2. Nowy test regresyjny `gra/tools/hud-konwerter-dopasowanie-test.cjs` (20 asercji) — wycina
+   PRAWDZIWY tekst `empireConverterResourceRatesForOwner` z bieżącego `main.ts` (po sygnaturze,
+   nie po numerze linii) i wykonuje go NAPRAWDĘ przez `esbuild.transformSync` + `new Function`,
+   z prawdziwymi `DEFAULT_CONVERTER_RECIPES`/`loadThroughput`/`converterThroughputForEra`/
+   `converterBuildingIdForRecipe` zbundlowanymi z prawdziwego `converters.ts` (wzorzec
+   `road-hook-mainguard-test.cjs`) — ZERO reimplementacji logiki dopasowania jako kopii w
+   teście (to dokładnie błąd, za który poprzedni temat city-panel dostał FAIL od Evaluatora).
+   Pokrycie: Odlewnia żelaza → Żelazo=25, Brąz=25 (era 1, normal, niepusty wynik); Wielka
+   odlewnia → Brąz=25, Żelazo=25, Stal=25; kontrola braku regresji dla trójki już-działającej
+   (Cegielnia=50, Garncarnia=50, Odlewnia brązu=25, recipe.id === buildingId, niedotknięte
+   naprawą); brzegi (właściciel bez żadnego konwertera → `{}`, nie `undefined`/wyjątek;
+   właściciel bez żadnego miasta → `{}`). **Dowód mutacyjny**: przywrócenie starego
+   `builtIds.includes(recipe.id)` na wyciętym tekście (w pamięci, dysk nietknięty) daje `{}`
+   dla Odlewni żelaza/Wielkiej odlewni — regresja złapana; kontrola że ta sama mutacja NIE
+   psuje trójki już-działającej (mutacja punktowa, nie za szeroka).
+
+**Bramki (z `gra/`):** `npx tsc --noEmit` 0 błędów (symlink `node_modules` z drzewa głównego
+zweryfikowany, `tsc --version` = 5.9.3, usunięty po pracy) · nowy test 20/20 ·
+`converters-test.cjs` 46/46 (bez zmian, kontrola) · `converter-era-scaling-test.cjs` 87/87 (bez
+zmian, kontrola) · `tech-tree-test.cjs` 19/19 · `research-test.cjs` 33/33 · impact check dla
+pliku współdzielonego (`main.ts`, C-026): `unit-replace-test.cjs` 13/13, `ai-founding-territory-test.cjs`
+28/28 — oba zielone, zero regresji. `mennica-magazyn-test.cjs` 38 pass/3 fail — zweryfikowane
+`git stash`+uruchomienie na bazowym stanie PRZED zmianą: identyczne 38/3, pre-istniejące (już
+opisane w `CLAUDE.md` sekcja BRAMKI pod innym tematem), niezwiązane z tą naprawą.
+`map-gen-regression-test.cjs` odpalony jako dodatkowy impact check, ale NIE dokończył się w
+czasie tej sesji (mapa Ogromny, znany długi czas — zmiana nie dotyka `gra/src/map/**` ani
+generatora, więc ryzyko regresji ocenione jako znikome, ale wynik nie jest tu potwierdzony
+liczbowo — do weryfikacji przez Evaluatora albo kolejną sesję, jeśli chce mieć twardy dowód).
+
+**Zmienione pliki:** `gra/src/main.ts` (import + 1 linia dopasowania + komentarz PL/EN),
+`gra/tools/hud-konwerter-dopasowanie-test.cjs` (nowy).
+
+**Commit:** `9482117f` (scalony bezpośrednio do `main`, fast-forward z `62b75f14`, `main` nie
+odjechał między `git fetch` a `git push` — brak rebase'u). Push wykonany, `origin/main` = `9482117f`.
+
+**STATUS: GOTOWE PO STRONIE OPERATORA, czeka na Evaluatora (nie self-ocena — praca w
+izolowanym worktree, commit i push wykonane, ale werdykt Evaluatora osobno, zgodnie z §0a/§0b).**
