@@ -6892,6 +6892,12 @@ zamyka 4 panele zamiast wyrzucać z pełnego ekranu, flaga oblężenia znika od 
 bitwie, tooltip heksu filtruje ulepszenia po nakładce/złożu, chip Rekruci → blok Armii, polityka
 Pracy imperium twardym pułapem sumy mimo override miasta, wyrównanie ramek w kroku 4 kreatora.
 
+⚠️ **CZUBEK GAŁĘZI ≠ ŹRÓDŁO BUILDA.** W trakcie deployu doszły na gałąź 4 commity ponad `5dc45b6e`;
+trzy to rejestr, ale **`d2dd4b89` (znacznik Mocy: glif ⚜ → ikona SVG, `gra/src/ui/` 4 pliki `+42/−8`)
+to realny kod i NIE MA GO w bundlu `4bef7d10`** — wejdzie w FALI 280. Znacznik Mocy w tej fali nadal
+pokazuje ⚜; **nie zgłaszać jako niedziałającej naprawy**. Nie przebudowano świadomie: bramki
+i weryfikacja headless zrobione na `5dc45b6e`, a `d2dd4b89` nie ma jeszcze werdyktu Evaluatora.
+
 ⛔ **DO PRZEKAZANIA WŁAŚCICIELOWI PRZY PLAYTEŚCIE:** commit `ea0be32a` (opisany wyłącznie jako
 naprawa not Auto-pracy) zgarnął ze wspólnego drzewa **niezatwierdzony PROTOTYP kroku 4 kreatora**
 (`P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START` wariant A + `P-NEWGAME-OPISY-DO-TOOLTIP`), którego
