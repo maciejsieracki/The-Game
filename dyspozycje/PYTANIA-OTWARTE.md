@@ -24856,6 +24856,138 @@ po nocie N2 Evaluatora przy `3f1a2f85` — to ta sama rodzina naprawy, tylko dru
 
 ---
 
+### Evaluator (Opus 5): **WERDYKT PASS-WITH-NOTES** dla `1d983d05` — naprawa poprawna, noty wyłącznie dokumentacyjne
+
+**Data:** 2026-08-14 · **Commit:** `1d983d05` · **Gałąź:** `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+(pliki tematu identyczne na czubku `cdfe39b9` — `git diff` pusty, więc weryfikacja czubka = weryfikacja commita).
+**Metoda:** własny izolowany worktree, zero zaufania do raportu Operatora, wszystkie liczby zmierzone samodzielnie.
+
+**Rozstrzygnięcie punktów zlecenia:**
+
+**1. Miejsce wstawienia — POTWIERDZONE, i mocniej niż wymagał dispatch.** Zmierzone offsety od początku
+`restoreGameFromSave`: `ensureCitySaveDefaults(c)` = 2609, nowy blok `if (c.ownerId !== 0)` = 5502,
+`cities.push(c)` = 5834. Blok jest **PO** migracji i **PRZED** wstawieniem do `cities`.
+Hipoteza z dispatchu („gdyby reset był przed `ensureCitySaveDefaults`, ta funkcja mogłaby nadpisać go
+z powrotem") — **sprawdzona explicite i OBALONA**: `cities.ts:414` to `if (!city.okolicaTryb) city.okolicaTryb
+= DEFAULT_OKOLICA_TRYB;`, a `DEFAULT_OKOLICA_TRYB = 'auto'` (`cities.ts:45`) jest wartością **prawdziwą**,
+więc po resecie warunek `!city.okolicaTryb` byłby fałszywy i nadpisania by nie było. Dodatkowo
+`ensureCitySaveDefaults` **w ogóle nie dotyka `okolicaReczne`** (jedyne wystąpienie tej nazwy w `cities.ts`
+to deklaracja interfejsu w linii 601), więc `delete` też nie mógłby zostać cofnięty. Kolejność jest zatem
+poprawna **i** odporna w obie strony — wybrana wersja jest lepsza czytelnościowo (najpierw migracja pól,
+potem sanityzacja), ale nie była jedyną działającą.
+
+**2. Przypadek brzegowy `ownerId !== 0` (ochrona trybu ręcznego GRACZA) — POTWIERDZONY NIEZALEŻNIE, 26/26.**
+Nie poprzestałem na czytaniu kodu ani na teście Operatora. Napisałem **własny harness**, który różni się
+od testu Operatora w sposób istotny: SEKCJA 3 Operatora **replikuje ręcznie 2 linie naprawy wewnątrz pliku
+testu** (testuje kopię — gdyby `main.ts` miał inny warunek, ta sekcja i tak byłaby zielona; łata to dopiero
+rozłączna SEKCJA 4 z regexem). Mój harness **wycina REALNY TEKST pętli z `src/main.ts`** (3320 znaków, od
+`cities.length = 0;` do `cities.push(c); }`) i **wykonuje go** przez `new Function`, na prawdziwych
+`ensureCitySaveDefaults` / `resolveWorkedTiles` zbundlowanych esbuildem. Wyniki:
+
+| Scenariusz | Wynik |
+|---|---|
+| E1 miasto gracza (`ownerId===0`, `reczny`, 3 wpisy) | `okolicaTryb` = `reczny`, wszystkie 3 wpisy zachowane co do wartości, `resolveWorkedTiles` = **dokładnie te 3 kafle** (`1,0\|2,0\|3,0`), nie auto-dobrane |
+| E2 miasto AI (`ownerId=3`, `reczny`) | reset na `auto`, `okolicaReczne` usunięte, 6/6 populacji pracuje |
+| E3 zapis MIESZANY (gracz + AI `1` + AI `7` + rebelianci `-99`) | gracz **nietknięty**, wszystkie 3 obce zresetowane — filtr łapie też **ujemne** id (`REBEL_FACTION_OWNER_ID = -99`, `society-breakdown.ts:146`) |
+| E4 **dwa pełne cykle** save→load→save→load (JSON round-trip) | tryb ręczny gracza **nadal żywy** — zero erozji między sesjami |
+| E5 gracz w `auto` / AI w `auto` z resztkowym `okolicaReczne` | bez efektów ubocznych; resztka u AI skasowana (no-op funkcjonalny) |
+| E6 stary zapis bez pola `okolicaTryb` | migracja `ensureCitySaveDefaults` działa dla obu |
+| E7 kontrola czułości — podmiana filtru na `if (true)` w wyciętym tekście | miasto gracza **traci** tryb ręczny → dowód, że E1 mierzy realny filtr, nie tautologię |
+| E8 `resolveWorkedTiles` bez filtra właściciela | 2 kafle przy populacji 6 → **naprawiany bug był realny**, nie teoretyczny |
+
+**Werdykt punktu 2: regresja, której dispatch się obawiał, NIE ISTNIEJE.** Konwencja `ownerId === 0` = gracz
+jest w `main.ts` twardo utrwalona (171 wystąpień `ownerId === 0` + 66 `ownerId !== 0`, brak stałej nazwanej),
+więc filtr jest zgodny z resztą pliku.
+
+**3. Kolizja testów — zweryfikowana samodzielnie, zapas REALNY (nie „akurat przechodzi").** Zmierzone:
+
+| Limit | Realna potrzeba | Zapas |
+|---|---|---|
+| `WINDOW` 13000 (2.1/2.2/2.4/4.1/4.3) | 8031 | **+4969 (61,9%)** |
+| `{0,4000}` w 2.1 (ciało pętli) | 3226 | +774 (24%) |
+| `{0,3500}` w 4.1 (`ensure` → `if`) | 2859 | +641 (22%) |
+| `{0,2500}` w 2.2 (koniec pętli → reconcile) | 1992 | +508 (25%) |
+| `{0,300}` / `{0,500}` | 1 / 210 | +299 / +290 |
+
+Twierdzenie Operatora o starej granicy **potwierdzone co do mechanizmu**: `playerEverOwnedCity` zaczyna się
+na offsecie **7969** (mieściło się w oknie 8000), ale dopasowanie regeksu kończy się na **8031** — `slice`
+ucinał string w połowie tokenu, więc test padał mimo poprawnego kodu. Stare okno 8000 dziś **nie
+wystarcza**, stare `{0,400}` też nie (realne 3226).
+Mutacja kontrolna 2.5 **NIE stała się tautologiczna**: `mutatedFnBody` ma **6530 znaków** (niepusty),
+mutacja jest wykrywana, `occurrences === 1` chroni przed rozjazdem, a target z wcięciem 6 spacji jest
+**rozłączny** z blokiem load'u (10 spacji) — w całym `main.ts` są dokładnie 2 wystąpienia przypisania,
+zgodnie z oczekiwaniem. Potwierdziłem to **własną drugą mutacją na dysku**: usunięcie resetu z
+`seedCityOwnerDefaults` (blok load'u nietknięty) daje **18/18 → 15/18, exit 1** (padają 2.1, 2.2 i 2.5) —
+przeskalowanie do `fnBody` nie osłabiło ochrony tamtej funkcji, wręcz ją wzmocniło.
+
+**4. Brak kolizji z `47a2e1ff` — ale opis commita jest tu nieścisły (nota N1).** `47a2e1ff` nie kasuje
+`okolicaReczne` w pętli; jego sanityzacja to wywołanie `reconcileAllWorkedTiles(...)` **PO pętli**
+(`main.ts:30321`), które nie usuwa całej właściwości, tylko **nielegalne klucze** wewnątrz niej. Podwójnego
+kasowania **nie ma**. Kolejność `delete` (w pętli) → `reconcile` (po pętli) jest bezpieczna, bo
+`reconcileWorkedTilesForOwner` ma `if (!city.okolicaReczne) continue;` (`territory-work.ts:123`) — miasta AI
+są po prostu pomijane, zero crashu, zero podwójnej pracy. Oba mechanizmy są **komplementarne**, nie
+nakładające się.
+
+**5. Bramki — uruchomione samodzielnie, liczby zgadzają się z raportem Operatora co do jednej:**
+
+| Bramka | Wynik | Exit |
+|---|---|---|
+| `npx tsc --noEmit` | 0 błędów (0 linii wyjścia) | **0** |
+| `okolica-load-reconcile-test.cjs` | **23/23** | 0 |
+| `okolica-tryb-reset-ownership-change-test.cjs` | **18/18** | 0 |
+| `okolica-ownership-change-reconcile-test.cjs` | **15/15** | 0 |
+| `okolica-test.cjs` | **72/72** | 0 |
+| `tech-tree-test.cjs` | **19/19** | 0 |
+| `research-test.cjs` | **33/33** | 0 |
+
+`tsc` mierzony **bez potoku** (`> log 2>&1; echo $?`) — potok zwróciłby kod `tail`, nie `tsc`; to dokładnie
+pułapka opisana w `CLAUDE.md` §0b przypadek (b).
+
+**6. Własna mutacja kontrolna na dysku — deklaracja Operatora POTWIERDZONA.** Fizyczne usunięcie bloku
+`if (c.ownerId !== 0) {...}` z `main.ts` (md5 `233e3c1d…` → `7a7e4208…`): `okolica-load-reconcile-test`
+spada **23/23 → 21/23, exit 1** (padają 4.1 i 4.3) — dokładnie jak deklarował. Mój harness spada
+**26/26 → 16/26**. **Rozkład porażek jest tu najciekawszy:** padają wyłącznie asercje miast obcych
+(E2.1-2.3, E3.3-3.5, E4.3, E5.4) — **wszystkie E1.\* (gracz) nadal przechodzą**, co dowodzi, że naprawa
+nie zmienia zachowania dla gracza w żadną stronę, ani przed, ani po. `main.ts` przywrócony z kopii,
+md5 zgodny z wyjściowym, drzewo czyste.
+
+**NOTY (żadna nie blokuje — wszystkie dokumentacyjne):**
+
+- **N1 — opis commita: „w tej samej pętli" o `47a2e1ff` jest nieprawdą.** Komunikat `1d983d05` uzasadnia
+  filtr „analogiczny wzorzec do już istniejącej naprawy `47a2e1ff`, która tak samo sanityzuje siostrzane
+  pole `okolicaReczne` przy load, **w tej samej pętli**". `47a2e1ff` działa **po pętli** (`main.ts:30321`)
+  i czyści klucze, a nie właściwość. Analogia co do **intencji** jest trafna, co do **umiejscowienia** —
+  nie. Bez skutków dla kodu; do sprostowania, gdyby ktoś budował na tym opisie kolejną naprawę.
+- **N2 — słowo „maskowało" opisuje kierunek błędu odwrotnie niż faktyczny.** Zweryfikowałem mechanizm
+  osobnym skryptem: stara, niescope'owana asercja 2.5 na dzisiejszym `main.ts` daje `stillMatches = true`
+  → `ok(!stillMatches)` = **FAIL**. Czyli test stawał się **fałszywie CZERWONY** (18→17), a nie fałszywie
+  zielony. „Maskowanie" sugeruje ukrycie regresji; faktycznie był to **fałszywy alarm**. Liczby Operatora
+  (18/18 → 17/18 → 18/18) są zgodne z tym mechanizmem — myli tylko nazwa zjawiska.
+- **N3 — kruchość strukturalna, nie zawiniona przez ten commit.** Asercje wiringu opierają się na regeksach
+  po źródle z limitami długości, więc **każdy kolejny dwujęzyczny komentarz w tej pętli znów je wywali** —
+  zapasy 22-25% na `{0,4000}`/`{0,3500}` to ok. 700-800 znaków, mniej niż jeden komentarz PL+EN tej klasy
+  (ten miał ~2900). To cena metody wymuszonej przez `main.ts` z DOM/THREE (tego samego rodzaju co
+  pre-istniejące `map-field-battle-test` / `pre-battle-save-test` w `CLAUDE.md`), nie błąd Operatora.
+  Sugestia na przyszłość: kotwiczyć okno na **`cities.push(c)`** zamiast na stałej liczbie znaków.
+- **N4 — 2.5 nie asertuje, że `mutatedFnBody` jest niepusty.** Przy degeneracji (`mutatedFnStart < 0` lub
+  `mutatedFnEnd <= mutatedFnStart`) `fnBody` staje się `''`, regex nie pasuje i asercja przechodzi
+  **fałszywie zielona**. Dziś nierealne (2.1 asertuje istnienie markera na niemutowanym źródle, więc padłoby
+  wcześniej; zmierzone 6530 znaków), ale jedna linia `ok(mutatedFnBody.length > 0, …)` domykałaby to na stałe.
+- **N5 — obserwacja POZA ZAKRESEM tego commita, do rozważenia osobno.** `onOkolicaEnterManual`
+  (`main.ts` ~6468) ustawia `city.okolicaTryb = 'reczny'` **bez filtra właściciela**, podczas gdy siostrzane
+  `applyOkolicaTileAdjust` (`main.ts:4821`) ma `if (!city || city.ownerId !== 0) return;`. Dziś **nie jest to
+  realna luka** — panel miasta otwiera się wyłącznie dla miast gracza (`if (clickedCity.ownerId === 0)`,
+  `main.ts:20457`), więc handler jest chroniony bramką wyżej. Zgłaszam jako obronę w głąb i asymetrię
+  wzorca, **nie** jako usterkę do naprawy przy okazji.
+
+**Bookkeeping (nie zmieniam sam — cudzy wpis, poza zakresem werdyktu Evaluatora, ten sam precedens co
+przy `7ec82223`):** nagłówek tego tematu nadal ma `STATUS: **OTWARTE** — … do dispatchu Operatora`, co po
+tym werdykcie jest już nieaktualne i będzie generować **fałszywy alarm w audycie `CLAUDE.md` §0c**
+(`grep -n 'STATUS: \*\*OTWARTE'`). Kwalifikuje się do przestawienia na **ZAMKNIĘTE** z odsyłaczem do
+`1d983d05` — decyzja orkiestratora.
+
+---
+
 ## Porządek w rejestrze: wpis-źródło tego tematu nadal wisi jako `OTWARTE` (do zamknięcia przez orkiestratora)
 
 **Nie zmieniam tego sam** — to cudzy wpis i bookkeeping orkiestratora, nie zakres werdyktu Evaluatora.
