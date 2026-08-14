@@ -26459,6 +26459,60 @@ w `DEFAULT_CONVERTER_RECIPES` nie ma odpowiednika w `buildings.json` (0 trafień
 zwróciłaby dla niej wynik, gdyby budynek istniał, więc kod jest poprawny; sama receptura jest
 osieroconym reliktem. Do osobnego sprzątania.
 
+**STATUS: RUNDA 2 W TOKU (dispatch orkiestrator, 2026-08-14, autonomicznie — Maciej upoważnił
+pracę bez przystanków na ABC przez najbliższe 2h, „wypchnij wszystkie tematy… deploy… scal do
+main").** Zakres rundy 2: N1 (obowiązkowe — wyekstrahować czystą funkcję domenową do
+`converters.ts`, test ma porównywać z prawdziwym `runConverter`, nie kopią formuły), N2
+(wyszarzenie/oznaczenie linii produkcji dla budynku runtime-nieaktywnego, korzystając z już
+policzonego `inactiveStatus`), N4 (Ruda cyny: pokazywać 1 miejsce po przecinku zamiast
+`Math.round`, żeby `2,5` nie stawało się `3`), N5 (informacyjne — do oceny wzrokowej w
+playteście, nie blokuje), N6 (⚠️ decyzja UI z notatki oznaczona „do ABC" — pod presją czasu
+Operator ma zastosować rozsądny domyślny wybór: krótki prefiks `Prod.:` przed linią produkcji +
+odcień koloru wejść odróżnialny od koloru utrzymania, NIE identyczny `#e8a090`; to prowizoryczna
+decyzja orkiestratora pod jego odpowiedzialnością, nie ostateczne ABC właściciela — może zostać
+odwrócona na jego słowo). Sprostować też fałszywe zdanie w komentarzu `cityPanel.ts:6341-6357`
+(spójność jest z SILNIKIEM `runConverter`/`converterBuildingIdForRecipe`, NIE z HUD-em imperium —
+patrz N3 niżej, osobny temat).
+
+---
+
+## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (2026-08-14, znalezisko Evaluatora N3 przy okazji `P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE`)
+
+**Nie zgłoszenie właściciela wprost — błąd znaleziony przez Evaluatora podczas oceny innego
+tematu, rejestrowany osobno zgodnie z zasadą C-025 (nie naprawiać przy okazji, dawać własny
+numer).**
+
+**Błąd:** `empireConverterResourceRatesForOwner` (`gra/src/main.ts:2765`, licznik HUD imperium)
+dopasowuje budynek↔receptura przez `builtIds.includes(recipe.id)`. Dla receptur z polem
+`buildingId` osobnym od `recipe.id` (5 z 10 receptur w `DEFAULT_CONVERTER_RECIPES` —
+`odlewnia_zelaza__zelazo`, `odlewnia_zelaza__brąz`, `wielka_odlewnia__zelazo`,
+`wielka_odlewnia__brąz`, `wielka_odlewnia__stal` — dokładny wykaz do potwierdzenia przez
+dispatchowanego agenta) `recipe.id` NIGDY nie jest elementem `builtIds` (tam są id budynków, np.
+`odlewnia_zelaza`, nie id receptur) — więc HUD **całkowicie gubi** te receptury, zwraca `{}`
+zamiast realnej produkcji.
+
+**Zmierzone (Evaluator, era 1, `normal`, po jednym budynku):**
+
+| Budynek | licznik HUD imperium (dziś) | silnik/panel miasta (poprawny) |
+|---|---|---|
+| Odlewnia żelaza | **{} — zero** | Brąz 25 + Żelazo 25 szt./turę |
+| Wielka odlewnia | **{} — zero** | Brąz 25 + Żelazo 25 + Stal 25 szt./turę |
+
+Garncarnia/Cegielnia/Odlewnia brązu (bez osobnego `buildingId`) liczą się poprawnie w obu
+miejscach — błąd dotyczy wyłącznie receptur gdzie `buildingId !== recipe.id` w pierwszym
+segmencie ID.
+
+**Dlaczego teraz widoczne:** po scaleniu `P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE` panel
+miasta pokaże poprawne `+25 Stal/t` dla Wielkiej odlewni, a licznik HUD imperium nadal pokaże
+`0` dla tego samego budynku — sprzeczność dwóch ekranów widoczna dla właściciela.
+
+**Poprawka (do dispatchu):** zmienić dopasowanie w `empireConverterResourceRatesForOwner` na
+`converterBuildingIdForRecipe(r) === buildingId`/analogiczne do tego, co już robi poprawnie
+`turn-economy.ts:1603` i nowa funkcja w `cityPanel.ts` — ujednolicić WSZYSTKIE trzy miejsca na
+jedną wspólną funkcję dopasowania budynek↔receptura, żeby taki rozjazd nie mógł się powtórzyć.
+
+**STATUS: DISPATCH W TOKU.**
+
 ---
 
 ## ⛔ P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ (2026-08-14, zgłoszenie Macieja, KRYTYCZNE — audyt dwóch fal wsteczny wykrył pominięcie)
