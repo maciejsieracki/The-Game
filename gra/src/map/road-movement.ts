@@ -31,6 +31,27 @@ export const ROAD_BRUK_MOVE_SPEED_MULT = 5;
 /** Minimalny koszt wejścia na hex z ulepszeniem drogowym (Dijkstra używa ułamków). */
 export const ROAD_MIN_MOVE_COST = 1 / 3;
 
+/**
+ * Osobna, niższa podłoga WYŁĄCZNIE dla drogi brukowanej (R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A,
+ * Maciej 2026-08-14). Wspólna podłoga `ROAD_MIN_MOVE_COST = 1/3` psuła mnożnik ÷5 przy
+ * najczęstszym koszcie bazowym terenu (Łąka/Równina/Pustynia/rzeka = 1): wynik `max(1/3, 1/5)`
+ * dawał `1/3` — dokładnie tyle samo co zwykła droga, zero korzyści z bruku (nota N1
+ * werdyktu Evaluatora dla `92cd220b`). Ta stała dopasowuje podłogę do własnego mnożnika
+ * bruku (÷5), więc `max(ROAD_BRUK_MIN_MOVE_COST, cost/5)` przy koszcie bazowym 1 daje `0,2`,
+ * nie `0,333`. UWAGA: to NIE naprawia w pełni noty N2 (regresja względem mechaniki SPRZED
+ * `92cd220b` przy koszcie bazowym 2 — Wzgórza/Las) — przy koszcie 2 wynik `cost/5 = 0,4` jest
+ * WYŻSZY od podłogi (0,2 lub nawet 1/3), więc podłoga się w ogóle nie aktywuje i jej obniżenie
+ * niczego tam nie zmienia; to świadomie zaakceptowana konsekwencja decyzji A, nie błąd tej
+ * poprawki — patrz tabela przed/po w commicie.
+ * / EN: separate, lower floor for cobblestone road ONLY. The shared floor undermined the ÷5
+ * multiplier at the most common terrain base cost (1): `max(1/3, 1/5)` collapsed to `1/3`,
+ * identical to a plain road. This constant matches cobblestone's own ÷5 multiplier. NOTE: it
+ * does NOT fully fix the base-cost-2 regression vs. the pre-`92cd220b` mechanic — at cost 2 the
+ * floor never binds either way, so lowering it changes nothing there; accepted consequence of
+ * decision A, not a bug in this fix.
+ */
+export const ROAD_BRUK_MIN_MOVE_COST = 1 / 5;
+
 export function isRoadImprovementKey(key: string): boolean {
   return key === 'droga' || key === 'droga_brukowana';
 }
@@ -50,7 +71,7 @@ export function applyRoadMovementModifier(cost: number, hex: Hex): number {
   const keys = improvementKeysForHex(hex);
   if (keys.includes('droga_brukowana')
     || hex.ulepszenie === Ulepszenie.DrogaBrukowana) {
-    return Math.max(ROAD_MIN_MOVE_COST, cost / ROAD_BRUK_MOVE_SPEED_MULT);
+    return Math.max(ROAD_BRUK_MIN_MOVE_COST, cost / ROAD_BRUK_MOVE_SPEED_MULT);
   }
   if (keys.includes('droga') || hex.ulepszenie === Ulepszenie.Droga) {
     return cost / ROAD_MOVE_SPEED_MULT;

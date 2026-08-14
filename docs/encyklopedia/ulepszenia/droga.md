@@ -23,7 +23,8 @@
 
 ### Co robi
 Ulepszenie **Droga** na polu w **twoim terytorium**. Teren: każdy przejezdny heks.
-**Warunek:** łączy TYLKO miasta i posterunki (MAPA pilnuje); +szybkość ruchu jednostek
+**Warunek:** łączy TYLKO miasta i posterunki (MAPA pilnuje); ruch jednostek 3× szybszy
+(koszt wejścia ÷3); Handel (plon heksa) +2/turę
 ### Strategia
 - Buduj z trybu **Budowa** (lewy panel mapy) — koszt w **pracy** ze skarbca imperium.
 - Przypisz heks w **Okolica** miasta, które ma nadwyżkę pracy.
@@ -36,7 +37,7 @@ Ulepszenie **Droga** na polu w **twoim terytorium**. Teren: każdy przejezdny he
 
 **Budowa:** **15 pracy** jednorazowo. Przy **8 pracy/t** z puli imperium → ok. **2 tur**.
 
-**Po ukończeniu:** heks daje +1 handel/t (oprócz plonu bazowego terenu).
+**Po ukończeniu:** heks daje +2 Handel/turę (oprócz plonu bazowego terenu; było +1, R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14).
 
 **Zwrot pracy (uproszczenie):** czysty zysk **+2**/t vs bez ulepszenia → **8 tur** na „odrobienie" 15 pracy (ignorując bazę pola).
 

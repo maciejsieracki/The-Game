@@ -24504,17 +24504,22 @@ daje pełne 5×, niezależnie od kosztu bazowego terenu; nigdy nie jest gorsza n
 armie na najtańszym terenie (Łąka/Równina/rzeka) przyspieszają wyraźnie po zbudowaniu bruku —
 to zamierzony efekt inwestycji w bruk, nie efekt uboczny.
 
-**STATUS: DISPATCH W TOKU** — Operator Sonnet 5, razem z N3 (sprostowanie CivPedii/wikiBundle,
-„+1 handel/t" → „+2 handel/t") zgłoszonym w tym samym werdykcie. N4 (panel Excel
-`Tereny-i-ulepszenia-MACIEJ.xlsx`) odłożone do osobnego kroku doganiania JSON→Excel — nie
-wykonywane automatycznie (`CLAUDE.md` §2).
+**STATUS: OPERATOR DOSTARCZYŁ, czeka na Evaluatora** — razem z N3 (sprostowanie CivPedii/
+wikiBundle, „+1 handel/t" → „+2 handel/t"). Pełny raport, tabela przed/po i wynik bramek: sekcja
+„R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A — Operator dostarczył, czeka na Evaluatora (2026-08-14)" niżej
+w tym pliku. N4 (panel Excel `Tereny-i-ulepszenia-MACIEJ.xlsx`) odłożone do osobnego kroku
+doganiania JSON→Excel — nie wykonywane automatycznie (`CLAUDE.md` §2).
 
 ---
 
 ## Evaluator: `R-DROGI-RUCH-HANDEL-Q1` (`92cd220b`) — WERDYKT **FAIL** (2026-08-14)
 
-**STATUS: **OTWARTE** — wymaga (a) decyzji ABC właściciela w sprawie podłogi `ROAD_MIN_MOVE_COST`
-(N1/N2), (b) dispatchu naprawy treści CivPedii (N3) i paneli Excel (N4).
+**STATUS: CZĘŚCIOWO ZAADRESOWANE (2026-08-14)** — (a) decyzja ABC właściciela
+`R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A` naprawia N1 (podłoga dla bruku osobna, koszt bazowy 1 daje
+teraz pełne ÷5), **N2 pozostaje ŚWIADOMIE NIEROZWIĄZANA** przy koszcie bazowym 2 (floor się tam
+nie aktywuje — patrz tabela w sekcji dostarczenia Operatora niżej, zaakceptowane wprost w treści
+decyzji A); (b) N3 (treść CivPedii/wikiBundle) naprawiona przez Operatora, czeka na Evaluatora;
+(c) N4 (panel Excel) odłożone do osobnego kroku doganiania JSON→Excel.
 
 Weryfikacja niezależna w osobnym worktree, na czubku gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
 (commit `92cd220b`, rodzic/baseline `08736abe`). Wszystkie liczby niżej zmierzone własnoręcznym
@@ -25467,3 +25472,74 @@ końca, co się dzieje z `item.cityId` przy WYKONANIU zaakceptowanej umowy (funk
 traktatu do stanu gry), żeby mieć pewność, że usunięcie selektora nie zgubi żadnej realnej logiki.
 
 **STATUS: DISPATCH W TOKU.**
+
+---
+
+## R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A — Operator dostarczył, czeka na Evaluatora (2026-08-14)
+
+Naprawa noty N1 werdyktu Evaluatora dla `92cd220b` (sekcja wyżej), zgodnie z decyzją Macieja
+(ECHO powyżej): osobna, niższa podłoga `ROAD_BRUK_MIN_MOVE_COST = 1/5` WYŁĄCZNIE dla drogi
+brukowanej — zwykła droga zostaje przy `ROAD_MIN_MOVE_COST = 1/3` bez zmian.
+
+**Co zmienione:**
+1. `gra/src/map/road-movement.ts` — nowa stała `ROAD_BRUK_MIN_MOVE_COST = 1/5` z komentarzem
+   PL/EN (WHY + jawne zastrzeżenie, że N2 pozostaje nierozwiązana przy koszcie bazowym 2).
+   Gałąź `droga_brukowana` w `applyRoadMovementModifier()`: `Math.max(ROAD_MIN_MOVE_COST, …)` →
+   `Math.max(ROAD_BRUK_MIN_MOVE_COST, …)`.
+2. `gra/tools/map-road-movement-test.cjs` — rozszerzony o: asercje na obie stałe podłogi z
+   osobna, koszt bazowy 1 → `0,2` (nie `0,333`), koszt bazowy 2 → `0,4` (floor się nie
+   aktywuje, bez zmiany), koszt bazowy 3 → `0,6`. Mutacja kontrolna (przywrócenie wspólnej
+   podłogi `1/3` dla bruku) odtworzona ręcznie: **23 pass / 3 fail** dokładnie na trzech nowych
+   asercjach koszt-1 — potwierdzone, przywrócone do 26/0.
+3. `docs/encyklopedia/ulepszenia/droga.md` + `gra/src/data/wikiBundle.json` (przebudowany
+   `node gra/tools/bundle-wiki-for-game.cjs`, nie edytowany ręcznie) — naprawa N3: „heks daje
+   +1 handel/t" → „+2 Handel/turę" (aktualna wartość po `R-DROGI-RUCH-HANDEL-Q1`), stała kopia
+   starego `warunek` w sekcji Wiki‑M zastąpiona aktualnym opisem („ruch jednostek 3× szybszy
+   (koszt wejścia ÷3); Handel (plon heksa) +2/turę"). Zweryfikowane: diff bundla dotyka
+   WYŁĄCZNIE wpisu `ulepszenia/droga` (136 haseł encyklopedii, 22 rozdziały poradnika —
+   liczby bez zmian). Wpisu `ulepszenia/droga_brukowana.md` w encyklopedii NIE MA — luka
+   pre-istniejąca (już odnotowana przez Evaluatora w N3), nie tworzona ani naprawiana w tym
+   zakresie.
+
+**Tabela przed/po (koszt wejścia po ulepszeniu drogowym), zweryfikowana `python3` + testem:**
+
+| Koszt bazowy terenu | Skąd | Zwykła droga (÷3) | Bruk PRZED tą poprawką (floor 1/3) | Bruk PO tej poprawce (floor 1/5) | Stara mechanika sprzed `92cd220b` (koszt−2, floor 1/3) |
+|---|---|---|---|---|---|
+| 1 | Łąka/Równina/Pustynia, każda rzeka | 0,3333 | 0,3333 (floor zjadał ÷5) | **0,2000** | 0,3333 |
+| 2 | Wzgórza lub płaski+Las | 0,6667 | 0,4000 | 0,4000 (floor się nie aktywuje) | 0,3333 |
+| 3 | Wzgórza+Las | 1,0000 | 0,6000 | 0,6000 (floor się nie aktywuje) | 1,0000 |
+
+**Co ta poprawka NAPRAWIA:** koszt bazowy 1 (najczęstszy — miasta i drogi biegną po płaskim/nad
+rzeką) — bruk przestaje być identyczny ze zwykłą drogą, realnie daje pełne ÷5 (`0,2` zamiast
+`0,333`). To był problem N1, jedyny w zakresie tej decyzji (A).
+
+**Co ta poprawka ŚWIADOMIE NIE naprawia (nota N2, poza zakresem decyzji A):** przy koszcie
+bazowym 2 (Wzgórza lub płaski+Las) wynik `0,4` jest wyższy (wolniej) niż `0,333`, które dawała
+mechanika ODEJMOWANIA sprzed `92cd220b` — bo przy koszcie 2 floor nigdy się nie aktywował
+(`2/5=0,4 > 1/5` i `> 1/3`), więc jego obniżenie nie ma tu żadnego wpływu. Przyczyną tej
+konkretnej regresji jest sam mnożnik ÷5 przy niskim koszcie bazowym, nie podłoga — inny problem
+niż ten, który decyzja A miała rozwiązać. Przy koszcie bazowym 3 sytuacja jest odwrotna: `0,6`
+zawsze było i pozostaje lepsze niż stare `1,0`. Świadomie zaakceptowane przez Macieja w treści
+ECHO decyzji A („Świadomy koszt zaakceptowany… to zamierzony efekt inwestycji w bruk, nie efekt
+uboczny") — nie traktowane jako nowe, nierozstrzygnięte pytanie w tej rundzie.
+
+**Bramki (uruchomione z `gra/`, po symlinku `node_modules` z drzewa głównego, `tsc --version`
+potwierdzony `5.9.3`):** `npx tsc --noEmit` — 0 błędów · `map-road-movement-test.cjs` — **26
+pass, 0 fail** (było 22/0 przed rozszerzeniem) · `heks-panel-tooltip-warstwa-test.cjs` —
+**22 pass, 0 fail** · `tech-tree-test.cjs` — **19 pass, 0 fail** · `research-test.cjs` —
+**33 pass, 0 fail** · `unit-replace-test.cjs` — **13/13** · `ai-founding-territory-test.cjs` —
+**28 pass, 0 fail**. Dedykowanego testu automatycznego dla `wikiBundle.json`/CivPedii nie ma w
+repo (`grep wikiBundle gra/tools/` → wyłącznie sam skrypt budujący bundle) — zweryfikowane
+ręcznie przez odczyt zbudowanego JSON-a (patrz punkt 3 wyżej).
+
+**N4 (panel Excel `Tereny-i-ulepszenia-MACIEJ.xlsx`) pozostaje odłożony do osobnego kroku
+doganiania JSON→Excel — zgodnie z ECHO decyzji, nie wykonywany w tym zakresie.**
+
+**Znalezisko przy okazji (poza zakresem tej naprawy, zapisane cicho zgodnie z regułą `CLAUDE.md`
+§2):** w `docs/encyklopedia/ulepszenia/droga.md`, sekcja „Przykład liczbowy", linia „Przykład:
+łąka daje 1 żywność/t; Droga +2 → 3 żywności/t z tego heksu" jest treściowo błędna niezależnie od
+tego tematu — bonus Drogi dotyczy Handlu (plon heksa), nie Żywności; przykład miesza dwa różne
+zasoby. Pre-istniejące (nie spowodowane tą zmianą, nie dotknięte w tym zakresie zgodnie z C-025 —
+naprawa ograniczona do konkretnej treści N3 werdyktu Evaluatora).
+
+**STATUS: SCALONE, czeka na Evaluatora.**
