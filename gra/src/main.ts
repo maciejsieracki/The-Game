@@ -4560,6 +4560,43 @@ async function boot(): Promise<void> {
       // Racji NOWEGO właściciela, nie zostaje przy wartości poprzedniego.
       c.poziomRacjiOverride = false;
       c.poziomRacji = ownerDefaultPoziomRacji.get(c.ownerId)!;
+      // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU (2026-08-14): zmiana właściciela (LUB
+      // nowe miasto -- przesuwa territoryNodes tak samo jak founding, patrz call site
+      // ~linia 10922) może uczynić ISTNIEJĄCE ręczne wpisy okolicaReczne INNYCH miast
+      // (dowolnego właściciela, także starego/sąsiadów) nielegalnymi -- centrum
+      // przejętego miasta albo heks, który stracił/zyskał terytorium. Dotąd sprzątał to
+      // WYŁĄCZNIE koniec tury (advanceCityEconomy) i founding gracza (~linia 10922) --
+      // podbój w bitwie/kapitulacja z głodu/wchłonięcie dyplomatyczne/rebelia NIE
+      // woływały reconcile wcale, więc nielegalny wpis (np. panel Miletu pokazujący
+      // centrum właśnie zdobytych Aten jako "zajęte" -- renderWorkedPreview czyta surowy
+      // okolicaReczne bez filtra, świadomie, R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1) wisiał do
+      // końca tury. Wpięte TU (nie osobno przy każdym z 9 call site'ów) właśnie dlatego,
+      // że JSDoc tej funkcji już wymagał wywołania PO każdej zmianie city.ownerId --
+      // każdy call site i tak spełnia ten warunek. `reconcileAllWorkedTiles` (nie
+      // wariant per-owner) celowo -- czyści WSZYSTKICH właścicieli, bo terytorium mogło
+      // przesunąć się i staremu, i nowemu sąsiadowi, spójnie z jedynym innym dotychczasowym
+      // call site'em tej funkcji (główny algorytm gry ma dostęp do `cities`/`map` w tym
+      // samym domknięciu, więc koszt jednego dodatkowego przebiegu po całej mapie miast
+      // przy rzadkim zdarzeniu zmiany właściciela jest pomijalny).
+      // / EN: an ownership change (OR a new city -- shifts territoryNodes the same way
+      // founding does, see the call site ~line 10922) can make EXISTING manual
+      // okolicaReczne entries of OTHER cities (any owner, including the old one/
+      // neighbours) illegal -- the captured city's centre, or a hex that gained/lost
+      // territory. Until now only end-of-turn (advanceCityEconomy) and player founding
+      // (~line 10922) cleaned this up -- battle capture/starvation surrender/diplomatic
+      // annexation/rebellion never called reconcile at all, so a stale entry (e.g.
+      // Miletus' panel showing the just-captured Athens' centre as "worked" --
+      // renderWorkedPreview reads raw okolicaReczne without a filter, intentionally,
+      // R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1) hung around until turn end. Wired HERE (not
+      // separately at each of the 9 call sites) precisely because this function's JSDoc
+      // already required being called AFTER every city.ownerId change -- every call site
+      // already satisfies that. `reconcileAllWorkedTiles` (not the per-owner variant) on
+      // purpose -- cleans ALL owners, since territory may have shifted for both the old
+      // and the new neighbour, consistent with the only other existing call site of this
+      // function (the main game loop already has `cities`/`map` in the same closure, so
+      // the cost of one extra full pass over the cities on a rare ownership-change event
+      // is negligible).
+      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
     }
 
     function initUlepszeniaEmpireByOwner(): void {
