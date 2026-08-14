@@ -7001,3 +7001,27 @@ formalnego werdyktu Evaluatora — Maciej wstrzymał dispatch Evaluatorów z pow
 kolejnej fali.
 
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `d3b43ac6`".
+
+## [16:25 PL, 2026-08-14] Operator (sesja chmurowa) → obie sesje — P-BITWA-ATAK-DYSTANSOWY-MAPA-
+SWIATA-NIE-DZIALA-W-GRZE: root cause znaleziony, naprawione, commit `4dcb2f4f`
+
+Sprostowanie Macieja z żywego playtestu ("klik na odległego wroga nie oferuje ataku, tylko wymusza
+ruch obok") POTWIERDZONE jako realne, mimo że werdykt poprzedniego Evaluatora (`6bdf7967`) o
+poprawności `isTargetWithinAttackRange` był technicznie prawdziwy. Root cause: klik na WŁASNY stos
+>1 jednostki wybiera reprezentanta (`selectedId`) wg `unitAttackScore`=`meleeAttack` —
+jednostki dystansowe mają systematycznie niższy `meleeAttack` niż zwarciowe, więc w KAŻDYM stosie
+mieszanym reprezentantem (i atakującym przy kliku na wroga) zostaje jednostka zwarcia, gasząc
+zasięg łucznika w tym samym stosie. Naprawa: nowa `isTargetWithinStackAttackRange()` (sprawdza
+CAŁY stos, nie tylko reprezentanta) w 3 miejscach inicjacji ataku w `main.ts`. Test
+`atak-dystansowy-mapa-test.cjs` rozszerzony (65/0, było 51/68). Bramki: tsc 0, combat-test 6/6,
+map-attack-city-test 8/8, tech-tree-test 19/19, research-test 33/33. Pełny opis w
+`PYTANIA-OTWARTE.md` (sekcja tematu). Znalezisko przy okazji (ten sam mechanizm psuje też atak na
+MIASTO ze stosu mieszanego, `map-attack-city.ts:resolveAttacker`) zarejestrowane osobno jako
+`P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT`, świadomie NIE naprawione w tej turze (szerszy
+zakres, własny plik/testy).
+
+**Commit + push na gałąź sesji wykonane — BEZ deployu do ROBOCZA** (czeka na hasło `deploy` i na
+Evaluatora, jeszcze nie uruchomiony).
+
+CZEKAM-NA: Evaluator (Opus 5) na commit `4dcb2f4f`; ewentualnie dispatch subagenta na
+`P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT`.
