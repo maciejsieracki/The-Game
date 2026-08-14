@@ -25629,7 +25629,9 @@ spójne z perspektywy gracza, nawet jeśli każda z osobna jest poprawnie policz
 relacji, jeśli ten wpływ ma być częścią kryterium sprawiedliwości) i bramka akceptacji ma być
 `bilans >= 0`, bez osobnego, niezależnego progu PW.
 
-**STATUS: NAPRAWIONE (Operator Sonnet 5, 2026-08-14), czeka na Evaluatora.**
+**STATUS: **OTWARTE** — runda 1 (`c94de5c8`) dostała od Evaluatora **FAIL** (werdykt na końcu tej
+sekcji): scenariusz ze zrzutu naprawiony, ale ten sam wzorzec nadal reprodukowalny dla
+`umowa_handlowa`/`umowa_szlakow` („Traktat handlowy") i dla pakietów. Czeka na rundę 2.**
 
 **Przyczyna zlokalizowana (dochodzenie, nie zgadywanie) — odtworzona SCENARIUSZEM ZE ZRZUTU
 (givePn=50, receivePn=20, Relacja 27,8) przez prawdziwy `evaluateProposal`:** to FAKTYCZNIE
@@ -25706,6 +25708,99 @@ wyceny, poza bezpiecznym zakresem tej rundy zgodnie z instrukcją orkiestratora 
 okaże się dużo bardziej złożone... zatrzymaj się, zrób tyle ile bezpiecznie się da"). Do
 rozważenia w osobnej rundzie, jeśli Maciej zgłosi konkretny przypadek tej resztkowej luki.
 
+### WERDYKT EVALUATORA (Opus 5, 2026-08-14, commit `c94de5c8`): **FAIL**
+
+**STATUS PO WERDYKCIE: OTWARTE — wymaga rundy 2 (naprawa niepełna, wzorzec ze zgłoszenia nadal
+reprodukowalny na sąsiedniej ścieżce).**
+
+Metoda: własny izolowany worktree na czubku `cc1c1695`, cztery skrypty-sondy uruchamiające
+PRAWDZIWY `evaluateProposal` + `balancePanelDataFromRows` + `renderPnBalancePanelHtml`
+(bundle esbuild z `gra/src`, bez symulacji), pełne odczytanie `treatyPnGate`/
+`treatyBaseFairnessGap`/`handelFairnessGate`, dwie własne mutacje kontrolne.
+
+**CO DZIAŁA (potwierdzone niezależnie, nie z raportu):**
+1. Scenariusz DOKŁADNIE ze zrzutu (`handel`, oddajemy 50 PW, oni 20 PW, Relacja 27,8) po naprawie:
+   `pwBalance = −37 PW`, wyświetlany `theirBalance.balancePn = −37 PW`, `statusLabel = "Brakuje
+   37 PW"`, pasek HTML `da-pn-balance-bar no` (czerwony), `canAccept = false`, HTML NIE zawiera
+   `+30`. Objaw ze zgłoszenia w tym konkretnym przypadku **zniknął**.
+2. Siatka `handel` (receivePn = 20 PW, givePn 0/20/50/71/72/73/100 PW @ Relacja 27,8): `(Bilans ≥ 0)
+   === canAccept` w KAŻDYM punkcie. Próg realny = 87 PW (mnożnik chęci ×1,2), nie 72 PW.
+3. Bramki zielone, zweryfikowane własnym uruchomieniem: `tsc --noEmit` 0 błędów; `diplomacy-stol-pw-sum`
+   70/70 exit 0; `diplomacy-test` 148/148; `diplomacy-proposal-test` 187/187;
+   `diplomacy-acceptance-points-test` 254/254; `diplomacy-negotiation-table-test` 62/62;
+   `diplomacy-own-proposal-edit-test` 33/33; `diplomacy-fairness-gate-package-q2-test` 24/24;
+   `diplomacy-package-ai-counter-actionable-test` 17/17; `diplomacy-treaties-test` 17/17;
+   `diplomacy-value-catalog-test` 81/81; `diplomacy-currency-trade-test` 5/5;
+   `diplomacy-penalty-preview-test` 9/9; `diplomacy-basket-duplicate-test` 21/21;
+   `diplomacy-basket-duplicate-ui-test` 31/31.
+4. Mutacje kontrolne Evaluatora (własne, nie cudze): (a) cofnięcie `const net = unifiedPwBalance ??
+   (myOfferPn − theirOfferPn)` do surowej różnicy → **62 pass, 8 fail, realny exit 1** (sprawdzone
+   `echo $?` na samym procesie node, nie na `tail`); (b) usunięcie `pwBalance` z wyniku odrzucenia
+   `handelFairnessGate` → **61 pass, 9 fail**. Asercje NIE są tautologią.
+
+**DLACZEGO MIMO TO FAIL — N1 (blokujące): ten sam wzorzec „Bilans na plusie, a oferta odrzucona"
+jest nadal w pełni reprodukowalny dla akcji `umowa_handlowa`/`umowa_szlakow`, czyli dla tego,
+co UI nazywa dosłownie „Traktat handlowy" — nagłówka ze zrzutu Macieja.**
+Przyczyna: odrzucenie leci z `treatyPnGate` (bramka PRZED `switch`, `diplomacy-proposals.ts`
+~linia 567: `if (receivePn > 0 && !pnDealAcceptedByAi(...))`), która **nie ustawia `pwBalance`
+w ogóle** → UI spada na stary, surowy `myOfferPn − theirOfferPn`. Reprodukcja własną sondą
+(Relacja 27,8, `umowa_handlowa`, oni oddają 50 PW):
+
+| oddajemy (PW) | wyświetlany Bilans | etykieta | canAccept |
+|---|---|---|---|
+| 105 | −3 | „Brakuje 3 PW" | false (spójne) |
+| **110** | **+2** | **„Nadwyżka +2 PW"** | **false** |
+| **130** | **+22** | **„Nadwyżka +22 PW"** | **false** |
+| **175** | **+67** | **„Nadwyżka +67 PW"** | **false** |
+| 180 | +72 | „Nadwyżka +72 PW" | true (spójne) |
+
+Okno niespójności ma tu **70 PW szerokości** (givePn 110–179 PW), a komunikat blokady brzmi
+„Oferta nieuczciwa dla partnera — poniżej wartości PW @ Relacji (masz 130 PW, potrzeba więcej
+wobec 50 PW od partnera)" — dokładnie ta sama sprzeczność, którą zgłosił właściciel. To samo dla
+`umowa_szlakow` (przy 30 PW od partnera okno givePn 90–109 PW).
+
+**N2 (blokujące, architektoniczne): `renderPnBalancePanelHtml` w trybie traktatu NIE CZYTA
+`theirBalance.balancePn`** — liczy `netPw = data.myOfferPn − data.theirOfferPn` (linia ~469).
+Naprawa zapisuje `pwBalance` do pola, którego renderer traktatów nigdy nie odczyta, więc dla
+`umowa_handlowa`/`umowa_szlakow` nie ma jak zadziałać, nawet gdyby N1 naprawiono.
+
+**N3 (istotne, sprostowanie opisu): dla `umowa_handlowa`/`umowa_szlakow` nowe `pwBalance` jest
+LICZBOWO IDENTYCZNE ze starym surowym netto** (bez sąsiadów pakietu). Dowód algebraiczny
+potwierdzony pomiarem: `pwBalance = −gap = (playerRequired + givePn) − (partnerRequired +
+receivePn)`, a `myOfferPn/theirOfferPn` w trybie traktatu to dokładnie te same dwie sumy. Realnie
+zmieniła się **wyłącznie** akcja `handel`. Opis w commicie i w sekcji wyżej sugeruje szerszy
+zakres naprawy niż faktyczny.
+
+**N4 (istotne, sprostowanie deklaracji): pakiet (>1 pozycja) — Operator pisze, że
+`BUG-PAKIET-BILANS-DODATNI-BLOKADA` jest „osobno rozstrzygnięty wcześniej — nienaruszony". Sonda
+pokazuje, że objaw tam ŻYJE**: dwie pozycje `handel` (hojna 300/20 PW + skąpa 10/20 PW) dają panel
+„Nadwyżka **+270 PW**", pasek `da-pn-balance-bar ok` (ZIELONY), `canAccept = false`, blokada
+„wymagane ≥ 87 PW, oferujesz 10 PW". Zawężenie `actionable.length === 1` jest dopuszczalną
+decyzją zakresu, ale **nie wolno opisywać tej ścieżki jako rozwiązanej**. Uwaga projektowa dla
+rundy 2: samo zsumowanie `pwBalance` nie wystarczy (213 + (−77) = +136 ≥ 0 przy blokadzie) —
+kryterium musi być „każda pozycja ≥ 0" albo `min(pwBalance)`, nie suma.
+
+**N5 (istotne, luka pominięta w opisie „znanego gapu"): live-podgląd traktatu to DRUGA funkcja,
+niewymieniona przez Operatora** — `renderPnBalancePanelForTreaty` (nie tylko
+`renderPnBalancePanelFromBasket`). Zmierzone: przy Relacji 27,8, partner oddaje 50 PW, gracz
+oddaje 110 PW → live pokazuje pasek ZIELONY, „Bilans +2", hint „Nadwyżka 2 PW", podczas gdy realna
+bramka odrzuca aż do 180 PW. Rozjazd wynosi tu **70 PW z progu 180 PW (39%)**, a nie „typowo do
+±20% progu" jak zapisano — i wynika z BRAKU `pnDealAcceptedByAi`, nie z mnożnika chęci. Zapis
+o znanym gapie jest zaniżony co do skali i błędny co do przyczyny.
+
+**N6 (drobne, nieścisłość komentarza): „`pwBalance` przechodzi TYLKO dla `own`"** (main.ts) jest
+prawdziwe warunkowo — `previewIncomingPlayerAccept` zwraca `null` gdy akcja jest spoza
+`INCOMING_NET_PW_ACTIONS` albo tryb to `treaty`; wtedy wiersz `incoming` też przechodzi przez
+`evaluateProposal` i dostaje `pwBalance`. `balancePanelDataFromRows` nie filtruje po kierunku.
+Dziś praktycznie nieosiągalne (dla `umowa_handlowa` incoming `proposerIsTreatyPlayer` = false, więc
+`pwBalance` zostaje `undefined`), ale komentarz opisuje gwarancję, której kod nie daje.
+
+**Czego rundzie 2 potrzeba (propozycja kierunku, nie decyzja):** jedno miejsce liczące „ile PW
+brakuje/zostaje wobec progu, który REALNIE zdecydował o `accepted`", ustawiane na KAŻDEJ ścieżce
+odrzucenia i akceptacji (łącznie z `treatyPnGate`), plus czytanie tej liczby również przez gałąź
+`isTreatyMode` renderera. Dopóki którakolwiek bramka zwraca `accepted:false` bez `pwBalance`,
+wzorzec ze zgłoszenia wraca — to piąte podejście do tego samego tematu.
+
 ---
 
 ## P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (2026-08-14, zgłoszenie Macieja ze zrzutem "Dodaj do oferty")
@@ -25728,7 +25823,8 @@ UI koszyka.** Do potwierdzenia przez dispatchowanego agenta (nie zakładać w 10
 końca, co się dzieje z `item.cityId` przy WYKONANIU zaakceptowanej umowy (funkcja aplikująca efekty
 traktatu do stanu gry), żeby mieć pewność, że usunięcie selektora nie zgubi żadnej realnej logiki.
 
-**STATUS: NAPRAWIONE (Operator Sonnet 5, 2026-08-14), czeka na Evaluatora.**
+**STATUS: ZAMKNIĘTE — Evaluator (Opus 5, 2026-08-14) wydał PASS-WITH-NOTES dla `cc1c1695`
+(werdykt na końcu tej sekcji).**
 
 **Potwierdzone przy wykonaniu (`gra/src/main.ts`, funkcja aplikująca efekty traktatu, `case
 'zywnosc':` ~linia 8558):** transfer żywności operuje WYŁĄCZNIE na `empireFoodStates.get(fromOwnerId
@@ -25768,6 +25864,63 @@ kroku żywności).
 selektor, który właśnie usunięto. Nie usunięte teraz, żeby nie poszerzać zakresu zlecenia poza
 `diplomacyTradeBasket.ts` (C-025, dyscyplina zakresu) — do posprzątania w osobnej, drobnej
 rundzie, jeśli ktoś to zauważy przy okazji innej pracy w tym obszarze.
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-14, commit `cc1c1695`): **PASS-WITH-NOTES**
+
+**STATUS PO WERDYKCIE: ZAMKNIĘTE** (noty niżej to obserwacje, nie warunki).
+
+Metoda: własny izolowany worktree na czubku `cc1c1695`, samodzielne prześledzenie ścieżki
+wykonania w `main.ts`, grep całego `gra/src` + `gra/tools`, uruchomienie bramek, własna mutacja
+kontrolna.
+
+**Zweryfikowane niezależnie (nie z deklaracji Operatora):**
+1. `transferBasketItems` → `case 'zywnosc':` (`gra/src/main.ts`, ~linia 8558) czyta z pozycji
+   koszyka **wyłącznie** `item.ilosc` (przez `const qty = item.ilosc ?? 1` na początku pętli)
+   i operuje na `empireFoodStates.get(fromOwnerId/toOwnerId).zapasyPanstwa`. `item.id` ani
+   `item.cityId` nie występują w tej gałęzi w żadnej postaci — przeczytana cała funkcja, nie
+   sam fragment. Twierdzenie „interfejs-widmo" **potwierdzone**.
+2. Usunięcie `cityId?: string` z `BasketItem` niczego nie osierociło: grep po `cityId` w
+   `src/ui/diplomacy*.ts`, `src/game/diplomacy*.ts` i `src/main.ts` daje wyłącznie trafienia
+   niezwiązane z koszykiem (`siegeAiKey`, parametry funkcji miejskich) plus dwa komentarze
+   opisujące samą naprawę. `tsc --noEmit` 0 błędów potwierdza to strukturalnie.
+3. **Zgodność ze starymi zapisami (sprawdzone osobno, bo usunięcie pola typu to klasyczne
+   ryzyko save-load):** stara pozycja koszyka z `id = '<cityId>'` w zapisanej propozycji nadal
+   działa identycznie — wycena (`diplomacy-value-catalog.ts` case `zywnosc` → `diplomacyPnZywnosc(qty)`),
+   wyświetlanie (`diplomacyDealDisplay.ts` → `${item.ilosc} Żywności`) i stać-mnie AI
+   (`diplomacy-ai-balance.ts` → `ownerCtx.foodReserve`) są w 100% id-agnostyczne. Jedyny skutek:
+   stara pozycja nie scali się z nowo dodaną (klucz `zywnosc::ateny` vs `zywnosc::zywnosc`) —
+   kosmetyczne, bez utraty danych i bez błędu.
+4. **Migracja testu 6b → 9 NIE jest sztucznym upchnięciem asercji.** Oryginał sprawdzał mechanizm
+   „edycja zmienia tożsamość pozycji → kolizja z INNYM istniejącym wierszem → scalenie ilości";
+   nowy krok 9 sprawdza dokładnie ten sam mechanizm na `surowiec_ilosc` (edycja węgla → chip
+   „drewno" → scalenie z istniejącym wierszem drewna, 40 + floor(7/5)×5 = 45 szt.), łącznie
+   z zanikiem edytowanego wiersza. Nośnik inny, pokrycie regresji zachowane. Przeniesienie było
+   wymuszone, nie kosmetyczne: żywność strukturalnie nie może już mieć dwóch osobnych wierszy.
+5. Bramki (własne uruchomienie): `tsc --noEmit` 0 błędów, `diplomacy-basket-duplicate-test`
+   **21/21**, `diplomacy-basket-duplicate-ui-test` **31/31**, plus cały pakiet dyplomacji
+   zielony (patrz lista w werdykcie tematu wyżej).
+6. Mutacja kontrolna Evaluatora: zmiana tożsamości pozycji na zależną od ilości
+   (`id: typ + '-' + qty` w `readItemFromForm`) → `diplomacy-basket-duplicate-ui-test`
+   **23 pass, 8 fail, exit 1**, w tym wszystkie 4 asercje żywności. Test realnie broni tej
+   semantyki, nie jest atrapą.
+
+**N1 (obserwacja, poza zakresem):** żywność nadal **nie ma żadnego limitu ilości** w koszyku —
+`basketItemMaxQty` obsługuje tylko `zloto` (skarbiec) i `surowiec_ilosc` (zapas), a `zywnosc`
+zwraca `undefined`. Można więc zaoferować więcej Żywności niż jest w Spichlerzu Centralnym;
+przy wykonaniu `Math.max(0, zapasyPanstwa − qty)` po prostu zeruje zapas dawcy. Stan
+PRE-ISTNIEJĄCY (usunięty selektor też tego nie pilnował — pole `spichlerz?: number` w
+`cityOptions` nigdy nie było czytane jako limit), więc **nie jest to regresja tego commita**.
+Zgłaszam, bo po tej zmianie `cityOptions.spichlerz` jest już definitywnie martwe i temat limitu
+nie ma gdzie zamieszkać.
+
+**N2 (kosmetyka):** atrybut `data-extra="<prefix>-city"` został jako nazwa sekcji, która nie ma
+już nic wspólnego z miastem (zawiera wyłącznie „Ilość żywności"). Świadomie udokumentowane
+w komentarzu — akceptowalne, ale przy następnym dotknięciu tego formularza warto przemianować na
+`-food`.
+
+**N3 (potwierdzam zakres Operatora):** `NegotiationModalContext.cityOptions`/`receiveCityOptions`
+i budująca je zmienna `cities` w `main.ts` (~17553) faktycznie zostały bez konsumenta. Zostawienie
+ich poza zakresem jest zgodne z dyscypliną C-025 i nie generuje ryzyka (martwe pola opcjonalne).
 
 ---
 
