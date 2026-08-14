@@ -26626,6 +26626,86 @@ odwrócona na jego słowo). Sprostować też fałszywe zdanie w komentarzu `city
 (spójność jest z SILNIKIEM `runConverter`/`converterBuildingIdForRecipe`, NIE z HUD-em imperium —
 patrz N3 niżej, osobny temat).
 
+**STATUS: RUNDA 2 GOTOWA, czeka na Evaluatora (commit `dcdf653c`, 2026-08-14 — hash zmieniony
+przez rebase `git pull --rebase` przed pushem, oryginalny lokalny commit przed rebase był
+`9ad8aaf2`, treść identyczna).**
+
+Zrobione (worktree izolowany, `git pull --rebase` bez konfliktów przed pracą):
+1. **N1 (obowiązkowe) — DONE.** Wyekstrahowano czystą funkcję domenową
+   `converterProductionDisplayForBuilding(buildingId, rawParams, difficulty, era)` do
+   `gra/src/game/converters.ts` (bez DOM/UI, testowalna bezpośrednio). `cityPanel.ts`
+   (`buildingConverterProductionDisplay`) to teraz cienka otoczka wołająca tę funkcję z
+   `cfg.getEpoch?.(city.ownerId)`/`cfg.difficulty` — zero reimplementacji logiki po stronie UI
+   (usunięto z importów `DEFAULT_CONVERTER_RECIPES`/`converterThroughputForEra`/
+   `converterBuildingIdForRecipe`/`loadThroughput`, zostaje tylko `converterProductionDisplayForBuilding`
+   + typ `RawConverterParamsJson`). `gra/tools/citypanel-konwerter-produkcja-test.cjs` przepisany:
+   sekcja `[1c]` woła BEZPOŚREDNIO tę funkcję i przypina TWARDE liczby z werdyktu (nie `>0`):
+   Garncarnia era1=50, era2=55, era3=60 (glina/drewno/ceramika, tolerancja 1e-9 na błąd
+   zmiennoprzecinkowy `50*1.1`); Odlewnia brązu era1: ruda=25, drewno=25, ruda_cyny=2,5, brąz=25;
+   budynek bez receptury (`spichlerz`, nieistniejący id) → `null`.
+   **Mutacje kontrolne (sekcja `[4]`, automatyczne — patch converters.ts na dysku, rerun w
+   subprocess, restore w `finally`) odtwarzają 3 z 6 mutacji Evaluatora, WSZYSTKIE łapane
+   czerwono, zweryfikowane też ręcznie poza harnessem (sed + rerun + manualne porównanie):**
+   - **M2 (zużycie wejść ×2)** — złapane numerycznie: `9 fail` (Garncarnia era2/3, Odlewnia
+     brązu wszystkie zużycia ×2 vs twarda liczba).
+   - **M7 (pomijanie wszystkich wejść)** — złapane numerycznie: `9 fail` (`consumed.*` →
+     `undefined` zamiast liczby).
+   - **M3 (ignorowanie `outputAmount`)** — **UWAGA, przeczytaj przed przyjęciem:** złapane
+     WYŁĄCZNIE strukturalnie (nowa sekcja `[1d]`, regex na ciało funkcji w prawdziwym
+     `converters.ts`), NIE numerycznie. Powód: KAŻDA receptura w `DEFAULT_CONVERTER_RECIPES`
+     ma dziś `outputAmount: 1`, więc `throughput * 1 === throughput` — mutacja jest matematycznie
+     no-opem względem wartości `produced` pod obecnymi danymi, niezależnie od tego jak rygorystyczny
+     jest test wartości. To NIE jest luka tego testu — to samo ograniczenie złapał własny
+     734-asercyjny harness Evaluatora, który w werdykcie oznaczył M3 jako „UCIECZKA" mimo
+     metodologii bez text-anchora. Jeśli w przyszłości powstanie receptura z `outputAmount != 1`,
+     `[1c]` (który czyta prawdziwe `recipe.outputAmount` z silnika, nie stałą) zacznie łapać ją
+     numerycznie też.
+   Bramka: **83 pass, 0 fail** (było 46/46 tautologicznych w rundzie 1).
+2. **N2 — DONE.** `inactiveStatus` w `appendOwnedBuildingRow` podniesiony na zasięg całej funkcji
+   (`let` przed pierwszym `if (def && city)`, przypisanie `=` zamiast `const` wewnątrz) — NIE liczone
+   drugi raz. Wiersz produkcji dostaje klasę `bld-owned-conv-row--inactive` (CSS: wyszarzenie
+   `#6a6458`, spójne z `.bld-owned-upkeep.muted`) + `title` z `inactiveStatus.tooltip`, gdy budynek
+   runtime-nieaktywny.
+3. **N4 — DONE.** Nowa `formatConverterAmount(v)`: `Math.round(v*10)/10`, całkowite → bez przecinka,
+   niecałkowite → `fmtDecPl(r1, 1)` (istniejący helper, reużyty, nie nowy). Ruda cyny 2,5 pozostaje
+   „2,5", nie zaokrągla się do „3"; Garncarnia 50 zostaje „50", nie „50,0".
+4. **N6 (decyzja prowizoryczna orkiestratora pod presją czasu, NIE ostateczne ABC — może zostać
+   odwrócona na słowo Macieja) — DONE.** Prefiks `<span class="bld-owned-conv-label">Prod.:</span>`
+   przed linią produkcji; kolor `.bld-owned-conv-in` zmieniony z `#e8a090` (identyczny jak
+   `.bld-owned-upkeep`) na `#e0973c` (ciepły pomarańcz) — bramka `[2c]` porównuje oba kolory z CSS
+   i asercjonuje że są różne (nie hardkoduje wartości na sztywno w teście, czyta z pliku).
+5. **Sprostowanie komentarza (N3) — DONE.** Usunięto z JSDoc `buildingConverterProductionDisplay`
+   fałszywe zdanie „ta sama para funkcji, która karmi licznik HUD imperium" — zastąpione jawnym
+   sprostowaniem (dopasowanie budynek↔receptura tu przez `converterBuildingIdForRecipe`, w HUD przez
+   `builtIds.includes(recipe.id)` — różne, HUD ma osobny błąd
+   `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`, nie ten temat).
+6. **N5 — bez działania (informacyjne, zgodnie z zadaniem).** Nie zaobserwowano przepełnienia
+   layoutu przy przeglądzie kodu trybu `compact`; ocena wzrokowa zostaje do playtestu.
+7. **N7 — nietknięte (poza zakresem), zgodnie z zadaniem.**
+
+**Bramki (uruchomione z `gra/`):** `npx tsc --noEmit` — **0 błędów**. `citypanel-konwerter-produkcja-test.cjs`
+— **83 pass, 0 fail**. `converters-test.cjs` — **46/46**. `converter-era-scaling-test.cjs` — **87/87**.
+`ekonomia-5x-inwariant-test.cjs` — **246/246**. `tech-tree-test.cjs` — **19/19**. `research-test.cjs`
+— **33/33**. `vite build --outDir <tmp> --emptyOutDir` — **OK, 823 moduły, ~36s** (build tymczasowy,
+nie kopiowany do `gra-robocza` — bez hasła `deploy`). Sanity dodatkowo (testy dotykające tego samego
+obszaru, wszystkie zielone, zero regresji): `owner-economy-test` 9/9, `ai-major-economy-test` 33/33,
+`plony-budynkow-test` 68/68, `surowce-dostep-test` 13/13, `surowce-katalog-kolejnosc-test` 62/62,
+`spichlerz-cap-citypanel-wiring-test` 12/12, `city-panel-growth-percent-separator-test` 29/29,
+`wire-ekonomia-test` 37/37, `diplomacy-economy-test` 21/21, `owned-building-detail-side-test` 17/17.
+Pre-istniejące czerwone bramki zweryfikowane delta zero względem `CLAUDE.md`: `upgrade-budynki-test`
+48 pass/1 fail, `grupy-budynkow-test` 80 pass/3 fail, `prereq-budynkow-test` 51 pass/8 fail.
+
+**Zakres commita (C-025):** wyłącznie 3 pliki — `gra/src/game/converters.ts`, `gra/src/ui/cityPanel.ts`,
+`gra/tools/citypanel-konwerter-produkcja-test.cjs`. Bez deployu (commit + push branch, hasło `deploy`
+nie padło).
+
+**Incydent w trakcie pracy (do wiadomości, bez wpływu na wynik):** przy ręcznej weryfikacji mutacji M7
+poza harnessem operator przypadkowo użył `git checkout -- src/game/converters.ts`, co cofnęło TAKŻE
+legalną zmianę N1 (nie tylko testową mutację sed). Wykryte natychmiast (`grep` na
+`converterProductionDisplayForBuilding` po checkout dał 0 trafień), naprawione odtworzeniem tej samej
+edycji z pamięci sesji, zweryfikowane ponownie `tsc --noEmit` (0 błędów) + pełna bramka (83/83) —
+finalny stan pliku identyczny z tym, co opisano wyżej.
+
 ---
 
 ## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (2026-08-14, znalezisko Evaluatora N3 przy okazji `P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE`)
