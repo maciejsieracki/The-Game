@@ -20703,3 +20703,23 @@ poruszania żadnej innej jednostki i bez zdobycia miasta — `city.oblegane` mus
 od razu po rozstrzygnięciu bitwy, nie dopiero po kolejnym ruchu. Nie zgadywać, które dokładnie
 wywołanie bitwy jest właściwym miejscem — zbadać wszystkie ścieżki gdzie jednostki znikają z
 `units[]` w wyniku walki i sprawdzić każdą pod kątem czy dotyczy jednostek oblegających.**
+
+## P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (2026-08-14, zgłoszenie Macieja ze zrzutem) · STATUS: OTWARTE — dispatch recon
+
+Maciej (dosłownie, ze zrzutem): „nie powinny nachodzić na siebie kolejne zdarzenia podczas
+zakończenia tury. Z jednej strony wysłało mnie audiencję dyplomatyczną, a z drugiej strony zaraz
+była bitwa, która na to wyszła." Zrzut pokazuje modal preBattle „Broni się: Atak barbarzyńców —
+obrona miasta Ateny" (Tura 23, szansa obrony 74%/26%, przyciski AUTO/BITWA/ZAPISZ) wyrenderowany
+NA WIERZCHU wciąż widocznego, przyciemnionego ekranu „Audiencja dyplomatyczna" (Grecy vs
+Mohenjo-daro·Harappa) w tle — dwa niezależne end-of-turn'owe zdarzenia próbują zająć ekran
+jednocześnie zamiast po kolei.
+
+**Nie zdiagnozowane jeszcze — do reconu, nie zgaduję architektury bez sprawdzenia kodu:** jak
+dziś kolejkowane są zdarzenia końca tury (AI wysyła propozycję dyplomatyczną → `diplomacyAudience`
++ jednoczesny atak barbarzyńców/AI wymagający `preBattle`), czy jest jakikolwiek wspólny mechanizm
+kolejki/stosu (może pokrewny `escapeOverlayStack.ts` użytemu wcześniej dziś przy naprawie ESCAPE,
+może coś zupełnie innego), i czy oba te wyzwalacze w ogóle wiedzą o sobie nawzajem.
+
+**STATUS: dispatch recon (Explore, read-only) — znaleźć dokładny mechanizm wyzwalania obu ekranów
+przy końcu/początku tury, ustalić czy istnieje kolejka zdarzeń per tura czy oba strzelają
+niezależnie z osobnych pętli, zlokalizować dokładnie gdzie brakuje serializacji.**
