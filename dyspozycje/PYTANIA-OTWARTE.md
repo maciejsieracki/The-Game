@@ -20723,3 +20723,12 @@ może coś zupełnie innego), i czy oba te wyzwalacze w ogóle wiedzą o sobie n
 **STATUS: dispatch recon (Explore, read-only) — znaleźć dokładny mechanizm wyzwalania obu ekranów
 przy końcu/początku tury, ustalić czy istnieje kolejka zdarzeń per tura czy oba strzelają
 niezależnie z osobnych pętli, zlokalizować dokładnie gdzie brakuje serializacji.**
+
+**Trzeci objaw tego samego tematu (Maciej, dopisany tego samego dnia):** „często też na inne
+zdarzenia po zakończeniu tury nachodzi na przykład wybór naszych jednostek które zostały nowo
+zbudowane. To jest w trakcie tury. Raczej to powinno być po zakończeniu tury. System pyta czy
+chce połączyć nowo zbudowane z poprzednim armią a w tym samym czasie trwają tury innych graczy."
+Czyli: prompt „połącz nowo wyprodukowaną jednostkę z istniejącą armią" pojawia się PODCZAS
+przetwarzania tur AI/innych graczy, zamiast dopiero po ich zakończeniu, gdy kontrola realnie
+wraca do gracza. Dopisany do reconu (agent w toku rozszerzony o ten trzeci przypadek) jako
+kolejny przykład tej samej klasy braku sekwencjonowania.
