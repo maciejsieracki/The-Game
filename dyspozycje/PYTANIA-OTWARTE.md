@@ -20222,7 +20222,13 @@ nie wspomniał o sprawiedliwym round-robin (C) — zostaje przy literalnym B, �
 budżet w ramach pułapu" NIE jest tym tematem (to osobna, nieproszona cecha, zostaje bez zmian
 chyba że właściciel się o nią upomni).
 
-**STATUS: ECHO — dispatch implementacji Q3=B.**
+**STATUS: SCALONE (`73ba2cd2`), dispatch Evaluatora.** `imperiumBudgetCap` liczony raz z parametru
+polityki imperium (nie z override miasta), `effectiveCityCap = min(cityBudgetCap,
+imperiumBudgetCap)`. Własny test reprodukujący dokładnie scenariusz Evaluatora: przed naprawą
+800 (miasto z override samo zjada), po naprawie 200 (=20%×1000). Regresja zerowa dla przypadku
+bez override. Wszystkie bramki zielone (`auto-improvements-test` 35/0, `ulepszenia-praca-
+percent-test` 27/0, `ai-improvements-test` 33/0, `logic-test` 213/213, `road-connectivity-test`
+99/0).
 
 **Nieblokujące, dług testowy (do rejestru, nie do naprawy teraz):** mutacja zamiany zamrożonej
 bazy % (`globalPracaPulaAtEntry`) na ruchomą (`pracaLeft`) przechodzi 29/29 mimo realnej zmiany
