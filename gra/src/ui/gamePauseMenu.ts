@@ -4,6 +4,7 @@
  */
 
 import { menuIconSvg, brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface GamePauseMenuConfig {
   hasSave?: () => boolean;
@@ -191,6 +192,18 @@ export function showGamePauseMenu(): void {
   root.appendChild(box);
   document.body.appendChild(root);
 
+  // R-ESC-PELNY-EKRAN-Q1=A / P-MENU-ESCAPE-NIEPELNOEKRANOWE (Maciej 2026-08-14): menu pauzy
+  // nie było dotąd wpięte w stos overlayów, więc Escape przy otwartym menu jednocześnie
+  // wychodził z pełnego ekranu (brak Keyboard Lock) zamiast tylko zamykać menu. Zamknięcie
+  // przez Escape ma zachowywać się jak klik w tło / przycisk „Wróć do gry".
+  // / EN: the pause menu wasn't wired into the overlay stack, so Escape while it was open
+  // also exited fullscreen (no Keyboard Lock) instead of just closing the menu. Closing via
+  // Escape should behave like a backdrop click / the "Resume" button.
+  pushOverlay('game-pause-menu', () => {
+    hideGamePauseMenu();
+    cfg?.onResume();
+  });
+
   const musicToggleBtn = box.querySelector('[data-act="music-toggle"]') as HTMLButtonElement | null;
   const musicVolInput = box.querySelector('[data-act="music-vol"]') as HTMLInputElement | null;
   musicToggleBtn?.addEventListener('click', () => {
@@ -270,6 +283,7 @@ export function showGamePauseMenu(): void {
 }
 
 export function hideGamePauseMenu(): void {
+  popOverlay('game-pause-menu');
   if (root !== null) {
     root.remove();
     root = null;

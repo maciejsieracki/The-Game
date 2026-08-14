@@ -74,9 +74,18 @@ function main() {
   // EN: Treasury got its OWN top-level block ('skarbiec'), like spichlerz/armia/handel below —
   // intended change.
   assert('econ-skarbiec → skarbiec (R-DESIGN-11-ZAKLADEK faza 1)', empirePanelBlockForSection('econ-skarbiec') === 'skarbiec');
-  // Miasta/Rekruci zostają na dawnym torze `ekonomia` — poza zakresem fazy 2.
+  // Miasta zostają na dawnym torze `ekonomia` — poza zakresem fazy 2.
   assert('econ-miasta → ekonomia + filtr wiersza (poza zakresem fazy 2)', empirePanelBlockForSection('econ-miasta') === 'ekonomia');
-  assert('econ-rekruci → ekonomia + filtr wiersza (poza zakresem fazy 2)', empirePanelBlockForSection('econ-rekruci') === 'ekonomia');
+  // P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK (Maciej 2026-08-14): Rekruci NIE zostaje na torze
+  // `ekonomia` jak Miasta wyżej — Armia ma już własny top-level blok (patrz empireDetailPanel.ts,
+  // sekcja ARMIA), więc chip HUD „Rekruci" musi trafiać w blok Armii, nie w stary fallback
+  // „ZASOBY IMPERIUM". Poprzednia asercja tu (`econ-rekruci → ekonomia`) testowała dokładnie ten
+  // bug routingu — zaktualizowana zamiast pozostawiona, bo dosłownie asercjonowała naprawiany bug.
+  // EN: Recruits does NOT stay on the `ekonomia` track like Cities above — Army already has its
+  // own top-level block, so the HUD "Recruits" chip must land on the Army block, not the old
+  // "EMPIRE RESOURCES" fallback. The previous assertion here tested exactly this routing bug —
+  // updated rather than left in place, since it literally asserted the bug being fixed.
+  assert('econ-rekruci → armia (P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK, Armia ma już własny blok)', empirePanelBlockForSection('econ-rekruci') === 'armia');
   assert('spichlerz → spichlerz', empirePanelBlockForSection('spichlerz') === 'spichlerz');
   assert('armia → armia', empirePanelBlockForSection('armia') === 'armia');
   assert('handel → handel', empirePanelBlockForSection('handel') === 'handel');
@@ -88,12 +97,22 @@ function main() {
   assert('HUD skarbiec → econ-skarbiec', empireSectionFromHudAct('skarbiec') === 'econ-skarbiec');
   assert('HUD spichlerz → spichlerz', empireSectionFromHudAct('spichlerz') === 'spichlerz');
   assert('HUD armia → armia', empireSectionFromHudAct('armia') === 'armia');
+  assert('HUD rekruci → econ-rekruci', empireSectionFromHudAct('rekruci') === 'econ-rekruci');
 
   const surowceBlock = empirePanelBlockForSection(empireSectionFromHudAct('surowce'));
   const naukaBlock = empirePanelBlockForSection(empireSectionFromHudAct('nauka'));
   assert('chip Surowce ≠ blok Nauka', surowceBlock !== naukaBlock);
   assert('chip Surowce = surowce', surowceBlock === 'surowce');
   assert('chip Nauka = nauka (R-DESIGN-11-ZAKLADEK faza 2, własny blok)', naukaBlock === 'nauka');
+
+  // P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK (Maciej 2026-08-14): chip HUD „Rekruci" musi trafiać w
+  // TEN SAM blok co chip „Armia" (Rekruci to sekcja wewnątrz bloku Armii, nie osobny blok).
+  // EN: HUD "Recruits" chip must land on the SAME block as the "Army" chip (Recruits is a section
+  // inside the Army block, not its own block).
+  const rekruciBlock = empirePanelBlockForSection(empireSectionFromHudAct('rekruci'));
+  const armiaBlock = empirePanelBlockForSection(empireSectionFromHudAct('armia'));
+  assert('chip Rekruci = blok Armii (routing fix)', rekruciBlock === 'armia');
+  assert('chip Rekruci = chip Armia (ten sam top-level blok)', rekruciBlock === armiaBlock);
 
   console.log(`\n${pass} pass · ${fail} fail`);
   process.exit(fail > 0 ? 1 : 0);

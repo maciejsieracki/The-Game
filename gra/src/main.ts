@@ -13150,10 +13150,24 @@ async function boot(): Promise<void> {
         cities: religionCityRows,
       };
 
+      // P-PANEL-IMPERIUM-PORTRET-WLADCA (Maciej 2026-08-14): nagłówek panelu imperium
+      // pokazywał gołe emoji cywilizacji (dotąd zawsze zahardkodowane na 🏛️, niezależnie
+      // od civKey) zamiast portretu władcy — REUŻYCIE gotowego systemu leaderPortraitUrl()
+      // (te same medaliony co bitwa/preBattle/dyplomacja), civKey/epoka już policzone wyżej
+      // (linie ~13020/13023) w tej samej funkcji. `civEmoji` zostaje jako fallback (patrz
+      // JSDoc EmpireGlobalParams.civPortraitUrl w empireDetailTypes.ts). / EN: the empire
+      // panel header showed a bare civ emoji (until now hardcoded to 🏛️ regardless of
+      // civKey) instead of the ruler portrait — REUSES the existing leaderPortraitUrl()
+      // system (same medallions as battle/preBattle/diplomacy); civKey/epoka already
+      // computed above (~lines 13020/13023) in this same function. `civEmoji` stays as the
+      // fallback (see EmpireGlobalParams.civPortraitUrl JSDoc in empireDetailTypes.ts).
+      const civPortraitUrl = leaderPortraitUrl(civKey, epoka);
+
       return {
         global: {
           civName,
           civEmoji: '🏛️',
+          civPortraitUrl,
           styl: String(civRow?.['Styl / charakter'] ?? '—'),
           jednostkaSpec: String(civRow?.['Jednostka specjalna'] ?? '—'),
           bonusStartowy: String(civRow?.['Bonus startowy'] ?? '—'),
@@ -21827,6 +21841,27 @@ async function boot(): Promise<void> {
 
       forceVisibleUnitId = null;
       syncUnitsRender();
+      // P-OBLEZENIE-IKONA-NIE-ZNIKA-PO-WYGRANEJ (Maciej 2026-08-14): applyMapBattleOutcome
+      // to JEDYNY wspólny punkt, przez który przechodzi KAŻDA ścieżka rozstrzygnięcia bitwy
+      // polowej na mapie — auto-resolve (doAutoPowerMapBattle/doMapAutoResolve),
+      // ręczna bitwa 3D (doMapAutoResolveIncoming/manualBattle onComplete) i szturm muru
+      // (finishSiegeStormBattle, z i bez podsumowania). Wcześniej `city.oblegane` było
+      // czyszczone wyłącznie po RUCHU jednostki (validateActiveSieges wołane z obsługi
+      // marszu) albo na koniec tury AI — jeśli bitwa zniszczyła WSZYSTKIE jednostki
+      // oblegające, a żadna jednostka się potem nie ruszyła, ikona/etykieta oblężenia
+      // wisiała na mieście mimo że oblegający już nie żyli. Wołanie tutaj, PO
+      // applyPostBattleMap (usunięcie poległych z units[]) i PO ewentualnym przejęciu
+      // miasta wyżej, naprawia to dla wszystkich ścieżek jednym miejscem — nie trzeba
+      // duplikować w każdym z callerów. / EN: applyMapBattleOutcome is the SOLE shared
+      // choke point every field-battle resolution path funnels through — auto-resolve,
+      // manual 3D battle, and wall-storm siege battles (with or without the summary
+      // panel). Previously `city.oblegane` was only cleared on a unit MOVE or at AI-turn
+      // end — if a battle wiped out every besieging unit and nothing then moved, the
+      // siege icon/label stayed stuck on the city. Calling it here, after
+      // applyPostBattleMap has removed the dead from units[] and after any city capture
+      // above, fixes this for every path from one place instead of duplicating the call
+      // at each caller.
+      validateActiveSieges();
       return battleLoot;
     }
 
@@ -25371,6 +25406,15 @@ async function boot(): Promise<void> {
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
+                  // R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14): `pracaBudgetPercent`
+                  // MUSI być polityką IMPERIUM (empirePol), nie per-miasto — to jest źródło
+                  // nadrzędnego pułapu (`imperiumBudgetCap` w pickAutoImprovements), który
+                  // per-miasto override (`getPracaBudgetPercent` niżej) nie może przebić.
+                  // / EN: `pracaBudgetPercent` MUST be the EMPIRE policy (empirePol), not
+                  // per-city — it's the source of the overarching cap (`imperiumBudgetCap` in
+                  // pickAutoImprovements) that the per-city override (`getPracaBudgetPercent`
+                  // below) cannot exceed.
+                  pracaBudgetPercent: empirePol.pracaAutoPercent,
                   getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(

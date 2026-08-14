@@ -6861,3 +6861,47 @@ na dysk właściciela, nie sam odczyt kanału** — dopóki dysk nie jest zsynch
 zgłoszenia (`P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK`, `P-PLAKIETKA-MIASTA-ZOOM-BRAK-ZMIANY`) zostają
 nierozstrzygnięte i mogą generować fałszywe bugi.
 CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 278).
+
+## [03:17 PL, 2026-08-14] Sesja chmurowa → integrator lokalny — FALA 277 scalona do `main`
+Rytm "jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`): po powstaniu FALI 278 scalono **FALĘ 277**
+do `main` — `git merge --no-ff` **commitu deployu `479021dd`** (nie czubka gałęzi, żeby praca
+FALI 278 została na gałęzi wyłącznie do testów). Merge commit **`8f2742ec`**, push
+`bd9f07b1..8f2742ec`. Bez konfliktów, 48 plików `+8014/−3013`.
+
+`main` nie odjechał od ostatniego znanego stanu (`bd9f07b1`) — rebase niepotrzebny, zero
+force-push. Bramki na SCALONYM drzewie zweryfikowane przed pushem: `tsc` **0, exit 0** (TS 5.9.3),
+`logic-test` **213/213, exit 0**.
+
+Stan: `main` = `8f2742ec` (do FALI 277 włącznie) · ROBOCZA = `8455b385` (FALA 278, zostaje na
+gałęzi do testów) · gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0` = `32e68c9c`.
+**FALA 278 kwalifikuje się do scalenia dopiero, gdy powstanie FALA 279.**
+CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 278 `8455b385`).
+
+## [06:41 PL, 2026-08-14] Sesja chmurowa → Sesja lokalna — FALA 279 zdeployowana do ROBOCZA
+Deploy ROBOCZA **md5 `4bef7d10`** (pełne `4bef7d10cc0567bb88e7a17ea1be62ca`), stempel
+`ROBOCZA · 516800d7 · 2026-08-14 04:41` (UTC), `verify-robocza-bundle` → **VERIFY OK**
+(`manifest match: OK`). Build z HEAD `5dc45b6e`, 28 commitów od deployu FALI 278 (`32e68c9c`),
+`gra/` 19 plików `+1434/−40`, **`gra/data` nietknięte**. Bramki: `tsc` 0/exit 0 (TS 5.9.3),
+`logic-test` 213/213, 4 nowe bramki tej fali zielone (escape-fullscreen 10/0, hex-tooltip-zloze
+36/0, menu-music-delay 9/0, oblezenie-siege-lifted 16/0); 13 znanych czerwonych **dokładnie na
+punkcie odniesienia, zero wzrostu**. Weryfikacja headless na bundlu: menu + start gry + HUD,
+**0 błędów konsoli** w 4 przebiegach.
+
+Zawartość: portret władcy w nagłówku panelu imperium (było 🏛️ dla każdej cywilizacji), ESCAPE
+zamyka 4 panele zamiast wyrzucać z pełnego ekranu, flaga oblężenia znika od razu po wygranej
+bitwie, tooltip heksu filtruje ulepszenia po nakładce/złożu, chip Rekruci → blok Armii, polityka
+Pracy imperium twardym pułapem sumy mimo override miasta, wyrównanie ramek w kroku 4 kreatora.
+
+⛔ **DO PRZEKAZANIA WŁAŚCICIELOWI PRZY PLAYTEŚCIE:** commit `ea0be32a` (opisany wyłącznie jako
+naprawa not Auto-pracy) zgarnął ze wspólnego drzewa **niezatwierdzony PROTOTYP kroku 4 kreatora**
+(`P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START` wariant A + `P-NEWGAME-OPISY-DO-TOOLTIP`), którego
+dyspozycja brzmiała „worktree, NIE scalać bez zatwierdzenia". Kod jest ŻYWY w bundlu (zweryfikowane
+w źródle i w zbudowanym HTML) — kreator będzie wyglądał inaczej. Bundle zdrowy, ale **to nie jest
+podjęta decyzja właściciela** — ma obejrzeć i powiedzieć „zostaje"/„wycofaj". Szczegóły: `WERSJE.md`,
+wpis FALI 279, akapit z ostrzeżeniem.
+
+🔴 **SESJA LOKALNA: pull na dysk właściciela (testuj ROBOCZA `4bef7d10`).** Poprzednie `CZEKAM-NA`
+z FALI 278 pozostaje aktualne i pilne — właściciel zgłaszał, że jego dysk mógł być nieaktualny od
+kilku fal, przez co dwa jego zgłoszenia (`P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK`,
+`P-PLAKIETKA-MIASTA-ZOOM-BRAK-ZMIANY`) wciąż wiszą nierozstrzygnięte.
+CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 279 `4bef7d10`).

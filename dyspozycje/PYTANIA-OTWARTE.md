@@ -6282,7 +6282,7 @@ mieście pop=12/15 z zagrożeniem 10-19 hex od centrum; (3) przerobić T3 na sce
 
 ---
 
-## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA (2026-08-09, propozycja Macieja) · STATUS: **OTWARTE — wymaga rozpoznania**
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA (2026-08-09, propozycja Macieja) · STATUS: **ZAMKNIĘTE** (nagłówek przestemplowany audytem 2026-08-14 — pełne domknięcie po 4 rundach, patrz „Fort/straznica krok2 — TEMAT ZAMKNIĘTY po 4 rundach (c3fe813d)")
 
 **Kontekst zgłoszenia:** bezpośrednia kontynuacja tematu P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI
 — po informacji, że AI (i tak samo gracz, twardy wymóg `withinTerritory`) traci możliwość
@@ -8536,7 +8536,7 @@ zapisu plików, realność gwarancji „jedno kliknięcie na sesję").
 
 ---
 
-## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (2026-08-10, propozycja Macieja) · STATUS: **ZAMKNIĘTE** (nagłówek przestemplowany audytem 2026-08-14 — runda 3 scalona i zdeployowana, commit `9a85f974`, wchodzi w skład FALA 277)
 
 **Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** możliwość wyboru, jakie
 konkretne cywilizacje mają być przeciwnikami, w konfiguratorze na początku gry (dziś
@@ -19094,7 +19094,7 @@ PRE-ISTNIEJĄCE przez Operatora (git stash) — niezwiazane z tym tematem.
 
 **STATUS: commit `a31c4164` wypchniety, dispatch Evaluatora (Opus 5) w toku.**
 
-## P-AUTO-WYZYWIENIE-ZAPASY-NIE-STEROWANE (2026-08-13, zgłoszenie Macieja, 3 zrzuty ekranu) · STATUS: **OTWARTE — dispatch rozpoznania**
+## P-AUTO-WYZYWIENIE-ZAPASY-NIE-STEROWANE (2026-08-13, zgłoszenie Macieja, 3 zrzuty ekranu) · STATUS: **ZAMKNIĘTE jako rozpoznanie** (nagłówek przestemplowany audytem 2026-08-14 — mechanizm działa zgodnie z projektem, 3 pytania ABC zadane właścicielowi wprost w czacie, czeka na jego decyzję nie na dalszy dispatch)
 
 Właściciel (dosłownie): „Tak działa auto wyżywienie, czyli de facto nie działa. Kompletnie nie
 steruje prawidłowo zapasami." Zrzuty ekranu: (1) HUD górny — Spichlerz **−38** (deficyt); (2)
@@ -20214,6 +20214,22 @@ C) Jak B + sprawiedliwy podział wspólnego budżetu między miasta (round-robin
 **Uwaga wg CLAUDE.md §1a: odpowiedź może częściowo cofnąć `R-AUTO-PRACA-BUDZET-PROCENT-Q1=B`
 w zakresie override per-miasto.**
 
+**ODPOWIEDŹ WŁAŚCICIELA (2026-08-14, w czacie, dosłownie):** „Autopraca działa przecież z budżetu
+całej cywilizacji, a nie z budżetu miasta więc musi się trzymać limitów, które są w budżecie
+całej cywilizacji." → **Q3 = B**. Polityka imperium jest twardym pułapem sumy; % miasta (override)
+to jego udział WEWNĄTRZ tego pułapu, nie osobny, niezależny limit mogący go przebić. Właściciel
+nie wspomniał o sprawiedliwym round-robin (C) — zostaje przy literalnym B, „pierwsze miasto zjada
+budżet w ramach pułapu" NIE jest tym tematem (to osobna, nieproszona cecha, zostaje bez zmian
+chyba że właściciel się o nią upomni).
+
+**STATUS: SCALONE (`73ba2cd2`), dispatch Evaluatora.** `imperiumBudgetCap` liczony raz z parametru
+polityki imperium (nie z override miasta), `effectiveCityCap = min(cityBudgetCap,
+imperiumBudgetCap)`. Własny test reprodukujący dokładnie scenariusz Evaluatora: przed naprawą
+800 (miasto z override samo zjada), po naprawie 200 (=20%×1000). Regresja zerowa dla przypadku
+bez override. Wszystkie bramki zielone (`auto-improvements-test` 35/0, `ulepszenia-praca-
+percent-test` 27/0, `ai-improvements-test` 33/0, `logic-test` 213/213, `road-connectivity-test`
+99/0).
+
 **Nieblokujące, dług testowy (do rejestru, nie do naprawy teraz):** mutacja zamiany zamrożonej
 bazy % (`globalPracaPulaAtEntry`) na ruchomą (`pracaLeft`) przechodzi 29/29 mimo realnej zmiany
 zachowania (800→640 w scenariuszu heterogenicznym) — luka pokrycia widoczna tylko przy różnych %
@@ -20295,3 +20311,933 @@ Evaluatorzy też powinni domyślnie dostawać izolowany worktree do własnych mu
 
 **TEMAT ZAMKNIĘTY.** Droga 6-ramion w pełni gotowa, geometria matematycznie potwierdzona,
 odporna na restart gry.
+
+## P-NEWGAME-RAMKI-WYROWNANIE (2026-08-14, zgłoszenie Macieja ze zrzutem "Ustawienia Rozgrywki") · STATUS: OTWARTE — dispatch recon+fix
+
+Maciej: „Poza tym trzeba trochę ramki wyrównać" (zrzut ekranu ekranu ustawień nowej gry, siatka
+2×3 kart: Poziom trudności/Rozmiar mapy, Typ świata/Prędkość gry, Miasta-Państwa/Liczba
+cywilizacji + osobna sekcja Cywilizacje przeciwnika + Twój start poniżej).
+
+Zgłoszenie ogólnikowe (nie wskazuje dokładnie której ramki/w którym miejscu) — kod:
+`gra/src/ui/newGameFlow.ts`, klasa `.sett-grid` (linia ~858: `display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;...align-items:stretch;`) już ma
+`align-items:stretch`, co powinno wyrównywać wysokość kart w tym samym wierszu automatycznie
+(CSS Grid). Możliwe przyczyny realnego rozjazdu (do zweryfikowania pomiarem w przeglądarce, nie
+zgadywania z zrzutu): (a) karty NIE są bezpośrednimi dziećmi `.sett-grid` tylko owinięte w
+dodatkowy kontener łamiący stretch, (b) przyciski `‹›` lub tekst opisu wewnątrz karty mają własne
+wymuszone wysokości/wyrównanie pionowe niespójne między kartami, (c) odstęp między wierszem 3
+(Miasta-Państwa/Liczba cywilizacji) a sekcją "Cywilizacje przeciwnika" niżej jest wizualnie
+niespójny z odstępami między pozostałymi wierszami.
+
+**STATUS: dispatch Operatora (Sonnet 5, UI, nie render/**) — najpierw zmierzyć REALNE
+`getBoundingClientRect()` wszystkich 6 kart w przeglądarce (headless Chrome, wzorem metody
+używanej całą noc), zidentyfikować faktyczny rozjazd (piksele, nie wrażenie), dopiero potem
+naprawić w kodzie. Nie zgadywać przyczyny bez pomiaru.
+
+## P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START (2026-08-14, zgłoszenie Macieja ze zrzutami kroku 4 kreatora) · STATUS: OTWARTE — prototyp do przeglądu przed scaleniem
+
+Maciej (dosłownie): „po ostatniej zmianie możliwości wyboru cywilizacji jako przeciwnika, widok
+na dole jest zakryty i gracz może myśleć, że coś jest nie tak i nie będzie wiedział, gdzie
+wystartować." Przy 5/5 wybranych cywilizacjach karta „Cywilizacje przeciwnika" rozrasta się do
+2 rzędów ikon, spychając „Twój start (podgląd)" + „Zaawansowane opcje" + „Rozpocznij grę" poniżej
+widocznego ekranu (screen 2 pokazuje pełną stronę: siatka 2×3 + Cywilizacje przeciwnika 5/5 +
+Twój start, wszystko widoczne tylko po przewinięciu strony przeglądarki).
+
+**Dwie zaproponowane opcje (dosłownie):**
+A) „damy to na prawą stronę i wyjustujemy, powiedzmy równo z całym blokiem wyborów. Poziom
+   trudności, typ świata, miasto, państwo. I rozbijemy to na dwie części." — sekcja Cywilizacje
+   przeciwnika przenosi się na prawą kolumnę obok/wewnątrz siatki 2×3 ustawień, rozbita na dwie
+   części (żeby była węższa i wyższa zamiast szeroka i niska, oszczędzając wysokość strony).
+B) „cały blok: pójść start, podgląd, zaawansowane opcje i rozpocznij grę. Raz pod ustawieniami
+   z rozgrywki." — sekcje akcji (Twój start / Zaawansowane opcje / Rozpocznij grę) przenoszą się
+   NAD sekcję Cywilizacje przeciwnika (zaraz pod siatką 2×3), żeby zawsze były widoczne bez
+   przewijania niezależnie od liczby wybranych cywilizacji.
+
+**Preferencja właściciela: A, ale wymaga potwierdzenia zrzutem ekranu przed decyzją** — dosłownie
+„Nasza opcja byłaby lepsza, ale musiałbym widzieć to w screenshocie."
+
+**STATUS: dispatch prototypu (worktree, NIE scalać do głównego drzewa bez zatwierdzenia) —
+zbudować wariant A, zrobić zrzuty ekranu (przy 2/5 i 5/5 wybranych cywilizacji, i przy różnych
+rozdzielczościach jeśli to możliwe), wysłać właścicielowi do przeglądu przed scaleniem.**
+
+## P-NEWGAME-OPISY-DO-TOOLTIP (2026-08-14, zgłoszenie Macieja) · STATUS: OTWARTE — do tego samego prototypu
+
+Maciej: „Wszystkie dodatkowe opisy na wyborach powinny być przeniesione na tooltipy." Dotyczy
+opisów kursywą pod każdą wartością ustawienia (widoczne na zrzucie „Zaawansowane opcje": np.
+„Fair play: min. 1 las / komórkę siatki (Mało 15 · Normalnie 10 · Dużo 5)...", „Mnożnik Pracy
+przy budowie — bazowe koszty z panelu = Niski (×1)." itd. — kilkanaście kart w overlayu
+Zaawansowane opcje, prawdopodobnie też w głównej siatce 2×3 kroku 4) — mają zniknąć jako zawsze
+widoczny tekst i pojawiać się wyłącznie po najechaniu (tooltip/ikona informacji), skracając
+znacząco wysokość każdej karty.
+
+**STATUS: dispatch w TYM SAMYM prototypie co P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START (ten sam
+plik `newGameFlow.ts`, ten sam ekran, warto zrobić razem — skrócenie kart tooltipami też pomaga
+z problemem zasłaniania). Zbudować, zrobić zrzuty przed/po, wysłać do przeglądu przed scaleniem.**
+
+## P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (2026-08-14, zgłoszenie Macieja ze zrzutem tooltipa Łąka) · STATUS: POTWIERDZONY BUG — dispatch fix
+
+Maciej (dosłownie, ze zrzutem tooltipa "Pole mapy — kliknięty heks", Łąka, "Surowce/zasoby: brak
+złoża", brak lasu/rzeki): „w jednym z pytań prosiłem też żebyś sprawdził czy w HEX-ach prawidłowo
+naliczają się wszystkie parametry [...] mi się wydaje, że tam jest groch z kapustą [...] Są tam
+informacje [...] o ulepszeniach, które na przykład nie są możliwe na polskim terenie, tak jak
+Tartak [...] Glinianka chyba też nie powinna być możliwa w miejscach, gdzie nie ma surowca gliny
+[...] linianki nie można budować wszędzie tylko tam gdzie jest SUROWIEC gliny."
+
+**POTWIERDZONE — realny, dokładnie zlokalizowany bug (nie wrażenie):**
+`gra/src/ui/hexContextTooltip.ts`, funkcja `listTerrainPossibleImprovements()` (linie 353-374).
+Filtruje listę WYŁĄCZNIE przez `galleryTerrainEligible(key, teren)` — sprawdza tylko TEREN
+BAZOWY (Łąka/Równina/Wzgórza/Góry...), ignorując `nakladka`/`zloze` (czy heks ma faktycznie Las,
+złoże gliny, złoże rudy itd.). Jedyny wyjątek to 3 ręcznie dopisane sprawdzenia dla
+bydło/owce/lama (linie 361-363) — Tartak, Glinianka, Kopalnia żelaza/miedzi/złota/cyny, Warzelnia
+soli, Wyrąb, Obóz łowiecki NIE mają analogicznego sprawdzenia nakladka/zloze, więc pokazują się
+na KAŻDYM heksie zgodnym terenem bazowym, niezależnie od tego czy realnie ma tam Las/złoże.
+
+**Dowód — prawdziwa, autorytatywna logika eligibility ISTNIEJE już w kodzie** i jest używana przy
+faktycznej budowie (`gra/src/map/improvement-build.ts`, funkcja `createQualifier()` ~linia 591,
+eksportowana przez `buildImprovementQualifier()` ~linia 819) — poprawnie wymaga:
+`tartak`: `nakladka === Nakladka.Las` (linia 765-768)
+`glinianka`: `hexHasClayDeposit(hex)` (linia 751-752, funkcja eksportowana, gotowa do reużycia)
+`wyrab`: `nakladka === Nakladka.Las` (linia 759-763)
+`oboz_lowiecki`: `nakladka === Nakladka.Las || hasAnimalDeposit(nakladka)` (linia 770-772)
+`warzelnia_soli`: `teren === Wybrzeze || zloze === 'sol'` (linia 774-776)
+`kopalnia_zelaza`: `(Wzgorza|Gory) && zloze === 'zelazo'` (linia 754-757)
+`kopalnia_miedzi`: `(Wzgorza|Gory) && (zloze==='miedz' || nakladka===ZlozeRudy || zloze==='ruda')` (linia 778-781)
+`kopalnia_zlota`: `(Wzgorza|Gory) && zloze === 'zloto'` (linia 783-786)
+`kopalnia_cyny`: analogiczne (linia ~788+, sprawdzić dokładnie)
+
+Tooltip (`hexContextTooltip.ts`) świadomie POMIJA bramkę tech i terytorium (komentarz w kodzie:
+"bez bramki tech — podgląd mapy") — to jest zamierzone uproszczenie, NIE dotyczy tego bugu. Ale
+pominięcie sprawdzenia nakladka/zloze (własność SAMEGO HEKSU, nie stanu gracza) to błąd, nie
+uproszczenie — dokładnie to zgłosił Maciej.
+
+**STATUS: dispatch Operatora (Sonnet 5) — dodać w `listTerrainPossibleImprovements()` analogiczne
+sprawdzenia nakladka/zloze dla WSZYSTKICH kluczy ulepszeń wymagających konkretnego terenu/złoża
+(nie tylko bydło/owce/lama), wzorem logiki w `createQualifier()`/`improvement-build.ts` — reużyć
+gotowe eksportowane funkcje (`hexHasClayDeposit` itd.) zamiast kopiować logikę. Napisać test
+dowodzący na przykładzie z Twojego zrzutu: Łąka bez lasu/złoża NIE pokazuje Tartaka/Glinianki/
+kopalń, a analogiczny heks Wzgórza+złoże żelaza POKAZUJE Kopalnię żelaza. Sprawdzić przy okazji
+WSZYSTKIE pozostałe klucze ulepszeń w `IMPROVEMENT_KEYS` pod kątem tej samej luki (nie tylko
+wymienione wyżej — zrobić to systematycznie, nie punktowo).**
+
+## MIASTA-ARMIE-PANEL-LEWY-2026-08-14 — Klatka Armie odebrana od Designera, decyzja przekazana (2026-08-14)
+
+Designer dostarczył Klatkę Armie (2 warianty: A z 6 wierszami/4 plakietkami/zaznaczeniem/raną,
+B stan pusty) + handoff „Co się zmieniło" + „Decyzje i zgłoszenia". Dwa punkty do reakcji:
+1. Paleta 3b potwierdzona (trzecie złoto `#e0b24a` wypada, gradient tła panelu zostaje) — zgodne
+   z rekomendacją briefu, bez zastrzeżeń.
+2. Rozdzielenie 4 plakietek stanu armii na 3 kolory (złoto=stan obronny [garnizon,
+   ufortyfikowana], neutralny=uśpiona, błękit=auto-eksploracja) zamiast jednego złota dla
+   wszystkich czterech (dziś "uśpiona"/"w garnizonie" nieodróżnialne wizualnie).
+
+**DECYZJA (orkiestrator, przekazana Maciejowi do przesłania Designerowi):** wariant 3-kolorowy
+przyjęty — rozwiązuje realny problem nieodróżnialności stanów, funkcjonalnie uzasadnione, nie
+tylko kosmetyczne. Maciej przesyła potwierdzenie, Designer buduje Panel Miasta (druga klatka).
+
+**STATUS: ZAMKNIĘTE — Klatka Miasta odebrana, patrz wpis niżej.**
+
+## MIASTA-ARMIE-PANEL-LEWY-2026-08-14 — Oddanie kompletne (2/2 klatek), 5 zgłoszeń do decyzji (2026-08-14)
+
+Designer dostarczył ZIP: makieta standalone HTML (oba panele), handoff
+`DESIGN-do-UI_MIASTA-ARMIE-PANEL-LEWY-2026-08-14.md`, MANIFEST, 2 PNG, źródło. Paleta 3b i
+3-kolorowe plakietki (już zatwierdzone wcześniej) potwierdzone w obu klatkach. Panel Miasta
+dziedziczy z Armii (karta, kafelek, hierarchia, nagłówek, stan pusty) + własne: emoji
+🏛️/👥/🔨 → SVG z brandu, pasmo podsumowania nad listą (hero „N miast" + 2 boxy, wzorem „Moc 181").
+
+**5 zgłoszeń §5 handoffu — rekomendacje orkiestratora (zweryfikowane czytaniem kodu, nie na
+słowo Designera):**
+
+1. **Wspólny arkusz stylów** (`sideListHud.css.ts` zamiast zduplikowanego `.cl-*`/`.al-*`) —
+   **REKOMENDACJA: TAK.** Czysty dług DRY, zero ryzyka funkcjonalnego, Designer potwierdził że
+   makieta działa w obu wariantach.
+2. **Rozbicie `productionLine` na 3 pola** (nazwa/postęp/maks zamiast sklejonego stringa) —
+   **REKOMENDACJA: TAK, i to TANIE, nie duże ryzyko jak sugeruje ostrożność Designera.**
+   Zweryfikowane w `main.ts:5556-5567`: wszystkie trzy wartości (`front.nazwa`, `prod.postep`,
+   `front.koszt`) są JUŻ policzone w tym samym miejscu, PRZED sklejeniem w string — to nie jest
+   nowe obliczenie w silniku, tylko przekazanie trzech już gotowych wartości przez interfejs
+   `CityListEntry` zamiast jednej. Fallback z §5.2 (zostaje pasek tekstowy, karta bez paska
+   postępu) nie jest potrzebny.
+3. **Plakietki „stolica"/„nowe"** — **REKOMENDACJA: „stolica" TAK (tanie — koncept stolicy
+   istnieje w silniku, `capital-capture.ts` i inne pliki go używają, więc flaga w
+   `CityListEntry` to trywialny dowiąz), „nowe" NIE na razie** (Designer sam pisze że próg wieku
+   miasta jest arbitralny — brak zdefiniowanego kryterium, dodatkowa decyzja produktowa której
+   nikt nie podjął; nie wprowadzać bez osobnego ustalenia co dokładnie znaczy „nowe").
+4. **Emoji w stopce podpowiedzi** (nazwa przycisku w zdaniu, nie ikona UI) — **REKOMENDACJA:
+   zostawić bez zmian**, zgodnie z propozycją Designera.
+5. **Styk złota paska medalionów vs złota panelu (dwa różne odcienie)** — **REKOMENDACJA: żyć z
+   tym, bez osobnego zlecenia na `mapToolbarHud.ts`** — medalion okrągły i mały, panel to
+   płaszczyzna, różnica niewidoczna w praktyce poza zbliżeniem porównawczym.
+
+**STATUS: OTWARTE — czeka na potwierdzenie Macieja (może przekazać powyższe Designerowi jako
+gotową odpowiedź na §5), potem dispatch Operatora do wdrożenia (reskin CSS obu paneli + wspólny
+plik stylów + rozbicie `productionLine` + flaga stolicy w `CityListEntry`).**
+
+## P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK — Recon zakończony: to jest DWIE rzeczy, jedna z nich to prawdziwy bug routingu (2026-08-14)
+
+Recon (Explore, read-only) ustalił, że to NIE jest prosto "jeszcze nieprzerobiona zakładka":
+
+1. **Prawdziwy bug routingu.** HUD ma klikalny chip `data-act="rekruci"` (`hud.ts:1124`) →
+   `empireSectionFromHudAct` → `'econ-rekruci'`. `empirePanelBlockForSection()`
+   (`empirePanelSectionMap.ts`) ma jawne wyjątki dla `econ-skarbiec`/`econ-praca`/`econ-nauka`/
+   `econ-religia` (Faza 1/2), ale **BRAKUJE wyjątku dla `econ-rekruci`** — wpada w ogólną gałąź
+   `startsWith('econ-')` → stary, wspólny widok „ZASOBY IMPERIUM (STAN + PRZYROST)". To dokładnie
+   to, co widzi Maciej klikając „Rekruci" na górnym pasku HUD.
+2. **Armia jako sekcja JUŻ ma własny top-level blok** w `empireDetailPanel.ts` (~linie 2100-2125,
+   analogiczny do Spichlerz/Surowce/Handel — nie wymagał wydzielania z `ekonomia` jak Skarbiec/
+   Praca/Nauka/Religia) — ale ten blok nigdy nie dostał reskinu Fazy 1/2 i nadal inline'uje stary
+   wygląd `cityPoborMiniRekruci()`.
+
+**Dane silnika w 100% gotowe — zero zmian w `main.ts`** (`p.rekruci`/`p.rekrutEkw`/
+`e.rekruciLabel`/`cp` już policzone, używane też przez box „REKRUCI" w sekcji Moc). Szacowany
+rozmiar: mniejszy niż Faza 1 (Skarbiec), porównywalny-do-mniejszy niż POJEDYNCZA zakładka Fazy 2
+— bo Armia nie potrzebuje wydzielania z ekonomii ani nowego suwaka. **Luka:** dokument
+projektowy `docs/ux/DESIGN-ZLECENIE-11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md` §8.7 (Armia), w
+przeciwieństwie do §8.1/8.2/8.4, NIE MA podpunktu „Kierunek" z konkretnym docelowym układem —
+Skarbiec/Praca/Nauka miały to przed implementacją, Armia nie. Zero kolizji z równoległym
+zleceniem Miasta/Armie panel lewy (inne pliki, inna paleta, potwierdzone).
+
+**STATUS: dispatch Operatora TYLKO na routing fix (bezpieczne, jednoznaczne, natychmiastowa
+poprawa — `econ-rekruci` dostaje wyjątek jak pozostałe 4, żeby chip HUD pokazywał już istniejący
+blok Armii zamiast starego widoku). Pełny wizualny reskin bloku Armii (do standardu Fazy 1/2)
+NIE dispatchowany teraz — brak „Kierunku" od Designera, nie zgaduję układu bez specyfikacji.**
+
+## P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK (2026-08-14, zgłoszenie Macieja ze zrzutem "ZASOBY IMPERIUM (STAN + PRZYROST)") · STATUS: OTWARTE — backlog Faza 3+, nie nowy bug
+
+Maciej: „Nie są wykonane też przez designera zasoby imperium, czyli przerost rekrutów." (zrzut:
+stary, nieodświeżony widok „Rekruci (pula werbu)" / „ZASOBY IMPERIUM (STAN + PRZYROST)").
+
+**Zlokalizowane dokładnie:** `gra/src/ui/empireDetailPanel.ts`, blok `zasoby` (~linie 2021-2054),
+wiersz `{ id: 'rekruci', lbl: 'Rekruci (pula werbu)', ... }` (linia 2033), nagłówek
+`ZASOBY IMPERIUM (STAN + PRZYROST)` (linia 2049). To jest ten sam panel co Skarbiec/Praca/Nauka/
+Religia (Faza 1+2 gotowe) — konkretnie widok pełnego przeglądu `ekonomia` (`activeSection ===
+null`), czyli lista wszystkich zasobów naraz zamiast osobnej zakładki. Zgodnie z pełnym
+zleceniem projektowym już dostarczonym przez Designera (`docs/ux/DESIGN-ZLECENIE-11-ZAKLADEK-
+PANEL-IMPERIUM-2026-08-13.md`, §8) to jest jedna z tych samych 11 zakładek co Spichlerz/Surowce/
+Handel/Armia/Miasto/Obywatele/Kultura — po prostu jeszcze nieprzerobiona (Faza 3+). **To NIE jest
+nowy bug ani coś pominięte przez Designera bez wiedzy zespołu — to znany, już zarejestrowany
+backlog**, tylko dziś potwierdzony konkretnym zrzutem i dokładną lokalizacją w kodzie.
+
+**STATUS: OTWARTE, do kolejki Faza 3+ (nie dispatchuję osobnego Operatora teraz — czeka na tę
+samą kolejność co pozostałe nieprzerobione zakładki; specyfikacja projektowa już istnieje, nie
+trzeba nowego zlecenia dla Designera).**
+
+## P-ZNACZNIK-POWER-HUD-CIV-EMBLEM (2026-08-14, zgłoszenie Macieja: „do wymiany jest też znacznik power") · STATUS: OTWARTE — hipoteza z kodu, czeka na potwierdzenie
+
+Maciej (2026-08-14, w czacie): „pisałem, że do wymiany jest też znacznik power. Tego nie
+zanotowałeś." — audyt sesji (pełny transkrypt + rejestr) NIE znalazł dosłownego wcześniejszego
+zapisu z frazą „znacznik power" ani w czacie, ani w tym pliku — więc **nie zgaduję w ciemno**,
+tylko podaję najbardziej prawdopodobnego kandydata znalezionego przez czytanie kodu, do
+potwierdzenia lub sprostowania.
+
+**Kandydat:** `gra/src/ui/hud.ts`, funkcja `powerCenterIconHtml(s)` (linie 935-964), środkowa
+ikona w widżecie „Moc" na STAŁYM pasku HUD (`power-center`, zawsze widoczny na ekranie gry, nie
+tylko w panelu imperium). Renderuje `civIconSvg(s.civIconId ?? 'grecy', 24)` — czyli emblemat
+cywilizacji (np. świątynia dla Greków), DOKŁADNIE ten sam wzorzec co `em.textContent =
+g.civEmoji` w `empireDetailPanel.ts` (już w naprawie, agent ruler-icon), tylko w innym pliku i w
+bardziej eksponowanym miejscu (widoczny cały czas, nie po otwarciu panelu). Osobna funkcja
+`powerSymbolHtml()` (linie 973-979, ikona przy liczbie Mocy po prawej) już używa właściwej,
+markowej ikony `res-influence.svg` (plik istnieje, `emoji ⚜` to tylko martwy fallback) — to
+NIE jest kandydat, wygląda poprawnie już dziś.
+
+**Rozszerzenie zlecone:** dopisane jako runda 2 do już trwającego zlecenia „ikona władcy zamiast
+emblematu" (agent `aa4af955d51b23bcd`, zakończony) — sprawdził, że `powerCenterIconHtml` już
+poprawnie pokazuje portret władcy jako główną ikonę, sygnet cywilizacji w rogu (`p-ic-signet`,
+`hud.ts:941-947`) to świadomy, dedykowany SVG (heraldyczny wzorzec portret+herb), NIE placeholder.
+
+**Recon 2 (2026-08-14) znalazł DUŻO lepszych kandydatów.** Systematyczny przegląd wszystkich
+miejsc "power"/"moc" w UI: jedyne miejsca gdzie "moc" jest pokazywana SUROWYM znakiem Unicode
+`⚜` (fleur-de-lis) wklejonym wprost w tekst, zamiast dedykowaną grafiką SVG:
+- **C — `empireDetailPanel.ts:1958`**: `` `<div class="k">Moc ⚜</div>` `` — etykieta chipa "Moc"
+  w sekcji PARAMETRY GLOBALNE panelu imperium, jedyny chip z taką dekoracją (Epoka/Tura/Osiedla
+  bez niej).
+- **D — `power-labels.ts:24` (`mocTitle()`) → `powerOverlayHud.ts:129`**: `<h2>⚜ Moc {value}</h2>`
+  — nagłówek overlayu "Szczegóły Mocy" (otwiera się po kliknięciu widżetu Mocy na stałym pasku
+  HUD), **zawsze widoczny przy KAŻDYM otwarciu panelu Mocy**.
+
+Oba renderują się naprawdę (nie martwy fallback jak `⚜` w `powerSymbolHtml()`, które ma
+działający SVG i nigdy nie spada na ten fallback). Semantycznie gołe glify Unicode pasują do
+słowa "znacznik" znacznie lepiej niż w pełni zaprojektowany SVG-sygnet w rogu.
+
+**STATUS: dispatch Operatora (Sonnet 5) — zamienić `⚜` w obu miejscach (C, D) na spójną, dedykowaną
+grafikę (reużyć `res-influence.svg`/`powerSymbolHtml()` wzorem, ten sam SVG który już poprawnie
+działa przy liczbie Mocy w HUD). Wysoka pewność co do trafności (silne dowody: jedyne miejsca z
+surowym glifem zamiast SVG), ale bez dosłownego potwierdzenia Macieja — informuję go równolegle,
+może skorygować jeśli to nie to.**
+
+## P-MENU-ESCAPE-NIEPELNOEKRANOWE (znalezisko audytu 2026-08-14, zgłoszenie Macieja z 2026-07-26 — nigdy niezarejestrowane) · STATUS: OTWARTE
+
+Maciej (2026-07-26, dosłownie): „Zapisz, że do rozwiązania pozostaje temat ESCAPE, wyjście z
+menu, żeby nie wychodziło z pełnego ekranu tylko z danej zakładki najpierw." — ESCAPE w grze ma
+dziś (zgłoszenie) zachowanie „wyjdź z pełnego ekranu przeglądarki od razu", zamiast najpierw
+zamknąć aktualnie otwartą zakładkę/overlay, a dopiero kolejny ESCAPE wyjść z pełnego ekranu.
+Właściciel explicite poprosił wtedy TYLKO o zapisanie tematu, nie o pracę nad nim od razu — ale
+audyt pełnego transkryptu dziś (2026-08-14) potwierdza, że nigdy nie trafiło to do tego pliku —
+**potwierdzony przypadek zgubionego zgłoszenia**, niezależny od dzisiejszego „znacznik power".
+
+**STATUS (NIEAKTUALNY — zachowany dla historii): OTWARTE, do kolejki — nie dispatchuję jeszcze
+Operatora (temat wymaga zbadania stosu Escape/overlayów, `escape-overlay-stack-test.cjs` już
+istnieje jako bramka pokrewna — możliwe że częściowo dotyczy tego samego stosu).**
+
+**STATUS AKTUALNY: Operator wykonał naprawę (`4fc770ee`), Evaluator wydał werdykt FAIL —
+patrz sekcja „Evaluator: ESCAPE dopięcie 4 paneli (4fc770ee)" niżej. Kod naprawy jest poprawny
+i zweryfikowany, ale nie jest chroniony żadnym testem i pominięto 5. panel z tą samą luką.**
+
+## Evaluator: ESCAPE dopięcie 4 paneli (4fc770ee) — WERDYKT: **FAIL** (2026-08-14)
+
+Ocena commita `4fc770ee` (P-MENU-ESCAPE-NIEPELNOEKRANOWE), Evaluator Opus 5, niezależna
+weryfikacja na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, worktree z dowiązanym
+`gra/node_modules` (`npx tsc --version` = **5.9.3**, wymóg `C-029` spełniony).
+
+### 1. Co JEST poprawne (zweryfikowane niezależnie, nie z raportu Operatora)
+
+**Sama naprawa działa — wszystkie 4 panele przeszły dowód end-to-end.** Zbudowałem własny
+harness w jsdom, który ładuje **prawdziwe moduły paneli** (esbuild, nie kopię logiki), otwiera
+panel i wysyła **realny `KeyboardEvent('keydown', {key:'Escape'})` na `document`** — czyli
+dokładnie tę drogę, którą przechodzi klawisz w grze. Fullscreen nie jest mierzalny w Node,
+więc mierzony jest **stan Keyboard Lock w momencie naciśnięcia** — bo to on rozstrzyga, czy
+Escape trafi do przeglądarki (i wyjdzie z pełnego ekranu), czy zostanie przechwycony przez grę.
+
+| Panel | Wynik | Co potwierdzone |
+|---|---|---|
+| `gamePauseMenu` | 7/7 | Escape zamyka menu, Lock trzymany (fullscreen nietknięty), `onResume` wywołane, Lock zwolniony, stos pusty |
+| `empireOverlayHud` (Kultura) | 6/6 | jw. + `onClose` wywołane |
+| `empireOverlayHud` (Religia) | 5/5 | jw. |
+| `powerOverlayHud` (Moc) | 6/6 | jw. |
+| `empireDetailPanel` | 8/8 | Escape zamyka panel, `top()` = `empire-detail-panel`, Lock trzymany, stos pusty po zamknięciu |
+| LIFO (Moc nad menu pauzy) | 7/7 | 1. Escape zamyka tylko Moc, 2. Escape menu pauzy, **dopiero 3. Escape wychodzi z pełnego ekranu** |
+| Idempotencja zakładek | 3/3 | 3× `showEmpireDetailPanel()` = 1 wpis na stosie, zero osieroconych wpisów |
+
+Razem **42 asercje, 0 porażek.** Zgłoszony przez Macieja scenariusz („Escape ma najpierw
+zamknąć zakładkę, nie wychodzić z pełnego ekranu") jest dla tych 4 paneli **faktycznie
+naprawiony**.
+
+**Bramki — odtworzone co do liczby:** `npx tsc --noEmit` **exit 0**;
+`escape-overlay-stack-test` **84 pass / 0 fail**; `escape-fullscreen-priority-test`
+**10 pass / 0 fail**. Zgodne z opisem commita.
+
+**Zero regresji — zweryfikowane przez porównanie z commitem-rodzicem `94977a20`:**
+`empire-nauka/praca/religia-panel-coverage` 15/15, `empire-skarbiec-panel-coverage` 12/12,
+`empire-miasta-table` 89/0, `hud-armia-chip-jednostki` 58/58, `empire-panel-split` 25/0,
+`empire-panel-sliders-always-visible` 8/0 — wszystkie zielone.
+
+**Wyjątek `diplomacyPendingHud` — uzasadniony, potwierdzam.** Przeczytany kod: wyłącznie
+przyciski `Akceptuj` / `Odrzuć` / `Następne`, **zero przycisku zamknięcia**. To realny bloker
+decyzyjny, nie modal do zamknięcia — świadome pominięcie jest tu poprawne.
+
+### 2. FAIL #1 (blokujący) — naprawa nie jest chroniona ŻADNYM testem
+
+To jest twardy **FAIL #7** z `R-PROC-AUTOBOT-EVAL-STRICT-EDGE` („test bez repro zgłoszonego
+buga — asercji, która padłaby na starym kodzie") oraz podręcznikowy przypadek **tautologii
+testowej** opisanej w playbooku (test odtwarza formułę zamiast importować prawdziwy kod).
+
+**Dowód rozstrzygający — cofnąłem WSZYSTKIE 4 naprawy do stanu sprzed commita
+(`git checkout 94977a20 -- <4 pliki>`), zostawiając nowe testy:**
+
+```
+escape-overlay-stack-test:      84 pass, 0 fail   (exit 0)
+escape-fullscreen-priority-test: 10 pass, 0 fail   (exit 0)
+npx tsc --noEmit:                                   exit 0
+```
+
+**Obie bramki są w 100% zielone na kodzie, w którym błąd Macieja występuje w pełni.**
+
+**Mutacja kontrolna (wymagana w zleceniu)** — usunięcie samego `pushOverlay('game-pause-menu', …)`
+z `gamePauseMenu.ts`, czyli rdzenia naprawy panelu wprost wymienionego w zgłoszeniu: `tsc`
+**exit 0**, `escape-overlay-stack-test` **84/0**, `escape-fullscreen-priority-test` **10/0**.
+**Mutacja ucieka w całości.** (`tsconfig.json` nie ma `noUnusedLocals`, więc osierocony import
+też nic nie łapie.)
+
+Przyczyna jest strukturalna, nie kosmetyczna:
+
+- `escape-fullscreen-priority-test.cjs` **nie importuje żadnego z 4 paneli.** Woła
+  `pushOverlay('empire-detail-panel', …)` **sam, z własnym callbackiem** — testuje
+  `escapeOverlayStack.ts`, który i tak działał poprawnie od `R-ESC-PELNY-EKRAN-Q1=A`. Nazwa
+  panelu jest tu wyłącznie literałem tekstowym.
+- „+4 nowe ID" w `escape-overlay-stack-test.cjs` to **4 stringi dopisane do listy**
+  `MAP_OVERLAY_IDS`, po której pętla robi `pushOverlay(id, …)` własnym callbackiem. To dowodzi,
+  że stos umie obsłużyć dowolny string — nie że którykolwiek panel go woła.
+
+**Co domknie lukę** (wzorzec sprawdzony w tym repo — patrz playbook, „extract-to-pure-function"):
+test, który **importuje prawdziwe moduły paneli**, otwiera panel i sprawdza, że wpis pojawia się
+na stosie (`top().id`), a Escape go zamyka. Mój harness z §1 robi dokładnie to i łapie mutację
+M1 czerwono — może posłużyć za punkt wyjścia. Minimum: 4 asercje `top()?.id === '<id>'` po
+wywołaniu `show*()` prawdziwego modułu.
+
+### 3. FAIL #2 — nieprawdziwa liczba w opisie commita
+
+Opis commita podaje: *„empire-panel-econ-slider-visibility 60/0"*. **Realny wynik: 59 pass,
+1 fail, `TEST_EXIT=1`** — zmierzony u mnie dwukrotnie. Bramka jest **czerwona**, nie zielona.
+
+Sprawdziłem, czy to nie regresja tego commita: na commicie-rodzicu `94977a20` wynik jest
+**identyczny (59/1, exit 1)** — więc **pre-istniejąca**, temat jej nie zepsuł. Ale wpisanie
+`60/0` jako faktu narusza `CLAUDE.md` §0b („każda liczba przedstawiona jako fakt wymaga
+weryfikacji"). Do sprostowania w rejestrze.
+
+**Druga bramka czerwona, w opisie w ogóle niewymieniona:** `empire-panel-moc-scroll-preserve`
+— **38 pass, 9 fail, exit 1**, również **identycznie na `94977a20`** (delta zero, więc też
+pre-istniejąca; dominujący komunikat: `wireMiastaColFilter is not defined`). Obu nie ma dziś na
+liście znanych porażek pre-istniejących w `CLAUDE.md` — warto je tam dopisać, żeby następna
+sesja nie liczyła ich jako swojej regresji.
+
+### 4. FAIL #3 — Operator NIE znalazł wszystkich miejsc z luką (5. panel)
+
+Przeliczyłem samodzielnie: `pushOverlay(` ma **31 wywołań** w `gra/src`, a **27 modułów**
+w `gra/src/ui` robi `document.body.appendChild` **bez** żadnego `pushOverlay`. Po odsianiu
+stałego chromu HUD (`hud.ts`, `bottomBarHud.ts`, `mapToolbarHud.ts`, `unitPanelHud.ts`,
+`leaderBannersHud.ts`, `contextPanelHud.ts`, `hoverDetailDock.ts`, paneli dev i ekranów
+przejściowych) zostaje realny, pominięty przypadek:
+
+**`gra/src/ui/improvementBuildConfirm.ts`** — modal „Zastąpić ulepszenie?", wołany z
+`main.ts:11129` w normalnej rozgrywce (budowa ulepszenia na heksie z istniejącym ulepszeniem
+lub lasem). Ma `role="dialog" aria-modal="true"`, pełnoekranowe tło `position:fixed;inset:0`,
+**przycisk „Anuluj" i zamykanie kliknięciem w tło** — czyli spełnia dokładnie to kryterium,
+którym Operator uzasadnił naprawę pozostałych paneli, a **nie ma ani `pushOverlay`, ani żadnej
+obsługi Escape** (identycznie jak `empireDetailPanel` przed naprawą).
+
+Udowodnione empirycznie moim harnessem (11/11 asercji, prawdziwy moduł + realny `KeyboardEvent`):
+
+- **Scenariusz A — modal sam, pusty stos:** Keyboard Lock **nie** jest trzymany → Escape
+  **nie zamyka modala** i **wychodzi z pełnego ekranu**. To dosłownie objaw ze zgłoszenia
+  Macieja, nadal obecny w grze po tym commicie.
+- **Scenariusz B — modal nad trybem budowy** (realna ścieżka: `main.ts` trzyma wtedy
+  `'build-mode'` na stosie): Escape **zamyka tryb budowy POD spodem**, a modal potwierdzenia
+  **zostaje osierocony na ekranie**. Naruszenie LIFO — objaw gorszy niż pierwotny bug.
+
+**Sprawdzone i ODRZUCONE jako luka** (żeby nie mnożyć problemów, których nie ma):
+`diplomacyNegotiationModal.ts` też nie jest na stosie, ale `diplomacyAudience.ts` ma jawny
+strażnik `childModalBlocksExit()` (linie 484-491), który wykrywa `.civ-diplo-neg-overlay`
+i blokuje zamknięcie audiencji pod spodem. Fullscreen jest tam chroniony przez Lock rodzica
+(`'diplo-audience'`), więc **zgłoszony bug tam nie występuje** — zostaje tylko drobiazg
+kosmetyczny (Escape nic nie robi, zamiast zamknąć formularz). Nie blokuje.
+
+### 5. FAIL #4 — uzasadnienie świadomych wyjątków jest faktycznie nieprawdziwe (toasty)
+
+Opis commita pomija powiadomienia jako *„blokery decyzyjne, nie modale do zamknięcia"*.
+Dla `diplomacyPendingHud` to prawda (§1). **Dla toastów to nieprawda — wszystkie trzy mają
+przycisk zamknięcia:**
+
+| Moduł | Przycisk | Dowód |
+|---|---|---|
+| `civElimNotice.ts` | „OK" + klik w tło zamyka | linie 83, 93, 96 |
+| `triumphCityStateNotice.ts` | „Rozumiem" | linie 91, 94 |
+| `wonderCompletedNotice.ts` | „Zamknij" | linia 86 |
+
+Skoro kryterium wyboru brzmiało „modal z przyciskiem zamknięcia → wpinamy", to te trzy
+kwalifikują się tak samo jak naprawione panele. Pojawiają się na mapie przy pustym stosie,
+więc Escape przy nich **wychodzi z pełnego ekranu** zamiast je zamknąć. Nie twierdzę, że muszą
+wejść do stosu — twierdzę, że **podane uzasadnienie wyłączenia ich jest sprzeczne z kodem**
+i decyzja wymaga świadomego potwierdzenia właściciela, a nie fałszywej przesłanki.
+
+### 6. Werdykt i co zrobić
+
+**FAIL.** Uzasadnienie wyboru werdyktu: naprawa kodu jest poprawna i przetestowana przeze mnie
+end-to-end (§1) — **nie o jakość kodu tu chodzi**. FAIL wynika z `R-PROC-AUTOBOT-EVAL-STRICT-EDGE`
+**FAIL #7**, który jest twardy i nigdy nie schodzi do PASS-WITH-NOTES: paczka wprowadza naprawę
+zgłoszonego buga i **nie zostawia po sobie ani jednej asercji, która padłaby na starym kodzie**.
+Dowód nie jest teoretyczny — cofnięcie całej naprawy zostawia bramki zielone (§2).
+
+Do zrobienia przed ponownym zgłoszeniem gotowości (jedna runda, bez nowego ABC):
+
+1. **Test wiążący panele ze stosem** — importujący 4 prawdziwe moduły; musi paść czerwono po
+   usunięciu któregokolwiek `pushOverlay`. Kryterium odbioru: mutacja M1 z §2 łapana.
+2. **`improvementBuildConfirm.ts`** — wpiąć w stos (`pushOverlay`/`popOverlay`) tak samo jak
+   pozostałe; scenariusze A i B z §4 jako asercje.
+3. **Sprostować liczbę** `empire-panel-econ-slider-visibility` (jest 59/1, nie 60/0) i dopisać
+   obie pre-istniejące czerwone bramki (§3) do listy znanych porażek w `CLAUDE.md`.
+4. **Toasty (§5)** — poprawić uzasadnienie na zgodne z kodem; jeśli mają zostać poza stosem,
+   to jako świadoma decyzja właściciela, nie jako „brak przycisku zamknięcia".
+
+**Zakres (`C-025`) i sprzężenia (`C-026`) — bez zastrzeżeń.** Diff to 203 dodane linie, zero
+usuniętych, zero zmian zachowania poza dokładnie tym, czego wymagała przyczyna błędu. Żadnych
+refaktorów „przy okazji". `escapeOverlayStack.ts` — kod współdzielony przez ~20 overlayów —
+**nie został tknięty**, więc ryzyko sprzężenia zerowe; przeliczyłem wszystkie 31 wywołań
+`pushOverlay` grepem samodzielnie, nie z raportu Operatora. Komentarze dwujęzyczne PL+EN
+zgodnie z `CLAUDE.md` §9.
+
+## P-MENU-START-MUZYKI-OPOZNIENIE — SPROSTOWANIE: JUŻ NAPRAWIONE WCZEŚNIEJ, dodano tylko strażnik (2026-08-14)
+
+Maciej (2026-07-26, dosłownie): „jakiś czas temu prosiłem żebyś przesunął start muzyki w menu
+głównym o dwie trzy sekundy bo niestety ścina początek zanim się właduje przeglądarka." Audyt
+transkryptu 2026-08-14 błędnie ocenił to jako „nigdy niezarejestrowane/nienaprawione" — **Operator
+dispatchowany do tego tematu ustalił (historia commitów, nie zgadywanie), że to zostało naprawione
+tego samego dnia w kolejnych iteracjach: `c922954f` (07-26, pierwsza wersja mechanizmu),
+`fb3ba24b` (07-27, zmiana na fade-in), `89b144ff` (08-05, dołożenie z powrotem
+`muzyka_opoznienie_startu_ms`).** Stan dziś: `resumeIntroMusic()` (`main.ts` ~9220-9236) czyta
+`UI_PARAMS.menu.muzyka_opoznienie_startu_ms` (`ui-params.json` = 2500ms, środek żądanego
+przedziału) i robi `setTimeout` przed pierwszym startem utworu, dodatkowo zabezpieczone fade-inem
+5000ms (`muzyka_fade_in_ms`) — potwierdzone też w żywym zdeployowanym bundlu
+`gra-robocza/Gra-ROBOCZA.html`. Mój wcześniejszy wpis w tym pliku (audyt dzisiejszy) był mylący —
+przepraszam za fałszywy alarm, poprawiam na podstawie realnej weryfikacji Operatora, nie samej
+obecności/braku frazy w transkrypcie.
+
+**Jedyna zmiana:** nowy test regresyjny `gra/tools/menu-music-delay-test.cjs` (9/0, scalony
+`4d000cb1`→kolejny commit), dopinający ten stan na stałe. Zero zmian w `gra/src`/`gra/data`.
+
+**STATUS: ZAMKNIĘTE.**
+
+**Uwaga o „menu wczoraj do poprawy" (Maciej, 2026-08-14):** audyt pełnego transkryptu z dnia
+2026-08-13 (wczoraj względem dzisiejszej daty) **nie znalazł żadnej wiadomości wspominającej
+„menu"** w tym oknie czasowym. Dwa powyższe zgłoszenia dot. menu, które faktycznie znalazłem
+przez pełny audyt, pochodzą z 2026-07-26 (trzy tygodnie temu), nie z wczoraj. Możliwe że chodzi o
+coś innego, zgłoszone np. przez telefon/inny kanał, którego nie ma w tym transkrypcie sesji —
+**proszę o wskazanie dokładnie o co chodzi**, żebym nie zgadywał na siłę.
+
+## R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (73ba2cd2) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY z 3 notami do drobnej naprawy (2026-08-14)
+
+Pułap imperium matematycznie szczelny — zweryfikowany niezależnie (fuzz 200 losowych układów:
+HEAD 0 naruszeń, commit-rodzic 123/200 naruszeń), edge case wielu różnych override'ów naraz
+zmierzony wprost (S2 vs S3 identyczne co do bajta, kolejność decyduje wyłącznie `id`, nie
+wysokość override powyżej polityki — zgodne z literalnym `Q3=B`, właściciel nie prosił o
+round-robin/wariant C). AI niezmienione (literał `pracaBudgetPercent:100` potwierdzony w
+źródle). 6 mutacji kontrolnych, 3 złapane, 2 równoważne, 1 (M6, dług testowy z rundy 2) nadal
+nieprzechwycona bez naruszenia inwariantu pułapu.
+
+**Do naprawy (mechaniczne, nieblokujące pozostania w gałęzi):**
+- N1 — komentarze w `auto-improvements.ts` (3 miejsca) twierdzą że override decyduje o
+  „PIERWSZEŃSTWIE/UDZIALE" — nieprawda dla override **powyżej** polityki (S2≡S3 to obala).
+  Poprawić na: kolejność ustala wyłącznie `id`, override zmienia coś tylko gdy jest NIŻSZY niż
+  polityka imperium.
+- N2 — `pracaBudgetPercent: empirePol.pracaAutoPercent` w `main.ts` (jedyne miejsce łączące
+  politykę gracza z silnikiem) nie ma ŻADNEGO testu; cichy revert przechodzi tsc + wszystkie 5
+  bramek. Dodać strażnik tekstowy wzorem `promote-to-front-test.cjs` §24.
+- N3 — ID rozjazd: kod/testy cytują `R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B`, w tym pliku decyzja
+  zapisana jako Q3 w temacie `R-AUTO-PRACA-BUDZET-PROCENT` — ujednolicić.
+
+**Do wiedzy właściciela, nie blokuje (N4):** panel nadal pokazuje per-miasto „X% Pracy"
+(`buildModeHud.ts:403`), które po tej naprawie bywa nieosiągalne — miasto z override 80% przy
+polityce imperium 20% realnie dostaje efekt 20%, panel dalej obiecuje 80%. Do decyzji właściciela
+przy kolejnym playteście, czy UI ma to inaczej komunikować — nie nowe pytanie ABC teraz, tylko
+odnotowane.
+
+**N5 (dług testowy, pre-istniejący, bez akcji):** układy z różnymi override'ami PONIŻEJ pułapu
+imperium nadal bez dedykowanej asercji (M6) — inwariantu sumy to nie narusza, zostaje jako znany
+dług.
+
+**STATUS: dispatch Operatora (Sonnet 5, mechaniczne, bez zmiany zachowania) — N1+N2+N3 w jednej
+małej rundzie, bez nowego ABC.**
+
+## Panel Faza 1+2 „Nauka" — Recon: brak strukturalnego bugu, prawdopodobna pomyłka ekranu (2026-08-14)
+
+Maciej: „W nauce nie widzę żadnej zmiany" (w tej samej wiadomości co Spichlerz/Armia/Miasto/
+Kultura — te są rzeczywiście jeszcze nieprzerobione, Faza 3+, oczekiwane). Nauka jest podejrzana,
+bo BYŁA już zrobiona (Faza 2, `9a539197`/`1f5832d7`, Evaluator PASS-WITH-NOTES, TEMAT ZAMKNIĘTY).
+
+**Recon (read-only) nie znalazł żadnej asymetrii w kodzie między Nauka i Praca** — routing
+(`empirePanelSectionMap.ts`) i składanie `body` w `render()` identyczne, zero commitów po
+`1f5832d7` dotknęło którykolwiek z dwóch plików, testy 22/22 + 15/15 PASS na HEAD, deploy ROBOCZA
+FALA 278 (md5 `8455b385`) jawnie wymienia „panel imperium 11 zakładek Faza 1+2 (Skarbiec/Praca/
+Nauka/Religia)" jako aktualny.
+
+**Kluczowe znalezisko:** w grze istnieją DWA różne wejścia nazwane „Nauka"/„Badania":
+(a) HUD chip „Nauka" (prawy górny pasek) → poprawnie otwiera przerobioną zakładkę Fazy 2;
+(b) lewy toolbar mapy, okrągły niebieski medalion „Badania" (`mapToolbarHud.ts`, tooltip
+„Badania" nie „Nauka") → otwiera CAŁKOWICIE INNY, samodzielny komponent (Hub Badań/drzewko
+technologii, `scienceHubHud.ts`), nietknięty tą sesją, faktycznie wygląda staro. Sam kod
+przerobionej sekcji odsyła do niego w stopce jako „Hub badań — przycisk Nauka na lewym pasku" —
+nazewnictwo myląco sugeruje że to ten sam ekran.
+
+**STATUS: pytanie do Macieja (proste, nie ABC) — którego dokładnie przycisku użyłeś: prawy górny
+chip HUD „Nauka", czy lewy okrągły medalion „Badania"? I czy robiłeś twarde odświeżenie (hard
+refresh) po FALA 278? To rozstrzygnie, czy to pomyłka ekranu/cache, czy realny bug do dalszego
+kopania.**
+
+## P-OBLEZENIE-IKONA-NIE-ZNIKA-PO-WYGRANEJ (2026-08-14, zgłoszenie Macieja) · STATUS: POTWIERDZONY BUG, dokładna diagnoza — dispatch fix
+
+Maciej: „w momencie gdy mamy oblężenie i je przerwiemy, wygramy, po wygranej bitwie, nadal widnieje
+symbol oblężenia na mieście, znika dopiero jak się wejdzie z powrotem jednostką do miasta."
+
+**Zdiagnozowane dokładnie (orkiestrator, czytanie kodu, nie zgadywanie):** flagowanie
+`city.oblegane` (`gra/src/game/cities.ts`) jest STANOWE, nie liczone na żywo z pozycji jednostek.
+Renderer markera (`gra/src/render/siegeMarker.ts`, `sync()`) i etykieta HTML pokazują oblężenie
+wyłącznie na podstawie `cities.filter(c => c.oblegane)` (`main.ts` `refreshSiegeMarkers()`, linia
+~11682) — nikt nie sprawdza w tym miejscu, czy oblegający realnie jeszcze żyją/stoją przy murach.
+
+`city.oblegane = false` jest ustawiane wyłącznie w 4 miejscach: (1) `endMapSiege()` (main.ts:1891,
+wołane przez głód/kapitulację), (2) eliminacja całej cywilizacji-oblegającej (main.ts:22343),
+(3) faktyczne zdobycie miasta przez atakującego (`post-battle-map.ts:486`, zmiana `ownerId`),
+(4) `validateActiveSieges()` (main.ts:12007) — sprawdza `stillBesieging` (czy jakakolwiek
+jednostka `bId` stoi w promieniu 1 heksa od miasta) i woła `endMapSiege()` gdy nie.
+
+**Rdzeń buga:** `validateActiveSieges()` jest wołane wyłącznie z 3 miejsc: zakończenie marszu/ruchu
+jednostki (main.ts:19326 i main.ts:27799 — DWA różne miejsca w obsłudze ruchu, jedno dla ruchu
+natychmiastowego, drugie po animacji marszu) i `scanAutoSiegesAfterAiTurn()` (main.ts:12027,
+wołane raz na koniec tury AI, ale WARUNKOWO — `if (!aiTurnAwaitingBattle) scanAutoSiegesAfterAiTurn()`,
+main.ts:27125-27126, czyli pomijane gdy akurat toczy się bitwa oczekująca na rozstrzygnięcie).
+**Żadne z tych trzech miejsc nie jest wołane z poziomu rozstrzygnięcia BITWY** — czyli gdy gracz
+wygrywa starcie polowe z armią oblegającą (niszczy jednostki `bId`), `city.oblegane` zostaje
+`true` aż do najbliższego RUCHU dowolnej jednostki (stąd obserwacja Macieja: znika dopiero po
+wejściu jednostką z powrotem do miasta — to nie "wejście do miasta" samo w sobie naprawia stan,
+tylko fakt, że to jest RUCH, który przy okazji odpala `validateActiveSieges()` i wtedy dopiero
+wykrywa, że oblegający już nie żyją).
+
+**STATUS: dispatch Operatora (Sonnet 5) — dodać wywołanie `validateActiveSieges()` (albo węższe,
+celowane sprawdzenie konkretnego miasta) w miejscu/miejscach rozstrzygania bitwy polowej, które
+mogą zniszczyć jednostki oblegające miasto z murem (silne kandydatury do zbadania: rozstrzygnięcie
+bitwy 3D w `battleScene.ts`/`mapFieldBattle.ts`, ścieżka auto-resolve/silent battle, wszędzie tam
+gdzie jednostki są usuwane z `units[]` po przegranej). Napisać test regresyjny odtwarzający
+scenariusz: miasto oblegane, gracz niszczy w bitwie WSZYSTKIE jednostki oblegającego (`bId`) bez
+poruszania żadnej innej jednostki i bez zdobycia miasta — `city.oblegane` musi wrócić na `false`
+od razu po rozstrzygnięciu bitwy, nie dopiero po kolejnym ruchu. Nie zgadywać, które dokładnie
+wywołanie bitwy jest właściwym miejscem — zbadać wszystkie ścieżki gdzie jednostki znikają z
+`units[]` w wyniku walki i sprawdzić każdą pod kątem czy dotyczy jednostek oblegających.**
+
+## P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (2026-08-14, zgłoszenie Macieja ze zrzutem) · STATUS: OTWARTE — dispatch recon
+
+Maciej (dosłownie, ze zrzutem): „nie powinny nachodzić na siebie kolejne zdarzenia podczas
+zakończenia tury. Z jednej strony wysłało mnie audiencję dyplomatyczną, a z drugiej strony zaraz
+była bitwa, która na to wyszła." Zrzut pokazuje modal preBattle „Broni się: Atak barbarzyńców —
+obrona miasta Ateny" (Tura 23, szansa obrony 74%/26%, przyciski AUTO/BITWA/ZAPISZ) wyrenderowany
+NA WIERZCHU wciąż widocznego, przyciemnionego ekranu „Audiencja dyplomatyczna" (Grecy vs
+Mohenjo-daro·Harappa) w tle — dwa niezależne end-of-turn'owe zdarzenia próbują zająć ekran
+jednocześnie zamiast po kolei.
+
+**Nie zdiagnozowane jeszcze — do reconu, nie zgaduję architektury bez sprawdzenia kodu:** jak
+dziś kolejkowane są zdarzenia końca tury (AI wysyła propozycję dyplomatyczną → `diplomacyAudience`
++ jednoczesny atak barbarzyńców/AI wymagający `preBattle`), czy jest jakikolwiek wspólny mechanizm
+kolejki/stosu (może pokrewny `escapeOverlayStack.ts` użytemu wcześniej dziś przy naprawie ESCAPE,
+może coś zupełnie innego), i czy oba te wyzwalacze w ogóle wiedzą o sobie nawzajem.
+
+**STATUS: dispatch recon (Explore, read-only) — znaleźć dokładny mechanizm wyzwalania obu ekranów
+przy końcu/początku tury, ustalić czy istnieje kolejka zdarzeń per tura czy oba strzelają
+niezależnie z osobnych pętli, zlokalizować dokładnie gdzie brakuje serializacji.**
+
+**Trzeci objaw tego samego tematu (Maciej, dopisany tego samego dnia):** „często też na inne
+zdarzenia po zakończeniu tury nachodzi na przykład wybór naszych jednostek które zostały nowo
+zbudowane. To jest w trakcie tury. Raczej to powinno być po zakończeniu tury. System pyta czy
+chce połączyć nowo zbudowane z poprzednim armią a w tym samym czasie trwają tury innych graczy."
+Czyli: prompt „połącz nowo wyprodukowaną jednostkę z istniejącą armią" pojawia się PODCZAS
+przetwarzania tur AI/innych graczy, zamiast dopiero po ich zakończeniu, gdy kontrola realnie
+wraca do gracza. Dopisany do reconu (agent w toku rozszerzony o ten trzeci przypadek) jako
+kolejny przykład tej samej klasy braku sekwencjonowania.
+
+## P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE — Recon zakończony: jedna wspólna przyczyna strukturalna dla wszystkich 3 objawów (2026-08-14)
+
+**Diagnoza (Explore, read-only, bardzo precyzyjna — plik:linia dla każdego kroku):**
+
+1. **Audiencja dyplomatyczna** — jedyny auto-wyzwalacz to pierwszy kontakt dyplomatyczny:
+   `checkNewDiplomaticContacts()` (`main.ts:15154`, wołane z `refreshFog()` wielokrotnie w trakcie
+   końca tury) planuje `requestAnimationFrame(() => tryOpenNextFirstContactCard())`. Koniec tury
+   wielokrotnie oddaje klatkę przeglądarce (`yieldTurnTransitionUi()`), więc ten zaplanowany
+   callback dostaje realną szansę wykonać się W ŚRODKU przetwarzania. Ma częściowy guard
+   `canAutoOpenDiploAudience()` (`main.ts:15137-15141`) — sprawdza tylko czy preBattle jest
+   otwarty, nie odwrotnie.
+2. **preBattle ataku barbarzyńców** — `main.ts:27416-27461` (gałąź `bcmd.type==='attack'`) →
+   `launchIncomingMapFieldBattle(...)` → `showPreBattle()` (`ui/preBattle.ts:167-186`) — **ZERO
+   guarda** przeciwko innym otwartym overlayom, zawsze otwiera się bezwarunkowo. Po otwarciu
+   pętla komend barbarzyńców leci dalej (`continue;`, linia 27450) bez czekania na gracza.
+3. **`escapeOverlayStack.ts`** obsługuje WYŁĄCZNIE klawisz Escape (push/pop + Keyboard Lock) —
+   nie steruje z-index/widocznością/kolejnością. Oba ekrany są wpięte w ten stos, ale to nie daje
+   im wzajemnej wiedzy o sobie. Z-index rozstrzyga wizualnie niezależnie: `.civ-diplo-aud{z-index:400}`
+   vs `.pb-overlay{z-index:9900}` — preBattle zawsze wygrywa wizualnie, stąd zrzut Macieja.
+4. **`triggerPlayerEndTurn()` (`main.ts:23775+`)** — `await runAiPhase()` rozwiązuje się ZANIM
+   bitwa faktycznie się skończy: gdy AI atakuje gracza, `break ownerLoop` (linia 26761) przerywa
+   tylko WEWNĘTRZNĄ pętlę komend, nie całą funkcję — kod po pętli (sojusze, handel AI-AI,
+   `scanAutoSiegesAfterAiTurn`) i tak leci dalej, `runAiPhase()` zwraca Promise natychmiast mimo
+   otwartego preBattle. Blok `finally` (`main.ts:27605-27613`) **bezwarunkowo** gasi
+   `endTurnInProgress=false` i flushuje odłożone UI, bez sprawdzenia `isPreBattleOpen()`/
+   `isDiplomacyAudienceOpen()`.
+5. **Trzeci objaw (prompt scalenia nowej jednostki)** — TEN SAM mechanizm, jedno piętro niżej:
+   `promptMergeIfCoLocated()` (`main.ts:9599-9746`) ma guard na `endTurnInProgress` (odracza przez
+   `deferredMergePrompts` gdy `true`), ale ta flaga gaśnie w `finally` ZANIM otwarty preBattle
+   zostanie faktycznie zamknięty przez gracza (pkt 4) — więc `flushDeferredMergePrompts()`
+   (wołane w tym samym `finally`) odpala `showArmyMergePanel()` od razu, mimo wiszącego preBattle.
+
+**Wspólna przyczyna:** żadna z 3 funkcji otwierających modal (`showDiplomacyAudience`,
+`showPreBattle`, `showArmyMergePanel`) nie sprawdza czy INNY modal end-of-turu jest już otwarty,
+i żaden z wyzwalaczy (rAF pierwszego kontaktu, pętla AI, tick barbarzyńców, blok `finally`) nie
+zatrzymuje się i nie czeka aż gracz faktycznie zamknie poprzedni modal. Trzy konkretne miejsca do
+naprawy: `main.ts:27605-27613` (finally — dodać warunek), `ui/preBattle.ts:167-186` (showPreBattle
+— brak jakiegokolwiek guarda, jedyna z trzech funkcji bez niego), `main.ts:21386-21387`+`26761`
+(intencja „wstrzymaj pętlę AI do zamknięcia bitwy" zrealizowana tylko dla pętli komend, nie dla
+całej `triggerPlayerEndTurn`).
+
+**STATUS: dispatch Operatora (Sonnet 5) — naprawić sekwencjonowanie tak, żeby drugi modal
+end-of-turu czekał na zamknięcie pierwszego przez gracza, zamiast otwierać się na wierzchu.**
+
+## Rozpoznanie zakończone: rozjazd Produkcja panel miasta vs spichlerz centralny — NIE bug obliczeniowy, rozjazd źródeł czasowych (2026-08-14)
+
+Stare zgłoszenie (Ateny: panel miasta Produkcja=29/Bilans=-3, tabela spichlerza centralnego
+Produkcja=33/Bilans=+1). Hipoteza Macieja ("Spichlerz stolicy +1/Przyrost zapasów +1") **OBALONA**
+— te dwa pola żyją na poziomie CAŁEGO imperium (liczone PO pętli per-miasto w `advanceEmpireFood()`),
+renderowane w zupełnie innym bloku UI ("Podsumowanie ostatniej tury"), nigdy nie dodawane do
+wiersza konkretnego miasta w żadnym z dwóch paneli. Dodatkowo arytmetycznie 1+1=2≠4.
+
+**Rzeczywista przyczyna:** oba panele liczą DOKŁADNIE tę samą formułę (`zywnoscBrutto −
+kosztRacji`) — różnią się tylko MOMENTEM: panel miasta (`cityPanel.ts computeView()`) liczy **na
+żywo** przy każdym renderze (aktualne przydzielone heksy/budynki/poziom Wyżywienia/mnożniki), a
+tabela "Miasta" w Spichlerzu centralnym (`empireDetailPanel.ts renderSpichlerzCentralnySection`)
+czyta **zamrożony snapshot** z `getLastEmpireFoodTick(0)`, ustawiany WYŁĄCZNIE przez
+`advanceEmpireFood()` wewnątrz `triggerPlayerEndTurn()` — nieodświeżany aż do następnego End Turn.
+Różnica 4 (Produkcja) i idąca za nią różnica 4 (Bilans) to zmiana w przydziale pracownika/budynku
+zaszła PO ostatnim End Turn, a PRZED bieżącym renderem panelu miasta — okno czasowe, którego stary
+snapshot panelu imperium jeszcze nie widzi.
+
+**Żaden panel się nie myli** — oba są wewnętrznie poprawne dla momentu który reprezentują. To
+architektoniczna niespójność UX (live preview vs. rozliczona tura), nie bug silnika. Wymaga
+decyzji właściciela (czy to akceptowalne, czy panel imperium ma odświeżać się na żywo, czy dodać
+etykietę rozróżniającą "stan bieżący" vs "stan z ostatniej tury") — **nie dispatchuję naprawy bez
+tej decyzji, to nie jest oczywisty bug do poprawienia.**
+
+**STATUS: rozpoznanie ZAMKNIĘTE. Czeka na decyzję właściciela czy/jak to zaadresować (osobne
+pytanie ABC, do zadania gdy Maciej wróci).**
+
+## Rozpoznanie zakończone: Milet trzyma pracowników na heksie Aten — LUKA ZNALEZIONA, w wyświetlaniu nie w przydziale (2026-08-14)
+
+Stary, PILNE zgłoszenie (task #105), utknęło wcześniej bez danych repro od Macieja. **Podejście z
+innej strony bez czekania na repro — zbadany zakres istniejącej ochrony:**
+
+**Przydział/silnik jest szczelny między różnymi właścicielami — potwierdzone kodem I testem.**
+`cityCenterKeysFromTerritoryNodes()` (`gra/src/game/okolica.ts:110-120`) wyklucza centrum KAŻDEGO
+miasta bezwarunkowo, bez filtra `ownerId` — zweryfikowane niezależnym testem (`okolica-multi-city-
+overlap-test.cjs:213-232`, scenariusz owner=0 vs owner=1 z "bait yield" 999/999/999 na centrum AI,
+mimo to wykluczone). `advanceCityEconomy` buduje `territoryNodes` WEWNĘTRZNIE — nie da się tego
+ominąć przez zapomnienie wołającego. `toggleTileWorker` (ścieżka pisania) też szczelna — nie da
+się dziś KLIKNIĘCIEM przypisać pracownika na centrum, własne ani obce.
+
+**Kontekst z logu 08-13: Maciej sam doprecyzował, że Milet i Ateny to TA SAMA cywilizacja**
+(„Sparta produkuje w Atenach, w samym mieście") — więc scenariusz różnych właścicieli był bardziej
+hipotetyczny niż dosłownym opisem zgłoszenia, ale i tak zweryfikowany w kodzie.
+
+**Rzeczywista luka — w WYŚWIETLANIU, nie w przydziale.** `cityPanel.ts::renderWorkedPreview`
+(~linie 8812-8988) w trybie ręcznym (`okolicaTryb==='reczny'`) czyta SUROWY `city.okolicaReczne`
+(linia 8875), całkowicie z pominięciem `resolveWorkedTiles`/`effectiveIsWorkable` — czyli
+pomijając zarówno filtr własności terytorium JAK I wykluczenie centrum. To świadoma, udokumentowana
+decyzja z INNEGO tematu (`R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`, Maciej 2026-08-09) — panel ma
+pokazywać stary/nielegalny wpis jako zajęty, żeby dało się go kliknięciem usunąć — ale nie
+rozróżnia POWODU nielegalności, więc identycznie pokazuje stary wpis na Morzu i wpis leżący dziś
+na centrum innego miasta.
+
+**Dwa konkretne źródła takiego wpisu w danych:**
+1. Stary zapis sprzed naprawy — `reconcileAllWorkedTiles` wołane wyłącznie z `advanceCityEconomy`
+   (koniec tury) i zakładania miasta, NIE przy wczytaniu save'a.
+2. **Zdobycie miasta** — `seedCityOwnerDefaults()` (`main.ts:4537-4563`) resetuje kilka pól przy
+   przejęciu miasta, ale NIE `okolicaTryb`/`okolicaReczne`, i reconcile nie jest wołane przy
+   podboju — stare wpisy (dla przejętego miasta lub sąsiadów, których terytorium się przesunęło)
+   mogą wisieć aż do końca tury.
+
+Oba scenariusze wymagają trybu `reczny`, dostępnego wyłącznie dla własnych miast gracza — spójne
+z doprecyzowaniem Macieja.
+
+**STATUS: dispatch Operatora (Sonnet 5) — (1) wołać `reconcileAllWorkedTiles`/
+`reconcileWorkedTilesForOwner` także po zdobyciu miasta (`seedCityOwnerDefaults` albo miejsce
+wołające), nie tylko po założeniu i co turę; (2) sanityzacja `okolicaReczne` przy wczytaniu save'a;
+(3) rozważyć wizualne odróżnienie w panelu „legalne pracujące" od „stary/nielegalny wpis" zamiast
+identycznego pokazywania obu jako zajęte (nota już zostawiona w kodzie, `cityPanel.ts:8870-8874`).
+Napisać test odtwarzający scenariusz: zdobycie miasta z aktywnym trybem ręcznym i wpisem
+`okolicaReczne` wskazującym na (teraz nieprawidłowy) heks centrum sąsiada.**
+---
+
+## Evaluator: oblężenie zdejmowanie flagi po bitwie (`7b57eb45`)
+
+**WERDYKT: PASS-WITH-NOTES.** Naprawa jest poprawna, minimalna i trafia w rdzeń zgłoszenia.
+Weryfikacja niezależna (Opus 5), nie odczyt raportu Operatora.
+
+### 1. Bramki — przebiegnięte samodzielnie, nie przepisane z raportu
+`npx tsc --noEmit` → **exit 0** (kod odczytany bez potoku — `tail` zwracał własny status,
+pułapka z CLAUDE.md §0b (b)). `oblezenie-siege-lifted-po-bitwie-test` **16/0**, `oblezenie-test`
+**27/0**, `map-siege-test` **6/0**, `siege-ai-test` **17/0**, `siege-defenders-test` **12/0**.
+Dołożone przeze mnie, poza listą zlecenia: `post-battle-map-test` **32/0**, `combat-test` **6/6**,
+`battle-roster-test` **7/0**, `battle-summary-test` OK, `logic-test` **213/213** (zgodne z punktem
+odniesienia `R-BRAMKA-MINDIST-Q1`). Zero regresji.
+
+### 2. Mutacja kontrolna — potwierdzona
+Fizyczne usunięcie dodanej linii z `main.ts` (nie mutacja w pamięci, jak w §3 testu Operatora)
+→ **11 passed, 5 failed, exit 1**. Dokładnie 5 porażek deklarowanych przez Operatora, w tym
+kontrola pozytywna, więc test **nie jest tautologiczny**. Po `git checkout` znów 16/0.
+
+### 3. Kluczowe twierdzenie Operatora („wszystkie ścieżki zbiegają się w `applyMapBattleOutcome`") — **POTWIERDZONE**
+Nie na słowo, tylko trzema niezależnymi krokami:
+1. `applyPostBattleMap` (jedyna funkcja usuwająca jednostki ze stratami walki — zawiera
+   `applyAutoLosses`, `applyManualSurvivors`, `wipeDefenderOnCityCenter`) ma w całym `gra/src/`
+   **dokładnie jednego wołającego**: `main.ts:21692`, wewnątrz `applyMapBattleOutcome`.
+2. W ciele `applyMapBattleOutcome` (21669–21867) jest **dokładnie jeden `return`** — ten na końcu,
+   tuż PO nowym wywołaniu. Zero wcześniejszych wyjść, żadna ścieżka nie może ominąć naprawy.
+3. Prześledzone wstecz wszystkie 8 wejść: `doMapAutoResolve`, ręczna 3D gracza (`bs.play`),
+   `doAutoPowerMapBattle` (atak AI na gracza, cicho), `doMapAutoResolveIncoming`, ręczna 3D
+   przychodząca, oba wejścia z `mapFieldBattle.ts` (443/505, wpięte przez `deps` z `main.ts:22764`)
+   oraz `finishSiegeStormBattle` w OBU gałęziach (22858 z podsumowaniem, 22874 bez) — zasilane
+   przez `executeSilentSiegeStorm` (22915), auto-szturm (23067) i ręczny szturm 3D (23135).
+Pozostałe miejsca kurczące `units[]` nie są walką i mają własne sprzątanie oblężenia:
+`disbandPlayerUnit` (5318), głód armii (24270), atrycja garnizonu (24447), kapitulacja głodowa
+(11850), eliminacja cywilizacji (22357), `applyCityCaptureAfterBattle` (samo ustawia `oblegane=false`).
+
+### 4. Scenariusz zgłoszenia — odtworzony NIEZALEŻNIE i mocniej niż w teście Operatora
+Test Operatora uruchamia `validateActiveSieges` w izolacji + strażnik tekstowy (ograniczenie
+uczciwie opisane w nagłówku pliku). Złożyłem **PRAWDZIWY `applyPostBattleMap`** (moduł jest
+importowalny, w przeciwieństwie do domknięć `main.ts`) z **PRAWDZIWYM `validateActiveSieges`**
+w tej samej kolejności co `applyMapBattleOutcome`: 13/13. Potwierdzone: (a) zabicie JEDNEGO z dwóch
+oblegających **nie** zdejmuje flagi; (b) zabicie WSZYSTKICH zdejmuje ją natychmiast, bez ruchu
+i bez zdobycia miasta, razem z `oblegajacyOwnerId`, `siegeBesiegerByCity` i `refreshSiegeMarkers`;
+(c) przegrana wycieczka obrońcy **nie** zdejmuje flagi (brak fałszywego pozytywu).
+
+### 5. Parytet gracz/AI — sprawdzony, bez zarzutu
+`validateActiveSieges` iteruje `for (const city of cities)` **bez filtra ownera** (12008),
+`refreshSiegeMarkers` analogicznie `cities.filter(c => c.oblegane)` (11682). Odtworzone empirycznie:
+miasto AI (`ownerId=3`) oblegane przez gracza traci flagę tą samą ścieżką. Zapis oblężenia trafia
+do save'a już poprawiony — bez zmian w formacie.
+
+### N1 — **ZNALEZISKO: naprawa ujawnia sprzeczność przy szturmie zakończonym REMISEM** · STATUS: **OTWARTE** — do dispatchu Operatora
+Nie blokuje scalenia (stan gry po naprawie jest ZGODNY z regułą silnika), ale wymaga osobnego
+zlecenia. Zmierzone, nie wydedukowane:
+przy remisie szturmu muru `applyPostBattleMap` idzie gałęzią `placeFanOutGroup` i **odsuwa całą
+armię oblegającą z dystansu 1 na dystans 2** od miasta. `validateActiveSieges` liczy oblegających
+jako `hexDistance === 1`, więc od teraz **natychmiast** kończy oblężenie — a `afterSiegeUi`
+w `finishSiegeStormBattle` w tej samej klatce pokazuje „Szturm: remis — oblężenie trwa."
+Gracz dostaje dwa sprzeczne komunikaty na tym samym `#hintToast` („oblężenie zniesione — brak wojsk
+przy murach" nadpisane przez „oblężenie trwa"), a marker znika mimo tekstu, że trwa.
+Dwa skutki gameplayowe, oba niezamierzone przez to zlecenie:
+1. `endMapSiege` czyści `clearSiegeMachines(city)`, `siegeTurnByCity` i `siegeAiStateByKey` —
+   **machiny oblężnicze i postęp oblężenia budowane przez wiele tur przepadają natychmiast po
+   remisie**, a nie dopiero przy kolejnym ruchu/końcu tury AI jak dotąd.
+2. Przed naprawą istniało (przypadkowe, nieudokumentowane) okno: `validateActiveSieges` w obsłudze
+   ruchu jest wołane PO aktualizacji pozycji (19326, 27820), więc gracz, który jako pierwszą
+   czynność po remisie zamaszerował oblegających z powrotem pod mur, **zachowywał oblężenie razem
+   z machinami**. Teraz okno jest zamknięte — flaga spada w momencie remisu.
+Weryfikacja kontrolna: przy wygranej OBROŃCY `retreatAtkRosterToStart` zostawia oblegających na
+dystansie 1 i oblężenie prawidłowo TRWA — zgodnie z komunikatem „Szturm odparty". Czyli problem
+dotyczy wyłącznie gałęzi remisu. Remis jest realnie osiągalny: auto `TIE_EPS = 0.01`
+(`auto-battle-params.ts:42`) plus każda ręczna bitwa 3D, w której obie strony mają żywe jednostki
+na koniec (`battleScene.ts:8870`). **Do rozstrzygnięcia produktowo (ABC dla właściciela, nie decyzja
+agenta): czy remis szturmu ma zrywać oblężenie i kasować machiny, czy oblegający ma zostawać pod
+murem.** Przyczyna źródłowa (fan-out na dystans 2) jest PRE-ISTNIEJĄCA, sprzed tego commitu —
+naprawa zmieniła tylko moment ujawnienia, nie sam stan docelowy.
+
+### N2 — pre-istniejąca czerwona bramka, nigdzie dotąd nieodnotowana
+`battle-loot-test.cjs` — **8 pass, 4 fail**, exit 1 (`FAIL: 2x Włócznik braz — expected 4 got 100`,
+`FAIL: 50% braz — expected 1 got 25`). **Nie ma związku z tym commitem**: test bunduje wyłącznie
+`../src/game/battle-loot`, w ogóle nie czyta `main.ts` (jedynego pliku produkcyjnego dotkniętego
+przez `7b57eb45`); test i jego źródło ostatnio zmieniane w FALA 96 (`daacd43a`). Brakuje go na
+liście znanych pre-istniejących porażek w `CLAUDE.md` — do dopisania przy najbliższej okazji, żeby
+nie był mylony z regresją.
+
+### N3 — luka pre-istniejąca, POZA zakresem tego zlecenia (nie naprawiać przy okazji)
+`captureCityWithoutBattle` (22712) → `applyCityCaptureToMap` przestawia zdobywców na heks miasta,
+ale **nie** woła `validateActiveSieges`. Jeśli któraś z przestawionych jednostek oblegała
+JEDNOCZEŚNIE inne sąsiednie miasto, flaga tamtego miasta zostaje nieświeża do najbliższego ruchu.
+Bardzo wąskie, identyczne przed i po commicie — odnotowane, świadomie nie zgłaszane jako blokada.
+
+### N4 — kruchość strażnika (nieblokująca, świadoma)
+Strażnik tekstowy przypina **dokładnie 4** wystąpienia `validateActiveSieges();` w `main.ts`.
+Każde przyszłe, w pełni zasadne piąte wywołanie zaświeci bramkę na czerwono. To celowy
+change-detector (komunikat sam tłumaczy, które 4 miejsca są oczekiwane), ale przy dokładaniu
+kolejnego wywołania trzeba pamiętać o podbiciu liczby — nie traktować jako regresji.
+
+## Evaluator: routing econ-rekruci (f536b792) — WERDYKT PASS (2026-08-14)
+
+Wszystko poniżej zmierzone niezależnie w izolowanym worktree (`git reset --hard` na czubek
+gałęzi), **nie przepisane z raportu Operatora**.
+
+1. **Bramki uruchomione samodzielnie:** `npx tsc --noEmit` = 0 błędów; `empire-panel-split-test`
+   = **25 pass / 0 fail** (deklarowane 25/0 — zgadza się; delta +3 asercje wobec 22/0 wynika
+   wprost z diffu: 1 asercja zmieniona + 3 dopisane).
+2. **Weryfikacja wizualna (headless Chromium przez Playwright, serwer `vite.js` uruchomiony
+   bezpośrednio z `node ./node_modules/vite/bin/vite.js`, NIE `npm run dev`; trasa
+   `?playtest=mapa`):** klik chipa HUD `data-act="rekruci"` renderuje w `.civ-emp-body` blok
+   **ARMIA** — „Wojsko na mapie / Rekruci (pula werbu) / Zaopatrzenie wojska", `data-section` =
+   `armia` + `econ-rekruci`. Treść panelu **co do znaku identyczna** z tą po kliknięciu chipa
+   „Armia". Zrzut ekranu potwierdza nagłówek „ARMIA" (poprzednio „ZASOBY IMPERIUM").
+3. **KONTROLA ODWROTNA (mutacja Evaluatora, nie Operatora):** wyłączenie tej JEDNEJ linii
+   routingu (`if (section === 'econ-rekruci') return 'armia';`) i powtórzenie tego samego
+   scenariusza → panel pokazuje **„ZASOBY IMPERIUM (STAN + PRZYROST)"**, `data-section` =
+   `ekonomia`. Czyli obserwowana poprawa jest skutkiem TEJ zmiany, nie czegoś innego na gałęzi.
+4. **Zmiana ISTNIEJĄCEJ asercji — UZASADNIONA, to nie „poprawienie niewygodnego testu".**
+   Stara linia brzmiała `assert('econ-rekruci → ekonomia + filtr wiersza (poza zakresem fazy 2)',
+   empirePanelBlockForSection('econ-rekruci') === 'ekonomia')`. Punkt 3 dowodzi wprost, że
+   `'ekonomia'` to dokładnie zgłoszone przez Macieja błędne zachowanie — asercja utrwalała bug.
+   Trzy dodatkowe przesłanki: (a) bliźniacza asercja dla **Miast** została NIETKNIĘTA (Miasta
+   naprawdę zostają na torze `ekonomia`) — gdyby chodziło o wygodę, poszłyby obie; (b) pokrycia
+   nie usunięto, tylko odwrócono oczekiwanie i **dołożono 3 asercje**, w tym równość
+   `chip Rekruci === chip Armia`; (c) siła bramki wzrosła — pod mutacją z punktu 3 test faktycznie
+   pada, więc nowa asercja ma „zęby".
+5. **Brak efektów ubocznych:** `empirePanelBlockForSection` ma w `gra/src` **jednego** konsumenta
+   (`empireDetailPanel.blockForSection`, linia 2153); `onlyEconId` (linia 2057) działa wyłącznie
+   wewnątrz bloku `ekonomia`, który dla `econ-rekruci` już się nie renderuje. Wiersz „Rekruci
+   (pula werbu)" nadal widoczny w pełnym przeglądzie ekonomii. Zakres commita = **dokładnie
+   2 pliki**, zero zanieczyszczenia.
+
+**Noty (nieblokujące):** (N1) gałąź `econSliderVisibilityForOnlyEconId('rekruci')` i wiersz
+`id:'rekruci'` w bloku `zasoby` są od teraz nieosiągalne z chipa HUD (żywe tylko w pełnym
+przeglądzie) — martwy tor do sprzątnięcia dopiero przy Fazie 3+, nie teraz; (N2) wnętrze bloku
+Armii nadal bez reskinu Fazy 1/2 — świadomie, brak „Kierunku" od Designera (§8.7 dokumentu
+projektowego); (N3) sekcja recon wyżej („Recon zakończony: to jest DWIE rzeczy…") ma nadal
+STATUS „dispatch Operatora TYLKO na routing fix" — **dispatch wykonany i zamknięty tym
+commitem**, nie dispatchować drugi raz.
+
+**WERDYKT: PASS. TEMAT ZAMKNIĘTY.**
+
+## Evaluator: Auto-praca N1-N3 (ea0be32a) — WERDYKT FAIL (integralność commita); sama treść N1-N3 zweryfikowana poprawnie (2026-08-14)
+
+**Najpierw treść not — ta część jest w porządku i NIE wymaga powtórzenia:**
+
+1. **„Zero zmian logiki" dla `auto-improvements.ts` + `main.ts` — potwierdzone mechanicznie, nie
+   na oko:** filtr diffu tych dwóch plików po liniach `+`/`-` z odrzuceniem komentarzy i pustych
+   zwraca **zero linii**. Każda zmieniona linia to komentarz albo string ID.
+2. **N1 — nowa treść opisuje zachowanie poprawnie:** `orderedCities` (linia 332) sortuje
+   WYŁĄCZNIE po `id`; `effectiveCityCap = Math.min(cityBudgetCap, imperiumBudgetCap)`; ponieważ
+   oba pułapy mnożą tę samą `globalPracaPulaAtEntry`, override wyższy od polityki imperium daje
+   `min` równy pułapowi imperium — czyli **dokładnie to samo, co brak override**. Zgodne z
+   pomiarem S2≡S3 z poprzedniej rundy.
+3. **N2 — sprawdzone WŁASNĄ mutacją kontrolną (nie zaufano deklaracji Operatora), dwa warianty:**
+   (a) usunięcie linii `pracaBudgetPercent: empirePol.pracaAutoPercent,` (`main.ts:25417`) →
+   `auto-improvements-test` = **36 pass / 1 fail** (pada 17a), przy czym `npx tsc --noEmit` = **0
+   błędów** — co potwierdza sens strażnika: cichy revert jest dla kompilatora niewidoczny;
+   (b) podmiana na literał `pracaBudgetPercent: 100,` → **też złapana** (36/1). Po obu mutacjach
+   plik przywrócony, drzewo czyste.
+4. **Bramki uruchomione samodzielnie:** tsc 0 błędów · `auto-improvements-test` 37/0 ·
+   `ulepszenia-praca-percent-test` 27/0 · `ai-improvements-test` 33/0 · `logic-test` 213/213 ·
+   **`vite build` zielony** (821 modułów, `dist/index.html` 37 082 kB).
+5. **N3 kompletne:** `grep` po `gra/src`, `gra/tools`, `docs` → **zero** wystąpień
+   `R-AUTO-PRACA-OVERRIDE-PER-MIASTO`; nowe ID `R-AUTO-PRACA-BUDZET-PROCENT-Q3=B` występuje
+   6× w `auto-improvements.ts`, 1× w `main.ts`, 6× w teście — i zgadza się z ID tematu w tym
+   pliku (linia 19665) oraz z zapisem decyzji `Q3 = B` (linia 20219).
+
+**ZNALEZISKO BLOKUJĄCE — commit zagarnął pracę DWÓCH INNYCH, niepowiązanych tematów.**
+Poza 3 plikami tematu (`auto-improvements.ts`, `main.ts`, `auto-improvements-test.cjs`)
+`ea0be32a` niesie:
+
+| Plik | Delta linii | Właściwy temat |
+|---|---|---|
+| `gra/src/ui/newGameFlow.ts` | +129 / −20 | prototyp kreatora (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, P-NEWGAME-OPISY-DO-TOOLTIP) |
+| `gra/src/ui/hudTitleTooltip.ts` | +6 / −0 | jw. (dopisany zasięg `.civ-newgame`) |
+| `gra/src/ui/hexContextTooltip.ts` | +44 / −5 | P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA |
+| `gra/src/map/improvement-build.ts` | +3 / −1 (eksport `hasAnimalDeposit`) | jw. |
+
+Ostatnie dwa to **realna zmiana zachowania** (filtr listy „Możliwe ulepszenia" w tooltipie heksu),
+a nie komentarze — więc zdanie z opisu commita **„Zero zmian logiki silnika" jest nieprawdziwe dla
+faktycznej zawartości tego commita**, mimo że jest prawdziwe dla samych plików tematu Auto-praca.
+
+**Dowód, nie hipoteza:** `git log --all -- <każdy z 4 plików>` pokazuje `ea0be32a` jako **jedyny**
+commit niosący te zmiany. Commit-rodzeństwo `94977a20` („Hex tooltip: filtr nakladka/zloze…",
+**ten sam znacznik czasu 04:03:53**) zawiera już TYLKO plik testu (257 linii, `+257/−0`) — jego
+zmiany źródłowe zostały wcześniej zabrane przez `ea0be32a`. To sygnatura `git commit -a` we
+wspólnym drzewie: modyfikacje plików ŚLEDZONYCH wchodzą do cudzego commita, nowy plik (nieśledzony
+test) zostaje. Dokładnie przypadek zakazany w CLAUDE.md §4a („commituj WYŁĄCZNIE pliki zamkniętego
+zlecenia, nigdy `git add -A`") i ten sam wzorzec co udokumentowany incydent `b9867b3`.
+
+**Skutki praktyczne:** (a) `git revert ea0be32a` cicho cofnąłby dwa obce tematy; (b) wymienione w
+opisie bramki nie pokrywają zagarniętych zmian (prototyp kreatora nie ma ŻADNEJ wymienionej
+bramki); (c) commit `94977a20` opisuje naprawę, której nie zawiera — mylący ślad dla każdego, kto
+będzie szukał tej zmiany po historii; (d) rytm scalania „jedna fala do tyłu" (§4a) opiera się na
+czytelnych granicach commitów.
+**Czego NIE ma:** nic nie zginęło i nic nie jest czerwone — gałąź się buduje (`vite build` OK,
+tsc 0), a test zagarniętego tematu `hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` = **36 pass /
+0 fail**. To wada integralności i identyfikowalności, nie funkcjonalna.
+
+**NOTA — N1 NIEDOKOŃCZONE (4. miejsce, nie 3):** `auto-improvements.ts:301` nadal mówi „override
+miasta nie jest osobną kopertą, tylko **udziałem WEWNĄTRZ tego pułapu**" i bliźniacza linia EN
+„just a **share** WITHIN this cap". To ta sama nieprawdziwa rama „udziału", którą N1 miała usunąć
+(dla override WYŻSZEGO niż polityka imperium nie ma żadnego udziału — jest po prostu ignorowany).
+Nota mówiła o „3 miejscach", realnych było 4. Commit ten blok komentarza **i tak edytował** (zmienił
+w nim ID w ramach N3), więc pominięcie nie wynikło z braku dostępu do pliku.
+
+**CO ZROBIĆ (bez przepisywania historii — gałąź wypchnięta, stoją na niej późniejsze commity):**
+1. **NIE powtarzać N1-N3** — treść jest poprawna i niezależnie zweryfikowana (punkty 1-5 wyżej).
+2. Dopisać w rejestrze sprostowanie mapujące **plik → właściwy temat** (te 4 pliki), żeby
+   Ewaluatorzy tamtych dwóch tematów wiedzieli, że ich kod **już jest na gałęzi** i muszą go ocenić
+   mimo braku własnego commita — inaczej wejdzie do fali bez żadnego przeglądu.
+3. Prototyp kreatora (`newGameFlow.ts`, +129 linii) wymaga oceny Ewaluatora swojego tematu **przed
+   deployem** — dziś jest na gałęzi bez przeglądu i bez wymienionej bramki.
+4. Domknąć N1: poprawić 2 linie komentarza (`auto-improvements.ts:301` PL + bliźniacza EN).
+
+**WERDYKT: FAIL — wyłącznie na integralność commita (zanieczyszczony zakres + nieprawdziwe zdanie
+w opisie) oraz niedokończone N1. Sama merytoryka N1-N3: zweryfikowana pozytywnie, do zachowania
+bez zmian.**

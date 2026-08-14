@@ -40,7 +40,19 @@ export function buildUchwalaSolSpichlerzII(
 
 export interface EmpireGlobalParams {
   civName: string;
+  /** Fallback gdy brak portretu władcy (civPortraitUrl null) — patrz JSDoc niżej. */
   civEmoji: string;
+  /**
+   * Portret władcy gracza (medalion) — REUŻYCIE systemu z leaderPortraits.ts (ten sam
+   * plik/URL co medaliony bitwy/preBattle/dyplomacji). `null` gdy civId nieznany lub brak
+   * pliku dla tej i wszystkich wcześniejszych epok — wtedy nagłówek panelu ma fallback do
+   * `civEmoji` (P-PANEL-IMPERIUM-PORTRET-WLADCA, Maciej 2026-08-14). / EN: player ruler
+   * portrait (medallion) — REUSES the leaderPortraits.ts system (same file/URL as
+   * battle/preBattle/diplomacy medallions). `null` when civId is unknown or no file
+   * exists for this and all earlier epochs — the panel header then falls back to
+   * `civEmoji`.
+   */
+  civPortraitUrl?: string | null;
   styl: string;
   jednostkaSpec: string;
   bonusStartowy: string;

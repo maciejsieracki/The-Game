@@ -1217,9 +1217,9 @@ function handleHudBarAction(act: string): void {
         const hudCfg = cfg;
         const refreshPower = () => {
           const fresh = hudCfg.getPowerOverlay?.();
-          if (fresh) showPowerOverlay(fresh, undefined, refreshPower);
+          if (fresh) showPowerOverlay(fresh, undefined, refreshPower, brandIconSvg('res-influence', 20));
         };
-        showPowerOverlay(data, undefined, refreshPower);
+        showPowerOverlay(data, undefined, refreshPower, brandIconSvg('res-influence', 20));
       }
     }
   } else if (act === 'religia' || act === 'kultura' || act === 'skarbiec' || act === 'praca' || act === 'nauka'

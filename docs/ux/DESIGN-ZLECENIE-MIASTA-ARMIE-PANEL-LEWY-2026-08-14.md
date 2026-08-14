@@ -140,7 +140,12 @@ Tak jak w zleceniu 11-zakładek: **sekcja Moc panelu imperium** (`empireDetailPa
 Zobacz ją w grze (`?playtest=mapa`, klik „Moc" na górnym pasku) albo w mockupie
 `docs/ux/claude-design/.../mockupy/The Game - Panel Moc imperium v3 (1E).dc.html` (format bundlera,
 otwórz w przeglądarce, nie w edytorze tekstu — patrz §5 zlecenia 11-zakładek dla wyjaśnienia
-formatu).
+formatu). **Do tej wiadomości dołączony jest też bezpośredni zrzut ekranu z żywej gry** (nie
+mockup) jako dodatkowy, wygodniejszy punkt odniesienia — pokazuje dokładnie tę hierarchię
+wizualną: „Moc 181" jako hero, dwa boxy (Miasta/Rekruci), tabelę 5-kolumnową z paskami % i
+wyróżnioną kolumną PKT, oraz zakładki rankingu na dole. Nie chodzi o kopiowanie layoutu 1:1 do
+paneli Miasta/Armie (Moc jest tabelą podsumowującą, te panele to listy kart) — chodzi o ten sam
+poziom dopracowania.
 
 **Zastosowanie do tych dwóch paneli:** nie chodzi o kopiowanie layoutu 1:1 (Moc jest tabelą
 podsumowującą, te panele to listy przewijalne kart) — chodzi o ten sam **poziom dopracowania**:

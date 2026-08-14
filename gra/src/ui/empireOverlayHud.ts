@@ -3,6 +3,7 @@
  */
 
 import { brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface CultureOverlayData {
   kulturaTotal: number;
@@ -69,6 +70,11 @@ function mount(title: string, bodyHtml: string, onClose?: () => void): void {
     hideEmpireOverlay();
     onClose?.();
   });
+  // P-MENU-ESCAPE-NIEPELNOEKRANOWE (Maciej 2026-08-14): wpięcie w stos overlayów, żeby
+  // Escape zamykał ten panel zamiast przebijać do przeglądarki i wychodzić z pełnego ekranu
+  // (patrz escapeOverlayStack.ts). / EN: wired into the overlay stack so Escape closes this
+  // panel instead of falling through to the browser and exiting fullscreen.
+  pushOverlay('empire-overlay', () => { hideEmpireOverlay(); onClose?.(); });
 }
 
 export function showCultureOverlay(data: CultureOverlayData, onClose?: () => void): void {
@@ -123,6 +129,7 @@ export function showReligionOverlay(data: ReligionOverlayData, onClose?: () => v
 }
 
 export function hideEmpireOverlay(): void {
+  popOverlay('empire-overlay');
   if (root !== null) { root.remove(); root = null; }
 }
 
