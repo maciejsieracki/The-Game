@@ -4,6 +4,11 @@
  * Migracja starego `ulepszeniaPerTurn`/`perTurn` (1|2|3 sztuk) → nowy `%` budżetu Pracy
  * (game/cities.ts). NIE testuje picker (auto-improvements.ts) — to auto-improvements-test.cjs.
  * Run from gra/:  node tools/ulepszenia-praca-percent-test.cjs
+ *
+ * RUNDA 2 (naprawa FAIL Evaluatora, nie dotyczy logiki wydatku picker'a — WYŁĄCZNIE ten plik):
+ * test 8 dopisany — przypina DEFAULT_ULEPSZENIA_PRACA_PERCENT LICZBOWO na 33 (testy 1/3/7 wyżej
+ * porównywały stałą z samą sobą — tautologia, Evaluator zmutował 33→50 i zostały zielone).
+ * 26/26 -> 27/27; migracja/logika testów 1-7 NIETKNIĘTA.
  */
 
 const fs = require('fs');
@@ -167,6 +172,16 @@ console.log('7. resolveEffectiveUlepszenia — dziedziczenie panstwa vs override
   const effOverride = resolveEffectiveUlepszenia(overrideCity, empire);
   eq(effOverride.pracaAutoPercent, 12, 'miasto z override -> efektywny % = wlasny (12), NIE panstwa');
   eq(effOverride.override, true, 'override=true zgloszone poprawnie');
+}
+
+// 8. R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2, naprawa FAIL Evaluatora) — DEFAULT_ULEPSZENIA_
+// PRACA_PERCENT przypięty LICZBOWO na 33 (test-mutacyjny). Testy 1/3/7 wyżej porównują wynik z
+// SAMĄ stałą (`eq(..., DEFAULT_ULEPSZENIA_PRACA_PERCENT, ...)`) — gdyby ktoś zmutował stałą w
+// źródle (33 -> 50), te testy pozostałyby zielone (tautologia: obie strony porównania czytają tę
+// samą, zmutowaną wartość). Ten test przypina samą stałą do konkretnej, niezależnej liczby.
+console.log('8. DEFAULT_ULEPSZENIA_PRACA_PERCENT = 33 (pin literalny, łapie mutację stałej)');
+{
+  eq(DEFAULT_ULEPSZENIA_PRACA_PERCENT, 33, 'DEFAULT_ULEPSZENIA_PRACA_PERCENT przypiety LITERALNIE na 33 (nie porownanie do samej siebie)');
 }
 
 console.log(`\nulepszenia-praca-percent-test: ${passed} passed, ${failed} failed`);
