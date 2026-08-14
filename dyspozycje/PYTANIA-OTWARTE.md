@@ -23836,3 +23836,210 @@ jej lustrzane odbicie.
 blokujący bug w TYM tekście") nie ma zastosowania — obie możliwe naprawy to albo zmiana zachowania
 silnika, albo zmiana treści rozstrzygająca decyzję produktową za właściciela, a nie literówka.
 Commit `51a32fe6` zostaje na gałęzi w obecnej postaci do rozstrzygnięcia w rundzie następnej.
+## Evaluator: G1+G2 runda 4 (`993adab4`) — **WERDYKT: PASS-WITH-NOTES**
+
+Temat `P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE`, runda 4 (naprawa G1 + G2 z werdyktu FAIL dla
+`4f24bcda`, werdykt zapisany w `43d4be34`). Evaluator: Opus 5, izolowany worktree zsynchronizowany
+z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, HEAD = oceniany commit `993adab4`. Wszystkie
+liczby niżej **zmierzone samodzielnie**; kody wyjścia odczytane **bezpośrednio z procesu testu**,
+nie przez potok (pułapka `CLAUDE.md` §0b (b)).
+
+**WERDYKT: PASS-WITH-NOTES.** **G1 i G2 uznaję za ZAMKNIĘTE** — oba zweryfikowane przeze mnie
+niezależnie, na **realnym kodzie**, nie na opisie commita. Architektura (przeniesienie progu 8000 ms
+z pasywnej sondy do osobnej funkcji wołanej wyłącznie z interaktywnej próby końca tury) jest
+**poprawna i faktycznie eliminuje wyścig** — nie jest to obejście ani przesunięcie problemu. Noty
+N1-N4 to **jedna realna luka projektowa (N1, do domknięcia jedną linią) i trzy zapisy dokumentacyjne
+/ ostrzeżenia dla przyszłych sesji** — żadna nie blokuje deployu.
+
+### 1. Bramki — zmierzone samodzielnie, exit code z procesu
+
+| Bramka | Wynik | Exit |
+|---|---|---|
+| `npx tsc --noEmit` | 0 błędów | **0** |
+| `koniec-tury-g1-g2-runda4-test` (NOWY) | 38 pass, 0 fail | **0** |
+| `koniec-tury-f1-f4-runda3-test` | 39 pass, 0 fail | **0** |
+| `heal-stale-blockers-pending-battle-test` | 23 pass, 0 fail | **0** |
+| `end-turn-modal-sequencing-test` | 40 pass, 0 fail | **0** |
+| `barbarzyncy-podwojny-atak-prebattle-test` | 18 pass, 0 fail | **0** |
+| `diplomacy-audience-close-flush-test` | 37 pass, 0 fail | **0** |
+| `escape-overlay-stack-test` | 84 pass, 0 fail | **0** |
+| `tech-tree-test` | 19 pass, 0 fail | **0** |
+| `research-test` | 33/33, ALL GREEN | **0** |
+| `vite build --outDir <tmp> --emptyOutDir` | 822 modułów, 37 087,77 kB | **0** |
+
+`git status` czysty po całym przebiegu (testy regenerują `tools/.stubs/g1g2r4-*.ts` bajt w bajt
+identycznie z zacommitowanymi). Wszystkie liczby z opisu commita **potwierdzone** — żadnej nie
+musiałem prostować (w odróżnieniu od rundy 3, gdzie prostowałem `logic-test`/`empire-panel-*`).
+
+### 2. Weryfikacja architektury — czy przeniesienie timeoutu NAPRAWDĘ usuwa wyścig z G1
+
+Nie poprzestałem na tekstowych pinach Operatora (te dowodzą tylko, że kod *stoi*, nie że *działa*).
+Zbudowałem własny harness, który **wycina DOSŁOWNY TEKST ŹRÓDŁOWY** trzech funkcji z `main.ts`
+(`healStaleEndTurnBlockers`, `healStuckDeferredPreBattleQueueOnEndTurnAttempt`,
+`canPlayerInitiateEndTurn`) i **wykonuje go** w odtworzonym domknięciu `boot()`, podpiętym pod
+**prawdziwy, zbundlowany `src/ui/preBattle.ts`** (esbuild + jsdom). Różnica wobec testu Operatora:
+mirror nie może się zdezaktualizować, bo nie ma mirrora — wykonywany jest ten sam bajt kodu, który
+pójdzie do bundla. Wynik: **21 pass, 0 fail**.
+
+**2.1. Kolejność w `triggerPlayerEndTurn()` — potwierdzona w kodzie, nie założona.** Pierwsza
+instrukcja ciała to dosłownie `healStuckDeferredPreBattleQueueOnEndTurnAttempt();`, druga
+`if (!canPlayerInitiateEndTurn()) {`. Sprzątanie wyprzedza early return — to jest ogniwo, od którego
+zależy cała naprawa G2, i jest na miejscu.
+
+**2.2. Czy istnieje ścieżka wejścia OMIJAJĄCA `triggerPlayerEndTurn()`** (zlecenie pytało wprost).
+Przeszukałem całe `src/`. Wejść jest dokładnie **trzy i wszystkie trzy prowadzą do
+`triggerPlayerEndTurn()`**:
+* `src/ui/bottomBarHud.ts:111` (`[data-end]`) → `config.onEndTurn` ,
+* `src/ui/hud.ts:1201` (`data-act="end"`) → `cfg.onEndTurn`,
+* obie wpięte w **jednym jedynym miejscu**: `main.ts:18280` `onEndTurn: () => triggerPlayerEndTurn()`,
+* klawisz **N**: `main.ts:28148` → `triggerPlayerEndTurn()` bezpośrednio.
+
+`endTurnTransition()` to wyłącznie overlay animacji, nie inicjator tury. **Żadnej ścieżki obejścia
+nie ma** — G1/G2 nie mogą wystąpić „na tamtej ścieżce", bo tamtej ścieżki nie ma.
+
+**2.3. Sedno G1 — odtworzone (§ SEKCJA 1 harnessu).** Audiencja otwarta, bitwa AI odroczona do
+kolejki, zegar cofnięty o 20 s, 5× pasywna sonda `canEndTurn()`:
+* `aiCmdResume` i `aiTurnAwaitingBattle` **przeżyły**, kolejka **nietknięta** — mimo wieku 20 s;
+* przy **OTWARTYM** modalu `healStuck...` **nie czyści** kolejki nawet po 20 s (warunek kontekstowy działa);
+* **dokładnie w oknie G1** (`isDiplomacyAudienceOpen()` już `false`, zaplanowany rAF flush jeszcze
+  się nie odpalił) pasywna sonda **NIE kasuje** ani flag, ani kolejki — bo gałąź 1 wróciła do
+  formuły `!hasPendingAutoPreBattle()`, a niepusta kolejka ją wyłącza;
+* następujący po tym flush **pokazuje odroczoną bitwę** — nic się nie gubi.
+
+To jest ta sama ścieżka, którą w rundzie 3 zmierzyłem jako deterministyczną awarię. Dziś przechodzi.
+**G1 zamknięte.**
+
+**2.4. Kontrole kierunkowe.** Modal zamknięty + >8 s + brak flusha → kolejka **czyszczona** (funkcja
+w ogóle działa). Żądanie świeże (<8 s) → **nietknięte**, normalnie się pokazuje (próg nie strzela od razu).
+
+**2.5. Sedno G2 — odtworzone (§ SEKCJA 4).** Bitwa barbarzyńska w kolejce, **obie flagi AI puste**:
+* `canPlayerInitiateEndTurn()===false` (przycisk zablokowany) i **pasywna sonda tego nie odblokowuje**
+  — gałąź 1 jest bramkowana flagami AI, których tu nie ma. To jest dokładnie zakleszczenie z G2;
+* interaktywna próba końca tury **czyści zaległą bitwę mimo pustych flag**, po czym
+  `canPlayerInitiateEndTurn()===true` → **przycisk odblokowany, jedno kliknięcie kończy turę**.
+  **G2 zamknięte.**
+
+**2.6. Ogniwo, od którego zależy G2, a którego opis commita NIE wymienia — sprawdzone osobno.**
+Cała naprawa G2 działa tylko wtedy, gdy **kliknięcie w wyszarzony przycisk „Zakończ turę" w ogóle
+dociera do handlera**. Sprawdziłem: `bottomBarHud.ts` renderuje blokadę jako **czysto wizualną** —
+klasa `is-disabled` (`opacity:.38;cursor:not-allowed;filter:grayscale(.5)`) + `aria-disabled`,
+**bez atrybutu `disabled` i bez `pointer-events:none`**; handler bramkuje wyłącznie na
+`hideEndTurn()`, nie na `canEnd`. `hud.ts:1201` nie bramkuje w ogóle. Czyli kliknięcie **dociera** i
+heal się odpala. Gdyby ktoś kiedyś „posprzątał" ten przycisk dodając `pointer-events:none` albo
+`disabled`, **G2 wróciłby po cichu** — patrz N4.
+
+### 3. Czy usunięcie timeoutu z gałęzi 1 nie cofa ochrony F2 z rundy 3 (zlecenie, pkt 5)
+
+F2 chroniło przed jednym: żądanie utknięte w kolejce **na stałe** wyłączałoby gałąź 1 bezterminowo,
+zamieniając odwracalną degradację w **twardą blokadę „Zakończ turę"**. Odtworzyłem ten scenariusz
+(§ SEKCJA 6): stan zakleszczony → przycisk zablokowany → **pierwsza interaktywna próba końca tury
+go odblokowuje**. Ochrona F2 jest **zachowana, tylko przeniesiona z pasywnej pętli renderu na
+ścieżkę interaktywną** — a to jest jedyny moment, w którym gracz w ogóle dostrzega problem, więc
+przeniesienie nie jest utratą. **Regresji do stanu sprzed rundy 3 nie ma.**
+
+Sprawdziłem też **gałąź 4** tej samej funkcji (`stuckMs > 8000`, nietknięta w tym commicie, bo
+pre-istniejąca): kasuje `aiCmdResume`, ale **nigdy nie rusza kolejki**, i wymaga
+`endTurnInProgress && isTurnTransitionActive()`, a oba są `false` w czasie oczekiwania na odroczoną
+bitwę (`finally` w `triggerPlayerEndTurn` gasi je zanim gracz zamknie modal). **Nie jest wektorem G1.**
+
+### 4. Poprawka army-merge flush — kompletna, czwartego miejsca NIE ma
+
+Zweryfikowałem wyczerpująco, nie na słowo: `showArmyMergePanel({` występuje w `main.ts` **dokładnie
+3 razy** (`:9782`, `:10103`, `:10191`) i **wszystkie 6 callbacków** (`onMerge`+`onSeparate`) ma dziś
+`flushDeferredAutoPreBattle()`. Domknięcie zbioru sprawdziłem od strony modułu:
+`src/ui/armyMergePanel.ts` ma **tylko dwa** callbacki wyjścia, a **Escape, klik w tło i Enter
+wszystkie routują przez `pick(opts.onMerge)`** — czyli są pokryte. `hideArmyMergePanel()`
+(zamknięcie z pominięciem callbacków) **nie jest wołane nigdzie poza własnym modułem** — sprawdzone
+grepem po całym `src/`. Ponowne `showArmyMergePanel` na otwartym panelu robi `closePanel()` bez
+callbacku, ale natychmiast otwiera nowy, więc `isArmyMergePanelOpen()` zostaje `true` i flush i tak
+byłby no-opem — nie jest to wyciek. **Czwartego nieodkrytego miejsca nie ma.**
+
+### 5. Hazard kodowania — naprawiony, zweryfikowane maszynowo
+
+Przeskanowałem cały diff `993adab4` skryptem: **0 znaków cyrylicy**, **0 sekwencji mojibake**
+(UTF-8 czytane jako latin-1), **0 znaków U+FFFD**, **0 literalnych `\uXXXX` w komentarzach**, przy
+**581 poprawnych polskich znakach UTF-8**. `file(1)` potwierdza `UTF-8 text` dla `src/main.ts` i
+wszystkich trzech plików testów. Czysto.
+
+### 6. Kontrola uczciwości testów (liczba asercji SPADŁA 40 → 39)
+
+Spadek liczby asercji zawsze sprawdzam pod kątem osłabienia bramki. Tutaj bilans jest **uczciwy**:
+usunięte 4 piny (`F2-A1`-`F2-A4`) asercjonowały **kod, którego już nie ma** (`pendingBattleStuck`
+w gałęzi 1); dodane 3 nowe (`F2-A9`-`F2-A11`) pinują nową funkcję i kolejność w
+`triggerPlayerEndTurn`; asercje behawioralne zostały **ODWRÓCONE** (dowodzą teraz, że pasywna gałąź
+**nie** kasuje na podstawie wieku) zamiast usunięte. −4 +3 = −1. Do tego **+38 w nowym dedykowanym
+pliku**. Pokrycie **wzrosło**, nie spadło.
+
+Potwierdziłem też deklarację Operatora, że **F1 z rundy 3 pozostaje nietknięte**: diff `main.ts` ma
+dokładnie **5 hunków** (3× army-merge flush, 1× gałąź 1, 1× nowa funkcja + głowa
+`triggerPlayerEndTurn`) — `finishIncomingBattleUi()` ani deklaracja `battleUiResolving` **nie są
+w diffie w ogóle**.
+
+---
+
+### NOTY (nie blokują deployu)
+
+**N1 — uzasadnienie w komentarzu jest nieprawdziwe, a `clear()` jest wyborem gorszym od `flush()`.
+Do domknięcia jedną linią, w osobnej turze.** Komentarz nowej funkcji mówi: *„gdy kolejka faktycznie
+jest martwa (jakiś inny błąd zablokował ją na stałe), pierwsze kliknięcie «Zakończ turę» ją
+odblokowuje"*. **To jest nieprawda i da się to udowodnić z samych strażników funkcji.** Warunki
+wejścia do `clearDeferredAutoPreBattleQueue()` to: kolejka niepusta ∧ `!isPreBattleOpen()` ∧
+`!isDiplomacyAudienceOpen() && !isArmyMergePanelOpen()` ∧ wiek > 8000 ms. Tymczasem
+`flushDeferredAutoPreBattle()` przerywa **wyłącznie** na: kolejka pusta ∨ `isPreBattleOpen()` ∨
+`isOtherEndTurnModalOpen()` — a ten ostatni jest wpięty (`main.ts:19044`) dokładnie jako
+`isDiplomacyAudienceOpen() || isArmyMergePanelOpen()`. Czyli **zbiór warunków, w którym funkcja
+porzuca bitwę, jest podzbiorem zbioru, w którym flush by się UDAŁ.** Kolejka w momencie sprawdzenia
+**nigdy nie jest „martwa"** — zawsze da się ją opróżnić normalną drogą.
+
+Odtworzyłem to empirycznie na realnym `ui/preBattle.ts` (**9 pass, 0 fail**): w **tym samym stanie**,
+w którym `healStuck...` porzuca żądanie, `flushDeferredAutoPreBattle()` **pokazuje bitwę**; ścieżka
+faktycznie zaimplementowana natomiast nie wywołuje **żadnego** callbacku (`onAuto`/`onBattlefield`/
+`onCancel`) — atak znika bez śladu dla gracza i bez efektu w modelu.
+
+**Dlaczego mimo to nie FAIL:** żeby ta ścieżka w ogóle się odpaliła, musiałby istnieć **nieznany
+wyciek** enqueue→flush. Wszystkie znane sparowałem i wszystkie są dziś pokryte (audiencja `onBack`
+rAF, `closeDiplomacyAudienceAndFlush` rAF, 3× panel scalenia — domknięte właśnie tym commitem,
+`finishIncomingBattleUi` na każdym wyjściu z bitwy przychodzącej, `finally` w `triggerPlayerEndTurn`).
+Nie udało mi się skonstruować osiągalnego scenariusza. Skutek ewentualnego trafienia to **jeden
+utracony atak AI/barbarzyńców na korzyść gracza** — degradacja, nie korupcja stanu i nie
+zakleszczenie. To jest **klasa niższa niż G1** (który był deterministyczny przy normalnym tempie gry).
+
+**Rekomendacja (1 linia, do osobnej tury — NIE warunek deployu):** w
+`healStuckDeferredPreBattleQueueOnEndTurnAttempt()`, po sprawdzeniu wieku, wołać najpierw
+`flushDeferredAutoPreBattle()`, a `clearDeferredAutoPreBattleQueue()` wykonać **tylko jeśli kolejka
+po flushu nadal jest niepusta**. Zamienia „porzuć bitwę" na „pokaż bitwę", zachowuje odblokowanie
+przycisku (pokazany preBattle blokuje koniec tury **z komunikatem**, zamiast po cichu), i **przy
+okazji likwiduje N3**. Jeśli świadomym zamiarem jest porzucanie żądań starszych niż 8 s jako
+**nieaktualnych** (roster sprzed tury — realny argument, podnoszony w rundzie 2), to należy **napisać
+to w komentarzu**, bo obecne uzasadnienie jest fałszywe.
+
+**N2 — nowa funkcja nie ma strażnika `!battleUiResolving`, który ma gałąź 1.** Dziś nieosiągalne:
+funkcja jest wołana wyłącznie z handlera wejścia użytkownika, a okno F1 (wnętrze
+`finishIncomingBattleUi()`) jest w całości synchroniczne — żadne zdarzenie wejścia nie przeplecie się
+w środku (`void runAiPhase()` nie jest awaitowane, więc `flushDeferredAutoPreBattle()` na końcu
+biegnie w tym samym bloku synchronicznym; sprawdziłem). Ale to **jedyny** strażnik, który gałąź 1 ma,
+a ta funkcja nie — gdyby kiedykolwiek ktoś wywołał ją z innej ścieżki niż `triggerPlayerEndTurn`,
+**F1 wróciłby**. Warte dopisania jako tania asekuracja albo przynajmniej jako ostrzeżenie w
+komentarzu funkcji.
+
+**N3 — reszta wyścigu poniżej jednej klatki.** Argument Operatora („gracz fizycznie nie zdąży
+kliknąć w oknie jednej klatki") jest **słuszny w praktyce**, ale nie jest twardą gwarancją: między
+zaplanowaniem `requestAnimationFrame` w `onBack` a jego wykonaniem przeglądarka **może** dostarczyć
+zdarzenie kliknięcia, a przy ciężkiej scenie three.js klatka bywa dłuższa niż 16 ms. Trafienie
+wymagałoby kliknięcia „Zakończ turę" w tej samej klatce, w której gracz zamknął audiencję, w innym
+miejscu ekranu — praktycznie nieosiągalne, a skutek byłby tożsamy z N1 (jeden utracony atak).
+Rekomendacja z N1 **usuwa to całkowicie**, bez potrzeby analizowania okien czasowych.
+
+**N4 — zapis dla przyszłych sesji: blokada przycisku „Zakończ turę" MUSI zostać czysto wizualna.**
+Cała naprawa G2 opiera się na tym, że kliknięcie w wyszarzony przycisk **dociera do handlera**
+(§2.6). To nie jest udokumentowane ani w kodzie, ani w opisie commita. Dodanie kiedykolwiek
+`disabled` albo `pointer-events:none` do `.civ-bottom-bar .end-turn.is-disabled` **po cichu
+przywróci G2** (zostanie tylko klawisz N). Warte komentarza-ostrzeżenia przy tej regule CSS.
+
+---
+
+**Deploy do ROBOCZA: bez przeszkód ze strony Evaluatora.** G1 (bloker) i G2 zamknięte i zweryfikowane
+niezależnie na realnym kodzie; wszystkie 10 bramek zielone z exitem 0 zmierzonym bezpośrednio; build
+przechodzi. N1 to dług projektowy do domknięcia jedną linią w osobnej turze — **nie warunek deployu**,
+bo nie znalazłem osiągalnego scenariusza jego wyzwolenia, a skutek trafienia jest o klasę niższy niż
+to, co ten commit naprawia.
