@@ -19257,7 +19257,7 @@ się na `miasto`+`obywatele` (2 nowe chipy HUD).
 **STATUS: czeka na decyzje właściciela — brak akcji kodowej. Plik przekazany właścicielowi
 (SendUserFile) do bezpośredniego obejrzenia.**
 
-## P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13, zgłoszenie Macieja, zrzut ekranu) · STATUS: **OTWARTE — dispatch naprawy**
+## P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13, zgłoszenie Macieja, zrzut ekranu) · STATUS: **ZAMKNIĘTE** (nagłówek przestemplowany 2026-08-14 — dispatch dziś wykazał, że fix `e7591ebb` + rename N4 już to naprawiły wcześniej; `diplomacyPnSurowiecIlosc` dzieli przez krok, test 205 Glina+105 Drewno=103 PW zielony w `diplomacy-value-catalog-test.cjs`, zero-line diff potwierdzony niezależnie)
 
 Właściciel przesłał zrzut ekranu "Edytuj swoją propozycję" (kontroferta, partner Inkowie):
 205 Glina + 105 Drewno → ekran pokazuje **MY ODDAJEMY: 515 PW, BILANS (ONI): +515 PW**.
