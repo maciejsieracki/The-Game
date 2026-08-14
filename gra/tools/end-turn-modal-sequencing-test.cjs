@@ -154,21 +154,43 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
     '[A7] finally woła flushDeferredPlayerUnitReveals() -> flushDeferredMergePrompts() -> flushDeferredAutoPreBattle() w tej kolejności');
 }
 
-// A8) preBattle.ts: showPreBattle ma guard "auto + isOtherEndTurnModalOpen -> odłóż" PRZED
-//     jakąkolwiek mutacją DOM (przed hidePreBattle()/showMapScrim()).
+// A8) preBattle.ts: showPreBattle ma guard "auto + (isPreBattleOpen||isOtherEndTurnModalOpen)
+//     -> odłóż" PRZED jakąkolwiek mutacją DOM (przed hidePreBattle()/showMapScrim()).
+//     P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (2026-08-14): guard rozszerzony o
+//     isPreBattleOpen() -- bez tego drugie automatyczne wywołanie w tym samym ticku (2+
+//     barbarzyńców atakujących naraz) przechodziło prosto do hidePreBattle() i po cichu
+//     kasowało pierwszą, wciąż otwartą bitwę. Bufor zmieniony z jednego nullable slotu na
+//     kolejkę FIFO (deferredAutoRequests.push/shift), żeby 3+ jednoczesne ataki też się nie
+//     gubiły.
 {
   const fnStart = preBattleSrc.indexOf('export function showPreBattle(');
   ok(fnStart >= 0, '[A8] znaleziono export function showPreBattle( w ui/preBattle.ts');
   const guardIdx = fnStart >= 0
-    ? preBattleSrc.indexOf("if (opts?.auto === true && pbCfg.isOtherEndTurnModalOpen?.() === true) {", fnStart)
+    ? preBattleSrc.indexOf(
+      "if (opts?.auto === true && (isPreBattleOpen() || pbCfg.isOtherEndTurnModalOpen?.() === true)) {",
+      fnStart,
+    )
     : -1;
   const hideCallIdx = fnStart >= 0 ? preBattleSrc.indexOf('hidePreBattle();', fnStart) : -1;
   ok(guardIdx > fnStart && hideCallIdx > guardIdx,
-    '[A8] guard automatyczny w showPreBattle stoi PRZED hidePreBattle() -- odłożone żądanie nie dotyka DOM w ogóle');
-  const deferIdx = guardIdx >= 0 ? preBattleSrc.indexOf('deferredAutoRequest = { info, cb, opts };', guardIdx) : -1;
+    '[A8] guard automatyczny w showPreBattle (auto + isPreBattleOpen()||isOtherEndTurnModalOpen()) stoi PRZED hidePreBattle() -- odłożone żądanie nie dotyka DOM w ogóle');
+  const deferIdx = guardIdx >= 0 ? preBattleSrc.indexOf('deferredAutoRequests.push({ info, cb, opts });', guardIdx) : -1;
   const returnIdx = deferIdx >= 0 ? preBattleSrc.indexOf('return;', deferIdx) : -1;
   ok(deferIdx > guardIdx && returnIdx > deferIdx && returnIdx - deferIdx < 60,
-    '[A8] po zapamiętaniu żądania funkcja robi return -- nie kontynuuje budowy overlayu');
+    '[A8] po dopisaniu żądania do kolejki (push) funkcja robi return -- nie kontynuuje budowy overlayu');
+}
+
+// A8b) P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY: bufor to kolejka FIFO (tablica), nie
+//      pojedynczy nullable slot -- 3+ jednoczesne automatyczne żądania nie mogą się nawzajem
+//      nadpisać. flushDeferredAutoPreBattle zdejmuje jeden element na wywołanie (shift()).
+{
+  ok(/const deferredAutoRequests: \{ info: PreBattleInfo; cb: PreBattleCallbacks; opts\?: PreBattleOptions \}\[\] = \[\];/
+    .test(preBattleSrc),
+  '[A8b] deferredAutoRequests to tablica (kolejka FIFO), nie pojedynczy nullable slot');
+  const fnStart = preBattleSrc.indexOf('export function flushDeferredAutoPreBattle(): void {');
+  const fnBody = fnStart >= 0 ? preBattleSrc.slice(fnStart, fnStart + 500) : '';
+  ok(/const req = deferredAutoRequests\.shift\(\)!;/.test(fnBody),
+    '[A8b] flushDeferredAutoPreBattle zdejmuje DOKŁADNIE jeden element z kolejki (shift()) na wywołanie');
 }
 
 // A9) preBattle.ts: flushDeferredAutoPreBattle re-sprawdza blokadę PRZED ponownym pokazaniem.

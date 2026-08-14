@@ -21604,6 +21604,27 @@ async function boot(): Promise<void> {
         updateHud();
         refreshD1bHud();
         onResolved();
+        // P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (Maciej 2026-08-14): ta bitwa
+        // przychodząca (AI/barbarzyńcy) właśnie się rozstrzygnęła (auto, pole bitwy albo
+        // wycofanie -- KAŻDA ścieżka wyjścia z launchIncomingMapFieldBattle kończy tutaj) --
+        // pokaż kolejne odłożone automatyczne preBattle z kolejki (drugi/trzeci
+        // barbarzyńca, który próbował zaatakować w tym samym ticku, gdy to okno było
+        // jeszcze otwarte, patrz deferredAutoRequests w ui/preBattle.ts). Bez tego
+        // wywołania odłożone żądanie nigdy by się nie pokazało -- żaden z pozostałych
+        // istniejących flushy (onMerge/onSeparate armii, onBack audiencji, finally
+        // triggerPlayerEndTurn) nie odpala się w momencie, gdy TA bitwa się kończy. No-op
+        // gdy kolejka pusta albo wciąż coś blokuje (kolejne preBattle, audiencja, scalenie
+        // armii) -- flushDeferredAutoPreBattle sam to sprawdza. / EN: this incoming battle
+        // (AI/barbarian) just resolved (auto, battlefield, or retreat -- EVERY exit path
+        // from launchIncomingMapFieldBattle ends here) -- show the next queued automatic
+        // preBattle (another barbarian/AI that tried to attack in the same tick while this
+        // window was still open, see deferredAutoRequests in ui/preBattle.ts). Without this
+        // call the deferred request would never surface -- none of the other existing
+        // flush call sites (army merge onMerge/onSeparate, diplomacy onBack, triggerPlayerEndTurn's
+        // finally) fire at the moment THIS battle ends. No-op when the queue is empty or
+        // something is still blocking (another preBattle, diplomacy audience, army merge) --
+        // flushDeferredAutoPreBattle checks that itself.
+        flushDeferredAutoPreBattle();
       }
 
       function doMapAutoResolveIncoming(): void {
