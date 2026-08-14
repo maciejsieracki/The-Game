@@ -926,7 +926,7 @@ Wdrożenie: `diplomacy.ts`, `diplomacy-proposals.ts`, `diplomacy-treaties.ts`. R
 
 ---
 
-## [UI/RENDER] Drogi — wygląd/mesh do przebudowy · STATUS: **ODŁOŻONE** (rozmowa jutro, 2026-07-29)
+## [UI/RENDER] Drogi — wygląd/mesh do przebudowy · STATUS: **ZAMKNIĘTE** (recon §0c, 2026-08-14) — rozwiązane przy okazji `R-DROGA-WZOR-6-RAMION` (`1194450f`, Evaluator PASS-WITH-NOTES); stary builder z płaskim, jednolitym pasem (`ulepszenia-modele-p3b.ts`) fizycznie usunięty, zastąpiony geometrią maski 6-bitowej z kolejami/kamykami/wzorem cegiełki — zgłoszony problem („płaskie jasne prostokąty") nie może już wystąpić
 
 **Screen (mapa):** płaskie jasne prostokąty / belki między Atenami a Argos — drogi wyglądają nieatrakcyjnie.
 
@@ -936,7 +936,7 @@ Wdrożenie: `diplomacy.ts`, `diplomacy-proposals.ts`, `diplomacy-treaties.ts`. R
 
 ---
 
-## KOLEJKA — audyt handlu / stołu negocjacji · STATUS: **PO PN ZŁOTO/WĘGIEL** (Maciej 2026-07-29)
+## KOLEJKA — audyt handlu / stołu negocjacji · STATUS: **WARUNEK SPEŁNIONY, GOTOWE DO URUCHOMIENIA** (recon §0c, 2026-08-14) — PN złoto/węgiel domknięte już 2026-07-29 (FALA 104), dodatkowo utwardzone `R-DYPLO-CENNIK-SKALA-5X-Q1` (2026-08-13, 2 rundy Evaluatora PASS). Sam audyt (duży zakres: „wszystko na stół, bez skrótów") nigdy nie podjęty — do uruchomienia w osobnej sesji, gdy właściciel da sygnał (nie autonomicznie ze względu na rozmiar)
 
 **Cytat Macieja:** po PN złoto/węgiel — **później** dokładny audyt całego handlu: czy wszystko spina się z wytycznymi (stół negocjacji), czy nie ma dróg na skróty / sytuacji omijających stół (wszystko na stół → akceptuj/odrzuć).
 
