@@ -20214,6 +20214,16 @@ C) Jak B + sprawiedliwy podział wspólnego budżetu między miasta (round-robin
 **Uwaga wg CLAUDE.md §1a: odpowiedź może częściowo cofnąć `R-AUTO-PRACA-BUDZET-PROCENT-Q1=B`
 w zakresie override per-miasto.**
 
+**ODPOWIEDŹ WŁAŚCICIELA (2026-08-14, w czacie, dosłownie):** „Autopraca działa przecież z budżetu
+całej cywilizacji, a nie z budżetu miasta więc musi się trzymać limitów, które są w budżecie
+całej cywilizacji." → **Q3 = B**. Polityka imperium jest twardym pułapem sumy; % miasta (override)
+to jego udział WEWNĄTRZ tego pułapu, nie osobny, niezależny limit mogący go przebić. Właściciel
+nie wspomniał o sprawiedliwym round-robin (C) — zostaje przy literalnym B, „pierwsze miasto zjada
+budżet w ramach pułapu" NIE jest tym tematem (to osobna, nieproszona cecha, zostaje bez zmian
+chyba że właściciel się o nią upomni).
+
+**STATUS: ECHO — dispatch implementacji Q3=B.**
+
 **Nieblokujące, dług testowy (do rejestru, nie do naprawy teraz):** mutacja zamiany zamrożonej
 bazy % (`globalPracaPulaAtEntry`) na ruchomą (`pracaLeft`) przechodzi 29/29 mimo realnej zmiany
 zachowania (800→640 w scenariuszu heterogenicznym) — luka pokrycia widoczna tylko przy różnych %
