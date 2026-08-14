@@ -20327,3 +20327,43 @@ niespójny z odstępami między pozostałymi wierszami.
 `getBoundingClientRect()` wszystkich 6 kart w przeglądarce (headless Chrome, wzorem metody
 używanej całą noc), zidentyfikować faktyczny rozjazd (piksele, nie wrażenie), dopiero potem
 naprawić w kodzie. Nie zgadywać przyczyny bez pomiaru.
+
+## P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START (2026-08-14, zgłoszenie Macieja ze zrzutami kroku 4 kreatora) · STATUS: OTWARTE — prototyp do przeglądu przed scaleniem
+
+Maciej (dosłownie): „po ostatniej zmianie możliwości wyboru cywilizacji jako przeciwnika, widok
+na dole jest zakryty i gracz może myśleć, że coś jest nie tak i nie będzie wiedział, gdzie
+wystartować." Przy 5/5 wybranych cywilizacjach karta „Cywilizacje przeciwnika" rozrasta się do
+2 rzędów ikon, spychając „Twój start (podgląd)" + „Zaawansowane opcje" + „Rozpocznij grę" poniżej
+widocznego ekranu (screen 2 pokazuje pełną stronę: siatka 2×3 + Cywilizacje przeciwnika 5/5 +
+Twój start, wszystko widoczne tylko po przewinięciu strony przeglądarki).
+
+**Dwie zaproponowane opcje (dosłownie):**
+A) „damy to na prawą stronę i wyjustujemy, powiedzmy równo z całym blokiem wyborów. Poziom
+   trudności, typ świata, miasto, państwo. I rozbijemy to na dwie części." — sekcja Cywilizacje
+   przeciwnika przenosi się na prawą kolumnę obok/wewnątrz siatki 2×3 ustawień, rozbita na dwie
+   części (żeby była węższa i wyższa zamiast szeroka i niska, oszczędzając wysokość strony).
+B) „cały blok: pójść start, podgląd, zaawansowane opcje i rozpocznij grę. Raz pod ustawieniami
+   z rozgrywki." — sekcje akcji (Twój start / Zaawansowane opcje / Rozpocznij grę) przenoszą się
+   NAD sekcję Cywilizacje przeciwnika (zaraz pod siatką 2×3), żeby zawsze były widoczne bez
+   przewijania niezależnie od liczby wybranych cywilizacji.
+
+**Preferencja właściciela: A, ale wymaga potwierdzenia zrzutem ekranu przed decyzją** — dosłownie
+„Nasza opcja byłaby lepsza, ale musiałbym widzieć to w screenshocie."
+
+**STATUS: dispatch prototypu (worktree, NIE scalać do głównego drzewa bez zatwierdzenia) —
+zbudować wariant A, zrobić zrzuty ekranu (przy 2/5 i 5/5 wybranych cywilizacji, i przy różnych
+rozdzielczościach jeśli to możliwe), wysłać właścicielowi do przeglądu przed scaleniem.**
+
+## P-NEWGAME-OPISY-DO-TOOLTIP (2026-08-14, zgłoszenie Macieja) · STATUS: OTWARTE — do tego samego prototypu
+
+Maciej: „Wszystkie dodatkowe opisy na wyborach powinny być przeniesione na tooltipy." Dotyczy
+opisów kursywą pod każdą wartością ustawienia (widoczne na zrzucie „Zaawansowane opcje": np.
+„Fair play: min. 1 las / komórkę siatki (Mało 15 · Normalnie 10 · Dużo 5)...", „Mnożnik Pracy
+przy budowie — bazowe koszty z panelu = Niski (×1)." itd. — kilkanaście kart w overlayu
+Zaawansowane opcje, prawdopodobnie też w głównej siatce 2×3 kroku 4) — mają zniknąć jako zawsze
+widoczny tekst i pojawiać się wyłącznie po najechaniu (tooltip/ikona informacji), skracając
+znacząco wysokość każdej karty.
+
+**STATUS: dispatch w TYM SAMYM prototypie co P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START (ten sam
+plik `newGameFlow.ts`, ten sam ekran, warto zrobić razem — skrócenie kart tooltipami też pomaga
+z problemem zasłaniania). Zbudować, zrobić zrzuty przed/po, wysłać do przeglądu przed scaleniem.**
