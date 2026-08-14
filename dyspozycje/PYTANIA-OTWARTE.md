@@ -20573,9 +20573,185 @@ Właściciel explicite poprosił wtedy TYLKO o zapisanie tematu, nie o pracę na
 audyt pełnego transkryptu dziś (2026-08-14) potwierdza, że nigdy nie trafiło to do tego pliku —
 **potwierdzony przypadek zgubionego zgłoszenia**, niezależny od dzisiejszego „znacznik power".
 
-**STATUS: OTWARTE, do kolejki — nie dispatchuję jeszcze Operatora (temat wymaga zbadania stosu
-Escape/overlayów, `escape-overlay-stack-test.cjs` już istnieje jako bramka pokrewna — możliwe że
-częściowo dotyczy tego samego stosu).**
+**STATUS (NIEAKTUALNY — zachowany dla historii): OTWARTE, do kolejki — nie dispatchuję jeszcze
+Operatora (temat wymaga zbadania stosu Escape/overlayów, `escape-overlay-stack-test.cjs` już
+istnieje jako bramka pokrewna — możliwe że częściowo dotyczy tego samego stosu).**
+
+**STATUS AKTUALNY: Operator wykonał naprawę (`4fc770ee`), Evaluator wydał werdykt FAIL —
+patrz sekcja „Evaluator: ESCAPE dopięcie 4 paneli (4fc770ee)" niżej. Kod naprawy jest poprawny
+i zweryfikowany, ale nie jest chroniony żadnym testem i pominięto 5. panel z tą samą luką.**
+
+## Evaluator: ESCAPE dopięcie 4 paneli (4fc770ee) — WERDYKT: **FAIL** (2026-08-14)
+
+Ocena commita `4fc770ee` (P-MENU-ESCAPE-NIEPELNOEKRANOWE), Evaluator Opus 5, niezależna
+weryfikacja na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, worktree z dowiązanym
+`gra/node_modules` (`npx tsc --version` = **5.9.3**, wymóg `C-029` spełniony).
+
+### 1. Co JEST poprawne (zweryfikowane niezależnie, nie z raportu Operatora)
+
+**Sama naprawa działa — wszystkie 4 panele przeszły dowód end-to-end.** Zbudowałem własny
+harness w jsdom, który ładuje **prawdziwe moduły paneli** (esbuild, nie kopię logiki), otwiera
+panel i wysyła **realny `KeyboardEvent('keydown', {key:'Escape'})` na `document`** — czyli
+dokładnie tę drogę, którą przechodzi klawisz w grze. Fullscreen nie jest mierzalny w Node,
+więc mierzony jest **stan Keyboard Lock w momencie naciśnięcia** — bo to on rozstrzyga, czy
+Escape trafi do przeglądarki (i wyjdzie z pełnego ekranu), czy zostanie przechwycony przez grę.
+
+| Panel | Wynik | Co potwierdzone |
+|---|---|---|
+| `gamePauseMenu` | 7/7 | Escape zamyka menu, Lock trzymany (fullscreen nietknięty), `onResume` wywołane, Lock zwolniony, stos pusty |
+| `empireOverlayHud` (Kultura) | 6/6 | jw. + `onClose` wywołane |
+| `empireOverlayHud` (Religia) | 5/5 | jw. |
+| `powerOverlayHud` (Moc) | 6/6 | jw. |
+| `empireDetailPanel` | 8/8 | Escape zamyka panel, `top()` = `empire-detail-panel`, Lock trzymany, stos pusty po zamknięciu |
+| LIFO (Moc nad menu pauzy) | 7/7 | 1. Escape zamyka tylko Moc, 2. Escape menu pauzy, **dopiero 3. Escape wychodzi z pełnego ekranu** |
+| Idempotencja zakładek | 3/3 | 3× `showEmpireDetailPanel()` = 1 wpis na stosie, zero osieroconych wpisów |
+
+Razem **42 asercje, 0 porażek.** Zgłoszony przez Macieja scenariusz („Escape ma najpierw
+zamknąć zakładkę, nie wychodzić z pełnego ekranu") jest dla tych 4 paneli **faktycznie
+naprawiony**.
+
+**Bramki — odtworzone co do liczby:** `npx tsc --noEmit` **exit 0**;
+`escape-overlay-stack-test` **84 pass / 0 fail**; `escape-fullscreen-priority-test`
+**10 pass / 0 fail**. Zgodne z opisem commita.
+
+**Zero regresji — zweryfikowane przez porównanie z commitem-rodzicem `94977a20`:**
+`empire-nauka/praca/religia-panel-coverage` 15/15, `empire-skarbiec-panel-coverage` 12/12,
+`empire-miasta-table` 89/0, `hud-armia-chip-jednostki` 58/58, `empire-panel-split` 25/0,
+`empire-panel-sliders-always-visible` 8/0 — wszystkie zielone.
+
+**Wyjątek `diplomacyPendingHud` — uzasadniony, potwierdzam.** Przeczytany kod: wyłącznie
+przyciski `Akceptuj` / `Odrzuć` / `Następne`, **zero przycisku zamknięcia**. To realny bloker
+decyzyjny, nie modal do zamknięcia — świadome pominięcie jest tu poprawne.
+
+### 2. FAIL #1 (blokujący) — naprawa nie jest chroniona ŻADNYM testem
+
+To jest twardy **FAIL #7** z `R-PROC-AUTOBOT-EVAL-STRICT-EDGE` („test bez repro zgłoszonego
+buga — asercji, która padłaby na starym kodzie") oraz podręcznikowy przypadek **tautologii
+testowej** opisanej w playbooku (test odtwarza formułę zamiast importować prawdziwy kod).
+
+**Dowód rozstrzygający — cofnąłem WSZYSTKIE 4 naprawy do stanu sprzed commita
+(`git checkout 94977a20 -- <4 pliki>`), zostawiając nowe testy:**
+
+```
+escape-overlay-stack-test:      84 pass, 0 fail   (exit 0)
+escape-fullscreen-priority-test: 10 pass, 0 fail   (exit 0)
+npx tsc --noEmit:                                   exit 0
+```
+
+**Obie bramki są w 100% zielone na kodzie, w którym błąd Macieja występuje w pełni.**
+
+**Mutacja kontrolna (wymagana w zleceniu)** — usunięcie samego `pushOverlay('game-pause-menu', …)`
+z `gamePauseMenu.ts`, czyli rdzenia naprawy panelu wprost wymienionego w zgłoszeniu: `tsc`
+**exit 0**, `escape-overlay-stack-test` **84/0**, `escape-fullscreen-priority-test` **10/0**.
+**Mutacja ucieka w całości.** (`tsconfig.json` nie ma `noUnusedLocals`, więc osierocony import
+też nic nie łapie.)
+
+Przyczyna jest strukturalna, nie kosmetyczna:
+
+- `escape-fullscreen-priority-test.cjs` **nie importuje żadnego z 4 paneli.** Woła
+  `pushOverlay('empire-detail-panel', …)` **sam, z własnym callbackiem** — testuje
+  `escapeOverlayStack.ts`, który i tak działał poprawnie od `R-ESC-PELNY-EKRAN-Q1=A`. Nazwa
+  panelu jest tu wyłącznie literałem tekstowym.
+- „+4 nowe ID" w `escape-overlay-stack-test.cjs` to **4 stringi dopisane do listy**
+  `MAP_OVERLAY_IDS`, po której pętla robi `pushOverlay(id, …)` własnym callbackiem. To dowodzi,
+  że stos umie obsłużyć dowolny string — nie że którykolwiek panel go woła.
+
+**Co domknie lukę** (wzorzec sprawdzony w tym repo — patrz playbook, „extract-to-pure-function"):
+test, który **importuje prawdziwe moduły paneli**, otwiera panel i sprawdza, że wpis pojawia się
+na stosie (`top().id`), a Escape go zamyka. Mój harness z §1 robi dokładnie to i łapie mutację
+M1 czerwono — może posłużyć za punkt wyjścia. Minimum: 4 asercje `top()?.id === '<id>'` po
+wywołaniu `show*()` prawdziwego modułu.
+
+### 3. FAIL #2 — nieprawdziwa liczba w opisie commita
+
+Opis commita podaje: *„empire-panel-econ-slider-visibility 60/0"*. **Realny wynik: 59 pass,
+1 fail, `TEST_EXIT=1`** — zmierzony u mnie dwukrotnie. Bramka jest **czerwona**, nie zielona.
+
+Sprawdziłem, czy to nie regresja tego commita: na commicie-rodzicu `94977a20` wynik jest
+**identyczny (59/1, exit 1)** — więc **pre-istniejąca**, temat jej nie zepsuł. Ale wpisanie
+`60/0` jako faktu narusza `CLAUDE.md` §0b („każda liczba przedstawiona jako fakt wymaga
+weryfikacji"). Do sprostowania w rejestrze.
+
+**Druga bramka czerwona, w opisie w ogóle niewymieniona:** `empire-panel-moc-scroll-preserve`
+— **38 pass, 9 fail, exit 1**, również **identycznie na `94977a20`** (delta zero, więc też
+pre-istniejąca; dominujący komunikat: `wireMiastaColFilter is not defined`). Obu nie ma dziś na
+liście znanych porażek pre-istniejących w `CLAUDE.md` — warto je tam dopisać, żeby następna
+sesja nie liczyła ich jako swojej regresji.
+
+### 4. FAIL #3 — Operator NIE znalazł wszystkich miejsc z luką (5. panel)
+
+Przeliczyłem samodzielnie: `pushOverlay(` ma **31 wywołań** w `gra/src`, a **27 modułów**
+w `gra/src/ui` robi `document.body.appendChild` **bez** żadnego `pushOverlay`. Po odsianiu
+stałego chromu HUD (`hud.ts`, `bottomBarHud.ts`, `mapToolbarHud.ts`, `unitPanelHud.ts`,
+`leaderBannersHud.ts`, `contextPanelHud.ts`, `hoverDetailDock.ts`, paneli dev i ekranów
+przejściowych) zostaje realny, pominięty przypadek:
+
+**`gra/src/ui/improvementBuildConfirm.ts`** — modal „Zastąpić ulepszenie?", wołany z
+`main.ts:11129` w normalnej rozgrywce (budowa ulepszenia na heksie z istniejącym ulepszeniem
+lub lasem). Ma `role="dialog" aria-modal="true"`, pełnoekranowe tło `position:fixed;inset:0`,
+**przycisk „Anuluj" i zamykanie kliknięciem w tło** — czyli spełnia dokładnie to kryterium,
+którym Operator uzasadnił naprawę pozostałych paneli, a **nie ma ani `pushOverlay`, ani żadnej
+obsługi Escape** (identycznie jak `empireDetailPanel` przed naprawą).
+
+Udowodnione empirycznie moim harnessem (11/11 asercji, prawdziwy moduł + realny `KeyboardEvent`):
+
+- **Scenariusz A — modal sam, pusty stos:** Keyboard Lock **nie** jest trzymany → Escape
+  **nie zamyka modala** i **wychodzi z pełnego ekranu**. To dosłownie objaw ze zgłoszenia
+  Macieja, nadal obecny w grze po tym commicie.
+- **Scenariusz B — modal nad trybem budowy** (realna ścieżka: `main.ts` trzyma wtedy
+  `'build-mode'` na stosie): Escape **zamyka tryb budowy POD spodem**, a modal potwierdzenia
+  **zostaje osierocony na ekranie**. Naruszenie LIFO — objaw gorszy niż pierwotny bug.
+
+**Sprawdzone i ODRZUCONE jako luka** (żeby nie mnożyć problemów, których nie ma):
+`diplomacyNegotiationModal.ts` też nie jest na stosie, ale `diplomacyAudience.ts` ma jawny
+strażnik `childModalBlocksExit()` (linie 484-491), który wykrywa `.civ-diplo-neg-overlay`
+i blokuje zamknięcie audiencji pod spodem. Fullscreen jest tam chroniony przez Lock rodzica
+(`'diplo-audience'`), więc **zgłoszony bug tam nie występuje** — zostaje tylko drobiazg
+kosmetyczny (Escape nic nie robi, zamiast zamknąć formularz). Nie blokuje.
+
+### 5. FAIL #4 — uzasadnienie świadomych wyjątków jest faktycznie nieprawdziwe (toasty)
+
+Opis commita pomija powiadomienia jako *„blokery decyzyjne, nie modale do zamknięcia"*.
+Dla `diplomacyPendingHud` to prawda (§1). **Dla toastów to nieprawda — wszystkie trzy mają
+przycisk zamknięcia:**
+
+| Moduł | Przycisk | Dowód |
+|---|---|---|
+| `civElimNotice.ts` | „OK" + klik w tło zamyka | linie 83, 93, 96 |
+| `triumphCityStateNotice.ts` | „Rozumiem" | linie 91, 94 |
+| `wonderCompletedNotice.ts` | „Zamknij" | linia 86 |
+
+Skoro kryterium wyboru brzmiało „modal z przyciskiem zamknięcia → wpinamy", to te trzy
+kwalifikują się tak samo jak naprawione panele. Pojawiają się na mapie przy pustym stosie,
+więc Escape przy nich **wychodzi z pełnego ekranu** zamiast je zamknąć. Nie twierdzę, że muszą
+wejść do stosu — twierdzę, że **podane uzasadnienie wyłączenia ich jest sprzeczne z kodem**
+i decyzja wymaga świadomego potwierdzenia właściciela, a nie fałszywej przesłanki.
+
+### 6. Werdykt i co zrobić
+
+**FAIL.** Uzasadnienie wyboru werdyktu: naprawa kodu jest poprawna i przetestowana przeze mnie
+end-to-end (§1) — **nie o jakość kodu tu chodzi**. FAIL wynika z `R-PROC-AUTOBOT-EVAL-STRICT-EDGE`
+**FAIL #7**, który jest twardy i nigdy nie schodzi do PASS-WITH-NOTES: paczka wprowadza naprawę
+zgłoszonego buga i **nie zostawia po sobie ani jednej asercji, która padłaby na starym kodzie**.
+Dowód nie jest teoretyczny — cofnięcie całej naprawy zostawia bramki zielone (§2).
+
+Do zrobienia przed ponownym zgłoszeniem gotowości (jedna runda, bez nowego ABC):
+
+1. **Test wiążący panele ze stosem** — importujący 4 prawdziwe moduły; musi paść czerwono po
+   usunięciu któregokolwiek `pushOverlay`. Kryterium odbioru: mutacja M1 z §2 łapana.
+2. **`improvementBuildConfirm.ts`** — wpiąć w stos (`pushOverlay`/`popOverlay`) tak samo jak
+   pozostałe; scenariusze A i B z §4 jako asercje.
+3. **Sprostować liczbę** `empire-panel-econ-slider-visibility` (jest 59/1, nie 60/0) i dopisać
+   obie pre-istniejące czerwone bramki (§3) do listy znanych porażek w `CLAUDE.md`.
+4. **Toasty (§5)** — poprawić uzasadnienie na zgodne z kodem; jeśli mają zostać poza stosem,
+   to jako świadoma decyzja właściciela, nie jako „brak przycisku zamknięcia".
+
+**Zakres (`C-025`) i sprzężenia (`C-026`) — bez zastrzeżeń.** Diff to 203 dodane linie, zero
+usuniętych, zero zmian zachowania poza dokładnie tym, czego wymagała przyczyna błędu. Żadnych
+refaktorów „przy okazji". `escapeOverlayStack.ts` — kod współdzielony przez ~20 overlayów —
+**nie został tknięty**, więc ryzyko sprzężenia zerowe; przeliczyłem wszystkie 31 wywołań
+`pushOverlay` grepem samodzielnie, nie z raportu Operatora. Komentarze dwujęzyczne PL+EN
+zgodnie z `CLAUDE.md` §9.
 
 ## P-MENU-START-MUZYKI-OPOZNIENIE — SPROSTOWANIE: JUŻ NAPRAWIONE WCZEŚNIEJ, dodano tylko strażnik (2026-08-14)
 
