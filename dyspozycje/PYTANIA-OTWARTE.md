@@ -21118,7 +21118,28 @@ i bez zdobycia miasta, razem z `oblegajacyOwnerId`, `siegeBesiegerByCity` i `ref
 miasto AI (`ownerId=3`) oblegane przez gracza traci flagę tą samą ścieżką. Zapis oblężenia trafia
 do save'a już poprawiony — bez zmian w formacie.
 
-### N1 — **ZNALEZISKO: naprawa ujawnia sprzeczność przy szturmie zakończonym REMISEM** · STATUS: **ZAMKNIĘTE — `R-OBLEZENIE-REMIS-MASZYNY-Q1 = A` (Maciej, 2026-08-14): remis zrywa oblężenie, stan po naprawie jest docelowy, zero zmian kodu potrzebnych.**
+### N1 — **ZNALEZISKO: naprawa ujawnia sprzeczność przy szturmie zakończonym REMISEM** · STATUS: **PONOWNIE OTWARTE — sprostowanie 2026-08-14, decyzja `R-OBLEZENIE-REMIS-MASZYNY-Q1 = A` NIE jest dziś wdrożona w kodzie**
+
+**⛔ Sprostowanie (2026-08-14, Evaluator komunikatu remisu, werdykt FAIL dla `51a32fe6`):** pierwotne
+sformułowanie „naprawa odsuwa CAŁĄ armię oblegającą z dystansu 1 na dystans 2" było prawdziwe
+TYLKO dla przypadku jednego obsadzonego heksu (`k=1`). Zmierzone wykonaniem prawdziwego
+`applyPostBattleMap` na wszystkich 63 podzbiorach heksów przyściennych: **31/63 układów zostawia
+oblężenie TRWAJĄCE** po remisie (`placeFanOutGroup` liczy przesunięcie z centroidu całej armii,
+więc część jednostek ląduje z powrotem na dystansie 1 po przeciwnej stronie miasta).
+Odpowiedź właściciela `R-OBLEZENIE-REMIS-MASZYNY-Q1 = A` („remis MA zrywać oblężenie") jest ważną
+decyzją produktową, ale **nie jest dziś zaimplementowana jako reguła silnika** — zachodzi tylko
+przypadkiem geometrii w ok. połowie układów. Poprawka tekstu toastu na „oblężenie zniesione"
+(`51a32fe6`) zamieniła stary błąd (fałszywe „trwa" w 32/63 przypadków) na lustrzane odbicie
+(fałszywe „zniesione" w 31/63 przypadków) — nie naprawiła sprzeczności, tylko odwróciła jej
+kierunek. Pełny opis pomiaru: sekcja „Evaluator: komunikat remisu szturmu (retry) — WERDYKT: FAIL"
+dalej w pliku.
+
+**Do rozstrzygnięcia (nowe ABC, podważa `R-OBLEZENIE-REMIS-MASZYNY-Q1 = A` z dzisiejszą, pełniejszą
+informacją — patrz pytanie w czacie):** czy remis ma WYMUSZAĆ zerwanie oblężenia (jawne
+`endMapSiege()` w gałęzi remisu, zmiana reguły silnika, jednolite zachowanie), czy zostać
+geometrio-zależny jak dziś, a naprawiony ma być tylko komunikat (odczyt faktycznego stanu
+`city.oblegane`/`validateActiveSieges()` PO przesunięciu, zamiast statycznego tekstu przypiętego
+do wyniku `remis`).
 Nie blokuje scalenia (stan gry po naprawie jest ZGODNY z regułą silnika). **Sprostowanie etykiety
 statusu (2026-08-14, audyt §0c):** treść tej sekcji niżej mówi wprost „do rozstrzygnięcia
 produktowo — ABC dla właściciela, nie decyzja agenta" — nagłówek błędnie sugerował dispatch
