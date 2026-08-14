@@ -472,7 +472,7 @@ import {
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
 import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius } from './map/territory';
-import { isTerritoryHexOwnedBy } from './map/territory-work';
+import { isTerritoryHexOwnedBy, isReczneKeyLegal, cityCenterKeys } from './map/territory-work';
 import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
 import {
@@ -6292,10 +6292,35 @@ async function boot(): Promise<void> {
         getOkolicaState: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
+          // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-PANEL (2026-08-14, N2 punkt 3):
+          // panel MUSI odróżnić wpis, który reconcile uzna za legalny, od takiego, który
+          // usunie na koniec tury (albo już usunąłby, gdyby ownership-change/load reconcile
+          // zdążył się wywołać) -- inaczej gracz widzi "zajęty" heks, który za chwilę
+          // zniknie z produkcji bez ostrzeżenia. Reużywa DOKŁADNIE tej samej reguły co
+          // reconcileWorkedTilesForOwner (isReczneKeyLegal, territory-work.ts), bez
+          // duplikowania jej ani bez mutowania stanu -- tylko do odczytu przez panel.
+          // / EN: the panel MUST distinguish an entry reconcile considers legal from one
+          // it will remove at turn end (or would already have removed, had an ownership-
+          // change/load reconcile run) -- otherwise the player sees a "worked" hex that is
+          // about to silently drop out of production. Reuses the EXACT SAME rule as
+          // reconcileWorkedTilesForOwner (isReczneKeyLegal, territory-work.ts), without
+          // duplicating it or mutating state -- read-only, for the panel only.
+          let illegalReczneKeys: Set<string> | undefined;
+          if (city.okolicaReczne) {
+            const territoryNodes = buildAllTerritoryNodes();
+            const centers = cityCenterKeys(cities);
+            const lostForCity = computeLostToNearerSiblingByCity(cities, map).get(city.id);
+            illegalReczneKeys = new Set(
+              Object.keys(city.okolicaReczne).filter(
+                key => !isReczneKeyLegal(key, city.ownerId, centers, territoryNodes, lostForCity),
+              ),
+            );
+          }
           return {
             focus: city.okolicaFocus ?? 'zrownowazone',
             tryb: city.okolicaTryb ?? 'auto',
             reczne: city.okolicaReczne,
+            illegalReczneKeys,
           };
         },
         getCityWorkedRange: (cityId: string) => {
@@ -29888,6 +29913,31 @@ async function boot(): Promise<void> {
         }
         cities.push(c);
       }
+      // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-LOAD (2026-08-14, N2 z werdyktu
+      // Evaluatora dla 3f1a2f85 -- dispatch miał 3 punkty, ten commit zamknął tylko
+      // (1); tu domykamy (2)): naprawa 3f1a2f85 wpięła reconcileAllWorkedTiles w
+      // seedCityOwnerDefaults -- wołaną PO każdej zmianie city.ownerId W BIEŻĄCEJ grze
+      // -- ale zapis sprzed tej naprawy (albo zapis z gry z dawną zmianą właściciela,
+      // która nigdy nie przeszła przez reconcile) mógł zostać ZAPISANY z nielegalnym
+      // okolicaReczne (np. na centrum cudzego miasta). Bez sanityzacji TU taki wpis
+      // wisiałby w panelu aż do pierwszego końca tury (turn-economy.ts, jedyne inne
+      // miejsce wołające reconcileAllWorkedTiles) -- dokładnie ten sam objaw co
+      // zgłoszenie Milet/Ateny, tylko wyzwolony load'em zamiast podbojem. `map` jest
+      // tu już finalną mapą gry (regenerateWorldForLoad, jeśli był potrzebny, zawsze
+      // kończy się PRZED tym wywołaniem -- patrz loadGameFromSlot), więc te same
+      // argumenty co w seedCityOwnerDefaults są tu bezpieczne.
+      // / EN: fix 3f1a2f85 wired reconcileAllWorkedTiles into seedCityOwnerDefaults --
+      // called AFTER every city.ownerId change WITHIN the current game -- but a save
+      // written before that fix (or from a game whose past ownership change never went
+      // through reconcile) may have been PERSISTED with an illegal okolicaReczne entry
+      // (e.g. on another city's centre). Without sanitizing HERE such an entry would
+      // hang in the panel until the first end-of-turn (turn-economy.ts, the only other
+      // caller of reconcileAllWorkedTiles) -- the exact same symptom as the Miletus/
+      // Athens report, just triggered by a load instead of a conquest. `map` here is
+      // already the final game map (regenerateWorldForLoad, when needed, always
+      // finishes BEFORE this call -- see loadGameFromSlot), so the same arguments as
+      // seedCityOwnerDefaults are safe here.
+      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
       playerEverOwnedCity = cities.some(c => c.ownerId === 0);
       explored.clear();
       for (const k of saved.explored ?? []) explored.add(k);
