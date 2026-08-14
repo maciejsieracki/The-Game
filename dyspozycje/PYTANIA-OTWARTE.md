@@ -21823,7 +21823,7 @@ oraz asercja wzorca argumentów). Po przywróceniu znów **15/15**, `git status`
 
 ---
 
-### N1 — `okolicaTryb` NIE resetowany: rezydualny problem REALNY, ale **PRE-ISTNIEJĄCY** · STATUS: **OTWARTE** — do ABC właściciela
+### N1 — `okolicaTryb` NIE resetowany: rezydualny problem REALNY, ale **PRE-ISTNIEJĄCY** · STATUS: **ZAMKNIĘTE** (2026-08-14) — ABC `R-OKOLICA-TRYB-RESET-PO-ZMIANIE-WLASCICIELA-Q1` zadane, odpowiedź **A** (zawsze resetuj, także gdy gracz odzyskuje własne miasto), wdrożone commitem `0d50bb81`, Evaluator **PASS-WITH-NOTES** (`7ec82223`) — nowy temat N1 Evaluatora (save/load nie sanityzuje starych zapisów) zarejestrowany osobno jako `P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE`
 Decyzja Operatora o nieresetowaniu `okolicaTryb` jest **słuszna w zakresie tego bugfixu** (to zmiana
 produktowa, nie techniczna), ale zostawia problem, który warto nazwać — **zmierzony, nie wydedukowany**:
 `resolveWorkedTiles` (`okolica.ts:350`) honoruje `tryb === 'reczny'` **bez filtra właściciela**,
