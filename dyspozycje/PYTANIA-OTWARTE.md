@@ -20570,3 +20570,43 @@ nazewnictwo myląco sugeruje że to ten sam ekran.
 chip HUD „Nauka", czy lewy okrągły medalion „Badania"? I czy robiłeś twarde odświeżenie (hard
 refresh) po FALA 278? To rozstrzygnie, czy to pomyłka ekranu/cache, czy realny bug do dalszego
 kopania.**
+
+## P-OBLEZENIE-IKONA-NIE-ZNIKA-PO-WYGRANEJ (2026-08-14, zgłoszenie Macieja) · STATUS: POTWIERDZONY BUG, dokładna diagnoza — dispatch fix
+
+Maciej: „w momencie gdy mamy oblężenie i je przerwiemy, wygramy, po wygranej bitwie, nadal widnieje
+symbol oblężenia na mieście, znika dopiero jak się wejdzie z powrotem jednostką do miasta."
+
+**Zdiagnozowane dokładnie (orkiestrator, czytanie kodu, nie zgadywanie):** flagowanie
+`city.oblegane` (`gra/src/game/cities.ts`) jest STANOWE, nie liczone na żywo z pozycji jednostek.
+Renderer markera (`gra/src/render/siegeMarker.ts`, `sync()`) i etykieta HTML pokazują oblężenie
+wyłącznie na podstawie `cities.filter(c => c.oblegane)` (`main.ts` `refreshSiegeMarkers()`, linia
+~11682) — nikt nie sprawdza w tym miejscu, czy oblegający realnie jeszcze żyją/stoją przy murach.
+
+`city.oblegane = false` jest ustawiane wyłącznie w 4 miejscach: (1) `endMapSiege()` (main.ts:1891,
+wołane przez głód/kapitulację), (2) eliminacja całej cywilizacji-oblegającej (main.ts:22343),
+(3) faktyczne zdobycie miasta przez atakującego (`post-battle-map.ts:486`, zmiana `ownerId`),
+(4) `validateActiveSieges()` (main.ts:12007) — sprawdza `stillBesieging` (czy jakakolwiek
+jednostka `bId` stoi w promieniu 1 heksa od miasta) i woła `endMapSiege()` gdy nie.
+
+**Rdzeń buga:** `validateActiveSieges()` jest wołane wyłącznie z 3 miejsc: zakończenie marszu/ruchu
+jednostki (main.ts:19326 i main.ts:27799 — DWA różne miejsca w obsłudze ruchu, jedno dla ruchu
+natychmiastowego, drugie po animacji marszu) i `scanAutoSiegesAfterAiTurn()` (main.ts:12027,
+wołane raz na koniec tury AI, ale WARUNKOWO — `if (!aiTurnAwaitingBattle) scanAutoSiegesAfterAiTurn()`,
+main.ts:27125-27126, czyli pomijane gdy akurat toczy się bitwa oczekująca na rozstrzygnięcie).
+**Żadne z tych trzech miejsc nie jest wołane z poziomu rozstrzygnięcia BITWY** — czyli gdy gracz
+wygrywa starcie polowe z armią oblegającą (niszczy jednostki `bId`), `city.oblegane` zostaje
+`true` aż do najbliższego RUCHU dowolnej jednostki (stąd obserwacja Macieja: znika dopiero po
+wejściu jednostką z powrotem do miasta — to nie "wejście do miasta" samo w sobie naprawia stan,
+tylko fakt, że to jest RUCH, który przy okazji odpala `validateActiveSieges()` i wtedy dopiero
+wykrywa, że oblegający już nie żyją).
+
+**STATUS: dispatch Operatora (Sonnet 5) — dodać wywołanie `validateActiveSieges()` (albo węższe,
+celowane sprawdzenie konkretnego miasta) w miejscu/miejscach rozstrzygania bitwy polowej, które
+mogą zniszczyć jednostki oblegające miasto z murem (silne kandydatury do zbadania: rozstrzygnięcie
+bitwy 3D w `battleScene.ts`/`mapFieldBattle.ts`, ścieżka auto-resolve/silent battle, wszędzie tam
+gdzie jednostki są usuwane z `units[]` po przegranej). Napisać test regresyjny odtwarzający
+scenariusz: miasto oblegane, gracz niszczy w bitwie WSZYSTKIE jednostki oblegającego (`bId`) bez
+poruszania żadnej innej jednostki i bez zdobycia miasta — `city.oblegane` musi wrócić na `false`
+od razu po rozstrzygnięciu bitwy, nie dopiero po kolejnym ruchu. Nie zgadywać, które dokładnie
+wywołanie bitwy jest właściwym miejscem — zbadać wszystkie ścieżki gdzie jednostki znikają z
+`units[]` w wyniku walki i sprawdzić każdą pod kątem czy dotyczy jednostek oblegających.**
