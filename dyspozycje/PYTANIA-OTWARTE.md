@@ -24518,8 +24518,16 @@ doganiania JSON→Excel — nie wykonywane automatycznie (`CLAUDE.md` §2).
 `R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A` naprawia N1 (podłoga dla bruku osobna, koszt bazowy 1 daje
 teraz pełne ÷5), **N2 pozostaje ŚWIADOMIE NIEROZWIĄZANA** przy koszcie bazowym 2 (floor się tam
 nie aktywuje — patrz tabela w sekcji dostarczenia Operatora niżej, zaakceptowane wprost w treści
-decyzji A); (b) N3 (treść CivPedii/wikiBundle) naprawiona przez Operatora, czeka na Evaluatora;
-(c) N4 (panel Excel) odłożone do osobnego kroku doganiania JSON→Excel.
+decyzji A); (b) N3 (treść CivPedii/wikiBundle) **naprawiona i ZWERYFIKOWANA** — werdykt
+PASS-WITH-NOTES dla `a3f61973`, oba punkty N3 (pole `full` i pole `wikiM`) potwierdzone
+semantycznym diffem bundla; (c) N4 (panel Excel) odłożone do osobnego kroku doganiania JSON→Excel.
+
+**AKTUALIZACJA po werdykcie dla `a3f61973` (2026-08-14):** N1 jest **domknięta w całości** — bruk
+daje pełne ÷5 na każdym realnie osiągalnym koszcie bazowym, opis „5× szybszy" przestał kłamać.
+**Sprostowanie do tabeli w nocie N1 poniżej:** wiersz „koszt bazowy 1 (Łąka/Równina/**Pustynia**,
+każda rzeka)" jest **błędny** — Pustynia ma w runtime koszt **2** (`terrain-movement.json`), więc
+należy do wiersza z regresją, nie do wiersza kosztu 1. Szczegóły i zakres naprawy: sekcja
+`P-DROGI-PUSTYNIA-KOSZT-2-SPROSTOWANIE` na końcu pliku.
 
 Weryfikacja niezależna w osobnym worktree, na czubku gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
 (commit `92cd220b`, rodzic/baseline `08736abe`). Wszystkie liczby niżej zmierzone własnoręcznym
@@ -25542,4 +25550,236 @@ tego tematu — bonus Drogi dotyczy Handlu (plon heksa), nie Żywności; przykł
 zasoby. Pre-istniejące (nie spowodowane tą zmianą, nie dotknięte w tym zakresie zgodnie z C-025 —
 naprawa ograniczona do konkretnej treści N3 werdyktu Evaluatora).
 
-**STATUS: SCALONE, czeka na Evaluatora.**
+**STATUS: ZWERYFIKOWANE — WERDYKT EVALUATORA: PASS-WITH-NOTES** (sekcja
+`Evaluator: R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A (a3f61973) — WERDYKT PASS-WITH-NOTES` niżej).
+Mechanika naprawy N1 poprawna i zweryfikowana empirycznie, ale **tabela „Skąd" w tym raporcie
+zawiera błąd faktu: Pustynia ma w RUNTIME koszt bazowy 2, nie 1** — patrz nota N1 werdyktu.
+
+---
+
+## Evaluator: `R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A` (`a3f61973`) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
+
+**STATUS: ZAMKNIĘTE** co do kodu — mechanika decyzji A zrealizowana poprawnie i w pełni, kod
+**nie wymaga cofnięcia**. **N1 (błąd faktu w tabeli i w komentarzu produkcyjnym) pozostaje
+OTWARTE jako sprostowanie do wykonania** — patrz sekcja `P-DROGI-PUSTYNIA-KOSZT-2-SPROSTOWANIE`
+niżej.
+
+Weryfikacja niezależna we własnym worktree, na commicie `a3f61973` (rodzic `7d75a53e`).
+Wszystkie liczby poniżej zmierzone własnoręcznym uruchomieniem, nie przepisane z raportu Operatora.
+
+### 1. Bramki — 6/6 zgodnych co do jednej asercji z opisem commita
+
+| Bramka | Wynik zmierzony | Opis commita | Zgodność |
+|---|---|---|---|
+| `npx tsc --noEmit` (v5.9.3) | 0 błędów, exit 0 | 0 błędów | ✅ |
+| `map-road-movement-test.cjs` | **26 pass / 0 fail**, exit 0 | 26/0 | ✅ |
+| `heks-panel-tooltip-warstwa-test.cjs` | **22 pass / 0 fail**, exit 0 | 22/0 | ✅ |
+| `tech-tree-test.cjs` | **19 pass / 0 fail**, exit 0 | 19/0 | ✅ |
+| `research-test.cjs` | **33 pass / 0 fail**, exit 0 | 33/0 | ✅ |
+| `unit-replace-test.cjs` | **13 / 13**, exit 0 | 13/13 | ✅ |
+| `ai-founding-territory-test.cjs` | **28 pass / 0 fail**, exit 0 | 28/0 | ✅ |
+
+Żadnej rozbieżności — w odróżnieniu od `4fc770ee`/`c3a5652c` z tej samej sesji, opis commita mówi
+prawdę co do każdej liczby bramek.
+
+### 2. Trzy własne mutacje kontrolne — test jest czuły, nie tautologiczny
+
+| Mutacja | Wynik | Wniosek |
+|---|---|---|
+| (A) przywrócenie wspólnej podłogi (`ROAD_MIN_MOVE_COST` w gałęzi bruku) | **23 pass / 3 fail**, exit 1 — dokładnie 3 asercje kosztu bazowego 1 | Deklaracja Operatora odtworzona co do liczby ✅ |
+| (B) **własna**, mocniejsza: `ROAD_BRUK_MIN_MOVE_COST = 1/4` zamiast `1/5` | **23 pass / 3 fail**, exit 1 | Test pilnuje twardej wartości `0,2`, nie samego „≠ 1/3" ✅ |
+| (C) **własna**, diagnostyczna: `ROAD_MIN_MOVE_COST = 1/2` | **25 pass / 1 fail** — pada WYŁĄCZNIE asercja literału stałej | Dowód, że ta stała **nie wpływa już na żadne zachowanie** — patrz nota N2 |
+
+### 3. Rdzeń naprawy N1 — zweryfikowany empirycznie end-to-end, PEŁNY SUKCES
+
+Nie poprzestałem na czytaniu `applyRoadMovementModifier()`. Zbudowałem własny harness (esbuild,
+wejście: `terrainMoveCost` + `configureTerrainMovement` + surowy `data/terrain-movement.json`)
+i przeliczyłem **wszystkie 32 kombinacje** `teren bazowy × las × rzeka × ulepszenie drogowe`,
+w dwóch trybach: na DEFAULTACH z kodu oraz **po realnym `configureTerrainMovement()`**, tak jak
+robi to `main.ts:1276` po `loadGameData()`.
+
+**Wynik kluczowy — decyzja „pięć razy szybszy" jest teraz zrealizowana BEZ WYJĄTKU.** Podłoga
+`ROAD_BRUK_MIN_MOVE_COST = 1/5` wiąże tylko dla kosztu bazowego < 1, a najniższy realnie osiągalny
+koszt bazowy w grze to **1**. Skutek: bruk daje dokładnie `koszt ÷ 5` na **każdym** przechodnim
+heksie (1→0,2 · 2→0,4 · 3→0,6). Opis widoczny dla gracza w `terrain-improvements.json`
+(`„ruch jednostek 5× szybszy (koszt wejścia ÷5)"`) — który przy `92cd220b` **kłamał** na
+dominującym terenie — **od tej poprawki jest prawdziwy we wszystkich realnych przypadkach**.
+To dokładnie to, o co chodziło w nocie N1 poprzedniego werdyktu.
+
+### 4. Uczciwość deklaracji o N2 — SPRAWDZONA I POTWIERDZONA, Operator NIE poddał się za wcześnie
+
+To był główny punkt podejrzeń tej rundy. Werdykt: **twierdzenie Operatora jest matematycznie
+prawdziwe i uczciwe.**
+
+Podłoga wchodzi przez `Math.max(...)` — z definicji może wynik **tylko podnieść, nigdy obniżyć**.
+Przy koszcie bazowym 2 wynik dzielenia to `2/5 = 0,4`, czyli więcej niż każda z obu podłóg
+(`1/3 ≈ 0,333` i `1/5 = 0,2`). Zatem **żadna wartość `ROAD_BRUK_MIN_MOVE_COST` — w tym 0 —
+nie zmieni tam wyniku**. Potwierdzone nie tylko rachunkiem, ale i mutacją (C): zmiana podłogi
+daje zero zmian w zachowaniu przy koszcie 2.
+
+Sprawdziłem osobno, czy istnieje **inna prosta zmiana w duchu decyzji A**, której Operator nie
+rozważył. **Nie istnieje.** Naprawa kosztu 2 wymaga jednego z trzech, i każdy wychodzi poza
+zakres A oraz podważa wcześniejszą decyzję właściciela:
+- zmiana mnożnika `÷5` → `÷6` (`2/6 = 0,333`) — podważa `R-DROGI-RUCH-HANDEL-Q1` i dosłowny cytat
+  Macieja „po brukowanej pięć razy szybszy";
+- dołożenie **sufitu** `Math.min(stary_wynik, ÷5)` — to nowa mechanika, nie podłoga, i sprawia,
+  że bruk przestaje być czystym `÷5`;
+- powrót do odejmowania — cofnięcie `92cd220b` w całości.
+
+Operator nazwał ograniczenie wprost w opisie commita, w komentarzu produkcyjnym **i** w komentarzu
+przy asercji testu. **To nie jest zamiecione pod dywan** — jest zakomunikowane w trzech miejscach
+naraz, z podaniem przyczyny (mnożnik, nie podłoga). Punkt 7 zlecenia: oceniam pozytywnie.
+
+### 5. `wikiBundle.json` — deklaracja o zakresie diffu POTWIERDZONA (z jednym uzupełnieniem)
+
+Nie oglądałem fragmentu — sparsowałem oba JSON-y (przed/po) i porównałem **spłaszczone drzewo
+liści**: 1178 liści przed, 1178 po, **0 dodanych, 0 usuniętych, 3 zmienione**:
+
+| Ścieżka | Przed → Po |
+|---|---|
+| `/encyklopedia/13/wikiM` (`ulepszenia/droga`) | stara kopia `„+szybkość ruchu jednostek"` → `„ruch jednostek 3× szybszy (koszt wejścia ÷3); Handel (plon heksa) +2/turę"` ✅ |
+| `/encyklopedia/13/full` (`ulepszenia/droga`) | `„+1 handel/t"` → `„+2 Handel/turę"` ✅ |
+| `/generated` | `2026-08-10` → `2026-08-14` (stempel generatora) |
+
+Oba punkty noty N3 poprzedniego werdyktu (pole `full` i pole `wikiM`) — **naprawione w całości**.
+136 haseł encyklopedii i 22 rozdziały poradnika bez zmian, zgodnie z deklaracją. Bundle jest
+realnie regenerowany, nie edytowany ręcznie (spójny z `docs/encyklopedia/ulepszenia/droga.md`).
+
+**Kwestia `droga_brukowana` z rzekomo przestarzałym handlem +2 zamiast +3 — sprostowanie zlecenia.**
+Sprawdziłem trzy miejsca: (a) w `wikiBundle.json` jest **zero** wystąpień ciągu „brukowan" — wpisu
+`ulepszenia/droga_brukowana` nie ma w ogóle, zgodnie z deklaracją Operatora (luka pre-istniejąca);
+(b) w `gra/data/terrain-improvements.json` wartość jest **poprawna: `droga_brukowana.bonus.handel = 3`**;
+(c) liczba `2` przy bruku, o której pisał poprzedni Evaluator, dotyczy **panelu Excel**
+`panele-sterowania/Tereny-i-ulepszenia-MACIEJ.xlsx` — czyli **noty N4, jawnie odłożonej przez
+właściciela** w ECHO decyzji A do osobnego kroku JSON→Excel. Nic tu nie zostało pominięte.
+
+### 6. N1 (POWAŻNA) — błąd faktu: Pustynia ma koszt bazowy **2**, nie 1; zasięg regresji N2 jest większy niż raportowano
+
+To jedyne realne znalezisko tej rundy i **jedyny powód, dla którego werdykt nie jest czystym PASS**.
+
+Tabela w opisie commita, w raporcie dostarczenia **oraz w komentarzu produkcyjnym**
+`gra/src/map/road-movement.ts` (linia 37) przypisuje Pustynię do kosztu bazowego 1:
+`„najczęstszym koszcie bazowym terenu (Łąka/Równina/Pustynia/rzeka = 1)"`.
+
+**To nieprawda w uruchomionej grze.** Źródłem błędu jest patrzenie na `DEFAULT_TERRAIN_COSTS`
+w `gra/src/units/setup.ts` (gdzie Pustynia faktycznie = 1) zamiast na
+**`gra/data/terrain-movement.json`, który gra realnie ładuje** przez `loader.ts:419` →
+`main.ts:1276` `configureTerrainMovement()`. W tym pliku stoi **`"Pustynia": 2`**.
+
+Zmierzone własnym harnessem, tryb RUNTIME (po zastosowaniu JSON):
+
+| Koszt bazowy | Skąd — DEFAULTY kodu (tabela Operatora) | Skąd — **RUNTIME, realna gra** | Bruk | vs stara mechanika |
+|---|---|---|---|---|
+| **1** | Łąka, Równina, **Pustynia**, każda rzeka | Łąka, Równina, każda rzeka | 0,2 | lepiej |
+| **2** | Wzgórza, płaski+Las | Wzgórza, **Pustynia**, Łąka+Las, Równina+Las | 0,4 | **GORZEJ (−20%)** |
+| **3** | Wzgórza+Las | Wzgórza+Las, **Pustynia+Las** | 0,6 | lepiej |
+
+**Skutek dla właściciela:** grupa terenów dotknięta świadomie zaakceptowaną regresją N2 obejmuje
+**całą Pustynię bez lasu**, a nie tylko Wzgórza i płaski las. Potwierdziłem, że to nie jest
+teoretyczne: `droga` i `droga_brukowana` są budowalne na Pustyni (`TERENY_LADU` w
+`gra/src/map/improvement-build.ts:152-155` zawiera `TerenBazowy.Pustynia`). Symetrycznie: grupa
+„naprawiona przez tę poprawkę" (koszt 1) jest **mniejsza** niż przedstawiono.
+
+**Dlaczego mimo to nie FAIL:** błąd dotyczy **atrybucji terenów**, nie wartości. Zbiór realnie
+osiągalnych skończonych kosztów bazowych `{1, 2, 3}` jest w tabeli Operatora **kompletny** —
+żaden koszt nie został przeoczony, więc cała matematyka podłogi, wszystkie asercje testu i sam
+kod są poprawne. Decyzja A dotyczyła podłogi, a podłoga i tak nie wpływa na koszt 2 — więc pełna
+wiedza o Pustyni nie zmieniłaby wyboru A/B/C w tamtym pytaniu. Kod nie wymaga cofnięcia.
+**Wymaga natomiast sprostowania**, bo `CLAUDE.md` §0b wymaga, by każda liczba przedstawiona
+właścicielowi jako fakt była zweryfikowana — a ten błąd trafił nie tylko do raportu, lecz
+**utrwalił się w komentarzu w kodzie produkcyjnym**, gdzie będzie mylił każdego następnego
+czytającego. Uczciwie odnotowuję, że **ten sam błąd popełnił poprzedni Evaluator** w nocie N1
+werdyktu dla `92cd220b` — Operator go stamtąd przepisał, zamiast zweryfikować u źródła.
+
+### 7. N2 (ŚREDNIA) — `ROAD_MIN_MOVE_COST` jest od tego commitu **martwym eksportem**, a dokumentacja twierdzi inaczej
+
+Opis commita: *„Zwykła droga zostaje przy `ROAD_MIN_MOVE_COST = 1/3` bez zmian."* Etykieta nowej
+asercji: *„`ROAD_MIN_MOVE_COST = 1/3` (zwykla droga, bez zmian)"*. Komentarz nad stałą do dziś:
+*„Minimalny koszt wejścia na hex z ulepszeniem drogowym"*.
+
+**Wszystkie trzy sugerują, że zwykła droga ma podłogę 1/3. Kod tego nie robi** — gałąź zwykłej
+drogi to goły `return cost / ROAD_MOVE_SPEED_MULT;`, bez żadnego `Math.max`. Sprawdziłem historię:
+zwykła droga **nigdy** tej podłogi nie miała (już w `13419757`, przed całym tematem) — sam fakt
+jest więc pre-istniejący. **Nowe w tym commicie jest co innego:** przed nim stałej używał bruk,
+więc żyła; po przeniesieniu bruku na `ROAD_BRUK_MIN_MOVE_COST` **nie ma już ani jednego jej
+użycia w ścieżce wykonania**, a jednocześnie dopisano trzy zdania mówiące, że pilnuje zwykłej drogi.
+
+Dowód mutacyjny (mutacja C wyżej): podmiana `ROAD_MIN_MOVE_COST` na `1/2` daje **dokładnie jeden
+FAIL — samą asercję literału**, zero zmian w zachowaniu jakiejkolwiek funkcji. Ta asercja jest
+tautologiczna: sprawdza, że literał równa się sobie.
+
+Dziś bez skutku w grze (najniższy wynik zwykłej drogi to i tak `1/3 ≈ 0,333` z samego dzielenia),
+ale to **pułapka dokładnie tej klasy, którą poprzedni Evaluator chwalił Operatora za posprzątanie**
+przy `cobblestoneMoveBonus()`: `terrain-movement.json` przyjmuje dowolną liczbę, więc koszt terenu
+`0,5` dałby zwykłej drodze `0,1667` — poniżej podłogi, o której dokumentacja zapewnia, że działa.
+Do naprawy przy następnym dotknięciu tego pliku: albo faktycznie objąć zwykłą drogę podłogą, albo
+usunąć stałą i sprostować trzy opisy. **Nie zmieniam tego sam — to zmiana gameplayowa.**
+
+### 8. N3 (DROBNA) — deklaracja o zakresie diffu bundla pomija pole `generated`
+
+Operator: *„diff bundla dotyka WYŁĄCZNIE wpisu `ulepszenia/droga`"*. Realnie zmieniły się **trzy**
+liście, trzeci to `/generated` (`2026-08-10` → `2026-08-14`). Nieszkodliwe i oczekiwane przy
+regeneracji, ale było przedstawione jako twierdzenie o fakcie i jako takie jest nieścisłe.
+
+### 9. N4 (DROBNA, obserwacja) — sąsiednia linia w tym samym pliku nadal kłamie graczowi
+
+W `docs/encyklopedia/ulepszenia/droga.md`, sekcja „Przykład liczbowy", **linia bezpośrednio pod
+tą, którą Operator poprawiał**: *„Przykład: łąka daje 1 żywność/t; Droga +2 → 3 żywności/t"* —
+myli Handel z Żywnością. Operator **zgłosił to uczciwie sam** jako pre-istniejące i świadomie
+zostawił, powołując się na C-025 (bez naprawiania przy okazji) — i to jest formalnie poprawne
+zachowanie. Odnotowuję jednak, że treść ta **przeszła w tym commicie do `wikiBundle.json`**, czyli
+gracz nadal widzi ją w żywej CivPedii, dwie linie od świeżo poprawionej liczby. Naturalny kandydat
+do domknięcia razem z brakującym wpisem `droga_brukowana.md`.
+
+### 10. N5 (OBSERWACJA, pre-istniejąca, niezwiązana z tym commitem)
+
+Przy pełnym przeglądzie 32 kombinacji wyszła osobliwość: **Góry z rzeką są przechodnie** (koszt
+płaski `RIVER_HEX_MOVE_COST = 1` — warunek rzeki w `terrainMoveCost` wyklucza tylko Morze,
+Wybrzeże i Polarny, **nie Góry**), a `TERENY_LADU` zawiera `Gory`, więc droga i bruk są tam
+budowalne i dają `0,2`. Stan pre-istniejący, nie dotknięty tym commitem — odnotowane wyłącznie
+dlatego, że zlecenie prosiło o przegląd **wszystkich** kosztów bazowych.
+
+### 11. Werdykt
+
+**PASS-WITH-NOTES.** Naprawa robi dokładnie to, co miała: nota N1 poprzedniego werdyktu jest
+**usunięta w całości** — bruk daje pełne `÷5` na każdym realnie osiągalnym koszcie bazowym,
+przestaje być tożsamy ze zwykłą drogą i opis „5× szybszy" widoczny dla gracza przestał kłamać.
+Deklaracja o niedomkniętym N2 jest matematycznie prawdziwa, zweryfikowana mutacyjnie i uczciwie
+zakomunikowana w trzech miejscach — sprawdziłem celowo, czy Operator nie poddał się za wcześnie,
+i **nie poddał się**: w zakresie decyzji A naprawa kosztu 2 jest niemożliwa. Bramki zgodne co do
+jednej asercji, test czuły na trzy niezależne mutacje, diff bundla czysty.
+
+Noty **N1** (Pustynia = koszt 2, nie 1 — zasięg regresji większy niż raportowano, błąd utrwalony
+w komentarzu produkcyjnym) i **N2** (`ROAD_MIN_MOVE_COST` martwa, a trzy opisy twierdzą, że
+chroni zwykłą drogę) dotyczą **warstwy faktograficznej i dokumentacyjnej, nie mechaniki** — kod
+`a3f61973` jest poprawny i nie wymaga cofnięcia. N1 wymaga jednak sprostowania przed uznaniem
+całego tematu drogowego za domknięty, żeby właściciel widział prawdziwy zasięg regresji, którą
+zaakceptował.
+
+*Evaluator nie wprowadził żadnych zmian w kodzie ani danych — jedyny commit to ten wpis. Trzy
+mutacje kontrolne i własny harness pomiarowy wykonane w izolowanym worktree i usunięte,
+`git status` czysty przed commitem.*
+
+---
+
+## P-DROGI-PUSTYNIA-KOSZT-2-SPROSTOWANIE (nota N1 werdyktu dla `a3f61973`, 2026-08-14)
+
+**STATUS: **OTWARTE** — do dispatchu subagenta (sprostowanie faktu, bez zmiany mechaniki).
+
+**Problem:** w trzech miejscach utrwalono nieprawdziwe przypisanie Pustyni do kosztu bazowego
+ruchu 1: (a) komentarz produkcyjny `gra/src/map/road-movement.ts` linia 37
+(`„Łąka/Równina/Pustynia/rzeka = 1"`); (b) tabela w opisie commita `a3f61973`; (c) tabela w raporcie
+dostarczenia Operatora w tym pliku, plus źródłowo nota N1 werdyktu dla `92cd220b`.
+**Realnie `gra/data/terrain-movement.json` ustawia `"Pustynia": 2`**, i ten plik jest ładowany
+do gry (`loader.ts:419` → `main.ts:1276` `configureTerrainMovement()`), nadpisując
+`DEFAULT_TERRAIN_COSTS` z `units/setup.ts`, gdzie Pustynia = 1.
+
+**Zakres naprawy:** wyłącznie tekst — komentarz w `road-movement.ts` + sprostowanie tabel w tym
+pliku. **Zero zmian mechaniki** (kod liczy poprawnie; błędna jest tylko etykieta „skąd bierze się
+ten koszt"). Przy okazji warto dopisać w komentarzu ostrzeżenie, że tabela kosztów w kodzie to
+**tylko fallback**, a źródłem prawdy w runtime jest JSON — to pułapka, która złapała już dwóch
+agentów pod rząd.
+
+**Skutek merytoryczny do zakomunikowania właścicielowi:** świadomie zaakceptowana regresja ruchu
+o −20% przy koszcie bazowym 2 (nota N2 tematu) obejmuje **także całą Pustynię bez lasu**, nie
+tylko Wzgórza i płaski teren z lasem, jak podano w tabeli przy decyzji A.
