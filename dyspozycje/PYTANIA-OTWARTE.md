@@ -21465,3 +21465,184 @@ przepisywana z wcześniejszego, wtedy jeszcze prawdziwego stanu.
 `empire-panel-econ-slider-visibility-test.cjs` (ten sam wzorzec poprawki co w `empire-panel-split-
 test.cjs`: `econ-rekruci` → oczekiwany blok `armia`, nie `ekonomia`), dopisać `empire-panel-econ-
 slider-visibility-test.cjs` do `CLAUDE.md` §BRAMKI dopóki nie naprawiona.**
+
+## Evaluator: ikona władcy w nagłówku panelu (33eeec11)
+
+**WERDYKT: PASS-WITH-NOTES.** Naprawa działa, jest zbudowana z istniejącego systemu (zero nowego
+kodu portretów), pokrywa wszystkie 15 cywilizacji i została potwierdzona wizualnie w realnym
+bundlu. Wszystkie liczby z opisu commitu odtworzone niezależnie co do jednej asercji. Noty
+dotyczą pokrycia testowego (zerowe), niedokończonej przyczyny źródłowej (fallback) i
+identyfikowalności — żadna nie blokuje pozostania zmiany w gałęzi.
+
+### 1. Bramki — zweryfikowane niezależnie na wymeldowanym `33eeec11` (nie na czubku gałęzi)
+
+Każda uruchomiona samodzielnie, lokalnym `tsc` z `gra/node_modules` (5.9.3 — `npx tsc` z korzenia
+podnosi globalny TS 6.0.2 i wywala się na `baseUrl`; to pułapka środowiska, nie błąd kodu):
+
+| Bramka | Opis commitu | Zmierzone | Zgodność |
+|---|---|---|---|
+| `tsc --noEmit` | 0 błędów | **0 błędów, exit 0** | ✅ |
+| `empire-panel-split-test` | 22/0 | **22 pass · 0 fail, exit 0** | ✅ |
+| `empire-nauka-panel-coverage-test` | 15/15 | **OK (15/15), exit 0** | ✅ |
+| `empire-praca-panel-coverage-test` | 15/15 | **OK (15/15), exit 0** | ✅ |
+| `empire-religia-panel-coverage-test` | 15/15 | **OK (15/15), exit 0** | ✅ |
+| `empire-skarbiec-panel-coverage-test` | 12/12 | **OK (12/12), exit 0** | ✅ |
+| `empire-panel-econ-slider-visibility-test` | 60/0 | **60 pass · 0 fail, exit 0** | ✅ |
+| `empire-panel-sliders-always-visible-test` | 8/0 | **8 pass, 0 fail, exit 0** | ✅ |
+| `tech-tree-test` (zlecone dodatkowo) | — | **19 pass, 0 fail, exit 0** | ✅ |
+| `research-test` (zlecone dodatkowo) | — | **33/33 ALL GREEN, exit 0** | ✅ |
+
+**Opis commitu nie zawiera ani jednej liczby, której nie dałoby się dziś odtworzyć.**
+
+### 2. ⛔ SPROSTOWANIE do wpisu „Nowa czerwona bramka znaleziona przez Deploy" (wyżej w tym pliku)
+
+Ten wpis twierdzi: *„liczba «60/0» dla tej bramki jest błędnie wpisana jako fakt w opisach
+commitów `33eeec11` i `4fc770ee` oraz we wpisie FALI 278 w `WERSJE.md`"*. **To twierdzenie jest
+nieprawdziwe i samo jest liczbą podaną bez weryfikacji (dokładnie ryzyko z §0b).** Zmierzone przez
+wymeldowanie każdego commitu i uruchomienie bramki na JEGO drzewie:
+
+| Commit | Znacznik czasu | `empire-panel-econ-slider-visibility-test` |
+|---|---|---|
+| `33eeec11` (ten temat) | 2026-08-14 03:54:12Z | **60 pass · 0 fail, exit 0** |
+| `4fc770ee` (ESCAPE) | 2026-08-14 04:07:08Z | **60 pass · 0 fail, exit 0** |
+| `4f208a0f` (rodzic `f536b792`) | — | **60 pass · 0 fail, exit 0** |
+| `f536b792` (routing Rekruci) | 2026-08-14 04:21:35Z | **59 pass · 1 fail, exit 1** ← tu pęka |
+| czubek gałęzi | — | **59 pass · 1 fail, exit 1** |
+
+`f536b792` jest **późniejszy** od obu „oskarżonych" commitów, a FALA 278 była budowana z `7ad9397a`
+(01:10Z), też przed nim. Liczba 60/0 była prawdziwa w chwili zapisu **i pozostaje odtwarzalna dziś**
+po wymeldowaniu tamtych commitów. **Merytoryczna część tamtego wpisu jest w pełni potwierdzona**
+(bramka jest dziś czerwona, sprawcą jest `f536b792`, dług testowy nie regresja silnika, dispatch
+zasadny) — sprostowanie dotyczy wyłącznie przypisania winy commitom, które jej nie ponoszą.
+
+**Domknięte w trakcie tej oceny:** commit `a8b47623` naprawił duplikat asercji; zmierzone na
+czubku gałęzi po rebase — `empire-panel-econ-slider-visibility-test` **60 pass · 0 fail, exit 0**,
+`empire-panel-split-test` **25 pass · 0 fail**. Uwaga na przyszłość: liczba „60/0" znaczy dziś co
+innego niż na `33eeec11` (ta sama suma asercji, ale `econ-rekruci` oczekiwany w bloku `armia`,
+nie `ekonomia`) — sama liczba nie odróżnia tych dwóch stanów.
+
+### 3. Pokrycie wszystkich cywilizacji + realność fallbacku (punkt 2 zlecenia)
+
+`civKey = String(player.civType || _menuCivId || 'grecy')` → `leaderPortraitUrl(civKey, epoka)`.
+Odtworzenie algorytmu `leaderPortraitUrl()` na realnym listingu `gra/src/assets/portrety/`
+(45 plików) i realnym `civs.json`:
+
+- **15/15 cywilizacji ma portret dla epok 1–4** (era 4 spada przez fallback do `zelazo`). Zero braków.
+- `ikonaId === typCywilizacji` dla **wszystkich 15** — więc obie ścieżki, którymi `civRow` bywa
+  wyszukiwany, dają ten sam klucz. Zero plików-sierot, zero cywilizacji bez pliku.
+- **Fallback do `civEmoji` jest w praktyce nieosiągalny dla gracza**: ostatnia deska ratunku w
+  wyrażeniu to literał `'grecy'`, który portret ma. Odpalają go tylko klucze spoza katalogu
+  (`''`, `'grecja'`, `'barbarzyncy'`, `'Słowianie'` z diakrytykiem — `leaderPortraitUrl` robi
+  `toLowerCase()`, ale **nie** składa diakrytyków, choć `civIconIdFromCivLabel()` w tym samym
+  pliku umie to zrobić).
+- **Portret i nazwa cywilizacji liczą się z TEGO SAMEGO `civKey`** — nie mogą się rozjechać.
+
+### 4. Dowód wizualny w realnym bundlu (punkt 3 zlecenia)
+
+Build z `33eeec11`: `vite build --outDir /tmp/eval-ruler-icon --emptyOutDir` → **exit 0**, 821 modułów,
+single-file 37 078 kB. Headless Chrome (Playwright + chromium-1194), `?playtest=mapa`, panel
+otwarty **klikiem żetonu HUD „Skarbiec"** (ta sama ścieżka co gracz), **3 cywilizacje**:
+
+| Cywilizacja | Nagłówek | md5 danych z `img.src` | Rozpoznany plik | Emoji w DOM |
+|---|---|---|---|---|
+| Rzymianie | `<img class="civ-emp-hdr-portrait">` | `6a69c210…` | `portrait-rzymianie-braz.jpg` | brak (textContent pusty) |
+| Egipt | `<img class="civ-emp-hdr-portrait">` | `81fa1667…` | `portrait-egipt-braz.jpg` | brak |
+| Zulusi | `<img class="civ-emp-hdr-portrait">` | `797d1d12…` | `portrait-zulusi-braz.jpg` | brak |
+
+Base64 z `img.src` zdekodowany i porównany md5 z realnymi plikami na dysku — **trafienie w konkretny
+plik, nie tylko „jakiś obrazek"**. Wszystkie trzy `naturalWidth=256` (obraz faktycznie zdekodowany,
+nie zepsuty link), 3 różne md5 (dowód, że to nie jedna grafika dla wszystkich), **0 błędów JS**.
+Łącznie **27 pass · 0 fail**. Oględziny zrzutów: okrągły medalion 34 px, portret wypełnia,
+nie deformuje się, nie wychodzi poza obrys.
+
+Druga cywilizacja uzyskana przez podmianę w ZBUDOWANYM bundlu wyłącznie argumentów
+`applyMenuParams({civId,civName})` playtestu — **kod nagłówka nietknięty**, zmienia się tylko to,
+którą nację dostaje gracz.
+
+**Brak wycieku DOM:** MutationObserver na `[data-civ-em]` — po 6 zmianach suwaka **1** odtworzenie
+`<img>`, po przełączeniu 4 zakładek **3** łącznie, `children.length === 1` na koniec. `renderHeader()`
+czyści węzeł przed `appendChild`, elementy się nie kumulują mimo że `updateHud()` woła
+`refreshEmpireDetailPanel()` przy każdej zmianie stanu.
+
+### 5. Runda 2 (`hud.ts`) — twierdzenie Operatora potwierdzone, wpis w rejestrze do sprostowania
+
+Wpis `P-ZNACZNIK-POWER-HUD-CIV-EMBLEM` (STATUS: OTWARTE) twierdzi, że `powerCenterIconHtml()`
+*„renderuje `civIconSvg(...)` — czyli emblemat cywilizacji, DOKŁADNIE ten sam wzorzec co
+`em.textContent = g.civEmoji`"*. **Odczyt kodu tego nie potwierdza.** Funkcja liczy
+`leaderPortraitUrl(civId, era)` i przy trafieniu zwraca `<img class="p-ic-portrait">` jako ikonę
+GŁÓWNĄ; `civIconSvg` jest tam (a) **12-pikselowym sygnetem w rogu** (`p-ic-signet`) obok portretu
+i (b) fallbackiem gdy portretu brak. Kod jest w tym kształcie od FALI 23-25, nie od dziś.
+Potwierdzone niezależnie na zrzucie ekranu: medalion Mocy na górnym pasku HUD pokazuje portret
+władcy Egiptu, nie emblemat. **Rekomendacja: wpis wymaga sprostowania/zamknięcia albo ponownego
+zapytania Macieja, które dokładnie miejsce miał na myśli — hipoteza z niego jest obalona,
+a dopóki stoi jako OTWARTE, kolejny agent pójdzie za nią w ślepy zaułek.**
+
+### 6. Mutacja kontrolna (punkt 4 zlecenia) — ⛔ POTWIERDZONA ZEROWA LUKA POKRYCIA
+
+`const civPortraitUrl = leaderPortraitUrl(civKey, epoka);` → `const civPortraitUrl: string | null = null;`
+(cofnięcie naprawy do stanu sprzed commitu, panel wraca do zahardkodowanej 🏛️ dla każdej nacji):
+
+- `tsc --noEmit` → **0 błędów**
+- wszystkie **9 bramek z opisu commitu** → **identyczne liczby co bez mutacji, wszystkie exit 0**
+- szeroki przemiat **39 bramek** `empire*`/`panel*`/`hud*`/`civ*`/`wonder*` → **wyniki co do bramki
+  identyczne z czystą bazą** (4 czerwone w obu przebiegach, opisane w pkt 7)
+- `grep` po `gra/tools/`: **zero** plików testowych wspomina `civPortraitUrl`, `civEmoji`,
+  `civ-emp-hdr-portrait` ani `data-civ-em`
+
+**Wniosek: cichy revert tej naprawy przechodzi dziś przez CAŁY zestaw bramek na zielono.** To ta sama
+klasa luki, którą Evaluator opisał wcześniej przy `empire-skarbiec-panel-coverage-test` („routing bez
+treści przechodzi bramki zielono") — i którą tamte 4 bramki `*-panel-coverage-test.cjs` rozwiązały
+strażnikiem tekstowym + wykonywalnym wycinkiem + mutacją negatywną. **Rekomendacja (N1, mechaniczna):**
+`empire-panel-portret-wladcy-test.cjs` tym samym wzorcem — strażnik tekstowy na `leaderPortraitUrl(civKey`
+w `main.ts` i na gałęzi `if (g.civPortraitUrl)` w `renderHeader()`, plus asercja z `leaderPortraits.ts`,
+że wszystkie 15 `ikonaId` z `civs.json` mają portret (dziś nic nie broni dodania 16. cywilizacji bez pliku).
+
+### 7. Stan bramek pobocznych napotkanych przy przemiatach (pre-istniejące, NIE ten temat)
+
+Zmierzone identycznie na `33eeec11` **i na commicie-rodzicu `4d000cb1`** (delta zero):
+
+| Bramka | Wynik | W `CLAUDE.md` §BRAMKI? |
+|---|---|---|
+| `budynek-civ-bonus-u17-test` | 3 pass / 3 fail | tak (2026-08-13) |
+| `empire-food-b5-test` | 25 pass / 3 fail | tak (2026-08-13) |
+| `civ-bonusy-test` | **29 pass / 4 fail** | **NIE — brak wpisu** |
+| `empire-panel-moc-scroll-preserve-test` | **38 pass / 9 fail** | **NIE — brak wpisu** |
+
+Dwie ostatnie nigdzie nie są udokumentowane jako znane czerwone — kolejny Operator/Deploy zobaczy je
+jako świeżą regresję i albo je „naprawi przy okazji", albo zatrzyma falę. Do dopisania do listy
+pre-istniejących albo do osobnego rozpoznania.
+
+### 8. Noty do naprawy (żadna nie blokuje pozostania w gałęzi)
+
+- **N1 — zerowe pokrycie testowe naprawy.** Pkt 6 wyżej. Dispatch mechaniczny, wzorzec gotowy.
+- **N2 — przyczyna źródłowa zamaskowana, nie usunięta.** `civEmoji: '🏛️'` w `main.ts:13169` **nadal
+  jest zahardkodowaną grecką świątynią dla każdej nacji** — dokładnie ten błąd, który był tematem
+  zgłoszenia. Dziś nie widać go tylko dlatego, że wszystkie 15 nacji ma plik portretu. Dodanie 16.
+  cywilizacji bez portretu (albo błąd nazwy pliku) przywraca zgłoszony objaw 1:1. **Wszystkie trzy
+  miejsca, na które commit powołuje się jako na wzorzec** (`hud.ts` `powerCenterIconHtml`,
+  `preBattle.ts:565`, `battleScene.ts:2942`) **mają w fallbacku `civIconSvg(civId)` — per-cywilizacja,
+  nie stały emoji.** Reużycie wzorca zatrzymało się o jeden krok za wcześnie.
+- **N3 — brak tożsamości władcy w nagłówku.** `img.alt=''`, brak `title`. `hud.ts` przy tym samym
+  portrecie ustawia `title="<wódz> · <nacja>"` (`leaderName`/`leaderNameFromPool` istnieją i są
+  wpięte). W panelu imperium imię władcy nie pada nigdzie, a czytnik ekranu dostaje pusty węzeł.
+- **N4 — identyfikowalność (§0).** ID `P-PANEL-IMPERIUM-PORTRET-WLADCA`, cytowane 4× w komentarzach
+  i JSDoc jako źródło decyzji („Maciej 2026-08-14"), **nie istnieje w żadnym pliku `.md` repo** —
+  ani w `REJESTR-PROSB-I-ZADAN.md`, ani w tym pliku. Jedyny ślad tematu to wzmianka poboczna
+  („już trwające zlecenie «ikona władcy zamiast emblematu»") w opisie `P-ZNACZNIK-POWER-HUD-CIV-EMBLEM`.
+  Kto pójdzie za ID z komentarza, trafi w pustkę.
+- **N5 — `leaderPortraitUrl()` nie składa diakrytyków**, choć `civIconIdFromCivLabel()` w tym samym
+  pliku to potrafi (`foldDiacritics`). Dziś nieszkodliwe (wszystkie `ikonaId` są bez ogonków), ale
+  klucz typu `'Słowianie'` cicho spada na fallback. Do wiedzy, bez akcji.
+
+### 9. Zakres, którego NIE dotknąłem
+
+Nie sprawdzałem panelu po wczytaniu zapisu ani przejścia epoki w trakcie otwartego panelu
+(`epoka` jest czytana raz przy budowie snapshotu — przy zmianie ery portret zmieni się dopiero
+przy następnym `refreshEmpireDetailPanel()`, co `updateHud()` i tak wywołuje; nie zmierzone
+wprost). Nie budowałem ani nie deployowałem niczego do `gra-robocza`.
+
+**STATUS: PASS-WITH-NOTES — zmiana zostaje w gałęzi. Do dispatchu Operatora (Sonnet 5, mechaniczne):
+N1 (bramka), N2 (fallback na `civIconSvg` wzorem 3 pozostałych miejsc), N3 (`title` z imieniem
+władcy), N4 (rejestracja ID). Osobno, poza tym tematem: sprostowanie wpisu o „błędnie wpisanej"
+liczbie 60/0 (pkt 2), sprostowanie/zamknięcie `P-ZNACZNIK-POWER-HUD-CIV-EMBLEM` (pkt 5), dopisanie
+`civ-bonusy-test` i `empire-panel-moc-scroll-preserve-test` do listy pre-istniejących (pkt 7).**
