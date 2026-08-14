@@ -109,3 +109,9 @@ gra/tools/.stubs/unit-context-card-brandAssets-stub.ts
 # samego powodu co wyzej (R-KARTA-JEDNOSTKI-STRZALKI-CYKL, 2026-08-09).
 gra/tools/.stubs/side-panel-unit-cycle-brandAssets-stub.ts
 gra/tools/.stubs/side-panel-unit-cycle-brandTokenVars-stub.ts
+
+# Stub bramki escape-overlay-real-panels-test.cjs (Evaluator FAIL 4fc770ee, FAIL #1, Maciej
+# 2026-08-14), wlasna nazwa z tego samego powodu co wyzej. Mutant bundle
+# ".escape-real-panels-mutant-<panel>-bundle.cjs" tej bramki juz pasuje do wzorca
+# "gra/tools/.*-bundle.cjs" wyzej, wiec nie potrzebuje osobnego wpisu.
+gra/tools/.stubs/brandAssets-escape-real-panels-stub.ts

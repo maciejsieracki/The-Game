@@ -14,7 +14,16 @@
  * tekstu zgodny z `buildTriumphCityStateUnificationMessage()`
  * (`game/triumph-city-state.ts`), tu tylko rozbity na tytuł + podtytuł + opis
  * zamiast jednego zdania w toaście.
+ *
+ * Wpięty w escapeOverlayStack (Evaluator FAIL 4fc770ee, znalezisko #4, Maciej 2026-08-14): ma
+ * realny przycisk zamknięcia („Rozumiem"), więc kwalifikuje się identycznie jak naprawione
+ * panele — commit 4fc770ee błędnie pominął go jako „bloker decyzyjny bez przycisku zamknięcia".
+ * / EN: wired into escapeOverlayStack — it has a real close button ("Understood"), so it
+ * qualifies the same as the panels fixed in 4fc770ee, which wrongly skipped it as "a decision
+ * blocker with no close button".
  */
+
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface TriumphCityStateNoticeOpts {
   civLabel: string;
@@ -77,8 +86,9 @@ export function showTriumphCityStateNotice(opts: TriumphCityStateNoticeOpts): vo
   const backdrop = document.createElement('div');
   backdrop.className = 'tn-backdrop';
 
-  const close = () => { host.remove(); opts.onClose?.(); };
+  const close = () => { popOverlay('triumph-city-state-notice'); host.remove(); opts.onClose?.(); };
   backdrop.addEventListener('click', close);
+  pushOverlay('triumph-city-state-notice', close);
 
   const card = document.createElement('div');
   card.className = 'tn-card';
@@ -99,5 +109,6 @@ export function showTriumphCityStateNotice(opts: TriumphCityStateNoticeOpts): vo
 }
 
 export function hideTriumphCityStateNotice(): void {
+  popOverlay('triumph-city-state-notice');
   document.getElementById(HOST_ID)?.remove();
 }

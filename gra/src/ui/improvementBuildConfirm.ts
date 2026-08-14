@@ -5,6 +5,7 @@
 import type { ImprovementBuildImpact } from '../map/improvement-build';
 import { formatImprovementBuildImpactList } from '../map/improvement-build';
 import { improvementDisplayName } from '../game/terrain-improvements';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 let overlay: HTMLDivElement | null = null;
 
@@ -66,9 +67,20 @@ export function showImprovementBuildConfirmModal(
   document.body.appendChild(overlay);
 
   const close = (): void => {
+    popOverlay('improvement-build-confirm');
     overlay?.remove();
     overlay = null;
   };
+
+  // Evaluator FAIL 4fc770ee, znalezisko #3 (Maciej 2026-08-14): ten modal ma przycisk „Anuluj"
+  // i zamykanie klikiem w tło, ale nie był wpięty w stos overlayów — Escape przy pustym stosie
+  // wychodził z pełnego ekranu (ten sam bug co pozostałe 4 panele), a otwarty NAD trybem
+  // budowy zamykał 'build-mode' POD SPODEM, zostawiając ten modal osieroconym (naruszenie
+  // LIFO). / EN: this modal has a "Cancel" button and closes on backdrop click, but wasn't
+  // wired into the overlay stack — Escape with an empty stack exited fullscreen (same bug as
+  // the other 4 panels), and opened OVER build mode it closed 'build-mode' underneath instead,
+  // orphaning this modal on screen (LIFO violation).
+  pushOverlay('improvement-build-confirm', close);
 
   overlay.querySelector('.civ-imp-build-cancel')?.addEventListener('click', close);
   overlay.querySelector('.civ-imp-build-ok')?.addEventListener('click', () => {
