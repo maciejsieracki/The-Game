@@ -27611,7 +27611,170 @@ mechanizmu wyboru reprezentanta stosu). Naprawiony w main.ts, pokryty nową regr
 `atak-dystansowy-mapa-test.cjs` (sekcja „(g) STOS MIESZANY" + mutacja MUT-G), wszystkie wymagane
 bramki zielone. Gotowe do commita na gałąź sesji (bez deployu — czeka na hasło `deploy`).**
 
-**STATUS: NAPRAWIONE — czeka na scalenie/commit (Operator), Evaluator jeszcze nie uruchomiony.**
+**STATUS: NAPRAWIONE — Evaluator uruchomiony, werdykt PASS-WITH-NOTES niżej.**
+
+### WERDYKT EVALUATORA (2026-08-14, Opus 5, agent `acde856863b7f9737`) dla `4dcb2f4f` — **PASS-WITH-NOTES**
+
+Wszystkie liczby niżej **zmierzone przez uruchomienie w izolowanym worktree** (`node_modules`
+przez symlink, `tsc` 5.9.3 zweryfikowane per C-029), nie przepisane z opisu commita.
+
+#### 1. Bramki — uruchomione niezależnie
+
+| Bramka | Wynik na `4dcb2f4f` | Ocena |
+|---|---|---|
+| `npx tsc --noEmit` | exit 0, 0 błędów | ZIELONA |
+| `atak-dystansowy-mapa-test.cjs` | **65 pass / 0 fail** | ZIELONA (zgodne z opisem commita) |
+| `combat-test.cjs` | 6 / 6 | ZIELONA |
+| `map-attack-city-test.cjs` | 8 ok / 0 fail | ZIELONA |
+| `tech-tree-test.cjs` | 19 / 0 | ZIELONA |
+| `research-test.cjs` | 33 / 0 | ZIELONA |
+| `unit-power-test.cjs` | 4 pass / 2 fail | PRE-ISTNIEJĄCE (`CLAUDE.md`), bez pogorszenia |
+| `ai-test.cjs` (dodatkowo) | 285 pass / 8 fail | PRE-ISTNIEJĄCE, identyczne z baseline poprzedniego Evaluatora |
+
+#### 2. Diagnoza — zweryfikowana samodzielnie, nie przepisana
+
+- `unitAttackScore` (`main.ts:9587-9589`) to **dosłownie** `normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0)`
+  — zero uwzględnienia zasięgu/typu ataku. Potwierdzone odczytem.
+- `pickStackRepresentative` (`armyMerge.ts:324-334`) wybiera **maksimum** tej funkcji (remis → niższe `id`),
+  a `unitAtRepresentative` (`armyMerge.ts:448-460`) filtruje stos po `(q,r)` + `inGarnizon !== true`.
+- **Własny skan `units.json` (75 wierszy, nie przykłady z commita):** mediana `meleeAttack` jednostek
+  zwarcia (`Zasięg ataku (hex)` puste, 57 szt.) = **6 pkt**, mediana jednostek z `Zasięg > 0` (18 szt.)
+  = **1 pkt**. Cała rodzina łuczników/procarzy/katapult siedzi w przedziale 0–2 pkt (Katapulta 0,
+  Procarz 1, Oszczepnik 1, Łucznik nubijski 1, Łucznik egipski/sumeryjski/akadyjski 1, Łucznik 2,
+  Łucznik asyryjski 2) przy Wojowniku = 4 pkt. **Diagnoza mechanizmu jest prawdziwa.**
+- **N5 (sprostowanie faktograficzne):** opis commita ORAZ komentarz w `main.ts:19286`/`19298`
+  podają „Hastati=7" jako przykład jednostki ZWARCIA. To nieprawda — Hastati ma
+  `"Zasięg ataku (hex)": 2` i `"Atak dystansowy": 3`, więc dla `unitMapAttackRangeHex` jest
+  jednostką **dystansową**. Podobnie 5 innych wierszy z `Zasięg > 0` ma `meleeAttack ≥ 4`
+  (Medżaj 10, Wojownik germański 6, Jeździec z oszczepami 6, Rydwan egipski 6, Konnica łucznicza
+  asyryjska 4). Sformułowanie „dystansowe mają **systematycznie** niższy `meleeAttack`" jest więc
+  prawdziwe dla rodziny łuczniczej, ale nie dla wszystkich jednostek z zasięgiem. Nie zmienia
+  poprawności naprawy — do sprostowania w komentarzu przy najbliższej okazji.
+
+#### 3. Bezpieczeństwo naprawy
+
+- `playerStackAt` (`main.ts:9764-9769`) = `activeUnitStack(units, u)` → dla jednostki poza garnizonem
+  `visibleStackOnHex(units, q, r, ownerId, groupId)`, czyli **czysty `Array.filter`** — zero mutacji,
+  zero efektów ubocznych. Potwierdzone odczytem `armyMerge.ts:88-104` i `161-170`.
+- **Wydajność: brak problemu.** `refreshHoverPathPreview` woła `playerStackAt(uSel)` już w
+  PIERWSZEJ linii (`main.ts:19358`), a zaraz potem uruchamia A* (`marchPathPlan`) — dodany
+  drugi `playerStackAt` to O(n) po tablicy jednostek przy koszcie rzędu wielokrotnie większym
+  obok. Kosmetyka: można było użyć wyliczonego już `stack` zamiast liczyć drugi raz (N4).
+
+#### 4. Parytet gracz↔AI — sprawdzony, **NIE złamany**
+
+`ai.ts` **w ogóle nie używa** `pickStackRepresentative` ani `unitAtRepresentative` (grep po całym
+`src/`: 0 trafień poza `main.ts` i `armyMerge.ts`). AI iteruje **jednostka po jednostce**
+(`ai.ts:2483 for (const unit of sortedUnits)`), a bramka zasięgu `isWithinAttackRange(unit, …)`
+(`ai.ts:2504`, `ai.ts:3004`) dostaje ZAWSZE tę konkretną jednostkę — więc łucznik AI sam znajduje
+cel w swoim zasięgu i nie jest zasłaniany przez zwarciowego „reprezentanta". Egzekucja rozkazu
+(`main.ts:27303-27356`) nie ma drugiej bramki adiacencji. **AI nie ma analogicznego błędu — nie
+ma potrzeby osobnego tematu.** Jeśli już, AI jest odrobinę bardziej swobodne niż gracz (każda
+jednostka decyduje osobno), ale to stan sprzed tego commita.
+
+#### 5. Jakość testu — 5 WŁASNYCH mutacji na PRAWDZIWYM `main.ts` (każda cofnięta `git checkout`)
+
+| # | Mutacja | Wynik bramki | Złapana? |
+|---|---|---|---|
+| MUT-1 | ciało `isTargetWithinStackAttackRange` → `return isTargetWithinAttackRange(atkUnit, tq, tr)` | 61 pass / **5 fail** | TAK — w tym asercje ZACHOWANIA (g2), nie tylko strażnik |
+| MUT-2 | sprawdzanie **tylko pierwszego** elementu stosu, **regex strażnika NIENARUSZONY** | 62 pass / **4 fail** | TAK — czysto behawioralnie, (g2) ×2 |
+| MUT-3 | cofnięcie wywołania w hover-preview | 64 / **1** | TAK (strażnik strukturalny) |
+| MUT-4 | cofnięcie wywołania w kliku jednostka→jednostka | 64 / **1** | TAK (strażnik strukturalny) |
+| MUT-5 | cofnięcie wywołania w `tryLaunchMarchAttack` | 64 / **1** | TAK (strażnik strukturalny) |
+| MUT-6 | **prawdziwy `playerStackAt` wypatroszony** (`activeUnitStack(units,u)` → `[u]`) | **65 / 0** | **NIE — PRZESZŁO** |
+
+MUT-2 jest tu kluczowe: dowodzi, że sekcja „(g)" łapie **zachowanie**, a nie tylko obecność
+nazwy funkcji w regexie. Test **nie jest tautologią** — wykonuje realnie wyciętą funkcję.
+
+**N2 — realna luka pokrycia (MUT-6).** Harness wstrzykuje **własną atrapę** `playerStackAt`, więc
+prawdziwa zależność ma **zerowe pokrycie**: można całkowicie zepsuć `playerStackAt` w `main.ts`
+(przywracając dokładnie zgłoszony przez właściciela błąd w grze) i bramka nadal daje 65/0.
+`atak-dystansowy-mapa-test.cjs` to jedyny plik w `tools/`, który w ogóle wspomina `playerStackAt`
+(grep). Sugestia na przyszłość: strażnik strukturalny na treść `playerStackAt`
+(`return activeUnitStack(units, u);`) albo asercja przez zbundlowany `activeUnitStack`.
+
+#### 6. **ODTWORZENIE W ŻYWEJ GRZE — WYKONANE, PRAWDZIWYMI KLIKNIĘCIAMI MYSZY (`page.mouse.click`)**
+
+To jest ta część, której zabrakło w rundzie 1 i której Operator nie dokończył. **Udało się.**
+
+**Sprostowanie noty metodologicznej Operatora:** headless **NIE jest** „bardzo wolny bez wyraźnego
+końca". Zmierzone: `vite build` całego bundla = **19-20 s**; boot do `<canvas>` = **~4 s**;
+pełna generacja świata do interaktywnej mapy = **~52 s**, z jednoznacznym, wykrywalnym końcem —
+`getComputedStyle(canvas).pointerEvents !== 'none'` (dopóki żyje nakładka „Tworzenie świata",
+canvas ma `pointer-events: none`, więc kliknięcia w ogóle nie docierają do handlera; to właśnie
+mylnie wygląda jak „gra nie reaguje"). Chromium w tym środowisku:
+`/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (uwaga: `chromium.executablePath()`
+Playwrighta wskazuje nieistniejącą wersję 1228 — trzeba podać ścieżkę wprost).
+
+Metoda: tymczasowy hook `__civEvalProbe` w `main.ts` (na wzór istniejącego `__civEmbarkDebug`),
+stawiający stos + wroga i centrujący kamerę na heksie, po czym **prawdziwe** `page.mouse.click`
+w środek canvasu. **Hook został w całości usunięty, `main.ts` przywrócony do stanu `4dcb2f4f`
+(`git status` czysty, bramki przeliczone po przywróceniu: tsc 0, bramka 65/0).**
+
+**Test A/B na TEJ SAMEJ mapie i tych samych heksach** (stos gracza `(28,9)`, barbarzyńca `(31,9)`,
+dystans **3**, Wojownik `meleeAttack=4, zasięg=0` + Łucznik `meleeAttack=2, zasięg=3`):
+
+| Build | Klik 1 (własny stos) | Klik 2 (wróg @ 3 heksy) | Ruch przed bitwą |
+|---|---|---|---|
+| **BEZ naprawy** (`isTargetWithinStackAttackRange` cofnięta) | `selectedId = ev_w` (**Wojownik** — reprezentant zwarcia, diagnoza potwierdzona ŻYWO) | **BRAK ATAKU** (marsz) — objaw właściciela odtworzony | — |
+| **Z naprawą** (`4dcb2f4f`) | `selectedId = ev_w` (identycznie) | **preBattle OTWARTE**, skład „2 oddziałów" (Wojownik + Łucznik) | **ŻADNEGO** — obie jednostki nadal `(28,9)`, ruch `2/2` |
+
+**Kontrola bez regresji (stos CZYSTO zwarciowy, dystans 2):** jednostka **przemaszerowała**
+`(81,8)` → `(82,8)` i dopiero wtedy weszła w bitwę — czyli dokładnie stare, poprawne zachowanie
+zwarcia. Zasięg NIE stał się globalny.
+
+**Wniosek:** zgłoszenie właściciela było prawdziwe, diagnoza Operatora trafna, a naprawa realnie
+działa w zbudowanej grze przy prawdziwym kliknięciu myszą — nie tylko w wywołaniu funkcji.
+
+#### 7. NOTY (nie blokują scalenia, ale N1 warto domknąć przed kolejnym deployem)
+
+- **N1 — ATAK NA CEL W MGLE, poszerzony przez ten commit (zmierzone ŻYWO).** W tym samym
+  przebiegu, w którym atak z 3 heksów się udał, sonda raportowała `wróg widoczny teraz: false`
+  — heks celu **nie był** w `currentVisible()`. Gałąź ataku w kliku (`main.ts:20623-20625`)
+  **nie sprawdza mgły** (sprawdzenie siedzi dopiero w gałęzi `else`, `main.ts:20629`), podczas
+  gdy `tryLaunchMarchAttack` (`main.ts:19315`) i hover-preview (`hoverVis`) mgłę sprawdzają.
+  To jest nota N3 poprzedniego Evaluatora — ale ten commit ją **poszerza**: wcześniej dziura
+  otwierała się tylko wtedy, gdy sama zaznaczona jednostka była dystansowa; teraz wystarczy
+  JEDEN łucznik w stosie. Skutek obserwowalny dla gracza: rozkaz **ruchu** na zamglony heks,
+  na którym stoi niewidoczny wróg w zasięgu stosu, **po cichu zamienia się w bitwę**.
+  Naprawa jednoliniowa (dołożenie `currentVisible().has(keyOf(cu.q, cu.r))` do warunku),
+  ale to zmiana zachowania → osobna runda, nie „przy okazji".
+- **N2 — bramka nie pokrywa prawdziwego `playerStackAt`** (MUT-6, sekcja 5).
+- **N3 — stos z DWÓCH różnych `stackGroupId` na jednym heksie: naprawa NIE działa
+  (potwierdzone i kodem, i ŻYWO).** `unitAtRepresentative` wybiera reprezentanta spośród
+  **wszystkich** jednostek na heksie (bez filtra grupy), a `playerStackAt` → `activeUnitStack`
+  zawęża do **jednej** grupy (`stackGroupIdOf`). Sonda z prawdziwymi obiema funkcjami:
+  ta sama para Wojownik+Łucznik na `(0,0)` — przy wspólnym fallbacku grupy
+  `isTargetWithinStackAttackRange(rep, 2) = true`, przy dwóch różnych `stackGroupId`
+  = **false**. Potwierdzone też klikaniem myszą w zbudowanej grze (dystans 3 → brak ataku).
+  Stan osiągalny w normalnej grze: „Zostaw osobno" z powrotem na origin zajęty przez rezydenta
+  (`units/setup.ts:139-141`). Nie jest to główny scenariusz zgłoszenia (jedna armia), ale
+  właściciel może na to trafić i zgłosić ponownie jako „czasem nadal nie działa".
+- **N4 — `refreshHoverPathPreview` liczy `playerStackAt` dwa razy** (linia 19358 i wewnątrz
+  `isTargetWithinStackAttackRange` w 19372). Bez znaczenia wydajnościowego, czysta kosmetyka.
+- **N5 — „Hastati=7" jako przykład zwarcia jest błędem faktograficznym** (sekcja 2).
+- **N6 — asymetria bramka vs skład bitwy.** `collectBattleRoster` zbiera jednostki właściciela
+  w promieniu **1 heksa** (`units/battleRoster.ts:63-76`), bez filtra `stackGroupId` — czyli
+  łucznik na SĄSIEDNIM heksie albo z innej grupy **wejdzie do bitwy**, choć nie odblokuje ataku.
+  Rozbieżność jest „na korzyść ostrożności" (bramka węższa niż skład), więc nie tworzy exploita,
+  ale warto o niej wiedzieć przy kolejnych zmianach.
+- **N7 — teleport po wygranej dotyczy teraz KAŻDEGO stosu mieszanego.** `moveAtkRosterOntoBattleHex`
+  (`game/post-battle-map.ts:283-304`) po wygranej przestawia cały skład na heks bitwy bez
+  sprawdzania dystansu i kosztu ruchu. To pre-istniejące (nota F3 poprzedniego Evaluatora,
+  pytanie `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` czeka na właściciela), ale ten commit
+  **zwielokrotnia zasięg rażenia**: wcześniej dotyczyło tylko sytuacji, gdy zaznaczona była
+  sama jednostka dystansowa, teraz każdej armii z jednym łucznikiem. Odpowiedź na to pytanie
+  robi się pilniejsza.
+
+#### 8. Werdykt
+
+**PASS-WITH-NOTES.** Naprawa jest merytorycznie poprawna, minimalna (3 wywołania + 1 funkcja),
+zgodna ze zgłoszeniem właściciela i **udowodniona end-to-end prawdziwymi kliknięciami myszy
+w zbudowanej grze, z kontrolą A/B na tym samym ziarnie mapy**. Test regresyjny jest prawdziwy
+(5 własnych mutacji, w tym jedna czysto behawioralna z nienaruszonym strażnikiem). Żadna bramka
+się nie pogorszyła. Noty N1 (mgła) i N3 (dwie grupy na heksie) to realne, zmierzone luki, ale
+obie są węższe niż naprawiony błąd i żadna nie cofa zgłoszonej funkcji — do rundy 2, nie do
+blokowania scalenia.
 
 ## ⚠️ P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT (2026-08-14, znalezisko przy okazji
 naprawy P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE, cicho zarejestrowane — nie nowy
