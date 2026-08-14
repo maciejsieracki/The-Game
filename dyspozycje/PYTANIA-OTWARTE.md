@@ -21646,3 +21646,30 @@ N1 (bramka), N2 (fallback na `civIconSvg` wzorem 3 pozostałych miejsc), N3 (`ti
 władcy), N4 (rejestracja ID). Osobno, poza tym tematem: sprostowanie wpisu o „błędnie wpisanej"
 liczbie 60/0 (pkt 2), sprostowanie/zamknięcie `P-ZNACZNIK-POWER-HUD-CIV-EMBLEM` (pkt 5), dopisanie
 `civ-bonusy-test` i `empire-panel-moc-scroll-preserve-test` do listy pre-istniejących (pkt 7).**
+
+## P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (2026-08-14, znalezisko przy okazji naprawy sekwencjonowania modali końca tury, `a7de65b0`) · STATUS: **OTWARTE — backlog, niedispatchowane**
+
+Znalezisko agenta naprawiającego `P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE` (commit `a7de65b0`),
+w jego własnych słowach: pętla ataku barbarzyńców (`main.ts`, tick barbarzyńców) woła
+`launchIncomingMapFieldBattle` i od razu `continue`-uje bez czekania na rozstrzygnięcie. Jeśli 2+
+jednostki barbarzyńskie atakują gracza w tym samym ticku, drugie wywołanie `showPreBattle()` cicho
+kasuje pierwsze (wciąż otwarte, nierozstrzygnięte) przez bezwarunkowe `hidePreBattle()` na
+początku funkcji.
+
+Niepowiązane z 3 objawami zdiagnozowanymi w `P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE` i celowo
+nietknięte tamtą naprawą (patrz commit message `a7de65b0` — świadomie odłożone, nie przeoczone).
+Efekt w grze: pierwsza z dwóch jednoczesnych bitew z barbarzyńcami może zniknąć z ekranu gracza bez
+rozstrzygnięcia widocznego dla gracza (bitwa nadal się toczy w silniku, ale okno preBattle dla niej
+już nie istnieje — do zweryfikowania czy to tylko UI, czy realnie gubi możliwość reakcji gracza
+przed automatycznym rozstrzygnięciem). Do dispatchu recon+fix gdy znajdzie się wolny slot.
+
+## Potwierdzenie: P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI — druga, niezależna weryfikacja (2026-08-14)
+
+Dispatch `ad60c934016a30a5c` (zlecony wcześniej tej samej sesji, zanim ustalono że temat już
+zamknięty — zgubiony w kompaktowaniu kontekstu, odebrany dopiero teraz) potwierdza niezależnie: zero
+zmian kodu potrzebnych, fix `e7591ebb` + rename N4 już na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+(HEAD w chwili sprawdzenia `5dc45b6e`). Zweryfikowane osobno: `tsc` 0 błędów, scenariusz 205
+Glina+105 Drewno=103 PW zielony w `diplomacy-value-catalog-test.cjs` (81/81), wszystkie 37 plików
+`diplomacy-*-test.cjs` zielone, `logic-test.cjs` 213/213 (zgodne z udokumentowanym punktem
+odniesienia). Nagłówek już był poprawnie przestemplowany na ZAMKNIĘTE — bez zmian. Zapis czysto
+informacyjny, żeby drugi dispatch tego samego tematu nie wyglądał na zgubiony bez wyjaśnienia.
