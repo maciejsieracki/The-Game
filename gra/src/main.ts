@@ -175,6 +175,7 @@ import {
   DEFAULT_PODZIAL_PRACY,
   DEFAULT_PROCENT_ROZWOJ,
   DEFAULT_OKOLICA_FOCUS,
+  DEFAULT_OKOLICA_TRYB,
   DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
@@ -4572,6 +4573,29 @@ async function boot(): Promise<void> {
       }
       c.okolicaFocusOverride = false;
       c.okolicaFocus = ownerDefaultOkolicaFocus.get(c.ownerId)!;
+      // R-OKOLICA-TRYB-RESET-PO-ZMIANIE-WLASCICIELA-Q1=A (Maciej 2026-08-14): resolveWorkedTiles
+      // (okolica.ts) honoruje okolicaTryb==='reczny' BEZ filtra właściciela -- miasto gracza
+      // przejęte przez AI/rebeliantów zostawało w trybie ręcznym NA ZAWSZE, bo wszystkie 4
+      // callbacki zmiany trybu (onOkolicaEnterManual/onOkolicaRestoreAuto/applyOkolicaTileAdjust/
+      // onOkolicaFocusChange) są dostępne WYŁĄCZNIE graczowi (ownerId===0) -- AI nie ma ścieżki
+      // powrotu do auto, obywatele stali bezczynnie mimo wolnych heksów. Reset TU, nie tylko przez
+      // reconcileAllWorkedTiles niżej -- ten czyści okolicaReczne niezależnie od trybu, ale NIGDY
+      // nie dotyka samego pola okolicaTryb. Reset ŚWIADOMIE bez wyjątku dla gracza odzyskującego
+      // WŁASNE miasto (kontratak) -- Maciej wybrał wariant A (zawsze resetuj), nie C (tylko gdy
+      // nowy właściciel to AI): traci wcześniejsze ręczne ustawienia, to zaakceptowany koszt.
+      // okolicaReczne kasowane tak samo jak w onOkolicaRestoreAuto -- martwe dane po powrocie do auto.
+      // / EN: resolveWorkedTiles (okolica.ts) honours okolicaTryb==='reczny' with NO owner filter --
+      // a player city captured by AI/rebels stayed stuck in manual mode FOREVER, because all 4
+      // tryb-changing callbacks (onOkolicaEnterManual/onOkolicaRestoreAuto/applyOkolicaTileAdjust/
+      // onOkolicaFocusChange) are player-only (ownerId===0) -- AI has no path back to auto, citizens
+      // sat idle despite free hexes. Reset HERE, not only via reconcileAllWorkedTiles below -- that
+      // cleans okolicaReczne regardless of tryb, but never touches the okolicaTryb field itself.
+      // Reset DELIBERATELY with no exception for the player reclaiming their OWN city (counter-
+      // attack) -- Maciej picked variant A (always reset), not C (only when the new owner is AI):
+      // losing prior manual settings is an accepted cost. okolicaReczne cleared the same way
+      // onOkolicaRestoreAuto does -- dead data once back to auto.
+      c.okolicaTryb = DEFAULT_OKOLICA_TRYB;
+      delete c.okolicaReczne;
       c.budowaFocusOverride = false;
       const bp = ownerDefaultBudowaProfil.get(c.ownerId)!;
       c.budowaFocus = bp.budowaFocus;
