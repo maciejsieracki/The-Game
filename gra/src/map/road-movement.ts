@@ -34,12 +34,15 @@ export const ROAD_MIN_MOVE_COST = 1 / 3;
 /**
  * Osobna, niższa podłoga WYŁĄCZNIE dla drogi brukowanej (R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A,
  * Maciej 2026-08-14). Wspólna podłoga `ROAD_MIN_MOVE_COST = 1/3` psuła mnożnik ÷5 przy
- * najczęstszym koszcie bazowym terenu (Łąka/Równina/Pustynia/rzeka = 1): wynik `max(1/3, 1/5)`
+ * najczęstszym koszcie bazowym terenu (Łąka/Równina/rzeka = 1): wynik `max(1/3, 1/5)`
  * dawał `1/3` — dokładnie tyle samo co zwykła droga, zero korzyści z bruku (nota N1
  * werdyktu Evaluatora dla `92cd220b`). Ta stała dopasowuje podłogę do własnego mnożnika
  * bruku (÷5), więc `max(ROAD_BRUK_MIN_MOVE_COST, cost/5)` przy koszcie bazowym 1 daje `0,2`,
  * nie `0,333`. UWAGA: to NIE naprawia w pełni noty N2 (regresja względem mechaniki SPRZED
- * `92cd220b` przy koszcie bazowym 2 — Wzgórza/Las) — przy koszcie 2 wynik `cost/5 = 0,4` jest
+ * `92cd220b` przy koszcie bazowym 2 — Wzgórza/Las, **oraz Pustynia**: sprostowanie
+ * `P-DROGI-PUSTYNIA-KOSZT-2-SPROSTOWANIE` — `gra/data/terrain-movement.json` ładuje Pustynię
+ * jako koszt 2 w runtime, nie 1 jak fallback w `units/setup.ts` sugerował błędnie w opisie
+ * poprzedniej wersji tego komentarza) — przy koszcie 2 wynik `cost/5 = 0,4` jest
  * WYŻSZY od podłogi (0,2 lub nawet 1/3), więc podłoga się w ogóle nie aktywuje i jej obniżenie
  * niczego tam nie zmienia; to świadomie zaakceptowana konsekwencja decyzji A, nie błąd tej
  * poprawki — patrz tabela przed/po w commicie.
@@ -47,8 +50,9 @@ export const ROAD_MIN_MOVE_COST = 1 / 3;
  * multiplier at the most common terrain base cost (1): `max(1/3, 1/5)` collapsed to `1/3`,
  * identical to a plain road. This constant matches cobblestone's own ÷5 multiplier. NOTE: it
  * does NOT fully fix the base-cost-2 regression vs. the pre-`92cd220b` mechanic — at cost 2 the
- * floor never binds either way, so lowering it changes nothing there; accepted consequence of
- * decision A, not a bug in this fix.
+ * floor never binds either way, so lowering it changes nothing there (this ALSO covers Desert,
+ * whose runtime cost is 2 per `terrain-movement.json`, not the code fallback of 1); accepted
+ * consequence of decision A, not a bug in this fix.
  */
 export const ROAD_BRUK_MIN_MOVE_COST = 1 / 5;
 
