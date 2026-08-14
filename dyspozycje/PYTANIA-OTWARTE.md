@@ -24414,3 +24414,34 @@ stałej w komentarzu), **N2** (przesłanianie zależne od kamery) i **N3** (ręc
 + `| string`) to poprawki do zrobienia przy następnym dotknięciu tego kodu, nie osobna runda.
 **N4** to temat pre-istniejący do ewentualnej decyzji właściciela, jeśli zależy mu na czytelności
 koloru tożsamościowego sąsiada na styku terytoriów.
+
+---
+
+## ECHO `R-DROGI-RUCH-HANDEL-Q1` (Maciej, 2026-08-14) — decyzja właściciela, dispatch w toku
+
+**Decyzja (cytat):** „Ustalmy że ruch po drodze zwykłej jest trzy razy szybszy a po brukowanej pięć
+razy szybszy z kolei handel na drodze plus dwa, na drodze brukowanej plus trzy."
+
+**Stan PRZED (zmierzony w kodzie/danych, nie założony):**
+| Parametr | Dziś | Docelowo (decyzja Macieja) | Plik |
+|---|---|---|---|
+| Ruch, Droga (`droga`) | **koszt ÷ 3** (`ROAD_MOVE_SPEED_MULT = 3`) | **koszt ÷ 3** — bez zmiany, już zgodne | `gra/src/map/road-movement.ts` |
+| Ruch, Droga brukowana (`droga_brukowana`) | **koszt − 2** (`bonus_ruch: 2`, mechanika ODEJMOWANIA, nie dzielenia) | **koszt ÷ 5** — zmiana MECHANIKI (z odejmowania na dzielenie, analogicznie do zwykłej drogi) | `gra/src/map/road-movement.ts` (`cobblestoneMoveBonus()`/`applyRoadMovementModifier()`), `gra/data/terrain-improvements.json` (`droga_brukowana.bonus_ruch`) |
+| Handel (plon heksa), Droga | **+1 handlu/turę** (`bonus.handel: 1`) | **+2 handlu/turę** | `gra/data/terrain-improvements.json` (`droga.bonus.handel`) |
+| Handel (plon heksa), Droga brukowana | **+2 handlu/turę** (`bonus.handel: 2`) | **+3 handlu/turę** | `gra/data/terrain-improvements.json` (`droga_brukowana.bonus.handel`) |
+
+**⚠️ Flaga §1a — dotyka wcześniejszej decyzji:** wartość `bonus_ruch: 2` przy `droga_brukowana` niesie
+adnotację `"uwagi": "T-TECH-9 Maciej 2026-07-04"` — to zmiana mechaniki ustalonej tamtą decyzją
+(z odejmowania stałej na dzielenie przez mnożnik), nie tylko przestrojenie liczby. Wartości handlu
+(1/2) nie mają przypisanej adnotacji źródłowej w JSON — nieznane, czy miały osobną decyzję ABC.
+
+**Zakres:** `applyRoadMovementModifier()` w `road-movement.ts` — gałąź `droga_brukowana` ma przejść
+z `Math.max(ROAD_MIN_MOVE_COST, cost - bonus)` na wzorzec analogiczny do zwykłej drogi:
+`cost / ROAD_BRUK_MOVE_SPEED_MULT` (nowa stała = 5), z tym samym `Math.max(ROAD_MIN_MOVE_COST, …)`
+jako podłogą. `bonus.handel` w `terrain-improvements.json` dla obu wpisów to czysta zmiana danych —
+już czytana generycznie przez `applyImprovementBonus()` (`terrain-improvements.ts:83-93`), zero zmian
+kodu potrzebnych po stronie handlu. Do sprawdzenia przez dispatchowanego agenta: czy `terrain-improvements.json`
+zasila którykolwiek panel Excel (`panele-sterowania/gen-panel-*.py`) — jeśli tak, odnotować w rejestrze
+jako osobny krok doganiania JSON→Excel (`CLAUDE.md` §2), nie wykonywać automatycznie bez potwierdzenia zakresu.
+
+**STATUS: WDROŻENIE W TOKU** (Workflow Operator Sonnet 5 → Evaluator Opus 5, dispatch 2026-08-14).
