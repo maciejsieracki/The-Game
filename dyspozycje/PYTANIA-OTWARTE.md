@@ -27375,3 +27375,164 @@ gra właściciel (mało prawdopodobne — ten sam branch, ale do zweryfikowania:
    potem cel, a nie od razu na cel) i opisać wprost, bez zgadywania.
 
 **STATUS: DISPATCH W TOKU — priorytet wysoki (żywy playtest, sprzeczny wynik z Evaluatorem).**
+
+---
+
+## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — WERDYKT EVALUATORA (Opus 5, agent `aa82c80ee4e26d8ce`, 2026-08-14)
+
+**WERDYKT: PASS-WITH-NOTES** dla `9482117f` (na gałęzi sesji jako merge `4a580231`). Naprawa jest
+poprawna, minimalna i zgodna ze wzorcem silnika; test regresyjny jest PRAWDZIWY (nie tautologia) —
+udowodnione trzema WŁASNYMI mutacjami Evaluatora, w tym mutacją funkcji WSPÓŁDZIELONEJ. Noty N1–N6
+niżej nie blokują scalenia ani deployu; N1 to jedyna rzecz do dopisania osobnym commitem.
+
+### 1. Merytoryka naprawy — zweryfikowana samodzielnie, nie przepisana z raportu Operatora
+
+| Sprawdzenie | Wynik |
+|---|---|
+| `converterBuildingIdForRecipe` robi to, co opisano | TAK — `gra/src/game/converters.ts:216-218`, dosłownie `return recipe.buildingId ?? recipe.id;` |
+| Liczba receptur z osobnym `buildingId` | **5 z 10** — potwierdzone odczytem `DEFAULT_CONVERTER_RECIPES` (`converters.ts:81-100`): `odlewnia_zelaza__braz`, `odlewnia_zelaza__zelazo`, `wielka_odlewnia__braz`, `wielka_odlewnia__zelazo`, `wielka_odlewnia__stal`. Zgodne ze zgłoszeniem |
+| Wzorzec w `main.ts:2789` identyczny z silnikiem | TAK — silnik: `runtimeBuiltIds.includes(converterBuildingIdForRecipe(r))` (`turn-economy.ts:1603-1605`); HUD: `builtIds.includes(converterBuildingIdForRecipe(recipe))`. Ta sama funkcja klucza, ta sama semantyka `includes` |
+| Czy merge `4a580231` nie zmienił treści commita | TAK — `git diff 9482117f HEAD` na obu plikach: zero różnic |
+| Brak podwójnego liczenia po naprawie (ryzyko: 3 receptury Brązu w łańcuchu) | Sprawdzone celowo: łańcuch odlewni to JEDEN slot — `gra/data/buildings.json` ma `odlewnia_zelaza.upgradeFrom = odlewnia_brazu`, `wielka_odlewnia.upgradeFrom = odlewnia_zelaza`, a `gra/src/game/production.ts:650-656` USUWA `upgradeFrom` z `builtIds` przy ukończeniu ulepszenia. Nie da się mieć dwóch ogniw naraz → brak sumowania 25+25+25 Brązu |
+| Realne wartości vs wartości w teście | `gra/data/econ-params.json`: Cegielnia 50, Garncarnia 50, Odlewnia brązu/żelaza/Wielka odlewnia 25 szt./turę na easy/normal/hard — DOKŁADNIE to, co test asercjonuje przez `throughputFallback` |
+
+### 2. Jakość testu `hud-konwerter-dopasowanie-test.cjs` — trzy WŁASNE mutacje Evaluatora
+
+Test faktycznie wycina prawdziwy tekst `empireConverterResourceRatesForOwner` z `main.ts`
+(po sygnaturze) i wykonuje go przez `esbuild.transformSync` + `new Function`, z PRAWDZIWYM
+`converters.ts` zbundlowanym przez `esbuild.buildSync` — nie z atrapą. Potwierdzone nie przez lekturę,
+tylko przez mutacje NA DYSKU (każda cofnięta przez `git checkout --`, drzewo po każdej rundzie
+czyste — `git status --porcelain` puste):
+
+| # | Mutacja (plik) | Wynik bramki |
+|---|---|---|
+| A | `main.ts` → powrót do `builtIds.includes(recipe.id)` (stary błąd) | **ZŁAPANA** — 11 pass / 9 fail, exit 1; `Odlewnia zelaza: Zelazo ... (got undefined)`, `Wielka odlewnia: Stal ... (got undefined)` — czyli niezależnie odtworzony ORYGINALNY objaw ze zgłoszenia (`{}` zamiast produkcji) |
+| B | `main.ts` → `builtIds.includes(recipe.buildingId ?? '')` (dopasowanie bez fallbacku na `recipe.id`) | **ZŁAPANA** — 12 pass / 8 fail, exit 1; padły asercje kontrolne trójki Cegielnia/Garncarnia/Odlewnia brązu (`got undefined`) — dowód, że test pilnuje OBU kierunków, nie tylko odlewni |
+| C | `converters.ts` → `converterBuildingIdForRecipe` zwraca `recipe.id` (psucie funkcji WSPÓŁDZIELONEJ, `main.ts` nietknięty) | **ZŁAPANA** — 13 pass / 7 fail, exit 1. To dowód najmocniejszy: test wykonuje prawdziwą funkcję z `converters.ts`, nie kopię formuły — dokładnie to, za co runda 1 tematu city-panel dostała FAIL |
+
+Na czystym drzewie: **20 passed, 0 failed, exit 0**.
+
+### 3. Kompletność — czy istnieje TRZECIE miejsce z tym samym dopasowaniem
+
+Audyt własny (`grep -rn "DEFAULT_CONVERTER_RECIPES\|converterBuildingIdForRecipe\|builtIds.includes" gra/src/`):
+dopasowanie budynek↔receptura żyje w **dokładnie trzech miejscach** i wszystkie trzy używają dziś tego
+samego klucza:
+
+1. `gra/src/game/turn-economy.ts:1603-1605` — silnik tury (`advanceCityEconomy`),
+2. `gra/src/game/converters.ts:246-248` — `converterProductionDisplayForBuilding`, wołane przez panel
+   miasta (`gra/src/ui/cityPanel.ts:6387`),
+3. `gra/src/main.ts:2789` — HUD imperium (naprawiane tu).
+
+**Twierdzenie Operatora o `cityPanel.ts` potwierdzam, ale z korektą:** panel miasta NIE ma własnej
+logiki dopasowania (nie odwołuje się do `DEFAULT_CONVERTER_RECIPES` w kodzie) — deleguje do
+`converters.ts`, które dopasowuje przez `converterBuildingIdForRecipe`. Operator napisał, że „nie
+znalazł w nim dziś żadnego odwołania” i wysnuł stąd, że to może „osobny, nie-scalony temat” — w
+rzeczywistości praca city-panel runda 2 (`dcdf653c`) BYŁA już na gałęzi sesji, tylko nie na `main`,
+od którego wystartował jego worktree. Wniosek końcowy ten sam: trzeciego, pominiętego miejsca NIE MA.
+
+Pozostałe dwa wystąpienia `DEFAULT_CONVERTER_RECIPES` (`turn-economy.ts:2128` i `2145`) to budowa mapy
+przepustowości kluczowanej po `recipe.id` — to NIE jest dopasowanie do budynku i `recipe.id` jest tam
+kluczem POPRAWNYM (identycznie jak w HUD-zie: `converterThroughputForEra(recipe.id, ...)`).
+
+### 4. Bramki uruchomione samodzielnie (z `gra/`, worktree `agent-aa82c80ee4e26d8ce`, symlink `node_modules`)
+
+`npx tsc --noEmit` → **exit 0** (tsc 5.9.3) · `hud-konwerter-dopasowanie-test.cjs` **20/0** ·
+`converters-test.cjs` **46/0** · `converter-era-scaling-test.cjs` **87/0** · `tech-tree-test.cjs`
+**19/0** · `research-test.cjs` **33/0** · `unit-replace-test.cjs` **13/0** ·
+`ai-founding-territory-test.cjs` **28/0**. Wszystkie liczby z raportu Operatora odtworzone co do
+sztuki. Dołożone przeze mnie bramki z tego samego obszaru (impact check): `citypanel-konwerter-produkcja-test.cjs`
+**83/0**, `cyna-surowiec-test.cjs` **78/0**, `ekonomia-5x-inwariant-test.cjs` **246/0**,
+`surowce-katalog-kolejnosc-test.cjs` **62/0** — wszystkie zielone.
+
+### 5. `mennica-magazyn-test.cjs` — pre-istnienie potwierdzone MOCNIEJ niż u Operatora
+
+Operator porównywał przez `git stash` (cały stan roboczy). Ja zrobiłem test punktowy: uruchomiłem
+bramkę na czubku gałęzi (**38 pass / 3 fail**), potem cofnąłem SAMĄ jedną linię naprawy
+(`converterBuildingIdForRecipe(recipe)` → `recipe.id`) i uruchomiłem ponownie: **38 pass / 3 fail**,
+te same komunikaty (m.in. `FAIL: odlewnia_brazu bez rudy NIE blokuje Cegielni ani Garncarni`).
+Delta tej naprawy = **zero**. Pre-istniejące, zgodnie z zapisem w `CLAUDE.md`.
+
+### 6. `map-gen-regression-test.cjs` — luka dowodowa Operatora zamknięta, ale INACZEJ niż przez pełny przebieg
+
+**(a) Dowód strukturalny (mocniejszy niż przebieg).** Bramka bundluje WYŁĄCZNIE
+`src/map/generator`, `src/map/gen-helpers`, `src/map/villages`, `src/map/newGameMapDefaults`,
+`src/types/hex` (`tools/map-gen-regression-test.cjs:16-23`). Commit zmienia `gra/src/main.ts`
+i dokłada `gra/tools/hud-konwerter-dopasowanie-test.cjs` — **żaden z tych plików nie wchodzi do
+bundla tej bramki**. Wpływ tej naprawy na wynik map-gen jest więc niemożliwy, nie „mało prawdopodobny”.
+
+**(b) Ta bramka w TYM środowisku i tak nie może dać `exit 0` — niezależnie od jakiejkolwiek zmiany
+kodu.** `allOk` zawiera `stdOk = tStd < STANDARD_GEN_MS_LIMIT` (7000 ms) oraz
+`duzyOk = tDuzy < 15000 ms`. Zmierzone TU: mapa mała (108×74) **57,86 s**, mapa standardowa (168×120)
+**116,25 s** — czyli 16,6× ponad limit. `stdOk = false` → `allOk = false` → `exit 1`, zanim jeszcze
+dojdzie do rzek. Pełny przebieg (80+ generacji map, w tym 40 standardowych po ~116 s) to w tym
+środowisku rząd 1,5–2,5 h; przerwałem go jako bezwartościowy dowodowo wobec (a) i (b). To jest ta
+sama klasa pułapki, o której mówi `CLAUDE.md` §0b (wcześniejsze błędne twierdzenie „map-gen kończy
+się exit 0”).
+
+**(c) Zamiast tego — skrócona replika DWÓCH kryteriów nazwanych w `CLAUDE.md`** (determinizm A=B
++ 0 rzek bez ujścia), na tym samym bundlu `src/map`, bez benchmarków czasowych:
+- **Determinizm A=B** (seed 42, standardowy, kontynenty, dwie generacje w jednym procesie):
+  hash `A=fdb5e82c`, `B=fdb5e82c` → **IDENTYCZNY, PASS**.
+- **0 rzek bez ujścia** (seed 42, mała mapa, 4 typy, rivers medium, `countBadRiverPaths`
+  odwzorowane 1:1 z bramki): kontynenty **0/92**, pangea **0/38**, wyspy **0/45**, ziemia **0/27**
+  tras bez ujścia; główne rzeki bez REALNEGO morza: **0/45, 0/29, 0/30, 0/25**. Łącznie
+  **0 złych na 202 trasy**, `exit 0`.
+
+**Uwaga metodologiczna do protokołu (błąd MOJEGO harnessu, nie kodu gry):** pierwsza wersja mojej
+repliki wołała `pathHasValidRiverOutlet(hexes, path, W, H)` — a prawdziwa sygnatura to
+`(hexes, path, paths, kinds, width, height)` (`gen-helpers.ts:9089-9096`). Efekt: „92/92 rzek bez
+ujścia”, co wyglądało na katastrofalną regresję, a było wyłącznie złym wywołaniem w moim skrypcie.
+Zapisuję to jawnie, bo dokładnie tak powstają fałszywe alarmy przepisywane potem do kolejnych
+dokumentów. Wynik ważny to ten z poprawionej repliki wyżej.
+
+### 7. Noty (NIE blokują — do osobnych, drobnych zleceń)
+
+**N1 (jedyna do naprawienia commitem — dokumentacja skłamała po naprawie).** Komentarz w
+`gra/src/ui/cityPanel.ts:6355-6379` nadal twierdzi, że HUD imperium dopasowuje przez
+`builtIds.includes(recipe.id)` i „przez to gubi część receptur (Odlewnia żelaza, Wielka odlewnia)”.
+Po `9482117f` to jest **nieprawda** — opis żywego bugu został w kodzie jako opis stanu bieżącego.
+Naprawa: przepisać ten akapit na czas przeszły z odwołaniem do `9482117f`. (Nie ruszam sam — rola
+Evaluatora, zero zmian w kodzie produkcyjnym.)
+
+**N2 (kruchość bramki, świadoma).** §2 testu przypina DOSŁOWNY ciąg
+`if (!builtIds.includes(converterBuildingIdForRecipe(recipe))) continue;`. Zachowawczy refaktor
+(np. inline `recipe.buildingId ?? recipe.id`) zachowałby poprawne zachowanie, ale zapali bramkę na
+czerwono (4 asercje §2). To standard tego repo (strażnicy tekstowi), ale warto wiedzieć przy
+przyszłym sprzątaniu.
+
+**N3 (zakres pokrycia).** Test wstrzykuje `data.econParams = {}` (ścieżka `throughputFallback`)
+i `empireEpochForOwner = () => 1`. Dziś realne `econ-params.json` ma te same liczby (sprawdziłem —
+sekcja 1), więc pokrycie jest realne; ale gdyby ktoś zmienił parametry w JSON, bramka nadal byłaby
+zielona na fallbackach, a HUD mógłby się rozjechać z silnikiem. Test asercjonuje też STAŁE (25/50),
+nie porównuje HUD z wynikiem silnika — czyli klasa błędu „HUD vs silnik” jest złapana dla TEGO
+dopasowania, ale nie pilnowana strukturalnie.
+
+**N4 (pre-istniejąca, realna różnica HUD vs silnik — POZA zakresem tej naprawy).** Silnik filtruje
+`runtimeBuiltIds` (`runtimeActiveBuiltIdsForCity` — etykiety dostępu do surowca, dostęp do Złota,
+zapas imperium), HUD używa surowego `builtIds`. Naprawa ujednoliciła KLUCZ dopasowania, ale nie
+ZBIÓR budynków: konwerter runtime-nieaktywny nadal policzy się w HUD jako pełne 25 szt./turę.
+To świadome „brutto” (udokumentowane w docstringu `empireConverterResourceRatesForOwner`), ale po tej
+naprawie dotyczy już także Odlewni żelaza/Wielkiej odlewni, więc rozjazd stał się bardziej widoczny.
+Do decyzji właściciela, czy rejestrować osobno.
+
+**N5 (skutek naprawy szerszy niż sam licznik — zamierzony, ale warto to wiedzieć).**
+`empireConverterResourceRatesForOwner` karmi też `mergedResourceRatesForOwner` (`main.ts:8375-8386`),
+a ta — cap handlu wielotorowego w dyplomacji (`main.ts:8412-8413`, `15899`). Po naprawie Brąz/Żelazo/Stal
+z odlewni realnie WCHODZĄ do tego capu (wcześniej liczyły się jako 0). PARYTET gracz↔AI zachowany —
+ta sama funkcja, `ownerId` jako zwykły parametr, zero gałęzi. Zmiana dotyka więc nie tylko wyświetlania,
+ale i zachowania AI w handlu — na plus (wcześniej cap był zaniżony), ale playtest handlu warto zrobić.
+
+**N6 (dług danych, zero szkody dziś).** Receptura `huta` (`converters.ts:87`) nie ma odpowiadającego
+budynku w `buildings.json` (łańcuch to `odlewnia_brazu` → `odlewnia_zelaza` → `wielka_odlewnia`), więc
+nigdy się nie dopasuje — identycznie w HUD i w silniku, bez rozjazdu. Martwy wpis do sprzątnięcia
+kiedyś osobno.
+
+### 8. Uwaga procesowa (potwierdzam ustalenie orkiestratora)
+
+Commity `9482117f` + `913b74f6` trafiły PROSTO na `main` z pominięciem gałęzi sesji i Evaluatora
+(worktree Operatora wystartował od `main`). Merytorycznie kod jest dziś zweryfikowany i zielony —
+dług był procesowy, nie merytoryczny, i tym werdyktem zostaje domknięty.
+
+**STATUS: PASS-WITH-NOTES — TEMAT ZAMKNIĘTY MERYTORYCZNIE.** Do dorobienia osobno: N1 (poprawka
+zdezaktualizowanego komentarza w `cityPanel.ts`). N4/N6 — do ewentualnej rejestracji jako osobne
+tematy, jeśli właściciel uzna za istotne.
