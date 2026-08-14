@@ -21379,3 +21379,19 @@ gate" — funkcja **istnieje i jest eksportowana od FALA 123 (`50215090`)**, tą
 *użyta*. Podobnie `isFarmBaseTerrain` i `hexHasClayDeposit` były już eksportowane. Nowo
 wyeksportowana jest **wyłącznie** `hasAnimalDeposit`. Reużycie zamiast duplikowania logiki —
 zgodnie z zaleceniem ze zgłoszenia — zostało wykonane poprawnie.
+
+## Dispatch: N4 z Evaluatora hex tooltip — droga_brukowana + irygacja, dwie kolejne luki tej samej klasy (2026-08-14)
+
+Evaluator hex tooltip (`94977a20`) znalazł, obie widoczne na oryginalnym zrzucie Macieja:
+1. **`droga_brukowana`** pokazuje się w **720/1008** sprawdzonych konfiguracji przy **0** faktycznie
+   dozwolonych przez silnik (wymaga istniejącej zwykłej Drogi na heksie) — tooltip ma już strukturę
+   `active`/warunek do dopięcia, jednoliniowa poprawka.
+2. **`irygacja`** pokazuje się na heksie wprost opisanym przez Macieja jako „bez rzeki" — **NIE
+   jednoliniowiec**: prawdziwy warunek `isRiverAdjacent` sprawdza też SĄSIADÓW heksu, a tooltip
+   dziś widzi tylko sam heks. Wymaga dostępu do sąsiadów w kontekście tooltipa.
+
+**STATUS: dispatch Operatora (Sonnet 5) — naprawić oba, wzorem już naprawionych 11 kluczy w tym
+samym pliku (`hexContextTooltip.ts listTerrainPossibleImprovements()`), rozszerzyć istniejący test
+`hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` o oba scenariusze. Commit WYŁĄCZNIE tego zakresu —
+nie mieszać z żadnym innym tematem (patrz sprostowanie N2 tego samego Evaluatora o zanieczyszczonym
+zakresie `ea0be32a`).**
