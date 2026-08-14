@@ -27776,6 +27776,65 @@ się nie pogorszyła. Noty N1 (mgła) i N3 (dwie grupy na heksie) to realne, zmi
 obie są węższe niż naprawiony błąd i żadna nie cofa zgłoszonej funkcji — do rundy 2, nie do
 blokowania scalenia.
 
+### RUNDA 2 (Operator, 2026-08-14, commit `b752e0c4`) — N1 + N2 naprawione, GOTOWE, czeka na Evaluatora
+
+Zakres ściśle N1+N2 (C-025) — N3/N4/N6/N7 świadomie nietknięte (patrz sekcje niżej i osobny
+temat `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` dla N7, czekający na właściciela).
+
+**N1 — atak przez mgłę wojny, naprawione.** `main.ts`, gałąź kliku jednostka→jednostka (ok. linii
+20623-20625): do warunku `atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
+isTargetWithinStackAttackRange(...)` dołożono `currentVisible().has(keyOf(cu.q, cu.r))` PRZED
+sprawdzeniem zasięgu — symetria z `tryLaunchMarchAttack` (main.ts:19315, sprawdza mgłę) i
+`refreshHoverPathPreview` (main.ts:19365, `hoverVis`). Gdy cel jest w zasięgu ataku stosu, ale poza
+`currentVisible()`, klik teraz spada do gałęzi `else if` i pokazuje istniejący hint „Cel niewidoczny
+(mgła).” zamiast cicho inicjować bitwę.
+
+**Weryfikacja żywa (headless Chromium, Playwright, `page.mouse.click` — nie wywołanie JS):**
+zbudowany bundel (`node ./node_modules/vite/bin/vite.js build`), uruchomiony z `?playtest=mapa`
+(realna generacja świata, ~19-20 s build + ~kilkanaście s do interaktywnego canvasu). Tymczasowy
+hook debugowy (na wzór `__civEmbarkDebug`) postawił łucznika gracza (Widok pola=2, Zasięg ataku=3)
+maksymalnie daleko od miasta gracza (żeby promień widoku miasta nie „oświetlał” celu) i wroga
+dokładnie 3 heksy dalej — w zasięgu ataku, ale POZA `currentVisible()` (zweryfikowane programowo:
+`enemyVisible: false`). **Kontrola A/B na TEJ SAMEJ mapie/ziarnie:**
+
+| Build | Klik na cel @ dystans=3 (enemyVisible=false) |
+|---|---|
+| **BEZ fixu N1** (warunek cofnięty do stanu sprzed rundy 2) | Atak WYSTARTOWAŁ — otworzył się ekran „ROZSTAWIENIE BITWY” mimo mgły |
+| **Z fixem N1** (`b752e0c4`) | Hint „Cel niewidoczny (mgła).” — trasa marszu zamiast bitwy, brak ataku |
+
+Hook debugowy w całości usunięty przed commitem (main.ts przywrócony identycznie do stanu z fixem,
+`git diff` po przywróceniu = tylko 9 linii samego fixu N1, zero orphan-code).
+
+**N2 — bramka teraz pokrywa prawdziwe `playerStackAt`, naprawione.**
+`gra/tools/atak-dystansowy-mapa-test.cjs`: harness `zbudujHarnessGracz` wycina teraz TEKSTOWO
+(wzorzec `wytnijFunkcje`, jak reszta pliku) prawdziwe `main.ts:playerStackAt` i wykonuje je z
+prawdziwym, zbundlowanym esbuildem `armyMerge.ts:activeUnitStack` (dociągniętym przez ENTRY obok
+`unitMapAttackRangeHex`/`hexDistance`/`resolveEnemyCityClick`) — zamiast dawnej atrapy
+`harnessPlayerStackOverride`. Sterowanie scenariuszem stosu teraz przez `setStackUnits(units)`,
+która ustawia tablicę jednostek realnie przeszukiwaną przez `activeUnitStack` (po `ownerId,q,r`/
+`stackGroupId`, dokładnie jak w main.ts) — zero reimplementacji formuły.
+
+Dodana nowa mutacja **MUT-H** (odpowiednik MUT-6 Evaluatora): `return activeUnitStack(units, u);`
+→ `return [u];` (playerStackAt „widzi tylko siebie”) — **teraz DAJE czerwony wynik** (asercja (g2)
+się łapie), podczas gdy w rundzie 1 ta sama klasa mutacji przechodziła bramkę na 65/0 zielono.
+
+**Weryfikacja WŁASNORĘCZNA (nie tylko przez wewnętrzną symulację MUT-H w teście) — wykonana wprost
+na prawdziwym `main.ts`:** tymczasowa podmiana `return activeUnitStack(units, u);` → `return [u];`
+bezpośrednio w pliku, uruchomienie bramki, przywrócenie:
+
+| Stan `main.ts` | Wynik `atak-dystansowy-mapa-test.cjs` |
+|---|---|
+| Wypatroszony `playerStackAt` (`[u]`) | **63 pass, 4 fail** — w tym dokładnie sekcja „(g2) NAPRAWA” (zgłoszony błąd wraca) |
+| Przywrócony (identyczny z commitem) | **66 pass, 0 fail** |
+
+**Bramki (z `gra/`):** `npx tsc --noEmit` → 0 błędów · `atak-dystansowy-mapa-test.cjs` → **66
+pass, 0 fail** (było 65/0, +1 z MUT-H) · `combat-test.cjs` → 6/6 · `map-attack-city-test.cjs` →
+8/8 · `tech-tree-test.cjs` → 19/19 · `research-test.cjs` → 33/33.
+
+**STATUS: RUNDA 2 GOTOWA, czeka na Evaluatora (commit `b752e0c4`, 2026-08-14). N1+N2 naprawione i
+zweryfikowane (statycznie + mutacyjnie + żywym kliknięciem myszy w headless Chromium z kontrolą
+A/B). N3/N4/N6/N7 świadomie poza zakresem tej rundy.**
+
 ## ⚠️ P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT (2026-08-14, znalezisko przy okazji
 naprawy P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE, cicho zarejestrowane — nie nowy
 wątek na czacie)
