@@ -2,7 +2,8 @@
  * hexContextTooltip.ts — treść panelu kontekstowego mapy (heks / jednostka, D17=A).
  */
 import type { Hex } from '../types/hex';
-import { Nakladka, TerenBazowy } from '../types/hex';
+import { Nakladka, TerenBazowy, Ulepszenie } from '../types/hex';
+import type { GameMap } from '../types/map';
 import { tileYield, type TileYield } from '../game/economy';
 import {
   IMPROVEMENT_KEYS,
@@ -373,7 +374,46 @@ function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | n
  * — the one authoritative source for this logic. Reuse the exported helpers instead of
  * duplicating conditions by hand.
  */
-function listTerrainPossibleImprovements(hex: Hex, playerCivType?: string | null): string[] {
+
+/**
+ * Te same przesunięcia osi aksjalnej co `hexNeighbors()` w map/improvement-build.ts i
+ * `hexNeighborCoords()` w units/setup.ts — skopiowane lokalnie (nie importowane), żeby nie
+ * ciągnąć do tego modułu UI całego łańcucha importów `units/setup.ts` (m.in. `map/startScoring`)
+ * tylko dla 6 stałych.
+ * EN: same axial-offset pairs as `hexNeighbors()` in map/improvement-build.ts and
+ * `hexNeighborCoords()` in units/setup.ts — copied locally (not imported) to avoid pulling this
+ * UI module's dependency graph through `units/setup.ts` (incl. `map/startScoring`) just for 6
+ * constants.
+ */
+const HEX_NEIGHBOR_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+  [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1],
+];
+
+/**
+ * Rzeka NA heksie LUB na dowolnym z 6 sąsiadów — lustrzane odbicie `isRiverAdjacent()` z
+ * `createQualifier()` w map/improvement-build.ts (tam używane dla klucza `irygacja`). Bez dostępu
+ * do `map` (np. wołający nie ma jej pod ręką) sprawdzamy tylko sam heks — bezpieczny fallback,
+ * bo `hex.rzeka.obecna` jest zawsze policzone przez generator.
+ * EN: river ON the hex OR any of its 6 neighbors — mirrors `isRiverAdjacent()` from
+ * `createQualifier()` in map/improvement-build.ts (used there for the `irygacja` key). Without a
+ * `map` reference (caller doesn't have one) we fall back to checking only the hex itself — safe,
+ * since `hex.rzeka.obecna` is always computed by the generator.
+ */
+function hexHasRiverAccess(hex: Hex, map?: GameMap): boolean {
+  if (hex.rzeka?.obecna) return true;
+  if (!map) return false;
+  const { q, r } = hex.coords;
+  for (const [dq, dr] of HEX_NEIGHBOR_OFFSETS) {
+    if (map.hexes[`${q + dq},${r + dr}`]?.rzeka?.obecna) return true;
+  }
+  return false;
+}
+
+function listTerrainPossibleImprovements(
+  hex: Hex,
+  playerCivType?: string | null,
+  map?: GameMap,
+): string[] {
   const active = new Set(improvementKeysForHex(hex));
   const teren = hex.terenBazowy;
   const nakladka = hex.nakladka;
@@ -400,6 +440,14 @@ function listTerrainPossibleImprovements(hex: Hex, playerCivType?: string | null
       && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;
     if (key === 'kopalnia_zlota' && zloze !== 'zloto') continue;
     if (key === 'kopalnia_cyny' && zloze !== 'cyna') continue;
+    // Droga brukowana to upgrade istniejącej Drogi — silnik (createQualifier) wymaga JUŻ
+    // zbudowanej zwykłej Drogi na tym heksie, nie samego terenu lądowego.
+    // EN: cobblestone road is an upgrade of an existing Road — the engine (createQualifier)
+    // requires an ALREADY-BUILT plain Road on this hex, not just land terrain.
+    if (key === 'droga_brukowana' && !active.has('droga') && hex.ulepszenie !== Ulepszenie.Droga) continue;
+    // Irygacja wymaga rzeki NA heksie lub na sąsiedzie (isRiverAdjacent w createQualifier).
+    // EN: irrigation requires a river on the hex or a neighbor (isRiverAdjacent in createQualifier).
+    if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;
     const bonus = formatCityBonusParts(improvementBonusForKey(key));
     const mag = formatTerritoryMagazynPart(key);
     const unlocks = labelsForImprovementUnlock(key);
@@ -426,6 +474,15 @@ export interface HexContextTooltipInput {
   /** typCywilizacji gracza — bramka widoczności lamy. */
   playerCivType?: string | null;
   /**
+   * Mapa świata (opcjonalna) — dostęp do sąsiadów heksa. Dziś jedyny użytek: warunek rzeki
+   * przy Irygacji (`hexHasRiverAccess`) sprawdzający sąsiadów, nie tylko sam heks. Bez `map`
+   * funkcja bezpiecznie zawęża się do sprawdzenia rzeki na samym heksie.
+   * EN: world map (optional) — gives access to hex neighbors. Today's only use: the river
+   * condition for Irrigation (`hexHasRiverAccess`), which checks neighbors, not just the hex
+   * itself. Without `map` the check safely narrows to the hex alone.
+   */
+  map?: GameMap;
+  /**
    * R-HEX-PLONY-MAGAZYN B: plony drewno/kamień/glina z terenu trafiają do magazynu
    * tylko przy 👤 (lub centrum miasta). Bez tego — nie pokazuj „przy 👤" na gołym heksie.
    */
@@ -446,7 +503,7 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
   const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));
-  const possible = listTerrainPossibleImprovements(hex, input.playerCivType);
+  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map);
 
   const lines: string[] = [];
 

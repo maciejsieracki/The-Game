@@ -4880,6 +4880,7 @@ async function boot(): Promise<void> {
         q: hexDetailHex.q,
         r: hexDetailHex.r,
         hex,
+        map,
         hexWorkedForMagazyn,
         cityName: cityOn?.name ?? null,
         cityIsCityState: cityOn != null && cityOn.ownerId !== 0 && !!cityOn.startCityState,
