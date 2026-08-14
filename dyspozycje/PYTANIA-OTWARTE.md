@@ -21673,3 +21673,163 @@ Glina+105 Drewno=103 PW zielony w `diplomacy-value-catalog-test.cjs` (81/81), ws
 `diplomacy-*-test.cjs` zielone, `logic-test.cjs` 213/213 (zgodne z udokumentowanym punktem
 odniesienia). Nagłówek już był poprawnie przestemplowany na ZAMKNIĘTE — bez zmian. Zapis czysto
 informacyjny, żeby drugi dispatch tego samego tematu nie wyglądał na zgubiony bez wyjaśnienia.
+
+## Evaluator: reconcile worked tiles po zmianie właściciela (Milet/Ateny)
+
+**WERDYKT: PASS-WITH-NOTES** dla commitu `3f1a2f85`. Naprawa jest poprawna, minimalna, trafia
+w rdzeń zgłoszenia i przy okazji domyka lukę parytetu gracz/AI. Wszystko poniżej **zmierzone
+niezależnie** (Opus 5, izolowany worktree na czubku gałęzi), nie przepisane z raportu Operatora.
+
+### 1. Bramki — uruchomione samodzielnie
+`npx tsc --noEmit` → **exit 0**, zero linii wyjścia (kod odczytany bezpośrednio, nie przez potok —
+pułapka `CLAUDE.md` §0b (b)). `okolica-ownership-change-reconcile-test` **15/15**,
+`okolica-multi-city-overlap-test` **55/55**, `empire-city-defaults-test` **49/0**,
+`auto-wyzywienie-population-growth-live-recalc-test` **42/0**, `praca-global-default-live-test`
+**7/0**, `ai-founding-territory-test` **28/0** — wszystkie exit 0, zgodne z commit message.
+Dołożone przeze mnie, poza listą zlecenia: `okolica-test` **72/72**,
+`okolica-isworkable-silnik-test` **15/15**, `post-battle-map-test` **32/0**, `logic-test`
+**213/213** (zgodne z punktem odniesienia `R-BRAMKA-MINDIST-Q1`). Zero regresji.
+
+### 2. Wszystkie 9 call site'ów `seedCityOwnerDefaults(` — sprawdzone w kodzie, nie na słowo
+Podział deklarowany przez Operatora (5 founding + 4 realna zmiana właściciela) **potwierdzony**:
+
+| Linia `main.ts` | Rodzaj | `ownerId` ustawiony PRZED wywołaniem? |
+|---|---|---|
+| 7713 | założenie miasta-państwa | n/d (nowe miasto, `foundCityAt(..., ownerId, ...)`) |
+| 7783 | kolonie z bonusu trudności | n/d (nowe miasto) |
+| 7822 | miasta startowe | n/d (nowe miasto) |
+| 10961 | założenie miasta przez gracza | n/d (nowe miasto) |
+| 26756 | założenie miasta przez AI | n/d (nowe miasto) |
+| 11878 | kapitulacja z głodu | **TAK** — `city.ownerId = newOwner` (11862) |
+| 22265 | aneksja dyplomatyczna MP | **TAK** — `city.ownerId = annexerId` (22261), w pętli po `csCities` |
+| 22629 | zdobycie w bitwie (`onOwnerChanged`) | **TAK** — `post-battle-map.ts:485` `city.ownerId = atkOwner` **przed** `captureOpts?.onOwnerChanged?.(city)` (489) |
+| 25056 | przejście w bunt | **TAK** — `city.ownerId = REBEL_FACTION_OWNER_ID` (25054) |
+
+We wszystkich 4 realnych miejscach `reconcileAllWorkedTiles` widzi **nowy** stan własności.
+Potwierdzone dodatkowo wykonaniem (§4, asercja „w momencie `onOwnerChanged` `city.ownerId` to już 0").
+
+**Znalezisko pozytywne (nieopisane przez Operatora):** przed naprawą reconcile przy zakładaniu
+miasta miał **wyłącznie gracz** (`main.ts:10959`) — AI (26756) i miasta startowe/MP (7713/7783/7822)
+nie miały go wcale. Naprawa domyka więc przy okazji **lukę parytetu gracz↔AI**, nie tylko scenariusz
+podboju.
+
+### 3. `reconcileAllWorkedTiles` vs `reconcileWorkedTilesForOwner` — wybór POPRAWNY, a zarzut wydajnościowy przeciw szerokiemu wariantowi jest **nieuzasadniony** (zmierzone)
+Uzasadnienie Operatora potwierdzone **empirycznie**, nie przyjęte na słowo: przy podboju Aten przez
+gracza wariant wąski (`reconcileWorkedTilesForOwner(..., ownerId=0)`) **zostawia** nielegalny wpis
+trzeciego właściciela (Sparta, `ownerId=2`) na centrum Aten; wariant szeroki go usuwa.
+Co ważniejsze — **koszt szerokiego wariantu jest pomijalny i nie on dominuje**. Rozbicie czasu
+jednego wywołania (mapa 81×81 równiny, miasta `population=12`, 6 właścicieli):
+
+| Liczba miast | CAŁOŚĆ | `computeLostToNearerSiblingByCity` | `buildTerritoryNodes` | `reconcileAllWorkedTiles` |
+|---|---|---|---|---|
+| 10 (rzadko) | 0,677 ms | 0,465 ms | 0,002 ms | 0,009 ms |
+| 20 (gęsto) | 5,350 ms | 5,494 ms | 0,001 ms | 0,020 ms |
+| 40 (gęsto) | 12,918 ms | 12,656 ms | 0,001 ms | 0,046 ms |
+| 40 (rzadko) | 7,074 ms | 6,757 ms | 0,001 ms | 0,040 ms |
+
+Czyli **~98% kosztu to argument `computeLostToNearerSiblingByCity(cities, map)`**, który obie
+wersje muszą policzyć tak samo. Sam wybór „wszyscy właściciele" zamiast „jeden" kosztuje **0,046 ms
+przy 40 miastach**. Zamiana na wariant wąski nie dałaby oszczędności, a zostawiłaby brud (patrz
+wyżej) — **wybór Operatora jest właściwy**.
+
+### 4. Scenariusz zgłoszenia odtworzony na PRAWDZIWEJ ścieżce podboju (mocniej niż u Operatora)
+Test Operatora (SEKCJA 1) woła `reconcileAllWorkedTiles` **ręcznie**, z pominięciem całej ścieżki
+przejęcia — uczciwie to opisuje w nagłówku, ale nie dowodzi, że wpięcie w `onOwnerChanged` działa.
+Złożyłem **PRAWDZIWY `applyCityCaptureAfterBattle`** (`post-battle-map.ts`, moduł importowalny)
+z **PRAWDZIWYM `reconcileAllWorkedTiles` / `computeLostToNearerSiblingByCity` /
+`buildTerritoryNodesFromCities`**, wpiętymi w `onOwnerChanged` dokładnie jak `main.ts:22629`:
+**17/17**. Potwierdzone: (a) Milet (gracz, tryb ręczny) z wpisem `okolicaReczne` na centrum Aten →
+po realnym podboju Aten wpis **znika natychmiast**; (b) legalny wpis `(1,0)` **nietknięty** (nie
+czyszczone hurtem); (c) kontrola czułości — ta sama ścieżka **bez** callbacku zostawia wpis, czyli
+test nie jest tautologiczny; (d) wariant odwrotny — wpis *przejętego* miasta na centrum sąsiada też
+usuwany; (e) `city.ownerId` w momencie callbacku to już nowy właściciel.
+**Strona panelu potwierdzona osobno w kodzie:** `getOkolicaState` (`main.ts:6284`) zwraca
+`reczne: city.okolicaReczne` — żywą referencję czytaną przy każdym renderze, a
+`reconcileWorkedTilesForOwner` **podmienia cały obiekt** (`city.okolicaReczne = reczne`), więc panel
+faktycznie przestaje pokazywać heks. Zweryfikowane wykonaniem (asercja „obiekt podmieniony").
+
+### 5. Weryfikacja `buildTerritoryNodesFromCities` ≡ `buildAllTerritoryNodes`
+Test Operatora używa `buildTerritoryNodesFromCities` (`map/territory-work.ts`), a produkcja lokalnego
+`buildAllTerritoryNodes` (`main.ts:3992`). Porównane ciała: **identyczne** mapowanie
+`{q, r, pop: c.population, level: 1, ownerId}` — podstawienie w teście jest uprawnione (sprawdzone,
+nie założone).
+
+### 6. Mutacja kontrolna — złapana
+Fizyczne usunięcie dodanej linii z `main.ts` → `okolica-ownership-change-reconcile-test`
+**13 pass, 2 fail, exit 1** (`cialo seedCityOwnerDefaults(...) wola reconcileAllWorkedTiles(...)`
+oraz asercja wzorca argumentów). Po przywróceniu znów **15/15**, `git status` czysty.
+
+---
+
+### N1 — `okolicaTryb` NIE resetowany: rezydualny problem REALNY, ale **PRE-ISTNIEJĄCY** · STATUS: **OTWARTE** — do ABC właściciela
+Decyzja Operatora o nieresetowaniu `okolicaTryb` jest **słuszna w zakresie tego bugfixu** (to zmiana
+produktowa, nie techniczna), ale zostawia problem, który warto nazwać — **zmierzony, nie wydedukowany**:
+`resolveWorkedTiles` (`okolica.ts:350`) honoruje `tryb === 'reczny'` **bez filtra właściciela**,
+a wszystkie 4 ścieżki zmiany `okolicaTryb` (`applyOkolicaTileAdjust`, `onOkolicaEnterManual`,
+`onOkolicaRestoreAuto`, `onOkolicaFocusChange`) to callbacki panelu miasta, dostępne **wyłącznie dla
+gracza** (`applyOkolicaTileAdjust` wprost `if (city.ownerId !== 0) return`). Skutek dla miasta
+GRACZA przejętego przez AI/rebeliantów: miasto zostaje w trybie ręcznym **na zawsze**, bo AI nie ma
+żadnej ścieżki powrotu do `auto`.
+Zmierzone na prawdziwym `workedHexCoordsForCity`: miasto `population=4` z 4 wpisami ręcznymi (1
+nielegalny) po przejęciu przez AI pracuje **3 heksy przy populacji 4** — jeden obywatel bezczynny
+na stałe. Wariant skrajny (wszystkie wpisy wypadają): **0 pracujących heksów przy populacji 4**.
+**To NIE jest regresja tego commitu** — `turn-economy.ts:2104` już wcześniej wołał ten sam
+`reconcileAllWorkedTiles` **bez filtra właściciela** na koniec KAŻDEJ tury, więc kurczenie się
+`okolicaReczne` u nowego właściciela zachodziło i przedtem; naprawa zmienia **moment**
+(natychmiast zamiast na koniec tury), nie stan docelowy. Do rozstrzygnięcia produktowo: czy zmiana
+właściciela ma resetować `okolicaTryb` na `auto` (i czy `okolicaReczne` ma być kasowane w całości).
+
+### N2 — dispatch miał 3 punkty, commit zamknął 1; pozostałe 2 są **niewidoczne dla audytu §0c** · STATUS: **OTWARTE**
+Sekcja „Rozpoznanie zakończone: Milet trzyma pracowników na heksie Aten" zlecała: **(1)** reconcile
+po zdobyciu miasta — **ZROBIONE** tym commitem; **(2)** sanityzacja `okolicaReczne` przy wczytaniu
+save'a — **NIEZROBIONE**; **(3)** wizualne odróżnienie w panelu „legalne pracujące" vs
+„stary/nielegalny wpis" — **NIEZROBIONE** (commit dotyka tylko `main.ts` + nowy test, `cityPanel.ts`
+nietknięty).
+Punkt (2) zweryfikowany: w całym `gra/src/` `reconcileAllWorkedTiles`/`reconcileWorkedTilesForOwner`
+są wołane z **dokładnie trzech** miejsc — `turn-economy.ts:2104` (koniec tury), `main.ts:4599`
+(nowe) i `main.ts:10959` (założenie miasta przez gracza). **Żadna ścieżka wczytania save'a nie
+sanityzuje `okolicaReczne`** — czyli źródło nr 1 nielegalnych wpisów z rozpoznania (stary zapis
+sprzed naprawy) nadal jest otwarte aż do pierwszego końca tury.
+**Ryzyko procesowe:** linia statusu tamtej sekcji brzmi `**STATUS: dispatch Operatora (Sonnet 5) —`,
+a **nie** `STATUS: **OTWARTE`, więc komenda kontrolna z `CLAUDE.md` §0c
+(`grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md`, dziś 14 trafień) **nie pokaże**
+punktów (2) i (3) po zamknięciu (1). Bez tego wpisu zniknęłyby po cichu.
+
+### N3 — podwójny reconcile przy zakładaniu miasta przez gracza (drobny, nieblokujący)
+`main.ts:10959` woła `reconcileAllWorkedTiles(...)` jawnie, a dwie linie dalej (10961)
+`seedCityOwnerDefaults(c)` woła go **po raz drugi**. Kolejność: jawny reconcile idzie **przed**
+`finalizeCityFounding` (10960), a ten z `seedCityOwnerDefaults` **po** — czyli drugi jest tym
+poprawniejszym, a pierwszy stał się zbędny. Koszt: jedno dodatkowe ~13 ms (mierzone przy 40 miastach)
+na każde założenie miasta przez gracza. Do sprzątnięcia przy okazji, **nie naprawiać w tym commicie**.
+
+### N4 — nowy koszt na BOOCIE (odnotowanie, nie blokada)
+4 z 5 call site'ów zakładania miasta (7713 MP, 7783 kolonie, 7822 startowe, 26756 AI) **nie miały
+dotąd żadnego reconcile** — teraz każde założenie miasta uruchamia pełny przebieg. Ponieważ boot
+zakłada miasta w pętlach, łączny narzut jest O(N²). Zmierzone: **225 ms** na 40 kolejnych założeń
+na gęstej mapie (na rzadszej odpowiednio mniej). Dziś akceptowalne i wielokrotnie mniejsze niż
+korzyść z parytetu gracz/AI (§2), ale jeśli liczba miast startowych urośnie — pierwszy kandydat do
+optymalizacji (policzyć `computeLostToNearerSiblingByCity` raz na całą pętlę, nie raz na miasto).
+
+### N5 — ochrona przed regresją jest WYŁĄCZNIE tekstowa (świadoma, ale krucha)
+`main.ts` zawiera DOM/THREE i nie da się go zbundlować w node (te same ograniczenia co
+pre-istniejące `map-field-battle-test.cjs`/`pre-battle-save-test.cjs` z `CLAUDE.md`), więc SEKCJA 2
+testu przypina wywołanie **strażnikiem tekstowym na źródle** — łącznie z dokładnym wzorcem
+argumentów. Skutki: (a) legalny refaktor (np. wyciągnięcie wywołania do helpera
+`reconcileAfterOwnerChange()`) **zaświeci bramkę na czerwono** mimo poprawnego zachowania;
+(b) odwrotnie — zmiana zachowania przy zachowanym tekście nie zostanie złapana. To przyjęty już
+w repo wzorzec (identycznie SEKCJE 3/4 w `okolica-multi-city-overlap-test.cjs`), więc **nie jest to
+zarzut do Operatora** — odnotowane, żeby przyszła czerwień nie została wzięta za regresję.
+
+### N6 — sekcja 1.2 testu jest tautologiczna (drobiazg)
+„Kontrola czułości" 1.2 sprawdza jedynie, że gdy reconcile **nie zostanie wywołany**, wpis zostaje —
+to demonstracja, nie test (przechodzi niezależnie od stanu kodu produkcyjnego). Nieszkodliwa, ale
+nie dokłada ochrony; realną kontrolę czułości na prawdziwej ścieżce podboju wykonałem w §4 (c).
+
+### N7 — reconcile nie sprawdza własnego promienia miasta (pre-istniejące, poza zakresem)
+`reconcileWorkedTilesForOwner` odrzuca wpis na podstawie (a) centrum dowolnego miasta,
+(b) własności terytorium, (c) `lostToSiblingByCity` — **ale nie sprawdza, czy heks mieści się
+w promieniu roboczym TEGO miasta**. Zaobserwowane wykonaniem: po przejęciu miasta 3 wpisy przetrwały
+reconcile, a `workedHexCoordsForCity` zwrócił 0 heksów (odpadły dopiero na etapie
+`resolveWorkedTiles`). Wpisy są więc bezwładne dla silnika, ale `okolicaPreviewRadius` rozszerza
+podgląd panelu na ich podstawie. Identyczne przed i po commicie — odnotowane, świadomie
+nie zgłaszane jako blokada.
