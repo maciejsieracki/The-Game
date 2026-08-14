@@ -28197,3 +28197,21 @@ błędzie. Wąski zakres (~kilka linii), niski priorytet — wymaga rzeczywisteg
 konstrukcji WebGL, co jest rzadkie, ale konsekwencja (trwale zamrożona mapa) jest poważna.
 
 **STATUS: DO DISPATCHU — niekrytyczne wzmocnienie obronne, nie pilne.**
+
+---
+
+## P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA + P-AI-BRAK-POJECIA-MGLY (2026-08-14, znalezisko Evaluatora przy okazji rundy 2 P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE)
+
+**Dwa powiązane, PRE-ISTNIEJĄCE znaleziska z analizy symetrii — żadne nie dotyczy tego, co runda 2
+naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C-025.**
+
+1. **Klik gracza na wrogie MIASTO nie sprawdza mgły w ogóle** — `gra/src/map/map-attack-city.ts`
+   ma zero odwołań do widoczności/`currentVisible`. Po naprawie ataku-na-jednostkę (runda 1+2 tego
+   tematu) gracz jest ograniczony mgłą na WSZYSTKICH trzech ścieżkach ataku na jednostki, ale NIE
+   na ataku na miasto — asymetria warta ujednolicenia.
+2. **AI w ogóle nie zna pojęcia mgły wojny przy decyzjach o ataku** — grep `ai.ts` po mgle/
+   widoczności: 0 trafień. Może to być świadomy projekt (AI ma pełną informację, gra "uczciwie"
+   inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
+
+**STATUS: DO DISPATCHU (rekonesans najpierw dla p.2 — ustalić czy AI-bez-mgły jest zamierzone) —
+niekrytyczne, nie pilne.**
