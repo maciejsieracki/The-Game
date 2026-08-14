@@ -30251,6 +30251,44 @@ async function boot(): Promise<void> {
       cities.length = 0;
       for (const c of saved.cities) {
         ensureCitySaveDefaults(c);
+        // P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE (2026-08-14, nota N1 Evaluatora przy
+        // werdykcie 7ec82223 dla 0d50bb81): naprawa 0d50bb81 resetuje okolicaTryb na
+        // 'auto' WYŁĄCZNIE w seedCityOwnerDefaults() -- wołanej PO zmianie city.ownerId
+        // W BIEŻĄCEJ grze. Zapis zrobiony PRZED tą naprawą (miasto GRACZA w trybie
+        // ręcznym przejęte przez AI/rebeliantów, zanim 0d50bb81 wylądował) niesie na
+        // stałe okolicaTryb:'reczny' w JSON-ie -- ensureCitySaveDefaults (cities.ts)
+        // nadpisuje pole TYLKO gdy jest puste (`if (!city.okolicaTryb)`), a 'reczny' to
+        // wartość prawdziwa (truthy), więc przechodzi bez zmian; reconcileAllWorkedTiles/
+        // reconcileWorkedTilesForOwner (territory-work.ts, wołane niżej) w ogóle nie znają
+        // pola okolicaTryb -- operują wyłącznie na okolicaReczne. Efekt bez tej naprawy:
+        // obywatele AI stoją bezczynnie mimo wolnych heksów, bo resolveWorkedTiles
+        // (okolica.ts) honoruje 'reczny' bez filtra właściciela, a AI nie ma ścieżki UI
+        // powrotu do auto. Filtr ownerId !== 0 jest KLUCZOWY -- miasto GRACZA w trybie
+        // ręcznym MUSI przetrwać load bez zmiany, inaczej cała funkcja trybu ręcznego
+        // przestaje działać dla gracza. Ten sam wzorzec resetu co seedCityOwnerDefaults
+        // (bezwarunkowy, niezależnie od bieżącej wartości -- okolicaReczne jest czytane
+        // wyłącznie gdy tryb==='reczny', więc kasowanie go dla miast już w 'auto' jest
+        // no-opem funkcjonalnym).
+        // / EN: fix 0d50bb81 resets okolicaTryb to 'auto' ONLY inside
+        // seedCityOwnerDefaults() -- called AFTER an ownerId change WITHIN the current
+        // game. A save written BEFORE that fix (a player city in manual mode captured by
+        // AI/rebels before 0d50bb81 landed) carries okolicaTryb:'reczny' permanently in
+        // the JSON -- ensureCitySaveDefaults (cities.ts) only fills the field when empty
+        // (`if (!city.okolicaTryb)`), and 'reczny' is truthy, so it passes through
+        // unchanged; reconcileAllWorkedTiles/reconcileWorkedTilesForOwner
+        // (territory-work.ts, called below) don't know the okolicaTryb field at all --
+        // they operate on okolicaReczne only. Effect without this fix: AI citizens sit
+        // idle despite free hexes, because resolveWorkedTiles (okolica.ts) honours
+        // 'reczny' with no owner filter and AI has no UI path back to auto. The
+        // ownerId !== 0 filter is CRITICAL -- a PLAYER city in manual mode MUST survive
+        // load unchanged, otherwise the whole manual-mode feature stops working for the
+        // player. Same unconditional reset pattern as seedCityOwnerDefaults --
+        // okolicaReczne is only ever read when tryb==='reczny', so clearing it for a city
+        // already in 'auto' is a functional no-op.
+        if (c.ownerId !== 0) {
+          c.okolicaTryb = DEFAULT_OKOLICA_TRYB;
+          delete c.okolicaReczne;
+        }
         if (c.maMur === undefined) {
           const built = saved.cityBuilt?.[c.id];
           if (built?.includes('mury') || built?.includes('fort') || built?.includes('palisada')) c.maMur = true;
