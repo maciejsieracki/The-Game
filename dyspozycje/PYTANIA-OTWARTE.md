@@ -23522,3 +23522,32 @@ odwrotną: „przy żywym powodzie odroczenia żądanie NIE ginie, niezależnie 
 gry (audiencja czytana dłużej niż 8 sekund) bitwa AI potrafi zniknąć razem z resztą fazy AI;
 G2 znaczy, że istnieje dziś otwarty kanał, po którym gracz **trwale traci przycisk „Zakończ
 turę"**.
+
+## R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (2026-08-14, odpowiedź Macieja na pytanie `R-GRANICE-CELTOWIE-KOLOR-Q1`) · STATUS: **NOWA SPECYFIKACJA — recon w toku**
+
+Zamiast prostej poprawki kontrastu koloru granicy Celtów, właściciel zaproponował szerszy system —
+**druga, wewnętrzna obwódka granicy terytorium**, o połowę cieńsza od istniejącej, kodująca relację
+dyplomatyczną gracz↔dana cywilizacja (nie tożsamość cywilizacji, którą już koduje dzisiejsza
+zewnętrzna obwódka):
+
+Jego słowa (dosłownie): „Może zróbmy trochę inaczej. Każda cywilizacja dostałaby kolor stanu.
+Oprócz obecnego koloru granicy doszedłby kolor obecnego stanu jako druga obwódka przy obecnym
+kolorze i obecnym obwodzie, tylko ta druga obwódka byłaby do wewnątrz i byłaby o połowę cieńsza.
+Nasza cywilizacja — obwódka w kolorze własnym cywilizacji, czyli grubsza granica składająca się
+z dwóch warstw tego samego koloru, niezależnie od tego, jaką cywilizację prowadzimy. Wrogie
+cywilizacje — jasno-czerwone. Sojusznicze — jasno-niebieskie. Neutralne — super jaskrawy złoty,
+taki który będzie bardzo dobrze widoczny."
+
+**Specyfikacja:** zewnętrzna obwódka = kolor tożsamościowy cywilizacji (bez zmian). Nowa wewnętrzna
+obwódka (½ grubości zewnętrznej): własna cywilizacja gracza → ten sam kolor co zewnętrzna (efekt:
+grubsza, jednolita granica); wrogowie → jasno-czerwony; sojusznicy → jasno-niebieski; neutralni →
+bardzo jaskrawy złoty.
+
+**Zastępuje pierwotne pytanie o Celtów** — jeśli ten system wejdzie, kontrast koloru Celtów
+przestaje być osobnym problemem (relacja dyplomatyczna stanie się dominującym sygnałem wizualnym).
+
+**STATUS: recon dispatchowany** (`ab83d8db9ad8f55c1`, Explore, read-only) — namierzyć dokładnie
+gdzie dziś renderowana jest granica terytorium (render/** WebGL czy Canvas 2D/SVG UI — determinuje
+czy implementacja idzie na Opus 5 wg stałej zasady projektu dla `render/**`), czy jest już dostępna
+funkcja relacji dyplomatycznej w kontekście renderu mapy, i grubą ocenę złożoności. Implementacja
+dopiero po recon, nie zgadywana z góry.
