@@ -87,7 +87,7 @@ async function clickToolbar(page, act) {
 async function tryOpenPreBattle(page) {
   await clickToolbar(page, 'army');
   await page.waitForSelector('.civ-army-list-hud.open', { timeout: 10000 });
-  await page.locator('.civ-army-list-hud .al-item').first().click();
+  await page.locator('.civ-army-list-hud .sl-item').first().click();
   await page.waitForTimeout(600);
   const canvas = page.locator('canvas').first();
   const box = await canvas.boundingBox();
@@ -136,7 +136,7 @@ async function main() {
 
     await clickToolbar(page, 'army');
     await page.waitForSelector('.civ-army-list-hud.open', { timeout: 10000 });
-    await page.locator('.civ-army-list-hud .al-item').first().click();
+    await page.locator('.civ-army-list-hud .sl-item').first().click();
     await page.waitForTimeout(800);
     const stackPanel = page.locator('.civ-army-stack.open');
     const unitPanel = page.locator('.civ-unit-panel.open');

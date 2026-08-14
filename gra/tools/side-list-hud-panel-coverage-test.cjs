@@ -76,9 +76,19 @@ console.log('===================================================================
 // ---------------------------------------------------------------------------
 console.log('A. Source-text -- paleta 3b, DRY (wspolny plik stylow), zero emoji, productionLine rozbity');
 
+// Ewaluator N1 (cbb85e3a): asercje ponizej musza czytac WYLACZNIE fragment szablonu CSS
+// (po `const css = `), nie caly plik -- naglowek JSDoc (linie 7-9) wymienia te same pieciu
+// kolorow jako dokumentacje, wiec asercja na cssSrc calym plikiem przechodzi nawet gdy sam
+// CSS jest zepsuty (zweryfikowane mutacja: podmiana wszystkich 5 tokenow --panel/--border/
+// --muted/--gold/--tile na losowe kolory przy nietknietym komentarzu dawala 72/72).
+const cssBlockMatch = cssSrc.match(/const css = `([\s\S]*?)`;/);
+assert('sideListHud.css.ts ma wyodrebniony blok szablonu CSS (const css = `...`;) do parsowania', !!cssBlockMatch);
+const cssBlockOnly = cssBlockMatch ? cssBlockMatch[1] : '';
+
 for (const hex of ['#171e2a', '#2b3543', '#d9a441', '#7d8798', '#1d2634']) {
-  assert(`sideListHud.css.ts zawiera kolor palety 3b ${hex}`, cssSrc.includes(hex));
+  assert(`sideListHud.css.ts (blok CSS, BEZ komentarza JSDoc naglowka) zawiera kolor palety 3b ${hex}`, cssBlockOnly.includes(hex));
 }
+assert('sideListHud.css.ts (blok CSS, BEZ komentarza JSDoc) NIE zawiera starego trzeciego zlota #e0b24a', !cssBlockOnly.includes('#e0b24a'));
 assert('cityListHud.ts NIE definiuje juz wlasnego --gold:#e0b24a (root CSS przeniesiony do sideListHud.css.ts)', !citySrc.includes('#e0b24a'));
 assert('armyListHud.ts NIE definiuje juz wlasnego --gold:#e0b24a', !armySrc.includes('#e0b24a'));
 
@@ -204,7 +214,15 @@ async function main() {
   assert('Panel Miasta: pasmo podsumowania renderuje sie przy niezerowej licznie miast ("3 miasta")', /cl-sum-big">3 miasta/.test(cityHtml));
   assert('Panel Miasta: box "W budowie" liczy miasta z productionName (2 z 3)', /W budowie[\s\S]{0,80}<b>2<\/b> z 3/.test(cityHtml));
   assert('Panel Miasta: box "Garnizony" sumuje garrison (2+0+1=3)', /Garnizony[\s\S]{0,80}<b>3<\/b> jedn\./.test(cityHtml));
-  assert('Panel Miasta: plakietka "stolica" (gold) obecna DOKLADNIE dla Aten (isCapital=true)', /sl-badge gold">stolica/.test(cityHtml));
+  // Ewaluator N2 (cbb85e3a): etykieta obiecuje "DOKLADNIE", wiec liczymy wystapienia, nie
+  // tylko obecnosc -- mutacja kontrolna `if (c.isCapital)` -> `if (true)` w cityListHud.ts
+  // (plakietke dostaja wszystkie miasta) dawala 72/72 przy samym teście `.test()`.
+  const capitalBadgeMatches = cityHtml.match(/sl-badge gold">stolica<\/span>/g) || [];
+  assert(
+    'Panel Miasta: plakietka "stolica" (gold) obecna DOKLADNIE RAZ (tylko dla Aten, isCapital=true) -- liczymy wystapienia, nie tylko obecnosc',
+    capitalBadgeMatches.length === 1,
+    { count: capitalBadgeMatches.length },
+  );
   assert('Panel Miasta: plakietka "kolejka pusta" (neutral) obecna dla Koryntu', /sl-badge neutral">kolejka pusta/.test(cityHtml));
   const prodPct = pctClamped(8, 20);
   assert(
