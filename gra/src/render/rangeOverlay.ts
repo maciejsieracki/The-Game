@@ -241,26 +241,62 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
   yOffset: 0.055,
 };
 
-/** Obrys granicy państwa — szeroki pas (world units), nie cienka linia WebGL 1px. */
+/**
+ * Obrys granicy państwa — szeroki pas (world units), nie cienka linia WebGL 1px.
+ *
+ * R-GRANICE-STYK-CZYTELNOSC-Q1 = B (Maciej, 2026-08-14): ta sama liczba jest DZIŚ także
+ * WSUNIĘCIEM pasa tożsamości do wewnątrz terytorium. Wcześniej pas szedł na ZEWNĄTRZ, czyli
+ * na ziemię sąsiada — a że sąsiadujące terytoria dzielą tę SAMĄ polilinię obwodu (heksy
+ * stykają się krawędzią, szczeliny nie ma), pas jednej cywilizacji lądował dokładnie tam,
+ * gdzie pas drugiej. To NIE był z-fighting (materiały mają `depthWrite: false`), tylko
+ * deterministyczne przesłanianie zależne od sortowania przezroczystości, czyli od położenia
+ * kamery: kolor tożsamościowy sąsiada potrafił zniknąć na styku całkowicie. Dziś CAŁY pas
+ * leży po własnej stronie — tożsamość [0 … 0,45] w głąb od linii granicy, relacja
+ * [0,45 … 0,675]. Szerokości i proporcja 2:1 bez zmian; zmieniła się wyłącznie STRONA.
+ * Wsunięcia nie są osobnymi stałymi — `buildTerritoryBorderGroup` wyprowadza je z szerokości,
+ * które dostał, więc nie ma drugiego źródła prawdy do rozjechania się.
+ * / EN: this same number is now ALSO the identity band's inward inset. The band used to grow
+ * OUTWARD, i.e. onto the neighbour's land; since adjacent territories share the very same
+ * boundary polyline, one civ's band landed exactly where the other's did. Not z-fighting
+ * (materials use `depthWrite: false`) but deterministic, camera-dependent occlusion that could
+ * hide a neighbour's identity colour completely. The whole belt now sits on its own side:
+ * identity [0 … 0.45] inward, relation [0.45 … 0.675]. Widths and the 2:1 ratio unchanged.
+ */
 export const TERRITORY_BORDER_BAND_WIDTH = 0.45;
 /**
- * R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (Maciej, 2026-08-14): DRUGA obwódka, rysowana
- * do WEWNĄTRZ tego samego obwodu, „o połowę cieńsza" od zewnętrznej — stąd dokładnie
- * połowa `TERRITORY_BORDER_BAND_WIDTH`, a nie osobna liczba do rozjechania się.
- * / EN: SECOND band, drawn INWARD along the same loop, "half as thin" as the outer one —
- * hence exactly half of TERRITORY_BORDER_BAND_WIDTH, not a separate drifting constant.
+ * R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (Maciej, 2026-08-14): DRUGA obwódka, „o połowę
+ * cieńsza" od pasa tożsamości — stąd dokładnie połowa `TERRITORY_BORDER_BAND_WIDTH`,
+ * a nie osobna liczba do rozjechania się.
+ * / EN: SECOND band, "half as thin" as the identity one — hence exactly half of
+ * TERRITORY_BORDER_BAND_WIDTH, not a separate drifting constant.
  */
 export const TERRITORY_RELATION_BAND_WIDTH = TERRITORY_BORDER_BAND_WIDTH / 2;
+/**
+ * R-GRANICE-STYK-CZYTELNOSC-Q1 = B (Maciej, 2026-08-14): CAŁY pas granicy leży PO WŁASNEJ
+ * STRONIE obwodu. Wcześniej pas tożsamości szedł na ZEWNĄTRZ, czyli na ziemię sąsiada —
+ * a że sąsiadujące terytoria dzielą tę SAMĄ polilinię obwodu (zero szczeliny między
+ * heksami), pas jednej cywilizacji lądował dokładnie tam, gdzie pas drugiej, i o tym,
+ * która wygra, decydowała kolejność sortowania przezroczystości (czyli położenie kamery).
+ * Dlatego oba pasy dostają WSUNIĘCIE do środka: tożsamość [0 … 0,45] od linii granicy
+ * w głąb, relacja [0,45 … 0,675]. Szerokości i proporcja 2:1 bez zmian — zmienia się
+ * wyłącznie STRONA. Same wsunięcia NIE są osobnymi stałymi — `buildTerritoryBorderGroup`
+ * wyprowadza je z szerokości, które dostał, więc nie ma drugiego źródła prawdy do rozjechania.
+ * / EN: the whole border belt now sits on its OWN side of the loop: identity [0 … 0.45]
+ * inward, relation [0.45 … 0.675] inward. Widths and the 2:1 ratio are untouched — only the
+ * side changes, so neighbours can no longer occlude each other. The insets are NOT separate
+ * constants — buildTerritoryBorderGroup derives them from the widths it is given.
+ */
 /** Jednolita przezroczystość pasa granicy terytorium. */
 export const TERRITORY_BORDER_OPACITY = 0.7;
 export const TERRITORY_BORDER_Y_OFFSET = 0.042;
-/** Podniesienie pasa zewnętrznego nad wspólną płaszczyznę obwodu. / EN: outer band y bump. */
+/** Podniesienie pasa tożsamości nad wspólną płaszczyznę obwodu. / EN: identity band y bump. */
 export const TERRITORY_BORDER_Y_BUMP = 0.004;
 /**
- * Pas wewnętrzny wyżej od zewnętrznego — oba stykają się wzdłuż tej samej polilinii
- * obwodu, więc bez tej różnicy krawędź styku migotałaby (z-fighting).
- * / EN: inner band sits above the outer one; they meet along the same loop polyline, so
- * without this delta the shared edge would z-fight.
+ * Pas relacji wyżej od pasa tożsamości — oba stykają się wzdłuż wspólnej linii (0,45 w głąb
+ * terytorium), a Three.js sortuje przezroczystość po głębokości środka bryły otaczającej,
+ * więc ta różnica przechyla sortowanie w stronę powtarzalnej kolejności rysowania.
+ * / EN: relation band sits above the identity band; they meet along a shared line, and
+ * Three.js sorts transparency by bounding-sphere depth, so this delta pins the draw order.
  */
 export const TERRITORY_RELATION_Y_BUMP = 0.008;
 
@@ -296,12 +332,45 @@ function segmentOutwardNormal(
 }
 
 /**
+ * Przesuwa pętlę obwodu DO WEWNĄTRZ terytorium o `inset` (world units) — mitra dokładna,
+ * więc każdy nowy wierzchołek leży w odległości równo `inset` od OBU sąsiednich krawędzi
+ * oryginału (przesunięta pętla jest do niego równoległa). Uśrednianie normalnych „przez 2",
+ * jak w `appendBorderBandLoop`, dałoby tu 0,75·inset w narożach i pas wychodziłby poza
+ * własne terytorium mimo wsunięcia. Mianownik `1 + n_prev·n_next` wynosi dla siatki heksów
+ * zawsze 1,5 (normalne skręcają o ±60°); ogranicznik chroni tylko przed teoretycznym
+ * zwrotem o 180°, gdzie mitra ucieka do nieskończoności.
+ * / EN: shifts the boundary loop INWARD by `inset` using an exact miter, so every new vertex
+ * keeps distance exactly `inset` from BOTH adjacent original edges (the offset loop stays
+ * parallel). The "average of normals / 2" used by appendBorderBandLoop would only reach
+ * 0.75·inset at corners and the band would spill outside its own territory. The clamp only
+ * guards the theoretical 180° reversal where a miter runs off to infinity.
+ */
+function insetBorderLoop(loop: BorderLoopPoint[], inset: number): BorderLoopPoint[] {
+  if (inset === 0) return loop;
+  const n = loop.length;
+  const out: BorderLoopPoint[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const prev = loop[(i + n - 1) % n]!;
+    const cur = loop[i]!;
+    const next = loop[(i + 1) % n]!;
+    const a = segmentOutwardNormal(prev.x, prev.z, cur.x, cur.z, loop);
+    const b = segmentOutwardNormal(cur.x, cur.z, next.x, next.z, loop);
+    const denom = Math.max(1 + (a.nx * b.nx + a.nz * b.nz), 0.5);
+    const k = inset / denom;
+    out[i] = {
+      x: cur.x - (a.nx + b.nx) * k,
+      z: cur.z - (a.nz + b.nz) * k,
+    };
+  }
+  return out;
+}
+
+/**
  * Pas wzdłuż zamkniętej pętli obwodu — ciągły kontur, joiny w wierzchołkach.
- * `bandWidth` UJEMNY odwraca stronę: pas idzie DO WEWNĄTRZ terytorium (obwódka relacji
- * dyplomatycznej). Trójkąty odwracają wtedy nawinięcie, co jest nieszkodliwe — materiał
- * pasa jest `THREE.DoubleSide`.
- * / EN: NEGATIVE `bandWidth` flips the side: the band runs INWARD (diplomatic relation
- * band). Triangle winding flips, which is harmless — the band material is DoubleSide.
+ * Pas zawsze rośnie NA ZEWNĄTRZ podanej pętli; o tym, gdzie realnie wyląduje, decyduje
+ * wsunięcie pętli (`insetBorderLoop`) w `buildTerritoryBorderMesh`.
+ * / EN: the band always grows OUTWARD from the loop it is given; where it actually lands is
+ * decided by how far that loop was inset in buildTerritoryBorderMesh.
  */
 function appendBorderBandLoop(
   loop: BorderLoopPoint[],
@@ -376,8 +445,13 @@ function buildTerritoryBorderMesh(
   bandWidth: number,
   flatY: number,
   opacity: number,
-  /** +1 = pas na zewnątrz obwodu (tożsamość civ), -1 = do wewnątrz (relacja). / EN: +1 outward, -1 inward. */
-  side: 1 | -1 = 1,
+  /**
+   * O ile pętla obwodu jest wsunięta DO WEWNĄTRZ, zanim wyrośnie na niej pas — pas zajmuje
+   * więc [inset − bandWidth … inset] licząc w głąb terytorium od linii granicy.
+   * / EN: how far the loop is inset before the band grows on it — the band occupies
+   * [inset − bandWidth … inset] measured inward from the border line.
+   */
+  inset: number,
   /** Podniesienie nad wspólną płaszczyznę obwodu. / EN: lift above the shared loop plane. */
   yBump: number = TERRITORY_BORDER_Y_BUMP,
 ): THREE.Mesh | null {
@@ -398,7 +472,7 @@ function buildTerritoryBorderMesh(
   const viRef = { v: 0 };
 
   for (const loop of loops) {
-    appendBorderBandLoop(loop, bandWidth * side, y, positions, indices, viRef);
+    appendBorderBandLoop(insetBorderLoop(loop, inset), bandWidth, y, positions, indices, viRef);
   }
 
   if (positions.length === 0) return null;
@@ -419,14 +493,20 @@ function buildTerritoryBorderMesh(
 }
 
 /**
- * Obrys granicy terytorium per właściciel: pas ZEWNĘTRZNY w kolorze cywilizacji
- * (`colorFn`) plus — gdy podano `relationColorFn` — pas WEWNĘTRZNY, o połowę węższy,
- * w kolorze relacji dyplomatycznej gracz↔właściciel (R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1).
- * Oba pasy leżą na tej samej polilinii obwodu z `computeTerritoryBorderLoops` — geometria
- * konturu jest liczona RAZ na pas, ale z tych samych pętli, więc nie mogą się rozjechać.
- * / EN: territory border per owner: OUTER band in the civ color plus — when
- * `relationColorFn` is given — an INNER, half-width band in the player↔owner diplomatic
- * relation color. Both bands ride the same boundary loops, so they cannot drift apart.
+ * Obrys granicy terytorium per właściciel: pas TOŻSAMOŚCI w kolorze cywilizacji (`colorFn`)
+ * przy samej linii granicy, plus — gdy podano `relationColorFn` — pas RELACJI, o połowę
+ * węższy, tuż za nim (R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1). Kolejność czytania od granicy
+ * w głąb (tożsamość → relacja) jest ta sama co przed R-GRANICE-STYK-CZYTELNOSC-Q1 = B;
+ * zmieniła się wyłącznie STRONA: cały pas leży teraz W ŚRODKU własnego terytorium, więc
+ * na styku dwóch cywilizacji żadna nie rysuje po ziemi drugiej i obie są widoczne
+ * niezależnie od kąta kamery. Oba pasy wyrastają z tych samych pętli
+ * `computeTerritoryBorderLoops`, tylko wsuniętych na różną głębokość — nie mogą się rozjechać.
+ * / EN: per-owner territory border: IDENTITY band in the civ color right at the border line,
+ * then — when `relationColorFn` is given — the half-width RELATION band just behind it. The
+ * outside-in reading order is unchanged; only the SIDE changed (R-GRANICE-STYK-CZYTELNOSC-Q1
+ * = B): the whole belt now sits INSIDE its own territory, so at a two-civ contact neither
+ * paints over the other's land and both stay visible from any camera angle. Both bands grow
+ * from the same boundary loops, only inset by different amounts, so they cannot drift apart.
  */
 export function buildTerritoryBorderGroup(
   map: GameMap,
@@ -451,7 +531,7 @@ export function buildTerritoryBorderGroup(
       bandWidth,
       flatBorderY,
       opacity,
-      1,
+      bandWidth,
       TERRITORY_BORDER_Y_BUMP,
     );
     if (border) {
@@ -466,7 +546,7 @@ export function buildTerritoryBorderGroup(
       relationBandWidth,
       flatBorderY,
       opacity,
-      -1,
+      bandWidth + relationBandWidth,
       TERRITORY_RELATION_Y_BUMP,
     );
     if (relation) {

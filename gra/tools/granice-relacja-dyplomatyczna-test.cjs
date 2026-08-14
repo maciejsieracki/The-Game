@@ -191,34 +191,42 @@ function hexLoopCorners(R) {
   }
   return out;
 }
-/**
- * Grubość pasa mierzona jako największe ODSUNIĘCIE wierzchołka od obwodu (od najbliższego
- * rogu pętli). Miara celowo taka, a nie „promień od środka heksa": pas składa się z quadów
- * o rogach mitrowanych (odsunięcie 0,866·w, bo `appendBorderBandLoop` uśrednia normalne
- * sąsiednich krawędzi) ORAZ z trójkątów domykających naroże (odsunięcie dokładnie w). Promień
- * od środka trafiałby raz w jedne, raz w drugie i porównanie obu pasów wyszłoby krzywo —
- * największe odsunięcie to dla OBU pasów dokładnie ich `bandWidth`.
- */
-function bandThickness(mesh, corners) {
-  let max = 0;
-  for (const v of meshVertices(mesh)) {
-    let nearest = Infinity;
-    for (const c of corners) {
-      const d = Math.hypot(v.x - c.x, v.z - c.z);
-      if (d < nearest) nearest = d;
-    }
-    if (nearest > max) max = nearest;
+/** Jednostkowe normalne 6 krawędzi heksa (0,0) — z rogów pętli, ta sama konwencja co wyżej. */
+function hexEdgeNormals(corners) {
+  const out = [];
+  for (let i = 0; i < corners.length; i++) {
+    const a = corners[i];
+    const b = corners[(i + 1) % corners.length];
+    const mx = (a.x + b.x) / 2;
+    const mz = (a.z + b.z) / 2;
+    const l = Math.hypot(mx, mz) || 1;
+    out.push({ nx: mx / l, nz: mz / l });
   }
-  return max;
+  return out;
 }
-/** Czy pas opiera się o obwód — ma wierzchołki dokładnie na rogach pętli. */
-function touchesLoop(mesh, corners) {
+/**
+ * R-GRANICE-STYK-CZYTELNOSC-Q1 = B (2026-08-14): oba pasy leżą DO WEWNĄTRZ od linii granicy,
+ * więc jedyną sensowną miarą jest GŁĘBOKOŚĆ prostopadła od tej linii (0 = dokładnie na niej,
+ * wartość dodatnia = w głąb terytorium, ujemna = wyciek poza własne terytorium). Promień od
+ * środka heksa tu nie działa: rogi obwodu leżą w HEX_R, a krawędzie w inradiusie — ta sama
+ * głębokość dałaby dwie różne wartości promienia. Miara „odsunięcie od najbliższego rogu",
+ * której używała poprzednia wersja tego pliku, mierzyła to samo tylko dopóki pas wyrastał
+ * wprost z rogów obwodu; po wsunięciu pasów jest bez sensu (miesza wsunięcie z grubością).
+ */
+function bandDepthRange(mesh, normals, inradius) {
+  let min = Infinity;
+  let max = -Infinity;
   for (const v of meshVertices(mesh)) {
-    for (const c of corners) {
-      if (Math.hypot(v.x - c.x, v.z - c.z) < 1e-6) return true;
+    let outermost = -Infinity;
+    for (const n of normals) {
+      const d = v.x * n.nx + v.z * n.nz;
+      if (d > outermost) outermost = d;
     }
+    const depth = inradius - outermost;
+    if (depth < min) min = depth;
+    if (depth > max) max = depth;
   }
-  return false;
+  return { min, max, thickness: max - min };
 }
 function meanY(mesh) {
   const vs = meshVertices(mesh);
@@ -248,27 +256,28 @@ function meanY(mesh) {
   ok(!!outer, 'mesh zewnętrzny nazwany territory-border-0');
   ok(!!inner, 'mesh wewnętrzny nazwany territory-relation-0');
 
-  const eOuter = radialExtent(outer, 0, 0);
+  const corners = hexLoopCorners(HEX_R);
+  const normals = hexEdgeNormals(corners);
+  const INRADIUS = HEX_R * Math.sqrt(3) / 2;
+  const dOuter = bandDepthRange(outer, normals, INRADIUS);
+  const dInner = bandDepthRange(inner, normals, INRADIUS);
   const eInner = radialExtent(inner, 0, 0);
 
-  // Wspólny obwód = 6 rogów heksa w promieniu HEX_R: pas zewnętrzny wychodzi POZA
-  // ten promień, wewnętrzny wchodzi DO ŚRODKA i nigdy go nie przekracza.
-  ok(eOuter.max > HEX_R + 1e-6, 'pas zewnętrzny wychodzi na zewnątrz obwodu');
-  ok(Math.abs(eInner.max - HEX_R) < 1e-4, 'pas wewnętrzny opiera się o obwód (nie wychodzi na zewnątrz)');
-  ok(eInner.min < HEX_R - 1e-6, 'pas wewnętrzny wchodzi do środka terytorium');
+  // R-GRANICE-STYK-CZYTELNOSC-Q1 = B: ŻADEN pas nie wychodzi poza własne terytorium (głębokość
+  // nigdy ujemna) — to jest cała treść decyzji, bo sąsiedzi dzielą tę samą linię granicy.
+  ok(dOuter.min >= -1e-6, `pas tożsamości NIE wychodzi poza obwód (min głębokość ${dOuter.min.toFixed(5)})`);
+  ok(Math.abs(dOuter.min) < 1e-6, 'pas tożsamości dotyka linii granicy od wewnątrz (głębokość 0)');
+  ok(eInner.min < HEX_R - 1e-6, 'pas relacji wchodzi do środka terytorium');
 
   // „O połowę cieńsza" — mierzone realną geometrią meshy, nie tylko stałą.
-  const corners = hexLoopCorners(HEX_R);
-  const outerThickness = bandThickness(outer, corners);
-  const innerThickness = bandThickness(inner, corners);
-  ok(touchesLoop(outer, corners) && touchesLoop(inner, corners),
-    'oba pasy opierają się o TEN SAM obwód (wspólna polilinia granicy)');
-  ok(Math.abs(outerThickness - M.TERRITORY_BORDER_BAND_WIDTH) < 1e-6,
-    `pas zewnętrzny szeroki na TERRITORY_BORDER_BAND_WIDTH (${outerThickness.toFixed(4)})`);
-  ok(Math.abs(innerThickness - M.TERRITORY_RELATION_BAND_WIDTH) < 1e-6,
-    `pas wewnętrzny szeroki na TERRITORY_RELATION_BAND_WIDTH (${innerThickness.toFixed(4)})`);
-  ok(Math.abs(outerThickness / innerThickness - 2) < 1e-6,
-    `pas wewnętrzny dokładnie o połowę węższy (zewn. ${outerThickness.toFixed(4)} / wewn. ${innerThickness.toFixed(4)})`);
+  ok(dInner.min >= -1e-6 && Math.abs(dInner.min - dOuter.max) < 1e-6,
+    `pas relacji zaczyna się dokładnie tam, gdzie kończy się pas tożsamości (${dInner.min.toFixed(5)})`);
+  ok(Math.abs(dOuter.thickness - M.TERRITORY_BORDER_BAND_WIDTH) < 1e-6,
+    `pas tożsamości gruby na TERRITORY_BORDER_BAND_WIDTH (${dOuter.thickness.toFixed(4)})`);
+  ok(Math.abs(dInner.thickness - M.TERRITORY_RELATION_BAND_WIDTH) < 1e-6,
+    `pas relacji gruby na TERRITORY_RELATION_BAND_WIDTH (${dInner.thickness.toFixed(4)})`);
+  ok(Math.abs(dOuter.thickness / dInner.thickness - 2) < 1e-6,
+    `pas relacji dokładnie o połowę węższy (tożsamość ${dOuter.thickness.toFixed(4)} / relacja ${dInner.thickness.toFixed(4)})`);
   ok(Math.abs(M.TERRITORY_RELATION_BAND_WIDTH - M.TERRITORY_BORDER_BAND_WIDTH / 2) < 1e-9,
     `stała TERRITORY_RELATION_BAND_WIDTH = połowa TERRITORY_BORDER_BAND_WIDTH (${M.TERRITORY_RELATION_BAND_WIDTH})`);
 
