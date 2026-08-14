@@ -23654,3 +23654,164 @@ zero refaktorów „przy okazji", zero cofniętych wcześniejszych napraw.
 **zamknięta poprawnie**. Noty N-A i N-B dotyczą precyzji uzasadnienia (nie zachowania) i nie
 wymagają osobnej rundy; warto je uwzględnić przy następnym dotknięciu `galleryTerrainEligible()`
 — zwłaszcza N-B, bo `TERRAIN_ALLOW.stadnina` jako martwy `Set` może mylić kolejnego agenta.
+
+## Evaluator: komunikat remisu szturmu (`51a32fe6`) — WERDYKT **FAIL** (2026-08-14)
+
+Zmiana orkiestratora (§0b — Operator własnej zmiany nie ocenia sam siebie). Jednolinijkowa zmiana
+tekstu w `gra/src/main.ts:23095`, gałąź `res.winner === 'remis'` w `finishSiegeStormBattle`:
+`'Szturm: remis — oblężenie trwa.'` → `'Szturm: remis — wojska odepchnięte od murów, oblężenie
+zniesione.'`. Uzasadnienie w opisie commita: „siege konczy sie natychmiast po remisie", zero zmian
+logiki, na mocy `R-OBLEZENIE-REMIS-MASZYNY-Q1 = A`.
+
+**Wszystko poniżej zmierzone niezależnie w izolowanym worktree (`git reset --hard` na czubek gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`), przez WYKONANIE prawdziwego kodu — nie przepisane
+z opisu commita ani z notatki N1.**
+
+### 1. Bramki — wszystkie zielone, zero regresji
+| Bramka | Wynik |
+|---|---|
+| `tsc --noEmit` (TS 5.9.3 projektowy) | **0 błędów**, exit 0 |
+| `vite build --outDir /tmp/eval-remis-toast` | **exit 0**, 822 moduły, 37 087,77 kB |
+| `oblezenie-siege-lifted-po-bitwie-test.cjs` | 16 pass, 0 fail, exit 0 |
+| `oblezenie-test.cjs` | 27 pass, 0 fail, exit 0 |
+| `map-siege-test.cjs` | 6 ok, 0 fail, exit 0 |
+| `siege-ai-test.cjs` | 17 ok, 0 fail, exit 0 |
+
+**Uwaga metodyczna:** w worktree brakowało `gra/node_modules` — pierwsze `npx tsc --noEmit`
+ściągnęło OBCĄ, nieprzypiętą wersję TypeScripta (zgłosiła `TS5101 baseUrl deprecated … TypeScript
+7.0`, czego projektowy TS 5.9.3 nie zgłasza). Wynik powtórzono po podlinkowaniu `node_modules`
+i uruchomieniu `./node_modules/.bin/tsc` — **w tabeli jest ten drugi pomiar.** Do zapamiętania przy
+każdym kolejnym zleceniu w świeżym worktree.
+
+**Żaden test nie przypina tego tekstu:** `grep -rn "Szturm: remis" gra/tools/` — zero trafień
+(jedyne wystąpienie w repo to sama linia produkcyjna `src/main.ts:23095`). Aktualizacja testów nie
+była potrzebna.
+
+### 2. Spójność terminologiczna — OK
+Pozostałe dwa komunikaty o zdjęciu oblężenia (`src/main.ts:12096` w `commitBesiege`, `:12193`
+w `validateActiveSieges`) używają dokładnie frazy „oblężenie zniesione". Nowy tekst używa tej samej
+frazy. Bez zastrzeżeń.
+
+### 3. ⛔ BLOKER (G1) — nowy tekst jest NIEPRAWDZIWY w ~połowie układów oblężenia, i to dokładnie w tych, w których STARY tekst był PRAWDZIWY
+
+Przesłanka commita („remis zawsze zrywa oblężenie") jest fałszywa. Nigdzie w kodzie nie ma
+`endMapSiege()` w gałęzi remisu — zdjęcie oblężenia jest **ubocznym efektem geometrii odwrotu**:
+`applyPostBattleMap` (gałąź `winner === 'remis'`) woła `placeFanOutGroup`, a dopiero
+`validateActiveSieges()` na końcu `applyMapBattleOutcome` (dodane przez `7b57eb45`) zdejmuje flagę
+— **wyłącznie gdy po odwrocie ŻADNA jednostka oblegającego nie stoi już na `hexDistance === 1`.**
+
+`placeFanOutGroup` przesuwa każdą jednostkę o wektor `c − miasto`, gdzie `c` to sąsiad miasta
+najbliższy CENTROIDOWI całej armii atakującej. Gdy oblegający obsadza więcej niż jeden heks
+przyścienny, wektor z centroidu nie pokrywa się z kierunkiem każdej jednostki z osobna — jednostki
+z przeciwnej strony pierścienia lądują **przez miasto**, znowu na dystansie 1.
+
+**Pomiar (wykonanie prawdziwego `applyPostBattleMap` z `src/game/post-battle-map.ts`, bundlowanego
+esbuildem; wszystkie 63 niepuste podzbiory 6 heksów przyściennych; `remis_pct = 0,4` za
+`data/auto-battle-params.json`; cała mapa przejezdna — wariant NAJŁAGODNIEJSZY):**
+
+| k = liczba obsadzonych heksów przy murze | układów: oblężenie ZNIESIONE | układów: oblężenie TRWA (nowy tekst nieprawdziwy) |
+|---|---|---|
+| k=1 | 6 | 0 |
+| k=2 | 10 | **5** |
+| k=3 | 9 | **11** |
+| k=4 | 6 | **9** |
+| k=5 | 1 | **5** |
+| k=6 | 0 | **1** |
+| **razem** | **32 / 63** | **31 / 63** |
+
+Czyli w **31 z 63 układów obsadzenia heksów przyściennych (49,2% UKŁADÓW — nie 49,2% rozgrywek; to
+rozkład równomierny po układach, nie zmierzona częstość w grze)** oblężenie po remisie **TRWA**,
+marker zostaje na mapie, a toast mówi „oblężenie zniesione".
+
+Przykłady zmierzone (miasto `(0,0)`, obrońca na heksie miasta):
+* oblegający na `(1,0)` i `(-1,0)` → po remisie `(2,0)` dyst 2 oraz **`(1,0)` dyst 1** → oblężenie TRWA
+* oblegający na `(-1,0)` i `(0,1)` → po remisie `(-2,0)` dyst 2 oraz **`(-1,1)` dyst 1** → TRWA
+* okrążenie z 4 stron → dwie jednostki lądują na dystansie 1 → TRWA
+
+**31/63 to DOLNA granica, nie górna.** Gdy za plecami oblegającego jest teren nieprzejezdny
+(morze/góry), `placeFanOutGroup` po `break` na `isPassableHex` wchodzi w gałąź `if (!placed)` —
+„zostaje na miejscu". Zmierzone: układ `k=1` (jedyny w 100% bezpieczny przy pełnej przejezdności),
+oblegający na `(1,0)`, heksy `(2,0)/(3,0)/(4,0)` nieprzejezdne → jednostka zostaje na `(1,0)`,
+dyst 1, **oblężenie TRWA**. Miasta nadmorskie i górskie systematycznie zwiększają udział układów,
+w których nowy tekst kłamie.
+
+**Dlaczego to bloker, a nie nota:** w tych 31 układach **stary tekst „oblężenie trwa" był
+PRAWDZIWY**. Commit nie poprawia więc tekstu bezwarunkowo — **wymienia jedną sprzeczność na drugą,
+lustrzaną**: zamiast „tekst mówi «trwa», a marker znika" (zgłoszenie N1) gracz w połowie układów
+dostanie „tekst mówi «zniesione», a marker oblężenia dalej wisi, machiny i licznik tur oblężenia
+żyją". Klasa błędu identyczna z tą, którą commit miał zamknąć. Dodatkowo trafia w C-039 z playbooka:
+ta sama informacja (czy oblężenie trwa) jest pokazywana w dwóch miejscach UI — **toast to stała
+tekstowa, a marker `refreshSiegeMarkers` czyta `city.oblegane` na żywo**; źródła są niezgodne
+z definicji, bo stała nie może zależeć od stanu.
+
+### 4. ⛔ G2 — decyzja `R-OBLEZENIE-REMIS-MASZYNY-Q1 = A` NIE jest zaimplementowana; właściciel podjął ją na fałszywej przesłance
+
+Notatka N1 (werdykt do `7b57eb45`) twierdzi — cytat — że przy remisie `applyPostBattleMap` „**odsuwa
+całą armię oblegającą z dystansu 1 na dystans 2** od miasta", i opisuje to jako „zmierzone, nie
+wydedukowane". Pomiar z §3 to obala: zdanie jest prawdziwe **wyłącznie dla k=1** (jeden obsadzony
+heks przyścienny) i tylko przy przejezdnym zapleczu. Pomiar N1 najwyraźniej objął jedną
+konfigurację i został uogólniony na wszystkie.
+
+Skutek proceduralny: właściciel odpowiedział `A` („remis MA zrywać oblężenie") na pytanie
+postawione tak, jakby silnik już to robił — i zamknięcie N1 zapisano jako „stan po naprawie jest
+docelowy, **zero zmian kodu potrzebnych**". To nieprawda: żeby reguła `A` obowiązywała jako REGUŁA,
+gałąź remisu musi jawnie wołać `endMapSiege(city.id)` (zdejmie flagę, `clearSiegeMachines`,
+`siegeTurnByCity`, `siegeBesiegerByCity` niezależnie od geometrii odwrotu). Dziś reguła `A`
+obowiązuje w 32/63 układów, a w 31/63 milcząco nie obowiązuje.
+
+**Nie naprawiam tego sam — i nie wolno tego naprawić bez właściciela.** Są dwa rozłączne kierunki,
+a wybór między nimi jest produktowy, nie techniczny:
+* **kierunek 1 (wierny `A`):** `endMapSiege(city.id)` w gałęzi remisu → reguła działa zawsze, tekst
+  zawsze prawdziwy, ale machiny oblężnicze i postęp oblężenia przepadają także w układach, w których
+  dziś przeżywają (skutek gameplayowy opisany w N1 pkt 1);
+* **kierunek 2 (tekst zgodny ze stanem):** toast warunkowany faktycznym `city.oblegane` (już
+  zaktualizowanym — `afterSiegeUi` biegnie PO `applyMapBattleOutcome`, zweryfikowane w obu
+  ścieżkach: z podsumowaniem bitwy i bez) → tekst zawsze prawdziwy, ale reguła `A` zostaje
+  niewdrożona.
+
+Zgodnie z CLAUDE.md §7 / zasada 6 („nie zgaduj przy niejednoznaczności") wymaga to **nowego ABC do
+właściciela**, z jawnym zaznaczeniem (zasada 1a), że **podważa jego własną decyzję
+`R-OBLEZENIE-REMIS-MASZYNY-Q1 = A` z 2026-08-14** — bo została podjęta na podstawie opisu stanu
+silnika prawdziwego tylko dla części układów.
+
+### 5. Nota N-A (niska waga, niezależna od G1/G2) — kolizja dwóch toastów z N1 NIE została usunięta
+`validateActiveSieges()` przy zdejmowaniu flagi sam pokazuje `'<miasto>: oblężenie zniesione — brak
+wojsk przy murach.'` (4500 ms), po czym `afterSiegeUi` w tej samej klatce nadpisuje
+`hintToast.innerHTML` komunikatem remisu (3500 ms) — `showHintMessage` (`main.ts:11703`) zawsze
+podmienia treść i kasuje poprzedni timer. Po tym commicie oba komunikaty przynajmniej nie przeczą
+sobie w układach k=1, ale pierwszy nadal ginie niezauważony. Kosmetyka, nie blokuje.
+
+### 6. Co NIE jest problemem (sprawdzone, wyniki negatywne)
+* **Inne miejsca UI z markerem/ikoną oblężenia:** `refreshSiegeMarkers` (`main.ts:11854`) buduje zbiór
+  wyłącznie z `cities.filter(c => c.oblegane)`, a `siegeMarker.ts` renderuje z tego zbioru — brak
+  niezależnego, „zapamiętanego" markera, który mógłby zdezaktualizować się osobno od flagi. Jedyny
+  inny odczyt `city.oblegane` w UI to `cityPanel.ts:9678` (`besieged` dla stolicy) — też na żywo.
+  Rozjazd z §3 bierze się WYŁĄCZNIE ze stałej tekstowej w toaście, nie z osobnego cache.
+* **Ścieżki wejścia:** wszystkie trzy wywołania `finishSiegeStormBattle` (`main.ts:23175` auto-szturm
+  AI, `:23327`, `:23395` bitwa ręczna) trafiają w tę samą gałąź `remis` w `applyPostBattleMap`
+  (ręczna podaje `manualSurvivors`, co zmienia tylko liczenie strat, nie gałąź odwrotu) — znalezisko
+  dotyczy wszystkich trzech jednakowo, bez asymetrii gracz/AI.
+
+### 7. Werdykt
+**FAIL.** Bramki i build czyste, żaden test nie wymagał aktualizacji, terminologia spójna — ale
+dostarczona zmiana opiera się na twierdzeniu o zachowaniu silnika, które jest fałszywe w 31 z 63
+układów obsadzenia heksów przyściennych (i szerzej przy terenie nieprzejezdnym), i w dokładnie tych
+układach zamienia komunikat prawdziwy na nieprawdziwy. Zamiast domknięcia sprzeczności z N1 powstaje
+jej lustrzane odbicie.
+
+**Runda następna — kolejność obowiązkowa:**
+1. **Sprostować N1** w tej samej sekcji: zdanie „odsuwa całą armię oblegającą z dystansu 1 na
+   dystans 2" jest prawdziwe tylko dla k=1 przy przejezdnym zapleczu (zapisać wprost, żeby kolejny
+   agent nie budował na nim dalej — C-016/C-038).
+2. **Zadać właścicielowi ABC** (kierunek 1 vs kierunek 2 z §4), z jawnym oznaczeniem, że podważa
+   `R-OBLEZENIE-REMIS-MASZYNY-Q1 = A` (zasada 1a). Nie otwierać wątku w czacie poza kolejnością —
+   zarejestrować i poczekać, jak przy N1.
+3. **Dopiero po literze** — Operator implementuje wybrany kierunek + bramka przypinająca zachowanie
+   dla k≥2 (dziś żaden test nie pokrywa remisu szturmu przy oblegającym na wielu heksach; to
+   właśnie ta luka przepuściła ten commit).
+
+**STATUS: OTWARTE** — czeka na sprostowanie N1 (pkt 1, dispatch Operatora) i na ABC do właściciela
+(pkt 2). Kod produkcyjny **NIE był zmieniany** przez Evaluatora: wyjątek z briefu („jednoliniowy
+blokujący bug w TYM tekście") nie ma zastosowania — obie możliwe naprawy to albo zmiana zachowania
+silnika, albo zmiana treści rozstrzygająca decyzję produktową za właściciela, a nie literówka.
+Commit `51a32fe6` zostaje na gałęzi w obecnej postaci do rozstrzygnięcia w rundzie następnej.
