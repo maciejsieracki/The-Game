@@ -4,6 +4,16 @@
 
 import { mocLabel, mocTitle, mocWithValue } from './power-labels';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+// UWAGA: celowo BEZ statycznego `import ... from './icons/brandAssets'` tutaj — ten moduł
+// zawiera `import.meta.glob` (konstrukcja Vite), która wybucha przy esbuild-bundlowaniu do
+// CJS/node (np. tools/power-ranking-view-test.cjs, który re-eksportuje stąd
+// sortPowerRankingForMode/powerRankingValueForMode). Dlatego ikona SVG Mocy przychodzi
+// gotowa od wywołującego (hud.ts, który bezpiecznie importuje brandAssets — ten plik NIE jest
+// bundlowany przez esbuild w żadnym teście .cjs).
+// / EN: deliberately NOT a static top-level import of brandAssets here — that module uses
+// Vite's `import.meta.glob`, which throws when esbuild-bundled to CJS/node (as
+// power-ranking-view-test.cjs does for this file's other exports). The Power SVG icon is
+// therefore passed in pre-rendered by the caller (hud.ts) instead.
 
 export interface PowerComponentRow {
   key: string;
@@ -92,7 +102,9 @@ function ensureStyles(): void {
 .civ-pow-box{min-width:340px;max-width:480px;background:linear-gradient(180deg,#1e2430,#141820);
   border:2px solid rgba(224,178,74,0.45);border-radius:10px;padding:16px 18px;
   box-shadow:0 12px 40px rgba(0,0,0,0.65);}
-.civ-pow-box h2{margin:0 0 4px;font-size:17px;color:#e0b24a;}
+.civ-pow-box h2{margin:0 0 4px;font-size:17px;color:#e0b24a;display:flex;align-items:center;gap:6px;}
+.civ-pow-h2-ic{display:inline-flex;align-items:center;justify-content:center;color:#e0b24a;flex-shrink:0;}
+.civ-pow-h2-ic svg{width:20px;height:20px;display:block;}
 .civ-pow-box .sub{font-size:11px;color:#9aa6b6;margin-bottom:12px;}
 .civ-pow-row{display:flex;align-items:center;gap:8px;margin:6px 0;}
 .civ-pow-row .lbl{flex:0 0 130px;font-size:12px;}
@@ -119,14 +131,30 @@ function ensureStyles(): void {
   document.head.appendChild(s);
 }
 
-export function showPowerOverlay(data: PowerOverlayData, onClose?: () => void, onRefresh?: () => void): void {
+/**
+ * @param mocIconSvg Gotowy znacznik `<svg>` ikony Mocy (np. `brandIconSvg('res-influence', 20)`
+ *   z ./icons/brandAssets — wywołujący importuje ten moduł sam, patrz uwaga nad importami wyżej).
+ *   Gdy pominięty/pusty, nagłówek pokazuje sam tekst tytułu bez ikony (bez fallbacku na `⚜`).
+ *   / EN: pre-rendered `<svg>` markup for the Power icon, supplied by the caller.
+ */
+export function showPowerOverlay(
+  data: PowerOverlayData,
+  onClose?: () => void,
+  onRefresh?: () => void,
+  mocIconSvg?: string,
+): void {
   hidePowerOverlay();
   ensureStyles();
   root = document.createElement('div');
   root.className = 'civ-pow-ov';
   const box = document.createElement('div');
   box.className = 'civ-pow-box';
-  let html = '<h2>' + esc(mocTitle(data.power)) + '</h2>';
+  // Ikona SVG dokleja się przed tekstem BEZ esc() (esc() escapowałby znaczniki <svg>),
+  // sam tekst tytułu nadal idzie przez esc() jak dotąd.
+  // / EN: SVG icon is prepended without esc() (esc() would escape the <svg> markup),
+  // the title text itself still goes through esc() as before.
+  const mocIconHtml = mocIconSvg ? `<span class="civ-pow-h2-ic" aria-hidden="true">${mocIconSvg}</span>` : '';
+  let html = '<h2>' + mocIconHtml + esc(mocTitle(data.power)) + '</h2>';
   html += '<div class="sub">Siła imperium — punkty obiektywne (P-A) · ranking · Respekt %</div>';
   for (const c of data.components) {
     const pct = Math.round(c.normalized * 100);
