@@ -19964,11 +19964,10 @@ Twoich słów "4× mniej"/"do 2× więcej" na metryce którą realnie widać w g
 
 **Rekomendacja: A.**
 
-**STATUS: czeka na odpowiedź `R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI-Q2 + litera`.**
-Kod scalony w `0811319c` jest bezpieczny i można go zostawić w ROBOCZA do czasu odpowiedzi (nie
-crashuje, nie psuje nic innego) — tylko dokładne wartości Normalny/Trudny mogą się jeszcze
-zmienić. Dodatkowo do zrobienia (nieblokujące, osobna runda): domknąć testy dla
-`spawnInterval`/`unitsPerCamp`/domyślnego poziomu kreatora, klamra obronna na legacy `wylaczeni`.
+**STATUS: ZAMKNIĘTE — `R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI-Q2 = B` (Maciej, 2026-08-14).**
+Zostaje jak jest — metryka liczona od obozów, kod z `0811319c` bez zmian. Dodatkowo do zrobienia
+(nieblokujące, osobna runda): domknąć testy dla `spawnInterval`/`unitsPerCamp`/domyślnego poziomu
+kreatora, klamra obronna na legacy `wylaczeni`.
 
 ## Fort/straznica krok2 — TEMAT ZAMKNIĘTY po 4 rundach (c3fe813d, Evaluator PASS-WITH-NOTES, 2026-08-14)
 
@@ -21119,7 +21118,7 @@ i bez zdobycia miasta, razem z `oblegajacyOwnerId`, `siegeBesiegerByCity` i `ref
 miasto AI (`ownerId=3`) oblegane przez gracza traci flagę tą samą ścieżką. Zapis oblężenia trafia
 do save'a już poprawiony — bez zmian w formacie.
 
-### N1 — **ZNALEZISKO: naprawa ujawnia sprzeczność przy szturmie zakończonym REMISEM** · STATUS: **OTWARTE — czeka na ABC właściciela, NIE dispatch Operatora**
+### N1 — **ZNALEZISKO: naprawa ujawnia sprzeczność przy szturmie zakończonym REMISEM** · STATUS: **ZAMKNIĘTE — `R-OBLEZENIE-REMIS-MASZYNY-Q1 = A` (Maciej, 2026-08-14): remis zrywa oblężenie, stan po naprawie jest docelowy, zero zmian kodu potrzebnych.**
 Nie blokuje scalenia (stan gry po naprawie jest ZGODNY z regułą silnika). **Sprostowanie etykiety
 statusu (2026-08-14, audyt §0c):** treść tej sekcji niżej mówi wprost „do rozstrzygnięcia
 produktowo — ABC dla właściciela, nie decyzja agenta" — nagłówek błędnie sugerował dispatch
