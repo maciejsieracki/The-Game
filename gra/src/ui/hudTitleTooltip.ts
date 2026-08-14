@@ -26,6 +26,12 @@ const SCOPE_SELECTOR = [
   '.civ-build-panel',
   '.civ-side-panel',
   '.civ-cs',
+  // PROTOTYP P-NEWGAME-OPISY-DO-TOOLTIP (2026-08-14): kreator nowej gry — opisy
+  // ustawień (krok 4 + modal "Zaawansowane opcje") przeniesione z zawsze-widocznego
+  // tekstu na ikonę (i) + title, pokazywaną tym samym stylem co reszta gry.
+  // / EN: new-game wizard — setting descriptions moved from always-visible text to
+  // an (i) icon + title, shown with this shared hover style.
+  '.civ-newgame',
 ].join(',');
 
 const SHOW_DELAY_MS = 380;

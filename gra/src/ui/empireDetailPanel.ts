@@ -41,6 +41,7 @@ import {
   empirePanelBlockForSection,
   type EmpirePanelBlock,
 } from './empirePanelSectionMap';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
 
@@ -245,8 +246,11 @@ function ensureStyles(): void {
 .civ-emp-panel *{box-sizing:border-box;}
 .civ-emp-hdr{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 14px;
   border-bottom:1px solid #242c3a;background:#141a24;flex-shrink:0;}
-.civ-emp-hdr-ic{flex:none;width:34px;height:34px;border-radius:8px;background:#1d2634;
-  display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;}
+.civ-emp-hdr-ic{flex:none;width:34px;height:34px;border-radius:50%;background:#1d2634;
+  display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;
+  overflow:hidden;}
+.civ-emp-hdr-portrait{display:block;width:100%;height:100%;object-fit:cover;
+  object-position:center top;border-radius:50%;}
 .civ-emp-hdr-tx{flex:1;min-width:0;}
 .civ-emp-civ-name{font-size:18px;font-weight:700;color:#e8ebf0;line-height:1.1;}
 .civ-emp-civ-name.has-brand-tip{cursor:help;}
@@ -1951,7 +1955,7 @@ function render(): void {
     + `<div class="civ-emp-eyebrow">PARAMETRY GLOBALNE</div><div class="civ-emp-meta">`
     + `<div class="civ-emp-chip"><div class="k">Epoka</div><div class="v gold">${esc(e.epoka)}</div></div>`
     + `<div class="civ-emp-chip"><div class="k">Tura</div><div class="v">${e.tura}</div></div>`
-    + `<div class="civ-emp-chip"><div class="k">Moc ⚜</div><div class="v gold">${e.power}</div></div>`
+    + `<div class="civ-emp-chip"><div class="k">Moc <span class="civ-emp-mini-h-ic" aria-hidden="true">${brandIconSvg('res-influence', 12)}</span></div><div class="v gold">${e.power}</div></div>`
     + `<div class="civ-emp-chip"><div class="k">Osiedla</div><div class="v">${e.osiedla}/${e.osiedlaMax}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Religia państwowa</div><div class="v">${esc(g.religiaPanstwowa)}</div></div>`
     + `<div class="civ-emp-chip wide"><div class="k">Badania</div><div class="v">${esc(e.badana ?? '—')}</div></div>`
@@ -2230,7 +2234,27 @@ function renderHeader(): void {
   const nm = root.querySelector('[data-civ-name]') as HTMLElement | null;
   const sub = root.querySelector('[data-civ-sub]');
   const brandLine = formatCivBrandLine(g.styl, g.jednostkaSpec);
-  if (em) em.textContent = g.civEmoji;
+  // Portret władcy zamiast gołego emoji cywilizacji (P-PANEL-IMPERIUM-PORTRET-WLADCA,
+  // Maciej 2026-08-14) — jeden wspólny nagłówek `.civ-emp-hdr` dla WSZYSTKICH 11 zakładek
+  // panelu (zakładki to tylko zawartość `.civ-emp-body`, ten sam `[data-civ-em]` renderowany
+  // raz tutaj), więc jedna naprawa działa naraz na wszystkich. Fallback do `civEmoji` gdy
+  // brak pliku portretu (civPortraitUrl null) — patrz JSDoc EmpireGlobalParams. / EN: ruler
+  // portrait instead of a bare civ emoji — one shared `.civ-emp-hdr` header for ALL 11 panel
+  // tabs (tabs are only `.civ-emp-body` content, this same `[data-civ-em]` node is rendered
+  // once here), so a single fix covers all of them at once. Falls back to `civEmoji` when no
+  // portrait file exists (civPortraitUrl null) — see EmpireGlobalParams JSDoc.
+  if (em) {
+    if (g.civPortraitUrl) {
+      em.textContent = '';
+      const img = document.createElement('img');
+      img.className = 'civ-emp-hdr-portrait';
+      img.alt = '';
+      img.src = g.civPortraitUrl;
+      em.appendChild(img);
+    } else {
+      em.textContent = g.civEmoji;
+    }
+  }
   if (nm) {
     nm.textContent = g.civName;
     if (brandLine) {
@@ -2278,9 +2302,19 @@ export function showEmpireDetailPanel(section?: string): void {
   render();
   root!.classList.add('open');
   backdrop!.classList.add('open');
+  // R-ESC-PELNY-EKRAN-Q1=A / P-MENU-ESCAPE-NIEPELNOEKRANOWE (Maciej 2026-08-14): panel imperium
+  // nie był dotąd wpięty w stos overlayów — Escape ani nie zamykał panelu, ani nie był
+  // blokowany przez Keyboard Lock, więc przebijał wprost do przeglądarki i wychodził
+  // z pełnego ekranu. idempotentne wobec ponownych wywołań przy zmianie zakładki (ten sam id
+  // trafia na wierzch stosu). / EN: the empire panel wasn't wired into the overlay stack —
+  // Escape neither closed the panel nor was blocked by Keyboard Lock, so it fell straight
+  // through to the browser and exited fullscreen. Idempotent across repeated calls when
+  // switching tabs (same id just moves to the top of the stack).
+  pushOverlay('empire-detail-panel', hideEmpireDetailPanel);
 }
 
 export function hideEmpireDetailPanel(): void {
+  popOverlay('empire-detail-panel');
   open = false;
   pendingScrollSection = null;
   root?.classList.remove('open');

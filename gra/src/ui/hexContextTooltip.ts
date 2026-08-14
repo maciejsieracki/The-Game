@@ -2,7 +2,8 @@
  * hexContextTooltip.ts — treść panelu kontekstowego mapy (heks / jednostka, D17=A).
  */
 import type { Hex } from '../types/hex';
-import { Nakladka, TerenBazowy } from '../types/hex';
+import { Nakladka, TerenBazowy, Ulepszenie } from '../types/hex';
+import type { GameMap } from '../types/map';
 import { tileYield, type TileYield } from '../game/economy';
 import {
   IMPROVEMENT_KEYS,
@@ -15,7 +16,13 @@ import {
   type ImprovementBonus,
   type TerritoryResourceKey,
 } from '../game/terrain-improvements';
-import { galleryTerrainEligible } from '../map/improvement-build';
+import {
+  galleryTerrainEligible,
+  hexHasClayDeposit,
+  isFarmBaseTerrain,
+  isImprovementBlockedOnForest,
+  hasAnimalDeposit,
+} from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
 // R-ZETON-PASKI (Maciej 2026-07-29): kolory pasków Zdrowia i Ruchu były tu
 // wpisane na sztywno w CSS. Wyciągnięte do JEDNEGO źródła prawdy, bo te same
@@ -349,18 +356,138 @@ function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | n
   return out;
 }
 
-/** Ulepszenia możliwe na tym terenie (bez bramki tech — podgląd mapy). */
-function listTerrainPossibleImprovements(hex: Hex, playerCivType?: string | null): string[] {
+/**
+ * Ulepszenia możliwe na tym terenie (bez bramki tech/terytorium — podgląd mapy).
+ *
+ * P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (Maciej 2026-08-14): sam teren bazowy
+ * (`galleryTerrainEligible`) to za mało — wiele ulepszeń wymaga też konkretnej nakładki/złoża
+ * NA TYM heksie (Las/glina/ruda/sól/żelazo/miedź/złoto/cyna/zwierzę), nie tylko pasującego
+ * terenu. Sprawdzenia niżej są lustrzanym odbiciem (wyłącznie części hex-property, bez
+ * terytorium/tech/stanu gracza) `createQualifier()`/`qualifies()` w `map/improvement-build.ts`
+ * — jedynego autorytatywnego źródła tej logiki. Nie duplikuj warunków ręcznie tam, gdzie
+ * istnieje eksportowana funkcja (hexHasClayDeposit, isFarmBaseTerrain,
+ * isImprovementBlockedOnForest, hasAnimalDeposit) — reużyj.
+ * EN: base terrain alone is not enough — many improvements also require a specific
+ * overlay/deposit ON THIS hex (forest/clay/ore/salt/iron/copper/gold/tin/animal), not just a
+ * matching terrain type. The checks below mirror (hex-property parts only, no
+ * territory/tech/player-state) `createQualifier()`/`qualifies()` in `map/improvement-build.ts`
+ * — the one authoritative source for this logic. Reuse the exported helpers instead of
+ * duplicating conditions by hand.
+ */
+
+/**
+ * Te same przesunięcia osi aksjalnej co `hexNeighbors()` w map/improvement-build.ts i
+ * `hexNeighborCoords()` w units/setup.ts — skopiowane lokalnie (nie importowane), żeby nie
+ * ciągnąć do tego modułu UI całego łańcucha importów `units/setup.ts` (m.in. `map/startScoring`)
+ * tylko dla 6 stałych.
+ * EN: same axial-offset pairs as `hexNeighbors()` in map/improvement-build.ts and
+ * `hexNeighborCoords()` in units/setup.ts — copied locally (not imported) to avoid pulling this
+ * UI module's dependency graph through `units/setup.ts` (incl. `map/startScoring`) just for 6
+ * constants.
+ */
+const HEX_NEIGHBOR_OFFSETS: ReadonlyArray<readonly [number, number]> = [
+  [1, 0], [-1, 0], [0, 1], [0, -1], [1, -1], [-1, 1],
+];
+
+/**
+ * Zbiór kluczy heksów `"q,r"` faktycznie leżących NA rzece, zbudowany z `map.riverPaths` —
+ * kopia lokalna `buildRiverHexSet()` z map/improvement-build.ts (linia ~563). Ten zbiór jest
+ * ŚCIŚLE WĘŻSZY niż flaga `hex.rzeka.obecna`: `syncRiverEdgeBonusHexes()`
+ * (gen-helpers.ts:~7241) świadomie ROZLEWA `rzeka.obecna` na wszystkie heksy stykające się
+ * z rzeką jednym bokiem (bonus plonu), więc `rzeka.obecna` sąsiada NIE jest dowodem, że ten
+ * sąsiad leży na `riverPaths` — a to właśnie `riverPaths`/`riverHexSet`, nie `rzeka.obecna`,
+ * silnik sprawdza dla SĄSIADÓW w `isRiverAdjacent()`.
+ * EN: set of hex keys `"q,r"` actually ON a river, built from `map.riverPaths` — local copy of
+ * `buildRiverHexSet()` in map/improvement-build.ts (line ~563). This set is STRICTLY NARROWER
+ * than the `hex.rzeka.obecna` flag: `syncRiverEdgeBonusHexes()` deliberately SPREADS
+ * `rzeka.obecna` onto every hex touching a river on one edge (yield bonus), so a neighbor's
+ * `rzeka.obecna` is not proof it's on `riverPaths` — and it's `riverPaths`/`riverHexSet`, not
+ * `rzeka.obecna`, that the engine checks for NEIGHBORS in `isRiverAdjacent()`.
+ */
+function buildRiverHexSet(map: GameMap): Set<string> {
+  const set = new Set<string>();
+  for (const path of map.riverPaths) {
+    for (const p of path) set.add(`${p.q},${p.r}`);
+  }
+  return set;
+}
+
+/**
+ * Rzeka NA heksie LUB na dowolnym z 6 sąsiadów — lustrzane odbicie `isRiverAdjacent()` z
+ * `createQualifier()` w map/improvement-build.ts (linia ~636): `hex?.rzeka?.obecna` LUB
+ * `riverHexSet.has(ownKey)` dla sam heks; WYŁĄCZNIE `riverHexSet` (nie `rzeka.obecna`) dla
+ * sąsiadów — dokładnie ta sama kolejność i te same trzy warunki co silnik. Bez dostępu do `map`
+ * (np. wołający nie ma jej pod ręką) sprawdzamy tylko flagę na samym heksie — bezpieczny,
+ * węższy fallback (podzbiór poprawnego wyniku, nigdy fałszywy pozytyw).
+ * EN: river ON the hex OR any of its 6 neighbors — mirrors `isRiverAdjacent()` from
+ * `createQualifier()` in map/improvement-build.ts (line ~636): `hex?.rzeka?.obecna` OR
+ * `riverHexSet.has(ownKey)` for the hex itself; `riverHexSet` ONLY (not `rzeka.obecna`) for
+ * neighbors — same order, same three conditions as the engine. Without a `map` reference
+ * (caller doesn't have one) we fall back to the hex's own flag only — a safe, narrower fallback
+ * (subset of the correct result, never a false positive).
+ */
+export function hexHasRiverAccess(hex: Hex, map?: GameMap): boolean {
+  if (hex.rzeka?.obecna) return true;
+  if (!map) return false;
+  const riverHexSet = buildRiverHexSet(map);
+  const { q, r } = hex.coords;
+  if (riverHexSet.has(`${q},${r}`)) return true;
+  for (const [dq, dr] of HEX_NEIGHBOR_OFFSETS) {
+    if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;
+  }
+  return false;
+}
+
+function listTerrainPossibleImprovements(
+  hex: Hex,
+  playerCivType?: string | null,
+  map?: GameMap,
+): string[] {
   const active = new Set(improvementKeysForHex(hex));
   const teren = hex.terenBazowy;
+  const nakladka = hex.nakladka;
+  const zloze = (hex as { zloze?: string }).zloze;
   const out: string[] = [];
   for (const key of IMPROVEMENT_KEYS) {
     if (active.has(key)) continue;
     if (!isImprovementAllowedForCiv(key, playerCivType)) continue;
     if (!galleryTerrainEligible(key as ImprovementKey, teren)) continue;
-    if (key === 'bydlo' && hex.nakladka !== Nakladka.ZlozeBydla) continue;
-    if (key === 'owce' && hex.nakladka !== Nakladka.ZlozeOwiec) continue;
-    if (key === 'lama' && hex.nakladka !== Nakladka.ZlozeLamy) continue;
+    // Ulepszenia zablokowane pod lasem (irygacja/tarasy — trzeba najpierw wyrąbać);
+    // tartak/wyrąb/glinianka/obóz łowiecki/farma MOGĄ stać na Lesie — wyjątki żyją w tej funkcji.
+    if (isImprovementBlockedOnForest(key, nakladka)) continue;
+    if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
+    if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
+    if (key === 'lama' && nakladka !== Nakladka.ZlozeLamy) continue;
+    // N5 (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA): stadnina wymaga złoża konia NA TYM
+    // heksie -- silnik (createQualifier) dodatkowo pozwala budować stadninę BEZ złoża, gdy imperium
+    // ma już odblokowane 'kon' gdzie indziej (isLivestockUnlockedForPlacement/empireUnlocks) -- to
+    // stan gracza/imperium, nie własność heksu, więc świadomie POMINIĘTE tu, tak samo jak
+    // terytorium/tech są pominięte w całej tej funkcji (patrz docstring wyżej).
+    // EN: stadnina requires a horse deposit ON THIS hex -- the engine additionally allows building
+    // it WITHOUT a deposit once the empire already unlocked 'kon' elsewhere
+    // (isLivestockUnlockedForPlacement/empireUnlocks) -- that is player/empire state, not a hex
+    // property, so it's deliberately SKIPPED here, same as territory/tech are skipped throughout
+    // this function (see docstring above).
+    if (key === 'stadnina' && nakladka !== Nakladka.ZlozeKonia) continue;
+    if (key === 'farma' && !isFarmBaseTerrain(teren, nakladka)) continue;
+    if (key === 'tartak' && nakladka !== Nakladka.Las) continue;
+    if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;
+    if (key === 'glinianka' && !hexHasClayDeposit(hex)) continue;
+    if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las && !hasAnimalDeposit(nakladka)) continue;
+    if (key === 'warzelnia_soli' && teren !== TerenBazowy.Wybrzeze && zloze !== 'sol') continue;
+    if (key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;
+    if (key === 'kopalnia_miedzi'
+      && zloze !== 'miedz' && nakladka !== Nakladka.ZlozeRudy && zloze !== 'ruda') continue;
+    if (key === 'kopalnia_zlota' && zloze !== 'zloto') continue;
+    if (key === 'kopalnia_cyny' && zloze !== 'cyna') continue;
+    // Droga brukowana to upgrade istniejącej Drogi — silnik (createQualifier) wymaga JUŻ
+    // zbudowanej zwykłej Drogi na tym heksie, nie samego terenu lądowego.
+    // EN: cobblestone road is an upgrade of an existing Road — the engine (createQualifier)
+    // requires an ALREADY-BUILT plain Road on this hex, not just land terrain.
+    if (key === 'droga_brukowana' && !active.has('droga') && hex.ulepszenie !== Ulepszenie.Droga) continue;
+    // Irygacja wymaga rzeki NA heksie lub na sąsiedzie (isRiverAdjacent w createQualifier).
+    // EN: irrigation requires a river on the hex or a neighbor (isRiverAdjacent in createQualifier).
+    if (key === 'irygacja' && !hexHasRiverAccess(hex, map)) continue;
     const bonus = formatCityBonusParts(improvementBonusForKey(key));
     const mag = formatTerritoryMagazynPart(key);
     const unlocks = labelsForImprovementUnlock(key);
@@ -387,6 +514,15 @@ export interface HexContextTooltipInput {
   /** typCywilizacji gracza — bramka widoczności lamy. */
   playerCivType?: string | null;
   /**
+   * Mapa świata (opcjonalna) — dostęp do sąsiadów heksa. Dziś jedyny użytek: warunek rzeki
+   * przy Irygacji (`hexHasRiverAccess`) sprawdzający sąsiadów, nie tylko sam heks. Bez `map`
+   * funkcja bezpiecznie zawęża się do sprawdzenia rzeki na samym heksie.
+   * EN: world map (optional) — gives access to hex neighbors. Today's only use: the river
+   * condition for Irrigation (`hexHasRiverAccess`), which checks neighbors, not just the hex
+   * itself. Without `map` the check safely narrows to the hex alone.
+   */
+  map?: GameMap;
+  /**
    * R-HEX-PLONY-MAGAZYN B: plony drewno/kamień/glina z terenu trafiają do magazynu
    * tylko przy 👤 (lub centrum miasta). Bez tego — nie pokazuj „przy 👤" na gołym heksie.
    */
@@ -407,7 +543,7 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   const resources = collectResourceLabels(hex, era, input.playerCivType);
   const built = builtImprovementKeys(hex);
   const implicitKeys = improvementKeysForHex(hex).filter(k => !built.includes(k));
-  const possible = listTerrainPossibleImprovements(hex, input.playerCivType);
+  const possible = listTerrainPossibleImprovements(hex, input.playerCivType, input.map);
 
   const lines: string[] = [];
 

@@ -2,7 +2,16 @@
  * wonderCompletedNotice.ts — powiadomienie „Cud ukończony” (TEMAT #16, klatka C).
  * Dwa warianty: nasz (złoty, laur) vs cudzy/wyścig przegrany (czerwony, „Rozumiem”).
  * Czysta prezentacja — dane liczone w main.ts z realnego stanu (completedWorldWonders/placedWorldWonders).
+ *
+ * Wpięty w escapeOverlayStack (Evaluator FAIL 4fc770ee, znalezisko #4, Maciej 2026-08-14): ma
+ * realny przycisk zamknięcia („Zamknij"), więc kwalifikuje się identycznie jak naprawione
+ * panele — commit 4fc770ee błędnie pominął go jako „bloker decyzyjny bez przycisku zamknięcia".
+ * / EN: wired into escapeOverlayStack — it has a real close button ("Close"), so it qualifies
+ * the same as the panels fixed in 4fc770ee, which wrongly skipped it as "a decision blocker
+ * with no close button".
  */
+
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface WonderCompletedNoticeOpts {
   variant: 'mine' | 'rival';
@@ -74,8 +83,9 @@ export function showWonderCompletedNotice(opts: WonderCompletedNoticeOpts): void
   const backdrop = document.createElement('div');
   backdrop.className = 'wn-backdrop';
 
-  const close = () => { host.remove(); opts.onClose?.(); };
+  const close = () => { popOverlay('wonder-completed-notice'); host.remove(); opts.onClose?.(); };
   backdrop.addEventListener('click', close);
+  pushOverlay('wonder-completed-notice', close);
 
   const mine = opts.variant === 'mine';
   const card = document.createElement('div');
@@ -109,5 +119,6 @@ export function showWonderCompletedNotice(opts: WonderCompletedNoticeOpts): void
 }
 
 export function hideWonderCompletedNotice(): void {
+  popOverlay('wonder-completed-notice');
   document.getElementById(HOST_ID)?.remove();
 }

@@ -1,26 +1,57 @@
 /**
- * cityListHud.ts — lista miast gracza na mapie świata (po kliknięciu 🏛 w toolbarze).
- * Styl jak lewa kolumna panelu miasta (Produkcja).
+ * cityListHud.ts — lista miast gracza na mapie świata (po kliknięciu medalionu Miasta
+ * w toolbarze). Reskin do palety 3b — MIASTA-ARMIE-PANEL-LEWY-2026-08-14 §4: karta
+ * zamiast płaskiego wiersza, zero emoji (🏛️/👥/🔨 → SVG z brandu), pasmo podsumowania
+ * (hero „N miast" + 2 boxy) nad listą, linia produkcji rozbita na pasek postępu.
+ * Style współdzielone z armyListHud.ts przez sideListHud.css.ts.
  */
 
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
-import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
+import { brandIconSvg } from './icons/brandAssets';
+import { formatMiastaCount, formatKolejkiCount } from './formatPl';
+import {
+  SIDE_LIST_ROOT_CLASS,
+  ensureSideListHudStyles,
+  sideListBadgeHtml,
+  sideListEmptyStateHtml,
+  pctClamped,
+  type SideListBadgeVariant,
+} from './sideListHud.css';
 
 export interface CityListEntry {
   id: string;
   name: string;
   population: number;
-  /** Np. „Stolarnia • 8/20 🔨” lub „Kolejka pusta”. */
-  productionLine?: string;
-  /** Np. „Garnizon: 2”. */
+  /**
+   * Rozbite z dawnego sklejonego `productionLine` („Stolarnia • 8/20 🔨") na 3 pola
+   * (MIASTA-ARMIE-PANEL-LEWY-2026-08-14 §5.2, zatwierdzone bez fallbacku) — pasek
+   * postępu i wyrównana liczba potrzebują osobnych wartości, nie stringa do parsowania.
+   * Obecne razem, gdy front kolejki istnieje; nieobecne, gdy kolejka pusta lub miasto
+   * nie ma zdolności produkcji (patrz `productionQueueEmpty`).
+   */
+  productionName?: string;
+  /** Postęp (pkt Pracy) zainwestowany we front kolejki. */
+  productionProgress?: number;
+  /** Koszt (pkt Pracy) frontu kolejki. */
+  productionMax?: number;
+  /** Kolejka pusta, ale miasto MA zdolność produkcji — dostaje plakietkę neutralną
+   *  „kolejka pusta" zamiast paska (dawne `cityHasActionableProduction` bez frontu). */
+  productionQueueEmpty?: boolean;
+  /** Np. „Garnizon: 2". */
   metaLine?: string;
+  /** Liczba jednostek w garnizonie miasta (surowa wartość) — suma w boksie
+   *  „GARNIZONY" pasma podsumowania; `metaLine` zostaje tekstem per-wiersz. */
+  garrison?: number;
+  /** Czy to stolica gracza (capitalCityIdForOwner) — plakietka „stolica"
+   *  (MIASTA-ARMIE-PANEL-LEWY-2026-08-14 §5.3, zatwierdzone). */
+  isCapital?: boolean;
 }
 
 export interface CityListHudConfig {
   getCities: () => CityListEntry[];
   onSelectCity: (cityId: string) => void;
-  /** Po zamknięciu listy (✕, Esc, ponowne 🏛). */
+  /** Po zamknięciu listy (✕, Esc, ponowne kliknięcie medalionu). */
   onClose?: () => void;
 }
 
@@ -34,47 +65,30 @@ export interface CityListHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-city-list-hud-css-v2';
-const TOP_H = SIDE_PANEL_TOP;
-const BOTTOM_BAR_H = 56;
-const PANEL_W = 340;
-/** Prawa krawędź toolbara mapy + margines (sidePanelLayout.ts) — lista nie zasłania przycisków. */
-const LEFT_INSET = SIDE_PANEL_LEFT;
+const STYLE_ID = 'civ-city-list-hud-css-v3';
 
+/** CSS wyłącznie tego panelu: pasmo podsumowania (hero) + pasek postępu produkcji.
+ *  Reszta (karta, kafelek, nagłówek, plakietki, stan pusty) — sideListHud.css.ts. */
 function ensureStyles(): void {
+  ensureSideListHudStyles();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
-.civ-city-list-hud{position:fixed;top:${TOP_H};left:${LEFT_INSET};bottom:calc(${BOTTOM_BAR_H}px + 2mm);
-  width:min(24vw,${PANEL_W}px);min-width:260px;max-width:calc(100vw - ${LEFT_INSET} - 12px);z-index:311;display:none;flex-direction:column;
-  pointer-events:auto;overflow:hidden;
-  background:linear-gradient(90deg,rgba(6,10,20,0.97) 0%,rgba(8,14,28,0.92) 88%,rgba(8,14,28,0.85) 100%);
-  border-right:1px solid rgba(212,175,90,0.28);box-shadow:6px 0 28px rgba(0,0,0,0.45);
-  font:14px 'Segoe UI',Tahoma,sans-serif;color:#e8ebf0;
-  --panel:#1e2430;--border:#2e3848;--muted:#8b97a8;--gold:#e0b24a;}
-.civ-city-list-hud.open{display:flex;}
-.civ-city-list-hud .cl-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:0.45rem 0.5rem 0.55rem;}
-.civ-city-list-hud .cl-scroll::-webkit-scrollbar{width:6px;}
-.civ-city-list-hud .cl-scroll::-webkit-scrollbar-thumb{background:rgba(212,175,90,0.25);border-radius:3px;}
-.civ-city-list-hud .panel{background:var(--panel);border:1px solid var(--border);border-radius:6px;
-  padding:0.38em 0.52em;box-shadow:0 1px 0 rgba(255,255,255,0.03);}
-.civ-city-list-hud .ptitle{font-size:0.74em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--gold);border-bottom:1px solid var(--border);padding-bottom:0.18em;margin-bottom:0.35em;
-  display:flex;justify-content:space-between;align-items:center;gap:0.5em;}
-.civ-city-list-hud .cl-close{background:none;border:none;color:var(--muted);font-size:1.15em;line-height:1;
-  cursor:pointer;padding:0.1em 0.25em;border-radius:4px;}
-.civ-city-list-hud .cl-close:hover{color:var(--gold);background:rgba(224,178,74,0.1);}
-.civ-city-list-hud .cl-empty{font-size:0.82em;color:var(--muted);line-height:1.45;padding:0.2em 0.1em;}
-.civ-city-list-hud .cl-item{display:flex;gap:0.55em;align-items:flex-start;padding:0.45em 0.35em;
-  margin-top:0.28em;border-radius:5px;border:1px solid transparent;cursor:pointer;transition:background .15s,border-color .15s;}
-.civ-city-list-hud .cl-item:first-of-type{margin-top:0.15em;}
-.civ-city-list-hud .cl-item:hover{background:rgba(224,178,74,0.08);border-color:rgba(224,178,74,0.35);}
-.civ-city-list-hud .cl-ico{font-size:1.35em;line-height:1;flex-shrink:0;margin-top:0.05em;}
-.civ-city-list-hud .cl-body{flex:1;min-width:0;}
-.civ-city-list-hud .cl-name{font-size:1.05em;font-weight:700;color:var(--gold);line-height:1.2;}
-.civ-city-list-hud .cl-pop{font-size:0.78em;color:var(--muted);margin-top:0.12em;}
-.civ-city-list-hud .cl-prod{font-size:0.78em;color:#d4cba0;margin-top:0.18em;line-height:1.35;}
-.civ-city-list-hud .cl-meta{font-size:0.72em;color:var(--muted);margin-top:0.1em;}
-.civ-city-list-hud .cl-hint{font-size:0.72em;color:var(--muted);font-style:italic;margin-top:0.45em;line-height:1.4;}
+.civ-city-list-hud .cl-sum{padding:.7em .75em .55em;border-bottom:1px solid var(--border);flex-shrink:0;}
+.civ-city-list-hud .cl-sum-big{font-size:20px;font-weight:800;color:var(--gold);}
+.civ-city-list-hud .cl-sum-sub{font-size:12px;color:var(--muted);margin-top:.25em;}
+.civ-city-list-hud .cl-sum-boxes{display:grid;grid-template-columns:1fr 1fr;gap:.6em;margin-top:.6em;}
+.civ-city-list-hud .cl-sum-box{border:1px solid var(--border);border-radius:7px;padding:.5em .6em;background:var(--panel);}
+.civ-city-list-hud .cl-sum-box .k{font-size:9px;letter-spacing:.08em;color:var(--muted);font-weight:700;text-transform:uppercase;}
+.civ-city-list-hud .cl-sum-box .v{font-size:13px;font-weight:600;margin-top:.3em;color:#e8ebf0;}
+.civ-city-list-hud .cl-sum-box .v b{font-weight:800;}
+.civ-city-list-hud .cl-prod-row{display:flex;justify-content:space-between;align-items:baseline;
+  margin-top:.35em;font-size:.82em;gap:.5em;}
+.civ-city-list-hud .cl-prod-name{color:#d4cba0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.civ-city-list-hud .cl-prod-count{color:#e8ebf0;font-weight:700;flex-shrink:0;}
+.civ-city-list-hud .cl-prod-empty{font-size:.82em;color:#d4cba0;margin-top:.35em;}
+.civ-city-list-hud .cl-prodbar{height:6px;border-radius:999px;background:rgba(0,0,0,.35);margin-top:.25em;overflow:hidden;}
+.civ-city-list-hud .cl-prodbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#6a4010,#d9a441);transition:width .2s;}
+.civ-city-list-hud .cl-meta{font-size:11px;color:var(--muted);margin-top:.2em;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -89,7 +103,7 @@ export function createCityListHud(config: CityListHudConfig): CityListHudApi {
   if (api !== null) api.destroy();
 
   const el = document.createElement('div');
-  el.className = 'civ-city-list-hud';
+  el.className = `civ-city-list-hud ${SIDE_LIST_ROOT_CLASS}`;
   document.body.appendChild(el);
 
   let open = false;
@@ -107,65 +121,105 @@ export function createCityListHud(config: CityListHudConfig): CityListHudApi {
 
   function render(): void {
     const cities = config.getCities();
-    const scroll = document.createElement('div');
-    scroll.className = 'cl-scroll';
-    const panel = document.createElement('div');
-    panel.className = 'panel';
-    const titleRow = document.createElement('div');
-    titleRow.className = 'ptitle';
-    const titleLbl = document.createElement('span');
-    titleLbl.textContent = 'Miasta';
+
+    const header = document.createElement('div');
+    header.className = 'sl-header';
+    header.innerHTML = `<span class="sl-header-ic">${brandIconSvg('tb-cities', 18)}</span>`
+      + `<span class="sl-title">Miasta</span>`;
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
-    closeBtn.className = 'cl-close';
+    closeBtn.className = 'sl-close';
     closeBtn.title = 'Zamknij listę (Esc)';
     closeBtn.setAttribute('aria-label', 'Zamknij listę miast');
-    closeBtn.textContent = '\u2715';
+    closeBtn.textContent = '✕';
     closeBtn.addEventListener('click', (ev) => {
       ev.stopPropagation();
       closeList();
     });
-    titleRow.appendChild(titleLbl);
-    titleRow.appendChild(closeBtn);
-    panel.appendChild(titleRow);
+    header.appendChild(closeBtn);
+
+    const scroll = document.createElement('div');
+    scroll.className = 'sl-scroll';
 
     if (cities.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'cl-empty';
-      empty.textContent = 'Brak miast w imperium — załóż pierwsze miasto na mapie.';
-      panel.appendChild(empty);
+      scroll.innerHTML = sideListEmptyStateHtml(
+        brandIconSvg('tb-cities', 32),
+        'Brak miast w imperium — załóż pierwsze miasto na mapie.',
+      );
     } else {
       for (const c of cities) {
         const row = document.createElement('div');
-        row.className = 'cl-item';
+        row.className = 'sl-item';
         row.setAttribute('role', 'button');
         row.tabIndex = 0;
         row.title = 'Wejdź do miasta ' + c.name;
+
         const ico = document.createElement('span');
-        ico.className = 'cl-ico';
-        ico.textContent = '\u{1F3DB}\uFE0F';
+        ico.className = 'sl-ico';
+        ico.innerHTML = brandIconSvg('tb-cities', 18);
+
         const body = document.createElement('div');
-        body.className = 'cl-body';
+        body.className = 'sl-body';
+
+        const badges: Array<{ text: string; variant: SideListBadgeVariant }> = [];
+        if (c.isCapital) badges.push({ text: 'stolica', variant: 'gold' });
+        if (c.productionQueueEmpty) badges.push({ text: 'kolejka pusta', variant: 'neutral' });
+
+        const nameRow = document.createElement('div');
+        nameRow.className = 'sl-name-row';
         const name = document.createElement('div');
-        name.className = 'cl-name';
+        name.className = 'sl-name';
         name.textContent = c.name;
-        body.appendChild(name);
-        const pop = document.createElement('div');
-        pop.className = 'cl-pop';
-        pop.textContent = '\u{1F465} ' + String(c.population) + ' mieszk.';
-        body.appendChild(pop);
-        if (c.productionLine) {
-          const prod = document.createElement('div');
-          prod.className = 'cl-prod';
-          prod.textContent = c.productionLine;
-          body.appendChild(prod);
+        name.title = c.name;
+        nameRow.appendChild(name);
+        if (badges.length > 0) {
+          const badgesWrap = document.createElement('span');
+          badgesWrap.className = 'sl-badges';
+          badgesWrap.innerHTML = badges.map(b => sideListBadgeHtml(b.text, b.variant)).join('');
+          nameRow.appendChild(badgesWrap);
         }
+        body.appendChild(nameRow);
+
+        const pop = document.createElement('div');
+        pop.className = 'sl-meta';
+        pop.innerHTML = `<span>${brandIconSvg('res-population', 12)}</span><span>${String(c.population)} mieszk.</span>`;
+        body.appendChild(pop);
+
+        if (c.productionName !== undefined
+          && typeof c.productionProgress === 'number'
+          && typeof c.productionMax === 'number') {
+          const prodRow = document.createElement('div');
+          prodRow.className = 'cl-prod-row';
+          const prodName = document.createElement('span');
+          prodName.className = 'cl-prod-name';
+          prodName.textContent = c.productionName;
+          const prodCount = document.createElement('span');
+          prodCount.className = 'cl-prod-count';
+          prodCount.textContent = `${Math.round(c.productionProgress)}/${c.productionMax}`;
+          prodRow.appendChild(prodName);
+          prodRow.appendChild(prodCount);
+          body.appendChild(prodRow);
+
+          const bar = document.createElement('div');
+          bar.className = 'cl-prodbar';
+          const fill = document.createElement('i');
+          fill.style.width = pctClamped(c.productionProgress, c.productionMax) + '%';
+          bar.appendChild(fill);
+          body.appendChild(bar);
+        } else if (c.productionQueueEmpty) {
+          const prodEmpty = document.createElement('div');
+          prodEmpty.className = 'cl-prod-empty';
+          prodEmpty.textContent = 'Kolejka pusta';
+          body.appendChild(prodEmpty);
+        }
+
         if (c.metaLine) {
           const meta = document.createElement('div');
           meta.className = 'cl-meta';
           meta.textContent = c.metaLine;
           body.appendChild(meta);
         }
+
         row.appendChild(ico);
         row.appendChild(body);
         const go = () => {
@@ -178,16 +232,34 @@ export function createCityListHud(config: CityListHudConfig): CityListHudApi {
             go();
           }
         });
-        panel.appendChild(row);
+        scroll.appendChild(row);
       }
       const hint = document.createElement('div');
-      hint.className = 'cl-hint';
+      hint.className = 'sl-hint';
       hint.textContent = 'Kliknij miasto, aby wejść. ✕ lub Esc — powrót na mapę. Ponowne 🏛 — zamknij listę.';
-      panel.appendChild(hint);
+      scroll.appendChild(hint);
     }
 
-    scroll.appendChild(panel);
     el.innerHTML = '';
+    el.appendChild(header);
+
+    // Pasmo podsumowania (hero „N miast" + 2 boxy) — NIE renderuje się przy zerze miast
+    // (MIASTA-ARMIE-PANEL-LEWY-2026-08-14 §4.2: „0 miast" powtarzałoby stan pusty).
+    if (cities.length > 0) {
+      const totalPop = cities.reduce((s, c) => s + c.population, 0);
+      const activeQueues = cities.filter(c => c.productionName !== undefined).length;
+      const totalGarrison = cities.reduce((s, c) => s + (c.garrison ?? 0), 0);
+      const sum = document.createElement('div');
+      sum.className = 'cl-sum';
+      sum.innerHTML = `<div class="cl-sum-big">${formatMiastaCount(cities.length)}</div>`
+        + `<div class="cl-sum-sub">${totalPop} mieszk. · ${formatKolejkiCount(activeQueues)} w toku</div>`
+        + `<div class="cl-sum-boxes">`
+        + `<div class="cl-sum-box"><div class="k">W budowie</div><div class="v"><b>${activeQueues}</b> z ${cities.length}</div></div>`
+        + `<div class="cl-sum-box"><div class="k">Garnizony</div><div class="v"><b>${totalGarrison}</b> jedn.</div></div>`
+        + `</div>`;
+      el.appendChild(sum);
+    }
+
     el.appendChild(scroll);
   }
 

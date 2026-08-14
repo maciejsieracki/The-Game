@@ -117,6 +117,20 @@ export interface PreBattleInfo {
 export interface PreBattleConfig {
   /** Bonusy cywilizacji per owner (civs.json bonusy[]) — wzorzec jak cityPanel. */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+  /**
+   * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): zwraca true gdy INNY
+   * modal końca tury (audiencja dyplomatyczna, panel scalenia armii) jest już otwarty --
+   * używane WYŁĄCZNIE dla automatycznych wywołań showPreBattle (opts.auto===true), żeby
+   * atak AI/barbarzyńców w trakcie końca tury nie wyskakiwał na wierzch już otwartego
+   * modala. Ręczne ataki gracza (opts.auto pominięte) NIGDY nie sprawdzają tego hooka --
+   * zawsze pokazują się natychmiast, jak dotychczas.
+   * / EN: returns true when ANOTHER end-of-turn modal (diplomacy audience, army-merge
+   * panel) is already open -- used ONLY for automatic showPreBattle calls
+   * (opts.auto===true), so an AI/barbarian attack mid-end-turn doesn't pop on top of an
+   * already-open modal. Manual player attacks (opts.auto omitted) never check this hook --
+   * they always show immediately, as before.
+   */
+  isOtherEndTurnModalOpen?: () => boolean;
 }
 
 export interface PreBattleCallbacks {
@@ -132,6 +146,16 @@ export interface PreBattleOptions {
   defaultAction?: 'auto' | 'manual';
   /** Nadpisanie hooka z configurePreBattle (np. jednorazowy test). */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+  /**
+   * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: true WYŁĄCZNIE dla automatycznych wywołań
+   * (atak AI/barbarzyńców w trakcie end-of-turu) -- NIGDY dla ręcznej akcji gracza (klik
+   * atak/szturm). Włącza guard przeciw innym otwartym modalom końca tury (patrz
+   * PreBattleConfig.isOtherEndTurnModalOpen) i kolejkowanie przez flushDeferredAutoPreBattle.
+   * / EN: true ONLY for automatic invocations (AI/barbarian attack mid-end-turn) -- NEVER
+   * for a manual player action (attack/storm click). Enables the guard against other open
+   * end-of-turn modals and queuing via flushDeferredAutoPreBattle.
+   */
+  auto?: boolean;
 }
 
 let overlayEl: HTMLDivElement | null = null;
@@ -143,6 +167,22 @@ let saveToastEl: HTMLDivElement | null = null;
 let saveToastTimer: ReturnType<typeof setTimeout> | null = null;
 let activePreBattleCb: PreBattleCallbacks | null = null;
 let activePreBattleRetreat: boolean = false;
+/** P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE + P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-
+ * NADPISANY (Maciej 2026-08-14): kolejka FIFO żądań automatycznego preBattle odłożonych,
+ * bo w momencie wywołania inny modal końca tury (audiencja/scalenie) LUB preBattle sam był
+ * już otwarty (patrz guard w showPreBattle / flushDeferredAutoPreBattle). Był tu kiedyś
+ * JEDEN slot (nullable) -- za mało: pętla ataku barbarzyńców w main.ts przetwarza WSZYSTKIE
+ * komendy tury synchronicznie (`continue`, bez czekania na rozstrzygnięcie), więc przy 2+
+ * jednoczesnych atakach na gracza w tym samym ticku drugie (i kolejne) automatyczne żądanie
+ * nadpisywałoby wcześniejsze w jednym slocie -- realnie GUBIĄC bitwę, nie tylko odraczając
+ * ją. Kolejka (shift() w flushDeferredAutoPreBattle, ten sam wzorzec co deferredMergePrompts
+ * w main.ts) gwarantuje, że KAŻDY odłożony atak w końcu dostanie swoje okno preBattle, po
+ * kolei. / EN: FIFO queue of deferred automatic preBattle requests -- used to be a single
+ * nullable slot, which lost the 2nd+ concurrent barbarian attack in the same tick (the
+ * barbarian attack loop in main.ts processes all commands synchronously with `continue`,
+ * never awaiting resolution). A queue guarantees every deferred attack eventually gets its
+ * own preBattle window, in order. */
+const deferredAutoRequests: { info: PreBattleInfo; cb: PreBattleCallbacks; opts?: PreBattleOptions; enqueuedAt: number }[] = [];
 
 /** Wpięcie silnika — jak configureCityPanel (P0-D4). */
 export function configurePreBattle(config: PreBattleConfig): void {
@@ -169,6 +209,36 @@ export function showPreBattle(
   cb: PreBattleCallbacks,
   opts?: PreBattleOptions,
 ): void {
+  // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE + P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-
+  // NADPISANY (Maciej 2026-08-14): automatyczne wywołanie (atak AI/barbarzyńców w trakcie
+  // końca tury) + (inny modal końca tury już otwarty ALBO preBattle SAM jest już otwarty,
+  // np. drugi/trzeci barbarzyńca atakujący w tym samym ticku) -- odłóż do kolejki, NIE
+  // pokazuj na wierzchu / nie zastępuj wciąż nierozstrzygniętej bitwy. Bez isPreBattleOpen()
+  // tutaj drugie automatyczne wywołanie w tym samym ticku przechodziłoby prosto do
+  // hidePreBattle() niżej i po cichu kasowało pierwszą, wciąż otwartą bitwę -- dokładnie
+  // zgłoszony błąd. flushDeferredAutoPreBattle() (wołane z main.ts po rozstrzygnięciu
+  // bitwy / gdy blokujący modal się zamyka) pokaże kolejne odłożone żądanie z kolejki.
+  // Ręczna akcja gracza (opts.auto pominięte) NIGDY tu nie trafia -- pokazuje się
+  // natychmiast, jak dotychczas.
+  // / EN: automatic invocation (AI/barbarian attack during end-of-turn) + (another
+  // end-of-turn modal already open OR preBattle itself is already open, e.g. a 2nd/3rd
+  // barbarian attacking in the same tick) -- defer to the queue instead of popping on top
+  // of / replacing a still-unresolved battle. Without isPreBattleOpen() here, a second
+  // automatic call in the same tick would fall straight through to hidePreBattle() below
+  // and silently wipe out the first, still-open battle -- exactly the reported bug.
+  // flushDeferredAutoPreBattle() (called from main.ts once a battle resolves / a blocking
+  // modal closes) shows the next deferred request from the queue. A manual player action
+  // (opts.auto omitted) never reaches this branch -- it always shows immediately, as before.
+  if (opts?.auto === true && (isPreBattleOpen() || pbCfg.isOtherEndTurnModalOpen?.() === true)) {
+    // F2 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): enqueuedAt zasila
+    // oldestPendingAutoPreBattleAgeMs() -- main.ts::healStaleEndTurnBlockers() go używa,
+    // żeby żądanie zalegające w kolejce ponad próg (8s, patrz main.ts) nie wyłączało jej
+    // gałęzi 1 BEZTERMINOWO. / EN: enqueuedAt feeds oldestPendingAutoPreBattleAgeMs() --
+    // main.ts::healStaleEndTurnBlockers() uses it so a request stuck in the queue past the
+    // threshold (8s, see main.ts) doesn't disable its branch 1 FOREVER.
+    deferredAutoRequests.push({ info, cb, opts, enqueuedAt: Date.now() });
+    return;
+  }
   hidePreBattle();
   showMapScrim();
   overlayEl = buildOverlay(info, cb, opts);
@@ -228,6 +298,99 @@ function showPreBattleSaveToast(overlay: HTMLElement, message: string, ok: boole
 
 export function isPreBattleOpen(): boolean {
   return overlayEl !== null;
+}
+
+/**
+ * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, N1 (Evaluator FAIL na a7de65b0, runda 2,
+ * Maciej 2026-08-14): true gdy co najmniej jedno automatyczne żądanie preBattle czeka w
+ * kolejce (isPreBattleOpen()===false w tym momencie, bo albo inny modal końca tury blokował
+ * w chwili wywołania showPreBattle, patrz isOtherEndTurnModalOpen, albo poprzednia bitwa z
+ * kolejki jeszcze się nie pokazała). main.ts::healStaleEndTurnBlockers() używa tego, żeby
+ * NIE uznawać `aiCmdResume`/`aiTurnAwaitingBattle` za osierocone, dopóki w kolejce coś
+ * czeka -- bez tego funkcja (wołana też z pętli renderu HUD, nie tylko z próby zakończenia
+ * tury) kasowała stan wznowienia fazy AI w oknie, gdy bitwa była już zaplanowana, ale
+ * jeszcze nie zdążyła się pokazać na ekranie.
+ * / EN: true when at least one automatic preBattle request is waiting in the queue
+ * (isPreBattleOpen()===false at this moment, either because another end-of-turn modal was
+ * blocking when showPreBattle was called, see isOtherEndTurnModalOpen, or the previous
+ * queued battle hasn't shown yet). main.ts::healStaleEndTurnBlockers() uses this so it does
+ * NOT treat `aiCmdResume`/`aiTurnAwaitingBattle` as orphaned while something is still
+ * queued -- without this, the function (also called from the HUD render loop, not only from
+ * an end-turn attempt) would clear the AI-phase resume state in the window where a battle
+ * was already scheduled but hadn't shown on screen yet.
+ */
+export function hasPendingAutoPreBattle(): boolean {
+  return deferredAutoRequests.length > 0;
+}
+
+/**
+ * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, F2 (Evaluator FAIL 136fefbb, runda 3, Maciej
+ * 2026-08-14): wiek NAJSTARSZEGO (indeks 0 -- FIFO, shift() zdejmuje z przodu) żądania w
+ * kolejce, w milisekundach; `0` gdy kolejka pusta. main.ts::healStaleEndTurnBlockers() go
+ * używa, żeby żądanie zalegające ponad rozsądny próg przestało bezterminowo wyłączać jej
+ * gałąź 1 (bez tego runda 2 wprowadziła ryzyko: zaleganie choćby jednego żądania w kolejce
+ * trwale wyłączało jedyny mechanizm samoleczenia flag fazy AI, zamieniając odwracalną
+ * degradację w twardą blokadę "Zakończ turę").
+ * / EN: age of the OLDEST (index 0 -- FIFO, shift() removes from the front) request in the
+ * queue, in milliseconds; `0` when the queue is empty. main.ts::healStaleEndTurnBlockers()
+ * uses this so a request stuck past a reasonable threshold stops permanently disabling its
+ * branch 1 (without this, round 2 introduced a risk: even one request stuck in the queue
+ * permanently disabled the only AI-phase-flag self-healing mechanism, turning a reversible
+ * degradation into a hard "End Turn" deadlock).
+ */
+export function oldestPendingAutoPreBattleAgeMs(): number {
+  if (deferredAutoRequests.length === 0) return 0;
+  return Date.now() - deferredAutoRequests[0]!.enqueuedAt;
+}
+
+/**
+ * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, F2+F4 (Evaluator FAIL 136fefbb, runda 3,
+ * Maciej 2026-08-14): opróżnia kolejkę odroczonych automatycznych żądań preBattle. Dwa
+ * wołania: (1) main.ts::healStaleEndTurnBlockers(), gdy najstarsze żądanie przekroczyło
+ * próg czasu (F2 -- żądanie uznane za martwe, nie tylko odroczone) i (2)
+ * main.ts::resetEndTurnBlockers(), przy Nowej grze / wczytaniu bez pełnego reload strony
+ * (F4 -- bez tego żądanie z poprzedniej sesji przeżywało reset i trwale psuło NOWĄ sesję,
+ * patrz uzasadnienie w resetEndTurnBlockers).
+ * / EN: empties the deferred automatic preBattle request queue. Two call sites: (1)
+ * main.ts::healStaleEndTurnBlockers(), when the oldest request exceeded the time threshold
+ * (F2 -- request considered dead, not merely deferred) and (2)
+ * main.ts::resetEndTurnBlockers(), on New Game / load without a full page reload (F4 --
+ * without this a request from the previous session survived the reset and permanently broke
+ * the NEW session, see the rationale in resetEndTurnBlockers).
+ */
+export function clearDeferredAutoPreBattleQueue(): void {
+  if (deferredAutoRequests.length > 0) {
+    console.warn('[PreBattle] Clearing deferred auto preBattle queue (' + deferredAutoRequests.length + ' zaległych żądań)');
+  }
+  deferredAutoRequests.length = 0;
+}
+
+/**
+ * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE + P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-
+ * NADPISANY: pokaż NAJSTARSZE odłożone automatyczne preBattle z kolejki (patrz guard w
+ * showPreBattle) -- wołane z main.ts w momentach, gdy inny modal końca tury (audiencja
+ * dyplomatyczna, panel scalenia armii) mógł się właśnie zamknąć, ALBO gdy bitwa (auto/pole
+ * bitwy/wycofanie) właśnie się rozstrzygnęła (patrz finishIncomingBattleUi). No-op gdy nic
+ * nie czeka w kolejce albo blokada (isPreBattleOpen()/pbCfg.isOtherEndTurnModalOpen) jest
+ * nadal aktywna -- sprawdzane tu ponownie na świeżo, żeby nie otworzyć na modal, który w
+ * międzyczasie znów się otworzył. Zdejmuje TYLKO jeden element (shift()) -- jeśli w kolejce
+ * czeka więcej niż jedno żądanie (3+ jednoczesnych barbarzyńców), reszta zostaje i pokaże
+ * się przy KOLEJNYCH wywołaniach flusha (po rozstrzygnięciu tej bitwy).
+ * / EN: show the OLDEST deferred automatic preBattle request from the queue (see the guard
+ * in showPreBattle) -- called from main.ts at points where another end-of-turn modal
+ * (diplomacy audience, army-merge panel) may have just closed, OR once a battle (auto/
+ * battlefield/retreat) just resolved (see finishIncomingBattleUi). No-op when nothing is
+ * queued or the block (isPreBattleOpen()/pbCfg.isOtherEndTurnModalOpen) is still active --
+ * re-checked fresh here so it doesn't pop open on a modal that reopened in the meantime.
+ * Removes only ONE item (shift()) -- if more than one request is queued (3+ simultaneous
+ * barbarians), the rest stays and shows on SUBSEQUENT flush calls (after this battle
+ * resolves too).
+ */
+export function flushDeferredAutoPreBattle(): void {
+  if (deferredAutoRequests.length === 0) return;
+  if (isPreBattleOpen() || pbCfg.isOtherEndTurnModalOpen?.() === true) return;
+  const req = deferredAutoRequests.shift()!;
+  showPreBattle(req.info, req.cb, req.opts);
 }
 
 let styleInjected = false;

@@ -386,6 +386,13 @@ export interface CityPanelConfig {
     focus: OkolicaFocus;
     tryb: OkolicaTryb;
     reczne?: Record<string, number>;
+    /**
+     * P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-PANEL (2026-08-14): klucze "q,r" z
+     * `reczne` powyżej, które reconcile uznaje za NIELEGALNE dziś (poza terytorium /
+     * centrum cudzego miasta / przegrane na rzecz sąsiada) -- reconcile jeszcze ich nie
+     * usunął (czeka na koniec tury), ale panel oznacza je wizualnie już teraz.
+     */
+    illegalReczneKeys?: Set<string>;
   } | null;
   onOkolicaFocusChange?: (cityId: string, focus: OkolicaFocus) => void;
   /**
@@ -8814,6 +8821,7 @@ function renderWorkedPreview(
   worked: { q: number; r: number }[] | undefined,
   reczne?: Record<string, number>,
   tryb: OkolicaTryb = 'auto',
+  illegalReczneKeys?: Set<string>,
 ): void {
   gridEl.innerHTML = '';
   const Rwork = cfg.getCityWorkedRange?.(city.id);
@@ -8823,7 +8831,7 @@ function renderWorkedPreview(
   type Cell = {
     q: number; r: number; cx: number; cy: number; d: number;
     isCity: boolean; hex: Hex | null;
-    fill: string; isWorked: boolean; isLas: boolean; teren: TerenBazowy;
+    fill: string; isWorked: boolean; isIllegal: boolean; isLas: boolean; teren: TerenBazowy;
   };
   const cells: Cell[] = [];
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -8839,6 +8847,7 @@ function renderWorkedPreview(
         hex: null,
         fill: '',
         isWorked: false,
+        isIllegal: false,
         isLas: false,
         teren: TerenBazowy.Morze,
       });
@@ -8867,14 +8876,16 @@ function renderWorkedPreview(
     // zawsze przepuszcza bez filtra terenu). Silnik (cityWorkedTilesForEconomy) juz
     // filtruje takie wpisy z produkcji po cichu, bez komunikatu -- zgodnie z
     // kanonem decyzji.
-    // Swiadomie NIE dodano tu osobnego wizualnego oznaczenia "legalne pracujace" vs
-    // "stary nielegalny wpis, nie liczy sie do produkcji" (np. inny kolor pasma /
-    // tekst tooltipa) -- twarda granica zakresu naprawy (kolejnosc bramek
-    // zdejmowania + pokrycie testowe, C-025), rozroznienie wizualne pozostawione
-    // jako oddzielna, nizej priorytetowa nota do rozwazenia.
+    // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-PANEL (2026-08-14, N2 punkt 3):
+    // wczesniej swiadomie NIE bylo tu osobnego wizualnego oznaczenia "legalne
+    // pracujace" vs "stary nielegalny wpis, nie liczy sie do produkcji" -- teraz
+    // JEST: `illegalReczneKeys` (main.ts::getOkolicaState, reuzywa isReczneKeyLegal
+    // z territory-work.ts, ta sama regula co reconcileWorkedTilesForOwner) oznacza
+    // dokladnie te wpisy, ktore reconcile i tak usunie przy najblizszej okazji.
     const inReczne = (reczne?.[tileKey] ?? 0) > 0;
     const inAutoWorked = workedSet ? workedSet.has(tileKey) : c.d <= 1;
     c.isWorked = !c.isCity && (tryb === 'reczny' ? inReczne : inAutoWorked);
+    c.isIllegal = tryb === 'reczny' && inReczne && !!illegalReczneKeys?.has(tileKey);
   }
   const ns = 'http://www.w3.org/2000/svg';
   const vbX = minX - 2, vbY = minY - 2;
@@ -8898,11 +8909,16 @@ function renderWorkedPreview(
     if (c.hex && (c.isCity || c.isWorked || (!c.isCity && canAdjust))) {
       const tip = document.createElementNS(ns, 'title');
       const hasW = okolicaTileHasWorkerAt(city, c.q, c.r, tryb, reczne, workedSet, c.d);
+      // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-PANEL: wpis oznaczony jako
+      // nielegalny (poza terytorium / centrum cudzego miasta / przegrany sąsiadowi)
+      // dostaje ostrzeżenie w tooltipie zamiast zwykłego opisu "zabierz 👤".
       tip.textContent = c.isCity
         ? `Centrum — plony z terenu (bez 👤) · ${tileYieldLabel(c.hex)}`
-        : hasW
-          ? `Plon: ${tileYieldLabel(c.hex)} · Klik: zabierz 👤`
-          : `Plon: ${tileYieldLabel(c.hex)} · Klik: przypisz 👤`;
+        : c.isIllegal
+          ? `⚠ Nielegalny wpis (poza terytorium) — zniknie automatycznie na koniec tury. Klik: usuń teraz`
+          : hasW
+            ? `Plon: ${tileYieldLabel(c.hex)} · Klik: zabierz 👤`
+            : `Plon: ${tileYieldLabel(c.hex)} · Klik: przypisz 👤`;
       poly.appendChild(tip);
     }
     svg.appendChild(poly);
@@ -8919,11 +8935,14 @@ function renderWorkedPreview(
     }
 
     if (c.isWorked) {
+      // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-PANEL: pasmo nielegalnego wpisu
+      // renderuje się na czerwono/pomarańczowo zamiast zielonego "legalnie pracujące".
       const band = document.createElementNS(ns, 'polygon');
       band.setAttribute('points', pts);
-      band.setAttribute('fill', 'rgba(40,255,120,0.44)');
-      band.setAttribute('stroke', 'rgba(100,255,170,0.88)');
+      band.setAttribute('fill', c.isIllegal ? 'rgba(255,90,40,0.44)' : 'rgba(40,255,120,0.44)');
+      band.setAttribute('stroke', c.isIllegal ? 'rgba(255,140,60,0.92)' : 'rgba(100,255,170,0.88)');
       band.setAttribute('stroke-width', '5.5');
+      band.setAttribute('stroke-dasharray', c.isIllegal ? '4,3' : '');
       band.setAttribute('pointer-events', 'none');
       if (poly.querySelector('title')) band.appendChild(poly.querySelector('title')!.cloneNode(true));
       svg.appendChild(band);
@@ -9121,7 +9140,7 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
       }
     }
   }
-  if (gridEl) renderWorkedPreview(gridEl, city, map, worked, okState?.reczne, tryb);
+  if (gridEl) renderWorkedPreview(gridEl, city, map, worked, okState?.reczne, tryb, okState?.illegalReczneKeys);
 
   const surowceHost = root.querySelector('#cs-oksurowce') as HTMLElement | null;
   if (surowceHost) {

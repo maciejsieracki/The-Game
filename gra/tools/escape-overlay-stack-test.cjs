@@ -102,6 +102,17 @@ const MAP_OVERLAY_IDS = [
   'city-unit-pick',
   'unit-foreign-pick',
   'unit-replace-picker',
+  // P-MENU-ESCAPE-NIEPELNOEKRANOWE (Maciej 2026-08-14): dopiete w tej samej turze co ten
+  // wpis — menu pauzy i panel imperium (+ siostrzane overlaye Moc/Kultura/Religia) nie mialy
+  // wczesniej zadnego wpisu w stosie, wiec Escape przebijal do przegladarki i wychodzil
+  // z pelnego ekranu zamiast zamykac panel. / EN: wired in the same batch as this entry —
+  // the pause menu and the empire panel (+ sibling Power/Culture/Religion overlays) had no
+  // stack entry before, so Escape fell through to the browser and exited fullscreen instead
+  // of closing the panel.
+  'game-pause-menu',
+  'empire-detail-panel',
+  'power-overlay',
+  'empire-overlay',
 ];
 for (const id of MAP_OVERLAY_IDS) {
   _resetEscapeOverlayStackForTest();

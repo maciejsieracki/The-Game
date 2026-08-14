@@ -580,7 +580,9 @@ const NAKLADKI_ZWIERZECZE = new Set<Nakladka>([
   Nakladka.ZlozeBydla, Nakladka.ZlozeLamy,
 ]);
 
-function hasAnimalDeposit(nakladka: Nakladka): boolean {
+/** Nakladka ze zlozem zwierzecym (kon/owce/bydlo/lama) — uzywane m.in. przez obóz łowiecki.
+ * EN: overlay with an animal deposit (horse/sheep/cattle/llama) — used e.g. by the hunting camp. */
+export function hasAnimalDeposit(nakladka: Nakladka): boolean {
   return NAKLADKI_ZWIERZECZE.has(nakladka);
 }
 
@@ -834,6 +836,20 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
       return FLAT_FARM.has(teren) || teren === TerenBazowy.Wzgorza;
     case 'bydlo':
       return FLAT_FARM.has(teren);
+    // N5 (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA, Maciej 2026-08-14): stadnina i
+    // kopalnia_cyny nie miały tu case'a -- wpadały w default -> false, więc tooltip heksu
+    // (hexContextTooltip.ts) nigdy ich nie pokazywał, mimo że silnik (createQualifier) na nie
+    // pozwalał. Dopisane tu terenowo -- ta sama para terenów co TERRAIN_ALLOW.stadnina (=
+    // FLAT_FARM) / grupa kopalń niżej; zawężenie do konkretnego złoża (ZlozeKonia / zloze==='cyna')
+    // zostaje w warstwie wyżej (listTerrainPossibleImprovements), tak jak dla bydlo/owce/lama i
+    // pozostałych kopalń.
+    // EN: stadnina and kopalnia_cyny had no case here -- fell through to default -> false, so the
+    // hex tooltip never showed them even though the engine (createQualifier) allowed them. Added
+    // here by terrain only -- same terrain pair as TERRAIN_ALLOW.stadnina (= FLAT_FARM) / the mine
+    // group below; narrowing to the specific deposit (ZlozeKonia / zloze==='cyna') stays in the
+    // layer above (listTerrainPossibleImprovements), same as bydlo/owce/lama and the other mines.
+    case 'stadnina':
+      return FLAT_FARM.has(teren);
     case 'irygacja':
       return FLAT_IRR.has(teren);
     case 'owce':
@@ -848,6 +864,7 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
     case 'kopalnia_miedzi':
     case 'kopalnia_zelaza':
     case 'kopalnia_zlota':
+    case 'kopalnia_cyny':
       return teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory;
     case 'wyrab':
       return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina

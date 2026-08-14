@@ -6956,3 +6956,94 @@ Stan: `main` = `8f2742ec` (do FALI 277 włącznie) · ROBOCZA = `8455b385` (FALA
 gałęzi do testów) · gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0` = `32e68c9c`.
 **FALA 278 kwalifikuje się do scalenia dopiero, gdy powstanie FALA 279.**
 CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 278 `8455b385`).
+
+## [06:41 PL, 2026-08-14] Sesja chmurowa → Sesja lokalna — FALA 279 zdeployowana do ROBOCZA
+Deploy ROBOCZA **md5 `4bef7d10`** (pełne `4bef7d10cc0567bb88e7a17ea1be62ca`), stempel
+`ROBOCZA · 516800d7 · 2026-08-14 04:41` (UTC), `verify-robocza-bundle` → **VERIFY OK**
+(`manifest match: OK`). Build z HEAD `5dc45b6e`, 28 commitów od deployu FALI 278 (`32e68c9c`),
+`gra/` 19 plików `+1434/−40`, **`gra/data` nietknięte**. Bramki: `tsc` 0/exit 0 (TS 5.9.3),
+`logic-test` 213/213, 4 nowe bramki tej fali zielone (escape-fullscreen 10/0, hex-tooltip-zloze
+36/0, menu-music-delay 9/0, oblezenie-siege-lifted 16/0); 13 znanych czerwonych **dokładnie na
+punkcie odniesienia, zero wzrostu**. Weryfikacja headless na bundlu: menu + start gry + HUD,
+**0 błędów konsoli** w 4 przebiegach.
+
+Zawartość: portret władcy w nagłówku panelu imperium (było 🏛️ dla każdej cywilizacji), ESCAPE
+zamyka 4 panele zamiast wyrzucać z pełnego ekranu, flaga oblężenia znika od razu po wygranej
+bitwie, tooltip heksu filtruje ulepszenia po nakładce/złożu, chip Rekruci → blok Armii, polityka
+Pracy imperium twardym pułapem sumy mimo override miasta, wyrównanie ramek w kroku 4 kreatora.
+
+🔴 **NOWA CZERWONA BRAMKA WNIESIONA PRZEZ TĘ FALĘ (nie pre-istniejąca):**
+`empire-panel-econ-slider-visibility-test` **59/1 exit 1**, było **60/0**. Bisekcja przyczynowa
+(worktree na rodzicu `4f208a0f` → 60/0 ZIELONA): wnosi to **`f536b792`** (routing Rekruci do bloku
+Armii). Padająca asercja `chip "rekruci" -> blok ekonomia` asercjonuje STARE zachowanie, celowo
+zmienione — **dług testowy, nie regresja silnika, gra działa poprawnie**. Operator poprawił bliźniaczą
+asercję w `empire-panel-split-test` (22→25) i przeoczył duplikat w tym drugim teście; Evaluator tematu
+dał PASS i tego nie złapał. **Do naprawy osobnym zleceniem AutoBot.** Uwaga: liczba „60/0" jest FAŁSZEM
+także w opisach commitów `33eeec11`/`4fc770ee` i we wpisie FALI 278 w `WERSJE.md`.
+
+⚠️ **CZUBEK GAŁĘZI ≠ ŹRÓDŁO BUILDA.** W trakcie deployu doszły na gałąź 4 commity ponad `5dc45b6e`;
+trzy to rejestr, ale **`d2dd4b89` (znacznik Mocy: glif ⚜ → ikona SVG, `gra/src/ui/` 4 pliki `+42/−8`)
+to realny kod i NIE MA GO w bundlu `4bef7d10`** — wejdzie w FALI 280. Znacznik Mocy w tej fali nadal
+pokazuje ⚜; **nie zgłaszać jako niedziałającej naprawy**. Nie przebudowano świadomie: bramki
+i weryfikacja headless zrobione na `5dc45b6e`, a `d2dd4b89` nie ma jeszcze werdyktu Evaluatora.
+
+⛔ **DO PRZEKAZANIA WŁAŚCICIELOWI PRZY PLAYTEŚCIE:** commit `ea0be32a` (opisany wyłącznie jako
+naprawa not Auto-pracy) zgarnął ze wspólnego drzewa **niezatwierdzony PROTOTYP kroku 4 kreatora**
+(`P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START` wariant A + `P-NEWGAME-OPISY-DO-TOOLTIP`), którego
+dyspozycja brzmiała „worktree, NIE scalać bez zatwierdzenia". Kod jest ŻYWY w bundlu (zweryfikowane
+w źródle i w zbudowanym HTML) — kreator będzie wyglądał inaczej. Bundle zdrowy, ale **to nie jest
+podjęta decyzja właściciela** — ma obejrzeć i powiedzieć „zostaje"/„wycofaj". Szczegóły: `WERSJE.md`,
+wpis FALI 279, akapit z ostrzeżeniem.
+
+🔴 **SESJA LOKALNA: pull na dysk właściciela (testuj ROBOCZA `4bef7d10`).** Poprzednie `CZEKAM-NA`
+z FALI 278 pozostaje aktualne i pilne — właściciel zgłaszał, że jego dysk mógł być nieaktualny od
+kilku fal, przez co dwa jego zgłoszenia (`P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK`,
+`P-PLAKIETKA-MIASTA-ZOOM-BRAK-ZMIANY`) wciąż wiszą nierozstrzygnięte.
+CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 279 `4bef7d10`).
+
+## [11:02 PL, 2026-08-14] Sesja chmurowa → Sesja lokalna — FALA 280 zdeployowana do ROBOCZA
+
+ROBOCZA md5 `ab4ffc156f11fb6204355db7757b3dbf` · stempel `ROBOCZA · 92c5101d · 2026-08-14 09:02` UTC ·
+**VERIFY OK** (`manifest match: OK`). Pełny wpis: `dyspozycje/WERSJE.md` (FALA 280, na górze).
+|- Build z HEAD `28a26339` — **56 commitów** od deployu FALI 279 (`f9589690`), z tego **21 pod `gra/`**.
+   **`gra/data` NIETKNIĘTE** (`git status --porcelain` pusty przed i po buildzie). Build 822 moduły.
+|- Zawartość (9 tematów): koniec tury — modale przestają nachodzić na siebie (**4 rundy, dwa werdykty FAIL
+   po drodze**); barbarzyńcy — drugi atak w ticku kasował otwartą bitwę, **atak przepadał bez efektu
+   mechanicznego**, teraz kolejka FIFO; reskin paneli Miasta/Armie na paletę 3b; **NOWA FUNKCJA — druga,
+   wewnętrzna obwódka granicy = relacja dyplomatyczna** (wojna `#FF5252` / sojusz `#4FC3F7` / pokój
+   `#FFD700`, render, Opus 5); remis szturmu ZAWSZE kończy oblężenie (**63/63**, było 30/63); tooltip
+   heksu rundy 3–5 (irygacja/droga brukowana + **niedomiar: stadnina i kopalnia cyny nie pokazywały się
+   NIGDY**); Milet/Ateny — reconcile przy zmianie właściciela + przy load + oznaczenie w panelu; ESCAPE
+   runda 2; `P-NEWGAME-RAMKI-WYROWNANIE` = fałszywy alarm + strażnik.
+|- ⚠️ **Realna delta bundla to `5dc45b6e..HEAD`, nie `f9589690..HEAD`** — commit deployu 279 był
+   zrebase'owany na czubek, więc zgarnął `d2dd4b89`, którego w bundlu `4bef7d10` nie było
+   (`merge-base --is-ancestor d2dd4b89 5dc45b6e` → NIE). **Znacznik Mocy dostaje wreszcie ikonę SVG
+   zamiast ⚜ — dokładnie jak zapowiadał wpis FALI 279.** 22 commity pod `gra/`, 61 plików, `+7052/−394`.
+|- ✅ **Czerwona bramka wniesiona przez FALĘ 279 jest SPŁACONA:** `empire-panel-econ-slider-visibility-test`
+   **60/0 exit 0** (było 59/1) — naprawił `a8b47623`. Nie należy już do listy czerwonych.
+|- Bramki (**25, wszystkie exit 0, w tym 14 NOWYCH**): `tsc` 0 błędów (TS 5.9.3) · `logic-test` 213/213 ·
+   `end-turn-modal-sequencing` 40/0 · `heal-stale-blockers-pending-battle` 23/0 · `koniec-tury-f1-f4-runda3`
+   39/0 · `koniec-tury-g1-g2-runda4` 38/0 · `diplomacy-audience-close-flush` 37/0 · `barbarzyncy-podwojny-atak-prebattle`
+   18/0 · `side-list-hud-panel-coverage` 74/74 · `oblezenie-remis-endsiege` 265/0 · `granice-relacja-dyplomatyczna`
+   52/0 · `newgame-sett-grid-layout` 70/0 · `hex-tooltip-stadnina-kopalnia-cyny` 29/0 · `okolica-load-reconcile`
+   11/11 · `okolica-ownership-change-reconcile` 15/15 · `escape-overlay-real-panels` 49/0 ·
+   `hex-tooltip-mozliwe-ulepszenia-zloze` 74/0 · `escape-overlay-stack` 84/0 · `tech-tree` 19/0 · `research` 33/33 ·
+   `unit-replace` 13/13 · `ai-founding-territory` 28/0 · `combat` 6/6 · `empire-panel-split` 25/0 ·
+   `auto-improvements` 37/0.
+|- `map-gen-regression-test` **nieukończony w budżecie 900 s** (mała 55,97 s, standardowa 112,23 s, duża nie
+   zdążyła; **zero linii FAIL** — limit czasu, nie porażka; znany `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`).
+   ✅ Fala **nie dotyka łańcucha generatora**: pod `src/map/**` tylko `improvement-build.ts` (+2 `case`) i
+   `territory-work.ts` (eksport + czysta funkcja) — **żadnego z nich nie importuje generator.ts/gen-helpers.ts/
+   villages.ts/newGameMapDefaults.ts** (sprawdzone grepem po wszystkich 4 punktach wejścia bramki).
+   13 pre-istniejących czerwonych **co do jednej na punkcie odniesienia, zero wzrostu**.
+|- 🖥️ Headless na zbudowanym bundlu (Chromium 1194, 1600×950): **28 asercji zaliczonych** — oba panele
+   reskinu otwarte i obejrzane na zrzucie, **wszystkie 5 tokenów palety 3b zgodne co do znaku**, stare klasy
+   `.cl-*`/`.al-*` zniknęły z DOM. Jedyny „błąd konsoli" (`404 /favicon.ico`) to artefakt serwera HTTP agenta —
+   **ten sam bundle przez `file://` daje 0 błędów konsoli**, sprawdzone osobnym przebiegiem.
+|- ⛔ **PROŚBA Z FALI 279 WCIĄŻ BEZ ODPOWIEDZI:** niezatwierdzony prototyp kroku 4 kreatora
+   (`P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START` wariant A) **nadal jest w grze** — rewertu nie było
+   (`git log f9589690..HEAD -- newGameFlow.ts` → 0 commitów), w bundlu `sett-layout` 5 / `ai-civ-panel` 7 /
+   `ng-info` 4. Właściciel ma obejrzeć i powiedzieć „zostaje"/„wycofaj".
+|- Scalenie do `main`: **FALA 279 (`f9589690`) scalona osobno zaraz po tym deployu** (rytm „jedna fala do
+   tyłu", `R-MERGE-MAIN-RYTM-Q1`). FALA 280 zostaje na gałęzi do testów, kwalifikuje się dopiero przy FALI 281.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `ab4ffc15`".

@@ -52,10 +52,43 @@ export function makeTerritoryWorkableFilter(
  * NIGDY nie może być legalnym wpisem w okolicaReczne — bezwarunkowo, niezależnie od
  * tego, czyje jest centrum (własne lub cudze).
  */
-function cityCenterKeys(cities: ReadonlyArray<Pick<City, 'q' | 'r'>>): Set<string> {
+export function cityCenterKeys(cities: ReadonlyArray<Pick<City, 'q' | 'r'>>): Set<string> {
   const out = new Set<string>();
   for (const c of cities) out.add(`${c.q},${c.r}`);
   return out;
+}
+
+/**
+ * Wersja BEZ MUTACJI tej samej reguły legalności co pętla w
+ * `reconcileWorkedTilesForOwner` niżej (centrum/terytorium/lostToSibling) — do
+ * reużycia przez panel miasta, żeby wizualnie oznaczyć wpis `okolicaReczne`,
+ * który reconcile i tak usunie na koniec tury/przy najbliższej zmianie
+ * właściciela/load'zie, ale jeszcze go nie zdążył (P-MILET-ATENY-OKOLICA-RECZNE-
+ * PRZY-PRZEJECIU-PANEL, 2026-08-14, N2 punkt 3). Klucz niesparsowalny → `true`
+ * (celowo "legalny"/nieoznaczany — dokładnie jak `continue` bez usunięcia w
+ * `reconcileWorkedTilesForOwner`, nie chcemy tu innego zachowania niż reconcile).
+ * / EN: a non-mutating version of the same legality rule the loop in
+ * `reconcileWorkedTilesForOwner` below applies — reused by the city panel to flag
+ * an `okolicaReczne` entry reconcile will remove at the next turn end/ownership
+ * change/load, but hasn't yet. An unparsable key returns `true` (deliberately
+ * "legal"/unflagged — exactly like the `continue`-without-delete in
+ * `reconcileWorkedTilesForOwner`; the panel must not diverge from reconcile's rule).
+ */
+export function isReczneKeyLegal(
+  key: string,
+  ownerId: number,
+  centers: ReadonlySet<string>,
+  territoryNodes: readonly TerritoryNode[],
+  lostForCity?: ReadonlySet<string>,
+): boolean {
+  if (centers.has(key)) return false;
+  const parts = key.split(',');
+  const q = Number(parts[0]);
+  const r = Number(parts[1]);
+  if (!Number.isFinite(q) || !Number.isFinite(r)) return true;
+  if (!isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes)) return false;
+  if (lostForCity?.has(key)) return false;
+  return true;
 }
 
 /**

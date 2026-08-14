@@ -69,6 +69,40 @@ export function civColorForOwner(
   return OWNER_COLORS_FALLBACK[ownerId % OWNER_COLORS_FALLBACK.length]!;
 }
 
+/**
+ * R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (Maciej, 2026-08-14) — kolory DRUGIEJ,
+ * WEWNĘTRZNEJ obwódki granicy terytorium. Zewnętrzna obwódka koduje TOŻSAMOŚĆ
+ * cywilizacji (`kolorHex` z civs.json, wyżej); wewnętrzna koduje RELACJĘ
+ * dyplomatyczną gracz↔właściciel i dlatego NIE zależy od cywilizacji.
+ * Odcienie dobrane tak, żeby czytać się na terenie 3D (trawa/piasek/skała), a złoto
+ * neutralne było wyraźnie jaśniejsze i bardziej nasycone niż złoto paneli UI (#d9a441).
+ * / EN: colors of the SECOND, INNER territory border band. The outer band encodes civ
+ * identity; the inner one encodes the diplomatic relation player↔owner, so it is
+ * civ-independent. Hues picked for readability over 3D terrain; the neutral gold is
+ * deliberately brighter/more saturated than the UI panel gold (#d9a441).
+ */
+export const RELATION_BORDER_COLOR_WOJNA = 0xff5252;
+export const RELATION_BORDER_COLOR_SOJUSZ = 0x4fc3f7;
+export const RELATION_BORDER_COLOR_NEUTRALNY = 0xffd700;
+
+/** Status dyplomatyczny pary — ten sam zestaw co `Relation['status']` w game/diplomacy.ts. */
+export type RelationBorderStatus = 'wojna' | 'pokoj' | 'sojusz' | 'neutralni';
+
+/**
+ * Status dyplomatyczny → kolor wewnętrznej obwódki. `pokoj` i `neutralni` to dla
+ * tej obwódki JEDEN przypadek „neutralny" (spec właściciela wymienia tylko trzy
+ * stany: wrogowie / sojusznicy / neutralni) — złoto jest też domyślnym kolorem dla
+ * statusu nierozpoznanego, żeby obwódka nigdy nie zniknęła.
+ * / EN: diplomatic status → inner band color. `pokoj` and `neutralni` collapse into a
+ * single "neutral" case (the owner's spec lists only enemies/allies/neutrals); gold is
+ * also the fallback for an unknown status so the band never disappears.
+ */
+export function relationBorderColor(status: RelationBorderStatus | string): number {
+  if (status === 'wojna') return RELATION_BORDER_COLOR_WOJNA;
+  if (status === 'sojusz') return RELATION_BORDER_COLOR_SOJUSZ;
+  return RELATION_BORDER_COLOR_NEUTRALNY;
+}
+
 /** CSS hex (#RRGGBB) dla właściciela — minimapa, HUD. */
 export function civColorCssForOwner(
   civs: CivsData,

@@ -12,6 +12,13 @@
  * jednoprzyciskowy w tym katalogu — host wyśrodkowany, backdrop klikalny-do-zamknięcia, karta
  * ze złotym obramowaniem zastąpionym tu czerwonym wariantem ostrzegawczym).
  *
+ * Wpięty w escapeOverlayStack (Evaluator FAIL 4fc770ee, znalezisko #4, Maciej 2026-08-14): ma
+ * realny przycisk zamknięcia („OK" + klik w tło), więc kwalifikuje się identycznie jak
+ * naprawione panele — commit 4fc770ee błędnie pominął go jako „bloker decyzyjny bez przycisku
+ * zamknięcia". / EN: wired into escapeOverlayStack — it has a real close button ("OK" + backdrop
+ * click), so it qualifies the same as the panels fixed in 4fc770ee, which wrongly skipped it as
+ * "a decision blocker with no close button".
+ *
  * EN: diplomatic-annex ELIMINATION modal — opened by clicking the side-panel "Events" card
  * (Round 5, owner decision B+C). Unlike cityCaptureNotice.ts (combat conquest — two exits),
  * there's no "enter city" here (diplomatic annexation doesn't hand you one freshly captured
@@ -20,6 +27,8 @@
  * centered host, click-to-close backdrop, card — with the gold border swapped for a red
  * warning variant.
  */
+
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface CivElimNoticeOpts {
   /** Etykieta wyeliminowanej cywilizacji/miasta-państwa. */
@@ -79,8 +88,9 @@ export function showCivElimNotice(opts: CivElimNoticeOpts): void {
   const backdrop = document.createElement('div');
   backdrop.className = 'cen-backdrop';
 
-  const close = () => { host.remove(); opts.onClose?.(); };
+  const close = () => { popOverlay('civ-elim-notice'); host.remove(); opts.onClose?.(); };
   backdrop.addEventListener('click', close);
+  pushOverlay('civ-elim-notice', close);
 
   const card = document.createElement('div');
   card.className = 'cen-card';
@@ -102,5 +112,6 @@ export function showCivElimNotice(opts: CivElimNoticeOpts): void {
 }
 
 export function hideCivElimNotice(): void {
+  popOverlay('civ-elim-notice');
   document.getElementById(HOST_ID)?.remove();
 }

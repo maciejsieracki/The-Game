@@ -9,6 +9,19 @@ export function formatArmiaLabel(n: number): string {
   return `Armia — ${formatJednostkiCount(n)}`;
 }
 
+/** Odmiana „miasto" (1 / 2–4 / 5+) — pasmo podsumowania panelu Miasta
+ *  (MIASTA-ARMIE-PANEL-LEWY-2026-08-14 §4.2, hero „N miast"). */
+export function formatMiastaCount(n: number): string {
+  const word = n === 1 ? 'miasto' : n >= 2 && n <= 4 ? 'miasta' : 'miast';
+  return `${n} ${word}`;
+}
+
+/** Odmiana „kolejka" (1 / 2–4 / 5+) — podpis „N kolejek w toku" w tym samym paśmie. */
+export function formatKolejkiCount(n: number): string {
+  const word = n === 1 ? 'kolejka' : n >= 2 && n <= 4 ? 'kolejki' : 'kolejek';
+  return `${n} ${word}`;
+}
+
 /** Tooltip listy armii: „Zaznacz armię — 2 jednostki". */
 export function formatZaznaczArmieLabel(n: number): string {
   return `Zaznacz armię — ${formatJednostkiCount(n)}`;

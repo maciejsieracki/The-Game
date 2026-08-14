@@ -175,6 +175,7 @@ import {
   DEFAULT_PODZIAL_PRACY,
   DEFAULT_PROCENT_ROZWOJ,
   DEFAULT_OKOLICA_FOCUS,
+  DEFAULT_OKOLICA_TRYB,
   DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
@@ -257,6 +258,7 @@ import {
   civColorCssForOwner,
   civColorForOwner,
   civColorHex,
+  relationBorderColor,
 } from './game/civ-visual';
 import {
   evaluateWonderBuildGate,
@@ -472,7 +474,7 @@ import {
   CURSOR_MAP_DEFAULT,
 } from './ui/mapUnitCursor';
 import { isInTerritory, territoryOwnerAt, isPlayerTerritoryHex, cityTerritoryRadius } from './map/territory';
-import { isTerritoryHexOwnedBy } from './map/territory-work';
+import { isTerritoryHexOwnedBy, isReczneKeyLegal, cityCenterKeys } from './map/territory-work';
 import type { CityNode, TerritoryNode } from './map/territory';
 import type { GameMap } from './types/map';
 import {
@@ -590,7 +592,10 @@ import {
   buildHexContextTooltipHtml,
   buildUnitContextTooltipHtml,
 } from './ui/hexContextTooltip';
-import { showPreBattle, hidePreBattle, isPreBattleOpen, configurePreBattle } from './ui/preBattle';
+import {
+  showPreBattle, hidePreBattle, isPreBattleOpen, configurePreBattle, flushDeferredAutoPreBattle,
+  hasPendingAutoPreBattle, oldestPendingAutoPreBattleAgeMs, clearDeferredAutoPreBattleQueue,
+} from './ui/preBattle';
 import { leaderNameFromPool } from './ui/leaderPortraits';
 import {
   showPostBattleSummary,
@@ -664,6 +669,8 @@ import {
   disposeRangeOverlayGroup,
   CULTURE_RANGE_STYLE,
   RELIGION_RANGE_STYLE,
+  TERRITORY_BORDER_BAND_WIDTH,
+  TERRITORY_BORDER_OPACITY,
 } from './render/rangeOverlay';
 import {
   buildTradeRoutesOverlayGroup,
@@ -3028,6 +3035,23 @@ async function boot(): Promise<void> {
       return civColorForOwner(data.civs, ownerId, civTypeForOwner);
     }
 
+    /**
+     * R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (Maciej, 2026-08-14): kolor DRUGIEJ, wewnętrznej
+     * obwódki granicy — relacja dyplomatyczna gracz↔właściciel, nie tożsamość cywilizacji.
+     * Własne terytorium (ownerId 0) dostaje ten SAM kolor co obwódka zewnętrzna, więc czyta
+     * się jako jedna, grubsza granica — dokładnie tak jak w specyfikacji właściciela.
+     * Barbarzyńcy nie są tu osobnym przypadkiem: `getDiploRelation` wymusza im status
+     * 'wojna', więc wpadają w czerwień tą samą drogą co każdy inny wróg (C-BARB-Q1).
+     * / EN: color of the SECOND, inner border band — the player↔owner diplomatic relation,
+     * not civ identity. Own territory (ownerId 0) reuses the outer color, so it reads as one
+     * thicker border. Barbarians need no special case: getDiploRelation forces 'wojna' on
+     * them, so they land on red through the very same path as any other enemy.
+     */
+    function relationColorFn(ownerId: number): number {
+      if (ownerId === 0) return civColorFn(0);
+      return relationBorderColor(getDiploRelation(0, ownerId).status);
+    }
+
     function civKolorHexFn(ownerId: number): string {
       return civColorHex(data.civs, civTypeForOwner(ownerId));
     }
@@ -4549,6 +4573,29 @@ async function boot(): Promise<void> {
       }
       c.okolicaFocusOverride = false;
       c.okolicaFocus = ownerDefaultOkolicaFocus.get(c.ownerId)!;
+      // R-OKOLICA-TRYB-RESET-PO-ZMIANIE-WLASCICIELA-Q1=A (Maciej 2026-08-14): resolveWorkedTiles
+      // (okolica.ts) honoruje okolicaTryb==='reczny' BEZ filtra właściciela -- miasto gracza
+      // przejęte przez AI/rebeliantów zostawało w trybie ręcznym NA ZAWSZE, bo wszystkie 4
+      // callbacki zmiany trybu (onOkolicaEnterManual/onOkolicaRestoreAuto/applyOkolicaTileAdjust/
+      // onOkolicaFocusChange) są dostępne WYŁĄCZNIE graczowi (ownerId===0) -- AI nie ma ścieżki
+      // powrotu do auto, obywatele stali bezczynnie mimo wolnych heksów. Reset TU, nie tylko przez
+      // reconcileAllWorkedTiles niżej -- ten czyści okolicaReczne niezależnie od trybu, ale NIGDY
+      // nie dotyka samego pola okolicaTryb. Reset ŚWIADOMIE bez wyjątku dla gracza odzyskującego
+      // WŁASNE miasto (kontratak) -- Maciej wybrał wariant A (zawsze resetuj), nie C (tylko gdy
+      // nowy właściciel to AI): traci wcześniejsze ręczne ustawienia, to zaakceptowany koszt.
+      // okolicaReczne kasowane tak samo jak w onOkolicaRestoreAuto -- martwe dane po powrocie do auto.
+      // / EN: resolveWorkedTiles (okolica.ts) honours okolicaTryb==='reczny' with NO owner filter --
+      // a player city captured by AI/rebels stayed stuck in manual mode FOREVER, because all 4
+      // tryb-changing callbacks (onOkolicaEnterManual/onOkolicaRestoreAuto/applyOkolicaTileAdjust/
+      // onOkolicaFocusChange) are player-only (ownerId===0) -- AI has no path back to auto, citizens
+      // sat idle despite free hexes. Reset HERE, not only via reconcileAllWorkedTiles below -- that
+      // cleans okolicaReczne regardless of tryb, but never touches the okolicaTryb field itself.
+      // Reset DELIBERATELY with no exception for the player reclaiming their OWN city (counter-
+      // attack) -- Maciej picked variant A (always reset), not C (only when the new owner is AI):
+      // losing prior manual settings is an accepted cost. okolicaReczne cleared the same way
+      // onOkolicaRestoreAuto does -- dead data once back to auto.
+      c.okolicaTryb = DEFAULT_OKOLICA_TRYB;
+      delete c.okolicaReczne;
       c.budowaFocusOverride = false;
       const bp = ownerDefaultBudowaProfil.get(c.ownerId)!;
       c.budowaFocus = bp.budowaFocus;
@@ -4560,6 +4607,43 @@ async function boot(): Promise<void> {
       // Racji NOWEGO właściciela, nie zostaje przy wartości poprzedniego.
       c.poziomRacjiOverride = false;
       c.poziomRacji = ownerDefaultPoziomRacji.get(c.ownerId)!;
+      // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU (2026-08-14): zmiana właściciela (LUB
+      // nowe miasto -- przesuwa territoryNodes tak samo jak founding, patrz call site
+      // ~linia 10922) może uczynić ISTNIEJĄCE ręczne wpisy okolicaReczne INNYCH miast
+      // (dowolnego właściciela, także starego/sąsiadów) nielegalnymi -- centrum
+      // przejętego miasta albo heks, który stracił/zyskał terytorium. Dotąd sprzątał to
+      // WYŁĄCZNIE koniec tury (advanceCityEconomy) i founding gracza (~linia 10922) --
+      // podbój w bitwie/kapitulacja z głodu/wchłonięcie dyplomatyczne/rebelia NIE
+      // woływały reconcile wcale, więc nielegalny wpis (np. panel Miletu pokazujący
+      // centrum właśnie zdobytych Aten jako "zajęte" -- renderWorkedPreview czyta surowy
+      // okolicaReczne bez filtra, świadomie, R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1) wisiał do
+      // końca tury. Wpięte TU (nie osobno przy każdym z 9 call site'ów) właśnie dlatego,
+      // że JSDoc tej funkcji już wymagał wywołania PO każdej zmianie city.ownerId --
+      // każdy call site i tak spełnia ten warunek. `reconcileAllWorkedTiles` (nie
+      // wariant per-owner) celowo -- czyści WSZYSTKICH właścicieli, bo terytorium mogło
+      // przesunąć się i staremu, i nowemu sąsiadowi, spójnie z jedynym innym dotychczasowym
+      // call site'em tej funkcji (główny algorytm gry ma dostęp do `cities`/`map` w tym
+      // samym domknięciu, więc koszt jednego dodatkowego przebiegu po całej mapie miast
+      // przy rzadkim zdarzeniu zmiany właściciela jest pomijalny).
+      // / EN: an ownership change (OR a new city -- shifts territoryNodes the same way
+      // founding does, see the call site ~line 10922) can make EXISTING manual
+      // okolicaReczne entries of OTHER cities (any owner, including the old one/
+      // neighbours) illegal -- the captured city's centre, or a hex that gained/lost
+      // territory. Until now only end-of-turn (advanceCityEconomy) and player founding
+      // (~line 10922) cleaned this up -- battle capture/starvation surrender/diplomatic
+      // annexation/rebellion never called reconcile at all, so a stale entry (e.g.
+      // Miletus' panel showing the just-captured Athens' centre as "worked" --
+      // renderWorkedPreview reads raw okolicaReczne without a filter, intentionally,
+      // R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1) hung around until turn end. Wired HERE (not
+      // separately at each of the 9 call sites) precisely because this function's JSDoc
+      // already required being called AFTER every city.ownerId change -- every call site
+      // already satisfies that. `reconcileAllWorkedTiles` (not the per-owner variant) on
+      // purpose -- cleans ALL owners, since territory may have shifted for both the old
+      // and the new neighbour, consistent with the only other existing call site of this
+      // function (the main game loop already has `cities`/`map` in the same closure, so
+      // the cost of one extra full pass over the cities on a rare ownership-change event
+      // is negligible).
+      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
     }
 
     function initUlepszeniaEmpireByOwner(): void {
@@ -4841,6 +4925,7 @@ async function boot(): Promise<void> {
         q: hexDetailHex.q,
         r: hexDetailHex.r,
         hex,
+        map,
         hexWorkedForMagazyn,
         cityName: cityOn?.name ?? null,
         cityIsCityState: cityOn != null && cityOn.ownerId !== 0 && !!cityOn.startCityState,
@@ -5177,6 +5262,31 @@ async function boot(): Promise<void> {
       hideUnitForeignPick();
     }
 
+    /** N3 (Evaluator FAIL a7de65b0, P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE): jedyny punkt
+     * zamknięcia audiencji dyplomatycznej dla ścieżek WYJŚCIA innych niż „Wróć"/Escape (te mają
+     * już własny flush w onBack, patrz niżej) — panel miasta, toolbar, wybór jednostki, karuzela
+     * kolejnych propozycji, celownik na stolicę. Flush jest w RAF (nie synchronicznie), bo część
+     * tych ścieżek od razu OTWIERA kolejną audiencję/modal w tym samym ticku (np.
+     * openNextOpenDiploProposal) — synchroniczny flush tutaj pokazałby preBattle w złym
+     * momencie. Guard isDiplomacyAudienceOpen()/isArmyMergePanelOpen() wewnątrz obu flushy
+     * zdąży zobaczyć nowo otwarty modal, zanim RAF odpali, więc flush wtedy poprawnie nic nie
+     * robi i czeka na kolejne zamknięcie (ten sam wzorzec co już istniejący flush w onBack).
+     * / EN: single closing point for the diplomacy audience for exit paths other than Back/
+     * Escape (those already have their own flush in onBack, see below) — city panel, toolbar,
+     * unit selection, next-proposal carousel, capital focus. Flush is scheduled via RAF (not
+     * sync) because some of these paths immediately OPEN another audience/modal in the same
+     * tick (e.g. openNextOpenDiploProposal) — a synchronous flush here would show preBattle at
+     * the wrong moment. The isDiplomacyAudienceOpen()/isArmyMergePanelOpen() guard inside both
+     * flushes will see the newly opened modal before RAF fires, so flush correctly no-ops and
+     * waits for the next closing (same pattern as the existing flush in onBack). */
+    function closeDiplomacyAudienceAndFlush(): void {
+      hideDiplomacyAudience();
+      requestAnimationFrame(() => {
+        flushDeferredMergePrompts();
+        flushDeferredAutoPreBattle();
+      });
+    }
+
     function openCityPanelForPlayer(city: City): void {
       hideCityUnitPick();
       hideCityForeignPick();
@@ -5185,7 +5295,7 @@ async function boot(): Promise<void> {
       hideWikiHubHud();
       hideSciencePicker();
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
@@ -5553,18 +5663,23 @@ async function boot(): Promise<void> {
         .map(c => {
           const prod = cityProd.get(c.id);
           const front = prod ? frontItem(prod) : null;
-          const productionLine = front
-            ? `${front.nazwa} • ${prod?.postep ?? 0}/${front.koszt} 🔨`
-            : cityHasActionableProduction(c)
-              ? 'Kolejka pusta'
-              : undefined;
+          // MIASTA-ARMIE-PANEL-LEWY-2026-08-14 §5.2: dawny sklejony string
+          // ("Stolarnia • 8/20 🔨") rozbity na 3 pola — pasek postępu i wyrównana
+          // liczba w cityListHud.ts potrzebują osobnych wartości. Te same trzy
+          // wartości (front.nazwa/prod.postep/front.koszt) liczone tu jak dotąd,
+          // tylko przekazane osobno zamiast sklejone w jeden string.
           const gar = c.garnizon ?? 0;
           return {
             id: c.id,
             name: c.name,
             population: c.population,
-            productionLine,
+            productionName: front ? front.nazwa : undefined,
+            productionProgress: front ? (prod?.postep ?? 0) : undefined,
+            productionMax: front ? front.koszt : undefined,
+            productionQueueEmpty: !front && cityHasActionableProduction(c),
             metaLine: gar > 0 ? `Garnizon: ${gar}` : undefined,
+            garrison: gar,
+            isCapital: capitalCityIdForOwner(c.ownerId) === c.id,
           };
         });
     }
@@ -5775,7 +5890,7 @@ async function boot(): Promise<void> {
       hideTechTreeView();
       hideEmpireDetailPanel();
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
@@ -5845,7 +5960,7 @@ async function boot(): Promise<void> {
       hideScienceHubHud();
       hideSciencePicker();
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
@@ -6247,10 +6362,35 @@ async function boot(): Promise<void> {
         getOkolicaState: (cityId: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
+          // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-PANEL (2026-08-14, N2 punkt 3):
+          // panel MUSI odróżnić wpis, który reconcile uzna za legalny, od takiego, który
+          // usunie na koniec tury (albo już usunąłby, gdyby ownership-change/load reconcile
+          // zdążył się wywołać) -- inaczej gracz widzi "zajęty" heks, który za chwilę
+          // zniknie z produkcji bez ostrzeżenia. Reużywa DOKŁADNIE tej samej reguły co
+          // reconcileWorkedTilesForOwner (isReczneKeyLegal, territory-work.ts), bez
+          // duplikowania jej ani bez mutowania stanu -- tylko do odczytu przez panel.
+          // / EN: the panel MUST distinguish an entry reconcile considers legal from one
+          // it will remove at turn end (or would already have removed, had an ownership-
+          // change/load reconcile run) -- otherwise the player sees a "worked" hex that is
+          // about to silently drop out of production. Reuses the EXACT SAME rule as
+          // reconcileWorkedTilesForOwner (isReczneKeyLegal, territory-work.ts), without
+          // duplicating it or mutating state -- read-only, for the panel only.
+          let illegalReczneKeys: Set<string> | undefined;
+          if (city.okolicaReczne) {
+            const territoryNodes = buildAllTerritoryNodes();
+            const centers = cityCenterKeys(cities);
+            const lostForCity = computeLostToNearerSiblingByCity(cities, map).get(city.id);
+            illegalReczneKeys = new Set(
+              Object.keys(city.okolicaReczne).filter(
+                key => !isReczneKeyLegal(key, city.ownerId, centers, territoryNodes, lostForCity),
+              ),
+            );
+          }
           return {
             focus: city.okolicaFocus ?? 'zrownowazone',
             tryb: city.okolicaTryb ?? 'auto',
             reczne: city.okolicaReczne,
+            illegalReczneKeys,
           };
         },
         getCityWorkedRange: (cityId: string) => {
@@ -6836,13 +6976,21 @@ async function boot(): Promise<void> {
 
     /** Zeruje flagi końca tury — Nowa gra / load bez pełnego reload strony zostawiały endTurnInProgress / AI resume. */
     function resetEndTurnBlockers(reason: string): void {
-      const had = endTurnInProgress || aiTurnAwaitingBattle || aiCmdResume != null || isTurnTransitionActive();
+      // F4 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): `had` liczy też zaległe
+      // żądanie w deferredAutoRequests -- bez tego ostrzeżenie w konsoli milczało, mimo że
+      // funkcja realnie miała co posprzątać (kolejka przeżywała Nowa gra/load bez reloadu).
+      // / EN: `had` also counts a leftover request in deferredAutoRequests -- without this
+      // the console warning stayed silent even though the function actually had something
+      // to clean up (the queue used to survive New Game/load without a page reload).
+      const had = endTurnInProgress || aiTurnAwaitingBattle || aiCmdResume != null
+        || isTurnTransitionActive() || hasPendingAutoPreBattle();
       if (had) {
         console.warn('[EndTurn] resetEndTurnBlockers:', reason, {
           endTurnInProgress,
           aiTurnAwaitingBattle,
           aiCmdResume: aiCmdResume != null,
           transition: isTurnTransitionActive(),
+          pendingAutoPreBattle: hasPendingAutoPreBattle(),
         });
       }
       endTurnInProgress = false;
@@ -6851,6 +6999,15 @@ async function boot(): Promise<void> {
       aiCmdResume = null;
       endTurnTransition();
       if (isPreBattleOpen()) hidePreBattle();
+      // F4: deferredAutoRequests (ui/preBattle.ts) nie miała ŻADNEGO resetu -- żądanie z
+      // poprzedniej sesji przeżywało Nową grę/wczytanie bez reloadu strony i (od rundy 2)
+      // dodatkowo trwale wyłączało gałąź 1 healStaleEndTurnBlockers() w NOWEJ sesji, czyli
+      // dokładnie tę siatkę bezpieczeństwa, dla której ta funkcja istnieje.
+      // / EN: deferredAutoRequests (ui/preBattle.ts) had NO reset at all -- a request from
+      // the previous session survived New Game/load without a page reload and (since round
+      // 2) additionally permanently disabled healStaleEndTurnBlockers()'s branch 1 in the
+      // NEW session -- exactly the safety net this function exists for.
+      clearDeferredAutoPreBattleQueue();
     }
 
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
@@ -7807,8 +7964,28 @@ async function boot(): Promise<void> {
 
     function setDiploRelation(a: number, b: number, rel: Relation): void {
       const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+      const prevStatus = diplomacyRelations.get(key)?.status;
       diplomacyRelations.set(key, rel);
       refreshCityMapOutlines();
+      // R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1: wewnętrzna obwódka granicy koduje relację
+      // gracz↔właściciel, więc musi się przemalować natychmiast po wypowiedzeniu wojny /
+      // zawarciu sojuszu, a nie dopiero na końcu tury (tam odświeża ją tick tury) ani po
+      // ruchu jednostki (tam odświeża ją mgła). Tą samą drogą co obrysy miast wyżej —
+      // setDiploRelation jest JEDYNYM miejscem zmiany statusu pary w silniku.
+      // Dwa filtry, bo przebudowa obwodu jest O(heksy × miasta) i leci przez WSZYSTKICH
+      // właścicieli: (1) pary bez gracza (AI↔AI) nie zmieniają koloru ŻADNEJ obwódki;
+      // (2) tura AI przepisuje relację z graczem co turę dla każdego rywala (zaufanie /
+      // respekt) — bez zmiany STATUSU kolor obwódki jest ten sam, więc nie ma czego
+      // przemalowywać. Porównanie po WARTOŚCI statusu, nie po referencji: w silniku nie ma
+      // dziś mutacji `rel.status` w miejscu (każda zmiana idzie przez nowy obiekt), więc
+      // stary status realnie odczytuje się tu sprzed zapisu.
+      // / EN: the inner border band encodes the player↔owner relation, so it must repaint
+      // the moment war is declared / an alliance is signed, not at end of turn. Same hook
+      // as the city outlines above — setDiploRelation is the ONLY status mutation point.
+      // Two filters, since the rebuild is O(hexes × cities) over every owner: AI↔AI pairs
+      // change no band color, and the AI turn rewrites the player relation every turn for
+      // trust/respect without touching the status.
+      if ((a === 0 || b === 0) && prevStatus !== rel.status) refreshTerritoryBorderOverlay();
     }
 
     function refreshCityMapOutlines(): void {
@@ -9068,6 +9245,28 @@ async function boot(): Promise<void> {
     };
     let aiCmdResume: AiCmdResume | null = null;
     let aiTurnAwaitingBattle = false;
+    /** P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, F1 (Evaluator FAIL 136fefbb, runda 3,
+     *  Maciej 2026-08-14): true WYŁĄCZNIE w synchronicznym oknie wewnątrz
+     *  finishIncomingBattleUi() między updateHud()/refreshD1bHud() (które wołają
+     *  canEndTurn() -> healStaleEndTurnBlockers() SYNCHRONICZNIE) a onResolved() (który dla
+     *  ataku AI konsumuje aiCmdResume przez runAiPhase()). W tym oknie preBattle jest już
+     *  zamknięty i kolejka deferredAutoRequests pusta (TA bitwa właśnie się kończy, nic
+     *  innego nie czeka), więc gałąź 1 healStaleEndTurnBlockers() myliła to z "bitwa
+     *  osierocona" i kasowała aiCmdResume ZANIM runAiPhase() zdążył go poprawnie
+     *  skonsumować -- cała faza AI leciała drugi raz od zera. Osobny sygnał od
+     *  hasPendingAutoPreBattle() (ta mówi o bitwach jeszcze NIEROZSTRZYGNIĘTYCH, czekających
+     *  w kolejce; battleUiResolving mówi o bitwie AKTUALNIE się rozstrzygającej).
+     *  / EN: true ONLY inside the synchronous window in finishIncomingBattleUi() between
+     *  updateHud()/refreshD1bHud() (which synchronously call canEndTurn() ->
+     *  healStaleEndTurnBlockers()) and onResolved() (which for an AI attack consumes
+     *  aiCmdResume via runAiPhase()). In that window preBattle is already closed and the
+     *  deferredAutoRequests queue is empty (THIS battle is the one just resolving, nothing
+     *  else waiting), so branch 1 of healStaleEndTurnBlockers() confused it with an
+     *  "orphaned battle" and cleared aiCmdResume BEFORE runAiPhase() got to consume it
+     *  properly -- the entire AI phase replayed from scratch. Separate signal from
+     *  hasPendingAutoPreBattle() (that one is about battles NOT YET resolved, waiting in the
+     *  queue; battleUiResolving is about a battle CURRENTLY resolving). */
+    let battleUiResolving = false;
     /** Tryb ?playtest=walka — wiekszy sklad preBattle + T = preset maciej_playtest. */
     let playtestWalkaActive = false;
     /** Tryb DUŻEJ bitwy (BITWA-DUZA / OBLEZENIE-DUZE): podnosi promień zbierania rosteru. */
@@ -9614,7 +9813,18 @@ async function boot(): Promise<void> {
       const existing = onHex.filter(x => !movedSet.has(x.id));
       if (existing.length === 0) return;
 
-      if (endTurnInProgress) {
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): odłóż też gdy
+      // preBattle/audiencja są otwarte, NIE tylko gdy endTurnInProgress -- `finally` w
+      // triggerPlayerEndTurn gasi endTurnInProgress ZANIM gracz zdąży zamknąć preBattle
+      // otwarty w trakcie fazy AI/barbarzyńców (bitwa jest asynchroniczna względem await
+      // runAiPhase()), więc bez tego dodatkowego warunku scalenie wyskakiwało na wierzch
+      // wciąż widocznej bitwy. / EN: also defer when preBattle/audience are open, NOT only
+      // when endTurnInProgress -- the `finally` in triggerPlayerEndTurn clears
+      // endTurnInProgress BEFORE the player has a chance to close a preBattle opened
+      // during the AI/barbarian phase (the battle is async relative to
+      // `await runAiPhase()`), so without this extra check the merge prompt would pop on
+      // top of a still-visible battle.
+      if (endTurnInProgress || isPreBattleOpen() || isDiplomacyAudienceOpen()) {
         deferredMergePrompts.push({
           movedUnitIds: [...movedUnitIds],
           fromQ,
@@ -9674,6 +9884,11 @@ async function boot(): Promise<void> {
           }
           refreshD1bHud();
           flushDeferredMergePrompts();
+          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: panel scalenia się właśnie zamknął
+          // -- odblokuj ewentualne odłożone automatyczne preBattle (rzadki, ale możliwy
+          // odwrotny porządek: bitwa AI/barbarzyńców próbowała otworzyć się, gdy ten panel
+          // był już otwarty).
+          flushDeferredAutoPreBattle();
         },
         onSeparate: () => {
           // P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO A (Maciej 2026-08-09): cała
@@ -9741,6 +9956,8 @@ async function boot(): Promise<void> {
           }
           refreshD1bHud();
           flushDeferredMergePrompts();
+          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: patrz komentarz w onMerge wyżej.
+          flushDeferredAutoPreBattle();
         },
       });
     }
@@ -9749,6 +9966,11 @@ async function boot(): Promise<void> {
     function flushDeferredMergePrompts(): void {
       if (deferredMergePrompts.length === 0 || endTurnInProgress) return;
       if (isArmyMergePanelOpen()) return;
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: nie flushuj na wierzch wciąż otwartego
+      // preBattle/audiencji -- patrz komentarz w promptMergeIfCoLocated. No-op tutaj jest
+      // bezpieczny: kolejka zostaje niezmieniona i zostanie ponowiona, gdy blokujący modal
+      // się zamknie (flushDeferredMergePrompts wołane ponownie z main.ts).
+      if (isPreBattleOpen() || isDiplomacyAudienceOpen()) return;
       const next = deferredMergePrompts.shift()!;
       promptMergeIfCoLocated(next.movedUnitIds, next.fromQ, next.fromR, next.moveCost, next.deductedRuch);
     }
@@ -9965,6 +10187,14 @@ async function boot(): Promise<void> {
             const selRep = pickStackRepresentative(merged, unitAttackScore);
             selectPlayerUnit(selRep.id);
             refreshD1bHud();
+            // G-DODATKOWO (Evaluator FAIL 4f24bcda, werdykt 43d4be34, runda 4, Maciej
+            // 2026-08-14): panel scalenia zamknal sie -- odblokuj ewentualne odlozone
+            // automatyczne preBattle, tak samo jak przy showArmyMergePanel wyzej (:9782) --
+            // brakowalo tu tego wywolania, ten call site zamykal panel BEZ flushu.
+            // / EN: the merge panel just closed -- unblock any deferred automatic preBattle,
+            // same as the showArmyMergePanel call above (:9782) -- this call site was missing
+            // it, closing the panel with NO flush.
+            flushDeferredAutoPreBattle();
           },
           onSeparate: () => {
             showHintMessage(
@@ -9972,6 +10202,7 @@ async function boot(): Promise<void> {
               3600,
             );
             refreshD1bHud();
+            flushDeferredAutoPreBattle();
           },
         });
         return;
@@ -10035,8 +10266,14 @@ async function boot(): Promise<void> {
           );
           syncUnitsRender();
           refreshD1bHud();
+          // G-DODATKOWO (Evaluator FAIL 4f24bcda, werdykt 43d4be34, runda 4): patrz komentarz
+          // przy pierwszym brakujacym flushu wyzej w tej samej funkcji.
+          flushDeferredAutoPreBattle();
         },
-        onSeparate: () => refreshD1bHud(),
+        onSeparate: () => {
+          refreshD1bHud();
+          flushDeferredAutoPreBattle();
+        },
       });
     }
 
@@ -10212,7 +10449,14 @@ async function boot(): Promise<void> {
         return vis.has(key) || explored.has(key);
       });
       if (byOwner.size === 0) return;
-      territoryBorderGroup = buildTerritoryBorderGroup(map, byOwner, civColorFn);
+      territoryBorderGroup = buildTerritoryBorderGroup(
+        map,
+        byOwner,
+        civColorFn,
+        TERRITORY_BORDER_BAND_WIDTH,
+        TERRITORY_BORDER_OPACITY,
+        relationColorFn,
+      );
       scene.add(territoryBorderGroup);
     }
 
@@ -12700,7 +12944,7 @@ async function boot(): Promise<void> {
       const next = resolveNextOpenDiploProposal(currentOwnerId, diplomacyAudienceSourceEventId);
       if (!next) return;
       hideDiplomacyPendingModal();
-      hideDiplomacyAudience();
+      closeDiplomacyAudienceAndFlush();
       diplomacyAudienceOwnerId = null;
       openDiploProposalQueueItem(next);
     }
@@ -13150,10 +13394,24 @@ async function boot(): Promise<void> {
         cities: religionCityRows,
       };
 
+      // P-PANEL-IMPERIUM-PORTRET-WLADCA (Maciej 2026-08-14): nagłówek panelu imperium
+      // pokazywał gołe emoji cywilizacji (dotąd zawsze zahardkodowane na 🏛️, niezależnie
+      // od civKey) zamiast portretu władcy — REUŻYCIE gotowego systemu leaderPortraitUrl()
+      // (te same medaliony co bitwa/preBattle/dyplomacja), civKey/epoka już policzone wyżej
+      // (linie ~13020/13023) w tej samej funkcji. `civEmoji` zostaje jako fallback (patrz
+      // JSDoc EmpireGlobalParams.civPortraitUrl w empireDetailTypes.ts). / EN: the empire
+      // panel header showed a bare civ emoji (until now hardcoded to 🏛️ regardless of
+      // civKey) instead of the ruler portrait — REUSES the existing leaderPortraitUrl()
+      // system (same medallions as battle/preBattle/diplomacy); civKey/epoka already
+      // computed above (~lines 13020/13023) in this same function. `civEmoji` stays as the
+      // fallback (see EmpireGlobalParams.civPortraitUrl JSDoc in empireDetailTypes.ts).
+      const civPortraitUrl = leaderPortraitUrl(civKey, epoka);
+
       return {
         global: {
           civName,
           civEmoji: '🏛️',
+          civPortraitUrl,
           styl: String(civRow?.['Styl / charakter'] ?? '—'),
           jednostkaSpec: String(civRow?.['Jednostka specjalna'] ?? '—'),
           bonusStartowy: String(civRow?.['Bonus startowy'] ?? '—'),
@@ -15097,7 +15355,7 @@ async function boot(): Promise<void> {
     /** Zamknij stoł/ panel dyplomacji — bez ruszania panelu miasta / jednostki. */
     function ensureDiplomacyUiClosed(): void {
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
@@ -15123,6 +15381,12 @@ async function boot(): Promise<void> {
     function canAutoOpenDiploAudience(): boolean {
       if (galleryOn || isPreBattleOpen() || isCityPanelOpen()) return false;
       if (isDiplomacyAudienceOpen()) return false;
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): brakowało tego
+      // kierunku -- guard sprawdzał tylko preBattle, nie panel scalenia armii, więc
+      // audiencja mogła wyskoczyć na wierzch otwartego army-merge. / EN: this direction was
+      // missing -- the guard only checked preBattle, not the army-merge panel, so the
+      // audience could pop on top of an already-open army-merge panel.
+      if (isArmyMergePanelOpen()) return false;
       return true;
     }
 
@@ -17232,12 +17496,21 @@ async function boot(): Promise<void> {
             refreshD1bHud();
             if (!d1bHudActive) updateDiplomacyPanel();
           }
-          requestAnimationFrame(() => tryOpenNextFirstContactCard());
+          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): audiencja
+          // właśnie się zamknęła -- odblokuj ewentualne odłożone scalenie armii/preBattle,
+          // które czekały na to zamknięcie (patrz guardy w promptMergeIfCoLocated /
+          // showPreBattle). Ten sam rAF co tryOpenNextFirstContactCard poniżej -- jedna
+          // klatka, żeby DOM audiencji zdążył się schować przed pokazaniem następnego modala.
+          requestAnimationFrame(() => {
+            flushDeferredMergePrompts();
+            flushDeferredAutoPreBattle();
+            tryOpenNextFirstContactCard();
+          });
         },
         hasNextOpenProposal: () => hasNextOpenDiploProposal(ownerId, diplomacyAudienceSourceEventId),
         onNextOpenProposal: () => openNextOpenDiploProposal(ownerId),
         onOpenKnownFactions: () => {
-          hideDiplomacyAudience();
+          closeDiplomacyAudienceAndFlush();
           diplomacyAudienceOwnerId = null;
           clearPlayerUnitSelection();
           d1bHudActive = true;
@@ -18833,7 +19106,14 @@ async function boot(): Promise<void> {
       ...extraCityPanelConfig(),
     });
 
-    configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
+    configurePreBattle({
+      getCivBonusy: civBonusyForOwnerId,
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
+      // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
+      // scalenia armii, nie generyczny stos overlayów (ten obejmuje też m.in. panel miasta/
+      // drzewko tech, które NIE są modalami końca tury i nie powinny blokować preBattle).
+      isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen(),
+    });
 
     // -----------------------------------------------------------------------
     // Animation state
@@ -21472,9 +21752,64 @@ async function boot(): Promise<void> {
       function finishIncomingBattleUi(): void {
         syncUnitsRender();
         refreshFog();
-        updateHud();
-        refreshD1bHud();
-        onResolved();
+        // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, F1 (Evaluator FAIL 136fefbb, runda 3,
+        // Maciej 2026-08-14): updateHud()/refreshD1bHud() wołają synchronicznie canEndTurn()
+        // -> healStaleEndTurnBlockers() -- w tym momencie preBattle jest już zamknięty
+        // (hidePreBattle() w handlerze, PRZED tą funkcją) i kolejka deferredAutoRequests
+        // pusta (ta bitwa właśnie się kończy, nic nie czeka), więc gałąź 1 widziała
+        // aiCmdResume jako osierocony i kasowała go ZANIM onResolved() (dla ataku AI:
+        // runAiPhase()) zdążył go poprawnie skonsumować -- cała faza AI leciała drugi raz.
+        // battleUiResolving informuje gałąź 1 "bitwa właśnie się rozstrzyga, nie osieroć" na
+        // czas tego synchronicznego okna; try/finally gwarantuje, że wyjątek w onResolved()
+        // nie zostawi flagi trwale ustawionej (patrz deklaracja battleUiResolving wyżej po
+        // uzasadnienie pełne). Kolejność wywołań NIE ZMIENIONA -- ryzyko reorderowania
+        // onResolved() przed updateHud() odrzucone (rekomendacja Evaluatora runda 3): trzeba
+        // by zweryfikować, że żaden z 3 handlerów (onAuto/onBattlefield/onCancel) w żadnym
+        // z 5 call site'ów finishIncomingBattleUi nie zakłada odświeżonego HUD-u przed
+        // wznowieniem -- flaga zamyka lukę bez tego ryzyka.
+        // / EN: updateHud()/refreshD1bHud() synchronously call canEndTurn() ->
+        // healStaleEndTurnBlockers() -- at this point preBattle is already closed
+        // (hidePreBattle() ran in the handler, BEFORE this function) and the
+        // deferredAutoRequests queue is empty (this battle is the one just resolving,
+        // nothing else waiting), so branch 1 saw aiCmdResume as orphaned and cleared it
+        // BEFORE onResolved() (for an AI attack: runAiPhase()) got to consume it properly --
+        // the entire AI phase replayed. battleUiResolving tells branch 1 "battle is
+        // currently resolving, don't orphan" for this synchronous window; try/finally
+        // guarantees an exception in onResolved() doesn't leave the flag stuck (see the
+        // battleUiResolving declaration above for the full rationale). Call order is NOT
+        // changed -- reordering onResolved() before updateHud() was rejected (Evaluator's
+        // round-3 recommendation): it would require verifying none of the 3 handlers
+        // (onAuto/onBattlefield/onCancel) across all 5 finishIncomingBattleUi call sites
+        // assume a refreshed HUD before resuming -- the flag closes the gap without that risk.
+        battleUiResolving = true;
+        try {
+          updateHud();
+          refreshD1bHud();
+          onResolved();
+        } finally {
+          battleUiResolving = false;
+        }
+        // P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (Maciej 2026-08-14): ta bitwa
+        // przychodząca (AI/barbarzyńcy) właśnie się rozstrzygnęła (auto, pole bitwy albo
+        // wycofanie -- KAŻDA ścieżka wyjścia z launchIncomingMapFieldBattle kończy tutaj) --
+        // pokaż kolejne odłożone automatyczne preBattle z kolejki (drugi/trzeci
+        // barbarzyńca, który próbował zaatakować w tym samym ticku, gdy to okno było
+        // jeszcze otwarte, patrz deferredAutoRequests w ui/preBattle.ts). Bez tego
+        // wywołania odłożone żądanie nigdy by się nie pokazało -- żaden z pozostałych
+        // istniejących flushy (onMerge/onSeparate armii, onBack audiencji, finally
+        // triggerPlayerEndTurn) nie odpala się w momencie, gdy TA bitwa się kończy. No-op
+        // gdy kolejka pusta albo wciąż coś blokuje (kolejne preBattle, audiencja, scalenie
+        // armii) -- flushDeferredAutoPreBattle sam to sprawdza. / EN: this incoming battle
+        // (AI/barbarian) just resolved (auto, battlefield, or retreat -- EVERY exit path
+        // from launchIncomingMapFieldBattle ends here) -- show the next queued automatic
+        // preBattle (another barbarian/AI that tried to attack in the same tick while this
+        // window was still open, see deferredAutoRequests in ui/preBattle.ts). Without this
+        // call the deferred request would never surface -- none of the other existing
+        // flush call sites (army merge onMerge/onSeparate, diplomacy onBack, triggerPlayerEndTurn's
+        // finally) fire at the moment THIS battle ends. No-op when the queue is empty or
+        // something is still blocking (another preBattle, diplomacy audience, army merge) --
+        // flushDeferredAutoPreBattle checks that itself.
+        flushDeferredAutoPreBattle();
       }
 
       function doMapAutoResolveIncoming(): void {
@@ -21613,7 +21948,17 @@ async function boot(): Promise<void> {
           finishIncomingBattleUi();
         },
         onSave: () => doQuickSave(false),
-      }, { defaultAction: 'manual' });
+      }, {
+        defaultAction: 'manual',
+        // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): JEDYNE
+        // automatyczne (nie-gracz-inicjowane) wywołanie showPreBattle w całym kodzie --
+        // atak AI/barbarzyńców na gracza w trakcie fazy AI/barbarzyńców końca tury (wołane z
+        // launchIncomingMapFieldBattle). Włącza guard przeciw audiencji/scaleniu armii (patrz
+        // configurePreBattle wyżej). Pozostałe dwa wywołania showPreBattle (atak jednostka→
+        // jednostka gracza, szturm gracza na miasto) to ręczne akcje gracza -- NIE dostają
+        // tej flagi, więc pokazują się natychmiast, bez zmian.
+        auto: true,
+      });
     }
 
     /** R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): dane przejęcia
@@ -21827,6 +22172,27 @@ async function boot(): Promise<void> {
 
       forceVisibleUnitId = null;
       syncUnitsRender();
+      // P-OBLEZENIE-IKONA-NIE-ZNIKA-PO-WYGRANEJ (Maciej 2026-08-14): applyMapBattleOutcome
+      // to JEDYNY wspólny punkt, przez który przechodzi KAŻDA ścieżka rozstrzygnięcia bitwy
+      // polowej na mapie — auto-resolve (doAutoPowerMapBattle/doMapAutoResolve),
+      // ręczna bitwa 3D (doMapAutoResolveIncoming/manualBattle onComplete) i szturm muru
+      // (finishSiegeStormBattle, z i bez podsumowania). Wcześniej `city.oblegane` było
+      // czyszczone wyłącznie po RUCHU jednostki (validateActiveSieges wołane z obsługi
+      // marszu) albo na koniec tury AI — jeśli bitwa zniszczyła WSZYSTKIE jednostki
+      // oblegające, a żadna jednostka się potem nie ruszyła, ikona/etykieta oblężenia
+      // wisiała na mieście mimo że oblegający już nie żyli. Wołanie tutaj, PO
+      // applyPostBattleMap (usunięcie poległych z units[]) i PO ewentualnym przejęciu
+      // miasta wyżej, naprawia to dla wszystkich ścieżek jednym miejscem — nie trzeba
+      // duplikować w każdym z callerów. / EN: applyMapBattleOutcome is the SOLE shared
+      // choke point every field-battle resolution path funnels through — auto-resolve,
+      // manual 3D battle, and wall-storm siege battles (with or without the summary
+      // panel). Previously `city.oblegane` was only cleared on a unit MOVE or at AI-turn
+      // end — if a battle wiped out every besieging unit and nothing then moved, the
+      // siege icon/label stayed stuck on the city. Calling it here, after
+      // applyPostBattleMap has removed the dead from units[] and after any city capture
+      // above, fixes this for every path from one place instead of duplicating the call
+      // at each caller.
+      validateActiveSieges();
       return battleLoot;
     }
 
@@ -22048,7 +22414,7 @@ async function boot(): Promise<void> {
     /** Zamyka overlay dyplo i centruje kamerę na stolicy wybranego państwa. */
     function handleDiploFocusCapital(ownerId: number): void {
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiploListHudOpen()) hideDiploListHud();
@@ -22797,13 +23163,22 @@ async function boot(): Promise<void> {
           refreshD1bHud();
           refreshSiegeMarkers();
         } else if (res.winner === 'remis') {
-          showHintMessage('Szturm: remis — oblężenie trwa.', 3500);
+          showHintMessage('Szturm: remis — wojska odepchnięte od murów, oblężenie zniesione.', 3500);
+          // R-OBLEZENIE-REMIS-MASZYNY-Q2=A: remis szturmu ZAWSZE kończy oblężenie — jawna
+          // reguła silnika, niezależnie od geometrii odwrotu placeFanOutGroup (dawniej skutek
+          // uboczny validateActiveSieges() kończył oblężenie tylko w 30/63 układów heksów
+          // przyściennych, w pozostałych 33/63 flaga zostawała mimo tego komunikatu).
+          // endMapSiege() woła refreshSiegeMarkers() sam — nie duplikować wywołania niżej.
+          // EN: storm draw now ALWAYS ends the siege — explicit engine rule, independent of
+          // placeFanOutGroup retreat geometry (previously only an accidental side effect of
+          // validateActiveSieges() ended it, and only in 30/63 wall-adjacent hex layouts).
+          // endMapSiege() already calls refreshSiegeMarkers() internally — no duplicate call below.
+          endMapSiege(city.id);
           syncUnitsRender();
           cityRenderer.sync(cities, _cityRenderOpts());
           refreshFog();
           updateHud();
           refreshD1bHud();
-          refreshSiegeMarkers();
         }
       };
 
@@ -23653,7 +24028,72 @@ async function boot(): Promise<void> {
     /** Po anulowaniu bitwy / Nowa gra bez reload — flagi resume i overlay potrafią zostać. */
     function healStaleEndTurnBlockers(): void {
       const preBattle = isPreBattleOpen();
-      if (!preBattle && (aiTurnAwaitingBattle || aiCmdResume)) {
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, N1 (Evaluator FAIL na a7de65b0, runda 2,
+      // Maciej 2026-08-14): funkcja jest wołana też z pętli renderu HUD (canEndTurn), nie
+      // tylko z próby zakończenia tury -- może więc odpalić się w oknie, gdy automatyczna
+      // bitwa AI/barbarzyńców jest już ZAPLANOWANA (aiCmdResume ustawiony) i czeka w kolejce
+      // (deferredAutoRequests w ui/preBattle.ts, bo inny modal końca tury blokował w chwili
+      // showPreBattle -- patrz isOtherEndTurnModalOpen), ale jeszcze się nie pokazała
+      // (isPreBattleOpen()===false). Bez hasPendingAutoPreBattle() ten warunek mylił "bitwa
+      // czeka w kolejce" z "bitwa osierocona" i kasował aiCmdResume -- runAiPhase() wznawiał
+      // się potem z aiCmdResume===null, czyli CAŁA faza AI leciała drugi raz od zera.
+      // / EN: this function is also called from the HUD render loop (canEndTurn), not only
+      // from an end-turn attempt -- so it can fire in the window where an automatic AI/
+      // barbarian battle is already SCHEDULED (aiCmdResume set) and waiting in the queue
+      // (deferredAutoRequests in ui/preBattle.ts, because another end-of-turn modal was
+      // blocking at showPreBattle time -- see isOtherEndTurnModalOpen), but hasn't shown yet
+      // (isPreBattleOpen()===false). Without hasPendingAutoPreBattle() this condition
+      // confused "battle waiting in queue" with "battle orphaned" and cleared aiCmdResume --
+      // runAiPhase() then resumed with aiCmdResume===null, replaying the ENTIRE AI phase
+      // from scratch.
+      //
+      // RUNDA 3 (Evaluator FAIL 136fefbb, F1, Maciej 2026-08-14): `!battleUiResolving` --
+      // bez tego, gałąź nadal kasowała aiCmdResume w synchronicznym oknie WEWNĄTRZ
+      // finishIncomingBattleUi() (updateHud() woła tę funkcję przez canEndTurn() ZANIM
+      // onResolved() zdąży skonsumować aiCmdResume) -- patrz deklaracja battleUiResolving
+      // wyżej po pełne uzasadnienie. To ścieżka WIELOKROTNIE częstsza niż odroczenie do
+      // kolejki: każdy atak AI na gracza rozstrzygnięty przez preBattle, nie tylko te
+      // odroczone.
+      // / EN: ROUND 3 (Evaluator FAIL 136fefbb, F1): `!battleUiResolving` -- without it, the
+      // branch still cleared aiCmdResume inside the synchronous window WITHIN
+      // finishIncomingBattleUi() (updateHud() calls this function via canEndTurn() BEFORE
+      // onResolved() gets to consume aiCmdResume) -- see the battleUiResolving declaration
+      // above for the full rationale. This path is FAR more common than the queue-deferral
+      // path: every AI attack on the player resolved via preBattle, not only the deferred
+      // ones.
+      //
+      // RUNDA 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej 2026-08-14): runda 3
+      // dodała tu próg 8000ms (`pendingBattleStuck`) -- USUNIĘTY z tej gałęzi, PRZENIESIONY do
+      // healStuckDeferredPreBattleQueueOnEndTurnAttempt() (patrz niżej, po hintEndTurnBlocked).
+      // Powód: ta funkcja jest wołana PASYWNIE z pętli renderu HUD (canEndTurn, patrz komentarz
+      // N1 wyżej), W TYM synchronicznie z WNĘTRZA onBack audiencji dyplomatycznej --
+      // hideDiplomacyAudience() -> refreshD1bHud() -> ... -> canEndTurn() -> TU, w oknie GDZIE
+      // modal JUŻ zniknął, ale zaplanowany na kolejną klatkę (rAF) flushDeferredAutoPreBattle()
+      // jeszcze się nie odpalił. isOtherEndTurnModalOpen() w tym oknie zwraca już false
+      // (audiencja zamknięta), więc GDYBY próg czasu żył w TEJ funkcji, kasowałby kolejkę
+      // DOKŁADNIE w tym oknie -- zmierzone przez Evaluatora jako deterministyczna ścieżka G1,
+      // nie hipoteza. Wołając timeout WYŁĄCZNIE z triggerPlayerEndTurn (rzeczywista próba
+      // końca tury, nigdy z pasywnej sondy canEndTurn) mamy gwarancję, że zaplanowany rAF
+      // flush ZAWSZE wygrywa wyścig z timeoutem -- gracz fizycznie nie zdąży kliknąć "Zakończ
+      // turę" w oknie pojedynczej klatki animacji. Gałąź niżej wraca więc do formuły
+      // sprzed rundy 3 (N1/runda 2): flagi kasowane WYŁĄCZNIE gdy kolejka jest już PUSTA.
+      // / EN: ROUND 4 (Evaluator FAIL 4f24bcda, verdict 43d4be34, G1+G2): round 3 added an
+      // 8000ms threshold (`pendingBattleStuck`) here -- REMOVED from this branch, MOVED to
+      // healStuckDeferredPreBattleQueueOnEndTurnAttempt() (see below, after
+      // hintEndTurnBlocked). Reason: this function is called PASSIVELY from the HUD render
+      // loop (canEndTurn, see the N1 comment above), INCLUDING synchronously from INSIDE the
+      // diplomacy audience's onBack handler -- hideDiplomacyAudience() -> refreshD1bHud() ->
+      // ... -> canEndTurn() -> HERE, in the window where the modal has ALREADY closed but the
+      // flush scheduled for the next frame (rAF) flushDeferredAutoPreBattle() hasn't fired
+      // yet. isOtherEndTurnModalOpen() already returns false in that window (audience
+      // closed), so IF the timeout lived in THIS function it would clear the queue in
+      // EXACTLY that window -- measured by the Evaluator as a deterministic path (G1), not a
+      // hypothesis. Calling the timeout ONLY from triggerPlayerEndTurn (an actual end-turn
+      // attempt, never the passive canEndTurn probe) guarantees the scheduled rAF flush
+      // always wins the race against the timeout, because the player can't physically click
+      // "End Turn" within a single animation frame. The branch below therefore reverts to the
+      // pre-round-3 formula (N1/round 2): flags cleared ONLY once the queue is actually EMPTY.
+      if (!preBattle && !battleUiResolving && !hasPendingAutoPreBattle() && (aiTurnAwaitingBattle || aiCmdResume)) {
         console.warn('[EndTurn] Clearing stale AI battle resume flags');
         aiTurnAwaitingBattle = false;
         aiCmdResume = null;
@@ -23688,8 +24128,21 @@ async function boot(): Promise<void> {
         console.warn('[EndTurn] blocked: awaitingFirstPlayerCity');
         return false;
       }
-      if (isPreBattleOpen()) {
-        console.warn('[EndTurn] blocked: preBattleOpen');
+      // F3 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): rozszerzone o
+      // hasPendingAutoPreBattle() -- goły isPreBattleOpen() nie widzi bitwy BARBARZYŃSKIEJ
+      // odroczonej do kolejki (aiCmdResume===null dla tej ścieżki, więc gałąź niżej
+      // `aiTurnAwaitingBattle || aiCmdResume` się nie stosuje). Bez tego gracz mógł
+      // zakończyć turę z bitwą wciąż czekającą w deferredAutoRequests -- żądanie wypływało
+      // dopiero z `finally` NASTĘPNEJ tury, pokazując roster sprzed tury (druga połowa
+      // rekomendacji 1 z werdyktu a7de65b0, pominięta w rundzie 2).
+      // / EN: extended with hasPendingAutoPreBattle() -- a bare isPreBattleOpen() misses a
+      // BARBARIAN battle deferred to the queue (aiCmdResume===null for that path, so the
+      // branch below `aiTurnAwaitingBattle || aiCmdResume` doesn't apply). Without this the
+      // player could end the turn with a battle still waiting in deferredAutoRequests -- the
+      // request would only surface from the NEXT turn's `finally`, showing a roster from
+      // before that turn (the second half of round-1 recommendation 1, skipped in round 2).
+      if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
+        console.warn('[EndTurn] blocked: preBattleOpen', { pending: hasPendingAutoPreBattle() });
         return false;
       }
       if (galleryOn) {
@@ -23720,7 +24173,14 @@ async function boot(): Promise<void> {
         showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B), potem zakończ turę.', 3500);
         return;
       }
-      if (isPreBattleOpen()) {
+      // F3 (patrz canPlayerInitiateEndTurn wyżej): odbicie tej samej rozszerzonej blokady w
+      // podpowiedzi -- bez tego bitwa barbarzyńska czekająca w kolejce (isPreBattleOpen()
+      // ===false, aiCmdResume===null) nie trafiała w żadną gałąź tej funkcji, więc gracz nie
+      // dostawał żadnego komunikatu mimo zablokowanego przycisku.
+      // / EN: mirrors the same extended block in the hint -- without this, a barbarian
+      // battle waiting in the queue (isPreBattleOpen()===false, aiCmdResume===null) hit no
+      // branch in this function, so the player got no message despite the button being blocked.
+      if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
         showHintMessage('Zakończ ekran bitwy, potem zakończ turę.', 3500);
         return;
       }
@@ -23737,7 +24197,51 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * RUNDA 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej 2026-08-14): sprząta
+     * PRZETERMINOWANĄ (>8000ms) kolejkę odroczonych automatycznych preBattle -- WYŁĄCZNIE gdy
+     * ŻADEN modal blokujący (audiencja/scalenie armii) nie jest otwarty, czyli powód
+     * odroczenia faktycznie już nie istnieje (G1: dopóki modal żyje, odroczenie jest LEGALNE
+     * i tempowane przez człowieka -- nigdy nie kasujemy). Wołana WYŁĄCZNIE z
+     * triggerPlayerEndTurn(), NIGDY z pasywnej sondy canEndTurn/healStaleEndTurnBlockers()
+     * (patrz uzasadnienie przy gałęzi 1 healStaleEndTurnBlockers wyżej) -- to jest jedyny
+     * sposób, żeby nie ścigać się z rAF flushem zaplanowanym tuż po zamknięciu modala.
+     * NIEZALEŻNA od aiTurnAwaitingBattle/aiCmdResume (G2) -- w przeciwieństwie do starej gałęzi
+     * 1 (bramkowanej `aiTurnAwaitingBattle||aiCmdResume`, więc ślepej na bitwę BARBARZYŃSKĄ,
+     * dla której obie te flagi są puste z definicji), ta funkcja patrzy WYŁĄCZNIE na wiek
+     * najstarszego żądania w kolejce -- pokrywa więc też ścieżkę barbarzyńską. Efekt uboczny:
+     * gdy kolejka faktycznie jest martwa (jakiś inny błąd zablokował ją na stałe), pierwsze
+     * kliknięcie "Zakończ turę" ją odblokowuje -- dokładnie ten moment, w którym gracz i tak
+     * musi zauważyć problem.
+     * / EN: ROUND 4 (Evaluator FAIL 4f24bcda, verdict 43d4be34, G1+G2): cleans up a STALE
+     * (>8000ms) deferred automatic preBattle queue -- ONLY when NO blocking modal (audience/
+     * army-merge) is open, i.e. the reason for deferral genuinely no longer exists (G1: as
+     * long as the modal is alive, the deferral is LEGAL and human-paced -- never clear it).
+     * Called ONLY from triggerPlayerEndTurn(), NEVER from the passive canEndTurn probe/
+     * healStaleEndTurnBlockers() (see the rationale at branch 1 of healStaleEndTurnBlockers
+     * above) -- this is the only way to avoid racing the rAF flush scheduled right after the
+     * modal closes. INDEPENDENT of aiTurnAwaitingBattle/aiCmdResume (G2) -- unlike the old
+     * branch 1 (gated on `aiTurnAwaitingBattle||aiCmdResume`, hence blind to a BARBARIAN
+     * battle, for which both flags are empty by definition), this function looks ONLY at the
+     * age of the oldest queued request -- so it also covers the barbarian path. Side effect:
+     * when the queue is genuinely dead (some other bug wedged it permanently), the first
+     * "End Turn" click unwedges it -- exactly the moment the player would notice the problem
+     * anyway.
+     */
+    function healStuckDeferredPreBattleQueueOnEndTurnAttempt(): void {
+      if (!hasPendingAutoPreBattle()) return;
+      if (isPreBattleOpen()) return;
+      if (isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
+      const ageMs = oldestPendingAutoPreBattleAgeMs();
+      if (ageMs <= 8000) return;
+      console.warn('[EndTurn] Deferred preBattle queue stuck >8000ms with no blocking modal — clearing (interactive end-turn attempt)', { ageMs });
+      clearDeferredAutoPreBattleQueue();
+      aiTurnAwaitingBattle = false;
+      aiCmdResume = null;
+    }
+
     function triggerPlayerEndTurn(): void {
+      healStuckDeferredPreBattleQueueOnEndTurnAttempt();
       if (!canPlayerInitiateEndTurn()) {
         console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
         hintEndTurnBlocked();
@@ -25371,6 +25875,15 @@ async function boot(): Promise<void> {
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
+                  // R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14): `pracaBudgetPercent`
+                  // MUSI być polityką IMPERIUM (empirePol), nie per-miasto — to jest źródło
+                  // nadrzędnego pułapu (`imperiumBudgetCap` w pickAutoImprovements), który
+                  // per-miasto override (`getPracaBudgetPercent` niżej) nie może przebić.
+                  // / EN: `pracaBudgetPercent` MUST be the EMPIRE policy (empirePol), not
+                  // per-city — it's the source of the overarching cap (`imperiumBudgetCap` in
+                  // pickAutoImprovements) that the per-city override (`getPracaBudgetPercent`
+                  // below) cannot exceed.
+                  pracaBudgetPercent: empirePol.pracaAutoPercent,
                   getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(
@@ -27562,8 +28075,26 @@ async function boot(): Promise<void> {
           endTurnTransition();
           endTurnInProgress = false;
           endTurnStartedAt = 0;
+          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): endTurnInProgress
+          // gaśnie TUTAJ, ALE preBattle otwarty w trakcie fazy AI/barbarzyńców (bitwa jest
+          // asynchroniczna względem `await runAiPhase()` -- `break ownerLoop`/`continue`
+          // przerywają tylko pętlę komend, nie całą funkcję) może wciąż wisieć na ekranie.
+          // flushDeferredPlayerUnitReveals()/flushDeferredMergePrompts() są teraz bezpieczne
+          // z definicji -- promptMergeIfCoLocated/flushDeferredMergePrompts same sprawdzają
+          // isPreBattleOpen()/isDiplomacyAudienceOpen() i odkładają się ponownie, gdy modal
+          // wciąż wisi, zamiast wyskoczyć na jego wierzch. / EN: endTurnInProgress clears
+          // HERE, but a preBattle opened during the AI/barbarian phase (the battle is async
+          // relative to `await runAiPhase()` -- `break ownerLoop`/`continue` only interrupt
+          // the command loop, not the whole function) may still be on screen.
+          // flushDeferredPlayerUnitReveals()/flushDeferredMergePrompts() are now safe by
+          // construction -- promptMergeIfCoLocated/flushDeferredMergePrompts check
+          // isPreBattleOpen()/isDiplomacyAudienceOpen() themselves and re-defer instead of
+          // popping on top of a modal that's still up.
           flushDeferredPlayerUnitReveals();
           flushDeferredMergePrompts();
+          // Odłożone automatyczne preBattle (audiencja/scalenie blokowały w momencie ataku)
+          // -- no-op gdy nic nie czeka albo blokada nadal aktywna.
+          flushDeferredAutoPreBattle();
           syncPlayerUnitSelectionOnMap();
           console.warn('[EndTurn] triggerPlayerEndTurn: DONE tura', turn);
         }
@@ -28290,7 +28821,14 @@ async function boot(): Promise<void> {
         },
         ...extraCityPanelConfig(),
       });
-      configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
+      configurePreBattle({
+        getCivBonusy: civBonusyForOwnerId,
+        // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
+        // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
+        // scalenia armii, nie generyczny stos overlayów (ten obejmuje też m.in. panel miasta/
+        // drzewko tech, które NIE są modalami końca tury i nie powinny blokować preBattle).
+        isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen(),
+      });
       _lastNewGameParams = {
         ...params,
         seed: params.seed > 0 ? params.seed : _gameSeed,
@@ -29719,6 +30257,31 @@ async function boot(): Promise<void> {
         }
         cities.push(c);
       }
+      // P-MILET-ATENY-OKOLICA-RECZNE-PRZY-PRZEJECIU-LOAD (2026-08-14, N2 z werdyktu
+      // Evaluatora dla 3f1a2f85 -- dispatch miał 3 punkty, ten commit zamknął tylko
+      // (1); tu domykamy (2)): naprawa 3f1a2f85 wpięła reconcileAllWorkedTiles w
+      // seedCityOwnerDefaults -- wołaną PO każdej zmianie city.ownerId W BIEŻĄCEJ grze
+      // -- ale zapis sprzed tej naprawy (albo zapis z gry z dawną zmianą właściciela,
+      // która nigdy nie przeszła przez reconcile) mógł zostać ZAPISANY z nielegalnym
+      // okolicaReczne (np. na centrum cudzego miasta). Bez sanityzacji TU taki wpis
+      // wisiałby w panelu aż do pierwszego końca tury (turn-economy.ts, jedyne inne
+      // miejsce wołające reconcileAllWorkedTiles) -- dokładnie ten sam objaw co
+      // zgłoszenie Milet/Ateny, tylko wyzwolony load'em zamiast podbojem. `map` jest
+      // tu już finalną mapą gry (regenerateWorldForLoad, jeśli był potrzebny, zawsze
+      // kończy się PRZED tym wywołaniem -- patrz loadGameFromSlot), więc te same
+      // argumenty co w seedCityOwnerDefaults są tu bezpieczne.
+      // / EN: fix 3f1a2f85 wired reconcileAllWorkedTiles into seedCityOwnerDefaults --
+      // called AFTER every city.ownerId change WITHIN the current game -- but a save
+      // written before that fix (or from a game whose past ownership change never went
+      // through reconcile) may have been PERSISTED with an illegal okolicaReczne entry
+      // (e.g. on another city's centre). Without sanitizing HERE such an entry would
+      // hang in the panel until the first end-of-turn (turn-economy.ts, the only other
+      // caller of reconcileAllWorkedTiles) -- the exact same symptom as the Miletus/
+      // Athens report, just triggered by a load instead of a conquest. `map` here is
+      // already the final game map (regenerateWorldForLoad, when needed, always
+      // finishes BEFORE this call -- see loadGameFromSlot), so the same arguments as
+      // seedCityOwnerDefaults are safe here.
+      reconcileAllWorkedTiles(cities, buildAllTerritoryNodes(), computeLostToNearerSiblingByCity(cities, map));
       playerEverOwnedCity = cities.some(c => c.ownerId === 0);
       explored.clear();
       for (const k of saved.explored ?? []) explored.add(k);
