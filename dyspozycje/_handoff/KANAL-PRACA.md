@@ -6892,6 +6892,15 @@ zamyka 4 panele zamiast wyrzucać z pełnego ekranu, flaga oblężenia znika od 
 bitwie, tooltip heksu filtruje ulepszenia po nakładce/złożu, chip Rekruci → blok Armii, polityka
 Pracy imperium twardym pułapem sumy mimo override miasta, wyrównanie ramek w kroku 4 kreatora.
 
+🔴 **NOWA CZERWONA BRAMKA WNIESIONA PRZEZ TĘ FALĘ (nie pre-istniejąca):**
+`empire-panel-econ-slider-visibility-test` **59/1 exit 1**, było **60/0**. Bisekcja przyczynowa
+(worktree na rodzicu `4f208a0f` → 60/0 ZIELONA): wnosi to **`f536b792`** (routing Rekruci do bloku
+Armii). Padająca asercja `chip "rekruci" -> blok ekonomia` asercjonuje STARE zachowanie, celowo
+zmienione — **dług testowy, nie regresja silnika, gra działa poprawnie**. Operator poprawił bliźniaczą
+asercję w `empire-panel-split-test` (22→25) i przeoczył duplikat w tym drugim teście; Evaluator tematu
+dał PASS i tego nie złapał. **Do naprawy osobnym zleceniem AutoBot.** Uwaga: liczba „60/0" jest FAŁSZEM
+także w opisach commitów `33eeec11`/`4fc770ee` i we wpisie FALI 278 w `WERSJE.md`.
+
 ⚠️ **CZUBEK GAŁĘZI ≠ ŹRÓDŁO BUILDA.** W trakcie deployu doszły na gałąź 4 commity ponad `5dc45b6e`;
 trzy to rejestr, ale **`d2dd4b89` (znacznik Mocy: glif ⚜ → ikona SVG, `gra/src/ui/` 4 pliki `+42/−8`)
 to realny kod i NIE MA GO w bundlu `4bef7d10`** — wejdzie w FALI 280. Znacznik Mocy w tej fali nadal
