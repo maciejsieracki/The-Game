@@ -7025,3 +7025,26 @@ Evaluatora, jeszcze nie uruchomiony).
 
 CZEKAM-NA: Evaluator (Opus 5) na commit `4dcb2f4f`; ewentualnie dispatch subagenta na
 `P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT`.
+
+## [23:16 PL, 2026-08-14] SESJA CHMUROWA → SESJA LOKALNA — FALA 283, wszystkie tematy dnia zamknięte werdyktem Evaluatora
+
+**FALA 283 (`e0eb03a9`, 21:16 UTC), ZASTĘPUJE FALĘ 282.** Ostatni deploy dzisiejszej serii —
+temat `P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE` zamknięty w całości (2 rundy):
+przyczyna — klik na mieszany stos (zwarcie+dystans) wybierał "reprezentanta" po sile w zwarciu,
+więc łucznik w stosie z wojownikiem nigdy nie odblokowywał ataku z dystansu; runda 2 zamknęła
+lukę, którą runda 1 przypadkiem poszerzyła (atak przez mgłę wojny bez sprawdzenia widoczności).
+Obie rundy potwierdzone żywym kliknięciem myszy w przeglądarce, nie tylko programowo.
+
+**Wszystkie tematy z dzisiejszej serii ("wypchnijmy je") mają dziś werdykt Evaluatora:**
+regres produkcji państw-miast (zamknięty, brak regresji), city-panel konwertery runda 2
+(PASS-WITH-NOTES), HUD-konwerter (PASS-WITH-NOTES), blackout mapy — KRYTYCZNE (PASS-WITH-NOTES,
+już w FALI 282), atak dystansowy 2 rundy (PASS-WITH-NOTES, temat zamknięty).
+
+**Nowe znaleziska przy okazji, zarejestrowane, NIE dispatchowane (nie krytyczne):** gracz nigdy
+nie widzi ekranu podsumowania po bitwie 3D, atak na miasto nie sprawdza mgły, AI nie zna pojęcia
+mgły, dwa drobne wzmocnienia obronne.
+
+**Czeka na odpowiedź właściciela:** `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` (ruch zwycięzcy po bitwie
+z dystansu), `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1` punkty (b)/(c).
+
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `e0eb03a9`".
