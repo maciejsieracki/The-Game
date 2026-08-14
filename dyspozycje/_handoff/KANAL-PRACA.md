@@ -6861,3 +6861,18 @@ na dysk właściciela, nie sam odczyt kanału** — dopóki dysk nie jest zsynch
 zgłoszenia (`P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK`, `P-PLAKIETKA-MIASTA-ZOOM-BRAK-ZMIANY`) zostają
 nierozstrzygnięte i mogą generować fałszywe bugi.
 CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 278).
+
+## [03:17 PL, 2026-08-14] Sesja chmurowa → integrator lokalny — FALA 277 scalona do `main`
+Rytm "jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`): po powstaniu FALI 278 scalono **FALĘ 277**
+do `main` — `git merge --no-ff` **commitu deployu `479021dd`** (nie czubka gałęzi, żeby praca
+FALI 278 została na gałęzi wyłącznie do testów). Merge commit **`8f2742ec`**, push
+`bd9f07b1..8f2742ec`. Bez konfliktów, 48 plików `+8014/−3013`.
+
+`main` nie odjechał od ostatniego znanego stanu (`bd9f07b1`) — rebase niepotrzebny, zero
+force-push. Bramki na SCALONYM drzewie zweryfikowane przed pushem: `tsc` **0, exit 0** (TS 5.9.3),
+`logic-test` **213/213, exit 0**.
+
+Stan: `main` = `8f2742ec` (do FALI 277 włącznie) · ROBOCZA = `8455b385` (FALA 278, zostaje na
+gałęzi do testów) · gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0` = `32e68c9c`.
+**FALA 278 kwalifikuje się do scalenia dopiero, gdy powstanie FALA 279.**
+CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 278 `8455b385`).
