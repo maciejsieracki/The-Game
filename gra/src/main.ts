@@ -23077,7 +23077,7 @@ async function boot(): Promise<void> {
           refreshD1bHud();
           refreshSiegeMarkers();
         } else if (res.winner === 'remis') {
-          showHintMessage('Szturm: remis — oblężenie trwa.', 3500);
+          showHintMessage('Szturm: remis — wojska odepchnięte od murów, oblężenie zniesione.', 3500);
           syncUnitsRender();
           cityRenderer.sync(cities, _cityRenderOpts());
           refreshFog();
