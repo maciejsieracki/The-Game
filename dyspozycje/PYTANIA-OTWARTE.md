@@ -20471,6 +20471,35 @@ słowo Designera):**
 gotową odpowiedź na §5), potem dispatch Operatora do wdrożenia (reskin CSS obu paneli + wspólny
 plik stylów + rozbicie `productionLine` + flaga stolicy w `CityListEntry`).**
 
+## P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK — Recon zakończony: to jest DWIE rzeczy, jedna z nich to prawdziwy bug routingu (2026-08-14)
+
+Recon (Explore, read-only) ustalił, że to NIE jest prosto "jeszcze nieprzerobiona zakładka":
+
+1. **Prawdziwy bug routingu.** HUD ma klikalny chip `data-act="rekruci"` (`hud.ts:1124`) →
+   `empireSectionFromHudAct` → `'econ-rekruci'`. `empirePanelBlockForSection()`
+   (`empirePanelSectionMap.ts`) ma jawne wyjątki dla `econ-skarbiec`/`econ-praca`/`econ-nauka`/
+   `econ-religia` (Faza 1/2), ale **BRAKUJE wyjątku dla `econ-rekruci`** — wpada w ogólną gałąź
+   `startsWith('econ-')` → stary, wspólny widok „ZASOBY IMPERIUM (STAN + PRZYROST)". To dokładnie
+   to, co widzi Maciej klikając „Rekruci" na górnym pasku HUD.
+2. **Armia jako sekcja JUŻ ma własny top-level blok** w `empireDetailPanel.ts` (~linie 2100-2125,
+   analogiczny do Spichlerz/Surowce/Handel — nie wymagał wydzielania z `ekonomia` jak Skarbiec/
+   Praca/Nauka/Religia) — ale ten blok nigdy nie dostał reskinu Fazy 1/2 i nadal inline'uje stary
+   wygląd `cityPoborMiniRekruci()`.
+
+**Dane silnika w 100% gotowe — zero zmian w `main.ts`** (`p.rekruci`/`p.rekrutEkw`/
+`e.rekruciLabel`/`cp` już policzone, używane też przez box „REKRUCI" w sekcji Moc). Szacowany
+rozmiar: mniejszy niż Faza 1 (Skarbiec), porównywalny-do-mniejszy niż POJEDYNCZA zakładka Fazy 2
+— bo Armia nie potrzebuje wydzielania z ekonomii ani nowego suwaka. **Luka:** dokument
+projektowy `docs/ux/DESIGN-ZLECENIE-11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md` §8.7 (Armia), w
+przeciwieństwie do §8.1/8.2/8.4, NIE MA podpunktu „Kierunek" z konkretnym docelowym układem —
+Skarbiec/Praca/Nauka miały to przed implementacją, Armia nie. Zero kolizji z równoległym
+zleceniem Miasta/Armie panel lewy (inne pliki, inna paleta, potwierdzone).
+
+**STATUS: dispatch Operatora TYLKO na routing fix (bezpieczne, jednoznaczne, natychmiastowa
+poprawa — `econ-rekruci` dostaje wyjątek jak pozostałe 4, żeby chip HUD pokazywał już istniejący
+blok Armii zamiast starego widoku). Pełny wizualny reskin bloku Armii (do standardu Fazy 1/2)
+NIE dispatchowany teraz — brak „Kierunku" od Designera, nie zgaduję układu bez specyfikacji.**
+
 ## P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK (2026-08-14, zgłoszenie Macieja ze zrzutem "ZASOBY IMPERIUM (STAN + PRZYROST)") · STATUS: OTWARTE — backlog Faza 3+, nie nowy bug
 
 Maciej: „Nie są wykonane też przez designera zasoby imperium, czyli przerost rekrutów." (zrzut:
@@ -20510,10 +20539,29 @@ markowej ikony `res-influence.svg` (plik istnieje, `emoji ⚜` to tylko martwy f
 NIE jest kandydat, wygląda poprawnie już dziś.
 
 **Rozszerzenie zlecone:** dopisane jako runda 2 do już trwającego zlecenia „ikona władcy zamiast
-emblematu" (agent w toku, `aa4af955d51b23bcd`) — ten sam mechanizm reużycia portretów władców ma
-objąć też `powerCenterIconHtml`. **Nie scalać** dopóki Maciej nie potwierdzi, że to faktycznie
-to miejsce (jeśli nie — proszę wskazać dokładnie które, bo to była jedyna pasująca lokalizacja
-znaleziona w kodzie).
+emblematu" (agent `aa4af955d51b23bcd`, zakończony) — sprawdził, że `powerCenterIconHtml` już
+poprawnie pokazuje portret władcy jako główną ikonę, sygnet cywilizacji w rogu (`p-ic-signet`,
+`hud.ts:941-947`) to świadomy, dedykowany SVG (heraldyczny wzorzec portret+herb), NIE placeholder.
+
+**Recon 2 (2026-08-14) znalazł DUŻO lepszych kandydatów.** Systematyczny przegląd wszystkich
+miejsc "power"/"moc" w UI: jedyne miejsca gdzie "moc" jest pokazywana SUROWYM znakiem Unicode
+`⚜` (fleur-de-lis) wklejonym wprost w tekst, zamiast dedykowaną grafiką SVG:
+- **C — `empireDetailPanel.ts:1958`**: `` `<div class="k">Moc ⚜</div>` `` — etykieta chipa "Moc"
+  w sekcji PARAMETRY GLOBALNE panelu imperium, jedyny chip z taką dekoracją (Epoka/Tura/Osiedla
+  bez niej).
+- **D — `power-labels.ts:24` (`mocTitle()`) → `powerOverlayHud.ts:129`**: `<h2>⚜ Moc {value}</h2>`
+  — nagłówek overlayu "Szczegóły Mocy" (otwiera się po kliknięciu widżetu Mocy na stałym pasku
+  HUD), **zawsze widoczny przy KAŻDYM otwarciu panelu Mocy**.
+
+Oba renderują się naprawdę (nie martwy fallback jak `⚜` w `powerSymbolHtml()`, które ma
+działający SVG i nigdy nie spada na ten fallback). Semantycznie gołe glify Unicode pasują do
+słowa "znacznik" znacznie lepiej niż w pełni zaprojektowany SVG-sygnet w rogu.
+
+**STATUS: dispatch Operatora (Sonnet 5) — zamienić `⚜` w obu miejscach (C, D) na spójną, dedykowaną
+grafikę (reużyć `res-influence.svg`/`powerSymbolHtml()` wzorem, ten sam SVG który już poprawnie
+działa przy liczbie Mocy w HUD). Wysoka pewność co do trafności (silne dowody: jedyne miejsca z
+surowym glifem zamiast SVG), ale bez dosłownego potwierdzenia Macieja — informuję go równolegle,
+może skorygować jeśli to nie to.**
 
 ## P-MENU-ESCAPE-NIEPELNOEKRANOWE (znalezisko audytu 2026-08-14, zgłoszenie Macieja z 2026-07-26 — nigdy niezarejestrowane) · STATUS: OTWARTE
 
