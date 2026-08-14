@@ -20256,3 +20256,42 @@ nadal nieuzupełnione. 6 własnych mutacji Evaluatora niezłapanych (kontynuacja
 świadomie zaakceptowanej luki pokrycia treści — ten sam wzorzec co Faza 1 i Skarbiec CSS fix).
 
 **TEMAT ZAMKNIĘTY.** Panel 11 zakładek Faza 2 (Praca/Nauka/Religia) w pełni gotowy.
+
+## R-DROGA-WZOR-6-RAMION — TEMAT ZAMKNIĘTY po 2 rundach (1194450f, Evaluator PASS-WITH-NOTES, 2026-08-14)
+
+Wszystkie 8 bramek zweryfikowane niezależnie i zielone. Naprawa blokująca z rundy 1 potwierdzona
+KOMPLETNA: `resetImprovementRenderState()` dokładnie 5 wywołań, żadna ścieżka restartu nie
+pominięta (2 niezależne dowody krzyżowe: `placedImprovements.clear()` i `cities.length=0`
+występują dokładnie 5× w tych samych 5 funkcjach; 6. kandydat `restoreGameFromSave` pokryty
+tranzytywnie przez wywołanie `restorePlacedImprovementsFromSave`). Własny scenariusz restartu
+Evaluatora (ekstrakcja PRAWDZIWEGO kodu z main.ts, pomiar REALNYCH wierzchołków `BufferGeometry`,
+nie atrapa) potwierdza: przed naprawą sąsiad rysował placyk (promień 0,17) zamiast ramienia
+(zasięg 0,866) po restarcie, po naprawie zasięg poprawny w obie strony, szew 3,55e-15.
+
+**10 mutacji (2 zapowiedziane + 8 własnych Evaluatora), wszystkie złapane** poza jedną
+mutacją-równoważną (MUT-6, sprawdzona i potwierdzona nieszkodliwa, nie luka). Obie luki
+pokrycia z rundy 1 (geometria M9, hook MUT-2) realnie domknięte.
+
+**Nowe, nieblokujące notatki (drobiazgi, nie warte 3 rundy):**
+- N1: domyślna wartość `roadMask=ROAD_MASK_FULL` w `buildImprovementSectored` to ZMIERZONA
+  pułapka z zerem użytkowników (jedyne wołanie i tak podaje maskę jawnie, MUT-10 to
+  potwierdza — usunięcie argumentu przechodzi WSZYSTKIE bramki drogowe na zielono mimo że
+  każda droga renderowałaby się jako pełna gwiazda). Najtańsza naprawa: usunąć default.
+- N2: komentarz "grubość 0,0736 przy HEX_R=1" sugeruje skalowanie z promieniem, ale wartość
+  jest STAŁA ABSOLUTNIE niezależnie od hexR (zmierzone przy 0,5/1/2) — doprecyzować sformułowanie.
+- N3: komentarz nie wspomina że `buildImprovementVisual` straciła też default `relief={}`
+  (wymuszone przez TS, wszystkie 3 wywołania podają jawnie) — kosmetyka dokumentacji.
+
+**Nota procesowa N4 (nie dotyczy tego tematu, do wiedzy orkiestratora):** Evaluator wykrył że
+inna, równoległa sesja/agent mutowała `empireDetailPanel.ts` w GŁÓWNYM drzewie roboczym podczas
+jego pracy (mutacja testowa tematu Panel Faza 2 F3, sama się cofnęła po kilku minutach) —
+zero szkody (Evaluator przeniósł swoje dalsze testy do izolowanego worktree po wykryciu), ale to
+żywy przykład ryzyka z CLAUDE.md §4a: dwóch agentów mutujących wspólne drzewo może zanieczyścić
+sobie wyniki bramek. W tej sesji WSZYSTKIE Evaluatory i Operatory tej nocy pracowały w
+`isolation: "worktree"` — ta konkretna kolizja dotyczyła najwyraźniej mutacji testowej
+uruchomionej BEZPOŚREDNIO w głównym drzewie przez jednego z Evaluatorów Panel Faza 2 (własna
+weryfikacja mutacyjna F1-F3), nie naruszenia zasady izolacji Operatora — do rozważenia czy
+Evaluatorzy też powinni domyślnie dostawać izolowany worktree do własnych mutacji kontrolnych.
+
+**TEMAT ZAMKNIĘTY.** Droga 6-ramion w pełni gotowa, geometria matematycznie potwierdzona,
+odporna na restart gry.
