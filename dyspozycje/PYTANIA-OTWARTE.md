@@ -24486,7 +24486,160 @@ kodu potrzebnych po stronie handlu. Do sprawdzenia przez dispatchowanego agenta:
 zasila którykolwiek panel Excel (`panele-sterowania/gen-panel-*.py`) — jeśli tak, odnotować w rejestrze
 jako osobny krok doganiania JSON→Excel (`CLAUDE.md` §2), nie wykonywać automatycznie bez potwierdzenia zakresu.
 
-**STATUS: WDROŻENIE W TOKU** (Workflow Operator Sonnet 5 → Evaluator Opus 5, dispatch 2026-08-14).
+**STATUS: WDROŻONE (`92cd220b`) — WERDYKT EVALUATORA: FAIL**, patrz sekcja
+`Evaluator: R-DROGI-RUCH-HANDEL-Q1 (92cd220b) — WERDYKT FAIL` niżej. Kod mechaniki i handlu jest
+poprawny co do litery decyzji i wszystkie bramki są zielone, ale decyzja „pięć razy szybszy" **nie
+jest realizowana** na dominującym terenie (podłoga `ROAD_MIN_MOVE_COST` zjada mnożnik) i wprowadza
+regresję ruchu na Wzgórzach/Lesie. Wymagana decyzja ABC właściciela (N1/N2) + naprawa treści
+CivPedii i paneli Excel (N3/N4) przed uznaniem tematu za domknięty.
+
+---
+
+## Evaluator: `R-DROGI-RUCH-HANDEL-Q1` (`92cd220b`) — WERDYKT **FAIL** (2026-08-14)
+
+**STATUS: **OTWARTE** — wymaga (a) decyzji ABC właściciela w sprawie podłogi `ROAD_MIN_MOVE_COST`
+(N1/N2), (b) dispatchu naprawy treści CivPedii (N3) i paneli Excel (N4).
+
+Weryfikacja niezależna w osobnym worktree, na czubku gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+(commit `92cd220b`, rodzic/baseline `08736abe`). Wszystkie liczby niżej zmierzone własnoręcznym
+uruchomieniem, nie przepisane z raportu Operatora.
+
+### 1. Co Operator zrobił dobrze — zweryfikowane, wszystko się zgadza
+
+| Punkt zlecenia | Wynik weryfikacji |
+|---|---|
+| (a) Ruch, Droga zwykła — nadal ÷3 | ✅ `cost / ROAD_MOVE_SPEED_MULT`, `ROAD_MOVE_SPEED_MULT = 3` — bez regresji |
+| (b) Ruch, Droga brukowana — dzielenie, nie odejmowanie | ✅ `Math.max(ROAD_MIN_MOVE_COST, cost / ROAD_BRUK_MOVE_SPEED_MULT)`, stała = 5 |
+| (c) Handel (plon heksa), Droga = 2/turę | ✅ `droga.bonus.handel: 2` w JSON |
+| (d) Handel (plon heksa), Droga brukowana = 3/turę | ✅ `droga_brukowana.bonus.handel: 3` w JSON |
+| Ścieżka handlu nie jest martwym kodem | ✅ prześledzona w całości: `economy.ts:44` import → `economy.ts:452` `applyImprovementBonuses(out, impKeys)` → `terrain-improvements.ts:131` pętla → `:83` `applyImprovementBonus` → `:87` `if (b.handel) yld.handel += b.handel`, gdzie `b` pochodzi z `improvementBonusForKey()` czytającego JSON. Wartości realnie trafiają do plonu heksa. |
+| Martwy kod posprzątany, nie zostawiony jako pułapka | ✅ `cobblestoneMoveBonus()` usunięta, **zero** pozostałych odwołań w `src/` i `tools/*.cjs` (grep). Pole `bonus_ruch: 2` zostaje w JSON, ale z siostrzanym `bonus_ruch_uwaga` opisującym wprost, że jest martwe, **plus** blok komentarza PL/EN w `road-movement.ts`. To wystarczające zabezpieczenie dla następnego czytającego. |
+
+**Bramki — 13/13 zgodnych co do jednej asercji z raportem Operatora** (uruchomione samodzielnie
+z `gra/`): `npx tsc --noEmit` 0 błędów exit 0 · `map-road-movement-test` **22/0** ·
+`heks-panel-tooltip-warstwa-test` **22/0** · `tech-tree-test` **19/0** · `research-test` **33/0** ·
+`unit-replace-test` **13/13** · `ai-founding-territory-test` **28/0** · `map-improvement-qualify-test`
+**112/0** · `road-hook-mainguard-test` **19/0** · `droga-6-ramion-geom-test` **61/0** ·
+`road-connectivity-test` **99/0** · `build-mode-hud-affordability-test` **7/0** · `zelazo-gate-test` **24/24**.
+
+**Teza „pre-istniejące" — potwierdzona niezależnie**, przez cofnięcie trzech zmienionych plików do
+baseline `08736abe` i ponowne uruchomienie: `upgrade-budynki-test.cjs` **48 pass / 1 fail**
+(`FAIL: no handel bonus on bruk`) i `zloto-test.cjs` **38 pass / 7 fail` — **identycznie przed i po
+zmianie**, delta zero. Teza Operatora prawdziwa. (Uwaga poboczna: oba testy kończą się `exit 0`
+mimo porażek — nie sygnalizują błędu kodem wyjścia; pre-istniejące, osobny dług.)
+
+**Jakość testu — nietautologiczny, mutacja kontrolna odtworzona.** Asercje rozróżniają starą i nową
+mechanikę liczbowo, nie przez powtórzenie wzoru: `koszt=2` na Wzgórzach → nowa `0.4` vs stara `1/3`,
+oraz `koszt=10` → nowa `2` vs stara `8` (przypadek bez clampu, jednoznacznie pokazuje dzielenie).
+Odtworzyłem deklarowaną mutację kontrolną dokładnie: podmiana samej formuły na `cost - 2` daje
+**19 pass / 3 fail** — zgodnie z raportem. Dodatkowo własna, mocniejsza mutacja (cofnięcie kodu
+**i** danych) daje **15 pass / 7 fail**, co potwierdza czułość także sekcji Handlu.
+
+### 2. N1 (KRYTYCZNA) — podłoga `ROAD_MIN_MOVE_COST` zjada decyzję właściciela na dominującym terenie
+
+`applyRoadMovementModifier()` clampuje gałąź bruku do `ROAD_MIN_MOVE_COST = 1/3`. Realne koszty
+bazowe wejścia w silniku (`units/setup.ts`): Łąka/Równina/Pustynia = **1**, Wzgórza = **2**,
+Las = **+1**, a **każdy heks z rzeką** to płaskie `RIVER_HEX_MOVE_COST = 1`. Stąd:
+
+| Koszt bazowy (skąd) | Bez drogi | Droga ÷3 | Bruk NOWY | Bruk STARY | Nowy vs stary | Bruk vs zwykła droga |
+|---|---|---|---|---|---|---|
+| **1** (Łąka/Równina/Pustynia, **każda rzeka**) | 1 | 0,3333 | **0,3333** | 0,3333 | identyczny | **ZERO zysku** |
+| **2** (Wzgórza **lub** płaski + Las) | 2 | 0,6667 | **0,4000** | 0,3333 | **GORSZY (−20%)** | lepszy |
+| **3** (Wzgórza + Las) | 3 | 1,0000 | 0,6000 | 1,0000 | lepszy | lepszy |
+
+Na koszcie bazowym 1 — czyli na terenie, po którym drogi realnie biegną (drogi łączą miasta,
+miasta stoją na płaskim i nad rzekami) — **droga brukowana daje dokładnie tyle samo co zwykła
+droga**: 1/3 punktu ruchu. Gracz płaci **25 pracy** za ulepszenie, które w warstwie ruchu nie robi
+**nic**. Efektywny mnożnik to 3×, nie 5×. Decyzja „po brukowanej pięć razy szybszy" **nie jest
+zrealizowana** tam, gdzie ma znaczenie.
+
+Osobno: Operator wpisał do `terrain-improvements.json` treść widoczną dla gracza
+`"warunek": "... ruch jednostek 5× szybszy (koszt wejścia ÷5) ..."`. To **nieprawda** na koszcie
+bazowym 1. Stary opis („+2 ruch jednostek") słusznie został uznany za kłamiący o mechanice — ale
+został zastąpiony opisem, który kłamie w najczęstszym przypadku. Clamp nie jest w raporcie
+przeanalizowany ani wspomniany **ani razu**, mimo że własna asercja Operatora
+(`'bruk laka: max(1/3, 1/5)'` === `1/3`) dosłownie go koduje i utrwala.
+
+### 3. N2 (KRYTYCZNA) — zmiana NIE jest monotonicznie korzystna: regresja ruchu na Wzgórzach i w Lesie
+
+Porównanie mechanik: stara `max(1/3, koszt−2)`, nowa `max(1/3, koszt/5)`. Nowa jest **wolniejsza**
+od starej dla kosztu bazowego w przedziale **(5/3; 5/2)** = (1,667; 2,5). Ten przedział zawiera
+dokładnie jedną z trzech realnie osiągalnych wartości: **koszt 2**. Skutek w grze: wjazd na
+brukowany heks Wzgórz albo brukowany heks płaski z Lasem kosztuje dziś **0,4** zamiast **0,333** —
+o **20% wolniej niż przed tą zmianą**. Bilans decyzji w warstwie ruchu: koszt 1 — bez zmian
+(i bez zysku z ulepszenia), koszt 2 — **pogorszenie**, koszt 3 — poprawa. Czyli na dwóch z trzech
+osiągalnych terenów decyzja daje zero albo minus.
+
+Operator asercjonuje wartość `0.4` wprost, opisując ją wyłącznie jako „dowód nietautologiczności" —
+patrzył na jedyny przypadek, w którym gracz traci, i nie rozpoznał go jako regresji.
+
+**N1+N2 wymagają decyzji właściciela, nie samodzielnej poprawki Operatora ani Evaluatora:**
+`ROAD_MIN_MOVE_COST` to parametr gameplayowy (podłoga kosztu ruchu, wspólna dla obu ulepszeń
+drogowych), a jego zmiana przestraja tempo przemieszczania armii w całej grze. Kierunki do
+rozważenia w pytaniu ABC — obniżenie podłogi do `1/5` (uwalnia pełne 5× i usuwa regresję,
+ale przyspiesza też ruch ogólnie), pozostawienie podłogi i przyjęcie, że bruk to głównie ulepszenie
+handlowe (wtedy trzeba naprawić kłamiący opis „5× szybszy"), albo podłoga zależna od typu drogi.
+**Nie rozstrzygam tego — to decyzja Macieja.**
+
+### 4. N3 (POWAŻNA) — nieprawdziwe twierdzenie o UI; nieaktualna treść realnie wysyłana do gracza
+
+Raport Operatora: *„Brak hardkodowanych liczb ruchu/handlu dróg w UI (…) opisy w grze pochodzą
+z pól JSON »warunek« (zaktualizowanych w pkt 2), nie z osobnych hardkodów."* — **nieprawda**,
+zweryfikowane własnym grepem.
+
+`docs/encyklopedia/ulepszenia/droga.md` jest pakowany przez `gra/tools/bundle-wiki-for-game.cjs`
+do `gra/src/data/wikiBundle.json`, który jest importowany w `gra/src/ui/wikiHubHud.ts:5` i zasila
+żywy hub CivPedii w grze. Zweryfikowałem zawartość **zbudowanego bundla** (nie samego markdownu) —
+wpis `ulepszenia/droga` zawiera dziś:
+- pole `full`: **„Po ukończeniu: heks daje +1 handel/t (oprócz plonu bazowego terenu)."** — po tej
+  zmianie jest **+2 handlu/turę**. Liczba nieaktualna, zahardkodowana w treści.
+- pole `wikiM`: **„Warunek: … ; +szybkość ruchu jednostek"** — to dosłowna kopia **starego**
+  `warunek` z JSON, czyli dokładnie tego opisu, który Operator sam uznał za kłamiący o mechanice
+  i poprawił w danych. Kopia w bundlu została nietknięta.
+
+Naprawa: edycja `docs/encyklopedia/ulepszenia/droga.md` + ponowne uruchomienie
+`gra/tools/bundle-wiki-for-game.cjs`. (Wpisu `droga_brukowana.md` w encyklopedii nie ma w ogóle —
+luka pre-istniejąca, nie spowodowana tą zmianą.)
+
+### 5. N4 (ŚREDNIA) — audyt paneli Excel niekompletny, pominięty drugi zacommitowany panel
+
+Wniosek Operatora o `Panel-A.xlsx` **potwierdzam** i uszczegóławiam: arkusz `Ulepszenia-inne`,
+wiersz **`A-IMP-038` `droga.bonus.handel` = 1** — nieaktualny (dziś 2). Wymaga doganiania JSON→Excel
+(`CLAUDE.md` §2).
+
+Operator **pominął** drugi zacommitowany panel: `panele-sterowania/Tereny-i-ulepszenia-MACIEJ.xlsx`,
+arkusz `Ulepszenia`, kolumna **„Handel (bonus)"** — `droga` = **1** i `droga_brukowana` = **2**,
+**obie wartości nieaktualne** (dziś 2 i 3). To panel z nazwiskiem właściciela w nazwie, czyli
+bezpośredni interfejs do strojenia dokładnie tych dwóch liczb. Jego teza o `MIASTO/Ulepszenia-terenu.xlsx`
+(niezacommitowany, nic do doganiania) — potwierdzam, prawdziwa.
+
+### 6. N5 (DROBNA, obserwacja) — mnożniki ruchu oddaliły się od interfejsu Excel właściciela
+
+`Panel-A.xlsx` nie ma **żadnego** wiersza dla mnożników drogowych: arkusz `Ruch-po-terenie` zawiera
+wyłącznie koszty bazowe terenów i dopłatę za las, a `Ulepszenia-inne` nie ma nawet wiersza
+`droga_brukowana.bonus.handel` (są tylko `koszt_praca`, `epoka`, `surowiecOdblokowany`). Ta zmiana
+dodatkowo przeniosła mnożniki ruchu **z JSON do stałych w TypeScripcie**, czyli jeszcze dalej od
+panelu. Luka generatora jest pre-istniejąca, ale zmiana ją pogłębia — właściciel nie może dziś
+przestroić 3×/5× ani handlu bruku z Excela.
+
+### 7. Werdykt
+
+**FAIL.** Nie z powodu jakości rzemiosła — ta jest dobra: mechanika zgodna z literą decyzji, bramki
+zielone co do jednej asercji, test nietautologiczny z odtworzoną mutacją kontrolną, martwy kod
+uczciwie opisany, teza o pre-istniejących porażkach prawdziwa. FAIL wynika z trzech rzeczy:
+(1) **decyzja właściciela nie jest zrealizowana** tam, gdzie ma skutek — na koszcie bazowym 1 bruk
+daje 3×, nie 5×, i zero przewagi nad zwykłą drogą; (2) **wprowadzono regresję ruchu** (−20%) na
+koszcie bazowym 2, nierozpoznaną mimo że test ją wprost asercjonuje; (3) **do raportu trafiło
+twierdzenie nieprawdziwe** („brak hardkodowanych liczb w UI") przy jednoczesnym pozostawieniu
+w bundlu gry nieaktualnej treści CivPedii — a §0b `CLAUDE.md` wymaga, by każda liczba i twierdzenie
+przedstawione właścicielowi jako fakt były zweryfikowane.
+
+Do domknięcia tematu: pytanie ABC o `ROAD_MIN_MOVE_COST` (N1/N2) + dispatch naprawy N3 i N4.
+Kod mechaniki i wartości handlu **nie wymagają cofnięcia** — są poprawne jako baza; brakuje decyzji
+o podłodze i dociągnięcia opisów.
+
+*Evaluator nie wprowadził żadnych zmian w kodzie ani danych — jedyny commit to ten wpis. Mutacje
+kontrolne wykonane lokalnie i cofnięte, drzewo robocze czyste (`git status` pusty).*
 
 ---
 
