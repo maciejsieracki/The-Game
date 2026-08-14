@@ -566,7 +566,25 @@ function treatyPnGate(
   // Dwustronna wymiana przy traktacie — tylko fair trade koszyka (bez dublowania bazy NAP).
   if (receivePn > 0) {
     if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-      return { accepted: false, reason: `Oferta nieuczciwa dla partnera — poniżej wartości PW @ Relacji (masz ${givePn} PW, potrzeba więcej wobec ${receivePn} PW od partnera)` };
+      // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (N1, Evaluator FAIL c94de5c8): TA bramka
+      // odrzuca `umowa_handlowa`/`umowa_szlakow` PRZED switch(actionId), więc dawniej
+      // wynik nie niósł `pwBalance` w ogóle — UI (balancePanelDataFromRows,
+      // renderPnBalancePanelHtml) spadał na stary, niespójny surowy net
+      // myOfferPn−theirOfferPn ("Bilans +30 zielone" mimo odrzucenia). `fairMin` to
+      // DOKŁADNIE ta sama liczba, którą właśnie policzył pnDealAcceptedByAi (jedyne
+      // źródło progu tutaj — ta ogólna bramka nie ma dostępu do mnożnika chęci AI
+      // per-akcja, w przeciwieństwie do handelFairnessGate).
+      // EN: this gate rejects `umowa_handlowa`/`umowa_szlakow` BEFORE switch(actionId),
+      // so the result used to carry no `pwBalance` at all — the UI fell back to the old,
+      // inconsistent raw net. `fairMin` is the exact same number pnDealAcceptedByAi just
+      // computed (this generic gate has no access to the per-action AI willingness
+      // multiplier, unlike handelFairnessGate).
+      const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relTotal));
+      return {
+        accepted: false,
+        reason: `Oferta nieuczciwa dla partnera — poniżej wartości PW @ Relacji (masz ${givePn} PW, potrzeba więcej wobec ${receivePn} PW od partnera)`,
+        pwBalance: givePn - fairMin,
+      };
     }
     return null;
   }

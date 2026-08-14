@@ -14343,9 +14343,19 @@ async function boot(): Promise<void> {
         if (playerAccept) return playerAccept;
       }
       const result = evaluateProposal(negotiationAsProposal(entry), ctx);
-      // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): pwBalance przechodzi TYLKO dla
-      // 'own' (gracz proponuje AI) — incoming ma osobną, już poprawną ścieżkę wyżej
-      // (previewIncomingPlayerAccept), nie dotykana tutaj.
+      // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (N6, Evaluator FAIL c94de5c8, sprostowanie
+      // komentarza rundy 1): to NIE jest gwarancja "pwBalance przechodzi TYLKO dla own" —
+      // `incoming` też trafia tutaj i dostaje `result.pwBalance`, ilekroć
+      // `previewIncomingPlayerAccept` wyżej zwróci `null` (akcja spoza
+      // INCOMING_NET_PW_ACTIONS, albo tryb 'treaty' bez realnego koszyka). Dziś PRAKTYCZNIE
+      // nieosiągalne dla umowa_handlowa/umowa_szlakow incoming: `proposerIsTreatyPlayer`
+      // w case'ie traktatu (diplomacy-proposals.ts) wymaga proponenta=gracz, a przy
+      // incoming proponentem jest AI — więc `pwBalance` i tak wychodzi `undefined`.
+      // `balancePanelDataFromRows` NIE filtruje wierszy po `direction` przy czytaniu
+      // `pwBalance` — gdyby kiedyś któraś ścieżka zaczęła zwracać numeryczny pwBalance
+      // dla incoming, ten brak filtra stałby się realnym problemem, nie tylko nieścisłym
+      // komentarzem. Zostawione bez zmiany logiki (poza zakresem N6 — "nieszkodliwe dziś"),
+      // ale komentarz już nie obiecuje gwarancji, której kod nie daje.
       return { accepted: result.accepted, reason: result.reason, pwBalance: result.pwBalance };
     }
 
