@@ -26693,4 +26693,54 @@ dojść do kroku 4, otworzyć „Zaawansowane opcje", najechać na ikonę (i), s
 `#civ-hud-title-tip-el` faktycznie się pokazuje z poprawnym tekstem. Jeśli nie — zdiagnozować
 DLACZEGO (błąd JS w konsoli, zły scope selektora, z-index/overlay, coś innego) i naprawić.
 
-**STATUS: DISPATCH W TOKU.**
+**WYNIK DISPATCHU (agent AutoBot, 2026-08-14, ta sama sesja) — NIE UDAŁO SIĘ ODTWORZYĆ.**
+Zbudowany bundle (`vite build`, HEAD tej gałęzi po `git pull --rebase`), headless Chromium
+(Playwright, `/opt/pw-browsers/chromium-1194`), pełne przejście kreatora: Intro → „Rozpocznij
+konfigurację" → Epoka → Dalej → Cywilizacja → Dalej → Ustawienia (krok 4) → „Zaawansowane
+opcje" → modal otwarty.
+
+- **Wszystkie 8 ustawień wymienionych w zgłoszeniu ze zrzutu** (Warunki zwycięstwa, Trudność
+  miast-państw, Barbarzyńcy, Bitwy, Koszty budynków, Koszty jednostek, Wzrost ludności, Zasięg
+  ruchu) — hover PRAWDZIWĄ myszą (`page.mouse.move`, zdarzenia CDP, nie syntetyczny
+  `dispatchEvent`) po odczekaniu >`SHOW_DELAY_MS` (380ms) → `#civ-hud-title-tip-el` pokazuje się
+  z `display:block` i DOKŁADNIE poprawnym tekstem `hint` z `advancedSettingRows()` — dla
+  wszystkich 8, także tych wymagających przewinięcia `.adv-modal-body` (Bitwy, Koszty
+  budynków/jednostek, Wzrost ludności, Zasięg ruchu leżą poniżej pierwszego ekranu modala).
+  **Zero błędów konsoli** (`console.error` + `pageerror`) w całym przebiegu.
+- **Jedna pułapka przy DIAGNOZIE, nie w produkcie:** pierwsza `.ng-info` w kolejności DOM na tym
+  ekranie NIE należy do modala, tylko do siatki „Ustawienia Rozgrywki" w tle (krok 4), która przy
+  otwartym modalu jest zasłonięta przez `.adv-overlay` (z-index 900, cały viewport) —
+  `elementFromPoint` w tym miejscu zwraca overlay, nie ikonę. Hover „pierwszej ikony ze strony"
+  bez zawężenia do `.adv-modal` fałszywie wygląda jak zepsuty tooltip. Możliwe, że to WŁAŚNIE
+  stało się w oryginalnym zrzucie/teście — nie da się tego potwierdzić bez dodatkowych informacji.
+- **Kontekst z `WERSJE.md` istotny dla oceny zgłoszenia:** prototyp `P-NEWGAME-OPISY-DO-TOOLTIP`
+  (ikona (i) zamiast zawsze-widocznego tekstu) wjechał do ROBOCZA PRZYPADKOWO w FALI 279
+  (`ea0be32a`, 2026-08-14 04:41 UTC) jako część commitu opisanego wyłącznie jako naprawa Auto-pracy
+  — bez Twojej zgody na sam prototyp. FALA 280 (09:02 UTC) powtórzyła ostrzeżenie: **werdykt
+  „zostaje / wycofaj" wciąż nie padł**. Jeśli zrzut ekranu w zgłoszeniu pochodzi z któregoś z tych
+  dwóch bundli ROBOCZA — kod jest identyczny z tym co testował ten agent (zero commitów do
+  `newGameFlow.ts`/`hudTitleTooltip.ts` między FALĄ 279 a HEAD tej gałęzi), więc różnica
+  real-browser/headless raczej NIE wynika z odmiennej wersji kodu.
+- **Najbardziej prawdopodobne wytłumaczenie różnicy (bez dowodu, tylko hipoteza — nie zgaduję
+  jako fakt):** `SHOW_DELAY_MS = 380` wymaga nieruchomego najechania >380ms na cel 16×16px.
+  Pobieżne „skanujące" przesunięcie myszy po liście 15 wierszy modala (typowe przy szybkim
+  przeglądzie nowego ekranu) może nigdzie nie zatrzymać się na tyle długo — subiektywnie
+  odczuwalne jako „tooltipy nie działają", mechanicznie zgodne z zamierzonym throttlingiem.
+  Zweryfikowane w teście regresyjnym: hover <380ms rzeczywiście NIE pokazuje tooltipa (to jest
+  zamierzone, nie usterka) — ale to nie dowodzi, że TO jest przyczyna zgłoszenia Macieja, tylko
+  że to prawdopodobny kandydat.
+- **Nic nie naprawiono** — nie znaleziono żadnej faktycznej usterki w bieżącym kodzie do naprawy.
+  Zamiast tego dodano regresję `gra/tools/newgame-adv-tooltip-test.cjs` (29/0, w tym dowód
+  mutacyjny: zdjęcie `.civ-newgame` z `rootEl` na żywo faktycznie gasi tooltip — test ma zęby, nie
+  jest tautologią), która chroni potwierdzony DZIAŁAJĄCY stan na przyszłość.
+
+**PYTANIE DOPRECYZOWUJĄCE DO CIEBIE, Maciej — `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1`:** żeby ustalić,
+czy to prawdziwa usterka której headless nie łapie, czy raczej UX (throttling 380ms +
+mały cel) albo pomyłka diagnozy (hover w tło zasłonięte modalem) — potrzebuję: (a) czy tooltip
+nie pojawia się przy KAŻDYM najechaniu, czy tylko czasami; (b) czy dotyczy WSZYSTKICH ikon (i) w
+grze, czy wyłącznie tych w modalu „Zaawansowane opcje"; (c) czy próbowałeś przytrzymać mysz
+nieruchomo na ikonie przez ok. sekundę, czy raczej przesuwałeś kursor po liście. Do czasu
+odpowiedzi temat zostaje otwarty — nie zamykam go jako „nie ma buga".
+
+**STATUS: OTWARTE — czeka na odpowiedź Macieja (`P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1`); mechanizm
+nie do odtworzenia w headless, regresja dodana, zero zmian produkcyjnych.**
