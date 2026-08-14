@@ -20418,3 +20418,19 @@ dowodzący na przykładzie z Twojego zrzutu: Łąka bez lasu/złoża NIE pokazuj
 kopalń, a analogiczny heks Wzgórza+złoże żelaza POKAZUJE Kopalnię żelaza. Sprawdzić przy okazji
 WSZYSTKIE pozostałe klucze ulepszeń w `IMPROVEMENT_KEYS` pod kątem tej samej luki (nie tylko
 wymienione wyżej — zrobić to systematycznie, nie punktowo).**
+
+## MIASTA-ARMIE-PANEL-LEWY-2026-08-14 — Klatka Armie odebrana od Designera, decyzja przekazana (2026-08-14)
+
+Designer dostarczył Klatkę Armie (2 warianty: A z 6 wierszami/4 plakietkami/zaznaczeniem/raną,
+B stan pusty) + handoff „Co się zmieniło" + „Decyzje i zgłoszenia". Dwa punkty do reakcji:
+1. Paleta 3b potwierdzona (trzecie złoto `#e0b24a` wypada, gradient tła panelu zostaje) — zgodne
+   z rekomendacją briefu, bez zastrzeżeń.
+2. Rozdzielenie 4 plakietek stanu armii na 3 kolory (złoto=stan obronny [garnizon,
+   ufortyfikowana], neutralny=uśpiona, błękit=auto-eksploracja) zamiast jednego złota dla
+   wszystkich czterech (dziś "uśpiona"/"w garnizonie" nieodróżnialne wizualnie).
+
+**DECYZJA (orkiestrator, przekazana Maciejowi do przesłania Designerowi):** wariant 3-kolorowy
+przyjęty — rozwiązuje realny problem nieodróżnialności stanów, funkcjonalnie uzasadnione, nie
+tylko kosmetyczne. Maciej przesyła potwierdzenie, Designer buduje Panel Miasta (druga klatka).
+
+**STATUS: OTWARTE — czeka na Klatkę Miasta od Designera.**
