@@ -24892,3 +24892,127 @@ mapy ikon (`"ruda cyny"`/`"ruda_cyny"` → `"res-tin-ore"`), zero zmian silnika.
 
 **STATUS: WDROŻENIE W TOKU** (dispatch Sonnet 5, 2026-08-14 — praca 2D SVG, poza zakresem stałej
 zasady render/**=Opus 5, która dotyczy WYŁĄCZNIE modeli 3D jednostek i `gra/src/render/**`).
+
+---
+
+## Evaluator: dedykowana ikona Rudy cyny (`cdfe39b9`) — WERDYKT **PASS-WITH-NOTES**
+
+Evaluator Opus 5, 2026-08-14, własny worktree na `cdfe39b9` (czubek
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`), `node_modules` podlinkowane z drzewa głównego.
+Wszystko poniżej zmierzone samodzielnie, nie przepisane z raportu Operatora.
+
+**STATUS: ZAMKNIĘTE** — wymóg właściciela spełniony co do litery, poprawka trafia dokładnie
+w tę powierzchnię, którą zgłosił (karta „Ruda cyny" w panelu zasobów imperium). Noty N1–N7 to
+kosmetyka, odporność bramki i jedna osobna, PRE-ISTNIEJĄCA luka (N6) — żadna nie blokuje.
+
+### Co zweryfikowane pozytywnie
+
+1. **Liczba grudek — policzona samodzielnie, nie z deklaracji.** `res-iron-ore.svg` = **3**
+   elementy `<path>`, `res-tin-ore.svg` = **2**. Każda grudka to domknięty wielokąt o 6
+   wierzchołkach. `res-iron-ore.svg` **nietknięty** (nie ma go w diffie commita).
+2. **Kolor i styl identyczne.** Oba pliki: `stroke="#c8ccd4"`, `stroke-width="1.5"`,
+   `stroke-linecap="round"`, `stroke-linejoin="round"`, `viewBox="0 0 24 24"`, `fill="none"`,
+   `width/height="24"`, ten sam `xmlns`. Nagłówek `<svg>` bajt w bajt taki sam aż do ścieżek.
+   Wymóg „kolor powinien być ten sam" spełniony dosłownie.
+3. **Ikona cyny to NIE kopia 2 z 3 ścieżek żelaza** — twierdzenie Operatora sprawdzone przez
+   porównanie współrzędnych: wszystkie punkty są inne (żelazo startuje w `M4 15.7` / `M11.5 17` /
+   `M9 9.3`, cyna w `M6 11.5` / `M13 18`). Deklaracja prawdziwa.
+4. **Geometria — wyrenderowana, nie tylko przeczytana.** Brak narzędzi SVG w środowisku, więc
+   napisałem własny rasteryzator (ścieżki to wyłącznie `M`/`l`/`Z`, czyli proste wielokąty)
+   i obejrzałem obie ikony w 16/18/32/64/300 px. Wyniki (jednostki viewBoxa, z uwzględnieniem
+   grubości kreski 1,5):
+   - Żelazo: bbox x[3,2..17,8] y[5,9..19,4]; marginesy L 3,25 / P 6,25 / G 5,85 / D 4,65.
+   - Cyna: bbox x[5,2..20,4] y[6,6..20,5]; marginesy L 5,25 / P 3,65 / G 6,65 / D 3,45.
+   - **Nic nie wychodzi poza viewBox**, grudki cyny **nie nachodzą na siebie**, nic nie jest
+     stłoczone w rogu, czytelne w każdym testowanym rozmiarze łącznie z 16 px.
+5. **Mapa kluczy — pełny zrzut wszystkich 39 kluczy, nie próbka.** `"ruda cyny"` → `res-tin-ore`,
+   `"ruda_cyny"` → `res-tin-ore`. `"ruda żelaza"` / `"ruda zelaza"` / `"ruda_zelaza"` → `res-iron-ore`
+   (wszystkie trzy warianty nietknięte). `"ruda"` → `res-copper-ore` i `"żelazo"`/`"zelazo"` →
+   `res-iron` (metal, inna ikona) bez zmian. **Zero literówek.** Reguła dopasowania (najdłuższy
+   klucz wygrywa substring) działa poprawnie: `ruda cyny` (9 znaków) bije gołe `ruda` (4).
+6. **Bundling — sprawdzony, bo to było realne ryzyko cichej porażki.** `brandAssets.ts` ładuje
+   ikony przez `import.meta.glob('./brand/**/*.svg', { query:'?raw', eager:true })`, więc nowy plik
+   wchodzi do bundla **automatycznie**, bez rejestracji. `icons-manifest.json` nie zawiera ŻADNEGO
+   wpisu `res-*-ore` (ani miedzi, ani żelaza), więc cyna też go nie potrzebuje — spójne.
+   `normalizeSvg()` podmienia tylko `stroke="#e8d88a"`, więc `#c8ccd4` przechodzi nietknięte;
+   regex `\swidth="` nie może trafić w `stroke-width="` (przed `width` stoi `-`, nie spacja),
+   więc skalowanie działa identycznie jak dla żelaza.
+7. **Poprawka trafia w zgłoszoną powierzchnię — sprawdzone do końca.** `main.ts:2913`
+   `{ id: 'ruda_cyny', label: 'Ruda cyny', icon: '⛏️', typ: 'surowy' }` — **bez `placeholder: true`**,
+   więc `resCardHtml()` idzie gałęzią realną (`resIconHtml(r.label)` → SVG), a nie placeholderową
+   (`esc(r.icon)` → emoji). Karta w panelu zasobów imperium naprawdę pokaże `res-tin-ore`.
+8. **Wszystkie powierzchnie ikon surowców przechodzą przez jeden punkt** — `mapResourceIconSvg`
+   w `brandAssets.ts`. Prześledzone wszystkie wywołania: panel imperium (etykieta `Ruda cyny`),
+   tooltip heksu (`ZLOZE_LABEL['cyna'] = 'Ruda cyny'` ORAZ `territoryResourceIconHtml` podające
+   **surowy klucz ASCII `ruda_cyny`** — pokryte, bo wariant `ruda_cyny` jest w mapie), pasek
+   surowców miasta (`CS_RES_STRIP_ORDER` zawiera `ruda_cyny`), kosz i podsumowanie umowy
+   dyplomatycznej (`resourceDisplayLabel` → `Ruda cyny`). Każda ścieżka trafia w `res-tin-ore`.
+9. **Grep `res-iron-ore` po całym repo** — poza mapą ikon i nowym testem zostają wyłącznie cztery
+   zamrożone makiety `gra/tools/.zeton-*-dist/*.html`. **Nie dotyczą cyny w ogóle** (trafienia na
+   „cyn" to szum wewnątrz base64 osadzonych obrazów) i nie wchodzą do bundla gry. **Nigdzie indziej
+   nie ma już wiązania cyny z ikoną żelaza.**
+10. **Bramka nie jest dekoracyjna — test mutacyjny.** Zrobiłem lustrzaną kopię w scratchpadzie
+    (repo nietknięte) i zepsułem cztery rzeczy po kolei: cofnięcie mapy na `res-iron-ore` → **3 FAIL**;
+    usunięcie pliku SVG → **2 FAIL**; zmiana koloru cyny → **2 FAIL**; danie cynie 3 grudek → **2 FAIL**.
+    Za każdym razem `exit 1`. Bramka realnie łapie regresję, którą deklaruje.
+
+### Bramki (uruchomione przeze mnie, na `cdfe39b9`)
+
+| Bramka | Wynik | Kod wyjścia |
+|---|---|---|
+| `tsc --noEmit` (przypięty TS 5.9.3) | 0 błędów | 0 |
+| `resources-map-icon-map-test.cjs` | **52 pass, 0 fail** | 0 |
+| `tech-tree-test.cjs` | 19 pass, 0 fail | 0 |
+| `research-test.cjs` | 33 pass, 0 fail | 0 |
+| `unit-replace-test.cjs` | 13/13 | 0 |
+| `surowce-katalog-kolejnosc-test.cjs` | **62 pass, 0 fail** | 0 |
+
+Wszystkie sześć liczb **zgadzają się co do jednego** z raportem Operatora. `surowce-katalog` = 62/0
+trzyma punkt odniesienia z handoffu (`R-SUROWIEC-CYNA-DO-BRAZU`), więc ten commit go nie ruszył.
+
+**Uczciwe zastrzeżenie do `tsc`:** pierwsze podejście przez `npx tsc` ściągnęło **nowszy** TypeScript
+i zwróciło błąd `TS5101: Option 'baseUrl' is deprecated` — to artefakt złej wersji kompilatora,
+nie błąd projektu. Na przypiętym `./node_modules/.bin/tsc` (5.9.3) jest czysto, `exit 0`.
+
+### Noty
+
+- **N1 (kosmetyka, kompozycja odstaje od rodziny).** Grudki żelaza **stykają się / lekko zachodzą**
+  na siebie (widoczna szczelina −0,23 i −0,49 jednostki) i czytają się jako JEDNA hałda. Grudki cyny
+  dzieli **+2,05 jednostki widocznej pustki** po przekątnej — czytają się jako dwa osobne, luźno
+  rzucone kamienie, nie jako mniejsza hałda. Miedź też stykowa (+0,25 / +0,34). Cyna jest jedyną
+  ikoną rudy z tak rozstrzelonym układem. Wymogu właściciela to nie łamie (2 grudki, ten kolor),
+  ale odstaje stylistycznie — do rozważenia zsunięcie grudek o ~1,5–2 jednostki.
+- **N2 (kosmetyka, widoczna obok siebie).** Środki optyczne obu ikon uciekają w **przeciwne strony**:
+  żelazo (−1,50; +0,60) siedzi na lewo od środka, cyna (+0,80; +1,60) na prawo i nisko. W pasku
+  surowców miasta `CS_RES_STRIP_ORDER` oraz w siatce kart panelu imperium `ruda_zelaza` i `ruda_cyny`
+  stoją **bezpośrednio obok siebie** — przy 32 px da to widoczne rozjechanie linii bazowej.
+- **N3 (konsekwencja polecenia, nie błąd).** Cyna (2 szare grudki) dzieli teraz sylwetkę
+  z `res-copper-ore` (też 2 grudki + kreska pęknięcia). Przy 16 px rozróżnia je **wyłącznie kolor**
+  (szary vs pomarańczowy). Wynika to wprost z polecenia właściciela (2 grudki + kolor żelaza),
+  więc zgłaszam jako skutek do świadomości, nie jako wadę do naprawy.
+- **N4 (dziura w bramce, dziś nieszkodliwa).** Piąta mutacja: podmieniłem `res-tin-ore.svg` na
+  **dosłowną kopię 2 z 3 ścieżek żelaza** — test **przeszedł 52/52**. Bramka pilnuje liczby grudek
+  i koloru, ale **nie tego, że geometria jest własna**. Dostarczony plik jest naprawdę niezależny,
+  więc realnej wady dziś nie ma; warto dołożyć asercję, że zbiory ścieżek obu plików są rozłączne.
+- **N5 (nazewnictwo asercji).** `res-copper-ore.svg` ma **3** elementy `<path>`, ale tylko **2**
+  grudki — trzeci to kreska pęknięcia (`M9 12.6 l1.5 2`, dwa punkty). Równoważność
+  „`<path>` = grudka" **nie jest** w tym zestawie ikon uniwersalna. Dla dwóch plików, które test
+  faktycznie bada, trzyma się poprawnie, ale rozszerzenie testu na miedź dałoby fałszywy alarm.
+- **N6 (PRE-ISTNIEJĄCE, poza zakresem tego commita — jedyna pozostała powierzchnia bez cyny).**
+  `gra/src/render/resources.ts`, `buildResourceOverlayFromZloze()` **nie ma `case 'cyna'`** →
+  `default: return null`. Złoże cyny na heksie dostaje więc **zero markera 3D**, podczas gdy
+  `miedz`/`zelazo`/`wegiel`/`sol`/`zloto` dostają `oreRocks()`. Słowo „cyna" nie występuje
+  w `gra/src/render/**` ani razu. To osobna luka, nie regresja tego tematu — ale jeśli właściciel
+  pyta „czy to jedyne miejsce", odpowiedź brzmi **nie: ikona 2D jest naprawiona, marker 3D na mapie
+  nadal nie istnieje**. Naprawa wymagałaby Operatora **Opus 5** (stała zasada `gra/src/render/**`).
+- **N7 (martwy kod, do świadomości).** `main.ts:2913` daje `ruda_cyny` emoji `⛏️` — **identyczne**
+  jak `ruda_zelaza`. Dziś nieszkodliwe, bo `r.icon` konsumuje wyłącznie `resPlaceholderCardHtml()`,
+  a `ruda_cyny` nie jest placeholderem. Gdyby ktoś kiedyś przywrócił jej `placeholder: true`,
+  nierozróżnialność żelaza i cyny **wróci** — tym razem na emoji.
+
+### Werdykt
+
+**PASS-WITH-NOTES.** Wymóg (żelazo 3 grudki, cyna 2 grudki, ten sam kolor) spełniony i zweryfikowany
+niezależnie; poprawka trafia w zgłoszoną powierzchnię; wszystkie bramki zielone i zgodne co do liczby
+z raportem Operatora; nowa bramka realnie łapie regresję. N1–N2 to dopieszczenie kompozycji, N4–N5
+wzmocnienie testu, N6 osobny temat na Opus 5, N3/N7 do świadomości. Nic nie blokuje.
