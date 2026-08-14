@@ -20126,3 +20126,55 @@ nieudokumentowane w commit message), przecinek/kropka niespójność w formatowa
 bramki dowodzą tylko routingu, nie treści — ten sam, świadomie zaakceptowany wzorzec co Faza 1).
 
 **STATUS: dispatch rundy naprawczej (F1/F2/F3 tylko).**
+
+## R-DROGA-WZOR-6-RAMION (0caa4471) — Evaluator: WERDYKT FAIL, dispatch runda 2 (2026-08-14)
+
+**Geometria POPRAWNA i niezależnie udowodniona** — Evaluator zrobił WŁASNY skrypt Node+Three
+(headless, mierzący realne wierzchołki `BufferGeometry`, zero zapożyczeń z testu Operatora):
+83 asercje, 0 porażek. Kluczowa decyzja Operatora (porty wyprowadzone z wektora do sąsiada, nie
+przepisane z pikseli mockupu flat-top) potwierdzona jako właściwa — dosłowne przeniesienie
+współrzędnych z dokumentu trafiłoby w WIERZCHOŁEK silnika (pointy-top), nie w środek ścianki,
+i drogi nigdy by się nie łączyły mimo zielonych testów logicznych. Szew między kaflami: błąd
+3,55e-15 (precyzja float, nie algorytmu). Hook rekomputacji potwierdzony jako jedyny punkt
+przebudowy mesha, wołany przez wszystkie ścieżki (gracz/AI/rajd/założenie miasta/wycinka lasu/
+save-load).
+
+**⛔ ZNALEZISKO BLOKUJĄCE:** nowy `roadRenderedHexes` Set czyszczony WYŁĄCZNIE w
+`restorePlacedImprovementsFromSave` — 4 pozostałe ścieżki restartu gry (`doStartGame`,
+`doStartPlaytestWalkaMapy`, `doStartPlaytestMiastoEkonomia`, `doStartPlaytestMapaSwiata`)
+czyszczą `improvementMeshes`/`placedImprovements` ale NIE `roadRenderedHexes`, i żadna nie
+przeładowuje strony. Skutek: stare wpisy przeżywają restart, wczesny `return` w
+`syncRoadNetworkAt` nigdy nie odpala odświeżenia sąsiada dla heksa który miał drogę w
+POPRZEDNIEJ rozgrywce tej samej sesji przeglądarki — drogi się wtedy nie stykają (sąsiad rysuje
+placyk zamiast ramienia). Zreprodukowane modelem hooka 1:1 przez Evaluatora. Trafia w codzienny
+przepływ (3 z 4 dotkniętych ścieżek to starty playtestów z huba). Ironicznie: komentarz 2 linie
+nad jedną z tych ścieżek już raz ostrzega przed dokładnie tą klasą błędu (audyt #43,
+cityRelig/autoManageCities przeżywały restart bez przeładowania strony) — nowy Set powiela
+naprawiony wcześniej błąd.
+
+**Luki pokrycia (mutacje 13, 7/13 złapane przez repo, 11/13 przez własny skrypt Evaluatora):**
+`droga-6-ramion.ts` (sam plik renderujący geometrię) ma ZERO pokrycia w repo — M9 (obrót ramion
+o 30°, dokładnie błąd flat-top↔pointy-top przed którym cała decyzja o orientacji miała chronić)
+przechodzi wszystkie bramki na zielono. Hook w `main.ts` (`syncRoadNetworkAt`) ma ZERO pokrycia,
+nawet `tsc` — usunięcie wywołania hooka w ogóle nie jest łapane.
+
+**Odstępstwo maska=0 (placyk) potwierdzone jako rozsądne i wycofywalne** — dokument nie
+rozstrzyga przypadku "kafel z drogą bez sąsiada", więc to wypełnienie luki, nie sprzeczność.
+
+**STATUS: dispatch runda 2 (mała, bez zmian w geometrii):**
+1. [BLOKUJĄCE] `roadRenderedHexes.clear()` w 4 brakujących miejscach restartu gry (albo wspólny
+   helper resetu stanu renderu ulepszeń dla wszystkich 5 miejsc łącznie z save/load).
+2. [mocno rekomendowane] Test na `droga-6-ramion.ts` domykający M8/M9/M10 (Evaluator zostawił
+   gotowy szkielet w `scratchpad/eval-droga-geom.cjs`, kluczowa asercja: kierunek ramienia
+   zgadza się z `roadPortOffset`, nie tylko długość).
+3. [mocno rekomendowane] Strażnik/test behawioralny na hook w `main.ts` domykający M11/M12/M13.
+4. [kosmetyka] Nagłówek komentarza `droga-6-ramion.ts` podaje nieprawdziwą liczbę max grubości
+   (deklaruje <0,07, realnie 0,0736 dla pełnej gwiazdy brukowanej).
+5. [kosmetyka] Rozjazd domyślnych `roadMask` między `buildImprovementSectored` (`ROAD_MASK_FULL`)
+   a `buildImprovementVisual` (`0`) — oba realne wywołania podają jawnie więc bez skutku dziś,
+   ale pułapka dla przyszłego wołającego.
+
+**Do playtestu, nie kod (odnotowane, nie do tej rundy):** miasta nie należą do sieci dróg
+(`hexHasRoadAt` patrzy tylko na ulepszenia) — samotny odcinek drogi przy własnym mieście pokaże
+placyk zamiast ramienia w stronę miasta. Dokument tego przypadku nie opisuje, do decyzji
+właściciela przy playteście.
