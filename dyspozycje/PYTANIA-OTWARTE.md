@@ -25554,7 +25554,46 @@ UI koszyka.** Do potwierdzenia przez dispatchowanego agenta (nie zakładać w 10
 końca, co się dzieje z `item.cityId` przy WYKONANIU zaakceptowanej umowy (funkcja aplikująca efekty
 traktatu do stanu gry), żeby mieć pewność, że usunięcie selektora nie zgubi żadnej realnej logiki.
 
-**STATUS: DISPATCH W TOKU.**
+**STATUS: NAPRAWIONE (Operator Sonnet 5, 2026-08-14), czeka na Evaluatora.**
+
+**Potwierdzone przy wykonaniu (`gra/src/main.ts`, funkcja aplikująca efekty traktatu, `case
+'zywnosc':` ~linia 8558):** transfer żywności operuje WYŁĄCZNIE na `empireFoodStates.get(fromOwnerId
+/toOwnerId)` (`zapasyPanstwa` — Spichlerz Centralny cywilizacji) i czyta z pozycji koszyka jedynie
+`item.ilosc` — `item.id`/`item.cityId` NIE są tam czytane ANI RAZEM, ani osobno, w żadnej gałęzi.
+Zgodnie z hipotezą orkiestratora: to był interfejs-widmo, wyłącznie UI (dedup koszyka).
+
+**Implementacja:** usunięty selektor "Miasto (spichlerz)" (`cdb-city-chips`/`cdb-city`, sekcja
+`data-extra="prefix-city"`) z formularza dodawania żywności w `gra/src/ui/diplomacyTradeBasket.ts`
+— zostaje tylko pole "Ilość żywności". `readItemFromForm` (case `'zywnosc'`) już nie czyta cityId —
+`id` jest teraz stałe (`'zywnosc'`, jak `zloto`/`praca`), więc `basketItemIdentity` (dedup) nie
+potrzebuje już specjalnego przypadku dla żywności — uproszczona do `typ + '::' + id` (jak
+wszystkie inne typy). Usunięte też: JS wiązanie kliknięć dla `.cdb-chip-city` (martwe po usunięciu
+elementów), oraz pole `cityId?: string` z interfejsu `BasketItem` (`diplomacy-pn-engine.ts`) —
+zweryfikowane grepem całego `gra/src`+`gra/tools`, zero pozostałych czytelników/pisarzy.
+
+**Skutek dla gracza:** wszystkie dodania żywności do oferty sumują się teraz do JEDNEJ pozycji
+koszyka (jeden cywilizacyjny zasób) zamiast dzielić się na osobne wiersze per miasto.
+
+**Testy zaktualizowane:** `diplomacy-basket-duplicate-test.cjs` (dawny scenariusz "inne miasto
+= osobna pozycja" zastąpiony "KAŻDE dodanie żywności zawsze scala się do 1 pozycji", 19→21
+asercji), `diplomacy-basket-duplicate-ui-test.cjs` (usunięty `cityId` param z helpera `addFood`,
+scenariusz "scalanie przez edycję" dawniej testowany na żywności+mieście PRZENIESIONY na
+`surowiec_ilosc` — drewno/węgiel — bo żywność strukturalnie nie może już mieć 2 osobnych wierszy
+do zderzenia; regresja-ochrona zachowana, nie utracona, 17→31 asercji łącznie z rozszerzeniem
+kroku żywności).
+
+**Bramki:** `tsc --noEmit` 0, `tech-tree-test` 19/19, `research-test` 33/33, `diplomacy-test`
+148/148, `diplomacy-proposal-test` 187/187, `diplomacy-basket-duplicate-test` 21/21,
+`diplomacy-basket-duplicate-ui-test` 31/31, `diplomacy-own-proposal-edit-test` 33/33,
+`diplomacy-stol-pw-sum-test` 70/70, `diplomacy-negotiation-table-test` 62/62,
+`diplomacy-currency-trade-test` 5/5.
+
+**Świadomie NIE ruszone (poza zakresem, niski priorytet):** `NegotiationModalContext.cityOptions`/
+`receiveCityOptions` (`diplomacyNegotiationModal.ts`) i budująca je zmienna `cities` w `main.ts`
+(~linia 17553) zostają jako nieużywane-ale-nieszkodliwe pola — jedyny ich konsument był
+selektor, który właśnie usunięto. Nie usunięte teraz, żeby nie poszerzać zakresu zlecenia poza
+`diplomacyTradeBasket.ts` (C-025, dyscyplina zakresu) — do posprzątania w osobnej, drobnej
+rundzie, jeśli ktoś to zauważy przy okazji innej pracy w tym obszarze.
 
 ---
 

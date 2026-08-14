@@ -186,15 +186,20 @@ async function main() {
       'surowiec_ilosc krok5: suma 100+100=200 przycięta do maxQty 137, floor do 135 (got ' + give[0].ilosc + ')');
   }
 
-  // --- 8) zywnosc: sumuje TYLKO dla tego samego miasta; inne miasto = osobna pozycja ---
+  // --- 8) zywnosc: P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (Maciej 2026-08-14) — bez
+  // wyboru miasta, id zawsze 'zywnosc' (jak zloto/praca), więc KAŻDE 2x dodanie zawsze
+  // sumuje się do JEDNEJ pozycji (jeden cywilizacyjny zasób, Spichlerz Centralny), nie ma
+  // już pojęcia "inne miasto = osobna pozycja".
   {
-    let give = addOrMergeBasketItem([], { typ: 'zywnosc', id: 'city1', cityId: 'city1', ilosc: 40 }, 'give', baseCtx());
-    give = addOrMergeBasketItem(give, { typ: 'zywnosc', id: 'city1', cityId: 'city1', ilosc: 25 }, 'give', baseCtx());
-    ok(give.length === 1, 'zywnosc: to samo miasto 2x → 1 pozycja');
-    ok(give[0].ilosc === 65, 'zywnosc: ilość zsumowana 40+25=65 dla tego samego miasta (got ' + give[0].ilosc + ')');
+    let give = addOrMergeBasketItem([], { typ: 'zywnosc', id: 'zywnosc', ilosc: 40 }, 'give', baseCtx());
+    give = addOrMergeBasketItem(give, { typ: 'zywnosc', id: 'zywnosc', ilosc: 25 }, 'give', baseCtx());
+    ok(give.length === 1, 'zywnosc: 2x dodanie → 1 pozycja (jeden cywilizacyjny zasób)');
+    ok(give[0].ilosc === 65, 'zywnosc: ilość zsumowana 40+25=65 (got ' + give[0].ilosc + ')');
 
-    give = addOrMergeBasketItem(give, { typ: 'zywnosc', id: 'city2', cityId: 'city2', ilosc: 10 }, 'give', baseCtx());
-    ok(give.length === 2, 'zywnosc: inne miasto → osobna pozycja (nie sumowana z city1)');
+    give = addOrMergeBasketItem(give, { typ: 'zywnosc', id: 'zywnosc', ilosc: 10 }, 'give', baseCtx());
+    ok(give.length === 1, 'zywnosc: 3. dodanie NADAL sumuje do tej samej 1 pozycji (bez cityId nie ma już "innego miasta")');
+    ok(give[0].ilosc === 75, 'zywnosc: ilość zsumowana 65+10=75 (got ' + give[0].ilosc + ')');
+    ok(give[0].cityId === undefined, 'zywnosc: pozycja koszyka NIE ma już pola cityId');
   }
 
   // --- 9) give i receive są niezależne — dodanie tej samej tech po obu stronach nie koliduje ---

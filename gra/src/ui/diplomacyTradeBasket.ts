@@ -1359,26 +1359,6 @@ export function buildAddForm(
     ),
   ).join('');
 
-  const cities = side === 'give'
-    ? (ctx.cityOptions ?? [])
-    : (ctx.receiveCityOptions ?? ctx.cityOptions ?? []);
-  const editCityId = editTyp === 'zywnosc' ? (editItem!.item.cityId ?? editItem!.item.id) : undefined;
-  const defaultCity = (editCityId != null && cities.some(c => c.id === editCityId))
-    ? editCityId
-    : (cities[0]?.id ?? '');
-  const cityChips = cities.length > 0
-    ? cities.map(c =>
-      buildChipBtn(
-        'cdb-chip-city',
-        c.id,
-        prefix,
-        c.id === defaultCity,
-        typChipIconHtml('zywnosc'),
-        c.label,
-      ),
-    ).join('')
-    : '<span class="cdb-sub">— brak miast (SILNIK) —</span>';
-
   // R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08): strona „daję" i „dostaję" filtrują
   // niezależnie (patrz NegotiationModalContext) — technologia znana przez obie strony nie
   // ma prawa pojawić się w żadnej z list. `techOptions` to legacy pojedynczy kierunek
@@ -1478,10 +1458,15 @@ export function buildAddForm(
     + '<label>Ilość</label>'
     + qtyStepperHtml('cdb-qty', prefix, initialQty)
     + '</div>'
+    // P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (Maciej 2026-08-14): usunięty selektor
+    // "Miasto (spichlerz)" — handel żywnością operuje na cywilizacyjnym Spichlerzu
+    // Centralnym (`empireFoodStates`, main.ts case 'zywnosc' przy wykonaniu traktatu),
+    // nie na konkretnym mieście; potwierdzone grepem silnika — `item.cityId`/`item.id`
+    // NIGDY nie były tam czytane, wybór miasta był interfejsem-widmem (UI-only, tylko do
+    // deduplikacji koszyka — patrz basketItemIdentity niżej, dziś uproszczona).
+    // `data-extra="prefix-city"` (nazwa atrybutu zostaje, patrz updateTypFields) dalej
+    // pokazuje/chowa tę sekcję przy wyborze typu "zywnosc", zostaje tylko pole ilości.
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-city">'
-    + '<label>Miasto (spichlerz)</label>'
-    + '<div class="cdb-chip-grid cdb-city-chips">' + cityChips + '</div>'
-    + '<input type="hidden" class="cdb-city" data-side="' + prefix + '" value="' + esc(defaultCity) + '" />'
     + '<label>Ilość żywności <span style="color:#7a8494">(1 PW = ' + zywnHint + ')</span></label>'
     + qtyStepperHtml('cdb-food-qty', prefix, initialFoodQty)
     + '</div>'
@@ -1552,19 +1537,19 @@ function clampQtyForItem(
 
 /**
  * Tożsamość pozycji koszyka — dwie pozycje o tej samej tożsamości są "tą samą propozycją"
- * (P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE). Dla `zywnosc` samo `id` już JEST cityId
- * (patrz readItemFromForm), dopisanie `cityId` jest więc no-opem — zostawione jawnie, żeby
- * nie polegać cicho na tym, że oba pola akurat są dziś równe.
+ * (P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE). `zywnosc` od P-DYPLO-HANDEL-ZYWNOSC-WYBOR-
+ * MIASTA-ZBEDNY (Maciej 2026-08-14) ma stały `id: 'zywnosc'` (jak zloto/praca) — jeden
+ * cywilizacyjny zasób, więc żaden specjalny przypadek tu już nie jest potrzebny (dawniej
+ * `id` = cityId, dopisywano go osobno do klucza).
  * / EN: identity key for a basket item; two items sharing it are "the same proposal".
  */
 function basketItemIdentity(item: BasketItem): string {
-  return item.typ + '::' + item.id + (item.typ === 'zywnosc' ? '::' + (item.cityId ?? '') : '');
+  return item.typ + '::' + item.id;
 }
 
 /**
  * R-DYPLO-DUPLIKAT-KOSZYK (P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE, 2026-08-12): dodanie
- * pozycji o TEJ SAMEJ tożsamości (typ+id[+cityId dla żywności]), która już jest w koszyku po
- * tej samej stronie:
+ * pozycji o TEJ SAMEJ tożsamości (typ+id), która już jest w koszyku po tej samej stronie:
  *  - typy z sensowną, sumowalną ilością (zloto/praca/zywnosc/surowiec_ilosc — te same typy co
  *    `basketItemQtyEditable`, bo to one dostają suwak ilości w wierszu koszyka) -> ZSUMUJ
  *    ilość z istniejącą pozycją, przycięte do tego samego limitu co ręczna zmiana ilości
@@ -1877,10 +1862,11 @@ export function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: Ne
       return { typ, id: typ, ilosc: qty };
     }
     case 'zywnosc': {
-      const cityId = (box.querySelector('.cdb-city[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
+      // P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (Maciej 2026-08-14): bez wyboru miasta —
+      // jeden cywilizacyjny zasób (Spichlerz Centralny), jak zloto/praca wyżej (id=typ).
       const qty = parseInt((box.querySelector('.cdb-food-qty[data-side="' + prefix + '"]') as HTMLInputElement)?.value ?? '0', 10);
-      if (!cityId || qty <= 0) return null;
-      return { typ, id: cityId, cityId, ilosc: qty };
+      if (qty <= 0) return null;
+      return { typ, id: typ, ilosc: qty };
     }
     case 'zloze': {
       const id = (box.querySelector('.cdb-zloze[data-side="' + prefix + '"]') as HTMLInputElement)?.value;
@@ -2271,11 +2257,9 @@ export function showTradeBasketModal(
       });
     });
 
-    box.querySelectorAll('.cdb-chip-city').forEach(btn => {
-      btn.addEventListener('click', () => {
-        selectChipInGroup(btn, 'cdb-chip-city', '.cdb-city');
-      });
-    });
+    // P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (Maciej 2026-08-14): wiązanie kliknięć dla
+    // `.cdb-chip-city`/`.cdb-city` usunięte razem z selektorem — te elementy już nigdy nie
+    // renderują się (patrz buildAddForm), więc `querySelectorAll` tu byłoby zawsze puste.
 
     box.querySelectorAll('.cdb-chip-tech').forEach(btn => {
       btn.addEventListener('click', () => {

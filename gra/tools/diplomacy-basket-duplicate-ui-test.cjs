@@ -123,9 +123,10 @@ function addGold(qty) {
   qa('.cdb-qty').find(i => i.getAttribute('data-side') === 'give').value = String(qty);
   click(addButton());
 }
-function addFood(cityId, qty) {
+// P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (Maciej 2026-08-14): bez wyboru miasta — selektor
+// "Miasto (spichlerz)"/chip .cdb-city-chips usunięty z formularza, patrz diplomacyTradeBasket.ts.
+function addFood(qty) {
   click(chip('cdb-chip-typ', 'zywnosc'));
-  click(chip('cdb-chip-city', cityId));
   qa('.cdb-food-qty').find(i => i.getAttribute('data-side') === 'give').value = String(qty);
   click(addButton());
 }
@@ -221,17 +222,19 @@ async function main() {
     `złoto: suma 80+900 przycięta do skarbca 500 ¤ (widoczne ilości: ${rowQtyValues().join(',')})`);
   ok(giveRows().length === 3, `po przycięciu nadal 3 wiersze (got ${giveRows().length})`);
 
-  // 5) Żywność: tożsamość zawiera miasto — dwa różne miasta to dwie osobne oferty.
-  addFood('c1', 20);
-  addFood('c2', 15);
-  ok(giveRows().length === 5, `żywność z 2 różnych miast → 2 osobne wiersze (got ${giveRows().length} łącznie)`);
-  addFood('c1', 10);
-  ok(giveRows().length === 5, `żywność z TEGO SAMEGO miasta → bez nowego wiersza (got ${giveRows().length})`);
-  // Wiersze: 0,1 = tech (bez ilości), 2 = złoto, 3 = żywność Roma, 4 = żywność Ostia.
-  ok(giveRowQty(3) === '30',
-    `żywność Roma (wiersz 3): 20+10=30 pkt żywności w jednym wierszu (got ${giveRowQty(3)})`);
-  ok(giveRowQty(4) === '15',
-    `żywność Ostia (wiersz 4): nietknięte 15 pkt żywności, nie zlane z Romą (got ${giveRowQty(4)})`);
+  // 5) Żywność: P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (Maciej 2026-08-14) — selektor
+  // "Miasto (spichlerz)" usunięty (handel żywnością operuje na Spichlerzu Centralnym
+  // całej cywilizacji, nie na konkretnym mieście — potwierdzone w silniku, main.ts case
+  // 'zywnosc' czyta wyłącznie ilość, nigdy cityId/id). KAŻDE dodanie żywności ma teraz
+  // stałą tożsamość (zywnosc::zywnosc, jak zloto::zloto) → zawsze scala się do JEDNEJ
+  // pozycji, tak jak złoto wyżej.
+  addFood(20);
+  addFood(15);
+  ok(giveRows().length === 4, `żywność 2x dodanie → 1 wiersz łącznie z 2 tech + złoto (got ${giveRows().length})`);
+  ok(giveRowQty(3) === '35', `żywność (wiersz 3): 20+15=35 w JEDNYM wierszu, bez podziału na miasta (got ${giveRowQty(3)})`);
+  addFood(10);
+  ok(giveRows().length === 4, `żywność: 3. dodanie NADAL scala do tego samego wiersza — bez nowego wiersza (got ${giveRows().length})`);
+  ok(giveRowQty(3) === '45', `żywność (wiersz 3): suma 35+10=45 (got ${giveRowQty(3)})`);
 
   // 6) P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-EDYCJA — ŚCIEŻKA EDYCJI (nie dodawania). Diagnoza
   // Evaluatora: handler „Zapisz zmiany" po edycji istniejącego wiersza podmieniał pozycję na
@@ -274,25 +277,13 @@ async function main() {
       `blokada-no-op: wiersz 0="Obróbka drewna", wiersz 1="Garncarstwo" — edytowany wiersz wrócił do stanu sprzed edycji (got ${giveRowText(0)}, ${giveRowText(1)})`);
   }
 
-  // 6b) Wariant SCALANIA dla typów Z ilością — użyj JUŻ ISTNIEJĄCYCH wierszy żywności z kroku 5
-  // (Roma=30 pkt, Ostia=15 pkt — patrz asercje kroku 5). Edytuj wiersz Ostii → zmień miasto na
-  // Roma (już obecne, inna tożsamość: zywnosc::c1 vs zywnosc::c2) → po naprawie: JEDEN wiersz
-  // żywności Roma z zsumowaną ilością 30+15=45, wiersz Ostii znika jako osobna pozycja (merge,
-  // analogicznie do addOrMergeBasketItem — patrz test 7 w diplomacy-basket-duplicate-test.cjs).
-  {
-    const beforeMerge = giveRows().length;
-    const ostiaIdx = giveRows().findIndex(r => r.querySelector('.cdb-row-qty-inp')?.value === '15');
-    ok(ostiaIdx >= 0, `wiersz żywności Ostia (15, z kroku 5) obecny przed testem scalania (idx=${ostiaIdx})`);
-
-    click(editButton(ostiaIdx));
-    click(chip('cdb-chip-city', 'c1')); // zmień miasto Ostia → Roma, gdzie już jest 30
-    click(saveEditButton());
-
-    ok(giveRows().length === beforeMerge - 1,
-      `scalanie (typ z ilością): edytowany wiersz zniknął jako osobna pozycja (${beforeMerge}→${beforeMerge - 1}, got ${giveRows().length})`);
-    ok(rowQtyValues().includes('45'),
-      `scalanie: żywność Roma pokazuje zsumowane 30+15=45 (widoczne ilości: ${rowQtyValues().join(',')})`);
-  }
+  // 6b) Wariant SCALANIA dla typów Z ilością (edycja powoduje kolizję z INNYM już istniejącym
+  // wierszem) dawniej używał żywności+miasta jako nośnika — P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-
+  // ZBEDNY (Maciej 2026-08-14) usuwa selektor miasta, więc żywność strukturalnie nie może już
+  // mieć DWÓCH osobnych wierszy do zderzenia (zawsze scala się w 1, patrz krok 5 wyżej) — ten
+  // wariant PRZENIESIONY niżej (krok 9, po kroku 8) na `surowiec_ilosc` (drewno/węgiel), gdzie
+  // taki sam mechanizm (edycja zmienia tożsamość → kolizja z istniejącym wierszem → merge) nadal
+  // ma sens i jest nadal weryfikowany, bez utraty pokrycia regresji.
 
   // 7) Edycja BEZ kolizji musi dalej działać jak dotychczas — bez regresji z naprawy kolizji
   // (6/6b). Edytuj wiersz złota zmieniając TYLKO ilość: tożsamość (zloto::zloto) się nie
@@ -348,6 +339,31 @@ async function main() {
     addResource('wegiel', 7);
     ok(giveRowQty(beforeLen + 1) === '7',
       `surowiec_ilosc (wegiel): 7 szt. NIE floruje (krok 1) — wiersz pokazuje dokładnie 7 (got ${giveRowQty(beforeLen + 1)})`);
+  }
+
+  // 9) Wariant SCALANIA dla typów Z ilością gdzie EDYCJA zmienia tożsamość i koliduje z INNYM
+  // już istniejącym wierszem — dawniej weryfikowane na żywności+mieście (patrz nota kroku 6b),
+  // PRZENIESIONE tutaj na `surowiec_ilosc` po naprawie P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-
+  // ZBEDNY. Reużywa wierszy drewna (40) i węgla (7) z kroku 8: edytuj wiersz węgla → przełącz
+  // chip surowca na "drewno" (koliduje z już istniejącym wierszem drewna) → Zapisz. Przełączenie
+  // chipa przelicza ilość na najbliższą wielokrotność KROKU NOWEGO surowca (R-DYPLO-CENNIK-
+  // SKALA-5X-Q1: drewno krok=5) z BIEŻĄCEJ wartości pola (7) — floor(7/5)×5=5 — więc scalenie
+  // daje 40+5=45, nie 40+7.
+  {
+    const beforeMerge = giveRows().length;
+    const drewnoIdx = giveRows().findIndex(r => r.querySelector('.cdb-row-qty-inp')?.value === '40');
+    const wegielIdx = giveRows().findIndex(r => r.querySelector('.cdb-row-qty-inp')?.value === '7');
+    ok(drewnoIdx >= 0 && wegielIdx >= 0,
+      `wiersze drewna (40) i węgla (7) z kroku 8 obecne przed testem scalania (drewno=${drewnoIdx}, wegiel=${wegielIdx})`);
+
+    click(editButton(wegielIdx));
+    click(chip('cdb-chip-resqty', 'drewno')); // przełącz surowiec węgla → drewno, już obecne
+    click(saveEditButton());
+
+    ok(giveRows().length === beforeMerge - 1,
+      `scalanie (surowiec_ilosc): edytowany wiersz węgla zniknął jako osobna pozycja (${beforeMerge}→${beforeMerge - 1}, got ${giveRows().length})`);
+    ok(rowQtyValues().includes('45'),
+      `scalanie: drewno pokazuje zsumowane 40+floor(7/5)*5(=5)=45 (widoczne ilości: ${rowQtyValues().join(',')})`);
   }
 
   for (const f of [ENTRY, BUNDLE, LEADER_STUB, BRAND_STUB]) {
