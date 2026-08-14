@@ -41,6 +41,7 @@ import {
   empirePanelBlockForSection,
   type EmpirePanelBlock,
 } from './empirePanelSectionMap';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 export type { EmpireDetailSnap } from './empireDetailTypes';
 export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
 
@@ -2301,9 +2302,19 @@ export function showEmpireDetailPanel(section?: string): void {
   render();
   root!.classList.add('open');
   backdrop!.classList.add('open');
+  // R-ESC-PELNY-EKRAN-Q1=A / P-MENU-ESCAPE-NIEPELNOEKRANOWE (Maciej 2026-08-14): panel imperium
+  // nie był dotąd wpięty w stos overlayów — Escape ani nie zamykał panelu, ani nie był
+  // blokowany przez Keyboard Lock, więc przebijał wprost do przeglądarki i wychodził
+  // z pełnego ekranu. idempotentne wobec ponownych wywołań przy zmianie zakładki (ten sam id
+  // trafia na wierzch stosu). / EN: the empire panel wasn't wired into the overlay stack —
+  // Escape neither closed the panel nor was blocked by Keyboard Lock, so it fell straight
+  // through to the browser and exited fullscreen. Idempotent across repeated calls when
+  // switching tabs (same id just moves to the top of the stack).
+  pushOverlay('empire-detail-panel', hideEmpireDetailPanel);
 }
 
 export function hideEmpireDetailPanel(): void {
+  popOverlay('empire-detail-panel');
   open = false;
   pendingScrollSection = null;
   root?.classList.remove('open');

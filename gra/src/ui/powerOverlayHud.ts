@@ -3,6 +3,7 @@
  */
 
 import { mocLabel, mocTitle, mocWithValue } from './power-labels';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface PowerComponentRow {
   key: string;
@@ -183,9 +184,15 @@ export function showPowerOverlay(data: PowerOverlayData, onClose?: () => void, o
     hidePowerOverlay();
     onClose?.();
   });
+  // P-MENU-ESCAPE-NIEPELNOEKRANOWE (Maciej 2026-08-14): wpięcie w stos overlayów, żeby
+  // Escape zamykał ten panel zamiast przebijać do przeglądarki i wychodzić z pełnego ekranu
+  // (patrz escapeOverlayStack.ts). / EN: wired into the overlay stack so Escape closes this
+  // panel instead of falling through to the browser and exiting fullscreen.
+  pushOverlay('power-overlay', () => { hidePowerOverlay(); onClose?.(); });
 }
 
 export function hidePowerOverlay(): void {
+  popOverlay('power-overlay');
   if (root !== null) { root.remove(); root = null; }
 }
 
