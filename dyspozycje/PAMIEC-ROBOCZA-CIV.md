@@ -11,7 +11,7 @@ Kolejność czytania: `CLAUDE.md` (zasady, auto-ładowane) → `STAN-PRACY-HANDO
 Maciej wymaga **pełnej formy** dla KAŻDEJ decyzji gameplayowej/produktowej/architektonicznej. Stary, lżejszy wzór („O co chodzi i dlaczego" / same plusy-minusy / sam formularz) jest **wycofany — bez skrótów**.
 
 **Struktura każdego pytania — pełny tekst w czacie, dokładnie w tej kolejności:**
-0. **Nagłówek** — `[TEMAT: …]` lub `[EKRAN: …]` + **ID pytania** (np. `C-MAP-Q1`, `B2-Q7`). Obowiązkowe.
+0. **Nagłówek** — `[TEMAT: …]` lub `[EKRAN: …]` + **ID pytania** (np. `C-MAP-Q1`, `B2-Q7`). Obowiązkowe. **ID zawsze w formacie inline code** (pojedyncze `` ` ``) — Maciej 2026-08-14: „obok numeru pytania zawsze taki znaczek kopiowania", żeby dało się je łatwo skopiować i odpowiedzieć `ID + litera`.
 1. **Sytuacja** — co jest DZIŚ w grze, językiem gracza, pełne nazwy, zero skrótów typu „P2"/gołych id. 2–4 zdania.
 2. **Cel pytania** — jaki efekt ma mieć decyzja. 1–2 zdania.
 3. **Dlaczego teraz** — blokada / ryzyko / zależność. 1–3 zdania.
