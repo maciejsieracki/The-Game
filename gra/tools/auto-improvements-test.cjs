@@ -19,6 +19,17 @@
  * test 12 słusznie chronił). Nowy test 13 przypina `AUTO_ULEPSZENIA_PRACA_RESERVE` LICZBOWO
  * (łapie mutację 30→0 — stare testy 9/11 porównują stałą z samą sobą, tautologia). Nowy test 14
  * potwierdza wprost sedno naprawy: łączny wydatek dla tego samego % NIE zależy od liczby miast N.
+ *
+ * R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14, decyzja właściciela, follow-up ABC rundy 2):
+ * runda 2 zostawiła znalezisko — override per-miasto (`getPracaBudgetPercent`) mógł przebić
+ * politykę imperium (`pracaBudgetPercent`), bo pułap liczył się od WŁASNEGO % miasta, nie od
+ * polityki imperium (zmierzone: override 80% przy polityce 20% → automat wydawał 80% CAŁEJ puli
+ * imperium). Naprawione: nadrzędny `imperiumBudgetCap`, liczony RAZ z polityki imperium — patrz
+ * `effectiveCityCap` w auto-improvements.ts. Nowy test 15 = scenariusz Evaluatora (a) —
+ * potwierdza SUMĘ ≤ pułap imperium mimo override. Nowy test 16 = regression guard (b) — bez
+ * override wynik identyczny jak przed tą naprawą. Mutacja (c) — usunięcie pułapu imperium —
+ * zweryfikowana ręcznie przez Operatora (AI_SRC_DIR na zmutowaną kopię źródła), nie wbudowana na
+ * stałe w ten plik (wymagałaby dublowania wewnętrznej implementacji funkcji w harnessie testu).
  */
 
 const fs = require('fs');
@@ -407,6 +418,97 @@ console.log('14. laczny wydatek NIEZALEZNY od liczby miast N (1 vs 4 miasta, ten
   const spentFour = picksFour.reduce((s, p) => s + p.kosztPraca, 0);
   eq(spentFour, spentOne, '4 miasta, TEN SAM % i TA SAMA pula startowa: laczny wydatek IDENTYCZNY jak przy 1 miescie (280), nie 4x wiecej');
   assert(spentFour <= 0.3 * 1000, `laczny wydatek (${spentFour}) <= 30% z puli 1000 (300), niezaleznie od N=4 miast`);
+}
+
+// 15. R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14, decyzja właściciela) — scenariusz
+// DOKŁADNIE ten, który zmierzył Evaluator: polityka imperium 20% (`pracaBudgetPercent`), miasto
+// cA ma override 80% (`getPracaBudgetPercent`), miasto cB nie ma override — dziedziczy politykę
+// imperium 20%. Pula 1000, rezerwa 30. PRZED tą naprawą: cA liczyło swój pułap OD SWOJEGO
+// override (80% × 1000 = 800), niezależnie od polityki imperium — automat wydawał do 800 Pracy
+// (80% CAŁEJ puli) na cA, a cB (dziedziczące 20%) dostawało 0, mimo że panel obiecywał mu "20%
+// Pracy". PO naprawie: nadrzędny `imperiumBudgetCap` = 20% × 1000 = 200 ogranicza SUMĘ całego
+// wywołania niezależnie od override cA — cA (przetwarzane 1. wg id) zjada wspólny pułap do 200
+// (5 farm × 40 = 200), cB dostaje 0 (pułap już wyczerpany) — DOKŁADNIE tak jak dziś dla miast BEZ
+// override, bo „Autopraca działa z budżetu całej cywilizacji, a nie z budżetu miasta" (słowa
+// właściciela). Kluczowa asercja: SUMA <= 200, NIE 800 jak w błędnej wersji sprzed naprawy.
+console.log('15. Q3=B — polityka imperium 20% jest TWARDYM pułapem SUMY mimo override miasta 80%');
+{
+  const map = makeFlatMap(80, 80);
+  // Miasta daleko od siebie żeby uniknąć sporu o wspólne heksy (nieistotne dla wyniku — cA,
+  // pierwsze wg id, i tak zjada caly pulap samo).
+  const cityA = makeCity('cA', 0, 20, 20, 6, { ulepszeniaFocus: 'zywnosc' });
+  const cityB = makeCity('cB', 0, 60, 60, 6, { ulepszeniaFocus: 'zywnosc' });
+  const opts = {
+    cities: [cityA, cityB],
+    ownerId: 0,
+    map,
+    territoryNodes: [
+      { q: cityA.q, r: cityA.r, pop: cityA.population, level: 1, ownerId: 0 },
+      { q: cityB.q, r: cityB.r, pop: cityB.population, level: 1, ownerId: 0 },
+    ],
+    placedImprovements: new Map(),
+    pracaAvailable: 1000,
+    pracaBudgetPercent: 20, // polityka IMPERIUM — źródło nadrzędnego pułapu
+    getPracaBudgetPercent: c => (c.id === 'cA' ? 80 : 20), // cA override 80%, cB dziedziczy 20%
+    unlockedTechs: new Set(['Rolnictwo', 'Kamieniarstwo']),
+    pracaSurplusThreshold: 30,
+    skipWyrab: true,
+    civArchetype: 'grecy',
+  };
+  const picks = pickAutoImprovements(opts);
+  const picksA = picks.filter(p => p.cityId === 'cA').length;
+  const picksB = picks.filter(p => p.cityId === 'cB').length;
+  const totalSpent = picks.reduce((s, p) => s + p.kosztPraca, 0);
+
+  assert(totalSpent <= 200, `SEDNO NAPRAWY: laczny wydatek (${totalSpent}) <= 20% z puli 1000 (200) MIMO override cA=80% (bledna wersja sprzed naprawy dawala 800)`);
+  eq(totalSpent, 200, 'laczny wydatek = dokladnie 200 (5 farm cA x 40 Pracy) — pulap imperium wyczerpany przez cA');
+  eq(picksA, 5, 'cA (override 80%, przetwarzane 1. wg id): 5 farm — 6-ta (240) przekroczylaby wspolny pulap imperium 200');
+  eq(picksB, 0, 'cB (dziedziczy polityke imperium 20%): 0 pickow — pulap imperium (200) juz wyczerpany przez cA, mimo ze panel obiecuje mu 20% Pracy');
+}
+
+// 16. R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B — REGRESSION GUARD: gdy WSZYSTKIE miasta mają TĘ
+// SAMĄ politykę (żadne nie ma własnego override, różnego od polityki imperium),
+// `imperiumBudgetCap` i suma `cityBudgetCap` dają DOKŁADNIE ten sam wynik co przed tą naprawą
+// (Q1=B, runda 2) — nowy nadrzędny pułap jest wtedy zawsze RÓWNY pułapowi per-miasto, więc
+// `effectiveCityCap = min(cityBudgetCap, imperiumBudgetCap)` nie zmienia niczego. Test porównuje
+// WPROST: (1) wywołanie BEZ getPracaBudgetPercent (jak dawny test 12/14 — jedyne źródło % to
+// pracaBudgetPercent), (2) wywołanie Z getPracaBudgetPercent, ale zwracającym TĘ SAMĄ wartość co
+// pracaBudgetPercent dla każdego miasta (jawny "brak override" przez inny kod ścieżki) — oba
+// MUSZĄ dać identyczny wynik, bo semantycznie to ten sam scenariusz.
+console.log('16. Q3=B REGRESSION GUARD — bez override (wszystkie miasta = polityka imperium) wynik identyczny jak przed naprawa');
+{
+  const map = makeFlatMap(60, 60);
+  const cityA = makeCity('cA', 0, 15, 15, 6, { ulepszeniaFocus: 'zywnosc' });
+  const cityB = makeCity('cB', 0, 45, 45, 6, { ulepszeniaFocus: 'zywnosc' });
+  const mkOpts = (extra) => ({
+    cities: [cityA, cityB],
+    ownerId: 0,
+    map,
+    territoryNodes: [
+      { q: cityA.q, r: cityA.r, pop: cityA.population, level: 1, ownerId: 0 },
+      { q: cityB.q, r: cityB.r, pop: cityB.population, level: 1, ownerId: 0 },
+    ],
+    placedImprovements: new Map(),
+    pracaAvailable: 200,
+    pracaBudgetPercent: 50,
+    unlockedTechs: new Set(['Rolnictwo', 'Kamieniarstwo']),
+    pracaSurplusThreshold: 0,
+    skipWyrab: true,
+    civArchetype: 'grecy',
+    ...extra,
+  });
+
+  // (1) BEZ getPracaBudgetPercent — jedyne zrodlo % to pracaBudgetPercent (jak stary test 12/14).
+  const picksNoOverrideFn = pickAutoImprovements(mkOpts({}));
+  const spentNoOverrideFn = picksNoOverrideFn.reduce((s, p) => s + p.kosztPraca, 0);
+
+  // (2) Z getPracaBudgetPercent, ale zwracajacym DOKLADNIE te sama wartosc co pracaBudgetPercent
+  // dla kazdego miasta — jawny "brak realnego override" inna sciezka kodu.
+  const picksExplicitSame = pickAutoImprovements(mkOpts({ getPracaBudgetPercent: () => 50 }));
+  const spentExplicitSame = picksExplicitSame.reduce((s, p) => s + p.kosztPraca, 0);
+
+  eq(spentNoOverrideFn, 80, 'bez override: laczny wydatek = 80 (2 farmy cA x 40) — jak test 12 przed ta naprawa (niezmienione)');
+  eq(spentExplicitSame, spentNoOverrideFn, 'getPracaBudgetPercent zwracajacy TA SAMA wartosc co polityka imperium daje IDENTYCZNY wynik jak brak override — nowy pulap imperium nie zmienia zachowania gdy brak realnego override');
 }
 
 console.log(`\nauto-improvements-test: ${passed} passed, ${failed} failed`);

@@ -25371,6 +25371,15 @@ async function boot(): Promise<void> {
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
+                  // R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (2026-08-14): `pracaBudgetPercent`
+                  // MUSI być polityką IMPERIUM (empirePol), nie per-miasto — to jest źródło
+                  // nadrzędnego pułapu (`imperiumBudgetCap` w pickAutoImprovements), który
+                  // per-miasto override (`getPracaBudgetPercent` niżej) nie może przebić.
+                  // / EN: `pracaBudgetPercent` MUST be the EMPIRE policy (empirePol), not
+                  // per-city — it's the source of the overarching cap (`imperiumBudgetCap` in
+                  // pickAutoImprovements) that the per-city override (`getPracaBudgetPercent`
+                  // below) cannot exceed.
+                  pracaBudgetPercent: empirePol.pracaAutoPercent,
                   getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(
