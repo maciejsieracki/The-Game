@@ -232,8 +232,11 @@ export interface PendingNegotiationRow {
   /**
    * Podgląd oceny warunków przez stronę, która ma odpowiedzieć (evaluateProposal).
    * incoming → czy gracz może przyjąć; own → czy AI spełnia warunki oferty.
+   * `pwBalance` (P-DYPLO-BILANS-GATE-NIESPOJNY, Maciej 2026-08-14): JEDNA liczba PW z tej
+   * samej bramki co `accepted`/`reason` (patrz diplomacy-proposals.ts ProposalEvalResult) —
+   * `undefined` gdy akcja nie ma numerycznej bramki PW (np. nap/sojusz/wasal).
    */
-  responderPreview?: { accepted: boolean; reason?: string };
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
   /** incoming: Przyjmij dostępne tylko gdy warunki spełnione (i brak legacy access). */
   canAccept?: boolean;
   /** own: czekamy na odpowiedź AI — akcja Przyjmij w panelu PN. */

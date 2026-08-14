@@ -14324,7 +14324,7 @@ async function boot(): Promise<void> {
     function previewNegotiationEntry(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string } {
+    ): { accepted: boolean; reason?: string; pwBalance?: number } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling);
       const relTotal = treatyEvalRelationTotal(ctx.relation);
@@ -14343,7 +14343,10 @@ async function boot(): Promise<void> {
         if (playerAccept) return playerAccept;
       }
       const result = evaluateProposal(negotiationAsProposal(entry), ctx);
-      return { accepted: result.accepted, reason: result.reason };
+      // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): pwBalance przechodzi TYLKO dla
+      // 'own' (gracz proponuje AI) — incoming ma osobną, już poprawną ścieżkę wyżej
+      // (previewIncomingPlayerAccept), nie dotykana tutaj.
+      return { accepted: result.accepted, reason: result.reason, pwBalance: result.pwBalance };
     }
 
     /** C-DYP-Q1=A: wiersze UI (diplomacyAudience.ts kolumna „Oczekujące propozycje") dla tej pary. */

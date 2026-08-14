@@ -25455,7 +25455,82 @@ spójne z perspektywy gracza, nawet jeśli każda z osobna jest poprawnie policz
 relacji, jeśli ten wpływ ma być częścią kryterium sprawiedliwości) i bramka akceptacji ma być
 `bilans >= 0`, bez osobnego, niezależnego progu PW.
 
-**STATUS: DISPATCH W TOKU.**
+**STATUS: NAPRAWIONE (Operator Sonnet 5, 2026-08-14), czeka na Evaluatora.**
+
+**Przyczyna zlokalizowana (dochodzenie, nie zgadywanie) — odtworzona SCENARIUSZEM ZE ZRZUTU
+(givePn=50, receivePn=20, Relacja 27,8) przez prawdziwy `evaluateProposal`:** to FAKTYCZNIE
+dwie różne formuły, dokładnie jak podejrzewało rozpoznanie wstępne — ale nie w
+`diplomacyTradeBasket.ts`/`diplomacy-ai-balance.ts` (te okazały się nieuczestniczące w tej
+konkretnej ścieżce), tylko w parze `gra/src/ui/diplomacyAcceptanceBalance.ts` (funkcja
+`balancePanelDataFromRows`, wyświetlany „Bilans") vs `gra/src/game/diplomacy-proposals.ts`
+(`handelFairnessGate` dla akcji `handel`/„Umowa wymiany", `treatyBaseFairnessGap` dla
+`umowa_handlowa`/`umowa_szlakow`/„Traktat handlowy" — próg akceptacji).
+`balancePanelDataFromRows` liczyła „Bilans" jako **surową różnicę** `myOfferPn − theirOfferPn`
+(givePn−receivePn = 50−20 = **+30**, zielone — dokładnie liczba ze zrzutu), całkowicie
+ignorując Relację i mnożnik chęci partnera przy niskim zaufaniu (×3,6 dla Relacji 27,8, plus
+ewentualny dodatkowy mnożnik „niechęci do handlu" w `handel`). Bramka akceptacji liczyła
+próg z UWZGLĘDNIENIEM obu tych czynników (`diplomacyFairGivePn(receivePn, rel) × mnożnik`),
+dając wymaganą wartość rzędu **73–87 PW** zależnie od dokładnego nastawienia AI — stąd
+sprzeczny komunikat „Bilans +30 (zielone)" + „wymagane ≥ 73 PW, oferujesz 50 PW" jednocześnie
+na tym samym ekranie. Zweryfikowane REPRODUKCJĄ 1:1 (probe script z prawdziwym kodem silnika,
+nie symulacją) przed naprawą — panel renderował dokładnie `da-pn-balance-bar ok` + „+30" +
+„Nadwyżka 30 PW" + poniżej `da-pn-bal-verdict no` z treścią „Nie spełnia warunków: ...
+wymagane ≥ 87 PW, oferujesz 50 PW" jednocześnie.
+
+**Implementacja (zgodna z żądaniem właściciela — JEDNA formuła, `bilans >= 0`):**
+`ProposalEvalResult` (diplomacy-proposals.ts) dostał nowe opcjonalne pole `pwBalance` — TA SAMA
+liczba `givePn − wymagany próg`, którą bramka faktycznie policzyła (relacja + mnożnik chęci
+uwzględnione), ustawiana w `handelFairnessGate`/`handelFairnessReject` (case `handel`) oraz przy
+`treatyBaseFairnessGap` (case `umowa_handlowa`/`umowa_szlakow`) — zarówno na ścieżce odrzucenia,
+jak i akceptacji. `previewNegotiationEntry` (main.ts) przekazuje `pwBalance` dalej przez
+`responderPreview` (WYŁĄCZNIE dla `direction==='own'` — ścieżka `incoming` nietknięta, ma osobną,
+już wcześniej poprawną logikę). `balancePanelDataFromRows` używa `pwBalance` jako JEDYNEGO źródła
+wyświetlanego „Bilans" gdy jest dostępne (dokładnie jedna pozycja na stole, akcja ma numeryczną
+bramkę PW) — dla akcji bez takiej bramki (nap/sojusz/wasal — tam liczy się wyłącznie próg
+Relacji/Zaufania) i dla pakietów wielu pozycji (temat BUG-PAKIET-BILANS-DODATNI-BLOKADA,
+osobno rozstrzygnięty wcześniej — nienaruszony) zostaje dawne zachowanie, bez regresji.
+Dodatkowo usunięta redundantna linia „PW surowe (bez Relacji): ... bilans +N" z live-podglądu
+koszyka (`renderPnBalancePanelFromBasket`, `diplomacyTradeBasket.ts`'s `treatySummaryHtml`) —
+druga, sprzeczna liczba obok prawdziwego Bilansu na tym samym panelu przy komponowaniu oferty
+(niepełne rozwiązanie architektoniczne: ta funkcja nie ma dostępu do mnożnika chęci AI — patrz
+nota niżej — ale usunięcie zbędnej, surowej liczby usuwa najbardziej widoczne źródło zamieszania
+nawet tam).
+
+**Weryfikacja po naprawie (mutacyjna, nie tylko happy-path):** rozszerzony
+`gra/tools/diplomacy-stol-pw-sum-test.cjs` (42→70 asercji) odtwarza scenariusz ze zrzutu
+1:1 przez prawdziwy `evaluateProposal`, potwierdza `theirBalance.balancePn === pwBalance`
+(jedna liczba), `canAccept === (balancePn>=0)` na siatce wokół progu (givePn: 0/20/50/86/87/
+88/100/150), oraz kontrolę negatywną (`nap` bez numerycznej bramki PW nie ustawia `pwBalance`).
+**Dowód mutacyjny:** cofnięcie jednej linii naprawy (`net = myOfferPn - theirOfferPn` zamiast
+`unifiedPwBalance ?? (...)`) powoduje 8 nowych FAIL — w tym dokładne odtworzenie „+30 zielone"
+mimo `canAccept=false` — dowód że asercje realnie łapią tę regresję, nie są tautologią.
+
+**Bramki:** `tsc --noEmit` 0, `tech-tree-test` 19/19, `research-test` 33/33; cały pakiet testów
+dyplomacji zielony: `diplomacy-test` 148/148, `diplomacy-proposal-test` 187/187,
+`diplomacy-acceptance-points-test` 254/254, `diplomacy-value-catalog-test` 81/81,
+`diplomacy-treaties-test` 17/17, `diplomacy-fairness-gate-package-q2-test` 24/24,
+`diplomacy-negotiation-table-test` 62/62, `diplomacy-own-proposal-edit-test` 33/33,
+`diplomacy-basket-duplicate-test` 19/19, `diplomacy-basket-duplicate-ui-test` 31/31,
+`diplomacy-package-ai-counter-actionable-test` 17/17, `diplomacy-penalty-preview-test` 9/9,
+`diplomacy-currency-trade-test` 5/5, `diplomacy-stol-pw-sum-test` 70/70 (rozszerzony).
+
+**Znany, udokumentowany pozostały gap (NIE naprawiony w tej rundzie, świadomie odłożony):**
+`renderPnBalancePanelFromBasket` (live-podgląd koszyka PRZED wysłaniem oferty, w
+`diplomacyTradeBasket.ts`) pokazuje bilans liczony wyłącznie z Relacji
+(`diplomacyFairGivePn`), BEZ mnożnika „chęci partnera do handlu" (`handelWillingnessMultiplier`
+w `diplomacy-proposals.ts`, zależny od pełnego kontekstu AI — Respekt, stance, itd.), którego
+ten podgląd architektonicznie nie ma dostępu (wołany tylko z givePn/receivePn/relTotal, bez
+kontekstu propozycji). Skutek: LIVE PODGLĄD przy komponowaniu oferty może pokazać "Bilans
+dodatni/zielone" tuż PRZED wysłaniem, a PO wysłaniu (na stole, `renderPnBalancePanelHtml`,
+już naprawione) ta sama oferta może zostać odrzucona przez pełną bramkę z mnożnikiem chęci —
+różnica typowo rzędu do ±20% progu (`HANDEL_WILLINGNESS_EASE_MAX_PCT`/`_PENALTY_MAX_PCT`).
+To DUŻO mniejsza, rzadsza niespójność niż naprawiona (brak relacji w ogóle, błąd
+wielokrotności ×3,6+) i dotyczy WYŁĄCZNIE fazy komponowania (przed wysłaniem), nie już
+wysłanej propozycji na stole — ale nie jest zerem. Pełne domknięcie wymagałoby przekazania
+kontekstu AI (stance/Respekt) do UI koszyka przy live-podglądzie — realna zmiana architektury
+wyceny, poza bezpiecznym zakresem tej rundy zgodnie z instrukcją orkiestratora („jeśli zadanie
+okaże się dużo bardziej złożone... zatrzymaj się, zrób tyle ile bezpiecznie się da"). Do
+rozważenia w osobnej rundzie, jeśli Maciej zgłosi konkretny przypadek tej resztkowej luki.
 
 ---
 

@@ -20,6 +20,7 @@ export {
   incomingTradeNetBalancePw,
 } from './ui/diplomacyAcceptanceBalance';
 export { computePlayerAcceptanceSides } from './game/diplomacy-acceptance-points';
+export { evaluateProposal } from './game/diplomacy-proposals';
 `);
 
 esbuild.buildSync({
@@ -360,6 +361,111 @@ ok(
     !negNetHtml.includes('dopłać do bilansu'),
     'P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC: net ujemny + canAccept=true -> brak mylącego hintu "dopłać do bilansu"',
   );
+}
+
+// ---------------------------------------------------------------------------
+// P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14, zrzut "Stół negocjacji" —
+// MY ODDAJEMY 50 PW, ONI ODDAJĄ 20 PW, Relacja 27,8): PRZED naprawą panel pokazywał
+// "Bilans (Oni) +30" (zielone, net=givePn-receivePn surowe, bez relacji) mimo że TA SAMA
+// oferta była odrzucana przez evaluateProposal ("wymagane ≥ 73-87 PW @ Relacji × mnożnik
+// chęci — oferujesz 50 PW"). Test odtwarza SCENARIUSZ ZE ZRZUTU przez PRAWDZIWY
+// evaluateProposal (case 'handel' — handelFairnessGate) i dowodzi: (1) MUTACYJNIE, że bez
+// pwBalance na responderPreview test WYKRYWA regresję (przywrócona stara ścieżka pokazałaby
+// znów +30/zielone mimo odrzucenia); (2) że po naprawie bilans wyświetlany == bilans, który
+// bramkuje akceptację, na całej siatce wokół progu (dokładnie na granicy, poniżej, powyżej).
+{
+  const rel = 27.8;
+  const ctx = {
+    relation: { zaufanie: rel, respekt: 0, status: 'pokoj' },
+    stanWojny: false,
+    turn: 10,
+    epoka: 1,
+    proposerRespekt: 50,
+    responderRespekt: 50,
+    militaryRatio: 1,
+    respektWzgledny: 0.5,
+    ekspansjaPrzyGranicy: false,
+    difficulty: 'normal',
+    proposerWiarygodnosc: 100,
+    responderWiarygodnosc: 100,
+    activeDeals: [],
+    isMinorCiv: false,
+  };
+
+  function buildOwnHandelRow(givePn, receivePn) {
+    const payload = { givePn, receivePn };
+    const proposal = { actionId: 'handel', proposerOwnerId: 0, responderOwnerId: 1, payload };
+    const preview = mod.evaluateProposal(proposal, ctx);
+    const sides = mod.computePlayerAcceptanceSides('handel', payload, rel, false, { difficulty: 'normal', proposerOwnerId: 0 });
+    return {
+      row: {
+        id: 'neg-handel-bilans-gate',
+        direction: 'own',
+        actionLabel: 'Umowa wymiany',
+        acceptanceMy: sides.my,
+        acceptanceTheir: sides.their,
+        awaitingAiResponse: true,
+        responderPreview: preview,
+      },
+      preview,
+    };
+  }
+
+  // Dokładnie ze zrzutu: 50 PW oddajemy, 20 PW oni oddają, Relacja 27,8.
+  const { row: rowZeZrzutu, preview: previewZeZrzutu } = buildOwnHandelRow(50, 20);
+  ok(previewZeZrzutu.accepted === false, 'zrzut 50/20@27,8: evaluateProposal ODRZUCA (jak w zgłoszeniu)');
+  ok(
+    typeof previewZeZrzutu.reason === 'string' && /wymagane ≥ \d+ PW, oferujesz 50 PW/.test(previewZeZrzutu.reason),
+    'zrzut 50/20@27,8: reason niesie "wymagane ≥ N PW, oferujesz 50 PW" (dokładna treść ze zrzutu Macieja)',
+  );
+  ok(typeof previewZeZrzutu.pwBalance === 'number' && previewZeZrzutu.pwBalance < 0, 'zrzut 50/20@27,8: pwBalance liczba ujemna (givePn < wymagane)');
+
+  const dataZeZrzutu = mod.balancePanelDataFromRows([rowZeZrzutu]);
+  ok(dataZeZrzutu != null, 'zrzut 50/20@27,8: balancePanelDataFromRows zwraca dane');
+  ok(dataZeZrzutu.canAccept === false, 'zrzut 50/20@27,8: canAccept=false (spójne z evaluateProposal)');
+  ok(
+    dataZeZrzutu.theirBalance.balancePn === previewZeZrzutu.pwBalance,
+    `P-DYPLO-BILANS-GATE-NIESPOJNY NAPRAWIONE: wyświetlany theirBalance.balancePn (${dataZeZrzutu.theirBalance.balancePn}) === pwBalance bramki (${previewZeZrzutu.pwBalance}) — JEDNA liczba, nie osobny surowy net (dawniej: net=givePn-receivePn=+30, zielone, mimo odrzucenia)`,
+  );
+  ok(dataZeZrzutu.theirBalance.balancePn < 0, 'zrzut 50/20@27,8: wyświetlany bilans jest UJEMNY (zgodny z odrzuceniem) — NIE surowe +30 sprzed naprawy');
+  const htmlZeZrzutu = mod.renderPnBalancePanelHtml(dataZeZrzutu);
+  ok(htmlZeZrzutu.includes('da-pn-balance-bar no'), 'zrzut 50/20@27,8: panel HTML tone "no" (czerwony) — NIE "ok"/zielony jak przed naprawą');
+  ok(!htmlZeZrzutu.includes('>+30<'), 'zrzut 50/20@27,8: HTML NIE zawiera surowego "+30" jako Bilans (regresja sprzed naprawy)');
+
+  // MUTACJA (dowód, że asercja realnie coś sprawdza, nie jest tautologią): odtwórz STARĄ
+  // ścieżkę (surowy net, ignorujący pwBalance) na TYCH SAMYCH danych i pokaż, że dałaby
+  // dokładnie objaw ze zgłoszenia — "+30" zielone mimo odrzucenia.
+  {
+    const rawNet = rowZeZrzutu.acceptanceMy.offerPn - rowZeZrzutu.acceptanceTheir.offerPn;
+    ok(rawNet === 30, 'MUTACJA: surowy net (bez pwBalance) odtwarza dokładnie "+30" ze zgłoszenia Macieja');
+    ok(
+      rawNet !== dataZeZrzutu.theirBalance.balancePn,
+      'MUTACJA: naprawiony bilans (ujemny) różni się od surowego net (+30) — dowód że fix realnie zmienia liczbę, nie tylko kolor',
+    );
+  }
+
+  // Siatka wokół progu — bilans wyświetlany >= 0 ⟺ canAccept, bez wyjątków.
+  for (const givePn of [0, 20, 50, 86, 87, 88, 100, 150]) {
+    const { row, preview } = buildOwnHandelRow(givePn, 20);
+    const data = mod.balancePanelDataFromRows([row]);
+    ok(
+      (data.theirBalance.balancePn >= 0) === data.canAccept,
+      `siatka givePn=${givePn}: (bilans>=0)===canAccept (bilans=${data.theirBalance.balancePn}, canAccept=${data.canAccept}, accepted=${preview.accepted})`,
+    );
+    ok(
+      data.canAccept === preview.accepted,
+      `siatka givePn=${givePn}: panel canAccept === evaluateProposal accepted (bez rozjazdu)`,
+    );
+  }
+
+  // Kontrola negatywna — akcja BEZ numerycznej bramki PW (nap) nie ustawia pwBalance;
+  // panel spada na dawne zachowanie (surowy net) bez rzucania wyjątku.
+  {
+    const payload = { givePn: 0, receivePn: 0 };
+    const proposal = { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload };
+    const preview = mod.evaluateProposal(proposal, ctx);
+    ok(preview.pwBalance === undefined, 'kontrola: nap (bez bramki PW) nie ustawia pwBalance — undefined jak przed naprawą');
+  }
 }
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }

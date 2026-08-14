@@ -219,6 +219,27 @@ export interface ProposalEvalResult {
   deal?: ActiveDeal;
   /** Jednorazowy handel T3A — bez trwałego dealu */
   oneShotTrade?: boolean;
+  /**
+   * P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): JEDNA liczba PW = givePn − próg
+   * wymagany PRZEZ TĘ SAMĄ bramkę, która zdecydowała `accepted` (relacja + ewentualny
+   * mnożnik chęci partnera — wszystko, co bramka faktycznie policzyła). Ustawiane
+   * WYŁĄCZNIE przez bramki PW-fairness, które mają realny, numeryczny próg
+   * (`handelFairnessGate` dla 'handel', `treatyBaseFairnessGap` dla
+   * 'umowa_handlowa'/'umowa_szlakow') — `undefined` gdy akcja nie ma takiej bramki
+   * (np. nap/sojusz/wasal — tam decyduje wyłącznie próg Relacji/Zaufania, nie PW).
+   * UI (diplomacyAcceptanceBalance.ts) używa TEGO pola jako jedynego źródła
+   * wyświetlanego "Bilans", gdy jest dostępne — zamiast osobno liczonej, surowej
+   * różnicy givePn−receivePn, żeby "Bilans ≥ 0" i akceptacja bramki ZAWSZE się zgadzały.
+   * / EN: ONE PW number = givePn − the threshold THE SAME gate used to decide
+   * `accepted` (relation + any partner-willingness multiplier — everything the gate
+   * actually computed). Set ONLY by PW-fairness gates that have a real numeric
+   * threshold; `undefined` when the action has no such gate (e.g. nap/alliance/vassal
+   * — decided purely by a Relation/Trust threshold, not PW). The UI uses this as the
+   * sole source for the displayed "Bilans" when present, instead of a separately
+   * computed raw give−receive difference, so "Bilans ≥ 0" and gate acceptance never
+   * disagree again.
+   */
+  pwBalance?: number;
 }
 
 export interface PendingProposal {
@@ -762,10 +783,19 @@ function handelFairnessReject(
 }
 
 /**
+ * Wymagany próg PW handlu @ Relacji × mnożnik chęci — JEDYNE miejsce, które to liczy
+ * (handelFairnessGate i pwBalance przy sukcesie muszą użyć TEJ SAMEJ liczby, inaczej
+ * wraca P-DYPLO-BILANS-GATE-NIESPOJNY). PODŁOGA PARYTETU (runda 4): nigdy poniżej receivePn.
+ */
+function handelRequiredPn(receivePn: number, relTotal: number, multiplier: number): number {
+  const relForFair = Math.min(100, Math.max(1, relTotal));
+  return Math.max(receivePn, Math.ceil(diplomacyFairGivePn(receivePn, relForFair) * multiplier));
+}
+
+/**
  * Bramka uczciwości PW handlu z modyfikatorem chęci (patrz komentarz bloku wyżej).
- * PODŁOGA PARYTETU (runda 4): requiredPn nigdy nie schodzi poniżej receivePn —
- * ulga z chęci respondenta działa tylko powyżej parytetu (relTotal < 100 pkt Relacji).
- * Zwraca wynik odrzucenia lub null = próg spełniony.
+ * Zwraca wynik odrzucenia lub null = próg spełniony. Wynik odrzucenia niesie `pwBalance`
+ * (givePn − requiredPn, ta sama liczba co bramka) — P-DYPLO-BILANS-GATE-NIESPOJNY.
  */
 function handelFairnessGate(
   givePn: number,
@@ -774,15 +804,11 @@ function handelFairnessGate(
   multiplier: number,
 ): ProposalEvalResult | null {
   if (givePn <= 0 && receivePn <= 0) {
-    return { accepted: false, reason: 'Brak wartości w ofercie' };
+    return { accepted: false, reason: 'Brak wartości w ofercie', pwBalance: givePn - receivePn };
   }
-  const relForFair = Math.min(100, Math.max(1, relTotal));
-  const requiredPn = Math.max(
-    receivePn,
-    Math.ceil(diplomacyFairGivePn(receivePn, relForFair) * multiplier),
-  );
+  const requiredPn = handelRequiredPn(receivePn, relTotal, multiplier);
   if (givePn < requiredPn) {
-    return handelFairnessReject(givePn, requiredPn, multiplier);
+    return { ...handelFairnessReject(givePn, requiredPn, multiplier), pwBalance: givePn - requiredPn };
   }
   return null;
 }
@@ -1059,6 +1085,7 @@ export function evaluateProposal(
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
         const cyklFairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
         if (cyklFairnessReject) return cyklFairnessReject;
+        const cyklPwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
         const turns = clampDealTurns(payload.turns);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
           proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
@@ -1081,13 +1108,15 @@ export function evaluateProposal(
           accepted: true,
           reason: `Umowa handlowa (surowiec co turę) na ${turns} tur`,
           deal,
+          pwBalance: cyklPwBalance,
         };
       }
 
       if (hasPnPath) {
         const fairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
         if (fairnessReject) return fairnessReject;
-        return { accepted: true, reason: 'Wymiana PW zaakceptowana', oneShotTrade: true };
+        const pwBalance = givePn - handelRequiredPn(receivePn, relTotal, handelMultiplier);
+        return { accepted: true, reason: 'Wymiana PW zaakceptowana', oneShotTrade: true, pwBalance };
       }
 
       // Legacy: goldOnce → PN 1:1, strict fair (W4-A)
@@ -1124,6 +1153,11 @@ export function evaluateProposal(
       // niskiej Relacji dalej wymagał dopłaty zamiast przechodzić za darmo.
       const treatyBasePn = treatyBasePnFromConfig(actionId);
       const proposerIsTreatyPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
+      // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): `-gap` to JEDYNA liczba, którą
+      // ta bramka realnie liczy — `pwBalance` musi być dokładnie nią, żeby wyświetlany
+      // "Bilans" (diplomacyAcceptanceBalance.ts) i próg akceptacji nigdy się nie rozjechały
+      // (undefined gdy bramka w ogóle nie dotyczy tej oferty — brak treatyBasePn/nie-gracz).
+      let pwBalance: number | undefined;
       if (treatyBasePn > 0 && proposerIsTreatyPlayer) {
         // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: dolicz PW z sąsiednich pozycji NA TYM SAMYM
         // stole (np. osobny `handel` między tymi samymi stronami) — pakiet jako całość
@@ -1135,6 +1169,7 @@ export function evaluateProposal(
         const gap = treatyBaseFairnessGap(
           treatyBasePn, givePn + siblingGivePn, receivePn + siblingReceivePn, relTotal,
         );
+        pwBalance = -gap;
         if (gap > 0) {
           const packageNote = (siblingGivePn > 0 || siblingReceivePn > 0)
             ? ', licząc pakiet na stole'
@@ -1142,13 +1177,14 @@ export function evaluateProposal(
           return {
             accepted: false,
             reason: `Brakuje ${gap} PW do uczciwej oferty traktatu handlowego @ Relacji (baza ${treatyBasePn} PW${packageNote}) — oferta nieuczciwa dla partnera`,
+            pwBalance,
           };
         }
       }
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
       if (hasItems) {
         if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
+          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji', pwBalance };
         }
       }
       const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
@@ -1163,6 +1199,7 @@ export function evaluateProposal(
         accepted: true,
         reason: hasItems ? 'Traktat handlowy (ze słodzikiem) zawarty' : 'Traktat handlowy zawarty',
         deal,
+        pwBalance,
       };
     }
 

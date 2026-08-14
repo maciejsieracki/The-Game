@@ -21,7 +21,12 @@ export interface NegotiationBalanceSource {
   acceptanceMy?: AcceptanceSideBalance;
   acceptanceTheir?: AcceptanceSideBalance;
   canAccept?: boolean;
-  responderPreview?: { accepted: boolean; reason?: string };
+  /**
+   * `pwBalance` (P-DYPLO-BILANS-GATE-NIESPOJNY, Maciej 2026-08-14): JEDNA liczba PW z TEJ
+   * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
+   * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
+   */
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
   isGift?: boolean;
   awaitingAiResponse?: boolean;
   canCounter?: boolean;
@@ -39,7 +44,12 @@ export interface PnBalancePanelData {
   canAccept?: boolean;
   extraOnTable?: number;
   awaitingAiResponse?: boolean;
-  responderPreview?: { accepted: boolean; reason?: string };
+  /**
+   * `pwBalance` (P-DYPLO-BILANS-GATE-NIESPOJNY, Maciej 2026-08-14): JEDNA liczba PW z TEJ
+   * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
+   * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
+   */
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
   canCounter?: boolean;
   uiActionId?: string;
 }
@@ -231,6 +241,17 @@ export function balancePanelDataFromRows(
   let myOfferPn = 0;
   let theirOfferPn = 0;
   let blockReason: string | undefined;
+  // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): gdy jest DOKŁADNIE jedna pozycja
+  // aktualna (typowy przypadek — pojedynczy "Traktat handlowy"/"Umowa wymiany" bez pakietu,
+  // patrz dyspozycje/PYTANIA-OTWARTE.md) i jej bramka ma numeryczny próg PW
+  // (responderPreview.pwBalance z evaluateProposal), użyj TEJ liczby jako JEDYNEGO
+  // wyświetlanego "Bilans" — zamiast osobno liczonej, surowej różnicy givePn-receivePn
+  // (`net` niżej), która ignorowała relację/mnożnik chęci partnera i dawała np. "+30" mimo
+  // że ta sama bramka odrzucała ofertę jako "wymagane ≥ 73 PW". Dla pakietu >1 pozycji
+  // (osobny, wcześniej rozstrzygnięty temat BUG-PAKIET-BILANS-DODATNI-BLOKADA) zostaje
+  // dawne zachowanie — pwBalance jest per-pozycja, nie sumuje się bezpośrednio z resztą
+  // pakietu bez ryzyka podwójnego liczenia.
+  let unifiedPwBalance: number | undefined;
 
   for (const row of actionable) {
     const d = balancePanelDataFromRow(row, 0);
@@ -271,10 +292,13 @@ export function balancePanelDataFromRows(
         blockReason = row.responderPreview.reason
           ?? (row.direction === 'incoming' ? 'Warunki niespełnione' : 'Oferta nieuczciwa dla partnera');
       }
+      if (actionable.length === 1 && row.responderPreview?.pwBalance != null) {
+        unifiedPwBalance = row.responderPreview.pwBalance;
+      }
     }
   }
 
-  const net = myOfferPn - theirOfferPn;
+  const net = unifiedPwBalance ?? (myOfferPn - theirOfferPn);
   const canAccept = blockReason == null;
 
   const statusLabel = net > 0
@@ -547,7 +571,6 @@ export function renderPnBalancePanelFromBasket(
   }
   const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relTotal));
   const balancePn = givePn - fairMin;
-  const rawBalancePn = givePn - receivePn;
   const accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
@@ -583,8 +606,10 @@ export function renderPnBalancePanelFromBasket(
     + '</div>'
     + '</div>'
     + renderRelationDealModRowHtml(relTotal, 'trade')
-    + '<div class="da-pn-bal-meta">PW surowe (bez Relacji): oddajemy ' + givePn + ' · oni ' + receivePn
-    + ' · bilans ' + (rawBalancePn >= 0 ? '+' : '') + rawBalancePn + '</div>'
+    // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): usunięta osobna linia "PW surowe
+    // (bez Relacji) ... bilans +N" — pokazywała DRUGĄ, sprzeczną liczbę "bilans" tuż obok
+    // powyższego, prawdziwego Bilansu (Oni) @ Relacji, dokładnie ten wzorzec zamieszania,
+    // który zgłosił Maciej. Jedna liczba "Bilans" na panelu — ta @ Relacji, poniżej.
     + '<div class="da-pn-bal-meta">PW @ Rel ' + formatLiczbaPl(relTotal) + ': fair min ' + fairMin + ' · bilans '
     + (balancePn >= 0 ? '+' : '') + balancePn + '</div>'
     + '<div class="da-pn-bal-verdict ' + (accepted ? 'ok' : 'no') + '">' + esc(verdict) + '</div>'
