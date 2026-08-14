@@ -25943,3 +25943,38 @@ miasta (mechanika `city.oblegane`) wymaga nadal fizycznej adiacencji niezależni
 (prawdopodobnie TAK — oblężenie to inna mechanika niż pojedynczy atak, nie mylić).
 
 **STATUS: DISPATCH W TOKU.**
+
+---
+
+## P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE (2026-08-14, zgłoszenie Macieja ze zrzutem panelu Garncarnia)
+
+**Zgłoszenie (cytat):** „Budynki pokazują tylko na czerwono jakie surowce i co pobierają. Ale nie
+pokazują co produkują. Jeżeli jest garncarnia to powinno być jeszcze oprócz tego jest tam
+produkcja. Czyli powinien być rozdzielony kosz utrzymania od kosztu produkcji. No i teraz w
+koszcie produkcji mamy na przykład w tym wypadku garncarni drewno jest na minusie, glina jest na
+minusie ale jest na plusie na przykład ceramika."
+
+**Zrzut:** panel szczegółów budynku „Garncarnia" (poprawnie pokazuje pełny profil: koszt budowy,
+utrzymanie, wymagania, „Odblokowuje surowiec: ceramika", notatkę „ABC-6: glina+drewno→ceramika").
+Obok, panel „BUDYNKI W MIEŚCIE" → sekcja „Produkcja surowców (1)" → wiersz „Garncarnia [L2]"
+pokazuje WYŁĄCZNIE `-2⚙/t · -5 Drewno/t` (koszt utrzymania) i `+5⚒` (Praca) — **nigdzie nie widać
+zużycia gliny ani przyrostu ceramiki**, mimo że budynek jest konwerterem glina+drewno→ceramika.
+
+**Potwierdzone w kodzie (orkiestrator, przed dispatchem):** `gra/src/ui/cityPanel.ts` —
+`formatBuildingUpkeepRowHtml()`/`formatBuildingUpkeepTotalHtml()`/`formatResourceUpkeepText()`
+renderują WYŁĄCZNIE stronę kosztową (utrzymanie: złoto + surowce zużywane co turę) — brak
+jakiegokolwiek formattera dla STRONY PRODUKCYJNEJ (output konwertera). `gra/data/buildings.json`
+dla `garncarnia`: pole `baza`/`przyrost` ma tylko `praca` (to wyjaśnia widoczne `+5⚒`) — sam
+output surowca (ile ceramiki/turę) NIE jest w tym samym rekordzie w oczywisty sposób; prawdopodobnie
+liczony gdzie indziej w silniku konwerterów (wzmianka `P-KONWERTERY-PRZEPUSTOWOSC-Q1` w
+`econ-params.json`). **Do zbadania przez dispatchowanego agenta:** znaleźć gdzie faktycznie
+liczony jest output konwertera dla danego budynku/poziomu (funkcja przepustowości konwerterów w
+`gra/src/game/economy.ts` lub pokrewnym), i doprowadzić tę liczbę do tego samego wiersza w
+panelu „BUDYNKI W MIEŚCIE", żeby gracz widział PEŁNY bilans budynku (na minusie: surowce
+zużywane, na plusie: surowiec produkowany), nie tylko połowę.
+
+**Żądanie właściciela:** rozdzielić „koszt utrzymania" od „kosztu/bilansu produkcji" w liście
+budynków miasta; dla budynków-konwerterów (jak Garncarnia) pokazać PEŁNY bilans — surowce wejściowe
+na minusie (drewno, glina), surowiec wyjściowy na plusie (ceramika) — nie tylko stronę kosztową.
+
+**STATUS: DISPATCH W TOKU.**
