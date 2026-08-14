@@ -130,6 +130,18 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
 ## JAK PRACOWAĆ Z WŁAŚCICIELEM (przeniesiona pamięć robocza)
 Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — odpowiadaj po polsku**. Podejmuje decyzje produktowe/gameplayowe; od Ciebie oczekuje architektury, analizy i wykonania. Woli **ustrukturyzowany, analityczny wywód** (tabele, numerowane sekcje) niż ściany tekstu.
 
+0. **⛔ CAŁY tekst widoczny dla właściciela — WYŁĄCZNIE po polsku, nie tylko raporty/ABC (Maciej,
+   2026-08-14).** Jego słowa: „dlaczego ciągle przechodzisz na język angielski? Spisz mi do reguł,
+   że masz posługiwać się językiem polskim." Powód wpisania: przez całą sesję 2026-08-14 formalne
+   dostarczenia (raport §10, pytania ABC) były po polsku, ale bieżąca narracja między wywołaniami
+   narzędzi („Round-3 fix landed…", „Let's verify independently…", „All gates confirmed
+   matching…") leciała po angielsku — to TEŻ jest tekst widoczny dla właściciela, nie tylko
+   końcowe podsumowania. Zasada „odpowiadaj po polsku" dotyczy więc KAŻDEGO zdania kierowanego do
+   Macieja: krótkich statusów w toku pracy, potwierdzeń, pytań doprecyzowujących — bez wyjątku dla
+   „to tylko robocza notka". Nie dotyczy treści technicznych które z natury żyją po angielsku
+   (nazwy zmiennych/funkcji w kodzie, komunikaty commitów jeśli repo ma angielską konwencję,
+   cytaty z logów/błędów) — te zostają w oryginale wewnątrz polskiego zdania, tak jak dotychczas.
+
 1. **KAŻDA decyzja gameplayowa/produktowa/architektoniczna → PEŁNA FORMA ABC** + **numer ID w rejestrze** (procedura 2026-08-03). Struktura pytania: nagłówek `[TEMAT: …]` + **ID** · **Sytuacja** · **Cel pytania** · **Dlaczego teraz** · **A / B / C** (Za≥2, Przeciw≥2) · **Rekomendacja**. **ID pytania ZAWSZE w formacie inline code** (pojedyncze znaczniki `` ` ``, np. `` `R-TEMAT-Q1` `` — **Maciej 2026-08-14: „obok numeru pytania zawsze taki znaczek kopiowania"**) — to jedyny sposób w tym środowisku żeby dać wyraźnie wyodrębniony, łatwy do skopiowania token; dotyczy TYLKO samego ID, nie całej treści pytania (długie bloki tekstu owinięte w potrójne ``` łamią kopiowanie i tego się unika). **Max 3 pytania na turę**. Po odpowiedzi Macieja w formie **`ID + litera`**: **ECHO** → zapis plikowy → **kod + commit** (bez deployu). Deploy tylko na **`deploy`**. Hasło **`format`** / **`ABC`** = przepisz pytanie. Szczegóły: `dyspozycje/PAMIEC-ROBOCZA-CIV.md` · `PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 1a. **⛔ OZNACZ WPROST, GDY PYTANIE PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (Maciej, 2026-08-09).** Jego słowa: „powinno być wyraźnie zapisane, że jeżeli pytanie ABC podważa wcześniejsze moje decyzje, to powinno być to wyraźnie wskazane, że to podważa jakąś inną moją decyzję, żebym miał świadomość, że mogę cofnąć pewne inne swoje ustalenia." Jeśli sytuacja/rekomendacja w pytaniu ABC dotyka obszaru objętego już podjętą decyzją (ID + litera + data w rejestrze) — **nazwij wprost, którą decyzję i z jakiego ID/daty to koliduje**, zamiast zostawiać to domyślne albo ukryte w opisie sytuacji. Cel: właściciel ma widzieć na pierwszy rzut oka, że odpowiadając literą, może cofać coś, co już wcześniej ustalił — nie ma się tego domyślać z kontekstu.
 1b. **⛔ KAŻDE pytanie do właściciela — nie tylko pełne ABC — dostaje numer/ID w inline code (Maciej,
