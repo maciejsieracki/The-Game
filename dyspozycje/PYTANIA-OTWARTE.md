@@ -20184,3 +20184,43 @@ właściciela przy playteście.
 F1/F2/F3 z rundy naprawczej zaimplementowane i zweryfikowane wizualnie (build + headless Chrome,
 screenshoty klik po chipach Praca/Nauka/Religia/Skarbiec, 3× zoom). Wszystkie 4 bramki pokrycia
 zielone, Faza 1 (Skarbiec) bez regresji. STATUS: dispatch Evaluatora.
+
+## Auto-praca runda 2 (b23ea7f1) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY z otwartym follow-up ABC (2026-08-14)
+
+Naprawa głównego bugu (budżet per-miasto zamiast wspólnego) potwierdzona jako poprawna i
+zmierzona niezależnie — scenariusz reprodukcyjny 2960→960 Pracy (98,7%→32,0%, ≤990=33%×3000)
+odtworzony bit-w-bit własnym harnessem Evaluatora. Mutacja przywracająca bug rundy 1 łapana
+(5 porażek). Wszystkie 6 bramek zielone, `git reset --hard` w worktree bez skutków ubocznych
+(zweryfikowany reflog + diff ograniczony do 3 zapowiedzianych plików). AI nietknięte, potwierdzone.
+
+**⛔ NOWE ZNALEZISKO (nie regresja tej rundy — runda 1 była w tym samym scenariuszu ściśle
+gorsza, więc runda 2 poprawia, nie psuje):** przy override % per-miasto (istniejący mechanizm z
+rundy 1, `R-AUTO-V2-Q3=C`, pierwotnie dla focus/tryb/onlyWorked, rozciągnięty na % bez osobnej
+decyzji właściciela), efektywny pułap CAŁEGO imperium = `max_i(pct miasta)`, NIE polityka
+imperium. Zmierzone: polityka imperium 20%, jedno miasto z override 80% → automat wydaje 80%
+CAŁEJ puli imperium (800 z 1000), pozostałe miasta z polityką 20% dostają ZERO — mimo że panel
+pokazuje im "Efekt w mieście: 20% Pracy". Gwarancja "zostaw mi X% Pracy" z poziomu polityki
+imperium może zostać obeziona jednym override per-miasto.
+
+**ECHO ABC do właściciela (jutro, nie dziś w nocy — nie blokuje niczego, kod jest bezpieczny):**
+[TEMAT: Semantyka % budżetu Pracy przy override per-miasto]
+A) Zostaw jak jest — override miasta to jego własny pułap na wspólny licznik, brak gwarancji
+   sumy na poziomie imperium przy aktywnym override.
+B) Dwupoziomowo — polityka imperium jest TWARDYM pułapem sumy, % miasta to jego udział
+   WEWNĄTRZ tego pułapu (nie może go przebić).
+C) Jak B + sprawiedliwy podział wspólnego budżetu między miasta (round-robin) — usuwa dodatkowo
+   efekt "pierwsze miasto wg id zjada cały budżet" (dziś świadomy, przypięty testem, ale nikt o
+   niego nie prosił).
+**Uwaga wg CLAUDE.md §1a: odpowiedź może częściowo cofnąć `R-AUTO-PRACA-BUDZET-PROCENT-Q1=B`
+w zakresie override per-miasto.**
+
+**Nieblokujące, dług testowy (do rejestru, nie do naprawy teraz):** mutacja zamiany zamrożonej
+bazy % (`globalPracaPulaAtEntry`) na ruchomą (`pracaLeft`) przechodzi 29/29 mimo realnej zmiany
+zachowania (800→640 w scenariuszu heterogenicznym) — luka pokrycia widoczna tylko przy różnych %
+per miasto, dziś nietestowana. Komentarz w kodzie powołuje się na test 12 jako dowód
+niezmienniczości sumy względem kolejności miast — test tego formalnie nie dowodzi (odwraca tylko
+tablicę wejściową, i tak sortowaną po `id`), twierdzenie samo w sobie PRAWDZIWE (zweryfikowane
+inną mutacją Evaluatora), tylko przypis wskazuje niewłaściwy dowód.
+
+**TEMAT ZAMKNIĘTY dla głównego bugu.** Kod bezpieczny do pozostania w ROBOCZA. Follow-up ABC do
+odpowiedzi jutro.
