@@ -22024,3 +22024,202 @@ LIFO, potwierdzony realnym zdarzeniem klawiatury.
 
 **STATUS: PASS-WITH-NOTES — kod zostaje w gałęzi, N1 do naprawy przed deployem (dotyka kanonu
 `CLAUDE.md`), N2 do backlogu testowego.**
+## Evaluator: sekwencjonowanie modali końca tury (`a7de65b0`) — **WERDYKT: FAIL**
+
+**WERDYKT: FAIL** dla commitu `a7de65b0` (`P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE`).
+Zgłoszony objaw jest naprawiony, bramki są zielone, a nowy test **nie jest** tautologiczny
+(zweryfikowane mutacją kontrolną). FAIL wynika z **jednego, nowego defektu wprowadzonego przez
+samą naprawę** (N1) — odroczenie preBattle rozjeżdża się z istniejącym „samoleczeniem" flag
+fazy AI, przez co po odroczeniu ataku AI silnik traci stan wznowienia, a przy późniejszym
+rozstrzygnięciu bitwy **odtwarza CAŁĄ fazę AI od zera**. Wszystko poniżej **zmierzone
+samodzielnie** (Opus 5, izolowany worktree zsynchronizowany z
+`origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, HEAD `7b803486`), nie przepisane z raportu
+Operatora.
+
+### 1. Bramki — uruchomione samodzielnie, wszystkie zgodne z commit message
+
+| Bramka | Zmierzone | Deklarowane w commicie | Zgodność |
+|---|---|---|---|
+| `npx tsc --noEmit` | **exit 0**, zero linii wyjścia | „tsc 0" | ✅ |
+| `end-turn-modal-sequencing-test.cjs` | **38 pass, 0 fail**, exit 0 | „38/0" | ✅ |
+| `escape-overlay-stack-test.cjs` | **84 pass, 0 fail**, exit 0 | „84/0" | ✅ |
+| `escape-fullscreen-priority-test.cjs` | **10 pass, 0 fail**, exit 0 | „10/0" | ✅ |
+| `tech-tree-test.cjs` | **19 pass, 0 fail**, exit 0 | „bez regresji" | ✅ |
+| `research-test.cjs` | **33 pass, 0 fail**, exit 0 | „bez regresji" | ✅ |
+| `unit-replace-test.cjs` | **13/13**, exit 0 | „bez regresji" | ✅ |
+| `ai-founding-territory-test.cjs` | **28 pass, 0 fail**, exit 0 | „bez regresji" | ✅ |
+| `vite build --outDir /tmp/eval-eot-modal` | **exit 0**, 822 moduły, `index.html` 37 086,11 kB | n/d | ✅ |
+
+Kod wyjścia `tsc` odczytany bezpośrednio, nie przez potok (pułapka `CLAUDE.md` §0b (b)).
+
+### 2. Nowy test NIE jest tautologiczny — mutacja kontrolna wykonana przeze mnie
+
+Trzy niezależne mutacje, każda cofnięta po pomiarze (drzewo robocze czyste, `git status` pusty):
+
+| Mutacja | Wynik testu | Które asercje padły |
+|---|---|---|
+| usunięcie całego guarda odraczania w `showPreBattle` | **34 pass, 4 fail** | A8 ×2, B1, B1b |
+| `flushDeferredAutoPreBattle()` → no-op | **36 pass, 2 fail** | B1c ×2 |
+| usunięcie `isArmyMergePanelOpen()` z `canAutoOpenDiploAudience` | **37 pass, 1 fail** | A3 |
+
+Część B testu bunduje (esbuild) i uruchamia (jsdom) **prawdziwy** `src/ui/preBattle.ts` +
+`src/ui/armyMergePanel.ts` — `showPreBattle`/`isPreBattleOpen`/`flushDeferredAutoPreBattle`
+w teście to kod produkcyjny, nie atrapa. Zastrzeżenie (uczciwie przyznane już w nagłówku samego
+testu): `promptMergeIfCoLocatedMirror`/`flushDeferredMergeMirror` w scenariuszu B3 to **mirror**
+logiki z `main.ts`, w dodatku **uproszczony** (sprawdza tylko `isPreBattleOpen()`, pomija
+`endTurnInProgress` i `isDiplomacyAudienceOpen()` z realnej formuły). B3 dowodzi więc wzorca,
+nie treści guarda w `main.ts` — tę pinują tekstowo A1/A2. Akceptowalne, ale to pin na string,
+nie na zachowanie.
+
+### 3. ⛔ N1 (BLOKER, powód FAIL) — odroczenie preBattle kasuje stan wznowienia fazy AI
+
+**Mechanizm, zweryfikowany linia po linii w kodzie (nie z raportu Operatora):**
+
+1. `main.ts:23789` `healStaleEndTurnBlockers()`:
+   ```
+   const preBattle = isPreBattleOpen();
+   if (!preBattle && (aiTurnAwaitingBattle || aiCmdResume)) {
+     console.warn('[EndTurn] Clearing stale AI battle resume flags');
+     aiTurnAwaitingBattle = false;
+     aiCmdResume = null;
+   }
+   ```
+   Jedynym sygnałem „bitwa jest w toku" jest tu `isPreBattleOpen()`.
+2. Nowa naprawa **celowo** tworzy stan, w którym bitwa czeka, a `isPreBattleOpen()` to `false` —
+   dowodzi tego asercja **B1 samego dostarczonego testu** („showPreBattle({auto:true}) NIE otwiera
+   overlayu"). `deferredAutoRequest` nie jest widoczne dla nikogo z zewnątrz (brak eksportu typu
+   `isAutoPreBattleDeferred()` — sprawdzone: `preBattle.ts` eksportuje wyłącznie `showPreBattle`,
+   `hidePreBattle`, `isPreBattleOpen`, `configurePreBattle`, `flushDeferredAutoPreBattle`).
+3. `healStaleEndTurnBlockers()` jest wołane z `canPlayerInitiateEndTurn()`
+   (`main.ts:23816-23817`), a to **z pętli renderu HUD**, nie tylko z klawisza N:
+   `main.ts:18172 canEndTurn: () => canPlayerInitiateEndTurn()` → `hud.ts:1671 updateHud()` →
+   `hud.ts:1675 refreshD1BModules()` → `hud.ts:1543 bottomBarApi?.update()` →
+   `bottomBarHud.ts:119 update: render` → `bottomBarHud.ts:86 config.canEndTurn?.()`.
+   `d1bHudActive = true` na starcie gry (`main.ts:18085`), `useD1BLayout()` zwraca `true`
+   (`hud.ts:526` — `cfg.onExecutePending` jest przekazane), więc dolny pasek JEST zamontowany.
+4. `updateHud()` jest wołane **w tej samej turze, po fazie AI**: `main.ts:27641`, tuż po
+   sprawdzeniu zwycięstwa, jeszcze przed blokiem `finally`.
+
+**Skutek dla ścieżki ataku AI na gracza** (`main.ts:26843-26861` — ustawia
+`aiCmdResume = {ownerList, ownerIdx, commands, cmdIdx}`, `aiTurnAwaitingBattle = true`,
+`onResolved = () => { void runAiPhase(); }`, potem `break ownerLoop`):
+
+- audiencja pierwszego kontaktu jest otwarta (`tryOpenNextFirstContactCard`, `main.ts:15217` —
+  **bez** guarda na `endTurnInProgress`, więc otwiera się w środku końca tury; to jest dokładnie
+  zgłoszony scenariusz) → auto-preBattle się **odracza** → `isPreBattleOpen() === false`;
+- `main.ts:27641 updateHud()` → `healStaleEndTurnBlockers()` → **kasuje `aiTurnAwaitingBattle`
+  i `aiCmdResume`** jako „stale";
+- konsekwencja A: reszta komend tego właściciela AI **i wszystkich kolejnych AI z `aiOwnerList`**
+  jest w tej turze po cichu porzucona;
+- konsekwencja B (poważniejsza): gdy gracz w końcu zamknie audiencję → `flushDeferredAutoPreBattle()`
+  → bitwa się pokazuje → gracz ją rozstrzyga → `onResolved()` woła `runAiPhase()`, a że
+  `aiCmdResume === null`, funkcja startuje od `startOi = 0` z **nowo wygenerowaną** listą
+  właścicieli (`main.ts:25585-25595`) — czyli **cała faza AI leci drugi raz**, w środku tury
+  gracza, poza overlayem przejścia tury.
+
+**To jest regresja wprowadzona przez ten commit.** Przed naprawą `isPreBattleOpen()` było `true`
+przez cały ten czas, więc gałąź „stale" nigdy nie strzelała, a `canPlayerInitiateEndTurn()`
+dodatkowo blokowała kolejny End Turn komunikatem „blocked: preBattleOpen".
+
+Poziom dowodu — uczciwie: punkty 1-4 to **analiza statyczna z cytatem każdej linii** (każde
+ogniwo łańcucha odczytane w kodzie, numery linii wyżej); dynamicznie się tego nie da wykonać,
+bo `main.ts` (27 tys. linii, `boot()` zależne od three.js/DOM) nie bunduje się do harnessu
+node'owego. Kluczowy, nieoczywisty fakt („bitwa czeka, a `isPreBattleOpen()` to `false`") **jest
+zmierzony dynamicznie** — asercją B1 dostarczonego testu.
+
+**Ścieżka barbarzyńska jest wolna od N1** — `main.ts:27538` przekazuje `onResolved = () => {}`
+i nie dotyka `aiTurnAwaitingBattle`/`aiCmdResume`. Zrzut Macieja pokazywał właśnie atak
+barbarzyńców, więc N1 leży w siostrzanej ścieżce, nie w tej z ekranu.
+
+### 4. N2 (poważne) — jednoslotowa kolejka gubi PIERWSZE żądanie; uzasadnienie w kodzie nieprawdziwe
+
+Komentarz przy `deferredAutoRequest` (`preBattle.ts`) twierdzi: *„Jeden slot wystarcza — drugi
+automatyczny atak w tym samym ticku nadpisałby ten sam scenariusz (kolejny atak nadejdzie po
+wznowieniu fazy AI)"*. To **nieprawda dla pętli barbarzyńców**, która po
+`launchIncomingMapFieldBattle` robi `continue` bez czekania (`main.ts:27538-27550`) — dwa ataki
+barbarzyńskie w tym samym ticku to dwa NIEZALEŻNE żądania, nie ten sam scenariusz.
+
+Zmierzone przeze mnie (probe na tym samym bundlu esbuild+jsdom co część B testu, prawdziwy
+`preBattle.ts`):
+
+```
+PROBE 1: blocked=true; showPreBattle(A, auto); showPreBattle(B, auto); blocked=false;
+  flush            -> otwarte=true, tytuł "Broni się: BITWA-B"
+  hidePreBattle(); flush -> otwarte=false      <-- BITWA-A ZGUBIONA BEZPOWROTNIE
+PROBE 2 (kontrola, znane side-discovery, bez zmian):
+  blocked=false; showPreBattle(C, auto); showPreBattle(D, auto) -> na ekranie D
+  hidePreBattle(); flush -> otwarte=false      <-- BITWA-C zgubiona
+```
+
+Czyli naprawa **nie zamyka** kanału cichej utraty bitwy, tylko **dokłada drugi** (utrata przez
+nadpisanie slotu kolejki, obok istniejącej utraty przez bezwarunkowe `hidePreBattle()`).
+Odpowiedź na pytanie „czy deferred-queue pattern sam gubi drugie żądanie": **tak, gubi pierwsze**
+— zmierzone, nie wywnioskowane. Naprawa: `deferredAutoRequest` jako tablica (FIFO) zamiast
+jednego slotu; `flushDeferredAutoPreBattle()` zdejmuje jedno żądanie na wywołanie (retry przy
+zamknięciu preBattle domknie resztę).
+
+### 5. N3 (poważne) — flush odpala się tylko na 2 z 9 ścieżek zamknięcia audiencji
+
+Pytanie „czy retry przy zamknięciu modalu faktycznie się odpala" — odpowiedź jest **połowiczna**:
+
+- **Panel scalenia armii: pełne pokrycie.** Wszystkie drogi wyjścia (klik przycisków, klik w tło,
+  Escape przez `escapeOverlayStack`) przechodzą przez `pick(opts.onMerge)` / `pick(opts.onSeparate)`
+  (`armyMergePanel.ts:167, 200-201, 209, 214`), a oba callbacki w `main.ts` wołają
+  `flushDeferredMergePrompts()` + `flushDeferredAutoPreBattle()`. ✅
+- **Audiencja: pokrycie niepełne.** `onBack` łapie klik „Wróć" (`diplomacyAudience.ts:2038`)
+  i Escape (`handleAudienceEscape`, `:496`) — to jest OK. Ale w `main.ts` jest **9 wywołań
+  `hideDiplomacyAudience()`**, a flush ma tylko jedno (`main.ts:17311`, w `onBack`). Pozostałe
+  zamykają audiencję po cichu: `openCityPanelForPlayer` (`:5228`), `:5823`, `:5893`,
+  `openNextOpenDiploProposal` (`:12771`), **`ensureDiplomacyUiClosed` (`:15182`) — wołane
+  z `selectPlayerUnit` (`main.ts:5265`)**, `handleDiploFocusCapital` (`:22186`).
+  Odroczona bitwa przeżywa wtedy do najbliższego `finally` **następnej** tury — a wtedy pokaże
+  rostery zapamiętane turę wcześniej (`atkRosterRef`/`defRosterRef` to `slice()` z momentu ataku,
+  `main.ts:21498-21499`), plus zapala N1. Naprawa: flush w jednym wspólnym miejscu zamykającym
+  audiencję, nie w `onBack`.
+
+### 6. Co JEST zrobione dobrze (bez tego werdykt byłby ostrzejszy)
+
+- **Wszystkie 3 objawy ze zgłoszenia są adresowane**, nie tylko ten ze zrzutu. Objaw 3 (prompt
+  scalenia w trakcie tur AI) prześledzony do końca: produkcja jednostki →
+  `flushDeferredPlayerUnitReveals()` (`main.ts:9846`) → `afterPlayerUnitSpawned` (`:9824`) →
+  `promptMergeIfCoLocated` (`:9833`) — czyli komentarz w `finally`, że reveals są „bezpieczne
+  z definicji", jest **prawdziwy**: jedyne wyjście tej ścieżki na modal prowadzi przez nowo
+  uzbrojony guard.
+- Guard w `showPreBattle` stoi **przed** `hidePreBattle()` — odroczone żądanie nie dotyka DOM.
+- `flushDeferredAutoPreBattle()` re-sprawdza blokadę na świeżo.
+- Rozdział auto/ręczny jest ścisły: dokładnie 1 wywołanie z `auto: true`, 2 ręczne bez niego
+  (pinowane A4/A5, sprawdzone przeze mnie niezależnie greppem).
+- Kolejność w `finally` (merge → auto-preBattle) działa: gdy merge wyskoczy pierwszy, bitwa
+  poczeka i domknie się przez `onMerge`/`onSeparate`.
+
+### 7. N4 (drobne) — wpis `P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY`: 1 zdanie nieprawdziwe
+
+Opis jest **wierny kodowi** co do mechanizmu (`continue` bez czekania + bezwarunkowe
+`hidePreBattle()`) — potwierdzone `main.ts:27538-27550` i PROBE 2 wyżej. Ale zdanie *„bitwa nadal
+się toczy w silniku, ale okno preBattle dla niej już nie istnieje"* jest **odwrotnością prawdy**:
+`launchIncomingMapFieldBattle` nie rozstrzyga nic samo — rozstrzygnięcie odpala wyłącznie callback
+z overlayu (`onAuto`/`onBattlefield`/`onCancel`), a `hidePreBattle()` (`preBattle.ts:230-244`)
+tylko sprząta DOM i **nie woła żadnego callbacku**. Zgubiona bitwa **w ogóle się nie odbywa** —
+atak znika bez śladu, rostery nietknięte. Do sprostowania w tamtym wpisie przy dispatchu; dopisać
+tam też drugi kanał utraty z N2 (nadpisanie slotu kolejki), którego tamten opis nie zna.
+
+### 8. Rekomendacja
+
+**Kod zostawiam nietknięty** — naprawa N1 nie jest jednoliniowa (wymaga decyzji, czy
+`healStaleEndTurnBlockers` ma znać stan odroczenia, czy odroczenie ma trzymać `endTurnInProgress`).
+Do dispatchu rundy 2 (Operator, Sonnet 5), w tej kolejności:
+
+1. **N1 (bloker)** — wyeksponować z `preBattle.ts` predykat „bitwa czeka" obejmujący też
+   `deferredAutoRequest` (np. `isPreBattlePendingOrOpen()`) i użyć go w `healStaleEndTurnBlockers`
+   (`main.ts:23790`) ORAZ w `canPlayerInitiateEndTurn` (blokada kolejnego End Turn), zamiast
+   gołego `isPreBattleOpen()`. Test regresyjny musi pinować, że przy odroczonym auto-preBattle
+   `aiTurnAwaitingBattle`/`aiCmdResume` **przeżywają** przejście przez `healStaleEndTurnBlockers`.
+2. **N2** — FIFO zamiast jednego slotu + asercja „dwa odroczone auto-żądania pokazują się po
+   kolei, żadne nie ginie" (PROBE 1 wyżej gotowa do przepisania na test).
+3. **N3** — flush przy KAŻDYM zamknięciu audiencji, nie tylko w `onBack`.
+4. **N4** — sprostować 1 zdanie we wpisie `P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY`
+   i dopisać drugi kanał utraty.
+
+**Nie deployować `a7de65b0` do ROBOCZA przed domknięciem N1** — w wariancie ataku AI podczas
+otwartej audiencji ryzyko (podwójna faza AI) jest większe niż naprawiany objaw (dwa modale
+naraz na ekranie).
