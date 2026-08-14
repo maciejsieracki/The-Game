@@ -182,7 +182,7 @@ let activePreBattleRetreat: boolean = false;
  * barbarian attack loop in main.ts processes all commands synchronously with `continue`,
  * never awaiting resolution). A queue guarantees every deferred attack eventually gets its
  * own preBattle window, in order. */
-const deferredAutoRequests: { info: PreBattleInfo; cb: PreBattleCallbacks; opts?: PreBattleOptions }[] = [];
+const deferredAutoRequests: { info: PreBattleInfo; cb: PreBattleCallbacks; opts?: PreBattleOptions; enqueuedAt: number }[] = [];
 
 /** Wpięcie silnika — jak configureCityPanel (P0-D4). */
 export function configurePreBattle(config: PreBattleConfig): void {
@@ -230,7 +230,13 @@ export function showPreBattle(
   // modal closes) shows the next deferred request from the queue. A manual player action
   // (opts.auto omitted) never reaches this branch -- it always shows immediately, as before.
   if (opts?.auto === true && (isPreBattleOpen() || pbCfg.isOtherEndTurnModalOpen?.() === true)) {
-    deferredAutoRequests.push({ info, cb, opts });
+    // F2 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): enqueuedAt zasila
+    // oldestPendingAutoPreBattleAgeMs() -- main.ts::healStaleEndTurnBlockers() go używa,
+    // żeby żądanie zalegające w kolejce ponad próg (8s, patrz main.ts) nie wyłączało jej
+    // gałęzi 1 BEZTERMINOWO. / EN: enqueuedAt feeds oldestPendingAutoPreBattleAgeMs() --
+    // main.ts::healStaleEndTurnBlockers() uses it so a request stuck in the queue past the
+    // threshold (8s, see main.ts) doesn't disable its branch 1 FOREVER.
+    deferredAutoRequests.push({ info, cb, opts, enqueuedAt: Date.now() });
     return;
   }
   hidePreBattle();
@@ -315,6 +321,48 @@ export function isPreBattleOpen(): boolean {
  */
 export function hasPendingAutoPreBattle(): boolean {
   return deferredAutoRequests.length > 0;
+}
+
+/**
+ * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, F2 (Evaluator FAIL 136fefbb, runda 3, Maciej
+ * 2026-08-14): wiek NAJSTARSZEGO (indeks 0 -- FIFO, shift() zdejmuje z przodu) żądania w
+ * kolejce, w milisekundach; `0` gdy kolejka pusta. main.ts::healStaleEndTurnBlockers() go
+ * używa, żeby żądanie zalegające ponad rozsądny próg przestało bezterminowo wyłączać jej
+ * gałąź 1 (bez tego runda 2 wprowadziła ryzyko: zaleganie choćby jednego żądania w kolejce
+ * trwale wyłączało jedyny mechanizm samoleczenia flag fazy AI, zamieniając odwracalną
+ * degradację w twardą blokadę "Zakończ turę").
+ * / EN: age of the OLDEST (index 0 -- FIFO, shift() removes from the front) request in the
+ * queue, in milliseconds; `0` when the queue is empty. main.ts::healStaleEndTurnBlockers()
+ * uses this so a request stuck past a reasonable threshold stops permanently disabling its
+ * branch 1 (without this, round 2 introduced a risk: even one request stuck in the queue
+ * permanently disabled the only AI-phase-flag self-healing mechanism, turning a reversible
+ * degradation into a hard "End Turn" deadlock).
+ */
+export function oldestPendingAutoPreBattleAgeMs(): number {
+  if (deferredAutoRequests.length === 0) return 0;
+  return Date.now() - deferredAutoRequests[0]!.enqueuedAt;
+}
+
+/**
+ * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, F2+F4 (Evaluator FAIL 136fefbb, runda 3,
+ * Maciej 2026-08-14): opróżnia kolejkę odroczonych automatycznych żądań preBattle. Dwa
+ * wołania: (1) main.ts::healStaleEndTurnBlockers(), gdy najstarsze żądanie przekroczyło
+ * próg czasu (F2 -- żądanie uznane za martwe, nie tylko odroczone) i (2)
+ * main.ts::resetEndTurnBlockers(), przy Nowej grze / wczytaniu bez pełnego reload strony
+ * (F4 -- bez tego żądanie z poprzedniej sesji przeżywało reset i trwale psuło NOWĄ sesję,
+ * patrz uzasadnienie w resetEndTurnBlockers).
+ * / EN: empties the deferred automatic preBattle request queue. Two call sites: (1)
+ * main.ts::healStaleEndTurnBlockers(), when the oldest request exceeded the time threshold
+ * (F2 -- request considered dead, not merely deferred) and (2)
+ * main.ts::resetEndTurnBlockers(), on New Game / load without a full page reload (F4 --
+ * without this a request from the previous session survived the reset and permanently broke
+ * the NEW session, see the rationale in resetEndTurnBlockers).
+ */
+export function clearDeferredAutoPreBattleQueue(): void {
+  if (deferredAutoRequests.length > 0) {
+    console.warn('[PreBattle] Clearing deferred auto preBattle queue (' + deferredAutoRequests.length + ' zaległych żądań)');
+  }
+  deferredAutoRequests.length = 0;
 }
 
 /**

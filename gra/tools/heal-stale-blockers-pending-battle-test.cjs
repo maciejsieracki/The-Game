@@ -101,14 +101,17 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
     '[A2] import z ui/preBattle zawiera zarówno isPreBattleOpen, jak i hasPendingAutoPreBattle');
 }
 
-// A3) healStaleEndTurnBlockers, gałąź 1: warunek rozszerzony o !hasPendingAutoPreBattle().
+// A3) healStaleEndTurnBlockers, gałąź 1: warunek rozszerzony o !hasPendingAutoPreBattle()
+//     (runda 2, N1) ORAZ (runda 3, F1+F2) o !battleUiResolving i timeout kolejki
+//     (pendingBattleStuck). Formuła runda 3 pinowana bajt-w-bajt -- patrz test dedykowany
+//     koniec-tury-f1-f4-runda3-test.cjs dla scenariuszy behawioralnych F1/F2/F3/F4.
 {
   const fnStart = mainSrc.indexOf('function healStaleEndTurnBlockers(): void {');
   ok(fnStart >= 0, '[A3] znaleziono function healStaleEndTurnBlockers( w main.ts');
   const fnEnd = fnStart >= 0 ? mainSrc.indexOf('\n    function canPlayerInitiateEndTurn', fnStart) : -1;
   const fnBody = (fnStart >= 0 && fnEnd > fnStart) ? mainSrc.slice(fnStart, fnEnd) : '';
-  ok(/if \(!preBattle && !hasPendingAutoPreBattle\(\) && \(aiTurnAwaitingBattle \|\| aiCmdResume\)\) \{/.test(fnBody),
-    '[A3] gałąź 1 (aiTurnAwaitingBattle||aiCmdResume) sprawdza DOKŁADNIE !preBattle && !hasPendingAutoPreBattle() -- N1 naprawiona formułą pinowaną bajt-w-bajt');
+  ok(/if \(!preBattle && !battleUiResolving && \(!hasPendingAutoPreBattle\(\) \|\| pendingBattleStuck\) && \(aiTurnAwaitingBattle \|\| aiCmdResume\)\) \{/.test(fnBody),
+    '[A3] gałąź 1 (aiTurnAwaitingBattle||aiCmdResume) sprawdza DOKŁADNIE !preBattle && !battleUiResolving && (!hasPendingAutoPreBattle()||pendingBattleStuck) -- N1 (runda 2) + F1/F2 (runda 3) naprawione formułą pinowaną bajt-w-bajt');
 
   // A4) KONTROLA NEGATYWNA -- pozostałe 3 gałęzie NIETKNIĘTE (Evaluator zgłosił problem
   //     WYŁĄCZNIE dla gałęzi aiTurnAwaitingBattle||aiCmdResume; scope discipline C-025).

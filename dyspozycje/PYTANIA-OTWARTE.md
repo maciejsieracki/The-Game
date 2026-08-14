@@ -22971,3 +22971,66 @@ Uwaga dodatkowa: tamten werdykt wskazuje N3 jako współprzyczynę ryzyka F2 (�
 możliwa jest sesja, w której gracz nie może już zakończyć tury") — N3 jest po `cb1ea991` **zamknięta
 dla 7 ścieżek zamknięcia audiencji**, z resztką opisaną w moim N1 wyżej (gałąź `diplo-pend-`), co
 zawęża, ale nie kasuje tamtej analizy. Ostateczna ocena F2 należy do Evaluatora rundy N1.
+
+## P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE — Operator runda 3: F1-F4 zaadresowane (Sonnet 5, 2026-08-14) · STATUS: czeka na Evaluatora (Opus 5)
+
+Dispatch bezpośrednio z rekomendacji rundy 2 (werdykt FAIL na `136fefbb`, sekcja wyżej). Cztery
+naprawy, kod + testy w `gra/src/main.ts`, `gra/src/ui/preBattle.ts`, `gra/tools/*.cjs`.
+
+**F1 (BLOKER)** — dodana flaga `battleUiResolving` (main.ts, deklaracja obok `aiCmdResume`/
+`aiTurnAwaitingBattle`). `finishIncomingBattleUi()` ustawia ją `true` PRZED
+`updateHud();refreshD1bHud();onResolved();` (try/finally, `false` w finally) — gałąź 1
+`healStaleEndTurnBlockers()` sprawdza teraz DODATKOWO `!battleUiResolving`, więc nie kasuje
+`aiCmdResume` w synchronicznym oknie, zanim `onResolved()` (dla ataku AI: `runAiPhase()`) zdąży go
+skonsumować. **Kolejność wywołań w `finishIncomingBattleUi()` NIE ZMIENIONA** — reorderowanie
+`onResolved()` przed `updateHud()` (hipoteza z dispatchu) świadomie odrzucone: wymagałoby
+weryfikacji, że żaden z 3 handlerów (`onAuto`/`onBattlefield`/`onCancel`) w żadnym z 5 call site'ów
+tej funkcji nie zakłada odświeżonego HUD-u przed wznowieniem — flaga zamyka lukę bez tego ryzyka.
+**To jest naprawa PRE-ISTNIEJĄCEGO defektu** — kolejność `updateHud();refreshD1bHud();onResolved();`
+stała identycznie od commitu `13419757` (sprzed dzisiejszej sesji), Evaluator to potwierdził w
+werdykcie rundy 2; dzisiejsza praca go tylko odsłoniła/trafiała częściej, nie wprowadziła.
+
+**F2** — `oldestPendingAutoPreBattleAgeMs()` (nowy eksport `preBattle.ts`, czyta `enqueuedAt`
+dopisane do każdego elementu `deferredAutoRequests` przy `push`). Gałąź 1 honoruje
+`hasPendingAutoPreBattle()` tylko dopóki wiek najstarszego żądania ≤ 8000 ms (ta sama wartość co
+istniejący wzorzec `stuckMs > 8000` w gałęzi 4 tej samej funkcji — świadomie ten sam próg, nie
+niezależnie dobrany drugi). Po przekroczeniu progu gałąź 1 CZYŚCI flagi ORAZ kolejkę (nowy eksport
+`clearDeferredAutoPreBattleQueue()`), z dedykowanym `console.warn`.
+
+**F3** — `canPlayerInitiateEndTurn` i `hintEndTurnBlocked` rozszerzone z gołego `isPreBattleOpen()`
+na `isPreBattleOpen() || hasPendingAutoPreBattle()` (oba miejsca, dla spójnego komunikatu).
+
+**F4** — `resetEndTurnBlockers()` woła `clearDeferredAutoPreBattleQueue()`; `had` (warunek
+`console.warn`) rozszerzony o `hasPendingAutoPreBattle()`.
+
+**Testy:** nowy `gra/tools/koniec-tury-f1-f4-runda3-test.cjs` (40/0) — pin tekstowy na wszystkie 4
+naprawy + scenariusze behawioralne na PRAWDZIWYM zbundlowanym `ui/preBattle.ts` (esbuild+jsdom):
+F1 end-to-end (mirror `finishIncomingBattleUi()`, `aiCmdResume` przeżywa do „runAiPhase" + kontrola
+regresji bez flagi odtwarzająca zgłoszony błąd), F2 timeout (Date.now cofnięty o 9s zamiast realnego
+sleep — deterministyczne; osobna kontrola „świeże żądanie nie strzela przedwcześnie"), F3 (mirror
+`canPlayerInitiateEndTurn` + kontrola regresji starą formułą), F4 (`clearDeferredAutoPreBattleQueue()`
+faktycznie opróżnia kolejkę). Zaktualizowane (pin formuły się zmienił): `heal-stale-blockers-
+pending-battle-test.cjs` (22/22 — sam pin A3 + opis, bez zmiany liczby asercji),
+`end-turn-modal-sequencing-test.cjs` (40/0 — pin `push()` rozszerzony o `enqueuedAt`, próg
+"return zaraz po push" podniesiony 60→100 znaków, bo literał push dłuższy). Bez zmian:
+`barbarzyncy-podwojny-atak-prebattle-test.cjs` (18/18), `diplomacy-audience-close-flush-test.cjs`
+(37/0), `escape-overlay-stack-test.cjs` (84/0), `tech-tree-test.cjs` (19/0), `research-test.cjs`
+(33/0). `npx tsc --noEmit` exit 0.
+
+**ZADANIE DODATKOWE (zasięg F1) — sprawdzone, nie szersze niż `finishIncomingBattleUi()`.**
+`aiCmdResume`/`aiTurnAwaitingBattle` są ustawiane w CAŁYM `main.ts` w DOKŁADNIE jednym miejscu
+(atak AI na gracza, tuż przed `launchIncomingMapFieldBattle`) i konsumowane w DOKŁADNIE jednym
+miejscu (`runAiPhase()`). Wszystkie 3 ścieżki wyjścia z `launchIncomingMapFieldBattle`
+(`onAuto`/`onBattlefield`/`onCancel`, w tym bitwa RĘCZNA przez `battleScene.ts` — 3D — wywołana z
+`onBattlefield`) kończą się w `finishIncomingBattleUi()`, więc manualna bitwa 3D jest już objęta tą
+samą naprawą, nie ma osobnego wzorca do naprawienia. Sprawdzone pozostałe 4 call site'y
+`new BattleScene(...)` w `main.ts` (linie ok. 21198, 23337, 23471 wg stanu przed tą naprawą — atak
+GRACZA na AI, szturm oblężniczy GRACZA, preset `?playtest=` DUŻA BITWA): żaden nie ustawia ani nie
+czyta `aiCmdResume`/`aiTurnAwaitingBattle` — ich odpowiedniki `finishMapBattleUi()`/
+`clearBattleUiState()` wołają `updateHud()` bez ŻADNEGO `onResolved`-owego callbacku do wznowienia
+czegokolwiek (gracz po prostu wraca do gry). **Wniosek: F1 to NIE szersza klasa błędu w tym repo
+dzisiaj — to specyficzna konsekwencja tego, że dokładnie jeden mechanizm (`aiCmdResume`) ma
+komponent "wznowienia" i dokładnie jedna funkcja (`finishIncomingBattleUi`) jest jego jedynym
+punktem wyjścia.** Gdyby w przyszłości powstał kolejny mechanizm "ustaw stan → callback wznawiający
+go asynchronicznie" w sąsiedztwie HUD-owego `updateHud()`, warto pamiętać o tym wzorcu (flaga
+"resolving" + try/finally) jako gotowym rozwiązaniu — ale nic dziś w kodzie tego nie potrzebuje.

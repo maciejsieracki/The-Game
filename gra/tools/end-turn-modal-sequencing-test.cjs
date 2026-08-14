@@ -174,19 +174,27 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
   const hideCallIdx = fnStart >= 0 ? preBattleSrc.indexOf('hidePreBattle();', fnStart) : -1;
   ok(guardIdx > fnStart && hideCallIdx > guardIdx,
     '[A8] guard automatyczny w showPreBattle (auto + isPreBattleOpen()||isOtherEndTurnModalOpen()) stoi PRZED hidePreBattle() -- odłożone żądanie nie dotyka DOM w ogóle');
-  const deferIdx = guardIdx >= 0 ? preBattleSrc.indexOf('deferredAutoRequests.push({ info, cb, opts });', guardIdx) : -1;
+  // F2 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): push dopisuje też
+  // `enqueuedAt: Date.now()` -- zasila oldestPendingAutoPreBattleAgeMs() (timeout dla
+  // healStaleEndTurnBlockers, patrz main.ts). Pin dopasowany do rozszerzonego wywołania.
+  const deferIdx = guardIdx >= 0 ? preBattleSrc.indexOf('deferredAutoRequests.push({ info, cb, opts, enqueuedAt: Date.now() });', guardIdx) : -1;
   const returnIdx = deferIdx >= 0 ? preBattleSrc.indexOf('return;', deferIdx) : -1;
-  ok(deferIdx > guardIdx && returnIdx > deferIdx && returnIdx - deferIdx < 60,
-    '[A8] po dopisaniu żądania do kolejki (push) funkcja robi return -- nie kontynuuje budowy overlayu');
+  // Próg podniesiony 47->100 (F2, runda 3): sam literał push() jest teraz dłuższy
+  // (`enqueuedAt: Date.now()` dopisane) -- cel sprawdzenia bez zmian: `return;` stoi ZARAZ
+  // po push(), zero kodu budującego overlay pomiędzy.
+  ok(deferIdx > guardIdx && returnIdx > deferIdx && returnIdx - deferIdx < 100,
+    '[A8] po dopisaniu żądania do kolejki (push, z enqueuedAt -- F2) funkcja robi return -- nie kontynuuje budowy overlayu');
 }
 
 // A8b) P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY: bufor to kolejka FIFO (tablica), nie
 //      pojedynczy nullable slot -- 3+ jednoczesne automatyczne żądania nie mogą się nawzajem
 //      nadpisać. flushDeferredAutoPreBattle zdejmuje jeden element na wywołanie (shift()).
+//      F2 (runda 3): każdy element niesie też `enqueuedAt` (timestamp kolejkowania) -- pin
+//      rozszerzony o to pole.
 {
-  ok(/const deferredAutoRequests: \{ info: PreBattleInfo; cb: PreBattleCallbacks; opts\?: PreBattleOptions \}\[\] = \[\];/
+  ok(/const deferredAutoRequests: \{ info: PreBattleInfo; cb: PreBattleCallbacks; opts\?: PreBattleOptions; enqueuedAt: number \}\[\] = \[\];/
     .test(preBattleSrc),
-  '[A8b] deferredAutoRequests to tablica (kolejka FIFO), nie pojedynczy nullable slot');
+  '[A8b] deferredAutoRequests to tablica (kolejka FIFO) z enqueuedAt na element, nie pojedynczy nullable slot');
   const fnStart = preBattleSrc.indexOf('export function flushDeferredAutoPreBattle(): void {');
   const fnBody = fnStart >= 0 ? preBattleSrc.slice(fnStart, fnStart + 500) : '';
   ok(/const req = deferredAutoRequests\.shift\(\)!;/.test(fnBody),

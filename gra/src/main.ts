@@ -592,7 +592,7 @@ import {
 } from './ui/hexContextTooltip';
 import {
   showPreBattle, hidePreBattle, isPreBattleOpen, configurePreBattle, flushDeferredAutoPreBattle,
-  hasPendingAutoPreBattle,
+  hasPendingAutoPreBattle, oldestPendingAutoPreBattleAgeMs, clearDeferredAutoPreBattleQueue,
 } from './ui/preBattle';
 import { leaderNameFromPool } from './ui/leaderPortraits';
 import {
@@ -6932,13 +6932,21 @@ async function boot(): Promise<void> {
 
     /** Zeruje flagi końca tury — Nowa gra / load bez pełnego reload strony zostawiały endTurnInProgress / AI resume. */
     function resetEndTurnBlockers(reason: string): void {
-      const had = endTurnInProgress || aiTurnAwaitingBattle || aiCmdResume != null || isTurnTransitionActive();
+      // F4 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): `had` liczy też zaległe
+      // żądanie w deferredAutoRequests -- bez tego ostrzeżenie w konsoli milczało, mimo że
+      // funkcja realnie miała co posprzątać (kolejka przeżywała Nowa gra/load bez reloadu).
+      // / EN: `had` also counts a leftover request in deferredAutoRequests -- without this
+      // the console warning stayed silent even though the function actually had something
+      // to clean up (the queue used to survive New Game/load without a page reload).
+      const had = endTurnInProgress || aiTurnAwaitingBattle || aiCmdResume != null
+        || isTurnTransitionActive() || hasPendingAutoPreBattle();
       if (had) {
         console.warn('[EndTurn] resetEndTurnBlockers:', reason, {
           endTurnInProgress,
           aiTurnAwaitingBattle,
           aiCmdResume: aiCmdResume != null,
           transition: isTurnTransitionActive(),
+          pendingAutoPreBattle: hasPendingAutoPreBattle(),
         });
       }
       endTurnInProgress = false;
@@ -6947,6 +6955,15 @@ async function boot(): Promise<void> {
       aiCmdResume = null;
       endTurnTransition();
       if (isPreBattleOpen()) hidePreBattle();
+      // F4: deferredAutoRequests (ui/preBattle.ts) nie miała ŻADNEGO resetu -- żądanie z
+      // poprzedniej sesji przeżywało Nową grę/wczytanie bez reloadu strony i (od rundy 2)
+      // dodatkowo trwale wyłączało gałąź 1 healStaleEndTurnBlockers() w NOWEJ sesji, czyli
+      // dokładnie tę siatkę bezpieczeństwa, dla której ta funkcja istnieje.
+      // / EN: deferredAutoRequests (ui/preBattle.ts) had NO reset at all -- a request from
+      // the previous session survived New Game/load without a page reload and (since round
+      // 2) additionally permanently disabled healStaleEndTurnBlockers()'s branch 1 in the
+      // NEW session -- exactly the safety net this function exists for.
+      clearDeferredAutoPreBattleQueue();
     }
 
     /** Pełny reset UI / flag przed wczytaniem innej gry (nie czyści mapy — to robi rebuild). */
@@ -9164,6 +9181,28 @@ async function boot(): Promise<void> {
     };
     let aiCmdResume: AiCmdResume | null = null;
     let aiTurnAwaitingBattle = false;
+    /** P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, F1 (Evaluator FAIL 136fefbb, runda 3,
+     *  Maciej 2026-08-14): true WYŁĄCZNIE w synchronicznym oknie wewnątrz
+     *  finishIncomingBattleUi() między updateHud()/refreshD1bHud() (które wołają
+     *  canEndTurn() -> healStaleEndTurnBlockers() SYNCHRONICZNIE) a onResolved() (który dla
+     *  ataku AI konsumuje aiCmdResume przez runAiPhase()). W tym oknie preBattle jest już
+     *  zamknięty i kolejka deferredAutoRequests pusta (TA bitwa właśnie się kończy, nic
+     *  innego nie czeka), więc gałąź 1 healStaleEndTurnBlockers() myliła to z "bitwa
+     *  osierocona" i kasowała aiCmdResume ZANIM runAiPhase() zdążył go poprawnie
+     *  skonsumować -- cała faza AI leciała drugi raz od zera. Osobny sygnał od
+     *  hasPendingAutoPreBattle() (ta mówi o bitwach jeszcze NIEROZSTRZYGNIĘTYCH, czekających
+     *  w kolejce; battleUiResolving mówi o bitwie AKTUALNIE się rozstrzygającej).
+     *  / EN: true ONLY inside the synchronous window in finishIncomingBattleUi() between
+     *  updateHud()/refreshD1bHud() (which synchronously call canEndTurn() ->
+     *  healStaleEndTurnBlockers()) and onResolved() (which for an AI attack consumes
+     *  aiCmdResume via runAiPhase()). In that window preBattle is already closed and the
+     *  deferredAutoRequests queue is empty (THIS battle is the one just resolving, nothing
+     *  else waiting), so branch 1 of healStaleEndTurnBlockers() confused it with an
+     *  "orphaned battle" and cleared aiCmdResume BEFORE runAiPhase() got to consume it
+     *  properly -- the entire AI phase replayed from scratch. Separate signal from
+     *  hasPendingAutoPreBattle() (that one is about battles NOT YET resolved, waiting in the
+     *  queue; battleUiResolving is about a battle CURRENTLY resolving). */
+    let battleUiResolving = false;
     /** Tryb ?playtest=walka — wiekszy sklad preBattle + T = preset maciej_playtest. */
     let playtestWalkaActive = false;
     /** Tryb DUŻEJ bitwy (BITWA-DUZA / OBLEZENIE-DUZE): podnosi promień zbierania rosteru. */
@@ -21627,9 +21666,43 @@ async function boot(): Promise<void> {
       function finishIncomingBattleUi(): void {
         syncUnitsRender();
         refreshFog();
-        updateHud();
-        refreshD1bHud();
-        onResolved();
+        // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, F1 (Evaluator FAIL 136fefbb, runda 3,
+        // Maciej 2026-08-14): updateHud()/refreshD1bHud() wołają synchronicznie canEndTurn()
+        // -> healStaleEndTurnBlockers() -- w tym momencie preBattle jest już zamknięty
+        // (hidePreBattle() w handlerze, PRZED tą funkcją) i kolejka deferredAutoRequests
+        // pusta (ta bitwa właśnie się kończy, nic nie czeka), więc gałąź 1 widziała
+        // aiCmdResume jako osierocony i kasowała go ZANIM onResolved() (dla ataku AI:
+        // runAiPhase()) zdążył go poprawnie skonsumować -- cała faza AI leciała drugi raz.
+        // battleUiResolving informuje gałąź 1 "bitwa właśnie się rozstrzyga, nie osieroć" na
+        // czas tego synchronicznego okna; try/finally gwarantuje, że wyjątek w onResolved()
+        // nie zostawi flagi trwale ustawionej (patrz deklaracja battleUiResolving wyżej po
+        // uzasadnienie pełne). Kolejność wywołań NIE ZMIENIONA -- ryzyko reorderowania
+        // onResolved() przed updateHud() odrzucone (rekomendacja Evaluatora runda 3): trzeba
+        // by zweryfikować, że żaden z 3 handlerów (onAuto/onBattlefield/onCancel) w żadnym
+        // z 5 call site'ów finishIncomingBattleUi nie zakłada odświeżonego HUD-u przed
+        // wznowieniem -- flaga zamyka lukę bez tego ryzyka.
+        // / EN: updateHud()/refreshD1bHud() synchronously call canEndTurn() ->
+        // healStaleEndTurnBlockers() -- at this point preBattle is already closed
+        // (hidePreBattle() ran in the handler, BEFORE this function) and the
+        // deferredAutoRequests queue is empty (this battle is the one just resolving,
+        // nothing else waiting), so branch 1 saw aiCmdResume as orphaned and cleared it
+        // BEFORE onResolved() (for an AI attack: runAiPhase()) got to consume it properly --
+        // the entire AI phase replayed. battleUiResolving tells branch 1 "battle is
+        // currently resolving, don't orphan" for this synchronous window; try/finally
+        // guarantees an exception in onResolved() doesn't leave the flag stuck (see the
+        // battleUiResolving declaration above for the full rationale). Call order is NOT
+        // changed -- reordering onResolved() before updateHud() was rejected (Evaluator's
+        // round-3 recommendation): it would require verifying none of the 3 handlers
+        // (onAuto/onBattlefield/onCancel) across all 5 finishIncomingBattleUi call sites
+        // assume a refreshed HUD before resuming -- the flag closes the gap without that risk.
+        battleUiResolving = true;
+        try {
+          updateHud();
+          refreshD1bHud();
+          onResolved();
+        } finally {
+          battleUiResolving = false;
+        }
         // P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (Maciej 2026-08-14): ta bitwa
         // przychodząca (AI/barbarzyńcy) właśnie się rozstrzygnęła (auto, pole bitwy albo
         // wycofanie -- KAŻDA ścieżka wyjścia z launchIncomingMapFieldBattle kończy tutaj) --
@@ -23878,8 +23951,50 @@ async function boot(): Promise<void> {
       // confused "battle waiting in queue" with "battle orphaned" and cleared aiCmdResume --
       // runAiPhase() then resumed with aiCmdResume===null, replaying the ENTIRE AI phase
       // from scratch.
-      if (!preBattle && !hasPendingAutoPreBattle() && (aiTurnAwaitingBattle || aiCmdResume)) {
-        console.warn('[EndTurn] Clearing stale AI battle resume flags');
+      //
+      // RUNDA 3 (Evaluator FAIL 136fefbb, F1+F2, Maciej 2026-08-14): dwa dalsze domknięcia
+      // tej samej gałęzi.
+      // F1: `!battleUiResolving` -- bez tego, gałąź nadal kasowała aiCmdResume w
+      // synchronicznym oknie WEWNĄTRZ finishIncomingBattleUi() (updateHud() woła tę funkcję
+      // przez canEndTurn() ZANIM onResolved() zdąży skonsumować aiCmdResume) -- patrz
+      // deklaracja battleUiResolving wyżej po pełne uzasadnienie. To ścieżka WIELOKROTNIE
+      // częstsza niż odroczenie do kolejki: każdy atak AI na gracza rozstrzygnięty przez
+      // preBattle, nie tylko te odroczone.
+      // F2: `|| pendingBattleStuck` -- runda 2 uzależniła całą gałąź od
+      // hasPendingAutoPreBattle() BEZ ŻADNEGO limitu czasu -- gdyby żądanie utknęło w
+      // kolejce (np. inny bug blokujący ją w nieskończoność), ta gałąź byłaby wyłączona
+      // TRWALE, zamieniając dotychczasową odwracalną degradację (podwójna faza AI) w twardą
+      // blokadę "Zakończ turę". Próg 8000 ms -- ta sama wartość co istniejący wzorzec
+      // `stuckMs > 8000` w gałęzi 4 tej samej funkcji (force-clear utkniętego przejścia
+      // tury) -- żeby nie wprowadzać drugiego, niezależnie dobranego progu czasowego bez
+      // uzasadnienia. Gdy próg przekroczony, CZYŚCI też kolejkę (clearDeferredAutoPreBattleQueue)
+      // -- żądanie, które siedziało tak długo, jest uznane za martwe, nie tylko flagi.
+      // / EN: two further closures of the same branch.
+      // F1: `!battleUiResolving` -- without it, the branch still cleared aiCmdResume inside
+      // the synchronous window WITHIN finishIncomingBattleUi() (updateHud() calls this
+      // function via canEndTurn() BEFORE onResolved() gets to consume aiCmdResume) -- see
+      // the battleUiResolving declaration above for the full rationale. This path is
+      // FAR more common than the queue-deferral path: every AI attack on the player
+      // resolved via preBattle, not only the deferred ones.
+      // F2: `|| pendingBattleStuck` -- round 2 made the whole branch depend on
+      // hasPendingAutoPreBattle() with NO timeout at all -- if a request got stuck in the
+      // queue (e.g. some other bug blocking it forever), this branch would be disabled
+      // PERMANENTLY, turning the previous reversible degradation (double AI phase) into a
+      // hard "End Turn" deadlock. Threshold 8000 ms -- the same value as the existing
+      // `stuckMs > 8000` pattern in branch 4 of this same function (force-clear a stuck
+      // turn transition) -- to avoid introducing a second, independently chosen timeout
+      // without justification. When the threshold is exceeded, ALSO clears the queue
+      // (clearDeferredAutoPreBattleQueue) -- a request that sat that long is considered
+      // dead, not just the flags.
+      const pendingBattleAgeMs = oldestPendingAutoPreBattleAgeMs();
+      const pendingBattleStuck = pendingBattleAgeMs > 8000;
+      if (!preBattle && !battleUiResolving && (!hasPendingAutoPreBattle() || pendingBattleStuck) && (aiTurnAwaitingBattle || aiCmdResume)) {
+        if (pendingBattleStuck) {
+          console.warn('[EndTurn] Deferred preBattle queue stuck >8000ms — clearing queue + stale AI battle resume flags', { pendingBattleAgeMs });
+          clearDeferredAutoPreBattleQueue();
+        } else {
+          console.warn('[EndTurn] Clearing stale AI battle resume flags');
+        }
         aiTurnAwaitingBattle = false;
         aiCmdResume = null;
       }
@@ -23913,8 +24028,21 @@ async function boot(): Promise<void> {
         console.warn('[EndTurn] blocked: awaitingFirstPlayerCity');
         return false;
       }
-      if (isPreBattleOpen()) {
-        console.warn('[EndTurn] blocked: preBattleOpen');
+      // F3 (Evaluator FAIL 136fefbb, runda 3, Maciej 2026-08-14): rozszerzone o
+      // hasPendingAutoPreBattle() -- goły isPreBattleOpen() nie widzi bitwy BARBARZYŃSKIEJ
+      // odroczonej do kolejki (aiCmdResume===null dla tej ścieżki, więc gałąź niżej
+      // `aiTurnAwaitingBattle || aiCmdResume` się nie stosuje). Bez tego gracz mógł
+      // zakończyć turę z bitwą wciąż czekającą w deferredAutoRequests -- żądanie wypływało
+      // dopiero z `finally` NASTĘPNEJ tury, pokazując roster sprzed tury (druga połowa
+      // rekomendacji 1 z werdyktu a7de65b0, pominięta w rundzie 2).
+      // / EN: extended with hasPendingAutoPreBattle() -- a bare isPreBattleOpen() misses a
+      // BARBARIAN battle deferred to the queue (aiCmdResume===null for that path, so the
+      // branch below `aiTurnAwaitingBattle || aiCmdResume` doesn't apply). Without this the
+      // player could end the turn with a battle still waiting in deferredAutoRequests -- the
+      // request would only surface from the NEXT turn's `finally`, showing a roster from
+      // before that turn (the second half of round-1 recommendation 1, skipped in round 2).
+      if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
+        console.warn('[EndTurn] blocked: preBattleOpen', { pending: hasPendingAutoPreBattle() });
         return false;
       }
       if (galleryOn) {
@@ -23945,7 +24073,14 @@ async function boot(): Promise<void> {
         showHintMessage('Najpierw załóż pierwsze miasto (🔨 → Załóż miasto · B), potem zakończ turę.', 3500);
         return;
       }
-      if (isPreBattleOpen()) {
+      // F3 (patrz canPlayerInitiateEndTurn wyżej): odbicie tej samej rozszerzonej blokady w
+      // podpowiedzi -- bez tego bitwa barbarzyńska czekająca w kolejce (isPreBattleOpen()
+      // ===false, aiCmdResume===null) nie trafiała w żadną gałąź tej funkcji, więc gracz nie
+      // dostawał żadnego komunikatu mimo zablokowanego przycisku.
+      // / EN: mirrors the same extended block in the hint -- without this, a barbarian
+      // battle waiting in the queue (isPreBattleOpen()===false, aiCmdResume===null) hit no
+      // branch in this function, so the player got no message despite the button being blocked.
+      if (isPreBattleOpen() || hasPendingAutoPreBattle()) {
         showHintMessage('Zakończ ekran bitwy, potem zakończ turę.', 3500);
         return;
       }
