@@ -115,3 +115,11 @@ gra/tools/.stubs/side-panel-unit-cycle-brandTokenVars-stub.ts
 # ".escape-real-panels-mutant-<panel>-bundle.cjs" tej bramki juz pasuje do wzorca
 # "gra/tools/.*-bundle.cjs" wyzej, wiec nie potrzebuje osobnego wpisu.
 gra/tools/.stubs/brandAssets-escape-real-panels-stub.ts
+
+# Stuby bramki heal-stale-blockers-pending-battle-test.cjs (P-KONIEC-TURY-ZDARZENIA-
+# NACHODZA-NA-SIEBIE, notatka N1, Evaluator FAIL na a7de65b0, runda 2, 2026-08-14),
+# wlasna nazwa z tego samego powodu co wyzej.
+gra/tools/.stubs/hsb-pending-battle-audio-stub.ts
+gra/tools/.stubs/hsb-pending-battle-brandAssets-stub.ts
+gra/tools/.stubs/hsb-pending-battle-hud-stub.ts
+gra/tools/.stubs/hsb-pending-battle-leaderPortraits-stub.ts

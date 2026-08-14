@@ -592,6 +592,7 @@ import {
 } from './ui/hexContextTooltip';
 import {
   showPreBattle, hidePreBattle, isPreBattleOpen, configurePreBattle, flushDeferredAutoPreBattle,
+  hasPendingAutoPreBattle,
 } from './ui/preBattle';
 import { leaderNameFromPool } from './ui/leaderPortraits';
 import {
@@ -23834,7 +23835,25 @@ async function boot(): Promise<void> {
     /** Po anulowaniu bitwy / Nowa gra bez reload — flagi resume i overlay potrafią zostać. */
     function healStaleEndTurnBlockers(): void {
       const preBattle = isPreBattleOpen();
-      if (!preBattle && (aiTurnAwaitingBattle || aiCmdResume)) {
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, N1 (Evaluator FAIL na a7de65b0, runda 2,
+      // Maciej 2026-08-14): funkcja jest wołana też z pętli renderu HUD (canEndTurn), nie
+      // tylko z próby zakończenia tury -- może więc odpalić się w oknie, gdy automatyczna
+      // bitwa AI/barbarzyńców jest już ZAPLANOWANA (aiCmdResume ustawiony) i czeka w kolejce
+      // (deferredAutoRequests w ui/preBattle.ts, bo inny modal końca tury blokował w chwili
+      // showPreBattle -- patrz isOtherEndTurnModalOpen), ale jeszcze się nie pokazała
+      // (isPreBattleOpen()===false). Bez hasPendingAutoPreBattle() ten warunek mylił "bitwa
+      // czeka w kolejce" z "bitwa osierocona" i kasował aiCmdResume -- runAiPhase() wznawiał
+      // się potem z aiCmdResume===null, czyli CAŁA faza AI leciała drugi raz od zera.
+      // / EN: this function is also called from the HUD render loop (canEndTurn), not only
+      // from an end-turn attempt -- so it can fire in the window where an automatic AI/
+      // barbarian battle is already SCHEDULED (aiCmdResume set) and waiting in the queue
+      // (deferredAutoRequests in ui/preBattle.ts, because another end-of-turn modal was
+      // blocking at showPreBattle time -- see isOtherEndTurnModalOpen), but hasn't shown yet
+      // (isPreBattleOpen()===false). Without hasPendingAutoPreBattle() this condition
+      // confused "battle waiting in queue" with "battle orphaned" and cleared aiCmdResume --
+      // runAiPhase() then resumed with aiCmdResume===null, replaying the ENTIRE AI phase
+      // from scratch.
+      if (!preBattle && !hasPendingAutoPreBattle() && (aiTurnAwaitingBattle || aiCmdResume)) {
         console.warn('[EndTurn] Clearing stale AI battle resume flags');
         aiTurnAwaitingBattle = false;
         aiCmdResume = null;

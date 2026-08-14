@@ -295,6 +295,29 @@ export function isPreBattleOpen(): boolean {
 }
 
 /**
+ * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE, N1 (Evaluator FAIL na a7de65b0, runda 2,
+ * Maciej 2026-08-14): true gdy co najmniej jedno automatyczne żądanie preBattle czeka w
+ * kolejce (isPreBattleOpen()===false w tym momencie, bo albo inny modal końca tury blokował
+ * w chwili wywołania showPreBattle, patrz isOtherEndTurnModalOpen, albo poprzednia bitwa z
+ * kolejki jeszcze się nie pokazała). main.ts::healStaleEndTurnBlockers() używa tego, żeby
+ * NIE uznawać `aiCmdResume`/`aiTurnAwaitingBattle` za osierocone, dopóki w kolejce coś
+ * czeka -- bez tego funkcja (wołana też z pętli renderu HUD, nie tylko z próby zakończenia
+ * tury) kasowała stan wznowienia fazy AI w oknie, gdy bitwa była już zaplanowana, ale
+ * jeszcze nie zdążyła się pokazać na ekranie.
+ * / EN: true when at least one automatic preBattle request is waiting in the queue
+ * (isPreBattleOpen()===false at this moment, either because another end-of-turn modal was
+ * blocking when showPreBattle was called, see isOtherEndTurnModalOpen, or the previous
+ * queued battle hasn't shown yet). main.ts::healStaleEndTurnBlockers() uses this so it does
+ * NOT treat `aiCmdResume`/`aiTurnAwaitingBattle` as orphaned while something is still
+ * queued -- without this, the function (also called from the HUD render loop, not only from
+ * an end-turn attempt) would clear the AI-phase resume state in the window where a battle
+ * was already scheduled but hadn't shown on screen yet.
+ */
+export function hasPendingAutoPreBattle(): boolean {
+  return deferredAutoRequests.length > 0;
+}
+
+/**
  * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE + P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-
  * NADPISANY: pokaż NAJSTARSZE odłożone automatyczne preBattle z kolejki (patrz guard w
  * showPreBattle) -- wołane z main.ts w momentach, gdy inny modal końca tury (audiencja
