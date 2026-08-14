@@ -117,6 +117,20 @@ export interface PreBattleInfo {
 export interface PreBattleConfig {
   /** Bonusy cywilizacji per owner (civs.json bonusy[]) — wzorzec jak cityPanel. */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+  /**
+   * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): zwraca true gdy INNY
+   * modal końca tury (audiencja dyplomatyczna, panel scalenia armii) jest już otwarty --
+   * używane WYŁĄCZNIE dla automatycznych wywołań showPreBattle (opts.auto===true), żeby
+   * atak AI/barbarzyńców w trakcie końca tury nie wyskakiwał na wierzch już otwartego
+   * modala. Ręczne ataki gracza (opts.auto pominięte) NIGDY nie sprawdzają tego hooka --
+   * zawsze pokazują się natychmiast, jak dotychczas.
+   * / EN: returns true when ANOTHER end-of-turn modal (diplomacy audience, army-merge
+   * panel) is already open -- used ONLY for automatic showPreBattle calls
+   * (opts.auto===true), so an AI/barbarian attack mid-end-turn doesn't pop on top of an
+   * already-open modal. Manual player attacks (opts.auto omitted) never check this hook --
+   * they always show immediately, as before.
+   */
+  isOtherEndTurnModalOpen?: () => boolean;
 }
 
 export interface PreBattleCallbacks {
@@ -132,6 +146,16 @@ export interface PreBattleOptions {
   defaultAction?: 'auto' | 'manual';
   /** Nadpisanie hooka z configurePreBattle (np. jednorazowy test). */
   getCivBonusy?: (ownerId: number) => readonly CivBonusLite[];
+  /**
+   * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: true WYŁĄCZNIE dla automatycznych wywołań
+   * (atak AI/barbarzyńców w trakcie end-of-turu) -- NIGDY dla ręcznej akcji gracza (klik
+   * atak/szturm). Włącza guard przeciw innym otwartym modalom końca tury (patrz
+   * PreBattleConfig.isOtherEndTurnModalOpen) i kolejkowanie przez flushDeferredAutoPreBattle.
+   * / EN: true ONLY for automatic invocations (AI/barbarian attack mid-end-turn) -- NEVER
+   * for a manual player action (attack/storm click). Enables the guard against other open
+   * end-of-turn modals and queuing via flushDeferredAutoPreBattle.
+   */
+  auto?: boolean;
 }
 
 let overlayEl: HTMLDivElement | null = null;
@@ -143,6 +167,11 @@ let saveToastEl: HTMLDivElement | null = null;
 let saveToastTimer: ReturnType<typeof setTimeout> | null = null;
 let activePreBattleCb: PreBattleCallbacks | null = null;
 let activePreBattleRetreat: boolean = false;
+/** P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: żądanie automatycznego preBattle odłożone,
+ * bo w momencie wywołania inny modal końca tury był otwarty (patrz showPreBattle/
+ * flushDeferredAutoPreBattle). Jeden slot wystarcza -- drugi automatyczny atak w tym samym
+ * ticku nadpisałby ten sam scenariusz (kolejny atak nadejdzie po wznowieniu fazy AI). */
+let deferredAutoRequest: { info: PreBattleInfo; cb: PreBattleCallbacks; opts?: PreBattleOptions } | null = null;
 
 /** Wpięcie silnika — jak configureCityPanel (P0-D4). */
 export function configurePreBattle(config: PreBattleConfig): void {
@@ -169,6 +198,20 @@ export function showPreBattle(
   cb: PreBattleCallbacks,
   opts?: PreBattleOptions,
 ): void {
+  // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: automatyczne wywołanie (atak AI/
+  // barbarzyńców w trakcie końca tury) + inny modal końca tury już otwarty -- odłóż,
+  // NIE pokazuj na wierzchu. flushDeferredAutoPreBattle() (wołane z main.ts, gdy blokujący
+  // modal się zamyka) wywoła showPreBattle ponownie. Ręczna akcja gracza (opts.auto
+  // pominięte) NIGDY tu nie trafia -- pokazuje się natychmiast, jak dotychczas.
+  // / EN: automatic invocation (AI/barbarian attack during end-of-turn) + another
+  // end-of-turn modal already open -- defer instead of popping on top.
+  // flushDeferredAutoPreBattle() (called from main.ts once the blocking modal closes)
+  // re-invokes showPreBattle. A manual player action (opts.auto omitted) never reaches
+  // this branch -- it always shows immediately, as before.
+  if (opts?.auto === true && pbCfg.isOtherEndTurnModalOpen?.() === true) {
+    deferredAutoRequest = { info, cb, opts };
+    return;
+  }
   hidePreBattle();
   showMapScrim();
   overlayEl = buildOverlay(info, cb, opts);
@@ -228,6 +271,27 @@ function showPreBattleSaveToast(overlay: HTMLElement, message: string, ok: boole
 
 export function isPreBattleOpen(): boolean {
   return overlayEl !== null;
+}
+
+/**
+ * P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: pokaż odłożone automatyczne preBattle (patrz
+ * guard w showPreBattle) -- wołane z main.ts w momentach, gdy inny modal końca tury
+ * (audiencja dyplomatyczna, panel scalenia armii) mógł się właśnie zamknąć. No-op gdy nic
+ * nie czeka w kolejce albo blokada (pbCfg.isOtherEndTurnModalOpen) jest nadal aktywna --
+ * sprawdzane tu ponownie na świeżo, żeby nie otworzyć na modal, który w międzyczasie znów
+ * się otworzył.
+ * / EN: show the deferred automatic preBattle request (see the guard in showPreBattle) --
+ * called from main.ts at points where another end-of-turn modal (diplomacy audience,
+ * army-merge panel) may have just closed. No-op when nothing is queued or the block
+ * (pbCfg.isOtherEndTurnModalOpen) is still active -- re-checked fresh here so it doesn't
+ * pop open on a modal that reopened in the meantime.
+ */
+export function flushDeferredAutoPreBattle(): void {
+  if (deferredAutoRequest === null) return;
+  if (isPreBattleOpen() || pbCfg.isOtherEndTurnModalOpen?.() === true) return;
+  const req = deferredAutoRequest;
+  deferredAutoRequest = null;
+  showPreBattle(req.info, req.cb, req.opts);
 }
 
 let styleInjected = false;

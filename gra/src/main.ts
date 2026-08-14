@@ -590,7 +590,9 @@ import {
   buildHexContextTooltipHtml,
   buildUnitContextTooltipHtml,
 } from './ui/hexContextTooltip';
-import { showPreBattle, hidePreBattle, isPreBattleOpen, configurePreBattle } from './ui/preBattle';
+import {
+  showPreBattle, hidePreBattle, isPreBattleOpen, configurePreBattle, flushDeferredAutoPreBattle,
+} from './ui/preBattle';
 import { leaderNameFromPool } from './ui/leaderPortraits';
 import {
   showPostBattleSummary,
@@ -9651,7 +9653,18 @@ async function boot(): Promise<void> {
       const existing = onHex.filter(x => !movedSet.has(x.id));
       if (existing.length === 0) return;
 
-      if (endTurnInProgress) {
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): odłóż też gdy
+      // preBattle/audiencja są otwarte, NIE tylko gdy endTurnInProgress -- `finally` w
+      // triggerPlayerEndTurn gasi endTurnInProgress ZANIM gracz zdąży zamknąć preBattle
+      // otwarty w trakcie fazy AI/barbarzyńców (bitwa jest asynchroniczna względem await
+      // runAiPhase()), więc bez tego dodatkowego warunku scalenie wyskakiwało na wierzch
+      // wciąż widocznej bitwy. / EN: also defer when preBattle/audience are open, NOT only
+      // when endTurnInProgress -- the `finally` in triggerPlayerEndTurn clears
+      // endTurnInProgress BEFORE the player has a chance to close a preBattle opened
+      // during the AI/barbarian phase (the battle is async relative to
+      // `await runAiPhase()`), so without this extra check the merge prompt would pop on
+      // top of a still-visible battle.
+      if (endTurnInProgress || isPreBattleOpen() || isDiplomacyAudienceOpen()) {
         deferredMergePrompts.push({
           movedUnitIds: [...movedUnitIds],
           fromQ,
@@ -9711,6 +9724,11 @@ async function boot(): Promise<void> {
           }
           refreshD1bHud();
           flushDeferredMergePrompts();
+          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: panel scalenia się właśnie zamknął
+          // -- odblokuj ewentualne odłożone automatyczne preBattle (rzadki, ale możliwy
+          // odwrotny porządek: bitwa AI/barbarzyńców próbowała otworzyć się, gdy ten panel
+          // był już otwarty).
+          flushDeferredAutoPreBattle();
         },
         onSeparate: () => {
           // P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO A (Maciej 2026-08-09): cała
@@ -9778,6 +9796,8 @@ async function boot(): Promise<void> {
           }
           refreshD1bHud();
           flushDeferredMergePrompts();
+          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: patrz komentarz w onMerge wyżej.
+          flushDeferredAutoPreBattle();
         },
       });
     }
@@ -9786,6 +9806,11 @@ async function boot(): Promise<void> {
     function flushDeferredMergePrompts(): void {
       if (deferredMergePrompts.length === 0 || endTurnInProgress) return;
       if (isArmyMergePanelOpen()) return;
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: nie flushuj na wierzch wciąż otwartego
+      // preBattle/audiencji -- patrz komentarz w promptMergeIfCoLocated. No-op tutaj jest
+      // bezpieczny: kolejka zostaje niezmieniona i zostanie ponowiona, gdy blokujący modal
+      // się zamknie (flushDeferredMergePrompts wołane ponownie z main.ts).
+      if (isPreBattleOpen() || isDiplomacyAudienceOpen()) return;
       const next = deferredMergePrompts.shift()!;
       promptMergeIfCoLocated(next.movedUnitIds, next.fromQ, next.fromR, next.moveCost, next.deductedRuch);
     }
@@ -15174,6 +15199,12 @@ async function boot(): Promise<void> {
     function canAutoOpenDiploAudience(): boolean {
       if (galleryOn || isPreBattleOpen() || isCityPanelOpen()) return false;
       if (isDiplomacyAudienceOpen()) return false;
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): brakowało tego
+      // kierunku -- guard sprawdzał tylko preBattle, nie panel scalenia armii, więc
+      // audiencja mogła wyskoczyć na wierzch otwartego army-merge. / EN: this direction was
+      // missing -- the guard only checked preBattle, not the army-merge panel, so the
+      // audience could pop on top of an already-open army-merge panel.
+      if (isArmyMergePanelOpen()) return false;
       return true;
     }
 
@@ -17283,7 +17314,16 @@ async function boot(): Promise<void> {
             refreshD1bHud();
             if (!d1bHudActive) updateDiplomacyPanel();
           }
-          requestAnimationFrame(() => tryOpenNextFirstContactCard());
+          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): audiencja
+          // właśnie się zamknęła -- odblokuj ewentualne odłożone scalenie armii/preBattle,
+          // które czekały na to zamknięcie (patrz guardy w promptMergeIfCoLocated /
+          // showPreBattle). Ten sam rAF co tryOpenNextFirstContactCard poniżej -- jedna
+          // klatka, żeby DOM audiencji zdążył się schować przed pokazaniem następnego modala.
+          requestAnimationFrame(() => {
+            flushDeferredMergePrompts();
+            flushDeferredAutoPreBattle();
+            tryOpenNextFirstContactCard();
+          });
         },
         hasNextOpenProposal: () => hasNextOpenDiploProposal(ownerId, diplomacyAudienceSourceEventId),
         onNextOpenProposal: () => openNextOpenDiploProposal(ownerId),
@@ -18884,7 +18924,14 @@ async function boot(): Promise<void> {
       ...extraCityPanelConfig(),
     });
 
-    configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
+    configurePreBattle({
+      getCivBonusy: civBonusyForOwnerId,
+      // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
+      // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
+      // scalenia armii, nie generyczny stos overlayów (ten obejmuje też m.in. panel miasta/
+      // drzewko tech, które NIE są modalami końca tury i nie powinny blokować preBattle).
+      isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen(),
+    });
 
     // -----------------------------------------------------------------------
     // Animation state
@@ -21664,7 +21711,17 @@ async function boot(): Promise<void> {
           finishIncomingBattleUi();
         },
         onSave: () => doQuickSave(false),
-      }, { defaultAction: 'manual' });
+      }, {
+        defaultAction: 'manual',
+        // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): JEDYNE
+        // automatyczne (nie-gracz-inicjowane) wywołanie showPreBattle w całym kodzie --
+        // atak AI/barbarzyńców na gracza w trakcie fazy AI/barbarzyńców końca tury (wołane z
+        // launchIncomingMapFieldBattle). Włącza guard przeciw audiencji/scaleniu armii (patrz
+        // configurePreBattle wyżej). Pozostałe dwa wywołania showPreBattle (atak jednostka→
+        // jednostka gracza, szturm gracza na miasto) to ręczne akcje gracza -- NIE dostają
+        // tej flagi, więc pokazują się natychmiast, bez zmian.
+        auto: true,
+      });
     }
 
     /** R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): dane przejęcia
@@ -27643,8 +27700,26 @@ async function boot(): Promise<void> {
           endTurnTransition();
           endTurnInProgress = false;
           endTurnStartedAt = 0;
+          // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE (Maciej 2026-08-14): endTurnInProgress
+          // gaśnie TUTAJ, ALE preBattle otwarty w trakcie fazy AI/barbarzyńców (bitwa jest
+          // asynchroniczna względem `await runAiPhase()` -- `break ownerLoop`/`continue`
+          // przerywają tylko pętlę komend, nie całą funkcję) może wciąż wisieć na ekranie.
+          // flushDeferredPlayerUnitReveals()/flushDeferredMergePrompts() są teraz bezpieczne
+          // z definicji -- promptMergeIfCoLocated/flushDeferredMergePrompts same sprawdzają
+          // isPreBattleOpen()/isDiplomacyAudienceOpen() i odkładają się ponownie, gdy modal
+          // wciąż wisi, zamiast wyskoczyć na jego wierzch. / EN: endTurnInProgress clears
+          // HERE, but a preBattle opened during the AI/barbarian phase (the battle is async
+          // relative to `await runAiPhase()` -- `break ownerLoop`/`continue` only interrupt
+          // the command loop, not the whole function) may still be on screen.
+          // flushDeferredPlayerUnitReveals()/flushDeferredMergePrompts() are now safe by
+          // construction -- promptMergeIfCoLocated/flushDeferredMergePrompts check
+          // isPreBattleOpen()/isDiplomacyAudienceOpen() themselves and re-defer instead of
+          // popping on top of a modal that's still up.
           flushDeferredPlayerUnitReveals();
           flushDeferredMergePrompts();
+          // Odłożone automatyczne preBattle (audiencja/scalenie blokowały w momencie ataku)
+          // -- no-op gdy nic nie czeka albo blokada nadal aktywna.
+          flushDeferredAutoPreBattle();
           syncPlayerUnitSelectionOnMap();
           console.warn('[EndTurn] triggerPlayerEndTurn: DONE tura', turn);
         }
@@ -28371,7 +28446,14 @@ async function boot(): Promise<void> {
         },
         ...extraCityPanelConfig(),
       });
-      configurePreBattle({ getCivBonusy: civBonusyForOwnerId });
+      configurePreBattle({
+        getCivBonusy: civBonusyForOwnerId,
+        // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
+        // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
+        // scalenia armii, nie generyczny stos overlayów (ten obejmuje też m.in. panel miasta/
+        // drzewko tech, które NIE są modalami końca tury i nie powinny blokować preBattle).
+        isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen(),
+      });
       _lastNewGameParams = {
         ...params,
         seed: params.seed > 0 ? params.seed : _gameSeed,
