@@ -20334,7 +20334,14 @@ niespójny z odstępami między pozostałymi wierszami.
 używanej całą noc), zidentyfikować faktyczny rozjazd (piksele, nie wrażenie), dopiero potem
 naprawić w kodzie. Nie zgadywać przyczyny bez pomiaru.
 
-## P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START (2026-08-14, zgłoszenie Macieja ze zrzutami kroku 4 kreatora) · STATUS: OTWARTE — prototyp do przeglądu przed scaleniem
+## P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START (2026-08-14, zgłoszenie Macieja ze zrzutami kroku 4 kreatora) · STATUS: **ZAMKNIĘTE — zatwierdzone i scalone**
+
+**AKTUALIZACJA (2026-08-14):** zrzuty wariantu A wysłane właścicielowi. Odpowiedź dosłowna: „prototypy
+widoku, które mi posłałeś, wyglądają super. Możesz wdrożyć." → zatwierdzone. Scalone (fizycznie
+razem z commitem `ea0be32a` innego tematu — patrz osobne sprostowanie integralności commita niżej
+w rejestrze — kod jest prawidłowy i zatwierdzony, tylko commit nie jest czysto odizolowany).
+Wdrożone w FALA 279. Deploy (Opus 5) słusznie to wyłapał jako „nie na liście zatwierdzonych" —
+w chwili jego pracy ten nagłówek był jeszcze nieprzestemplowany po zatwierdzeniu; poprawione teraz.
 
 Maciej (dosłownie): „po ostatniej zmianie możliwości wyboru cywilizacji jako przeciwnika, widok
 na dole jest zakryty i gracz może myśleć, że coś jest nie tak i nie będzie wiedział, gdzie
@@ -20360,7 +20367,7 @@ B) „cały blok: pójść start, podgląd, zaawansowane opcje i rozpocznij grę
 zbudować wariant A, zrobić zrzuty ekranu (przy 2/5 i 5/5 wybranych cywilizacji, i przy różnych
 rozdzielczościach jeśli to możliwe), wysłać właścicielowi do przeglądu przed scaleniem.**
 
-## P-NEWGAME-OPISY-DO-TOOLTIP (2026-08-14, zgłoszenie Macieja) · STATUS: OTWARTE — do tego samego prototypu
+## P-NEWGAME-OPISY-DO-TOOLTIP (2026-08-14, zgłoszenie Macieja) · STATUS: **ZAMKNIĘTE — zatwierdzone i scalone razem z P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START** (patrz wpis wyżej, ta sama zgoda „Możesz wdrożyć", ten sam commit, FALA 279)
 
 Maciej: „Wszystkie dodatkowe opisy na wyborach powinny być przeniesione na tooltipy." Dotyczy
 opisów kursywą pod każdą wartością ustawienia (widoczne na zrzucie „Zaawansowane opcje": np.
@@ -21437,3 +21444,24 @@ pozostałe 3 miejsca w pliku: kolejność wydatku ustala wyłącznie `id` miasta
 efektywny pułap TEGO miasta tylko gdy jest NIŻSZY niż polityka imperium, nie daje ani
 pierwszeństwa, ani większego udziału gdy jest wyższy. Bramki: `npx tsc --noEmit` 0 błędów,
 `auto-improvements-test.cjs` 37/0 (bez zmiany — czysta poprawka komentarza, zero zmian logiki).
+
+## Nowa czerwona bramka znaleziona przez Deploy: empire-panel-econ-slider-visibility-test 59/1 (2026-08-14)
+
+Deploy (Opus 5, FALA 279) znalazł bramkę wcześniej zieloną (60/0 na commicie-rodzicu `4f208a0f`),
+dziś **59/1, exit 1**. Bisekcja wskazuje `f536b792` (routing chipa Rekruci → blok Armii,
+`P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK`). Padająca asercja to **duplikat** tej samej sprawdzanej
+rzeczy w INNYM pliku testowym niż ten, który Operator tamtego tematu już poprawił
+(`empire-panel-split-test.cjs`, 22→25, poprawnie zaktualizowany) — `empire-panel-econ-slider-
+visibility-test.cjs` ma swoją WŁASNĄ, osobną asercję `chip "rekruci" → blok ekonomia`, która nadal
+asercjonuje STARE zachowanie, celowo zmienione na życzenie właściciela. **To dług testowy
+(przeoczony duplikat asercji), nie regresja silnika** — gra działa poprawnie, potwierdzone już
+wizualnie przy scalaniu `f536b792`.
+
+**Dodatkowo:** liczba „60/0" dla tej bramki jest błędnie wpisana jako fakt w opisach commitów
+`33eeec11` i `4fc770ee` oraz we wpisie FALI 278 w `WERSJE.md` — nikt jej tam nie zmienił, po prostu
+przepisywana z wcześniejszego, wtedy jeszcze prawdziwego stanu.
+
+**STATUS: dispatch Operatora (Sonnet 5) — znaleźć i poprawić duplikat asercji w
+`empire-panel-econ-slider-visibility-test.cjs` (ten sam wzorzec poprawki co w `empire-panel-split-
+test.cjs`: `econ-rekruci` → oczekiwany blok `armia`, nie `ekonomia`), dopisać `empire-panel-econ-
+slider-visibility-test.cjs` do `CLAUDE.md` §BRAMKI dopóki nie naprawiona.**
