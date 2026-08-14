@@ -6352,15 +6352,13 @@ function formatResourceUpkeepSummary(resources: Record<string, number>): string 
  * skalowanie epoką) żyje TYLKO w converters.ts, testowalna bez UI/DOM (N1).
  * Liczba jest CELOWO BRUTTO (nominalna przepustowość, NIE pomniejszona o brak
  * wejścia tej konkretnej tury).
- * SPROSTOWANIE (Evaluator N3, runda 1): to NIE jest „ta sama para funkcji,
- * która karmi licznik HUD imperium" — dopasowanie budynek↔receptura tutaj
- * (`converterBuildingIdForRecipe`, jak `turn-economy.ts`) jest INNE niż w
- * HUD-zie imperium (`empireConverterResourceRatesForOwner` w main.ts, przez
- * `builtIds.includes(recipe.id)`), przez co HUD gubi część receptur (Odlewnia
- * żelaza, Wielka odlewnia) — to osobny, już zarejestrowany błąd
- * (`P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`), NIE ten temat. Spójność
- * tej funkcji jest z SILNIKIEM (`runConverter`/`converterBuildingIdForRecipe`),
- * nie z HUD-em.
+ * SPROSTOWANIE (Evaluator N3, runda 1; naprawione commitem `9482117f`,
+ * `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`): dopasowanie budynek↔receptura
+ * tutaj (`converterBuildingIdForRecipe`, jak `turn-economy.ts`) jest DZIŚ TAKIE
+ * SAMO jak w HUD-zie imperium (`empireConverterResourceRatesForOwner` w main.ts,
+ * `gra/src/main.ts:2789`) — obie strony spójne z SILNIKIEM
+ * (`runConverter`/`converterBuildingIdForRecipe`). Wcześniej (przed `9482117f`)
+ * HUD gubił część receptur (Odlewnia żelaza, Wielka odlewnia); to już naprawione.
  * / EN: converter PRODUCTION side of a building (e.g. Pottery clay+wood→pottery)
  * — SEPARATE from `buildingUpkeepDisplay` (upkeep). Thin wrapper calling the
  * pure domain function `converterProductionDisplayForBuilding` from
@@ -6368,13 +6366,12 @@ function formatResourceUpkeepSummary(resources: Record<string, number>): string 
  * lives ONLY in converters.ts, testable without UI/DOM (N1). The number is
  * DELIBERATELY BRUTTO (nominal throughput, not reduced for this turn's actual
  * input availability).
- * CORRECTION (Evaluator N3, round 1): this is NOT "the same function pair
- * feeding the empire HUD counter" — the building↔recipe matching here differs
- * from the HUD's (`empireConverterResourceRatesForOwner` in main.ts), which is
- * why the HUD drops some recipes (Iron/Great Foundry) — a separate, already
- * registered bug (`P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`), not this
- * one. This function is consistent with the ENGINE (`runConverter`/
- * `converterBuildingIdForRecipe`), not the HUD.
+ * CORRECTION (Evaluator N3, round 1; fixed by `9482117f`,
+ * `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`): the building↔recipe matching
+ * here now MATCHES the empire HUD counter's (`empireConverterResourceRatesForOwner`
+ * in main.ts) — both consistent with the ENGINE (`runConverter`/
+ * `converterBuildingIdForRecipe`). Before `9482117f` the HUD dropped some
+ * recipes (Iron/Great Foundry); that is now fixed.
  */
 function buildingConverterProductionDisplay(
   def: BuildingDef,
