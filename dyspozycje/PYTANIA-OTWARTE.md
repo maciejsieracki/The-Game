@@ -26915,6 +26915,16 @@ odpowiedzi temat zostaje otwarty — nie zamykam go jako „nie ma buga".
 **STATUS: OTWARTE — czeka na odpowiedź Macieja (`P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1`); mechanizm
 nie do odtworzenia w headless, regresja dodana, zero zmian produkcyjnych.**
 
+**Częściowa odpowiedź Macieja (2026-08-14): „a"** — odpowiedź na punkt (a): tooltip **nie pojawia
+się przy KAŻDYM najechaniu** (nie „tylko czasami" — czyli błąd jest SYSTEMATYCZNY, nie
+sporadyczny). Punkty (b) (czy dotyczy wszystkich ikon (i) w grze, czy tylko modala) i (c) (czy
+próbował przytrzymać mysz nieruchomo, czy przesuwał kursor po liście) **nadal bez odpowiedzi** —
+bez nich nie da się jednoznacznie zdiagnozować (systematyczny błąd pasuje zarówno do „mechanizm
+faktycznie zepsuty w realnej przeglądarce mimo że headless go nie łapie", jak i do „throttling
+380ms + przesuwanie kursora zamiast przytrzymania" — obie hipotezy dają „nie pojawia się przy
+każdym najechaniu" jeśli gracz konsekwentnie nie przytrzymuje myszy). Temat zostaje OTWARTY, nie
+dispatchowany ponownie do czasu doprecyzowania (b)/(c) albo wyraźnego polecenia właściciela.
+
 ---
 
 ## P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1 (2026-08-14, zgłoszenie Macieja)
