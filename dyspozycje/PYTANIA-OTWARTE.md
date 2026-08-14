@@ -20417,7 +20417,7 @@ znacząco wysokość każdej karty.
 plik `newGameFlow.ts`, ten sam ekran, warto zrobić razem — skrócenie kart tooltipami też pomaga
 z problemem zasłaniania). Zbudować, zrobić zrzuty przed/po, wysłać do przeglądu przed scaleniem.**
 
-## P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (2026-08-14, zgłoszenie Macieja ze zrzutem tooltipa Łąka) · STATUS: **NAPRAWIONE** — kod `ea0be32a`, test `94977a20`; Evaluator **PASS-WITH-NOTES** (2026-08-14, sekcja „Evaluator: hex tooltip filtr złoża (94977a20)" na końcu pliku). Nietknięte, do osobnego dispatchu: `irygacja`/`droga_brukowana` (ta sama klasa, nota N4) oraz `stadnina`/`kopalnia_cyny` (klasa odwrotna, nota N5). **AKTUALIZACJA 2026-08-14 (runda 3):** nota N4 zdispatchowana commitem `ec089e9a` — `droga_brukowana` **zamknięta poprawnie**, `irygacja` **NIE** (Evaluator **FAIL**, sekcja „Evaluator: hex tooltip — `droga_brukowana` + `irygacja` (commit `ec089e9a`, Dispatch N4)" na końcu pliku; wymagana runda 4). Nota N5 (`stadnina`/`kopalnia_cyny`) nadal nietknięta. **AKTUALIZACJA 2026-08-14 (runda 4, ZAMKNIĘTE):** commit `92be2b28` naprawia oba blokujące znaleziska — `hexHasRiverAccess()` buduje `riverHexSet` z `map.riverPaths` (F1), a test bundluje i woła prawdziwą, wyeksportowaną funkcję (F2). Evaluator **PASS-WITH-NOTES** (sekcja „Evaluator: hex tooltip — `irygacja` runda 4 (commit `92be2b28`, F1+F2 z FAIL `ec089e9a`)" na końcu pliku): parytet tooltip↔silnik potwierdzony niezależną metodą różnicową na **12937 porównaniach z 8 map, 0 rozbieżności**, przy kontroli czułości dającej 299 trafień na starym kodzie. **Blokada deployu zdjęta.** Uwagi N-A…N-D nie blokują. Nota N5 (`stadnina`/`kopalnia_cyny`) **nadal nietknięta — wymaga osobnego dispatchu**.
+## P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (2026-08-14, zgłoszenie Macieja ze zrzutem tooltipa Łąka) · STATUS: **NAPRAWIONE** — kod `ea0be32a`, test `94977a20`; Evaluator **PASS-WITH-NOTES** (2026-08-14, sekcja „Evaluator: hex tooltip filtr złoża (94977a20)" na końcu pliku). Nietknięte, do osobnego dispatchu: `irygacja`/`droga_brukowana` (ta sama klasa, nota N4) oraz `stadnina`/`kopalnia_cyny` (klasa odwrotna, nota N5). **AKTUALIZACJA 2026-08-14 (runda 3):** nota N4 zdispatchowana commitem `ec089e9a` — `droga_brukowana` **zamknięta poprawnie**, `irygacja` **NIE** (Evaluator **FAIL**, sekcja „Evaluator: hex tooltip — `droga_brukowana` + `irygacja` (commit `ec089e9a`, Dispatch N4)" na końcu pliku; wymagana runda 4). Nota N5 (`stadnina`/`kopalnia_cyny`) nadal nietknięta. **AKTUALIZACJA 2026-08-14 (runda 4, ZAMKNIĘTE):** commit `92be2b28` naprawia oba blokujące znaleziska — `hexHasRiverAccess()` buduje `riverHexSet` z `map.riverPaths` (F1), a test bundluje i woła prawdziwą, wyeksportowaną funkcję (F2). Evaluator **PASS-WITH-NOTES** (sekcja „Evaluator: hex tooltip — `irygacja` runda 4 (commit `92be2b28`, F1+F2 z FAIL `ec089e9a`)" na końcu pliku): parytet tooltip↔silnik potwierdzony niezależną metodą różnicową na **12937 porównaniach z 8 map, 0 rozbieżności**, przy kontroli czułości dającej 299 trafień na starym kodzie. **Blokada deployu zdjęta.** Uwagi N-A…N-D nie blokują. Nota N5 (`stadnina`/`kopalnia_cyny`) **nadal nietknięta — wymaga osobnego dispatchu**. **AKTUALIZACJA 2026-08-14 (Dispatch N5, ZAMKNIĘTE):** commit `f874fe04` dopisuje `case 'stadnina'` (FLAT_FARM) i `case 'kopalnia_cyny'` (grupa kopalń Wzgórza/Góry) w `galleryTerrainEligible()` oraz zawężenie stadniny do złoża konia w `hexContextTooltip.ts`. Evaluator **PASS-WITH-NOTES** (sekcja „Evaluator: hex tooltip — `stadnina` + `kopalnia_cyny` (commit `f874fe04`, Dispatch N5)" na końcu pliku): wszystkie 6 bramek zweryfikowane niezależnie (nowy test 29/0, `hex-tooltip-mozliwe-ulepszenia-zloze` 74/0, `map-improvement-qualify` 112/0, `tsc` 0 błędów, build exit 0); test bundluje PRAWDZIWE funkcje — **N6 z rundy 1 realnie zamknięte**; trzy niezależne mutacje Evaluatora na dysku potwierdziły, że sweep łapie regresję (M1 5 fail, M3 1 fail) i że potrójne kodowanie terenu stadniny jest pilnowane. Twierdzenie o nieistnieniu galerii 3D `improvepreview` **zweryfikowane samodzielnie i prawdziwe**. Noty N-A (niepełna enumeracja C-026 — 5 wewnętrznych wywołań w `improvement-build.ts`, sprawdzone przez Evaluatora, martwe eksporty) i N-B (komentarz cytuje martwy `TERRAIN_ALLOW.stadnina` zamiast efektywnej bramki w linii 713) **nie blokują**. Pominięcie `empireUnlocks` uznane za **uzasadnione** (kontrakt hex-property-only, udokumentowany w docstringu sprzed tej zmiany). **Temat w całości domknięty — brak otwartych not.**
 
 Maciej (dosłownie, ze zrzutem tooltipa "Pole mapy — kliknięty heks", Łąka, "Surowce/zasoby: brak
 złoża", brak lasu/rzeki): „w jednym z pytań prosiłem też żebyś sprawdził czy w HEX-ach prawidłowo
@@ -23551,3 +23551,106 @@ gdzie dziś renderowana jest granica terytorium (render/** WebGL czy Canvas 2D/S
 czy implementacja idzie na Opus 5 wg stałej zasady projektu dla `render/**`), czy jest już dostępna
 funkcja relacji dyplomatycznej w kontekście renderu mapy, i grubą ocenę złożoności. Implementacja
 dopiero po recon, nie zgadywana z góry.
+
+## Evaluator: hex tooltip — `stadnina` + `kopalnia_cyny` (commit `f874fe04`, Dispatch N5) · 2026-08-14
+
+Werdykt: **PASS-WITH-NOTES**. Blokad brak — naprawa jest poprawna, minimalna i realnie
+chroniona testem. Dwie noty dotyczą **uzasadnienia** zmiany (nieścisła enumeracja i nieścisły
+cytat w komentarzu), nie jej zachowania.
+
+**Bramki — uruchomione niezależnie przeze mnie, nie przyjęte z opisu commita** (`tsc` dopiero po
+`ln -s` do `gra/node_modules`, C-029: bez symlinku worktree pokazywał TypeScript **6.0.2**
+zamiast projektowego **5.9.3**; wszystkie liczby niżej z wersji 5.9.3):
+
+| Bramka | Wynik | Zgodność z opisem commita |
+|---|---|---|
+| `npx tsc --noEmit` | 0 błędów | zgodne |
+| `hex-tooltip-stadnina-kopalnia-cyny-test.cjs` (nowy) | 29 pass / 0 fail | zgodne |
+| `hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` | 74 pass / 0 fail | zgodne |
+| `map-improvement-qualify-test.cjs` | 112 pass / 0 fail | zgodne |
+| `tech-tree-test.cjs` | 19 pass / 0 fail | zgodne |
+| `research-test.cjs` | 33 pass / 0 fail | zgodne |
+| `vite build --outDir /tmp/eval-n5` | exit 0, 822 modułów | zgodne |
+
+**Test ma zęby — zweryfikowane MOIMI mutacjami na dysku, nie tylko mutacją wbudowaną w test.**
+Test bundluje przez esbuild PRAWDZIWE, eksportowane funkcje (`buildImprovementQualifier`,
+`galleryTerrainEligible`, `buildHexContextTooltipHtml`), stub tylko na `brandAssets` — **N6
+z poprzedniej rundy (test reimplementujący pętlę zamiast wołać prawdziwy kod) jest realnie
+zamknięty**. Trzy mutacje wykonane przeze mnie na pliku źródłowym, każda cofnięta, drzewo
+zweryfikowane czyste (`git status --porcelain` puste):
+
+- **M1** — usunięcie `case 'stadnina'` z `galleryTerrainEligible()`: **24 pass / 5 fail, exit 1**.
+  Istotne: **sweep [1] złapał to niezależnie od regex-pinów** — 8 rozbieżności, dokładnie tyle,
+  ile konfiguracji silnik dopuszcza (8/256). Odtwarza zgłoszony bug.
+- **M2** — poszerzenie `TERRAIN_ALLOW.stadnina` o Wzgórza: test **nadal 29/0 zielony**, licznik
+  silnika **bez zmian (8/256)**. To dowód, że ten `Set` jest dla stadniny **martwy** (patrz N-B).
+- **M3 (mój własny scenariusz, nieprzewidziany przez Operatora)** — poszerzenie **efektywnej**
+  bramki silnika (linia 713) o Wzgórza, przy `galleryTerrainEligible` pozostawionym na
+  `FLAT_FARM`: **28 pass / 1 fail, exit 1**, sweep zgłosił 4 rozbieżności. **Wniosek: potrójne
+  zakodowanie terenu stadniny JEST pilnowane** przez różnicowy sweep engine↔tooltip — przyszły
+  rozjazd wywali bramkę, nie przejdzie po cichu.
+
+**Merytoryka naprawy — potwierdzona.** `FLAT_FARM = {Łąka, Równina}` (linia 169) pokrywa się
+co do składu z efektywną bramką silnika dla stadniny; `kopalnia_cyny` dołączona do grupy
+kopalń `Wzgórza||Góry` zgadza się z `TERRAIN_ALLOW.kopalnia_cyny` (linia 399). Pre-istniejąca
+linia `if (key === 'kopalnia_cyny' && zloze !== 'cyna') continue;` jest **teraz faktycznie
+osiągalna** (wcześniej martwy kod) — sweep potwierdza parytet w 256/256 konfiguracjach, łącznie
+z przypadkami negatywnymi (gołe Wzgórza bez cyny → nie pokazane).
+
+**N-A (nota, nie blokada) — enumeracja konsumentów z C-026 była NIEPEŁNA.** Opis commita mówi:
+„jedyny dziś istniejący konsument `galleryTerrainEligible()` to `hexContextTooltip.ts`" —
+**to nieprawda w sensie dosłownym**. Istnieje 5 dodatkowych, WEWNĘTRZNYCH wywołań w samym
+`improvement-build.ts`: `galleryComboEligible()` (linie 906, 909, 911) i `galleryComboShowModel()`
+(linie 928, 931). **Sprawdziłem je sam i są nieszkodliwe** — obie funkcje są eksportowane, ale
+mają **zero konsumentów w całym `gra/src`** (wołają wyłącznie siebie nawzajem), czyli to martwe
+eksporty. Praktyczny wniosek Operatora („zero ryzyka regresji") **się broni**, ale został
+postawiony bez wypisania tych miejsc — dokładnie to, czego C-026 zabrania („to powinno nadal
+działać" bez sprawdzenia). Werdykt nie schodzi do FAIL, bo enumerację wykonałem ja i wynik jest
+zerowy.
+
+**Twierdzenie o galerii 3D — zweryfikowane samodzielnie i PRAWDZIWE.** `gra/src/improvepreview/`
+nie istnieje ani w `git ls-tree HEAD`, ani na dysku; `git log --all -- gra/src/improvepreview/`
+zwraca **dokładnie 1 commit** — `9defa846` (initial commit), czyli katalog żył tylko w genezie
+repo. Jedyny ocalały ślad to `gra/tools/build-improvepreview.ps1`, który odwołuje się do
+nieistniejącego `src/improvepreview/vite.improvepreview.config.ts` — skrypt martwy, bez asercji,
+nie jest bramką. Zero ryzyka regresji galerii, bo galeria nie istnieje.
+
+**N-B (nota, nie blokada) — komentarz cytuje NIEWŁAŚCIWE źródło prawdy.** Komentarz w kodzie
+i opis commita uzasadniają `FLAT_FARM` słowami „ta sama para terenów co `TERRAIN_ALLOW.stadnina`".
+Tymczasem `TERRAIN_ALLOW.stadnina` (linia 382) **nie jest bramką, której silnik używa dla tego
+klucza** — efektywny warunek to zaszyty literał w `createQualifier()`, linia 713:
+`(teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)`. Udowodnione mutacją M2 wyżej
+(zmiana `TERRAIN_ALLOW.stadnina` nie ruszyła licznika silnika ani o jeden). Dodatkowo
+`TERRAIN_ALLOW.stadnina` to **osobna instancja `Set`**, nie referencja do `FLAT_FARM` (inaczej
+niż `farma: FLAT_FARM` i `bydlo: FLAT_FARM`). Skład wszystkich trzech kodowań jest dziś
+identyczny — `{Łąka, Równina}` — więc **naprawa jest funkcjonalnie poprawna**; nietrafiony jest
+tylko cytat w uzasadnieniu. Ryzyko rozjazdu w przyszłości pilnuje sweep (M3).
+
+**N-C — pominięcie `empireUnlocks` jest UZASADNIONE, to nie luka.** Silnik dopuszcza stadninę
+przez `(hex.nakladka === ZlozeKonia || isLivestockUnlockedForPlacement(...))`, gdzie helper
+(`livestock-unlock.ts:146`) = `hexHasHorseDeposit(hex) || empireUnlocks.has('kon')` — więc po
+odblokowaniu konia w imperium silnik pozwala na stadninę na dowolnej Łące/Równinie w terytorium,
+a tooltip jej nie pokaże. Uznaję to za poprawne z trzech powodów: (1) **kontrakt jest
+udokumentowany i wcześniejszy niż ta zmiana** — docstring funkcji (linia 360) mówi wprost „bez
+bramki tech/terytorium" i „wyłącznie części hex-property, bez terytorium/tech/**stanu gracza**",
+a `empireUnlocks` to stan imperium; (2) **wymuszone strukturalnie** —
+`buildHexContextTooltipHtml({q, r, hex, esc})` w ogóle nie dostaje `empireUnlocks`, więc
+uwzględnienie go wymagałoby zmiany sygnatury i przepychania stanu przez UI, czyli zakresu daleko
+poza naprawiany błąd (C-025); (3) **test [4] to asertuje uczciwie** — najpierw **dowodzi** na
+prawdziwym `qualifies()`, że silnik faktycznie pozwala, i dopiero potem stwierdza, że tooltip
+świadomie nie pokazuje. Warto odnotować dla właściciela: `stadnina` jest **jedynym** kluczem,
+dla którego `isLivestockUnlockedForPlacement` nie jest no-opem (dla bydła/owiec/lam zwraca
+bezwarunkowo `true`, `livestock-unlock.ts:148`), więc to jedyne miejsce, gdzie kontrakt
+„per heks" daje widoczny niedomiar. Świadomy, zawężony, otestowany — nie do naprawy w tym temacie.
+
+**Twarde FAIL-e §4 — sprawdzone, żaden nie zachodzi.** #7 (sam happy-path): test ma przypadki
+negatywne, pełny sweep 256 konfiguracji z terenami zawsze-fałszywymi i mutację odtwarzającą
+zgłoszony bug. #8 (parytet gracz/AI): zmiana dotyczy wyłącznie funkcji wyświetlającej tooltip,
+nie dodaje żadnej gałęzi `ownerId`/`isPlayer` w logice wspólnej. #9 (save/load): brak nowego
+trwałego pola stanu. SCOPE/DIFF-MINIMAL: diff to 2 linie `case` + 1 linia `continue` + komentarze,
+zero refaktorów „przy okazji", zero cofniętych wcześniejszych napraw.
+
+**Wniosek:** nota N5 z tematu `P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA` jest
+**zamknięta poprawnie**. Noty N-A i N-B dotyczą precyzji uzasadnienia (nie zachowania) i nie
+wymagają osobnej rundy; warto je uwzględnić przy następnym dotknięciu `galleryTerrainEligible()`
+— zwłaszcza N-B, bo `TERRAIN_ALLOW.stadnina` jako martwy `Set` może mylić kolejnego agenta.
