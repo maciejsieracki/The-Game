@@ -27792,3 +27792,57 @@ dług był procesowy, nie merytoryczny, i tym werdyktem zostaje domknięty.
 **STATUS: PASS-WITH-NOTES — TEMAT ZAMKNIĘTY MERYTORYCZNIE.** Do dorobienia osobno: N1 (poprawka
 zdezaktualizowanego komentarza w `cityPanel.ts`). N4/N6 — do ewentualnej rejestracji jako osobne
 tematy, jeśli właściciel uzna za istotne.
+
+---
+
+## ⚠️ P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE (2026-08-14, znalezisko Evaluatora NOTA 3 przy okazji P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ)
+
+**Nie zgłoszenie właściciela wprost — błąd znaleziony przez Evaluatora (agent `a2def38f639c4c7c5`)
+podczas oceny fixu blackoutu, rejestrowany osobno zgodnie z C-025 (nie naprawiać przy okazji).
+PRE-ISTNIEJĄCY — starszy niż `222277aa`, nie dotyka żadnego z trzech miejsc zmienionych tamtym
+commitem.**
+
+**Zmierzony mechanizm (instrumentacja licznikowa na pełnej ścieżce wygranej bitwy 3D, build
+tymczasowy, źródła przywrócone po pomiarze):** `BattleScene.dispose()` woła
+`this._hideEndDetails()` (~linia 3583), a ta — gdy `isPostBattleSummaryOpen()` zwraca `true` —
+woła `hidePostBattleSummary()` **BEZ wywołania jej callbacku `onContinue`**. Skutek: podsumowanie
+po bitwie (ekran „Zwycięstwo"/łupy/nagrody) jest budowane i natychmiast kasowane **w tym samym
+ticku** — gracz go nigdy realnie nie widzi. Zmierzone: 4 s po kliknięciu „Powrót na mapę" w DOM
+zero elementów `.pbs-roster-col` i brak przycisku „Kontynuuj". Ponieważ `onContinue` się nie
+wykonuje, `afterSummary` (`setMood('mapa')` + `finishMapBattleUi()` = `clearPlayerUnitSelection`
++ `refreshFog` + `updateHud`) też się nie wykonuje.
+
+**Dlaczego to nie zepsuło naprawy blackoutu:** `markBattleSceneClosed(this)` w `dispose()` stoi
+PRZED `_hideEndDetails()`, więc rejestr scen bitwy i tak się poprawnie czyści — mapa wraca do
+życia. To osobny, równoległy problem: brakuje EKRANU, nie brakuje ODBLOKOWANIA KAMERY.
+
+**Do dispatchu:** znaleźć dlaczego `dispose()` kasuje otwarte podsumowanie zamiast poczekać na
+decyzję gracza (przycisk „Kontynuuj") — prawdopodobnie `dispose()` jest wołane zbyt wcześnie/przy
+niewłaściwym trigerze na ścieżce wygranej, albo `_hideEndDetails()` nie powinno w ogóle kasować
+OTWARTEGO podsumowania, tylko już zamknięte. Naprawić tak, żeby gracz faktycznie widział ekran
+podsumowania i sam decydował kiedy wrócić na mapę (klik „Kontynuuj"), zamiast być z niego
+wyrzucanym automatycznie.
+
+**STATUS: DO DISPATCHU — nie krytyczne (gra jest grywalna, kamera działa poprawnie po fixie
+blackoutu), ale gracz traci realny ekran gry (podsumowanie łupów/wyniku bitwy) przy każdej
+bitwie 3D.**
+
+---
+
+## P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM (2026-08-14, znalezisko Evaluatora NOTA 5 przy okazji P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ)
+
+**Ryzyko w naprawie `222277aa`, nie potwierdzony dziś błąd — do wzmocnienia obronnego.**
+`markBattleSceneOpen(this)` w konstruktorze `BattleScene` stoi na początku, a konstruktor biegnie
+dalej jeszcze ~700 linii (m.in. `new THREE.WebGLRenderer(...)`). Gdyby cokolwiek w tej reszcie
+konstruktora rzuciło wyjątek (np. WebGL niedostępny/kontekst odrzucony), wpis w rejestrze
+`battleSceneOpen.ts` zostałby na trwałe — kamera mapy świata zostałaby zablokowana na zawsze
+(ten sam objaw co pierwotne zgłoszenie, tylko bez możliwości wyjścia z bitwy żeby to naprawić).
+Strona `dispose()` ma już to zabezpieczone wzorowo (`markBattleSceneClosed` na samym początku),
+strona rejestracji — nie.
+
+**Do dispatchu:** przenieść `markBattleSceneOpen(this)` na koniec konstruktora (po wszystkich
+operacjach mogących rzucić) ALBO opakować konstruktor w `try/catch` który czyści rejestr przy
+błędzie. Wąski zakres (~kilka linii), niski priorytet — wymaga rzeczywistego zerwania
+konstrukcji WebGL, co jest rzadkie, ale konsekwencja (trwale zamrożona mapa) jest poważna.
+
+**STATUS: DO DISPATCHU — niekrytyczne wzmocnienie obronne, nie pilne.**
