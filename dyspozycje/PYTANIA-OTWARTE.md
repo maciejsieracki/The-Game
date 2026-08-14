@@ -20318,7 +20318,7 @@ Evaluatorzy też powinni domyślnie dostawać izolowany worktree do własnych mu
 **TEMAT ZAMKNIĘTY.** Droga 6-ramion w pełni gotowa, geometria matematycznie potwierdzona,
 odporna na restart gry.
 
-## P-NEWGAME-RAMKI-WYROWNANIE (2026-08-14, zgłoszenie Macieja ze zrzutem "Ustawienia Rozgrywki") · STATUS: OTWARTE — dispatch recon+fix
+## P-NEWGAME-RAMKI-WYROWNANIE (2026-08-14, zgłoszenie Macieja ze zrzutem "Ustawienia Rozgrywki") · STATUS: **ZAMKNIĘTE — pomiar potwierdza FAŁSZYWY ALARM na dzisiejszym kodzie, test regresyjny dodany** (Operator Sonnet 5, 2026-08-14)
 
 Maciej: „Poza tym trzeba trochę ramki wyrównać" (zrzut ekranu ekranu ustawień nowej gry, siatka
 2×3 kart: Poziom trudności/Rozmiar mapy, Typ świata/Prędkość gry, Miasta-Państwa/Liczba
@@ -20335,10 +20335,41 @@ wymuszone wysokości/wyrównanie pionowe niespójne między kartami, (c) odstęp
 (Miasta-Państwa/Liczba cywilizacji) a sekcją "Cywilizacje przeciwnika" niżej jest wizualnie
 niespójny z odstępami między pozostałymi wierszami.
 
-**STATUS: dispatch Operatora (Sonnet 5, UI, nie render/**) — najpierw zmierzyć REALNE
-`getBoundingClientRect()` wszystkich 6 kart w przeglądarce (headless Chrome, wzorem metody
-używanej całą noc), zidentyfikować faktyczny rozjazd (piksele, nie wrażenie), dopiero potem
-naprawić w kodzie. Nie zgadywać przyczyny bez pomiaru.
+**AKTUALIZACJA 2026-08-14 (Operator Sonnet 5, pomiar zakończony):** zbudowany bundle
+(`node ./node_modules/vite/bin/vite.js build`) + Playwright/Chromium headless, prawdziwe
+`getBoundingClientRect()` całej siatki 2×3 + `.ai-civ-panel` + `.start-preview` + `.sett-actions`,
+w 4 scenariuszach (domyślny 1920×1080, `Rozmiar mapy = "Super Huge"` — najdłuższa etykieta
+wartości, 5/5 zaznaczonych cywilizacji AI — panel przewijany, viewport węższy 1366×768).
+**Wynik: wszystkie 6 kart są DZIŚ piksel-idealnie wyrównane** — identyczny `top`/`height` w
+każdym wierszu, identyczne `left`/`width` w każdej kolumnie, identyczne wewnętrzne odstępy
+(nagłówek/kontrolki/wartość) na 6/6 kart, `.ai-civ-panel` wyrównany górą z siatką, spójny rytm
+16px (1rem) między blokami poniżej siatki. Żadna z 3 hipotez z opisu wyżej się nie potwierdza na
+dzisiejszym kodzie: (a) karty SĄ bezpośrednimi dziećmi `.sett-grid` (6/6 `.srow`), (b) wewnętrzne
+offsety identyczne na wszystkich kartach, (c) odstęp `.sett-layout`→`.start-preview` (16px) ==
+odstęp `.start-preview`→`.sett-actions` (16px) — poza tym struktura (c) opisywała już
+NIEAKTUALNY układ (panel AI POD siatką) sprzed wariantu A.
+
+**Diagnoza czasowa:** w `PYTANIA-OTWARTE.md` ten wpis POPRZEDZA
+`P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START` (ten sam dzień, prawdopodobnie ten sam zrzut/sesja
+przeglądu Macieja) — zgłoszenie „ramki" zostało zarejestrowane PRZED wdrożeniem wariantu A
+(commit `ea0be32a`, FALA 279), który przeniósł panel „Cywilizacje przeciwnika" z pełnej szerokości
+POD siatką na kolumnę OBOK niej. Najbardziej prawdopodobne wyjaśnienie: to ten sam wizualny
+bałagan (panel AI rozpychający layout pod siatką), naprawiony przy okazji wariantu A — nie osobny,
+wciąż nierozwiązany problem w samej siatce 2×3.
+
+**Znalezisko przy okazji (pozytywne):** wyrównanie wysokości kart ma DWIE niezależne warstwy
+obrony — CSS Grid `align-items:stretch` na `.sett-grid` ORAZ jawne `.civ-newgame .srow{height:100%;
+min-height:76px}`. Dowiedzione eksperymentalnie (wstrzyknięcie CSS na żywo, bez dotykania źródeł):
+złamanie WYŁĄCZNIE `align-items` nie wystarcza, żeby wysokości się rozjechały — trzeba złamać obie
+warstwy naraz. To dobra wiadomość dla odporności tego ekranu na przyszłe zmiany.
+
+**Bez zmiany kodu produkcyjnego** (CSS/`newGameFlow.ts` nietknięte — nie ma czego naprawiać).
+Dodany test regresyjny `gra/tools/newgame-sett-grid-layout-test.cjs` (Playwright + prawdziwie
+zbudowany kod, nie source-text pin; 70/70 asercji, w tym sekcja dowodu mutacyjnego potwierdzająca,
+że asercje realnie wykrywają regres, nie są tautologią) — chroni dzisiejszy, poprawny stan przed
+przyszłym cofnięciem. Bramki: `tsc --noEmit` 0 błędów, `tech-tree-test` 19/19,
+`research-test` 33/33, `ruch-swiata-tempo-test` 35/35 (jedyny istniejący test dotykający
+`newGameFlow.ts`, niezwiązany z layoutem — bez zmian, zielony).
 
 ## P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START (2026-08-14, zgłoszenie Macieja ze zrzutami kroku 4 kreatora) · STATUS: **ZAMKNIĘTE — zatwierdzone i scalone**
 
