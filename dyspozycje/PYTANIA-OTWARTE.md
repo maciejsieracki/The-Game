@@ -27042,3 +27042,52 @@ odjechał między `git fetch` a `git push` — brak rebase'u). Push wykonany, `o
 
 **STATUS: GOTOWE PO STRONIE OPERATORA, czeka na Evaluatora (nie self-ocena — praca w
 izolowanym worktree, commit i push wykonane, ale werdykt Evaluatora osobno, zgodnie z §0a/§0b).**
+
+---
+
+## ⚠️ P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE (2026-08-14, sprostowanie Macieja z żywego playtestu)
+
+**⚠️ WAŻNE — to NIE jest to samo co pytanie `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` (ruch PO wygranej
+bitwie).** Właściciel wyraźnie sprostował: „Tylko ja nie mówię o atakowaniu na bitwie, tylko mówię
+o atakowaniu na mapie świata."
+
+**Zgłoszenie (cytat):** „Jeżeli na przykład nasza armia jest daleko od wroga, załóżmy 5 heksów od,
+ale w zasięgu widoku, to nie można na nią kliknąć, żeby zaatakowała z daleka, nawet jeżeli miałaby
+taki zasięg. Tylko trzeba kliknąć obok tej armii, a dopiero wtedy można nacisnąć, jak się będzie
+już obok, aby zaatakować tę jednostkę."
+
+**⚠️ SPRZECZNOŚĆ z werdyktem Evaluatora (agent `a769a63eec29a9402`, commit `6bdf7967`):** ten
+Evaluator zmierzył i potwierdził „Atak jednostka→jednostka z dystansu działa we wszystkich 3
+ścieżkach inicjacji" (`tryLaunchMarchAttack`, `refreshHoverPathPreview`, unit-click handler) —
+ale metoda była programowa (wywołanie funkcji wyciętych z kodu), NIE realna interakcja myszą w
+przeglądarce. Właściciel opisuje realną grę i twierdzi że kliknięcie na odległą jednostkę NIE
+oferuje ataku, tylko wymusza podejście na hex obok — dokładnie objaw ze ZGŁOSZENIA PIERWOTNEGO
+(sprzed fixu `9e25ea77`). Możliwe przyczyny do zbadania, żadna nie wykluczona a priori:
+(a) UI (kliknięcie myszą na mapie) faktycznie idzie inną ścieżką niż te 3 przetestowane
+programowo — np. domyślny klik na wrogą jednostkę może pokazywać WYŁĄCZNIE opcję „idź tam"
+(ruch), a opcja „zaatakuj" nigdy się nie pojawia dla celu poza adiacencją, mimo że funkcja
+`isTargetWithinAttackRange` pod spodem zwróciłaby `true`; (b) `refreshHoverPathPreview` gasi
+się/nie pokazuje kursora ataku dla odległych celów (nota N4 werdyktu Evaluatora wspominała
+lukę pokrycia hover-preview); (c) build który testował Evaluator/Operator różni się od tego, co
+gra właściciel (mało prawdopodobne — ten sam branch, ale do zweryfikowania: czy FALA 282
+`gra-robocza/Gra-ROBOCZA.html` faktycznie zawiera ten kod).
+
+**Do dispatchu — priorytet WYSOKI (żywy playtest, sprzeczny z „potwierdzone działające"):**
+1. Odtworzyć DOKŁADNIE scenariusz właściciela w **realnym kliknięciu myszą** (nie wywołaniu
+   funkcji) na **zbudowanym bundlu ROBOCZA** (`gra-robocza/Gra-ROBOCZA.html`, FALA 282,
+   md5 `d3b43ac6` — ten sam plik, który gra właściciel): własna jednostka, wroga jednostka
+   5 heksów dalej (w zasięgu widoku, NIE za mgłą), jednostka atakująca ma realny zasięg ≥5
+   (sprawdzić `units.json`, pole „Zasięg ataku (hex)" — może żaden dostępny w tym momencie gry
+   typ jednostki nie ma aż tak dużego zasięgu; jeśli tak, dobrać jednostkę z odpowiednim zasięgiem
+   albo zmniejszyć dystans testu do rzeczywistego zasięgu tej jednostki, np. Katapulta = 6,
+   podstawowy łucznik zwykle mniej — NIE zakładać z góry).
+2. Sprawdzić realny UI: czy po kliknięciu na odległego wroga pojawia się JAKAKOLWIEK opcja ataku
+   (kursor, podświetlenie, panel akcji jednostki z przyciskiem „Atakuj"), czy TYLKO opcja ruchu.
+3. Jeśli potwierdzone że UI faktycznie nie oferuje ataku z dystansu mimo że logika pod spodem by
+   na to pozwoliła — znaleźć DOKŁADNIE które wywołanie/handler klika gracz w tym scenariuszu
+   (może to być zupełnie inna funkcja niż 3 przetestowane) i naprawić.
+4. Jeśli NIE potwierdzone (realny klik faktycznie oferuje atak) — dokładnie odtworzyć czego
+   właściciel próbował (może brakuje jakiegoś kroku, np. trzeba najpierw kliknąć samą jednostkę,
+   potem cel, a nie od razu na cel) i opisać wprost, bez zgadywania.
+
+**STATUS: DISPATCH W TOKU — priorytet wysoki (żywy playtest, sprzeczny wynik z Evaluatorem).**
