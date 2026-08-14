@@ -6282,7 +6282,7 @@ mieście pop=12/15 z zagrożeniem 10-19 hex od centrum; (3) przerobić T3 na sce
 
 ---
 
-## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA (2026-08-09, propozycja Macieja) · STATUS: **OTWARTE — wymaga rozpoznania**
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA (2026-08-09, propozycja Macieja) · STATUS: **ZAMKNIĘTE** (nagłówek przestemplowany audytem 2026-08-14 — pełne domknięcie po 4 rundach, patrz „Fort/straznica krok2 — TEMAT ZAMKNIĘTY po 4 rundach (c3fe813d)")
 
 **Kontekst zgłoszenia:** bezpośrednia kontynuacja tematu P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI
 — po informacji, że AI (i tak samo gracz, twardy wymóg `withinTerritory`) traci możliwość
@@ -8536,7 +8536,7 @@ zapisu plików, realność gwarancji „jedno kliknięcie na sesję").
 
 ---
 
-## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (2026-08-10, propozycja Macieja) · STATUS: **ZAMKNIĘTE** (nagłówek przestemplowany audytem 2026-08-14 — runda 3 scalona i zdeployowana, commit `9a85f974`, wchodzi w skład FALA 277)
 
 **Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** możliwość wyboru, jakie
 konkretne cywilizacje mają być przeciwnikami, w konfiguratorze na początku gry (dziś
@@ -19094,7 +19094,7 @@ PRE-ISTNIEJĄCE przez Operatora (git stash) — niezwiazane z tym tematem.
 
 **STATUS: commit `a31c4164` wypchniety, dispatch Evaluatora (Opus 5) w toku.**
 
-## P-AUTO-WYZYWIENIE-ZAPASY-NIE-STEROWANE (2026-08-13, zgłoszenie Macieja, 3 zrzuty ekranu) · STATUS: **OTWARTE — dispatch rozpoznania**
+## P-AUTO-WYZYWIENIE-ZAPASY-NIE-STEROWANE (2026-08-13, zgłoszenie Macieja, 3 zrzuty ekranu) · STATUS: **ZAMKNIĘTE jako rozpoznanie** (nagłówek przestemplowany audytem 2026-08-14 — mechanizm działa zgodnie z projektem, 3 pytania ABC zadane właścicielowi wprost w czacie, czeka na jego decyzję nie na dalszy dispatch)
 
 Właściciel (dosłownie): „Tak działa auto wyżywienie, czyli de facto nie działa. Kompletnie nie
 steruje prawidłowo zapasami." Zrzuty ekranu: (1) HUD górny — Spichlerz **−38** (deficyt); (2)
