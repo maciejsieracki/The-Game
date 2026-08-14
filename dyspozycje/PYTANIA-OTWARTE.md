@@ -25629,9 +25629,11 @@ spójne z perspektywy gracza, nawet jeśli każda z osobna jest poprawnie policz
 relacji, jeśli ten wpływ ma być częścią kryterium sprawiedliwości) i bramka akceptacji ma być
 `bilans >= 0`, bez osobnego, niezależnego progu PW.
 
-**STATUS: **OTWARTE** — runda 1 (`c94de5c8`) dostała od Evaluatora **FAIL** (werdykt na końcu tej
-sekcji): scenariusz ze zrzutu naprawiony, ale ten sam wzorzec nadal reprodukowalny dla
-`umowa_handlowa`/`umowa_szlakow` („Traktat handlowy") i dla pakietów. Czeka na rundę 2.**
+**STATUS: OTWARTE — runda 1 (`c94de5c8`) dostała od Evaluatora FAIL** (werdykt niżej):
+scenariusz ze zrzutu naprawiony w `case 'handel'`, ale ten sam wzorzec nadal reprodukowalny dla
+`umowa_handlowa`/`umowa_szlakow` („Traktat handlowy") i dla pakietów.
+**RUNDA 2 dostarczona (Operator, ten commit) — czeka na werdykt Evaluatora, patrz sekcja
+„RUNDA 2 — naprawa N1/N2/N4/N5/N6" niżej.**
 
 **Przyczyna zlokalizowana (dochodzenie, nie zgadywanie) — odtworzona SCENARIUSZEM ZE ZRZUTU
 (givePn=50, receivePn=20, Relacja 27,8) przez prawdziwy `evaluateProposal`:** to FAKTYCZNIE
@@ -25800,6 +25802,99 @@ brakuje/zostaje wobec progu, który REALNIE zdecydował o `accepted`", ustawiane
 odrzucenia i akceptacji (łącznie z `treatyPnGate`), plus czytanie tej liczby również przez gałąź
 `isTreatyMode` renderera. Dopóki którakolwiek bramka zwraca `accepted:false` bez `pwBalance`,
 wzorzec ze zgłoszenia wraca — to piąte podejście do tego samego tematu.
+
+### RUNDA 2 — naprawa N1/N2/N4/N5/N6 (Operator Sonnet 5, 2026-08-14)
+
+Zakres: dokładnie sześć not z werdyktu Evaluatora dla `c94de5c8` (wyżej). Wszystkie naprawione
+w tej rundzie (żadna nie odłożona do rundy 3).
+
+**N1 (`gra/src/game/diplomacy-proposals.ts`, `treatyPnGate`):** gałąź `receivePn > 0` (odrzucenie
+`umowa_handlowa`/`umowa_szlakow` PRZED `switch`) teraz ustawia `pwBalance: givePn - fairMin`, gdzie
+`fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relTotal))` — DOKŁADNIE ta sama liczba,
+którą `pnDealAcceptedByAi` już policzył, żeby zdecydować o odrzuceniu (jedno źródło prawdy, jak w
+`handelFairnessGate` z rundy 1).
+
+**N2 (`gra/src/ui/diplomacyAcceptanceBalance.ts`, `renderPnBalancePanelHtml`):** gałąź
+`isTreatyMode` przestała liczyć surowe `data.myOfferPn − data.theirOfferPn` — teraz czyta
+`their.balancePn` tak samo jak gałąź nie-traktatowa. Skoro `balancePanelDataFromRows` już
+zapisuje do tego pola `unifiedPwBalance` (z `pwBalance` bramki, gdy dostępny), naprawa N1 mogła
+wreszcie dotrzeć do ekranu „Traktat handlowy".
+
+**N3:** bez zmiany kodu — to było sprostowanie opisu rundy 1 (Evaluator: dla traktatów `pwBalance`
+liczbowo wychodzi identyczny jak stare surowe netto), potwierdzone; kluczowe było N2 (czytanie
+pola), nie sama liczba.
+
+**N4 (`gra/src/ui/diplomacyAcceptanceBalance.ts`, `balancePanelDataFromRows`):** kryterium
+wyświetlanego bilansu pakietu zmienione z „`pwBalance` tylko gdy `actionable.length === 1`" na
+`MIN(pwBalance)` po wszystkich aktywnych pozycjach (gdy KAŻDA ma numeryczny `pwBalance`; inaczej
+zostaje dawny surowy `net`). `canAccept` per-pozycja (mechanizm `blockReason`) już wcześniej
+poprawnie blokował pakiet — to wyłącznie naprawa WYŚWIETLANEJ liczby, żeby nie pokazywała
+zielonej sumy/surowego netto mimo blokady (zmierzony przez Evaluatora przykład: dwie pozycje
+`handel` 300/20 + 10/20 PW pokazywały „+270 PW" zielone mimo `canAccept=false`; po naprawie
+bilans = min(pwBalance obu pozycji), ujemny, czerwony).
+
+**N5 (`gra/src/ui/diplomacyAcceptanceBalance.ts`, `renderPnBalancePanelForTreaty`):** live-podgląd
+koszyka traktatu (wywoływany z `diplomacyTradeBasket.ts` PRZED wysłaniem oferty) dostał dokładnie
+tę samą matematykę koszyka co `treatyPnGate` w silniku: `basketFairMin`/`basketFair` liczone przez
+`diplomacyFairGivePn`/`pnDealAcceptedByAi`. Dawniej funkcja liczyła WYŁĄCZNIE
+`asymBalance` (baza traktatu @ Relacji + koszyk), pomijając osobną bramkę „koszyk sam z siebie
+uczciwy @ Relacji" — stąd zielone „+2" przy 110/50 PW @ Relacja 27,8, gdy realna bramka wymagała
+180 PW. Pozostały, udokumentowany w rundzie 1 gap (brak mnożnika chęci AI per-akcja w tej samej
+funkcji) NIE jest domknięty tą rundą — to nadal osobna, mniejsza, świadomie odłożona luka
+architektoniczna (funkcja nie ma dostępu do `stance`/`Respekt`).
+
+**N6 (`gra/src/main.ts`, `previewNegotiationEntry`):** wyłącznie korekta komentarza — zdanie
+„pwBalance przechodzi TYLKO dla own" nie było ścisłe (incoming też trafia do `evaluateProposal`,
+gdy `previewIncomingPlayerAccept` zwróci `null`). Zweryfikowane, że to DZIŚ nieszkodliwe:
+`treatyPnGate` ma `if (!proposerIsPlayer) return null` i case traktatu wymaga
+`proposerIsTreatyPlayer`, więc dla incoming `pwBalance` i tak wychodzi `undefined`. Kod
+niezmieniony (poza zakresem tej naprawy), komentarz teraz opisuje realną gwarancję.
+
+**Własna reprodukcja zrzutu Macieja (krok 7 zlecenia, orkiestrator/Operator, nie tylko
+literalne testy):** sonda z prawdziwym `evaluateProposal`/`balancePanelDataFromRows`/
+`renderPnBalancePanelHtml`/`renderPnBalancePanelForTreaty`, scenariusz MY ODDAJEMY 50 PW / ONI
+ODDAJĄ 20 PW / Relacja 27,8 (liczby ze zrzutu), dla OBU `umowa_handlowa` i `umowa_szlakow`:
+`evaluateProposal` → `accepted:false, pwBalance:-22`; panel `canAccept:false`,
+`theirBalance.balancePn:-22`, HTML tone `no` (czerwony) — SPÓJNE, nie „+30 zielone" ze zrzutu.
+Live-podgląd PRZED wysłaniem (N5) też tone `no`, zgodny z finalną bramką. Objaw ze zgłoszenia
+zniknął na ekranie „Traktat handlowy" konkretnie, nie tylko na `handel`.
+
+**Testy:** `gra/tools/diplomacy-stol-pw-sum-test.cjs` rozszerzony 70→166 asercji. Nowy blok
+pokrywa: siatkę z werdyktu Evaluatora (givePn 105/110/130/175/180 @ receivePn=50, Relacja 27,8)
+dla `umowa_handlowa` I `umowa_szlakow`, dokładne odtworzenie objawu „+2" i naprawionego „-70",
+pakiet 2×`handel` (N4, wzorzec 300/20+10/20), kontrolę negatywną pakietu mieszanego (nap bez
+bramki PW), oraz `renderPnBalancePanelForTreaty` (N5) na progu i poniżej progu.
+
+**Mutacje kontrolne — KAŻDA naprawa osobno, w kodzie źródłowym (nie tylko w teście), z
+przywróceniem po pomiarze:**
+- M1 (cofnięcie N1 — usunięcie `pwBalance` z odrzucenia `treatyPnGate`): **140 pass, 26 fail**.
+- M2 (cofnięcie N2 — powrót do `isTreatyMode ? myOfferPn−theirOfferPn : ...`): **164 pass, 2
+  fail**, dokładnie odtwarzając „+2" zamiast „-70".
+- M3 (cofnięcie N4 — powrót do `actionable.length === 1` zamiast `min`): **162 pass, 4 fail**,
+  odtwarzając zieloną sumę pakietu zamiast ujemnego minimum.
+- M4 (cofnięcie N5 — `basketFair = true` na sztywno): **163 pass, 3 fail**, odtwarzając zielone
+  „+2" w live-podglądzie.
+Wszystkie cztery mutacje przywrócone do stanu naprawionego po pomiarze; końcowy stan
+166 pass, 0 fail, `tsc --noEmit` 0 błędów.
+
+**Bramki (własne uruchomienie, pełna lista z werdyktu rundy 1):** `tsc --noEmit` 0;
+`diplomacy-stol-pw-sum-test` 166/166; `diplomacy-test` 148/148; `diplomacy-proposal-test`
+187/187; `diplomacy-acceptance-points-test` 254/254; `diplomacy-value-catalog-test` 81/81;
+`diplomacy-treaties-test` 17/17; `diplomacy-fairness-gate-package-q2-test` 24/24;
+`diplomacy-negotiation-table-test` 62/62; `diplomacy-own-proposal-edit-test` 33/33;
+`diplomacy-basket-duplicate-test` 21/21; `diplomacy-basket-duplicate-ui-test` 31/31;
+`diplomacy-package-ai-counter-actionable-test` 17/17; `diplomacy-penalty-preview-test` 9/9;
+`diplomacy-currency-trade-test` 5/5; `tech-tree-test` 19/19; `research-test` 33/33.
+
+**Świadomie NIE domknięte w tej rundzie (nie N1-N6, ale sąsiedni, mniejszy gap udokumentowany
+już w rundzie 1):** mnożnik chęci AI (`handelWillingnessMultiplier`) w live-podglądzie koszyka
+(`renderPnBalancePanelFromBasket`/`renderPnBalancePanelForTreaty`) — obie funkcje nadal nie mają
+dostępu do pełnego kontekstu AI (stance/Respekt), więc pozostały rozjazd rzędu ±15-20% progu
+(nie ±39% jak przed tą rundą) jest możliwy. Wymagałby przekazania kontekstu AI do UI koszyka —
+realna zmiana architektury wyceny, poza zakresem naprawy zgłoszonego buga. Do rozważenia jako
+osobny temat, jeśli Maciej zgłosi konkretny przypadek.
+
+**Czeka na Evaluatora (Opus 5).**
 
 ---
 
