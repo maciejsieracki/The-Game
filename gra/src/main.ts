@@ -13150,10 +13150,24 @@ async function boot(): Promise<void> {
         cities: religionCityRows,
       };
 
+      // P-PANEL-IMPERIUM-PORTRET-WLADCA (Maciej 2026-08-14): nagłówek panelu imperium
+      // pokazywał gołe emoji cywilizacji (dotąd zawsze zahardkodowane na 🏛️, niezależnie
+      // od civKey) zamiast portretu władcy — REUŻYCIE gotowego systemu leaderPortraitUrl()
+      // (te same medaliony co bitwa/preBattle/dyplomacja), civKey/epoka już policzone wyżej
+      // (linie ~13020/13023) w tej samej funkcji. `civEmoji` zostaje jako fallback (patrz
+      // JSDoc EmpireGlobalParams.civPortraitUrl w empireDetailTypes.ts). / EN: the empire
+      // panel header showed a bare civ emoji (until now hardcoded to 🏛️ regardless of
+      // civKey) instead of the ruler portrait — REUSES the existing leaderPortraitUrl()
+      // system (same medallions as battle/preBattle/diplomacy); civKey/epoka already
+      // computed above (~lines 13020/13023) in this same function. `civEmoji` stays as the
+      // fallback (see EmpireGlobalParams.civPortraitUrl JSDoc in empireDetailTypes.ts).
+      const civPortraitUrl = leaderPortraitUrl(civKey, epoka);
+
       return {
         global: {
           civName,
           civEmoji: '🏛️',
+          civPortraitUrl,
           styl: String(civRow?.['Styl / charakter'] ?? '—'),
           jednostkaSpec: String(civRow?.['Jednostka specjalna'] ?? '—'),
           bonusStartowy: String(civRow?.['Bonus startowy'] ?? '—'),
