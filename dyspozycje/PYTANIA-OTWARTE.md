@@ -21082,9 +21082,14 @@ i bez zdobycia miasta, razem z `oblegajacyOwnerId`, `siegeBesiegerByCity` i `ref
 miasto AI (`ownerId=3`) oblegane przez gracza traci flagę tą samą ścieżką. Zapis oblężenia trafia
 do save'a już poprawiony — bez zmian w formacie.
 
-### N1 — **ZNALEZISKO: naprawa ujawnia sprzeczność przy szturmie zakończonym REMISEM** · STATUS: **OTWARTE** — do dispatchu Operatora
-Nie blokuje scalenia (stan gry po naprawie jest ZGODNY z regułą silnika), ale wymaga osobnego
-zlecenia. Zmierzone, nie wydedukowane:
+### N1 — **ZNALEZISKO: naprawa ujawnia sprzeczność przy szturmie zakończonym REMISEM** · STATUS: **OTWARTE — czeka na ABC właściciela, NIE dispatch Operatora**
+Nie blokuje scalenia (stan gry po naprawie jest ZGODNY z regułą silnika). **Sprostowanie etykiety
+statusu (2026-08-14, audyt §0c):** treść tej sekcji niżej mówi wprost „do rozstrzygnięcia
+produktowo — ABC dla właściciela, nie decyzja agenta" — nagłówek błędnie sugerował dispatch
+Operatora, co pozwoliłoby agentowi podjąć decyzję produktową za właściciela. Poprawione, żeby
+kolejny audyt kompletności widział to jako oczekujące na ABC (Maciej nieobecny — pytanie nieotwarte
+w czacie, zgodnie z zakazem otwierania nowych wątków pod jego nieobecność), nie jako zapomniany
+dispatch. Zmierzone, nie wydedukowane:
 przy remisie szturmu muru `applyPostBattleMap` idzie gałęzią `placeFanOutGroup` i **odsuwa całą
 armię oblegającą z dystansu 1 na dystans 2** od miasta. `validateActiveSieges` liczy oblegających
 jako `hexDistance === 1`, więc od teraz **natychmiast** kończy oblężenie — a `afterSiegeUi`
