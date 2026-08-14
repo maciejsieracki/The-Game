@@ -25148,3 +25148,242 @@ nie błąd projektu. Na przypiętym `./node_modules/.bin/tsc` (5.9.3) jest czyst
 niezależnie; poprawka trafia w zgłoszoną powierzchnię; wszystkie bramki zielone i zgodne co do liczby
 z raportem Operatora; nowa bramka realnie łapie regresję. N1–N2 to dopieszczenie kompozycji, N4–N5
 wzmocnienie testu, N6 osobny temat na Opus 5, N3/N7 do świadomości. Nic nie blokuje.
+
+---
+
+## Evaluator: cały pas granicy do wewnątrz własnego terytorium (`4de64fa8`, `R-GRANICE-STYK-CZYTELNOSC-Q1` = B) — WERDYKT **FAIL** (2026-08-14)
+
+Zakres commita: `gra/src/render/rangeOverlay.ts`, `gra/tools/granice-relacja-dyplomatyczna-test.cjs`,
+`gra/tools/granice-styk-nakladanie-test.cjs` — 3 pliki, **zero zanieczyszczenia** innymi tematami.
+Praca renderowa (`gra/src/render/**`), więc ocena na Opus 5 zgodnie ze stałą zasadą `CLAUDE.md` §4.
+
+Wszystko poniżej zmierzone **niezależnie** w izolowanym worktree (`git reset --hard` na
+`origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, `node_modules` przez symlink), przez
+URUCHOMIENIE prawdziwego kodu i przez zbudowanie **własnego** harnessu rasteryzującego geometrię
+meshy — nie przez przepisanie liczb z opisu commita. Porównania „PRZED" liczone na kodzie
+`4de64fa8^` wyciągniętym do osobnego drzewa (`git show 4de64fa8^:…`), nie z pamięci.
+
+**FAIL nie oznacza „wyrzucić".** Rdzeń zmiany (matematyka mitry, przepisanie asercji, kierunek
+decyzji B) jest dobry i wart zachowania — punkt 1 niżej. FAIL wynika z trzech rzeczy: obietnica
+konstrukcyjna nie zachodzi na **większości realnych kształtów terytorium** (N1), enklawy dostały
+**regresję** (N3), a jedna liczba przedstawiona właścicielowi jako fakt jest **nieprawdziwa** (N5).
+
+### 1. Co jest zweryfikowane i POPRAWNE
+
+| Sprawdzone | Wynik |
+|---|---|
+| `npx tsc --noEmit` | 0 błędów, exit 0 — zgodne z opisem |
+| `granice-styk-nakladanie-test.cjs` (nowy) | **30 pass / 0 fail** — zgodne |
+| `granice-relacja-dyplomatyczna-test.cjs` | **52 pass / 0 fail** — zgodne |
+| `civ-visual-test.cjs` | **56 pass / 0 fail** — zgodne |
+| `territory-border-test.cjs` | **9 pass / 0 fail** — zgodne |
+| `territory-border-dense-settlement-test.cjs` | **15 pass / 0 fail** — zgodne |
+| `tech-tree-test.cjs` | **19 pass / 0 fail** — zgodne |
+| `research-test.cjs` | **33 pass / 0 fail** — zgodne |
+| `vite build --outDir dist --emptyOutDir` | exit 0 — zgodne |
+
+**Matematyka mitry w `insetBorderLoop()` jest DOKŁADNA, a ryzyko „miter spike" tu NIE istnieje.**
+Wzór `cur − (a+b)·inset/(1+a·b)` to standardowe dokładne odsunięcie: długość dwusiecznej to
+`inset/cos(θ/2)`, przy `|a+b| = 2cos(θ/2)` i `1+a·b = 2cos²(θ/2)` — tożsamość się zgadza, wsunięta
+pętla jest równoległa do oryginału. Sprawdziłem empirycznie, że na siatce heksów mianownik jest
+**zawsze 1,5**: na 5 kształtach (kwiat 7, podkowa 12, rząd 1×5, szachownica, przekątna) każdy skręt
+pętli wynosi dokładnie 60°, `min(1+cos) = 1,5000` w każdym przypadku. Ogranicznik `Math.max(…, 0,5)`
+jest prawdziwym **miter limit**: tnie wysunięcie do `2·inset` (1,35 j dla pasa relacji), jest ciągły
+w punkcie przełączenia (θ = 120°: wzór bez ogranicznika daje `1/cos60° = 2`, ogranicznik daje to
+samo) i przy θ→180° schodzi do zera zamiast uciekać w nieskończoność. **Zarzut o miter spike —
+oddalony, nie ma go czym wywołać.**
+
+**6 przepisanych asercji w `granice-relacja-dyplomatyczna-test.cjs` NIE zostało złagodzonych** —
+porównane linia po linii z `git show 4de64fa8^:…`. Dwie są wprost **ostrzejsze**: `eInner.max ≈ HEX_R`
+z tolerancją `1e-4` zastąpione przez `|dOuter.min| < 1e-6`, a mętne „oba pasy opierają się o TEN SAM
+obwód" (spełniane przez istnienie choćby jednego wspólnego wierzchołka) zastąpione przez twardy
+kontrakt ciągłości `|dInner.min − dOuter.max| < 1e-6`. Liczba asercji w bloku bez zmian (8 → 8).
+Zastrzeżenie do jednej z nich — nota N2.
+
+**Metoda pomiaru w nowym teście jest rzetelna** (prawdziwe trójkąty mesha, test punkt-w-trójkącie,
+krok 0,01 j) i **odtworzyłem jej wynik własnym kodem** na tej samej konfiguracji dwóch bloków 2×3:
+nakładanie pasów różnych właścicieli **2,2111 j² → 0,0000 j²**, pas tożsamości gracza na ziemi
+sąsiada **1,8152 j² → 0,0000 j²** (Operator podał 2,2024 i ~1,89 — różnica to rozdzielczość siatki
+rasteryzacji, zgodne w granicach zadeklarowanego ±0,002 j²). **Na tej konfiguracji naprawa działa
+w 100 %.**
+
+### N1 (BLOKUJĄCA) — obietnica „nakładanie znika konstrukcyjnie" NIE zachodzi na większości realnych kształtów
+
+`segmentOutwardNormal()` ustala, gdzie jest „na zewnątrz", porównując normalną ze **średnią
+arytmetyczną wierzchołków pętli** (centroid). Dla kształtów niewypukłych ta heurystyka **odwraca
+znak** części normalnych. `insetBorderLoop()` używa dokładnie tej samej funkcji, więc na odwróconej
+krawędzi pętla wsuwa się **na zewnątrz** i cały pas ląduje u sąsiada — czyli dokładnie to, co
+decyzja B miała usunąć.
+
+Zmierzone (Monte Carlo, losowe spójne klastry heksów — tak wyglądają realne terytoria):
+
+| Wielkość klastra | Kształtów z ≥1 odwróconą normalną | Odsetek odwróconych krawędzi obwodu | Średni wyciek pasa tożsamości poza własne terytorium |
+|---|---|---|---|
+| 7 heksów | **50 / 60** | 11,3 % | 13,1 % pola pasa |
+| 12 heksów | **58 / 60** | 15,0 % | 12,4 % |
+| 19 heksów | **60 / 60** | 16,2 % | 13,2 % |
+| 25 heksów | **60 / 60** | 17,1 % | 13,1 % |
+| 40 heksów | **60 / 60** | 18,9 % | 15,7 % |
+
+Atrybucja przyczyny jest czysta: kształty z **0** odwróconych normalnych mają wyciek **dokładnie 0**
+(1 heks 0/6, 1×2 0/10, trójkąt 0/12, kwiat 7 0/18 — wyciek 0,000 j² w każdym), a kształty z
+odwróconymi normalnymi mają wyciek **zawsze** (rząd 1×3 2/14 krawędzi, kolumna 3 2/14).
+
+Realne nakładanie międzywłaścicielskie po naprawie (mój pomiar, ta sama metoda co w teście):
+
+| Konfiguracja | Nakładanie A×B PRZED | PO |
+|---|---|---|
+| dwa bloki 2×3 (fixture z testu) | 2,2111 j² | **0,0000 j²** |
+| rząd 1×3 vs rząd 1×3 | 1,7819 j² | **0,6435 j²** |
+| rząd 1×4 vs rząd 1×4 | 2,0407 j² | **1,3179 j²** |
+| kolumna 3 vs kolumna 3 | 1,6070 j² | **0,3743 j²** |
+| L-kształt vs sąsiad | 1,9053 j² | **0,1863 j²** |
+
+**Uczciwie: kierunek jest dobry — każda zmierzona konfiguracja się poprawiła.** Ale twierdzenie
+z opisu commita i z komentarzy w kodzie („nakładanie znika **konstrukcyjnie**, przy **każdym** kącie
+kamery") oraz asercja testu „`0,0000 j²` / żaden pas nie wchodzi na heksy drugiej cywilizacji" są
+prawdziwe **wyłącznie dla fixture'ów użytych w teście**. Sprawdziłem to wprost: **wszystkie** kształty
+w `granice-styk-nakladanie-test.cjs` mają **zero** odwróconych normalnych (bloki 2×3 → 0/18 i 0/18,
+kolumny 2-heksowe z sekcji 3 → 0/10). Blok 2×**4** — jeden rząd większy — ma już **2/22**. Test
+przypadkiem trafił dokładnie w klasę kształtów, na której naprawa działa idealnie, i przypiął to
+jako kontrakt uniwersalny.
+
+Dodatkowo, na odwróconych krawędziach commit **pogarsza** stan lokalnie: PRZED pas tożsamości
+wyrastał „na zewnątrz" wg odwróconej normalnej, czyli do **wewnątrz** własnego terytorium
+(nieszkodliwie); PO — wsunięcie wypycha go na ziemię sąsiada. Globalnie i tak wychodzi lepiej,
+bo 81–89 % krawędzi jest zorientowanych poprawnie.
+
+**Do naprawy:** `segmentOutwardNormal` ma ustalać stronę z **orientacji pętli** (znak pola
+powierzchni / winding), a nie z centroidu wierzchołków. To jedna zmiana i naprawia równocześnie N3.
+
+### N2 — pas tożsamości NIE dotyka linii granicy jako POWIERZCHNIA; asercja mierzy co innego, niż mówi
+
+`appendBorderBandLoop` buduje zewnętrzną krawędź pasa przez **uśrednienie normalnych** (`·0,5`), co
+daje narożnik **ścięty (bevel)** sięgający tylko `0,75·w` prostopadle. Dopóki pas rósł na zewnątrz,
+to ścięcie było po stronie sąsiada i nie miało znaczenia — a **wewnętrzna** krawędź pasa była
+dokładnie pętlą obwodu, więc kolor dotykał linii granicy idealnie. Po odwróceniu strony ścięcie
+wypadło **od strony linii granicy**.
+
+Zmierzone na pojedynczym heksie (próbkowanie 2 400 punktów po obwodzie, krok 0,0005 j):
+
+- szczelina między linią granicy a początkiem pasa tożsamości: **średnio 0,0938 j, maksymalnie
+  0,1505 j** — czyli do **33 % szerokości pasa** (0,45 j);
+- na prostych odcinkach szczelina wynosi dokładnie **0,1125 j** (= 0,25·0,45), co potwierdza
+  rachunek `0,75·w`;
+- ze strefy `[0 … 0,45]` w głąb heksa **25,1 %** pola **nie jest pomalowane** (0,5025 z 2,0001 j²);
+  analogicznie **25,4 %** strefy `[0,45 … 0,675]` dla pasa relacji.
+
+Na styku dwóch cywilizacji daje to **goły korytarz terenu ok. 0,22 j** (2 × 0,1125) wzdłuż wspólnej
+krawędzi. Potwierdzone na fixture Operatora: w przekroju przez styk pas tożsamości A kończy się na
+**−0,112 j** od linii granicy, nie na 0.
+
+Asercje `ok(Math.abs(identity.min) < 1e-6, 'pas tożsamości zaczyna się DOKŁADNIE na linii granicy')`
+(nowy test, sekcja 2) i `'pas tożsamości dotyka linii granicy od wewnątrz (głębokość 0)'`
+(`granice-relacja-dyplomatyczna`) przechodzą, bo `depthRange` liczy minimum po **WIERZCHOŁKACH**, a
+wierzchołki `oPrev`/`oNext` trójkątów domykających naroża rzeczywiście leżą na linii — ale są to
+**izolowane punkty**, nie krawędź powierzchni. Asercja nie mierzy tego, co głosi jej komunikat.
+
+To nie musi być wada produktowa (rozdzielenie pasów cienkim pasem terenu może nawet poprawiać
+czytelność), ale **jest zmianą wyglądu, której nikt nie zgłosił właścicielowi**, i jest opisana
+w kodzie odwrotnie do stanu faktycznego. Wymaga albo poprawki geometrii (mitra zamiast bevelu w
+`appendBorderBandLoop`), albo świadomej decyzji właściciela i sprostowania komentarzy.
+
+### N3 (REGRESJA) — enklawy: pas tożsamości przeniósł się na cudzy heks
+
+Terytorium z dziurą (pierścień 6 heksów wokół pustego środka — enklawa, ziemia niczyja albo obcy
+heks otoczony przez nasze). Dla pętli dziury „na zewnątrz od centroidu" wskazuje **w głąb
+terytorium**, więc wsunięcie wypycha pętlę **do dziury**:
+
+| Pomiar | PRZED (`4de64fa8^`) | PO (`4de64fa8`) |
+|---|---|---|
+| pas tożsamości leżący W ENKLAWIE | **0,000 j² (0,0 %)** | **1,504 j² (21,0 %)** |
+| pas relacji leżący w enklawie | 0,916 j² (23,5 %) | 0,349 j² (12,6 %) |
+| **łącznie farba na cudzym heksie** | **0,916 j²** | **1,853 j² (2× więcej)** |
+
+Czyli: PRZED pas tożsamości enklawy był po właściwej stronie, PO — leży w całości na heksie
+enklawy. To jest **dokładnie ten defekt, który temat miał usunąć**, tylko przeniesiony na inną
+klasę przypadków. Enklawy nie są egzotyką: w Monte Carlo **11/60** klastrów 40-heksowych ma już
+więcej niż jedną pętlę obwodu (25 heksów: 5/60, 19 heksów: 1/60).
+
+### N4 — nowy artefakt: samo-nakładanie pasa tożsamości i relacji TEGO SAMEGO właściciela
+
+| Terytorium | PRZED | PO |
+|---|---|---|
+| 1 heks | 0,000 j² (0,0 %) | **0,000 j² (0,0 %)** |
+| kwiat 7 heksów | 0,000 j² (0,0 %) | **0,000 j² (0,0 %)** |
+| 1×2 (dwa heksy w rzędzie) | 0,000 j² (0,0 %) | **0,292 j² (38,4 % pasa relacji)** |
+| 1×3 | 0,106 j² (5,6 %) | **0,421 j² (24,1 %)** |
+
+We wklęsłych kieszeniach obwodu pas relacji (rysowany wyżej, `TERRITORY_RELATION_Y_BUMP`) przykrywa
+pas tożsamości, więc kolor cywilizacji traci tam widoczne pole. Żaden test tego nie pokrywa.
+
+**Odpowiedź na obawę o jednoheksowe miasto-państwo: obawa NIE potwierdza się.** Pas 0,675 j mieści
+się w inradiusie 0,866 j (zostaje 0,191 j czystego wnętrza, 22 % inradiusu), wsunięta pętla nie
+odwraca się, a zmierzone samo-nakładanie wynosi **dokładnie 0,0000 j²**. Test Operatora pilnuje tego
+wprost (`relation.max < INRADIUS`). Problem pojawia się dopiero od **dwóch** heksów i wszędzie tam,
+gdzie obwód ma narożnik wklęsły.
+
+### N5 — liczba nieprawdziwa w opisie commita
+
+Opis commita: „*łączna grubość pasa na styku dwóch cywilizacji — bez zmian (1,35 j przed i po,
+zmienia się tylko przypisanie stron)*". Zmierzone przekrojem przez styk na fixture z testu:
+
+- **PRZED:** jeden ciągły pomalowany odcinek **0,674 j**, wyśrodkowany na linii granicy, bez przerw;
+- **PO:** rozpiętość **1,41 j**, z czego pomalowane **0,902 j**, z przerwami (w tym gołym korytarzem
+  z noty N2).
+
+Rachunkowo: przed zmianą pas jednej cywilizacji zajmował `[−0,45 … +0,225]`, więc suma obu stron to
+**0,9 j** (a po ścięciu naroży realnie 0,674 j) — nie 1,35 j. Pasek na styku **rozrósł się mniej
+więcej dwukrotnie**, nie został bez zmian. To liczba podana właścicielowi jako fakt (`CLAUDE.md` §0b).
+
+### N6 — dowód wizualny (headless Chromium) NIEODTWARZALNY
+
+Liczby „4 173 px (2,92 %) PRZED → 27 143 px (19,01 %) PO" nie mają w repozytorium **żadnego
+artefaktu**: commit dotyka dokładnie 3 plików, nie ma ani zrzutu, ani skryptu pomiarowego.
+Nie odtworzyłem ich też u siebie — w środowisku nie ma zainstalowanej przeglądarki
+(`npx playwright install chromium` kończy się `Failed to download Chrome for Testing … Download
+failure, code=1`; `puppeteer` nie jest zainstalowany). Twierdzenie opiera się wyłącznie na opisie
+commita. Kierunkowo jest **spójne** z moim niezależnym pomiarem geometrycznym na tych samych
+kształtach (1,8152 j² pasa gracza na ziemi sąsiada → 0,0000 j²), więc nie podważam wyniku — ale
+jako **dowód** dla właściciela on nie istnieje.
+
+### N7 — dodatkowe zlecenie („gracz ma podwójną niebieską granicę"): pierwsza połowa udowodniona, druga nie
+
+Twierdzenie „to nie był błąd koloru" jest **dobrze udokumentowane w kodzie i sam je potwierdzam**:
+`gra/src/main.ts` linia 3051 — `function relationColorFn(ownerId) { if (ownerId === 0) return
+civColorFn(0); … }`, czyli własne terytorium świadomie dostaje ten sam kolor w obu obwódkach.
+Commit `4de64fa8` **nie tyka `main.ts`**, więc kod koloru jest ten sam co od `bf839f81` — podwójna
+niebieska granica gracza to zamierzona specyfikacja, nie usterka.
+
+Druga połowa („to, co Maciej zobaczył, to było przesłanianie, a nie osobny problem") opiera się
+**wyłącznie** na tym samym nieodtwarzalnym zrzucie z N6. Nie jest udowodniona. Co więcej, po tej
+zmianie granica gracza czyta się inaczej niż przed nią: 0,675 j **w całości po własnej stronie**
+zamiast pasa rozłożonego na linii granicy, plus goły korytarz z N2 — więc jeżeli właściciel
+zgłaszał wygląd, to wygląd właśnie się zmienił i wymaga jego ponownej oceny w grze, nie deklaracji
+agenta.
+
+### N8 (drobna, metodyczna) — `makeOwnerAt` w nowym teście jest luźniejsze, niż brzmi
+
+`makeOwnerAt` uznaje punkt za leżący na heksie, gdy jest bliżej niż `HEX_R = 1,0` od jego środka —
+ale heks sięga tylko do inradiusu **0,866 j**. Do **0,134 j** wycieku poza linię granicy nadal
+liczyłoby się więc jako „na własnych heksach", mimo asercji `całe pole pasa leży na heksach własnego
+terytorium`. Na obecnych fixture'ach nie zmienia to wyniku (przy prawdziwym teście punkt-w-sześciokącie
+wyciek też wychodzi dokładnie 0), ale margines bezpieczeństwa jest inny, niż sugeruje treść asercji.
+
+### Wymagane przed ponownym zgłoszeniem do PASS
+
+1. **N1:** `segmentOutwardNormal` ma wyznaczać stronę z orientacji (winding / znak pola) pętli, nie
+   z centroidu wierzchołków. Bramka: rozszerzyć `granice-styk-nakladanie-test.cjs` o kształty
+   **niewypukłe** (rząd 1×3, kolumna 3, L-kształt, blok 2×4) — dziś każdy fixture ma 0 odwróconych
+   normalnych, więc test nie może złapać tej klasy błędów.
+2. **N3:** enklawy — osobny przypadek testowy z pętlą dziury; pas tożsamości ma mieć **0 j²** na
+   heksie enklawy (dziś 1,504 j²).
+3. **N5:** sprostować liczbę „1,35 j przed i po" (realnie 0,674 j → 0,902 j pomalowane w rozpiętości
+   1,41 j).
+4. **N2:** decyzja właściciela — czy pas ma dotykać linii granicy (mitra zamiast bevelu), czy goły
+   korytarz 0,22 j jest akceptowany; do tego czasu poprawić komunikaty asercji, żeby nie twierdziły
+   czegoś, czego nie mierzą.
+5. **N6/N7:** dowód wizualny albo do repo (zrzut + skrypt), albo do playtestu właściciela — nie
+   jako deklaracja w opisie commita.
+
+**STATUS: OTWARTE — zwrot do Operatora (runda 2), praca renderowa, Operator dowolny model, Evaluator Opus 5.**
