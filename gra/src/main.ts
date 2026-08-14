@@ -23142,12 +23142,12 @@ async function boot(): Promise<void> {
           showHintMessage('Szturm: remis — wojska odepchnięte od murów, oblężenie zniesione.', 3500);
           // R-OBLEZENIE-REMIS-MASZYNY-Q2=A: remis szturmu ZAWSZE kończy oblężenie — jawna
           // reguła silnika, niezależnie od geometrii odwrotu placeFanOutGroup (dawniej skutek
-          // uboczny validateActiveSieges() kończył oblężenie tylko w 32/63 układów heksów
-          // przyściennych, w pozostałych 31/63 flaga zostawała mimo tego komunikatu).
+          // uboczny validateActiveSieges() kończył oblężenie tylko w 30/63 układów heksów
+          // przyściennych, w pozostałych 33/63 flaga zostawała mimo tego komunikatu).
           // endMapSiege() woła refreshSiegeMarkers() sam — nie duplikować wywołania niżej.
           // EN: storm draw now ALWAYS ends the siege — explicit engine rule, independent of
           // placeFanOutGroup retreat geometry (previously only an accidental side effect of
-          // validateActiveSieges() ended it, and only in 32/63 wall-adjacent hex layouts).
+          // validateActiveSieges() ended it, and only in 30/63 wall-adjacent hex layouts).
           // endMapSiege() already calls refreshSiegeMarkers() internally — no duplicate call below.
           endMapSiege(city.id);
           syncUnitsRender();

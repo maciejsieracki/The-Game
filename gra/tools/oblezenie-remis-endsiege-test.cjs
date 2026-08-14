@@ -12,8 +12,10 @@
  * zdjęcie oblężenia po remisie było WYŁĄCZNIE ubocznym skutkiem `validateActiveSieges()`
  * (wołanej na końcu `applyMapBattleOutcome`, PO `placeFanOutGroup`) — flaga spadała tylko
  * gdy PO fan-oucie żadna jednostka oblegającego nie została na dystansie 1 od miasta.
- * Zmierzone na wszystkich 63 niepustych podzbiorach 6 heksów przyściennych: 32/63 układów
- * kończyło oblężenie, 31/63 zostawiało je TRWAJĄCE mimo tekstu „oblężenie zniesione".
+ * Zmierzone na wszystkich 63 niepustych podzbiorach 6 heksów przyściennych: 30/63 układów
+ * kończyło oblężenie, 33/63 zostawiało je TRWAJĄCE mimo tekstu „oblężenie zniesione"
+ * (liczby sprostowane przez Evaluatora naprawy `a159af84` — pierwotny pomiar Evaluatora
+ * `51a32fe6` mylił się w układach k=2 i k=4).
  *
  * TEN TEST — niezależny od pomiaru Evaluatora (własna implementacja, ta sama metoda:
  * wszystkie 2^6-1=63 niepuste podzbiory heksów przyściennych), sprawdza DWIE warstwy:
@@ -283,16 +285,16 @@ for (const idxs of PODZBIORY) {
 }
 
 console.log(`[info] 63 konfiguracje: ${insufficientBefore}/63 zostawiało oblężenie TRWAJĄCE po samym `
-  + `validateActiveSieges() (stare zachowanie, geometrio-zależne — u Evaluatora zmierzone 31/63 przy `
-  + `identycznym wariancie pełnej przejezdności); ${allEndedAfterFix}/63 ma city.oblegane===false po `
-  + `dołożeniu endMapSiege() (ten commit).`);
+  + `validateActiveSieges() (stare zachowanie, geometrio-zależne — u Evaluatora naprawy zmierzone `
+  + `33/63 przy identycznym wariancie pełnej przejezdności); ${allEndedAfterFix}/63 ma `
+  + `city.oblegane===false po dołożeniu endMapSiege() (ten commit).`);
 
 ok(allEndedAfterFix === 63,
   `WSZYSTKIE 63/63 konfiguracje muszą kończyć się city.oblegane===false po naprawie (dostało ${allEndedAfterFix}/63)`);
 ok(insufficientBefore > 0,
   'test nie jest pusty: co najmniej jedna z 63 konfiguracji dowodzi, że SAM validateActiveSieges() '
   + '(stare zachowanie) NIE wystarczał — endMapSiege() w kroku 3 wykonuje realną pracę, '
-  + `dostało ${insufficientBefore}/63 (oczekiwano >0, u Evaluatora 31/63 dla analogicznego wariantu)`);
+  + `dostało ${insufficientBefore}/63 (oczekiwano >0, u Evaluatora naprawy 33/63 dla analogicznego wariantu)`);
 
 // ===========================================================================
 // §3. SAMOSPRAWDZENIE — cofnięcie naprawy w main.ts musi zaświecić strażnik §1 na czerwono
