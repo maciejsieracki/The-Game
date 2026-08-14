@@ -20305,3 +20305,25 @@ Evaluatorzy też powinni domyślnie dostawać izolowany worktree do własnych mu
 
 **TEMAT ZAMKNIĘTY.** Droga 6-ramion w pełni gotowa, geometria matematycznie potwierdzona,
 odporna na restart gry.
+
+## P-NEWGAME-RAMKI-WYROWNANIE (2026-08-14, zgłoszenie Macieja ze zrzutem "Ustawienia Rozgrywki") · STATUS: OTWARTE — dispatch recon+fix
+
+Maciej: „Poza tym trzeba trochę ramki wyrównać" (zrzut ekranu ekranu ustawień nowej gry, siatka
+2×3 kart: Poziom trudności/Rozmiar mapy, Typ świata/Prędkość gry, Miasta-Państwa/Liczba
+cywilizacji + osobna sekcja Cywilizacje przeciwnika + Twój start poniżej).
+
+Zgłoszenie ogólnikowe (nie wskazuje dokładnie której ramki/w którym miejscu) — kod:
+`gra/src/ui/newGameFlow.ts`, klasa `.sett-grid` (linia ~858: `display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;...align-items:stretch;`) już ma
+`align-items:stretch`, co powinno wyrównywać wysokość kart w tym samym wierszu automatycznie
+(CSS Grid). Możliwe przyczyny realnego rozjazdu (do zweryfikowania pomiarem w przeglądarce, nie
+zgadywania z zrzutu): (a) karty NIE są bezpośrednimi dziećmi `.sett-grid` tylko owinięte w
+dodatkowy kontener łamiący stretch, (b) przyciski `‹›` lub tekst opisu wewnątrz karty mają własne
+wymuszone wysokości/wyrównanie pionowe niespójne między kartami, (c) odstęp między wierszem 3
+(Miasta-Państwa/Liczba cywilizacji) a sekcją "Cywilizacje przeciwnika" niżej jest wizualnie
+niespójny z odstępami między pozostałymi wierszami.
+
+**STATUS: dispatch Operatora (Sonnet 5, UI, nie render/**) — najpierw zmierzyć REALNE
+`getBoundingClientRect()` wszystkich 6 kart w przeglądarce (headless Chrome, wzorem metody
+używanej całą noc), zidentyfikować faktyczny rozjazd (piksele, nie wrażenie), dopiero potem
+naprawić w kodzie. Nie zgadywać przyczyny bez pomiaru.
