@@ -15,17 +15,33 @@
  * tożsamość [0 … 0,45] w głąb terytorium, relacja [0,45 … 0,675]. Szerokości i proporcja
  * 2:1 bez zmian; zmieniła się wyłącznie strona.
  *
- * PUNKT ODNIESIENIA — zmierzony tą samą metodą na kodzie SPRZED naprawy (commit `c438af75`,
- * ten sam układ dwóch terytoriów co niżej, rasteryzacja krokiem 0,01):
- *   - nakładanie pasów RÓŻNYCH właścicieli:            2,2024 j²
- *   - pas tożsamości gracza leżący na heksach sąsiada: ~1,89 j²
- *   - udział pasa tożsamości przykrytego przez sąsiada: 18,7 %
- *   - pas tożsamości leżący na WŁASNYCH heksach:       1,18 z 6,75 j², czyli 17 %
- * Po naprawie wszystkie cztery wynoszą odpowiednio 0 / 0 / 0 % / 100 %. Liczby z rasteryzacji
- * mają rozdzielczość ±0,002 j² (wynik zależy od tego, gdzie wypadną środki komórek siatki),
- * dlatego progi niżej są zapisane z zapasem, a nie jako równości.
- * SPRAWDZONE MUTACYJNIE: na kodzie sprzed naprawy ten plik daje 12 pass / 18 fail — nie jest
- * to test, który przechodzi w obie strony.
+ * RUNDA 2 (`R-GRANICE-STYK-CZYTELNOSC-Q1` = B, po werdykcie FAIL Evaluatora do `4de64fa8`):
+ * runda 1 wyznaczała stronę „na zewnątrz" przez porównanie ze ŚRODKIEM pętli, co jest poprawne
+ * tylko dla kształtów WYPUKŁYCH — a wszystkie fixture'y sekcji 1–3 akurat takie są (bloki 2×3
+ * → 0/18 odwróconych normalnych, kolumny 2-heksowe → 0/10), więc ten plik nie mógł tej klasy
+ * błędu złapać. Stąd sekcje 4–6: kształty NIEWYPUKŁE, terytorium z ENKLAWĄ i pomiar
+ * POWIERZCHNI pasa przy linii granicy (a nie obecności wierzchołka).
+ *
+ * PUNKTY ODNIESIENIA — wszystkie zmierzone `tools/granice-pas-pomiar.cjs` (to samo narzędzie,
+ * ta sama rasteryzacja krokiem 0,01 j) na trzech wersjach kodu: PRZED tematem (`4de64fa8^`),
+ * RUNDA 1 (`4de64fa8`), RUNDA 2 (dziś). Pas tożsamości poza własnym terytorium [j²]:
+ *   kształt        PRZED     RUNDA 1   RUNDA 2
+ *   blok 2×3       6,7495    0,0000    0,0000
+ *   rząd 1×3       4,2119    0,9844    0,0000
+ *   rząd 1×4       4,4916    1,9683    0,0000
+ *   L-kształt      6,3882    0,4272    0,0000
+ *   podkowa        7,4317    1,7703    0,0000
+ *   pierścień      6,7377    1,5013    0,0000   ← farba w ENKLAWIE (nota N3)
+ * Szczelina między linią granicy a POWIERZCHNIĄ pasa [j]: RUNDA 1 0,1360–0,3995 → RUNDA 2 0.
+ * Nakładanie pasów RÓŻNYCH właścicieli na styku dwóch bloków 2×3: 2,2024 → 0,0000 j².
+ * Liczby z rasteryzacji mają rozdzielczość ±0,002 j², dlatego progi niżej są zapisane
+ * z zapasem, a nie jako równości.
+ *
+ * SPRAWDZONE MUTACYJNIE (runda 2, mutacje wykonane na dysku i cofnięte):
+ *   - przywrócenie heurystyki centroidu → 41 pass / 16 fail; wszystkie 16 porażek w sekcjach
+ *     4 i 5, sekcje 1–3 nadal zielone (dowód, że stary zestaw fixture'ów był ślepy);
+ *   - zewnętrzna krawędź pasa cofnięta o 0,25·szerokości (odpowiednik starego ścięcia naroża)
+ *     → 52 pass / 5 fail, w tym 3 porażki sekcji 6 przy szczelinie 0,1390 j.
  *
  * Uruchamianie z katalogu gra/: node tools/granice-styk-nakladanie-test.cjs
  */
@@ -46,6 +62,7 @@ fs.writeFileSync(
   TERRITORY_RELATION_BAND_WIDTH,
   TERRITORY_BORDER_OPACITY,
 } from '../src/render/rangeOverlay';
+export { computeTerritoryBorderLoops } from '../src/map/territory-border';
 export { HEX_R, axialToWorld } from '../src/render/hexutil';`,
   'utf8',
 );
@@ -155,7 +172,31 @@ function maskOverlap(a, b) {
   return s * CELL;
 }
 
-/** Właściciel heksa pod punktem (komórka Woronoja środków = sam heks); -1 = ziemia niczyja. */
+/**
+ * Właściciel heksa pod punktem; -1 = ziemia niczyja.
+ *
+ * DOKŁADNY test punkt-w-sześciokącie (6 półpłaszczyzn na inradiusie), nie „bliżej niż HEX_R
+ * od środka" — nota N8 Evaluatora do `4de64fa8`: heks sięga tylko do inradiusu 0,866 j, więc
+ * próg HEX_R = 1,0 przepuszczał do 0,134 j wycieku POZA linię granicy jako „na własnych
+ * heksach", mimo że asercja mówi co innego. Woronoj po środkach też nie wystarcza: dla
+ * terytoriów z dziurą punkt w enklawie ma najbliższy środek NALEŻĄCY do terytorium, więc
+ * wychodziłby jako „własny", a to jest dokładnie przypadek z noty N3.
+ * / EN: exact point-in-hexagon test (six half-planes at the inradius). A "within HEX_R of the
+ * centre" test let up to 0.134 j of spill past the border line count as "inside", and a plain
+ * Voronoi test would call a point inside an enclave "ours" because its nearest centre is ours.
+ */
+const HEX_EDGE_NORMALS = (() => {
+  const out = [];
+  for (let i = 0; i < 6; i++) {
+    const a1 = (Math.PI / 3) * i;
+    const a2 = (Math.PI / 3) * ((i + 1) % 6);
+    const mx = (Math.sin(a1) + Math.sin(a2)) / 2;
+    const mz = (Math.cos(a1) + Math.cos(a2)) / 2;
+    const l = Math.hypot(mx, mz);
+    out.push({ nx: mx / l, nz: mz / l });
+  }
+  return out;
+})();
 function makeOwnerAt(ownerByKey) {
   const centers = [];
   for (const [key, owner] of ownerByKey) {
@@ -164,14 +205,17 @@ function makeOwnerAt(ownerByKey) {
     centers.push({ x: c.x, z: c.z, owner });
   }
   return (px, pz) => {
-    let best = -1;
-    let bestD = Infinity;
     for (const c of centers) {
-      const d = (px - c.x) ** 2 + (pz - c.z) ** 2;
-      if (d < bestD) { bestD = d; best = c.owner; }
+      const dx = px - c.x;
+      const dz = pz - c.z;
+      if (Math.hypot(dx, dz) > HEX_R + 1e-9) continue;
+      let inHex = true;
+      for (const n of HEX_EDGE_NORMALS) {
+        if (dx * n.nx + dz * n.nz > INRADIUS + 1e-9) { inHex = false; break; }
+      }
+      if (inHex) return c.owner;
     }
-    // poza heksem: dalej niż promień opisany na heksie od KAŻDEGO środka
-    return bestD <= HEX_R * HEX_R ? best : -1;
+    return -1;
   };
 }
 function areaOnOwner(mask, grid, ownerAt, who) {
@@ -370,6 +414,171 @@ console.log('\n3. Trzy terytoria w rzędzie (środkowe ma dwa styki)');
     const mask = r.masks.get(c.name);
     ok(Math.abs(areaOnOwner(mask, r, oa, who) - maskArea(mask)) < 1e-6,
       `${c.name}: pas w całości na własnych heksach`);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. KSZTAŁTY NIEWYPUKŁE — klasa, na której runda 1 (`4de64fa8`) realnie się wykładała
+//
+// Nota N1 Evaluatora: KAŻDY fixture w sekcjach 1–3 ma ZERO odwróconych normalnych w starej
+// heurystyce centroidu (bloki 2×3 → 0/18, kolumny 2-heksowe → 0/10), więc test nie mógł
+// złapać tej klasy błędu i przypiął jako kontrakt uniwersalny coś, co zachodziło tylko dla
+// kształtów wypukłych. Kształty niżej mają odwrócone normalne realnie — sprawdzamy to WPROST
+// (asercja „fixture należy do klasy łapiącej"), żeby ta sekcja nie zwiotczała po cichu, gdyby
+// ktoś kiedyś zmienił geometrię obwodu.
+// ─────────────────────────────────────────────────────────────────────────────
+console.log('\n4. Kształty NIEWYPUKŁE (fixture z odwróconą normalną w starej heurystyce centroidu)');
+
+/** Ile segmentów obwodu dostałoby ODWRÓCONĄ normalną przy heurystyce „normalna od centroidu". */
+function invertedByCentroid(keys) {
+  const loops = M.computeTerritoryBorderLoops(new Set(keys), (q, r) => axialToWorld(q, r, HEX_R));
+  const ownerAt = makeOwnerAt(new Map(keys.map((k) => [k, 0])));
+  const EPS = 0.06;
+  let segs = 0;
+  let wrong = 0;
+  for (const loop of loops) {
+    let cx = 0;
+    let cz = 0;
+    for (const p of loop) { cx += p.x; cz += p.z; }
+    cx /= loop.length;
+    cz /= loop.length;
+    for (let i = 0; i < loop.length; i++) {
+      const a = loop[i];
+      const b = loop[(i + 1) % loop.length];
+      const dx = b.x - a.x;
+      const dz = b.z - a.z;
+      const len = Math.hypot(dx, dz) || 1;
+      const mx = (a.x + b.x) / 2;
+      const mz = (a.z + b.z) / 2;
+      segs++;
+      let nx = dz / len;
+      let nz = -dx / len;
+      if ((cx - mx) * nx + (cz - mz) * nz > 0) { nx = -nx; nz = -nz; }
+      // „na zewnątrz" wg centroidu, a ląduje na WŁASNYM heksie → normalna odwrócona
+      if (ownerAt(mx + nx * EPS, mz + nz * EPS) === 0) wrong++;
+    }
+  }
+  return { segs, wrong };
+}
+
+const NONCONVEX = {
+  'rząd 1×3':   ['0,0', '1,0', '2,0'],
+  'rząd 1×4':   ['0,0', '1,0', '2,0', '3,0'],
+  'kolumna 3':  ['0,0', '0,1', '0,2'],
+  'L-kształt':  ['0,0', '1,0', '2,0', '0,1', '0,2'],
+  'blok 2×4':   ['0,0', '1,0', '0,1', '1,1', '-1,2', '0,2', '-1,3', '0,3'],
+  'podkowa':    ['0,0', '1,0', '2,0', '2,1', '2,2', '1,2', '0,2'],
+};
+
+for (const [label, keys] of Object.entries(NONCONVEX)) {
+  const inv = invertedByCentroid(keys);
+  ok(inv.wrong > 0,
+    `${label}: fixture NALEŻY do klasy łapiącej — stara heurystyka odwracała ${inv.wrong} z ${inv.segs} normalnych`);
+
+  const set = new Set(keys);
+  const g = M.buildTerritoryBorderGroup(
+    fakeMap(keys), new Map([[0, set]]), () => COLOR_A,
+    BAND, M.TERRITORY_BORDER_OPACITY, () => COLOR_WAR,
+  );
+  const r = rasterize(g);
+  const oa = makeOwnerAt(new Map(keys.map((k) => [k, 0])));
+  for (const name of ['territory-border-0', 'territory-relation-0']) {
+    const mask = r.masks.get(name);
+    const own = areaOnOwner(mask, r, oa, 0);
+    const total = maskArea(mask);
+    ok(total > 0.3 && Math.abs(own - total) < 1e-6,
+      `${label}: ${name} w CAŁOŚCI na własnych heksach (${own.toFixed(4)} z ${total.toFixed(4)} j²)`);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. ENKLAWA — terytorium z DZIURĄ (nota N3 Evaluatora: regresja rundy 1)
+//
+// Pierścień 6 heksów wokół pustego środka ma DRUGĄ pętlę obwodu — wokół dziury. Dla niej
+// „na zewnątrz terytorium" znaczy „w głąb dziury", a heurystyka centroidu wskazywała tam
+// odwrotnie, więc pas tożsamości wsuwał się DO enklawy: zmierzone 1,5013 j² farby na cudzym
+// heksie tam, gdzie przed tematem było 0,0000 j².
+// ─────────────────────────────────────────────────────────────────────────────
+console.log('\n5. Enklawa — terytorium z dziurą (druga pętla obwodu)');
+{
+  const ring = ['1,0', '1,-1', '0,-1', '-1,0', '-1,1', '0,1'];
+  const hole = '0,0';
+  const set = new Set(ring);
+
+  const loops = M.computeTerritoryBorderLoops(set, (q, r) => axialToWorld(q, r, HEX_R));
+  ok(loops.length === 2, `pierścień ma DWIE pętle obwodu (zewnętrzną i wokół dziury) — jest ${loops.length}`);
+
+  const inv = invertedByCentroid(ring);
+  ok(inv.wrong > 0,
+    `fixture NALEŻY do klasy łapiącej — stara heurystyka odwracała ${inv.wrong} z ${inv.segs} normalnych`);
+
+  const g = M.buildTerritoryBorderGroup(
+    fakeMap([...ring, hole]), new Map([[0, set]]), () => COLOR_A,
+    BAND, M.TERRITORY_BORDER_OPACITY, () => COLOR_WAR,
+  );
+  const r = rasterize(g);
+  // Właściciel 0 = pierścień, właściciel 9 = heks enklawy (nie nasz).
+  const oa = makeOwnerAt(new Map([...ring.map((k) => [k, 0]), [hole, 9]]));
+  for (const name of ['territory-border-0', 'territory-relation-0']) {
+    const mask = r.masks.get(name);
+    const inEnclave = areaOnOwner(mask, r, oa, 9);
+    const own = areaOnOwner(mask, r, oa, 0);
+    const total = maskArea(mask);
+    ok(inEnclave < 1e-6,
+      `${name}: 0 j² na heksie ENKLAWY (${inEnclave.toFixed(4)} j²; runda 1 miała 1,5013 j² dla pasa tożsamości)`);
+    ok(Math.abs(own - total) < 1e-6,
+      `${name}: całe pole na własnych heksach pierścienia (${own.toFixed(4)} z ${total.toFixed(4)} j²)`);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6. POWIERZCHNIA pasa dotyka linii granicy — nie tylko pojedyncze wierzchołki
+//
+// Nota N2 Evaluatora: asercja z sekcji 2 mierzy minimum po WIERZCHOŁKACH, a wierzchołki
+// trójkątów domykających naroża leżały na linii jako punkty izolowane — powierzchnia pasa
+// kończyła się 0,0938 j (średnio) przed linią. Tu próbkujemy w głąb od PUNKTÓW WEWNĘTRZNYCH
+// odcinków obwodu, więc mierzymy pokrycie powierzchni, nie obecność wierzchołka.
+// ─────────────────────────────────────────────────────────────────────────────
+console.log('\n6. Pas tożsamości dotyka linii granicy POWIERZCHNIĄ (nie tylko wierzchołkiem)');
+{
+  const shapes = { '1 heks': ['0,0'], 'blok 2×3': ['0,0', '1,0', '0,1', '1,1', '-1,2', '0,2'], 'rząd 1×3': ['0,0', '1,0', '2,0'] };
+  const PROBE = 0.001;
+  for (const [label, keys] of Object.entries(shapes)) {
+    const set = new Set(keys);
+    const g = M.buildTerritoryBorderGroup(
+      fakeMap(keys), new Map([[0, set]]), () => COLOR_A,
+      BAND, M.TERRITORY_BORDER_OPACITY, () => COLOR_WAR,
+    );
+    const tris = meshTriangles(g.children.find((c) => c.name === 'territory-border-0'));
+    const loops = M.computeTerritoryBorderLoops(set, (q, r) => axialToWorld(q, r, HEX_R));
+    let maxGap = 0;
+    for (const loop of loops) {
+      for (let i = 0; i < loop.length; i++) {
+        const a = loop[i];
+        const b = loop[(i + 1) % loop.length];
+        const dx = b.x - a.x;
+        const dz = b.z - a.z;
+        const len = Math.hypot(dx, dz) || 1;
+        const inx = dz / len;
+        const inz = -dx / len; // w głąb terytorium
+        for (let s = 1; s < 20; s++) {
+          const t = s / 20;
+          const px = a.x + dx * t;
+          const pz = a.z + dz * t;
+          let gap = null;
+          for (let k = 0; k <= 400; k++) {
+            const d = k * PROBE;
+            let hit = false;
+            for (const tt of tris) if (pointInTriangle(px + inx * d, pz + inz * d, tt)) { hit = true; break; }
+            if (hit) { gap = d; break; }
+          }
+          if (gap !== null && gap > maxGap) maxGap = gap;
+        }
+      }
+    }
+    ok(maxGap <= PROBE + 1e-9,
+      `${label}: szczelina między linią granicy a powierzchnią pasa ${maxGap.toFixed(4)} j `
+      + `(runda 1: 0,1360–0,3995 j w zależności od kształtu)`);
   }
 }
 
