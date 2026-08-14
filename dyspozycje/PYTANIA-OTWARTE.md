@@ -20732,3 +20732,47 @@ Czyli: prompt „połącz nowo wyprodukowaną jednostkę z istniejącą armią" 
 przetwarzania tur AI/innych graczy, zamiast dopiero po ich zakończeniu, gdy kontrola realnie
 wraca do gracza. Dopisany do reconu (agent w toku rozszerzony o ten trzeci przypadek) jako
 kolejny przykład tej samej klasy braku sekwencjonowania.
+
+## P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE — Recon zakończony: jedna wspólna przyczyna strukturalna dla wszystkich 3 objawów (2026-08-14)
+
+**Diagnoza (Explore, read-only, bardzo precyzyjna — plik:linia dla każdego kroku):**
+
+1. **Audiencja dyplomatyczna** — jedyny auto-wyzwalacz to pierwszy kontakt dyplomatyczny:
+   `checkNewDiplomaticContacts()` (`main.ts:15154`, wołane z `refreshFog()` wielokrotnie w trakcie
+   końca tury) planuje `requestAnimationFrame(() => tryOpenNextFirstContactCard())`. Koniec tury
+   wielokrotnie oddaje klatkę przeglądarce (`yieldTurnTransitionUi()`), więc ten zaplanowany
+   callback dostaje realną szansę wykonać się W ŚRODKU przetwarzania. Ma częściowy guard
+   `canAutoOpenDiploAudience()` (`main.ts:15137-15141`) — sprawdza tylko czy preBattle jest
+   otwarty, nie odwrotnie.
+2. **preBattle ataku barbarzyńców** — `main.ts:27416-27461` (gałąź `bcmd.type==='attack'`) →
+   `launchIncomingMapFieldBattle(...)` → `showPreBattle()` (`ui/preBattle.ts:167-186`) — **ZERO
+   guarda** przeciwko innym otwartym overlayom, zawsze otwiera się bezwarunkowo. Po otwarciu
+   pętla komend barbarzyńców leci dalej (`continue;`, linia 27450) bez czekania na gracza.
+3. **`escapeOverlayStack.ts`** obsługuje WYŁĄCZNIE klawisz Escape (push/pop + Keyboard Lock) —
+   nie steruje z-index/widocznością/kolejnością. Oba ekrany są wpięte w ten stos, ale to nie daje
+   im wzajemnej wiedzy o sobie. Z-index rozstrzyga wizualnie niezależnie: `.civ-diplo-aud{z-index:400}`
+   vs `.pb-overlay{z-index:9900}` — preBattle zawsze wygrywa wizualnie, stąd zrzut Macieja.
+4. **`triggerPlayerEndTurn()` (`main.ts:23775+`)** — `await runAiPhase()` rozwiązuje się ZANIM
+   bitwa faktycznie się skończy: gdy AI atakuje gracza, `break ownerLoop` (linia 26761) przerywa
+   tylko WEWNĘTRZNĄ pętlę komend, nie całą funkcję — kod po pętli (sojusze, handel AI-AI,
+   `scanAutoSiegesAfterAiTurn`) i tak leci dalej, `runAiPhase()` zwraca Promise natychmiast mimo
+   otwartego preBattle. Blok `finally` (`main.ts:27605-27613`) **bezwarunkowo** gasi
+   `endTurnInProgress=false` i flushuje odłożone UI, bez sprawdzenia `isPreBattleOpen()`/
+   `isDiplomacyAudienceOpen()`.
+5. **Trzeci objaw (prompt scalenia nowej jednostki)** — TEN SAM mechanizm, jedno piętro niżej:
+   `promptMergeIfCoLocated()` (`main.ts:9599-9746`) ma guard na `endTurnInProgress` (odracza przez
+   `deferredMergePrompts` gdy `true`), ale ta flaga gaśnie w `finally` ZANIM otwarty preBattle
+   zostanie faktycznie zamknięty przez gracza (pkt 4) — więc `flushDeferredMergePrompts()`
+   (wołane w tym samym `finally`) odpala `showArmyMergePanel()` od razu, mimo wiszącego preBattle.
+
+**Wspólna przyczyna:** żadna z 3 funkcji otwierających modal (`showDiplomacyAudience`,
+`showPreBattle`, `showArmyMergePanel`) nie sprawdza czy INNY modal end-of-turu jest już otwarty,
+i żaden z wyzwalaczy (rAF pierwszego kontaktu, pętla AI, tick barbarzyńców, blok `finally`) nie
+zatrzymuje się i nie czeka aż gracz faktycznie zamknie poprzedni modal. Trzy konkretne miejsca do
+naprawy: `main.ts:27605-27613` (finally — dodać warunek), `ui/preBattle.ts:167-186` (showPreBattle
+— brak jakiegokolwiek guarda, jedyna z trzech funkcji bez niego), `main.ts:21386-21387`+`26761`
+(intencja „wstrzymaj pętlę AI do zamknięcia bitwy" zrealizowana tylko dla pętli komend, nie dla
+całej `triggerPlayerEndTurn`).
+
+**STATUS: dispatch Operatora (Sonnet 5) — naprawić sekwencjonowanie tak, żeby drugi modal
+end-of-turu czekał na zamknięcie pierwszego przez gracza, zamiast otwierać się na wierzchu.**
