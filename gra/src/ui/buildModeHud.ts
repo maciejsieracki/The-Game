@@ -8,7 +8,7 @@ import type { ImprovementKey } from '../render/improvements';
 import { HUD_EDGE_PX } from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
-import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPerTurn, UlepszeniaEmpirePolicy } from '../game/cities';
+import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -76,7 +76,8 @@ export interface BuildModeHudConfig {
   onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
   onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
   onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
-  onUlepszeniaEmpirePerTurnChange?: (perTurn: UlepszeniaPerTurn) => void;
+  /** R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: suwak 0-100% budżetu Pracy (zastępuje dawne przyciski 1/2/3). */
+  onUlepszeniaEmpirePracaPercentChange?: (pracaAutoPercent: UlepszeniaPracaPercent) => void;
   getUlepszeniaCityOverride?: (cityId: string) => boolean;
   onUlepszeniaCityOverrideChange?: (cityId: string, override: boolean) => void;
   /** Efektywne ustawienia wybranego miasta (empire lub override). */
@@ -84,13 +85,13 @@ export interface BuildModeHudConfig {
     focus: UlepszeniaFocus;
     tryb: UlepszeniaTryb;
     onlyWorked: boolean;
-    perTurn: UlepszeniaPerTurn;
+    pracaAutoPercent: UlepszeniaPracaPercent;
     override: boolean;
   } | null;
   onUlepszeniaCityFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
   onUlepszeniaCityTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
   onUlepszeniaCityOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
-  onUlepszeniaCityPerTurnChange?: (cityId: string, perTurn: UlepszeniaPerTurn) => void;
+  onUlepszeniaCityPracaPercentChange?: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => void;
 }
 
 export interface BuildModeHudApi {
@@ -174,7 +175,6 @@ function ensureStyles(): void {
 .civ-build-auto-btn.reczny{margin-left:2px;}
 .civ-build-auto-row{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:10px;color:#9a9070;flex-wrap:wrap;}
 .civ-build-auto-row label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
-.civ-build-auto-speed{display:inline-flex;align-items:center;gap:3px;}
 .civ-build-auto-city-wrap{margin-top:4px;}
 .civ-build-auto-eff{font-size:9px;color:#8a8060;line-height:1.35;margin:4px 0 2px;}
 .civ-build-auto-override{font-size:10px;color:#9a9070;margin:4px 0;}
@@ -184,6 +184,19 @@ function ensureStyles(): void {
 .civ-build-hbtn:hover{background:rgba(232,216,138,.16);border-color:rgba(232,216,138,.45);}
 .civ-build-hbtn.active{background:linear-gradient(180deg,#2a5a28,#1e4020);border-color:#6bbf59;color:#dff5d8;
   box-shadow:0 0 8px rgba(107,191,89,.45);}
+/* R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: suwak 0-100% budżetu Pracy, zastępuje przyciski 1/2/3. */
+.civ-build-percent-row{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
+.civ-build-percent-head{display:flex;align-items:baseline;gap:6px;font-size:10px;color:#9a9070;}
+.civ-build-percent-head b{font-size:11px;color:#f0e8b8;}
+.civ-build-percent-slider{-webkit-appearance:none;-moz-appearance:none;appearance:none;
+  width:100%;height:6px;border-radius:999px;cursor:pointer;margin:0;background:rgba(0,0,0,.35);
+  display:block;}
+.civ-build-percent-slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+  border-radius:50%;border:2px solid #1a1408;box-shadow:0 1px 4px rgba(0,0,0,.6);cursor:pointer;
+  background:#e8d88a;}
+.civ-build-percent-slider::-moz-range-thumb{width:13px;height:13px;border-radius:50%;
+  border:2px solid #1a1408;box-shadow:0 1px 4px rgba(0,0,0,.6);cursor:pointer;background:#e8d88a;}
+.civ-build-percent-slider::-moz-range-track{height:6px;border-radius:999px;background:transparent;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -207,6 +220,33 @@ function renderUlepszeniaProfileRow(
     + ` title="Ręczny — buduj ulepszenia na mapie (🔨)">Ręczny</button>`;
   html += '</div>';
   return html;
+}
+
+/** Tor suwaka wypełniony do `pct` (%) — reszta w kolorze tła (natywny input[type=range]
+ *  z -webkit-appearance:none renderuje swoje tło wprost jako tor). */
+function ulepszeniaPercentSliderFillStyle(pct: number): string {
+  const p = Math.max(0, Math.min(100, pct));
+  return `background:linear-gradient(90deg,#8a6a20 0%,#e8d88a ${p}%,rgba(0,0,0,.35) ${p}%,rgba(0,0,0,.35) 100%)`;
+}
+
+/**
+ * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: suwak 0-100% budżetu Pracy dla auto-managera ulepszeń —
+ * zastępuje dawne przyciski „Na turę: 1 2 3" (limit sztuk). 0% = auto-ulepszenia terenu
+ * wyłączone (cała Praca zostaje dla gracza), 100% = auto-manager może wydać całą dostępną pulę
+ * (do flat-rezerwy AUTO_ULEPSZENIA_PRACA_RESERVE w silniku — patrz auto-improvements.ts).
+ * / EN: 0-100% slider for the auto-manager's Work budget — replaces the old "Per turn: 1 2 3"
+ * buttons (item-count cap). 0% = terrain auto-improvements disabled (all Work stays with the
+ * player), 100% = the auto-manager may spend the whole available pool (down to the flat reserve
+ * floor AUTO_ULEPSZENIA_PRACA_RESERVE in the engine — see auto-improvements.ts).
+ */
+function renderUlepszeniaPercentRow(pct: number, scope: 'empire' | 'city'): string {
+  return '<div class="civ-build-percent-row">'
+    + '<div class="civ-build-percent-head"><span title="Jaki % budżetu Pracy imperium dostaje auto-manager tej tury">'
+    + 'Budżet Pracy dla automatu:</span><b data-ulepszenia-' + scope + '-percent-label>' + pct + '%</b></div>'
+    + `<input type="range" class="civ-build-percent-slider" min="0" max="100" step="1" value="${pct}" `
+    + `style="${ulepszeniaPercentSliderFillStyle(pct)}" data-ulepszenia-${scope}-percent `
+    + `title="0% = cała Praca dla gracza · 100% = auto-manager może wydać całą dostępną pulę" />`
+    + '</div>';
 }
 
 /** Montuje banner + panel wyboru ulepszeń (D1B mockup G2). */
@@ -343,14 +383,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             + ` aria-pressed="${empireState.onlyWorked ? 'true' : 'false'}"`
             + ` title="Buduj tylko na polach z obywatelami (👤)">Tylko pola z obywatelami</button>`;
           html += '</div>';
-          html += '<div class="civ-build-auto-row civ-build-auto-speed">';
-          html += '<span title="Ile ulepszeń auto stawia w mieście na turę">Na turę:</span>';
-          for (const n of [1, 2, 3] as const) {
-            const on = empireState.perTurn === n ? ' on' : '';
-            html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-empire-per-turn="${n}"`
-              + ` title="${n} ulepszenie/a na miasto na turę">${n}</button>`;
-          }
-          html += '</div>';
+          html += renderUlepszeniaPercentRow(empireState.pracaAutoPercent, 'empire');
         }
         if (playerCities.length > 1) {
           html += '<div class="civ-build-auto-city-wrap">';
@@ -367,7 +400,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         if (effState) {
           const effLabel = effState.tryb === 'reczny'
             ? 'Ręczny'
-            : `${ULEPSZENIA_FOCUS_LABELS[effState.focus]} · ${effState.perTurn}/turę`
+            : `${ULEPSZENIA_FOCUS_LABELS[effState.focus]} · ${effState.pracaAutoPercent}% Pracy`
               + (effState.onlyWorked ? ' · tylko 👤' : '');
           html += `<div class="civ-build-auto-eff">Efekt w mieście: ${effLabel}`
             + (effState.override ? ' (własne)' : ' (państwo)') + '</div>';
@@ -390,13 +423,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             html += `<button type="button" class="civ-build-hbtn${onC}" data-ulepszenia-city-only-worked`
               + ` aria-pressed="${effState.onlyWorked ? 'true' : 'false'}">Tylko pola z obywatelami</button>`;
             html += '</div>';
-            html += '<div class="civ-build-auto-row civ-build-auto-speed">';
-            html += '<span>Na turę:</span>';
-            for (const n of [1, 2, 3] as const) {
-              const on = effState.perTurn === n ? ' on' : '';
-              html += `<button type="button" class="civ-build-auto-btn${on}" data-ulepszenia-city-per-turn="${n}">${n}</button>`;
-            }
-            html += '</div>';
+            html += renderUlepszeniaPercentRow(effState.pracaAutoPercent, 'city');
           }
         }
         html += '</div>';
@@ -512,12 +539,21 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       render();
     });
 
-    el.querySelectorAll('[data-ulepszenia-empire-per-turn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const n = Number((btn as HTMLElement).getAttribute('data-ulepszenia-empire-per-turn')) as UlepszeniaPerTurn;
-        if (n === 1 || n === 2 || n === 3) config.onUlepszeniaEmpirePerTurnChange?.(n);
-        render();
-      });
+    // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: `input` = tylko lokalny podgląd (etykieta + wypełnienie
+    // toru) BEZ pełnego render() -- wzorzec `wireSkarbiecTaxSplitInputs` w empireDetailPanel.ts,
+    // żeby przebudowa innerHTML w trakcie przeciągania nie przerywała gestu. `change` (puszczenie
+    // suwaka) commituje wartość do stanu gry i dopiero wtedy robi pełny render().
+    const empirePercentInput = el.querySelector('[data-ulepszenia-empire-percent]') as HTMLInputElement | null;
+    empirePercentInput?.addEventListener('input', () => {
+      const pct = Math.max(0, Math.min(100, Math.round(Number(empirePercentInput.value))));
+      empirePercentInput.style.background = ulepszeniaPercentSliderFillStyle(pct);
+      const label = el.querySelector('[data-ulepszenia-empire-percent-label]');
+      if (label) label.textContent = `${pct}%`;
+    });
+    empirePercentInput?.addEventListener('change', () => {
+      const pct = Math.max(0, Math.min(100, Math.round(Number(empirePercentInput.value))));
+      config.onUlepszeniaEmpirePracaPercentChange?.(pct);
+      render();
     });
 
     el.querySelectorAll('[data-ulepszenia-city-focus]').forEach(btn => {
@@ -545,13 +581,18 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       render();
     });
 
-    el.querySelectorAll('[data-ulepszenia-city-per-turn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cityId = config.getUlepszeniaCityId?.();
-        const n = Number((btn as HTMLElement).getAttribute('data-ulepszenia-city-per-turn')) as UlepszeniaPerTurn;
-        if (cityId && (n === 1 || n === 2 || n === 3)) config.onUlepszeniaCityPerTurnChange?.(cityId, n);
-        render();
-      });
+    const cityPercentInput = el.querySelector('[data-ulepszenia-city-percent]') as HTMLInputElement | null;
+    cityPercentInput?.addEventListener('input', () => {
+      const pct = Math.max(0, Math.min(100, Math.round(Number(cityPercentInput.value))));
+      cityPercentInput.style.background = ulepszeniaPercentSliderFillStyle(pct);
+      const label = el.querySelector('[data-ulepszenia-city-percent-label]');
+      if (label) label.textContent = `${pct}%`;
+    });
+    cityPercentInput?.addEventListener('change', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      const pct = Math.max(0, Math.min(100, Math.round(Number(cityPercentInput.value))));
+      if (cityId) config.onUlepszeniaCityPracaPercentChange?.(cityId, pct);
+      render();
     });
 
     const overrideBtn = el.querySelector('[data-ulepszenia-city-override]') as HTMLButtonElement | null;

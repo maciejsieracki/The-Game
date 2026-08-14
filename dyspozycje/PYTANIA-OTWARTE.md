@@ -19448,3 +19448,850 @@ weryfikacji retroaktywnej); (b) dispatch Evaluatora/rundy 2 dla poprawki `diplom
 (jednoliniowa, ale ekonomicznie istotna — wpływa na każdą Szybką Umowę i ofertę AI); (c) rozliczyć
 zakres `66be754f` — czy 3 stray hunki main.ts mają formalnie należeć do tematu fortów, czy do
 auto-wyżywienia (kosmetyka rejestru, nie blokuje).
+
+## Scalono FALA 276 do main (rytm "jedna fala do tylu") (2026-08-13)
+
+Po deployu FALA 277 (`479021dd`, md5 `432cfa7e`), FALA 276 (`35d1d2e1`, md5 `58c0afe2`)
+kwalifikuje się do scalenia do `main`. Scalenie czyste (`--no-ff`), merge commit `bd9f07b1`,
+push OK. FALA 277 zostaje na gałęzi wyłącznie do testów, do scalenia po następnej fali.
+
+## Awaryjna naprawa (8b20c34d) — Evaluator: PASS-WITH-NOTES (2026-08-13)
+
+Obie naprawy (dokończenie merge auto-wyżywienia + poprawka PN ×5) potwierdzone MERYTORYCZNIE
+poprawne niezależnym scenariuszem na realnym kodzie (200 drewna → 40 PN = fair, mutacja cofająca
+→ 8 PN = 5× za mało, dokładnie jak zgłoszone). `tsc` czysty (prawdziwy kod wyjścia, nie
+`tail`-owy pułapek), merge kompletny w obu połowach (panel + realna ścieżka auto-wyżywienia),
+zero nowych regresji na przetestowanych przypadkach brzegowych.
+
+**N1/N2 (do domknięcia, NIE blokujące — deploy FALA 277 już wyszedł):** obie naprawy siedzą w
+MARTWYCH STREFACH POKRYCIA — cofnięcie każdej z osobna przechodzi przez komplet bramek na
+zielono. N1: zerowe pokrycie fairness `computeQuickDealBasket` (jedyna asercja sprawdza
+wielokrotność 5, nie wartość PN — 40 PN "zepsute" spełnia ją tak samo jak 200 PN "poprawne").
+N2: wiązanie `kosztArmii` w `main.ts` (ręcznie przepisany fragment orkiestratora) ma zerowe
+pokrycie — istniejący test woła silnik bezpośrednio z literałem, nigdy przez `main.ts`.
+N3/N4 niepilne (rozjazd Sola panel/silnik świadomy; `pnPerUnit`/`CenaJednostkowa` mylące nazwy
+— cena jest ZA BLOK nie za sztukę, bezpośrednia przyczyna tego incydentu).
+
+**STATUS: dispatch Operatora (Sonnet 5) domknięcia N1/N2/N4 w toku.**
+
+## Panel 11 zakladek Faza 1 - Skarbiec (6afdde92) — Evaluator: PASS-WITH-NOTES, 3 rozjazdy wizualne + nieprawdziwe twierdzenie commita (2026-08-13)
+
+Bramki komplet zielone (tsc 0, wszystkie testy panelu, 11/11 zakładek żyje bez błędów konsoli w
+Playwright), etykiety tekstowe i arytmetyka suwaków sprawdzone znak-w-znak zgodne z makietą.
+Ale 3 realne rozjazdy wizualne + jedno fałszywe twierdzenie w komunikacie commita:
+
+**Do naprawy:**
+1. **Suwaki — wszystkie 3 uchwyty ZŁOTE zamiast złoty/niebieski/szary.** Przyczyna: regułki
+   `.civ-emp-slider.gold::-webkit-...` i `.civ-emp-slider.gold::-moz-...` połączone w JEDNEJ liście
+   selektorów CSS — nieznany pseudo-element jednego dostawcy unieważnia CAŁĄ regułę w drugim.
+   Dowód z CSSOM Chrome: z 7 zapisanych regułek przyjęte tylko 2 (gold, bo to jedyna bez
+   konfliktu). Naprawa: rozbić 4 warianty (gold/blue/neutral/green) na 8 osobnych regułek,
+   po jednej per dostawca (`-webkit`/`-moz` osobno).
+2. **Etykiety suwaków (Skarb/Nauka/Zamożność) bez koloru** — `class="gold"/"blue"` na `<span>`
+   to martwe atrybuty, arkusz ma tylko selektory zakresowane do innych komponentów. Zmierzone:
+   wszystkie trzy `#e8ebf0` zamiast złoty/`#8ec5ff`/`#cfd5de`.
+3. **Tabela per miasto — wiersze danych do lewej, wiersz SUMA do prawej** — dwie konwencje w
+   jednej tabeli, makieta wyrównuje wszystko do prawej.
+
+**Do sprostowania:** komunikat commita `6afdde92` twierdzi "Zgodnosc wizualna... potwierdzona 1:1"
+— NIEPRAWDZIWE (§0b), 3 rozjazdy wyżej istniały już wtedy. Nie wyłapano ich przy oryginalnej
+weryfikacji.
+
+**Luka pokrycia (M2):** żadna bramka nie sprawdza, że blok `skarbiec` w ogóle renderuje TREŚĆ —
+usunięcie `if (block === 'skarbiec') body += skarbiec;` przechodzi przez wszystkie 6 bramek
+zielono (panel renderuje się CAŁKOWICIE PUSTY, niewykryte).
+
+**Nie usterki (sprawdzone i wykluczone):** znaki minus (U+2212, poprawne), rozjazd `border-top`
+tabeli Miasto (pre-istniejący z 2026-08-12, nie ten commit), stan B (świadomie poza zakresem
+Fazy 1) — poza jedną niespójnością wewnątrz stanu A: przy netto ujemnym hero robi się czerwony,
+ale wiersz "Netto skarbiec" w tabeli zostaje złoty (brak wariantu `.neg` na tym elemencie).
+
+**STATUS: dispatch Operatora (Sonnet 5) naprawy 3 rozjazdów CSS + M2 pokrycie w toku.**
+
+## P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (c57cd41d) — Evaluator runda 2: WERDYKT PASS-WITH-NOTES (2026-08-13, zamknięte)
+
+Zarzut z rundy 1 (brak JAKIEJKOLWIEK ścieżki zebrania dla `ownerId≠0` → nieskończona oscylacja,
+dowiedziona symulacją 12 tur) jest **domknięty i zweryfikowany niezależnie** symulacją 10-turową
+z kontrolą negatywną. Wszystkie 4 obszary owner-aware (złoto, badania, jednostka, era) piszą do
+właściwego ownera przez akcesory już używane przez przejęcie stolicy i coroczne badania AI.
+Bramki: `tsc` 0 błędów, `logic-test` 213/213, `villages-test` 94/94 (+12), `ai-improvements-test`
+33/33, `ai-test` 285/8 (+5 T7D-p, te same 8 pre-istniejące), `barb-camp-destruction-test` 81/1
+pre-istniejące (zweryfikowane niezależnie na commicie-rodzicu — identyczne). Mutacje kontrolne:
+5/6 złapane (a1/a2/b/c/e); (d) owner-aware `era`→`player.era` NIEZŁAPANA kodowo, ale zamknięta
+symulacją Evaluatora na czas tej oceny — luka testowa, nie wada silnika.
+
+**Uwagi nieblokujące (N1-N7), zarejestrowane, nie dispatchowane teraz (nieblokujące):**
+- N1: brak testu behawioralnego end-to-end dla wpięcia w `main.ts` (dziś tylko strażnik tekstowy).
+- N2: asymetria złota AI-vs-gracz przy deficycie (AI podłogowane do 0, gracz nie) — wąski przypadek.
+- N3: `exploredHexes` gracza przekazywane też dla AI/MP — tylko tie-break spawnu, kosmetyka.
+- **N4 — korekta liczbowa (§0b):** commit i komentarz testu mówią „4 istniejące wywołania gracza"
+  — poprawnie jest **5** (`main.ts` 19087, 23578, 23612, 27570, 27579), dowiedzione 5×TS2554 w
+  mutacji (c). Czysto redakcyjne, koryguję tu zgodnie z zasadą prawdziwych liczb.
+- N5: chatka nie jest zbierana przez wejście na hex walką/eviction — pre-istniejące, symetryczne
+  gracz+AI, nie regresja. Do osobnej rejestracji jeśli będzie priorytetem.
+- N6: fallback do złota przy braku aktywnego badania AI jest ostrożniejszy niż konieczne (mógłby
+  sam wybrać tech przez `chooseAIResearch`) — świadoma decyzja architektury, nie błąd.
+- N7: `barb-camp-destruction-test` czerwony pre-istniejąco ujawnia 12 realnych wpięć vs 11 na
+  liście `CALL_SITES` — dług testowy niezwiązany z tym tematem, do osobnego zgłoszenia.
+
+**Temat zamknięty.** N1/N5/N7 mogą zostać podjęte jako osobne, mniejsze zlecenia w przyszłości —
+nie blokują tego tematu ani deployu.
+
+## ECHO P-MP-CHATKI-SKARBOW-NIE-ZBIERANE — nagroda dla MP/AI (2026-08-13)
+
+Jego słowa: „Zarówno AI jak i miasta państwa po odkryciu chatek mają takie same skarby jak
+gracze." Decyzja: `pickVillageReward` (dziś napisane wyłącznie pod gracza — `player.skarbiec`,
+`player.era`, `player.badana`) ma być użyte identycznie dla AI/MP, tylko owner-aware zamiast
+zahardkodowane na gracza — ta sama pula nagród, te same reguły losowania, wyłącznie cel zapisu
+(skarbiec/postęp badań właściwego właściciela, nie zawsze gracza).
+
+**STATUS: dispatch Operatora rundy 2 (Sonnet 5) w toku** — zakres z werdyktu Evaluatora rundy 1
+(`P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (d79a85a5) — Evaluator: WERDYKT FAIL`): zebranie po stronie
+egzekutora AI (main.ts ~26100), analogicznie do `checkBarbCampDestructionAlongPath`:
+`wioska.istnieje=false` + `lootedVillageHexKeys.add` (inaczej save/load wskrzesi chatkę) +
+`villageHexKeyCache.delete` + nagroda do skarbca/badań WŁAŚCICIELA AI/MP (nie zawsze `player.*`)
+przez `pickVillageReward` sparametryzowane o ownerId. Naprawić też infinite-oscylację z rundy 1
+(jednostka MP wciąż chodziła do chatki bez mechanizmu zebrania) — teraz zebranie faktycznie
+kończy interakcję z hexem.
+
+## R-DESIGN-11-ZAKLADEK — Designer: paczka zaktualizowana z rejestrem decyzji (2026-08-14)
+
+Designer potwierdził wszystkie 4 decyzje przekazane przez orkiestratora + odłożenie hub badań:
+Klatka 11 oznaczona A=ZATWIERDZONY/B=ODRZUCONY, przycisk hub badań oznaczony ramką przerywaną +
+podpisem "element odłożony", handoff dostał sekcję "8. Rejestr decyzji · 2026-08-14" (tabela
+5 punktów). Punkty 2 (eyebrow Handel/Kultura) i 4 (plakietki stanu Surowce) były już zrealizowane
+w pierwszej wersji makiety — potwierdzenie nie wymagało przerysowania. Plik przekazany
+właścicielowi (SendUserFile).
+
+**STATUS: paczka designera KOMPLETNA i w pełni zgodna z decyzjami. Czeka na realną implementację
+kolejnych 10 zakładek (Praca/Nauka/Spichlerz/Surowce/Handel/Armia/Miasto/Obywatele/Kultura/
+Religia) — Skarbiec (Faza 1) już zaimplementowany i naprawiony (9cbfc8ae).**
+
+## R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień) · STATUS: **ZABLOKOWANE NA ABC (Q2) — kod scalony i bezpieczny, liczby wymagają potwierdzenia**
+
+**AKTUALIZACJA (2026-08-14, sygnał właściciela):** Maciej: „pracuj autonomicznie teraz przez całą
+noc, wypnij wszystkie tematy" — to jest wprost sygnał odblokowujący wszystkie tematy zapisane
+jako „odłożone do sygnału", w tym ten. Runda 1 Operatora (poniżej) słusznie zatrzymała się na
+starym statusie „ODŁOŻONE ŚWIADOMIE" (dyscyplina §7 — nie zgaduj), ale rekonesans wykonała w
+całości i jest gotowy do wykorzystania bez powtarzania. Runda 2 dispatchowana z tym rekonesansem
++ jawną adnotacją o odblokowaniu.
+
+Zrzut: panel ustawień na początku gry, sekcja "BARBARZYŃCY", suwak z wartością "Wielu",
+podpis "Gęstość frakcji barbarzyńskich na mapie."
+
+Jego słowa (dosłownie): „żebyśmy przypisali wszystkie rodzaje trudności i wpływu barbarzyńców
+na rozgrywkę w panelu sterowania i ustawień na początku gry. Czyli tutaj niezależnie od trybu
+wybranej trudności te ustawienia powinny działać niezależnie tak samo jak dla trudności
+państw miast. I trzeba będzie to zmienić. Dodatkowo trzeba zmienić system z obecnego wielu,
+wielu, niewielu i tam coś na łatwy, normalny, trudny i brak. Czyli zawsze będą barbarzyńcy na
+łatwym, po prostu będzie ich bardzo mało. ale będzie też można wyłączyć całkowicie
+barbarzyńców. Na przykład 4 razy mniej niż obecnie na normalnym trybie, a w wypadku
+najtrudniejszego poziomu nie będzie 2 razy więcej niż obecnie w najgorszym wypadku. Jak ma być
+trudno, to ma być trudno."
+
+**Wymagania (dosłowna specyfikacja liczbowa już podana, do przyszłej implementacji):**
+1. Ustawienie gęstości barbarzyńców ma być NIEZALEŻNE od głównego poziomu trudności gry —
+   osobny wybór w panelu startowym, analogicznie do już istniejącego osobnego ustawienia
+   trudności Miast-Państw (precedens, sprawdzić dokładny mechanizm tamtego ustawienia jako wzorzec).
+2. Zmiana skali z obecnej ("wielu/wielu/niewielu" — zdaniem właściciela myląca/zduplikowana
+   nazwa) na: **Łatwy / Normalny / Trudny / Brak**.
+3. **Łatwy** — zawsze jacyś barbarzyńcy, nigdy zero (zero wyłącznie przez osobną opcję "Brak").
+4. **Brak** — całkowite wyłączenie barbarzyńców.
+5. **Normalny** — ok. 4× mniej niż dzisiejsza wartość (baseline do ustalenia przy implementacji
+   — prawdopodobnie dzisiejsze "Wielu"/domyślna gęstość).
+6. **Trudny** — do ok. 2× więcej niż dzisiejszy najgorszy/maksymalny przypadek ("Jak ma być
+   trudno, to ma być trudno").
+
+**STATUS: zapisane do backlogu na wyraźne życzenie właściciela ("zanotuj") — NIE dispatchowane,
+NIE wymaga teraz pytania ABC (numery już podane właścicielem, ABC prawdopodobnie potrzebne
+dopiero przy konkretach implementacji — np. dokładny mechanizm/plik generujący gęstość
+barbarzyńców, czy stary zapis z poprzednim ustawieniem ma migrację). Do podjęcia gdy właściciel
+da sygnał.**
+
+## R-RUCH-JEDNOSTEK-USTAWIENIE-BRAK (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień nowej gry) · STATUS: **ZAMKNIĘTE — funkcja już istnieje, ukryta w UI**
+
+**WYNIK REKONESANSU:** ustawienie **JUŻ ISTNIEJE i jest wdrożone** — nazywa się **„Zasięg ruchu"**
+(nie „Ruch jednostek"), 3 poziomy: Krótki ×1 (domyślny) / Normalny ×3 / Długi ×6. Wdrożone
+commitem `48375ce1` (2026-08-13 15:22 UTC), żywe w ROBOCZA od FALA 275, potwierdzone dalej żywe
+w FALA 277 (aktualny build w momencie zgłoszenia Macieja). Silnik: `gra/src/game/ruch-swiata-tempo.ts`
+(`applyRuchSwiataPace`), stosowany przy spawnie jednostki (gracz/AI/barbarzyńcy/nagrody chatek),
+persystencja `player.ruchSwiataPace` (`playerState.ts`) z fallbackiem `'krotki'` dla starych
+zapisów. Celowo nie dotyka ruchu w bitwie (osobny system).
+
+**PRZYCZYNA, DLA KTÓREJ MACIEJ GO NIE ZOBACZYŁ:** suwak siedzi jako **ostatni** (15.) wiersz
+przewijalnej listy `advancedSettingRows()` w `gra/src/ui/newGameFlow.ts`, ukryty za przyciskiem
+**„⚙ Zaawansowane opcje"** (nie w głównej siatce kroku 4 nowej gry, gdzie jest tylko
+trudność/rozmiar mapy/typ świata/tempo gry/liczba miast-państw/liczba cywilizacji). Lista, którą
+Maciej opisał w zgłoszeniu, kończy się dokładnie na „Wzrost ludności" — czyli jeden wiersz przed
+„Zasięg ruchu" — silnie wskazuje, że po prostu nie doprzewinął modala do końca, a nie że funkcja
+nie istnieje.
+
+**ZAMKNIĘTE bez zmian kodu.** Rekomendacja UX (do rozważenia osobno, nie teraz): przenieść/
+wyeksponować ten suwak wyżej na liście albo do głównej siatki kroku 4, skoro sam próg jego
+zauważalności okazał się problemem — do zarejestrowania jako osobny temat jeśli Maciej to
+potwierdzi jako priorytet.
+
+**KOREKTA 2026-08-14 (Maciej przesłał zrzut ekranu swojego panelu):** hipoteza „po prostu nie
+doprzewinął modala" była BŁĘDNA — zrzut ekranu Macieja pokazuje modal doprzewinięty do samego
+dołu (widoczny przycisk „ZAMKNIJ" zaraz po „WZROST LUDNOŚCI"), a wiersza „Zasięg ruchu" tam
+NIE MA. Weryfikacja: `48375ce1` (kod źródłowy) faktycznie JEST przodkiem `8b20c34d` (HEAD builda
+FALA 277, `git merge-base --is-ancestor` potwierdza) — kod w repo jest poprawny i kompletny.
+Rzeczywista przyczyna: `dyspozycje/_handoff/KANAL-PRACA.md` pokazuje, że KAŻDY deploy od FALI 275
+(gdzie ta funkcja weszła, 17:45 PL 2026-08-13) kończy się wpisem „CZEKAM-NA: sesja lokalna (pull
++ playtest FALI ...)" — i **żaden z tych wpisów nie ma potwierdzenia, że sesja lokalna faktycznie
+wykonała pull/sync** na dysk właściciela. Maciej najpewniej testuje bundle sprzed FALI 275 —
+nieaktualną, zbuforowaną lokalnie kopię, nie brak funkcji w kodzie. Zalecenie przekazane
+Maciejowi: uruchomić sync ("push") sesji lokalnej albo pobrać świeży bundle ROBOCZA.
+
+Zrzut: pełny panel ustawień nowej gry (Pustynie/Las/Góry i Wzgórza/Udział lądu/Warunki
+zwycięstwa/Trudność Miast-Państw/Barbarzyńcy/Bitwy/Koszty budynków/Koszty jednostek/Wzrost
+ludności).
+
+Jego słowa (dosłownie): „poza tym miał być panel w wyborze jak dużo ruchów chcemy mieć dla
+jednostek. Nie widzę tego wyboru."
+
+Interpretacja: brakuje ustawienia liczby punktów ruchu jednostek (prawdopodobnie mnożnik/skala
+`movementPoints` globalnie dla wszystkich jednostek, analogicznie do "Koszty jednostek" czy
+"Wzrost ludności" — osobny suwak w tym samym panelu). Nie wiadomo, czy to ustawienie:
+(a) było kiedyś planowane/omówione a nigdy nie trafiło do UI, (b) istnieje gdzieś indziej w
+kodzie ale nie w tym panelu, (c) jest zupełnie nowym pomysłem właściciela.
+
+**STATUS: dispatch rekonesansu (Explore, read-only) — grep całego repo (kod + `dyspozycje/**`)
+pod kątem "ruch jednostek"/"punkty ruchu"/"movementPoints"/ustawienie skalujące, żeby ustalić
+czy to nowa prośba czy zapomniana funkcja. Po rekonesansie: jeśli nowa — ABC do właściciela
+(zakres/skala nie jest jeszcze sprecyzowany, w przeciwieństwie do barbarzyńców); jeśli
+zapomniana — dispatch bezpośredni implementacji.**
+
+## R-AUTO-PRACA-BUDZET-PROCENT (2026-08-14, zgłoszenie Macieja) · STATUS: **ZABLOKOWANE NA PYTANIU ABC (R-AUTO-PRACA-BUDZET-PROCENT-Q1) — rekonesans zakończony**
+
+**REKONESANS ZAKOŃCZONY (Explore, 2026-08-14):** "system 1,2,3,natura" nie jest jedną rzeczą w
+kodzie — to najprawdopodobniej `UlepszeniaPerTurn` (przyciski 1/2/3 w `buildModeHud.ts`, limit
+LICZBY auto-ulepszeń terenu na turę, nie limit Pracy) + ewentualnie `UlepszeniaFocus`
+(Żywność/Surowce/Infra/**Zrównoważone** — brak literalnego "Natura" w kodzie, najbliższe
+dopasowanie to "Zrównoważone"). Trzeci, NIEZALEŻNY mechanizm (`autoManageCities` toggle +
+`udzialBudynki` 70/30 split Pracy miasta budynki/pula) to JEDYNE miejsce gdzie już dziś istnieje
+koncept "% budżetu Pracy" — ale dzieli Pracę między dwa cele silnika, nie między automat a
+gracza. Pełny raport z lokalizacjami plików/linii: patrz notatka Explore w historii sesji
+2026-08-14 (do wglądu przy dispatchu — nie duplikować rekonesansu).
+
+## ECHO R-AUTO-PRACA-BUDZET-PROCENT-Q1 (2026-08-14) — CZEKA NA ODPOWIEDŹ WŁAŚCICIELA
+
+[TEMAT: Suwak % budżetu Pracy dla auto-managera zamiast "1,2,3,natura"]
+
+**Sytuacja:** rekonesans ustalił że "1,2,3,natura" odpowiada dziś trzem NIEZALEŻNYM mechanizmom
+o różnych jednostkach: (1) `UlepszeniaPerTurn` 1/2/3 = limit SZTUK auto-ulepszeń terenu/turę,
+nie limit Pracy; (2) `UlepszeniaFocus` — 4 przyciski, brak literalnego "Natura", najbliższe to
+"Zrównoważone"; (3) `autoManageCities`+`udzialBudynki` = już dziś istniejący % Pracy, ale dzieli
+ją między kolejkę-budynków a pulę-imperium, NIE między automat a gracza.
+
+**Cel pytania:** ustalić który/które z tych mechanizmów suwak 0-100% ma zastąpić, i potwierdzić
+że % liczy się od SKUMULOWANEJ puli Pracy imperium na koniec tury (nie od przyrostu tej tury) —
+zgodnie z Twoimi słowami "nie liczymy tego od przyrostu tylko od koniec tury ile nam zostało w
+pracy".
+
+**Dlaczego teraz:** te 3 mechanizmy mają różne jednostki (sztuki/procent/Praca absolutna) i różne
+zakresy (per-miasto vs per-imperium) — zły wybór dziś = przebudowa architektury później.
+
+**A)** Zastąp WSZYSTKIE 3 mechanizmy jednym globalnym suwakiem 0-100% (per-imperium + override
+per-miasto jak dziś `UlepszeniaEmpirePolicy`), % od skumulowanej puli Pracy na koniec tury.
+Za: jeden spójny model "% dla mnie / % dla automatu", dosłownie zgodny z Twoim opisem. Przeciw:
+największy zakres — 3 różne pętle silnika naraz, najdłuższy czas realizacji.
+
+**B)** Zastąp WYŁĄCZNIE `UlepszeniaPerTurn` (przyciski 1/2/3 w panelu "Na turę:") suwakiem %, od
+skumulowanej puli Pracy na koniec tury.
+Za: najmniejszy, najbardziej izolowany zakres (jeden plik silnika + jeden panel UI), szybka
+realizacja, nie rusza `autoManageCities`/przydziału obywateli które działają inaczej. Przeciw:
+może nie odpowiadać w pełni jeśli miałeś na myśli też podział budynki/pula.
+
+**C)** Jak (B), ale % liczone od PRZYROSTU Pracy w tej turze, nie od skumulowanej puli —
+analogia do niedawnej poprawki kryterium Auto-Wyżywienia.
+Za: spójność z ostatnią decyzją o kryterium żywnościowym. Przeciw: **Twoje własne słowa
+("nie liczymy tego od przyrostu") wprost WYKLUCZAJĄ tę opcję dla TEGO tematu** — zostawiam
+wyłącznie jako punkt kontrastu, to NIE jest rekomendacja.
+
+**Rekomendacja: B.** Najciaśniejszy zakres zgodny dosłownie z opisem (jeden realny dzisiejszy
+przełącznik 1/2/3), liczony od skumulowanej puli zgodnie z Twoim wprost wyrażonym zastrzeżeniem.
+Jeśli chodziło Ci też o podział budynki/pula (`udzialBudynki`) albo o przydział obywateli do
+heksów (`assignWorkedTiles` — to przydział BINARNY per-heks, nie da się go łatwo sparametryzować
+procentem budżetu bez głębszej przebudowy mechaniki) — powiedz wprost, to osobne, większe tematy.
+
+**STATUS: ECHO — Maciej odpowiedział `R-AUTO-PRACA-BUDZET-PROCENT-Q1 = B` (2026-08-14, w nocy,
+tuż przed snem).** Zastępujemy WYŁĄCZNIE `UlepszeniaPerTurn` (przyciski 1/2/3, panel "Na turę:")
+suwakiem 0-100%, liczonym od SKUMULOWANEJ puli Pracy imperium na koniec tury. Dispatch do
+implementacji poniżej.
+
+Jego słowa (dosłownie, dwie wiadomości pod rząd): „jeszcze jedna ważna kwestia, bo zapomniałem.
+Na późniejszym etapie gry trzy usprawnienia dla pracy w terenie automatyczne to jest za mało.
+I trzeba po prostu wprowadzić, jaki procent całego budżetu ma być wykorzystany na automatyczną
+pracę, a ile ma być zostawione dla gracza, na jego jakieś działania. No i tu po prostu powinien
+być suwak między od zera do 100%. 0% na pracę dla autonomiczne albo i 100% budżetu. ale nie
+liczymy tego od przyrostu tylko od koniec tury ile nam zostało w pracy" + „to ma zastąpić ten
+obecny system 1, 2, 3, naturę".
+
+Interpretacja robocza (do potwierdzenia rekonesansem, nie zgadywać dalej niż to):
+- Istnieje dziś system automatycznego zarządzania pracą/przydziałem obywateli do heksów z
+  poziomami "1, 2, 3, natura" (prawdopodobnie tryby auto-manage obywateli w mieście —
+  `gra/src/game/auto-manage*.ts` / `cityPanel.ts`, do zlokalizowania rekonesansem).
+- Ma zostać ZASTĄPIONY suwakiem 0-100%: 0% = cała praca ręczna gracza, 100% = cała automatyczna,
+  wartości pośrednie = ten % budżetu pracy (prawdopodobnie surowca "Praca"/`praca` na turę)
+  przekazany autonomicznemu zarządcy, reszta zostaje do ręcznego dysponowania przez gracza.
+- Kluczowe zastrzeżenie właściciela: **kryterium liczone "od końca tury ile nam zostało w
+  pracy"** — czyli od STANU KOŃCOWEGO/resztki budżetu Pracy po turze, NIE od przyrostu
+  (`przyrost`/delta) — analogiczna dyscyplina do niedawnej korekty `R-AUTO-WYZYWIENIE-KRYTERIUM-Q1`
+  (przyrost zapasów żywności, nie bufor) — warto zwrócić uwagę Operatorowi na spójność wzorca,
+  ale to NIE jest to samo ustawienie (żywność vs Praca), nie mylić.
+
+**Zakres nieprecyzyjny — WYMAGA ABC przed implementacją** (np.: czy suwak jest globalny dla
+całego imperium czy per miasto? co dokładnie oznacza "zostawione dla gracza" — czy to blokuje
+gracza przed ręcznym przydziałem powyżej jego %, czy tylko ustawia priorytet kolejki
+auto-managera?). Rekonesans najpierw (znaleźć dzisiejszy system "1,2,3,natura" i zrozumieć jego
+mechanikę), potem ABC z pełną specyfikacją opcji na bazie tego, co rekonesans znajdzie.
+
+## R-DROGA-WZOR-6-RAMION (2026-08-14, zlecenie Macieja z załącznikiem `Droga_wzor_6_ramion_standalone.html`) · STATUS: **DISPATCH BEZPOŚREDNI (render/**, Opus 5), bez ABC**
+
+Załącznik to gotowy, w pełni dopracowany dokument designerski (nie luźny pomysł) — screenshoty w
+`/tmp/claude-0/.../scratchpad/droga-6-ramion.png` i `droga-full.png` w tej sesji. Treść:
+
+**Zasada:** każde ramię drogi kończy się dokładnie w połowie ścianki heksa. Heks ma 6 ścianek →
+pełny wzór to sześcioramienna gwiazda. Każdy kafel łączy się z każdym sąsiadem, bo obie strony
+schodzą się w tym samym punkcie na wspólnej krawędzi. Brak "wariantów obrotu" — rysuje się jedno
+ramię na aktywny kierunek.
+
+**Geometria (2D rzut z góry, do przełożenia na obecny render Three.js):** heks 108×60px, ramię
+szerokości 15px (zakończenie płaskie, nie zaokrąglone), węzeł promień 11px (rysowany TYLKO przy
+3+ ramionach — przy 1-2 ramionach droga jest po prostu przejazdem bez węzła). Środek heksa (0,0),
+promień poziomy 54, pionowy 30. Sześć portów (środki ścianek, jedyne punkty styku): N(0,-30) ·
+NE(40.5,-15) · SE(40.5,15) · S(0,30) · SW(-40.5,15) · NW(-40.5,-15). Sąsiedzi w siatce: przez
+ściankę N/S przesunięcie (0,±60), przez skośne (±81,±30). Port jednego kafla i port sąsiada to
+TEN SAM PUNKT — szew niewidoczny bez dopasowywania grafiki.
+
+**Implementacja (kod, nie dane):** kafel drogi trzyma maskę 6 bitów (jeden na sąsiada z drogą).
+Rysowanie: dla każdego ustawionego bitu jedno ramię do jego portu, na końcu węzeł jeśli bitów≥3.
+Zero sprite'ów per kształt, zero tabeli 64 wariantów — jeden algorytm generuje wszystkie 13
+kształtów po obrocie (64 kombinacje bitów → 13 unikalnych kształtów geometrycznie, ale kod NIE
+potrzebuje tabeli kształtów, tylko maski + portów). Maska aktualizuje się przy budowie/zniszczeniu
+drogi na heksie SĄSIEDNIM — czyli budowa/zniszczenie 1 drogi to 2 zmiany maski (siebie + sąsiada).
+Droga rysowana POD propsami kafla (budynki, drzewa) i NAD teksturą terenu.
+
+**Wiele typów dróg (żwir vs brukowana itd.):** właściciel chce różne grafiki 3D w zależności od
+tego skąd droga przybywa i gdzie się kończy — do doprecyzowania w implementacji: prawdopodobnie
+osobna maska/rendering per typ drogi (`droga` vs `droga_brukowana`, już dziś 2 klucze w
+`ImprovementKey`), niekoniecznie osobne kształty na skrzyżowaniu dwóch różnych typów (rzadki
+przypadek, do decyzji Operatora — nie blokować na tym, zanotować jako otwarty szczegół jeśli
+napotkane).
+
+**DZISIEJSZY STAN (potwierdzony rekonesansem, potwierdza że to realna, nie kosmetyczna zmiana):**
+`gra/src/render/improvements.ts` — `DROGA_KEYS = new Set(['droga','droga_brukowana'])`, funkcje
+`droga()`/`drogaBrukowana()` (linie 55-70) budują STAŁY pas przez środek heksa góra-dół (N-S),
+niezależnie od realnej sąsiedztwa/kierunku (linie 399-490, komentarz Macieja z 2026-07-09 wprost:
+*"Łączenie dróg rozwiążemy inaczej w przyszłości"* — to jest dokładnie ta przyszłość). Logika
+ruchu/bonusu prędkości już istnieje osobno w `gra/src/map/road-movement.ts` (`bonus_ruch`,
+domyślnie ×2 dla `droga_brukowana`) — NIE dotykać tej logiki, tylko rendering wizualny.
+
+**STATUS: dispatch bezpośredni do Operatora Opus 5 (render/**, wyjątek §4 CLAUDE.md stosuje się
+zawsze, bez wyjątku).** Spec jest kompletny i jednoznaczny — nie wymaga ABC. Worktree izolacja.
+
+## Fort/straznica krok2 (45f673af) — Evaluator runda 3: WERDYKT FAIL, dispatch runda 4 (2026-08-14)
+
+**Ważne: commit `45f673af` sam w sobie jest poprawny** — wszystkie liczbowe twierdzenia
+zweryfikowane niezależnie i PRAWDZIWE (67→73 asercji, D2/D3 realnie domykają mutacje z rundy 1,
+0 obcych hunków, kod produkcyjny nietknięty). FAIL dotyczy domknięcia TEMATU, nie tego commita.
+
+**⛔ SPROSTOWANIE §0b — błędne twierdzenie w REJESTRZE (nie w kodzie):** wpis
+`P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (c57cd41d) — Evaluator runda 2` (wyżej w tym pliku) opisuje
+`barb-camp-destruction-test` 81/1 jako **„pre-istniejące — zweryfikowane niezależnie na commicie-
+rodzicu, identyczne"**. To PRAWDA lokalnie (identyczne na commicie-rodzicu `c57cd41d^`), ale
+FAŁSZYWE co do genezy: bisekcja Evaluatora rundy 3 Fort/straznicy dowodzi przyczynowo (usunięcie/
+przywrócenie jednej linii), że regresję wprowadził **`66be754f`** (Fort/straznica runda 2, fix F2:
+`applyFortTakeoverAndEvacuation` dodaje legalne, zamówione przez Evaluatora rundy 1 wywołanie
+`checkBarbCampDestroyedAt`), NIE stan zastany sprzed jakiegokolwiek tematu tej sesji. Baseline
+`63fcbaae` (sprzed Fort R1): **82/0**. Po Fort R2 (`66be754f`): **81/1**, niezmienne od tamtej
+pory (R3, incydent, deploy FALA 277). Przyczyna: `barb-camp-destruction-test.cjs` trzyma sztywny
+inwentarz call-site'ów (dziś twierdzi że jest ich 11, po F2 realnie jest 12) — dług testowy, NIE
+regresja silnika (logika gry jest poprawna, dokładnie to czego zażądał Evaluator rundy 1).
+Zakres błędu: dotyczy TYLKO etykiety „pre-istniejące" w rejestrze; sama liczba 81/1 i twierdzenie
+że jest identyczna na commicie-rodzicu `c57cd41d^` pozostają prawdziwe i nie wymagają korekty.
+
+**Bramki (baseline `63fcbaae` sprzed Fort R1 → dziś HEAD):** `tsc` czysty exit 0.
+`fort-strazniaca-zasieg-zakladania-test` 39→67→**73/0**. `ai-founding-territory` 28/0.
+`found-from-village` 24/24. `first-player-city` 16/0. `logic-test` 213/213. `okolica-multi-city-
+overlap` 55/55. `city-hex-movement` 7/0. `ai-improvements` 33/0. `city-state-alliance`/`cluster-
+diff`/`prod-audit` 67/0, 31/0, 17/0. `auto-improvements` 14/1 pre-istniejące (zweryfikowane na
+baseline). `ai-test` 285/8 (+5 z MP-chatki, te same 8 pre-istniejące). **`barb-camp-destruction`
+82/0 (baseline) → 81/1 (od 66be754f) — REGRESJA TEMATU, patrz sprostowanie wyżej.**
+
+**Mutacje kontrolne Evaluatora (8, izolowany worktree): 4/8 złapane.** MUT-1/MUT-2 (mutacje-
+zabójcy z rundy 1, D2/D3) złapane. MUT-3 (F1, węzeł-widmo) złapana. MUT-4 (F4, MP budują forty)
+złapana. **MUT-5 (F2 obejście semantyczne przy zachowanym tekście strażnika D1) NIEZŁAPANA** —
+jedyna rzecz reagująca na F2 to właśnie czerwona bramka barb-camp-destruction z powyższego
+sprostowania. **MUT-6 (zapis `fortNodes` do save wyzerowany) NIEZŁAPANA — zero pokrycia save-load
+w całym repo.** MUT-7/MUT-8 (obejścia D2/D3 przy zachowanym tokenie) NIEZŁAPANE — strażniki są
+dopasowaniem literału, nie kontraktem behawioralnym (akceptowalne jako tania ochrona przed
+powtórką konkretnej historycznej mutacji, nie jako pełne pokrycie).
+
+**Incydent procesowy — rozliczenie:** `a31c4164` (R1) i `45f673af` (R3) czysto odseparowane od
+tematu kosztArmii/empire-food (0 wystąpień). Obce hunki nadal fizycznie tkwią w treści `66be754f`
+(3 hunki, uzupełnione ale nie wycofane przez `8b20c34d`) — funkcjonalnie zdrowe, ale atrybucja w
+historii git trwale zmieszana. Nic po `45f673af` nie narusza kodu tematu (diff pusty dla
+`fort-territory.ts`/`ai.ts`/`improvement-build.ts`/pliku testu).
+
+**Uwagi nieblokujące:** N-1 sekcja D3 błędnie oznaczona "(F3)" — F3 już pokryte przez C4, D3
+faktycznie odpowiada F7 (edge `contestedUseless` nigdy nie przeliczane) — etykieta do poprawy.
+N-2 komentarz w `main.ts:10463-10467` odsyła do nieaktualnych numerów linii save (23028→realnie
+23151, 29825-26→realnie 29977-29979) — treść poprawna, numery przesunięte przez późniejsze
+commity. N-3 (ten wpis) domyka brak nagłówków rundy 3/werdyktu R2 w rejestrze.
+
+**RUNDA 4 (dispatch, mały zakres, zero kodu produkcyjnego poza testami):**
+1. [blokujące] `barb-camp-destruction-test.cjs`: dopisać inwentarz dla `applyFortTakeoverAndEvacuation`
+   (wywołanie `checkBarbCampDestroyedAt(dest.q, dest.r)` dodane w F2), licznik 11→12, powrót do 82/0.
+2. [mocno rekomendowane] Test round-trip save→load dla `fortNodes` (domyka MUT-6).
+3. [rekomendowane] Asercja behawioralna dla F2 obok strażnika tekstowego D1 (domyka MUT-5).
+4. [kosmetyka] N-1 (etykieta D3 F3→F7), N-2 (numery linii w komentarzu).
+
+## P-PLAKIETKA-MIASTA-ZOOM-BRAK-ZMIANY (2026-08-14, zgłoszenie Macieja ze zrzutem "ATENY" po przybliżeniu) · STATUS: **PRAWDOPODOBNIE TA SAMA PRZYCZYNA CO R-RUCH-JEDNOSTEK — stale local build**
+
+Maciej: „nadal po przybliżeniu nie widzę żadnej zmiany w jakości panera na mieście" (zrzut:
+banderola "ATENY" po przybliżeniu, rozmyta).
+
+**Weryfikacja:** funkcja LOD plakietki miasta przy przybliżeniu (`city-badge-zoom-lod-test`,
+67/0) to część tej samej dostawy co "Zasięg ruchu" (patrz `P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK`
+wyżej) — weszła do ROBOCZA w **FALA 275** (2026-08-13 17:38 UTC), potwierdzone dalej żywe w
+FALA 277 (obecna). Kod: `gra/src/render/cities.ts`, `gra/src/render/zoomLod.ts`,
+`gra/src/render/cityMapStatChip.ts`.
+
+**Robocza hipoteza (silna, ale NIE zweryfikowana wprost na zrzucie Macieja — wymagałoby
+porównania z konkretnym oczekiwanym wyglądem "po" LOD):** to najprawdopodobniej TEN SAM problem
+co zgłoszenie "Zasięg ruchu" — lokalny dysk właściciela testuje bundle sprzed FALI 275, więc
+zmiana faktycznie nie mogła być widoczna, bo jej tam nie ma. Nie rejestruję jako osobny bug do
+naprawy w kodzie, dopóki właściciel nie zsynchronizuje dysku i nie potwierdzi że problem
+utrzymuje się na aktualnym buildzie (FALA 277+).
+
+**STATUS: czeka na potwierdzenie właściciela po zsynchronizowaniu dysku (patrz zalecenie w
+`P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK` — sync/„push" sesji lokalnej). Nie dispatchowane do naprawy
+kodu — brak dowodu na realny bug, tylko na stary build.**
+
+## Design brief: panele Miasta/Armie (lewa lista mapy) dla Designera (2026-08-14) — DOSTARCZONE
+
+Zlecenie Macieja: „Przygotuj też wytyczne dla Designera, żeby zmienił, tak jak poprzednio zmienił
+panele: surowcy, prace itd. To zmienię surowy panel po lewej stronie: miasta i Armie są
+przestarzałe i nie były nigdy zmienione." Dostarczone: `docs/ux/DESIGN-ZLECENIE-MIASTA-ARMIE-PANEL-LEWY-2026-08-14.md`
+— pełny brief (kod: `cityListHud.ts`/`armyListHud.ts`, paleta trzecia niespójna wersja
+`#e0b24a` vs 3b `#d9a441`, zawartość obu paneli, DoD). Menu pauzy (`gamePauseMenu.ts`) sprawdzone
+przy okazji — już dopracowane, POZA zakresem, nie wymaga designu.
+
+**STATUS: dokument gotowy, do przekazania Designerowi przez właściciela (poza pętlą AutoBot —
+to deliverable dla człowieka, nie kod).**
+
+## Fort/straznica krok2 (c3fe813d) — runda 4 SCALONA, dispatch Evaluatora (2026-08-14)
+
+Naprawia dokładnie zakres z rundy 4 (patrz wpis wyżej): `barb-camp-destruction-test.cjs`
+inwentarz 11→12 wpięć, powrót do zielonego (84/0, +2 nad historycznym baseline 82 — Operator
+wyjaśnił: lista rośnie o 1 wpis × 2 generyczne pętle asercji skalujące się z długością listy, nie
+błąd). Nowy `fort-nodes-save-load-test.cjs` (18/0, domyka MUT-6). Nowa sekcja E w
+`fort-strazniaca-zasieg-zakladania-test.cjs` (12 asercji, 85/0, domyka MUT-5). D3 etykieta
+F3→F7. Bramki: `tsc` 0, wszystkie 4 pliki zielone. Operator poprawnie wykrył że jego worktree
+bazował na `main`, sam skorygował tworząc branch na `9cae3b64` (właściwy punkt feature brancha) —
+brak powtórki incydentu procesowego z rundy 2.
+
+**STATUS: dispatch świeżego Evaluatora — to ma być OSTATNIA runda tego tematu, pierwsza która
+dostaje czysty werdykt od zera (bez dziedziczonego FAIL z poprzednich rund).**
+
+## Barbarzyńcy skala niezależna (0811319c) — Evaluator: WERDYKT PASS-WITH-NOTES, ABC blokujące (2026-08-14)
+
+**Kod POPRAWNY I BEZPIECZNY** — architektura trafiona (`BarbariansLevel` własne pole w `advOpts`,
+wzorowane na `cityStateDifficultyOverride`, testy 11a dowodzą strukturalnie niezależności od
+trudności gry), migracja wsteczna mocna (fuzz 30 wejść, 0 wyjątków), worktree-na-main incydent
+bez realnego wpływu (zweryfikowane niezależnie: `barbarians.ts` 0 commitów między bazą a HEAD,
+diff chirurgiczny). Bramki zielone: `tsc` 0, `barbarians-test` 201/0, `barb-camp-destruction`
+84/0 (naprawione równolegle przez Fort R4), `barb-city-behavior` 178/0, `barb-city-capture-cluster`
+94/0, `ai-home-defense-vs-barbarians` 38/0, `logic-test` 213/213.
+
+**⛔ GŁÓWNE ZNALEZISKO — liczby trafiają specyfikację TYLKO na osi obozów, nie na osi realnej
+liczby jednostek na mapie** (`maxCamps × unitsPerCamp` — to jest metryka, którą silnik faktycznie
+egzekwuje jako limit stanu, `barbarians.ts:1154`):
+
+| Poziom | camps×units/camp | Stan realny | vs baseline (12) | Spec właściciela |
+|---|---|---|---|---|
+| Normalny | 2×1 | **2** | **6× mniej** | prosił o 4× mniej |
+| Trudny | 12×3 | **36** | **3,0× więcej** | prosił o "do ok. 2× więcej" |
+
+Warianty trafiające specyfikację DOKŁADNIE na osi jednostek (Evaluator obliczył): Normalny
+`maxCamps×0,5(=3) + unitsPerCamp−1(=1)` → 3 jednostki = dokładnie 4× mniej. Trudny
+`maxCamps×2(=12) + unitsPerCamp bez zmian(=2)` → 24 = dokładnie 2× więcej.
+
+**Dodatkowe uwagi nieblokujące:** sentinel wyłączenia zmieniony `wylaczeni`→`brak` bez klamry
+obronnej w `barbariansEnabledForLevel` na stary string (dziś szczelne — jeden konsument, migruje
+przed użyciem — ale przyszły niezmigrowany zapis mógłby po cichu włączyć barbarzyńców graczowi
+który ich wyłączył). `unitsPerCamp`/`spawnInterval` sprzężone też z Ludami Morza, nieudokumentowane
+w JSDoc. Bateria mutacji 5/8 złapane — `spawnInterval`/`unitsPerCamp` całkowicie niechronione w
+testach (test pinuje wyłącznie `maxCamps`), domyślny poziom kreatora też niechroniony.
+
+## ECHO ABC R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI-Q2 (2026-08-14) — CZEKA NA ODPOWIEDŹ
+
+[TEMAT: Metryka "4× mniej / 2× więcej" barbarzyńców — obozy czy jednostki na mapie?]
+
+**Sytuacja:** zaimplementowane liczby (Normalny 2 obozy/1 jedn., Trudny 12 obozów/3 jedn.) trafiają
+Twoją specyfikację "Normalny 4× mniej, Trudny do 2× więcej" TYLKO licząc same obozy. Realna liczba
+barbarzyńców na mapie (`maxCamps × unitsPerCamp`, to jest twardy limit egzekwowany przez silnik)
+wychodzi: Normalny **6× mniej** (za łagodnie), Trudny **3× więcej** (za ostro, o 50% ponad Twój
+pułap "do ok. 2×").
+
+**Cel pytania:** ustalić, czy "4×/2×" miało dotyczyć liczby OBOZÓW, czy liczby JEDNOSTEK na mapie
+— to dwie różne metryki dziś rozjechane w kodzie, bo `unitsPerCamp` też się zmienia (Normalny
+2→1, Trudny 2→3).
+
+**Nie podważa żadnej wcześniejszej decyzji (§1a)** — to pierwsza implementacja tego tematu, nie ma
+tu nic do cofania, tylko doprecyzowanie interpretacji już podanych liczb.
+
+**A)** Licz od JEDNOSTEK NA MAPIE (rekomendacja Evaluatora) — Normalny: `maxCamps=3, unitsPerCamp=1`
+(3 jednostki = dokładnie 4× mniej). Trudny: `maxCamps=12, unitsPerCamp=2` (bez zmian, 24 jednostki
+= dokładnie 2× więcej).
+Za: trafia Twoje liczby dosłownie na metryce, którą gracz faktycznie widzi na mapie (ile
+barbarzyńców realnie chodzi). Przeciw: wymaga małej poprawki kodu (zmiana 2 stałych + testy).
+
+**B)** Zostaw jak jest — licz od OBOZÓW, akceptując że realna liczba jednostek wychodzi 6×/3× a
+nie 4×/2×.
+Za: zero dodatkowej pracy, kod już scalony i działa bezpiecznie. Przeciw: nie trafia dosłownie
+Twoich słów "4× mniej"/"do 2× więcej" na metryce którą realnie widać w grze.
+
+**C)** Inna kombinacja liczb — podaj własne wartości dla obu poziomów.
+
+**Rekomendacja: A.**
+
+**STATUS: czeka na odpowiedź `R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI-Q2 + litera`.**
+Kod scalony w `0811319c` jest bezpieczny i można go zostawić w ROBOCZA do czasu odpowiedzi (nie
+crashuje, nie psuje nic innego) — tylko dokładne wartości Normalny/Trudny mogą się jeszcze
+zmienić. Dodatkowo do zrobienia (nieblokujące, osobna runda): domknąć testy dla
+`spawnInterval`/`unitsPerCamp`/domyślnego poziomu kreatora, klamra obronna na legacy `wylaczeni`.
+
+## Fort/straznica krok2 — TEMAT ZAMKNIĘTY po 4 rundach (c3fe813d, Evaluator PASS-WITH-NOTES, 2026-08-14)
+
+**WERDYKT: PASS-WITH-NOTES, żadna notatka nie blokuje.** Wszystkie zapowiedziane liczby
+zweryfikowane niezależnie (84/0, 85/0, 18/0, 213/213), obie luki testowe z R3 (MUT-5, MUT-6)
+realnie domknięte — Evaluator zrobił własną, niezależną powtórkę obu mutacji i potwierdził że
+nowe testy (sekcja E behawioralna, `fort-nodes-save-load-test.cjs`) łapią to, czego stary
+strażnik tekstowy nie łapał. `tsc` czysty. Diff `main.ts` w R4 to wyłącznie 9 linii wewnątrz
+komentarza — zero kodu produkcyjnego.
+
+**⛔ SPROSTOWANIE (§0b, zgłoszone przez Evaluatora):** teza "logika produkcyjna niezmieniona od
+R1" jest FAŁSZYWA — `git diff a31c4164 c3fe813d` pokazuje 69 wstawień/3 usunięcia w kodzie
+fortu, wprowadzone w R2 (`66be754f`, zamówione naprawy F1/F2/F4/F3/F5/F6 z werdyktu R1). Prawdziwa
+teza: logika produkcyjna niezmieniona **od R2**, nie od R1 (`git diff 66be754f c3fe813d` — pusty
+dla `fort-territory.ts`/`ai.ts`). Koryguję tu, żeby nie powielać nieścisłości w przyszłych
+odwołaniach do tego tematu.
+
+**Notatki nieblokujące (do rozważenia osobno, nie teraz):** N-A komentarz z numerami linii w
+`main.ts` znów nieaktualny (rozjazd +3/+12, bo commit 0811319c dołożył linie między worktree
+Operatora a HEAD) — rekomendacja: zastąpić numery odwołaniem do kotwic tekstowych zamiast liczb,
+tak jak robi to już nowy test tego samego commita. N-B martwy import `BARBARIAN_OWNER_ID` w
+teście. N-C `barb-camp-destruction-test.cjs` fizycznie zapisuje zmutowany `main.ts` na dysk 14×
+na przebieg (przywraca w finally) — ryzyko przy dwóch integratorach na współdzielonym drzewie
+(CLAUDE.md §6), kontrast: nowy `fort-nodes-save-load-test.cjs` mutuje wyłącznie w pamięci, lepszy
+wzorzec do skopiowania później. N-D/N-E drobne, opisane w pełnym raporcie Evaluatora.
+
+**TEMAT ZAMKNIĘTY.** 4 rundy: R1 implementacja → R2 naprawa F1-F6 (+ incydent procesowy, naprawiony
+osobno) → R3 text-guardy + odkrycie regresji testu → R4 naprawa testu + domknięcie 2 luk. Zero
+otwartych blokad.
+
+## Panel Skarbiec CSS fix (9cbfc8ae) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-14)
+
+Wszystkie 3 zgłoszone rozjazdy CSS (kolor gałki suwaka, kolor etykiety suwaka, wyrównanie tabeli)
+zweryfikowane jako naprawione **dowodem pikselowym** (screenshot + odczyt piksela Pillow) i
+**dowodem CSSOM** (enumeracja `sheet.cssRules` w Chromium headless), nie tylko odczytem źródła.
+Bug okazał się SZERSZY niż opis: przed naprawą WSZYSTKIE 3 etykiety suwaka (nie tylko neutral)
+dziedziczyły `#e8ebf0` z korzenia panelu, bo `.gold`/`.blue` nie miały żadnej reguły. Pułapka
+`-webkit`/`-moz` w jednej regule potwierdzona empirycznie (przed naprawą: 4 połączone reguły → 0
+przetrwało parsowanie Chromium; po naprawie: 8 osobnych → 4 poprawne). `tsc` czysty,
+`empire-skarbiec-panel-coverage-test` 12/12, wszystkie sąsiednie bramki zielone. Jedna czerwona
+(`empire-panel-moc-scroll-preserve-test`, 38/9) potwierdzona pre-istniejąca (identyczna na
+commicie-rodzicu) — **luka dokumentacyjna: brak w CLAUDE.md §BRAMKI, do dopisania osobno**.
+
+**Uwagi nieblokujące:** (1) sama naprawa CSS (sedno commita) ma ZERO pokrycia bramkowego — 6 z 8
+własnych mutacji Evaluatora (cofnięcie kolorów gałek/etykiet, scalenie z powrotem `-webkit`+`-moz`,
+usunięcie wyrównania tabeli) przechodzi wszystkie bramki na zielono, tylko M2 (routing/niepusta
+treść) jest chronione; (2) commit message ma 3 drobne nieścisłości: (a) "unieważnia regułę w OBU
+przeglądarkach" zweryfikowane tylko w Chromium (brak Gecko w środowisku), (b) opis testu M2 jako
+dowodu "niepustej treści" jest mocniejszy niż to co test faktycznie dowodzi (nagłówek samego
+pliku testu jest w tej sprawie uczciwszy niż commit message), (c) tytuł mówi "3 rozjazdy", treść
+wymienia 4. Żadna nie jest fabrykacją w stylu poprzedniego "1:1 confirmed" — to precyzyjne
+niedopowiedzenia, nie fałsz. (3) 2 martwe reguły CSS `.civ-emp-slider.green` (żaden markup ich
+nie używa, pre-istniejące). (4) Naprawa już procentuje poza Skarbcem — commit `9a539197` (Faza 2)
+reużywa `.civ-emp-slider-label`/`.civ-emp-slider` bez modyfikacji, w 4 zakładkach zamiast 1.
+
+**TEMAT ZAMKNIĘTY.** Rekomendacja Evaluatora (test source-text przypinający 8 reguł per-vendor +
+hexy + wywołanie funkcji) zanotowana jako opcjonalne domknięcie pokrycia, nieblokujące — do
+rozważenia w przyszłej rundzie, nie teraz.
+
+## R-DROGA-WZOR-6-RAMION (0caa4471) — SCALONE, dispatch Evaluatora (2026-08-14)
+
+Implementacja zgodna ze specyfikacją designerską (patrz wpis wyżej): maska 6 bitów, jeden
+algorytm proceduralny, rekomputacja przez pojedynczy hook w `spawnImprovementMesh`. Bramki:
+`tsc` 0, `road-connectivity-test` 99/0 (pełny przegląd 64 masek + dowód geometryczny styku
+portów), 6 sąsiednich bramek zielonych, `logic-test` 213/213, mutacje 3/3 złapane.
+
+**Odstępstwo od spec-u zgłoszone przez Operatora (do potwierdzenia przy playteście, NIE
+blokujące):** maska=0 (droga bez żadnego sąsiada z drogą) rysuje mały placyk zamiast dosłownego
+"0 bitów = 0 ramion" z dokumentu — inaczej pierwszy postawiony odcinek drogi byłby całkowicie
+niewidoczny mimo zapłaconej Pracy. Predykat w `roadMaskIsLonePatch`, testowany, jednolinijkowe
+wycofanie jeśli właściciel uzna że powinno być dosłownie zgodne z dokumentem.
+
+**STATUS: dispatch Evaluatora (Opus 5, render/**).**
+
+## R-AUTO-PRACA-BUDZET-PROCENT (2bf4318a) — SCALONE wariant B, dispatch Evaluatora (2026-08-14)
+
+Implementacja zgodna z decyzją `Q1=B`: zastępuje WYŁĄCZNIE `UlepszeniaPerTurn` (przyciski 1/2/3)
+suwakiem 0-100%, liczonym od skumulowanej puli Pracy NA START tury. Flat-rezerwa 30 zostaje
+niezależnym dolnym progiem. AI dostał osobny parametr `maxItemsPerCity=1` — Operator odkrył że
+dawny domyślny limit AI (1 sztuka/miasto/turę) był NIEJAWNY (AI nigdy nie przekazywał
+`getMaxPerCity`, polegał na domyślnej wartości funkcji) i ujawnił go explicite zamiast wymuszać
+AI przez nowy mechanizm %, bo koszt-bazowy % nie odtwarza twardej gwarancji liczby (ważne dla
+determinizmu `ai-improvements-test`).
+
+Bramki: `tsc` 0, `auto-improvements-test` przepisany 21/21, nowy `ulepszenia-praca-percent-test`
+26/26 (migracja 1→33%/2→66%/3→100%, idempotentna), `ai-improvements-test` 33/33,
+`build-mode-hud-affordability-test` 7/7, `logic-test` 213/213. Potwierdzone współistnienie z
+równolegle scalonym tematem Dróg w tym samym `main.ts` (`road-connectivity-test` 99/0 po
+scaleniu obu).
+
+**STATUS: dispatch Evaluatora.**
+
+## R-AUTO-PRACA-BUDZET-PROCENT (2bf4318a) — Evaluator: WERDYKT FAIL, dispatch runda 2 (2026-08-14)
+
+**ZNALEZISKO BLOKUJĄCE:** procent liczony jest PER MIASTO od PEŁNEJ puli imperium, nie jako
+JEDEN wspólny budżet imperium. `cityBudget = pct% × pełnaPula`, osobno dla KAŻDEGO miasta —
+sumarycznie automat może wydać N×pct% puli. Zmierzone: przy domyślnych 33% i 4 miastach automat
+zabiera 98,7% puli (2960 z 3000), graczowi zostaje 40 — wprost przeciwnie do słów właściciela
+"ile ma być zostawione dla gracza". Górna część suwaka jest martwa przy N≥3 miast (nasycenie
+przy 33% już dla 4 miast, przy 15% dla 10 miast) — dokładnie tam, gdzie właściciel chciał
+kontroli na późnym etapie gry ("trzy usprawnienia to za mało"). Flat-rezerwa 30 zostaje jedynym
+realnym hamulcem. Komentarze w kodzie ("ten % to sposób gracza na «zostaw mi część Pracy»")
+są FAŁSZYWE dla N≥2 miast — to nie brak funkcji, to funkcja opisana inaczej niż działa.
+
+**Test 12 utrwala wadę jako poprawność** — asercjonuje wprost że przy 2 miastach × 50% każde
+dostaje 50% PEŁNEJ puli (razem 100%). Mutacja Evaluatora (budżet wspólny dla imperium — czyli
+to, o co prosił właściciel) WYWALA test 12, mimo że daje dokładnie deklarowaną gwarancję.
+
+**Zweryfikowane POZYTYWNIE (uczciwa robota Operatora, nie do zmiany w rundzie 2):** semantyka
+"koniec tury nie przyrost" poprawna (wywołanie po całej ekonomii tury); AI `maxItemsPerCity=1`
+to prawdziwe ujawnienie dawnego niejawnego zachowania (`git log -S"maxPerCity"` potwierdza AI
+nigdy tego nie przekazywało); wszystkie 6 bramek zgodne co do liczby; save/load OK; wiring
+suwaka dobry (input=podgląd, change=commit); naprawia PRE-ISTNIEJĄCĄ czerwoną bramkę (14/1→21/0).
+
+**Dodatkowe luki (do domknięcia w tej samej rundzie, nie osobno):** flat-rezerwa nietestowana
+(mutacja reserve=0 → 21/21 nadal zielone, mimo nierównoważnej zmiany zachowania przy małych
+pulach); domyślne 33% nieprzypięte (test porównuje stałą z samą sobą, tautologia); opis commita
+mówi "na START tury" a kod/komentarze poprawnie "na KONIEC tury" — trzy różne sformułowania
+tego samego w trzech miejscach, ujednolicić na "koniec tury".
+
+**DECYZJA (bez nowego ABC — kierunek jednoznaczny z już ustalonych słów właściciela):** budżet
+ma być JEDEN, wspólny dla całego imperium (dosłownie "% całego budżetu... reszta zostaje dla
+gracza" z oryginalnego zgłoszenia), nie duplikowany per miasto. To nie jest nowa decyzja
+wymagająca ABC — to korekta implementacji do już wyrażonego zamiaru, analogicznie do innych
+napraw tej nocy bez blokowania na odpowiedzi właściciela.
+
+**STATUS: dispatch runda 2 — przerobić na jeden wspólny budżet imperium (suma wydatków wszystkich
+miast ograniczona do pct%×pula, nie każde miasto osobno), przerobić test 12 zgodnie z nową
+semantyką (zachowując niezależność od kolejności miast — to jedyne co dziś słusznie chroni),
+dopiąć asercję flat-rezerwy (reserve=0 musi łapać), przypiąć literał 33% dla wartości domyślnej,
+ujednolicić opis na "koniec tury" wszędzie, usunąć/poprawić komentarz "zostaw mi część Pracy"
+żeby odpowiadał rzeczywistemu zachowaniu.
+
+## Panel 11 zakladek Faza 2 (9a539197) — Evaluator: WERDYKT PASS-WITH-NOTES, dispatch rundy naprawczej (2026-08-14)
+
+Bramki komplet zielone (weryfikowane niezależnie przez Evaluator: build+boot+klik chipów+
+`getComputedStyle` porównanie z makietą element-po-elemencie, nie czytanie CSS na wiarę), zero
+fałszywych liczb w commit message, reużycie `getResearchState`/`aggregateReligionEmpire` itd.
+potwierdzone jako te same funkcje (nie duplikaty), brak parametru religia→Porządek potwierdzony
+jako prawdziwy (zero martwych kluczy JSON dających się użyć bez zmyślania).
+
+**Wymagane przed deployem (3 punkty, mała runda naprawcza):**
+1. **F1 — RECYDYWA z Fazy 1.** Werdykt Fazy 1 (Evaluator) już raz kazał wyrównać całą tabelę per
+   miasto do prawej (dziś naprawione w Skarbcu klasą `.civ-emp-skarbiec-city-tbl`) — Faza 2
+   stworzyła 3 NOWE tabele (Praca/Nauka/Religia) i żadnej nie dała tej klasy, ten sam defekt
+   wraca (dane `start`, wiersz SUMA `right` — dwie konwencje w jednej tabeli).
+2. **F2** — kolumny tabeli Praca/Nauka mają dziedziczyć kolor semantyczny (DO PULI błękit,
+   DO BUDYNKÓW złoto, NAUKA błękit) tak jak wskazuje sama makieta w opisie zmian — dziś wszystkie
+   szare, bo `signedTxt()`/`signedPl()` zwraca goły tekst bez `<span>` do pokolorowania.
+3. **F3** — komentarz PL+EN przy guardzie `kosztCelu>0` w Nauce KŁAMIE o przyczynie (twierdzi że
+   dzielenie przez 0 daje `postepFraction=1`/pasek pełny — Evaluator zweryfikował buildem że
+   naprawdę daje 0/pasek pusty). Guard ma zostać (mylący tekst „200/0 PN" niezależnie od paska),
+   tylko uzasadnienie w komentarzu do sprostowania.
+
+**Do rejestru, nieblokujące teraz:** F6 (produkcja=0 → pasek Pracy w całości błękitny mimo
+zera), F7 ("−0 z puli" gdy upkeep=0), F8 (brak religii państwowej → "Inne religie 100%" na
+pełnym pasku), F9 (hero Pracy "0/turę" sprzeczny z chipem HUD "+28" obok — dwa różne źródła
+danych, udokumentowane w kodzie ale mylące wizualnie), brak ikony 14×14 przy eyebrow (znane,
+nieudokumentowane w commit message), przecinek/kropka niespójność w formatowaniu liczb Religii
+(pre-istniejący dług, nie do tej rundy), M1b/M3/M4 luki mutacyjne w pokryciu treści sekcji (dziś
+bramki dowodzą tylko routingu, nie treści — ten sam, świadomie zaakceptowany wzorzec co Faza 1).
+
+**STATUS: dispatch rundy naprawczej (F1/F2/F3 tylko).**
+
+## R-DROGA-WZOR-6-RAMION (0caa4471) — Evaluator: WERDYKT FAIL, dispatch runda 2 (2026-08-14)
+
+**Geometria POPRAWNA i niezależnie udowodniona** — Evaluator zrobił WŁASNY skrypt Node+Three
+(headless, mierzący realne wierzchołki `BufferGeometry`, zero zapożyczeń z testu Operatora):
+83 asercje, 0 porażek. Kluczowa decyzja Operatora (porty wyprowadzone z wektora do sąsiada, nie
+przepisane z pikseli mockupu flat-top) potwierdzona jako właściwa — dosłowne przeniesienie
+współrzędnych z dokumentu trafiłoby w WIERZCHOŁEK silnika (pointy-top), nie w środek ścianki,
+i drogi nigdy by się nie łączyły mimo zielonych testów logicznych. Szew między kaflami: błąd
+3,55e-15 (precyzja float, nie algorytmu). Hook rekomputacji potwierdzony jako jedyny punkt
+przebudowy mesha, wołany przez wszystkie ścieżki (gracz/AI/rajd/założenie miasta/wycinka lasu/
+save-load).
+
+**⛔ ZNALEZISKO BLOKUJĄCE:** nowy `roadRenderedHexes` Set czyszczony WYŁĄCZNIE w
+`restorePlacedImprovementsFromSave` — 4 pozostałe ścieżki restartu gry (`doStartGame`,
+`doStartPlaytestWalkaMapy`, `doStartPlaytestMiastoEkonomia`, `doStartPlaytestMapaSwiata`)
+czyszczą `improvementMeshes`/`placedImprovements` ale NIE `roadRenderedHexes`, i żadna nie
+przeładowuje strony. Skutek: stare wpisy przeżywają restart, wczesny `return` w
+`syncRoadNetworkAt` nigdy nie odpala odświeżenia sąsiada dla heksa który miał drogę w
+POPRZEDNIEJ rozgrywce tej samej sesji przeglądarki — drogi się wtedy nie stykają (sąsiad rysuje
+placyk zamiast ramienia). Zreprodukowane modelem hooka 1:1 przez Evaluatora. Trafia w codzienny
+przepływ (3 z 4 dotkniętych ścieżek to starty playtestów z huba). Ironicznie: komentarz 2 linie
+nad jedną z tych ścieżek już raz ostrzega przed dokładnie tą klasą błędu (audyt #43,
+cityRelig/autoManageCities przeżywały restart bez przeładowania strony) — nowy Set powiela
+naprawiony wcześniej błąd.
+
+**Luki pokrycia (mutacje 13, 7/13 złapane przez repo, 11/13 przez własny skrypt Evaluatora):**
+`droga-6-ramion.ts` (sam plik renderujący geometrię) ma ZERO pokrycia w repo — M9 (obrót ramion
+o 30°, dokładnie błąd flat-top↔pointy-top przed którym cała decyzja o orientacji miała chronić)
+przechodzi wszystkie bramki na zielono. Hook w `main.ts` (`syncRoadNetworkAt`) ma ZERO pokrycia,
+nawet `tsc` — usunięcie wywołania hooka w ogóle nie jest łapane.
+
+**Odstępstwo maska=0 (placyk) potwierdzone jako rozsądne i wycofywalne** — dokument nie
+rozstrzyga przypadku "kafel z drogą bez sąsiada", więc to wypełnienie luki, nie sprzeczność.
+
+**STATUS: dispatch runda 2 (mała, bez zmian w geometrii):**
+1. [BLOKUJĄCE] `roadRenderedHexes.clear()` w 4 brakujących miejscach restartu gry (albo wspólny
+   helper resetu stanu renderu ulepszeń dla wszystkich 5 miejsc łącznie z save/load).
+2. [mocno rekomendowane] Test na `droga-6-ramion.ts` domykający M8/M9/M10 (Evaluator zostawił
+   gotowy szkielet w `scratchpad/eval-droga-geom.cjs`, kluczowa asercja: kierunek ramienia
+   zgadza się z `roadPortOffset`, nie tylko długość).
+3. [mocno rekomendowane] Strażnik/test behawioralny na hook w `main.ts` domykający M11/M12/M13.
+4. [kosmetyka] Nagłówek komentarza `droga-6-ramion.ts` podaje nieprawdziwą liczbę max grubości
+   (deklaruje <0,07, realnie 0,0736 dla pełnej gwiazdy brukowanej).
+5. [kosmetyka] Rozjazd domyślnych `roadMask` między `buildImprovementSectored` (`ROAD_MASK_FULL`)
+   a `buildImprovementVisual` (`0`) — oba realne wywołania podają jawnie więc bez skutku dziś,
+   ale pułapka dla przyszłego wołającego.
+
+**Do playtestu, nie kod (odnotowane, nie do tej rundy):** miasta nie należą do sieci dróg
+(`hexHasRoadAt` patrzy tylko na ulepszenia) — samotny odcinek drogi przy własnym mieście pokaże
+placyk zamiast ramienia w stronę miasta. Dokument tego przypadku nie opisuje, do decyzji
+właściciela przy playteście.
+
+## Panel Faza 2 naprawa (1f5832d7) — SCALONA, dispatch Evaluatora (2026-08-14)
+
+F1/F2/F3 z rundy naprawczej zaimplementowane i zweryfikowane wizualnie (build + headless Chrome,
+screenshoty klik po chipach Praca/Nauka/Religia/Skarbiec, 3× zoom). Wszystkie 4 bramki pokrycia
+zielone, Faza 1 (Skarbiec) bez regresji. STATUS: dispatch Evaluatora.
+
+## Auto-praca runda 2 (b23ea7f1) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY z otwartym follow-up ABC (2026-08-14)
+
+Naprawa głównego bugu (budżet per-miasto zamiast wspólnego) potwierdzona jako poprawna i
+zmierzona niezależnie — scenariusz reprodukcyjny 2960→960 Pracy (98,7%→32,0%, ≤990=33%×3000)
+odtworzony bit-w-bit własnym harnessem Evaluatora. Mutacja przywracająca bug rundy 1 łapana
+(5 porażek). Wszystkie 6 bramek zielone, `git reset --hard` w worktree bez skutków ubocznych
+(zweryfikowany reflog + diff ograniczony do 3 zapowiedzianych plików). AI nietknięte, potwierdzone.
+
+**⛔ NOWE ZNALEZISKO (nie regresja tej rundy — runda 1 była w tym samym scenariuszu ściśle
+gorsza, więc runda 2 poprawia, nie psuje):** przy override % per-miasto (istniejący mechanizm z
+rundy 1, `R-AUTO-V2-Q3=C`, pierwotnie dla focus/tryb/onlyWorked, rozciągnięty na % bez osobnej
+decyzji właściciela), efektywny pułap CAŁEGO imperium = `max_i(pct miasta)`, NIE polityka
+imperium. Zmierzone: polityka imperium 20%, jedno miasto z override 80% → automat wydaje 80%
+CAŁEJ puli imperium (800 z 1000), pozostałe miasta z polityką 20% dostają ZERO — mimo że panel
+pokazuje im "Efekt w mieście: 20% Pracy". Gwarancja "zostaw mi X% Pracy" z poziomu polityki
+imperium może zostać obeziona jednym override per-miasto.
+
+**ECHO ABC do właściciela (jutro, nie dziś w nocy — nie blokuje niczego, kod jest bezpieczny):**
+[TEMAT: Semantyka % budżetu Pracy przy override per-miasto]
+A) Zostaw jak jest — override miasta to jego własny pułap na wspólny licznik, brak gwarancji
+   sumy na poziomie imperium przy aktywnym override.
+B) Dwupoziomowo — polityka imperium jest TWARDYM pułapem sumy, % miasta to jego udział
+   WEWNĄTRZ tego pułapu (nie może go przebić).
+C) Jak B + sprawiedliwy podział wspólnego budżetu między miasta (round-robin) — usuwa dodatkowo
+   efekt "pierwsze miasto wg id zjada cały budżet" (dziś świadomy, przypięty testem, ale nikt o
+   niego nie prosił).
+**Uwaga wg CLAUDE.md §1a: odpowiedź może częściowo cofnąć `R-AUTO-PRACA-BUDZET-PROCENT-Q1=B`
+w zakresie override per-miasto.**
+
+**Nieblokujące, dług testowy (do rejestru, nie do naprawy teraz):** mutacja zamiany zamrożonej
+bazy % (`globalPracaPulaAtEntry`) na ruchomą (`pracaLeft`) przechodzi 29/29 mimo realnej zmiany
+zachowania (800→640 w scenariuszu heterogenicznym) — luka pokrycia widoczna tylko przy różnych %
+per miasto, dziś nietestowana. Komentarz w kodzie powołuje się na test 12 jako dowód
+niezmienniczości sumy względem kolejności miast — test tego formalnie nie dowodzi (odwraca tylko
+tablicę wejściową, i tak sortowaną po `id`), twierdzenie samo w sobie PRAWDZIWE (zweryfikowane
+inną mutacją Evaluatora), tylko przypis wskazuje niewłaściwy dowód.
+
+**TEMAT ZAMKNIĘTY dla głównego bugu.** Kod bezpieczny do pozostania w ROBOCZA. Follow-up ABC do
+odpowiedzi jutro.
+
+## Droga 6-ramion runda 2 (1194450f) — SCALONA, dispatch Evaluatora (2026-08-14)
+
+Naprawia znalezisko blokujące z rundy 1 (`roadRenderedHexes` nieczyszczony na 4 z 5 ścieżek
+restartu gry). Nowa `resetImprovementRenderState()` jako jedyny punkt kasowania stanu renderu.
+Domknięte obie luki pokrycia (geometria M9 obrót 30° + hook M11-M13 usunięcie wywołania) nowymi
+bramkami (61/0, 19/0). Własny test scenariusza restartu wbudowany na stałe (przed naprawą
+czerwony, po naprawie zielony). Wszystkie bramki zielone. STATUS: dispatch Evaluatora.
+
+## Panel Faza 2 naprawa (1f5832d7) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-14)
+
+F1/F2/F3 potwierdzone dowodem pikselowym/CSSOM (Playwright, `getBoundingClientRect`/
+`getComputedStyle`) — nie tylko obecność klas/kodu. F1: wyrównanie do prawej co do 0,01px we
+wszystkich 3 tabelach, Religia zweryfikowana wprost w makiecie (kolumna RELIGIA celowo BEZ
+`text-align:right`, kod to poprawnie odzwierciedla). F2: RGB dokładnie `#8ec5ff`/`#d9a441`, zero
+przecieku funkcji `miniColColor` poza deklarowanym zakresem. F3: komentarz sprawdzony wprost w
+`playerState.ts` — prawdziwy. Diff dokładnie `+53/−10`, wyłącznie `empireDetailPanel.ts`, zero
+dotknięcia Skarbca. Wszystkie 6 bramek zielone, `empire-panel-moc-scroll-preserve` 38/9
+potwierdzone pre-istniejące (identyczne na commicie-rodzicu).
+
+**Uwagi nieblokujące:** (1) `signedTxt(0)`→`—` dostaje pełny kolor semantyczny zamiast wygaszenia
+do szarości jak w Skarbcu — dwie konwencje "braku wartości" między zakładkami, kosmetyka do
+gustu właściciela. (2) Opis mówił o recydywie dla 3 tabel, ale Religia nie ma wiersza SUMA więc
+to nie była dosłownie ta sama recydywa — precyzja, nie fałsz. (3) Martwe duplikaty
+`cityEconMiniPraca`/`cityEconMiniNauka` (blok `zasoby`, nieosiągalny z HUD, pre-istniejący
+wzorzec z Fazy 1, nie wprowadzony tą naprawą). (4) Nieaktualny numer linii w komentarzu F3
+(29253→realnie 29391) — przeniesiony ze starej wersji. (5) `empire-panel-moc-scroll-preserve`
+nadal brak w CLAUDE.md §BRAMKI jako znana czerwona — zgłoszone już raz przy innym temacie,
+nadal nieuzupełnione. 6 własnych mutacji Evaluatora niezłapanych (kontynuacja znanej,
+świadomie zaakceptowanej luki pokrycia treści — ten sam wzorzec co Faza 1 i Skarbiec CSS fix).
+
+**TEMAT ZAMKNIĘTY.** Panel 11 zakładek Faza 2 (Praca/Nauka/Religia) w pełni gotowy.
+
+## R-DROGA-WZOR-6-RAMION — TEMAT ZAMKNIĘTY po 2 rundach (1194450f, Evaluator PASS-WITH-NOTES, 2026-08-14)
+
+Wszystkie 8 bramek zweryfikowane niezależnie i zielone. Naprawa blokująca z rundy 1 potwierdzona
+KOMPLETNA: `resetImprovementRenderState()` dokładnie 5 wywołań, żadna ścieżka restartu nie
+pominięta (2 niezależne dowody krzyżowe: `placedImprovements.clear()` i `cities.length=0`
+występują dokładnie 5× w tych samych 5 funkcjach; 6. kandydat `restoreGameFromSave` pokryty
+tranzytywnie przez wywołanie `restorePlacedImprovementsFromSave`). Własny scenariusz restartu
+Evaluatora (ekstrakcja PRAWDZIWEGO kodu z main.ts, pomiar REALNYCH wierzchołków `BufferGeometry`,
+nie atrapa) potwierdza: przed naprawą sąsiad rysował placyk (promień 0,17) zamiast ramienia
+(zasięg 0,866) po restarcie, po naprawie zasięg poprawny w obie strony, szew 3,55e-15.
+
+**10 mutacji (2 zapowiedziane + 8 własnych Evaluatora), wszystkie złapane** poza jedną
+mutacją-równoważną (MUT-6, sprawdzona i potwierdzona nieszkodliwa, nie luka). Obie luki
+pokrycia z rundy 1 (geometria M9, hook MUT-2) realnie domknięte.
+
+**Nowe, nieblokujące notatki (drobiazgi, nie warte 3 rundy):**
+- N1: domyślna wartość `roadMask=ROAD_MASK_FULL` w `buildImprovementSectored` to ZMIERZONA
+  pułapka z zerem użytkowników (jedyne wołanie i tak podaje maskę jawnie, MUT-10 to
+  potwierdza — usunięcie argumentu przechodzi WSZYSTKIE bramki drogowe na zielono mimo że
+  każda droga renderowałaby się jako pełna gwiazda). Najtańsza naprawa: usunąć default.
+- N2: komentarz "grubość 0,0736 przy HEX_R=1" sugeruje skalowanie z promieniem, ale wartość
+  jest STAŁA ABSOLUTNIE niezależnie od hexR (zmierzone przy 0,5/1/2) — doprecyzować sformułowanie.
+- N3: komentarz nie wspomina że `buildImprovementVisual` straciła też default `relief={}`
+  (wymuszone przez TS, wszystkie 3 wywołania podają jawnie) — kosmetyka dokumentacji.
+
+**Nota procesowa N4 (nie dotyczy tego tematu, do wiedzy orkiestratora):** Evaluator wykrył że
+inna, równoległa sesja/agent mutowała `empireDetailPanel.ts` w GŁÓWNYM drzewie roboczym podczas
+jego pracy (mutacja testowa tematu Panel Faza 2 F3, sama się cofnęła po kilku minutach) —
+zero szkody (Evaluator przeniósł swoje dalsze testy do izolowanego worktree po wykryciu), ale to
+żywy przykład ryzyka z CLAUDE.md §4a: dwóch agentów mutujących wspólne drzewo może zanieczyścić
+sobie wyniki bramek. W tej sesji WSZYSTKIE Evaluatory i Operatory tej nocy pracowały w
+`isolation: "worktree"` — ta konkretna kolizja dotyczyła najwyraźniej mutacji testowej
+uruchomionej BEZPOŚREDNIO w głównym drzewie przez jednego z Evaluatorów Panel Faza 2 (własna
+weryfikacja mutacyjna F1-F3), nie naruszenia zasady izolacji Operatora — do rozważenia czy
+Evaluatorzy też powinni domyślnie dostawać izolowany worktree do własnych mutacji kontrolnych.
+
+**TEMAT ZAMKNIĘTY.** Droga 6-ramion w pełni gotowa, geometria matematycznie potwierdzona,
+odporna na restart gry.

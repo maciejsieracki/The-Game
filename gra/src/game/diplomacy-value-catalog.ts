@@ -357,8 +357,18 @@ export function diplomacyHandelSurowcePakietWielkosc(): number {
   return v > 0 ? Math.floor(v) : DEFAULT_HANDEL_SUROWCE_PAKIET;
 }
 
-/** Cena jednostkowa (PN/szt.) surowca ilościowego, lub null gdy surowiec spoza cennika. */
-export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): number | null {
+/**
+ * Cena za blok (PN/krok szt.) surowca ilościowego, lub null gdy surowiec spoza cennika.
+ * N4 (Evaluator 2026-08-13, rename po P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI): dawna nazwa
+ * tej funkcji (`...CenaJednostkowa`) sugerowała cenę ZA SZTUKĘ, choć realnie zawsze była ceną
+ * za BLOK (krok jednostek handlu, patrz `diplomacyHandelSurowiecKrok`) — mylące nazewnictwo
+ * było bezpośrednią przyczyną incydentu ×5 (P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI).
+ * Sam rename, bez zmiany logiki/wartości.
+ * / EN: this function's old name (`...CenaJednostkowa`, "unit price") implied a per-single-unit
+ * price, but it was always a per-block price (krok units) — that misleading name was the direct
+ * cause of the ×5 incident. Pure rename, no logic/value change.
+ */
+export function diplomacyHandelSurowiecCenaZaBlok(surowiecKey: string): number | null {
   const rowKey = HANDEL_SUROWCE_CENA_ROW[surowiecKey.trim().toLowerCase()];
   if (!rowKey) return null;
   const v = readHandelSurowceParam(rowKey, NaN);
@@ -392,7 +402,7 @@ export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): num
  * `krok` first to get the block count (exact, since `sztuki` is already a multiple of it).
  */
 export function diplomacyPnSurowiecIlosc(surowiecKey: string, iloscSztuk: number): number | null {
-  const cena = diplomacyHandelSurowiecCenaJednostkowa(surowiecKey);
+  const cena = diplomacyHandelSurowiecCenaZaBlok(surowiecKey);
   if (cena == null) return null;
   const sztuki = diplomacyNormalizeSurowiecIlosc(surowiecKey, iloscSztuk);
   if (sztuki <= 0) return 0;
@@ -405,7 +415,7 @@ export function diplomacyPnSurowiecIlosc(surowiecKey: string, iloscSztuk: number
 export function diplomacyHandelSurowceCatalog(): Readonly<Record<string, number>> {
   const out: Record<string, number> = {};
   for (const key of Object.keys(HANDEL_SUROWCE_CENA_ROW)) {
-    const cena = diplomacyHandelSurowiecCenaJednostkowa(key);
+    const cena = diplomacyHandelSurowiecCenaZaBlok(key);
     if (cena != null) out[key] = cena;
   }
   return Object.freeze(out);

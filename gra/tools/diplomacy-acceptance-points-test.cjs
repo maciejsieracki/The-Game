@@ -31,7 +31,7 @@ export {
   diplomacySumPn,
   basketSidePnDifficultyMultiplier,
   diplomacyPnSurowiecIlosc,
-  diplomacyHandelSurowiecCenaJednostkowa,
+  diplomacyHandelSurowiecCenaZaBlok,
 } from './game/diplomacy-value-catalog';
 export {
   effectiveTreatyPnRequired,
@@ -305,11 +305,11 @@ ok(goldEasyReceive.receivePn === 60, 'player gives 40¤ easy (AI proposal) → �
 // z ×5 -> zostają przy krok=1, ilosc=1 nadal działa bez floorowania.
 // NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): PN = BLOKI × cena_PN/blok
 // (ECHO f838b599), nie sztuki × cena — 5 szt. braz = 1 blok × 15 PN/blok = 15 PN (nie 75).
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('sol') === 2, 'acceptance: sol 2 PN/szt.');
+ok(mod.diplomacyHandelSurowiecCenaZaBlok('sol') === 2, 'acceptance: sol 2 PN/szt.');
 ok(mod.diplomacyPnSurowiecIlosc('braz', 5) === 15, 'acceptance: 5 szt. braz (krok 5) = 1 blok × 15 PN/blok = 15 PN');
 ok(mod.diplomacyPnSurowiecIlosc('braz', 1) === 0, 'acceptance: 1 szt. braz (< krok 5) floruje do 0 PN');
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('zloto') === 50, 'acceptance: zloto-surowiec 50 PN/szt.');
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('wegiel') === 20, 'acceptance: wegiel 20 PN/szt.');
+ok(mod.diplomacyHandelSurowiecCenaZaBlok('zloto') === 50, 'acceptance: zloto-surowiec 50 PN/szt.');
+ok(mod.diplomacyHandelSurowiecCenaZaBlok('wegiel') === 20, 'acceptance: wegiel 20 PN/szt.');
 ok(mod.diplomacyPnSurowiecIlosc('zloto', 1) === 50, 'acceptance: 1 szt. zloto (krok 1, wyłączone z ×5) = 50 PN');
 const woodTradePn = mod.resolveProposalPn({
   giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 5 }],

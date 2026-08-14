@@ -106,10 +106,70 @@ export interface PickAutoImprovementsOpts {
   /** Filtr heksów — tylko obrabiane (domyślnie city.ulepszeniaOnlyWorked ?? false). */
   getOnlyWorked?: (city: AutoImprovementCity) => boolean;
   getWorkedHexKeys?: (city: AutoImprovementCity) => ReadonlySet<string>;
-  /** Stały limit (gdy brak getMaxPerCity). */
-  maxPerCity?: number;
-  /** R-AUTO-ULEPSZENIA-Q2=B: limit per miasto (1–3). Nadpisuje maxPerCity. */
-  getMaxPerCity?: (city: AutoImprovementCity) => number;
+  /**
+   * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2, naprawa FAIL Evaluatora): stały % (0–100)
+   * budżetu Pracy DLA CAŁEGO TEGO WYWOŁANIA (gdy brak getPracaBudgetPercent) — JEDEN, WSPÓLNY
+   * budżet dla WSZYSTKICH miast razem, nie osobny budżet na każde miasto. Łączny wydatek
+   * automatu na wszystkie miasta w tym wywołaniu jest ograniczony do `pct% × pula` (pula = stan
+   * puli Pracy NA KONIEC TURY, po całej ekonomii/upkeepie, przed wydatkiem auto-managera — patrz
+   * `globalPracaPulaAtEntry` w pickAutoImprovements), NIEZALEŻNIE od liczby miast N (runda 1 tego
+   * miała błąd: liczyła `pct% × pula` OSOBNO dla każdego miasta, więc N miast mogło razem wydać
+   * do N×pct% puli — Evaluator złapał 98,7% wydane przy nominalnych 33% i 4 miastach). Domyślnie
+   * 100 — BRAK ograniczenia % (jedyne ograniczenia to sama pula i flat-rezerwa), żeby wywołania
+   * nieświadome tego mechanizmu (np. AI — patrz `maxItemsPerCity` niżej) nie zostały
+   * niespodziewanie przycięte. Ten % to sposób gracza na "zostaw mi część Pracy"
+   * (`UlepszeniaEmpirePolicy.pracaAutoPercent` w cities.ts, świeża polityka startuje od
+   * DEFAULT_ULEPSZENIA_PRACA_PERCENT=33%, NIE od tego domyślnego parametru funkcji) — koncept,
+   * który dla AI nie ma odpowiednika (AI nie ma "gracza", dla którego miałoby zostawiać Pracę).
+   * ZASTĘPUJE dawny `maxPerCity` (limit sztuk) jako mechanizm WYBORU GRACZA; AI ma swój OSOBNY,
+   * niezależny throttle — patrz `maxItemsPerCity`.
+   * / EN: flat % (0-100) of the Work budget for THIS ENTIRE CALL (when no
+   * getPracaBudgetPercent) — ONE SHARED budget across ALL cities together, not a separate
+   * budget per city. Total spend across every city in this call is capped at `pct% × pool`
+   * (pool = the Work pool's state AT TURN END, after the whole turn's economy/upkeep, before the
+   * auto-manager's spend — see `globalPracaPulaAtEntry` in pickAutoImprovements), regardless of
+   * city count N (round 1 bug: computed `pct% × pool` SEPARATELY per city, so N cities could
+   * together spend up to N×pct% of the pool — the Evaluator caught 98.7% spent at a nominal 33%
+   * with 4 cities). Defaults to 100 — NO % restriction (the only limits are the pool itself and
+   * the flat reserve), so callers unaware of this mechanism (e.g. AI — see `maxItemsPerCity`
+   * below) aren't unexpectedly capped. This % is the player's way to "leave me some Work"
+   * (`UlepszeniaEmpirePolicy.pracaAutoPercent` in cities.ts, a fresh policy starts at
+   * DEFAULT_ULEPSZENIA_PRACA_PERCENT=33%, NOT this function parameter's default) — a concept
+   * that has no AI equivalent (AI has no "player" to leave Work for). REPLACES the old
+   * `maxPerCity` (item-count cap) as the PLAYER'S choice mechanism; AI has its OWN, independent
+   * throttle — see `maxItemsPerCity`.
+   */
+  pracaBudgetPercent?: number;
+  /**
+   * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: % (0–100) PER MIASTO — nadpisuje `pracaBudgetPercent` dla
+   * TEGO miasta (np. override gracza w panelu miasta, `city.ulepszeniaPracaPercent`). UWAGA: to
+   * NIE tworzy dodatkowego budżetu obok wspólnej puli — % tego miasta jest jego WŁASNYM pułapem
+   * na WSPÓLNY, dzielony licznik wydatków (`globalSpent` w pickAutoImprovements), nie osobną
+   * kopertą. Przy jednakowym % dla wszystkich miast (typowy przypadek — brak override) to i tak
+   * daje dokładnie jeden wspólny budżet `pct% × pula`.
+   * / EN: % (0-100) PER CITY — overrides `pracaBudgetPercent` for THIS city (e.g. a player
+   * override in the city panel, `city.ulepszeniaPracaPercent`). NOTE: this does NOT create an
+   * extra budget alongside the shared pool — this city's % is its OWN ceiling on the SHARED,
+   * cross-city spend counter (`globalSpent` in pickAutoImprovements), not a separate envelope.
+   * With the same % for every city (the typical case — no override) this still yields exactly
+   * one shared budget of `pct% × pool`.
+   */
+  getPracaBudgetPercent?: (city: AutoImprovementCity) => number;
+  /**
+   * Throttle LICZBY ulepszeń/miasto/turę, NIEZALEŻNY od %-budżetu Pracy (oba limity działają
+   * RÓWNOLEGLE — obowiązuje ciaśniejszy). Domyślnie bez limitu (Infinity). To NIE jest część
+   * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (który dotyczy WYŁĄCZNIE gracza) — to PRZEDWCZEŚNIEJSZY,
+   * osobny mechanizm wydajności/determinizmu AI (`planCityImprovements` w ai.ts jawnie ustawia
+   * 1 — dawniej to był NIEJAWNY skutek uboczny domyślnej wartości usuniętego `maxPerCity=1`,
+   * teraz jawny i udokumentowany tu). Gracz go NIE ustawia.
+   * / EN: item-COUNT throttle per city per turn, INDEPENDENT of the %-budget (both limits apply
+   * in PARALLEL — whichever is tighter wins). Unlimited (Infinity) by default. This is NOT part
+   * of R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (which is player-only) — it's a PRE-EXISTING, separate
+   * AI performance/determinism throttle (`planCityImprovements` in ai.ts sets it to 1 explicitly
+   * — previously an IMPLICIT side effect of the removed `maxPerCity=1` default, now explicit and
+   * documented here). The player never sets this.
+   */
+  maxItemsPerCity?: number;
   pracaSurplusThreshold?: number;
   skipWyrab?: boolean;
   civArchetype?: string;
@@ -120,7 +180,23 @@ export interface PickAutoImprovementsOpts {
 }
 
 /**
- * Planuje auto-ulepszenia: max `maxPerCity` (domyślnie 1) na miasto na turę.
+ * Planuje auto-ulepszenia: JEDEN wspólny budżet Pracy dla CAŁEGO wywołania (wszystkich miast
+ * razem) = `pracaBudgetPercent`% (domyślnie 100 — bez ograniczenia) ze SKUMULOWANEJ puli Pracy
+ * `pracaAvailable` — czyli stanu puli Pracy NA KONIEC TURY, po całej ekonomii/upkeepie, przed
+ * wydatkiem auto-managera, zamrożonego w `globalPracaPulaAtEntry` w momencie wejścia do tej
+ * funkcji (NIE od przyrostu tej tury — R-AUTO-PRACA-BUDZET-PROCENT-Q1=B). Miasta czerpią z TEJ
+ * SAMEJ wspólnej puli PO KOLEI (kolejność = po id, patrz `orderedCities` niżej) — łączny wydatek
+ * wszystkich miast razem nigdy nie przekracza `pct% × globalPracaPulaAtEntry`, NIEZALEŻNIE od
+ * liczby miast N (naprawa rundy 2: przed nią każde miasto liczyło `pct%` OSOBNO od PEŁNEJ puli,
+ * więc N miast mogło razem wydać do N×pct%). Kolejność miast wpływa WYŁĄCZNIE na to, KTÓRE
+ * konkretne ulepszenia się zmieszczą w budżecie (pierwsze miasto w kolejności ma pierwszeństwo do
+ * wspólnej puli) — NIE na łączną wydaną sumę, która jest deterministyczna niezależnie od
+ * kolejności (patrz test 12 w auto-improvements-test.cjs). RÓWNOLEGLE, niezależnie od %-budżetu,
+ * obowiązuje też `maxItemsPerCity` sztuk/miasto (domyślnie bez limitu; AI ustawia jawnie 1 —
+ * throttle wydajności/determinizmu AI, niezwiązany z %-budżetem — patrz opis pola wyżej). Flat-
+ * rezerwa `pracaSurplusThreshold` (np. AUTO_ULEPSZENIA_PRACA_RESERVE) to DODATKOWY dolny próg
+ * bezpieczeństwa na CAŁEJ puli imperium — auto-manager nigdy nie schodzi poniżej niej, niezależnie
+ * od %/liczby miast.
  * Determinizm: miasta po id, heksy po (q,r), typy wg profilu.
  */
 export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprovementPick[] {
@@ -134,8 +210,9 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     getFocus = c => c.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
     getOnlyWorked = c => c.ulepszeniaOnlyWorked ?? false,
     getWorkedHexKeys,
-    maxPerCity = 1,
-    getMaxPerCity,
+    pracaBudgetPercent = 100,
+    getPracaBudgetPercent,
+    maxItemsPerCity = Infinity,
     pracaSurplusThreshold = 0,
     skipWyrab = false,
     civArchetype,
@@ -149,6 +226,28 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   let pracaLeft = opts.pracaAvailable;
   const reserve = opts.pracaSurplusThreshold ?? 0;
   if (pracaLeft <= reserve) return [];
+
+  // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: dostępnaPula = stan puli Pracy NA KONIEC TURY (po całej
+  // ekonomii/upkeepie, przed wydatkiem auto-managera) W MOMENCIE WEJŚCIA w ten blok tej tury,
+  // zamrożona TU, PRZED jakimkolwiek wydatkiem w tym wywołaniu — kolejne picki (tego i innych
+  // miast) nie przesuwają bazy % w dół razem z malejącym pracaLeft.
+  // / EN: available pool = the Work pool's state AT TURN END (after the whole turn's
+  // economy/upkeep, before the auto-manager's spend), AT THE MOMENT this call runs this turn,
+  // frozen HERE, BEFORE any spend in this call — later picks (this city's or another's) don't
+  // shift the % base downward together with the shrinking pracaLeft.
+  const globalPracaPulaAtEntry = opts.pracaAvailable;
+
+  // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2): licznik WSPÓLNY dla CAŁEGO wywołania (wszystkich
+  // miast razem) — NIE per-miasto. To jest sedno naprawy: każde miasto sprawdza swój % przeciwko
+  // TEMU SAMEMU dzielonemu licznikowi (globalSpent), więc łączny wydatek wszystkich miast razem
+  // jest ograniczony do pct%×pula, niezależnie od liczby miast N (dawny błąd: `spentThisCity`
+  // resetował się PER MIASTO, więc N miast mogło razem wydać do N×pct%).
+  // / EN: SHARED counter for the WHOLE call (all cities together) — NOT per city. This is the
+  // core of the fix: every city checks its own % against this SAME shared counter (globalSpent),
+  // so the total spend across all cities together is capped at pct%×pool, regardless of city
+  // count N (old bug: `spentThisCity` reset PER CITY, so N cities could together spend up to
+  // N×pct%).
+  let globalSpent = 0;
 
   const workingPlaced = new Map<string, string[]>();
   if (placedImprovements) {
@@ -180,7 +279,14 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     const basePriority = priorityOverride ?? prioritiesForUlepszeniaFocus(focus, skipWyrab);
     const onlyWorked = getOnlyWorked(city);
     const workedKeys = onlyWorked && getWorkedHexKeys ? getWorkedHexKeys(city) : null;
-    const cityMax = Math.max(1, Math.min(3, getMaxPerCity?.(city) ?? maxPerCity));
+    // cityBudgetCap = pułap TEGO miasta na WSPÓLNY, dzielony licznik globalSpent (nie osobna
+    // koperta — patrz komentarz przy globalSpent wyżej). Przy jednakowym % dla wszystkich miast
+    // (typowy przypadek) to i tak daje dokładnie jeden wspólny budżet pct%×pula.
+    // / EN: cityBudgetCap = THIS city's ceiling on the SHARED globalSpent counter (not a separate
+    // envelope — see the globalSpent comment above). With the same % for every city (the typical
+    // case) this still yields exactly one shared budget of pct%×pool.
+    const cityPercent = Math.max(0, Math.min(100, getPracaBudgetPercent?.(city) ?? pracaBudgetPercent));
+    const cityBudgetCap = (cityPercent / 100) * globalPracaPulaAtEntry;
 
     const radius = cityTerritoryRadius({ q: city.q, r: city.r, pop: city.population, level: 1 }) + 1;
     let candidateHexes = hexKeysWithinRadius(city.q, city.r, radius, map)
@@ -197,7 +303,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     let placedThisCity = 0;
 
     for (const key of basePriority) {
-      if (placedThisCity >= cityMax) break;
+      if (globalSpent >= cityBudgetCap || placedThisCity >= maxItemsPerCity) break;
       const meta = getImprovementMeta(key);
       if (!meta) continue;
       if (meta.kosztPraca > pracaLeft) continue;
@@ -214,9 +320,14 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
         if (forestCount < WYRAB_MIN_FOREST_IN_RADIUS) continue;
       }
 
-      // Q2=B: ten sam typ (np. farma) wielokrotnie na różnych heksach aż do cityMax.
-      while (placedThisCity < cityMax && meta.kosztPraca <= pracaLeft) {
+      // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2): ten sam typ (np. farma) wielokrotnie na
+      // różnych heksach, dopóki starcza WSPÓLNEGO budżetu całego wywołania (globalSpent
+      // sprawdzany przeciw pułapowi TEGO miasta cityBudgetCap — patrz komentarze wyżej), limitu
+      // sztuk (maxItemsPerCity — niezależny, np. throttle AI) i globalnej puli (pracaLeft, z
+      // flat-rezerwą jako dolnym progiem bezpieczeństwa).
+      while (globalSpent < cityBudgetCap && placedThisCity < maxItemsPerCity && meta.kosztPraca <= pracaLeft) {
         if (pracaLeft - meta.kosztPraca < reserve) break;
+        if (globalSpent + meta.kosztPraca > cityBudgetCap) break;
         let placedOne = false;
         for (const { q, r } of candidateHexes) {
           const hexKey = `${q},${r}`;
@@ -232,6 +343,7 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
             kosztPraca: meta.kosztPraca,
           });
           pracaLeft -= meta.kosztPraca;
+          globalSpent += meta.kosztPraca;
           placedThisCity++;
 
           if (key === 'wyrab') {

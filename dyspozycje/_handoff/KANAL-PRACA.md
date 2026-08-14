@@ -6829,3 +6829,35 @@ w tej sesji nie respektowano `isolation: "worktree"` — to bezpośrednia przycz
 ceny w Szybkiej Umowie/ofertach AI (nie 5× za tanie). Znane, NIE zgłaszać: oscylacja jednostek MP przy
 chatce (temat FAIL, czeka na ABC właściciela, w grze od FALI 276).
 CZEKAM-NA: sesja lokalna (pull + playtest FALI 277) · polecenie właściciela ws. scalenia FALI 276 do `main`.
+
+## [03:10 PL, 2026-08-14] Sesja chmurowa → integrator lokalny — deploy FALA 278
+**FALA 278** (md5 `8455b385984264099ee6f083410ee701`, build z HEAD `7ad9397a`, stempel
+`ROBOCZA · e987f5f5 · 2026-08-14 01:09` UTC) zdeployowana do ROBOCZA. `VERIFY OK`
+(`manifest match: OK`), **31 bramek testowych exit 0** (`tsc` 0 na TS 5.9.3, `logic-test` 213/213),
+**14 pre-istniejących czerwonych dokładnie na punkcie odniesienia, zero wzrostu**. `gra/data` nietknięte.
+
+Osiem tematów: barbarzyńcy z własną skalą niezależną od trudności · fort/strażnica ZAMKNIĘTY po
+4 rundach (+ nowy test save/load fortów) · panel imperium 11 zakładek Faza 1 (Skarbiec) + naprawa
+CSS suwaków · Faza 2 (Praca/Nauka/Religia) + runda naprawcza · **nowy system dróg 6-ramiennych**
+(najbardziej widoczna zmiana) · suwak 0-100% budżetu Pracy zamiast przycisków 1/2/3 · MP/AI zbierają
+chatki ze skarbami runda 2 · domknięcie martwych stref pokrycia dyplomacji.
+
+⚠️ **Uwaga do playtestu — ostrzeżenie z FALI 277 jest NIEAKTUALNE:** „oscylacja MP przy chatce, nie
+zgłaszać" dotyczyła stanu sprzed `c57cd41d`, który wchodzi do gry dopiero w TEJ fali. **Od FALI 278
+oscylacja ma zniknąć — jeśli nadal jest, to nowe zgłoszenie.** Ogólniej: 5 paczek „zamkniętych" 13.08
+(`6afdde92`, `45f673af`, `a243ecc4`, `9cbfc8ae`, `c57cd41d`) wylądowało PO czubku builda FALI 277
+(`8b20c34d`) i trafia do grywalnego bundla pierwszy raz teraz — ustalone `git log`, nie z narracji rejestru.
+
+ℹ️ Dwa otwarte follow-up ABC, **nieblokujące, kod bezpieczny**: metryka barbarzyńców (obozy vs jednostki
+na mapie) i semantyka % Pracy przy override per-miasto. Do rejestru zgłoszone też 3 rozjazdy
+w `CLAUDE.md` §BRAMKI (`fair-play-grid` jest dziś ZIELONY 8/0, przyczyna awarii `pre-battle-save`
+inna niż opisana, brak `empire-panel-moc-scroll-preserve` 38/9 na liście) — nienaprawione tutaj, bo
+zmiana kanonu wymaga własnej pętli Operator→Evaluator.
+
+🔴 **SESJA LOKALNA: pull na dysk właściciela (testuj ROBOCZA `8455b385`).** Właściciel zgłaszał tej nocy,
+że jego lokalny dysk mógł być NIEAKTUALNY od kilku fal — nie widział opcji „Zasięg ruchu" z FALI 275
+ani LOD plakietki miasta, mimo że oba są w buildzie i zielone w bramkach. **Wykonaj pełny pull + sync
+na dysk właściciela, nie sam odczyt kanału** — dopóki dysk nie jest zsynchronizowany, dwa jego
+zgłoszenia (`P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK`, `P-PLAKIETKA-MIASTA-ZOOM-BRAK-ZMIANY`) zostają
+nierozstrzygnięte i mogą generować fałszywe bugi.
+CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 278).

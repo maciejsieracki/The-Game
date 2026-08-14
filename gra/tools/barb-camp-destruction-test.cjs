@@ -168,6 +168,13 @@ const CALL_SITES = [
     marker: 'P-BARBARZYNCY-LOAD-REKONCYLIACJA-Q1', call: 'checkBarbCampDestroyedAt(u.q, u.r)', window: 1400 },
   { label: 'evictForeignUnitsFromCityHexes -- wypchnięcie obcej jednostki z heksu miasta (RUNDA 3 pkt 6)',
     marker: 'RUNDA 3 pkt 6', call: 'checkBarbCampDestroyedAt(dest.q, dest.r)', window: 900 },
+  // RUNDA 4 (dispatch, 2026-08-14): brakująca pozycja -- Fort/straznica runda 2 (66be754f, F2 fix)
+  // dopisała TO wywolanie w applyFortTakeoverAndEvacuation, ale inwentarz rundy 3 nie zostal wtedy
+  // zaktualizowany (dlug testowy, nie regresja silnika -- patrz sprostowanie Evaluatora rundy 3 w
+  // PYTANIA-OTWARTE.md). Bez tej pozycji `static 4-list: dokladnie N realnych wywolan` liczylo 12
+  // realnych wywolan w main.ts, ale CALL_SITES mialo tylko 11 wpisow -- FAIL.
+  { label: 'applyFortTakeoverAndEvacuation -- ewakuacja jednostki poprzedniego wlasciciela z przejetego fortu (Fort/straznica R2, fix F2)',
+    marker: 'F2 fix (Evaluator runda 1, 2026-08-13)', call: 'checkBarbCampDestroyedAt(dest.q, dest.r)', window: 700 },
 ];
 
 // ============================================================================================

@@ -500,26 +500,106 @@ export function loadSeaBarbParams(
   };
 }
 
-/** Poziom z kreatora (Maciej 2026-07-04). */
-export type BarbariansLevel = 'wielu' | 'nieliczni' | 'wylaczeni';
+/**
+ * Poziom gęstości barbarzyńców z kreatora (R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI,
+ * Maciej 2026-08-13) — osobny suwak w „Zaawansowane opcje", NIEZALEŻNY od głównej
+ * trudności gry (`_menuDifficulty`) i od trudności miast-państw
+ * (`cityStateDifficultyOverride`, patrz city-state-difficulty.ts) — dokładnie ten
+ * sam wzorzec architektoniczny (własne pole w advOpts, nie pochodna trudności).
+ * Zastępuje starą skalę 'wielu'|'nieliczni'|'wylaczeni' (Maciej 2026-07-04) skalą
+ * 4-poziomową w duchu trudności: Łatwy zawsze daje jakichś barbarzyńców (nigdy
+ * zero), Normalny i Trudny kotwiczą na dawnym baseline „Wielu" (JSON/FALLBACK),
+ * Brak = pełne wyłączenie (jak dawne „Wyłączeni"). Stare zapisy (save/localStorage)
+ * migrowane funkcją migrateBarbariansLevel() poniżej — brak crasha na starym stanie.
+ * / EN: barbarian density level from the new-game wizard — its own advanced-option
+ * field, INDEPENDENT of game difficulty and city-state difficulty (same
+ * architectural pattern as cityStateDifficultyOverride). Replaces the old
+ * 'wielu'|'nieliczni'|'wylaczeni' 3-tier scale with a difficulty-shaped 4-tier
+ * scale. Old saved values are migrated via migrateBarbariansLevel(), never crash.
+ */
+export type BarbariansLevel = 'latwy' | 'normalny' | 'trudny' | 'brak';
 
-export function barbariansEnabledForLevel(level: BarbariansLevel | undefined): boolean {
-  return level !== 'wylaczeni';
+/** Stara skala (przed 2026-08-13) — WYŁĄCZNIE do migracji starych zapisów/configów. */
+export type LegacyBarbariansLevel = 'wielu' | 'nieliczni' | 'wylaczeni';
+
+/**
+ * Migruje dowolną starą lub nierozpoznaną wartość na nową 4-poziomową skalę —
+ * używana zarówno przy wczytaniu starego zapisu gry (save.ts), jak i starych
+ * prefs kreatora (localStorage, newGameFlow.ts migrateAdvanced()).
+ * Mapowanie: `wielu` (dawny szczyt gęstości -- w starej skali nie było wyżej)
+ * -> `trudny` (odpowiednik "dużo barbarzyńców" w nowej skali, gdzie Trudny =
+ * 2x dawny baseline). `nieliczni` (0.45x baseline) -> `normalny` (najbliższy
+ * nowy poziom -- porównaj maxCamps/spawnInterval w scaleBarbParamsForLevel).
+ * `wylaczeni` -> `brak` (dokładny odpowiednik, oba dają maxCamps=0). Wartość
+ * już w nowej skali przechodzi bez zmian. Nierozpoznana/brakująca -> `normalny`
+ * (bezpieczny środek skali, nigdy nie crashuje na nieznanym stringu z save'a).
+ * / EN: migrates any legacy or unrecognised value onto the new 4-tier scale;
+ * used both for old save games (save.ts) and old wizard prefs (localStorage).
+ */
+export function migrateBarbariansLevel(level: unknown): BarbariansLevel {
+  if (level === 'latwy' || level === 'normalny' || level === 'trudny' || level === 'brak') {
+    return level;
+  }
+  if (level === 'wielu') return 'trudny';
+  if (level === 'nieliczni') return 'normalny';
+  if (level === 'wylaczeni') return 'brak';
+  return 'normalny';
 }
 
-/** Skala obozów/spawnu dla „Nieliczni”; „Wielu” = parametry z JSON. */
+export function barbariansEnabledForLevel(level: BarbariansLevel | undefined): boolean {
+  return level !== 'brak';
+}
+
+/**
+ * Skalowanie parametrów obozów/spawnu wg poziomu z kreatora. Baseline (`params`,
+ * z JSON/FALLBACK_BARB_PARAMS) NIE jest już żadnym z 4 poziomów wprost -- leży
+ * pomiędzy Normalny (~1/4 baseline) i Trudny (2x baseline), bo dawne "Wielu" nie
+ * miało wyższej opcji nad sobą (patrz migrateBarbariansLevel). Wszystkie
+ * mnożniki liczone OD `params` (odczytanego z danych), NIGDY od twardo wpisanych
+ * liczb -- balansowanie przez panel Excel/JSON działa identycznie jak przed
+ * zmianą (zmienia się tylko sama skala poziomów, nie źródło baseline).
+ *   Brak     (=0):   maxCamps=0 -- reszta bez znaczenia, spawn i tak się nie odbywa.
+ *   Łatwy    (~0.2x): maxCamps min(1, round(0.2x)) -- zawsze coś, nigdy zero
+ *                     (wymóg właściciela); spawnInterval x2 (rzadziej), unitsPerCamp -1 (min 1).
+ *   Normalny (~0.25x): maxCamps round(1/4) (min 1) -- ok. 4x mniej niż dawne
+ *                     "Wielu" (decyzja właściciela); spawnInterval x1.5, unitsPerCamp -1 (min 1).
+ *   Trudny   (~2x):   maxCamps round(x2) -- ok. 2x więcej niż dawne "Wielu"
+ *                     (decyzja właściciela, "ma być trudno to ma być trudno");
+ *                     spawnInterval /2 (min 1, częściej), unitsPerCamp +1.
+ * / EN: scales camp/spawn params by wizard level. The JSON baseline is NOT any
+ * single one of the 4 levels -- it sits between Normal (~1/4x) and Hard (2x).
+ * All multipliers apply to `params` (data-driven), never to hardcoded numbers.
+ */
 export function scaleBarbParamsForLevel(
   params: BarbParams,
   level: BarbariansLevel | undefined,
 ): BarbParams {
-  if (!level || level === 'wielu') return params;
-  if (level === 'wylaczeni') return { ...params, maxCamps: 0 };
-  return {
-    ...params,
-    maxCamps: Math.max(1, Math.ceil(params.maxCamps * 0.45)),
-    spawnInterval: Math.ceil(params.spawnInterval * 1.5),
-    unitsPerCamp: Math.max(1, params.unitsPerCamp - 1),
-  };
+  switch (level) {
+    case 'brak':
+      return { ...params, maxCamps: 0 };
+    case 'latwy':
+      return {
+        ...params,
+        maxCamps: Math.max(1, Math.round(params.maxCamps * 0.2)),
+        spawnInterval: Math.max(1, Math.round(params.spawnInterval * 2)),
+        unitsPerCamp: Math.max(1, params.unitsPerCamp - 1),
+      };
+    case 'trudny':
+      return {
+        ...params,
+        maxCamps: Math.max(1, Math.round(params.maxCamps * 2)),
+        spawnInterval: Math.max(1, Math.round(params.spawnInterval / 2)),
+        unitsPerCamp: params.unitsPerCamp + 1,
+      };
+    case 'normalny':
+    default:
+      return {
+        ...params,
+        maxCamps: Math.max(1, Math.round(params.maxCamps / 4)),
+        spawnInterval: Math.max(1, Math.round(params.spawnInterval * 1.5)),
+        unitsPerCamp: Math.max(1, params.unitsPerCamp - 1),
+      };
+  }
 }
 
 /** True when barbarians are active on the given turn number. */
@@ -527,7 +607,7 @@ export function barbariansActive(
   turn: number,
   params: BarbParams,
   maxPlayerEra: number = 1,
-  level: BarbariansLevel | undefined = 'wielu',
+  level: BarbariansLevel | undefined = 'normalny',
 ): boolean {
   if (!barbariansEnabledForLevel(level)) return false;
   if (maxPlayerEra >= EPOKA_SREDNIOWIECZE_BARBARZY) return false;

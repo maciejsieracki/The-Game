@@ -337,6 +337,76 @@ export interface EmpireFoodSnap {
   perCityRows: EmpireFoodCityUiRow[];
 }
 
+/**
+ * R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Klatka 3 makiety: box „BADANE TERAZ" w
+ * zakładce Nauka pokazuje cel badań aktywny TERAZ, nie tylko sumę Nauki/turę. Źródło: silnikowa,
+ * czysta funkcja `getResearchState()` (`gra/src/game/playerState.ts`) — TA SAMA, którą już
+ * konsumują `sciencePicker.ts`/`scienceHubHud.ts` (dwa wywołania w `main.ts`), więc panel imperium
+ * nie duplikuje formuły postępu/ETA, tylko przekazuje jej wynik dalej. `targetLabel` = id celu
+ * (== nazwa technologii w `tech.json`, patrz `PlayerState.badana` JSDoc), gotowe do wyświetlenia
+ * bez dodatkowego słownika.
+ * EN: "RESEARCHING NOW" box in the Science tab shows the CURRENTLY active research target, not
+ * just the Science/turn sum. Source: the engine's pure `getResearchState()` — the SAME function
+ * already consumed by sciencePicker.ts/scienceHubHud.ts — so the empire panel doesn't duplicate
+ * the progress/ETA formula, just forwards its result. `targetLabel` = target id (== tech name).
+ */
+export interface EmpireResearchSnap {
+  targetLabel: string;
+  /** Koszt Nauki (PN) celu, po skalowaniu tempem gry/trudnością — `scaledResearchCost()`. */
+  kosztCelu: number;
+  /** Pula Nauki zgromadzona (bank, ta sama liczba co `economy.nauka`). */
+  pula: number;
+  /** Postęp [0..1] w kierunku celu — `min(1, pula/kosztCelu)`. */
+  postepFraction: number;
+  /** Szacowane tury do ukończenia przy bieżącym tempie Nauki/turę; null = brak celu lub tempo 0. */
+  turnsLeft: number | null;
+}
+
+/** Wiersz tabeli per-miasto w zakładce Religia (Klatka 11, wariant A). */
+export interface EmpireReligionCityRow {
+  name: string;
+  /** Religia z NAJWIĘKSZĄ liczbą wyznawców w tym mieście (niezależnie od progu dominacji —
+   *  w przeciwieństwie do `dominantReligion()`, który zwraca null poniżej progu). '—' = brak
+   *  żadnych wyznawców zapisanych (T0 przed pierwszym tickiem). */
+  religionLabel: string;
+  /** true = wiodąca religia miasta to religia państwowa gracza. */
+  isOwn: boolean;
+  /** Liczba wyznawców wiodącej religii w tym mieście (wartość surowa z `ReligionState.counts`). */
+  adherents: number;
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 2 — Klatka 11 (wariant A ZATWIERDZONY 2026-08-14): karta religii
+ * państwowej. Pola grounded 1:1 w silniku (`culture-religion.ts`/`main.ts`) — BEZ pola „Porządek"
+ * z makiety, bo żaden parametr silnika nie wiąże religii z Porządkiem wprost (tylko Zadowolenie,
+ * przez `ReligionParams.zadowolenieDominujaca`/`karaObca`) — patrz notatka Operatora w
+ * `empireDetailPanel.ts` przy `renderReligiaSection()`.
+ * EN: state religion card. Fields are grounded 1:1 in the engine — WITHOUT the mockup's "Order"
+ * row, because no engine parameter ties religion to Order directly (only Happiness, via
+ * `ReligionParams.zadowolenieDominujaca`/`karaObca`) — see the Operator's note next to
+ * `renderReligiaSection()` in empireDetailPanel.ts.
+ */
+export interface EmpireReligionSnap {
+  /** Nazwa religii państwowej gracza ('—' gdy nieustalona, np. T0). */
+  stateReligionLabel: string;
+  /** Suma wyznawców religii PAŃSTWOWEJ we wszystkich miastach gracza. */
+  totalAdherents: number;
+  /** Udział wyznawców własnej religii w sumie wszystkich wyznawców imperium [0..100]. */
+  ownSharePct: number;
+  /** 100 - ownSharePct — udział wyznawców religii OBCYCH. */
+  foreignSharePct: number;
+  /** Najliczniejsza obca religia w imperium (do etykiety paska); null = brak obcych wyznawców. */
+  foreignLabel: string | null;
+  /** Netto szerzenie wyznawców/turę (ta sama liczba co `economy.religionRate`) — panel nie ma
+   *  osobnej waluty „Wiara" w silniku, więc etykieta „Wiara/turę" z makiety pokazuje TĘ liczbę. */
+  faithRatePerTurn: number;
+  /** Bonus Zadowolenia w mieście, gdy religia państwa tam dominuje (`ReligionParams.zadowolenieDominujaca`). */
+  zadowolenieBonus: number;
+  /** Liczba Świątyń wybudowanych w miastach gracza (`builtIds.includes('swiatynia')`). */
+  templeCount: number;
+  cities: EmpireReligionCityRow[];
+}
+
 export interface EmpireDetailSnap {
   global: EmpireGlobalParams;
   economy: HudState;
@@ -348,4 +418,8 @@ export interface EmpireDetailSnap {
   trade: EmpireTradeSnap;
   /** PYTANIE-85 — Spichlerz centralny (magazyn żywności imperium). */
   food: EmpireFoodSnap;
+  /** R-DESIGN-11-ZAKLADEK faza 2 — cel badań aktywny teraz; null = gracz nie wybrał celu. */
+  research: EmpireResearchSnap | null;
+  /** R-DESIGN-11-ZAKLADEK faza 2 — karta religii państwowej (Klatka 11, wariant A). */
+  religion: EmpireReligionSnap;
 }

@@ -35,7 +35,7 @@ export {
 export {
   diplomacyNormalizeSurowiecIlosc,
   diplomacyPnSurowiecIlosc,
-  diplomacyHandelSurowiecCenaJednostkowa,
+  diplomacyHandelSurowiecCenaZaBlok,
 } from '../src/game/diplomacy-value-catalog.ts';
 
 `, 'utf8');
@@ -492,7 +492,7 @@ for (const rawRate of [7, 9]) {
   // cenę/PN z tego payloadu, robi to już z ilości 5, nigdy z surowej ${rawRate}.
   // NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): PN = BLOKI × cena/blok
   // (ECHO f838b599) — 5 szt. = 1 blok kroku 5, więc want = 1×cena, nie 5×cena.
-  const cena = B.diplomacyHandelSurowiecCenaJednostkowa('drewno');
+  const cena = B.diplomacyHandelSurowiecCenaZaBlok('drewno');
   const pnDlaZflorowanej = out != null ? B.diplomacyPnSurowiecIlosc('drewno', out.pakietyPerTura) : null;
   ok(cena != null && cena > 0, 'drewno ma dodatnią cenę jednostkową w cenniku (przesłanka do sensownej asercji)');
   ok(pnDlaZflorowanej === Math.round((5 / 5) * (cena ?? 0)),

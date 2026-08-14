@@ -27,7 +27,11 @@ export {
   trimQuickDealGiveToTolerance,
 } from '../src/game/diplomacy-ai-offer-balance.ts';
 export { computePlayerAcceptanceSides } from '../src/game/diplomacy-acceptance-points.ts';
-export { diplomacyPnZloto } from '../src/game/diplomacy-value-catalog.ts';
+export {
+  diplomacyPnZloto,
+  diplomacySumPn,
+  diplomacyFairGivePn,
+} from '../src/game/diplomacy-value-catalog.ts';
 export { computeQuickDealBasket } from '../src/game/diplomacy-pn-engine.ts';
 `);
 
@@ -209,6 +213,21 @@ ok(
   const drewnoGive = giveFiller.giveItems.find(i => i.id === 'drewno');
   ok(drewnoGive != null && drewnoGive.ilosc % 5 === 0 && drewnoGive.ilosc > 0,
     `Szybka umowa: dopełniacz drewna wielokrotnością 5, >0 (got ${drewnoGive?.ilosc})`);
+
+  // N1 (Evaluator 2026-08-13, domknięcie luki pokrycia P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI):
+  // powyższa asercja "wielokrotność 5, >0" NIE łapie błędu WIELKOŚCI — 40 szt. "zepsute" (5×
+  // za mało) spełnia ją tak samo dobrze jak 200 szt. "poprawne". Tu przeliczamy PN oddawanego
+  // koszyka NIEZALEŻNIE (diplomacySumPn na zwróconych giveItems, ta sama funkcja katalogu co
+  // reszta silnika, ale wołana z zewnątrz — nie z wewnętrznej zmiennej giveSum liczonej wewnątrz
+  // computeQuickDealBasket) i porównujemy z fairMin wyliczonym z receivePn (diplomacySumPn na
+  // receiveItems) przez diplomacyFairGivePn. Margines 10% w dół dopuszcza floor-do-kroku-5
+  // (ostatni blok zwykle nie trafia dokładnie w fairMin), ale NIE dopuszcza błędu ×5.
+  const giveFillerReceivePn = M.diplomacySumPn(giveFiller.receiveItems);
+  const giveFillerGivePn = M.diplomacySumPn(giveFiller.giveItems);
+  const giveFillerFairMin = M.diplomacyFairGivePn(giveFillerReceivePn, 100);
+  ok(giveFillerGivePn >= giveFillerFairMin * 0.9,
+    `Szybka umowa: fairness rzeczywista (nie tylko wielokrotność 5) - givePn=${giveFillerGivePn} ` +
+    `>= 0.9*fairMin=${(giveFillerFairMin * 0.9).toFixed(1)} (receivePn=${giveFillerReceivePn}, fairMin=${giveFillerFairMin})`);
 }
 
 console.log(`\ndiplomacy-ai-offer-balance-test: ${pass} passed, ${fail} failed`);

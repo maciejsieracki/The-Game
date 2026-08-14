@@ -587,6 +587,45 @@ if (gmsBody) {
   });
   ok(scenF.result === 6,
     `(kontrola założenia) Scenariusz F: miasto oblężone przy wypłacalnym imperium (bez deficytu) -> maxSafe=6=WYZYWIENIE_MAX, realnie liczony (got=${scenF.result})`);
+
+  // Scenariusz G (N2, Evaluator 2026-08-13, domknięcie luki pokrycia
+  // P-DYPLO-ARMII-KOSZT-WIAZANIE-MAIN-TS): Część 9 do tej pory testowała WYŁĄCZNIE z PUSTĄ
+  // `units` (zob. komentarz przy `runGetMaxSafePoziomRacjiForPlayerCity` -- "brak wojska
+  // (kosztArmii=0)"), czyli nigdy nie wykonywała realnie linii `kosztArmiiForMaxSafe =
+  // militaryFoodConsumptionWithSpichlerz(playerUnitsForArmy, ...)` z NIEZEROWYM wynikiem --
+  // gdyby to wiązanie (main.ts ~14264-14281, dwa wywołania `maxSafePoziomRacjiForCity` z
+  // `kosztArmii: kosztArmiiForMaxSafe` w liniach ~14310 i ~14339) zostało PRZYPADKOWO usunięte
+  // z jednego z dwóch miejsc, komplet dotychczasowych scenariuszy Części 9 (units=[] wszędzie)
+  // nadal przechodziłby na zielono -- kosztArmii=0 niezależnie od tego, czy wiązanie istnieje.
+  // Tu uruchamiamy TĘ SAMĄ realną ścieżkę (miasto 'capital', NIE oblężone -- idzie przez pętlę
+  // main linii ~14301-14313, główne wiązanie, nie fallback linii ~14330-14340 testowany przez
+  // Scenariusz E) dla identycznych danych miasta/zapasów, raz z PUSTĄ armią (kosztArmii=0,
+  // jak dotąd) i raz z NIEPUSTĄ (2 jednostki gracza, koszt żywności > 0 liczony PRAWDZIWĄ
+  // `militaryFoodConsumptionWithSpichlerz` -- nie literałem) -- i porównujemy wynik.
+  // Wartości 0,5 / 0 ustalone empirycznie i deterministyczne (identyczne przy zapasyPrzed
+  // 0/100/1000/10000 -- ścieżka gracza wymaga flow-bilansu nieujemnego W TEJ turze, nie tylko
+  // dodatniego zapasu, patrz `requireFlowBalance`/`isRationBalanceTargetMet` w empire-food.ts).
+  const scenGEmpty = runGetMaxSafePoziomRacjiForPlayerCity({
+    cityId: 'capital', cities: cities9, previewPerCity: previewPerCity9, zapasyPrzed: 0, units: [],
+  });
+  ok(scenGEmpty.result === 0.5,
+    `Scenariusz G (baseline): capital, PUSTA armia (kosztArmii=0) -> maxSafe=0.5 (got=${scenGEmpty.result})`);
+
+  const scenGArmy = runGetMaxSafePoziomRacjiForPlayerCity({
+    cityId: 'capital', cities: cities9, previewPerCity: previewPerCity9, zapasyPrzed: 0,
+    units: [
+      { ownerId: 0, typeId: 'wojownik', q: 0, r: 0 },
+      { ownerId: 0, typeId: 'wojownik', q: 1, r: 0 },
+    ],
+  });
+  ok(scenGArmy.result === 0,
+    `Scenariusz G (N2): capital, NIEPUSTA armia (2 jednostki, kosztArmii>0 z realnej ` +
+    `militaryFoodConsumptionWithSpichlerz) -> maxSafe=0=WYZYWIENIE_MIN, NIŻSZY niż baseline ` +
+    `0,5 bez armii (got=${scenGArmy.result})`);
+  ok(scenGArmy.result < scenGEmpty.result,
+    `Scenariusz G (N2): koszt armii FAKTYCZNIE obniża "Limit Spichlerza" dla tego samego ` +
+    `miasta/danych (armia=${scenGArmy.result} < pusta=${scenGEmpty.result}) -- dowód, że ` +
+    `wiązanie kosztArmii w main.ts jest wykonywane, nie tylko obecne w kodzie martwym`);
 }
 
 // Sprzątanie plików tymczasowych esbuild.

@@ -185,8 +185,8 @@ import {
   loadBudowaListaBiblioteka,
   DEFAULT_ULEPSZENIA_TRYB,
   DEFAULT_ULEPSZENIA_FOCUS,
-  DEFAULT_ULEPSZENIA_PER_TURN,
-  clampUlepszeniaPerTurn,
+  clampUlepszeniaPracaPercent,
+  resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
   resolveEffectiveUlepszenia,
   normalizePodzialHandlu,
@@ -200,7 +200,7 @@ import {
   type OkolicaFocus,
   type UlepszeniaFocus,
   type UlepszeniaTryb,
-  type UlepszeniaPerTurn,
+  type UlepszeniaPracaPercent,
   type UlepszeniaEmpirePolicy,
   type EffectiveUlepszeniaSettings,
 } from './game/cities';
@@ -672,6 +672,10 @@ import {
 } from './render/tradeRoutesOverlay';
 import { hideDiplomacyPendingModal, showDiplomacyPendingModal } from './ui/diplomacyPendingHud';
 import { getMinimapData, computeViewport } from './map/minimap';
+// R-DROGA-WZOR-6-RAMION: maska 6 bitów sąsiedztwa dróg (czysta logika, testowalna w Node).
+// / EN: 6-bit road neighbour mask (pure logic, Node-testable).
+import { ROAD_MASK_NONE, computeRoadMask, roadHexesToRefresh } from './map/road-network';
+import { hexHasRoad, isRoadImprovementKey } from './map/road-movement';
 import {
   createImprovementBuildApi,
   collectRoadKeys,
@@ -1031,7 +1035,7 @@ import {
 } from './ui/victoryScreen';
 import {
   loadBarbParams, barbariansActive, spawnCamps, tickCamps, decideBarbarianMoves,
-  scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady,
+  scaleBarbParamsForLevel, pickBronzeBarbUnit, isCampRaidReady, migrateBarbariansLevel,
   BARBARIAN_OWNER_ID, isBarbarian,
   loadSeaBarbParams, spawnSeaPeoplesRaiders, purgeNavalCamps, decideSeaPeoplesRaids,
   collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
@@ -2215,11 +2219,41 @@ async function boot(): Promise<void> {
       return [...keys];
     }
 
-    function buildImprovementVisual(layers: readonly string[], relief: SectorReliefOpts = {}): THREE.Group {
+    /**
+     * Czy heks (q,r) należy do sieci dróg — źródłem prawdy są pola `hex.ulepszenia`/`ulepszenie`,
+     * utrzymywane w zgodzie z `placedImprovements` przez syncHexUlepszenieFields (więc widzi
+     * też drogi AI i te z wczytanego zapisu). / EN: is (q,r) part of the road network.
+     */
+    function hexHasRoadAt(q: number, r: number): boolean {
+      const hex = map.hexes[keyOf(q, r)];
+      return !!hex && hexHasRoad(hex);
+    }
+
+    /**
+     * OBA parametry są WYMAGANE świadomie (Evaluator R-DROGA-WZOR-6-RAMION, 2026-08-14):
+     * ta funkcja rysuje heks W KONTEKŚCIE MAPY, więc maska sąsiedztwa jest zawsze znana
+     * wołającemu. Wcześniej miała domyślne `roadMask = 0`, sprzeczne z domyślnym
+     * `ROAD_MASK_FULL` w buildImprovementSectored, które wprost opakowuje — dwie różne
+     * ciche odpowiedzi na to samo pytanie. Zamiast wybierać „mniej zły" literał, defaultu
+     * tu po prostu nie ma: TypeScript nie pozwoli przyszłemu wołającemu pominąć maski
+     * i dostać po cichu złego kształtu drogi.
+     * / EN: both params are deliberately REQUIRED — this draws a hex WITH map context, so the
+     * caller always knows the neighbour mask. The old `roadMask = 0` default contradicted the
+     * `ROAD_MASK_FULL` default of the function it wraps; removing the default (rather than
+     * picking a literal) makes the compiler catch a forgotten mask.
+     */
+    function buildImprovementVisual(
+      layers: readonly string[],
+      relief: SectorReliefOpts,
+      roadMask: number,
+    ): THREE.Group {
       if (layers.length === 0) return new THREE.Group();
       // Maciej 2026-07-09: układ sektorowy — każde ulepszenie w swoim boku heksa, mocno mniejsze,
-      // przy ściance, środek wolny pod miasto; droga = obwódka.
-      return buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R, relief);
+      // przy ściance, środek wolny pod miasto. Droga (R-DROGA-WZOR-6-RAMION) = gwiazda ramion
+      // wg maski sąsiedztwa — dlatego maskę liczy wołający, który jako jedyny widzi mapę.
+      // / EN: the road is a star of arms driven by the neighbour mask, so the caller — the only
+      // one that sees the map — computes it.
+      return buildImprovementSectored(layers, 0xffd54a, undefined, HEX_R, relief, roadMask);
     }
 
     /** collapseToMergedMesh per heks to ~10–20 ms × tysiące złoże — tylko gdy grupa ciężka. */
@@ -10376,7 +10410,13 @@ async function boot(): Promise<void> {
       if (!ok) return;
       const hk = keyOf(q, r);
       const preview = [...new Set([...mergedImprovementLayers(hk), activeImprovementKey])];
-      const g = buildImprovementVisual(preview, improvementReliefOpts(q, r, preview));
+      // Duch pokazuje, JAK droga się połączy — maska z realnych sąsiadów, jeszcze przed budową.
+      // / EN: the ghost shows how the road WILL connect — mask from the real neighbours.
+      const g = buildImprovementVisual(
+        preview,
+        improvementReliefOpts(q, r, preview),
+        computeRoadMask(q, r, hexHasRoadAt),
+      );
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, preview), wp.z);
       applyGhostMaterial(g, true);
@@ -10461,18 +10501,60 @@ async function boot(): Promise<void> {
      * (dlaczego OSOBNO od placedImprovements/territoryOwnerAt: fort budowany
      * POZA istniejacym terytorium nie ma zadnego innego zrodla wlasciciela).
      * Zapis/odczyt save — pole `meta.fortNodes` budowane TU w main.ts (nie w
-     * game/save.ts, gdzie fortNodes nie wystepuje): zapis ok. main.ts:23028
-     * (`fortNodes: fortNodes.slice()`), odczyt main.ts:29825-29826.
+     * game/save.ts, gdzie fortNodes nie wystepuje): zapis ok. main.ts:23151
+     * (`fortNodes: fortNodes.slice()`), odczyt main.ts:29977-29979.
      * / EN: save write/read -- `meta.fortNodes` is built HERE in main.ts (not
      * in game/save.ts, which has no fortNodes field): write around
-     * main.ts:23028, read at main.ts:29825-29826.
+     * main.ts:23151, read at main.ts:29977-29979.
+     * (N-2, runda 4 2026-08-14: numery linii uaktualnione -- poprzednie
+     * 23028/29825-26 przesunely sie przez pozniejsze commity, patrz
+     * PYTANIA-OTWARTE.md "Fort/straznica krok2 (45f673af)".)
      */
     const fortNodes: FortNode[] = [];
     const improvementMeshes = new Map<string, THREE.Group>();
+    /**
+     * R-DROGA-WZOR-6-RAMION: heksy, dla których OSTATNIO wyrenderowano drogę. Służy wyłącznie do
+     * wykrycia ZMIANY sieci dróg (postawiono/zburzono) — wtedy trzeba przerysować sąsiadów, bo
+     * ich maska zyskała/straciła bit w tę stronę. Bez tego sąsiad zostaje z urwanym ramieniem.
+     * / EN: hexes whose last render included a road — used only to detect a road-network CHANGE,
+     * which is when the neighbours must be redrawn (their mask gained/lost a bit towards this hex).
+     */
+    const roadRenderedHexes = new Set<string>();
+    /**
+     * Odbudowa CAŁEJ mapy (wczytanie zapisu, tryb demo) — każdy heks i tak przechodzi przez
+     * spawnImprovementMesh z aktualnymi danymi, więc odświeżanie sąsiadów byłoby czystą stratą
+     * (podwojona liczba przebudów na starcie). / EN: full-map rebuild — every hex is rebuilt anyway.
+     */
+    let bulkImprovementRebuild = false;
     const clearingMeshes = new Map<string, THREE.Group>();
     const hexClearingStates = new Map<string, HexClearingState>();
     let pendingImprovementsTurn = new PendingImprovementsTurn();
     let buildApi: ImprovementBuildCallbacks | null = null;
+
+    /**
+     * JEDYNY punkt kasowania stanu RENDERU ulepszeń (meshe + pamięć sieci dróg). Woła go
+     * KAŻDA ścieżka restartu rozgrywki (nowa gra, 3 playtesty z huba) oraz wczytanie zapisu —
+     * 5 miejsc, bo żadne z nich nie przeładowuje strony, więc każdy stan pominięty tutaj
+     * przeżywa restart jako zombie.
+     *
+     * Powód wydzielenia (Evaluator R-DROGA-WZOR-6-RAMION, 2026-08-14): `roadRenderedHexes`
+     * był czyszczony TYLKO przy wczytaniu zapisu, a 4 pozostałe ścieżki kasowały same
+     * `improvementMeshes`. Stary wpis przeżywał restart → wczesny `return` w
+     * syncRoadNetworkAt („stan drogi się nie zmienił") blokował odświeżenie SĄSIADA heksa,
+     * który miał drogę w POPRZEDNIEJ rozgrywce tej samej sesji przeglądarki, i drogi
+     * przestawały się stykać (sąsiad rysował placyk zamiast ramienia). Ta sama klasa błędu
+     * co audyt #43 (cityRelig/autoManageCities). Trzymanie obu kasowań w JEDNEJ funkcji
+     * sprawia, że dołożenie kolejnego stanu renderu nie wymaga pamiętania o 5 miejscach.
+     * / EN: the ONLY place that clears improvement RENDER state (meshes + road-network memory).
+     * Called from all 5 restart paths (new game, 3 playtests, save load) — none of them reloads
+     * the page, so anything missed here survives as a zombie. Extracted after `roadRenderedHexes`
+     * was found to be cleared on the save path only.
+     */
+    function resetImprovementRenderState(): void {
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
+      improvementMeshes.clear();
+      roadRenderedHexes.clear();
+    }
 
     /**
      * Regula 1/3 (Maciej 2026-08-09): rejestruje nowo postawiony Fort/Posterunek
@@ -10625,14 +10707,21 @@ async function boot(): Promise<void> {
     }
 
     function syncLivestockAndPlacedMeshes(): void {
-      for (const hexKey of Object.keys(map.hexes)) {
-        const hex = map.hexes[hexKey];
-        if (!hex) continue;
-        const hasDeposit = isLivestockDepositNakladka(hex.nakladka);
-        const hasPlaced = (placedImprovements.get(hexKey)?.length ?? 0) > 0;
-        if (hasDeposit || hasPlaced) {
-          spawnImprovementMesh(hexKey);
+      // Przebieg po CAŁEJ mapie — maski liczą się z gotowych danych, więc sąsiadów nie odświeżamy
+      // (patrz bulkImprovementRebuild). / EN: full-map pass — masks come from ready data.
+      bulkImprovementRebuild = true;
+      try {
+        for (const hexKey of Object.keys(map.hexes)) {
+          const hex = map.hexes[hexKey];
+          if (!hex) continue;
+          const hasDeposit = isLivestockDepositNakladka(hex.nakladka);
+          const hasPlaced = (placedImprovements.get(hexKey)?.length ?? 0) > 0;
+          if (hasDeposit || hasPlaced) {
+            spawnImprovementMesh(hexKey);
+          }
         }
+      } finally {
+        bulkImprovementRebuild = false;
       }
     }
 
@@ -11191,7 +11280,10 @@ async function boot(): Promise<void> {
       if (isNaN(q) || isNaN(r)) return;
       removeClearingMesh(hexKey);
       const layers: readonly string[] = ['wyrab'];
-      const g = buildImprovementVisual(layers);
+      // Ikona wyrębu nie zawiera warstwy drogi, więc maska nie ma tu żadnego skutku — podana
+      // jawnie, bo funkcja nie ma (celowo) domyślnej. / EN: no road layer here, so the mask is
+      // inert; passed explicitly because the function deliberately has no default.
+      const g = buildImprovementVisual(layers, {}, ROAD_MASK_NONE);
       const wp = axialToWorld(q, r, HEX_R);
       g.position.set(wp.x, improvementMeshPlacement(q, r, layers), wp.z);
       scene.add(g);
@@ -11235,6 +11327,30 @@ async function boot(): Promise<void> {
       syncResourceOverlayAtHex(hexKey);
     }
 
+    /**
+     * R-DROGA-WZOR-6-RAMION — rekomputacja masek po zmianie sieci dróg na heksie (q,r).
+     * Przelicza się TYLKO gdy droga na tym heksie się pojawiła albo zniknęła, i dotyka wyłącznie
+     * tego heksa + jego sąsiadów Z DROGĄ (roadHexesToRefresh) — nigdy całej mapy. Typowe
+     * dociągnięcie odcinka do istniejącej sieci = 2 kafle, dokładnie jak w dokumencie właściciela.
+     * Rekurencja się nie rozbiega: przerysowany sąsiad ma niezmieniony stan drogi, więc wychodzi
+     * pierwszym `return`.
+     * / EN: recompute masks after the road network changed at (q,r). Runs only when a road appeared
+     * or disappeared here, and touches this hex plus its road-having neighbours only — never the
+     * whole map. Recursion terminates: a redrawn neighbour's road state is unchanged, so it returns
+     * on the first check.
+     */
+    function syncRoadNetworkAt(hexKey: string, q: number, r: number, layers: readonly string[]): void {
+      const hasRoad = layers.some(isRoadImprovementKey);
+      if (roadRenderedHexes.has(hexKey) === hasRoad) return;
+      if (hasRoad) roadRenderedHexes.add(hexKey);
+      else roadRenderedHexes.delete(hexKey);
+      if (bulkImprovementRebuild) return;
+      for (const nb of roadHexesToRefresh(q, r, hexHasRoadAt)) {
+        const nk = keyOf(nb.q, nb.r);
+        if (nk !== hexKey) spawnImprovementMesh(nk);
+      }
+    }
+
     function spawnImprovementMesh(hexKey: string): void {
       const parts = hexKey.split(',');
       if (parts.length !== 2) return;
@@ -11242,6 +11358,9 @@ async function boot(): Promise<void> {
       const r = parseInt(parts[1]!, 10);
       if (isNaN(q) || isNaN(r)) return;
       const layers = mergedImprovementLayers(hexKey);
+      // PRZED wcześniejszym `return` dla pustego heksa — zburzenie drogi też musi odświeżyć sąsiadów.
+      // / EN: before the empty-hex early return — removing a road must refresh neighbours too.
+      syncRoadNetworkAt(hexKey, q, r, layers);
       const oldMesh = improvementMeshes.get(hexKey);
       if (oldMesh) {
         scene.remove(oldMesh);
@@ -11269,7 +11388,11 @@ async function boot(): Promise<void> {
       const hex = map.hexes[hexKey];
       const isHill = hex?.terenBazowy === TerenBazowy.Wzgorza;
       const sectoredLayers = hasTarasy ? layers.filter(l => l !== 'tarasy') : layers;
-      const g = buildImprovementVisual(sectoredLayers, improvementReliefOpts(q, r, layers));
+      const g = buildImprovementVisual(
+        sectoredLayers,
+        improvementReliefOpts(q, r, layers),
+        computeRoadMask(q, r, hexHasRoadAt),
+      );
       if (hasTarasy && isHill) {
         const tv = tarasyWariantDlaHeksa(q, r, map.seed);
         const rotY = rotacjaDlaHeksa(q, r, map.seed);
@@ -11291,8 +11414,7 @@ async function boot(): Promise<void> {
       entries: Array<[string, ImprovementKey | PlacedLayers]> | undefined,
     ): void {
       placedImprovements.clear();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState(); // meshe + sieć dróg odtwarzają się z wczytanych warstw / EN: rebuilt from loaded layers
       if (entries?.length) {
         for (const [hexKey, raw] of entries) {
           const hex = map.hexes[hexKey];
@@ -11353,8 +11475,13 @@ async function boot(): Promise<void> {
         syncHexUlepszenieFields(key, layers);
         count++;
       }
-      for (const key of keys) {
-        if (placedImprovements.has(key)) spawnImprovementMesh(key);
+      bulkImprovementRebuild = true; // zasiew całej mapy — jak wyżej / EN: full-map seeding
+      try {
+        for (const key of keys) {
+          if (placedImprovements.has(key)) spawnImprovementMesh(key);
+        }
+      } finally {
+        bulkImprovementRebuild = false;
       }
       rebuildResourceOverlays();
       renderer.shadowMap.needsUpdate = true;
@@ -12947,6 +13074,82 @@ async function boot(): Promise<void> {
       let rekruciMax = 0;
       for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka, maxMult);
       const unitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
+
+      // R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Klatka 3: box „BADANE TERAZ" w Nauce.
+      // TA SAMA czysta funkcja `getResearchState()` już wołana dla sciencePicker/scienceHubHud
+      // (patrz `getResearchState: (_ownerId) => getResearchState(player, data.tech, 0, ...)` w
+      // innym miejscu tego pliku) — tu z prawdziwym `economy.naukaRate` zamiast zaślepki 0,
+      // żeby ETA w turach było policzone naprawdę, nie zawsze `null`. Zero nowej logiki badań.
+      const researchState = getResearchState(player, data.tech, economy.naukaRate ?? 0, _menuDifficulty);
+      const research: EmpireDetailSnap['research'] = researchState.targetId
+        ? {
+          targetLabel: researchState.targetId,
+          kosztCelu: researchState.kosztCelu,
+          pula: researchState.pula,
+          postepFraction: researchState.postepFraction,
+          turnsLeft: researchState.turnsLeft,
+        }
+        : null;
+
+      // R-DESIGN-11-ZAKLADEK faza 2 — Klatka 11 (wariant A): karta religii państwowej. Wzorzec
+      // POŻYCZONY z `buildReligionOverlayData()` (ten sam plik, poniżej) — wiodąca religia per
+      // miasto liczona przez `religionCompositionBreakdown()` (max po `count`, NIE
+      // `dominantReligion()`, który zwraca null poniżej progu dominacji — Klatka 11 chce zawsze
+      // pokazać wiodącą wiarę miasta, nawet mieszaną, tak jak robi to tabela MIASTO/RELIGIA w
+      // makiecie). Bez fabrykowania „Porządku" — patrz JSDoc EmpireReligionSnap.
+      const relStateReligion = ownerReligionForOwnerId(0);
+      const relAggForSnap = aggregateReligionEmpire(
+        pc.map(c => ({
+          state: resolvedCityReligion(c),
+          spreadDelta: lastReligionSpreadByCity.get(c.id) ?? 0,
+        })),
+        relStateReligion,
+      );
+      const relParamsForSnap = loadReligionParams(data.societyParams, _menuDifficulty);
+      const religionCityRows: EmpireDetailSnap['religion']['cities'] = pc.map(c => {
+        const rel = resolvedCityReligion(c);
+        const breakdown = religionCompositionBreakdown(rel);
+        let leading: { name: string; count: number; pct: number } | null = null;
+        for (const b of breakdown) {
+          if (!leading || b.count > leading.count) leading = b;
+        }
+        return {
+          name: c.name,
+          religionLabel: leading?.name ?? '—',
+          isOwn: leading != null && relStateReligion != null && leading.name === relStateReligion,
+          adherents: leading?.count ?? 0,
+        };
+      });
+      // Najliczniejsza obca religia (etykieta paska własna/obca) — suma wyznawców per religia we
+      // WSZYSTKICH miastach gracza (nie tylko wiodąca per miasto), religia PAŃSTWOWA wykluczona.
+      const foreignAdherentTotals = new Map<string, number>();
+      for (const c of pc) {
+        const rel = resolvedCityReligion(c);
+        for (const [name, count] of Object.entries(rel.counts)) {
+          if (name === relStateReligion) continue;
+          if (typeof count === 'number' && count > 0) {
+            foreignAdherentTotals.set(name, (foreignAdherentTotals.get(name) ?? 0) + count);
+          }
+        }
+      }
+      let foreignLabel: string | null = null;
+      let foreignMax = 0;
+      for (const [name, count] of foreignAdherentTotals) {
+        if (count > foreignMax) { foreignMax = count; foreignLabel = name; }
+      }
+      const templeCount = pc.filter(c => (cityBuilt.get(c.id) ?? []).includes('swiatynia')).length;
+      const religion: EmpireDetailSnap['religion'] = {
+        stateReligionLabel: relStateReligion ?? '—',
+        totalAdherents: relAggForSnap.stateAdherents,
+        ownSharePct: relAggForSnap.sharePct,
+        foreignSharePct: Math.max(0, 100 - relAggForSnap.sharePct),
+        foreignLabel,
+        faithRatePerTurn: relAggForSnap.spreadRateTotal,
+        zadowolenieBonus: relParamsForSnap.zadowolenieDominujaca,
+        templeCount,
+        cities: religionCityRows,
+      };
+
       return {
         global: {
           civName,
@@ -12989,6 +13192,8 @@ async function boot(): Promise<void> {
         resources: buildEmpireResourceRows(0),
         trade: buildEmpireTradeSnap(),
         food: buildEmpireFoodSnap(),
+        research,
+        religion,
       };
     }
 
@@ -18060,12 +18265,12 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
-          onUlepszeniaEmpirePerTurnChange: (perTurn: UlepszeniaPerTurn) => {
+          onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
             const pol = ulepszeniaEmpireForOwner(0);
-            pol.perTurn = clampUlepszeniaPerTurn(perTurn);
+            pol.pracaAutoPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             pol.tryb = 'auto';
             ulepszeniaEmpireByOwner.set(0, pol);
-            showHintMessage(`Państwo: auto ulepszenia · ${pol.perTurn}/turę`, 2800);
+            showHintMessage(`Państwo: auto ulepszenia · ${pol.pracaAutoPercent}% budżetu Pracy`, 2800);
             refreshD1bHud();
           },
           getUlepszeniaCityOverride: (cityId: string) => {
@@ -18081,7 +18286,9 @@ async function boot(): Promise<void> {
               city.ulepszeniaFocus = city.ulepszeniaFocus ?? pol.focus;
               city.ulepszeniaTryb = city.ulepszeniaTryb ?? pol.tryb;
               city.ulepszeniaOnlyWorked = city.ulepszeniaOnlyWorked ?? pol.onlyWorked;
-              city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(city.ulepszeniaPerTurn ?? pol.perTurn);
+              city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
+                city.ulepszeniaPracaPercent ?? pol.pracaAutoPercent,
+              );
             }
             showHintMessage(
               override
@@ -18132,13 +18339,16 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
-          onUlepszeniaCityPerTurnChange: (cityId: string, perTurn: UlepszeniaPerTurn) => {
+          onUlepszeniaCityPracaPercentChange: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => {
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
-            city.ulepszeniaPerTurn = clampUlepszeniaPerTurn(perTurn);
+            city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             city.ulepszeniaTryb = 'auto';
-            showHintMessage(`${city.name}: auto ulepszenia · ${city.ulepszeniaPerTurn}/turę`, 2800);
+            showHintMessage(
+              `${city.name}: auto ulepszenia · ${city.ulepszeniaPracaPercent}% budżetu Pracy`,
+              2800,
+            );
             refreshD1bHud();
           },
         },
@@ -19186,7 +19396,21 @@ async function boot(): Promise<void> {
      * później) widzi już `istnieje === false` i funkcja wraca natychmiast.
      * Wołane raz na ZAKOŃCZONE przemieszczenie (nie per jednostka w stosie).
      */
-    function checkVillageRewardAt(q: number, r: number): boolean {
+    /**
+     * P-MP-CHATKI-SKARBOW-NIE-ZBIERANE runda 2 (ECHO 2026-08-13, Maciej): „Zarówno AI jak i
+     * miasta państwa po odkryciu chatek mają takie same skarby jak gracze." -- ta sama pula
+     * nagród i te same reguły losowania (pickVillageReward/villageGoldAmount/...), wyłącznie
+     * CEL ZAPISU jest owner-aware: gracz (ownerId===0) pisze wprost do `player.*` jak dotąd,
+     * AI/miasto-państwo (ownerId>0) pisze do map `ai*ByOwner` (ownerTreasury/ownerNaukaPool,
+     * ten sam wzorzec co przejęcie stolicy, linia ~21630) i do `runAiResearchForOwner` (ten sam
+     * resolver co coroczne bankowanie nauki AI, linia ~24270) zamiast do `researchStep(player,…)`.
+     * Toast/wpis w panelu WYDARZENIA to UI gracza — dla AI/MP zamiast tego jeden console.log.
+     * / EN: same reward pool/rules as the player; only the write target is owner-aware --
+     * player writes to `player.*` as before, AI/city-state writes to the `ai*ByOwner` maps via
+     * the same accessors capital-capture already uses. No player-UI toast for AI/MP, console.log
+     * instead.
+     */
+    function checkVillageRewardAt(q: number, r: number, ownerId: number = 0): boolean {
       const hex = map.hexes[keyOf(q, r)];
       if (!hex?.wioska?.istnieje) return false;
       hex.wioska.istnieje = false;
@@ -19196,6 +19420,11 @@ async function boot(): Promise<void> {
       // przy save/load wskrzesza wioskę (hex.wioska.istnieje wraca na true).
       lootedVillageHexKeys.add(keyOf(q, r));
 
+      const isPlayer = ownerId === 0;
+      // PARYTET AI: era do skalowania nagrody -- gracz z player.era, AI/MP przez ten sam
+      // resolver co reszta silnika (empireEpochForOwner), nie zahardkodowane player.era.
+      const era = isPlayer ? player.era : empireEpochForOwner(ownerId);
+
       // D: zbieramy JEDEN czytelny opis nagrody + ikonę + kind zdarzenia (zamiast
       // kilku nadpisujących się toastów). Na końcu: jeden toast + trwały wpis w WYDARZENIA.
       let summary = '';
@@ -19204,8 +19433,12 @@ async function boot(): Promise<void> {
       let villageEraAdvanced = false;
 
       const grantGold = (label: string): void => {
-        const amount = villageGoldAmount(player.era);
-        player.skarbiec += amount;
+        const amount = villageGoldAmount(era);
+        if (isPlayer) {
+          player.skarbiec += amount;
+        } else {
+          setOwnerTreasury(ownerId, ownerTreasury(ownerId) + amount);
+        }
         summary = 'Chatka (' + label + '): +' + amount + ' złota';
         icon = '\u{1F4B0}'; // 💰
         evKind = 'city';
@@ -19216,12 +19449,12 @@ async function boot(): Promise<void> {
       // SPAWNU (gdzie jednostka faktycznie stanie), NIE na heksie chatki (q, r) — bo to
       // spawn, nie chatka, liczy się jako naruszenie granicy. Wynik reużyty niżej w gałęzi
       // 'jednostka', żeby findVillageRewardSpawnHex nie było wołane dwa razy.
-      const rewardUnitTypeId = villageUnitForEra(player.era);
+      const rewardUnitTypeId = villageUnitForEra(era);
       const rewardUnitDest = rewardUnitTypeId
         ? findVillageRewardSpawnHex({
             hutQ: q,
             hutR: r,
-            ownerId: 0,
+            ownerId,
             units,
             cities,
             isPassable: isHexPassableForUnit,
@@ -19231,8 +19464,8 @@ async function boot(): Promise<void> {
       const excludeUnit = shouldExcludeUnitReward({
         hasSpawnHex: rewardUnitDest !== undefined,
         spawnHexOwnerId: rewardUnitDest ? territoryOwnerAtLive(rewardUnitDest.q, rewardUnitDest.r) : null,
-        playerOwnerId: 0,
-        rewardUnitIsMilitary: isVillageRewardUnitMilitary(player.era),
+        playerOwnerId: ownerId,
+        rewardUnitIsMilitary: isVillageRewardUnitMilitary(era),
       });
 
       const kind = pickVillageReward(Math.random(), { excludeUnit });
@@ -19240,32 +19473,45 @@ async function boot(): Promise<void> {
       if (kind === 'zloto') {
         grantGold('skarb');
       } else if (kind === 'tech') {
-        if (player.badana === null) {
+        // Aktualnie badana technologia właściciela -- gracz z player.badana, AI/MP z
+        // aiBadanaByOwner (ten sam magazyn co runAiResearchForOwner niżej czyta/pisze).
+        const ownerBadanaNow = isPlayer ? player.badana : (aiBadanaByOwner.get(ownerId) ?? null);
+        if (ownerBadanaNow === null) {
           grantGold('brak aktywnych badań, w zamian');
         } else {
-          const amount = villageTechProgress(player.era);
-          player.nauka += amount;
-          summary = 'Chatka: +' + amount + ' postępu badań (' + player.badana + ')';
+          const amount = villageTechProgress(era);
+          summary = 'Chatka: +' + amount + ' postępu badań (' + ownerBadanaNow + ')';
           icon = '\u{1F52C}'; // 🔬
           evKind = 'science';
-          const prevPlayerEra = player.era;
-          const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
-          // R-EPOKA-CUD-WARUNEK-AWANSU: era gracza przeliczana pełną bramką PO researchStep
-          // (komplet tech epoki + cud E), nie przez surowy awansDoEpoki ustawiony wewnątrz
-          // researchStep — ta sama ścieżka co koniec tury i handel technologiami.
-          reconcilePlayerEraFromResearch();
-          for (const done of step.completed) {
-            summary += ' \xb7 zbadano ' + done.id;
-          }
-          const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
-          villageEraAdvanced = eraAdvanced;
-          if (eraAdvanced) {
-            overlayDepositEra = player.era;
-            rebuildResourceOverlays();
-            setEra(player.era);
-          }
-          if (eraAdvanced) {
-            notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+          if (isPlayer) {
+            player.nauka += amount;
+            const prevPlayerEra = player.era;
+            const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+            // R-EPOKA-CUD-WARUNEK-AWANSU: era gracza przeliczana pełną bramką PO researchStep
+            // (komplet tech epoki + cud E), nie przez surowy awansDoEpoki ustawiony wewnątrz
+            // researchStep — ta sama ścieżka co koniec tury i handel technologiami.
+            reconcilePlayerEraFromResearch();
+            for (const done of step.completed) {
+              summary += ' \xb7 zbadano ' + done.id;
+            }
+            const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
+            villageEraAdvanced = eraAdvanced;
+            if (eraAdvanced) {
+              overlayDepositEra = player.era;
+              rebuildResourceOverlays();
+              setEra(player.era);
+            }
+            if (eraAdvanced) {
+              notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+            }
+          } else {
+            // AI/MP: dolicz do puli nauki ownera i odpal TEN SAM resolver co coroczne
+            // bankowanie nauki AI (runAiResearchForOwner, main.ts ~24270) -- konsumuje pulę,
+            // ewentualnie kończy technologię/awansuje epokę i sam wywołuje
+            // refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(ownerId)) wewnątrz.
+            // Nie duplikujemy tej logiki -- żadnego osobnego researchStep(aiState,...) tutaj.
+            setOwnerNaukaPool(ownerId, ownerNaukaPool(ownerId) + amount);
+            runAiResearchForOwner(ownerId);
           }
         }
       } else {
@@ -19278,13 +19524,15 @@ async function boot(): Promise<void> {
         } else {
           const def = lookupUnitDef(typeId);
           // RUCH-SWIATA-TEMPO: patrz komentarz przy pierwszym spawnie (produkcja jednostki).
+          // player.ruchSwiataPace jest globalnym ustawieniem tempa świata (nie per-owner) --
+          // ten sam wzorzec już stosowany dla jednostek produkowanych przez AI (main.ts ~24932).
           const ruch = applyRuchSwiataPace(normFieldVal(def['Ruch'], 2), player.ruchSwiataPace ?? 'krotki');
           const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
           const isSuper = def['Super-jednostka'] === 'TAK';
           const newUnitId = 'wioska_' + turn + '_' + q + '_' + r + '_' + Math.random().toString(36).slice(2);
           units.push({
             id: newUnitId,
-            ownerId: 0,
+            ownerId,
             typeId,
             category: categoryOf(typeId, role, isSuper, def['Typ']),
             q: dest.q,
@@ -19304,33 +19552,43 @@ async function boot(): Promise<void> {
       refreshFog({ skipVeteranEducation: true });
 
       if (summary) {
-        // Jeden trwały toast (5 s) + wpis w panelu WYDARZENIA (nie ginie jak toast).
-        // Awans epoki ma własny toast — nie nadpisuj go podsumowaniem chatki.
-        if (!villageEraAdvanced) {
-          showHintMessage(icon + ' ' + summary, 5000);
+        if (isPlayer) {
+          // Jeden trwały toast (5 s) + wpis w panelu WYDARZENIA (nie ginie jak toast).
+          // Awans epoki ma własny toast — nie nadpisuj go podsumowaniem chatki.
+          if (!villageEraAdvanced) {
+            showHintMessage(icon + ' ' + summary, 5000);
+          }
+          villageEventLog.unshift({
+            id: 'village-' + turn + '-' + q + '-' + r,
+            icon,
+            title: 'Odkryto chatkę',
+            subtitle: summary,
+            kind: evKind,
+          });
+          if (villageEventLog.length > 6) villageEventLog.length = 6;
+          refreshD1bHud();
+        } else {
+          // AI/miasto-państwo: brak UI gracza (toast/panel WYDARZENIA są jego widokiem) --
+          // console.log wzorem innych zdarzeń AI (np. „[AI ${ownerId}] Zalozono miasto…”).
+          console.log(`[Chatka] Owner ${ownerId}: ${summary}`);
         }
-        villageEventLog.unshift({
-          id: 'village-' + turn + '-' + q + '-' + r,
-          icon,
-          title: 'Odkryto chatkę',
-          subtitle: summary,
-          kind: evKind,
-        });
-        if (villageEventLog.length > 6) villageEventLog.length = 6;
-        refreshD1bHud();
       }
       return true;
     }
 
-    /** Sprawdza nagrody wioski na każdym unikalnym heksie ścieżki (gracz). */
-    function checkVillageRewardsAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): boolean {
+    /** Sprawdza nagrody wioski na każdym unikalnym heksie ścieżki (domyślnie gracz;
+     *  ownerId>0 -- AI/miasto-państwo, patrz checkVillageRewardAt). */
+    function checkVillageRewardsAlongPath(
+      hexes: ReadonlyArray<{ q: number; r: number }>,
+      ownerId: number = 0,
+    ): boolean {
       const seen = new Set<string>();
       let collected = false;
       for (const h of hexes) {
         const k = keyOf(h.q, h.r);
         if (seen.has(k)) continue;
         seen.add(k);
-        if (checkVillageRewardAt(h.q, h.r)) collected = true;
+        if (checkVillageRewardAt(h.q, h.r, ownerId)) collected = true;
       }
       return collected;
     }
@@ -25113,7 +25371,7 @@ async function boot(): Promise<void> {
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
-                  getMaxPerCity: c => effectiveUlepszeniaForCity(c as City).perTurn,
+                  getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(
                       city as City, map, territoryNodesAuto,
@@ -26355,6 +26613,18 @@ async function boot(): Promise<void> {
                     // path (Dijkstra from computePath), not just the last hex, since AI
                     // "teleports" to `last` with ruchLeft=0 and passes camps along the way.
                     checkBarbCampDestructionAlongPath(path);
+                    // P-MP-CHATKI-SKARBOW-NIE-ZBIERANE runda 2 (ECHO 2026-08-13, Maciej):
+                    // „Zarówno AI jak i miasta-państwa... mają takie same skarby jak
+                    // gracze" -- ten sam egzekutor obsługuje ruch zwykłego AI I miast-
+                    // państw (decideAITurn deleguje do decideDefensiveCopyTurn dla MP,
+                    // ale obie ścieżki kończą w tej samej pętli commands/'move' tutaj),
+                    // więc jedno wpięcie pokrywa oba. Bez tego jednostka dochodziła do
+                    // chatki i NIGDY jej nie zbierała (nieskończona oscylacja, runda 1).
+                    // `u.ownerId` tu to zawsze prawdziwa cywilizacja/MP (1..N), nigdy
+                    // barbarzyńcy (patrz komentarz wyżej). / EN: same command executor
+                    // handles both regular AI and city-state movement -- one wiring point
+                    // covers both owners with actual military units reaching a hut.
+                    checkVillageRewardsAlongPath(path, u.ownerId);
                     if (applyCityVisitBonusesAlongPath([u], path, false)) {
                       syncUnitsRender();
                     }
@@ -26844,7 +27114,16 @@ async function boot(): Promise<void> {
         setTurnTransition(94, 'Barbarzyńcy…', 'Barbarzyńcy', nextTurnNum);
         await yieldTurnTransitionUi();
         try {
-          const barbLevel = _menuAdvanced?.barbariansLevel ?? 'wielu';
+          // R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (Maciej 2026-08-13):
+          // migrateBarbariansLevel obsluguje zarowno brak wartosci (nowa gra bez
+          // wyboru = domyslny 'normalny'), jak i legacy stringi ('wielu' itp.)
+          // ktore moga wciaz przetrwac w starym newGameParams po wczytaniu save'u
+          // sprzed tej zmiany (_lastNewGameParams nie przechodzi migracji przy
+          // wczytaniu -- patrz restoreGameFromSave), bez crasha na nieznanym stringu.
+          // / EN: handles both "no value" (fresh game, no pick = default
+          // 'normalny') and legacy strings that may still linger in an old
+          // save's newGameParams after load, without crashing on an unknown string.
+          const barbLevel = migrateBarbariansLevel(_menuAdvanced?.barbariansLevel);
           const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel);
           if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
             const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
@@ -28408,8 +28687,7 @@ async function boot(): Promise<void> {
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState();
 
       await postSceneProgress(loading, 'plan klastra startowego', 7, POST_SCENE_STEPS);
       applyClusterStartPlan(_menuCivId, newSeed, _menuCityStates, {
@@ -28671,8 +28949,7 @@ async function boot(): Promise<void> {
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState();
       refreshBuildApi();
       overlayDepositEra = player.era;
       rebuildResourceOverlays();
@@ -28921,8 +29198,7 @@ async function boot(): Promise<void> {
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState();
 
       cityBuilt.set(preset.playerCityId, ['koszary']);
       cityProd.set(preset.playerCityId, { ...preset.initialProduction, kolejka: [...preset.initialProduction.kolejka] });
@@ -29148,8 +29424,7 @@ async function boot(): Promise<void> {
       fortNodes.length = 0; // R-FORT-STRAZNICA krok 2: nowa gra = pusty rejestr fort/posterunek
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
-      improvementMeshes.clear();
+      resetImprovementRenderState();
 
       cityBuilt.set(preset.playerCityId, ['koszary', 'spichlerz']);
       cityProd.set(preset.playerCityId, {
@@ -29726,14 +30001,18 @@ async function boot(): Promise<void> {
       const savedPoziomRacji = saved.meta?.ownerDefaultPoziomRacji as Array<[number, PoziomRacji]> | undefined;
       migratePoziomRacjiOnLoad(cities, ownerDefaultPoziomRacji, savedPoziomRacji);
       ulepszeniaEmpireByOwner.clear();
-      const savedUlepszenia = saved.meta?.ulepszeniaEmpireByOwner as Array<[number, UlepszeniaEmpirePolicy]> | undefined;
+      // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: `pol` może pochodzić ze starego zapisu (pole `perTurn`,
+      // 1|2|3) LUB z nowego (`pracaAutoPercent`, 0-100) — typujemy surowo (Record) i migrujemy
+      // przez resolveUlepszeniaPracaPercentFromRaw, żeby stary zapis nie crashował.
+      const savedUlepszenia = saved.meta?.ulepszeniaEmpireByOwner as
+        Array<[number, Record<string, unknown>]> | undefined;
       if (savedUlepszenia?.length) {
         for (const [oid, pol] of savedUlepszenia) {
           ulepszeniaEmpireByOwner.set(oid, {
-            focus: pol.focus ?? DEFAULT_ULEPSZENIA_FOCUS,
-            tryb: pol.tryb ?? DEFAULT_ULEPSZENIA_TRYB,
-            onlyWorked: pol.onlyWorked ?? false,
-            perTurn: clampUlepszeniaPerTurn(pol.perTurn),
+            focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
+            tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
+            onlyWorked: (pol.onlyWorked as boolean) ?? false,
+            pracaAutoPercent: resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
           });
         }
       } else {

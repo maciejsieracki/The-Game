@@ -34,6 +34,7 @@ export {
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
+  scaleBarbParamsForLevel, barbariansEnabledForLevel, migrateBarbariansLevel,
 } from '../src/game/barbarians';
 export {
   hexDistance, computePath, computeReachable, keyOf,
@@ -69,6 +70,7 @@ const {
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
+  scaleBarbParamsForLevel, barbariansEnabledForLevel, migrateBarbariansLevel,
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
@@ -730,6 +732,90 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     const cmds = decideBarbarianMoves([b1], [e], [], [], m, P);
     eq(cmds.length, 0, 'land logic skips embarked/seaRaider units');
   }
+}
+
+// ===========================================================================
+// 11. R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (Maciej 2026-08-13):
+//     skala 4-poziomowa Łatwy/Normalny/Trudny/Brak, niezależna od trudności
+//     gry, + migracja starej skali 'wielu'/'nieliczni'/'wylaczeni'.
+// ===========================================================================
+{
+  // 11a. Sygnatury funkcji NIE przyjmują trudności gry -- dowód strukturalny
+  // niezależności od _menuDifficulty/cityStateDifficultyOverride: jedyny
+  // parametr obok `params` to poziom barbarzyńców, nic więcej.
+  eq(scaleBarbParamsForLevel.length, 2, 'scaleBarbParamsForLevel(params, level) -- brak parametru trudności');
+  eq(barbariansEnabledForLevel.length, 1, 'barbariansEnabledForLevel(level) -- brak parametru trudności');
+  eq(migrateBarbariansLevel.length, 1, 'migrateBarbariansLevel(level) -- brak parametru trudności');
+
+  // 11b. Ten sam poziom + baseline -> ten sam wynik niezależnie od tego, "jaka"
+  // byłaby trudność gry w tle (funkcja jej nawet nie widzi) -- dwa wywołania
+  // identyczne, potwierdzają brak ukrytej zależności/losowości.
+  const s1 = scaleBarbParamsForLevel(P, 'trudny');
+  const s2 = scaleBarbParamsForLevel(P, 'trudny');
+  eq(JSON.stringify(s1), JSON.stringify(s2), 'scaleBarbParamsForLevel deterministyczne, tylko (params, level)');
+
+  // 11c. Brak -> pełne wyłączenie (maxCamps=0, enabled=false) -- jak dawne "wylaczeni".
+  eq(scaleBarbParamsForLevel(P, 'brak').maxCamps, 0, 'brak: maxCamps=0');
+  assert(barbariansEnabledForLevel('brak') === false, 'brak: enabled=false');
+  assert(barbariansEnabledForLevel('latwy') === true, 'latwy: enabled=true');
+  assert(barbariansEnabledForLevel('normalny') === true, 'normalny: enabled=true');
+  assert(barbariansEnabledForLevel('trudny') === true, 'trudny: enabled=true');
+
+  // 11d. Łatwy: zawsze przynajmniej 1 obóz, NIGDY zero -- wymóg właściciela --
+  // sprawdzone też na skrajnie niskim baseline (maxCamps=1), gdzie 20% baseline
+  // zaokrągla się do 0 bez klamry min(1, ...).
+  const easy = scaleBarbParamsForLevel(P, 'latwy');
+  assert(easy.maxCamps >= 1, 'latwy: maxCamps >= 1 (nigdy zero)');
+  assert(easy.maxCamps < P.maxCamps, 'latwy: mniej obozow niz dawne baseline "Wielu"');
+  const easyTinyBaseline = scaleBarbParamsForLevel({ ...P, maxCamps: 1 }, 'latwy');
+  eq(easyTinyBaseline.maxCamps, 1, 'latwy: min(1) trzyma sie nawet gdy baseline juz = 1 (20% -> 0 bez klamry)');
+
+  // 11e. Normalny ~= 1/4 dawnego baseline "Wielu" (maxCamps), min 1.
+  const normal = scaleBarbParamsForLevel(P, 'normalny');
+  eq(normal.maxCamps, Math.max(1, Math.round(P.maxCamps / 4)), 'normalny: maxCamps ~= baseline/4');
+  assert(normal.maxCamps < P.maxCamps, 'normalny: mniej obozow niz dawne baseline "Wielu"');
+
+  // 11f. Trudny ~= 2x dawny baseline "Wielu" (maxCamps) -- "ma byc trudno to ma
+  // byc trudno", realnie odczuwalne, nie kosmetyczne.
+  const hard = scaleBarbParamsForLevel(P, 'trudny');
+  eq(hard.maxCamps, Math.max(1, Math.round(P.maxCamps * 2)), 'trudny: maxCamps ~= 2x baseline');
+  assert(hard.maxCamps > P.maxCamps, 'trudny: wiecej obozow niz dawne baseline "Wielu"');
+}
+
+// 11g. Kolejnosc gestosci (maxCamps) na baseline FALLBACK_BARB_PARAMS (=6):
+// Brak(0) < Latwy(1) <= Normalny(2) < Trudny(12).
+{
+  const none = scaleBarbParamsForLevel(P, 'brak').maxCamps;
+  const easy = scaleBarbParamsForLevel(P, 'latwy').maxCamps;
+  const normal = scaleBarbParamsForLevel(P, 'normalny').maxCamps;
+  const hard = scaleBarbParamsForLevel(P, 'trudny').maxCamps;
+  assert(none === 0, 'kolejnosc: Brak=0');
+  assert(easy >= 1, 'kolejnosc: Latwy >= 1');
+  assert(easy <= normal, 'kolejnosc: Latwy <= Normalny (Latwy nigdy najgestszy)');
+  assert(normal < hard, 'kolejnosc: Normalny < Trudny');
+  assert(none < easy, 'kolejnosc: Brak < Latwy (Brak zawsze najmniej)');
+}
+
+// 11i. Migracja starej skali (przed 2026-08-13) na nowa, bez crasha na
+// nieznanym/brakujacym stringu z save'a/localStorage.
+eq(migrateBarbariansLevel('wielu'), 'trudny', 'migracja: wielu -> trudny');
+eq(migrateBarbariansLevel('nieliczni'), 'normalny', 'migracja: nieliczni -> normalny');
+eq(migrateBarbariansLevel('wylaczeni'), 'brak', 'migracja: wylaczeni -> brak');
+eq(migrateBarbariansLevel('latwy'), 'latwy', 'migracja: nowa wartosc przechodzi bez zmian (latwy)');
+eq(migrateBarbariansLevel('normalny'), 'normalny', 'migracja: nowa wartosc przechodzi bez zmian (normalny)');
+eq(migrateBarbariansLevel('trudny'), 'trudny', 'migracja: nowa wartosc przechodzi bez zmian (trudny)');
+eq(migrateBarbariansLevel('brak'), 'brak', 'migracja: nowa wartosc przechodzi bez zmian (brak)');
+eq(migrateBarbariansLevel(undefined), 'normalny', 'migracja: brak wartosci -> normalny (bezpieczny domyslny)');
+eq(migrateBarbariansLevel(null), 'normalny', 'migracja: null -> normalny');
+eq(migrateBarbariansLevel('nieznany-string-ze-starego-save'), 'normalny', 'migracja: nieznany string -> normalny, bez crasha');
+eq(migrateBarbariansLevel(42), 'normalny', 'migracja: zly typ (number) -> normalny, bez crasha');
+
+// 11j. Zmigrowana wartosc dziala od razu w scaleBarbParamsForLevel/
+// barbariansEnabledForLevel -- pelny lancuch save-legacy -> gra bez crasha.
+{
+  const migrated = migrateBarbariansLevel('wylaczeni');
+  eq(scaleBarbParamsForLevel(P, migrated).maxCamps, 0, 'legacy wylaczeni po migracji nadal daje maxCamps=0');
+  assert(barbariansEnabledForLevel(migrated) === false, 'legacy wylaczeni po migracji nadal wylacza barbarzyncow');
 }
 
 // --- summary ---------------------------------------------------------------

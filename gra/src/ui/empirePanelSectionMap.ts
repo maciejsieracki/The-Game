@@ -12,7 +12,11 @@ export type EmpirePanelBlock =
   | 'surowce'
   | 'spichlerz'
   | 'armia'
-  | 'handel';
+  | 'handel'
+  | 'skarbiec'
+  | 'praca'
+  | 'nauka'
+  | 'religia';
 
 /** Sekcja panelu → który TOP-LEVEL blok pokazać. 'all' = pełny panel (brak section). */
 export function empirePanelBlockForSection(section: string | null): EmpirePanelBlock {
@@ -25,6 +29,24 @@ export function empirePanelBlockForSection(section: string | null): EmpirePanelB
   if (section === 'kultura') return 'kultura';
   if (section === 'moc') return 'moc';
   if (section === 'parametry') return 'parametry';
+  // R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13): Skarbiec dostaje własny, odizolowany blok
+  // (hero-nagłówek „Netto ±N / turę" nie mieści się w schemacie filtrowanego wiersza wspólnej
+  // sekcji „ekonomia") — wyjątek MUSI być sprawdzony PRZED ogólnym `startsWith('econ-')` niżej.
+  // EN: Treasury gets its own isolated block (a hero header "Net ±N / turn" doesn't fit the
+  // filtered-row scheme of the shared "ekonomia" section) — this exception MUST be checked
+  // BEFORE the generic `startsWith('econ-')` below.
+  if (section === 'econ-skarbiec') return 'skarbiec';
+  // R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x): Praca/Nauka/Religia dostają ten sam
+  // traktament co Skarbiec w fazie 1 — każda ma własny hero (Praca: suma Pracy/turę imperium;
+  // Nauka: bank badań + cel badań; Religia: karta religii państwowej) niepasujący do schematu
+  // filtrowanego wiersza „ekonomia". Miasta zostają na dawnym torze `ekonomia` (kolejna faza,
+  // rozbicie na `miasto`/`obywatele`, poza zakresem tej fazy).
+  // EN: Labor/Science/Religion get the same treatment Treasury got in phase 1 — each has its own
+  // hero that doesn't fit the filtered-row "ekonomia" scheme. Cities stay on the old `ekonomia`
+  // track (next phase, splitting into `miasto`/`obywatele`, out of this phase's scope).
+  if (section === 'econ-praca') return 'praca';
+  if (section === 'econ-nauka') return 'nauka';
+  if (section === 'econ-religia') return 'religia';
   if (section.startsWith('econ-')) return 'ekonomia';
   return 'ekonomia';
 }

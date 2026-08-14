@@ -135,8 +135,21 @@ export interface NewGameParams {
   selectedAiCivIds?: string[];
 }
 
-/** Decyzja B — modal „Zaawansowane opcje” krok 4. */
-export type BarbariansLevel = 'wielu' | 'nieliczni' | 'wylaczeni';
+/**
+ * Decyzja B — modal „Zaawansowane opcje” krok 4.
+ * R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (Maciej 2026-08-13): skala
+ * 4-poziomowa w duchu trudności (Łatwy/Normalny/Trudny/Brak), NIEZALEŻNA od
+ * `_menuDifficulty` (dokładnie ten sam wzorzec co `cityStateDifficultyOverride`
+ * niżej — własne pole w advOpts, nie pochodna głównej trudności). Zastępuje
+ * starą skalę 'wielu'|'nieliczni'|'wylaczeni'; ten literal-union MUSI zostać
+ * zsynchronizowany ręcznie z BarbariansLevel w game/barbarians.ts — moduł UI
+ * jest świadomie odcięty (DECOUPLED, patrz nagłówek pliku) od importów z game/.
+ * / EN: 4-tier difficulty-shaped scale, INDEPENDENT of `_menuDifficulty` (same
+ * pattern as `cityStateDifficultyOverride`). Must stay manually in sync with
+ * BarbariansLevel in game/barbarians.ts — this UI module is intentionally
+ * decoupled from game/ imports.
+ */
+export type BarbariansLevel = 'latwy' | 'normalny' | 'trudny' | 'brak';
 export type VictoryMode = 'moc' | 'dominacja' | 'moc_i_dominacja';
 
 export interface NewGameAdvancedOptions {
@@ -170,7 +183,7 @@ export interface NewGameAdvancedOptions {
 }
 
 const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
-  barbariansLevel: 'wielu',
+  barbariansLevel: 'normalny',
   battleAlwaysManual: false,
   victoryMode: 'moc_i_dominacja',
   buildingCostPace: 'niski',
@@ -267,10 +280,27 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
   }
   if (typeof raw.landFractionCustom === 'boolean') base.landFractionCustom = raw.landFractionCustom;
   if (typeof raw.battleAlwaysManual === 'boolean') base.battleAlwaysManual = raw.battleAlwaysManual;
-  if (raw.barbariansLevel === 'wielu' || raw.barbariansLevel === 'nieliczni' || raw.barbariansLevel === 'wylaczeni') {
+  if (
+    raw.barbariansLevel === 'latwy' || raw.barbariansLevel === 'normalny'
+    || raw.barbariansLevel === 'trudny' || raw.barbariansLevel === 'brak'
+  ) {
     base.barbariansLevel = raw.barbariansLevel;
+  } else if (
+    // R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI: migracja starych prefs
+    // (skala 'wielu'/'nieliczni'/'wylaczeni' sprzed 2026-08-13) -- kompatybilność
+    // wsteczna, bez importu z game/barbarians.ts (moduł UI świadomie DECOUPLED,
+    // patrz nagłówek pliku), więc mapowanie zduplikowane lokalnie 1:1 z
+    // migrateBarbariansLevel() tamtego pliku. / EN: migrates old wizard prefs
+    // scale; duplicated in sync with migrateBarbariansLevel() in game/barbarians.ts
+    // because this UI module deliberately avoids importing from game/.
+    raw.barbariansLevel === 'wielu' || raw.barbariansLevel === 'nieliczni'
+    || raw.barbariansLevel === 'wylaczeni'
+  ) {
+    base.barbariansLevel = raw.barbariansLevel === 'wielu' ? 'trudny'
+      : raw.barbariansLevel === 'nieliczni' ? 'normalny'
+        : 'brak';
   } else if (raw.barbariansEnabled === false) {
-    base.barbariansLevel = 'wylaczeni';
+    base.barbariansLevel = 'brak';
   }
   if (
     raw.victoryMode === 'moc'
@@ -1147,15 +1177,16 @@ function advancedSettingRows(): AdvSettingRow[] {
     {
       key: 'barbariansLevel',
       lbl: 'Barbarzyńcy',
-      hint: 'Gęstość frakcji barbarzyńskich na mapie.',
-      opts: ['Wielu', 'Nieliczni', 'Wyłączeni'],
+      hint: 'Gęstość frakcji barbarzyńskich na mapie — niezależnie od głównej trudności gry. Łatwy = zawsze jacyś, nigdy zero. Brak = pełne wyłączenie.',
+      opts: ['Łatwy', 'Normalny', 'Trudny', 'Brak'],
       getIdx: () => {
-        if (advOpts.barbariansLevel === 'nieliczni') return 1;
-        if (advOpts.barbariansLevel === 'wylaczeni') return 2;
-        return 0;
+        if (advOpts.barbariansLevel === 'latwy') return 0;
+        if (advOpts.barbariansLevel === 'trudny') return 2;
+        if (advOpts.barbariansLevel === 'brak') return 3;
+        return 1;
       },
       setIdx: (i) => {
-        advOpts.barbariansLevel = i === 1 ? 'nieliczni' : i === 2 ? 'wylaczeni' : 'wielu';
+        advOpts.barbariansLevel = i === 0 ? 'latwy' : i === 2 ? 'trudny' : i === 3 ? 'brak' : 'normalny';
       },
     },
     {
@@ -1498,11 +1529,13 @@ function renderGenStep(host: HTMLElement): void {
       : p.advanced.victoryMode === 'dominacja'
         ? 'Tylko dominacja'
         : 'Moc + dominacja';
-    const bLabel = p.advanced.barbariansLevel === 'wielu'
-      ? 'Wielu'
-      : p.advanced.barbariansLevel === 'nieliczni'
-        ? 'Nieliczni'
-        : 'Wylaczeni';
+    const bLabel = p.advanced.barbariansLevel === 'latwy'
+      ? 'Latwy'
+      : p.advanced.barbariansLevel === 'trudny'
+        ? 'Trudny'
+        : p.advanced.barbariansLevel === 'brak'
+          ? 'Brak'
+          : 'Normalny';
     const costLabel = p.advanced.buildingCostPace === 'normalny'
       ? 'Normalny (x2)'
       : p.advanced.buildingCostPace === 'wysoki'

@@ -63,8 +63,20 @@ function main() {
   assert('null section → all (pełny panel)', empirePanelBlockForSection(null) === 'all');
   assert('ekonomia → ekonomia (nie all)', empirePanelBlockForSection('ekonomia') === 'ekonomia');
   assert('surowce → surowce', empirePanelBlockForSection('surowce') === 'surowce');
-  assert('econ-nauka → ekonomia + filtr wiersza', empirePanelBlockForSection('econ-nauka') === 'ekonomia');
-  assert('econ-skarbiec → ekonomia', empirePanelBlockForSection('econ-skarbiec') === 'ekonomia');
+  // R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x): Nauka dostała WŁASNY blok top-level
+  // ('nauka'), tak jak Skarbiec w fazie 1 — zmiana zamierzona (patrz assercje niżej + Praca/
+  // Religia). Dawne oczekiwanie „ekonomia + filtr wiersza" jest tym, co ta faza naprawia.
+  assert('econ-nauka → nauka (R-DESIGN-11-ZAKLADEK faza 2, własny blok)', empirePanelBlockForSection('econ-nauka') === 'nauka');
+  assert('econ-praca → praca (R-DESIGN-11-ZAKLADEK faza 2, własny blok)', empirePanelBlockForSection('econ-praca') === 'praca');
+  assert('econ-religia → religia (R-DESIGN-11-ZAKLADEK faza 2, własny blok)', empirePanelBlockForSection('econ-religia') === 'religia');
+  // R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13): Skarbiec dostał WŁASNY blok top-level
+  // ('skarbiec'), analogicznie do spichlerz/armia/handel niżej — zmiana zamierzona.
+  // EN: Treasury got its OWN top-level block ('skarbiec'), like spichlerz/armia/handel below —
+  // intended change.
+  assert('econ-skarbiec → skarbiec (R-DESIGN-11-ZAKLADEK faza 1)', empirePanelBlockForSection('econ-skarbiec') === 'skarbiec');
+  // Miasta/Rekruci zostają na dawnym torze `ekonomia` — poza zakresem fazy 2.
+  assert('econ-miasta → ekonomia + filtr wiersza (poza zakresem fazy 2)', empirePanelBlockForSection('econ-miasta') === 'ekonomia');
+  assert('econ-rekruci → ekonomia + filtr wiersza (poza zakresem fazy 2)', empirePanelBlockForSection('econ-rekruci') === 'ekonomia');
   assert('spichlerz → spichlerz', empirePanelBlockForSection('spichlerz') === 'spichlerz');
   assert('armia → armia', empirePanelBlockForSection('armia') === 'armia');
   assert('handel → handel', empirePanelBlockForSection('handel') === 'handel');
@@ -81,7 +93,7 @@ function main() {
   const naukaBlock = empirePanelBlockForSection(empireSectionFromHudAct('nauka'));
   assert('chip Surowce ≠ blok Nauka', surowceBlock !== naukaBlock);
   assert('chip Surowce = surowce', surowceBlock === 'surowce');
-  assert('chip Nauka = ekonomia (jeden wiersz)', naukaBlock === 'ekonomia');
+  assert('chip Nauka = nauka (R-DESIGN-11-ZAKLADEK faza 2, własny blok)', naukaBlock === 'nauka');
 
   console.log(`\n${pass} pass · ${fail} fail`);
   process.exit(fail > 0 ? 1 : 0);
