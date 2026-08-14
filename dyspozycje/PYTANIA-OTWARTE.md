@@ -25404,3 +25404,66 @@ wyciek też wychodzi dokładnie 0), ale margines bezpieczeństwa jest inny, niż
    jako deklaracja w opisie commita.
 
 **STATUS: OTWARTE — zwrot do Operatora (runda 2), praca renderowa, Operator dowolny model, Evaluator Opus 5.**
+
+---
+
+## P-DYPLO-BILANS-GATE-NIESPOJNY (2026-08-14, zgłoszenie Macieja ze zrzutem stołu negocjacji, temat POWRACAJĄCY)
+
+**Zgłoszenie (cytat):** „nadal temat równowagi transakcji nie został naprawiony. Pomimo tego, że
+bilans jest na plusie, nie mogę zaakceptować tej oferty. Muszę ją zwiększyć. Akceptacja powinna
+być obliczona w ten sposób, że bilans powinien zliczać wszystko i w bilansie powinno być 0, jeżeli
+jest 0 to jest do zaakceptowania. Jeżeli jest na plusie to tym bardziej."
+
+**Zrzut:** Traktat handlowy Grecy↔Chińczycy. MY ODDAJEMY 50 PW, BILANS (ONI) **+30** (Nadwyżka 30
+PW, pole zielone), ONI ODDAJĄ 20 PW. Mimo dodatniego bilansu: „WPŁYW RELACJI NA DEAL: −72,2% ·
+Relacja 27,8 · musisz dać więcej (×3,6 PW), by oferta była uczciwa" i blok blokujący „Nie spełnia
+warunków: Oferta nieuczciwa dla partnera — poniżej uczciwej wartości PW @ Relacji (wymagane ≥ 73
+PW, oferujesz 50 PW)".
+
+**⚠️ TEMAT MA DŁUGĄ HISTORIĘ NIEROZWIĄZANYCH PRÓB — nie zgadywać, przeczytać całą historię przed
+kodowaniem.** Co najmniej 4 wcześniejsze zgłoszenia tego samego wzorca (dokładny ten sam sprzeczny
+komunikat „bilans dodatni, ale oferta nieuczciwa"): `BUG-PAKIET-BILANS-DODATNI-BLOKADA` (2026-08-08,
+`ce69cf45` FALA 262), `P-DYPLO-BILANS-VS-BRAKUJE-PW-SPRZECZNE` (2026-08-10), `P-DYPLO-PAKT-NIEAGRESJI-ZAUFANIE-MIMO-PLUS-BILANS`
+(2026-08-10, szósty zrzut), `R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY` (2026-08-10, cztery rundy
+rozpoznania, Operator naprawy `af98bc5fafb5f2aa6`, decyzja `3f76022d`). Mimo tego wzorzec wraca —
+albo poprzednie naprawy dotyczyły innej ścieżki kodu (np. auto-wyżywienie miasta, nie stół
+negocjacji dyplomatycznych), albo naprawiono tylko część przypadków. **Do ustalenia jako pierwszy
+krok: czy ten konkretny ekran (Traktat handlowy, `diplomacyTradeBasket.ts`) był w ogóle objęty
+którąkolwiek z poprzednich napraw.**
+
+**Hipoteza robocza (do zweryfikowania w kodzie, nie zakładać):** wyświetlany „BILANS (ONI)" i
+bramka akceptacji („wymagane ≥X PW") to DWIE RÓŻNE formuły liczone osobno — bilans to prawdopodobnie
+surowa różnica `oddajemy − otrzymujemy` bez uwzględnienia mnożnika relacji, a bramka akceptacji
+osobno mnoży wymóg przez czynnik zależny od relacji (×3,6 przy niskim zaufaniu). Skutek: gracz widzi
+„+30 na plusie" i nie rozumie, dlaczego oferta i tak jest odrzucana — te dwie liczby nie są ze sobą
+spójne z perspektywy gracza, nawet jeśli każda z osobna jest poprawnie policzona.
+
+**Żądanie właściciela wprost:** JEDNA formuła — bilans ma **zliczać wszystko** (włącznie z wpływem
+relacji, jeśli ten wpływ ma być częścią kryterium sprawiedliwości) i bramka akceptacji ma być
+`bilans >= 0`, bez osobnego, niezależnego progu PW.
+
+**STATUS: DISPATCH W TOKU.**
+
+---
+
+## P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (2026-08-14, zgłoszenie Macieja ze zrzutem "Dodaj do oferty")
+
+**Zgłoszenie (cytat):** „miało być z gry usunięte [wybieranie miasta] podczas handlu żywnością z
+danego miasta. Handluje się ze Spichlerza, całej cywilizacji, więc to jest w ogóle niepotrzebne."
+
+**Zrzut:** panel „Dodaj do oferty" → typ Żywność → sekcja „Miasto (spichlerz)" z siatką przycisków
+per miasto (Ateny, Sparta, Korynt, Teby, Argos, Mykeny) do wyboru, ZANIM gracz poda ilość żywności.
+
+**Potwierdzone rozpoznaniem (orkiestrator, przed dispatchem):** `gra/src/ui/diplomacyTradeBasket.ts`
+— pole `cityId` dla pozycji koszyka typu `zywnosc` jest odczytywane/zapisywane WYŁĄCZNIE wewnątrz
+tego samego pliku UI (komentarz w kodzie: „Dla zywnosc samo id już JEST cityId" — używane do
+deduplikacji pozycji w koszyku, `P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE"). Grep całego
+`gra/src/game/*.ts` (silnik) nie znalazł ŻADNEGO miejsca czytającego `cityId` w kontekście handlu
+żywnością — silnik dyplomacji operuje na cywilizacji jako całości (spójne z istniejącym „Spichlerz
+Centralny": nadwyżki miast trafiają do wspólnej puli, niedobory pokrywane stamtąd). **Silny sygnał,
+że wybór miasta jest interfejsem-widmem — nic w silniku faktycznie z niego nie korzysta poza samym
+UI koszyka.** Do potwierdzenia przez dispatchowanego agenta (nie zakładać w 100%): prześledzić do
+końca, co się dzieje z `item.cityId` przy WYKONANIU zaakceptowanej umowy (funkcja aplikująca efekty
+traktatu do stanu gry), żeby mieć pewność, że usunięcie selektora nie zgubi żadnej realnej logiki.
+
+**STATUS: DISPATCH W TOKU.**
