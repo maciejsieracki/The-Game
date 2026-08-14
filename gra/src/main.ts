@@ -5593,18 +5593,23 @@ async function boot(): Promise<void> {
         .map(c => {
           const prod = cityProd.get(c.id);
           const front = prod ? frontItem(prod) : null;
-          const productionLine = front
-            ? `${front.nazwa} • ${prod?.postep ?? 0}/${front.koszt} 🔨`
-            : cityHasActionableProduction(c)
-              ? 'Kolejka pusta'
-              : undefined;
+          // MIASTA-ARMIE-PANEL-LEWY-2026-08-14 §5.2: dawny sklejony string
+          // ("Stolarnia • 8/20 🔨") rozbity na 3 pola — pasek postępu i wyrównana
+          // liczba w cityListHud.ts potrzebują osobnych wartości. Te same trzy
+          // wartości (front.nazwa/prod.postep/front.koszt) liczone tu jak dotąd,
+          // tylko przekazane osobno zamiast sklejone w jeden string.
           const gar = c.garnizon ?? 0;
           return {
             id: c.id,
             name: c.name,
             population: c.population,
-            productionLine,
+            productionName: front ? front.nazwa : undefined,
+            productionProgress: front ? (prod?.postep ?? 0) : undefined,
+            productionMax: front ? front.koszt : undefined,
+            productionQueueEmpty: !front && cityHasActionableProduction(c),
             metaLine: gar > 0 ? `Garnizon: ${gar}` : undefined,
+            garrison: gar,
+            isCapital: capitalCityIdForOwner(c.ownerId) === c.id,
           };
         });
     }
