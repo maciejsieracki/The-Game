@@ -22760,3 +22760,214 @@ czyli dokładnie tę siatkę bezpieczeństwa, dla której `healStaleEndTurnBlock
 **Nie deployować do ROBOCZA przed domknięciem F1 i F2.** F1 znaczy, że objaw ze zgłoszenia nadal
 jest w grze na częstszej ścieżce niż ta naprawiona; F2 znaczy, że przy dziś otwartej N3 możliwa
 jest sesja, w której gracz **nie może już zakończyć tury**.
+
+## Evaluator: naprawa N3 — flush odroczonej bitwy na wszystkich ścieżkach zamknięcia audiencji (`cb1ea991`) — **WERDYKT: PASS-WITH-NOTES**
+
+**WERDYKT: PASS-WITH-NOTES** dla commitu `cb1ea991` (`P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE`,
+nota **N3** z werdyktu FAIL dla `a7de65b0`). Naprawa robi dokładnie to, czego żądał werdykt, wybór
+architektoniczny (flush w `requestAnimationFrame`, nie synchronicznie) jest **poprawny i nośny** —
+zweryfikowany przeze mnie dynamicznie, nie przyjęty na słowo. Nowy test nie jest tautologiczny.
+Cztery noty niżej, **żadna nie blokuje scalenia**; N1 i N2 do osobnej rundy Operatora.
+
+Wszystko poniżej **zmierzone samodzielnie** (Opus 5, izolowany worktree zsynchronizowany
+z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, HEAD `cb1ea991`), nie przepisane z raportu
+Operatora. Kody wyjścia odczytane bezpośrednio, nie przez potok (pułapka `CLAUDE.md` §0b (b)).
+
+### 1. Bramki — uruchomione samodzielnie, wszystkie zgodne z commit message
+
+| Bramka | Zmierzone | Deklarowane w commicie | Zgodność |
+|---|---|---|---|
+| `npx tsc --noEmit` | **exit 0**, zero linii wyjścia | „0 błędów" | ✅ |
+| `diplomacy-audience-close-flush-test.cjs` (nowy) | **37 pass, 0 fail**, exit 0 | „37/0" | ✅ |
+| `end-turn-modal-sequencing-test.cjs` | **40 pass, 0 fail**, exit 0 | „40/0" | ✅ |
+| `heal-stale-blockers-pending-battle-test.cjs` | **22 pass, 0 fail**, exit 0 | „22/22" | ✅ |
+| `barbarzyncy-podwojny-atak-prebattle-test.cjs` | **18 pass, 0 fail**, exit 0 | „18/18" | ✅ |
+| `escape-overlay-stack-test.cjs` | **84 pass, 0 fail**, exit 0 | „84/0" | ✅ |
+| `tech-tree-test.cjs` | **19 pass, 0 fail**, exit 0 | „19/0" | ✅ |
+| `research-test.cjs` | **33 pass, 0 fail**, exit 0 | „33/0" | ✅ |
+| `vite build --outDir /tmp/eval-n3 --emptyOutDir` | **exit 0**, `index.html` 37 087,05 kB | n/d | ✅ |
+
+**Pułapka środowiskowa do zapamiętania:** worktree agenta **nie miał** `gra/node_modules` (wbrew
+`CLAUDE.md` §4a — symlink trzeba było założyć ręcznie). Bez niego `npx tsc` ściąga **obcą** wersję
+TypeScriptu i zgłasza pozorny błąd `tsconfig.json(15,5): error TS5101: Option 'baseUrl' is
+deprecated`. To **nie jest** błąd projektu — z właściwym `node_modules` `tsc` daje zero linii
+wyjścia. Nie meldować tego jako regresji.
+
+### 2. Spór o liczbę wywołań — **Operator ma rację, poprzedni Evaluator policzył linię importu**
+
+Policzyłem sam, na **baseline poprzedniego werdyktu** (`7b803486`, ten sam, na którym liczył
+poprzedni Evaluator): `grep -c 'hideDiplomacyAudience'` w `main.ts` = **9 linii**, z czego linia
+**1091 to import** (`showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, …`).
+Realnych wywołań jest **8**: `5228`, `5823`, `5893`, `12771`, `15182`, `17311`, `17337`, `22186` —
+jedno z flushem (`onBack` @`17311`), **7 cichych**.
+
+**Poprzedni werdykt był niespójny sam ze sobą w obie strony:** podał liczbę **9**, ale
+wyliczył imiennie tylko **6** cichych miejsc (`5228`, `5823`, `5893`, `12771`, `15182`, `22186`)
++ `onBack` = 7 pozycji. Prawda: 8 wywołań, 7 cichych. Operator poprawił liczbę **i** znalazł
+miejsce, którego lista werdyktu w ogóle nie zawierała.
+
+Rozbiór nazw z opisu commita — na pytanie „nowe odkrycia czy przeklasyfikowanie tych samych linii":
+
+| Nazwa u Operatora | Linia (pre-fix) | Status wobec werdyktu |
+|---|---|---|
+| `openCityPanelForPlayer` | 5229 | ta sama linia, werdykt nazwał ją wprost |
+| `closeAllMapToolbarModes` | 5824 | **przeklasyfikowanie** — bezimienne `:5823` werdyktu, teraz nazwane |
+| `toggleWikiFromToolbar` | 5894 | **przeklasyfikowanie** — bezimienne `:5893` werdyktu, teraz nazwane |
+| `openNextOpenDiploProposal` | 12797 | ta sama linia |
+| `ensureDiplomacyUiClosed` | 15208 | ta sama linia |
+| `onOpenKnownFactions` | 17363 | ⭐ **NOWE ODKRYCIE** — werdykt tej linii nie wymienił |
+| `handleDiploFocusCapital` | 22233 | ta sama linia |
+
+Czyli: 6 z listy werdyktu (2 dopiero teraz nazwane po funkcji) + **1 realnie nowe** znalezisko.
+
+**Migracja kompletna — zweryfikowana po fakcie:** `main.ts` na `cb1ea991` ma **dokładnie 3**
+wystąpienia `hideDiplomacyAudience`: import @1092, ciało wrappera @5239, `onBack` @17362. Wszystkie
+7 cichych ścieżek faktycznie chodzi przez `closeDiplomacyAudienceAndFlush()`.
+
+**Sprawdziłem też, czy nie ma ścieżki poza `main.ts`:** `hideDiplomacyAudience` nie jest wołane
+nigdzie indziej w `src/` (jedyne trafienie spoza to komentarz w `audio/muzyka-antyczna.ts:1762`).
+Własne wyjścia modułu — przycisk „Wróć" (`diplomacyAudience.ts:2038`) i Escape
+(`handleAudienceEscape`, `:493`) — oba delegują do `cfg.onBack()`, który zachował swój flush.
+**Nie ma zamknięcia audiencji poza tymi 8 miejscami.**
+
+### 3. Architektura: RAF vs flush synchroniczny — **uzasadnienie Operatora jest poprawne, potwierdzone dynamicznie**
+
+`showDiplomacyAudience()` jest **w pełni synchroniczne** — ustawia `rootEl.style.display='flex'`
+przed powrotem (`diplomacyAudience.ts:2205-2218`), bez żadnego `await` na portrety/muzykę. To jest
+fakt, na którym stoi cała konstrukcja. Skutek w `openNextOpenDiploProposal` (`main.ts:12818-12824`):
+
+- **Flush SYNCHRONICZNY** wykonałby się między `hideDiplomacyAudience()` (`display='none'`)
+  a `openDiploProposalQueueItem(next)`. W tym momencie `isDiplomacyAudienceOpen()` to **false**,
+  guard w `flushDeferredAutoPreBattle` (`preBattle.ts:343`) przepuszcza → **preBattle się otwiera**
+  → dopiero potem otwiera się audiencja #2 → **modale nachodzą na siebie**, dokładnie ta klasa
+  błędu, którą naprawiał cały temat.
+- **Flush w RAF** wykonuje się po całym bloku synchronicznym → `isDiplomacyAudienceOpen()` to
+  **true** → flush poprawnie **nic nie robi** i czeka na kolejne, prawdziwe zamknięcie.
+
+Guard jest okablowany w `main.ts:18990` i `28551`:
+`isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen()`.
+
+**Potwierdzenie dynamiczne (mutacja M3, patrz §5):** zamiana mirrora w teście na wersję
+synchroniczną wywala **C2 krok 2** — bitwa pokazuje się w środku tranzycji audiencja#1→audiencja#2.
+To jest realny scenariusz, o który pytało zlecenie, i odpowiedź brzmi: **tak, RAF jest nośny, flush
+synchroniczny pokazałby bitwę błędnie**.
+
+### 4. Jednoklatkowe opóźnienie — **nieobserwowalne, bez ryzyka**
+
+- ~16,7 ms przy 60 Hz. Flush **wyłącznie OTWIERA** modal, nigdy nic nie chowa — więc nie ma
+  migotania: w tej jednej klatce widać mapę bez modala, czyli **to samo, co `onBack` robi od
+  zawsze** (miał ten RAF przed tym commitem i został już zaakceptowany przez Evaluatora).
+- Wzorzec pre-istnieje w 3 innych miejscach: `main.ts:4764`, `4772`, `15296`.
+- Jedyna teoretyczna ekspozycja: RAF jest wstrzymywany, gdy dokument jest ukryty — zminimalizowanie
+  karty w tej jednej klatce **odracza** (nigdy nie gubi) flush, a `finally` następnego końca tury
+  i tak flushuje ponownie. Identyczna ekspozycja istniała już w `onBack`. **Bez zastrzeżeń.**
+
+### 5. Kontrola mutacyjna — **wykonana przeze mnie niezależnie, wszystkie 3 deklaracje Operatora się potwierdzają**
+
+Każda mutacja cofnięta po pomiarze; po każdej `git status` **pusty** (drzewo bajt w bajt jak `cb1ea991`).
+
+| Mutacja | Gdzie | Wynik | Które asercje padły |
+|---|---|---|---|
+| M1: goły `hideDiplomacyAudience()` z powrotem w `ensureDiplomacyUiClosed` | produkcja | **34 pass, 3 fail**, exit 1 | A2 ×2 + A4 (`got 3`) |
+| M2: wrapper produkcyjny bez RAF (flush synchroniczny) | produkcja | **36 pass, 1 fail**, exit 1 | A1 (kolejność hide→RAF→flushe) |
+| M3: mirror w teście bez RAF (flush synchroniczny) | test | **35 pass, 2 fail**, exit 1 | C1 krok 2 + C2 krok 2 |
+
+Część B testu bunduje (esbuild) i uruchamia (jsdom) **prawdziwy** `src/ui/preBattle.ts` —
+`showPreBattle`/`isPreBattleOpen`/`flushDeferredAutoPreBattle` to kod produkcyjny, nie atrapa.
+**Test nie jest tautologiczny.**
+
+Uczciwe zastrzeżenie do zakresu części B: mirror wrappera woła **tylko**
+`flushDeferredAutoPreBattle()`, pomija `flushDeferredMergePrompts()` (domknięcie `main.ts`, nie da
+się zbundlować) — ścieżka scalenia armii jest więc pinowana wyłącznie tekstowo (A1), dynamicznie
+pokrywa ją `end-turn-modal-sequencing-test.cjs`. Akceptowalne.
+
+### 6. ⚠️ N1 (nota, NIE bloker) — uzasadnienie RAF nie pokrywa gałęzi `diplo-pend-`
+
+Opis commita twierdzi, że `openNextOpenDiploProposal` „zamyka audiencję i zaraz otwiera NASTĘPNĄ".
+To prawda **tylko dla gałęzi negocjacyjnej**. `openDiploProposalQueueItem` (`main.ts:12809`) się
+rozgałęzia: id zaczynające się od `diplo-pend-` idą do `openDiplomacyPendingById` (`main.ts:14471`),
+które otwiera `showDiplomacyPendingModal` — **inny modal, nie audiencję**. Ten modal **nie należy**
+do `isOtherEndTurnModalOpen`, więc flush w RAF **odpala się** i preBattle (z-index 9900 + scrim
+9899) przykrywa modal oczekujących (z-index 820).
+
+Osiągalność potwierdzona w kodzie: `collectOpenDiploProposalQueue` (`main.ts:12769`) **miesza**
+`pendingDiplomacyInbox` (id bite jako `'diplo-pend-'+…`, `main.ts:14394`) z `negotiationTable`, więc
+łańcuch pending→pending jest realny. Dodatkowo `closeDiplomacyAudienceAndFlush()` w
+`openNextOpenDiploProposal` jest wołane **BEZWARUNKOWO** — także gdy gracz kliknął „Następne"
+wewnątrz modalu oczekujących i audiencja **nigdy nie była otwarta**.
+
+**Waga:** wyłącznie wizualna. Brak zakleszczenia (rozstrzygnięcie bitwy odsłania modal pod spodem),
+zero wpływu na stan silnika i save/load. W 6 z 7 ścieżek commit jest czystą poprawą; w tej jednej
+podgałęzi zamienia „bitwa odłożona do następnej tury" na „bitwa nachodzi na modal" — czyli objaw
+z tego samego worka co zgłoszenie. Dlatego **nota, nie FAIL**: stan po naprawie nadal jest lepszy
+niż przed nią, ale luka zostaje otwarta.
+
+**Szkic naprawy (NIE zastosowany — poza zakresem tego commita):** wyeksportować
+`isDiplomacyPendingModalOpen()` z `ui/diplomacyPendingHud.ts` (dziś **nie ma** takiego predykatu;
+ciało to `root !== null`) i dołożyć go do **obu** okablowań `isOtherEndTurnModalOpen`
+(`main.ts:18990` i `28551`). Ponieważ to zmiana wspólnego guarda używanego przez dwa wywołania
+`configurePreBattle`, a przy okazji decyzja produktowa (czy modal oczekującej dyplomacji ma
+wstrzymywać przychodzącą bitwę?) — **osobna runda Operatora / pytanie ABC**, nie doklejanie tutaj.
+
+### 7. ⚠️ N2 (nota) — pin A4 „dokładnie 2 gołe wywołania" ma **udowodnioną** dziurę
+
+Regex to `/hideDiplomacyAudience\(\);/g` — **wymaga średnika**. Sprawdziłem empirycznie
+(mutacja M4): wstawienie zupełnie nowej, cichej ścieżki zamknięcia zapisanej jako
+`if (isDiplomacyAudienceOpen()) { hideDiplomacyAudience() }` do `toggleDiploListFromToolbar`
+zostawia test na **37 pass / 0 fail, exit 0** i `tsc` na exit 0. Nowa ścieżka omijająca wrapper
+przechodzi przez bramkę **niezauważona**.
+
+Deklaracja z opisu commita, że A4 „łapie przyszłe wywołanie omijające wrapper", jest więc
+**przesadzona** — łapie tylko wywołania zakończone średnikiem, a repo swobodnie używa form
+strzałkowych i klamrowych.
+
+**Naprawa zweryfikowana przeze mnie (jeden znak):** usunąć `;` z regexa →
+`/hideDiplomacyAudience\(\)/g`. Zmierzone na obu stanach: **2** na czystym drzewie (linia importu
+zawiera `hideDiplomacyAudience,` bez nawiasów, więc nie jest doliczana), **3** przy mutacji M4.
+Do dołożenia w następnej rundzie testowej.
+
+### 8. 🟡 N3 (drobne) — kotwica A4 degraduje się po cichu
+
+`mainSrc.indexOf('showDiplomacyAudience, hideDiplomacyAudience')` przy przestawieniu kolejności
+w imporcie zwróci `-1`, a `indexOf('\n', -1)` przytnie się do 0 — `bodySrc` stanie się całym plikiem
+bez pierwszej linii. Fałszywej porażki nie będzie (import nie zawiera `()`), ale **intencja
+„pomiń import" przestanie być egzekwowana bez żadnego sygnału**. Kosmetyka.
+
+### 9. 🟡 N4 (drobne) — wrapper NIE jest dosłownym lustrem `onBack`
+
+Komentarz w kodzie mówi „ten sam wzorzec co już istniejący flush w `onBack`", ale RAF w `onBack`
+woła jeszcze `tryOpenNextFirstContactCard()`, a wrapper nie. **Oceniam to pominięcie jako
+POPRAWNE** (nie chcemy, żeby nowa audiencja pierwszego kontaktu wyskakiwała dlatego, że gracz
+otworzył panel miasta). Skutek uboczny: odłożone karty pierwszego kontaktu nadal **nie** są
+drenowane tymi 7 ścieżkami — czekają na `onBack` albo `main.ts:4764/4772/15296`. To luka
+**pre-istniejąca**, nietknięta przez ten commit. Notuję wyłącznie po to, żeby ktoś później nie
+„naprawił" tej asymetrii przez skopiowanie `onBack` w całości — byłaby to regresja UX.
+
+### 10. Co sprawdziłem dodatkowo i jest czyste
+
+- **Brak hazardu `endTurnInProgress`:** `flushDeferredMergePrompts` guarduje na nim
+  (`main.ts:9864`), `flushDeferredAutoPreBattle` **celowo nie** — i tak być powinno, bo atak AI
+  musi dać się rozstrzygnąć w trakcie końca tury.
+- **Podwójne zaplanowanie jest bezpieczne:** dwa wywołania wrappera w jednej klatce planują dwa
+  RAF-y, ale drugi flush zastaje `isPreBattleOpen()===true` i nic nie robi; oba flushe zdejmują
+  z kolejki co najwyżej jeden element (`shift()`).
+- **Guardy na wejściu:** 5 z 7 zmigrowanych miejsc stoi już za `if (isDiplomacyAudienceOpen())`;
+  2 niezguardowane (`12819`, `17388`) to callbacki audiencji, gdzie jest ona otwarta z definicji —
+  z wyjątkiem wejścia z modalu oczekujących opisanego w N1.
+- **Zakres commita:** 6 plików, wyłącznie `main.ts` (+39/−7) + nowy test + 4 stuby. Zero zmian
+  w danych, zero w `render/**`, brak przypadkowo zgarniętej cudzej pracy.
+
+**STATUS: PASS-WITH-NOTES — kod zostaje w gałęzi. N1 i N2 do osobnej rundy Operatora (N2 to jeden
+znak w regexie, N1 wymaga decyzji o zakresie `isOtherEndTurnModalOpen`); N3 i N4 do backlogu, bez
+działania.**
+
+⛔ **ZASTRZEŻENIE DO DEPLOYU — dopisane przy rebase, po zobaczeniu równoległego werdyktu.** Ten PASS
+dotyczy **wyłącznie commitu `cb1ea991` (nota N3)**. W tym samym czasie inna sesja dopisała wyżej
+werdykt **FAIL dla `136fefbb` (nota N1, runda 2)** z jawnym zakazem: *„Nie deployować do ROBOCZA
+przed domknięciem F1 i F2"*. Oba werdykty dotyczą tej samej gałęzi i tego samego tematu
+`P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE`, więc **mój PASS NIE jest zgodą na deploy gałęzi** —
+blokada z N1 rundy 2 obowiązuje. Nie czytać tej sekcji w oderwaniu od tamtej.
+Uwaga dodatkowa: tamten werdykt wskazuje N3 jako współprzyczynę ryzyka F2 („przy dziś otwartej N3
+możliwa jest sesja, w której gracz nie może już zakończyć tury") — N3 jest po `cb1ea991` **zamknięta
+dla 7 ścieżek zamknięcia audiencji**, z resztką opisaną w moim N1 wyżej (gałąź `diplo-pend-`), co
+zawęża, ale nie kasuje tamtej analizy. Ostateczna ocena F2 należy do Evaluatora rundy N1.
