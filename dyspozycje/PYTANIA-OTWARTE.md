@@ -21784,7 +21784,7 @@ na stałe. Wariant skrajny (wszystkie wpisy wypadają): **0 pracujących heksów
 (natychmiast zamiast na koniec tury), nie stan docelowy. Do rozstrzygnięcia produktowo: czy zmiana
 właściciela ma resetować `okolicaTryb` na `auto` (i czy `okolicaReczne` ma być kasowane w całości).
 
-### N2 — dispatch miał 3 punkty, commit zamknął 1; pozostałe 2 są **niewidoczne dla audytu §0c** · STATUS: **OTWARTE**
+### N2 — dispatch miał 3 punkty, commit zamknął 1; pozostałe 2 są **niewidoczne dla audytu §0c** · STATUS: **ZAMKNIĘTE** (commit `47a2e1ff`, 2026-08-14 — oba pozostałe punkty zrobione, gates zielone zweryfikowane niezależnie przez orkiestratora)
 Sekcja „Rozpoznanie zakończone: Milet trzyma pracowników na heksie Aten" zlecała: **(1)** reconcile
 po zdobyciu miasta — **ZROBIONE** tym commitem; **(2)** sanityzacja `okolicaReczne` przy wczytaniu
 save'a — **NIEZROBIONE**; **(3)** wizualne odróżnienie w panelu „legalne pracujące" vs
@@ -22131,7 +22131,7 @@ zmierzony dynamicznie** — asercją B1 dostarczonego testu.
 i nie dotyka `aiTurnAwaitingBattle`/`aiCmdResume`. Zrzut Macieja pokazywał właśnie atak
 barbarzyńców, więc N1 leży w siostrzanej ścieżce, nie w tej z ekranu.
 
-### 4. N2 (poważne) — jednoslotowa kolejka gubi PIERWSZE żądanie; uzasadnienie w kodzie nieprawdziwe
+### 4. N2 (poważne) — jednoslotowa kolejka gubi PIERWSZE żądanie; uzasadnienie w kodzie nieprawdziwe · STATUS: **ZAMKNIĘTE** (commit `fe39215a`, 2026-08-14 — osobny temat podwójnego ataku barbarzyńców naprawił dokładnie ten mechanizm: FIFO `deferredAutoRequests[]` + nowy choke point `finishIncomingBattleUi()` wołający `flushDeferredAutoPreBattle()`; zweryfikowane niezależnie przez orkiestratora: `tsc` 0, `barbarzyncy-podwojny-atak-prebattle-test` 18/18, `end-turn-modal-sequencing-test` 40/0, `escape-overlay-stack-test` 84/0)
 
 Komentarz przy `deferredAutoRequest` (`preBattle.ts`) twierdzi: *„Jeden slot wystarcza — drugi
 automatyczny atak w tym samym ticku nadpisałby ten sam scenariusz (kolejny atak nadejdzie po
