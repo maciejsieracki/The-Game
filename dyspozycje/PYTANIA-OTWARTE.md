@@ -24043,3 +24043,13 @@ niezależnie na realnym kodzie; wszystkie 10 bramek zielone z exitem 0 zmierzony
 przechodzi. N1 to dług projektowy do domknięcia jedną linią w osobnej turze — **nie warunek deployu**,
 bo nie znalazłem osiągalnego scenariusza jego wyzwolenia, a skutek trafienia jest o klasę niższy niż
 to, co ten commit naprawia.
+
+## ECHO ABC `R-OBLEZENIE-REMIS-MASZYNY-Q2 = A` (Maciej, 2026-08-14) — dispatch naprawy w toku
+
+Odpowiedź na sprostowanie wyżej: **remis szturmu muru MA ZAWSZE kończyć oblężenie** — jawna
+reguła silnika (`endMapSiege()` w gałęzi `res.winner === 'remis'`), niezależnie od geometrii
+odwrotu `placeFanOutGroup`. Zastępuje przypadkowe, geometrio-zależne zachowanie zmierzone przez
+Evaluatora (31/63 układów zostawiało oblężenie trwające). Toast `51a32fe6` („oblężenie zniesione")
+staje się PRAWDZIWY w każdym przypadku po tej naprawie — zostaje bez zmian.
+
+**STATUS: dispatch Operatora (Sonnet 5) w toku.**
