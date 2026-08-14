@@ -27835,6 +27835,135 @@ pass, 0 fail** (było 65/0, +1 z MUT-H) · `combat-test.cjs` → 6/6 · `map-att
 zweryfikowane (statycznie + mutacyjnie + żywym kliknięciem myszy w headless Chromium z kontrolą
 A/B). N3/N4/N6/N7 świadomie poza zakresem tej rundy.**
 
+### WERDYKT EVALUATORA RUNDY 2 (2026-08-14, Opus 5, agent `a79cd973e2ed4355c`) dla `b752e0c4` — **PASS-WITH-NOTES**
+
+Wszystkie liczby niżej **zmierzone przez samodzielne uruchomienie** w izolowanym worktree
+(`node_modules` przez symlink, `tsc` 5.9.3 potwierdzone `npx tsc --version` per C-029) — żadna nie
+przepisana z opisu commita. Kod produkcyjny NIE był zmieniany trwale: wszystkie sondy i mutacje
+cofnięte, `git diff --quiet` czysty przed i po (md5 `src/main.ts` = `b3823ed9…`, identyczny
+z `b752e0c4`).
+
+#### 1. Bramki — uruchomione niezależnie na czystym drzewie
+
+| Bramka | Wynik na `b752e0c4` | Ocena |
+|---|---|---|
+| `npx tsc --noEmit` (5.9.3) | exit 0, 0 błędów | ZIELONA |
+| `atak-dystansowy-mapa-test.cjs` | **66 pass / 0 fail**, exit 0 | ZIELONA (zgodne z opisem) |
+| `combat-test.cjs` | 6 / 6 | ZIELONA |
+| `map-attack-city-test.cjs` | 8 ok / 0 fail | ZIELONA |
+| `tech-tree-test.cjs` | 19 / 0 | ZIELONA |
+| `research-test.cjs` | 33 / 0 | ZIELONA |
+
+#### 2. N1 — ŻYWE KLIKNIĘCIE MYSZY, własny pomiar A/B (nie powtórzenie pomiaru Operatora)
+
+Metoda: bundle zbudowany przeze mnie z bieżącego źródła (`vite build`, 19–20 s) + tymczasowa sonda
+`__civEvalProbe` (stawia stos, wroga, centruje kamerę, zwraca współrzędne ekranowe), prawdziwe
+`page.mouse.down/up` w headless Chromium **`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`**
+(potwierdzam ostrzeżenie poprzednika: domyślna ścieżka Playwrighta w tym środowisku nie istnieje),
+viewport 1400×900, `?playtest=mapa`, boot do klikalnego canvasu **~50 s**. Trafienie kliku
+zweryfikowane niezależnie (`pickMapTarget` na tych samych pikselach zwraca dokładnie klikany heks).
+**Sonda usunięta, `main.ts` przywrócony bit-w-bit (md5 zgodny).**
+
+Scenariusz: stos gracza `(28,9)` = Wojownik (`meleeAttack=4`, zasięg 0) + Łucznik (`meleeAttack=2`,
+zasięg ataku 3 heksy, widok pola 2), barbarzyńca `(31,9)`, **dystans 3 heksy**, `enemyVisible=false`
+(zmierzone programowo z `currentVisible()`), `inStackRange=true`, `atWar=true`. Klik 1 na własny stos
+daje `selectedId = evalp_woj` — **reprezentantem jest jednostka zwarcia, mechanizm ze zgłoszenia
+potwierdzony na żywo**.
+
+| Bundle (ta sama mapa, te same heksy) | Klik 2 na wroga @ 3 heksy, za mgłą |
+|---|---|
+| **BEZ fixu N1** (cofnięta wyłącznie linia `currentVisible()…`, reszta identyczna) | `preBattleOpen=true`, w DOM „ROZSTAWIENIE BITWY" — **regresja odtworzona** |
+| **Z fixem** (`b752e0c4`) | `preBattleOpen=false`, hint „Cel niewidoczny (mgła).", `plannedMarch=null`, jednostki nadal `(28,9)` |
+
+**Kontrola nr 1 — fix NIE jest za szeroki (te same heksy, ten sam dystans 3):** dołożenie Zwiadowcy
+(widok pola 5) do stosu → `enemyVisible=true` → klik na wroga **otwiera bitwę** (`preBattleOpen=true`,
+„ROZSTAWIENIE BITWY" w DOM), obie jednostki nadal na `(28,9)` (atak z dystansu bez marszu).
+**Kontrola nr 2 — zwarcie/adiacencja bez regresji:** `(81,8)`→`(82,8)`, dystans 1, `enemyVisible=true`
+→ bitwa startuje normalnie.
+
+#### 3. Symetria trzech ścieżek — sprawdzona, mgła TERAZ identyczna
+
+`currentVisible()` (`main.ts:8833-8850`) to **czysta funkcja przeliczana przy każdym wywołaniu**
+z `units`/`cities`/`map` — nie ma cache'u ani stanu, który mógłby się rozjechać między ścieżkami.
+`refreshFog` (`main.ts:9136`) woła dokładnie ją samą, więc render mgły pochodzi z tego samego źródła.
+Wszystkie trzy ścieżki mają dziś **ten sam warunek i tę samą kolejność** (mgła PRZED zasięgiem):
+klik `main.ts:20632-20633`, `tryLaunchMarchAttack` `19315-19316`, `refreshHoverPathPreview`
+`19365 + 19372` (`hoverVis`). **Zero rozbieżności w samym sprawdzeniu mgły.**
+
+Rozbieżności, które ZOSTAŁY, wszystkie **PRE-ISTNIEJĄCE** (żadnej nie wprowadza ta runda):
+- **cel wyznaczany inaczej:** klik → `unitAtRepresentative` (pomija `inGarnizon`), hover → surowe
+  `units.find(...)` (garnizon wroga ŁAPIE), marsz → `find` po `id`;
+- **`stackCanMove` tylko w kliku** — po marszu atak startuje przy 0 pkt ruchu, klikiem nie;
+- **ścieżka klik→MIASTO wroga w ogóle nie sprawdza mgły** (`main.ts:20466` + `src/map/map-attack-city.ts`
+  — grep: **0 odwołań** do widoczności w całym pliku), więc ta sama klasa dziury „atakuję to, czego nie
+  widzę" tam nadal stoi. Wynik z odczytu kodu, NIE zmierzony żywym klikiem — kandydat na osobny numer;
+- **`ai.ts` nie zna mgły w ogóle** (grep `currentVisible|computeVisibleAt|explored` → **0 trafień**),
+  AI atakuje każdy cel w zasięgu niezależnie od widoczności. Po N1 gracz jest ograniczony mgłą na
+  wszystkich 3 ścieżkach, AI na żadnej — asymetria pre-istniejąca, kierunek „AI swobodniejsze",
+  kandydat na osobny numer (w rejestrze nie ma dziś żadnego wątku o mgle AI — sprawdzone grepem).
+
+#### 4. N2 — własne mutacje na PRODUKCYJNYCH plikach (nie powtórzenie MUT-H), baza 66/0
+
+| # | Mutacja | Plik | Wynik bramki | Złapana? |
+|---|---|---|---|---|
+| E1 | `activeUnitStack` → `return [active];` | `game/armyMerge.ts` | **64 / 2** | TAK — czysto behawioralnie |
+| E2 | `visibleStackOnHex` → zawsze pusty stos | `game/armyMerge.ts` | **62 / 4** | TAK |
+| E3 | `stackGroupIdOf` → każda jednostka własną grupą (scenariusz N3) | `game/armyMerge.ts` | **64 / 2** | TAK |
+| E4 | `visibleStackOnHex` ignoruje `q`/`r` (cały świat = jeden stos) | `game/armyMerge.ts` | **66 / 0** | **NIE** |
+| E5 | `playerStackAt` → `activeUnitStack(…).filter(x => x.id === u.id)` (inny tekst niż MUT-H) | `src/main.ts` | **63 / 4** | TAK |
+
+**E1-E3 to twardy dowód, że N2 jest naprawione realnie, nie pozornie:** test nie ma ŻADNEGO strażnika
+tekstowego na `armyMerge.ts`, więc czerwony wynik może pochodzić wyłącznie z faktycznego wykonania
+prawdziwego, zbundlowanego `activeUnitStack`/`visibleStackOnHex`/`stackGroupIdOf`. E5 potwierdza
+niezależnie liczbę 63/4 z opisu commita i to, że wykonywane jest prawdziwe `main.ts:playerStackAt`
+(2 porażki behawioralne `(g2)` + 2 z wewnętrznego MUT-H).
+
+#### 5. NOTY (żadna nie blokuje zamknięcia tematu)
+
+- **G1 — sam fix N1 ma ZEROWE pokrycie bramkowe (zmierzone, nie domniemane).** Mutacja E6: usunięcie
+  całej linii `currentVisible().has(keyOf(cu.q, cu.r)) &&` z `main.ts` → `atak-dystansowy-mapa-test`
+  **66 pass / 0 fail**, `combat-test` 6/6, `map-attack-city-test` 8/0, `tsc` exit 0 — **wszystko
+  zielone, nikt nie zauważa cofnięcia naprawy**. Grep po całym `gra/tools/`: `currentVisible`
+  występuje w **0 plikach**. To dokładnie ta sama klasa braku, którą runda 1 zgłosiła jako N2 dla
+  `playerStackAt` — runda 2 naprawiła tamten przypadek, a swojego własnego fixu strażnikiem nie
+  objęła, mimo że w tym samym pliku stoją już 4 analogiczne strażniki strukturalne
+  (`atak-dystansowy-mapa-test.cjs:253-266`). Zalecenie: dołożyć jedną asercję regex na warunek
+  w gałęzi kliku przy najbliższym dotknięciu tego pliku (Evaluator nie pisze kodu za Operatora).
+- **G2 — sprostowanie opisu commita/rejestru: „trasa marszu zamiast bitwy" to NIEPRAWDA.** Zmierzone:
+  po kliku na zamglony cel `plannedMarch = null`, jednostki nie ruszyły się z `(28,9)`. Kod
+  (`main.ts:20636-20648`) w gałęzi mgły pokazuje wyłącznie hint i kończy — `planMarchTo` siedzi
+  dopiero w dalszych `else if`. Zachowanie jest **poprawne i pre-istniejące** (gałąź hintu
+  „Cel niewidoczny (mgła)." żyje od commita `13419757`, 2026-07-09 — sprawdzone `git log -S`),
+  więc fix przywraca stan sprzed całego tematu; błędny jest tylko opis.
+- **G3 — luka pokrycia obok N2 (mutacja E4).** Bramka nigdy nie sprawdza, że jednostka z INNEGO heksu
+  NIE wchodzi do stosu — `visibleStackOnHex` bez warunku `q`/`r` przechodzi 66/0. Sekcja „(g)" stawia
+  wszystkie jednostki na `(0,0)`. Warto dołożyć asercję „łucznik na SĄSIEDNIM heksie nie odblokowuje
+  ataku" — przy okazji udokumentowałaby notę N6 rundy 1 (skład bitwy zbiera promień 1, bramka nie).
+- **G4 — tryb dev z wyłączoną mgłą (klawisz `F`): gracz WIDZI wroga, a klik go odrzuca.** Zmierzone
+  żywo: po `F` (hint „FoW wyłączony (F): cała mapa widoczna — wolniejsze") cała mapa jest wyrenderowana,
+  ale klik na wroga @ 3 heksy daje „Cel niewidoczny (mgła)." i brak bitwy — bo `currentVisible()` nie
+  patrzy na `fogOn`/`revealAllLand` (`main.ts:8833-8850`, `9207-9233`). Dotyczy WYŁĄCZNIE trybu
+  dev/playtest i jest identyczne w pozostałych dwóch ścieżkach (tam pre-istniejące) — N1 tylko
+  domyka symetrię. Do świadomości przy playtestach z `F`.
+- **G5 — MUT-H jest kruchy na refaktor.** Szuka literału `return activeUnitStack(units, u);`; KAŻDA
+  legalna zmiana tej linii (E5) daje `FAIL: mutacja nieprzygotowana`. Kierunek bezpieczny (czerwone,
+  nie zielone), ale to fałszywy alarm przy poprawnym refaktorze — do świadomości, nie do naprawy teraz.
+
+#### 6. Werdykt
+
+**PASS-WITH-NOTES — żadna nota nie blokuje.** N1 jest naprawione realnie i udowodnione **własnym**
+żywym kliknięciem myszy z kontrolą A/B na tym samym ziarnie mapy oraz dwiema kontrolami braku
+nadmiernego zasięgu fixu; wszystkie trzy ścieżki inicjacji ataku sprawdzają dziś mgłę identycznie,
+z tego samego, bezstanowego źródła. N2 jest naprawione **weryfikowalnie** — trzy niezależne mutacje
+w `armyMerge.ts`, na którym test nie ma żadnego strażnika tekstowego, są łapane wyłącznie
+behawioralnie, co dowodzi wykonywania prawdziwej zależności produkcyjnej. Wszystkie sześć bramek
+zielonych, drzewo czyste. Noty G1-G5 to dług testowy i sprostowania opisu, nie wady naprawy.
+
+**TEMAT `P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE` — ZAMKNIĘTY W CAŁOŚCI (obie rundy:
+`4dcb2f4f` PASS-WITH-NOTES + `b752e0c4` PASS-WITH-NOTES).** Poza zakresem i nadal otwarte osobno:
+N3 (dwa `stackGroupId` na jednym heksie), N4/N6 (kosmetyka), N7 → `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1`
+(czeka na właściciela), plus dwaj nowi kandydaci z §3 (mgła na ścieżce klik→miasto; brak mgły w `ai.ts`).
+
 ## ⚠️ P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT (2026-08-14, znalezisko przy okazji
 naprawy P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE, cicho zarejestrowane — nie nowy
 wątek na czacie)
