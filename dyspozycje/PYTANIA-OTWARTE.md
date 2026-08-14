@@ -24495,6 +24495,22 @@ CivPedii i paneli Excel (N3/N4) przed uznaniem tematu za domknięty.
 
 ---
 
+## ECHO `R-DROGI-RUCH-HANDEL-PODLOGA-Q1 = A` (Maciej, 2026-08-14) — dispatch naprawy w toku
+
+**Decyzja:** osobna podłoga `ROAD_BRUK_MIN_MOVE_COST = 1/5` wyłącznie dla drogi brukowanej —
+zwykła droga zostaje przy `ROAD_MIN_MOVE_COST = 1/3` bez zmian. Skutek: droga brukowana zawsze
+daje pełne 5×, niezależnie od kosztu bazowego terenu; nigdy nie jest gorsza niż zwykła droga
+(dziś przy koszcie bazowym 2 była — nota N1/N2 Evaluatora). Świadomy koszt zaakceptowany:
+armie na najtańszym terenie (Łąka/Równina/rzeka) przyspieszają wyraźnie po zbudowaniu bruku —
+to zamierzony efekt inwestycji w bruk, nie efekt uboczny.
+
+**STATUS: DISPATCH W TOKU** — Operator Sonnet 5, razem z N3 (sprostowanie CivPedii/wikiBundle,
+„+1 handel/t" → „+2 handel/t") zgłoszonym w tym samym werdykcie. N4 (panel Excel
+`Tereny-i-ulepszenia-MACIEJ.xlsx`) odłożone do osobnego kroku doganiania JSON→Excel — nie
+wykonywane automatycznie (`CLAUDE.md` §2).
+
+---
+
 ## Evaluator: `R-DROGI-RUCH-HANDEL-Q1` (`92cd220b`) — WERDYKT **FAIL** (2026-08-14)
 
 **STATUS: **OTWARTE** — wymaga (a) decyzji ABC właściciela w sprawie podłogi `ROAD_MIN_MOVE_COST`
@@ -24832,7 +24848,8 @@ w komentarzu, **N3** i **N4** są informacyjne.
 
 ## `P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE` — miasto AI z zapisu sprzed `0d50bb81` zostaje w trybie ręcznym na zawsze
 
-**STATUS: **OTWARTE** — zgłoszone przez Evaluatora `0d50bb81` (nota N1), do dispatchu Operatora.
+**STATUS: ZAMKNIĘTE** (2026-08-14) — naprawione commitem `1d983d05`, Evaluator **PASS-WITH-NOTES**
+(sekcja niżej w tym pliku), wszystkie noty dokumentacyjne, żadna nie blokuje.
 
 **Objaw:** wczytanie zapisu zrobionego przed `0d50bb81`, w którym miasto gracza w trybie ręcznym
 zostało przejęte przez AI/rebeliantów → miasto nadal ma `okolicaTryb: 'reczny'`, obywatele stoją
