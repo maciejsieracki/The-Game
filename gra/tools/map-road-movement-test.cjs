@@ -1,5 +1,10 @@
 'use strict';
-/** MAPA T-TECH-9 — droga brukowana: upgrade + bonus ruchu. */
+/**
+ * MAPA T-TECH-9 — droga brukowana: upgrade + ruch.
+ * R-DROGI-RUCH-HANDEL-Q1 (Maciej 2026-08-14): ruch droga ÷3 (bez zmian), droga
+ * brukowana ÷5 (było: koszt-2); Handel (plon heksa) droga +2/t (było +1),
+ * droga brukowana +3/t (było +2).
+ */
 const fs = require('fs');
 const path = require('path');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
@@ -14,11 +19,13 @@ export {
 } from '../src/map/improvement-build';
 export {
   applyRoadMovementModifier,
-  cobblestoneMoveBonus,
+  ROAD_MOVE_SPEED_MULT,
+  ROAD_BRUK_MOVE_SPEED_MULT,
   hexHasRoad,
 } from '../src/map/road-movement';
 export { terrainMoveCost } from '../src/units/setup';
 export { TerenBazowy, Ulepszenie } from '../src/types/hex';
+export { applyImprovementBonus, applyImprovementBonuses } from '../src/game/terrain-improvements';
 `, 'utf8');
 
 esbuild.buildSync({
@@ -46,7 +53,9 @@ function mkHex(q, r, teren, ulepszenie = UL.Brak) {
   };
 }
 
-ok(M.cobblestoneMoveBonus() === 2, 'bonus_ruch from JSON = 2');
+// R-DROGI-RUCH-HANDEL-Q1 (Maciej 2026-08-14): stale mnozniki, nie z JSON.
+ok(M.ROAD_MOVE_SPEED_MULT === 3, 'ROAD_MOVE_SPEED_MULT = 3 (droga, bez zmian)');
+ok(M.ROAD_BRUK_MOVE_SPEED_MULT === 5, 'ROAD_BRUK_MOVE_SPEED_MULT = 5 (droga brukowana, nowa mechanika)');
 
 const plain = mkHex(0, 0, TB.Laka);
 const road = mkHex(1, 0, TB.Laka, UL.Droga);
@@ -54,9 +63,16 @@ const cobble = mkHex(2, 0, TB.Laka, UL.DrogaBrukowana);
 const hill = mkHex(3, 0, TB.Wzgorza, UL.DrogaBrukowana);
 
 ok(M.applyRoadMovementModifier(1, plain) === 1, 'plain laka cost 1');
-ok(M.applyRoadMovementModifier(1, road) === 1 / 3, 'droga cost /3');
-ok(M.applyRoadMovementModifier(1, cobble) === 1 / 3, 'bruk laka: max(1/3, 1-2)');
-ok(M.applyRoadMovementModifier(2, hill) === 1 / 3, 'bruk wzgorza: max(1/3, 2-2)');
+// (a) brak regresji na zwyklej drodze: koszt/3.
+ok(M.applyRoadMovementModifier(1, road) === 1 / 3, 'droga cost /3 (bez regresji)');
+ok(M.applyRoadMovementModifier(1, cobble) === 1 / 3, 'bruk laka: max(1/3, 1/5)');
+// (b) droga brukowana: koszt/5 (nowa mechanika). Case nietautologiczny -- na koszcie
+// bazowym 2 (Wzgorza) stara mechanika (koszt-2=0, clamp do 1/3=0.333...) i nowa
+// (koszt/5=0.4) daja INNY wynik liczbowy -- gdyby kod nadal odejmowal, ten test by fail.
+ok(M.applyRoadMovementModifier(2, hill) === 0.4, 'bruk wzgorza: koszt/5 = 0.4 (stara mechanika dawala 1/3=0.333..., rozne liczby)');
+ok(Math.abs(M.applyRoadMovementModifier(2, hill) - (1 / 3)) > 1e-9, 'bruk wzgorza: nowy wynik != stary wynik (koszt-2)');
+// Case bez clampu, zeby jednoznacznie pokazac dzielenie a nie tylko efekt max():
+ok(M.applyRoadMovementModifier(10, cobble) === 2, 'bruk: koszt=10 -> 10/5=2 (stara mechanika: 10-2=8, calkiem inna liczba)');
 ok(M.terrainMoveCost(cobble) === 1 / 3, 'terrainMoveCost bruk on laka');
 ok(M.terrainMoveCost(road) === 1 / 3, 'terrainMoveCost droga on laka');
 ok(M.terrainMoveCost(plain) === 1, 'terrainMoveCost plain');
@@ -64,6 +80,23 @@ ok(M.terrainMoveCost(plain) === 1, 'terrainMoveCost plain');
 ok(M.hexHasRoad(road), 'hexHasRoad droga');
 ok(M.hexHasRoad(cobble), 'hexHasRoad bruk');
 ok(!M.hexHasRoad(plain), 'hexHasRoad plain false');
+
+// (c) Handel (plon heksa): bonus.handel z JSON trafia do yld.handel przez applyImprovementBonus.
+// R-DROGI-RUCH-HANDEL-Q1: droga 1->2/ture, droga brukowana 2->3/ture.
+function mkYield() {
+  return { zywnosc: 0, praca: 0, handel: 0, drewno: 0, kamien: 0, glina: 0, ruda: 0, ruda_zelaza: 0 };
+}
+const yldDroga = mkYield();
+M.applyImprovementBonus(yldDroga, 'droga');
+ok(yldDroga.handel === 2, 'Handel (plon heksa) droga = +2/ture (bylo +1)');
+
+const yldBruk = mkYield();
+M.applyImprovementBonus(yldBruk, 'droga_brukowana');
+ok(yldBruk.handel === 3, 'Handel (plon heksa) droga_brukowana = +3/ture (bylo +2)');
+
+const yldMulti = mkYield();
+M.applyImprovementBonuses(yldMulti, ['droga_brukowana']);
+ok(yldMulti.handel === 3, 'applyImprovementBonuses (wiele warstw) tez daje +3/ture dla bruku');
 
 const cityNodes = [{ q: 0, r: 0, pop: 10, level: 1 }];
 const hexes = {

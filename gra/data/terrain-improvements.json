@@ -267,31 +267,33 @@
     "nazwa": "Droga",
     "epoka": 1,
     "bonus": {
-      "handel": 1
+      "handel": 2
     },
     "surowiecOdblokowany": null,
     "teren": "każdy przejezdny heks",
-    "warunek": "łączy TYLKO miasta i posterunki (MAPA pilnuje); +szybkość ruchu jednostek",
+    "warunek": "łączy TYLKO miasta i posterunki (MAPA pilnuje); ruch jednostek 3× szybszy (koszt wejścia ÷3); Handel (plon heksa) +2/turę",
     "koszt_praca": 15,
     "tech": "Koło",
-    "odblokowuje": ""
+    "odblokowuje": "",
+    "uwagi": "R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: Handel (plon heksa) 1→2/turę (było 1)"
   },
   "droga_brukowana": {
     "nazwa": "Droga brukowana",
     "typ": "ulepszenie",
     "epoka": 3,
     "bonus": {
-      "handel": 2
+      "handel": 3
     },
     "bonus_ruch": 2,
+    "bonus_ruch_uwaga": "MARTWE POLE od R-DROGI-RUCH-HANDEL-Q1 (Maciej 2026-08-14) — mechanika ruchu przeszła z ODEJMOWANIA (koszt-bonus_ruch) na DZIELENIE stałą ROAD_BRUK_MOVE_SPEED_MULT=5 (patrz gra/src/map/road-movement.ts), która NIE czyta już tego pola. Zostawione jako historyczna migawka starej mechaniki, nie usunięte z JSON. / EN: DEAD FIELD since R-DROGI-RUCH-HANDEL-Q1 — movement now divides by the fixed ROAD_BRUK_MOVE_SPEED_MULT=5 constant instead of subtracting this value; kept only as a historical trace.",
     "surowiecOdblokowany": null,
     "upgradeFrom": "droga",
     "teren": "hex z Drogi",
-    "warunek": "upgrade Drogi; +2 ruch jednostek; ta sama sieć dróg co Droga",
+    "warunek": "upgrade Drogi; ruch jednostek 5× szybszy (koszt wejścia ÷5); Handel (plon heksa) +3/turę; ta sama sieć dróg co Droga",
     "koszt_praca": 25,
     "tech": "Drogi brukowane",
     "odblokowuje": "",
-    "uwagi": "T-TECH-9 Maciej 2026-07-04"
+    "uwagi": "T-TECH-9 Maciej 2026-07-04. R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: ruch z +2 (odejmowanie) na 5× szybszy (dzielenie); Handel (plon heksa) 2→3/turę (było 2)"
   },
   "kopalnia_miedzi": {
     "nazwa": "Kopalnia miedzi",

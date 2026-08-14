@@ -133,7 +133,8 @@ const hex = {
 const silnikY = tileYield(hexToWorkedTile(hex));
 eq(silnikY.zywnosc, 5, 'silnik: zywnosc = 2(teren) + 3(farma) + 0(droga) = 5');
 eq(silnikY.praca, 5, 'silnik: praca = 2(teren) + 3(farma) + 0(droga) = 5');
-eq(silnikY.handel, 5, 'silnik: handel = 1(teren) + 3(farma) + 1(droga) = 5');
+// R-DROGI-RUCH-HANDEL-Q1 (Maciej 2026-08-14): Handel (plon heksa) droga 1->2/ture, wiec suma 5->6.
+eq(silnikY.handel, 6, 'silnik: handel = 1(teren) + 3(farma) + 2(droga) = 6 (bylo 1+3+1=5 przed R-DROGI-RUCH-HANDEL-Q1)');
 
 // Nowa logika panelu (naprawiona, kopia dokladnie tego co robi teraz tileYieldLabel/append*) --
 // musi sie zgadzac z silnikiem.
@@ -159,7 +160,8 @@ const oldPanelY = tileYield({
 });
 eq(oldPanelY.zywnosc, 2, 'stara logika panelu (legacy tylko): zywnosc = 2 (zanizone, dowod mutacyjny)');
 eq(oldPanelY.praca, 2, 'stara logika panelu (legacy tylko): praca = 2 (zanizone, dowod mutacyjny)');
-eq(oldPanelY.handel, 2, 'stara logika panelu (legacy tylko): handel = 2 (zanizone, dowod mutacyjny)');
+// R-DROGI-RUCH-HANDEL-Q1: droga handel 1->2/ture, wiec teren(1)+droga(2)=3 (bylo 1+1=2).
+eq(oldPanelY.handel, 3, 'stara logika panelu (legacy tylko): handel = 3 = 1(teren)+2(droga) (zanizone wzgledem silnika 6, dowod mutacyjny; bylo 2 przed R-DROGI-RUCH-HANDEL-Q1)');
 assert(
   oldPanelY.zywnosc !== silnikY.zywnosc && oldPanelY.praca !== silnikY.praca && oldPanelY.handel !== silnikY.handel,
   'stara logika panelu (legacy tylko) daje wynik RÓŻNY od silnika -- to byl bug (P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA)',
