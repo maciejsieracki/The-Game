@@ -21652,7 +21652,7 @@ władcy), N4 (rejestracja ID). Osobno, poza tym tematem: sprostowanie wpisu o �
 liczbie 60/0 (pkt 2), sprostowanie/zamknięcie `P-ZNACZNIK-POWER-HUD-CIV-EMBLEM` (pkt 5), dopisanie
 `civ-bonusy-test` i `empire-panel-moc-scroll-preserve-test` do listy pre-istniejących (pkt 7).**
 
-## P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (2026-08-14, znalezisko przy okazji naprawy sekwencjonowania modali końca tury, `a7de65b0`) · STATUS: **W NAPRAWIE — dispatch agenta w toku (audyt §0c, 2026-08-14)**
+## P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (2026-08-14, znalezisko przy okazji naprawy sekwencjonowania modali końca tury, `a7de65b0`) · STATUS: **ZAMKNIĘTE** (commit `fe39215a`, 2026-08-14 — kolejka FIFO `deferredAutoRequests[]` + `finishIncomingBattleUi()` jako choke point flusha, zweryfikowane niezależnie: `barbarzyncy-podwojny-atak-prebattle-test` 18/18; Evaluator FAIL `a7de65b0` sekcja N4 zauważył że opis oryginalnego zgłoszenia zawierał 1 zdanie nieprawdziwe — „bitwa nadal się toczy w silniku" — w rzeczywistości zgubiona bitwa w ogóle się nie odbywała; nieistotne teraz, skoro problem naprawiony)
 
 Znalezisko agenta naprawiającego `P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE` (commit `a7de65b0`),
 w jego własnych słowach: pętla ataku barbarzyńców (`main.ts`, tick barbarzyńców) woła
