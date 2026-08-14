@@ -20848,3 +20848,99 @@ wołające), nie tylko po założeniu i co turę; (2) sanityzacja `okolicaReczne
 identycznego pokazywania obu jako zajęte (nota już zostawiona w kodzie, `cityPanel.ts:8870-8874`).
 Napisać test odtwarzający scenariusz: zdobycie miasta z aktywnym trybem ręcznym i wpisem
 `okolicaReczne` wskazującym na (teraz nieprawidłowy) heks centrum sąsiada.**
+---
+
+## Evaluator: oblężenie zdejmowanie flagi po bitwie (`7b57eb45`)
+
+**WERDYKT: PASS-WITH-NOTES.** Naprawa jest poprawna, minimalna i trafia w rdzeń zgłoszenia.
+Weryfikacja niezależna (Opus 5), nie odczyt raportu Operatora.
+
+### 1. Bramki — przebiegnięte samodzielnie, nie przepisane z raportu
+`npx tsc --noEmit` → **exit 0** (kod odczytany bez potoku — `tail` zwracał własny status,
+pułapka z CLAUDE.md §0b (b)). `oblezenie-siege-lifted-po-bitwie-test` **16/0**, `oblezenie-test`
+**27/0**, `map-siege-test` **6/0**, `siege-ai-test` **17/0**, `siege-defenders-test` **12/0**.
+Dołożone przeze mnie, poza listą zlecenia: `post-battle-map-test` **32/0**, `combat-test` **6/6**,
+`battle-roster-test` **7/0**, `battle-summary-test` OK, `logic-test` **213/213** (zgodne z punktem
+odniesienia `R-BRAMKA-MINDIST-Q1`). Zero regresji.
+
+### 2. Mutacja kontrolna — potwierdzona
+Fizyczne usunięcie dodanej linii z `main.ts` (nie mutacja w pamięci, jak w §3 testu Operatora)
+→ **11 passed, 5 failed, exit 1**. Dokładnie 5 porażek deklarowanych przez Operatora, w tym
+kontrola pozytywna, więc test **nie jest tautologiczny**. Po `git checkout` znów 16/0.
+
+### 3. Kluczowe twierdzenie Operatora („wszystkie ścieżki zbiegają się w `applyMapBattleOutcome`") — **POTWIERDZONE**
+Nie na słowo, tylko trzema niezależnymi krokami:
+1. `applyPostBattleMap` (jedyna funkcja usuwająca jednostki ze stratami walki — zawiera
+   `applyAutoLosses`, `applyManualSurvivors`, `wipeDefenderOnCityCenter`) ma w całym `gra/src/`
+   **dokładnie jednego wołającego**: `main.ts:21692`, wewnątrz `applyMapBattleOutcome`.
+2. W ciele `applyMapBattleOutcome` (21669–21867) jest **dokładnie jeden `return`** — ten na końcu,
+   tuż PO nowym wywołaniu. Zero wcześniejszych wyjść, żadna ścieżka nie może ominąć naprawy.
+3. Prześledzone wstecz wszystkie 8 wejść: `doMapAutoResolve`, ręczna 3D gracza (`bs.play`),
+   `doAutoPowerMapBattle` (atak AI na gracza, cicho), `doMapAutoResolveIncoming`, ręczna 3D
+   przychodząca, oba wejścia z `mapFieldBattle.ts` (443/505, wpięte przez `deps` z `main.ts:22764`)
+   oraz `finishSiegeStormBattle` w OBU gałęziach (22858 z podsumowaniem, 22874 bez) — zasilane
+   przez `executeSilentSiegeStorm` (22915), auto-szturm (23067) i ręczny szturm 3D (23135).
+Pozostałe miejsca kurczące `units[]` nie są walką i mają własne sprzątanie oblężenia:
+`disbandPlayerUnit` (5318), głód armii (24270), atrycja garnizonu (24447), kapitulacja głodowa
+(11850), eliminacja cywilizacji (22357), `applyCityCaptureAfterBattle` (samo ustawia `oblegane=false`).
+
+### 4. Scenariusz zgłoszenia — odtworzony NIEZALEŻNIE i mocniej niż w teście Operatora
+Test Operatora uruchamia `validateActiveSieges` w izolacji + strażnik tekstowy (ograniczenie
+uczciwie opisane w nagłówku pliku). Złożyłem **PRAWDZIWY `applyPostBattleMap`** (moduł jest
+importowalny, w przeciwieństwie do domknięć `main.ts`) z **PRAWDZIWYM `validateActiveSieges`**
+w tej samej kolejności co `applyMapBattleOutcome`: 13/13. Potwierdzone: (a) zabicie JEDNEGO z dwóch
+oblegających **nie** zdejmuje flagi; (b) zabicie WSZYSTKICH zdejmuje ją natychmiast, bez ruchu
+i bez zdobycia miasta, razem z `oblegajacyOwnerId`, `siegeBesiegerByCity` i `refreshSiegeMarkers`;
+(c) przegrana wycieczka obrońcy **nie** zdejmuje flagi (brak fałszywego pozytywu).
+
+### 5. Parytet gracz/AI — sprawdzony, bez zarzutu
+`validateActiveSieges` iteruje `for (const city of cities)` **bez filtra ownera** (12008),
+`refreshSiegeMarkers` analogicznie `cities.filter(c => c.oblegane)` (11682). Odtworzone empirycznie:
+miasto AI (`ownerId=3`) oblegane przez gracza traci flagę tą samą ścieżką. Zapis oblężenia trafia
+do save'a już poprawiony — bez zmian w formacie.
+
+### N1 — **ZNALEZISKO: naprawa ujawnia sprzeczność przy szturmie zakończonym REMISEM** · STATUS: **OTWARTE** — do dispatchu Operatora
+Nie blokuje scalenia (stan gry po naprawie jest ZGODNY z regułą silnika), ale wymaga osobnego
+zlecenia. Zmierzone, nie wydedukowane:
+przy remisie szturmu muru `applyPostBattleMap` idzie gałęzią `placeFanOutGroup` i **odsuwa całą
+armię oblegającą z dystansu 1 na dystans 2** od miasta. `validateActiveSieges` liczy oblegających
+jako `hexDistance === 1`, więc od teraz **natychmiast** kończy oblężenie — a `afterSiegeUi`
+w `finishSiegeStormBattle` w tej samej klatce pokazuje „Szturm: remis — oblężenie trwa."
+Gracz dostaje dwa sprzeczne komunikaty na tym samym `#hintToast` („oblężenie zniesione — brak wojsk
+przy murach" nadpisane przez „oblężenie trwa"), a marker znika mimo tekstu, że trwa.
+Dwa skutki gameplayowe, oba niezamierzone przez to zlecenie:
+1. `endMapSiege` czyści `clearSiegeMachines(city)`, `siegeTurnByCity` i `siegeAiStateByKey` —
+   **machiny oblężnicze i postęp oblężenia budowane przez wiele tur przepadają natychmiast po
+   remisie**, a nie dopiero przy kolejnym ruchu/końcu tury AI jak dotąd.
+2. Przed naprawą istniało (przypadkowe, nieudokumentowane) okno: `validateActiveSieges` w obsłudze
+   ruchu jest wołane PO aktualizacji pozycji (19326, 27820), więc gracz, który jako pierwszą
+   czynność po remisie zamaszerował oblegających z powrotem pod mur, **zachowywał oblężenie razem
+   z machinami**. Teraz okno jest zamknięte — flaga spada w momencie remisu.
+Weryfikacja kontrolna: przy wygranej OBROŃCY `retreatAtkRosterToStart` zostawia oblegających na
+dystansie 1 i oblężenie prawidłowo TRWA — zgodnie z komunikatem „Szturm odparty". Czyli problem
+dotyczy wyłącznie gałęzi remisu. Remis jest realnie osiągalny: auto `TIE_EPS = 0.01`
+(`auto-battle-params.ts:42`) plus każda ręczna bitwa 3D, w której obie strony mają żywe jednostki
+na koniec (`battleScene.ts:8870`). **Do rozstrzygnięcia produktowo (ABC dla właściciela, nie decyzja
+agenta): czy remis szturmu ma zrywać oblężenie i kasować machiny, czy oblegający ma zostawać pod
+murem.** Przyczyna źródłowa (fan-out na dystans 2) jest PRE-ISTNIEJĄCA, sprzed tego commitu —
+naprawa zmieniła tylko moment ujawnienia, nie sam stan docelowy.
+
+### N2 — pre-istniejąca czerwona bramka, nigdzie dotąd nieodnotowana
+`battle-loot-test.cjs` — **8 pass, 4 fail**, exit 1 (`FAIL: 2x Włócznik braz — expected 4 got 100`,
+`FAIL: 50% braz — expected 1 got 25`). **Nie ma związku z tym commitem**: test bunduje wyłącznie
+`../src/game/battle-loot`, w ogóle nie czyta `main.ts` (jedynego pliku produkcyjnego dotkniętego
+przez `7b57eb45`); test i jego źródło ostatnio zmieniane w FALA 96 (`daacd43a`). Brakuje go na
+liście znanych pre-istniejących porażek w `CLAUDE.md` — do dopisania przy najbliższej okazji, żeby
+nie był mylony z regresją.
+
+### N3 — luka pre-istniejąca, POZA zakresem tego zlecenia (nie naprawiać przy okazji)
+`captureCityWithoutBattle` (22712) → `applyCityCaptureToMap` przestawia zdobywców na heks miasta,
+ale **nie** woła `validateActiveSieges`. Jeśli któraś z przestawionych jednostek oblegała
+JEDNOCZEŚNIE inne sąsiednie miasto, flaga tamtego miasta zostaje nieświeża do najbliższego ruchu.
+Bardzo wąskie, identyczne przed i po commicie — odnotowane, świadomie nie zgłaszane jako blokada.
+
+### N4 — kruchość strażnika (nieblokująca, świadoma)
+Strażnik tekstowy przypina **dokładnie 4** wystąpienia `validateActiveSieges();` w `main.ts`.
+Każde przyszłe, w pełni zasadne piąte wywołanie zaświeci bramkę na czerwono. To celowy
+change-detector (komunikat sam tłumaczy, które 4 miejsca są oczekiwane), ale przy dokładaniu
+kolejnego wywołania trzeba pamiętać o podbiciu liczby — nie traktować jako regresji.
