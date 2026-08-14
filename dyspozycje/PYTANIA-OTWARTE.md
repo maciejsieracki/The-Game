@@ -24241,13 +24241,46 @@ Dwie noty do domknięcia w osobnej turze, **żadna nie jest warunkiem deployu**:
   zmierzone niezależnie (trzy warianty, zgodne co do jednego układu): **30/63 kończyło,
   33/63 zostawiało**. Do sprostowania w komentarzu i w sekcji ECHO wyżej w tym pliku.
 
-STATUS: **OTWARTE — G1 i G2 do domknięcia (noty Evaluatora, nie blokują deployu)**
+STATUS: **ZAMKNIĘTE — G1 i G2 domknięte** (G2 przez `678b31e1`, G1 przez `dda042bb` — patrz
+aktualizacje niżej w tej sekcji dla obu).
 
 **AKTUALIZACJA 2026-08-14 (orkiestrator, audyt kompletności §0c):** **G2 ZAMKNIĘTE** — komentarz
 `main.ts` ~23098-23099 oraz nagłówek/dwa literały `oblezenie-remis-endsiege-test.cjs` skorygowane
 commitem `678b31e1` (32/63→30/63, 31/63→33/63), zgodnie z pomiarem Evaluatora wyżej. **G1 nadal
 OTWARTE** — dispatch naprawczy w toku (wzmocnienie §2 testu, żeby faktycznie zabezpieczał gałąź
 naprawy, nie tylko strażnik tekstowy §1).
+
+**AKTUALIZACJA 2026-08-14 (Operator, dispatch domknięcia G1) — G1 ZAMKNIĘTE, commit `dda042bb`.**
+§2 `oblezenie-remis-endsiege-test.cjs` przestał wołać `endMapSiege('roma')` bezwarunkowo z
+harnessu. Nowa funkcja `wytnijBlokRemis` (JEDNO źródło prawdy, użyte zarówno przez §1 jak i §2)
+wycina TEKSTOWO samą gałąź `res.winner === 'remis'` z `finishSiegeStormBattle` i §2 WYKONUJE ją
+naprawdę (`wykonajGalazRemis`) w tym samym zasięgu `new Function` co wycięty `endMapSiege` —
+gołe `endMapSiege(city.id)` w tej gałęzi wiąże się więc z PRAWDZIWĄ wyciętą funkcją (podniesienie
+deklaracji), nie z atrapą. Dodano §3b: to samo sprawdzenie w pamięci (main.ts na dysku
+nietknięty), potwierdzające że mutacja psuje §2 behawioralnie, nie tylko §1 tekstowo.
+
+**Dowód mutacyjny NA DYSKU** (main.ts przywrócony przed commitem, `git diff` puste):
+| Stan `main.ts` | Wynik testu | Exit |
+|---|---|---|
+| nietknięty | 271 passed, 0 failed | 0 |
+| usunięta linia `endMapSiege(city.id);` w gałęzi remis | **138 passed, 133 failed** | 1 |
+| przywrócony (identyczny z kopią zapasową) | 271 passed, 0 failed | 0 |
+
+Dla porównania z notą G1: ta sama klasa mutacji dawała wcześniej **257 passed, 3 failed** —
+regresję łapały wyłącznie 3 asercje czysto tekstowe. Dziś pada 133/271, w tym cała rodzina
+asercji §2 (`city.oblegane`, `oblegajacyOwnerId`, `siegeBesiegerByCity`, `siegeTurnByCity`) dla
+wszystkich 33 z 63 konfiguracji, w których sam `validateActiveSieges()` nie wystarczał
+(`insufficientBefore=33/63`, zgodne z niezależnym pomiarem Evaluatora dla identycznego wariantu
+geometrii). Poprawiono też mylący `[info]` — opisuje teraz wprost, że wynik pochodzi z
+WYKONANIA prawdziwej gałęzi remis, wołanej tylko jeśli main.ts faktycznie ją zawiera.
+
+Bramki: `npx tsc --noEmit` 0 błędów · `oblezenie-remis-endsiege-test.cjs` 271/0 · sąsiednie testy
+oblężenia (`oblezenie-siege-lifted-po-bitwie-test.cjs` 16/0, `oblezenie-test.cjs` 27/0,
+`map-siege-test.cjs` 6/0, `siege-ai-test.cjs` 17/0) oraz `tech-tree-test.cjs`/`research-test.cjs`/
+`unit-replace-test.cjs`/`ai-founding-territory-test.cjs` bez regresji. `main.ts` bez zmian
+funkcjonalnych względem stanu przed tą pracą (commit dotyka wyłącznie pliku testowego).
+
+Sekcja domknięta w całości (G1 + G2) — patrz `STATUS: **ZAMKNIĘTE**` na początku tej sekcji.
 
 ## Evaluator: druga (wewnętrzna) obwódka granicy = relacja dyplomatyczna (`bf839f81`, `R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1`) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
 
