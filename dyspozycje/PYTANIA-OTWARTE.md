@@ -27006,6 +27006,130 @@ przez cały przebieg `null`, zero zdarzeń `webglcontextlost`, zero błędów w 
 
 ---
 
+### WERDYKT EVALUATORA (Opus 5, 2026-08-14, commit `222277aa`, wdrożone falą `af366f13`): **PASS-WITH-NOTES**
+
+Wszystkie liczby poniżej to **własne pomiary Evaluatora** (osobny worktree, własne skrypty
+Playwright, własny build), nie przepisany opis commita.
+
+**1. Naprawa działa — dowód A/B na żywym bundlu (ten sam skrypt, ten sam scenariusz).**
+Scenariusz: `?playtest=walka` → klik jednostki → klik wroga → „BITWA" → 90 s przytrzymanego `s`
+w scenie bitwy → „Wycofaj się". Canvas mapy próbkowany niezależnie (wymuszony
+`preserveDrawingBuffer`, próbka 64×48: średnie RGB + liczba różnych kolorów + hash treści).
+
+| pomiar | PRZED (`64ef8510`, źródła cofnięte + rebuild) | PO (`222277aa`) |
+|---|---|---|
+| tuż przed trzymaniem klawisza | (36,57,51) distinct 547 | (36,57,51) distinct 547 |
+| t = 15 s | (36,57,50) distinct 642 | **bez zmian — identyczny hash** |
+| t = 45 s | (34,52,46) distinct 676 | bez zmian |
+| t = 90 s | (25,37,35) distinct 545 | bez zmian |
+| po powrocie z bitwy | (25,36,35) distinct 512 | (36,57,51) distinct 547 |
+
+Zrzuty potwierdzają: PRZED — po powrocie dolne ~55% ekranu to samo tło, jednostki poza kadrem;
+PO — mapa dokładnie jak przed bitwą (obie jednostki na swoich heksach). Zero `pageerror`, zero
+błędów konsoli, `webglcontextlost` = 0, `document.fullscreenElement` = null w obu przebiegach —
+niezależnie potwierdza wykluczenie hipotez (a)–(d) z rozpoznania wstępnego.
+
+**2. Test negatywny — bramka NIE jest za szeroka (bundle z naprawą, bez żadnej bitwy).**
+WASD: (36,57,52) distinct 547 → (15,19,21) distinct 227 po 30 s — panuje.
+Edge-pan (kursor przy dolnej krawędzi, bez klawiszy): → **(11,13,18) distinct = 1**, czyli
+dokładnie `FOG_HIDDEN_COLOR 0x0b0d12` — panuje aż do jednolitego, pustego kadru. Zoom kółkiem nie
+jest w ogóle bramkowany przez `isWorldMapUnitMode()` (`blockWheelAt` = `isPointOverCityPanelUi`),
+więc naprawa go nie dotyka.
+
+**3. Test tautologiczności bramki `bitwa-mapa-kamera-blokada-test.cjs` — 6 niezależnych mutacji,
+6/6 złapanych** (po każdej przywrócenie i kontrola 24/24):
+
+| mutacja | wynik |
+|---|---|
+| M1 cofnięcie `!isBattleSceneOpen()` w `renderLoop` | FAIL [C2] + [C3] |
+| M2 `Set.delete` → `Set.clear` | FAIL [A6] + [A8] |
+| M3 usunięcie `isBattleSceneOpen()` z `isWorldMapUnitMode()` | FAIL [C5] |
+| M4 usunięcie `markBattleSceneOpen(this)` z konstruktora | FAIL [C8] |
+| M5 **podmiana `Set` na naiwny licznik** (ta sama sygnatura API) | FAIL [A5] + [A6] + [A8] |
+| M6 przeniesienie `markBattleSceneClosed` na KONIEC `dispose()` | FAIL [C10] |
+
+Bramka nie jest tautologiczna. Część C to wprawdzie pin tekstowy (najsłabsza forma), ale części
+A i B są behawioralne na realnym kodzie (esbuild na `battleSceneOpen.ts` i `camera.ts`), a M5
+dowodzi, że test łapie także podmianę semantyki, nie tylko liter.
+
+**NOTA 1 (do poprawienia przy okazji, nie blokuje) — uzasadnienie wyboru `Set` opisuje SKUTEK
+ODWROTNIE.** Komentarz w `gra/src/battle/battleSceneOpen.ts` (i ten sam zapis w teście oraz
+w opisie commita) mówi: „licznik zszedłby poniżej zera i mapa świata zostałaby zablokowana na
+stałe". Pomiar M5 pokazuje odwrotność: przy `isBattleSceneOpen() = n > 0` ujemny licznik daje
+`false`, więc mapa **NIE jest zablokowana** — po prostu **wraca zgłoszony błąd** przy następnej
+bitwie (dlatego pada `[A5]`, nie `[A4]`). Wniosek dla decyzji jest ten sam (`Set` wygrywa), ale
+uzasadnienie w kodzie jest mylące.
+
+**NOTA 2 (istotna, bo dotyczy głównej przesłanki projektowej) — „`dispose()` leci DWA RAZY na
+ścieżce wygranej" NIE potwierdza się w dzisiejszym kodzie; leci RAZ.** Zmierzone tymczasową
+instrumentacją licznikową (build tylko na czas pomiaru, źródła przywrócone — `git status` czysty)
+na pełnej ścieżce wygranej (deploy → „Start walki" → „Pomiń do wyniku" → ekran „Zwycięstwo" →
+„Powrót na mapę"): `onFinish` = 1, `onFinishCb` obecny = true, `showPostBattleSummary` = 1,
+`hidePostBattleSummary` = 2, **`dispose()` = 1**, `markBattleSceneClosed` = 1, rozmiar rejestru
+po wszystkim = 0. Przyczyna: `dispose()` woła `this._hideEndDetails()` (linia ~3583), a ta —
+gdy `isPostBattleSummaryOpen()` — woła `hidePostBattleSummary()`, **kasując dopiero co otwarte
+podsumowanie BEZ wywołania jego `onContinue`**. Drugi `dispose()` (z `afterSummary`) jest więc
+dziś nieosiągalny na tej ścieżce. To **nie psuje naprawy** (idempotencja `Set` jest własnością
+obronną i zadziała, gdy tamto zostanie naprawione), ale zdanie w komentarzu produkcyjnym opisuje
+stan, którego nie ma.
+
+**NOTA 3 (nowe znalezisko UBOCZNE, PRE-ISTNIEJĄCE, do osobnej rejestracji — nie żądam naprawy
+w tym zgłoszeniu).** Konsekwencja mechanizmu z NOTY 2: po bitwie 3D na mapie **gracz nigdy nie
+widzi podsumowania po bitwie** (jest budowane i kasowane w tym samym ticku), a wraz z nim nie
+wykonuje się `afterSummary` → `setMood('mapa')` + `finishMapBattleUi()` (czyli
+`clearPlayerUnitSelection` + `refreshFog` + `updateHud`). Zmierzone: 4 s po kliknięciu „Powrót na
+mapę" w DOM zero elementów `.pbs-roster-col` i brak przycisku „Kontynuuj". Defekt jest starszy niż
+`222277aa` (nie dotyka żadnego z trzech zmienionych miejsc).
+
+**NOTA 4 — nota Operatora o sąsiednim, nienaprawionym defekcie jest TRAFNA i potwierdzona
+pomiarem.** Przy otwartej nakładce, która nie jest sceną bitwy, `camCtrl.update()` nadal panuje
+kamerę mapy z WASD. Zmierzone na żywo przy otwartym okienku pre-bitwy (bundle z naprawą):
+30 s trzymanego `s` → (36,57,51) distinct 547 → (21,29,29) distinct 442 (mapa panuje), natomiast
+30 s kursora przy krawędzi → **zero zmian** (edge-pan poprawnie zablokowany przez
+`isWorldMapUnitMode()`). Ten sam mechanizm dotyczy panelu miasta i podsumowania bitwy. Zgadzam
+się, że jest to **poza zakresem** tego zgłoszenia (C-025) — zgłoszenie Macieja dotyczyło mapy
+znikającej PO BITWIE, a nie panowania kamerą przy otwartym panelu.
+
+**NOTA 5 (ryzyko resztkowe wprowadzone przez naprawę, niskie prawdopodobieństwo).**
+`markBattleSceneOpen(this)` stoi w KONSTRUKTORZE `BattleScene` (~linia 2653), a konstruktor
+biegnie jeszcze ~700 linii dalej, m.in. przez `new THREE.WebGLRenderer(...)` (~3236). Jeśli
+cokolwiek po rejestracji rzuci, obiekt zostaje w `Set` **na zawsze** (brak referencji → nikt nie
+zawoła `dispose()`) i kamera mapy jest trwale zamrożona, a scena bitwy trzymana silną referencją
+(wyciek three.js). Symetryczne zabezpieczenie po stronie `dispose()` jest zrobione dobrze
+(wyrejestrowanie PRZED resztą sprzątania — [C10]), po stronie rejestracji nie. Tanie warianty na
+przyszłość: rejestrować w `play()` zamiast w konstruktorze, albo w `isBattleSceneOpen()` odsiewać
+wpisy, których `overlay.isConnected === false`.
+
+**NOTA 6 (drobna zmiana zachowania, bez skutku dla gracza).** `isWorldMapUnitMode() === false`
+przy otwartej bitwie wyłącza też auto-cykl „bęben" po zakończeniu animacji ruchu (main.ts ~28460)
+i `getStack` dla `armyStackHud` (~18665). Oba są pod nakładką, oba wracają do normy po `dispose()`.
+
+**BRAMKI — uruchomione samodzielnie na czubku gałęzi (`af366f13`), wszystkie zielone:**
+`tsc --noEmit` exit 0 · `vite build` exit 0 · `bitwa-mapa-kamera-blokada` 24/24 ·
+`combat` 6/6 · `post-battle-map` 32/32 · `oblezenie` 27/27 · `oblezenie-siege-lifted-po-bitwie`
+16/16 · `tech-tree` 19/19 · `research` 33/33 · `battle-roster` 7/7 · `battle-hp-display` 7/7 ·
+`heal-stale-blockers-pending-battle` 23/23.
+**Czerwone potwierdzone jako PRE-ISTNIEJĄCE (zgodnie z opisem commita):** `map-field-battle-test`
+(`TypeError: import_meta.glob is not a function` — awaria harnessu, znana z `CLAUDE.md`) oraz
+`battle-loot-test` **8 pass / 4 fail** (m.in. `50% braz — expected 1 got 25`) — dług testowy,
+niedotknięty przez tę zmianę (nie rusza `computeBattleLoot` ani danych łupów).
+Uwaga porządkowa: commit powołuje się na „commit-rodzic `a4a7c6ea`", a rodzicem w gałęzi sesji
+jest `64ef8510`; `a4a7c6ea` to baza worktree Operatora. Bez wpływu na wynik — sam sprawdziłem
+delty względem `64ef8510`.
+
+**Uwaga procesowa (nie wada naprawy):** zmiana została wdrożona do ROBOCZA (`af366f13`, FALA 282,
+md5 `d3b43ac6`) **przed** werdyktem Evaluatora. Sam commit deployu to odnotowuje i wskazuje
+polecenie właściciela (limit sesji) — odnotowuję dla porządku audytowego §0a/§0b.
+
+**Podsumowanie werdyktu:** zgłoszony błąd jest realnie odtworzony i realnie naprawiony (dowód A/B
+w żywej grze, nie samo czytanie kodu), zakres naprawy jest minimalny i nie blokuje kamery poza
+sceną bitwy, bramka łapie regresję na 6/6 mutacji. Zastrzeżenia dotyczą **dokładności opisu**
+(NOTA 1, NOTA 2), jednego **nowego ryzyka resztkowego** (NOTA 5) i **ujawnionego przy okazji
+defektu pre-istniejącego** (NOTA 3) — żadne z nich nie podważa samej naprawy, dlatego
+**PASS-WITH-NOTES**, a nie FAIL.
+
+---
+
 ## P-NEWGAME-KREATOR-TOOLTIP-INFO-NIE-DZIALA (2026-08-14, zgłoszenie Macieja ze zrzutem, audyt dwóch fal wsteczny wykrył pominięcie)
 
 **Zgłoszenie (cytat):** „Te tooltipy niestety nie działają. Wcześniejsze teksty, które tam były
