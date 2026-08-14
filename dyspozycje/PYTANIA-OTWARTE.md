@@ -26306,6 +26306,159 @@ na minusie (drewno, glina), surowiec wyjściowy na plusie (ceramika) — nie tyl
 
 **STATUS: DISPATCH W TOKU.**
 
+### WERDYKT EVALUATORA (Opus 5, 2026-08-14, commit `9e96370a`): **FAIL**
+
+**STATUS PO WERDYKCIE: OTWARTE — wymaga rundy 2. Uwaga dla rundy 2: FAIL dotyczy DOWODU (bramki),
+NIE implementacji — sam kod produkcyjny jest zweryfikowany jako poprawny i NIE należy go
+przepisywać.**
+
+**Uwaga o identyfikacji commita:** zlecenie podawało hash `6b488bcc`; taki commit nie istnieje na
+gałęzi — realny commit tematu to **`9e96370a`**. Zweryfikowano też, że `gra/src/ui/cityPanel.ts`
+i `gra/tools/citypanel-konwerter-produkcja-test.cjs` na czubku gałęzi (`a4a7c6ea`) są **bajt w bajt
+identyczne** z `9e96370a` (`git diff` pusty) — mimo incydentu z `0d9a56b1`, który tę pracę cofnął,
+i `a4a7c6ea`, który ją przywrócił. Oceniany kod = kod na gałęzi.
+
+**Metoda:** własny izolowany worktree, symlink `gra/node_modules` z weryfikacją `tsc 5.9.3` (C-029),
+własny harness wykonujący **FAKTYCZNE ciało** `buildingConverterProductionDisplay`/
+`formatConverterProductionRowHtml` (wycięte 1:1 ze źródła, transpilowane esbuildem, z podstawionym
+`cfg`) i porównujący jego wynik z **prawdziwym `runConverter`** z `converters.ts` — nie z kopią
+formuły. Plus 6 własnych mutacji kontrolnych i pomiar baseline na commicie-rodzicu `1d427547`.
+
+**CO DZIAŁA — potwierdzone niezależnie, nie z opisu commita:**
+1. **Zgodność UI ↔ silnik: 734 asercje, 0 porażek.** Porównanie `buildingConverterProductionDisplay`
+   z `runConverter` (zasoby wejściowe 1e6 szt., pojemność wyjścia 1e12 szt.) dla **wszystkich
+   41 budynków** z `buildings.json` × **4 ery** (1–4) × **3 poziomy trudności** — każda pozycja
+   `consumed`/`produced` zgadza się co do 1e-6. Funkcja UI naprawdę czyta te same dane co silnik.
+2. **Garncarnia, liczby ręczne (trudność `normal`):** era 1 → **−50 Glina/turę · −50 Drewno/turę ·
+   +50 Ceramika/turę**; era 2 → 55 każdego; era 3 → 60 każdego. Zgodne z `budynek_garncarnia_
+   przepustowosc = 50 szt./turę` + `+10% bazy addytywnie za epokę` (`converterThroughputForEra`).
+   Renderowany HTML: `−50 Glina/t · −50 Drewno/t · +50 Ceramika/t`, wejścia klasą
+   `bld-owned-conv-in`, wyjście `bld-owned-conv-out`.
+3. **`null` dla budynków bez receptury: 36 z 41.** Drugą linię dostaje dokładnie 5 budynków —
+   `garncarnia`, `cegielnia`, `odlewnia_brazu`, `odlewnia_zelaza` (2 receptury), `wielka_odlewnia`
+   (3 receptury). Zero fałszywych trafień.
+4. **Przypadki brzegowe:** brak `cfg.getEpoch` i brak `cfg.difficulty` → fallback era 1 / `normal`
+   → 50 szt./turę (bez `NaN`, bez `undefined`); `era = 0` → clamp do 1 (bez wartości ujemnej).
+5. **Poziom budynku (L1/L2/L3) — poprawnie NIE wpływa na przepustowość.** `converterThroughputForEra`
+   zależy wyłącznie od ery WŁAŚCICIELA, nie od poziomu budynku (jawna decyzja
+   `P-KONWERTERY-PRZEPUSTOWOSC-Q1`, komentarz `converters.ts:104-114`); silnik
+   (`converterThroughputsForOwner` w `turn-economy.ts:2140`) też nie zna poziomu. Nowa funkcja jest
+   z tym zgodna — nie przyjmuje poziomu i słusznie.
+6. **Parytet gracz/AI:** brak jakiejkolwiek gałęzi po `ownerId`; era czytana przez
+   `cfg.getEpoch?.(city.ownerId)` = ten sam `empireEpochForOwner` co reszta pliku. Save/load: brak
+   nowego trwałego stanu, nie dotyczy.
+7. **Zakres (C-025) czysty:** diff to 2 pliki, wyłącznie dodania (+324 linii), zero refaktorów, zero
+   „przy okazji". `appendOwnedBuildingRow` ma 2 miejsca użycia (`cityPanel.ts:7200` i `:8449`) — oba
+   to lista posiadanych budynków, zmiana w obu jest zamierzona.
+8. **Bramki (własne uruchomienie):** `tsc --noEmit` **0 błędów** (tsc 5.9.3 potwierdzony);
+   `vite build` **przechodzi** (823 moduły, 28,7 s); `tech-tree-test` 19/19; `research-test` 33/33;
+   `unit-replace-test` zielony; `citypanel-konwerter-produkcja-test` 46/46; `converters-test` 46/46;
+   `converter-era-scaling-test` 87/87; `ekonomia-5x-inwariant-test` 246/246; `owner-economy-test`
+   9/9; `ai-major-economy-test` 33/33; `plony-budynkow-test` 68/68; `surowce-dostep-test` 13/13;
+   `surowce-katalog-kolejnosc-test` 62/62; `spichlerz-cap-citypanel-wiring-test` 12/12;
+   `city-panel-growth-percent-separator-test` 29/29; `wire-ekonomia-test` 37/37;
+   `diplomacy-economy-test` 21/21.
+9. **Czerwone bramki — wszystkie PRE-ISTNIEJĄCE, delta zero**, potwierdzone identycznym wynikiem na
+   commicie-rodzicu `1d427547`: `upgrade-budynki-test` 48 pass/1 fail; `grupy-budynkow-test`
+   80 pass/3 fail (`suma budynków we wszystkich grupach = 40, ma: 41`); `prereq-budynkow-test`
+   51 pass/8 fail (już opisane w `CLAUDE.md`).
+
+---
+
+**DLACZEGO MIMO TO FAIL — N1 (blokujące): bramka `citypanel-konwerter-produkcja-test.cjs` (46/46)
+nie sprawdza ANI JEDNEJ liczby zwracanej przez nową funkcję. 4 z 6 mutacji kontrolnych Evaluatora
+przechodzą ją na ZIELONO.**
+
+Test jest w ~90% **text-anchorem** (`indexOf`/regex po treści `cityPanel.ts`). Sekcja `[1]` wylicza
+`expectedGlina`/`expectedDrewno`/`expectedCeramika` **własną kopią formuły** silnika i… nigdy nie
+porównuje ich z wynikiem UI — jedyna asercja na te liczby to `> 0`. To dokładnie wzorzec „tautologii
+testowej" opisany w `dyspozycje/autobot/playbook.md` (extract-to-pure-function): test odtwarza
+formułę zamiast zaimportować kod produkcyjny. Zadeklarowana „mutacja kontrolna" usuwa **wywołanie**
+funkcji — łapie ją sekcja `[2b]` po tekście — ale nie mówi nic o tym, czy funkcja liczy poprawnie.
+
+Własne mutacje Evaluatora (każda: podmiana w `cityPanel.ts` → uruchomienie bramki → przywrócenie):
+
+| # | Mutacja (w ciele nowych funkcji) | Wynik bramki | Werdykt |
+|---|---|---|---|
+| M2 | `perCykl * throughput` → `perCykl * throughput * 2` (zużycie wejść zawyżone **2×**) | 46 pass, 0 fail, exit 0 | **UCIECZKA** |
+| M3 | `recipe.outputAmount * throughput` → `throughput` (ignorowanie `outputAmount`) | 46 pass, 0 fail, exit 0 | **UCIECZKA** |
+| M4 | `cfg.difficulty ?? 'normal'` → `'easy'` na sztywno | 46 pass, 0 fail, exit 0 | **UCIECZKA** |
+| M7 | odwrócony warunek — **pomijaj WSZYSTKIE wejścia** (znika `−50 Glina/t`, `−50 Drewno/t`) | 46 pass, 0 fail, exit 0 | **UCIECZKA** |
+| M5 | `cfg.getEpoch?.(city.ownerId) ?? 1` → `1` (brak skalowania epoką) | 45 pass, 1 fail, exit 1 | złapana |
+| M6 | wejścia renderowane klasą `bld-owned-conv-out` (zielone jak produkcja) | 45 pass, 1 fail, exit 1 | złapana |
+
+M7 jest najcięższa: kasuje **dokładnie tę połowę informacji, o którą prosił właściciel** („drewno
+jest na minusie, glina jest na minusie"), a bramka mówi „46/46, zielono". M2 podaje właścicielowi
+zużycie zawyżone dwukrotnie — też przechodzi. Obie mutacje złapane (M5, M6) to trafienia w
+*text-anchor*, nie w zachowanie — czyli bramka pilnuje kształtu źródła, nie poprawności liczb.
+
+**Wymagane w rundzie 2 (minimum do PASS):** wyeksportować część czystą — najlepiej jako funkcję
+domenową w `gra/src/game/converters.ts` (np. `converterProductionDisplayForBuilding(buildingId,
+rawParams, difficulty, era)`), wołaną i przez `cityPanel.ts`, i przez test — po czym przypiąć
+**twarde liczby**: Garncarnia era 1 = 50/50/50 szt./turę, era 2 = 55, era 3 = 60; Odlewnia brązu
+era 1 = ruda 25, drewno 25, ruda cyny 2,5, brąz 25 szt./turę; budynek bez receptury → `null`.
+Wykonalność potwierdzona: harness Evaluatora zrobił to samo bez jsdom i bez stubów THREE/SVG
+(734 asercje) — argument „koszt nieproporcjonalny" z nagłówka testu nie broni się.
+
+**N2 (poważne, do rozstrzygnięcia w rundzie 2): budynek runtime-NIEAKTYWNY pokaże pełną produkcję,
+której silnik nie wykona — a informacja o nieaktywności jest już policzona 40 linii wyżej w TEJ
+SAMEJ funkcji.** `garncarnia` i `cegielnia` mają runtime gate na etykietę `Glina`, `odlewnia_brazu`
+na `Ruda` (`building-resource-gate.ts:59-71`). Gdy imperium traci dostęp, `runtimeActiveBuiltIdsForCity`
+wyrzuca budynek z `activeRecipes` i silnik **nie odpala go wcale** — a panel nadal wypisze
+`+50 Ceramika/t`. To nie jest znany kompromis „brutto vs netto" (brak wejścia w danej turze), tylko
+budynek strukturalnie wyłączony. `appendOwnedBuildingRow` **już wylicza** `inactiveStatus`
+(`cityPanel.ts:8298`) i koloruje nazwę na czerwono (`bld-owned-name--inactive`, tylko sama nazwa —
+reszta wiersza bez zmian); uwzględnienie tego w nowym wierszu (wyszarzenie / tooltip) kosztuje
+zmienną, która jest w zasięgu. Argument „netto zbyt kosztowne" tu nie obowiązuje.
+
+**N3 (blokujące dla twierdzenia z opisu commita): deklaracja „ta sama para funkcji, która już karmi
+licznik HUD imperium" jest NIEPRAWDZIWA — dopasowanie budynek↔receptura jest inne, i to nowy kod ma
+rację, a HUD jest zepsuty.** Nowa funkcja dopasowuje przez `converterBuildingIdForRecipe(r) ===
+def.id` (jak `turn-economy.ts:1603`), a `empireConverterResourceRatesForOwner` (`main.ts:2765`) przez
+`builtIds.includes(recipe.id)`. Skutek zmierzony (era 1, `normal`, po jednym budynku):
+
+| Budynek | licznik HUD imperium | silnik = nowy panel miasta |
+|---|---|---|
+| Garncarnia | Ceramika 50 szt./turę | Ceramika 50 szt./turę |
+| Cegielnia | Cegła 50 szt./turę | Cegła 50 szt./turę |
+| Odlewnia brązu | Brąz 25 szt./turę | Brąz 25 szt./turę |
+| **Odlewnia żelaza** | **{} — zero** | Brąz 25 + Żelazo 25 szt./turę |
+| **Wielka odlewnia** | **{} — zero** | Brąz 25 + Żelazo 25 + Stal 25 szt./turę |
+
+HUD gubi **wszystkie** receptury z polem `buildingId` (5 z 10), bo `recipe.id` to tam
+`odlewnia_zelaza__zelazo`, a `builtIds` zawiera `odlewnia_zelaza`. To **pre-istniejący błąd HUD**
+(nie regresja tego commita), ale po tej zmianie stanie się widoczny dla właściciela jako sprzeczność
+dwóch ekranów: panel miasta powie „+25 Stal/t", licznik imperium „0". Do rundy 2: **sprostować
+komentarz** w `cityPanel.ts:6341-6357` (spójność jest z SILNIKIEM, nie z HUD) i **zarejestrować
+osobne zgłoszenie na HUD** — nie naprawiać go w tym temacie (C-025).
+
+**N4 (drobne, liczba dla właściciela): Ruda cyny w Odlewni brązu pokazana jako `−3/t` zamiast
+`−2,5/t`.** Receptura ma `ruda_cyny: 0.1` na cykl × 25 cykli = **2,5 szt./turę** (tyle zużywa
+silnik); `Math.round(2.5)` daje 3 — zawyżenie o 20% na tej jednej pozycji. Jedyna receptura z
+ułamkowym wejściem, więc problem jest wąski, ale dotyczy trzech budynków (`odlewnia_brazu`,
+`odlewnia_zelaza`, `wielka_odlewnia`).
+
+**N5 (drobne, UX): Wielka odlewnia pokaże `−25 Żelazo/t` i `+25 Żelazo/t` w tej samej linii.**
+Żelazo jest jednocześnie wyjściem receptury `wielka_odlewnia__zelazo` i wejściem
+`wielka_odlewnia__stal`; realny bilans netto Żelaza z tego budynku = 0. Pełna linia to 8 chipów:
+`−25 Ruda/t · −75 Drewno/t · −3 Ruda cyny/t · −25 Ruda żelaza/t · −25 Żelazo/t · +25 Brąz/t ·
++25 Żelazo/t · +25 Stal/t` — w trybie `compact` (`cityPanel.ts:8449`, lista o stałej wysokości
+`visibleRows`) to sporo zawijania i zmieniona wysokość wiersza. Do oceny wzrokowej w playteście.
+
+**N6 (drobne, wprost dotyka słów właściciela): rozdzielenie jest strukturalne, ale nie semantyczne.**
+Wejścia konwertera dostały `color:#e8a090` — **ten sam kolor** co `.bld-owned-upkeep` (koszt
+utrzymania), w tym samym formacie `−N Nazwa/t`. Dla Garncarni L2 ze zrzutu właściciela dadzą dwie
+sąsiadujące, wizualnie identyczne linie: `−2⚙/t · −5 Drewno/t · +5⚒` (utrzymanie) i
+`−50 Glina/t · −50 Drewno/t · +50 Ceramika/t` (produkcja) — Drewno w obu, bez etykiety mówiącej,
+która linia jest która. Właściciel prosił wprost, żeby „rozdzielić koszt utrzymania od kosztu
+produkcji"; warto rozważyć krótki prefiks (np. `Prod.:`) albo odmienny odcień. Do decyzji ABC, nie
+do samodzielnego wyboru Operatora.
+
+**N7 (informacyjne, pre-istniejące, nie w zakresie): receptura `huta` jest martwa.** `id: 'huta'`
+w `DEFAULT_CONVERTER_RECIPES` nie ma odpowiednika w `buildings.json` (0 trafień) — nowa funkcja
+zwróciłaby dla niej wynik, gdyby budynek istniał, więc kod jest poprawny; sama receptura jest
+osieroconym reliktem. Do osobnego sprzątania.
+
 ---
 
 ## ⛔ P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ (2026-08-14, zgłoszenie Macieja, KRYTYCZNE — audyt dwóch fal wsteczny wykrył pominięcie)
