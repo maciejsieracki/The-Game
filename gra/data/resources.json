@@ -36,6 +36,12 @@
     "Uwagi": "wejscie Odlewni żelaza (klucz stock: ruda_zelaza)"
   },
   {
+    "Surowiec": "Ruda cyny",
+    "Typ": "surowy",
+    "Źródło / budynek": "złoże cyny (Wzgórza/Góry) + Kopalnia cyny",
+    "Uwagi": "wejscie Odlewni brązu/żelaza/Wielkiej odlewni — TRZECI input konwertera Brązu obok ruda+drewno, proporcja 1 Ruda cyny / 10 cykli (klucz stock: ruda_cyny). GWARANTOWANA każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), mimo że złoże 5× rzadsze niż miedzi (Maciej 2026-08-13)."
+  },
+  {
     "Surowiec": "Koń",
     "Typ": "hodowla",
     "Źródło / budynek": "Stadnina (złoże konia) + szlaki handlowe",

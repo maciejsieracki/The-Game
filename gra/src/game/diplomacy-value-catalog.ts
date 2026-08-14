@@ -260,6 +260,7 @@ const HANDEL_SUROWCE_CENA_ROW: Readonly<Record<string, string>> = {
   kamien: 'cena_kamien',
   ruda: 'cena_ruda',
   ruda_zelaza: 'cena_ruda_zelaza',
+  ruda_cyny: 'cena_ruda_cyny',
   cegla: 'cena_cegla',
   sol: 'cena_sol',
   kon: 'cena_kon',
@@ -298,7 +299,7 @@ function readHandelSurowceParam(rowKey: string, fallback: number): number {
 
 /** Surowce ilościowe dotknięte ×5 rebalansem produkcji — krok handlu 5 szt. (patrz wyżej). */
 const HANDEL_SUROWCE_KROK5: ReadonlySet<string> = new Set([
-  'drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'cegla', 'sol', 'kon',
+  'drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'sol', 'kon',
   'ceramika', 'braz', 'zelazo', 'stal',
 ]);
 
@@ -356,8 +357,18 @@ export function diplomacyHandelSurowcePakietWielkosc(): number {
   return v > 0 ? Math.floor(v) : DEFAULT_HANDEL_SUROWCE_PAKIET;
 }
 
-/** Cena jednostkowa (PN/szt.) surowca ilościowego, lub null gdy surowiec spoza cennika. */
-export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): number | null {
+/**
+ * Cena za blok (PN/krok szt.) surowca ilościowego, lub null gdy surowiec spoza cennika.
+ * N4 (Evaluator 2026-08-13, rename po P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI): dawna nazwa
+ * tej funkcji (`...CenaJednostkowa`) sugerowała cenę ZA SZTUKĘ, choć realnie zawsze była ceną
+ * za BLOK (krok jednostek handlu, patrz `diplomacyHandelSurowiecKrok`) — mylące nazewnictwo
+ * było bezpośrednią przyczyną incydentu ×5 (P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI).
+ * Sam rename, bez zmiany logiki/wartości.
+ * / EN: this function's old name (`...CenaJednostkowa`, "unit price") implied a per-single-unit
+ * price, but it was always a per-block price (krok units) — that misleading name was the direct
+ * cause of the ×5 incident. Pure rename, no logic/value change.
+ */
+export function diplomacyHandelSurowiecCenaZaBlok(surowiecKey: string): number | null {
   const rowKey = HANDEL_SUROWCE_CENA_ROW[surowiecKey.trim().toLowerCase()];
   if (!rowKey) return null;
   const v = readHandelSurowceParam(rowKey, NaN);
@@ -365,7 +376,7 @@ export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): num
 }
 
 /**
- * PN pozycji koszyka surowiec_ilosc = sztuki × cena_PN/szt.
+ * PN pozycji koszyka surowiec_ilosc = bloki × cena_PN/blok.
  * R-DYP-PAKIET-USUN (2026-08-08): `iloscSztuk` to SZTUKI wprost — spójne z polem
  * `ilosc` w BasketItem (dawniej „pakiety", usunięte na życzenie właściciela: „podajemy
  * sztuki. Jeden, dziesięć, sto — żadnych pakietów").
@@ -376,20 +387,35 @@ export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): num
  * generatory ofert AI, Szybka umowa, walidacja przy zatwierdzeniu) — więc dowolna ilość
  * niebędąca wielokrotnością 5, z DOWOLNEGO źródła (w tym ręcznie edytowany save), jest tu
  * bezpiecznie przycinana w dół, NIGDY cicho zaakceptowana jako-jest.
+ * NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): korekta ECHO `f838b599`
+ * mówi wprost „cena za blok 5 sztuk = stara cena za 1 sztukę" — `cena_*` w econ-params.json
+ * jest ceną PER BLOK (krok jednostek), NIE per pojedyncza (nowa, ×5) sztuka. Do tej naprawy
+ * ten choke-point mnożył PEŁNĄ (tylko floorowaną do wielokrotności kroku) liczbę sztuk razy
+ * `cena`, czyli efektywnie stosował STARĄ cenę/szt. do NOWYCH (5× większych) ilości —
+ * dokładnie ten sam błąd, który krok wymiany miał wyeliminować (dla 205 Glina: 205×2=410
+ * zamiast 41 bloków×2=82). Poprawka dzieli sflorowane sztuki przez `krok`, żeby dostać
+ * liczbę BLOKÓW — `sztuki` jest już wielokrotnością `krok` (floor w
+ * `diplomacyNormalizeSurowiecIlosc`), więc dzielenie jest zawsze całkowite, bez ułamków.
+ * / EN: bugfix — `cena_*` prices PER BLOCK of `krok` units, not per single new-scale unit;
+ * this chokepoint used to multiply the (step-floored) raw unit count by `cena` directly,
+ * silently re-applying the pre-rescale price to the post-×5 quantities. Now divides by
+ * `krok` first to get the block count (exact, since `sztuki` is already a multiple of it).
  */
 export function diplomacyPnSurowiecIlosc(surowiecKey: string, iloscSztuk: number): number | null {
-  const cena = diplomacyHandelSurowiecCenaJednostkowa(surowiecKey);
+  const cena = diplomacyHandelSurowiecCenaZaBlok(surowiecKey);
   if (cena == null) return null;
   const sztuki = diplomacyNormalizeSurowiecIlosc(surowiecKey, iloscSztuk);
   if (sztuki <= 0) return 0;
-  return Math.max(0, Math.round(sztuki * cena));
+  const krok = diplomacyHandelSurowiecKrok(surowiecKey);
+  const bloki = krok <= 1 ? sztuki : sztuki / krok;
+  return Math.max(0, Math.round(bloki * cena));
 }
 
 /** Lista surowców ilościowych z ceną jednostkową (debug / UI fallback). */
 export function diplomacyHandelSurowceCatalog(): Readonly<Record<string, number>> {
   const out: Record<string, number> = {};
   for (const key of Object.keys(HANDEL_SUROWCE_CENA_ROW)) {
-    const cena = diplomacyHandelSurowiecCenaJednostkowa(key);
+    const cena = diplomacyHandelSurowiecCenaZaBlok(key);
     if (cena != null) out[key] = cena;
   }
   return Object.freeze(out);

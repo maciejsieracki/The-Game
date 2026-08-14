@@ -401,8 +401,11 @@ console.log('\n11. checkVillageRewardAt (main.ts) -- bramka tekstowa wpięcia');
   const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
   const src = fs.readFileSync(MAIN_TS, 'utf8');
 
-  const fnStart = src.indexOf('function checkVillageRewardAt(q: number, r: number): boolean {');
-  assert(fnStart >= 0, 'znaleziono checkVillageRewardAt w main.ts');
+  // Runda 2 P-MP-CHATKI-SKARBOW-NIE-ZBIERANE (2026-08-13): sygnatura dostała trzeci
+  // parametr `ownerId: number = 0` (domyślnie gracz, kompatybilne wstecz z wszystkimi
+  // 4 pre-istniejącymi wywołaniami bez trzeciego argumentu) -- pin zaktualizowany.
+  const fnStart = src.indexOf('function checkVillageRewardAt(q: number, r: number, ownerId: number = 0): boolean {');
+  assert(fnStart >= 0, 'znaleziono checkVillageRewardAt w main.ts (sygnatura z ownerId=0)');
   const fnEndMarker = '\n    function checkVillageRewardsAlongPath(';
   const fnEndIdx = src.indexOf(fnEndMarker, fnStart);
   assert(fnEndIdx > fnStart, 'znaleziono koniec checkVillageRewardAt (przed checkVillageRewardsAlongPath)');
@@ -421,9 +424,11 @@ console.log('\n11. checkVillageRewardAt (main.ts) -- bramka tekstowa wpięcia');
     /pickVillageReward\(Math\.random\(\), \{ excludeUnit \}\)/.test(fnBody),
     'pickVillageReward wołane z opcją { excludeUnit }',
   );
+  // Runda 2: `era` jest teraz zmienną owner-aware (player.era dla gracza,
+  // empireEpochForOwner(ownerId) dla AI/MP) -- nie zaszyty na sztywno player.era.
   assert(
-    /isVillageRewardUnitMilitary\(player\.era\)/.test(fnBody),
-    'isVillageRewardUnitMilitary(player.era) obecne (predykat wojskowości nagrody)',
+    /isVillageRewardUnitMilitary\(era\)/.test(fnBody),
+    'isVillageRewardUnitMilitary(era) obecne (predykat wojskowości nagrody, era owner-aware)',
   );
   const spawnHexCallCount = (fnBody.match(/findVillageRewardSpawnHex\(/g) || []).length;
   eq(spawnHexCallCount, 1, 'findVillageRewardSpawnHex( wołane DOKŁADNIE RAZ w ciele funkcji (nie liczone dwa razy)');
@@ -438,18 +443,87 @@ console.log('\n11. checkVillageRewardAt (main.ts) -- bramka tekstowa wpięcia');
     /spawnHexOwnerId: rewardUnitDest \? territoryOwnerAtLive\(rewardUnitDest\.q, rewardUnitDest\.r\) : null,/.test(fnBody),
     'spawnHexOwnerId liczone z territoryOwnerAtLive na heksie spawnu, null gdy brak spawnu',
   );
-  assert(/playerOwnerId: 0,/.test(fnBody), 'playerOwnerId: 0 (gracz) przekazywane do shouldExcludeUnitReward');
+  // Runda 2: playerOwnerId przekazywany do shouldExcludeUnitReward to teraz `ownerId`
+  // (parametr funkcji, gracz=0 domyślnie) -- ta sama zasada wykluczenia stosuje się
+  // symetrycznie dla AI/MP na WŁASNYM ownerId, nie zaszytym na sztywno 0.
+  assert(/playerOwnerId: ownerId,/.test(fnBody), 'playerOwnerId: ownerId (owner-aware) przekazywane do shouldExcludeUnitReward');
   assert(
-    /rewardUnitIsMilitary: isVillageRewardUnitMilitary\(player\.era\),/.test(fnBody),
-    'rewardUnitIsMilitary NIE odwrócone podwójną negacją przy wpięciu (brak "!" przed wywołaniem)',
+    /rewardUnitIsMilitary: isVillageRewardUnitMilitary\(era\),/.test(fnBody),
+    'rewardUnitIsMilitary NIE odwrócone podwójną negacją przy wpięciu (brak "!" przed wywołaniem), era owner-aware',
   );
 
   // --- 3 nowe piny (runda 4): hutQ/hutR/ownerId w wywołaniu findVillageRewardSpawnHex ---
   // Zamyka E5 (zamiana ownerId na inny niż gracza) i E6 (zamiana hutQ/hutR miejscami).
+  // Runda 2: `ownerId` przekazywany skrótem (shorthand), nie zaszyty na sztywno `ownerId: 0`
+  // -- to WŁAŚNIE naprawa tego tematu (spawn na heksie właściwym dla AI/MP, nie zawsze gracza).
   assert(
-    /findVillageRewardSpawnHex\(\{\s*hutQ: q,\s*hutR: r,\s*ownerId: 0,/.test(fnBody),
-    'findVillageRewardSpawnHex wołane z {hutQ: q, hutR: r, ownerId: 0, ...} (piny E5/E6)',
+    /findVillageRewardSpawnHex\(\{\s*hutQ: q,\s*hutR: r,\s*ownerId,/.test(fnBody),
+    'findVillageRewardSpawnHex wołane z {hutQ: q, hutR: r, ownerId, ...} (owner-aware spawn, piny E5/E6)',
   );
+
+  // --- NOWE (runda 2, P-MP-CHATKI-SKARBOW-NIE-ZBIERANE): zapis nagrody jest owner-aware ---
+  assert(/const isPlayer = ownerId === 0;/.test(fnBody), 'gałąź gracz/AI-MP rozróżniona przez isPlayer = ownerId === 0');
+  // Edge case własna (poza literalnym scenariuszem zgłoszenia): AI/MP BEZ aktywnych badań
+  // (aiBadanaByOwner puste dla tego ownera) -- fallback do złota musi czytać STAN OWNERA,
+  // nie zawsze player.badana (inaczej AI z player.badana!==null a WŁASNym badana===null
+  // dostałoby fałszywie postęp badań zamiast złota, albo odwrotnie).
+  assert(
+    /const ownerBadanaNow = isPlayer \? player\.badana : \(aiBadanaByOwner\.get\(ownerId\) \?\? null\);/.test(fnBody),
+    'edge: aktualnie badana technologia czytana per-owner (aiBadanaByOwner dla AI/MP, nie zawsze player.badana)',
+  );
+  assert(
+    /setOwnerTreasury\(ownerId, ownerTreasury\(ownerId\) \+ amount\)/.test(fnBody),
+    'grantGold pisze złoto AI/MP przez setOwnerTreasury/ownerTreasury (nie zawsze player.skarbiec)',
+  );
+  assert(
+    /setOwnerNaukaPool\(ownerId, ownerNaukaPool\(ownerId\) \+ amount\)/.test(fnBody),
+    'nagroda "tech" dolicza nauki AI/MP przez setOwnerNaukaPool/ownerNaukaPool',
+  );
+  assert(
+    /runAiResearchForOwner\(ownerId\)/.test(fnBody),
+    'nagroda "tech" dla AI/MP odpala runAiResearchForOwner (ten sam resolver co coroczne badania AI)',
+  );
+  assert(
+    /units\.push\(\{\s*id: newUnitId,\s*ownerId,/.test(fnBody),
+    'nagroda "jednostka" spawnuje jednostkę z ownerId zbierającego (nie zawsze ownerId: 0)',
+  );
+
+  // Stan wioski/cache nadal zerowany BEZWARUNKOWO (przed jakąkolwiek gałęzią gracz/AI) --
+  // inaczej regeneracja mapy z seeda (save/load) wskrzesza chatkę i AI wraca do oscylacji.
+  assert(/lootedVillageHexKeys\.add\(keyOf\(q, r\)\);/.test(fnBody), 'lootedVillageHexKeys.add zachowane bezwarunkowo (save/load, dowolny ownerId)');
+  assert(/villageHexKeyCache\?\.delete\(keyOf\(q, r\)\);/.test(fnBody), 'villageHexKeyCache?.delete zachowane bezwarunkowo (AI getNeutralVillages(InTerritory) przestaje widzieć chatkę)');
+}
+
+// ===========================================================================
+// 12. Wpięcie egzekutora AI/MP (main.ts, cmd.type==='move') -- runda 2
+//     P-MP-CHATKI-SKARBOW-NIE-ZBIERANE: TO jest dokładnie miejsce, którego brak
+//     Evaluator złapał w rundzie 1 (jednostka dochodziła do chatki, silnik nigdy
+//     jej nie zbierał -> nieskończona oscylacja). Guard sprawdza że wywołanie
+//     żyje TUŻ PRZY tym samym markerze co checkBarbCampDestructionAlongPath(path)
+//     (P-BARBARZYNCY-AI-CALA-TRASA-Q1, ten sam blok ruchu AI/MP -- jeden
+//     egzekutor obsługuje OBIE ścieżki, decideAITurn i decideDefensiveCopyTurn,
+//     patrz main.ts ~26145 decideAITurn(ownerId,...) -> deleguje wewnętrznie).
+// ===========================================================================
+console.log('\n12. Egzekutor AI/MP (main.ts, cmd.type===\'move\') -- wpięcie zebrania chatki');
+{
+  const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
+  const src = fs.readFileSync(MAIN_TS, 'utf8');
+
+  const markerIdx = src.indexOf('P-BARBARZYNCY-AI-CALA-TRASA-Q1');
+  assert(markerIdx !== -1, 'marker P-BARBARZYNCY-AI-CALA-TRASA-Q1 (blok ruchu AI/MP) obecny w main.ts');
+  if (markerIdx !== -1) {
+    const window = src.slice(markerIdx, markerIdx + 2200);
+    assert(window.includes('checkBarbCampDestructionAlongPath(path);'),
+      '12: checkBarbCampDestructionAlongPath(path) nadal wołane w tym bloku (kotwica pozycji)');
+    assert(window.includes('checkVillageRewardsAlongPath(path, u.ownerId);'),
+      '12: checkVillageRewardsAlongPath(path, u.ownerId) wołane w bloku ruchu AI/MP -- ' +
+      'TO jest naprawa rundy 2 (bez tego jednostka dochodzi do chatki i nigdy jej nie zbiera)');
+    // ownerId gracza to zawsze 0 -- to wywołanie NIE jest gałęzią "tylko MP" ani "tylko AI":
+    // ten sam egzekutor przetwarza obie ścieżki identycznie, więc brak nazwanego ownera (np.
+    // sztywnego 0) jest dowodem parytetu, nie przypadkiem.
+    assert(!window.includes('checkVillageRewardsAlongPath(path, 0)') && !window.includes('checkVillageRewardsAlongPath(path);'),
+      '12: wywołanie NIE jest zaszyte na sztywno na gracza (owner-aware, parytet AI/MP)');
+  }
 }
 
 // --- summary ---------------------------------------------------------------

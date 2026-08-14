@@ -292,6 +292,24 @@ console.log('\n-- H. advanceCityEconomy: PARYTET AI (gracz era1, AI era3) -- mag
   }
 }
 
+// ===========================================================================
+// I. reconcileOwnerResourceCaps: ruda_cyny NALEZY do OWNER_CAPPED_RESOURCE_KEYS
+//    (test strazniczy R-SUROWIEC-CYNA-DO-BRAZU runda 3, Nota N1 werdyktu Evaluatora
+//    rundy 2 -- dopisanie ruda_cyny do OWNER_CAPPED_RESOURCE_KEYS w rundzie 2 nie mialo
+//    wlasnego testu; cofniecie tego wpisu przechodzilo dotad wszystkie bramki repo na
+//    zielono). Wywoluje PRAWDZIWA funkcje reconcileOwnerResourceCaps (economy-upkeep.ts)
+//    na syntetycznym mieście z zapasem ruda_cyny POWYZEJ cap -- jesli isOwnerCappedResourceKey
+//    nie obejmuje ruda_cyny, klucz jest pomijany w petli (economy-upkeep.ts:517) i nadwyzka
+//    NIE zostaje obcieta.
+// ===========================================================================
+console.log('\n-- I. reconcileOwnerResourceCaps: ruda_cyny objeta capem magazynu panstwa --');
+{
+  const cities = [{ id: 'cynaCity', ownerId: 0, surowce: { ruda_cyny: 900 } }];
+  M.reconcileOwnerResourceCaps(cities, () => 500);
+  eq(cities[0].surowce.ruda_cyny, 500,
+    'reconcileOwnerResourceCaps: ruda_cyny (900 szt.) obcinana do cap=500 -- OWNER_CAPPED_RESOURCE_KEYS obejmuje ruda_cyny (N1)');
+}
+
 // --- summary ---------------------------------------------------------------
 console.log(`\nmagazyn-era-scaling-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE);  } catch (e) {}

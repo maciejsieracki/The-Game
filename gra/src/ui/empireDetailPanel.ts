@@ -435,6 +435,103 @@ function ensureStyles(): void {
 .civ-emp-res-legend i.good{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
 .civ-emp-res-legend i.warn{background:linear-gradient(90deg,#6a4010,#d9a441);}
 .civ-emp-res-legend i.bad{background:linear-gradient(90deg,#5a2020,#e07a7a);}
+
+/* — R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13) — klasy uogólnione z sekcji Moc na
+   wszystkie 11 zakładek panelu (§4 handoffu designera), pierwsze użycie: Skarbiec — */
+.civ-emp-hero{font-size:20px;font-weight:800;color:#d9a441;margin-top:8px;}
+.civ-emp-hero.pos{color:#d9a441;}
+.civ-emp-hero.neg{color:#e07a7a;}
+.civ-emp-hero-sub{font-size:12px;color:#9aa4b2;margin-top:3px;}
+.civ-emp-hero-sub b{color:#d9a441;}
+.civ-emp-alert{margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid #4a2a2a;
+  background:rgba(224,122,122,.07);font-size:12px;color:#e6c4c4;line-height:1.45;}
+.civ-emp-alert b{color:#e07a7a;}
+.civ-emp-slider{-webkit-appearance:none;-moz-appearance:none;appearance:none;width:100%;height:8px;
+  border-radius:999px;cursor:pointer;margin:0 0 6px;background:#1f2733;display:block;}
+.civ-emp-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;border:2px solid #141a24;box-shadow:0 1px 4px rgba(0,0,0,.6);cursor:pointer;
+  background:#d9a441;}
+.civ-emp-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;border:2px solid #141a24;
+  box-shadow:0 1px 4px rgba(0,0,0,.6);cursor:pointer;background:#d9a441;}
+.civ-emp-slider::-moz-range-track{height:8px;border-radius:999px;background:transparent;}
+/* Rozbite na OSOBNE regułki -webkit/-moz per wariant (Evaluator, Panel 11 zakladek Faza 1
+   Skarbiec, 6afdde92): łączenie ::-webkit-slider-thumb i ::-moz-range-thumb w JEDNEJ liście
+   selektorów unieważnia CAŁĄ regułę w OBU przeglądarkach (nieznany pseudo-element jednego
+   dostawcy psuje parsowanie selektora dla drugiego) — dowód CSSOM: z 7 zapisanych regułek
+   przyjęte tylko 2 (gold, jedyna bez konfliktu). 8 regułek zamiast 4, po jednej per dostawca.
+   / EN: split into SEPARATE -webkit/-moz rules per variant — combining ::-webkit-slider-thumb
+   and ::-moz-range-thumb in ONE selector list invalidates the WHOLE rule in BOTH browsers
+   (an unknown vendor pseudo-element breaks selector parsing for the other vendor too). */
+.civ-emp-slider.gold::-webkit-slider-thumb{background:#d9a441;}
+.civ-emp-slider.gold::-moz-range-thumb{background:#d9a441;}
+.civ-emp-slider.blue::-webkit-slider-thumb{background:#8ec5ff;}
+.civ-emp-slider.blue::-moz-range-thumb{background:#8ec5ff;}
+.civ-emp-slider.neutral::-webkit-slider-thumb{background:#9aa4b2;}
+.civ-emp-slider.neutral::-moz-range-thumb{background:#9aa4b2;}
+.civ-emp-slider.green::-webkit-slider-thumb{background:#78c95a;}
+.civ-emp-slider.green::-moz-range-thumb{background:#78c95a;}
+/* Etykiety suwaków (Skarb/Nauka/Zamożność) — zakresowane pod .civ-emp-slider-label, żeby NIE
+   kolidować z niepowiązanymi .gold/.blue z innych komponentów (.civ-emp-chip .v.gold itp.).
+   / EN: slider labels — scoped under .civ-emp-slider-label so they don't collide with
+   unrelated .gold/.blue selectors from other components. */
+.civ-emp-slider-label.gold{color:#d9a441;}
+.civ-emp-slider-label.blue{color:#8ec5ff;}
+.civ-emp-slider-label.neutral{color:#cfd5de;}
+.civ-emp-tbl-sum{display:grid;column-gap:6px;align-items:baseline;padding:11px 0 9px;}
+.civ-emp-tbl-sum>div:first-child{font-size:13px;color:#e8ebf0;font-weight:700;}
+.civ-emp-tbl-sum>div:last-child{text-align:right;font-size:15px;color:#d9a441;font-weight:800;}
+.civ-emp-tbl-sum>div:last-child.pos{color:#d9a441;}
+.civ-emp-tbl-sum>div:last-child.neg{color:#e07a7a;}
+/* Tabela per miasto Skarbca — kolumny liczbowe (DO SKARBCA / UTRZYMANIE) wyrównane do prawej we
+   WSZYSTKICH wierszach (nagłówek + dane + SUMA), spójnie z makietą — poprzednio tylko wiersz
+   SUMA miał text-align:right inline, wiersze danych były do lewej. Zakresowane pod
+   .civ-emp-skarbiec-city-tbl, żeby nie ruszać innych tabel .civ-emp-mini w panelu.
+   / EN: Treasury per-city table — numeric columns right-aligned in ALL rows (header + data +
+   SUM), consistent with the mockup — previously only the SUM row had inline text-align:right.
+   Scoped under .civ-emp-skarbiec-city-tbl so other .civ-emp-mini tables are untouched. */
+.civ-emp-skarbiec-city-tbl .civ-emp-mini-h-cell:nth-child(2),
+.civ-emp-skarbiec-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
+.civ-emp-skarbiec-city-tbl .civ-emp-mini-r>div:nth-child(2),
+.civ-emp-skarbiec-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
+/* RECYDYWA naprawy wyżej — Faza 2 (Praca/Nauka/Religia, 9a539197) stworzyła 3 NOWE tabele per
+   miasto i żadnej nie dała analogicznej klasy: dane wyrównane do lewej (start), wiersz SUMA
+   do prawej (inline) — dwie konwencje w jednej tabeli, ten sam defekt co Skarbiec przed
+   naprawą wyżej. Praca/Nauka: wszystkie kolumny liczbowe do prawej (nagłówek + dane), spójnie
+   z SUMĄ. Religia: tylko WYZNAWCY jest liczbą — RELIGIA to nazwa (tekst), zostaje do lewej,
+   zgodnie z makietą (klatka 11, kolumna RELIGIA bez text-align:right).
+   / EN: RELAPSE of the fix above — Phase 2 (Labor/Science/Religion, 9a539197) created 3 NEW
+   per-city tables and gave none of them an analogous class: data rows left-aligned (start), SUM
+   row right-aligned (inline) — two conventions in one table, same defect as Treasury before its
+   fix above. Labor/Science: all numeric columns right-aligned (header + data), consistent with
+   SUM. Religion: only WYZNAWCY (adherents) is numeric — RELIGIA is a name (text) and stays left,
+   matching the mockup (frame 11, RELIGIA column has no text-align:right). */
+.civ-emp-praca-city-tbl .civ-emp-mini-h-cell:nth-child(2),
+.civ-emp-praca-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
+.civ-emp-praca-city-tbl .civ-emp-mini-r>div:nth-child(2),
+.civ-emp-praca-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
+.civ-emp-nauka-city-tbl .civ-emp-mini-h-cell:nth-child(2){align-items:flex-end;text-align:right;}
+.civ-emp-nauka-city-tbl .civ-emp-mini-r>div:nth-child(2){text-align:right;}
+.civ-emp-religia-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
+.civ-emp-religia-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
+
+/* — R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Praca/Nauka/Religia (§4 handoffu
+   designera: .civ-emp-split2 = "pasek podziału na dwa strumienie", Praca budynki/pula, Religia
+   własna/obca) — */
+.civ-emp-split2{display:flex;height:12px;border-radius:999px;overflow:hidden;background:#1f2733;
+  margin-top:12px;}
+.civ-emp-split2>span{display:block;height:100%;}
+.civ-emp-relig-medallion{flex:none;width:44px;height:44px;border-radius:9px;background:#1d2634;
+  border:1px solid #d9a441;display:flex;align-items:center;justify-content:center;}
+.civ-emp-relig-medallion svg{width:24px;height:24px;display:block;}
+.civ-emp-relig-name{display:block;font-size:18px;font-weight:800;color:#d9a441;line-height:1.15;}
+.civ-emp-relig-sub{display:block;font-size:11px;color:#7d8798;margin-top:2px;}
+.civ-emp-relig-fx-hdr{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;
+  font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a;}
+.civ-emp-relig-fx{display:flex;flex-direction:column;gap:3px;padding:9px 10px;border-radius:7px;
+  background:#1c2431;border:1px solid #2b3543;}
+.civ-emp-relig-fx-row{display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8;}
+.civ-emp-relig-fx-row .v{color:#78c95a;font-weight:600;}
+.civ-emp-relig-fx-row .v.neutral{color:#cfd5de;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -537,6 +634,225 @@ function cityEconMiniSkarbiec(
   return h;
 }
 
+/** Odmiana „miasto/miasta/miast" wg liczby (bez sufiksu „niedokarmione", inaczej niż
+ *  `miastoNiedokarmioneWord` niżej — ten sam wzorzec gramatyczny, inne zastosowanie).
+ *  EN: "miasto/miasta/miast" (city, cities, of cities) grammatical form by count — same
+ *  pattern as `miastoNiedokarmioneWord` below, different use site. */
+function miastoCountWord(n: number): string {
+  if (n === 1) return 'miasto';
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'miasta';
+  return 'miast';
+}
+
+/** Kolorowana wartość w tabeli bilansu Skarbca (zielony/czerwony/szary wg znaku). */
+function tblValTxt(n: number): string {
+  const r = Math.round(n);
+  const color = r > 0 ? '#78c95a' : r < 0 ? '#e07a7a' : '#6f7889';
+  return `<span style="color:${color};font-weight:700">${treasuryBalanceSignedTxt(r)}</span>`;
+}
+
+/** Jak `formatResourceUpkeepEmpireLine`, ale kolorowana/łamana wierszami — dla tabeli bilansu
+ *  Skarbca (klatka 1, R-DESIGN-11-ZAKLADEK), gdzie sąsiaduje z kolorowanymi kwotami złota. */
+function formatResourceUpkeepEmpireLineColored(resources: Record<string, number> | undefined): string {
+  const keys = Object.keys(resources ?? {});
+  if (keys.length === 0) return '<span style="color:#6f7889">—</span>';
+  const lines = keys.map(k => `−${resources![k]} ${stockResourceLabel(k)}`).join('<br>');
+  return `<span style="font-size:11.5px;color:#e07a7a;font-weight:600;line-height:1.35">${lines}</span>`;
+}
+
+/** Tor suwaka `.civ-emp-slider` częściowo wypełniony gradientem do wartości `pct` (%),
+ *  reszta toru w kolorze tła — natywny input[type=range] z `-webkit-appearance:none` renderuje
+ *  swoje tło wprost jako tor, więc to jedyne, czego trzeba do wizualnego „wypełnienia". */
+function sliderFillStyle(pct: number, colorFrom: string, colorTo: string): string {
+  const p = Math.max(0, Math.min(100, pct));
+  return `background:linear-gradient(90deg,${colorFrom} 0%,${colorTo} ${p}%,#1f2733 ${p}%,#1f2733 100%)`;
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13) — Klatka 1 makiety designera: Skarbiec dostaje
+ * własny blok top-level (jak Spichlerz/Surowce/Handel/Armia/Kultura/Moc), z hero-liczbą „Netto
+ * ±N / turę" analogiczną do `.civ-emp-moc-big` w sekcji Moc. Wzorzec organizacji kodu skopiowany
+ * z `renderSpichlerzCentralnySection()` (nested `.civ-emp-sect` dla suwaka na końcu) — treść
+ * własna, 1:1 z etykietami `cityEconMiniSkarbiec()` wyżej (ta funkcja NIE jest usuwana — nadal
+ * używana w pełnym przeglądzie „ZASOBY IMPERIUM", blok `ekonomia`, gdy activeSection === null).
+ * EN: Treasury gets its own top-level block (like Granary/Resources/Trade/Army/Culture/Power),
+ * with a hero number "Net ±N / turn" analogous to `.civ-emp-moc-big` in the Power section. Code
+ * organization pattern copied from `renderSpichlerzCentralnySection()` (nested `.civ-emp-sect`
+ * for the slider at the end) — content is new, labels 1:1 with `cityEconMiniSkarbiec()` above
+ * (that function is NOT removed — still used in the full "ZASOBY IMPERIUM" overview, `ekonomia`
+ * block, when activeSection is null).
+ */
+function renderSkarbiecSection(
+  rows: EmpireDetailSnap['cityEcon'],
+  economy: EmpireDetailSnap['economy'],
+): string {
+  const wplywy = Math.round(economy.bogactwoWplywyBrutto ?? 0);
+  const handel = Math.round(economy.bogactwoHandel ?? 0);
+  const daninaBud = wplywy - handel;
+  const utrzB = Math.round(economy.bogactwoUtrzymanieBudynkow ?? 0);
+  const utrzRes = economy.bogactwoUtrzymanieSurowcowBudynkow ?? {};
+  const utrzJ = Math.round(economy.bogactwoUtrzymanieJednostek ?? 0);
+  const koszty = utrzB + utrzJ;
+  const netto = Math.round(economy.bogactwoRate ?? 0);
+  const stan = Math.round(economy.bogactwo ?? 0);
+  const nettoCls = netto < 0 ? 'neg' : 'pos';
+
+  let h = '<div class="civ-emp-sect" data-section="skarbiec">'
+    + '<div class="civ-emp-eyebrow">SKARBIEC IMPERIUM</div>'
+    + `<div class="civ-emp-hero ${nettoCls}">Netto ${treasuryBalanceSignedTxt(netto)} / turę</div>`;
+
+  if (rows.length === 0) {
+    h += `<div class="civ-emp-hero-sub">Stan skarbca <b>${stan}</b></div>`
+      + '<div class="civ-emp-empty">Brak miast — dochód pojawi się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  h += `<div class="civ-emp-hero-sub">Stan skarbca <b>${stan}</b> · wpływy <b>${wplywy}</b> − koszty `
+    + `<b>${koszty}</b> · ${rows.length} ${miastoCountWord(rows.length)}</div>`;
+
+  if (netto < 0) {
+    h += '<div class="civ-emp-alert"><b>Skarbiec się wyczerpuje</b> — koszty przewyższają wpływy. '
+      + 'Przy zerze utrzymanie budynków przestaje być pokrywane.</div>';
+  }
+
+  const wplywySub = handel > 0
+    ? `<span style="font-size:11px;color:#78c95a;font-weight:600">+${handel} handel</span>`
+    : '<span style="font-size:11px;color:#7d8798;font-weight:600">bez handlu</span>';
+  const kosztySub = utrzB > 0
+    ? `<span style="font-size:11px;color:#e07a7a;font-weight:600">${utrzB} budynki</span>` : '';
+  h += '<div class="civ-emp-two">'
+    + `<div class="civ-emp-box"><div class="k">WPŁYWY / TURĘ</div><div class="v">${wplywy} ${wplywySub}</div></div>`
+    + `<div class="civ-emp-box"${netto < 0 ? ' style="border-color:#4a2a2a"' : ''}><div class="k">KOSZTY / TURĘ</div>`
+    + `<div class="v"${netto < 0 ? ' style="color:#e07a7a"' : ''}>${koszty} ${kosztySub}</div></div>`
+    + '</div>';
+
+  // TABELA BILANSU — .civ-emp-tbl (dziś tylko w Mocy) z gridem 2-kolumnowym przez inline
+  // override (klasy `.civ-emp-tbl-h`/`.civ-emp-tbl-r` mają grid-template-columns 5-kolumnowy
+  // zaszyty w CSS dla tabeli Mocy — inline style nadpisuje go z wyższym priorytetem kaskady).
+  const bg = '1fr 0.62fr';
+  h += `<div class="civ-emp-tbl"><div class="civ-emp-tbl-h" style="grid-template-columns:${bg}">`
+    + '<div>SKARBIEC IMPERIUM — BILANS / TURĘ</div><div>ZŁOTO</div></div>';
+  const balRow = (label: string, sub: string | null, valueHtml: string): string =>
+    `<div class="civ-emp-tbl-r" style="grid-template-columns:${bg}"><div><div class="nm">${label}</div>`
+    + `${sub ? `<div class="src">${sub}</div>` : ''}</div><div style="text-align:right">${valueHtml}</div></div>`;
+  h += balRow('Wpływy brutto (podatek + budynki)', null, tblValTxt(daninaBud));
+  h += balRow('Handel ze szlaków', null, tblValTxt(handel));
+  h += balRow('Utrzymanie budynków', null, tblValTxt(-utrzB));
+  h += balRow('Utrzymanie surowców budynków', 'z magazynu państwa, nie ze złota',
+    formatResourceUpkeepEmpireLineColored(utrzRes));
+  h += balRow('Utrzymanie jednostek', null, tblValTxt(-utrzJ));
+  h += `<div class="civ-emp-tbl-sum" style="grid-template-columns:${bg}"><div>Netto skarbiec</div>`
+    + `<div class="${nettoCls}">${treasuryBalanceSignedTxt(netto)}</div></div>`;
+  h += '</div>';
+
+  // TABELA PER MIASTO — wzorzec `.civ-emp-mini`/`miniHeader`/`miniRow` (jak reszta panelu),
+  // wiersz SUMA w `.civ-emp-mini-summary` — mechanizm już istnieje dla tabeli Miasta.
+  const grid = '1fr 0.7fr 0.9fr';
+  let sumSkarbiec = 0;
+  let sumUtrz = 0;
+  h += `<div class="civ-emp-mini civ-emp-skarbiec-city-tbl" style="margin-top:10px">${miniHeader(['MIASTO', 'DO SKARBCA', 'UTRZYMANIE'], grid)}`;
+  for (const c of rows) {
+    const doSkarbca = c.pieniadz;
+    const utrzymanie = -(c.utrzymanieBudynkow ?? 0);
+    sumSkarbiec += doSkarbca;
+    sumUtrz += utrzymanie;
+    h += miniRow([esc(c.name), tblValTxt(doSkarbca), tblValTxt(utrzymanie)], grid);
+  }
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+    + `<div>SUMA</div><div style="text-align:right">${treasuryBalanceSignedTxt(sumSkarbiec)}</div>`
+    + `<div style="text-align:right">${treasuryBalanceSignedTxt(sumUtrz)}</div></div>`;
+  h += '</div>';
+
+  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie '
+    + 'budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi '
+    + 'z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie '
+    + 'per miasto w tabeli.</div>';
+
+  h += renderSkarbiecTaxSplitSection(daninaBud);
+  h += '</div>';
+  return h;
+}
+
+/**
+ * Suwak „Domyślny podział podatku" w nowym stylu `.civ-emp-slider` (Klatka 1, §C zlecenia) —
+ * WŁASNA funkcja, NIE modyfikuje `renderDefaultHandelSplitSection()` wyżej, która nadal obsługuje
+ * suwak podatku wewnątrz filtrowanego wiersza „Nauka" w bloku `ekonomia` (poza zakresem tej fazy).
+ * Ten sam mechanizm danych (`handelSplitUi`, `adjustHandelSplit`), inny markup: kwota „≈ ±N/turę"
+ * obok procentu, tor suwaka kolorowany wg zasobu (`.gold`/`.blue`/`.neutral`).
+ * EN: "Default tax split" slider in the new `.civ-emp-slider` style — its OWN function, does NOT
+ * modify `renderDefaultHandelSplitSection()` above, which still serves the tax slider inside the
+ * filtered "Science" row of the `ekonomia` block (out of this phase's scope). Same data mechanism,
+ * different markup: an "≈ ±N/turn" amount next to the percentage, slider track colored by resource.
+ */
+function renderSkarbiecTaxSplitSection(baseAmount: number): string {
+  const getDef = handelSplitUi.getOwnerDefault;
+  const onChange = handelSplitUi.onOwnerDefaultChange;
+  if (!getDef || !onChange) return '';
+  const split = normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 });
+  const daninaLbl = handelSplitUi.getDaninaLabel?.() ?? 'Podatek';
+  const id = 'emp-skarbiec-tax-split';
+  const rows: { key: keyof CityPodzialHandlu; label: string; cls: string; from: string; to: string }[] = [
+    { key: 'procentPieniadz', label: 'Skarb', cls: 'gold', from: '#6a4010', to: '#d9a441' },
+    { key: 'procentNauka', label: 'Nauka', cls: 'blue', from: '#2c4a6b', to: '#8ec5ff' },
+    { key: 'procentLuksus', label: 'Zamożność', cls: 'neutral', from: '#3a4657', to: '#9aa4b2' },
+  ];
+  let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ ${esc(daninaLbl.toUpperCase())}</div>`
+    + '<div class="civ-emp-note">Nowe miasta dziedziczą ten podział. W panelu miasta możesz włączyć własny override.</div>';
+  h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:12px">';
+  for (const row of rows) {
+    const pct = split[row.key];
+    const amount = Math.round((baseAmount * pct) / 100);
+    h += '<div>'
+      + '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">'
+      + `<span style="flex:1;font-size:12px;font-weight:600" class="civ-emp-slider-label ${row.cls}">${row.label}</span>`
+      + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-pct="${row.key}"><b>${pct}%</b></span>`
+      + `<span style="font-size:11px;color:#7d8798" data-amt="${row.key}">≈ ${amount >= 0 ? '+' : ''}${amount}/turę</span></div>`
+      + `<input type="range" class="civ-emp-slider ${row.cls}" min="0" max="100" step="${HANDEL_PCT_STEP}" `
+      + `value="${pct}" style="${sliderFillStyle(pct, row.from, row.to)}" data-handel-key="${row.key}" `
+      + `data-grad-from="${row.from}" data-grad-to="${row.to}" /></div>`;
+  }
+  h += '<div style="display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid #232b38">'
+    + '<span style="flex:1;font-size:10.5px;color:#7d8798">Suma <b style="color:#cfd5de">100%</b> · kroki '
+    + `${HANDEL_PCT_STEP}%</span><span data-sum-ok style="font-size:9.5px;font-weight:700;letter-spacing:.04em;`
+    + 'color:#78c95a;background:rgba(120,201,90,.14);border-radius:999px;padding:2px 8px">SUMA OK</span></div>';
+  h += `</div><div class="civ-emp-foot">Suma = 100% · kroki ${HANDEL_PCT_STEP}% · dotyczy wszystkich miast bez własnego override.</div></div>`;
+  queueMicrotask(() => wireSkarbiecTaxSplitInputs(split, baseAmount, onChange));
+  return h;
+}
+
+function wireSkarbiecTaxSplitInputs(
+  initial: CityPodzialHandlu,
+  baseAmount: number,
+  onChange: (ownerId: number, split: CityPodzialHandlu) => void,
+): void {
+  const host = document.getElementById('emp-skarbiec-tax-split');
+  if (!host) return;
+  let current = { ...initial };
+  for (const inp of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
+    inp.addEventListener('input', () => {
+      const key = inp.dataset.handelKey as keyof CityPodzialHandlu;
+      current = adjustHandelSplit(current, key, Number(inp.value));
+      onChange(0, { ...current });
+      for (const other of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-handel-key]'))) {
+        const k = other.dataset.handelKey as keyof CityPodzialHandlu;
+        const pct = current[k];
+        other.value = String(pct);
+        other.style.background = sliderFillStyle(pct, other.dataset.gradFrom ?? '#6a4010', other.dataset.gradTo ?? '#d9a441');
+        const pctEl = host.querySelector(`[data-pct="${k}"] b`);
+        if (pctEl) pctEl.textContent = `${pct}%`;
+        const amtEl = host.querySelector(`[data-amt="${k}"]`);
+        if (amtEl) {
+          const amount = Math.round((baseAmount * pct) / 100);
+          amtEl.textContent = `≈ ${amount >= 0 ? '+' : ''}${amount}/turę`;
+        }
+      }
+    });
+  }
+}
+
 function cityEconMiniPraca(rows: EmpireDetailSnap['cityEcon'], upkeep?: number): string {
   if (rows.length === 0) return '<div class="civ-emp-empty">Brak miast.</div>';
   const grid = '1fr 1fr 1fr';
@@ -555,6 +871,311 @@ function cityEconMiniNauka(rows: EmpireDetailSnap['cityEcon']): string {
   let h = `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'NAUKA'], grid)}`;
   for (const c of rows) h += miniRow([esc(c.name), signedTxt(c.nauka)], grid);
   h += '</div><div class="civ-emp-foot">Nauka z miast trafia do banku badań. Hub badań — przycisk Nauka na lewym pasku.</div>';
+  return h;
+}
+
+/** Tor dwukolorowy statyczny (bez interakcji) — hero-pasek podziału na dwa strumienie
+ *  (Praca: Budynki/Pula, Religia: własna/obca religia). Odpowiednik wizualny `.civ-emp-split2`
+ *  z handoffu designera §4 — DWA niezależne odcinki gradientu, nie „fill do wartości" jak
+ *  `sliderFillStyle` (ten używany na suwakach interaktywnych, gdzie reszta toru = tło). */
+function split2BarHtml(
+  pctA: number, colorFromA: string, colorToA: string,
+  pctB: number, colorFromB: string, colorToB: string,
+): string {
+  const a = Math.max(0, Math.min(100, Math.round(pctA)));
+  const b = Math.max(0, Math.min(100, Math.round(pctB)));
+  return `<div class="civ-emp-split2"><span style="width:${a}%;background:linear-gradient(90deg,${colorFromA},${colorToA})"></span>`
+    + `<span style="width:${b}%;background:linear-gradient(90deg,${colorFromB},${colorToB})"></span></div>`;
+}
+
+/** Tor suwaka `.civ-emp-slider` z DWOMA odcinkami gradientu po obu stronach wartości `pctA` (%) —
+ *  odpowiednik `sliderFillStyle()` dla suwaka reprezentującego DWA strumienie na raz (Budynki
+ *  0..pctA w złocie, Pula imperium pctA..100 w błękicie), nie „wartość + puste tło" jak przy
+ *  pojedynczym zasobie (suwak podatku Skarbca). */
+function laborSliderFillStyle(pctBudynki: number): string {
+  const p = Math.max(0, Math.min(100, pctBudynki));
+  return `linear-gradient(90deg,#6a4010 0%,#d9a441 ${p}%,#3a4657 ${p}%,#8ec5ff 100%)`;
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Klatka 2: Praca dostaje własny blok
+ * top-level, wzorem Skarbca (faza 1). Hero = suma Pracy/turę imperium (Budynki+Pula tej tury,
+ * sumowane z `cityEcon`, NIE `economy.pracaRate` — ten opisuje przyrost NETTO puli po utrzymaniu,
+ * inna liczba, patrz box PULA IMPERIUM niżej gdzie `economy.pracaRate` jest pokazywany osobno,
+ * tak samo jak Skarbiec pokazuje „netto" osobno od sum tabeli per-miasto).
+ */
+function renderPracaSection(
+  rows: EmpireDetailSnap['cityEcon'],
+  economy: EmpireDetailSnap['economy'],
+): string {
+  let h = '<div class="civ-emp-sect" data-section="praca">'
+    + '<div class="civ-emp-eyebrow">PRACA IMPERIUM</div>';
+
+  if (rows.length === 0) {
+    h += '<div class="civ-emp-hero pos">0 Pracy / turę</div>'
+      + '<div class="civ-emp-empty">Brak miast — produkcja Pracy pojawi się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  let sumBudynki = 0;
+  let sumPula = 0;
+  for (const c of rows) { sumBudynki += c.pracaBudynki; sumPula += c.pracaPula; }
+  const total = sumBudynki + sumPula;
+  const pctBudynki = total > 0 ? Math.round((sumBudynki / total) * 100) : 0;
+  const pctPula = 100 - pctBudynki;
+  const upkeep = Math.round(economy.pracaUpkeep ?? 0);
+  const stock = Math.round(economy.praca ?? 0);
+  const rate = Math.round(economy.pracaRate ?? 0);
+
+  h += `<div class="civ-emp-hero pos">${total} Pracy / turę</div>`
+    + `<div class="civ-emp-hero-sub"><b>${sumBudynki}</b> do budynków · <b>${sumPula}</b> do puli imperium · `
+    + `${rows.length} ${miastoCountWord(rows.length)}</div>`;
+
+  h += split2BarHtml(pctBudynki, '#6a4010', '#d9a441', pctPula, '#2c4a6b', '#8ec5ff');
+  h += '<div style="display:flex;gap:8px;margin-top:6px;font-size:11px">'
+    + `<span style="flex:1" class="civ-emp-slider-label gold">Budynki ${pctBudynki}% · ${sumBudynki}</span>`
+    + `<span class="civ-emp-slider-label blue">Pula imperium ${pctPula}% · ${sumPula}</span></div>`;
+
+  h += '<div class="civ-emp-two">'
+    + `<div class="civ-emp-box"><div class="k">PULA IMPERIUM</div><div class="v">${stock} ${deltaHtml(rate)}</div></div>`
+    + `<div class="civ-emp-box"><div class="k">UTRZYMANIE ULEPSZEŃ</div>`
+    + `<div class="v"${upkeep > 0 ? ' style="color:#e07a7a"' : ''}>−${upkeep} `
+    + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>'
+    + '</div>';
+
+  const grid = '1fr 1fr 1fr';
+  let tblSumPula = 0;
+  let tblSumBud = 0;
+  h += `<div class="civ-emp-mini civ-emp-praca-city-tbl" style="margin-top:10px">${miniHeader(['MIASTO', 'DO PULI', 'DO BUDYNKÓW'], grid)}`;
+  for (const c of rows) {
+    tblSumPula += c.pracaPula;
+    tblSumBud += c.pracaBudynki;
+    h += miniRow([esc(c.name), miniColColor(c.pracaPula, '#8ec5ff'), miniColColor(c.pracaBudynki, '#d9a441')], grid);
+  }
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+    + `<div>SUMA</div><div style="text-align:right">${signedTxt(tblSumPula)}</div>`
+    + `<div style="text-align:right">${signedTxt(tblSumBud)}</div></div>`;
+  h += '</div>';
+
+  h += '<div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
+  if (upkeep > 0) {
+    h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${upkeep} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
+  }
+
+  h += renderPracaSplitSection();
+  h += '</div>';
+  return h;
+}
+
+/**
+ * Suwak „Domyślny podział pracy" w nowym stylu `.civ-emp-slider` (Klatka 2 §C zlecenia) — WŁASNA
+ * funkcja, analogicznie do `renderSkarbiecTaxSplitSection` dla Skarbca (faza 1). NIE modyfikuje
+ * `renderDefaultPodzialPracySection()` wyżej, która nadal obsługuje ten sam suwak wewnątrz
+ * filtrowanego wiersza „Praca" w bloku `ekonomia` (pełny przegląd, gdy activeSection===null) —
+ * ten sam mechanizm danych (`empireGlobalDefaultsUi`), inny markup: tor suwaka dwukolorowy
+ * (złoto=Budynki, błękit=Pula imperium) przez `laborSliderFillStyle()`.
+ */
+function renderPracaSplitSection(): string {
+  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
+  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
+  if (!getDef || !onChange) return '';
+  const split = getDef(0) ?? { procentBudynki: 70 };
+  const id = 'emp-praca-tab-split';
+  const pctB = split.procentBudynki;
+  const pctU = 100 - pctB;
+  let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ PRACY</div>`
+    + '<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten podział.</div>';
+  h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:7px">'
+    + '<div style="display:flex;align-items:baseline;gap:8px">'
+    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label gold">Budynki</b> / '
+    + '<b class="civ-emp-slider-label blue">Do puli imperium</b></span>'
+    + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-praca-pct>${pctB}% / ${pctU}%</span></div>`
+    + `<input type="range" class="civ-emp-slider gold" min="0" max="100" step="${HANDEL_PCT_STEP}" `
+    + `value="${pctB}" style="background:${laborSliderFillStyle(pctB)}" data-praca-key="procentBudynki" /></div>`;
+  h += `<div class="civ-emp-foot">Kroki ${HANDEL_PCT_STEP}% · w lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.</div></div>`;
+  queueMicrotask(() => wirePracaSplitInputs(onChange));
+  return h;
+}
+
+function wirePracaSplitInputs(
+  onChange: (ownerId: number, split: CityPodzialPracy) => void,
+): void {
+  const host = document.getElementById('emp-praca-tab-split');
+  if (!host) return;
+  const inp = host.querySelector<HTMLInputElement>('input[data-praca-key="procentBudynki"]');
+  if (!inp) return;
+  inp.addEventListener('input', () => {
+    const pctB = snapHandelPct(Number(inp.value));
+    onChange(0, { procentBudynki: pctB });
+    inp.style.background = laborSliderFillStyle(pctB);
+    const lbl = host.querySelector('[data-praca-pct]');
+    if (lbl) lbl.textContent = `${pctB}% / ${100 - pctB}%`;
+  });
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 2 — Klatka 3: Nauka dostaje własny blok top-level. BEZ przycisku
+ * „Otwórz hub badań" (rejestr decyzji designera §5/§8, punkt 5, Maciej 2026-08-14: ODŁOŻONE —
+ * „do potwierdzenia, czy hub ma istnieć jako cel linku... bez niego klatka zostaje bez zmian") —
+ * pominięty CAŁKOWICIE w tej fazie, nie renderowany nawet jako placeholder. BEZ własnego suwaka
+ * podatku — Nauka finansowana z TEGO SAMEGO % co Skarbiec/Zamożność (jeden suwak, mieszka w
+ * `renderSkarbiecTaxSplitSection`, patrz `econSliderVisibilityForOnlyEconId` i box „ŹRÓDŁO
+ * FINANSOWANIA" niżej, który tylko WSKAZUJE suwak, nie duplikuje go).
+ */
+function renderNaukaSection(
+  rows: EmpireDetailSnap['cityEcon'],
+  economy: EmpireDetailSnap['economy'],
+  research: EmpireDetailSnap['research'],
+): string {
+  const rate = Math.round(economy.naukaRate ?? 0);
+  const bank = Math.floor(economy.nauka ?? 0);
+  const getDef = handelSplitUi.getOwnerDefault;
+  const split = getDef ? normalizePodzialHandlu(getDef(0) ?? { procentPieniadz: 60, procentNauka: 20, procentLuksus: 20 }) : null;
+  const procentNauka = split ? split.procentNauka : 20;
+  const heroCls = rate < 0 ? 'neg' : 'pos';
+
+  let h = '<div class="civ-emp-sect" data-section="nauka">'
+    + '<div class="civ-emp-eyebrow">NAUKA IMPERIUM</div>'
+    + `<div class="civ-emp-hero ${heroCls}">${signedPl(rate)} PN / turę</div>`;
+
+  if (rows.length === 0) {
+    h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN</div>`
+      + '<div class="civ-emp-empty">Brak miast — produkcja Nauki pojawi się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  h += `<div class="civ-emp-hero-sub">Bank badań <b>${bank}</b> PN · finansowana <b>${procentNauka}%</b> podatku · `
+    + `${rows.length} ${miastoCountWord(rows.length)}</div>`;
+
+  h += '<div class="civ-emp-two">';
+  // Znalezisko przy tej fazie (NIE naprawiane tu, poza zakresem UI): playtest „?playtest=mapa"
+  // (main.ts ok. linii 29253) ustawia `player.badana = 'Metalurgia Brązu'` — nazwa niedopasowana
+  // do żadnego wpisu `data/tech.json` (dziś „Brązownictwo") — `getResearchState()` wtedy nie
+  // znajduje `def`, więc `kosztCelu` wraca 0. F3 KOREKTA (2026-08-14, Evaluator zweryfikował
+  // buildem): poprzednia wersja tego komentarza twierdziła że bez guarda pasek byłby sztucznie
+  // pełny („dzielenie przez 0 daje postepFraction=1") — NIEPRAWDA. `getResearchState()`
+  // (playerState.ts) inicjalizuje `postepFraction=0` i dzieli WYŁĄCZNIE wewnątrz
+  // `if (kosztCelu>0)`; bez guarda pasek renderowałby się PUSTY (0%), nie pełny. Prawdziwy
+  // powód guarda to wyświetlany TEKST: bez niego pokazałby mylące „N / 0 PN" (zero widoczne w
+  // mianowniku LICZBY, nie dzielenie w kodzie) — guard chroni czytelność tej liczby, nie kształt
+  // paska.
+  // EN: found during this phase (NOT fixed here, out of UI scope): the "?playtest=mapa" preset
+  // sets a stale tech name not matching today's tech.json, so the engine can't resolve `def` and
+  // returns kosztCelu=0. F3 CORRECTION (2026-08-14, Evaluator verified via build): the previous
+  // version of this comment claimed the bar would render artificially full without the guard
+  // ("division by zero gives postepFraction=1") — FALSE. `getResearchState()` (playerState.ts)
+  // initializes `postepFraction=0` and divides ONLY inside `if (kosztCelu>0)`; without the guard
+  // the bar would render EMPTY (0%), not full. The guard's real purpose is the displayed TEXT:
+  // without it, it would show a misleading "N / 0 PN" (the zero visible in the NUMBER's
+  // denominator, not an actual division in the code) — the guard protects that number's
+  // readability, not the bar's shape.
+  if (research && research.kosztCelu > 0) {
+    const pctBar = Math.max(0, Math.min(100, Math.round(research.postepFraction * 100)));
+    const etaTxt = research.turnsLeft == null
+      ? '—'
+      : (research.turnsLeft > 0 ? `${research.turnsLeft} tur` : '<1 tury');
+    h += '<div class="civ-emp-box"><div class="k">BADANE TERAZ</div>'
+      + `<div class="v">${esc(research.targetLabel)}</div>`
+      + `<div class="civ-emp-bar" style="margin-top:7px;height:6px;margin-bottom:0">`
+      + `<span class="fill" style="width:${pctBar}%;background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span></div>`
+      + `<div style="font-size:10.5px;color:#7d8798;margin-top:5px">${Math.round(research.pula)} / `
+      + `${Math.round(research.kosztCelu)} PN · ETA ${etaTxt}</div></div>`;
+  } else if (research) {
+    h += '<div class="civ-emp-box"><div class="k">BADANE TERAZ</div>'
+      + `<div class="v">${esc(research.targetLabel)}</div>`
+      + '<div style="font-size:10.5px;color:#7d8798;margin-top:7px">Koszt celu nieznany (dane techu '
+      + 'niedopasowane) · bank <b style="color:#e8ebf0">' + Math.round(research.pula) + '</b> PN</div></div>';
+  } else {
+    h += '<div class="civ-emp-box"><div class="k">BADANE TERAZ</div>'
+      + '<div class="v" style="color:#7d8798;font-size:12px;font-weight:600">Brak wybranego celu</div></div>';
+  }
+  h += '<div class="civ-emp-box"><div class="k">ŹRÓDŁO FINANSOWANIA</div>'
+    + `<div class="v" style="color:#8ec5ff">${procentNauka}% podatku</div>`
+    + '<div style="font-size:10.5px;color:#7d8798;margin-top:7px;line-height:1.4">Suwak Skarb / Nauka / '
+    + 'Zamożność — sekcja Skarbiec</div></div>';
+  h += '</div>';
+
+  const grid = '1fr 1fr';
+  let tblSum = 0;
+  h += `<div class="civ-emp-mini civ-emp-nauka-city-tbl" style="margin-top:10px">${miniHeader(['MIASTO', 'NAUKA'], grid)}`;
+  for (const c of rows) { tblSum += c.nauka; h += miniRow([esc(c.name), miniColColor(c.nauka, '#8ec5ff')], grid); }
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+    + `<div>SUMA</div><div style="text-align:right">${signedTxt(tblSum)}</div></div>`;
+  h += '</div>';
+
+  h += '<div class="civ-emp-foot">Nauka z miast trafia do banku badań. Hub badań — przycisk Nauka na lewym pasku.</div>';
+  h += '</div>';
+  return h;
+}
+
+/**
+ * R-DESIGN-11-ZAKLADEK faza 2 — Klatka 11 (wariant A ZATWIERDZONY 2026-08-14): Religia dostaje
+ * własny blok top-level, kompletnie od zera (dotąd tylko jeden filtrowany wiersz `econRows`,
+ * `detailFor` bez klucza 'religia', patrz stary komentarz w `render()`).
+ *
+ * ⚠️ ROZBIEŻNOŚĆ ŚWIADOMA WOBEC MAKIETY — sekcja „Efekty" w makiecie pokazuje 3 pozycje
+ * (Zadowolenie/Porządek/Świątynie); tu są WYŁĄCZNIE 2 (Zadowolenie, Świątynie). Sprawdzone w
+ * silniku (`gra/src/game/culture-religion.ts`, `ReligionParams`): istnieje
+ * `zadowolenieDominujaca`/`karaObca` (religia → Zadowolenie) i `swiatyniaBonusSzerzenia` (religia
+ * → tempo szerzenia), ale ŻADEN parametr nie wiąże religii z Porządkiem wprost — `order.ts` bierze
+ * Porządek z zupełnie innych wag (`porzadek_waga_szczescie`/`porzadek_waga_prawo`), nie z religii.
+ * Wpisanie liczby przy „Porządek" byłoby wymyśloną wartością bez pokrycia w silniku (zakaz z
+ * CLAUDE.md §3 „każda liczba ma nazwany parametr" — nazwany parametr musi istnieć NAPRAWDĘ, nie
+ * tylko nazewniczo). Zgłoszone do rejestru pytań (nie ABC — brak realnej alternatywy do wyboru,
+ * to obserwacja o luce, nie decyzja produktowa) zamiast cichego zgadywania liczby.
+ */
+function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
+  let h = '<div class="civ-emp-sect" data-section="religia">'
+    + '<div class="civ-emp-eyebrow">RELIGIA IMPERIUM</div>';
+
+  if (religion.cities.length === 0) {
+    h += `<div class="civ-emp-hero pos">${esc(religion.stateReligionLabel)}</div>`
+      + '<div class="civ-emp-empty">Brak miast — wyznawcy pojawią się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  h += '<div style="display:flex;align-items:center;gap:12px;margin-top:4px">'
+    + `<span class="civ-emp-relig-medallion">${brandIconSvg('cp-religion', 24)}</span>`
+    + '<span style="flex:1;min-width:0">'
+    + `<span class="civ-emp-relig-name">${esc(religion.stateReligionLabel)}</span>`
+    + '<span class="civ-emp-relig-sub">religia państwowa · własna</span></span></div>';
+
+  h += '<div class="civ-emp-two">'
+    + `<div class="civ-emp-box"><div class="k">WYZNAWCY</div><div class="v">${formatManpower(religion.totalAdherents)} `
+    + `<span style="font-size:11px;color:#78c95a;font-weight:600">${religion.ownSharePct}%</span></div></div>`
+    + `<div class="civ-emp-box"><div class="k">WIARA / TURĘ</div><div class="v">${signedTxt(religion.faithRatePerTurn)}</div></div>`
+    + '</div>';
+
+  h += split2BarHtml(religion.ownSharePct, '#6a4010', '#d9a441', religion.foreignSharePct, '#3a4657', '#9aa4b2');
+  h += '<div style="display:flex;gap:8px;margin-top:6px;font-size:11px">'
+    + `<span style="flex:1" class="civ-emp-slider-label gold">${esc(religion.stateReligionLabel)} ${religion.ownSharePct}%</span>`;
+  if (religion.foreignSharePct > 0) {
+    h += `<span class="civ-emp-slider-label neutral">${esc(religion.foreignLabel ?? 'Inne religie')} ${religion.foreignSharePct}%</span>`;
+  }
+  h += '</div>';
+
+  h += '<div class="civ-emp-relig-fx-hdr">Efekty</div>'
+    + '<div class="civ-emp-relig-fx">'
+    + '<div class="civ-emp-relig-fx-row"><span>Zadowolenie (miasta z dominującą religią państwa)</span>'
+    + `<span class="v">+${religion.zadowolenieBonus}</span></div>`
+    + `<div class="civ-emp-relig-fx-row"><span>Świątynie</span><span class="v neutral">${religion.templeCount}</span></div>`
+    + '</div>';
+
+  const grid = '1fr 1.1fr 0.8fr';
+  h += '<div class="civ-emp-relig-fx-hdr">Miasta</div>'
+    + `<div class="civ-emp-mini civ-emp-religia-city-tbl">${miniHeader(['MIASTO', 'RELIGIA', 'WYZNAWCY'], grid)}`;
+  for (const c of religion.cities) {
+    const relCell = c.religionLabel === '—'
+      ? '<span style="color:#6f7889">—</span>'
+      : `<span style="color:${c.isOwn ? '#d9a441' : '#9aa4b2'}">${esc(c.religionLabel)}</span>`;
+    h += miniRow([esc(c.name), relCell, formatManpower(c.adherents)], grid);
+  }
+  h += '</div>';
+
+  h += '<div class="civ-emp-foot">Pełne rozbicie per miasto — panel miasta, zakładka Religia. '
+    + '„Efekty" — bonusy religii państwa aktywne w mieście, gdzie ona dominuje.</div>';
+  h += '</div>';
   return h;
 }
 
@@ -777,6 +1398,18 @@ function cityPoborMiniRekruci(
 function signedTxt(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
   return signedPl(n);
+}
+
+/** F2 naprawa Panel 11 zakładek Faza 2 (dispatch 2026-08-14) — wartość w tabeli per miasto
+ *  pokolorowana kolorem SEMANTYCZNYM KOLUMNY (nie znakiem wartości), zgodnie z makietą designera:
+ *  DO PULI/NAUKA błękit, DO BUDYNKÓW złoto. Wcześniej `signedTxt()` zwracał goły tekst bez
+ *  `<span>`, więc komórka dziedziczyła domyślny szary `.civ-emp-mini-r`.
+ *  EN: per-city table value colored by the COLUMN's semantic color (not the value's sign), per
+ *  the designer mockup: DO PULI/NAUKA blue, DO BUDYNKÓW gold. Previously `signedTxt()` returned
+ *  bare text with no `<span>` to color, so the cell inherited the default gray from
+ *  `.civ-emp-mini-r`. */
+function miniColColor(n: number, hex: string): string {
+  return `<span style="color:${hex}">${signedTxt(n)}</span>`;
 }
 
 /** Wartość liczbowa bez ikony (komórki danych tabel miast). */
@@ -1443,6 +2076,18 @@ function render(): void {
   if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
+  // — SKARBIEC (R-DESIGN-11-ZAKLADEK faza 1, Maciej 2026-08-13) — hero „Netto ±N / turę",
+  // własny blok top-level (patrz empirePanelSectionMap.ts). Miasta zostają na dawnym torze
+  // `ekonomia` (kolejna faza) — ce/e potrzebne tu tak samo jak w detailFor niżej.
+  const skarbiec = renderSkarbiecSection(ce, e);
+
+  // — PRACA / NAUKA / RELIGIA (R-DESIGN-11-ZAKLADEK faza 2, Maciej 2026-08-1x) — własne bloki
+  // top-level, wzorem Skarbca (faza 1). `snap.research`/`snap.religion` liczone raz w
+  // `buildEmpireDetailSnap()` (main.ts) i przekazane przez snapshot — panel tylko renderuje.
+  const praca = renderPracaSection(ce, e);
+  const nauka = renderNaukaSection(ce, e, snap.research);
+  const religia = renderReligiaSection(snap.religion);
+
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
   const spichlerz = renderSpichlerzCentralnySection(snap.food)
     .replace('data-section="spichlerz-centralny"', 'data-section="spichlerz"')
@@ -1506,6 +2151,10 @@ function render(): void {
   if (block === 'all' || block === 'parametry') body += params;
   if (block === 'all' || block === 'moc') body += moc;
   if (block === 'all' || block === 'ekonomia') body += zasoby;
+  if (block === 'skarbiec') body += skarbiec;
+  if (block === 'praca') body += praca;
+  if (block === 'nauka') body += nauka;
+  if (block === 'religia') body += religia;
   if (block === 'spichlerz') body += spichlerz;
   if (block === 'armia') body += armia;
   if (block === 'all' || block === 'kultura') body += kult;

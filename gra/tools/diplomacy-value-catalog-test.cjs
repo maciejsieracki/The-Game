@@ -32,7 +32,7 @@ export {
   diplomacyDobraWolaFromSurplus,
   diplomacyProgDarRelacja,
   diplomacyPnSurowiecIlosc,
-  diplomacyHandelSurowiecCenaJednostkowa,
+  diplomacyHandelSurowiecCenaZaBlok,
   diplomacyHandelSurowceCatalog,
   diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowiecKrok,
@@ -116,42 +116,54 @@ eq(gift.deltaZaufanie, 2, 'dar z limitem tury +2');
 
 // Maciej 2026-07-29: PN/szt. surowców magazynowych (handel_surowce)
 eq(D.diplomacyHandelSurowcePakietWielkosc(), 10, 'pakiet_wielkosc = 10 szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('drewno'), 1, 'drewno 1 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('glina'), 2, 'glina 2 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('kamien'), 3, 'kamien 3 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda'), 5, 'ruda miedzi 5 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('ruda_zelaza'), 10, 'ruda_zelaza 10 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('cegla'), 5, 'cegla 5 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('sol'), 2, 'sol 2 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('kon'), 5, 'kon 5 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('ceramika'), 5, 'ceramika 5 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('braz'), 15, 'braz 15 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('zelazo'), 20, 'zelazo 20 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('stal'), 25, 'stal 25 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('zloto'), 50, 'zloto-surowiec 50 PN/szt.');
-eq(D.diplomacyHandelSurowiecCenaJednostkowa('wegiel'), 20, 'wegiel 20 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('drewno'), 1, 'drewno 1 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('glina'), 2, 'glina 2 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('kamien'), 3, 'kamien 3 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('ruda'), 5, 'ruda miedzi 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('ruda_zelaza'), 10, 'ruda_zelaza 10 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('ruda_cyny'), 10, 'ruda_cyny 10 PN/szt. (R-CYNA-BRAZ, Maciej 2026-08-13)');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('cegla'), 5, 'cegla 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('sol'), 2, 'sol 2 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('kon'), 5, 'kon 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('ceramika'), 5, 'ceramika 5 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('braz'), 15, 'braz 15 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('zelazo'), 20, 'zelazo 20 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('stal'), 25, 'stal 25 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('zloto'), 50, 'zloto-surowiec 50 PN/szt.');
+eq(D.diplomacyHandelSurowiecCenaZaBlok('wegiel'), 20, 'wegiel 20 PN/szt.');
 // R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk handlu podaje sztuki wprost — bez
-// pakietów, bez ×10. PN pozycji = sztuki × cena_PN/szt., nic więcej.
+// pakietów, bez ×10. PN pozycji = bloki × cena_PN/blok, nic więcej.
 // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): drewno/ruda_zelaza/stal (i pozostałe surowce
 // dotknięte ×5 rebalansem produkcji) handlują się WYŁĄCZNIE wielokrotnościami 5 szt. —
-// diplomacyPnSurowiecIlosc floruje w dół do najbliższej wielokrotności PRZED przemnożeniem
-// przez cenę. Złoto (surowiec)/Węgiel świadomie WYŁĄCZONE z ×5 -> zostają przy kroku 1 szt.
-eq(D.diplomacyPnSurowiecIlosc('drewno', 5), 5, '5 szt. drewno = 5 PN (5×1) — krok 5 spełniony');
-eq(D.diplomacyPnSurowiecIlosc('drewno', 20), 20, '20 szt. drewno = 20 PN (20×1)');
-eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 10), 100, '10 szt. ruda_zelaza = 100 PN (10×10)');
-eq(D.diplomacyPnSurowiecIlosc('stal', 5), 125, '5 szt. stal = 125 PN (5×25)');
+// diplomacyPnSurowiecIlosc floruje w dół do najbliższej wielokrotności, a NASTĘPNIE dzieli
+// przez krok (5) żeby dostać liczbę BLOKÓW, ZANIM policzona zostanie cena. Złoto (surowiec)/
+// Węgiel świadomie WYŁĄCZONE z ×5 -> zostają przy kroku 1 szt. (blok = 1 szt., bez zmian).
+// NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): poprzednie oczekiwane
+// wartości (5 szt. drewno=5 PN, 20 szt.=20 PN, 10 szt. ruda_zelaza=100 PN, 5 szt. stal=125 PN)
+// asercjonowały STARĄ (błędną) formułę „sztuki × cena" bez dzielenia przez krok — dokładnie
+// błąd zgłoszony przez właściciela (515 PW zamiast 103 PW dla 205 Glina + 105 Drewno, patrz
+// diplomacy-cennik-krok5-blok-test.cjs). Poprawka: cena_* to PN za BLOK (krok jednostek),
+// decyzja ECHO f838b599 („cena za blok 5 sztuk = stara cena za 1 sztukę").
+eq(D.diplomacyPnSurowiecIlosc('drewno', 5), 1, '5 szt. drewno = 1 blok × 1 PN/blok = 1 PN — krok 5 spełniony');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 20), 4, '20 szt. drewno = 4 bloki × 1 PN/blok = 4 PN');
+eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 10), 20, '10 szt. ruda_zelaza = 2 bloki × 10 PN/blok = 20 PN');
+eq(D.diplomacyPnSurowiecIlosc('stal', 5), 25, '5 szt. stal = 1 blok × 25 PN/blok = 25 PN');
 eq(D.diplomacyPnSurowiecIlosc('zloto', 1), 50, '1 szt. zloto = 50 PN (1×50) — Złoto krok 1, bez zmian');
 eq(D.diplomacyPnSurowiecIlosc('wegiel', 1), 20, '1 szt. wegiel = 20 PN (1×20) — Węgiel krok 1, bez zmian');
 // Przypadki brzegowe kroku 5: ilość niebędąca wielokrotnością floruje w DÓŁ (nigdy w górę),
 // a ilość poniżej jednego bloku (5 szt.) jest odrzucana jako 0 PN — spójne z istniejącym
 // traktowaniem ilosc<=0 (nigdy nie zaakceptowana po cichu jako-jest).
 eq(D.diplomacyPnSurowiecIlosc('drewno', 4), 0, '4 szt. drewno (< 1 kroku) = 0 PN — odrzucone, nie zaokrąglone w górę');
-eq(D.diplomacyPnSurowiecIlosc('drewno', 7), 5, '7 szt. drewno floruje do 5 szt. = 5 PN (nie 7 PN)');
-eq(D.diplomacyPnSurowiecIlosc('drewno', 9), 5, '9 szt. drewno floruje do 5 szt. = 5 PN');
-eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 23), 200, '23 szt. ruda_zelaza floruje do 20 szt. = 200 PN (nie 230 PN)');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 7), 1, '7 szt. drewno floruje do 5 szt. = 1 blok = 1 PN (nie 7 PN)');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 9), 1, '9 szt. drewno floruje do 5 szt. = 1 blok = 1 PN');
+eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 23), 40, '23 szt. ruda_zelaza floruje do 20 szt. = 4 bloki × 10 PN/blok = 40 PN (nie 230 PN)');
 eq(D.diplomacyPnSurowiecIlosc('wegiel', 3), 60, '3 szt. wegiel (krok 1) = 60 PN — bez floorowania, Węgiel nietknięty');
 eq(D.diplomacyHandelSurowiecKrok('drewno'), 5, 'krok(drewno) = 5 szt.');
 eq(D.diplomacyHandelSurowiecKrok('ruda_zelaza'), 5, 'krok(ruda_zelaza) = 5 szt.');
+// R-SUROWIEC-CYNA-DO-BRAZU runda 3 (Maciej 2026-08-13) — test strażniczy Noty N1 z werdyktu
+// Evaluatora rundy 2: cofnięcie wpisu ruda_cyny w HANDEL_SUROWCE_KROK5 przechodziło dotąd
+// wszystkie bramki repo na zielono (brak własnej asercji). Wzorem ruda_zelaza wyżej.
+eq(D.diplomacyHandelSurowiecKrok('ruda_cyny'), 5, 'krok(ruda_cyny) = 5 szt. (R-SUROWIEC-CYNA-DO-BRAZU, test strażniczy N1)');
 eq(D.diplomacyHandelSurowiecKrok('braz'), 5, 'krok(braz) = 5 szt.');
 eq(D.diplomacyHandelSurowiecKrok('zloto'), 1, 'krok(zloto-surowiec) = 1 szt. — wyłączone z ×5');
 eq(D.diplomacyHandelSurowiecKrok('wegiel'), 1, 'krok(wegiel) = 1 szt. — wyłączone z ×5 (brak produkcji objętej rebalansem)');
@@ -159,7 +171,34 @@ eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 137, 137), 135, 'normalize: 137 s
 eq(D.diplomacyNormalizeSurowiecIlosc('drewno', 3, 137), 0, 'normalize: żądanie 3 < krok(5) -> 0, nie 3');
 eq(D.diplomacyNormalizeSurowiecIlosc('wegiel', 137, 137), 137, 'normalize: wegiel krok 1 -> max przechodzi bez zmian');
 const handelCat = D.diplomacyHandelSurowceCatalog();
-ok(Object.keys(handelCat).length === 14, 'katalog handlu: 14 surowców ilościowych');
+// R-CYNA-BRAZ (Maciej 2026-08-13): 14 -> 15, doszła ruda_cyny (wymienialna dyplomatycznie
+// jak miedź/żelazo, patrz asercja diplomacyHandelSurowiecCenaZaBlok('ruda_cyny') wyżej).
+ok(Object.keys(handelCat).length === 15, 'katalog handlu: 15 surowców ilościowych (było 14, +ruda_cyny)');
+
+// ---------------------------------------------------------------------------
+// P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13) — regresja dokładnego scenariusza
+// ze zrzutu ekranu właściciela: "Edytuj swoją propozycję" (kontroferta własnej oferty),
+// 205 Glina + 105 Drewno. Ekran pokazywał błędnie 515 PW (= 205×2 + 105×1, stara formuła
+// sztuki×cena BEZ dzielenia na bloki po 5 szt.). Poprawna wartość wg mechanizmu
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (ECHO f838b599, "cena za blok 5 sztuk = stara cena za 1
+// sztukę"): (205÷5 bloków)×2 PN/blok + (105÷5 bloków)×1 PN/blok = 82+21 = 103 PW.
+// Ten sam choke-point (diplomacyPnSurowiecIlosc / diplomacySumPn) obsługuje WSZYSTKIE
+// ekrany koszyka PN (nowa oferta, kontroferta, edycja własnej propozycji) — jeden test tu
+// pokrywa je wszystkie, bo żadna ścieżka UI nie liczy PN inaczej niż przez tę funkcję.
+// / EN: regression for the owner's exact screenshot scenario — 205 Clay + 105 Wood must
+// price at 103 PW (block-based), not 515 PW (old per-unit formula applied to post-×5 qty).
+eq(D.diplomacyPnSurowiecIlosc('glina', 205), 82, 'P-DYPLO-PW-BRAK-KROKU-5: 205 szt. glina = 41 bloków × 2 PN/blok = 82 PN');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 105), 21, 'P-DYPLO-PW-BRAK-KROKU-5: 105 szt. drewno = 21 bloków × 1 PN/blok = 21 PN');
+{
+  const givePn = D.diplomacySumPn(
+    [
+      { typ: 'surowiec_ilosc', id: 'glina', ilosc: 205 },
+      { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 105 },
+    ],
+    { side: 'give', proposerOwnerId: 0, playerOwnerId: 0 },
+  );
+  eq(givePn, 103, 'P-DYPLO-PW-BRAK-KROKU-5: koszyk 205 Glina + 105 Drewno = 103 PW (NIE 515 PW — scenariusz ze zrzutu właściciela)');
+}
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

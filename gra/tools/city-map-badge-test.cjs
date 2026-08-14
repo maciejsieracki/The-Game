@@ -199,8 +199,13 @@ const keyStolica = M.cityMapBadgeKey({
   prodActive: false,
   isCapital: true,
 });
-assert(keyStolica.endsWith('|k1'), 'stolica → segment k1 na końcu klucza cache');
-assert(keyNieStolica.endsWith('|k0'), 'nie-stolica → segment k0 na końcu klucza cache');
+// Segment stolicy `k…` był kiedyś OSTATNI w kluczu; od BUG-ETYKIETA-MIASTA-ROZMYTA-ZOOM
+// (2026-08-13) ostatni jest poziom LOD plakietki `l…` — po jego SUFIKSIE rozpoznaje poziom
+// sprzątanie cache (`disposeCityMapBadgeTexturesForOtherLod`). Intencja asercji bez zmian:
+// `k…` ma być w kluczu jako WŁASNY segment, nie sklejony z sąsiadem. Progi LOD pilnuje
+// tools/city-badge-zoom-lod-test.cjs.
+assert(keyStolica.includes('|k1|'), 'stolica → segment k1 jako własny segment klucza cache');
+assert(keyNieStolica.includes('|k0|'), 'nie-stolica → segment k0 jako własny segment klucza cache');
 assert(keyStolica !== keyNieStolica, 'stolica vs nie-stolica — różne klucze cache');
 assert(keyNieStolica === keyBase, 'brak isCapital === isCapital:false (ten sam klucz)');
 

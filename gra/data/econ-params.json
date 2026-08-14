@@ -768,6 +768,13 @@
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Rudy żelaza (klucz magazynu: ruda_zelaza) — patrz cena_drewno."
     },
+    "cena_ruda_cyny": {
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
+      "jednostka": "PN/szt.",
+      "opis": "Maciej 2026-08-13: PN za 1 szt. Rudy cyny (klucz magazynu: ruda_cyny) — patrz cena_drewno. Cena dobrana ANALOGICZNIE do rudy żelaza (10 PN/szt.): mimo tej samej ery co ruda miedzi (Brązownictwo), złoże jest 5× rzadsze (rarity 0.02 vs 0.10) — założenie do weryfikacji przez właściciela, panel Excel dogania JSON."
+    },
     "cena_cegla": {
       "easy": 5,
       "normal": 5,

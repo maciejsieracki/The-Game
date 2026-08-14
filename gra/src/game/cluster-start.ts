@@ -56,6 +56,16 @@ export interface BuildClusterStartInput {
   /** Epoka startu — filtr puli typów na mapie (kamien | braz | zelazo). */
   startEpochId?: string;
   cityNamesPools?: CityNamesPoolsData;
+  /**
+   * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2: typy AI wybrane przez
+   * gracza w kreatorze, w kolejności zaznaczenia — przekazane do
+   * buildClusterSpawnPlan()/computeClusters(). Puste/undefined = zachowanie bez
+   * zmian (dzisiejszy deterministyczny ROSTER_KLUCZE).
+   * / EN: AI types chosen by the player in the wizard, in selection order —
+   * passed to buildClusterSpawnPlan()/computeClusters(). Empty/undefined =
+   * unchanged behaviour (today's deterministic ROSTER_KLUCZE).
+   */
+  preferredCivIds?: readonly string[];
 }
 
 /** Pełny plan startu — konsumuje SILNIK w doStartGame(). */
@@ -69,6 +79,7 @@ export function buildClusterStartPlan(input: BuildClusterStartInput): ClusterSta
     aktywneTypy: input.aktywneTypy,
     startEpochId: input.startEpochId,
     cityNamesPools: input.cityNamesPools,
+    preferredCivIds: input.preferredCivIds,
   });
 
   const aiOwnerCivMap = new Map<number, string>();

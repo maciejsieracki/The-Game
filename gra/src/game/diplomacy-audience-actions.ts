@@ -113,3 +113,22 @@ export function audienceActionBarLockNote(
   if (!action || action.enabled) return '';
   return action.lockNote || action.tooltip || 'Niedostępne';
 }
+
+/**
+ * R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): UI-owe typy akcji (`AudienceAction.id`)
+ * dopuszczające WIELE naszych własnych wpisów tego samego typu jednocześnie na stole
+ * negocjacji — kolejne instancje sumują się do wspólnego bilansu PW zamiast blokować kolejny
+ * wybór. Dziś wyłącznie '14' (Umowa wymiany surowców). Współdzielone przez dwa miejsca w
+ * `diplomacyAudience.ts`: gating przycisku w kolumnie „Możliwe umowy" (`dealsColumnHtml`) i
+ * handler kliknięcia (`blockDuplicateNegotiationClick`) — oba muszą się zgadzać, inaczej
+ * przycisk wygląda na klikalny, ale klik i tak nic nie robi (albo odwrotnie).
+ * EN: UI action types (`AudienceAction.id`) allowed to have MULTIPLE own entries of the same
+ * type on the negotiation table at once — further instances sum into one shared PW balance
+ * instead of blocking re-selection. Today only '14' (resource-exchange deal). Shared by two
+ * spots in `diplomacyAudience.ts`: the "Możliwe umowy" column button gating and the click
+ * handler — both must agree, or the button looks clickable but the click no-ops (or the
+ * reverse).
+ */
+export function uiActionAllowsMultipleOwnOnTable(actionId: string): boolean {
+  return actionId === '14';
+}

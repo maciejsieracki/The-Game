@@ -459,6 +459,17 @@ export interface CityPanelConfig {
    * UI podświetla te pola w kompaktowym podglądzie okolicy.
    */
   getWorkedTiles?: (cityId: string) => { q: number; r: number }[] | undefined;
+  /**
+   * P-HEKS-SPOR-SASIAD runda 2 nota A (Maciej 2026-08-13): heksy przegrane na rzecz
+   * bliższego miasta TEGO SAMEGO właściciela (`computeLostToNearerSiblingByCity`) —
+   * ten sam zbiór co `excludeHexKeys` w `getWorkedTiles`/silniku tury. Bez tego haka
+   * `cityWorkedTilesForEconomy` w panelu liczy bez reguły "najbliższe miasto wygrywa",
+   * podczas gdy silnik i overlay 👤 (getWorkedTiles) już ją stosują — rozjazd liczb.
+   * EN: hexes lost to a closer same-owner sibling city — same set the engine and the
+   * 👤 overlay already exclude; without this hook the panel's own economy read (top
+   * chips, growth badge) disagreed with them.
+   */
+  getExcludeHexKeys?: (cityId: string) => ReadonlySet<string> | undefined;
   /** Biezacy podzial Handlu per miasto (efektywny — global lub override). */
   getPodzialHandlu?: (cityId: string) => PodzialHandluSplit | null;
   /** Domyślny podział imperium (DYSPOZYCJA-85-SUWAK). */
@@ -1080,7 +1091,9 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     // więc samo `built.includes('spichlerz')` gubi cap 8 po ulepszeniu.
     const maSpichlerz = cityHasSpichlerzBuilding(built);
     const maAkwedukt = built.includes('akwedukt');
-    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel());
+    // P-HEKS-SPOR-SASIAD runda 2 nota A: excludeHexKeys tak samo jak silnik tury /
+    // overlay 👤 (getWorkedTiles) -- bez tego panel liczyl A=4/B=2 zamiast A=3/B=2.
+    const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id));
     const healthBd = computeCityHealthBreakdown(
       city.population,
       worked,
@@ -1161,7 +1174,17 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       if (orderMult.kulturaMult !== 1) y.kultura *= orderMult.kulturaMult;
     }
     y.praca = cityPracaInteger(y.praca);
-    const zywnoscBrutto = y.zywnosc;
+    // Naprawa P-SPICHLERZ-PANEL-VS-SILNIK-ROZJAZD-BILANS (2026-08-13): `y.zywnosc` to martwe,
+    // przedwerbjne pole modelu konsumpcji (flat 1 zywnosc/mieszkanca/ture), niezalezne od
+    // dzisiejszego systemu Wyzywienia V85 (Racje) -- czytanie go tu powodowalo PODWOJNE odjecie
+    // zuzycia zywnosci (raz przez ten martwy model, drugi raz przez `kosztRacji` liczony nizej).
+    // Silnik tury (`turn-economy.ts` `previewCityEconomy`/`advanceCityEconomy`) poprawnie czyta
+    // `y.zywnoscBrutto` (produkcja PRZED odjeciem konsumpcji) -- panel musi robic to samo.
+    // EN: `y.zywnosc` is a dead, pre-V85 consumption-model field (flat 1 food/citizen/turn),
+    // independent of today's V85 Rations system -- reading it here double-subtracted food
+    // consumption (once via that dead model, again via `kosztRacji` computed below). The turn
+    // engine correctly reads `y.zywnoscBrutto` (production BEFORE consumption); panel must match.
+    const zywnoscBrutto = y.zywnoscBrutto;
     const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
     const poziomRacji = getCityRationLevel(city);
     const allCities = cfg.getCities?.() ?? [];
@@ -3007,7 +3030,9 @@ function resolveCityHealth(city: City, map: GameMap, data: GameData): { total: n
   const live = cfg.getCityHealth?.(city.id);
   if (live) return { ...live, fromEngine: true };
   const builtIds = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel());
+  // P-HEKS-SPOR-SASIAD runda 2 nota A: fallback (gdy cfg.getCityHealth nie odpowiedzial)
+  // musi liczyc tak samo jak silnik -- ta sama excludeHexKeys.
+  const tiles = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel(), cfg.getExcludeHexKeys?.(city.id));
   const br = computeCityHealthBreakdown(
     city.population, tiles, builtIds, data.societyParams, cfg.difficulty ?? 'normal',
     { city, map },
@@ -5753,7 +5778,7 @@ function ownerSurowcePoolFor(city: City): Record<string, number> {
  * STOCK_RESOURCE_LABEL (game/building-stock-cost.ts).
  */
 const CS_RES_STRIP_ORDER: readonly string[] = [
-  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'cegla', 'braz', 'zelazo', 'stal',
+  'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'braz', 'zelazo', 'stal',
 ];
 
 /** Rdzeń paska budowy — ZAWSZE widoczny, także przy 0 (podstawowe materiały budowlane),

@@ -32,6 +32,14 @@ export interface AssignAiCivInput {
   /** Cap unikalnych typów na mapie (3/5/7/9) — newGameMapDefaults. */
   aktywneTypy: number;
   seed: number;
+  /**
+   * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: konkretne typy AI wybrane przez
+   * gracza w kreatorze (multi-select), w kolejności zaznaczenia. Puste/undefined =
+   * dotychczasowe zachowanie losowe (backward-compatible).
+   * / EN: specific AI civ types chosen by the player in the wizard, in selection
+   * order. Empty/undefined = today's random behaviour (backward-compatible).
+   */
+  preferredCivIds?: string[];
 }
 
 /**
@@ -39,6 +47,16 @@ export interface AssignAiCivInput {
  * - Zawsze zawiera nację gracza w puli aktywnych typów.
  * - Każdy owner AI dostaje inny typ niż gracz i inne AI.
  * - Liczba typów na mapie = min(aktywneTypy, 1 + liczba AI).
+ *
+ * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA: `preferredCivIds`, jeśli podane,
+ * mają PIERWSZEŃSTWO nad losowym doborem — brane w kolejności zaznaczenia w
+ * kreatorze, do limitu `typesNeeded-1`. Reszta slotów (gdy preferowanych jest za
+ * mało) dobierana jak dziś — deterministyczny seedowany shuffle puli pozostałych
+ * typów. Bez `preferredCivIds` zachowanie 1:1 jak przed tą zmianą.
+ * / EN: `preferredCivIds`, when given, take priority over random selection — in
+ * selection order, up to `typesNeeded-1`. Remaining slots (when too few preferred)
+ * fall back to today's deterministic seeded shuffle. Without `preferredCivIds`
+ * behaviour is unchanged.
  */
 export function pickActiveCivPool(
   allCivIds: string[],
@@ -46,6 +64,7 @@ export function pickActiveCivPool(
   aktywneTypy: number,
   numAi: number,
   seed: number,
+  preferredCivIds?: string[],
 ): string[] {
   const pool = [...new Set(allCivIds.filter(Boolean))];
   if (pool.length === 0) return playerCivId ? [playerCivId] : [];
@@ -65,7 +84,26 @@ export function pickActiveCivPool(
   }
 
   const needOthers = Math.min(typesNeeded - 1, shuffled.length);
-  const picked = shuffled.slice(0, needOthers);
+
+  let picked: string[];
+  const othersSet = new Set(others);
+  const preferredValid = preferredCivIds
+    ? [...new Set(preferredCivIds.filter((id) => !!id && id !== playerCivId && othersSet.has(id)))]
+    : [];
+  if (preferredValid.length > 0) {
+    // Preferowane w kolejności zaznaczenia, do limitu — deterministyczne, bez rng.
+    // / EN: preferred in selection order, up to the cap — deterministic, no rng.
+    const chosen = preferredValid.slice(0, needOthers);
+    if (chosen.length < needOthers) {
+      const chosenSet = new Set(chosen);
+      const fillIn = shuffled.filter((id) => !chosenSet.has(id));
+      chosen.push(...fillIn.slice(0, needOthers - chosen.length));
+    }
+    picked = chosen;
+  } else {
+    picked = shuffled.slice(0, needOthers);
+  }
+
   const active = playerCivId && pool.includes(playerCivId)
     ? [playerCivId, ...picked]
     : picked.length > 0
@@ -75,9 +113,39 @@ export function pickActiveCivPool(
   return [...new Set(active.filter((id): id is string => !!id))].slice(0, typesNeeded);
 }
 
+/**
+ * N1 (Evaluator, R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2, 2026-08-13):
+ * rotuje `preferred` deterministycznie wg `seed`. Jedyny użytkownik dziś to
+ * `repairAiRosterFromMap()` w main.ts (naprawa sejwu z brakującym ownerem) — bez
+ * tego, przy 1 brakującym ownerze `pickActiveCivPool` zawsze bierze
+ * `preferredValid[0]` (deterministyczny kolaps, gubi różnorodność, którą dawał
+ * dawny seedowany shuffle). CELOWO nieużywane przez `pickActiveCivPool` — kolejność
+ * zaznaczenia gracza w normalnej ścieżce startu (clusters.ts) i istniejące testy
+ * (civ-roster-test.cjs, civ-configurator-opponent-test.cjs scenariusz (c)) zostają
+ * nietknięte.
+ * / EN: deterministically rotates `preferred` by `seed`. Its only caller today is
+ * `repairAiRosterFromMap()` in main.ts (save-repair for a missing owner) —
+ * without it, with exactly 1 missing owner `pickActiveCivPool` always takes
+ * `preferredValid[0]` (deterministic collapse, losing the diversity the old
+ * seeded shuffle gave). Deliberately NOT used by `pickActiveCivPool` — the
+ * normal start path's (clusters.ts) selection-order guarantee and existing
+ * tests (civ-roster-test.cjs, civ-configurator-opponent-test.cjs scenario (c))
+ * stay untouched.
+ */
+export function rotatePreferredForRepairSeed(
+  preferred: readonly string[],
+  seed: number,
+): string[] {
+  if (preferred.length <= 1) return [...preferred];
+  const rng = makeRng(seed >>> 0);
+  const offset = Math.floor(rng() * preferred.length);
+  if (offset === 0) return [...preferred];
+  return preferred.map((_, i) => preferred[(i + offset) % preferred.length]!);
+}
+
 /** Mapa ownerId → ikonaId dla AI (E1-D-Q1=A). */
 export function assignAiCivTypes(input: AssignAiCivInput): Map<number, string> {
-  const { allCivIds, playerCivId, aiOwnerIds, aktywneTypy, seed } = input;
+  const { allCivIds, playerCivId, aiOwnerIds, aktywneTypy, seed, preferredCivIds } = input;
   const sorted = [...aiOwnerIds].sort((a, b) => a - b);
   const activePool = pickActiveCivPool(
     allCivIds,
@@ -85,6 +153,7 @@ export function assignAiCivTypes(input: AssignAiCivInput): Map<number, string> {
     aktywneTypy,
     sorted.length,
     seed,
+    preferredCivIds,
   );
   const aiTypes = activePool.filter((id) => id !== playerCivId);
 

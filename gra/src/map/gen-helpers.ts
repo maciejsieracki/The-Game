@@ -11938,7 +11938,7 @@ export type HexWithZloze = Hex & { zloze?: string; zlozeMinEra?: number };
  * Morze/wybrzeże: brak złóż; ryby = przyszłe ulepszenie „łodzie rybackie”, nie nakładka.
  */
 export interface DepositRule {
-  id: 'miedz' | 'zelazo' | 'glina' | 'konie' | 'wegiel' | 'owce' | 'bydlo' | 'sol' | 'zloto';
+  id: 'miedz' | 'zelazo' | 'glina' | 'konie' | 'wegiel' | 'owce' | 'bydlo' | 'sol' | 'zloto' | 'cyna';
   /** Wartosc Nakladka do ustawienia (lub null gdy uzywamy pola `zloze`). */
   nakladka: Nakladka | null;
   /** Predykat: czy ten heks moze przyjac to zloze. */
@@ -12016,6 +12016,16 @@ const BASE_DEPOSIT_RULES: DepositRule[] = [
       && (h.terenBazowy === TerenBazowy.Wzgorza || h.terenBazowy === TerenBazowy.Gory),
     rarity: 0.03,
   },
+  {
+    // Ruda cyny (2026-08-13, spec Maciej): jak złoto — jeden wzorzec Wzgórza/Góry (oba typy
+    // terenu), ale GWARANTOWANY każdej cywilizacji (patrz FAIR_PLAY_DEPOSIT_IDS niżej) —
+    // w przeciwieństwie do złota, celowo wykluczonego z tej listy. Rzadkość = miedź (0.10) / 5.
+    id: 'cyna',
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy)
+      && (h.terenBazowy === TerenBazowy.Wzgorza || h.terenBazowy === TerenBazowy.Gory),
+    rarity: 0.02,
+  },
 ];
 
 const _depositRarities = mapGenAllDepositRarities();
@@ -12058,7 +12068,7 @@ export function placeDeposits(
 
   const counts: Record<string, number> = {
     miedz: 0, zelazo: 0, glina: 0, konie: 0, wegiel: 0,
-    owce: 0, bydlo: 0, sol: 0, zloto: 0,
+    owce: 0, bydlo: 0, sol: 0, zloto: 0, cyna: 0,
   };
 
   for (const key of keys) {
@@ -12097,9 +12107,12 @@ export function placeDeposits(
   return counts;
 }
 
-/** Pakiet surowców wymagany w każdej komórce siatki fair play (Maciej 2026-07-04). Konie wyłączone — mają być rzadkie. */
+/** Pakiet surowców wymagany w każdej komórce siatki fair play (Maciej 2026-07-04). Konie wyłączone — mają być rzadkie.
+ *  Cyna dopisana 2026-08-13 (spec Maciej): mimo 5× rzadszego złoża niż miedzi, KAŻDA cywilizacja
+ *  ma mieć gwarantowany dostęp do co najmniej jednego złoża — jak żelazo/miedź/glina, NIE jak złoto
+ *  (świadomie wykluczone, patrz komentarz przy regule 'zloto' wyżej). */
 export const FAIR_PLAY_DEPOSIT_IDS: ReadonlyArray<DepositRule['id']> = [
-  'zelazo', 'miedz', 'glina', // Model B: bydlo/owce usunięte (hodowla = ulepszenie, nie złoże)
+  'zelazo', 'miedz', 'glina', 'cyna', // Model B: bydlo/owce usunięte (hodowla = ulepszenie, nie złoże)
 ];
 
 function depositRuleById(id: DepositRule['id']): DepositRule {
@@ -12168,6 +12181,9 @@ function prepareTerrainForDeposit(hex: Hex, rule: DepositRule): void {
       break;
     case 'miedz':
     case 'owce':
+    case 'cyna':
+      // Cyna: allowedOn dopuszcza Wzgórza LUB Góry (jak złoto) — bootstrap wymusza JEDNO
+      // z nich (Wzgórza, jak miedź) dla determinizmu, analogicznie do miedzi/owiec wyżej.
       hex.terenBazowy = TerenBazowy.Wzgorza;
       break;
     // TEMAT 12: 'glina' NIE wymusza już terenu — reguła glina.allowedOn nie zależy od typu

@@ -2,6 +2,23 @@
 /**
  * auto-improvements-test.cjs — picker wspólny gracz+AI (game/auto-improvements.ts).
  * Run from gra/:  node tools/auto-improvements-test.cjs
+ *
+ * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (2026-08-14): dawny limit SZTUK (`maxPerCity`/`getMaxPerCity`,
+ * 1-3/miasto/turę) zastąpiony % budżetu Pracy (`pracaBudgetPercent`/`getPracaBudgetPercent`,
+ * 0-100%) liczonym od SKUMULOWANEJ puli Pracy na WEJŚCIU do wywołania (nie od przyrostu).
+ * Testy 4/7/8/9 przepisane pod nową logikę (świadomie, nie usunięto pokrycia — patrz komentarze
+ * przy każdym). Testy 10-12 to nowe asercje (a)-(c) z dyspozycji Operatora; migracja starego
+ * zapisu (d) żyje w osobnym pliku `ulepszenia-praca-percent-test.cjs` (to test game/cities.ts,
+ * nie auto-improvements.ts).
+ *
+ * RUNDA 2 (2026-08-14, naprawa FAIL Evaluatora): runda 1 liczyła `pct% × pula` OSOBNO dla
+ * KAŻDEGO miasta zamiast jako JEDEN wspólny budżet całego wywołania — przy N miastach automat
+ * mógł wydać do N×pct% puli (zmierzone: 98,7% zamiast 33% przy 4 miastach). Naprawione: WSPÓLNY,
+ * dzielony licznik `globalSpent` (patrz auto-improvements.ts) — test 12 przepisany pod nową,
+ * poprawną semantykę (zachowując ochronę niezależności OD KOLEJNOŚCI miast — jedyne, co stary
+ * test 12 słusznie chronił). Nowy test 13 przypina `AUTO_ULEPSZENIA_PRACA_RESERVE` LICZBOWO
+ * (łapie mutację 30→0 — stare testy 9/11 porównują stałą z samą sobą, tautologia). Nowy test 14
+ * potwierdza wprost sedno naprawy: łączny wydatek dla tego samego % NIE zależy od liczby miast N.
  */
 
 const fs = require('fs');
@@ -87,6 +104,13 @@ function makeCity(id, ownerId, q, r, population = 2, extra = {}) {
   return { id, ownerId, q, r, name: 'TestCity', population, ...extra };
 }
 
+// pracaAvailable=50 + pracaBudgetPercent=100 (jawnie, żeby test był czytelny niezależnie od
+// domyślnej wartości funkcji): dokładnie tyle, by starczyło na JEDNO typowe ulepszenie z tej
+// puli testów (farma/bydlo/owce/lama/lodzie_rybackie=40 Pracy, kamieniolom=44 Pracy po
+// R_STAWKI_FALA2_MULT×2), ale NIE na drugie (min. koszt kolejnego typu w tych samych listach to
+// 36, więc pracaLeft=10 po pierwszym picku zawsze za mało). Odizolowuje testy 1/2/3/5/6 (logika
+// KWALIFIKACJI heksa/typu) od mechanizmu %-budżetu (testowanego osobno w 10-13) — przed
+// R-AUTO-PRACA-BUDZET-PROCENT-Q1=B tę rolę pełnił domyślny sztuk-cap=1 przy pracaAvailable=200.
 function baseOpts(city, map) {
   return {
     cities: [city],
@@ -94,7 +118,8 @@ function baseOpts(city, map) {
     map,
     territoryNodes: [{ q: city.q, r: city.r, pop: city.population, level: 1, ownerId: city.ownerId }],
     placedImprovements: new Map(),
-    pracaAvailable: 200,
+    pracaAvailable: 50,
+    pracaBudgetPercent: 100,
     unlockedTechs: new Set(['Rolnictwo', 'Kamieniarstwo']),
     pracaSurplusThreshold: 0,
     skipWyrab: true,
@@ -146,13 +171,21 @@ console.log('3. onlyWorked=false — moze nieobrabiane');
   eq(picks.length, 1, 'bez filtra worked — kwalifikujacy hex');
 }
 
-// 4. max 1 per city
-console.log('4. max 1 per city');
+// 4. R-AUTO-PRACA-BUDZET-PROCENT-Q1=B — sztuk-cap USUNIĘTY: przy 100% budżetu i dużej puli jedno
+// miasto może dostać WIĘCEJ NIŻ jedno ulepszenie w tym samym wywołaniu (przed tą zmianą default
+// był maxPerCity=1, więc to zawsze zatrzymywało się na 1 niezależnie od pracaAvailable). To jest
+// też test-mutacyjny (e) z dyspozycji: gdyby ktoś przywrócił stary sztuk-cap (albo twardy cap=3),
+// ten test złapie regresję (5 !== 1 i 5 !== 3).
+console.log('4. brak sztuk-cap — 100% budzetu + duza pula = wiele ulepszen w 1 miescie');
 {
   const map = makeFlatMap(30, 30);
-  const city = makeCity('c4', 0, 15, 15, 4, { ulepszeniaFocus: 'zywnosc' });
-  const picks = pickAutoImprovements(baseOpts(city, map));
-  eq(picks.length, 1, 'maks 1 ulepszenie na miasto');
+  const city = makeCity('c4', 0, 15, 15, 6, { ulepszeniaFocus: 'zywnosc' });
+  const opts = baseOpts(city, map);
+  opts.pracaAvailable = 200; // 200 / 40 (farma) = dokladnie 5
+  opts.pracaBudgetPercent = 100;
+  const picks = pickAutoImprovements(opts);
+  eq(picks.length, 5, '200 Pracy / 100% budzet / farma=40 -> 5 ulepszen (stary kod capsowalby na 1)');
+  assert(picks.every(p => p.key === 'farma'), 'wszystkie 5 to farma (priorytet zywnosc, budzet nie wyczerpany aby przejsc do kolejnego typu)');
 }
 
 // 5. wyrab skipped when skipWyrab
@@ -182,43 +215,198 @@ console.log('6. focus surowce — kamieniolom na wzgorzach');
   eq(picks[0].key, 'kamieniolom', 'surowce wybiera kamieniolom');
 }
 
-// 7. R-AUTO-ULEPSZENIA-Q2=B — getMaxPerCity = 2
-console.log('7. getMaxPerCity=2');
+// 7. R-AUTO-PRACA-BUDZET-PROCENT-Q1=B — getPracaBudgetPercent per-miasto = 50% (zastępuje dawny
+// getMaxPerCity=2; ten sam "kształt" pokrycia — override per miasto — nowym mechanizmem).
+console.log('7. getPracaBudgetPercent=50%');
 {
   const map = makeFlatMap(30, 30);
   const city = makeCity('c7', 0, 15, 15, 5, { ulepszeniaFocus: 'zywnosc' });
   const opts = baseOpts(city, map);
-  opts.getMaxPerCity = () => 2;
-  opts.pracaAvailable = 200;
+  opts.getPracaBudgetPercent = () => 50;
+  opts.pracaAvailable = 200; // budzet = 50% * 200 = 100 -> 2x farma (80), 3cia (120) przekracza
   const picks = pickAutoImprovements(opts);
-  assert(picks.length === 2, `getMaxPerCity=2 → 2 picki (got ${picks.length})`);
+  assert(picks.length === 2, `getPracaBudgetPercent=50% z puli 200 → 2 picki (got ${picks.length})`);
 }
 
-// 8. getMaxPerCity = 3
-console.log('8. getMaxPerCity=3');
+// 8. getPracaBudgetPercent = 75% (zastępuje dawny getMaxPerCity=3)
+console.log('8. getPracaBudgetPercent=75%');
 {
   const map = makeFlatMap(30, 30);
   const city = makeCity('c8', 0, 15, 15, 6, { ulepszeniaFocus: 'zywnosc' });
   const opts = baseOpts(city, map);
-  opts.getMaxPerCity = () => 3;
-  opts.pracaAvailable = 300;
+  opts.getPracaBudgetPercent = () => 75;
+  opts.pracaAvailable = 200; // budzet = 75% * 200 = 150 -> 3x farma (120), 4ta (160) przekracza
   const picks = pickAutoImprovements(opts);
-  assert(picks.length === 3, `getMaxPerCity=3 → 3 picki (got ${picks.length})`);
+  assert(picks.length === 3, `getPracaBudgetPercent=75% z puli 200 → 3 picki (got ${picks.length})`);
 }
 
-// 9. rezerwa Pracy — nie zjada całej puli
+// 9. rezerwa Pracy — nie zjada całej puli (izolowane od %-budżetu: pracaBudgetPercent=100, żeby
+// jedynym ograniczeniem był flat AUTO_ULEPSZENIA_PRACA_RESERVE, nie interakcja z %).
+// NAPRAWIONO przy tej samej okazji: druga część testu miała pracaAvailable=rezerwa+25=55, co przy
+// koszcie farmy=40 (po R_STAWKI_FALA2_MULT×2 na 20 bazowych) NIGDY nie starczało na 1 pick z
+// zachowaniem rezerwy (55-40=15 < 30) — asercja failowała od zawsze, niezależnie od tego zadania
+// (zweryfikowane na tym samym kodzie PRZED zmianami tej sesji). Naprawione na rezerwa+45=75
+// (75-40=35 >= 30 rezerwy).
 console.log('9. rezerwa Pracy ' + AUTO_ULEPSZENIA_PRACA_RESERVE);
 {
   const map = makeFlatMap(30, 30);
   const city = makeCity('c9', 0, 15, 15, 5, { ulepszeniaFocus: 'zywnosc' });
   const opts = baseOpts(city, map);
+  opts.pracaBudgetPercent = 100;
   opts.pracaAvailable = AUTO_ULEPSZENIA_PRACA_RESERVE + 5;
   opts.pracaSurplusThreshold = AUTO_ULEPSZENIA_PRACA_RESERVE;
   const picks = pickAutoImprovements(opts);
-  eq(picks.length, 0, 'pula = rezerwa+5, koszt farmy > 5 -> 0 picków');
-  opts.pracaAvailable = AUTO_ULEPSZENIA_PRACA_RESERVE + 25;
+  eq(picks.length, 0, 'pula = rezerwa+5, koszt farmy(40) > 5 dostepnych ponad rezerwe -> 0 pickow');
+  opts.pracaAvailable = AUTO_ULEPSZENIA_PRACA_RESERVE + 45;
   const picks2 = pickAutoImprovements(opts);
-  eq(picks2.length, 1, 'pula wystarcza z rezerwą -> 1 pick');
+  eq(picks2.length, 1, 'pula = rezerwa+45, starcza na 1 farme (40) z zachowaniem rezerwy -> 1 pick');
+}
+
+// 10. (a) R-AUTO-PRACA-BUDZET-PROCENT-Q1=B — 0% = auto-manager CAŁKOWICIE wyłączony, mimo że
+// Pracy jest pod dostatkiem (cała zostaje dla gracza).
+console.log('10. pracaBudgetPercent=0% — zero auto-ulepszen mimo dostepnej Pracy');
+{
+  const map = makeFlatMap(30, 30);
+  const city = makeCity('c10', 0, 15, 15, 5, { ulepszeniaFocus: 'zywnosc' });
+  const opts = baseOpts(city, map);
+  opts.pracaAvailable = 500;
+  opts.pracaBudgetPercent = 0;
+  const picks = pickAutoImprovements(opts);
+  eq(picks.length, 0, '0% budzetu -> zero auto-ulepszen, mimo 500 Pracy dostepnej');
+}
+
+// 11. (b) 100% = auto-manager wydaje AŻ DO flat-rezerwy, nigdy poniżej.
+console.log('11. pracaBudgetPercent=100% — wydaje do flat-rezerwy, nie ponizej');
+{
+  const map = makeFlatMap(30, 30);
+  const city = makeCity('c11', 0, 15, 15, 6, { ulepszeniaFocus: 'zywnosc' });
+  const opts = baseOpts(city, map);
+  opts.pracaAvailable = 150; // 3x farma(40)=120, dokladnie 30 zostaje = rezerwa
+  opts.pracaBudgetPercent = 100;
+  opts.pracaSurplusThreshold = AUTO_ULEPSZENIA_PRACA_RESERVE;
+  const picks = pickAutoImprovements(opts);
+  const totalSpent = picks.reduce((s, p) => s + p.kosztPraca, 0);
+  eq(picks.length, 3, '100% + pula 150 -> 3 farmy (120 Pracy), zostaje dokladnie rezerwa 30');
+  eq(totalSpent, 120, 'laczny wydatek = 120 (150 - rezerwa 30) -- pula NIGDY nie schodzi ponizej rezerwy');
+}
+
+// 12. R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (RUNDA 2 — naprawa FAIL Evaluatora): wartość pośrednia
+// (50%) to JEDEN wspólny budżet dla CAŁEGO wywołania (wszystkich miast razem), NIE osobny budżet
+// per miasto. PRZED naprawą ten test asercjonował wprost błędną semantykę: "2 miasta x 50% każde
+// = 100% pełnej puli" (cityA dostawał 2 picki, cityB TEŻ 2 picki, razem 4 = 160 Pracy ze 100%
+// puli 200 — de facto 80% zamiast deklarowanych 50%, przy większej liczbie miast narastałoby do
+// N-krotności). PO naprawie: łączny wydatek obu miast razem ≤ 50% × 200 = 100 Pracy, NIEZALEŻNIE
+// od liczby miast. Miasta czerpią z TEJ SAMEJ puli PO KOLEI (kolejność = po id) — cityA
+// (przetwarzane 1.) zjada budżet do 80 Pracy (2 farmy; 3-cia farma=120>100 przekroczyłaby budżet),
+// cityB (2.) dostaje 0 — budżet WSPÓLNY już wyczerpany przez cityA. To jest DOKŁADNIE oczekiwane:
+// "ile zostaje dla gracza" liczy się raz dla całego imperium, nie raz na miasto.
+// Zachowana ochrona z rundy 1 (jedyne, co Evaluator uznał za słuszne w starym teście 12):
+// niezależność OD KOLEJNOŚCI miast — nie per-city rozbicia (to zależy od kolejności, i tak ma
+// być — patrz dokumentacja funkcji), tylko ŁĄCZNEJ WYDANEJ SUMY. Test odwraca kolejność w tablicy
+// wejściowej `cities` i potwierdza identyczną łączną sumę (funkcja i tak sortuje po id
+// wewnętrznie — `orderedCities` — więc kolejność w tablicy wejściowej nie powinna nic zmieniać).
+console.log('12. pracaBudgetPercent=50% — JEDEN wspólny budżet dla obu miast razem (nie per miasto)');
+{
+  const map = makeFlatMap(60, 60);
+  const cityA = makeCity('cA', 0, 15, 15, 6, { ulepszeniaFocus: 'zywnosc' });
+  const cityB = makeCity('cB', 0, 45, 45, 6, { ulepszeniaFocus: 'zywnosc' });
+  const mkOpts = (citiesInInputOrder) => ({
+    cities: citiesInInputOrder,
+    ownerId: 0,
+    map,
+    territoryNodes: [
+      { q: cityA.q, r: cityA.r, pop: cityA.population, level: 1, ownerId: 0 },
+      { q: cityB.q, r: cityB.r, pop: cityB.population, level: 1, ownerId: 0 },
+    ],
+    placedImprovements: new Map(),
+    pracaAvailable: 200,
+    pracaBudgetPercent: 50,
+    unlockedTechs: new Set(['Rolnictwo', 'Kamieniarstwo']),
+    pracaSurplusThreshold: 0,
+    skipWyrab: true,
+    civArchetype: 'grecy',
+  });
+
+  const picks = pickAutoImprovements(mkOpts([cityA, cityB]));
+  const picksA = picks.filter(p => p.cityId === 'cA').length;
+  const picksB = picks.filter(p => p.cityId === 'cB').length;
+  const totalSpent = picks.reduce((s, p) => s + p.kosztPraca, 0);
+  eq(picksA, 2, 'miasto cA (przetwarzane 1. wg id): 2 farmy (80 Pracy) — 3-cia (120) przekroczylaby wspolny budzet 100');
+  eq(picksB, 0, 'miasto cB (przetwarzane 2.): 0 pickow — wspolny budzet (100) juz wyczerpany przez cA (80), kolejna farma (120) go przekracza');
+  eq(totalSpent, 80, 'laczny wydatek OBU miast razem = 80, nie 160 jak w bledej wersji sprzed naprawy');
+  assert(totalSpent <= 0.5 * 200, `laczny wydatek (${totalSpent}) <= 50% z puli 200 (100) -- to jest CALY sens naprawy rundy 2`);
+
+  // Niezaleznosc od kolejnosci w tablicy WEJSCIOWEJ (funkcja i tak sortuje po id wewnetrznie).
+  const picksReversed = pickAutoImprovements(mkOpts([cityB, cityA]));
+  const totalSpentReversed = picksReversed.reduce((s, p) => s + p.kosztPraca, 0);
+  eq(totalSpentReversed, totalSpent, 'kolejnosc miast w tablicy WEJSCIOWEJ nie zmienia lacznej wydanej sumy (funkcja sortuje po id sama)');
+}
+
+// 13. R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2) — test-mutacyjny łapiący flat-rezerwę
+// zmutowaną na 0. Testy 9/11 odwołują się do AUTO_ULEPSZENIA_PRACA_RESERVE SYMBOLICZNIE po obu
+// stronach porównania (`pracaAvailable = AUTO_ULEPSZENIA_PRACA_RESERVE + 45` itd.) — gdyby ktoś
+// zmutował samą stałą w źródle (30 -> 0), te testy pozostałyby zielone (tautologia: liczą się
+// względem SIEBIE, nie względem realnej, ustalonej wartości). Ten test przypina: (a) samą stałą
+// LICZBOWO na 30 (łapie mutację stałej wprost), (b) zachowanie pickera przy puli w zakresie
+// 40-65 (wskazanym przez Evaluatora) z LITERALNYM threshold=30 przekazanym z zewnątrz — niezależnie
+// od wartości stałej. Farma kosztuje 40 Pracy: pula=60, 60-40=20 < 30 rezerwy -> 0 pickow. Gdyby
+// rezerwa realnie nie była egzekwowana (np. potraktowana jako 0), farma zmieściłaby się (20>=0) i
+// test złapałby różnicę.
+console.log('13. AUTO_ULEPSZENIA_PRACA_RESERVE = 30 (pin literalny, łapie mutację na 0)');
+{
+  eq(AUTO_ULEPSZENIA_PRACA_RESERVE, 30, 'stala rezerwy przypieta LITERALNIE na 30 (nie porownanie do samej siebie)');
+
+  const map = makeFlatMap(30, 30);
+  const city = makeCity('c13', 0, 15, 15, 5, { ulepszeniaFocus: 'zywnosc' });
+  const opts = baseOpts(city, map);
+  opts.pracaAvailable = 60; // w zakresie 40-65 wskazanym przez Evaluatora jako nietestowany dzis
+  opts.pracaBudgetPercent = 100;
+  opts.pracaSurplusThreshold = 30; // LITERALNIE, nie przez odwolanie do stalej
+  const picks = pickAutoImprovements(opts);
+  eq(picks.length, 0, 'pula=60, rezerwa literalna=30, farma=40 Pracy: 60-40=20 < 30 rezerwy -> 0 pickow');
+}
+
+// 14. R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2) — sedno naprawy jako test regresyjny: dla TEGO
+// SAMEGO % i TEJ SAMEJ puli startowej, łączny wydatek automatu jest NIEZALEŻNY od liczby miast N.
+// 1 miasto i 4 miasta (ten sam właściciel, pct=30%, pula=1000) muszą wydać RAZEM dokładnie tyle
+// samo (280 = 7 farm x 40 Pracy; 8-ma farma=320 przekroczyłaby budżet 300=30%x1000). PRZED
+// naprawą rundy 2 każde miasto liczyło budżet OSOBNO od pełnej puli, więc 4 miasta wydałyby razem
+// do 4x tyle (ograniczone tu tylko flat-rezerwą/pulą, nie %-em) — ten test łapie dokładnie ten
+// regres, gdyby ktoś przywrócił per-miasto cityBudget.
+console.log('14. laczny wydatek NIEZALEZNY od liczby miast N (1 vs 4 miasta, ten sam %)');
+{
+  const map = makeFlatMap(100, 100);
+  const mkOpts = citiesArr => ({
+    cities: citiesArr,
+    ownerId: 0,
+    map,
+    territoryNodes: citiesArr.map(c => ({ q: c.q, r: c.r, pop: c.population, level: 1, ownerId: 0 })),
+    placedImprovements: new Map(),
+    pracaAvailable: 1000,
+    pracaBudgetPercent: 30,
+    unlockedTechs: new Set(['Rolnictwo', 'Kamieniarstwo']),
+    pracaSurplusThreshold: 0,
+    skipWyrab: true,
+    civArchetype: 'grecy',
+  });
+
+  const oneCity = [makeCity('n1', 0, 10, 10, 3, { ulepszeniaFocus: 'zywnosc' })];
+  const picksOne = pickAutoImprovements(mkOpts(oneCity));
+  const spentOne = picksOne.reduce((s, p) => s + p.kosztPraca, 0);
+  eq(spentOne, 280, '1 miasto, 30% z puli 1000 (budzet=300): 7 farm x 40 = 280 (8. farma=320 przekroczylaby budzet)');
+
+  // Miasta daleko od siebie (>> promien 6), zeby uniknac sporu o wspolne heksy -- nieistotne dla
+  // wyniku (tylko n1, pierwsze wg id, cokolwiek dostaje), ale czysciej izoluje test.
+  const fourCities = [
+    makeCity('n1', 0, 10, 10, 3, { ulepszeniaFocus: 'zywnosc' }),
+    makeCity('n2', 0, 10, 50, 3, { ulepszeniaFocus: 'zywnosc' }),
+    makeCity('n3', 0, 10, 90, 3, { ulepszeniaFocus: 'zywnosc' }),
+    makeCity('n4', 0, 50, 10, 3, { ulepszeniaFocus: 'zywnosc' }),
+  ];
+  const picksFour = pickAutoImprovements(mkOpts(fourCities));
+  const spentFour = picksFour.reduce((s, p) => s + p.kosztPraca, 0);
+  eq(spentFour, spentOne, '4 miasta, TEN SAM % i TA SAMA pula startowa: laczny wydatek IDENTYCZNY jak przy 1 miescie (280), nie 4x wiecej');
+  assert(spentFour <= 0.3 * 1000, `laczny wydatek (${spentFour}) <= 30% z puli 1000 (300), niezaleznie od N=4 miast`);
 }
 
 console.log(`\nauto-improvements-test: ${passed} passed, ${failed} failed`);

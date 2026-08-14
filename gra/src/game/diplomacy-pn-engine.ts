@@ -18,7 +18,7 @@ import {
   diplomacyPnSurowiecIlosc,
   diplomacyNormalizeSurowiecIlosc,
   diplomacyHandelSurowiecKrok,
-  diplomacyHandelSurowiecCenaJednostkowa,
+  diplomacyHandelSurowiecCenaZaBlok,
   type DiplomacySumPnOptions,
   type WartoscPozycjaTyp,
   type PnRelacjaParams,
@@ -387,12 +387,12 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
   // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): cena JEDNOSTKOWA (PN/szt., bez krok-floor) do
   // sortowania/filtrowania „najtańszy pierwszy" — `diplomacyPnSurowiecIlosc(id, 1)` floruje
   // TERAZ 1 szt. do 0 dla surowców z krokiem 5, co fałszywie wykluczyłoby WSZYSTKIE takie
-  // surowce z „Szybkiej umowy" (pnPerUnit>0 filter). `diplomacyHandelSurowiecCenaJednostkowa`
+  // surowce z „Szybkiej umowy" (pnPerBlok>0 filter). `diplomacyHandelSurowiecCenaZaBlok`
   // to surowa stawka z cennika, niezależna od kroku — dokładnie to, czego tu trzeba.
   const theirQtyPriced = (input.theirQuantityResourceOptions ?? [])
-    .map(o => ({ ...o, pnPerUnit: diplomacyHandelSurowiecCenaJednostkowa(o.id) ?? 0 }))
-    .filter(o => o.pnPerUnit > 0 && o.maxQty > 0)
-    .sort((a, b) => a.pnPerUnit - b.pnPerUnit);
+    .map(o => ({ ...o, pnPerBlok: diplomacyHandelSurowiecCenaZaBlok(o.id) ?? 0 }))
+    .filter(o => o.pnPerBlok > 0 && o.maxQty > 0)
+    .sort((a, b) => a.pnPerBlok - b.pnPerBlok);
   if (theirQtyPriced.length > 0) {
     const pick = theirQtyPriced[0]!;
     // R-DYP-PAKIET-USUN (2026-08-08, Evaluator minor-1): dawniej `ilosc: 1` znaczyło
@@ -429,19 +429,25 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
 
   // C-DYP-SUROWCE-Q1=B: dopełniacz z surowców ILOŚCIOWYCH (sztuki) — tanie, dobrze
   // domykają bilans granularnie, zanim sięgniemy po złoto. Najtańszy PN/szt. pierwszy.
-  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): pnPerUnit z cennika surowego (bez krok-floor,
+  // R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): pnPerBlok z cennika surowego (bez krok-floor,
   // patrz komentarz przy theirQtyPriced wyżej) — pętla przyrasta o KROK, nie o 1 szt., żeby
   // `qty` zawsze wychodził już jako poprawna wielokrotność (5 dla surowców dotkniętych ×5).
   if (giveSum < fairMin && input.ourQuantityResourceOptions?.length) {
     const ourQtyPriced = input.ourQuantityResourceOptions
-      .map(o => ({ ...o, pnPerUnit: diplomacyHandelSurowiecCenaJednostkowa(o.id) ?? 0, krok: diplomacyHandelSurowiecKrok(o.id) }))
-      .filter(o => o.pnPerUnit > 0 && o.maxQty >= o.krok)
-      .sort((a, b) => a.pnPerUnit - b.pnPerUnit);
+      .map(o => ({ ...o, pnPerBlok: diplomacyHandelSurowiecCenaZaBlok(o.id) ?? 0, krok: diplomacyHandelSurowiecKrok(o.id) }))
+      .filter(o => o.pnPerBlok > 0 && o.maxQty >= o.krok)
+      .sort((a, b) => a.pnPerBlok - b.pnPerBlok);
 
     for (const item of ourQtyPriced) {
       if (giveSum >= fairMin) break;
       let qty = 0;
-      const pnPerKrok = item.pnPerUnit * item.krok;
+      // P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (Evaluator, 2026-08-13): `item.pnPerBlok` to
+      // JUŻ cena za blok (krok szt.), nie cena za 1 sztukę — mnożenie przez `item.krok` tu
+      // dawało cenę ×5 za każdy blok, więc AI proponowało/akceptowało transakcje 5× poniżej fair.
+      // EN: `item.pnPerBlok` is ALREADY the price per block (krok units), not per single unit —
+      // multiplying by `item.krok` here priced every block ×5 too cheap, so AI proposed/accepted
+      // deals 5x below fair.
+      const pnPerKrok = item.pnPerBlok;
       while (qty + item.krok <= item.maxQty && giveSum < fairMin) {
         qty += item.krok;
         giveSum += pnPerKrok;

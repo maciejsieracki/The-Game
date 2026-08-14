@@ -90,6 +90,25 @@ export interface PreBattleInfo {
   canRetreat?: boolean;
   /** Gdy canRetreat===false (obrońca gracza) — pokaż przycisk Wycofaj i Esc. */
   defenderCanRetreat?: boolean;
+  /**
+   * P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): true gdy obrońca gracza NIE
+   * może się wycofać, BO już wycofał się raz w tej turze (a nie z powodu garnizonu --
+   * te dwa powody mają OSOBNE komunikaty i osobny stan wizualny przycisku). Gdy true,
+   * buildDeployPanel() renderuje przycisk Wycofaj WIDOCZNY, ale wyszarzony (`disabled`),
+   * z osobnym tekstem blokady -- w odróżnieniu od garnizonu, gdzie przycisk w ogóle
+   * się nie renderuje. Zawsze false/undefined razem z defenderCanRetreat===true
+   * (wzajemnie wykluczające się -- patrz main.ts, budowa PreBattleInfo w
+   * launchIncomingMapFieldBattle).
+   * / EN: true when the player's defender CANNOT retreat because they already
+   * retreated once this turn (not because of the garrison lock -- those two reasons
+   * get SEPARATE messages and a separate button visual state). When true,
+   * buildDeployPanel() renders the Retreat button VISIBLE but greyed out
+   * (`disabled`), with its own blocking text -- unlike the garrison case, where the
+   * button doesn't render at all. Always false/undefined alongside
+   * defenderCanRetreat===true (mutually exclusive -- see main.ts, PreBattleInfo built
+   * in launchIncomingMapFieldBattle).
+   */
+  retreatExhaustedThisTurn?: boolean;
   /** Opcjonalne nadpisanie — inaczej z getCivBonusy(ownerId) */
   bonusyAtakujacy?: readonly CivBonusLite[];
   bonusyObronca?: readonly CivBonusLite[];
@@ -614,6 +633,13 @@ function metaHtml(info: PreBattleInfo): string {
 function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManual: boolean, hasSave: boolean): HTMLElement {
   const defenderCanRetreat = info.defenderCanRetreat === true;
   const showRetreat = canRetreat || defenderCanRetreat;
+  // P-WYCOFANIE-JEDNORAZOWE-TURA (Maciej 2026-08-13): obrońca już wycofany w tej
+  // turze -- przycisk MA SIĘ POJAWIĆ, ale wyszarzony (disabled), nie zniknąć jak
+  // przy blokadzie garnizonowej. Osobny stan od showRetreat (który steruje aktywnym
+  // przyciskiem). / EN: defender already retreated this turn -- the button MUST
+  // still render, greyed out (disabled), not disappear like the garrison lock does.
+  // Separate state from showRetreat (which drives the active button).
+  const retreatExhausted = !showRetreat && info.retreatExhaustedThisTurn === true;
   const place = info.miejsce ?? info.lokacja ?? info.teren;
   const kicker = canRetreat ? 'ROZSTAWIENIE BITWY' : 'WRÓG ATAKUJE';
   const title = (canRetreat ? 'Atakujesz: ' : 'Broni się: ') + esc(place);
@@ -626,6 +652,8 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
   const btns: string[] = [];
   if (showRetreat) {
     btns.push('<button type="button" class="pb-btn pb-danger" data-act="cancel">' + PB_SVG.retreat + 'Wycofaj</button>');
+  } else if (retreatExhausted) {
+    btns.push('<button type="button" class="pb-btn pb-danger" data-act="cancel" disabled>' + PB_SVG.retreat + 'Wycofaj</button>');
   }
   btns.push('<button type="button" class="pb-btn" data-act="auto">' + PB_SVG.auto + 'Auto</button>');
   btns.push('<button type="button" class="pb-btn pb-primary" data-act="deploy">' + deployIcon + esc(deployLabel) + '</button>');
@@ -637,8 +665,11 @@ function buildDeployPanel(info: PreBattleInfo, canRetreat: boolean, defaultManua
     ? (defenderCanRetreat && !canRetreat
         ? '<div class="pb-note">Wycofaj — uniknij walki (jednostka cofa się na sąsiedni heks)</div>'
         : '')
-    : '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
-      'Wycofanie niedostępne — to wróg wybrał bitwę (obrońca nie może uciec)</div>';
+    : retreatExhausted
+      ? '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
+        'Wycofanie niedostępne — ta jednostka wycofała się już w tej turze, rozstrzygnij bitwę</div>'
+      : '<div class="pb-noretreat">' + PB_ICON_NO_RETREAT +
+        'Wycofanie niedostępne — to wróg wybrał bitwę (obrońca nie może uciec)</div>';
 
   const enterLabel = defaultManual ? deployLabel : 'Auto';
   const keysParts: string[] = ['<b>Enter</b> = ' + esc(enterLabel)];

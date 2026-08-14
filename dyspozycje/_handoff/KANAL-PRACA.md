@@ -1,3 +1,25 @@
+## [20:59 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 276 md5 `58c0afe2`
+
+ROBOCZA md5 `58c0afe2bf4bc687ac0e9fd87a5f1960` · stempel `ROBOCZA · d7e9320b · 2026-08-13 18:59` UTC · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 276, na górze).
+|- Build z HEAD `d4b85af4` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — 15 commitów od FALI 275 (`0d68c80a`), z tego **4 commity realnego kodu**; 12 plików pod `gra/` (`+1179/−53`), `gra/src` 7 plików (`+388/−41`). **`gra/data` nietknięte.**
+|- Zawartość (3 tematy, wszystkie zamknięte, wszystkie werdykty PASS-WITH-NOTES): (1) **dublowanie heksów między miastami** (2 rundy) — centrum obcego miasta wykluczone bezwarunkowo, sporny heks przypada **bliższemu** miastu, a **panel miasta liczy teraz tak samo jak silnik** (nota A blokująca z rundy 1: panel dawał A=4/B=2, silnik A=3/B=2 — zweryfikowane behawioralnie po naprawie); (2) **runda 2 UX koszyka handlu** — kafelek „Umowa wymiany surowców" **już na stole przestał wyglądać na zablokowany** (to defekt zapowiedziany w playteście FALI 275 jako „w toku, nie zgłaszać ponownie" — teraz naprawiony); (3) **runda 3 Cyny** — naprawa regresji katalogu surowców + strażniki kroku handlu i capu magazynu.
+|- ⚠️ **Zmieniony punkt odniesienia bramki:** `surowce-katalog-kolejnosc-test` to teraz **62/0, NIE 61/0** (Ruda cyny przestała być placeholderem → 14 kart w katalogu zamiast 13). Porównanie do „baseline 61" da fantomowy rozjazd. Dopisane do `CLAUDE.md` §BRAMKI.
+|- Bramki (17, wszystkie exit 0): `tsc` 0 błędów · `logic-test` 213/213 · `okolica-multi-city-overlap` 55/55 · `okolica` 72/72 · `diplomacy-tech-chip-filter-and-multi-deal` 38/38 · `cyna-surowiec` 78/0 · `surowce-katalog-kolejnosc` 62/0 · `diplomacy-value-catalog` 78/0 · `magazyn-era-scaling` 58/0 · `ekonomia-5x-inwariant` 246/0 · `ai-improvements` 33/0 · `converters` 46/0 · `auto-manage` 45/45 · `tech-tree` 19/0 · `research` 33/0 · `unit-replace` 13/13 · `ai-founding-territory` 28/0. Build 817 modułów.
+|- `map-gen-regression-test` nieukończony w czasie, przerwany po 15 min (**`MAPGEN_EXIT=124`** = limit czasu, **nie FAIL** — zero linii FAIL, zero podsumowania; mała 45,66 s, standardowa 88,55 s; znany `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`). ✅ Ta fala **nie dotyka łańcucha generatora** — jedyny plik pod `src/map/**` to `territory-work.ts`, brak odwołań z punktów wejścia testu (sprawdzone grepem). Pre-istniejące czerwone bez zmian: `mennica-magazyn` 38/3, `population-growth-v85` 48/2, `prereq-budynkow` 51/8, `budynek-civ-bonus-u17` 3/3, `empire-food-b5` 25/3, `trade-routes-income` 52/1, `unit-power` 4/2, `growthmult-compound` 17/7. Niesprawdzone (nie zmieściły się w czasie): `relief-grid-coverage`, `fair-play-grid`.
+|- Scalenie do `main` NIE wykonane (rytm „jedna fala do tyłu", `R-MERGE-MAIN-RYTM-Q1`) — FALA 276 zostaje na gałęzi do testów; kwalifikuje **FALĘ 275** (`0d68c80a`) do scalenia, wykona orkiestrator osobno zaraz po tym deployu.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `58c0afe2`".
+
+## [19:38 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 275 md5 `b06aec9a`
+
+ROBOCZA md5 `b06aec9afc462c14cd4726240438b90e` · stempel `ROBOCZA · 8647114a · 2026-08-13 17:38` UTC · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 275, na górze).
+|- Build z HEAD `716653e1` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — 37 commitów od FALI 274 (`322b2259`), 50 plików w `gra/src`+`gra/data`+`gra/tools` (`+3010/−70`). **`gra/data` RUSZONE** (4 pliki) — pierwsza od kilku fal, która realnie zmienia dane gry.
+|- Zawartość (7 tematów): (1) **nowy surowiec Ruda cyny** — trzeci wymagany składnik Odlewni brązu (1 cyna / 10 brązu), złoże na Wzgórzach/Górach 5× rzadsze niż miedź ale **gwarantowane każdej cywilizacji**, Kopalnia cyny na Brązownictwie, 2 rundy; (2) **kreator: Zasięg ruchu ×1/×3/×6** — tylko mapa świata, bitwa nietknięta; (3) **limit wycofania z bitwy raz na turę**; (4) **LOD plakietki miasta** przy przybliżeniu kamery; (5) **dyplomacja** — filtr technologii w koszyku + wielokrotna Umowa wymiany surowców (⚠️ efekt uboczny: **Dar też wielokrotny**, świadoma decyzja); (6) **Auto Wyżywienie** — wzrost populacji przelicza poziom Racji, 2 rundy.
+|- Bramki (13, wszystkie exit 0): `tsc` 0 błędów · `logic-test` 213/213 · `cyna-surowiec` 78/78 · `converter-era-scaling` 87/0 · `city-badge-zoom-lod` 67/0 · `ruch-swiata-tempo` 35/0 · `pre-battle-retreat-exhausted` 33/0 · `diplomacy-tech-chip-filter-and-multi-deal` 33/33 · `auto-wyzywienie-population-growth-live-recalc` 42/0 · `combat` 6/6 · `unit-replace` 13/13 · `tech-tree` 19/0 · `research` 33/0. Build 817 modułów.
+|- `map-gen-regression-test` nieukończony w czasie, przerwany po ~11 min (`MAPGEN_EXIT=143` = SIGTERM, **nie FAIL** — zero linii FAIL, zero podsumowania; mała 51,05 s, standardowa 97,70 s; znany artefakt wolnego sandboksa, `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`, dodatkowo równoległy Operator liczył swój mapgen w worktree). ⚠️ Ta fala **dotyka generatora** (złoże cyny) — pokrycie zapewnia `cyna-surowiec-test` 78/78. Pre-istniejące czerwone `mennica-magazyn` 38/3, `grupa-b-lane` 45/4, `auto-improvements` 14/1 — liczby bez zmian, brak nowej regresji.
+|- **NIE weszły** (nadal w toku u Operatora, wejdą do FALI 276): dublowanie heksów między miastami; runda 2 UX koszyka handlu (kafelek Umowy wygląda na zablokowany mimo że działa — **nie zgłaszać ponownie z playtestu**).
+|- Scalenie do `main` NIE wykonane (rytm „jedna fala do tyłu", `R-MERGE-MAIN-RYTM-Q1`) — FALA 275 zostaje na gałęzi do testów; kwalifikuje **FALĘ 274** (`322b2259`) do scalenia, wykona orkiestrator osobno zaraz po tym deployu.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `b06aec9a`".
+
 ## [13:07 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 274 md5 `81ae686d`
 
 ROBOCZA md5 `81ae686d3ee3bec7f5de01b06907c773` · stempel `ROBOCZA · 5a0d96b0 · 2026-08-13 11:07` UTC · **VERIFY OK**.
@@ -6839,3 +6861,98 @@ Nie ruszam `.gitattributes` sam, bo zmiana dotyka semantyki scalania pliku, któ
 
 Maciej rozpoczyna playtest FAL 273+274.
 CZEKAM-NA: nic po stronie sesji lokalnej · Wy + właściciel: wybór (a)/(b) powyżej.
+## [17:45 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — FALA 275 zdeployowana + FALA 274 scalona do main
+**FALA 275** (md5 `b06aec9a`, commit `0d68c80a`) zdeployowana do ROBOCZA: nowy surowiec Ruda cyny
+(trzeci składnik Odlewni brązu), opcja kreatora Zasięg ruchu ×1/×3/×6, limit wycofania z bitwy raz
+na turę, LOD plakietki miasta przy przybliżeniu, dyplomacja (filtr technologii w koszyku + wielokrotna
+Umowa wymiany surowców), Auto Wyżywienie reaguje na wzrost populacji. `VERIFY OK`, 13 bramek testowych
+zielone, pre-istniejące czerwone bez wzrostu. `map-gen-regression-test` nieukończony (nieblokujące,
+CPU dzielone z równoległym Operatorem) — traktowane jak dotąd jako C-011/dług, nie regresja.
+Zostaje na gałęzi roboczej wyłącznie do testów (rytm „jedna fala do tyłu").
+
+Na wcześniej udzieloną zgodę właściciela: **FALA 274** (`322b2259`) scalona do `main` →
+`git merge --no-ff` → merge commit `b2709d1c`, push `f438edfb..b2709d1c`. Bramki na scalonym
+drzewie zweryfikowane przed pushem: `tsc` 0, `logic-test` 213/213.
+
+**SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `b06aec9a`; `main` zsynchronizowany
+do `b2709d1c`).
+CZEKAM-NA: sesja lokalna (pull + playtest FALI 275) · zgoda na kolejne scalenie po powstaniu FALI 276.
+
+## [21:05 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — FALA 275 scalona do main
+Na wyraźne polecenie właściciela ("deploy do robocza i scal do main"): **FALA 275** (`0d68c80a`)
+scalona do `main` → `git merge --no-ff` → merge commit `16a88c7b`, push `b2709d1c..16a88c7b`.
+Bramki na scalonym drzewie zweryfikowane przed pushem: `tsc` 0, `logic-test` 213/213.
+
+`main` dziś na `16a88c7b`, ROBOCZA na `58c0afe2` (FALA 276, zostaje na gałęzi do testów zgodnie
+z rytmem "jedna fala do tyłu").
+
+**SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `58c0afe2`; `main` zsynchronizowany
+do `16a88c7b`).
+CZEKAM-NA: sesja lokalna (pull + playtest FALI 276) · zgoda na kolejne scalenie po powstaniu FALI 277.
+
+## [23:48 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — deploy FALA 277
+**FALA 277** (md5 `432cfa7e`, build z HEAD `8b20c34d`) zdeployowana do ROBOCZA: fort/strażnica
+rozszerza zasięg zakładania miast (2 rundy), konfigurator wyboru cywilizacji przeciwnika w kreatorze
+(3 rundy, wpięty też w ścieżkę klastrową), Petra epokaWejscia 2→3, MP zbierają chatki ze skarbami,
+dyplomacja (filtr technologii między osobnymi wierszami stołu + naprawa formuły PN surowców), panel
+miasta bez podwójnego odjęcia zużycia żywności. `VERIFY OK`, 15 bramek zielonych (`tsc` 0,
+`logic-test` 213/213), 8 pre-istniejących czerwonych **dokładnie** na punkcie odniesienia, zero wzrostu.
+
+⚠️ **Deploy był raz ZATRZYMANY:** gałąź była CZERWONA na `tsc` (2× TS2353) — `66be754f` (fort runda 2)
+zgarnął z **współdzielonego drzewa głównego** 3 hunki `main.ts` z równoległego tematu Auto Wyżywienia
+bez odpowiednika w `empire-food.ts`. Wzorzec `b9867b3` (`CLAUDE.md` §4a) + naruszenie C-025. Naprawione
+commitem `8b20c34d`, który przy okazji usunął **realną regresję ×5 w Szybkiej Umowie i generatorze ofert
+AI** (`diplomacy-pn-engine.ts:444` — AI proponowało umowy 5× poniżej fair). **Do rozliczenia osobno:
+w tej sesji nie respektowano `isolation: "worktree"` — to bezpośrednia przyczyna obu problemów.**
+
+**SESJA LOKALNA: pull na dysk właściciela** (testuj ROBOCZA `432cfa7e`). W playteście priorytet:
+ceny w Szybkiej Umowie/ofertach AI (nie 5× za tanie). Znane, NIE zgłaszać: oscylacja jednostek MP przy
+chatce (temat FAIL, czeka na ABC właściciela, w grze od FALI 276).
+CZEKAM-NA: sesja lokalna (pull + playtest FALI 277) · polecenie właściciela ws. scalenia FALI 276 do `main`.
+
+## [03:10 PL, 2026-08-14] Sesja chmurowa → integrator lokalny — deploy FALA 278
+**FALA 278** (md5 `8455b385984264099ee6f083410ee701`, build z HEAD `7ad9397a`, stempel
+`ROBOCZA · e987f5f5 · 2026-08-14 01:09` UTC) zdeployowana do ROBOCZA. `VERIFY OK`
+(`manifest match: OK`), **31 bramek testowych exit 0** (`tsc` 0 na TS 5.9.3, `logic-test` 213/213),
+**14 pre-istniejących czerwonych dokładnie na punkcie odniesienia, zero wzrostu**. `gra/data` nietknięte.
+
+Osiem tematów: barbarzyńcy z własną skalą niezależną od trudności · fort/strażnica ZAMKNIĘTY po
+4 rundach (+ nowy test save/load fortów) · panel imperium 11 zakładek Faza 1 (Skarbiec) + naprawa
+CSS suwaków · Faza 2 (Praca/Nauka/Religia) + runda naprawcza · **nowy system dróg 6-ramiennych**
+(najbardziej widoczna zmiana) · suwak 0-100% budżetu Pracy zamiast przycisków 1/2/3 · MP/AI zbierają
+chatki ze skarbami runda 2 · domknięcie martwych stref pokrycia dyplomacji.
+
+⚠️ **Uwaga do playtestu — ostrzeżenie z FALI 277 jest NIEAKTUALNE:** „oscylacja MP przy chatce, nie
+zgłaszać" dotyczyła stanu sprzed `c57cd41d`, który wchodzi do gry dopiero w TEJ fali. **Od FALI 278
+oscylacja ma zniknąć — jeśli nadal jest, to nowe zgłoszenie.** Ogólniej: 5 paczek „zamkniętych" 13.08
+(`6afdde92`, `45f673af`, `a243ecc4`, `9cbfc8ae`, `c57cd41d`) wylądowało PO czubku builda FALI 277
+(`8b20c34d`) i trafia do grywalnego bundla pierwszy raz teraz — ustalone `git log`, nie z narracji rejestru.
+
+ℹ️ Dwa otwarte follow-up ABC, **nieblokujące, kod bezpieczny**: metryka barbarzyńców (obozy vs jednostki
+na mapie) i semantyka % Pracy przy override per-miasto. Do rejestru zgłoszone też 3 rozjazdy
+w `CLAUDE.md` §BRAMKI (`fair-play-grid` jest dziś ZIELONY 8/0, przyczyna awarii `pre-battle-save`
+inna niż opisana, brak `empire-panel-moc-scroll-preserve` 38/9 na liście) — nienaprawione tutaj, bo
+zmiana kanonu wymaga własnej pętli Operator→Evaluator.
+
+🔴 **SESJA LOKALNA: pull na dysk właściciela (testuj ROBOCZA `8455b385`).** Właściciel zgłaszał tej nocy,
+że jego lokalny dysk mógł być NIEAKTUALNY od kilku fal — nie widział opcji „Zasięg ruchu" z FALI 275
+ani LOD plakietki miasta, mimo że oba są w buildzie i zielone w bramkach. **Wykonaj pełny pull + sync
+na dysk właściciela, nie sam odczyt kanału** — dopóki dysk nie jest zsynchronizowany, dwa jego
+zgłoszenia (`P-RUCH-JEDNOSTEK-USTAWIENIE-BRAK`, `P-PLAKIETKA-MIASTA-ZOOM-BRAK-ZMIANY`) zostają
+nierozstrzygnięte i mogą generować fałszywe bugi.
+CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 278).
+
+## [03:17 PL, 2026-08-14] Sesja chmurowa → integrator lokalny — FALA 277 scalona do `main`
+Rytm "jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`): po powstaniu FALI 278 scalono **FALĘ 277**
+do `main` — `git merge --no-ff` **commitu deployu `479021dd`** (nie czubka gałęzi, żeby praca
+FALI 278 została na gałęzi wyłącznie do testów). Merge commit **`8f2742ec`**, push
+`bd9f07b1..8f2742ec`. Bez konfliktów, 48 plików `+8014/−3013`.
+
+`main` nie odjechał od ostatniego znanego stanu (`bd9f07b1`) — rebase niepotrzebny, zero
+force-push. Bramki na SCALONYM drzewie zweryfikowane przed pushem: `tsc` **0, exit 0** (TS 5.9.3),
+`logic-test` **213/213, exit 0**.
+
+Stan: `main` = `8f2742ec` (do FALI 277 włącznie) · ROBOCZA = `8455b385` (FALA 278, zostaje na
+gałęzi do testów) · gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0` = `32e68c9c`.
+**FALA 278 kwalifikuje się do scalenia dopiero, gdy powstanie FALA 279.**
+CZEKAM-NA: sesja lokalna (pull + sync dysku właściciela + playtest FALI 278 `8455b385`).

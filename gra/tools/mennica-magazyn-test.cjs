@@ -314,7 +314,7 @@ assert(withOdlewniaNoOre.stores.cegla > 0 && withOdlewniaNoOre.stores.ceramika >
 
 // Sanity: gdyby ruda BYLA w magazynie (nie zbierana dzis, ale receptura istnieje), odlewnia
 // zadzialalaby -- potwierdza, ze brak braz wyzej wynika z braku rudy, nie ze zlej receptury.
-const withOdlewniaWithOre = simulateConverterTick(['odlewnia_brazu'], { ruda: 4, drewno: 4 });
+const withOdlewniaWithOre = simulateConverterTick(['odlewnia_brazu'], { ruda: 4, drewno: 4, ruda_cyny: 1 });
 assert(withOdlewniaWithOre.stores.braz > 0,
   `kontrola: odlewnia_brazu Z ruda w magazynie -> braz > 0 (got ${withOdlewniaWithOre.stores.braz}) -- receptura sama w sobie sprawna`);
 

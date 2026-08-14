@@ -163,6 +163,16 @@ export interface BuildClusterSpawnInput {
   /** Epoka startu — filtr puli typów na mapie (kamien | braz | zelazo). */
   startEpochId?: string;
   cityNamesPools?: CityNamesPoolsData;
+  /**
+   * R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA runda 2: typy AI wybrane przez
+   * gracza w kreatorze, w kolejności zaznaczenia — przekazane wprost do
+   * computeClusters(). Puste/undefined = zachowanie bez zmian (dzisiejszy
+   * deterministyczny ROSTER_KLUCZE).
+   * / EN: AI types chosen by the player in the wizard, in selection order —
+   * passed straight through to computeClusters(). Empty/undefined = unchanged
+   * behaviour (today's deterministic ROSTER_KLUCZE).
+   */
+  preferredCivIds?: readonly string[];
 }
 
 function capitalOf(klaster: TypeCluster): { q: number; r: number } | null {
@@ -195,7 +205,7 @@ export function groupForeignTypeClusters(slots: ClusterSpawnSlot[]): ForeignType
 export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpawnPlan {
   const {
     map, civs, seed, playerTyp, rywaleNaKlaster, aktywneTypy,
-    startEpochId, cityNamesPools,
+    startEpochId, cityNamesPools, preferredCivIds,
   } = input;
 
   const placement = computeClusters(map, {
@@ -205,6 +215,7 @@ export function buildClusterSpawnPlan(input: BuildClusterSpawnInput): ClusterSpa
     aktywneTypy,
     startEpochId,
     civRoster: civs.cywilizacje,
+    preferredCivIds,
   });
 
   const playerCluster = placement.klastry[placement.playerTypIndex];

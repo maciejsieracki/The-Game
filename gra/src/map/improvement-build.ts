@@ -11,6 +11,7 @@ import { IMPROVEMENTS } from '../render/improvements';
 import {
   isInTerritory,
   isPlayerTerritoryHex,
+  territoryOwnerAt,
   axialDistance,
   cityTerritoryRadius,
   type CityNode,
@@ -80,6 +81,20 @@ export interface ImprovementBuildState {
    * playerOwnerIdNum, 'kon')) — ten moduł nie zna tras handlowych.
    */
   tradeRouteKonUnlocked?: boolean;
+  /**
+   * R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2, Q1=B doprecyzowanie
+   * (Maciej 2026-08-09): klucze "q,r" heksow, na ktorych aktualnie stoi WLASNA
+   * jednostka budowniczego (playerOwnerIdNum) — wymog fizycznej obecnosci przy
+   * budowie fort/posterunek POZA wlasnym terytorium (fog of war jest wtedy
+   * automatycznie zdjeta, bo jednostka tam stoi). Brak pola / pusty zbior =
+   * fort/posterunek NIE kwalifikuje sie poza wlasnym terytorium (fail-closed).
+   * / EN: "q,r" keys of hexes currently occupied by the builder's OWN unit —
+   * physical-presence requirement for building fort/outpost OUTSIDE own
+   * territory (fog of war is then automatically lifted by that unit standing
+   * there). Missing/empty = fort/outpost does NOT qualify outside own
+   * territory (fail-closed).
+   */
+  ownUnitHexKeys?: ReadonlySet<string>;
 }
 
 export interface ImprovementTypeInfo {
@@ -233,6 +248,9 @@ const SEKTOR_OF: Record<string, string> = {
   // bok 1 — surowce + ich ulepszenia
   glinianka: 'surowiec',
   stadnina: 'surowiec', kopalnia_miedzi: 'surowiec', kopalnia_zelaza: 'surowiec',
+  // Cyna (Maciej 2026-08-13): jak kopalnia miedzi/żelaza — jedno złoże na heks (placeDeposits
+  // break po pierwszym trafieniu), więc nigdy nie koliduje z pozostałymi kopalniami rudy.
+  kopalnia_cyny: 'surowiec',
   // Maciej 2026-07-25: Kopalnia złota — dedykowane ulepszenie jak kopalnia_miedzi (tylko na
   // hex.zloze==='zloto'); sektor 'surowiec' jest tu bezpieczny bo tylko JEDNO złoże może
   // istnieć na heksie (placeDeposits — break po pierwszym trafieniu), więc nigdy nie koliduje
@@ -377,6 +395,8 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
   // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
   // gen-helpers.ts id='zloto').
   kopalnia_zlota: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
+  // Maciej 2026-08-13: cyna — Wzgórza/Góry, jak złoto (DEPOSIT_RULES gen-helpers.ts id='cyna').
+  kopalnia_cyny: new Set([TerenBazowy.Wzgorza, TerenBazowy.Gory]),
 };
 
 /**
@@ -446,6 +466,8 @@ export function depositAllowsPlayerImprovement(
       return zloze === 'zelazo';
     case 'kopalnia_zlota': // kopalnia złota — TYLKO złoże złota (Maciej 2026-07-25)
       return zloze === 'zloto';
+    case 'kopalnia_cyny': // kopalnia cyny — TYLKO złoże cyny (Maciej 2026-08-13)
+      return zloze === 'cyna';
     case 'bydlo':
       return nakladka === Nakladka.ZlozeBydla;
     case 'owce':
@@ -573,6 +595,7 @@ function createQualifier(state: ImprovementBuildState) {
   const territoryNodes = state.territoryNodes ?? [];
   const placedKeys = state.placedKeys ?? new Set<string>();
   const roadKeys = state.roadKeys ?? new Set<string>();
+  const ownUnitHexKeys = state.ownUnitHexKeys ?? new Set<string>();
   const riverHexSet = buildRiverHexSet(map);
   const placedMap = buildPlacedImprovementsMap(map, state.placedImprovements);
   const empireUnlocks = computeEmpireLivestockUnlocks(
@@ -692,12 +715,39 @@ function createQualifier(state: ImprovementBuildState) {
         break;
       case 'droga':
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
+      // R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA krok 2 (Maciej 2026-08-09,
+      // ECHO Q1=B): fort/posterunek NIE wymagaja juz wlasnego terytorium (regula
+      // 1 — dozwolone wszedzie poza terenem NALEZACYM JUZ do innej cywilizacji,
+      // czyli poza terytorium CUDZEGO MIASTA; regula 2 — same forty/posterunki
+      // nie tworza wylacznosci, wiec CUDZY fort na tym hexie NIE blokuje), za to
+      // wymagaja fizycznej obecnosci WLASNEJ jednostki na hexie w chwili budowy
+      // (Q1 doprecyzowanie — jednoczesnie zdejmuje fog of war, wiec osobny
+      // warunek widocznosci jest zbedny). / EN: fort/outpost no longer require
+      // own territory (rule 1 — allowed anywhere except a hex already belonging
+      // to another civ's CITY territory; rule 2 — a rival fort there does NOT
+      // block), but require the builder's OWN unit physically present on the hex
+      // at build time (Q1 clarification — also lifts fog of war by construction).
       case 'posterunek':
-        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+      case 'fort': {
+        const owner = territoryNodes.length > 0 ? territoryOwnerAt(q, r, territoryNodes) : null;
+        const rivalCityTerritory = owner !== null && owner !== playerOwnerIdNum;
+        // Wewnatrz WLASNEGO terytorium zachowanie sprzed kroku 2 (bez wymogu
+        // jednostki -- teren juz kontrolowany/widoczny). Wymog fizycznej
+        // obecnosci (Q1 doprecyzowanie) dotyczy WYLACZNIE nowej mozliwosci --
+        // budowy POZA wlasnym terytorium (unika regresji auto-ulepszen AI/gracza,
+        // ktore nie przekazuja ownUnitHexKeys i budowaly fort/posterunek w
+        // terytorium bez tego wymogu od zawsze). / EN: inside OWN territory,
+        // pre-step-2 behaviour (no unit requirement -- ground already
+        // controlled/visible). The physical-presence requirement (Q1
+        // clarification) applies ONLY to the new capability -- building OUTSIDE
+        // own territory (avoids regressing AI/player auto-improvements, which
+        // don't pass ownUnitHexKeys and have always built fort/outpost inside
+        // territory without this requirement).
+        const ownTerritory = owner === playerOwnerIdNum || inPlayerTerritory(q, r);
+        terrainOk = TERENY_LADU.has(teren) && !rivalCityTerritory
+          && (ownTerritory || ownUnitHexKeys.has(hexKey));
         break;
-      case 'fort':
-        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
-        break;
+      }
       case 'glinianka':
         terrainOk = hexHasClayDeposit(hex) && inPlayerTerritory(q, r);
         break;
@@ -734,6 +784,11 @@ function createQualifier(state: ImprovementBuildState) {
         terrainOk = inPlayerTerritory(q, r)
           && (teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory)
           && zloze === 'zloto';
+        break;
+      case 'kopalnia_cyny':
+        terrainOk = inPlayerTerritory(q, r)
+          && (teren === TerenBazowy.Wzgorza || teren === TerenBazowy.Gory)
+          && zloze === 'cyna';
         break;
       case 'tarasy':
         terrainOk = inPlayerTerritory(q, r)
@@ -997,7 +1052,9 @@ export function createImprovementBuildApi(
   // qualifies() dla dowolnego klucza:
   //   • terytorium gracza + 1 pierścień  (posterunek: isOnTerritoryEdge = sąsiad terytorium),
   //   • istniejące drogi                 (droga_brukowana nie sprawdza terytorium),
-  //   • placedKeys / pendingUndoKeys     (ścieżki w qualifies() zwracające true poza terytorium).
+  //   • placedKeys / pendingUndoKeys     (ścieżki w qualifies() zwracające true poza terytorium),
+  //   • ownUnitHexKeys                   (R-FORT-STRAZNICA krok 2: fort/posterunek poza
+  //     terytorium kwalifikują się WYŁĄCZNIE na hexie z własną jednostką — patrz Q1=B).
   // Każdy heks SPOZA tego zbioru zwróciłby z qualifies() false, więc wynik jest
   // IDENTYCZNY jak przy pełnym skanie (predykat qualifies bez zmian).
   const candidateHexKeys: Set<string> = (() => {
@@ -1014,6 +1071,7 @@ export function createImprovementBuildApi(
         if (idx > 0) set.add(composite.slice(0, idx));
       }
     }
+    if (state.ownUnitHexKeys) for (const k of state.ownUnitHexKeys) set.add(k);
     return set;
   })();
 

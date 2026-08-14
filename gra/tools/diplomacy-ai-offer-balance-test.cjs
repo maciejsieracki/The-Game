@@ -27,7 +27,11 @@ export {
   trimQuickDealGiveToTolerance,
 } from '../src/game/diplomacy-ai-offer-balance.ts';
 export { computePlayerAcceptanceSides } from '../src/game/diplomacy-acceptance-points.ts';
-export { diplomacyPnZloto } from '../src/game/diplomacy-value-catalog.ts';
+export {
+  diplomacyPnZloto,
+  diplomacySumPn,
+  diplomacyFairGivePn,
+} from '../src/game/diplomacy-value-catalog.ts';
 export { computeQuickDealBasket } from '../src/game/diplomacy-pn-engine.ts';
 `);
 
@@ -99,10 +103,15 @@ const minGold = M.pickMinimalSweetenerGold(
 ok(minGold === 50, `minimal sweetener: 50¤ nie 500¤ (${minGold})`);
 
 // R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk podaje sztuki wprost (cena_drewno=1 PN/szt.)
-// — `ilosc: 10` odtwarza dokładnie ten sam scenariusz „10 PN drewna vs 1 PN złota”, który
-// przed usunięciem pakietów dawało `ilosc: 1` (1 pakiet × 10 szt. × 1 PN/szt.).
+// — `ilosc: 10` odtwarzało scenariusz „10 PN drewna vs 1 PN złota”, który przed usunięciem
+// pakietów dawało `ilosc: 1` (1 pakiet × 10 szt. × 1 PN/szt.).
+// NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): PN surowca ilościowego
+// liczy się teraz BLOKAMI (krok 5), nie sztukami wprost — 10 szt. drewna = 2 bloki = 2 PN,
+// za mało, by odtworzyć oryginalny scenariusz „10 PN drewna”. `ilosc: 50` (10 bloków × 1
+// PN/blok = 10 PN, jak dawne 10 szt. × 1 PN/szt. przed R-DYPLO-CENNIK-SKALA-5X-Q1) zachowuje
+// TĘ SAMĄ wartość PN co oryginalny scenariusz — liczba sztuk rośnie ×5, PN scenariusza bez zmian.
 const cyclicRaw = {
-  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 10 }],
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 50 }],
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
   resourceTradeMode: 'per_turn',
   turns: 10,
@@ -112,7 +121,7 @@ const cyclicTrimmed = M.trimProposalForZeroBalance(cyclicRaw, 100, 'normal');
 const cyclicSurplusAfter = M.aiProposalPlayerBenefitSurplus(cyclicTrimmed, 100);
 const cyclicGold = cyclicTrimmed.receiveItems?.find(i => i.typ === 'zloto')?.ilosc ?? 0;
 const cyclicWood = cyclicTrimmed.giveItems?.find(i => i.typ === 'surowiec_ilosc')?.ilosc ?? 0;
-ok(cyclicSurplusBefore >= 8, `scenariusz zrzutu: 10 szt. drewna/turę + 1¤ → nadwyżka ≥8 (${cyclicSurplusBefore})`);
+ok(cyclicSurplusBefore >= 8, `scenariusz zrzutu: 50 szt. drewna/turę (10 bloków) + 1¤ → nadwyżka ≥8 (${cyclicSurplusBefore})`);
 ok(
   cyclicSurplusAfter <= 5 || (!cyclicTrimmed.giveItems?.length && !cyclicTrimmed.receiveItems?.length),
   `normal: nadwyżka ≤5 lub oferta wycofana (${cyclicSurplusAfter})`,
@@ -132,7 +141,7 @@ ok(
 
 const cyclicEasy = M.trimProposalForZeroBalance(cyclicRaw, 100, 'easy');
 ok(
-  cyclicEasy.giveItems[0].ilosc === 10 && cyclicEasy.receiveItems[0].ilosc === 1,
+  cyclicEasy.giveItems[0].ilosc === 50 && cyclicEasy.receiveItems[0].ilosc === 1,
   'easy: bez trimu cyklicznego',
 );
 
@@ -204,6 +213,21 @@ ok(
   const drewnoGive = giveFiller.giveItems.find(i => i.id === 'drewno');
   ok(drewnoGive != null && drewnoGive.ilosc % 5 === 0 && drewnoGive.ilosc > 0,
     `Szybka umowa: dopełniacz drewna wielokrotnością 5, >0 (got ${drewnoGive?.ilosc})`);
+
+  // N1 (Evaluator 2026-08-13, domknięcie luki pokrycia P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI):
+  // powyższa asercja "wielokrotność 5, >0" NIE łapie błędu WIELKOŚCI — 40 szt. "zepsute" (5×
+  // za mało) spełnia ją tak samo dobrze jak 200 szt. "poprawne". Tu przeliczamy PN oddawanego
+  // koszyka NIEZALEŻNIE (diplomacySumPn na zwróconych giveItems, ta sama funkcja katalogu co
+  // reszta silnika, ale wołana z zewnątrz — nie z wewnętrznej zmiennej giveSum liczonej wewnątrz
+  // computeQuickDealBasket) i porównujemy z fairMin wyliczonym z receivePn (diplomacySumPn na
+  // receiveItems) przez diplomacyFairGivePn. Margines 10% w dół dopuszcza floor-do-kroku-5
+  // (ostatni blok zwykle nie trafia dokładnie w fairMin), ale NIE dopuszcza błędu ×5.
+  const giveFillerReceivePn = M.diplomacySumPn(giveFiller.receiveItems);
+  const giveFillerGivePn = M.diplomacySumPn(giveFiller.giveItems);
+  const giveFillerFairMin = M.diplomacyFairGivePn(giveFillerReceivePn, 100);
+  ok(giveFillerGivePn >= giveFillerFairMin * 0.9,
+    `Szybka umowa: fairness rzeczywista (nie tylko wielokrotność 5) - givePn=${giveFillerGivePn} ` +
+    `>= 0.9*fairMin=${(giveFillerFairMin * 0.9).toFixed(1)} (receivePn=${giveFillerReceivePn}, fairMin=${giveFillerFairMin})`);
 }
 
 console.log(`\ndiplomacy-ai-offer-balance-test: ${pass} passed, ${fail} failed`);

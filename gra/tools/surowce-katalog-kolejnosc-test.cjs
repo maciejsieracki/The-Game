@@ -1,17 +1,24 @@
 'use strict';
 /**
- * surowce-katalog-kolejnosc-test.cjs — P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12).
+ * surowce-katalog-kolejnosc-test.cjs — P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12),
+ * zaktualizowany pod R-SUROWIEC-CYNA-DO-BRAZU (Maciej 2026-08-13, runda 3 naprawy testu —
+ * patrz dyspozycje/PYTANIA-OTWARTE.md).
  *
  * Panel Surowców (empireDetailPanel.ts renderSurowceSection) renderuje karty w siatce 2
  * kolumny, wiersz po wierszu, w kolejności tablicy `CATALOG` z main.ts
  * (buildEmpireResourceRows) — `stored.map(resCardHtml).join('')`, bez żadnego sortowania
  * pośredniego. Docelowa kolejność (decyzja właściciela):
  *   W1: Drewno | Kamień          W2: Glina | Cegła         W3: Sól | Ceramika
- *   W4: Ruda (miedzi) | Brąz     W5: Ruda żelaza | Ruda cyny (placeholder)
+ *   W4: Ruda (miedzi) | Brąz     W5: Ruda żelaza | Ruda cyny
  *   W6: Żelazo | Stal            W7: Koń | Złoto
  * "Koń" nie był na liście właściciela (nie pasuje do żadnej pary bazowy→przetworzony) —
- * umieszczony celowo TUŻ PRZED Złotem, żeby Złoto zostało ostatnią kartą. "Ruda cyny" NIE
- * istnieje w resources.json — karta placeholder wyszarzona, bez realnych danych.
+ * umieszczony celowo TUŻ PRZED Złotem, żeby Złoto zostało ostatnią kartą. "Ruda cyny" BYŁA
+ * placeholderem (P-SUROWCE-KOLEJNOSC-KART, 2026-08-12) — NADRZĘDNA, nowsza decyzja
+ * R-SUROWIEC-CYNA-DO-BRAZU (2026-08-13, CLAUDE.md §1a) uczyniła ją REALNYM, aktywnym
+ * surowcem (Odlewnia brązu, złoże na mapie, wpis w `resources.json`), więc karta dziś NIE
+ * jest placeholderem (main.ts:2845). Sekcja D niżej nadal testuje GENERYCZNĄ funkcję
+ * `resPlaceholderCardHtml` na spreparowanym mocku — infrastruktura placeholderów zostaje w
+ * kodzie dla przyszłych kart, ale żadna dzisiejsza karta katalogu przez nią nie przechodzi.
  *
  * Wzorzec: esbuild-bundle-real-source — CATALOG i resPlaceholderCardHtml są WYCIĘTE z
  * prawdziwych plików (main.ts / empireDetailPanel.ts) i wykonane naprawdę (esbuild
@@ -116,19 +123,22 @@ eq(catalog.length > 1 && catalog[catalog.length - 2].id, 'kon',
 
 const rudaCyny = catalog.find(c => c.id === 'ruda_cyny');
 ok(!!rudaCyny, 'CATALOG zawiera wpis ruda_cyny');
-ok(!!rudaCyny && rudaCyny.placeholder === true, 'ruda_cyny.placeholder === true');
-ok(!!rudaCyny && /wkr.tce/i.test(rudaCyny.label), 'ruda_cyny.label sygnalizuje "wkrótce" (nieaktywny surowiec)');
+// R-SUROWIEC-CYNA-DO-BRAZU (2026-08-13) unieważniła P-SUROWCE-KOLEJNOSC-KART (2026-08-12) dla
+// tej karty: Ruda cyny jest dziś REALNYM, aktywnym surowcem (main.ts:2845), nie placeholderem
+// zapowiadającym "wkrótce". Odwrócenie 3 asercji niżej vs. runda 1/2 — CLAUDE.md §1a.
+ok(!!rudaCyny && !rudaCyny.placeholder, 'ruda_cyny.placeholder NIE jest ustawiony (aktywny surowiec, nie placeholder)');
+ok(!!rudaCyny && !/wkr.tce/i.test(rudaCyny.label), 'ruda_cyny.label NIE sygnalizuje "wkrótce" (aktywny surowiec, main.ts:2845)');
 for (const c of catalog) {
-  if (c.id === 'ruda_cyny') continue;
-  ok(!c.placeholder, `${c.id}: placeholder NIE ustawiony (tylko ruda_cyny jest placeholderem)`);
+  ok(!c.placeholder, `${c.id}: placeholder NIE ustawiony (żadna karta katalogu dziś nie jest placeholderem)`);
 }
 
-// resources.json NIE zawiera "Ruda cyny" — to jest zamierzony placeholder, nie zapomniany
-// realny surowiec (P-SUROWCE-KOLEJNOSC-KART: zakaz dodawania realnego surowca do danych gry).
+// resources.json MA zawierać "Ruda cyny" — R-SUROWIEC-CYNA-DO-BRAZU (2026-08-13, runda 1)
+// dodała ją jako realny surowiec silnika, unieważniając wcześniejszy zakaz
+// P-SUROWCE-KOLEJNOSC-KART ("nie dodawaj realnego surowca do danych gry").
 const RESOURCES_JSON = path.join(__dirname, '..', 'data', 'resources.json');
 const resourcesRaw = fs.readFileSync(RESOURCES_JSON, 'utf8');
-ok(!/cyna|cyny/i.test(resourcesRaw),
-  'resources.json NIE zawiera "cyna"/"cyny" — Ruda cyny zostaje WYŁĄCZNIE kartą UI placeholder, zgodnie ze zleceniem');
+ok(/cyna|cyny/i.test(resourcesRaw),
+  'resources.json ZAWIERA "cyna"/"cyny" — Ruda cyny jest realnym surowcem gry (R-SUROWIEC-CYNA-DO-BRAZU)');
 
 // ===========================================================================
 // B. main.ts: buildEmpireResourceRows — brak sortowania po zbudowaniu wierszy (kolejność

@@ -31,7 +31,7 @@ export {
   diplomacySumPn,
   basketSidePnDifficultyMultiplier,
   diplomacyPnSurowiecIlosc,
-  diplomacyHandelSurowiecCenaJednostkowa,
+  diplomacyHandelSurowiecCenaZaBlok,
 } from './game/diplomacy-value-catalog';
 export {
   effectiveTreatyPnRequired,
@@ -303,17 +303,19 @@ ok(goldEasyReceive.receivePn === 60, 'player gives 40¤ easy (AI proposal) → �
 // ×5 rebalansem produkcji) — 1 szt. floruje do 0 PN, więc te dwie asercje testują teraz
 // ilosc=5 (najmniejsza poprawna ilość) zamiast ilosc=1. Zloto/wegiel świadomie WYŁĄCZONE
 // z ×5 -> zostają przy krok=1, ilosc=1 nadal działa bez floorowania.
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('sol') === 2, 'acceptance: sol 2 PN/szt.');
-ok(mod.diplomacyPnSurowiecIlosc('braz', 5) === 75, 'acceptance: 5 szt. braz (krok 5) = 75 PN (5×15)');
+// NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): PN = BLOKI × cena_PN/blok
+// (ECHO f838b599), nie sztuki × cena — 5 szt. braz = 1 blok × 15 PN/blok = 15 PN (nie 75).
+ok(mod.diplomacyHandelSurowiecCenaZaBlok('sol') === 2, 'acceptance: sol 2 PN/szt.');
+ok(mod.diplomacyPnSurowiecIlosc('braz', 5) === 15, 'acceptance: 5 szt. braz (krok 5) = 1 blok × 15 PN/blok = 15 PN');
 ok(mod.diplomacyPnSurowiecIlosc('braz', 1) === 0, 'acceptance: 1 szt. braz (< krok 5) floruje do 0 PN');
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('zloto') === 50, 'acceptance: zloto-surowiec 50 PN/szt.');
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('wegiel') === 20, 'acceptance: wegiel 20 PN/szt.');
+ok(mod.diplomacyHandelSurowiecCenaZaBlok('zloto') === 50, 'acceptance: zloto-surowiec 50 PN/szt.');
+ok(mod.diplomacyHandelSurowiecCenaZaBlok('wegiel') === 20, 'acceptance: wegiel 20 PN/szt.');
 ok(mod.diplomacyPnSurowiecIlosc('zloto', 1) === 50, 'acceptance: 1 szt. zloto (krok 1, wyłączone z ×5) = 50 PN');
 const woodTradePn = mod.resolveProposalPn({
   giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 5 }],
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
 }, { difficulty: 'normal', proposerOwnerId: 0, playerOwnerId: 0 });
-ok(woodTradePn.givePn === 5, 'resolveProposalPn: 5 szt. drewno (krok 5) = 5 PN');
+ok(woodTradePn.givePn === 1, 'resolveProposalPn: 5 szt. drewno (krok 5) = 1 blok × 1 PN/blok = 1 PN');
 
 // Pokój @ rel 77 — asymetria: gracz 385 PW, partner 500 PW (baza)
 ok(mod.effectiveTreatyPnRequired(500, 77) === 385, 'pokój @ rel 77: traktat gracz 385 PW');

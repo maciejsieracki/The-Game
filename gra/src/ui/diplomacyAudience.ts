@@ -54,6 +54,7 @@ import type { ProposalPayload } from '../game/diplomacy-proposals';
 import {
   audienceActionBarLockNote,
   audienceActionStatusNote,
+  uiActionAllowsMultipleOwnOnTable,
 } from '../game/diplomacy-audience-actions';
 
 export interface AudienceAction {
@@ -346,7 +347,79 @@ function findOwnOutgoingNegotiationRow(
   );
 }
 
-/** Blokuje duplikat na stole: ich wpis → kontroferta; nasz → ignoruj klik. */
+/**
+ * P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU (2026-08-13): dla akcji zezwalających
+ * na WIELE własnych wpisów na stole naraz (dziś wyłącznie aid '14' — patrz
+ * uiActionAllowsMultipleOwnOnTable) każda KOLEJNA instancja koszyka startuje z pustymi
+ * giveItems/receiveItems (R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA) — lokalny filtr „już w koszyku"
+ * w `buildAddForm` (diplomacyTradeBasket.ts, P-HANDEL-TECH-CHIP-BEZ-FILTRU-JUZ-DODANE) nie ma
+ * więc czego odfiltrować, mimo że ta sama technologia widnieje już w INNYM, wcześniej wysłanym
+ * własnym wierszu tego samego aid (widocznym w koszyku OFERUJEMY). Zbiera id technologii już
+ * zaangażowanych w takich wierszach; `excludeRowId` pomija wiersz aktualnie edytowany/
+ * kontrowany (jego własne pozycje trafiają do lokalnego filtra przez `existingItems`, nie
+ * powinny więc same siebie wykluczać tutaj).
+ * EN: for UI actions allowing multiple own table entries at once (today only aid '14'), each
+ * new basket instance starts with EMPTY giveItems/receiveItems, so buildAddForm's local
+ * already-in-basket filter has nothing to filter against — even though the same tech already
+ * sits in ANOTHER, previously submitted own row of the same aid (visible in the OFERUJEMY
+ * basket). Collects tech ids already committed in such rows; `excludeRowId` skips the row
+ * currently being edited/countered (its own items already reach the local filter via
+ * `existingItems`, so it must not exclude itself here).
+ */
+function techIdsCommittedInOtherOwnRows(
+  st: DiplomacyAudienceState,
+  aid: string,
+  excludeRowId?: string,
+): { give: Set<string>; receive: Set<string> } {
+  const give = new Set<string>();
+  const receive = new Set<string>();
+  for (const r of st.pendingNegotiations ?? []) {
+    if (r.direction !== 'own' || r.uiActionId !== aid || r.id === excludeRowId) continue;
+    for (const it of r.dealPayload?.giveItems ?? []) {
+      if (it.typ === 'tech') give.add(it.id);
+    }
+    for (const it of r.dealPayload?.receiveItems ?? []) {
+      if (it.typ === 'tech') receive.add(it.id);
+    }
+  }
+  return { give, receive };
+}
+
+/**
+ * Nakłada `techIdsCommittedInOtherOwnRows` na `ctx.giveTechOptions`/`receiveTechOptions` —
+ * patrz komentarz przy `techIdsCommittedInOtherOwnRows` dla pełnego uzasadnienia.
+ * Eksport WYŁĄCZNIE do testu (`diplomacy-tech-chip-filter-and-multi-deal-test.cjs` CZĘŚĆ D,
+ * P-UMOWA-SUROWCOW-TECH-CHIP-NADAL-WYBIERALNY-PO-DODANIU) — potwierdza, że filtr faktycznie
+ * usuwa z `ctx` technologie już zaangażowane w innych własnych wpisach stołu, z zachowaniem
+ * wyjątku dla wiersza aktualnie edytowanego.
+ * EN: exported ONLY for the test — confirms the filter actually strips techs already committed
+ * in other own table rows from `ctx`, while keeping the exception for the row being edited.
+ */
+export function withOwnTableTechFilter(
+  negCtx: NegotiationModalContext,
+  st: DiplomacyAudienceState,
+  aid: string,
+  excludeRowId?: string,
+): NegotiationModalContext {
+  const { give, receive } = techIdsCommittedInOtherOwnRows(st, aid, excludeRowId);
+  if (give.size === 0 && receive.size === 0) return negCtx;
+  return {
+    ...negCtx,
+    giveTechOptions: negCtx.giveTechOptions?.filter(t => !give.has(t.id)),
+    receiveTechOptions: negCtx.receiveTechOptions?.filter(t => !receive.has(t.id)),
+  };
+}
+
+/**
+ * Blokuje duplikat na stole: ich wpis → kontroferta; nasz → ignoruj klik.
+ * R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): dla „Umowa wymiany surowców" (aid '14') NIE
+ * blokuj ponownego kliknięcia z powodu istniejącego NASZEGO wpisu tego samego typu — kolejny
+ * klik ma otworzyć NOWY, pusty formularz (kolejną instancję), nie zignorować klik. Zachowanie
+ * dla przychodzącej (AI) oferty tego samego typu jest bez zmian — nadal idzie do kontroferty.
+ * EN: for the resource-exchange deal (aid '14'), a re-click must NOT be swallowed just because
+ * we already have our own row of that type on the table — it opens a fresh, empty add form
+ * (another instance) instead. Incoming (AI) offers of the same type keep going to counter-offer.
+ */
 function blockDuplicateNegotiationClick(
   st: DiplomacyAudienceState,
   aid: string,
@@ -359,6 +432,7 @@ function blockDuplicateNegotiationClick(
     }
     return true;
   }
+  if (uiActionAllowsMultipleOwnOnTable(aid)) return false;
   return findOwnOutgoingNegotiationRow(st, aid) != null;
 }
 
@@ -383,7 +457,7 @@ function openCounterNegotiationModal(
     showTradeBasketModal(
       getTradeBasketMode(row.uiActionId),
       syntheticAction,
-      mergeBasketCtx(negCtx),
+      withOwnTableTechFilter(mergeBasketCtx(negCtx), st, row.uiActionId, isOwnEdit ? row.id : undefined),
       (payload) => isOwnEdit
         ? cfg!.onEditOwnNegotiation?.(row.id, payload)
         : cfg!.onCounterNegotiation?.(row.id, payload),
@@ -733,6 +807,13 @@ ${DIPLO_1E_SHARED_CSS}
 .da-deal.locked .da-note{color:#e08a8a;}
 .da-deal.on-table{opacity:.72;border-style:dashed;}
 .da-deal.on-table .da-note{color:#8ab4e8;}
+/* Runda 2 (2026-08-13): stan „na stole, ale WOLNO dodać kolejną" (np. Umowa wymiany surowców,
+   id '14') — kafelek ma wyglądać na normalnie klikalny (bez przyciemnienia/kreski), notatka
+   informacyjna (nie ostrzegawcza) w kolorze pozytywnym, nie niebieskim „ostrzegawczym" jak wyżej.
+   EN: „on the table but allowed to add another" state — tile stays visually normal (no dimming/
+   dashing), note is informational (not a warning), positive color, distinct from the blue warning
+   note above. */
+.da-deal.on-table-ok .da-note{color:#8ec9a0;}
 .da-multi-deal-hint{font-size:0.62em;color:#8a8070;line-height:1.45;margin-top:6px;padding:6px 8px;
   border-radius:6px;border:1px dashed rgba(232,216,138,.2);background:rgba(0,0,0,.18);}
 .da-deal.active{border-color:rgba(142,197,255,.5);background:linear-gradient(180deg,rgba(142,197,255,.09),rgba(12,16,24,.75));cursor:default;}
@@ -1494,8 +1575,17 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
   return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
 }
 
-/** FAZA 2 pkt 3 kol.1 (lewo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
-function dealsColumnHtml(st: DiplomacyAudienceState): string {
+/**
+ * FAZA 2 pkt 3 kol.1 (lewo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest).
+ * Eksport WYŁĄCZNIE do testu warstwy wiązania (Runda 2, 2026-08-13,
+ * `diplomacy-tech-chip-filter-and-multi-deal-test.cjs` CZĘŚĆ C) — potwierdza, że render
+ * faktycznie CZYTA `onTableBlocks`/`uiActionAllowsMultipleOwnOnTable`, nie tylko że te
+ * predykaty zwracają poprawną wartość w oderwaniu (to już pokrywają inne testy).
+ * EN: exported ONLY for the binding-layer test — confirms the render actually READS
+ * `onTableBlocks`/`uiActionAllowsMultipleOwnOnTable`, not just that the predicates return the
+ * right value in isolation (already covered elsewhere).
+ */
+export function dealsColumnHtml(st: DiplomacyAudienceState): string {
   const visible = st.actions.filter(a => a.id !== '1');
   const ownOnTable = new Set(
     (st.pendingNegotiations ?? []).filter(r => r.direction === 'own').map(r => r.uiActionId),
@@ -1503,17 +1593,44 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
   const ownPendingCount = (st.pendingNegotiations ?? []).filter(r => r.direction === 'own').length;
   const items = visible.map(a => {
     const onTable = ownOnTable.has(a.id);
-    const isLocked = a.locked || !a.enabled || a.active === true || onTable;
+    // R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): uiActionAllowsMultipleOwnOnTable —
+    // „Umowa wymiany surowców" (id '14') może trafić na stół wielokrotnie w jednej negocjacji,
+    // kilka osobnych wierszy sumujących się do wspólnego bilansu PW. Dla WSZYSTKICH innych
+    // typów `onTable` nadal blokuje ponowny wybór.
+    // EN: uiActionAllowsMultipleOwnOnTable — the resource-exchange deal (id '14') may be
+    // placed on the table multiple times per negotiation, summing into one shared PW balance.
+    // All other deal types stay blocked by `onTable` as before.
+    const onTableBlocks = onTable && !uiActionAllowsMultipleOwnOnTable(a.id);
+    // Runda 2 (Evaluator, 2026-08-13): dla typów, które WOLNO dodać wielokrotnie (dziś '14'),
+    // kafelek MUSI wyglądać na normalnie klikalny — `cls`/`statusNote`/`hoverTip` czytają
+    // `onTableBlocks`, nigdy surowe `onTable`. Wcześniej kafelek wyglądał zablokowany
+    // (przyciemniony, kreskowana ramka, ostrzegawczy tooltip) mimo że kliknięcie faktycznie
+    // dodawało kolejną pozycję — UI komunikował odwrotność prawdy.
+    // EN: for types that MAY be added multiple times (today '14'), the tile MUST look
+    // normally clickable — `cls`/`statusNote`/`hoverTip` read `onTableBlocks`, never raw
+    // `onTable`. Previously the tile looked blocked (dimmed, dashed border, warning tooltip)
+    // even though clicking it actually added another entry — the UI said the opposite of
+    // the truth.
+    const onTableAllowsMore = onTable && !onTableBlocks;
+    const onTableCountForType = onTableAllowsMore
+      ? (st.pendingNegotiations ?? []).filter(r => r.direction === 'own' && r.uiActionId === a.id).length
+      : 0;
+    const isLocked = a.locked || !a.enabled || a.active === true || onTableBlocks;
     let cls = isLocked ? 'da-deal locked' : 'da-deal';
     if (a.active) cls += ' active';
-    if (onTable) cls += ' on-table';
-    const statusNote = audienceActionStatusNote(a, onTable);
+    if (onTableBlocks) cls += ' on-table';
+    if (onTableAllowsMore) cls += ' on-table-ok';
+    const statusNote = onTableAllowsMore
+      ? 'na stole: ' + onTableCountForType + ' — dodaj kolejną'
+      : audienceActionStatusNote(a, onTableBlocks);
     const lockReason = a.lockNote || (isLocked && a.tooltip ? a.tooltip : '');
-    const hoverTip = onTable
+    const hoverTip = onTableBlocks
       ? 'Ta umowa już leży na stole negocjacji — użyj Przyjmij przy panelu PW lub Odrzuć, aby wycofać'
-      : a.active
-        ? 'Umowa już zawarta'
-        : (a.opis || lockReason || a.tooltip || a.label);
+      : onTableAllowsMore
+        ? 'Na stole jest już ' + onTableCountForType + ' tego typu — możesz dodać kolejną umowę'
+        : a.active
+          ? 'Umowa już zawarta'
+          : (a.opis || lockReason || a.tooltip || a.label);
     const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
     const endIc = a.active
       ? dipBrandIconHtml('ui-check', 13, 'da-checkic')
@@ -1963,7 +2080,7 @@ function render(): void {
           showTradeBasketModal(
             getTradeBasketMode(aid),
             action,
-            mergeBasketCtx(negCtx),
+            withOwnTableTechFilter(mergeBasketCtx(negCtx), st, aid),
             (payload) => cfg!.onAction(cfg!.ownerId, aid, payload),
             () => { /* anulowano */ },
           );
@@ -2003,7 +2120,7 @@ function render(): void {
     if (!negCtx) return;
     openQuickDealBasket(
       handel,
-      mergeBasketCtx(negCtx),
+      withOwnTableTechFilter(mergeBasketCtx(negCtx), st, '14'),
       (payload) => cfg!.onAction(cfg!.ownerId, '14', payload),
       () => { /* anulowano */ },
     );

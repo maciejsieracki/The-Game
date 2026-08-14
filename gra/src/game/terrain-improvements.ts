@@ -157,7 +157,7 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 // ---------------------------------------------------------------------------
 
 export type TerritoryResourceKey =
-  | 'drewno' | 'kamien' | 'glina' | 'ruda' | 'ruda_zelaza'
+  | 'drewno' | 'kamien' | 'glina' | 'ruda' | 'ruda_zelaza' | 'ruda_cyny'
   | 'sol' | 'zloto' | 'kon';
 
 export interface TerritoryResourceYield {
@@ -167,7 +167,7 @@ export interface TerritoryResourceYield {
 
 /** Ulepszenia produkujące surowiec do magazynu państwa niezależnie od workerów (SUROW-TERYT-01). */
 const TERRITORY_YIELD_IMPROVEMENTS: ReadonlySet<string> = new Set([
-  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza',
+  'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny',
   'warzelnia_soli', 'stadnina', 'kopalnia_zlota',
 ]);
 
@@ -204,6 +204,8 @@ export function territoryResourceYieldForImprovement(
     case 'glinianka':       return { resourceKey: 'glina',  amount: territoryYieldAmountForKey(norm) };
     case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: territoryYieldAmountForKey(norm) };
     case 'kopalnia_zelaza': return { resourceKey: 'ruda_zelaza', amount: territoryYieldAmountForKey(norm) };
+    // Maciej 2026-08-13: Ruda cyny — nowy surowiec, analogicznie do ruda_zelaza (stawka z JSON).
+    case 'kopalnia_cyny':   return { resourceKey: 'ruda_cyny', amount: territoryYieldAmountForKey(norm) };
     case 'warzelnia_soli':  return { resourceKey: 'sol',    amount: territoryYieldAmountForKey(norm) };
     // R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 (Maciej 2026-08-12): stawka teraz czytana z JSON
     // (surowiec_ilosc_tura), tak jak pozostale ulepszenia produkcyjne — wczesniej byla

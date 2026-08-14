@@ -1857,6 +1857,23 @@ export function findOwnOutgoingNegotiation(
   );
 }
 
+/**
+ * R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-13): typy propozycji zwolnione z blokady
+ * „nasza propozycja tego typu jest już na stole" (findOwnOutgoingNegotiation) — mogą trafić
+ * na stół wielokrotnie w jednej negocjacji, jako osobne wpisy sumujące się do wspólnego
+ * bilansu PW. Dziś wyłącznie 'handel' (silnikowy actionId UI '14' „Umowa wymiany surowców" —
+ * współdzielony z darem UI '13' przez CYW_ACTION_TO_UI_ID w main.ts). Woła to `main.ts`
+ * (handleNegotiatedProposal) PRZED zapytaniem findOwnOutgoingNegotiation.
+ * EN: proposal types exempt from the "our own proposal of this type is already on the table"
+ * guard (findOwnOutgoingNegotiation) — may be placed on the table multiple times per
+ * negotiation, as separate entries summing into one shared PW balance. Today only 'handel'
+ * (engine actionId for UI '14' resource-exchange, shared with gift UI '13'). Called by
+ * `main.ts` (handleNegotiatedProposal) BEFORE querying findOwnOutgoingNegotiation.
+ */
+export function allowsMultipleOwnOutgoingNegotiations(actionId: ProposalActionId): boolean {
+  return actionId === 'handel';
+}
+
 /** Tworzy nowy wpis (runda 1) z propozycji — respondent = ten, kto musi teraz odpowiedzieć. */
 export function createNegotiation(
   proposal: DiplomaticProposal,
