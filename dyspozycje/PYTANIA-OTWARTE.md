@@ -20224,3 +20224,11 @@ inną mutacją Evaluatora), tylko przypis wskazuje niewłaściwy dowód.
 
 **TEMAT ZAMKNIĘTY dla głównego bugu.** Kod bezpieczny do pozostania w ROBOCZA. Follow-up ABC do
 odpowiedzi jutro.
+
+## Droga 6-ramion runda 2 (1194450f) — SCALONA, dispatch Evaluatora (2026-08-14)
+
+Naprawia znalezisko blokujące z rundy 1 (`roadRenderedHexes` nieczyszczony na 4 z 5 ścieżek
+restartu gry). Nowa `resetImprovementRenderState()` jako jedyny punkt kasowania stanu renderu.
+Domknięte obie luki pokrycia (geometria M9 obrót 30° + hook M11-M13 usunięcie wywołania) nowymi
+bramkami (61/0, 19/0). Własny test scenariusza restartu wbudowany na stałe (przed naprawą
+czerwony, po naprawie zielony). Wszystkie bramki zielone. STATUS: dispatch Evaluatora.
