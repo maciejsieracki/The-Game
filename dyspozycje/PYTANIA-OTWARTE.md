@@ -20374,7 +20374,7 @@ znacząco wysokość każdej karty.
 plik `newGameFlow.ts`, ten sam ekran, warto zrobić razem — skrócenie kart tooltipami też pomaga
 z problemem zasłaniania). Zbudować, zrobić zrzuty przed/po, wysłać do przeglądu przed scaleniem.**
 
-## P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (2026-08-14, zgłoszenie Macieja ze zrzutem tooltipa Łąka) · STATUS: POTWIERDZONY BUG — dispatch fix
+## P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (2026-08-14, zgłoszenie Macieja ze zrzutem tooltipa Łąka) · STATUS: **NAPRAWIONE** — kod `ea0be32a`, test `94977a20`; Evaluator **PASS-WITH-NOTES** (2026-08-14, sekcja „Evaluator: hex tooltip filtr złoża (94977a20)" na końcu pliku). Nietknięte, do osobnego dispatchu: `irygacja`/`droga_brukowana` (ta sama klasa, nota N4) oraz `stadnina`/`kopalnia_cyny` (klasa odwrotna, nota N5).
 
 Maciej (dosłownie, ze zrzutem tooltipa "Pole mapy — kliknięty heks", Łąka, "Surowce/zasoby: brak
 złoża", brak lasu/rzeki): „w jednym z pytań prosiłem też żebyś sprawdził czy w HEX-ach prawidłowo
@@ -21241,3 +21241,141 @@ w nim ID w ramach N3), więc pominięcie nie wynikło z braku dostępu do pliku.
 **WERDYKT: FAIL — wyłącznie na integralność commita (zanieczyszczony zakres + nieprawdziwe zdanie
 w opisie) oraz niedokończone N1. Sama merytoryka N1-N3: zweryfikowana pozytywnie, do zachowania
 bez zmian.**
+
+## Evaluator: hex tooltip filtr złoża (94977a20)
+
+**WERDYKT: PASS-WITH-NOTES** (Evaluator Opus 5, 2026-08-14). Zgłoszony bug jest **realnie
+naprawiony** — potwierdzone niezależnie na PRAWDZIWYM kodzie produkcyjnym, nie na reimplementacji
+z testu. Nie znaleziono żadnej regresji. Noty niżej to **luki nietknięte / nieścisłości w opisie**,
+nie wady dostarczonej naprawy.
+
+### 1. Bramki — zweryfikowane niezależnie (uruchomione, nie przepisane z raportu)
+| bramka | wynik | zgodne z commit message? |
+|---|---|---|
+| `hex-tooltip-mozliwe-ulepszenia-zloze-test` | **36 pass / 0 fail** | tak |
+| `map-improvement-qualify-test` | **112 pass / 0 fail** | tak |
+| `tech-tree-test` | 19/0 | tak |
+| `research-test` | 33/0 | tak |
+| `unit-replace-test` | 13/13 | tak |
+| `ai-founding-territory-test` | 28/0 | tak |
+| `cyna-surowiec-test` | 78/0 | tak |
+| `vite build` | OK, 821 modułów, single-file | — |
+| `npx tsc --noEmit` | **exit 2** — `tsconfig.json(15,5) TS5101: 'baseUrl' is deprecated` | **NIE** (patrz N1) |
+
+### 2. Dowód główny — audyt parytetu WSZYSTKICH 22 kluczy na prawdziwym kodzie
+Zbudowany osobny harness omijający blokadę `import.meta.glob` (stub modułu `brandAssets`), dzięki
+czemu dało się wywołać **eksportowany `buildHexContextTooltipHtml()` → prawdziwy
+`listTerrainPossibleImprovements()`** i porównać go z **prawdziwym `qualifies()`** z
+`createQualifier()`, przy zneutralizowanym terytorium/tech/stanie gracza (miasto pop 15 obejmuje
+heks, własna jednostka na heksie). Macierz: 7 terenów × 8 nakładek × 9 złóż × 2 cywilizacje =
+**1008 konfiguracji heksu**, dla każdego z 22 kluczy.
+
+**Nadmiar (tooltip pokazuje, silnik NIE pozwala) — przed vs po naprawie:**
+
+| klucz | przed | po | |
+|---|---|---|---|
+| tartak | 504 | **0** | naprawione |
+| wyrab | 378 | **0** | naprawione |
+| kopalnia_zelaza | 240 | **0** | naprawione |
+| glinianka | 224 | **0** | naprawione |
+| kopalnia_miedzi | 196 | **0** | naprawione |
+| kopalnia_zlota | 184 | **0** | naprawione |
+| warzelnia_soli | 128 | **0** | naprawione |
+| farma | 126 | **0** | naprawione |
+| oboz_lowiecki | 108 | **0** | naprawione |
+| tarasy | 9 | **0** | naprawione (przez `isImprovementBlockedOnForest`) |
+| **irygacja** | 432 | **378** | **NIE naprawione — N4** |
+| **droga_brukowana** | 702 | **720** | **NIE naprawione — N4** |
+
+Liczba naprawionych kluczy = **11**, dokładnie jak w commit message. Zero nowych niedomiarów —
+naprawa niczego nie „przestrzeliła".
+
+### 3. Scenariusz ze zgłoszenia Macieja — odtworzony 1:1, zweryfikowany wizualnie
+Heks **Łąka, bez lasu / bez rzeki / „brak złoża"**, wyrenderowany w headless Chromium z prawdziwego
+kodu (zrzut ekranu wykonany):
+- **PRZED naprawą** tooltip pokazywał: Farma, Irygacja, **Glinianka, Obóz łowiecki, Wyrąb, Tartak**,
+  Fort, Droga, Droga brukowana, Posterunek — czyli dokładnie to, na co skarżył się Maciej.
+- **PO naprawie**: Farma, Irygacja, Fort, Droga, Droga brukowana, Posterunek. **Tartak, Glinianka,
+  wszystkie kopalnie, Warzelnia soli, Wyrąb i Obóz łowiecki zniknęły.** ✅
+- Kontrola pozytywna: Wzgórza + złoże żelaza → **Kopalnia żelaza nadal się pokazuje** ✅
+
+### 4. Mutacja kontrolna na PRAWDZIWYM źródle (nie na reimplementacji)
+Usunięto z `hexContextTooltip.ts` warunek `if (key === 'glinianka' && !hexHasClayDeposit(hex))
+continue;` → test **łapie regresję: 35 pass / 1 fail**. ✅ Warunki nie są martwym kodem (z jednym
+wyjątkiem — N3).
+
+---
+
+### NOTY
+
+**N1 — „tsc 0" w commit message nie jest odtwarzalne.** `npx tsc --noEmit` kończy się **exit 2**
+(`TS5101`, `baseUrl` deprecated, TypeScript 6.0.2). **Pre-istniejące i środowiskowe** — identyczny
+komunikat na niezwiązanym worktree i na commicie-rodzicu; `tsconfig.json` nie był ruszany tą
+zmianą. Nie jest to wina tej naprawy, ale zapis „tsc 0" jest nieprawdziwy jako stan faktyczny.
+
+**N2 — kod naprawy NIE jest w commicie `94977a20`.** `94977a20` zawiera **wyłącznie plik testu**
+(257 linii, 1 plik). Prawdziwa zmiana w `hexContextTooltip.ts` (+49) i `improvement-build.ts` (+4)
+siedzi w commicie **`ea0be32a` — „Auto-praca override: naprawa 3 not Evaluatora"**, czyli w commicie
+INNEGO zlecenia, którego opis deklaruje wprost *„Zero zmian logiki silnika"* (a zawiera zmianę
+zachowania UI z tego tematu). Naruszenie `CLAUDE.md` §4a („commituj wyłącznie pliki zamkniętego
+zlecenia, nigdy `git add -A`"). Skutki praktyczne: (a) `git log -- gra/src/ui/hexContextTooltip.ts`
+pokazuje dla tej naprawy tytuł „Auto-praca override" — trop ginie; (b) revert `94977a20` usunie
+**test, zostawiając bug-fix**, a revert `ea0be32a` usunie **fix razem z niezwiązaną pracą
+auto-praca** — rytm „jedna fala do tyłu" (§4a) traci tu możliwość czystego cofnięcia.
+
+**N3 — `kopalnia_cyny`: dopisany warunek jest martwym kodem.** `galleryTerrainEligible()` nie ma
+`case 'kopalnia_cyny'` → wpada w `default: return false`, więc pętla **nigdy** nie dochodzi do linii
+`if (key === 'kopalnia_cyny' && zloze !== 'cyna') continue;`. Zmierzone: kopalnia cyny pokazana w
+**0/1008** konfiguracji. Asercja testu „Łąka bez lasu/złoża: lista NIE zawiera Kopalni cyny"
+przechodzi **jałowo** (przeszłaby też bez naprawy), a mutacja w teście dotyczyła `tartak`, nie tej
+linii — więc zdanie z commit message „mutacja żywa potwierdza że warunki nie są martwym kodem"
+**dla tej jednej linii nie obowiązuje**.
+
+**N4 — dwie luki TEJ SAMEJ KLASY co zgłoszona zostały nietknięte i nigdzie nie zarejestrowane.**
+Obie widoczne na zrzucie ze scenariusza Macieja:
+- **`droga_brukowana`** — silnik wymaga **istniejącej Drogi na heksie** (`hasDroga`), tooltip nie
+  sprawdza tego wcale: pokazuje „Droga brukowana" na **720/1008** konfiguracji, silnik pozwala w
+  **0** (bez drogi). Zweryfikowane punktowo: heks bez drogi → tooltip pokazuje, silnik odmawia;
+  heks z drogą → oba zgodne. **Naprawialne jedną linią** — tooltip ma już zmienną `active`
+  (`improvementKeysForHex(hex)`), która poprawnie ukrywa „Droga" na heksie z drogą, więc
+  `if (key === 'droga_brukowana' && !active.has('droga')) continue;` wystarcza.
+- **`irygacja`** — silnik wymaga `isRiverAdjacent(q, r)`; tooltip nie sprawdza rzeki wcale.
+  Na heksie Macieja (**wprost opisanym jako „bez rzeki"**) tooltip pokazuje Irygację, a silnik jej
+  nie pozwoli. **Uwaga: to NIE jest jednolinijkowiec** — `isRiverAdjacent` sprawdza także **sąsiadów**,
+  a `listTerrainPossibleImprovements(hex)` dostaje sam heks bez mapy. Sprawdzenie tylko
+  `hex.rzeka?.obecna` usunęłoby nadmiar, ale wprowadziło niedomiar na heksach sąsiadujących z rzeką.
+  Wymaga albo przekazania mapy/sąsiedztwa do tooltipa, albo świadomej decyzji, którą stronę błędu
+  wybieramy. **Do dispatchu jako osobny temat, nie „przy okazji".**
+
+**N5 — potwierdzam zgłoszenie Operatora o `kopalnia_cyny` / `stadnina`: to PRAWDA i to INNY bug.**
+Zmierzone: `stadnina` pokazana w **0/1008** konfiguracji (silnik pozwala w 36), `kopalnia_cyny`
+w **0/1008** (silnik pozwala w 32) — obie **nigdy nie pojawiają się w tej liście**, bo
+`galleryTerrainEligible()` nie ma dla nich `case`. To **niedomiar** (brak czegoś, co powinno być),
+czyli problem **odwrotny** do zgłoszonego przez Macieja **nadmiaru** — nie ten sam bug, słusznie
+nietknięty. `galleryTerrainEligible()` jest współdzielona z galerią modeli 3D (`improvepreview`),
+więc dopisanie `case` ma realnie szerszy blast radius. **Zostaje otwarte do osobnego dispatchu.**
+
+**N6 — połowa behawioralna testu jest ŚLEPA na prawdziwy kod (udowodnione).** Sekcja [2] testu nie
+woła `listTerrainPossibleImprovements()`, tylko **reimplementuje** jej pętlę. Dowód: po usunięciu
+warunku `glinianka` z prawdziwego źródła (mutacja z pkt 4) asercja „Łąka bez lasu/złoża: lista NIE
+zawiera Glinianki" **nadal przeszła na zielono**, mimo że prawdziwy tooltip znów pokazywał
+Gliniankę na gołej Łące — regresję złapał **wyłącznie regex ze sekcji [1]**. Konsekwencja: każda
+zmiana, która psuje zachowanie **nie ruszając tych dosłownych linii** (wcześniejszy `continue`,
+zmiana `galleryTerrainEligible`, limit `out.length >= 10`), przejdzie test po cichu. Sam plik testu
+uczciwie to dokumentuje i podaje zweryfikowaną przyczynę (`import.meta.glob` w `brandAssets` wysadza
+`require()` — ten sam znany defekt harnessu co `map-field-battle-test`), więc **nie jest to wada
+dyskwalifikująca** — ale **da się to obejść** (stub modułu `brandAssets` przez plugin esbuild;
+Evaluator zrobił to w ~40 liniach i uruchomił prawdziwy kod). Dodatkowo regex jest wrażliwy na
+formatowanie — samo przełamanie linii przez formatter wywali bramkę fałszywie.
+
+**N7 — drobiazg UX, nie bug.** Na gołej Łące w tooltipie nadal widnieje słowo „Tartak" — w stałej
+linii objaśniającej `Magazyn → ulepszenia (Tartak, Kamieniołom… — auto)`
+(`hexContextTooltip.ts:501`), niezależnej od heksu. To legenda, nie lista możliwych ulepszeń, ale
+skoro zgłoszenie Macieja brzmiało dosłownie „widzę tam Tartak", jest realna szansa, że zgłosi to
+ponownie patrząc na ten sam panel.
+
+**N8 — nieścisłość w commit message:** `isImprovementBlockedOnForest` opisane jako „nowy uniwersalny
+gate" — funkcja **istnieje i jest eksportowana od FALA 123 (`50215090`)**, tą zmianą została tylko
+*użyta*. Podobnie `isFarmBaseTerrain` i `hexHasClayDeposit` były już eksportowane. Nowo
+wyeksportowana jest **wyłącznie** `hasAnimalDeposit`. Reużycie zamiast duplikowania logiki —
+zgodnie z zaleceniem ze zgłoszenia — zostało wykonane poprawnie.
