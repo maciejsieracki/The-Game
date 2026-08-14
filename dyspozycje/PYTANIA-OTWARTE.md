@@ -20944,3 +20944,124 @@ Strażnik tekstowy przypina **dokładnie 4** wystąpienia `validateActiveSieges(
 Każde przyszłe, w pełni zasadne piąte wywołanie zaświeci bramkę na czerwono. To celowy
 change-detector (komunikat sam tłumaczy, które 4 miejsca są oczekiwane), ale przy dokładaniu
 kolejnego wywołania trzeba pamiętać o podbiciu liczby — nie traktować jako regresji.
+
+## Evaluator: routing econ-rekruci (f536b792) — WERDYKT PASS (2026-08-14)
+
+Wszystko poniżej zmierzone niezależnie w izolowanym worktree (`git reset --hard` na czubek
+gałęzi), **nie przepisane z raportu Operatora**.
+
+1. **Bramki uruchomione samodzielnie:** `npx tsc --noEmit` = 0 błędów; `empire-panel-split-test`
+   = **25 pass / 0 fail** (deklarowane 25/0 — zgadza się; delta +3 asercje wobec 22/0 wynika
+   wprost z diffu: 1 asercja zmieniona + 3 dopisane).
+2. **Weryfikacja wizualna (headless Chromium przez Playwright, serwer `vite.js` uruchomiony
+   bezpośrednio z `node ./node_modules/vite/bin/vite.js`, NIE `npm run dev`; trasa
+   `?playtest=mapa`):** klik chipa HUD `data-act="rekruci"` renderuje w `.civ-emp-body` blok
+   **ARMIA** — „Wojsko na mapie / Rekruci (pula werbu) / Zaopatrzenie wojska", `data-section` =
+   `armia` + `econ-rekruci`. Treść panelu **co do znaku identyczna** z tą po kliknięciu chipa
+   „Armia". Zrzut ekranu potwierdza nagłówek „ARMIA" (poprzednio „ZASOBY IMPERIUM").
+3. **KONTROLA ODWROTNA (mutacja Evaluatora, nie Operatora):** wyłączenie tej JEDNEJ linii
+   routingu (`if (section === 'econ-rekruci') return 'armia';`) i powtórzenie tego samego
+   scenariusza → panel pokazuje **„ZASOBY IMPERIUM (STAN + PRZYROST)"**, `data-section` =
+   `ekonomia`. Czyli obserwowana poprawa jest skutkiem TEJ zmiany, nie czegoś innego na gałęzi.
+4. **Zmiana ISTNIEJĄCEJ asercji — UZASADNIONA, to nie „poprawienie niewygodnego testu".**
+   Stara linia brzmiała `assert('econ-rekruci → ekonomia + filtr wiersza (poza zakresem fazy 2)',
+   empirePanelBlockForSection('econ-rekruci') === 'ekonomia')`. Punkt 3 dowodzi wprost, że
+   `'ekonomia'` to dokładnie zgłoszone przez Macieja błędne zachowanie — asercja utrwalała bug.
+   Trzy dodatkowe przesłanki: (a) bliźniacza asercja dla **Miast** została NIETKNIĘTA (Miasta
+   naprawdę zostają na torze `ekonomia`) — gdyby chodziło o wygodę, poszłyby obie; (b) pokrycia
+   nie usunięto, tylko odwrócono oczekiwanie i **dołożono 3 asercje**, w tym równość
+   `chip Rekruci === chip Armia`; (c) siła bramki wzrosła — pod mutacją z punktu 3 test faktycznie
+   pada, więc nowa asercja ma „zęby".
+5. **Brak efektów ubocznych:** `empirePanelBlockForSection` ma w `gra/src` **jednego** konsumenta
+   (`empireDetailPanel.blockForSection`, linia 2153); `onlyEconId` (linia 2057) działa wyłącznie
+   wewnątrz bloku `ekonomia`, który dla `econ-rekruci` już się nie renderuje. Wiersz „Rekruci
+   (pula werbu)" nadal widoczny w pełnym przeglądzie ekonomii. Zakres commita = **dokładnie
+   2 pliki**, zero zanieczyszczenia.
+
+**Noty (nieblokujące):** (N1) gałąź `econSliderVisibilityForOnlyEconId('rekruci')` i wiersz
+`id:'rekruci'` w bloku `zasoby` są od teraz nieosiągalne z chipa HUD (żywe tylko w pełnym
+przeglądzie) — martwy tor do sprzątnięcia dopiero przy Fazie 3+, nie teraz; (N2) wnętrze bloku
+Armii nadal bez reskinu Fazy 1/2 — świadomie, brak „Kierunku" od Designera (§8.7 dokumentu
+projektowego); (N3) sekcja recon wyżej („Recon zakończony: to jest DWIE rzeczy…") ma nadal
+STATUS „dispatch Operatora TYLKO na routing fix" — **dispatch wykonany i zamknięty tym
+commitem**, nie dispatchować drugi raz.
+
+**WERDYKT: PASS. TEMAT ZAMKNIĘTY.**
+
+## Evaluator: Auto-praca N1-N3 (ea0be32a) — WERDYKT FAIL (integralność commita); sama treść N1-N3 zweryfikowana poprawnie (2026-08-14)
+
+**Najpierw treść not — ta część jest w porządku i NIE wymaga powtórzenia:**
+
+1. **„Zero zmian logiki" dla `auto-improvements.ts` + `main.ts` — potwierdzone mechanicznie, nie
+   na oko:** filtr diffu tych dwóch plików po liniach `+`/`-` z odrzuceniem komentarzy i pustych
+   zwraca **zero linii**. Każda zmieniona linia to komentarz albo string ID.
+2. **N1 — nowa treść opisuje zachowanie poprawnie:** `orderedCities` (linia 332) sortuje
+   WYŁĄCZNIE po `id`; `effectiveCityCap = Math.min(cityBudgetCap, imperiumBudgetCap)`; ponieważ
+   oba pułapy mnożą tę samą `globalPracaPulaAtEntry`, override wyższy od polityki imperium daje
+   `min` równy pułapowi imperium — czyli **dokładnie to samo, co brak override**. Zgodne z
+   pomiarem S2≡S3 z poprzedniej rundy.
+3. **N2 — sprawdzone WŁASNĄ mutacją kontrolną (nie zaufano deklaracji Operatora), dwa warianty:**
+   (a) usunięcie linii `pracaBudgetPercent: empirePol.pracaAutoPercent,` (`main.ts:25417`) →
+   `auto-improvements-test` = **36 pass / 1 fail** (pada 17a), przy czym `npx tsc --noEmit` = **0
+   błędów** — co potwierdza sens strażnika: cichy revert jest dla kompilatora niewidoczny;
+   (b) podmiana na literał `pracaBudgetPercent: 100,` → **też złapana** (36/1). Po obu mutacjach
+   plik przywrócony, drzewo czyste.
+4. **Bramki uruchomione samodzielnie:** tsc 0 błędów · `auto-improvements-test` 37/0 ·
+   `ulepszenia-praca-percent-test` 27/0 · `ai-improvements-test` 33/0 · `logic-test` 213/213 ·
+   **`vite build` zielony** (821 modułów, `dist/index.html` 37 082 kB).
+5. **N3 kompletne:** `grep` po `gra/src`, `gra/tools`, `docs` → **zero** wystąpień
+   `R-AUTO-PRACA-OVERRIDE-PER-MIASTO`; nowe ID `R-AUTO-PRACA-BUDZET-PROCENT-Q3=B` występuje
+   6× w `auto-improvements.ts`, 1× w `main.ts`, 6× w teście — i zgadza się z ID tematu w tym
+   pliku (linia 19665) oraz z zapisem decyzji `Q3 = B` (linia 20219).
+
+**ZNALEZISKO BLOKUJĄCE — commit zagarnął pracę DWÓCH INNYCH, niepowiązanych tematów.**
+Poza 3 plikami tematu (`auto-improvements.ts`, `main.ts`, `auto-improvements-test.cjs`)
+`ea0be32a` niesie:
+
+| Plik | Delta linii | Właściwy temat |
+|---|---|---|
+| `gra/src/ui/newGameFlow.ts` | +129 / −20 | prototyp kreatora (P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START, P-NEWGAME-OPISY-DO-TOOLTIP) |
+| `gra/src/ui/hudTitleTooltip.ts` | +6 / −0 | jw. (dopisany zasięg `.civ-newgame`) |
+| `gra/src/ui/hexContextTooltip.ts` | +44 / −5 | P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA |
+| `gra/src/map/improvement-build.ts` | +3 / −1 (eksport `hasAnimalDeposit`) | jw. |
+
+Ostatnie dwa to **realna zmiana zachowania** (filtr listy „Możliwe ulepszenia" w tooltipie heksu),
+a nie komentarze — więc zdanie z opisu commita **„Zero zmian logiki silnika" jest nieprawdziwe dla
+faktycznej zawartości tego commita**, mimo że jest prawdziwe dla samych plików tematu Auto-praca.
+
+**Dowód, nie hipoteza:** `git log --all -- <każdy z 4 plików>` pokazuje `ea0be32a` jako **jedyny**
+commit niosący te zmiany. Commit-rodzeństwo `94977a20` („Hex tooltip: filtr nakladka/zloze…",
+**ten sam znacznik czasu 04:03:53**) zawiera już TYLKO plik testu (257 linii, `+257/−0`) — jego
+zmiany źródłowe zostały wcześniej zabrane przez `ea0be32a`. To sygnatura `git commit -a` we
+wspólnym drzewie: modyfikacje plików ŚLEDZONYCH wchodzą do cudzego commita, nowy plik (nieśledzony
+test) zostaje. Dokładnie przypadek zakazany w CLAUDE.md §4a („commituj WYŁĄCZNIE pliki zamkniętego
+zlecenia, nigdy `git add -A`") i ten sam wzorzec co udokumentowany incydent `b9867b3`.
+
+**Skutki praktyczne:** (a) `git revert ea0be32a` cicho cofnąłby dwa obce tematy; (b) wymienione w
+opisie bramki nie pokrywają zagarniętych zmian (prototyp kreatora nie ma ŻADNEJ wymienionej
+bramki); (c) commit `94977a20` opisuje naprawę, której nie zawiera — mylący ślad dla każdego, kto
+będzie szukał tej zmiany po historii; (d) rytm scalania „jedna fala do tyłu" (§4a) opiera się na
+czytelnych granicach commitów.
+**Czego NIE ma:** nic nie zginęło i nic nie jest czerwone — gałąź się buduje (`vite build` OK,
+tsc 0), a test zagarniętego tematu `hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` = **36 pass /
+0 fail**. To wada integralności i identyfikowalności, nie funkcjonalna.
+
+**NOTA — N1 NIEDOKOŃCZONE (4. miejsce, nie 3):** `auto-improvements.ts:301` nadal mówi „override
+miasta nie jest osobną kopertą, tylko **udziałem WEWNĄTRZ tego pułapu**" i bliźniacza linia EN
+„just a **share** WITHIN this cap". To ta sama nieprawdziwa rama „udziału", którą N1 miała usunąć
+(dla override WYŻSZEGO niż polityka imperium nie ma żadnego udziału — jest po prostu ignorowany).
+Nota mówiła o „3 miejscach", realnych było 4. Commit ten blok komentarza **i tak edytował** (zmienił
+w nim ID w ramach N3), więc pominięcie nie wynikło z braku dostępu do pliku.
+
+**CO ZROBIĆ (bez przepisywania historii — gałąź wypchnięta, stoją na niej późniejsze commity):**
+1. **NIE powtarzać N1-N3** — treść jest poprawna i niezależnie zweryfikowana (punkty 1-5 wyżej).
+2. Dopisać w rejestrze sprostowanie mapujące **plik → właściwy temat** (te 4 pliki), żeby
+   Ewaluatorzy tamtych dwóch tematów wiedzieli, że ich kod **już jest na gałęzi** i muszą go ocenić
+   mimo braku własnego commita — inaczej wejdzie do fali bez żadnego przeglądu.
+3. Prototyp kreatora (`newGameFlow.ts`, +129 linii) wymaga oceny Ewaluatora swojego tematu **przed
+   deployem** — dziś jest na gałęzi bez przeglądu i bez wymienionej bramki.
+4. Domknąć N1: poprawić 2 linie komentarza (`auto-improvements.ts:301` PL + bliźniacza EN).
+
+**WERDYKT: FAIL — wyłącznie na integralność commita (zanieczyszczony zakres + nieprawdziwe zdanie
+w opisie) oraz niedokończone N1. Sama merytoryka N1-N3: zweryfikowana pozytywnie, do zachowania
+bez zmian.**
