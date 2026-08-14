@@ -20232,3 +20232,27 @@ restartu gry). Nowa `resetImprovementRenderState()` jako jedyny punkt kasowania 
 Domknięte obie luki pokrycia (geometria M9 obrót 30° + hook M11-M13 usunięcie wywołania) nowymi
 bramkami (61/0, 19/0). Własny test scenariusza restartu wbudowany na stałe (przed naprawą
 czerwony, po naprawie zielony). Wszystkie bramki zielone. STATUS: dispatch Evaluatora.
+
+## Panel Faza 2 naprawa (1f5832d7) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY (2026-08-14)
+
+F1/F2/F3 potwierdzone dowodem pikselowym/CSSOM (Playwright, `getBoundingClientRect`/
+`getComputedStyle`) — nie tylko obecność klas/kodu. F1: wyrównanie do prawej co do 0,01px we
+wszystkich 3 tabelach, Religia zweryfikowana wprost w makiecie (kolumna RELIGIA celowo BEZ
+`text-align:right`, kod to poprawnie odzwierciedla). F2: RGB dokładnie `#8ec5ff`/`#d9a441`, zero
+przecieku funkcji `miniColColor` poza deklarowanym zakresem. F3: komentarz sprawdzony wprost w
+`playerState.ts` — prawdziwy. Diff dokładnie `+53/−10`, wyłącznie `empireDetailPanel.ts`, zero
+dotknięcia Skarbca. Wszystkie 6 bramek zielone, `empire-panel-moc-scroll-preserve` 38/9
+potwierdzone pre-istniejące (identyczne na commicie-rodzicu).
+
+**Uwagi nieblokujące:** (1) `signedTxt(0)`→`—` dostaje pełny kolor semantyczny zamiast wygaszenia
+do szarości jak w Skarbcu — dwie konwencje "braku wartości" między zakładkami, kosmetyka do
+gustu właściciela. (2) Opis mówił o recydywie dla 3 tabel, ale Religia nie ma wiersza SUMA więc
+to nie była dosłownie ta sama recydywa — precyzja, nie fałsz. (3) Martwe duplikaty
+`cityEconMiniPraca`/`cityEconMiniNauka` (blok `zasoby`, nieosiągalny z HUD, pre-istniejący
+wzorzec z Fazy 1, nie wprowadzony tą naprawą). (4) Nieaktualny numer linii w komentarzu F3
+(29253→realnie 29391) — przeniesiony ze starej wersji. (5) `empire-panel-moc-scroll-preserve`
+nadal brak w CLAUDE.md §BRAMKI jako znana czerwona — zgłoszone już raz przy innym temacie,
+nadal nieuzupełnione. 6 własnych mutacji Evaluatora niezłapanych (kontynuacja znanej,
+świadomie zaakceptowanej luki pokrycia treści — ten sam wzorzec co Faza 1 i Skarbiec CSS fix).
+
+**TEMAT ZAMKNIĘTY.** Panel 11 zakładek Faza 2 (Praca/Nauka/Religia) w pełni gotowy.
