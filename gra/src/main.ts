@@ -5218,6 +5218,31 @@ async function boot(): Promise<void> {
       hideUnitForeignPick();
     }
 
+    /** N3 (Evaluator FAIL a7de65b0, P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE): jedyny punkt
+     * zamknięcia audiencji dyplomatycznej dla ścieżek WYJŚCIA innych niż „Wróć"/Escape (te mają
+     * już własny flush w onBack, patrz niżej) — panel miasta, toolbar, wybór jednostki, karuzela
+     * kolejnych propozycji, celownik na stolicę. Flush jest w RAF (nie synchronicznie), bo część
+     * tych ścieżek od razu OTWIERA kolejną audiencję/modal w tym samym ticku (np.
+     * openNextOpenDiploProposal) — synchroniczny flush tutaj pokazałby preBattle w złym
+     * momencie. Guard isDiplomacyAudienceOpen()/isArmyMergePanelOpen() wewnątrz obu flushy
+     * zdąży zobaczyć nowo otwarty modal, zanim RAF odpali, więc flush wtedy poprawnie nic nie
+     * robi i czeka na kolejne zamknięcie (ten sam wzorzec co już istniejący flush w onBack).
+     * / EN: single closing point for the diplomacy audience for exit paths other than Back/
+     * Escape (those already have their own flush in onBack, see below) — city panel, toolbar,
+     * unit selection, next-proposal carousel, capital focus. Flush is scheduled via RAF (not
+     * sync) because some of these paths immediately OPEN another audience/modal in the same
+     * tick (e.g. openNextOpenDiploProposal) — a synchronous flush here would show preBattle at
+     * the wrong moment. The isDiplomacyAudienceOpen()/isArmyMergePanelOpen() guard inside both
+     * flushes will see the newly opened modal before RAF fires, so flush correctly no-ops and
+     * waits for the next closing (same pattern as the existing flush in onBack). */
+    function closeDiplomacyAudienceAndFlush(): void {
+      hideDiplomacyAudience();
+      requestAnimationFrame(() => {
+        flushDeferredMergePrompts();
+        flushDeferredAutoPreBattle();
+      });
+    }
+
     function openCityPanelForPlayer(city: City): void {
       hideCityUnitPick();
       hideCityForeignPick();
@@ -5226,7 +5251,7 @@ async function boot(): Promise<void> {
       hideWikiHubHud();
       hideSciencePicker();
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
@@ -5821,7 +5846,7 @@ async function boot(): Promise<void> {
       hideTechTreeView();
       hideEmpireDetailPanel();
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
@@ -5891,7 +5916,7 @@ async function boot(): Promise<void> {
       hideScienceHubHud();
       hideSciencePicker();
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
@@ -12794,7 +12819,7 @@ async function boot(): Promise<void> {
       const next = resolveNextOpenDiploProposal(currentOwnerId, diplomacyAudienceSourceEventId);
       if (!next) return;
       hideDiplomacyPendingModal();
-      hideDiplomacyAudience();
+      closeDiplomacyAudienceAndFlush();
       diplomacyAudienceOwnerId = null;
       openDiploProposalQueueItem(next);
     }
@@ -15205,7 +15230,7 @@ async function boot(): Promise<void> {
     /** Zamknij stoł/ panel dyplomacji — bez ruszania panelu miasta / jednostki. */
     function ensureDiplomacyUiClosed(): void {
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
@@ -17360,7 +17385,7 @@ async function boot(): Promise<void> {
         hasNextOpenProposal: () => hasNextOpenDiploProposal(ownerId, diplomacyAudienceSourceEventId),
         onNextOpenProposal: () => openNextOpenDiploProposal(ownerId),
         onOpenKnownFactions: () => {
-          hideDiplomacyAudience();
+          closeDiplomacyAudienceAndFlush();
           diplomacyAudienceOwnerId = null;
           clearPlayerUnitSelection();
           d1bHudActive = true;
@@ -22230,7 +22255,7 @@ async function boot(): Promise<void> {
     /** Zamyka overlay dyplo i centruje kamerę na stolicy wybranego państwa. */
     function handleDiploFocusCapital(ownerId: number): void {
       if (isDiplomacyAudienceOpen()) {
-        hideDiplomacyAudience();
+        closeDiplomacyAudienceAndFlush();
         diplomacyAudienceOwnerId = null;
       }
       if (isDiploListHudOpen()) hideDiploListHud();
