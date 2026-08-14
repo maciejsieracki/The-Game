@@ -27378,6 +27378,138 @@ gra właściciel (mało prawdopodobne — ten sam branch, ale do zweryfikowania:
 
 ---
 
+**AKTUALIZACJA (Operator, druga tura, po dispatchu) — ROOT CAUSE ZNALEZIONY I NAPRAWIONY,
+metoda: czytanie kodu źródłowego (nie headless Chromium — patrz nota metodologiczna na końcu).**
+
+**Metoda, dlaczego zmieniona w trakcie:** Próba nr 1 to była realna, zbudowana gra w headless
+Chromium z prawdziwymi `page.mouse.click` (nie wywołaniami JS) — dokładnie to, o co proszono. Po
+drodze dodano 4 hooki debugowe (`window.__civTestSpawnUnit` itd., analogiczne do istniejącego
+`__civEmbarkDebug`) do stawiania jednostek bez przechodzenia przez cały New Game. Problem: samo
+uruchomienie prawdziwej gry w headless SwiftShader (software rendering) okazało się bardzo wolne —
+generacja mapy + budowa sceny 3D ciągnęła się >60-90s nawet dla małej mapy playtestowej, bez
+wyraźnego końca w rozsądnym oknie czasowym. Właściciel/koordynator polecił porzucić to podejście i
+przejść na czytanie kodu — co poniżej. **4 dodane hooki debugowe zostały USUNIĘTE z main.ts przed
+commitem** (nieużywane przez finalną naprawę/test — zero orphan-code w diffie, zgodnie z regułą
+zakresu C-025).
+
+**1. Klik na mapie — DOKŁADNIE gdzie, real handler (nie funkcja pomocnicza wycięta z kontekstu):**
+`gra/src/main.ts`, `canvas.addEventListener('mouseup', ...)` (start listenera ok. linii 20149,
+sam handler klika na wrogą jednostkę ok. linii 20680-20690 przed naprawą):
+```ts
+} else if (selectedId !== null && cu !== null && cu.ownerId !== 0) {
+  const atkUnit = units.find(x => x.id === selectedId);
+  if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
+      isTargetWithinAttackRange(atkUnit, cu.q, cu.r)) {
+    withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
+  } else if (atkUnit && atkUnit.ownerId === 0) {
+    ...
+  } else if (!planMarchTo(cu.q, cu.r, cu.id)) { ... }   // <-- tu ląduje realny klik z bugiem
+```
+To JEST realny, produkcyjny listener kliku myszą (nie oddzielona funkcja testowana programowo) —
+`isTargetWithinAttackRange` faktycznie tu wisi, dokładnie jak zmierzył poprzedni Evaluator. **Ta
+część jego werdyktu była prawdziwa.**
+
+**2. Root cause: `atkUnit` to NIE zawsze ta jednostka, którą właściciel myśli, że zaatakuje.**
+`atkUnit = units.find(x => x.id === selectedId)` — `selectedId` ustawia się przy kliku na WŁASNĄ
+jednostkę (główny handler, gałąź `cu.ownerId === 0` → `selectPlayerUnit(cu.id)`), gdzie
+`cu = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore)` (`game/armyMerge.ts:448`).
+Dla stosu >1 jednostki na heksie, `unitAtRepresentative` woła
+`pickStackRepresentative(stack, unitAttackScore)` (`game/armyMerge.ts:324-334`), który wybiera
+jednostkę z **najwyższym** `unitAttackScore`. A `unitAttackScore` (main.ts ok. linii 9587) to:
+```ts
+function unitAttackScore(u: RuntimeUnit): number {
+  return normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0);
+}
+```
+— czyli WYŁĄCZNIE `meleeAttack`, ZERO uwzględnienia „Zasięg ataku (hex)". Zmierzone wprost z
+`units.json`: jednostki dystansowe mają systematycznie NIŻSZY `meleeAttack` niż zwarciowe —
+Wojownik=4, Hastati=7 vs Łucznik=2, Łucznik nubijski=1, Procarz=1, Oszczepnik=1. **Skutek: w
+KAŻDYM stosie mieszanym zwarcie+dystans (np. „nasza armia" = kilka jednostek na jednym heksie,
+gra pozwala je swobodnie łączyć bez ograniczeń typu) reprezentantem — więc i `selectedId`/
+`atkUnit` przy kolejnym kliku na wroga — niemal zawsze zostaje jednostka ZWARCIA, nigdy łucznik,
+niezależnie od tego, którą jednostką właściciel chciał strzelać.** `isTargetWithinAttackRange`
+sama w sobie jest poprawna (to potwierdził poprzedni Evaluator) — ale dostaje złą jednostkę do
+sprawdzenia. Melee ma zasięg 0 (`Math.max(1,0)=1`, wymaga adiacencji) → klik na wroga 5 heksów
+dalej zwraca `false` → kod ląduje w gałęzi `planMarchTo(cu.q, cu.r, cu.id)` (marsz w stronę wroga,
+atak dopiero po dotarciu — auto-atak na koniec marszu też sprawdza TĘ SAMĄ, złą jednostkę, więc
+realnie wymaga fizycznego dotarcia na adiacencję) — **dokładnie objaw ze zgłoszenia: „trzeba
+kliknąć obok tej armii, a dopiero wtedy można nacisnąć, aby zaatakować".**
+
+**Dlaczego poprzedni Evaluator tego nie złapał:** jego harness (`atak-dystansowy-mapa-test.cjs`
+runda 1) wołał `isTargetWithinAttackRange(atkUnit, ...)` z RĘCZNIE PODANĄ, pojedynczą jednostką
+— nigdy przez `unitAtRepresentative`/stos. Zerowe pokrycie mechanizmu wyboru reprezentanta stosu.
+To NIE jest ta sama ścieżka kodu co sugerował koordynator (wciąż `isTargetWithinAttackRange`/
+`tryLaunchMarchAttack`/hover — te 3 miejsca są realne) — problem leży w tym, KTÓRA jednostka
+do nich trafia jako `atkUnit`, nie w samej logice zasięgu.
+
+**3. Naprawa (`gra/src/main.ts`, +34/-3 linii, zakres ściśle do tego mechanizmu):** nowa funkcja
+`isTargetWithinStackAttackRange(atkUnit, tq, tr)` = `playerStackAt(atkUnit).some(u =>
+isTargetWithinAttackRange(u, tq, tr))` — sprawdza zasięg KAŻDEJ jednostki w stosie gracza na
+heksie `atkUnit`, nie tylko reprezentanta. Podmieniona we WSZYSTKICH 3 miejscach inicjacji ataku
+na mapie świata (te same 3, które testował poprzedni Evaluator): klik jednostka→jednostka,
+`tryLaunchMarchAttack` (auto-atak po marszu), `refreshHoverPathPreview` (hover-preview trasy).
+**Bezpieczne:** `openPlayerMapUnitAttack`→`collectBattleRoster` (`units/battleRoster.ts:63-76`)
+i tak zbiera CAŁY stos po pozycji (`anchor.q/r`, nie po tożsamości `atkUnit`) do składu bitwy —
+zmiana wpływa WYŁĄCZNIE na to, czy klik w ogóle ODBLOKOWUJE ofertę ataku, nie na to, kto bierze
+w niej udział. Reprezentant do RENDEROWANIA (badge/HP na mapie) pozostał nietknięty — to celowo
+węższy zakres niż zmiana `unitAttackScore` globalnie (ryzykowałaby efekty uboczne w renderze
+stosów, poza tematem tego zgłoszenia).
+
+**4. Bramki (z `gra/`, wszystkie zielone, `tsc` z symlinkiem `node_modules` = 5.9.3 zweryfikowane
+per C-029):**
+- `npx tsc --noEmit` → 0 błędów.
+- `node tools/atak-dystansowy-mapa-test.cjs` → **65 passed, 0 failed** (było 68 asercji na starym
+  kodzie zliczone jako 51 pass/3 fail po samej zmianie main.ts, zanim zaktualizowano 3 strażniki
+  regex nazw funkcji + dodano nową sekcję (g) 14 asercji dowodzących naprawy realną egzekucją
+  wyciętej `isTargetWithinStackAttackRange` z `playerStackAt` wstrzykniętym jako zależność
+  sterowana testem — NIE reimplementacją formuły; plus mutacja MUT-G cofająca naprawę, złapana).
+- `node tools/combat-test.cjs` → 6/6.
+- `node tools/map-attack-city-test.cjs` → 8/8 (nietknięty, city-attack path osobny — patrz p.5).
+- `node tools/tech-tree-test.cjs` → 19/19.
+- `node tools/research-test.cjs` → 33/33.
+- `node tools/unit-power-test.cjs` → 4 pass/2 fail, identyczne z udokumentowanym pre-istniejącym
+  baseline w `CLAUDE.md` (dług testowy, niezwiązany z tym tematem) — zweryfikowane bez regresji.
+
+**5. ZNALEZISKO PRZY OKAZJI, ŚWIADOMIE POZA ZAKRESEM tej naprawy (zapisane tu cicho, zgodnie z
+regułą „problem znaleziony przy okazji → do tego pliku, nie nowy wątek na czacie"):** DOKŁADNIE
+ten sam mechanizm psuje też atak na MIASTO z dystansu dla stosu mieszanego —
+`resolveAttacker()` w `gra/src/map/map-attack-city.ts:78-90`: gdy `selectedUnit` jest podane
+(reprezentant stosu — zwarcie), a NIE jest w liście `adjacent` (eligible), funkcja zwraca `'none'`
+(→ `hint_no_adjacent`) **nawet jeśli inna jednostka w TYM SAMYM stosie ma wystarczający zasięg** —
+nie sięga po `'pick'`/inną jednostkę stosu w tym przypadku (tylko gdy `selectedUnit` jest `null`).
+Naprawa tego wymaga zmiany współdzielonej `resolveAttacker`/`eligibleCityAttackers` (własny plik,
+własne testy, szerszy blast radius niż to zgłoszenie) — świadomie NIE dotknięte tutaj, żeby
+zachować wąski zakres C-025. Kandydat na osobny numer w rejestrze.
+
+**WERDYKT KOŃCOWY: błąd właściciela POTWIERDZONY i realny (nie sprzeczność w metodzie pomiaru
+poprzedniego Evaluatora — jego pomiar programowy był technicznie poprawny, ale nie pokrywał
+mechanizmu wyboru reprezentanta stosu). Naprawiony w main.ts, pokryty nową regresją w
+`atak-dystansowy-mapa-test.cjs` (sekcja „(g) STOS MIESZANY" + mutacja MUT-G), wszystkie wymagane
+bramki zielone. Gotowe do commita na gałąź sesji (bez deployu — czeka na hasło `deploy`).**
+
+**STATUS: NAPRAWIONE — czeka na scalenie/commit (Operator), Evaluator jeszcze nie uruchomiony.**
+
+## ⚠️ P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT (2026-08-14, znalezisko przy okazji
+naprawy P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE, cicho zarejestrowane — nie nowy
+wątek na czacie)
+
+Ten sam mechanizm co w temacie wyżej (reprezentant stosu wybierany wg `meleeAttack`, więc dla
+stosu mieszanego zwarcie+dystans niemal zawsze wybierana jest jednostka zwarcia) psuje też
+ATAK NA MIASTO z dystansu, nie tylko atak jednostka→jednostka. `resolveAttacker()`
+(`gra/src/map/map-attack-city.ts:78-90`): gdy `selectedUnit` jest podane (reprezentant stosu) i
+NIE jest w liście `adjacent` (eligible dla tego miasta), funkcja zwraca `'none'` →
+`hint_no_adjacent`, **nawet jeśli inna jednostka w TYM SAMYM stosie ma wystarczający zasięg** —
+ścieżka `'pick'` (prompt wyboru atakującego) uruchamia się tylko gdy `selectedUnit` jest `null`,
+nie gdy jest ustawione ale niewłaściwe.
+
+Naprawa wymaga zmiany współdzielonej `resolveAttacker`/`eligibleCityAttackers`
+(`gra/src/map/map-attack-city.ts`) — własny plik, własne testy (`map-attack-city-test.cjs`),
+szerszy blast radius niż wąski temat wyżej. Świadomie NIE naprawione w tej samej turze (zakres
+C-025: „zero przy okazji/skoro już tu jestem").
+
+**STATUS: OTWARTE — do dispatchu subagenta Sonnet 5 w kolejnej turze (C-027: błąd z jednoznacznie
+opisanym oczekiwanym zachowaniem, bez potrzeby ABC — analogicznie do naprawy wyżej).**
+
 ## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — WERDYKT EVALUATORA (Opus 5, agent `aa82c80ee4e26d8ce`, 2026-08-14)
 
 **WERDYKT: PASS-WITH-NOTES** dla `9482117f` (na gałęzi sesji jako merge `4a580231`). Naprawa jest

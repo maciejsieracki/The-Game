@@ -97,24 +97,38 @@ const { unitMapAttackRangeHex, hexDistance, resolveEnemyCityClick } = MOD;
 const SYG_LOOKUP = 'function lookupUnitDef(typeId: string): any {';
 const SYG_RANGE = 'function unitAttackRangeHex(u: RuntimeUnit): number {';
 const SYG_WITHIN = 'function isTargetWithinAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {';
+const SYG_WITHIN_STACK = 'function isTargetWithinStackAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {';
 const SYG_MARCH = 'function tryLaunchMarchAttack(atkUnit: RuntimeUnit, attackTargetId: string): boolean {';
 
+// P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE (runda 2): isTargetWithinStackAttackRange
+// woła playerStackAt(atkUnit) -- funkcja domknięcia main.ts (activeUnitStack + units[] + fog).
+// Wycinamy PRAWDZIWĄ formułę (`.some(u => isTargetWithinAttackRange(u, tq, tr))`) i wstrzykujemy
+// playerStackAt jako zależność sterowaną przez test (analogicznie do unitMapAttackRangeHex/
+// hexDistance/data wyżej) -- realna logika stąd nie jest reimplementowana w teście.
 function zbudujHarnessGracz(src, data) {
   const lookupTxt = wytnijFunkcje(src, SYG_LOOKUP);
   const rangeTxt = wytnijFunkcje(src, SYG_RANGE);
   const withinTxt = wytnijFunkcje(src, SYG_WITHIN);
-  if (!lookupTxt || !rangeTxt || !withinTxt) return null;
+  const withinStackTxt = wytnijFunkcje(src, SYG_WITHIN_STACK);
+  if (!lookupTxt || !rangeTxt || !withinTxt || !withinStackTxt) return null;
   const js = esbuild.transformSync(
-    lookupTxt + '\n' + rangeTxt + '\n' + withinTxt,
+    lookupTxt + '\n' + rangeTxt + '\n' + withinTxt + '\n' + withinStackTxt,
     { loader: 'ts', target: 'node18' },
   ).code;
   const fabryka = new Function('deps', `
-    const { unitMapAttackRangeHex, hexDistance, data } = deps;
+    const { unitMapAttackRangeHex, hexDistance, data, playerStackAt } = deps;
     ${js}
-    return { lookupUnitDef, unitAttackRangeHex, isTargetWithinAttackRange };
+    return { lookupUnitDef, unitAttackRangeHex, isTargetWithinAttackRange, isTargetWithinStackAttackRange };
   `);
-  return fabryka({ unitMapAttackRangeHex, hexDistance, data });
+  return fabryka({
+    unitMapAttackRangeHex, hexDistance, data,
+    // Domyślnie (gdy test nie ustawi wprost) stos = tylko sama jednostka -- identyczne z
+    // zachowaniem sprzed poprawki dla jednostek solo (bez regresji istniejących asercji (a)-(f)).
+    playerStackAt: (u) => (harnessPlayerStackOverride ? harnessPlayerStackOverride(u) : [u]),
+  });
 }
+// Ustawiane per-test-case, żeby zasymulować konkretny stos gracza bez reimplementacji formuły.
+let harnessPlayerStackOverride = null;
 
 // ===========================================================================
 // Harness AI: unitAttackRangeHexAi + isWithinAttackRange wycięte z ai.ts.
@@ -222,21 +236,29 @@ function ru(typeId, q, r) { return { id: 't-' + typeId + '-' + q + '-' + r, type
 
 // ===========================================================================
 // STRAŻNIK STRUKTURALNY (main.ts): wszystkie miejsca inicjacji ataku na mapie
-// świata muszą realnie wołać isTargetWithinAttackRange, nie hardkodowaną
-// adiacencję=1 (regresja z ticketu — dystans wymuszał marsz przed atakiem).
+// świata muszą realnie wołać isTargetWithinStackAttackRange (P-BITWA-ATAK-
+// DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE runda 2), nie samą isTargetWithinAttackRange
+// (regresja rundy 1: sprawdzała TYLKO pojedynczą, wybraną wg meleeAttack jednostkę-
+// reprezentanta stosu -- w stosie mieszanym zwarcie+dystans to niemal zawsze
+// jednostka zwarcia, więc łucznik-w-tym-samym-stosie nie mógł nigdy odblokować ataku
+// z dystansu), i nie hardkodowaną adiacencję=1.
 // ===========================================================================
 {
   const march = wytnijFunkcje(realMainSrc, SYG_MARCH);
-  ok(!!march && /isTargetWithinAttackRange\s*\(\s*atkUnit\s*,\s*def\.q\s*,\s*def\.r\s*\)/.test(march),
-    'strażnik: tryLaunchMarchAttack woła isTargetWithinAttackRange (nie hexDistance(...)>1 hardkodowany)');
+  ok(!!march && /isTargetWithinStackAttackRange\s*\(\s*atkUnit\s*,\s*def\.q\s*,\s*def\.r\s*\)/.test(march),
+    'strażnik: tryLaunchMarchAttack woła isTargetWithinStackAttackRange (cały stos, nie tylko atkUnit)');
   ok(!!march && !/hexDistance\([^)]*\)\s*>\s*1/.test(march),
     'strażnik: tryLaunchMarchAttack NIE zawiera już starej twardej bramki hexDistance(...)>1');
 
-  ok(/hoverEnemy\s*&&\s*hoverVis\s*&&\s*isTargetWithinAttackRange\(\s*uSel\s*,\s*hitQ\s*,\s*hitR\s*\)/.test(realMainSrc),
-    'strażnik: hover-preview pomija podgląd trasy gdy cel już w zasięgu ataku');
+  ok(/hoverEnemy\s*&&\s*hoverVis\s*&&\s*isTargetWithinStackAttackRange\(\s*uSel\s*,\s*hitQ\s*,\s*hitR\s*\)/.test(realMainSrc),
+    'strażnik: hover-preview pomija podgląd trasy gdy cel już w zasięgu ataku KTÓREGOKOLWIEK z jednostek stosu');
 
-  ok(/isTargetWithinAttackRange\(\s*atkUnit\s*,\s*cu\.q\s*,\s*cu\.r\s*\)/.test(realMainSrc),
-    'strażnik: klik jednostka→jednostka używa isTargetWithinAttackRange (nie tylko adiacencji)');
+  ok(/isTargetWithinStackAttackRange\(\s*atkUnit\s*,\s*cu\.q\s*,\s*cu\.r\s*\)/.test(realMainSrc),
+    'strażnik: klik jednostka→jednostka używa isTargetWithinStackAttackRange (cały stos, nie tylko reprezentant)');
+
+  const withinStackTxt = wytnijFunkcje(realMainSrc, SYG_WITHIN_STACK);
+  ok(!!withinStackTxt && /playerStackAt\(atkUnit\)\.some\(\s*u\s*=>\s*isTargetWithinAttackRange\(u,\s*tq,\s*tr\)\s*\)/.test(withinStackTxt),
+    'strażnik: isTargetWithinStackAttackRange deleguje do PRAWDZIWEJ isTargetWithinAttackRange (nie reimplementuje formuły zasięgu)');
 
   // Oba wywołania resolveEnemyCityClick (klik z zaznaczoną jednostką, klik bez
   // zaznaczenia) MUSZĄ przekazywać unitAttackRangeHex — inaczej ta ścieżka po
@@ -254,6 +276,89 @@ function ru(typeId, q, r) { return { id: 't-' + typeId + '-' + q + '-' + r, type
 {
   ok((realAiSrc.match(/eu\s*=>\s*isWithinAttackRange\(unit,\s*eu\.q,\s*eu\.r,\s*data\)/g) || []).length === 2,
     'strażnik: DOKŁADNIE 2 miejsca (decideAITurn + decideDefensiveCopyTurn) wołają isWithinAttackRange(unit, eu.q, eu.r, data)');
+}
+
+// ===========================================================================
+// (g) STOS MIESZANY (zwarcie+dystans) — P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-
+// NIE-DZIALA-W-GRZE runda 2 (Maciej, sprostowanie z żywego playtestu):
+// unitAtRepresentative()/pickStackRepresentative() w main.ts wybiera reprezentanta
+// stosu wg unitAttackScore=meleeAttack -- w KAŻDYM stosie zwarcie+dystans reprezentantem
+// (więc i `selectedId`/`atkUnit` przy kliku) jest niemal zawsze jednostka zwarcia
+// (Wojownik meleeAttack=4, Hastati=7 vs Łucznik=2, Łucznik nubijski=1, Procarz=1).
+// Runda 1 sprawdzała TYLKO isTargetWithinAttackRange(pojedyncza jednostka) -- ślepa na
+// to, że INNA jednostka w tym samym stosie mogła mieć wystarczający zasięg. Ten blok
+// dowodzi, że isTargetWithinStackAttackRange to naprawia, wykonując PRAWDZIWĄ formułę
+// (nie kopię) z main.ts, z playerStackAt() wstrzykniętym jako sterowana zależność.
+// ===========================================================================
+{
+  const wojownik = ru('Wojownik', 0, 0);   // meleeAttack=4, zasięg=0 (zwarcie)
+  const lucznik = ru('Łucznik', 0, 0);     // meleeAttack=2, zasięg=3 (ten sam heks -- "stos")
+  ok(hGracz.unitAttackRangeHex(wojownik) === 0, '(g) fixture: Wojownik zasięg=0 (zwarcie)');
+  ok(hGracz.unitAttackRangeHex(lucznik) === 3, '(g) fixture: Łucznik zasięg=3 (dystans)');
+
+  // (g1) REGRESJA UDOWODNIONA: sama isTargetWithinAttackRange(reprezentant=Wojownik, dystans=2)
+  // jest FALSE -- to jest DOKŁADNIE błędny odczyt, który dawała runda 1 dla stosu mieszanego
+  // (reprezentant Wojownik wybrany bo meleeAttack=4 > Łucznika=2), mimo że Łucznik w TYM SAMYM
+  // stosie ma zasięg 3 i powinien odblokować atak.
+  ok(hGracz.isTargetWithinAttackRange(wojownik, 2, 0) === false,
+    '(g1) sama isTargetWithinAttackRange(reprezentant Wojownik, dystans 2) = false -- to jest błąd rundy 1');
+
+  // (g2) NAPRAWA: isTargetWithinStackAttackRange(reprezentant=Wojownik, dystans=2), ze stosem
+  // [Wojownik, Łucznik] wstrzykniętym przez playerStackAt -- MUSI być true, bo Łucznik w stosie
+  // ma zasięg 3 ≥ 2. To jest realny scenariusz zgłoszenia: klik wybiera reprezentanta (Wojownik),
+  // ale atak z dystansu ma zostać odblokowany bo w stosie jest łucznik w zasięgu.
+  harnessPlayerStackOverride = (u) => (u.id === wojownik.id || u.id === lucznik.id) ? [wojownik, lucznik] : [u];
+  ok(hGracz.isTargetWithinStackAttackRange(wojownik, 2, 0) === true,
+    '(g2) NAPRAWA: isTargetWithinStackAttackRange(reprezentant Wojownik, dystans 2) = true dzięki Łucznikowi w tym samym stosie');
+  ok(hGracz.isTargetWithinStackAttackRange(wojownik, 3, 0) === true,
+    '(g2) NAPRAWA: … i dystans dokładnie 3 (granica zasięgu Łucznika) = true');
+  ok(hGracz.isTargetWithinStackAttackRange(wojownik, 4, 0) === false,
+    '(g2) poza zasięgiem CAŁEGO stosu (dystans 4 > max(0,3)=3) = false (nie staje się nieskończony zasięg)');
+
+  // (g3) NEGACJA: stos WYŁĄCZNIE zwarciowy (dwóch Wojowników) -- zasięg nadal 0/adiacencja,
+  // brak regresji "każdy stos automatycznie strzela z dystansu".
+  const wojownik2 = ru('Wojownik', 0, 0);
+  harnessPlayerStackOverride = () => [wojownik, wojownik2];
+  ok(hGracz.isTargetWithinStackAttackRange(wojownik, 1, 0) === true,
+    '(g3) stos czysto zwarciowy @ dystans 1 (adiacencja) = true (bez regresji)');
+  ok(hGracz.isTargetWithinStackAttackRange(wojownik, 2, 0) === false,
+    '(g3) stos czysto zwarciowy @ dystans 2 = false (bez regresji -- zwarcie nadal wymaga adiacencji)');
+
+  // (g4) STOS SOLO (bez override -- domyślne playerStackAt = [u]): identyczne z isTargetWithinAttackRange,
+  // zero zmiany zachowania dla jednostek niesolo w stosie (pokrywa (a)-(c) wyżej z innej strony).
+  harnessPlayerStackOverride = null;
+  ok(hGracz.isTargetWithinStackAttackRange(lucznik, 3, 0) === hGracz.isTargetWithinAttackRange(lucznik, 3, 0),
+    '(g4) jednostka solo: isTargetWithinStackAttackRange === isTargetWithinAttackRange (bez regresji przypadku bazowego)');
+
+  harnessPlayerStackOverride = null; // sprzątanie dla kolejnych sekcji testu
+}
+
+// MUT-G: cofnięcie isTargetWithinStackAttackRange do samej isTargetWithinAttackRange(atkUnit,...)
+// (czyli dokładnie stary, błędny kod) -- (g2) MUSI się złapać, (g1)/(g3)/(g4) zostają zielone
+// (dowód że mutacja trafia dokładnie w naprawę stosu, nie w bazową logikę zasięgu).
+{
+  const mutSrc = zmutuj(
+    realMainSrc,
+    'return playerStackAt(atkUnit).some(u => isTargetWithinAttackRange(u, tq, tr));',
+    'return isTargetWithinAttackRange(atkUnit, tq, tr);',
+    'MUT-G (isTargetWithinStackAttackRange cofnięta do pojedynczej jednostki)',
+  );
+  if (mutSrc) {
+    const hMut = zbudujHarnessGracz(mutSrc, dataFixture);
+    if (hMut) {
+      const wojownikM = ru('Wojownik', 0, 0);
+      const lucznikM = ru('Łucznik', 0, 0);
+      harnessPlayerStackOverride = (u) => (u.id === wojownikM.id || u.id === lucznikM.id)
+        ? [wojownikM, lucznikM] : [u];
+      ok(hMut.isTargetWithinStackAttackRange(wojownikM, 2, 0) === false,
+        '(MUT-G) po cofnięciu: reprezentant Wojownik @ dystans 2 z Łucznikiem w stosie → ZŁAPANE, wraca stary błąd (regresja rundy 1)');
+      harnessPlayerStackOverride = null;
+    } else {
+      fail++; console.error('FAIL: (MUT-G) nie udało się zbudować harnessu ze zmutowanego main.ts');
+    }
+  } else {
+    fail++; console.error('FAIL: (MUT-G) nie udało się przygotować mutacji main.ts (wzorzec nie znaleziony -- sprawdź SYG_WITHIN_STACK)');
+  }
 }
 
 // ===========================================================================

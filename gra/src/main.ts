@@ -19278,11 +19278,42 @@ async function boot(): Promise<void> {
       return hexDistance(atkUnit.q, atkUnit.r, tq, tr) <= range;
     }
 
+    /**
+     * P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE: czy cel jest w zasięgu
+     * KTÓREJKOLWIEK jednostki w stosie gracza na heksie `atkUnit` — nie tylko samej `atkUnit`.
+     * Powód: reprezentanta stosu do kliku wybiera unitAtRepresentative() wg unitAttackScore
+     * (=meleeAttack), a jednostki dystansowe mają meleeAttack systematycznie NIŻSZY niż
+     * zwarciowe (np. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Hastati=7) — w
+     * KAŻDYM stosie mieszanym zwarcie+dystans reprezentantem (więc i `selectedId`/`atkUnit`
+     * przy kliku) niemal zawsze zostaje jednostka zwarcia. Bez tej funkcji isTargetWithinAttackRange
+     * cicho sprawdzała TYLKO zasięg=0 tej jednostki zwarcia, więc klik na wroga w zasięgu
+     * łucznika-w-tym-samym-stosie mylnie wypadał jako "poza zasięgiem" -> marsz zamiast ataku
+     * (dokładnie zgłoszenie właściciela: "trzeba kliknąć obok, dopiero wtedy można zaatakować").
+     * Bezpieczne: openPlayerMapUnitAttack/collectBattleRoster i tak zbiera CAŁY stos po pozycji
+     * (units/battleRoster.ts:collectBattleRoster), więc który konkretnie unit jest `atkUnit`
+     * nie zmienia składu bitwy — zmienia tylko to, czy klik w ogóle ODBLOKOWUJE atak.
+     * / EN: is the target within range of ANY unit in the player's stack at `atkUnit`'s hex --
+     * not just `atkUnit` itself. Reason: the stack's click representative is picked by
+     * unitAttackScore (=meleeAttack), and ranged units have a systematically LOWER meleeAttack
+     * than melee ones (e.g. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Hastati=7) --
+     * in ANY mixed melee+ranged stack the representative (hence `selectedId`/`atkUnit` on click)
+     * is almost always the melee unit. Without this, isTargetWithinAttackRange silently checked
+     * ONLY that melee unit's range=0, so clicking an enemy within the stack's archer's range
+     * wrongly read as "out of range" -> march instead of attack (exactly the owner's report:
+     * "you have to click next to it first, only then can you attack"). Safe: openPlayerMapUnitAttack
+     * /collectBattleRoster already gathers the WHOLE stack by position (units/battleRoster.ts:
+     * collectBattleRoster), so which specific unit is `atkUnit` doesn't change the battle roster --
+     * it only changes whether the click unlocks the attack at all.
+     */
+    function isTargetWithinStackAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {
+      return playerStackAt(atkUnit).some(u => isTargetWithinAttackRange(u, tq, tr));
+    }
+
     function tryLaunchMarchAttack(atkUnit: RuntimeUnit, attackTargetId: string): boolean {
       const def = units.find(x => x.id === attackTargetId);
       if (!def) return false;
       if (!currentVisible().has(keyOf(def.q, def.r))) return false;
-      if (!isTargetWithinAttackRange(atkUnit, def.q, def.r)) return false;
+      if (!isTargetWithinStackAttackRange(atkUnit, def.q, def.r)) return false;
       clearPlannedMarch(atkUnit.id);
       openPlayerMapUnitAttack(atkUnit, def);
       return true;
@@ -19338,7 +19369,7 @@ async function boot(): Promise<void> {
       // within attack range (ranged or adjacent) -- the attack needs no march,
       // so a route preview would be misleading (implying unnecessary movement
       // before firing).
-      if (hoverEnemy && hoverVis && isTargetWithinAttackRange(uSel, hitQ, hitR)) {
+      if (hoverEnemy && hoverVis && isTargetWithinStackAttackRange(uSel, hitQ, hitR)) {
         unitRenderer.clearPathRoute();
         return;
       }
@@ -20590,7 +20621,7 @@ async function boot(): Promise<void> {
         // dystansowego — P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE) → preBattle C-01
         const atkUnit = units.find(x => x.id === selectedId);
         if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
-            isTargetWithinAttackRange(atkUnit, cu.q, cu.r)) {
+            isTargetWithinStackAttackRange(atkUnit, cu.q, cu.r)) {
           withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
         } else if (atkUnit && atkUnit.ownerId === 0) {
           if (!stackCanMove(atkUnit)) {
