@@ -20434,3 +20434,139 @@ przyjęty — rozwiązuje realny problem nieodróżnialności stanów, funkcjona
 tylko kosmetyczne. Maciej przesyła potwierdzenie, Designer buduje Panel Miasta (druga klatka).
 
 **STATUS: OTWARTE — czeka na Klatkę Miasta od Designera.**
+
+## P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK (2026-08-14, zgłoszenie Macieja ze zrzutem "ZASOBY IMPERIUM (STAN + PRZYROST)") · STATUS: OTWARTE — backlog Faza 3+, nie nowy bug
+
+Maciej: „Nie są wykonane też przez designera zasoby imperium, czyli przerost rekrutów." (zrzut:
+stary, nieodświeżony widok „Rekruci (pula werbu)" / „ZASOBY IMPERIUM (STAN + PRZYROST)").
+
+**Zlokalizowane dokładnie:** `gra/src/ui/empireDetailPanel.ts`, blok `zasoby` (~linie 2021-2054),
+wiersz `{ id: 'rekruci', lbl: 'Rekruci (pula werbu)', ... }` (linia 2033), nagłówek
+`ZASOBY IMPERIUM (STAN + PRZYROST)` (linia 2049). To jest ten sam panel co Skarbiec/Praca/Nauka/
+Religia (Faza 1+2 gotowe) — konkretnie widok pełnego przeglądu `ekonomia` (`activeSection ===
+null`), czyli lista wszystkich zasobów naraz zamiast osobnej zakładki. Zgodnie z pełnym
+zleceniem projektowym już dostarczonym przez Designera (`docs/ux/DESIGN-ZLECENIE-11-ZAKLADEK-
+PANEL-IMPERIUM-2026-08-13.md`, §8) to jest jedna z tych samych 11 zakładek co Spichlerz/Surowce/
+Handel/Armia/Miasto/Obywatele/Kultura — po prostu jeszcze nieprzerobiona (Faza 3+). **To NIE jest
+nowy bug ani coś pominięte przez Designera bez wiedzy zespołu — to znany, już zarejestrowany
+backlog**, tylko dziś potwierdzony konkretnym zrzutem i dokładną lokalizacją w kodzie.
+
+**STATUS: OTWARTE, do kolejki Faza 3+ (nie dispatchuję osobnego Operatora teraz — czeka na tę
+samą kolejność co pozostałe nieprzerobione zakładki; specyfikacja projektowa już istnieje, nie
+trzeba nowego zlecenia dla Designera).**
+
+## P-ZNACZNIK-POWER-HUD-CIV-EMBLEM (2026-08-14, zgłoszenie Macieja: „do wymiany jest też znacznik power") · STATUS: OTWARTE — hipoteza z kodu, czeka na potwierdzenie
+
+Maciej (2026-08-14, w czacie): „pisałem, że do wymiany jest też znacznik power. Tego nie
+zanotowałeś." — audyt sesji (pełny transkrypt + rejestr) NIE znalazł dosłownego wcześniejszego
+zapisu z frazą „znacznik power" ani w czacie, ani w tym pliku — więc **nie zgaduję w ciemno**,
+tylko podaję najbardziej prawdopodobnego kandydata znalezionego przez czytanie kodu, do
+potwierdzenia lub sprostowania.
+
+**Kandydat:** `gra/src/ui/hud.ts`, funkcja `powerCenterIconHtml(s)` (linie 935-964), środkowa
+ikona w widżecie „Moc" na STAŁYM pasku HUD (`power-center`, zawsze widoczny na ekranie gry, nie
+tylko w panelu imperium). Renderuje `civIconSvg(s.civIconId ?? 'grecy', 24)` — czyli emblemat
+cywilizacji (np. świątynia dla Greków), DOKŁADNIE ten sam wzorzec co `em.textContent =
+g.civEmoji` w `empireDetailPanel.ts` (już w naprawie, agent ruler-icon), tylko w innym pliku i w
+bardziej eksponowanym miejscu (widoczny cały czas, nie po otwarciu panelu). Osobna funkcja
+`powerSymbolHtml()` (linie 973-979, ikona przy liczbie Mocy po prawej) już używa właściwej,
+markowej ikony `res-influence.svg` (plik istnieje, `emoji ⚜` to tylko martwy fallback) — to
+NIE jest kandydat, wygląda poprawnie już dziś.
+
+**Rozszerzenie zlecone:** dopisane jako runda 2 do już trwającego zlecenia „ikona władcy zamiast
+emblematu" (agent w toku, `aa4af955d51b23bcd`) — ten sam mechanizm reużycia portretów władców ma
+objąć też `powerCenterIconHtml`. **Nie scalać** dopóki Maciej nie potwierdzi, że to faktycznie
+to miejsce (jeśli nie — proszę wskazać dokładnie które, bo to była jedyna pasująca lokalizacja
+znaleziona w kodzie).
+
+## P-MENU-ESCAPE-NIEPELNOEKRANOWE (znalezisko audytu 2026-08-14, zgłoszenie Macieja z 2026-07-26 — nigdy niezarejestrowane) · STATUS: OTWARTE
+
+Maciej (2026-07-26, dosłownie): „Zapisz, że do rozwiązania pozostaje temat ESCAPE, wyjście z
+menu, żeby nie wychodziło z pełnego ekranu tylko z danej zakładki najpierw." — ESCAPE w grze ma
+dziś (zgłoszenie) zachowanie „wyjdź z pełnego ekranu przeglądarki od razu", zamiast najpierw
+zamknąć aktualnie otwartą zakładkę/overlay, a dopiero kolejny ESCAPE wyjść z pełnego ekranu.
+Właściciel explicite poprosił wtedy TYLKO o zapisanie tematu, nie o pracę nad nim od razu — ale
+audyt pełnego transkryptu dziś (2026-08-14) potwierdza, że nigdy nie trafiło to do tego pliku —
+**potwierdzony przypadek zgubionego zgłoszenia**, niezależny od dzisiejszego „znacznik power".
+
+**STATUS: OTWARTE, do kolejki — nie dispatchuję jeszcze Operatora (temat wymaga zbadania stosu
+Escape/overlayów, `escape-overlay-stack-test.cjs` już istnieje jako bramka pokrewna — możliwe że
+częściowo dotyczy tego samego stosu).**
+
+## P-MENU-START-MUZYKI-OPOZNIENIE (znalezisko audytu 2026-08-14, zgłoszenie Macieja z 2026-07-26 — nigdy niezarejestrowane) · STATUS: OTWARTE
+
+Maciej (2026-07-26, dosłownie): „jakiś czas temu prosiłem żebyś przesunął start muzyki w menu
+głównym o dwie trzy sekundy bo niestety ścina początek zanim się właduje przeglądarka." —
+muzyka w menu głównym startuje natychmiast przy załadowaniu, zanim przeglądarka/strona są w
+pełni gotowe, więc początek utworu bywa ucięty. Ten sam raport zawierał zdanie „Oczywiście ani
+tego nie zarejestrowałeś ani nie wprowadziłeś do grę" — czyli już WTEDY (07-26) było to zgubione
+zgłoszenie; audyt dziś potwierdza że nadal nie ma go w tym pliku.
+
+**STATUS: OTWARTE, drobna poprawka — do dispatchu Operatora (dodać opóźnienie 2-3s przed startem
+muzyki menu głównego, znaleźć plik odpowiedzialny za `Prayer_of_the_Sun_Stone.mp3`/playlistę menu).**
+
+**Uwaga o „menu wczoraj do poprawy" (Maciej, 2026-08-14):** audyt pełnego transkryptu z dnia
+2026-08-13 (wczoraj względem dzisiejszej daty) **nie znalazł żadnej wiadomości wspominającej
+„menu"** w tym oknie czasowym. Dwa powyższe zgłoszenia dot. menu, które faktycznie znalazłem
+przez pełny audyt, pochodzą z 2026-07-26 (trzy tygodnie temu), nie z wczoraj. Możliwe że chodzi o
+coś innego, zgłoszone np. przez telefon/inny kanał, którego nie ma w tym transkrypcie sesji —
+**proszę o wskazanie dokładnie o co chodzi**, żebym nie zgadywał na siłę.
+
+## R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B (73ba2cd2) — Evaluator: WERDYKT PASS-WITH-NOTES, TEMAT ZAMKNIĘTY z 3 notami do drobnej naprawy (2026-08-14)
+
+Pułap imperium matematycznie szczelny — zweryfikowany niezależnie (fuzz 200 losowych układów:
+HEAD 0 naruszeń, commit-rodzic 123/200 naruszeń), edge case wielu różnych override'ów naraz
+zmierzony wprost (S2 vs S3 identyczne co do bajta, kolejność decyduje wyłącznie `id`, nie
+wysokość override powyżej polityki — zgodne z literalnym `Q3=B`, właściciel nie prosił o
+round-robin/wariant C). AI niezmienione (literał `pracaBudgetPercent:100` potwierdzony w
+źródle). 6 mutacji kontrolnych, 3 złapane, 2 równoważne, 1 (M6, dług testowy z rundy 2) nadal
+nieprzechwycona bez naruszenia inwariantu pułapu.
+
+**Do naprawy (mechaniczne, nieblokujące pozostania w gałęzi):**
+- N1 — komentarze w `auto-improvements.ts` (3 miejsca) twierdzą że override decyduje o
+  „PIERWSZEŃSTWIE/UDZIALE" — nieprawda dla override **powyżej** polityki (S2≡S3 to obala).
+  Poprawić na: kolejność ustala wyłącznie `id`, override zmienia coś tylko gdy jest NIŻSZY niż
+  polityka imperium.
+- N2 — `pracaBudgetPercent: empirePol.pracaAutoPercent` w `main.ts` (jedyne miejsce łączące
+  politykę gracza z silnikiem) nie ma ŻADNEGO testu; cichy revert przechodzi tsc + wszystkie 5
+  bramek. Dodać strażnik tekstowy wzorem `promote-to-front-test.cjs` §24.
+- N3 — ID rozjazd: kod/testy cytują `R-AUTO-PRACA-OVERRIDE-PER-MIASTO-Q3=B`, w tym pliku decyzja
+  zapisana jako Q3 w temacie `R-AUTO-PRACA-BUDZET-PROCENT` — ujednolicić.
+
+**Do wiedzy właściciela, nie blokuje (N4):** panel nadal pokazuje per-miasto „X% Pracy"
+(`buildModeHud.ts:403`), które po tej naprawie bywa nieosiągalne — miasto z override 80% przy
+polityce imperium 20% realnie dostaje efekt 20%, panel dalej obiecuje 80%. Do decyzji właściciela
+przy kolejnym playteście, czy UI ma to inaczej komunikować — nie nowe pytanie ABC teraz, tylko
+odnotowane.
+
+**N5 (dług testowy, pre-istniejący, bez akcji):** układy z różnymi override'ami PONIŻEJ pułapu
+imperium nadal bez dedykowanej asercji (M6) — inwariantu sumy to nie narusza, zostaje jako znany
+dług.
+
+**STATUS: dispatch Operatora (Sonnet 5, mechaniczne, bez zmiany zachowania) — N1+N2+N3 w jednej
+małej rundzie, bez nowego ABC.**
+
+## Panel Faza 1+2 „Nauka" — Recon: brak strukturalnego bugu, prawdopodobna pomyłka ekranu (2026-08-14)
+
+Maciej: „W nauce nie widzę żadnej zmiany" (w tej samej wiadomości co Spichlerz/Armia/Miasto/
+Kultura — te są rzeczywiście jeszcze nieprzerobione, Faza 3+, oczekiwane). Nauka jest podejrzana,
+bo BYŁA już zrobiona (Faza 2, `9a539197`/`1f5832d7`, Evaluator PASS-WITH-NOTES, TEMAT ZAMKNIĘTY).
+
+**Recon (read-only) nie znalazł żadnej asymetrii w kodzie między Nauka i Praca** — routing
+(`empirePanelSectionMap.ts`) i składanie `body` w `render()` identyczne, zero commitów po
+`1f5832d7` dotknęło którykolwiek z dwóch plików, testy 22/22 + 15/15 PASS na HEAD, deploy ROBOCZA
+FALA 278 (md5 `8455b385`) jawnie wymienia „panel imperium 11 zakładek Faza 1+2 (Skarbiec/Praca/
+Nauka/Religia)" jako aktualny.
+
+**Kluczowe znalezisko:** w grze istnieją DWA różne wejścia nazwane „Nauka"/„Badania":
+(a) HUD chip „Nauka" (prawy górny pasek) → poprawnie otwiera przerobioną zakładkę Fazy 2;
+(b) lewy toolbar mapy, okrągły niebieski medalion „Badania" (`mapToolbarHud.ts`, tooltip
+„Badania" nie „Nauka") → otwiera CAŁKOWICIE INNY, samodzielny komponent (Hub Badań/drzewko
+technologii, `scienceHubHud.ts`), nietknięty tą sesją, faktycznie wygląda staro. Sam kod
+przerobionej sekcji odsyła do niego w stopce jako „Hub badań — przycisk Nauka na lewym pasku" —
+nazewnictwo myląco sugeruje że to ten sam ekran.
+
+**STATUS: pytanie do Macieja (proste, nie ABC) — którego dokładnie przycisku użyłeś: prawy górny
+chip HUD „Nauka", czy lewy okrągły medalion „Badania"? I czy robiłeś twarde odświeżenie (hard
+refresh) po FALA 278? To rozstrzygnie, czy to pomyłka ekranu/cache, czy realny bug do dalszego
+kopania.**
