@@ -855,7 +855,7 @@ function ensureStyles(): void {
 .civ-newgame .ec .bdg{font-size:9px;letter-spacing:.18em;text-transform:uppercase;font-family:Arial,sans-serif;padding:3px 10px;border-radius:12px;border:1px solid var(--gold-dim);color:var(--gold-dim);}
 .civ-newgame .ec.sel .bdg{border-color:var(--gold);color:var(--gold-light);background:rgba(201,168,76,.1);}
 .civ-newgame .ec .fl{flex:1;width:100%;font-size:11px;color:var(--tx2);font-style:italic;line-height:1.45;min-height:4.35em;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;}
-.civ-newgame .sett-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;max-width:720px;margin-left:auto;margin-right:clamp(24px,8vw,120px);align-items:stretch;}
+.civ-newgame .sett-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;max-width:720px;margin:0 auto;align-items:stretch;}
 .civ-newgame .qual-sect{max-width:700px;margin:1.1rem auto 0;text-align:center;}
 .civ-newgame .qual-sect h3{font-size:11px;letter-spacing:.35em;text-transform:uppercase;color:var(--tx2);margin-bottom:.65rem;font-family:Arial,sans-serif;font-weight:400;}
 .civ-newgame .qual-hint{color:#E8C060;font-size:12px;line-height:1.55;margin:.75rem auto 0;max-width:520px;font-family:Arial,sans-serif;}
@@ -898,10 +898,10 @@ function ensureStyles(): void {
 .civ-newgame .ng-glyph-ep{font-size:22px;font-weight:600;}
 .civ-newgame .start{background:transparent;border:2px solid var(--gold);color:var(--gold-light);font-size:14px;letter-spacing:.3em;text-transform:uppercase;padding:13px 50px;cursor:pointer;border-radius:var(--radius);font-family:var(--civ-font-ui);margin:1.4rem auto 0;display:block;}
 .civ-newgame .start:hover{background:rgba(232,216,138,0.12);}
-.civ-newgame .sett-actions{max-width:700px;margin:1rem clamp(24px,8vw,120px) 0 auto;display:flex;flex-direction:column;gap:10px;align-items:center;}
+.civ-newgame .sett-actions{max-width:700px;margin:1rem auto 0;display:flex;flex-direction:column;gap:10px;align-items:center;}
 .civ-newgame .btn-adv{background:transparent;border:1px solid var(--bd-mid);color:var(--tx2);font-size:12px;letter-spacing:.15em;text-transform:uppercase;padding:9px 28px;cursor:pointer;border-radius:var(--radius);font-family:Arial,sans-serif;}
 .civ-newgame .btn-adv:hover{color:var(--tx);background:rgba(255,255,255,.03);}
-.civ-newgame .sett-note{font-size:11px;color:var(--tx-muted);text-align:center;max-width:700px;margin:.35rem clamp(24px,8vw,120px) 0 auto;font-family:Arial,sans-serif;line-height:1.4;}
+.civ-newgame .sett-note{font-size:11px;color:var(--tx-muted);text-align:center;max-width:700px;margin:.35rem auto 0;font-family:Arial,sans-serif;line-height:1.4;}
 .civ-newgame .ai-civ-picker{max-width:700px;}
 .civ-newgame .ai-civ-picker .ai-civ-hint{text-align:left;margin:0 0 .6rem;max-width:none;}
 .civ-newgame .ai-civ-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;}
