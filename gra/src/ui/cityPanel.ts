@@ -232,6 +232,13 @@ import {
   type CityYieldContext,
   type BuildingRecord,
 } from '../game/economy';
+import {
+  DEFAULT_CONVERTER_RECIPES,
+  converterThroughputForEra,
+  converterBuildingIdForRecipe,
+  loadThroughput,
+  type RawConverterParamsJson,
+} from '../game/converters';
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
@@ -2785,6 +2792,7 @@ ${UNIT_RECRUIT_CARD_CSS}
 .bld-owned-compact-mount .bld-owned-hd .bi{width:1em;height:1em;font-size:0.85em;}
 .bld-owned-compact-mount .bld-owned-name{font-size:0.68em;max-width:7.5em;}
 .bld-owned-compact-mount .bld-owned-tail{font-size:0.62em;gap:0.22em 0.28em;line-height:1.1;}
+.bld-owned-compact-mount .bld-owned-conv-row{font-size:0.62em;gap:0.16em 0.28em;line-height:1.1;}
 .bld-owned-compact-mount .bld-owned-chip{gap:0.06em;}
 .bld-owned-compact-mount .bld-owned-sep{opacity:.4;font-size:0.9em;margin:0 0.06em;}
 .bld-owned-compact-mount .bld-owned-row .bld-upg{font-size:0.62em;padding:0 0.2em;}
@@ -2809,6 +2817,13 @@ ${UNIT_RECRUIT_CARD_CSS}
 .bld-owned-upkeep{flex:none;color:#e8a090;font-weight:600;white-space:nowrap;}
 .bld-owned-upkeep.muted{color:#6a6458;font-weight:500;}
 .bld-owned-bonus{display:inline-flex;flex-wrap:wrap;gap:0.18em 0.32em;min-width:0;justify-content:flex-end;}
+/* P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE: druga linia -- bilans produkcji
+   konwertera (wejscia na czerwono jak utrzymanie, wyjscie na zielono).
+   flex-basis:100% wymusza zawijanie na wlasna linie w .bld-owned-row (flex-wrap). */
+.bld-owned-conv-row{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:0.2em 0.4em;
+  font-size:0.66em;line-height:1.25;margin-top:0.1em;}
+.bld-owned-conv-in{color:#e8a090;font-weight:600;white-space:nowrap;}
+.bld-owned-conv-out{color:var(--green);font-weight:600;white-space:nowrap;}
 .bld-owned-chip{display:inline-flex;align-items:center;gap:0.12em;color:#c8d8b0;white-space:nowrap;}
 .bld-owned-chip .civ-cs-chip-ic-wrap,.bld-owned-chip .civ-cs-inline-loaf{opacity:0.92;}
 .bld-owned-row .bld-upg{margin-left:auto;flex:none;font-size:0.72em;padding:0.1em 0.32em;line-height:1;border-radius:4px;
@@ -6319,6 +6334,79 @@ function formatResourceUpkeepSummary(resources: Record<string, number>): string 
   return keys.map(k => `−${resources[k]} ${stockResourceLabel(k)}`).join(' · ');
 }
 
+/**
+ * P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE (Maciej 2026-08-14): strona
+ * PRODUKCYJNA budynku-konwertera (np. Garncarnia glina+drewno→ceramika) —
+ * ODRĘBNA od `buildingUpkeepDisplay` (koszt utrzymania, koszt_surowce). Czyta
+ * WPROST te same receptury/przepustowość co silnik (`DEFAULT_CONVERTER_RECIPES`
+ * + `converterThroughputForEra`, `tickEmpireResourcePipeline` w turn-economy.ts) —
+ * ta sama para funkcji, która już karmi licznik HUD imperium
+ * (`empireConverterResourceRatesForOwner` w main.ts). Liczba jest CELOWO BRUTTO
+ * (nominalna przepustowość, NIE pomniejszona o brak wejścia tej konkretnej
+ * tury) — dokładnie ten sam wybór, który silnik już podjął dla licznika HUD
+ * ("netto zbyt kosztowne, brutto OK", komentarz `empireConverterResourceRatesForOwner`);
+ * pokazanie tu innej metodologii (np. netto) rozjechałoby ten wiersz z licznikiem
+ * imperium bez uzasadnienia.
+ * / EN: converter PRODUCTION side of a building (e.g. Pottery clay+wood→pottery) —
+ * SEPARATE from `buildingUpkeepDisplay` (upkeep, build-cost resource drain). Reads
+ * the SAME recipes/throughput as the engine (`DEFAULT_CONVERTER_RECIPES` +
+ * `converterThroughputForEra`) — the same pair already feeding the empire HUD
+ * counter. The number is DELIBERATELY BRUTTO (nominal throughput, not reduced
+ * for this turn's actual input availability) — the same choice the engine already
+ * made for the HUD counter; showing a different (netto) methodology here would
+ * desync this row from the empire counter without justification.
+ */
+function buildingConverterProductionDisplay(
+  def: BuildingDef,
+  city: City,
+  data: GameData,
+): { consumed: Record<string, number>; produced: Record<string, number> } | null {
+  const recipes = DEFAULT_CONVERTER_RECIPES.filter(
+    r => converterBuildingIdForRecipe(r) === def.id,
+  );
+  if (recipes.length === 0) return null;
+  const era = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const difficulty = cfg.difficulty ?? 'normal';
+  const rawParams = data.econParams as unknown as RawConverterParamsJson;
+  const consumed: Record<string, number> = {};
+  const produced: Record<string, number> = {};
+  for (const recipe of recipes) {
+    const baseThroughput = loadThroughput(
+      rawParams, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
+    );
+    const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
+    for (const [key, perCykl] of Object.entries(recipe.inputs)) {
+      if (!(perCykl > 0)) continue;
+      consumed[key] = (consumed[key] ?? 0) + perCykl * throughput;
+    }
+    if (recipe.outputAmount > 0) {
+      produced[recipe.output] = (produced[recipe.output] ?? 0) + recipe.outputAmount * throughput;
+    }
+  }
+  return { consumed, produced };
+}
+
+/** Wiersz HTML „bilansu produkcji" konwertera — wejścia na czerwono, wyjście na zielono. */
+function formatConverterProductionRowHtml(
+  display: { consumed: Record<string, number>; produced: Record<string, number> },
+  compact: boolean,
+): string {
+  const parts: string[] = [];
+  for (const [k, v] of Object.entries(display.consumed)) {
+    const amt = Math.round(v);
+    if (amt <= 0) continue;
+    const txt = compact ? `−${amt} ${stockResourceLabel(k)}` : `−${amt} ${stockResourceLabel(k)}/t`;
+    parts.push(`<span class="bld-owned-conv-in">${txt}</span>`);
+  }
+  for (const [k, v] of Object.entries(display.produced)) {
+    const amt = Math.round(v);
+    if (amt <= 0) continue;
+    const txt = compact ? `+${amt} ${stockResourceLabel(k)}` : `+${amt} ${stockResourceLabel(k)}/t`;
+    parts.push(`<span class="bld-owned-conv-out">${txt}</span>`);
+  }
+  return parts.join(compact ? ' ' : ' · ');
+}
+
 type BuildingReqChipKind = 'tech' | 'stock' | 'other';
 
 interface BuildingReqChip {
@@ -8263,6 +8351,19 @@ function appendOwnedBuildingRow(
       tail.appendChild(bon);
     }
     if (tail.childElementCount > 0) row.appendChild(tail);
+    // P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE: DRUGA linia, oddzielona od
+    // `tail` (koszt utrzymania) -- bilans produkcji konwertera (Garncarnia i in.).
+    // / EN: SECOND line, kept separate from `tail` (upkeep) -- converter
+    // production balance (Pottery and other converter buildings).
+    const convDisplay = buildingConverterProductionDisplay(def, city, data);
+    if (convDisplay) {
+      const convHtml = formatConverterProductionRowHtml(convDisplay, compact);
+      if (convHtml) {
+        const convRow = el('div', 'bld-owned-conv-row');
+        convRow.innerHTML = convHtml;
+        row.appendChild(convRow);
+      }
+    }
     attachHoverDetail(row, () => buildBuildingDetailCard(def, data, city), 280, detailSide);
     row.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('.bld-upg')) return;

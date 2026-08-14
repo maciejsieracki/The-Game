@@ -733,7 +733,7 @@ import { UI_PARAMS } from './ui/uiParams';
 import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
 import { loadAmbiencePrefs, saveAmbiencePrefs } from './audio/ambiencePrefs';
 import { loadSfxPrefs, saveSfxPrefs } from './audio/sfxPrefs';
-import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
+import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier, unitMapAttackRangeHex } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
 import miastoParams from '../data/miasto-params.json';
@@ -19226,11 +19226,30 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: zasięg ataku `u` NA MAPIE ŚWIATA
+     * w heksach — 0 dla jednostek zwarcia (wymóg adiacencji bez zmian), N dla
+     * jednostek dystansowych (pole "Zasięg ataku (hex)" z units.json, ten sam
+     * odczyt co combat.ts:combatUnitFromDef). / EN: `u`'s world-map attack
+     * reach in hexes — 0 for melee units (adjacency requirement unchanged), N
+     * for ranged units (units.json "Zasięg ataku (hex)", same read as
+     * combat.ts:combatUnitFromDef).
+     */
+    function unitAttackRangeHex(u: RuntimeUnit): number {
+      return unitMapAttackRangeHex(lookupUnitDef(u.typeId));
+    }
+
+    /** Min. wymagany dystans do zainicjowania ataku: 1 (adiacencja) dla zwarcia, zasięg dla dystansu. */
+    function isTargetWithinAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {
+      const range = Math.max(1, unitAttackRangeHex(atkUnit));
+      return hexDistance(atkUnit.q, atkUnit.r, tq, tr) <= range;
+    }
+
     function tryLaunchMarchAttack(atkUnit: RuntimeUnit, attackTargetId: string): boolean {
       const def = units.find(x => x.id === attackTargetId);
       if (!def) return false;
       if (!currentVisible().has(keyOf(def.q, def.r))) return false;
-      if (hexDistance(atkUnit.q, atkUnit.r, def.q, def.r) > 1) return false;
+      if (!isTargetWithinAttackRange(atkUnit, def.q, def.r)) return false;
       clearPlannedMarch(atkUnit.id);
       openPlayerMapUnitAttack(atkUnit, def);
       return true;
@@ -19280,6 +19299,16 @@ async function boot(): Promise<void> {
         x => x.q === hitQ && x.r === hitR && x.ownerId !== uSel.ownerId,
       );
       const hoverVis = currentVisible().has(keyOf(hitQ, hitR));
+      // P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: cel już w zasięgu ataku (dystans
+      // lub adiacencja) -- atak nie wymaga marszu, więc podgląd trasy byłby
+      // mylący (sugerowałby zbędny ruch przed strzałem). / EN: target already
+      // within attack range (ranged or adjacent) -- the attack needs no march,
+      // so a route preview would be misleading (implying unnecessary movement
+      // before firing).
+      if (hoverEnemy && hoverVis && isTargetWithinAttackRange(uSel, hitQ, hitR)) {
+        unitRenderer.clearPathRoute();
+        return;
+      }
       const hoverDest: PlannedMarchDest = hoverEnemy && hoverVis
         ? { destQ: hitQ, destR: hitR, attackUnitId: hoverEnemy.id }
         : { destQ: hitQ, destR: hitR };
@@ -20405,7 +20434,9 @@ async function boot(): Promise<void> {
             return;
           case 'hint_no_adjacent':
             showHintMessage(
-              action.cityName + ' — miasto wrogie. Ustaw jednostkę na sąsiednim heksie i kliknij miasto.',
+              // P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: dla muru zawsze adiacencja
+              // (oblężenie), dla miasta bez muru wystarczy zasięg jednostki dystansowej.
+              action.cityName + ' — miasto wrogie. Podejdź na sąsiedni heks (lub w zasięg jednostki dystansowej, jeśli miasto bez muru) i kliknij miasto.',
               4500,
             );
             clearPlayerUnitSelection();
@@ -20419,7 +20450,7 @@ async function boot(): Promise<void> {
             return;
           case 'hint_pick_attacker':
             showHintMessage(
-              action.cityName + ' — kilka jednostek obok. Zaznacz którą atakujesz, potem kliknij miasto.',
+              action.cityName + ' — kilka jednostek w zasięgu. Zaznacz którą atakujesz, potem kliknij miasto.',
               4500,
             );
             clearPlayerUnitSelection();
@@ -20441,6 +20472,7 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: 0,
+            unitAttackRangeHex,
           });
           const isMilitaryAction =
             enemyAction.kind === 'siege_panel' ||
@@ -20491,6 +20523,7 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: 0,
+          unitAttackRangeHex,
         });
         const isMilitaryAction =
           enemyAction.kind === 'siege_panel' ||
@@ -20520,10 +20553,11 @@ async function boot(): Promise<void> {
           selectPlayerUnit(cu.id);
         }
       } else if (selectedId !== null && cu !== null && cu.ownerId !== 0) {
-        // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01
+        // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad LUB w zasięgu ataku
+        // dystansowego — P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE) → preBattle C-01
         const atkUnit = units.find(x => x.id === selectedId);
         if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
-            hexDistance(atkUnit.q, atkUnit.r, cu.q, cu.r) <= 1) {
+            isTargetWithinAttackRange(atkUnit, cu.q, cu.r)) {
           withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
         } else if (atkUnit && atkUnit.ownerId === 0) {
           if (!stackCanMove(atkUnit)) {
@@ -21139,7 +21173,14 @@ async function boot(): Promise<void> {
       });
     }
 
-    /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
+    /**
+     * MAP PLAYER ATTACK: jednostka → jednostka (sąsiad LUB w zasięgu ataku
+     * dystansowego) → preBattle C-01. Bitwa jest abstrakcyjna względem pozycji
+     * — atakujący NIE przemieszcza się fizycznie na heks obrońcy przed walką
+     * (patrz applyPostBattleMap/moveAtkRosterOntoBattleHex — repozycjonowanie
+     * następuje dopiero PO wygranej), więc atak z dystansu nie wymaga żadnego
+     * dodatkowego kroku ruchu tutaj — P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE.
+     */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
       if (atkUnit.ownerId === 0 && defUnit.ownerId !== 0 && !playerIsAtWarWith(defUnit.ownerId)) {
         withPlayerWarConsent(defUnit.ownerId, () => openPlayerMapUnitAttackCore(atkUnit, defUnit));
