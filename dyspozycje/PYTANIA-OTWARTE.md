@@ -26706,6 +26706,182 @@ legalną zmianę N1 (nie tylko testową mutację sed). Wykryte natychmiast (`gre
 edycji z pamięci sesji, zweryfikowane ponownie `tsc --noEmit` (0 błędów) + pełna bramka (83/83) —
 finalny stan pliku identyczny z tym, co opisano wyżej.
 
+### WERDYKT EVALUATORA — RUNDA 2 (Opus 5, 2026-08-14, commity `dcdf653c` + `4bfeec7f`): **PASS-WITH-NOTES**
+
+**STATUS PO WERDYKCIE: ZAMKNIĘTE co do zakresu rundy 2** (N1 blokujące — spełnione i zweryfikowane
+niezależnie; N2/N4/N6 — wykonane i zmierzone). Pozostają **4 notatki nieblokujące** (Z1–Z4) + dwie
+informacyjne (I1–I2) — żadna nie wymaga rundy 3 przed deployem, wszystkie są tanie i mogą wejść
+przy okazji dowolnej następnej pracy w tym obszarze.
+
+**Metoda (własna, nie odczyt z opisu commita):** izolowany worktree na czubku gałęzi `4a580231`
+(potwierdzone `git diff dcdf653c` = pusty dla wszystkich 3 plików tematu — oceniany kod = kod na
+gałęzi), `node_modules` przez symlink, `tsc 5.9.3`, `esbuild 0.21.5`. Trzy niezależne harnessy
+Evaluatora: (a) **19 własnych mutacji** na `converters.ts`/`cityPanel.ts` z pomiarem exit code
+bramki; (b) harness renderujący, który **wycina 1:1 ciała prawdziwych funkcji** ze źródła
+(`fmtDecPl`, `formatConverterAmount`, `formatConverterProductionRowHtml`) i łączy je z prawdziwym
+`converterProductionDisplayForBuilding` + `stockResourceLabel` — zero reimplementacji formatowania
+po stronie Evaluatora; (c) harness scenariuszowy na prawdziwym `building-resource-gate.ts`
+(`filterRuntimeActiveBuiltIds` + `resolveOwnedBuildingInactiveStatus`); (d) render w **headless
+Chromium** (playwright, `/opt/pw-browsers/chromium-1194`) z CSS wyciętym werbatim ze źródła.
+
+**N1 (blokujące w rundzie 1) — ZAMKNIĘTE.** Bramka faktycznie woła prawdziwą funkcję domenową:
+sekcja `[1]` bundluje esbuildem PRAWDZIWY `src/game/converters.ts` i wywołuje
+`converterProductionDisplayForBuilding` na PRAWDZIWYM `data/econ-params.json`; `[1c]` porównuje
+wynik z literałami z werdyktu rundy 1 (nie `> 0`). Dowód mutacyjny Evaluatora — **19 własnych
+mutacji, 15 złapanych czerwono**:
+
+| # | Mutacja (własna, Evaluator) | Wynik bramki | Werdykt |
+|---|---|---|---|
+| E1 | zużycie wejść ×2 (klasa M2 z rundy 1) | 72 pass, **11 fail** | ZŁAPANA (numerycznie: Glina 50 → got 100) |
+| E2 | zużycie wejść ×1,01 (subtelna, +1%) | 72 pass, **11 fail** | ZŁAPANA (Glina 50 → got 50,5 — tolerancja `EPS=1e-9` jest wystarczająco ciasna) |
+| E3 | pominięcie WSZYSTKICH wejść (klasa M7) | 72 pass, **11 fail** | ZŁAPANA (`consumed.glina` → `undefined`) |
+| E4 | pominięcie JEDNEGO wejścia (`drewno`) | 77 pass, **6 fail** | ZŁAPANA |
+| E5 | ignorowanie `outputAmount` (klasa M3) | 80 pass, **3 fail** | ZŁAPANA (strukturalnie przez `[1d]` — patrz nota niżej) |
+| E6 | brak wyjścia w ogóle (`if (false)`) | 79 pass, **4 fail** | ZŁAPANA (`produced.ceramika` → `undefined`) |
+| E7 | brak skalowania epoką (klasa M5) | 77 pass, **6 fail** | ZŁAPANA **numerycznie** (era 2: 55 → got 50) — w rundzie 1 ta klasa była łapana tylko text-anchorem |
+| E10 | `Math.round` na zużyciu w funkcji domenowej (regresja N4 w silniku) | 80 pass, **3 fail** | ZŁAPANA (Ruda cyny 2,5 → got 3) |
+| E12 | funkcja zwraca `null` dla każdego budynku | 66 pass, **4 fail** | ZŁAPANA |
+| U2 | wiersz produkcji nigdy nie wyszarzony (regresja N2) | 82 pass, **1 fail** | ZŁAPANA (text-anchor) |
+| U3 | wejścia renderowane klasą wyjścia (colour-swap) | 82 pass, **1 fail** | ZŁAPANA |
+| U4 | usunięty prefiks „Prod.:" (regresja N6) | 81 pass, **2 fail** | ZŁAPANA |
+| U5 | kolor wejść z powrotem `#e8a090` (regresja N6) | 82 pass, **1 fail** | ZŁAPANA (bramka czyta OBA kolory z CSS i porównuje, nie hardkoduje) |
+| U6 | era globalna zamiast `cfg.getEpoch?.(city.ownerId)` (parytet AI) | 82 pass, **1 fail** | ZŁAPANA |
+| **E9** | **dopasowanie budynek↔receptura przez `r.id` (reguła zepsutego HUD)** | **83 pass, 0 fail** | **UCIECZKA — patrz Z1** |
+| **U1** | **`Math.round(v)` w `formatConverterAmount` (cofnięcie N4 w warstwie UI)** | **83 pass, 0 fail** | **UCIECZKA — patrz Z2** |
+| E8 | trudność zaszyta na `'easy'` (klasa M4) | 83 pass, 0 fail | ucieczka **nieusuwalna** — `econ-params.json` ma `easy = normal = hard` (Garncarnia/Cegielnia 50 szt./turę, Odlewnie 25 szt./turę na każdej trudności), więc mutacja jest matematycznie no-opem; żaden test wartości jej nie złapie |
+| E11 | `throughputFallback` zamiast odczytu z JSON | 83 pass, 0 fail | ucieczka **nieusuwalna** — wartości w `econ-params.json` są dziś IDENTYCZNE z fallbackami (50 i 25), różnicy nie da się zaobserwować |
+| U6* | (anchor niejednoznaczny w całym pliku — powtórzone z zawężeniem do ciała funkcji, patrz U6) | — | — |
+
+Nota o E5/M3: potwierdzam ustalenie Operatora — **każda** receptura w `DEFAULT_CONVERTER_RECIPES`
+ma dziś `outputAmount: 1`, więc `throughput * 1 === throughput`; mutacja jest numerycznie
+nieobserwowalna pod obecnymi danymi (to samo ograniczenie miał 734-asercyjny harness poprzedniego
+Evaluatora). Kotwica strukturalna `[1d]` na prawdziwym ciele funkcji w `converters.ts` jest tu
+uczciwym rozwiązaniem, a nie zamiataniem — i została opisana wprost, bez fałszywej obietnicy
+wykrycia numerycznego.
+
+**N2 — POTWIERDZONE end-to-end (nie z kodu, z uruchomienia).** Własny harness na prawdziwym
+`building-resource-gate.ts`, dwa scenariusze imperium:
+
+| Budynek | `hasDepositRuntimeGate` | scenariusz A (jest Glina/Ruda) | scenariusz B (brak Gliny/Rudy) |
+|---|---|---|---|
+| garncarnia | true | `inactive=false`, runtimeActive=true | **`inactive=true`, tooltip „Brak: Glina", runtimeActive=false** |
+| cegielnia | true | `inactive=false` | **`inactive=true`, „Brak: Glina"** |
+| odlewnia_brazu | true | `inactive=false` | **`inactive=true`, „Brak: Ruda"** |
+| odlewnia_zelaza | **false** | `inactive=false` | `inactive=false` (brak bramki — patrz I2) |
+| wielka_odlewnia | **false** | `inactive=false` | `inactive=false` (patrz I2) |
+
+Złożenie klasy wg logiki `cityPanel.ts` zmierzone: scenariusz B daje
+`class="bld-owned-conv-row bld-owned-conv-row--inactive" title="Brak: Glina"`. Sprawdzona też
+kolejność wykonania (przypisanie `inactiveStatus` w bloku `if (def && city)` POPRZEDZA użycie
+w drugim bloku `if (def && city)` — brak TDZ, brak drugiego liczenia; `resolveOwnedBuildingInactiveStatus`
+wołane dokładnie raz) i specyficzność CSS (`.bld-owned-conv-row--inactive .bld-owned-conv-in`
+(0,2,0) bije `.bld-owned-conv-in` (0,1,0), reguła stoi PO niej w arkuszu). W Chromium zmierzone
+kolory obliczone: aktywny wiersz `rgb(224,151,60)` / `rgb(80,176,112)`, nieaktywny **`rgb(106,100,88)`
+dla wejść, wyjścia I prefiksu** — wyszarza się CAŁA linia, nie tylko część.
+
+**N4 — POTWIERDZONE na renderowanym HTML** (nie na wartości funkcji, tylko na tym, co zobaczy
+właściciel). Odlewnia brązu era 1: `Prod.: −25 Ruda/t · −25 Drewno/t · −2,5 Ruda cyny/t · +25 Brąz/t`.
+Odlewnia żelaza: `−2,5 Ruda cyny/t` obok `−25 Ruda żelaza/t`. Wielka odlewnia: `−2,5 Ruda cyny/t`.
+Wartości całkowite bez ozdobnika (`−50 Glina/t`, nie `−50,0`). Zaokrąglenie do „3" nie występuje
+w żadnym z trzech budynków.
+
+**N6 — OCENIONE WZROKOWO (headless Chromium, zrzut), werdykt: wystarczające, nie „niedopracowane".**
+Zmierzone kolory: utrzymanie `rgb(232,160,144)` (łososiowy) vs wejścia produkcji `rgb(224,151,60)`
+(bursztyn) — kanał niebieski 144 → 60, różnica czytelna przy 10,56 px. Do tego trzy niezależne
+sygnały rozdzielenia, nie jeden: (a) prefiks „Prod.:" w osobnym kolorze `rgb(168,160,144)` i
+`font-weight:700`; (b) fizyczna osobna linia (utrzymanie wyrównane do prawej w `tail`, produkcja
+do lewej w `conv-row`); (c) inny kolor. Żądanie właściciela „rozdzielić koszt utrzymania od kosztu
+produkcji" jest spełnione także semantycznie, nie tylko strukturalnie. **Zastrzeżenie do ewentualnego
+ABC:** `#e0973c` leży blisko `--gold #e0b24a` używanego na plakietce poziomu (L1/L2) i nagłówkach
+sekcji — na zrzucie te trzy elementy tworzą wspólną „ciepłą" grupę. To kwestia gustu właściciela,
+nie błąd; decyzja prowizoryczna orkiestratora zostaje w mocy do jego słowa.
+
+**Sprostowanie komentarza (N3) — WYKONANE, ale patrz Z3.** Fałszywe zdanie „ta sama para funkcji,
+która karmi licznik HUD imperium" usunięte, zastąpione jawnym sprostowaniem + odesłaniem do
+osobnego tematu `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`. Zakres (C-025) czysty: 3 pliki,
+zero refaktorów poza tematem.
+
+**Bramki — WŁASNE uruchomienie na czubku gałęzi (nie liczby z opisu commita):** `npx tsc --noEmit`
+**0 błędów** (13,3 s); `citypanel-konwerter-produkcja-test` **83 pass, 0 fail**; `converters-test`
+**46/46**; `converter-era-scaling-test` **87/87**; `ekonomia-5x-inwariant-test` **246/246**;
+`tech-tree-test` **19/19**; `research-test` **33/33**; `owned-building-detail-side-test` **17/17**.
+`vite build --outDir <tmp> --emptyOutDir` — **OK, 24,9 s**; w zbudowanym bundlu potwierdzone
+4 wystąpienia `bld-owned-conv-label` i 4 `bld-owned-conv-row--inactive` (kod nie jest martwy,
+dociera do wersji uruchamialnej). Pre-istniejące czerwone zweryfikowane: `upgrade-budynki-test`
+**48 pass, 1 fail** (`no handel bonus on bruk`), `prereq-budynkow-test` **51 pass, 8 fail** —
+zgodne z `CLAUDE.md`, delta zero. Drzewo robocze po wszystkich 19 mutacjach: `git status` czysty,
+`git diff` pusty (pliki przywrócone bajt w bajt).
+
+---
+
+**Z1 (nieblokujące, ale konkretne — luka pokrycia bramki): mutacja „dopasowanie jak w zepsutym HUD"
+przechodzi na zielono, choć KASUJE cały wiersz produkcji dla 2 z 5 budynków-konwerterów.**
+Zamiana `converterBuildingIdForRecipe(r) === buildingId` na `r.id === buildingId` w
+`converterProductionDisplayForBuilding` daje zmierzone (własny probe, nie dedukcja):
+`garncarnia`/`cegielnia`/`odlewnia_brazu` — bez zmian; **`odlewnia_zelaza` → `null`**,
+**`wielka_odlewnia` → `null`** (czyli panel NIE POKAZUJE ani zużycia, ani produkcji — dokładnie
+pierwotne zgłoszenie właściciela, tylko dla innych budynków). Bramka: **83 pass, 0 fail**. Powód:
+`[1c]` przypina twarde liczby wyłącznie dla Garncarni i Odlewni brązu — obu, w których
+`recipe.id === buildingId`, więc oba dopasowania dają ten sam wynik; `[1b]` liczy receptury
+własnym wywołaniem `converterBuildingIdForRecipe`, nie przez badaną funkcję. **Uczciwie:
+to WYKRACZA poza minimum nakazane w rundzie 1** (tam wymieniono dokładnie Garncarnię i Odlewnię
+brązu, i to zostało dowiezione co do joty) — dlatego nota, nie FAIL. **Koszt naprawy: ~6 linii**
+w `[1c]` — dopisać `odlewnia_zelaza` (era 1: ruda 25, drewno 50, ruda cyny 2,5, ruda żelaza 25 →
+brąz 25 + żelazo 25 szt./turę) i `wielka_odlewnia` (era 1: ruda 25, drewno 75, ruda cyny 2,5,
+ruda żelaza 25, żelazo 25 → brąz 25 + żelazo 25 + stal 25 szt./turę). Liczby zmierzone przez
+Evaluatora renderem, gotowe do przepisania.
+
+**Z2 (nieblokujące, luka pokrycia): cofnięcie N4 w warstwie UI przechodzi na zielono.** Podmiana
+ciała `formatConverterAmount` z `Math.round(v*10)/10` + `fmtDecPl(r1,1)` na zwykłe `Math.round(v)`
+(czyli powrót do „3" zamiast „2,5" — dokładnie to, co N4 kazało naprawić) → bramka **83 pass,
+0 fail**. Funkcja domenowa nadal zwraca 2,5 i `[1c]` to widzi, ale nikt nie sprawdza ŁAŃCUCHA
+liczba → tekst. Sekcja `[2]` kotwiczy tylko `` `−${amtTxt}` ``, co przetrwa każdą zmianę formatera.
+**Koszt naprawy: ~3 linie** — albo kotwica na obecność `fmtDecPl(r1, 1)` w ciele
+`formatConverterAmount`, albo (lepiej) wycięcie ciała tej funkcji ze źródła i sprawdzenie
+`formatConverterAmount(2.5) === '2,5'` oraz `formatConverterAmount(50) === '50'`.
+
+**Z3 (nieblokujące, ale to POWTÓRKA klasy błędu z N3 — komentarz twierdzący coś o CUDZYM module):
+sprostowanie w `cityPanel.ts` jest już nieaktualne na czubku gałęzi.** JSDoc
+`buildingConverterProductionDisplay` mówi w czasie teraźniejszym: „…w HUD-zie imperium
+(`empireConverterResourceRatesForOwner` w main.ts, przez `builtIds.includes(recipe.id)`), przez co
+HUD gubi część receptur (Odlewnia żelaza, Wielka odlewnia)". **To nieprawda od commita `9482117f`
+(12:34, pięć minut PRZED `dcdf653c`)** — HUD został naprawiony i `main.ts:2789` używa dziś
+`builtIds.includes(converterBuildingIdForRecipe(recipe))`, czyli DOKŁADNIE tego samego dopasowania
+co ta funkcja. Zweryfikowane odczytem `main.ts` na czubku gałęzi, nie z opisu commita. Sedno
+sprostowania (spójność jest z SILNIKIEM, nie „to ta sama para funkcji co HUD") pozostaje prawdziwe
+i wartościowe — nieaktualne jest tylko zdanie podrzędne o obecnym stanie HUD. **Naprawa: zmiana
+czasu na przeszły** + wzmianka, że naprawione `9482117f`. **Wniosek szerszy do zapamiętania:**
+komentarz opisujący stan INNEGO modułu starzeje się w ciągu minut przy równoległej pracy sesji —
+lepiej odsyłać do ID tematu (co ten komentarz już robi) bez orzekania, czy tamten błąd nadal żyje.
+
+**Z4 (nieblokujące, ale realny hazard operacyjny): bramka MUTUJE PRAWDZIWE PLIKI ŹRÓDŁOWE na dysku
+podczas każdego zwykłego uruchomienia.** Sekcja `[3]` nadpisuje `src/ui/cityPanel.ts`, sekcja `[4]`
+**trzykrotnie nadpisuje `src/game/converters.ts`** — plik silnika ekonomii — i przywraca je
+w `finally`. Ryzyka: (a) zabicie procesu (timeout, Ctrl-C, OOM) między zapisem a przywróceniem
+zostawia w repo zmutowany silnik; przy `git add -A` w innej sesji ląduje to w commicie po cichu;
+(b) równoległy `vite build`/`tsc`/inna bramka w TYM SAMYM drzewie zobaczy stan zmutowany (projekt
+ma wiele sesji i subagentów — reguła 4a o worktree to łagodzi, ale nie eliminuje). Test sam
+weryfikuje przywrócenie (`ok(fs.readFileSync(...) === backup)`) i w moich 19 przebiegach ani razu
+nie zostawił śmieci — dlatego nota, nie FAIL. **Bezpieczniejszy wzorzec na przyszłość:** mutować
+KOPIĘ (np. `src/game/.mut-converters.ts` + entry esbuilda wskazujące na kopię), nigdy plik, który
+buduje grę.
+
+**I1 (informacyjne, N5 nadal otwarte — potwierdzone zrzutem, nie „nie zaobserwowano"):** Wielka
+odlewnia renderuje **9 elementów** w jednej linii: `Prod.: −25 Ruda/t · −75 Drewno/t · −2,5 Ruda
+cyny/t · −25 Ruda żelaza/t · −25 Żelazo/t · +25 Brąz/t · +25 Żelazo/t · +25 Stal/t` i przy
+szerokości panelu 560 px **zawija się na dwie linie** (zrzut Evaluatora). Żelazo występuje
+jednocześnie na minusie i na plusie (netto 0) — dla gracza wygląda to na błąd, choć jest zgodne
+z recepturami. W trybie `compact` (lista o stałej wysokości wiersza) to samo zawinięcie może
+przycinać treść. Zostaje do oceny właściciela w playteście — bez zmian w tej rundzie, zgodnie
+z zakresem.
+
+**I2 (informacyjne, pre-istniejące, NIE wada tego commita):** `odlewnia_zelaza` i `wielka_odlewnia`
+**nie mają w ogóle runtime gate** (`hasDepositRuntimeGate = false`, brak wpisu w
+`DEPOSIT_LINKED_BUILDING_LABELS`), więc N2 ich nie dotyczy — ale też silnik ich nie wyłącza
+(`filterRuntimeActiveBuiltIds` zostawia je aktywne), więc panel i silnik są tu SPÓJNE. Odlewnia
+brązu ma bramkę na `Ruda`, jej następcy w łańcuchu — nie. Czy to zamierzone, to osobne pytanie
+do właściciela, poza tym tematem.
+
 ---
 
 ## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (2026-08-14, znalezisko Evaluatora N3 przy okazji `P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE`)
