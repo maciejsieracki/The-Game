@@ -19283,7 +19283,7 @@ async function boot(): Promise<void> {
      * KTÓREJKOLWIEK jednostki w stosie gracza na heksie `atkUnit` — nie tylko samej `atkUnit`.
      * Powód: reprezentanta stosu do kliku wybiera unitAtRepresentative() wg unitAttackScore
      * (=meleeAttack), a jednostki dystansowe mają meleeAttack systematycznie NIŻSZY niż
-     * zwarciowe (np. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Hastati=7) — w
+     * zwarciowe (np. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Triari=8) — w
      * KAŻDYM stosie mieszanym zwarcie+dystans reprezentantem (więc i `selectedId`/`atkUnit`
      * przy kliku) niemal zawsze zostaje jednostka zwarcia. Bez tej funkcji isTargetWithinAttackRange
      * cicho sprawdzała TYLKO zasięg=0 tej jednostki zwarcia, więc klik na wroga w zasięgu
@@ -19295,7 +19295,7 @@ async function boot(): Promise<void> {
      * / EN: is the target within range of ANY unit in the player's stack at `atkUnit`'s hex --
      * not just `atkUnit` itself. Reason: the stack's click representative is picked by
      * unitAttackScore (=meleeAttack), and ranged units have a systematically LOWER meleeAttack
-     * than melee ones (e.g. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Hastati=7) --
+     * than melee ones (e.g. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Triari=8) --
      * in ANY mixed melee+ranged stack the representative (hence `selectedId`/`atkUnit` on click)
      * is almost always the melee unit. Without this, isTargetWithinAttackRange silently checked
      * ONLY that melee unit's range=0, so clicking an enemy within the stack's archer's range
