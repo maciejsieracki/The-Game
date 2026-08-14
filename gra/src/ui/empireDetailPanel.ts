@@ -493,6 +493,26 @@ function ensureStyles(): void {
 .civ-emp-skarbiec-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
 .civ-emp-skarbiec-city-tbl .civ-emp-mini-r>div:nth-child(2),
 .civ-emp-skarbiec-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
+/* RECYDYWA naprawy wyżej — Faza 2 (Praca/Nauka/Religia, 9a539197) stworzyła 3 NOWE tabele per
+   miasto i żadnej nie dała analogicznej klasy: dane wyrównane do lewej (start), wiersz SUMA
+   do prawej (inline) — dwie konwencje w jednej tabeli, ten sam defekt co Skarbiec przed
+   naprawą wyżej. Praca/Nauka: wszystkie kolumny liczbowe do prawej (nagłówek + dane), spójnie
+   z SUMĄ. Religia: tylko WYZNAWCY jest liczbą — RELIGIA to nazwa (tekst), zostaje do lewej,
+   zgodnie z makietą (klatka 11, kolumna RELIGIA bez text-align:right).
+   / EN: RELAPSE of the fix above — Phase 2 (Labor/Science/Religion, 9a539197) created 3 NEW
+   per-city tables and gave none of them an analogous class: data rows left-aligned (start), SUM
+   row right-aligned (inline) — two conventions in one table, same defect as Treasury before its
+   fix above. Labor/Science: all numeric columns right-aligned (header + data), consistent with
+   SUM. Religion: only WYZNAWCY (adherents) is numeric — RELIGIA is a name (text) and stays left,
+   matching the mockup (frame 11, RELIGIA column has no text-align:right). */
+.civ-emp-praca-city-tbl .civ-emp-mini-h-cell:nth-child(2),
+.civ-emp-praca-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
+.civ-emp-praca-city-tbl .civ-emp-mini-r>div:nth-child(2),
+.civ-emp-praca-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
+.civ-emp-nauka-city-tbl .civ-emp-mini-h-cell:nth-child(2){align-items:flex-end;text-align:right;}
+.civ-emp-nauka-city-tbl .civ-emp-mini-r>div:nth-child(2){text-align:right;}
+.civ-emp-religia-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
+.civ-emp-religia-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
 
 /* — R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Praca/Nauka/Religia (§4 handoffu
    designera: .civ-emp-split2 = "pasek podziału na dwa strumienie", Praca budynki/pula, Religia
@@ -926,11 +946,11 @@ function renderPracaSection(
   const grid = '1fr 1fr 1fr';
   let tblSumPula = 0;
   let tblSumBud = 0;
-  h += `<div class="civ-emp-mini" style="margin-top:10px">${miniHeader(['MIASTO', 'DO PULI', 'DO BUDYNKÓW'], grid)}`;
+  h += `<div class="civ-emp-mini civ-emp-praca-city-tbl" style="margin-top:10px">${miniHeader(['MIASTO', 'DO PULI', 'DO BUDYNKÓW'], grid)}`;
   for (const c of rows) {
     tblSumPula += c.pracaPula;
     tblSumBud += c.pracaBudynki;
-    h += miniRow([esc(c.name), signedTxt(c.pracaPula), signedTxt(c.pracaBudynki)], grid);
+    h += miniRow([esc(c.name), miniColColor(c.pracaPula, '#8ec5ff'), miniColColor(c.pracaBudynki, '#d9a441')], grid);
   }
   h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
     + `<div>SUMA</div><div style="text-align:right">${signedTxt(tblSumPula)}</div>`
@@ -1032,13 +1052,24 @@ function renderNaukaSection(
   // Znalezisko przy tej fazie (NIE naprawiane tu, poza zakresem UI): playtest „?playtest=mapa"
   // (main.ts ok. linii 29253) ustawia `player.badana = 'Metalurgia Brązu'` — nazwa niedopasowana
   // do żadnego wpisu `data/tech.json` (dziś „Brązownictwo") — `getResearchState()` wtedy nie
-  // znajduje `def`, więc `kosztCelu` wraca 0. Guard niżej pokazuje w takiej sytuacji CZYSTY
-  // stan „nieznany koszt" zamiast mylącego „N / 0 PN" z paskiem sztucznie pełnym na 100%
-  // (dzielenie przez 0 w silniku daje `postepFraction=1`).
+  // znajduje `def`, więc `kosztCelu` wraca 0. F3 KOREKTA (2026-08-14, Evaluator zweryfikował
+  // buildem): poprzednia wersja tego komentarza twierdziła że bez guarda pasek byłby sztucznie
+  // pełny („dzielenie przez 0 daje postepFraction=1") — NIEPRAWDA. `getResearchState()`
+  // (playerState.ts) inicjalizuje `postepFraction=0` i dzieli WYŁĄCZNIE wewnątrz
+  // `if (kosztCelu>0)`; bez guarda pasek renderowałby się PUSTY (0%), nie pełny. Prawdziwy
+  // powód guarda to wyświetlany TEKST: bez niego pokazałby mylące „N / 0 PN" (zero widoczne w
+  // mianowniku LICZBY, nie dzielenie w kodzie) — guard chroni czytelność tej liczby, nie kształt
+  // paska.
   // EN: found during this phase (NOT fixed here, out of UI scope): the "?playtest=mapa" preset
   // sets a stale tech name not matching today's tech.json, so the engine can't resolve `def` and
-  // returns kosztCelu=0. The guard below shows a clean "unknown cost" state instead of a
-  // misleading "N / 0 PN" with an artificially full bar (division by zero → postepFraction=1).
+  // returns kosztCelu=0. F3 CORRECTION (2026-08-14, Evaluator verified via build): the previous
+  // version of this comment claimed the bar would render artificially full without the guard
+  // ("division by zero gives postepFraction=1") — FALSE. `getResearchState()` (playerState.ts)
+  // initializes `postepFraction=0` and divides ONLY inside `if (kosztCelu>0)`; without the guard
+  // the bar would render EMPTY (0%), not full. The guard's real purpose is the displayed TEXT:
+  // without it, it would show a misleading "N / 0 PN" (the zero visible in the NUMBER's
+  // denominator, not an actual division in the code) — the guard protects that number's
+  // readability, not the bar's shape.
   if (research && research.kosztCelu > 0) {
     const pctBar = Math.max(0, Math.min(100, Math.round(research.postepFraction * 100)));
     const etaTxt = research.turnsLeft == null
@@ -1067,8 +1098,8 @@ function renderNaukaSection(
 
   const grid = '1fr 1fr';
   let tblSum = 0;
-  h += `<div class="civ-emp-mini" style="margin-top:10px">${miniHeader(['MIASTO', 'NAUKA'], grid)}`;
-  for (const c of rows) { tblSum += c.nauka; h += miniRow([esc(c.name), signedTxt(c.nauka)], grid); }
+  h += `<div class="civ-emp-mini civ-emp-nauka-city-tbl" style="margin-top:10px">${miniHeader(['MIASTO', 'NAUKA'], grid)}`;
+  for (const c of rows) { tblSum += c.nauka; h += miniRow([esc(c.name), miniColColor(c.nauka, '#8ec5ff')], grid); }
   h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
     + `<div>SUMA</div><div style="text-align:right">${signedTxt(tblSum)}</div></div>`;
   h += '</div>';
@@ -1133,7 +1164,7 @@ function renderReligiaSection(religion: EmpireDetailSnap['religion']): string {
 
   const grid = '1fr 1.1fr 0.8fr';
   h += '<div class="civ-emp-relig-fx-hdr">Miasta</div>'
-    + `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'RELIGIA', 'WYZNAWCY'], grid)}`;
+    + `<div class="civ-emp-mini civ-emp-religia-city-tbl">${miniHeader(['MIASTO', 'RELIGIA', 'WYZNAWCY'], grid)}`;
   for (const c of religion.cities) {
     const relCell = c.religionLabel === '—'
       ? '<span style="color:#6f7889">—</span>'
@@ -1367,6 +1398,18 @@ function cityPoborMiniRekruci(
 function signedTxt(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
   return signedPl(n);
+}
+
+/** F2 naprawa Panel 11 zakładek Faza 2 (dispatch 2026-08-14) — wartość w tabeli per miasto
+ *  pokolorowana kolorem SEMANTYCZNYM KOLUMNY (nie znakiem wartości), zgodnie z makietą designera:
+ *  DO PULI/NAUKA błękit, DO BUDYNKÓW złoto. Wcześniej `signedTxt()` zwracał goły tekst bez
+ *  `<span>`, więc komórka dziedziczyła domyślny szary `.civ-emp-mini-r`.
+ *  EN: per-city table value colored by the COLUMN's semantic color (not the value's sign), per
+ *  the designer mockup: DO PULI/NAUKA blue, DO BUDYNKÓW gold. Previously `signedTxt()` returned
+ *  bare text with no `<span>` to color, so the cell inherited the default gray from
+ *  `.civ-emp-mini-r`. */
+function miniColColor(n: number, hex: string): string {
+  return `<span style="color:${hex}">${signedTxt(n)}</span>`;
 }
 
 /** Wartość liczbowa bez ikony (komórki danych tabel miast). */
