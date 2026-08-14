@@ -25899,3 +25899,47 @@ agentów pod rząd.
 **Skutek merytoryczny do zakomunikowania właścicielowi:** świadomie zaakceptowana regresja ruchu
 o −20% przy koszcie bazowym 2 (nota N2 tematu) obejmuje **także całą Pustynię bez lasu**, nie
 tylko Wzgórza i płaski teren z lasem, jak podano w tabeli przy decyzji A.
+
+---
+
+## P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE (2026-08-14, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „jest jeden błąd. Nie da się z większej odległości zaatakować jednostki
+przeciwnika. Trzeba podejść na HEX obok i dopiero przeprowadzić atak. Zarówno atak na miasto jak
+i atak na jedną jednostkę powinien być możliwy z daleka, jeżeli tylko jest dana jednostka lub
+miasto w zasięgu."
+
+**Potwierdzone w kodzie (orkiestrator, przed dispatchem, zmierzone nie zgadywane):**
+- Dane jednostek (`gra/data/units.json`) mają pola `"Atak dystansowy"` (dmg pocisków) i
+  `"Zasięg ataku (hex)"` (np. procarz `Zasięg=2`, łucznik `Zasięg=3`, kusza `Zasięg=4` — dla
+  jednostek zwarcia `"—"`) — jawnie zaprojektowany mechanizm ataku na dystans.
+- Pole `"Zasięg ataku (hex)"` jest CZYTANE wyłącznie wewnątrz **sceny bitwy taktycznej**
+  (`gra/src/battle/battleScene.ts:1303`, faza pocisków WEWNĄTRZ już toczącej się bitwy) —
+  nigdzie indziej w `gra/src`.
+- **Inicjacja ataku na mapie świata ma TWARDO zakodowaną odległość `1`, niezależnie od zasięgu
+  jednostki:** `gra/src/main.ts:19233`, funkcja `tryLaunchMarchAttack()` —
+  `if (hexDistance(atkUnit.q, atkUnit.r, def.q, def.r) > 1) return false;`. To jest dokładnie
+  ścieżka wywoływana przy kliknięciu „zaatakuj" na jednostkę przeciwnika — jednostka musi więc
+  najpierw dojść na sąsiedni heks (`planMarchTo`/marsz), zanim atak w ogóle może się zacząć.
+  Analogiczna bariera prawdopodobnie dotyczy też ataku na miasto (`offerCityAttackChoice`,
+  `main.ts:12330`, i pokrewne `hexDistance(...) === 1` w tym samym pliku — **do potwierdzenia
+  przez dispatchowanego agenta, nie zakładać z góry, które z ~13 wystąpień `hexDistance(...) ===
+  1`/`<= 1` w `main.ts` to bramki inicjacji ataku, a które to inne mechaniki (garnizon, oblężenie,
+  wymagające fizycznej adiacencji z zupełnie innych powodów niż zasięg strzału)**.
+
+**Żądanie właściciela:** zarówno atak na pojedynczą jednostkę, jak i atak na miasto, ma być
+możliwy z dystansu — bez konieczności podchodzenia na sąsiedni heks — jeśli cel mieści się w
+`"Zasięg ataku (hex)"` atakującej jednostki (dla jednostek zwarcia, gdzie to pole to `"—"`,
+zachowanie zostaje bez zmian — wymagana adiacencja, tak jak dziś).
+
+**⚠️ Uwaga do dispatchu — zakres pracy jest większy niż drobny bugfix:** to dotyka rdzenia
+mechaniki walki na mapie świata, **musi zachować parytet gracz↔AI** (AI też musi umieć strzelać
+z dystansu tymi samymi jednostkami, inaczej gracz dostanie nieuczciwą przewagę/AI stanie się
+łatwiejsze — twardy warunek FAIL Evaluatora z `R-PROC-AUTOBOT-EVAL-STRICT-SAVE`), oraz rodzi
+pytania projektowe, których NIE rozstrzygać samodzielnie bez zaznaczenia w commicie: czy
+jednostka atakująca z dystansu zużywa cały ruch tej tury, czy może się potem jeszcze przesunąć;
+czy jednostka dystansowa może kontratakować z dystansu gdy jest atakowana z bliska; czy oblężenie
+miasta (mechanika `city.oblegane`) wymaga nadal fizycznej adiacencji niezależnie od tego fixu
+(prawdopodobnie TAK — oblężenie to inna mechanika niż pojedynczy atak, nie mylić).
+
+**STATUS: DISPATCH W TOKU.**
