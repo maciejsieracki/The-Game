@@ -24052,4 +24052,193 @@ odwrotu `placeFanOutGroup`. Zastępuje przypadkowe, geometrio-zależne zachowani
 Evaluatora (31/63 układów zostawiało oblężenie trwające). Toast `51a32fe6` („oblężenie zniesione")
 staje się PRAWDZIWY w każdym przypadku po tej naprawie — zostaje bez zmian.
 
-**STATUS: dispatch Operatora (Sonnet 5) w toku.**
+**STATUS: WDROŻONE commitem `a159af84`, zweryfikowane przez Evaluatora — werdykt PASS-WITH-NOTES
+na końcu tego pliku.** (Uwaga: cytowane wyżej „31/63" jest błędne — pomiar niezależny Evaluatora
+daje **33/63** zostawiających oblężenie trwające; szczegóły w nocie G2 werdyktu.)
+
+## Evaluator: remis szturmu ZAWSZE kończy oblężenie (`a159af84`, `R-OBLEZENIE-REMIS-MASZYNY-Q2 = A`) — WERDYKT: **PASS-WITH-NOTES**
+
+**Zakres:** commit `a159af84` na `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — `endMapSiege(city.id)`
+w gałęzi `res.winner === 'remis'` (`finishSiegeStormBattle` → `afterSiegeUi`, `gra/src/main.ts`),
+usunięcie osobnego `refreshSiegeMarkers()` z tej gałęzi, nowy `gra/tools/oblezenie-remis-endsiege-test.cjs`.
+Weryfikacja niezależna: własne uruchomienie wszystkich bramek, własna mutacja NA DYSKU, własny
+skrypt pomiarowy (nie harness Operatora). **Deploy do ROBOCZA: bez przeszkód ze strony Evaluatora.**
+
+### 1. Bramki — zmierzone bezpośrednio, exit code odczytany z testu (nie z procesu opakowującego)
+
+| Bramka | Wynik | Exit |
+|---|---|---|
+| `npx tsc --noEmit` | 0 błędów | 0 |
+| `oblezenie-remis-endsiege-test.cjs` (nowy) | 265 passed, 0 failed | 0 |
+| `oblezenie-siege-lifted-po-bitwie-test.cjs` | 16 passed, 0 failed | 0 |
+| `oblezenie-test.cjs` | 27 passed, 0 failed | 0 |
+| `map-siege-test.cjs` | 6 ok, 0 fail | 0 |
+| `siege-ai-test.cjs` | 17 ok, 0 fail | 0 |
+| `tech-tree-test.cjs` | 19 pass, 0 fail | 0 |
+| `research-test.cjs` | 33 passed, 0 failed | 0 |
+| `vite build` (822 moduły, single-file 37,1 MB) | — | 0 |
+
+Wszystkie liczby z opisu commita potwierdzone co do jednej asercji.
+
+### 2. Kolejność operacji — twierdzenie Operatora POTWIERDZONE, i to mocniej niż twierdził
+
+Przeczytane bit-po-bit, obie ścieżki:
+* **bez podsumowania** (`main.ts` 23143-23144): `applyMapBattleOutcome(...)` → `afterSiegeUi()`.
+  `applyMapBattleOutcome` jest w całości SYNCHRONICZNE i kończy się na `validateActiveSieges()`
+  (22124) tuż przed `return`. `applyPostBattleMap` (`src/game/post-battle-map.ts`) nie zawiera
+  ANI JEDNEGO `setTimeout` / `requestAnimationFrame` / `async` / `await` / `Promise` (sprawdzone
+  grepem na całym pliku, 494 linie) — „animacja odwrotu" nie istnieje jako osobny, opóźniony
+  krok, `placeFanOutGroup` przestawia współrzędne natychmiast.
+* **z podsumowaniem** (21324 → 21342): `applyMapBattleOutcomeWithSummary` woła
+  `applyMapBattleOutcome` SYNCHRONICZNIE, a `afterSiegeUi` jest dopiero callbackiem `onContinue`
+  panelu. Czyli tym bardziej PO.
+
+**Nie znalazłem żadnego scenariusza kolizji.** Dodatkowy, mocniejszy argument, którego Operator
+nie podniósł: `endMapSiege` w tej klatce **nie jest nowym zdarzeniem** — przed tym commitem
+odpalał się dokładnie tutaj przez `validateActiveSieges()` w ~połowie układów geometrycznych.
+Gdyby jakikolwiek kod za `afterSiegeUi` zakładał, że flaga oblężenia jeszcze żyje, ten
+zakład byłby już dziś łamany w 33/63 układów. Zmiana czyni zachowanie **bezwarunkowym, nie nowym**.
+
+Sprawdzony jedyny realny kandydat na kolizję — pętla tury oblężenia (24862-24869):
+`maybeAiAssaultAfterMachines()` → `executeSilentSiegeStorm` → remis → `endMapSiege`, a zaraz
+po niej `if (getActiveSiegeCityId() === oblCity.id) { syncSiegePanelMeta(); updateSiegeMapPanelTurn(); }`.
+Bezpieczne: `endMapSiege` → `hideSiegeMapPanel()` ustawia `activeCtx = null`
+(`ui/siegeMapPanel.ts` 349-356), więc `getActiveSiegeCityId()` zwraca `null` i blok jest pomijany —
+nie ma aktualizacji panelu-widma. Pętla iteruje `econ.perCity` (tablica), nie `siegeTurnByCity`,
+którą `endMapSiege` mutuje — brak mutacji w trakcie iteracji.
+
+### 3. Usunięcie osobnego `refreshSiegeMarkers()` — BEZPIECZNE, kolejność bez znaczenia
+
+Zmiana jest realna: dawniej markery odświeżały się OSTATNIE (po `refreshD1bHud()`), dziś
+odświeżają się PIERWSZE (wewnątrz `endMapSiege`, przed `syncUnitsRender()`). Sprawdziłem, czy
+któreś z pięciu następujących wywołań (`syncUnitsRender`, `cityRenderer.sync`, `refreshFog`,
+`updateHud`, `refreshD1bHud`) produkuje stan, który `refreshSiegeMarkers` czyta:
+* `refreshSiegeMarkers` (11854-11890) czyta wyłącznie **stan gry**: `cities[].oblegane/q/r`,
+  `units[].q/r/ownerId`, gotowe machiny — plus `getTopY: (q,r) => unitRenderer.topYAt(q,r)`;
+* `topYAt` (`render/units.ts` 5434) to `hexGrid.get(...)` → `terrainTopY(hex)` — **czysta geometria
+  terenu**, zero zależności od stanu renderu jednostek. `syncUnitsRender()` nie może go zmienić;
+* pozostałe cztery to konsumenci stanu (render/HUD), nie producenci.
+
+Co więcej `applyMapBattleOutcome` **już wołało `syncUnitsRender()`** (22103) przed `validateActiveSieges()`,
+więc w chwili `afterSiegeUi` renderer jednostek jest zsynchronizowany z pozycjami po bitwie —
+drugi `syncUnitsRender()` w gałęzi remisu jest redundantny, nie naprawczy. Nowa kolejność jest
+wręcz **odrobinę lepsza**: `cityRenderer.sync()` widzi teraz już poprawione `oblegane === false`.
+
+### 4. ⚠️ NOTA G1 — §2 nowego testu (252 z 265 asercji) NIE wykrywa regresji; robi to WYŁĄCZNIE strażnik tekstowy §1
+
+To najważniejsze znalezisko. Wykonałem **własną mutację na DYSKU** (usunięcie linii
+`endMapSiege(city.id);` z prawdziwego `gra/src/main.ts`, nie w pamięci jak §3), uruchomiłem bramkę,
+przywróciłem plik (md5 `f161ba8b0abc4559a65b047c8ca26f6c` przed i po, `git status` czysty).
+
+**Wynik mutacji: 257 passed, 3 failed, exit 1.** Regresja **JEST** złapana — ale przyjrzyjmy się, przez co:
+* czerwone: strażnik tekstowy §1, „przygotowanie §3: realny main.ts zawiera endMapSiege" i kontrola
+  pozytywna z końca pliku — **wszystkie trzy czysto tekstowe**;
+* **wszystkie 252 asercje behawioralne §2 (63 układy × 4) przeszły ZIELONO mimo usuniętej naprawy.**
+
+Przyczyna: §2 woła `h.F.endMapSiege('roma')` **sam, na sztywno, w linii 272 testu** — nie czyta
+z `main.ts`, czy gałąź remisu ją woła. §2 dowodzi więc semantyki samego `endMapSiege` (który
+bezwarunkowo ustawia `city.oblegane = false`) i mierzy geometrię starego zachowania — ale **nie
+dowodzi, że naprawa jest podpięta**. Cały ciężar wykrywania regresji leży na `String.includes`.
+
+Konsekwencja praktyczna: refaktor, który zachowa tekst `endMapSiege(city.id)` w gałęzi remisu, ale
+np. otoczy go warunkiem albo przeniesie do martwego kodu, **przejdzie bramkę na zielono**. Także
+komunikat `[info]` testu („63/63 ma city.oblegane===false po dołożeniu endMapSiege() (ten commit)")
+drukuje się IDENTYCZNIE przy usuniętej naprawie — jest mylący.
+
+**Dlaczego to NOTA, a nie FAIL:** (a) regresja realnie kończy się exitem 1, czyli bramka spełnia
+swoją funkcję; (b) `finishSiegeStormBattle` to domknięcie wewnątrz `boot()`, nieeksportowalne bez
+przebudowy — wzorzec „strażnik tekstowy + zachowanie osobno" jest w tym repo kanoniczny
+(`oblezenie-siege-lifted-po-bitwie-test.cjs`, `road-hook-mainguard-test.cjs`); (c) opis commita
+mówi „SS2 test behawioralny na PRAWDZIWYM kodzie", co jest prawdą co do `applyPostBattleMap`
+(zweryfikowane: `src/game/post-battle-map.ts` 351, `export function`, importowany przez esbuild,
+gałąź `else` → `placeFanOutGroup` — to PRAWDZIWY moduł, nie kopia), ale **przecenia, co ten test
+zabezpiecza**. Do poprawy przy okazji, nie warunek deployu.
+
+### 5. ⚠️ NOTA G2 — komentarz w kodzie produkcyjnym niesie liczby, które obala własny test tego commita
+
+`main.ts` 23098-23099 (i opis commita) twierdzą: „**32/63** układów kończyło oblężenie,
+w pozostałych **31/63** flaga zostawała". Te liczby pochodzą z poprzedniego werdyktu Evaluatora
+(tabela per-k wyżej w tym pliku, 32+31=63).
+
+**Nowy test tego samego commita mierzy co innego: 33/63 zostawia oblężenie TRWAJĄCE** (czyli 30
+kończy) — widać to w jego własnym `[info]`. Test sam zauważa rozbieżność i tłumaczy ją zdaniem
+„u Evaluatora zmierzone 31/63 **przy identycznym wariancie** pełnej przejezdności" — czego nie
+zweryfikował.
+
+**Zmierzyłem to niezależnie własnym skryptem** (prawdziwy `applyPostBattleMap`, własna
+implementacja starej reguły „ktoś oblegającego na dystansie 1", 63 podzbiory, trzy warianty
+obsługi strat: `applyAutoLosses` z `maxHp=1`, `applyAutoLosses` z `maxHp=100`, jawne
+`manualSurvivors`). **Wszystkie trzy warianty dają identycznie 30 ended / 33 ongoing**, z rozkładem
+per-k: k=1 → 6/0, k=2 → 11/4, k=3 → 9/11, k=4 → 4/11, k=5 → 0/6, k=6 → 0/1.
+
+Czyli: **poprawne liczby to 30/63 kończyło i 33/63 zostawiało**; wersja 32/31 z poprzedniego
+werdyktu jest błędna (rozjazd w k=2 i k=4), a commit przepisał ją do **trwałego komentarza
+w kodzie produkcyjnym**. Merytorycznie bez skutku — wniosek („mniej więcej połowa układów
+zostawiała oblężenie trwające, naprawa daje 63/63") stoi przy każdej z tych liczb, a sama naprawa
+jest bezwarunkowa i od geometrii niezależna. Ale zgodnie z CLAUDE.md §0b („każda liczba
+przedstawiona właścicielowi jako fakt") — do sprostowania: `main.ts` 23098-23099 oraz sekcja
+`ECHO ABC R-OBLEZENIE-REMIS-MASZYNY-Q2 = A` wyżej w tym pliku (też cytuje 31/63).
+
+### 6. Guard na `city` — jest, wyjątku nie rzuci
+
+`endMapSiege(cityId)` (12061-12078) robi `const city = cities.find(c => c.id === cityId); if (city) {...}` —
+mutacje pól miasta są pod guardem, a czyszczenie `units[].oblegaCityId`, `siegeTurnByCity`,
+`siegeBesiegerByCity` i `refreshSiegeMarkers()` działa poprawnie także dla nieistniejącego id
+(no-op). Samo `city.id` w miejscu wywołania też nie może rzucić: `finishSiegeStormBattle(city: City, …)`
+ma parametr nienullowalny, a wszystkie trzy call-site'y odsiewają brak miasta wcześniej
+(`if (!city || !anchor || !city.maMur) return` w `executeSilentSiegeStorm`; `city!` po guardzie
+w `doSiegeAutoResolve`; domknięcie `bs.play` w ścieżce ręcznej). Nawet gdyby miasto zniknęło
+z tablicy `cities` w międzyczasie, `finishSiegeStormBattle` trzyma **referencję do obiektu**,
+więc `.id` pozostaje czytelne. Scenariusza wyjątku nie ma.
+
+### 7. Pokrycie ścieżek remisu — KOMPLETNE, jedna zmiana wystarcza
+
+Wszystkie trzy ścieżki rozstrzygnięcia szturmu muru lejkują się przez `finishSiegeStormBattle`,
+a więc przez tę samą gałąź `remis`:
+1. `executeSilentSiegeStorm` (szturm AI bez UI, 23184) — wołany z `scanAutoSiegesAfterAiTurn` (12218)
+   i `maybeAiAssaultAfterMachines` (12256);
+2. `doSiegeAutoResolve` (Auto-szturm gracza, 23336);
+3. bitwa ręczna 3D `bs.play(...)` (23404).
+
+`BattleResult['winner']` to dokładnie `'atakujacy' | 'obronca' | 'remis'` (`battle/battleScene.ts` 519-523)
+— trzy gałęzie `afterSiegeUi` są wyczerpujące, nie ma czwartej wartości „remisopodobnej".
+
+**PARYTET GRACZ/AI sprawdzony:** `showSummary = atkOwner === 0 && opts?.summary`, więc szturm AI
+idzie ścieżką bez podsumowania i `afterSiegeUi()` biegnie SYNCHRONICZNIE zaraz po
+`applyMapBattleOutcome` — remis w wykonaniu AI kończy oblężenie tak samo natychmiast jak remis
+gracza. `endMapSiege` i `validateActiveSieges` iterują bez filtra ownera. Bez zarzutu.
+
+Poza zakresem (poprawnie NIETKNIĘTE): `doMapAutoResolve` (21160) też produkuje `'remis'`, ale to
+bitwa **polowa**, bez `siegeContext`, nie szturm muru — reguła Q2=A jej nie dotyczy.
+Obserwacja niskiej wagi, NIE do naprawy w tym temacie: `resolveAutoBattleByPower` może zwrócić
+`'none'` (brak jednostek bojowych w składzie) — wtedy szturm nie dochodzi do skutku i oblężenie
+trwa. To nie jest remis, tylko odmowa rozstrzygnięcia, więc `Q2=A` nie ma tu zastosowania.
+
+### 8. Ryzyko szczątkowe (odnotowane, nie blokuje)
+
+W ścieżce z podsumowaniem `endMapSiege` odpala się dopiero przy zamknięciu panelu. Sprawdziłem
+wszystkie wyjścia: klik „Kontynuuj", `Enter` (`attachKeyboard`) i `Escape`
+(`handlePostBattleEscape` — jawnie woła `activeOnContinue` przed `hidePostBattleSummary`) —
+**wszystkie trzy odpalają callback**, więc reguła się wykonuje. Jedyne miejsce, które połyka
+callback, to `resetStuckInteractiveState()` (`main.ts` 6924, `hidePostBattleSummary()` bez wywołania
+`activeOnContinue`), ale jego trzej wołający — `prepareSessionForLoad`, `openStartupMainMenu`,
+`onMainMenu` — to ścieżki rozbiórki sesji, gdzie stan w pamięci i tak jest zastępowany. Realnej
+dziury save/load nie znalazłem.
+
+### Werdykt
+
+**PASS-WITH-NOTES.** Decyzja `R-OBLEZENIE-REMIS-MASZYNY-Q2 = A` jest zaimplementowana poprawnie
+i jako **bezwarunkowa reguła silnika**, niezależna od geometrii `placeFanOutGroup`, we wszystkich
+trzech ścieżkach szturmu, z parytetem gracz/AI. Wszystkie bramki zielone, build przechodzi,
+usunięcie zdublowanego `refreshSiegeMarkers()` bezpieczne, guardy na miejscu, kolizji z niczym
+asynchronicznym nie ma (bo asynchroniczności w tej ścieżce nie ma w ogóle).
+
+Dwie noty do domknięcia w osobnej turze, **żadna nie jest warunkiem deployu**:
+* **G1** — §2 nowego testu nie zabezpiecza podpięcia naprawy (252/265 asercji przechodzi
+  z usuniętą naprawą); ochronę daje wyłącznie strażnik tekstowy. Do rozważenia: dopiąć §2 do
+  gałęzi remisu tak, jak §1 robi to tekstowo, albo przynajmniej poprawić mylący `[info]`.
+* **G2** — liczby `32/63` i `31/63` w trwałym komentarzu `main.ts` 23098-23099 są błędne;
+  zmierzone niezależnie (trzy warianty, zgodne co do jednego układu): **30/63 kończyło,
+  33/63 zostawiało**. Do sprostowania w komentarzu i w sekcji ECHO wyżej w tym pliku.
+
+STATUS: **OTWARTE — G1 i G2 do domknięcia (noty Evaluatora, nie blokują deployu)**
