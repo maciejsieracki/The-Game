@@ -20367,3 +20367,48 @@ znacząco wysokość każdej karty.
 **STATUS: dispatch w TYM SAMYM prototypie co P-NEWGAME-CYWILIZACJE-ZASLANIAJA-START (ten sam
 plik `newGameFlow.ts`, ten sam ekran, warto zrobić razem — skrócenie kart tooltipami też pomaga
 z problemem zasłaniania). Zbudować, zrobić zrzuty przed/po, wysłać do przeglądu przed scaleniem.**
+
+## P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA (2026-08-14, zgłoszenie Macieja ze zrzutem tooltipa Łąka) · STATUS: POTWIERDZONY BUG — dispatch fix
+
+Maciej (dosłownie, ze zrzutem tooltipa "Pole mapy — kliknięty heks", Łąka, "Surowce/zasoby: brak
+złoża", brak lasu/rzeki): „w jednym z pytań prosiłem też żebyś sprawdził czy w HEX-ach prawidłowo
+naliczają się wszystkie parametry [...] mi się wydaje, że tam jest groch z kapustą [...] Są tam
+informacje [...] o ulepszeniach, które na przykład nie są możliwe na polskim terenie, tak jak
+Tartak [...] Glinianka chyba też nie powinna być możliwa w miejscach, gdzie nie ma surowca gliny
+[...] linianki nie można budować wszędzie tylko tam gdzie jest SUROWIEC gliny."
+
+**POTWIERDZONE — realny, dokładnie zlokalizowany bug (nie wrażenie):**
+`gra/src/ui/hexContextTooltip.ts`, funkcja `listTerrainPossibleImprovements()` (linie 353-374).
+Filtruje listę WYŁĄCZNIE przez `galleryTerrainEligible(key, teren)` — sprawdza tylko TEREN
+BAZOWY (Łąka/Równina/Wzgórza/Góry...), ignorując `nakladka`/`zloze` (czy heks ma faktycznie Las,
+złoże gliny, złoże rudy itd.). Jedyny wyjątek to 3 ręcznie dopisane sprawdzenia dla
+bydło/owce/lama (linie 361-363) — Tartak, Glinianka, Kopalnia żelaza/miedzi/złota/cyny, Warzelnia
+soli, Wyrąb, Obóz łowiecki NIE mają analogicznego sprawdzenia nakladka/zloze, więc pokazują się
+na KAŻDYM heksie zgodnym terenem bazowym, niezależnie od tego czy realnie ma tam Las/złoże.
+
+**Dowód — prawdziwa, autorytatywna logika eligibility ISTNIEJE już w kodzie** i jest używana przy
+faktycznej budowie (`gra/src/map/improvement-build.ts`, funkcja `createQualifier()` ~linia 591,
+eksportowana przez `buildImprovementQualifier()` ~linia 819) — poprawnie wymaga:
+`tartak`: `nakladka === Nakladka.Las` (linia 765-768)
+`glinianka`: `hexHasClayDeposit(hex)` (linia 751-752, funkcja eksportowana, gotowa do reużycia)
+`wyrab`: `nakladka === Nakladka.Las` (linia 759-763)
+`oboz_lowiecki`: `nakladka === Nakladka.Las || hasAnimalDeposit(nakladka)` (linia 770-772)
+`warzelnia_soli`: `teren === Wybrzeze || zloze === 'sol'` (linia 774-776)
+`kopalnia_zelaza`: `(Wzgorza|Gory) && zloze === 'zelazo'` (linia 754-757)
+`kopalnia_miedzi`: `(Wzgorza|Gory) && (zloze==='miedz' || nakladka===ZlozeRudy || zloze==='ruda')` (linia 778-781)
+`kopalnia_zlota`: `(Wzgorza|Gory) && zloze === 'zloto'` (linia 783-786)
+`kopalnia_cyny`: analogiczne (linia ~788+, sprawdzić dokładnie)
+
+Tooltip (`hexContextTooltip.ts`) świadomie POMIJA bramkę tech i terytorium (komentarz w kodzie:
+"bez bramki tech — podgląd mapy") — to jest zamierzone uproszczenie, NIE dotyczy tego bugu. Ale
+pominięcie sprawdzenia nakladka/zloze (własność SAMEGO HEKSU, nie stanu gracza) to błąd, nie
+uproszczenie — dokładnie to zgłosił Maciej.
+
+**STATUS: dispatch Operatora (Sonnet 5) — dodać w `listTerrainPossibleImprovements()` analogiczne
+sprawdzenia nakladka/zloze dla WSZYSTKICH kluczy ulepszeń wymagających konkretnego terenu/złoża
+(nie tylko bydło/owce/lama), wzorem logiki w `createQualifier()`/`improvement-build.ts` — reużyć
+gotowe eksportowane funkcje (`hexHasClayDeposit` itd.) zamiast kopiować logikę. Napisać test
+dowodzący na przykładzie z Twojego zrzutu: Łąka bez lasu/złoża NIE pokazuje Tartaka/Glinianki/
+kopalń, a analogiczny heks Wzgórza+złoże żelaza POKAZUJE Kopalnię żelaza. Sprawdzić przy okazji
+WSZYSTKIE pozostałe klucze ulepszeń w `IMPROVEMENT_KEYS` pod kątem tej samej luki (nie tylko
+wymienione wyżej — zrobić to systematycznie, nie punktowo).**
