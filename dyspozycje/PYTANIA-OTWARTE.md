@@ -19573,6 +19573,15 @@ właścicielowi (SendUserFile).
 kolejnych 10 zakładek (Praca/Nauka/Spichlerz/Surowce/Handel/Armia/Miasto/Obywatele/Kultura/
 Religia) — Skarbiec (Faza 1) już zaimplementowany i naprawiony (9cbfc8ae).**
 
+**AKTUALIZACJA 2026-08-14 (Maciej, żywy playtest FALA 280):** potwierdzone wprost, które zakładki
+nadal wyglądają po staremu: **Armia, Miasto, Obywatele, Kultura** — stare, nietknięte. **Religia**
+— już zaktualizowana (to NIE efekt tego projektu; wynik wcześniejszego, osobnego „Panel Faza 2
+(Praca/Nauka/Religia)", scalonego dawniej w tej sesji, przed dostarczeniem paczki designera
+11-zakładek). Skarbiec potwierdzony jako zrobiony niezależnie (wyżej). Nie sprawdzono jeszcze
+żywo: Praca, Nauka, Spichlerz, Surowce, Handel — ale Praca/Nauka najpewniej też już zaktualizowane
+przez to samo „Panel Faza 2" co Religia (do potwierdzenia, nie zakładać). Czysta informacja
+zwiadowcza — nie zmienia STATUS, żadna implementacja jeszcze nie dispatchowana.
+
 ## R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień) · STATUS: **ZABLOKOWANE NA ABC (Q2) — kod scalony i bezpieczny, liczby wymagają potwierdzenia**
 
 **AKTUALIZACJA (2026-08-14, sygnał właściciela):** Maciej: „pracuj autonomicznie teraz przez całą
