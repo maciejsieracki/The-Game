@@ -257,6 +257,7 @@ import {
   civColorCssForOwner,
   civColorForOwner,
   civColorHex,
+  relationBorderColor,
 } from './game/civ-visual';
 import {
   evaluateWonderBuildGate,
@@ -667,6 +668,8 @@ import {
   disposeRangeOverlayGroup,
   CULTURE_RANGE_STYLE,
   RELIGION_RANGE_STYLE,
+  TERRITORY_BORDER_BAND_WIDTH,
+  TERRITORY_BORDER_OPACITY,
 } from './render/rangeOverlay';
 import {
   buildTradeRoutesOverlayGroup,
@@ -3029,6 +3032,23 @@ async function boot(): Promise<void> {
 
     function civColorFn(ownerId: number): number {
       return civColorForOwner(data.civs, ownerId, civTypeForOwner);
+    }
+
+    /**
+     * R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (Maciej, 2026-08-14): kolor DRUGIEJ, wewnętrznej
+     * obwódki granicy — relacja dyplomatyczna gracz↔właściciel, nie tożsamość cywilizacji.
+     * Własne terytorium (ownerId 0) dostaje ten SAM kolor co obwódka zewnętrzna, więc czyta
+     * się jako jedna, grubsza granica — dokładnie tak jak w specyfikacji właściciela.
+     * Barbarzyńcy nie są tu osobnym przypadkiem: `getDiploRelation` wymusza im status
+     * 'wojna', więc wpadają w czerwień tą samą drogą co każdy inny wróg (C-BARB-Q1).
+     * / EN: color of the SECOND, inner border band — the player↔owner diplomatic relation,
+     * not civ identity. Own territory (ownerId 0) reuses the outer color, so it reads as one
+     * thicker border. Barbarians need no special case: getDiploRelation forces 'wojna' on
+     * them, so they land on red through the very same path as any other enemy.
+     */
+    function relationColorFn(ownerId: number): number {
+      if (ownerId === 0) return civColorFn(0);
+      return relationBorderColor(getDiploRelation(0, ownerId).status);
     }
 
     function civKolorHexFn(ownerId: number): string {
@@ -7920,8 +7940,28 @@ async function boot(): Promise<void> {
 
     function setDiploRelation(a: number, b: number, rel: Relation): void {
       const key = a < b ? `${a}_${b}` : `${b}_${a}`;
+      const prevStatus = diplomacyRelations.get(key)?.status;
       diplomacyRelations.set(key, rel);
       refreshCityMapOutlines();
+      // R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1: wewnętrzna obwódka granicy koduje relację
+      // gracz↔właściciel, więc musi się przemalować natychmiast po wypowiedzeniu wojny /
+      // zawarciu sojuszu, a nie dopiero na końcu tury (tam odświeża ją tick tury) ani po
+      // ruchu jednostki (tam odświeża ją mgła). Tą samą drogą co obrysy miast wyżej —
+      // setDiploRelation jest JEDYNYM miejscem zmiany statusu pary w silniku.
+      // Dwa filtry, bo przebudowa obwodu jest O(heksy × miasta) i leci przez WSZYSTKICH
+      // właścicieli: (1) pary bez gracza (AI↔AI) nie zmieniają koloru ŻADNEJ obwódki;
+      // (2) tura AI przepisuje relację z graczem co turę dla każdego rywala (zaufanie /
+      // respekt) — bez zmiany STATUSU kolor obwódki jest ten sam, więc nie ma czego
+      // przemalowywać. Porównanie po WARTOŚCI statusu, nie po referencji: w silniku nie ma
+      // dziś mutacji `rel.status` w miejscu (każda zmiana idzie przez nowy obiekt), więc
+      // stary status realnie odczytuje się tu sprzed zapisu.
+      // / EN: the inner border band encodes the player↔owner relation, so it must repaint
+      // the moment war is declared / an alliance is signed, not at end of turn. Same hook
+      // as the city outlines above — setDiploRelation is the ONLY status mutation point.
+      // Two filters, since the rebuild is O(hexes × cities) over every owner: AI↔AI pairs
+      // change no band color, and the AI turn rewrites the player relation every turn for
+      // trust/respect without touching the status.
+      if ((a === 0 || b === 0) && prevStatus !== rel.status) refreshTerritoryBorderOverlay();
     }
 
     function refreshCityMapOutlines(): void {
@@ -10385,7 +10425,14 @@ async function boot(): Promise<void> {
         return vis.has(key) || explored.has(key);
       });
       if (byOwner.size === 0) return;
-      territoryBorderGroup = buildTerritoryBorderGroup(map, byOwner, civColorFn);
+      territoryBorderGroup = buildTerritoryBorderGroup(
+        map,
+        byOwner,
+        civColorFn,
+        TERRITORY_BORDER_BAND_WIDTH,
+        TERRITORY_BORDER_OPACITY,
+        relationColorFn,
+      );
       scene.add(territoryBorderGroup);
     }
 

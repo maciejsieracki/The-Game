@@ -243,9 +243,26 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
 
 /** Obrys granicy państwa — szeroki pas (world units), nie cienka linia WebGL 1px. */
 export const TERRITORY_BORDER_BAND_WIDTH = 0.45;
+/**
+ * R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (Maciej, 2026-08-14): DRUGA obwódka, rysowana
+ * do WEWNĄTRZ tego samego obwodu, „o połowę cieńsza" od zewnętrznej — stąd dokładnie
+ * połowa `TERRITORY_BORDER_BAND_WIDTH`, a nie osobna liczba do rozjechania się.
+ * / EN: SECOND band, drawn INWARD along the same loop, "half as thin" as the outer one —
+ * hence exactly half of TERRITORY_BORDER_BAND_WIDTH, not a separate drifting constant.
+ */
+export const TERRITORY_RELATION_BAND_WIDTH = TERRITORY_BORDER_BAND_WIDTH / 2;
 /** Jednolita przezroczystość pasa granicy terytorium. */
 export const TERRITORY_BORDER_OPACITY = 0.7;
 export const TERRITORY_BORDER_Y_OFFSET = 0.042;
+/** Podniesienie pasa zewnętrznego nad wspólną płaszczyznę obwodu. / EN: outer band y bump. */
+export const TERRITORY_BORDER_Y_BUMP = 0.004;
+/**
+ * Pas wewnętrzny wyżej od zewnętrznego — oba stykają się wzdłuż tej samej polilinii
+ * obwodu, więc bez tej różnicy krawędź styku migotałaby (z-fighting).
+ * / EN: inner band sits above the outer one; they meet along the same loop polyline, so
+ * without this delta the shared edge would z-fight.
+ */
+export const TERRITORY_RELATION_Y_BUMP = 0.008;
 
 function segmentOutwardNormal(
   ax: number,
@@ -278,7 +295,14 @@ function segmentOutwardNormal(
   return { nx, nz };
 }
 
-/** Pas wzdłuż zamkniętej pętli obwodu — ciągły kontur, joiny w wierzchołkach. */
+/**
+ * Pas wzdłuż zamkniętej pętli obwodu — ciągły kontur, joiny w wierzchołkach.
+ * `bandWidth` UJEMNY odwraca stronę: pas idzie DO WEWNĄTRZ terytorium (obwódka relacji
+ * dyplomatycznej). Trójkąty odwracają wtedy nawinięcie, co jest nieszkodliwe — materiał
+ * pasa jest `THREE.DoubleSide`.
+ * / EN: NEGATIVE `bandWidth` flips the side: the band runs INWARD (diplomatic relation
+ * band). Triangle winding flips, which is harmless — the band material is DoubleSide.
+ */
 function appendBorderBandLoop(
   loop: BorderLoopPoint[],
   bandWidth: number,
@@ -289,6 +313,7 @@ function appendBorderBandLoop(
 ): void {
   const n = loop.length;
   if (n < 3) return;
+  if (bandWidth === 0) return;
 
   const outers: { x: number; z: number }[] = new Array(n);
 
@@ -351,9 +376,13 @@ function buildTerritoryBorderMesh(
   bandWidth: number,
   flatY: number,
   opacity: number,
+  /** +1 = pas na zewnątrz obwodu (tożsamość civ), -1 = do wewnątrz (relacja). / EN: +1 outward, -1 inward. */
+  side: 1 | -1 = 1,
+  /** Podniesienie nad wspólną płaszczyznę obwodu. / EN: lift above the shared loop plane. */
+  yBump: number = TERRITORY_BORDER_Y_BUMP,
 ): THREE.Mesh | null {
   if (bandWidth <= 0) return null;
-  const y = flatY + 0.004;
+  const y = flatY + yBump;
 
   const hexCenter = (q: number, r: number): { x: number; z: number } | null => {
     const hex = map.hexes[`${q},${r}`];
@@ -369,7 +398,7 @@ function buildTerritoryBorderMesh(
   const viRef = { v: 0 };
 
   for (const loop of loops) {
-    appendBorderBandLoop(loop, bandWidth, y, positions, indices, viRef);
+    appendBorderBandLoop(loop, bandWidth * side, y, positions, indices, viRef);
   }
 
   if (positions.length === 0) return null;
@@ -389,13 +418,24 @@ function buildTerritoryBorderMesh(
   return mesh;
 }
 
-/** Obrys zewnętrznej krawędzi terytorium per właściciel (kolor cywilizacji). */
+/**
+ * Obrys granicy terytorium per właściciel: pas ZEWNĘTRZNY w kolorze cywilizacji
+ * (`colorFn`) plus — gdy podano `relationColorFn` — pas WEWNĘTRZNY, o połowę węższy,
+ * w kolorze relacji dyplomatycznej gracz↔właściciel (R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1).
+ * Oba pasy leżą na tej samej polilinii obwodu z `computeTerritoryBorderLoops` — geometria
+ * konturu jest liczona RAZ na pas, ale z tych samych pętli, więc nie mogą się rozjechać.
+ * / EN: territory border per owner: OUTER band in the civ color plus — when
+ * `relationColorFn` is given — an INNER, half-width band in the player↔owner diplomatic
+ * relation color. Both bands ride the same boundary loops, so they cannot drift apart.
+ */
 export function buildTerritoryBorderGroup(
   map: GameMap,
   hexKeysByOwner: Map<number, Set<string>>,
   colorFn: (ownerId: number) => number,
   bandWidth = TERRITORY_BORDER_BAND_WIDTH,
   opacity = TERRITORY_BORDER_OPACITY,
+  relationColorFn?: (ownerId: number) => number,
+  relationBandWidth = bandWidth / 2,
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'territory-border-overlay';
@@ -411,10 +451,27 @@ export function buildTerritoryBorderGroup(
       bandWidth,
       flatBorderY,
       opacity,
+      1,
+      TERRITORY_BORDER_Y_BUMP,
     );
     if (border) {
       border.name = `territory-border-${ownerId}`;
       group.add(border);
+    }
+    if (!relationColorFn) continue;
+    const relation = buildTerritoryBorderMesh(
+      map,
+      hexKeys,
+      relationColorFn(ownerId),
+      relationBandWidth,
+      flatBorderY,
+      opacity,
+      -1,
+      TERRITORY_RELATION_Y_BUMP,
+    );
+    if (relation) {
+      relation.name = `territory-relation-${ownerId}`;
+      group.add(relation);
     }
   }
   return group;
