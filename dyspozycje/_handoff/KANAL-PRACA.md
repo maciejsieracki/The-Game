@@ -6967,3 +6967,37 @@ ROBOCZA md5 `ab4ffc156f11fb6204355db7757b3dbf` · stempel `ROBOCZA · 92c5101d �
 |- Scalenie do `main`: **FALA 279 (`f9589690`) scalona osobno zaraz po tym deployu** (rytm „jedna fala do
    tyłu", `R-MERGE-MAIN-RYTM-Q1`). FALA 280 zostaje na gałęzi do testów, kwalifikuje się dopiero przy FALI 281.
 CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `ab4ffc15`".
+
+## [15:11 PL, 2026-08-14] SESJA CHMUROWA → SESJA LOKALNA — FALA 281 + FALA 282 (⛔ krytyczny fix), main scalony o jedną falę do tyłu
+
+Dwa deploye w krótkim odstępie, oba na wyraźne polecenie właściciela ("zrób deploy z tym co masz,
+a jak skończysz resztę, zrób ostatni").
+
+**FALA 281 (`7c92c364`, 12:40 UTC)** — drogi ruch/handel (×3/×5 + podłoga bruku), granice styk
+czytelność (2 rundy), reset ustawień okolicy po zmianie właściciela, nowa ikona Rudy cyny, bilans
+traktatu handlowego spójny z bramką akceptacji (2 rundy), usunięty wybór miasta przy handlu
+żywnością, wzmocniony test remisu oblężenia, ⚠️ atak z dystansu na mapie (Evaluator FAIL — AI bez
+parytetu przy ataku na miasto, capture zamiast attack na pustym mieście, teleport zwycięzcy do 6
+heksów — zdeployowane mimo FAIL na wyraźne polecenie właściciela, pytanie `P-BITWA-ATAK-DYSTANS-
+TELEPORT-Q1` czeka w `ZGLOSZENIA-CZEKAJACE-NA-LIMIT.md`).
+
+**FALA 282 (`d3b43ac6`, 13:11 UTC, ZASTĘPUJE 281) — ⛔ KRYTYCZNE:** naprawiony blackout mapy świata
+po wygranej bitwie (kamera mapy dryfowała pod nakładką bitwy — `camCtrl.update()` leciał
+bezwarunkowo, WASD/edge-pan kamery bitwy przesuwał kamerę mapy pod spodem; naprawa: rejestr
+`battleSceneOpen.ts` + bramka w `renderLoop`/`isWorldMapUnitMode`). Odtworzone i zweryfikowane w
+headless Chromium (próbkowanie koloru canvasu, 15 pomiarów przed/po, zero regresji). Do tego:
+produkcja konwerterów w liście budynków miasta (runda 2, funkcja domenowa w silniku zamiast
+tautologicznego testu) i naprawiony rozjazd HUD-u imperium vs silnik dla Odlewni żelaza/Wielkiej
+odlewni.
+
+⚠️ **Uwaga dla sesji lokalnej:** fix blackoutu, city-panel runda 2 i HUD-konwerter NIE mają jeszcze
+formalnego werdyktu Evaluatora — Maciej wstrzymał dispatch Evaluatorów z powodu limitu sesji
+(2026-08-14), wraca do tego po odnowie limitu w środę. Kod zweryfikowany osobiście przeze mnie
+(bramki + odczyt diffu) — solidny, ale to nie zastępuje niezależnej oceny. Pełna lista w
+`dyspozycje/ZGLOSZENIA-CZEKAJACE-NA-LIMIT.md` (nowa kategoria 6 raportu).
+
+**Scalenie do `main`: FALA 281 (`7c92c364`, deploy commit) scalona osobno zaraz po tym wpisie**
+(rytm „jedna fala do tyłu"). FALA 282 zostaje na gałęzi do testów, kwalifikuje się dopiero przy
+kolejnej fali.
+
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `d3b43ac6`".
