@@ -58,3 +58,27 @@ nielegalnego ruchu przez nieprzejezdny teren) — ale to nie jest pilne, wystarc
 odnowie limitu.
 
 **STATUS: CZEKA NA ODNOWĘ LIMITU (Evaluator FAIL, runda 2 wymagana — nie krytyczne).**
+
+---
+
+## P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE — runda 2 (2026-08-14)
+
+**Stan:** Operator dostarczył rundę 2 (`dcdf653c`+`4bfeec7f`, scalone do gałęzi sesji), adresując
+N1 (funkcja czysta w `converters.ts` + test przeciw prawdziwemu `runConverter`), N2, N4, N6.
+Bramki własnoręcznie zweryfikowane: tsc 0, `citypanel-konwerter-produkcja-test` 83/83,
+`converters-test` 46/46, `converter-era-scaling-test` 87/87, `tech-tree`/`research` zielone.
+**Nie dispatchowałem Evaluatora** (limit) — merytorycznie wygląda solidnie (prawdziwa funkcja
+domenowa, twarde liczby przypięte), ale bez niezależnej weryfikacji formalnie nie zamknięte.
+
+**STATUS: CZEKA NA ODNOWĘ LIMITU (Operator gotowy, Evaluator odłożony — nie krytyczne).**
+
+---
+
+## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (2026-08-14)
+
+**Stan:** Operator dostarczył (`9482117f`, omyłkowo na `main`, scalone do gałęzi sesji jako
+`4a580231` — zobacz notę procesową w `PYTANIA-OTWARTE.md`). Poprawka 1-liniowa + test 20/20,
+kod zweryfikowany osobiście przy scalaniu, bramki zielone. **Nie dispatchowałem Evaluatora**
+(limit).
+
+**STATUS: CZEKA NA ODNOWĘ LIMITU (Operator gotowy, Evaluator odłożony — nie krytyczne).**
