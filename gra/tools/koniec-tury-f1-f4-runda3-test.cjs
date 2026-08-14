@@ -33,6 +33,20 @@
  *   przeżywała Nową grę / wczytanie bez pełnego reload strony. Naprawa: nowy eksport
  *   `clearDeferredAutoPreBattleQueue()`, wołany w resetEndTurnBlockers().
  *
+ * AKTUALIZACJA RUNDA 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej 2026-08-14):
+ * F2 z tego pliku (timeout 8000ms WEWNĄTRZ gałęzi 1) okazał się WNOSIĆ regresję G1 --
+ * kasował LEGALNIE odroczoną bitwę, gdy modal blokujący (audiencja/scalenie armii) był
+ * otwarty >8s, w tym deterministycznie w wąskim oknie onBack audiencji (modal już zamknięty,
+ * zaplanowany rAF flush jeszcze się nie odpalił). Dodatkowo G2: bitwa barbarzyńska (oba flagi
+ * puste z definicji) nie miała ŻADNEJ ścieżki sprzątania, bo timeout siedział w gałęzi
+ * bramkowanej `aiTurnAwaitingBattle||aiCmdResume`. F2 USUNIĘTE z tej funkcji, PRZENIESIONE do
+ * nowej `healStuckDeferredPreBattleQueueOnEndTurnAttempt()` -- wołanej WYŁĄCZNIE z
+ * triggerPlayerEndTurn (rzeczywista próba końca tury), nigdy z pasywnej sondy canEndTurn.
+ * Pełne scenariusze G1/G2 -- test dedykowany `koniec-tury-g1-g2-runda4-test.cjs`. Ten plik
+ * zaktualizowany tak, żeby [F1-A5] i mirror healBranch1Mirror odzwierciedlały formułę PO
+ * usunięciu F2 (patrz sekcja "F2" niżej, teraz demonstrująca ODWROTNOŚĆ -- że gałąź 1 NIE
+ * czyści już nic na podstawie samego wieku żądania).
+ *
  * Wzorzec identyczny jak heal-stale-blockers-pending-battle-test.cjs / end-turn-modal-
  * sequencing-test.cjs / barbarzyncy-podwojny-atak-prebattle-test.cjs -- main.ts (30+ tys.
  * linii, monolityczny bootstrap zależny od document/window/three.js) nie da się zbundlować
@@ -85,28 +99,34 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
     '[F1-A4 kontrola] flushDeferredAutoPreBattle() nadal PO onResolved() (niezmienione przez F1)');
 
   // Gałąź 1 healStaleEndTurnBlockers honoruje battleUiResolving.
+  //
+  // AKTUALIZACJA RUNDA 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej
+  // 2026-08-14): formuła NIE zawiera już `pendingBattleStuck` -- ten fragment (F2, próg
+  // 8000ms) PRZENIESIONY poza tę funkcję, do healStuckDeferredPreBattleQueueOnEndTurnAttempt()
+  // (wołanej WYŁĄCZNIE z triggerPlayerEndTurn, nigdy z pasywnej sondy canEndTurn -- powód: G1,
+  // deterministyczna ścieżka onBack audiencji -> refreshD1bHud() -> heal PRZED zaplanowanym
+  // rAF flushem, patrz komentarz w main.ts przy gałęzi 1). Pin poniżej zaktualizowany na
+  // formułę SPRZED rundy 3 (identyczną jak N1/runda 2, plus !battleUiResolving z F1).
   const hsStart = mainSrc.indexOf('function healStaleEndTurnBlockers(): void {');
   const hsEnd = hsStart >= 0 ? mainSrc.indexOf('\n    function canPlayerInitiateEndTurn', hsStart) : -1;
   const hsBody = (hsStart >= 0 && hsEnd > hsStart) ? mainSrc.slice(hsStart, hsEnd) : '';
-  ok(/if \(!preBattle && !battleUiResolving && \(!hasPendingAutoPreBattle\(\) \|\| pendingBattleStuck\) && \(aiTurnAwaitingBattle \|\| aiCmdResume\)\) \{/.test(hsBody),
-    '[F1-A5] healStaleEndTurnBlockers gałąź 1 sprawdza !battleUiResolving (dodatkowy warunek obok hasPendingAutoPreBattle/timeout)');
+  ok(/if \(!preBattle && !battleUiResolving && !hasPendingAutoPreBattle\(\) && \(aiTurnAwaitingBattle \|\| aiCmdResume\)\) \{/.test(hsBody),
+    '[F1-A5] healStaleEndTurnBlockers gałąź 1 sprawdza !battleUiResolving (dodatkowy warunek obok hasPendingAutoPreBattle); runda 4: BEZ pendingBattleStuck (przeniesiony)');
 }
 
-// --- F2 -----------------------------------------------------------------
+// --- F2 -------------------------------------------------------------------
+// SUPERSEDED w rundzie 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej
+// 2026-08-14): F2 (próg 8000ms wewnątrz gałęzi 1 healStaleEndTurnBlockers) wnosił G1 (kasował
+// LEGALNIE odroczoną bitwę, gdy modal blokujący był otwarty >8s -- i deterministycznie w
+// wąskim oknie onBack audiencji, PO jej zamknięciu, ale PRZED zaplanowanym rAF flushem) oraz
+// G2 (bitwa barbarzyńska -- oba flagi puste z definicji -- nie miała ŻADNEJ ścieżki
+// sprzątania, bo timeout siedział w gałęzi bramkowanej aiTurnAwaitingBattle||aiCmdResume).
+// Mechanizm PRZENIESIONY do nowej, dedykowanej funkcji healStuckDeferredPreBattleQueueOnEnd-
+// TurnAttempt() -- wołanej WYŁĄCZNIE z triggerPlayerEndTurn (rzeczywista próba końca tury),
+// niezależnej od aiTurnAwaitingBattle/aiCmdResume. Pełne scenariusze behawioralne G1/G2 --
+// patrz nowy test dedykowany koniec-tury-g1-g2-runda4-test.cjs. Tu zostają WYLACZNIE piny
+// A5-A8 (eksporty ui/preBattle.ts, nadal uzywane -- teraz przez nowa funkcje).
 {
-  const hsStart = mainSrc.indexOf('function healStaleEndTurnBlockers(): void {');
-  const hsEnd = hsStart >= 0 ? mainSrc.indexOf('\n    function canPlayerInitiateEndTurn', hsStart) : -1;
-  const hsBody = (hsStart >= 0 && hsEnd > hsStart) ? mainSrc.slice(hsStart, hsEnd) : '';
-
-  ok(/const pendingBattleAgeMs = oldestPendingAutoPreBattleAgeMs\(\);/.test(hsBody),
-    '[F2-A1] healStaleEndTurnBlockers czyta oldestPendingAutoPreBattleAgeMs()');
-  ok(/const pendingBattleStuck = pendingBattleAgeMs > 8000;/.test(hsBody),
-    '[F2-A2] próg "utknięcia" kolejki = 8000 ms -- ta sama wartość co istniejący wzorzec stuckMs>8000 w gałęzi 4');
-  ok(/if \(pendingBattleStuck\) \{\s*\n\s*console\.warn\('\[EndTurn\] Deferred preBattle queue stuck >8000ms/.test(hsBody),
-    '[F2-A3] gdy pendingBattleStuck, console.warn dedykowany (nie myli się z komunikatem "Clearing stale AI battle resume flags" zwykłej gałęzi 1)');
-  ok(/clearDeferredAutoPreBattleQueue\(\);/.test(hsBody),
-    '[F2-A4] gałąź 1, przy pendingBattleStuck, woła clearDeferredAutoPreBattleQueue() -- czyści też kolejkę, nie tylko flagi');
-
   // preBattle.ts: enqueuedAt + oldestPendingAutoPreBattleAgeMs + clearDeferredAutoPreBattleQueue.
   ok(/const deferredAutoRequests: \{ info: PreBattleInfo; cb: PreBattleCallbacks; opts\?: PreBattleOptions; enqueuedAt: number \}\[\] = \[\];/.test(preBattleSrc),
     '[F2-A5] deferredAutoRequests niesie enqueuedAt na element (timestamp kolejkowania)');
@@ -116,6 +136,17 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
     '[F2-A7] ui/preBattle.ts eksportuje oldestPendingAutoPreBattleAgeMs');
   ok(/export function clearDeferredAutoPreBattleQueue\(\): void \{/.test(preBattleSrc),
     '[F2-A8] ui/preBattle.ts eksportuje clearDeferredAutoPreBattleQueue');
+
+  // Regresja rundy 4: healStuckDeferredPreBattleQueueOnEndTurnAttempt() istnieje i jest wołana
+  // z triggerPlayerEndTurn PRZED sprawdzeniem canPlayerInitiateEndTurn (G2 -- musi się odpalić
+  // nawet na ścieżce, która potem robi early return).
+  ok(/function healStuckDeferredPreBattleQueueOnEndTurnAttempt\(\): void \{/.test(mainSrc),
+    '[F2-A9 runda 4] main.ts deklaruje healStuckDeferredPreBattleQueueOnEndTurnAttempt()');
+  const tpetIdx = mainSrc.indexOf('function triggerPlayerEndTurn(): void {');
+  ok(tpetIdx >= 0, '[F2-A10 runda 4] znaleziono function triggerPlayerEndTurn(');
+  const tpetHead = tpetIdx >= 0 ? mainSrc.slice(tpetIdx, tpetIdx + 400) : '';
+  ok(/function triggerPlayerEndTurn\(\): void \{\s*\n\s*healStuckDeferredPreBattleQueueOnEndTurnAttempt\(\);\s*\n\s*if \(!canPlayerInitiateEndTurn\(\)\) \{/.test(tpetHead),
+    '[F2-A11 runda 4] triggerPlayerEndTurn woła healStuckDeferredPreBattleQueueOnEndTurnAttempt() JAKO PIERWSZĄ instrukcję, PRZED sprawdzeniem canPlayerInitiateEndTurn() -- inaczej G2 (early return) omijałby sprzątanie');
 }
 
 // --- F3 -----------------------------------------------------------------
@@ -267,18 +298,20 @@ async function runUiPart() {
   configurePreBattle({ isOtherEndTurnModalOpen: () => blocked });
 
   // -------------------------------------------------------------------------
-  // Mirror gałęzi 1 healStaleEndTurnBlockers() PO naprawie F1+F2 -- formuła pinowana
-  // bajt-w-bajt w [F1-A5] wyżej, więc dryf main.ts daje FAIL w części A zanim ten mirror
-  // zdąży się zdezaktualizować. Karmiony PRAWDZIWYMI isPreBattleOpen()/
-  // hasPendingAutoPreBattle()/oldestPendingAutoPreBattleAgeMs() z tego samego zbundlowanego
-  // ui/preBattle.ts co reszta testu.
+  // Mirror gałęzi 1 healStaleEndTurnBlockers() -- formuła pinowana bajt-w-bajt w [F1-A5]
+  // wyżej, więc dryf main.ts daje FAIL w części A zanim ten mirror zdąży się zdezaktualizować.
+  // Karmiony PRAWDZIWYMI isPreBattleOpen()/hasPendingAutoPreBattle() z tego samego
+  // zbundlowanego ui/preBattle.ts co reszta testu.
+  //
+  // AKTUALIZACJA RUNDA 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej
+  // 2026-08-14): formuła NIE zawiera już pendingBattleStuck/timeout (F2 z rundy 3,
+  // przeniesiony do healStuckDeferredPreBattleQueueOnEndTurnAttempt() -- patrz mirror
+  // dedykowany w koniec-tury-g1-g2-runda4-test.cjs). Ten mirror wraca do formuły SPRZED
+  // rundy 3 (identycznej jak N1/runda 2, plus !battleUiResolving z F1).
   // -------------------------------------------------------------------------
   function healBranch1Mirror(state, battleUiResolving) {
     const preBattle = isPreBattleOpen();
-    const pendingBattleAgeMs = oldestPendingAutoPreBattleAgeMs();
-    const pendingBattleStuck = pendingBattleAgeMs > 8000;
-    if (!preBattle && !battleUiResolving && (!hasPendingAutoPreBattle() || pendingBattleStuck) && (state.aiTurnAwaitingBattle || state.aiCmdResume)) {
-      if (pendingBattleStuck) clearDeferredAutoPreBattleQueue();
+    if (!preBattle && !battleUiResolving && !hasPendingAutoPreBattle() && (state.aiTurnAwaitingBattle || state.aiCmdResume)) {
       state.aiTurnAwaitingBattle = false;
       state.aiCmdResume = null;
     }
@@ -348,11 +381,18 @@ async function runUiPart() {
   }
 
   // =========================================================================
-  // F2 -- TIMEOUT faktycznie się odpala po przekroczeniu progu (8000 ms).
+  // F2 -- SUPERSEDED w rundzie 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej
+  // 2026-08-14). Runda 3 dawała gałęzi 1 timeout 8000ms -- to WNOSIŁO regresję G1
+  // (deterministycznie kasowało LEGALNIE odroczoną bitwę w wąskim oknie onBack audiencji:
+  // modal już zamknięty, ale zaplanowany rAF flush jeszcze się nie odpalił). Ten blok
+  // TERAZ dowodzi PRZECIWIEŃSTWA -- że gałąź 1 (healBranch1Mirror, formuła zaktualizowana
+  // wyżej) NIE kasuje flag/kolejki, NIEZALEŻNIE od wieku żądania, dopóki kolejka jest
+  // niepusta -- czyli pasywna pętla renderu HUD jest odporna na wyścig z rAF flushem.
+  // Pełne scenariusze G1 (timeout kontekstowy przy interaktywnej próbie końca tury) i G2
+  // (ścieżka barbarzyńska) -- patrz koniec-tury-g1-g2-runda4-test.cjs.
   // =========================================================================
   {
-    // "Świeże" odroczenie (age ~=0ms) -- pendingBattleStuck MUSI być false, gałąź 1 MUSI
-    // uszanować kolejkę (kontrola negatywna -- nie chcemy timeoutu strzelającego od razu).
+    // "Świeże" odroczenie (age ~=0ms).
     blocked = true;
     showPreBattle(baseInfo, { onAuto: () => {}, onBattlefield: () => {}, onCancel: () => {} }, { auto: true });
     ok(hasPendingAutoPreBattle() === true, '[F2 setup] żądanie odłożone do kolejki (świeże)');
@@ -371,26 +411,31 @@ async function runUiPart() {
     ok(hasPendingAutoPreBattle() === false, '[F2 sprzątanie] kolejka pusta po flushu');
 
     // Żądanie "zaległe" -- enqueuedAt cofnięty w przeszłość przez tymczasowe podmienienie
-    // Date.now (deterministyczne, bez realnego sleep 8+ sekund w bramce).
+    // Date.now (deterministyczne, bez realnego sleep 8+ sekund w bramce). Modal blokował W
+    // CHWILI odłożenia (blocked=true, żeby żądanie w ogóle trafiło do kolejki), ale zamknął
+    // się PÓŹNIEJ, PRZED wywołaniem heala (blocked=false poniżej) -- to jest DOKŁADNIE stan
+    // G1: żaden modal blokujący W CHWILI SPRAWDZENIA, żądanie stare, ALE nadal wołane z
+    // pasywnej ścieżki (healBranch1Mirror), nie z interaktywnej próby końca tury.
     const realDateNow = Date.now;
     blocked = true;
     Date.now = () => realDateNow() - 9000; // 9s "temu"
     showPreBattle(baseInfo, { onAuto: () => {}, onBattlefield: () => {}, onCancel: () => {} }, { auto: true });
     Date.now = realDateNow;
-    ok(hasPendingAutoPreBattle() === true, '[F2 setup] żądanie "zaległe" (enqueuedAt cofnięty o 9s) w kolejce');
+    blocked = false; // modal zamknięty PO odłożeniu, PRZED sprawdzeniem heala
+    ok(hasPendingAutoPreBattle() === true, '[F2 setup] żądanie "zaległe" (enqueuedAt cofnięty o 9s) w kolejce, ŻADEN modal nie blokuje');
     const ageStuck = oldestPendingAutoPreBattleAgeMs();
     ok(ageStuck > 8000, '[F2-C2] oldestPendingAutoPreBattleAgeMs() poprawnie mierzy zaległość > 8000ms (got ' + ageStuck + ')');
 
     const stuckState = { aiTurnAwaitingBattle: true, aiCmdResume: { ownerIdx: 5, cmdIdx: 9 } };
     healBranch1Mirror(stuckState, false);
-    ok(stuckState.aiCmdResume === null && stuckState.aiTurnAwaitingBattle === false,
-      '[F2-C3] żądanie zaległe (> 8000ms) -> gałąź 1 CZYŚCI flagi mimo hasPendingAutoPreBattle()===true (timeout się odpala)');
-    ok(hasPendingAutoPreBattle() === false,
-      '[F2-C3] gałąź 1, przy timeout, CZYŚCI też samą kolejkę (clearDeferredAutoPreBattleQueue) -- żądanie uznane za martwe, nie tylko flagi wznowienia');
+    ok(stuckState.aiCmdResume !== null && stuckState.aiTurnAwaitingBattle === true,
+      '[F2-C3 runda 4, ODWRÓCONE względem rundy 3] żądanie zaległe (> 8000ms), wołane z PASYWNEJ ścieżki (healBranch1Mirror) -> gałąź 1 NIE czyści flagi -- timeout usunięty z tej gałęzi (G1: przeniesiony do interaktywnej healStuckDeferredPreBattleQueueOnEndTurnAttempt, patrz koniec-tury-g1-g2-runda4-test.cjs)');
+    ok(hasPendingAutoPreBattle() === true,
+      '[F2-C3 runda 4] gałąź 1 też NIE czyści kolejki -- kolejka zostaje nietknięta dla rAF flusha, który i tak zaraz ją opróżni');
 
-    // blocked już false (nie zmieniony od czasu ustawienia dla stuck-push) -- zresetuj dla
-    // kolejnych sekcji testu, dla porządku.
     blocked = false;
+    flushDeferredAutoPreBattle();
+    hidePreBattle();
   }
 
   // =========================================================================

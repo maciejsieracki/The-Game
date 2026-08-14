@@ -102,16 +102,31 @@ const preBattleSrc = fs.readFileSync(PREBATTLE_TS, 'utf8');
 }
 
 // A3) healStaleEndTurnBlockers, gałąź 1: warunek rozszerzony o !hasPendingAutoPreBattle()
-//     (runda 2, N1) ORAZ (runda 3, F1+F2) o !battleUiResolving i timeout kolejki
-//     (pendingBattleStuck). Formuła runda 3 pinowana bajt-w-bajt -- patrz test dedykowany
-//     koniec-tury-f1-f4-runda3-test.cjs dla scenariuszy behawioralnych F1/F2/F3/F4.
+//     (runda 2, N1) ORAZ (runda 3, F1) o !battleUiResolving. Formuła pinowana bajt-w-bajt --
+//     patrz test dedykowany koniec-tury-f1-f4-runda3-test.cjs dla scenariuszy F1/F3/F4.
+//
+//     AKTUALIZACJA RUNDA 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej
+//     2026-08-14): runda 3 dodała tu też próg 8000ms (F2, `pendingBattleStuck`) -- ten
+//     fragment formuły USUNIĘTY z tej gałęzi (przeniesiony do NOWEJ, dedykowanej funkcji
+//     healStuckDeferredPreBattleQueueOnEndTurnAttempt(), wołanej WYŁĄCZNIE z
+//     triggerPlayerEndTurn, nigdy z pasywnej sondy canEndTurn -- powód: G1, patrz komentarz w
+//     main.ts przy gałęzi 1). Gałąź 1 wraca więc do formuły SPRZED rundy 3 (identycznej jak
+//     N1/runda 2, plus !battleUiResolving z F1) -- pin poniżej zaktualizowany zgodnie z tym.
+//     Scenariusze G1/G2 (timeout kontekstowy, niezależny od aiTurnAwaitingBattle/aiCmdResume)
+//     -- patrz nowy test dedykowany koniec-tury-g1-g2-runda4-test.cjs.
 {
   const fnStart = mainSrc.indexOf('function healStaleEndTurnBlockers(): void {');
   ok(fnStart >= 0, '[A3] znaleziono function healStaleEndTurnBlockers( w main.ts');
   const fnEnd = fnStart >= 0 ? mainSrc.indexOf('\n    function canPlayerInitiateEndTurn', fnStart) : -1;
   const fnBody = (fnStart >= 0 && fnEnd > fnStart) ? mainSrc.slice(fnStart, fnEnd) : '';
-  ok(/if \(!preBattle && !battleUiResolving && \(!hasPendingAutoPreBattle\(\) \|\| pendingBattleStuck\) && \(aiTurnAwaitingBattle \|\| aiCmdResume\)\) \{/.test(fnBody),
-    '[A3] gałąź 1 (aiTurnAwaitingBattle||aiCmdResume) sprawdza DOKŁADNIE !preBattle && !battleUiResolving && (!hasPendingAutoPreBattle()||pendingBattleStuck) -- N1 (runda 2) + F1/F2 (runda 3) naprawione formułą pinowaną bajt-w-bajt');
+  ok(/if \(!preBattle && !battleUiResolving && !hasPendingAutoPreBattle\(\) && \(aiTurnAwaitingBattle \|\| aiCmdResume\)\) \{/.test(fnBody),
+    '[A3] gałąź 1 (aiTurnAwaitingBattle||aiCmdResume) sprawdza DOKŁADNIE !preBattle && !battleUiResolving && !hasPendingAutoPreBattle() -- N1 (runda 2) + F1 (runda 3) naprawione formułą pinowaną bajt-w-bajt; F2 (runda 3, pendingBattleStuck) PRZENIESIONE poza tę funkcję w rundzie 4 (G1/G2)');
+  // Sprawdzamy WYŁĄCZNIE kod wykonywalny (nie komentarze PL/EN, które celowo wspominają
+  // pendingBattleStuck jako historyczny kontekst naprawy rundy 4) -- ten sam wzorzec
+  // filtrowania co [A4 kontrola] niżej.
+  const codeLinesA3 = fnBody.split('\n').filter(line => !/^\s*(\/\/|\*)/.test(line));
+  ok(!codeLinesA3.some(line => line.includes('pendingBattleStuck')),
+    '[A3 kontrola regresji rundy 4] healStaleEndTurnBlockers NIE zawiera już pendingBattleStuck w kodzie wykonywalnym -- gdyby wróciło, oznaczałoby cofnięcie naprawy G1 (timeout w pasywnej pętli renderu HUD, patrz koniec-tury-g1-g2-runda4-test.cjs)');
 
   // A4) KONTROLA NEGATYWNA -- pozostałe 3 gałęzie NIETKNIĘTE (Evaluator zgłosił problem
   //     WYŁĄCZNIE dla gałęzi aiTurnAwaitingBattle||aiCmdResume; scope discipline C-025).

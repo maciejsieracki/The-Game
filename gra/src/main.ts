@@ -10123,6 +10123,14 @@ async function boot(): Promise<void> {
             const selRep = pickStackRepresentative(merged, unitAttackScore);
             selectPlayerUnit(selRep.id);
             refreshD1bHud();
+            // G-DODATKOWO (Evaluator FAIL 4f24bcda, werdykt 43d4be34, runda 4, Maciej
+            // 2026-08-14): panel scalenia zamknal sie -- odblokuj ewentualne odlozone
+            // automatyczne preBattle, tak samo jak przy showArmyMergePanel wyzej (:9782) --
+            // brakowalo tu tego wywolania, ten call site zamykal panel BEZ flushu.
+            // / EN: the merge panel just closed -- unblock any deferred automatic preBattle,
+            // same as the showArmyMergePanel call above (:9782) -- this call site was missing
+            // it, closing the panel with NO flush.
+            flushDeferredAutoPreBattle();
           },
           onSeparate: () => {
             showHintMessage(
@@ -10130,6 +10138,7 @@ async function boot(): Promise<void> {
               3600,
             );
             refreshD1bHud();
+            flushDeferredAutoPreBattle();
           },
         });
         return;
@@ -10193,8 +10202,14 @@ async function boot(): Promise<void> {
           );
           syncUnitsRender();
           refreshD1bHud();
+          // G-DODATKOWO (Evaluator FAIL 4f24bcda, werdykt 43d4be34, runda 4): patrz komentarz
+          // przy pierwszym brakujacym flushu wyzej w tej samej funkcji.
+          flushDeferredAutoPreBattle();
         },
-        onSeparate: () => refreshD1bHud(),
+        onSeparate: () => {
+          refreshD1bHud();
+          flushDeferredAutoPreBattle();
+        },
       });
     }
 
@@ -23952,49 +23967,54 @@ async function boot(): Promise<void> {
       // runAiPhase() then resumed with aiCmdResume===null, replaying the ENTIRE AI phase
       // from scratch.
       //
-      // RUNDA 3 (Evaluator FAIL 136fefbb, F1+F2, Maciej 2026-08-14): dwa dalsze domknięcia
-      // tej samej gałęzi.
-      // F1: `!battleUiResolving` -- bez tego, gałąź nadal kasowała aiCmdResume w
-      // synchronicznym oknie WEWNĄTRZ finishIncomingBattleUi() (updateHud() woła tę funkcję
-      // przez canEndTurn() ZANIM onResolved() zdąży skonsumować aiCmdResume) -- patrz
-      // deklaracja battleUiResolving wyżej po pełne uzasadnienie. To ścieżka WIELOKROTNIE
-      // częstsza niż odroczenie do kolejki: każdy atak AI na gracza rozstrzygnięty przez
-      // preBattle, nie tylko te odroczone.
-      // F2: `|| pendingBattleStuck` -- runda 2 uzależniła całą gałąź od
-      // hasPendingAutoPreBattle() BEZ ŻADNEGO limitu czasu -- gdyby żądanie utknęło w
-      // kolejce (np. inny bug blokujący ją w nieskończoność), ta gałąź byłaby wyłączona
-      // TRWALE, zamieniając dotychczasową odwracalną degradację (podwójna faza AI) w twardą
-      // blokadę "Zakończ turę". Próg 8000 ms -- ta sama wartość co istniejący wzorzec
-      // `stuckMs > 8000` w gałęzi 4 tej samej funkcji (force-clear utkniętego przejścia
-      // tury) -- żeby nie wprowadzać drugiego, niezależnie dobranego progu czasowego bez
-      // uzasadnienia. Gdy próg przekroczony, CZYŚCI też kolejkę (clearDeferredAutoPreBattleQueue)
-      // -- żądanie, które siedziało tak długo, jest uznane za martwe, nie tylko flagi.
-      // / EN: two further closures of the same branch.
-      // F1: `!battleUiResolving` -- without it, the branch still cleared aiCmdResume inside
-      // the synchronous window WITHIN finishIncomingBattleUi() (updateHud() calls this
-      // function via canEndTurn() BEFORE onResolved() gets to consume aiCmdResume) -- see
-      // the battleUiResolving declaration above for the full rationale. This path is
-      // FAR more common than the queue-deferral path: every AI attack on the player
-      // resolved via preBattle, not only the deferred ones.
-      // F2: `|| pendingBattleStuck` -- round 2 made the whole branch depend on
-      // hasPendingAutoPreBattle() with NO timeout at all -- if a request got stuck in the
-      // queue (e.g. some other bug blocking it forever), this branch would be disabled
-      // PERMANENTLY, turning the previous reversible degradation (double AI phase) into a
-      // hard "End Turn" deadlock. Threshold 8000 ms -- the same value as the existing
-      // `stuckMs > 8000` pattern in branch 4 of this same function (force-clear a stuck
-      // turn transition) -- to avoid introducing a second, independently chosen timeout
-      // without justification. When the threshold is exceeded, ALSO clears the queue
-      // (clearDeferredAutoPreBattleQueue) -- a request that sat that long is considered
-      // dead, not just the flags.
-      const pendingBattleAgeMs = oldestPendingAutoPreBattleAgeMs();
-      const pendingBattleStuck = pendingBattleAgeMs > 8000;
-      if (!preBattle && !battleUiResolving && (!hasPendingAutoPreBattle() || pendingBattleStuck) && (aiTurnAwaitingBattle || aiCmdResume)) {
-        if (pendingBattleStuck) {
-          console.warn('[EndTurn] Deferred preBattle queue stuck >8000ms — clearing queue + stale AI battle resume flags', { pendingBattleAgeMs });
-          clearDeferredAutoPreBattleQueue();
-        } else {
-          console.warn('[EndTurn] Clearing stale AI battle resume flags');
-        }
+      // RUNDA 3 (Evaluator FAIL 136fefbb, F1, Maciej 2026-08-14): `!battleUiResolving` --
+      // bez tego, gałąź nadal kasowała aiCmdResume w synchronicznym oknie WEWNĄTRZ
+      // finishIncomingBattleUi() (updateHud() woła tę funkcję przez canEndTurn() ZANIM
+      // onResolved() zdąży skonsumować aiCmdResume) -- patrz deklaracja battleUiResolving
+      // wyżej po pełne uzasadnienie. To ścieżka WIELOKROTNIE częstsza niż odroczenie do
+      // kolejki: każdy atak AI na gracza rozstrzygnięty przez preBattle, nie tylko te
+      // odroczone.
+      // / EN: ROUND 3 (Evaluator FAIL 136fefbb, F1): `!battleUiResolving` -- without it, the
+      // branch still cleared aiCmdResume inside the synchronous window WITHIN
+      // finishIncomingBattleUi() (updateHud() calls this function via canEndTurn() BEFORE
+      // onResolved() gets to consume aiCmdResume) -- see the battleUiResolving declaration
+      // above for the full rationale. This path is FAR more common than the queue-deferral
+      // path: every AI attack on the player resolved via preBattle, not only the deferred
+      // ones.
+      //
+      // RUNDA 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej 2026-08-14): runda 3
+      // dodała tu próg 8000ms (`pendingBattleStuck`) -- USUNIĘTY z tej gałęzi, PRZENIESIONY do
+      // healStuckDeferredPreBattleQueueOnEndTurnAttempt() (patrz niżej, po hintEndTurnBlocked).
+      // Powód: ta funkcja jest wołana PASYWNIE z pętli renderu HUD (canEndTurn, patrz komentarz
+      // N1 wyżej), W TYM synchronicznie z WNĘTRZA onBack audiencji dyplomatycznej --
+      // hideDiplomacyAudience() -> refreshD1bHud() -> ... -> canEndTurn() -> TU, w oknie GDZIE
+      // modal JUŻ zniknął, ale zaplanowany na kolejną klatkę (rAF) flushDeferredAutoPreBattle()
+      // jeszcze się nie odpalił. isOtherEndTurnModalOpen() w tym oknie zwraca już false
+      // (audiencja zamknięta), więc GDYBY próg czasu żył w TEJ funkcji, kasowałby kolejkę
+      // DOKŁADNIE w tym oknie -- zmierzone przez Evaluatora jako deterministyczna ścieżka G1,
+      // nie hipoteza. Wołając timeout WYŁĄCZNIE z triggerPlayerEndTurn (rzeczywista próba
+      // końca tury, nigdy z pasywnej sondy canEndTurn) mamy gwarancję, że zaplanowany rAF
+      // flush ZAWSZE wygrywa wyścig z timeoutem -- gracz fizycznie nie zdąży kliknąć "Zakończ
+      // turę" w oknie pojedynczej klatki animacji. Gałąź niżej wraca więc do formuły
+      // sprzed rundy 3 (N1/runda 2): flagi kasowane WYŁĄCZNIE gdy kolejka jest już PUSTA.
+      // / EN: ROUND 4 (Evaluator FAIL 4f24bcda, verdict 43d4be34, G1+G2): round 3 added an
+      // 8000ms threshold (`pendingBattleStuck`) here -- REMOVED from this branch, MOVED to
+      // healStuckDeferredPreBattleQueueOnEndTurnAttempt() (see below, after
+      // hintEndTurnBlocked). Reason: this function is called PASSIVELY from the HUD render
+      // loop (canEndTurn, see the N1 comment above), INCLUDING synchronously from INSIDE the
+      // diplomacy audience's onBack handler -- hideDiplomacyAudience() -> refreshD1bHud() ->
+      // ... -> canEndTurn() -> HERE, in the window where the modal has ALREADY closed but the
+      // flush scheduled for the next frame (rAF) flushDeferredAutoPreBattle() hasn't fired
+      // yet. isOtherEndTurnModalOpen() already returns false in that window (audience
+      // closed), so IF the timeout lived in THIS function it would clear the queue in
+      // EXACTLY that window -- measured by the Evaluator as a deterministic path (G1), not a
+      // hypothesis. Calling the timeout ONLY from triggerPlayerEndTurn (an actual end-turn
+      // attempt, never the passive canEndTurn probe) guarantees the scheduled rAF flush
+      // always wins the race against the timeout, because the player can't physically click
+      // "End Turn" within a single animation frame. The branch below therefore reverts to the
+      // pre-round-3 formula (N1/round 2): flags cleared ONLY once the queue is actually EMPTY.
+      if (!preBattle && !battleUiResolving && !hasPendingAutoPreBattle() && (aiTurnAwaitingBattle || aiCmdResume)) {
+        console.warn('[EndTurn] Clearing stale AI battle resume flags');
         aiTurnAwaitingBattle = false;
         aiCmdResume = null;
       }
@@ -24097,7 +24117,51 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * RUNDA 4 (Evaluator FAIL 4f24bcda, werdykt 43d4be34, G1+G2, Maciej 2026-08-14): sprząta
+     * PRZETERMINOWANĄ (>8000ms) kolejkę odroczonych automatycznych preBattle -- WYŁĄCZNIE gdy
+     * ŻADEN modal blokujący (audiencja/scalenie armii) nie jest otwarty, czyli powód
+     * odroczenia faktycznie już nie istnieje (G1: dopóki modal żyje, odroczenie jest LEGALNE
+     * i tempowane przez człowieka -- nigdy nie kasujemy). Wołana WYŁĄCZNIE z
+     * triggerPlayerEndTurn(), NIGDY z pasywnej sondy canEndTurn/healStaleEndTurnBlockers()
+     * (patrz uzasadnienie przy gałęzi 1 healStaleEndTurnBlockers wyżej) -- to jest jedyny
+     * sposób, żeby nie ścigać się z rAF flushem zaplanowanym tuż po zamknięciu modala.
+     * NIEZALEŻNA od aiTurnAwaitingBattle/aiCmdResume (G2) -- w przeciwieństwie do starej gałęzi
+     * 1 (bramkowanej `aiTurnAwaitingBattle||aiCmdResume`, więc ślepej na bitwę BARBARZYŃSKĄ,
+     * dla której obie te flagi są puste z definicji), ta funkcja patrzy WYŁĄCZNIE na wiek
+     * najstarszego żądania w kolejce -- pokrywa więc też ścieżkę barbarzyńską. Efekt uboczny:
+     * gdy kolejka faktycznie jest martwa (jakiś inny błąd zablokował ją na stałe), pierwsze
+     * kliknięcie "Zakończ turę" ją odblokowuje -- dokładnie ten moment, w którym gracz i tak
+     * musi zauważyć problem.
+     * / EN: ROUND 4 (Evaluator FAIL 4f24bcda, verdict 43d4be34, G1+G2): cleans up a STALE
+     * (>8000ms) deferred automatic preBattle queue -- ONLY when NO blocking modal (audience/
+     * army-merge) is open, i.e. the reason for deferral genuinely no longer exists (G1: as
+     * long as the modal is alive, the deferral is LEGAL and human-paced -- never clear it).
+     * Called ONLY from triggerPlayerEndTurn(), NEVER from the passive canEndTurn probe/
+     * healStaleEndTurnBlockers() (see the rationale at branch 1 of healStaleEndTurnBlockers
+     * above) -- this is the only way to avoid racing the rAF flush scheduled right after the
+     * modal closes. INDEPENDENT of aiTurnAwaitingBattle/aiCmdResume (G2) -- unlike the old
+     * branch 1 (gated on `aiTurnAwaitingBattle||aiCmdResume`, hence blind to a BARBARIAN
+     * battle, for which both flags are empty by definition), this function looks ONLY at the
+     * age of the oldest queued request -- so it also covers the barbarian path. Side effect:
+     * when the queue is genuinely dead (some other bug wedged it permanently), the first
+     * "End Turn" click unwedges it -- exactly the moment the player would notice the problem
+     * anyway.
+     */
+    function healStuckDeferredPreBattleQueueOnEndTurnAttempt(): void {
+      if (!hasPendingAutoPreBattle()) return;
+      if (isPreBattleOpen()) return;
+      if (isDiplomacyAudienceOpen() || isArmyMergePanelOpen()) return;
+      const ageMs = oldestPendingAutoPreBattleAgeMs();
+      if (ageMs <= 8000) return;
+      console.warn('[EndTurn] Deferred preBattle queue stuck >8000ms with no blocking modal — clearing (interactive end-turn attempt)', { ageMs });
+      clearDeferredAutoPreBattleQueue();
+      aiTurnAwaitingBattle = false;
+      aiCmdResume = null;
+    }
+
     function triggerPlayerEndTurn(): void {
+      healStuckDeferredPreBattleQueueOnEndTurnAttempt();
       if (!canPlayerInitiateEndTurn()) {
         console.warn('[EndTurn] triggerPlayerEndTurn: odrzucono (canPlayerInitiateEndTurn=false)');
         hintEndTurnBlocked();
