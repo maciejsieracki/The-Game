@@ -21838,3 +21838,189 @@ reconcile, a `workedHexCoordsForCity` zwrócił 0 heksów (odpadły dopiero na e
 `resolveWorkedTiles`). Wpisy są więc bezwładne dla silnika, ale `okolicaPreviewRadius` rozszerza
 podgląd panelu na ich podstawie. Identyczne przed i po commicie — odnotowane, świadomie
 nie zgłaszane jako blokada.
+
+## Evaluator: ESCAPE runda 2 — test realny + 5. panel + 3 toasty (`c3a5652c`) — WERDYKT: **PASS-WITH-NOTES** (2026-08-14)
+
+Ocena commita `c3a5652c` (`P-MENU-ESCAPE-NIEPELNOEKRANOWE`, runda 2 naprawiająca 4 blokujące
+znaleziska werdyktu FAIL dla `4fc770ee`), Evaluator Opus 5, weryfikacja niezależna na gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`, worktree z dowiązanym `gra/node_modules`
+(`npx tsc --version` = **5.9.3**, wymóg `C-029` spełniony — bez dowiązania `npx` ściąga 6.0.2
+i mierzy nie ten kompilator).
+
+### 1. Bramki — odtworzone samodzielnie, co do liczby
+
+| Bramka | Wynik | Zgodne z opisem commita |
+|---|---|---|
+| `npx tsc --noEmit` | exit 0 | tak |
+| `escape-overlay-stack-test` | 84 pass / 0 fail | tak |
+| `escape-fullscreen-priority-test` | 10 pass / 0 fail | tak |
+| **`escape-overlay-real-panels-test` (NOWA)** | **49 pass / 0 fail** | tak |
+| `elimination-toast-merge-test` | 54 pass / 0 fail | tak |
+| `triumph-city-state-notice-test` | 16 pass / 0 fail | tak |
+| `unit-replace-test` | 13/13 | tak |
+| `ai-founding-territory-test` | 28 pass / 0 fail | tak |
+| `vite build --outDir …` | **exit 0**, 822 modułów | — |
+
+### 2. FAIL #1 z rundy 1 (tautologia testowa) — **NAPRAWIONY, dowiedziony wykonaniem**
+
+Nie poprzestałem na przeczytaniu, że test „importuje prawdziwy kod" — **zmutowałem prawdziwe
+pliki źródłowe na dysku** i zmierzyłem, czy nowa bramka faktycznie czerwienieje. Celowo wybrałem
+dwa moduły **spoza** sekcji D testu (która mutuje tylko `gamePauseMenu` i `improvementBuildConfirm`),
+po jednym z każdej grupy:
+
+| Mutacja (usunięty `pushOverlay` w prawdziwym pliku) | `escape-overlay-real-panels` | `escape-overlay-stack` | `escape-fullscreen-priority` |
+|---|---|---|---|
+| **MA** — `empireDetailPanel.ts` (panel z rundy 1) | **47 pass / 2 fail — ŁAPIE** | 84/0 zielony | 10/0 zielony |
+| **MB** — `civElimNotice.ts` (toast z rundy 2) | **46 pass / 3 fail — ŁAPIE** | 84/0 zielony | 10/0 zielony |
+
+To rozstrzyga zarzut z rundy 1 w obie strony: nowa bramka **jako jedyna ma zęby**, a obie stare
+pozostają w 100% zielone na kodzie z przywróconym błędem — dokładnie tak, jak opisał to poprzedni
+werdykt. Bundle esbuild jest budowany z `entryPoints` → `export … from '../src/ui/<panel>'`,
+czyli z **realnych plików `gra/src/ui/*.ts`**; jedyny stub to `icons/brandAssets`
+(`import.meta.glob` + `?raw` nie bundluje się do CJS — istniejący wzorzec repo, ~10 innych bramek).
+Zero stringów-kopii.
+
+### 3. Sekcja D (mutacja kontrolna) — **uczciwa, plik na dysku nietknięty**
+
+Podmiana treści następuje wyłącznie w `esbuild` `onLoad` (pamięć), a sam test asercjonuje to wprost
+(linia 266: porównanie `readFileSync` z oryginałem). Zweryfikowane niezależnie: **`git status` jest
+czysty po każdym uruchomieniu bramki** (artefakty `.escape-real-panels-*-bundle.cjs` wpadają pod
+istniejący wzorzec `.gitignore`). Sekcja D pokrywa po jednym module z każdej grupy — poprawny dobór.
+
+### 4. FAIL #3 (5. panel) — **NAPRAWIONY, potwierdzony REALNYM `KeyboardEvent`**
+
+`improvementBuildConfirm.ts` woła `pushOverlay('improvement-build-confirm', close)` (linia 83)
+i `popOverlay('improvement-build-confirm')` wewnątrz `close()` (linia 70). Zbudowałem **własny,
+niezależny harness** (jsdom + prawdziwy `document.dispatchEvent(new KeyboardEvent('keydown',
+{key:'Escape'}))` + mock Keyboard Lock) — **22 asercje, 0 porażek**:
+
+- **Scenariusz A (modal sam):** Lock **założony** w momencie naciśnięcia → Escape **nie wychodzi
+  z pełnego ekranu**; `ev.defaultPrevented === true` (gra przechwyciła klawisz); modal **znika
+  z DOM**; `onConfirm` **nie** wywołane (Escape = Anuluj, nie Zastąp); Lock zwolniony po opróżnieniu
+  stosu. Objaw ze zgłoszenia Macieja **zniknął**.
+- **Scenariusz B (modal NAD `build-mode`) — LIFO:** 1. Escape zamyka **tylko modal**, `build-mode`
+  **przeżywa** i zostaje na wierzchu, Lock **nadal trzymany**; dopiero 2. Escape zamyka `build-mode`.
+  Naruszenie LIFO z rundy 1 (modal osierocony) **usunięte**.
+- Analogicznie dla toastów (S3, S4) — toast nad `build-mode` zamyka się sam, panel pod spodem nietknięty.
+
+Sprawdziłem też integrację z `main.ts`: własny handler Escape (`main.ts:27737`) ma strażnik
+`if (e.defaultPrevented) return`, a stos rejestruje się na `document` w **fazie przechwytywania**
+(`capture=true`), więc odpala się wcześniej — brak podwójnego zadziałania. Potwierdzone pomiarem
+(`defaultPrevented === true`), nie samym odczytem.
+
+### 5. FAIL #4 (toasty) — **uzasadnienie naprawione, wykluczenia zweryfikowane od zera**
+
+Przeczytałem kod, nie przepisałem poprzedniej rundy:
+
+| Moduł | Przycisk zamknięcia | Werdykt |
+|---|---|---|
+| `civElimNotice.ts` | „OK" (l. 103) + klik w tło (l. 92) | słusznie **wpięty** |
+| `triumphCityStateNotice.ts` | „Rozumiem" (l. 101) + tło | słusznie **wpięty** |
+| `wonderCompletedNotice.ts` | „Zamknij"/„Rozumiem" (l. 96/98) + tło | słusznie **wpięty** |
+| `diplomacyPendingHud.ts` | **brak** — tylko `Akceptuj`/`Odrzuć`/`Następne` | słusznie **pominięty** |
+| `victoryScreen.ts` | **brak** — tylko „Nowa gra" (ekran terminalny) | słusznie **pominięty** |
+
+**Brak ryzyka osieroconych wpisów na stosie:** żaden z 3 toastów nie ma auto-zamykania
+(`setTimeout`) — sprawdzone; ponowne wywołanie `show*()` jest deduplikowane po `id`
+w `pushOverlay`, a `hide*()` woła `popOverlay` bezpiecznie także gdy wpisu nie ma.
+
+**Kompletność wyszukania (zarzut „nie znalazł wszystkich miejsc" z rundy 1) — domknięta.**
+Przeliczyłem samodzielnie: 34 moduły w `gra/src/ui` używają `pushOverlay` (część przez stałą
+`OVERLAY_ID`, nie literał — dlatego grep po samym stringu zaniża), 56 robi
+`document.body.appendChild`. Po odsianiu stałego chromu HUD, ekranów przejściowych i paneli dev
+**nie został ANI JEDEN modal z przyciskiem zamknięcia poza stosem**. `diplomacyNegotiationModal.ts`
+pozostaje poza stosem, ale — jak ustalono w rundzie 1 — jest chroniony strażnikiem
+`childModalBlocksExit()` rodzica. Zakres naprawy jest kompletny.
+
+### 6. N1 (do naprawy przed zamknięciem tematu) — **sprostowanie w `CLAUDE.md` samo jest nieprawdziwe**
+
+Commit wpisuje do listy „Znane PRE-ISTNIEJĄCE porażki" w `CLAUDE.md`, że
+`empire-panel-econ-slider-visibility-test.cjs` daje **59 pass, 1 fail, exit 1**.
+
+**Zmierzone przeze mnie na samym `c3a5652c`** (detached checkout tego commita, nie na czubku
+gałęzi): **60 pass, 0 fail, `exit 0` — bramka jest ZIELONA.**
+
+Przyczyna rozjazdu, ustalona (nie zgadnięta): commit **`a8b47623`** („Naprawa duplikatu asercji
+rekruci→ekonomia w empire-panel-econ-slider-visibility-test", temat
+`P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK`) naprawił tę asercję **pomiędzy** `4fc770ee` a `c3a5652c`;
+`git merge-base --is-ancestor a8b47623 c3a5652c` potwierdza, że jest przodkiem. Liczba **59/1 była
+prawdziwa w rundzie 1** (na `4fc770ee`) i poprzedni werdykt zmierzył ją poprawnie — ale runda 2
+**przepisała historyczny pomiar do listy czytanej jako stan BIEŻĄCY, bez ponownego uruchomienia
+bramki**. To ta sama klasa błędu co FAIL #2 z rundy 1 (`CLAUDE.md` §0b — liczba podana jako fakt
+bez weryfikacji), tylko odwrócona: nie zawyża zieleni, tylko **zawyża czerwień**.
+
+**Dlaczego to szkodzi, mimo że nie dotyka kodu gry:** lista „znanych porażek" jest instrukcją
+„nie naprawiaj przy okazji". Wpisanie do niej bramki faktycznie zielonej sprawia, że **przyszła,
+realna regresja w tej bramce zostanie uznana za znaną i przemilczana**.
+
+**Do poprawki (mechaniczna, jedna linia):** usunąć `empire-panel-econ-slider-visibility-test.cjs`
+z listy albo przestemplować na „było 59/1 na `4fc770ee`, naprawione przez `a8b47623`, dziś 60/0".
+
+**Druga liczba z tego samego sprostowania jest POPRAWNA:**
+`empire-panel-moc-scroll-preserve-test.cjs` = **38 pass, 9 fail, exit 1** — potwierdzone przeze
+mnie zarówno na `c3a5652c`, jak i na czubku gałęzi. Zostaje na liście słusznie.
+
+### 7. N2 (nieblokujące, dług testowy) — żadna bramka nie pokrywa PRAWDZIWEJ ścieżki klawisza
+
+Mutacja kontrolna, którą dołożyłem od siebie: w `escapeOverlayStack.ts` sprawiłem, że
+`ensureGlobalListener()` **nie podpina** `document.addEventListener('keydown', …, true)` — czyli
+Escape w grze przestaje cokolwiek robić i przebija do przeglądarki, **dosłownie zgłoszony przez
+Macieja objaw**. Wynik:
+
+```
+escape-overlay-real-panels-test:  49 pass, 0 fail   (exit 0)
+escape-overlay-stack-test:        84 pass, 0 fail   (exit 0)
+escape-fullscreen-priority-test:  10 pass, 0 fail   (exit 0)
+```
+
+**Mutacja ucieka wszystkim trzem bramkom.** Powód: wszystkie trzy wołają
+`_dispatchEscapeForTest()`, który **powtarza ciało** `onGlobalKeyDown` (weź wierzch stosu →
+`onClose()`) zamiast przejść przez prawdziwy listener. To reszta tej samej tautologii co FAIL #1,
+tyle że przesunięta o jeden poziom — na warstwę doręczenia klawisza, nie na wiring paneli.
+
+**To NIE unieważnia werdyktu:** kryterium odbioru z rundy 1 brzmiało „test importujący prawdziwe
+moduły, czerwony po usunięciu `pushOverlay`" i jest **spełnione** (§2). Ścieżka doręczenia
+**działa dziś poprawnie** — udowodniłem to własnym harnessem z prawdziwym `KeyboardEvent`
+(22/22, §4), więc to luka w ochronie, nie błąd w kodzie. Warto ją domknąć jedną asercją:
+`document.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', cancelable:true}))`
++ sprawdzenie `ev.defaultPrevented === true` (poprzedni werdykt używał dokładnie tej metody —
+Operator sięgnął po słabszy hook).
+
+### 8. Zakres, sprzężenia, drobiazgi
+
+**Zakres (`C-025`) i sprzężenia (`C-026`) — bez zastrzeżeń.** Diff to 358 dodanych / 4 usunięte
+linie w 8 plikach; `escapeOverlayStack.ts` (kod współdzielony przez 28 nakładek) **nie został
+tknięty**. Zmiany w 4 modułach UI to wyłącznie `pushOverlay`/`popOverlay` + komentarz; zero
+refaktorów „przy okazji". Komentarze dwujęzyczne PL+EN zgodnie z `CLAUDE.md` §9.
+Zbudowany bundle vite zawiera nowe id (`improvement-build-confirm`, `civ-elim-notice` …)
+i nasłuch `keydown` w fazie przechwytywania — wiring przeżywa produkcyjny build, nie tylko esbuild.
+
+**N3 (kosmetyczne, bez akcji):** stub `gra/tools/.stubs/brandAssets-escape-real-panels-stub.ts`
+jest jednocześnie **śledzony przez git i wpisany do `.gitignore`** (wpis nie ma efektu na pliku
+śledzonym). Identycznie jak ~15 istniejących stubów w tym katalogu — konwencja repo, nie nowy błąd.
+
+**Weryfikacja wizualna headless Chrome — NIEWYKONALNA w tym środowisku:** `playwright` jest
+zainstalowany, ale brakuje binarki przeglądarki
+(`/opt/pw-browsers/chromium_headless_shell-1228/…` nie istnieje). Zastąpione harnessem jsdom
+z prawdziwym `KeyboardEvent` i mockiem Keyboard Lock (§4) — w tym konkretnym przypadku to
+narzędzie **mocniejsze**, bo pełny ekran i Keyboard Lock i tak nie są mierzalne w headless Chrome
+(wymagają gestu użytkownika i realnego fullscreena), a to właśnie one rozstrzygają zgłoszony bug.
+
+### 9. Werdykt
+
+**PASS-WITH-NOTES.** Wszystkie 4 blokujące znaleziska rundy 1 są naprawione **co do istoty**,
+a twarde kryterium `R-PROC-AUTOBOT-EVAL-STRICT-EDGE` **FAIL #7** (paczka nie zostawia asercji,
+która padłaby na starym kodzie) jest **spełnione** — dowiedzione dwiema mutacjami prawdziwego
+źródła na dysku, nie deklaracją. Kod działa: zgłoszony przez Macieja objaw („Escape ma najpierw
+zamknąć zakładkę, nie wychodzić z pełnego ekranu") jest zamknięty dla **8 paneli**, z poprawnym
+LIFO, potwierdzony realnym zdarzeniem klawiatury.
+
+**Przed zamknięciem tematu (jedna mała runda, bez nowego ABC):**
+1. **N1 — obowiązkowe:** poprawić wpis w `CLAUDE.md` o `empire-panel-econ-slider-visibility-test`
+   (jest 60/0 zielona na `c3a5652c`, nie 59/1) — bramka faktycznie zielona nie może stać na liście
+   znanych porażek. Wpis o `empire-panel-moc-scroll-preserve` (38/9) zostawić bez zmian.
+2. **N2 — zalecane:** jedna asercja z prawdziwym `KeyboardEvent` + `defaultPrevented`
+   w `escape-overlay-real-panels-test.cjs`, żeby mutacja odpinająca globalny listener nie uciekała.
+
+**STATUS: PASS-WITH-NOTES — kod zostaje w gałęzi, N1 do naprawy przed deployem (dotyka kanonu
+`CLAUDE.md`), N2 do backlogu testowego.**
