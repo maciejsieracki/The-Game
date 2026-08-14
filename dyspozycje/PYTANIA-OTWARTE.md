@@ -23186,3 +23186,309 @@ czułości** (299 trafień na starym kodzie). Bramki zielone, zakres czysty, bra
 **Blokada deployu z rundy 3 zdjęta** — temat gotowy do ROBOCZA przy najbliższej fali (deploy nadal
 wyłącznie na hasło `deploy`, §0). Nota **N5** z rejestru (`stadnina`/`kopalnia_cyny`, klasa odwrotna)
 pozostaje nietknięta i wymaga osobnego dispatchu.
+
+## Evaluator: N1 runda 3 — F1-F4 (`4f24bcda`) — **WERDYKT: FAIL**
+
+Temat `P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE`, runda 3 (naprawa czterech znalezisk F1-F4
+z werdyktu FAIL dla `136fefbb`). Evaluator: Opus 5, izolowany worktree zsynchronizowany
+z `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, HEAD = oceniany commit `4f24bcda`.
+Wszystkie liczby niżej **zmierzone samodzielnie**, żadna nie przepisana z opisu commita ani
+z raportu Operatora. Kody wyjścia odczytane bezpośrednio, nie przez potok (pułapka `CLAUDE.md`
+§0b (b)).
+
+**WERDYKT: FAIL.** **F1 (bloker rundy 2) uznaję za ZAMKNIĘTY** — mechanizm `battleUiResolving`
+jest poprawny, wystarczający i zweryfikowałem go end-to-end na prawdziwym module (§2), łącznie
+z ogniwem, którego Operator nie udowodnił, a od którego wszystko zależy (§2.2). **FAIL wynika
+z F2 i F3** — obie naprawy wnoszą **nowe** defekty na ścieżkach normalnej rozgrywki, oba
+zmierzone, nie wydedukowane:
+
+* **G1 (BLOKER, regresja wniesiona przez ten commit)** — próg 8000 ms z F2 **kasuje legalnie
+  odroczoną bitwę AI razem z `aiCmdResume`, gdy modal blokujący (audiencja dyplomatyczna /
+  panel scalenia armii) jest otwarty dłużej niż 8 sekund**. Powód odroczenia wciąż istnieje,
+  a mimo to żądanie jest uznane za „martwe" i **niszczone bez żadnego callbacku** — bitwa
+  znika, faza AI się nie wznawia. Zmierzone (§4). Ten sam scenariusz na formule rundy 2
+  (`136fefbb`, czyli stan gałęzi PRZED tym commitem) przechodzi **poprawnie** — to jest
+  regresja względem czubka własnej gałęzi, nie tylko teoria.
+* **G2 (poważne, regresja wniesiona przez ten commit)** — F3 + sposób bramkowania F2 dają
+  **trwałe zakleszczenie „Zakończ turę"** na ścieżce BARBARZYŃSKIEJ. To dokładnie ta klasa
+  awarii, dla której F2 w ogóle powstała, przeniesiona na ścieżkę, której timeout F2
+  **strukturalnie nie może** obsłużyć. Zmierzone (§5).
+
+Do deployu: **nadal NIE**. Zakaz z rundy 2 („nie deployować przed domknięciem F1 i F2")
+pozostaje w mocy — F1 jest zamknięte, F2 nie, a doszła G2.
+
+### 1. Bramki — uruchomione samodzielnie z `gra/`, wszystkie zgodne z opisem commita
+
+| Bramka | Deklarowane w commicie | Zmierzone przeze mnie | Zgodność |
+|---|---|---|---|
+| `npx tsc --noEmit` | „exit 0" | **exit 0**, zero linii wyjścia | ✅ |
+| `koniec-tury-f1-f4-runda3-test.cjs` (nowy) | „40/0" | **40 pass, 0 fail**, exit 0 | ✅ |
+| `heal-stale-blockers-pending-battle-test.cjs` | „22/22" | **22 pass, 0 fail**, exit 0 | ✅ |
+| `end-turn-modal-sequencing-test.cjs` | „40/0" | **40 pass, 0 fail**, exit 0 | ✅ |
+| `barbarzyncy-podwojny-atak-prebattle-test.cjs` | „18/18" | **18 pass, 0 fail**, exit 0 | ✅ |
+| `diplomacy-audience-close-flush-test.cjs` | „37/0" | **37 pass, 0 fail**, exit 0 | ✅ |
+| `escape-overlay-stack-test.cjs` | „84/0" | **84 pass, 0 fail**, exit 0 | ✅ |
+| `tech-tree-test.cjs` | „19/0" | **19 pass, 0 fail**, exit 0 | ✅ |
+| `research-test.cjs` | „33/0" | **33 pass, 0 fail**, „ALL GREEN" | ✅ |
+| `vite build --outDir <tmp> --emptyOutDir` | n/d | **exit 0**, 822 moduły, `index.html` 37 087,55 kB (gzip 24 699,09 kB) | ✅ |
+
+`git status` **pusty** po całym przebiegu (nowy test sprząta `ENTRY`/`OUT`, stuby w
+`gra/tools/.stubs/` pokryte istniejącym `.gitignore`).
+
+⚠️ **Pułapka środowiskowa, do zapamiętania na przyszłe oceny (nie wada commita).** W świeżym
+worktree bez `gra/node_modules` `npx tsc --noEmit` **ściąga TypeScript 6.0.2** i kończy się
+**exit 2** na `tsconfig.json(15,5): error TS5101: Option 'baseUrl' is deprecated…`. To NIE jest
+błąd kodu — repo pinuje TypeScript **5.9.3**. Po podlinkowaniu `node_modules` z głównego
+checkoutu ta sama komenda daje **exit 0, zero linii**. Kto oceni bramkę bez `node_modules`,
+zgłosi nieistniejącą regresję.
+
+### 2. F1 — ZAMKNIĘTE. Mechanizm zweryfikowany, w tym ogniwo, którego Operator nie udowodnił
+
+**2.1 Flaga jest szczelna w oknie, dla którego powstała.** `battleUiResolving` (`main.ts:9205`)
+jest ustawiana `main.ts:21698` PRZED `try { updateHud(); refreshD1bHud(); onResolved(); }`
+i czyszczona w `finally` (`:21704`). `finally` obejmuje **cały** blok, więc wyjątek w
+`onResolved()` nie zostawi flagi zawieszonej — sprawdzone czytaniem, nie założone. Gałąź 1
+`healStaleEndTurnBlockers()` czyta ją w `main.ts:23991`.
+
+**Czy coś może wejść do `healStaleEndTurnBlockers()` między ustawieniem flagi a jej odczytem?**
+Nie. Całe okno jest **synchroniczne** i JS jest jednowątkowy — żaden timer, rAF ani mikrozadanie
+nie wklinuje się między `battleUiResolving = true` a `finally`; wejść mogą wyłącznie
+synchroniczni wywołańcy z wnętrza `try`, a ci widzą flagę `true`. Łańcuch potwierdzony
+odczytem: `updateHud()` (`hud.ts:1671`) → `refreshD1BModules()` (`:1542`) →
+`bottomBarApi?.update()` (`:1543`) → `render()` → `config.canEndTurn?.()`
+(`bottomBarHud.ts:86`) → `main.ts:18262 canPlayerInitiateEndTurn()` → `:24022
+healStaleEndTurnBlockers()`. `hideEndTurn: () => playtestWalkaActive` (`:18263`) jest w normalnej
+grze `false`, więc short-circuitu nie ma.
+
+**2.2 Ogniwo kluczowe, którego commit ani raport Operatora nie dowodzą, a bez którego naprawa
+BYŁABY dziurawa — sprawdziłem je sam i JEST spełnione.** `onResolved()` dla ataku AI to
+`() => { void runAiPhase(); }` (`main.ts:27083`) — **bez `await`**. Gdyby `runAiPhase()`
+zawiesił się na pierwszym `await` **przed** konsumpcją `aiCmdResume`, `finally` zdjęłoby flagę
+przy wciąż żywych flagach i okno otwierałoby się na nowo, tyle że po `finally`. Zweryfikowane:
+w prologu `runAiPhase` (`main.ts:25802-25820`) **nie ma ani jednego `await`** (`grep -c await`
+na tym zakresie = **0**; `await yieldTurnTransitionUi()` stoi w `:25800`, czyli w funkcji
+otaczającej, PRZED definicją `runAiPhase`). `aiTurnAwaitingBattle = false` (`:25803`) i
+`aiCmdResume = null` (`:25820`) wykonują się więc **synchronicznie**, zanim sterowanie wróci do
+`finally`. Po `finally` warunek `(aiTurnAwaitingBattle || aiCmdResume)` jest już fałszywy —
+luki po oknie nie ma.
+
+**2.3 Scenariusz end-to-end poprzedniego Evaluatora, odtworzony na prawdziwym zbundlowanym
+`src/ui/preBattle.ts` (esbuild + jsdom), wierna kolejność `finishIncomingBattleUi` i mirror
+gałęzi 1 PO naprawie:**
+
+```
+T1  preBattle zamkniety, kolejka pusta, aiCmdResume={"ownerIdx":2,"cmdIdx":7}
+    updateHud() -> heal (flaga=true)  ... nie kasuje
+    refreshD1bHud() -> heal (flaga=true) ... nie kasuje
+    onResolved() -> runAiPhase() widzi {"ownerIdx":2,"cmdIdx":7}
+    -> PRZEZYL. Objaw S2 z rundy 2 ZNIKNAL.
+    kontrola: ta sama sciezka z flaga na stale false -> aiCmdResume===null (blad wraca)
+```
+
+**2.4 Ryzyko „flaga zostaje `true` na stałe" / dwie bitwy nakładają się — sprawdzone, dziś
+nieosiągalne.** Wyjątek pokrywa `finally`. Zagnieżdżenie wymagałoby **synchronicznego**
+ponownego wejścia w `finishIncomingBattleUi()` z wnętrza `try`; wewnątrz `try` biegną tylko
+`updateHud()`, `refreshD1bHud()` i `onResolved()`, a każda droga do kolejnego
+`finishIncomingBattleUi()` prowadzi przez klik gracza w `onAuto`/`onBattlefield`/`onCancel`
+(zdarzenie DOM, czyli osobny tick). `flushDeferredAutoPreBattle()` stoi PO `finally`
+(`:21726`), więc kolejna bitwa z kolejki pokazuje się poza oknem flagi. **Zastrzeżenie na
+przyszłość:** `battleUiResolving` jest zwykłym `boolean`, nie licznikiem — gdyby kiedykolwiek
+powstała ścieżka zagnieżdżająca, `finally` wewnętrznego wywołania zdjąłby ochronę zewnętrznemu.
+Dziś nieosiągalne, ale to jednosłotowa flaga i warto o tym pamiętać przy kolejnych zmianach.
+
+### 3. F4 — potwierdzone, wywołanie realnie istnieje (punkt 6 zlecenia)
+
+Nie poprzestałem na obecności funkcji. `resetEndTurnBlockers()` (`main.ts:6934`) woła
+`clearDeferredAutoPreBattleQueue()` (`:6966`), a sama jest wołana z **dwóch** miejsc:
+`doStartGame` (`:28884` — **pierwsza linia funkcji**, wpiętej w `onStart` kreatora nowej gry,
+`:17991` i `:18029`) oraz `prepareSessionForLoad` (`:6972`, wołane z `:29894` na ścieżce
+wczytania). Nowa gra i load bez reloadu realnie czyszczą kolejkę. ✅ **F4 zamknięte.**
+
+### 4. ⛔ G1 (BLOKER) — próg 8000 ms niszczy LEGALNIE odroczoną bitwę, gdy modal jest otwarty >8 s
+
+**Mechanizm.** Odroczenie następuje, gdy w chwili `showPreBattle(..., {auto:true})` jest
+otwarty inny modal: `isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() ||
+isArmyMergePanelOpen()` (`main.ts:19029`, `:28686`). Czyli **powód odroczenia jest tempowany
+przez CZŁOWIEKA** (czytanie audiencji dyplomatycznej, decyzja w panelu scalenia armii), a nie
+przez maszynę. Gałąź 1 po F2 nie pyta jednak, czy powód nadal istnieje — pyta wyłącznie
+o stoper: `pendingBattleStuck = pendingBattleAgeMs > 8000` (`main.ts:23990`). Przekroczenie
+progu ⇒ `clearDeferredAutoPreBattleQueue()` (`:23994`) **oraz** `aiCmdResume = null`.
+
+**To jest dokładnie wariant, przed którym ostrzegał werdykt rundy 2 i który zalecał zastąpić
+warunkiem kontekstowym** („gałąź 1 honoruje `hasPendingAutoPreBattle()` tylko dopóki
+`isPreBattleOpen() || isOtherEndTurnModalOpen()`, czyli **dopóki powód odroczenia nadal
+istnieje**"). Commit wybrał czysty stoper i **nigdzie nie uzasadnia, dlaczego odrzucił wariant
+kontekstowy** — a to właśnie ta różnica jest źródłem G1.
+
+**Ścieżka wyzwolenia jest deterministyczna, nie hipotetyczna.** W `onBack` audiencji
+(`main.ts:17400`) kolejność jest: `hideDiplomacyAudience()` (`:17401`) → **`refreshD1bHud()`
+(`:17407` albo `:17410` — OBIE gałęzie `if/else` go wołają)** → dopiero `requestAnimationFrame`
+z `flushDeferredAutoPreBattle()` (`:17418-17420`). Czyli w chwili, gdy audiencja już zniknęła,
+a flush jeszcze nie ruszył, biegnie synchronicznie `healStaleEndTurnBlockers()` (łańcuch z
+§2.1) — z `isPreBattleOpen()===false`, `battleUiResolving===false`, kolejką niepustą
+i `aiCmdResume` żywym. Jeśli gracz czytał audiencję dłużej niż 8 s, żądanie ginie **zanim**
+flush zdąży je pokazać. Ten sam wzorzec „`refreshD1bHud()` przed flushem" stoi też na ścieżce
+panelu scalenia armii: `:9821 refreshD1bHud()` → `:9827 flushDeferredAutoPreBattle()`.
+
+**Zmierzone** na prawdziwym zbundlowanym `src/ui/preBattle.ts` (esbuild + jsdom, mirror gałęzi 1
+bajt-w-bajt wg `main.ts:23989-24000`, `enqueuedAt` cofnięty o 9 s zamiast realnego sleepu):
+
+```
+T2  audiencja WCIAZ OTWARTA, wiek zadania 9000 ms, aiCmdResume zywy
+    -> galaz 1 ODPALA. aiCmdResume=null, kolejka=pusta
+    -> zadanie skasowane MIMO ze powod odroczenia nadal istnieje
+
+T3  gracz zamyka audiencje po 9 s (onBack: refreshD1bHud PRZED rAF flush)
+    heal odpalila? true | aiCmdResume=null | kolejka pusta
+    rAF flush -> czy bitwa sie pokazala? FALSE
+    *** BITWA ZNIKNELA ***
+
+T4  DOKLADNIE ten sam scenariusz na formule RUNDY 2 (stan sprzed tego commita)
+    heal odpalila? false | bitwa pokazana? TRUE | aiCmdResume={"ownerIdx":2,"cmdIdx":7}
+    -> runda 2 obslugiwala to POPRAWNIE  => G1 jest REGRESJA rundy 3
+```
+
+**Osiągalność odroczenia przy otwartej audiencji — sprawdzona w kodzie, nie założona.**
+`checkNewDiplomaticContacts()` (`main.ts:15318`) jest wołane z `refreshFog()` (`:9081`), a przy
+nowym kontakcie kolejkuje kartę i odpala `requestAnimationFrame(() =>
+tryOpenNextFirstContactCard())` (`:15335`) → `openDiplomacyAudience()` (`:15312`). Audiencja
+potrafi więc **otworzyć się sama w trakcie fazy AI** (faza AI oddaje klatki przez
+`await yieldTurnTransitionUi()`), a kolejny rozkaz `attack` tej samej fazy trafia wtedy na
+`isDiplomacyAudienceOpen()===true` i ląduje w kolejce. To zresztą ta sama przesłanka, na której
+stoi cały temat od rundy 1 (komentarz `main.ts:23940-23941`) — nie wprowadzam nowego założenia.
+
+**Skutek dla gracza:** bitwa, którą AI właśnie wyprowadziło, **nie odbywa się w ogóle**, a faza
+AI nie wznawia się (`runAiPhase` nie ma już kto wywołać — jedynym wznowieniem był `onResolved`
+skasowanego żądania), czyli pozostali właściciele AI **nie wykonują rozkazów w tej turze**.
+Cichy, bez komunikatu w UI. Wystarczy do tego, żeby gracz spędził w audiencji dyplomatycznej
+**więcej niż 8 sekund** — czyli normalna rozgrywka, nie edge case.
+
+**Dodatkowo (zmierzone, T6): `clearDeferredAutoPreBattleQueue()` kasuje żądanie NIE wywołując
+ŻADNEGO callbacku** (`onCancel` też nie) — `deferredAutoRequests.length = 0`
+(`preBattle.ts:361-366`). Silnik nie dostaje więc nawet informacji „bitwa anulowana"; rostery
+zostają w stanie sprzed bitwy. Przy kolejce >1 elementu czyszczenie zabiera też żądania
+**świeże**, nie tylko to przeterminowane (próg liczony z indeksu 0, kasowanie całej tablicy).
+
+### 5. ⛔ G2 (poważne) — F3 + bramkowanie F2 = TRWAŁE zakleszczenie „Zakończ turę" na ścieżce barbarzyńskiej
+
+F3 rozszerza `canPlayerInitiateEndTurn` (`main.ts:24044`) i `hintEndTurnBlocked` (`:24083`)
+o `|| hasPendingAutoPreBattle()`. Cel osiągnięty (odroczona bitwa barbarzyńska blokuje koniec
+tury) — ale timeout z F2 **siedzi wewnątrz gałęzi bramkowanej warunkiem
+`(aiTurnAwaitingBattle || aiCmdResume)`** (`main.ts:23991`). Dla barbarzyńców **obie te flagi
+są z definicji puste** (`onResolved` barbarzyński to no-op, ustalone w rundzie 1 i powtórzone
+w komentarzu F3 tego commita). Zatem:
+
+* zaległe żądanie barbarzyńskie **nigdy** nie zostanie posprzątane przez timeout F2 — gałąź
+  w ogóle nie wchodzi;
+* `canPlayerInitiateEndTurn()` zwraca **`false`** dopóki kolejka jest niepusta;
+* `triggerPlayerEndTurn` (`:24100-24105`) robi wtedy `return` **przed** swoim `try`, więc
+  `flushDeferredAutoPreBattle()` z `finally` (`:27953`) — dotąd najpewniejszy odpływ kolejki —
+  **staje się nieosiągalny**;
+* jedyne wyjście: Nowa gra / load (F4).
+
+Zmierzone:
+
+```
+T5  zadanie barbarzynskie w kolejce, wiek 60 000 ms, aiCmdResume===null
+    galaz 1 odpalila? FALSE   (bramka `aiTurnAwaitingBattle || aiCmdResume`)
+    kolejka nadal niepusta? TRUE
+    canPlayerInitiateEndTurn -> FALSE
+    *** trwale zakleszczenie „Zakoncz ture" ***
+```
+
+To **ta sama klasa awarii**, którą F2 miała zlikwidować („twarda blokada zamiast odwracalnej
+degradacji"), tylko przeniesiona na ścieżkę, do której F2 strukturalnie nie sięga. Dodatkowo
+komunikat, który gracz zobaczy, wprowadza w błąd: *„Zakończ ekran bitwy, potem zakończ turę"* —
+podczas gdy żadnego ekranu bitwy na ekranie nie ma i nie da się go wywołać.
+
+**Kanał wycieku, który to uruchamia, JEST dziś otwarty** — analogiczny do N3 (audiencja) sprzed
+`cb1ea991`: z trzech wywołań `showArmyMergePanel` w `main.ts` **tylko jedno** (`:9782`) ma
+`flushDeferredAutoPreBattle()` w `onMerge`/`onSeparate` (`:9827`, `:9896`). Pozostałe dwa
+(`:10103` i `:10182`) zamykają panel **bez flushu**. Żądanie odłożone, gdy otwarty był panel
+z któregoś z tych dwóch wywołań, zostaje w kolejce.
+
+### 6. Notatki (nie blokują same z siebie, ale należą do protokołu)
+
+**N-A · Twierdzenie o ścieżce 3D jest połowicznie nietrafne (punkt 7 zlecenia).** Sprawdziłem
+w kodzie: bitwa ręczna faktycznie kończy się w TEJ SAMEJ `finishIncomingBattleUi()` —
+`onBattlefield` (`main.ts:21769`) → `new BattleScene(...)` (`:21774`) → `bs.play(...)` →
+`applyMapBattleOutcomeWithSummary(..., () => { setMood('mapa'); finishIncomingBattleUi(); … })`
+(`:21821-21825`) oraz `onCancel` sceny (`:21803-21806`). Fakt potwierdzony. **Ale wyciągnięty
+z niego wniosek („więc jest już objęta naprawą") nie wynika z przesłanki.** Okno ekspozycji
+ścieżki ręcznej leży **PRZED** tą funkcją, nie w niej: `hidePreBattle()` pada w `:21770`,
+a `finishIncomingBattleUi()` dopiero po zakończeniu bitwy 3D — przez cały ten czas
+`isPreBattleOpen()===false`, kolejka pusta, `battleUiResolving===false`, a `aiCmdResume` żywy,
+czyli warunek gałęzi 1 jest spełniony w całości. Flaga tego okna **nie zakrywa**. Praktycznie
+ryzyko wygląda dziś na niskie z **innego** powodu niż podany: `src/battle/battleScene.ts` nie
+woła ani `updateHud`, ani `refreshD1bHud`, ani `canEndTurn` (sprawdzone grepem — zero trafień),
+a `updateHud()` w `renderLoop` (`main.ts:28231`) odpala się tylko po zakończeniu animacji
+jednostki, nie co klatkę. Nie znalazłem timera odświeżającego HUD. **Uczciwy poziom dowodu:
+nie potrafię wskazać konkretnego wywołania `updateHud()` w trakcie bitwy 3D, ale też nie mogę
+wykluczyć wszystkich (142 wywołania `refreshD1bHud()` w `main.ts`).** Uzasadnienie w commicie
+należy poprawić — teza jest dziś prawdziwa przypadkiem, nie z powodu, który podano.
+
+**N-B · Mutacja łapana WYŁĄCZNIE pinem tekstowym** (ta sama, znana i akceptowana granica co
+w rundzie 2). Usunąłem `!battleUiResolving` z `main.ts:23991` i uruchomiłem bramkę:
+**39 pass, 1 fail, exit 1** — jedyna porażka to `[F1-A5]`, czyli pin na string. Scenariusz
+behawioralny `[F1-C1]` **pozostał zielony przy zmutowanym `main.ts`**, bo `healBranch1Mirror()`
+żyje w pliku testu i niesie naprawioną formułę własnym kodem. To samo dotyczy progu 8000 ms
+(mirror ma go zaszytego). Test dowodzi więc realnego zachowania kolejki + obecności dokładnych
+stringów w `main.ts`, ale **nie wykonuje gałęzi 1 z `main.ts`**. Nagłówek testu przyznaje to
+wprost; odnotowuję dla ścisłości. `main.ts` przywrócony, bramka znów **40/0**, `git status`
+czysty.
+
+**N-C · Czego test Operatora NIE pyta.** `[F2-C3]` sprawdza, że timeout „się odpala" —
+i celebruje to jako naprawę — ale robi to przy `blocked === true`, czyli **przy wciąż otwartym
+modalu blokującym**, i nie stawia pytania, czy w tym stanie kasowanie jest w ogóle pożądane.
+Dokładnie ta asercja przypina G1 jako zachowanie oczekiwane. Test rundy 4 musi mieć asercję
+odwrotną: „przy żywym powodzie odroczenia żądanie NIE ginie, niezależnie od wieku".
+
+### 7. Co jest zrobione dobrze (nie chowam tego pod FAIL)
+
+* **F1 rozwiązane elegancko i minimalnie.** Odrzucenie mojej hipotezy z dispatchu
+  (przestawienie `onResolved()` przed `updateHud()`) było **słuszne** — flaga zamyka lukę bez
+  dotykania kolejności, której bezpieczeństwa nikt nie zweryfikował dla 3 handlerów × 5 call
+  site'ów. Operator miał rację, ja nie.
+* Zasięg F1 przeanalizowany rzetelnie: `aiCmdResume`/`aiTurnAwaitingBattle` faktycznie mają
+  **dokładnie jedno** miejsce ustawienia (`main.ts:27068-27074`) i **dokładnie jedno** miejsce
+  konsumpcji (`runAiPhase`, `:25803`/`:25820`) — sprawdziłem grepem po całym `main.ts`,
+  twierdzenie się broni.
+* F4 domknięte i realnie wpięte (§3).
+* F3 osiąga swój deklarowany cel (blokada End Turn dla odroczonej bitwy barbarzyńskiej),
+  z lustrzanym komunikatem w `hintEndTurnBlocked` — brak cichego zablokowania przycisku.
+* Komentarze PL+EN zgodne z regułą 9 `CLAUDE.md`; wszystkie 4 znaleziska opisane w commicie
+  z podaniem, które są pre-istniejące, a które wniesione przez rundę 2 — bez zamiatania.
+* Zero regresji bramkowych: 8 bramek + build, wszystkie zielone, `git status` czysty.
+
+### 8. Rekomendacja — runda 4, wąska
+
+**Kodu nie ruszam** (mandat Evaluatora). Do dispatchu Operatora (Sonnet 5), w tej kolejności:
+
+1. **G1 (bloker)** — zastąpić czysty stoper warunkiem **kontekstowym**, zgodnie z rekomendacją
+   rundy 2, której runda 3 nie wykonała i nie uzasadniła pominięcia: gałąź 1 honoruje
+   `hasPendingAutoPreBattle()` **dopóki powód odroczenia realnie istnieje**
+   (`isPreBattleOpen() || isOtherEndTurnModalOpen()` — ten predykat jest już skonfigurowany
+   w `configurePreBattle`, wystarczy go udostępnić po stronie `main.ts`). Jeśli stoper ma
+   zostać jako druga linia obrony, to (a) musi zaczynać liczyć dopiero **od chwili, gdy żaden
+   modal blokujący nie jest otwarty**, a nie od `enqueuedAt`, oraz (b) sprzątać przez
+   **flush** (pokazanie/anulowanie bitwy z wywołaniem callbacku), a nie przez ciche
+   `length = 0`.
+2. **G2 (poważne)** — wyprowadzić sprzątanie przeterminowanej kolejki **poza** gałąź bramkowaną
+   `(aiTurnAwaitingBattle || aiCmdResume)`, do osobnej gałęzi `healStaleEndTurnBlockers()`,
+   żeby ścieżka barbarzyńska (obie flagi puste) też miała siatkę bezpieczeństwa i żeby nowa
+   blokada z F3 nie mogła zamienić się w trwałe zakleszczenie końca tury.
+3. **G2, kanał wycieku** — dołożyć `flushDeferredAutoPreBattle()` do `onMerge`/`onSeparate`
+   pozostałych dwóch wywołań `showArmyMergePanel` (`main.ts:10103`, `:10182`), analogicznie do
+   `:9827`/`:9896` — to ta sama luka co N3 przy audiencji, tylko w panelu scalenia armii.
+4. **Komunikat** — przy blokadzie pochodzącej z kolejki (`hasPendingAutoPreBattle()` przy
+   `isPreBattleOpen()===false`) dać treść adekwatną do stanu; dzisiejsze „Zakończ ekran bitwy"
+   wskazuje na ekran, którego nie ma.
+5. **Dokumentacja** — poprawić w commicie/notatce wniosek o ścieżce 3D (§6 N-A): wspólna
+   `finishIncomingBattleUi()` **nie** jest dowodem pokrycia, bo okno ekspozycji leży przed nią.
+6. **Test** — dodać asercję odwrotną do `[F2-C3]` (§6 N-C) oraz scenariusz „zamknięcie
+   audiencji po >8 s": bitwa MUSI się pokazać, `aiCmdResume` MUSI przeżyć.
+
+**Nie deployować do ROBOCZA przed domknięciem G1 i G2.** G1 znaczy, że przy normalnym tempie
+gry (audiencja czytana dłużej niż 8 sekund) bitwa AI potrafi zniknąć razem z resztą fazy AI;
+G2 znaczy, że istnieje dziś otwarty kanał, po którym gracz **trwale traci przycisk „Zakończ
+turę"**.
