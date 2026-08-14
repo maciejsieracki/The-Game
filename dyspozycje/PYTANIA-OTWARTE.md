@@ -24243,6 +24243,12 @@ Dwie noty do domknięcia w osobnej turze, **żadna nie jest warunkiem deployu**:
 
 STATUS: **OTWARTE — G1 i G2 do domknięcia (noty Evaluatora, nie blokują deployu)**
 
+**AKTUALIZACJA 2026-08-14 (orkiestrator, audyt kompletności §0c):** **G2 ZAMKNIĘTE** — komentarz
+`main.ts` ~23098-23099 oraz nagłówek/dwa literały `oblezenie-remis-endsiege-test.cjs` skorygowane
+commitem `678b31e1` (32/63→30/63, 31/63→33/63), zgodnie z pomiarem Evaluatora wyżej. **G1 nadal
+OTWARTE** — dispatch naprawczy w toku (wzmocnienie §2 testu, żeby faktycznie zabezpieczał gałąź
+naprawy, nie tylko strażnik tekstowy §1).
+
 ## Evaluator: druga (wewnętrzna) obwódka granicy = relacja dyplomatyczna (`bf839f81`, `R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1`) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
 
 Zakres: `gra/src/game/civ-visual.ts`, `gra/src/render/rangeOverlay.ts`, `gra/src/main.ts`,
