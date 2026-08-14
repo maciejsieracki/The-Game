@@ -20433,7 +20433,43 @@ B stan pusty) + handoff „Co się zmieniło" + „Decyzje i zgłoszenia". Dwa p
 przyjęty — rozwiązuje realny problem nieodróżnialności stanów, funkcjonalnie uzasadnione, nie
 tylko kosmetyczne. Maciej przesyła potwierdzenie, Designer buduje Panel Miasta (druga klatka).
 
-**STATUS: OTWARTE — czeka na Klatkę Miasta od Designera.**
+**STATUS: ZAMKNIĘTE — Klatka Miasta odebrana, patrz wpis niżej.**
+
+## MIASTA-ARMIE-PANEL-LEWY-2026-08-14 — Oddanie kompletne (2/2 klatek), 5 zgłoszeń do decyzji (2026-08-14)
+
+Designer dostarczył ZIP: makieta standalone HTML (oba panele), handoff
+`DESIGN-do-UI_MIASTA-ARMIE-PANEL-LEWY-2026-08-14.md`, MANIFEST, 2 PNG, źródło. Paleta 3b i
+3-kolorowe plakietki (już zatwierdzone wcześniej) potwierdzone w obu klatkach. Panel Miasta
+dziedziczy z Armii (karta, kafelek, hierarchia, nagłówek, stan pusty) + własne: emoji
+🏛️/👥/🔨 → SVG z brandu, pasmo podsumowania nad listą (hero „N miast" + 2 boxy, wzorem „Moc 181").
+
+**5 zgłoszeń §5 handoffu — rekomendacje orkiestratora (zweryfikowane czytaniem kodu, nie na
+słowo Designera):**
+
+1. **Wspólny arkusz stylów** (`sideListHud.css.ts` zamiast zduplikowanego `.cl-*`/`.al-*`) —
+   **REKOMENDACJA: TAK.** Czysty dług DRY, zero ryzyka funkcjonalnego, Designer potwierdził że
+   makieta działa w obu wariantach.
+2. **Rozbicie `productionLine` na 3 pola** (nazwa/postęp/maks zamiast sklejonego stringa) —
+   **REKOMENDACJA: TAK, i to TANIE, nie duże ryzyko jak sugeruje ostrożność Designera.**
+   Zweryfikowane w `main.ts:5556-5567`: wszystkie trzy wartości (`front.nazwa`, `prod.postep`,
+   `front.koszt`) są JUŻ policzone w tym samym miejscu, PRZED sklejeniem w string — to nie jest
+   nowe obliczenie w silniku, tylko przekazanie trzech już gotowych wartości przez interfejs
+   `CityListEntry` zamiast jednej. Fallback z §5.2 (zostaje pasek tekstowy, karta bez paska
+   postępu) nie jest potrzebny.
+3. **Plakietki „stolica"/„nowe"** — **REKOMENDACJA: „stolica" TAK (tanie — koncept stolicy
+   istnieje w silniku, `capital-capture.ts` i inne pliki go używają, więc flaga w
+   `CityListEntry` to trywialny dowiąz), „nowe" NIE na razie** (Designer sam pisze że próg wieku
+   miasta jest arbitralny — brak zdefiniowanego kryterium, dodatkowa decyzja produktowa której
+   nikt nie podjął; nie wprowadzać bez osobnego ustalenia co dokładnie znaczy „nowe").
+4. **Emoji w stopce podpowiedzi** (nazwa przycisku w zdaniu, nie ikona UI) — **REKOMENDACJA:
+   zostawić bez zmian**, zgodnie z propozycją Designera.
+5. **Styk złota paska medalionów vs złota panelu (dwa różne odcienie)** — **REKOMENDACJA: żyć z
+   tym, bez osobnego zlecenia na `mapToolbarHud.ts`** — medalion okrągły i mały, panel to
+   płaszczyzna, różnica niewidoczna w praktyce poza zbliżeniem porównawczym.
+
+**STATUS: OTWARTE — czeka na potwierdzenie Macieja (może przekazać powyższe Designerowi jako
+gotową odpowiedź na §5), potem dispatch Operatora do wdrożenia (reskin CSS obu paneli + wspólny
+plik stylów + rozbicie `productionLine` + flaga stolicy w `CityListEntry`).**
 
 ## P-ZASOBY-IMPERIUM-REKRUCI-STARY-WIDOK (2026-08-14, zgłoszenie Macieja ze zrzutem "ZASOBY IMPERIUM (STAN + PRZYROST)") · STATUS: OTWARTE — backlog Faza 3+, nie nowy bug
 
