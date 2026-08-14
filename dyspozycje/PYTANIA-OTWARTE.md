@@ -26976,6 +26976,104 @@ tknięte. Plan rekonesansu wyżej zostaje aktualny na później.**
 
 ---
 
+### RAPORT REKONESANSU (Operator Sonnet 5, worktree izolowany `agent-a75fd2d3ac7ad8835`, 2026-08-14)
+
+**Wynik: regresja NIE potwierdzona — oba pola trudności Państw-Miast (PM) są DZIŚ poprawnie
+podłączone.** Zero zmian w kodzie (zgodnie z pkt 5 zlecenia — nie zgaduję naprawy na siłę).
+
+**1. Dwa osobne pola — potwierdzone, faktyczne nazwy (`gra/src/main.ts` ok. linii 1289–1313):**
+| Pole | Oś | Steruje (dziś) |
+|---|---|---|
+| `_menuDifficulty` | Ogólna trudność gry gracza | Major AI (ekonomia/walka/nauka), gate `qualifiesForMajorAiDifficultyBonus` |
+| `_menuCityStateDifficulty` | PM **jako CEL PODBOJU przez inne AI** (oś AI-vs-PM, domyślnie ODWRÓCONA względem `_menuDifficulty`) | `aiDiffLevelForOwner`/`effectiveGameDifficultyForOwner` → `poziomTrudnosci` PM (DifficultyParams: bonusProdukcja/bonusWalka/agresjaMnoznik) |
+| `_menuCityStateDifficultyVsPlayer` | PM **SKIEROWANE NA GRACZA** (oś PM-vs-GRACZ, WPROST z `_menuDifficulty`, bez odwrócenia) | zaufanie startowe PM↔gracz, DOW klastra PM na gracza, `cityStateOffensiveSupport` (fala ataku), `_menuCitySupport` (posiłki obronne), **`cityStateMilitaryProductionCap`** (limit wojska PM) |
+
+Suwak w kreatorze „Zaawansowane opcje → Trudność miast-państw" (`newGameFlow.ts`,
+`cityStateDifficultyOverride: 'easy'|'normal'|'hard'|null`) — to JEDYNE pole UI, które Maciej
+ustawia na „Trudny". Gdy ustawione jawnie (nie `null`), **steruje OBIEMA zmiennymi silnika naraz
+tą samą wartością** (`main.ts` ok. linii 28616–28630) — więc w dokładnym scenariuszu zgłoszenia
+(gra=Normalny, PM=Trudny/override='hard') obie osie i tak wychodzą na `'hard'`.
+
+**2. Commit rozdzielenia znaleziony — to dokładnie „przerzucenie ustawień" ze zgłoszenia:**
+`a6076db7` (2026-08-10 21:21 UTC) „R-CS-HARD-PASYWNE: rozdzielenie trudnosci PM na (AI) i
+(GRACZ)" — temat `C-025/C-026`. Wprowadził `_menuCityStateDifficultyVsPlayer` i przepiął 4
+miejsca gracz-facing (zaufanie startowe, DOW klastra, `cityStateOffensiveSupport`,
+`_menuCitySupport`).
+
+**3. Hipoteza właściciela („kod czyta stare/nie podłączone pole") BYŁA TRAFNA — ale dla PIĄTEGO
+miejsca, już naprawionego 4 dni przed tym zgłoszeniem:** `a6076db7` przepiął 4 miejsca, ale
+POMINĄŁ `cityStateMilitaryProductionCap` (limit wojska PM w `chooseCityProduction`, `ai.ts`) —
+ta funkcja nadal czytała `opts.menuDifficulty` (starą, ogólną oś gry, NIE nawet starą oś PM).
+Efekt na commit `a6076db7`: przy głównej trudności gry=Trudny, cap=0 — PM nie mogło zrekrutować
+NAWET pierwszego garnizonu. Evaluator złapał to TEGO SAMEGO DNIA:
+- `7e753db2` (2026-08-10 21:56 UTC) — przepiął cap na `opts.cityStateDifficultyVsPlayer`
+  (poprawną, nową oś gracz-facing), podniósł `cap('hard')` z 0 do 3.
+- `28c96bd8` „runda 3: cap PM 3→4" — Evaluator rundy 2 wykazał, że 3 to wciąż za mało (bramka
+  wyjścia z domu w `ai.ts` wymaga `totalMilitary < 3 + RESUP_TIERS.strong.minGuard(1) = 4`) —
+  podniesiono do 4 = `CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard`.
+
+**Wszystkie trzy commity są SPRZED zgłoszenia Macieja (2026-08-14) — bug istniał realnie, ale
+przez ~35 minut jednego dnia (2026-08-10), i został zamknięty pełną pętlą Operator→Evaluator
+zanim ten temat w ogóle powstał.** Dodatkowo powstała dedykowana bramka regresyjna
+`cs-military-cap-wiring-test.cjs` (13 asercji, w tym sekcja RUNTIME wołająca prawdziwy
+`chooseCityProduction` przez esbuild — nie reimplementacja) właśnie po to, żeby DOKŁADNIE ten typ
+błędu (pole po cichu wraca do starej osi) nigdy więcej nie przeszedł bramek po cichu.
+
+**4. Weryfikacja EMPIRYCZNA dziś (2026-08-14), uruchomione z `gra/`:**
+| Bramka | Wynik |
+|---|---|
+| `npx tsc --noEmit` | 0 błędów |
+| `node tools/cs-military-cap-wiring-test.cjs` | **13/13 PASS** (w tym sekcja 4 RUNTIME: prawdziwy `chooseCityProduction` blokuje wojsko przy 4/4 dla `cityStateDifficultyVsPlayer='hard'`, i przestaje blokować gdy pole = `undefined` — dowód, że dziś pole JEST przekazywane) |
+| `node tools/ai-mp-military-cap-test.cjs` | **18/18 PASS** |
+| `node tools/city-state-prod-audit-test.cjs` | **17/17 PASS** |
+| `node tools/city-state-cluster-diff-test.cjs` | **31/31 PASS** |
+| `node tools/ai-cs-absorption-test.cjs` | **29/29 PASS** |
+| `node tools/tech-tree-test.cjs` | 19/19 PASS |
+| `node tools/research-test.cjs` | 33/33 PASS |
+| `node tools/ai-test.cjs` | 285 pass, **8 fail — identyczne z listą pre-istniejących w `CLAUDE.md`** (ranking budynek-ekonomia vs Koszary + `zaproponuj_handel` po odkryciu/cooldownie); żaden fail NIE dotyczy limitu wojska PM ani osi trudności |
+
+Wniosek: dziś (HEAD gałęzi sesji) `_menuCityStateDifficultyVsPlayer` faktycznie zasila limit
+wojska PM, zero regresji wiringu.
+
+**5. Co FAKTYCZNIE ogranicza liczbę jednostek PM na „Trudnym" — mechanizm, nie błąd, ale WARTY
+wyjaśnienia właścicielowi (może to źródło subiektywnego wrażenia „mniej jednostek"):**
+`cityStateMilitaryProductionCap()` (`gra/src/game/city-state-difficulty.ts`) zwraca:
+`normal → 1`, `hard → 4`, `easy → null (BRAK LIMITU, PM zachowuje się jak major AI)`.
+
+To NIE jest skala rosnąca 1:1 z „trudnością" w sensie „im trudniej tym więcej wojska bez
+ograniczeń" — `hard` ma cap NIŻSZY niż `easy` (4 vs nieskończoność). To celowe, udokumentowane w
+kodzie (3 rundy Evaluatora): cap na `hard` to konkretna liczba dopasowana do progu wyjścia z domu
+mechanizmu „fali ataku" (`cityStateOffensiveSupport`, TYLKO dla PM tego samego typu cywilizacji co
+gracz) — PM na Trudnym ma trzymać MAŁY, stale odnawiany oddział (do 4 jednostek), wysyłać go falą
+na gracza, a resztę produkcji przekierować na budynki gospodarcze/ekonomię (`diffProdBonus` w
+`chooseCityProduction` realnie premiuje wtedy `economyScore`, bo `poziomTrudnosci` PM też
+wychodzi na 3/hard przy override). PM na `easy` NIE ma tego throttlingu wcale — zachowuje się jak
+zwykłe AI bez capu.
+
+Osobno: realny mnożnik produkcji/walki/nauki z trudności (`difficultyProductionMultForOwner` i
+analogiczne w `main.ts`) jest ZAGATOWANY wyłącznie dla major AI przez
+`qualifiesForMajorAiDifficultyBonus(ownerId, isCityState)` → `!isCityState` — PM NIGDY nie
+dostaje tego mnożnika, niezależnie od ustawienia trudności PM. Ten gate istnieje od **2026-08-05**
+(`150fdbeb`, temat `P-AI-MOC-BONUS`), 5 dni PRZED rozdzieleniem osi C-025/C-026 — to nie jest
+skutek „przerzucenia ustawień", tylko wcześniejsza, niezależna decyzja architektoniczna.
+
+**Podsumowanie dla właściciela:** jeśli PM na „Trudnym" subiektywnie buduje mniej jednostek niż
+Maciej oczekiwał — to dziś efekt CELOWO NISKIEGO capu (4 jednostki na mapie na PM), nie
+rozłączonego ustawienia. Zmiana tej liczby to decyzja BALANSOWA (poza zakresem tego zlecenia,
+które miało dotyczyć wyłącznie wiringu) — jeśli Maciej chce PM budujące realnie WIĘCEJ jednostek
+na Trudnym, potrzebne osobne pytanie ABC o podniesienie stałej `cap('hard')` (dziś 4) albo o
+rozszerzenie mnożnika trudności ekonomicznej na PM (dziś zagatowany wyłącznie dla major AI) —
+obie zmiany wykraczają poza „napraw podłączenie", którym było to zlecenie.
+
+**STATUS: ZAMKNIĘTE — regresja NIE potwierdzona.** Zero zmian w kodzie. Oba pola (`_menuCityStateDifficulty`
+i `_menuCityStateDifficultyVsPlayer`) są dziś poprawnie rozdzielone i poprawnie skonsumowane;
+konkretny wiring-bug, który pasował do hipotezy właściciela, istniał realnie 2026-08-10 i został
+zamknięty pełną pętlą Operator→Evaluator (`7e753db2`, `28c96bd8`) 4 dni przed tym zgłoszeniem,
+z dedykowaną bramką regresyjną chroniącą przed nawrotem. Ewentualne dalsze niezadowolenie z
+LICZBY jednostek PM na Trudnym wymaga osobnej decyzji ABC o wartościach (nie wiringu).
+
+---
+
 ## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — RAPORT NAPRAWY (Operator, agent `a415dfdd8dcb90060`)
 
 **⚠️ Uwaga procesowa orkiestratora (dopisane przy scalaniu, 2026-08-14):** ten agent pracował na

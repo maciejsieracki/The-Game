@@ -31,12 +31,14 @@ poziom, jeżeli chodzi o Państwa-miasta. Sprawdź czego to może wynikać, moż
 Przerzuciliśmy ostatnio ustawienia do oddzielnych ustawień, może wtedy coś umknęło, jest nie
 podłączone."
 
-**Stan:** zarejestrowany PEŁNY opis + hipoteza + plan rekonesansu w `PYTANIA-OTWARTE.md`
-(sekcja `P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1`) — status tam poprawiony na „przeniesione
-tutaj, czeka na limit", NIE dispatchowany, zero kodu tknięte. Gdy limit się odnowi: dispatch wg
-planu już opisanego w `PYTANIA-OTWARTE.md`.
+**Stan (aktualizacja 2026-08-14, dispatch mimo limitu):** rekonesans WYKONANY — pełny raport w
+`PYTANIA-OTWARTE.md` (sekcja `P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1`, blok „RAPORT
+REKONESANSU"). Skrót: oba pola trudności PM (`_menuCityStateDifficulty` vs
+`_menuCityStateDifficultyVsPlayer`) są dziś poprawnie podłączone; konkretny wiring-bug pasujący do
+hipotezy właściciela istniał realnie 2026-08-10 (`a6076db7`) i został naprawiony tego samego dnia
+(`7e753db2`, `28c96bd8`), 4 dni przed tym zgłoszeniem. Zero zmian w kodzie w tej rundzie.
 
-**STATUS: CZEKA NA ODNOWĘ LIMITU (nie krytyczne — Maciej nie oznaczył jako krytyczne).**
+**STATUS: ZAMKNIĘTE — regresja NIE potwierdzona (pełne uzasadnienie w `PYTANIA-OTWARTE.md`).**
 
 ---
 
