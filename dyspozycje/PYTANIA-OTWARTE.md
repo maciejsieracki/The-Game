@@ -24709,3 +24709,24 @@ rozstrzygnięty i kusił do zbędnego dispatchu.
 **Uwaga:** zamknięcie tamtego wpisu **nie** zamyka `P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE` powyżej —
 to dwie różne rzeczy (tamto: czy resetować przy zmianie właściciela → rozstrzygnięte;
 to: czy migrować stare zapisy → nierozstrzygnięte).
+
+---
+
+## ECHO `P-IKONA-RUDA-CYNY-PLACEHOLDER` (Maciej, 2026-08-14, zgłoszenie ze zrzutem) — dispatch w toku
+
+**Zgłoszenie:** „Rudy żelaza od rudy cyny trzeba oddzielić tym że w rudzie żelaza są trzy grudki
+a nie w rudzie cyny będą dwie grudki naprawdę kolor powinien być ten sam."
+
+**Potwierdzone w kodzie (zmierzone, nie zgadywane):** `gra/src/ui/icons/brand/resources-map-icon-map.json`
+mapuje `"ruda cyny"`/`"ruda_cyny"` na `"res-iron-ore"` — **dosłownie ten sam plik SVG co Ruda żelaza**,
+z jawnym komentarzem w pliku: „PLACEHOLDER, brak dedykowanej ikony cyny w repo — podmienić gdy Design
+dostarczy własną grafikę" (`R-SUROWIEC-CYNA-DO-BRAZU` runda 2, 2026-08-13). To dokładnie ten placeholder
+— zgłoszenie właściciela go zamyka.
+
+`gra/src/ui/icons/brand/resources-map/res-iron-ore.svg` — 3 elementy `<path>`, każdy osobna „grudka",
+wspólny `stroke="#c8ccd4"` (bez wypełnienia). Nowa ikona `res-tin-ore.svg`: **2 grudki, ten sam kolor
+`#c8ccd4`**, ten sam styl (stroke-width 1.5, linecap/linejoin round, 24×24 viewBox) — zmiana w kodzie
+mapy ikon (`"ruda cyny"`/`"ruda_cyny"` → `"res-tin-ore"`), zero zmian silnika.
+
+**STATUS: WDROŻENIE W TOKU** (dispatch Sonnet 5, 2026-08-14 — praca 2D SVG, poza zakresem stałej
+zasady render/**=Opus 5, która dotyczy WYŁĄCZNIE modeli 3D jednostek i `gra/src/render/**`).
