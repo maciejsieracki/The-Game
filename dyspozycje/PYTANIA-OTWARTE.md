@@ -26305,3 +26305,90 @@ budynków miasta; dla budynków-konwerterów (jak Garncarnia) pokazać PEŁNY bi
 na minusie (drewno, glina), surowiec wyjściowy na plusie (ceramika) — nie tylko stronę kosztową.
 
 **STATUS: DISPATCH W TOKU.**
+
+---
+
+## ⛔ P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ (2026-08-14, zgłoszenie Macieja, KRYTYCZNE — audyt dwóch fal wsteczny wykrył pominięcie)
+
+**Zgłoszenie (cytat):** „Po wygranej bitwie nagle nastąpił blackout zniknęła cała mapa świata.
+Jest na biało. Można teoretycznie wejść do miasta, ale po prostu przez to, że nie ma mapy, no to
+nic nie widać."
+
+**Zrzuty (2):** (1) panel miasta Ateny otwarty NAD mapą — obszar mapy (canvas WebGL) całkowicie
+biały/pusty zamiast renderować heksy; widoczny tooltip „Zarządzanie polami" pływający nad pustką.
+(2) widok pełnoekranowy mapy świata — canvas w całości biały, poza HUD-em (paski
+Skarbiec/Praca/Nauka itd. renderują się normalnie), widoczny tooltip przeglądarki „file:/// — aby
+zamknąć tryb pełnoekranowy, naciśnij Esc" i częściowo notyfikacja „Epoka brązu" — **wskazuje że
+canvas jest w trybie pełnoekranowym (Fullscreen API), co sugeruje że problem może być związany z
+przejściem ze sceny bitwy (prawdopodobnie też pełnoekranowej) z powrotem do mapy świata.**
+
+**⚠️ AUDYT §0c — dlaczego to zgłoszenie umknęło:** zostało wysłane w trakcie mojej pracy nad
+inną sprawą (dyspozycja disku/agentów), zacząłem rekonesans (`finishMapBattleUi`, szukanie
+funkcji zamknięcia sceny bitwy) ale zostałem przerwany i NIGDY nie zarejestrowałem ani nie
+dispatchowałem naprawy. To realny błąd procesu — zgłoszenie krytycznego, blokującego bugu
+(gra dosłownie niegrywalna po wygranej bitwie) siedziało nieobsłużone przez kilka tur rozmowy.
+
+**Rozpoznanie wstępne (orkiestrator, niepełne — do dokończenia przez dispatchowanego agenta):**
+- `finishMapBattleUi()` (main.ts ~21205) woła wyłącznie `clearBattleUiState()` — zbyt płytkie
+  jak na pełną diagnozę, wymaga śledzenia co robi `clearBattleUiState` i czy scena bitwy
+  (prawdopodobnie WŁASNY, oddzielny canvas/renderer Three.js w `battle/battleScene.ts`, osobny
+  od mapy świata) jest poprawnie usuwana/dispose'owana, oraz czy renderer/pętla `requestAnimationFrame`
+  mapy świata jest poprawnie WZNAWIANA po powrocie.
+- Fullscreen API (`requestFullscreen`/`exitFullscreen`) — brak potwierdzonych wywołań w
+  `main.ts`/`battleScene.ts` przy pobieżnym grepie orkiestratora, ale zrzut #2 jednoznacznie
+  pokazuje że przeglądarka JEST w trybie pełnoekranowym w tym momencie — **do zweryfikowania
+  gdzie fullscreen jest realnie wyzwalany** (może to być globalny toggle niezwiązany z bitwą,
+  zbieżny w czasie przez przypadek — nie zakładać związku przyczynowego bez dowodu).
+- Hipotezy do zbadania przez dispatchowanego agenta (nie wykluczające się wzajemnie): (a) scena
+  bitwy używa WŁASNEGO kontekstu WebGL/renderera Three.js, który przy powrocie nie jest poprawnie
+  zamknięty, zostawiając mapę światową bez aktywnej pętli renderowania; (b) resize/viewport canvasu
+  mapy nie jest przeliczany po zamknięciu bitwy (biały canvas = brak treningu geometrii, nie błąd
+  koloru — możliwe że kamera/scena zostały wyzerowane); (c) utrata kontekstu WebGL (context lost)
+  przy przełączeniu między dwoma ciężkimi scenami 3D; (d) wyjątek JS w trakcie `finishMapBattleUi`
+  łańcuchu, który przerywa dalszą inicjalizację mapy po cichu (sprawdzić konsolę w headless repro).
+
+**Do dispatchu:** agent MUSI odtworzyć błąd w żywej grze (headless Chromium, Playwright
+preinstalowany) — wejść w bitwę (auto-resolve lub manual), wygrać, i zaobserwować stan canvasu
+mapy świata oraz konsolę (błędy JS) bezpośrednio po powrocie z bitwy. Statyczne czytanie kodu nie
+wystarczy dla błędu renderowania tej klasy. To jest praca w `gra/src/render/**` i/lub
+`gra/src/battle/battleScene.ts` (przenikanie sceny bitwy z mapą świata) — **Opus 5 obowiązkowo**
+zgodnie ze stałą zasadą projektu.
+
+**STATUS: DISPATCH W TOKU — priorytet wysoki (blokuje grę).**
+
+---
+
+## P-NEWGAME-KREATOR-TOOLTIP-INFO-NIE-DZIALA (2026-08-14, zgłoszenie Macieja ze zrzutem, audyt dwóch fal wsteczny wykrył pominięcie)
+
+**Zgłoszenie (cytat):** „Te tooltipy niestety nie działają. Wcześniejsze teksty, które tam były
+trzeba wprowadzić do tooltipów." (zrzut: krok „Zaawansowane opcje" kreatora nowej gry — Warunki
+zwycięstwa, Trudność miast-państw, Barbarzyńcy, Bitwy, Koszty budynków/jednostek, Wzrost
+ludności, Zasięg ruchu — każdy z ikoną (i) obok etykiety, bez widocznego tekstu opisu).
+
+**⚠️ AUDYT §0c:** to zgłoszenie także umknęło — zrobiłem częściowy rekonesans (poniżej), ale
+nigdy nie zarejestrowałem ani nie dispatchowałem naprawy, bo rozmowa przeskoczyła na kolejne
+zgłoszenia (granice, ruda cyny) zanim domknąłem ten wątek.
+
+**Rozpoznanie częściowe (orkiestrator, niepełne):**
+- Treść tooltipów (`row.hint` w `newGameFlow.ts`, funkcja `advancedSettingRows()`) jest
+  IDENTYCZNA przed i po prototypie P-NEWGAME-OPISY-DO-TOOLTIP (`ea0be32a`) — porównane bajt w
+  bajt z wersją sprzed commitu. Więc treść NIE zaginęła — problem to wyłącznie MECHANIZM
+  WYŚWIETLANIA hover, nie brakujące dane.
+- Przed prototypem: `row.hint` renderowany jako ZAWSZE WIDOCZNY `<span class="d">` obok wartości.
+  Po prototypie: `makeInfoIcon(row.hint)` — ikona (i), `title` + custom hover przez
+  `hudTitleTooltip.ts` (`installHudTitleTooltips()`, wołane w `showNewGameFlow()`, idempotentne).
+- `hudTitleTooltip.ts`: `SCOPE_SELECTOR` zawiera `.civ-newgame` (dopisane celowo dla tego ekranu).
+  `installHudTitleTooltips()` wołane na starcie `showNewGameFlow()` — kod WYGLĄDA poprawnie przy
+  czytaniu statycznym, ale orkiestrator NIE zweryfikował tego w żywej grze (brak dostępu do
+  przeglądarki w tamtym momencie rekonesansu).
+- Nie ustalono: czy modal „Zaawansowane opcje" (`showAdvancedModal`/`ensureAdvOverlay`) jest
+  faktycznie zagnieżdżony wewnątrz `.civ-newgame` w DOM w momencie hover (kod sugeruje że tak —
+  `(rootEl ?? document.body).appendChild(advOverlayEl)`, a `rootEl` powinien już istnieć — ale
+  NIE zweryfikowane wykonaniem).
+
+**Do dispatchu:** agent MUSI odtworzyć w żywej grze (headless Chromium) — otworzyć kreator,
+dojść do kroku 4, otworzyć „Zaawansowane opcje", najechać na ikonę (i), sprawdzić czy
+`#civ-hud-title-tip-el` faktycznie się pokazuje z poprawnym tekstem. Jeśli nie — zdiagnozować
+DLACZEGO (błąd JS w konsoli, zły scope selektora, z-index/overlay, coś innego) i naprawić.
+
+**STATUS: DISPATCH W TOKU.**

@@ -18,7 +18,6 @@ import type { GameData } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
-import { unitMapAttackRangeHex } from './combat';
 import {
   cityStateMilitaryProductionCap,
   type DifficultyLevel,
@@ -717,30 +716,6 @@ export function chooseAIResearch(
 /** Returns true if (aq,ar) and (bq,br) are adjacent (distance === 1). */
 function isAdjacent(aq: number, ar: number, bq: number, br: number): boolean {
   return hexDistance(aq, ar, bq, br) === 1;
-}
-
-/**
- * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE (Maciej 2026-08-14, PARYTET AI): zasięg
- * ataku jednostki AI na mapie świata w heksach — 0 dla zwarcia (adiacencja bez
- * zmian), N dla dystansu. Ten sam odczyt "Zasięg ataku (hex)" co po stronie
- * gracza (main.ts:unitAttackRangeHex → game/combat.ts:unitMapAttackRangeHex) —
- * bez tego AI z łucznikiem/procarzem zostałaby ślepa na własny zasięg strzału,
- * mimo że gracz już go dostał (regresja parytetu). / EN: an AI unit's world-map
- * attack reach in hexes — 0 for melee (adjacency unchanged), N for ranged. Same
- * "Zasięg ataku (hex)" read as the player side (main.ts:unitAttackRangeHex →
- * game/combat.ts:unitMapAttackRangeHex) — without this the AI would stay blind
- * to its own firing range with an archer/slinger even though the player already
- * got it (a parity regression).
- */
-function unitAttackRangeHexAi(unit: RuntimeUnit, data: GameData): number {
-  const def = data.units.find(u => u.Jednostka === unit.typeId);
-  return unitMapAttackRangeHex(def as unknown as Record<string, unknown> | undefined);
-}
-
-/** Czy (tq,tr) jest w zasięgu ataku `unit` — adiacencja dla zwarcia, zasięg dla dystansu. */
-function isWithinAttackRange(unit: RuntimeUnit, tq: number, tr: number, data: GameData): boolean {
-  const range = Math.max(1, unitAttackRangeHexAi(unit, data));
-  return hexDistance(unit.q, unit.r, tq, tr) <= range;
 }
 
 /** Nearest element from list by hex distance to (fromQ, fromR). */
@@ -2497,11 +2472,9 @@ export function decideAITurn(
 
     // Military
 
-    // 4b: enemy unit adjacent LUB w zasięgu ataku dystansowego -> attack (tylko
-    // engageable — np. gracz tylko w wojnie). P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE,
-    // PARYTET AI: ta sama bramka zasięgu co main.ts:isTargetWithinAttackRange.
+    // 4b: adjacent enemy unit -> attack (tylko engageable — np. gracz tylko w wojnie)
     const adjacentEnemy = engageableEnemyUnits.find(
-      eu => isWithinAttackRange(unit, eu.q, eu.r, data),
+      eu => isAdjacent(unit.q, unit.r, eu.q, eu.r),
     );
     if (adjacentEnemy !== undefined) {
       commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
@@ -2997,11 +2970,8 @@ function decideDefensiveCopyTurn(
   for (const unit of myUnits) {
     if (unit.ruchLeft <= 0) continue;
 
-    // P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE, PARYTET AI: adjacent LUB w zasięgu
-    // ataku dystansowego (miasta-państwa/kopie defensywne dostają tę samą bramkę
-    // co zwykłe AI wyżej i gracz w main.ts).
     const adjacentEnemy = nonSisterEnemyUnits.find(
-      eu => isWithinAttackRange(unit, eu.q, eu.r, data),
+      eu => isAdjacent(unit.q, unit.r, eu.q, eu.r),
     );
     if (adjacentEnemy !== undefined) {
       let doAttack = true;
