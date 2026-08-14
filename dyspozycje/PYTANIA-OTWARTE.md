@@ -20776,3 +20776,30 @@ całej `triggerPlayerEndTurn`).
 
 **STATUS: dispatch Operatora (Sonnet 5) — naprawić sekwencjonowanie tak, żeby drugi modal
 end-of-turu czekał na zamknięcie pierwszego przez gracza, zamiast otwierać się na wierzchu.**
+
+## Rozpoznanie zakończone: rozjazd Produkcja panel miasta vs spichlerz centralny — NIE bug obliczeniowy, rozjazd źródeł czasowych (2026-08-14)
+
+Stare zgłoszenie (Ateny: panel miasta Produkcja=29/Bilans=-3, tabela spichlerza centralnego
+Produkcja=33/Bilans=+1). Hipoteza Macieja ("Spichlerz stolicy +1/Przyrost zapasów +1") **OBALONA**
+— te dwa pola żyją na poziomie CAŁEGO imperium (liczone PO pętli per-miasto w `advanceEmpireFood()`),
+renderowane w zupełnie innym bloku UI ("Podsumowanie ostatniej tury"), nigdy nie dodawane do
+wiersza konkretnego miasta w żadnym z dwóch paneli. Dodatkowo arytmetycznie 1+1=2≠4.
+
+**Rzeczywista przyczyna:** oba panele liczą DOKŁADNIE tę samą formułę (`zywnoscBrutto −
+kosztRacji`) — różnią się tylko MOMENTEM: panel miasta (`cityPanel.ts computeView()`) liczy **na
+żywo** przy każdym renderze (aktualne przydzielone heksy/budynki/poziom Wyżywienia/mnożniki), a
+tabela "Miasta" w Spichlerzu centralnym (`empireDetailPanel.ts renderSpichlerzCentralnySection`)
+czyta **zamrożony snapshot** z `getLastEmpireFoodTick(0)`, ustawiany WYŁĄCZNIE przez
+`advanceEmpireFood()` wewnątrz `triggerPlayerEndTurn()` — nieodświeżany aż do następnego End Turn.
+Różnica 4 (Produkcja) i idąca za nią różnica 4 (Bilans) to zmiana w przydziale pracownika/budynku
+zaszła PO ostatnim End Turn, a PRZED bieżącym renderem panelu miasta — okno czasowe, którego stary
+snapshot panelu imperium jeszcze nie widzi.
+
+**Żaden panel się nie myli** — oba są wewnętrznie poprawne dla momentu który reprezentują. To
+architektoniczna niespójność UX (live preview vs. rozliczona tura), nie bug silnika. Wymaga
+decyzji właściciela (czy to akceptowalne, czy panel imperium ma odświeżać się na żywo, czy dodać
+etykietę rozróżniającą "stan bieżący" vs "stan z ostatniej tury") — **nie dispatchuję naprawy bez
+tej decyzji, to nie jest oczywisty bug do poprawienia.**
+
+**STATUS: rozpoznanie ZAMKNIĘTE. Czeka na decyzję właściciela czy/jak to zaadresować (osobne
+pytanie ABC, do zadania gdy Maciej wróci).**
