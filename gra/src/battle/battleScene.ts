@@ -212,6 +212,7 @@ import {
 import { civIconSvg, brandIconSvg } from '../ui/icons/brandAssets';
 import { leaderPortraitUrl, leaderName, civIconIdFromCivLabel } from '../ui/leaderPortraits';
 import { showEndScreen1E } from './endScreen1E';
+import { markBattleSceneOpen, markBattleSceneClosed } from './battleSceneOpen';
 import { startVictoryMusic, startDefeatMusic, startBattleMusic } from '../audio/muzyka-antyczna';
 import {
   showEndDetails1E,
@@ -2646,6 +2647,12 @@ export class BattleScene {
       justifyContent: 'flex-start',
     });
     document.body.appendChild(this.overlay);
+    // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: od tej chwili nakładka bitwy przykrywa mapę
+    // świata — main.ts czyta ten stan, żeby wstrzymać WŁASNĄ kamerę mapy (WASD/edge-pan
+    // lecą na window i inaczej przesuwałyby mapę pod spodem przez całą bitwę).
+    // / EN: from here the battle overlay covers the world map; main.ts uses this to
+    // freeze the world-map camera (WASD/edge-pan are window-level listeners).
+    markBattleSceneOpen(this);
 
     const titleBar = document.createElement('div');
     Object.assign(titleBar.style, {
@@ -3506,6 +3513,11 @@ export class BattleScene {
 
   dispose(): void {
     this.finished = true;
+    // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: zdejmij wpis z rejestru NAJPIERW — dispose()
+    // bywa wołane dwa razy na ścieżce wygranej (ekran końca + podsumowanie), a
+    // markBattleSceneClosed jest idempotentne. / EN: unregister first; dispose() legitimately
+    // runs twice on the victory path and markBattleSceneClosed is idempotent.
+    markBattleSceneClosed(this);
     if (this.animFrameId !== null) {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;

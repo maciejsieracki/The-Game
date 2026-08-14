@@ -719,6 +719,7 @@ import { isLivestockAllowed, isLamaDepositVisibleForCiv } from './game/livestock
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { BattleScene } from './battle/battleScene';
+import { isBattleSceneOpen } from './battle/battleSceneOpen';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
@@ -4883,6 +4884,13 @@ async function boot(): Promise<void> {
     function isWorldMapUnitMode(): boolean {
       if (isCityPanelOpen()) return false;
       if (isPreBattleOpen()) return false;
+      // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: `isPreBattleOpen()` łapie WYŁĄCZNIE okienko
+      // pre-bitwy; po kliknięciu „BITWA" jest ono zamykane (hidePreBattle) i przez całą
+      // scenę bitwy ta funkcja zwracała `true`, mimo że mapa świata jest przykryta
+      // nakładką — wbrew intencji opisanej przy `edgePanActive` (cameraControllerOpts).
+      // / EN: isPreBattleOpen() only covers the pre-battle dialog; it is hidden the moment
+      // the 3D battle starts, so the world map wrongly counted as interactive underneath.
+      if (isBattleSceneOpen()) return false;
       if (isPostBattleSummaryOpen()) return false;
       if (isArmyMergePanelOpen()) return false;
       if (isArmyMergePickPanelOpen()) return false;
@@ -28523,7 +28531,16 @@ async function boot(): Promise<void> {
       }
 
       // --- Camera and render (always run, even during animation) ---
-      camCtrl.update();
+      // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: `camCtrl.update()` to jedyne miejsce, gdzie
+      // WASD/strzałki i edge-pan przesuwają kamerę MAPY ŚWIATA. Oba nasłuchy siedzą na
+      // `window` (camera.ts `_bind`), więc gdy gracz panuje kamerą SCENY BITWY tymi samymi
+      // klawiszami, mapa świata pod nakładką odjeżdżała razem z nią — po powrocie z bitwy
+      // kadr stał poza mapą i gracz widział pusty ekran. Bramka nie zmienia zachowania na
+      // samej mapie (brak nakładki = zero różnicy).
+      // / EN: camCtrl.update() is the only place WASD/edge-pan move the WORLD-MAP camera;
+      // both listeners live on `window`, so panning the BATTLE camera dragged the world map
+      // along under the overlay and left it off-screen after the battle.
+      if (!isBattleSceneOpen()) camCtrl.update();
       {
         const { dist } = camCtrl.getFocusState();
         const { minDist, maxDist } = camCtrl.getDistLimits();

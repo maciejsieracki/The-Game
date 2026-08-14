@@ -26793,7 +26793,40 @@ wystarczy dla błędu renderowania tej klasy. To jest praca w `gra/src/render/**
 `gra/src/battle/battleScene.ts` (przenikanie sceny bitwy z mapą świata) — **Opus 5 obowiązkowo**
 zgodnie ze stałą zasadą projektu.
 
-**STATUS: DISPATCH W TOKU — priorytet wysoki (blokuje grę).**
+**ODTWORZONE I NAPRAWIONE (Operator Opus 5, 2026-08-14) — PRZYCZYNA: DRYF KAMERY MAPY POD
+NAKŁADKĄ BITWY, nie renderer/WebGL/fullscreen.**
+
+**Jak odtworzone (headless Chromium, Playwright, bundle z `vite build`):** `?playtest=walka` →
+klik jednostki → klik wroga → „BITWA" (scena 3D) → przytrzymany klawisz `s` (normalny pan kamery
+BITWY) → wyjście „Wycofaj się". Canvas mapy świata próbkowany niezależnie co ~13 s (wymuszony
+`preserveDrawingBuffer` + `drawImage` do canvasu 2D, próbka 64×48). Średni kolor mapy spadał
+monotonicznie **(36,57,52) → (16,21,23)**, liczba różnych kolorów **201 → 113**; po powrocie na
+mapę zrzut pokazuje **prawie pusty ekran — cienki pasek terenu przy górnej krawędzi, reszta tło**.
+
+**Przyczyna (zweryfikowana w kodzie i pomiarem):** `CameraController` mapy świata trzyma nasłuchy
+`keydown` i `mousemove` na `window` (`src/render/camera.ts` `_bind`), a `renderLoop` w `main.ts`
+wołał `camCtrl.update()` **bezwarunkowo** — także gdy na wierzchu stała nakładka sceny bitwy.
+Pan kamery BITWY (WASD/strzałki) i edge-pan kursorem przy krawędzi ekranu przesuwały równolegle
+kamerę MAPY ŚWIATA. Bramka edge-panu `isWorldMapUnitMode()` sprawdzała tylko `isPreBattleOpen()`
+(okienko pre-bitwy, zamykane w chwili startu bitwy 3D), mimo że komentarz przy `edgePanActive`
+(`cameraControllerOpts`) deklarował wykluczenie także „bitwy". Skala: `keyPanSpeed 0.3 × dist/30`
+na KLATKĘ; przy 60 FPS i `dist≈22` to ~13 jedn. świata/s (HEX_R = 1,0) — kilka sekund panowania
+kamerą bitwy wynosi mapę poza kadr. W headless (SwiftShader, ~1–1,5 FPS) ten sam dryf zajął ~3 min.
+
+**Naprawa:** nowy, lekki rejestr `src/battle/battleSceneOpen.ts` (`Set`, bo `dispose()` leci DWA
+RAZY na ścieżce wygranej — ekran końca + `afterSummary`); `BattleScene` rejestruje się przy
+wstawieniu nakładki do DOM i wyrejestrowuje na starcie `dispose()`; `main.ts`: `renderLoop` woła
+`camCtrl.update()` tylko gdy `!isBattleSceneOpen()`, a `isWorldMapUnitMode()` zwraca `false` przy
+otwartej scenie bitwy. Bramka: `gra/tools/bitwa-mapa-kamera-blokada-test.cjs` (24/24, dowód
+mutacyjny w obie strony). Weryfikacja po naprawie: ten sam scenariusz, mapa BEZ ZMIAN.
+
+**Czego NIE potwierdzono:** dosłownej BIAŁEJ barwy ze zrzutu właściciela. Pusty kadr przyjmuje
+kolor tła sceny, a ten zależy od stanu mgły: przy nieodkrytych heksach `FOG_HIDDEN_COLOR` 0x0b0d12
+(ciemny — tak wyszło w repro), przy pełnym odkryciu `deepOcean` 0x163d5c + mgła `0x9fcfe6`
+(jasna). Fullscreen i utrata kontekstu WebGL **wykluczone pomiarem**: `document.fullscreenElement`
+przez cały przebieg `null`, zero zdarzeń `webglcontextlost`, zero błędów w konsoli.
+
+**STATUS: NAPRAWIONE — czeka na playtest właściciela.**
 
 ---
 
