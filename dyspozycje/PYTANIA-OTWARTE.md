@@ -22350,3 +22350,132 @@ tekstowo), tak żeby mutacja B świeciła na czerwono; (3) przy okazji asercja r
 offsetów (N1). Sprostowanie do opisu commita `ec089e9a`: sformułowania „lustrzany"/„lustrzane
 odbicie `isRiverAdjacent()`" są nieścisłe — poprawnie „warunek węższy niż wcześniej, wciąż szerszy
 niż silnik o ~7 % heksów FLAT_IRR".
+
+---
+
+## Evaluator: reskin paneli Miasta/Armie na paletę 3b (`cbb85e3a`, `MIASTA-ARMIE-PANEL-LEWY-2026-08-14`)
+
+**Werdykt: PASS-WITH-NOTES.** Kod produkcyjny jest poprawny, zgodny ze zleceniem Designera i z makietami,
+wszystkie 5 zadeklarowanych decyzji faktycznie wdrożonych (sprawdzone w kodzie, nie z opisu commita),
+zero regresji zachowania. **Dwa znaleziska wymagają follow-upu przed kolejną falą** (N1 i N3 niżej) —
+nie blokują deployu, ale N1 oznacza, że nowa bramka *nie chroni* głównego przedmiotu zlecenia, a N3
+obala twierdzenie z opisu commita.
+
+### Bramki — zweryfikowane niezależnie (uruchomione samodzielnie z `gra/`, kody wyjścia z procesu testu, nie z opakowania)
+`npx tsc --noEmit` → **exit 0, zero błędów** · `side-list-hud-panel-coverage-test.cjs` → **72/72, exit 0** ·
+`tech-tree-test.cjs` → **19 pass / 0 fail** · `research-test.cjs` → **33/0, ALL GREEN** ·
+`unit-replace-test.cjs` → **13/13** · `ai-founding-territory-test.cjs` → **28 passed / 0 failed**.
+Build `vite build` → **exit 0** (bundle jednoplikowy 37,1 MB). Wszystkie zgodne z opisem commita.
+*(Nota techniczna: worktree nie miał `node_modules` — pierwszy przebieg `npx tsc` ściągnął nowszy
+TypeScript i zwrócił nieistniejący błąd `TS5101 baseUrl deprecated`; po podlinkowaniu `node_modules`
+z drzewa głównego bramka jest czysta. To artefakt środowiska, nie kodu.)*
+
+### Weryfikacja wizualna — 4 scenariusze + 2 zrzuty z żywej gry
+Zbudowany bundle uruchomiony w headless Chrome (`?playtest=mapa`) oraz osobny harness renderujący
+**realne moduły** (`cityListHud.ts`/`armyListHud.ts`/`sideListHud.css.ts` zbundlowane esbuildem,
+stub `brandAssets` z **prawdziwymi** SVG z brand-booka) w prawdziwej przeglądarce przy szerokości
+okna 1600px, czyli tam gdzie `min(24vw,340px)` daje realne 340px panelu.
+- **Paleta 3b potwierdzona `getComputedStyle` z przeglądarki, nie z odczytu źródła:** tło karty
+  `rgb(23,30,42)` = `#171e2a`, ramka `rgb(43,53,67)` = `#2b3543`, róg `7px`, nazwa i tytuł
+  `rgb(217,164,65)` = `#d9a441`, paski Zdrowie/Ruch `height: 6px`. Zero starych kolorów.
+- **Miasta z danymi:** pasmo podsumowania („4 miasta", „27 mieszk. · 2 kolejki w toku", boxy
+  W BUDOWIE `2 z 4` / GARNIZONY `3 jedn.`), karty z ramką, pasek postępu produkcji (złoty gradient),
+  plakietka `stolica` (złota) **dokładnie na jednym** mieście z czterech, `kolejka pusta` (neutralna).
+- **Armie z danymi:** wszystkie 4 plakietki w 3 zatwierdzonych kolorach — `w garnizonie`
+  `rgb(217,164,65)`, `ufortyfikowana w polu` `rgb(217,164,65)`, `uśpiona` `rgb(154,164,178)`,
+  `auto-eksploracja` `rgb(142,197,255)` — plus zielona `ZAZNACZONA` `rgb(120,201,90)` z lewym paskiem.
+  Liczba HP 11/40 w `#e07a7a`, interpolacja hue paska nietknięta.
+- **Oba stany puste:** ramka przerywana, wyciszona ikona, komunikaty niezmienione co do znaku,
+  pasmo podsumowania **nie** renderuje się przy 0 miast, licznik **nie** renderuje się przy 0 armii.
+- **Zero błędów** `pageerror`/`console.error` w żywej grze i w harnessie.
+
+### Punkty zlecenia sprawdzone w kodzie (nie z opisu commita)
+5 zgłoszeń §5: wspólny arkusz **TAK** (`sideListHud.css.ts`, oba pliki go importują, stare
+zdublowane `.cl-*`/`.al-*` usunięte) · rozbicie `productionLine` **TAK** (jedyna zmiana danych;
+warunki renderu równoważne staremu `front ? … : cityHasActionableProduction ? 'Kolejka pusta' : undefined`) ·
+plakietka `stolica` bez `nowe` **TAK** (`'nowe'` nie występuje nigdzie) · emoji stopki **NIETKNIĘTE**
+(oba `hint.textContent` bajt w bajt identyczne przed i po) · `mapToolbarHud.ts` **NIETKNIĘTY**
+(i `gamePauseMenu.ts` też — commit dotyka 7 plików, żadnego z nich).
+DoD §6: 6 z 7 punktów potwierdzone kodem/wizualnie; punkt 7 — patrz N4.
+**Brak regresji interakcji/a11y:** `addEventListener('click')`, `keydown` Enter/Spacja, `tabIndex`,
+`role="button"`, `title`, `aria-label`, `pushOverlay`/Esc, `bindHudPanelOutsideDismiss` — wszystko
+zachowane; usunięte linie to wyłącznie CSS i przebudowa wiersza tytułu.
+**Pole `productionLine` nie żyje już nigdzie w `gra/src/`** (grep: tylko komentarze i sam test);
+`CityListEntry`/`ArmyListEntry` mają dokładnie po jednym miejscu konstrukcji, oba w `main.ts`.
+**`isCapital` daje dokładnie jedną stolicę:** `capitalCityIdForOwner(ownerId)` jest funkcją czystą
+od `ownerId`, a `buildPlayerCityListEntries` filtruje `ownerId === 0`, więc wszystkie wiersze pytają
+o tę samą wartość; `oldestCityOfOwner` zwraca dokładnie jedno miasto (`<` przy remisie).
+Potwierdzone wykonaniem: 4 miasta → **1** plakietka `sl-badge.gold`.
+
+### N1 — **nowa bramka NIE chroni palety, czyli głównego przedmiotu zlecenia** · STATUS: **OTWARTE**
+Sekcja A testu asercjonuje paletę przez `cssSrc.includes('#171e2a')` itd. — ale **wszystkie pięć**
+tych kolorów wymienia nagłówkowy komentarz samego pliku (linie 7–9: „tło kart #171e2a, obramowanie
+#2b3543, akcent złoty #d9a441, tekst wyciszony #7d8798, kafelek ikony #1d2634"). Asercje spełnia
+więc komentarz, nie CSS.
+**Mutacja kontrolna (wykonana, nie rozumowana):** podmiana w szablonie CSS wszystkich pięciu tokenów
+na `--panel:#ff0000;--border:#00ff00;--muted:#0000ff;--gold:#ff00ff;--tile:#ffff00` przy nietkniętym
+komentarzu → bramka nadal **`OK (72/72)`**, a panel renderuje się czerwono-magentowo-zielony
+(zweryfikowane zrzutem). Pośrednia mutacja (sam `--gold` z powrotem na stare trzecie złoto
+`#e0b24a`) — również **72/72**.
+Dla kontrastu mutacja logiki **jest** łapana: `armyStatusBadge` `sentry` z `neutral` na `gold`
+→ **70 pass, 2 fail**. Czyli część wykonawcza (esbuild+jsdom, sekcje B i C) jest realna i nietautologiczna
+— słabość dotyczy wyłącznie source-textowych asercji palety.
+**Do naprawy:** asercjonować na treści szablonu CSS (fragment po `const css = `), a nie na całym
+pliku, oraz dołożyć asercję negatywną „`#e0b24a` NIE występuje w `sideListHud.css.ts` poza komentarzem".
+Docelowo najmocniej: asercja na `getComputedStyle` w jsdom, bo jsdom liczy zmienne CSS.
+
+### N2 — asercja „stolica DOKŁADNIE dla Aten" nie testuje wyłączności · STATUS: **OTWARTE**
+Etykieta obiecuje `DOKLADNIE`, a regex `/sl-badge gold">stolica/` sprawdza wyłącznie **obecność**.
+Mutacja kontrolna: `if (c.isCapital)` → `if (true)` w `cityListHud.ts` (plakietkę dostają wszystkie
+miasta) → bramka **`OK (72/72)`**. Logika produkcyjna jest poprawna (zweryfikowana osobno, wyżej),
+ale bramka nie złapałaby jej regresji. Poprawka jednolinijkowa: policzyć trafienia i porównać z 1.
+
+### N3 — `baseline-screenshots-A.cjs` **złamany** tym commitem; opis commita twierdzi przeciwnie · STATUS: **OTWARTE**
+`gra/tools/baseline-screenshots-A.cjs` w liniach **90 i 139** używa selektora
+`.civ-army-list-hud .al-item` — klasy, którą ten commit usunął (wiersz to dziś `.sl-item`).
+Potwierdzone na **żywym DOM z gry**: `al-item` → **0 trafień**, `sl-item` → **3**. Obie linie to
+`.first().click()`, więc lokator pusty = timeout Playwrighta.
+Opis commita stwierdza: *„Brak istniejacych bramek odwolujacych sie do tych plikow (zweryfikowane
+grepem) — zero kolizji"* — **to twierdzenie jest nieprawdziwe**; grep najwyraźniej objął nazwy
+plików `.ts`, a nie przemianowane selektory CSS.
+**Waga: niska dla gry, istotna dla zaufania do opisu.** Skrypt nie jest jedną z bramek z `CLAUDE.md`
+i dziś i tak nie wystartuje (wymaga `Gra-podglad-PLAYTEST-MAPA.html`, którego nie ma w repo), więc
+**zero wpływu na deploy** — ale padnie przy najbliższym odtwarzaniu baseline'ów grupy A. Naprawa:
+dwa razy `al-item` → `sl-item`. Świadomie **nie naprawiam** w tej turze (mandat Evaluatora: commituję
+wyłącznie ten plik).
+
+### N4 — deliverables Designera nie trafiły do repo, żyją tylko w efemerycznym scratchpadzie · STATUS: **OTWARTE**
+W repo jest **wyłącznie zlecenie** (`docs/ux/DESIGN-ZLECENIE-MIASTA-ARMIE-PANEL-LEWY-2026-08-14.md`).
+Handoff Designera (`DESIGN-do-UI_…md`), makieta `.dc.html`, `standalone.html`, `MANIFEST.txt`, ZIP
+i dwa PNG klatek leżą tylko w `/tmp/…/scratchpad/panel-miasta-designer/_dist/…`. To jedyny pisany
+zapis potwierdzenia palety 3b, matrycy kolorów plakietek, 5 zgłoszeń i uzasadnienia progu HP 30%
+(sam próg jest arbitralny — dokument Designera go nie podaje, dobrał go integrator). Po skasowaniu
+scratchpada zostanie tylko opis commita. DoD §6 pkt 7 jest więc odhaczony po stronie Designera, ale
+**nie w repozytorium**. Wobec `CLAUDE.md` §6 („jeśli czegoś nie zapiszesz — dla drugiej sesji to się
+nie wydarzyło") — do przeniesienia do `docs/ux/`.
+
+### N5 — długa nazwa + najdłuższa plakietka zjada nazwę mocniej niż w makiecie (kosmetyka, w granicach specyfikacji)
+Przy realnych 340px „Włócznicy graniczni" obok plakietki `ufortyfikowana w polu` skraca się do
+„Włócznicy grani…", podczas gdy makieta pokazuje pełną nazwę. Przyczyna: `.sl-badges{flex-shrink:0}`
+przy `.sl-name{flex:1;min-width:0}` — plakietka nigdy nie ustępuje. Elipsa to **zamierzone**
+zachowanie z §4.5 handoffu, więc formalnie zgodne; przy `min-width:260px` panelu efekt jest silniejszy.
+Do rozważenia, nie do naprawy teraz.
+
+### N6 — `formatMiastaCount`/`formatKolejkiCount`: uproszczona odmiana (1 / 2–4 / 5+)
+Dla n = 22 zwrócą „22 miast" zamiast poprawnego „22 miasta" (polska reguła patrzy na ostatnie dwie
+cyfry). **To dokładnie ten sam wzorzec co pre-istniejący `formatJednostkiCount`**, z którego commit
+świadomie kopiował — więc spójność z repo, nie nowa klasa błędu. Osiągalne dopiero przy ≥22 miastach.
+
+### N7 — postęp produkcji jest teraz zaokrąglany do wyświetlenia (drobna zmiana zachowania spoza reskinu)
+Przed: `${prod?.postep ?? 0}/${front.koszt}` — wartość surowa, więc ułamkowy postęp renderował się
+jako np. „8.5/20". Po: `Math.round(c.productionProgress)` → „9/20". Wyłącznie prezentacja, silnik
+liczy dalej na pełnej wartości; obiektywnie poprawa czytelności, ale **nie jest to czysty reskin**
+i opis commita tego nie wymienia. Odnotowane, bez zalecenia cofania.
+
+### N8 — „zero emoji" nie jest dosłownie prawdą na ekranie (zgodne z decyzją, nie zarzut)
+W stopkach nadal renderują się `🏛` (Miasta) i `⚔` (Armie), plus glif zamknięcia `✕`. To **dokładnie**
+udokumentowana decyzja §5.4 handoffu, potwierdzona w opisie commita („emoji stopki nietknięte"),
+a `🏛️`/`👥`/`🔨` z kafelka, licznika mieszkańców i linii produkcji faktycznie zniknęły na rzecz SVG
+z brandu (potwierdzone wizualnie — w kartach renderują się prawdziwe ikony brand-booka).
+**Otwarta, nieodpowiedziana oferta Designera:** *„Jeśli chcecie i tam SVG inline, dotyczy obu paneli"* —
+gdyby właściciel oczekiwał dosłownego zera emoji, to jest ten jeden pozostały krok.
