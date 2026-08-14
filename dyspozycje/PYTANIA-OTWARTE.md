@@ -25416,7 +25416,181 @@ wyciek też wychodzi dokładnie 0), ale margines bezpieczeństwa jest inny, niż
 5. **N6/N7:** dowód wizualny albo do repo (zrzut + skrypt), albo do playtestu właściciela — nie
    jako deklaracja w opisie commita.
 
-**STATUS: OTWARTE — zwrot do Operatora (runda 2), praca renderowa, Operator dowolny model, Evaluator Opus 5.**
+**STATUS: ZAMKNIĘTE po rundzie 2 (`c571a3ca`) — patrz werdykt PASS-WITH-NOTES bezpośrednio niżej.**
+
+---
+
+## Evaluator: pas granicy do wewnątrz — RUNDA 2 (`c571a3ca`, `R-GRANICE-STYK-CZYTELNOSC-Q1` = B) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
+
+Ocena poprawki po **moim własnym werdykcie FAIL rundy 1** (`4de64fa8`, sekcja wyżej). Zakres commita:
+`gra/src/render/rangeOverlay.ts`, `gra/tools/granice-styk-nakladanie-test.cjs` oraz nowe narzędzie
+`gra/tools/granice-pas-pomiar.cjs` — **3 pliki, zero zanieczyszczenia** innymi tematami (równoległy
+commit dyplomacji `c94de5c8` to osobny temat, poza tą oceną). Praca w `gra/src/render/**`, więc ocena
+na Opus 5 zgodnie ze stałą zasadą `CLAUDE.md` §4.
+
+Wszystko poniżej zmierzone **niezależnie**, w izolowanym worktree na `c571a3ca`, **własnym harnessem
+napisanym od zera** (własny bundler, własny dokładny test punkt-w-sześciokącie, własne fixture'y —
+inne niż Operatora) oraz przez uruchomienie prawdziwego kodu. Liczby PRZED i RUNDA 1 odtworzone przez
+podstawienie `git show 4de64fa8^:…` / `git show 4de64fa8:…`, nie przepisane z opisu commita.
+
+### 1. WSZYSTKIE PIĘĆ PUNKTÓW BLOKUJĄCYCH RUNDY 1 — ZAMKNIĘTE
+
+| Nota rundy 1 | Wymaganie | Stan po rundzie 2 (mój pomiar) |
+|---|---|---|
+| **N1** (blokująca) — strona „na zewnątrz" z centroidu | wyznaczać z orientacji pętli | **0 błędnych normalnych na 26 206 segmentach** (600 losowych klastrów 7/12/19/25/40 heksów + 8 kształtów adwersarialnych). Regułą rundy 1: 12,51 % / 14,47 % / 16,65 % / 17,29 % / 19,09 % — zgodne z moim pomiarem rundy 1 (11,3–18,9 %) |
+| **N3** (regresja) — enklawa | 0 j² pasa na heksie enklawy | **0,0000 j²** — potwierdzone też na MOICH enklawach: 2 dziury naraz, **wyspa wewnątrz dziury (głębokość zagnieżdżenia 2)**, dwa osobne pierścienie |
+| **N2** — pas nie dotyka linii granicy powierzchnią | mitra zamiast bevelu | **szczelina 0,0005 j = jeden krok próbkowania, czyli zero**, na 6 kształtach (1 heks, 1×2, 1×3, blok 2×3, pierścień 6, wąż S). Runda 1 miała 0,1360–0,3995 j |
+| **N5** — nieprawdziwa liczba „1,35 j przed i po" | sprostować | Sprostowanie **poprawne co do cyfry** — odtworzyłem tabelę PRZED i RUNDA 1 uruchamiając narzędzie na obu historycznych commitach |
+| **N8** — `makeOwnerAt` luźniejsze niż brzmi | dokładny test punkt-w-sześciokącie | Zrobione (6 półpłaszczyzn na inradiusie) |
+
+**Wyciek pasa tożsamości poza własne terytorium — MÓJ Monte Carlo, nie fixture'y Operatora:**
+200 losowych spójnych klastrów (40 na każdy rozmiar 7/12/19/25/40 heksów) + 10 kształtów
+adwersarialnych (wąż S, spirala, 2 dziury, wyspa w dziurze, dwie wyspy, styk rogiem, krzyż, grzebień,
+nitka 1×6) — **wyciek 0,0000 j² we WSZYSTKICH przypadkach**, dla obu pasów. Obietnica
+„konstrukcyjnie" tym razem naprawdę zachodzi, nie tylko na wybranej klasie kształtów.
+
+### 2. ODSTĘPSTWO OD MOJEJ REKOMENDACJI — UZASADNIONE, i to mocniej, niż argumentował Operator
+
+To był główny punkt sporny. Rozstrzygam go **na własnych fixture'ach i własną algebrą**, nie na
+zaufaniu. Porównałem trzy reguły przy tej samej konwencji znaku (baza `(−dz, dx)`):
+
+| Reguła | pierścień 12 wokół 3 pustych | 2 dziury | wyspa w dziurze (głęb. 2) | Monte Carlo (151 kształtów wielopętlowych, 11 716 segm.) |
+|---|---|---|---|---|
+| **R1** shoelace NAIWNY (na zewnątrz od obszaru zamkniętego przez TĘ pętlę) | 16/56 błędnych | 10/54 | 18/66 | **1066 błędnych (9,10 %)** |
+| **R2** shoelace + korekta głębokości zagnieżdżenia | 0/56 | 0/54 | 0/66 | **0 (0,00 %)** |
+| **R3** stała rotacja — to, co zrobił Operator | 0/56 | 0/54 | 0/66 | **0 (0,00 %)** |
+
+**Wniosek 1 — Operator ma rację, że dosłowny shoelace byłby błędny.** Potwierdzone na MOICH
+enklawach, nie na jego pierścieniu 6: R1 myli się wyłącznie na pętlach dziur, bo „na zewnątrz od
+dziury" to „w głąb terytorium", a potrzebne jest odwrotnie.
+
+**Wniosek 2 — moja rekomendacja „z warunkiem różnicującym" (R2) też jest poprawna… ale to TA SAMA
+reguła.** Postawiłem i sfalsyfikowałem hipotezę `znak_pola(L) = σ₀ · (−1)^głębokość(L)`: sprawdzona
+na 5 własnych fixture'ach (w tym głębokość 2) i 165 losowych kształtach wielopętlowych, **354 pętle,
+0 naruszeń**. Skoro tak, to korekta głębokości **algebraicznie kasuje** człon shoelace:
+`−znak(A)·(−1)^d = −σ₀·(−1)^{2d} = −σ₀` = stała. Zmierzone wprost — kolumna „flipy R2" w moim
+harnessie wynosi **`[1, 1]`, `[1, 1, 1]` — czyli +1 dla KAŻDEJ pętli na KAŻDEJ głębokości**, w każdym
+fixture. R2 ≡ R3 jako funkcja, tylko że R2 kosztuje `O(pętle² × wierzchołki)` testów
+punkt-w-wielokącie i dokłada kruchą arytmetykę zagnieżdżenia (a punkt-w-wielokącie na wspólnych
+wierzchołkach / stykach rogiem jest właśnie tym, co lubi się psuć).
+
+**Werdykt do punktu spornego: to NIE był unik od trudniejszej naprawy — to jest zredukowana postać
+tej trudniejszej naprawy.** Moja rekomendacja rundy 1 mieszała dwie rzeczy pod jednym hasłem
+(„znak pola powierzchni / winding"); Operator wziął tę poprawną (winding) i odrzucił tę niepoprawną
+(znak pola), z uzasadnieniem, które sam sprawdziłem i potwierdzam.
+
+**Kontrakt orientacji, na którym to wszystko stoi, ISTNIEJE i został zweryfikowany.** Każdy segment
+każdej pętli porównałem z kanonicznym kierunkiem krawędzi z `collectTerritoryBoundaryEdges`
+(róg dir+1 → róg dir+2): **26 258 segmentów, 0 odwróconych, 0 niekanonicznych.** (Pierwsze podejście
+pokazało ~1,5 % „segmentów widmo" — to był **błąd mojego klucza**, nieuwzględniający naprawy ujemnego
+zera z `borderVertexKey`; po zrównaniu klucza z produktem zostaje czyste 0. Zapisuję, żeby nikt nie
+odziedziczył fałszywego tropu.)
+
+### 3. Bramki — uruchomione przeze mnie na `c571a3ca`, wszystkie zgodne co do jednego
+
+| Bramka | Wynik | Kod wyjścia |
+|---|---|---|
+| `tsc --noEmit` (przypięty `./node_modules/.bin/tsc`) | 0 błędów | 0 |
+| `granice-styk-nakladanie-test.cjs` | **57 pass / 0 fail** (było 30/0) | 0 |
+| `granice-relacja-dyplomatyczna-test.cjs` | 52 pass / 0 fail | 0 |
+| `civ-visual-test.cjs` | 56 pass / 0 fail | 0 |
+| `territory-border-test.cjs` | 9 pass / 0 fail | 0 |
+| `territory-border-dense-settlement-test.cjs` | 15 pass / 0 fail | 0 |
+| `tech-tree-test.cjs` | 19 pass / 0 fail | 0 |
+| `research-test.cjs` | 33 pass / 0 fail | 0 |
+| `vite build --outDir dist --emptyOutDir` | 823 moduły, 27,83 s | 0 |
+
+`granice-pas-pomiar.cjs` **uruchomiłem sam i odtwarza całą tabelę co do cyfry** — łącznie z wersjami
+historycznymi (przepis z nagłówka pliku działa): PRZED `2,5567 / 3,9504 / 4,2119 / … / 6,7377`,
+RUNDA 1 `0,9844 / 1,9683 / … / 1,5013`, przekrój PRZED `0,6745 j` bez przerw, RUNDA 1 `1,3495 j`
+rozpiętości z przerwą `0,6750 j`, RUNDA 2 `1,3495 j` rozpiętości i `1,3500 j` pomalowane, zero przerw.
+Nota N6 rundy 1 (dowód nieodtwarzalny) — **zamknięta**.
+
+### 4. MOJE WŁASNE mutacje kontrolne (nie odtworzenie deklaracji Operatora)
+
+| Mutacja | Wynik bramki | Wniosek |
+|---|---|---|
+| **M1** — odwrócenie KANONICZNEGO kierunku krawędzi w `territory-border.ts` (róg dir+2 → dir+1) | **18 pass / 39 fail** | Niewidzialny kontrakt, na którym stoi cała naprawa, **jest pilnowany behawioralnie**. Ale `territory-border-test.cjs` pod tą samą mutacją zostaje **9/0** — moduł, który ten kontrakt POSIADA, sam go nie testuje (nota N6 niżej) |
+| **M2** — wyłączenie przycinania odległościowego (naprawa N4) | **57 pass / 0 fail** | Bramka **nie pilnuje N4 w ogóle** (nota N4 niżej) |
+| **M3** — reguła naiwnego shoelace (pętle dziur odwrócone) | **53 pass / 4 fail**, wszystkie 4 w sekcji 5 (enklawa) | Bramka realnie broni dokładnie przed tym błędem, który analizowałem w punkcie 2 |
+
+### Noty
+
+- **N1 (LICZBA NIEPRAWDZIWA w opisie commita, `CLAUDE.md` §0b).** „*Przycinanie odleglosciowe kosztuje
+  0,2 ms, bo uruchamia sie tylko we wkleslych kieszeniach*" — **nieprawda na obu członach**. Sonda
+  `distanceToBoundary` **jest samym warunkiem `if`**, więc wykonuje się dla KAŻDEGO wierzchołka
+  bezwarunkowo (inaczej nie da się stwierdzić, czy kieszeń jest wklęsła), a każde wywołanie skanuje
+  WSZYSTKIE pętle → koszt `O(V²)` na terytorium, i to 4× (dwa pasy × dwa wsunięcia). Zmierzone przeze
+  mnie, ta sama konfiguracja z mutacją M2 i bez: 8 cywilizacji × 120 heksów **8,9 ms bez przycinania
+  → 15,2 ms z przycinaniem**, czyli **6,3 ms, ~31× więcej niż deklarowane, i 41 % całego czasu
+  przebudowy**. Skrajne rozdrobnienie (8 cywilizacji × 120 heksów rozsypanych): **19,1 → 124,3 ms**.
+  Skalowanie na jednym terytorium 120 heksów: 1 blob 2,9 ms · 3 bloby 4,2 · 12 blobów 8,5 · 30 blobów
+  13,4 ms. **NIE blokuje:** `refreshTerritoryBorderOverlay()` woła się na zdarzenia (koniec tury,
+  zmiana statusu dyplomatycznego, przełącznik warstwy), nie co klatkę, a łączne 15,2 ms mieści się
+  w jednej klatce — i sama liczba zbiorcza „15,7 ms" z opisu commita **jest prawdziwa** (zmierzyłem
+  15,2 ms / 4192 trójkąty przy deklarowanych 15,7 ms / 4120). Fałszywa jest **atrybucja**, a jest
+  szkodliwa, bo sugeruje, że mechanizm jest prawie darmowy — kto go w przyszłości rozbuduje
+  (np. zwiększy `STEPS = 24`), zapłaci kwadratowo, nie liniowo.
+- **N2 (LICZBA NIEPRAWDZIWA w opisie commita, §0b).** „*1 heks / blok 2x3 / blok 2x4 / kwiat 7: 0,0000
+  we wszystkich trzech wersjach*" — **nieprawda dla dwóch z czterech**. Zmierzone JEGO WŁASNYM
+  narzędziem na commitach historycznych: `blok 2x3` RUNDA 1 = **0,0314 j²** (nie 0), `blok 2x4` PRZED
+  = **0,1081 j²** i RUNDA 1 = **0,3396 j²** (nie 0). Naprawdę zerowe we wszystkich trzech wersjach są
+  tylko `1 heks` i `kwiat 7`. Kierunek błędu działa **przeciw** Operatorowi (przedstawia rundę 1 jako
+  lepszą, niż była), ale liczba podana właścicielowi jako fakt musi być prawdziwa niezależnie od
+  kierunku. Dzisiejsze wartości (RUNDA 2 = 0,0000 dla wszystkich czterech) potwierdzam.
+- **N3 (ZAKRES N4 ZAWĘŻONY NIEPRAWDZIWIE, §0b).** „*wylacznie na terytoriach szerokosci 1 heksa*" —
+  **nieprawda**. Zmierzone na moich kształtach szerokości 2 heksów: `L szerokie 2` **0,0328 j²**
+  (0,26 % pasa), `U szerokie 2` **0,0388 j²** (0,22 %), `schodek szerokości 2` **0,0445 j²** (0,40 %).
+  Czynnikiem sprawczym jest **WKLĘSŁOŚĆ obwodu, nie szerokość 1** — szerokość 1 to tylko najgorszy
+  przypadek (1,22–3,19 %). Kształty wypukłe (blok 2×3, blok 3×3, pierścień o ścianie 2) faktycznie
+  mają 0,0000 i to się potwierdza.
+- **N4 (DZIURA W BRAMCE — najpoważniejsza nota tej rundy).** Mutacja M2: wyłączyłem przycinanie
+  odległościowe całkowicie (`if (false && …)`) — **bramka zostaje 57 pass / 0 fail**, mimo że
+  samo-nakładanie rośnie 3–5× (`1x2` 0,0302→**0,1520**; `1x3` 0,0604→**0,3044**; `1x4`
+  0,0906→**0,4570**; `podkowa` 0,1554→**0,6101**; `pierścień 6` 0,3355→**0,9094**). Czyli najdroższa
+  czasowo część tego commita (nota N1 wyżej: 41 % czasu przebudowy) **nie jest chroniona ani jedną
+  asercją** — można ją usunąć i wszystkie bramki zostaną zielone. Do dołożenia: asercja progowa na
+  samo-nakładanie dla `1x2` / `1x4` / `pierścienia 6`.
+- **N5 (OCENA ISTOTNOŚCI WIZUALNEJ POZOSTAŁOŚCI N4 — POMIJALNA; decyzję Operatora o nieinwestowaniu
+  w Clipper BRONIĘ).** Liczby w j² wyglądają groźnie, ale mierzą nie tę własność, która decyduje
+  o wyglądzie. Zmierzyłem geometrię rastrem 0,005 j: **najgłębsze wejście pasa relacji w stronę linii
+  granicy to 0,4219 j przy nominale 0,4500 j — czyli maksymalnie 0,0281 j**, to 6,2 % szerokości pasa
+  tożsamości (0,45 j) i przy typowym zoomie (1 j ≈ 35–58 px) **około 1–1,6 piksela**. Pole 0,3355 j²
+  bierze się stąd, że ten włos ciągnie się wzdłuż ~12 j obwodu, nie stąd, że gdzieś jest gruby.
+  **Dodatkowo leży przy WEWNĘTRZNEJ krawędzi pasa tożsamości — na szwie między dwoma pasami, nie przy
+  linii granicy, gdzie patrzy gracz.** Klasa algorytmów Clipper dla włosa 1-pikselowego byłaby
+  jawnie nieproporcjonalna (`CLAUDE.md` §7 — „nie twórz problemów, których nie ma"). Zastrzeżenie:
+  opis commita podaje to wyłącznie w j², co **przeszacowuje** problem — powinien podawać
+  „0,028 j na szwie pasów", i tak to należy zameldować właścicielowi, jeśli zapyta.
+- **N6 (kontrakt niepilnowany u ŹRÓDŁA).** Naprawa opiera się na milczącym niezmienniku
+  `territory-border.ts` (kanoniczny kierunek krawędzi). Pod mutacją M1 `territory-border-test.cjs`
+  zostaje **9 pass / 0 fail** — moduł, który ten niezmiennik posiada, w ogóle go nie testuje; łapie
+  go dopiero bramka renderowa piętro wyżej (18/39). Sprzężenie jest dziś zabezpieczone, ale
+  **w niewłaściwym module**: gdyby kiedyś `granice-styk-nakladanie-test.cjs` został przepisany lub
+  usunięty, niezmiennik zostaje bez żadnej ochrony, a objaw (cała obwódka po złej stronie) jest
+  wizualny, nie wyjątek. Do rozważenia: jedna asercja w `territory-border-test.cjs`, że dla
+  pojedynczego heksa normalna `(−dz, dx)` każdego segmentu wskazuje od środka.
+- **N7 (porządkowa).** Operator nie dopisał sekcji rundy 2 do `PYTANIA-OTWARTE.md` — wpis rundy 1
+  nadal głosił „STATUS: OTWARTE — zwrot do Operatora (runda 2)". Przestemplowałem go tym werdyktem.
+
+### Werdykt
+
+**PASS-WITH-NOTES.** Wszystkie pięć punktów blokujących rundy 1 jest realnie naprawionych
+i zweryfikowanych **poza** zestawem fixture'ów Operatora — na moich własnych kształtach, enklawach
+zagnieżdżonych do głębokości 2 i 200-elementowym Monte Carlo; wyciek jest zerowy wszędzie, nie
+„zerowy tam, gdzie mierzono". Odstępstwo od mojej rekomendacji rundy 1 **jest uzasadnione i sam je
+potwierdzam własnym dowodem**: reguła Operatora to zredukowana postać poprawnej reguły
+shoelace-z-zagnieżdżeniem, tańsza i z jednym trybem awarii mniej. Bramka urosła 30 → 57 i realnie
+łapie regresję (moje trzy mutacje kontrolne). Notami do domknięcia są **trzy nieprawdziwe liczby
+w opisie commita** (N1, N2, N3 — §0b, do sprostowania w rejestrze, nie w kodzie), **jedna realna
+dziura w bramce** (N4 — najdroższy mechanizm commita bez żadnej asercji) i **jedno sprzężenie
+pilnowane w niewłaściwym module** (N6). Pozostałość N4 to włos ≤ 0,028 j na szwie pasów, poniżej
+progu widoczności — nic nie blokuje ani deployu, ani playtestu.
+
+**STATUS: ZAMKNIĘTE — kod przyjęty. Follow-up OTWARTE (drobne, bez blokady):** (a) asercja
+samo-nakładania w `granice-styk-nakladanie-test.cjs` (nota N4); (b) asercja kierunku normalnej
+w `territory-border-test.cjs` (nota N6); (c) sprostowanie trzech liczb w opisie/komentarzach
+(noty N1–N3).
 
 ---
 
