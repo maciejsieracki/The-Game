@@ -22407,7 +22407,7 @@ od `ownerId`, a `buildPlayerCityListEntries` filtruje `ownerId === 0`, więc wsz
 o tę samą wartość; `oldestCityOfOwner` zwraca dokładnie jedno miasto (`<` przy remisie).
 Potwierdzone wykonaniem: 4 miasta → **1** plakietka `sl-badge.gold`.
 
-### N1 — **nowa bramka NIE chroni palety, czyli głównego przedmiotu zlecenia** · STATUS: **OTWARTE**
+### N1 — **nowa bramka NIE chroni palety, czyli głównego przedmiotu zlecenia** · STATUS: **ZAMKNIĘTE** (commit `0415f258`, 2026-08-14 — asercje przeniesione na fragment szablonu CSS + dodana asercja negatywna, 72→74/74, zweryfikowane niezależnie)
 Sekcja A testu asercjonuje paletę przez `cssSrc.includes('#171e2a')` itd. — ale **wszystkie pięć**
 tych kolorów wymienia nagłówkowy komentarz samego pliku (linie 7–9: „tło kart #171e2a, obramowanie
 #2b3543, akcent złoty #d9a441, tekst wyciszony #7d8798, kafelek ikony #1d2634"). Asercje spełnia
@@ -22424,13 +22424,13 @@ Dla kontrastu mutacja logiki **jest** łapana: `armyStatusBadge` `sentry` z `neu
 pliku, oraz dołożyć asercję negatywną „`#e0b24a` NIE występuje w `sideListHud.css.ts` poza komentarzem".
 Docelowo najmocniej: asercja na `getComputedStyle` w jsdom, bo jsdom liczy zmienne CSS.
 
-### N2 — asercja „stolica DOKŁADNIE dla Aten" nie testuje wyłączności · STATUS: **OTWARTE**
+### N2 — asercja „stolica DOKŁADNIE dla Aten" nie testuje wyłączności · STATUS: **ZAMKNIĘTE** (commit `0415f258`, 2026-08-14 — asercja liczy trafienia i wymaga dokładnie 1)
 Etykieta obiecuje `DOKLADNIE`, a regex `/sl-badge gold">stolica/` sprawdza wyłącznie **obecność**.
 Mutacja kontrolna: `if (c.isCapital)` → `if (true)` w `cityListHud.ts` (plakietkę dostają wszystkie
 miasta) → bramka **`OK (72/72)`**. Logika produkcyjna jest poprawna (zweryfikowana osobno, wyżej),
 ale bramka nie złapałaby jej regresji. Poprawka jednolinijkowa: policzyć trafienia i porównać z 1.
 
-### N3 — `baseline-screenshots-A.cjs` **złamany** tym commitem; opis commita twierdzi przeciwnie · STATUS: **OTWARTE**
+### N3 — `baseline-screenshots-A.cjs` **złamany** tym commitem; opis commita twierdzi przeciwnie · STATUS: **ZAMKNIĘTE** (commit `0415f258`, 2026-08-14 — oba wystąpienia `al-item` → `sl-item`)
 `gra/tools/baseline-screenshots-A.cjs` w liniach **90 i 139** używa selektora
 `.civ-army-list-hud .al-item` — klasy, którą ten commit usunął (wiersz to dziś `.sl-item`).
 Potwierdzone na **żywym DOM z gry**: `al-item` → **0 trafień**, `sl-item` → **3**. Obie linie to
@@ -22444,7 +22444,7 @@ i dziś i tak nie wystartuje (wymaga `Gra-podglad-PLAYTEST-MAPA.html`, którego 
 dwa razy `al-item` → `sl-item`. Świadomie **nie naprawiam** w tej turze (mandat Evaluatora: commituję
 wyłącznie ten plik).
 
-### N4 — deliverables Designera nie trafiły do repo, żyją tylko w efemerycznym scratchpadzie · STATUS: **OTWARTE**
+### N4 — deliverables Designera nie trafiły do repo, żyją tylko w efemerycznym scratchpadzie · STATUS: **ZAMKNIĘTE** (commit `0415f258`, 2026-08-14 — handoff+MANIFEST+2 PNG skopiowane do `docs/ux/`, standalone/`.dc.html` świadomie pominięte)
 W repo jest **wyłącznie zlecenie** (`docs/ux/DESIGN-ZLECENIE-MIASTA-ARMIE-PANEL-LEWY-2026-08-14.md`).
 Handoff Designera (`DESIGN-do-UI_…md`), makieta `.dc.html`, `standalone.html`, `MANIFEST.txt`, ZIP
 i dwa PNG klatek leżą tylko w `/tmp/…/scratchpad/panel-miasta-designer/_dist/…`. To jedyny pisany
