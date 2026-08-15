@@ -7048,3 +7048,31 @@ mgły, dwa drobne wzmocnienia obronne.
 z dystansu), `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1` punkty (b)/(c).
 
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `e0eb03a9`".
+
+## [14:13 PL, 2026-08-15] SESJA CHMUROWA → SESJA LOKALNA — FALA 284, trzy naprawy UI/rozkazów (md5 `68c7f238`)
+
+**FALA 284 (`68c7f238`, 12:13 UTC), ZASTĘPUJE FALĘ 283 (`e0eb03a9`).** VERIFY OK, `manifest match: OK`.
+Build z HEAD `97a61e7b` — 11 commitów od deployu FALI 283 (`118728a0`), 4 commity realnego kodu;
+7 plików pod `gra/` (`+1414/−24`), w `gra/src` tylko 3 (`main.ts`, `ui/sidePanelHud.ts`,
+`ui/hudTitleTooltip.ts`). **`gra/data` NIE ruszone · `gra/src/map/**` NIE ruszone.**
+
+**Co weszło (3 tematy, każdy z werdyktem Evaluatora PASS-WITH-NOTES):** (1) ikony (i) w panelu
+Imperium/Surowce i w Audiencji dyplomatycznej znów pokazują treść dymka (kontenery na
+`document.body` były poza `SCOPE_SELECTOR`); (2) panel HUD „WYDARZENIA" przestał połykać klik na
+mapę — runda 1 to naprawiła i zabrała scroll listy, Evaluator złapał, runda 2 wróciła scroll BEZ
+cofania naprawy; (3) rozkaz „marsz, potem atak" przeżywa odznaczenie jednostki — Escape i 34 inne
+miejsca w ciszy kasowały zakolejkowany atak (`P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1 = A`).
+
+**Bramki (10, exit 0):** `tsc` 0 błędów · `logic-test` 213/213 · `tech-tree` 19/0 · `research` 33/0 ·
+`unit-replace` 13/13 · `ai-founding-territory` 28/0 · nowe bramki tematów: `hud-tooltip-body-mounted-panels`
+8/0, `sidepanel-hud-deadzone` 32/0, `march-attack-queue-persist` 41/0 · `scout-explore-deselect-cycle` 34/0.
+`map-gen-regression`: **oba AC z `CLAUDE.md` zielone** — 0 rzek bez ujścia (2124/2124 tras,
+1235/1235 głównych, 0 fail) i determinizm A=B (`fdb5e82c`, zmierzony celowanym harnessem, bo główny
+przebieg ubity na 18/20 map sekcji sieci rzek). Progi czasowe AC czerwone (62 s/122 s/1120 s) — pomiar
+wydajności sandboksa, nie regresja (`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`). Fala nie rusza generatora
+(`gra/src/map/**` = 0 plików), więc regresja mapgenu jest tu strukturalnie niemożliwa.
+
+**Scalenie do `main`:** zgodnie z rytmem „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 284
+zostaje na gałęzi do testów; scalona zostaje **FALA 283** (`118728a0`) — osobny wpis niżej.
+
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `68c7f238`".
