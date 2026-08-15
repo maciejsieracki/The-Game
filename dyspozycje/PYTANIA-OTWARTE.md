@@ -28512,6 +28512,33 @@ zielone, zero regresji.
 **STATUS: RUNDA 2 GOTOWA — scalona do gałęzi sesji, czeka na Evaluatora i deploy (deploy tylko na
 hasło `deploy`).**
 
+### WERDYKT EVALUATORA — RUNDA 2 (Opus 5, 2026-08-15, commit `e975cbc9`): **PASS-WITH-NOTES**
+
+Decydujący dowód: Evaluator zbudował OSOBNY bundel ze stanu sprzed naprawy (`d8c3bc78`) i porównał
+z czubkiem gałęzi tym samym punktem/metodą — regresja rundy 1 (pasek niełapalny, `scrollTop` 0→0
+mimo `wheel`) odtworzona niezależnie na starym stanie, i potwierdzona jako naprawiona na nowym
+(`elementFromPoint` na pasku → `.sp-scroll`, `scrollTop` 0→400). Fix rundy 1 (martwa strefa)
+zweryfikowany jako nienaruszony (632px „ogona" nadal przepuszcza klik do canvasu przy małej
+liczbie wydarzeń). Wszystkie 5 bramek zgodne z opisem. 3 własne mutacje Evaluatora (różne od testu
+Operatora) — wszystkie złapane. Audyt restrukturyzacji DOM: zero selektorów kombinatora dziecka
+(`>`) przeciwko `.civ-side-panel` w całym `gra/src`, wszystkie selektory potomka odporne na
+dodatkową warstwę wrappera — czysto.
+
+**Notatki nieblokujące:** (1) sekcja G nowego testu nie rozróżnia w pełni stanu naprawionego od
+zepsutego (kółko nad kartą przewijało już PRZED naprawą dzięki `pointer-events:auto` na
+`.sp-event` z rundy 1 — realną różnicę widać dopiero nad marginesem/paskiem; mutację i tak łapie
+sekcja H, więc bramka nie ma dziury, tylko test mniej precyzyjny niż mógłby być); (2) opis
+regresji rundy 1 w rejestrze był nieco szerszy niż stan faktyczny („wydarzenia nieosiągalne"
+zamiast precyzyjniej „pasek nieprzeciągalny + martwe kółko nad marginesami") — nie podważa
+zasadności naprawy, tylko koryguje zapis; (3) `hud.ts:1587` ustawia inline `display:flex` na
+kontener, a cała naprawa opiera się na tym, że `height:max-content` na wrapperze nadpisuje
+domyślne `align-items:stretch` — działa i jest strzeżone bramką (mutacja M3), ale zależność jest
+nieoczywista, warto dopisać komentarz.
+
+**STATUS: PASS-WITH-NOTES — GOTOWE DO DEPLOY. Temat P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE
+zamknięty w całości (Przyczyna A runda 1+2, Przyczyna B) — wszystkie trzy komponenty mają werdykt
+PASS-WITH-NOTES, gotowe do wspólnego deployu.**
+
 ---
 
 ## P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (2026-08-15, znalezisko Evaluatora przy okazji Przyczyny A)
