@@ -28374,6 +28374,27 @@ znika. Gdy cel przesunięty poza obszar tych paneli, mechanizm zadziałał natyc
 niezależnie od tego, gdzie akurat renderuje się wróg — systemowy, powtarzalny problem, nie
 przypadek jednego testu.
 
+**PRZYCZYNA A — NAPRAWIONA I SCALONA (Operator Sonnet 5, worktree izolowany
+`agent-acfc882780d724ecc`, 2026-08-15, commit naprawy `b2197887`).** Root cause potwierdzony
+żywym `document.elementFromPoint`: `.civ-side-panel` miał `pointer-events:auto` na CAŁYM
+prostokątnym kontenerze (`top=102 bottom=816`, 714px), mimo że realna treść (nagłówek/karty)
+kończyła się na `bottom=184` — pozostałe 632px to czyste, przezroczyste tło pokazujące canvas pod
+spodem. Dowód PRZED: `elementFromPoint(1430,500)` → `DIV.civ-side-panel`. Dowód PO: ten sam punkt
+→ `CANVAS`. Dowód mutacyjny (przywrócenie `auto` na żywo natychmiast przywraca błąd w tym samym
+punkcie). **Druga część (`.sp-ctx-card.sp-ctx-interactive`, dok kontekstowy) zweryfikowana
+osobno — kod już miał poprawną strukturę (`pointer-events:none` na kontenerze,
+`auto` tylko na karcie), nie wymagała zmiany.**
+Naprawa: `gra/src/ui/sidePanelHud.ts` — `.civ-side-panel` z `auto` na `none`, `auto` dopisane z
+powrotem na realnie interaktywnej treści (`.sp-event`, `.sp-toolbar`, `.civ-side-panel .sp-ctx-card`
+dla karty kontekstu heksa). Nowy test `sidepanel-hud-deadzone-test.cjs` (18/18, z dowodem
+mutacyjnym) potwierdza zarówno naprawę martwej strefy, jak i że cała istniejąca klikalność
+(toolbar „Inne cyw.", karta własnej jednostki + strzałka cyklowania, karta kontekstu heksa)
+działa bez regresji — potwierdzone realnym kliknięciem myszy, nie tylko odczytem CSS. Bramki
+zweryfikowane NIEZALEŻNIE przez orkiestratora po scaleniu: `tsc --noEmit` 0 błędów,
+`sidepanel-hud-deadzone-test` 18/18, `sidepanel-events-toolbar-test` 19/19,
+`side-list-hud-panel-coverage-test` 74/74, `unit-context-card-test` 29/29,
+`side-panel-unit-cycle-arrows-test` 20/20. **Scalone do gałęzi sesji, czeka na deploy.**
+
 **PRZYCZYNA B — Escape (i 34 inne miejsca) cicho kasuje zakolejkowany marsz-z-atakiem.**
 `clearPlayerUnitSelection()` (`main.ts`, ok. linii 5208, wołane przez Escape via
 `dismissPlayerUnitSelectionIfAny()` ORAZ 34 inne miejsca w `main.ts`):

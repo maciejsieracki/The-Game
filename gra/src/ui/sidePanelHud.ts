@@ -130,7 +130,18 @@ function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const unitCardMaxRight = `${SIDE_PANEL_LEFT_PX + MINIMAP_EDGE}px`;
   const css = `
-.civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:305;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:auto;
+.civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:305;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:none;
+  /* P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE Przyczyna A (2026-08-15): kontener jest wysoki
+     na cały pion mapy (top..bottom), ale karty wydarzeń wypełniają go tylko częściowo —
+     reszta to przezroczyste tło pokazujące canvas. pointer-events:auto na CAŁYM prostokącie
+     połykało klik gracza w tę pustą przestrzeń, mimo że wizualnie widać było mapę. Teraz:
+     kontener przepuszcza klik (none), a realna, widoczna treść (karty/pasek narzędzi)
+     dostaje pointer-events:auto z powrotem niżej.
+     EN: container spans the full panel height but event cards only fill part of it — the
+     rest is transparent background showing the canvas through. pointer-events:auto on the
+     WHOLE rectangle swallowed clicks landing in that empty space even though the canvas was
+     visibly showing there. Now the container passes clicks through (none); real, visible
+     content (cards/toolbar) gets pointer-events:auto back below. */
   overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;
   ${CIV_BRAND_SCOPE_VARS}
@@ -152,7 +163,7 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;
-  padding:0 4px 2px;margin-bottom:2px;}
+  padding:0 4px 2px;margin-bottom:2px;pointer-events:auto;}
 .civ-side-panel .sp-toolbar-chip{font:10px var(--civ-font-ui);letter-spacing:.06em;
   color:var(--civ-text-muted);background:rgba(20,26,38,.7);border:1px solid rgba(232,216,138,.22);
   border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
@@ -164,7 +175,7 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
 .civ-side-panel .sp-toolbar-dismiss-all:hover{border-color:var(--tg-red);color:var(--tg-red);}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;
-  cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s;pointer-events:auto;
   background:linear-gradient(90deg,rgba(200,64,64,.12),rgba(20,26,38,.92));
   border:1px solid rgba(232,216,138,.25);border-left:3px solid var(--tg-red);
   box-shadow:0 6px 16px rgba(0,0,0,.5);}
@@ -192,7 +203,7 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   background:linear-gradient(180deg,rgba(24,30,42,.98),rgba(10,12,18,.96));
   border:1px solid rgba(212,175,90,.38);box-shadow:0 6px 18px rgba(0,0,0,.45);}
 .civ-side-panel .sp-ctx-card{margin-bottom:10px;}
-.civ-side-ctx-dock .sp-ctx-card.sp-ctx-interactive,.civ-side-panel .sp-ctx-card.sp-ctx-interactive{pointer-events:auto;}
+.civ-side-ctx-dock .sp-ctx-card.sp-ctx-interactive,.civ-side-panel .sp-ctx-card{pointer-events:auto;}
 .civ-side-ctx-dock .sp-ctx-head,.civ-side-panel .sp-ctx-head{font-size:10px;color:var(--civ-text-muted,#a09880);text-transform:uppercase;
   letter-spacing:.22em;margin-bottom:8px;text-align:right;}
 .civ-side-ctx-dock .sp-ctx-nav,.civ-side-panel .sp-ctx-nav{display:flex;gap:8px;margin-bottom:10px;}
