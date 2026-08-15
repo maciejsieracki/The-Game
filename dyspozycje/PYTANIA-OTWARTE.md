@@ -28215,3 +28215,65 @@ naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C
 
 **STATUS: DO DISPATCHU (rekonesans najpierw dla p.2 — ustalić czy AI-bez-mgły jest zamierzone) —
 niekrytyczne, nie pilne.**
+
+---
+
+## ⚠️ P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE (2026-08-14/15, sprostowanie Macieja — DRUGI raz po błędnym pytaniu ABC orkiestratora)
+
+**Zgłoszenie (cytat, po sprostowaniu że NIE chodzi o strzał z dystansu):** „chodzi o to, żeby
+doszło do zwarcia jednostki, która jest kilka heksów od jednostki wroga — muszę wskazywać jej
+najpierw miejsce w bezpośrednim sąsiedztwie tej jednostki, a dopiero jak się tam znajdzie, mogę
+wydać dyspozycję ataku. Nie mogę z daleka wskazać tego celu i po prostu żeby tam zaatakował…
+Nie można zaatakować z daleka na mapie wskazać tego celu. Tu jest problem."
+
+**Błąd orkiestratora do odnotowania:** wcześniej w tej samej turze zarejestrowano
+`P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` jako rzekomą odpowiedź na to zgłoszenie — to było złe
+zrozumienie (dotyczyło teleportu PO wygranej bitwie dystansowej, `post-battle-map.ts` F3, temat
+odrębny i nadal ważny, ale nie to, o co pyta właściciel tutaj). Ten wpis jest właściwym,
+osobnym tematem.
+
+**Stan kodu wg czytania (orkiestrator, main.ts, PRZED dispatchem — do potwierdzenia żywym testem,
+nie zakładać):**
+- Klik na wrogą jednostkę poza zasięgiem ataku stosu (`main.ts:20635-20648`) NIE jest ślepy —
+  gałąź `else if (atkUnit && atkUnit.ownerId === 0)` wywołuje `planMarchTo(cu.q, cu.r, cu.id)`
+  (po ew. `withPlayerWarConsent`), co ustawia `PlannedMarchDest.attackUnitId = cu.id`
+  (`main.ts:19439-19441`) i rejestruje cel w `marchAttackTargets` przez `syncMarchAttackTarget`
+  (`main.ts:19467`). Ten mechanizm istnieje od implementacji `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`
+  (commit `9e25ea77`, RUNDA 1 — Evaluator dał wtedy FAIL na inny powód: F1 parytet AI dla miast,
+  RUNDA 2 dla TEGO tematu nigdy nie została wykonana, przesunięta na listę „czeka na limit").
+- Konsumpcja: `tryLaunchMarchAttack(atkUnit, attackTargetId)` (`main.ts:19312-19320`) jest wołana
+  przy zakończeniu segmentu marszu (`main.ts:~19691-19694`, w trakcie tury) i przy rozstrzyganiu
+  podpowiedzi końca tury (`main.ts:~28478-28491`).
+- `computePath` (`units/setup.ts:873-1025`) traktuje heks docelowy jako „zawsze przejezdny jako
+  ostatni krok" niezależnie od zajętości (`nKey === destKey` → brak blokady po occupied) — czyli
+  ścieżka planowana jest DO heksu wroga włącznie, a nie tylko do heksu sąsiedniego. Czy egzekucja
+  segmentu marszu (per-tura) faktycznie zatrzymuje jednostkę PRZED wejściem na zajęty heks (żeby w
+  ogóle doszło do wywołania `tryLaunchMarchAttack` zamiast próby wejścia na heks wroga) — **NIE
+  zweryfikowane czytaniem, wymaga śledzenia `executeMarchSegmentForUnit`/egzekucji ruchu.**
+
+**Rozbieżność do wyjaśnienia żywym testem (nie zgadywać z samego czytania kodu):** powyższe
+czytanie sugeruje, że mechanizm marsz-a-potem-atak formalnie ISTNIEJE i powinien się uruchamiać
+przy kliku na dystansowego wroga jednostką zwarcia — a mimo to właściciel zgłasza z żywej gry,
+że tak nie działa. Możliwe przyczyny do zbadania przez Operatora (bez zakładania z góry, które):
+(a) któryś z warunków wejścia w gałąź `planMarchTo(cu.q, cu.r, cu.id)` cicho nie jest spełniany w
+realnym scenariuszu gracza (np. `stackCanMove`, stan wojny, coś w `withPlayerWarConsent`);
+(b) marsz się zaplanowuje, ale egzekucja per-turowa nie dochodzi do wywołania
+`tryLaunchMarchAttack` po dotarciu na sąsiedni heks (np. jednostka zatrzymuje się, ale
+`marchAttackTargets` już wtedy nie ma wpisu, albo drugi warunek w `tryLaunchMarchAttack`
+(`isTargetWithinStackAttackRange`/mgła) zawodzi mimo że powinien przejść);
+(c) UI nie daje żadnej wizualnej informacji zwrotnej, że marsz-z-atakiem został zakolejkowany
+(gracz widzi zwykły marsz i nie wie, że po dotarciu nastąpi automatyczny atak — subiektywnie
+odbierane jako „nie da się zaatakować z daleka", nawet jeśli mechanicznie działa).
+
+**Do dispatchu:** Operator (Sonnet 5, `isolation: "worktree"`) — **żywy test w headless Chromium**
+(binarka `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, NIE domyślna ścieżka Playwright),
+nie tylko czytanie kodu: nowa gra, jednostka zwarcia (np. Wojownik) w polu widzenia ale 4-5 heksów
+od widocznej wrogiej jednostki, pojedynczy klik na wroga → zaobserwować realne zachowanie (marsz
+bez zapowiedzi ataku? marsz z jakimś sygnałem ataku w toku? od razu odrzucone?). Jeśli
+scenariusz (a) lub (b) — naprawić root cause. Jeśli (c) — dodać widoczny sygnał zakolejkowanego
+ataku (np. w `unitRenderer.setPathRoute`/HUD), tak żeby gracz wiedział że nie musi ręcznie
+domykać ataku drugim klikiem. Rozszerzyć `atak-dystansowy-mapa-test.cjs` lub nowy plik testu o
+scenariusz „marsz wieloturowy zwarcia zakończony automatycznym atakiem po dotarciu" — realna
+egzekucja wyciętych funkcji z `main.ts`, nie reimplementacja formuły (wzorem poprzednich rund).
+
+**STATUS: DISPATCH WYKONANY, patrz sekcja werdyktu niżej.**
