@@ -28690,3 +28690,40 @@ skróceniem komentarzy (bez zmiany logiki), zweryfikowane powrotem do baseline 2
 
 **STATUS: NAPRAWIONE, GOTOWE DO SCALENIA — czeka na Evaluatora (Opus 5) zgodnie z AutoBot §0a/0b.
 Kod + commit BEZ deployu (deploy tylko na hasło „deploy", zgodnie z odpowiedzią Macieja wyżej).**
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-15, commit `e4193407`): **PASS-WITH-NOTES**
+
+Niezależne pomiary: `tsc` 0 błędów; wszystkie 12 bramek z opisu commita zgodne (`march-attack-queue-persist-test` 41/0, `combat-test` 6/6, `map-attack-city-test` 8/0, `atak-dystansowy-mapa-test` 66/0, `planned-march-test` 18/0, `scout-explore-deselect-cycle-test` 34/0, `border-march-scan-test` 15/0, `diplomacy-border-march-test` 39/39, `tech-tree`/`research`/`unit-replace`, `logic-test` 213/213). Dwie czerwone bramki (`border-march-wygasanie-test` 22/4, `forced-war-bronze-main-guard-test` 23/2) potwierdzone identyczne na commicie-rodzicu `b622ce20` — pre-istniejące. Własne 7 mutacji (różne od mutacji Operatora) — wszystkie złapane, test NIE jest tautologią.
+
+**Parytet gracz↔AI:** brak asymetrii — AI nie ma mechanizmu kolejkowania (`plannedMarches`/`marchAttackTargets` to z definicji mechanizm gracza), przelicza `isWithinAttackRange` co turę na nowo, więc strukturalnie nie może mieć tego błędu. Naprawa ZMNIEJSZA istniejącą asymetrię (wcześniej intencja gracza ginęła po cichu, intencja AI zawsze przeżywała).
+
+**Save/load zweryfikowane wykonaniem:** pełny cykl zapis→odczyt z aktywnym, niedokończonym marszem-z-atakiem — `attackUnitId` serializowany i odtwarzany poprawnie, wpis chroniony przed odznaczeniem także po wczytaniu. Ta sama asercja PADA na commicie-rodzicu (to jest naprawiany błąd, nie regresja).
+
+**Edge case (śmierć jednostki/celu w trakcie marszu):** stan IDENTYCZNY jak u rodzica — wpisy-sieroty pre-istniejące, nieszkodliwe (egzekutory iterują po `units`, nigdy nie odczytują wpisu bez istniejącej jednostki), a naprawa DODATKOWO je łata przy save/load.
+
+**Notatki nieblokujące:**
+- **N1/N2 (kosmetyka):** opis commita i 2 komentarze JSDoc mówią „35 wywołań clearPlayerUnitSelection" — realnie 32 (31 domyślnych + 1× force=true). Liczba w kanonie do sprostowania, kod i strażnik testu (`g8`) są poprawne.
+- **B (jedyna realna, nieblokująca luka):** `commitBesiege` (rozpoczęcie oblężenia) NIE dostał `force=true`, mimo że to analogiczny jawny rozkaz unieruchamiający jednostkę jak Ufortyfikuj/Czuwaj (które force=true dostały). Skutek: zakolejkowany atak przeżywa rozpoczęcie oblężenia, ale przycisk „Anuluj atak" nie jest wtedy pokazywany (gałąź `if (siegeCity)` wyklucza `hasPlan`) — gracz nie ma jak go odwołać w trakcie oblężenia; po zdjęciu oblężenia jednostka wznowi stary marsz. Do osobnego zgłoszenia, nie blokuje.
+- **C/D (dług techniczny, nieszkodliwy):** martwy kod (`clearAutoMarch` nieużywana, bezargumentowa gałąź `else` nieosiągalna); `finishMarchSegmentHints` ma tę samą klasę dziury (surowe `plannedMarches.delete` bez `marchAttackTargets.delete`) co naprawiono w `stopPlannedMarchForSelected` — pre-istniejące, samoleczące się.
+
+**Żywy test w headless Chromium** (metoda niezależna od Operatora, osobna sonda tylko-do-odczytu): pełny łańcuch potwierdzony 9/9 — klik na wroga (dystans 4) → Escape ×2 (w tym w nowej turze) → plan przetrwał oba razy → jednostka dotarła → atak odpalił się sam (zrzut ekranu: ekran zwycięstwa).
+
+**STATUS: PASS-WITH-NOTES — GOTOWE DO DEPLOY. Nota B zapisana osobno niżej jako
+`P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU`, nie blokuje.**
+
+---
+
+## P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU (2026-08-15, znalezisko Evaluatora Nota B przy okazji Przyczyny B)
+
+**Rozpoczęcie oblężenia (`commitBesiege`, main.ts:12218) nie czyści zakolejkowanego marszu-z-atakiem
+(`force=false` domyślne), w przeciwieństwie do analogicznych jawnych rozkazów unieruchamiających
+jednostkę (Ufortyfikuj/Czuwaj, które dostały `force=true`).** Skutek: plan przeżywa rozpoczęcie
+oblężenia, ale przycisk „Anuluj atak"/„Zatrzymaj" nie jest wtedy w ogóle pokazywany w HUD (gałąź
+`if (siegeCity) {...} else if (hasPlan) {...}` — wykluczają się wzajemnie), więc gracz nie ma jak
+odwołać planu w trakcie oblężenia. Marsz jest bezpieczny podczas oblężenia (`ruchLeft` zerowany co
+turę), ale po zdjęciu oblężenia jednostka wznowi marsz na stary cel bez ponownego pytania gracza.
+
+**Do dispatchu:** albo dodać `force=true` w `commitBesiege` (spójność z Ufortyfikuj/Czuwaj), albo
+pokazywać „Anuluj atak" także w trybie oblężenia — decyzja projektowa (ABC), nie jednolinijkowa.
+
+**STATUS: DO DISPATCHU — niekrytyczne, nie pilne, wymaga krótkiego ABC.**
