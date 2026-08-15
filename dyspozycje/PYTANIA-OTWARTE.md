@@ -27375,6 +27375,46 @@ klasy `.civ-unit-panel` z roota na żywo gasi tooltip). Wynik: **16 pass, 0 fail
 naprawy per se (niskie ryzyko, ten sam wzorzec co runda 2), (b) trafność znaleziska „kod martwy —
 `createUnitPanelHud()` bez callera" — jeśli błędne, cofnąć ocenę wagi tematu.
 
+### WERDYKT EVALUATORA (Opus 5, 2026-08-15, commit `46ebea84`): **PASS-WITH-NOTES**
+
+**Teza „kod martwy" POTWIERDZONA, mocniej niż dowiódł Operator.** Grep po całym `gra/src/**`:
+`createUnitPanelHud` występuje wyłącznie w swojej definicji; wszystkie inne importy z
+`unitPanelHud.ts` są type-only. Dowód na poziomie zbudowanego artefaktu: w `dist/index.html` STYLE_ID
+modułu (`civ-unit-panel-hud-css-v2-1e`) ma **0 wystąpień** — cały moduł wycięty tree-shakingiem;
+`.civ-unit-panel` ma tylko 2 wystąpienia (nowy wpis w allowliście + osierocony CSS) wobec 142 dla
+`.civ-diplo-basket` (żywy panel, kontrola). Ten sam wynik na wdrożonym `gra-robocza/Gra-ROBOCZA.html`.
+Naprawa jest więc dziś kodem bez żadnego efektu obserwowalnego w grze — przygotowuje grunt, nie
+naprawia widocznego objawu.
+
+**Bramki zgodne z opisem:** `tsc --noEmit` 0 błędów, `hud-tooltip-body-mounted-panels-test` 16/16,
+`newgame-adv-tooltip-test` 29/29 (regresja bez zmian).
+
+**Jakość dowodu testowego — DOBRA, nie tautologia:** prześledzony cały łańcuch
+`createUnitPanelHud`→`buildUnitCardStatusSectionHtml`→`unitCardStatus.ts` (prawdziwy kod, zero
+reimplementacji). Własna mutacja Evaluatora (usunięcie `.civ-unit-panel` ze `SCOPE_SELECTOR` na
+żywo) złapana — 4 fail dokładnie na asercjach Scenariusza 2.
+
+**Noty nieblokujące:** (1) proporcja kosztu do wagi (+1 linia realnej naprawy vs +186 linii testu
+dla modułu bez efektu w bundlu) — decyzja produktowa czy `.civ-unit-panel` ma być kiedyś
+podłączony czy porzucony, nie rozstrzygana tutaj; (2) **nowe znalezisko:** `gra/src/ui/
+unitInfographic.ts:160` wstrzykuje regułę CSS `.civ-unit-panel .hdr .unit-ic-medallion` — kolejny
+osierocony selektor dla tego samego martwego kontenera, zapisane osobno niżej.
+
+**STATUS: PASS-WITH-NOTES — GOTOWE DO DEPLOY (niski priorytet, brak efektu widocznego w grze).**
+
+---
+
+## P-UNITINFOGRAPHIC-OSIEROCONY-SELEKTOR-CIV-UNIT-PANEL (2026-08-15, znalezisko Evaluatora przy okazji P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE)
+
+`gra/src/ui/unitInfographic.ts:160` wstrzykuje do bundla regułę CSS
+`.civ-unit-panel .hdr .unit-ic-medallion` — kolejny osierocony selektor dla kontenera
+`.civ-unit-panel`, który (patrz temat wyżej) nigdy nie powstaje w obecnym silniku
+(`createUnitPanelHud()` bez callera). Nieszkodliwe (martwy CSS), ale warto posprzątać razem z
+resztą, jeśli/gdy zapadnie decyzja co zrobić z panelem [H].
+
+**STATUS: DO DISPATCHU — niekrytyczne, nie pilne, można połączyć z ewentualnym sprzątaniem
+`unitPanelHud.ts`.**
+
 ---
 
 ## P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1 (2026-08-14, zgłoszenie Macieja)
