@@ -131,22 +131,42 @@ function ensureStyles(): void {
   const unitCardMaxRight = `${SIDE_PANEL_LEFT_PX + MINIMAP_EDGE}px`;
   const css = `
 .civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:305;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:none;
-  /* P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE Przyczyna A (2026-08-15): kontener jest wysoki
-     na cały pion mapy (top..bottom), ale karty wydarzeń wypełniają go tylko częściowo —
+  /* P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE Przyczyna A runda 1 (2026-08-15): kontener jest
+     wysoki na cały pion mapy (top..bottom), ale karty wydarzeń wypełniają go tylko częściowo —
      reszta to przezroczyste tło pokazujące canvas. pointer-events:auto na CAŁYM prostokącie
-     połykało klik gracza w tę pustą przestrzeń, mimo że wizualnie widać było mapę. Teraz:
-     kontener przepuszcza klik (none), a realna, widoczna treść (karty/pasek narzędzi)
-     dostaje pointer-events:auto z powrotem niżej.
-     EN: container spans the full panel height but event cards only fill part of it — the
-     rest is transparent background showing the canvas through. pointer-events:auto on the
-     WHOLE rectangle swallowed clicks landing in that empty space even though the canvas was
-     visibly showing there. Now the container passes clicks through (none); real, visible
-     content (cards/toolbar) gets pointer-events:auto back below. */
+     połykało klik gracza w tę pustą przestrzeń, mimo że wizualnie widać było mapę. Kontener
+     zostaje pointer-events:none na stałe; scroll (runda 2, patrz .sp-scroll niżej) i realna,
+     widoczna treść (karty/pasek narzędzi) dostają auto z powrotem osobno.
+     EN: container spans the full panel height but event cards only fill part of it — the rest
+     is transparent background showing the canvas through. pointer-events:auto on the WHOLE
+     rectangle swallowed clicks landing in that empty space. Container stays pointer-events:none
+     permanently; scroll (round 2, see .sp-scroll below) and real, visible content (cards/
+     toolbar) get auto back separately. */
+  ${CIV_BRAND_SCOPE_VARS}
+  font:13px var(--civ-font-ui);}
+html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM_ZOOM}px;right:${HUD_ZOOM_EDGE_PX}px;}
+.civ-side-panel .sp-scroll{
+  /* Przyczyna A runda 2 (Evaluator FAIL na d8c3bc78, 2026-08-15): overflow-y:auto/scrollbar-
+     gutter przeniesione z ZEWNĘTRZNEGO kontenera (.civ-side-panel, pointer-events:none) na TEN
+     wewnętrzny wrapper (pointer-events:auto). height:max-content dopasowuje wrapper do realnej
+     wysokości treści — gdy wydarzeń mało, wrapper jest niski i pusty „ogon" kontenera POD nim
+     zostaje bez elementu z pointer-events:auto, więc klik nadal przechodzi do canvasu (fix
+     rundy 1 nienaruszony). max-height:100% ogranicza wrapper do wysokości kontenera — gdy
+     wydarzeń dużo (>~11, collectTurnEvents() w main.ts bez limitu), wrapper wypełnia cały pion
+     i STAJE SIĘ scrollowalny (kółko myszy + pasek przewijania łapalne), bo to on, nie kontener,
+     niesie pointer-events:auto.
+     EN: overflow-y:auto/scrollbar-gutter moved from the OUTER container (.civ-side-panel,
+     pointer-events:none) onto this inner wrapper (pointer-events:auto). height:max-content
+     sizes the wrapper to real content height — few events -> short wrapper, the empty "tail"
+     below it carries no pointer-events:auto element, so clicks still pass through to the canvas
+     (round-1 fix intact). max-height:100% caps the wrapper at the container's height — many
+     events (>~11, collectTurnEvents() in main.ts has no cap) -> wrapper fills the full column
+     and BECOMES scrollable (wheel + draggable scrollbar work), because it — not the container —
+     carries pointer-events:auto. */
+  pointer-events:auto;height:max-content;max-height:100%;
   overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;
-  ${CIV_BRAND_SCOPE_VARS}
-  display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
-html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM_ZOOM}px;right:${HUD_ZOOM_EDGE_PX}px;}
+  display:flex;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;}
 .civ-side-ctx-dock{position:fixed;left:${SIDE_PANEL_LEFT};top:${unitCardSafeTopCss()};bottom:${unitCardDockBottomCss()};
   --civ-unit-card-max-right:${unitCardMaxRight};
   z-index:316;width:${unitCardDockWidthCss()};pointer-events:none;
@@ -306,6 +326,18 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   const el = document.createElement('div');
   el.className = 'civ-side-panel';
 
+  // Przyczyna A runda 2: wrapper scrollowalny/klikalny, dziecko trwałe .civ-side-panel —
+  // render() wypełnia TEN element (scrollEl.innerHTML), nie el.innerHTML, żeby el (kontener,
+  // pointer-events:none) nigdy nie stracił tego jedynego dziecka. el.querySelector(All) dalej
+  // działa bez zmian, bo przeszukuje CAŁE poddrzewo, niezależnie od tej dodatkowej warstwy.
+  // EN: persistent scrollable/clickable wrapper child of .civ-side-panel — render() fills THIS
+  // element (scrollEl.innerHTML), not el.innerHTML, so el (the pointer-events:none container)
+  // never loses its one child. el.querySelector(All) below keeps working unchanged since it
+  // searches the whole subtree regardless of this extra layer.
+  const scrollEl = document.createElement('div');
+  scrollEl.className = 'sp-scroll';
+  el.appendChild(scrollEl);
+
   const ctxEl = document.createElement('div');
   ctxEl.className = 'civ-side-ctx-dock';
 
@@ -414,7 +446,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       }
     }
 
-    el.innerHTML = html;
+    scrollEl.innerHTML = html;
 
     if (hexCtx !== null) {
       const card = el.querySelector('.sp-ctx-card');

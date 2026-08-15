@@ -28463,6 +28463,55 @@ NIE regresja tego commita, zarejestrowane osobno niżej jako `P-SIDEPANEL-CTX-DO
 **STATUS: RUNDA 2 WYMAGANA — dispatch w toku. Deploy tej konkretnej naprawy (Przyczyna A)
 WSTRZYMANY do PASS rundy 2; pozostałe dwa tematy (tooltipy, Przyczyna B) nie są tym blokowane.**
 
+### WYNIK RUNDY 2 (Operator Sonnet 5, worktree izolowany `agent-aaa7fbe79b2032623`, 2026-08-15) — scroll naprawiony, martwa strefa rundy 1 NIE cofnięta
+
+**Naprawa (`gra/src/ui/sidePanelHud.ts`):** `overflow-y:auto`/`scrollbar-gutter` przeniesione z
+ZEWNĘTRZNEGO kontenera `.civ-side-panel` (który zostaje `pointer-events:none` NA STAŁE, bez zmian
+względem rundy 1) na NOWY wewnętrzny wrapper `.civ-side-panel .sp-scroll` — jedyne, trwałe dziecko
+kontenera, tworzone raz w `createSidePanelHud()` i wypełniane przy każdym `render()`
+(`scrollEl.innerHTML = html`, NIE `el.innerHTML` — żeby `el` nigdy nie stracił tego dziecka).
+Wrapper ma `pointer-events:auto`, `height:max-content;max-height:100%` — dopasowuje się do realnej
+wysokości treści zamiast rozciągać hit-obszar na cały pion kontenera. Efekt: gdy wydarzeń jest
+mało, wrapper jest niski i pusty „ogon" kontenera POD nim nadal przepuszcza klik do canvasu (fix
+rundy 1 nienaruszony); gdy wydarzeń jest dużo (>~11), wrapper wypełnia cały pion i STAJE SIĘ
+scrollowalny (kółko myszy + pasek przewijania łapalne), bo to on, nie kontener, niesie
+`pointer-events:auto`. Wszystkie selektory potomne (`.civ-side-panel .sp-event` itd.) działają bez
+zmian — to selektory descendant, obojętne na dodatkową warstwę wrappera.
+
+**Test (`gra/tools/sidepanel-hud-deadzone-test.cjs`) rozszerzony o sekcje F–I** (żywy headless
+Chromium, `?playtest=mapa`): (F) wstrzyknięcie 20 syntetycznych `.sp-event` do `.sp-scroll`
+odtwarza próg >~11 wydarzeń z werdyktu Evaluatora (`scrollHeight > clientHeight`); (G) realny
+`page.mouse.wheel()` + odpytywanie `scrollTop` w pętli (zamiast pojedynczego `wait`) potwierdza,
+że scroll DZIAŁA (kontrfaktyczny pomiar Evaluatora odwrócony: `scrollTop` 0→400); (H) pasek
+przewijania łapalny (`elementFromPoint` na jego pozycji → `.sp-scroll`, nie `CANVAS`) + dowód
+mutacyjny (`.sp-scroll{pointer-events:none}` na żywo przywraca DOKŁADNIE regresję Evaluatora:
+scroll przestaje działać, pasek znów niełapalny); (I) klikalność `.sp-event` — nowa asercja + dowód
+mutacyjny (`.sp-event{pointer-events:none}` na żywo) chroniąca DOKŁADNIE tę mutację, którą wykonał
+Evaluator i którą żaden test wcześniej nie łapał. **32 pass, 0 fail, exit 0.**
+
+**Dwie pułapki środowiskowe napotkane i obejście udokumentowane w kodzie testu:**
+1. `page.mouse.wheel()` Playwrighta w tym headless Chromium (fallback + software swiftshader, CPU
+   regularnie >90% przez współdzielony sandbox) potrafi opóźnić naniesienie natywnego scrolla o
+   >1s pod obciążeniem — pojedynczy `wait(200)` dawał fałszywy FAIL. Naprawione odpytywaniem
+   `scrollTop` w pętli (do 4s) zamiast jednego stałego czekania.
+2. Chromium **zatrzaskuje** (wheel scroll latching) cel scrolla na czas trwania sekwencji — DRUGIE
+   wywołanie `page.mouse.wheel()` w tej samej sesji strony (test dowodu mutacyjnego, sekcja H)
+   nadal trafiało w PIERWOTNY cel (`.sp-scroll`) mimo że `elementFromPoint` w tym samym punkcie już
+   poprawnie zwracał `CANVAS` po mutacji CSS — zatrzask przeżył nawet ruch myszy w neutralny punkt
+   i z powrotem. Rozwiązanie: dla DRUGIEGO (negatywnego, mutacyjnego) sprawdzenia scrolla użyto
+   syntetycznego `dispatchEvent(new WheelEvent(...))` bezpośrednio na elemencie, który
+   `elementFromPoint` wskazuje TERAZ — to pomija mechanizm zatrzasku kompozytora i poprawnie
+   odzwierciedla żywy stan CSS. Pierwsze (pozytywne) sprawdzenie w sekcji G nadal używa
+   prawdziwego `page.mouse.wheel()` jako najwierniejszej symulacji realnego gestu.
+
+**Bramki (z `gra/`):** `tsc --noEmit` 0 błędów · `sidepanel-hud-deadzone-test.cjs` 32/32 ·
+`sidepanel-events-toolbar-test.cjs` 19/19 · `side-list-hud-panel-coverage-test.cjs` 74/74 ·
+`unit-context-card-test.cjs` 29/29 · `side-panel-unit-cycle-arrows-test.cjs` 20/20 — wszystkie
+zielone, zero regresji.
+
+**STATUS: RUNDA 2 GOTOWA — scalona do gałęzi sesji, czeka na Evaluatora i deploy (deploy tylko na
+hasło `deploy`).**
+
 ---
 
 ## P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (2026-08-15, znalezisko Evaluatora przy okazji Przyczyny A)
