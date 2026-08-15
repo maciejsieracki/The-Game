@@ -27291,6 +27291,45 @@ Operatora):** `npx tsc --noEmit` 0 błędów · `hud-tooltip-body-mounted-panels
 **STATUS: SCALONE do gałęzi sesji (commit naprawy poniżej w historii). Czeka na deploy (hasło
 `deploy`).**
 
+### WERDYKT EVALUATORA (Opus 5, 2026-08-15, commit `ab8c180d`): **PASS-WITH-NOTES**
+
+Niezależne pomiary: `tsc` 0 błędów, `hud-tooltip-body-mounted-panels-test` 8/8,
+`newgame-adv-tooltip-test` 29/29, plus dwie dodatkowe bramki tooltipowe (`danina-podatek-tooltip-ui-test`
+12/12, `heks-panel-tooltip-warstwa-test` 22/22). Własne mutacje źródłowe: usunięcie `.civ-emp-panel`
+i literówka w nazwie klasy — obie złapane (test NIE jest tautologią dla tego selektora). **Luka:**
+mutacja usuwająca `.civ-diplo-aud`+`.civ-diplo-basket` PRZECHODZI bez wykrycia — te dwa selektory nie
+mają dedykowanej asercji (świadomie ujawnione w nagłówku testu, dług, nie ukryta wada). Zero efektów
+ubocznych znalezionych (brak konkurencyjnych mechanizmów hover, z-index bezpieczny). Sprostowanie
+opisu commita: `.civ-diplo-basket` NIE był „prewencyjny bez dowodu" — ma własne `cursor:help`+`title=`
+w kodzie (`diplomacyTradeBasket.ts`), dodanie było uzasadnione.
+
+**Nowe znalezisko (NIE naprawione w tej rundzie, C-025):** `.civ-unit-panel` (`unitPanelHud.ts`,
+montowany na `document.body`, `position:fixed`) ma TĘ SAMĄ przyczynę — renderuje plakietkę weterana
+przez `buildUnitCardStatusSectionHtml()` (identyczną funkcję jak `.civ-army-stack`, który JEST w
+scope) — ale nie jest w `SCOPE_SELECTOR`. Zapisane osobno niżej jako
+`P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE`.
+
+**STATUS: PASS-WITH-NOTES — gotowe do deploy. Nowe znalezisko zarejestrowane osobno, nie blokuje.**
+
+---
+
+## P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE (2026-08-15, znalezisko Evaluatora przy okazji P-NEWGAME-KREATOR-TOOLTIP-INFO-NIE-DZIALA runda 2)
+
+**Ta sama przyczyna co naprawiona w rundzie 2 (`SCOPE_SELECTOR` allowlist w `hudTitleTooltip.ts`),
+jedna nienaprawiona instancja:** `.civ-unit-panel` (`gra/src/ui/unitPanelHud.ts:112`, montowany na
+`document.body` w linii 180, `position:fixed; z-index:311`) renderuje `uc-path-icon` i
+`uc-veteran-badge` z natywnym `title=` przez `buildUnitCardStatusSectionHtml()` — DOKŁADNIE tę samą
+funkcję, którą woła `armyStackHud.ts` dla `.civ-army-stack`, a `.civ-army-stack` JEST już w
+`SCOPE_SELECTOR`. Efekt: ta sama plakietka weterana ma stylowany dymek JS w stosie armii, ale w
+panelu jednostki [H] zależy od zawodnego natywnego dymka przeglądarki — ten sam objaw co zgłoszenie
+Macieja („pytajnik jest, treści nie ma"), po prostu ten kontener umknął audytowi.
+
+**Do dispatchu:** dopisać `.civ-unit-panel` do `SCOPE_SELECTOR` (wzorem pozostałych trzech), z żywym
+dowodem PRZED/PO analogicznym do rundy 2, plus rozszerzenie `hud-tooltip-body-mounted-panels-test.cjs`
+o ten kontener. Niskie ryzyko (ten sam mechanizm co już zweryfikowana naprawa), niekrytyczne.
+
+**STATUS: DO DISPATCHU — niekrytyczne, nie pilne.**
+
 ---
 
 ## P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1 (2026-08-14, zgłoszenie Macieja)
