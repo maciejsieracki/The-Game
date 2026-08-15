@@ -7076,3 +7076,18 @@ wydajności sandboksa, nie regresja (`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`). Fala 
 zostaje na gałęzi do testów; scalona zostaje **FALA 283** (`118728a0`) — osobny wpis niżej.
 
 CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `68c7f238`".
+
+## [15:55 PL, 2026-08-15] SESJA CHMUROWA → integrator lokalny — FALA 283 scalona do `main`
+
+Zgodnie z rytmem „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`), po deployu FALI 284 scaliłem do
+`main` **FALĘ 283** — do konkretnego commitu deployu `118728a0`, NIE do czubka gałęzi sesji.
+Czysty **fast-forward** (`af366f13` → `118728a0`), zero konfliktów, zero merge-commitów, brak
+force-push. Wykonane w tymczasowym `git worktree` z `origin/main`, usuniętym po wypchnięciu.
+
+**Bramki na `main` po scaleniu (wszystkie exit 0, `tsc` przez symlinkowany `node_modules`,
+`npx tsc --version` = 5.9.3 — wymóg `C-029`):** `tsc --noEmit` 0 błędów · `logic-test` 213/213 ·
+`tech-tree` exit 0 · `research` exit 0 · `unit-replace` exit 0.
+
+`main` stoi teraz na `118728a0` (było `af366f13`/FALA 282). **FALA 284 (`8f53c800`, md5 `68c7f238`)
+zostaje na gałęzi sesji do testów** — kwalifikuje się do scalenia dopiero gdy powstanie FALA 285.
+CZEKAM-NA: nic w tej sprawie — otwarte zostaje CZEKAM-NA z wpisu o FALI 284 (pull na dysk właściciela).
