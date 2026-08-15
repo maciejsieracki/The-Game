@@ -27260,6 +27260,37 @@ kreator (b). Poprzednia RUNDA 1 (headless) nie złapała usterki — RUNDA 2 mus
 (pytajnik kursora bez treści dymka) i rozszerzyć test na inne ekrany gry (nie tylko kreator), a nie
 tylko powtórzyć syntetyczny hover z RUNDY 1, który już raz nie odtworzył problemu.
 
+### RUNDA 2 (Operator Sonnet 5, worktree izolowany `agent-ac1201f7e1a2bdf44`, 2026-08-15) — ROOT CAUSE ZNALEZIONY I NAPRAWIONY, SCALONE
+
+**Root cause:** `SCOPE_SELECTOR` w `gra/src/ui/hudTitleTooltip.ts` to allowlista kontenerów. Panele
+montowane bezpośrednio na `document.body` (poza wszystkimi kontenerami z listy) mają ikony/etykiety
+z natywnym `title=` + CSS `cursor:help`, ale `resolveTarget()` je odrzuca — kursor reaguje (czysty
+CSS, pytajnik), ale treść dymka zależy WYŁĄCZNIE od natywnego tooltipa przeglądarki, niewiarygodnego
+w wielu środowiskach. Dokładnie pasuje do zgłoszenia: „pytajnik jest, treści nie ma" + „dotyczy
+wszystkich". Dwa potwierdzone kontenery: `.civ-emp-panel` (panel Imperium/Surowce,
+`.civ-emp-info-tip`) i `.civ-diplo-aud` (Audiencja dyplomatyczna, `.da-civname.has-brand-tip`);
+`.civ-diplo-basket` dodany prewencyjnie (ten sam wzorzec montowania, choć bez potwierdzonej żywej
+regresji).
+
+**Dowód empiryczny (żywy headless Chromium, `.civ-emp-info-tip`):** PRZED naprawą — natywny `title`
+po hover >380ms pozostawał nietknięty, `#civ-hud-title-tip-el` pusty (`display:''`, `text:''`). PO
+naprawie — `title` zdjęty, tooltip pokazuje pełny tekst z formułą pojemności magazynu.
+
+**Naprawa:** dopisano `.civ-emp-panel`, `.civ-diplo-aud`, `.civ-diplo-basket` do `SCOPE_SELECTOR`
+(18-liniowy diff, komentarz PL/EN). Kreator (`.civ-newgame`) bez zmian kodu — już był w scope,
+RUNDA 1 potwierdziła że tam działa.
+
+**Regresja:** nowy `gra/tools/hud-tooltip-body-mounted-panels-test.cjs` (8/8, w tym dowód
+mutacyjny — zdjęcie `.civ-emp-panel` na żywo gasi tooltip). `newgame-adv-tooltip-test.cjs`
+nadal 29/29.
+
+**Bramki (zweryfikowane NIEZALEŻNIE przez orkiestratora po scaleniu, nie tylko odczytane z raportu
+Operatora):** `npx tsc --noEmit` 0 błędów · `hud-tooltip-body-mounted-panels-test.cjs` 8/8 ·
+`newgame-adv-tooltip-test.cjs` 29/29.
+
+**STATUS: SCALONE do gałęzi sesji (commit naprawy poniżej w historii). Czeka na deploy (hasło
+`deploy`).**
+
 ---
 
 ## P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1 (2026-08-14, zgłoszenie Macieja)
@@ -28312,3 +28343,102 @@ scenariusz „marsz wieloturowy zwarcia zakończony automatycznym atakiem po dot
 egzekucja wyciętych funkcji z `main.ts`, nie reimplementacja formuły (wzorem poprzednich rund).
 
 **STATUS: DISPATCH WYKONANY, patrz sekcja werdyktu niżej.**
+
+---
+
+### WYNIK RUNDY 1 (Operator Sonnet 5, worktree izolowany `agent-ae5f29cbac1b8c209`, 2026-08-15) — mechanizm DZIAŁA, znalezione DWIE inne, osobne przyczyny
+
+**Metoda:** żywy headless Chromium, real `page.mouse.click` na współrzędnych z realnego rzutowania
+kamery (nie syntetyczny `dispatchEvent`), zweryfikowane `document.elementFromPoint`/`pickHexAt`.
+Pierwsza runda przez pełną nową grę (~140s generacji mapy/próba), po mojej interwencji (agent utknął
+w wolnej, kruchej pętli) przełączona na `?playtest=mapa` (`doStartPlaytestMapaSwiata`, main.ts:31033)
+— sandbox mapy świata, start ~47s. Tymczasowy hook `window.__civTest` + `[civTest-trace]` logi
+konsoli USUNIĘTE przed zakończeniem (`git checkout -- src/main.ts`), repo czyste — zero zmian
+kodu z tej rundy.
+
+**Obalone (dowód z żywej gry, nie zgadywane):** `stackCanMove`, `currentVisible`,
+`isTargetWithinStackAttackRange`, `playerIsAtWarWith` — wszystkie liczą się poprawnie.
+`planMarchTo(cu.q, cu.r, cu.id)` zwraca `true`, poprawnie ustawia `PlannedMarchDest.attackUnitId`
+i wpis w `marchAttackTargets`. Śledzenie wieloturowe `plannedMarches` nie gubi celu samo z siebie
+przy zwykłym końcu segmentu marszu.
+
+**PRZYCZYNA A — stałe panele HUD połykają klik, zanim dotrze do canvasu (potwierdzona 2× w różnych
+scenariuszach).** `document.elementFromPoint(x,y)` w dokładnym miejscu kliku na wroga zwrócił
+`.civ-side-panel` (panel „WYDARZENIA", `sidePanelHud.ts:133`, `position:fixed; z-index:305;
+pointer-events:auto`, stała szerokość przy prawej krawędzi) w jednym przebiegu i
+`.sp-ctx-card.sp-ctx-interactive` (dok kontekstowy, lewy skraj) w drugim. `pickHexAt(x,y)`
+(raycasting canvasu) POPRAWNIE wskazywał heks wroga w obu przypadkach — ale realny klik myszą
+trafiał w DOM-owy panel nad canvasem, nie w canvas. Zero błędu, zero komunikatu — klik po prostu
+znika. Gdy cel przesunięty poza obszar tych paneli, mechanizm zadziałał natychmiast (`planMarchTo`
+→ `true`, jednostka realnie ruszyła, `ruchLeft` zmalało). Te panele stoją na stałej pozycji ekranu
+niezależnie od tego, gdzie akurat renderuje się wróg — systemowy, powtarzalny problem, nie
+przypadek jednego testu.
+
+**PRZYCZYNA B — Escape (i 34 inne miejsca) cicho kasuje zakolejkowany marsz-z-atakiem.**
+`clearPlayerUnitSelection()` (`main.ts`, ok. linii 5208, wołane przez Escape via
+`dismissPlayerUnitSelectionIfAny()` ORAZ 34 inne miejsca w `main.ts`):
+```ts
+function clearPlayerUnitSelection(): void {
+  if (selectedId !== null) clearPlannedMarch(selectedId);
+  clearPlayerUnitSelectionStateOnly();
+}
+```
+`clearPlannedMarch(unitId)` usuwa wpis z `plannedMarches` ORAZ `marchAttackTargets` bez
+rozróżnienia, czy to zwykły marsz, czy świadomie zakolejkowany atak (`attackUnitId` ustawiony).
+Atakująca jednostka zostaje `selectedId` przez cały czas trwania marszu — więc KAŻDA czynność
+odznaczająca ją (Escape, ale też dowolne z pozostałych 34 wywołań) w ciszy kasuje rozkaz ataku,
+bez ostrzeżenia gracza. Potwierdzone logami z żywej gry: tuż po kliku `plannedMarches`/
+`marchAttackTargets` mają wpis, chwilę później — po przejściu przez typową pętlę zamykania
+popupów Escape'em — oba puste, mimo że wróg wciąż żyje i nie doszło do walki. **To bardzo
+prawdopodobnie realny mechanizm stojący za zgłoszeniem Macieja:** klik na dystansowego wroga
+POPRAWNIE kolejkuje marsz+atak, ale coś (Escape, zamknięcie popupu, inna akcja odznaczająca)
+między wydaniem rozkazu a jego realizacją w ciszy go kasuje — gracz widzi tylko, że jednostka
+doszła na miejsce i NIC się nie stało, więc musi ręcznie wydać drugi rozkaz ataku. Dokładnie
+pasuje do cytatu: „dopiero jak się tam znajdzie, mogę wydać dyspozycję ataku".
+
+**Rekomendacje Operatora (NIE wdrożone — zero zmian w repo, czekają na decyzję):**
+- Przyczyna A: `pointer-events` dla `.civ-side-panel`/`.sp-ctx-card` ograniczyć do faktycznie
+  widocznej treści (nie całego prostokąta paneli).
+- Przyczyna B: `clearPlayerUnitSelection()`/`clearPlannedMarch` nie powinno kasować wpisu w
+  `plannedMarches` gdy ma ustawione `attackUnitId` — jednolinijkowa zmiana warunku, ale dotyka
+  funkcji wołanej w 35 miejscach (wymaga przeglądu, czy któreś z nich zakłada że deselect = pełne
+  skasowanie, zgodnie z dyscypliną C-026).
+
+**PYTANIE DO CIEBIE, Maciej — `P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1`** (dotyczy WYŁĄCZNIE
+Przyczyny B — Przyczyna A to jednoznaczny bugfix UI, dispatchuję ją od razu bez pytania):
+
+**Sytuacja:** zakolejkowany marsz-z-atakiem (klik na dystansowego wroga) jest dziś kasowany przez
+KAŻDE odznaczenie jednostki (Escape, zamknięcie popupu, klik gdzie indziej) — 35 miejsc w kodzie
+wywołuje tę samą funkcję czyszczącą, bez rozróżnienia zwykłego marszu od świadomego rozkazu ataku.
+
+**Cel pytania:** ustalić, czy naprawić to u źródła (zmiana zachowania współdzielonej funkcji w 35
+miejscach naraz) czy ograniczyć ryzyko innym sposobem.
+
+**Dlaczego teraz:** to najbardziej prawdopodobna, potwierdzona logami przyczyna Twojego zgłoszenia
+— bez decyzji temat stoi.
+
+- **A. Napraw u źródła (rekomendacja Operatora).** `clearPlannedMarch`/`clearPlayerUnitSelection`
+  nie kasuje wpisu z ustawionym `attackUnitId` — rozkaz ataku przetrwa odznaczenie jednostki,
+  zostanie wykonany po dotarciu, chyba że gracz go JAWNIE anuluje (np. osobny przycisk/klawisz
+  „anuluj marsz"). Za: naprawia dokładnie zgłoszony problem; zachowanie zgodne z intuicją (wydany
+  rozkaz nie znika przez przypadek, np. przez sam Escape). Przeciw: zmienia zachowanie
+  współdzielonej funkcji w 35 miejscach jednocześnie — wymaga przeglądu każdego wywołania i
+  solidnych testów regresji; ryzyko że w jakimś z tych 35 miejsc „deselect = anuluj wszystko" było
+  zamierzone.
+- **B. Zostaw kasowanie, dodaj ostrzeżenie.** Zachowanie silnika bez zmian (odznaczenie nadal
+  kasuje marsz-z-atakiem), ale przy próbie odznaczenia jednostki z aktywnym zakolejkowanym atakiem
+  pokaż potwierdzenie/ostrzeżenie („Anulować atak na [wróg]?"). Za: zero zmian w głębokiej logice
+  silnika (niskie ryzyko regresji w 35 miejscach), gracz świadomie decyduje. Przeciw: nie eliminuje
+  źródła frustracji (dalej łatwo przypadkowo skasować, tylko teraz z ostrzeżeniem które można kliknąć
+  bezmyślnie); dodatkowy UI do zaprojektowania.
+- **C. Poczekaj z kodem, potwierdź hipotezę osobno.** Nie zmieniaj nic teraz — Przyczyna B to
+  najbardziej prawdopodobna, ale nie jedyna możliwa, przyczyna zgłoszenia (Przyczyna A też może
+  wystarczająco tłumaczyć część przypadków). Za: zero ryzyka regresji teraz. Przeciw: problem
+  zgłoszony przez Ciebie pozostaje nienaprawiony do czasu kolejnej rundy.
+
+**Rekomendacja:** A — dowód z żywych logów jest mocny (plan znika dokładnie w momencie typowej
+sekwencji Escape/zamykanie popupów), a 35 miejsc to zarządzalny zakres przeglądu dla jednego
+Operatora z dobrym pokryciem testowym, nie powód żeby zostawić potwierdzony bug.
+
+**STATUS: CZEKA na odpowiedź Macieja (`P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1`) dla Przyczyny B.
+Przyczyna A dispatchowana od razu jako jednoznaczny bugfix, bez ABC.**

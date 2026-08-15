@@ -32,6 +32,24 @@ const SCOPE_SELECTOR = [
   // / EN: new-game wizard — setting descriptions moved from always-visible text to
   // an (i) icon + title, shown with this shared hover style.
   '.civ-newgame',
+  // P-NEWGAME-KREATOR-TOOLTIP-INFO-NIE-DZIALA RUNDA 2 (2026-08-15): te trzy panele
+  // montują się bezpośrednio na `document.body` (poza wszystkimi kontenerami wyżej),
+  // ale mają ikony/etykiety z natywnym `title=` + CSS `cursor:help` — bez wpisu tutaj
+  // `resolveTarget()` je odrzuca (`hit.closest(SCOPE_SELECTOR)` = null), więc kursor
+  // zmienia się w pytajnik (czysty CSS), ale treść zależy WYŁĄCZNIE od natywnego
+  // dymka przeglądarki — niewiarygodnego w wielu środowiskach (zdalny pulpit, część
+  // konfiguracji przeglądarka/OS/DPI). Dowód: `.civ-emp-info-tip` (magazynInfoTipHtml,
+  // empireDetailPanel.ts) w żywym teście headless — po hover >380ms atrybut `title`
+  // NIE został zdjęty, `#civ-hud-title-tip-el` zostaje pusty/display:'' (mechanizm
+  // JS nigdy się nie uruchomił, bo element poza zasięgiem).
+  // / EN: these three panels mount directly on `document.body` (outside every
+  // container above); their icons/labels carry a native `title=` + CSS `cursor:help`
+  // but were never added here, so `resolveTarget()` rejects them and hover falls
+  // back entirely to the browser's native title tooltip — unreliable in several
+  // real environments even though the CSS cursor still changes.
+  '.civ-emp-panel',
+  '.civ-diplo-aud',
+  '.civ-diplo-basket',
 ].join(',');
 
 const SHOW_DELAY_MS = 380;
