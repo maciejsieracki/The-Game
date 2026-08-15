@@ -28463,3 +28463,10 @@ Operatora z dobrym pokryciem testowym, nie powód żeby zostawić potwierdzony b
 
 **STATUS: CZEKA na odpowiedź Macieja (`P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1`) dla Przyczyny B.
 Przyczyna A dispatchowana od razu jako jednoznaczny bugfix, bez ABC.**
+
+**ODPOWIEDŹ MACIEJA (2026-08-15): `P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1 = A`.** Napraw u
+źródła: `clearPlannedMarch`/`clearPlayerUnitSelection` nie kasuje wpisu z ustawionym
+`attackUnitId`. Dispatch do Operatora (Sonnet 5, worktree) w toku — kod + commit, BEZ deployu
+(zgodnie z procedurą §0/§5 CLAUDE.md, deploy tylko na hasło „deploy").
+
+**STATUS: DISPATCH W TOKU.**
