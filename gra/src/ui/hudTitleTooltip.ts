@@ -50,6 +50,20 @@ const SCOPE_SELECTOR = [
   '.civ-emp-panel',
   '.civ-diplo-aud',
   '.civ-diplo-basket',
+  // P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE (2026-08-15, znalezisko Evaluatora C-025 przy okazji
+  // RUNDY 2): ta sama przyczyna — `.civ-unit-panel` (unitPanelHud.ts) montuje się bezpośrednio
+  // na `document.body`, poza wszystkimi kontenerami wyżej. Renderuje plakietkę weterana
+  // (`uc-veteran-badge`, `buildUnitCardStatusSectionHtml()`) z natywnym `title=` — DOKŁADNIE tą
+  // samą funkcją, którą woła `.civ-army-stack` (JUŻ w scope) dla tego samego badge'a. Bez wpisu
+  // tutaj kursor reaguje (`cursor:help`), ale treść dymka zależy wyłącznie od natywnego tooltipa
+  // przeglądarki.
+  // / EN: same root cause — `.civ-unit-panel` (unitPanelHud.ts) mounts directly on
+  // `document.body`, outside every container above. It renders the veteran badge
+  // (`uc-veteran-badge`, `buildUnitCardStatusSectionHtml()`) with a native `title=` — the EXACT
+  // same function `.civ-army-stack` (already in scope) calls for the same badge. Without this
+  // entry the cursor still reacts (`cursor:help`) but the tip content depends entirely on the
+  // browser's native tooltip.
+  '.civ-unit-panel',
 ].join(',');
 
 const SHOW_DELAY_MS = 380;

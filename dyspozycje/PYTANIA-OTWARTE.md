@@ -27330,6 +27330,51 @@ o ten kontener. Niskie ryzyko (ten sam mechanizm co już zweryfikowana naprawa),
 
 **STATUS: DO DISPATCHU — niekrytyczne, nie pilne.**
 
+### WYKONANE (Operator Sonnet 5, worktree izolowany `agent-ae729b094d2c593cd`, 2026-08-15)
+
+**Naprawa:** dopisano `.civ-unit-panel` do `SCOPE_SELECTOR` w `hudTitleTooltip.ts`, ten sam wzorzec
+co pozostałe cztery wpisy, komentarz PL/EN wyjaśniający WHY (identyczny root cause: montaż na
+`document.body`, `buildUnitCardStatusSectionHtml()` — ta sama funkcja co `.civ-army-stack`, już
+w scope).
+
+**⚠️ WAŻNE ZNALEZISKO PRZY OKAZJI — zmienia praktyczną wagę tego tematu:** `createUnitPanelHud()`
+(`unitPanelHud.ts`) ma dziś **ZERO wywołań** w `main.ts`/`hud.ts` — zweryfikowane wielokrotnym
+grepem po całym `gra/src/` (tylko typy `UnitPanelAction`/`UnitPanelState` są importowane w innych
+plikach, nigdy sama funkcja). Realne zaznaczenie jednostki/stosu w grze dziś obsługuje wyłącznie
+`.civ-army-stack` (`armyStackHud.ts`, `createArmyStackHud()` faktycznie wołane z `hud.ts:1538`) —
+ten kontener JUŻ był w `SCOPE_SELECTOR` od rundy 2. Potwierdzone też dokumentacją projektu:
+`dyspozycje/UI-DO-MASTERA.md` opisuje `unitPanelHud.ts` wprost jako „spójność typów + fallback
+panel [H]" wobec „`armyStackHud.ts` (live `.civ-army-stack`)" — czyli panel [H] jest od dawna
+udokumentowany jako NIEŻYWY w obecnym silniku, nie ukryta regresja. **Wniosek: to naprawa
+poprawnego, ale dziś martwego kodu — przygotowuje grunt na wypadek gdyby `.civ-unit-panel` kiedyś
+został podłączony, ale NIE naprawia dziś żadnego objawu widocznego w grze** (bo panelu [H] gracz
+nie może dziś w ogóle otworzyć). To nie podważa ustaleń Evaluatora (root cause identyczny, poprawka
+poprawna) — tylko koryguje wagę: niekrytyczne staje się jeszcze bardziej niekrytyczne.
+
+**Żywy dowód PRZED/PO — dlaczego innym mechanizmem niż runda 2:** ponieważ `.civ-unit-panel` nie
+jest osiągalny żadną ścieżką gracza w zbudowanym bundlu gry (patrz wyżej), nie da się go dowieść
+przez nawigację po pełnej grze jak dla `.civ-emp-panel`/`.civ-diplo-aud`. Dowód wykonano przez
+bezpośredni montaż PRAWDZIWEGO, niezmodyfikowanego kodu (`createUnitPanelHud()` +
+`installHudTitleTooltips()`, esbuild bundle importujący `../src/ui/*` bez reimplementacji) w
+prawdziwym headless Chromium — mechanizm SCOPE_SELECTOR jest więc dowiedziony na rzeczywistym
+kodzie, tylko drogą montażu zamiast przejścia menu. PRZED naprawą: hover >380ms na
+`.uc-veteran-badge` zostawiał `title` nietknięty (`"Doświadczenie bojowe: 2 gwiazdki (12
+zwycięskich starć)."`), `#civ-hud-title-tip-el` pusty (`display:''`, `text:''`). PO naprawie:
+`title` zdjęty (`null`), tooltip `display:'block'` z pełnym tekstem, zero błędów konsoli.
+
+**Regresja:** `gra/tools/hud-tooltip-body-mounted-panels-test.cjs` rozszerzony o „Scenariusz 2"
+(harness bezpośredniego montażu, wzorem `escape-overlay-real-panels-test.cjs` — entry pisany na
+dysk przez sam test, nietrackowany w repo zgodnie z `.gitignore`), z dowodem mutacyjnym (zdjęcie
+klasy `.civ-unit-panel` z roota na żywo gasi tooltip). Wynik: **16 pass, 0 fail** (8 scenariusz 1 +
+8 scenariusz 2), exit 0.
+
+**Bramki:** `npx tsc --noEmit` — 0 błędów. `hud-tooltip-body-mounted-panels-test.cjs` — 16/16.
+`newgame-adv-tooltip-test.cjs` — 29/29 (regresja bez zmian).
+
+**STATUS: NAPRAWIONE, czeka na Evaluatora.** Do potwierdzenia przez Evaluatora: (a) poprawność
+naprawy per se (niskie ryzyko, ten sam wzorzec co runda 2), (b) trafność znaleziska „kod martwy —
+`createUnitPanelHud()` bez callera" — jeśli błędne, cofnąć ocenę wagi tematu.
+
 ---
 
 ## P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1 (2026-08-14, zgłoszenie Macieja)
