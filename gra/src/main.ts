@@ -5205,8 +5205,18 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
-    function clearPlayerUnitSelection(): void {
-      if (selectedId !== null) clearPlannedMarch(selectedId);
+    /**
+     * P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: domyślnie (force=false, prawie wszystkie 35
+     * wywołania w tym pliku) odznaczenie NIE kasuje świadomie zakolejkowanego marszu-z-atakiem
+     * (`attackUnitId` ustawiony) — patrz `clearPlannedMarch`. `force=true` dla miejsc, które
+     * NAPRAWDĘ mają jawnie anulować wszystko (np. rozwiązanie jednostki — `disbandPlayerUnit`).
+     * / EN: by default (force=false, nearly all 35 call sites in this file) deselecting does
+     * NOT cancel a consciously queued march-then-attack order (`attackUnitId` set) — see
+     * `clearPlannedMarch`. `force=true` for sites that genuinely mean to cancel everything
+     * explicitly (e.g. disbanding the unit — `disbandPlayerUnit`).
+     */
+    function clearPlayerUnitSelection(force = false): void {
+      if (selectedId !== null) clearPlannedMarch(selectedId, force);
       clearPlayerUnitSelectionStateOnly();
     }
 
@@ -5466,7 +5476,12 @@ async function boot(): Promise<void> {
 
       if (wasGarnizon && cityForGarnizon) syncGarnizonForCity(cityForGarnizon);
 
-      if (selectedId === unitId) clearPlayerUnitSelection();
+      // force=true: jednostka już usunięta z `units` powyżej (splice) — nie ma czego "przetrwać"
+      // odznaczeniu, wpis w plannedMarches/marchAttackTargets dla nieistniejącej już jednostki
+      // byłby tylko martwym śmieciem w mapie. / EN: force=true — the unit was already spliced out
+      // of `units` above, so there is nothing for a plannedMarches/marchAttackTargets entry to
+      // "survive" the deselect for; leaving it would just be dead litter in the map.
+      if (selectedId === unitId) clearPlayerUnitSelection(true);
       forceVisibleUnitId = null;
       syncUnitsRender();
       refreshFog();
@@ -17728,9 +17743,15 @@ async function boot(): Promise<void> {
           active: isFieldFortifiedSiege,
         });
       } else if (hasPlan) {
+        // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: skoro zakolejkowany atak teraz PRZETRWA
+        // zwykłe odznaczenie, etykieta jasno mówi graczowi co dokładnie anuluje ten przycisk —
+        // sam marsz, czy marsz-i-atak. / EN: since a queued attack now SURVIVES an ordinary
+        // deselect, the label tells the player exactly what this button cancels — a plain
+        // march, or a march-then-attack.
+        const hasQueuedAttack = marchAttackTargets.has(active.id);
         actions.push({
           id: 'march-stop',
-          label: 'Zatrzymaj',
+          label: hasQueuedAttack ? 'Anuluj atak' : 'Zatrzymaj',
           disabled: isAnimating,
         });
       }
@@ -17830,7 +17851,11 @@ async function boot(): Promise<void> {
       } else if (actionId === 'march-stop') {
         stopPlannedMarchForSelected();
       } else if (actionId === 'skip') {
-        clearPlannedMarch(u.id);
+        // force=true: "Pomiń" to jawny rozkaz gracza kasujący plan tej jednostki (razem z
+        // zerowaniem ruchu poniżej) — nie zwykłe odznaczenie UI. / EN: force=true — "Skip" is an
+        // explicit player order cancelling this unit's plan (together with zeroing its movement
+        // below), not an ordinary UI deselect.
+        clearPlannedMarch(u.id, true);
         syncStackRuchLeft(stack, 0);
         reachable = new Set<string>();
         unitRenderer.clearHighlight();
@@ -17890,7 +17915,12 @@ async function boot(): Promise<void> {
           refreshD1bHud();
           return;
         }
-        clearPlannedMarch(u.id);
+        // force=true: "Ufortyfikuj"/wej\u015bcie do garnizonu to jawny nowy rozkaz gracza, kt\u00f3ry
+        // nadpisuje dowolny poprzedni plan marszu (w tym marsz-z-atakiem) \u2014 jednostka i tak
+        // przestaje si\u0119 przemieszcza\u0107. / EN: force=true \u2014 "Fortify"/entering garrison is an
+        // explicit new player order that supersedes any previous march plan (including a
+        // march-then-attack) \u2014 the unit stops moving either way.
+        clearPlannedMarch(u.id, true);
         reachable = new Set<string>();
         unitRenderer.clearHighlight();
         unitRenderer.clearPathRoute();
@@ -17924,7 +17954,11 @@ async function boot(): Promise<void> {
       } else if (actionId === 'sentry') {
         const enteringSentry = u.sentry !== true;
         if (enteringSentry) {
-          clearPlannedMarch(u.id);
+          // force=true: "Czuwaj" to jawny nowy rozkaz gracza (jednostka usypia, ruch zerowany
+          // poniżej) — nadpisuje dowolny poprzedni plan marszu. / EN: force=true — "Sentry" is an
+          // explicit new player order (the unit goes dormant, movement zeroed below) — it
+          // supersedes any previous march plan.
+          clearPlannedMarch(u.id, true);
           syncStackRuchLeft(stack, 0);
           for (const su of stack) su.sentry = true;
           showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);
@@ -17945,7 +17979,11 @@ async function boot(): Promise<void> {
           // brakowało w sierpniu, stąd Q1). / EN: after enabling auto-explore the unit no longer
           // stays selected — the misleading movement highlight caused accidental clicks that
           // silently cancelled auto-explore. Visual feedback is now covered by the toast below.
-          clearPlannedMarch(u.id);
+          // force=true: "Zwiedzaj" to jawny nowy rozkaz gracza (auto-eksploracja przejmuje
+          // sterowanie ruchem) — nadpisuje dowolny poprzedni plan marszu.
+          // / EN: force=true — "Explore" is an explicit new player order (auto-explore takes
+          // over movement) — it supersedes any previous march plan.
+          clearPlannedMarch(u.id, true);
           // C-025: fortyfikacja w polu i auto-eksploracja wykluczają się wzajemnie —
           // włączenie Zwiedzaj zdejmuje fortyfikację (analogicznie do enterFieldFortify,
           // które zdejmuje autoExplore w drugą stronę), inaczej jednostka rusza się mimo
@@ -19190,13 +19228,40 @@ async function boot(): Promise<void> {
       movedByPlayerThisTurn.add(unitId);
     }
 
-    function clearPlannedMarch(unitId?: string): void {
+    /**
+     * P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE (root cause, Przyczyna B): domyślnie
+     * (`force=false`) NIE kasuje wpisu, który ma ustawione `PlannedMarchDest.attackUnitId`
+     * (świadomie zakolejkowany marsz-a-potem-atak) — rozkaz przetrwa zwykłe odznaczenie
+     * (Escape, klik gdzie indziej, otwarcie panelu — `clearPlayerUnitSelection()`, 35 wywołań
+     * w tym pliku) i wykona się po dotarciu (`tryLaunchMarchAttack`). `force=true` dla miejsc,
+     * które NAPRAWDĘ mają jawnie anulować wszystko: przycisk „Zatrzymaj"
+     * (`stopPlannedMarchForSelected`), rozwiązanie jednostki, nowe jawne rozkazy które
+     * nadpisują poprzedni plan (garnizon/Czuwaj/Zwiedzaj/Pomiń/ruch natychmiastowy),
+     * uruchomienie samego ataku (`tryLaunchMarchAttack` — plan spełnił swoją rolę).
+     * / EN: by default (`force=false`) does NOT clear an entry with
+     * `PlannedMarchDest.attackUnitId` set (a consciously queued march-then-attack order) — the
+     * order survives an ordinary deselect (Escape, click elsewhere, opening a panel —
+     * `clearPlayerUnitSelection()`, 35 call sites in this file) and fires on arrival
+     * (`tryLaunchMarchAttack`). `force=true` for sites that genuinely mean to cancel
+     * everything explicitly: the "Stop" button (`stopPlannedMarchForSelected`), disbanding the
+     * unit, a new explicit order that supersedes the old plan (garrison/Sentry/Explore/Skip/
+     * immediate move), or launching the attack itself (`tryLaunchMarchAttack` — the plan has
+     * served its purpose).
+     */
+    function clearPlannedMarch(unitId?: string, force = false): void {
       if (unitId !== undefined) {
+        if (!force && plannedMarches.get(unitId)?.attackUnitId) return;
         plannedMarches.delete(unitId);
         marchAttackTargets.delete(unitId);
-      } else {
+      } else if (force) {
         plannedMarches.clear();
         marchAttackTargets.clear();
+      } else {
+        for (const id of [...plannedMarches.keys()]) {
+          if (plannedMarches.get(id)?.attackUnitId) continue;
+          plannedMarches.delete(id);
+          marchAttackTargets.delete(id);
+        }
       }
       if (selectedId === null || unitId === selectedId || unitId === undefined) {
         unitRenderer.clearPathRoute();
@@ -19314,7 +19379,11 @@ async function boot(): Promise<void> {
       if (!def) return false;
       if (!currentVisible().has(keyOf(def.q, def.r))) return false;
       if (!isTargetWithinStackAttackRange(atkUnit, def.q, def.r)) return false;
-      clearPlannedMarch(atkUnit.id);
+      // force=true: plan spełnił swoją rolę — atak właśnie się uruchamia, więc czyścimy wpis
+      // bezwarunkowo (attackUnitId też, jest tu zawsze ustawione dla tej ścieżki).
+      // / EN: force=true — the plan has served its purpose, the attack is launching right now,
+      // so the entry is cleared unconditionally (attackUnitId is always set on this path anyway).
+      clearPlannedMarch(atkUnit.id, true);
       openPlayerMapUnitAttack(atkUnit, def);
       return true;
     }
@@ -19721,10 +19790,25 @@ async function boot(): Promise<void> {
       executeMarchSegmentForUnit(selectedId);
     }
 
+    /**
+     * Przycisk „Zatrzymaj" HUD — jedyny dziś jawny sposób gracza na anulowanie zaplanowanego
+     * marszu, w tym świadomie zakolejkowanego marszu-z-atakiem (P-BITWA-MARSZ-POTEM-ATAK-NIE-
+     * KOLEJKUJE). Wcześniej robił surowe `plannedMarches.delete()` BEZ kasowania
+     * `marchAttackTargets` — dziurawe niezależnie od tej naprawy (martwy wpis zostawał w mapie,
+     * nieszkodliwy dziś bo nieodczytywany bez odpowiadającego `plannedMarches`, ale krucho).
+     * Przechodzi teraz przez `clearPlannedMarch(id, true)` (force=true — to jest DOKŁADNIE
+     * jawne anulowanie), które czyści oba. / EN: HUD "Stop" button — today's only explicit way
+     * for the player to cancel a planned march, including a consciously queued march-then-
+     * attack. Used to do a raw `plannedMarches.delete()` WITHOUT clearing `marchAttackTargets`
+     * — leaky independent of this fix (a dead entry stayed in the map, harmless today since
+     * unread without a matching `plannedMarches` entry, but fragile). Now routed through
+     * `clearPlannedMarch(id, true)` (force=true — this IS the explicit cancel), which clears
+     * both.
+     */
     function stopPlannedMarchForSelected(): void {
       if (selectedId === null) return;
-      if (plannedMarches.delete(selectedId)) {
-        unitRenderer.clearPathRoute();
+      if (plannedMarches.has(selectedId)) {
+        clearPlannedMarch(selectedId, true);
         showHintMessage('Zatrzymano', 2200);
         refreshD1bHud();
       }
@@ -20074,7 +20158,12 @@ async function boot(): Promise<void> {
       // R-SCOUT-ZWIEDZAJ-HIGHLIGHT: ręczny ruch (jak marsz) wyłącza auto-zwiedzanie.
       clearScoutAutoExplore(u);
       markPlayerMovedUnit(u.id);
-      clearPlannedMarch(u.id);
+      // force=true: gracz właśnie wydał NOWY, natychmiastowy rozkaz ruchu do innego celu —
+      // jawnie nadpisuje dowolny poprzedni zaplanowany marsz (w tym marsz-z-atakiem).
+      // / EN: force=true — the player just issued a NEW, immediate move order to a different
+      // destination — it explicitly supersedes any previous planned march (including a
+      // march-then-attack).
+      clearPlannedMarch(u.id, true);
       startAnimatedMove(u, movePath, moveDestQ, moveDestR, cost);
       return true;
     }
@@ -29285,6 +29374,11 @@ async function boot(): Promise<void> {
       aiAudienceLastRequestTurn.clear();
       units.length = 0;
       plannedMarches.clear();
+      // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — inaczej wpis-widmo
+      // (attackUnitId po jednostce z poprzedniej gry) mógłby przetrwać reset (force=false chroni
+      // wpisy z attackUnitId). / EN: clear together with plannedMarches — otherwise a ghost entry
+      // could survive the reset (force=false protects entries with attackUnitId).
+      marchAttackTargets.clear();
       movedByPlayerThisTurn.clear();
       marchExecQueue.length = 0;
       pendingMarchHint = null;
@@ -30364,6 +30458,11 @@ async function boot(): Promise<void> {
       units.length = 0;
       for (const u of saved.units) units.push(u);
       plannedMarches.clear();
+      // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — pętla niżej
+      // odbudowuje oba TYLKO dla jednostek z wczytanego save'a (reszta zostałaby wisząca).
+      // / EN: clear together with plannedMarches — the loop below only rebuilds both for units
+      // present in the loaded save (the rest would be left dangling).
+      marchAttackTargets.clear();
       movedByPlayerThisTurn.clear();
       marchExecQueue.length = 0;
       pendingMarchHint = null;

@@ -28469,4 +28469,90 @@ Przyczyna A dispatchowana od razu jako jednoznaczny bugfix, bez ABC.**
 `attackUnitId`. Dispatch do Operatora (Sonnet 5, worktree) w toku — kod + commit, BEZ deployu
 (zgodnie z procedurą §0/§5 CLAUDE.md, deploy tylko na hasło „deploy").
 
-**STATUS: DISPATCH W TOKU.**
+### WYNIK RUNDY 2 (Operator Sonnet 5, worktree izolowany `agent-a11c82a24501732c2`, 2026-08-15) — Przyczyna B naprawiona u źródła, potwierdzone żywym testem
+
+**Implementacja:** `clearPlannedMarch(unitId?: string, force = false)` (`main.ts`) — domyślnie
+(`force=false`) NIE kasuje wpisu z ustawionym `PlannedMarchDest.attackUnitId` (wpis PRZETRWA
+zwykłe odznaczenie); `force=true` kasuje bezwarunkowo. `clearPlayerUnitSelection(force = false)`
+przekazuje `force` dalej do `clearPlannedMarch(selectedId, force)` — bez zmiany sygnatury
+wywołania w 32 z 33 realnych call site'ów w pliku (domyślne `force=false` wystarcza samo z
+siebie, bo parametr ma wartość domyślną).
+
+**Przegląd wywołań (35 wystąpień tekstowych `clearPlayerUnitSelection(` łącznie z definicją i
+komentarzami zmierzone przez Operatora w RUNDZIE 1 = 1 definicja + 32 realne wywołania + 2
+pre-istniejące komentarze; nie mylić z liczbą „34 inne miejsca" z opisu zgłoszenia wyżej, która
+była nieprecyzyjnym skrótem):**
+- **32 wywołania `clearPlayerUnitSelection()` (bez argumentu, domyślne `force=false`)** —
+  wszystkie ścieżki UI: Escape (`dismissPlayerUnitSelectionIfAny`), klik gdzie indziej na mapie,
+  otwarcie panelu miasta/nauki/dyplomacji/listy armii, zamknięcie audiencji dyplomatycznej,
+  cykl jednostek bez kolejnej do wybrania, koniec bitwy (`clearBattleUiState`/
+  `clearMapBattleUiState` ×3), tryb galerii, zdjęcie oblężenia (`commitBesiege`) itd. — dla
+  wszystkich tych miejsc plan-z-atakiem TERAZ PRZETRWA (naprawiony bug).
+- **1 wywołanie `clearPlayerUnitSelection(true)`** — `disbandPlayerUnit`: jednostka jest już
+  usunięta z `units` (splice) PRZED tym wywołaniem, więc nie ma czego "przetrwać" — wpis byłby
+  tylko martwym śmieciem.
+- **6 bezpośrednich wywołań `clearPlannedMarch(u.id/atkUnit.id/selectedId, true)`** (jawne nowe
+  rozkazy gracza, które mają nadpisać/skonsumować poprzedni plan): `handleSelectedUnitHudAction`
+  gałęzie „Pomiń"/„Ufortyfikuj"(wejście do garnizonu)/„Czuwaj"/„Zwiedzaj" (4×),
+  `beginMoveSelectedUnitTo` (ruch natychmiastowy — nowy rozkaz nadpisuje stary plan),
+  `tryLaunchMarchAttack` (plan spełnił swoją rolę — atak się właśnie uruchamia).
+- **`stopPlannedMarchForSelected`** (jedyny dziś jawny przycisk „Zatrzymaj"/„Anuluj atak" w HUD)
+  — PRZY OKAZJI naprawiony **dziurawy pre-istniejący kod**: robił surowe
+  `plannedMarches.delete(selectedId)` BEZ czyszczenia `marchAttackTargets` (nieszkodliwe przed tą
+  rundą, bo nieodczytywane bez odpowiadającego wpisu w `plannedMarches`, ale krucho). Przechodzi
+  teraz przez `clearPlannedMarch(selectedId, true)`, które czyści oba. Etykieta przycisku
+  rozróżnia teraz „Anuluj atak" (gdy `marchAttackTargets.has(id)`) od „Zatrzymaj" (zwykły marsz)
+  — jawny sposób gracza na anulowanie zakolejkowanego ataku, wymagany zadaniem; istniejący
+  mechanizm rozszerzony, nie dodano nowego UI.
+- **2 miejsca `plannedMarches.clear()` bez odpowiadającego `clearPlannedMarch`** (reset nowej gry
+  — `doStartGame`, i wczytanie zapisu — `restoreGameFromSave`) — dołożono obok
+  `marchAttackTargets.clear()`: bez tego wpis-widmo (`attackUnitId` po jednostce z poprzedniej
+  gry/sesji) mógłby przetrwać reset, bo `force=false` teraz świadomie chroni wpisy z
+  `attackUnitId`. Zweryfikowane strażnikiem strukturalnym w nowym teście.
+
+**Żywy test w headless Chromium** (`?playtest=mapa`, sandbox mapy świata, binarka
+`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`): tymczasowy hook `window.__civMarchAttackTest`
+(USUNIĘTY przed commitem, wzorem rundy 1) wywoływał PRAWDZIWE funkcje z `main.ts`
+(`planMarchTo`, `dismissPlayerUnitSelectionIfAny` — dokładnie ten sam Escape co na mapie,
+`applyMarchSegmentInstant`). Scenariusz: Hastati (zwarcie) gracza kliknął wroga @ dystans=3 →
+`planMarchTo` ustawił `attackUnitId` → `dismissPlayerUnitSelectionIfAny()` (Escape) →
+**plan PRZETRWAŁ w całości** (`plannedMarches` i `marchAttackTargets` nietknięte, `selectedId`
+poprawnie wyzerowane — odznaczenie realnie zaszło) → egzekucja segmentu marszu → jednostka
+dotarła w zasięg → **atak odpalił się automatycznie** (plan skonsumowany przez
+`tryLaunchMarchAttack`/`clearPlannedMarch(atkUnit.id, true)`). Dokładnie scenariusz zgłoszenia
+Macieja, potwierdzony żywym uruchomieniem gry, nie tylko odczytem kodu.
+
+**Testy regresyjne:** nowy `gra/tools/march-attack-queue-persist-test.cjs` (41/0) — wycina
+`clearPlannedMarch`/`clearPlayerUnitSelection` z prawdziwego `main.ts` i wykonuje je naprawdę
+(wzorzec `atak-dystansowy-mapa-test.cjs`), pokrywa (a) przetrwanie wpisu z `attackUnitId` przy
+`force=false`, (b) brak regresji zwykłego marszu, (c)-(d) `force=true`, (e) przekazanie `force`
+przez `clearPlayerUnitSelection`, (f) `unitRenderer.clearPathRoute()`, (g) 8 strażników
+strukturalnych nad wszystkimi opisanymi wyżej call site'ami, (h) integracja `tryLaunchMarchAttack`
+na PRAWDZIWYCH zależnościach. Dowód mutacyjny (MUT-FORCE): cofnięcie early-return w
+`clearPlannedMarch` łapane. `scout-explore-deselect-cycle-test.cjs` zaktualizowany (regex
+oczekiwał starego `clearPlannedMarch(u.id);` bez `force` — zmiana zamierzona, nie regresja
+C-025), dziś 34/0.
+
+**Bramki:** `npx tsc --noEmit` 0 błędów · `march-attack-queue-persist-test` 41/0 ·
+`combat-test` 6/6 · `map-attack-city-test` 8/8 · `atak-dystansowy-mapa-test` 66/0 ·
+`planned-march-test` 18/0 · `scout-explore-deselect-cycle-test` 34/0 · `border-march-scan-test`
+15/0 · `diplomacy-border-march-test` 39/39 · `tech-tree-test` 19/0 · `research-test` 33/0 ·
+`unit-replace-test` 13/13 · plus 8 dodatkowych bramek dotykających `doStartGame`/
+`restoreGameFromSave`/`disbandPlayerUnit`/`beginMoveSelectedUnitTo` (`barb-city-capture-cluster-test`
+94/0, `citizen-resource-upkeep-test` 109/0, `city-orderstate-restore-clear-test` 9/0,
+`civ-configurator-opponent-test` 41/0, `converter-era-scaling-test` 87/0,
+`fort-nodes-save-load-test` 18/0, `okolica-load-reconcile-test` 23/23,
+`okolica-tryb-reset-ownership-change-test` 18/18, `resource-usage-breakdown-test` 100/0,
+`retreat-garnizon-fortyfikacja-test` 27/0, `road-hook-mainguard-test` 19/0) — wszystkie zielone.
+**2 bramki czerwone, POTWIERDZONE PRE-ISTNIEJĄCE** (identyczne na commicie-rodzicu `b622ce20`,
+zmierzone przez cofnięcie zmian i ponowne uruchomienie): `border-march-wygasanie-test.cjs`
+(22 pass/4 fail — dotyczy `onEventDismiss`/`borderMarchEventLog`, temat niezwiązany) i
+`forced-war-bronze-main-guard-test.cjs` (23 pass/2 fail — dotyczy `applyCityCaptureToMap`/
+`resolveSiegeSurrender`, temat niezwiązany). **Uwaga techniczna:** pierwsza wersja komentarzy
+dodanych w `restoreGameFromSave` była zbyt długa i przesunęła pozycję
+`restoreBronzeForcedWarState(...)` poza sztywny budżet znaków (`{0,15000}`) w istniejącym
+strażniku `forced-war-bronze-main-guard-test.cjs` — wykryte przez samą bramkę, naprawione
+skróceniem komentarzy (bez zmiany logiki), zweryfikowane powrotem do baseline 23/2.
+
+**STATUS: NAPRAWIONE, GOTOWE DO SCALENIA — czeka na Evaluatora (Opus 5) zgodnie z AutoBot §0a/0b.
+Kod + commit BEZ deployu (deploy tylko na hasło „deploy", zgodnie z odpowiedzią Macieja wyżej).**
