@@ -28434,6 +28434,52 @@ zweryfikowane NIEZALEŻNIE przez orkiestratora po scaleniu: `tsc --noEmit` 0 bł
 `side-list-hud-panel-coverage-test` 74/74, `unit-context-card-test` 29/29,
 `side-panel-unit-cycle-arrows-test` 20/20. **Scalone do gałęzi sesji, czeka na deploy.**
 
+### WERDYKT EVALUATORA (Opus 5, 2026-08-15, commit `d8c3bc78`): **FAIL** — NIE cofać, runda 2 wymagana
+
+**Rdzeń naprawy potwierdzony solidnie** (wszystkie bramki z opisu zgodne z niezależnym pomiarem,
+zero zawyżenia; klikalność WSZYSTKICH elementów panelu — `.sp-toolbar`, `.sp-event`, `.sp-ctx-card`
+— potwierdzona hit-testem + realnymi kliknięciami, zero regresji na 4 różnych stanach gry).
+
+**Powód FAIL — realna, zmierzona regresja poza zakresem testu:** `.civ-side-panel` ma
+`overflow-y:auto` (realnie się przewija przy >~11 równoczesnych wpisach — `collectTurnEvents()`
+w `main.ts` nie ma limitu, próg osiągalny w normalnej grze). `pointer-events:none` na całym
+kontenerze **zabija scroll myszą i przeciąganie paska przewijania** — kontrfaktyczny pomiar A/B
+(jedyna zmienna: ta jedna reguła CSS): PRZED — `wheel` przewija (`scrollTop` 0→400), pasek
+łapany (`elementFromPoint` na pasku → `DIV.civ-side-panel`); PO — `wheel` NIE przewija
+(`scrollTop` zostaje 0, kółko trafia w mapę pod spodem), pasek niełapalny
+(`elementFromPoint` → `CANVAS`). Skutek: wydarzenia poniżej ~11. pozycji na liście stają się
+nieosiągalne dla gracza. Własna mutacja Evaluatora (usunięcie `pointer-events:auto` z
+`.sp-event`) **NIE jest łapana** przez żaden istniejący test — klikalność kart wydarzeń jest dziś
+niestrzeżona bramką.
+
+**Zalecenie (NIE cofać commit — przywróciłoby cięższy, już naprawiony błąd połykania kliku):**
+przenieść `overflow-y:auto`/scrollbar z zewnętrznego kontenera na wewnętrzny wrapper z
+`pointer-events:auto`, dopasowany wysokością do treści, zamiast rozciągać hit-obszar na cały pion
+kontenera. Decyzja projektowa, nie jednolinijkowa — do rundy 2. Dodatkowo: dopisać asercję
+klikalności `.sp-event` do `sidepanel-hud-deadzone-test.cjs` (dziś nieosłonięta). Ten sam wzorzec
+(`pointer-events:none` + `overflow-y:auto`) istnieje też pre-istniejąco w `.civ-side-ctx-dock` —
+NIE regresja tego commita, zarejestrowane osobno niżej jako `P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY`.
+
+**STATUS: RUNDA 2 WYMAGANA — dispatch w toku. Deploy tej konkretnej naprawy (Przyczyna A)
+WSTRZYMANY do PASS rundy 2; pozostałe dwa tematy (tooltipy, Przyczyna B) nie są tym blokowane.**
+
+---
+
+## P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (2026-08-15, znalezisko Evaluatora przy okazji Przyczyny A)
+
+**Ten sam wzorzec co regresja w rundzie 1 Przyczyny A, ale PRE-ISTNIEJĄCY, nie spowodowany tym
+commitem:** `.civ-side-ctx-dock` ma `pointer-events:none` na kontenerze (od dawna, niezależnie od
+dzisiejszej zmiany) razem z `overflow-y:auto` — jeśli ten dok kiedykolwiek renderuje treść
+przewijalną (dziś prawdopodobnie nie, bo karty kontekstu są krótkie), scroll myszą/pasek będzie
+tam równie martwy jak było w `.civ-side-panel` przed naprawą Przyczyny A.
+
+**Do dispatchu:** niekrytyczne — zbadać czy `.civ-side-ctx-dock` realnie kiedykolwiek przepełnia
+się na tyle, żeby to miało znaczenie (jeśli nie, można zostawić bez zmian), a jeśli tak, naprawić
+tym samym wzorcem co runda 2 Przyczyny A (wrapper z `pointer-events:auto` na scrollowalnej treści).
+
+**STATUS: DO DISPATCHU — niekrytyczne, nie pilne, zależne od wyniku rundy 2 Przyczyny A (ten sam
+wzorzec naprawy).**
+
 **PRZYCZYNA B — Escape (i 34 inne miejsca) cicho kasuje zakolejkowany marsz-z-atakiem.**
 `clearPlayerUnitSelection()` (`main.ts`, ok. linii 5208, wołane przez Escape via
 `dismissPlayerUnitSelectionIfAny()` ORAZ 34 inne miejsca w `main.ts`):
