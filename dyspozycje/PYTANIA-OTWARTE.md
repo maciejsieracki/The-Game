@@ -27225,6 +27225,41 @@ faktycznie zepsuty w realnej przeglądarce mimo że headless go nie łapie", jak
 każdym najechaniu" jeśli gracz konsekwentnie nie przytrzymuje myszy). Temat zostaje OTWARTY, nie
 dispatchowany ponownie do czasu doprecyzowania (b)/(c) albo wyraźnego polecenia właściciela.
 
+**Odpowiedź Macieja na punkt (c) (2026-08-15, `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1c`, cytat):** „tak,
+muszę przytrzymać, muszę naciskać na ikonkę. Wtedy pojawia się taki pytajnik, jak się znajdzie tam
+ikonkę, ale niestety się nie pojawia żadna informacja."
+
+**Znaczenie tej odpowiedzi:** OBALA hipotezę „przesuwanie kursora zamiast przytrzymania" — właściciel
+POTWIERDZA, że przytrzymuje mysz nieruchomo na ikonie (nawet "naciska" na nią). Nowy, konkretny trop:
+pojawia się **kursor w kształcie pytajnika** (`cursor: help` lub podobne) w momencie najechania na
+ikonę — czyli sam hover-detect DZIAŁA na poziomie CSS/DOM — ale treść dymka (`#civ-hud-title-tip-el`
+z `hudTitleTooltip.ts`) mimo to się nie pokazuje. To NIE pasuje do throttlingu 380ms (który sam
+Evaluator/agent zmierzył jako działający w headless z prawdziwym CDP hover) — sugeruje że w realnej
+przeglądarce właściciela coś BLOKUJE renderowanie dymka mimo że hover-state jest wykrywany. Kandydaci
+do zbadania (nie zakładać z góry): (1) czy `.ng-info`/ikona (i) ma NATYWNY atrybut `title="…"` OBOK
+własnej logiki `hudTitleTooltip.ts` — natywne dymki przeglądarki bywają zawodne w niektórych
+środowiskach (zdalny pulpit, skalowanie DPI, niektóre przeglądarki) i mogłyby tłumaczyć „pytajnik
+kursora jest, tekst nie" jeśli to, co właściciel widzi jako „pytajnik", to w istocie próba natywnego
+tooltipa; (2) czy fizyczne kliknięcie/naciśnięcie („muszę naciskać") zamiast czystego hover psuje stan
+(np. `mousedown` czyści/przerywa timer 380ms, albo focus po kliku usuwa element z DOM); (3) czy na
+środowisku właściciela occlusion inny element przechwytuje zdarzenia hover mimo że kursor wizualnie
+zmienia kształt (kursor to CSS na elemencie pod spodem, ale `pointerenter` mógł polecieć na inny
+element w drzewie zdarzeń).
+
+**Odpowiedź Macieja na punkt (b) (2026-08-15, `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1b`, cytat):** „tak
+problem dotyczy wszystkich." — dotyczy WSZYSTKICH ikon (i) w grze, nie tylko modala „Zaawansowane
+opcje" kreatora. To ważna zmiana zakresu: skoro błąd jest szerszy niż jeden ekran, prawdopodobieństwo
+że przyczyną jest coś specyficznego dla `.civ-newgame`/modala (np. z-index, zagnieżdżenie w DOM,
+`SCOPE_SELECTOR`) SPADA, a rośnie prawdopodobieństwo wspólnego mechanizmu używanego przez WSZYSTKIE
+ikony (i) w całej grze — np. sam `hudTitleTooltip.ts` (współdzielony moduł) albo natywny atrybut
+`title` używany globalnie.
+
+**Oba punkty (b) i (c) odpowiedziane — temat gotowy do RUNDY 2 dispatchu**, z pełnym zakresem: błąd
+systematyczny (a), przytrzymanie potwierdzone/nie przesuwanie (c), zasięg globalny nie tylko
+kreator (b). Poprzednia RUNDA 1 (headless) nie złapała usterki — RUNDA 2 musi zbadać nowy trop
+(pytajnik kursora bez treści dymka) i rozszerzyć test na inne ekrany gry (nie tylko kreator), a nie
+tylko powtórzyć syntetyczny hover z RUNDY 1, który już raz nie odtworzył problemu.
+
 ---
 
 ## P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1 (2026-08-14, zgłoszenie Macieja)
