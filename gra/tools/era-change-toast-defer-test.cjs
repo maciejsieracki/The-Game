@@ -64,8 +64,28 @@ const RE_FLUSH_FN = /function flushPendingEraChangeToast\(\): void \{\s*\n\s*if 
 // ---------------------------------------------------------------------------
 // Blok 4 — wywołanie flush MUSI nastąpić PO `endTurnInProgress = false;` w finally
 // triggerPlayerEndTurn (inaczej showHintMessage znów by go zdeferowała).
+//
+// N1 (Evaluator, werdykt 6936d4d3, 2026-08-16): stara wersja tego regexa nie miała ŻADNEJ
+// kotwicy na `triggerPlayerEndTurn`/`finally` — `endTurnInProgress = false;` występuje w
+// main.ts CZTEROKROTNIE (resetEndTurnBlockers ~7034, healStaleEndTurnBlockers ~24381/24391,
+// finally triggerPlayerEndTurn ~28354), więc dopasowanie mogło się „przykleić" do KTÓREGOKOLWIEK
+// z nich. Eksperymentalnie potwierdzone: przeniesienie flushPendingEraChangeToast() CAŁKOWICIE
+// z finally triggerPlayerEndTurn do healStaleEndTurnBlockers (ścieżka leczenia zacięć, w
+// normalnej rozgrywce się nie wykonuje) DALEJ dawało 6/6 PASS. Nowa kotwica: literalna sekwencja
+// `endTurnTransition();` NATYCHMIAST przed `endTurnInProgress = false;` — zweryfikowane
+// (node -e), że ten dokładny ciąg znaków występuje w main.ts DOKŁADNIE RAZ, wyłącznie w bloku
+// `finally` triggerPlayerEndTurn (endTurnTransition() poprzedza tam endTurnInProgress = false;
+// w tej kolejności; w pozostałych trzech miejscach endTurnTransition() albo w ogóle nie
+// występuje w sąsiedztwie, albo występuje PO endTurnInProgress = false, nigdy bezpośrednio przed).
+// / EN: the old version of this regex had NO anchor at all on `triggerPlayerEndTurn`/`finally` —
+// `endTurnInProgress = false;` appears FOUR times in main.ts, so the match could latch onto ANY
+// of them. Experimentally confirmed: moving flushPendingEraChangeToast() ENTIRELY out of
+// triggerPlayerEndTurn's finally into healStaleEndTurnBlockers (a stuck-transition healing path
+// that never runs in normal play) still gave 6/6 PASS. New anchor: the literal sequence
+// `endTurnTransition();` IMMEDIATELY before `endTurnInProgress = false;` — verified (node -e)
+// to occur in main.ts EXACTLY ONCE, only inside triggerPlayerEndTurn's `finally` block.
 // ---------------------------------------------------------------------------
-const RE_FLUSH_WIRED_AFTER_FALSE = /endTurnInProgress = false;[\s\S]{0,2200}?flushPendingEraChangeToast\(\);/;
+const RE_FLUSH_WIRED_AFTER_FALSE = /endTurnTransition\(\);\s*\n\s*endTurnInProgress = false;[\s\S]{0,2200}?flushPendingEraChangeToast\(\);/;
 
 // ---------------------------------------------------------------------------
 // Blok 5 — REGRESJA: ogólny mechanizm defer (showHintMessage/shouldDeferEotEvents/
@@ -73,12 +93,23 @@ const RE_FLUSH_WIRED_AFTER_FALSE = /endTurnInProgress = false;[\s\S]{0,2200}?flu
 // ---------------------------------------------------------------------------
 const RE_GENERIC_DEFER_INTACT = /function showHintMessage\(msg: string, durationMs: number = 3000\): void \{\s*\n\s*if \(shouldDeferEotEvents\(endTurnInProgress\)\) \{\s*\n\s*deferredEotHints\.push\(\{ msg, durationMs \}\);\s*\n\s*return;\s*\n\s*\}/;
 
+// ---------------------------------------------------------------------------
+// Blok 6 — N2 (Evaluator, werdykt 6936d4d3, 2026-08-16): resetEndTurnBlockers() (wołane z
+// prepareSessionForLoad/doStartGame) MUSI zerować pendingEraChangeToastForNextTurn, tak samo jak
+// F4 (2026-08-14) domknął tam deferredAutoRequests. Bez tego: awans epoki w trakcie EOT ustawia
+// pending → gracz wczytuje inną grę w oknie fazy AI → resetEndTurnBlockers zeruje
+// endTurnInProgress, ale NIE pending → oryginalna async sekwencja i tak dobiega do finally i
+// wypuszcza toast "Nowa epoka" w świeżo wczytanej grze.
+// ---------------------------------------------------------------------------
+const RE_RESET_CLEARS_PENDING_TOAST = /function resetEndTurnBlockers\(reason: string\): void \{[\s\S]{0,1500}?aiCmdResume = null;[\s\S]{0,700}?pendingEraChangeToastForNextTurn = null;[\s\S]{0,80}?endTurnTransition\(\);/;
+
 assert(RE_STATE_DECL.test(src), 'Blok 1: stan pendingEraChangeToastForNextTurn zadeklarowany (osobno od deferredEotHints)');
 assert(RE_BRANCH.test(src), 'Blok 2: notifyPlayerEraChangeIfAdvanced podczas endTurnInProgress zapamiętuje toast zamiast wołać showHintMessage (unika generycznej kolejki)');
 assert(RE_JOURNAL_UNCHANGED.test(src), 'Blok 2: trwały wpis warEventLog nietknięty — nadal bezwarunkowy, poza if/else toastu');
 assert(RE_FLUSH_FN.test(src), 'Blok 3: flushPendingEraChangeToast konsumuje + zeruje stan, woła showHintMessage naprawdę');
-assert(RE_FLUSH_WIRED_AFTER_FALSE.test(src), 'Blok 4: flushPendingEraChangeToast() wołane PO endTurnInProgress = false w finally triggerPlayerEndTurn');
+assert(RE_FLUSH_WIRED_AFTER_FALSE.test(src), 'Blok 4: flushPendingEraChangeToast() wołane PO endTurnInProgress = false w finally triggerPlayerEndTurn (kotwica: endTurnTransition(); NATYCHMIAST przed endTurnInProgress = false)');
 assert(RE_GENERIC_DEFER_INTACT.test(src), 'Blok 5: ogólny mechanizm defer (showHintMessage/shouldDeferEotEvents/deferredEotHints) dla innych komunikatów EOT nienaruszony');
+assert(RE_RESET_CLEARS_PENDING_TOAST.test(src), 'Blok 6 (N2): resetEndTurnBlockers() zeruje pendingEraChangeToastForNextTurn (ta sama klasa wycieku co F4 dla deferredAutoRequests)');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 
@@ -89,7 +120,7 @@ console.log('\n' + passed + ' passed, ' + failed + ' failed');
 function countPass(text) {
   const checks = [
     RE_STATE_DECL, RE_BRANCH, RE_JOURNAL_UNCHANGED, RE_FLUSH_FN,
-    RE_FLUSH_WIRED_AFTER_FALSE, RE_GENERIC_DEFER_INTACT,
+    RE_FLUSH_WIRED_AFTER_FALSE, RE_GENERIC_DEFER_INTACT, RE_RESET_CLEARS_PENDING_TOAST,
   ];
   return checks.filter(re => re.test(text)).length;
 }
@@ -154,7 +185,31 @@ assertMutationCaught('M6: usunięcie deklaracji pendingEraChangeToastForNextTurn
     '',
   ));
 
-console.log('\n' + (6 - mutFailed) + '/6 mutacji złapanych, ' + mutFailed + ' NIEZŁAPANYCH');
+// M7 (N1, Evaluator werdykt 6936d4d3): DOKŁADNY scenariusz eksperymentu Evaluatora —
+// flushPendingEraChangeToast() przeniesione CAŁKOWICIE z finally triggerPlayerEndTurn do
+// healStaleEndTurnBlockers (ścieżka leczenia zacięć, w normalnej rozgrywce się nie wykonuje).
+// Ze STARYM regexem (bez kotwicy na finally triggerPlayerEndTurn) ta mutacja NIE była łapana
+// (bramka dalej pokazywała 6/6 PASS) — to jest dowód, że nowy, zaostrzony regex Blok 4 naprawia
+// dziurę zgłoszoną przez Evaluatora.
+assertMutationCaught('M7: flushPendingEraChangeToast() przeniesione z finally triggerPlayerEndTurn do healStaleEndTurnBlockers (scenariusz Evaluatora)',
+  src.replace(
+    "          flushDeferredAutoPreBattle();\n          // P-EPOKA-TOAST-EOT-POLYKANY: toast awansu epoki odłożony z fazy EOT — wypuść go\n          // NAPRAWDĘ dopiero TERAZ, endTurnInProgress jest już false (patrz komentarz przy\n          // flushPendingEraChangeToast).\n          flushPendingEraChangeToast();\n",
+    "          flushDeferredAutoPreBattle();\n",
+  ).replace(
+    "      if (endTurnInProgress && !isTurnTransitionActive()) {\n        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');\n        endTurnInProgress = false;\n        endTurnStartedAt = 0;\n      }",
+    "      if (endTurnInProgress && !isTurnTransitionActive()) {\n        console.warn('[EndTurn] Clearing stale endTurnInProgress (brak overlay)');\n        endTurnInProgress = false;\n        endTurnStartedAt = 0;\n        flushPendingEraChangeToast();\n      }",
+  ));
+
+// M8 (N2, Evaluator werdykt 6936d4d3): resetEndTurnBlockers() PRZESTAJE zerować
+// pendingEraChangeToastForNextTurn (cofnięcie naprawy N2 — ta sama klasa wycieku, którą F4
+// domknął 2026-08-14 dla deferredAutoRequests, w TEJ SAMEJ funkcji).
+assertMutationCaught('M8: resetEndTurnBlockers nie zeruje pendingEraChangeToastForNextTurn (regresja N2)',
+  src.replace(
+    '      pendingEraChangeToastForNextTurn = null;\n      endTurnTransition();\n      if (isPreBattleOpen()) hidePreBattle();',
+    '      endTurnTransition();\n      if (isPreBattleOpen()) hidePreBattle();',
+  ));
+
+console.log('\n' + (8 - mutFailed) + '/8 mutacji złapanych, ' + mutFailed + ' NIEZŁAPANYCH');
 
 // Sondy kruchości (NIESZKODLIWE zmiany — bramka MUSI zostać zielona)
 console.log('\n-- sondy kruchości (muszą zostać PASS) --\n');
@@ -184,8 +239,13 @@ assertProbeSafe('P3: dodatkowy whitespace wokół flushPendingEraChangeToast() w
     'flushDeferredAutoPreBattle();\n          // P-EPOKA-TOAST-EOT-POLYKANY',
     'flushDeferredAutoPreBattle();\n\n          // P-EPOKA-TOAST-EOT-POLYKANY',
   ));
+assertProbeSafe('P4: dodatkowy komentarz wewnątrz resetEndTurnBlockers, obok pendingEraChangeToastForNextTurn = null (N2)',
+  src.replace(
+    'pendingEraChangeToastForNextTurn = null;\n      endTurnTransition();',
+    '// nowy komentarz bez znaczenia\n      pendingEraChangeToastForNextTurn = null;\n      endTurnTransition();',
+  ));
 
-console.log('\n' + (3 - probeFailed) + '/3 sond kruchości bezpiecznych, ' + probeFailed + ' fałszywie czerwonych');
+console.log('\n' + (4 - probeFailed) + '/4 sond kruchości bezpiecznych, ' + probeFailed + ' fałszywie czerwonych');
 
 const allOk = failed === 0 && mutFailed === 0 && probeFailed === 0;
 console.log('\n=== WYNIK: ' + (allOk ? 'OK' : 'FAIL') + ' ===');

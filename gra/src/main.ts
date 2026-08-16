@@ -7035,6 +7035,14 @@ async function boot(): Promise<void> {
       endTurnStartedAt = 0;
       aiTurnAwaitingBattle = false;
       aiCmdResume = null;
+      // N2 (Evaluator, werdykt 6936d4d3, 2026-08-16): ta sama klasa wycieku co F4 wyżej —
+      // awans epoki w trakcie fazy EOT ustawia pending toast, a load innej gry w tym oknie
+      // zerował endTurnInProgress, ale NIE pending, więc oryginalna async sekwencja i tak
+      // wypuszczała toast "Nowa epoka" w świeżo wczytanej grze. / EN: same leak class as F4
+      // above — an era advance during the EOT phase sets a pending toast, and loading another
+      // game in that window used to clear endTurnInProgress but NOT the pending toast, so the
+      // original async sequence still fired the "New era" toast into the freshly loaded game.
+      pendingEraChangeToastForNextTurn = null;
       endTurnTransition();
       if (isPreBattleOpen()) hidePreBattle();
       // F4: deferredAutoRequests (ui/preBattle.ts) nie miała ŻADNEGO resetu -- żądanie z
