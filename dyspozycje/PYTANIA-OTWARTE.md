@@ -30765,7 +30765,41 @@ marsz-potem-atak i wybór jednostki we własnym stosie. **Cofa decyzje ECHO z ru
 tematu:** `P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B`, `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A` — obie
 były odpowiedziami na źle zrozumiany zakres, unieważnione tym ECHO.
 
-STATUS: **OTWARTE — dispatch cofnięcia (Operator Sonnet 5, worktree) w toku.**
+**Cofnięcie zaimplementowane (commit `2acf7c08`).** Wszystkie 5 dotkniętych plików źródłowych
+(`main.ts`, `game/ai.ts`, `game/city-hex-movement.ts`, `map/map-attack-city.ts`, `game/combat.ts`)
+przywrócone do stanu funkcjonalnie równoważnego baseline `9e96370a` — 2 z nich zweryfikowane jako
+**bajt-w-bajt identyczne**. Usunięte testy `atak-dystansowy-mapa-test.cjs`/`atak-dystansowy-
+egzekucja-test.cjs` (testowały funkcjonalność, która przestała istnieć), nowy strażnik regresyjny
+`atak-adiacencja-wymagana-test.cjs` (57/0). Bramki zielone: tsc 0, build exit 0, combat-test 6/6,
+map-attack-city-test 8/0, barb-city-capture-cluster-test 94/0, march-attack-queue-persist-test
+57/0. `ai-test` (285/8) i `unit-power-test` (4/2) niezmienione, pre-istniejące.
+
+**Evaluator (`a511947fa1b30eb34`, Opus 5, 2026-08-16): PASS-WITH-NOTES.** Zweryfikowane niezależnie:
+oba twierdzenia „bajt-w-bajt" potwierdzone (`git diff 9e96370a` pusty dla obu plików), zero
+pozostałości 8 usuniętych nazw w `gra/src/**`, `"Zasięg ataku (hex)"` czytany dziś wyłącznie w
+scenie bitwy taktycznej (jak przed całą sagą). **Marsz-potem-atak zweryfikowany żywym
+uruchomieniem** (własny harness esbuild, 33/0) dla 3 typów stosu (zwarcie/dystans/mieszany) —
+działa identycznie dla wszystkich, plan przetrwał przy dist=2/3, atak wystartował przy dist=1.
+Asymetryczna decyzja Operatora (embarked-check zachowany w `isWithinAttackRange`, usunięty w
+`isWithinCityAttackRange`) zweryfikowana jako merytorycznie uzasadniona, nie niekonsekwencja —
+`canUnitOccupyCityHex` blokuje każdy obcy heks miasta bezwarunkowo, bez wzorca specyficznego dla
+`embarked`, więc dołożenie bramki tam nic by nie dało.
+
+Noty nieblokujące: **N1** — zdeployowana ROBOCZA (FALA 288) nadal zawiera cofniętą mechanikę,
+cofnięcie będzie widoczne dla właściciela dopiero po nowym deployu. **N2** — ten wpis rejestru
+(naprawione tym samym commitem dokumentacji). **N3** — embarked-check to jedyne świadome
+odstępstwo od dosłownego „identyczne jak baseline", udokumentowane i uzasadnione. **N4 — WAŻNE,
+osobny temat, wydzielony niżej w pliku jako `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA`**: AI
+nie ma dziś ŻADNEJ ścieżki zdobycia miasta przez adiacencję — gałąź `ai.ts:2517` emituje `move` na
+heks obcego miasta, egzekutor zawsze go odrzuca (`canUnitOccupyCityHex`), jednostka traci turę.
+To pre-istniejące (identyczne w baseline `9e96370a`), NIE regresja tego cofnięcia — dokładnie ten
+problem próbowały (źle) naprawić rundy 3-4 pod pomyłkowo zrozumianym zakresem. Evaluator wyraźnie
+zalecił: zarejestrować z własnym ABC, świadomie NIE naprawiać „przy okazji" — to właśnie ten odruch
+wygenerował całą 4-rundową sagę. **N5** — jakość nowego strażnika potwierdzona, lista 8 zakazanych
+nazw w pełni trafna (`git log -S` potwierdza że każda faktycznie istniała i została usunięta).
+
+STATUS: **ZAMKNIĘTE** — kod gotowy do deployu. **N1: właściciel powinien wiedzieć, że aktualna
+ROBOCZA (FALA 288) jeszcze pokazuje starą mechanikę — cofnięcie wymaga nowego deployu.**
 
 ---
 
@@ -30790,5 +30824,31 @@ tam wstawione), czy błąd (jednostki faktycznie trafiają do kolejki budynków 
 kolejki rekrutacji wojska).
 
 STATUS: **OTWARTE — do reconu po zamknięciu bieżącego wątku (cofnięcie ataku dystansowego).**
+
+---
+
+## P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA (2026-08-16, znalezisko Evaluatora cofnięcia N4)
+
+**Znalezisko (Evaluator `a511947fa1b30eb34`, zweryfikowane porównaniem z baseline `9e96370a` —
+identyczne, więc NIE jest to regresja cofnięcia ataku dystansowego):** gałąź AI `ai.ts:2517`
+(komentarz w kodzie: `// 4b: adjacent enemy city -> move onto it (engine handles capture)`) emituje
+rozkaz `move` na heks obcego, niebronionego miasta w adiacencji — ale egzekutor (`main.ts`) ZAWSZE
+odrzuca ten rozkaz przez `canUnitOccupyCityHex` (blokuje bezwarunkowo każdy obcy heks miasta), po
+czym jednostka trafia do `unitActed.add()` i traci całą turę nic nie robiąc. Jedyne dziś istniejące
+wywołania `tryAutoCaptureEmptyCityAt` prowadzą od gracza (3×) i barbarzyńców (1×) — **zero od
+cywilizacji AI**. AI major nie ma więc dziś ŻADNEJ działającej ścieżki zdobycia miasta przez zwykłą
+adiacencję (nie mylić z atakiem dystansowym, który dotyczył czegoś innego i został świadomie
+cofnięty).
+
+**Dlaczego to osobny temat, nie „naprawa przy okazji":** to dokładnie ten sam problem, który rundy
+3-4 tematu `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE` próbowały naprawić — pod pomyłkowo zrozumianym
+zakresem (przez ścieżkę ataku dystansowego zamiast zwykłej adiacencji). Naprawienie go teraz, przy
+okazji zamykania tamtego tematu, powtórzyłoby dokładnie ten sam błąd procesowy (rozszerzanie
+zakresu bez jawnej decyzji właściciela), który wygenerował całą 4-rundową sagę.
+
+**Do ABC przy najbliższym przeglądzie tematów AI/bitewnych, nie pilne** (pre-istniejące, AI radzi
+sobie dziś bez tej ścieżki — barbarzyńcy i gracz mają działającą, cywilizacje major nie).
+
+STATUS: **OTWARTE — zarejestrowane, świadomie NIE naprawiane teraz.**
 
 ---
