@@ -7215,3 +7215,12 @@ commit deployu **zrebasowany** na `6936d4d3`, bez force-push. **Toast epoki NIE 
 **Scalenie do `main`:** zgodnie z „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 287 zostaje na gałęzi
 do testów; scalona zostaje **FALA 286** (`3ea531c6`) — osobny wpis niżej.
 CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `a2afa359`".
+
+## [18:35 PL, 2026-08-16] Sesja chmurowa → main — scalenie FALA 286 (jedna fala do tyłu)
+FALA 286 (`3ea531c6`) scalona do `main` **fast-forward** (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 287). `origin/main`: `25104155` → `3ea531c6`. Scalenie celowało w **commit deployu** FALI 286,
+nie w czubek gałęzi — zgodnie z regułą. FALA 287 (`17baa179`) zostaje na gałęzi sesji **wyłącznie do
+testów**, nie scalona; scali się dopiero przy FALI 288.
+⚠️ **Uwaga dla następnej fali:** na gałęzi stoi już `6936d4d3` (toast epoki), który **NIE jest w bundlu
+`a2afa359`** — patrz wpis wyżej. FALA 288 musi go objąć i przepuścić przez bramki.
+CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpis wyżej).
