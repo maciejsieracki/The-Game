@@ -30768,3 +30768,27 @@ były odpowiedziami na źle zrozumiany zakres, unieważnione tym ECHO.
 STATUS: **OTWARTE — dispatch cofnięcia (Operator Sonnet 5, worktree) w toku.**
 
 ---
+
+## P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat, lekko poprawione literówki):** „jest inny problem, mianowicie wydaje mi się,
+że AI i czy państwa miasta zamiast rekrutować, za pieniądze wojsko, to one budują je tak jak
+budynki. To jest prawda, bo po zdobyciu miast w liście do wybudowania budynków widnieją jednostki
+wojskowe."
+
+**Interpretacja (do potwierdzenia reconem, nie zgadywać):** Maciej podejrzewa, że AI (i/lub
+miasta-państwa, MP) nie korzysta z mechanizmu rekrutacji jednostek za Pieniądz (jak gracz), tylko
+umieszcza jednostki wojskowe w tej samej kolejce produkcji co budynki (Praca/tury), co potwierdza
+obserwacją: po zdobyciu takiego miasta przez gracza, w liście „do wybudowania" (budynki) widnieją
+jednostki wojskowe — sugeruje to, że były one wpisane do tej samej kolejki/listy co budynki, a nie
+osobnej ścieżki rekrutacji.
+
+**Nie zbadane jeszcze przez orkiestratora — do reconu:** czy to faktyczny mechanizm silnika (AI/MP
+mają osobną, tańszą/inną ścieżkę tworzenia jednostek niż gracz), czy tylko artefakt UI (kolejka
+produkcji zdobytego miasta pokazuje pozycje, które i tak istniały, niezależnie od tego jak zostały
+tam wstawione), czy błąd (jednostki faktycznie trafiają do kolejki budynków zamiast właściwej
+kolejki rekrutacji wojska).
+
+STATUS: **OTWARTE — do reconu po zamknięciu bieżącego wątku (cofnięcie ataku dystansowego).**
+
+---
