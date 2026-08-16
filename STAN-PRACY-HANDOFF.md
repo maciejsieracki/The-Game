@@ -1,6 +1,84 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-15 ~13:25** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-16 (sesja AutoBot, kontynuacja po restarcie kontenera)** · Projekt: Civ „The Game"
+
+> **Handoff sesji 2026-08-16 (7 tematów domkniętych + saga 4-rundowa ataku dystansowego AI +
+> odzysk po restarcie kontenera):** ROBOCZA jeszcze **NIE zdeployowana** w tej sesji — deploy
+> czeka na werdykt Evaluatora rundy 4 (patrz niżej), następnie `git push` do
+> `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (czubek na koniec sesji: `4d7e00dd`, dalsze commity
+> możliwe po Evaluatorze rundy 4).
+>
+> **Tematy domknięte (PASS/PASS-WITH-NOTES), gotowe do deployu:**
+> 1. **`P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD`** (ECHO `Q1=B`, commit `0b46cdbd`) — SUMA
+>    wzrostu w Spichlerzu Centralnym liczona efektywnie (uwzględnia głód), per-miasto cele
+>    zostają nominalne — analogicznie do już wcześniej ujednoliconej sekcji Miasta. Evaluator
+>    PASS-WITH-NOTES (`aa0e09ba853b7dada`), N1-N4 nieblokujące.
+> 2. **`P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA` runda 2** (N1-N7, commit `01b89eec`) — SZLAKI w
+>    wierszu Handel liczone z `paired` zamiast `trade.routes.length`, jednostki „Pieniądza/turę"/
+>    „Sz" przywrócone/dodane, etykieta „Poziom imperium"→„Suma netto (wszystkie miasta)",
+>    poprawki JSDoc N2/N5/N6/N7. Evaluator PASS-WITH-NOTES (`a0a9c5e072b42a28f`), U1/U2
+>    nieblokujące.
+> 3. **`P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK` runda 2** (N1/N2, commit `b22bc5ce`) —
+>    `prod.wstrzymana` respektowane (ETA `null` + tekst „wstrzymana" zamiast fikcyjnej liczby
+>    tur), `etaTurns()` dostał twarde asercje brzegowe (`Math.ceil→floor`, `Math.max(1,)→max(0,)`
+>    — wzór A4 by tego nie złapał, złapały dopiero A12/A13 z literałami). Evaluator
+>    PASS-WITH-NOTES (`a77af5228a68e9bb7`), U1 nieblokujące.
+>
+> **Saga 4-rundowa: `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE` (AI nie potrafiła zdobywać miast przy
+> ataku dystansowym) — WZORCOWY przykład dlaczego bramka 0/0 NIE wystarcza bez testu pełnej
+> sekwencji wielu tur:**
+> - Runda 2: warstwa decyzyjna AI poprawnie poszerzyła zasięg, ale egzekucja
+>   (`canUnitOccupyCityHex`) bezwarunkowo odrzucała wejście → jednostki zamierały.
+> - Runda 3 (`13f595bc`) FAIL: dodano wyjątek wejścia, ale bez przejęcia miasta →
+>   **B1** wieczna oscylacja evict (barbarzyńcy WŁ.), **B2** trwałe uwięzienie na heksie
+>   (barbarzyńcy WYŁ.), **B3** miasto bronione nadal zamrożone jak w rundzie 2. Evaluator
+>   zażądał ABC zamiast czwartej ślepej próby.
+> - **ECHO właściciela `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 = A`** — realne przejęcie miasta (jak
+>   barbarzyńcy), nie samo wejście bez konsekwencji.
+> - Runda 4 (`6826b16c`) — egzekutor woła `tryAutoCaptureEmptyCityAt` po wejściu (ta sama ścieżka
+>   co barbarzyńcy, naprawia B1/B2 bo przejęcie usuwa przyczynę wypychania);
+>   `isWithinCityAttackRange` dostał 4. param `units`, mur-LUB-obrońcy blokuje też adiacencję nie
+>   tylko zasięg (naprawia B3, zrównanie decyzji z egzekucją) — świadome, udokumentowane odejście
+>   od parytetu gracz-AI wyłącznie w komórce mur×adiacencja. Przy okazji naprawione N-D (embarked
+>   w ataku jednostka-jednostka). Bramka pełnej sekwencji (`decideAITurn`→egzekutor→`evict`, 2
+>   tury, prawdziwy kod nie atrapy) pokrywa A2/D1/B1/C1 + mutację MUT-N odtwarzającą regresję
+>   rundy 3. **Evaluator rundy 4 dispatchowany (`a4380802596aad26a`), wynik jeszcze NIEZNANY w
+>   chwili pisania tego wpisu — sprawdź `PYTANIA-OTWARTE.md` sekcja
+>   `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE` po aktualny STATUS.**
+>
+> **Odzysk po restarcie kontenera w środku sesji:** restart ubił wszystkie agenty w tle (runda 3
+> egzekucji ataku dystansowego, runda 2 Miasto/Obywatele, Evaluator Armii-produkcji). Odzyskane
+> bez utraty pracy: `git log`/`git fetch` potwierdziły że wszystko wcześniej zacommitowane i
+> wypchnięte przetrwało; dwa osierocone worktree miały kompletne, weryfikowalne diffy (potwierdzone
+> niezależnym uruchomieniem tsc/build/testów, zgodne z ostatnim raportem agenta sprzed restartu) —
+> scalone jak przy normalnym zwrocie; trzeci (Evaluator, bez diffu z natury) redispatchowany od
+> zera. Wniosek na przyszłość: po restarcie zawsze `git worktree list` + `git status --short` w
+> każdym przed decyzją co robić dalej — nigdy nie zakładaj że praca przepadła ani że jest kompletna
+> bez weryfikacji.
+>
+> **Higiena rejestru — powtarzający się błąd tej sesji, wart zapamiętania:** STATUS linie w
+> `PYTANIA-OTWARTE.md` kilkukrotnie zostawały nieaktualne po faktycznym domknięciu tematu
+> (nagłówek dalej mówił „OTWARTE" mimo że fix był już scalony i zweryfikowany) — złapane i
+> naprawione dwa razy w tej sesji, raz podczas kompilacji raportu (`af0d4c23`), raz podczas
+> późniejszego sprzątania gdy okazało się że werdykt Evaluatora został zakomunikowany właścicielowi
+> w czacie, ale NIE zapisany do pliku (naprawione w `7f9186f2` z jawną adnotacją w opisie commita).
+> **Zasada na przyszłość:** po każdym „PASS/FAIL, rejestruję" — natychmiast wykonaj Edit, nie tylko
+> powiedz że go wykonasz.
+>
+> **Trzy prośby właściciela zarejestrowane w tej sesji, jeszcze NIE dispatchowane** (recon zrobiony,
+> zapisany w `PYTANIA-OTWARTE.md`, commit `4d7e00dd`): `R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE`
+> (nowe miasto ma startować z autowyżywieniem WŁ.), `R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-
+> DOMYSLNIE` (nowe miasto ma startować z trybem budowy „zrównoważone" zamiast „ręczny"),
+> `R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN` (+1 do liczby dostępnych cywilizacji per rozmiar
+> mapy — niejednoznaczność max-vs-default do rozstrzygnięcia przy dispatchu). Wszystkie trzy
+> celują w `gra/src/game/cities.ts` (`foundCityAt()`) i `gra/data/e-start-params.json` — miejsca
+> zmian już zlokalizowane, gotowe do dispatchu Operatora bez dalszego reconu.
+>
+> **Deploy tej sesji: PLANOWANY, nie wykonany do chwili tego wpisu.** Właściciel autoryzował
+> deploy do ROBOCZA + `git push` warunkowo — dopiero po domknięciu rundy 4 ataku dystansowego I
+> po zapisaniu tej dokumentacji. Gdy Evaluator rundy 4 zwróci PASS/PASS-WITH-NOTES: scal ewentualne
+> poprawki, zamknij STATUS w rejestrze, wykonaj runbook §6 (build+stamp+sync+verify+log do
+> `WERSJE.md`+`KANAL-PRACA.md`), `git push`.
 
 > **Handoff sesji 2026-08-14/15 (FALA 283+284, batch „wypchnijmy je" + marsz-potem-atak +
 > tooltipy):** ROBOCZA **AKTUALNA `68c7f238`** (FALA 284, branch
