@@ -7167,3 +7167,9 @@ Dowód wejścia do bundla (porównanie z bundlem FALI 285): `unfortify-all` 4→
 **Scalenie do `main`:** zgodnie z „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 286 zostaje na
 gałęzi do testów; do scalenia kwalifikuje się teraz **FALA 285** (`25104155`) — osobny krok orkiestratora.
 CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `49594c1e`".
+
+## [12:15 PL, 2026-08-16] Sesja chmurowa → main — scalenie FALA 285 (jedna fala do tyłu)
+FALA 285 (`25104155`) scalona do `main` fast-forward (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 286). `origin/main`: `8f53c800` → `25104155`. Bramka `tsc --noEmit` na scalonym `main` — 0
+błędów. FALA 286 (`3ea531c6`) zostaje na gałęzi sesji do testów, nie scalona.
+CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpis wyżej).
