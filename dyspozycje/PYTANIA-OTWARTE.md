@@ -29937,3 +29937,39 @@ rejestr decyzji z 2026-08-14):**
 Handel, Armia, Miasto, Obywatele, Kultura) może teraz ruszyć na podstawie REALNEGO mockupu, nie
 samej specyfikacji tekstowej. Nie rozpoczynam bez wyraźnego polecenia — Maciej zastrzegł „nie rób
 nic sam" w tej samej turze.**
+
+---
+
+## P-WERYFIKACJA-MIASTA-ARMIE-PANEL-LEWY (2026-08-16, Maciej: „sprawdź, czy wszystko zostało poprawnie wprowadzone")
+
+Maciej załączył ponownie paczkę Designera `MIASTA-ARMIE-PANEL-LEWY-2026-08-14` (dwa identyczne
+uploady, `miasta_armie.zip`/`armia.zip`) — zapisana do repo:
+`docs/ux/claude-design/_dist/MIASTA-ARMIE-PANEL-LEWY-2026-08-14/`. To INNE zlecenie niż panel
+imperium — dotyczy `gra/src/ui/cityListHud.ts` i `gra/src/ui/armyListHud.ts` (lewy panel z listą
+miast/armii na mapie świata, nie panel boczny imperium po prawej).
+
+**Weryfikacja (Sonnet 5, orkiestrator, bezpośrednio w drzewie głównym, tylko odczyt kodu +
+uruchomienie testu):**
+
+W przeciwieństwie do panelu imperium (11 zakładek) — **to zlecenie JEST poprawnie wdrożone**:
+- `gra/src/ui/sideListHud.css.ts` (146 linii) — wspólny arkusz stylów z §5.1 handoffu, istnieje.
+- Paleta 3b dokładnie: `--panel:#171e2a;--border:#2b3543;--muted:#7d8798;--gold:#d9a441` —
+  potwierdzone `grep` w `sideListHud.css.ts`.
+- Plakietki armii — 4 warianty, 3 kolory dokładnie wg zlecenia: `.sl-badge.gold` (#d9a441 — w
+  garnizonie/ufortyfikowana), `.sl-badge.neutral` (#9aa4b2 — uśpiona), `.sl-badge.blue` (#8ec5ff —
+  auto-eksploracja), `.sl-badge.green` (#78c95a — zaznaczona).
+- Emoji 🏛️/👥 zamienione na SVG (`brandIconSvg`/ikony brandu) w kodzie miast — potwierdzone
+  komentarzem w nagłówku pliku cytującym dokładnie sformułowanie zlecenia. Emoji w stopce
+  podpowiedzi (`Ponowne 🏛`) **celowo zostało** — zgodnie z §5.4 zlecenia („zostaje jak jest").
+- `productionLine` rozbite na 3 pola (`prodName`/`prodProgress`/`prodMax` — nazwy pól w kodzie
+  różnią się nieznacznie, ale mechanizm jest) — bez fallbacku tekstowego, zgodnie z decyzją §5.2.
+- Plakietka „stolica" (`isCapital` → `badges.push({text:'stolica', variant:'gold'})`) — wdrożona;
+  plakietka „nowe" nieobecna — zgodnie z odrzuceniem w §5.3.
+- Pasmo podsumowania miast (`cl-sum`, `cl-sum-big`, `cl-sum-boxes`) — wdrożone, wzorem sekcji Moc.
+
+**Bramka:** `node tools/side-list-hud-panel-coverage-test.cjs` (dedykowany test tych dwóch paneli)
+→ **74 passed, 0 failed**, w tym asercja `armyStatusBadge({sentry:true}) zwraca neutral (nie gold
+— to jest DOKŁADNIE naprawiony bug nieodróżnialności)` — dokładnie problem, który zlecenie miało
+naprawić (punkt 5 handoffu), potwierdzony testem jako naprawiony.
+
+**STATUS: ZWERYFIKOWANE — wdrożone poprawnie i kompletnie, zgodnie ze zleceniem Designera.**
