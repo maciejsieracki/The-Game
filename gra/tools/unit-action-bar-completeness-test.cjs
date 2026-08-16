@@ -79,9 +79,25 @@ function sliceBetween(src, startMarker, endMarker, label) {
   return src.slice(s, e);
 }
 
-/** Wszystkie literały `id: '...'` wewnątrz wywołań `actions.push({...})` w podanym tekście. */
+/** Wszystkie literały `id: '...'` w podanym wycinku ciała funkcji.
+ * P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI, Evaluator (Opus 5) N1 (2026-08-16):
+ * poprzedni regex `/actions\.push\(\{[^}]*?id:\s*'([\w-]+)'/` wymagał `id:` jako POLA BEZ
+ * poprzedzającego `}` zaraz po `actions.push({` — literał szablonowy albo obiekt zagnieżdżony
+ * PRZED `id:` w tym samym wywołaniu (np. `actions.push({ label: `T ${x}`, id: 'nowa' })`) cicho
+ * wypadał ze zbioru, mimo że produkował realny, nierenderowany id — dokładnie klasa buga, którą
+ * ta bramka miała zamykać. Nowy regex nie wymaga sąsiedztwa z `actions.push(` — liczy WSZYSTKIE
+ * `id: '...'` w całym wycinku ciała funkcji. Zweryfikowane (Evaluator): na dzisiejszym kodzie
+ * zwraca identyczny zbiór co poprzedni regex (zero fałszywych alarmów), a na trzech stylach
+ * zapisu które poprzednio umykały — łapie wszystkie trzy. Kierunek błędu też się poprawia:
+ * nadmiarowe niepowiązane `id:` w wycinku dałoby FAŁSZYWY ALARM (głośny, widoczny), nie ciche
+ * przeoczenie. / EN: the previous regex required `id:` as a field with no preceding `}` right
+ * after `actions.push({` — a template literal or nested object BEFORE `id:` in the same call
+ * silently fell out of the set despite producing a real, unrendered id — exactly the bug class
+ * this gate exists to close. The new regex doesn't require adjacency to `actions.push(` — it
+ * counts ALL `id: '...'` in the whole function-body slice. Verified (Evaluator): identical set
+ * on today's code (zero false positives), and catches all three previously-missed styles. */
 function extractPushedIds(text) {
-  const re = /actions\.push\(\{[^}]*?id:\s*'([\w-]+)'/g;
+  const re = /\bid:\s*'([\w-]+)'/g;
   const ids = new Set();
   let m;
   while ((m = re.exec(text))) ids.add(m[1]);

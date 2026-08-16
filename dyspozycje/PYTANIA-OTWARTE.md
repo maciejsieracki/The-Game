@@ -29039,13 +29039,13 @@ commicie (dodany dedykowany blok w `unitActionBarHtml.ts`, analogiczny do `march
 zero nowej logiki biznesowej — dane już ustawiały `disabled: true`, renderer tylko to teraz
 odzwierciedla).
 
-**Uwaga integracyjna orkiestratora:** w chwili gdy ten Operator pracował, `unfortify-all` był
-jeszcze niezamknięty — dostał wpis w `KNOWN_GAPS`, żeby nie kolidować z równoległym tematem
-`P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE`. Ten drugi temat scalił się w międzyczasie jako
-PIERWSZY (commit `1261c170`) — przy scalaniu bramki kompletności orkiestrator zweryfikował, że
-test przechodzi także z realnym render path dla `unfortify-all` (allowlist `KNOWN_GAPS` jest
-wtedy no-opem, zgodnie z projektem testu), więc wpis pozostał tymczasowo — do usunięcia przy
-najbliższej okazji dotykania tego pliku, nieblokujące.
+**Uwaga integracyjna orkiestratora (sprostowana — Evaluator N2, 2026-08-16):** w chwili gdy ten
+Operator pracował, `unfortify-all` był jeszcze niezamknięty — dostał wpis w `KNOWN_GAPS`, żeby nie
+kolidować z równoległym tematem `P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE`. Ten drugi temat
+scalił się w międzyczasie jako PIERWSZY (commit `1261c170`) — przy scalaniu bramki kompletności
+orkiestrator faktycznie **usunął** wpis z `KNOWN_GAPS` (`unit-action-bar-completeness-test.cjs:68`
+→ `const KNOWN_GAPS = new Set([]);`, zgodnie z opisem commita `48bd881c`). Zdanie poniżej („wpis
+pozostał tymczasowo") było błędne w chwili pisania — Evaluator to złapał (N2), sprostowane tutaj.
 
 **Dowód mutacyjny na żywym pliku (nie tylko wewnątrz testu):** tymczasowo usunięty realny blok
 renderujący `siege-hold` z `unitActionBarHtml.ts` → bramka: **29 passed, 2 failed, exit 1**
@@ -29328,3 +29328,170 @@ w całości (`unitPanelHud.ts` + wpis w `SCOPE_SELECTOR` + test Scenariusz 2), s
 **STATUS: DO ROZPOZNANIA — niekrytyczne, nie pilne (nie blokuje żadnego z dwóch scalonych commitów,
 zero wpływu na dzisiejszą grywalność). Wymaga decyzji: usunąć martwy kod w całości, czy zostawić
 jako przygotowanie pod przyszłe wykorzystanie panelu.**
+**→ WERDYKT EVALUATORA:** ten temat był oceniany ŁĄCZNIE z
+`P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE` (oba commity dotykają tego samego pliku) — pełna
+sekcja werdyktu znajduje się pod tamtym tematem, niżej: **„Evaluator (Opus 5): WERDYKT
+PASS-WITH-NOTES dla 1261c170 + 48bd881c"**. Uwagi N1 (fałszywe negatywy ekstrakcji), N2
+(nieaktualny zapis o `KNOWN_GAPS` w sekcji „Uwaga integracyjna orkiestratora" wyżej), N3 (brak
+wykonywalnego testu dla `siege-hold`) i N4 (przycisk „Oblega" dubluje istniejący wiersz statusu)
+dotyczą właśnie tego tematu.
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla 1261c170 + 48bd881c
+
+Oba commity oceniane jako PARA (dotykają tego samego pliku `gra/src/ui/unitActionBarHtml.ts`).
+Weryfikacja niezależna na detached HEAD `48bd881c`, wszystkie liczby zmierzone samodzielnie —
+żadna nie przepisana z raportów Operatorów.
+
+**1. Zakres commitów — zgodny z opisem, zero nieoczekiwanych plików.**
+`1261c170` → 3 pliki (`PYTANIA-OTWARTE.md` +56, `unitActionBarHtml.ts` +19/−3,
+`unfortify-all-action-bar-test.cjs` nowy 186 linii). `48bd881c` → 3 pliki
+(`PYTANIA-OTWARTE.md` +52, `unitActionBarHtml.ts` +22, `unit-action-bar-completeness-test.cjs`
+nowy 235 linii). `main.ts` NIE dotknięty w żadnym z nich — zgodne z twierdzeniem „naprawa
+wyłącznie w rendererze".
+
+**2. Warunek widoczności `unfortify-all` opisany w rejestrze — PRAWDZIWY, nie zmyślony.**
+Odczytane samodzielnie z `main.ts` 17677–17861 (`buildArmyStackHudStateInner`): `actions.push({id:
+'unfortify-all', …})` stoi w linii 17794, zagnieżdżone w `if (!siegeCity)` (17777) → `if
+(isGarnizoned)` (17791, gdzie `isGarnizoned = active.inGarnizon === true`, 17781) → `if (garCount >
+1)` (17793, gdzie `garCount = garrisonUnitsOnHex(units, active.q, active.r, active.ownerId).length`,
+17792). Wszystkie trzy warunki (a) `!siegeCity`, (b) `inGarnizon === true`, (c) `garrisonUnitsOnHex
+> 1` — potwierdzone co do linii. Handler `} else if (actionId === 'unfortify-all') {` w 17883.
+Ikona w `ACTION_ICONS` w linii 17 pliku renderera. Twierdzenie „brak akcji `'fortify-all'` w
+kodzie" — również potwierdzone (`grep` zwraca pusto).
+
+**3. Bramka strukturalna — jakość ekstrakcji zbadana osobno (to jest jądro tej oceny).**
+- (a) **Na DZISIEJSZYM kodzie ekstrakcja jest kompletna — zero fałszywych negatywów.**
+  Zweryfikowane niezależnym skryptem: w wycinku `buildArmyStackHudStateInner` jest **12 wywołań
+  `actions.push(`**, z czego 11 to literały obiektowe i 1 to `actions.push(a)` (pętla po
+  `stackHudMergeSplitActions`, pokryta osobnym wycinkiem). Regex bramki wyciąga **9 id**
+  (`disband, fortify, march-stop, replace, scout-explore, sentry, siege-hold, skip, unfortify-all`);
+  niezależna kontrolna ekstrakcja WSZYSTKICH literałów `id: '…'` w tym samym wycinku daje
+  **identyczny zbiór 9 id** → dziś nic nie jest przeoczone. `stackHudMergeSplitActions`: 2 id
+  (`split`, `merge`), zgodnie z sanity-checkiem.
+- (b) **Dowody mutacyjne DZIAŁAJĄ — sprawdzone na ŻYWYM pliku, nie tylko wewnątrz testu.**
+  Cztery realne mutacje wykonane w worktree Evaluatora i cofnięte (`git status` po wszystkim:
+  czysty):
+  | mutacja | wynik bramki |
+  |---|---|
+  | usunięcie `'unfortify-all'` z `COMPACT_ACTION_ORDER` (cofnięcie `1261c170`) | **30 passed, 1 failed, exit 1** — `luki renderowania: unfortify-all` |
+  | usunięcie bloku renderującego `siege-hold` (cofnięcie `48bd881c`) | **29 passed, 2 failed, exit 1** — `luki renderowania: siege-hold` |
+  | NOWE id w stylu kanonicznym (`id` pierwszym polem) | **30 passed, 1 failed, exit 1** — ZŁAPANE |
+  | brak mutacji (stan czysty) | **31 passed, 0 failed, exit 0** |
+  Bramka realnie łapie cofnięcie obu dzisiejszych napraw ORAZ nowe id dopisane w stylu, w jakim
+  napisane są wszystkie 12 istniejących `actions.push` w tym pliku.
+- (c) **`KNOWN_GAPS` jest faktycznie pusty i uzasadniony.** `tools/unit-action-bar-completeness-test.cjs:68`
+  → `const KNOWN_GAPS = new Set([]);`. Uzasadnienie potwierdzone niezależnie: zbiór id produkowanych
+  (9) minus zbiór id mających render path jest dziś PUSTY, więc allowlista nie ma czego ukrywać.
+
+**4. Weryfikacja na poziomie BUILD-ARTEFAKTU (dokładnie ten krok, którego zabrakło przy
+`march-stop`) — OBA id realnie trafiają do renderera w zbudowanym bundlu.**
+Build: `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir` → `✓ built in
+18.96s`, `dist/index.html` 37 097,74 kB, exit 0. Wyliczone pozycje w zminifikowanym artefakcie:
+- `unfortify-all` — **5 wystąpień**, w tym kluczowe: `npo=["fortify","unfortify-all","sentry",
+  "scout-explore","split","merge","replace","skip"]` (@28802320) — to jest zminifikowany
+  `COMPACT_ACTION_ORDER`, czyli allowlista, po której realnie iteruje pętla renderująca; plus
+  producent `rA.push({id:"unfortify-all",label:"Odfortyfikuj całą armię",disabled:!1})` (@36919672)
+  i handler `else if(D==="unfortify-all")` (@36920763).
+- `siege-hold` — **3 wystąpienia**, w tym kluczowe: `const a=A.get("siege-hold");a&&(i+=\`<button
+  type="button" class="uc-act-btn uc-act-text" data-act="siege-hold" …` (@28802892/@28802976) — blok
+  renderujący jest fizycznie obecny w bundlu; plus producent `rA.push({id:"siege-hold",
+  label:"Oblega",disabled:!0})` (@36919082).
+- kontrola `march-stop` — 5 wystąpień o identycznym kształcie (render path + 2 producentów +
+  handler), czyli oba nowe id mają w artefakcie tę samą strukturę co id już potwierdzone żywym
+  testem w FALI 285.
+
+**5. Bramki uruchomione samodzielnie (z katalogu `gra/`), dokładne liczby:**
+| bramka | wynik | exit |
+|---|---|---|
+| `npx tsc --noEmit` | **0 błędów** | 0 |
+| `node tools/unit-action-bar-completeness-test.cjs` | **31 passed, 0 failed** | 0 |
+| `node tools/unfortify-all-action-bar-test.cjs` | **16 passed, 0 failed** | 0 |
+| `node tools/march-attack-queue-persist-test.cjs` | **55 passed, 0 failed** | 0 |
+| `node tools/hud-tooltip-body-mounted-panels-test.cjs` | **16 pass, 0 fail** | 0 |
+| `node tools/unit-replace-test.cjs` | **13/13 zielone** | 0 |
+| `node tools/unit-context-card-test.cjs` (kontrola dodatkowa Evaluatora) | **29 pass, 0 fail** | 0 |
+Zero regresji, zero nowych czerwonych bramek. (Uwaga techniczna: w świeżym worktree brakowało
+`gra/node_modules` — dowiązane symlinkiem do drzewa głównego, bez wpływu na wynik.)
+
+---
+
+#### N1 (ISTOTNA, do naprawy zanim ktokolwiek zacytuje tę bramkę jako „klasa zamknięta")
+**Twierdzenie z nagłówka testu i z rejestru — „zamyka CAŁĄ KLASĘ błędu" — jest NIEPRAWDZIWE.**
+Ekstrakcja opiera się na regexie `/actions\.push\(\{[^}]*?id:\s*'([\w-]+)'/`, w którym `[^}]*?`
+zabrania JAKIEGOKOLWIEK znaku `}` między `actions.push({` a `id:`. Skutek: id przechodzi
+niezauważone, gdy `id` nie jest pierwszym polem, a przed nim stoi cokolwiek z `}`. Sprawdzone
+realnymi mutacjami `main.ts` (każda: nowe id produkowane, ZERO render path — czyli dokładnie
+zgłoszony bug):
+| styl zapisu nowej akcji | wynik bramki |
+|---|---|
+| `actions.push({ label: \`T ${zmienna}\`, id: 'nowa', … })` — literał szablonowy przed `id` | **31 passed, 0 failed, exit 0 — PRZEOCZONE** |
+| `actions.push({ meta: { k: 'x' }, id: 'nowa', … })` — obiekt zagnieżdżony przed `id` | **31 passed, 0 failed, exit 0 — PRZEOCZONE** |
+| `const a = { id: 'nowa', … }; actions.push(a);` — push przez zmienną | **31 passed, 0 failed, exit 0 — PRZEOCZONE** |
+To nie jest hipotetyczne: literały szablonowe w obiektach są w `main.ts` powszechne (np.
+`headMeta: \`${formatJednostkiCount(…)} na heksie\``), a etykieta `march-stop` już dziś jest
+warunkowa i naturalnie mogłaby stać się szablonem. Sanity-check `producedFromMain.size >= 9`
+NIE chroni w tym kierunku — przeoczone id nie zmniejsza liczności, więc bramka zostaje zielona.
+**Naprawa (zweryfikowana przez Evaluatora, jedna linia):** zamienić regex na
+`/\bid:\s*'([\w-]+)'/g` liczony po CAŁYM wycinku ciała funkcji (bez wymogu sąsiedztwa z
+`actions.push`). Zmierzone: łapie wszystkie 4 style (w tym 3 dziś przeoczone), a na czystym
+kodzie zwraca **identyczny zbiór 9 id** co obecna wersja → zero fałszywych alarmów. Kierunek
+błędu też się poprawia: ewentualne nadmiarowe `id:` dałoby FAŁSZYWY ALARM (głośny), a nie ciche
+przeoczenie. **Do czasu tej poprawki bramkę należy opisywać jako „łapie styl kanoniczny", NIE
+jako „zamyka całą klasę".**
+
+#### N2 (dokumentacyjna, do sprostowania)
+Sekcja **„Uwaga integracyjna orkiestratora"** pod tematem
+`P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI` (wyżej) twierdzi, że wpis `unfortify-all`
+w `KNOWN_GAPS` *„pozostał tymczasowo — do usunięcia przy najbliższej okazji"*. **To nieprawda w
+stosunku do scalonego kodu:** `unit-action-bar-completeness-test.cjs:68` ma
+`const KNOWN_GAPS = new Set([]);` — wpis został usunięty, co zresztą poprawnie odnotowuje opis
+commita `48bd881c` („KNOWN_GAPS wyczyszczone z 'unfortify-all'"). Rejestr przeczy kodowi i
+własnemu commitowi; do poprawienia, żeby przyszła sesja nie szukała nieistniejącego długu.
+
+#### N3 (luka w pokryciu testowym `siege-hold`)
+`unfortify-all` dostał test WYKONUJĄCY prawdziwy renderer (`unfortify-all-action-bar-test.cjs`
+buduje `unitActionBarHtml.ts` przez esbuild i realnie woła `buildUnitActionBarHtml`, 16/16).
+`siege-hold` — nie dostał NIC wykonywalnego; jest pokryty wyłącznie statyczną analizą tekstu w tej
+samej bramce, której zasięg właśnie podważyłem w N1. Biorąc pod uwagę, że cała lekcja `march-stop`
+brzmiała „weryfikacja pośrednia skłamała", nowy render path zasługuje na to samo traktowanie.
+Łagodzące: Evaluator domknął to jednorazowo na poziomie build-artefaktu (punkt 4 — `data-act="siege-hold"`
+fizycznie w `dist/index.html`), więc nic nie jedzie na ślepo; brakuje jednak TRWAŁEGO strażnika
+regresji. Zalecenie: dopisać 3–4 asercje do istniejącego testu (render gdy w `actions[]`, brak gdy
+nieobecne, `disabled` obecny, klasa `uc-act-text`).
+
+#### N4 (produktowa — do decyzji Macieja, nie do autonomicznego zamknięcia)
+Nowy przycisk **„OBLEGA" dubluje informację, która już jest wyświetlana.** `unitCardStatus.ts:299`
+renderuje wiersz `Status: oblega <miasto>`, który dociera do karty jednostki ścieżką
+`main.ts:5055 (oblegaCityName) → 5101 → hexContextTooltip.ts:715 → buildUnitExtraStatusLinesHtml →
+buildUnitDetailExtrasHtml`. Po tej zmianie oblegający gracz widzi ten sam fakt dwa razy: jako
+wiersz statusu i jako zawsze wyszarzony, nieklikalny przycisk w pasku akcji. Operator uzasadnił to
+jako „zero nowej logiki biznesowej" — co jest prawdą o LOGICE, ale nie o UI: dodanie widocznego
+elementu interfejsu to decyzja produktowa (reguła NUMER → ABC), podjęta tu autonomicznie.
+Nie blokuje deployu (element jest nieszkodliwy, `flex-wrap` zapobiega rozjechaniu paska), ale
+warto zapytać właściciela, czy chce ten przycisk, czy raczej wykluczyć `siege-hold` z renderera
+jako czysty status (wtedy wrócić do `KNOWN_GAPS` z jawnym uzasadnieniem „to nie jest akcja").
+
+#### N5 (informacyjna — pokrycie bramki, dziś kompletne)
+Zweryfikowano niezależnie, że dwie funkcje objęte bramką są DZIŚ jedynym źródłem akcji:
+`buildUnitActionBarHtml` ma dokładnie jednego konsumenta (`hexContextTooltip.ts:972`), ten jest
+wołany wyłącznie z `buildUnitContextTooltipHtml` (`main.ts:5074`), a pole `actions` pochodzi tam
+wyłącznie z `actions: stackState?.actions` (`main.ts:5089`), gdzie `stackState =
+buildArmyStackHudStateInner()`. Pokrycie producentów jest więc dziś PEŁNE — ale nic nie pilnuje,
+by w przyszłości nie pojawił się trzeci producent poza tymi dwoma wycinkami.
+Osobno: `armyStackHud.ts` to DRUGI, żywy renderer akcji (`createArmyStackHud`, wołany z
+`hud.ts:1538`) z własną kopią mapy ikon — ale iteruje `for (const a of st.actions)` po WSZYSTKICH
+akcjach z fallbackiem tekstowym (`const body = icon ? … : esc(a.label)`), więc jest z definicji
+ODPORNY na tę klasę błędu. Warto odnotować, że wzorzec eliminujący problem u źródła (render
+wszystkiego + fallback zamiast allowlisty) leży już w repo, jeden plik obok.
+
+---
+
+**WERDYKT: PASS-WITH-NOTES.** Obie naprawy funkcjonalne są poprawne, minimalne i potwierdzone na
+najmocniejszym dostępnym poziomie (build-artefakt, nie samo źródło); wszystkie 7 uruchomionych
+bramek zielone, `tsc` 0 błędów, zero regresji, zakres commitów czysty. Bramka kompletności jest
+realnym postępem — natychmiast znalazła drugi, nieudokumentowany gap (`siege-hold`) i łapie
+cofnięcie obu dzisiejszych napraw. NIE jest jednak tym, za co się podaje: jej zasięg to styl
+kanoniczny zapisu akcji, a nie „cała klasa błędu" (N1, udowodnione trzema mutacjami). **Do
+deployu bez przeszkód; do domknięcia tematu wymagane N1 i N2** (obie tanie: jedna linia regexa +
+sprostowanie zdania w rejestrze). N3 i N4 do kolejki, N5 informacyjnie.
+
