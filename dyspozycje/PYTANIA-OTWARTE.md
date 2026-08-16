@@ -30229,8 +30229,21 @@ wszystkie 4 mutacje werdyktu), N4 (jednostki „Pieniądza/turę"/„Sz", etykie
 N6/N7 (sprostowania JSDoc). Bramki: tsc 0, build exit 0, `empire-panel-miasto-obywatele-content-test`
 99/0 (było 59/0).
 
-STATUS: **OTWARTE** — Evaluator rundy 2 w toku. Zmiana **nie jest gotowa do deployu** do czasu
-werdyktu.
+**Evaluator (`a0a9c5e072b42a28f`, 2026-08-16) dla `01b89eec`: PASS-WITH-NOTES.** N1 zweryfikowane
+najsurowiej — odtworzone wszystkie 4 mutacje z werdyktu FAIL (garnizon+1, sumowanie Zadowolenia
+`+=`→`=`, dochód tras ×2, bonus murów ×2), wszystkie teraz złapane przez realne wykonanie
+(esbuild+jsdom), nie tekst źródłowy. N3/N4 potwierdzone renderem. N2/N5/N7 sprawdzone co do
+prawdziwości — w większości trafne.
+
+Noty nieblokujące: **U1** (najpoważniejsza) — N6 nadal częściowo zawyża pokrycie: „kolejka
+produkcji (tury do końca)" i „budynki i ich produkcja" opisane jako w pełni zrealizowane, ale
+faktycznie brak. **U2** — `renderObywateleSection` ma zero pokrycia realnym wykonaniem (sekcja D
+testuje wyłącznie Miasto), własna mutacja w wierszu Zadowolenia Obywateli przeszła zielono. **U3**
+— sortowanie źródeł Zadowolenia nietestowane. **U4-U7** — drobne nieścisłości opisu/komentarzy,
+zaokrąglenie niespójne między nagłówkiem (int) a źródłami (1 miejsce po przecinku).
+
+STATUS: **ZAMKNIĘTE** — gotowe do deployu. U1/U2 rekomendowane jako osobne, wąskie zlecenie
+(nie teraz).
 
 ---
 
@@ -30539,5 +30552,17 @@ ETA null + tekst „wstrzymana"), N2 (2 nowe asercje brzegowe `etaTurns()`, zwer
 N3 (sprostowana atrybucja), N4 (odmiana „tura/tury/tur"), N5 (usunięty zbędny strażnik). Bramki:
 tsc 0, build exit 0, `empire-armia-produkcja-test` 51/51 (było 30/0).
 
-STATUS: **OTWARTE** — Evaluator rundy 2 w toku. Zmiana **nie jest gotowa do deployu** do czasu
-werdyktu.
+**Evaluator (`a77af5228a68e9bb7`, 2026-08-16) dla `b22bc5ce`: PASS-WITH-NOTES.** Wszystkie 5 not
+zweryfikowane niezależnym wykonaniem: N1 (spójność z panelem miasta potwierdzona w kodzie), N2
+(6 mutacji, w tym własne — A12/A13 jedyne łapiące `Math.ceil→Math.floor`/`Math.max(1,)→Math.max(0,)`,
+sam wzór A4 by tego nie złapał), N3 (atrybucja zmierzona na 5 commitach — sprawcą wyłącznie
+`6366e81e`), N4 (21 liczb, 0 błędów odmiany, w tym `112`), N5 (potwierdzone że `etaTurns()` sam
+strażuje `praca<=0`).
+
+Nota nieblokująca: **U1** — linia `_lastPlayerCityEcon.find(t => t.cityId === c.id)` (źródło
+Pracy per miasto) nie ma żadnej kotwicy w sekcji B testu; własna mutacja Evaluatora (Praca
+pierwszego miasta użyta dla wszystkich) przeszła 51/51 zielono. Kod poprawny, sieć regresyjna ma
+dziurę — do przyszłego zlecenia.
+
+STATUS: **ZAMKNIĘTE** — gotowe do deployu. U1 do przyszłego, wąskiego zlecenia utwardzenia bramki
+(nie teraz).
