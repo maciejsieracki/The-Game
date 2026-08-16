@@ -7091,3 +7091,33 @@ force-push. Wykonane w tymczasowym `git worktree` z `origin/main`, usuniętym po
 `main` stoi teraz na `118728a0` (było `af366f13`/FALA 282). **FALA 284 (`8f53c800`, md5 `68c7f238`)
 zostaje na gałęzi sesji do testów** — kwalifikuje się do scalenia dopiero gdy powstanie FALA 285.
 CZEKAM-NA: nic w tej sprawie — otwarte zostaje CZEKAM-NA z wpisu o FALI 284 (pull na dysk właściciela).
+
+## [12:02 PL, 2026-08-16] SESJA CHMUROWA → SESJA LOKALNA — FALA 285, ⛔ PILNA poprawka realnego buga z FALI 284 (md5 `97b3b12a`)
+
+**FALA 285 (`97b3b12a`, 10:02 UTC), ZASTĘPUJE FALĘ 284 (`68c7f238`).** VERIFY OK, `manifest match: OK`.
+Build z HEAD `597972be` — 8 commitów od deployu FALI 284 (`8f53c800`), 2 commity realnego kodu;
+7 plików pod `gra/`, w `gra/src` tylko 3 (`main.ts`, `ui/hudTitleTooltip.ts`, `ui/unitActionBarHtml.ts`).
+**`gra/data` NIE ruszone · `gra/src/map/**` NIE ruszone.**
+
+⛔ **NAJWAŻNIEJSZE: ta fala naprawia REALNY BUG, który gracz ma już w ROBOCZA FALA 284.** Przycisk
+„Anuluj atak"/„Zatrzymaj" **nigdy fizycznie nie renderował się w DOM** — renderer
+`unitActionBarHtml.ts` nie znał id `march-stop`, więc obietnica z Przyczyny B (FALA 284) była martwa
+przez cały czas życia tamtej fali. Zmierzone porównaniem dwóch bundli, nie odczytem kodu: w bundlu
+FALI 284 klasa `uc-act-text` **0 trafień**, w FALI 285 **2** (`march-stop` 2 → 5). Drugi temat
+(`.civ-unit-panel` w `SCOPE_SELECTOR`) to przygotowanie na przyszłość — panel [H] jest dziś martwym
+kodem, bez widocznego efektu w grze. Oba tematy: Evaluator **PASS-WITH-NOTES**.
+
+**Bramki (8, exit 0):** `tsc` 0 błędów (TS 5.9.3) · `logic-test` 213/213 · `tech-tree` 19/0 ·
+`research` 33/0 · `unit-replace` 13/13 · `ai-founding-territory` 28/0 · `combat` 6/6 ·
+`hud-tooltip-body-mounted-panels` 16/0 · `march-attack-queue-persist` 55/0. Build 824 moduły.
+13 znanych czerwonych bramek pre-istniejących — **wszystkie dokładnie na punkcie odniesienia, zero
+wzrostu**. `map-gen-regression`: **oba AC z `CLAUDE.md` zielone, zmierzone ŚWIEŻO w tej fali** — 0 rzek
+bez ujścia (2124/2124 tras, 1235/1235 głównych, 0 fail, pełne 40 map) i determinizm A=B (`fdb5e82c`);
+pełny przebieg utknął po ~13 min na benchmarku mapy „duża" i został świadomie zastąpiony dwoma
+celowanymi harnessami będącymi wiernymi wycinkami tego samego pliku testu (różnica: pominięte trzy
+benchmarki czasowe — pomiar wydajności sandboksa, `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`).
+
+**Scalenie do `main`:** zgodnie z rytmem „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 285
+zostaje na gałęzi do testów; scalona zostaje **FALA 284** (`8f53c800`) — osobny wpis niżej.
+
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `97b3b12a`".
