@@ -30397,8 +30397,23 @@ tak samo jak Spichlerz. Wymaga zmiany `cityMiastaMiniDetail()`/`computeMiastaSum
 (`empireDetailPanel.ts`) i ruszenia przypiętej bramki `empire-miasta-table-test.cjs` (dziś 89/0,
 pinuje konwencję nominalną).
 
-STATUS: **OTWARTE** — dispatch Operatora (Sonnet 5, worktree) w toku. Nie blokuje deployu
-istniejącego kodu (to nowa, świadomie zamówiona zmiana, nie regresja).
+**Evaluator (`aa0e09ba853b7dada`, 2026-08-16) dla `0b46cdbd`: PASS-WITH-NOTES.** Wszystkie 4
+warunki ECHO B potwierdzone własnym harnessem (esbuild+jsdom, render obu zakładek dla tych samych
+danych): reguła głodu identyczna (to samo pole `nakarmione === false` w tym samym typie wiersza),
+komórki per-miasto nietknięte (nadal nominalne mimo głodu), przykład z rejestru odtworzony 1:1
+(komórki 6%/6%/6%, ŚREDNIA=SUMA=2%), konwencja zaokrąglania poprawna (suma surowa → jedno
+zaokrąglenie, nie średnia z zaokrąglonych komórek — rozstrzygnięte danymi które to rozróżniają).
+
+Noty nieblokujące: N1/N2 — bramka nie przypina osobno definicji głodu (`undefined` vs `!== true`)
+ani konwencji zaokrąglania (dane testowe całkowite, nie łapią zaokrąglania-przed-sumą) — kod
+poprawny, sieć regresyjna ma dziury. N3 — poprawiony komentarz przy Spichlerzu odrobinę za szeroki
+(„obie tabele liczą identycznie" bez zastrzeżenia że dotyczy wyłącznie wiersza sumarycznego,
+nie komórek per-miasto). N4 — pre-istniejący, nieregresyjny rozjazd: obie tabele liczą po różnych
+zbiorach wierszy (Miasta po `cp` aktualnym, Spichlerz po `food.perCityRows` z ostatniego ticku) —
+przy zdobyciu/utracie miasta między tickiem a renderem mianowniki mogą się różnić.
+
+STATUS: **ZAMKNIĘTE** — gotowe do deployu. N1-N4 do przyszłego, wąskiego zlecenia utwardzenia
+bramki (nie teraz).
 
 ---
 
