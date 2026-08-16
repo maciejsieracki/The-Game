@@ -29995,8 +29995,8 @@ Zgłoszone w trakcie równoległej pracy nad reskinowaniem 11 zakładek panelu i
 (`R-DESIGN-11-ZAKLADEK` faza 3) — zgodnie z zasadą 2 (zakaz otwierania nowych wątków) zapisane tu
 bez przerywania bieżącego tematu.
 
-**STATUS: OTWARTE — czeka na dispatch subagenta (recon UI powiadomień końca tury/podboju +
-doprecyzowanie zakresu z Maciejem).**
+STATUS: **OTWARTE** — czeka na dispatch subagenta (recon UI powiadomień końca tury/podboju +
+doprecyzowanie zakresu z Maciejem).
 
 ---
 
@@ -30072,7 +30072,37 @@ zrobione poprawnie; brakuje tylko dalszych kroków tej samej kolejności.
 bez regresji; wymyślanie liczb zamiast prawdziwych danych łamałoby CLAUDE.md §3), ale właściciel
 musi znać prawdziwy zakres — stąd ten wpis.
 
-**STATUS: OTWARTE — czeka na decyzję właściciela, czy dociągnięcie pozostałych pozycji list (co
+STATUS: **OTWARTE** — czeka na decyzję właściciela, czy dociągnięcie pozostałych pozycji list (co
 wymaga rozszerzenia `EmpireDetailSnap`/`main.ts`) to kolejny temat do zlecenia, czy zakres
 zostaje jak jest. Nie dispatchuję subagenta bez tej decyzji — to pytanie produktowe, nie
-techniczne.**
+techniczne.
+
+---
+
+## P-AUDYT-STATUS-OTWARTE-REGEX-SLEPOTA (2026-08-16, znalezisko Evaluatora)
+
+Evaluator oceniający `eef657d3` znalazł, że komenda audytu narzucona w CLAUDE.md §0c
+(`grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md`) łapie tylko formę kanoniczną
+`STATUS: **OTWARTE**` (pogrubienie zaczyna się PO dwukropku, tuż przed słowem OTWARTE). W pliku
+istnieje też — i to w WIĘKSZOŚCI — forma niekanoniczna `**STATUS: OTWARTE ...**` (pogrubienie
+całej linii od słowa STATUS) oraz forma nagłówkowa (`## ... · STATUS: OTWARTE`).
+
+**Skala (zmierzona przez Evaluatora, 2026-08-16):** komenda z §0c zwracała 19 trafień; realnych
+otwartych stempli w pliku jest ok. 48 (24 w formie niekanonicznej `**STATUS: OTWARTE`, ~5 w formie
+nagłówkowej, 19 kanonicznych). Audyt narzucony jako "twarda reguła" w §0c po cichu pomijał **~29
+z ~48** realnie otwartych pozycji od momentu wprowadzenia tej komendy.
+
+**Dwa własne wpisy tej sesji naprawione od razu** (`P-EPOKA-BRAK-INFO-PODBOJ-PANSTW-MIAST`,
+`P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA`) — przepisane na formę kanoniczną w tym samym commicie,
+który dodaje ten wpis.
+
+**Pozostałe ~29 niekanonicznych wpisów w reszcie pliku — NIE naprawione tutaj** (poza zakresem tej
+poprawki, wymaga osobnego przejścia po całym pliku, żeby nie ryzykować przypadkowej zmiany treści
+merytorycznej przy okazji zmiany formatowania). Dwie możliwe naprawy do wyboru przy podjęciu tego
+tematu: (a) systematyczny przegląd i normalizacja wszystkich ~29 wpisów do formy kanonicznej, albo
+(b) rozszerzenie samej komendy grep w §0c tak, żeby łapała obie formy (`grep -nE 'STATUS: \*\*OTWARTE|\*\*STATUS: OTWARTE'`)
+— (b) jest szybsze i nie ryzykuje przypadkowej zmiany treści 29 istniejących wpisów, ale (a) jest
+bardziej zgodne z duchem reguły „jeden kanoniczny format".
+
+**STATUS: **OTWARTE** — czeka na decyzję właściciela (a) vs (b) powyżej. Nie dispatchuję
+subagenta bez tej decyzji, bo (a) dotyka merytorycznej treści ~29 istniejących wpisów rejestru.**
