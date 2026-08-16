@@ -157,7 +157,6 @@ export const UNIT_INFOGRAPHIC_CSS = `
 .civ-cs .unit-infocard-actions{display:flex;align-items:center;justify-content:space-between;gap:0.35em;
   margin-top:0.12em;flex-wrap:wrap;}
 .civ-cs .unit-infocard-cost{font-size:0.68em;color:var(--muted);}
-.civ-unit-panel .hdr .unit-ic-medallion{width:2.2em;height:2.2em;font-size:1em;}
 .civ-army-stack .ash-card-ic .unit-infographic-medallion{width:1.85em;height:1.85em;}
 `;
 

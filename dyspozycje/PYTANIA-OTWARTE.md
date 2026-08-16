@@ -28978,3 +28978,45 @@ w ogóle powinna być widoczna (żeby nie pokazywać jej zawsze), zanim się dod
 (funkcja rzadko używana — odfortyfikowanie całej armii naraz), ale realna luka funkcjonalna.
 
 **STATUS: DO DISPATCHU — niekrytyczne, nie pilne.**
+
+---
+
+## P-UNITINFOGRAPHIC-OSIEROCONY-SELEKTOR-CIV-UNIT-PANEL (2026-08-16, dispatch Operatora Sonnet 5, worktree `agent-a55b21c543551498b`) — NAPRAWIONE
+
+**Zgłoszenie:** `gra/src/ui/unitInfographic.ts:160` wstrzykiwał regułę CSS
+`.civ-unit-panel .hdr .unit-ic-medallion{width:2.2em;height:2.2em;font-size:1em;}` celującą w
+kontener `.civ-unit-panel` (`unitPanelHud.ts`/`createUnitPanelHud()`) — podejrzenie martwego kodu,
+potwierdzone wcześniej na poziomie build-artefaktu (`STYLE_ID` panelu = 0 wystąpień w
+`dist/index.html`).
+
+**Weryfikacja Operatora (niezależna, nie tylko przyjęcie założenia zadania):**
+1. `grep -rn "createUnitPanelHud|civ-unit-panel|UnitPanelHudApi|UnitPanelHudConfig" gra/src` —
+   jedyne trafienia poza definicją w `unitPanelHud.ts` to `import type { UnitPanelAction }` w
+   `hexContextTooltip.ts`, `armyStackHud.ts`, `unitActionBarHtml.ts` oraz `import { type
+   UnitPanelState }` w `hud.ts` — **wyłącznie importy typów**, zero realnego wywołania
+   `createUnitPanelHud()` w runtime. Kontener `.civ-unit-panel` faktycznie martwy.
+2. **Dodatkowe znalezisko:** sama klasa `unit-ic-medallion` (użyta w usuwanej regule) w ogóle nie
+   występowała nigdzie indziej w `gra/src` — nawet gdyby `.civ-unit-panel` był żywy, ta reguła
+   nigdy nie trafiłaby w żaden realny element DOM (kontener HUD-a jednostki używa klasy `.ic`, nie
+   `.unit-ic-medallion` — patrz `unitPanelHud.ts:84`). Reguła osierocona podwójnie, nie tylko przez
+   martwy kontener.
+3. Build (`node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir` z `gra/`) —
+   po naprawie `grep -c "civ-unit-panel-hud-css-v2-1e|unit-ic-medallion|civ-unit-panel" dist/index.html`
+   = 0/0/0. Potwierdza dead code niezależnie od statycznej analizy grep po źródłach.
+
+**Naprawa:** usunięto WYŁĄCZNIE tę jedną linię CSS z `UNIT_INFOGRAPHIC_CSS` w
+`gra/src/ui/unitInfographic.ts` (nic ponadto — zakres C-025). Diff:
+```diff
+-.civ-unit-panel .hdr .unit-ic-medallion{width:2.2em;height:2.2em;font-size:1em;}
+```
+
+**Bramki:** `npx tsc --noEmit` — 0 błędów (uwaga: node_modules brakowało w tym worktree, dosymlinkowano
+z drzewa głównego `gra/node_modules` zgodnie z konwencją 4a, przed naprawą zweryfikowano identyczny
+baseline przez `git stash` — bez związku z tą zmianą). `grep -rl "unitInfographic" gra/tools/` — brak
+wyników, nie ma dedykowanego testu dla tego pliku, więc nic do uruchomienia. Build produkcyjny — zielony,
+0 wystąpień usuniętej reguły/selektorów w `dist/index.html`.
+
+**Zakres (C-025):** 1 plik, 1 usunięta linia, zero refaktorów, zero zmian poza wskazaną regułą.
+
+**STATUS: NAPRAWIONE, SCALONE w worktree (NIE commitowane, NIE pushowane — zgodnie z poleceniem
+zlecenia). Czeka na `NUMER+A|B|C`/commit właściciela zgodnie z procedurą §0.**
