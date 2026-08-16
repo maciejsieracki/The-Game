@@ -2144,7 +2144,13 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
   const unfedRows = food.perCityRows.filter(r => r.nakarmione === false);
   const hasDeficit = unfedRows.length > 0 || food.glodWojska === true;
   const alarm = hasDeficit || food.zapasy < 0;
-  const barCls = alarm ? 'low' : (pct >= 95 ? 'warn' : 'fill');
+  // N3 (Evaluator, 7a413462): `barCls` niesie CAŁĄ klasę paska ("fill"/"fill warn"/"fill low"),
+  // tak jak `fillCls` w cityPoborMiniRekruci (pula rekrutów) — bez osobnego prefiksu "fill "
+  // przy użyciu, żeby nie dublować słowa "fill" w stanie zdrowym. / EN: `barCls` carries the
+  // WHOLE bar class ("fill"/"fill warn"/"fill low"), same convention as `fillCls` in
+  // cityPoborMiniRekruci — no separate "fill " prefix at the call site, so the healthy state
+  // doesn't duplicate the word "fill".
+  const barCls = alarm ? 'fill low' : (pct >= 95 ? 'fill warn' : 'fill');
   const heroCls = alarm ? 'neg' : 'pos';
 
   let h = `<div class="civ-emp-sect" data-section="spichlerz-centralny">`
@@ -2156,7 +2162,7 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     + `<span class="ic" aria-hidden="true">${brandIconSvg('res-food', 16)}</span></div>`
     + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit);
   if (food.maxCap > 0) {
-    h += `<div class="civ-emp-bar civ-emp-sp-bar"><div class="fill ${barCls}" style="width:${pct}%"></div></div>`;
+    h += `<div class="civ-emp-bar civ-emp-sp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
   }
   // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): scalenie w JEDNO miejsce prawdy,
   // TUŻ PRZY liczbie magazynu — wcześniej „W magazynie: 0" nie mówiło nic o tym, czy to
@@ -2203,6 +2209,7 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     let sumProdukcja = 0;
     let sumKoszt = 0;
     let sumBilans = 0;
+    let sumWzrost = 0;
     h += `<div class="civ-emp-res-lbl" style="margin-top:14px">Miasta</div>`;
     h += `<div class="civ-emp-mini civ-emp-sp-city-tbl">`
       + `${miniHeader(['MIASTO', 'PRODUKCJA', 'KOSZT RACJI', 'BILANS', 'WZROST%'], grid)}`;
@@ -2219,6 +2226,7 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
       sumProdukcja += row.produkcja;
       sumKoszt += row.kosztRacji;
       sumBilans += row.bilans;
+      sumWzrost += row.wzrostProcent;
       h += miniRow([
         `<span class="civ-emp-sp-city-nm">${fedMark}<span>${esc(row.name)}</span></span>`,
         String(Math.round(row.produkcja)),
@@ -2228,16 +2236,23 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
       ], grid);
     }
     // Wiersz SUMA — te same sumy co kolumny wyżej (agregacja liczb już pokazanych, wzorzec
-    // `.civ-emp-mini-summary` ze Skarbca). WZROST% celowo „—”: makieta pokazuje tam średnią, ale
-    // reguła uśredniania (zwykła vs ważona ludnością) to decyzja produktowa, nie reskin.
-    // EN: SUM row — aggregates of the already-shown columns. WZROST% deliberately "—": the mockup
-    // shows an average there, but the averaging rule is a product decision, not a reskin.
+    // `.civ-emp-mini-summary` ze Skarbca). N5 (Evaluator, 7a413462): WZROST% liczony jako ŚREDNIA
+    // ARYTMETYCZNA po widocznych miastach (makieta klatka 4A/4B), zaokrąglona RAZ na końcu —
+    // dokładnie ta sama konwencja co `wzrostProcentAvg` w computeMiastaSummaryRow
+    // (empireMiastaTable.ts, tabela Miasta): `Math.round(sumaSurowa / liczbaMiast)`, nie średnia
+    // z już zaokrąglonych komórek. Ta tabela nie ma filtra kolumn/miast (miastaHiddenCols) —
+    // `food.perCityRows` to zawsze wszystkie widoczne miasta. / EN: SUM row — aggregates of the
+    // already-shown columns. WZROST% is the arithmetic mean over the visible cities, rounded ONCE
+    // at the end — same convention as `wzrostProcentAvg` in computeMiastaSummaryRow (the Miasta
+    // tab): round the raw sum, not the average of already-rounded cells. This table has no
+    // column/city filter (miastaHiddenCols) — `food.perCityRows` is already the full visible set.
     const sumBilansR = Math.round(sumBilans);
     const sumBilansCls = sumBilansR > 0 ? 'pos' : sumBilansR < 0 ? 'neg' : 'z';
+    const wzrostAvgTxt = `${Math.round(sumWzrost / food.perCityRows.length)}%`;
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>SUMA</div><div>${Math.round(sumProdukcja)}</div><div>${Math.round(sumKoszt)}</div>`
       + `<div><span class="d ${sumBilansCls}">${sumBilansR === 0 ? '0' : `${sumBilansR > 0 ? '+' : ''}${foodMinus(sumBilansR)}`}</span></div>`
-      + `<div>—</div></div>`;
+      + `<div>${wzrostAvgTxt}</div></div>`;
     h += `</div>`;
   }
 
