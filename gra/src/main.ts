@@ -19118,6 +19118,48 @@ async function boot(): Promise<void> {
       }
     }
 
+    // Hak testowy (analogiczny wzorzec do __civEmbarkDebug niżej) — wołany WYŁĄCZNIE z
+    // Playwright w `tools/era-change-toast-live-test.cjs` (P-EPOKA-BRAK-INFO-REGRESJA-BRAZ).
+    // Steruje stanem gracza, żeby zainscenizować REALNE, pojedyncze przejście epoki
+    // Kamień->Brąz przez EOT auto-badania (main.ts ~25320, ta sama ścieżka co u gracza),
+    // bez konieczności grania dziesiątek tur w headless Chromium.
+    // / EN: test hook (same pattern as __civEmbarkDebug below) — called ONLY from Playwright
+    // in `tools/era-change-toast-live-test.cjs`. Fast-forwards player state to stage a REAL,
+    // single Stone->Bronze era transition through the EOT auto-research path (same path a
+    // real player takes), without playing dozens of turns in headless Chromium.
+    (window as any).__eraTestDebug = {
+      prepareOneTechFromBronze: (): { remaining: string; era1Count: number } => {
+        const era1 = data.tech.filter(t => t.Epoka === 'Kamień');
+        const remaining = era1.find(t => t.Technologia === 'Brązownictwo');
+        if (!remaining) throw new Error('Brązownictwo not found in tech.json');
+        player.zbadane = new Set(era1.filter(t => t.Technologia !== 'Brązownictwo').map(t => t.Technologia as string));
+        player.badana = null;
+        player.playerResearchTargetId = null;
+        // Dokladnie tyle nauki, zeby researchStep dokonczyl WYLACZNIE Brazownictwo w tej turze
+        // (bez kaskady w glab epoki 2) -- reprodukuje pojedyncze, naturalne przejscie epoki.
+        const scaledCost = scaledResearchCost(
+          remaining['Koszt nauki'] as number,
+          player.tempoGry ?? 'standardowa',
+          0,
+          _menuDifficulty,
+          remaining.Epoka,
+        );
+        player.nauka = scaledCost + 5;
+        player.era = 1;
+        return { remaining: remaining.Technologia as string, era1Count: era1.length };
+      },
+      getPlayerState: () => ({ era: player.era, zbadaneSize: player.zbadane.size, nauka: player.nauka, badana: player.badana }),
+      endTurn: () => triggerPlayerEndTurn(),
+      getToast: () => {
+        const el = document.getElementById('civ-hint-toast') as HTMLElement | null;
+        if (!el) return null;
+        return { display: el.style.display, html: el.innerHTML, zIndex: el.style.zIndex };
+      },
+      getWarEventLogHead: () => warEventLog.slice(0, 3),
+      isEndTurnInProgress: () => endTurnInProgress,
+      getWorldState: () => ({ citiesLen: cities.length, unitsLen: units.length, turn }),
+    };
+
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---
     (window as any).__civ_getResearchedTechs = () => Array.from(player.zbadane);
 
