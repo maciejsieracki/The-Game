@@ -129,6 +129,18 @@ ok(
   /const unfed = row\.nakarmione === false;[\s\S]{0,400}?fedMark = unfed\s*\n?\s*\?[\s\S]{0,400}?chip-warning[\s\S]{0,200}?:\s*'';/.test(spichlerzFn),
   'znacznik przy nazwie miasta w tabeli zachowany, bramkowany bezpośrednio poprzedzającym ternarnym warunkiem row.nakarmione === false (per-miasto szczegół, nie dowolny chip-warning gdziekolwiek dalej w funkcji)',
 );
+// N-A (Evaluator, a98f63f8): asercja wyżej pilnuje wyłącznie DEKLARACJI `fedMark` — nie tego, czy
+// zmienna jest faktycznie WSTAWIONA do wiersza tabeli. Zweryfikowane mutacyjnie przez Evaluatora:
+// usunięcie `${fedMark}` z interpolacji wiersza (przy nietkniętej deklaracji) dawało 50/0, czyli
+// znacznik znikał z realnego HTML bez żadnej czerwonej bramki. Domyka lukę.
+// EN: the assertion above only guards the DECLARATION of `fedMark`, not whether it's actually
+// interpolated into the row. Evaluator-verified: stripping `${fedMark}` from the row interpolation
+// (declaration left intact) still passed 50/0 — the marker vanished from real HTML with no red
+// gate. This closes that gap.
+ok(
+  /civ-emp-sp-city-nm">\$\{fedMark\}/.test(spichlerzFn),
+  'fedMark faktycznie WSTAWIONY do wiersza (nie tylko zadeklarowany) — civ-emp-sp-city-nm">${fedMark}',
+);
 
 // ---------------------------------------------------------------------------
 // 2) hud.ts — spichlerzChipTitle: cross-surface (C-039), ta sama liczba magazynu na HUD mapy.

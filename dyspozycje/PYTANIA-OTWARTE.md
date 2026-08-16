@@ -30106,3 +30106,32 @@ bardziej zgodne z duchem reguły „jeden kanoniczny format".
 
 **STATUS: **OTWARTE** — czeka na decyzję właściciela (a) vs (b) powyżej. Nie dispatchuję
 subagenta bez tej decyzji, bo (a) dotyka merytorycznej treści ~29 istniejących wpisów rejestru.**
+
+---
+
+## P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY (2026-08-16, znalezisko Evaluatora)
+
+Evaluator oceniający `a98f63f8` (Spichlerz runda 2) znalazł: nowy wiersz SUMA/WZROST% w tabeli
+miast Spichlerza agreguje `wzrostProcent` — wartość **nominalną** z silnika
+(`population-growth-v85.ts:432`, `breakdown.total` ustawiane bezwarunkowo). Realny przyrost
+liczony jest jako `fed ? total : 0` (linia 440) — miasto głodujące ma realny wzrost 0, ale jego
+nominalna wartość nadal wchodzi do sumy.
+
+**Dowód empiryczny (Evaluator):** 3 miasta po 6% nominalnie, 2 z nich niedokarmione → SUMA pokazuje
+**6%**, choć realnie rośnie tylko jedno miasto. `cityPanel.ts` w innym miejscu świadomie liczy
+inaczej (`effectiveGrowthPctForUi` → 0 przy głodzie) — dwa różne miejsca w kodzie stosują dwie różne
+konwencje dla tej samej koncepcji.
+
+**Ważne zastrzeżenie:** komórki PER MIASTO w tej tabeli miały tę własność (nominalna wartość) już
+PRZED tym commitem — to nie jest nowa regresja w danych. Nowością jest wiersz SUMA, który podnosi
+tę już istniejącą niejednoznaczność do liczby nagłówkowej, bardziej widocznej dla gracza.
+
+**Nie rozstrzygnięte samodzielnie — pytanie produktowe, nie techniczne** (CLAUDE.md §6: nie zgaduj
+przy niejednoznaczności). Dwie opcje do ABC przy podjęciu tematu:
+- A: SUMA liczona z wartości nominalnych (dzisiejsze zachowanie, spójne z komórkami per-miasto tej
+  samej tabeli).
+- B: SUMA liczona z wartości efektywnych (`fed ? total : 0`, spójne z `cityPanel.ts` gdzie indziej
+  w grze) — wymagałoby też przemyślenia, czy komórki per-miasto powinny pójść tą samą drogą.
+
+STATUS: **OTWARTE** — czeka na ABC do właściciela. Nie blokuje deployu (to nie regresja, tylko
+uwidocznienie istniejącej niejednoznaczności konwencji).
