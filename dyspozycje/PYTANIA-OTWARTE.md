@@ -29973,3 +29973,27 @@ W przeciwieństwie do panelu imperium (11 zakładek) — **to zlecenie JEST popr
 naprawić (punkt 5 handoffu), potwierdzony testem jako naprawiony.
 
 **STATUS: ZWERYFIKOWANE — wdrożone poprawnie i kompletnie, zgodnie ze zleceniem Designera.**
+
+---
+
+## P-EPOKA-BRAK-INFO-PODBOJ-PANSTW-MIAST (2026-08-16, zgłoszenie Macieja)
+
+Maciej (dosłownie): „Jeszcze jedno zgłoszenie chciałbym, żeby zapisać na przyszłość. brakuje
+wyraźnej informacji takiej, przy pokonaniu wszystkich państw miast i zdobyciu, na przykład całej
+Grecji, brakujeprzy przejściu do nowej epoki."
+
+**Interpretacja (do potwierdzenia przy podjęciu tematu, nie zgadywać):** po pokonaniu/zdobyciu
+WSZYSTKICH miast danego państwa-miasta (np. całej Grecji jako grupy miast-państw) i/lub przy
+przejściu do nowej epoki brakuje wyraźnego komunikatu/powiadomienia w UI informującego o tym
+fakcie — gracz nie dostaje czytelnego potwierdzenia „podbiłeś całe państwo X" ani wyraźnego
+sygnału przejścia epoki w tym kontekście. Zgłoszenie urwane w połowie zdania („brakujeprzy") —
+literalna treść niejednoznaczna, wymaga doprecyzowania z Maciejem przed implementacją: czy chodzi
+o (a) brak komunikatu o podboju całego państwa-miasta, (b) brak komunikatu o przejściu epoki po
+takim podboju, czy (c) oba.
+
+Zgłoszone w trakcie równoległej pracy nad reskinowaniem 11 zakładek panelu imperium
+(`R-DESIGN-11-ZAKLADEK` faza 3) — zgodnie z zasadą 2 (zakaz otwierania nowych wątków) zapisane tu
+bez przerywania bieżącego tematu.
+
+**STATUS: OTWARTE — czeka na dispatch subagenta (recon UI powiadomień końca tury/podboju +
+doprecyzowanie zakresu z Maciejem).**
