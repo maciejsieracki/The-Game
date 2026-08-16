@@ -30242,3 +30242,39 @@ vs „jak wygląda produkcja per miasto" [Miasta]).
 STATUS: **OTWARTE** — czeka na ABC do właściciela przy następnym przeglądzie panelu imperium.
 Nie blokuje deployu (nie jest regresją — to nowa widoczność istniejącej niejednoznaczności
 konwencji, tym razem między zakładkami zamiast wewnątrz jednej).
+
+---
+
+## P-DESIGN-11-ZAKLADEK-KULTURA-SUROWCE-ARMIA-HANDEL-ZAMKNIECIE (2026-08-16, werdykt zamykający Evaluatora)
+
+Evaluator zamykający (Opus 5, `a58506e09f6edacf2`) potwierdził werdykt **PASS-WITH-NOTES** dla obu
+rund tematu Kultura+Surowce+Armia+Handel (`a6ed0553` → `1f431aa7`): wszystkie 6 napraw kodowych
+(N2/N3/N4/N6/N8/N10) zweryfikowane niezależnie realnym renderem (harness esbuild+jsdom,
+`mountEmpireDetailPanel`/`showEmpireDetailPanel`, nie odczyt źródła), 16 bramek panelu bez
+regresji (jedyna czerwona `empire-panel-moc-scroll-preserve` 38/9 — pre-istniejąca, potwierdzona
+zgodna z CLAUDE.md). Rejestr N1/N5/N7/N9/N11/N12 zweryfikowany jako wierny (patrz
+`P-DESIGN-11-ZAKLADEK-ODSTEPSTWA-OD-MAKIETY-RUNDA-2` i
+`P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` wyżej w tym pliku). **Temat już w ROBOCZA**
+(FALA 287, commit `17baa179`).
+
+Dodatkowe uwagi tego werdyktu, dotąd nigdzie nieodnotowane — wszystkie NIEBLOKUJĄCE, bez akcji:
+
+- **U1** — opis commita `1f431aa7` twierdzi „Naprawione kodem (7)", a wylicza 6 pozycji
+  (N2/N3/N4/N6/N8/N10). Sprostowanie liczby w opisie; historii commita nie da się przepisać.
+- **U2** — polska odmiana: przy wartościach 2-4 podpis brzmi „2 rośnie"/„3 spada" zamiast
+  „2 rosną"/„3 spadają" (ten sam mechanizm co N4, ale czasownik zamiast przymiotnika).
+  Pre-istniejące.
+- **U3** — „Głód wojska za 3 tur" zamiast „za 3 tury" — pre-istniejący ciąg, commit zmienił tylko
+  klasę CSS.
+- **U4** — w Handlu komórki dochodu per trasa mają zaszyte `+${r.income}` zamiast `signedPl()`
+  (jak hero/SUMA po N6) — dziś nieosiągalne (dochód trasy zawsze całkowity i dodatni), teoretyczna
+  niespójność.
+- **U5** — kolumna ZASIĘG drukuje „+3 hex" a makieta „3 heksy" — czwarte odstępstwo od makiety w
+  tej samej kolumnie omawianej w N7 (`P-DESIGN-11-ZAKLADEK-ODSTEPSTWA-OD-MAKIETY-RUNDA-2`),
+  tam niewymienione. Kosmetyczne.
+- **U6** — `zlotoTxt = utrzZloto > 0 ? … : '0'` po cichu pokazałoby „0" dla wartości ujemnej,
+  nieosiągalne przy obecnym silniku (parytet z istniejącym kodem w Skarbcu).
+
+STATUS: **ZAMKNIĘTE** — temat Kultura+Surowce+Armia+Handel w całości domknięty, zdeployowany,
+żadna z uwag U1-U6 nie wymaga dalszego dispatchu. Ewentualne sprzątanie kosmetyczne (U1-U5) może
+wejść przy okazji kolejnego przeglądu panelu imperium, razem z resztą drobiazgów rundy 2.
