@@ -30992,4 +30992,14 @@ ustalenia dopiero po reconie, nie zakładać z góry.
 
 STATUS: **OTWARTE — do dispatchu po zamknięciu bieżących wątków.**
 
+**Wskazówka diagnostyczna Macieja (dopisana po dispatchu reconu):** „myślę, że też duży wpływ na to,
+jak działa szybko gra jest to, jak dużo gracz posiada miast. Im więcej posiadam miast, [im więcej]
+inne cywilizacje [mają miast], tym bardziej gra spowalnia, ale głównie chyba chodzi o moje miasta."
+— sugeruje korelację ze skalą liczby miast GRACZA konkretnie (nie tylko liczby cywilizacji/AI w
+grze ogólnie). Do uwzględnienia w pomiarze: rozdzielić wpływ liczby miast gracza od liczby tur
+(dwie różne, możliwe zmienne) — np. porównać sesję z małą liczbą miast trwającą wiele tur vs sesję
+z dużą liczbą miast trwającą niewiele tur, żeby odróżnić „wyciek narastający z czasem" od „koszt
+liniowy/kwadratowy rosnący z liczbą miast gracza" (to drugie może być kosztem oczekiwanym, nie
+bugiem — do rozstrzygnięcia pomiarem, nie zgadywania).
+
 ---
