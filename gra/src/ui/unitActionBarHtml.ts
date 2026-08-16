@@ -101,6 +101,28 @@ export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): str
   // actually appeared in the DOM regardless of game state (confirmed via a live
   // headless Chromium test, not just reading the code). The label is dynamic ("Cancel
   // attack" vs "Stop"), so render as a text button (like 'disband'), not an icon.
+  // P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI (2026-08-16): nowa bramka
+  // kompletności (unit-action-bar-completeness-test.cjs) wykryła, że 'siege-hold'
+  // (etykieta „Oblega", zawsze `disabled: true` — czysty status „ta jednostka oblega
+  // miasto", nie klikalna akcja) nie miał ŻADNEJ ścieżki renderowania — brak w
+  // COMPACT_ACTION_ORDER i brak dedykowanego bloku, dokładnie ta sama klasa błędu co
+  // wcześniej 'march-stop'. Renderowany jak 'march-stop'/'disband' — tekstowy przycisk,
+  // zawsze disabled (dane już ustawiają disabled:true, renderer tylko to odzwierciedla,
+  // bez nowej logiki biznesowej). / EN: the new completeness gate
+  // (unit-action-bar-completeness-test.cjs) found that 'siege-hold' (label "Oblega"/
+  // "Besieging", always `disabled: true` — a pure status indicator, not a clickable
+  // action) had NO render path at all — missing from COMPACT_ACTION_ORDER and missing a
+  // dedicated block, the same bug class as 'march-stop' before it. Rendered like
+  // 'march-stop'/'disband' — a text button, always disabled (the data layer already
+  // sets disabled:true, the renderer just reflects it, no new business logic).
+  const siegeHold = byId.get('siege-hold');
+  if (siegeHold) {
+    html += `<button type="button" class="uc-act-btn uc-act-text" data-act="siege-hold"`
+      + ` title="${esc(siegeHold.label)}" aria-label="${esc(siegeHold.label)}"`
+      + (siegeHold.disabled ? ' disabled' : '')
+      + `>${esc(siegeHold.label)}</button>`;
+  }
+
   const marchStop = byId.get('march-stop');
   if (marchStop) {
     html += `<button type="button" class="uc-act-btn uc-act-text" data-act="march-stop"`

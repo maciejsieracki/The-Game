@@ -28959,8 +28959,56 @@ w `buildUnitActionBarHtml` (czy to przez `COMPACT_ACTION_ORDER`/`ACTION_ICONS`, 
 blok jak `disband`/`march-stop`). To zamknęłoby całą klasę błędu na przyszłość, nie tylko dzisiejszy
 przypadek.
 
-**STATUS: DO DISPATCHU — niekrytyczne dla dzisiejszej gry (istniejące dziury już złapane i
-zamknięte), ale warte zrobienia żeby nie powtórzyło się po raz trzeci.**
+**STATUS: NAPRAWIONE — bramka dodana, scalona do gałęzi sesji, czeka na Evaluatora (Opus 5).**
+
+**Wykonanie (2026-08-16, Operator Sonnet 5):** nowy test source-level
+`gra/tools/unit-action-bar-completeness-test.cjs` — bez budowania Vite/DOM, statycznie:
+1. wycina tekstowo (po stabilnych kotwicach, wzorzec `march-attack-queue-persist-test.cjs`) ciało
+   `buildArmyStackHudStateInner` (`main.ts`) i `stackHudMergeSplitActions` (`armyMerge.ts`), zbiera
+   WSZYSTKIE literały `id: '...'` z `actions.push({...})` — to jest zbiór id, jakie HUD MOŻE
+   wyprodukować;
+2. z `unitActionBarHtml.ts` wylicza zbiór id, które FAKTYCZNIE mają render path: przecięcie
+   `COMPACT_ACTION_ORDER` × klucze `ACTION_ICONS` (pętla renderująca pomija id bez ikony) ∪ id z
+   dedykowanych bloków `byId.get('...')` (`march-stop`, `disband`, teraz też `siege-hold`);
+3. FAILuje na każdym id z (1) bez odpowiednika w (2), poza jawną `KNOWN_GAPS`;
+4. dwa wbudowane dowody mutacyjne (`MUT-HARDCODED` — usuwa blok `march-stop` z tekstu w pamięci;
+   `MUT-COMPACT-ORDER` — usuwa `'fortify'` z `COMPACT_ACTION_ORDER` w pamięci) potwierdzają, że
+   bramka NAPRAWDĘ łapie regresję tej klasy, nie tylko wygląda na to.
+
+**Dodatkowe znalezisko przy pierwszym uruchomieniu bramki:** poza już znanym `unfortify-all`, test
+wykrył DRUGI nieudokumentowany gap — **`siege-hold`** (etykieta „Oblega", zawsze
+`disabled: true`, czysty status oblężenia, nie klikalna akcja) nie miał żadnej ścieżki
+renderowania — brak w `COMPACT_ACTION_ORDER`, brak dedykowanego bloku. Naprawione w tym samym
+commicie (dodany dedykowany blok w `unitActionBarHtml.ts`, analogiczny do `march-stop`/`disband`,
+zero nowej logiki biznesowej — dane już ustawiały `disabled: true`, renderer tylko to teraz
+odzwierciedla).
+
+**Uwaga integracyjna orkiestratora:** w chwili gdy ten Operator pracował, `unfortify-all` był
+jeszcze niezamknięty — dostał wpis w `KNOWN_GAPS`, żeby nie kolidować z równoległym tematem
+`P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE`. Ten drugi temat scalił się w międzyczasie jako
+PIERWSZY (commit `1261c170`) — przy scalaniu bramki kompletności orkiestrator zweryfikował, że
+test przechodzi także z realnym render path dla `unfortify-all` (allowlist `KNOWN_GAPS` jest
+wtedy no-opem, zgodnie z projektem testu), więc wpis pozostał tymczasowo — do usunięcia przy
+najbliższej okazji dotykania tego pliku, nieblokujące.
+
+**Dowód mutacyjny na żywym pliku (nie tylko wewnątrz testu):** tymczasowo usunięty realny blok
+renderujący `siege-hold` z `unitActionBarHtml.ts` → bramka: **29 passed, 2 failed, exit 1**
+(złapane dokładnie to id). Blok przywrócony → bramka wraca do **31 passed, 0 failed, exit 0**.
+
+**Wyniki bramek Operatora (z katalogu `gra/`, stan po naprawie):**
+- `node_modules/.bin/tsc --noEmit` → **0 błędów**.
+- `node tools/unit-action-bar-completeness-test.cjs` → **31 passed, 0 failed, exit 0**.
+- `node tools/march-attack-queue-persist-test.cjs` → **55 passed, 0 failed** (bez regresji).
+- `node tools/unit-replace-test.cjs` → **13/13 zielone** (bez regresji).
+- Siedem testów budujących bundle z `hexContextTooltip.ts` (jedyny konsument
+  `buildUnitActionBarHtml`): `danina-podatek-tooltip-ui-test.cjs` (12/0),
+  `side-panel-unit-cycle-arrows-test.cjs` (20/0), `sidepanel-events-toolbar-test.cjs` (19/0),
+  `unit-context-card-test.cjs` (29/0), `heks-plony-zloze-parytet-ui-test.cjs` (19/0),
+  `hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` (74/0),
+  `hex-tooltip-stadnina-kopalnia-cyny-test.cjs` (29/0) — wszystkie zielone, bez regresji.
+
+**Zmienione/nowe pliki:** `gra/src/ui/unitActionBarHtml.ts` (dodany render path `siege-hold`),
+`gra/tools/unit-action-bar-completeness-test.cjs` (nowy).
 
 ---
 
