@@ -13863,7 +13863,21 @@ async function boot(): Promise<void> {
         turn, 'ai', negotiationSeq,
       );
       negotiationTable.push(entry);
-      showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmd.type), 4500);
+      // P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT: BRAK showHintMessage tutaj celowo — ta funkcja biegnie
+      // podczas endTurnInProgress (faza AI), więc toast trafiałby do deferredEotHints i po EOT
+      // wychodziłby jako DRUGI, generyczny wpis w warEventLog (deferredHintsToSidePanelEvents,
+      // prefiks eot-hint-) obok karty stołu negocjacji utworzonej wyżej (negotiationTable.push) —
+      // ta karta niesie całą treść oferty i wisi całą turę, więc toast był czystym duplikatem
+      // (zgłoszenie Macieja: „niepotrzebnie czasem powtarza się dwukrotnie ten sam komunikat").
+      // Ten sam wzorzec co N1 przy border-march (main.ts ~4391) — trwała reprezentacja już
+      // istnieje, więc toast jest zbędny w całości, nie odraczany (odwrotnie niż
+      // pendingEraChangeToastForNextTurn, gdzie toast jest JEDYNĄ reprezentacją).
+      // / EN: showHintMessage intentionally OMITTED here -- this function runs during
+      // endTurnInProgress (AI phase), so the toast would land in deferredEotHints and, after EOT,
+      // surface as a SECOND generic entry in warEventLog (deferredHintsToSidePanelEvents,
+      // eot-hint- prefix) alongside the negotiation-table card created above
+      // (negotiationTable.push) -- that card already carries the full offer content and persists
+      // for the whole turn, so the toast was a pure duplicate.
       refreshD1bHud();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
