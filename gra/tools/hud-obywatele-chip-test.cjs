@@ -197,10 +197,11 @@ check(
 console.log('');
 
 // ---------------------------------------------------------------------------
-// 4. Wiring kliku: empireSectionFromHudAct('ludnosc') == ('miasta') -- ten sam panel.
+// 4. Wiring kliku: empireSectionFromHudAct('ludnosc') != ('miasta') -- OSOBNE zakladki od
+//    R-DESIGN-11-ZAKLADEK faza 3 (wczesniej: ten sam panel `econ-miasta`, patrz nota nizej).
 //    Modul bez importow UI/DOM -- bundlowalny esbuildem bez loaderow SVG/audio.
 // ---------------------------------------------------------------------------
-console.log('4. empirePanelSectionMap.ts: act "ludnosc" prowadzi do tej samej sekcji co "miasta"');
+console.log('4. empirePanelSectionMap.ts: act "ludnosc" i "miasta" -> DWIE ROZNE zakladki');
 
 function bundle(entry, outName) {
   const outfile = path.join(os.tmpdir(), outName);
@@ -220,15 +221,29 @@ try {
 }
 const { empireSectionFromHudAct } = sectionMapMod;
 
+// R-DESIGN-11-ZAKLADEK faza 3 (§3 pkt 2 handoffu designera, decyzja `R-DESIGN-11-ZAKLADEK` Q2=B):
+// chipy „Miasta" i „Obywatele" prowadzily dotad do TEJ SAMEJ sekcji `econ-miasta` i tej samej
+// funkcji `cityMiastaMiniDetail()`, mieszajac dane produkcyjne (Praca/Pieniadz/Surowce) ze
+// spolecznymi (Ludnosc/Wzrost) w jednej tabeli. Ta mieszanka miala sie ROZDZIELIC — od tej fazy
+// kazdy chip ma wlasna zakladke: 'miasta' -> 'econ-miasto' (blok `miasto`), 'ludnosc' ->
+// 'econ-obywatele' (blok `obywatele`). Asercje ponizej pilnuja teraz ROZDZIELNOSCI, nie tozsamosci.
+// Stare wspolne id 'econ-miasta' NIE znika z kodu — nadal jest kotwica scrollowania w bloku Mocy
+// i wierszem `econRows` w pelnym przegladzie „ZASOBY IMPERIUM" (patrz empire-panel-split-test.cjs,
+// gdzie asercja `econ-miasta -> ekonomia` pozostaje niezmieniona i nadal przechodzi).
 check(
-  "empireSectionFromHudAct('ludnosc') === 'econ-miasta'",
-  empireSectionFromHudAct('ludnosc') === 'econ-miasta',
+  "empireSectionFromHudAct('ludnosc') === 'econ-obywatele' (wlasna zakladka Obywatele)",
+  empireSectionFromHudAct('ludnosc') === 'econ-obywatele',
   empireSectionFromHudAct('ludnosc'),
 );
 check(
-  "empireSectionFromHudAct('miasta') === 'econ-miasta' (ten sam panel co 'ludnosc')",
-  empireSectionFromHudAct('miasta') === 'econ-miasta',
+  "empireSectionFromHudAct('miasta') === 'econ-miasto' (wlasna zakladka Miasto)",
+  empireSectionFromHudAct('miasta') === 'econ-miasto',
   empireSectionFromHudAct('miasta'),
+);
+check(
+  "chipy 'miasta' i 'ludnosc' prowadza do DWOCH ROZNYCH sekcji (rozejscie econ-miasta)",
+  empireSectionFromHudAct('miasta') !== empireSectionFromHudAct('ludnosc'),
+  empireSectionFromHudAct('miasta') + ' vs ' + empireSectionFromHudAct('ludnosc'),
 );
 check(
   "'ludnosc' figuruje w liście dopuszczonych act w handleHudBarAction (hud.ts) -- klik faktycznie coś robi",

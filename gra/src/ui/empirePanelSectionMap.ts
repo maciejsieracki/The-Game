@@ -16,7 +16,9 @@ export type EmpirePanelBlock =
   | 'skarbiec'
   | 'praca'
   | 'nauka'
-  | 'religia';
+  | 'religia'
+  | 'miasto'
+  | 'obywatele';
 
 /** Sekcja panelu → który TOP-LEVEL blok pokazać. 'all' = pełny panel (brak section). */
 export function empirePanelBlockForSection(section: string | null): EmpirePanelBlock {
@@ -58,6 +60,31 @@ export function empirePanelBlockForSection(section: string | null): EmpirePanelB
   // already-existing Army block. This exception MUST be checked BEFORE the generic
   // `startsWith('econ-')` below, same as the others.
   if (section === 'econ-rekruci') return 'armia';
+  // R-DESIGN-11-ZAKLADEK faza 3 (decyzja designera §3 pkt 2, Maciej 2026-08-13/14): wspólna
+  // zakładka `econ-miasta` ROZCHODZI SIĘ na dwa niezależne bloki top-level — `miasto` (kąt
+  // produkcyjny, §8.10) i `obywatele` (kąt społeczny, §8.11). Dotąd OBA chipy HUD („miasta"
+  // i „ludnosc") prowadziły do tej samej funkcji `cityMiastaMiniDetail()`, mieszając dane
+  // produkcyjne (Praca/Pieniądz/Surowce) ze społecznymi (Ludność/Wzrost) w jednej tabeli — to
+  // właśnie ta mieszanka miała się rozdzielić. Wyjątki MUSZĄ być sprawdzone PRZED ogólnym
+  // `startsWith('econ-')` niżej, tak samo jak Skarbiec/Praca/Nauka/Religia/Rekruci wyżej.
+  // Identyfikatory sekcji zachowują przedrostek `econ-` (jak wszystkie pozostałe bloki tej
+  // rodziny), więc `onlyEconId` w `empireDetailPanel.ts` pozostaje zdefiniowany i
+  // `econSliderVisibilityForOnlyEconId` nadal zwraca dla nich „żaden suwak" — bez tego
+  // przedrostka wpadłyby na `null` (= pełny przegląd) i deklarowały OBA suwaki.
+  // EN: the shared `econ-miasta` tab SPLITS into two independent top-level blocks — `miasto`
+  // (production angle) and `obywatele` (social angle). Both HUD chips used to lead to the same
+  // `cityMiastaMiniDetail()`, mixing production data with social data in one table — exactly the
+  // mix that was meant to separate. These exceptions MUST be checked BEFORE the generic
+  // `startsWith('econ-')` below. Section ids keep the `econ-` prefix (like every other block in
+  // this family) so `onlyEconId` stays defined and the slider-visibility rule still reports "no
+  // slider" for them; without the prefix they would fall to `null` (= full overview) and claim BOTH.
+  if (section === 'econ-miasto') return 'miasto';
+  if (section === 'econ-obywatele') return 'obywatele';
+  // `econ-miasta` (STARE, wspólne id) celowo ZOSTAJE na torze `ekonomia` — to nadal kotwica
+  // scrollowania w bloku Mocy (`data-section="econ-miasta"`) i wiersz `econRows` id `miasta`
+  // w pełnym przeglądzie „ZASOBY IMPERIUM". Rozejście dotyczy chipów HUD, nie pełnego przeglądu.
+  // EN: the OLD shared id deliberately STAYS on the `ekonomia` track — it is still a scroll
+  // anchor in the Power block and an `econRows` row in the full "EMPIRE RESOURCES" overview.
   if (section.startsWith('econ-')) return 'ekonomia';
   return 'ekonomia';
 }
@@ -74,8 +101,8 @@ export interface EconSliderVisibility {
  * bloku „ekonomia" (`onlyEconId` — id wiersza po filtrze chipu HUD, `null` = pełny przegląd bez
  * filtra) pokazuje WYŁĄCZNIE tematycznie powiązany suwak, nie oba naraz na każdej — Skarbiec i
  * Nauka -> podatek (Nauka finansowana % podatku "Nauka" z TEGO SAMEGO suwaka co Skarb/Zamożność,
- * NIE przez podział Pracy); Praca -> podział pracy; pozostałe zakładki (Miasta, Rekruci, Religia)
- * -> żaden. Pełny przegląd (`onlyEconId === null`) pokazuje oba — jedyne miejsce gdzie to ma sens
+ * NIE przez podział Pracy); Praca -> podział pracy; pozostałe zakładki (Miasto, Obywatele,
+ * Rekruci, Religia) -> żaden. Pełny przegląd (`onlyEconId === null`) pokazuje oba — jedyne miejsce gdzie to ma sens
  * tematyczny (przegląd całej ekonomii, nie pojedynczy zasób).
  * EN: each tab of the "ekonomia" block (`onlyEconId` — the row id after the HUD chip filter,
  * `null` = full overview with no filter) shows ONLY its thematically-linked slider, not both on
@@ -97,8 +124,10 @@ export function empireSectionFromHudAct(act: string): string | undefined {
     case 'skarbiec': return 'econ-skarbiec';
     case 'praca': return 'econ-praca';
     case 'kultura': return 'kultura';
-    case 'miasta':
-    case 'ludnosc': return 'econ-miasta';
+    // R-DESIGN-11-ZAKLADEK faza 3 (§3 pkt 2): dwa chipy → dwie RÓŻNE zakładki, koniec wspólnego
+    // `econ-miasta`. / EN: two chips → two DIFFERENT tabs, the shared `econ-miasta` ends here.
+    case 'miasta': return 'econ-miasto';
+    case 'ludnosc': return 'econ-obywatele';
     case 'rekruci': return 'econ-rekruci';
     case 'power':
     case 'moc': return 'moc';

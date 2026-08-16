@@ -12,6 +12,7 @@ import {
 } from './empireDetailTypes';
 import { formatObywateleLabel, formatManpower } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
+import { CITIZEN_UPKEEP_RATE_PER_CITIZEN } from '../game/citizen-resource-upkeep';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
 import {
   MIASTA_TABLE_COLUMNS,
@@ -478,6 +479,26 @@ function ensureStyles(): void {
 .civ-emp-alert{margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid #4a2a2a;
   background:rgba(224,122,122,.07);font-size:12px;color:#e6c4c4;line-height:1.45;}
 .civ-emp-alert b{color:#e07a7a;}
+/* — R-DESIGN-11-ZAKLADEK faza 3 (§4 handoffu designera) — wiersz kategorii z checkboxem.
+   Odznaczony GAŚNIE (modyfikator .off), NIE znika — gracz ma widzieć, co sam odznaczył
+   (§6 handoffu: „Odznaczone pozycje gasną (nie znikają) i wypadają z sumy"). Pierwsze użycie:
+   typy surowca w zakładce Miasto. / EN: category row with a checkbox; unchecked rows DIM
+   instead of disappearing, so the player can see what they switched off, and drop out of the sum. */
+.civ-emp-grp-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;
+  border-radius:7px;background:#171e2a;cursor:pointer;user-select:none;}
+.civ-emp-grp-row input{accent-color:#d9a441;cursor:pointer;margin:0;flex:none;}
+.civ-emp-grp-row .nm{flex:1;min-width:0;font-size:12px;color:#e2e6ec;}
+.civ-emp-grp-row .qty{font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums;}
+.civ-emp-grp-row .val{font-size:12px;color:#d9a441;font-weight:700;font-variant-numeric:tabular-nums;
+  min-width:58px;text-align:right;}
+.civ-emp-grp-row.off .nm{color:#8a93a4;}
+.civ-emp-grp-row.off .val{color:#7d8798;font-weight:600;}
+.civ-emp-grp-list{display:flex;flex-direction:column;gap:4px;}
+/* Wiersz „CAŁA CYWILIZACJA" pod listą kategorii — nazwa wprost z §6 handoffu (NIE „SUMA"). */
+.civ-emp-grp-sum{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;
+  background:#1a2230;border:1px solid #3a4657;}
+.civ-emp-grp-sum .nm{flex:1;font-size:12px;font-weight:700;color:#d9a441;}
+.civ-emp-grp-sum .val{font-size:13px;font-weight:800;color:#d9a441;font-variant-numeric:tabular-nums;}
 .civ-emp-slider{-webkit-appearance:none;-moz-appearance:none;appearance:none;width:100%;height:8px;
   border-radius:999px;cursor:pointer;margin:0 0 6px;background:#1f2733;display:block;}
 .civ-emp-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
@@ -1467,6 +1488,452 @@ export function cityMiastaMiniDetail(
   // / EN: queueMicrotask(wireMiastaColFilter) intentionally NOT called here — this function used
   // to be invoked twice per render() (see detailFor in render()), which would double-wire
   // listeners. Wiring moved to a SINGLE call in render(), after bodyEl.innerHTML=.
+  return h;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════════════════
+   R-DESIGN-11-ZAKLADEK faza 3 — Klatki 8 i 9: rozejście wspólnej zakładki `econ-miasta` na dwa
+   niezależne bloki „Miasto" (kąt produkcyjny, §8.10) i „Obywatele" (kąt społeczny, §8.11).
+
+   ⚠️ ZAKRES ŚWIADOMIE WĘŻSZY NIŻ MAKIETA — powód i dokładna lista pominięć przy każdej funkcji
+   niżej. Reguła przyjęta za precedensem `renderReligiaSection()` w tym samym pliku (pominięty
+   wiersz „Porządek" z makiety, bo żaden parametr silnika go nie niesie): pozycja z makiety, dla
+   której `EmpireDetailSnap` NIE ma pola, jest POMIJANA i opisana, a NIE wypełniana wymyśloną
+   liczbą — CLAUDE.md §3 („każda liczba ma nazwany parametr i jednostkę"; nazwany parametr musi
+   istnieć NAPRAWDĘ). Dociągnięcie brakujących danych wymaga zmian w `main.ts`
+   (`buildEmpireDetailSnap`) i `empireDetailTypes.ts`, czyli poza zakresem tego zlecenia
+   („dane/liczby/logika biznesowa bez zmian").
+   Kolejność cięcia zakresu wzięta z rejestru decyzji designera §8 pkt 3: wpływy do skarbca →
+   surowce → kolejka → budynki → obrona/populacja.
+   EN: the shared `econ-miasta` tab splits into two independent blocks. Scope is deliberately
+   narrower than the mockup: any mockup item with no backing field in `EmpireDetailSnap` is
+   OMITTED and documented rather than filled with an invented number — same rule the existing
+   `renderReligiaSection()` already applies to the mockup's "Order" row.
+   ══════════════════════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Zakres zakładki „Miasto": `null` = całe imperium, inaczej `cityId` wybranego miasta.
+ * Trwa między renderami (czysty stan wyświetlania — jak `miastaHiddenCols` wyżej).
+ * Klucz to `cityId`, NIE indeks ani nazwa — patrz P-EMPIRE-MIASTA-JOIN-INDEX
+ * (`EmpireCityPoborRow.cityId` JSDoc): nazwy miast NIE są unikalne po podboju.
+ * EN: "Miasto" tab scope: null = whole empire, otherwise the selected city's `cityId` (not an
+ * index, not a name — city names are not unique after conquest).
+ */
+let miastoScopeCityId: string | null = null;
+
+/**
+ * Typy surowca ODZNACZONE w sekcji „Produkowane surowce" zakładki Miasto. Rozszerzenie
+ * istniejącego wzorca `miastaHiddenCols` (filtr kolumn tabeli Miasta) na typy surowca —
+ * §6 handoffu designera wprost zakazuje wymyślania nowego mechanizmu: „Mechanizm «zaznacz
+ * i zobacz sumę cywilizacyjną» = rozszerzenie istniejącego filtra kolumn (`miastaHiddenCols`
+ * + `computeMiastaSummaryRow()`) na wiersze kategorii i typy surowca. Nowego wzorca nie
+ * wprowadzam." Odznaczone GASNĄ (`.civ-emp-grp-row.off`), nie znikają, i wypadają z sumy.
+ * EN: resource types UNCHECKED in the Miasto tab — same "hidden set + summary row" pattern as
+ * `miastaHiddenCols`, extended to resource types per the designer handoff §6.
+ */
+const miastoHiddenResKeys = new Set<string>();
+
+/** Przełącznik zakresu w stylu `.civ-emp-mocview-btn` (§6 handoffu designera). */
+function miastoScopeSwitchHtml(cp: EmpireDetailSnap['cityPobor']): string {
+  const btn = (active: boolean, id: string, label: string): string =>
+    `<button type="button" class="civ-emp-mocview-btn${active ? ' active' : ''}" `
+    + `data-miasto-scope="${esc(id)}">${esc(label)}</button>`;
+  let h = '<div class="civ-emp-mocview" style="flex-wrap:wrap">';
+  h += btn(miastoScopeCityId === null, '', 'Całe imperium');
+  for (const c of cp) h += btn(miastoScopeCityId === c.cityId, c.cityId, c.name);
+  return h + '</div>';
+}
+
+/** Podpięcie przycisków zakresu — wzorzec 1:1 z `wireMocViewButtons()`. */
+export function wireMiastoScopeButtons(): void {
+  if (bodyEl === null) return;
+  for (const btn of Array.from(bodyEl.querySelectorAll<HTMLButtonElement>('[data-miasto-scope]'))) {
+    btn.addEventListener('click', () => {
+      const raw = btn.dataset.miastoScope ?? '';
+      const next = raw === '' ? null : raw;
+      if (next === miastoScopeCityId) return;
+      miastoScopeCityId = next;
+      render();
+    });
+  }
+}
+
+/** Podpięcie checkboxów typów surowca — wzorzec 1:1 z `wireMiastaColFilter()`. */
+export function wireMiastoResFilter(): void {
+  if (bodyEl === null) return;
+  for (const inp of Array.from(bodyEl.querySelectorAll<HTMLInputElement>('input[data-miasto-res]'))) {
+    inp.addEventListener('change', () => {
+      const key = inp.dataset.miastoRes;
+      if (!key) return;
+      if (inp.checked) miastoHiddenResKeys.delete(key); else miastoHiddenResKeys.add(key);
+      render();
+    });
+  }
+}
+
+/** Nagłówek sekcji wewnątrz zakładki (wielkie litery + kreska) — `.civ-emp-res-lbl` z Surowców. */
+function subHdr(label: string): string {
+  return `<div class="civ-emp-res-lbl">${esc(label)}</div>`;
+}
+
+/**
+ * Klatka 8 — „Miasto", kąt produkcyjny (§8.10, lista zatwierdzona `R-DESIGN-11-ZAKLADEK` Q2=B).
+ *
+ * ZREALIZOWANE (dane realnie obecne w `EmpireDetailSnap`): przełącznik zakresu, wpływy do
+ * skarbca per miasto (priorytet 1 z rejestru §8 pkt 3), produkcja Nauki per miasto, produkowane
+ * surowce z checkboxami i sumą cywilizacyjną (priorytet 2), populacja per miasto.
+ *
+ * POMINIĘTE ŚWIADOMIE — brak pola w snapshocie, dociągnięcie = zmiana `main.ts`/`empireDetailTypes.ts`
+ * (poza zakresem zlecenia):
+ *   • „Budynki i ich produkcja" w 8 kategoriach `BUILDING_GROUP_ORDER` — snapshot nie niesie ANI
+ *     liczby budynków per kategoria, ANI ich produkcji per kategoria (`EmpireCityEconRow` ma
+ *     wyłącznie zagregowane `pieniadz`/`praca*`/`nauka`). 8 wierszy z samymi „—" byłoby gorsze
+ *     niż ich brak. Priorytet 4 z 5 w kolejności cięcia zakresu.
+ *   • „Kolejka produkcji" (co miasto buduje, ile tur) — snapshot nie ma żadnego pola kolejki.
+ *     Priorytet 3 z 5.
+ *   • „Obrona miasta" (mury/garnizon/bonusy) i „obrabiane pola" — brak pól. Priorytet 5 z 5.
+ *   • Kolumna SZLAKI per miasto — `EmpireTradeRouteRow` niesie tylko `cityName`, a nazwy miast
+ *     NIE są unikalne (P-EMPIRE-MIASTA-JOIN-INDEX): join po nazwie policzyłby trasy podwójnie dla
+ *     dwóch miast o tej samej nazwie. Zamiast wprowadzać dokładnie ten błąd, który plik już raz
+ *     naprawiał, szlaki pokazane są zbiorczo dla imperium z odsyłaczem do zakładki Handel.
+ *   • Kolumna „SUROWCE" z dzisiejszej wspólnej tabeli — CELOWO nie wchodzi (§6 handoffu: „to
+ *     koszt, nie produkcja; zostaje w Skarbcu i Surowcach").
+ *   • Koszt utrzymania JEDNOSTEK — celowo nieobecny, korekta właściciela (koszt całej cywilizacji,
+ *     nie per-miasto).
+ */
+function renderMiastoSection(
+  ce: EmpireDetailSnap['cityEcon'],
+  cp: EmpireDetailSnap['cityPobor'],
+  e: EmpireDetailSnap['economy'],
+  trade: EmpireDetailSnap['trade'],
+  resources: EmpireResourceRow[],
+): string {
+  let h = '<div class="civ-emp-sect" data-section="miasto">'
+    + '<div style="display:flex;align-items:center;gap:6px">'
+    + `<span class="civ-emp-mini-h-ic" aria-hidden="true">${brandIconSvg('tb-cities', 12)}</span>`
+    + '<span class="civ-emp-eyebrow">MIASTA — PRODUKCJA</span></div>';
+
+  if (cp.length === 0) {
+    h += '<div class="civ-emp-hero pos">0 miast</div>'
+      + '<div class="civ-emp-empty">Brak miast — załóż osiedle na mapie.</div></div>';
+    return h;
+  }
+
+  // Zakres: `cityEcon` i `cityPobor` są RÓWNOLEGŁE INDEKSOWO (patrz P-EMPIRE-MIASTA-JOIN-INDEX),
+  // więc zawężenie robimy raz, po indeksie wyliczonym z `cityPobor`, i stosujemy do obu tablic.
+  // Samo-naprawa zakresu: wybrane miasto mogło w międzyczasie przestać należeć do gracza
+  // (zdobyte przez wroga / zniszczone). Bez tego zakładka pokazywałaby pustkę z nieaktualną
+  // nazwą w hero. / EN: self-heal — the pinned city may have been captured or destroyed
+  // since it was selected; fall back to the whole empire instead of rendering an empty tab.
+  if (miastoScopeCityId !== null && !cp.some(c => c.cityId === miastoScopeCityId)) {
+    miastoScopeCityId = null;
+  }
+  const paired = cp
+    .map((pob, i) => ({ pob, econ: ce[i] }))
+    .filter(x => miastoScopeCityId === null || x.pob.cityId === miastoScopeCityId);
+  const scopeLabel = miastoScopeCityId === null
+    ? `${paired.length} ${miastoCountWord(paired.length)}`
+    : (paired[0]?.pob.name ?? '—');
+
+  let sumPraca = 0;
+  let sumPieniadz = 0;
+  let sumNauka = 0;
+  for (const { econ } of paired) {
+    sumPraca += (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0);
+    sumPieniadz += econ?.pieniadz ?? 0;
+    sumNauka += econ?.nauka ?? 0;
+  }
+
+  // Surowce produkowane (civ-wide — snapshot nie ma rozbicia produkcji surowców per miasto).
+  const prodRows = resources.filter(r => !r.placeholder && r.dostep
+    && Math.round(r.rateProductionPerTurn ?? r.ratePerTurn) !== 0);
+
+  h += `<div class="civ-emp-hero">${esc(scopeLabel)}</div>`
+    + `<div class="civ-emp-hero-sub">Praca <b>${Math.round(sumPraca)}</b> pkt/turę · `
+    + `skarbiec <b>${treasuryBalanceSignedTxt(Math.round(sumPieniadz))}</b>/turę · `
+    + `nauka <b>${signedIntTxt(sumNauka)}</b> PN/turę · <b>${prodRows.length}</b> `
+    + 'produkowanych surowców (imperium)</div>';
+
+  h += miastoScopeSwitchHtml(cp);
+
+  // — WPŁYWY DO SKARBCA (priorytet 1 kolejności wdrożenia) —
+  // Rozkład na trzy składniki DOKŁADNIE tą samą formułą co bilans imperium w
+  // `cityEconMiniSkarbiec()`/`renderSkarbiecSection()` wyżej: tam `daninaBud = wplywy − handel`
+  // (brutto minus szlaki); tu ta sama różnica na per-miastowych odpowiednikach tych pól
+  // (`pieniadzBrutto` − `handelZeSzlakow`). Gdy `pieniadzBrutto` jest `undefined` (brak ticku)
+  // kolumna pokazuje „—" zamiast zgadywanej liczby.
+  // EN: the three columns use the SAME decomposition as the empire-level treasury balance above.
+  h += subHdr('Wpływy do skarbca');
+  {
+    const grid = '1fr 0.8fr 0.8fr 0.95fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'PODATEK', 'SZLAKI', 'UTRZ. BUD.'], grid)}`;
+    let sPod = 0;
+    let sSzl = 0;
+    let sUtr = 0;
+    let anyPodatek = false;
+    for (const { pob, econ } of paired) {
+      const szlaki = econ?.handelZeSzlakow ?? 0;
+      const utrz = econ?.utrzymanieBudynkow ?? 0;
+      const brutto = econ?.pieniadzBrutto;
+      const podatek = brutto != null ? brutto - szlaki : null;
+      if (podatek != null) { sPod += podatek; anyPodatek = true; }
+      sSzl += szlaki;
+      sUtr += utrz;
+      h += miniRow([
+        esc(pob.name),
+        podatek != null ? tblValTxt(podatek) : '<span style="color:#6f7889">—</span>',
+        tblValTxt(szlaki),
+        tblValTxt(-utrz),
+      ], grid);
+    }
+    h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + '<div>CAŁA CYWILIZACJA</div>'
+      + `<div>${anyPodatek ? treasuryBalanceSignedTxt(Math.round(sPod)) : '—'}</div>`
+      + `<div>${treasuryBalanceSignedTxt(Math.round(sSzl))}</div>`
+      + `<div>${treasuryBalanceSignedTxt(-Math.round(sUtr))}</div></div>`;
+    h += '</div>';
+    h += '<div class="civ-emp-foot">PODATEK = wpływ brutto miasta bez dochodu ze szlaków (pkt Pieniądza/turę) · '
+      + 'SZLAKI = dochód z tras handlowych · UTRZ. BUD. = utrzymanie budynków tego miasta. '
+      + 'Bez utrzymania jednostek — to koszt całej cywilizacji, nie miasta. '
+      + 'Pełny bilans imperium: zakładka Skarbiec.</div>';
+  }
+
+  // — PRODUKCJA NAUKI —
+  h += subHdr('Produkcja nauki');
+  {
+    const maxN = paired.reduce((m, x) => Math.max(m, x.econ?.nauka ?? 0), 0);
+    h += '<div style="display:flex;flex-direction:column;gap:5px">';
+    for (const { pob, econ } of paired) {
+      const n = econ?.nauka ?? 0;
+      const pct = maxN > 0 ? Math.max(0, Math.round((n / maxN) * 100)) : 0;
+      h += '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#cfd5de">'
+        + `<span style="flex:1;min-width:0">${esc(pob.name)}</span>`
+        + '<span style="flex:2;height:8px;border-radius:999px;background:#1f2733;overflow:hidden">'
+        + `<span style="display:block;height:100%;width:${pct}%;`
+        + 'background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span></span>'
+        + '<span style="width:62px;text-align:right;color:#8ec5ff;font-weight:600">'
+        + `${signedIntTxt(n)} PN</span></div>`;
+    }
+    h += '</div>';
+    h += `<div class="civ-emp-foot">Suma zakresu: <b>${signedIntTxt(sumNauka)}</b> PN/turę · `
+      + `bank nauki imperium: <b>${Math.floor(e.nauka)}</b> PN. Pasek = udział miasta względem `
+      + 'najsilniejszego w zakresie.</div>';
+  }
+
+  // — PRODUKOWANE SUROWCE (priorytet 2) — mechanizm „zaznacz i zobacz sumę cywilizacyjną" —
+  h += subHdr('Produkowane surowce');
+  if (prodRows.length === 0) {
+    h += '<div class="civ-emp-empty">Brak surowców z dodatnią produkcją własną.</div>';
+  } else {
+    h += '<div class="civ-emp-grp-list">';
+    let sumChecked = 0;
+    let nChecked = 0;
+    for (const r of prodRows) {
+      const off = miastoHiddenResKeys.has(r.id);
+      const prod = Math.round(r.rateProductionPerTurn ?? r.ratePerTurn);
+      if (!off) { sumChecked += prod; nChecked++; }
+      h += `<label class="civ-emp-grp-row${off ? ' off' : ''}">`
+        + `<input type="checkbox" data-miasto-res="${esc(r.id)}"${off ? '' : ' checked'}>`
+        + `<span class="civ-emp-res-ic" aria-hidden="true">${mapResourceIconSvg(r.id, 16)}</span>`
+        + `<span class="nm">${esc(r.label)}</span>`
+        + `<span class="qty">${Math.round(r.stock)} w mag.</span>`
+        + `<span class="val">${signedIntTxt(prod)}</span></label>`;
+    }
+    h += '<div class="civ-emp-grp-sum">'
+      + `<span class="nm">CAŁA CYWILIZACJA · ${nChecked} z ${prodRows.length}</span>`
+      + `<span class="val">${signedIntTxt(sumChecked)} szt./turę</span></div>`;
+    h += '</div>';
+    h += '<div class="civ-emp-foot">Produkcja WŁASNA / turę (teren + konwertery, bez umów '
+      + 'dyplomatycznych) — liczba całego imperium: silnik nie rozbija produkcji surowców na '
+      + 'miasta, więc ta sekcja nie zmienia się z przełącznikiem zakresu. Odznaczenie gasi pozycję '
+      + 'i wyjmuje ją z sumy. Stany magazynu i zużycie: zakładka Surowce.</div>';
+  }
+
+  // — POPULACJA I HANDEL —
+  h += subHdr('Populacja · handel');
+  {
+    const grid = '1fr 0.6fr 0.95fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'OBYW.', 'LUDNOŚĆ'], grid)}`;
+    let sObyw = 0;
+    let sAbs = 0;
+    for (const { pob } of paired) {
+      sObyw += pob.ludki;
+      sAbs += pob.ludnoscAbsolutna;
+      h += miniRow([esc(pob.name), String(pob.ludki), esc(pob.ludnoscAbsLabel)], grid);
+    }
+    h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + `<div>CAŁA CYWILIZACJA</div><div>${sObyw}</div>`
+      + `<div>${esc(formatManpower(sAbs))}</div></div>`;
+    h += '</div>';
+    h += `<div class="civ-emp-foot">Szlaki handlowe imperium: <b>${trade.routes.length}</b> · `
+      + `dochód <b>${treasuryBalanceSignedTxt(Math.round(trade.totalIncome))}</b> Pieniądza/turę — `
+      + 'rozpiska tras w zakładce Handel (panel imperium nie wiąże trasy z konkretnym miastem '
+      + 'jednoznacznie, bo nazwy miast nie są unikalne). Kolejka produkcji, obrona i obrabiane '
+      + 'pola — panel miasta.</div>';
+  }
+
+  h += '</div>';
+  return h;
+}
+
+/**
+ * Klatka 9 — „Obywatele", kąt społeczny (§8.11, lista zatwierdzona bez korekt).
+ *
+ * ZREALIZOWANE: hero (obywatele/ludzie/zużycie), podział Pracy, Kultura z progiem, karta Religii,
+ * poziom Zadowolenia, Rekruci, zużycie surowców przez obywateli per miasto z sumą cywilizacyjną.
+ *
+ * POMINIĘTE ŚWIADOMIE — brak pola w snapshocie (ta sama reguła co przy `renderMiastoSection`):
+ *   • ROZBICIE Zadowolenia na źródła (Kultura/Religia/Zdrowie/Wyżywienie/Niedobór surowców) —
+ *     `HudState` niesie wyłącznie zagregowane `zadowolenie`, żadnego rozbicia. Pokazany jest sam
+ *     poziom + istniejąca notatka `kultura.happinessNote`; pięć wymyślonych składników byłoby
+ *     złamaniem CLAUDE.md §3.
+ *   • Tabela „Zdrowie · prawo · wyżywienie" — wymaga liczby budynków per kategoria (jak w Mieście,
+ *     brak) oraz poziomu racji, którego snapshot nie niesie (suwak racji żyje w Spichlerzu).
+ *   • „ilu obywateli w polu / w budynkach" — snapshot ma WYŁĄCZNIE `pracaPula`/`pracaBudynki`,
+ *     czyli punkty PRACY na turę, nie liczbę obywateli. Etykiety nazywają więc wprost to, co
+ *     naprawdę jest mierzone (pkt Pracy/turę), zamiast podpisywać punkty Pracy jako ludzi —
+ *     CLAUDE.md §3.
+ */
+function renderObywateleSection(
+  ce: EmpireDetailSnap['cityEcon'],
+  cp: EmpireDetailSnap['cityPobor'],
+  e: EmpireDetailSnap['economy'],
+  p: EmpireDetailSnap['power'],
+  k: EmpireDetailSnap['kultura'],
+  religion: EmpireDetailSnap['religion'],
+  resources: EmpireResourceRow[],
+): string {
+  let h = '<div class="civ-emp-sect" data-section="obywatele">'
+    + '<div style="display:flex;align-items:center;gap:6px">'
+    + `<span class="civ-emp-mini-h-ic" aria-hidden="true">${brandIconSvg('res-population', 12)}</span>`
+    + '<span class="civ-emp-eyebrow">OBYWATELE IMPERIUM</span></div>';
+
+  if (cp.length === 0) {
+    h += '<div class="civ-emp-hero pos">0 obywateli</div>'
+      + '<div class="civ-emp-empty">Brak miast — obywatele pojawią się po założeniu osiedli.</div></div>';
+    return h;
+  }
+
+  let sumObyw = 0;
+  let sumAbs = 0;
+  for (const c of cp) { sumObyw += c.ludki; sumAbs += c.ludnoscAbsolutna; }
+  let sumPula = 0;
+  let sumBud = 0;
+  for (const c of ce) { sumPula += c.pracaPula; sumBud += c.pracaBudynki; }
+
+  // Zużycie surowców przez obywateli — TA SAMA formuła co silnik: `floor(population × stawka)`
+  // na KAŻDY surowiec wymagany w bieżącej epoce (`computeCitizenResourceDrain`,
+  // citizen-resource-upkeep.ts). Lista surowców epoki czytana z `citizenRequired` w wierszach
+  // Magazynu Państwa — panel nie zna epoki wprost, ale silnik już oznaczył nią te wiersze.
+  // EN: same formula the engine uses — floor(population × rate) per resource required this era.
+  const citizenResCount = resources.filter(r => r.citizenRequired === true).length;
+  const zuzyciePerTyp = Math.floor(sumObyw * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
+  const zadow = e.zadowolenie;
+  const przyrost = Math.round(e.ludnoscRate ?? 0);
+
+  h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpower(sumAbs))} ludzi</div>`;
+  h += '<div class="civ-emp-hero-sub">'
+    + (zadow != null ? `Zadowolenie <b>${signedIntTxt(zadow)}</b> · ` : '')
+    + `przyrost <b>${signedIntTxt(przyrost)}</b> obyw./turę · `
+    + `zużycie surowców <b>${zuzyciePerTyp}</b> szt./turę na każdy z <b>${citizenResCount}</b> `
+    + 'surowców epoki</div>';
+
+  // — PODZIAŁ PRACY OBYWATELI —
+  {
+    const total = sumPula + sumBud;
+    const pctB = total > 0 ? Math.round((sumBud / total) * 100) : 0;
+    h += '<div class="civ-emp-two">'
+      + '<div class="civ-emp-box"><div class="k">PRACA DO PULI</div>'
+      + `<div class="v">${Math.round(sumPula)} <span style="font-size:11px;color:#7d8798;`
+      + `font-weight:600">pkt/turę · ${100 - pctB}%</span></div></div>`
+      + '<div class="civ-emp-box"><div class="k">PRACA W BUDYNKACH</div>'
+      + `<div class="v">${Math.round(sumBud)} <span style="font-size:11px;color:#7d8798;`
+      + `font-weight:600">pkt/turę · ${pctB}%</span></div></div>`
+      + '</div>';
+  }
+
+  // — KULTURA —
+  h += subHdr('Kultura');
+  h += '<div style="display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:#cfd5de">'
+    + `<span style="flex:1">Zgromadzono <b style="color:#e8ebf0">${k.total}</b> pkt</span>`
+    + `<span style="color:#78c95a;font-weight:600">${signedTxt(k.rate)} / turę</span></div>`;
+  if (k.nextThreshold != null && k.pctToNext != null) {
+    const pct = Math.max(0, Math.min(100, Math.round(k.pctToNext)));
+    h += `<div class="civ-emp-bar" style="margin:7px 0 5px"><div class="fill warn" style="width:${pct}%"></div></div>`
+      + `<div style="font-size:11px;color:#9aa4b2">${pct}% do progu <b style="color:#e8ebf0">`
+      + `${k.nextThreshold}</b> pkt — rozszerzenie granic najsilniejszego miasta</div>`;
+  } else {
+    h += '<div style="font-size:11px;color:#9aa4b2">Brak kolejnego progu rozszerzenia granic.</div>';
+  }
+
+  // — RELIGIA —
+  h += subHdr('Religia');
+  h += '<div style="display:flex;align-items:center;gap:10px;padding:10px 11px;border:1px solid #2b3543;'
+    + 'border-radius:8px;background:#171e2a">'
+    + `<span class="civ-emp-relig-medallion">${brandIconSvg('cp-religion', 19)}</span>`
+    + '<span style="flex:1;min-width:0">'
+    + `<span style="display:block;font-size:13px;font-weight:700;color:#d9a441">${esc(religion.stateReligionLabel)}</span>`
+    + '<span style="display:block;font-size:11px;color:#7d8798;margin-top:2px">religia państwowa · własna</span></span>'
+    + '<span style="flex:none;text-align:right">'
+    + `<span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">${esc(formatManpower(religion.totalAdherents))}</span>`
+    + `<span style="display:block;font-size:10.5px;color:#7d8798">wyznawców · ${religion.ownSharePct}%</span></span></div>`;
+  if (religion.foreignSharePct > 0) {
+    h += `<div style="font-size:11px;color:#9aa4b2;margin-top:6px">Obca religia: `
+      + `<b style="color:#cfd5de">${esc(religion.foreignLabel ?? 'Inne religie')}</b> `
+      + `${religion.foreignSharePct}% wyznawców imperium</div>`;
+  }
+
+  // — SZCZĘŚCIE / ZADOWOLENIE —
+  h += subHdr('Szczęście · zadowolenie');
+  if (zadow != null) {
+    const cls = zadow > 0 ? '#78c95a' : zadow < 0 ? '#e07a7a' : '#6f7889';
+    h += '<div style="display:flex;align-items:baseline;gap:8px">'
+      + '<span style="flex:1;font-size:13px;color:#e2e6ec">Poziom imperium</span>'
+      + `<span style="font-size:15px;font-weight:800;color:${cls}">${signedIntTxt(zadow)}</span></div>`;
+  } else {
+    h += '<div class="civ-emp-empty">Poziom zadowolenia pojawi się po pierwszej turze.</div>';
+  }
+  h += `<div class="civ-emp-resp" style="margin-top:8px">${esc(k.happinessNote)}</div>`;
+  h += '<div class="civ-emp-foot">Rozbicie Zadowolenia na źródła (kultura, religia, zdrowie, racje, '
+    + 'niedobór surowców) liczone jest per miasto — panel miasta, zakładka Zadowolenie.</div>';
+
+  // — REKRUCI —
+  h += subHdr('Rekruci');
+  {
+    const pct = p.rekruciMax > 0 ? Math.round((p.rekruci / p.rekruciMax) * 100) : 0;
+    const fillCls = pct >= 60 ? 'fill' : (pct >= 25 ? 'fill warn' : 'fill low');
+    h += '<div style="display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:#cfd5de">'
+      + '<span style="flex:1">Pula do powołania</span>'
+      + `<span><b style="color:#d9a441">${esc(p.rekruciLabel)}</b> / `
+      + `<b style="color:#d9a441">${esc(p.rekruciMaxLabel)}</b></span></div>`
+      + `<div class="civ-emp-bar" style="margin-top:7px"><div class="${fillCls}" style="width:${pct}%"></div></div>`
+      + '<div class="civ-emp-foot">Rozbicie per miasto i odnowa — zakładka Armia.</div>';
+  }
+
+  // — ZUŻYCIE SUROWCÓW PRZEZ OBYWATELI —
+  h += subHdr('Zużycie surowców przez obywateli');
+  {
+    const grid = '1fr 0.6fr 1fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'OBYW.', 'ZUŻYCIE / TURĘ'], grid)}`;
+    for (const c of cp) {
+      const z = Math.floor(c.ludki * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
+      h += miniRow([
+        esc(c.name),
+        String(c.ludki),
+        `<span style="color:#e07a7a">−${z}</span>`,
+      ], grid);
+    }
+    h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + `<div>CYWILIZACJA</div><div>${sumObyw}</div><div>−${zuzyciePerTyp}</div></div>`;
+    h += '</div>';
+    h += `<div class="civ-emp-foot">${formatLiczbaPl(CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1)} szt. surowca `
+      + 'na obywatela na turę, z magazynu CENTRALNEGO imperium — liczba w kolumnie dotyczy KAŻDEGO '
+      + `z ${citizenResCount} surowców wymaganych w tej epoce osobno, nie ich sumy. Wiersz `
+      + 'CYWILIZACJA to zużycie całego imperium (silnik liczy je od sumy obywateli, nie miasto po '
+      + 'mieście). Rozbicie per surowiec: zakładka Surowce → karta → „Zobacz szczegóły zużycia".</div>';
+  }
+
+  h += '</div>';
   return h;
 }
 
@@ -2466,6 +2933,16 @@ function render(): void {
   const nauka = renderNaukaSection(ce, e, snap.research);
   const religia = renderReligiaSection(snap.religion);
 
+  // — MIASTO / OBYWATELE (R-DESIGN-11-ZAKLADEK faza 3, Klatki 8 i 9) — dwa niezależne bloki
+  // top-level w miejsce dawnej wspólnej zakładki `econ-miasta`. `cityMiastaMiniDetail()` wyżej
+  // NIE jest usuwana — nadal obsługuje wiersz „Miasta" w pełnym przeglądzie „ZASOBY IMPERIUM"
+  // (blok `ekonomia`, gdy activeSection === null), tak samo jak `cityEconMiniSkarbiec()` przeżyła
+  // wydzielenie Skarbca w fazie 1. / EN: two independent top-level blocks replacing the shared
+  // `econ-miasta` tab; `cityMiastaMiniDetail()` is NOT removed — it still backs the "Miasta" row
+  // of the full overview, exactly as `cityEconMiniSkarbiec()` survived the phase-1 Treasury split.
+  const miasto = renderMiastoSection(ce, cp, e, snap.trade, snap.resources);
+  const obywatele = renderObywateleSection(ce, cp, e, p, k, snap.religion, snap.resources);
+
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
   const spichlerz = renderSpichlerzCentralnySection(snap.food)
     .replace('data-section="spichlerz-centralny"', 'data-section="spichlerz"')
@@ -2629,6 +3106,8 @@ function render(): void {
   if (block === 'praca') body += praca;
   if (block === 'nauka') body += nauka;
   if (block === 'religia') body += religia;
+  if (block === 'miasto') body += miasto;
+  if (block === 'obywatele') body += obywatele;
   if (block === 'spichlerz') body += spichlerz;
   if (block === 'armia') body += armia;
   if (block === 'all' || block === 'kultura') body += kult;
@@ -2654,6 +3133,19 @@ function render(): void {
   // wireMiastaColFilter() is null-safe (getElementById returns null otherwise, function
   // returns early).
   queueMicrotask(wireMiastaColFilter);
+  // R-DESIGN-11-ZAKLADEK faza 3: przełącznik zakresu i checkboxy surowców zakładki Miasto.
+  // Oba null-safe (querySelectorAll zwraca pustą listę poza blokiem `miasto`), więc wołane
+  // bezwarunkowo raz na render — jak wireMocViewButtons wyżej. SYNCHRONICZNIE, nie przez
+  // queueMicrotask: `bodyEl.innerHTML` jest już podmienione linijkę wyżej, więc węzły istnieją,
+  // a odroczenie tworzyłoby okno, w którym kontrolka jest widoczna, ale jeszcze nie reaguje na
+  // klik (realnie złapane przy weryfikacji w headless Chromium). Podwójne podpięcie nie grozi —
+  // w przeciwieństwie do `wireMiastaColFilter` (nota N1) te funkcje są wołane raz na render.
+  // EN: wired SYNCHRONOUSLY, not via queueMicrotask — innerHTML is already swapped one line
+  // above, so the nodes exist; deferring would leave a window where the control is visible but
+  // does not yet respond to clicks (caught for real during headless-Chromium verification).
+  // No double-wiring risk: unlike `wireMiastaColFilter` (note N1) these run once per render.
+  wireMiastoScopeButtons();
+  wireMiastoResFilter();
 
   // Scroll do podsekcji ma sens tylko w pełnym widoku; przy pojedynczym bloku i tak widać całość.
   const scrollTarget = block === 'all' ? pendingScrollSection : null;
