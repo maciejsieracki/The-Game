@@ -15,7 +15,9 @@
  *          po regen, przed końcem tury; parametry manpower_uzupelnienie_hp_proc_max_tura.
  *
  * Decyzje B-MP-Q1 (Maciej):
- *   Q1a=B — leczenie % maxHP/turę (łatwy 25 / normalny 20 / trudny 15).
+ *   Q1a=B — leczenie % maxHP/turę (wartości zastąpione decyzją `R-MANPOWER-LECZENIE-PROC-TRUDNOSC`
+ *           2026-08-16: łatwy 40 / normalny 30 / trudny 20 — pierwotnie łatwy 25 / normalny 20 /
+ *           trudny 15).
  *   Q1b=A — częściowe leczenie gdy brak MP (proporcjonalnie do puli).
  *   Q1c  — brak uzupełnienia w oblężonym mieście (hex miasta lub garnizon).
  */

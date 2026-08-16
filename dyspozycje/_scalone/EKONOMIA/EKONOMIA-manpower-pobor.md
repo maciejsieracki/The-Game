@@ -84,8 +84,7 @@ Pozostałe 70%: armia 24, bitwy 17, miasta 12, gospodarka 10, epoka 7.
 | `gra/src/ui/hud.ts` | Wyświetlanie rekrutów |
 | `gra/tools/manpower-test.cjs` | Testy regresji |
 
-## Faza 3 — uzupełnianie HP jednostek (Maciej 2026-07; wartości zaktualizowane
-`R-MANPOWER-LECZENIE-PROC-TRUDNOSC` 2026-08-16)
+## Faza 3 — uzupełnianie HP jednostek (Maciej 2026-07; wartości zaktualizowane `R-MANPOWER-LECZENIE-PROC-TRUDNOSC` 2026-08-16)
 
 Co koniec tury, **po odnowie puli Manpower** (`tickManpowerRegen`):
 

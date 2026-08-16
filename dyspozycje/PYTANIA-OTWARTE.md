@@ -30030,8 +30030,16 @@ wszystkie dokumentacyjne/kosmetyczne, bez ryzyka logiki:
 - N5: ten wpis (dopisany właśnie po to, żeby domknąć wiszący odsyłacz z `REJESTR-PROSB-I-ZADAN.md`,
   który wskazywał na "pełną treść w PYTANIA-OTWARTE.md" bez odpowiadającego wpisu).
 
-**STATUS: ZAMKNIĘTE — wdrożone, Evaluator PASS-WITH-NOTES, wszystkie 4 uwagi kodowe/dokumentacyjne
-naprawione (N1-N3), N4 to tylko korekta liczby w opisie, N5 domknięty tym wpisem.**
+**Runda 2 (Evaluator na naprawie N1-N5, commit `007fd3d4`) — PASS-WITH-NOTES, znalazł 3 kolejne
+drobiazgi:** N6 — nagłówek modułu `manpower.ts:17-18` (komentarz „Decyzje B-MP-Q1") nadal cytował
+stare 25/20/15, 51 linii nad już poprawionym JSDoc-iem — **NAPRAWIONE**. N7 — nagłówek Markdown
+w `EKONOMIA-manpower-pobor.md:87-88` rozbity na dwie linie (ATX kończy się na końcu wiersza) —
+**NAPRAWIONE** (scalone w jedną linię). N8 — ten wpis mówił „wszystkie 4 uwagi... (N1-N3)"
+wymieniając trzy — **NAPRAWIONE** (ten akapit).
+
+**STATUS: ZAMKNIĘTE — wdrożone, dwie rundy Evaluatora PASS-WITH-NOTES, wszystkie znalezione uwagi
+(N1-N8) naprawione lub świadomie odłożone jako czysto korekcyjne (N4 — korekta liczby w opisie
+commita, bez skutku).**
 
 ---
 
