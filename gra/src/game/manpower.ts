@@ -66,14 +66,14 @@ const DEFAULT_REGEN: ManpowerRegenParams = {
 export type ManpowerDifficulty = 'easy' | 'normal' | 'hard';
 
 export interface ManpowerReplenishParams {
-  /** Procent maxHP leczony co turę (0–100). Łatwy 25 / Normalny 20 / Trudny 15. */
+  /** Procent maxHP leczony co turę (0–100). Łatwy 40 / Normalny 30 / Trudny 20. */
   healPctMaxPerTurn: number;
 }
 
 const DEFAULT_REPLENISH_PCT: Record<ManpowerDifficulty, number> = {
-  easy: 25,
-  normal: 20,
-  hard: 15,
+  easy: 40,
+  normal: 30,
+  hard: 20,
 };
 
 /** Parametry uzupełniania HP z miasto-params.json (per trudność). */

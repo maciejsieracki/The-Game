@@ -29997,3 +29997,38 @@ bez przerywania bieżącego tematu.
 
 **STATUS: OTWARTE — czeka na dispatch subagenta (recon UI powiadomień końca tury/podboju +
 doprecyzowanie zakresu z Maciejem).**
+
+---
+
+## R-MANPOWER-LECZENIE-PROC-TRUDNOSC (2026-08-16, decyzja bezpośrednia Macieja)
+
+Maciej (dosłownie): „a jeżeli chodzi o leczenie jednostek, to przyjmiemy, że na trudnym poziomie
+teraz to będzie 20, na normalnym 30, a na łatwym 40%."
+
+Dotyczy `manpower_uzupelnienie_hp_proc_max_tura` w `gra/data/miasto-params.json` — procent maxHP
+leczony jednostce wojskowej co turę z puli Manpower imperium (`manpower.tickManpowerUnitReplenishment`).
+Wcześniej: łatwy 25% / normalny 20% / trudny 15%. Po zmianie: łatwy 40% / normalny 30% / trudny 20%.
+Decyzja jednoznaczna — liczby podane wprost per poziom trudności, bez formalnego ABC.
+
+**Wdrożenie (Sonnet 5, orkiestrator, commit `afb51098`):** zmiana danych + przeliczenie 8
+hardcodowanych asercji w `gra/tools/manpower-test.cjs` (dowód poprawności: ręczne przeliczenie
+każdego scenariusza wg wzorów `manpowerHealCapForTurn`/`maxAffordableManpowerHeal`/
+`manpowerCostForHeal`). Bramki: `tsc` 0, `manpower-test` 62/0, `combat-test` 6/6.
+`unit-power-test` 4/2 — pre-istniejące, niezwiązane (potwierdzone niezależnie).
+
+**Evaluator (Opus 5) — PASS-WITH-NOTES.** Zweryfikował wszystkie 8 przeliczonych asercji od zera
+własnym harnessem (esbuild na `manpower.ts`), potwierdził zgodność co do joty. Znalazł 5 uwag,
+wszystkie dokumentacyjne/kosmetyczne, bez ryzyka logiki:
+- N1: JSDoc w `manpower.ts:69` nadal cytował stare 25/20/15 — **NAPRAWIONE** (aktualizacja do 40/30/20).
+- N2: fallback `DEFAULT_REPLENISH_PCT` (nieosiągalny przy poprawnym JSON, ale sprzeczny jako
+  druga "prawda" w pliku) nadal 25/20/15 — **NAPRAWIONE** (40/30/20).
+- N3: tabela w `dyspozycje/_scalone/EKONOMIA/EKONOMIA-manpower-pobor.md` (jedyne miejsce poza
+  kodem, gdzie stare liczby żyły jako treść merytoryczna) — **NAPRAWIONE** (40/30/20 + nota o dacie
+  decyzji).
+- N4: opis commita `afb51098` podawał sprzeczne liczby zmienionych asercji (6 vs 8) — realnie 8
+  (`git show | grep -c '^+ok('`). Bez skutku funkcjonalnego, korekta tylko tu w rejestrze.
+- N5: ten wpis (dopisany właśnie po to, żeby domknąć wiszący odsyłacz z `REJESTR-PROSB-I-ZADAN.md`,
+  który wskazywał na "pełną treść w PYTANIA-OTWARTE.md" bez odpowiadającego wpisu).
+
+**STATUS: ZAMKNIĘTE — wdrożone, Evaluator PASS-WITH-NOTES, wszystkie 4 uwagi kodowe/dokumentacyjne
+naprawione (N1-N3), N4 to tylko korekta liczby w opisie, N5 domknięty tym wpisem.**
