@@ -30116,8 +30116,45 @@ musi znać prawdziwy zakres — stąd ten wpis.
 produkcji, obrona miasta dla Miasta; Zdrowie, Prawo i administracja, Wyżywienie w tym rozbicie
 Zadowolenia na 5 źródeł dla Obywateli), pełna pętla Operator→Evaluator.
 
-STATUS: **ECHO — dispatch w toku** (nie deploy, zgodnie z procedurą numer+ABC — commit dopiero,
-deploy tylko na hasło).
+**Evaluator (`af0c03dbbf259ab94`, 2026-08-16) dla commitu `6366e81e`: FAIL.** Merytorycznie
+solidne (wszystkie 9 pozycji faktycznie czytają silnik, zero wymyślonej matematyki, zero
+regresji na ~15 bramkach — wszystkie policzone niezależnie), ale trzy realne defekty produktu +
+trzy nieprawdziwe twierdzenia zapisane w kodzie jako fakt (CLAUDE.md §0b: każda liczba/twierdzenie
+przedstawione właścicielowi jako fakt wymaga rygoru).
+
+Blokujące (warunek PASS):
+- **N3** — wiersz podsumowania Handlu liczy `SZLAKI` z `trade.routes.length` (CAŁA cywilizacja),
+  a `DOCHÓD` obok z `paired` (zawężone przełącznikiem zakresu) — po ustawieniu zakresu na jedno
+  miasto wiersz miesza dwa różne zakresy w jednym bloku (np. „CAŁA CYWILIZACJA · 7 · 0" obok
+  komunikatu „brak tras w zakresie").
+- **N1** — nowy test (`empire-panel-miasto-obywatele-content-test.cjs`) sprawdza WYŁĄCZNIE
+  obecność tekstu/kotwic źródłowych, nie poprawność wartości. 4 mutacje arytmetyczne Evaluatora
+  (garnizon +1, sumowanie Zadowolenia zamienione na nadpisywanie, dochód tras ×2, bonus murów ×2)
+  przeszły **59/0 zielono** — bramka nie łapie żadnego z nich. Wymagane: wyciągnąć agregację
+  Zadowolenia do eksportowanej czystej funkcji + dopisać asercje WARTOŚCIOWE łapiące te 4
+  scenariusze, plus min. 2 własne przypadki brzegowe (pusta kolejka, prawoPct null, miasto bez
+  murów, poziom racji na clampie).
+- **N4** — CLAUDE.md §3 (jednostki): zniknęła etykieta „Pieniądza/turę" przy DOCHÓD Handlu (była
+  w starej stopce); Zadowolenie/źródła bez jednostki `pkt Sz` (konwencja repo, `cityPanel.ts`);
+  etykieta „Poziom imperium" myląca — to SUMA netto pkt Sz po wszystkich miastach (rośnie z
+  liczbą miast), nie poziom — stopka temu przeczy.
+
+Wymagane, ale nie blokujące deployu jako takiego (poprawka dokumentacji/JSDoc, §0b):
+- **N2** — JSDoc uzasadnia pominięcie „obrabianych pól" fałszywie („wymaga dostępu do
+  mapy/heksów, nie tylko City/cityProd/cityOrderState") — Evaluator dowiódł eksperymentem
+  kompilacyjnym że dane są dostępne jedną linią (`okolicaWorkedKeySet(c).size`, helper już
+  istnieje w main.ts:4778); prawdziwy powód to WYŁĄCZNIE zakres ECHO A (nie było na liście).
+- **N5** — JSDoc `EmpireCityQueueItemRow` fałszywie twierdzi że pozycje spoza frontu nie mają
+  postępu — `promoteToFront` bankuje postęp na schodzącej pozycji.
+- **N6** — commit/JSDoc raportuje „8/8"/„9/9" (pełne pokrycie), ale „obrabiane pola" i „podział
+  praca/budynki" NADAL brakuje — to część oryginalnie zgłoszonych pozycji (populacja/podział
+  pracy), nie poza-zakresem jak N2 sugeruje.
+- **N7** — drobne: `EmpireCityDefenseRow` JSDoc nie uwzględnia bonusu z ulepszenia terenu (fort/
+  posterunek) gdy brak murów; „ta sama funkcja co garnizon w rozpisce Prawa" to w rzeczywistości
+  dwa identyczne, osobne predykaty w `armyMerge.ts` (liczby się zgadzają, opis nie).
+
+STATUS: **OTWARTE — Evaluator FAIL, wymagana RUNDA 2** (N1-N4 wymagane do PASS, N5-N7 poprawki
+dokumentacji). Zmiana **nie jest gotowa do deployu**.
 
 ---
 
