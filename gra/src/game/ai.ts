@@ -743,6 +743,30 @@ function isWithinAttackRange(unit: RuntimeUnit, tq: number, tr: number, data: Ga
   return hexDistance(unit.q, unit.r, tq, tr) <= range;
 }
 
+/**
+ * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE (RUNDA 2, PARYTET AI dla miast, Evaluator F1
+ * 2026-08-14): czy `city` jest w zasięgu ataku AI `unit` — adiacencja ZAWSZE (jak
+ * dotychczas, także dla miast z murem — oblężenie to inna mechanika, canInitiateSiege,
+ * nietknięta tu), a dla miast BEZ muru DODATKOWO dystans jednostki dystansowej w jej
+ * zasięgu ataku. Dokładne odzwierciedlenie reguły gracza —
+ * map/map-attack-city.ts:eligibleCityAttackers (`dist === 1 → true; city.maMur → false;
+ * else dist <= attackRangeHex(u)`) — bez tej funkcji AI z łucznikiem/procarzem zostaje
+ * ślepa na miasta bez muru w zasięgu, mimo że gracz już ten zasięg dostał (regresja
+ * parytetu, werdykt Evaluatora F1). / EN: whether `city` is within AI `unit`'s attack
+ * reach — adjacency ALWAYS (unchanged, including walled cities — sieging is a separate
+ * mechanic, canInitiateSiege, untouched here), and for UNWALLED cities additionally a
+ * ranged unit's attack range. Exact mirror of the player's rule —
+ * map/map-attack-city.ts:eligibleCityAttackers — without this the AI stays blind to
+ * unwalled cities within range even though the player already got that range (parity
+ * regression, Evaluator verdict F1).
+ */
+function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {
+  const dist = hexDistance(unit.q, unit.r, city.q, city.r);
+  if (dist === 1) return true;
+  if (city.maMur) return false;
+  return dist <= unitAttackRangeHexAi(unit, data);
+}
+
 /** Nearest element from list by hex distance to (fromQ, fromR). */
 function nearest<T>(
   fromQ: number,
@@ -2510,11 +2534,14 @@ export function decideAITurn(
       continue;
     }
 
-    // 4b: adjacent enemy city -> move onto it (engine handles capture)
+    // 4b: enemy city adjacent LUB (miasto bez muru) w zasięgu ataku dystansowego ->
+    // move onto it (engine handles capture). P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE,
+    // RUNDA 2, PARYTET AI dla miast (Evaluator F1): ta sama bramka co
+    // map/map-attack-city.ts:eligibleCityAttackers po stronie gracza.
     const adjacentEnemyCity = (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities).find(
-      ec => isAdjacent(unit.q, unit.r, ec.q, ec.r),
+      ec => isWithinCityAttackRange(unit, ec, data),
     ) ?? engageableEnemyCities.find(
-      ec => isAdjacent(unit.q, unit.r, ec.q, ec.r),
+      ec => isWithinCityAttackRange(unit, ec, data),
     );
     if (adjacentEnemyCity !== undefined) {
       commands.push({ type: 'move', unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r });

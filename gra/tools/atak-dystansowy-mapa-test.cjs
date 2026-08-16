@@ -137,23 +137,28 @@ function zbudujHarnessGracz(src, data) {
 }
 
 // ===========================================================================
-// Harness AI: unitAttackRangeHexAi + isWithinAttackRange wycięte z ai.ts.
+// Harness AI: unitAttackRangeHexAi + isWithinAttackRange + isWithinCityAttackRange
+// wycięte z ai.ts. isWithinCityAttackRange (RUNDA 2, Evaluator F1, parytet AI dla
+// miast) sprawdzana IDENTYCZNIE jak isWithinAttackRange — prawdziwy kod wycięty po
+// sygnaturze, nie kopia formuły.
 // ===========================================================================
 const SYG_RANGE_AI = 'function unitAttackRangeHexAi(unit: RuntimeUnit, data: GameData): number {';
 const SYG_WITHIN_AI = 'function isWithinAttackRange(unit: RuntimeUnit, tq: number, tr: number, data: GameData): boolean {';
+const SYG_WITHIN_CITY_AI = 'function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {';
 
 function zbudujHarnessAi(src) {
   const rangeTxt = wytnijFunkcje(src, SYG_RANGE_AI);
   const withinTxt = wytnijFunkcje(src, SYG_WITHIN_AI);
-  if (!rangeTxt || !withinTxt) return null;
+  const withinCityTxt = wytnijFunkcje(src, SYG_WITHIN_CITY_AI);
+  if (!rangeTxt || !withinTxt || !withinCityTxt) return null;
   const js = esbuild.transformSync(
-    rangeTxt + '\n' + withinTxt,
+    rangeTxt + '\n' + withinTxt + '\n' + withinCityTxt,
     { loader: 'ts', target: 'node18' },
   ).code;
   const fabryka = new Function('deps', `
     const { unitMapAttackRangeHex, hexDistance } = deps;
     ${js}
-    return { unitAttackRangeHexAi, isWithinAttackRange };
+    return { unitAttackRangeHexAi, isWithinAttackRange, isWithinCityAttackRange };
   `);
   return fabryka({ unitMapAttackRangeHex, hexDistance });
 }
@@ -451,6 +456,110 @@ function ru(typeId, q, r) { return { id: 't-' + typeId + '-' + q + '-' + r, type
   });
   ok(walledAdjacent.kind === 'attack_choice',
     `(f) kontrola: miasto Z MUREM, łucznik adiacentny (dystans 1) → attack_choice bez zmian (got ${walledAdjacent.kind})`);
+}
+
+// ===========================================================================
+// (h) PARYTET AI DLA ATAKU NA MIASTO (RUNDA 2, Evaluator F1, 2026-08-14): ai.ts
+// isWithinCityAttackRange musi dawać IDENTYCZNĄ decyzję "eligible / nie eligible"
+// co gracz (map/map-attack-city.ts resolveEnemyCityClick — eligibleCityAttackers),
+// dla tej samej jednostki/miasta/dystansu. Przed RUNDĄ 2 ai.ts:2514-2518 wołał
+// WYŁĄCZNIE isAdjacent — AI była ślepa na miasta BEZ muru w zasięgu, mimo że gracz
+// już ten zasięg dostał w RUNDZIE 1 (dokładny opis luki: N5 werdyktu Evaluatora).
+// ===========================================================================
+{
+  const openCityAi = { id: 'ca1', ownerId: 1, q: 3, r: 0, name: 'Korynt', maMur: false, population: 2 };
+  const walledCityAi = { id: 'ca2', ownerId: 1, q: 3, r: 0, name: 'Teby', maMur: true, population: 3 };
+  const obroncaOpenAi = { id: 'g2', ownerId: 1, typeId: 'Wojownik', q: 3, r: 0, ruchLeft: 0, ruch: 2 };
+
+  // (h1) miasto BEZ muru, Łucznik @ dystans=3 (granica zasięgu, BRAK adiacencji) →
+  // AI MUSI uznać za eligible (true), tak jak gracz (field_battle, nie hint_no_adjacent).
+  const lucznikAi3 = ru('Łucznik', 0, 0);
+  ok(hAi.isWithinCityAttackRange(lucznikAi3, openCityAi, dataFixture) === true,
+    '(h1) AI: miasto BEZ muru, Łucznik @ dystans=3 (bez adiacencji) → eligible (parytet z graczem)');
+  const graczOpenH1 = resolveEnemyCityClick({
+    city: openCityAi, selectedUnit: ru('Łucznik', 0, 0), units: [ru('Łucznik', 0, 0), obroncaOpenAi],
+    playerOwnerId: 0, unitAttackRangeHex: (u) => hGracz.unitAttackRangeHex(u),
+  });
+  ok(graczOpenH1.kind !== 'hint_no_adjacent',
+    `(h1) kontrola PARYTETU: gracz w tym samym scenariuszu też eligible (kind=${graczOpenH1.kind}, nie hint_no_adjacent)`);
+
+  // (h2) miasto BEZ muru, Łucznik @ dystans=4 (POZA zasięgiem 3) → AI odrzuca (false),
+  // tak jak gracz (hint_no_adjacent) — brak "nieskończonego" zasięgu.
+  const lucznikAi4 = ru('Łucznik', -1, 0); // dystans do (3,0) = 4
+  ok(hAi.isWithinCityAttackRange(lucznikAi4, openCityAi, dataFixture) === false,
+    '(h2) AI: miasto BEZ muru, Łucznik @ dystans=4 (poza zasięgiem 3) → NIE eligible (parytet z graczem)');
+
+  // (h3) miasto Z MUREM, Łucznik @ dystans=3 (w zasięgu, ale BEZ adiacencji) → AI
+  // odrzuca (false) — oblężenie wymaga adiacencji NIEZALEŻNIE od zasięgu, dokładnie
+  // jak po stronie gracza (hint_no_adjacent w (f) wyżej).
+  const lucznikAi3w = ru('Łucznik', 0, 0);
+  ok(hAi.isWithinCityAttackRange(lucznikAi3w, walledCityAi, dataFixture) === false,
+    '(h3) AI: miasto Z MUREM, Łucznik @ dystans=3 (w zasięgu, brak adiacencji) → NIE eligible (oblężenie nietknięte)');
+
+  // (h4) miasto Z MUREM, Wojownik adiacentny (dystans 1) → AI akceptuje (true) —
+  // zwarcie nadal wymaga TYLKO adiacencji, zero regresji bazowego zachowania.
+  const wojownikAi1 = ru('Wojownik', 2, 0); // dystans do (3,0) = 1
+  ok(hAi.isWithinCityAttackRange(wojownikAi1, walledCityAi, dataFixture) === true,
+    '(h4) AI: miasto Z MUREM, Wojownik adiacentny (dystans 1) → eligible (adiacencja, bez regresji)');
+
+  // (h5) PARYTET macierzowy: dla siatki (typ jednostki × dystans × mur), AI i gracz
+  // MUSZĄ dawać identyczną decyzję eligible/nie-eligible.
+  const macierzH5 = [];
+  for (const maMur of [false, true]) {
+    for (const typeId of ['Łucznik', 'Wojownik']) {
+      for (const dist of [1, 2, 3, 4]) {
+        macierzH5.push({ maMur, typeId, dist });
+      }
+    }
+  }
+  for (const { maMur, typeId, dist } of macierzH5) {
+    const city = { id: 'cm', ownerId: 1, q: dist, r: 0, name: 'Sparta', maMur, population: 2 };
+    const atkAi = ru(typeId, 0, 0);
+    const rAi = hAi.isWithinCityAttackRange(atkAi, city, dataFixture);
+    const atkGracz = ru(typeId, 0, 0);
+    const defOpen = maMur ? [] : [{ id: 'gd', ownerId: 1, typeId: 'Wojownik', q: dist, r: 0, ruchLeft: 0, ruch: 2 }];
+    const graczRes = resolveEnemyCityClick({
+      city, selectedUnit: atkGracz, units: [atkGracz, ...defOpen],
+      playerOwnerId: 0, unitAttackRangeHex: (u) => hGracz.unitAttackRangeHex(u),
+    });
+    const rGracz = graczRes.kind !== 'hint_no_adjacent';
+    ok(rAi === rGracz,
+      `(h5) PARYTET miasto ${typeId}@dystans=${dist},maMur=${maMur}: AI=${rAi} vs gracz=${rGracz} (kind=${graczRes.kind}, muszą być identyczne)`);
+  }
+}
+
+// ===========================================================================
+// STRAŻNIK STRUKTURALNY (ai.ts, RUNDA 2): decyzja o ataku na miasto w decideAITurn
+// MUSI wołać isWithinCityAttackRange, nie samą isAdjacent — inaczej AI wraca do
+// ślepoty na zasięg dla miast (regresja F1).
+// ===========================================================================
+{
+  ok((realAiSrc.match(/ec\s*=>\s*isWithinCityAttackRange\(unit,\s*ec,\s*data\)/g) || []).length === 2,
+    'strażnik: DOKŁADNIE 2 miejsca (clusterEnemyCities + engageableEnemyCities) wołają isWithinCityAttackRange(unit, ec, data)');
+}
+
+// MUT-I (RUNDA 2, F1): cofnięcie isWithinCityAttackRange do starej isAdjacent (tylko
+// dystans===1) -> (h1)/(h5-niektóre) muszą się zepsuć (miasto bez muru w zasięgu >1
+// przestaje być eligible dla AI), (h3)/(h4) zostają zielone (adiacencja i tak działała).
+{
+  const mutAiSrc = zmutuj(
+    realAiSrc,
+    'function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {\n  const dist = hexDistance(unit.q, unit.r, city.q, city.r);\n  if (dist === 1) return true;\n  if (city.maMur) return false;\n  return dist <= unitAttackRangeHexAi(unit, data);\n}',
+    'function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {\n  return hexDistance(unit.q, unit.r, city.q, city.r) === 1;\n}',
+    'MUT-I (cofnięcie AI isWithinCityAttackRange do isAdjacent)',
+  );
+  const hMutAiCity = mutAiSrc ? zbudujHarnessAi(mutAiSrc) : null;
+  ok(!!hMutAiCity, '(MUT-I) harness AI po mutacji nadal daje się zbudować');
+  if (hMutAiCity) {
+    const openCityMut = { id: 'cmut', ownerId: 1, q: 3, r: 0, name: 'Sparta', maMur: false, population: 2 };
+    const lucznikMut = ru('Łucznik', 0, 0);
+    ok(hMutAiCity.isWithinCityAttackRange(lucznikMut, openCityMut, dataFixture) === false,
+      '(MUT-I) PARYTET ZŁAPANY: po cofnięciu AI do isAdjacent, miasto BEZ muru @ dystans=3 → AI odrzuca (regresja F1 wraca)');
+    // kontrola: adiacencja nadal działa poprawnie mimo mutacji (dowód że mutacja trafia wyłącznie w dystans)
+    const lucznikObokMut = ru('Łucznik', 2, 0);
+    ok(hMutAiCity.isWithinCityAttackRange(lucznikObokMut, openCityMut, dataFixture) === true,
+      '(MUT-I) kontrola: adiacencja (dystans 1) nadal eligible mimo mutacji (mutacja trafia wyłącznie w dystans)');
+  }
 }
 
 // ===========================================================================
