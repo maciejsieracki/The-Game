@@ -11841,10 +11841,18 @@ async function boot(): Promise<void> {
     /** Awans epoki gracza — toast + trwały wpis WYDARZENIA (raz na przejście). */
     function notifyPlayerEraChangeIfAdvanced(prevEra: number): void {
       if (!shouldNotifyPlayerEraChange(prevEra, player.era)) return;
-      showHintMessage(
-        eraChangeNotifyToastHtml(player.era),
-        ERA_CHANGE_NOTIFY.toastDurationMs,
-      );
+      const toastHtml = eraChangeNotifyToastHtml(player.era);
+      // P-EPOKA-TOAST-EOT-POLYKANY: podczas endTurnInProgress showHintMessage() i tak
+      // zdeferowałby ten toast do generycznej kolejki (znika jako toast, wraca jako bierna
+      // karta „Koniec tury”) — zamiast tego zapamiętaj go osobno i pokaż NAPRAWDĘ dopiero po
+      // zakończeniu overlay (patrz komentarz przy pendingEraChangeToastForNextTurn wyżej).
+      // Poza endTurnInProgress (dokończenie cudu / handel technologią / nagroda z chatki poza
+      // fazą EOT) zachowanie bez zmian — showHintMessage() od razu.
+      if (endTurnInProgress) {
+        pendingEraChangeToastForNextTurn = { msg: toastHtml, durationMs: ERA_CHANGE_NOTIFY.toastDurationMs };
+      } else {
+        showHintMessage(toastHtml, ERA_CHANGE_NOTIFY.toastDurationMs);
+      }
       const evId = 'era-' + turn + '-' + player.era;
       if (!warEventLog.some(e => e.id === evId)) {
         warEventLog.unshift({
@@ -11857,6 +11865,26 @@ async function boot(): Promise<void> {
         if (warEventLog.length > 8) warEventLog.length = 8;
       }
       refreshD1bHud();
+    }
+
+    /**
+     * P-EPOKA-TOAST-EOT-POLYKANY: wypuść odłożony toast awansu epoki NAPRAWDĘ — wołane wyłącznie
+     * z `finally` w `triggerPlayerEndTurn`, TUŻ PO `endTurnInProgress = false` (overlay przejścia
+     * tury już się kończy), więc `showHintMessage` widzi `endTurnInProgress === false` i pokazuje
+     * toast na żywo zamiast go znowu deferować. Trwały wpis WYDARZENIA jest już w warEventLog
+     * (dodany synchronicznie w notifyPlayerEraChangeIfAdvanced) — ta funkcja dotyczy WYŁĄCZNIE
+     * toastu.
+     * EN: actually fire the deferred era-advance toast — called only from `triggerPlayerEndTurn`'s
+     * `finally`, right after `endTurnInProgress = false` (the turn-transition overlay is already
+     * closing), so `showHintMessage` sees `endTurnInProgress === false` and shows the toast live
+     * instead of deferring it again. The persistent Wydarzenia entry is already in warEventLog
+     * (added synchronously in notifyPlayerEraChangeIfAdvanced) — this function is toast-only.
+     */
+    function flushPendingEraChangeToast(): void {
+      if (!pendingEraChangeToastForNextTurn) return;
+      const { msg, durationMs } = pendingEraChangeToastForNextTurn;
+      pendingEraChangeToastForNextTurn = null;
+      showHintMessage(msg, durationMs);
     }
 
     /** Po pierwszej jednostce gracza — przypomnienie o magazynie centralnym (PYTANIE-85). */
@@ -12505,6 +12533,31 @@ async function boot(): Promise<void> {
     let pendingAutoRationForNextTurn: AutoRationAdjustResult | null = null;
     /** R-EOT-EVENT-DEFER-Q1=A: toasty z fazy EOT — flush na starcie tury gracza. */
     const deferredEotHints: DeferredEotHint[] = [];
+    /**
+     * P-EPOKA-TOAST-EOT-POLYKANY (Maciej 2026-08-16): toast awansu epoki odłożony z fazy EOT —
+     * NIE trafia do generycznej `deferredEotHints` (ta po flushu staje się tylko biernym wpisem
+     * „Koniec tury” w panelu, patrz `deferredHintsToSidePanelEvents`), bo to zdarzenie rzadkie
+     * i ważne, dla którego chcemy PRAWDZIWY toast, nie kartę w panelu. Zwykłe omijanie kolejki
+     * w miejscu wywołania (jak `warEventLog` niżej) by nie wystarczyło: overlay przejścia tury
+     * (`turnTransitionOverlay`, z-index 100400) rysuje się NAD toastem (maks. z-index 9950) w
+     * tym samym dolnym obszarze ekranu (oba `position:fixed;bottom`), a 5,5-sekundowy licznik
+     * toastu zwykle wygasa, zanim overlay się skończy (faza AI wielu cywilizacji trwa dłużej) —
+     * toast i tak by „mignął” niewidocznie, ten sam problem, który R-EOT-EVENT-DEFER-Q1=A miał
+     * rozwiązać. Flush dopiero w `finally` triggerPlayerEndTurn, TUŻ PO `endTurnInProgress =
+     * false` (patrz `flushPendingEraChangeToast`) — wtedy `showHintMessage` przechodzi na żywo.
+     * EN: pending era-advance toast deferred from the EOT phase — deliberately NOT routed
+     * through the generic `deferredEotHints` (which, after flush, becomes just a passive
+     * "Koniec tury" panel card, see `deferredHintsToSidePanelEvents`), because this is a rare,
+     * important event that needs a REAL toast, not a panel card. Simply skipping the queue at
+     * the call site (like `warEventLog` below) would not be enough: the turn-transition overlay
+     * (`turnTransitionOverlay`, z-index 100400) paints OVER the toast (max z-index 9950) in the
+     * exact same bottom-of-screen area (both `position:fixed;bottom`), and the toast's 5.5s
+     * timer usually expires before the overlay finishes (the multi-civ AI phase runs longer) —
+     * it would still "flicker" invisibly, the very problem R-EOT-EVENT-DEFER-Q1=A fixed. Flushed
+     * only in triggerPlayerEndTurn's `finally`, right after `endTurnInProgress = false` (see
+     * `flushPendingEraChangeToast`) — only then does `showHintMessage` go through live.
+     */
+    let pendingEraChangeToastForNextTurn: DeferredEotHint | null = null;
 
     /** Miasta, w których gracz zamknął (✕) alert pustej kolejki — fingerprint opcji produkcji. */
     const prodEmptyDismissFp = new Map<string, string>();
@@ -28320,6 +28373,10 @@ async function boot(): Promise<void> {
           // Odłożone automatyczne preBattle (audiencja/scalenie blokowały w momencie ataku)
           // -- no-op gdy nic nie czeka albo blokada nadal aktywna.
           flushDeferredAutoPreBattle();
+          // P-EPOKA-TOAST-EOT-POLYKANY: toast awansu epoki odłożony z fazy EOT — wypuść go
+          // NAPRAWDĘ dopiero TERAZ, endTurnInProgress jest już false (patrz komentarz przy
+          // flushPendingEraChangeToast).
+          flushPendingEraChangeToast();
           syncPlayerUnitSelectionOnMap();
           console.warn('[EndTurn] triggerPlayerEndTurn: DONE tura', turn);
         }
