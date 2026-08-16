@@ -28638,8 +28638,64 @@ tam równie martwy jak było w `.civ-side-panel` przed naprawą Przyczyny A.
 się na tyle, żeby to miało znaczenie (jeśli nie, można zostawić bez zmian), a jeśli tak, naprawić
 tym samym wzorcem co runda 2 Przyczyny A (wrapper z `pointer-events:auto` na scrollowalnej treści).
 
-**STATUS: DO DISPATCHU — niekrytyczne, nie pilne, zależne od wyniku rundy 2 Przyczyny A (ten sam
-wzorzec naprawy).**
+### WYNIK (Operator Sonnet 5, worktree izolowany `agent-abebaf21173023a69`, 2026-08-16) — recon potwierdził realne przepełnienie, naprawiono tym samym wzorcem co runda 2 Przyczyny A
+
+**Recon — czy `.civ-side-ctx-dock` realnie kiedykolwiek przepełnia się:** TAK, potwierdzone
+przeglądem kodu (nie tylko spekulacja). `.civ-side-ctx-dock` (`sidePanelHud.ts`) renderuje
+WYŁĄCZNIE karty kontekstu jednostki (`kind==='unit'`, funkcja `buildContextCardHtml` wywołana z
+`ctxScrollEl.innerHTML`) — karta kontekstu heksa (`kind==='hex'`) trafia gdzie indziej, do
+`.civ-side-panel .sp-scroll` (już objętego naprawą rundy 2), więc dok lewy dotyczy tylko jednostek.
+Realny trigger przepełnienia: `buildUnitContextTooltipForUnit()` (`main.ts:5060`) dla własnej
+armii przekazuje `stackCards: isArmy ? stackState.cards : undefined`, gdzie `stackState.cards`
+pochodzi z `buildArmyStackHudStateInner()` (`main.ts:17677`) → `stack = playerStackAt(active)` —
+**BEZ limitu liczby jednostek w stosie**. `buildUnitStackCardsHtml()`
+(`gra/src/ui/hexContextTooltip.ts:749`) renderuje jeden wiersz `.sp-unit-stack-card`
+(ikona+nazwa+2 paski+meta, rząd wielkości ~50-70px) na KAŻDĄ jednostkę w stosie. Gracz w Civ-owej
+rozgrywce regularnie stackuje kilkanaście+ jednostek na jednym heksie (armia późnej gry) — przy
+takiej liczbie karta łatwo przekracza wysokość doku (`unitCardSafeTopCss()`/
+`unitCardDockBottomCss()`, typowo kilkaset px na typowej rozdzielczości). To NIE jest
+hipotetyczne — to codzienny, oczekiwany stan w dłuższej partii.
+
+**Naprawa (`gra/src/ui/sidePanelHud.ts`), identyczny wzorzec co Przyczyna A runda 2
+(commit `e975cbc9`):** `overflow-y:auto`/`scrollbar-gutter`/`overscroll-behavior:contain`
+przeniesione z ZEWNĘTRZNEGO kontenera `.civ-side-ctx-dock` (zostaje `pointer-events:none` na
+stałe, BEZ ZMIAN — potwierdzone testem, sekcja M) na NOWY, jedyny stały wewnętrzny wrapper
+`.civ-side-ctx-dock .sp-ctx-scroll` (`pointer-events:auto`, `height:max-content;max-height:100%`).
+`render()` wypełnia teraz `ctxScrollEl.innerHTML` (NIE `ctxEl.innerHTML`), analogicznie do
+`scrollEl`/`el` w `.civ-side-panel`. `ctxEl.querySelector('.sp-ctx-card')` i
+`bindContextInteractions(ctxEl, ...)` działają bez zmian (przeszukują całe poddrzewo, obojętne na
+dodatkową warstwę wrappera) — zweryfikowane testem, sekcja C nadal zielona bez modyfikacji.
+
+**Test (`gra/tools/sidepanel-hud-deadzone-test.cjs`) rozszerzony o sekcje J–M** (żywy headless
+Chromium, `?playtest=mapa`, NOWA `page2` żeby uniknąć udokumentowanego wcześniej zatrzasku scrolla
+Chromium z sekcji G/H tej samej strony): (J) wstrzyknięcie 25 syntetycznych `.sp-unit-stack-card`
+(60px każda) do `.sp-ctx-scroll` po otwarciu doku (klik na jednostkę gracza) odtwarza realne
+przepełnienie dużym stosem jednostek (`scrollHeight > clientHeight`); (K) realny
+`page.mouse.wheel()` + odpytywanie `scrollTop` w pętli potwierdza, że scroll DZIAŁA (`scrollTop`
+0→>0); (L) pasek przewijania łapalny (`elementFromPoint` na jego pozycji → `.sp-ctx-scroll`, nie
+`CANVAS`) + dowód mutacyjny (`.sp-ctx-scroll{pointer-events:none}` na żywo odtwarza dokładnie
+regresję: scroll przestaje działać, pasek znów niełapalny, potem przywrócone); (M) baseline
+niezmieniony — `.civ-side-ctx-dock` (kontener) nadal ma `pointer-events:none` po naprawie, fix
+rundy 1 Przyczyny A (martwa strefa) pozostaje nienaruszony. **43 pass, 0 fail, exit 0**
+(32 istniejące z rundy 2 Przyczyny A bez regresji + 11 nowych sekcji J–M).
+
+**Bramki (z `gra/`):** `tsc --noEmit` 0 błędów (po naprawieniu brakującego symlinku
+`node_modules` w worktree — problem środowiska tego zlecenia, niezwiązany z tematem) ·
+`sidepanel-hud-deadzone-test.cjs` 43/43 · `sidepanel-events-toolbar-test.cjs` 19/19 ·
+`side-list-hud-panel-coverage-test.cjs` 74/74 · `unit-context-card-test.cjs` 29/29 ·
+`side-panel-unit-cycle-arrows-test.cjs` 20/20 — wszystkie zielone, zero regresji.
+
+**Zakres:** ściśle ograniczony do tego tematu (C-025) — jedyne zmiany: CSS reguła
+`.civ-side-ctx-dock` w `sidePanelHud.ts` (usunięcie `overflow-y:auto` itp. z kontenera, nowa
+reguła `.sp-ctx-scroll`), deklaracja `ctxScrollEl` + jego montaż jako dziecko `ctxEl`, dwie linijki
+`render()` zmienione z `ctxEl.innerHTML` na `ctxScrollEl.innerHTML`, oraz rozszerzenie testu.
+Żadnych poprawek "przy okazji" gdzie indziej.
+
+**NIE commitowane, NIE pushowane** (zgodnie z instrukcją zlecenia) — zmiany zostają w worktree
+`agent-abebaf21173023a69`, czekają na scalenie/Evaluatora.
+
+**STATUS: NAPRAWIONE I PRZETESTOWANE W WORKTREE — czeka na scalenie do gałęzi sesji i Evaluatora
+(deploy tylko na hasło `deploy`, zgodnie z procedurą §0/§5 CLAUDE.md).**
 
 **PRZYCZYNA B — Escape (i 34 inne miejsca) cicho kasuje zakolejkowany marsz-z-atakiem.**
 `clearPlayerUnitSelection()` (`main.ts`, ok. linii 5208, wołane przez Escape via

@@ -170,13 +170,44 @@ html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENT
 .civ-side-ctx-dock{position:fixed;left:${SIDE_PANEL_LEFT};top:${unitCardSafeTopCss()};bottom:${unitCardDockBottomCss()};
   --civ-unit-card-max-right:${unitCardMaxRight};
   z-index:316;width:${unitCardDockWidthCss()};pointer-events:none;
-  overflow-y:auto;overflow-x:hidden;
-  overscroll-behavior:contain;scrollbar-gutter:stable;display:none;
+  display:none;
   transition:width .18s ease;
   ${CIV_BRAND_SCOPE_VARS}
   font:13px var(--civ-font-ui);}
 .civ-side-ctx-dock.open{display:block;pointer-events:none;}
 .civ-side-ctx-dock.sp-ctx-expanded{width:${unitCardDockExpandedWidthCss()};}
+.civ-side-ctx-dock .sp-ctx-scroll{
+  /* P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (2026-08-16): ten sam wzorzec naprawy co
+     .civ-side-panel .sp-scroll (Przyczyna A runda 2, commit e975cbc9) — overflow-y:auto/
+     scrollbar-gutter przeniesione z ZEWNĘTRZNEGO kontenera (.civ-side-ctx-dock,
+     pointer-events:none, bez zmian) na TEN wewnętrzny wrapper (pointer-events:auto). Recon
+     potwierdził realny (nie hipotetyczny) trigger przepełnienia: karta armii
+     (buildUnitStackCardsHtml w hexContextTooltip.ts, zasilana przez playerStackAt() w main.ts,
+     BEZ limitu liczby jednostek w stosie) renderuje jeden wiersz .sp-unit-stack-card na każdą
+     jednostkę na heksie — przy kilkunastu+ jednostkach w jednej armii karta łatwo przekracza
+     wysokość doku (top..bottom liczone z unitCardSafeTopCss()/unitCardDockBottomCss(), typowo
+     kilkaset px). height:max-content dopasowuje wrapper do realnej wysokości treści (mała karta
+     -> krótki wrapper, pusty „ogon" doku pod nim nadal przepuszcza klik do canvasu — fix rundy 1
+     Przyczyny A pozostaje nienaruszony wzorcem). max-height:100% ogranicza wrapper do wysokości
+     doku -> rozbudowany stos jednostek wypełnia cały pion i STAJE SIĘ scrollowalny (kółko myszy
+     + pasek przewijania łapalne), bo to wrapper, nie kontener, niesie pointer-events:auto.
+     EN: same fix pattern as .civ-side-panel .sp-scroll (Przyczyna A round 2, commit e975cbc9) —
+     overflow-y:auto/scrollbar-gutter moved from the OUTER container (.civ-side-ctx-dock,
+     pointer-events:none, unchanged) onto this inner wrapper (pointer-events:auto). Recon
+     confirmed a real (not hypothetical) overflow trigger: the army stack card
+     (buildUnitStackCardsHtml in hexContextTooltip.ts, fed by playerStackAt() in main.ts, with NO
+     cap on unit count) renders one .sp-unit-stack-card row per unit on the hex — a dozen-plus
+     stacked units easily exceeds the dock's height (top..bottom from unitCardSafeTopCss()/
+     unitCardDockBottomCss(), typically a few hundred px). height:max-content sizes the wrapper to
+     real content height (short card -> short wrapper, the empty "tail" below it still passes
+     clicks to the canvas — round-1 fix stays intact by the same pattern). max-height:100% caps
+     the wrapper at the dock's height -> a large stack fills the full column and BECOMES
+     scrollable (wheel + draggable scrollbar work), since the wrapper — not the container —
+     carries pointer-events:auto. */
+  pointer-events:auto;height:max-content;max-height:100%;
+  overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;scrollbar-gutter:stable;
+  width:100%;box-sizing:border-box;}
 html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   top:${unitCardSafeTopCss()};
   bottom:calc(${unitCardDockBottomCss(true)} + (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px);}
@@ -341,6 +372,20 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   const ctxEl = document.createElement('div');
   ctxEl.className = 'civ-side-ctx-dock';
 
+  // P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (2026-08-16): ten sam wzorzec co scrollEl wyżej —
+  // wrapper scrollowalny/klikalny, dziecko trwałe .civ-side-ctx-dock. render() wypełnia TEN
+  // element (ctxScrollEl.innerHTML), nie ctxEl.innerHTML, żeby ctxEl (kontener,
+  // pointer-events:none) nigdy nie stracił tego jedynego dziecka. ctxEl.querySelector(All) dalej
+  // działa bez zmian, bo przeszukuje CAŁE poddrzewo, niezależnie od tej dodatkowej warstwy.
+  // EN: same pattern as scrollEl above — persistent scrollable/clickable wrapper child of
+  // .civ-side-ctx-dock. render() fills THIS element (ctxScrollEl.innerHTML), not ctxEl.innerHTML,
+  // so ctxEl (the pointer-events:none container) never loses its one child.
+  // ctxEl.querySelector(All) keeps working unchanged since it searches the whole subtree
+  // regardless of this extra layer.
+  const ctxScrollEl = document.createElement('div');
+  ctxScrollEl.className = 'sp-ctx-scroll';
+  ctxEl.appendChild(ctxScrollEl);
+
   // R-WYDARZENIA-FILTR-KATEGORII: stan chipa 🌍 „Inne cyw." — zmienna domknięcia,
   // przeżywa update()/tury (nie jest resetowana przy każdym render()).
   let showOtherCivsEvents = false;
@@ -391,7 +436,11 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
 
     if (unitCtx !== null && !hideUnitDock) {
       const canCycle = config.canContextCycleUnit?.() ?? false;
-      ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded, canCycle);
+      // P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY: wypełniamy ctxScrollEl (wrapper pointer-events:auto),
+      // NIE ctxEl (kontener pointer-events:none) — patrz komentarz przy deklaracji ctxScrollEl.
+      // EN: fill ctxScrollEl (pointer-events:auto wrapper), NOT ctxEl (pointer-events:none
+      // container) — see comment at the ctxScrollEl declaration.
+      ctxScrollEl.innerHTML = buildContextCardHtml(unitCtx, expanded, canCycle);
       ctxEl.classList.add('open');
       if (expanded && unitCtx.expandable) {
         ctxEl.classList.add('sp-ctx-expanded');
@@ -401,7 +450,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       const card = ctxEl.querySelector('.sp-ctx-card');
       if (card) bindContextInteractions(ctxEl, unitCtx);
     } else {
-      ctxEl.innerHTML = '';
+      ctxScrollEl.innerHTML = '';
       ctxEl.classList.remove('open', 'sp-ctx-expanded');
     }
 

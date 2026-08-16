@@ -72,6 +72,29 @@
  *     mutacyjny (`.sp-event{pointer-events:none}` na żywo) — dokładnie ta mutacja, jaką
  *     wykonał Evaluator, jest teraz łapana.
  *
+ * ===== P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (Operator Sonnet 5, 2026-08-16, worktree izolowany) =====
+ * Znalezisko Evaluatora przy okazji rundy 2 (d8c3bc78): `.civ-side-ctx-dock` (lewy dok karty
+ * jednostki) ma DOKŁADNIE ten sam wzorzec, który w `.civ-side-panel` był martwym scrollem przed
+ * naprawą rundy 2 — `pointer-events:none` na kontenerze RAZEM z `overflow-y:auto` na TYM SAMYM
+ * elemencie. Recon (ten Operator) potwierdził, że to NIE jest teoretyczne ryzyko: karta armii
+ * (`buildUnitStackCardsHtml` w `hexContextTooltip.ts`, zasilana przez `playerStackAt()` w
+ * `main.ts`) renderuje jeden wiersz `.sp-unit-stack-card` na KAŻDĄ jednostkę na heksie, BEZ
+ * limitu liczby jednostek w stosie — kilkanaście+ jednostek w jednej armii gracza realnie
+ * przekracza wysokość doku. NAPRAWA (sidePanelHud.ts): identyczny wzorzec co runda 2 —
+ * `overflow-y:auto`/`scrollbar-gutter` przeniesione z ZEWNĘTRZNEGO `.civ-side-ctx-dock` (zostaje
+ * `pointer-events:none` na stałe, bez zmian) na NOWY wewnętrzny wrapper
+ * `.civ-side-ctx-dock .sp-ctx-scroll` (jedyne stałe dziecko kontenera, `pointer-events:auto`,
+ * `height:max-content;max-height:100%`).
+ *  J. Wstrzyknięcie 25 syntetycznych `.sp-unit-stack-card` (60px każda) do `.sp-ctx-scroll`
+ *     odtwarza realne przepełnienie dużym stosem jednostek (scrollHeight > clientHeight).
+ *  K. Realny `wheel` nad dokiem przewija kartę (scrollTop 0 → >0) — na ŚWIEŻEJ stronie (`page2`),
+ *     żeby uniknąć udokumentowanego wyżej zatrzasku scrolla Chromium z sekcji G/H tej samej sesji.
+ *  L. Pasek przewijania łapalny (`elementFromPoint` na jego pozycji trafia w `.sp-ctx-scroll`,
+ *     nie w CANVAS pod spodem) + dowód mutacyjny: `.sp-ctx-scroll{pointer-events:none}` na żywo
+ *     odtwarza dokładnie regresję opisaną wyżej (wheel przestaje działać, pasek niełapalny).
+ *  M. Baseline niezmieniony: `.civ-side-ctx-dock` (kontener) nadal ma `pointer-events:none` po
+ *     naprawie — dowód, że fix rundy 1 Przyczyny A (martwa strefa) pozostaje nienaruszony.
+ *
  * Bramka (z katalogu gra/): node tools/sidepanel-hud-deadzone-test.cjs — exit 0 = zielona.
  */
 
@@ -582,6 +605,135 @@ async function main() {
     if (consoleErrors.length) console.error('   konsola:', consoleErrors.join(' | '));
 
     await page.close();
+
+    // ===== P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY: sekcje J-M na ŚWIEŻEJ stronie (page2) =====
+    // Świeża strona = świeża sesja Chromium, bez zatrzasku scrolla z sekcji G/H powyżej (patrz
+    // komentarz przy wheelAt) -- pozwala użyć PRAWDZIWEGO page.mouse.wheel() na .sp-ctx-scroll
+    // jako pierwszego (i jedynego "realnego") gestu na tej stronie, zgodnie z ustalonym wzorcem.
+    console.log('\n===== P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY: .civ-side-ctx-dock .sp-ctx-scroll =====');
+    const consoleErrors2 = [];
+    const page2 = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+    page2.on('console', (msg) => { if (msg.type() === 'error') consoleErrors2.push(msg.text()); });
+    page2.on('pageerror', (err) => consoleErrors2.push('[pageerror] ' + err.message));
+
+    console.log('\n-- J. Wstrzyknięcie 25 syntetycznych .sp-unit-stack-card do .civ-side-ctx-dock .sp-ctx-scroll (odtworzenie przepełnienia dużym stosem jednostek) --');
+    await gotoPlaytestMapa(page2);
+    // Ten sam punkt co sekcja C powyżej (kamera skupiona na jednostce gracza w playtest=mapa) --
+    // otwiera .civ-side-ctx-dock (klasa .open).
+    await page2.mouse.click(800, 500);
+    await wait(500);
+    const ctxInject = await page2.evaluate(() => {
+      const dock = document.querySelector('.civ-side-ctx-dock');
+      const scrollEl = document.querySelector('.civ-side-ctx-dock .sp-ctx-scroll');
+      if (!dock || !scrollEl) return { found: false, dockFound: !!dock, scrollFound: !!scrollEl };
+      for (let i = 0; i < 25; i++) {
+        const div = document.createElement('div');
+        div.className = 'sp-unit-stack-card';
+        // 60px -- rząd wielkości realnego wiersza buildUnitStackCardsHtml (ikona+nazwa+2 paski+meta).
+        div.style.cssText = 'height:60px;box-sizing:border-box;border-bottom:1px solid rgba(0,0,0,.2);';
+        div.textContent = 'Test jednostka stosu ' + i;
+        scrollEl.appendChild(div);
+      }
+      const r = scrollEl.getBoundingClientRect();
+      return {
+        found: true,
+        dockOpen: dock.classList.contains('open'),
+        scrollHeight: scrollEl.scrollHeight,
+        clientHeight: scrollEl.clientHeight,
+        rect: { top: r.top, bottom: r.bottom, left: r.left, right: r.right },
+      };
+    });
+    assert('.civ-side-ctx-dock otwarty (.open) i .sp-ctx-scroll znaleziony, 25 syntetycznych .sp-unit-stack-card wstrzyknięte', ctxInject.found && ctxInject.dockOpen, ctxInject);
+    assert(
+      'PO WSTRZYKNIĘCIU: scrollHeight > clientHeight (realne przepełnienie dużym stosem jednostek odtworzone)',
+      !!ctxInject.found && ctxInject.scrollHeight > ctxInject.clientHeight,
+      ctxInject,
+    );
+
+    let ctxScrollbarPoint = null;
+    if (ctxInject.found && ctxInject.dockOpen) {
+      console.log('\n-- K. Scroll kółkiem myszy realnie przewija kartę armii w lewym doku (naprawa P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY) --');
+      const cx = Math.round((ctxInject.rect.left + ctxInject.rect.right) / 2);
+      const cy = Math.round((ctxInject.rect.top + ctxInject.rect.bottom) / 2);
+      const ctxScrollBefore = await page2.evaluate(() => document.querySelector('.civ-side-ctx-dock .sp-ctx-scroll').scrollTop);
+      assert('scrollTop=0 przed scrollem (higiena testu)', ctxScrollBefore === 0, ctxScrollBefore);
+      const ctxWheelResult = await wheelAndPollScrollTop(page2, '.civ-side-ctx-dock .sp-ctx-scroll', cx, cy, 400, ctxScrollBefore);
+      assert(
+        'PO NAPRAWIE: wheel realnie przewija kartę armii w .civ-side-ctx-dock (scrollTop 0 -> >0)',
+        ctxWheelResult.changed && ctxWheelResult.scrollTop > ctxScrollBefore,
+        { ctxScrollBefore, ...ctxWheelResult },
+      );
+
+      console.log('\n-- L. Pasek przewijania łapalny (elementFromPoint w jego miejscu trafia w .sp-ctx-scroll, nie CANVAS) --');
+      ctxScrollbarPoint = { x: Math.round(ctxInject.rect.right - 6), y: Math.round((ctxInject.rect.top + ctxInject.rect.bottom) / 2) };
+      const efpCtxScrollbar = await page2.evaluate(({ x, y }) => {
+        const el = document.elementFromPoint(x, y);
+        return el ? { tag: el.tagName, cls: el.className } : null;
+      }, ctxScrollbarPoint);
+      assert(
+        'PO NAPRAWIE: pasek przewijania łapalny -- elementFromPoint w miejscu paska trafia w .sp-ctx-scroll, NIE w CANVAS pod spodem',
+        !!efpCtxScrollbar && efpCtxScrollbar.tag === 'DIV' && String(efpCtxScrollbar.cls).includes('sp-ctx-scroll'),
+        efpCtxScrollbar,
+      );
+
+      console.log('\n-- Dowód mutacyjny (K/L): .sp-ctx-scroll{pointer-events:none} na żywo odtwarza DOKŁADNIE regresję P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY --');
+      const mutCtxScroll = await page2.evaluate((styleId) => {
+        const styleEl = document.getElementById(styleId);
+        if (!styleEl) return { found: false };
+        const orig = styleEl.textContent || '';
+        const re = /(\.civ-side-ctx-dock \.sp-ctx-scroll\{[^}]*pointer-events:)auto(;)/;
+        if (!re.test(orig)) return { found: true, patched: false };
+        styleEl.textContent = orig.replace(re, '$1none$2');
+        return { found: true, patched: true, orig };
+      }, STYLE_ID);
+      assert('mutacja: reguła .civ-side-ctx-dock .sp-ctx-scroll{pointer-events:auto} znaleziona i podmieniona na none', mutCtxScroll.found && mutCtxScroll.patched, mutCtxScroll);
+
+      if (mutCtxScroll.patched) {
+        const ctxScrollTopBeforeMut = await page2.evaluate(() => document.querySelector('.civ-side-ctx-dock .sp-ctx-scroll').scrollTop);
+        // wheelAt (dispatchEvent na aktualnym elementFromPoint), NIE wheelAndPollScrollTop --
+        // druga strona (page2) już zużyła swój jedyny "bezpieczny" realny page.mouse.wheel() w
+        // sekcji K powyżej; patrz komentarz przy wheelAt dla wyjaśnienia zatrzasku Chromium.
+        const mutCtxWheelInfo = await wheelAt(page2, cx, cy, 400);
+        await wait(300);
+        const ctxScrollTopAfterMut = await page2.evaluate(() => document.querySelector('.civ-side-ctx-dock .sp-ctx-scroll').scrollTop);
+        assert(
+          'PO MUTACJI (odtworzenie regresji): wheel PRZESTAJE przewijać kartę armii (scrollTop bez zmian) -- dowód, że naprawa realnie zależy od tej reguły CSS, nie jest tautologią',
+          ctxScrollTopAfterMut === ctxScrollTopBeforeMut,
+          { ctxScrollTopBeforeMut, ctxScrollTopAfterMut, mutCtxWheelInfo },
+        );
+        const efpCtxScrollbarMut = await page2.evaluate(({ x, y }) => {
+          const el = document.elementFromPoint(x, y);
+          return el ? { tag: el.tagName, cls: el.className } : null;
+        }, ctxScrollbarPoint);
+        assert(
+          'PO MUTACJI: pasek przewijania PRZESTAJE być łapalny -- elementFromPoint w tym samym miejscu znów trafia w CANVAS (dokładnie regresja P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY)',
+          !!efpCtxScrollbarMut && efpCtxScrollbarMut.tag === 'CANVAS',
+          efpCtxScrollbarMut,
+        );
+
+        await page2.evaluate(({ styleId, orig }) => {
+          const styleEl = document.getElementById(styleId);
+          if (styleEl) styleEl.textContent = orig;
+        }, { styleId: STYLE_ID, orig: mutCtxScroll.orig });
+        const efpCtxScrollbarRestored = await page2.evaluate(({ x, y }) => {
+          const el = document.elementFromPoint(x, y);
+          return el ? { tag: el.tagName } : null;
+        }, ctxScrollbarPoint);
+        assert('CSS przywrócony do stanu naprawionego: pasek znów łapalny (nie CANVAS)', !!efpCtxScrollbarRestored && efpCtxScrollbarRestored.tag !== 'CANVAS', efpCtxScrollbarRestored);
+      }
+    }
+
+    console.log('\n-- M. Baseline niezmieniony: .civ-side-ctx-dock (kontener) nadal pointer-events:none po naprawie (fix rundy 1 Przyczyny A nienaruszony) --');
+    const ctxDockPEAfterFix = await page2.evaluate(() => {
+      const dock = document.querySelector('.civ-side-ctx-dock');
+      return dock ? getComputedStyle(dock).pointerEvents : null;
+    });
+    assert('.civ-side-ctx-dock (kontener, NIE wrapper) ma pointer-events:none -- fix rundy 1 Przyczyny A pozostaje nienaruszony', ctxDockPEAfterFix === 'none', ctxDockPEAfterFix);
+
+    assert('[konsola, page2] zero console.error / pageerror w scenariuszu P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY', consoleErrors2.length === 0);
+    if (consoleErrors2.length) console.error('   konsola page2:', consoleErrors2.join(' | '));
+
+    await page2.close();
   } finally {
     await browser.close();
   }
