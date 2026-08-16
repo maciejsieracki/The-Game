@@ -26491,8 +26491,40 @@ miasto. N2 (ogólny brak ścieżki zdobycia miasta przez AI) świadomie POZA zak
 naprawione). Bramki: tsc 0, build exit 0, `atak-dystansowy-mapa-test` 98/0, nowy
 `atak-dystansowy-egzekucja-test` 18/0.
 
-STATUS: **OTWARTE** — Evaluator rundy 3 w toku. Zmiana **nie jest gotowa do deployu** do czasu
-werdyktu.
+**Evaluator (`abfdbad6162a9b0d3`, 2026-08-16) dla `13f595bc`: FAIL — trzeci z rzędu.** Bramki
+zielone (98/0, 18/0), ale zachowanie w grze gorsze niż oczekiwane, w trzech niezależnie zmierzonych
+scenariuszach (esbuild-sonda: prawdziwy `decideAITurn` → prawdziwy egzekutor → prawdziwa
+`evictForeignUnitsFromCityHexes`, wiele tur z rzędu):
+
+- **B1 (barbarzyńcy WŁĄCZENI, domyślne)** — jednostka wchodzi na pusty heks miasta, ale
+  `evictForeignUnitsFromCityHexes()` (wołana z tej samej gałęzi co barbarzyńcy) wypycha ją co turę
+  na drugą stronę miasta w głąb terytorium wroga. Miasto nigdy nie zmienia właściciela — **wieczna
+  oscylacja**, cały ruch jednostki marnowany co turę bez końca.
+- **B2 (barbarzyńcy WYŁĄCZENI)** — evict się nie wykonuje, jednostka **wrasta na stałe** w heks
+  miasta (`computePath` zwraca `[]` dla ruchu na własny heks) — wyłączona z gry na zawsze, gorzej
+  niż przed rundą 2 (wtedy przynajmniej się wycofywała).
+- **B3 (miasto BRONIONE — przypadek dominujący w realnej grze)** — reguła decyzyjna
+  (`isWithinCityAttackRange`) i egzekucyjna (`canAiEnterUndefendedCityHex`) rozjeżdżają się:
+  decyzja nie sprawdza obrońców/muru przy adiacencji, egzekucja odmawia — **dokładnie regresja
+  rundy 2, tylko zawężona do miast bronionych**, które są większością realnych scenariuszy.
+  Porównanie z baseline `07626e24` (sprzed rundy 2): tam jednostka wykonywała realny odwrót, dziś
+  zamiera.
+
+Analogia do barbarzyńców była niekompletna: barbarzyńcy po wejściu wołają
+`tryAutoCaptureEmptyCityAt` (miasto zmienia właściciela → evict ich pomija), ta naprawa skopiowała
+samo pozwolenie na wejście, bez tego co czyni je trwałym.
+
+**Zalecenie Evaluatora do rundy 4:** (1) zrównać `isWithinCityAttackRange` z
+`canAiEnterUndefendedCityHex` (decyzja ma zwracać false wszędzie, gdzie egzekucja i tak odmówi —
+mur, obrońcy), żeby jednostka spadała do gałęzi odwrotu zamiast zamierać; (2) **pytanie ABC do
+właściciela**: czy wejście na pusty heks ma skutkować realnym przejęciem miasta (jak
+barbarzyńcy — ale to dotyka N2, świadomie odłożonego), czy wejścia w ogóle nie powinno być —
+obecny stan pośredni (B1/B2) jest gorszy od obu skrajności; (3) bramka musi objąć
+`evictForeignUnitsFromCityHexes` i min. 2 tury z rzędu, inaczej ten sam błąd przejdzie ponownie
+zielono.
+
+STATUS: **OTWARTE — Evaluator FAIL runda 3, wymagana decyzja ABC właściciela przed rundą 4**
+(patrz punkt 2 zalecenia — nie zgaduję). Zmiana **nie jest gotowa do deployu**.
 
 ---
 
