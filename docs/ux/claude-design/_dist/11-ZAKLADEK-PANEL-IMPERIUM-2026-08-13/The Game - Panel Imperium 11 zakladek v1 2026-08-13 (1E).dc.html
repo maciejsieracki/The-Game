@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+html,body{margin:0;padding:0;background:#0c1017}
+*{box-sizing:border-box;margin:0;padding:0}
+a{color:#d9a441}a:hover{color:#e8c274}
+</style>
+</helmet>
+
+<section data-screen-label="Skarbiec — klatka 1" style="padding:32px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:radial-gradient(1200px 640px at 32% 0%,#161d28,#0c1017 78%)">
+
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">The Game · ZLECENIE 11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13 · klatka 1 z 11</div>
+  <h1 style="font-size:29px;font-weight:700;color:#d9a441;line-height:1.15">Skarbiec — reskin do wzorca sekcji Moc</h1>
+  <p style="font-size:13.5px;color:#9aa4b2;max-width:1000px;line-height:1.6;margin-top:9px;text-wrap:pretty">Zgodnie z kolejnością pracy z §9 zlecenia: najpierw <b style="color:#e8ebf0">jedna zakładka</b> do przeglądu, pozostałe 10 po potwierdzeniu. Paleta <b style="color:#e8ebf0">3b</b> (faktycznie wdrożona w <span style="font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#d9a441">empireDetailPanel.ts</span>) — zgodnie z rekomendacją §3, bez mieszania dwóch złotych w jednym oknie panelu. Wszystkie etykiety, wiersze i teksty stopek 1:1 z <span style="font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#d9a441">cityEconMiniSkarbiec()</span> — zmienia się wyłącznie hierarchia wizualna. Szerokość 404px = realna szerokość panelu.</p>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:32px;flex-wrap:wrap">
+
+    <!-- ══════ KLATKA A ══════ -->
+    <div style="flex:none;display:flex;flex-direction:column;gap:11px">
+      <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600">Klatka A · dane, netto dodatnie</div>
+
+      <div style="width:404px;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+
+        <!-- HEADER PANELU (bez zmian) -->
+        <div style="display:flex;align-items:flex-start;gap:12px;padding:16px 16px 14px;border-bottom:1px solid #242c3a">
+          <span style="flex:none;width:34px;height:34px;border-radius:8px;background:#1d2634;display:flex;align-items:center;justify-content:center"><img src="../eksport/icons/civilizations/civ-grecy.svg" alt="" style="width:20px;height:20px;opacity:.9"></span>
+          <span style="flex:1;min-width:0;display:block">
+            <span style="display:block;font-size:18px;font-weight:700;color:#e8ebf0;line-height:1.1">Grecy</span>
+          </span>
+          <button style="flex:none;width:30px;height:30px;border-radius:7px;border:1px solid #2f3947;background:#1a2230;color:#9aa4b2;font-size:15px;cursor:pointer;line-height:1">✕</button>
+        </div>
+
+        <div style="padding:14px 16px 18px">
+
+          <!-- EYEBROW + HERO -->
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+            <span style="width:14px;height:14px;display:flex;color:#9aa4b2"><img src="../eksport/icons/res-treasury.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+            <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">SKARBIEC IMPERIUM</span>
+          </div>
+          <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">Netto +14 / turę</div>
+          <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Stan skarbca <b style="color:#d9a441">151</b> · wpływy <b style="color:#d9a441">62</b> − koszty <b style="color:#d9a441">48</b> · 3 miasta</div>
+
+          <!-- DWA BOXY -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+            <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+              <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">WPŁYWY / TURĘ</div>
+              <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">62 <span style="font-size:11px;color:#78c95a;font-weight:600">+18 handel</span></div>
+            </div>
+            <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+              <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">KOSZTY / TURĘ</div>
+              <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">48 <span style="font-size:11px;color:#e07a7a;font-weight:600">31 budynki</span></div>
+            </div>
+          </div>
+
+          <!-- TABELA BILANSU (wzorzec civ-emp-tbl: wyróżniona kolumna wartości) -->
+          <div style="margin-top:14px">
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;font-size:9.5px;letter-spacing:.6px;color:#7d8798;font-weight:600;padding:0 0 8px;border-bottom:1px solid #242c3a">
+              <div>SKARBIEC IMPERIUM — BILANS / TURĘ</div><div style="text-align:right">ZŁOTO</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;align-items:baseline;padding:9px 0;border-bottom:1px solid #1f2733">
+              <div style="font-size:12.5px;color:#e2e6ec">Wpływy brutto (podatek + budynki)</div><div style="text-align:right;font-size:12.5px;color:#78c95a;font-weight:700">+44</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;align-items:baseline;padding:9px 0;border-bottom:1px solid #1f2733">
+              <div style="font-size:12.5px;color:#e2e6ec">Handel ze szlaków</div><div style="text-align:right;font-size:12.5px;color:#78c95a;font-weight:700">+18</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;align-items:baseline;padding:9px 0;border-bottom:1px solid #1f2733">
+              <div style="font-size:12.5px;color:#e2e6ec">Utrzymanie budynków</div><div style="text-align:right;font-size:12.5px;color:#e07a7a;font-weight:700">−31</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;align-items:baseline;padding:9px 0;border-bottom:1px solid #1f2733">
+              <div style="font-size:12.5px;color:#e2e6ec">Utrzymanie surowców budynków<div style="font-size:10.5px;color:#6f7889;margin-top:2px;line-height:1.3">z magazynu państwa, nie ze złota</div></div>
+              <div style="text-align:right;font-size:11.5px;color:#e07a7a;font-weight:600;line-height:1.35">−2 Drewno<br>−1 Cegła</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;align-items:baseline;padding:9px 0;border-bottom:1px solid #242c3a">
+              <div style="font-size:12.5px;color:#e2e6ec">Utrzymanie jednostek</div><div style="text-align:right;font-size:12.5px;color:#e07a7a;font-weight:700">−17</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;align-items:baseline;padding:11px 0 9px">
+              <div style="font-size:13px;color:#e8ebf0;font-weight:700">Netto skarbiec</div><div style="text-align:right;font-size:15px;color:#d9a441;font-weight:800">+14</div>
+            </div>
+          </div>
+
+          <!-- TABELA PER MIASTO -->
+          <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden;margin:10px 0 8px">
+            <div style="display:grid;grid-template-columns:1fr 0.7fr 0.9fr;column-gap:6px;padding:7px 10px;font-size:10px;letter-spacing:.35px;color:#7d8798;font-weight:600;background:#1a2230">
+              <div>MIASTO</div><div style="text-align:right">DO SKARBCA</div><div style="text-align:right">UTRZYMANIE</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.7fr 0.9fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de">
+              <div>Ateny</div><div style="text-align:right;color:#78c95a">+26</div><div style="text-align:right;color:#e07a7a">−18</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.7fr 0.9fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733">
+              <div>Korynt</div><div style="text-align:right;color:#78c95a">+12</div><div style="text-align:right;color:#e07a7a">−9</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.7fr 0.9fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733">
+              <div>Sparta</div><div style="text-align:right;color:#78c95a">+6</div><div style="text-align:right;color:#e07a7a">−4</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.7fr 0.9fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657">
+              <div>SUMA</div><div style="text-align:right">+44</div><div style="text-align:right">−31</div>
+            </div>
+          </div>
+
+          <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>
+
+          <!-- SUWAKI -->
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid #242c3a">
+            <div style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;margin-bottom:6px">DOMYŚLNY PODZIAŁ PODATKU</div>
+            <div style="font-size:11.5px;color:#9aa4b2;line-height:1.5;margin-bottom:10px">Nowe miasta dziedziczą ten podział. W panelu miasta możesz włączyć własny override.</div>
+
+            <div style="border:1px solid #232b38;border-radius:7px;background:#171e2a;padding:11px 12px 12px;display:flex;flex-direction:column;gap:12px">
+              <div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">
+                  <span style="flex:1;font-size:12px;color:#d9a441;font-weight:600">Skarb</span>
+                  <span style="font-size:13px;font-weight:700;color:#e8ebf0;font-variant-numeric:tabular-nums">60%</span>
+                  <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">≈ +26/turę</span>
+                </div>
+                <div style="position:relative;height:8px;border-radius:999px;background:#1f2733">
+                  <span style="position:absolute;left:0;top:0;bottom:0;width:60%;border-radius:999px;background:linear-gradient(90deg,#6a4010,#d9a441)"></span>
+                  <span style="position:absolute;left:60%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#d9a441;border:2px solid #141a24;box-shadow:0 1px 4px rgba(0,0,0,.6)"></span>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">
+                  <span style="flex:1;font-size:12px;color:#8ec5ff;font-weight:600">Nauka</span>
+                  <span style="font-size:13px;font-weight:700;color:#e8ebf0;font-variant-numeric:tabular-nums">20%</span>
+                  <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">≈ +9/turę</span>
+                </div>
+                <div style="position:relative;height:8px;border-radius:999px;background:#1f2733">
+                  <span style="position:absolute;left:0;top:0;bottom:0;width:20%;border-radius:999px;background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span>
+                  <span style="position:absolute;left:20%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#8ec5ff;border:2px solid #141a24;box-shadow:0 1px 4px rgba(0,0,0,.6)"></span>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">
+                  <span style="flex:1;font-size:12px;color:#cfd5de;font-weight:600">Zamożność</span>
+                  <span style="font-size:13px;font-weight:700;color:#e8ebf0;font-variant-numeric:tabular-nums">20%</span>
+                  <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">≈ +9/turę</span>
+                </div>
+                <div style="position:relative;height:8px;border-radius:999px;background:#1f2733">
+                  <span style="position:absolute;left:0;top:0;bottom:0;width:20%;border-radius:999px;background:linear-gradient(90deg,#3a4657,#9aa4b2)"></span>
+                  <span style="position:absolute;left:20%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#9aa4b2;border:2px solid #141a24;box-shadow:0 1px 4px rgba(0,0,0,.6)"></span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid #232b38">
+                <span style="flex:1;font-size:10.5px;color:#7d8798">Suma <b style="color:#cfd5de">100%</b> · kroki 10%</span>
+                <span style="font-size:9.5px;font-weight:700;letter-spacing:.04em;color:#78c95a;background:rgba(120,201,90,.14);border-radius:999px;padding:2px 8px">SUMA OK</span>
+              </div>
+            </div>
+            <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px">Suma = 100% · kroki 10% · dotyczy wszystkich miast bez własnego override.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ KLATKA B ══════ -->
+    <div style="flex:none;display:flex;flex-direction:column;gap:11px">
+      <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600">Klatka B · netto ujemne + stan „brak miast"</div>
+
+      <div style="width:404px;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+        <div style="padding:14px 16px 18px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+            <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-treasury.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+            <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">SKARBIEC IMPERIUM</span>
+          </div>
+          <div style="font-size:20px;font-weight:800;color:#e07a7a;margin-top:8px">Netto −35 / turę</div>
+          <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Stan skarbca <b style="color:#d9a441">62</b> · wystarczy na <b style="color:#e07a7a">2 tury</b> · 2 miasta</div>
+
+          <div style="margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid #4a2a2a;background:rgba(224,122,122,.07);font-size:12px;color:#e6c4c4;line-height:1.45">
+            <b style="color:#e07a7a">Skarbiec się wyczerpuje</b> — koszty przewyższają wpływy. Przy zerze utrzymanie budynków przestaje być pokrywane.
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+            <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+              <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">WPŁYWY / TURĘ</div>
+              <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">21 <span style="font-size:11px;color:#7d8798;font-weight:600">bez handlu</span></div>
+            </div>
+            <div style="border:1px solid #4a2a2a;border-radius:8px;padding:10px 12px;background:#171e2a">
+              <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">KOSZTY / TURĘ</div>
+              <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e07a7a">56 <span style="font-size:11px;color:#e07a7a;font-weight:600">22 wojsko</span></div>
+            </div>
+          </div>
+
+          <div style="margin-top:14px">
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;font-size:9.5px;letter-spacing:.6px;color:#7d8798;font-weight:600;padding:0 0 8px;border-bottom:1px solid #242c3a">
+              <div>SKARBIEC IMPERIUM — BILANS / TURĘ</div><div style="text-align:right">ZŁOTO</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;padding:9px 0;border-bottom:1px solid #1f2733"><div style="font-size:12.5px;color:#e2e6ec">Wpływy brutto (podatek + budynki)</div><div style="text-align:right;font-size:12.5px;color:#78c95a;font-weight:700">+21</div></div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;padding:9px 0;border-bottom:1px solid #1f2733"><div style="font-size:12.5px;color:#e2e6ec">Handel ze szlaków</div><div style="text-align:right;font-size:12.5px;color:#6f7889;font-weight:600">—</div></div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;padding:9px 0;border-bottom:1px solid #1f2733"><div style="font-size:12.5px;color:#e2e6ec">Utrzymanie budynków</div><div style="text-align:right;font-size:12.5px;color:#e07a7a;font-weight:700">−34</div></div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;padding:9px 0;border-bottom:1px solid #1f2733"><div style="font-size:12.5px;color:#e2e6ec">Utrzymanie surowców budynków<div style="font-size:10.5px;color:#6f7889;margin-top:2px;line-height:1.3">z magazynu państwa, nie ze złota</div></div><div style="text-align:right;font-size:11.5px;color:#6f7889;font-weight:600">—</div></div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;padding:9px 0;border-bottom:1px solid #242c3a"><div style="font-size:12.5px;color:#e2e6ec">Utrzymanie jednostek</div><div style="text-align:right;font-size:12.5px;color:#e07a7a;font-weight:700">−22</div></div>
+            <div style="display:grid;grid-template-columns:1fr 0.62fr;column-gap:6px;align-items:baseline;padding:11px 0 9px"><div style="font-size:13px;color:#e8ebf0;font-weight:700">Netto skarbiec</div><div style="text-align:right;font-size:15px;color:#e07a7a;font-weight:800">−35</div></div>
+          </div>
+
+          <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Stan bez miast</div>
+          <div style="border:1px dashed #2b3543;border-radius:8px;background:rgba(142,197,255,.04);padding:12px 13px;font-size:12px;color:#b8c4d8;line-height:1.5">Brak miast — dochód pojawi się po założeniu osiedli.</div>
+          <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:8px">Tekst 1:1 z kodu (<span style="font-family:ui-monospace,Consolas,monospace;font-size:10px">civ-emp-empty</span>) — dostaje tylko ramkę, żeby czytał się jako stan, nie jako urwana treść.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ NOTATKI ══════ -->
+    <div style="flex:1;min-width:420px;max-width:560px;display:flex;flex-direction:column;gap:16px">
+
+      <div style="border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+        <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Co się zmieniło (i dlaczego to nie jest znów „zbyt subtelne")</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+          <span><b style="color:#e8ebf0">Hero-liczba na starcie.</b> „Netto +14 / turę", 20px, złote 800 — dokładnie ten sam gest co „Moc {N}". Dziś Netto jest ostatnim wierszem tabeli, wizualnie równym pozycji „Handel ze szlaków”. To jest zmiana hierarchii, nie odcienia — dlatego widać ją od razu.</span>
+          <span><b style="color:#e8ebf0">Podpis pod hero</b> (odpowiednik <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-moc-sub</span>): stan skarbca, wpływy − koszty, liczba miast. Stan skarbca przestaje być osobnym wierszem w „ZASOBACH IMPERIUM” i wraca tam, gdzie jest potrzebny.</span>
+          <span><b style="color:#e8ebf0">Dwa boxy 2×1</b> Wpływy / Koszty — wzorzec <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-two</span> z Mocy. Gracz widzi kierunek bilansu bez czytania sześciu wierszy.</span>
+          <span><b style="color:#e8ebf0">Bilans przenosi się z <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-mini</span> na <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-tbl</span></b> — nagłówek z linią pod spodem, wiersze rozdzielone <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">#1f2733</span>, kolumna wartości wyróżniona jak PKT w Mocy. Znaki kwot dostają kolor <span style="color:#78c95a">.pos</span>/<span style="color:#e07a7a">.neg</span>, który już jest w CSS, ale dziś w tej tabeli nieużywany (wartości idą przez <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">treasuryBalanceSignedTxt</span> bez klasy).</span>
+          <span><b style="color:#e8ebf0">Wiersz „Utrzymanie surowców budynków"</b> dostaje drugą linię <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.src</span> („z magazynu państwa, nie ze złota") — dziś ta pozycja siedzi w kolumnie złota, choć złota nie dotyczy, i to jedyne miejsce w tabeli, gdzie „—” znaczy „nie dotyczy”, a nie „zero”.</span>
+          <span><b style="color:#e8ebf0">Tabela per miasto</b> zyskuje wiersz SUMA w stylu <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-mini-summary</span> (mechanizm już istnieje dla tabeli Miasta) i prawy alias liczb.</span>
+          <span><b style="color:#e8ebf0">Suwaki.</b> Natywne <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">input[type=range]</span> zostają w kodzie, dostają tylko styl toru i uchwytu w kolorach sekcji: Skarb <b style="color:#d9a441">#d9a441</b>, Nauka <b style="color:#8ec5ff">#8ec5ff</b>, Zamożność <b style="color:#9aa4b2">#9aa4b2</b> — te trzy kolory już są w pliku jako <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.gold</span>/<span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.blue</span>, dziś jednak sam tor jest systemowo niebieski w każdym z trzech. Dodatkowo przy każdym procencie realna kwota („≈ +26/turę”) i chip <b style="color:#78c95a">SUMA OK</b>.</span>
+        </div>
+      </div>
+
+      <div style="border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+        <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Do integratora — zgłoszenia z §1 i §3</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+          <span><b style="color:#e8ebf0">1 · Skarbiec potrzebuje własnego bloku.</b> Hero + boxy nie mieszczą się w schemacie „filtrowany wiersz wewnątrz wspólnej sekcji ZASOBY IMPERIUM” — eyebrow „ZASOBY IMPERIUM (STAN + PRZYROST)” i wiersz <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-zrow</span> ze stanem znikają z tego widoku, bo stan wchodzi w podpis pod hero. To zmiana struktury w <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">render()</span>/<span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">empirePanelSectionMap.ts</span> (osobny blok <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">skarbiec</span>, jak <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">spichlerz</span>), nie tylko nowe klasy CSS — zgłaszam wprost, zgodnie z §1. Ta sama uwaga obejmie potem Pracę, Naukę i Religię.</span>
+          <span><b style="color:#e8ebf0">2 · Paleta 3b, bez odstępstw.</b> Trzymam rekomendację §3: <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">#141a24</span> / <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">#171e2a</span> / <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">#2b3543</span> / <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">#d9a441</span>, Segoe UI, róg 7–9px, zero Georgii. Rozjazd 3a↔3b odnotowuję jako dług systemowy do osobnej dyspozycji — nie ruszam go w tym zleceniu.</span>
+          <span><b style="color:#e8ebf0">3 · Nowe klasy</b> trzymają konwencję prefiksu: <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-skarb-big</span>, <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-skarb-sub</span>, <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-skarb-warn</span>, <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-slider</span> (współdzielony przez wszystkie suwaki panelu — Skarbiec, Praca, Wyżywienie).</span>
+          <span><b style="color:#e8ebf0">4 · Pytanie o chip Religia (§8.9)</b> — nie rozstrzygam. Wróci w handoffie razem z klatkami Obywatele/Religia, z propozycją obu wariantów, gdy dojdę do tych zakładek.</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:12px;color:#7d8798">
+        <span style="font-size:9.5px;color:#141a24;background:#d9a441;border-radius:999px;padding:3px 11px;font-weight:700;letter-spacing:.04em;white-space:nowrap;line-height:1.4">BEZ ZMIAN</span>
+        <span>Wszystkie etykiety i teksty stopek, kolejność wierszy bilansu, tabela per miasto, trzy suwaki i ich kroki 10%, szerokość panelu 404px, mechanika zamykania.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Praca — klatka 2" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 2 z 11 · sekcja <span style="color:#d9a441">econ-praca</span> · cityEconMiniPraca() + renderDefaultPodzialPracySection()</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Praca</h2>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="width:404px;flex:none;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+      <div style="padding:14px 16px 18px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-work.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+          <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">PRACA IMPERIUM</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">48 Pracy / turę</div>
+        <div style="font-size:12px;color:#9aa4b2;margin-top:3px"><b style="color:#d9a441">34</b> do budynków · <b style="color:#d9a441">14</b> do puli imperium · 3 miasta</div>
+
+        <div style="margin-top:12px">
+          <div style="display:flex;height:12px;border-radius:999px;overflow:hidden;background:#1f2733">
+            <span style="width:70%;background:linear-gradient(90deg,#6a4010,#d9a441)"></span>
+            <span style="width:30%;background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:6px;font-size:11px">
+            <span style="flex:1;color:#d9a441;font-weight:600">Budynki 70% · 34</span>
+            <span style="color:#8ec5ff;font-weight:600">Pula imperium 30% · 14</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">PULA IMPERIUM</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">126 <span style="font-size:11px;color:#78c95a;font-weight:600">+14</span></div>
+          </div>
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">UTRZYMANIE ULEPSZEŃ</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e07a7a">−4 <span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden;margin:14px 0 8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:6px;padding:7px 10px;font-size:10px;letter-spacing:.35px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">DO PULI</div><div style="text-align:right">DO BUDYNKÓW</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right;color:#8ec5ff">+6</div><div style="text-align:right;color:#d9a441">+16</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right;color:#8ec5ff">+5</div><div style="text-align:right;color:#d9a441">+11</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right;color:#8ec5ff">+3</div><div style="text-align:right;color:#d9a441">+7</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>SUMA</div><div style="text-align:right">+14</div><div style="text-align:right">+34</div></div>
+        </div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:6px">Ulepszenia (utrzymanie): −4 Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>
+
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid #242c3a">
+          <div style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;margin-bottom:6px">DOMYŚLNY PODZIAŁ PRACY</div>
+          <div style="font-size:11.5px;color:#9aa4b2;line-height:1.5;margin-bottom:10px">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten podział.</div>
+          <div style="border:1px solid #232b38;border-radius:7px;background:#171e2a;padding:11px 12px 12px">
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">
+              <span style="flex:1;font-size:12px;color:#cfd5de"><b style="color:#d9a441">Budynki</b> / <b style="color:#8ec5ff">Do puli imperium</b></span>
+              <span style="font-size:13px;font-weight:700;color:#e8ebf0;font-variant-numeric:tabular-nums">70% / 30%</span>
+            </div>
+            <div style="position:relative;height:8px;border-radius:999px;background:#1f2733">
+              <span style="position:absolute;left:0;top:0;bottom:0;width:70%;border-radius:999px;background:linear-gradient(90deg,#6a4010,#d9a441)"></span>
+              <span style="position:absolute;left:70%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#d9a441;border:2px solid #141a24;box-shadow:0 1px 4px rgba(0,0,0,.6)"></span>
+            </div>
+          </div>
+          <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px">Kroki 10% · w lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:380px;max-width:560px;border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+      <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Zmiany</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+        <span><b style="color:#e8ebf0">Hero + dwukolorowy pasek podziału</b> na starcie sekcji: 48 Pracy/turę i od razu widoczne, gdzie ta praca idzie. Wzorzec paska z karty „Praca" mockupu <i>Miasto Zakladki W3 6klatek</i> (§7), przeliczony na paletę 3b — złoto = budynki, błękit = pula imperium, te same dwa kolory co klasy <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.gold</span>/<span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.blue</span> w etykiecie suwaka.</span>
+        <span><b style="color:#e8ebf0">Kolumny tabeli dziedziczą te kolory</b> — DO PULI błękitna, DO BUDYNKÓW złota. Dziś obie kolumny są tym samym szarym, więc dwa strumienie trzeba czytać z nagłówka.</span>
+        <span><b style="color:#e8ebf0">Utrzymanie ulepszeń</b> awansuje ze stopki drobnym do boxa obok puli — to jedyna pozycja, która z tej puli schodzi.</span>
+        <span><b style="color:#e8ebf0">Suwak</b> — jeden tor, dwa kolory po obu stronach uchwytu (wartość „70% / 30%" zostaje jak w kodzie).</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Nauka — klatka 3" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 3 z 11 · sekcja <span style="color:#d9a441">econ-nauka</span> · cityEconMiniNauka()</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Nauka</h2>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="width:404px;flex:none;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+      <div style="padding:14px 16px 18px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-science.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+          <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">NAUKA IMPERIUM</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">+17 PN / turę</div>
+        <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Bank badań <b style="color:#d9a441">87</b> PN · finansowana <b style="color:#8ec5ff">20%</b> podatku · 3 miasta</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">BADANE TERAZ</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">Matematyka</div>
+            <div style="margin-top:7px;height:6px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:64%;background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span></div>
+            <div style="font-size:10.5px;color:#7d8798;margin-top:5px">87 / 136 PN · ETA 3 tury</div>
+          </div>
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">ŹRÓDŁO FINANSOWANIA</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#8ec5ff">20% podatku</div>
+            <div style="font-size:10.5px;color:#7d8798;margin-top:7px;line-height:1.4">Suwak Skarb / Nauka / Zamożność — sekcja Skarbiec</div>
+          </div>
+        </div>
+
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden;margin:14px 0 8px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6px;padding:7px 10px;font-size:10px;letter-spacing:.35px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">NAUKA</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right;color:#8ec5ff">+8</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right;color:#8ec5ff">+6</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right;color:#8ec5ff">+3</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>SUMA</div><div style="text-align:right">+17</div></div>
+        </div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4">Nauka z miast trafia do banku badań. Hub badań — przycisk Nauka na lewym pasku.</div>
+
+        <button style="width:100%;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 12px;border-radius:7px;border:1px dashed #3a4657;background:transparent;color:#7d8798;font-size:11.5px;font-weight:700;letter-spacing:.04em;cursor:pointer;font-family:inherit">Otwórz hub badań</button>
+        <div style="font-size:10px;color:#6f7889;margin-top:6px;text-align:center">element odłożony (14.08) — do potwierdzenia, czy hub istnieje jako cel linku; bez niego klatka zostaje bez zmian</div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:380px;max-width:560px;border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+      <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Zmiany</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+        <span><b style="color:#e8ebf0">Najuboższa zakładka dostaje kontekst, nie nową funkcję.</b> Dziś to jedna tabela MIASTO · NAUKA i stopka. Box „Badane teraz" i „Źródło finansowania" pokazują dane, które gra już zna (bieżąca technologia, pula PN, % suwaka) — nic nowego do policzenia, a zakładka przestaje być pustym stołem.</span>
+        <span><b style="color:#e8ebf0">Błękit tylko jako semantyka nauki</b> (<span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">#8ec5ff</span>, klasa <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.blue</span> już w pliku) — pasek postępu i kolumna NAUKA. Złoto zostaje dla hero i sum.</span>
+        <span><b style="color:#e8ebf0">Przycisk „Otwórz hub badań"</b> zamiast zdania w stopce („Hub badań — przycisk Nauka na lewym pasku"). Stopka zostaje, ale wskazówka staje się klikalna. <b style="color:#e8ebf0">Do decyzji:</b> czy hub otwierać z panelu — jeśli nie, przycisk wypada, resztę zostawiam.</span>
+        <span><b style="color:#e8ebf0">Suwak podatku</b> nie jest duplikowany — box wprost mówi, że mieszka w Skarbcu. Dziś Nauka nie tłumaczy, skąd bierze pieniądze.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Spichlerz — klatka 4" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 4 z 11 · blok <span style="color:#d9a441">spichlerz</span> · renderSpichlerzCentralnySection() + renderDefaultPoziomRacjiSection()</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Spichlerz centralny <span style="font-size:13px;font-weight:600;color:#e07a7a;letter-spacing:.02em">· tu ginie emoji 🍞</span></h2>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="flex:none;display:flex;flex-direction:column;gap:11px">
+      <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600">Klatka A · zapas zdrowy</div>
+      <div style="width:404px;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+        <div style="padding:14px 16px 18px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-food.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+            <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">SPICHLERZ CENTRALNY</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:8px">
+            <span style="font-size:20px;font-weight:800;color:#d9a441">214</span>
+            <span style="font-size:13px;color:#7d8798;font-weight:600">/ 300</span>
+            <span style="width:16px;height:16px;display:flex;align-self:center"><img src="../eksport/icons/res-food.svg" alt="Żywność" style="width:100%;height:100%"></span>
+          </div>
+          <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Zapełnienie <b style="color:#d9a441">71%</b> · przyrost <b style="color:#78c95a">+14</b> / turę · wszystkie miasta nakarmione</div>
+          <div style="height:10px;border-radius:6px;background:#1f2733;overflow:hidden;margin:10px 0"><span style="display:block;height:100%;width:71%;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></span></div>
+
+          <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 4px;padding-bottom:6px;border-bottom:1px solid #242c3a">Podsumowanie ostatniej tury</div>
+          <div style="display:flex;flex-direction:column">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #1f2733"><span style="font-size:13px;color:#e2e6ec">Uprawa i hodowla</span><span style="font-size:13px;color:#78c95a;font-weight:600;font-variant-numeric:tabular-nums">+96</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #1f2733"><span style="font-size:13px;color:#e2e6ec">Wyżywienie ludności</span><span style="font-size:13px;color:#e07a7a;font-weight:600;font-variant-numeric:tabular-nums">−72</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #1f2733"><span style="font-size:13px;color:#e2e6ec">Nadwyżka</span><span style="font-size:13px;color:#78c95a;font-weight:600;font-variant-numeric:tabular-nums">+24</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #1f2733"><span style="font-size:13px;color:#e2e6ec">Pomoc miastom</span><span style="font-size:13px;color:#e07a7a;font-weight:600;font-variant-numeric:tabular-nums">−6</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #1f2733"><span style="font-size:13px;color:#e2e6ec">Spichlerz stolicy</span><span style="font-size:13px;color:#78c95a;font-weight:600;font-variant-numeric:tabular-nums">+4</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #242c3a"><span style="font-size:13px;color:#e2e6ec">Wojsko</span><span style="font-size:13px;color:#e07a7a;font-weight:600;font-variant-numeric:tabular-nums">−8</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 4px"><span style="font-size:13px;color:#e8ebf0;font-weight:700">Przyrost zapasów</span><span style="font-size:15px;color:#d9a441;font-weight:800;font-variant-numeric:tabular-nums">+14</span></div>
+          </div>
+
+          <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Miasta</div>
+          <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">PRODUKCJA</div><div style="text-align:right">KOSZT RACJI</div><div style="text-align:right">BILANS</div><div style="text-align:right">WZROST%</div></div>
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right">44</div><div style="text-align:right">32</div><div style="text-align:right;color:#78c95a">+12</div><div style="text-align:right">7%</div></div>
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right">32</div><div style="text-align:right">24</div><div style="text-align:right;color:#78c95a">+8</div><div style="text-align:right">5%</div></div>
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right">20</div><div style="text-align:right">16</div><div style="text-align:right;color:#78c95a">+4</div><div style="text-align:right">3%</div></div>
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>SUMA</div><div style="text-align:right">96</div><div style="text-align:right">72</div><div style="text-align:right">+24</div><div style="text-align:right">5%</div></div>
+          </div>
+
+          <div style="margin-top:16px;padding-top:14px;border-top:1px solid #242c3a">
+            <div style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;margin-bottom:6px">DOMYŚLNE WYŻYWIENIE</div>
+            <div style="font-size:11.5px;color:#9aa4b2;line-height:1.5;margin-bottom:10px">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten poziom Racji.</div>
+            <div style="border:1px solid #232b38;border-radius:7px;background:#171e2a;padding:11px 12px 12px">
+              <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">
+                <span style="flex:1;font-size:12px;color:#cfd5de">Wyżywienie</span>
+                <span style="font-size:13px;font-weight:700;color:#e8ebf0">Standardowe · 4</span>
+              </div>
+              <div style="position:relative;height:8px;border-radius:999px;background:#1f2733">
+                <span style="position:absolute;left:0;top:0;bottom:0;width:50%;border-radius:999px;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></span>
+                <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#78c95a;border:2px solid #141a24;box-shadow:0 1px 4px rgba(0,0,0,.6)"></span>
+              </div>
+              <div style="font-size:9.5px;color:#6f7889;margin-top:7px">etykieta z <span style="font-family:ui-monospace,Consolas,monospace">formatWyzwienieLabel()</span> — bez zmian</div>
+            </div>
+            <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px">Miasta z lokalnym limitem Spichlerza poniżej tego poziomu i tak obniżą go automatycznie na koniec tury (bez zmiany globalnego ustawienia).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:none;display:flex;flex-direction:column;gap:11px">
+      <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600">Klatka B · realny deficyt</div>
+      <div style="width:404px;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+        <div style="padding:14px 16px 18px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-food.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+            <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">SPICHLERZ CENTRALNY</span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:8px">
+            <span style="font-size:20px;font-weight:800;color:#e07a7a">0</span>
+            <span style="font-size:13px;color:#7d8798;font-weight:600">/ 300</span>
+            <span style="width:16px;height:16px;display:flex;align-self:center"><img src="../eksport/icons/res-food.svg" alt="Żywność" style="width:100%;height:100%"></span>
+          </div>
+          <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Zapełnienie <b style="color:#e07a7a">0%</b> · bilans <b style="color:#e07a7a">−11</b> / turę</div>
+          <div style="height:10px;border-radius:6px;background:#1f2733;overflow:hidden;margin:10px 0"><span style="display:block;height:100%;width:3%;background:linear-gradient(90deg,#5a2020,#e07a7a)"></span></div>
+
+          <div style="padding:11px 12px;border-radius:8px;border:1px solid #4a2a2a;background:rgba(224,122,122,.07);font-size:12px;color:#e6c4c4;line-height:1.5;display:flex;gap:9px;align-items:flex-start">
+            <span style="flex:none;width:16px;height:16px;display:flex;margin-top:1px"><img src="../eksport/icons/chip-warning.svg" alt="" style="width:100%;height:100%"></span>
+            <span><b style="color:#e07a7a">Realny niepokryty deficyt żywności</b> — <b style="color:#e8ebf0">2</b> miasta niedokarmione (Korynt, Sparta) · głód wojska — magazyn centralny na minusie po koszcie armii.</span>
+          </div>
+
+          <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 4px;padding-bottom:6px;border-bottom:1px solid #242c3a">Podsumowanie ostatniej tury</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #1f2733"><span style="font-size:13px;color:#e2e6ec">Uprawa i hodowla</span><span style="font-size:13px;color:#78c95a;font-weight:600;font-variant-numeric:tabular-nums">+61</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #1f2733"><span style="font-size:13px;color:#e2e6ec">Wyżywienie ludności</span><span style="font-size:13px;color:#e07a7a;font-weight:600;font-variant-numeric:tabular-nums">−64</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid #242c3a"><span style="font-size:13px;color:#e2e6ec">Wojsko</span><span style="font-size:13px;color:#e07a7a;font-weight:600;font-variant-numeric:tabular-nums">−8</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 4px"><span style="font-size:13px;color:#e8ebf0;font-weight:700">Przyrost zapasów</span><span style="font-size:15px;color:#e07a7a;font-weight:800;font-variant-numeric:tabular-nums">−11</span></div>
+
+          <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Miasta</div>
+          <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">PRODUKCJA</div><div style="text-align:right">KOSZT RACJI</div><div style="text-align:right">BILANS</div><div style="text-align:right">WZROST%</div></div>
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right">33</div><div style="text-align:right">28</div><div style="text-align:right;color:#78c95a">+5</div><div style="text-align:right">4%</div></div>
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;display:flex;flex:none"><img src="../eksport/icons/chip-warning.svg" alt="niedokarmione" style="width:100%;height:100%"></span>Korynt</div><div style="text-align:right">18</div><div style="text-align:right">22</div><div style="text-align:right;color:#e07a7a">−4</div><div style="text-align:right;color:#e07a7a">0%</div></div>
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div style="display:flex;align-items:center;gap:5px"><span style="width:11px;height:11px;display:flex;flex:none"><img src="../eksport/icons/chip-warning.svg" alt="niedokarmione" style="width:100%;height:100%"></span>Sparta</div><div style="text-align:right">10</div><div style="text-align:right">14</div><div style="text-align:right;color:#e07a7a">−4</div><div style="text-align:right;color:#e07a7a">0%</div></div>
+            <div style="display:grid;grid-template-columns:1.1fr 0.7fr 0.8fr 0.65fr 0.6fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>SUMA</div><div style="text-align:right">61</div><div style="text-align:right">64</div><div style="text-align:right;color:#e07a7a">−3</div><div style="text-align:right">1%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:340px;max-width:520px;border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+      <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Zmiany</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+        <span><b style="color:#e8ebf0">Emoji 🍞 wypada w całości.</b> Wszędzie, gdzie dziś jest znak chleba (<span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">foodSignedTxt()</span>, nagłówek magazynu, wiersze podsumowania, tabela miast), wchodzi <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">res-food.svg</span> przez istniejące <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">mapResourceIconSvg()</span>/<span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">brandIconSvg()</span>. Ikona zostaje <b style="color:#e8ebf0">jedna</b>, przy dużej liczbie — nie po jednej na każdym wierszu, bo 14 chlebków w kolumnie to szum, nie informacja. Jednostka jest oczywista z nagłówka sekcji.</span>
+        <span><b style="color:#e8ebf0">⚠ też przestaje być znakiem tekstowym</b> — <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">chip-warning.svg</span> w callocie i przy nazwie niedokarmionego miasta.</span>
+        <span><b style="color:#e8ebf0">Hierarchia:</b> stan magazynu (hero + pasek) → callout deficytu → podsumowanie tury → miasta → suwak. Dziś wszystko to jedna gęstość; przy 7 wierszach podsumowania i 5-kolumnowej tabeli to najbardziej zatłoczona z 11 zakładek.</span>
+        <span><b style="color:#e8ebf0">Przyrost zapasów</b> wyróżniony jak „Netto skarbiec" — to ta sama rola: jedna liczba, po której gracz wie, czy jest dobrze.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Surowce — klatka 5" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 5 z 11 · blok <span style="color:#d9a441">surowce</span> · renderSurowceSection()</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Surowce — magazyn państwa</h2>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="width:404px;flex:none;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+      <div style="padding:14px 16px 18px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/chip-crate.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+          <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">MAGAZYN PAŃSTWA</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">7 surowców w obiegu</div>
+        <div style="font-size:12px;color:#9aa4b2;margin-top:3px"><b style="color:#78c95a">5</b> rośnie · <b style="color:#d9a441">1</b> pełny · <b style="color:#e07a7a">1</b> spada · obywatele: <b style="color:#e07a7a">niedobór</b></div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:8px;margin-top:14px">
+
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 11px;background:#171e2a;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:18px;height:18px;display:flex"><img src="../eksport/icons/resources-map/res-wood.svg" alt="" style="width:100%;height:100%"></span>
+              <span style="flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#e2e6ec">Drewno</span>
+              <span style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:1px;padding:3px 6px;border-radius:8px;background:rgba(15,20,28,.55)">
+                <span style="font-size:9.5px;font-weight:700;color:#78c95a;line-height:1.2">+12 prod.</span>
+                <span style="font-size:9.5px;font-weight:700;color:#78c95a;line-height:1.2;margin-top:1px;padding-top:2px;border-top:1px solid rgba(255,255,255,.1)">+7 netto</span>
+              </span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums"><span style="font-size:15px;font-weight:700;color:#e8ebf0">184</span><span style="font-size:11px;color:#7d8798">/ 400</span></div>
+            <div style="height:6px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:46%;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></span></div>
+            <div style="font-size:10.5px;color:#8ec5ff;font-weight:600">▸ Zobacz szczegóły zużycia</div>
+          </div>
+
+          <div style="border:1px solid #4a3a1a;border-radius:8px;padding:10px 11px;background:#171e2a;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:18px;height:18px;display:flex"><img src="../eksport/icons/resources-map/res-stone.svg" alt="" style="width:100%;height:100%"></span>
+              <span style="flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#e2e6ec">Kamień</span>
+              <span style="flex:none;font-size:10.5px;font-weight:700;color:#d9a441;background:rgba(217,164,65,.14);padding:2px 6px;border-radius:999px">PEŁNY</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums"><span style="font-size:15px;font-weight:700;color:#e8ebf0">300</span><span style="font-size:11px;color:#7d8798">/ 300</span><span style="margin-left:auto;font-size:9.5px;text-transform:uppercase;font-weight:700;color:#d9a441">marnuje się</span></div>
+            <div style="height:6px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:100%;background:linear-gradient(90deg,#6a4010,#d9a441)"></span></div>
+            <div style="font-size:10.5px;color:#8ec5ff;font-weight:600">▸ Zobacz szczegóły zużycia</div>
+          </div>
+
+          <div style="border:1px solid #4a2a2a;border-radius:8px;padding:10px 11px;background:#171e2a;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:18px;height:18px;display:flex"><img src="../eksport/icons/resources-map/res-clay.svg" alt="" style="width:100%;height:100%"></span>
+              <span style="flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#e2e6ec">Glina</span>
+              <span style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:1px;padding:3px 6px;border-radius:8px;background:rgba(15,20,28,.55)">
+                <span style="font-size:9.5px;font-weight:700;color:#78c95a;line-height:1.2">+4 prod.</span>
+                <span style="font-size:9.5px;font-weight:700;color:#e07a7a;line-height:1.2">−6 wymiana</span>
+                <span style="font-size:9.5px;font-weight:700;color:#e07a7a;line-height:1.2;margin-top:1px;padding-top:2px;border-top:1px solid rgba(255,255,255,.1)">−2 netto</span>
+              </span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums"><span style="font-size:15px;font-weight:700;color:#e8ebf0">18</span><span style="font-size:11px;color:#7d8798">/ 250</span><span style="margin-left:auto;font-size:9.5px;text-transform:uppercase;font-weight:700;color:#e07a7a">spada</span></div>
+            <div style="height:6px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:7%;background:linear-gradient(90deg,#5a2020,#e07a7a)"></span></div>
+            <div style="font-size:10.5px;color:#8ec5ff;font-weight:600">▾ Zobacz szczegóły zużycia</div>
+            <div style="padding:8px 9px;border-radius:6px;background:rgba(15,20,28,.55);display:flex;flex-direction:column;gap:3px">
+              <div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#b8c4d8;font-variant-numeric:tabular-nums"><span>Budynki</span><span style="color:#e07a7a;font-weight:600">−3</span></div>
+              <div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#b8c4d8;font-variant-numeric:tabular-nums"><span>Obywatele</span><span style="color:#e07a7a;font-weight:600">−9</span></div>
+              <div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#b8c4d8;font-variant-numeric:tabular-nums"><span>Wojsko</span><span style="color:#e07a7a;font-weight:600">—</span></div>
+              <div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;font-weight:700;color:#cfd5de;margin-top:2px;padding-top:4px;border-top:1px solid rgba(255,255,255,.1)"><span>Razem</span><span style="color:#e07a7a">−12</span></div>
+            </div>
+            <div style="font-size:10px;color:#7d8798;line-height:1.4">Obywatele: <b style="color:#e07a7a">NIEDOBÓR</b> — 9 obyw. × 1,0 szt./turę, zapas na 2 tury.</div>
+          </div>
+
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 11px;background:#171e2a;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:18px;height:18px;display:flex"><img src="../eksport/icons/resources-map/res-copper-ore.svg" alt="" style="width:100%;height:100%"></span>
+              <span style="flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#e2e6ec">Ruda miedzi</span>
+              <span style="flex:none;font-size:10.5px;font-weight:700;color:#78c95a;background:rgba(120,201,90,.14);padding:2px 6px;border-radius:999px">+5</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums"><span style="font-size:15px;font-weight:700;color:#e8ebf0">96</span><span style="font-size:11px;color:#7d8798">/ 200</span></div>
+            <div style="height:6px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:48%;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></span></div>
+            <div style="font-size:10.5px;color:#8ec5ff;font-weight:600">▸ Zobacz szczegóły zużycia</div>
+          </div>
+
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 11px;background:#171e2a;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:18px;height:18px;display:flex"><img src="../eksport/icons/resources-map/res-bronze.svg" alt="" style="width:100%;height:100%"></span>
+              <span style="flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#e2e6ec">Brąz</span>
+              <span style="flex:none;font-size:10.5px;font-weight:700;color:#78c95a;background:rgba(120,201,90,.14);padding:2px 6px;border-radius:999px">+3</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums"><span style="font-size:15px;font-weight:700;color:#e8ebf0">42</span><span style="font-size:11px;color:#7d8798">/ 150</span></div>
+            <div style="height:6px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:28%;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></span></div>
+            <div style="font-size:10.5px;color:#8ec5ff;font-weight:600">▸ Zobacz szczegóły zużycia</div>
+          </div>
+
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 11px;background:#171e2a;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:18px;height:18px;display:flex"><img src="../eksport/icons/resources-map/res-horse.svg" alt="" style="width:100%;height:100%"></span>
+              <span style="flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#e2e6ec">Konie</span>
+              <span style="flex:none;font-size:10.5px;font-weight:700;color:#78c95a;background:rgba(120,201,90,.14);padding:2px 6px;border-radius:999px">+1</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums"><span style="font-size:15px;font-weight:700;color:#e8ebf0">14</span><span style="font-size:11px;color:#7d8798">/ 60</span></div>
+            <div style="height:6px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:23%;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></span></div>
+            <div style="font-size:10.5px;color:#8ec5ff;font-weight:600">▸ Zobacz szczegóły zużycia</div>
+          </div>
+        </div>
+
+        <div style="margin:14px 0 4px;padding:10px 12px;border-radius:8px;border:1px dashed #2b3543;background:rgba(142,197,255,.05);font-size:12px;color:#b8c4d8;display:flex;gap:9px;align-items:flex-start">
+          <span style="color:#8ec5ff;font-weight:700;flex:none">Żywność</span>
+          <span>rozliczana osobno — <b style="color:#cfd5de">Spichlerz centralny</b>, nie magazyn państwa.</span>
+        </div>
+
+        <div style="display:flex;gap:14px;flex-wrap:wrap;padding-top:10px;margin-top:10px;border-top:1px solid #242c3a;font-size:11px;color:#7d8798">
+          <span style="display:flex;align-items:center;gap:6px"><i style="width:18px;height:6px;border-radius:999px;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></i>rośnie</span>
+          <span style="display:flex;align-items:center;gap:6px"><i style="width:18px;height:6px;border-radius:999px;background:linear-gradient(90deg,#6a4010,#d9a441)"></i>pełny</span>
+          <span style="display:flex;align-items:center;gap:6px"><i style="width:18px;height:6px;border-radius:999px;background:linear-gradient(90deg,#5a2020,#e07a7a)"></i>spada</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:380px;max-width:560px;border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+      <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Zmiany</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+        <span><b style="color:#e8ebf0">Najmniej zmian z 11 zakładek</b> — karty, paski i stany kolorystyczne zostają, bo działają. Dochodzi hero z jednym zdaniem stanu magazynu: ile rośnie, ile pełnych, ile spada. Dziś, żeby to wiedzieć, trzeba przejechać wzrokiem 7 kart.</span>
+        <span><b style="color:#e8ebf0">Eyebrow „Magazyn państwa" → UPPERCASE</b> jak „ARMIA" i „SPICHLERZ CENTRALNY" (§8.5 — dziś jedyny pisany małymi literami, bo CSS nie robi <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">text-transform</span>).</span>
+        <span><b style="color:#e8ebf0">Plakietki stanu</b> („PEŁNY / marnuje się", „spada") przenoszą informację, która dziś jest tylko w kolorze ramki. Kolor + słowo, nie kolor sam.</span>
+        <span><b style="color:#e8ebf0">Ikony surowców bez zmian</b> — <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">mapResourceIconSvg()</span> i <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">resources-map/</span>, w tym kolorowe kreski (wyjątek kolorystyczny kanonu z 2026-07-24) — jedyne kolorowe ikony w panelu, zostają.</span>
+        <span><b style="color:#e8ebf0">Rozwinięcie zużycia</b> zostaje natywnym <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">&lt;details&gt;</span>; pod rozbiciem dochodzi jedna linia o stawce obywateli (<b style="color:#e8ebf0">1,0 szt./obyw./turę</b>) i zapasie w turach.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Handel — klatka 6" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 6 z 11 · blok <span style="color:#d9a441">handel</span> · renderHandelSection()</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Handel — szlaki handlowe</h2>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="width:404px;flex:none;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+      <div style="padding:14px 16px 18px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/tb-diplomacy.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+          <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">HANDEL — SZLAKI HANDLOWE</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">+18 złota / turę</div>
+        <div style="font-size:12px;color:#9aa4b2;margin-top:3px"><b style="color:#d9a441">3</b> szlaki · <b style="color:#d9a441">2</b> umowy · bonus cudów <b style="color:#78c95a">+15%</b></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">DOCHÓD SZLAKÓW</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">16 <span style="font-size:11px;color:#78c95a;font-weight:600">+2 cuda</span></div>
+          </div>
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">SUROWCE Z WYMIANY</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">2 typy</div>
+          </div>
+        </div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Umowy handlowe</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .7fr .8fr 1fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>PARTNER</div><div style="text-align:right">POZOSTAŁO</div><div style="text-align:right">ZAUFANIE</div><div style="text-align:right">TRASA</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .8fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Fenicjanie</div><div style="text-align:right">8 tur</div><div style="text-align:right;color:#78c95a">wysokie</div><div style="text-align:right;font-size:11px">morska</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .8fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Hetyci</div><div style="text-align:right">3 tury</div><div style="text-align:right;color:#d9a441">średnie</div><div style="text-align:right;font-size:11px">lądowa</div></div>
+        </div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Trasy</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>TWOJE MIASTO</div><div>PARTNER</div><div>MEDIUM · DYST.</div><div style="text-align:right">DOCHÓD/TURĘ</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div>Tyr</div><div style="font-size:11px;color:#9aa4b2">morska · 14</div><div style="text-align:right;color:#78c95a">+8</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div>Tyr</div><div style="font-size:11px;color:#9aa4b2">morska · 11</div><div style="text-align:right;color:#78c95a">+5</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div>Hattusa</div><div style="font-size:11px;color:#9aa4b2">lądowa · 9</div><div style="text-align:right;color:#78c95a">+3</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>SUMA</div><div></div><div></div><div style="text-align:right">+16</div></div>
+        </div>
+
+        <div style="margin-top:12px;padding:10px 12px;border-radius:8px;background:#1c2431;border:1px solid #2b3543;font-size:12.5px;color:#cfd5de">Kolos Rodyjski: <b style="color:#e8ebf0">+15%</b> dochodu ze szlaków morskich.</div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Surowce z wymiany</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>SUROWIEC</div><div style="text-align:right">PRZYCHÓD</div><div style="text-align:right">ODDANE</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;display:flex;flex:none"><img src="../eksport/icons/resources-map/res-copper-ore.svg" alt="" style="width:100%;height:100%"></span>Ruda miedzi</div><div style="text-align:right;color:#78c95a">+6</div><div style="text-align:right;color:#6f7889">—</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;display:flex;flex:none"><img src="../eksport/icons/resources-map/res-clay.svg" alt="" style="width:100%;height:100%"></span>Glina</div><div style="text-align:right;color:#6f7889">—</div><div style="text-align:right;color:#e07a7a">−6</div></div>
+        </div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px">Wymiana surowców ustalana w dyplomacji — osobny ekran umowy wymiany.</div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:380px;max-width:560px;border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+      <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Zmiany</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+        <span><b style="color:#e8ebf0">Cztery tabele jedna pod drugą dostają nagłówki sekcji</b> (Umowy / Trasy / Surowce z wymiany) w stylu <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-res-lbl</span>. Dziś to ciąg identycznych bloków bez podziału — najtrudniejsza do skanowania zakładka po Spichlerzu.</span>
+        <span><b style="color:#e8ebf0">Linia dochodu sumarycznego</b> awansuje na hero, a suma tras dubluje się w wierszu SUMA tabeli — gracz może sprawdzić, że +16 to naprawdę suma trzech tras.</span>
+        <span><b style="color:#e8ebf0">Bonus cudów</b> zostaje calloutem <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-resp</span> (ten sam co Respekt w Mocy) — to jednorazowa informacja, nie wiersz tabeli.</span>
+        <span><b style="color:#e8ebf0">Nagłówek</b> ujednolicony do eyebrow, jak reszta panelu — dziś Handel i Kultura używają <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-title</span> (14px złoty bold), co wygląda jak inny poziom hierarchii niż pozostałe dziewięć zakładek. <b style="color:#e8ebf0">Do decyzji:</b> ujednolicić w stronę eyebrow (tak zrobiłem) albo odwrotnie — wtedy zmiana dotyczy wszystkich 11.</span>
+        <span><b style="color:#e8ebf0">Zaufanie</b> słowem i kolorem, nie samą liczbą.</span>
+        <span><b style="color:#e8ebf0">Koszyk wymiany surowców</b> poza zakresem (§8.6) — stopka tylko wskazuje, gdzie to żyje.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Armia — klatka 7" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 7 z 11 · blok <span style="color:#d9a441">armia</span> · render() + cityPoborMiniRekruci()</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Armia</h2>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="width:404px;flex:none;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+      <div style="padding:14px 16px 18px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/tb-army.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+          <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">ARMIA</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">9 jednostek na mapie</div>
+        <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Rekruci <b style="color:#d9a441">340</b> / <b style="color:#d9a441">520</b> · można werbować <b style="color:#e8ebf0">4</b> jedn. (85 rekr./szt.)</div>
+        <div style="height:10px;border-radius:6px;background:#1f2733;overflow:hidden;margin:10px 0"><span style="display:block;height:100%;width:65%;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></span></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">KOSZT ZŁOTA</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e07a7a">−17 <span style="font-size:11px;color:#7d8798;font-weight:600">/ turę</span></div>
+          </div>
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">ZAOPATRZENIE</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">−8 <span style="font-size:11px;color:#7d8798;font-weight:600">żywności</span></div>
+          </div>
+        </div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Rekruci — pula werbu</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .9fr .75fr .85fr .85fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">REKRUCI</div><div style="text-align:right">MAX</div><div style="text-align:right">ODNOWA</div><div style="text-align:right">JEDN.</div></div>
+          <div style="display:grid;grid-template-columns:1fr .9fr .75fr .85fr .85fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right">160</div><div style="text-align:right">240</div><div style="text-align:right;color:#78c95a">+12</div><div style="text-align:right">1,9</div></div>
+          <div style="display:grid;grid-template-columns:1fr .9fr .75fr .85fr .85fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right">110</div><div style="text-align:right">170</div><div style="text-align:right;color:#78c95a">+8</div><div style="text-align:right">1,3</div></div>
+          <div style="display:grid;grid-template-columns:1fr .9fr .75fr .85fr .85fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right">70</div><div style="text-align:right">110</div><div style="text-align:right;color:#78c95a">+5</div><div style="text-align:right">0,8</div></div>
+          <div style="display:grid;grid-template-columns:1fr .9fr .75fr .85fr .85fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>RAZEM</div><div style="text-align:right">340</div><div style="text-align:right">520</div><div style="text-align:right">+25</div><div style="text-align:right">4</div></div>
+        </div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px">Werb jednostki zużywa rekrutów z puli całej cywilizacji (suma miast). Pasek = wypełnienie puli względem maksimum imperium. JEDN. = rekruci miasta ÷ koszt jednostki w bieżącej epoce (informacyjnie, bez zaokrąglania w dół).</div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Zaopatrzenie wojska</div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px solid #1f2733"><span style="font-size:13px;color:#e2e6ec">Koszt żywności armii</span><span style="font-size:13px;color:#e07a7a;font-weight:600">−8 / turę</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0"><span style="font-size:13px;color:#e2e6ec">Magazyn państwa</span><span style="font-size:13px;color:#78c95a;font-weight:600">214 · zapas 26 tur</span></div>
+
+        <div style="margin-top:12px">
+          <div style="font-size:10px;letter-spacing:1.1px;color:#d9a441;font-weight:600;margin-bottom:6px">UCHWAŁY AKTYWNE</div>
+          <div style="font-size:12px;color:#d4e4f4;line-height:1.45;padding:8px 10px;border-left:3px solid #d9a441;background:#1a2430;border-radius:0 6px 6px 0">
+            <span style="font-weight:600;color:#e8ebf0">Sól dla spichlerza II</span><span style="font-size:9px;color:#a89060;text-transform:uppercase;margin-left:6px">uchwała</span>
+            <span style="display:block;margin-top:4px;color:#b8c4d8">+10% limitu magazynu żywności · −2 sól / turę</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:380px;max-width:560px;border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+      <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Zmiany</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+        <span><b style="color:#e8ebf0">Hero = jednostki na mapie</b>, podpis = pula rekrutów i ile z niej wyjdzie jednostek. Dziś oba te wiersze („Wojsko na mapie", „Rekruci") są równorzędne i rozjechane między notatką a tabelą.</span>
+        <span><b style="color:#e8ebf0">Dwa koszty armii obok siebie</b> — złoto (schodzi ze skarbca) i żywność (schodzi z magazynu). To najczęstsze nieporozumienie tej zakładki: armia kosztuje dwa różne zasoby z dwóch różnych miejsc.</span>
+        <span><b style="color:#e8ebf0">Zaopatrzenie</b> zyskuje „zapas 26 tur" — liczbę, którą gra już ma (magazyn ÷ koszt), a która mówi więcej niż sam stan.</span>
+        <span><b style="color:#e8ebf0">Uchwały</b> zostają w formie <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-uchwala</span> bez zmian — jeden z niewielu elementów panelu, który już ma akcent.</span>
+        <span><b style="color:#e8ebf0">Ostrzeżenie „Głód wojska"</b> (gdy aktywne) w formie identycznej jak callout deficytu w Spichlerzu — jedno zdarzenie, jeden wygląd w dwóch zakładkach.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Miasto — klatka 8" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 8 z 11 · dziś <span style="color:#d9a441">econ-miasta</span> (wspólne z Obywatelami) · zawartość zatwierdzona §8.10</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Miasto — kąt produkcyjny</h2>
+  <p style="font-size:13px;color:#9aa4b2;max-width:1000px;line-height:1.6;margin-top:8px;text-wrap:pretty">Zawartość dokładnie z listy zatwierdzonej przez właściciela, w jej kolejności. <b style="color:#e8ebf0">Bez kosztu utrzymania jednostek</b> — zgodnie z korektą. Mechanizm „zaznacz i zobacz sumę cywilizacyjną" to rozszerzenie istniejącego filtra kolumn (<span style="font-family:ui-monospace,Consolas,monospace;font-size:12px">miastaHiddenCols</span> + <span style="font-family:ui-monospace,Consolas,monospace;font-size:12px">computeMiastaSummaryRow()</span>), nie nowy wzorzec.</p>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="width:404px;flex:none;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+      <div style="padding:14px 16px 18px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/tb-cities.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+          <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">MIASTA — PRODUKCJA</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">3 miasta · 21 budynków</div>
+        <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Praca <b style="color:#d9a441">48</b> · złoto <b style="color:#d9a441">+13</b> · nauka <b style="color:#d9a441">+17</b> · 7 surowców</div>
+
+        <!-- WYBÓR ZAKRESU -->
+        <div style="display:flex;gap:6px;margin-top:12px">
+          <button style="flex:1;padding:6px 4px;border-radius:6px;border:1px solid #d9a441;background:rgba(217,164,65,.16);color:#d9a441;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Całe imperium</button>
+          <button style="flex:1;padding:6px 4px;border-radius:6px;border:1px solid #2b3543;background:#171e2a;color:#9aa4b2;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Ateny</button>
+          <button style="flex:1;padding:6px 4px;border-radius:6px;border:1px solid #2b3543;background:#171e2a;color:#9aa4b2;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Korynt</button>
+          <button style="flex:1;padding:6px 4px;border-radius:6px;border:1px solid #2b3543;background:#171e2a;color:#9aa4b2;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">Sparta</button>
+        </div>
+
+        <!-- BUDYNKI 8 KATEGORII -->
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Budynki i ich produkcja</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">
+            <span style="flex:1;min-width:0;font-size:12px;color:#e2e6ec">Prawo i administracja</span>
+            <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">3 bud.</span>
+            <span style="font-size:12px;color:#d9a441;font-weight:700;font-variant-numeric:tabular-nums;width:52px;text-align:right">+6 zł</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">
+            <span style="flex:1;min-width:0;font-size:12px;color:#e2e6ec">Wojsko i obrona</span>
+            <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">4 bud.</span>
+            <span style="font-size:12px;color:#d9a441;font-weight:700;font-variant-numeric:tabular-nums;width:52px;text-align:right">+40 rekr.</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">
+            <span style="flex:1;min-width:0;font-size:12px;color:#e2e6ec">Handel i pieniądz</span>
+            <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">3 bud.</span>
+            <span style="font-size:12px;color:#d9a441;font-weight:700;font-variant-numeric:tabular-nums;width:52px;text-align:right">+14 zł</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">
+            <span style="flex:1;min-width:0;font-size:12px;color:#e2e6ec">Nauka i kultura</span>
+            <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">4 bud.</span>
+            <span style="font-size:12px;color:#d9a441;font-weight:700;font-variant-numeric:tabular-nums;width:52px;text-align:right">+11 PN</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <input type="checkbox" style="accent-color:#d9a441;margin:0;cursor:pointer">
+            <span style="flex:1;min-width:0;font-size:12px;color:#8a93a4">Wiara</span>
+            <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">2 bud.</span>
+            <span style="font-size:12px;color:#7d8798;font-weight:600;font-variant-numeric:tabular-nums;width:52px;text-align:right">+3 wiara</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <input type="checkbox" style="accent-color:#d9a441;margin:0;cursor:pointer">
+            <span style="flex:1;min-width:0;font-size:12px;color:#8a93a4">Zdrowie</span>
+            <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">1 bud.</span>
+            <span style="font-size:12px;color:#7d8798;font-weight:600;font-variant-numeric:tabular-nums;width:52px;text-align:right">+2 zdr.</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">
+            <span style="flex:1;min-width:0;font-size:12px;color:#e2e6ec">Produkcja surowców</span>
+            <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">3 bud.</span>
+            <span style="font-size:12px;color:#d9a441;font-weight:700;font-variant-numeric:tabular-nums;width:52px;text-align:right">7 typów</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">
+            <span style="flex:1;min-width:0;font-size:12px;color:#e2e6ec">Żywność</span>
+            <span style="font-size:11px;color:#7d8798;font-variant-numeric:tabular-nums">1 bud.</span>
+            <span style="font-size:12px;color:#d9a441;font-weight:700;font-variant-numeric:tabular-nums;width:52px;text-align:right">+96</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:7px;background:#1a2230;border:1px solid #3a4657">
+            <span style="flex:1;font-size:12px;font-weight:700;color:#d9a441">SUMA ZAZNACZONYCH · CAŁA CYWILIZACJA</span>
+            <span style="font-size:13px;font-weight:800;color:#d9a441;font-variant-numeric:tabular-nums">18 bud.</span>
+          </div>
+        </div>
+
+        <!-- WPŁYWY DO SKARBCA -->
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Wpływy do skarbca</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">PODATEK</div><div style="text-align:right">SZLAKI</div><div style="text-align:right">UTRZ. BUD.</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right;color:#78c95a">+18</div><div style="text-align:right;color:#78c95a">+8</div><div style="text-align:right;color:#e07a7a">−18</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right;color:#78c95a">+7</div><div style="text-align:right;color:#78c95a">+5</div><div style="text-align:right;color:#e07a7a">−9</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right;color:#78c95a">+3</div><div style="text-align:right;color:#78c95a">+3</div><div style="text-align:right;color:#e07a7a">−4</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>SUMA</div><div style="text-align:right">+28</div><div style="text-align:right">+16</div><div style="text-align:right">−31</div></div>
+        </div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:8px">Bez utrzymania jednostek — to koszt całej cywilizacji, nie miasta. Pełny bilans imperium: sekcja Skarbiec.</div>
+
+        <!-- NAUKA -->
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Produkcja nauki</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#cfd5de"><span style="flex:1">Ateny</span><span style="flex:2;height:8px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:47%;background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span></span><span style="width:56px;text-align:right;color:#8ec5ff;font-weight:600">+8 / 17</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#cfd5de"><span style="flex:1">Korynt</span><span style="flex:2;height:8px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:35%;background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span></span><span style="width:56px;text-align:right;color:#8ec5ff;font-weight:600">+6 / 17</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#cfd5de"><span style="flex:1">Sparta</span><span style="flex:2;height:8px;border-radius:999px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:18%;background:linear-gradient(90deg,#2c4a6b,#8ec5ff)"></span></span><span style="width:56px;text-align:right;color:#8ec5ff;font-weight:600">+3 / 17</span></div>
+        </div>
+
+        <!-- SUROWCE FIZYCZNE -->
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Produkowane surowce</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 12px;padding:8px 10px;border:1px solid #232b38;border-radius:7px;background:#171e2a;margin-bottom:8px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;cursor:pointer"><input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">Drewno</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;cursor:pointer"><input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">Kamień</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;cursor:pointer"><input type="checkbox" checked style="accent-color:#d9a441;margin:0;cursor:pointer">Glina</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;cursor:pointer"><input type="checkbox" style="accent-color:#d9a441;margin:0;cursor:pointer">Ruda miedzi</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;cursor:pointer"><input type="checkbox" style="accent-color:#d9a441;margin:0;cursor:pointer">Brąz</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;cursor:pointer"><input type="checkbox" style="accent-color:#d9a441;margin:0;cursor:pointer">Cegła</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;cursor:pointer"><input type="checkbox" style="accent-color:#d9a441;margin:0;cursor:pointer">Konie</label>
+        </div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .7fr .7fr .7fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">DREWNO</div><div style="text-align:right">KAMIEŃ</div><div style="text-align:right">GLINA</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .7fr .7fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right">+6</div><div style="text-align:right">+4</div><div style="text-align:right">+2</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .7fr .7fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right">+4</div><div style="text-align:right">+2</div><div style="text-align:right">+2</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .7fr .7fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right">+2</div><div style="text-align:right">+2</div><div style="text-align:right">—</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .7fr .7fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>CYWILIZACJA</div><div style="text-align:right">+12</div><div style="text-align:right">+8</div><div style="text-align:right">+4</div></div>
+        </div>
+
+        <!-- KOLEJKA -->
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Kolejka produkcji</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <span style="flex:1;min-width:0;font-size:12px;color:#e2e6ec"><b style="color:#e8ebf0">Ateny</b> · Mennica</span>
+            <span style="width:64px;height:6px;border-radius:999px;background:#1f2733;overflow:hidden;flex:none"><span style="display:block;height:100%;width:60%;background:linear-gradient(90deg,#6a4010,#d9a441)"></span></span>
+            <span style="font-size:11px;color:#d9a441;font-weight:600;width:42px;text-align:right">2 tury</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #2b3543;border-radius:7px;background:#171e2a">
+            <span style="flex:1;min-width:0;font-size:12px;color:#e2e6ec"><b style="color:#e8ebf0">Korynt</b> · Port</span>
+            <span style="width:64px;height:6px;border-radius:999px;background:#1f2733;overflow:hidden;flex:none"><span style="display:block;height:100%;width:25%;background:linear-gradient(90deg,#6a4010,#d9a441)"></span></span>
+            <span style="font-size:11px;color:#d9a441;font-weight:600;width:42px;text-align:right">5 tur</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px dashed #2b3543;border-radius:7px">
+            <span style="flex:1;min-width:0;font-size:12px;color:#8a93a4"><b style="color:#cfd5de">Sparta</b> · kolejka pusta</span>
+          </div>
+        </div>
+
+        <!-- HANDEL / OBRONA / POPULACJA -->
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Handel · obrona · populacja</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .7fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">SZLAKI</div><div style="text-align:right">OBRONA</div><div style="text-align:right">LUDNOŚĆ</div><div style="text-align:right">POLA</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right">1</div><div style="text-align:right;color:#78c95a">78%</div><div style="text-align:right">12,4 tys.</div><div style="text-align:right">9</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right">1</div><div style="text-align:right;color:#d9a441">52%</div><div style="text-align:right">8,1 tys.</div><div style="text-align:right">7</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right">1</div><div style="text-align:right;color:#e07a7a">31%</div><div style="text-align:right">5,3 tys.</div><div style="text-align:right">5</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr .8fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>SUMA / ŚR.</div><div style="text-align:right">3</div><div style="text-align:right">54%</div><div style="text-align:right">25,8 tys.</div><div style="text-align:right">21</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:380px;max-width:560px;display:flex;flex-direction:column;gap:16px">
+      <div style="border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+        <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Jak działa „zaznacz i zobacz sumę"</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+          <span><b style="color:#e8ebf0">Ten sam mechanizm, trzy miejsca.</b> Checkbox przed wierszem (kategorie budynków), checkboxy nad tabelą (surowce) i dolny wiersz sumy — dokładnie logika <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">miastaHiddenCols</span> + <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">computeMiastaSummaryRow()</span>, tylko zastosowana do wierszy i typów surowca, nie samych kolumn. Odznaczone pozycje gasną do <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">#8a93a4</span> i wypadają z sumy — nie znikają, żeby gracz wiedział, co odznaczył.</span>
+          <span><b style="color:#e8ebf0">Wiersz sumy zawsze mówi „CAŁA CYWILIZACJA"</b> / „CYWILIZACJA", nie „SUMA" — pytanie właściciela brzmiało „ile w sumie w całej cywilizacji", więc odpowiedź stoi w wierszu wprost.</span>
+          <span><b style="color:#e8ebf0">Przełącznik zakresu</b> (Całe imperium / poszczególne miasta) w stylu <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-mocview-btn</span> z Mocy — jedna zakładka obsługuje oba przekroje bez drugiego ekranu.</span>
+          <span><b style="color:#e8ebf0">Osiem kategorii</b> w kolejności <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">BUILDING_GROUP_ORDER</span>, nie alfabetycznie.</span>
+        </div>
+      </div>
+      <div style="border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+        <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Do integratora</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+          <span><b style="color:#e8ebf0">To najdroższa zakładka z 11</b> — dzisiejsza jedna tabela z 8 kolumnami rozchodzi się na sześć sekcji, a część danych (produkcja per kategoria budynków, obrona, pola) nie jest dziś w panelu imperium w ogóle. Jeśli zakres ma być cięty, proponuję kolejność wdrożenia: wpływy do skarbca → surowce → kolejka → budynki → obrona/populacja.</span>
+          <span><b style="color:#e8ebf0">Kolumna „SUROWCE"</b> z dzisiejszej tabeli (zapotrzebowanie budynków) <b style="color:#e8ebf0">nie</b> wchodzi tu — to koszt, nie produkcja. Zostaje w Skarbcu (utrzymanie) i w Surowcach (rozbicie zużycia).</span>
+          <span><b style="color:#e8ebf0">Utrzymania jednostek nie ma</b> w żadnej tabeli tej zakładki — zgodnie z korektą właściciela.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Obywatele — klatka 9" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 9 z 11 · dziś <span style="color:#d9a441">econ-miasta</span> (wspólne z Miastem) · zawartość zatwierdzona §8.11</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Obywatele — kąt społeczny</h2>
+  <p style="font-size:13px;color:#9aa4b2;max-width:1000px;line-height:1.6;margin-top:8px;text-wrap:pretty">Dziewięć pozycji z listy zatwierdzonej bez korekt, w jej kolejności. Powtórzenia z zakładką Miasto (Kultura, Religia) są zamierzone — dwa przekroje tych samych miast.</p>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="width:404px;flex:none;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+      <div style="padding:14px 16px 18px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-population.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+          <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">OBYWATELE IMPERIUM</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">28 obywateli · 25,8 tys. ludzi</div>
+        <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Zadowolenie <b style="color:#78c95a">+2</b> · przyrost <b style="color:#78c95a">+3</b> obyw./turę · zużycie surowców <b style="color:#e07a7a">28</b> szt./turę</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">W POLU</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">17 <span style="font-size:11px;color:#7d8798;font-weight:600">61%</span></div>
+          </div>
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">W BUDYNKACH</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">11 <span style="font-size:11px;color:#7d8798;font-weight:600">39%</span></div>
+          </div>
+        </div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Kultura</div>
+        <div style="display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:#cfd5de"><span style="flex:1">Zgromadzono <b style="color:#e8ebf0">248</b></span><span style="color:#78c95a;font-weight:600">+14 / turę</span></div>
+        <div style="height:8px;border-radius:999px;background:#1f2733;overflow:hidden;margin:7px 0 5px"><span style="display:block;height:100%;width:62%;background:linear-gradient(90deg,#6a4010,#d9a441)"></span></div>
+        <div style="font-size:11px;color:#9aa4b2">248 / 400 do rozszerzenia granic (Ateny) · 11 tur</div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Religia</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 11px;border:1px solid #2b3543;border-radius:8px;background:#171e2a">
+          <span style="flex:none;width:34px;height:34px;border-radius:8px;background:#1d2634;display:flex;align-items:center;justify-content:center"><img src="../eksport/icons/res-religion.svg" alt="" style="width:19px;height:19px"></span>
+          <span style="flex:1;min-width:0">
+            <span style="display:block;font-size:13px;font-weight:700;color:#d9a441">Kult olimpijski</span>
+            <span style="display:block;font-size:11px;color:#7d8798;margin-top:2px">religia państwowa · własna</span>
+          </span>
+          <span style="flex:none;text-align:right">
+            <span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">19,4 tys.</span>
+            <span style="display:block;font-size:10.5px;color:#7d8798">wyznawców · 75%</span>
+          </span>
+        </div>
+        <div style="font-size:11px;color:#9aa4b2;margin-top:6px">Obca religia: <b style="color:#cfd5de">Kult Baala</b> 6,4 tys. (25%, Korynt)</div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Szczęście · zadowolenie</div>
+        <div style="display:flex;align-items:baseline;gap:8px"><span style="flex:1;font-size:13px;color:#e2e6ec">Poziom imperium</span><span style="font-size:15px;font-weight:800;color:#78c95a">+2</span></div>
+        <div style="display:flex;flex-direction:column;gap:3px;margin-top:8px;padding:9px 10px;border-radius:7px;background:#1c2431;border:1px solid #2b3543">
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8"><span>Kultura</span><span style="color:#78c95a;font-weight:600">+2</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8"><span>Religia</span><span style="color:#78c95a;font-weight:600">+1</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8"><span>Zdrowie</span><span style="color:#78c95a;font-weight:600">+1</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8"><span>Wyżywienie (standardowe)</span><span style="color:#6f7889;font-weight:600">0</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8"><span>Niedobór surowców obywateli</span><span style="color:#e07a7a;font-weight:600">−2</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#cfd5de;margin-top:3px;padding-top:5px;border-top:1px solid rgba(255,255,255,.1)"><span>Razem</span><span style="color:#78c95a">+2</span></div>
+        </div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Zdrowie · prawo · wyżywienie</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>OBSZAR</div><div style="text-align:right">POZIOM</div><div style="text-align:right">BUDYNKI</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Zdrowie</div><div style="text-align:right;color:#78c95a">+2</div><div style="text-align:right">1</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Prawo i administracja</div><div style="text-align:right;color:#78c95a">+3</div><div style="text-align:right">3</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Wyżywienie · racje</div><div style="text-align:right">Standardowe</div><div style="text-align:right">—</div></div>
+        </div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:8px">Poziom racji wpływa na wzrost ludności i zadowolenie. Suwak — sekcja Spichlerz.</div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Rekruci</div>
+        <div style="display:flex;align-items:baseline;gap:8px;font-size:12.5px;color:#cfd5de"><span style="flex:1">Pula do powołania</span><span><b style="color:#d9a441">340</b> / <b style="color:#d9a441">520</b></span></div>
+        <div style="height:8px;border-radius:999px;background:#1f2733;overflow:hidden;margin-top:7px"><span style="display:block;height:100%;width:65%;background:linear-gradient(90deg,#4e9a3f,#78c95a)"></span></div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:7px">Rozbicie per miasto i odnowa — sekcja Armia.</div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Zużycie surowców przez obywateli</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .7fr 1fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">OBYW.</div><div style="text-align:right">ZUŻYCIE / TURĘ</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right">12</div><div style="text-align:right;color:#e07a7a">−12</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right">9</div><div style="text-align:right;color:#e07a7a">−9</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right">7</div><div style="text-align:right;color:#e07a7a">−7</div></div>
+          <div style="display:grid;grid-template-columns:1fr .7fr 1fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>CYWILIZACJA</div><div style="text-align:right">28</div><div style="text-align:right">−28</div></div>
+        </div>
+        <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:8px">1,0 szt. surowca na obywatela na turę, z magazynu centralnego. Rozbicie per surowiec: sekcja Surowce → karta → „Zobacz szczegóły zużycia".</div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:380px;max-width:560px;border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+      <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Decyzje projektowe</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+        <span><b style="color:#e8ebf0">Kolejność sekcji = kolejność listy właściciela.</b> Nic nie przestawione, nic nie dodane. Hero podaje trzy liczby, które są wspólnym mianownikiem wszystkich dziewięciu pozycji: ilu obywateli, jak się czują, ile zużywają.</span>
+        <span><b style="color:#e8ebf0">Rozbicie zadowolenia</b> jest sercem tej zakładki — dlatego jako jedyne dostaje callout <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-resp</span>. To tu widać, że kultura i religia „coś dają", co dziś jest tylko zdaniem w Kulturze („notatka o wpływie na szczęście").</span>
+        <span><b style="color:#e8ebf0">Karta religii</b> to wzorzec z mockupu <i>Miasto Zakladki W3 6klatek</i> (medalion + nazwa + wyznawcy + efekty), przemalowany na 3b i podniesiony do skali imperium: dominująca religia, procent, obca religia osobną linią.</span>
+        <span><b style="color:#e8ebf0">Trzy sekcje kończą się odsyłaczem</b> („suwak — Spichlerz", „rozbicie — Armia", „per surowiec — Surowce"), zamiast duplikować kontrolki. Obywatele to przekrój, nie druga kopia panelu.</span>
+        <span><b style="color:#e8ebf0">Stawka 1,0 szt./obyw./turę</b> — zgodnie z §8.11, liczby przykładowe policzone od 1,0, nie 0,2.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Kultura — klatka 10" style="padding:40px 38px 60px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 10 z 11 · blok <span style="color:#d9a441">kultura</span> · render()</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Kultura imperium</h2>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="width:404px;flex:none;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+      <div style="padding:14px 16px 18px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-culture.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+          <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">KULTURA IMPERIUM</span>
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#d9a441;margin-top:8px">248 kultury</div>
+        <div style="font-size:12px;color:#9aa4b2;margin-top:3px">Przyrost <b style="color:#78c95a">+14</b> / turę · 3 miasta · zadowolenie <b style="color:#78c95a">+2</b></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">NAJSILNIEJSZE MIASTO</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">Ateny</div>
+          </div>
+          <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+            <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">DO PROGU</div>
+            <div style="font-size:14px;font-weight:700;margin-top:5px;color:#d9a441">62%</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9aa4b2;margin-bottom:6px"><span style="flex:1">Ateny — zasięg granic</span><span><b style="color:#e8ebf0">148</b> / 240</span></div>
+          <div style="height:10px;border-radius:6px;background:#1f2733;overflow:hidden"><span style="display:block;height:100%;width:62%;background:linear-gradient(90deg,#6a4010,#d9a441)"></span></div>
+          <div style="font-size:11px;color:#9aa4b2;margin-top:6px">92 kultury do rozszerzenia granic · 7 tur</div>
+        </div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Progi zasięgu</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;background:#171e2a;border:1px solid #2b3543"><span style="flex:1;font-size:12px;color:#8a93a4">Próg 1 · 60 kultury</span><span style="font-size:11px;font-weight:700;color:#78c95a">osiągnięty</span></div>
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;background:#171e2a;border:1px solid #2b3543"><span style="flex:1;font-size:12px;color:#8a93a4">Próg 2 · 140 kultury</span><span style="font-size:11px;font-weight:700;color:#78c95a">osiągnięty</span></div>
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;background:rgba(217,164,65,.16);border:1px solid #d9a441"><span style="flex:1;font-size:12px;color:#e8ebf0;font-weight:600">Próg 3 · 240 kultury</span><span style="font-size:11px;font-weight:700;color:#d9a441">62%</span></div>
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;border:1px dashed #2b3543"><span style="flex:1;font-size:12px;color:#8a93a4">Próg 4 · 380 kultury</span><span style="font-size:11px;color:#6f7889">—</span></div>
+        </div>
+
+        <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Miasta</div>
+        <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div style="text-align:right">KULTURA</div><div style="text-align:right">ZASIĘG</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="text-align:right">148</div><div style="text-align:right;color:#d9a441">3 heksy</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="text-align:right">64</div><div style="text-align:right">2 heksy</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="text-align:right">36</div><div style="text-align:right">1 heks</div></div>
+          <div style="display:grid;grid-template-columns:1fr .8fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;font-weight:700;color:#d9a441;background:#1a2230;border-top:1px solid #3a4657"><div>SUMA</div><div style="text-align:right">248</div><div style="text-align:right">6 heksów</div></div>
+        </div>
+
+        <div style="margin-top:12px;padding:10px 12px;border-radius:8px;background:#1c2431;border:1px solid #2b3543;font-size:12.5px;color:#cfd5de">Kultura podnosi zadowolenie obywateli — rozbicie w zakładce <b style="color:#e8ebf0">Obywatele</b>.</div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:380px;max-width:560px;border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+      <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Zmiany</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+        <span><b style="color:#e8ebf0">Progi jako lista stanów</b>, nie zdanie o procencie. Osiągnięte gasną, bieżący dostaje złote tło <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">rgba(217,164,65,.16)</span> (ten sam co aktywny <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-mocview-btn</span>), przyszły — ramka przerywana. Wzorzec z karty „Kultura" mockupu <i>Miasto Zakladki W3 6klatek</i>, w skali imperium.</span>
+        <span><b style="color:#e8ebf0">Pasek do progu</b> dotyczy najsilniejszego miasta i mówi to wprost w etykiecie — dziś procent wisi bez wskazania, czego dotyczy.</span>
+        <span><b style="color:#e8ebf0">Notatka o wpływie na szczęście</b> zostaje, ale jako callout z odsyłaczem do rozbicia w Obywatelach, żeby ta sama informacja nie żyła w dwóch miejscach w dwóch formach.</span>
+        <span><b style="color:#e8ebf0">Nagłówek</b> z <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">.civ-emp-title</span> na eyebrow — ta sama zmiana co w Handlu (§8.8/§8.6), jedna konwencja na 11 zakładek.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Religia — klatka 11" style="padding:40px 38px 80px;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:#e8ebf0;width:1720px;margin:0 auto;background:#0c1017;border-top:1px solid #242c3a">
+  <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7d8798;margin-bottom:7px;font-weight:600">Klatka 11 z 11 · dziś <span style="color:#d9a441">econ-religia</span> — jeden wiersz, brak detalu · pytanie architektoniczne §8.9</div>
+  <h2 style="font-size:24px;font-weight:700;color:#d9a441;line-height:1.15">Religia — dwa warianty do decyzji</h2>
+  <p style="font-size:13px;color:#9aa4b2;max-width:1000px;line-height:1.6;margin-top:8px;text-wrap:pretty">Zgodnie z §8.9 <b style="color:#e8ebf0">nie rozstrzygam</b>, czy chip „Religia" zostaje na górnym pasku. Oba warianty są tu zaprojektowane, żeby decyzja właściciela nie wymagała kolejnej rundy rysowania.</p>
+
+  <div style="display:flex;gap:30px;align-items:flex-start;margin-top:22px;flex-wrap:wrap">
+    <div style="flex:none;display:flex;flex-direction:column;gap:11px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:9.5px;color:#141a24;background:#78c95a;border-radius:999px;padding:2px 9px;font-weight:700;letter-spacing:.04em;white-space:nowrap;line-height:1.4">ZATWIERDZONY 14.08</span><span style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#d9a441;font-weight:600">Wariant A · chip zostaje — pełna zakładka</span></div>
+      <div style="width:404px;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+        <div style="padding:14px 16px 18px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-religion.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+            <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">RELIGIA IMPERIUM</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+            <span style="flex:none;width:44px;height:44px;border-radius:9px;background:#1d2634;border:1px solid #d9a441;display:flex;align-items:center;justify-content:center"><img src="../eksport/icons/res-religion.svg" alt="" style="width:24px;height:24px"></span>
+            <span style="flex:1;min-width:0">
+              <span style="display:block;font-size:18px;font-weight:800;color:#d9a441;line-height:1.15">Kult olimpijski</span>
+              <span style="display:block;font-size:11px;color:#7d8798;margin-top:2px">religia państwowa · własna</span>
+            </span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+            <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+              <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">WYZNAWCY</div>
+              <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">19,4 tys. <span style="font-size:11px;color:#78c95a;font-weight:600">75%</span></div>
+            </div>
+            <div style="border:1px solid #2b3543;border-radius:8px;padding:10px 12px;background:#171e2a">
+              <div style="font-size:10px;letter-spacing:1px;color:#7d8798;font-weight:600">WIARA / TURĘ</div>
+              <div style="font-size:14px;font-weight:700;margin-top:5px;color:#e8ebf0">+3</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div style="display:flex;height:12px;border-radius:999px;overflow:hidden;background:#1f2733">
+              <span style="width:75%;background:linear-gradient(90deg,#6a4010,#d9a441)"></span>
+              <span style="width:25%;background:linear-gradient(90deg,#3a4657,#9aa4b2)"></span>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-size:11px"><span style="flex:1;color:#d9a441;font-weight:600">Kult olimpijski 75%</span><span style="color:#9aa4b2;font-weight:600">Kult Baala 25%</span></div>
+          </div>
+
+          <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Efekty</div>
+          <div style="display:flex;flex-direction:column;gap:3px;padding:9px 10px;border-radius:7px;background:#1c2431;border:1px solid #2b3543">
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8"><span>Zadowolenie</span><span style="color:#78c95a;font-weight:600">+1</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8"><span>Porządek</span><span style="color:#78c95a;font-weight:600">+2</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8"><span>Świątynie</span><span style="color:#cfd5de;font-weight:600">2</span></div>
+          </div>
+
+          <div style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600;margin:14px 0 8px;padding-bottom:6px;border-bottom:1px solid #242c3a">Miasta</div>
+          <div style="border:1px solid #232b38;border-radius:7px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:9px;letter-spacing:.25px;color:#7d8798;font-weight:600;background:#1a2230"><div>MIASTO</div><div>RELIGIA</div><div style="text-align:right">WYZNAWCY</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de"><div>Ateny</div><div style="color:#d9a441">Kult olimpijski</div><div style="text-align:right">12,4 tys.</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Korynt</div><div style="color:#9aa4b2">Kult Baala</div><div style="text-align:right">6,4 tys.</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1.1fr .8fr;column-gap:6px;padding:7px 10px;font-size:12px;color:#cfd5de;border-top:1px solid #1f2733"><div>Sparta</div><div style="color:#d9a441">Kult olimpijski</div><div style="text-align:right">7,0 tys.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:none;display:flex;flex-direction:column;gap:11px">
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:9.5px;color:#9aa4b2;border:1px solid #3a4657;border-radius:999px;padding:2px 9px;font-weight:700;letter-spacing:.04em;white-space:nowrap;line-height:1.4">ODRZUCONY</span><span style="font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#7d8798;font-weight:600">Wariant B · chip znika — skrót w Obywatelach</span></div>
+      <div style="width:404px;opacity:.55;background:#141a24;border-left:1px solid #2b3543;box-shadow:-18px 0 44px rgba(0,0,0,.45);font-size:13px;line-height:1.45">
+        <div style="padding:14px 16px 18px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="width:14px;height:14px;display:flex"><img src="../eksport/icons/res-population.svg" alt="" style="width:100%;height:100%;filter:grayscale(1) brightness(1.6)"></span>
+            <span style="font-size:11px;letter-spacing:1.4px;color:#7d8798;font-weight:600;white-space:nowrap">OBYWATELE → RELIGIA</span>
+          </div>
+          <div style="font-size:12px;color:#9aa4b2;margin-top:8px;line-height:1.5">Sekcja Religia wewnątrz zakładki Obywatele — bez własnego chipa na górnym pasku HUD.</div>
+
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 11px;border:1px solid #2b3543;border-radius:8px;background:#171e2a;margin-top:12px">
+            <span style="flex:none;width:34px;height:34px;border-radius:8px;background:#1d2634;display:flex;align-items:center;justify-content:center"><img src="../eksport/icons/res-religion.svg" alt="" style="width:19px;height:19px"></span>
+            <span style="flex:1;min-width:0">
+              <span style="display:block;font-size:13px;font-weight:700;color:#d9a441">Kult olimpijski</span>
+              <span style="display:block;font-size:11px;color:#7d8798;margin-top:2px">religia państwowa · własna · 2 świątynie</span>
+            </span>
+            <span style="flex:none;text-align:right">
+              <span style="display:block;font-size:13px;font-weight:700;color:#e8ebf0">75%</span>
+              <span style="display:block;font-size:10.5px;color:#7d8798">19,4 tys.</span>
+            </span>
+          </div>
+          <div style="display:flex;height:8px;border-radius:999px;overflow:hidden;background:#1f2733;margin-top:8px">
+            <span style="width:75%;background:linear-gradient(90deg,#6a4010,#d9a441)"></span>
+            <span style="width:25%;background:linear-gradient(90deg,#3a4657,#9aa4b2)"></span>
+          </div>
+          <div style="font-size:11px;color:#9aa4b2;margin-top:6px">Obca: <b style="color:#cfd5de">Kult Baala</b> 25% (Korynt) · efekty: zadowolenie +1, porządek +2</div>
+          <div style="font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px">Pełne rozbicie per miasto — panel miasta, zakładka Religia.</div>
+
+          <div style="margin-top:14px;padding:11px 12px;border-radius:8px;border:1px dashed #2b3543;background:rgba(142,197,255,.05);font-size:12px;color:#b8c4d8;line-height:1.5">
+            Górny pasek traci jeden chip (10 zamiast 11) — <b style="color:#cfd5de">Religia</b> przestaje być osobnym wejściem.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:340px;max-width:520px;display:flex;flex-direction:column;gap:16px">
+      <div style="border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+        <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Decyzja właściciela · 2026-08-14</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cfd5de;line-height:1.55">
+          <span style="padding:10px 12px;border-radius:8px;background:rgba(120,201,90,.08);border:1px solid #3a5a34"><b style="color:#78c95a">Wariant A — chip zostaje.</b> Religia dostaje pełną zakładkę; mniejsze ryzyko strukturalne niż usuwanie chipa z górnego paska HUD. Wariant B zostaje w makiecie wyłącznie jako zapis rozważanej alternatywy.</span>
+          <span>Dziś Religia to <b style="color:#e8ebf0">jedna linijka</b> („Wierni religii") w bloku ekonomii, bez klucza w <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">detailFor</span>, czyli bez żadnego rozwinięcia. Zatwierdzona lista Obywateli zawiera jednak Religię — więc albo chip zostaje i dostaje pełną zakładkę (A), albo znika i treść mieszka w Obywatelach (B).</span>
+          <span><b style="color:#e8ebf0">Co mówi projekt, a nie decyzja:</b> oba warianty używają tej samej karty religii, więc wybór nie zmienia rysunku — zmienia tylko, czy istnieje osobne wejście z HUD. Wariant A dubluje treść w dwóch zakładkach (zamierzone przy Kulturze, ale tam obie zakładki mają własne dane; przy Religii dane są te same). Wariant B skraca górny pasek do 10 chipów.</span>
+          <span style="color:#9aa4b2">Decyzja nie blokuje pozostałych 10 klatek — reszta paczki jest niezależna.</span>
+        </div>
+      </div>
+      <div style="border:1px solid #2b3543;border-radius:9px;background:#171e2a;padding:16px 18px">
+        <div style="font-size:14px;font-weight:700;color:#d9a441;margin-bottom:10px">Podsumowanie paczki · 11 z 11</div>
+        <div style="font-size:12.5px;color:#cfd5de;line-height:1.7">
+          Skarbiec · Praca · Nauka · Spichlerz · Surowce · Handel · Armia · Miasto · Obywatele · Kultura · Religia.<br>
+          <span style="color:#9aa4b2">Paleta 3b bez odstępstw · zero emoji (🍞 i ⚠ zamienione na <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">res-food.svg</span> / <span style="font-family:ui-monospace,Consolas,monospace;font-size:11px">chip-warning.svg</span>) · zawartość Miasto/Obywatele dosłownie z zatwierdzonych list, bez utrzymania jednostek w Mieście · mechanizm sumy cywilizacyjnej oparty na istniejącym filtrze kolumn · pytanie o chip Religia nierozstrzygnięte.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1760}}"></script>
+</body>
+</html>

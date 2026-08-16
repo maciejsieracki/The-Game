@@ -376,9 +376,9 @@ ok(mp.empireManpowerCurrent(empCities, 0, 1) === beforeRefund + 500, 'zwrot MP d
 // Faza 3: uzupełnianie HP z puli Manpower
 const healParamsEasy = mp.loadManpowerReplenishParams('easy');
 const healParamsHard = mp.loadManpowerReplenishParams('hard');
-ok(healParamsEasy.healPctMaxPerTurn === 25, 'uzupelnienie easy 25%');
-ok(healParamsHard.healPctMaxPerTurn === 15, 'uzupelnienie hard 15%');
-ok(mp.manpowerHealCapForTurn(100, 10, healParamsEasy) === 25, 'cap leczenia 25% maxHP');
+ok(healParamsEasy.healPctMaxPerTurn === 40, 'uzupelnienie easy 40% (R-MANPOWER-LECZENIE-PROC-TRUDNOSC 2026-08-16)');
+ok(healParamsHard.healPctMaxPerTurn === 20, 'uzupelnienie hard 20% (R-MANPOWER-LECZENIE-PROC-TRUDNOSC 2026-08-16)');
+ok(mp.manpowerHealCapForTurn(100, 10, healParamsEasy) === 40, 'cap leczenia 40% maxHP');
 ok(mp.manpowerCostForHeal(25, 100, 1000) === 250, 'koszt MP proporcjonalny do leczenia');
 
 const healCities = [{ id: 'h1', ownerId: 0, population: 10, manpower: 5000, q: 0, r: 0, oblegane: false }];
@@ -391,9 +391,9 @@ const healRes = mp.tickManpowerUnitReplenishment(
   () => [],
   () => 100,
 );
-ok(healRes.healedCount === 1 && healUnit.hp === 30, 'normal: +20 HP (20% z 100)');
-ok(healRes.totalMpSpent === 200, 'normal: koszt 200 MP (20% × 1000)');
-ok(healCities[0].manpower === 4800, 'normal: pula -200 MP');
+ok(healRes.healedCount === 1 && healUnit.hp === 40, 'normal: +30 HP (30% z 100)');
+ok(healRes.totalMpSpent === 300, 'normal: koszt 300 MP (30% × 1000)');
+ok(healCities[0].manpower === 4700, 'normal: pula -300 MP');
 
 const lowMpCities = [{ id: 'h2', ownerId: 0, population: 10, manpower: 50, q: 0, r: 0, oblegane: false }];
 const lowMpUnit = { id: 'u2', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 4, r: 4 };
@@ -413,7 +413,7 @@ const multiCities = [{ id: 'h3', ownerId: 0, population: 10, manpower: 100_000, 
 for (let t = 0; t < 3; t++) {
   mp.tickManpowerUnitReplenishment(multiCities, [multiTurnUnit], 'easy', () => 1, () => [], () => 100);
 }
-ok(multiTurnUnit.hp === 76, 'easy: 3 tury z 1 HP do 76 (25/ture)');
+ok(multiTurnUnit.hp === 100, 'easy: 3 tury z 1 HP do 100 (40/ture: 1+40+40+19 capped na maxHP)');
 
 // B-MP-Q1c: brak leczenia w oblężonym mieście (hex lub garnizon)
 const siegeCities = [{ id: 's1', ownerId: 0, population: 10, manpower: 5000, q: 5, r: 5, oblegane: true }];
@@ -434,9 +434,11 @@ const mixCities = [
 ];
 const fieldOk = { id: 'fo', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 10, r: 10 };
 const mixRes = mp.tickManpowerUnitReplenishment(mixCities, [fieldOk], 'normal', () => 1, () => [], () => 100);
-ok(mixRes.healedCount === 1 && fieldOk.hp === 30, 'pole poza oblezeniem: +20 HP');
+ok(mixRes.healedCount === 1 && fieldOk.hp === 40, 'pole poza oblezeniem: +30 HP');
 
-// Garnizon pierwszy przy ograniczonej puli MP (100 MP = połowa pełnego leczenia 20% przy koszcie 1000)
+// Garnizon pierwszy przy ograniczonej puli MP (100 MP kupuje tylko 10 HP przy koszcie 1000 —
+// wynik bez zmian po R-MANPOWER-LECZENIE-PROC-TRUDNOSC 2026-08-16, bo tu limituje pula MP,
+// nie procent trudności: desiredHeal 30% > affordable 10 HP zarówno przed, jak i po zmianie)
 const orderCities = [{ id: 'oc', ownerId: 0, population: 10, manpower: 100, q: 1, r: 1, oblegane: false }];
 const garUnit = { id: 'g1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 1, r: 1, inGarnizon: true };
 const fldUnit = { id: 'f1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 8, r: 8 };

@@ -29833,3 +29833,371 @@ dwuznaczny; nie żądam zmiany.
 — mutacja łapana z nową kotwicą, przepuszczana ze starą. Zmiana jest minimalna (jedna linia kodu
 wykonywalnego), dotyczy wyłącznie narzędzia testowego, wszystkie 4 uruchomione bramki zielone, `tsc`
 bez błędów. Noty N10–N12 są informacyjne i żadna nie blokuje. **Temat gotowy do deploy.**
+
+---
+
+## P-PANEL-IMPERIUM-DESIGN-STARY-NIE-WGRANY (2026-08-16, zgłoszenie Macieja przy playtescie FALI 286, zrzuty ekranu)
+
+**Zgłoszenie (dwa kolejne zrzuty ekranu panelu cywilizacji "Grecy"):**
+1. Zakładka „Spichlerz Centralny" — pokazuje „W magazynie: 0/1000", suwak „Domyślne wyżywienie".
+   Maciej: „spichlerz dalej nie jest aktualizowany do najnowszego" → doprecyzowane (ABC
+   `P-SPICHLERZ-STAN-PYTANIE-Q1`, odpowiedź): **„Nie chodzi o UX. Był nowszy zaproponowany dla
+   tego miejsca, a nie został wgrany."**
+2. Zakładka „Wojsko" — pokazuje „Wojsko na mapie", „Rekruci (pula werbu)", tabelę
+   MIASTO/REKRUCI/MAX/ODNOWA/JEDN., „Zaopatrzenie wojska". Maciej: „wojsko dokładnie to samo stare
+   infografiki stare design" — ten sam problem co Spichlerz: istniał nowszy zaproponowany design,
+   nigdy niewgrany.
+
+**Rozpoznanie w toku (Explore, worktree):** identyfikacja pliku/plików renderujących panel
+(prawdopodobnie `gra/src/ui/empireDetailPanel.ts`) + przeszukanie `docs/ux/claude-design/` i
+`dyspozycje/UI-DO-MASTERA.md`/`UI-INVENTORY-DESIGN-vs-GRA.md` pod kątem konkretnego,
+niewpiętego mockupu dla TEGO panelu (poziom imperium/cywilizacji, nie panelu miasta — to inny,
+już wdrożony temat W4-S).
+
+**STATUS: W TRAKCIE ROZPOZNANIA — dispatch Explore w toku, wynik trafi do tego wpisu.**
+
+**DOPISEK Macieja (2026-08-16, ta sama tura co zgłoszenie wyżej):** „tak samo jak nie zostały
+zróżnicowane kwestie pomiędzy miastami obywatelami, przecież według wytycznych miało tam być
+całkiem inny elementy" — trzeci panel z tym samym problemem: zakładka Ludność/Obywatele (miasta)
+też nie ma wdrożonych elementów z wytycznych designu. Rozszerzone razem z rozpoznaniem wyżej —
+ten sam Explore ma sprawdzić też ten panel.
+
+### WYNIK ROZPOZNANIA (Explore, 2026-08-16)
+
+Kod: `gra/src/ui/empireDetailPanel.ts` (Spichlerz: `renderSpichlerzCentralnySection()`; Armia:
+blok inline w `render()`; Miasto/Obywatele: oba chipy `miasta`/`ludnosc` mapują dziś na tę samą
+sekcję `econ-miasta` → `cityMiastaMiniDetail()`, zero realnego rozdzielenia mimo dwóch chipów).
+
+**Kluczowe znalezisko:** Designer DOSTARCZYŁ pełną paczkę 11/11 klatek (`Ulepszenie_infografik.zip`,
+potwierdzone w rejestrze linia ~19248/19563, 2026-08-13/14, ocena „wysoka jakość") — ale paczka
+trafiła **bezpośrednio do Macieja w czacie (SendUserFile), NIGDY nie została skomitowana do repo**.
+Nie ma jej w `docs/ux/claude-design/` ani nigdzie indziej w drzewie — potwierdzone `find` po
+całym repo. Jedyny artefakt w repo to sama specyfikacja zamówienia
+(`docs/ux/DESIGN-ZLECENIE-11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md`), nie gotowe mockupy.
+
+Zaimplementowano dotąd tylko Skarbiec (Faza 1) i Praca/Nauka/Religia (Faza 2). Sam Maciej
+potwierdził żywym playtestem FALA 280 (2026-08-14): „Armia, Miasto, Obywatele, Kultura — stare,
+nietknięte." Spichlerz, Armia, Miasto, Obywatele, Kultura, Surowce, Handel = 7 zakładek Faza 3+,
+czeka na implementację (nie na nową decyzję/design — treść i kierunek już zatwierdzone).
+
+**⚠️ RYZYKO dla toczącej się pracy (Task #185, reskin Spichlerza w toku):** Operator (Opus 5)
+dostał do ręki WYŁĄCZNIE tekstową specyfikację (§8.3 zlecenia), NIE realny mockup z paczki
+Designera — bo ta paczka nie istnieje w repo. Wynik może nie odpowiadać dokładnie temu, co
+Designer faktycznie narysował i co Maciej już ocenił jako „wysoka jakość". Do rozstrzygnięcia z
+właścicielem: czy ma dostęp do `Ulepszenie_infografik.zip` i może go udostępnić (wtedy Operator
+dostanie realny mockup zamiast rekonstrukcji z tekstu), czy kontynuować na podstawie samej
+specyfikacji.
+
+**STATUS: ROZPOZNANIE ZAKOŃCZONE. Implementacja Spichlerza w toku na podstawie specyfikacji
+tekstowej — czeka na potwierdzenie właściciela czy ma dostępną oryginalną paczkę Designera.**
+
+### SPROSTOWANIE (2026-08-16, Maciej) — paczka Designera ISTNIEJE, była załączona na czacie, nie w repo
+
+Wcześniejsza notatka wyżej („paczka nigdy nie trafiła do repo") była myląca — paczka **istniała
+od 2026-08-13/14, przekazana Maciejowi na czacie**, po prostu żadna sesja nigdy jej stamtąd nie
+zapisała do repozytorium. Maciej załączył ją ponownie bezpośrednio w tej rozmowie
+(`c7208bef-panel_imperium.zip`) — **zapisana teraz do repo**:
+`docs/ux/claude-design/_dist/11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13/` (konwencja `_dist/<ZLECENIE-ID>/`,
+zgodna z innymi wcześniejszymi paczkami w tym katalogu).
+
+**Zawartość paczki (handoff `DESIGN-do-UI_11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md`, pełny
+rejestr decyzji z 2026-08-14):**
+- Mapowanie klatka→kod dla wszystkich 11 zakładek (§2 handoffu).
+- **Cztery zakładki (Skarbiec/Praca/Nauka/Religia) wymagają WŁASNEGO bloku** zamiast dzisiejszego
+  wspólnego filtrowanego kontenera `ekonomia` — zmiana struktury, nie tylko CSS.
+- **`econ-miasta` rozchodzi się na `miasto` i `obywatele`** — dwa niezależne bloki, dwa chipy.
+- Nowe klasy CSS: `.civ-emp-hero`(+pos/neg) / `.civ-emp-hero-sub` / `.civ-emp-alert` /
+  `.civ-emp-slider`(+gold/blue/neutral/green) / `.civ-emp-split2` / `.civ-emp-tbl-sum` /
+  `.civ-emp-grp-row` / `.civ-emp-thr`(+done/now/next).
+- Zamienniki emoji: 🍞 → `res-food.svg` przez `mapResourceIconSvg()` (JEDNA ikona przy dużej
+  liczbie magazynu, NIE powtarzana per wiersz); ⚠ → `chip-warning.svg` przez `brandIconSvg()`.
+- **Rejestr decyzji Macieja 2026-08-14 (§8 handoffu, 5 punktów):**
+  1. Chip Religia = **wariant A** (chip zostaje, pełna zakładka; wariant B w klatce 11 wyszarzony,
+     oznaczony ODRZUCONY).
+  2. Nagłówki Handel/Kultura = **eyebrow** (ujednolicone z resztą) — **już zrealizowane w oddanej
+     makiecie, nic nie trzeba przerysowywać**.
+  3. Kolejność wdrożenia Miasta przy cięciu zakresu: wpływy do skarbca → surowce → kolejka →
+     budynki → obrona/populacja.
+  4. Plakietki stanu w Surowcach (kolor + słowo, nigdy sam kolor) — **już zrealizowane w oddanej
+     makiecie**.
+  5. Przycisk „Otwórz hub badań" (Nauka) — **odłożone**, nierozstrzygnięte czy hub ma być celem
+     linku; w makiecie oznaczony ramką przerywaną + podpisem „element odłożony", reszta klatki
+     bez zmian.
+- Miasto/Obywatele: dosłownie zatwierdzone listy (§6 handoffu), zero kosztu utrzymania jednostek
+  w Mieście, stawka zużycia surowców 1,0/obywatela/turę, mechanizm sumy = rozszerzenie
+  istniejącego filtra kolumn (`miastaHiddenCols`/`computeMiastaSummaryRow()`), wiersz „CAŁA
+  CYWILIZACJA" nie „SUMA".
+
+**Pliki w repo:** `Panel Imperium 11 zakladek (standalone).html` (jeden plik, otwiera się offline,
+11 sekcji + kolumna „Zmiany" przy każdej), `The Game - Panel Imperium 11 zakladek v1 2026-08-13
+(1E).dc.html` (źródło do edycji), `Skarbiec klatka 1.png` (zrzut zatwierdzonej klatki 1,
+3440×2690 2×), `MANIFEST.txt`, `DESIGN-do-UI_11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md`.
+
+**STATUS: PACZKA ZAPISANA W REPO. Implementacja 7 pozostałych zakładek (Spichlerz, Surowce,
+Handel, Armia, Miasto, Obywatele, Kultura) może teraz ruszyć na podstawie REALNEGO mockupu, nie
+samej specyfikacji tekstowej. Nie rozpoczynam bez wyraźnego polecenia — Maciej zastrzegł „nie rób
+nic sam" w tej samej turze.**
+
+---
+
+## P-WERYFIKACJA-MIASTA-ARMIE-PANEL-LEWY (2026-08-16, Maciej: „sprawdź, czy wszystko zostało poprawnie wprowadzone")
+
+Maciej załączył ponownie paczkę Designera `MIASTA-ARMIE-PANEL-LEWY-2026-08-14` (dwa identyczne
+uploady, `miasta_armie.zip`/`armia.zip`) — zapisana do repo:
+`docs/ux/claude-design/_dist/MIASTA-ARMIE-PANEL-LEWY-2026-08-14/`. To INNE zlecenie niż panel
+imperium — dotyczy `gra/src/ui/cityListHud.ts` i `gra/src/ui/armyListHud.ts` (lewy panel z listą
+miast/armii na mapie świata, nie panel boczny imperium po prawej).
+
+**Weryfikacja (Sonnet 5, orkiestrator, bezpośrednio w drzewie głównym, tylko odczyt kodu +
+uruchomienie testu):**
+
+W przeciwieństwie do panelu imperium (11 zakładek) — **to zlecenie JEST poprawnie wdrożone**:
+- `gra/src/ui/sideListHud.css.ts` (146 linii) — wspólny arkusz stylów z §5.1 handoffu, istnieje.
+- Paleta 3b dokładnie: `--panel:#171e2a;--border:#2b3543;--muted:#7d8798;--gold:#d9a441` —
+  potwierdzone `grep` w `sideListHud.css.ts`.
+- Plakietki armii — 4 warianty, 3 kolory dokładnie wg zlecenia: `.sl-badge.gold` (#d9a441 — w
+  garnizonie/ufortyfikowana), `.sl-badge.neutral` (#9aa4b2 — uśpiona), `.sl-badge.blue` (#8ec5ff —
+  auto-eksploracja), `.sl-badge.green` (#78c95a — zaznaczona).
+- Emoji 🏛️/👥 zamienione na SVG (`brandIconSvg`/ikony brandu) w kodzie miast — potwierdzone
+  komentarzem w nagłówku pliku cytującym dokładnie sformułowanie zlecenia. Emoji w stopce
+  podpowiedzi (`Ponowne 🏛`) **celowo zostało** — zgodnie z §5.4 zlecenia („zostaje jak jest").
+- `productionLine` rozbite na 3 pola (`prodName`/`prodProgress`/`prodMax` — nazwy pól w kodzie
+  różnią się nieznacznie, ale mechanizm jest) — bez fallbacku tekstowego, zgodnie z decyzją §5.2.
+- Plakietka „stolica" (`isCapital` → `badges.push({text:'stolica', variant:'gold'})`) — wdrożona;
+  plakietka „nowe" nieobecna — zgodnie z odrzuceniem w §5.3.
+- Pasmo podsumowania miast (`cl-sum`, `cl-sum-big`, `cl-sum-boxes`) — wdrożone, wzorem sekcji Moc.
+
+**Bramka:** `node tools/side-list-hud-panel-coverage-test.cjs` (dedykowany test tych dwóch paneli)
+→ **74 passed, 0 failed**, w tym asercja `armyStatusBadge({sentry:true}) zwraca neutral (nie gold
+— to jest DOKŁADNIE naprawiony bug nieodróżnialności)` — dokładnie problem, który zlecenie miało
+naprawić (punkt 5 handoffu), potwierdzony testem jako naprawiony.
+
+**STATUS: ZWERYFIKOWANE — wdrożone poprawnie i kompletnie, zgodnie ze zleceniem Designera.**
+
+---
+
+## P-EPOKA-BRAK-INFO-PODBOJ-PANSTW-MIAST (2026-08-16, zgłoszenie Macieja)
+
+Maciej (dosłownie): „Jeszcze jedno zgłoszenie chciałbym, żeby zapisać na przyszłość. brakuje
+wyraźnej informacji takiej, przy pokonaniu wszystkich państw miast i zdobyciu, na przykład całej
+Grecji, brakujeprzy przejściu do nowej epoki."
+
+**Doprecyzowanie (Maciej, AskUserQuestion 2026-08-16): „Komunikat przy przejściu epoki".** Zgłoszenie
+urwane w połowie zdania („brakujeprzy") dopuszczało trzy odczyty (komunikat o podboju
+państwa-miasta / komunikat przy przejściu epoki / oba) — Maciej wybrał wprost: chodzi WYŁĄCZNIE
+o **brak wyraźnego powiadomienia w UI przy przejściu do nowej epoki**. Wzmianka o podboju całej
+Grecji w oryginalnym zgłoszeniu to był kontekst sytuacyjny (scenariusz, w którym zauważył problem
+— podbił wszystkie miasta-państwa i wtedy nastąpiło przejście epoki), NIE osobne żądanie
+komunikatu o podboju. Temat NIE dotyczy więc UI podboju miast-państw, tylko UI końca tury /
+przejścia epoki.
+
+Zgłoszone w trakcie równoległej pracy nad reskinowaniem 11 zakładek panelu imperium
+(`R-DESIGN-11-ZAKLADEK` faza 3) — zgodnie z zasadą 2 (zakaz otwierania nowych wątków) zapisane tu
+bez przerywania bieżącego tematu.
+
+STATUS: **OTWARTE** — zakres doprecyzowany, czeka na dispatch subagenta (recon + implementacja
+komunikatu przejścia epoki w UI końca tury).
+
+---
+
+## R-MANPOWER-LECZENIE-PROC-TRUDNOSC (2026-08-16, decyzja bezpośrednia Macieja)
+
+Maciej (dosłownie): „a jeżeli chodzi o leczenie jednostek, to przyjmiemy, że na trudnym poziomie
+teraz to będzie 20, na normalnym 30, a na łatwym 40%."
+
+Dotyczy `manpower_uzupelnienie_hp_proc_max_tura` w `gra/data/miasto-params.json` — procent maxHP
+leczony jednostce wojskowej co turę z puli Manpower imperium (`manpower.tickManpowerUnitReplenishment`).
+Wcześniej: łatwy 25% / normalny 20% / trudny 15%. Po zmianie: łatwy 40% / normalny 30% / trudny 20%.
+Decyzja jednoznaczna — liczby podane wprost per poziom trudności, bez formalnego ABC.
+
+**Wdrożenie (Sonnet 5, orkiestrator, commit `afb51098`):** zmiana danych + przeliczenie 8
+hardcodowanych asercji w `gra/tools/manpower-test.cjs` (dowód poprawności: ręczne przeliczenie
+każdego scenariusza wg wzorów `manpowerHealCapForTurn`/`maxAffordableManpowerHeal`/
+`manpowerCostForHeal`). Bramki: `tsc` 0, `manpower-test` 62/0, `combat-test` 6/6.
+`unit-power-test` 4/2 — pre-istniejące, niezwiązane (potwierdzone niezależnie).
+
+**Evaluator (Opus 5) — PASS-WITH-NOTES.** Zweryfikował wszystkie 8 przeliczonych asercji od zera
+własnym harnessem (esbuild na `manpower.ts`), potwierdził zgodność co do joty. Znalazł 5 uwag,
+wszystkie dokumentacyjne/kosmetyczne, bez ryzyka logiki:
+- N1: JSDoc w `manpower.ts:69` nadal cytował stare 25/20/15 — **NAPRAWIONE** (aktualizacja do 40/30/20).
+- N2: fallback `DEFAULT_REPLENISH_PCT` (nieosiągalny przy poprawnym JSON, ale sprzeczny jako
+  druga "prawda" w pliku) nadal 25/20/15 — **NAPRAWIONE** (40/30/20).
+- N3: tabela w `dyspozycje/_scalone/EKONOMIA/EKONOMIA-manpower-pobor.md` (jedyne miejsce poza
+  kodem, gdzie stare liczby żyły jako treść merytoryczna) — **NAPRAWIONE** (40/30/20 + nota o dacie
+  decyzji).
+- N4: opis commita `afb51098` podawał sprzeczne liczby zmienionych asercji (6 vs 8) — realnie 8
+  (`git show | grep -c '^+ok('`). Bez skutku funkcjonalnego, korekta tylko tu w rejestrze.
+- N5: ten wpis (dopisany właśnie po to, żeby domknąć wiszący odsyłacz z `REJESTR-PROSB-I-ZADAN.md`,
+  który wskazywał na "pełną treść w PYTANIA-OTWARTE.md" bez odpowiadającego wpisu).
+
+**Runda 2 (Evaluator na naprawie N1-N5, commit `007fd3d4`) — PASS-WITH-NOTES, znalazł 3 kolejne
+drobiazgi:** N6 — nagłówek modułu `manpower.ts:17-18` (komentarz „Decyzje B-MP-Q1") nadal cytował
+stare 25/20/15, 51 linii nad już poprawionym JSDoc-iem — **NAPRAWIONE**. N7 — nagłówek Markdown
+w `EKONOMIA-manpower-pobor.md:87-88` rozbity na dwie linie (ATX kończy się na końcu wiersza) —
+**NAPRAWIONE** (scalone w jedną linię). N8 — ten wpis mówił „wszystkie 4 uwagi... (N1-N3)"
+wymieniając trzy — **NAPRAWIONE** (ten akapit).
+
+**STATUS: ZAMKNIĘTE — wdrożone, dwie rundy Evaluatora PASS-WITH-NOTES, wszystkie znalezione uwagi
+(N1-N8) naprawione lub świadomie odłożone jako czysto korekcyjne (N4 — korekta liczby w opisie
+commita, bez skutku).**
+
+---
+
+## P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (2026-08-16, znalezisko Evaluatora)
+
+Evaluator (Opus 5) oceniający `98345aa5` (reskin + rozbicie Miasto/Obywatele panelu imperium)
+zwrócił uwagę, że opis commita zaniża rzeczywisty ubytek treści wobec zatwierdzonych list
+`R-DESIGN-11-ZAKLADEK` Q2=B (Miasto 8 pozycji, Obywatele 9 pozycji).
+
+**Realne pokrycie (Evaluator, po przeliczeniu wobec `EmpireDetailSnap`):**
+- **Miasto (8):** pełne — wpływy do skarbca, produkcja Nauki, produkowane surowce · częściowe —
+  populacja (bez „obrabianych pól"), handel (zbiorczo dla imperium, nie per miasto) · **brak** —
+  budynki wg `BUILDING_GROUP_ORDER`, kolejka produkcji, obrona miasta.
+- **Obywatele (9):** pełne — Kultura, Religia, Rekruci, zużycie surowców · częściowe —
+  Szczęście/Zadowolenie (sam poziom, **bez rozbicia** na 5 źródeł), podział pracy (przemianowany
+  z ludzi na pkt Pracy) · **brak** — Zdrowie, Prawo i administracja, Wyżywienie.
+
+To ~połowa każdej z dwóch list, nie „8/9 minus 3", jak sugerował opis commita. Designer nazywa
+rozbicie Zadowolenia na 5 źródeł „sercem tej zakładki" (Obywatele) — właśnie tego brakuje.
+
+**Przyczyna (zweryfikowana, nie domysł):** `EmpireDetailSnap` fizycznie nie niesie tych danych
+(brak pól kolejki produkcji, kategorii budynków, obrony miasta, rozbicia Zadowolenia na źródła) —
+dociągnięcie wymaga zmian w `main.ts`/`empireDetailTypes.ts`, poza dozwolonym zakresem tamtego
+zlecenia (tylko `empireDetailPanel.ts` + `empirePanelSectionMap.ts`). Designer sam autoryzował
+cięcie zakresu i podał kolejność wdrożenia (wpływy do skarbca → surowce → kolejka → budynki →
+obrona/populacja) — Operator dotrzymał dokładnie tej kolejności, więc to co jest zrobione, jest
+zrobione poprawnie; brakuje tylko dalszych kroków tej samej kolejności.
+
+**Rekomendacja Evaluatora:** NIE blokować deployu (to co wdrożono jest poprawne, przetestowane,
+bez regresji; wymyślanie liczb zamiast prawdziwych danych łamałoby CLAUDE.md §3), ale właściciel
+musi znać prawdziwy zakres — stąd ten wpis.
+
+STATUS: **OTWARTE** — czeka na decyzję właściciela, czy dociągnięcie pozostałych pozycji list (co
+wymaga rozszerzenia `EmpireDetailSnap`/`main.ts`) to kolejny temat do zlecenia, czy zakres
+zostaje jak jest. Nie dispatchuję subagenta bez tej decyzji — to pytanie produktowe, nie
+techniczne.
+
+---
+
+## P-AUDYT-STATUS-OTWARTE-REGEX-SLEPOTA (2026-08-16, znalezisko Evaluatora)
+
+Evaluator oceniający `eef657d3` znalazł, że komenda audytu narzucona w CLAUDE.md §0c
+(`grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md`) łapie tylko formę kanoniczną
+`STATUS: **OTWARTE**` (pogrubienie zaczyna się PO dwukropku, tuż przed słowem OTWARTE). W pliku
+istnieje też — i to w WIĘKSZOŚCI — forma niekanoniczna `**STATUS: OTWARTE ...**` (pogrubienie
+całej linii od słowa STATUS) oraz forma nagłówkowa (`## ... · STATUS: OTWARTE`).
+
+**Skala (zmierzona przez Evaluatora, 2026-08-16):** komenda z §0c zwracała 19 trafień; realnych
+otwartych stempli w pliku jest ok. 48 (24 w formie niekanonicznej `**STATUS: OTWARTE`, ~5 w formie
+nagłówkowej, 19 kanonicznych). Audyt narzucony jako "twarda reguła" w §0c po cichu pomijał **~29
+z ~48** realnie otwartych pozycji od momentu wprowadzenia tej komendy.
+
+**Dwa własne wpisy tej sesji naprawione od razu** (`P-EPOKA-BRAK-INFO-PODBOJ-PANSTW-MIAST`,
+`P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA`) — przepisane na formę kanoniczną w tym samym commicie,
+który dodaje ten wpis.
+
+**Pozostałe ~29 niekanonicznych wpisów w reszcie pliku — NIE naprawione tutaj** (poza zakresem tej
+poprawki, wymaga osobnego przejścia po całym pliku, żeby nie ryzykować przypadkowej zmiany treści
+merytorycznej przy okazji zmiany formatowania). Dwie możliwe naprawy do wyboru przy podjęciu tego
+tematu: (a) systematyczny przegląd i normalizacja wszystkich ~29 wpisów do formy kanonicznej, albo
+(b) rozszerzenie samej komendy grep w §0c tak, żeby łapała obie formy (`grep -nE 'STATUS: \*\*OTWARTE|\*\*STATUS: OTWARTE'`)
+— (b) jest szybsze i nie ryzykuje przypadkowej zmiany treści 29 istniejących wpisów, ale (a) jest
+bardziej zgodne z duchem reguły „jeden kanoniczny format".
+
+**STATUS: **OTWARTE** — czeka na decyzję właściciela (a) vs (b) powyżej. Nie dispatchuję
+subagenta bez tej decyzji, bo (a) dotyka merytorycznej treści ~29 istniejących wpisów rejestru.**
+
+---
+
+## P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY (2026-08-16, znalezisko Evaluatora)
+
+Evaluator oceniający `a98f63f8` (Spichlerz runda 2) znalazł: nowy wiersz SUMA/WZROST% w tabeli
+miast Spichlerza agreguje `wzrostProcent` — wartość **nominalną** z silnika
+(`population-growth-v85.ts:432`, `breakdown.total` ustawiane bezwarunkowo). Realny przyrost
+liczony jest jako `fed ? total : 0` (linia 440) — miasto głodujące ma realny wzrost 0, ale jego
+nominalna wartość nadal wchodzi do sumy.
+
+**Dowód empiryczny (Evaluator):** 3 miasta po 6% nominalnie, 2 z nich niedokarmione → SUMA pokazuje
+**6%**, choć realnie rośnie tylko jedno miasto. `cityPanel.ts` w innym miejscu świadomie liczy
+inaczej (`effectiveGrowthPctForUi` → 0 przy głodzie) — dwa różne miejsca w kodzie stosują dwie różne
+konwencje dla tej samej koncepcji.
+
+**Ważne zastrzeżenie:** komórki PER MIASTO w tej tabeli miały tę własność (nominalna wartość) już
+PRZED tym commitem — to nie jest nowa regresja w danych. Nowością jest wiersz SUMA, który podnosi
+tę już istniejącą niejednoznaczność do liczby nagłówkowej, bardziej widocznej dla gracza.
+
+**Nie rozstrzygnięte samodzielnie — pytanie produktowe, nie techniczne** (CLAUDE.md §6: nie zgaduj
+przy niejednoznaczności). Dwie opcje do ABC przy podjęciu tematu:
+- A: SUMA liczona z wartości nominalnych (dzisiejsze zachowanie, spójne z komórkami per-miasto tej
+  samej tabeli).
+- B: SUMA liczona z wartości efektywnych (`fed ? total : 0`, spójne z `cityPanel.ts` gdzie indziej
+  w grze) — wymagałoby też przemyślenia, czy komórki per-miasto powinny pójść tą samą drogą.
+
+STATUS: **OTWARTE** — czeka na ABC do właściciela. Nie blokuje deployu (to nie regresja, tylko
+uwidocznienie istniejącej niejednoznaczności konwencji).
+
+---
+
+## P-DESIGN-11-ZAKLADEK-ODSTEPSTWA-OD-MAKIETY-RUNDA-2 (2026-08-16, uwaga N7 Evaluatora)
+
+Runda 2 poprawek reskinu 4 zakładek (Kultura/Surowce/Armia/Handel, na `a6ed0553`) wprowadza
+**trzy świadome odstępstwa od ZATWIERDZONEJ makiety Designera** — zgłaszam je wprost zamiast
+zostawiać w komentarzu kodu (CLAUDE.md §1a: odstępstwo od zatwierdzonej decyzji ma być nazwane,
+nie ukryte). Makieta: `docs/ux/claude-design/_dist/11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13/`
+`Panel Imperium 11 zakladek (standalone).html`.
+
+**1. KULTURA, wiersz SUMA / kolumna ZASIĘG — makieta „6 heksów", kod „—" (to jest to, co wymaga
+decyzji właściciela).** Makieta (klatka 10) sumuje kolumnę ZASIĘG i wpisuje `6 heksów`.
+`empireDetailPanel.ts` celowo zostawia tam `—`, z uzasadnieniem w komentarzu przy wierszu SUMA:
+`borderRadius` to **promień** granicy miasta w heksach, więc suma promieni różnych miast nie jest
+żadną wielkością gry — ani powierzchnią terytorium, ani promieniem imperium — a wpisanie tam
+liczby łamałoby CLAUDE.md §3 („każda liczba ma nazwany parametr i jednostkę"). W przykładzie z
+makiety 3+2+1 = 6, ale ta „6" nie oznacza niczego, co gracz mógłby zweryfikować na mapie.
+**Zachowanie kodu NIE zostało zmienione** (Evaluator: uzasadnienie merytorycznie słuszne,
+zostaje) — do rozstrzygnięcia zostaje wyłącznie, czy makieta ma być w tym punkcie skorygowana,
+czy właściciel jednak chce tam liczbę (i wtedy: jaką wielkość, z jaką nazwą i jednostką).
+
+**2. SUROWCE, podpis hero — czwarty kubełek „N bez zmian", którego makieta nie ma** (naprawa N3
+Evaluatora, już wykonana). Makieta pokazuje trzy kubełki (`5 rośnie · 1 pełny · 1 spada`) i
+zakłada, że wszystko poza „na capie"/„spada" realnie rośnie. W grze tak nie jest: przy 14
+surowcach katalogu typowo 11-12 ma **zerowe** tempo, a stary kod liczył je jako „rośnie" (bo
+`resStateOf()` zwraca `'good'` również dla tempa 0). Podpis mówił więc „12 rośnie", gdy realny
+wzrost miał 1 surowiec. Dodany kubełek jest neutralny kolorystycznie (#9aa4b2). **Skutek uboczny
+do wiadomości:** przy szerokości panelu 404 px podpis zawija się teraz do dwóch linii (makieta z
+trzema kubełkami mieściła się w jednej).
+
+**3. ARMIA, box ZAOPATRZENIE — jednostka „żywności / turę" zamiast samego „żywności" z makiety**
+(przy okazji naprawy N2, dołożenia pary boxów z klatki 7). Makieta drukuje `−8 żywności`, co
+czyta się jak stan magazynu, a nie koszt na turę. CLAUDE.md §3 wymaga nazwanego parametru **i**
+jednostki, więc box dostał `−8 żywności / turę`, symetrycznie do sąsiedniego `−17 złota / turę`.
+
+STATUS: **OTWARTE** — czeka na decyzję właściciela WYŁĄCZNIE w punkcie 1 (Kultura/ZASIĘG: korekta
+makiety czy jednak liczba w kodzie). Punkty 2 i 3 są już wdrożone i nie wymagają odpowiedzi —
+stoją tu po to, żeby rozjazd z zatwierdzonym rysunkiem był zapisany, a nie odkryty przy
+następnym porównaniu z makietą. Nie blokuje deployu.
+
+---
+
+## P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI (2026-08-16, uwagi N1/N5/N9/N11/N12 Evaluatora)
+
+Pięć drobnych uwag Evaluatora dla `a6ed0553`/rundy 2, świadomie NIE naprawianych kodem — zapisane
+dla kompletności rejestru, żaden nie blokuje deployu:
+
+- **N1** — opis commita `a6ed0553` twierdził „wszystkie zielone" dla bramek panelu, pomijając że
+  `empire-panel-moc-scroll-preserve-test.cjs` jest pre-istniejąco czerwony (38/9, potwierdzone
+  identyczne na commicie-rodzicu). Sprostowanie: nieprawda w treści opisu, ale sam fakt (pre-
+  istniejący fail, nie regresja) jest poprawny i już udokumentowany w CLAUDE.md. Historii commita
+  nie da się przepisać — sprostowanie żyje tutaj.
+- **N5** — box „DOCHÓD SZLAKÓW" w Handlu drukuje tę samą liczbę co hero (bonus cudów pokazany
+  osobno jako %), więc nie wnosi nowej informacji względem makiety (baza vs suma). Kosmetyczne,
+  nie myli gracza (liczby są spójne, nie sprzeczne) — bez akcji.
+- **N9** — „−0 / turę" przy zerowym koszcie żywności armii to zachowanie PRE-ISTNIEJĄCE (identyczne
+  przed reskinem, tylko teraz w bardziej widocznej czerwonej plakietce). Nie regresja tego tematu.
+- **N11** — komentarz przy `cityPoborMiniRekruci()` mówił „domyślne wywołanie bez zmian", pomijając
+  że sama tabela (nie nagłówek) dostała nową klasę wyrównania i wiersz RAZEM zmienił styl. Drobna
+  nieścisłość komentarza, zero skutku funkcjonalnego.
+- **N12** — ikona przy eyebrow występuje tylko w Surowcach (`chip-crate`), makieta ma ją też w
+  Handlu/Armii/Kulturze. Niespójność kosmetyczna między 4 zakładkami tego samego commita.
+
+STATUS: **OTWARTE** — czeka na uznanie właściciela za zamknięte przy następnym przeglądzie panelu
+imperium (żaden punkt nie wymaga osobnego dispatchu, wszystkie są kosmetyczne/dokumentacyjne).

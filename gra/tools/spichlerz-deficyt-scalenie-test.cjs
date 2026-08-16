@@ -65,10 +65,14 @@ ok(
 );
 // Uwaga: "civ-emp-note" jako klasa CSS jest też użyta gdzie indziej w tej funkcji (notka
 // informacyjna "Podsumowanie tury pojawi się..." gdy brak jeszcze pierwszego ticku) — to NIE
-// jest ostrzeżenie o deficycie, więc liczymy tylko bloki z czerwonym stylem deficytu
-// (color:#e07a7a), unikalnym dla ostrzeżenia o niepokrytym deficycie.
+// jest ostrzeżenie o deficycie, więc liczymy tylko bloki callera ostrzeżenia, unikalne dla
+// komunikatu o niepokrytym deficycie.
+// AKTUALIZACJA (R-DESIGN-11-ZAKLADEK klatka 4, reskin Spichlerza): ostrzeżenie przeniesione z
+// `civ-emp-note" style="color:#e07a7a` na klasę `.civ-emp-alert` (kanoniczny callout z §4
+// handoffu Designera). Intencja asercji BEZ ZMIAN — nadal pilnuje, że czerwony blok deficytu
+// jest DOKŁADNIE JEDEN, czyli że nie wróciła stara, osobna notka "Głód wojska".
 ok(
-  (spichlerzFn.match(/civ-emp-note" style="color:#e07a7a/g) || []).length === 1,
+  (spichlerzFn.match(/civ-emp-alert civ-emp-sp-alert/g) || []).length === 1,
   'dokładnie JEDEN czerwony blok ostrzeżenia o deficycie — bez starej osobnej notki "Głód wojska"',
 );
 ok(
@@ -83,14 +87,59 @@ ok(warnIdx >= 0 && tableIdx >= 0 && warnIdx < tableIdx,
   'ostrzeżenie renderuje się PRZED tabelą miast — tuż przy nagłówku "W magazynie", nie po nim');
 // Regresja architektury: stara, ROZŁĄCZNA notka "Głód wojska — magazyn centralny..." (bez
 // wzmianki o miastach) NIE może dalej istnieć jako osobny, samodzielny blok w tej funkcji.
+// N2 (Evaluator, 7a413462): rozszerzone na oba warianty klasy (civ-emp-note ORAZ civ-emp-alert),
+// case-insensitive na "głód wojska" — dawny regex pilnował WYŁĄCZNIE literalnej starej klasy
+// `civ-emp-note`, której funkcja po reskinie już nigdy nie generuje w TYM miejscu (przeniesiona
+// na `civ-emp-alert`) — asercja była więc martwa: przechodziła zawsze, niezależnie od tego, czy
+// separatystyczny blok faktycznie wrócił, bo wracałby dziś pod klasą `civ-emp-alert`, nie
+// `civ-emp-note`. / EN: broadened to both class variants (civ-emp-note AND civ-emp-alert),
+// case-insensitive on "głód wojska" — the old regex guarded ONLY the literal old class name,
+// which the function no longer emits here after the reskin (moved to `civ-emp-alert`), so the
+// assertion was dead — it always passed regardless of whether the standalone block actually came
+// back, since it would resurface today under `civ-emp-alert`, not `civ-emp-note`.
 ok(
-  !/if \(food\.glodWojska\) \{\s*h \+= `<div class="civ-emp-note"[^`]*Głód wojska/.test(spichlerzFn),
-  'stara, samodzielna notka "Głód wojska" (bez miast) usunięta — scalona do wspólnego bloku',
+  !/if \(food\.glodWojska\) \{\s*h \+= `<div class="civ-emp-(?:note|alert)[^`]*głód wojska/i.test(spichlerzFn),
+  'stara, samodzielna notka "Głód wojska" (bez miast) usunięta — scalona do wspólnego bloku (sprawdzone dla obu wariantów klasy: civ-emp-note i civ-emp-alert)',
 );
-// Per-miasto ⚠ w tabeli ZOSTAJE (szczegół "które miasto"), informacja nie jest tracona.
+// Per-miasto znacznik ostrzegawczy w tabeli ZOSTAJE (szczegół "które miasto"), informacja nie
+// jest tracona.
+// AKTUALIZACJA (R-DESIGN-11-ZAKLADEK klatka 4, reskin Spichlerza): znak tekstowy ⚠ zamieniony na
+// ikonę SVG `chip-warning` przez brandIconSvg() — reguła "zero emoji" z kanonu (§5 handoffu
+// Designera). Intencja asercji BEZ ZMIAN — nadal pilnuje, że znacznik przy nazwie miasta jest
+// bramkowany tym samym `row.nakarmione === false` i nie został przy reskinie zgubiony.
+// N1 (Evaluator, 7a413462): dawny regex `/row\.nakarmione === false[\s\S]*?chip-warning/` był
+// NIEOGRANICZONY — `[\s\S]*?` (choć leniwy) i tak przeszuka CAŁĄ resztę wyciętej funkcji, więc
+// łapał `chip-warning` gdziekolwiek dalej, nawet niepowiązany z warunkiem (np. gdyby fedMark stał
+// się bezwarunkowy, albo znacznik zniknął, a osobny "chip-warning" pojawił się dalej w tej samej
+// funkcji). Naprawa: wiąże `chip-warning` z KONKRETNYM wzorcem ternarnym użytym w kodzie
+// (`const unfed = row.nakarmione === false; … const fedMark = unfed ? …chip-warning… : '';`), z
+// ograniczonym zasięgiem znaków między każdym elementem ({0,400}/{0,200}) — zbyt daleki lub
+// niepowiązany (np. bezwarunkowy, if/else zamiast ternary, albo osobny znacznik gdzie indziej w
+// funkcji) NIE dopasuje. Zweryfikowane mutacyjnie (3 regresje z werdyktu Evaluatora — bezwarunkowy
+// fedMark, usunięty fedMark + niepowiązany "chip-warning" dalej w funkcji, rozbicie na dwa osobne
+// if): stary regex łapał 0/3, nowy 3/3. / EN: the old regex was unbounded — even though `[\s\S]*?`
+// is lazy, it still scans the REST of the extracted function, so it matched `chip-warning`
+// anywhere further down, unrelated to the condition (e.g. an unconditional fedMark, or the marker
+// removed with an unrelated "chip-warning" appearing later in the same function). Fix: ties
+// `chip-warning` to the EXACT ternary pattern used in the code, with a bounded character window
+// between each piece — anything too far away or structurally different (unconditional, if/else
+// instead of ternary, or a stray marker elsewhere) will NOT match. Mutation-tested against the 3
+// regressions from the Evaluator's verdict: old regex caught 0/3, new regex catches 3/3.
 ok(
-  /row\.nakarmione === false.*⚠/.test(spichlerzFn),
-  '⚠ przy nazwie miasta w tabeli zachowane (per-miasto szczegół, nie duplikat — uzupełnienie zbiorczego komunikatu)',
+  /const unfed = row\.nakarmione === false;[\s\S]{0,400}?fedMark = unfed\s*\n?\s*\?[\s\S]{0,400}?chip-warning[\s\S]{0,200}?:\s*'';/.test(spichlerzFn),
+  'znacznik przy nazwie miasta w tabeli zachowany, bramkowany bezpośrednio poprzedzającym ternarnym warunkiem row.nakarmione === false (per-miasto szczegół, nie dowolny chip-warning gdziekolwiek dalej w funkcji)',
+);
+// N-A (Evaluator, a98f63f8): asercja wyżej pilnuje wyłącznie DEKLARACJI `fedMark` — nie tego, czy
+// zmienna jest faktycznie WSTAWIONA do wiersza tabeli. Zweryfikowane mutacyjnie przez Evaluatora:
+// usunięcie `${fedMark}` z interpolacji wiersza (przy nietkniętej deklaracji) dawało 50/0, czyli
+// znacznik znikał z realnego HTML bez żadnej czerwonej bramki. Domyka lukę.
+// EN: the assertion above only guards the DECLARATION of `fedMark`, not whether it's actually
+// interpolated into the row. Evaluator-verified: stripping `${fedMark}` from the row interpolation
+// (declaration left intact) still passed 50/0 — the marker vanished from real HTML with no red
+// gate. This closes that gap.
+ok(
+  /civ-emp-sp-city-nm">\$\{fedMark\}/.test(spichlerzFn),
+  'fedMark faktycznie WSTAWIONY do wiersza (nie tylko zadeklarowany) — civ-emp-sp-city-nm">${fedMark}',
 );
 
 // ---------------------------------------------------------------------------

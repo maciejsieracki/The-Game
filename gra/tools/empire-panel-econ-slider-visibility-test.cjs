@@ -153,7 +153,20 @@ function main() {
     // is still intact. Recruits does NOT stay on that track — Army already has its own top-level
     // block, so the HUD "Recruits" chip lands on the Army block (fixed in f536b792; this was a
     // duplicate assertion in a separate test file that got missed by that fix, now corrected).
-    const OWN_BLOCK_BY_ACT = { skarbiec: 'skarbiec', praca: 'praca', nauka: 'nauka', religia: 'religia', rekruci: 'armia' };
+    // R-DESIGN-11-ZAKLADEK faza 3 (§3 pkt 2 handoffu designera): wspólna zakładka `econ-miasta`
+    // rozeszła się na DWA własne bloki top-level — chip „miasta" -> blok `miasto` (kąt
+    // produkcyjny), chip „ludnosc" -> blok `obywatele` (kąt społeczny). Oczekiwania suwaków dla
+    // obu POZOSTAJĄ `false/false` i nie były ruszane: nowe id sekcji zachowują przedrostek
+    // `econ-` (`econ-miasto`/`econ-obywatele`), więc `onlyEconIdFromAct` nadal zwraca string, a
+    // `econSliderVisibilityForOnlyEconId` nadal odpowiada „żaden suwak" — zmienia się wyłącznie
+    // docelowy BLOK, nie widoczność suwaków.
+    // EN: the shared `econ-miasta` tab split into two own top-level blocks. Slider expectations
+    // for both stay false/false untouched — the new section ids keep the `econ-` prefix, so the
+    // slider rule still answers "neither"; only the target BLOCK changes.
+    const OWN_BLOCK_BY_ACT = {
+      skarbiec: 'skarbiec', praca: 'praca', nauka: 'nauka', religia: 'religia', rekruci: 'armia',
+      miasta: 'miasto', ludnosc: 'obywatele',
+    };
     const expectedBlock = OWN_BLOCK_BY_ACT[c.act] ?? 'ekonomia';
     assert(`chip "${c.act}" -> blok ${expectedBlock} (R-PANEL-SPLIT nienaruszone / R-DESIGN-11-ZAKLADEK faza 1)`,
       empirePanelBlockForSection(section) === expectedBlock);

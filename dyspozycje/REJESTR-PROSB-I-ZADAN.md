@@ -2437,3 +2437,11 @@ Bramki: `tsc` 0, `tech-tree-test` 19/19, `research-test` 33/33, `diplomacy-test`
 `diplomacy-proposal-test` 187/187, `diplomacy-own-proposal-edit-test` 33/33,
 `diplomacy-stol-pw-sum-test` 70/70, `diplomacy-negotiation-table-test` 62/62,
 `diplomacy-currency-trade-test` 5/5. Pełny opis w `PYTANIA-OTWARTE.md`.
+
+## R-MANPOWER-LECZENIE-PROC-TRUDNOSC — ECHO bezpośredni (2026-08-16)
+Maciej (dosłownie): „a jeżeli chodzi o leczenie jednostek, to przyjmiemy, że na trudnym poziomie
+teraz to będzie 20, na normalnym 30, a na łatwym 40%." Dotyczy `manpower_uzupelnienie_hp_proc_max_tura`
+(`gra/data/miasto-params.json`) — % maxHP leczonego jednostce na turę z puli Manpower imperium.
+Dziś: easy 25 / normal 20 / hard 15. Po zmianie: easy 40 / normal 30 / hard 20. Decyzja
+jednoznaczna (liczby podane wprost per poziom trudności), bez ABC — implementacja wprost.
+Pełna treść w `PYTANIA-OTWARTE.md`.
