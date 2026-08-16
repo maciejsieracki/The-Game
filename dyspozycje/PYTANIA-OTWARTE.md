@@ -29120,5 +29120,155 @@ wyników, nie ma dedykowanego testu dla tego pliku, więc nic do uruchomienia. B
 
 **Zakres (C-025):** 1 plik, 1 usunięta linia, zero refaktorów, zero zmian poza wskazaną regułą.
 
-**STATUS: NAPRAWIONE, SCALONE w worktree (NIE commitowane, NIE pushowane — zgodnie z poleceniem
-zlecenia). Czeka na `NUMER+A|B|C`/commit właściciela zgodnie z procedurą §0.**
+**STATUS: NAPRAWIONE, SCALONE i wypchnięte (commit `f3db8b22`, orkiestrator, zakres kosmetyczny
+poza pełną procedurą NUMER+ABC — jednoznaczna naprawa martwego kodu bez decyzji produktowej).
+Evaluator: patrz werdykt niżej.**
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla `f3db8b22`
+
+**Zakres weryfikacji:** wszystko zmierzone niezależnie na worktree `agent-a0a72354d00fe592d`
+zsynchronizowanym do `f3db8b22`; żadna liczba nie przepisana z raportu Operatora. Baseline
+porównawczy = commit-rodzic `359bb38c` (a NIE `8f53c800`, na którym pracował Operator — to
+okazało się kluczowe, patrz NOTA 2).
+
+**1. Zakres diffu — POTWIERDZONY.** `git show f3db8b22 --stat` = dokładnie 2 pliki:
+`dyspozycje/PYTANIA-OTWARTE.md` (+42) i `gra/src/ui/unitInfographic.ts` (−1). Diff kodu to
+jedna usunięta linia CSS, zero innych zmian, zero refaktorów. Zgodne z C-025.
+
+**2. Twierdzenie (b) — klasa `unit-ic-medallion` osierocona — POTWIERDZONE, i to mocniej niż
+twierdził Operator.**
+- `grep -rn "unit-ic-medallion"` po `gra/src`, `gra/tools`, `gra/data`, `gra/index.html` na
+  `f3db8b22` = **0 trafień**.
+- `git grep "unit-ic-medallion" 359bb38c -- gra/` = **dokładnie 1 trafienie** (usuwana linia).
+  Czyli commit usunął JEDYNE wystąpienie w repozytorium — potwierdzone po obu stronach, nie
+  tylko „po".
+- Realna, żywa klasa to `unit-infographic-medallion` (`unitInfographic.ts:134`) — inna nazwa,
+  nietknięta (5 wystąpień w `dist`, identycznie przed i po).
+- Nagłówek `.civ-unit-panel .hdr` emituje wyłącznie `<span class="ic">` albo `.uc-owner-emblem`
+  (`unitPanelHud.ts:122-124`) — nigdy medalionu. Nawet gdyby panel żył, reguła nie miałaby w co
+  trafić.
+- Brak budowania nazwy dynamicznie: `grep -rn "unit-ic"` daje wyłącznie import
+  `unit-icon-map.json`. Żadnej konkatenacji/template'u produkującego tę klasę.
+
+**3. Twierdzenie (a) — `.civ-unit-panel` martwy — POTWIERDZONE dla gry, ale UZASADNIENIE
+OPERATORA JEST ZA SZEROKIE (NOTA 1).**
+- `grep -rn "createUnitPanelHud" gra/src` = 1 trafienie, sama definicja (`unitPanelHud.ts:109`).
+  Zero wywołań w kodzie aplikacji — zgadza się.
+- Dowód z artefaktu builda (mocniejszy niż grep po źródłach): `civ-unit-panel-hud-css-v2-1e`
+  = **0 wystąpień w `dist/index.html`**, a `act-danger` = **3** — dokładnie tyle, ile wnosi sam
+  `armyStackHud.ts` (`ash-act-danger`, linie 136/137/309). Gdyby `unitPanelHud.ts` wszedł do
+  bundla, byłoby 6. Moduł jest więc w całości wycięty przez tree-shaking i panel **nigdy nie
+  montuje się w wydanej grze**.
+
+**4. Build PRZED i PO — pomiar własny (hipoteza „0 w obu wersjach" jest BŁĘDNA).**
+Obie wersje zbudowane komendą z CLAUDE.md (`node ./node_modules/vite/bin/vite.js build --outDir
+dist --emptyOutDir` z `gra/`), obie zielone, 824 moduły:
+
+| ciąg w `dist/index.html` | PRZED (`359bb38c`) | PO (`f3db8b22`) |
+|---|---|---|
+| `unit-ic-medallion` | **1** | **0** |
+| `civ-unit-panel-hud-css-v2` | 0 | 0 |
+| `civ-unit-panel` | **2** | **1** |
+| `unit-infographic-medallion` | 5 | 5 |
+
+Rozmiar bundla: **37 154 768 B → 37 154 687 B, delta dokładnie 81 B** — a usunięta linia ma
+dokładnie 81 bajtów ze znakiem końca linii (`printf ... | wc -c` = 81). To domyka dowód: efekt
+commita na artefakcie to co do bajta ta jedna linia i **nic poza nią** — zero skutków ubocznych.
+
+Wniosek: to NIE jest zmiana czysto kosmetyczna „bez wpływu na build". Reguła realnie trafiała do
+wydanego bundla (`UNIT_INFOGRAPHIC_CSS` jest wstrzykiwany na żywo — `cityPanel.ts:2595` oraz
+`ensureUnitInfographicStyles()`, `unitInfographic.ts:165-171`), tylko była w arkuszu martwa.
+Commit ją stamtąd usuwa.
+
+**5. Bramki.**
+- `npx tsc --noEmit` (przez `-p gra/tsconfig.json`) — **0 błędów, exit 0**.
+- `node tools/hud-tooltip-body-mounted-panels-test.cjs` — **16 pass · 0 fail, exit 0**. To jedyna
+  bramka realnie dotykająca tego obszaru i jest zielona.
+
+**6. Regresja wizualna — WYKLUCZONA, na DWÓCH niezależnych podstawach.** Nie przyjmuję tego jako
+„oczywiste":
+  (i) Kluczowym selektorem reguły jest `.unit-ic-medallion`. Ta klasa nie istnieje nigdzie w
+  repozytorium — ani w markupie statycznym, ani budowana dynamicznie. Reguła CSS, której klucz nie
+  pasuje do żadnego elementu, nie ma wpływu na rendering **niezależnie od przodka**.
+  (ii) Niezależnie: przodek `.civ-unit-panel` nie montuje się w wydanej grze (moduł wycięty przez
+  tree-shaking, `STYLE_ID` = 0 w `dist`).
+  Każda z tych przesłanek osobno wystarcza; obie zachodzą. Dodatkowo reguły sąsiednie w tym samym
+  stringu (`.unit-infographic-medallion`, `.civ-army-stack .ash-card-ic ...`) są nietknięte —
+  licznik 5 identyczny przed i po. Ryzyko wizualne: **zero**.
+
+---
+
+**NOTA 1 (sprostowanie twierdzenia Operatora — za szerokie).** Zdanie z wpisu wyżej: „zero
+realnego wywołania `createUnitPanelHud()` w runtime" jest **nieprawdziwe jako twierdzenie ogólne**.
+Operator grepował wyłącznie `gra/src` i przeoczył `gra/tools`. Realne wywołanie istnieje:
+`gra/tools/hud-tooltip-body-mounted-panels-test.cjs:109` woła `createUnitPanelHud({...})`
+naprawdę (bundle esbuild + headless Chromium, prawdziwy import z `unitPanelHud.ts`, linia 86).
+Poprawne sformułowanie: *zero wywołań w kodzie gry (`main.ts`/`hud.ts`), jedno realne wywołanie
+w harnessie bramki*. Dla werdyktu bez znaczenia — bramka jest zielona i nie dotyka usuniętej
+reguły (grep `unit-ic-medallion` po `gra/tools` = 0) — ale liczba/twierdzenie idące do
+właściciela musi być poprawne (CLAUDE.md §0b).
+
+**NOTA 2 (sprostowanie liczby z raportu Operatora — pomiar na innej bazie).** Operator raportuje
+„`grep -c "civ-unit-panel-hud-css-v2-1e|unit-ic-medallion|civ-unit-panel" dist/index.html` =
+0/0/0". Trzecia liczba jest **błędna na ocenianym commicie**: `civ-unit-panel` = **1**, nie 0.
+Przyczyna ustalona, nie zgadywana: worktree Operatora (`agent-a55b21c543551498b`) był oparty na
+`8f53c800`, gdzie `hudTitleTooltip.ts` **jeszcze nie zawierał** wpisu `'.civ-unit-panel'`
+(zweryfikowane: `git grep "'.civ-unit-panel'" 8f53c800 -- gra/src/ui/hudTitleTooltip.ts` = brak
+trafień; to samo na `359bb38c` = linia 66). Wpis dołożył w międzyczasie temat siostrzany
+`P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE`. Liczba była więc prawdziwa w izolowanym worktree
+Operatora i zdezaktualizowała się po przeniesieniu zmiany na `359bb38c`. Dokładnie ten tryb
+błędu jest już opisany w CLAUDE.md (ESCAPE runda 2, 2026-08-14: „skopiował historyczny pomiar
+rundy 1 bez ponownego uruchomienia") — **pomiar z worktree trzeba powtórzyć po scaleniu na
+docelową bazę, nie przepisywać.**
+
+**NOTA 3 (znalezisko poboczne — NIE wada tego commita, do osobnego rozpoznania).** W repozytorium
+stoją dziś dwa wzajemnie sprzeczne założenia o `.civ-unit-panel`:
+- ten temat (`f3db8b22`): panel to martwy kod;
+- temat siostrzany: `hudTitleTooltip.ts:66` dokłada `'.civ-unit-panel'` do **żywej** listy
+  `SCOPE_SELECTOR`, z komentarzem twierdzącym, że panel „montuje się bezpośrednio na
+  `document.body`" i renderuje plakietkę weterana.
+Mój dowód z builda (`civ-unit-panel-hud-css-v2-1e` = 0 w `dist`, `act-danger` = 3 = wkład samego
+`armyStackHud`) pokazuje, że w wydanej grze ten panel **nie powstaje**, więc tamten wpis w scope
+jest w produkcji równie bezczynny — działa wyłącznie w harnessie testowym, który montuje panel
+ręcznie. Bramka `hud-tooltip-body-mounted-panels-test.cjs` jest przez to zielona, ale scenariusz 2
+dowodzi zachowania kodu, którego gracz nie widzi. Do zarejestrowania jako osobny temat; **nie
+blokuje `f3db8b22`.**
+
+---
+
+**WERDYKT: PASS-WITH-NOTES.** Zmiana kodu jest poprawna, minimalna (1 linia, zakres C-025
+dotrzymany), a jej nieszkodliwość udowodniona dwiema niezależnymi drogami plus dowodem bajtowym
+(delta bundla = dokładnie 81 B = usunięta linia). Bramki zielone: `tsc` 0 błędów/exit 0,
+`hud-tooltip-body-mounted-panels-test.cjs` 16/0/exit 0. Powód, dla którego to nie jest czyste
+PASS: raport Operatora zawiera jedną **fałszywą na ocenianym commicie liczbę** (NOTA 2) i jedno
+**za szerokie twierdzenie** (NOTA 1) — obie pozycje szły do właściciela jako fakt, obie
+sprostowane powyżej. Sam fix nie wymaga poprawki i jest gotowy do scalenia/deployu.
+
+---
+
+## P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE (2026-08-16, znalezisko Evaluatora Opus 5 przy okazji f3db8b22, NOTA 3)
+
+**Sprzeczność między dwoma już scalonymi tematami.** `P-UNITINFOGRAPHIC-OSIEROCONY-SELEKTOR-CIV-UNIT-PANEL`
+(f3db8b22) zakłada, że `.civ-unit-panel` jest martwym kodem — potwierdzone na poziomie build-artefaktu
+(`civ-unit-panel-hud-css-v2-1e` = 0 w `dist/index.html`, moduł w całości wycięty tree-shakingiem).
+Tymczasem temat siostrzany `P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE` (commit `46ebea84`, już
+zdeployowany w FALA 285) dołożył `'.civ-unit-panel'` do **żywej** listy `SCOPE_SELECTOR` w
+`hudTitleTooltip.ts:66`, z komentarzem twierdzącym, że panel „montuje się bezpośrednio na
+`document.body`" i renderuje plakietkę weterana.
+
+**Dowód Evaluatora:** skoro `unitPanelHud.ts` jest w całości wycięty przez tree-shaking z wydanego
+bundla, wpis w `SCOPE_SELECTOR` dla `.civ-unit-panel` jest w produkcji równie bezczynny — działa
+WYŁĄCZNIE w harnessie testowym `hud-tooltip-body-mounted-panels-test.cjs` (Scenariusz 2), który
+montuje panel ręcznie przez bezpośrednie wywołanie `createUnitPanelHud()`. Bramka jest zielona, ale
+dowodzi zachowania kodu, którego gracz nigdy nie zobaczy.
+
+**Nie jest to regresja ani błąd tych dwóch commitów** — oba są poprawne w swoim zakresie. To
+niespójność założeń między dwoma niezależnie prowadzonymi tematami tego samego dnia, warta
+rozpoznania: albo `.civ-unit-panel`/`createUnitPanelHud()` faktycznie powinien się kiedyś montować
+(i wtedy oba fixy mają sens na przyszłość), albo jest to w pełni martwa ścieżka kodu wartą usunięcia
+w całości (`unitPanelHud.ts` + wpis w `SCOPE_SELECTOR` + test Scenariusz 2), skoro
+`armyStackHud.ts`/`.civ-army-stack` już go zastąpił (udokumentowane w `dyspozycje/UI-DO-MASTERA.md`).
+
+**STATUS: DO ROZPOZNANIA — niekrytyczne, nie pilne (nie blokuje żadnego z dwóch scalonych commitów,
+zero wpływu na dzisiejszą grywalność). Wymaga decyzji: usunąć martwy kod w całości, czy zostawić
+jako przygotowanie pod przyszłe wykorzystanie panelu.**
