@@ -2262,13 +2262,19 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     // Wiersz SUMA — te same sumy co kolumny wyżej (agregacja liczb już pokazanych, wzorzec
     // `.civ-emp-mini-summary` ze Skarbca). N5 (Evaluator, 7a413462): WZROST% liczony jako ŚREDNIA
     // ARYTMETYCZNA po widocznych miastach (makieta klatka 4A/4B), zaokrąglona RAZ na końcu —
-    // dokładnie ta sama konwencja co `wzrostProcentAvg` w computeMiastaSummaryRow
+    // TA SAMA konwencja zaokrąglania co `wzrostProcentAvg` w computeMiastaSummaryRow
     // (empireMiastaTable.ts, tabela Miasta): `Math.round(sumaSurowa / liczbaMiast)`, nie średnia
-    // z już zaokrąglonych komórek. Ta tabela nie ma filtra kolumn/miast (miastaHiddenCols) —
-    // `food.perCityRows` to zawsze wszystkie widoczne miasta. / EN: SUM row — aggregates of the
-    // already-shown columns. WZROST% is the arithmetic mean over the visible cities, rounded ONCE
-    // at the end — same convention as `wzrostProcentAvg` in computeMiastaSummaryRow (the Miasta
-    // tab): round the raw sum, not the average of already-rounded cells. This table has no
+    // z już zaokrąglonych komórek. UWAGA (Evaluator N2, 2026-08-16): to podobieństwo dotyczy
+    // WYŁĄCZNIE sposobu zaokrąglania — od ECHO B (patrz niżej) `sumaSurowa` tutaj jest EFEKTYWNA
+    // (głodujące miasta = 0), a `wzrostProcentAvg` w tabeli Miasta nadal liczy NOMINALNIE (bez
+    // bramki `nakarmione`). Dla tych samych danych obie zakładki dziś pokażą różne liczby — patrz
+    // `P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY` w PYTANIA-OTWARTE.md. Ta tabela nie ma
+    // filtra kolumn/miast (miastaHiddenCols) — `food.perCityRows` to zawsze wszystkie widoczne
+    // miasta. / EN: SAME rounding convention as `wzrostProcentAvg` in computeMiastaSummaryRow —
+    // round the raw sum once, not the average of already-rounded cells. That similarity is
+    // ROUNDING ONLY: since ECHO B (below) the raw sum here is EFFECTIVE growth (starving cities
+    // = 0), while the Miasta tab's `wzrostProcentAvg` still computes NOMINAL growth (no `fed`
+    // gate) — the two tabs can show different numbers for the same data today. This table has no
     // column/city filter (miastaHiddenCols) — `food.perCityRows` is already the full visible set.
     // ECHO B (P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY, Maciej 2026-08-16): `sumWzrost`
     // powyżej sumuje już EFEKTYWNE wzrosty (`wzrostEff` per wiersz) — SUMA zgadza się teraz

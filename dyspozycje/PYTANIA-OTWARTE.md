@@ -30140,8 +30140,12 @@ przy niejednoznaczności). Dwie opcje do ABC przy podjęciu tematu:
 (`fed ? total : 0`) — wraz z przejściem komórek per-miasto tej samej tabeli na tę samą konwencję,
 dla spójności (żeby SUMA zgadzała się z widocznymi liczbami).
 
-STATUS: **ECHO — dispatch w toku** (nie deploy, zgodnie z procedurą numer+ABC — commit dopiero,
-deploy tylko na hasło).
+**Wdrożone i zweryfikowane** (commit `710179cb`, Evaluator PASS-WITH-NOTES — dowód liczbowy
+odtworzony wykonaniem kodu, nie na słowo). Evaluator znalazł efekt uboczny POZA zakresem tego
+ECHO (zakładka Miasta w tym samym pliku, `cityMiastaMiniDetail()`, nadal liczy nominalnie —
+patrz nowy wpis `P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD` niżej).
+
+STATUS: **ZAMKNIĘTE** (nie deploy — commit już jest, deploy do ROBOCZA tylko na hasło).
 
 ---
 
@@ -30210,3 +30214,31 @@ dla kompletności rejestru, żaden nie blokuje deployu:
 
 STATUS: **OTWARTE** — czeka na uznanie właściciela za zamknięte przy następnym przeglądzie panelu
 imperium (żaden punkt nie wymaga osobnego dispatchu, wszystkie są kosmetyczne/dokumentacyjne).
+
+---
+
+## P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD (2026-08-16, znalezisko Evaluatora)
+
+Evaluator oceniający `710179cb` (Spichlerz SUMA efektywna, ECHO B) znalazł: naprawa usunęła
+rozjazd WEWNĄTRZ tabeli Spichlerza, ale wytworzyła NOWY rozjazd MIĘDZY zakładkami tego samego
+panelu imperium. `cityMiastaMiniDetail()` (zakładka „Miasta", ten sam plik
+`empireDetailPanel.ts`) czyta te same `food.perCityRows` (przez `foodById`), ale bez bramki
+`nakarmione` — liczy nominalnie, tak jak Spichlerz robił PRZED tą naprawą.
+
+**Skutek na przykładzie z poprzedniego wpisu** (3 miasta po 6%, 2 głodujące): zakładka „Miasta"
+→ 6%/6%/6%, ŚREDNIA **6%**; zakładka „Spichlerz" → 6%/0%/0%, SUMA **2%**. Przed naprawą obie
+zakładki pokazywały to samo. Formalnie NIE jest to naruszenie ECHO B (decyzja mówiła wprost o
+„komórkach per-miasto **tej samej tabeli**"), ale gracz przełączający się między zakładkami
+zobaczy dwie różne liczby dla tego samego zjawiska.
+
+**Uwaga praktyczna:** `empire-miasta-table-test.cjs` (89/0) dziś przypina nominalną konwencję
+po stronie „Miasta" — ewentualna zmiana wymagałaby też ruszenia tej bramki.
+
+Nie rozstrzygam samodzielnie — to kolejne pytanie produktowe tej samej rodziny co ECHO B (czy
+zakładka Miasta ma pójść tą samą drogą, czy rozjazd między dwoma różnymi „widokami" tej samej
+liczby jest akceptowalny, bo to inne pytania: „ile realnie rośnie populacja imperium" [Spichlerz]
+vs „jak wygląda produkcja per miasto" [Miasta]).
+
+STATUS: **OTWARTE** — czeka na ABC do właściciela przy następnym przeglądzie panelu imperium.
+Nie blokuje deployu (nie jest regresją — to nowa widoczność istniejącej niejednoznaczności
+konwencji, tym razem między zakładkami zamiast wewnątrz jednej).
