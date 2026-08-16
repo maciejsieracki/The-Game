@@ -239,7 +239,7 @@ import {
 } from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import {
-  canUnitOccupyCityHex, addForeignCityBlocks, canAiEnterUndefendedCityHex,
+  canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
 import {
   evaluateFoundCityAffordance,
@@ -737,7 +737,7 @@ import { UI_PARAMS } from './ui/uiParams';
 import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
 import { loadAmbiencePrefs, saveAmbiencePrefs } from './audio/ambiencePrefs';
 import { loadSfxPrefs, saveSfxPrefs } from './audio/sfxPrefs';
-import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier, unitMapAttackRangeHex } from './game/combat';
+import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
 import miastoParams from '../data/miasto-params.json';
@@ -19527,61 +19527,11 @@ async function boot(): Promise<void> {
       }
     }
 
-    /**
-     * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: zasięg ataku `u` NA MAPIE ŚWIATA
-     * w heksach — 0 dla jednostek zwarcia (wymóg adiacencji bez zmian), N dla
-     * jednostek dystansowych (pole "Zasięg ataku (hex)" z units.json, ten sam
-     * odczyt co combat.ts:combatUnitFromDef). / EN: `u`'s world-map attack
-     * reach in hexes — 0 for melee units (adjacency requirement unchanged), N
-     * for ranged units (units.json "Zasięg ataku (hex)", same read as
-     * combat.ts:combatUnitFromDef).
-     */
-    function unitAttackRangeHex(u: RuntimeUnit): number {
-      return unitMapAttackRangeHex(lookupUnitDef(u.typeId));
-    }
-
-    /** Min. wymagany dystans do zainicjowania ataku: 1 (adiacencja) dla zwarcia, zasięg dla dystansu. */
-    function isTargetWithinAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {
-      const range = Math.max(1, unitAttackRangeHex(atkUnit));
-      return hexDistance(atkUnit.q, atkUnit.r, tq, tr) <= range;
-    }
-
-    /**
-     * P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE: czy cel jest w zasięgu
-     * KTÓREJKOLWIEK jednostki w stosie gracza na heksie `atkUnit` — nie tylko samej `atkUnit`.
-     * Powód: reprezentanta stosu do kliku wybiera unitAtRepresentative() wg unitAttackScore
-     * (=meleeAttack), a jednostki dystansowe mają meleeAttack systematycznie NIŻSZY niż
-     * zwarciowe (np. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Triari=8) — w
-     * KAŻDYM stosie mieszanym zwarcie+dystans reprezentantem (więc i `selectedId`/`atkUnit`
-     * przy kliku) niemal zawsze zostaje jednostka zwarcia. Bez tej funkcji isTargetWithinAttackRange
-     * cicho sprawdzała TYLKO zasięg=0 tej jednostki zwarcia, więc klik na wroga w zasięgu
-     * łucznika-w-tym-samym-stosie mylnie wypadał jako "poza zasięgiem" -> marsz zamiast ataku
-     * (dokładnie zgłoszenie właściciela: "trzeba kliknąć obok, dopiero wtedy można zaatakować").
-     * Bezpieczne: openPlayerMapUnitAttack/collectBattleRoster i tak zbiera CAŁY stos po pozycji
-     * (units/battleRoster.ts:collectBattleRoster), więc który konkretnie unit jest `atkUnit`
-     * nie zmienia składu bitwy — zmienia tylko to, czy klik w ogóle ODBLOKOWUJE atak.
-     * / EN: is the target within range of ANY unit in the player's stack at `atkUnit`'s hex --
-     * not just `atkUnit` itself. Reason: the stack's click representative is picked by
-     * unitAttackScore (=meleeAttack), and ranged units have a systematically LOWER meleeAttack
-     * than melee ones (e.g. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Triari=8) --
-     * in ANY mixed melee+ranged stack the representative (hence `selectedId`/`atkUnit` on click)
-     * is almost always the melee unit. Without this, isTargetWithinAttackRange silently checked
-     * ONLY that melee unit's range=0, so clicking an enemy within the stack's archer's range
-     * wrongly read as "out of range" -> march instead of attack (exactly the owner's report:
-     * "you have to click next to it first, only then can you attack"). Safe: openPlayerMapUnitAttack
-     * /collectBattleRoster already gathers the WHOLE stack by position (units/battleRoster.ts:
-     * collectBattleRoster), so which specific unit is `atkUnit` doesn't change the battle roster --
-     * it only changes whether the click unlocks the attack at all.
-     */
-    function isTargetWithinStackAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {
-      return playerStackAt(atkUnit).some(u => isTargetWithinAttackRange(u, tq, tr));
-    }
-
     function tryLaunchMarchAttack(atkUnit: RuntimeUnit, attackTargetId: string): boolean {
       const def = units.find(x => x.id === attackTargetId);
       if (!def) return false;
       if (!currentVisible().has(keyOf(def.q, def.r))) return false;
-      if (!isTargetWithinStackAttackRange(atkUnit, def.q, def.r)) return false;
+      if (hexDistance(atkUnit.q, atkUnit.r, def.q, def.r) > 1) return false;
       // force=true: plan spełnił swoją rolę — atak właśnie się uruchamia, więc czyścimy wpis
       // bezwarunkowo (attackUnitId też, jest tu zawsze ustawione dla tej ścieżki).
       // / EN: force=true — the plan has served its purpose, the attack is launching right now,
@@ -19635,16 +19585,6 @@ async function boot(): Promise<void> {
         x => x.q === hitQ && x.r === hitR && x.ownerId !== uSel.ownerId,
       );
       const hoverVis = currentVisible().has(keyOf(hitQ, hitR));
-      // P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: cel już w zasięgu ataku (dystans
-      // lub adiacencja) -- atak nie wymaga marszu, więc podgląd trasy byłby
-      // mylący (sugerowałby zbędny ruch przed strzałem). / EN: target already
-      // within attack range (ranged or adjacent) -- the attack needs no march,
-      // so a route preview would be misleading (implying unnecessary movement
-      // before firing).
-      if (hoverEnemy && hoverVis && isTargetWithinStackAttackRange(uSel, hitQ, hitR)) {
-        unitRenderer.clearPathRoute();
-        return;
-      }
       const hoverDest: PlannedMarchDest = hoverEnemy && hoverVis
         ? { destQ: hitQ, destR: hitR, attackUnitId: hoverEnemy.id }
         : { destQ: hitQ, destR: hitR };
@@ -20790,9 +20730,7 @@ async function boot(): Promise<void> {
             return;
           case 'hint_no_adjacent':
             showHintMessage(
-              // P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: dla muru zawsze adiacencja
-              // (oblężenie), dla miasta bez muru wystarczy zasięg jednostki dystansowej.
-              action.cityName + ' — miasto wrogie. Podejdź na sąsiedni heks (lub w zasięg jednostki dystansowej, jeśli miasto bez muru) i kliknij miasto.',
+              action.cityName + ' — miasto wrogie. Ustaw jednostkę na sąsiednim heksie i kliknij miasto.',
               4500,
             );
             clearPlayerUnitSelection();
@@ -20828,7 +20766,6 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: 0,
-            unitAttackRangeHex,
           });
           const isMilitaryAction =
             enemyAction.kind === 'siege_panel' ||
@@ -20879,7 +20816,6 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: 0,
-          unitAttackRangeHex,
         });
         const isMilitaryAction =
           enemyAction.kind === 'siege_panel' ||
@@ -20909,20 +20845,10 @@ async function boot(): Promise<void> {
           selectPlayerUnit(cu.id);
         }
       } else if (selectedId !== null && cu !== null && cu.ownerId !== 0) {
-        // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad LUB w zasięgu ataku
-        // dystansowego — P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE) → preBattle C-01
-        // N1 (P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE, runda 2):
-        // sprawdź mgłę PRZED zaakceptowaniem ataku — symetria z tryLaunchMarchAttack
-        // (main.ts:19315) i refreshHoverPathPreview (hoverVis); bez tego wystarczy
-        // JEDEN łucznik w stosie, żeby klik na zamglony heks po cichu zamienił się
-        // w atak zamiast marszu. / EN: check fog BEFORE accepting the attack —
-        // symmetry with tryLaunchMarchAttack (main.ts:19315) and
-        // refreshHoverPathPreview (hoverVis); without this, one archer anywhere in
-        // the stack silently turned a move onto a fogged hex into an attack.
+        // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01
         const atkUnit = units.find(x => x.id === selectedId);
         if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
-            currentVisible().has(keyOf(cu.q, cu.r)) &&
-            isTargetWithinStackAttackRange(atkUnit, cu.q, cu.r)) {
+            hexDistance(atkUnit.q, atkUnit.r, cu.q, cu.r) <= 1) {
           withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
         } else if (atkUnit && atkUnit.ownerId === 0) {
           if (!stackCanMove(atkUnit)) {
@@ -21538,14 +21464,7 @@ async function boot(): Promise<void> {
       });
     }
 
-    /**
-     * MAP PLAYER ATTACK: jednostka → jednostka (sąsiad LUB w zasięgu ataku
-     * dystansowego) → preBattle C-01. Bitwa jest abstrakcyjna względem pozycji
-     * — atakujący NIE przemieszcza się fizycznie na heks obrońcy przed walką
-     * (patrz applyPostBattleMap/moveAtkRosterOntoBattleHex — repozycjonowanie
-     * następuje dopiero PO wygranej), więc atak z dystansu nie wymaga żadnego
-     * dodatkowego kroku ruchu tutaj — P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE.
-     */
+    /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
       if (atkUnit.ownerId === 0 && defUnit.ownerId !== 0 && !playerIsAtWarWith(defUnit.ownerId)) {
         withPlayerWarConsent(defUnit.ownerId, () => openPlayerMapUnitAttackCore(atkUnit, defUnit));
@@ -27508,40 +27427,7 @@ async function boot(): Promise<void> {
                 if (cmd.type === 'move') {
                   const u = units.find(x => x.id === cmd.unitId);
                   if (!u || u.ownerId !== ownerId) continue;
-                  // P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B (RUNDA 3, Maciej 2026-08-16):
-                  // wąski wyjątek WYŁĄCZNIE dla komend z jednej gałęzi ai.ts
-                  // (cmd.rangedCityAttackEntry -- ustawiane TYLKO przy emisji ruchu na
-                  // miasto w zasięgu ataku, ai.ts:isWithinCityAttackRange) -- pozwala
-                  // wejść na PUSTY (bez obrońców), NIEOBMUROWANY heks obcego miasta,
-                  // zamiast cichego odrzucenia rozkazu przez `canUnitOccupyCityHex`,
-                  // która blokuje KAŻDY obcy heks miasta bezwarunkowo (regresja RUNDY 2:
-                  // isWithinCityAttackRange dała AI zasięg, ale egzekutor nie miał
-                  // wyjątku -- jednostka dostawała rozkaz i NIC nie robiła). Analogiczne
-                  // do canBarbarianWalkIntoEmptyCity (gałąź barbarzyńców niżej), ale BEZ
-                  // realnego przejęcia miasta -- ogólna ścieżka zdobycia (N2 werdyktu)
-                  // świadomie POZA zakresem, patrz doc-comment
-                  // canAiEnterUndefendedCityHex (city-hex-movement.ts). Każde inne `move`
-                  // (marsz, patrol, obrona domu, wioski) nigdy nie ustawia to pole, więc
-                  // wyjątek nie otwiera ogólnej furtki. / EN: narrow exception ONLY for
-                  // commands from the one ai.ts branch (cmd.rangedCityAttackEntry -- set
-                  // ONLY when emitting a move onto a city within attack range,
-                  // ai.ts:isWithinCityAttackRange) -- lets the unit enter an EMPTY
-                  // (undefended), UNWALLED foreign city hex instead of the command being
-                  // silently dropped by `canUnitOccupyCityHex`, which blocks every
-                  // foreign city hex unconditionally (ROUND 2 regression: the AI got the
-                  // attack range, but the executor had no exception -- the unit received
-                  // the order and did NOTHING). Mirrors canBarbarianWalkIntoEmptyCity
-                  // (barbarian branch below), but WITHOUT actually capturing the city --
-                  // a general capture path (verdict N2) is deliberately out of scope, see
-                  // canAiEnterUndefendedCityHex's doc-comment (city-hex-movement.ts).
-                  // Every other `move` (march, patrol, home defense, village explore)
-                  // never sets this field, so the exception cannot widen into a general
-                  // escape hatch.
-                  const cityAttackEntry = cmd.rangedCityAttackEntry === true
-                    && canAiEnterUndefendedCityHex(
-                      cities.find(c => c.q === cmd.toQ && c.r === cmd.toR), units,
-                    );
-                  if (!cityAttackEntry && !canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
+                  if (!canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
                   const path = computePath(u, map, cmd.toQ, cmd.toR, (() => {
                     const occ = addForeignCityBlocks(new Set<string>(), u.ownerId, cities);
                     for (const ou of units) { if (ou.id !== u.id) occ.add(keyOf(ou.q, ou.r)); }
@@ -27549,38 +27435,12 @@ async function boot(): Promise<void> {
                   })(), moveCostFnForUnit(u));
                   if (path.length > 0) {
                     const last = path[path.length - 1]!;
-                    if (!cityAttackEntry && !canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
+                    if (!canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
                     u.q = last.q;
                     u.r = last.r;
                     u.ruchLeft = 0;
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     applyEmbarkStateAfterMove([u], map);
-                    // RUNDA 4 (P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A, ECHO Maciej 2026-08-16):
-                    // wejście na pusty, niebroniony heks miasta w TEJ gałęzi ma REALNIE
-                    // przejąć miasto -- ta sama konsekwencja co barbarzyńcy
-                    // (tryAutoCaptureEmptyCityAt, gałąź barbarzyńców niżej). Naprawia B1
-                    // (evictForeignUnitsFromCityHexes przestaje wypychać jednostkę, bo
-                    // canUnitOccupyCityHex widzi już zgodny ownerId) i B2 (jednostka nie
-                    // wrasta na stałe w heks, bo miasto jest teraz jej) NIEZALEŻNIE od tego,
-                    // czy barbariansActive -- samo przejęcie usuwa przyczynę obu, evict nie
-                    // musi się nawet wykonać. tryAutoCaptureEmptyCityAt no-opuje (zwraca
-                    // false) dla własnego miasta (city.ownerId===anchor.ownerId), więc
-                    // wołanie jest bezpieczne nawet gdyby `city` w międzyczasie już należało
-                    // do `u.ownerId`.
-                    // / EN: entering an empty, undefended city hex on THIS branch now
-                    // REALLY captures the city -- the same consequence as barbarians
-                    // (tryAutoCaptureEmptyCityAt, barbarian branch below). Fixes B1
-                    // (evictForeignUnitsFromCityHexes stops evicting the unit, since
-                    // canUnitOccupyCityHex now sees a matching ownerId) and B2 (the unit no
-                    // longer fuses permanently into the hex, since the city is now its own)
-                    // REGARDLESS of barbariansActive -- the capture itself removes the root
-                    // cause of both, eviction need not even run. tryAutoCaptureEmptyCityAt
-                    // no-ops (returns false) for one's own city
-                    // (city.ownerId===anchor.ownerId), so the call is safe even if `city`
-                    // already belonged to `u.ownerId` in the meantime.
-                    if (cityAttackEntry) {
-                      tryAutoCaptureEmptyCityAt(last.q, last.r, [u]);
-                    }
                     // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: symetria z ruchem gracza --
                     // `ownerId` tu to zawsze prawdziwa cywilizacja AI (1..N), nigdy
                     // barbarzyńcy (ci mają własną pętlę ruchu niżej, poza AICommand).

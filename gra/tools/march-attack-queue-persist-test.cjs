@@ -321,24 +321,24 @@ function zbudujHarness(marchTxt, selTxt) {
 // faktycznie się odpala przy dotarciu.
 // ===========================================================================
 {
-  const SYG_WITHIN = 'function isTargetWithinAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {';
-  const SYG_WITHIN_STACK = 'function isTargetWithinStackAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {';
-  const SYG_STACK_AT = 'function playerStackAt(u: RuntimeUnit): RuntimeUnit[] {';
-  const SYG_RANGE = 'function unitAttackRangeHex(u: RuntimeUnit): number {';
-  const SYG_LOOKUP = 'function lookupUnitDef(typeId: string): any {';
+  // P-BITWA-ATAK-DYSTANSOWY-COFNIECIE-Q1=A (2026-08-16): tryLaunchMarchAttack wróciła do
+  // wymogu adiacencji (hexDistance(...) > 1) return false) -- nie zależy już od
+  // isTargetWithinAttackRange/isTargetWithinStackAttackRange/unitAttackRangeHex/
+  // lookupUnitDef/playerStackAt (usunięte razem z mechaniką ataku dystansowego na mapie).
+  // Jedyna realna zależność poza clearPlannedMarch/openPlayerMapUnitAttack (dostarczane
+  // przez harness) to hexDistance -- zwykła funkcja importowana z units/setup.
   const SYG_MARCH_ATTACK = 'function tryLaunchMarchAttack(atkUnit: RuntimeUnit, attackTargetId: string): boolean {';
 
-  const parts = [SYG_LOOKUP, SYG_RANGE, SYG_WITHIN, SYG_WITHIN_STACK, SYG_STACK_AT, SYG_CLEAR_MARCH, SYG_MARCH_ATTACK]
+  const parts = [SYG_CLEAR_MARCH, SYG_MARCH_ATTACK]
     .map(syg => wytnijFunkcje(realMainSrc, syg));
   const allFound = parts.every(Boolean);
   ok(allFound, '(h) wycięcie wszystkich zależności tryLaunchMarchAttack z main.ts powiodło się');
 
   if (allFound) {
     const esbuild = require(path.resolve(GRA_ROOT, 'node_modules', 'esbuild'));
-    const unitsJson = require('../data/units.json');
     const js = esbuild.transformSync(parts.join('\n'), { loader: 'ts', target: 'node18' }).code;
     const fabryka = new Function('deps', `
-      const { data, unitMapAttackRangeHex, hexDistance, activeUnitStack } = deps;
+      const { hexDistance } = deps;
       let units = [];
       let currentVisibleSet = new Set();
       const openCalls = [];
@@ -365,9 +365,7 @@ function zbudujHarness(marchTxt, selTxt) {
     const combatBundleEntry = path.resolve(__dirname, '.march-attack-persist-entry.ts');
     const combatBundleOut = path.resolve(__dirname, '.march-attack-persist-bundle.cjs');
     fs.writeFileSync(combatBundleEntry, `
-export { unitMapAttackRangeHex } from '../src/game/combat';
 export { hexDistance } from '../src/units/setup';
-export { activeUnitStack } from '../src/game/armyMerge';
 `, 'utf8');
     esbuild.buildSync({
       entryPoints: [combatBundleEntry], bundle: true, platform: 'node', format: 'cjs',
@@ -375,35 +373,49 @@ export { activeUnitStack } from '../src/game/armyMerge';
       resolveExtensions: ['.ts', '.js', '.json'],
       absWorkingDir: GRA_ROOT, nodePaths: [path.resolve(GRA_ROOT, 'node_modules')],
     });
-    const { unitMapAttackRangeHex, hexDistance, activeUnitStack } = require(combatBundleOut);
+    const { hexDistance } = require(combatBundleOut);
 
-    const h = fabryka({ data: { units: unitsJson }, unitMapAttackRangeHex, hexDistance, activeUnitStack });
+    const h = fabryka({ hexDistance });
 
-    const lucznik = { id: 'atk1', typeId: 'Łucznik', q: 0, r: 0, ownerId: 0, ruchLeft: 2, ruch: 2 };
-    const wrog = { id: 'def1', typeId: 'Wojownik', q: 3, r: 0, ownerId: 1, ruchLeft: 2, ruch: 2 };
-    h.setUnits([lucznik, wrog]);
-    h.setVisible(['3,0']);
-    // Zakolejkowany marsz-z-atakiem, DOKŁADNIE jak main.ts po kliku na dystansowego wroga
-    // (planMarchTo → syncMarchAttackTarget) -- wpis PRZETRWAŁ symulowane odznaczenie (naprawa
-    // force=false nie usuwa go z zewnątrz, dokładnie tak jak realnie działa dziś).
-    h.setPlannedMarch('atk1', { destQ: 3, destR: 0, attackUnitId: 'def1' });
+    const wojownik = { id: 'atk1', typeId: 'Wojownik', q: 0, r: 0, ownerId: 0, ruchLeft: 2, ruch: 2 };
+    const wrog = { id: 'def1', typeId: 'Wojownik', q: 1, r: 0, ownerId: 1, ruchLeft: 2, ruch: 2 };
+    h.setUnits([wojownik, wrog]);
+    h.setVisible(['1,0']);
+    // Zakolejkowany marsz-z-atakiem, DOKŁADNIE jak main.ts po kliku na wroga poza zasięgiem
+    // ruchu (planMarchTo → syncMarchAttackTarget) -- wpis PRZETRWAŁ symulowane odznaczenie
+    // (naprawa force=false nie usuwa go z zewnątrz, dokładnie tak jak realnie działa dziś).
+    h.setPlannedMarch('atk1', { destQ: 1, destR: 0, attackUnitId: 'def1' });
     ok(h.hasPlannedMarch('atk1') && h.hasAttackTarget('atk1'),
       '(h) SETUP: plan marszu-z-atakiem zarejestrowany PRZED wywołaniem tryLaunchMarchAttack (symuluje stan "po przetrwanym odznaczeniu")');
 
-    // Scenariusz zgłoszenia: jednostka DOTARŁA w zasięg (Łucznik zasięg=3, dystans=3) — egzekucja
-    // marszu na końcu segmentu (main.ts:~19691) woła dokładnie to wywołanie.
-    const wynik = h.tryLaunchMarchAttack(lucznik, 'def1');
+    // Scenariusz P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: jednostka DOTARŁA na sąsiedni heks
+    // (dystans=1, wymóg adiacencji po cofnięciu ataku dystansowego) — egzekucja marszu na
+    // końcu segmentu (main.ts) woła dokładnie to wywołanie.
+    const wynik = h.tryLaunchMarchAttack(wojownik, 'def1');
     ok(wynik === true,
-      '(h) tryLaunchMarchAttack(Łucznik@dystans=3, cel w zasięgu i widoczny) → true (atak się uruchamia PO przetrwanym odznaczeniu)');
+      '(h) tryLaunchMarchAttack(dystans=1, cel widoczny) → true (atak się uruchamia PO przetrwanym odznaczeniu)');
     ok(h.getOpenCalls().length === 1 && h.getOpenCalls()[0].atk === 'atk1' && h.getOpenCalls()[0].def === 'def1',
       '(h) openPlayerMapUnitAttack woła się DOKŁADNIE raz z prawidłową parą atakujący/cel — dowód end-to-end, że plan po "przetrwaniu" odznaczenia faktycznie kończy się realnym atakiem po dotarciu, nie cichym zgaśnięciem');
     ok(h.hasPlannedMarch('atk1') === false && h.hasAttackTarget('atk1') === false,
       '(h) PO uruchomieniu ataku: plan skonsumowany (clearPlannedMarch(atkUnit.id, true) wewnątrz tryLaunchMarchAttack wyczyścił oba wpisy)');
 
-    // kontrola: cel poza zasięgiem/niewidoczny -> atak się NIE uruchamia, plan zostaje nietknięty
-    h.setPlannedMarch('atk1', { destQ: 3, destR: 0, attackUnitId: 'def1' });
+    // kontrola: cel poza zasięgiem (dystans=2, NIE adiacencja po cofnięciu ataku dystansowego)
+    // -> atak się NIE uruchamia, plan zostaje nietknięty (jednostka jeszcze w marszu).
+    const wrogDaleko = { id: 'def1', typeId: 'Wojownik', q: 2, r: 0, ownerId: 1, ruchLeft: 2, ruch: 2 };
+    h.setUnits([wojownik, wrogDaleko]);
+    h.setVisible(['2,0']);
+    h.setPlannedMarch('atk1', { destQ: 2, destR: 0, attackUnitId: 'def1' });
+    const wynikDaleko = h.tryLaunchMarchAttack(wojownik, 'def1');
+    ok(wynikDaleko === false,
+      '(h) kontrola: cel w dystansie=2 (poza wymogiem adiacencji) → tryLaunchMarchAttack zwraca false (atak dystansowy pozostaje cofnięty)');
+    ok(h.hasPlannedMarch('atk1') === true,
+      '(h) kontrola: atak nieudany (poza adiacencją) → plan NIE skonsumowany, zostaje do kolejnej próby po dalszym marszu');
+
+    // kontrola: cel poza mgłą -> atak się NIE uruchamia, plan zostaje nietknięty
+    h.setUnits([wojownik, wrog]);
+    h.setPlannedMarch('atk1', { destQ: 1, destR: 0, attackUnitId: 'def1' });
     h.setVisible([]); // mgła
-    const wynikMgla = h.tryLaunchMarchAttack(lucznik, 'def1');
+    const wynikMgla = h.tryLaunchMarchAttack(wojownik, 'def1');
     ok(wynikMgla === false, '(h) kontrola: cel w mgle → tryLaunchMarchAttack zwraca false (bez regresji)');
     ok(h.hasPlannedMarch('atk1') === true,
       '(h) kontrola: atak nieudany (mgła) → plan NIE skonsumowany, zostaje do kolejnej próby (early return PRZED clearPlannedMarch)');
