@@ -29855,3 +29855,38 @@ niewpiętego mockupu dla TEGO panelu (poziom imperium/cywilizacji, nie panelu mi
 już wdrożony temat W4-S).
 
 **STATUS: W TRAKCIE ROZPOZNANIA — dispatch Explore w toku, wynik trafi do tego wpisu.**
+
+**DOPISEK Macieja (2026-08-16, ta sama tura co zgłoszenie wyżej):** „tak samo jak nie zostały
+zróżnicowane kwestie pomiędzy miastami obywatelami, przecież według wytycznych miało tam być
+całkiem inny elementy" — trzeci panel z tym samym problemem: zakładka Ludność/Obywatele (miasta)
+też nie ma wdrożonych elementów z wytycznych designu. Rozszerzone razem z rozpoznaniem wyżej —
+ten sam Explore ma sprawdzić też ten panel.
+
+### WYNIK ROZPOZNANIA (Explore, 2026-08-16)
+
+Kod: `gra/src/ui/empireDetailPanel.ts` (Spichlerz: `renderSpichlerzCentralnySection()`; Armia:
+blok inline w `render()`; Miasto/Obywatele: oba chipy `miasta`/`ludnosc` mapują dziś na tę samą
+sekcję `econ-miasta` → `cityMiastaMiniDetail()`, zero realnego rozdzielenia mimo dwóch chipów).
+
+**Kluczowe znalezisko:** Designer DOSTARCZYŁ pełną paczkę 11/11 klatek (`Ulepszenie_infografik.zip`,
+potwierdzone w rejestrze linia ~19248/19563, 2026-08-13/14, ocena „wysoka jakość") — ale paczka
+trafiła **bezpośrednio do Macieja w czacie (SendUserFile), NIGDY nie została skomitowana do repo**.
+Nie ma jej w `docs/ux/claude-design/` ani nigdzie indziej w drzewie — potwierdzone `find` po
+całym repo. Jedyny artefakt w repo to sama specyfikacja zamówienia
+(`docs/ux/DESIGN-ZLECENIE-11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md`), nie gotowe mockupy.
+
+Zaimplementowano dotąd tylko Skarbiec (Faza 1) i Praca/Nauka/Religia (Faza 2). Sam Maciej
+potwierdził żywym playtestem FALA 280 (2026-08-14): „Armia, Miasto, Obywatele, Kultura — stare,
+nietknięte." Spichlerz, Armia, Miasto, Obywatele, Kultura, Surowce, Handel = 7 zakładek Faza 3+,
+czeka na implementację (nie na nową decyzję/design — treść i kierunek już zatwierdzone).
+
+**⚠️ RYZYKO dla toczącej się pracy (Task #185, reskin Spichlerza w toku):** Operator (Opus 5)
+dostał do ręki WYŁĄCZNIE tekstową specyfikację (§8.3 zlecenia), NIE realny mockup z paczki
+Designera — bo ta paczka nie istnieje w repo. Wynik może nie odpowiadać dokładnie temu, co
+Designer faktycznie narysował i co Maciej już ocenił jako „wysoka jakość". Do rozstrzygnięcia z
+właścicielem: czy ma dostęp do `Ulepszenie_infografik.zip` i może go udostępnić (wtedy Operator
+dostanie realny mockup zamiast rekonstrukcji z tekstu), czy kontynuować na podstawie samej
+specyfikacji.
+
+**STATUS: ROZPOZNANIE ZAKOŃCZONE. Implementacja Spichlerza w toku na podstawie specyfikacji
+tekstowej — czeka na potwierdzenie właściciela czy ma dostępną oryginalną paczkę Designera.**
