@@ -2469,3 +2469,7 @@ wejście AI na pusty, niebroniony heks miasta w kontekście ataku dystansowego m
 otwiera zakres N2 (ogólny brak ścieżki zdobycia miasta przez AI) wcześniej niż planowano — ale
 tylko w obrębie tej jednej ścieżki (atak dystansowy), nie ogólnego marszu AI na puste miasta.
 Pełna treść pytania w `PYTANIA-OTWARTE.md`, sekcja `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`.
+
+| R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE | 2026-08-16 | Nowo założone miasto ma zaczynać z automatycznie włączonym autowyżywieniem | **NOWE** | Recon w `PYTANIA-OTWARTE.md`, miejsce zmiany: `foundCityAt()` w `gra/src/game/cities.ts` |
+| R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-DOMYSLNIE | 2026-08-16 | Nowo założone miasto ma zaczynać z trybem budowy „zrównoważone" zamiast „ręczny" | **NOWE** | Recon w `PYTANIA-OTWARTE.md`, to samo miejsce `foundCityAt()` |
+| R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN | 2026-08-16 | +1 do liczby dostępnych cywilizacji dla każdego rozmiaru mapy | **NOWE** | Recon w `PYTANIA-OTWARTE.md`, `gra/data/e-start-params.json`; niejednoznaczność max-vs-default do rozstrzygnięcia przy dispatchu |

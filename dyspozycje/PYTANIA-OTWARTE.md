@@ -30587,3 +30587,71 @@ dziurę — do przyszłego zlecenia.
 
 STATUS: **ZAMKNIĘTE** — gotowe do deployu. U1 do przyszłego, wąskiego zlecenia utwardzenia bramki
 (nie teraz).
+
+---
+
+## R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „nowo wybudowane miasto niech zaczyna zawsze z automatycznie włączonym
+autowyżywieniem."
+
+**Recon (orkiestrator, przed dispatchem):** pole `autoWyzywienie?: boolean` istnieje w
+`gra/src/game/cities.ts` (~linia 577, komentarz „Gracz: default false/undefined=WYŁ. AI:
+ignorowane"). `ensureCitySaveDefaults()` (linia 410+) NIE ustawia tego pola wcale — więc nie jest
+właściwym miejscem (dotyczy WSZYSTKICH miast przy wczytaniu zapisu, nie tylko nowo zakładanych,
+zmiana tam retroaktywnie włączyłaby autowyżywienie w starych zapisach — niezgodne z literalnym
+zgłoszeniem „nowo wybudowane"). Właściwe miejsce: `foundCityAt()` (linia 793-828) — konstruktor
+obiektu dla faktycznie nowego miasta, obecnie pomija to pole całkowicie (dopiero
+`ensureCitySaveDefaults` coś by dostawiło, ale jak wyżej — nic nie dostawia, więc dziś zawsze
+`undefined` = WYŁ.). Do potwierdzenia przy implementacji: czy zmiana ma dotyczyć też miast AI (pole
+ma komentarz „AI: ignorowane" — jeśli faktycznie ignorowane przez silnik AI, ustawienie `true` dla
+AI jest nieszkodliwe, ale do zweryfikowania w kodzie, nie zgadywania).
+
+STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+
+---
+
+## R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-DOMYSLNIE (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „oraz zrównoważonym automatycznym budowaniu budynków." (kontynuacja tego
+samego zdania co wyżej, ale osobny mechanizm — traktowane jako odrębny temat, bo dotyczy innego
+pola).
+
+**Recon (orkiestrator, przed dispatchem):** `BudowaTryb` (typ) + `DEFAULT_BUDOWA_TRYB: BudowaTryb =
+'reczny'` (linia 166, `gra/src/game/cities.ts`). `ensureCitySaveDefaults()` USTAWIA `budowaTryb`
+jako fallback-tylko-jeśli-brak — czyli dziś każde miasto (stare i nowe) dostaje `'reczny'` jeśli
+pole nie istnieje. Analogicznie do tematu wyżej: `foundCityAt()` obecnie pomija `budowaTryb`
+całkowicie w konstruktorze nowego miasta — właściwe miejsce dodania `budowaTryb: 'zrownowazone'`
+wprost tam, żeby zmiana dotyczyła WYŁĄCZNIE nowo zakładanych miast, nie retroaktywnie starych
+zapisów. Do zweryfikowania przy implementacji: czy pole ma jakikolwiek efekt dla miast AI (ten sam
+`foundCityAt()` obsługuje `ownerId` gracza i AI) — jeśli AI ma własną, niezależną logikę budowy
+ignorującą to pole, ustawienie jest neutralne; jeśli nie, może wymagać warunku `ownerId === gracz`.
+
+STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+
+---
+
+## R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „zwiększ też ilość dostępnych cywilizacji dla każdej mapy o +1"
+
+**Recon (orkiestrator, przed dispatchem):** źródło prawdy `gra/data/e-start-params.json` —
+struktura `skala_mapy.<rozmiar_mapy>.typy_cywilizacji_per_epoka.<epoka>.{min,default,max}`,
+potwierdzone przez `python json.load` dla wszystkich 6 rozmiarów mapy × 3 epoki. Loader:
+`gra/src/data/e-start-params-loader.ts` (`eStartTypyCywilizacjiPerEpoka()`), konsument:
+`gra/src/map/newGameMapDefaults.ts` (`civTypesTripleForMapLabel()`) — ten drugi plik ma też
+zapasową twardo-zakodowaną macierz `TYPY_CYWILIZACJI_DEFAULT_BY_TIER`, używaną WYŁĄCZNIE gdy wpis
+JSON brakuje (do potwierdzenia że po zmianie JSON nie trzeba dotykać tej macierzy zapasowej —
+prawdopodobnie nie, bo JSON będzie zawsze obecny, ale do zweryfikowania kodem przy implementacji).
+
+**Niejednoznaczność do rozstrzygnięcia przy dispatchu (niezgadywana):** zgłoszenie mówi „ilość
+dostępnych cywilizacji" — nie jest jawnie powiedziane, czy to dotyczy WYŁĄCZNIE `max`, czy też
+`default`/`min` mają wzrosnąć o +1. Najbardziej dosłowna interpretacja „dostępnych" to `max` (górny
+limit wyboru), zostawiając `default`/`min` bez zmian — to będzie rekomendacja domyślna dla
+Operatora, ale jeśli w trakcie implementacji okaże się dwuznaczne (np. `default` już dziś równa się
+`max` dla części map, co zrobiłoby niejawną zmianę defaultu przy podniesieniu tylko `max`), Operator
+ma zatrzymać się i zgłosić do ABC zamiast zgadywać (CLAUDE.md §6/§7).
+
+STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+
+---
