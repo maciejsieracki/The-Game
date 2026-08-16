@@ -7239,3 +7239,10 @@ Wszystkie bramki zielone, `verify-robocza-bundle.cjs` → VERIFY OK. Szczegóły
 **Scalenie do `main`:** zgodnie z „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 288 zostaje na
 gałęzi do testów; scalona zostaje **FALA 287** (`17baa179`) — osobny wpis niżej.
 CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `3d37608e`".
+
+## [21:41 PL, 2026-08-16] Sesja chmurowa → main — scalenie FALA 287 (jedna fala do tyłu)
+FALA 287 (`17baa179`) scalona do `main` **fast-forward** (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 288). `origin/main`: `3ea531c6` → `17baa179`. Scalenie celowało w **commit deployu** FALI 287,
+nie w czubek gałęzi — zgodnie z regułą. FALA 288 (`10efff7c`) zostaje na gałęzi sesji **wyłącznie
+do testów**, nie scalona; scali się dopiero przy FALI 289.
+CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpis wyżej).
