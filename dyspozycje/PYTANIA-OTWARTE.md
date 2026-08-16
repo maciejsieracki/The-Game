@@ -29890,3 +29890,50 @@ specyfikacji.
 
 **STATUS: ROZPOZNANIE ZAKOŃCZONE. Implementacja Spichlerza w toku na podstawie specyfikacji
 tekstowej — czeka na potwierdzenie właściciela czy ma dostępną oryginalną paczkę Designera.**
+
+### SPROSTOWANIE (2026-08-16, Maciej) — paczka Designera ISTNIEJE, była załączona na czacie, nie w repo
+
+Wcześniejsza notatka wyżej („paczka nigdy nie trafiła do repo") była myląca — paczka **istniała
+od 2026-08-13/14, przekazana Maciejowi na czacie**, po prostu żadna sesja nigdy jej stamtąd nie
+zapisała do repozytorium. Maciej załączył ją ponownie bezpośrednio w tej rozmowie
+(`c7208bef-panel_imperium.zip`) — **zapisana teraz do repo**:
+`docs/ux/claude-design/_dist/11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13/` (konwencja `_dist/<ZLECENIE-ID>/`,
+zgodna z innymi wcześniejszymi paczkami w tym katalogu).
+
+**Zawartość paczki (handoff `DESIGN-do-UI_11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md`, pełny
+rejestr decyzji z 2026-08-14):**
+- Mapowanie klatka→kod dla wszystkich 11 zakładek (§2 handoffu).
+- **Cztery zakładki (Skarbiec/Praca/Nauka/Religia) wymagają WŁASNEGO bloku** zamiast dzisiejszego
+  wspólnego filtrowanego kontenera `ekonomia` — zmiana struktury, nie tylko CSS.
+- **`econ-miasta` rozchodzi się na `miasto` i `obywatele`** — dwa niezależne bloki, dwa chipy.
+- Nowe klasy CSS: `.civ-emp-hero`(+pos/neg) / `.civ-emp-hero-sub` / `.civ-emp-alert` /
+  `.civ-emp-slider`(+gold/blue/neutral/green) / `.civ-emp-split2` / `.civ-emp-tbl-sum` /
+  `.civ-emp-grp-row` / `.civ-emp-thr`(+done/now/next).
+- Zamienniki emoji: 🍞 → `res-food.svg` przez `mapResourceIconSvg()` (JEDNA ikona przy dużej
+  liczbie magazynu, NIE powtarzana per wiersz); ⚠ → `chip-warning.svg` przez `brandIconSvg()`.
+- **Rejestr decyzji Macieja 2026-08-14 (§8 handoffu, 5 punktów):**
+  1. Chip Religia = **wariant A** (chip zostaje, pełna zakładka; wariant B w klatce 11 wyszarzony,
+     oznaczony ODRZUCONY).
+  2. Nagłówki Handel/Kultura = **eyebrow** (ujednolicone z resztą) — **już zrealizowane w oddanej
+     makiecie, nic nie trzeba przerysowywać**.
+  3. Kolejność wdrożenia Miasta przy cięciu zakresu: wpływy do skarbca → surowce → kolejka →
+     budynki → obrona/populacja.
+  4. Plakietki stanu w Surowcach (kolor + słowo, nigdy sam kolor) — **już zrealizowane w oddanej
+     makiecie**.
+  5. Przycisk „Otwórz hub badań" (Nauka) — **odłożone**, nierozstrzygnięte czy hub ma być celem
+     linku; w makiecie oznaczony ramką przerywaną + podpisem „element odłożony", reszta klatki
+     bez zmian.
+- Miasto/Obywatele: dosłownie zatwierdzone listy (§6 handoffu), zero kosztu utrzymania jednostek
+  w Mieście, stawka zużycia surowców 1,0/obywatela/turę, mechanizm sumy = rozszerzenie
+  istniejącego filtra kolumn (`miastaHiddenCols`/`computeMiastaSummaryRow()`), wiersz „CAŁA
+  CYWILIZACJA" nie „SUMA".
+
+**Pliki w repo:** `Panel Imperium 11 zakladek (standalone).html` (jeden plik, otwiera się offline,
+11 sekcji + kolumna „Zmiany" przy każdej), `The Game - Panel Imperium 11 zakladek v1 2026-08-13
+(1E).dc.html` (źródło do edycji), `Skarbiec klatka 1.png` (zrzut zatwierdzonej klatki 1,
+3440×2690 2×), `MANIFEST.txt`, `DESIGN-do-UI_11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13.md`.
+
+**STATUS: PACZKA ZAPISANA W REPO. Implementacja 7 pozostałych zakładek (Spichlerz, Surowce,
+Handel, Armia, Miasto, Obywatele, Kultura) może teraz ruszyć na podstawie REALNEGO mockupu, nie
+samej specyfikacji tekstowej. Nie rozpoczynam bez wyraźnego polecenia — Maciej zastrzegł „nie rób
+nic sam" w tej samej turze.**
