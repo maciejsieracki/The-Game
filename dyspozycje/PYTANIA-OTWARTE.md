@@ -30072,10 +30072,13 @@ zrobione poprawnie; brakuje tylko dalszych kroków tej samej kolejności.
 bez regresji; wymyślanie liczb zamiast prawdziwych danych łamałoby CLAUDE.md §3), ale właściciel
 musi znać prawdziwy zakres — stąd ten wpis.
 
-STATUS: **OTWARTE** — czeka na decyzję właściciela, czy dociągnięcie pozostałych pozycji list (co
-wymaga rozszerzenia `EmpireDetailSnap`/`main.ts`) to kolejny temat do zlecenia, czy zakres
-zostaje jak jest. Nie dispatchuję subagenta bez tej decyzji — to pytanie produktowe, nie
-techniczne.
+**ECHO A (Maciej, AskUserQuestion 2026-08-16):** zleć dociągnięcie teraz — rozszerzenie
+`EmpireDetailSnap`/`main.ts` o brakujące pola (budynki wg `BUILDING_GROUP_ORDER`, kolejka
+produkcji, obrona miasta dla Miasta; Zdrowie, Prawo i administracja, Wyżywienie w tym rozbicie
+Zadowolenia na 5 źródeł dla Obywateli), pełna pętla Operator→Evaluator.
+
+STATUS: **ECHO — dispatch w toku** (nie deploy, zgodnie z procedurą numer+ABC — commit dopiero,
+deploy tylko na hasło).
 
 ---
 
@@ -30133,8 +30136,12 @@ przy niejednoznaczności). Dwie opcje do ABC przy podjęciu tematu:
 - B: SUMA liczona z wartości efektywnych (`fed ? total : 0`, spójne z `cityPanel.ts` gdzie indziej
   w grze) — wymagałoby też przemyślenia, czy komórki per-miasto powinny pójść tą samą drogą.
 
-STATUS: **OTWARTE** — czeka na ABC do właściciela. Nie blokuje deployu (to nie regresja, tylko
-uwidocznienie istniejącej niejednoznaczności konwencji).
+**ECHO B (Maciej, AskUserQuestion 2026-08-16):** SUMA efektywna, jak `cityPanel.ts`
+(`fed ? total : 0`) — wraz z przejściem komórek per-miasto tej samej tabeli na tę samą konwencję,
+dla spójności (żeby SUMA zgadzała się z widocznymi liczbami).
+
+STATUS: **ECHO — dispatch w toku** (nie deploy, zgodnie z procedurą numer+ABC — commit dopiero,
+deploy tylko na hasło).
 
 ---
 
@@ -30171,10 +30178,12 @@ trzema kubełkami mieściła się w jednej).
 czyta się jak stan magazynu, a nie koszt na turę. CLAUDE.md §3 wymaga nazwanego parametru **i**
 jednostki, więc box dostał `−8 żywności / turę`, symetrycznie do sąsiedniego `−17 złota / turę`.
 
-STATUS: **OTWARTE** — czeka na decyzję właściciela WYŁĄCZNIE w punkcie 1 (Kultura/ZASIĘG: korekta
-makiety czy jednak liczba w kodzie). Punkty 2 i 3 są już wdrożone i nie wymagają odpowiedzi —
-stoją tu po to, żeby rozjazd z zatwierdzonym rysunkiem był zapisany, a nie odkryty przy
-następnym porównaniu z makietą. Nie blokuje deployu.
+**ECHO A, punkt 1 (Maciej, AskUserQuestion 2026-08-16):** „—" zostaje — makieta była w tym jednym
+miejscu błędna (suma promieni granic nie jest realną wielkością gry). Korekta wyłącznie
+dokumentacyjna (nota przy makiecie), bez zmiany kodu. Punkty 2 i 3 były już wdrożone bez
+konieczności odpowiedzi.
+
+STATUS: **ZAMKNIĘTE** — wszystkie 3 punkty rozstrzygnięte, nic nie blokuje deployu.
 
 ---
 
