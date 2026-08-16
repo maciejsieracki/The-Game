@@ -7173,3 +7173,45 @@ FALA 285 (`25104155`) scalona do `main` fast-forward (rytm `R-MERGE-MAIN-RYTM-Q1
 FALI 286). `origin/main`: `8f53c800` → `25104155`. Bramka `tsc --noEmit` na scalonym `main` — 0
 błędów. FALA 286 (`3ea531c6`) zostaje na gałęzi sesji do testów, nie scalona.
 CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpis wyżej).
+
+## [18:04 PL, 2026-08-16] SESJA CHMUROWA → SESJA LOKALNA — deploy FALA 287 (md5 `a2afa359`)
+
+**FALA 287 (`a2afa359`, 16:04 UTC), ZASTĘPUJE FALĘ 286 (`49594c1e`).** `VERIFY OK`, `manifest match: OK`.
+Build z HEAD `3e36fcc5` (= czubek `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, sprawdzone po
+buildzie) — 18 commitów od deployu FALI 286 (`3ea531c6`). **`gra/src/map/**` NIE ruszone** (0 plików).
+⚠️ **`gra/data` RUSZONE** — inaczej niż w kilku ostatnich falach: 1 plik `miasto-params.json`, 3 linie,
+celowa zmiana leczenia (pkt 4). Pełny wpis: `dyspozycje/WERSJE.md` (FALA 287, na górze).
+
+**Cztery tematy, wszystkie Evaluator (Opus 5) PASS-WITH-NOTES, część po 2–3 rundach:** (1)–(3)
+**domknięcie `R-DESIGN-11-ZAKLADEK` faza 3** — reskin sześciu ostatnich zakładek panelu imperium
+(Kultura, Surowce, Armia, Handel, Spichlerz Centralny, Miasto+Obywatele; Skarbiec/Praca/Nauka/Religia
+były wcześniej). Poza kosmetyką weszły realne naprawy: Armia dostała **brakującą parę boxów KOSZT
+ZŁOTA/ZAOPATRZENIE** (dane były w silniku, panel ich nie pokazywał), Surowce przestały pisać „rośnie"
+przy tempie 0, Kultura przestała renderować **zerowy** przyrost na zielono, Spichlerz pokazuje w wierszu
+SUMA/WZROST% **liczbę zamiast „-"**, a zakładka `econ-miasta` została **rozbita na dwa bloki** — chipy
+HUD „miasta" i „ludność" prowadziły dotąd do **tej samej** funkcji. (4) ⚠️ **`R-MANPOWER-LECZENIE-PROC-TRUDNOSC`
+— ZMIANA DANYCH ROZGRYWKI, decyzja bezpośrednia właściciela:** leczenie jednostki z puli Manpower
+(**% maxHP na turę**) **łatwy 25→40, normalny 20→30, trudny 15→20**.
+
+**Bramki (17, wszystkie na punkcie odniesienia):** `tsc` 0 błędów (TS 5.9.3 zweryfikowany, `C-029`) ·
+`logic-test` 213/213 · `combat` 6/6 · `manpower-test` 62/0 · `empire-miasta-table` 89/0 ·
+`hud-armia-chip-jednostki` 58/58 · `empire-panel-econ-slider-visibility` 60/0 · `spichlerz-deficyt-scalenie`
+**51/0 (było 50/0** — +1 asercja z rundy 3, pilnująca użycia `fedMark`) · `surowce-katalog-kolejnosc` 62/0 ·
+`hud-obywatele-chip` 20/20 · reszta w `WERSJE.md`. Build 824 moduły, 24,37 s.
+**`map-gen-regression` — oba AC zmierzone świeżo i ZIELONE:** rzeki **40/40 map, 2124/2124 tras,
+1235/1235 głównych, 0 FAIL**; determinizm `A=B=fdb5e82c` (ten sam hash co w falach 284/285).
+**13 znanych pre-istniejących czerwonych bramek — liczby identyczne, zero wzrostu.**
+Dowód wejścia do bundla (porównanie z bundlem FALI 286): `easy:25,normal:20,hard:15` → `easy:40,normal:30,hard:20`
+(potwierdzone też w bundlach playtestowych), `civ-emp-hero` 15→34, `civ-emp-box` 22→30, `civ-emp-sp-city-nm` 0→3.
+
+**Czeka na decyzję właściciela (NIE na wykonawcę, nie blokuje):** `P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA`
+(nowe zakładki mają ~połowę zatwierdzonej listy Q2=B), `P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY`,
+`P-DESIGN-11-ZAKLADEK-ODSTEPSTWA-OD-MAKIETY-RUNDA-2`.
+⚠️ **NIE WESZŁO do bundla:** commit `6936d4d3` (naprawa toastu przejścia epoki połykanego przez EOT defer,
+`main.ts` + bramka `era-change-toast-defer-test.cjs`) **wpadł na gałąź już PO buildzie** i nie przeszedł
+bramek tej fali. Bundla świadomie nie przebudowywano (md5 `a2afa359` ma odpowiadać temu, co zmierzono);
+commit deployu **zrebasowany** na `6936d4d3`, bez force-push. **Toast epoki NIE jest naprawiony w
+`a2afa359` — nie zgłaszać z playtestu, wejdzie do FALI 288.**
+**Scalenie do `main`:** zgodnie z „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 287 zostaje na gałęzi
+do testów; scalona zostaje **FALA 286** (`3ea531c6`) — osobny wpis niżej.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `a2afa359`".
