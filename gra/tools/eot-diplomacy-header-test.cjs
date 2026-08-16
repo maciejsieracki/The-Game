@@ -1,15 +1,25 @@
 'use strict';
 /**
  * P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK — wpisy end-of-turn, których treść dotyczy
- * dyplomacji (np. „Dyplomacja: Korynt · Grecy · miasto-państwo — Propozycja handlu
- * surowcem”, showHintMessage z enqueueDiplomacyPendingFromCmd / resolveNegotiationEntryAt
- * w main.ts), muszą dostać nagłówek „Dyplomacja" + kind:'diplo', NIE mylący uniwersalny
- * „Koniec tury". Regresja wzorowana na tools/eot-event-defer-test.cjs (ta sama technika:
- * esbuild bundluje realny moduł src/game/eot-event-defer.ts, test woła prawdziwą funkcję —
- * nie regex/stripLineComments, bo pełne wykonanie jest tu praktyczne).
+ * dyplomacji (np. „Dyplomacja: propozycja wygasła — wojna”, showHintMessage z
+ * `resolveNegotiationEntryAt` / `pruneInvalidNegotiations` w main.ts), muszą dostać nagłówek
+ * „Dyplomacja" + kind:'diplo', NIE mylący uniwersalny „Koniec tury". Regresja wzorowana na
+ * tools/eot-event-defer-test.cjs (ta sama technika: esbuild bundluje realny moduł
+ * src/game/eot-event-defer.ts, test woła prawdziwą funkcję — nie regex/stripLineComments, bo
+ * pełne wykonanie jest tu praktyczne). Test sprawdza samo FORMATOWANIE nagłówka na podstawie
+ * prefiksu wiadomości — nie zależy od tego, KTÓRA funkcja produkcyjna go dziś emituje.
+ * KOREKTA (P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT, 2026-08-16): przypadek `diploHandelMsg` niżej
+ * (wzorzec „Propozycja handlu surowcem") NIE jest już produkowany przez
+ * `enqueueDiplomacyPendingFromCmd` — ta ścieżka toastu została usunięta jako zbędny duplikat
+ * karty stołu negocjacji (trwała karta w `negotiationTable` wystarcza). Stała zostaje w teście
+ * jako czysty przykład FORMATU (dowolny string zaczynający się od „Dyplomacja:" musi dostać
+ * nagłówek „Dyplomacja"), nie jako dowód że main.ts wciąż go emituje.
  * EN: EOT toast entries whose content is about diplomacy must get the "Dyplomacja" header
- * + kind:'diplo', NOT the misleading generic "Koniec tury" — regression test.
- */
+ * + kind:'diplo', NOT the misleading generic "Koniec tury" — regression test. Tests header
+ * FORMATTING from the message prefix only, independent of which production function emits it.
+ * CORRECTED: the "Propozycja handlu surowcem" case is no longer emitted by
+ * `enqueueDiplomacyPendingFromCmd` (removed as a redundant duplicate of the negotiation-table
+ * card) — kept here purely as a format example, not proof of a live call site. */
 const fs = require('fs');
 const path = require('path');
 
@@ -42,9 +52,8 @@ function ok(c, m) { if (c) { pass++; console.log('  OK:', m); } else { fail++; c
 
 console.log('eot-diplomacy-header-test');
 
-// Wpis dokładnie odtwarzający zgłoszony przypadek (P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK):
-// showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmd.type), …)
-// z enqueueDiplomacyPendingFromCmd / resolveNegotiationEntryAt (main.ts), odłożony bo endTurnInProgress.
+// Przykład FORMATU nagłówka „Dyplomacja: <cyw.> — <tytuł>" (patrz korekta w nagłówku pliku —
+// dziś już nie emitowany przez enqueueDiplomacyPendingFromCmd, ta stała testuje tylko format).
 const diploHandelMsg = 'Dyplomacja: Korynt · Grecy · miasto-państwo — Propozycja handlu surowcem';
 // showHintMessage('Dyplomacja: propozycja wygasła — ' + …) z resolveNegotiationEntryAt / pruneInvalidNegotiations.
 const diploWygaslaMsg = 'Dyplomacja: propozycja wygasła — wojna';

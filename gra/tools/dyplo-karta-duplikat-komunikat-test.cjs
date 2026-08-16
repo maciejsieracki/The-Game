@@ -174,5 +174,27 @@ ok(M.shouldDeferEotEvents(true), 'D0: faza AI (endTurnInProgress=true) → kolej
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 try { fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// E. Niezmiennik na CAŁYM pliku (Evaluator N1, 2026-08-16, werdykt ab994b8ed44af2121)
+// ─────────────────────────────────────────────────────────────────────────────
+// A2/A2b/B2 to punktowe sondy (dwie konkretne funkcje) — mutacja dowodowa Evaluatora (M5)
+// pokazała, że da się w pełni przywrócić duplikat z TRZECIEGO miejsca w main.ts (np. pętla
+// dyspozytora komend AI), a test i tak przejdzie 14/14. Ten blok zamienia dwie sondy w jeden
+// niezmiennik na całym źródle main.ts: dokładna liczba wystąpień wzorca
+// `showHintMessage(DIPLOMACY_MSG_PREFIX` w CAŁYM pliku. Dziś to 3, NIE 2 (Evaluator policzył
+// tylko żywe wystąpienia w wariancie „propozycja wygasła" — pominął, że wzorzec występuje też
+// wewnątrz martwej funkcji `enqueueDiplomacyPending`, sekcja C wyżej, jako tekst źródłowy,
+// mimo że nigdy się nie wykonuje). Jeśli liczba kiedykolwiek wzrośnie — ktoś dodał nowy toast
+// dyplomacji gdzieś w pliku i trzeba świadomie ocenić, czy to kolejny duplikat.
+console.log('\nE. Niezmiennik całego pliku — liczba wystąpień wzorca toastu dyplomacji');
+{
+  const allOccurrences = (mainSrc.match(/showHintMessage\(DIPLOMACY_MSG_PREFIX/g) || []).length;
+  ok(allOccurrences === 3,
+    `E1: showHintMessage(DIPLOMACY_MSG_PREFIX występuje dokładnie 3× w całym main.ts (znaleziono ${allOccurrences}) — ` +
+    `2 żywe w wariancie „propozycja wygasła" (linie ok. 13990, 14109) + 1 martwe wewnątrz ` +
+    `enqueueDiplomacyPending (linia ok. 14749, sekcja C wyżej potwierdza 0 wywołań tej funkcji). ` +
+    `Wzrost tej liczby ponad 3 = nowy toast dodany gdzie indziej w pliku, do świadomej oceny.`);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail === 0 ? 0 : 1);
