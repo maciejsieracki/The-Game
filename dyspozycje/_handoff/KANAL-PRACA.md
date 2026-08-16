@@ -7246,3 +7246,16 @@ FALI 288). `origin/main`: `3ea531c6` → `17baa179`. Scalenie celowało w **comm
 nie w czubek gałęzi — zgodnie z regułą. FALA 288 (`10efff7c`) zostaje na gałęzi sesji **wyłącznie
 do testów**, nie scalona; scali się dopiero przy FALI 289.
 CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpis wyżej).
+
+## [23:37 PL, 2026-08-16] Sesja chmurowa → sesja lokalna — deploy ROBOCZA FALA 289
+FALA 289 (`e457e054`) — build z HEAD `2ce69b8f`, 11 commitów od FALI 288 (`5b471f32`). Zawartość:
+**cofnięcie mechaniki „atak bez adiacencji"** (`P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`, ECHO
+`COFNIECIE-Q1=A`) — właściciel sprostował że cała 4-rundowa saga z FAL 281-288 (strzelanie bez
+ruchu, AI zdobywające miasta z dystansu) była nieporozumieniem zakresu; chodziło wyłącznie o
+marsz-potem-atak (osobny, już działający mechanizm, nietknięty). Cofnięte do stanu funkcjonalnie
+równoważnego kodowi sprzed całej sagi (`9e96370a`), 2 pliki bajt-w-bajt identyczne, zweryfikowane
+przez Evaluatora żywym uruchomieniem (marsz-potem-atak działa identycznie dla wszystkich typów
+stosu). **WAŻNE dla playtestu: łucznicy/procarze/kusznicy/katapulty NIE strzelają już bez
+podejścia na sąsiedni heks — to jest oczekiwane, świadome cofnięcie, nie regresja.** `gra/data`
+NIE ruszone. Szczegóły: `WERSJE.md`.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `e457e054`".
