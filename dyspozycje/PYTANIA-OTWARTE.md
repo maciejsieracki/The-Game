@@ -29833,3 +29833,25 @@ dwuznaczny; nie żądam zmiany.
 — mutacja łapana z nową kotwicą, przepuszczana ze starą. Zmiana jest minimalna (jedna linia kodu
 wykonywalnego), dotyczy wyłącznie narzędzia testowego, wszystkie 4 uruchomione bramki zielone, `tsc`
 bez błędów. Noty N10–N12 są informacyjne i żadna nie blokuje. **Temat gotowy do deploy.**
+
+---
+
+## P-PANEL-IMPERIUM-DESIGN-STARY-NIE-WGRANY (2026-08-16, zgłoszenie Macieja przy playtescie FALI 286, zrzuty ekranu)
+
+**Zgłoszenie (dwa kolejne zrzuty ekranu panelu cywilizacji "Grecy"):**
+1. Zakładka „Spichlerz Centralny" — pokazuje „W magazynie: 0/1000", suwak „Domyślne wyżywienie".
+   Maciej: „spichlerz dalej nie jest aktualizowany do najnowszego" → doprecyzowane (ABC
+   `P-SPICHLERZ-STAN-PYTANIE-Q1`, odpowiedź): **„Nie chodzi o UX. Był nowszy zaproponowany dla
+   tego miejsca, a nie został wgrany."**
+2. Zakładka „Wojsko" — pokazuje „Wojsko na mapie", „Rekruci (pula werbu)", tabelę
+   MIASTO/REKRUCI/MAX/ODNOWA/JEDN., „Zaopatrzenie wojska". Maciej: „wojsko dokładnie to samo stare
+   infografiki stare design" — ten sam problem co Spichlerz: istniał nowszy zaproponowany design,
+   nigdy niewgrany.
+
+**Rozpoznanie w toku (Explore, worktree):** identyfikacja pliku/plików renderujących panel
+(prawdopodobnie `gra/src/ui/empireDetailPanel.ts`) + przeszukanie `docs/ux/claude-design/` i
+`dyspozycje/UI-DO-MASTERA.md`/`UI-INVENTORY-DESIGN-vs-GRA.md` pod kątem konkretnego,
+niewpiętego mockupu dla TEGO panelu (poziom imperium/cywilizacji, nie panelu miasta — to inny,
+już wdrożony temat W4-S).
+
+**STATUS: W TRAKCIE ROZPOZNANIA — dispatch Explore w toku, wynik trafi do tego wpisu.**
