@@ -1437,7 +1437,23 @@ export function cityMiastaMiniDetail(
       obyw: pob.ludki,
       ludnoscLabel: pob.ludnoscAbsLabel,
       ludnoscAbsolutna: pob.ludnoscAbsolutna,
+      // `wzrost` = NOMINALNA wartość — czyta ją WYŁĄCZNIE komórka per-miasto (miastaCellFor
+      // niżej), CELOWO bez bramki `nakarmione`. ECHO B (P-PANEL-MIASTA-VS-SPICHLERZ-WZROST
+      // -ROZJAZD-Q1, Maciej 2026-08-16) dotyczy wyłącznie wiersza ŚREDNIA/SUMA — komórki
+      // per-miasto tej tabeli zostają nominalne, bez zmian.
+      // / EN: `wzrost` = NOMINAL value — read ONLY by the per-city cell below, deliberately
+      // without the `nakarmione` gate. ECHO B applies only to the AVG/SUM footer row —
+      // per-city cells stay nominal, unchanged.
       wzrost: fd != null ? fd.wzrostProcent : null,
+      // `wzrostEff` = EFEKTYWNA wartość (miasto głodujące → 0%), TA SAMA konwencja co
+      // `wzrostEff` w renderSpichlerzCentralnySection() (identyczny warunek głodu
+      // `nakarmione === false`) — czyta ją WYŁĄCZNIE wiersz podsumowania niżej, żeby ŚREDNIA
+      // w zakładce Miasta zgadzała się z SUMĄ w zakładce Spichlerz dla tych samych danych.
+      // / EN: `wzrostEff` = EFFECTIVE value (a starving city → 0%), same convention as
+      // `wzrostEff` in renderSpichlerzCentralnySection() (identical `nakarmione === false`
+      // hunger test) — read ONLY by the summary row, so the Miasta tab's AVG matches the
+      // Spichlerz tab's SUM for the same data (ECHO B).
+      wzrostEff: fd != null ? (fd.nakarmione === false ? 0 : fd.wzrostProcent) : null,
       praca: (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0),
       pieniadz: econ?.pieniadz ?? 0,
       zywnosc: fd != null ? fd.bilans : null,
@@ -1459,11 +1475,17 @@ export function cityMiastaMiniDetail(
   }
   // Punkt (c): wiersz podsumowania — suma każdej kolumny, poza WZROST gdzie to ŚREDNIA
   // (computeMiastaSummaryRow, empireMiastaTable.ts — czysta agregacja liczb z wierszy powyżej,
-  // zero nowego przeliczenia ekonomii).
+  // zero nowego przeliczenia ekonomii). ECHO B (P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD-Q1,
+  // Maciej 2026-08-16): wejście `wzrostProcent` to `r.wzrostEff` (EFEKTYWNY, głodujące miasto
+  // = 0), NIE `r.wzrost` (nominalny, ten czytają tylko komórki per-miasto powyżej) — inaczej
+  // ŚREDNIA tej tabeli rozjeżdżałaby się z SUMĄ zakładki Spichlerz dla tych samych danych.
+  // / EN: ECHO B — the `wzrostProcent` input is `r.wzrostEff` (EFFECTIVE, starving city = 0),
+  // NOT `r.wzrost` (nominal, read only by the per-city cells above) — otherwise this table's
+  // AVG would diverge from the Spichlerz tab's SUM for the same data.
   const summary = computeMiastaSummaryRow(rows.map(r => ({
     obyw: r.obyw,
     ludnoscAbsolutna: r.ludnoscAbsolutna,
-    wzrostProcent: r.wzrost,
+    wzrostProcent: r.wzrostEff,
     praca: r.praca,
     pieniadz: r.pieniadz,
     zywnosc: r.zywnosc ?? 0,
@@ -2516,18 +2538,22 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     // ARYTMETYCZNA po widocznych miastach (makieta klatka 4A/4B), zaokrąglona RAZ na końcu —
     // TA SAMA konwencja zaokrąglania co `wzrostProcentAvg` w computeMiastaSummaryRow
     // (empireMiastaTable.ts, tabela Miasta): `Math.round(sumaSurowa / liczbaMiast)`, nie średnia
-    // z już zaokrąglonych komórek. UWAGA (Evaluator N2, 2026-08-16): to podobieństwo dotyczy
-    // WYŁĄCZNIE sposobu zaokrąglania — od ECHO B (patrz niżej) `sumaSurowa` tutaj jest EFEKTYWNA
-    // (głodujące miasta = 0), a `wzrostProcentAvg` w tabeli Miasta nadal liczy NOMINALNIE (bez
-    // bramki `nakarmione`). Dla tych samych danych obie zakładki dziś pokażą różne liczby — patrz
-    // `P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY` w PYTANIA-OTWARTE.md. Ta tabela nie ma
-    // filtra kolumn/miast (miastaHiddenCols) — `food.perCityRows` to zawsze wszystkie widoczne
-    // miasta. / EN: SAME rounding convention as `wzrostProcentAvg` in computeMiastaSummaryRow —
-    // round the raw sum once, not the average of already-rounded cells. That similarity is
-    // ROUNDING ONLY: since ECHO B (below) the raw sum here is EFFECTIVE growth (starving cities
-    // = 0), while the Miasta tab's `wzrostProcentAvg` still computes NOMINAL growth (no `fed`
-    // gate) — the two tabs can show different numbers for the same data today. This table has no
-    // column/city filter (miastaHiddenCols) — `food.perCityRows` is already the full visible set.
+    // z już zaokrąglonych komórek. AKTUALIZACJA (P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD-Q1
+    // = B, Maciej 2026-08-16): poprzednia wersja tego komentarza mówiła, że podobieństwo ze
+    // `wzrostProcentAvg` dotyczy WYŁĄCZNIE zaokrąglania, bo tabela Miasta liczyła wtedy
+    // NOMINALNIE — to już NIEAKTUALNE. Po naprawie tego ECHO obie tabele liczą IDENTYCZNIE:
+    // ta sama konwencja EFEKTYWNA (głodujące miasto = 0% w sumie/średniej) i ta sama konwencja
+    // zaokrąglania (Math.round raz na końcu, nie średnia z zaokrąglonych komórek). Dla tych
+    // samych danych obie zakładki dziś pokazują TĘ SAMĄ liczbę. Ta tabela nie ma filtra
+    // kolumn/miast (miastaHiddenCols) — `food.perCityRows` to zawsze wszystkie widoczne miasta.
+    // / EN: SAME rounding convention as `wzrostProcentAvg` in computeMiastaSummaryRow — round
+    // the raw sum once, not the average of already-rounded cells. UPDATE (ECHO B, 2026-08-16):
+    // the earlier note here said the similarity was ROUNDING ONLY because the Miasta tab still
+    // computed NOMINAL growth — that is now STALE. After this fix both tables compute
+    // IDENTICALLY: same EFFECTIVE convention (a starving city = 0% in the sum/average) and same
+    // rounding convention. For the same data both tabs now show the SAME number. This table has
+    // no column/city filter (miastaHiddenCols) — `food.perCityRows` is already the full visible
+    // set.
     // ECHO B (P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY, Maciej 2026-08-16): `sumWzrost`
     // powyżej sumuje już EFEKTYWNE wzrosty (`wzrostEff` per wiersz) — SUMA zgadza się teraz
     // dokładnie z tym, co widać w komórkach per-miasto (obie strony 0% dla głodujących).
