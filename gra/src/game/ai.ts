@@ -69,6 +69,23 @@ export interface AICmdMove {
   unitId: string;
   toQ: number;
   toR: number;
+  /**
+   * P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B (Maciej 2026-08-16): oznacza, że TA
+   * komenda pochodzi WYŁĄCZNIE z gałęzi ataku na miasto w zasięgu (`isWithinCityAttackRange`,
+   * niżej) -- daje egzekutorowi w main.ts (cmd.type==='move') prawo zastosować wąski
+   * wyjątek `canAiEnterUndefendedCityHex` (city-hex-movement.ts) zamiast bezwarunkowej
+   * blokady `canUnitOccupyCityHex` dla obcego heksu miasta. Ustawiane WYŁĄCZNIE w
+   * miejscu emisji tej jednej gałęzi -- inne gałęzie (marsz, patrol, obrona domu, wioski)
+   * NIGDY nie ustawiają tego pola, więc wyjątek w egzekutorze nie otwiera ogólnej furtki
+   * dla wszystkich rozkazów `move`. / EN: marks that THIS command comes EXCLUSIVELY from
+   * the in-range city-attack branch (`isWithinCityAttackRange`, below) -- lets the
+   * main.ts executor (cmd.type==='move') apply the narrow `canAiEnterUndefendedCityHex`
+   * exception instead of the unconditional `canUnitOccupyCityHex` block for a foreign
+   * city hex. Set ONLY at that one emission site -- every other branch (march, patrol,
+   * home defense, village explore) never sets it, so the executor's exception cannot
+   * widen into a general escape hatch for all `move` commands.
+   */
+  rangedCityAttackEntry?: true;
 }
 
 /** Found a city at (q, r) via panel budowy (foundCityAt — bez osadnika). */
@@ -759,8 +776,22 @@ function isWithinAttackRange(unit: RuntimeUnit, tq: number, tr: number, data: Ga
  * map/map-attack-city.ts:eligibleCityAttackers — without this the AI stays blind to
  * unwalled cities within range even though the player already got that range (parity
  * regression, Evaluator verdict F1).
+ *
+ * P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B (RUNDA 3, Evaluator N1 2026-08-16): `embarked`
+ * sprawdzane PIERWSZE, tak samo jak w `eligibleCityAttackers`
+ * (map-attack-city.ts:70 `if (u.embarked === true) return false;`, PRZED sprawdzeniem
+ * adiacencji) — TEMAT #15 (brak ataku z wody) dotyczy miast tak samo jak jednostek, i to
+ * zarówno adiacencji (dist===1), jak i zasięgu dystansowego. Bez tego wąski wyjątek
+ * egzekucji `canAiEnterUndefendedCityHex` (city-hex-movement.ts) wpuściłby zaokrętowaną
+ * jednostkę AI na heks miasta z wody. / EN: `embarked` checked FIRST, mirroring
+ * `eligibleCityAttackers` (map-attack-city.ts:70, BEFORE the adjacency check) — TOPIC #15
+ * (no attack from water) applies to cities the same as units, for both adjacency
+ * (dist===1) and ranged reach. Without this, the narrow execution exception
+ * `canAiEnterUndefendedCityHex` (city-hex-movement.ts) would let an embarked AI unit walk
+ * onto a city hex straight from the water.
  */
 function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {
+  if (unit.embarked === true) return false;
   const dist = hexDistance(unit.q, unit.r, city.q, city.r);
   if (dist === 1) return true;
   if (city.maMur) return false;
@@ -2544,7 +2575,14 @@ export function decideAITurn(
       ec => isWithinCityAttackRange(unit, ec, data),
     );
     if (adjacentEnemyCity !== undefined) {
-      commands.push({ type: 'move', unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r });
+      // RUNDA 3 (P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B): oznacz komendę jako
+      // pochodzącą Z TEJ gałęzi -- patrz doc-comment `rangedCityAttackEntry` na
+      // AICmdMove. Egzekutor (main.ts) używa tego pola WYŁĄCZNIE do wąskiego
+      // wyjątku wejścia na pusty/niebroniony/nieobmurowany heks miasta.
+      commands.push({
+        type: 'move', unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r,
+        rangedCityAttackEntry: true,
+      });
       unitActed.add(unit.id);
       continue;
     }

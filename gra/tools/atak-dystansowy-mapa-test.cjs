@@ -529,6 +529,46 @@ function ru(typeId, q, r) { return { id: 't-' + typeId + '-' + q + '-' + r, type
 }
 
 // ===========================================================================
+// (i) EMBARKED (RUNDA 3, Evaluator N1 2026-08-16): jednostka AI zaokrętowana
+// (embarked===true) NIE może atakować miasta — ani z adiacencji, ani z dystansu —
+// dokładnie jak gracz (map-attack-city.ts:eligibleCityAttackers, TEMAT #15 "BRAK
+// ataku z wody"). Bez tej bramki wąski wyjątek egzekucji
+// (canAiEnterUndefendedCityHex, city-hex-movement.ts, RUNDA 3) wpuściłby
+// zaokrętowaną jednostkę AI na heks pustego/nieobmurowanego miasta wprost z wody.
+// ===========================================================================
+{
+  const openCityEmb = { id: 'ce1', ownerId: 1, q: 3, r: 0, name: 'Milet', maMur: false, population: 2 };
+  const walledCityEmb = { id: 'ce2', ownerId: 1, q: 1, r: 0, name: 'Efez', maMur: true, population: 2 };
+
+  // (i1) zaokrętowany Łucznik @ dystans=3 (w zasięgu 3, miasto bez muru) → mimo to NIE eligible.
+  const lucznikEmbDaleko = { ...ru('Łucznik', 0, 0), embarked: true };
+  ok(hAi.isWithinCityAttackRange(lucznikEmbDaleko, openCityEmb, dataFixture) === false,
+    '(i1) AI: Łucznik ZAOKRĘTOWANY @ dystans=3 (w zasięgu, miasto bez muru) → NIE eligible (TEMAT #15)');
+
+  // (i2) kontrola: TEN SAM Łucznik, embarked:false, identyczna geometria → eligible
+  // (dowodzi że (i1) łapie WYŁĄCZNIE embarked, nie psuje bazowego zasięgu).
+  const lucznikNieEmbDaleko = ru('Łucznik', 0, 0);
+  ok(hAi.isWithinCityAttackRange(lucznikNieEmbDaleko, openCityEmb, dataFixture) === true,
+    '(i2) kontrola: TEN SAM Łucznik NIEzaokrętowany @ dystans=3 → nadal eligible (mutacja trafia wyłącznie w embarked)');
+
+  // (i3) zaokrętowana jednostka zwarcia (Wojownik) ADIACENTNA (dystans=1) do miasta Z MUREM
+  // → mimo adiacencji NIE eligible (embarked blokuje też ścieżkę oblężenia, nie tylko dystans).
+  const wojownikEmbObok = { ...ru('Wojownik', 0, 0), embarked: true };
+  ok(hAi.isWithinCityAttackRange(wojownikEmbObok, walledCityEmb, dataFixture) === false,
+    '(i3) AI: Wojownik ZAOKRĘTOWANY adiacentny (dystans=1) do miasta Z MUREM → NIE eligible (embarked blokuje też adiacencję)');
+
+  // (i4) PARYTET z graczem: eligibleCityAttackers (map-attack-city.ts) też odrzuca
+  // embarked, dla tej samej geometrii — ten sam scenariusz jak (i1), strona gracza.
+  const graczEmbRes = resolveEnemyCityClick({
+    city: openCityEmb, selectedUnit: { ...ru('Łucznik', 0, 0), embarked: true },
+    units: [{ ...ru('Łucznik', 0, 0), embarked: true }],
+    playerOwnerId: 0, unitAttackRangeHex: (u) => hGracz.unitAttackRangeHex(u),
+  });
+  ok(graczEmbRes.kind === 'hint_no_adjacent',
+    `(i4) PARYTET: gracz zaokrętowany w tym samym scenariuszu też odrzucony (kind=${graczEmbRes.kind})`);
+}
+
+// ===========================================================================
 // STRAŻNIK STRUKTURALNY (ai.ts, RUNDA 2): decyzja o ataku na miasto w decideAITurn
 // MUSI wołać isWithinCityAttackRange, nie samą isAdjacent — inaczej AI wraca do
 // ślepoty na zasięg dla miast (regresja F1).
@@ -544,7 +584,7 @@ function ru(typeId, q, r) { return { id: 't-' + typeId + '-' + q + '-' + r, type
 {
   const mutAiSrc = zmutuj(
     realAiSrc,
-    'function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {\n  const dist = hexDistance(unit.q, unit.r, city.q, city.r);\n  if (dist === 1) return true;\n  if (city.maMur) return false;\n  return dist <= unitAttackRangeHexAi(unit, data);\n}',
+    'function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {\n  if (unit.embarked === true) return false;\n  const dist = hexDistance(unit.q, unit.r, city.q, city.r);\n  if (dist === 1) return true;\n  if (city.maMur) return false;\n  return dist <= unitAttackRangeHexAi(unit, data);\n}',
     'function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {\n  return hexDistance(unit.q, unit.r, city.q, city.r) === 1;\n}',
     'MUT-I (cofnięcie AI isWithinCityAttackRange do isAdjacent)',
   );
@@ -559,6 +599,31 @@ function ru(typeId, q, r) { return { id: 't-' + typeId + '-' + q + '-' + r, type
     const lucznikObokMut = ru('Łucznik', 2, 0);
     ok(hMutAiCity.isWithinCityAttackRange(lucznikObokMut, openCityMut, dataFixture) === true,
       '(MUT-I) kontrola: adiacencja (dystans 1) nadal eligible mimo mutacji (mutacja trafia wyłącznie w dystans)');
+  }
+}
+
+// MUT-J (RUNDA 3, Evaluator N1 2026-08-16): usunięcie bramki `embarked` z
+// isWithinCityAttackRange -> (i1)/(i3) muszą się zepsuć (zaokrętowana jednostka
+// znów staje się eligible), (h1)-(h5)/(i2) zostają zielone (mutacja trafia
+// wyłącznie w embarked, nie w bazowy zasięg/adiacencję/mur).
+{
+  const mutAiSrc = zmutuj(
+    realAiSrc,
+    'function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {\n  if (unit.embarked === true) return false;\n  const dist = hexDistance(unit.q, unit.r, city.q, city.r);\n  if (dist === 1) return true;\n  if (city.maMur) return false;\n  return dist <= unitAttackRangeHexAi(unit, data);\n}',
+    'function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {\n  const dist = hexDistance(unit.q, unit.r, city.q, city.r);\n  if (dist === 1) return true;\n  if (city.maMur) return false;\n  return dist <= unitAttackRangeHexAi(unit, data);\n}',
+    'MUT-J (usunięcie bramki embarked z isWithinCityAttackRange)',
+  );
+  const hMutAiEmb = mutAiSrc ? zbudujHarnessAi(mutAiSrc) : null;
+  ok(!!hMutAiEmb, '(MUT-J) harness AI po mutacji nadal daje się zbudować');
+  if (hMutAiEmb) {
+    const openCityMutJ = { id: 'cmutj', ownerId: 1, q: 3, r: 0, name: 'Milet', maMur: false, population: 2 };
+    const lucznikEmbMutJ = { ...ru('Łucznik', 0, 0), embarked: true };
+    ok(hMutAiEmb.isWithinCityAttackRange(lucznikEmbMutJ, openCityMutJ, dataFixture) === true,
+      '(MUT-J) PARYTET ZŁAPANY: po usunięciu bramki embarked, Łucznik zaokrętowany @ dystans=3 → znów eligible (regresja N1 wraca)');
+    // kontrola: jednostka NIEzaokrętowana nadal działa identycznie mimo mutacji.
+    const lucznikMutJ = ru('Łucznik', 0, 0);
+    ok(hMutAiEmb.isWithinCityAttackRange(lucznikMutJ, openCityMutJ, dataFixture) === true,
+      '(MUT-J) kontrola: Łucznik NIEzaokrętowany @ dystans=3 nadal eligible (mutacja trafia wyłącznie w embarked)');
   }
 }
 

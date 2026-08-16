@@ -238,7 +238,9 @@ import {
   resolveCityPoziomRacji,
 } from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
-import { canUnitOccupyCityHex, addForeignCityBlocks } from './game/city-hex-movement';
+import {
+  canUnitOccupyCityHex, addForeignCityBlocks, canAiEnterUndefendedCityHex,
+} from './game/city-hex-movement';
 import {
   evaluateFoundCityAffordance,
   foundCityCostLabel,
@@ -27519,7 +27521,40 @@ async function boot(): Promise<void> {
                 if (cmd.type === 'move') {
                   const u = units.find(x => x.id === cmd.unitId);
                   if (!u || u.ownerId !== ownerId) continue;
-                  if (!canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
+                  // P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B (RUNDA 3, Maciej 2026-08-16):
+                  // wąski wyjątek WYŁĄCZNIE dla komend z jednej gałęzi ai.ts
+                  // (cmd.rangedCityAttackEntry -- ustawiane TYLKO przy emisji ruchu na
+                  // miasto w zasięgu ataku, ai.ts:isWithinCityAttackRange) -- pozwala
+                  // wejść na PUSTY (bez obrońców), NIEOBMUROWANY heks obcego miasta,
+                  // zamiast cichego odrzucenia rozkazu przez `canUnitOccupyCityHex`,
+                  // która blokuje KAŻDY obcy heks miasta bezwarunkowo (regresja RUNDY 2:
+                  // isWithinCityAttackRange dała AI zasięg, ale egzekutor nie miał
+                  // wyjątku -- jednostka dostawała rozkaz i NIC nie robiła). Analogiczne
+                  // do canBarbarianWalkIntoEmptyCity (gałąź barbarzyńców niżej), ale BEZ
+                  // realnego przejęcia miasta -- ogólna ścieżka zdobycia (N2 werdyktu)
+                  // świadomie POZA zakresem, patrz doc-comment
+                  // canAiEnterUndefendedCityHex (city-hex-movement.ts). Każde inne `move`
+                  // (marsz, patrol, obrona domu, wioski) nigdy nie ustawia to pole, więc
+                  // wyjątek nie otwiera ogólnej furtki. / EN: narrow exception ONLY for
+                  // commands from the one ai.ts branch (cmd.rangedCityAttackEntry -- set
+                  // ONLY when emitting a move onto a city within attack range,
+                  // ai.ts:isWithinCityAttackRange) -- lets the unit enter an EMPTY
+                  // (undefended), UNWALLED foreign city hex instead of the command being
+                  // silently dropped by `canUnitOccupyCityHex`, which blocks every
+                  // foreign city hex unconditionally (ROUND 2 regression: the AI got the
+                  // attack range, but the executor had no exception -- the unit received
+                  // the order and did NOTHING). Mirrors canBarbarianWalkIntoEmptyCity
+                  // (barbarian branch below), but WITHOUT actually capturing the city --
+                  // a general capture path (verdict N2) is deliberately out of scope, see
+                  // canAiEnterUndefendedCityHex's doc-comment (city-hex-movement.ts).
+                  // Every other `move` (march, patrol, home defense, village explore)
+                  // never sets this field, so the exception cannot widen into a general
+                  // escape hatch.
+                  const cityAttackEntry = cmd.rangedCityAttackEntry === true
+                    && canAiEnterUndefendedCityHex(
+                      cities.find(c => c.q === cmd.toQ && c.r === cmd.toR), units,
+                    );
+                  if (!cityAttackEntry && !canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
                   const path = computePath(u, map, cmd.toQ, cmd.toR, (() => {
                     const occ = addForeignCityBlocks(new Set<string>(), u.ownerId, cities);
                     for (const ou of units) { if (ou.id !== u.id) occ.add(keyOf(ou.q, ou.r)); }
@@ -27527,7 +27562,7 @@ async function boot(): Promise<void> {
                   })(), moveCostFnForUnit(u));
                   if (path.length > 0) {
                     const last = path[path.length - 1]!;
-                    if (!canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
+                    if (!cityAttackEntry && !canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
                     u.q = last.q;
                     u.r = last.r;
                     u.ruchLeft = 0;
