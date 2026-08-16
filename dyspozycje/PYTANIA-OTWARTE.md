@@ -29784,3 +29784,52 @@ fałszywy alarm, nigdy ciche przeoczenie luki renderowania. **Temat gotowy do de
 technicznej) i N6 (dokumentacja wyprzedziła pomiar — treść okazała się prawdziwa, ale wzorzec jest
 tym, przed czym chroni §0b) do kolejki; N7, N8, N9 informacyjnie.
 
+
+---
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla d6b03bd0 (runda 3 - N5)
+
+**Zakres.** Jedna zmiana funkcjonalna: w `gra/tools/unit-action-bar-completeness-test.cjs`
+startMarker wycinka `mergeBody` przesunięty z `'export function stackHudMergeSplitActions('` na
+`'if (stackLength >= 2) {'` (+ komentarz PL/EN). `gra/src/**` nietknięty — ryzyko regresji
+gameplayowej zerowe z konstrukcji. Reszta commita to dopisanie dwóch wcześniejszych werdyktów do
+rejestru.
+
+**Zweryfikowane niezależnie (uruchomione, nie odczytane z opisu commita):**
+
+| kontrola | wynik |
+|---|---|
+| `git show d6b03bd0 -- …completeness-test.cjs` | dokładnie ta jedna zmiana (13 linii: 1 usunięta kotwica, 1 nowa + 11 linii komentarza) |
+| unikalność `'if (stackLength >= 2) {'` w `armyMerge.ts` | **1 wystąpienie** (L689) — kotwica jednoznaczna, także dla luźniejszego wzorca `stackLength >= 2` |
+| **mutacja N5** — usunięcie realnego `actions.push({ id: 'split', … })` (L690–694), typ nietknięty | **30 passed, 1 failed, exit 1**: `FAIL: sanity: stackHudMergeSplitActions produkuje dokładnie {'split','merge'} (dziś: merge)` — **strażnik znowu łapie** |
+| **kontrfaktycznie** — ta sama mutacja + STARA kotwica (kopia testu, `sed`) | **31 passed, 0 failed, exit 0** — zielona mimo usuniętej akcji, czyli dokładnie objaw z N5. Naprawa jest nośna, nie kosmetyczna |
+| `npx tsc --noEmit` (TS lokalny z `gra/node_modules`) | **exit 0**, 0 błędów |
+| `node tools/unit-action-bar-completeness-test.cjs` (kod nienaruszony) | **31 passed, 0 failed, exit 0**, BEZ komunikatu „info" o nieaktualnej allowliście |
+| `node tools/unfortify-all-action-bar-test.cjs` | **16 passed, 0 failed, exit 0** |
+| `node tools/march-attack-queue-persist-test.cjs` | **55 passed, 0 failed, exit 0** |
+
+Plik `armyMerge.ts` przywrócony z kopii po mutacji — `git diff` na nim pusty, bramka po
+przywróceniu znowu 31/0.
+
+**N10 (informacyjnie, nie wada tej zmiany) — `hudBody` z `main.ts` nie ma dziś przecieku typu, ale
+nie jest to zagwarantowane strukturalnie.** Sprawdzone bezpośrednio: wszystkie **11** dopasowań
+`id: '…'` w wycinku `buildArmyStackHudStateInner` pochodzi z realnych `actions.push(` — zero
+adnotacji typu. Ta funkcja zwraca jednak `ArmyStackHudState`, a nie inline'owy `Array<{ id: '…' }>`,
+więc przeciek analogiczny do N5 mógłby tam powstać dopiero po refaktorze wprowadzającym literały
+typu do ciała. Zabezpieczenie na dziś: brak — sanity `producedFromMain.size >= 9` jest progiem
+dolnym, więc nadmiarowe id z typu by go nie ruszyło.
+
+**N11 (informacyjnie) — kotwica startowa jest teraz szczegółem implementacyjnym, nie nagłówkiem
+API.** Zmiana warunku (np. na `stackLength > 1`) wywali kotwicę. Skutek jest jednak **głośny, nie
+cichy**: `sliceBetween` rzuca `Nie znaleziono kotwicy startowej dla stackHudMergeSplitActions
+(armyMerge.ts)` i bramka pada z exit 1 — czyli awaria pójdzie w bezpieczną stronę, tak jak przy
+naprawie N1. Akceptowalne.
+
+**N12 (drobiazg redakcyjny) — komentarz w kodzie mówi „N5, runda 2".** N5 zostało *zgłoszone*
+w werdykcie rundy 2, ale *naprawione* w rundzie 3 (ten commit). Zapis nie jest fałszywy, tylko
+dwuznaczny; nie żądam zmiany.
+
+**WERDYKT: PASS-WITH-NOTES.** N5 naprawione w pełnym zgłoszonym zakresie i **udowodnione dwustronnie**
+— mutacja łapana z nową kotwicą, przepuszczana ze starą. Zmiana jest minimalna (jedna linia kodu
+wykonywalnego), dotyczy wyłącznie narzędzia testowego, wszystkie 4 uruchomione bramki zielone, `tsc`
+bez błędów. Noty N10–N12 są informacyjne i żadna nie blokuje. **Temat gotowy do deploy.**
