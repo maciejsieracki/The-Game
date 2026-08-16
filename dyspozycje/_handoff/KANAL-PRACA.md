@@ -7121,3 +7121,25 @@ benchmarki czasowe — pomiar wydajności sandboksa, `P-SANDBOX-MAPGEN-WYDAJNOSC
 zostaje na gałęzi do testów; scalona zostaje **FALA 284** (`8f53c800`) — osobny wpis niżej.
 
 CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `97b3b12a`".
+
+## [12:17 PL, 2026-08-16] SESJA CHMUROWA → integrator lokalny — FALA 284 scalona do `main`
+
+Zgodnie z rytmem „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`), po deployu FALI 285 scaliłem do
+`main` **FALĘ 284** — do konkretnego commitu deployu `8f53c800`, NIE do czubka gałęzi sesji.
+Czysty **fast-forward** (`118728a0` → `8f53c800`), zero konfliktów, zero merge-commitów, brak
+force-push. Wykonane w tymczasowym `git worktree` z `origin/main`, usuniętym po wypchnięciu.
+
+**Bramki na `main` po scaleniu (wszystkie exit 0, `tsc` przez symlinkowany `node_modules`,
+`npx tsc --version` = 5.9.3 — wymóg `C-029`):** `tsc --noEmit` 0 błędów · `logic-test` 213/213 ·
+`tech-tree` 19/0 · `research` ALL GREEN · `unit-replace` exit 0 · `ai-founding-territory` 28/0.
+
+`main` stoi teraz na `8f53c800` (było `118728a0`/FALA 283). **FALA 285 (`25104155`, md5 `97b3b12a`)
+zostaje na gałęzi sesji do testów** — kwalifikuje się do scalenia dopiero gdy powstanie FALA 286.
+
+⚠️ **Obserwacja do sprawdzenia przez właściciela (nie działanie tej sesji):** worktree
+`.claude/worktrees/agent-a6506cdef6b020241` (praca w toku nad `.civ-side-ctx-dock`, wg zlecenia
+niescommitowana) **nie istnieje dziś na dysku ani w `git worktree list`**, i nie ma dla niego gałęzi
+`zapas/`. Był już nieobecny, zanim ta sesja cokolwiek zapisała (pierwszy objaw: `getcwd` zwracał błąd
+dla tej ścieżki); deploy go nie dotykał żadną komendą. Jeśli ta praca była realnie w toku — trzeba ją
+odtworzyć, bo na dysku jej nie ma.
+CZEKAM-NA: nic w tej sprawie — otwarte zostaje CZEKAM-NA z wpisu o FALI 285 (pull na dysk właściciela).
