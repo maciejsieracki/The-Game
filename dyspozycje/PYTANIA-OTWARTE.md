@@ -26528,8 +26528,29 @@ miasta jak barbarzyńcy (`tryAutoCaptureEmptyCityAt`), wejście na pusty niebron
 sekwencję zmianą właściciela. Świadomie otwiera zakres N2, ale wyłącznie w obrębie ścieżki ataku
 dystansowego (nie ogólnego marszu AI).
 
-STATUS: **OTWARTE** — dispatch rundy 4 (Operator Sonnet 5) w toku, implementacja wariantu A.
-Zmiana **nie jest gotowa do deployu** do czasu Evaluatora rundy 4.
+**Runda 4 (`6826b16c`, 2026-08-16) — zaimplementowana.** (1) Egzekutor AI (`main.ts:27561-27587`)
+po wejściu na heks miasta woła `tryAutoCaptureEmptyCityAt` (ta sama ścieżka co barbarzyńcy) —
+naprawia B1 (wieczna oscylacja evict) i B2 (trwałe uwięzienie na heksie), bo przejęcie usuwa
+przyczynę wypychania. (2) `isWithinCityAttackRange` (`ai.ts`) dostał 4. parametr `units`, warunek
+mur-LUB-obrońcy zastosowany też do adiacencji (nie tylko zasięgu) — naprawia B3, zrównując regułę
+decyzyjną z egzekucyjną. Świadome odejście od parytetu gracz-AI w komórce mur×adiacencja (AI
+dostaje „niedostępne" zamiast `attack_choice`, opisane w kodzie i teście) — AI i tak nie miała
+ścieżki oblężenia z adiacencji, więc to nie regresja parytetu z rund 1/2. (3) N-D naprawione przy
+okazji: `isWithinAttackRange` (atak jednostka-jednostka) dostał wyjątek embarked, analogiczny do
+już istniejącego w `isWithinCityAttackRange`.
+
+Bramka pełnej sekwencji (`atak-dystansowy-egzekucja-test.cjs`, prawdziwe `decideAITurn` → prawdziwy
+egzekutor → prawdziwe `evictForeignUnitsFromCityHexes`, 2 tury/scenariusz) pokrywa A2/D1/B1/C1 +
+mutację MUT-N odtwarzającą dokładnie regresję rundy 3. Wyniki: tsc 0, build exit 0,
+`atak-dystansowy-mapa-test` 102/0, `atak-dystansowy-egzekucja-test` 52/0, `combat-test` 6/6,
+`map-attack-city-test` 8/0, `barb-city-capture-cluster-test` 94/0 — zweryfikowane niezależnie przez
+orkiestratora w drzewie głównym po scaleniu, identyczne z raportem Operatora. `ai-test` (285/8) i
+`unit-power-test` (4/2) niezmienione, pre-istniejące.
+
+**Evaluator rundy 4 dispatchowany (agent `a4380802596aad26a`, Opus 5, worktree) — w toku.**
+
+STATUS: **OTWARTE** — czeka na werdykt Evaluatora rundy 4. Zmiana **scalona i wypchnięta**
+(`6826b16c`) ale **nie jest gotowa do deployu** do czasu PASS/PASS-WITH-NOTES.
 
 ---
 
