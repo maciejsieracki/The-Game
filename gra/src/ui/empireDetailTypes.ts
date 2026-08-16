@@ -216,6 +216,59 @@ export interface EmpireCityEconRow {
   pracaPula: number;
   pracaBudynki: number;
   nauka: number;
+  /**
+   * P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
+   * budynki tego miasta zliczone wg `BUILDING_GROUP_ORDER` (`building-upgrades.ts`,
+   * `groupBuiltBuildingIds()`) — 8 grup zawsze obecne w tej kolejności (nawet z count=0),
+   * plus ewentualny koszyk `BUILDING_GROUP_FALLBACK` na końcu, gdy dane budynku nie mają
+   * rozpoznanej grupy. / EN: this city's buildings counted per `BUILDING_GROUP_ORDER` — all
+   * 8 groups always present in this order (even count=0), plus an optional fallback bucket.
+   */
+  buildingGroups: EmpireCityBuildingGroupRow[];
+  /**
+   * Kolejka produkcji tego miasta (`cityProd.get(cityId).kolejka`, `production.ts`) — front
+   * (index 0) niesie `postep`, reszta budynków/jednostek w kolejce nie ma jeszcze aktywnego
+   * postępu (patrz JSDoc `CityProduction.postep`). Pusta lista = kolejka pusta.
+   * / EN: this city's production queue — the front item (index 0) carries `postep`, the rest
+   * has none yet (see `CityProduction.postep` JSDoc). Empty array = empty queue.
+   */
+  queue: EmpireCityQueueItemRow[];
+  /** `CityProduction.wstrzymana` — kolejka wstrzymana (Wstrzymaj), bez postępu mimo zawartości. */
+  queueWstrzymana: boolean;
+  /** Obrona strukturalna tego miasta (mury/cytadela/baszta/palisada) — patrz JSDoc typu. */
+  defense: EmpireCityDefenseRow;
+}
+
+/**
+ * Liczba budynków miasta w jednej grupie dziedzinowej (`BUILDING_GROUP_ORDER`).
+ * P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (Maciej 2026-08-16, ECHO A).
+ */
+export interface EmpireCityBuildingGroupRow {
+  grupa: string;
+  count: number;
+}
+
+/** Jedna pozycja kolejki produkcji miasta — podzbiór `ProductionItem` (`production.ts`). */
+export interface EmpireCityQueueItemRow {
+  nazwa: string;
+  koszt: number;
+  /** Postęp WYŁĄCZNIE dla frontu kolejki (index 0); pozostałe pozycje: `undefined`. */
+  postep?: number;
+}
+
+/**
+ * Obrona strukturalna miasta — bonus % z murów/cytadeli/baszty/palisady (`city-defense.ts`
+ * `cityWallDefenseBonusPercent`, TA SAMA liczba co `structureDefenseBonusFor()` w main.ts
+ * dla bitwy/oblężenia — parytet z silnikiem walki) + garnizon na żywo (`unitsOnCityHexForLaw`,
+ * TA SAMA funkcja co `garnizonCount` w rozpisce Prawa).
+ */
+export interface EmpireCityDefenseRow {
+  /** Bonus obrony strukturalnej miasta, w punktach procentowych (200 = +200%). 0 = brak murów. */
+  structBonusPct: number;
+  /** structBonusPct > 0 — miasto ma co najmniej jeden budynek obronny. */
+  hasWalls: boolean;
+  /** Jednostki gracza stacjonujące na heksie miasta (garnizon), NA ŻYWO (nie tylko koniec tury). */
+  garnizonCount: number;
 }
 
 /** Ludność i pula rekrutów per miasto. */
@@ -252,6 +305,50 @@ export interface EmpireCityPoborRow {
   rekruci: number;
   rekruciMax: number;
   regenPerTurn: number;
+  /**
+   * P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A): liczba
+   * budynków grupy „Zdrowie" w tym mieście — TA SAMA liczba jak w `EmpireCityEconRow
+   * .buildingGroups` (Miasto), tylko wydzielona dla wygody zakładki Obywatele (kąt społeczny).
+   */
+  zdrowieBuildingCount: number;
+  /** Jak wyżej, dla grupy „Prawo i administracja". */
+  prawoAdminBuildingCount: number;
+  /**
+   * Procent Prawa tego miasta (`LawPctBreakdown.prawPct`, `society-breakdown.ts`), czytany
+   * WPROST z `cityOrderState` (main.ts) — TA SAMA, autorytatywna liczba silnika co panel
+   * miasta (Porządek), liczona raz na koniec tury. `null` = jeszcze brak wpisu (przed 1. turą,
+   * `cityOrderState` puste) — panel pokazuje „—", NIE zero (zero sugerowałoby realny wynik).
+   */
+  prawoPct: number | null;
+  /** Bieżący poziom Wyżywienia (Racji) tego miasta, 0–6 co 0,5 (`getCityRationLevel()`). */
+  poziomRacji: number;
+  /** Wpływ bieżącego poziomu Racji na wzrost ludności, %/turę (`rationGrowthPercent()`). */
+  racjaGrowthPct: number;
+}
+
+/**
+ * P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A): jedno
+ * źródło Zadowolenia (`SocietyLine` z `society-breakdown.ts computeHappinessBreakdown()`,
+ * czytane WPROST z `cityOrderState.szLines` w main.ts — TA SAMA, autorytatywna rozpiska, którą
+ * panel miasta już pokazuje per miasto). Liczba aktywnych źródeł zależy od stanu gry (silnik
+ * pomija linie o wartości 0) — designer mówił o „5 źródłach" jako przybliżeniu z makiety, ale
+ * silnik NIE ma sztywnej piątki (może być 0–14 linii naraz, `computeHappinessBreakdown` w
+ * `society-breakdown.ts`); ten typ pokazuje realne źródła, nie sztuczne dopasowanie do 5.
+ */
+export interface EmpireHappinessSourceRow {
+  id: string;
+  label: string;
+  value: number;
+}
+
+/** Zagregowane (suma po `id` ze wszystkich miast gracza) źródła Zadowolenia imperium. */
+export interface EmpireHappinessSnap {
+  /** Posortowane malejąco po |value| — najsilniejsze źródła na górze. */
+  sources: EmpireHappinessSourceRow[];
+  /** Suma netto wszystkich linii (== suma `value`) — poziom Zadowolenia zagregowany z miast gracza. */
+  totalNetto: number;
+  /** true = przynajmniej jedno miasto gracza ma już policzony `OrderState` (po 1. turze). */
+  hasData: boolean;
 }
 
 /**
@@ -260,6 +357,13 @@ export interface EmpireCityPoborRow {
  */
 export interface EmpireTradeRouteRow {
   id: string;
+  /**
+   * P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
+   * `TradeRoute.fromCityId` — identyfikator miasta gracza (NIE tylko `cityName`, patrz
+   * P-EMPIRE-MIASTA-JOIN-INDEX: nazwy miast nie są unikalne po podboju) — pozwala zakładce
+   * Miasto pogrupować trasy PER MIASTO niezawodnie.
+   */
+  cityId: string;
   /** Miasto gracza (fromCityId trasy — trasy zawsze gracz↔obcy, patrz refreshTradeRoutes). */
   cityName: string;
   partnerCityName: string;
@@ -434,4 +538,9 @@ export interface EmpireDetailSnap {
   research: EmpireResearchSnap | null;
   /** R-DESIGN-11-ZAKLADEK faza 2 — karta religii państwowej (Klatka 11, wariant A). */
   religion: EmpireReligionSnap;
+  /**
+   * P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
+   * rozbicie Zadowolenia imperium na źródła (zakładka Obywatele) — patrz JSDoc `EmpireHappinessSnap`.
+   */
+  happiness: EmpireHappinessSnap;
 }

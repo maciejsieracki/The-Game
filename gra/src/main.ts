@@ -343,7 +343,7 @@ import {
   eraChangeJournalTitle,
   eraChangeJournalSubtitle,
 } from './game/era-change-notify';
-import { cityPalacTier } from './game/building-upgrades';
+import { cityPalacTier, groupBuiltBuildingIds } from './game/building-upgrades';
 import {
   evaluateOrderFromBreakdown,
   updateRevoltGrace,
@@ -855,6 +855,7 @@ import {
   migrateProcentRozwojToPoziomRacji,
   clampPoziomRacji,
   getCityRationLevel,
+  rationGrowthPercent,
   WYZYWIENIE_MAX,
   type PoziomRacji,
 } from './game/population-growth-v85';
@@ -13381,6 +13382,32 @@ async function boot(): Promise<void> {
       const { regenMult, maxMult } = mpMults;
       const cityEcon = pc.map(c => {
         const tk = _lastPlayerCityEcon.find(t => t.cityId === c.id);
+        // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
+        // budynki wg BUILDING_GROUP_ORDER — ekspozycja UI istniejącej, czystej funkcji
+        // (`groupBuiltBuildingIds`), TA SAMA, którą już renderuje panel miasta
+        // (`buildOwnedBuildingsDetailCard`, cityPanel.ts). / EN: buildings per
+        // BUILDING_GROUP_ORDER — UI exposure of the existing pure grouping function, the SAME
+        // one the city panel already renders with.
+        const builtIds = cityBuilt.get(c.id) ?? [];
+        const buildingGroups = groupBuiltBuildingIds(builtIds, data.buildings)
+          .map(g => ({ grupa: g.grupa, count: g.ids.length }));
+        // Kolejka produkcji — `cityProd` (Map<string, CityProduction>) to TO SAMO źródło, z
+        // którego panel miasta (cityPanel.ts) czyta i modyfikuje kolejkę (`cfg.getProduction`) —
+        // tu WYŁĄCZNIE odczyt do widoku, bez mutacji. / EN: the production queue — `cityProd` is
+        // the SAME source the city panel reads/writes via `cfg.getProduction`; here read-only.
+        const prod = cityProd.get(c.id);
+        const queue = (prod?.kolejka ?? []).map((item, i) => ({
+          nazwa: item.nazwa,
+          koszt: item.koszt,
+          postep: i === 0 ? prod!.postep : undefined,
+        }));
+        // Obrona strukturalna — TA SAMA funkcja (`structureDefenseBonusFor`) którą silnik walki
+        // woła dla oblężenia/bitwy na tym heksie (parytet z combat.ts), garnizon na żywo z
+        // `unitsOnCityHexForLaw` — TA SAMA funkcja co `garnizonCount` w rozpisce Prawa niżej.
+        // / EN: structural defense — the SAME function the combat engine calls for this hex's
+        // siege/battle; live garrison count from the SAME function the Law breakdown uses below.
+        const structBonusPct = structureDefenseBonusFor(c.q, c.r);
+        const garnizonCount = unitsOnCityHexForLaw(units, c.q, c.r, c.ownerId).length;
         return {
           name: c.name,
           pieniadz: tk?.pieniadz ?? 0,
@@ -13395,10 +13422,29 @@ async function boot(): Promise<void> {
           pracaPula: tk?.doPuli ?? 0,
           pracaBudynki: tk?.doBudynkow ?? 0,
           nauka: tk?.nauka ?? 0,
+          buildingGroups,
+          queue,
+          queueWstrzymana: prod?.wstrzymana ?? false,
+          defense: { structBonusPct, hasWalls: structBonusPct > 0, garnizonCount },
         };
       });
       const cityPobor = pc.map(c => {
         const mp = cityManpowerSnapshot(c, epoka, regenMult, maxMult);
+        // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
+        // Zdrowie / Prawo i administracja — liczba budynków tych dwóch grup w tym mieście
+        // (ta sama funkcja jak w cityEcon.buildingGroups wyżej, osobne wołanie bo to osobny
+        // .map()). Prawo % i Wyżywienie — czytane WPROST z engine'u (cityOrderState liczony
+        // raz na koniec tury; getCityRationLevel/rationGrowthPercent to te same czyste funkcje,
+        // którymi silnik liczy realny wzrost -- turn-economy.ts). / EN: Health / Law &
+        // administration building counts (same grouping fn as cityEcon above, separate call
+        // since this is a separate .map()). Law % and Ration read straight from the engine.
+        const builtIdsForGroups = cityBuilt.get(c.id) ?? [];
+        const poborBuildingGroups = groupBuiltBuildingIds(builtIdsForGroups, data.buildings);
+        const zdrowieBuildingCount = poborBuildingGroups.find(g => g.grupa === 'Zdrowie')?.ids.length ?? 0;
+        const prawoAdminBuildingCount = poborBuildingGroups
+          .find(g => g.grupa === 'Prawo i administracja')?.ids.length ?? 0;
+        const ord = cityOrderState.get(c.id);
+        const poziomRacji = getCityRationLevel(c);
         return {
           // P-EMPIRE-MIASTA-JOIN-INDEX (naprawa F2): patrz JSDoc EmpireCityPoborRow.cityId
           // (empireDetailTypes.ts) -- nazwy miast nie sa unikalne w obrebie cywilizacji.
@@ -13412,8 +13458,44 @@ async function boot(): Promise<void> {
           rekruci: mp.manpowerBiezacy,
           rekruciMax: mp.manpowerMax,
           regenPerTurn: mp.regenPerTurn,
+          zdrowieBuildingCount,
+          prawoAdminBuildingCount,
+          prawoPct: ord?.prawPct ?? null,
+          poziomRacji,
+          racjaGrowthPct: rationGrowthPercent(poziomRacji),
         };
       });
+      // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
+      // rozbicie Zadowolenia na źródła — zagregowane (suma po `id`) z `cityOrderState.szLines`
+      // WSZYSTKICH miast gracza. `cityOrderState` jest TĄ SAMĄ, autorytatywną mapą, którą panel
+      // miasta czyta przez `cfg.getOrderState` (jeden koniec-tury obliczenie, żadnej duplikacji
+      // formuły Zadowolenia tutaj). Puste, dopóki żadne miasto nie ma jeszcze wpisu (przed 1.
+      // turą) -- `hasData` sygnalizuje to UI zamiast fałszywego zera. / EN: happiness source
+      // breakdown — aggregated (summed by `id`) from `cityOrderState.szLines` across all player
+      // cities. `cityOrderState` is the SAME authoritative map the city panel reads via
+      // `cfg.getOrderState` (one end-of-turn computation, zero duplicated happiness formula
+      // here). Empty until at least one city has an entry (before turn 1) — `hasData` signals
+      // that to the UI instead of a misleading zero.
+      const happinessAgg = new Map<string, { label: string; value: number }>();
+      let happinessHasData = false;
+      for (const c of pc) {
+        const ord = cityOrderState.get(c.id);
+        if (!ord?.szLines) continue;
+        happinessHasData = true;
+        for (const line of ord.szLines) {
+          const prev = happinessAgg.get(line.id);
+          if (prev) prev.value += line.value;
+          else happinessAgg.set(line.id, { label: line.label, value: line.value });
+        }
+      }
+      const happinessSources = Array.from(happinessAgg.entries())
+        .map(([id, v]) => ({ id, label: v.label, value: Math.round(v.value * 10) / 10 }))
+        .sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+      const happiness: EmpireDetailSnap['happiness'] = {
+        sources: happinessSources,
+        totalNetto: Math.round(happinessSources.reduce((s, r) => s + r.value, 0) * 10) / 10,
+        hasData: happinessHasData,
+      };
       let rekruciMax = 0;
       for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka, maxMult);
       const unitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
@@ -13551,6 +13633,7 @@ async function boot(): Promise<void> {
         food: buildEmpireFoodSnap(),
         research,
         religion,
+        happiness,
       };
     }
 
@@ -13586,6 +13669,11 @@ async function boot(): Promise<void> {
           const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
           return {
             id: r.id,
+            // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (Maciej 2026-08-16, ECHO A): id, nie
+            // tylko nazwa (P-EMPIRE-MIASTA-JOIN-INDEX) — pozwala zakładce Miasto grupować
+            // trasy PER MIASTO niezawodnie. / EN: id, not just the name — lets the Miasto tab
+            // group routes PER CITY reliably.
+            cityId: r.fromCityId,
             cityName: myCity?.name ?? r.fromCityId,
             partnerCityName: partnerCity?.name ?? r.toCityId,
             partnerOwnerLabel: ownerDiploLabel(r.toOwnerId),

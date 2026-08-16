@@ -1600,25 +1600,20 @@ function subHdr(label: string): string {
 /**
  * Klatka 8 — „Miasto", kąt produkcyjny (§8.10, lista zatwierdzona `R-DESIGN-11-ZAKLADEK` Q2=B).
  *
- * ZREALIZOWANE (dane realnie obecne w `EmpireDetailSnap`): przełącznik zakresu, wpływy do
- * skarbca per miasto (priorytet 1 z rejestru §8 pkt 3), produkcja Nauki per miasto, produkowane
- * surowce z checkboxami i sumą cywilizacyjną (priorytet 2), populacja per miasto.
+ * ZREALIZOWANE (dane realnie obecne w `EmpireDetailSnap`) — 8/8 pozycji zatwierdzonej listy:
+ * przełącznik zakresu, wpływy do skarbca per miasto, produkcja Nauki per miasto, produkowane
+ * surowce z checkboxami i sumą cywilizacyjną, kolejka produkcji per miasto, budynki wg
+ * `BUILDING_GROUP_ORDER` (suma w bieżącym zakresie), obrona miasta (mury % + garnizon na żywo),
+ * populacja per miasto, handel PER MIASTO (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA,
+ * Maciej 2026-08-16, ECHO A — `EmpireTradeRouteRow.cityId` dodane dla niezawodnego joina, patrz
+ * P-EMPIRE-MIASTA-JOIN-INDEX).
  *
- * POMINIĘTE ŚWIADOMIE — brak pola w snapshocie, dociągnięcie = zmiana `main.ts`/`empireDetailTypes.ts`
- * (poza zakresem zlecenia):
- *   • „Budynki i ich produkcja" w 8 kategoriach `BUILDING_GROUP_ORDER` — snapshot nie niesie ANI
- *     liczby budynków per kategoria, ANI ich produkcji per kategoria (`EmpireCityEconRow` ma
- *     wyłącznie zagregowane `pieniadz`/`praca*`/`nauka`). 8 wierszy z samymi „—" byłoby gorsze
- *     niż ich brak. Priorytet 4 z 5 w kolejności cięcia zakresu.
- *   • „Kolejka produkcji" (co miasto buduje, ile tur) — snapshot nie ma żadnego pola kolejki.
- *     Priorytet 3 z 5.
- *   • „Obrona miasta" (mury/garnizon/bonusy) i „obrabiane pola" — brak pól. Priorytet 5 z 5.
- *   • Kolumna SZLAKI per miasto — `EmpireTradeRouteRow` niesie tylko `cityName`, a nazwy miast
- *     NIE są unikalne (P-EMPIRE-MIASTA-JOIN-INDEX): join po nazwie policzyłby trasy podwójnie dla
- *     dwóch miast o tej samej nazwie. Zamiast wprowadzać dokładnie ten błąd, który plik już raz
- *     naprawiał, szlaki pokazane są zbiorczo dla imperium z odsyłaczem do zakładki Handel.
- *   • Kolumna „SUROWCE" z dzisiejszej wspólnej tabeli — CELOWO nie wchodzi (§6 handoffu: „to
- *     koszt, nie produkcja; zostaje w Skarbcu i Surowcach").
+ * POMINIĘTE ŚWIADOMIE — poza zatwierdzoną listą 8 pozycji (§8.10), NIE dociągane tym zleceniem:
+ *   • „obrabiane pola" (worked tiles) — koncept ISTNIEJE w silniku (`assignWorkedTiles`,
+ *     auto-manage.ts), ale wymaga dostępu do mapy/heksów (okolica miasta), nie tylko do stanu
+ *     City/cityProd/cityOrderState jak reszta tej funkcji — dispatch tego zlecenia (KROK 1.4)
+ *     wymienia jawnie tylko 4 luki (budynki/kolejka/obrona/handel), ta pozycja nie była w nim
+ *     wymieniona, więc zostaje nietknięta do osobnej decyzji.
  *   • Koszt utrzymania JEDNOSTEK — celowo nieobecny, korekta właściciela (koszt całej cywilizacji,
  *     nie per-miasto).
  */
@@ -1770,8 +1765,90 @@ function renderMiastoSection(
       + 'i wyjmuje ją z sumy. Stany magazynu i zużycie: zakładka Surowce.</div>';
   }
 
-  // — POPULACJA I HANDEL —
-  h += subHdr('Populacja · handel');
+  // — BUDYNKI wg BUILDING_GROUP_ORDER (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA,
+  // Maciej 2026-08-16, ECHO A) — suma liczby budynków każdej z 8 grup dziedzinowych w bieżącym
+  // zakresie (jedno miasto lub cała cywilizacja, respektuje przełącznik zakresu jak reszta
+  // sekcji). Kolejność grup przychodzi już posortowana z `groupBuiltBuildingIds()` (main.ts) —
+  // ta funkcja tylko sumuje, nie zmienia kolejności. / EN: building count per domain group,
+  // summed across the current scope — order already comes sorted from the engine.
+  h += subHdr('Budynki');
+  {
+    const groupTotals = new Map<string, number>();
+    let totalBuildings = 0;
+    for (const { econ } of paired) {
+      for (const g of econ?.buildingGroups ?? []) {
+        groupTotals.set(g.grupa, (groupTotals.get(g.grupa) ?? 0) + g.count);
+        totalBuildings += g.count;
+      }
+    }
+    if (totalBuildings === 0) {
+      h += '<div class="civ-emp-empty">Brak wybudowanych budynków w zakresie.</div>';
+    } else {
+      h += '<div class="civ-emp-grp-list">';
+      for (const [grupa, count] of groupTotals) {
+        if (count === 0) continue;
+        h += '<div class="civ-emp-grp-row" style="cursor:default">'
+          + `<span class="nm">${esc(grupa)}</span>`
+          + `<span class="val">${count}</span></div>`;
+      }
+      h += '<div class="civ-emp-grp-sum">'
+        + '<span class="nm">RAZEM W ZAKRESIE</span>'
+        + `<span class="val">${totalBuildings} budynków</span></div>`;
+      h += '</div>';
+    }
+    h += '<div class="civ-emp-foot">Grupy wg `BUILDING_GROUP_ORDER` (building-upgrades.ts): '
+      + 'Prawo i administracja · Wojsko i obrona · Handel i pieniądz · Nauka i kultura · Wiara · '
+      + 'Zdrowie · Produkcja surowców · Żywność. Szczegóły efektów pojedynczego budynku: panel miasta.</div>';
+  }
+
+  // — KOLEJKA PRODUKCJI (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA) —
+  h += subHdr('Kolejka produkcji');
+  {
+    const grid = '1fr 1.3fr 0.7fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'BUDUJE TERAZ', 'W KOLEJCE'], grid)}`;
+    let anyQueue = false;
+    for (const { pob, econ } of paired) {
+      const q = econ?.queue ?? [];
+      const front = q[0];
+      if (q.length > 0) anyQueue = true;
+      let frontTxt = '<span style="color:#6f7889">pusta</span>';
+      if (front) {
+        const pct = front.postep != null
+          ? Math.max(0, Math.min(100, Math.round((front.postep / Math.max(1, front.koszt)) * 100)))
+          : null;
+        frontTxt = esc(front.nazwa) + (pct != null ? ` (${pct}%)` : '')
+          + (econ?.queueWstrzymana ? ' · wstrzymana' : '');
+      }
+      h += miniRow([esc(pob.name), frontTxt, String(Math.max(0, q.length - 1))], grid);
+    }
+    h += '</div>';
+    h += anyQueue
+      ? '<div class="civ-emp-foot">Procent dotyczy WYŁĄCZNIE pozycji na froncie kolejki (postęp Pracy '
+        + 'zgromadzony na tym budynku/jednostce). „W kolejce" = liczba pozycji ZA frontem, jeszcze bez '
+        + 'zgromadzonego postępu.</div>'
+      : '<div class="civ-emp-empty">Brak aktywnej produkcji w zakresie.</div>';
+  }
+
+  // — OBRONA MIASTA (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA) —
+  h += subHdr('Obrona miasta');
+  {
+    const grid = '1fr 0.9fr 0.7fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'MURY', 'GARNIZON'], grid)}`;
+    for (const { pob, econ } of paired) {
+      const d = econ?.defense;
+      const murTxt = d?.hasWalls
+        ? `<span style="color:#78c95a;font-weight:700">+${d.structBonusPct}%</span>`
+        : '<span style="color:#6f7889">brak murów</span>';
+      h += miniRow([esc(pob.name), murTxt, String(d?.garnizonCount ?? 0)], grid);
+    }
+    h += '</div>';
+    h += '<div class="civ-emp-foot">MURY = bonus obrony strukturalnej (Mury/Cytadela/Baszta/Palisada), '
+      + 'ta sama liczba co w bitwie/oblężeniu tego miasta. GARNIZON = jednostki gracza na heksie '
+      + 'miasta teraz (na żywo, nie tylko koniec tury).</div>';
+  }
+
+  // — POPULACJA —
+  h += subHdr('Populacja');
   {
     const grid = '1fr 0.6fr 0.95fr';
     h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'OBYW.', 'LUDNOŚĆ'], grid)}`;
@@ -1786,11 +1863,32 @@ function renderMiastoSection(
       + `<div>CAŁA CYWILIZACJA</div><div>${sObyw}</div>`
       + `<div>${esc(formatManpower(sAbs))}</div></div>`;
     h += '</div>';
-    h += `<div class="civ-emp-foot">Szlaki handlowe imperium: <b>${trade.routes.length}</b> · `
-      + `dochód <b>${treasuryBalanceSignedTxt(Math.round(trade.totalIncome))}</b> Pieniądza/turę — `
-      + 'rozpiska tras w zakładce Handel (panel imperium nie wiąże trasy z konkretnym miastem '
-      + 'jednoznacznie, bo nazwy miast nie są unikalne). Kolejka produkcji, obrona i obrabiane '
-      + 'pola — panel miasta.</div>';
+    h += '<div class="civ-emp-foot">Tempo wzrostu i obrabiane pola — panel miasta.</div>';
+  }
+
+  // — HANDEL PER MIASTO (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA — dawniej zbiorczo,
+  // bo `EmpireTradeRouteRow` niosło tylko `cityName` niejednoznaczny po podboju; teraz join po
+  // `cityId`, patrz JSDoc pola w empireDetailTypes.ts) —
+  h += subHdr('Handel — szlaki per miasto');
+  {
+    const grid = '1fr 0.6fr 0.95fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'SZLAKI', 'DOCHÓD'], grid)}`;
+    let anyRoutes = false;
+    let sIncome = 0;
+    for (const { pob } of paired) {
+      const cityRoutes = trade.routes.filter(r => r.cityId === pob.cityId);
+      if (cityRoutes.length > 0) anyRoutes = true;
+      const income = cityRoutes.reduce((s, r) => s + r.income, 0);
+      sIncome += income;
+      h += miniRow([esc(pob.name), String(cityRoutes.length), treasuryBalanceSignedTxt(Math.round(income))], grid);
+    }
+    h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + `<div>CAŁA CYWILIZACJA</div><div>${trade.routes.length}</div>`
+      + `<div>${treasuryBalanceSignedTxt(Math.round(sIncome))}</div></div>`;
+    h += '</div>';
+    h += anyRoutes
+      ? '<div class="civ-emp-foot">Rozpiska tras (partner, medium, dystans) — zakładka Handel.</div>'
+      : '<div class="civ-emp-empty">Brak aktywnych tras handlowych w zakresie.</div>';
   }
 
   h += '</div>';
@@ -1800,20 +1898,23 @@ function renderMiastoSection(
 /**
  * Klatka 9 — „Obywatele", kąt społeczny (§8.11, lista zatwierdzona bez korekt).
  *
- * ZREALIZOWANE: hero (obywatele/ludzie/zużycie), podział Pracy, Kultura z progiem, karta Religii,
- * poziom Zadowolenia, Rekruci, zużycie surowców przez obywateli per miasto z sumą cywilizacyjną.
+ * ZREALIZOWANE — 9/9 pozycji zatwierdzonej listy: hero (obywatele/ludzie/zużycie), podział
+ * Pracy, Kultura z progiem, karta Religii, Rekruci, zużycie surowców przez obywateli per miasto
+ * z sumą cywilizacyjną, Zdrowie, Prawo i administracja, Wyżywienie, oraz rozbicie Zadowolenia na
+ * źródła (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA, Maciej 2026-08-16, ECHO A) —
+ * czytane WPROST z `cityOrderState.szLines`/`prawPct` (main.ts), TA SAMA autorytatywna rozpiska
+ * którą panel miasta (Porządek) już liczy per miasto raz na koniec tury.
  *
- * POMINIĘTE ŚWIADOMIE — brak pola w snapshocie (ta sama reguła co przy `renderMiastoSection`):
- *   • ROZBICIE Zadowolenia na źródła (Kultura/Religia/Zdrowie/Wyżywienie/Niedobór surowców) —
- *     `HudState` niesie wyłącznie zagregowane `zadowolenie`, żadnego rozbicia. Pokazany jest sam
- *     poziom + istniejąca notatka `kultura.happinessNote`; pięć wymyślonych składników byłoby
- *     złamaniem CLAUDE.md §3.
- *   • Tabela „Zdrowie · prawo · wyżywienie" — wymaga liczby budynków per kategoria (jak w Mieście,
- *     brak) oraz poziomu racji, którego snapshot nie niesie (suwak racji żyje w Spichlerzu).
- *   • „ilu obywateli w polu / w budynkach" — snapshot ma WYŁĄCZNIE `pracaPula`/`pracaBudynki`,
- *     czyli punkty PRACY na turę, nie liczbę obywateli. Etykiety nazywają więc wprost to, co
- *     naprawdę jest mierzone (pkt Pracy/turę), zamiast podpisywać punkty Pracy jako ludzi —
- *     CLAUDE.md §3.
+ * NOTA o „5 źródłach": designer nazwał rozbicie Zadowolenia „sercem tej zakładki" i mówił o 5
+ * źródłach (przybliżenie z makiety) — silnik NIE ma sztywnej piątki (`computeHappinessBreakdown`,
+ * society-breakdown.ts, może zwrócić 0–14 aktywnych linii zależnie od stanu gry/miasta). Ta
+ * sekcja pokazuje REALNE źródła silnika, nie sztuczne dopasowanie do liczby 5 — patrz JSDoc
+ * `EmpireHappinessSnap` (empireDetailTypes.ts).
+ *
+ * POMINIĘTE ŚWIADOMIE — poza zatwierdzoną listą 9 pozycji (§8.11):
+ *   • „ilu obywateli w polu / w budynkach" (Podział pracy powyżej) — snapshot ma WYŁĄCZNIE
+ *     `pracaPula`/`pracaBudynki`, czyli punkty PRACY na turę, nie liczbę obywateli. Etykiety
+ *     nazywają więc wprost to, co naprawdę jest mierzone (pkt Pracy/turę) — CLAUDE.md §3.
  */
 function renderObywateleSection(
   ce: EmpireDetailSnap['cityEcon'],
@@ -1823,6 +1924,7 @@ function renderObywateleSection(
   k: EmpireDetailSnap['kultura'],
   religion: EmpireDetailSnap['religion'],
   resources: EmpireResourceRow[],
+  happiness: EmpireDetailSnap['happiness'],
 ): string {
   let h = '<div class="civ-emp-sect" data-section="obywatele">'
     + '<div style="display:flex;align-items:center;gap:6px">'
@@ -1849,7 +1951,16 @@ function renderObywateleSection(
   // EN: same formula the engine uses — floor(population × rate) per resource required this era.
   const citizenResCount = resources.filter(r => r.citizenRequired === true).length;
   const zuzyciePerTyp = Math.floor(sumObyw * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
-  const zadow = e.zadowolenie;
+  // `e.zadowolenie` (HudState, main.ts buildHudState()) NIE jest nigdzie wypełniane silnikiem —
+  // zawsze `undefined` (pre-istniejące, niezależne od tego dociągnięcia). Realny, na żywo liczony
+  // poziom Zadowolenia imperium bierzemy z `happiness.totalNetto` (suma tych samych
+  // `cityOrderState.szLines`, z których zbudowane jest rozbicie na źródła niżej) — to poprawia
+  // hero-sub i sekcję Zadowolenia bez wymyślania nowej liczby: to dokładnie ta sama suma co
+  // pozycje w tabeli źródeł, tylko zagregowana wcześniej. / EN: `e.zadowolenie` is never
+  // populated by the engine (pre-existing, unrelated to this dispatch) — the real, live empire
+  // happiness level comes from `happiness.totalNetto` instead (the same sum backing the source
+  // breakdown below), fixing the display without inventing a number.
+  const zadow = e.zadowolenie ?? (happiness.hasData ? happiness.totalNetto : null);
   const przyrost = Math.round(e.ludnoscRate ?? 0);
 
   h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpower(sumAbs))} ludzi</div>`;
@@ -1904,7 +2015,27 @@ function renderObywateleSection(
       + `${religion.foreignSharePct}% wyznawców imperium</div>`;
   }
 
-  // — SZCZĘŚCIE / ZADOWOLENIE —
+  // — ZDROWIE (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA, Maciej 2026-08-16, ECHO A) —
+  // liczba budynków grupy „Zdrowie" (Studnia/Akwedukt/Łaźnia publiczna) per miasto — TA SAMA
+  // liczba co grupa „Zdrowie" w zakładce Miasto, tylko z kąta społecznego tej zakładki.
+  h += subHdr('Zdrowie');
+  {
+    const grid = '1fr 0.8fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'BUDYNKI ZDROWIA'], grid)}`;
+    let sZdrowie = 0;
+    for (const c of cp) {
+      sZdrowie += c.zdrowieBuildingCount;
+      h += miniRow([esc(c.name), String(c.zdrowieBuildingCount)], grid);
+    }
+    h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + `<div>CYWILIZACJA</div><div>${sZdrowie}</div></div>`;
+    h += '</div>';
+    h += '<div class="civ-emp-foot">Studnia · Akwedukt · Łaźnia publiczna. Podnoszą Zadowolenie '
+      + '(patrz „Budynki" w rozbiciu źródeł niżej) i cap populacji miasta.</div>';
+  }
+
+  // — SZCZĘŚCIE / ZADOWOLENIE — rozbicie na źródła (dociągnięcie
+  // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA, Maciej 2026-08-16, ECHO A) —
   h += subHdr('Szczęście · zadowolenie');
   if (zadow != null) {
     const cls = zadow > 0 ? '#78c95a' : zadow < 0 ? '#e07a7a' : '#6f7889';
@@ -1915,8 +2046,70 @@ function renderObywateleSection(
     h += '<div class="civ-emp-empty">Poziom zadowolenia pojawi się po pierwszej turze.</div>';
   }
   h += `<div class="civ-emp-resp" style="margin-top:8px">${esc(k.happinessNote)}</div>`;
-  h += '<div class="civ-emp-foot">Rozbicie Zadowolenia na źródła (kultura, religia, zdrowie, racje, '
-    + 'niedobór surowców) liczone jest per miasto — panel miasta, zakładka Zadowolenie.</div>';
+  if (!happiness.hasData) {
+    h += '<div class="civ-emp-empty" style="margin-top:6px">Rozbicie na źródła pojawi się po pierwszej turze.</div>';
+  } else if (happiness.sources.length === 0) {
+    h += '<div class="civ-emp-empty" style="margin-top:6px">Brak aktywnych źródeł Zadowolenia (netto 0) w tej turze.</div>';
+  } else {
+    h += '<div class="civ-emp-grp-list" style="margin-top:8px">';
+    for (const src of happiness.sources) {
+      const posSrc = src.value >= 0;
+      h += '<div class="civ-emp-grp-row" style="cursor:default">'
+        + `<span class="nm">${esc(src.label)}</span>`
+        + `<span class="val" style="color:${posSrc ? '#78c95a' : '#e07a7a'}">${signedTxt(src.value)}</span></div>`;
+    }
+    h += '</div>';
+  }
+  h += '<div class="civ-emp-foot">Źródła zsumowane ze wszystkich miast gracza, WPROST z tego samego '
+    + 'rozbicia co panel miasta (Porządek → Szczęście). Liczba aktywnych źródeł zmienia się z turą '
+    + 'na turę (silnik pomija źródła o wartości 0) — nie jest sztywno „5", to realny stan gry.</div>';
+
+  // — PRAWO I ADMINISTRACJA (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA) — % Prawa per
+  // miasto czytany WPROST z `cityOrderState.prawPct` (main.ts, ta sama liczba co panel miasta,
+  // Porządek → Prawo) + liczba budynków grupy „Prawo i administracja" tego miasta.
+  h += subHdr('Prawo i administracja');
+  {
+    const grid = '1fr 0.7fr 0.8fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'PRAWO', 'BUDYNKI'], grid)}`;
+    let sBud = 0;
+    let anyPrawo = false;
+    for (const c of cp) {
+      sBud += c.prawoAdminBuildingCount;
+      if (c.prawoPct != null) anyPrawo = true;
+      const prawoTxt = c.prawoPct != null
+        ? `${Math.round(c.prawoPct)}%`
+        : '<span style="color:#6f7889">—</span>';
+      h += miniRow([esc(c.name), prawoTxt, String(c.prawoAdminBuildingCount)], grid);
+    }
+    h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + `<div>CYWILIZACJA</div><div>—</div><div>${sBud}</div></div>`;
+    h += '</div>';
+    h += anyPrawo
+      ? '<div class="civ-emp-foot">PRAWO = udział Prawa w Porządku tego miasta (garnizon, Pałac, '
+        + 'Dom Starszyzny/Dwór Zarządcy/Pretorium/Trybunał/Sąd — ta sama liczba co panel miasta). '
+        + 'BUDYNKI = liczba budynków tej grupy.</div>'
+      : '<div class="civ-emp-empty">Wartości Prawa pojawią się po pierwszej turze.</div>';
+  }
+
+  // — WYŻYWIENIE (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA) — poziom Racji per
+  // miasto (`getCityRationLevel()`) i jego wpływ na wzrost (`rationGrowthPercent()`) — te same
+  // czyste funkcje, którymi silnik liczy realny przyrost ludności każdej tury.
+  h += subHdr('Wyżywienie');
+  {
+    const grid = '1fr 0.7fr 0.9fr';
+    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'RACJE', 'WZROST Z RACJI'], grid)}`;
+    for (const c of cp) {
+      h += miniRow([
+        esc(c.name),
+        formatWyzwienieLabel(c.poziomRacji),
+        `<span style="color:${c.racjaGrowthPct >= 0 ? '#78c95a' : '#e07a7a'}">${signedTxt(c.racjaGrowthPct)}%</span>`,
+      ], grid);
+    }
+    h += '</div>';
+    h += '<div class="civ-emp-foot">RACJE = bieżący poziom Wyżywienia (0–6) — im wyżej, tym więcej '
+      + 'Żywności na mieszkańca, ale mniej trafia do puli imperium. WZROST Z RACJI = wpływ tego '
+      + 'poziomu na przyrost ludności, %/turę. Ustawienie globalne i per miasto — zakładka Spichlerz.</div>';
+  }
 
   // — REKRUCI —
   h += subHdr('Rekruci');
@@ -3039,7 +3232,7 @@ function render(): void {
   // `econ-miasta` tab; `cityMiastaMiniDetail()` is NOT removed — it still backs the "Miasta" row
   // of the full overview, exactly as `cityEconMiniSkarbiec()` survived the phase-1 Treasury split.
   const miasto = renderMiastoSection(ce, cp, e, snap.trade, snap.resources);
-  const obywatele = renderObywateleSection(ce, cp, e, p, k, snap.religion, snap.resources);
+  const obywatele = renderObywateleSection(ce, cp, e, p, k, snap.religion, snap.resources, snap.happiness);
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
   const spichlerz = renderSpichlerzCentralnySection(snap.food)
