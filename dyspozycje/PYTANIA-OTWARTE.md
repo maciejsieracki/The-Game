@@ -26420,8 +26420,43 @@ tę część można zachować. Do RUNDY 2:
 3. **N1 — zapytać o skalę zasięgu na mapie świata** (Katapulta 6 heksów?) zamiast dziedziczyć
    liczbę z siatki taktycznej bez konwersji.
 
-**STATUS: **OTWARTE** — Evaluator FAIL, wymagana RUNDA 2 (parytet AI dla miast) + pytania ABC do
-właściciela dla F2/F3/N1. Zmiana **nie jest gotowa do deployu**.**
+**RUNDA 2 (`a5bcd99a`) — Evaluator FAIL (2026-08-16), drugi werdykt z rzędu.** Naprawa warstwy
+DECYZJI (`isWithinCityAttackRange` w `ai.ts`, identyczna z regułą gracza `eligibleCityAttackers`
+— zweryfikowane znak w znak) jest poprawna, ale **rozkaz nigdy nie dociera do egzekucji**:
+jedyny egzekutor komend AI (`main.ts:27385`, `cmd.type === 'move'`) najpierw sprawdza
+`canUnitOccupyCityHex(...)` (`city-hex-movement.ts:29-31`), a ta funkcja **bezwarunkowo** zwraca
+`false` dla heksu obcego miasta — identyczny mechanizm, który do niedawna blokował barbarzyńcom
+przejęcie pustych miast, aż dostali jawny wyjątek `canBarbarianWalkIntoEmptyCity`
+(`P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B`). AI takiego wyjątku nie ma.
+
+**Skutek — to REGRESJA, nie martwy kod.** Własna sonda Evaluatora (prawdziwy `decideAITurn` +
+prawdziwy `canUnitOccupyCityHex`, esbuild, `units.json` realny) pokazuje: PRZED naprawą jednostka
+dystansowa przy pustym, nieobmurowanym mieście wroga dostawała realny krok — odwrót/marsz (gałąź
+„ranged hold back", `ai.ts:2610`). PO naprawie dostaje rozkaz `move` do heksu miasta, który
+egzekutor kasuje (`continue`) — jednostka nie robi NIC, `ruchLeft` nietknięty, **w kolejnej turze
+ta sama decyzja → trwałe zakleszczenie**. Promień tego zamrożenia rośnie z 1 heksa (adiacencja,
+stan sprzed zmiany) do pełnego zasięgu jednostki dystansowej (Katapulta 6, Łucznik 3 itd.).
+Bramka `atak-dystansowy-mapa-test.cjs` (91/0) tego nie łapie — sekcja (h) i strażnik testują
+wyłącznie warstwę decyzji (czysta funkcja), nie czy wyprodukowany rozkaz przeżywa egzekutor.
+
+**Dodatkowe luki (N1-N3 werdyktu, drugorzędne wobec regresji wyżej):** N1 — `isWithinCityAttackRange`
+nie sprawdza `embarked` (parytet z `eligibleCityAttackers`), dziś zamaskowane przez regresję
+egzekutora, odsłoni się po jej naprawie; ten sam wzorzec dotyczy `isWithinAttackRange` z rundy 1
+(jednostki) — egzekutor ataku też kasuje rozkaz dla `embarked === true`. N2 — pre-istniejący,
+osobny problem silnika: AI w ogóle nie ma ścieżki przejęcia niebronionego miasta (nie tylko z
+dystansu) — `allowCityCapture` wołane wyłącznie z bloku barbarzyńskiego, `AICommand` nie zna
+oblężenia. N3 — samo-mutacja MUT-I w bramce degraduje się do "nieprzygotowana" przy zmianie ciała
+funkcji zamiast dać sensowny sygnał.
+
+**Wymagane do rundy 3 (z werdyktu):** (1) decyzja ABC — czy AI dostaje tę samą ścieżkę egzekucji
+zdobycia miasta co gracz, czy egzekutor dostaje jawny wyjątek jak barbarzyńcy, czy cofnąć zasięg
+dla miast po stronie gracza (dotyka nierozstrzygniętego F2 z rundy 1); (2) bramka musi asercjonować
+rozkaz PO przejściu przez `canUnitOccupyCityHex`, nie sam predykat; (3) N1 embarked; (4) N3 -
+odporność samo-mutacji testu.
+
+**STATUS: **OTWARTE** — Evaluator FAIL runda 2, wymagana decyzja ABC właściciela przed rundą 3
+(patrz punkt 1 wyżej — kod nie jest gotowy do napisania bez tej decyzji, nie zgaduję). Zmiana
+**nie jest gotowa do deployu**.**
 
 ---
 
