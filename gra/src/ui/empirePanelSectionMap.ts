@@ -67,17 +67,24 @@ export function empirePanelBlockForSection(section: string | null): EmpirePanelB
   // produkcyjne (Praca/Pieniądz/Surowce) ze społecznymi (Ludność/Wzrost) w jednej tabeli — to
   // właśnie ta mieszanka miała się rozdzielić. Wyjątki MUSZĄ być sprawdzone PRZED ogólnym
   // `startsWith('econ-')` niżej, tak samo jak Skarbiec/Praca/Nauka/Religia/Rekruci wyżej.
-  // Identyfikatory sekcji zachowują przedrostek `econ-` (jak wszystkie pozostałe bloki tej
-  // rodziny), więc `onlyEconId` w `empireDetailPanel.ts` pozostaje zdefiniowany i
-  // `econSliderVisibilityForOnlyEconId` nadal zwraca dla nich „żaden suwak" — bez tego
-  // przedrostka wpadłyby na `null` (= pełny przegląd) i deklarowały OBA suwaki.
+  // Identyfikatory sekcji zachowują przedrostek `econ-` dla spójności nazewnictwa z resztą
+  // rodziny `econ-*` (Skarbiec/Praca/Nauka/Rekruci). Weryfikacja Evaluatora (2026-08-16): to NIE
+  // jest funkcjonalnie konieczne — `econSliderVisibilityForOnlyEconId()` ma jednego konsumenta
+  // (`empireDetailPanel.ts`, string `zasoby`), a `zasoby` trafia do treści panelu WYŁĄCZNIE gdy
+  // blok to `'ekonomia'`/`'all'`; dla bloków `miasto`/`obywatele` jest liczony i odrzucany, więc
+  // ewentualne suwaki i tak by się nie wyrenderowały niezależnie od przedrostka. Zachowany mimo
+  // to jako nazewnicza konwencja i dlatego że `onlyEconId` musi pozostać zdefiniowanym stringiem
+  // dla ewentualnych innych konsumentów tego pola w przyszłości, nie tylko dzisiejszego suwaka.
   // EN: the shared `econ-miasta` tab SPLITS into two independent top-level blocks — `miasto`
   // (production angle) and `obywatele` (social angle). Both HUD chips used to lead to the same
   // `cityMiastaMiniDetail()`, mixing production data with social data in one table — exactly the
   // mix that was meant to separate. These exceptions MUST be checked BEFORE the generic
-  // `startsWith('econ-')` below. Section ids keep the `econ-` prefix (like every other block in
-  // this family) so `onlyEconId` stays defined and the slider-visibility rule still reports "no
-  // slider" for them; without the prefix they would fall to `null` (= full overview) and claim BOTH.
+  // `startsWith('econ-')` below. Section ids keep the `econ-` prefix for naming consistency with
+  // the rest of the `econ-*` family. Evaluator-verified (2026-08-16): this is NOT functionally
+  // required today — the slider-visibility rule's only consumer only renders sliders when the
+  // block is `'ekonomia'`/`'all'`, so `miasto`/`obywatele` never reach that code path regardless
+  // of the prefix. Kept as a naming convention and to keep `onlyEconId` a defined string for any
+  // future consumer of that field, not just today's slider check.
   if (section === 'econ-miasto') return 'miasto';
   if (section === 'econ-obywatele') return 'obywatele';
   // `econ-miasta` (STARE, wspólne id) celowo ZOSTAJE na torze `ekonomia` — to nadal kotwica

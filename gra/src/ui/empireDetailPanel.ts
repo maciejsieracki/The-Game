@@ -1527,7 +1527,12 @@ let miastoScopeCityId: string | null = null;
  * §6 handoffu designera wprost zakazuje wymyślania nowego mechanizmu: „Mechanizm «zaznacz
  * i zobacz sumę cywilizacyjną» = rozszerzenie istniejącego filtra kolumn (`miastaHiddenCols`
  * + `computeMiastaSummaryRow()`) na wiersze kategorii i typy surowca. Nowego wzorca nie
- * wprowadzam." Odznaczone GASNĄ (`.civ-emp-grp-row.off`), nie znikają, i wypadają z sumy.
+ * wprowadzam." UWAGA (Evaluator 2026-08-16): cytat opisuje MECHANIZM (filtr/wygaszanie/sumowanie),
+ * nie dosłowne wywołanie `computeMiastaSummaryRow()` — ta funkcja ma sztywny schemat kolumn
+ * (obyw/ludność/praca/pieniądz/żywność/wzrost%/surowce) i nie sumuje dowolnej, konfigurowalnej
+ * listy typów surowca, więc suma tutaj liczona jest inline tym samym WZOREM (gasną, nie znikają;
+ * wypadają z sumy), a nie przez wywołanie tej konkretnej funkcji. Odznaczone GASNĄ
+ * (`.civ-emp-grp-row.off`), nie znikają, i wypadają z sumy.
  * EN: resource types UNCHECKED in the Miasto tab — same "hidden set + summary row" pattern as
  * `miastaHiddenCols`, extended to resource types per the designer handoff §6.
  */

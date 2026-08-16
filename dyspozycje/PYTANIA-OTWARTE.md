@@ -30032,3 +30032,39 @@ wszystkie dokumentacyjne/kosmetyczne, bez ryzyka logiki:
 
 **STATUS: ZAMKNIĘTE — wdrożone, Evaluator PASS-WITH-NOTES, wszystkie 4 uwagi kodowe/dokumentacyjne
 naprawione (N1-N3), N4 to tylko korekta liczby w opisie, N5 domknięty tym wpisem.**
+
+---
+
+## P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (2026-08-16, znalezisko Evaluatora)
+
+Evaluator (Opus 5) oceniający `98345aa5` (reskin + rozbicie Miasto/Obywatele panelu imperium)
+zwrócił uwagę, że opis commita zaniża rzeczywisty ubytek treści wobec zatwierdzonych list
+`R-DESIGN-11-ZAKLADEK` Q2=B (Miasto 8 pozycji, Obywatele 9 pozycji).
+
+**Realne pokrycie (Evaluator, po przeliczeniu wobec `EmpireDetailSnap`):**
+- **Miasto (8):** pełne — wpływy do skarbca, produkcja Nauki, produkowane surowce · częściowe —
+  populacja (bez „obrabianych pól"), handel (zbiorczo dla imperium, nie per miasto) · **brak** —
+  budynki wg `BUILDING_GROUP_ORDER`, kolejka produkcji, obrona miasta.
+- **Obywatele (9):** pełne — Kultura, Religia, Rekruci, zużycie surowców · częściowe —
+  Szczęście/Zadowolenie (sam poziom, **bez rozbicia** na 5 źródeł), podział pracy (przemianowany
+  z ludzi na pkt Pracy) · **brak** — Zdrowie, Prawo i administracja, Wyżywienie.
+
+To ~połowa każdej z dwóch list, nie „8/9 minus 3", jak sugerował opis commita. Designer nazywa
+rozbicie Zadowolenia na 5 źródeł „sercem tej zakładki" (Obywatele) — właśnie tego brakuje.
+
+**Przyczyna (zweryfikowana, nie domysł):** `EmpireDetailSnap` fizycznie nie niesie tych danych
+(brak pól kolejki produkcji, kategorii budynków, obrony miasta, rozbicia Zadowolenia na źródła) —
+dociągnięcie wymaga zmian w `main.ts`/`empireDetailTypes.ts`, poza dozwolonym zakresem tamtego
+zlecenia (tylko `empireDetailPanel.ts` + `empirePanelSectionMap.ts`). Designer sam autoryzował
+cięcie zakresu i podał kolejność wdrożenia (wpływy do skarbca → surowce → kolejka → budynki →
+obrona/populacja) — Operator dotrzymał dokładnie tej kolejności, więc to co jest zrobione, jest
+zrobione poprawnie; brakuje tylko dalszych kroków tej samej kolejności.
+
+**Rekomendacja Evaluatora:** NIE blokować deployu (to co wdrożono jest poprawne, przetestowane,
+bez regresji; wymyślanie liczb zamiast prawdziwych danych łamałoby CLAUDE.md §3), ale właściciel
+musi znać prawdziwy zakres — stąd ten wpis.
+
+**STATUS: OTWARTE — czeka na decyzję właściciela, czy dociągnięcie pozostałych pozycji list (co
+wymaga rozszerzenia `EmpireDetailSnap`/`main.ts`) to kolejny temat do zlecenia, czy zakres
+zostaje jak jest. Nie dispatchuję subagenta bez tej decyzji — to pytanie produktowe, nie
+techniczne.**
