@@ -7259,3 +7259,10 @@ stosu). **WAŻNE dla playtestu: łucznicy/procarze/kusznicy/katapulty NIE strzel
 podejścia na sąsiedni heks — to jest oczekiwane, świadome cofnięcie, nie regresja.** `gra/data`
 NIE ruszone. Szczegóły: `WERSJE.md`.
 CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `e457e054`".
+
+## [23:38 PL, 2026-08-16] Sesja chmurowa → main — scalenie FALA 288 (jedna fala do tyłu)
+FALA 288 (`5b471f32`) scalona do `main` **fast-forward** (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 289). `origin/main`: `17baa179` → `5b471f32`. Scalenie celowało w **commit deployu** FALI 288,
+nie w czubek gałęzi. FALA 289 (`0528dccc`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
+scalona; scali się dopiero przy FALI 290.
+CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpisy wyżej).
