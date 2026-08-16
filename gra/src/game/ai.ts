@@ -58,6 +58,7 @@ import {
 } from './auto-improvements';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
+import { hasCityDefenders } from './siegeDefenders';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -754,8 +755,23 @@ function unitAttackRangeHexAi(unit: RuntimeUnit, data: GameData): number {
   return unitMapAttackRangeHex(def as unknown as Record<string, unknown> | undefined);
 }
 
-/** Czy (tq,tr) jest w zasięgu ataku `unit` — adiacencja dla zwarcia, zasięg dla dystansu. */
+/**
+ * Czy (tq,tr) jest w zasięgu ataku `unit` — adiacencja dla zwarcia, zasięg dla dystansu.
+ * RUNDA 4 (N-D werdyktu rundy 3, 2026-08-16, analogiczna 1-linijkowa poprawka bez ryzyka):
+ * `embarked` sprawdzane PIERWSZE, tak samo jak `isWithinCityAttackRange` wyżej —
+ * egzekutor ataku jednostka→jednostka (main.ts, `if (attacker.embarked === true) continue;`)
+ * i tak kasuje rozkaz zaokrętowanej jednostki, więc bez tej bramki tu jednostka dostawała
+ * rozkaz `attack`, który ginął w egzekucji, zamiast spaść do innej gałęzi decyzji (zamiast
+ * zamierać, tak jak B3 dla miast przed tą samą poprawką w `isWithinCityAttackRange`).
+ * / EN: `embarked` checked FIRST, mirroring `isWithinCityAttackRange` above — the
+ * unit-vs-unit attack executor (main.ts, `if (attacker.embarked === true) continue;`)
+ * drops the order for an embarked unit anyway, so without this gate the unit got an
+ * `attack` order that died in execution instead of falling through to another decision
+ * branch (freezing, same class of bug as B3 for cities before the analogous fix in
+ * `isWithinCityAttackRange`).
+ */
 function isWithinAttackRange(unit: RuntimeUnit, tq: number, tr: number, data: GameData): boolean {
+  if (unit.embarked === true) return false;
   const range = Math.max(1, unitAttackRangeHexAi(unit, data));
   return hexDistance(unit.q, unit.r, tq, tr) <= range;
 }
@@ -789,12 +805,42 @@ function isWithinAttackRange(unit: RuntimeUnit, tq: number, tr: number, data: Ga
  * (dist===1) and ranged reach. Without this, the narrow execution exception
  * `canAiEnterUndefendedCityHex` (city-hex-movement.ts) would let an embarked AI unit walk
  * onto a city hex straight from the water.
+ *
+ * RUNDA 4 (P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A, zalecenie Evaluatora rundy 3, punkt 1,
+ * 2026-08-16): decyzja MUSI zwracać `false` wszędzie, gdzie egzekucja
+ * (`canAiEnterUndefendedCityHex`, city-hex-movement.ts: `!maMur && !hasCityDefenders`)
+ * i tak by odmówiła — mur LUB obrońcy — inaczej jednostka dostaje rozkaz `move`, egzekucja
+ * go odrzuca, i jednostka zamiera (B3 werdyktu rundy 3) zamiast spaść do gałęzi
+ * odwrotu/marszu (4c „ranged hold back", niżej w `decideAITurn`). To TERAZ obejmuje też
+ * adiacencję (dist===1) — inaczej niż u gracza (`eligibleCityAttackers`: dist===1 zawsze
+ * `true`, bo gracz z tego punktu ma osobną ścieżkę oblężenia/szturmu) — bo AI
+ * (`AICommand`) NIE MA odpowiednika tej ścieżki (N2, świadomie poza zakresem tego tematu):
+ * jedyny skutek „true" tu to identyczny rozkaz `move` na heks miasta, który egzekutor i
+ * tak by odrzucił dla miasta bronionego/z murem, więc różnicowanie adiacencja-vs-zasięg
+ * przy tym warunku nie ma dziś żadnego obserwowalnego skutku.
+ * / EN: the decision MUST return `false` everywhere the execution
+ * (`canAiEnterUndefendedCityHex`, city-hex-movement.ts: `!maMur && !hasCityDefenders`)
+ * would refuse anyway — wall OR defenders — otherwise the unit gets a `move` order, the
+ * executor rejects it, and the unit freezes (round-3 verdict B3) instead of falling
+ * through to the retreat/march branch (4c "ranged hold back", below in `decideAITurn`).
+ * This NOW also covers adjacency (dist===1) — unlike the player's rule
+ * (`eligibleCityAttackers`: dist===1 is always `true`, because the player has a separate
+ * siege/storm path from that point) — because the AI (`AICommand`) has NO equivalent path
+ * (N2, deliberately out of scope for this topic): the only effect of "true" here is the
+ * same `move` order onto the city hex, which the executor would reject anyway for a
+ * defended/walled city, so distinguishing adjacency from ranged reach on this condition
+ * has no observable effect today.
  */
-function isWithinCityAttackRange(unit: RuntimeUnit, city: AICity, data: GameData): boolean {
+function isWithinCityAttackRange(
+  unit: RuntimeUnit,
+  city: AICity,
+  data: GameData,
+  units: readonly RuntimeUnit[],
+): boolean {
   if (unit.embarked === true) return false;
+  if (city.maMur || hasCityDefenders(city, units)) return false;
   const dist = hexDistance(unit.q, unit.r, city.q, city.r);
   if (dist === 1) return true;
-  if (city.maMur) return false;
   return dist <= unitAttackRangeHexAi(unit, data);
 }
 
@@ -2570,9 +2616,9 @@ export function decideAITurn(
     // RUNDA 2, PARYTET AI dla miast (Evaluator F1): ta sama bramka co
     // map/map-attack-city.ts:eligibleCityAttackers po stronie gracza.
     const adjacentEnemyCity = (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities).find(
-      ec => isWithinCityAttackRange(unit, ec, data),
+      ec => isWithinCityAttackRange(unit, ec, data, units),
     ) ?? engageableEnemyCities.find(
-      ec => isWithinCityAttackRange(unit, ec, data),
+      ec => isWithinCityAttackRange(unit, ec, data, units),
     );
     if (adjacentEnemyCity !== undefined) {
       // RUNDA 3 (P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B): oznacz komendę jako

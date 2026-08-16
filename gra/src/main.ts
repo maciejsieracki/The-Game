@@ -27555,6 +27555,32 @@ async function boot(): Promise<void> {
                     u.ruchLeft = 0;
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     applyEmbarkStateAfterMove([u], map);
+                    // RUNDA 4 (P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A, ECHO Maciej 2026-08-16):
+                    // wejście na pusty, niebroniony heks miasta w TEJ gałęzi ma REALNIE
+                    // przejąć miasto -- ta sama konsekwencja co barbarzyńcy
+                    // (tryAutoCaptureEmptyCityAt, gałąź barbarzyńców niżej). Naprawia B1
+                    // (evictForeignUnitsFromCityHexes przestaje wypychać jednostkę, bo
+                    // canUnitOccupyCityHex widzi już zgodny ownerId) i B2 (jednostka nie
+                    // wrasta na stałe w heks, bo miasto jest teraz jej) NIEZALEŻNIE od tego,
+                    // czy barbariansActive -- samo przejęcie usuwa przyczynę obu, evict nie
+                    // musi się nawet wykonać. tryAutoCaptureEmptyCityAt no-opuje (zwraca
+                    // false) dla własnego miasta (city.ownerId===anchor.ownerId), więc
+                    // wołanie jest bezpieczne nawet gdyby `city` w międzyczasie już należało
+                    // do `u.ownerId`.
+                    // / EN: entering an empty, undefended city hex on THIS branch now
+                    // REALLY captures the city -- the same consequence as barbarians
+                    // (tryAutoCaptureEmptyCityAt, barbarian branch below). Fixes B1
+                    // (evictForeignUnitsFromCityHexes stops evicting the unit, since
+                    // canUnitOccupyCityHex now sees a matching ownerId) and B2 (the unit no
+                    // longer fuses permanently into the hex, since the city is now its own)
+                    // REGARDLESS of barbariansActive -- the capture itself removes the root
+                    // cause of both, eviction need not even run. tryAutoCaptureEmptyCityAt
+                    // no-ops (returns false) for one's own city
+                    // (city.ownerId===anchor.ownerId), so the call is safe even if `city`
+                    // already belonged to `u.ownerId` in the meantime.
+                    if (cityAttackEntry) {
+                      tryAutoCaptureEmptyCityAt(last.q, last.r, [u]);
+                    }
                     // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: symetria z ruchem gracza --
                     // `ownerId` tu to zawsze prawdziwa cywilizacja AI (1..N), nigdy
                     // barbarzyńcy (ci mają własną pętlę ruchu niżej, poza AICommand).
