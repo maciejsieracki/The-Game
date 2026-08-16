@@ -30519,5 +30519,10 @@ już PRZED tym commitem. Poprawka okna (12000→20000) słuszna, atrybucja przyc
 odmiany „tur/tury" (kosmetyka, zgodne z istniejącą konwencją panelu imperium). N5 — zbędny
 strażnik `pracaBudynki > 0 ?` dubluje wewnętrzny guard `etaTurns()`, przypięty kotwicą testową B8.
 
-STATUS: **OTWARTE — Evaluator FAIL, wymagana RUNDA 2** (N1/N2 blokujące, N3-N5 poprawki
-dokumentacji/kosmetyka). Zmiana **nie jest gotowa do deployu**.
+**Runda 2 (`b22bc5ce`) — zaimplementowana**, naprawia N1-N5: N1 (`prod.wstrzymana` respektowane,
+ETA null + tekst „wstrzymana"), N2 (2 nowe asercje brzegowe `etaTurns()`, zweryfikowane mutacyjnie),
+N3 (sprostowana atrybucja), N4 (odmiana „tura/tury/tur"), N5 (usunięty zbędny strażnik). Bramki:
+tsc 0, build exit 0, `empire-armia-produkcja-test` 51/51 (było 30/0).
+
+STATUS: **OTWARTE** — Evaluator rundy 2 w toku. Zmiana **nie jest gotowa do deployu** do czasu
+werdyktu.
