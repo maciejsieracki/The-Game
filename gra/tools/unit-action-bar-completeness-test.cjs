@@ -112,7 +112,18 @@ const hudBody = sliceBetween(
 );
 const mergeBody = sliceBetween(
   armyMergeSrc,
-  'export function stackHudMergeSplitActions(',
+  // P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI, Evaluator (Opus 5) N5, runda 2 (2026-08-16):
+  // start od 'if (stackLength >= 2) {' (NIE od nagłówka funkcji) — sygnatura i deklaracja `actions`
+  // powyżej zawierają adnotację typu `id: 'split' | 'merge'` w DWÓCH miejscach (linia zwracanego
+  // typu + `const actions: Array<{...}>`), którą regex bez wymogu sąsiedztwa z `actions.push(`
+  // (naprawa N1) błędnie liczył jako produkowane id — osłabiając sanity-check przy usunięciu
+  // realnej akcji. Cięcie od `if` pomija oba miejsca, zostawiając wyłącznie faktyczne wywołania
+  // `actions.push({...})`. / EN: start from 'if (stackLength >= 2) {' (NOT the function header) —
+  // the signature and the `actions` declaration above it both repeat the `id: 'split' | 'merge'`
+  // type annotation, which the N1 regex (no longer anchored to `actions.push(`) wrongly counted as
+  // produced ids, weakening the sanity check when a real action was removed. Cutting from `if`
+  // skips both spots, leaving only actual `actions.push({...})` calls.
+  'if (stackLength >= 2) {',
   '/** Wspólny pul ruchu stosu',
   'stackHudMergeSplitActions (armyMerge.ts)',
 );

@@ -28697,6 +28697,149 @@ reguła `.sp-ctx-scroll`), deklaracja `ctxScrollEl` + jego montaż jako dziecko 
 **STATUS: NAPRAWIONE I PRZETESTOWANE W WORKTREE — czeka na scalenie do gałęzi sesji i Evaluatora
 (deploy tylko na hasło `deploy`, zgodnie z procedurą §0/§5 CLAUDE.md).**
 
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla `a39dd5ab`
+
+**Werdykt: PASS-WITH-NOTES.** Kod naprawy jest poprawny, zakres czysty, wszystkie bramki
+zweryfikowane niezależnie (uruchomione przeze mnie, nie przepisane z raportu Operatora). Naprawa
+zostaje. **ALE uzasadnienie merytoryczne wpisane przez Operatora do tego rejestru zawiera błąd
+faktyczny** — teza o mechanizmie przepełnienia jest nieprawdziwa i musi zostać sprostowana, żeby
+nie powielała się dalej (CLAUDE.md §0b: „każda liczba/twierdzenie przedstawione właścicielowi jako
+fakt" wymaga weryfikacji; realne wypadki 2026-08-07 pokazały, że taki błąd rozchodzi się potem po
+kolejnych dokumentach).
+
+**Środowisko weryfikacji:** worktree `agent-a79b23a25776bf440`, `git reset --hard a39dd5ab`
+(czubek `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`), `git status` czysty przez cały czas
+weryfikacji poza celowym eksperymentem mutacyjnym (opisanym niżej, cofniętym co do bajtu).
+
+#### Co potwierdzone POZYTYWNIE (weryfikacja własna)
+
+1. **Zakres commita — dokładnie 3 pliki, zero „przy okazji":** `gra/src/ui/sidePanelHud.ts`
+   (+57/−6), `gra/tools/sidepanel-hud-deadzone-test.cjs` (+152), `dyspozycje/PYTANIA-OTWARTE.md`
+   (+60). Zgodne z deklaracją.
+2. **Wzorzec zastosowany poprawnie i konsekwentnie z `.civ-side-panel`/`.sp-scroll`:** `ctxEl`
+   zachowuje `pointer-events:none` w OBU regułach (`.civ-side-ctx-dock` i
+   `.civ-side-ctx-dock.open`), `overflow-y`/`overscroll-behavior`/`scrollbar-gutter` przeniesione
+   w całości na `.sp-ctx-scroll` (`pointer-events:auto;height:max-content;max-height:100%`).
+3. **`render()` wypełnia `ctxScrollEl.innerHTML` we WSZYSTKICH miejscach, łącznie z gałęzią
+   czyszczącą** — sprawdzone linia po linii: linia 443 (`= buildContextCardHtml(...)`) oraz
+   linia 453 (`else { ctxScrollEl.innerHTML = '' }`). Nie został ani jeden `ctxEl.innerHTML`.
+   Wrapper nigdy nie ginie.
+4. **Ryzyko, którego Operator nie zbadał, a które sprawdziłem — i jest czyste:** `ctxEl` jest
+   eksportowany w publicznym API (`SidePanelHudApi.ctxEl`, linia 87), więc konsument z zewnątrz
+   mógłby skasować wrapper. Przegląd wszystkich użyć poza `sidePanelHud.ts` (`gra/src/ui/hud.ts`
+   linie 1495, 1588, 1690) wykazał wyłącznie `appendChild` i `style.display` — **żadnego
+   `innerHTML`/`replaceChildren`**. Wrapper jest bezpieczny.
+   `bindContextInteractions()` używa wyłącznie `querySelector(All)` na poddrzewie — obojętne na
+   dodatkową warstwę, zgodnie z deklaracją Operatora.
+5. **Punkt 6 zlecenia — fix rundy 1 Przyczyny A nienaruszony, potwierdzony w SKOMPILOWANYM CSS**
+   (nie tylko w źródle): w `dist/index.html` reguła `.civ-side-ctx-dock{...pointer-events:none;
+   display:none;...}` **nie zawiera już `overflow-y:auto`**, a `.civ-side-ctx-dock.open{display:
+   block;pointer-events:none;}` bez zmian. Martwa strefa klikania nie wraca.
+6. **Bundle produkcyjny — `.sp-ctx-scroll` realnie trafia do `dist/index.html`:** build
+   `vite build --outDir dist --emptyOutDir` przeszedł (824 moduły, 37 100,39 kB), w wynikowym
+   pliku **2 wystąpienia** `sp-ctx-scroll` — reguła CSS (indeks 28 827 264) oraz kod tworzący
+   wrapper (`M.className="sp-ctx-scroll",a.appendChild(M)`).
+
+#### Bramki — uruchomione przeze mnie, liczby zgadzają się z raportem Operatora co do jednej
+
+| Bramka | Wynik | Exit | Zgodność z raportem |
+|---|---|---|---|
+| `npx tsc --noEmit` | 0 błędów | 0 | ✅ |
+| `sidepanel-hud-deadzone-test.cjs` | **43 pass, 0 fail** | 0 | ✅ |
+| `sidepanel-events-toolbar-test.cjs` | 19 pass, 0 fail | 0 | ✅ |
+| `side-list-hud-panel-coverage-test.cjs` | 74/74 | 0 | ✅ |
+| `unit-context-card-test.cjs` | 29 pass, 0 fail | 0 | ✅ |
+| `side-panel-unit-cycle-arrows-test.cjs` | 20 pass, 0 fail | 0 | ✅ |
+
+**Dowód mutacyjny na POZIOMIE ŹRÓDŁA (mocniejszy niż wbudowany w test dowód na żywym CSS).**
+Cofnąłem naprawę w `src/ui/sidePanelHud.ts` (przywróciłem `overflow-y:auto`/`scrollbar-gutter` na
+`.civ-side-ctx-dock`, usunąłem je z `.sp-ctx-scroll`), przebudowałem bundle i uruchomiłem bramkę:
+**36 pass, 4 fail, exit 1** — padły dokładnie asercje J (`scrollHeight` 1909 px = `clientHeight`
+1909 px, brak przepełnienia bo wrapper stracił `max-height`), K (`scrollTop` 0 → 0, wheel martwy),
+L (`elementFromPoint` na pasku → `null`) oraz sam dowód mutacyjny. **Bramka realnie łapie regresję,
+nie jest tautologią.** Źródło przywrócone z kopii, `git status` czysty (drzewo identyczne
+z `a39dd5ab` co do bajtu).
+
+#### NOTA 1 (BŁĄD FAKTYCZNY — do sprostowania w tym rejestrze)
+
+Operator napisał wyżej: *„`buildUnitStackCardsHtml()` renderuje jeden wiersz `.sp-unit-stack-card`
+(ikona+nazwa+2 paski+meta, rząd wielkości ~50-70px) na KAŻDĄ jednostkę w stosie"* i że *„przy
+kilkunastu+ jednostkach karta łatwo przekracza wysokość doku"*. **To nieprawda w domyślnym
+(zwiniętym) stanie karty.** Kontener stosu to `.sp-unit-stack{display:flex;gap:6px;overflow-x:auto}`
+(`hexContextTooltip.ts:865`), a karty to `.sp-unit-stack-card{flex:0 0 auto;width:76px}` — czyli
+**JEDEN POZIOMY rząd z poziomym scrollem**, nie lista pionowa.
+
+Zmierzone przeze mnie na żywym headless Chromium (realny markup produkowany przez
+`buildUnitStackCardsHtml`, viewport 1600×1000 px, wysokość doku 628 px):
+
+| Liczba jednostek w stosie (szt.) | Wysokość `.sp-unit-stack` — tryb ZWINIĘTY (px) | Wysokość `.sp-unit-stack` — tryb ROZWINIĘTY (px) |
+|---|---|---|
+| 2 | 81 | 81 |
+| 5 | 81 | 164 |
+| 10 | 81 | 330 |
+| 20 | 81 | 579 |
+| 40 | 81 | 1160 |
+
+**W trybie zwiniętym liczba jednostek wnosi DOKŁADNIE ZERO przyrostu wysokości** — 81 px zarówno
+dla 2, jak i dla 40 jednostek. Teza Operatora nie broni się w stanie, w którym karta jest domyślnie
+wyświetlana.
+
+#### NOTA 2 (przepełnienie JEST realne, ale z dwóch INNYCH powodów — naprawa uzasadniona MOCNIEJ, niż Operator argumentował)
+
+Werdykt jest PASS, bo naprawiany problem istnieje naprawdę — tylko mechanizm jest inny:
+
+**(a) Tryb rozwinięty.** `.sp-unit-card-expanded .sp-unit-stack{flex-wrap:wrap;overflow-x:visible}`
+(`hexContextTooltip.ts:885`) — dopiero tu karty zawijają się do wielu rzędów. Zmierzone na REALNEJ
+karcie wygenerowanej przez grę (viewport 1600×1000 px, dok 628 px wys. / 560 px szer. po
+rozwinięciu, sama karta bez stosu = 393 px): przepełnienie zaczyna się przy **16 jednostkach**
+(678 px > 628 px); przy 12 jednostkach jeszcze mieści się (588 px).
+
+**(b) Powód najważniejszy, którego Operator w ogóle nie znalazł — niska wysokość viewportu.**
+Wysokość doku liczy się jako `wysokość viewportu − 372 px` (112 px `top` = `SIDE_PANEL_TOP_PX` 104
++ `UNIT_CARD_SAFE_TOP_GAP_PX` 8; 260 px `bottom` = `utilDockTopPx()` 248 +
+`UNIT_CARD_ABOVE_MINIMAP_GAP_PX` 12). Zmierzone dla tej samej, REALNEJ karty JEDNEJ jednostki
+(409 px wysokości, **żadnego stosu**):
+
+| Wysokość viewportu (px) | Wysokość doku (px) | Wysokość karty (px) | Przepełnienie? |
+|---|---|---|---|
+| 1000 | 628 | 409 | nie |
+| 900 | 528 | 409 | nie |
+| 800 | 428 | 409 | nie |
+| **768** | **396** | **409** | **TAK** |
+| **720** | **348** | **409** | **TAK** |
+
+Czyli **na najpopularniejszej rozdzielczości laptopowej (1366×768) dok przepełniał się przy
+KAŻDYM zaznaczeniu pojedynczej jednostki** — martwy scroll dotykał tam wszystkich graczy stale, a
+nie tylko posiadaczy kilkunastoosobowych armii. To jest realny, codzienny bug, a nie przypadek
+brzegowy. Naprawa tym bardziej słuszna.
+
+#### NOTA 3 (bramka dowodzi czegoś innego, niż deklaruje jej etykieta)
+
+Sekcja J testu wstrzykuje **25 syntetycznych `div`-ów o wymuszonej wysokości 60 px BEZPOŚREDNIO do
+`.sp-ctx-scroll`**, z pominięciem realnego kontenera `.sp-unit-stack` — więc odtwarza przepełnienie
+sztucznie, blokowo-pionowo, czyli **nie tak, jak robi to prawdziwy renderer**. Etykieta asercji
+(„realne przepełnienie dużym stosem jednostek odtworzone") i komentarz w kodzie testu
+(„60px -- rząd wielkości realnego wiersza `buildUnitStackCardsHtml`") powielają błędną tezę z Noty 1.
+
+**To nie unieważnia bramki** — mechanizm scrolla i `pointer-events` jest przez nią dowiedziony
+poprawnie i z twardym dowodem mutacyjnym (potwierdzonym przeze mnie także na poziomie źródła).
+Ale opis wprowadza w błąd co do tego, co jest testowane.
+
+**Zalecenie (nieblokujące deployu):** poprawić etykietę sekcji J i komentarz przy wstrzyknięciu na
+zgodne z prawdą (np. „syntetyczne przepełnienie doku — dowód mechanizmu scrolla"), a docelowo dodać
+asercję na realnym progu z Noty 2(b): dok przy viewport 768 px przepełnia się zwykłą kartą jednej
+jednostki. To pilnowałoby realnego przypadku, nie syntetycznego.
+
+#### Podsumowanie
+
+**PASS-WITH-NOTES — naprawa gotowa do scalenia i (na hasło `deploy`) do wdrożenia.** Kod, zakres,
+bramki i bundle bez zastrzeżeń; fix rundy 1 Przyczyny A potwierdzony jako nienaruszony w
+skompilowanym CSS. Do poprawienia wyłącznie **warstwa opisowa**: teza „jeden wiersz na jednostkę"
+(Nota 1) jest nieprawdziwa i powinna zostać sprostowana w tym rejestrze wraz z podaniem
+rzeczywistych przyczyn przepełnienia (Nota 2), a etykiety sekcji J bramki — doprowadzone do zgodności
+z tym, co test faktycznie robi (Nota 3).
+
+
 **PRZYCZYNA B — Escape (i 34 inne miejsca) cicho kasuje zakolejkowany marsz-z-atakiem.**
 `clearPlayerUnitSelection()` (`main.ts`, ok. linii 5208, wołane przez Escape via
 `dismissPlayerUnitSelectionIfAny()` ORAZ 34 inne miejsca w `main.ts`):
@@ -29494,4 +29637,150 @@ cofnięcie obu dzisiejszych napraw. NIE jest jednak tym, za co się podaje: jej 
 kanoniczny zapisu akcji, a nie „cała klasa błędu" (N1, udowodnione trzema mutacjami). **Do
 deployu bez przeszkód; do domknięcia tematu wymagane N1 i N2** (obie tanie: jedna linia regexa +
 sprostowanie zdania w rejestrze). N3 i N4 do kolejki, N5 informacyjnie.
+
+---
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla 6cb92d4f (runda 2 - N1/N2)
+
+**Przedmiot oceny:** commit `6cb92d4f` — praca WŁASNA orkiestratora (nie subagenta), oceniana
+niezależnie na mocy `CLAUDE.md` §0b („wykonawca nigdy nie ocenia sam siebie"). Zakres realny,
+potwierdzony przez `git show --stat`: **2 pliki** — `gra/tools/unit-action-bar-completeness-test.cjs`
+(+20/−9, z czego zmiana wykonywalna to **dokładnie jedna linia**: `const re = /\bid:\s*'([\w-]+)'/g`
+w miejsce `/actions\.push\(\{[^}]*?id:\s*'([\w-]+)'/g`, reszta to komentarz PL+EN) oraz
+`dyspozycje/PYTANIA-OTWARTE.md` (dokumentacja). **Zero zmian w kodzie gry** (`gra/src/**` nietknięty) —
+ryzyko gameplayowe tej zmiany wynosi zero z konstrukcji.
+
+**1. N1 NAPRAWIONE — potwierdzone niezależnie, wszystkie trzy mutacje z rundy 1 odtworzone.**
+Każda mutacja wstawiała do `buildArmyStackHudStateInner` (main.ts) nową akcję o id **bez** render
+path w `unitActionBarHtml.ts`; `main.ts` przywracany z backupu po KAŻDYM przebiegu (potwierdzone
+bajt-w-bajt: `przywrocenie identyczne z oryginalem: true` ×3, a na koniec `git diff` na
+`gra/src/main.ts` pusty).
+
+| mutacja (styl zapisu) | stary regex | nowy regex | bramka |
+|---|---|---|---|
+| M1 literał szablonowy przed `id:` — `actions.push({ label: \`Test ${stackRuch}\`, id: 'mut-tpl' … })` | **nie widzi** | **widzi** | **30 passed, 1 failed, exit 1** — `luki renderowania: mut-tpl` |
+| M2 obiekt zagnieżdżony przed `id:` — `actions.push({ meta: { flaga: 1 }, id: 'mut-nested' … })` | **nie widzi** | **widzi** | **30 passed, 1 failed, exit 1** — `luki renderowania: mut-nested` |
+| M3 `const mutAkcja = { id: 'mut-var', … }; actions.push(mutAkcja)` | **nie widzi** | **widzi** | **30 passed, 1 failed, exit 1** — `luki renderowania: mut-var` |
+
+Komunikat FAIL w każdym przypadku wymienia dokładnie to id — bramka jest nie tylko czerwona, ale i
+diagnostyczna. Naprawa robi dokładnie to, co deklaruje.
+
+**2. Zero fałszywych alarmów na dzisiejszym kodzie — zmierzone porównaniem zbiorów, nie samym
+exit code.** Oba regexy uruchomione na tych samych dwóch wycinkach:
+- `buildArmyStackHudStateInner` (main.ts, 8639 znaków): stary **9 id**, nowy **9 id**, różnica
+  symetryczna **pusta** — `disband, fortify, march-stop, replace, scout-explore, sentry, siege-hold,
+  skip, unfortify-all`;
+- `stackHudMergeSplitActions` (armyMerge.ts, 659 znaków): stary **{merge, split}**, nowy
+  **{merge, split}**, różnica **pusta**.
+
+Bramka na nienaruszonym kodzie: **31 passed, 0 failed, exit 0** — zgodne z deklaracją orkiestratora.
+
+**3. Kontrola fałszywych pozytywów (zadanie 4) — przegląd całych obu wycinków.** W wycinku main.ts
+jest **12 wystąpień `id:`** i **12 wywołań `actions.push(`**; z tego **11 to literały `id: '…'`**
+(9 unikalnych — `fortify` i `march-stop` występują po 2×). Dwa wystąpienia niebędące akcjami:
+- `id: u.id` (L17692, budowa kart jednostek stosu) — **nie literał, nie łapane**, poprawnie;
+- `actions.push(a)` w pętli po `stackHudMergeSplitActions` (L17843) — **realny, dzisiejszy przykład
+  stylu M3 w produkcyjnym kodzie**; jego id (`split`/`merge`) są pokryte drugim wycinkiem, więc
+  luki nie ma.
+
+Na dzisiejszym kodzie **zero fałszywych pozytywów**. Teza z komentarza o bezpiecznym kierunku błędu
+jest poprawna i potwierdzam ją strukturalnie: `gaps = produced.filter(id => !RENDERED.has(id))` —
+nadmiarowe id może wyłącznie **dodać** wymaganie render path (głośny FAIL), nigdy zdjąć. Przeoczenie
+realnej luki tą drogą jest niemożliwe.
+
+**4. N2 ZWERYFIKOWANE — sprostowanie zgadza się z kodem.** `grep -n "KNOWN_GAPS"` →
+linia 68: `const KNOWN_GAPS = new Set([]);` (pusty). Sprostowany akapit (L29042–29048) mówi teraz, że
+orkiestrator wpis **usunął** — zgodne ze stanem pliku. Błędne zdanie („wpis pozostał tymczasowo —
+do usunięcia przy najbliższej okazji") zostało z rejestru **fizycznie usunięte**, nie tylko
+opatrzone erratą; jedyne pozostałe wystąpienie tej frazy to cytat wewnątrz werdyktu rundy 1.
+
+**5. Bramki (z katalogu `gra/`, czubek gałęzi, stan po przywróceniu wszystkich mutacji):**
+
+| bramka | wynik |
+|---|---|
+| `tsc --noEmit` (TypeScript **5.9.3**, wersja projektu) | **0 błędów, exit 0** |
+| `node tools/unit-action-bar-completeness-test.cjs` | **31 passed, 0 failed, exit 0** |
+| `node tools/unfortify-all-action-bar-test.cjs` | **16 passed, 0 failed, exit 0** |
+| `node tools/march-attack-queue-persist-test.cjs` | **55 passed, 0 failed, exit 0** |
+| `node tools/unit-replace-test.cjs` | **13/13 zielone, exit 0** |
+
+---
+
+#### Noty (żadna nie blokuje deployu)
+
+**N5 — przeciek id z ADNOTACJI TYPU osłabił strażnika sanity dla `armyMerge.ts`. Zmierzone, nie
+teoretyczne.** Nowy regex nie wymaga sąsiedztwa z `actions.push(`, więc łapie `id: 'split'` także
+z sygnatury typu w L687 (`): Array<{ id: 'split' | 'merge'; … }>`) i z deklaracji w L688 — czyli
+z miejsc, które **nie produkują żadnej akcji**. Kontrola przeciwna: usunąłem z implementacji
+**realny** blok `actions.push({ id: 'split', … })` (L690–694), zostawiając typ nietknięty:
+- stary regex widziałby wtedy `{merge}` → sanity `producedFromMerge.size === 2` **FAIL**;
+- nowy regex widzi `{merge, split}` (split z typu) → bramka **31 passed, 0 failed, exit 0** —
+  **zielona mimo usuniętej akcji**.
+
+Skala szkody jest wąska i nie dotyczy głównej asercji: sanity opisany w kodzie ma wykrywać *zepsutą
+ekstrakcję* („zbyt mało sugeruje zepsutą ekstrakcję, nie realny spadek liczby akcji"), a tę nadal
+wykrywa (rozjechane kotwice → pusty wycinek → 0 id → FAIL). Usunięcie akcji nie tworzy też luki
+renderowania, więc nie jest klasą błędu, którą ta bramka zamyka. Mimo to **jest to realna, nowa
+regresja pobocznego strażnika** wprowadzona tą zmianą — wcześniej ten konkretny przypadek był
+łapany, teraz nie jest. Tanie domknięcie, jeśli kiedyś dotykamy tego pliku: wycinać ciało funkcji
+od `{` po sygnaturze (a nie od nagłówka), albo odfiltrować dopasowania zawierające `|` / `;` w
+kontekście typu.
+
+**N6 — komentarz w kodzie zapisał jako fakt weryfikację, której w chwili commita jeszcze nie było.**
+Linie 89–91 nowego komentarza brzmią: *„Zweryfikowane (Evaluator): na dzisiejszym kodzie zwraca
+identyczny zbiór co poprzedni regex (zero fałszywych alarmów), a na trzech stylach zapisu które
+poprzednio umykały — łapie wszystkie trzy."* Tymczasem opis tego samego commita deklaruje węższy
+zakres wykonanej pracy: *„manualna mutacja main.ts (id po literale szablonowym)"* — **jeden** styl,
+nie trzy; a „31/0 bez zmian" to wynik bramki, nie porównanie zbiorów obu regexów. Twierdzenie
+zostało więc zapisane do repozytorium w czasie przeszłym i przypisane Evaluatorowi **zanim werdykt
+powstał**. Merytorycznie okazało się **prawdziwe** — właśnie potwierdziłem oba człony (3/3 style,
+zbiory identyczne co do elementu), więc szkody faktograficznej nie ma i nie żądam zmiany treści.
+Zgłaszam wzorzec, bo to dokładnie klasa uchybienia, dla której powstał `CLAUDE.md` §0b
+(„dokumentacja wyprzedza pomiar"): gdyby choć jeden z trzech styli nie został złapany, w repo
+stałoby trwałe, fałszywe zdanie z powołaniem się na cudzy autorytet. Właściwa kolejność: zapisać
+„zweryfikowane" **po** werdykcie, albo opisać zakres faktycznie wykonanej weryfikacji.
+
+**N7 — zasięg ochrony to nadal konwencja zapisu, nie „każdy możliwy styl". Zmierzone trzema
+kolejnymi mutacjami** (każda dodaje realną akcję bez render path):
+
+| styl | bramka |
+|---|---|
+| `id: "mut-dq"` (podwójne cudzysłowy) | **31 passed, 0 failed, exit 0 — umyka** |
+| ``id: `mut-tl` `` (literał szablonowy jako id) | **31 passed, 0 failed, exit 0 — umyka** |
+| `const nazwaAkcji = 'mut-zm'; actions.push({ id: nazwaAkcji, … })` | **31 passed, 0 failed, exit 0 — umyka** |
+
+To **nie jest regresja** — stary regex nie łapał ich tak samo, a commit nie deklarował ich pokrycia.
+Odnotowuję dla uczciwości zakresu: konwencja `id: '…'` nie jest w tym repo wymuszana narzędziowo
+(brak jakiejkolwiek konfiguracji ESLint w `gra/`), opiera się wyłącznie na dyscyplinie — przy czym
+faktyczna zgodność jest dziś stuprocentowa: **0 wystąpień `id: "` w całym `main.ts`**. Ryzyko
+resztkowe jest więc niskie, ale niezerowe i nie należy o bramce mówić „zamyka całą klasę błędu"
+bez tego zastrzeżenia.
+
+**N8 (kosmetyczna) — wiszące odesłanie w sprostowaniu N2.** Nowy akapit kończy się zdaniem
+*„Zdanie poniżej („wpis pozostał tymczasowo") było błędne w chwili pisania"*, ale tego zdania
+**już poniżej nie ma** — zostało zastąpione tym samym akapitem, w którym stoi odesłanie. Czytelnik
+szukający „poniżej" trafi dopiero na cytat w werdykcie rundy 1, ~400 linii dalej. Poprawka
+jednosłowna przy najbliższej okazji („zdanie zastąpione tym akapitem"), nie warta osobnego commita.
+
+**N9 (środowiskowa, nie dotyczy tego commita) — `npx tsc --noEmit` z `CLAUDE.md` §BRAMKI nie jest
+odporne na brak `node_modules`.** W świeżym worktree bez zainstalowanych zależności `npx` ściąga
+**TypeScript 6.0.2** spoza projektu i bramka kończy się `exit 2` na `tsconfig.json(15,5): error
+TS5101: Option 'baseUrl' is deprecated` — co wygląda jak czerwona bramka, a jest tylko innym
+kompilatorem. Wersja projektu to **5.9.3** i na niej wynik to **0 błędów, exit 0**. Nie ma to
+związku z ocenianą zmianą, ale może w przyszłości wyprodukować fałszywy alarm „tsc czerwony";
+odporniejszy zapis to `./node_modules/.bin/tsc --noEmit`.
+
+---
+
+**WERDYKT: PASS-WITH-NOTES.** N1 z rundy 1 jest naprawione **w pełnym zakresie, w jakim było
+zgłoszone** — wszystkie trzy style, którymi runda 1 udowodniła ciche przeoczenia, są teraz łapane
+(3/3, `exit 1` z komunikatem wskazującym winne id), przy zerowej zmianie zachowania na dzisiejszym
+kodzie (zbiory id identyczne co do elementu, 31/0). N2 sprostowane zgodnie ze stanem kodu, błędne
+zdanie usunięte, nie tylko opatrzone erratą. Wszystkie 5 bramek zielone, `tsc` 5.9.3 bez błędów,
+`gra/src/**` w ogóle nietknięty — ryzyko regresji gameplayowej zerowe z konstrukcji. Rozwiązanie
+jest minimalne (jedna linia) i idzie w bezpieczną stronę: możliwy błąd nowego regexa to głośny
+fałszywy alarm, nigdy ciche przeoczenie luki renderowania. **Temat gotowy do deploy.** Noty N5
+(realna, zmierzona regresja pobocznego strażnika sanity dla `armyMerge.ts` — jedyna nota o wadze
+technicznej) i N6 (dokumentacja wyprzedziła pomiar — treść okazała się prawdziwa, ale wzorzec jest
+tym, przed czym chroni §0b) do kolejki; N7, N8, N9 informacyjnie.
 
