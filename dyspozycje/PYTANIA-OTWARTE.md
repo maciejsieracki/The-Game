@@ -30744,7 +30744,27 @@ ewentualnego cofnięcia (wszystkie pliki/funkcje dotknięte 4 rundami), (3) czy 
 bezpiecznie zachować (np. `isTargetWithinStackAttackRange` z FALI 283 dotyczy wyboru WŁAŚCIWEJ
 jednostki we WŁASNYM stosie, nie zasięgu ataku — potencjalnie ortogonalne do tego nieporozumienia).
 
-STATUS: **OTWARTE — CZEKA NA RECON, potem pytanie ABC do Macieja** (cofnąć / zostawić jako bonus
-funkcję / częściowo). Nic więcej w tym temacie nie jest kodowane do czasu odpowiedzi ABC.
+**Recon zakończony (agent `af665691a77dc4362`):** dziś NIE istnieje żaden dedykowany UI wyboru celu
+wśród kilku widocznych wrogów — jedyny „wybór" to kliknięcie we właściwy heks (bitwa i tak zbiera
+pełny roster obu stron niezależnie od tego, kto był „reprezentantem" stosu). Skala kodu 4 rund:
+`main.ts` (~8 funkcji/gałęzi: `tryLaunchMarchAttack`, `isTargetWithinAttackRange`, gałęzie kliku
+jednostka→miasto i jednostka→jednostka, `refreshHoverPathPreview`, `planMarchTo`, egzekutor AI z
+`rangedCityAttackEntry`, wywołania `tryAutoCaptureEmptyCityAt` z tej ścieżki), `game/ai.ts`
+(`isWithinAttackRange`, `isWithinCityAttackRange`), `game/city-hex-movement.ts`
+(`canAiEnterUndefendedCityHex` — cała funkcja tylko dla tej mechaniki), `map/map-attack-city.ts`
+(`eligibleCityAttackers`), `game/combat.ts` (`unitMapAttackRangeHex` — nowa funkcja). Testy:
+`atak-dystansowy-mapa-test.cjs` (888 linii) + `atak-dystansowy-egzekucja-test.cjs` (666 linii).
+**Ortogonalne, do zachowania:** `isTargetWithinStackAttackRange` (FALA 283, wybór WŁAŚCIWEJ
+jednostki we WŁASNYM stosie przy kliku — nie zasięgu ataku) i cały mechanizm marsz-potem-atak
+(`P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE`, FALA 284-285).
+
+**ECHO właściciela (2026-08-16): `P-BITWA-ATAK-DYSTANSOWY-COFNIECIE-Q1 = A` — cofnij całkowicie.**
+Przywrócić wymóg fizycznej adiacencji (dist=1) do inicjacji ataku, jednostka-jednostka i
+jednostka-miasto, gracz i AI — dokładnie jak przed 2026-08-14 (baseline `9e96370a`). Zachować
+marsz-potem-atak i wybór jednostki we własnym stosie. **Cofa decyzje ECHO z rund 1-4 tego samego
+tematu:** `P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B`, `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A` — obie
+były odpowiedziami na źle zrozumiany zakres, unieważnione tym ECHO.
+
+STATUS: **OTWARTE — dispatch cofnięcia (Operator Sonnet 5, worktree) w toku.**
 
 ---
