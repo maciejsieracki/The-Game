@@ -26486,8 +26486,13 @@ egzekutorze (`canUnitOccupyCityHex`), analogiczny do `canBarbarianWalkIntoEmptyC
 wejść na heks pustego, niebronionego miasta WYŁĄCZNIE w kontekście komendy ataku dystansowego na
 miasto. N2 (ogólny brak ścieżki zdobycia miasta przez AI) świadomie POZA zakresem — osobny temat.
 
-STATUS: **OTWARTE** — dispatch rundy 3 (Operator Sonnet 5) w toku, implementacja wariantu B.
-Zmiana **nie jest gotowa do deployu** do czasu Evaluatora rundy 3.
+**Runda 3 (`13f595bc`) — zaimplementowana** (`canAiEnterUndefendedCityHex` w
+`city-hex-movement.ts`, aktywowana wyłącznie przez `AICmdMove.rangedCityAttackEntry`; N1 embarked
+naprawione). Bramki: tsc 0, build exit 0, `atak-dystansowy-mapa-test` 98/0, nowy
+`atak-dystansowy-egzekucja-test` 18/0.
+
+STATUS: **OTWARTE** — Evaluator rundy 3 w toku. Zmiana **nie jest gotowa do deployu** do czasu
+werdyktu.
 
 ---
 
@@ -30061,8 +30066,9 @@ Zgłoszone w trakcie równoległej pracy nad reskinowaniem 11 zakładek panelu i
 (`R-DESIGN-11-ZAKLADEK` faza 3) — zgodnie z zasadą 2 (zakaz otwierania nowych wątków) zapisane tu
 bez przerywania bieżącego tematu.
 
-STATUS: **OTWARTE** — zakres doprecyzowany, czeka na dispatch subagenta (recon + implementacja
-komunikatu przejścia epoki w UI końca tury).
+STATUS: **ZAMKNIĘTE** — zaimplementowane (commity `6936d4d3`/`90661f91`, `pendingEraChangeToastForNextTurn`
++ `flushPendingEraChangeToast()`), Evaluator PASS-WITH-NOTES (runda 2 naprawiła N1/N2 werdyktu).
+Gotowe do deployu.
 
 ---
 
@@ -30180,8 +30186,14 @@ Wymagane, ale nie blokujące deployu jako takiego (poprawka dokumentacji/JSDoc, 
   posterunek) gdy brak murów; „ta sama funkcja co garnizon w rozpisce Prawa" to w rzeczywistości
   dwa identyczne, osobne predykaty w `armyMerge.ts` (liczby się zgadzają, opis nie).
 
-STATUS: **OTWARTE — Evaluator FAIL, wymagana RUNDA 2** (N1-N4 wymagane do PASS, N5-N7 poprawki
-dokumentacji). Zmiana **nie jest gotowa do deployu**.
+**Runda 2 (`01b89eec`) — zaimplementowana**, naprawia N1-N7: N3 (SZLAKI z `paired`), N1
+(`aggregateHappinessSources()` czysta funkcja + sekcja D testu z asercjami wartościowymi łapiącymi
+wszystkie 4 mutacje werdyktu), N4 (jednostki „Pieniądza/turę"/„Sz", etykieta „Suma netto"), N2/N5/
+N6/N7 (sprostowania JSDoc). Bramki: tsc 0, build exit 0, `empire-panel-miasto-obywatele-content-test`
+99/0 (było 59/0).
+
+STATUS: **OTWARTE** — Evaluator rundy 2 w toku. Zmiana **nie jest gotowa do deployu** do czasu
+werdyktu.
 
 ---
 
@@ -30416,9 +30428,8 @@ Macieja powinien zostać, „wisi się od nowa całą turę").
 **Życzenie Macieja wprost:** zostaw TYLKO jedną kartę per propozycję dyplomatyczną — tę trwałą,
 odświeżaną, nie generyczny duplikat/„ponaglenie".
 
-STATUS: **OTWARTE** — wymaga recon (root cause w kodzie: skąd dokładnie bierze się karta #2,
-czy to rzeczywiście toast-EOT-defer jak w hipotezie, czy inny mechanizm) PRZED kodowaniem —
-zgodnie z CLAUDE.md §0 nie koduj od razu, przedstaw rozwiązanie ± ABC dopiero po recon.
+STATUS: **ZAMKNIĘTE** — recon potwierdził hipotezę w 100%, naprawione (commit `4dabd793` +
+follow-up `267fa85c`), Evaluator PASS-WITH-NOTES. Gotowe do deployu.
 
 ---
 
@@ -30446,4 +30457,5 @@ ukończenia. Miasta bez jednostki w produkcji (kolejka pusta, albo budynek na cz
 listy albo pokazać „—", do ustalenia przez Operatora wg czytelności (nie wymaga ABC, to detal
 prezentacji, nie decyzja produktowa — życzenie Macieja jest jednoznaczne co do TREŚCI informacji).
 
-STATUS: **OTWARTE** — dispatch Operatora (Sonnet 5, worktree) w toku.
+STATUS: **OTWARTE** — zaimplementowane (commit `e5b4a91a`, scalone ręcznie z równoległym tematem
+Miasto/Obywatele — konflikt rozwiązany, oba pola snapshotu zachowane), Evaluator w toku.
