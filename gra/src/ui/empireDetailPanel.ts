@@ -263,6 +263,9 @@ function ensureStyles(): void {
 .civ-emp-res-hdr-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
 .civ-emp-res-hdr-row .civ-emp-eyebrow{margin:0;}
 .civ-emp-res-hdr-sub{font-size:11px;color:#7d8798;font-weight:400;letter-spacing:0;}
+.civ-emp-res-hdr-ic{flex:none;width:14px;height:14px;display:flex;align-items:center;
+  justify-content:center;color:#7d8798;}
+.civ-emp-res-hdr-ic svg{width:100%;height:100%;display:block;}
 .civ-emp-close{flex:none;width:30px;height:30px;border-radius:7px;border:1px solid #2f3947;
   background:#1a2230;color:#9aa4b2;font-size:15px;cursor:pointer;line-height:1;}
 .civ-emp-close:hover{color:#e8ebf0;border-color:#3a4657;}
@@ -401,10 +404,15 @@ function ensureStyles(): void {
 .civ-emp-res-amt{display:flex;align-items:baseline;gap:5px;font-variant-numeric:tabular-nums;}
 .civ-emp-res-amt .cur{font-size:15px;font-weight:700;color:#e8ebf0;}
 .civ-emp-res-amt .cap{font-size:11px;color:#7d8798;}
-.civ-emp-res-amt .flag{margin-left:auto;font-size:9.5px;letter-spacing:.03em;text-transform:uppercase;
-  font-weight:700;}
-.civ-emp-res-amt .flag.warn{color:#d9a441;}
-.civ-emp-res-amt .flag.bad{color:#e07a7a;}
+/* Plakietka stanu = kolor + SŁOWO (decyzja Designera 2026-08-14 pkt 4) — nigdy sam kolor ramki.
+   / EN: state badge = colour + WORD, never colour alone. */
+.civ-emp-res-flag-pill{margin-left:auto;font-size:9.5px;font-weight:700;letter-spacing:.03em;
+  text-transform:uppercase;padding:2px 6px;border-radius:999px;white-space:nowrap;flex:none;}
+.civ-emp-res-flag-pill.warn{color:#d9a441;background:rgba(217,164,65,.14);}
+.civ-emp-res-flag-pill.bad{color:#e07a7a;background:rgba(224,122,122,.14);}
+.civ-emp-res-flag-note{font-size:10px;line-height:1.3;font-weight:600;margin-top:-2px;}
+.civ-emp-res-flag-note.warn{color:#d9a441;}
+.civ-emp-res-flag-note.bad{color:#e07a7a;}
 .civ-emp-res-bar{height:6px;border-radius:999px;background:#1f2733;overflow:hidden;}
 .civ-emp-res-bar>span{display:block;height:100%;border-radius:999px;}
 .civ-emp-res-bar.good>span{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
@@ -439,6 +447,12 @@ function ensureStyles(): void {
 .civ-emp-res-legend i.good{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
 .civ-emp-res-legend i.warn{background:linear-gradient(90deg,#6a4010,#d9a441);}
 .civ-emp-res-legend i.bad{background:linear-gradient(90deg,#5a2020,#e07a7a);}
+/* Podpis hero Surowców — semantyka kolorów TYLKO w tej sekcji (osobna klasa obok
+   .civ-emp-hero-sub, żeby nie ruszać podpisów hero w pozostałych zakładkach).
+   / EN: Resources hero sub-caption — colour semantics scoped to this section only. */
+.civ-emp-res-sub b.good{color:#78c95a;}
+.civ-emp-res-sub b.warn{color:#d9a441;}
+.civ-emp-res-sub b.bad{color:#e07a7a;}
 
 /* — R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13) — klasy uogólnione z sekcji Moc na
    wszystkie 11 zakładek panelu (§4 handoffu designera), pierwsze użycie: Skarbiec — */
@@ -517,6 +531,19 @@ function ensureStyles(): void {
 .civ-emp-nauka-city-tbl .civ-emp-mini-r>div:nth-child(2){text-align:right;}
 .civ-emp-religia-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
 .civ-emp-religia-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
+/* Armia (faza 3, klatka 7 makiety) — tabela rekrutów per miasto: MIASTO tekstem do lewej,
+   4 kolumny liczbowe (REKRUCI / MAX / ODNOWA / JEDN.) do prawej w nagłówku, danych i wierszu
+   RAZEM — ta sama konwencja co Skarbiec/Praca/Nauka wyżej, bez powtarzania inline styli.
+   / EN: Army (phase 3, mockup frame 7) — per-city recruit table: CITY column left, the 4
+   numeric columns right-aligned across header, data and the RAZEM row — same convention as
+   Treasury/Labor/Science above, with no repeated inline styles. */
+.civ-emp-armia-rekr-tbl .civ-emp-mini-h-cell:nth-child(n+2){align-items:flex-end;text-align:right;}
+.civ-emp-armia-rekr-tbl .civ-emp-mini-r>div:nth-child(n+2){text-align:right;}
+/* Nagłówek sekcji z JEDNĄ ikoną zasobu obok tekstu (Armia: „Zaopatrzenie wojska" + res-food).
+   §5 handoffu designera: ikona pojawia się raz, przy nagłówku — nigdy per wiersz tabeli.
+   / EN: section heading with ONE resource icon next to the text (Army: "Zaopatrzenie wojska" +
+   res-food). Designer handoff §5: the icon appears once, at the heading — never per table row. */
+.civ-emp-lbl-ic{display:flex;align-items:center;gap:6px;}
 
 /* — R-DESIGN-11-ZAKLADEK faza 2 (Maciej 2026-08-1x) — Praca/Nauka/Religia (§4 handoffu
    designera: .civ-emp-split2 = "pasek podziału na dwa strumienie", Praca budynki/pula, Religia
@@ -536,6 +563,35 @@ function ensureStyles(): void {
 .civ-emp-relig-fx-row{display:flex;justify-content:space-between;font-size:11.5px;color:#b8c4d8;}
 .civ-emp-relig-fx-row .v{color:#78c95a;font-weight:600;}
 .civ-emp-relig-fx-row .v.neutral{color:#cfd5de;}
+
+/* — R-DESIGN-11-ZAKLADEK faza 3 (Maciej 2026-08-14) — Kultura, klatka 10. Lista progów
+   zasięgu granic jako STANY (.civ-emp-thr z §4 handoffu designera), nie jako zdanie o
+   procencie: .done = próg już osiągnięty (wygaszony, status zielony), .now = próg bieżący
+   (złote tło rgba(217,164,65,.16) — ten sam akcent co aktywny .civ-emp-mocview-btn — i procent
+   dojścia), .next = próg przyszły (ramka przerywana, bez wartości).
+   / EN: Culture tab, frame 10. Border-range thresholds rendered as STATES (.civ-emp-thr from
+   §4 of the designer handoff) instead of a sentence about a percentage: .done = already
+   reached (dimmed, green status), .now = current threshold (gold rgba(217,164,65,.16) tint —
+   same accent as the active .civ-emp-mocview-btn — plus progress percentage), .next = future
+   threshold (dashed border, no value). */
+.civ-emp-thr-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
+.civ-emp-thr{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;
+  background:#171e2a;border:1px solid #2b3543;}
+.civ-emp-thr .lbl{flex:1;min-width:0;font-size:12px;color:#8a93a4;}
+.civ-emp-thr .st{font-size:11px;font-weight:700;color:#78c95a;flex-shrink:0;}
+.civ-emp-thr.now{background:rgba(217,164,65,.16);border-color:#d9a441;}
+.civ-emp-thr.now .lbl{color:#e8ebf0;font-weight:600;}
+.civ-emp-thr.now .st{color:#d9a441;}
+.civ-emp-thr.next{background:transparent;border:1px dashed #2b3543;}
+.civ-emp-thr.next .st{color:#6f7889;font-weight:400;}
+/* Tabela per miasto Kultury — kolumny liczbowe (KULTURA / ZASIĘG) do prawej we wszystkich
+   wierszach, tą samą konwencją co Skarbiec/Praca/Nauka wyżej.
+   / EN: Culture per-city table — numeric columns (KULTURA / ZASIĘG) right-aligned in all rows,
+   same convention as Treasury/Labor/Science above. */
+.civ-emp-kult-city-tbl .civ-emp-mini-h-cell:nth-child(2),
+.civ-emp-kult-city-tbl .civ-emp-mini-h-cell:nth-child(3){align-items:flex-end;text-align:right;}
+.civ-emp-kult-city-tbl .civ-emp-mini-r>div:nth-child(2),
+.civ-emp-kult-city-tbl .civ-emp-mini-r>div:nth-child(3){text-align:right;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -1352,13 +1408,25 @@ export function cityMiastaMiniDetail(
 function cityPoborMiniRekruci(
   rows: EmpireDetailSnap['cityPobor'],
   p: EmpireDetailSnap['power'],
+  opts?: { skipHero?: boolean },
 ): string {
   const pct = p.rekruciMax > 0 ? Math.round((p.rekruci / p.rekruciMax) * 100) : 0;
   const fillCls = pct >= 60 ? 'fill' : (pct >= 25 ? 'fill warn' : 'fill low');
-  let h = `<div class="civ-emp-note">Pula rekrutów imperium: <b style="color:#d9a441">${esc(p.rekruciLabel)}</b> / `
-    + `<b style="color:#d9a441">${esc(p.rekruciMaxLabel)}</b> · można werbować: <b>${p.rekrutEkw}</b> jedn. `
-    + `(koszt ${p.kosztJednostki} rekr./szt.) · wojsko na mapie: <b>${p.unitsOnMap}</b></div>`;
-  h += `<div class="civ-emp-bar"><div class="${fillCls}" style="width:${pct}%"></div></div>`;
+  let h = '';
+  // R-DESIGN-11-ZAKLADEK / Armia: zakładka „Armia" pokazuje DOKŁADNIE te same liczby w hero
+  // (jednostki na mapie) + podpisie (pula rekrutów, werb, koszt/szt.) i we własnym pasku NAD
+  // tabelą, zgodnie z klatką 7 makiety — dlatego tam nagłówek tej funkcji jest pomijany, żeby
+  // nie dublować pary „notatka + pasek". Domyślne wywołanie (blok ZASOBY IMPERIUM) bez zmian.
+  // / EN: the "Armia" tab renders the very same numbers in its hero (units on map) + subtitle
+  // (recruit pool, recruitable units, cost/unit) and its own bar ABOVE the table, per mockup
+  // frame 7 — so the header is skipped there to avoid duplicating the note+bar pair. The
+  // default call (EMPIRE RESOURCES block) is unchanged.
+  if (!opts?.skipHero) {
+    h += `<div class="civ-emp-note">Pula rekrutów imperium: <b style="color:#d9a441">${esc(p.rekruciLabel)}</b> / `
+      + `<b style="color:#d9a441">${esc(p.rekruciMaxLabel)}</b> · można werbować: <b>${p.rekrutEkw}</b> jedn. `
+      + `(koszt ${p.kosztJednostki} rekr./szt.) · wojsko na mapie: <b>${p.unitsOnMap}</b></div>`;
+    h += `<div class="civ-emp-bar"><div class="${fillCls}" style="width:${pct}%"></div></div>`;
+  }
   if (rows.length === 0) {
     h += '<div class="civ-emp-empty">Brak miast.</div>';
     return h;
@@ -1376,7 +1444,7 @@ function cityPoborMiniRekruci(
   // p.rekrutEkw (identical to the HUD and the note above, not recomputed separately) in the
   // JEDN. column.
   const grid = '1fr 0.9fr 0.75fr 0.85fr 0.85fr';
-  h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'REKRUCI', 'MAX', 'ODNOWA', 'JEDN.'], grid)}`;
+  h += `<div class="civ-emp-mini civ-emp-armia-rekr-tbl">${miniHeader(['MIASTO', 'REKRUCI', 'MAX', 'ODNOWA', 'JEDN.'], grid)}`;
   let sumRekruci = 0;
   let sumMax = 0;
   let sumRegen = 0;
@@ -1389,10 +1457,9 @@ function cityPoborMiniRekruci(
       `<span style="color:#78c95a">+${c.regenPerTurn}</span>`,
       formatLiczbaPl(ekwMiasto, 1)], grid);
   }
-  h += `<div class="civ-emp-mini-r" style="grid-template-columns:${grid};font-weight:700;`
-    + `border-top:1px solid #2b3543;background:#1a2230">`
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
     + `<div>RAZEM (imperium)</div><div>${sumRekruci}</div><div>${sumMax}</div>`
-    + `<div><span style="color:#78c95a">+${sumRegen}</span></div><div>${p.rekrutEkw}</div></div>`;
+    + `<div>+${sumRegen}</div><div>${p.rekrutEkw}</div></div>`;
   h += '</div><div class="civ-emp-foot">Werb jednostki zużywa rekrutów z puli całej cywilizacji (suma miast). '
     + 'Pasek = wypełnienie puli względem maksimum imperium. '
     + 'JEDN. = rekruci miasta ÷ koszt jednostki w bieżącej epoce (informacyjnie, bez zaokrąglania w dół).</div>';
@@ -1699,15 +1766,25 @@ function resCardHtml(r: EmpireResourceRow): string {
   const cap = r.cap ?? 0;
   const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((r.stock / cap) * 100))) : 0;
   const state = resStateOf(r);
-  const flag = state === 'bad' ? 'spada' : (state === 'warn' ? 'pełny' : '');
+  // Plakietka stanu = kolor + SŁOWO (Designer 2026-08-14 pkt 4): magazyn pełny dostaje pigułkę
+  // „PEŁNY" plus skutek „marnuje się", niedobór — słowo „spada". Sam kolor ramki nie wystarcza.
+  // / EN: state badge = colour + WORD; full storage gets a "PEŁNY" pill plus the consequence
+  // ("marnuje się" — it is being wasted), a shortage gets "spada". Colour alone is not enough.
+  const flagPill = state === 'bad' ? 'SPADA' : (state === 'warn' ? 'PEŁNY' : '');
+  // Skutek pod paskiem, nie obok liczby: kolumna siatki ma 148px, plakietka + skutek w jednym
+  // wierszu z „stock / cap" nie mieszczą się i wychodzą poza obrys karty (sprawdzone zrzutem).
+  // / EN: consequence goes below the bar, not next to the number — at a 148px grid column the
+  // badge plus the wording overflow the card when placed on the amount row.
+  const flagNote = state === 'bad' ? 'zapas maleje' : (state === 'warn' ? 'nadmiar się marnuje' : '');
   return `<div class="civ-emp-res-card ${state}" data-section="econ-surowiec-${esc(r.id)}" title="${resTooltipHtml(r)}">`
     + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${resIconHtml(r.label)}</span>`
     + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div></div>`
     + resRateHtml(r, state) + `</div>`
     + `<div class="civ-emp-res-amt"><span class="cur">${r.stock}</span><span class="cap">/ ${cap}</span>`
-    + (flag ? `<span class="flag ${state}">${esc(flag)}</span>` : '')
+    + (flagPill ? `<span class="civ-emp-res-flag-pill ${state}">${esc(flagPill)}</span>` : '')
     + `</div>`
     + `<div class="civ-emp-res-bar ${state}"><span style="width:${pct}%"></span></div>`
+    + (flagNote ? `<div class="civ-emp-res-flag-note ${state}">${esc(flagNote)}</div>` : '')
     + resCitizenBadgeHtml(r)
     + resUsageDetailsHtml(r)
     + `</div>`;
@@ -1737,7 +1814,24 @@ function magazynInfoTipHtml(title: string): string {
   return `<span class="civ-emp-info-tip" title="${title}" aria-label="Szczegóły magazynu">i</span>`;
 }
 
-/** Sekcja SUROWCE (magazyn państwa) — mockup „Magazyn surowców" (Maciej 2026-07-24). */
+/** Odmiana rzeczownika „surowiec" po liczebniku (podpis hero Surowców). */
+function surowiecCountWord(n: number): string {
+  if (n === 1) return 'surowiec';
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'surowce';
+  return 'surowców';
+}
+
+/**
+ * Sekcja SUROWCE (magazyn państwa) — mockup „Magazyn surowców" (Maciej 2026-07-24),
+ * reskin do wzorca sekcji Moc wg klatki 5 handoffu Designera
+ * `11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13` (hero + podpis stanu, eyebrow UPPERCASE
+ * z ikoną, plakietki stanu kolor+słowo, legenda pasków). Sam RESKIN — liczby, dane
+ * i logika bez zmian; hero to wyłącznie agregat kart renderowanych poniżej.
+ * / EN: pure reskin to the Power-section pattern — the hero line only aggregates the
+ * cards rendered below; no data, numbers or business logic changed.
+ */
 function renderSurowceSection(rows: EmpireResourceRow[]): string {
   let sur = `<div class="civ-emp-sect sep" data-section="surowce">`;
   if (rows.length === 0) {
@@ -1763,19 +1857,48 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   const magTip = magazynPanstwaTooltip(cap, capBase, capBonus, magazyny, magSlowo);
 
   sur += `<div class="civ-emp-res-hdr-row" title="${magTip}">`
-    + `<span class="civ-emp-eyebrow">Magazyn państwa</span>`
+    + `<span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('chip-crate', 14)}</span>`
+    + `<span class="civ-emp-eyebrow">MAGAZYN PAŃSTWA</span>`
     + `<span class="civ-emp-res-hdr-sub">(wspólny)</span>`
     + magazynInfoTipHtml(magTip)
     + `</div>`;
 
+  // Hero + podpis: zliczenie stanów TYCH SAMYCH kart, które lecą do siatki niżej — karty
+  // placeholder (surowiec bez danych silnika) nie mają stanu, więc nie wchodzą do licznika.
+  // / EN: hero counters aggregate exactly the cards rendered below; placeholder cards carry no
+  // engine state, so they stay out of the tally.
+  const real = stored.filter(r => !r.placeholder);
+  const nGood = real.filter(r => resStateOf(r) === 'good').length;
+  const nWarn = real.filter(r => resStateOf(r) === 'warn').length;
+  const nBad = real.filter(r => resStateOf(r) === 'bad').length;
+  const citizenRows = real.filter(r => r.citizenRequired);
+  const citizenShort = citizenRows.some(r => r.citizenCovered !== true);
+  sur += `<div class="civ-emp-hero">${real.length} ${surowiecCountWord(real.length)} w obiegu</div>`;
+  const subParts = [
+    `<b class="good">${nGood}</b> rośnie`,
+    `<b class="warn">${nWarn}</b> pełny`,
+    `<b class="bad">${nBad}</b> spada`,
+  ];
+  if (citizenRows.length > 0) {
+    subParts.push(citizenShort
+      ? `obywatele: <b class="bad">niedobór</b>`
+      : `obywatele: <b class="good">pokryte</b>`);
+  }
+  sur += `<div class="civ-emp-hero-sub civ-emp-res-sub">${subParts.join(' · ')}</div>`;
+
   if (stored.length > 0) {
-    sur += `<div class="civ-emp-res-lbl">Magazynowane</div>`
-      + `<div class="civ-emp-res-grid">${stored.map(resCardHtml).join('')}</div>`;
+    sur += `<div class="civ-emp-res-grid" style="margin-top:14px">${stored.map(resCardHtml).join('')}</div>`;
   }
 
   sur += `<div class="civ-emp-res-foodnote"><span class="k">Żywność</span>`
     + `<span>ma osobny <b>magazyn centralny</b> — chip HUD „Spichlerz" · panel Spichlerz centralny. `
     + `Nie wchodzi do wspólnej puli surowców powyżej.</span></div>`;
+
+  sur += `<div class="civ-emp-res-legend">`
+    + `<span><i class="good"></i>rośnie</span>`
+    + `<span><i class="warn"></i>pełny</span>`
+    + `<span><i class="bad"></i>spada</span>`
+    + `</div>`;
 
   sur += `</div>`;
   return sur;
@@ -1787,24 +1910,59 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
  * refreshTradeRoutes) + dochód z każdej + sumę imperium. Szczegóły algorytmu per
  * miasto zostają w panelu miasta (cityPanel.ts buildTradeRoutesDetailCard) — tu
  * jest zbiorczy widok imperium, nie duplikat.
+ *
+ * R-DESIGN-11-ZAKLADEK, Klatka 6 (Maciej 2026-08-13; rejestr decyzji 2026-08-14 pkt 2) — reskin do
+ * wzorca sekcji Moc/Skarbiec: nagłówek przechodzi z `.civ-emp-title` na `.civ-emp-eyebrow` (jedna
+ * konwencja nagłówka wspólna dla 11 zakładek), linia dochodu sumarycznego awansuje na hero
+ * (`.civ-emp-hero` + `.civ-emp-hero-sub`), cztery bloki tabel dostają nagłówki `.civ-emp-res-lbl`,
+ * bonus cudów staje się calloutem `.civ-emp-resp` (ten sam co Respekt w Mocy), a suma tras dubluje
+ * się w wierszu SUMA (`.civ-emp-mini-summary`), żeby gracz mógł sprawdzić hero. Dane, liczby
+ * i logika bez zmian — wyłącznie hierarchia wizualna.
+ * EN: Trade tab reskinned to the Power/Treasury pattern — eyebrow header (one convention across all
+ * 11 tabs), total income promoted to a hero number, section labels above each table, wonder bonus as
+ * a callout, and a SUM row echoing the hero. Data, numbers and logic unchanged — visual hierarchy only.
  */
 function renderHandelSection(t: EmpireDetailSnap['trade']): string {
+  const heroCls = t.totalIncome < 0 ? 'neg' : 'pos';
+  const wonderPct = Math.max(t.wonderBonusLadPct, t.wonderBonusMorzePct);
+
   let h = `<div class="civ-emp-sect sep" data-section="handel">`
-    + `<div class="civ-emp-title">Handel — szlaki handlowe</div>`;
+    + `<div class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</div>`
+    + `<div class="civ-emp-hero ${heroCls}">+${t.totalIncome} złota / turę</div>`
+    + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
+    + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
+
+  // Bonus cudów jest JUŻ wliczony w income każdej trasy (CUDA-HANDEL-01), więc stoi jako podpis
+  // przy dochodzie, nie jako osobny składnik sumy.
+  // EN: the wonder bonus is ALREADY inside each route's income, so it is a caption next to the
+  // income, not a separate addend.
+  const cudaSub = wonderPct > 0
+    ? `<span style="font-size:11px;color:#78c95a;font-weight:600">+${wonderPct}% cuda</span>`
+    : '';
+  h += `<div class="civ-emp-two">`
+    + `<div class="civ-emp-box"><div class="k">DOCHÓD SZLAKÓW</div>`
+    + `<div class="v">+${t.totalIncome} ${cudaSub}</div></div>`
+    + `<div class="civ-emp-box"><div class="k">SUROWCE Z WYMIANY</div>`
+    + `<div class="v">${t.resourceGrants.length} ${typCountWord(t.resourceGrants.length)}</div></div>`
+    + `</div>`;
 
   // Aktywne umowy handlowe (traktaty) — przed tabelą tras.
-  h += `<div class="civ-emp-res-lbl" style="margin-top:4px">Aktywne umowy handlowe</div>`;
+  h += `<div class="civ-emp-res-lbl">Umowy handlowe</div>`;
   if (t.activeDeals.length === 0) {
-    h += `<div class="civ-emp-note" style="font-style:italic">Brak aktywnych umów handlowych.</div>`;
+    h += `<div class="civ-emp-empty">Brak aktywnych umów handlowych.</div>`;
   } else {
-    const dealGrid = '1.1fr 0.9fr 0.9fr 1.2fr';
+    // Kolumna POZOSTAŁO musi zmieścić najdłuższą realną wartość „bezterminowa" (jedno słowo,
+    // nie ma gdzie się złamać) — stąd szersza niż w makiecie, gdzie były tylko „8 tur"/„3 tury".
+    // EN: the POZOSTAŁO column must fit the longest real value "bezterminowa" (a single unbreakable
+    // word), hence wider than in the mockup, which only showed short "N tur" values.
+    const dealGrid = '0.9fr 1.05fr 0.8fr 1.05fr';
     h += `<div class="civ-emp-mini">${miniHeader(['PARTNER', 'POZOSTAŁO', 'ZAUFANIE', 'TRASA'], dealGrid)}`;
     for (const d of t.activeDeals) {
       const turnsCell = d.turnsLeft === null ? 'bezterminowa' : `${d.turnsLeft} tur`;
-      const trustCell = `+${d.trustPerTurn}/turę`;
+      const trustCell = `<span style="color:#78c95a">+${d.trustPerTurn}/turę</span>`;
       const routeCell = d.hasActiveRoute
         ? 'aktywny szlak'
-        : `<span style="font-style:italic">${esc(d.blockReason ?? 'brak trasy')}</span>`;
+        : `<span style="font-style:italic;color:#9aa4b2">${esc(d.blockReason ?? 'brak trasy')}</span>`;
       h += miniRow([
         esc(d.partnerLabel),
         turnsCell,
@@ -1815,23 +1973,31 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     h += `</div>`;
   }
 
-  h += `<div class="civ-emp-kult-line" style="margin-top:10px">Dochód z tras: <b class="gold">+${t.totalIncome}</b>/turę · `
-    + `${t.routes.length} ${routeCountWord(t.routes.length)} aktywnych</div>`;
-
+  h += `<div class="civ-emp-res-lbl">Trasy</div>`;
   if (t.routes.length > 0) {
-    const grid = '1.1fr 1.2fr 1fr 0.7fr';
+    // Szerokości zmierzone na realnym renderze przy 404px panelu: „DOCHÓD/TURĘ" (9px) potrzebuje
+    // ~74px, inaczej łamie się w środku wyrazu; „Morze · 14 heks." (11px) ~88px.
+    // EN: widths measured on the real 404px render: the "DOCHÓD/TURĘ" header needs ~74px or it
+    // breaks mid-word; the "Morze · 14 heks." cell needs ~88px.
+    const grid = '0.95fr 0.9fr 1.1fr 0.95fr';
     h += `<div class="civ-emp-mini">${miniHeader(['TWOJE MIASTO', 'PARTNER', 'MEDIUM · DYSTANS', 'DOCHÓD/TURĘ'], grid)}`;
     for (const r of t.routes) {
       h += miniRow([
         esc(r.cityName),
         `${esc(r.partnerCityName)} (${esc(r.partnerOwnerLabel)})`,
-        `${r.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.dystans} heks.`,
-        `+${r.income}`,
+        `<span style="font-size:11px;color:#9aa4b2">${r.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.dystans} heks.</span>`,
+        `<span style="color:#78c95a">+${r.income}</span>`,
       ], grid);
     }
+    // Wiersz SUMA — `totalIncome` to dokładnie suma income wszystkich tras (main.ts), więc gracz
+    // może zweryfikować hero-liczbę na tej samej liście.
+    // EN: SUM row — `totalIncome` is exactly the sum of every route's income, so the hero number
+    // is verifiable against this very table.
+    h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + `<div>SUMA</div><div></div><div></div><div>+${t.totalIncome}</div></div>`;
     h += `</div>`;
   } else {
-    h += `<div class="civ-emp-note" style="font-style:italic">Brak aktywnych tras handlowych. Wymagany: budynek handlowy `
+    h += `<div class="civ-emp-empty">Brak aktywnych tras handlowych. Wymagany: budynek handlowy `
       + `(Targowisko/Port) w mieście + zawarta Umowa Handlowa z obcą cywilizacją w zasięgu (bez wojny).</div>`;
   }
 
@@ -1839,9 +2005,9 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   // Kamień Ha'amonga, Kolos Rodyjski, Brama wszystkich narodów, Pałac Weiyang) —
   // już wliczony w dochód powyżej (CUDA-HANDEL-01), tu tylko pokazany jako czynnik.
   if (t.wonderBonusLadPct > 0 || t.wonderBonusMorzePct > 0) {
-    h += `<div class="civ-emp-kult-line">Bonus cudów świata: `
-      + `<b class="gold">+${t.wonderBonusLadPct}%</b> ląd`
-      + (t.wonderBonusMorzePct !== t.wonderBonusLadPct ? ` · <b class="gold">+${t.wonderBonusMorzePct}%</b> morze` : '')
+    h += `<div class="civ-emp-resp">Bonus cudów świata: `
+      + `<b>+${t.wonderBonusLadPct}%</b> ląd`
+      + (t.wonderBonusMorzePct !== t.wonderBonusLadPct ? ` · <b>+${t.wonderBonusMorzePct}%</b> morze` : '')
       + ` (już wliczone w dochód tras powyżej)</div>`;
   }
 
@@ -1849,11 +2015,17 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   // handlowej — zebrane tu (panel Handel = handel międzynarodowy i tylko on),
   // USUNIĘTE z panelu miasta (tam było 🔗/tradeSources per surowiec).
   if (t.resourceGrants.length > 0) {
-    h += `<div class="civ-emp-res-lbl" style="margin-top:10px">Surowce z wymiany handlowej</div>`;
+    h += `<div class="civ-emp-res-lbl">Surowce z wymiany handlowej</div>`;
     const grid2 = '1fr 1fr';
     h += `<div class="civ-emp-mini">${miniHeader(['SUROWIEC', 'PARTNER'], grid2)}`;
     for (const g of t.resourceGrants) {
-      h += miniRow([esc(g.label), esc(g.partnerLabel)], grid2);
+      const ic = resIconHtml(g.label, 16);
+      const nameCell = ic
+        ? `<span style="display:inline-flex;align-items:center;gap:6px">`
+          + `<span class="civ-emp-mini-h-ic" aria-hidden="true" style="width:14px;height:14px">${ic}</span>`
+          + `${esc(g.label)}</span>`
+        : esc(g.label);
+      h += miniRow([nameCell, esc(g.partnerLabel)], grid2);
     }
     h += `</div>`;
   }
@@ -1871,6 +2043,30 @@ function routeCountWord(n: number): string {
   const lastTwo = n % 100;
   if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'trasy';
   return 'tras';
+}
+
+/**
+ * Czy liczebnik bierze formę „mnoga bliska" (2–4, poza 12–14) — wspólna reguła PL dla dwóch
+ * odmian poniżej. Istniejące `routeCountWord`/`miastoNiedokarmioneWord` celowo NIE są tu
+ * przerabiane (poza zakresem reskinu).
+ * EN: whether the numeral takes the Polish "few" form (2–4, excluding 12–14) — shared by the two
+ * new word forms below. The existing count-word helpers are deliberately NOT refactored onto this
+ * (outside the reskin's scope).
+ */
+function isPlFewForm(n: number): boolean {
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  return lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14);
+}
+
+function dealCountWord(n: number): string {
+  if (n === 1) return 'umowa';
+  return isPlFewForm(n) ? 'umowy' : 'umów';
+}
+
+function typCountWord(n: number): string {
+  if (n === 1) return 'typ';
+  return isPlFewForm(n) ? 'typy' : 'typów';
 }
 
 /**
@@ -2098,49 +2294,145 @@ function render(): void {
     .replace('class="civ-emp-sect"', 'class="civ-emp-sect sep"');
 
   // — ARMIA — wojsko + rekruci; żywność tylko skrót zaopatrzenia (reszta w Spichlerzu).
+  // R-DESIGN-11-ZAKLADEK (klatka 7 makiety, §8.7 zlecenia): reskin do wzorca sekcji Moc/Skarbiec
+  // — hero „N jednostek na mapie" + podpis z pulą rekrutów, pasek zapełnienia puli, tabela
+  // rekrutów, wiersze zaopatrzenia, callout `.civ-emp-alert` przy głodzie wojska. Emoji 🍞
+  // zamienione na ikonę brandu `res-food` pokazywaną RAZ, przy nagłówku zaopatrzenia (§5
+  // handoffu: ikona przy nagłówku, nie powtarzana per wiersz). Liczby i logika bez zmian.
+  // / EN: reskin to the Power/Treasury section pattern — hero "N units on the map" + recruit
+  // pool subtitle, pool fill bar, recruit table, supply rows, `.civ-emp-alert` callout on army
+  // hunger. The 🍞 emoji is replaced by the `res-food` brand icon shown ONCE, at the supply
+  // heading (handoff §5: icon at the heading, never repeated per row). Numbers/logic unchanged.
   const kosztWojska = Math.round(e.zywnoscKosztWojska ?? 0);
   const maxZywnPart = e.zywnoscMax != null && e.zywnoscMax > 0 ? ` / ${e.zywnoscMax}` : '';
+  const rekrPct = p.rekruciMax > 0 ? Math.round((p.rekruci / p.rekruciMax) * 100) : 0;
+  const rekrFill = rekrPct >= 60 ? 'fill' : (rekrPct >= 25 ? 'fill warn' : 'fill low');
+  const glodTeraz = !!e.glodWojska;
+  const glodZaTur = e.zywnoscKarencjaZaTur != null && e.zywnoscKarencjaZaTur > 0;
+  const magazynCls = glodTeraz || glodZaTur ? 'neg' : 'pos';
   let armia = `<div class="civ-emp-sect sep" data-section="armia">`
-    + `<div class="civ-emp-eyebrow" style="margin-bottom:8px">ARMIA</div>`
-    + `<div class="civ-emp-zrow brd"><span class="lbl">Wojsko na mapie</span>`
-    + `<span class="val"><b>${p.unitsOnMap}</b> jednostek</span></div>`;
+    + `<div class="civ-emp-eyebrow">ARMIA</div>`
+    + `<div class="civ-emp-hero">${p.unitsOnMap} jednostek na mapie</div>`
+    + `<div class="civ-emp-hero-sub">Rekruci <b>${esc(p.rekruciLabel)}</b> / <b>${esc(p.rekruciMaxLabel)}</b>`
+    + ` · można werbować <b>${p.rekrutEkw}</b> jedn. (${p.kosztJednostki} rekr./szt.)</div>`
+    + `<div class="civ-emp-bar"><div class="${rekrFill}" style="width:${rekrPct}%"></div></div>`;
   const rekrRow = econRows.find(r => r.id === 'rekruci');
   if (rekrRow) {
-    armia += `<div class="civ-emp-zrow brd" data-section="econ-rekruci">`
-      + `<span class="lbl">${rekrRow.lbl}</span>`
-      + `<span class="val"><b class="gold">${esc(rekrRow.stock)}</b></span></div>`;
-    armia += `<div data-section="econ-rekruci">${detailFor.rekruci}</div>`;
+    armia += `<div data-section="econ-rekruci">`
+      + `<div class="civ-emp-res-lbl">Rekruci — pula werbu</div>`
+      + `${cityPoborMiniRekruci(cp, p, { skipHero: true })}</div>`;
   }
-  armia += `<div class="civ-emp-res-lbl" style="margin-top:12px">Zaopatrzenie wojska</div>`
-    + `<div class="civ-emp-note">Koszt żywności armii: <b>−${kosztWojska} 🍞</b>/turę`
-    + ` · W magazynie państwa: <b>${esc(e.zywnoscLabel)}${maxZywnPart} 🍞</b></div>`;
-  if (e.glodWojska) {
-    armia += `<div class="civ-emp-note" style="color:#e07a7a"><b>Głód wojska</b> — uzupełnij Spichlerz centralny.</div>`;
-  } else if (e.zywnoscKarencjaZaTur != null && e.zywnoscKarencjaZaTur > 0) {
-    armia += `<div class="civ-emp-note" style="color:#e8c84a">Głód wojska za ${e.zywnoscKarencjaZaTur} tur — magazyn ujemny.</div>`;
+  armia += `<div class="civ-emp-res-lbl civ-emp-lbl-ic">Zaopatrzenie wojska`
+    + `<span class="civ-emp-mini-h-ic" aria-hidden="true">${brandIconSvg('res-food', 12)}</span></div>`
+    + `<div class="civ-emp-zrow brd"><span class="lbl">Koszt żywności armii</span>`
+    + `<span class="val"><span class="d neg">−${kosztWojska} / turę</span></span></div>`
+    + `<div class="civ-emp-zrow"><span class="lbl">Magazyn państwa</span>`
+    + `<span class="val"><span class="d ${magazynCls}">${esc(e.zywnoscLabel)}${maxZywnPart}</span></span></div>`;
+  if (glodTeraz) {
+    armia += `<div class="civ-emp-alert"><b>Głód wojska</b> — uzupełnij Spichlerz centralny.</div>`;
+  } else if (glodZaTur) {
+    armia += `<div class="civ-emp-alert"><b>Głód wojska za ${e.zywnoscKarencjaZaTur} tur</b> — magazyn ujemny.</div>`;
   }
   if (uchwaly.length > 0) {
     armia += renderUchwalyHtml(uchwaly);
   }
   armia += `<div class="civ-emp-foot">Pełna bilans żywności imperium — przycisk Spichlerz na lewym pasku. Ludność miast — zakładka Ludność.</div></div>`;
 
-  // — KULTURA IMPERIUM —
+  // — KULTURA IMPERIUM (R-DESIGN-11-ZAKLADEK faza 3 — klatka 10, RESKIN, nic nie usunięte) —
+  // Nagłówek przeszedł z `.civ-emp-title` na eyebrow (rejestr decyzji designera 2026-08-14,
+  // punkt 2: jedna konwencja nagłówka wspólna dla wszystkich 11 zakładek). Dane, liczby
+  // i logika BEZ ZMIAN — te same pola `snap.kultura` co przed reskinem; zmienia się wyłącznie
+  // sposób ich pokazania (hero + boxy + pasek + lista progów zamiast trzech linii tekstu).
+  // EN: Culture — reskin to frame 10. The header moved from `.civ-emp-title` to the eyebrow
+  // convention shared by all 11 tabs (designer decision log 2026-08-14, item 2). Data, numbers
+  // and logic are UNCHANGED — same `snap.kultura` fields as before; only their presentation
+  // changes (hero + boxes + progress bar + threshold list instead of three text lines).
+  //
+  // Najsilniejsze miasto = to o największej Kulturze na liście `k.cities`; ten sam punkt
+  // odniesienia, do którego silnik liczy `pctToNext` (poprzednia wersja mówiła o nim wprost
+  // w tekście „(najsilniejsze miasto)", tylko bez podania nazwy).
+  // EN: strongest city = highest Culture in `k.cities` — the same reference point the engine
+  // uses for `pctToNext` (the previous copy already said "(strongest city)", just without a name).
+  const kultTop = k.cities.reduce<(typeof k.cities)[number] | null>(
+    (best, c) => (best === null || c.kultura > best.kultura ? c : best), null);
+  const kultRateColor = k.rate < 0 ? '#e07a7a' : '#78c95a';
   let kult = `<div class="civ-emp-sect sep" data-section="kultura">`
-    + `<div class="civ-emp-title">Kultura imperium</div>`
-    + `<div class="civ-emp-kult-line">Imperium: <b>${k.total}</b> · ${signedTxt(k.rate)} · ${k.cities.length} miast</div>`;
+    + `<div class="civ-emp-eyebrow">KULTURA IMPERIUM</div>`
+    + `<div class="civ-emp-hero ${k.rate < 0 ? 'neg' : 'pos'}">${k.total} kultury</div>`
+    + `<div class="civ-emp-hero-sub">Przyrost <b style="color:${kultRateColor}">${signedTxt(k.rate)}</b>`
+    + ` / turę · ${k.cities.length} ${miastoCountWord(k.cities.length)}</div>`;
+  kult += `<div class="civ-emp-two">`
+    + `<div class="civ-emp-box"><div class="k">NAJSILNIEJSZE MIASTO</div>`
+    + `<div class="v">${kultTop ? esc(kultTop.name) : '—'}</div></div>`
+    + `<div class="civ-emp-box"><div class="k">DO PROGU</div>`
+    + `<div class="v" style="color:#d9a441">${k.pctToNext != null ? `${k.pctToNext}%` : '—'}</div></div>`
+    + `</div>`;
+  if (kultTop !== null && k.nextThreshold != null && k.pctToNext != null) {
+    const pctBar = Math.max(0, Math.min(100, k.pctToNext));
+    const brakuje = Math.max(0, k.nextThreshold - kultTop.kultura);
+    kult += `<div style="margin-top:14px">`
+      + `<div style="display:flex;align-items:baseline;gap:8px;font-size:12px;color:#9aa4b2;margin-bottom:6px">`
+      + `<span style="flex:1;min-width:0">${esc(kultTop.name)} — zasięg granic</span>`
+      + `<span><b style="color:#e8ebf0">${kultTop.kultura}</b> / ${k.nextThreshold}</span></div>`
+      // Wypełnienie paska jako `<div>`, NIE `<span>`: `.civ-emp-bar .fill` ustawia height:100%
+      // bez `display:block`, więc na elemencie inline wysokość jest ignorowana i pasek renderuje
+      // się pusty. Blokowy `<div>` to wzorzec działający w tym pliku (Spichlerz, Surowce).
+      // EN: bar fill is a `<div>`, NOT a `<span>`: `.civ-emp-bar .fill` sets height:100% without
+      // `display:block`, so on an inline element the height is ignored and the bar renders empty.
+      // The block-level `<div>` is the pattern that works elsewhere in this file.
+      + `<div class="civ-emp-bar" style="margin:0"><div class="fill warn" style="width:${pctBar}%"></div></div>`
+      + `<div style="font-size:11px;color:#9aa4b2;margin-top:6px">${brakuje} kultury do rozszerzenia granic</div>`
+      + `</div>`;
+  }
   if (k.thresholds.length > 0) {
-    kult += `<div class="civ-emp-kult-line muted">Progi zasięgu w mieście: ${k.thresholds.join(' · ')} pkt</div>`;
-  }
-  if (k.nextThreshold != null && k.pctToNext != null) {
-    kult += `<div class="civ-emp-kult-line gold">Najbliższy próg (${k.nextThreshold}): ${k.pctToNext}% (najsilniejsze miasto)</div>`;
-  }
-  kult += `<div class="civ-emp-note" style="font-style:italic">${esc(k.happinessNote)}</div>`;
-  if (k.cities.length > 0) {
-    const grid = '1fr 1fr 1fr';
-    kult += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'KULTURA', 'ZASIĘG'], grid)}`;
-    for (const c of k.cities) kult += miniRow([esc(c.name), String(c.kultura), `+${c.borderRadius} hex`], grid);
+    // Stan progu wyprowadzony WYŁĄCZNIE z `k.nextThreshold` (progi < bieżącego = osiągnięte,
+    // równy = bieżący, większe = przyszłe) — bez własnego porównywania z Kulturą miasta, żeby
+    // nie powielać reguły progu, którą liczy silnik.
+    // EN: threshold state derived SOLELY from `k.nextThreshold` (below = reached, equal =
+    // current, above = future) — no separate comparison against city Culture, so the engine's
+    // threshold rule is not duplicated here.
+    kult += `<div class="civ-emp-res-lbl">Progi zasięgu</div><div class="civ-emp-thr-list">`;
+    k.thresholds.forEach((t, i) => {
+      let cls = 'civ-emp-thr done';
+      let st = 'osiągnięty';
+      if (k.nextThreshold != null) {
+        if (t === k.nextThreshold) {
+          cls = 'civ-emp-thr now';
+          st = k.pctToNext != null ? `${k.pctToNext}%` : '—';
+        } else if (t > k.nextThreshold) {
+          cls = 'civ-emp-thr next';
+          st = '—';
+        }
+      }
+      kult += `<div class="${cls}"><span class="lbl">Próg ${i + 1} · ${t} kultury</span>`
+        + `<span class="st">${st}</span></div>`;
+    });
     kult += `</div>`;
   }
+  if (k.cities.length > 0) {
+    const grid = '1fr 0.8fr 0.8fr';
+    let kultSum = 0;
+    kult += `<div class="civ-emp-res-lbl">Miasta</div>`
+      + `<div class="civ-emp-mini civ-emp-kult-city-tbl">${miniHeader(['MIASTO', 'KULTURA', 'ZASIĘG'], grid)}`;
+    for (const c of k.cities) {
+      kultSum += c.kultura;
+      const zasieg = `+${c.borderRadius} hex`;
+      const zasiegHtml = c === kultTop ? `<span style="color:#d9a441">${zasieg}</span>` : zasieg;
+      kult += miniRow([esc(c.name), String(c.kultura), zasiegHtml], grid);
+    }
+    // Wiersz sumy: sumuje się WYŁĄCZNIE Kultura (pkt). Kolumna ZASIĘG zostaje pusta („—"),
+    // bo `borderRadius` to PROMIEŃ granicy w heksach — suma promieni różnych miast nie jest
+    // żadną wielkością gry (nie jest to ani powierzchnia terytorium, ani promień imperium),
+    // więc wpisanie tam liczby łamałoby zasadę „każda liczba ma nazwany parametr".
+    // EN: summary row sums Culture (pts) ONLY. The ZASIĘG column stays empty ("—") because
+    // `borderRadius` is a border RADIUS in hexes — summing radii across cities is not a real
+    // game quantity (neither territory area nor an empire radius), so putting a number there
+    // would break the "every number needs a named parameter" rule.
+    kult += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + `<div>SUMA</div><div>${kultSum}</div><div>—</div></div>`;
+    kult += `</div>`;
+  }
+  kult += `<div class="civ-emp-resp">${esc(k.happinessNote)}</div>`;
   kult += `<div class="civ-emp-foot">Szczegóły per miasto (źródła, progi) — panel miasta → zakładka Kultura. Przycisk Kultura na toolbarze = zasięg na mapie.</div></div>`;
 
   // — MAGAZYN PAŃSTWA (surowce, mockup „Magazyn surowców" — Maciej 2026-07-24) —
