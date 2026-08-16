@@ -468,6 +468,12 @@ function ensureStyles(): void {
 .civ-emp-res-sub b.good{color:#78c95a;}
 .civ-emp-res-sub b.warn{color:#d9a441;}
 .civ-emp-res-sub b.bad{color:#e07a7a;}
+/* Kubełek „bez zmian" (tempo = 0) — szary neutralny #9aa4b2, ten sam odcień, którego plik
+   używa dla wartości bez wydźwięku (podpisy hero, noty italic). NIE zielony: zerowe tempo
+   nie jest sukcesem, a przy poprzednim liczeniu wpadało do „rośnie" i zawyżało ten licznik.
+   / EN: "no change" bucket (rate = 0) — the file's existing neutral gray, deliberately NOT
+   green: a zero rate is not growth, yet it used to be counted as such. */
+.civ-emp-res-sub b.neutral{color:#9aa4b2;}
 
 /* — R-DESIGN-11-ZAKLADEK faza 1 (Maciej 2026-08-13) — klasy uogólnione z sekcji Moc na
    wszystkie 11 zakładek panelu (§4 handoffu designera), pierwsze użycie: Skarbiec — */
@@ -479,6 +485,16 @@ function ensureStyles(): void {
 .civ-emp-alert{margin-top:12px;padding:10px 12px;border-radius:8px;border:1px solid #4a2a2a;
   background:rgba(224,122,122,.07);font-size:12px;color:#e6c4c4;line-height:1.45;}
 .civ-emp-alert b{color:#e07a7a;}
+/* Wariant OSTRZEGAWCZY (żółty) — zdarzenie NADCHODZĄCE, nie trwające. Odtwarza rozróżnienie
+   dwóch poziomów pilności, które istniało przed reskinem (np. „Głód wojska" = czerwony,
+   „Głód wojska za N tur" = żółty) i zostało wtedy spłaszczone do jednego czerwonego stylu.
+   Kolory to ta sama para semantyczna „warn", której plik używa wszędzie indziej: #d9a441
+   z obwódką #4a3a1a i tłem rgba(217,164,65,…) — patrz .civ-emp-res-card.warn / .civ-emp-bar
+   .fill.warn. / EN: WARNING variant (amber) for an UPCOMING event, restoring the two urgency
+   levels that existed before the reskin flattened both into the red alert. Uses the same
+   semantic "warn" palette the rest of the file already uses. */
+.civ-emp-alert.warn{border-color:#4a3a1a;background:rgba(217,164,65,.07);color:#e6dcc4;}
+.civ-emp-alert.warn b{color:#d9a441;}
 /* — R-DESIGN-11-ZAKLADEK faza 3 (§4 handoffu designera) — wiersz kategorii z checkboxem.
    Odznaczony GAŚNIE (modyfikator .off), NIE znika — gracz ma widzieć, co sam odznaczył
    (§6 handoffu: „Odznaczone pozycje gasną (nie znikają) i wypadają z sumy"). Pierwsze użycie:
@@ -2489,6 +2505,20 @@ function surowiecCountWord(n: number): string {
 }
 
 /**
+ * Odmiana PRZYMIOTNIKA „pełny" po liczebniku (kubełek „na cap" w podpisie hero Surowców).
+ * Wcześniej podpis brzmiał „0 pełny" / „3 pełny" — forma mianownikowa niezależnie od liczby.
+ * Reguła ta sama, trójformowa, co dla rzeczowników: 1 → pełny · 2-4 (poza 12-14) → pełne ·
+ * 0, 5+, 12-14 → pełnych. Korzysta ze wspólnego `isPlFewForm()` (deklaracja funkcji hoistuje,
+ * tak samo jak przy `dealCountWord`/`typCountWord`).
+ * / EN: Polish ADJECTIVE declension for "pełny" (full) after a numeral — same three-form rule
+ * as the noun helpers; previously the caption always used the nominative singular.
+ */
+function pelnyCountWord(n: number): string {
+  if (n === 1) return 'pełny';
+  return isPlFewForm(n) ? 'pełne' : 'pełnych';
+}
+
+/**
  * Sekcja SUROWCE (magazyn państwa) — mockup „Magazyn surowców" (Maciej 2026-07-24),
  * reskin do wzorca sekcji Moc wg klatki 5 handoffu Designera
  * `11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13` (hero + podpis stanu, eyebrow UPPERCASE
@@ -2536,12 +2566,28 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   const nGood = real.filter(r => resStateOf(r) === 'good').length;
   const nWarn = real.filter(r => resStateOf(r) === 'warn').length;
   const nBad = real.filter(r => resStateOf(r) === 'bad').length;
+  // Rozbicie kubełka „good" na REALNY wzrost i brak zmiany (naprawa N3 Evaluatora na a6ed0553).
+  // `resStateOf()` zwraca 'good' także wtedy, gdy tempo wynosi 0 (to jego dopełnienie: nie
+  // spada i nie stoi na capie) — podpis liczył więc surowce o ZEROWEJ produkcji jako rosnące
+  // i pokazywał np. „14 rośnie", gdy realny wzrost miały 2 z 14. `nFlat` liczymy jako RESZTĘ
+  // (nGood − nGrow), a nie osobnym predykatem `=== 0`, żeby cztery kubełki zawsze sumowały się
+  // do `real.length` niezależnie od wartości niecałkowitych czy NaN w `ratePerTurn`.
+  // `resStateOf()` i plakietki per-karta (`resCardHtml()`) zostają NIETKNIĘTE — to wyłącznie
+  // agregacja podpisu hero.
+  // / EN: split the "good" bucket into genuine growth vs. no change. `resStateOf()` returns
+  // 'good' for a ZERO rate too (it is the catch-all: neither falling nor capped), so the caption
+  // counted idle resources as growing. `nFlat` is the REMAINDER rather than a `=== 0` predicate,
+  // so the four buckets always add up to `real.length`. `resStateOf()` and the per-card badges
+  // are left untouched — this is the hero caption's aggregation only.
+  const nGrow = real.filter(r => resStateOf(r) === 'good' && r.ratePerTurn > 0).length;
+  const nFlat = nGood - nGrow;
   const citizenRows = real.filter(r => r.citizenRequired);
   const citizenShort = citizenRows.some(r => r.citizenCovered !== true);
   sur += `<div class="civ-emp-hero">${real.length} ${surowiecCountWord(real.length)} w obiegu</div>`;
   const subParts = [
-    `<b class="good">${nGood}</b> rośnie`,
-    `<b class="warn">${nWarn}</b> pełny`,
+    `<b class="good">${nGrow}</b> rośnie`,
+    `<b class="neutral">${nFlat}</b> bez zmian`,
+    `<b class="warn">${nWarn}</b> ${pelnyCountWord(nWarn)}`,
     `<b class="bad">${nBad}</b> spada`,
   ];
   if (citizenRows.length > 0) {
@@ -2591,9 +2637,17 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   const heroCls = t.totalIncome < 0 ? 'neg' : 'pos';
   const wonderPct = Math.max(t.wonderBonusLadPct, t.wonderBonusMorzePct);
 
+  // Znak drukowany przez `signedPl()`, NIE dosłownym prefiksem „+" (naprawa N6 Evaluatora na
+  // a6ed0553): gałąź `heroCls === 'neg'` wyżej zakłada, że `totalIncome` MOŻE być ujemny, ale
+  // zaszyty „+" dałby wtedy „+-5". Dziś suma jest zawsze nieujemna (suma nieujemnych `income`
+  // tras), więc to nie jest błąd widoczny w grze — konstrukcja była wewnętrznie sprzeczna.
+  // `signedPl()` to wzorzec już używany w tym pliku (m.in. Nauka) i pokrywa oba znaki oraz zero.
+  // / EN: the sign is printed by `signedPl()` instead of a hardcoded "+" — the `neg` branch above
+  // assumes `totalIncome` can go negative, which the literal "+" would render as "+-5". The sum
+  // is non-negative today, so this was an internal inconsistency rather than a live bug.
   let h = `<div class="civ-emp-sect sep" data-section="handel">`
     + `<div class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</div>`
-    + `<div class="civ-emp-hero ${heroCls}">+${t.totalIncome} złota / turę</div>`
+    + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
 
@@ -2606,7 +2660,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     : '';
   h += `<div class="civ-emp-two">`
     + `<div class="civ-emp-box"><div class="k">DOCHÓD SZLAKÓW</div>`
-    + `<div class="v">+${t.totalIncome} ${cudaSub}</div></div>`
+    + `<div class="v">${signedPl(t.totalIncome)} ${cudaSub}</div></div>`
     + `<div class="civ-emp-box"><div class="k">SUROWCE Z WYMIANY</div>`
     + `<div class="v">${t.resourceGrants.length} ${typCountWord(t.resourceGrants.length)}</div></div>`
     + `</div>`;
@@ -2658,8 +2712,13 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     // może zweryfikować hero-liczbę na tej samej liście.
     // EN: SUM row — `totalIncome` is exactly the sum of every route's income, so the hero number
     // is verifiable against this very table.
+    // Ta sama poprawka znaku co w hero (N6) — wiersz SUMA istnieje PO TO, żeby gracz mógł
+    // zweryfikować liczbę hero, więc musi ją formatować identycznie; przy ujemnej sumie
+    // „+-5" tutaj i „−5" w hero łamałoby dokładnie tę weryfikowalność.
+    // / EN: same sign fix as the hero — the SUM row exists to let the player verify the hero
+    // number, so it must format it identically.
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
-      + `<div>SUMA</div><div></div><div></div><div>+${t.totalIncome}</div></div>`;
+      + `<div>SUMA</div><div></div><div></div><div>${signedPl(t.totalIncome)}</div></div>`;
     h += `</div>`;
   } else {
     h += `<div class="civ-emp-empty">Brak aktywnych tras handlowych. Wymagany: budynek handlowy `
@@ -2991,6 +3050,34 @@ function render(): void {
     + `<div class="civ-emp-hero-sub">Rekruci <b>${esc(p.rekruciLabel)}</b> / <b>${esc(p.rekruciMaxLabel)}</b>`
     + ` · można werbować <b>${p.rekrutEkw}</b> jedn. (${p.kosztJednostki} rekr./szt.)</div>`
     + `<div class="civ-emp-bar"><div class="${rekrFill}" style="width:${rekrPct}%"></div></div>`;
+  // Para boxów z klatki 7 makiety (naprawa N2 Evaluatora na a6ed0553) — reskin przeszedł
+  // z paska rekrutów wprost do nagłówka „Rekruci — pula werbu", pomijając `.civ-emp-two`,
+  // które Handel i Kultura w tym samym commicie już mają. Obie liczby to dane JUŻ obecne
+  // w snapshocie, nic nowego się tu nie liczy:
+  //  · KOSZT ZŁOTA  = `economy.bogactwoUtrzymanieJednostek` — DODATNIA wielkość kosztu (to samo
+  //    pole i ten sam znak, z którego Skarbiec składa pozycję „koszty", patrz
+  //    `renderSkarbiecSection()`), więc minus dokładamy przy druku, jak w cityPanel.ts;
+  //  · ZAOPATRZENIE = `kosztWojska` (żywność/turę), policzone już wyżej dla wiersza
+  //    „Koszt żywności armii" — tu tylko dublowane do boxa, zgodnie z makietą.
+  // Jednostka „/ turę" stoi przy OBU liczbach (makieta miała przy zaopatrzeniu samo
+  // „żywności") — wymóg CLAUDE.md §3: każda liczba ma nazwany parametr I jednostkę, a bez
+  // „/ turę" liczba czyta się jak stan magazynu, nie koszt na turę.
+  // / EN: the mockup's frame-7 box pair, skipped by the reskin. Both numbers already exist in
+  // the snapshot — army gold upkeep (a POSITIVE cost magnitude, same field the Treasury sums
+  // into "koszty", so the minus is added at print time) and the army food cost computed above.
+  // The "/ turę" unit is on BOTH boxes (the mockup had bare "żywności") per CLAUDE.md §3.
+  const utrzZloto = Math.round(e.bogactwoUtrzymanieJednostek ?? 0);
+  const zlotoTxt = utrzZloto > 0 ? `−${utrzZloto}` : '0';
+  const zywTxt = kosztWojska > 0 ? `−${kosztWojska}` : '0';
+  const jednostkaSub = (txt: string): string =>
+    `<span style="font-size:11px;color:#7d8798;font-weight:600">${txt}</span>`;
+  armia += `<div class="civ-emp-two">`
+    + `<div class="civ-emp-box"><div class="k">KOSZT ZŁOTA</div>`
+    + `<div class="v"${utrzZloto > 0 ? ' style="color:#e07a7a"' : ''}>${zlotoTxt} `
+    + `${jednostkaSub('złota / turę')}</div></div>`
+    + `<div class="civ-emp-box"><div class="k">ZAOPATRZENIE</div>`
+    + `<div class="v">${zywTxt} ${jednostkaSub('żywności / turę')}</div></div>`
+    + `</div>`;
   const rekrRow = econRows.find(r => r.id === 'rekruci');
   if (rekrRow) {
     armia += `<div data-section="econ-rekruci">`
@@ -3006,7 +3093,12 @@ function render(): void {
   if (glodTeraz) {
     armia += `<div class="civ-emp-alert"><b>Głód wojska</b> — uzupełnij Spichlerz centralny.</div>`;
   } else if (glodZaTur) {
-    armia += `<div class="civ-emp-alert"><b>Głód wojska za ${e.zywnoscKarencjaZaTur} tur</b> — magazyn ujemny.</div>`;
+    // Wariant ŻÓŁTY (naprawa N10 Evaluatora na a6ed0553): to zdarzenie NADCHODZĄCE, nie trwające
+    // — przed reskinem miało własny, mniej pilny kolor, a reskin spłaszczył oba komunikaty do
+    // jednego czerwonego `.civ-emp-alert`. Dwa poziomy pilności wracają przez modyfikator `.warn`.
+    // / EN: AMBER variant — this is an UPCOMING event, not one already happening; the reskin had
+    // flattened both urgency levels into the single red alert.
+    armia += `<div class="civ-emp-alert warn"><b>Głód wojska za ${e.zywnoscKarencjaZaTur} tur</b> — magazyn ujemny.</div>`;
   }
   if (uchwaly.length > 0) {
     armia += renderUchwalyHtml(uchwaly);
@@ -3030,7 +3122,13 @@ function render(): void {
   // uses for `pctToNext` (the previous copy already said "(strongest city)", just without a name).
   const kultTop = k.cities.reduce<(typeof k.cities)[number] | null>(
     (best, c) => (best === null || c.kultura > best.kultura ? c : best), null);
-  const kultRateColor = k.rate < 0 ? '#e07a7a' : '#78c95a';
+  // Trzy przypadki, nie dwa (naprawa N8 Evaluatora na a6ed0553): dotąd warunek sprawdzał tylko
+  // `rate < 0`, więc ZEROWY przyrost dostawał kolor zielony — a `signedTxt(0)` drukuje „—",
+  // co dawało zieloną kreskę czytaną jak wzrost. Zero to brak zmiany, nie sukces → neutralny
+  // szary #9aa4b2, ten sam odcień, którego plik używa dla wartości bez wydźwięku.
+  // / EN: three cases, not two — a ZERO rate used to render green, and since `signedTxt(0)`
+  // prints "—", the result was a green dash reading like growth. Zero is no change, not success.
+  const kultRateColor = k.rate < 0 ? '#e07a7a' : (k.rate > 0 ? '#78c95a' : '#9aa4b2');
   let kult = `<div class="civ-emp-sect sep" data-section="kultura">`
     + `<div class="civ-emp-eyebrow">KULTURA IMPERIUM</div>`
     + `<div class="civ-emp-hero ${k.rate < 0 ? 'neg' : 'pos'}">${k.total} kultury</div>`

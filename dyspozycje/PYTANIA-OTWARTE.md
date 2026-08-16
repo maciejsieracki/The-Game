@@ -30135,3 +30135,69 @@ przy niejednoznaczności). Dwie opcje do ABC przy podjęciu tematu:
 
 STATUS: **OTWARTE** — czeka na ABC do właściciela. Nie blokuje deployu (to nie regresja, tylko
 uwidocznienie istniejącej niejednoznaczności konwencji).
+
+---
+
+## P-DESIGN-11-ZAKLADEK-ODSTEPSTWA-OD-MAKIETY-RUNDA-2 (2026-08-16, uwaga N7 Evaluatora)
+
+Runda 2 poprawek reskinu 4 zakładek (Kultura/Surowce/Armia/Handel, na `a6ed0553`) wprowadza
+**trzy świadome odstępstwa od ZATWIERDZONEJ makiety Designera** — zgłaszam je wprost zamiast
+zostawiać w komentarzu kodu (CLAUDE.md §1a: odstępstwo od zatwierdzonej decyzji ma być nazwane,
+nie ukryte). Makieta: `docs/ux/claude-design/_dist/11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13/`
+`Panel Imperium 11 zakladek (standalone).html`.
+
+**1. KULTURA, wiersz SUMA / kolumna ZASIĘG — makieta „6 heksów", kod „—" (to jest to, co wymaga
+decyzji właściciela).** Makieta (klatka 10) sumuje kolumnę ZASIĘG i wpisuje `6 heksów`.
+`empireDetailPanel.ts` celowo zostawia tam `—`, z uzasadnieniem w komentarzu przy wierszu SUMA:
+`borderRadius` to **promień** granicy miasta w heksach, więc suma promieni różnych miast nie jest
+żadną wielkością gry — ani powierzchnią terytorium, ani promieniem imperium — a wpisanie tam
+liczby łamałoby CLAUDE.md §3 („każda liczba ma nazwany parametr i jednostkę"). W przykładzie z
+makiety 3+2+1 = 6, ale ta „6" nie oznacza niczego, co gracz mógłby zweryfikować na mapie.
+**Zachowanie kodu NIE zostało zmienione** (Evaluator: uzasadnienie merytorycznie słuszne,
+zostaje) — do rozstrzygnięcia zostaje wyłącznie, czy makieta ma być w tym punkcie skorygowana,
+czy właściciel jednak chce tam liczbę (i wtedy: jaką wielkość, z jaką nazwą i jednostką).
+
+**2. SUROWCE, podpis hero — czwarty kubełek „N bez zmian", którego makieta nie ma** (naprawa N3
+Evaluatora, już wykonana). Makieta pokazuje trzy kubełki (`5 rośnie · 1 pełny · 1 spada`) i
+zakłada, że wszystko poza „na capie"/„spada" realnie rośnie. W grze tak nie jest: przy 14
+surowcach katalogu typowo 11-12 ma **zerowe** tempo, a stary kod liczył je jako „rośnie" (bo
+`resStateOf()` zwraca `'good'` również dla tempa 0). Podpis mówił więc „12 rośnie", gdy realny
+wzrost miał 1 surowiec. Dodany kubełek jest neutralny kolorystycznie (#9aa4b2). **Skutek uboczny
+do wiadomości:** przy szerokości panelu 404 px podpis zawija się teraz do dwóch linii (makieta z
+trzema kubełkami mieściła się w jednej).
+
+**3. ARMIA, box ZAOPATRZENIE — jednostka „żywności / turę" zamiast samego „żywności" z makiety**
+(przy okazji naprawy N2, dołożenia pary boxów z klatki 7). Makieta drukuje `−8 żywności`, co
+czyta się jak stan magazynu, a nie koszt na turę. CLAUDE.md §3 wymaga nazwanego parametru **i**
+jednostki, więc box dostał `−8 żywności / turę`, symetrycznie do sąsiedniego `−17 złota / turę`.
+
+STATUS: **OTWARTE** — czeka na decyzję właściciela WYŁĄCZNIE w punkcie 1 (Kultura/ZASIĘG: korekta
+makiety czy jednak liczba w kodzie). Punkty 2 i 3 są już wdrożone i nie wymagają odpowiedzi —
+stoją tu po to, żeby rozjazd z zatwierdzonym rysunkiem był zapisany, a nie odkryty przy
+następnym porównaniu z makietą. Nie blokuje deployu.
+
+---
+
+## P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI (2026-08-16, uwagi N1/N5/N9/N11/N12 Evaluatora)
+
+Pięć drobnych uwag Evaluatora dla `a6ed0553`/rundy 2, świadomie NIE naprawianych kodem — zapisane
+dla kompletności rejestru, żaden nie blokuje deployu:
+
+- **N1** — opis commita `a6ed0553` twierdził „wszystkie zielone" dla bramek panelu, pomijając że
+  `empire-panel-moc-scroll-preserve-test.cjs` jest pre-istniejąco czerwony (38/9, potwierdzone
+  identyczne na commicie-rodzicu). Sprostowanie: nieprawda w treści opisu, ale sam fakt (pre-
+  istniejący fail, nie regresja) jest poprawny i już udokumentowany w CLAUDE.md. Historii commita
+  nie da się przepisać — sprostowanie żyje tutaj.
+- **N5** — box „DOCHÓD SZLAKÓW" w Handlu drukuje tę samą liczbę co hero (bonus cudów pokazany
+  osobno jako %), więc nie wnosi nowej informacji względem makiety (baza vs suma). Kosmetyczne,
+  nie myli gracza (liczby są spójne, nie sprzeczne) — bez akcji.
+- **N9** — „−0 / turę" przy zerowym koszcie żywności armii to zachowanie PRE-ISTNIEJĄCE (identyczne
+  przed reskinem, tylko teraz w bardziej widocznej czerwonej plakietce). Nie regresja tego tematu.
+- **N11** — komentarz przy `cityPoborMiniRekruci()` mówił „domyślne wywołanie bez zmian", pomijając
+  że sama tabela (nie nagłówek) dostała nową klasę wyrównania i wiersz RAZEM zmienił styl. Drobna
+  nieścisłość komentarza, zero skutku funkcjonalnego.
+- **N12** — ikona przy eyebrow występuje tylko w Surowcach (`chip-crate`), makieta ma ją też w
+  Handlu/Armii/Kulturze. Niespójność kosmetyczna między 4 zakładkami tego samego commita.
+
+STATUS: **OTWARTE** — czeka na uznanie właściciela za zamknięte przy następnym przeglądzie panelu
+imperium (żaden punkt nie wymaga osobnego dispatchu, wszystkie są kosmetyczne/dokumentacyjne).
