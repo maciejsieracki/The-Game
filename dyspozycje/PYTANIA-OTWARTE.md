@@ -30462,5 +30462,25 @@ ukończenia. Miasta bez jednostki w produkcji (kolejka pusta, albo budynek na cz
 listy albo pokazać „—", do ustalenia przez Operatora wg czytelności (nie wymaga ABC, to detal
 prezentacji, nie decyzja produktowa — życzenie Macieja jest jednoznaczne co do TREŚCI informacji).
 
-STATUS: **OTWARTE** — zaimplementowane (commit `e5b4a91a`, scalone ręcznie z równoległym tematem
-Miasto/Obywatele — konflikt rozwiązany, oba pola snapshotu zachowane), Evaluator w toku.
+**Evaluator (`a7a731139391b227c`, 2026-08-16) dla `e5b4a91a`: FAIL.** Scalenie ręczne z równoległym
+tematem Obywatele zweryfikowane jako poprawne (oba pola snapshotu żyją pełnym łańcuchem, zero
+ubocznych skasowań). Dwa realne defekty blokujące:
+
+- **N1** — mini-tabela ignoruje pole `prod.wstrzymana` (silnik NIE dodaje Pracy do wstrzymanej
+  produkcji). Miasto z wstrzymaną kolejką pokazuje w zakładce Armia „~3 tur" — liczbę, która nigdy
+  nie nadejdzie — podczas gdy panel miasta (4 inne miejsca w kodzie) poprawnie drukuje „wstrzymana".
+  Dwa panele tej samej gry przeczą sobie. Zgłoszenie Macieja: „jeżeli jest produkowana" — wstrzymana
+  nie jest produkowana.
+- **N2** — nowo wyekstrahowana, współdzielona `etaTurns()` (`production.ts`) nie ma ani jednej
+  asercji brzegowej (reszta z dzielenia, clamp `Math.max(1,...)`) — dwie mutacje realnej formuły
+  (`Math.ceil→Math.floor`, `Math.max(1,...)→Math.max(0,...)`) przechodzą bramkę 30/0 zielono.
+  `grep -rln etaTurns tools/` = wyłącznie jeden plik testowy dla całej współdzielonej funkcji.
+
+Nieblokujące: N3 — komentarz/opis commita błędnie przypisuje przekroczenie okna regexa 12000 znaków
+temu tematowi; realny sprawca to równoległy `6366e81e` (Miasto/Obywatele), bramka była czerwona
+już PRZED tym commitem. Poprawka okna (12000→20000) słuszna, atrybucja przyczyny nie. N4 — brak
+odmiany „tur/tury" (kosmetyka, zgodne z istniejącą konwencją panelu imperium). N5 — zbędny
+strażnik `pracaBudynki > 0 ?` dubluje wewnętrzny guard `etaTurns()`, przypięty kotwicą testową B8.
+
+STATUS: **OTWARTE — Evaluator FAIL, wymagana RUNDA 2** (N1/N2 blokujące, N3-N5 poprawki
+dokumentacji/kosmetyka). Zmiana **nie jest gotowa do deployu**.
