@@ -25629,9 +25629,36 @@ spójne z perspektywy gracza, nawet jeśli każda z osobna jest poprawnie policz
 relacji, jeśli ten wpływ ma być częścią kryterium sprawiedliwości) i bramka akceptacji ma być
 `bilans >= 0`, bez osobnego, niezależnego progu PW.
 
-**STATUS: **OTWARTE** — runda 1 (`c94de5c8`) dostała od Evaluatora **FAIL** (werdykt na końcu tej
-sekcji): scenariusz ze zrzutu naprawiony, ale ten sam wzorzec nadal reprodukowalny dla
-`umowa_handlowa`/`umowa_szlakow` („Traktat handlowy") i dla pakietów. Czeka na rundę 2.**
+**Runda 1 (`c94de5c8`) — FAIL** (werdykt na końcu tej sekcji): scenariusz ze zrzutu naprawiony,
+ale ten sam wzorzec nadal reprodukowalny dla `umowa_handlowa`/`umowa_szlakow` („Traktat handlowy")
+i dla pakietów.
+
+**Runda 2 (`20a988c6`, przywrócona po przypadkowym cofnięciu rebase przez `d17208dd`) —
+Evaluator (`a4ccb69ab7ed4e094`, 2026-08-16): PASS-WITH-NOTES. Kod już na czubku gałęzi, gotowy
+do deployu, nic do scalenia.** Wszystkie 6 not blokujących z FAIL rundy 1 zweryfikowane
+niezależnie: scenariusz ze zrzutu (50/20 PW @ Relacja 27,8) spójny na `handel`/`umowa_handlowa`/
+`umowa_szlakow`; siatka „Traktat handlowy" 0/401 niespójnych punktów (było okno 110-179 PW);
+pakiety z jedną nieuczciwą pozycją poprawnie liczą MIN, nie sumę; live-podgląd koszyka traktatu
+0/1950 rozjazdów (baseline 177). Pomiar regresji na 2112 komórkach: 0 nowo niespójnych, 175
+naprawionych, zmiana monotoniczna. `BUG-PAKIET-BILANS-DODATNI-BLOKADA` NIE cofnięty.
+
+Noty nieblokujące (do przyszłej rundy, nie warunek PASS): **N-E1** — opis commita przypisuje
+pozostały gap live-podglądu złej funkcji (`renderPnBalancePanelForTreaty` ma dziś 0 rozjazdów) —
+realna resztka siedzi w `renderPnBalancePanelFromBasket` (panel „Wymiana", 1,6% rozjazdów, ±20%
+próg niechęci partnera). **N-E2** — komentarz typu `ProposalEvalResult` obiecuje że `pwBalance`
+jest `undefined` dla nap/sojusz/wasal — po naprawie N1 jest ustawiane dla wszystkich akcji z bazą
+traktatu, zachowanie lepsze ale komentarz nieprawdziwy. **N-E3** — teoretyczna dziura w inwariancie
+`accepted === (pwBalance >= 0)` dla koszyka 0 PW przy bardzo wysokiej Relacji — potwierdzone
+nieosiągalne przez realny katalog surowców/UI. **N-E4** — resztkowe fałszywe zielenie (39/1890
+dar blokowany progiem Relacji — już zarejestrowany osobny temat
+`P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT`; 9/1890 pusta oferta 0/0 — pożądany wyjątek;
+pakiety mieszane own+incoming 649/3136, o 312 mniej niż runda 1, nie zamknięte). **N-E5** —
+„Bilans (netto)" na ścieżce odrzucenia `treatyPnGate` nie zgadza się z prostym odjęciem kolumn
+„My oddajemy"/„Oni oddają" (ten sam znak, różna wartość — myląca dla gracza liczącego ręcznie).
+**N-E6** — `trade-ilosc-test.cjs` (35/5) nie figuruje w CLAUDE.md jako pre-istniejąca porażka;
+zweryfikowane identyczne na baseline, nie regresja tego tematu, do dopisania do CLAUDE.md.
+
+STATUS: **ZAMKNIĘTE** — temat gotowy do deployu (kod już w drzewie od `20a988c6`/`d17208dd`).
 
 **Przyczyna zlokalizowana (dochodzenie, nie zgadywanie) — odtworzona SCENARIUSZEM ZE ZRZUTU
 (givePn=50, receivePn=20, Relacja 27,8) przez prawdziwy `evaluateProposal`:** to FAKTYCZNIE
