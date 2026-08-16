@@ -7143,3 +7143,27 @@ niescommitowana) **nie istnieje dziś na dysku ani w `git worktree list`**, i ni
 dla tej ścieżki); deploy go nie dotykał żadną komendą. Jeśli ta praca była realnie w toku — trzeba ją
 odtworzyć, bo na dysku jej nie ma.
 CZEKAM-NA: nic w tej sprawie — otwarte zostaje CZEKAM-NA z wpisu o FALI 285 (pull na dysk właściciela).
+
+## [13:30 PL, 2026-08-16] SESJA CHMUROWA → SESJA LOKALNA — deploy FALA 286 (md5 `49594c1e`)
+
+**FALA 286 (`49594c1e`, 11:30 UTC), ZASTĘPUJE FALĘ 285 (`97b3b12a`).** `VERIFY OK`, `manifest match: OK`.
+Build z HEAD `8cdf6664` — 8 commitów od deployu FALI 285 (`25104155`). **`gra/data` NIE ruszone ·
+`gra/src/map/**` NIE ruszone** (zweryfikowane `git diff --name-only 25104155..HEAD` — pusto), więc
+`map-gen-regression` świadomie pominięty: regresja generatora strukturalnie niemożliwa (`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`).
+
+**Pięć tematów, wszystkie Evaluator PASS-WITH-NOTES:** (1) akcja „Zdejmij fortyfikację ze wszystkich"
+wreszcie osiągalna dla gracza (brak w `COMPACT_ACTION_ORDER`); (2) nowa bramka kompletności renderera
+akcji — od razu wyłapała kolejną martwą akcję `siege-hold`, naprawioną; (3) przewijanie kółkiem myszy
+w lewym doku `.civ-side-ctx-dock` (ten sam wzorzec co naprawa `.civ-side-panel` z FALI 284, martwa
+strefa nienaruszona); (4) usunięta osierocona reguła CSS `.unit-ic-medallion`; (5) 2 rundy poprawek
+jakości samej bramki (fałszywe negatywy regexa, przeciek id z adnotacji typu).
+
+**Bramki (7, exit 0):** `tsc` 0 błędów · `unit-action-bar-completeness` 31/0 (NOWA) ·
+`unfortify-all-action-bar` 16/0 · `march-attack-queue-persist` 55/0 · `sidepanel-hud-deadzone` 43/0 ·
+`hud-tooltip-body-mounted-panels` 16/0 · `unit-replace` 13/13. Build 824 moduły, 16,82 s, 37,16 MB.
+Dowód wejścia do bundla (porównanie z bundlem FALI 285): `unfortify-all` 4→5, `siege-hold` 1→3,
+`sp-ctx-scroll` 0→2, `unit-ic-medallion` 1→0.
+
+**Scalenie do `main`:** zgodnie z „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 286 zostaje na
+gałęzi do testów; do scalenia kwalifikuje się teraz **FALA 285** (`25104155`) — osobny krok orkiestratora.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `49594c1e`".
