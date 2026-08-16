@@ -30354,9 +30354,14 @@ zakładka Miasta ma pójść tą samą drogą, czy rozjazd między dwoma różny
 liczby jest akceptowalny, bo to inne pytania: „ile realnie rośnie populacja imperium" [Spichlerz]
 vs „jak wygląda produkcja per miasto" [Miasta]).
 
-STATUS: **OTWARTE** — czeka na ABC do właściciela przy następnym przeglądzie panelu imperium.
-Nie blokuje deployu (nie jest regresją — to nowa widoczność istniejącej niejednoznaczności
-konwencji, tym razem między zakładkami zamiast wewnątrz jednej).
+**ECHO właściciela (2026-08-16): `P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD-Q1 = B`** —
+ujednolicić: zakładka Miasta ma liczyć ŚREDNIĄ wzrostu efektywnie (głodujące miasta = 0%),
+tak samo jak Spichlerz. Wymaga zmiany `cityMiastaMiniDetail()`/`computeMiastaSummaryRow`
+(`empireDetailPanel.ts`) i ruszenia przypiętej bramki `empire-miasta-table-test.cjs` (dziś 89/0,
+pinuje konwencję nominalną).
+
+STATUS: **OTWARTE** — dispatch Operatora (Sonnet 5, worktree) w toku. Nie blokuje deployu
+istniejącego kodu (to nowa, świadomie zamówiona zmiana, nie regresja).
 
 ---
 
