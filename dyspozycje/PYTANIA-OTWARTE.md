@@ -26547,10 +26547,33 @@ mutację MUT-N odtwarzającą dokładnie regresję rundy 3. Wyniki: tsc 0, build
 orkiestratora w drzewie głównym po scaleniu, identyczne z raportem Operatora. `ai-test` (285/8) i
 `unit-power-test` (4/2) niezmienione, pre-istniejące.
 
-**Evaluator rundy 4 dispatchowany (agent `a4380802596aad26a`, Opus 5, worktree) — w toku.**
+**Evaluator rundy 4 (`a4380802596aad26a`, Opus 5, 2026-08-16): PASS-WITH-NOTES.** Worktree Evaluatora
+startował z błędnego punktu (przodek `6826b16c`, nie czubek) — złapane i naprawione samodzielnie
+(`--detach 6826b16c`) przed pomiarem, wszystkie liczby niżej z poprawnego commita. Wszystkie bramki
+zielone, potwierdzone niezależnie: tsc 0, build exit 0, `atak-dystansowy-mapa-test` 102/0,
+`atak-dystansowy-egzekucja-test` 52/0, `combat-test` 6/6, `map-attack-city-test` 8/0,
+`barb-city-capture-cluster-test` 94/0, `ai-test` 285/8 i `unit-power-test` 4/2 (oba pre-istniejące,
+delta zero zmierzona podmianą plików na wersję rodzica). **B1/B2/B3 potwierdzone naprawione przez
+wykonanie, nie odczyt** — 3 własne mutacje cofające naprawę (MUT-A: usunięcie przejęcia, MUT-B:
+cofnięcie reguły decyzyjnej, MUT-C: usunięcie wyjątku embarked) wszystkie idą na czerwono. Oba
+punkty zgłoszone przez Operatora zweryfikowane: parytet — słuszne co do istoty, ale realnie
+utracona komórka to (mur LUB obrońcy)×adiacencja, nie tylko mur×adiacencja; zweryfikowane na
+baseline `07626e24` że ta komórka nigdy nie dawała AI wykonalnej akcji, więc `false` jest ściśle
+lepsze niż martwy rozkaz — nie regresja. Skutki uboczne przejęcia — potwierdzone, ścieżka
+`applyCityCaptureToMap` reużyta 1:1, jedyne rozgałęzienia po właścicielu (kolejka produkcji
+barbarzyńców, popup gracza) nie dotyczą AI; utrata stolicy/ostatniego miasta powiadamia niezależnie
+od zdobywcy.
 
-STATUS: **OTWARTE** — czeka na werdykt Evaluatora rundy 4. Zmiana **scalona i wypchnięta**
-(`6826b16c`) ale **nie jest gotowa do deployu** do czasu PASS/PASS-WITH-NOTES.
+Noty nieblokujące: **N1** (patrz nowy temat `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` niżej w pliku,
+zasługuje na osobne ABC) — teleport na pełny zasięg jednostki (do 6 heksów) ze zmianą właściciela
+miasta w jednej turze, zarezerwowane dla właściciela w rundzie 1 (F3) i nigdy nie zadane. N2/N3 —
+atrapa testu i reguła AI nie kopiują bramki cywilnej gracza, ale latentne (Osadnik/Robotnik nie
+istnieją w danych, zwiadowcy mają bezwarunkowy `continue`). N4 — `hasCityDefenders` (kosztowne)
+liczone przed tanim porównaniem dystansu, obserwacja statyczna, nie zbenchmarkowana. N5 — brak
+pokrycia dla dwóch jednostek AI wchodzących na ten sam heks miasta w jednej turze (z odczytu kodu
+wynik łagodny). N6 — komunikat mutacyjny nieaktualny kosmetycznie.
+
+STATUS: **ZAMKNIĘTE** — gotowe do deployu.
 
 ---
 
@@ -30653,5 +30676,39 @@ Operatora, ale jeśli w trakcie implementacji okaże się dwuznaczne (np. `defau
 ma zatrzymać się i zgłosić do ABC zamiast zgadywać (CLAUDE.md §6/§7).
 
 STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+
+---
+
+---
+
+## P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1 (2026-08-16, znalezisko Evaluatora rundy 4 ataku dystansowego)
+
+**Kontekst:** rezerwacja z Evaluatora rundy 1 tematu `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`
+(„NIE rozstrzygać samodzielnie bez zaznaczenia w commicie") — pytanie nigdy nie zadane właścicielowi
+(zweryfikowane grepem po tym pliku, zero trafień). Runda 4 (`6826b16c`, ECHO `Q1=A` — realne
+przejęcie miasta) nadała temu istniejącemu od rundy 3 zachowaniu **skutek własnościowy**, więc
+zasługuje na numer i pytanie.
+
+**Ustalenie (Evaluator `a4380802596aad26a`, zweryfikowane czytaniem kodu):** `computePath`
+(`gra/src/units/setup.ts:986-993`) jawnie zwalnia cel z `occupied` i NIE skraca ścieżki do
+punktów ruchu jednostki dla rozkazu `rangedCityAttackEntry` — jedyna gałąź `move` w `ai.ts`, która
+podaje wprost docelowe współrzędne miasta zamiast pierwszego kroku ścieżki (`firstStep`, jak
+wszystkie inne rozkazy ruchu AI). Skutek: jednostka o zasięgu ataku 6 (np. Katapulta) może
+pokonać 6 heksów i **zmienić właściciela miasta w jednej turze**, zamiast dojść na sąsiedni heks i
+dopiero w kolejnej turze atakować/wchodzić.
+
+Symetryczne z graczem (Evaluator rundy 1 zmierzył to samo dla ścieżki `capture_empty` gracza) —
+nie jest to złamanie parytetu. Drobna asymetria kosztu na korzyść gry: gracz płaci 1 punkt ruchu
+(`spendAttackMpOnLive`), AI płaci CAŁY ruch jednostki za wejście.
+
+**Pytanie do rozstrzygnięcia (do zadania właścicielowi przy najbliższym przeglądzie tematów
+bitewnych, nie pilne — teleport-capture istnieje od rundy 3, runda 4 tylko dodała realny skutek
+przejęcia do już istniejącego ruchu):** czy jednostka atakująca z dystansu ma teleportować się na
+pełny zasięg przy wejściu na heks miasta (obecne zachowanie, symetryczne gracz/AI), czy ruch
+powinien być ograniczony do faktycznych punktów ruchu jednostki (jak każdy inny rozkaz `move`)?
+
+STATUS: **OTWARTE** — zarejestrowane, do ABC przy najbliższym przeglądzie tematów bitewnych (nie
+pilne, świadomie odłożone zgodnie z zasadą „jeden wątek na raz" — nie przerywa bieżącej sekwencji
+deployu).
 
 ---
