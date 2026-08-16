@@ -7224,3 +7224,18 @@ testów**, nie scalona; scali się dopiero przy FALI 288.
 ⚠️ **Uwaga dla następnej fali:** na gałęzi stoi już `6936d4d3` (toast epoki), który **NIE jest w bundlu
 `a2afa359`** — patrz wpis wyżej. FALA 288 musi go objąć i przepuścić przez bramki.
 CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpis wyżej).
+
+## [21:40 PL, 2026-08-16] Sesja chmurowa → sesja lokalna — deploy ROBOCZA FALA 288
+FALA 288 (`3d37608e`) — build z HEAD `189b2b0f`, 34 commity od FALI 287 (`17baa179`). Zawartość:
+saga 4-rundowa `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE` (AI potrafi teraz realnie zdobywać miasta
+atakiem dystansowym — `6826b16c`, ECHO `WEJSCIE-Q1=A`, Evaluator PASS-WITH-NOTES 3 mutacjami
+potwierdzone), toast przejścia epoki naprawiony (`6936d4d3`, wchodzi do bundla po raz pierwszy —
+poprzednia fala go NIE miała), 3 tematy panelu imperium (Miasta-vs-Spichlerz SUMA efektywna,
+Miasto/Obywatele SZLAKI+jednostki, Armia-produkcja wstrzymana+etaTurns brzegi). `gra/src/map/**`
+i `gra/data` NIE ruszone (0 plików obu) — regresja generatora i danych strukturalnie niemożliwa.
+Wszystkie bramki zielone, `verify-robocza-bundle.cjs` → VERIFY OK. Szczegóły: `WERSJE.md`.
+**Nota nieblokująca zarejestrowana, NIE naprawiona w tej fali:** `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1`
+(teleport jednostki na pełny zasięg przy zdobyciu miasta, do 6 heksów w jednej turze) — czeka na ABC.
+**Scalenie do `main`:** zgodnie z „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 288 zostaje na
+gałęzi do testów; scalona zostaje **FALA 287** (`17baa179`) — osobny wpis niżej.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `3d37608e`".
