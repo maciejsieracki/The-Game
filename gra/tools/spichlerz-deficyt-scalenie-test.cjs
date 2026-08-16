@@ -348,5 +348,62 @@ for (const [n, expected] of pluralCases) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 7) P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY (ECHO B, Maciej 2026-08-16): WZROST% per
+//    miasto ORAZ wiersz SUMA muszą liczyć wartość EFEKTYWNĄ (miasto głodujące -> 0), tak samo jak
+//    effectiveGrowthPctForUi() w cityPanel.ts (`fed ? total : 0`) -- NIE wartość nominalną wprost z
+//    silnika (`row.wzrostProcent`). Dowód mutacyjny z rejestru (Evaluator, znalezisko na
+//    `a98f63f8`): 3 miasta po 6% nominalnie, 2 niedokarmione -> SUMA pokazywała błędnie 6%,
+//    poprawnie powinna 2% (średnia z efektywnych {6,0,0}).
+// ---------------------------------------------------------------------------
+ok(
+  /const wzrostEff = unfed \? 0 : row\.wzrostProcent;/.test(spichlerzFn),
+  'per-miasto WZROST% liczony jako wartość EFEKTYWNA (unfed -> 0), nie nominalna row.wzrostProcent wprost',
+);
+ok(
+  /sumWzrost \+= wzrostEff;/.test(spichlerzFn),
+  'wiersz SUMA sumuje już EFEKTYWNE wzrosty (wzrostEff), nie nominalne row.wzrostProcent',
+);
+ok(
+  !/sumWzrost \+= row\.wzrostProcent;/.test(spichlerzFn),
+  'stara (błędna) linia sumowania wartości nominalnej NIE wraca (regresja do sumWzrost += row.wzrostProcent)',
+);
+
+// Reprodukcja niezależna (ta sama formuła co w kodzie, wzorem liveUnfedCityCount w sekcji 5) --
+// dowód liczbowy z przykładu Evaluatora w rejestrze: 3 miasta po 6% nominalnie, 2 niedokarmione.
+function effectiveGrowthRows(rows) {
+  return rows.map(r => ({ ...r, wzrostEff: r.nakarmione === false ? 0 : r.wzrostProcent }));
+}
+function sumaWzrostAvg(effRows) {
+  const suma = effRows.reduce((s, r) => s + r.wzrostEff, 0);
+  return Math.round(suma / effRows.length);
+}
+
+const evalRows = [
+  { name: 'A', wzrostProcent: 6, nakarmione: true },
+  { name: 'B', wzrostProcent: 6, nakarmione: false },
+  { name: 'C', wzrostProcent: 6, nakarmione: false },
+];
+const evalEff = effectiveGrowthRows(evalRows);
+ok(evalEff[0].wzrostEff === 6, 'miasto nakarmione: WZROST% w komórce = wartość nominalna (6%)');
+ok(
+  evalEff[1].wzrostEff === 0 && evalEff[2].wzrostEff === 0,
+  'miasta niedokarmione: WZROST% w komórce = 0% (nie 6% nominalne z silnika)',
+);
+ok(
+  sumaWzrostAvg(evalEff) === 2,
+  'wiersz SUMA (średnia z wartości efektywnych {6,0,0}) = 2%, NIE 6% (dowód Evaluatora z rejestru P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY)',
+);
+// Kontrola przytomności: gdy WSZYSTKIE miasta nakarmione, efektywna SUMA = nominalna SUMA (bez
+// regresji dla zdrowego stanu -- ta zmiana nie zmienia niczego, gdy nikt nie głoduje).
+const allFedRows = [
+  { name: 'A', wzrostProcent: 6, nakarmione: true },
+  { name: 'B', wzrostProcent: 4, nakarmione: true },
+];
+ok(
+  sumaWzrostAvg(effectiveGrowthRows(allFedRows)) === 5,
+  'kontrola przytomności: wszystkie miasta nakarmione -> SUMA efektywna = SUMA nominalna (5%, średnia z {6,4})',
+);
+
 console.log(`\nspichlerz-deficyt-scalenie-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);

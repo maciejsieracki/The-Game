@@ -2232,17 +2232,25 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     for (const row of food.perCityRows) {
       const bilansCls = row.bilans > 0 ? 'pos' : row.bilans < 0 ? 'neg' : 'z';
       const bilansTxt = row.bilans === 0 ? '0' : `${row.bilans > 0 ? '+' : ''}${foodMinus(Math.round(row.bilans))}`;
-      const wzrostTxt = `${Math.round(row.wzrostProcent)}%`;
       // Znacznik miasta niedokarmionego — ikona chip-warning PRZED nazwą (makieta klatka 4B),
       // wcześniej znak ⚠ po nazwie. / EN: unfed-city marker — chip-warning icon BEFORE the name.
       const unfed = row.nakarmione === false;
       const fedMark = unfed
         ? `<span class="civ-emp-sp-unfed-ic" title="Miasto nie nakarmione z centrali">${brandIconSvg('chip-warning', 11)}</span>`
         : '';
+      // P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY (ECHO B, Maciej 2026-08-16): WZROST%
+      // liczony jako wartość EFEKTYWNA (miasto głodujące → 0), ta sama jednolinijkowa konwencja
+      // co `effectiveGrowthPctForUi()` w cityPanel.ts (`fed ? wzrostProcent : 0`) — powtórzona
+      // tu lokalnie zamiast eksportować, bo to jednolinijkowa reguła bez dodatkowego stanu.
+      // / EN: WZROST% is now the EFFECTIVE value (a starving city → 0), same one-line convention
+      // as `effectiveGrowthPctForUi()` in cityPanel.ts (`fed ? wzrostProcent : 0`) — duplicated
+      // locally instead of exported since it's a one-line rule with no extra state.
+      const wzrostEff = unfed ? 0 : row.wzrostProcent;
+      const wzrostTxt = `${Math.round(wzrostEff)}%`;
       sumProdukcja += row.produkcja;
       sumKoszt += row.kosztRacji;
       sumBilans += row.bilans;
-      sumWzrost += row.wzrostProcent;
+      sumWzrost += wzrostEff;
       h += miniRow([
         `<span class="civ-emp-sp-city-nm">${fedMark}<span>${esc(row.name)}</span></span>`,
         String(Math.round(row.produkcja)),
@@ -2262,6 +2270,11 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     // at the end — same convention as `wzrostProcentAvg` in computeMiastaSummaryRow (the Miasta
     // tab): round the raw sum, not the average of already-rounded cells. This table has no
     // column/city filter (miastaHiddenCols) — `food.perCityRows` is already the full visible set.
+    // ECHO B (P-SPICHLERZ-SUMA-WZROST-NOMINALNY-VS-EFEKTYWNY, Maciej 2026-08-16): `sumWzrost`
+    // powyżej sumuje już EFEKTYWNE wzrosty (`wzrostEff` per wiersz) — SUMA zgadza się teraz
+    // dokładnie z tym, co widać w komórkach per-miasto (obie strony 0% dla głodujących).
+    // / EN: `sumWzrost` above now accumulates the EFFECTIVE growth per row — SUM matches exactly
+    // what the per-city cells show (both sides read 0% for starving cities).
     const sumBilansR = Math.round(sumBilans);
     const sumBilansCls = sumBilansR > 0 ? 'pos' : sumBilansR < 0 ? 'neg' : 'z';
     const wzrostAvgTxt = `${Math.round(sumWzrost / food.perCityRows.length)}%`;
