@@ -28844,4 +28844,63 @@ Plan ataku zostaje chroniony jak dziś (przeżywa rozpoczęcie oblężenia, `com
 świadomie odwołać zamiast czekać do zdjęcia oblężenia. Dispatch do Operatora (Sonnet 5, worktree)
 w toku.
 
-**STATUS: DISPATCH W TOKU.**
+### WYNIK (Operator Sonnet 5, worktree izolowany `agent-a365889d32aa53199`, 2026-08-16) — NAPRAWIONE, plus dodatkowo naprawiony ukryty gap renderowania
+
+**Implementacja (dane, `gra/src/main.ts`, `buildArmyStackHudStateInner`):** do gałęzi
+`if (siegeCity) {...}` dopisany warunkowy wpis akcji `{ id: 'march-stop', label: 'Anuluj atak',
+disabled: isAnimating }`, widoczny WYŁĄCZNIE gdy `hasPlan && marchAttackTargets.has(active.id)` —
+czyli tylko gdy faktycznie jest zakolejkowany atak do anulowania. Reużywa ISTNIEJĄCY handler
+`stopPlannedMarchForSelected()` (przez wspólny routing `actionId === 'march-stop'` w
+`handleSelectedUnitHudAction`) — zero duplikacji logiki czyszczenia planu, zero zmian w
+`clearPlannedMarch`/`commitBesiege` (Q1=B: plan nadal przeżywa rozpoczęcie oblężenia bez zmian).
+
+**ZNALEZISKO DODATKOWE (potwierdzone żywym testem, nie tylko czytaniem kodu): przycisk
+„Anuluj atak"/„Zatrzymaj" NIGDY faktycznie nie renderował się w DOM — ani w nowej gałęzi
+oblężenia, ani w PRE-ISTNIEJĄCEJ gałęzi `hasPlan` z poprzedniej rundy
+(P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE, Przyczyna B).** Realny renderer akcji
+(`gra/src/ui/unitActionBarHtml.ts`, `buildUnitActionBarHtml`) pokazuje TYLKO id z listy
+`COMPACT_ACTION_ORDER = ['fortify','sentry','scout-explore','split','merge','replace','skip']`
+plus osobno hardkodowany `'disband'` — `'march-stop'` nie był w żadnej z tych dwóch ścieżek, więc
+akcja była cicho wypychana do `actions[]` (dane), ale nigdy nie trafiała do HTML. Poprzednia runda
+(Przyczyna B) tego nie złapała, bo jej żywy test wołał funkcje z main.ts BEZPOŚREDNIO przez
+tymczasowy hook (`planMarchTo`, `dismissPlayerUnitSelectionIfAny` itd.), z pominięciem
+renderowanego DOM — nigdy nie klikał w realny przycisk na stronie. Naprawione w tym samym commicie:
+`buildUnitActionBarHtml` dostał osobny blok dla `'march-stop'` (przycisk tekstowy, jak `'disband'`,
+bo etykieta jest dynamiczna: „Anuluj atak"/„Zatrzymaj") + nowa klasa CSS `.uc-act-text`. Naprawa
+obejmuje OBA miejsca na raz (gałąź `hasPlan` i nowa gałąź `siegeCity`) — jeden wspólny renderer.
+
+**Żywy test w headless Chromium** (`?playtest=mapa`, binarka
+`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, tymczasowy hook `window.__civSiegeCancelTest`
+USUNIĘTY przed commitem — `git diff` na `main.ts` pokazuje wyłącznie zmianę danych opisaną wyżej):
+(1) zakolejkowany marsz-z-atakiem (Hastati `u1` → Łucznik `e0`, dystans 4, real
+`planMarchTo(q,r,attackUnitId)`) → DOM PRZED symulacją oblężenia: `.uc-act-bar` zawiera
+`data-act="march-stop"`, etykieta „Anuluj atak" (dowód, że renderer-fix naprawia też starą
+gałąź); (2) symulacja rozpoczęcia oblężenia (`u.oblegaCityId` ustawione — dokładnie to, co realnie
+robi `commitBesiege`) → `.uc-act-bar` nadal zawiera `march-stop`/„Anuluj atak", `disabled=false`;
+(3) REALNY klik myszy (`page.click('[data-act="march-stop"]')`) na renderowany przycisk →
+`plannedMarches`/`marchAttackTargets` dla tej jednostki PUSTE, jednostka nadal oblega
+(`oblegaCityId` nietknięte — anuluje tylko atak, nie oblężenie); (4) po kliku przycisk znika z DOM
+(nic więcej do anulowania); (5) kontrola: druga jednostka gracza wchodzi w oblężenie BEZ
+zakolejkowanego ataku → `march-stop` NIEOBECNY w DOM od początku (zero zaśmiecania UI).
+
+**Test regresyjny** (`gra/tools/march-attack-queue-persist-test.cjs`, sekcja (i), rozszerzony
+41→55 asercji): blok `if (siegeCity) {...}` wycięty TEKSTOWO z `main.ts` i wykonany NAPRAWDĘ
+(wzorzec repo, nie reimplementacja) — (i1) oblężenie+zakolejkowany atak → akcja obecna; (i2)
+oblężenie bez ataku → NIEOBECNA; (i3) `marchAttackTargets` ma wpis ale `hasPlan=false` (desync) →
+NIEOBECNA (oba warunki wymagane); (i4) `isAnimating=true` → obecna, `disabled=true`; kontrola
+`siege-hold`/`fortify` bez regresji. Dowód mutacyjny `MUT-SIEGE-GUARD`: usunięcie warunku
+ochronnego → (i2) ŁAPIE (przycisk pojawiałby się zawsze w oblężeniu).
+
+**Bramki (z `gra/`):** `tsc --noEmit` 0 błędów · `march-attack-queue-persist-test` 55/0 ·
+`combat-test` 6/6 · `oblezenie-test` 27/0 · `oblezenie-remis-endsiege-test` 271/0 ·
+`oblezenie-siege-lifted-po-bitwie-test` 16/0 · `siege-ai-test` 17/0 · `siege-defenders-test` 12/0 ·
+`map-siege-test` 6/0 · `unit-context-card-test` 29/0 · `side-panel-unit-cycle-arrows-test` 20/0 ·
+`sidepanel-hud-deadzone-test` 32/0 · `sidepanel-events-toolbar-test` 19/0 — wszystkie zielone, zero
+regresji.
+
+**STATUS: NAPRAWIONE — scalone do gałęzi sesji, czeka na Evaluatora (Opus 5) i deploy (hasło
+`deploy`).** Do wiadomości Evaluatora: naprawa renderera (`unitActionBarHtml.ts`) jest wspólna dla
+tego tematu i dla P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE (Przyczyna B) — ten drugi temat miał już
+werdykt PASS-WITH-NOTES i status „gotowe do deploy", ale jego kluczowy przycisk faktycznie nigdy
+się nie renderował aż do tego commitu; warto to uwzględnić przy ponownej ocenie tamtego tematu,
+skoro oba idą do roboczej w tym samym deployu.

@@ -17742,6 +17742,25 @@ async function boot(): Promise<void> {
           disabled: false,
           active: isFieldFortifiedSiege,
         });
+        // P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU-Q1=B: commitBesiege NIE
+        // czyści zakolejkowany marsz-z-atakiem (force=false, jak dziś) — plan przeżywa
+        // rozpoczęcie oblężenia. Ale gałąź siegeCity wykluczała się z gałęzią hasPlan
+        // niżej, więc przycisk anulowania w ogóle się nie pojawiał. Pokaż go też tutaj,
+        // TYLKO gdy faktycznie jest zakolejkowany atak do anulowania — reużywa tego
+        // samego id/handlera 'march-stop' → stopPlannedMarchForSelected(), zero
+        // duplikacji logiki czyszczenia planu. / EN: commitBesiege does NOT clear a
+        // queued march-then-attack (force=false, unchanged) — the plan survives
+        // starting a siege. But the siegeCity branch excluded the hasPlan branch below,
+        // so the cancel button never appeared. Show it here too, ONLY when there is
+        // actually a queued attack to cancel — reuses the same 'march-stop' id/handler
+        // → stopPlannedMarchForSelected(), no duplicated clearing logic.
+        if (hasPlan && marchAttackTargets.has(active.id)) {
+          actions.push({
+            id: 'march-stop',
+            label: 'Anuluj atak',
+            disabled: isAnimating,
+          });
+        }
       } else if (hasPlan) {
         // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: skoro zakolejkowany atak teraz PRZETRWA
         // zwykłe odznaczenie, etykieta jasno mówi graczowi co dokładnie anuluje ten przycisk —

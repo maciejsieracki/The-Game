@@ -71,6 +71,29 @@ export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): str
       + `><span class="uc-act-ic">${icon}</span></button>`;
   }
 
+  // P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU (2026-08-16): 'march-stop'
+  // (etykieta „Anuluj atak"/„Zatrzymaj", ustalana w main.ts) NIE była w
+  // COMPACT_ACTION_ORDER ani w ACTION_ICONS — była wypychana do `actions[]` (zarówno
+  // przez istniejącą gałąź hasPlan, jak i nową siegeCity), ale ta funkcja renderowała
+  // TYLKO id ze stałej listy + osobno 'disband' -- akcja realnie NIGDY się nie
+  // wyświetlała w DOM, niezależnie od stanu gry (potwierdzone żywym testem headless
+  // Chromium, nie tylko czytaniem kodu). Etykieta bywa dynamiczna („Anuluj atak" vs
+  // „Zatrzymaj"), więc render jako tekstowy przycisk (jak 'disband'), nie ikona.
+  // / EN: 'march-stop' (label "Cancel attack"/"Stop", set in main.ts) was in neither
+  // COMPACT_ACTION_ORDER nor ACTION_ICONS -- it was pushed into `actions[]` (both by
+  // the pre-existing hasPlan branch and the new siegeCity branch), but this function
+  // only rendered ids from the fixed list + 'disband' separately -- the action never
+  // actually appeared in the DOM regardless of game state (confirmed via a live
+  // headless Chromium test, not just reading the code). The label is dynamic ("Cancel
+  // attack" vs "Stop"), so render as a text button (like 'disband'), not an icon.
+  const marchStop = byId.get('march-stop');
+  if (marchStop) {
+    html += `<button type="button" class="uc-act-btn uc-act-text" data-act="march-stop"`
+      + ` title="${esc(marchStop.label)}" aria-label="${esc(marchStop.label)}"`
+      + (marchStop.disabled ? ' disabled' : '')
+      + `>${esc(marchStop.label)}</button>`;
+  }
+
   const disband = byId.get('disband');
   if (disband) {
     html += `<button type="button" class="uc-act-btn uc-act-disband" data-act="disband"`
@@ -104,4 +127,6 @@ export const UNIT_ACTION_BAR_CSS = `
 .uc-act-disband{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.08em;
   color:#ffb0b0!important;border-color:rgba(200,64,64,.45)!important;min-width:72px;}
 .uc-act-disband:hover:not(:disabled){border-color:rgba(200,64,64,.65)!important;color:#ffd0d0!important;}
+.uc-act-text{min-width:auto;padding:0 10px;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;white-space:nowrap;}
 `;

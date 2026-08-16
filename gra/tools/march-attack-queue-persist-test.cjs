@@ -34,6 +34,25 @@
  *  h. tryLaunchMarchAttack (integracja pełnego cyklu: marsz zakolejkowany → odznaczenie →
  *     dotarcie → atak) — wykonanie PRAWDZIWEJ funkcji z main.ts, nie kopii formuły.
  *
+ * ROZSZERZENIE 2026-08-16 — P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU (decyzja
+ * `P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU-Q1 = B`): plan-z-atakiem PRZEŻYWA
+ * rozpoczęcie oblężenia (commitBesiege bez force=true, bez zmian), ale gałąź HUD
+ * `if (siegeCity) {...} else if (hasPlan) {...}` w `buildArmyStackHudStateInner`
+ * wykluczała przycisk „Anuluj atak" właśnie wtedy, gdy jest potrzebny — w trybie
+ * oblężenia. Naprawa: dopisany do gałęzi `siegeCity` warunkowy wpis akcji 'march-stop'
+ * (reużywa ISTNIEJĄCY handler `stopPlannedMarchForSelected()`, zero duplikacji), widoczny
+ * WYŁĄCZNIE gdy `hasPlan && marchAttackTargets.has(active.id)`.
+ *  i. Wycięty TEKSTOWO blok `if (siegeCity) { ... }` z `buildArmyStackHudStateInner`
+ *     wykonany NAPRAWDĘ (nie reimplementacja) w izolowanym harnessie: (i1) oblężenie +
+ *     zakolejkowany atak → akcja 'march-stop'/'Anuluj atak' obecna; (i2) oblężenie BEZ
+ *     zakolejkowanego ataku (marchAttackTargets pusty) → akcja NIEOBECNA (zero
+ *     zaśmiecania UI); (i3) marchAttackTargets ma wpis, ale hasPlan=false (desync) →
+ *     akcja NIEOBECNA (oba warunki wymagane, nie tylko jeden); (i4) isAnimating=true →
+ *     akcja obecna, ale disabled=true. Dowód mutacyjny (MUT-SIEGE-GUARD): usunięcie
+ *     warunku `hasPlan && marchAttackTargets.has(active.id)` (podmiana na zawsze-prawda)
+ *     MUSI złapać scenariusz (i2) — bez warunku przycisk pojawiałby się zawsze w
+ *     oblężeniu, także bez czegokolwiek do anulowania.
+ *
  * METODA (wzorzec kanoniczny repo — atak-dystansowy-mapa-test.cjs): funkcje wycinane są
  * TEKSTOWO z main.ts po sygnaturze i wykonywane NAPRAWDĘ przez `new Function` z lokalnymi
  * Map/obiektami odpowiadającymi domknięciu main.ts (plannedMarches, marchAttackTargets,
@@ -391,6 +410,105 @@ export { activeUnitStack } from '../src/game/armyMerge';
 
     fs.rmSync(combatBundleEntry, { force: true });
     fs.rmSync(combatBundleOut, { force: true });
+  }
+}
+
+// ===========================================================================
+// (i) P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU: blok `if (siegeCity) {...}`
+// z buildArmyStackHudStateInner, wycięty TEKSTOWO i wykonany NAPRAWDĘ (ta sama metoda co
+// (a)-(h) wyżej — zero reimplementacji formuły).
+// ===========================================================================
+{
+  const SYG_SIEGE_BLOK = 'if (siegeCity) {';
+  const siegeBlokTxt = wytnijFunkcje(realMainSrc, SYG_SIEGE_BLOK);
+  ok(!!siegeBlokTxt, '(i) wycięcie bloku `if (siegeCity) {...}` z main.ts powiodło się');
+
+  if (siegeBlokTxt) {
+    // Kontrola treści PRZED wykonaniem: blok musi zawierać dokładnie ten warunek ochronny
+    // (nie inny, przypadkowo podobny) -- inaczej harness testowałby coś innego niż realny kod.
+    ok(/if \(hasPlan && marchAttackTargets\.has\(active\.id\)\) \{/.test(siegeBlokTxt),
+      '(i) SETUP: blok siegeCity zawiera oczekiwany warunek `hasPlan && marchAttackTargets.has(active.id)`');
+    ok(/id: 'march-stop'/.test(siegeBlokTxt) && /label: 'Anuluj atak'/.test(siegeBlokTxt),
+      "(i) SETUP: blok siegeCity dopisuje akcję id='march-stop', label='Anuluj atak'");
+
+    function zbudujSiegeHarness(blokTxt) {
+      const esbuild = require(path.resolve(GRA_ROOT, 'node_modules', 'esbuild'));
+      const js = esbuild.transformSync(blokTxt, { loader: 'ts', target: 'node18' }).code;
+      // `siegeCity`/`active`/`hasPlan`/`marchAttackTargets`/`isAnimating` to dokładnie te
+      // same nazwy zmiennych z domknięcia buildArmyStackHudStateInner, które blok czyta.
+      const fabryka = new Function(`
+        return function(siegeCity, active, hasPlan, marchAttackTargets, isAnimating) {
+          const actions = [];
+          ${js}
+          return actions;
+        };
+      `);
+      return fabryka();
+    }
+
+    const runSiege = zbudujSiegeHarness(siegeBlokTxt);
+    const findMarchStop = (actions) => actions.find(a => a.id === 'march-stop');
+
+    // (i1) oblężenie + zakolejkowany atak (hasPlan=true, marchAttackTargets ma wpis) →
+    // akcja 'march-stop'/'Anuluj atak' OBECNA.
+    {
+      const mt = new Map([['u1', 'enemy1']]);
+      const acts = runSiege({ id: 'c1' }, { id: 'u1', ufortyfikowanyWPolu: false }, true, mt, false);
+      const ms = findMarchStop(acts);
+      ok(!!ms, "(i1) oblężenie + zakolejkowany atak → akcja 'march-stop' OBECNA w panelu oblężenia");
+      ok(!!ms && ms.label === 'Anuluj atak', "(i1) etykieta akcji = 'Anuluj atak'");
+      ok(!!ms && ms.disabled === false, '(i1) isAnimating=false → przycisk NIE disabled');
+    }
+
+    // (i2) oblężenie BEZ zakolejkowanego ataku (marchAttackTargets pusty) → akcja
+    // NIEOBECNA -- gracz nie ma czego anulować, UI nie zaśmiecony.
+    {
+      const mt = new Map();
+      const acts = runSiege({ id: 'c1' }, { id: 'u1', ufortyfikowanyWPolu: false }, false, mt, false);
+      ok(!findMarchStop(acts),
+        "(i2) oblężenie BEZ zakolejkowanego ataku → akcja 'march-stop' NIEOBECNA (zero zaśmiecania UI)");
+    }
+
+    // (i3) marchAttackTargets MA wpis dla tej jednostki, ale hasPlan=false (desync, nie
+    // powinien wystąpić w realnej grze, ale blok wymaga OBU warunków jawnie) → NIEOBECNA.
+    {
+      const mt = new Map([['u1', 'enemy1']]);
+      const acts = runSiege({ id: 'c1' }, { id: 'u1', ufortyfikowanyWPolu: false }, false, mt, false);
+      ok(!findMarchStop(acts),
+        '(i3) marchAttackTargets ma wpis, ale hasPlan=false → NIEOBECNA (oba warunki wymagane, nie tylko jeden)');
+    }
+
+    // (i4) isAnimating=true → akcja nadal OBECNA, ale disabled=true (spójne z gałęzią
+    // hasPlan poza oblężeniem, `disabled: isAnimating`).
+    {
+      const mt = new Map([['u1', 'enemy1']]);
+      const acts = runSiege({ id: 'c1' }, { id: 'u1', ufortyfikowanyWPolu: false }, true, mt, true);
+      const ms = findMarchStop(acts);
+      ok(!!ms && ms.disabled === true, '(i4) isAnimating=true → akcja OBECNA, ale disabled=true');
+    }
+
+    // (i) kontrola bez regresji: 'siege-hold' i 'fortify' nadal obecne niezależnie od
+    // stanu zakolejkowanego ataku (blok siegeCity nie stracił swoich oryginalnych akcji).
+    {
+      const acts = runSiege({ id: 'c1' }, { id: 'u1', ufortyfikowanyWPolu: true }, false, new Map(), false);
+      ok(!!acts.find(a => a.id === 'siege-hold'), "(i) kontrola: akcja 'siege-hold' nadal obecna");
+      const fortifyAct = acts.find(a => a.id === 'fortify');
+      ok(!!fortifyAct && fortifyAct.active === true,
+        "(i) kontrola: akcja 'fortify' nadal obecna i odzwierciedla ufortyfikowanyWPolu=true");
+    }
+
+    // MUT-SIEGE-GUARD: usunięcie warunku ochronnego -> (i2) MUSI się złapać (przycisk
+    // pojawiałby się w oblężeniu ZAWSZE, także bez czegokolwiek do anulowania).
+    {
+      const guardRegex = /if \(hasPlan && marchAttackTargets\.has\(active\.id\)\) \{/;
+      ok(guardRegex.test(siegeBlokTxt), '(MUT-SIEGE-GUARD) warunek ochronny znaleziony w wyciętym tekście (mutacja przygotowana poprawnie)');
+      const mutTxt = siegeBlokTxt.replace(guardRegex, 'if (true) {');
+      ok(mutTxt !== siegeBlokTxt, '(MUT-SIEGE-GUARD) mutacja faktycznie zmieniła tekst');
+      const runSiegeMut = zbudujSiegeHarness(mutTxt);
+      const actsMut = runSiegeMut({ id: 'c1' }, { id: 'u1', ufortyfikowanyWPolu: false }, false, new Map(), false);
+      ok(!!findMarchStop(actsMut),
+        "(MUT-SIEGE-GUARD) po usunięciu warunku: 'march-stop' pojawia się nawet BEZ zakolejkowanego ataku → ZŁAPANE, wraca zaśmiecanie UI");
+    }
   }
 }
 
