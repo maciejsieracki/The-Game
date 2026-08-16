@@ -30278,3 +30278,41 @@ Dodatkowe uwagi tego werdyktu, dotąd nigdzie nieodnotowane — wszystkie NIEBLO
 STATUS: **ZAMKNIĘTE** — temat Kultura+Surowce+Armia+Handel w całości domknięty, zdeployowany,
 żadna z uwag U1-U6 nie wymaga dalszego dispatchu. Ewentualne sprzątanie kosmetyczne (U1-U5) może
 wejść przy okazji kolejnego przeglądu panelu imperium, razem z resztą drobiazgów rundy 2.
+
+---
+
+## P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT (2026-08-16, zgłoszenie Macieja ze zrzutem panelu bocznego)
+
+**Zgłoszenie (cytat):** „Niepotrzebnie czasem powtarza się dwukrotnie ten sam komunikat
+dyplomacji, który jest wcześniej poniżej, takie jakby ponaglenie, ale to jest w ogóle
+niepotrzebne. Wystarczy, że jeden wisi się od nowa całą turę."
+
+**Zrzut (panel boczny, kolejność kart od góry):**
+1. „Koniec tury — Auto ulepszenia: 3× (−Praca)"
+2. „Dyplomacja — Dyplomacja: Rzymianie — Propozycja handlu surowcem" (BEZ przycisku ✕ — jedyna
+   karta na zrzucie bez ✕)
+3. „Dyplomacja: Sumerowie" — pełna treść oferty (Oferujemy 30 Kamień/turę... Wymiana co turę
+   przez 10 tur, runda 1/3), z ✕
+4. „Dyplomacja: Chińczycy" — pełna treść oferty, z ✕
+5. „Dyplomacja: Harappa" — pełna treść oferty, z ✕
+6. „Dyplomacja: Rzymianie" — pełna treść oferty (Oferujemy 4 ¤/turę... Oferują 5 Glina/turę...),
+   z ✕ — **ta sama cywilizacja (Rzymianie) co karta #2, dwa osobne wpisy dla tego samego
+   wydarzenia.**
+
+**Hipoteza robocza (DO ZWERYFIKOWANIA w kodzie, nie zakładać):** karta #2 („Dyplomacja: Rzymianie
+— Propozycja handlu surowcem", generyczna, bez ✕) wygląda jak jednorazowy toast/hint
+przekształcony w bierną kartę panelu (ten sam wzorzec co niedawno naprawiony
+`P-EPOKA-BRAK-INFO-PODBOJ-PANSTW-MIAST` — toast z fazy EOT trafiający do `deferredEotHints` →
+`deferredHintsToSidePanelEvents`), podczas gdy karta #6 to OSOBNY, trwały mechanizm per-civ
+statusu propozycji dyplomatycznej (ma ✕, ma pełną treść oferty, prawdopodobnie odświeżana co
+turę dopóki oferta stoi). Jeśli hipoteza się potwierdzi: to dwa RÓŻNE mechanizmy generujące
+powiadomienie o tym samym wydarzeniu (nowa propozycja od Rzymian) — jeden generyczny/jednorazowy
+(zbędny, brak ✕ sugeruje że i tak zniknie sam), drugi szczegółowy/trwały (ten, który wg
+Macieja powinien zostać, „wisi się od nowa całą turę").
+
+**Życzenie Macieja wprost:** zostaw TYLKO jedną kartę per propozycję dyplomatyczną — tę trwałą,
+odświeżaną, nie generyczny duplikat/„ponaglenie".
+
+STATUS: **OTWARTE** — wymaga recon (root cause w kodzie: skąd dokładnie bierze się karta #2,
+czy to rzeczywiście toast-EOT-defer jak w hipotezie, czy inny mechanizm) PRZED kodowaniem —
+zgodnie z CLAUDE.md §0 nie koduj od razu, przedstaw rozwiązanie ± ABC dopiero po recon.
