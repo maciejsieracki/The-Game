@@ -30877,7 +30877,28 @@ sesji) — nowa gra, odegranie tur do faktycznego przejścia Kamień→Brąz, ob
 pojawia. Jeśli nie — ustalić którą z 5 ścieżek wywołania faktycznie przechodzi gracz i dlaczego
 akurat ta nie pokazuje toastu, zamiast zgadywać.
 
-STATUS: **OTWARTE — dispatch reconu/naprawy w toku.**
+**Wynik reconu (agent `a38bed1f2ba5518bd`): mechanizm POPRAWNY, to nie był bug kodu.** Żywa
+reprodukcja w headless Chromium (nowa gra → jedno naturalne przejście Kamień→Brąz przez realny
+`triggerPlayerEndTurn()`, ta sama ścieżka co przycisk gracza) potwierdziła: toast się pokazuje
+(`display:block`, treść „Nowa epoka"/„Brązu"), razem z wpisem w dzienniku Wydarzeń. Nowa bramka
+regresyjna `era-change-toast-live-test.cjs` (17/17, realny build+Chromium, zero reimplementacji
+formuły) scalona do drzewa głównego (`9590ccca`), zweryfikowana niezależnie przez orkiestratora
+identycznie 17/17.
+
+**Rzeczywista przyczyna zgłoszenia — pomyłka diagnostyczna po drodze, nie regresja silnika.**
+Worktree Operatora dispatchowanego do tego reconu miał STARĄ kopię `gra-robocza/Gra-ROBOCZA.html`
+(md5 `a2afa359`, FALA 287, bez fixu) i na tej podstawie błędnie zdiagnozował „lukę w deployu".
+Zweryfikowane przez orkiestratora **w głównym drzewie repo**: `git log -- gra-robocza/Gra-ROBOCZA.html`
+pokazuje commit `5b471f32` („bundle pliki pominięte w poprzednim commicie"), a `md5sum` na tym
+pliku w głównym drzewie daje **`3d37608e` (FALA 288, z fixem)** — deploy w repo jest poprawny.
+**Najbardziej prawdopodobna prawdziwa przyczyna u Macieja:** lokalna kopia dysku, którą faktycznie
+gra, może nie być jeszcze zsynchronizowana z FALĄ 288 — sync na dysk właściciela wykonuje sesja
+lokalna (protokół „push", CLAUDE.md §6) i nie ma dowodu, że to nastąpiło po tym deployu. **Nie
+zgadywane dalej — do potwierdzenia wprost z Maciejem**, jak dokładnie uzyskuje dostęp do grywalnej
+wersji.
+
+STATUS: **ZAMKNIĘTE** — mechanizm zweryfikowany poprawny, nowa bramka regresyjna w drzewie. Do
+wyjaśnienia z właścicielem: kanał dystrybucji bundla, którym faktycznie gra.
 
 ---
 
