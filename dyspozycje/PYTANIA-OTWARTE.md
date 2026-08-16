@@ -25629,9 +25629,36 @@ spójne z perspektywy gracza, nawet jeśli każda z osobna jest poprawnie policz
 relacji, jeśli ten wpływ ma być częścią kryterium sprawiedliwości) i bramka akceptacji ma być
 `bilans >= 0`, bez osobnego, niezależnego progu PW.
 
-**STATUS: **OTWARTE** — runda 1 (`c94de5c8`) dostała od Evaluatora **FAIL** (werdykt na końcu tej
-sekcji): scenariusz ze zrzutu naprawiony, ale ten sam wzorzec nadal reprodukowalny dla
-`umowa_handlowa`/`umowa_szlakow` („Traktat handlowy") i dla pakietów. Czeka na rundę 2.**
+**Runda 1 (`c94de5c8`) — FAIL** (werdykt na końcu tej sekcji): scenariusz ze zrzutu naprawiony,
+ale ten sam wzorzec nadal reprodukowalny dla `umowa_handlowa`/`umowa_szlakow` („Traktat handlowy")
+i dla pakietów.
+
+**Runda 2 (`20a988c6`, przywrócona po przypadkowym cofnięciu rebase przez `d17208dd`) —
+Evaluator (`a4ccb69ab7ed4e094`, 2026-08-16): PASS-WITH-NOTES. Kod już na czubku gałęzi, gotowy
+do deployu, nic do scalenia.** Wszystkie 6 not blokujących z FAIL rundy 1 zweryfikowane
+niezależnie: scenariusz ze zrzutu (50/20 PW @ Relacja 27,8) spójny na `handel`/`umowa_handlowa`/
+`umowa_szlakow`; siatka „Traktat handlowy" 0/401 niespójnych punktów (było okno 110-179 PW);
+pakiety z jedną nieuczciwą pozycją poprawnie liczą MIN, nie sumę; live-podgląd koszyka traktatu
+0/1950 rozjazdów (baseline 177). Pomiar regresji na 2112 komórkach: 0 nowo niespójnych, 175
+naprawionych, zmiana monotoniczna. `BUG-PAKIET-BILANS-DODATNI-BLOKADA` NIE cofnięty.
+
+Noty nieblokujące (do przyszłej rundy, nie warunek PASS): **N-E1** — opis commita przypisuje
+pozostały gap live-podglądu złej funkcji (`renderPnBalancePanelForTreaty` ma dziś 0 rozjazdów) —
+realna resztka siedzi w `renderPnBalancePanelFromBasket` (panel „Wymiana", 1,6% rozjazdów, ±20%
+próg niechęci partnera). **N-E2** — komentarz typu `ProposalEvalResult` obiecuje że `pwBalance`
+jest `undefined` dla nap/sojusz/wasal — po naprawie N1 jest ustawiane dla wszystkich akcji z bazą
+traktatu, zachowanie lepsze ale komentarz nieprawdziwy. **N-E3** — teoretyczna dziura w inwariancie
+`accepted === (pwBalance >= 0)` dla koszyka 0 PW przy bardzo wysokiej Relacji — potwierdzone
+nieosiągalne przez realny katalog surowców/UI. **N-E4** — resztkowe fałszywe zielenie (39/1890
+dar blokowany progiem Relacji — już zarejestrowany osobny temat
+`P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT`; 9/1890 pusta oferta 0/0 — pożądany wyjątek;
+pakiety mieszane own+incoming 649/3136, o 312 mniej niż runda 1, nie zamknięte). **N-E5** —
+„Bilans (netto)" na ścieżce odrzucenia `treatyPnGate` nie zgadza się z prostym odjęciem kolumn
+„My oddajemy"/„Oni oddają" (ten sam znak, różna wartość — myląca dla gracza liczącego ręcznie).
+**N-E6** — `trade-ilosc-test.cjs` (35/5) nie figuruje w CLAUDE.md jako pre-istniejąca porażka;
+zweryfikowane identyczne na baseline, nie regresja tego tematu, do dopisania do CLAUDE.md.
+
+STATUS: **ZAMKNIĘTE** — temat gotowy do deployu (kod już w drzewie od `20a988c6`/`d17208dd`).
 
 **Przyczyna zlokalizowana (dochodzenie, nie zgadywanie) — odtworzona SCENARIUSZEM ZE ZRZUTU
 (givePn=50, receivePn=20, Relacja 27,8) przez prawdziwy `evaluateProposal`:** to FAKTYCZNIE
@@ -26420,8 +26447,133 @@ tę część można zachować. Do RUNDY 2:
 3. **N1 — zapytać o skalę zasięgu na mapie świata** (Katapulta 6 heksów?) zamiast dziedziczyć
    liczbę z siatki taktycznej bez konwersji.
 
-**STATUS: **OTWARTE** — Evaluator FAIL, wymagana RUNDA 2 (parytet AI dla miast) + pytania ABC do
-właściciela dla F2/F3/N1. Zmiana **nie jest gotowa do deployu**.**
+**RUNDA 2 (`a5bcd99a`) — Evaluator FAIL (2026-08-16), drugi werdykt z rzędu.** Naprawa warstwy
+DECYZJI (`isWithinCityAttackRange` w `ai.ts`, identyczna z regułą gracza `eligibleCityAttackers`
+— zweryfikowane znak w znak) jest poprawna, ale **rozkaz nigdy nie dociera do egzekucji**:
+jedyny egzekutor komend AI (`main.ts:27385`, `cmd.type === 'move'`) najpierw sprawdza
+`canUnitOccupyCityHex(...)` (`city-hex-movement.ts:29-31`), a ta funkcja **bezwarunkowo** zwraca
+`false` dla heksu obcego miasta — identyczny mechanizm, który do niedawna blokował barbarzyńcom
+przejęcie pustych miast, aż dostali jawny wyjątek `canBarbarianWalkIntoEmptyCity`
+(`P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B`). AI takiego wyjątku nie ma.
+
+**Skutek — to REGRESJA, nie martwy kod.** Własna sonda Evaluatora (prawdziwy `decideAITurn` +
+prawdziwy `canUnitOccupyCityHex`, esbuild, `units.json` realny) pokazuje: PRZED naprawą jednostka
+dystansowa przy pustym, nieobmurowanym mieście wroga dostawała realny krok — odwrót/marsz (gałąź
+„ranged hold back", `ai.ts:2610`). PO naprawie dostaje rozkaz `move` do heksu miasta, który
+egzekutor kasuje (`continue`) — jednostka nie robi NIC, `ruchLeft` nietknięty, **w kolejnej turze
+ta sama decyzja → trwałe zakleszczenie**. Promień tego zamrożenia rośnie z 1 heksa (adiacencja,
+stan sprzed zmiany) do pełnego zasięgu jednostki dystansowej (Katapulta 6, Łucznik 3 itd.).
+Bramka `atak-dystansowy-mapa-test.cjs` (91/0) tego nie łapie — sekcja (h) i strażnik testują
+wyłącznie warstwę decyzji (czysta funkcja), nie czy wyprodukowany rozkaz przeżywa egzekutor.
+
+**Dodatkowe luki (N1-N3 werdyktu, drugorzędne wobec regresji wyżej):** N1 — `isWithinCityAttackRange`
+nie sprawdza `embarked` (parytet z `eligibleCityAttackers`), dziś zamaskowane przez regresję
+egzekutora, odsłoni się po jej naprawie; ten sam wzorzec dotyczy `isWithinAttackRange` z rundy 1
+(jednostki) — egzekutor ataku też kasuje rozkaz dla `embarked === true`. N2 — pre-istniejący,
+osobny problem silnika: AI w ogóle nie ma ścieżki przejęcia niebronionego miasta (nie tylko z
+dystansu) — `allowCityCapture` wołane wyłącznie z bloku barbarzyńskiego, `AICommand` nie zna
+oblężenia. N3 — samo-mutacja MUT-I w bramce degraduje się do "nieprzygotowana" przy zmianie ciała
+funkcji zamiast dać sensowny sygnał.
+
+**Wymagane do rundy 3 (z werdyktu):** (1) decyzja ABC — czy AI dostaje tę samą ścieżkę egzekucji
+zdobycia miasta co gracz, czy egzekutor dostaje jawny wyjątek jak barbarzyńcy, czy cofnąć zasięg
+dla miast po stronie gracza (dotyka nierozstrzygniętego F2 z rundy 1); (2) bramka musi asercjonować
+rozkaz PO przejściu przez `canUnitOccupyCityHex`, nie sam predykat; (3) N1 embarked; (4) N3 -
+odporność samo-mutacji testu.
+
+**ECHO właściciela (2026-08-16): `P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1 = B`** — wąski wyjątek w
+egzekutorze (`canUnitOccupyCityHex`), analogiczny do `canBarbarianWalkIntoEmptyCity`: AI może
+wejść na heks pustego, niebronionego miasta WYŁĄCZNIE w kontekście komendy ataku dystansowego na
+miasto. N2 (ogólny brak ścieżki zdobycia miasta przez AI) świadomie POZA zakresem — osobny temat.
+
+**Runda 3 (`13f595bc`) — zaimplementowana** (`canAiEnterUndefendedCityHex` w
+`city-hex-movement.ts`, aktywowana wyłącznie przez `AICmdMove.rangedCityAttackEntry`; N1 embarked
+naprawione). Bramki: tsc 0, build exit 0, `atak-dystansowy-mapa-test` 98/0, nowy
+`atak-dystansowy-egzekucja-test` 18/0.
+
+**Evaluator (`abfdbad6162a9b0d3`, 2026-08-16) dla `13f595bc`: FAIL — trzeci z rzędu.** Bramki
+zielone (98/0, 18/0), ale zachowanie w grze gorsze niż oczekiwane, w trzech niezależnie zmierzonych
+scenariuszach (esbuild-sonda: prawdziwy `decideAITurn` → prawdziwy egzekutor → prawdziwa
+`evictForeignUnitsFromCityHexes`, wiele tur z rzędu):
+
+- **B1 (barbarzyńcy WŁĄCZENI, domyślne)** — jednostka wchodzi na pusty heks miasta, ale
+  `evictForeignUnitsFromCityHexes()` (wołana z tej samej gałęzi co barbarzyńcy) wypycha ją co turę
+  na drugą stronę miasta w głąb terytorium wroga. Miasto nigdy nie zmienia właściciela — **wieczna
+  oscylacja**, cały ruch jednostki marnowany co turę bez końca.
+- **B2 (barbarzyńcy WYŁĄCZENI)** — evict się nie wykonuje, jednostka **wrasta na stałe** w heks
+  miasta (`computePath` zwraca `[]` dla ruchu na własny heks) — wyłączona z gry na zawsze, gorzej
+  niż przed rundą 2 (wtedy przynajmniej się wycofywała).
+- **B3 (miasto BRONIONE — przypadek dominujący w realnej grze)** — reguła decyzyjna
+  (`isWithinCityAttackRange`) i egzekucyjna (`canAiEnterUndefendedCityHex`) rozjeżdżają się:
+  decyzja nie sprawdza obrońców/muru przy adiacencji, egzekucja odmawia — **dokładnie regresja
+  rundy 2, tylko zawężona do miast bronionych**, które są większością realnych scenariuszy.
+  Porównanie z baseline `07626e24` (sprzed rundy 2): tam jednostka wykonywała realny odwrót, dziś
+  zamiera.
+
+Analogia do barbarzyńców była niekompletna: barbarzyńcy po wejściu wołają
+`tryAutoCaptureEmptyCityAt` (miasto zmienia właściciela → evict ich pomija), ta naprawa skopiowała
+samo pozwolenie na wejście, bez tego co czyni je trwałym.
+
+**Zalecenie Evaluatora do rundy 4:** (1) zrównać `isWithinCityAttackRange` z
+`canAiEnterUndefendedCityHex` (decyzja ma zwracać false wszędzie, gdzie egzekucja i tak odmówi —
+mur, obrońcy), żeby jednostka spadała do gałęzi odwrotu zamiast zamierać; (2) **pytanie ABC do
+właściciela**: czy wejście na pusty heks ma skutkować realnym przejęciem miasta (jak
+barbarzyńcy — ale to dotyka N2, świadomie odłożonego), czy wejścia w ogóle nie powinno być —
+obecny stan pośredni (B1/B2) jest gorszy od obu skrajności; (3) bramka musi objąć
+`evictForeignUnitsFromCityHexes` i min. 2 tury z rzędu, inaczej ten sam błąd przejdzie ponownie
+zielono.
+
+**ECHO właściciela (2026-08-16): `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 = A`** — realne przejęcie
+miasta jak barbarzyńcy (`tryAutoCaptureEmptyCityAt`), wejście na pusty niebroniony heks kończy
+sekwencję zmianą właściciela. Świadomie otwiera zakres N2, ale wyłącznie w obrębie ścieżki ataku
+dystansowego (nie ogólnego marszu AI).
+
+**Runda 4 (`6826b16c`, 2026-08-16) — zaimplementowana.** (1) Egzekutor AI (`main.ts:27561-27587`)
+po wejściu na heks miasta woła `tryAutoCaptureEmptyCityAt` (ta sama ścieżka co barbarzyńcy) —
+naprawia B1 (wieczna oscylacja evict) i B2 (trwałe uwięzienie na heksie), bo przejęcie usuwa
+przyczynę wypychania. (2) `isWithinCityAttackRange` (`ai.ts`) dostał 4. parametr `units`, warunek
+mur-LUB-obrońcy zastosowany też do adiacencji (nie tylko zasięgu) — naprawia B3, zrównując regułę
+decyzyjną z egzekucyjną. Świadome odejście od parytetu gracz-AI w komórce mur×adiacencja (AI
+dostaje „niedostępne" zamiast `attack_choice`, opisane w kodzie i teście) — AI i tak nie miała
+ścieżki oblężenia z adiacencji, więc to nie regresja parytetu z rund 1/2. (3) N-D naprawione przy
+okazji: `isWithinAttackRange` (atak jednostka-jednostka) dostał wyjątek embarked, analogiczny do
+już istniejącego w `isWithinCityAttackRange`.
+
+Bramka pełnej sekwencji (`atak-dystansowy-egzekucja-test.cjs`, prawdziwe `decideAITurn` → prawdziwy
+egzekutor → prawdziwe `evictForeignUnitsFromCityHexes`, 2 tury/scenariusz) pokrywa A2/D1/B1/C1 +
+mutację MUT-N odtwarzającą dokładnie regresję rundy 3. Wyniki: tsc 0, build exit 0,
+`atak-dystansowy-mapa-test` 102/0, `atak-dystansowy-egzekucja-test` 52/0, `combat-test` 6/6,
+`map-attack-city-test` 8/0, `barb-city-capture-cluster-test` 94/0 — zweryfikowane niezależnie przez
+orkiestratora w drzewie głównym po scaleniu, identyczne z raportem Operatora. `ai-test` (285/8) i
+`unit-power-test` (4/2) niezmienione, pre-istniejące.
+
+**Evaluator rundy 4 (`a4380802596aad26a`, Opus 5, 2026-08-16): PASS-WITH-NOTES.** Worktree Evaluatora
+startował z błędnego punktu (przodek `6826b16c`, nie czubek) — złapane i naprawione samodzielnie
+(`--detach 6826b16c`) przed pomiarem, wszystkie liczby niżej z poprawnego commita. Wszystkie bramki
+zielone, potwierdzone niezależnie: tsc 0, build exit 0, `atak-dystansowy-mapa-test` 102/0,
+`atak-dystansowy-egzekucja-test` 52/0, `combat-test` 6/6, `map-attack-city-test` 8/0,
+`barb-city-capture-cluster-test` 94/0, `ai-test` 285/8 i `unit-power-test` 4/2 (oba pre-istniejące,
+delta zero zmierzona podmianą plików na wersję rodzica). **B1/B2/B3 potwierdzone naprawione przez
+wykonanie, nie odczyt** — 3 własne mutacje cofające naprawę (MUT-A: usunięcie przejęcia, MUT-B:
+cofnięcie reguły decyzyjnej, MUT-C: usunięcie wyjątku embarked) wszystkie idą na czerwono. Oba
+punkty zgłoszone przez Operatora zweryfikowane: parytet — słuszne co do istoty, ale realnie
+utracona komórka to (mur LUB obrońcy)×adiacencja, nie tylko mur×adiacencja; zweryfikowane na
+baseline `07626e24` że ta komórka nigdy nie dawała AI wykonalnej akcji, więc `false` jest ściśle
+lepsze niż martwy rozkaz — nie regresja. Skutki uboczne przejęcia — potwierdzone, ścieżka
+`applyCityCaptureToMap` reużyta 1:1, jedyne rozgałęzienia po właścicielu (kolejka produkcji
+barbarzyńców, popup gracza) nie dotyczą AI; utrata stolicy/ostatniego miasta powiadamia niezależnie
+od zdobywcy.
+
+Noty nieblokujące: **N1** (patrz nowy temat `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` niżej w pliku,
+zasługuje na osobne ABC) — teleport na pełny zasięg jednostki (do 6 heksów) ze zmianą właściciela
+miasta w jednej turze, zarezerwowane dla właściciela w rundzie 1 (F3) i nigdy nie zadane. N2/N3 —
+atrapa testu i reguła AI nie kopiują bramki cywilnej gracza, ale latentne (Osadnik/Robotnik nie
+istnieją w danych, zwiadowcy mają bezwarunkowy `continue`). N4 — `hasCityDefenders` (kosztowne)
+liczone przed tanim porównaniem dystansu, obserwacja statyczna, nie zbenchmarkowana. N5 — brak
+pokrycia dla dwóch jednostek AI wchodzących na ten sam heks miasta w jednej turze (z odczytu kodu
+wynik łagodny). N6 — komunikat mutacyjny nieaktualny kosmetycznie.
+
+STATUS: **ZAMKNIĘTE** — gotowe do deployu.
 
 ---
 
@@ -29995,8 +30147,9 @@ Zgłoszone w trakcie równoległej pracy nad reskinowaniem 11 zakładek panelu i
 (`R-DESIGN-11-ZAKLADEK` faza 3) — zgodnie z zasadą 2 (zakaz otwierania nowych wątków) zapisane tu
 bez przerywania bieżącego tematu.
 
-STATUS: **OTWARTE** — zakres doprecyzowany, czeka na dispatch subagenta (recon + implementacja
-komunikatu przejścia epoki w UI końca tury).
+STATUS: **ZAMKNIĘTE** — zaimplementowane (commity `6936d4d3`/`90661f91`, `pendingEraChangeToastForNextTurn`
++ `flushPendingEraChangeToast()`), Evaluator PASS-WITH-NOTES (runda 2 naprawiła N1/N2 werdyktu).
+Gotowe do deployu.
 
 ---
 
@@ -30072,10 +30225,69 @@ zrobione poprawnie; brakuje tylko dalszych kroków tej samej kolejności.
 bez regresji; wymyślanie liczb zamiast prawdziwych danych łamałoby CLAUDE.md §3), ale właściciel
 musi znać prawdziwy zakres — stąd ten wpis.
 
-STATUS: **OTWARTE** — czeka na decyzję właściciela, czy dociągnięcie pozostałych pozycji list (co
-wymaga rozszerzenia `EmpireDetailSnap`/`main.ts`) to kolejny temat do zlecenia, czy zakres
-zostaje jak jest. Nie dispatchuję subagenta bez tej decyzji — to pytanie produktowe, nie
-techniczne.
+**ECHO A (Maciej, AskUserQuestion 2026-08-16):** zleć dociągnięcie teraz — rozszerzenie
+`EmpireDetailSnap`/`main.ts` o brakujące pola (budynki wg `BUILDING_GROUP_ORDER`, kolejka
+produkcji, obrona miasta dla Miasta; Zdrowie, Prawo i administracja, Wyżywienie w tym rozbicie
+Zadowolenia na 5 źródeł dla Obywateli), pełna pętla Operator→Evaluator.
+
+**Evaluator (`af0c03dbbf259ab94`, 2026-08-16) dla commitu `6366e81e`: FAIL.** Merytorycznie
+solidne (wszystkie 9 pozycji faktycznie czytają silnik, zero wymyślonej matematyki, zero
+regresji na ~15 bramkach — wszystkie policzone niezależnie), ale trzy realne defekty produktu +
+trzy nieprawdziwe twierdzenia zapisane w kodzie jako fakt (CLAUDE.md §0b: każda liczba/twierdzenie
+przedstawione właścicielowi jako fakt wymaga rygoru).
+
+Blokujące (warunek PASS):
+- **N3** — wiersz podsumowania Handlu liczy `SZLAKI` z `trade.routes.length` (CAŁA cywilizacja),
+  a `DOCHÓD` obok z `paired` (zawężone przełącznikiem zakresu) — po ustawieniu zakresu na jedno
+  miasto wiersz miesza dwa różne zakresy w jednym bloku (np. „CAŁA CYWILIZACJA · 7 · 0" obok
+  komunikatu „brak tras w zakresie").
+- **N1** — nowy test (`empire-panel-miasto-obywatele-content-test.cjs`) sprawdza WYŁĄCZNIE
+  obecność tekstu/kotwic źródłowych, nie poprawność wartości. 4 mutacje arytmetyczne Evaluatora
+  (garnizon +1, sumowanie Zadowolenia zamienione na nadpisywanie, dochód tras ×2, bonus murów ×2)
+  przeszły **59/0 zielono** — bramka nie łapie żadnego z nich. Wymagane: wyciągnąć agregację
+  Zadowolenia do eksportowanej czystej funkcji + dopisać asercje WARTOŚCIOWE łapiące te 4
+  scenariusze, plus min. 2 własne przypadki brzegowe (pusta kolejka, prawoPct null, miasto bez
+  murów, poziom racji na clampie).
+- **N4** — CLAUDE.md §3 (jednostki): zniknęła etykieta „Pieniądza/turę" przy DOCHÓD Handlu (była
+  w starej stopce); Zadowolenie/źródła bez jednostki `pkt Sz` (konwencja repo, `cityPanel.ts`);
+  etykieta „Poziom imperium" myląca — to SUMA netto pkt Sz po wszystkich miastach (rośnie z
+  liczbą miast), nie poziom — stopka temu przeczy.
+
+Wymagane, ale nie blokujące deployu jako takiego (poprawka dokumentacji/JSDoc, §0b):
+- **N2** — JSDoc uzasadnia pominięcie „obrabianych pól" fałszywie („wymaga dostępu do
+  mapy/heksów, nie tylko City/cityProd/cityOrderState") — Evaluator dowiódł eksperymentem
+  kompilacyjnym że dane są dostępne jedną linią (`okolicaWorkedKeySet(c).size`, helper już
+  istnieje w main.ts:4778); prawdziwy powód to WYŁĄCZNIE zakres ECHO A (nie było na liście).
+- **N5** — JSDoc `EmpireCityQueueItemRow` fałszywie twierdzi że pozycje spoza frontu nie mają
+  postępu — `promoteToFront` bankuje postęp na schodzącej pozycji.
+- **N6** — commit/JSDoc raportuje „8/8"/„9/9" (pełne pokrycie), ale „obrabiane pola" i „podział
+  praca/budynki" NADAL brakuje — to część oryginalnie zgłoszonych pozycji (populacja/podział
+  pracy), nie poza-zakresem jak N2 sugeruje.
+- **N7** — drobne: `EmpireCityDefenseRow` JSDoc nie uwzględnia bonusu z ulepszenia terenu (fort/
+  posterunek) gdy brak murów; „ta sama funkcja co garnizon w rozpisce Prawa" to w rzeczywistości
+  dwa identyczne, osobne predykaty w `armyMerge.ts` (liczby się zgadzają, opis nie).
+
+**Runda 2 (`01b89eec`) — zaimplementowana**, naprawia N1-N7: N3 (SZLAKI z `paired`), N1
+(`aggregateHappinessSources()` czysta funkcja + sekcja D testu z asercjami wartościowymi łapiącymi
+wszystkie 4 mutacje werdyktu), N4 (jednostki „Pieniądza/turę"/„Sz", etykieta „Suma netto"), N2/N5/
+N6/N7 (sprostowania JSDoc). Bramki: tsc 0, build exit 0, `empire-panel-miasto-obywatele-content-test`
+99/0 (było 59/0).
+
+**Evaluator (`a0a9c5e072b42a28f`, 2026-08-16) dla `01b89eec`: PASS-WITH-NOTES.** N1 zweryfikowane
+najsurowiej — odtworzone wszystkie 4 mutacje z werdyktu FAIL (garnizon+1, sumowanie Zadowolenia
+`+=`→`=`, dochód tras ×2, bonus murów ×2), wszystkie teraz złapane przez realne wykonanie
+(esbuild+jsdom), nie tekst źródłowy. N3/N4 potwierdzone renderem. N2/N5/N7 sprawdzone co do
+prawdziwości — w większości trafne.
+
+Noty nieblokujące: **U1** (najpoważniejsza) — N6 nadal częściowo zawyża pokrycie: „kolejka
+produkcji (tury do końca)" i „budynki i ich produkcja" opisane jako w pełni zrealizowane, ale
+faktycznie brak. **U2** — `renderObywateleSection` ma zero pokrycia realnym wykonaniem (sekcja D
+testuje wyłącznie Miasto), własna mutacja w wierszu Zadowolenia Obywateli przeszła zielono. **U3**
+— sortowanie źródeł Zadowolenia nietestowane. **U4-U7** — drobne nieścisłości opisu/komentarzy,
+zaokrąglenie niespójne między nagłówkiem (int) a źródłami (1 miejsce po przecinku).
+
+STATUS: **ZAMKNIĘTE** — gotowe do deployu. U1/U2 rekomendowane jako osobne, wąskie zlecenie
+(nie teraz).
 
 ---
 
@@ -30133,8 +30345,16 @@ przy niejednoznaczności). Dwie opcje do ABC przy podjęciu tematu:
 - B: SUMA liczona z wartości efektywnych (`fed ? total : 0`, spójne z `cityPanel.ts` gdzie indziej
   w grze) — wymagałoby też przemyślenia, czy komórki per-miasto powinny pójść tą samą drogą.
 
-STATUS: **OTWARTE** — czeka na ABC do właściciela. Nie blokuje deployu (to nie regresja, tylko
-uwidocznienie istniejącej niejednoznaczności konwencji).
+**ECHO B (Maciej, AskUserQuestion 2026-08-16):** SUMA efektywna, jak `cityPanel.ts`
+(`fed ? total : 0`) — wraz z przejściem komórek per-miasto tej samej tabeli na tę samą konwencję,
+dla spójności (żeby SUMA zgadzała się z widocznymi liczbami).
+
+**Wdrożone i zweryfikowane** (commit `710179cb`, Evaluator PASS-WITH-NOTES — dowód liczbowy
+odtworzony wykonaniem kodu, nie na słowo). Evaluator znalazł efekt uboczny POZA zakresem tego
+ECHO (zakładka Miasta w tym samym pliku, `cityMiastaMiniDetail()`, nadal liczy nominalnie —
+patrz nowy wpis `P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD` niżej).
+
+STATUS: **ZAMKNIĘTE** (nie deploy — commit już jest, deploy do ROBOCZA tylko na hasło).
 
 ---
 
@@ -30171,10 +30391,12 @@ trzema kubełkami mieściła się w jednej).
 czyta się jak stan magazynu, a nie koszt na turę. CLAUDE.md §3 wymaga nazwanego parametru **i**
 jednostki, więc box dostał `−8 żywności / turę`, symetrycznie do sąsiedniego `−17 złota / turę`.
 
-STATUS: **OTWARTE** — czeka na decyzję właściciela WYŁĄCZNIE w punkcie 1 (Kultura/ZASIĘG: korekta
-makiety czy jednak liczba w kodzie). Punkty 2 i 3 są już wdrożone i nie wymagają odpowiedzi —
-stoją tu po to, żeby rozjazd z zatwierdzonym rysunkiem był zapisany, a nie odkryty przy
-następnym porównaniu z makietą. Nie blokuje deployu.
+**ECHO A, punkt 1 (Maciej, AskUserQuestion 2026-08-16):** „—" zostaje — makieta była w tym jednym
+miejscu błędna (suma promieni granic nie jest realną wielkością gry). Korekta wyłącznie
+dokumentacyjna (nota przy makiecie), bez zmiany kodu. Punkty 2 i 3 były już wdrożone bez
+konieczności odpowiedzi.
+
+STATUS: **ZAMKNIĘTE** — wszystkie 3 punkty rozstrzygnięte, nic nie blokuje deployu.
 
 ---
 
@@ -30201,3 +30423,292 @@ dla kompletności rejestru, żaden nie blokuje deployu:
 
 STATUS: **OTWARTE** — czeka na uznanie właściciela za zamknięte przy następnym przeglądzie panelu
 imperium (żaden punkt nie wymaga osobnego dispatchu, wszystkie są kosmetyczne/dokumentacyjne).
+
+---
+
+## P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD (2026-08-16, znalezisko Evaluatora)
+
+Evaluator oceniający `710179cb` (Spichlerz SUMA efektywna, ECHO B) znalazł: naprawa usunęła
+rozjazd WEWNĄTRZ tabeli Spichlerza, ale wytworzyła NOWY rozjazd MIĘDZY zakładkami tego samego
+panelu imperium. `cityMiastaMiniDetail()` (zakładka „Miasta", ten sam plik
+`empireDetailPanel.ts`) czyta te same `food.perCityRows` (przez `foodById`), ale bez bramki
+`nakarmione` — liczy nominalnie, tak jak Spichlerz robił PRZED tą naprawą.
+
+**Skutek na przykładzie z poprzedniego wpisu** (3 miasta po 6%, 2 głodujące): zakładka „Miasta"
+→ 6%/6%/6%, ŚREDNIA **6%**; zakładka „Spichlerz" → 6%/0%/0%, SUMA **2%**. Przed naprawą obie
+zakładki pokazywały to samo. Formalnie NIE jest to naruszenie ECHO B (decyzja mówiła wprost o
+„komórkach per-miasto **tej samej tabeli**"), ale gracz przełączający się między zakładkami
+zobaczy dwie różne liczby dla tego samego zjawiska.
+
+**Uwaga praktyczna:** `empire-miasta-table-test.cjs` (89/0) dziś przypina nominalną konwencję
+po stronie „Miasta" — ewentualna zmiana wymagałaby też ruszenia tej bramki.
+
+Nie rozstrzygam samodzielnie — to kolejne pytanie produktowe tej samej rodziny co ECHO B (czy
+zakładka Miasta ma pójść tą samą drogą, czy rozjazd między dwoma różnymi „widokami" tej samej
+liczby jest akceptowalny, bo to inne pytania: „ile realnie rośnie populacja imperium" [Spichlerz]
+vs „jak wygląda produkcja per miasto" [Miasta]).
+
+**ECHO właściciela (2026-08-16): `P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD-Q1 = B`** —
+ujednolicić: zakładka Miasta ma liczyć ŚREDNIĄ wzrostu efektywnie (głodujące miasta = 0%),
+tak samo jak Spichlerz. Wymaga zmiany `cityMiastaMiniDetail()`/`computeMiastaSummaryRow`
+(`empireDetailPanel.ts`) i ruszenia przypiętej bramki `empire-miasta-table-test.cjs` (dziś 89/0,
+pinuje konwencję nominalną).
+
+**Evaluator (`aa0e09ba853b7dada`, 2026-08-16) dla `0b46cdbd`: PASS-WITH-NOTES.** Wszystkie 4
+warunki ECHO B potwierdzone własnym harnessem (esbuild+jsdom, render obu zakładek dla tych samych
+danych): reguła głodu identyczna (to samo pole `nakarmione === false` w tym samym typie wiersza),
+komórki per-miasto nietknięte (nadal nominalne mimo głodu), przykład z rejestru odtworzony 1:1
+(komórki 6%/6%/6%, ŚREDNIA=SUMA=2%), konwencja zaokrąglania poprawna (suma surowa → jedno
+zaokrąglenie, nie średnia z zaokrąglonych komórek — rozstrzygnięte danymi które to rozróżniają).
+
+Noty nieblokujące: N1/N2 — bramka nie przypina osobno definicji głodu (`undefined` vs `!== true`)
+ani konwencji zaokrąglania (dane testowe całkowite, nie łapią zaokrąglania-przed-sumą) — kod
+poprawny, sieć regresyjna ma dziury. N3 — poprawiony komentarz przy Spichlerzu odrobinę za szeroki
+(„obie tabele liczą identycznie" bez zastrzeżenia że dotyczy wyłącznie wiersza sumarycznego,
+nie komórek per-miasto). N4 — pre-istniejący, nieregresyjny rozjazd: obie tabele liczą po różnych
+zbiorach wierszy (Miasta po `cp` aktualnym, Spichlerz po `food.perCityRows` z ostatniego ticku) —
+przy zdobyciu/utracie miasta między tickiem a renderem mianowniki mogą się różnić.
+
+STATUS: **ZAMKNIĘTE** — gotowe do deployu. N1-N4 do przyszłego, wąskiego zlecenia utwardzenia
+bramki (nie teraz).
+
+---
+
+## P-DESIGN-11-ZAKLADEK-KULTURA-SUROWCE-ARMIA-HANDEL-ZAMKNIECIE (2026-08-16, werdykt zamykający Evaluatora)
+
+Evaluator zamykający (Opus 5, `a58506e09f6edacf2`) potwierdził werdykt **PASS-WITH-NOTES** dla obu
+rund tematu Kultura+Surowce+Armia+Handel (`a6ed0553` → `1f431aa7`): wszystkie 6 napraw kodowych
+(N2/N3/N4/N6/N8/N10) zweryfikowane niezależnie realnym renderem (harness esbuild+jsdom,
+`mountEmpireDetailPanel`/`showEmpireDetailPanel`, nie odczyt źródła), 16 bramek panelu bez
+regresji (jedyna czerwona `empire-panel-moc-scroll-preserve` 38/9 — pre-istniejąca, potwierdzona
+zgodna z CLAUDE.md). Rejestr N1/N5/N7/N9/N11/N12 zweryfikowany jako wierny (patrz
+`P-DESIGN-11-ZAKLADEK-ODSTEPSTWA-OD-MAKIETY-RUNDA-2` i
+`P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` wyżej w tym pliku). **Temat już w ROBOCZA**
+(FALA 287, commit `17baa179`).
+
+Dodatkowe uwagi tego werdyktu, dotąd nigdzie nieodnotowane — wszystkie NIEBLOKUJĄCE, bez akcji:
+
+- **U1** — opis commita `1f431aa7` twierdzi „Naprawione kodem (7)", a wylicza 6 pozycji
+  (N2/N3/N4/N6/N8/N10). Sprostowanie liczby w opisie; historii commita nie da się przepisać.
+- **U2** — polska odmiana: przy wartościach 2-4 podpis brzmi „2 rośnie"/„3 spada" zamiast
+  „2 rosną"/„3 spadają" (ten sam mechanizm co N4, ale czasownik zamiast przymiotnika).
+  Pre-istniejące.
+- **U3** — „Głód wojska za 3 tur" zamiast „za 3 tury" — pre-istniejący ciąg, commit zmienił tylko
+  klasę CSS.
+- **U4** — w Handlu komórki dochodu per trasa mają zaszyte `+${r.income}` zamiast `signedPl()`
+  (jak hero/SUMA po N6) — dziś nieosiągalne (dochód trasy zawsze całkowity i dodatni), teoretyczna
+  niespójność.
+- **U5** — kolumna ZASIĘG drukuje „+3 hex" a makieta „3 heksy" — czwarte odstępstwo od makiety w
+  tej samej kolumnie omawianej w N7 (`P-DESIGN-11-ZAKLADEK-ODSTEPSTWA-OD-MAKIETY-RUNDA-2`),
+  tam niewymienione. Kosmetyczne.
+- **U6** — `zlotoTxt = utrzZloto > 0 ? … : '0'` po cichu pokazałoby „0" dla wartości ujemnej,
+  nieosiągalne przy obecnym silniku (parytet z istniejącym kodem w Skarbcu).
+
+STATUS: **ZAMKNIĘTE** — temat Kultura+Surowce+Armia+Handel w całości domknięty, zdeployowany,
+żadna z uwag U1-U6 nie wymaga dalszego dispatchu. Ewentualne sprzątanie kosmetyczne (U1-U5) może
+wejść przy okazji kolejnego przeglądu panelu imperium, razem z resztą drobiazgów rundy 2.
+
+---
+
+## P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT (2026-08-16, zgłoszenie Macieja ze zrzutem panelu bocznego)
+
+**Zgłoszenie (cytat):** „Niepotrzebnie czasem powtarza się dwukrotnie ten sam komunikat
+dyplomacji, który jest wcześniej poniżej, takie jakby ponaglenie, ale to jest w ogóle
+niepotrzebne. Wystarczy, że jeden wisi się od nowa całą turę."
+
+**Zrzut (panel boczny, kolejność kart od góry):**
+1. „Koniec tury — Auto ulepszenia: 3× (−Praca)"
+2. „Dyplomacja — Dyplomacja: Rzymianie — Propozycja handlu surowcem" (BEZ przycisku ✕ — jedyna
+   karta na zrzucie bez ✕)
+3. „Dyplomacja: Sumerowie" — pełna treść oferty (Oferujemy 30 Kamień/turę... Wymiana co turę
+   przez 10 tur, runda 1/3), z ✕
+4. „Dyplomacja: Chińczycy" — pełna treść oferty, z ✕
+5. „Dyplomacja: Harappa" — pełna treść oferty, z ✕
+6. „Dyplomacja: Rzymianie" — pełna treść oferty (Oferujemy 4 ¤/turę... Oferują 5 Glina/turę...),
+   z ✕ — **ta sama cywilizacja (Rzymianie) co karta #2, dwa osobne wpisy dla tego samego
+   wydarzenia.**
+
+**Hipoteza robocza (DO ZWERYFIKOWANIA w kodzie, nie zakładać):** karta #2 („Dyplomacja: Rzymianie
+— Propozycja handlu surowcem", generyczna, bez ✕) wygląda jak jednorazowy toast/hint
+przekształcony w bierną kartę panelu (ten sam wzorzec co niedawno naprawiony
+`P-EPOKA-BRAK-INFO-PODBOJ-PANSTW-MIAST` — toast z fazy EOT trafiający do `deferredEotHints` →
+`deferredHintsToSidePanelEvents`), podczas gdy karta #6 to OSOBNY, trwały mechanizm per-civ
+statusu propozycji dyplomatycznej (ma ✕, ma pełną treść oferty, prawdopodobnie odświeżana co
+turę dopóki oferta stoi). Jeśli hipoteza się potwierdzi: to dwa RÓŻNE mechanizmy generujące
+powiadomienie o tym samym wydarzeniu (nowa propozycja od Rzymian) — jeden generyczny/jednorazowy
+(zbędny, brak ✕ sugeruje że i tak zniknie sam), drugi szczegółowy/trwały (ten, który wg
+Macieja powinien zostać, „wisi się od nowa całą turę").
+
+**Życzenie Macieja wprost:** zostaw TYLKO jedną kartę per propozycję dyplomatyczną — tę trwałą,
+odświeżaną, nie generyczny duplikat/„ponaglenie".
+
+STATUS: **ZAMKNIĘTE** — recon potwierdził hipotezę w 100%, naprawione (commit `4dabd793` +
+follow-up `267fa85c`), Evaluator PASS-WITH-NOTES. Gotowe do deployu.
+
+---
+
+## P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „w widoku armii powinien być jeszcze jedno miejsce. Jaka jednostka jest
+produkowana, jeżeli jest produkowana."
+
+**Kontekst:** zakładka „Armia" panelu imperium (`renderArmiaSection`, `empireDetailPanel.ts`,
+świeżo przebudowana w tej samej sesji — reskin `a6ed0553`/`1f431aa7`) pokazuje dziś: liczbę
+jednostek na mapie, pulę rekrutów (Manpower) z paskiem zapełnienia, boxy KOSZT ZŁOTA/ZAOPATRZENIE,
+tabelę rekrutów (`cityPoborMiniRekruci`), zaopatrzenie żywnościowe i alert głodu. **Nigdzie nie
+pokazuje, jaka JEDNOSTKA jest aktualnie w produkcji w poszczególnych miastach** — mimo że dane już
+istnieją w silniku: `City.productionQueue` (`ProductionItem[]`, pole `kind` rozróżnia
+`jednostka`/budynek, `nazwa`, `koszt`, `postep` — indeks 0 to pozycja aktualnie budowana,
+`gra/src/game/production.ts`), czytane już per-miasto w panelu miasta (`cityPanel.ts`).
+
+**Zakres do ustalenia przez Operatora (recon przed kodowaniem):** dokładny kształt typu
+`ProductionItem`/`City.productionQueue`, czy jest już gdzieś empire-wide agregacja kolejki
+produkcji jednostek (do sprawdzenia), oraz najlepsze miejsce w istniejącym layoucie zakładki
+Armia (prawdopodobnie nowa mini-tabela pod „Rekruci — pula werbu", analogiczna do
+`cityPoborMiniRekruci`, wg wzorca `miniHeader`/`miniRow` już używanego w pliku) — pokazująca per
+miasto: jaka jednostka w produkcji (jeśli `productionQueue[0].kind === 'jednostka'`), ew. tury do
+ukończenia. Miasta bez jednostki w produkcji (kolejka pusta, albo budynek na czele) — pominąć z
+listy albo pokazać „—", do ustalenia przez Operatora wg czytelności (nie wymaga ABC, to detal
+prezentacji, nie decyzja produktowa — życzenie Macieja jest jednoznaczne co do TREŚCI informacji).
+
+**Evaluator (`a7a731139391b227c`, 2026-08-16) dla `e5b4a91a`: FAIL.** Scalenie ręczne z równoległym
+tematem Obywatele zweryfikowane jako poprawne (oba pola snapshotu żyją pełnym łańcuchem, zero
+ubocznych skasowań). Dwa realne defekty blokujące:
+
+- **N1** — mini-tabela ignoruje pole `prod.wstrzymana` (silnik NIE dodaje Pracy do wstrzymanej
+  produkcji). Miasto z wstrzymaną kolejką pokazuje w zakładce Armia „~3 tur" — liczbę, która nigdy
+  nie nadejdzie — podczas gdy panel miasta (4 inne miejsca w kodzie) poprawnie drukuje „wstrzymana".
+  Dwa panele tej samej gry przeczą sobie. Zgłoszenie Macieja: „jeżeli jest produkowana" — wstrzymana
+  nie jest produkowana.
+- **N2** — nowo wyekstrahowana, współdzielona `etaTurns()` (`production.ts`) nie ma ani jednej
+  asercji brzegowej (reszta z dzielenia, clamp `Math.max(1,...)`) — dwie mutacje realnej formuły
+  (`Math.ceil→Math.floor`, `Math.max(1,...)→Math.max(0,...)`) przechodzą bramkę 30/0 zielono.
+  `grep -rln etaTurns tools/` = wyłącznie jeden plik testowy dla całej współdzielonej funkcji.
+
+Nieblokujące: N3 — komentarz/opis commita błędnie przypisuje przekroczenie okna regexa 12000 znaków
+temu tematowi; realny sprawca to równoległy `6366e81e` (Miasto/Obywatele), bramka była czerwona
+już PRZED tym commitem. Poprawka okna (12000→20000) słuszna, atrybucja przyczyny nie. N4 — brak
+odmiany „tur/tury" (kosmetyka, zgodne z istniejącą konwencją panelu imperium). N5 — zbędny
+strażnik `pracaBudynki > 0 ?` dubluje wewnętrzny guard `etaTurns()`, przypięty kotwicą testową B8.
+
+**Runda 2 (`b22bc5ce`) — zaimplementowana**, naprawia N1-N5: N1 (`prod.wstrzymana` respektowane,
+ETA null + tekst „wstrzymana"), N2 (2 nowe asercje brzegowe `etaTurns()`, zweryfikowane mutacyjnie),
+N3 (sprostowana atrybucja), N4 (odmiana „tura/tury/tur"), N5 (usunięty zbędny strażnik). Bramki:
+tsc 0, build exit 0, `empire-armia-produkcja-test` 51/51 (było 30/0).
+
+**Evaluator (`a77af5228a68e9bb7`, 2026-08-16) dla `b22bc5ce`: PASS-WITH-NOTES.** Wszystkie 5 not
+zweryfikowane niezależnym wykonaniem: N1 (spójność z panelem miasta potwierdzona w kodzie), N2
+(6 mutacji, w tym własne — A12/A13 jedyne łapiące `Math.ceil→Math.floor`/`Math.max(1,)→Math.max(0,)`,
+sam wzór A4 by tego nie złapał), N3 (atrybucja zmierzona na 5 commitach — sprawcą wyłącznie
+`6366e81e`), N4 (21 liczb, 0 błędów odmiany, w tym `112`), N5 (potwierdzone że `etaTurns()` sam
+strażuje `praca<=0`).
+
+Nota nieblokująca: **U1** — linia `_lastPlayerCityEcon.find(t => t.cityId === c.id)` (źródło
+Pracy per miasto) nie ma żadnej kotwicy w sekcji B testu; własna mutacja Evaluatora (Praca
+pierwszego miasta użyta dla wszystkich) przeszła 51/51 zielono. Kod poprawny, sieć regresyjna ma
+dziurę — do przyszłego zlecenia.
+
+STATUS: **ZAMKNIĘTE** — gotowe do deployu. U1 do przyszłego, wąskiego zlecenia utwardzenia bramki
+(nie teraz).
+
+---
+
+## R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „nowo wybudowane miasto niech zaczyna zawsze z automatycznie włączonym
+autowyżywieniem."
+
+**Recon (orkiestrator, przed dispatchem):** pole `autoWyzywienie?: boolean` istnieje w
+`gra/src/game/cities.ts` (~linia 577, komentarz „Gracz: default false/undefined=WYŁ. AI:
+ignorowane"). `ensureCitySaveDefaults()` (linia 410+) NIE ustawia tego pola wcale — więc nie jest
+właściwym miejscem (dotyczy WSZYSTKICH miast przy wczytaniu zapisu, nie tylko nowo zakładanych,
+zmiana tam retroaktywnie włączyłaby autowyżywienie w starych zapisach — niezgodne z literalnym
+zgłoszeniem „nowo wybudowane"). Właściwe miejsce: `foundCityAt()` (linia 793-828) — konstruktor
+obiektu dla faktycznie nowego miasta, obecnie pomija to pole całkowicie (dopiero
+`ensureCitySaveDefaults` coś by dostawiło, ale jak wyżej — nic nie dostawia, więc dziś zawsze
+`undefined` = WYŁ.). Do potwierdzenia przy implementacji: czy zmiana ma dotyczyć też miast AI (pole
+ma komentarz „AI: ignorowane" — jeśli faktycznie ignorowane przez silnik AI, ustawienie `true` dla
+AI jest nieszkodliwe, ale do zweryfikowania w kodzie, nie zgadywania).
+
+STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+
+---
+
+## R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-DOMYSLNIE (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „oraz zrównoważonym automatycznym budowaniu budynków." (kontynuacja tego
+samego zdania co wyżej, ale osobny mechanizm — traktowane jako odrębny temat, bo dotyczy innego
+pola).
+
+**Recon (orkiestrator, przed dispatchem):** `BudowaTryb` (typ) + `DEFAULT_BUDOWA_TRYB: BudowaTryb =
+'reczny'` (linia 166, `gra/src/game/cities.ts`). `ensureCitySaveDefaults()` USTAWIA `budowaTryb`
+jako fallback-tylko-jeśli-brak — czyli dziś każde miasto (stare i nowe) dostaje `'reczny'` jeśli
+pole nie istnieje. Analogicznie do tematu wyżej: `foundCityAt()` obecnie pomija `budowaTryb`
+całkowicie w konstruktorze nowego miasta — właściwe miejsce dodania `budowaTryb: 'zrownowazone'`
+wprost tam, żeby zmiana dotyczyła WYŁĄCZNIE nowo zakładanych miast, nie retroaktywnie starych
+zapisów. Do zweryfikowania przy implementacji: czy pole ma jakikolwiek efekt dla miast AI (ten sam
+`foundCityAt()` obsługuje `ownerId` gracza i AI) — jeśli AI ma własną, niezależną logikę budowy
+ignorującą to pole, ustawienie jest neutralne; jeśli nie, może wymagać warunku `ownerId === gracz`.
+
+STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+
+---
+
+## R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „zwiększ też ilość dostępnych cywilizacji dla każdej mapy o +1"
+
+**Recon (orkiestrator, przed dispatchem):** źródło prawdy `gra/data/e-start-params.json` —
+struktura `skala_mapy.<rozmiar_mapy>.typy_cywilizacji_per_epoka.<epoka>.{min,default,max}`,
+potwierdzone przez `python json.load` dla wszystkich 6 rozmiarów mapy × 3 epoki. Loader:
+`gra/src/data/e-start-params-loader.ts` (`eStartTypyCywilizacjiPerEpoka()`), konsument:
+`gra/src/map/newGameMapDefaults.ts` (`civTypesTripleForMapLabel()`) — ten drugi plik ma też
+zapasową twardo-zakodowaną macierz `TYPY_CYWILIZACJI_DEFAULT_BY_TIER`, używaną WYŁĄCZNIE gdy wpis
+JSON brakuje (do potwierdzenia że po zmianie JSON nie trzeba dotykać tej macierzy zapasowej —
+prawdopodobnie nie, bo JSON będzie zawsze obecny, ale do zweryfikowania kodem przy implementacji).
+
+**Niejednoznaczność do rozstrzygnięcia przy dispatchu (niezgadywana):** zgłoszenie mówi „ilość
+dostępnych cywilizacji" — nie jest jawnie powiedziane, czy to dotyczy WYŁĄCZNIE `max`, czy też
+`default`/`min` mają wzrosnąć o +1. Najbardziej dosłowna interpretacja „dostępnych" to `max` (górny
+limit wyboru), zostawiając `default`/`min` bez zmian — to będzie rekomendacja domyślna dla
+Operatora, ale jeśli w trakcie implementacji okaże się dwuznaczne (np. `default` już dziś równa się
+`max` dla części map, co zrobiłoby niejawną zmianę defaultu przy podniesieniu tylko `max`), Operator
+ma zatrzymać się i zgłosić do ABC zamiast zgadywać (CLAUDE.md §6/§7).
+
+STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+
+---
+
+---
+
+## P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1 (2026-08-16, znalezisko Evaluatora rundy 4 ataku dystansowego)
+
+**Kontekst:** rezerwacja z Evaluatora rundy 1 tematu `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`
+(„NIE rozstrzygać samodzielnie bez zaznaczenia w commicie") — pytanie nigdy nie zadane właścicielowi
+(zweryfikowane grepem po tym pliku, zero trafień). Runda 4 (`6826b16c`, ECHO `Q1=A` — realne
+przejęcie miasta) nadała temu istniejącemu od rundy 3 zachowaniu **skutek własnościowy**, więc
+zasługuje na numer i pytanie.
+
+**Ustalenie (Evaluator `a4380802596aad26a`, zweryfikowane czytaniem kodu):** `computePath`
+(`gra/src/units/setup.ts:986-993`) jawnie zwalnia cel z `occupied` i NIE skraca ścieżki do
+punktów ruchu jednostki dla rozkazu `rangedCityAttackEntry` — jedyna gałąź `move` w `ai.ts`, która
+podaje wprost docelowe współrzędne miasta zamiast pierwszego kroku ścieżki (`firstStep`, jak
+wszystkie inne rozkazy ruchu AI). Skutek: jednostka o zasięgu ataku 6 (np. Katapulta) może
+pokonać 6 heksów i **zmienić właściciela miasta w jednej turze**, zamiast dojść na sąsiedni heks i
+dopiero w kolejnej turze atakować/wchodzić.
+
+Symetryczne z graczem (Evaluator rundy 1 zmierzył to samo dla ścieżki `capture_empty` gracza) —
+nie jest to złamanie parytetu. Drobna asymetria kosztu na korzyść gry: gracz płaci 1 punkt ruchu
+(`spendAttackMpOnLive`), AI płaci CAŁY ruch jednostki za wejście.
+
+**Pytanie do rozstrzygnięcia (do zadania właścicielowi przy najbliższym przeglądzie tematów
+bitewnych, nie pilne — teleport-capture istnieje od rundy 3, runda 4 tylko dodała realny skutek
+przejęcia do już istniejącego ruchu):** czy jednostka atakująca z dystansu ma teleportować się na
+pełny zasięg przy wejściu na heks miasta (obecne zachowanie, symetryczne gracz/AI), czy ruch
+powinien być ograniczony do faktycznych punktów ruchu jednostki (jak każdy inny rozkaz `move`)?
+
+STATUS: **OTWARTE** — zarejestrowane, do ABC przy najbliższym przeglądzie tematów bitewnych (nie
+pilne, świadomie odłożone zgodnie z zasadą „jeden wątek na raz" — nie przerywa bieżącej sekwencji
+deployu).
+
+---

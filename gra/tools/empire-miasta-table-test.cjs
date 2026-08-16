@@ -27,6 +27,13 @@
  *          przez formatResourceUpkeepEmpireLine (istniejący formatter, zero duplikatu),
  *      (c) wiersz podsumowania renderowany z computeMiastaSummaryRow, wzrost z
  *          wzrostProcentAvg (NIE sumy).
+ *   M. P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD-Q1 = B (Maciej 2026-08-16, esbuild+jsdom,
+ *      REALNE wykonanie, ten sam wzorzec co sekcja L): wiersz ŚREDNIA/SUMA tabeli Miasta liczy
+ *      WZROST EFEKTYWNIE (miasto głodujące -- `nakarmione === false` -- liczy się jako 0%, ta
+ *      sama konwencja co Spichlerz), NIE nominalnie. Odtwarza dokładnie przykład z rejestru:
+ *      3 miasta po 6%, 2 głodujące -> ŚREDNIA = round((6+0+0)/3) = 2%, NIE 6% (naiwna nominalna
+ *      średnia). Osobno potwierdza, że komórki PER-MIASTO w tej samej tabeli zostają nominalne
+ *      (6% dla każdego miasta, głodującego też) -- ECHO B dotyczy WYŁĄCZNIE wiersza sumarycznego.
  */
 
 const fs = require('fs');
@@ -531,10 +538,80 @@ export {
   eq(summaryCount, 1, 'L7: dokładnie jeden wiersz podsumowania rozpoznany w DOM (civ-emp-mini-summary)');
 }
 
-runSectionL().then(() => {
-  console.log(`\nempire-miasta-table-test: ${passed} passed, ${failed} failed`);
-  process.exitCode = failed > 0 ? 1 : 0;
-}).catch((e) => {
-  console.error('[empire-miasta-table-test] sekcja L unexpected error:', e && e.stack || e);
-  process.exitCode = 1;
-});
+// ===========================================================================
+// M. REALNE wykonanie (esbuild+jsdom) -- P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD-Q1 = B
+//    (Maciej 2026-08-16): wiersz ŚREDNIA tabeli Miasta liczy WZROST EFEKTYWNIE (miasto
+//    głodujące = 0%), dokładnie odtwarzając przykład z rejestru: 3 miasta po 6%, 2 głodujące
+//    -> ŚREDNIA 2%, NIE 6%. Świeży require (cache wyczyszczony) tego samego L_BUNDLE_FILE co
+//    sekcja L -- moduł startuje z PUSTYM miastaHiddenCols, niezależnie od checkboxów
+//    odznaczonych przez sekcję L wyżej (moduł-level stan by inaczej przeciekł między sekcjami).
+// ===========================================================================
+async function runSectionM() {
+  console.log('\n-- M. cityMiastaMiniDetail -- WZROST wiersza ŚREDNIA liczony EFEKTYWNIE (ECHO B) --');
+
+  // Tak samo jak sekcja L -- ten sam bundle plik (już zbudowany przez runSectionL powyżej,
+  // ta sama ścieżka wyliczona lokalnie bo L_BUNDLE_FILE żyje w zasięgu runSectionL).
+  const M_BUNDLE_FILE = path.resolve(__dirname, '.empire-miasta-table-L-bundle.cjs');
+  delete require.cache[require.resolve(M_BUNDLE_FILE)];
+  const M = require(M_BUNDLE_FILE);
+
+  // Przykład z rejestru dosłownie: 3 miasta, każde NOMINALNIE 6% wzrostu, 2 z nich głodujące
+  // (`nakarmione: false`) -- ten sam warunek co Spichlerz (`nakarmione === false`).
+  const ceM = [
+    { name: 'Miasto A', pieniadz: 0, pracaPula: 0, pracaBudynki: 0, nauka: 0, utrzymanieSurowcowBudynkow: undefined },
+    { name: 'Miasto B', pieniadz: 0, pracaPula: 0, pracaBudynki: 0, nauka: 0, utrzymanieSurowcowBudynkow: undefined },
+    { name: 'Miasto C', pieniadz: 0, pracaPula: 0, pracaBudynki: 0, nauka: 0, utrzymanieSurowcowBudynkow: undefined },
+  ];
+  const cpM = [
+    { cityId: 'm1', name: 'Miasto A', ludki: 1, ludnoscAbsLabel: '100', ludnoscAbsolutna: 100, rekruci: 0, rekruciMax: 0, regenPerTurn: 0 },
+    { cityId: 'm2', name: 'Miasto B', ludki: 1, ludnoscAbsLabel: '100', ludnoscAbsolutna: 100, rekruci: 0, rekruciMax: 0, regenPerTurn: 0 },
+    { cityId: 'm3', name: 'Miasto C', ludki: 1, ludnoscAbsLabel: '100', ludnoscAbsolutna: 100, rekruci: 0, rekruciMax: 0, regenPerTurn: 0 },
+  ];
+  const foodM = {
+    zapasy: 100, maxCap: 200,
+    perCityRows: [
+      { cityId: 'm1', name: 'Miasto A', produkcja: 10, kosztRacji: 5, bilans: 5, wzrostProcent: 6, nakarmione: true },
+      { cityId: 'm2', name: 'Miasto B', produkcja: 10, kosztRacji: 5, bilans: -2, wzrostProcent: 6, nakarmione: false },
+      { cityId: 'm3', name: 'Miasto C', produkcja: 10, kosztRacji: 5, bilans: -2, wzrostProcent: 6, nakarmione: false },
+    ],
+  };
+  const eM = { osiedla: 3, ludnoscRate: 2 };
+
+  const containerM = document.createElement('div');
+  document.body.appendChild(containerM);
+  containerM.innerHTML = M.cityMiastaMiniDetail(ceM, cpM, foodM, eM);
+
+  const allRowsM = Array.from(containerM.querySelectorAll('.civ-emp-mini-r'));
+  const summaryRowM = allRowsM.find(el => el.classList.contains('civ-emp-mini-summary'));
+  const cityRowsM = allRowsM.filter(el => !el.classList.contains('civ-emp-mini-summary'));
+  assert(summaryRowM !== undefined, 'M1: wiersz podsumowania (civ-emp-mini-summary) znaleziony w renderze scenariusza z rejestru');
+  eq(cityRowsM.length, 3, 'M2: trzy wiersze miast wyrenderowane dla scenariusza z rejestru');
+
+  // Kolumna WZROST to indeks 3 wśród kolumn widocznych domyślnie: MIASTO(0), OBYW.(1),
+  // LUDNOŚĆ(2), WZROST(3) -- brak ukrytych kolumn (świeży moduł, sekcja A potwierdza tę
+  // kolejność dla MIASTA_TABLE_COLUMNS).
+  const WZROST_COL_IDX = 3;
+
+  // Rdzeń naprawy: komórki PER-MIASTO (nawet głodujących) pozostają NOMINALNE -- ECHO B
+  // dotyczy WYŁĄCZNIE wiersza sumarycznego, nie tych komórek.
+  cityRowsM.forEach((rowEl, i) => {
+    const txt = rowEl.children[WZROST_COL_IDX] ? rowEl.children[WZROST_COL_IDX].textContent : null;
+    eq(txt, '6%', `M3.${i}: komórka WZROST per-miasto pozostaje NOMINALNA (6%) niezależnie od głodu miasta -- ECHO B dotyczy tylko wiersza ŚREDNIA, nie komórek per-miasto tej samej tabeli`);
+  });
+
+  // Rdzeń naprawy: ŚREDNIA EFEKTYWNA = round((6+0+0)/3) = 2%, NIE naiwna nominalna 6%.
+  const wzrostCellM = summaryRowM ? summaryRowM.children[WZROST_COL_IDX] : null;
+  const wzrostTxtM = wzrostCellM ? wzrostCellM.textContent : null;
+  assert(wzrostTxtM !== '6%', 'M4: kontrola przytomności -- ŚREDNIA NIE jest już starą nominalną wartością 6% (gdyby naprawa nie zadziałała, ten assert by to złapał)');
+  eq(wzrostTxtM, '2%', 'M5 (rdzeń ECHO B): wiersz ŚREDNIA w zakładce Miasta = round((6+0+0)/3) = 2% -- EFEKTYWNIE, głodujące miasta liczone jako 0%, dokładnie jak przykład z rejestru (P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD)');
+}
+
+runSectionL()
+  .then(() => runSectionM())
+  .then(() => {
+    console.log(`\nempire-miasta-table-test: ${passed} passed, ${failed} failed`);
+    process.exitCode = failed > 0 ? 1 : 0;
+  }).catch((e) => {
+    console.error('[empire-miasta-table-test] sekcja L/M unexpected error:', e && e.stack || e);
+    process.exitCode = 1;
+  });

@@ -56,12 +56,18 @@ export function mergeDeferredEotSideEvents(
 const AI_AI_TRADE_MARKER = ' handluje z ';
 
 /** Prefiks komunikatów dyplomacji gracz↔AI odłożonych tą kolejką — `showHintMessage('Dyplomacja: ' + …)`
- * wołane z `enqueueDiplomacyPendingFromCmd` / `resolveNegotiationEntryAt` / negocjacji AI→gracz w
- * main.ts, gdy trafia w `endTurnInProgress` (np. „Dyplomacja: Korynt · Grecy · miasto-państwo —
- * Propozycja handlu surowcem”). Bez tego dostawały mylący nagłówek „Koniec tury”, jakby to było
- * ogólne podsumowanie tury, a nie osobna nota dyplomatyczna (P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK).
+ * wołane z `pruneInvalidNegotiations` / `resolveNegotiationEntryAt` w main.ts (oba warianty
+ * „propozycja wygasła”), gdy trafia w `endTurnInProgress` (np. „Dyplomacja: propozycja wygasła —
+ * …”). Bez tego dostawały mylący nagłówek „Koniec tury”, jakby to było ogólne podsumowanie tury,
+ * a nie osobna nota dyplomatyczna (P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK).
+ * KOREKTA (P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT, 2026-08-16): `enqueueDiplomacyPendingFromCmd` /
+ * `enqueueNegotiationFromAiCmd` (nowa propozycja AI→gracz) NIE wołają już tego toastu — dla tego
+ * zdarzenia trwała reprezentacja to WYŁĄCZNIE karta stołu negocjacji (`negotiationTable`), toast
+ * był zbędnym duplikatem, usunięty.
  * EN: prefix of player↔AI diplomacy messages deferred via this queue — without this check they got
- * the misleading "Koniec tury" (End of turn) header instead of a diplomacy-specific one. */
+ * the misleading "Koniec tury" (End of turn) header instead of a diplomacy-specific one.
+ * CORRECTED: new AI→player proposals no longer emit this toast — the persistent negotiation-table
+ * card is the sole representation for that event now; the toast was a redundant duplicate. */
 export const DIPLOMACY_MSG_PREFIX = 'Dyplomacja:';
 
 /** Zamień odłożone hinty na wpisy panelu Wydarzenia.

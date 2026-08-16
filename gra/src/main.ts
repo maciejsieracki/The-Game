@@ -238,7 +238,9 @@ import {
   resolveCityPoziomRacji,
 } from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
-import { canUnitOccupyCityHex, addForeignCityBlocks } from './game/city-hex-movement';
+import {
+  canUnitOccupyCityHex, addForeignCityBlocks, canAiEnterUndefendedCityHex,
+} from './game/city-hex-movement';
 import {
   evaluateFoundCityAffordance,
   foundCityCostLabel,
@@ -343,7 +345,7 @@ import {
   eraChangeJournalTitle,
   eraChangeJournalSubtitle,
 } from './game/era-change-notify';
-import { cityPalacTier } from './game/building-upgrades';
+import { cityPalacTier, groupBuiltBuildingIds } from './game/building-upgrades';
 import {
   evaluateOrderFromBreakdown,
   updateRevoltGrace,
@@ -657,6 +659,7 @@ import {
   configureEmpireGlobalDefaults,
 } from './ui/empireDetailPanel';
 import type { EmpireDetailSnap, EmpireFoodSnap, EmpireResourceRow } from './ui/empireDetailTypes';
+import { aggregateHappinessSources } from './ui/empireDetailTypes';
 import {
   collectCultureRangeHexKeys,
   collectReligionRangeHexKeys,
@@ -772,7 +775,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
-  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
+  buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
@@ -855,6 +858,7 @@ import {
   migrateProcentRozwojToPoziomRacji,
   clampPoziomRacji,
   getCityRationLevel,
+  rationGrowthPercent,
   WYZYWIENIE_MAX,
   type PoziomRacji,
 } from './game/population-growth-v85';
@@ -13381,6 +13385,36 @@ async function boot(): Promise<void> {
       const { regenMult, maxMult } = mpMults;
       const cityEcon = pc.map(c => {
         const tk = _lastPlayerCityEcon.find(t => t.cityId === c.id);
+        // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
+        // budynki wg BUILDING_GROUP_ORDER — ekspozycja UI istniejącej, czystej funkcji
+        // (`groupBuiltBuildingIds`), TA SAMA, którą już renderuje panel miasta
+        // (`buildOwnedBuildingsDetailCard`, cityPanel.ts). / EN: buildings per
+        // BUILDING_GROUP_ORDER — UI exposure of the existing pure grouping function, the SAME
+        // one the city panel already renders with.
+        const builtIds = cityBuilt.get(c.id) ?? [];
+        const buildingGroups = groupBuiltBuildingIds(builtIds, data.buildings)
+          .map(g => ({ grupa: g.grupa, count: g.ids.length }));
+        // Kolejka produkcji — `cityProd` (Map<string, CityProduction>) to TO SAMO źródło, z
+        // którego panel miasta (cityPanel.ts) czyta i modyfikuje kolejkę (`cfg.getProduction`) —
+        // tu WYŁĄCZNIE odczyt do widoku, bez mutacji. / EN: the production queue — `cityProd` is
+        // the SAME source the city panel reads/writes via `cfg.getProduction`; here read-only.
+        const prod = cityProd.get(c.id);
+        const queue = (prod?.kolejka ?? []).map((item, i) => ({
+          nazwa: item.nazwa,
+          koszt: item.koszt,
+          postep: i === 0 ? prod!.postep : undefined,
+        }));
+        // Obrona strukturalna — TA SAMA funkcja (`structureDefenseBonusFor`) którą silnik walki
+        // woła dla oblężenia/bitwy na tym heksie (parytet z combat.ts), garnizon na żywo z
+        // `unitsOnCityHexForLaw` — IDENTYCZNY predykat filtrowania co `lawGarrisonCountForCity`/
+        // `countLawGarrisonOnCityHex` w rozpisce Prawa niżej (naprawa N7b, runda 2: to DWIE
+        // OSOBNE funkcje w armyMerge.ts o identycznym filtrze, nie jedna reużyta — liczby się
+        // zgadzają, kod nie jest współdzielony).
+        // / EN: structural defense — the SAME function the combat engine calls for this hex's
+        // siege/battle; live garrison count from an IDENTICAL filter predicate to the one the Law
+        // breakdown uses below (two separate functions in armyMerge.ts, not one shared function).
+        const structBonusPct = structureDefenseBonusFor(c.q, c.r);
+        const garnizonCount = unitsOnCityHexForLaw(units, c.q, c.r, c.ownerId).length;
         return {
           name: c.name,
           pieniadz: tk?.pieniadz ?? 0,
@@ -13395,10 +13429,29 @@ async function boot(): Promise<void> {
           pracaPula: tk?.doPuli ?? 0,
           pracaBudynki: tk?.doBudynkow ?? 0,
           nauka: tk?.nauka ?? 0,
+          buildingGroups,
+          queue,
+          queueWstrzymana: prod?.wstrzymana ?? false,
+          defense: { structBonusPct, hasWalls: structBonusPct > 0, garnizonCount },
         };
       });
       const cityPobor = pc.map(c => {
         const mp = cityManpowerSnapshot(c, epoka, regenMult, maxMult);
+        // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
+        // Zdrowie / Prawo i administracja — liczba budynków tych dwóch grup w tym mieście
+        // (ta sama funkcja jak w cityEcon.buildingGroups wyżej, osobne wołanie bo to osobny
+        // .map()). Prawo % i Wyżywienie — czytane WPROST z engine'u (cityOrderState liczony
+        // raz na koniec tury; getCityRationLevel/rationGrowthPercent to te same czyste funkcje,
+        // którymi silnik liczy realny wzrost -- turn-economy.ts). / EN: Health / Law &
+        // administration building counts (same grouping fn as cityEcon above, separate call
+        // since this is a separate .map()). Law % and Ration read straight from the engine.
+        const builtIdsForGroups = cityBuilt.get(c.id) ?? [];
+        const poborBuildingGroups = groupBuiltBuildingIds(builtIdsForGroups, data.buildings);
+        const zdrowieBuildingCount = poborBuildingGroups.find(g => g.grupa === 'Zdrowie')?.ids.length ?? 0;
+        const prawoAdminBuildingCount = poborBuildingGroups
+          .find(g => g.grupa === 'Prawo i administracja')?.ids.length ?? 0;
+        const ord = cityOrderState.get(c.id);
+        const poziomRacji = getCityRationLevel(c);
         return {
           // P-EMPIRE-MIASTA-JOIN-INDEX (naprawa F2): patrz JSDoc EmpireCityPoborRow.cityId
           // (empireDetailTypes.ts) -- nazwy miast nie sa unikalne w obrebie cywilizacji.
@@ -13412,8 +13465,29 @@ async function boot(): Promise<void> {
           rekruci: mp.manpowerBiezacy,
           rekruciMax: mp.manpowerMax,
           regenPerTurn: mp.regenPerTurn,
+          zdrowieBuildingCount,
+          prawoAdminBuildingCount,
+          prawoPct: ord?.prawPct ?? null,
+          poziomRacji,
+          racjaGrowthPct: rationGrowthPercent(poziomRacji),
         };
       });
+      // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A) +
+      // RUNDA 2 (naprawa N1 Evaluatora): rozbicie Zadowolenia na źródła — zagregowane (suma po
+      // `id`) z `cityOrderState.szLines` WSZYSTKICH miast gracza, przez WYCIĄGNIĘTĄ, czystą,
+      // eksportowaną funkcję `aggregateHappinessSources()` (empireDetailTypes.ts) — testowalną
+      // bezpośrednio (esbuild bundle + wywołanie), bez odtwarzania całego main.ts (patrz sekcja D
+      // empire-panel-miasto-obywatele-content-test.cjs). `cityOrderState` jest TĄ SAMĄ,
+      // autorytatywną mapą, którą panel miasta czyta przez `cfg.getOrderState` (jeden koniec-tury
+      // obliczenie, żadnej duplikacji formuły Zadowolenia tutaj). Puste, dopóki żadne miasto nie
+      // ma jeszcze wpisu (przed 1. turą) -- `hasData` sygnalizuje to UI zamiast fałszywego zera.
+      // / EN: happiness source breakdown — aggregated (summed by `id`) from
+      // `cityOrderState.szLines` across all player cities, via the EXTRACTED, pure, exported
+      // `aggregateHappinessSources()` (empireDetailTypes.ts) — directly unit-testable. Empty
+      // until at least one city has an entry (before turn 1) — `hasData` signals that to the UI.
+      const happiness: EmpireDetailSnap['happiness'] = aggregateHappinessSources(
+        pc.map(c => cityOrderState.get(c.id)?.szLines),
+      );
       let rekruciMax = 0;
       for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka, maxMult);
       const unitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
@@ -13433,6 +13507,34 @@ async function boot(): Promise<void> {
           turnsLeft: researchState.turnsLeft,
         }
         : null;
+
+      // P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (Maciej 2026-08-16): jednostka w produkcji
+      // per miasto (front kolejki, `frontItem()`) -- puste kolejki/budynek na froncie pominięte.
+      // N1 (runda 2, Evaluator FAIL): `wstrzymana` czytana wprost -- silnik nie dodaje Pracy do
+      // wstrzymanej kolejki, więc ETA byłoby liczbą, która nigdy nie nadejdzie (jak 4 miejsca w
+      // cityPanel.ts sprawdzające `prod.wstrzymana`). N5: `etaTurns()` sam strażuje `praca<=0`,
+      // zewnętrzny `pracaBudynki > 0 ?` był zbędnym duplikatem, usunięty.
+      // / EN: unit currently in production per city (queue front) -- empty queues/building-front
+      // skipped. N1: `wstrzymana` read directly -- the engine adds no Praca to a paused queue, so
+      // ETA would be a number that never arrives. N5: `etaTurns()` already guards `praca<=0`
+      // internally, so the external ternary was a redundant duplicate, removed.
+      const armiaProdukcja: EmpireDetailSnap['armiaProdukcja'] = [];
+      for (const c of pc) {
+        const prod = cityProd.get(c.id);
+        if (!prod) continue;
+        const front = frontItem(prod);
+        if (!front || front.kind !== 'jednostka') continue;
+        const wstrzymanaProdukcja = prod.wstrzymana === true;
+        const tk = _lastPlayerCityEcon.find(t => t.cityId === c.id);
+        const pracaBudynki = tk?.doBudynkow ?? 0;
+        armiaProdukcja.push({
+          cityId: c.id,
+          name: c.name,
+          unitName: front.nazwa,
+          wstrzymana: wstrzymanaProdukcja,
+          etaTurns: wstrzymanaProdukcja ? null : etaTurns(front.koszt, prod.postep, pracaBudynki),
+        });
+      }
 
       // R-DESIGN-11-ZAKLADEK faza 2 — Klatka 11 (wariant A): karta religii państwowej. Wzorzec
       // POŻYCZONY z `buildReligionOverlayData()` (ten sam plik, poniżej) — wiodąca religia per
@@ -13551,6 +13653,8 @@ async function boot(): Promise<void> {
         food: buildEmpireFoodSnap(),
         research,
         religion,
+        happiness,
+        armiaProdukcja,
       };
     }
 
@@ -13586,6 +13690,11 @@ async function boot(): Promise<void> {
           const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
           return {
             id: r.id,
+            // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (Maciej 2026-08-16, ECHO A): id, nie
+            // tylko nazwa (P-EMPIRE-MIASTA-JOIN-INDEX) — pozwala zakładce Miasto grupować
+            // trasy PER MIASTO niezawodnie. / EN: id, not just the name — lets the Miasto tab
+            // group routes PER CITY reliably.
+            cityId: r.fromCityId,
             cityName: myCity?.name ?? r.fromCityId,
             partnerCityName: partnerCity?.name ?? r.toCityId,
             partnerOwnerLabel: ownerDiploLabel(r.toOwnerId),
@@ -13863,7 +13972,21 @@ async function boot(): Promise<void> {
         turn, 'ai', negotiationSeq,
       );
       negotiationTable.push(entry);
-      showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmd.type), 4500);
+      // P-DYPLO-KARTA-DUPLIKAT-KOMUNIKAT: BRAK showHintMessage tutaj celowo — ta funkcja biegnie
+      // podczas endTurnInProgress (faza AI), więc toast trafiałby do deferredEotHints i po EOT
+      // wychodziłby jako DRUGI, generyczny wpis w warEventLog (deferredHintsToSidePanelEvents,
+      // prefiks eot-hint-) obok karty stołu negocjacji utworzonej wyżej (negotiationTable.push) —
+      // ta karta niesie całą treść oferty i wisi całą turę, więc toast był czystym duplikatem
+      // (zgłoszenie Macieja: „niepotrzebnie czasem powtarza się dwukrotnie ten sam komunikat").
+      // Ten sam wzorzec co N1 przy border-march (main.ts ~4391) — trwała reprezentacja już
+      // istnieje, więc toast jest zbędny w całości, nie odraczany (odwrotnie niż
+      // pendingEraChangeToastForNextTurn, gdzie toast jest JEDYNĄ reprezentacją).
+      // / EN: showHintMessage intentionally OMITTED here -- this function runs during
+      // endTurnInProgress (AI phase), so the toast would land in deferredEotHints and, after EOT,
+      // surface as a SECOND generic entry in warEventLog (deferredHintsToSidePanelEvents,
+      // eot-hint- prefix) alongside the negotiation-table card created above
+      // (negotiationTable.push) -- that card already carries the full offer content and persists
+      // for the whole turn, so the toast was a pure duplicate.
       refreshD1bHud();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
@@ -27385,7 +27508,40 @@ async function boot(): Promise<void> {
                 if (cmd.type === 'move') {
                   const u = units.find(x => x.id === cmd.unitId);
                   if (!u || u.ownerId !== ownerId) continue;
-                  if (!canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
+                  // P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B (RUNDA 3, Maciej 2026-08-16):
+                  // wąski wyjątek WYŁĄCZNIE dla komend z jednej gałęzi ai.ts
+                  // (cmd.rangedCityAttackEntry -- ustawiane TYLKO przy emisji ruchu na
+                  // miasto w zasięgu ataku, ai.ts:isWithinCityAttackRange) -- pozwala
+                  // wejść na PUSTY (bez obrońców), NIEOBMUROWANY heks obcego miasta,
+                  // zamiast cichego odrzucenia rozkazu przez `canUnitOccupyCityHex`,
+                  // która blokuje KAŻDY obcy heks miasta bezwarunkowo (regresja RUNDY 2:
+                  // isWithinCityAttackRange dała AI zasięg, ale egzekutor nie miał
+                  // wyjątku -- jednostka dostawała rozkaz i NIC nie robiła). Analogiczne
+                  // do canBarbarianWalkIntoEmptyCity (gałąź barbarzyńców niżej), ale BEZ
+                  // realnego przejęcia miasta -- ogólna ścieżka zdobycia (N2 werdyktu)
+                  // świadomie POZA zakresem, patrz doc-comment
+                  // canAiEnterUndefendedCityHex (city-hex-movement.ts). Każde inne `move`
+                  // (marsz, patrol, obrona domu, wioski) nigdy nie ustawia to pole, więc
+                  // wyjątek nie otwiera ogólnej furtki. / EN: narrow exception ONLY for
+                  // commands from the one ai.ts branch (cmd.rangedCityAttackEntry -- set
+                  // ONLY when emitting a move onto a city within attack range,
+                  // ai.ts:isWithinCityAttackRange) -- lets the unit enter an EMPTY
+                  // (undefended), UNWALLED foreign city hex instead of the command being
+                  // silently dropped by `canUnitOccupyCityHex`, which blocks every
+                  // foreign city hex unconditionally (ROUND 2 regression: the AI got the
+                  // attack range, but the executor had no exception -- the unit received
+                  // the order and did NOTHING). Mirrors canBarbarianWalkIntoEmptyCity
+                  // (barbarian branch below), but WITHOUT actually capturing the city --
+                  // a general capture path (verdict N2) is deliberately out of scope, see
+                  // canAiEnterUndefendedCityHex's doc-comment (city-hex-movement.ts).
+                  // Every other `move` (march, patrol, home defense, village explore)
+                  // never sets this field, so the exception cannot widen into a general
+                  // escape hatch.
+                  const cityAttackEntry = cmd.rangedCityAttackEntry === true
+                    && canAiEnterUndefendedCityHex(
+                      cities.find(c => c.q === cmd.toQ && c.r === cmd.toR), units,
+                    );
+                  if (!cityAttackEntry && !canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
                   const path = computePath(u, map, cmd.toQ, cmd.toR, (() => {
                     const occ = addForeignCityBlocks(new Set<string>(), u.ownerId, cities);
                     for (const ou of units) { if (ou.id !== u.id) occ.add(keyOf(ou.q, ou.r)); }
@@ -27393,12 +27549,38 @@ async function boot(): Promise<void> {
                   })(), moveCostFnForUnit(u));
                   if (path.length > 0) {
                     const last = path[path.length - 1]!;
-                    if (!canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
+                    if (!cityAttackEntry && !canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
                     u.q = last.q;
                     u.r = last.r;
                     u.ruchLeft = 0;
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     applyEmbarkStateAfterMove([u], map);
+                    // RUNDA 4 (P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A, ECHO Maciej 2026-08-16):
+                    // wejście na pusty, niebroniony heks miasta w TEJ gałęzi ma REALNIE
+                    // przejąć miasto -- ta sama konsekwencja co barbarzyńcy
+                    // (tryAutoCaptureEmptyCityAt, gałąź barbarzyńców niżej). Naprawia B1
+                    // (evictForeignUnitsFromCityHexes przestaje wypychać jednostkę, bo
+                    // canUnitOccupyCityHex widzi już zgodny ownerId) i B2 (jednostka nie
+                    // wrasta na stałe w heks, bo miasto jest teraz jej) NIEZALEŻNIE od tego,
+                    // czy barbariansActive -- samo przejęcie usuwa przyczynę obu, evict nie
+                    // musi się nawet wykonać. tryAutoCaptureEmptyCityAt no-opuje (zwraca
+                    // false) dla własnego miasta (city.ownerId===anchor.ownerId), więc
+                    // wołanie jest bezpieczne nawet gdyby `city` w międzyczasie już należało
+                    // do `u.ownerId`.
+                    // / EN: entering an empty, undefended city hex on THIS branch now
+                    // REALLY captures the city -- the same consequence as barbarians
+                    // (tryAutoCaptureEmptyCityAt, barbarian branch below). Fixes B1
+                    // (evictForeignUnitsFromCityHexes stops evicting the unit, since
+                    // canUnitOccupyCityHex now sees a matching ownerId) and B2 (the unit no
+                    // longer fuses permanently into the hex, since the city is now its own)
+                    // REGARDLESS of barbariansActive -- the capture itself removes the root
+                    // cause of both, eviction need not even run. tryAutoCaptureEmptyCityAt
+                    // no-ops (returns false) for one's own city
+                    // (city.ownerId===anchor.ownerId), so the call is safe even if `city`
+                    // already belonged to `u.ownerId` in the meantime.
+                    if (cityAttackEntry) {
+                      tryAutoCaptureEmptyCityAt(last.q, last.r, [u]);
+                    }
                     // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: symetria z ruchem gracza --
                     // `ownerId` tu to zawsze prawdziwa cywilizacja AI (1..N), nigdy
                     // barbarzyńcy (ci mają własną pętlę ruchu niżej, poza AICommand).

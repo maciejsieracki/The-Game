@@ -184,7 +184,25 @@ check(
   /kosztJednostki: unitManpowerCost\(player\.era, mpMults\.maxMult\),/.test(buildHudStateBody),
 );
 
-const buildEmpireSnapMatch = mainTsSrc.match(/function buildEmpireDetailSnap\(\): EmpireDetailSnap \{[\s\S]{0,12000}?\n {4}\}/);
+// Okno rozszerzone 12000 -> 20000. N3 (RUNDA 2, Evaluator FAIL, sprostowanie 2026-08-16):
+// wcześniejsza wersja tego komentarza przypisywała przekroczenie starego limitu 12000 znaków
+// blokowi `armiaProdukcja` (P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK) -- NIEPRAWDA. Bramka
+// była czerwona JUŻ PRZED tym tematem: realnym sprawcą jest równoległy commit `6366e81e`
+// (Miasto/Obywatele), który urósł `buildEmpireDetailSnap()` ponad 12000 znaków niezależnie.
+// Poprawka okna (12000->20000) była słuszna, sama atrybucja przyczyny nie. Margines dziś
+// (po dołożeniu bloku armiaProdukcja + naprawie N1/N5) to ~18505/20000 znaków (zapas ~7,5%) --
+// NIE ten sam rząd wielkości co sąsiedni buildHudStateMatch wyżej (~10882/20000, zapas ~46%);
+// obie kotwice mają WSPÓLNĄ wartość liczbową okna (20000), ale zupełnie różny margines
+// bezpieczeństwa do wyczerpania.
+// / EN: window widened 12000 -> 20000. N3 (round 2 fix): an earlier version of this comment
+// wrongly blamed the `armiaProdukcja` block for exceeding the old 12000-char cap -- the gate was
+// already red BEFORE that topic; the real cause was the parallel `6366e81e` commit (City/Citizens)
+// growing `buildEmpireDetailSnap()` past 12000 chars independently. Widening the window was the
+// right fix; the attribution was not. Today's margin (after the armiaProdukcja block + the N1/N5
+// fix) is ~18505/20000 chars (~7.5% headroom) -- NOT the same order of magnitude as the sibling
+// buildHudStateMatch above (~10882/20000, ~46% headroom); both anchors share the same window
+// constant (20000) but have very different headroom before exhaustion.
+const buildEmpireSnapMatch = mainTsSrc.match(/function buildEmpireDetailSnap\(\): EmpireDetailSnap \{[\s\S]{0,20000}?\n {4}\}/);
 check('main.ts zawiera funkcje buildEmpireDetailSnap(): EmpireDetailSnap', buildEmpireSnapMatch !== null);
 const buildEmpireSnapBody = buildEmpireSnapMatch ? buildEmpireSnapMatch[0] : '';
 check(

@@ -88,6 +88,7 @@ import {
   dequeueRecruitment,
   unitProductionItem,
   unitNacjaForCivKey,
+  etaTurns,
   type CityProduction,
   type ProductionItem,
   type CivBonusLite,
@@ -829,11 +830,6 @@ function tury(n: number): string {
   if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return 'tury';
   return 'tur';
 }
-function etaTurns(koszt: number, postep: number, praca: number): number | null {
-  if (!(praca > 0)) return null;
-  return Math.max(1, Math.ceil(Math.max(0, koszt - postep) / praca));
-}
-
 /** Etykieta ETA budowy — null → „brak Pracy”. */
 function formatBuildEtaLabel(turns: number | null, prefix = '~'): string {
   if (turns === null) return 'brak Pracy';
