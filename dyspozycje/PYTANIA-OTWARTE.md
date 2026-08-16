@@ -29982,21 +29982,21 @@ Maciej (dosłownie): „Jeszcze jedno zgłoszenie chciałbym, żeby zapisać na 
 wyraźnej informacji takiej, przy pokonaniu wszystkich państw miast i zdobyciu, na przykład całej
 Grecji, brakujeprzy przejściu do nowej epoki."
 
-**Interpretacja (do potwierdzenia przy podjęciu tematu, nie zgadywać):** po pokonaniu/zdobyciu
-WSZYSTKICH miast danego państwa-miasta (np. całej Grecji jako grupy miast-państw) i/lub przy
-przejściu do nowej epoki brakuje wyraźnego komunikatu/powiadomienia w UI informującego o tym
-fakcie — gracz nie dostaje czytelnego potwierdzenia „podbiłeś całe państwo X" ani wyraźnego
-sygnału przejścia epoki w tym kontekście. Zgłoszenie urwane w połowie zdania („brakujeprzy") —
-literalna treść niejednoznaczna, wymaga doprecyzowania z Maciejem przed implementacją: czy chodzi
-o (a) brak komunikatu o podboju całego państwa-miasta, (b) brak komunikatu o przejściu epoki po
-takim podboju, czy (c) oba.
+**Doprecyzowanie (Maciej, AskUserQuestion 2026-08-16): „Komunikat przy przejściu epoki".** Zgłoszenie
+urwane w połowie zdania („brakujeprzy") dopuszczało trzy odczyty (komunikat o podboju
+państwa-miasta / komunikat przy przejściu epoki / oba) — Maciej wybrał wprost: chodzi WYŁĄCZNIE
+o **brak wyraźnego powiadomienia w UI przy przejściu do nowej epoki**. Wzmianka o podboju całej
+Grecji w oryginalnym zgłoszeniu to był kontekst sytuacyjny (scenariusz, w którym zauważył problem
+— podbił wszystkie miasta-państwa i wtedy nastąpiło przejście epoki), NIE osobne żądanie
+komunikatu o podboju. Temat NIE dotyczy więc UI podboju miast-państw, tylko UI końca tury /
+przejścia epoki.
 
 Zgłoszone w trakcie równoległej pracy nad reskinowaniem 11 zakładek panelu imperium
 (`R-DESIGN-11-ZAKLADEK` faza 3) — zgodnie z zasadą 2 (zakaz otwierania nowych wątków) zapisane tu
 bez przerywania bieżącego tematu.
 
-STATUS: **OTWARTE** — czeka na dispatch subagenta (recon UI powiadomień końca tury/podboju +
-doprecyzowanie zakresu z Maciejem).
+STATUS: **OTWARTE** — zakres doprecyzowany, czeka na dispatch subagenta (recon + implementacja
+komunikatu przejścia epoki w UI końca tury).
 
 ---
 
