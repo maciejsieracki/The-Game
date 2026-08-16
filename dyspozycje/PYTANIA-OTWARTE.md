@@ -30852,3 +30852,31 @@ sobie dziś bez tej ścieżki — barbarzyńcy i gracz mają działającą, cywi
 STATUS: **OTWARTE — zarejestrowane, świadomie NIE naprawiane teraz.**
 
 ---
+
+## P-EPOKA-BRAK-INFO-REGRESJA-BRAZ (2026-08-16, sprostowanie Macieja — temat "zamknięty" nadal wadliwy)
+
+**Zgłoszenie (cytat):** „przyszedłem do brązu, ale nie widziałem żadnej informacji o tym."
+
+**Kontekst krytyczny:** temat `P-EPOKA-BRAK-INFO-PODBOJ-PANSTW-MIAST` jest formalnie
+**ZAMKNIĘTY** (commity `6936d4d3`/`90661f91`, mechanizm `pendingEraChangeToastForNextTurn` +
+`flushPendingEraChangeToast()`), Evaluator PASS-WITH-NOTES w dwóch rundach, wdrożony w FALI 288.
+Mimo to Maciej zgłasza brak toastu — doprecyzowane przez `AskUserQuestion`: **nowa gra, zaczęta PO
+ostatnim pull/odświeżeniu** — to NIE stary zapis ani stara karta przeglądarki, więc to prawdopodobnie
+realna luka w naprawie, nie artefakt cache.
+
+**Recon (orkiestrator, przed dispatchem):** `notifyPlayerEraChangeIfAdvanced()` (`main.ts:11854`) ma
+**5 miejsc wywołania** w kodzie (linie 3281, 3638, 8521, 20108, 25390) — fix z rundy „toast połykany
+przez EOT" naprawiał WYŁĄCZNIE ścieżkę `endTurnInProgress` (deferowanie do `pendingEraChangeToastForNextTurn`
++ flush po zakończeniu overlay). Nie zweryfikowane jeszcze: czy WSZYSTKIE 5 miejsc wywołania
+faktycznie prowadzi do poprawnego toastu, czy któreś z nich (np. przejście epoki wywołane przez
+dokończenie badania NIE w fazie EOT, albo pierwsze-w-grze przejście Kamień→Brąz konkretnie) ma inną,
+nienaprawioną przyczynę zniknięcia komunikatu.
+
+**Do dispatchu:** żywy test w headless Chromium (wzorem wcześniejszych tematów bitewnych w tej
+sesji) — nowa gra, odegranie tur do faktycznego przejścia Kamień→Brąz, obserwacja czy toast się
+pojawia. Jeśli nie — ustalić którą z 5 ścieżek wywołania faktycznie przechodzi gracz i dlaczego
+akurat ta nie pokazuje toastu, zamiast zgadywać.
+
+STATUS: **OTWARTE — dispatch reconu/naprawy w toku.**
+
+---
