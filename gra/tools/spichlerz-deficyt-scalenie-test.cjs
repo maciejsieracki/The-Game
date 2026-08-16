@@ -65,10 +65,14 @@ ok(
 );
 // Uwaga: "civ-emp-note" jako klasa CSS jest też użyta gdzie indziej w tej funkcji (notka
 // informacyjna "Podsumowanie tury pojawi się..." gdy brak jeszcze pierwszego ticku) — to NIE
-// jest ostrzeżenie o deficycie, więc liczymy tylko bloki z czerwonym stylem deficytu
-// (color:#e07a7a), unikalnym dla ostrzeżenia o niepokrytym deficycie.
+// jest ostrzeżenie o deficycie, więc liczymy tylko bloki callera ostrzeżenia, unikalne dla
+// komunikatu o niepokrytym deficycie.
+// AKTUALIZACJA (R-DESIGN-11-ZAKLADEK klatka 4, reskin Spichlerza): ostrzeżenie przeniesione z
+// `civ-emp-note" style="color:#e07a7a` na klasę `.civ-emp-alert` (kanoniczny callout z §4
+// handoffu Designera). Intencja asercji BEZ ZMIAN — nadal pilnuje, że czerwony blok deficytu
+// jest DOKŁADNIE JEDEN, czyli że nie wróciła stara, osobna notka "Głód wojska".
 ok(
-  (spichlerzFn.match(/civ-emp-note" style="color:#e07a7a/g) || []).length === 1,
+  (spichlerzFn.match(/civ-emp-alert civ-emp-sp-alert/g) || []).length === 1,
   'dokładnie JEDEN czerwony blok ostrzeżenia o deficycie — bez starej osobnej notki "Głód wojska"',
 );
 ok(
@@ -87,10 +91,15 @@ ok(
   !/if \(food\.glodWojska\) \{\s*h \+= `<div class="civ-emp-note"[^`]*Głód wojska/.test(spichlerzFn),
   'stara, samodzielna notka "Głód wojska" (bez miast) usunięta — scalona do wspólnego bloku',
 );
-// Per-miasto ⚠ w tabeli ZOSTAJE (szczegół "które miasto"), informacja nie jest tracona.
+// Per-miasto znacznik ostrzegawczy w tabeli ZOSTAJE (szczegół "które miasto"), informacja nie
+// jest tracona.
+// AKTUALIZACJA (R-DESIGN-11-ZAKLADEK klatka 4, reskin Spichlerza): znak tekstowy ⚠ zamieniony na
+// ikonę SVG `chip-warning` przez brandIconSvg() — reguła "zero emoji" z kanonu (§5 handoffu
+// Designera). Intencja asercji BEZ ZMIAN — nadal pilnuje, że znacznik przy nazwie miasta jest
+// bramkowany tym samym `row.nakarmione === false` i nie został przy reskinie zgubiony.
 ok(
-  /row\.nakarmione === false.*⚠/.test(spichlerzFn),
-  '⚠ przy nazwie miasta w tabeli zachowane (per-miasto szczegół, nie duplikat — uzupełnienie zbiorczego komunikatu)',
+  /row\.nakarmione === false[\s\S]*?chip-warning/.test(spichlerzFn),
+  'znacznik przy nazwie miasta w tabeli zachowany (per-miasto szczegół, nie duplikat — uzupełnienie zbiorczego komunikatu)',
 );
 
 // ---------------------------------------------------------------------------

@@ -172,16 +172,23 @@ function renderDefaultPoziomRacjiSection(): string {
   const poziom = getDef(0) ?? 4;
   const id = 'emp-zywnosc-racje';
   const steps = poziom / WYZYWIENIE_STEP;
+  const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
   const maxSteps = WYZYWIENIE_MAX / WYZYWIENIE_STEP;
+  // R-DESIGN-11-ZAKLADEK klatka 4 — suwak w stylu `.civ-emp-slider` (zielony, kolor żywności),
+  // zamiast systemowego niebieskiego `input[type=range]`; wypełnienie toru liczone z pozycji
+  // w zakresie MIN..MAX, tak jak w suwakach Skarbca. / EN: slider restyled to `.civ-emp-slider`
+  // (green, the food color) instead of the system-blue range input; track fill from MIN..MAX.
+  const fillPct = maxSteps > minSteps ? ((steps - minSteps) / (maxSteps - minSteps)) * 100 : 0;
   let h = `<div class="civ-emp-sect" data-section="ekonomia-zywnosc-racje" id="${id}">`
     + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNE WYŻYWIENIE</div>`
     + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten poziom Racji.</div>`;
-  h += `<div class="civ-emp-mini" style="margin-top:8px">`
-    + `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
-    + `<label style="font-size:12px">Wyżywienie</label>`
+  h += `<div class="civ-emp-mini civ-emp-sp-slider-card">`
+    + `<div class="civ-emp-sp-slider-hd">`
+    + `<span class="civ-emp-slider-label">Wyżywienie</span>`
     + `<span data-racje-lbl><b>${esc(formatWyzwienieLabel(poziom))}</b></span></div>`
-    + `<input type="range" min="${WYZYWIENIE_MIN / WYZYWIENIE_STEP}" max="${maxSteps}" step="1" value="${steps}" `
-    + `data-racje-key="poziom" style="width:100%;margin:0 0 6px" /></div>`
+    + `<input type="range" class="civ-emp-slider green" min="${minSteps}" max="${maxSteps}" step="1" `
+    + `value="${steps}" style="${sliderFillStyle(fillPct, '#4e9a3f', '#78c95a')}" `
+    + `data-racje-key="poziom" /></div>`
     + `<div class="civ-emp-foot">Miasta z lokalnym limitem Spichlerza poniżej tego poziomu i tak obniżą go automatycznie na koniec tury (bez zmiany globalnego ustawienia).</div></div>`;
   queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange));
   return h;
@@ -194,11 +201,18 @@ function wireDefaultPoziomRacjiInputs(
   if (!host) return;
   const inp = host.querySelector<HTMLInputElement>('input[data-racje-key="poziom"]');
   if (!inp) return;
+  const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
+  const maxSteps = WYZYWIENIE_MAX / WYZYWIENIE_STEP;
   inp.addEventListener('input', () => {
-    const poziom = Number(inp.value) * WYZYWIENIE_STEP;
+    const stepsNow = Number(inp.value);
+    const poziom = stepsNow * WYZYWIENIE_STEP;
     onChange(0, poziom);
     const lbl = host.querySelector('[data-racje-lbl] b');
     if (lbl) lbl.textContent = esc(formatWyzwienieLabel(poziom));
+    // Wypełnienie toru musi nadążać za wartością (jak w suwakach Skarbca) — bez tego zielony
+    // pasek zostałby na pozycji z renderu. / EN: keep the track fill in sync with the value.
+    const pct = maxSteps > minSteps ? ((stepsNow - minSteps) / (maxSteps - minSteps)) * 100 : 0;
+    inp.style.background = sliderFillStyle(pct, '#4e9a3f', '#78c95a');
   });
 }
 
@@ -495,6 +509,57 @@ function ensureStyles(): void {
 .civ-emp-slider-label.gold{color:#d9a441;}
 .civ-emp-slider-label.blue{color:#8ec5ff;}
 .civ-emp-slider-label.neutral{color:#cfd5de;}
+/* — R-DESIGN-11-ZAKLADEK klatka 4 (Maciej 2026-08-13) — SPICHLERZ CENTRALNY, oba stany makiety
+   (A: zapas zdrowy, B: realny deficyt). Wszystko zakresowane pod .civ-emp-sp-*, żeby reskin
+   tej jednej zakładki nie ruszył pozostałych sekcji panelu.
+   EN: GRANARY tab, both mockup states; everything scoped under .civ-emp-sp-* so this one tab's
+   reskin cannot leak into the other sections of the panel. */
+.civ-emp-sp-eyebrow{display:flex;align-items:center;gap:6px;}
+.civ-emp-sp-eyebrow-ic{display:inline-flex;align-items:center;justify-content:center;width:14px;
+  height:14px;color:#7d8798;flex:none;}
+.civ-emp-sp-eyebrow-ic svg{width:100%;height:100%;display:block;}
+.civ-emp-sp-hero{display:flex;align-items:baseline;gap:8px;}
+.civ-emp-sp-hero .cap{font-size:13px;color:#7d8798;font-weight:600;}
+.civ-emp-sp-hero .ic{display:inline-flex;align-items:center;justify-content:center;width:16px;
+  height:16px;align-self:center;flex:none;color:#d9a441;}
+.civ-emp-sp-hero.neg .ic{color:#e07a7a;}
+.civ-emp-sp-hero .ic svg{width:100%;height:100%;display:block;}
+.civ-emp-hero-sub b.pos{color:#78c95a;}
+.civ-emp-hero-sub b.neg{color:#e07a7a;}
+.civ-emp-sp-bar{margin:10px 0;}
+/* Stan alarmowy przy zapasie 0: sama szerokość 0% dałaby pusty tor, nieodróżnialny od stanu „brak
+   danych". Makieta (klatka 4B) rysuje w tym miejscu czerwony ślad — minimalna szerokość zapewnia,
+   że alarm jest widoczny. Nie zmienia żadnej liczby, tylko widoczność paska.
+   EN: alarm state at zero stock — a bare 0% width would render an empty track indistinguishable
+   from "no data"; the mockup draws a red sliver here. No number changes, only bar visibility. */
+.civ-emp-sp-bar .fill.low{min-width:3%;}
+.civ-emp-sp-alert{display:flex;gap:9px;align-items:flex-start;margin-bottom:8px;}
+.civ-emp-sp-alert-ic{display:inline-flex;align-items:center;justify-content:center;width:16px;
+  height:16px;flex:none;margin-top:1px;}
+.civ-emp-sp-alert-ic svg{width:100%;height:100%;display:block;}
+.civ-emp-alert b.n{color:#e8ebf0;}
+.civ-emp-sp-row{padding:6px 0;}
+.civ-emp-sp-row .val .d{font-weight:600;font-variant-numeric:tabular-nums;}
+.civ-emp-sp-sum{font-variant-numeric:tabular-nums;}
+.civ-emp-sp-city-nm{display:flex;align-items:center;gap:5px;min-width:0;}
+.civ-emp-sp-city-nm>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-emp-sp-unfed-ic{display:inline-flex;align-items:center;justify-content:center;width:11px;
+  height:11px;flex:none;}
+.civ-emp-sp-unfed-ic svg{width:100%;height:100%;display:block;}
+/* Kolumny liczbowe (PRODUKCJA / KOSZT RACJI / BILANS / WZROST%) do prawej we WSZYSTKICH wierszach
+   — nagłówek, dane i SUMA — jak w tabeli per miasto Skarbca.
+   EN: numeric columns right-aligned in ALL rows, as in the Treasury per-city table. */
+.civ-emp-sp-city-tbl .civ-emp-mini-h-cell:nth-child(n+2){align-items:flex-end;text-align:right;}
+/* Nagłówki tej tabeli w JEDNEJ linii — przy 404px „PRODUKCJA" i „WZROST%" łamały się na dwie
+   linie i rozpychały wiersz nagłówka. / EN: single-line headers — at 404px "PRODUKCJA" and
+   "WZROST%" wrapped onto two lines and inflated the header row. */
+.civ-emp-sp-city-tbl .civ-emp-mini-h-txt{white-space:nowrap;letter-spacing:0.1px;}
+.civ-emp-sp-city-tbl .civ-emp-mini-r>div:nth-child(n+2){text-align:right;
+  font-variant-numeric:tabular-nums;}
+.civ-emp-sp-slider-card{margin-top:8px;padding:11px 12px 12px;background:#171e2a;}
+.civ-emp-sp-slider-hd{display:flex;align-items:baseline;gap:8px;margin-bottom:7px;}
+.civ-emp-sp-slider-hd .civ-emp-slider-label{flex:1;font-size:12px;color:#cfd5de;}
+.civ-emp-sp-slider-hd>span:last-child{font-size:13px;font-weight:700;color:#e8ebf0;}
 .civ-emp-tbl-sum{display:grid;column-gap:6px;align-items:baseline;padding:11px 0 9px;}
 .civ-emp-tbl-sum>div:first-child{font-size:13px;color:#e8ebf0;font-weight:700;}
 .civ-emp-tbl-sum>div:last-child{text-align:right;font-size:15px;color:#d9a441;font-weight:800;}
@@ -1491,29 +1556,102 @@ function signedIntTxt(n: number): string {
   return `${r > 0 ? '+' : ''}${r}`;
 }
 
-/** PYTANIE-85 — wartość żywności z emoji 🍞 (np. „+72 🍞", „−48 🍞"). */
+/**
+ * PYTANIE-85 — wartość żywności BEZ emoji (np. „+72", „−48”).
+ * R-DESIGN-11-ZAKLADEK klatka 4 (§5 handoffu Designera): jednostka „żywność” wynika z ikony przy
+ * hero-liczbie magazynu i z nagłówka sekcji — ikona NIE jest powtarzana per wiersz (14 chlebków
+ * w kolumnie to szum, nie informacja).
+ * EN: food value WITHOUT emoji — the food unit comes from the single icon next to the storage hero
+ * number and from the section header; the icon is NOT repeated per row.
+ */
 function foodSignedTxt(n: number, forceSign = true): string {
   if (!Number.isFinite(n)) return '—';
   const r = Math.round(n);
-  if (r === 0) return '0 🍞';
-  if (!forceSign) return `${r} 🍞`;
-  return `${r > 0 ? '+' : ''}${r} 🍞`;
+  if (r === 0) return '0';
+  if (!forceSign) return foodMinus(r);
+  return `${r > 0 ? '+' : ''}${foodMinus(r)}`;
 }
 
-/** PYTANIE-85 — wiersz podsumowania tury Spichlerza centralnego. */
-function foodSummaryRow(label: string, value: number, opts?: { expense?: boolean; pool?: boolean }): string {
-  const cls = value > 0 ? 'pos' : value < 0 ? 'neg' : 'z';
+/**
+ * Znak minus U+2212 zamiast ASCII „-” — makieta klatki 4 używa go konsekwentnie, a w tej zakładce
+ * część wierszy składała minus ręcznie („−72”), a część przez `${liczba}` („-11”), więc w jednej
+ * kolumnie sąsiadowały dwa różne glify. Zmienia się WYŁĄCZNIE glif, nie wartość.
+ * EN: U+2212 minus instead of ASCII "-" — the mockup uses it consistently, while this tab mixed a
+ * hand-written "−" with the ASCII one from `${number}`. Only the glyph changes, never the value.
+ */
+function foodMinus(n: number): string {
+  return n < 0 ? `−${Math.abs(n)}` : `${n}`;
+}
+
+/**
+ * PYTANIE-85 — wiersz podsumowania tury Spichlerza centralnego.
+ * R-DESIGN-11-ZAKLADEK klatka 4: wiersze kosztowe (`expense`) są CZERWONE zgodnie z makietą.
+ * Wcześniej liczyły kolor z surowej wartości, a `wyzwienieLudnosci`/`pomocMiastom`/`wojsko` to
+ * dodatnie magnitudy (`empire-food.ts`) — więc koszt renderował się na ZIELONO mimo minusa przy
+ * liczbie. Sama liczba się nie zmienia, wyłącznie klasa koloru.
+ * EN: expense rows are RED per the mockup. Previously the color was derived from the raw value,
+ * but the cost fields are positive magnitudes, so an expense rendered GREEN despite its minus
+ * sign. The number itself is unchanged — only the color class.
+ */
+function foodSummaryRow(
+  label: string,
+  value: number,
+  opts?: { expense?: boolean; pool?: boolean; last?: boolean },
+): string {
+  const r = Math.round(value);
+  const mag = Math.abs(r);
+  let cls: 'pos' | 'neg' | 'z';
   let display: string;
   if (opts?.expense) {
-    display = `−${Math.abs(Math.round(value))} 🍞`;
+    cls = mag === 0 ? 'z' : 'neg';
+    display = mag === 0 ? '0' : `−${mag}`;
   } else if (opts?.pool) {
-    display = `+${Math.round(value)} 🍞`;
+    cls = r === 0 ? 'z' : 'pos';
+    display = r === 0 ? '0' : `+${r}`;
   } else {
+    cls = r > 0 ? 'pos' : r < 0 ? 'neg' : 'z';
     display = foodSignedTxt(value);
   }
-  return `<div class="civ-emp-zrow brd" style="padding:6px 0">`
+  if (opts?.last) {
+    return `<div class="civ-emp-tbl-sum civ-emp-sp-sum" style="grid-template-columns:1fr auto">`
+      + `<div>${esc(label)}</div><div class="${cls}">${display}</div></div>`;
+  }
+  return `<div class="civ-emp-zrow brd civ-emp-sp-row">`
     + `<span class="lbl">${esc(label)}</span>`
     + `<span class="val"><span class="d ${cls}">${display}</span></span></div>`;
+}
+
+/**
+ * Podpis pod hero-liczbą magazynu (`.civ-emp-hero-sub`) — makieta klatka 4:
+ * „Zapełnienie <b>71%</b> · przyrost <b>+14</b> / turę · wszystkie miasta nakarmione” (stan A)
+ * / „Zapełnienie <b>0%</b> · bilans <b>−11</b> / turę” (stan B, deficyt).
+ * Każdy człon jest warunkowy — bez limitu magazynu nie ma procentu, przed pierwszą turą nie ma
+ * przyrostu. Żadna liczba nie jest tu wyliczana od nowa: `pct` i `tick` przychodzą z wywołania.
+ * EN: caption under the storage hero number; every part is conditional and no number is derived
+ * here — `pct` and `tick` come from the caller.
+ */
+function renderSpichlerzHeroSub(
+  food: EmpireFoodSnap,
+  pct: number,
+  alarm: boolean,
+  hasDeficit: boolean,
+): string {
+  const parts: string[] = [];
+  if (food.maxCap > 0) {
+    parts.push(`Zapełnienie <b class="${alarm ? 'neg' : ''}">${pct}%</b>`);
+  }
+  const t = food.tick;
+  if (t) {
+    const r = Math.round(t.przyrostZapasow);
+    const word = r < 0 ? 'bilans' : 'przyrost';
+    const cls = r > 0 ? 'pos' : r < 0 ? 'neg' : '';
+    parts.push(`${word} <b class="${cls}">${r > 0 ? '+' : ''}${foodMinus(r)}</b> / turę`);
+  }
+  if (!hasDeficit && food.perCityRows.length > 0) {
+    parts.push('wszystkie miasta nakarmione');
+  }
+  if (parts.length === 0) return '';
+  return `<div class="civ-emp-hero-sub">${parts.join(' · ')}</div>`;
 }
 
 /**
@@ -1521,18 +1659,32 @@ function foodSummaryRow(label: string, value: number, opts?: { expense?: boolean
  * (kanoniczne etykiety) + tabela miast.
  */
 function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
-  const capPart = food.maxCap > 0 ? ` / ${food.maxCap}` : '';
   const pct = food.maxCap > 0
     ? Math.max(0, Math.min(100, Math.round((food.zapasy / food.maxCap) * 100)))
     : 0;
-  const barCls = food.zapasy < 0 ? 'low' : (pct >= 95 ? 'warn' : 'fill');
+  // R-DESIGN-11-ZAKLADEK klatka 4 (Maciej 2026-08-13) — deficyt liczony RAZ i sterujący całą
+  // sygnalizacją stanu alarmowego (kolor hero-liczby, kolor paska, callout), zamiast trzech
+  // niezależnych warunków. Makieta pokazuje stan B (zapasy 0 + głód wojska) jako CZERWONY —
+  // stary warunek `zapasy < 0` malował go jeszcze na zielono. / EN: deficit computed ONCE and
+  // driving the whole alarm state (hero color, bar color, callout) instead of three independent
+  // conditions; the mockup's state B (0 stock + army hunger) is RED, the old `zapasy < 0` test
+  // still painted it green.
+  const unfedRows = food.perCityRows.filter(r => r.nakarmione === false);
+  const hasDeficit = unfedRows.length > 0 || food.glodWojska === true;
+  const alarm = hasDeficit || food.zapasy < 0;
+  const barCls = alarm ? 'low' : (pct >= 95 ? 'warn' : 'fill');
+  const heroCls = alarm ? 'neg' : 'pos';
 
   let h = `<div class="civ-emp-sect" data-section="spichlerz-centralny">`
-    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">SPICHLERZ CENTRALNY</div>`
-    + `<div class="civ-emp-kult-line" style="font-size:14px;margin-bottom:6px">`
-    + `W magazynie: <b>${food.zapasy}${capPart} 🍞</b></div>`;
+    + `<div class="civ-emp-eyebrow civ-emp-sp-eyebrow">`
+    + `<span class="civ-emp-sp-eyebrow-ic" aria-hidden="true">${brandIconSvg('res-food', 14)}</span>`
+    + `<span>SPICHLERZ CENTRALNY</span></div>`
+    + `<div class="civ-emp-hero ${heroCls} civ-emp-sp-hero"><span>${food.zapasy}</span>`
+    + (food.maxCap > 0 ? `<span class="cap">/ ${food.maxCap}</span>` : '')
+    + `<span class="ic" aria-hidden="true">${brandIconSvg('res-food', 16)}</span></div>`
+    + renderSpichlerzHeroSub(food, pct, alarm, hasDeficit);
   if (food.maxCap > 0) {
-    h += `<div class="civ-emp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
+    h += `<div class="civ-emp-bar civ-emp-sp-bar"><div class="fill ${barCls}" style="width:${pct}%"></div></div>`;
   }
   // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): scalenie w JEDNO miejsce prawdy,
   // TUŻ PRZY liczbie magazynu — wcześniej „W magazynie: 0" nie mówiło nic o tym, czy to
@@ -1541,19 +1693,19 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
   // ONE place of truth, RIGHT NEXT TO the stock number — previously "In storage: 0" said
   // nothing about whether that zero is healthy or a real uncovered deficit; the army-hunger
   // note and the per-city ⚠ mark (table below) lived separately, disconnected.
-  const unfedRows = food.perCityRows.filter(r => r.nakarmione === false);
   if (unfedRows.length > 0 || food.glodWojska) {
     const deficitParts: string[] = [];
     if (unfedRows.length > 0) {
       const names = unfedRows.map(r => esc(r.name)).join(', ');
       const miastoWord = miastoNiedokarmioneWord(unfedRows.length);
-      deficitParts.push(`<b>${unfedRows.length}</b> ${miastoWord} (${names})`);
+      deficitParts.push(`<b class="n">${unfedRows.length}</b> ${miastoWord} (${names})`);
     }
     if (food.glodWojska) {
       deficitParts.push('głód wojska — magazyn centralny na minusie po koszcie armii');
     }
-    h += `<div class="civ-emp-note" style="color:#e07a7a;margin-bottom:8px">`
-      + `<b>⚠ Realny niepokryty deficyt żywności</b> — ${deficitParts.join(' · ')}.</div>`;
+    h += `<div class="civ-emp-alert civ-emp-sp-alert">`
+      + `<span class="civ-emp-sp-alert-ic" aria-hidden="true">${brandIconSvg('chip-warning', 16)}</span>`
+      + `<span><b>Realny niepokryty deficyt żywności</b> — ${deficitParts.join(' · ')}.</span></div>`;
   }
 
   const t = food.tick;
@@ -1565,7 +1717,10 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
     h += foodSummaryRow('Pomoc miastom', t.pomocMiastom, { expense: true });
     h += foodSummaryRow('Spichlerz stolicy', t.spichlerzStolicy, { pool: true });
     h += foodSummaryRow('Wojsko', t.wojsko, { expense: true });
-    h += foodSummaryRow('Przyrost zapasów', t.przyrostZapasow);
+    // `last` = wiersz wyróżniony jak „Netto skarbiec" w Skarbcu (.civ-emp-tbl-sum) — ta sama
+    // rola: jedna liczba, po której gracz wie, czy jest dobrze (§ makieta klatka 4, „Zmiany").
+    // EN: `last` = row highlighted like "Net treasury" — one number telling the player if it's OK.
+    h += foodSummaryRow('Przyrost zapasów', t.przyrostZapasow, { last: true });
   } else {
     h += `<div class="civ-emp-note" style="margin-top:10px;font-style:italic">`
       + `Podsumowanie tury pojawi się po zakończeniu pierwszej tury.</div>`;
@@ -1573,21 +1728,44 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
 
   if (food.perCityRows.length > 0) {
     const grid = '1.1fr 0.7fr 0.8fr 0.65fr 0.6fr';
+    let sumProdukcja = 0;
+    let sumKoszt = 0;
+    let sumBilans = 0;
     h += `<div class="civ-emp-res-lbl" style="margin-top:14px">Miasta</div>`;
-    h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'PRODUKCJA', 'KOSZT RACJI', 'BILANS', 'WZROST%'], grid)}`;
+    h += `<div class="civ-emp-mini civ-emp-sp-city-tbl">`
+      + `${miniHeader(['MIASTO', 'PRODUKCJA', 'KOSZT RACJI', 'BILANS', 'WZROST%'], grid)}`;
     for (const row of food.perCityRows) {
       const bilansCls = row.bilans > 0 ? 'pos' : row.bilans < 0 ? 'neg' : 'z';
-      const bilansTxt = row.bilans === 0 ? '0' : `${row.bilans > 0 ? '+' : ''}${Math.round(row.bilans)}`;
+      const bilansTxt = row.bilans === 0 ? '0' : `${row.bilans > 0 ? '+' : ''}${foodMinus(Math.round(row.bilans))}`;
       const wzrostTxt = `${Math.round(row.wzrostProcent)}%`;
-      const fedMark = row.nakarmione === false ? ' <span style="color:#e07a7a" title="Miasto nie nakarmione z centrali">⚠</span>' : '';
+      // Znacznik miasta niedokarmionego — ikona chip-warning PRZED nazwą (makieta klatka 4B),
+      // wcześniej znak ⚠ po nazwie. / EN: unfed-city marker — chip-warning icon BEFORE the name.
+      const unfed = row.nakarmione === false;
+      const fedMark = unfed
+        ? `<span class="civ-emp-sp-unfed-ic" title="Miasto nie nakarmione z centrali">${brandIconSvg('chip-warning', 11)}</span>`
+        : '';
+      sumProdukcja += row.produkcja;
+      sumKoszt += row.kosztRacji;
+      sumBilans += row.bilans;
       h += miniRow([
-        esc(row.name) + fedMark,
+        `<span class="civ-emp-sp-city-nm">${fedMark}<span>${esc(row.name)}</span></span>`,
         String(Math.round(row.produkcja)),
         String(Math.round(row.kosztRacji)),
         `<span class="d ${bilansCls}">${bilansTxt}</span>`,
-        wzrostTxt,
+        unfed ? `<span class="d neg">${wzrostTxt}</span>` : wzrostTxt,
       ], grid);
     }
+    // Wiersz SUMA — te same sumy co kolumny wyżej (agregacja liczb już pokazanych, wzorzec
+    // `.civ-emp-mini-summary` ze Skarbca). WZROST% celowo „—”: makieta pokazuje tam średnią, ale
+    // reguła uśredniania (zwykła vs ważona ludnością) to decyzja produktowa, nie reskin.
+    // EN: SUM row — aggregates of the already-shown columns. WZROST% deliberately "—": the mockup
+    // shows an average there, but the averaging rule is a product decision, not a reskin.
+    const sumBilansR = Math.round(sumBilans);
+    const sumBilansCls = sumBilansR > 0 ? 'pos' : sumBilansR < 0 ? 'neg' : 'z';
+    h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+      + `<div>SUMA</div><div>${Math.round(sumProdukcja)}</div><div>${Math.round(sumKoszt)}</div>`
+      + `<div><span class="d ${sumBilansCls}">${sumBilansR === 0 ? '0' : `${sumBilansR > 0 ? '+' : ''}${foodMinus(sumBilansR)}`}</span></div>`
+      + `<div>—</div></div>`;
     h += `</div>`;
   }
 
