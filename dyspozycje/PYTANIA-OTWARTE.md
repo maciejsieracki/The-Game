@@ -30880,3 +30880,53 @@ akurat ta nie pokazuje toastu, zamiast zgadywać.
 STATUS: **OTWARTE — dispatch reconu/naprawy w toku.**
 
 ---
+
+## P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA (2026-08-16, zrzuty Macieja — potwierdzenie N-E1 + nowy wątek staleness)
+
+**Kontekst:** temat macierzysty `P-DYPLO-BILANS-GATE-NIESPOJNY` (runda 2, Evaluator PASS-WITH-NOTES,
+`20a988c6`) zostawił jawnie udokumentowaną resztkę **N-E1** — panel „Wymiana"
+(`renderPnBalancePanelFromBasket`) ma ~1,6% rozjazdów, nienaprawione w rundzie 2. Ten wpis to
+świeża reprodukcja z żywej gry, ze zrzutami, plus nowa obserwacja wykraczająca poza N-E1.
+
+**Zrzut 1 (pakiet Rzymianie, zablokowany):** panel „PUNKTY WYMIANY PW" — MY ODDAJEMY 221 PW, BILANS
+(ONI) **+141** (Nadwyżka 141 PW, zielone pole), ONI ODDAJĄ 80 PW. Mimo dodatniego bilansu:
+„WPŁYW RELACJI NA DEAL: −55,1% · Relacja 44,9 · musisz dać więcej (×2,2 PW), by oferta była
+uczciwa" i blokada „Nie spełnia warunków: Brakuje 9 PW do uczciwej oferty traktatu handlowego @
+Relacji (baza 80 PW) — oferta nieuczciwa dla partnera". Przycisk „Przyjmij" wyszarzony.
+
+**Cytat Macieja przy zrzucie 1:** „Pomyłkę tego, że bilans jest na plus, to jesteś na plusie, to
+nadal nie mogę przyjąć oferty." — dokładnie ten sam wzorzec sprzeczności co w oryginalnym
+zgłoszeniu tematu macierzystego (2026-08-14): wyświetlany bilans dodatni, bramka mimo to blokuje.
+
+**Zrzut 2 (ta sama para, po interwencji Macieja — działa):** Maciej (cytat): „wygląda jakby się
+propozycja zablokowała, usunąłem i wprowadziłem ponownie i następna, chociaż była mniejsza, to
+pozwoliła zawrzeć umowę." Panel po usunięciu i ponownym dodaniu (MNIEJSZEJ) oferty: MY ODDAJEMY
+**93 PW** (baza 80, Relacja −11,1% siła), **BILANS (NETTO): +13** (Nadwyżka 13 PW), ONI ODDAJĄ 80
+PW — „WPŁYW RELACJI NA DEAL: −11,1% · Relacja 88,9 · Twoja strona słabsza (−11,1% PW); oni: baza
+(punkt balansu: 100)" — „Spełnia warunki — użyj Przyjmij, aby wysłać propozycję do partnera",
+przycisk „Przyjmij" aktywny (zielony).
+
+**Dwie różne, możliwe (nie wykluczające się) przyczyny do zbadania — NIE zgadywać, ustalić reconem:**
+1. **N-E1 potwierdzone ponownie** — sama formuła bilansu w panelu „PUNKTY WYMIANY PW"/„Wymiana"
+   nadal niespójna z bramką akceptacji dla pakietów wielo-umowowych (Traktat handlowy + Umowa
+   wymiany surowców razem) — zrzut 1 pokazuje `BILANS (ONI)` (stara etykieta?), zrzut 2 pokazuje
+   `BILANS (NETTO)` (**inna etykieta w tym samym miejscu UI** — do zweryfikowania, czy to dwie różne
+   wersje panelu, czy odświeżona etykieta po edycji, ślad że coś się realnie przeliczyło).
+2. **NOWY wątek — stan panelu nie odświeża się (staleness) po edycji pozycji w koszyku.** Maciej
+   opisuje, że usunięcie i ponowne dodanie oferty (nawet MNIEJSZEJ) odblokowało akceptację — to
+   sugeruje, że panel bilansu w zrzucie 1 mógł pokazywać NIEAKTUALNE dane (stara `Relacja 44,9` vs
+   nowa `Relacja 88,9` dla tej samej pary Rzymianie — różnica prawie ×2, zbyt duża jak na zwykły
+   upływ tur między dwoma zrzutami z tej samej krótkiej sesji testowej), a nie że math per se był
+   błędny. Do ustalenia: czy `Relacja` faktycznie tak skoczyła (np. przez wcześniej zawartą inną
+   umowę) — jeśli TAK, to zrzut 1 był poprawny na starą Relację i to nie jest bug; jeśli NIE
+   (Relacja realnie była już 88,9 w chwili zrzutu 1, ale panel pokazywał starą wartość 44,9 z
+   poprzedniej iteracji edycji koszyka) — to jest realny bug odświeżania stanu, osobny od N-E1.
+
+**Do dispatchu (po zamknięciu bieżącego wątku — recon toastu epoki, Operator w toku):** żywy test
+w headless Chromium odtwarzający dokładnie tę sekwencję (dodaj ofertę → sprawdź panel → edytuj
+ofertę w miejscu → sprawdź czy panel się przelicza NA ŻYWO bez usuwania/dodawania) — ustalić czy to
+faktycznie problem odświeżania, czy zbieg okoliczności (realna zmiana Relacji między zrzutami).
+
+STATUS: **OTWARTE — zarejestrowane ze zrzutami, do reconu po zamknięciu bieżącego wątku.**
+
+---
