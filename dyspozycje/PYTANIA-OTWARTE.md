@@ -30316,3 +30316,31 @@ odświeżaną, nie generyczny duplikat/„ponaglenie".
 STATUS: **OTWARTE** — wymaga recon (root cause w kodzie: skąd dokładnie bierze się karta #2,
 czy to rzeczywiście toast-EOT-defer jak w hipotezie, czy inny mechanizm) PRZED kodowaniem —
 zgodnie z CLAUDE.md §0 nie koduj od razu, przedstaw rozwiązanie ± ABC dopiero po recon.
+
+---
+
+## P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „w widoku armii powinien być jeszcze jedno miejsce. Jaka jednostka jest
+produkowana, jeżeli jest produkowana."
+
+**Kontekst:** zakładka „Armia" panelu imperium (`renderArmiaSection`, `empireDetailPanel.ts`,
+świeżo przebudowana w tej samej sesji — reskin `a6ed0553`/`1f431aa7`) pokazuje dziś: liczbę
+jednostek na mapie, pulę rekrutów (Manpower) z paskiem zapełnienia, boxy KOSZT ZŁOTA/ZAOPATRZENIE,
+tabelę rekrutów (`cityPoborMiniRekruci`), zaopatrzenie żywnościowe i alert głodu. **Nigdzie nie
+pokazuje, jaka JEDNOSTKA jest aktualnie w produkcji w poszczególnych miastach** — mimo że dane już
+istnieją w silniku: `City.productionQueue` (`ProductionItem[]`, pole `kind` rozróżnia
+`jednostka`/budynek, `nazwa`, `koszt`, `postep` — indeks 0 to pozycja aktualnie budowana,
+`gra/src/game/production.ts`), czytane już per-miasto w panelu miasta (`cityPanel.ts`).
+
+**Zakres do ustalenia przez Operatora (recon przed kodowaniem):** dokładny kształt typu
+`ProductionItem`/`City.productionQueue`, czy jest już gdzieś empire-wide agregacja kolejki
+produkcji jednostek (do sprawdzenia), oraz najlepsze miejsce w istniejącym layoucie zakładki
+Armia (prawdopodobnie nowa mini-tabela pod „Rekruci — pula werbu", analogiczna do
+`cityPoborMiniRekruci`, wg wzorca `miniHeader`/`miniRow` już używanego w pliku) — pokazująca per
+miasto: jaka jednostka w produkcji (jeśli `productionQueue[0].kind === 'jednostka'`), ew. tury do
+ukończenia. Miasta bez jednostki w produkcji (kolejka pusta, albo budynek na czele) — pominąć z
+listy albo pokazać „—", do ustalenia przez Operatora wg czytelności (nie wymaga ABC, to detal
+prezentacji, nie decyzja produktowa — życzenie Macieja jest jednoznaczne co do TREŚCI informacji).
+
+STATUS: **OTWARTE** — dispatch Operatora (Sonnet 5, worktree) w toku.
