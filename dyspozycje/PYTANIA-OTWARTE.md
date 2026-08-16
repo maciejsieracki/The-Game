@@ -26454,9 +26454,13 @@ dla miast po stronie gracza (dotyka nierozstrzygniętego F2 z rundy 1); (2) bram
 rozkaz PO przejściu przez `canUnitOccupyCityHex`, nie sam predykat; (3) N1 embarked; (4) N3 -
 odporność samo-mutacji testu.
 
-**STATUS: **OTWARTE** — Evaluator FAIL runda 2, wymagana decyzja ABC właściciela przed rundą 3
-(patrz punkt 1 wyżej — kod nie jest gotowy do napisania bez tej decyzji, nie zgaduję). Zmiana
-**nie jest gotowa do deployu**.**
+**ECHO właściciela (2026-08-16): `P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1 = B`** — wąski wyjątek w
+egzekutorze (`canUnitOccupyCityHex`), analogiczny do `canBarbarianWalkIntoEmptyCity`: AI może
+wejść na heks pustego, niebronionego miasta WYŁĄCZNIE w kontekście komendy ataku dystansowego na
+miasto. N2 (ogólny brak ścieżki zdobycia miasta przez AI) świadomie POZA zakresem — osobny temat.
+
+STATUS: **OTWARTE** — dispatch rundy 3 (Operator Sonnet 5) w toku, implementacja wariantu B.
+Zmiana **nie jest gotowa do deployu** do czasu Evaluatora rundy 3.
 
 ---
 

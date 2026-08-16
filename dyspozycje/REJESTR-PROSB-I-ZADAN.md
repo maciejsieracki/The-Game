@@ -2445,3 +2445,11 @@ teraz to będzie 20, na normalnym 30, a na łatwym 40%." Dotyczy `manpower_uzupe
 Dziś: easy 25 / normal 20 / hard 15. Po zmianie: easy 40 / normal 30 / hard 20. Decyzja
 jednoznaczna (liczby podane wprost per poziom trudności), bez ABC — implementacja wprost.
 Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1 — ECHO (2026-08-16)
+Maciej: `P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1 = B`. Wąski wyjątek w egzekutorze
+(`canUnitOccupyCityHex`), analogiczny do `canBarbarianWalkIntoEmptyCity` — AI może wejść na
+heks pustego, niebronionego miasta wyłącznie w kontekście komendy ataku dystansowego na miasto.
+Nie rozwiązuje ogólnego braku ścieżki zdobycia miasta przez AI (N2 werdyktu Evaluatora rundy 2)
+— to świadomie poza zakresem tej naprawy. Pełna treść pytania i uzasadnienie w
+`PYTANIA-OTWARTE.md`, sekcja `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`.
