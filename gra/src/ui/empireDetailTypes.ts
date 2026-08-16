@@ -226,11 +226,18 @@ export interface EmpireCityEconRow {
    */
   buildingGroups: EmpireCityBuildingGroupRow[];
   /**
-   * Kolejka produkcji tego miasta (`cityProd.get(cityId).kolejka`, `production.ts`) — front
-   * (index 0) niesie `postep`, reszta budynków/jednostek w kolejce nie ma jeszcze aktywnego
-   * postępu (patrz JSDoc `CityProduction.postep`). Pusta lista = kolejka pusta.
-   * / EN: this city's production queue — the front item (index 0) carries `postep`, the rest
-   * has none yet (see `CityProduction.postep` JSDoc). Empty array = empty queue.
+   * Kolejka produkcji tego miasta (`cityProd.get(cityId).kolejka`, `production.ts`) — TEN
+   * WIDOK świadomie eksponuje `postep` WYŁĄCZNIE dla frontu (index 0, `CityProduction.postep`
+   * na żywo); pozostałe pozycje dostają `postep: undefined`, choć silnik MOŻE mieć na nich
+   * zbankowany postęp (`ProductionItem.postep`, `promoteToFront()` bankuje go, gdy pozycja
+   * schodzi z frontu) — patrz JSDoc `EmpireCityQueueItemRow.postep` (naprawa N5, runda 2,
+   * Evaluator FAIL 6366e81e: poprzednie sformułowanie fałszywie sugerowało, że pozycje spoza
+   * frontu NIE MAJĄ aktywnego postępu w silniku). Pusta lista = kolejka pusta.
+   * / EN: this city's production queue — this VIEW deliberately exposes `postep` ONLY for the
+   * front item (live `CityProduction.postep`); other items get `postep: undefined` even though
+   * the engine MAY have banked progress on them (`ProductionItem.postep`, banked by
+   * `promoteToFront()` when an item leaves the front) — see `EmpireCityQueueItemRow.postep`.
+   * Empty array = empty queue.
    */
   queue: EmpireCityQueueItemRow[];
   /** `CityProduction.wstrzymana` — kolejka wstrzymana (Wstrzymaj), bez postępu mimo zawartości. */
@@ -252,7 +259,20 @@ export interface EmpireCityBuildingGroupRow {
 export interface EmpireCityQueueItemRow {
   nazwa: string;
   koszt: number;
-  /** Postęp WYŁĄCZNIE dla frontu kolejki (index 0); pozostałe pozycje: `undefined`. */
+  /**
+   * Postęp WYSTAWIONY W TYM WIDOKU WYŁĄCZNIE dla frontu kolejki (index 0); pozostałe pozycje
+   * dostają `undefined` w tym DTO jako świadome uproszczenie widoku — NIE dlatego, że silnik nie
+   * ma dla nich aktywnego postępu. `production.ts` `promoteToFront()` bankuje postęp na
+   * pozycji, która schodzi z frontu (`ProductionItem.postep`) i przywraca go, gdy wraca na front
+   * — więc pozycje spoza frontu w silniku MOGĄ nosić zbankowany postęp, tylko ten widok go nie
+   * pokazuje (naprawa N5, runda 2, Evaluator FAIL 6366e81e — poprzednie sformułowanie twierdziło
+   * fałszywie, że te pozycje NIE MAJĄ postępu w ogóle).
+   * / EN: progress exposed by THIS VIEW only for the queue front (index 0); other items get
+   * `undefined` in this DTO as a deliberate view simplification — NOT because the engine lacks
+   * active progress for them. `production.ts` `promoteToFront()` banks progress on the item
+   * leaving the front (`ProductionItem.postep`) and restores it when that item returns to the
+   * front — so off-front items CAN carry banked progress in the engine, this view just omits it.
+   */
   postep?: number;
 }
 
@@ -260,12 +280,27 @@ export interface EmpireCityQueueItemRow {
  * Obrona strukturalna miasta — bonus % z murów/cytadeli/baszty/palisady (`city-defense.ts`
  * `cityWallDefenseBonusPercent`, TA SAMA liczba co `structureDefenseBonusFor()` w main.ts
  * dla bitwy/oblężenia — parytet z silnikiem walki) + garnizon na żywo (`unitsOnCityHexForLaw`,
- * TA SAMA funkcja co `garnizonCount` w rozpisce Prawa).
+ * `armyMerge.ts` — IDENTYCZNY predykat filtrowania jednostek co `countLawGarrisonOnCityHex`
+ * w rozpisce Prawa, ale to DWIE OSOBNE funkcje w tym samym pliku, nie jedna reużyta — naprawa
+ * N7b, runda 2, Evaluator FAIL 6366e81e: poprzednie sformułowanie „ta sama funkcja" było
+ * nieprawdziwe; liczby się zgadzają, bo filtr jest identyczny, kod nie jest współdzielony).
  */
 export interface EmpireCityDefenseRow {
-  /** Bonus obrony strukturalnej miasta, w punktach procentowych (200 = +200%). 0 = brak murów. */
+  /**
+   * Bonus obrony strukturalnej miasta, w punktach procentowych (200 = +200%). 0 = brak
+   * struktury obronnej NA TYM heksie z żadnego źródła — nie tylko „brak murów": naprawa N7a
+   * (runda 2, Evaluator FAIL 6366e81e) — `structureDefenseBonusFor()` (main.ts) najpierw sprawdza
+   * mury/cytadelę/basztę/palisadę miasta, ale gdy miasto ich nie ma, MOŻE zamiast tego zwrócić
+   * bonus z ulepszenia TERENOWEGO na tym heksie (fort +100%/posterunek +50% — inny byt niż
+   * budynek Cytadela o tym samym id). 0 nadal oznacza realny brak jakiejkolwiek struktury
+   * obronnej, ale >0 niekoniecznie oznacza mury.
+   */
   structBonusPct: number;
-  /** structBonusPct > 0 — miasto ma co najmniej jeden budynek obronny. */
+  /**
+   * `structBonusPct > 0` — miasto ma bonus obrony strukturalnej na tym heksie. Zwykle z
+   * budynku obronnego (Mury/Cytadela/Baszta/Palisada), ale patrz JSDoc `structBonusPct` —
+   * może pochodzić też z ulepszenia terenowego (fort/posterunek) bez żadnych murów.
+   */
   hasWalls: boolean;
   /** Jednostki gracza stacjonujące na heksie miasta (garnizon), NA ŻYWO (nie tylko koniec tury). */
   garnizonCount: number;
@@ -349,6 +384,41 @@ export interface EmpireHappinessSnap {
   totalNetto: number;
   /** true = przynajmniej jedno miasto gracza ma już policzony `OrderState` (po 1. turze). */
   hasData: boolean;
+}
+
+/**
+ * P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA RUNDA 2 (Maciej 2026-08-16, naprawa N1 Evaluatora):
+ * agregacja rozbicia Zadowolenia na źródła (suma po `id`, WSZYSTKIE miasta gracza) — wyciągnięta
+ * z `buildEmpireDetailSnap()` (main.ts) do czystej, eksportowanej funkcji, żeby dało się ją
+ * przetestować bezpośrednio (esbuild bundle + wywołanie), bez odtwarzania całego main.ts.
+ * `main.ts` woła TĘ SAMĄ funkcję — nie duplikat, więc test i silnik nie mogą się po cichu
+ * rozjechać. Sumowanie MUSI być `+=` (nie nadpisanie) — dwa miasta z tym samym `id` źródła
+ * (np. „Budynki") mają się zsumować, nie nadpisać ostatnią wartością.
+ * EN: happiness source-breakdown aggregation (sum by `id`, ALL player cities) — extracted from
+ * `buildEmpireDetailSnap()` into a pure, exported function so it can be unit-tested directly.
+ * `main.ts` calls this SAME function (not a duplicate), so test and engine can't silently drift.
+ * Summation MUST be `+=` (not overwrite) — two cities with the same source `id` must sum, not
+ * clobber each other.
+ */
+export function aggregateHappinessSources(
+  cityLines: ReadonlyArray<ReadonlyArray<{ id: string; label: string; value: number }> | undefined>,
+): EmpireHappinessSnap {
+  const agg = new Map<string, { label: string; value: number }>();
+  let hasData = false;
+  for (const szLines of cityLines) {
+    if (!szLines) continue;
+    hasData = true;
+    for (const line of szLines) {
+      const prev = agg.get(line.id);
+      if (prev) prev.value += line.value;
+      else agg.set(line.id, { label: line.label, value: line.value });
+    }
+  }
+  const sources = Array.from(agg.entries())
+    .map(([id, v]) => ({ id, label: v.label, value: Math.round(v.value * 10) / 10 }))
+    .sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
+  const totalNetto = Math.round(sources.reduce((s, r) => s + r.value, 0) * 10) / 10;
+  return { sources, totalNetto, hasData };
 }
 
 /**

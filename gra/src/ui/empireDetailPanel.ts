@@ -1600,24 +1600,32 @@ function subHdr(label: string): string {
 /**
  * Klatka 8 — „Miasto", kąt produkcyjny (§8.10, lista zatwierdzona `R-DESIGN-11-ZAKLADEK` Q2=B).
  *
- * ZREALIZOWANE (dane realnie obecne w `EmpireDetailSnap`) — 8/8 pozycji zatwierdzonej listy:
- * przełącznik zakresu, wpływy do skarbca per miasto, produkcja Nauki per miasto, produkowane
- * surowce z checkboxami i sumą cywilizacyjną, kolejka produkcji per miasto, budynki wg
- * `BUILDING_GROUP_ORDER` (suma w bieżącym zakresie), obrona miasta (mury % + garnizon na żywo),
- * populacja per miasto, handel PER MIASTO (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA,
- * Maciej 2026-08-16, ECHO A — `EmpireTradeRouteRow.cityId` dodane dla niezawodnego joina, patrz
- * P-EMPIRE-MIASTA-JOIN-INDEX).
+ * ZREALIZOWANE W PEŁNI — 7/8 pozycji zatwierdzonej listy: przełącznik zakresu, wpływy do
+ * skarbca per miasto, produkcja Nauki per miasto, produkowane surowce z checkboxami i sumą
+ * cywilizacyjną, kolejka produkcji per miasto, budynki wg `BUILDING_GROUP_ORDER` (suma w
+ * bieżącym zakresie), obrona miasta (mury % + garnizon na żywo), handel PER MIASTO
+ * (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA, Maciej 2026-08-16, ECHO A —
+ * `EmpireTradeRouteRow.cityId` dodane dla niezawodnego joina, patrz P-EMPIRE-MIASTA-JOIN-INDEX).
  *
- * POMINIĘTE ŚWIADOMIE — poza zatwierdzoną listą 8 pozycji (§8.10), NIE dociągane tym zleceniem:
+ * CZĘŚCIOWO ZREALIZOWANE — 1/8 (naprawa N6, Evaluator FAIL runda 2, poprawka nieprawdziwego
+ * „8/8" z tej samej sekcji w rundzie 1): populacja per miasto (liczba obywateli/ludność) JEST,
+ * ale BEZ „obrabianych pól" — patrz POMINIĘTE niżej. To NIE jest pozycja poza zakresem (patrz
+ * N2 niżej) — to wciąż otwarta CZĘŚĆ tej samej zatwierdzonej listy 8 pozycji.
+ *
+ * POMINIĘTE ŚWIADOMIE (naprawa N2, Evaluator FAIL runda 2, sprostowanie fałszywego uzasadnienia
+ * technicznego z rundy 1):
  *   • „obrabiane pola" (worked tiles) — koncept ISTNIEJE w silniku (`assignWorkedTiles`,
- *     auto-manage.ts), ale wymaga dostępu do mapy/heksów (okolica miasta), nie tylko do stanu
- *     City/cityProd/cityOrderState jak reszta tej funkcji — dispatch tego zlecenia (KROK 1.4)
- *     wymienia jawnie tylko 4 luki (budynki/kolejka/obrona/handel), ta pozycja nie była w nim
- *     wymieniona, więc zostaje nietknięta do osobnej decyzji.
+ *     auto-manage.ts) i DANE SĄ DOSTĘPNE jedną linią z `City`/mapy już zaimportowanej w
+ *     main.ts (helper `okolicaWorkedKeySet(city)`, `main.ts:4779`, używa
+ *     `resolveWorkedTiles`/`yieldOfMapHex` już zaimportowanych w tym pliku) — TO NIE JEST
+ *     ograniczenie techniczne, wbrew temu co twierdziła runda 1. Prawdziwy powód pominięcia:
+ *     WYŁĄCZNIE zakres ECHO A — dispatch tego zlecenia (KROK 1.4) wymieniał jawnie tylko 4 luki
+ *     (budynki/kolejka/obrona/handel), ta pozycja nie była na tej liście, więc zostaje nietknięta
+ *     do osobnej decyzji właściciela (nie do implementacji „przy okazji").
  *   • Koszt utrzymania JEDNOSTEK — celowo nieobecny, korekta właściciela (koszt całej cywilizacji,
  *     nie per-miasto).
  */
-function renderMiastoSection(
+export function renderMiastoSection(
   ce: EmpireDetailSnap['cityEcon'],
   cp: EmpireDetailSnap['cityPobor'],
   e: EmpireDetailSnap['economy'],
@@ -1822,10 +1830,14 @@ function renderMiastoSection(
       h += miniRow([esc(pob.name), frontTxt, String(Math.max(0, q.length - 1))], grid);
     }
     h += '</div>';
+    // Naprawa N5 (runda 2, Evaluator FAIL 6366e81e): poprzedni tekst „jeszcze bez zgromadzonego
+    // postępu" fałszywie twierdził, że pozycje ZA frontem nie mają postępu — silnik (production.ts
+    // promoteToFront()) MOŻE bankować na nich postęp z wcześniejszego pobytu na froncie, ten
+    // widok po prostu go nie pokazuje (patrz JSDoc EmpireCityQueueItemRow.postep).
     h += anyQueue
       ? '<div class="civ-emp-foot">Procent dotyczy WYŁĄCZNIE pozycji na froncie kolejki (postęp Pracy '
-        + 'zgromadzony na tym budynku/jednostce). „W kolejce" = liczba pozycji ZA frontem, jeszcze bez '
-        + 'zgromadzonego postępu.</div>'
+        + 'zgromadzony na tym budynku/jednostce). „W kolejce" = liczba pozycji ZA frontem — ich '
+        + 'ewentualny wcześniejszy postęp ten widok nie pokazuje.</div>'
       : '<div class="civ-emp-empty">Brak aktywnej produkcji w zakresie.</div>';
   }
 
@@ -1874,20 +1886,32 @@ function renderMiastoSection(
     const grid = '1fr 0.6fr 0.95fr';
     h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'SZLAKI', 'DOCHÓD'], grid)}`;
     let anyRoutes = false;
+    let sRoutes = 0;
     let sIncome = 0;
     for (const { pob } of paired) {
       const cityRoutes = trade.routes.filter(r => r.cityId === pob.cityId);
       if (cityRoutes.length > 0) anyRoutes = true;
+      sRoutes += cityRoutes.length;
       const income = cityRoutes.reduce((s, r) => s + r.income, 0);
       sIncome += income;
       h += miniRow([esc(pob.name), String(cityRoutes.length), treasuryBalanceSignedTxt(Math.round(income))], grid);
     }
+    // Naprawa N3 (runda 2, Evaluator FAIL 6366e81e): SZLAKI w wierszu podsumowania MUSI liczyć
+    // się z `sRoutes` (suma po `paired`, ten sam zakres co DOCHÓD obok), NIE z
+    // `trade.routes.length` (zawsze CAŁA cywilizacja niezależnie od przełącznika zakresu) —
+    // inaczej wiersz miesza dwa różne zakresy w jednym bloku. Ten sam wzorzec co sekcje
+    // „Wpływy do skarbca"/„Populacja" wyżej w tym pliku (suma budowana W PĘTLI po `paired`).
+    // / EN: SZLAKI in the summary row MUST be summed from `sRoutes` (built over `paired`, same
+    // scope as DOCHÓD next to it), NOT from `trade.routes.length` (always civ-wide regardless of
+    // the scope switch) — matches the pattern used by the sections above.
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
-      + `<div>CAŁA CYWILIZACJA</div><div>${trade.routes.length}</div>`
+      + `<div>CAŁA CYWILIZACJA</div><div>${sRoutes}</div>`
       + `<div>${treasuryBalanceSignedTxt(Math.round(sIncome))}</div></div>`;
     h += '</div>';
     h += anyRoutes
-      ? '<div class="civ-emp-foot">Rozpiska tras (partner, medium, dystans) — zakładka Handel.</div>'
+      ? '<div class="civ-emp-foot">SZLAKI = liczba aktywnych tras handlowych tego miasta · DOCHÓD = suma '
+        + 'dochodu tych tras (pkt Pieniądza/turę). Rozpiska tras (partner, medium, dystans) — zakładka '
+        + 'Handel.</div>'
       : '<div class="civ-emp-empty">Brak aktywnych tras handlowych w zakresie.</div>';
   }
 
@@ -1898,25 +1922,27 @@ function renderMiastoSection(
 /**
  * Klatka 9 — „Obywatele", kąt społeczny (§8.11, lista zatwierdzona bez korekt).
  *
- * ZREALIZOWANE — 9/9 pozycji zatwierdzonej listy: hero (obywatele/ludzie/zużycie), podział
- * Pracy, Kultura z progiem, karta Religii, Rekruci, zużycie surowców przez obywateli per miasto
- * z sumą cywilizacyjną, Zdrowie, Prawo i administracja, Wyżywienie, oraz rozbicie Zadowolenia na
- * źródła (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA, Maciej 2026-08-16, ECHO A) —
- * czytane WPROST z `cityOrderState.szLines`/`prawPct` (main.ts), TA SAMA autorytatywna rozpiska
- * którą panel miasta (Porządek) już liczy per miasto raz na koniec tury.
+ * ZREALIZOWANE W PEŁNI — 8/9 pozycji zatwierdzonej listy: hero (obywatele/ludzie/zużycie),
+ * Kultura z progiem, karta Religii, Rekruci, zużycie surowców przez obywateli per miasto z sumą
+ * cywilizacyjną, Zdrowie, Prawo i administracja, Wyżywienie, oraz rozbicie Zadowolenia na źródła
+ * (dociągnięcie P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA, Maciej 2026-08-16, ECHO A) — czytane
+ * WPROST z `cityOrderState.szLines`/`prawPct` (main.ts), TA SAMA autorytatywna rozpiska którą
+ * panel miasta (Porządek) już liczy per miasto raz na koniec tury.
+ *
+ * CZĘŚCIOWO ZREALIZOWANE — 1/9 (naprawa N6, Evaluator FAIL runda 2, poprawka nieprawdziwego
+ * „9/9" z tej samej sekcji w rundzie 1): podział Pracy JEST pokazany, ale jako `pracaPula`/
+ * `pracaBudynki` (punkty PRACY na turę), NIE jako „ilu obywateli w polu / w budynkach" — snapshot
+ * nie niesie liczby obywateli per przydział, więc etykiety nazywają wprost to, co naprawdę jest
+ * mierzone (pkt Pracy/turę) — CLAUDE.md §3. To NIE jest pozycja poza zakresem zatwierdzonej listy
+ * 9 pozycji — to wciąż otwarta CZĘŚĆ tej samej pozycji „Podział pracy".
  *
  * NOTA o „5 źródłach": designer nazwał rozbicie Zadowolenia „sercem tej zakładki" i mówił o 5
  * źródłach (przybliżenie z makiety) — silnik NIE ma sztywnej piątki (`computeHappinessBreakdown`,
  * society-breakdown.ts, może zwrócić 0–14 aktywnych linii zależnie od stanu gry/miasta). Ta
  * sekcja pokazuje REALNE źródła silnika, nie sztuczne dopasowanie do liczby 5 — patrz JSDoc
  * `EmpireHappinessSnap` (empireDetailTypes.ts).
- *
- * POMINIĘTE ŚWIADOMIE — poza zatwierdzoną listą 9 pozycji (§8.11):
- *   • „ilu obywateli w polu / w budynkach" (Podział pracy powyżej) — snapshot ma WYŁĄCZNIE
- *     `pracaPula`/`pracaBudynki`, czyli punkty PRACY na turę, nie liczbę obywateli. Etykiety
- *     nazywają więc wprost to, co naprawdę jest mierzone (pkt Pracy/turę) — CLAUDE.md §3.
  */
-function renderObywateleSection(
+export function renderObywateleSection(
   ce: EmpireDetailSnap['cityEcon'],
   cp: EmpireDetailSnap['cityPobor'],
   e: EmpireDetailSnap['economy'],
@@ -1965,7 +1991,7 @@ function renderObywateleSection(
 
   h += `<div class="civ-emp-hero">${esc(formatObywateleLabel(sumObyw))} · ${esc(formatManpower(sumAbs))} ludzi</div>`;
   h += '<div class="civ-emp-hero-sub">'
-    + (zadow != null ? `Zadowolenie <b>${signedIntTxt(zadow)}</b> · ` : '')
+    + (zadow != null ? `Zadowolenie <b>${signedIntTxt(zadow)} Sz</b> · ` : '')
     + `przyrost <b>${signedIntTxt(przyrost)}</b> obyw./turę · `
     + `zużycie surowców <b>${zuzyciePerTyp}</b> szt./turę na każdy z <b>${citizenResCount}</b> `
     + 'surowców epoki</div>';
@@ -2040,8 +2066,13 @@ function renderObywateleSection(
   if (zadow != null) {
     const cls = zadow > 0 ? '#78c95a' : zadow < 0 ? '#e07a7a' : '#6f7889';
     h += '<div style="display:flex;align-items:baseline;gap:8px">'
-      + '<span style="flex:1;font-size:13px;color:#e2e6ec">Poziom imperium</span>'
-      + `<span style="font-size:15px;font-weight:800;color:${cls}">${signedIntTxt(zadow)}</span></div>`;
+      // Naprawa N4.3 (runda 2, Evaluator FAIL 6366e81e): „Poziom imperium" mylił — to NIE jest
+      // poziom/tier, tylko suma NETTO pkt Zadowolenia (Sz) po wszystkich miastach gracza (rośnie
+      // wraz z liczbą miast). Nowa etykieta nazywa to wprost, spójnie ze stopką „Źródła zsumowane
+      // ze wszystkich miast gracza" niżej. / EN: "Poziom imperium" ("empire level") was misleading
+      // — this is the NET SUM of Happiness points (Sz) across all player cities, not a tier.
+      + '<span style="flex:1;font-size:13px;color:#e2e6ec">Suma netto (wszystkie miasta)</span>'
+      + `<span style="font-size:15px;font-weight:800;color:${cls}">${signedIntTxt(zadow)} Sz</span></div>`;
   } else {
     h += '<div class="civ-emp-empty">Poziom zadowolenia pojawi się po pierwszej turze.</div>';
   }
@@ -2056,7 +2087,9 @@ function renderObywateleSection(
       const posSrc = src.value >= 0;
       h += '<div class="civ-emp-grp-row" style="cursor:default">'
         + `<span class="nm">${esc(src.label)}</span>`
-        + `<span class="val" style="color:${posSrc ? '#78c95a' : '#e07a7a'}">${signedTxt(src.value)}</span></div>`;
+        // Naprawa N4.2 (runda 2): jednostka `Sz` (Zadowolenie/Szczęście) przy każdym źródle —
+        // konwencja repo, patrz cityPanel.ts (np. „+X Sz" przy zadowolenieDominujaca) — CLAUDE.md §3.
+        + `<span class="val" style="color:${posSrc ? '#78c95a' : '#e07a7a'}">${signedTxt(src.value)} Sz</span></div>`;
     }
     h += '</div>';
   }

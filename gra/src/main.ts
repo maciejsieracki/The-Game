@@ -659,6 +659,7 @@ import {
   configureEmpireGlobalDefaults,
 } from './ui/empireDetailPanel';
 import type { EmpireDetailSnap, EmpireFoodSnap, EmpireResourceRow } from './ui/empireDetailTypes';
+import { aggregateHappinessSources } from './ui/empireDetailTypes';
 import {
   collectCultureRangeHexKeys,
   collectReligionRangeHexKeys,
@@ -13405,9 +13406,13 @@ async function boot(): Promise<void> {
         }));
         // Obrona strukturalna — TA SAMA funkcja (`structureDefenseBonusFor`) którą silnik walki
         // woła dla oblężenia/bitwy na tym heksie (parytet z combat.ts), garnizon na żywo z
-        // `unitsOnCityHexForLaw` — TA SAMA funkcja co `garnizonCount` w rozpisce Prawa niżej.
+        // `unitsOnCityHexForLaw` — IDENTYCZNY predykat filtrowania co `lawGarrisonCountForCity`/
+        // `countLawGarrisonOnCityHex` w rozpisce Prawa niżej (naprawa N7b, runda 2: to DWIE
+        // OSOBNE funkcje w armyMerge.ts o identycznym filtrze, nie jedna reużyta — liczby się
+        // zgadzają, kod nie jest współdzielony).
         // / EN: structural defense — the SAME function the combat engine calls for this hex's
-        // siege/battle; live garrison count from the SAME function the Law breakdown uses below.
+        // siege/battle; live garrison count from an IDENTICAL filter predicate to the one the Law
+        // breakdown uses below (two separate functions in armyMerge.ts, not one shared function).
         const structBonusPct = structureDefenseBonusFor(c.q, c.r);
         const garnizonCount = unitsOnCityHexForLaw(units, c.q, c.r, c.ownerId).length;
         return {
@@ -13467,37 +13472,22 @@ async function boot(): Promise<void> {
           racjaGrowthPct: rationGrowthPercent(poziomRacji),
         };
       });
-      // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A):
-      // rozbicie Zadowolenia na źródła — zagregowane (suma po `id`) z `cityOrderState.szLines`
-      // WSZYSTKICH miast gracza. `cityOrderState` jest TĄ SAMĄ, autorytatywną mapą, którą panel
-      // miasta czyta przez `cfg.getOrderState` (jeden koniec-tury obliczenie, żadnej duplikacji
-      // formuły Zadowolenia tutaj). Puste, dopóki żadne miasto nie ma jeszcze wpisu (przed 1.
-      // turą) -- `hasData` sygnalizuje to UI zamiast fałszywego zera. / EN: happiness source
-      // breakdown — aggregated (summed by `id`) from `cityOrderState.szLines` across all player
-      // cities. `cityOrderState` is the SAME authoritative map the city panel reads via
-      // `cfg.getOrderState` (one end-of-turn computation, zero duplicated happiness formula
-      // here). Empty until at least one city has an entry (before turn 1) — `hasData` signals
-      // that to the UI instead of a misleading zero.
-      const happinessAgg = new Map<string, { label: string; value: number }>();
-      let happinessHasData = false;
-      for (const c of pc) {
-        const ord = cityOrderState.get(c.id);
-        if (!ord?.szLines) continue;
-        happinessHasData = true;
-        for (const line of ord.szLines) {
-          const prev = happinessAgg.get(line.id);
-          if (prev) prev.value += line.value;
-          else happinessAgg.set(line.id, { label: line.label, value: line.value });
-        }
-      }
-      const happinessSources = Array.from(happinessAgg.entries())
-        .map(([id, v]) => ({ id, label: v.label, value: Math.round(v.value * 10) / 10 }))
-        .sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
-      const happiness: EmpireDetailSnap['happiness'] = {
-        sources: happinessSources,
-        totalNetto: Math.round(happinessSources.reduce((s, r) => s + r.value, 0) * 10) / 10,
-        hasData: happinessHasData,
-      };
+      // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA dociągnięcie (Maciej 2026-08-16, ECHO A) +
+      // RUNDA 2 (naprawa N1 Evaluatora): rozbicie Zadowolenia na źródła — zagregowane (suma po
+      // `id`) z `cityOrderState.szLines` WSZYSTKICH miast gracza, przez WYCIĄGNIĘTĄ, czystą,
+      // eksportowaną funkcję `aggregateHappinessSources()` (empireDetailTypes.ts) — testowalną
+      // bezpośrednio (esbuild bundle + wywołanie), bez odtwarzania całego main.ts (patrz sekcja D
+      // empire-panel-miasto-obywatele-content-test.cjs). `cityOrderState` jest TĄ SAMĄ,
+      // autorytatywną mapą, którą panel miasta czyta przez `cfg.getOrderState` (jeden koniec-tury
+      // obliczenie, żadnej duplikacji formuły Zadowolenia tutaj). Puste, dopóki żadne miasto nie
+      // ma jeszcze wpisu (przed 1. turą) -- `hasData` sygnalizuje to UI zamiast fałszywego zera.
+      // / EN: happiness source breakdown — aggregated (summed by `id`) from
+      // `cityOrderState.szLines` across all player cities, via the EXTRACTED, pure, exported
+      // `aggregateHappinessSources()` (empireDetailTypes.ts) — directly unit-testable. Empty
+      // until at least one city has an entry (before turn 1) — `hasData` signals that to the UI.
+      const happiness: EmpireDetailSnap['happiness'] = aggregateHappinessSources(
+        pc.map(c => cityOrderState.get(c.id)?.szLines),
+      );
       let rekruciMax = 0;
       for (const c of pc) rekruciMax += cityManpowerMax(c.population, epoka, maxMult);
       const unitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
