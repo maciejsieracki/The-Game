@@ -30951,3 +30951,45 @@ faktycznie problem odświeżania, czy zbieg okoliczności (realna zmiana Relacji
 STATUS: **OTWARTE — zarejestrowane ze zrzutami, do reconu po zamknięciu bieżącego wątku.**
 
 ---
+
+## P-PERF-SPOWALNIANIE-SESJA-DLUGA-Q1 (2026-08-16, ponowne zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „czym dalej w las tę gra bardziej spowalnia. Już raz o tym rozmawialiśmy i
+niby miała być coś naprawione. pytałem się, czy można zwiększyć zasoby w przeglądarce, żeby miała
+większą pamięć. I to stała odpowiedźi."
+
+**Kontekst — poprzednie naprawy tego samego OBSZARU (2026-08-12), oba SCALONE + Evaluator
+PASS-WITH-NOTES:** `P-PERF-SCENE-STYLEDOVERLAYS-WYCIEK` (`scene.ts::dispose()` nie zwalniał
+zmergowanych grup overlayów — las/dżungla/szczyty/plaże/wydmy/oazy — przy każdej przebudowie sceny
+w tej samej sesji przeglądarki; naprawione dopisaniem `disposeMergedDecor(group)`) i
+`P-PERF-BUILDSCENE-TRY-FINALLY` (`buildScene()` bez `try/finally` — wyjątek w trakcie budowy
+porzucał scenę i listenery `resize`/`fullscreenchange` bez zwolnienia, dodatkowo trzymając przy
+życiu cały graf sceny w hałdzie JS, nie tylko bufory GPU). To jest prawdopodobnie „już raz
+naprawione", o którym mówi Maciej — ale zgłoszenie wraca 4 dni później, więc albo naprawa nie
+objęła wszystkich źródeł wycieku, albo od tego czasu (setki commitów, wiele reskinów paneli
+imperium, nowe mechaniki bitewne) doszły NOWE źródła.
+
+**Odpowiedź wprost na pytanie o „zwiększenie zasobów przeglądarki" (nie odkładać, bo to właśnie
+zabrakło poprzednio):** NIE — nowoczesne przeglądarki (Chrome/Edge) nie mają user-facing ustawienia
+„daj tej karcie więcej pamięci". Limit sterty V8 skaluje się automatycznie do dostępnego RAM
+systemu, nie jest sztucznie zaniżony przez przeglądarkę do podniesienia. Istnieją flagi
+uruchomieniowe (`--js-flags="--max-old-space-size=…"`) ale wymagają startu przeglądarki z linii
+komend ze specjalnymi parametrami i i tak nie rozwiązują PRAWDZIWEGO problemu: jeśli gra ma wyciek
+pamięci (rosnące zużycie, które nigdy nie spada), podniesienie limitu tylko odsuwa moment
+spowolnienia/awarii w czasie, nie usuwa przyczyny — pamięć i tak rośnie bez końca. Jedyna właściwa
+naprawa to znalezienie i zamknięcie źródła(deł) wycieku w kodzie gry, nie ustawienia przeglądarki.
+
+**Do dispatchu:** żywy, wieloturowy test w headless Chromium mierzący realny wzrost pamięci
+(`performance.memory`/CDP heap snapshot jeśli dostępne w tym środowisku, alternatywnie liczba
+obiektów w kluczowych rejestrach silnika — `scene.children.length`, liczba aktywnych
+event-listenerów, rozmiar `warEventLog`/`deferredEotHints`/innych rosnących tablic) przez wiele
+dziesiątek tur, żeby ustalić: (a) czy poprzednie 2 naprawy faktycznie trzymają (regresja?), (b)
+czy jest NOWE źródło wycieku spoza `scene.ts` (np. w panelach UI dodanych po 2026-08-12 — 6
+reskinowanych zakładek imperium, nowe testy DOM-owe sugerują dużo nowego kodu renderującego HTML
+per tura). Jeśli źródło jest w `gra/src/render/**` — wymaga Opus 5 (stała zgoda właściciela);
+jeśli poza (np. rosnące tablice w `main.ts`, nieusuwane listenery UI) — Sonnet 5 wystarczy, do
+ustalenia dopiero po reconie, nie zakładać z góry.
+
+STATUS: **OTWARTE — do dispatchu po zamknięciu bieżących wątków.**
+
+---
