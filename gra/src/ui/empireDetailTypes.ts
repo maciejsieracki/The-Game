@@ -613,9 +613,21 @@ export interface EmpireArmiaProductionRow {
    * Tury do ukończenia przy bieżącym tempie Pracy/turę do budynków tego miasta
    * (`etaTurns()`, `game/production.ts` — ta sama formuła co ETA w panelu miasta,
    * `cityPanel.ts`). `null` = brak dopływu Pracy do budynków w tej turze (`pracaBudynki`
-   * ≤ 0) — nie da się oszacować, panel pokazuje wtedy samą nazwę jednostki bez liczby tur.
+   * ≤ 0) LUB kolejka wstrzymana (patrz `wstrzymana` niżej) — nie da się oszacować, panel
+   * pokazuje wtedy samą nazwę jednostki bez liczby tur.
    */
   etaTurns: number | null;
+  /**
+   * N1 (RUNDA 2, Evaluator FAIL, Maciej 2026-08-16): `CityProduction.wstrzymana === true` —
+   * silnik (`production.ts`, `advanceProduction()`) NIE dodaje Pracy do wstrzymanej kolejki,
+   * więc `etaTurns` jest zawsze `null` w tym wypadku, ale panel MUSI odróżnić „wstrzymana" od
+   * zwykłego braku Pracy — inaczej dwa panele tej samej gry przeczą sobie (panel miasta,
+   * `cityPanel.ts`, drukuje „wstrzymana" w 4 miejscach dla tej samej sytuacji silnika).
+   * EN: mirrors `CityProduction.wstrzymana` — the engine adds no Praca to a paused queue, so
+   * `etaTurns` is always `null` here too, but the panel must distinguish "paused" from plain
+   * "no Praca this turn" so it does not contradict the city panel.
+   */
+  wstrzymana: boolean;
 }
 
 export interface EmpireDetailSnap {

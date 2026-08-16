@@ -13508,34 +13508,31 @@ async function boot(): Promise<void> {
         }
         : null;
 
-      // P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (Maciej 2026-08-16): zakładka Armia nie
-      // pokazywała nigdzie, jaka JEDNOSTKA jest aktualnie produkowana per miasto -- mimo że
-      // dane już istnieją w silniku (`cityProd`, `frontItem()`). Front kolejki = pozycja
-      // AKTUALNIE budowana (kontrakt `CityProduction.kolejka`, JSDoc w production.ts) --
-      // miasta z pustą kolejką albo budynkiem na czele są pominięte (patrz JSDoc
-      // EmpireArmiaProductionRow, empireDetailTypes.ts). ETA liczone `etaTurns()` (ta sama
-      // formuła co panel miasta) z `pracaBudynki` już policzonym wyżej w `cityEcon` (żadnego
-      // nowego przeliczenia Pracy/turę) -- `null` gdy miasto nie kieruje Pracy do budynków w
-      // tej turze (suwak %Budynki=0 albo brak Pracy), panel wtedy pokazuje samą nazwę.
-      // / EN: the Armia tab showed nowhere which UNIT is currently in production per city --
-      // the data already exists in the engine (`cityProd`, `frontItem()`). Front of queue =
-      // the item CURRENTLY being built; cities with an empty queue or a building at the front
-      // are excluded. ETA reuses the exact same `etaTurns()` formula as the city panel, fed by
-      // `pracaBudynki` already computed above for `cityEcon` (no new Praca/turn math) --
-      // `null` when the city routes no Praca to buildings this turn.
+      // P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (Maciej 2026-08-16): jednostka w produkcji
+      // per miasto (front kolejki, `frontItem()`) -- puste kolejki/budynek na froncie pominięte.
+      // N1 (runda 2, Evaluator FAIL): `wstrzymana` czytana wprost -- silnik nie dodaje Pracy do
+      // wstrzymanej kolejki, więc ETA byłoby liczbą, która nigdy nie nadejdzie (jak 4 miejsca w
+      // cityPanel.ts sprawdzające `prod.wstrzymana`). N5: `etaTurns()` sam strażuje `praca<=0`,
+      // zewnętrzny `pracaBudynki > 0 ?` był zbędnym duplikatem, usunięty.
+      // / EN: unit currently in production per city (queue front) -- empty queues/building-front
+      // skipped. N1: `wstrzymana` read directly -- the engine adds no Praca to a paused queue, so
+      // ETA would be a number that never arrives. N5: `etaTurns()` already guards `praca<=0`
+      // internally, so the external ternary was a redundant duplicate, removed.
       const armiaProdukcja: EmpireDetailSnap['armiaProdukcja'] = [];
       for (const c of pc) {
         const prod = cityProd.get(c.id);
         if (!prod) continue;
         const front = frontItem(prod);
         if (!front || front.kind !== 'jednostka') continue;
+        const wstrzymanaProdukcja = prod.wstrzymana === true;
         const tk = _lastPlayerCityEcon.find(t => t.cityId === c.id);
         const pracaBudynki = tk?.doBudynkow ?? 0;
         armiaProdukcja.push({
           cityId: c.id,
           name: c.name,
           unitName: front.nazwa,
-          etaTurns: pracaBudynki > 0 ? etaTurns(front.koszt, prod.postep, pracaBudynki) : null,
+          wstrzymana: wstrzymanaProdukcja,
+          etaTurns: wstrzymanaProdukcja ? null : etaTurns(front.koszt, prod.postep, pracaBudynki),
         });
       }
 

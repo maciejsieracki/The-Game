@@ -2286,7 +2286,15 @@ export function renderArmiaProdukcjaMini(rows: EmpireDetailSnap['armiaProdukcja'
   const grid = '1.1fr 1.1fr 0.7fr';
   h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'JEDNOSTKA', 'TURY'], grid)}`;
   for (const r of rows) {
-    const turyTxt = r.etaTurns == null ? '—' : `~${r.etaTurns} tur`;
+    // N1 (RUNDA 2, Evaluator FAIL 2026-08-16): kolejka wstrzymana ma osobny, czytelny tekst --
+    // NIE zwykłe "—" (brak danych o Pracy), żeby panel Armii nie przeczył panelowi miasta,
+    // który drukuje "wstrzymana" w tej samej sytuacji silnika (`prod.wstrzymana === true`).
+    // / EN: a paused queue gets its own readable label -- not the plain "—" used for "no Praca
+    // data", so the Armia tab does not contradict the city panel's "wstrzymana" wording for the
+    // same engine state.
+    const turyTxt = r.wstrzymana
+      ? '<span style="color:#6f7889">wstrzymana</span>'
+      : r.etaTurns == null ? '—' : `~${r.etaTurns} ${turaCountWord(r.etaTurns)}`;
     h += miniRow([esc(r.name), esc(r.unitName), turyTxt], grid);
   }
   h += '</div>';
@@ -3088,6 +3096,23 @@ function dealCountWord(n: number): string {
 function typCountWord(n: number): string {
   if (n === 1) return 'typ';
   return isPlFewForm(n) ? 'typy' : 'typów';
+}
+
+/**
+ * N4 (RUNDA 2, P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK, Maciej 2026-08-16): odmiana
+ * „tura/tury/tur" dla ETA w `renderArmiaProdukcjaMini()` — reużywa `isPlFewForm()` już
+ * zdefiniowane wyżej zamiast duplikować regułę. Odpowiednik `tury(n)` z `cityPanel.ts`, ale
+ * ten NIE jest wyeksportowany (moduł-prywatny) — zamiast go eksportować przez granicę modułu
+ * wyłącznie dla jednej etykiety, dopisano lokalny wariant w idiomie już panującym w tym pliku
+ * (`dealCountWord`/`typCountWord` obok).
+ * EN: "tura/tury/tur" plural for the ETA label in `renderArmiaProdukcjaMini()` — reuses the
+ * already-defined `isPlFewForm()` instead of duplicating the rule. Equivalent to `tury(n)` in
+ * `cityPanel.ts`, but that one is module-private there — rather than exporting it across a
+ * module boundary for a single label, this follows this file's own existing idiom instead.
+ */
+function turaCountWord(n: number): string {
+  if (n === 1) return 'tura';
+  return isPlFewForm(n) ? 'tury' : 'tur';
 }
 
 /**
