@@ -523,6 +523,31 @@ export interface EmpireReligionSnap {
   cities: EmpireReligionCityRow[];
 }
 
+/**
+ * P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (Maciej 2026-08-16): jedno miasto gracza, na
+ * czele kolejki produkcji (`City.productionQueue`/`kolejka[0]`, `game/production.ts`
+ * `frontItem()`) którego stoi JEDNOSTKA (`ProductionItem.kind === 'jednostka'`) — miasta z
+ * pustą kolejką albo z budynkiem na czele NIE trafiają do tej listy (patrz filtr w
+ * `buildEmpireDetailSnap()`, main.ts). Zgłoszenie Macieja: „w widoku armii powinien być
+ * jeszcze jedno miejsce. Jaka jednostka jest produkowana, jeżeli jest produkowana."
+ * EN: one player city whose production queue front (`kolejka[0]`, `frontItem()`) is a UNIT
+ * — cities with an empty queue or a building at the front are excluded from this list.
+ */
+export interface EmpireArmiaProductionRow {
+  /** Patrz JSDoc `EmpireCityPoborRow.cityId` — nazwy miast NIE są unikalne po podboju. */
+  cityId: string;
+  name: string;
+  /** Nazwa jednostki na czele kolejki (`ProductionItem.nazwa`). */
+  unitName: string;
+  /**
+   * Tury do ukończenia przy bieżącym tempie Pracy/turę do budynków tego miasta
+   * (`etaTurns()`, `game/production.ts` — ta sama formuła co ETA w panelu miasta,
+   * `cityPanel.ts`). `null` = brak dopływu Pracy do budynków w tej turze (`pracaBudynki`
+   * ≤ 0) — nie da się oszacować, panel pokazuje wtedy samą nazwę jednostki bez liczby tur.
+   */
+  etaTurns: number | null;
+}
+
 export interface EmpireDetailSnap {
   global: EmpireGlobalParams;
   economy: HudState;
@@ -543,4 +568,7 @@ export interface EmpireDetailSnap {
    * rozbicie Zadowolenia imperium na źródła (zakładka Obywatele) — patrz JSDoc `EmpireHappinessSnap`.
    */
   happiness: EmpireHappinessSnap;
+  /** P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK — miasta gracza aktualnie budujące jednostkę
+   *  (front kolejki produkcji == jednostka); patrz JSDoc EmpireArmiaProductionRow. */
+  armiaProdukcja: EmpireArmiaProductionRow[];
 }

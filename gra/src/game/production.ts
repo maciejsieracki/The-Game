@@ -1097,6 +1097,22 @@ export function frontItem(prod: CityProduction): ProductionItem | null {
 }
 
 /**
+ * Tury do ukończenia pozycji o koszcie `koszt` przy dotychczasowym postępie `postep`
+ * i stałym dopływie `praca` Pracy/turę. `null` gdy brak Pracy (praca <= 0) — nie da się
+ * oszacować. Przeniesione z `cityPanel.ts` (P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK,
+ * Maciej 2026-08-16) — panel imperium (main.ts) potrzebuje tego samego wzoru dla mini-tabeli
+ * "jednostka w produkcji" per miasto, więc formuła żyje raz, w warstwie silnika.
+ * / EN: turns-to-complete for an item costing `koszt` given progress `postep` and a steady
+ * `praca` Praca/turn. `null` when there is no Praca (praca <= 0) -- cannot estimate. Moved
+ * from `cityPanel.ts` so the empire panel (main.ts) can reuse the exact same formula for its
+ * per-city "unit in production" mini-table instead of re-deriving it.
+ */
+export function etaTurns(koszt: number, postep: number, praca: number): number | null {
+  if (!(praca > 0)) return null;
+  return Math.max(1, Math.ceil(Math.max(0, koszt - postep) / praca));
+}
+
+/**
  * Append `item` to the end of the queue.  Returns a new CityProduction; the
  * input is not mutated.  `postep` is preserved (work already done on the front
  * item is untouched).

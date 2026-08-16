@@ -184,7 +184,16 @@ check(
   /kosztJednostki: unitManpowerCost\(player\.era, mpMults\.maxMult\),/.test(buildHudStateBody),
 );
 
-const buildEmpireSnapMatch = mainTsSrc.match(/function buildEmpireDetailSnap\(\): EmpireDetailSnap \{[\s\S]{0,12000}?\n {4}\}/);
+// Okno rozszerzone 12000 -> 20000 (P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK, Maciej
+// 2026-08-16): buildEmpireDetailSnap() urosło o blok armiaProdukcja (~30 linii) i przekroczyło
+// stary limit 12000 znaków -- regex przestał znajdywać dopasowanie mimo że oba pola (power:{...})
+// wciąż istnieją bez zmian, dając fałszywy FAIL. Ta sama wartość co sąsiedni buildHudStateMatch
+// wyżej (linia ~175), więc obie kotwice mają teraz spójny margines bezpieczeństwa.
+// / EN: window widened 12000 -> 20000 -- buildEmpireDetailSnap() grew by the armiaProdukcja
+// block (~30 lines) and exceeded the old 12000-char cap, so the regex stopped matching even
+// though both power:{...} fields are unchanged (false FAIL). Matches the sibling
+// buildHudStateMatch window above for a consistent safety margin.
+const buildEmpireSnapMatch = mainTsSrc.match(/function buildEmpireDetailSnap\(\): EmpireDetailSnap \{[\s\S]{0,20000}?\n {4}\}/);
 check('main.ts zawiera funkcje buildEmpireDetailSnap(): EmpireDetailSnap', buildEmpireSnapMatch !== null);
 const buildEmpireSnapBody = buildEmpireSnapMatch ? buildEmpireSnapMatch[0] : '';
 check(

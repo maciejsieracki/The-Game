@@ -2212,6 +2212,32 @@ function cityPoborMiniRekruci(
   return h;
 }
 
+/**
+ * P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK (Maciej 2026-08-16): mini-tabela „Produkcja
+ * jednostek" — wyłącznie miasta, na czele kolejki których stoi JEDNOSTKA (patrz JSDoc
+ * EmpireArmiaProductionRow, empireDetailTypes.ts; zbudowane raz w `buildEmpireDetailSnap()`,
+ * main.ts — panel tylko renderuje). Pusty stan (żadne miasto nie buduje jednostki) — komunikat
+ * `.civ-emp-empty`, wzorem `cityPoborMiniRekruci()` powyżej ("Brak miast."), NIE pusta tabela.
+ * EN: "Unit production" mini-table — only cities whose production queue front is a UNIT. Empty
+ * state uses the same `.civ-emp-empty` pattern as `cityPoborMiniRekruci()` above, not a bare
+ * empty table.
+ */
+export function renderArmiaProdukcjaMini(rows: EmpireDetailSnap['armiaProdukcja']): string {
+  let h = `<div class="civ-emp-res-lbl" style="margin-top:12px">Produkcja jednostek</div>`;
+  if (rows.length === 0) {
+    h += '<div class="civ-emp-empty">Żadne miasto nie buduje teraz jednostki.</div>';
+    return h;
+  }
+  const grid = '1.1fr 1.1fr 0.7fr';
+  h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'JEDNOSTKA', 'TURY'], grid)}`;
+  for (const r of rows) {
+    const turyTxt = r.etaTurns == null ? '—' : `~${r.etaTurns} tur`;
+    h += miniRow([esc(r.name), esc(r.unitName), turyTxt], grid);
+  }
+  h += '</div>';
+  return h;
+}
+
 function signedTxt(n: number): string {
   if (!Number.isFinite(n) || n === 0) return '—';
   return signedPl(n);
@@ -3296,6 +3322,7 @@ function render(): void {
       + `<div class="civ-emp-res-lbl">Rekruci — pula werbu</div>`
       + `${cityPoborMiniRekruci(cp, p, { skipHero: true })}</div>`;
   }
+  armia += renderArmiaProdukcjaMini(snap.armiaProdukcja);
   armia += `<div class="civ-emp-res-lbl civ-emp-lbl-ic">Zaopatrzenie wojska`
     + `<span class="civ-emp-mini-h-ic" aria-hidden="true">${brandIconSvg('res-food', 12)}</span></div>`
     + `<div class="civ-emp-zrow brd"><span class="lbl">Koszt żywności armii</span>`
