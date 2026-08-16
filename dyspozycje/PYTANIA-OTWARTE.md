@@ -28838,4 +28838,10 @@ turę), ale po zdjęciu oblężenia jednostka wznowi marsz na stary cel bez pono
 **Do dispatchu:** albo dodać `force=true` w `commitBesiege` (spójność z Ufortyfikuj/Czuwaj), albo
 pokazywać „Anuluj atak" także w trybie oblężenia — decyzja projektowa (ABC), nie jednolinijkowa.
 
-**STATUS: DO DISPATCHU — niekrytyczne, nie pilne, wymaga krótkiego ABC.**
+**ODPOWIEDŹ MACIEJA (2026-08-15): `P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU-Q1 = B`.**
+Plan ataku zostaje chroniony jak dziś (przeżywa rozpoczęcie oblężenia, `commitBesiege` BEZ
+`force=true`) — dodać przycisk „Anuluj atak" także w trybie oblężenia, żeby gracz mógł go
+świadomie odwołać zamiast czekać do zdjęcia oblężenia. Dispatch do Operatora (Sonnet 5, worktree)
+w toku.
+
+**STATUS: DISPATCH W TOKU.**
