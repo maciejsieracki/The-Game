@@ -30712,3 +30712,39 @@ pilne, świadomie odłożone zgodnie z zasadą „jeden wątek na raz" — nie p
 deployu).
 
 ---
+
+## P-BITWA-ATAK-DYSTANSOWY-ZAKRES-NIEPOROZUMIENIE-KRYTYCZNE (2026-08-16, sprostowanie Macieja)
+
+**⛔ KRYTYCZNE — możliwe nieporozumienie co do zakresu całego tematu `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`, przez 4 rundy implementacji, już zdeployowane do ROBOCZA (FALA 288) i częściowo scalone do `main` (FALA 287).**
+
+**Oryginalny cytat zgłoszenia (2026-08-14):** „jest jeden błąd. Nie da się z większej odległości
+zaatakować jednostki przeciwnika. Trzeba podejść na HEX obok i dopiero przeprowadzić atak. Zarówno
+atak na miasto jak i atak na jedną jednostkę powinien być możliwy z daleka, jeżeli tylko jest dana
+jednostka lub miasto w zasięgu." — orkiestrator odczytał to literalnie jako żądanie ataku BEZ
+wymogu adiacencji (jednostka strzela z dystansu, jeśli cel mieści się w jej `"Zasięg ataku (hex)"`)
+i tak zaimplementował przez 4 rundy (FALA 281→288).
+
+**Sprostowanie Macieja (2026-08-16, dosłownie):** „ustaliliśmy, że chodziło mi tylko o to, że można
+było z dalszej odległości wyznaczyć do ataku inną jednostkę. a nie żeby z kilku pul, z kilku heksów
+rozpoczynała się bitwa." Doprecyzowane przez `AskUserQuestion` — wybrana opcja: **„Wybór celu wśród
+kilku wrogów"** — chodziło o możliwość wskazania, KTÓRĄ konkretnie jednostkę przeciwnika (spośród
+kilku widocznych) zaatakować, **NIE** o rezygnację z wymogu adiacencji. Bitwa ma nadal wymagać
+podejścia na sąsiedni heks.
+
+**Skutek:** cała mechanika „atak bez adiacencji" (rundy 1-4, `9e25ea77`/`13f595bc`/`6826b16c` i
+pokrewne), łącznie z realnym przejęciem miasta przez AI wchodzącą na dystans
+(`tryAutoCaptureEmptyCityAt` z egzekutora), może być **poza pierwotnie żądanym zakresem** — zbudowano
+funkcjonalność, o którą nikt nie prosił, kosztem 4 rund pracy Operator+Evaluator, kilku ECHO-decyzji
+ABC (`P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B`, `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A`) i już
+zdeployowanej/scalonej wersji.
+
+**Dispatchowany recon (agent `af665691a77dc4362`, Explore, w toku):** (1) czy mechanizm wyboru celu
+wśród kilku wrogów w adiacencji istnieje dziś w jakiejkolwiek formie, (2) dokładna skala kodu do
+ewentualnego cofnięcia (wszystkie pliki/funkcje dotknięte 4 rundami), (3) czy coś z tego da się
+bezpiecznie zachować (np. `isTargetWithinStackAttackRange` z FALI 283 dotyczy wyboru WŁAŚCIWEJ
+jednostki we WŁASNYM stosie, nie zasięgu ataku — potencjalnie ortogonalne do tego nieporozumienia).
+
+STATUS: **OTWARTE — CZEKA NA RECON, potem pytanie ABC do Macieja** (cofnąć / zostawić jako bonus
+funkcję / częściowo). Nic więcej w tym temacie nie jest kodowane do czasu odpowiedzi ABC.
+
+---
