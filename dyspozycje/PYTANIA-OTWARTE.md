@@ -28904,3 +28904,77 @@ tego tematu i dla P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE (Przyczyna B) — ten d
 werdykt PASS-WITH-NOTES i status „gotowe do deploy", ale jego kluczowy przycisk faktycznie nigdy
 się nie renderował aż do tego commitu; warto to uwzględnić przy ponownej ocenie tamtego tematu,
 skoro oba idą do roboczej w tym samym deployu.
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-16, commit `13ac8d35`): **PASS-WITH-NOTES — PILNE DO DEPLOYU**
+
+**Teza „przycisk nigdy nie renderował się" POTWIERDZONA dwiema niezależnymi ścieżkami dowodu.**
+(1) Strukturalna: drugi teoretyczny renderer (`armyStackHud.ts`) jest martwy —
+`buildArmyStackHudState()` zwraca `null` bezwarunkowo od 2026-07-28 („akcje przeniesione do
+rozszerzonego panelu bocznego"), zmierzone `armyStackDisplay: "none"` we wszystkich scenariuszach.
+Zostaje wyłącznie `buildUnitActionBarHtml`. (2) Żywa: zbudowano OSOBNY bundel ze stanu SPRZED tego
+commita (`13ac8d35^` = `7b19dcfd`, czyli DOKŁADNIE to, co jest dziś w ROBOCZA FALA 284) i
+odtworzono scenariusz Przyczyny B (marsz-z-atakiem, zwykłe odznaczenie, BEZ oblężenia) — pasek akcji
+JEST w DOM, ale `march-stop` w nim nie ma (`domButtons` bez `march-stop`, mimo że dane
+(`hudActions`) go zawierają). **Potwierdzone: funkcja obiecana przez już wdrożoną Przyczynę B nigdy
+nie działała dla gracza w ROBOCZA.** Po naprawie ten sam scenariusz pokazuje przycisk, realny klik
+myszą czyści plan poprawnie, kontrola (oblężenie bez ataku) poprawnie nie pokazuje przycisku.
+
+**Bramki zgodne z opisem, wszystkie 13 zielone**, zmierzone niezależnie.
+
+**NOTATKA 1 (najważniejsza, powód „WITH-NOTES"): krytyczna połowa naprawy (renderer) nie ma
+ŻADNEJ bramki.** Mutacja Evaluatora — usunięcie całego nowego bloku renderującego z
+`unitActionBarHtml.ts` (czyli przywrócenie DOKŁADNIE tego buga, który właśnie wyciekł do ROBOCZA)
+— **żadna z 12 bramek tego nie łapie** (`march-attack-queue-persist-test` nadal 55/0, bo testuje
+tylko warstwę danych `main.ts`, nie renderowany HTML). Ten sam martwy punkt, przez który Przyczyna
+B przeszła jako „gotowe" poprzednim razem, dziś nadal istnieje dla renderera jako całości.
+
+**NOTATKA 2: ta sama klasa błędu żyje dalej w dwóch innych akcjach.** Evaluator podał rendererowi
+pełen zestaw id produkowanych przez `main.ts`: `siege-hold`, `fortify`, `unfortify-all`,
+`march-stop`, `skip`, `disband` → wyrenderowane tylko `fortify`, `skip`, `march-stop`, `disband`.
+**`unfortify-all`** („Odfortyfikuj całą armię") ma działający handler (`main.ts:17883`) I gotową
+ikonę w `ACTION_ICONS`, ale nie jest w `COMPACT_ACTION_ORDER` — gracz nie może jej dziś wywołać,
+zero alternatywnej ścieżki. `siege-hold` (zawsze `disabled`) to czysto kosmetyczna strata.
+
+**STATUS FINALNY: PASS-WITH-NOTES — PILNE DO NAJBLIŻSZEGO DEPLOYU** (realny, znaczący bug w
+kodzie który gracz ma już w ROBOCZA FALA 284 — przez cały czas życia tej fali obietnica z
+Przyczyny B, możliwość odwołania zakolejkowanego marszu-z-atakiem, była martwa). Dwa nowe
+znaleziska zapisane osobno niżej: `P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI` i
+`P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE`.
+
+---
+
+## P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI (2026-08-16, znalezisko Evaluatora przy okazji P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU)
+
+**Klasa błędu, nie pojedynczy przypadek:** `gra/src/ui/unitActionBarHtml.ts` (`buildUnitActionBarHtml`)
+renderuje WYŁĄCZNIE id z ręcznie utrzymywanej listy `COMPACT_ACTION_ORDER` + osobno hardkodowany
+`'disband'`. Każde nowe id akcji dodane po stronie danych (`main.ts`, `buildArmyStackHudStateInner`)
+domyślnie NIE trafia do DOM, dopóki ktoś jawnie nie dopisze go do renderera — cichy, niewykrywalny
+przez istniejące testy gap (dokładnie ten mechanizm ukrył martwy przycisk „Anuluj atak" przez całą
+rundę Przyczyny B). Dziś potwierdzone dwa nieosiągalne id: `march-stop` (naprawione tym tematem),
+`unfortify-all` (nadal nieosiągalne, zobacz temat osobno).
+
+**Do dispatchu:** dodać bramkę strukturalną sprawdzającą, że KAŻDE id, które `buildArmyStackHudStateInner`
+może wyprodukować (enumeracja z kodu, nie z pamięci), faktycznie ma odpowiadającą ścieżkę renderowania
+w `buildUnitActionBarHtml` (czy to przez `COMPACT_ACTION_ORDER`/`ACTION_ICONS`, czy przez dedykowany
+blok jak `disband`/`march-stop`). To zamknęłoby całą klasę błędu na przyszłość, nie tylko dzisiejszy
+przypadek.
+
+**STATUS: DO DISPATCHU — niekrytyczne dla dzisiejszej gry (istniejące dziury już złapane i
+zamknięte), ale warte zrobienia żeby nie powtórzyło się po raz trzeci.**
+
+---
+
+## P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE (2026-08-16, znalezisko Evaluatora przy okazji P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU)
+
+**`unfortify-all` („Odfortyfikuj całą armię") ma działający handler (`main.ts:17883`) i gotową
+ikonę w `ACTION_ICONS` (`unitActionBarHtml.ts:17`), ale nie jest w `COMPACT_ACTION_ORDER` —
+gracz nie może dziś tej akcji w ogóle wywołać z HUD.** Brak skrótu klawiszowego i alternatywnej
+ścieżki wywołania. Gotowa ikona sugeruje, że miała się renderować — to prawdopodobnie przeoczenie
+przy jakiejś wcześniejszej zmianie `COMPACT_ACTION_ORDER`, nie świadoma decyzja.
+
+**Do dispatchu:** dopisać `'unfortify-all'` do `COMPACT_ACTION_ORDER` (albo dedykowanego bloku,
+jeśli ma warunkową widoczność jak `march-stop`) — sprawdzić najpierw W JAKICH warunkach ta akcja
+w ogóle powinna być widoczna (żeby nie pokazywać jej zawsze), zanim się doda. Niekrytyczne
+(funkcja rzadko używana — odfortyfikowanie całej armii naraz), ale realna luka funkcjonalna.
+
+**STATUS: DO DISPATCHU — niekrytyczne, nie pilne.**
