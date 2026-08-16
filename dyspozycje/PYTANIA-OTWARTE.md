@@ -26523,8 +26523,13 @@ obecny stan pośredni (B1/B2) jest gorszy od obu skrajności; (3) bramka musi ob
 `evictForeignUnitsFromCityHexes` i min. 2 tury z rzędu, inaczej ten sam błąd przejdzie ponownie
 zielono.
 
-STATUS: **OTWARTE — Evaluator FAIL runda 3, wymagana decyzja ABC właściciela przed rundą 4**
-(patrz punkt 2 zalecenia — nie zgaduję). Zmiana **nie jest gotowa do deployu**.
+**ECHO właściciela (2026-08-16): `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 = A`** — realne przejęcie
+miasta jak barbarzyńcy (`tryAutoCaptureEmptyCityAt`), wejście na pusty niebroniony heks kończy
+sekwencję zmianą właściciela. Świadomie otwiera zakres N2, ale wyłącznie w obrębie ścieżki ataku
+dystansowego (nie ogólnego marszu AI).
+
+STATUS: **OTWARTE** — dispatch rundy 4 (Operator Sonnet 5) w toku, implementacja wariantu A.
+Zmiana **nie jest gotowa do deployu** do czasu Evaluatora rundy 4.
 
 ---
 
