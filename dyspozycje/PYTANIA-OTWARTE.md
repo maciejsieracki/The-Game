@@ -28977,7 +28977,61 @@ jeśli ma warunkową widoczność jak `march-stop`) — sprawdzić najpierw W JA
 w ogóle powinna być widoczna (żeby nie pokazywać jej zawsze), zanim się doda. Niekrytyczne
 (funkcja rzadko używana — odfortyfikowanie całej armii naraz), ale realna luka funkcjonalna.
 
-**STATUS: DO DISPATCHU — niekrytyczne, nie pilne.**
+**STATUS: NAPRAWIONE 2026-08-16 (subagent Sonnet 5, worktree, jeszcze BEZ scalenia/deployu —
+czeka na Operatora równoległego tematu `P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI` i na
+Evaluatora).**
+
+**Analiza handlera (main.ts:17883, funkcja `handleSelectedUnitHudAction`):** `'unfortify-all'`
+zdejmuje fortyfikację ze WSZYSTKICH jednostek w garnizonie na heksie danego miasta naraz
+(`garrisonUnitsOnHex(units, u.q, u.r, u.ownerId)` → `exitGarnizon(su)` w pętli), w odróżnieniu
+od `'fortify'`, który dotyczy WYŁĄCZNIE aktywnie wybranej jednostki. Po zdjęciu fortyfikacji
+synchronizuje garnizon miasta (`syncGarnizonForCity`), mgłę wojny, render jednostek, panel
+miasta (jeśli otwarty) i pokazuje podpowiedź z liczbą odfortyfikowanych jednostek.
+
+**Warunek produkcji akcji (main.ts ok. 17777-17800, funkcja `buildArmyStackHudStateInner`):**
+`actions.push({id:'unfortify-all', ...})` wyłącznie gdy WSZYSTKIE trzy: (a) `!siegeCity`
+(jednostka nie oblega miasta), (b) `active.inGarnizon === true` (jest w garnizonie), (c)
+`garrisonUnitsOnHex(...).length > 1` (więcej niż 1 jednostka w garnizonie na tym heksie — dla
+pojedynczej jednostki akcja grupowa nie miałaby sensu, wystarczy zwykłe `'fortify'`). Ten
+warunek handlera NIE był dziś tematem — działał poprawnie od zawsze; łamał się wyłącznie
+renderer (brak wpisu w allowliście), więc main.ts w tym temacie NIE zmieniony.
+
+**Analog grupowy w tym samym pasku:** brak osobnej akcji `'fortify-all'` (nie istnieje w
+kodzie) — `'unfortify-all'` jest jedyną akcją grupową w pasku. Etykieta jest STATYCZNA
+(„Odfortyfikuj całą armię", main.ts:17796) — w odróżnieniu od `'march-stop'` (etykieta
+dynamiczna „Anuluj atak"/„Zatrzymaj"), więc wzorzec zastosowany to ten sam co dla `'fortify'`:
+zwykła ikona w `COMPACT_ACTION_ORDER` (już gotowa ikona SVG w `ACTION_ICONS['unfortify-all']`),
+NIE dedykowany blok tekstowy jak dla `'march-stop'` (13ac8d35).
+
+**Zmiana (dokładnie ta jedna linia, `gra/src/ui/unitActionBarHtml.ts`):**
+```
+- const COMPACT_ACTION_ORDER = ['fortify', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
++ const COMPACT_ACTION_ORDER = ['fortify', 'unfortify-all', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
+```
+Wstawione zaraz po `'fortify'` (grupowy odpowiednik pojedynczej fortyfikacji), przed `'sentry'`.
+Renderer w tej samej pętli co `'fortify'`/`'sentry'`/… — zero nowego bloku, `ACTION_ICONS`
+niezmieniony (ikona była już gotowa). `main.ts` NIE dotknięty — cała naprawa w jednym pliku.
+
+**Test:** `gra/tools/unfortify-all-action-bar-test.cjs` (nowy plik) — 16/16 zielone. Buduje
+PRAWDZIWY `unitActionBarHtml.ts` przez esbuild (zero reimplementacji renderera) i sprawdza: (1)
+przycisk renderuje się w DOM gdy `'unfortify-all'` jest w `actions[]`; (2) NIE renderuje się gdy
+nieobecne w `actions[]` (np. garnizon z 1 jednostką — main.ts w ogóle nie wypycha akcji); (3)
+`disabled:true` → atrybut `disabled` obecny; (4) styl ikony (`uc-act-btn`), nie tekstowy blok;
+(5) pozycja PO `'fortify'`, PRZED `'sentry'`; (6) strażnik strukturalny — warunek widoczności w
+main.ts (`isGarnizoned && garCount>1`) i handler nietknięte tym tematem; (7) DOWÓD MUTACYJNY —
+cofnięcie wpisu z `COMPACT_ACTION_ORDER` (symulacja stanu sprzed naprawy) → test (1) łapie
+regresję, przycisk znowu znika mimo że jest w `actions[]`.
+
+**Bramki (z katalogu `gra/`):** `npx tsc --noEmit` → 0 błędów. Nowy test → 16 passed, 0 failed.
+`march-attack-queue-persist-test.cjs` (dotyka tego samego renderera przez sąsiedztwo tematu) →
+55 passed, 0 failed (bez zmiany). `hud-tooltip-body-mounted-panels-test.cjs` (dotyka
+`.civ-unit-panel`, blisko akcji jednostki) → 16 pass, 0 fail (bez zmiany).
+
+**Kolizja plikowa:** ten temat i `P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI` dotykają
+tych samych dwóch plików (`main.ts`, `unitActionBarHtml.ts`), ale w rozłącznych worktree —
+scalenie sekwencyjne przez orkiestratora. Zmiana tego tematu to WYŁĄCZNIE jedna linia w
+`unitActionBarHtml.ts` (`COMPACT_ACTION_ORDER`, patrz diff wyżej) + jeden nowy plik testu; `main.ts`
+w tym worktree ma tylko treść już scaloną z gałęzi (bez dodatkowych zmian tego tematu).
 
 ---
 

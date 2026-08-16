@@ -49,8 +49,23 @@ const ACTION_ICONS: Partial<Record<string, string>> = {
     + '</svg>',
 };
 
-/** Ikony akcji widoczne w kompaktowej karcie (bez rozwiąż w środku — osobno po prawej). */
-const COMPACT_ACTION_ORDER = ['fortify', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
+/** Ikony akcji widoczne w kompaktowej karcie (bez rozwiąż w środku — osobno po prawej).
+ * P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE (2026-08-16): 'unfortify-all' („Odfortyfikuj
+ * całą armię") miało już gotową ikonę w ACTION_ICONS i w pełni działający handler w
+ * main.ts (garnizon, >1 jednostka), ale nie było w tej liście — renderer pomija id spoza
+ * COMPACT_ACTION_ORDER (patrz pętla niżej), więc przycisk nigdy nie trafiał do DOM mimo że
+ * main.ts poprawnie wypychał go do `actions[]`. Etykieta jest statyczna (nie zależy od
+ * stanu jak w 'march-stop'), więc — tak jak 'fortify' — renderuje się jako ikona z tej
+ * listy, nie jako dedykowany tekstowy blok. Umieszczone zaraz po 'fortify', bo to jego
+ * odpowiednik grupowy (cała armia w garnizonie zamiast jednej jednostki). / EN:
+ * 'unfortify-all' ("Unfortify whole army") already had a ready icon in ACTION_ICONS and a
+ * fully working handler in main.ts (garrison, >1 unit), but was missing from this list —
+ * the renderer skips any id not in COMPACT_ACTION_ORDER (see loop below), so the button
+ * never reached the DOM even though main.ts correctly pushed it into `actions[]`. The
+ * label is static (unlike 'march-stop'), so — like 'fortify' — it renders as an icon from
+ * this list, not a dedicated text block. Placed right after 'fortify' as its group
+ * counterpart (whole garrisoned army instead of a single unit). */
+const COMPACT_ACTION_ORDER = ['fortify', 'unfortify-all', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
 
 export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): string {
   const byId = new Map(actions.map(a => [a.id, a]));
