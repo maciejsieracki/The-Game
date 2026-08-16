@@ -1,0 +1,86 @@
+# ZGŁOSZENIA CZEKAJĄCE NA ODNOWĘ LIMITU
+
+**To jest KATEGORIA 6 raportu (Maciej, 2026-08-14): „taka, którą zajmiemy się w pierwszej
+kolejności, jak się odnowi limit."** Przy haśle `raport` doliczyć tę listę jako 6. kategorię, obok
+istniejących 5 z `CLAUDE.md` §10.
+
+**Cel tego pliku (Maciej, 2026-08-14):** osobna warstwa, NIE to samo co „odłożone jako rozwojowe"
+w `PYTANIA-OTWARTE.md`/`BACKLOG-PRZYSZLOSC.md`. Od 2026-08-14 limit sesji jest praktycznie
+zjedzony. Zasada na czas do odnowy limitu (**przyszła środa**):
+
+- **Każde nowe zgłoszenie Macieja trafia TU** — samo zarejestrowanie, BEZ dispatchu subagenta,
+  bez Operatora/Evaluatora, bez kodu.
+- **Wyjątek: Maciej mówi wprost, że zgłoszenie jest KRYTYCZNE** („będę za każdym razem mówił, czy
+  to jest błąd krytyczny, czy może coś tylko zapisałem" — jego słowa, 2026-08-14). Tylko
+  wtedy dispatch od razu, normalnym trybem AutoBot (Operator→Evaluator), tak jak do tej pory.
+  Domyślnie — bez tego wyraźnego słowa — zgłoszenie NIE jest krytyczne, zostaje tutaj.
+- Po odnowie limitu: przejść ten plik od góry, każdy punkt przepuścić przez zwykły cykl
+  (rejestracja pełna w `PYTANIA-OTWARTE.md` jeśli tego wymaga + dispatch), a wpis tutaj oznaczyć
+  jako przeniesiony/zamknięty.
+
+Format wpisu: data, cytat zgłoszenia (jeśli był), krótki kontekst jeśli już coś ustalono, status.
+
+---
+
+## P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1 (2026-08-14)
+
+**Zgłoszenie (cytat):** „Jeszcze jedna rzecz jest do sprawdzenia. Trzeba zobaczyć czy nie ma
+jakiegoś regresu, jeżeli chodzi o państwa-miasta, bo zaczęły produkować mniej jednostek, chociaż
+ustawiony jest najtrudniejszy poziom gry. W sensie poziom gry jest normalny, ale najtrudniejszy
+poziom, jeżeli chodzi o Państwa-miasta. Sprawdź czego to może wynikać, może jakiś regres.
+Przerzuciliśmy ostatnio ustawienia do oddzielnych ustawień, może wtedy coś umknęło, jest nie
+podłączone."
+
+**Stan (aktualizacja 2026-08-14, dispatch mimo limitu):** rekonesans WYKONANY — pełny raport w
+`PYTANIA-OTWARTE.md` (sekcja `P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1`, blok „RAPORT
+REKONESANSU"). Skrót: oba pola trudności PM (`_menuCityStateDifficulty` vs
+`_menuCityStateDifficultyVsPlayer`) są dziś poprawnie podłączone; konkretny wiring-bug pasujący do
+hipotezy właściciela istniał realnie 2026-08-10 (`a6076db7`) i został naprawiony tego samego dnia
+(`7e753db2`, `28c96bd8`), 4 dni przed tym zgłoszeniem. Zero zmian w kodzie w tej rundzie.
+
+**STATUS: ZAMKNIĘTE — regresja NIE potwierdzona (pełne uzasadnienie w `PYTANIA-OTWARTE.md`).**
+
+---
+
+## P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE — runda 2 (2026-08-14)
+
+**Stan:** Evaluator (Opus 5) zwrócił **FAIL** dla `9e25ea77`+`5ed4e083` (pełny werdykt w
+`PYTANIA-OTWARTE.md`, commit `6bdf7967`). Atak jednostka→jednostka z dystansu **działa poprawnie**
+(nie cofać). Trzy powody FAIL: **F1** — AI nadal wymaga adiacencji przy ataku na miasto, gracz już
+nie (złamany parytet); **F2** — zdobycie PUSTEGO miasta z dystansu daje `capture_empty` zamiast
+zgłoszonego „ataku"; **F3** — zwycięski atakujący z dystansu TELEPORTUJE SIĘ na heks celu (do 6
+heksów dla Katapulty), bez sprawdzania przejezdności terenu — nieprojektowana zmiana mechaniki,
+zgłoszenie wprost rezerwowało to pytanie dla Ciebie.
+
+**Pytanie do Ciebie, gdy wrócimy do tematu — `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1`:** czy zwycięski
+atakujący z dystansu ma (A) teleportować się na heks celu tak jak dziś, (B) zostać na swoim
+miejscu bez żadnego ruchu, czy (C) przesunąć się tylko o 1 heks jak dawniej mimo ataku z dystansu?
+Rekomendacja robocza: B (najbliżej „łucznik strzela z daleka i zostaje na miejscu", zero ryzyka
+nielegalnego ruchu przez nieprzejezdny teren) — ale to nie jest pilne, wystarczy odpowiedzieć przy
+odnowie limitu.
+
+**STATUS: CZEKA NA ODNOWĘ LIMITU (Evaluator FAIL, runda 2 wymagana — nie krytyczne).**
+
+---
+
+## P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE — runda 2 (2026-08-14)
+
+**Stan:** Operator dostarczył rundę 2 (`dcdf653c`+`4bfeec7f`, scalone do gałęzi sesji), adresując
+N1 (funkcja czysta w `converters.ts` + test przeciw prawdziwemu `runConverter`), N2, N4, N6.
+Bramki własnoręcznie zweryfikowane: tsc 0, `citypanel-konwerter-produkcja-test` 83/83,
+`converters-test` 46/46, `converter-era-scaling-test` 87/87, `tech-tree`/`research` zielone.
+**Nie dispatchowałem Evaluatora** (limit) — merytorycznie wygląda solidnie (prawdziwa funkcja
+domenowa, twarde liczby przypięte), ale bez niezależnej weryfikacji formalnie nie zamknięte.
+
+**STATUS: CZEKA NA ODNOWĘ LIMITU (Operator gotowy, Evaluator odłożony — nie krytyczne).**
+
+---
+
+## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (2026-08-14)
+
+**Stan:** Operator dostarczył (`9482117f`, omyłkowo na `main`, scalone do gałęzi sesji jako
+`4a580231` — zobacz notę procesową w `PYTANIA-OTWARTE.md`). Poprawka 1-liniowa + test 20/20,
+kod zweryfikowany osobiście przy scalaniu, bramki zielone. **Nie dispatchowałem Evaluatora**
+(limit).
+
+**STATUS: CZEKA NA ODNOWĘ LIMITU (Operator gotowy, Evaluator odłożony — nie krytyczne).**

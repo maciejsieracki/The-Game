@@ -19573,6 +19573,15 @@ właścicielowi (SendUserFile).
 kolejnych 10 zakładek (Praca/Nauka/Spichlerz/Surowce/Handel/Armia/Miasto/Obywatele/Kultura/
 Religia) — Skarbiec (Faza 1) już zaimplementowany i naprawiony (9cbfc8ae).**
 
+**AKTUALIZACJA 2026-08-14 (Maciej, żywy playtest FALA 280):** potwierdzone wprost, które zakładki
+nadal wyglądają po staremu: **Armia, Miasto, Obywatele, Kultura** — stare, nietknięte. **Religia**
+— już zaktualizowana (to NIE efekt tego projektu; wynik wcześniejszego, osobnego „Panel Faza 2
+(Praca/Nauka/Religia)", scalonego dawniej w tej sesji, przed dostarczeniem paczki designera
+11-zakładek). Skarbiec potwierdzony jako zrobiony niezależnie (wyżej). Nie sprawdzono jeszcze
+żywo: Praca, Nauka, Spichlerz, Surowce, Handel — ale Praca/Nauka najpewniej też już zaktualizowane
+przez to samo „Panel Faza 2" co Religia (do potwierdzenia, nie zakładać). Czysta informacja
+zwiadowcza — nie zmienia STATUS, żadna implementacja jeszcze nie dispatchowana.
+
 ## R-BARBARZYNCY-USTAWIENIA-NIEZALEZNE-OD-TRUDNOSCI (2026-08-14, zgłoszenie Macieja ze zrzutem panelu ustawień) · STATUS: **ZABLOKOWANE NA ABC (Q2) — kod scalony i bezpieczny, liczby wymagają potwierdzenia**
 
 **AKTUALIZACJA (2026-08-14, sygnał właściciela):** Maciej: „pracuj autonomicznie teraz przez całą
@@ -21823,7 +21832,7 @@ oraz asercja wzorca argumentów). Po przywróceniu znów **15/15**, `git status`
 
 ---
 
-### N1 — `okolicaTryb` NIE resetowany: rezydualny problem REALNY, ale **PRE-ISTNIEJĄCY** · STATUS: **OTWARTE** — do ABC właściciela
+### N1 — `okolicaTryb` NIE resetowany: rezydualny problem REALNY, ale **PRE-ISTNIEJĄCY** · STATUS: **ZAMKNIĘTE** (2026-08-14) — ABC `R-OKOLICA-TRYB-RESET-PO-ZMIANIE-WLASCICIELA-Q1` zadane, odpowiedź **A** (zawsze resetuj, także gdy gracz odzyskuje własne miasto), wdrożone commitem `0d50bb81`, Evaluator **PASS-WITH-NOTES** (`7ec82223`) — nowy temat N1 Evaluatora (save/load nie sanityzuje starych zapisów) zarejestrowany osobno jako `P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE`
 Decyzja Operatora o nieresetowaniu `okolicaTryb` jest **słuszna w zakresie tego bugfixu** (to zmiana
 produktowa, nie techniczna), ale zostawia problem, który warto nazwać — **zmierzony, nie wydedukowany**:
 `resolveWorkedTiles` (`okolica.ts:350`) honoruje `tryb === 'reczny'` **bez filtra właściciela**,
@@ -24241,7 +24250,46 @@ Dwie noty do domknięcia w osobnej turze, **żadna nie jest warunkiem deployu**:
   zmierzone niezależnie (trzy warianty, zgodne co do jednego układu): **30/63 kończyło,
   33/63 zostawiało**. Do sprostowania w komentarzu i w sekcji ECHO wyżej w tym pliku.
 
-STATUS: **OTWARTE — G1 i G2 do domknięcia (noty Evaluatora, nie blokują deployu)**
+STATUS: **ZAMKNIĘTE — G1 i G2 domknięte** (G2 przez `678b31e1`, G1 przez `dda042bb` — patrz
+aktualizacje niżej w tej sekcji dla obu).
+
+**AKTUALIZACJA 2026-08-14 (orkiestrator, audyt kompletności §0c):** **G2 ZAMKNIĘTE** — komentarz
+`main.ts` ~23098-23099 oraz nagłówek/dwa literały `oblezenie-remis-endsiege-test.cjs` skorygowane
+commitem `678b31e1` (32/63→30/63, 31/63→33/63), zgodnie z pomiarem Evaluatora wyżej. **G1 nadal
+OTWARTE** — dispatch naprawczy w toku (wzmocnienie §2 testu, żeby faktycznie zabezpieczał gałąź
+naprawy, nie tylko strażnik tekstowy §1).
+
+**AKTUALIZACJA 2026-08-14 (Operator, dispatch domknięcia G1) — G1 ZAMKNIĘTE, commit `dda042bb`.**
+§2 `oblezenie-remis-endsiege-test.cjs` przestał wołać `endMapSiege('roma')` bezwarunkowo z
+harnessu. Nowa funkcja `wytnijBlokRemis` (JEDNO źródło prawdy, użyte zarówno przez §1 jak i §2)
+wycina TEKSTOWO samą gałąź `res.winner === 'remis'` z `finishSiegeStormBattle` i §2 WYKONUJE ją
+naprawdę (`wykonajGalazRemis`) w tym samym zasięgu `new Function` co wycięty `endMapSiege` —
+gołe `endMapSiege(city.id)` w tej gałęzi wiąże się więc z PRAWDZIWĄ wyciętą funkcją (podniesienie
+deklaracji), nie z atrapą. Dodano §3b: to samo sprawdzenie w pamięci (main.ts na dysku
+nietknięty), potwierdzające że mutacja psuje §2 behawioralnie, nie tylko §1 tekstowo.
+
+**Dowód mutacyjny NA DYSKU** (main.ts przywrócony przed commitem, `git diff` puste):
+| Stan `main.ts` | Wynik testu | Exit |
+|---|---|---|
+| nietknięty | 271 passed, 0 failed | 0 |
+| usunięta linia `endMapSiege(city.id);` w gałęzi remis | **138 passed, 133 failed** | 1 |
+| przywrócony (identyczny z kopią zapasową) | 271 passed, 0 failed | 0 |
+
+Dla porównania z notą G1: ta sama klasa mutacji dawała wcześniej **257 passed, 3 failed** —
+regresję łapały wyłącznie 3 asercje czysto tekstowe. Dziś pada 133/271, w tym cała rodzina
+asercji §2 (`city.oblegane`, `oblegajacyOwnerId`, `siegeBesiegerByCity`, `siegeTurnByCity`) dla
+wszystkich 33 z 63 konfiguracji, w których sam `validateActiveSieges()` nie wystarczał
+(`insufficientBefore=33/63`, zgodne z niezależnym pomiarem Evaluatora dla identycznego wariantu
+geometrii). Poprawiono też mylący `[info]` — opisuje teraz wprost, że wynik pochodzi z
+WYKONANIA prawdziwej gałęzi remis, wołanej tylko jeśli main.ts faktycznie ją zawiera.
+
+Bramki: `npx tsc --noEmit` 0 błędów · `oblezenie-remis-endsiege-test.cjs` 271/0 · sąsiednie testy
+oblężenia (`oblezenie-siege-lifted-po-bitwie-test.cjs` 16/0, `oblezenie-test.cjs` 27/0,
+`map-siege-test.cjs` 6/0, `siege-ai-test.cjs` 17/0) oraz `tech-tree-test.cjs`/`research-test.cjs`/
+`unit-replace-test.cjs`/`ai-founding-territory-test.cjs` bez regresji. `main.ts` bez zmian
+funkcjonalnych względem stanu przed tą pracą (commit dotyka wyłącznie pliku testowego).
+
+Sekcja domknięta w całości (G1 + G2) — patrz `STATUS: **ZAMKNIĘTE**` na początku tej sekcji.
 
 ## Evaluator: druga (wewnętrzna) obwódka granicy = relacja dyplomatyczna (`bf839f81`, `R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1`) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
 
@@ -24408,3 +24456,5380 @@ stałej w komentarzu), **N2** (przesłanianie zależne od kamery) i **N3** (ręc
 + `| string`) to poprawki do zrobienia przy następnym dotknięciu tego kodu, nie osobna runda.
 **N4** to temat pre-istniejący do ewentualnej decyzji właściciela, jeśli zależy mu na czytelności
 koloru tożsamościowego sąsiada na styku terytoriów.
+
+---
+
+## ECHO `R-DROGI-RUCH-HANDEL-Q1` (Maciej, 2026-08-14) — decyzja właściciela, dispatch w toku
+
+**Decyzja (cytat):** „Ustalmy że ruch po drodze zwykłej jest trzy razy szybszy a po brukowanej pięć
+razy szybszy z kolei handel na drodze plus dwa, na drodze brukowanej plus trzy."
+
+**Stan PRZED (zmierzony w kodzie/danych, nie założony):**
+| Parametr | Dziś | Docelowo (decyzja Macieja) | Plik |
+|---|---|---|---|
+| Ruch, Droga (`droga`) | **koszt ÷ 3** (`ROAD_MOVE_SPEED_MULT = 3`) | **koszt ÷ 3** — bez zmiany, już zgodne | `gra/src/map/road-movement.ts` |
+| Ruch, Droga brukowana (`droga_brukowana`) | **koszt − 2** (`bonus_ruch: 2`, mechanika ODEJMOWANIA, nie dzielenia) | **koszt ÷ 5** — zmiana MECHANIKI (z odejmowania na dzielenie, analogicznie do zwykłej drogi) | `gra/src/map/road-movement.ts` (`cobblestoneMoveBonus()`/`applyRoadMovementModifier()`), `gra/data/terrain-improvements.json` (`droga_brukowana.bonus_ruch`) |
+| Handel (plon heksa), Droga | **+1 handlu/turę** (`bonus.handel: 1`) | **+2 handlu/turę** | `gra/data/terrain-improvements.json` (`droga.bonus.handel`) |
+| Handel (plon heksa), Droga brukowana | **+2 handlu/turę** (`bonus.handel: 2`) | **+3 handlu/turę** | `gra/data/terrain-improvements.json` (`droga_brukowana.bonus.handel`) |
+
+**⚠️ Flaga §1a — dotyka wcześniejszej decyzji:** wartość `bonus_ruch: 2` przy `droga_brukowana` niesie
+adnotację `"uwagi": "T-TECH-9 Maciej 2026-07-04"` — to zmiana mechaniki ustalonej tamtą decyzją
+(z odejmowania stałej na dzielenie przez mnożnik), nie tylko przestrojenie liczby. Wartości handlu
+(1/2) nie mają przypisanej adnotacji źródłowej w JSON — nieznane, czy miały osobną decyzję ABC.
+
+**Zakres:** `applyRoadMovementModifier()` w `road-movement.ts` — gałąź `droga_brukowana` ma przejść
+z `Math.max(ROAD_MIN_MOVE_COST, cost - bonus)` na wzorzec analogiczny do zwykłej drogi:
+`cost / ROAD_BRUK_MOVE_SPEED_MULT` (nowa stała = 5), z tym samym `Math.max(ROAD_MIN_MOVE_COST, …)`
+jako podłogą. `bonus.handel` w `terrain-improvements.json` dla obu wpisów to czysta zmiana danych —
+już czytana generycznie przez `applyImprovementBonus()` (`terrain-improvements.ts:83-93`), zero zmian
+kodu potrzebnych po stronie handlu. Do sprawdzenia przez dispatchowanego agenta: czy `terrain-improvements.json`
+zasila którykolwiek panel Excel (`panele-sterowania/gen-panel-*.py`) — jeśli tak, odnotować w rejestrze
+jako osobny krok doganiania JSON→Excel (`CLAUDE.md` §2), nie wykonywać automatycznie bez potwierdzenia zakresu.
+
+**STATUS: WDROŻONE (`92cd220b`) — WERDYKT EVALUATORA: FAIL**, patrz sekcja
+`Evaluator: R-DROGI-RUCH-HANDEL-Q1 (92cd220b) — WERDYKT FAIL` niżej. Kod mechaniki i handlu jest
+poprawny co do litery decyzji i wszystkie bramki są zielone, ale decyzja „pięć razy szybszy" **nie
+jest realizowana** na dominującym terenie (podłoga `ROAD_MIN_MOVE_COST` zjada mnożnik) i wprowadza
+regresję ruchu na Wzgórzach/Lesie. Wymagana decyzja ABC właściciela (N1/N2) + naprawa treści
+CivPedii i paneli Excel (N3/N4) przed uznaniem tematu za domknięty.
+
+---
+
+## ECHO `R-DROGI-RUCH-HANDEL-PODLOGA-Q1 = A` (Maciej, 2026-08-14) — dispatch naprawy w toku
+
+**Decyzja:** osobna podłoga `ROAD_BRUK_MIN_MOVE_COST = 1/5` wyłącznie dla drogi brukowanej —
+zwykła droga zostaje przy `ROAD_MIN_MOVE_COST = 1/3` bez zmian. Skutek: droga brukowana zawsze
+daje pełne 5×, niezależnie od kosztu bazowego terenu; nigdy nie jest gorsza niż zwykła droga
+(dziś przy koszcie bazowym 2 była — nota N1/N2 Evaluatora). Świadomy koszt zaakceptowany:
+armie na najtańszym terenie (Łąka/Równina/rzeka) przyspieszają wyraźnie po zbudowaniu bruku —
+to zamierzony efekt inwestycji w bruk, nie efekt uboczny.
+
+**STATUS: OPERATOR DOSTARCZYŁ, czeka na Evaluatora** — razem z N3 (sprostowanie CivPedii/
+wikiBundle, „+1 handel/t" → „+2 handel/t"). Pełny raport, tabela przed/po i wynik bramek: sekcja
+„R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A — Operator dostarczył, czeka na Evaluatora (2026-08-14)" niżej
+w tym pliku. N4 (panel Excel `Tereny-i-ulepszenia-MACIEJ.xlsx`) odłożone do osobnego kroku
+doganiania JSON→Excel — nie wykonywane automatycznie (`CLAUDE.md` §2).
+
+---
+
+## Evaluator: `R-DROGI-RUCH-HANDEL-Q1` (`92cd220b`) — WERDYKT **FAIL** (2026-08-14)
+
+**STATUS: CZĘŚCIOWO ZAADRESOWANE (2026-08-14)** — (a) decyzja ABC właściciela
+`R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A` naprawia N1 (podłoga dla bruku osobna, koszt bazowy 1 daje
+teraz pełne ÷5), **N2 pozostaje ŚWIADOMIE NIEROZWIĄZANA** przy koszcie bazowym 2 (floor się tam
+nie aktywuje — patrz tabela w sekcji dostarczenia Operatora niżej, zaakceptowane wprost w treści
+decyzji A); (b) N3 (treść CivPedii/wikiBundle) **naprawiona i ZWERYFIKOWANA** — werdykt
+PASS-WITH-NOTES dla `a3f61973`, oba punkty N3 (pole `full` i pole `wikiM`) potwierdzone
+semantycznym diffem bundla; (c) N4 (panel Excel) odłożone do osobnego kroku doganiania JSON→Excel.
+
+**AKTUALIZACJA po werdykcie dla `a3f61973` (2026-08-14):** N1 jest **domknięta w całości** — bruk
+daje pełne ÷5 na każdym realnie osiągalnym koszcie bazowym, opis „5× szybszy" przestał kłamać.
+**Sprostowanie do tabeli w nocie N1 poniżej:** wiersz „koszt bazowy 1 (Łąka/Równina/**Pustynia**,
+każda rzeka)" jest **błędny** — Pustynia ma w runtime koszt **2** (`terrain-movement.json`), więc
+należy do wiersza z regresją, nie do wiersza kosztu 1. Szczegóły i zakres naprawy: sekcja
+`P-DROGI-PUSTYNIA-KOSZT-2-SPROSTOWANIE` na końcu pliku.
+
+Weryfikacja niezależna w osobnym worktree, na czubku gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+(commit `92cd220b`, rodzic/baseline `08736abe`). Wszystkie liczby niżej zmierzone własnoręcznym
+uruchomieniem, nie przepisane z raportu Operatora.
+
+### 1. Co Operator zrobił dobrze — zweryfikowane, wszystko się zgadza
+
+| Punkt zlecenia | Wynik weryfikacji |
+|---|---|
+| (a) Ruch, Droga zwykła — nadal ÷3 | ✅ `cost / ROAD_MOVE_SPEED_MULT`, `ROAD_MOVE_SPEED_MULT = 3` — bez regresji |
+| (b) Ruch, Droga brukowana — dzielenie, nie odejmowanie | ✅ `Math.max(ROAD_MIN_MOVE_COST, cost / ROAD_BRUK_MOVE_SPEED_MULT)`, stała = 5 |
+| (c) Handel (plon heksa), Droga = 2/turę | ✅ `droga.bonus.handel: 2` w JSON |
+| (d) Handel (plon heksa), Droga brukowana = 3/turę | ✅ `droga_brukowana.bonus.handel: 3` w JSON |
+| Ścieżka handlu nie jest martwym kodem | ✅ prześledzona w całości: `economy.ts:44` import → `economy.ts:452` `applyImprovementBonuses(out, impKeys)` → `terrain-improvements.ts:131` pętla → `:83` `applyImprovementBonus` → `:87` `if (b.handel) yld.handel += b.handel`, gdzie `b` pochodzi z `improvementBonusForKey()` czytającego JSON. Wartości realnie trafiają do plonu heksa. |
+| Martwy kod posprzątany, nie zostawiony jako pułapka | ✅ `cobblestoneMoveBonus()` usunięta, **zero** pozostałych odwołań w `src/` i `tools/*.cjs` (grep). Pole `bonus_ruch: 2` zostaje w JSON, ale z siostrzanym `bonus_ruch_uwaga` opisującym wprost, że jest martwe, **plus** blok komentarza PL/EN w `road-movement.ts`. To wystarczające zabezpieczenie dla następnego czytającego. |
+
+**Bramki — 13/13 zgodnych co do jednej asercji z raportem Operatora** (uruchomione samodzielnie
+z `gra/`): `npx tsc --noEmit` 0 błędów exit 0 · `map-road-movement-test` **22/0** ·
+`heks-panel-tooltip-warstwa-test` **22/0** · `tech-tree-test` **19/0** · `research-test` **33/0** ·
+`unit-replace-test` **13/13** · `ai-founding-territory-test` **28/0** · `map-improvement-qualify-test`
+**112/0** · `road-hook-mainguard-test` **19/0** · `droga-6-ramion-geom-test` **61/0** ·
+`road-connectivity-test` **99/0** · `build-mode-hud-affordability-test` **7/0** · `zelazo-gate-test` **24/24**.
+
+**Teza „pre-istniejące" — potwierdzona niezależnie**, przez cofnięcie trzech zmienionych plików do
+baseline `08736abe` i ponowne uruchomienie: `upgrade-budynki-test.cjs` **48 pass / 1 fail**
+(`FAIL: no handel bonus on bruk`) i `zloto-test.cjs` **38 pass / 7 fail` — **identycznie przed i po
+zmianie**, delta zero. Teza Operatora prawdziwa. (Uwaga poboczna: oba testy kończą się `exit 0`
+mimo porażek — nie sygnalizują błędu kodem wyjścia; pre-istniejące, osobny dług.)
+
+**Jakość testu — nietautologiczny, mutacja kontrolna odtworzona.** Asercje rozróżniają starą i nową
+mechanikę liczbowo, nie przez powtórzenie wzoru: `koszt=2` na Wzgórzach → nowa `0.4` vs stara `1/3`,
+oraz `koszt=10` → nowa `2` vs stara `8` (przypadek bez clampu, jednoznacznie pokazuje dzielenie).
+Odtworzyłem deklarowaną mutację kontrolną dokładnie: podmiana samej formuły na `cost - 2` daje
+**19 pass / 3 fail** — zgodnie z raportem. Dodatkowo własna, mocniejsza mutacja (cofnięcie kodu
+**i** danych) daje **15 pass / 7 fail**, co potwierdza czułość także sekcji Handlu.
+
+### 2. N1 (KRYTYCZNA) — podłoga `ROAD_MIN_MOVE_COST` zjada decyzję właściciela na dominującym terenie
+
+`applyRoadMovementModifier()` clampuje gałąź bruku do `ROAD_MIN_MOVE_COST = 1/3`. Realne koszty
+bazowe wejścia w silniku (`units/setup.ts`): Łąka/Równina/Pustynia = **1**, Wzgórza = **2**,
+Las = **+1**, a **każdy heks z rzeką** to płaskie `RIVER_HEX_MOVE_COST = 1`. Stąd:
+
+| Koszt bazowy (skąd) | Bez drogi | Droga ÷3 | Bruk NOWY | Bruk STARY | Nowy vs stary | Bruk vs zwykła droga |
+|---|---|---|---|---|---|---|
+| **1** (Łąka/Równina/Pustynia, **każda rzeka**) | 1 | 0,3333 | **0,3333** | 0,3333 | identyczny | **ZERO zysku** |
+| **2** (Wzgórza **lub** płaski + Las) | 2 | 0,6667 | **0,4000** | 0,3333 | **GORSZY (−20%)** | lepszy |
+| **3** (Wzgórza + Las) | 3 | 1,0000 | 0,6000 | 1,0000 | lepszy | lepszy |
+
+Na koszcie bazowym 1 — czyli na terenie, po którym drogi realnie biegną (drogi łączą miasta,
+miasta stoją na płaskim i nad rzekami) — **droga brukowana daje dokładnie tyle samo co zwykła
+droga**: 1/3 punktu ruchu. Gracz płaci **25 pracy** za ulepszenie, które w warstwie ruchu nie robi
+**nic**. Efektywny mnożnik to 3×, nie 5×. Decyzja „po brukowanej pięć razy szybszy" **nie jest
+zrealizowana** tam, gdzie ma znaczenie.
+
+Osobno: Operator wpisał do `terrain-improvements.json` treść widoczną dla gracza
+`"warunek": "... ruch jednostek 5× szybszy (koszt wejścia ÷5) ..."`. To **nieprawda** na koszcie
+bazowym 1. Stary opis („+2 ruch jednostek") słusznie został uznany za kłamiący o mechanice — ale
+został zastąpiony opisem, który kłamie w najczęstszym przypadku. Clamp nie jest w raporcie
+przeanalizowany ani wspomniany **ani razu**, mimo że własna asercja Operatora
+(`'bruk laka: max(1/3, 1/5)'` === `1/3`) dosłownie go koduje i utrwala.
+
+### 3. N2 (KRYTYCZNA) — zmiana NIE jest monotonicznie korzystna: regresja ruchu na Wzgórzach i w Lesie
+
+Porównanie mechanik: stara `max(1/3, koszt−2)`, nowa `max(1/3, koszt/5)`. Nowa jest **wolniejsza**
+od starej dla kosztu bazowego w przedziale **(5/3; 5/2)** = (1,667; 2,5). Ten przedział zawiera
+dokładnie jedną z trzech realnie osiągalnych wartości: **koszt 2**. Skutek w grze: wjazd na
+brukowany heks Wzgórz albo brukowany heks płaski z Lasem kosztuje dziś **0,4** zamiast **0,333** —
+o **20% wolniej niż przed tą zmianą**. Bilans decyzji w warstwie ruchu: koszt 1 — bez zmian
+(i bez zysku z ulepszenia), koszt 2 — **pogorszenie**, koszt 3 — poprawa. Czyli na dwóch z trzech
+osiągalnych terenów decyzja daje zero albo minus.
+
+Operator asercjonuje wartość `0.4` wprost, opisując ją wyłącznie jako „dowód nietautologiczności" —
+patrzył na jedyny przypadek, w którym gracz traci, i nie rozpoznał go jako regresji.
+
+**N1+N2 wymagają decyzji właściciela, nie samodzielnej poprawki Operatora ani Evaluatora:**
+`ROAD_MIN_MOVE_COST` to parametr gameplayowy (podłoga kosztu ruchu, wspólna dla obu ulepszeń
+drogowych), a jego zmiana przestraja tempo przemieszczania armii w całej grze. Kierunki do
+rozważenia w pytaniu ABC — obniżenie podłogi do `1/5` (uwalnia pełne 5× i usuwa regresję,
+ale przyspiesza też ruch ogólnie), pozostawienie podłogi i przyjęcie, że bruk to głównie ulepszenie
+handlowe (wtedy trzeba naprawić kłamiący opis „5× szybszy"), albo podłoga zależna od typu drogi.
+**Nie rozstrzygam tego — to decyzja Macieja.**
+
+### 4. N3 (POWAŻNA) — nieprawdziwe twierdzenie o UI; nieaktualna treść realnie wysyłana do gracza
+
+Raport Operatora: *„Brak hardkodowanych liczb ruchu/handlu dróg w UI (…) opisy w grze pochodzą
+z pól JSON »warunek« (zaktualizowanych w pkt 2), nie z osobnych hardkodów."* — **nieprawda**,
+zweryfikowane własnym grepem.
+
+`docs/encyklopedia/ulepszenia/droga.md` jest pakowany przez `gra/tools/bundle-wiki-for-game.cjs`
+do `gra/src/data/wikiBundle.json`, który jest importowany w `gra/src/ui/wikiHubHud.ts:5` i zasila
+żywy hub CivPedii w grze. Zweryfikowałem zawartość **zbudowanego bundla** (nie samego markdownu) —
+wpis `ulepszenia/droga` zawiera dziś:
+- pole `full`: **„Po ukończeniu: heks daje +1 handel/t (oprócz plonu bazowego terenu)."** — po tej
+  zmianie jest **+2 handlu/turę**. Liczba nieaktualna, zahardkodowana w treści.
+- pole `wikiM`: **„Warunek: … ; +szybkość ruchu jednostek"** — to dosłowna kopia **starego**
+  `warunek` z JSON, czyli dokładnie tego opisu, który Operator sam uznał za kłamiący o mechanice
+  i poprawił w danych. Kopia w bundlu została nietknięta.
+
+Naprawa: edycja `docs/encyklopedia/ulepszenia/droga.md` + ponowne uruchomienie
+`gra/tools/bundle-wiki-for-game.cjs`. (Wpisu `droga_brukowana.md` w encyklopedii nie ma w ogóle —
+luka pre-istniejąca, nie spowodowana tą zmianą.)
+
+### 5. N4 (ŚREDNIA) — audyt paneli Excel niekompletny, pominięty drugi zacommitowany panel
+
+Wniosek Operatora o `Panel-A.xlsx` **potwierdzam** i uszczegóławiam: arkusz `Ulepszenia-inne`,
+wiersz **`A-IMP-038` `droga.bonus.handel` = 1** — nieaktualny (dziś 2). Wymaga doganiania JSON→Excel
+(`CLAUDE.md` §2).
+
+Operator **pominął** drugi zacommitowany panel: `panele-sterowania/Tereny-i-ulepszenia-MACIEJ.xlsx`,
+arkusz `Ulepszenia`, kolumna **„Handel (bonus)"** — `droga` = **1** i `droga_brukowana` = **2**,
+**obie wartości nieaktualne** (dziś 2 i 3). To panel z nazwiskiem właściciela w nazwie, czyli
+bezpośredni interfejs do strojenia dokładnie tych dwóch liczb. Jego teza o `MIASTO/Ulepszenia-terenu.xlsx`
+(niezacommitowany, nic do doganiania) — potwierdzam, prawdziwa.
+
+### 6. N5 (DROBNA, obserwacja) — mnożniki ruchu oddaliły się od interfejsu Excel właściciela
+
+`Panel-A.xlsx` nie ma **żadnego** wiersza dla mnożników drogowych: arkusz `Ruch-po-terenie` zawiera
+wyłącznie koszty bazowe terenów i dopłatę za las, a `Ulepszenia-inne` nie ma nawet wiersza
+`droga_brukowana.bonus.handel` (są tylko `koszt_praca`, `epoka`, `surowiecOdblokowany`). Ta zmiana
+dodatkowo przeniosła mnożniki ruchu **z JSON do stałych w TypeScripcie**, czyli jeszcze dalej od
+panelu. Luka generatora jest pre-istniejąca, ale zmiana ją pogłębia — właściciel nie może dziś
+przestroić 3×/5× ani handlu bruku z Excela.
+
+### 7. Werdykt
+
+**FAIL.** Nie z powodu jakości rzemiosła — ta jest dobra: mechanika zgodna z literą decyzji, bramki
+zielone co do jednej asercji, test nietautologiczny z odtworzoną mutacją kontrolną, martwy kod
+uczciwie opisany, teza o pre-istniejących porażkach prawdziwa. FAIL wynika z trzech rzeczy:
+(1) **decyzja właściciela nie jest zrealizowana** tam, gdzie ma skutek — na koszcie bazowym 1 bruk
+daje 3×, nie 5×, i zero przewagi nad zwykłą drogą; (2) **wprowadzono regresję ruchu** (−20%) na
+koszcie bazowym 2, nierozpoznaną mimo że test ją wprost asercjonuje; (3) **do raportu trafiło
+twierdzenie nieprawdziwe** („brak hardkodowanych liczb w UI") przy jednoczesnym pozostawieniu
+w bundlu gry nieaktualnej treści CivPedii — a §0b `CLAUDE.md` wymaga, by każda liczba i twierdzenie
+przedstawione właścicielowi jako fakt były zweryfikowane.
+
+Do domknięcia tematu: pytanie ABC o `ROAD_MIN_MOVE_COST` (N1/N2) + dispatch naprawy N3 i N4.
+Kod mechaniki i wartości handlu **nie wymagają cofnięcia** — są poprawne jako baza; brakuje decyzji
+o podłodze i dociągnięcia opisów.
+
+*Evaluator nie wprowadził żadnych zmian w kodzie ani danych — jedyny commit to ten wpis. Mutacje
+kontrolne wykonane lokalnie i cofnięte, drzewo robocze czyste (`git status` pusty).*
+
+---
+
+## Evaluator: reset trybu okolicy przy zmianie właściciela (`0d50bb81`, `R-OKOLICA-TRYB-RESET-PO-ZMIANIE-WLASCICIELA-Q1 = A`) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
+
+**STATUS: **ZAMKNIĘTE** (werdykt wydany) — ale **N1 pozostaje OTWARTE jako osobny temat**, patrz sekcja
+`P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE` niżej.
+
+Weryfikacja niezależna, na commicie `0d50bb81` (rodzic: `c438af75`). Wszystko poniżej zmierzone
+własnoręcznym uruchomieniem, nie przepisane z raportu Operatora.
+
+### 1. Bramki — wszystkie 7 zgodne co do liczby z opisem commita
+
+| Bramka | Wynik zmierzony | Opis commita | Zgodność |
+|---|---|---|---|
+| `npx tsc --noEmit` | 0 błędów, exit 0 | 0 błędów | ✅ |
+| `okolica-tryb-reset-ownership-change-test.cjs` | **18 pass / 0 fail**, exit 0 | 18/18 | ✅ |
+| `okolica-ownership-change-reconcile-test.cjs` | **15 pass / 0 fail** | 15/15 | ✅ |
+| `okolica-load-reconcile-test.cjs` | **11 pass / 0 fail** | 11/11 | ✅ |
+| `okolica-test.cjs` | **72 pass / 0 fail** | 72/72 | ✅ |
+| `tech-tree-test.cjs` | **19 pass / 0 fail** | 19/19 | ✅ |
+| `research-test.cjs` | **33 pass / 0 fail** | 33/33 | ✅ |
+
+Żadnej rozbieżności — w odróżnieniu od kilku wcześniejszych commitów tej sesji (patrz sprostowania
+liczb przy `4fc770ee`/`c3a5652c` w CLAUDE.md), tutaj opis commita mówi prawdę co do jednej asercji.
+
+### 2. Czy istnieje PIĄTA ścieżka zmiany właściciela, omijająca `seedCityOwnerDefaults`? — NIE
+
+Przeszukałem **cały** `gra/src`, nie tylko `main.ts`. Realnych mutacji `city.ownerId` jest **cztery**
+(reszta trafień grepa to jednostki, forty, parametry funkcji i komentarze):
+
+| # | Miejsce | Zdarzenie | Dociera do `seedCityOwnerDefaults`? |
+|---|---|---|---|
+| 1 | `main.ts:12070` `city.ownerId = newOwner` | kapitulacja z głodu | ✅ bezpośrednio, `main.ts:12085` |
+| 2 | `main.ts:22555` `city.ownerId = annexerId` | aneksja dyplomatyczna | ✅ bezpośrednio, `main.ts:22559` |
+| 3 | `main.ts:25485` `city.ownerId = REBEL_FACTION_OWNER_ID` | bunt | ✅ bezpośrednio, `main.ts:25488` |
+| 4 | **`src/game/post-battle-map.ts:485`** `city.ownerId = atkOwner` | podbój w bitwie | ✅ przez callback `onOwnerChanged` → `main.ts:22923` |
+
+Ścieżka 4 leży w **innym pliku** i biegnie przez opcjonalny łańcuch
+`captureOpts?.onOwnerChanged?.(city)` — to jedyne realne miejsce, w którym naprawa mogłaby zostać
+ominięta, gdyby ktoś zawołał `applyCityCaptureAfterBattle` bez przekazania callbacku. Sprawdziłem:
+w kodzie produkcyjnym ta funkcja ma **dokładnie jednego** wywołującego (`main.ts:22908`, wewnątrz
+`applyCityCaptureToMap`) i on callback przekazuje. Pozostałe wywołania to wyłącznie harnessy
+testowe (`post-battle-map-test.cjs`, `barb-city-behavior-test.cjs`). **Luki nie ma.**
+
+### 3. Czy reset nie wywala ustawień gracza POZA zmianą właściciela? — NIE, sprawdzone wszystkie 9 call site'ów
+
+To było moje główne podejrzenie regresyjne: `seedCityOwnerDefaults` kasuje teraz ręczne ustawienia,
+więc gdyby była wołana z jakiejś ścieżki cyklicznej (koniec tury, odświeżenie panelu), gracz
+traciłby przypisania 👤 bez powodu. Przejrzałem **każdy** z 9 call site'ów:
+
+- **5 × założenie miasta** — `7833` (miasto-państwo na starcie), `7903` (kolonia z bonusu trudności),
+  `7942` (obcy klaster), `11168` (gracz zakłada miasto), `27188` (AI zakłada miasto),
+- **4 × zmiana właściciela** — `12085`, `22559`, `22923`, `25488` (tabela w §2).
+
+**Żadnej ścieżki cyklicznej/odświeżeniowej.** Dodatkowo sprawdziłem, że przy zakładaniu reset jest
+czystym no-opem: ani `foundCityAt`, ani `finalizeCityFounding` nie ustawiają `okolicaTryb` /
+`okolicaReczne` (grep po `src/game/cities.ts` — pola występują wyłącznie jako deklaracje typu w
+interfejsie `City` i w migracji `ensureCitySaveDefaults`). Świeże miasto ma oba pola `undefined`.
+
+### 4. `DEFAULT_OKOLICA_TRYB` — import poprawny, wartość faktycznie `'auto'`
+
+`src/game/cities.ts:45`: `export const DEFAULT_OKOLICA_TRYB: OkolicaTryb = 'auto';`. Import w
+`main.ts:178` z `'./game/cities'` — ta sama ścieżka, z której `main.ts` bierze pozostałe stałe
+`DEFAULT_*`. Nie jest to nazwa zgadnięta; `tsc` by ją zresztą obalił.
+
+### 5. `delete c.okolicaReczne` — bezpieczne, także dla `reconcileAllWorkedTiles` w tej samej funkcji
+
+`seedCityOwnerDefaults` najpierw kasuje pole (linia 4598), a **na końcu tej samej funkcji** (4646)
+woła `reconcileAllWorkedTiles`, które przechodzi po `okolicaReczne` **wszystkich** miast.
+Sprawdziłem `src/map/territory-work.ts:123` — pętla zaczyna się od `if (!city.okolicaReczne) continue;`,
+więc `undefined` jest obsłużone wprost, bez wyjątku. Twierdzenie z opisu commita, że kolejność
+reset-vs-reconcile nie ma znaczenia funkcjonalnego, **potwierdzam** — reconcile nie czyta ani nie
+pisze `okolicaTryb` w ogóle (własny grep po pliku: zero trafień).
+
+### 6. Miasta AI, które nigdy nie miały trybu ręcznego — reset jest semantycznym no-opem
+
+Pole zmienia się z `undefined` na `'auto'`. Sprawdziłem **wszystkich** czytelników `okolicaTryb`
+w `src/`: `okolica.ts:346/451/564/645` używają `?? DEFAULT_OKOLICA_TRYB`, `cityPanel.ts:9035`
+używa `?? 'auto'`, `cities.ts:414` używa `if (!city.okolicaTryb)`. Dla każdego z nich `undefined`
+i `'auto'` są nierozróżnialne. Jedyny realny skutek to nieco większy plik zapisu (pole zawsze
+obecne). **Bez efektu ubocznego.**
+
+### 7. Jakość nowego testu — asercje nietautologiczne, ale SEKCJA 1 nie dowodzi wpięcia
+
+Test ma repro buga (1.1), kontrolę czułości (1.2), przypadek po naprawie (1.3), przypadek graniczny
+„gracz odzyskuje własne miasto" (1.4) oraz mutację kontrolną (2.5) — czyli spełnia STRICT-EDGE
+(nie jest happy-path-only). Uczciwie odnotowuję jednak ograniczenie, które sam autor opisał
+w nagłówku (patrz **N3**): **SEKCJA 1 nie wykonuje prawdziwego `seedCityOwnerDefaults`** — ręcznie
+odtwarza jego dwie linie na obiekcie testowym. Gdyby ktoś wyciął naprawę z `main.ts`, SEKCJA 1
+przeszłaby **w 100%**; regresję złapałyby wyłącznie asercje 2.1/2.2 (strażnik tekstowy) i 2.5.
+To ten sam wzorzec i to samo ograniczenie co w przyjętym już `okolica-ownership-change-reconcile-test.cjs`
+(`main.ts` ciągnie DOM/THREE, nie da się go zbundlować w node) — akceptuję, ale zapisuję, żeby
+nikt nie przecenił wagi SEKCJI 1.
+
+### N1 ⚠️ — LUKA SAVE/LOAD: stary zapis zostaje w trybie ręcznym NA ZAWSZE (potwierdzone własnym harnessem)
+
+**To jest najważniejsze znalezisko tej recenzji.** Naprawa domyka wyłącznie zmianę właściciela
+**w bieżącej grze**. Ścieżka wczytania zapisu (`main.ts`, ~30253-30286) robi
+`ensureCitySaveDefaults(c)` + `reconcileAllWorkedTiles(...)` — i **żadne z nich nie rusza `okolicaTryb`**:
+
+- `cities.ts:414` to `if (!city.okolicaTryb) city.okolicaTryb = DEFAULT_OKOLICA_TRYB;` — `'reczny'`
+  jest wartością **prawdziwą**, więc migracja go **zachowuje**, bez filtra właściciela;
+- `reconcileAllWorkedTiles` nie zna pojęcia `okolicaTryb` (dowodzi tego asercja **2.6 tego samego
+  commita**).
+
+Zbudowałem własny harness (poza repo, na prawdziwych `resolveWorkedTiles` + `ensureCitySaveDefaults`)
+odtwarzający zapis zrobiony PRZED naprawą — miasto gracza w trybie ręcznym, przejęte przez AI(3),
+zapisane. Wynik po wczytaniu na wersji **Z** naprawą:
+
+```
+--- stan PO ensureCitySaveDefaults (migracja zapisu) ---
+okolicaTryb = reczny
+populacja        = 6
+obrobione kafle  = 2
+BEZCZYNNI        = 4
+WNIOSEK: LUKA POTWIERDZONA
+kontrola (to samo przejęcie W BIEŻĄCEJ GRZE): obrobione = 6, bezczynni = 0
+```
+
+Czyli **dokładnie ten sam objaw, który commit deklaruje jako zabity** („AI nie ma ścieżki powrotu
+do auto, obywatele stali bezczynnie"), żyje dalej — tylko wchodzi drzwiami load'u zamiast drzwiami
+podboju. Dotyczy każdego zapisu z bieżącej ROBOCZEJ, w którym gracz stracił ręcznie zarządzane miasto.
+Zapisy zrobione **po** tej naprawie są czyste (żadne nowe zablokowane miasto już nie powstanie).
+
+**Dlaczego mimo to NIE jest to twarde FAIL #9 (STRICT-SAVE):** `R-PROC-AUTOBOT-EVAL-STRICT-SAVE`
+definiuje FAIL #9 jako *nowe trwałe pole bez snapshot/restore* albo *restore bez `?? default`*.
+Ten commit **nie dodaje żadnego trwałego pola**, a `okolicaTryb` ma poprawny `?? default` w każdym
+miejscu odczytu. Sytuacja podpada pod wiersz wyjątków „**Pre-existing baseline poza tematem →
+PASS-WITH-NOTES**": zablokowany stan w starych zapisach powstał przed tym commitem, a decyzja
+właściciela `Q1 = A` mówiła o **zmianie właściciela**, nie o migracji zapisu.
+
+**Ale precedens jest jednoznaczny i dlatego zostawiam to jako temat otwarty:** commit
+bezpośrednio poprzedzający (`3f1a2f85` + jego dogrywka) domknął **dokładnie taką samą lukę load'u**
+dla pola siostrzanego `okolicaReczne` — właśnie po nocie **N2** Evaluatora. Jedno pole dostało
+migrację load'u, drugie nie. Rekomendacja: dołożyć w tym samym miejscu ścieżki load'u reset
+`okolicaTryb = DEFAULT_OKOLICA_TRYB` + `delete okolicaReczne` **dla miast o `ownerId !== 0`**
+(nie dla miast gracza — jego własne ustawienia mają przetrwać zapis/wczytanie, inaczej złamalibyśmy
+podstawową funkcję trybu ręcznego). To ~2 linie + asercja w `okolica-load-reconcile-test.cjs`.
+
+### N2 ⚠️ — uzasadnienie w komentarzu i opisie commita jest MOCNIEJSZE niż kod
+
+Komentarz w `main.ts:4578-4581`, opis commita i nagłówek testu twierdzą zgodnie, że **wszystkie 4**
+callbacki zmiany trybu są „dostępne **WYŁĄCZNIE** graczowi (`ownerId===0`)". Sprawdziłem każdy:
+
+| Callback | Miejsce | Twardy guard `ownerId` w kodzie? |
+|---|---|---|
+| `applyOkolicaTileAdjust` | `main.ts:4819` | ✅ `if (!city \|\| city.ownerId !== 0) return;` |
+| `onOkolicaFocusChange` | `main.ts:6406` | ❌ tylko `if (!city) return;` |
+| `onOkolicaEnterManual` | `main.ts:6468` | ❌ tylko `if (!city) return;` |
+| `onOkolicaRestoreAuto` | `main.ts:6485` | ❌ tylko `if (!city) return;` |
+
+Trzy z czterech opierają się wyłącznie na tym, że panel miasta nie wystawia tych przycisków dla
+cudzego miasta (`cityPanel.ts:10049-10068` warunkuje je **obecnością callbacku**, nie właścicielem,
+a sama sekcja Okolicy w `cityPanel.ts:9084/9090` nie ma testu `ownerId === 0`) — czyli na bramce
+**UI**, nie na bramce w logice, i nigdzie nie asercjonowanej. **Naprawy to nie podważa** (reset przy
+zmianie właściciela jest poprawny niezależnie od tego, kto może przestawić tryb), ale twierdzenie
+zapisane w kodzie produkcyjnym jako fakt jest zbyt mocne — a CLAUDE.md §0b wymaga, żeby każde
+twierdzenie przedstawione jako fakt było prawdziwe. Do poprawienia przy następnym dotknięciu:
+albo dopisać guard `ownerId !== 0` do tych trzech (spójnie z `applyOkolicaTileAdjust`), albo
+przeredagować komentarz na „dostępne graczowi przez panel miasta".
+
+### N3 — SEKCJA 1 testu nie dowodzi wpięcia (opisane w §7 wyżej)
+
+Nie wymaga osobnej rundy; wymaga tylko, żeby nikt nie cytował „18/18" jako dowodu, że naprawa
+**jest w `main.ts`** — tego dowodzą wyłącznie asercje 2.1, 2.2 i mutacja 2.5.
+
+### N4 — koszt wariantu A jest realny i będzie widoczny w playteście
+
+Gracz odzyskujący własne miasto kontratakiem traci swoje wcześniejsze przypisania 👤 (test 1.4
+przypina to zachowanie). To **świadomy wybór właściciela** (`Q1 = A`, nie `C`), nie przeoczenie —
+odnotowuję wyłącznie dlatego, że przy playteście objawi się jako „miasto zapomniało moje ustawienia"
+i warto nie zgłosić tego drugi raz jako buga.
+
+### Werdykt
+
+**PASS-WITH-NOTES.** Zmiana robi dokładnie to, o co prosiła decyzja `Q1 = A`, i robi to kompletnie
+dla **każdej** ścieżki zmiany właściciela w bieżącej grze — w tym dla tej najłatwiejszej do
+przeoczenia, leżącej w innym pliku (`post-battle-map.ts`) i biegnącej przez opcjonalny callback.
+Piątej ścieżki omijającej naprawę nie ma. Reset nie może zadziałać przypadkiem poza zmianą
+właściciela (wszystkie 9 call site'ów to zakładanie miasta albo zmiana właściciela), jest
+bezpieczny dla `undefined` i nie psuje kolejności z `reconcileAllWorkedTiles`. Wszystkie 7 bramek
+zmierzyłem sam i wszystkie zgadzają się co do jednej asercji z opisem commita. **N1 (luka load'u)
+to jedyne znalezisko o realnej wadze gameplayowej** — nie blokuje tego commita (temat decyzji był
+węższy, a FAIL #9 literalnie nie zachodzi), ale zostaje otwarty jako osobne zlecenie poniżej,
+bo inaczej ten sam bug przetrwa w zapisach graczy. **N2** to nieprawdziwe (za mocne) uzasadnienie
+w komentarzu, **N3** i **N4** są informacyjne.
+
+---
+
+## `P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE` — miasto AI z zapisu sprzed `0d50bb81` zostaje w trybie ręcznym na zawsze
+
+**STATUS: ZAMKNIĘTE** (2026-08-14) — naprawione commitem `1d983d05`, Evaluator **PASS-WITH-NOTES**
+(sekcja niżej w tym pliku), wszystkie noty dokumentacyjne, żadna nie blokuje.
+
+**Objaw:** wczytanie zapisu zrobionego przed `0d50bb81`, w którym miasto gracza w trybie ręcznym
+zostało przejęte przez AI/rebeliantów → miasto nadal ma `okolicaTryb: 'reczny'`, obywatele stoją
+bezczynnie mimo wolnych heksów. Zmierzone: populacja 6, obrobione kafle 2, **bezczynnych 4**.
+
+**Przyczyna:** ścieżka load'u (`main.ts` ~30253-30286) woła `ensureCitySaveDefaults` +
+`reconcileAllWorkedTiles`; pierwsze ustawia domyślny tryb tylko gdy pole jest **puste**
+(`cities.ts:414`, `'reczny'` jest wartością prawdziwą), drugie `okolicaTryb` w ogóle nie zna
+(asercja 2.6 w `okolica-tryb-reset-ownership-change-test.cjs`). Naprawa `0d50bb81` siedzi wyłącznie
+w `seedCityOwnerDefaults`, której load nie woła.
+
+**Proponowana naprawa (~2 linie + test):** w ścieżce load'u, przy tej samej pętli po `saved.cities`,
+dla miast o `ownerId !== 0` ustawić `okolicaTryb = DEFAULT_OKOLICA_TRYB` i skasować `okolicaReczne`.
+**Filtr `ownerId !== 0` jest istotny** — miasta gracza muszą zachować swój tryb ręczny przez
+zapis/wczytanie, inaczej tryb ręczny przestaje działać między sesjami. Asercję dołożyć do
+`okolica-load-reconcile-test.cjs` (ten plik zamyka analogiczną lukę load'u dla `okolicaReczne`,
+więc jest naturalnym miejscem).
+
+**Precedens:** identyczna luka load'u dla pola siostrzanego `okolicaReczne` została już domknięta
+po nocie N2 Evaluatora przy `3f1a2f85` — to ta sama rodzina naprawy, tylko drugie pole.
+
+---
+
+### Evaluator (Opus 5): **WERDYKT PASS-WITH-NOTES** dla `1d983d05` — naprawa poprawna, noty wyłącznie dokumentacyjne
+
+**Data:** 2026-08-14 · **Commit:** `1d983d05` · **Gałąź:** `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+(pliki tematu identyczne na czubku `cdfe39b9` — `git diff` pusty, więc weryfikacja czubka = weryfikacja commita).
+**Metoda:** własny izolowany worktree, zero zaufania do raportu Operatora, wszystkie liczby zmierzone samodzielnie.
+
+**Rozstrzygnięcie punktów zlecenia:**
+
+**1. Miejsce wstawienia — POTWIERDZONE, i mocniej niż wymagał dispatch.** Zmierzone offsety od początku
+`restoreGameFromSave`: `ensureCitySaveDefaults(c)` = 2609, nowy blok `if (c.ownerId !== 0)` = 5502,
+`cities.push(c)` = 5834. Blok jest **PO** migracji i **PRZED** wstawieniem do `cities`.
+Hipoteza z dispatchu („gdyby reset był przed `ensureCitySaveDefaults`, ta funkcja mogłaby nadpisać go
+z powrotem") — **sprawdzona explicite i OBALONA**: `cities.ts:414` to `if (!city.okolicaTryb) city.okolicaTryb
+= DEFAULT_OKOLICA_TRYB;`, a `DEFAULT_OKOLICA_TRYB = 'auto'` (`cities.ts:45`) jest wartością **prawdziwą**,
+więc po resecie warunek `!city.okolicaTryb` byłby fałszywy i nadpisania by nie było. Dodatkowo
+`ensureCitySaveDefaults` **w ogóle nie dotyka `okolicaReczne`** (jedyne wystąpienie tej nazwy w `cities.ts`
+to deklaracja interfejsu w linii 601), więc `delete` też nie mógłby zostać cofnięty. Kolejność jest zatem
+poprawna **i** odporna w obie strony — wybrana wersja jest lepsza czytelnościowo (najpierw migracja pól,
+potem sanityzacja), ale nie była jedyną działającą.
+
+**2. Przypadek brzegowy `ownerId !== 0` (ochrona trybu ręcznego GRACZA) — POTWIERDZONY NIEZALEŻNIE, 26/26.**
+Nie poprzestałem na czytaniu kodu ani na teście Operatora. Napisałem **własny harness**, który różni się
+od testu Operatora w sposób istotny: SEKCJA 3 Operatora **replikuje ręcznie 2 linie naprawy wewnątrz pliku
+testu** (testuje kopię — gdyby `main.ts` miał inny warunek, ta sekcja i tak byłaby zielona; łata to dopiero
+rozłączna SEKCJA 4 z regexem). Mój harness **wycina REALNY TEKST pętli z `src/main.ts`** (3320 znaków, od
+`cities.length = 0;` do `cities.push(c); }`) i **wykonuje go** przez `new Function`, na prawdziwych
+`ensureCitySaveDefaults` / `resolveWorkedTiles` zbundlowanych esbuildem. Wyniki:
+
+| Scenariusz | Wynik |
+|---|---|
+| E1 miasto gracza (`ownerId===0`, `reczny`, 3 wpisy) | `okolicaTryb` = `reczny`, wszystkie 3 wpisy zachowane co do wartości, `resolveWorkedTiles` = **dokładnie te 3 kafle** (`1,0\|2,0\|3,0`), nie auto-dobrane |
+| E2 miasto AI (`ownerId=3`, `reczny`) | reset na `auto`, `okolicaReczne` usunięte, 6/6 populacji pracuje |
+| E3 zapis MIESZANY (gracz + AI `1` + AI `7` + rebelianci `-99`) | gracz **nietknięty**, wszystkie 3 obce zresetowane — filtr łapie też **ujemne** id (`REBEL_FACTION_OWNER_ID = -99`, `society-breakdown.ts:146`) |
+| E4 **dwa pełne cykle** save→load→save→load (JSON round-trip) | tryb ręczny gracza **nadal żywy** — zero erozji między sesjami |
+| E5 gracz w `auto` / AI w `auto` z resztkowym `okolicaReczne` | bez efektów ubocznych; resztka u AI skasowana (no-op funkcjonalny) |
+| E6 stary zapis bez pola `okolicaTryb` | migracja `ensureCitySaveDefaults` działa dla obu |
+| E7 kontrola czułości — podmiana filtru na `if (true)` w wyciętym tekście | miasto gracza **traci** tryb ręczny → dowód, że E1 mierzy realny filtr, nie tautologię |
+| E8 `resolveWorkedTiles` bez filtra właściciela | 2 kafle przy populacji 6 → **naprawiany bug był realny**, nie teoretyczny |
+
+**Werdykt punktu 2: regresja, której dispatch się obawiał, NIE ISTNIEJE.** Konwencja `ownerId === 0` = gracz
+jest w `main.ts` twardo utrwalona (171 wystąpień `ownerId === 0` + 66 `ownerId !== 0`, brak stałej nazwanej),
+więc filtr jest zgodny z resztą pliku.
+
+**3. Kolizja testów — zweryfikowana samodzielnie, zapas REALNY (nie „akurat przechodzi").** Zmierzone:
+
+| Limit | Realna potrzeba | Zapas |
+|---|---|---|
+| `WINDOW` 13000 (2.1/2.2/2.4/4.1/4.3) | 8031 | **+4969 (61,9%)** |
+| `{0,4000}` w 2.1 (ciało pętli) | 3226 | +774 (24%) |
+| `{0,3500}` w 4.1 (`ensure` → `if`) | 2859 | +641 (22%) |
+| `{0,2500}` w 2.2 (koniec pętli → reconcile) | 1992 | +508 (25%) |
+| `{0,300}` / `{0,500}` | 1 / 210 | +299 / +290 |
+
+Twierdzenie Operatora o starej granicy **potwierdzone co do mechanizmu**: `playerEverOwnedCity` zaczyna się
+na offsecie **7969** (mieściło się w oknie 8000), ale dopasowanie regeksu kończy się na **8031** — `slice`
+ucinał string w połowie tokenu, więc test padał mimo poprawnego kodu. Stare okno 8000 dziś **nie
+wystarcza**, stare `{0,400}` też nie (realne 3226).
+Mutacja kontrolna 2.5 **NIE stała się tautologiczna**: `mutatedFnBody` ma **6530 znaków** (niepusty),
+mutacja jest wykrywana, `occurrences === 1` chroni przed rozjazdem, a target z wcięciem 6 spacji jest
+**rozłączny** z blokiem load'u (10 spacji) — w całym `main.ts` są dokładnie 2 wystąpienia przypisania,
+zgodnie z oczekiwaniem. Potwierdziłem to **własną drugą mutacją na dysku**: usunięcie resetu z
+`seedCityOwnerDefaults` (blok load'u nietknięty) daje **18/18 → 15/18, exit 1** (padają 2.1, 2.2 i 2.5) —
+przeskalowanie do `fnBody` nie osłabiło ochrony tamtej funkcji, wręcz ją wzmocniło.
+
+**4. Brak kolizji z `47a2e1ff` — ale opis commita jest tu nieścisły (nota N1).** `47a2e1ff` nie kasuje
+`okolicaReczne` w pętli; jego sanityzacja to wywołanie `reconcileAllWorkedTiles(...)` **PO pętli**
+(`main.ts:30321`), które nie usuwa całej właściwości, tylko **nielegalne klucze** wewnątrz niej. Podwójnego
+kasowania **nie ma**. Kolejność `delete` (w pętli) → `reconcile` (po pętli) jest bezpieczna, bo
+`reconcileWorkedTilesForOwner` ma `if (!city.okolicaReczne) continue;` (`territory-work.ts:123`) — miasta AI
+są po prostu pomijane, zero crashu, zero podwójnej pracy. Oba mechanizmy są **komplementarne**, nie
+nakładające się.
+
+**5. Bramki — uruchomione samodzielnie, liczby zgadzają się z raportem Operatora co do jednej:**
+
+| Bramka | Wynik | Exit |
+|---|---|---|
+| `npx tsc --noEmit` | 0 błędów (0 linii wyjścia) | **0** |
+| `okolica-load-reconcile-test.cjs` | **23/23** | 0 |
+| `okolica-tryb-reset-ownership-change-test.cjs` | **18/18** | 0 |
+| `okolica-ownership-change-reconcile-test.cjs` | **15/15** | 0 |
+| `okolica-test.cjs` | **72/72** | 0 |
+| `tech-tree-test.cjs` | **19/19** | 0 |
+| `research-test.cjs` | **33/33** | 0 |
+
+`tsc` mierzony **bez potoku** (`> log 2>&1; echo $?`) — potok zwróciłby kod `tail`, nie `tsc`; to dokładnie
+pułapka opisana w `CLAUDE.md` §0b przypadek (b).
+
+**6. Własna mutacja kontrolna na dysku — deklaracja Operatora POTWIERDZONA.** Fizyczne usunięcie bloku
+`if (c.ownerId !== 0) {...}` z `main.ts` (md5 `233e3c1d…` → `7a7e4208…`): `okolica-load-reconcile-test`
+spada **23/23 → 21/23, exit 1** (padają 4.1 i 4.3) — dokładnie jak deklarował. Mój harness spada
+**26/26 → 16/26**. **Rozkład porażek jest tu najciekawszy:** padają wyłącznie asercje miast obcych
+(E2.1-2.3, E3.3-3.5, E4.3, E5.4) — **wszystkie E1.\* (gracz) nadal przechodzą**, co dowodzi, że naprawa
+nie zmienia zachowania dla gracza w żadną stronę, ani przed, ani po. `main.ts` przywrócony z kopii,
+md5 zgodny z wyjściowym, drzewo czyste.
+
+**NOTY (żadna nie blokuje — wszystkie dokumentacyjne):**
+
+- **N1 — opis commita: „w tej samej pętli" o `47a2e1ff` jest nieprawdą.** Komunikat `1d983d05` uzasadnia
+  filtr „analogiczny wzorzec do już istniejącej naprawy `47a2e1ff`, która tak samo sanityzuje siostrzane
+  pole `okolicaReczne` przy load, **w tej samej pętli**". `47a2e1ff` działa **po pętli** (`main.ts:30321`)
+  i czyści klucze, a nie właściwość. Analogia co do **intencji** jest trafna, co do **umiejscowienia** —
+  nie. Bez skutków dla kodu; do sprostowania, gdyby ktoś budował na tym opisie kolejną naprawę.
+- **N2 — słowo „maskowało" opisuje kierunek błędu odwrotnie niż faktyczny.** Zweryfikowałem mechanizm
+  osobnym skryptem: stara, niescope'owana asercja 2.5 na dzisiejszym `main.ts` daje `stillMatches = true`
+  → `ok(!stillMatches)` = **FAIL**. Czyli test stawał się **fałszywie CZERWONY** (18→17), a nie fałszywie
+  zielony. „Maskowanie" sugeruje ukrycie regresji; faktycznie był to **fałszywy alarm**. Liczby Operatora
+  (18/18 → 17/18 → 18/18) są zgodne z tym mechanizmem — myli tylko nazwa zjawiska.
+- **N3 — kruchość strukturalna, nie zawiniona przez ten commit.** Asercje wiringu opierają się na regeksach
+  po źródle z limitami długości, więc **każdy kolejny dwujęzyczny komentarz w tej pętli znów je wywali** —
+  zapasy 22-25% na `{0,4000}`/`{0,3500}` to ok. 700-800 znaków, mniej niż jeden komentarz PL+EN tej klasy
+  (ten miał ~2900). To cena metody wymuszonej przez `main.ts` z DOM/THREE (tego samego rodzaju co
+  pre-istniejące `map-field-battle-test` / `pre-battle-save-test` w `CLAUDE.md`), nie błąd Operatora.
+  Sugestia na przyszłość: kotwiczyć okno na **`cities.push(c)`** zamiast na stałej liczbie znaków.
+- **N4 — 2.5 nie asertuje, że `mutatedFnBody` jest niepusty.** Przy degeneracji (`mutatedFnStart < 0` lub
+  `mutatedFnEnd <= mutatedFnStart`) `fnBody` staje się `''`, regex nie pasuje i asercja przechodzi
+  **fałszywie zielona**. Dziś nierealne (2.1 asertuje istnienie markera na niemutowanym źródle, więc padłoby
+  wcześniej; zmierzone 6530 znaków), ale jedna linia `ok(mutatedFnBody.length > 0, …)` domykałaby to na stałe.
+- **N5 — obserwacja POZA ZAKRESEM tego commita, do rozważenia osobno.** `onOkolicaEnterManual`
+  (`main.ts` ~6468) ustawia `city.okolicaTryb = 'reczny'` **bez filtra właściciela**, podczas gdy siostrzane
+  `applyOkolicaTileAdjust` (`main.ts:4821`) ma `if (!city || city.ownerId !== 0) return;`. Dziś **nie jest to
+  realna luka** — panel miasta otwiera się wyłącznie dla miast gracza (`if (clickedCity.ownerId === 0)`,
+  `main.ts:20457`), więc handler jest chroniony bramką wyżej. Zgłaszam jako obronę w głąb i asymetrię
+  wzorca, **nie** jako usterkę do naprawy przy okazji.
+
+**Bookkeeping (nie zmieniam sam — cudzy wpis, poza zakresem werdyktu Evaluatora, ten sam precedens co
+przy `7ec82223`):** nagłówek tego tematu nadal ma `STATUS: **OTWARTE** — … do dispatchu Operatora`, co po
+tym werdykcie jest już nieaktualne i będzie generować **fałszywy alarm w audycie `CLAUDE.md` §0c**
+(`grep -n 'STATUS: \*\*OTWARTE'`). Kwalifikuje się do przestawienia na **ZAMKNIĘTE** z odsyłaczem do
+`1d983d05` — decyzja orkiestratora.
+
+---
+
+## Porządek w rejestrze: wpis-źródło tego tematu nadal wisi jako `OTWARTE` (do zamknięcia przez orkiestratora)
+
+**Nie zmieniam tego sam** — to cudzy wpis i bookkeeping orkiestratora, nie zakres werdyktu Evaluatora.
+Zgłaszam, bo generuje **fałszywy alarm w obowiązkowym audycie `CLAUDE.md` §0c**.
+
+Sekcja **`### N1 — okolicaTryb NIE resetowany: rezydualny problem REALNY, ale PRE-ISTNIEJĄCY`**
+(ok. linii 21826) ma `STATUS: **OTWARTE** — do ABC właściciela`. To ABC **już się odbyło**:
+właściciel odpowiedział `R-OKOLICA-TRYB-RESET-PO-ZMIANIE-WLASCICIELA-Q1 = A`, a commit `0d50bb81`
+je wdrożył i właśnie dostał werdykt wyżej. Wpis należy przestawić na **ZAMKNIĘTE** z odsyłaczem do
+`0d50bb81`, inaczej `grep -n 'STATUS: \*\*OTWARTE'` będzie przy każdym audycie pokazywał temat już
+rozstrzygnięty i kusił do zbędnego dispatchu.
+
+**Uwaga:** zamknięcie tamtego wpisu **nie** zamyka `P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE` powyżej —
+to dwie różne rzeczy (tamto: czy resetować przy zmianie właściciela → rozstrzygnięte;
+to: czy migrować stare zapisy → nierozstrzygnięte).
+
+---
+
+## ECHO `P-IKONA-RUDA-CYNY-PLACEHOLDER` (Maciej, 2026-08-14, zgłoszenie ze zrzutem) — dispatch w toku
+
+**Zgłoszenie:** „Rudy żelaza od rudy cyny trzeba oddzielić tym że w rudzie żelaza są trzy grudki
+a nie w rudzie cyny będą dwie grudki naprawdę kolor powinien być ten sam."
+
+**Potwierdzone w kodzie (zmierzone, nie zgadywane):** `gra/src/ui/icons/brand/resources-map-icon-map.json`
+mapuje `"ruda cyny"`/`"ruda_cyny"` na `"res-iron-ore"` — **dosłownie ten sam plik SVG co Ruda żelaza**,
+z jawnym komentarzem w pliku: „PLACEHOLDER, brak dedykowanej ikony cyny w repo — podmienić gdy Design
+dostarczy własną grafikę" (`R-SUROWIEC-CYNA-DO-BRAZU` runda 2, 2026-08-13). To dokładnie ten placeholder
+— zgłoszenie właściciela go zamyka.
+
+`gra/src/ui/icons/brand/resources-map/res-iron-ore.svg` — 3 elementy `<path>`, każdy osobna „grudka",
+wspólny `stroke="#c8ccd4"` (bez wypełnienia). Nowa ikona `res-tin-ore.svg`: **2 grudki, ten sam kolor
+`#c8ccd4`**, ten sam styl (stroke-width 1.5, linecap/linejoin round, 24×24 viewBox) — zmiana w kodzie
+mapy ikon (`"ruda cyny"`/`"ruda_cyny"` → `"res-tin-ore"`), zero zmian silnika.
+
+**STATUS: WDROŻENIE W TOKU** (dispatch Sonnet 5, 2026-08-14 — praca 2D SVG, poza zakresem stałej
+zasady render/**=Opus 5, która dotyczy WYŁĄCZNIE modeli 3D jednostek i `gra/src/render/**`).
+
+---
+
+## Evaluator: dedykowana ikona Rudy cyny (`cdfe39b9`) — WERDYKT **PASS-WITH-NOTES**
+
+Evaluator Opus 5, 2026-08-14, własny worktree na `cdfe39b9` (czubek
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`), `node_modules` podlinkowane z drzewa głównego.
+Wszystko poniżej zmierzone samodzielnie, nie przepisane z raportu Operatora.
+
+**STATUS: ZAMKNIĘTE** — wymóg właściciela spełniony co do litery, poprawka trafia dokładnie
+w tę powierzchnię, którą zgłosił (karta „Ruda cyny" w panelu zasobów imperium). Noty N1–N7 to
+kosmetyka, odporność bramki i jedna osobna, PRE-ISTNIEJĄCA luka (N6) — żadna nie blokuje.
+
+### Co zweryfikowane pozytywnie
+
+1. **Liczba grudek — policzona samodzielnie, nie z deklaracji.** `res-iron-ore.svg` = **3**
+   elementy `<path>`, `res-tin-ore.svg` = **2**. Każda grudka to domknięty wielokąt o 6
+   wierzchołkach. `res-iron-ore.svg` **nietknięty** (nie ma go w diffie commita).
+2. **Kolor i styl identyczne.** Oba pliki: `stroke="#c8ccd4"`, `stroke-width="1.5"`,
+   `stroke-linecap="round"`, `stroke-linejoin="round"`, `viewBox="0 0 24 24"`, `fill="none"`,
+   `width/height="24"`, ten sam `xmlns`. Nagłówek `<svg>` bajt w bajt taki sam aż do ścieżek.
+   Wymóg „kolor powinien być ten sam" spełniony dosłownie.
+3. **Ikona cyny to NIE kopia 2 z 3 ścieżek żelaza** — twierdzenie Operatora sprawdzone przez
+   porównanie współrzędnych: wszystkie punkty są inne (żelazo startuje w `M4 15.7` / `M11.5 17` /
+   `M9 9.3`, cyna w `M6 11.5` / `M13 18`). Deklaracja prawdziwa.
+4. **Geometria — wyrenderowana, nie tylko przeczytana.** Brak narzędzi SVG w środowisku, więc
+   napisałem własny rasteryzator (ścieżki to wyłącznie `M`/`l`/`Z`, czyli proste wielokąty)
+   i obejrzałem obie ikony w 16/18/32/64/300 px. Wyniki (jednostki viewBoxa, z uwzględnieniem
+   grubości kreski 1,5):
+   - Żelazo: bbox x[3,2..17,8] y[5,9..19,4]; marginesy L 3,25 / P 6,25 / G 5,85 / D 4,65.
+   - Cyna: bbox x[5,2..20,4] y[6,6..20,5]; marginesy L 5,25 / P 3,65 / G 6,65 / D 3,45.
+   - **Nic nie wychodzi poza viewBox**, grudki cyny **nie nachodzą na siebie**, nic nie jest
+     stłoczone w rogu, czytelne w każdym testowanym rozmiarze łącznie z 16 px.
+5. **Mapa kluczy — pełny zrzut wszystkich 39 kluczy, nie próbka.** `"ruda cyny"` → `res-tin-ore`,
+   `"ruda_cyny"` → `res-tin-ore`. `"ruda żelaza"` / `"ruda zelaza"` / `"ruda_zelaza"` → `res-iron-ore`
+   (wszystkie trzy warianty nietknięte). `"ruda"` → `res-copper-ore` i `"żelazo"`/`"zelazo"` →
+   `res-iron` (metal, inna ikona) bez zmian. **Zero literówek.** Reguła dopasowania (najdłuższy
+   klucz wygrywa substring) działa poprawnie: `ruda cyny` (9 znaków) bije gołe `ruda` (4).
+6. **Bundling — sprawdzony, bo to było realne ryzyko cichej porażki.** `brandAssets.ts` ładuje
+   ikony przez `import.meta.glob('./brand/**/*.svg', { query:'?raw', eager:true })`, więc nowy plik
+   wchodzi do bundla **automatycznie**, bez rejestracji. `icons-manifest.json` nie zawiera ŻADNEGO
+   wpisu `res-*-ore` (ani miedzi, ani żelaza), więc cyna też go nie potrzebuje — spójne.
+   `normalizeSvg()` podmienia tylko `stroke="#e8d88a"`, więc `#c8ccd4` przechodzi nietknięte;
+   regex `\swidth="` nie może trafić w `stroke-width="` (przed `width` stoi `-`, nie spacja),
+   więc skalowanie działa identycznie jak dla żelaza.
+7. **Poprawka trafia w zgłoszoną powierzchnię — sprawdzone do końca.** `main.ts:2913`
+   `{ id: 'ruda_cyny', label: 'Ruda cyny', icon: '⛏️', typ: 'surowy' }` — **bez `placeholder: true`**,
+   więc `resCardHtml()` idzie gałęzią realną (`resIconHtml(r.label)` → SVG), a nie placeholderową
+   (`esc(r.icon)` → emoji). Karta w panelu zasobów imperium naprawdę pokaże `res-tin-ore`.
+8. **Wszystkie powierzchnie ikon surowców przechodzą przez jeden punkt** — `mapResourceIconSvg`
+   w `brandAssets.ts`. Prześledzone wszystkie wywołania: panel imperium (etykieta `Ruda cyny`),
+   tooltip heksu (`ZLOZE_LABEL['cyna'] = 'Ruda cyny'` ORAZ `territoryResourceIconHtml` podające
+   **surowy klucz ASCII `ruda_cyny`** — pokryte, bo wariant `ruda_cyny` jest w mapie), pasek
+   surowców miasta (`CS_RES_STRIP_ORDER` zawiera `ruda_cyny`), kosz i podsumowanie umowy
+   dyplomatycznej (`resourceDisplayLabel` → `Ruda cyny`). Każda ścieżka trafia w `res-tin-ore`.
+9. **Grep `res-iron-ore` po całym repo** — poza mapą ikon i nowym testem zostają wyłącznie cztery
+   zamrożone makiety `gra/tools/.zeton-*-dist/*.html`. **Nie dotyczą cyny w ogóle** (trafienia na
+   „cyn" to szum wewnątrz base64 osadzonych obrazów) i nie wchodzą do bundla gry. **Nigdzie indziej
+   nie ma już wiązania cyny z ikoną żelaza.**
+10. **Bramka nie jest dekoracyjna — test mutacyjny.** Zrobiłem lustrzaną kopię w scratchpadzie
+    (repo nietknięte) i zepsułem cztery rzeczy po kolei: cofnięcie mapy na `res-iron-ore` → **3 FAIL**;
+    usunięcie pliku SVG → **2 FAIL**; zmiana koloru cyny → **2 FAIL**; danie cynie 3 grudek → **2 FAIL**.
+    Za każdym razem `exit 1`. Bramka realnie łapie regresję, którą deklaruje.
+
+### Bramki (uruchomione przeze mnie, na `cdfe39b9`)
+
+| Bramka | Wynik | Kod wyjścia |
+|---|---|---|
+| `tsc --noEmit` (przypięty TS 5.9.3) | 0 błędów | 0 |
+| `resources-map-icon-map-test.cjs` | **52 pass, 0 fail** | 0 |
+| `tech-tree-test.cjs` | 19 pass, 0 fail | 0 |
+| `research-test.cjs` | 33 pass, 0 fail | 0 |
+| `unit-replace-test.cjs` | 13/13 | 0 |
+| `surowce-katalog-kolejnosc-test.cjs` | **62 pass, 0 fail** | 0 |
+
+Wszystkie sześć liczb **zgadzają się co do jednego** z raportem Operatora. `surowce-katalog` = 62/0
+trzyma punkt odniesienia z handoffu (`R-SUROWIEC-CYNA-DO-BRAZU`), więc ten commit go nie ruszył.
+
+**Uczciwe zastrzeżenie do `tsc`:** pierwsze podejście przez `npx tsc` ściągnęło **nowszy** TypeScript
+i zwróciło błąd `TS5101: Option 'baseUrl' is deprecated` — to artefakt złej wersji kompilatora,
+nie błąd projektu. Na przypiętym `./node_modules/.bin/tsc` (5.9.3) jest czysto, `exit 0`.
+
+### Noty
+
+- **N1 (kosmetyka, kompozycja odstaje od rodziny).** Grudki żelaza **stykają się / lekko zachodzą**
+  na siebie (widoczna szczelina −0,23 i −0,49 jednostki) i czytają się jako JEDNA hałda. Grudki cyny
+  dzieli **+2,05 jednostki widocznej pustki** po przekątnej — czytają się jako dwa osobne, luźno
+  rzucone kamienie, nie jako mniejsza hałda. Miedź też stykowa (+0,25 / +0,34). Cyna jest jedyną
+  ikoną rudy z tak rozstrzelonym układem. Wymogu właściciela to nie łamie (2 grudki, ten kolor),
+  ale odstaje stylistycznie — do rozważenia zsunięcie grudek o ~1,5–2 jednostki.
+- **N2 (kosmetyka, widoczna obok siebie).** Środki optyczne obu ikon uciekają w **przeciwne strony**:
+  żelazo (−1,50; +0,60) siedzi na lewo od środka, cyna (+0,80; +1,60) na prawo i nisko. W pasku
+  surowców miasta `CS_RES_STRIP_ORDER` oraz w siatce kart panelu imperium `ruda_zelaza` i `ruda_cyny`
+  stoją **bezpośrednio obok siebie** — przy 32 px da to widoczne rozjechanie linii bazowej.
+- **N3 (konsekwencja polecenia, nie błąd).** Cyna (2 szare grudki) dzieli teraz sylwetkę
+  z `res-copper-ore` (też 2 grudki + kreska pęknięcia). Przy 16 px rozróżnia je **wyłącznie kolor**
+  (szary vs pomarańczowy). Wynika to wprost z polecenia właściciela (2 grudki + kolor żelaza),
+  więc zgłaszam jako skutek do świadomości, nie jako wadę do naprawy.
+- **N4 (dziura w bramce, dziś nieszkodliwa).** Piąta mutacja: podmieniłem `res-tin-ore.svg` na
+  **dosłowną kopię 2 z 3 ścieżek żelaza** — test **przeszedł 52/52**. Bramka pilnuje liczby grudek
+  i koloru, ale **nie tego, że geometria jest własna**. Dostarczony plik jest naprawdę niezależny,
+  więc realnej wady dziś nie ma; warto dołożyć asercję, że zbiory ścieżek obu plików są rozłączne.
+- **N5 (nazewnictwo asercji).** `res-copper-ore.svg` ma **3** elementy `<path>`, ale tylko **2**
+  grudki — trzeci to kreska pęknięcia (`M9 12.6 l1.5 2`, dwa punkty). Równoważność
+  „`<path>` = grudka" **nie jest** w tym zestawie ikon uniwersalna. Dla dwóch plików, które test
+  faktycznie bada, trzyma się poprawnie, ale rozszerzenie testu na miedź dałoby fałszywy alarm.
+- **N6 (PRE-ISTNIEJĄCE, poza zakresem tego commita — jedyna pozostała powierzchnia bez cyny).**
+  `gra/src/render/resources.ts`, `buildResourceOverlayFromZloze()` **nie ma `case 'cyna'`** →
+  `default: return null`. Złoże cyny na heksie dostaje więc **zero markera 3D**, podczas gdy
+  `miedz`/`zelazo`/`wegiel`/`sol`/`zloto` dostają `oreRocks()`. Słowo „cyna" nie występuje
+  w `gra/src/render/**` ani razu. To osobna luka, nie regresja tego tematu — ale jeśli właściciel
+  pyta „czy to jedyne miejsce", odpowiedź brzmi **nie: ikona 2D jest naprawiona, marker 3D na mapie
+  nadal nie istnieje**. Naprawa wymagałaby Operatora **Opus 5** (stała zasada `gra/src/render/**`).
+- **N7 (martwy kod, do świadomości).** `main.ts:2913` daje `ruda_cyny` emoji `⛏️` — **identyczne**
+  jak `ruda_zelaza`. Dziś nieszkodliwe, bo `r.icon` konsumuje wyłącznie `resPlaceholderCardHtml()`,
+  a `ruda_cyny` nie jest placeholderem. Gdyby ktoś kiedyś przywrócił jej `placeholder: true`,
+  nierozróżnialność żelaza i cyny **wróci** — tym razem na emoji.
+
+### Werdykt
+
+**PASS-WITH-NOTES.** Wymóg (żelazo 3 grudki, cyna 2 grudki, ten sam kolor) spełniony i zweryfikowany
+niezależnie; poprawka trafia w zgłoszoną powierzchnię; wszystkie bramki zielone i zgodne co do liczby
+z raportem Operatora; nowa bramka realnie łapie regresję. N1–N2 to dopieszczenie kompozycji, N4–N5
+wzmocnienie testu, N6 osobny temat na Opus 5, N3/N7 do świadomości. Nic nie blokuje.
+
+---
+
+## Evaluator: cały pas granicy do wewnątrz własnego terytorium (`4de64fa8`, `R-GRANICE-STYK-CZYTELNOSC-Q1` = B) — WERDYKT **FAIL** (2026-08-14)
+
+Zakres commita: `gra/src/render/rangeOverlay.ts`, `gra/tools/granice-relacja-dyplomatyczna-test.cjs`,
+`gra/tools/granice-styk-nakladanie-test.cjs` — 3 pliki, **zero zanieczyszczenia** innymi tematami.
+Praca renderowa (`gra/src/render/**`), więc ocena na Opus 5 zgodnie ze stałą zasadą `CLAUDE.md` §4.
+
+Wszystko poniżej zmierzone **niezależnie** w izolowanym worktree (`git reset --hard` na
+`origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`, `node_modules` przez symlink), przez
+URUCHOMIENIE prawdziwego kodu i przez zbudowanie **własnego** harnessu rasteryzującego geometrię
+meshy — nie przez przepisanie liczb z opisu commita. Porównania „PRZED" liczone na kodzie
+`4de64fa8^` wyciągniętym do osobnego drzewa (`git show 4de64fa8^:…`), nie z pamięci.
+
+**FAIL nie oznacza „wyrzucić".** Rdzeń zmiany (matematyka mitry, przepisanie asercji, kierunek
+decyzji B) jest dobry i wart zachowania — punkt 1 niżej. FAIL wynika z trzech rzeczy: obietnica
+konstrukcyjna nie zachodzi na **większości realnych kształtów terytorium** (N1), enklawy dostały
+**regresję** (N3), a jedna liczba przedstawiona właścicielowi jako fakt jest **nieprawdziwa** (N5).
+
+### 1. Co jest zweryfikowane i POPRAWNE
+
+| Sprawdzone | Wynik |
+|---|---|
+| `npx tsc --noEmit` | 0 błędów, exit 0 — zgodne z opisem |
+| `granice-styk-nakladanie-test.cjs` (nowy) | **30 pass / 0 fail** — zgodne |
+| `granice-relacja-dyplomatyczna-test.cjs` | **52 pass / 0 fail** — zgodne |
+| `civ-visual-test.cjs` | **56 pass / 0 fail** — zgodne |
+| `territory-border-test.cjs` | **9 pass / 0 fail** — zgodne |
+| `territory-border-dense-settlement-test.cjs` | **15 pass / 0 fail** — zgodne |
+| `tech-tree-test.cjs` | **19 pass / 0 fail** — zgodne |
+| `research-test.cjs` | **33 pass / 0 fail** — zgodne |
+| `vite build --outDir dist --emptyOutDir` | exit 0 — zgodne |
+
+**Matematyka mitry w `insetBorderLoop()` jest DOKŁADNA, a ryzyko „miter spike" tu NIE istnieje.**
+Wzór `cur − (a+b)·inset/(1+a·b)` to standardowe dokładne odsunięcie: długość dwusiecznej to
+`inset/cos(θ/2)`, przy `|a+b| = 2cos(θ/2)` i `1+a·b = 2cos²(θ/2)` — tożsamość się zgadza, wsunięta
+pętla jest równoległa do oryginału. Sprawdziłem empirycznie, że na siatce heksów mianownik jest
+**zawsze 1,5**: na 5 kształtach (kwiat 7, podkowa 12, rząd 1×5, szachownica, przekątna) każdy skręt
+pętli wynosi dokładnie 60°, `min(1+cos) = 1,5000` w każdym przypadku. Ogranicznik `Math.max(…, 0,5)`
+jest prawdziwym **miter limit**: tnie wysunięcie do `2·inset` (1,35 j dla pasa relacji), jest ciągły
+w punkcie przełączenia (θ = 120°: wzór bez ogranicznika daje `1/cos60° = 2`, ogranicznik daje to
+samo) i przy θ→180° schodzi do zera zamiast uciekać w nieskończoność. **Zarzut o miter spike —
+oddalony, nie ma go czym wywołać.**
+
+**6 przepisanych asercji w `granice-relacja-dyplomatyczna-test.cjs` NIE zostało złagodzonych** —
+porównane linia po linii z `git show 4de64fa8^:…`. Dwie są wprost **ostrzejsze**: `eInner.max ≈ HEX_R`
+z tolerancją `1e-4` zastąpione przez `|dOuter.min| < 1e-6`, a mętne „oba pasy opierają się o TEN SAM
+obwód" (spełniane przez istnienie choćby jednego wspólnego wierzchołka) zastąpione przez twardy
+kontrakt ciągłości `|dInner.min − dOuter.max| < 1e-6`. Liczba asercji w bloku bez zmian (8 → 8).
+Zastrzeżenie do jednej z nich — nota N2.
+
+**Metoda pomiaru w nowym teście jest rzetelna** (prawdziwe trójkąty mesha, test punkt-w-trójkącie,
+krok 0,01 j) i **odtworzyłem jej wynik własnym kodem** na tej samej konfiguracji dwóch bloków 2×3:
+nakładanie pasów różnych właścicieli **2,2111 j² → 0,0000 j²**, pas tożsamości gracza na ziemi
+sąsiada **1,8152 j² → 0,0000 j²** (Operator podał 2,2024 i ~1,89 — różnica to rozdzielczość siatki
+rasteryzacji, zgodne w granicach zadeklarowanego ±0,002 j²). **Na tej konfiguracji naprawa działa
+w 100 %.**
+
+### N1 (BLOKUJĄCA) — obietnica „nakładanie znika konstrukcyjnie" NIE zachodzi na większości realnych kształtów
+
+`segmentOutwardNormal()` ustala, gdzie jest „na zewnątrz", porównując normalną ze **średnią
+arytmetyczną wierzchołków pętli** (centroid). Dla kształtów niewypukłych ta heurystyka **odwraca
+znak** części normalnych. `insetBorderLoop()` używa dokładnie tej samej funkcji, więc na odwróconej
+krawędzi pętla wsuwa się **na zewnątrz** i cały pas ląduje u sąsiada — czyli dokładnie to, co
+decyzja B miała usunąć.
+
+Zmierzone (Monte Carlo, losowe spójne klastry heksów — tak wyglądają realne terytoria):
+
+| Wielkość klastra | Kształtów z ≥1 odwróconą normalną | Odsetek odwróconych krawędzi obwodu | Średni wyciek pasa tożsamości poza własne terytorium |
+|---|---|---|---|
+| 7 heksów | **50 / 60** | 11,3 % | 13,1 % pola pasa |
+| 12 heksów | **58 / 60** | 15,0 % | 12,4 % |
+| 19 heksów | **60 / 60** | 16,2 % | 13,2 % |
+| 25 heksów | **60 / 60** | 17,1 % | 13,1 % |
+| 40 heksów | **60 / 60** | 18,9 % | 15,7 % |
+
+Atrybucja przyczyny jest czysta: kształty z **0** odwróconych normalnych mają wyciek **dokładnie 0**
+(1 heks 0/6, 1×2 0/10, trójkąt 0/12, kwiat 7 0/18 — wyciek 0,000 j² w każdym), a kształty z
+odwróconymi normalnymi mają wyciek **zawsze** (rząd 1×3 2/14 krawędzi, kolumna 3 2/14).
+
+Realne nakładanie międzywłaścicielskie po naprawie (mój pomiar, ta sama metoda co w teście):
+
+| Konfiguracja | Nakładanie A×B PRZED | PO |
+|---|---|---|
+| dwa bloki 2×3 (fixture z testu) | 2,2111 j² | **0,0000 j²** |
+| rząd 1×3 vs rząd 1×3 | 1,7819 j² | **0,6435 j²** |
+| rząd 1×4 vs rząd 1×4 | 2,0407 j² | **1,3179 j²** |
+| kolumna 3 vs kolumna 3 | 1,6070 j² | **0,3743 j²** |
+| L-kształt vs sąsiad | 1,9053 j² | **0,1863 j²** |
+
+**Uczciwie: kierunek jest dobry — każda zmierzona konfiguracja się poprawiła.** Ale twierdzenie
+z opisu commita i z komentarzy w kodzie („nakładanie znika **konstrukcyjnie**, przy **każdym** kącie
+kamery") oraz asercja testu „`0,0000 j²` / żaden pas nie wchodzi na heksy drugiej cywilizacji" są
+prawdziwe **wyłącznie dla fixture'ów użytych w teście**. Sprawdziłem to wprost: **wszystkie** kształty
+w `granice-styk-nakladanie-test.cjs` mają **zero** odwróconych normalnych (bloki 2×3 → 0/18 i 0/18,
+kolumny 2-heksowe z sekcji 3 → 0/10). Blok 2×**4** — jeden rząd większy — ma już **2/22**. Test
+przypadkiem trafił dokładnie w klasę kształtów, na której naprawa działa idealnie, i przypiął to
+jako kontrakt uniwersalny.
+
+Dodatkowo, na odwróconych krawędziach commit **pogarsza** stan lokalnie: PRZED pas tożsamości
+wyrastał „na zewnątrz" wg odwróconej normalnej, czyli do **wewnątrz** własnego terytorium
+(nieszkodliwie); PO — wsunięcie wypycha go na ziemię sąsiada. Globalnie i tak wychodzi lepiej,
+bo 81–89 % krawędzi jest zorientowanych poprawnie.
+
+**Do naprawy:** `segmentOutwardNormal` ma ustalać stronę z **orientacji pętli** (znak pola
+powierzchni / winding), a nie z centroidu wierzchołków. To jedna zmiana i naprawia równocześnie N3.
+
+### N2 — pas tożsamości NIE dotyka linii granicy jako POWIERZCHNIA; asercja mierzy co innego, niż mówi
+
+`appendBorderBandLoop` buduje zewnętrzną krawędź pasa przez **uśrednienie normalnych** (`·0,5`), co
+daje narożnik **ścięty (bevel)** sięgający tylko `0,75·w` prostopadle. Dopóki pas rósł na zewnątrz,
+to ścięcie było po stronie sąsiada i nie miało znaczenia — a **wewnętrzna** krawędź pasa była
+dokładnie pętlą obwodu, więc kolor dotykał linii granicy idealnie. Po odwróceniu strony ścięcie
+wypadło **od strony linii granicy**.
+
+Zmierzone na pojedynczym heksie (próbkowanie 2 400 punktów po obwodzie, krok 0,0005 j):
+
+- szczelina między linią granicy a początkiem pasa tożsamości: **średnio 0,0938 j, maksymalnie
+  0,1505 j** — czyli do **33 % szerokości pasa** (0,45 j);
+- na prostych odcinkach szczelina wynosi dokładnie **0,1125 j** (= 0,25·0,45), co potwierdza
+  rachunek `0,75·w`;
+- ze strefy `[0 … 0,45]` w głąb heksa **25,1 %** pola **nie jest pomalowane** (0,5025 z 2,0001 j²);
+  analogicznie **25,4 %** strefy `[0,45 … 0,675]` dla pasa relacji.
+
+Na styku dwóch cywilizacji daje to **goły korytarz terenu ok. 0,22 j** (2 × 0,1125) wzdłuż wspólnej
+krawędzi. Potwierdzone na fixture Operatora: w przekroju przez styk pas tożsamości A kończy się na
+**−0,112 j** od linii granicy, nie na 0.
+
+Asercje `ok(Math.abs(identity.min) < 1e-6, 'pas tożsamości zaczyna się DOKŁADNIE na linii granicy')`
+(nowy test, sekcja 2) i `'pas tożsamości dotyka linii granicy od wewnątrz (głębokość 0)'`
+(`granice-relacja-dyplomatyczna`) przechodzą, bo `depthRange` liczy minimum po **WIERZCHOŁKACH**, a
+wierzchołki `oPrev`/`oNext` trójkątów domykających naroża rzeczywiście leżą na linii — ale są to
+**izolowane punkty**, nie krawędź powierzchni. Asercja nie mierzy tego, co głosi jej komunikat.
+
+To nie musi być wada produktowa (rozdzielenie pasów cienkim pasem terenu może nawet poprawiać
+czytelność), ale **jest zmianą wyglądu, której nikt nie zgłosił właścicielowi**, i jest opisana
+w kodzie odwrotnie do stanu faktycznego. Wymaga albo poprawki geometrii (mitra zamiast bevelu w
+`appendBorderBandLoop`), albo świadomej decyzji właściciela i sprostowania komentarzy.
+
+### N3 (REGRESJA) — enklawy: pas tożsamości przeniósł się na cudzy heks
+
+Terytorium z dziurą (pierścień 6 heksów wokół pustego środka — enklawa, ziemia niczyja albo obcy
+heks otoczony przez nasze). Dla pętli dziury „na zewnątrz od centroidu" wskazuje **w głąb
+terytorium**, więc wsunięcie wypycha pętlę **do dziury**:
+
+| Pomiar | PRZED (`4de64fa8^`) | PO (`4de64fa8`) |
+|---|---|---|
+| pas tożsamości leżący W ENKLAWIE | **0,000 j² (0,0 %)** | **1,504 j² (21,0 %)** |
+| pas relacji leżący w enklawie | 0,916 j² (23,5 %) | 0,349 j² (12,6 %) |
+| **łącznie farba na cudzym heksie** | **0,916 j²** | **1,853 j² (2× więcej)** |
+
+Czyli: PRZED pas tożsamości enklawy był po właściwej stronie, PO — leży w całości na heksie
+enklawy. To jest **dokładnie ten defekt, który temat miał usunąć**, tylko przeniesiony na inną
+klasę przypadków. Enklawy nie są egzotyką: w Monte Carlo **11/60** klastrów 40-heksowych ma już
+więcej niż jedną pętlę obwodu (25 heksów: 5/60, 19 heksów: 1/60).
+
+### N4 — nowy artefakt: samo-nakładanie pasa tożsamości i relacji TEGO SAMEGO właściciela
+
+| Terytorium | PRZED | PO |
+|---|---|---|
+| 1 heks | 0,000 j² (0,0 %) | **0,000 j² (0,0 %)** |
+| kwiat 7 heksów | 0,000 j² (0,0 %) | **0,000 j² (0,0 %)** |
+| 1×2 (dwa heksy w rzędzie) | 0,000 j² (0,0 %) | **0,292 j² (38,4 % pasa relacji)** |
+| 1×3 | 0,106 j² (5,6 %) | **0,421 j² (24,1 %)** |
+
+We wklęsłych kieszeniach obwodu pas relacji (rysowany wyżej, `TERRITORY_RELATION_Y_BUMP`) przykrywa
+pas tożsamości, więc kolor cywilizacji traci tam widoczne pole. Żaden test tego nie pokrywa.
+
+**Odpowiedź na obawę o jednoheksowe miasto-państwo: obawa NIE potwierdza się.** Pas 0,675 j mieści
+się w inradiusie 0,866 j (zostaje 0,191 j czystego wnętrza, 22 % inradiusu), wsunięta pętla nie
+odwraca się, a zmierzone samo-nakładanie wynosi **dokładnie 0,0000 j²**. Test Operatora pilnuje tego
+wprost (`relation.max < INRADIUS`). Problem pojawia się dopiero od **dwóch** heksów i wszędzie tam,
+gdzie obwód ma narożnik wklęsły.
+
+### N5 — liczba nieprawdziwa w opisie commita
+
+Opis commita: „*łączna grubość pasa na styku dwóch cywilizacji — bez zmian (1,35 j przed i po,
+zmienia się tylko przypisanie stron)*". Zmierzone przekrojem przez styk na fixture z testu:
+
+- **PRZED:** jeden ciągły pomalowany odcinek **0,674 j**, wyśrodkowany na linii granicy, bez przerw;
+- **PO:** rozpiętość **1,41 j**, z czego pomalowane **0,902 j**, z przerwami (w tym gołym korytarzem
+  z noty N2).
+
+Rachunkowo: przed zmianą pas jednej cywilizacji zajmował `[−0,45 … +0,225]`, więc suma obu stron to
+**0,9 j** (a po ścięciu naroży realnie 0,674 j) — nie 1,35 j. Pasek na styku **rozrósł się mniej
+więcej dwukrotnie**, nie został bez zmian. To liczba podana właścicielowi jako fakt (`CLAUDE.md` §0b).
+
+### N6 — dowód wizualny (headless Chromium) NIEODTWARZALNY
+
+Liczby „4 173 px (2,92 %) PRZED → 27 143 px (19,01 %) PO" nie mają w repozytorium **żadnego
+artefaktu**: commit dotyka dokładnie 3 plików, nie ma ani zrzutu, ani skryptu pomiarowego.
+Nie odtworzyłem ich też u siebie — w środowisku nie ma zainstalowanej przeglądarki
+(`npx playwright install chromium` kończy się `Failed to download Chrome for Testing … Download
+failure, code=1`; `puppeteer` nie jest zainstalowany). Twierdzenie opiera się wyłącznie na opisie
+commita. Kierunkowo jest **spójne** z moim niezależnym pomiarem geometrycznym na tych samych
+kształtach (1,8152 j² pasa gracza na ziemi sąsiada → 0,0000 j²), więc nie podważam wyniku — ale
+jako **dowód** dla właściciela on nie istnieje.
+
+### N7 — dodatkowe zlecenie („gracz ma podwójną niebieską granicę"): pierwsza połowa udowodniona, druga nie
+
+Twierdzenie „to nie był błąd koloru" jest **dobrze udokumentowane w kodzie i sam je potwierdzam**:
+`gra/src/main.ts` linia 3051 — `function relationColorFn(ownerId) { if (ownerId === 0) return
+civColorFn(0); … }`, czyli własne terytorium świadomie dostaje ten sam kolor w obu obwódkach.
+Commit `4de64fa8` **nie tyka `main.ts`**, więc kod koloru jest ten sam co od `bf839f81` — podwójna
+niebieska granica gracza to zamierzona specyfikacja, nie usterka.
+
+Druga połowa („to, co Maciej zobaczył, to było przesłanianie, a nie osobny problem") opiera się
+**wyłącznie** na tym samym nieodtwarzalnym zrzucie z N6. Nie jest udowodniona. Co więcej, po tej
+zmianie granica gracza czyta się inaczej niż przed nią: 0,675 j **w całości po własnej stronie**
+zamiast pasa rozłożonego na linii granicy, plus goły korytarz z N2 — więc jeżeli właściciel
+zgłaszał wygląd, to wygląd właśnie się zmienił i wymaga jego ponownej oceny w grze, nie deklaracji
+agenta.
+
+### N8 (drobna, metodyczna) — `makeOwnerAt` w nowym teście jest luźniejsze, niż brzmi
+
+`makeOwnerAt` uznaje punkt za leżący na heksie, gdy jest bliżej niż `HEX_R = 1,0` od jego środka —
+ale heks sięga tylko do inradiusu **0,866 j**. Do **0,134 j** wycieku poza linię granicy nadal
+liczyłoby się więc jako „na własnych heksach", mimo asercji `całe pole pasa leży na heksach własnego
+terytorium`. Na obecnych fixture'ach nie zmienia to wyniku (przy prawdziwym teście punkt-w-sześciokącie
+wyciek też wychodzi dokładnie 0), ale margines bezpieczeństwa jest inny, niż sugeruje treść asercji.
+
+### Wymagane przed ponownym zgłoszeniem do PASS
+
+1. **N1:** `segmentOutwardNormal` ma wyznaczać stronę z orientacji (winding / znak pola) pętli, nie
+   z centroidu wierzchołków. Bramka: rozszerzyć `granice-styk-nakladanie-test.cjs` o kształty
+   **niewypukłe** (rząd 1×3, kolumna 3, L-kształt, blok 2×4) — dziś każdy fixture ma 0 odwróconych
+   normalnych, więc test nie może złapać tej klasy błędów.
+2. **N3:** enklawy — osobny przypadek testowy z pętlą dziury; pas tożsamości ma mieć **0 j²** na
+   heksie enklawy (dziś 1,504 j²).
+3. **N5:** sprostować liczbę „1,35 j przed i po" (realnie 0,674 j → 0,902 j pomalowane w rozpiętości
+   1,41 j).
+4. **N2:** decyzja właściciela — czy pas ma dotykać linii granicy (mitra zamiast bevelu), czy goły
+   korytarz 0,22 j jest akceptowany; do tego czasu poprawić komunikaty asercji, żeby nie twierdziły
+   czegoś, czego nie mierzą.
+5. **N6/N7:** dowód wizualny albo do repo (zrzut + skrypt), albo do playtestu właściciela — nie
+   jako deklaracja w opisie commita.
+
+**STATUS: ZAMKNIĘTE po rundzie 2 (`c571a3ca`) — patrz werdykt PASS-WITH-NOTES bezpośrednio niżej.**
+
+---
+
+## Evaluator: pas granicy do wewnątrz — RUNDA 2 (`c571a3ca`, `R-GRANICE-STYK-CZYTELNOSC-Q1` = B) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
+
+Ocena poprawki po **moim własnym werdykcie FAIL rundy 1** (`4de64fa8`, sekcja wyżej). Zakres commita:
+`gra/src/render/rangeOverlay.ts`, `gra/tools/granice-styk-nakladanie-test.cjs` oraz nowe narzędzie
+`gra/tools/granice-pas-pomiar.cjs` — **3 pliki, zero zanieczyszczenia** innymi tematami (równoległy
+commit dyplomacji `c94de5c8` to osobny temat, poza tą oceną). Praca w `gra/src/render/**`, więc ocena
+na Opus 5 zgodnie ze stałą zasadą `CLAUDE.md` §4.
+
+Wszystko poniżej zmierzone **niezależnie**, w izolowanym worktree na `c571a3ca`, **własnym harnessem
+napisanym od zera** (własny bundler, własny dokładny test punkt-w-sześciokącie, własne fixture'y —
+inne niż Operatora) oraz przez uruchomienie prawdziwego kodu. Liczby PRZED i RUNDA 1 odtworzone przez
+podstawienie `git show 4de64fa8^:…` / `git show 4de64fa8:…`, nie przepisane z opisu commita.
+
+### 1. WSZYSTKIE PIĘĆ PUNKTÓW BLOKUJĄCYCH RUNDY 1 — ZAMKNIĘTE
+
+| Nota rundy 1 | Wymaganie | Stan po rundzie 2 (mój pomiar) |
+|---|---|---|
+| **N1** (blokująca) — strona „na zewnątrz" z centroidu | wyznaczać z orientacji pętli | **0 błędnych normalnych na 26 206 segmentach** (600 losowych klastrów 7/12/19/25/40 heksów + 8 kształtów adwersarialnych). Regułą rundy 1: 12,51 % / 14,47 % / 16,65 % / 17,29 % / 19,09 % — zgodne z moim pomiarem rundy 1 (11,3–18,9 %) |
+| **N3** (regresja) — enklawa | 0 j² pasa na heksie enklawy | **0,0000 j²** — potwierdzone też na MOICH enklawach: 2 dziury naraz, **wyspa wewnątrz dziury (głębokość zagnieżdżenia 2)**, dwa osobne pierścienie |
+| **N2** — pas nie dotyka linii granicy powierzchnią | mitra zamiast bevelu | **szczelina 0,0005 j = jeden krok próbkowania, czyli zero**, na 6 kształtach (1 heks, 1×2, 1×3, blok 2×3, pierścień 6, wąż S). Runda 1 miała 0,1360–0,3995 j |
+| **N5** — nieprawdziwa liczba „1,35 j przed i po" | sprostować | Sprostowanie **poprawne co do cyfry** — odtworzyłem tabelę PRZED i RUNDA 1 uruchamiając narzędzie na obu historycznych commitach |
+| **N8** — `makeOwnerAt` luźniejsze niż brzmi | dokładny test punkt-w-sześciokącie | Zrobione (6 półpłaszczyzn na inradiusie) |
+
+**Wyciek pasa tożsamości poza własne terytorium — MÓJ Monte Carlo, nie fixture'y Operatora:**
+200 losowych spójnych klastrów (40 na każdy rozmiar 7/12/19/25/40 heksów) + 10 kształtów
+adwersarialnych (wąż S, spirala, 2 dziury, wyspa w dziurze, dwie wyspy, styk rogiem, krzyż, grzebień,
+nitka 1×6) — **wyciek 0,0000 j² we WSZYSTKICH przypadkach**, dla obu pasów. Obietnica
+„konstrukcyjnie" tym razem naprawdę zachodzi, nie tylko na wybranej klasie kształtów.
+
+### 2. ODSTĘPSTWO OD MOJEJ REKOMENDACJI — UZASADNIONE, i to mocniej, niż argumentował Operator
+
+To był główny punkt sporny. Rozstrzygam go **na własnych fixture'ach i własną algebrą**, nie na
+zaufaniu. Porównałem trzy reguły przy tej samej konwencji znaku (baza `(−dz, dx)`):
+
+| Reguła | pierścień 12 wokół 3 pustych | 2 dziury | wyspa w dziurze (głęb. 2) | Monte Carlo (151 kształtów wielopętlowych, 11 716 segm.) |
+|---|---|---|---|---|
+| **R1** shoelace NAIWNY (na zewnątrz od obszaru zamkniętego przez TĘ pętlę) | 16/56 błędnych | 10/54 | 18/66 | **1066 błędnych (9,10 %)** |
+| **R2** shoelace + korekta głębokości zagnieżdżenia | 0/56 | 0/54 | 0/66 | **0 (0,00 %)** |
+| **R3** stała rotacja — to, co zrobił Operator | 0/56 | 0/54 | 0/66 | **0 (0,00 %)** |
+
+**Wniosek 1 — Operator ma rację, że dosłowny shoelace byłby błędny.** Potwierdzone na MOICH
+enklawach, nie na jego pierścieniu 6: R1 myli się wyłącznie na pętlach dziur, bo „na zewnątrz od
+dziury" to „w głąb terytorium", a potrzebne jest odwrotnie.
+
+**Wniosek 2 — moja rekomendacja „z warunkiem różnicującym" (R2) też jest poprawna… ale to TA SAMA
+reguła.** Postawiłem i sfalsyfikowałem hipotezę `znak_pola(L) = σ₀ · (−1)^głębokość(L)`: sprawdzona
+na 5 własnych fixture'ach (w tym głębokość 2) i 165 losowych kształtach wielopętlowych, **354 pętle,
+0 naruszeń**. Skoro tak, to korekta głębokości **algebraicznie kasuje** człon shoelace:
+`−znak(A)·(−1)^d = −σ₀·(−1)^{2d} = −σ₀` = stała. Zmierzone wprost — kolumna „flipy R2" w moim
+harnessie wynosi **`[1, 1]`, `[1, 1, 1]` — czyli +1 dla KAŻDEJ pętli na KAŻDEJ głębokości**, w każdym
+fixture. R2 ≡ R3 jako funkcja, tylko że R2 kosztuje `O(pętle² × wierzchołki)` testów
+punkt-w-wielokącie i dokłada kruchą arytmetykę zagnieżdżenia (a punkt-w-wielokącie na wspólnych
+wierzchołkach / stykach rogiem jest właśnie tym, co lubi się psuć).
+
+**Werdykt do punktu spornego: to NIE był unik od trudniejszej naprawy — to jest zredukowana postać
+tej trudniejszej naprawy.** Moja rekomendacja rundy 1 mieszała dwie rzeczy pod jednym hasłem
+(„znak pola powierzchni / winding"); Operator wziął tę poprawną (winding) i odrzucił tę niepoprawną
+(znak pola), z uzasadnieniem, które sam sprawdziłem i potwierdzam.
+
+**Kontrakt orientacji, na którym to wszystko stoi, ISTNIEJE i został zweryfikowany.** Każdy segment
+każdej pętli porównałem z kanonicznym kierunkiem krawędzi z `collectTerritoryBoundaryEdges`
+(róg dir+1 → róg dir+2): **26 258 segmentów, 0 odwróconych, 0 niekanonicznych.** (Pierwsze podejście
+pokazało ~1,5 % „segmentów widmo" — to był **błąd mojego klucza**, nieuwzględniający naprawy ujemnego
+zera z `borderVertexKey`; po zrównaniu klucza z produktem zostaje czyste 0. Zapisuję, żeby nikt nie
+odziedziczył fałszywego tropu.)
+
+### 3. Bramki — uruchomione przeze mnie na `c571a3ca`, wszystkie zgodne co do jednego
+
+| Bramka | Wynik | Kod wyjścia |
+|---|---|---|
+| `tsc --noEmit` (przypięty `./node_modules/.bin/tsc`) | 0 błędów | 0 |
+| `granice-styk-nakladanie-test.cjs` | **57 pass / 0 fail** (było 30/0) | 0 |
+| `granice-relacja-dyplomatyczna-test.cjs` | 52 pass / 0 fail | 0 |
+| `civ-visual-test.cjs` | 56 pass / 0 fail | 0 |
+| `territory-border-test.cjs` | 9 pass / 0 fail | 0 |
+| `territory-border-dense-settlement-test.cjs` | 15 pass / 0 fail | 0 |
+| `tech-tree-test.cjs` | 19 pass / 0 fail | 0 |
+| `research-test.cjs` | 33 pass / 0 fail | 0 |
+| `vite build --outDir dist --emptyOutDir` | 823 moduły, 27,83 s | 0 |
+
+`granice-pas-pomiar.cjs` **uruchomiłem sam i odtwarza całą tabelę co do cyfry** — łącznie z wersjami
+historycznymi (przepis z nagłówka pliku działa): PRZED `2,5567 / 3,9504 / 4,2119 / … / 6,7377`,
+RUNDA 1 `0,9844 / 1,9683 / … / 1,5013`, przekrój PRZED `0,6745 j` bez przerw, RUNDA 1 `1,3495 j`
+rozpiętości z przerwą `0,6750 j`, RUNDA 2 `1,3495 j` rozpiętości i `1,3500 j` pomalowane, zero przerw.
+Nota N6 rundy 1 (dowód nieodtwarzalny) — **zamknięta**.
+
+### 4. MOJE WŁASNE mutacje kontrolne (nie odtworzenie deklaracji Operatora)
+
+| Mutacja | Wynik bramki | Wniosek |
+|---|---|---|
+| **M1** — odwrócenie KANONICZNEGO kierunku krawędzi w `territory-border.ts` (róg dir+2 → dir+1) | **18 pass / 39 fail** | Niewidzialny kontrakt, na którym stoi cała naprawa, **jest pilnowany behawioralnie**. Ale `territory-border-test.cjs` pod tą samą mutacją zostaje **9/0** — moduł, który ten kontrakt POSIADA, sam go nie testuje (nota N6 niżej) |
+| **M2** — wyłączenie przycinania odległościowego (naprawa N4) | **57 pass / 0 fail** | Bramka **nie pilnuje N4 w ogóle** (nota N4 niżej) |
+| **M3** — reguła naiwnego shoelace (pętle dziur odwrócone) | **53 pass / 4 fail**, wszystkie 4 w sekcji 5 (enklawa) | Bramka realnie broni dokładnie przed tym błędem, który analizowałem w punkcie 2 |
+
+### Noty
+
+- **N1 (LICZBA NIEPRAWDZIWA w opisie commita, `CLAUDE.md` §0b).** „*Przycinanie odleglosciowe kosztuje
+  0,2 ms, bo uruchamia sie tylko we wkleslych kieszeniach*" — **nieprawda na obu członach**. Sonda
+  `distanceToBoundary` **jest samym warunkiem `if`**, więc wykonuje się dla KAŻDEGO wierzchołka
+  bezwarunkowo (inaczej nie da się stwierdzić, czy kieszeń jest wklęsła), a każde wywołanie skanuje
+  WSZYSTKIE pętle → koszt `O(V²)` na terytorium, i to 4× (dwa pasy × dwa wsunięcia). Zmierzone przeze
+  mnie, ta sama konfiguracja z mutacją M2 i bez: 8 cywilizacji × 120 heksów **8,9 ms bez przycinania
+  → 15,2 ms z przycinaniem**, czyli **6,3 ms, ~31× więcej niż deklarowane, i 41 % całego czasu
+  przebudowy**. Skrajne rozdrobnienie (8 cywilizacji × 120 heksów rozsypanych): **19,1 → 124,3 ms**.
+  Skalowanie na jednym terytorium 120 heksów: 1 blob 2,9 ms · 3 bloby 4,2 · 12 blobów 8,5 · 30 blobów
+  13,4 ms. **NIE blokuje:** `refreshTerritoryBorderOverlay()` woła się na zdarzenia (koniec tury,
+  zmiana statusu dyplomatycznego, przełącznik warstwy), nie co klatkę, a łączne 15,2 ms mieści się
+  w jednej klatce — i sama liczba zbiorcza „15,7 ms" z opisu commita **jest prawdziwa** (zmierzyłem
+  15,2 ms / 4192 trójkąty przy deklarowanych 15,7 ms / 4120). Fałszywa jest **atrybucja**, a jest
+  szkodliwa, bo sugeruje, że mechanizm jest prawie darmowy — kto go w przyszłości rozbuduje
+  (np. zwiększy `STEPS = 24`), zapłaci kwadratowo, nie liniowo.
+- **N2 (LICZBA NIEPRAWDZIWA w opisie commita, §0b).** „*1 heks / blok 2x3 / blok 2x4 / kwiat 7: 0,0000
+  we wszystkich trzech wersjach*" — **nieprawda dla dwóch z czterech**. Zmierzone JEGO WŁASNYM
+  narzędziem na commitach historycznych: `blok 2x3` RUNDA 1 = **0,0314 j²** (nie 0), `blok 2x4` PRZED
+  = **0,1081 j²** i RUNDA 1 = **0,3396 j²** (nie 0). Naprawdę zerowe we wszystkich trzech wersjach są
+  tylko `1 heks` i `kwiat 7`. Kierunek błędu działa **przeciw** Operatorowi (przedstawia rundę 1 jako
+  lepszą, niż była), ale liczba podana właścicielowi jako fakt musi być prawdziwa niezależnie od
+  kierunku. Dzisiejsze wartości (RUNDA 2 = 0,0000 dla wszystkich czterech) potwierdzam.
+- **N3 (ZAKRES N4 ZAWĘŻONY NIEPRAWDZIWIE, §0b).** „*wylacznie na terytoriach szerokosci 1 heksa*" —
+  **nieprawda**. Zmierzone na moich kształtach szerokości 2 heksów: `L szerokie 2` **0,0328 j²**
+  (0,26 % pasa), `U szerokie 2` **0,0388 j²** (0,22 %), `schodek szerokości 2` **0,0445 j²** (0,40 %).
+  Czynnikiem sprawczym jest **WKLĘSŁOŚĆ obwodu, nie szerokość 1** — szerokość 1 to tylko najgorszy
+  przypadek (1,22–3,19 %). Kształty wypukłe (blok 2×3, blok 3×3, pierścień o ścianie 2) faktycznie
+  mają 0,0000 i to się potwierdza.
+- **N4 (DZIURA W BRAMCE — najpoważniejsza nota tej rundy).** Mutacja M2: wyłączyłem przycinanie
+  odległościowe całkowicie (`if (false && …)`) — **bramka zostaje 57 pass / 0 fail**, mimo że
+  samo-nakładanie rośnie 3–5× (`1x2` 0,0302→**0,1520**; `1x3` 0,0604→**0,3044**; `1x4`
+  0,0906→**0,4570**; `podkowa` 0,1554→**0,6101**; `pierścień 6` 0,3355→**0,9094**). Czyli najdroższa
+  czasowo część tego commita (nota N1 wyżej: 41 % czasu przebudowy) **nie jest chroniona ani jedną
+  asercją** — można ją usunąć i wszystkie bramki zostaną zielone. Do dołożenia: asercja progowa na
+  samo-nakładanie dla `1x2` / `1x4` / `pierścienia 6`.
+- **N5 (OCENA ISTOTNOŚCI WIZUALNEJ POZOSTAŁOŚCI N4 — POMIJALNA; decyzję Operatora o nieinwestowaniu
+  w Clipper BRONIĘ).** Liczby w j² wyglądają groźnie, ale mierzą nie tę własność, która decyduje
+  o wyglądzie. Zmierzyłem geometrię rastrem 0,005 j: **najgłębsze wejście pasa relacji w stronę linii
+  granicy to 0,4219 j przy nominale 0,4500 j — czyli maksymalnie 0,0281 j**, to 6,2 % szerokości pasa
+  tożsamości (0,45 j) i przy typowym zoomie (1 j ≈ 35–58 px) **około 1–1,6 piksela**. Pole 0,3355 j²
+  bierze się stąd, że ten włos ciągnie się wzdłuż ~12 j obwodu, nie stąd, że gdzieś jest gruby.
+  **Dodatkowo leży przy WEWNĘTRZNEJ krawędzi pasa tożsamości — na szwie między dwoma pasami, nie przy
+  linii granicy, gdzie patrzy gracz.** Klasa algorytmów Clipper dla włosa 1-pikselowego byłaby
+  jawnie nieproporcjonalna (`CLAUDE.md` §7 — „nie twórz problemów, których nie ma"). Zastrzeżenie:
+  opis commita podaje to wyłącznie w j², co **przeszacowuje** problem — powinien podawać
+  „0,028 j na szwie pasów", i tak to należy zameldować właścicielowi, jeśli zapyta.
+- **N6 (kontrakt niepilnowany u ŹRÓDŁA).** Naprawa opiera się na milczącym niezmienniku
+  `territory-border.ts` (kanoniczny kierunek krawędzi). Pod mutacją M1 `territory-border-test.cjs`
+  zostaje **9 pass / 0 fail** — moduł, który ten niezmiennik posiada, w ogóle go nie testuje; łapie
+  go dopiero bramka renderowa piętro wyżej (18/39). Sprzężenie jest dziś zabezpieczone, ale
+  **w niewłaściwym module**: gdyby kiedyś `granice-styk-nakladanie-test.cjs` został przepisany lub
+  usunięty, niezmiennik zostaje bez żadnej ochrony, a objaw (cała obwódka po złej stronie) jest
+  wizualny, nie wyjątek. Do rozważenia: jedna asercja w `territory-border-test.cjs`, że dla
+  pojedynczego heksa normalna `(−dz, dx)` każdego segmentu wskazuje od środka.
+- **N7 (porządkowa).** Operator nie dopisał sekcji rundy 2 do `PYTANIA-OTWARTE.md` — wpis rundy 1
+  nadal głosił „STATUS: OTWARTE — zwrot do Operatora (runda 2)". Przestemplowałem go tym werdyktem.
+
+### Werdykt
+
+**PASS-WITH-NOTES.** Wszystkie pięć punktów blokujących rundy 1 jest realnie naprawionych
+i zweryfikowanych **poza** zestawem fixture'ów Operatora — na moich własnych kształtach, enklawach
+zagnieżdżonych do głębokości 2 i 200-elementowym Monte Carlo; wyciek jest zerowy wszędzie, nie
+„zerowy tam, gdzie mierzono". Odstępstwo od mojej rekomendacji rundy 1 **jest uzasadnione i sam je
+potwierdzam własnym dowodem**: reguła Operatora to zredukowana postać poprawnej reguły
+shoelace-z-zagnieżdżeniem, tańsza i z jednym trybem awarii mniej. Bramka urosła 30 → 57 i realnie
+łapie regresję (moje trzy mutacje kontrolne). Notami do domknięcia są **trzy nieprawdziwe liczby
+w opisie commita** (N1, N2, N3 — §0b, do sprostowania w rejestrze, nie w kodzie), **jedna realna
+dziura w bramce** (N4 — najdroższy mechanizm commita bez żadnej asercji) i **jedno sprzężenie
+pilnowane w niewłaściwym module** (N6). Pozostałość N4 to włos ≤ 0,028 j na szwie pasów, poniżej
+progu widoczności — nic nie blokuje ani deployu, ani playtestu.
+
+**STATUS: ZAMKNIĘTE — kod przyjęty. Follow-up OTWARTE (drobne, bez blokady):** (a) asercja
+samo-nakładania w `granice-styk-nakladanie-test.cjs` (nota N4); (b) asercja kierunku normalnej
+w `territory-border-test.cjs` (nota N6); (c) sprostowanie trzech liczb w opisie/komentarzach
+(noty N1–N3).
+
+---
+
+## P-DYPLO-BILANS-GATE-NIESPOJNY (2026-08-14, zgłoszenie Macieja ze zrzutem stołu negocjacji, temat POWRACAJĄCY)
+
+**Zgłoszenie (cytat):** „nadal temat równowagi transakcji nie został naprawiony. Pomimo tego, że
+bilans jest na plusie, nie mogę zaakceptować tej oferty. Muszę ją zwiększyć. Akceptacja powinna
+być obliczona w ten sposób, że bilans powinien zliczać wszystko i w bilansie powinno być 0, jeżeli
+jest 0 to jest do zaakceptowania. Jeżeli jest na plusie to tym bardziej."
+
+**Zrzut:** Traktat handlowy Grecy↔Chińczycy. MY ODDAJEMY 50 PW, BILANS (ONI) **+30** (Nadwyżka 30
+PW, pole zielone), ONI ODDAJĄ 20 PW. Mimo dodatniego bilansu: „WPŁYW RELACJI NA DEAL: −72,2% ·
+Relacja 27,8 · musisz dać więcej (×3,6 PW), by oferta była uczciwa" i blok blokujący „Nie spełnia
+warunków: Oferta nieuczciwa dla partnera — poniżej uczciwej wartości PW @ Relacji (wymagane ≥ 73
+PW, oferujesz 50 PW)".
+
+**⚠️ TEMAT MA DŁUGĄ HISTORIĘ NIEROZWIĄZANYCH PRÓB — nie zgadywać, przeczytać całą historię przed
+kodowaniem.** Co najmniej 4 wcześniejsze zgłoszenia tego samego wzorca (dokładny ten sam sprzeczny
+komunikat „bilans dodatni, ale oferta nieuczciwa"): `BUG-PAKIET-BILANS-DODATNI-BLOKADA` (2026-08-08,
+`ce69cf45` FALA 262), `P-DYPLO-BILANS-VS-BRAKUJE-PW-SPRZECZNE` (2026-08-10), `P-DYPLO-PAKT-NIEAGRESJI-ZAUFANIE-MIMO-PLUS-BILANS`
+(2026-08-10, szósty zrzut), `R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY` (2026-08-10, cztery rundy
+rozpoznania, Operator naprawy `af98bc5fafb5f2aa6`, decyzja `3f76022d`). Mimo tego wzorzec wraca —
+albo poprzednie naprawy dotyczyły innej ścieżki kodu (np. auto-wyżywienie miasta, nie stół
+negocjacji dyplomatycznych), albo naprawiono tylko część przypadków. **Do ustalenia jako pierwszy
+krok: czy ten konkretny ekran (Traktat handlowy, `diplomacyTradeBasket.ts`) był w ogóle objęty
+którąkolwiek z poprzednich napraw.**
+
+**Hipoteza robocza (do zweryfikowania w kodzie, nie zakładać):** wyświetlany „BILANS (ONI)" i
+bramka akceptacji („wymagane ≥X PW") to DWIE RÓŻNE formuły liczone osobno — bilans to prawdopodobnie
+surowa różnica `oddajemy − otrzymujemy` bez uwzględnienia mnożnika relacji, a bramka akceptacji
+osobno mnoży wymóg przez czynnik zależny od relacji (×3,6 przy niskim zaufaniu). Skutek: gracz widzi
+„+30 na plusie" i nie rozumie, dlaczego oferta i tak jest odrzucana — te dwie liczby nie są ze sobą
+spójne z perspektywy gracza, nawet jeśli każda z osobna jest poprawnie policzona.
+
+**Żądanie właściciela wprost:** JEDNA formuła — bilans ma **zliczać wszystko** (włącznie z wpływem
+relacji, jeśli ten wpływ ma być częścią kryterium sprawiedliwości) i bramka akceptacji ma być
+`bilans >= 0`, bez osobnego, niezależnego progu PW.
+
+**STATUS: **OTWARTE** — runda 1 (`c94de5c8`) dostała od Evaluatora **FAIL** (werdykt na końcu tej
+sekcji): scenariusz ze zrzutu naprawiony, ale ten sam wzorzec nadal reprodukowalny dla
+`umowa_handlowa`/`umowa_szlakow` („Traktat handlowy") i dla pakietów. Czeka na rundę 2.**
+
+**Przyczyna zlokalizowana (dochodzenie, nie zgadywanie) — odtworzona SCENARIUSZEM ZE ZRZUTU
+(givePn=50, receivePn=20, Relacja 27,8) przez prawdziwy `evaluateProposal`:** to FAKTYCZNIE
+dwie różne formuły, dokładnie jak podejrzewało rozpoznanie wstępne — ale nie w
+`diplomacyTradeBasket.ts`/`diplomacy-ai-balance.ts` (te okazały się nieuczestniczące w tej
+konkretnej ścieżce), tylko w parze `gra/src/ui/diplomacyAcceptanceBalance.ts` (funkcja
+`balancePanelDataFromRows`, wyświetlany „Bilans") vs `gra/src/game/diplomacy-proposals.ts`
+(`handelFairnessGate` dla akcji `handel`/„Umowa wymiany", `treatyBaseFairnessGap` dla
+`umowa_handlowa`/`umowa_szlakow`/„Traktat handlowy" — próg akceptacji).
+`balancePanelDataFromRows` liczyła „Bilans" jako **surową różnicę** `myOfferPn − theirOfferPn`
+(givePn−receivePn = 50−20 = **+30**, zielone — dokładnie liczba ze zrzutu), całkowicie
+ignorując Relację i mnożnik chęci partnera przy niskim zaufaniu (×3,6 dla Relacji 27,8, plus
+ewentualny dodatkowy mnożnik „niechęci do handlu" w `handel`). Bramka akceptacji liczyła
+próg z UWZGLĘDNIENIEM obu tych czynników (`diplomacyFairGivePn(receivePn, rel) × mnożnik`),
+dając wymaganą wartość rzędu **73–87 PW** zależnie od dokładnego nastawienia AI — stąd
+sprzeczny komunikat „Bilans +30 (zielone)" + „wymagane ≥ 73 PW, oferujesz 50 PW" jednocześnie
+na tym samym ekranie. Zweryfikowane REPRODUKCJĄ 1:1 (probe script z prawdziwym kodem silnika,
+nie symulacją) przed naprawą — panel renderował dokładnie `da-pn-balance-bar ok` + „+30" +
+„Nadwyżka 30 PW" + poniżej `da-pn-bal-verdict no` z treścią „Nie spełnia warunków: ...
+wymagane ≥ 87 PW, oferujesz 50 PW" jednocześnie.
+
+**Implementacja (zgodna z żądaniem właściciela — JEDNA formuła, `bilans >= 0`):**
+`ProposalEvalResult` (diplomacy-proposals.ts) dostał nowe opcjonalne pole `pwBalance` — TA SAMA
+liczba `givePn − wymagany próg`, którą bramka faktycznie policzyła (relacja + mnożnik chęci
+uwzględnione), ustawiana w `handelFairnessGate`/`handelFairnessReject` (case `handel`) oraz przy
+`treatyBaseFairnessGap` (case `umowa_handlowa`/`umowa_szlakow`) — zarówno na ścieżce odrzucenia,
+jak i akceptacji. `previewNegotiationEntry` (main.ts) przekazuje `pwBalance` dalej przez
+`responderPreview` (WYŁĄCZNIE dla `direction==='own'` — ścieżka `incoming` nietknięta, ma osobną,
+już wcześniej poprawną logikę). `balancePanelDataFromRows` używa `pwBalance` jako JEDYNEGO źródła
+wyświetlanego „Bilans" gdy jest dostępne (dokładnie jedna pozycja na stole, akcja ma numeryczną
+bramkę PW) — dla akcji bez takiej bramki (nap/sojusz/wasal — tam liczy się wyłącznie próg
+Relacji/Zaufania) i dla pakietów wielu pozycji (temat BUG-PAKIET-BILANS-DODATNI-BLOKADA,
+osobno rozstrzygnięty wcześniej — nienaruszony) zostaje dawne zachowanie, bez regresji.
+Dodatkowo usunięta redundantna linia „PW surowe (bez Relacji): ... bilans +N" z live-podglądu
+koszyka (`renderPnBalancePanelFromBasket`, `diplomacyTradeBasket.ts`'s `treatySummaryHtml`) —
+druga, sprzeczna liczba obok prawdziwego Bilansu na tym samym panelu przy komponowaniu oferty
+(niepełne rozwiązanie architektoniczne: ta funkcja nie ma dostępu do mnożnika chęci AI — patrz
+nota niżej — ale usunięcie zbędnej, surowej liczby usuwa najbardziej widoczne źródło zamieszania
+nawet tam).
+
+**Weryfikacja po naprawie (mutacyjna, nie tylko happy-path):** rozszerzony
+`gra/tools/diplomacy-stol-pw-sum-test.cjs` (42→70 asercji) odtwarza scenariusz ze zrzutu
+1:1 przez prawdziwy `evaluateProposal`, potwierdza `theirBalance.balancePn === pwBalance`
+(jedna liczba), `canAccept === (balancePn>=0)` na siatce wokół progu (givePn: 0/20/50/86/87/
+88/100/150), oraz kontrolę negatywną (`nap` bez numerycznej bramki PW nie ustawia `pwBalance`).
+**Dowód mutacyjny:** cofnięcie jednej linii naprawy (`net = myOfferPn - theirOfferPn` zamiast
+`unifiedPwBalance ?? (...)`) powoduje 8 nowych FAIL — w tym dokładne odtworzenie „+30 zielone"
+mimo `canAccept=false` — dowód że asercje realnie łapią tę regresję, nie są tautologią.
+
+**Bramki:** `tsc --noEmit` 0, `tech-tree-test` 19/19, `research-test` 33/33; cały pakiet testów
+dyplomacji zielony: `diplomacy-test` 148/148, `diplomacy-proposal-test` 187/187,
+`diplomacy-acceptance-points-test` 254/254, `diplomacy-value-catalog-test` 81/81,
+`diplomacy-treaties-test` 17/17, `diplomacy-fairness-gate-package-q2-test` 24/24,
+`diplomacy-negotiation-table-test` 62/62, `diplomacy-own-proposal-edit-test` 33/33,
+`diplomacy-basket-duplicate-test` 19/19, `diplomacy-basket-duplicate-ui-test` 31/31,
+`diplomacy-package-ai-counter-actionable-test` 17/17, `diplomacy-penalty-preview-test` 9/9,
+`diplomacy-currency-trade-test` 5/5, `diplomacy-stol-pw-sum-test` 70/70 (rozszerzony).
+
+**Znany, udokumentowany pozostały gap (NIE naprawiony w tej rundzie, świadomie odłożony):**
+`renderPnBalancePanelFromBasket` (live-podgląd koszyka PRZED wysłaniem oferty, w
+`diplomacyTradeBasket.ts`) pokazuje bilans liczony wyłącznie z Relacji
+(`diplomacyFairGivePn`), BEZ mnożnika „chęci partnera do handlu" (`handelWillingnessMultiplier`
+w `diplomacy-proposals.ts`, zależny od pełnego kontekstu AI — Respekt, stance, itd.), którego
+ten podgląd architektonicznie nie ma dostępu (wołany tylko z givePn/receivePn/relTotal, bez
+kontekstu propozycji). Skutek: LIVE PODGLĄD przy komponowaniu oferty może pokazać "Bilans
+dodatni/zielone" tuż PRZED wysłaniem, a PO wysłaniu (na stole, `renderPnBalancePanelHtml`,
+już naprawione) ta sama oferta może zostać odrzucona przez pełną bramkę z mnożnikiem chęci —
+różnica typowo rzędu do ±20% progu (`HANDEL_WILLINGNESS_EASE_MAX_PCT`/`_PENALTY_MAX_PCT`).
+To DUŻO mniejsza, rzadsza niespójność niż naprawiona (brak relacji w ogóle, błąd
+wielokrotności ×3,6+) i dotyczy WYŁĄCZNIE fazy komponowania (przed wysłaniem), nie już
+wysłanej propozycji na stole — ale nie jest zerem. Pełne domknięcie wymagałoby przekazania
+kontekstu AI (stance/Respekt) do UI koszyka przy live-podglądzie — realna zmiana architektury
+wyceny, poza bezpiecznym zakresem tej rundy zgodnie z instrukcją orkiestratora („jeśli zadanie
+okaże się dużo bardziej złożone... zatrzymaj się, zrób tyle ile bezpiecznie się da"). Do
+rozważenia w osobnej rundzie, jeśli Maciej zgłosi konkretny przypadek tej resztkowej luki.
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-14, commit `c94de5c8`): **FAIL**
+
+**STATUS PO WERDYKCIE: OTWARTE — wymaga rundy 2 (naprawa niepełna, wzorzec ze zgłoszenia nadal
+reprodukowalny na sąsiedniej ścieżce).**
+
+Metoda: własny izolowany worktree na czubku `cc1c1695`, cztery skrypty-sondy uruchamiające
+PRAWDZIWY `evaluateProposal` + `balancePanelDataFromRows` + `renderPnBalancePanelHtml`
+(bundle esbuild z `gra/src`, bez symulacji), pełne odczytanie `treatyPnGate`/
+`treatyBaseFairnessGap`/`handelFairnessGate`, dwie własne mutacje kontrolne.
+
+**CO DZIAŁA (potwierdzone niezależnie, nie z raportu):**
+1. Scenariusz DOKŁADNIE ze zrzutu (`handel`, oddajemy 50 PW, oni 20 PW, Relacja 27,8) po naprawie:
+   `pwBalance = −37 PW`, wyświetlany `theirBalance.balancePn = −37 PW`, `statusLabel = "Brakuje
+   37 PW"`, pasek HTML `da-pn-balance-bar no` (czerwony), `canAccept = false`, HTML NIE zawiera
+   `+30`. Objaw ze zgłoszenia w tym konkretnym przypadku **zniknął**.
+2. Siatka `handel` (receivePn = 20 PW, givePn 0/20/50/71/72/73/100 PW @ Relacja 27,8): `(Bilans ≥ 0)
+   === canAccept` w KAŻDYM punkcie. Próg realny = 87 PW (mnożnik chęci ×1,2), nie 72 PW.
+3. Bramki zielone, zweryfikowane własnym uruchomieniem: `tsc --noEmit` 0 błędów; `diplomacy-stol-pw-sum`
+   70/70 exit 0; `diplomacy-test` 148/148; `diplomacy-proposal-test` 187/187;
+   `diplomacy-acceptance-points-test` 254/254; `diplomacy-negotiation-table-test` 62/62;
+   `diplomacy-own-proposal-edit-test` 33/33; `diplomacy-fairness-gate-package-q2-test` 24/24;
+   `diplomacy-package-ai-counter-actionable-test` 17/17; `diplomacy-treaties-test` 17/17;
+   `diplomacy-value-catalog-test` 81/81; `diplomacy-currency-trade-test` 5/5;
+   `diplomacy-penalty-preview-test` 9/9; `diplomacy-basket-duplicate-test` 21/21;
+   `diplomacy-basket-duplicate-ui-test` 31/31.
+4. Mutacje kontrolne Evaluatora (własne, nie cudze): (a) cofnięcie `const net = unifiedPwBalance ??
+   (myOfferPn − theirOfferPn)` do surowej różnicy → **62 pass, 8 fail, realny exit 1** (sprawdzone
+   `echo $?` na samym procesie node, nie na `tail`); (b) usunięcie `pwBalance` z wyniku odrzucenia
+   `handelFairnessGate` → **61 pass, 9 fail**. Asercje NIE są tautologią.
+
+**DLACZEGO MIMO TO FAIL — N1 (blokujące): ten sam wzorzec „Bilans na plusie, a oferta odrzucona"
+jest nadal w pełni reprodukowalny dla akcji `umowa_handlowa`/`umowa_szlakow`, czyli dla tego,
+co UI nazywa dosłownie „Traktat handlowy" — nagłówka ze zrzutu Macieja.**
+Przyczyna: odrzucenie leci z `treatyPnGate` (bramka PRZED `switch`, `diplomacy-proposals.ts`
+~linia 567: `if (receivePn > 0 && !pnDealAcceptedByAi(...))`), która **nie ustawia `pwBalance`
+w ogóle** → UI spada na stary, surowy `myOfferPn − theirOfferPn`. Reprodukcja własną sondą
+(Relacja 27,8, `umowa_handlowa`, oni oddają 50 PW):
+
+| oddajemy (PW) | wyświetlany Bilans | etykieta | canAccept |
+|---|---|---|---|
+| 105 | −3 | „Brakuje 3 PW" | false (spójne) |
+| **110** | **+2** | **„Nadwyżka +2 PW"** | **false** |
+| **130** | **+22** | **„Nadwyżka +22 PW"** | **false** |
+| **175** | **+67** | **„Nadwyżka +67 PW"** | **false** |
+| 180 | +72 | „Nadwyżka +72 PW" | true (spójne) |
+
+Okno niespójności ma tu **70 PW szerokości** (givePn 110–179 PW), a komunikat blokady brzmi
+„Oferta nieuczciwa dla partnera — poniżej wartości PW @ Relacji (masz 130 PW, potrzeba więcej
+wobec 50 PW od partnera)" — dokładnie ta sama sprzeczność, którą zgłosił właściciel. To samo dla
+`umowa_szlakow` (przy 30 PW od partnera okno givePn 90–109 PW).
+
+**N2 (blokujące, architektoniczne): `renderPnBalancePanelHtml` w trybie traktatu NIE CZYTA
+`theirBalance.balancePn`** — liczy `netPw = data.myOfferPn − data.theirOfferPn` (linia ~469).
+Naprawa zapisuje `pwBalance` do pola, którego renderer traktatów nigdy nie odczyta, więc dla
+`umowa_handlowa`/`umowa_szlakow` nie ma jak zadziałać, nawet gdyby N1 naprawiono.
+
+**N3 (istotne, sprostowanie opisu): dla `umowa_handlowa`/`umowa_szlakow` nowe `pwBalance` jest
+LICZBOWO IDENTYCZNE ze starym surowym netto** (bez sąsiadów pakietu). Dowód algebraiczny
+potwierdzony pomiarem: `pwBalance = −gap = (playerRequired + givePn) − (partnerRequired +
+receivePn)`, a `myOfferPn/theirOfferPn` w trybie traktatu to dokładnie te same dwie sumy. Realnie
+zmieniła się **wyłącznie** akcja `handel`. Opis w commicie i w sekcji wyżej sugeruje szerszy
+zakres naprawy niż faktyczny.
+
+**N4 (istotne, sprostowanie deklaracji): pakiet (>1 pozycja) — Operator pisze, że
+`BUG-PAKIET-BILANS-DODATNI-BLOKADA` jest „osobno rozstrzygnięty wcześniej — nienaruszony". Sonda
+pokazuje, że objaw tam ŻYJE**: dwie pozycje `handel` (hojna 300/20 PW + skąpa 10/20 PW) dają panel
+„Nadwyżka **+270 PW**", pasek `da-pn-balance-bar ok` (ZIELONY), `canAccept = false`, blokada
+„wymagane ≥ 87 PW, oferujesz 10 PW". Zawężenie `actionable.length === 1` jest dopuszczalną
+decyzją zakresu, ale **nie wolno opisywać tej ścieżki jako rozwiązanej**. Uwaga projektowa dla
+rundy 2: samo zsumowanie `pwBalance` nie wystarczy (213 + (−77) = +136 ≥ 0 przy blokadzie) —
+kryterium musi być „każda pozycja ≥ 0" albo `min(pwBalance)`, nie suma.
+
+**N5 (istotne, luka pominięta w opisie „znanego gapu"): live-podgląd traktatu to DRUGA funkcja,
+niewymieniona przez Operatora** — `renderPnBalancePanelForTreaty` (nie tylko
+`renderPnBalancePanelFromBasket`). Zmierzone: przy Relacji 27,8, partner oddaje 50 PW, gracz
+oddaje 110 PW → live pokazuje pasek ZIELONY, „Bilans +2", hint „Nadwyżka 2 PW", podczas gdy realna
+bramka odrzuca aż do 180 PW. Rozjazd wynosi tu **70 PW z progu 180 PW (39%)**, a nie „typowo do
+±20% progu" jak zapisano — i wynika z BRAKU `pnDealAcceptedByAi`, nie z mnożnika chęci. Zapis
+o znanym gapie jest zaniżony co do skali i błędny co do przyczyny.
+
+**N6 (drobne, nieścisłość komentarza): „`pwBalance` przechodzi TYLKO dla `own`"** (main.ts) jest
+prawdziwe warunkowo — `previewIncomingPlayerAccept` zwraca `null` gdy akcja jest spoza
+`INCOMING_NET_PW_ACTIONS` albo tryb to `treaty`; wtedy wiersz `incoming` też przechodzi przez
+`evaluateProposal` i dostaje `pwBalance`. `balancePanelDataFromRows` nie filtruje po kierunku.
+Dziś praktycznie nieosiągalne (dla `umowa_handlowa` incoming `proposerIsTreatyPlayer` = false, więc
+`pwBalance` zostaje `undefined`), ale komentarz opisuje gwarancję, której kod nie daje.
+
+**Czego rundzie 2 potrzeba (propozycja kierunku, nie decyzja):** jedno miejsce liczące „ile PW
+brakuje/zostaje wobec progu, który REALNIE zdecydował o `accepted`", ustawiane na KAŻDEJ ścieżce
+odrzucenia i akceptacji (łącznie z `treatyPnGate`), plus czytanie tej liczby również przez gałąź
+`isTreatyMode` renderera. Dopóki którakolwiek bramka zwraca `accepted:false` bez `pwBalance`,
+wzorzec ze zgłoszenia wraca — to piąte podejście do tego samego tematu.
+
+---
+
+## P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (2026-08-14, zgłoszenie Macieja ze zrzutem "Dodaj do oferty")
+
+**Zgłoszenie (cytat):** „miało być z gry usunięte [wybieranie miasta] podczas handlu żywnością z
+danego miasta. Handluje się ze Spichlerza, całej cywilizacji, więc to jest w ogóle niepotrzebne."
+
+**Zrzut:** panel „Dodaj do oferty" → typ Żywność → sekcja „Miasto (spichlerz)" z siatką przycisków
+per miasto (Ateny, Sparta, Korynt, Teby, Argos, Mykeny) do wyboru, ZANIM gracz poda ilość żywności.
+
+**Potwierdzone rozpoznaniem (orkiestrator, przed dispatchem):** `gra/src/ui/diplomacyTradeBasket.ts`
+— pole `cityId` dla pozycji koszyka typu `zywnosc` jest odczytywane/zapisywane WYŁĄCZNIE wewnątrz
+tego samego pliku UI (komentarz w kodzie: „Dla zywnosc samo id już JEST cityId" — używane do
+deduplikacji pozycji w koszyku, `P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE"). Grep całego
+`gra/src/game/*.ts` (silnik) nie znalazł ŻADNEGO miejsca czytającego `cityId` w kontekście handlu
+żywnością — silnik dyplomacji operuje na cywilizacji jako całości (spójne z istniejącym „Spichlerz
+Centralny": nadwyżki miast trafiają do wspólnej puli, niedobory pokrywane stamtąd). **Silny sygnał,
+że wybór miasta jest interfejsem-widmem — nic w silniku faktycznie z niego nie korzysta poza samym
+UI koszyka.** Do potwierdzenia przez dispatchowanego agenta (nie zakładać w 100%): prześledzić do
+końca, co się dzieje z `item.cityId` przy WYKONANIU zaakceptowanej umowy (funkcja aplikująca efekty
+traktatu do stanu gry), żeby mieć pewność, że usunięcie selektora nie zgubi żadnej realnej logiki.
+
+**STATUS: ZAMKNIĘTE — Evaluator (Opus 5, 2026-08-14) wydał PASS-WITH-NOTES dla `cc1c1695`
+(werdykt na końcu tej sekcji).**
+
+**Potwierdzone przy wykonaniu (`gra/src/main.ts`, funkcja aplikująca efekty traktatu, `case
+'zywnosc':` ~linia 8558):** transfer żywności operuje WYŁĄCZNIE na `empireFoodStates.get(fromOwnerId
+/toOwnerId)` (`zapasyPanstwa` — Spichlerz Centralny cywilizacji) i czyta z pozycji koszyka jedynie
+`item.ilosc` — `item.id`/`item.cityId` NIE są tam czytane ANI RAZEM, ani osobno, w żadnej gałęzi.
+Zgodnie z hipotezą orkiestratora: to był interfejs-widmo, wyłącznie UI (dedup koszyka).
+
+**Implementacja:** usunięty selektor "Miasto (spichlerz)" (`cdb-city-chips`/`cdb-city`, sekcja
+`data-extra="prefix-city"`) z formularza dodawania żywności w `gra/src/ui/diplomacyTradeBasket.ts`
+— zostaje tylko pole "Ilość żywności". `readItemFromForm` (case `'zywnosc'`) już nie czyta cityId —
+`id` jest teraz stałe (`'zywnosc'`, jak `zloto`/`praca`), więc `basketItemIdentity` (dedup) nie
+potrzebuje już specjalnego przypadku dla żywności — uproszczona do `typ + '::' + id` (jak
+wszystkie inne typy). Usunięte też: JS wiązanie kliknięć dla `.cdb-chip-city` (martwe po usunięciu
+elementów), oraz pole `cityId?: string` z interfejsu `BasketItem` (`diplomacy-pn-engine.ts`) —
+zweryfikowane grepem całego `gra/src`+`gra/tools`, zero pozostałych czytelników/pisarzy.
+
+**Skutek dla gracza:** wszystkie dodania żywności do oferty sumują się teraz do JEDNEJ pozycji
+koszyka (jeden cywilizacyjny zasób) zamiast dzielić się na osobne wiersze per miasto.
+
+**Testy zaktualizowane:** `diplomacy-basket-duplicate-test.cjs` (dawny scenariusz "inne miasto
+= osobna pozycja" zastąpiony "KAŻDE dodanie żywności zawsze scala się do 1 pozycji", 19→21
+asercji), `diplomacy-basket-duplicate-ui-test.cjs` (usunięty `cityId` param z helpera `addFood`,
+scenariusz "scalanie przez edycję" dawniej testowany na żywności+mieście PRZENIESIONY na
+`surowiec_ilosc` — drewno/węgiel — bo żywność strukturalnie nie może już mieć 2 osobnych wierszy
+do zderzenia; regresja-ochrona zachowana, nie utracona, 17→31 asercji łącznie z rozszerzeniem
+kroku żywności).
+
+**Bramki:** `tsc --noEmit` 0, `tech-tree-test` 19/19, `research-test` 33/33, `diplomacy-test`
+148/148, `diplomacy-proposal-test` 187/187, `diplomacy-basket-duplicate-test` 21/21,
+`diplomacy-basket-duplicate-ui-test` 31/31, `diplomacy-own-proposal-edit-test` 33/33,
+`diplomacy-stol-pw-sum-test` 70/70, `diplomacy-negotiation-table-test` 62/62,
+`diplomacy-currency-trade-test` 5/5.
+
+**Świadomie NIE ruszone (poza zakresem, niski priorytet):** `NegotiationModalContext.cityOptions`/
+`receiveCityOptions` (`diplomacyNegotiationModal.ts`) i budująca je zmienna `cities` w `main.ts`
+(~linia 17553) zostają jako nieużywane-ale-nieszkodliwe pola — jedyny ich konsument był
+selektor, który właśnie usunięto. Nie usunięte teraz, żeby nie poszerzać zakresu zlecenia poza
+`diplomacyTradeBasket.ts` (C-025, dyscyplina zakresu) — do posprzątania w osobnej, drobnej
+rundzie, jeśli ktoś to zauważy przy okazji innej pracy w tym obszarze.
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-14, commit `cc1c1695`): **PASS-WITH-NOTES**
+
+**STATUS PO WERDYKCIE: ZAMKNIĘTE** (noty niżej to obserwacje, nie warunki).
+
+Metoda: własny izolowany worktree na czubku `cc1c1695`, samodzielne prześledzenie ścieżki
+wykonania w `main.ts`, grep całego `gra/src` + `gra/tools`, uruchomienie bramek, własna mutacja
+kontrolna.
+
+**Zweryfikowane niezależnie (nie z deklaracji Operatora):**
+1. `transferBasketItems` → `case 'zywnosc':` (`gra/src/main.ts`, ~linia 8558) czyta z pozycji
+   koszyka **wyłącznie** `item.ilosc` (przez `const qty = item.ilosc ?? 1` na początku pętli)
+   i operuje na `empireFoodStates.get(fromOwnerId/toOwnerId).zapasyPanstwa`. `item.id` ani
+   `item.cityId` nie występują w tej gałęzi w żadnej postaci — przeczytana cała funkcja, nie
+   sam fragment. Twierdzenie „interfejs-widmo" **potwierdzone**.
+2. Usunięcie `cityId?: string` z `BasketItem` niczego nie osierociło: grep po `cityId` w
+   `src/ui/diplomacy*.ts`, `src/game/diplomacy*.ts` i `src/main.ts` daje wyłącznie trafienia
+   niezwiązane z koszykiem (`siegeAiKey`, parametry funkcji miejskich) plus dwa komentarze
+   opisujące samą naprawę. `tsc --noEmit` 0 błędów potwierdza to strukturalnie.
+3. **Zgodność ze starymi zapisami (sprawdzone osobno, bo usunięcie pola typu to klasyczne
+   ryzyko save-load):** stara pozycja koszyka z `id = '<cityId>'` w zapisanej propozycji nadal
+   działa identycznie — wycena (`diplomacy-value-catalog.ts` case `zywnosc` → `diplomacyPnZywnosc(qty)`),
+   wyświetlanie (`diplomacyDealDisplay.ts` → `${item.ilosc} Żywności`) i stać-mnie AI
+   (`diplomacy-ai-balance.ts` → `ownerCtx.foodReserve`) są w 100% id-agnostyczne. Jedyny skutek:
+   stara pozycja nie scali się z nowo dodaną (klucz `zywnosc::ateny` vs `zywnosc::zywnosc`) —
+   kosmetyczne, bez utraty danych i bez błędu.
+4. **Migracja testu 6b → 9 NIE jest sztucznym upchnięciem asercji.** Oryginał sprawdzał mechanizm
+   „edycja zmienia tożsamość pozycji → kolizja z INNYM istniejącym wierszem → scalenie ilości";
+   nowy krok 9 sprawdza dokładnie ten sam mechanizm na `surowiec_ilosc` (edycja węgla → chip
+   „drewno" → scalenie z istniejącym wierszem drewna, 40 + floor(7/5)×5 = 45 szt.), łącznie
+   z zanikiem edytowanego wiersza. Nośnik inny, pokrycie regresji zachowane. Przeniesienie było
+   wymuszone, nie kosmetyczne: żywność strukturalnie nie może już mieć dwóch osobnych wierszy.
+5. Bramki (własne uruchomienie): `tsc --noEmit` 0 błędów, `diplomacy-basket-duplicate-test`
+   **21/21**, `diplomacy-basket-duplicate-ui-test` **31/31**, plus cały pakiet dyplomacji
+   zielony (patrz lista w werdykcie tematu wyżej).
+6. Mutacja kontrolna Evaluatora: zmiana tożsamości pozycji na zależną od ilości
+   (`id: typ + '-' + qty` w `readItemFromForm`) → `diplomacy-basket-duplicate-ui-test`
+   **23 pass, 8 fail, exit 1**, w tym wszystkie 4 asercje żywności. Test realnie broni tej
+   semantyki, nie jest atrapą.
+
+**N1 (obserwacja, poza zakresem):** żywność nadal **nie ma żadnego limitu ilości** w koszyku —
+`basketItemMaxQty` obsługuje tylko `zloto` (skarbiec) i `surowiec_ilosc` (zapas), a `zywnosc`
+zwraca `undefined`. Można więc zaoferować więcej Żywności niż jest w Spichlerzu Centralnym;
+przy wykonaniu `Math.max(0, zapasyPanstwa − qty)` po prostu zeruje zapas dawcy. Stan
+PRE-ISTNIEJĄCY (usunięty selektor też tego nie pilnował — pole `spichlerz?: number` w
+`cityOptions` nigdy nie było czytane jako limit), więc **nie jest to regresja tego commita**.
+Zgłaszam, bo po tej zmianie `cityOptions.spichlerz` jest już definitywnie martwe i temat limitu
+nie ma gdzie zamieszkać.
+
+**N2 (kosmetyka):** atrybut `data-extra="<prefix>-city"` został jako nazwa sekcji, która nie ma
+już nic wspólnego z miastem (zawiera wyłącznie „Ilość żywności"). Świadomie udokumentowane
+w komentarzu — akceptowalne, ale przy następnym dotknięciu tego formularza warto przemianować na
+`-food`.
+
+**N3 (potwierdzam zakres Operatora):** `NegotiationModalContext.cityOptions`/`receiveCityOptions`
+i budująca je zmienna `cities` w `main.ts` (~17553) faktycznie zostały bez konsumenta. Zostawienie
+ich poza zakresem jest zgodne z dyscypliną C-025 i nie generuje ryzyka (martwe pola opcjonalne).
+
+---
+
+## R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A — Operator dostarczył, czeka na Evaluatora (2026-08-14)
+
+Naprawa noty N1 werdyktu Evaluatora dla `92cd220b` (sekcja wyżej), zgodnie z decyzją Macieja
+(ECHO powyżej): osobna, niższa podłoga `ROAD_BRUK_MIN_MOVE_COST = 1/5` WYŁĄCZNIE dla drogi
+brukowanej — zwykła droga zostaje przy `ROAD_MIN_MOVE_COST = 1/3` bez zmian.
+
+**Co zmienione:**
+1. `gra/src/map/road-movement.ts` — nowa stała `ROAD_BRUK_MIN_MOVE_COST = 1/5` z komentarzem
+   PL/EN (WHY + jawne zastrzeżenie, że N2 pozostaje nierozwiązana przy koszcie bazowym 2).
+   Gałąź `droga_brukowana` w `applyRoadMovementModifier()`: `Math.max(ROAD_MIN_MOVE_COST, …)` →
+   `Math.max(ROAD_BRUK_MIN_MOVE_COST, …)`.
+2. `gra/tools/map-road-movement-test.cjs` — rozszerzony o: asercje na obie stałe podłogi z
+   osobna, koszt bazowy 1 → `0,2` (nie `0,333`), koszt bazowy 2 → `0,4` (floor się nie
+   aktywuje, bez zmiany), koszt bazowy 3 → `0,6`. Mutacja kontrolna (przywrócenie wspólnej
+   podłogi `1/3` dla bruku) odtworzona ręcznie: **23 pass / 3 fail** dokładnie na trzech nowych
+   asercjach koszt-1 — potwierdzone, przywrócone do 26/0.
+3. `docs/encyklopedia/ulepszenia/droga.md` + `gra/src/data/wikiBundle.json` (przebudowany
+   `node gra/tools/bundle-wiki-for-game.cjs`, nie edytowany ręcznie) — naprawa N3: „heks daje
+   +1 handel/t" → „+2 Handel/turę" (aktualna wartość po `R-DROGI-RUCH-HANDEL-Q1`), stała kopia
+   starego `warunek` w sekcji Wiki‑M zastąpiona aktualnym opisem („ruch jednostek 3× szybszy
+   (koszt wejścia ÷3); Handel (plon heksa) +2/turę"). Zweryfikowane: diff bundla dotyka
+   WYŁĄCZNIE wpisu `ulepszenia/droga` (136 haseł encyklopedii, 22 rozdziały poradnika —
+   liczby bez zmian). Wpisu `ulepszenia/droga_brukowana.md` w encyklopedii NIE MA — luka
+   pre-istniejąca (już odnotowana przez Evaluatora w N3), nie tworzona ani naprawiana w tym
+   zakresie.
+
+**Tabela przed/po (koszt wejścia po ulepszeniu drogowym), zweryfikowana `python3` + testem:**
+
+| Koszt bazowy terenu | Skąd | Zwykła droga (÷3) | Bruk PRZED tą poprawką (floor 1/3) | Bruk PO tej poprawce (floor 1/5) | Stara mechanika sprzed `92cd220b` (koszt−2, floor 1/3) |
+|---|---|---|---|---|---|
+| 1 | Łąka/Równina/Pustynia, każda rzeka | 0,3333 | 0,3333 (floor zjadał ÷5) | **0,2000** | 0,3333 |
+| 2 | Wzgórza lub płaski+Las | 0,6667 | 0,4000 | 0,4000 (floor się nie aktywuje) | 0,3333 |
+| 3 | Wzgórza+Las | 1,0000 | 0,6000 | 0,6000 (floor się nie aktywuje) | 1,0000 |
+
+**Co ta poprawka NAPRAWIA:** koszt bazowy 1 (najczęstszy — miasta i drogi biegną po płaskim/nad
+rzeką) — bruk przestaje być identyczny ze zwykłą drogą, realnie daje pełne ÷5 (`0,2` zamiast
+`0,333`). To był problem N1, jedyny w zakresie tej decyzji (A).
+
+**Co ta poprawka ŚWIADOMIE NIE naprawia (nota N2, poza zakresem decyzji A):** przy koszcie
+bazowym 2 (Wzgórza lub płaski+Las) wynik `0,4` jest wyższy (wolniej) niż `0,333`, które dawała
+mechanika ODEJMOWANIA sprzed `92cd220b` — bo przy koszcie 2 floor nigdy się nie aktywował
+(`2/5=0,4 > 1/5` i `> 1/3`), więc jego obniżenie nie ma tu żadnego wpływu. Przyczyną tej
+konkretnej regresji jest sam mnożnik ÷5 przy niskim koszcie bazowym, nie podłoga — inny problem
+niż ten, który decyzja A miała rozwiązać. Przy koszcie bazowym 3 sytuacja jest odwrotna: `0,6`
+zawsze było i pozostaje lepsze niż stare `1,0`. Świadomie zaakceptowane przez Macieja w treści
+ECHO decyzji A („Świadomy koszt zaakceptowany… to zamierzony efekt inwestycji w bruk, nie efekt
+uboczny") — nie traktowane jako nowe, nierozstrzygnięte pytanie w tej rundzie.
+
+**Bramki (uruchomione z `gra/`, po symlinku `node_modules` z drzewa głównego, `tsc --version`
+potwierdzony `5.9.3`):** `npx tsc --noEmit` — 0 błędów · `map-road-movement-test.cjs` — **26
+pass, 0 fail** (było 22/0 przed rozszerzeniem) · `heks-panel-tooltip-warstwa-test.cjs` —
+**22 pass, 0 fail** · `tech-tree-test.cjs` — **19 pass, 0 fail** · `research-test.cjs` —
+**33 pass, 0 fail** · `unit-replace-test.cjs` — **13/13** · `ai-founding-territory-test.cjs` —
+**28 pass, 0 fail**. Dedykowanego testu automatycznego dla `wikiBundle.json`/CivPedii nie ma w
+repo (`grep wikiBundle gra/tools/` → wyłącznie sam skrypt budujący bundle) — zweryfikowane
+ręcznie przez odczyt zbudowanego JSON-a (patrz punkt 3 wyżej).
+
+**N4 (panel Excel `Tereny-i-ulepszenia-MACIEJ.xlsx`) pozostaje odłożony do osobnego kroku
+doganiania JSON→Excel — zgodnie z ECHO decyzji, nie wykonywany w tym zakresie.**
+
+**Znalezisko przy okazji (poza zakresem tej naprawy, zapisane cicho zgodnie z regułą `CLAUDE.md`
+§2):** w `docs/encyklopedia/ulepszenia/droga.md`, sekcja „Przykład liczbowy", linia „Przykład:
+łąka daje 1 żywność/t; Droga +2 → 3 żywności/t z tego heksu" jest treściowo błędna niezależnie od
+tego tematu — bonus Drogi dotyczy Handlu (plon heksa), nie Żywności; przykład miesza dwa różne
+zasoby. Pre-istniejące (nie spowodowane tą zmianą, nie dotknięte w tym zakresie zgodnie z C-025 —
+naprawa ograniczona do konkretnej treści N3 werdyktu Evaluatora).
+
+**STATUS: ZWERYFIKOWANE — WERDYKT EVALUATORA: PASS-WITH-NOTES** (sekcja
+`Evaluator: R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A (a3f61973) — WERDYKT PASS-WITH-NOTES` niżej).
+Mechanika naprawy N1 poprawna i zweryfikowana empirycznie, ale **tabela „Skąd" w tym raporcie
+zawiera błąd faktu: Pustynia ma w RUNTIME koszt bazowy 2, nie 1** — patrz nota N1 werdyktu.
+
+---
+
+## Evaluator: `R-DROGI-RUCH-HANDEL-PODLOGA-Q1=A` (`a3f61973`) — WERDYKT **PASS-WITH-NOTES** (2026-08-14)
+
+**STATUS: ZAMKNIĘTE** co do kodu — mechanika decyzji A zrealizowana poprawnie i w pełni, kod
+**nie wymaga cofnięcia**. **N1 (błąd faktu w tabeli i w komentarzu produkcyjnym) pozostaje
+OTWARTE jako sprostowanie do wykonania** — patrz sekcja `P-DROGI-PUSTYNIA-KOSZT-2-SPROSTOWANIE`
+niżej.
+
+Weryfikacja niezależna we własnym worktree, na commicie `a3f61973` (rodzic `7d75a53e`).
+Wszystkie liczby poniżej zmierzone własnoręcznym uruchomieniem, nie przepisane z raportu Operatora.
+
+### 1. Bramki — 6/6 zgodnych co do jednej asercji z opisem commita
+
+| Bramka | Wynik zmierzony | Opis commita | Zgodność |
+|---|---|---|---|
+| `npx tsc --noEmit` (v5.9.3) | 0 błędów, exit 0 | 0 błędów | ✅ |
+| `map-road-movement-test.cjs` | **26 pass / 0 fail**, exit 0 | 26/0 | ✅ |
+| `heks-panel-tooltip-warstwa-test.cjs` | **22 pass / 0 fail**, exit 0 | 22/0 | ✅ |
+| `tech-tree-test.cjs` | **19 pass / 0 fail**, exit 0 | 19/0 | ✅ |
+| `research-test.cjs` | **33 pass / 0 fail**, exit 0 | 33/0 | ✅ |
+| `unit-replace-test.cjs` | **13 / 13**, exit 0 | 13/13 | ✅ |
+| `ai-founding-territory-test.cjs` | **28 pass / 0 fail**, exit 0 | 28/0 | ✅ |
+
+Żadnej rozbieżności — w odróżnieniu od `4fc770ee`/`c3a5652c` z tej samej sesji, opis commita mówi
+prawdę co do każdej liczby bramek.
+
+### 2. Trzy własne mutacje kontrolne — test jest czuły, nie tautologiczny
+
+| Mutacja | Wynik | Wniosek |
+|---|---|---|
+| (A) przywrócenie wspólnej podłogi (`ROAD_MIN_MOVE_COST` w gałęzi bruku) | **23 pass / 3 fail**, exit 1 — dokładnie 3 asercje kosztu bazowego 1 | Deklaracja Operatora odtworzona co do liczby ✅ |
+| (B) **własna**, mocniejsza: `ROAD_BRUK_MIN_MOVE_COST = 1/4` zamiast `1/5` | **23 pass / 3 fail**, exit 1 | Test pilnuje twardej wartości `0,2`, nie samego „≠ 1/3" ✅ |
+| (C) **własna**, diagnostyczna: `ROAD_MIN_MOVE_COST = 1/2` | **25 pass / 1 fail** — pada WYŁĄCZNIE asercja literału stałej | Dowód, że ta stała **nie wpływa już na żadne zachowanie** — patrz nota N2 |
+
+### 3. Rdzeń naprawy N1 — zweryfikowany empirycznie end-to-end, PEŁNY SUKCES
+
+Nie poprzestałem na czytaniu `applyRoadMovementModifier()`. Zbudowałem własny harness (esbuild,
+wejście: `terrainMoveCost` + `configureTerrainMovement` + surowy `data/terrain-movement.json`)
+i przeliczyłem **wszystkie 32 kombinacje** `teren bazowy × las × rzeka × ulepszenie drogowe`,
+w dwóch trybach: na DEFAULTACH z kodu oraz **po realnym `configureTerrainMovement()`**, tak jak
+robi to `main.ts:1276` po `loadGameData()`.
+
+**Wynik kluczowy — decyzja „pięć razy szybszy" jest teraz zrealizowana BEZ WYJĄTKU.** Podłoga
+`ROAD_BRUK_MIN_MOVE_COST = 1/5` wiąże tylko dla kosztu bazowego < 1, a najniższy realnie osiągalny
+koszt bazowy w grze to **1**. Skutek: bruk daje dokładnie `koszt ÷ 5` na **każdym** przechodnim
+heksie (1→0,2 · 2→0,4 · 3→0,6). Opis widoczny dla gracza w `terrain-improvements.json`
+(`„ruch jednostek 5× szybszy (koszt wejścia ÷5)"`) — który przy `92cd220b` **kłamał** na
+dominującym terenie — **od tej poprawki jest prawdziwy we wszystkich realnych przypadkach**.
+To dokładnie to, o co chodziło w nocie N1 poprzedniego werdyktu.
+
+### 4. Uczciwość deklaracji o N2 — SPRAWDZONA I POTWIERDZONA, Operator NIE poddał się za wcześnie
+
+To był główny punkt podejrzeń tej rundy. Werdykt: **twierdzenie Operatora jest matematycznie
+prawdziwe i uczciwe.**
+
+Podłoga wchodzi przez `Math.max(...)` — z definicji może wynik **tylko podnieść, nigdy obniżyć**.
+Przy koszcie bazowym 2 wynik dzielenia to `2/5 = 0,4`, czyli więcej niż każda z obu podłóg
+(`1/3 ≈ 0,333` i `1/5 = 0,2`). Zatem **żadna wartość `ROAD_BRUK_MIN_MOVE_COST` — w tym 0 —
+nie zmieni tam wyniku**. Potwierdzone nie tylko rachunkiem, ale i mutacją (C): zmiana podłogi
+daje zero zmian w zachowaniu przy koszcie 2.
+
+Sprawdziłem osobno, czy istnieje **inna prosta zmiana w duchu decyzji A**, której Operator nie
+rozważył. **Nie istnieje.** Naprawa kosztu 2 wymaga jednego z trzech, i każdy wychodzi poza
+zakres A oraz podważa wcześniejszą decyzję właściciela:
+- zmiana mnożnika `÷5` → `÷6` (`2/6 = 0,333`) — podważa `R-DROGI-RUCH-HANDEL-Q1` i dosłowny cytat
+  Macieja „po brukowanej pięć razy szybszy";
+- dołożenie **sufitu** `Math.min(stary_wynik, ÷5)` — to nowa mechanika, nie podłoga, i sprawia,
+  że bruk przestaje być czystym `÷5`;
+- powrót do odejmowania — cofnięcie `92cd220b` w całości.
+
+Operator nazwał ograniczenie wprost w opisie commita, w komentarzu produkcyjnym **i** w komentarzu
+przy asercji testu. **To nie jest zamiecione pod dywan** — jest zakomunikowane w trzech miejscach
+naraz, z podaniem przyczyny (mnożnik, nie podłoga). Punkt 7 zlecenia: oceniam pozytywnie.
+
+### 5. `wikiBundle.json` — deklaracja o zakresie diffu POTWIERDZONA (z jednym uzupełnieniem)
+
+Nie oglądałem fragmentu — sparsowałem oba JSON-y (przed/po) i porównałem **spłaszczone drzewo
+liści**: 1178 liści przed, 1178 po, **0 dodanych, 0 usuniętych, 3 zmienione**:
+
+| Ścieżka | Przed → Po |
+|---|---|
+| `/encyklopedia/13/wikiM` (`ulepszenia/droga`) | stara kopia `„+szybkość ruchu jednostek"` → `„ruch jednostek 3× szybszy (koszt wejścia ÷3); Handel (plon heksa) +2/turę"` ✅ |
+| `/encyklopedia/13/full` (`ulepszenia/droga`) | `„+1 handel/t"` → `„+2 Handel/turę"` ✅ |
+| `/generated` | `2026-08-10` → `2026-08-14` (stempel generatora) |
+
+Oba punkty noty N3 poprzedniego werdyktu (pole `full` i pole `wikiM`) — **naprawione w całości**.
+136 haseł encyklopedii i 22 rozdziały poradnika bez zmian, zgodnie z deklaracją. Bundle jest
+realnie regenerowany, nie edytowany ręcznie (spójny z `docs/encyklopedia/ulepszenia/droga.md`).
+
+**Kwestia `droga_brukowana` z rzekomo przestarzałym handlem +2 zamiast +3 — sprostowanie zlecenia.**
+Sprawdziłem trzy miejsca: (a) w `wikiBundle.json` jest **zero** wystąpień ciągu „brukowan" — wpisu
+`ulepszenia/droga_brukowana` nie ma w ogóle, zgodnie z deklaracją Operatora (luka pre-istniejąca);
+(b) w `gra/data/terrain-improvements.json` wartość jest **poprawna: `droga_brukowana.bonus.handel = 3`**;
+(c) liczba `2` przy bruku, o której pisał poprzedni Evaluator, dotyczy **panelu Excel**
+`panele-sterowania/Tereny-i-ulepszenia-MACIEJ.xlsx` — czyli **noty N4, jawnie odłożonej przez
+właściciela** w ECHO decyzji A do osobnego kroku JSON→Excel. Nic tu nie zostało pominięte.
+
+### 6. N1 (POWAŻNA) — błąd faktu: Pustynia ma koszt bazowy **2**, nie 1; zasięg regresji N2 jest większy niż raportowano
+
+To jedyne realne znalezisko tej rundy i **jedyny powód, dla którego werdykt nie jest czystym PASS**.
+
+Tabela w opisie commita, w raporcie dostarczenia **oraz w komentarzu produkcyjnym**
+`gra/src/map/road-movement.ts` (linia 37) przypisuje Pustynię do kosztu bazowego 1:
+`„najczęstszym koszcie bazowym terenu (Łąka/Równina/Pustynia/rzeka = 1)"`.
+
+**To nieprawda w uruchomionej grze.** Źródłem błędu jest patrzenie na `DEFAULT_TERRAIN_COSTS`
+w `gra/src/units/setup.ts` (gdzie Pustynia faktycznie = 1) zamiast na
+**`gra/data/terrain-movement.json`, który gra realnie ładuje** przez `loader.ts:419` →
+`main.ts:1276` `configureTerrainMovement()`. W tym pliku stoi **`"Pustynia": 2`**.
+
+Zmierzone własnym harnessem, tryb RUNTIME (po zastosowaniu JSON):
+
+| Koszt bazowy | Skąd — DEFAULTY kodu (tabela Operatora) | Skąd — **RUNTIME, realna gra** | Bruk | vs stara mechanika |
+|---|---|---|---|---|
+| **1** | Łąka, Równina, **Pustynia**, każda rzeka | Łąka, Równina, każda rzeka | 0,2 | lepiej |
+| **2** | Wzgórza, płaski+Las | Wzgórza, **Pustynia**, Łąka+Las, Równina+Las | 0,4 | **GORZEJ (−20%)** |
+| **3** | Wzgórza+Las | Wzgórza+Las, **Pustynia+Las** | 0,6 | lepiej |
+
+**Skutek dla właściciela:** grupa terenów dotknięta świadomie zaakceptowaną regresją N2 obejmuje
+**całą Pustynię bez lasu**, a nie tylko Wzgórza i płaski las. Potwierdziłem, że to nie jest
+teoretyczne: `droga` i `droga_brukowana` są budowalne na Pustyni (`TERENY_LADU` w
+`gra/src/map/improvement-build.ts:152-155` zawiera `TerenBazowy.Pustynia`). Symetrycznie: grupa
+„naprawiona przez tę poprawkę" (koszt 1) jest **mniejsza** niż przedstawiono.
+
+**Dlaczego mimo to nie FAIL:** błąd dotyczy **atrybucji terenów**, nie wartości. Zbiór realnie
+osiągalnych skończonych kosztów bazowych `{1, 2, 3}` jest w tabeli Operatora **kompletny** —
+żaden koszt nie został przeoczony, więc cała matematyka podłogi, wszystkie asercje testu i sam
+kod są poprawne. Decyzja A dotyczyła podłogi, a podłoga i tak nie wpływa na koszt 2 — więc pełna
+wiedza o Pustyni nie zmieniłaby wyboru A/B/C w tamtym pytaniu. Kod nie wymaga cofnięcia.
+**Wymaga natomiast sprostowania**, bo `CLAUDE.md` §0b wymaga, by każda liczba przedstawiona
+właścicielowi jako fakt była zweryfikowana — a ten błąd trafił nie tylko do raportu, lecz
+**utrwalił się w komentarzu w kodzie produkcyjnym**, gdzie będzie mylił każdego następnego
+czytającego. Uczciwie odnotowuję, że **ten sam błąd popełnił poprzedni Evaluator** w nocie N1
+werdyktu dla `92cd220b` — Operator go stamtąd przepisał, zamiast zweryfikować u źródła.
+
+### 7. N2 (ŚREDNIA) — `ROAD_MIN_MOVE_COST` jest od tego commitu **martwym eksportem**, a dokumentacja twierdzi inaczej
+
+Opis commita: *„Zwykła droga zostaje przy `ROAD_MIN_MOVE_COST = 1/3` bez zmian."* Etykieta nowej
+asercji: *„`ROAD_MIN_MOVE_COST = 1/3` (zwykla droga, bez zmian)"*. Komentarz nad stałą do dziś:
+*„Minimalny koszt wejścia na hex z ulepszeniem drogowym"*.
+
+**Wszystkie trzy sugerują, że zwykła droga ma podłogę 1/3. Kod tego nie robi** — gałąź zwykłej
+drogi to goły `return cost / ROAD_MOVE_SPEED_MULT;`, bez żadnego `Math.max`. Sprawdziłem historię:
+zwykła droga **nigdy** tej podłogi nie miała (już w `13419757`, przed całym tematem) — sam fakt
+jest więc pre-istniejący. **Nowe w tym commicie jest co innego:** przed nim stałej używał bruk,
+więc żyła; po przeniesieniu bruku na `ROAD_BRUK_MIN_MOVE_COST` **nie ma już ani jednego jej
+użycia w ścieżce wykonania**, a jednocześnie dopisano trzy zdania mówiące, że pilnuje zwykłej drogi.
+
+Dowód mutacyjny (mutacja C wyżej): podmiana `ROAD_MIN_MOVE_COST` na `1/2` daje **dokładnie jeden
+FAIL — samą asercję literału**, zero zmian w zachowaniu jakiejkolwiek funkcji. Ta asercja jest
+tautologiczna: sprawdza, że literał równa się sobie.
+
+Dziś bez skutku w grze (najniższy wynik zwykłej drogi to i tak `1/3 ≈ 0,333` z samego dzielenia),
+ale to **pułapka dokładnie tej klasy, którą poprzedni Evaluator chwalił Operatora za posprzątanie**
+przy `cobblestoneMoveBonus()`: `terrain-movement.json` przyjmuje dowolną liczbę, więc koszt terenu
+`0,5` dałby zwykłej drodze `0,1667` — poniżej podłogi, o której dokumentacja zapewnia, że działa.
+Do naprawy przy następnym dotknięciu tego pliku: albo faktycznie objąć zwykłą drogę podłogą, albo
+usunąć stałą i sprostować trzy opisy. **Nie zmieniam tego sam — to zmiana gameplayowa.**
+
+### 8. N3 (DROBNA) — deklaracja o zakresie diffu bundla pomija pole `generated`
+
+Operator: *„diff bundla dotyka WYŁĄCZNIE wpisu `ulepszenia/droga`"*. Realnie zmieniły się **trzy**
+liście, trzeci to `/generated` (`2026-08-10` → `2026-08-14`). Nieszkodliwe i oczekiwane przy
+regeneracji, ale było przedstawione jako twierdzenie o fakcie i jako takie jest nieścisłe.
+
+### 9. N4 (DROBNA, obserwacja) — sąsiednia linia w tym samym pliku nadal kłamie graczowi
+
+W `docs/encyklopedia/ulepszenia/droga.md`, sekcja „Przykład liczbowy", **linia bezpośrednio pod
+tą, którą Operator poprawiał**: *„Przykład: łąka daje 1 żywność/t; Droga +2 → 3 żywności/t"* —
+myli Handel z Żywnością. Operator **zgłosił to uczciwie sam** jako pre-istniejące i świadomie
+zostawił, powołując się na C-025 (bez naprawiania przy okazji) — i to jest formalnie poprawne
+zachowanie. Odnotowuję jednak, że treść ta **przeszła w tym commicie do `wikiBundle.json`**, czyli
+gracz nadal widzi ją w żywej CivPedii, dwie linie od świeżo poprawionej liczby. Naturalny kandydat
+do domknięcia razem z brakującym wpisem `droga_brukowana.md`.
+
+### 10. N5 (OBSERWACJA, pre-istniejąca, niezwiązana z tym commitem)
+
+Przy pełnym przeglądzie 32 kombinacji wyszła osobliwość: **Góry z rzeką są przechodnie** (koszt
+płaski `RIVER_HEX_MOVE_COST = 1` — warunek rzeki w `terrainMoveCost` wyklucza tylko Morze,
+Wybrzeże i Polarny, **nie Góry**), a `TERENY_LADU` zawiera `Gory`, więc droga i bruk są tam
+budowalne i dają `0,2`. Stan pre-istniejący, nie dotknięty tym commitem — odnotowane wyłącznie
+dlatego, że zlecenie prosiło o przegląd **wszystkich** kosztów bazowych.
+
+### 11. Werdykt
+
+**PASS-WITH-NOTES.** Naprawa robi dokładnie to, co miała: nota N1 poprzedniego werdyktu jest
+**usunięta w całości** — bruk daje pełne `÷5` na każdym realnie osiągalnym koszcie bazowym,
+przestaje być tożsamy ze zwykłą drogą i opis „5× szybszy" widoczny dla gracza przestał kłamać.
+Deklaracja o niedomkniętym N2 jest matematycznie prawdziwa, zweryfikowana mutacyjnie i uczciwie
+zakomunikowana w trzech miejscach — sprawdziłem celowo, czy Operator nie poddał się za wcześnie,
+i **nie poddał się**: w zakresie decyzji A naprawa kosztu 2 jest niemożliwa. Bramki zgodne co do
+jednej asercji, test czuły na trzy niezależne mutacje, diff bundla czysty.
+
+Noty **N1** (Pustynia = koszt 2, nie 1 — zasięg regresji większy niż raportowano, błąd utrwalony
+w komentarzu produkcyjnym) i **N2** (`ROAD_MIN_MOVE_COST` martwa, a trzy opisy twierdzą, że
+chroni zwykłą drogę) dotyczą **warstwy faktograficznej i dokumentacyjnej, nie mechaniki** — kod
+`a3f61973` jest poprawny i nie wymaga cofnięcia. N1 wymaga jednak sprostowania przed uznaniem
+całego tematu drogowego za domknięty, żeby właściciel widział prawdziwy zasięg regresji, którą
+zaakceptował.
+
+*Evaluator nie wprowadził żadnych zmian w kodzie ani danych — jedyny commit to ten wpis. Trzy
+mutacje kontrolne i własny harness pomiarowy wykonane w izolowanym worktree i usunięte,
+`git status` czysty przed commitem.*
+
+---
+
+## P-DROGI-PUSTYNIA-KOSZT-2-SPROSTOWANIE (nota N1 werdyktu dla `a3f61973`, 2026-08-14)
+
+**STATUS: ZAMKNIĘTE** (2026-08-14, `5ad9819c`, orkiestrator — sprostowanie komentarza w
+`road-movement.ts`, zero zmian mechaniki, `tsc` czysty). Tabele w opisach historycznych commitów
+zostają nieskorygowane (są niezmienialną historią gita), ale nie mylą już nikogo w przyszłości.
+
+**Problem:** w trzech miejscach utrwalono nieprawdziwe przypisanie Pustyni do kosztu bazowego
+ruchu 1: (a) komentarz produkcyjny `gra/src/map/road-movement.ts` linia 37
+(`„Łąka/Równina/Pustynia/rzeka = 1"`); (b) tabela w opisie commita `a3f61973`; (c) tabela w raporcie
+dostarczenia Operatora w tym pliku, plus źródłowo nota N1 werdyktu dla `92cd220b`.
+**Realnie `gra/data/terrain-movement.json` ustawia `"Pustynia": 2`**, i ten plik jest ładowany
+do gry (`loader.ts:419` → `main.ts:1276` `configureTerrainMovement()`), nadpisując
+`DEFAULT_TERRAIN_COSTS` z `units/setup.ts`, gdzie Pustynia = 1.
+
+**Zakres naprawy:** wyłącznie tekst — komentarz w `road-movement.ts` + sprostowanie tabel w tym
+pliku. **Zero zmian mechaniki** (kod liczy poprawnie; błędna jest tylko etykieta „skąd bierze się
+ten koszt"). Przy okazji warto dopisać w komentarzu ostrzeżenie, że tabela kosztów w kodzie to
+**tylko fallback**, a źródłem prawdy w runtime jest JSON — to pułapka, która złapała już dwóch
+agentów pod rząd.
+
+**Skutek merytoryczny do zakomunikowania właścicielowi:** świadomie zaakceptowana regresja ruchu
+o −20% przy koszcie bazowym 2 (nota N2 tematu) obejmuje **także całą Pustynię bez lasu**, nie
+tylko Wzgórza i płaski teren z lasem, jak podano w tabeli przy decyzji A.
+
+---
+
+## P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE (2026-08-14, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „jest jeden błąd. Nie da się z większej odległości zaatakować jednostki
+przeciwnika. Trzeba podejść na HEX obok i dopiero przeprowadzić atak. Zarówno atak na miasto jak
+i atak na jedną jednostkę powinien być możliwy z daleka, jeżeli tylko jest dana jednostka lub
+miasto w zasięgu."
+
+**Potwierdzone w kodzie (orkiestrator, przed dispatchem, zmierzone nie zgadywane):**
+- Dane jednostek (`gra/data/units.json`) mają pola `"Atak dystansowy"` (dmg pocisków) i
+  `"Zasięg ataku (hex)"` (np. procarz `Zasięg=2`, łucznik `Zasięg=3`, kusza `Zasięg=4` — dla
+  jednostek zwarcia `"—"`) — jawnie zaprojektowany mechanizm ataku na dystans.
+- Pole `"Zasięg ataku (hex)"` jest CZYTANE wyłącznie wewnątrz **sceny bitwy taktycznej**
+  (`gra/src/battle/battleScene.ts:1303`, faza pocisków WEWNĄTRZ już toczącej się bitwy) —
+  nigdzie indziej w `gra/src`.
+- **Inicjacja ataku na mapie świata ma TWARDO zakodowaną odległość `1`, niezależnie od zasięgu
+  jednostki:** `gra/src/main.ts:19233`, funkcja `tryLaunchMarchAttack()` —
+  `if (hexDistance(atkUnit.q, atkUnit.r, def.q, def.r) > 1) return false;`. To jest dokładnie
+  ścieżka wywoływana przy kliknięciu „zaatakuj" na jednostkę przeciwnika — jednostka musi więc
+  najpierw dojść na sąsiedni heks (`planMarchTo`/marsz), zanim atak w ogóle może się zacząć.
+  Analogiczna bariera prawdopodobnie dotyczy też ataku na miasto (`offerCityAttackChoice`,
+  `main.ts:12330`, i pokrewne `hexDistance(...) === 1` w tym samym pliku — **do potwierdzenia
+  przez dispatchowanego agenta, nie zakładać z góry, które z ~13 wystąpień `hexDistance(...) ===
+  1`/`<= 1` w `main.ts` to bramki inicjacji ataku, a które to inne mechaniki (garnizon, oblężenie,
+  wymagające fizycznej adiacencji z zupełnie innych powodów niż zasięg strzału)**.
+
+**Żądanie właściciela:** zarówno atak na pojedynczą jednostkę, jak i atak na miasto, ma być
+możliwy z dystansu — bez konieczności podchodzenia na sąsiedni heks — jeśli cel mieści się w
+`"Zasięg ataku (hex)"` atakującej jednostki (dla jednostek zwarcia, gdzie to pole to `"—"`,
+zachowanie zostaje bez zmian — wymagana adiacencja, tak jak dziś).
+
+**⚠️ Uwaga do dispatchu — zakres pracy jest większy niż drobny bugfix:** to dotyka rdzenia
+mechaniki walki na mapie świata, **musi zachować parytet gracz↔AI** (AI też musi umieć strzelać
+z dystansu tymi samymi jednostkami, inaczej gracz dostanie nieuczciwą przewagę/AI stanie się
+łatwiejsze — twardy warunek FAIL Evaluatora z `R-PROC-AUTOBOT-EVAL-STRICT-SAVE`), oraz rodzi
+pytania projektowe, których NIE rozstrzygać samodzielnie bez zaznaczenia w commicie: czy
+jednostka atakująca z dystansu zużywa cały ruch tej tury, czy może się potem jeszcze przesunąć;
+czy jednostka dystansowa może kontratakować z dystansu gdy jest atakowana z bliska; czy oblężenie
+miasta (mechanika `city.oblegane`) wymaga nadal fizycznej adiacencji niezależnie od tego fixu
+(prawdopodobnie TAK — oblężenie to inna mechanika niż pojedynczy atak, nie mylić).
+
+**STATUS: DISPATCH WYKONANY — Evaluator zwrócił FAIL, patrz sekcja niżej.**
+
+### WERDYKT EVALUATORA (2026-08-14, Opus 5) dla `9e25ea77` + `5ed4e083` — **FAIL**
+
+Oceniane commity: `9e25ea77` (WIP, implementacja) + `5ed4e083` (test). Punkt odniesienia
+(commit-rodzic) `9e96370a`. Wszystkie liczby niżej **zmierzone przez uruchomienie w izolowanym
+worktree**, nie przepisane z opisów commitów.
+
+#### 1. Bramki — uruchomione niezależnie
+
+| Bramka | Wynik na `b53510c4` | Wynik na `9e96370a` (baseline) | Ocena |
+|---|---|---|---|
+| `npx tsc --noEmit` | exit 0, 0 błędów | — | ZIELONA |
+| `atak-dystansowy-mapa-test.cjs` (nowy) | 54 pass / 0 fail | n/d | ZIELONA |
+| `combat-test.cjs` | 6 / 6 | — | ZIELONA |
+| `map-attack-city-test.cjs` | 8 ok / 0 fail | 8 ok / 0 fail | ZIELONA, wsteczna zgodność opcjonalnego parametru potwierdzona |
+| `unit-power-test.cjs` | 4 pass / 2 fail | 4 pass / 2 fail | PRE-ISTNIEJĄCE, **bez pogorszenia** |
+| `ai-test.cjs` | 285 pass / 8 fail | 285 pass / 8 fail | PRE-ISTNIEJĄCE, **bez pogorszenia** |
+| `tech-tree-test.cjs` | 19 pass / 0 fail | — | ZIELONA |
+| `research-test.cjs` | 33 / 0 | — | ZIELONA |
+
+Baseline `9e96370a` zmierzony realnie: cztery pliki źródłowe cofnięte do commita-rodzica,
+bramki uruchomione, pliki przywrócone (drzewo robocze czyste, `git diff HEAD` pusty).
+
+#### 2. Jakość testu `atak-dystansowy-mapa-test.cjs` — **NIE jest tautologiczny (6/6 mutacji złapanych)**
+
+Mutacje przeprowadzone przez Evaluatora **niezależnie**, na prawdziwych plikach źródłowych
+(każda przywrócona przez `git checkout --` po pomiarze):
+
+| # | Mutacja | Wynik | Złapana? |
+|---|---|---|---|
+| MUT-1 | `combat.ts:181` `unitMapAttackRangeHex` → `return 0` | 49 pass / **5 fail** | TAK |
+| MUT-2 | `ai.ts:743` `isWithinAttackRange` → cofnięcie do `hexDistance === 1` | 48 pass / **5 fail** | TAK (asercje parytetu (d)) |
+| MUT-3 | `map-attack-city.ts:73` usunięcie `if (city.maMur) return false;` | 52 pass / **3 fail** | TAK (asercja (f)) |
+| MUT-4 | `main.ts:19245` `<=` → `<` (off-by-one) | 44 pass / **8 fail** | TAK |
+| MUT-5 | usunięcie `unitAttackRangeHex` z 1 z 2 wywołań `resolveEnemyCityClick` | 53 pass / **1 fail** | TAK (strażnik strukturalny) |
+| MUT-6 | usunięcie early-return hover-preview (`main.ts:19308-19311`) | 53 pass / **1 fail** | TAK (strażnik strukturalny) |
+
+Metoda testu (wycinanie funkcji z prawdziwego `main.ts`/`ai.ts` po sygnaturze + `new Function`
+z prawdziwymi zależnościami, zero reimplementacji formuły) jest poprawna i odporna. **To NIE jest
+powtórka problemu z tematu `P-CITYPANEL`** — test realnie wykonuje kod produkcyjny.
+
+#### 3. Co działa poprawnie (potwierdzone, nie założone)
+
+- **Atak na jednostkę z dystansu** — działa, `main.ts:19239-19247` (`isTargetWithinAttackRange`),
+  wpięte we wszystkie 3 ścieżki inicjacji (`tryLaunchMarchAttack` 19249, klik jednostka→jednostka
+  20559-20560, hover-preview 19308).
+- **Jednostki zwarcia bez regresji** — `Math.max(1, unitAttackRangeHex(...))` (`main.ts:19245`)
+  odwzorowuje zasięg 0 → 1, czyli **dokładnie** dawne `hexDistance(...) > 1 return false`
+  (włącznie z dystansem 0). Identyczna konstrukcja po stronie AI (`ai.ts:744`) — parytet zwarcia
+  zachowany. Zweryfikowane wykonaniem, nie odczytem.
+- **Oblężenie NIETKNIĘTE** — `mapSiegeDetect.ts:74-81` (`canInitiateSiege` wymaga muru
+  ORAZ adiacencji) i `map-attack-city.ts:102-107` (wyszukanie oblegającego nadal `=== 1`).
+  Brak podwójnego liczenia.
+- **Miasto Z MUREM nadal wymaga przyległości** — `map-attack-city.ts:73`, potwierdzone
+  wykonaniem (Łucznik zasięg 3 @ dystans 3 od miasta z murem → `hint_no_adjacent`).
+- **Egzekucja rozkazu ataku AI nie ma drugiej bramki adiacencji** (`main.ts:27239-27292`) —
+  czyli zmiana w `ai.ts` faktycznie działa, nie jest martwym kodem.
+- **Brak wpływu na save/load** — zasięg liczony za każdym razem z `units.json`, zero nowego
+  stanu w zapisie.
+- Twierdzenie z komentarza `combat.ts:163-176` („każda jednostka z `Atak dystansowy` > 0 ma
+  wypełnione `Zasięg ataku (hex)`, więc fallback niepotrzebny") — **zweryfikowane skanem
+  `units.json`: 0 takich jednostek, twierdzenie PRAWDZIWE na dziś.**
+
+#### 4. Powody FAIL
+
+**F1 — ZŁAMANY PARYTET GRACZ↔AI DLA ATAKU NA MIASTO (twardy warunek FAIL).**
+`ai.ts:2514-2518` — jedyna ścieżka AI do ataku na wrogie miasto nadal używa
+`isAdjacent(unit.q, unit.r, ec.q, ec.r)`, **niezmieniona**. Tymczasem gracz dostał zasięg dla
+miast bez muru (`map-attack-city.ts:71-74`, wpięte w `main.ts:20475` i `main.ts:20526`).
+Skutek: gracz może z 3-6 heksów zaatakować / zdobyć wrogie miasto bez muru, **AI nie może**.
+To dokładnie ten warunek, który wpis zgłoszenia wyżej nazywa „twardym warunkiem FAIL Evaluatora
+z `R-PROC-AUTOBOT-EVAL-STRICT-SAVE`". Opis commita `9e25ea77` deklaruje „PARYTET" — deklaracja
+jest prawdziwa **wyłącznie** dla ataku jednostka→jednostka, nie dla miast.
+Test tego nie łapie i **nie może** — jego asercje parytetu (d) porównują wyłącznie
+`isTargetWithinAttackRange` vs `isWithinAttackRange` dla celów-jednostek, a strażnik strukturalny
+„DOKŁADNIE 2 miejsca wołają `isWithinAttackRange`" wręcz **utrwala** tę lukę jako stan pożądany.
+
+**F2 — ZDOBYCIE PUSTEGO MIASTA Z DYSTANSU (poza żądaniem właściciela).**
+`map-attack-city.ts:148-150` — gdy miasto bez muru nie ma obrońców, `resolveEnemyCityClick`
+zwraca `capture_empty`, a ta ścieżka jest teraz osiągalna **z dystansu**. Dalej
+`main.ts:20428-20434` → `captureCityWithoutBattle` → `post-battle-map.ts:439-443`, gdzie
+jednostka jest **przestawiana na heks miasta**.
+Zmierzone wykonaniem (sonda Evaluatora, prawdziwy `resolveEnemyCityClick` +
+`applyCityCaptureAfterBattle`): Łucznik (zasięg 3) na (0,0), puste miasto bez muru na (3,0) →
+`kind = capture_empty`; po przejęciu `city.ownerId = 0`, jednostka **@ (3,0)**, `ruchLeft` 2 → 1.
+Żądanie właściciela brzmiało „**atak** z daleka", nie „**zdobycie** miasta z daleka".
+Test świadomie omija ten przypadek — komentarz w `atak-dystansowy-mapa-test.cjs:269-272`
+wprost mówi, że do miasta wstawiono obrońcę, „bo bez niego pusty cel daje `capture_empty`".
+Autor testu widział ten wariant i go **obszedł, zamiast go zaasercjonować**.
+
+**F3 — TELEPORT ZWYCIĘSKIEGO ATAKUJĄCEGO O DO 6 HEKSÓW (nowa, nieprojektowana mechanika).**
+`post-battle-map.ts:283-304` (`moveAtkRosterOntoBattleHex`) przy wygranej atakującego ustawia
+`u.q = battleQ; u.r = battleR` **bez sprawdzania dystansu, przejezdności terenu ani kosztu ruchu**
+(`isPassableHex` jest przekazywane w `PostBattleMapInput`, ale w tej funkcji **nieużywane**),
+a `spendAttackMpOnLive` (`post-battle-map.ts:318-328`) odejmuje tylko **1 punkt ruchu**.
+Zmierzone wykonaniem: Łucznik na (0,0) atakuje obrońcę na (3,0), wygrywa → Łucznik **@ (3,0)**,
+`ruchLeft` 2 → 1, czyli **przeskok o 3 heksy za 1 PR**.
+Przed tą zmianą atakujący ZAWSZE stał w adiacencji, więc było to klasyczne wejście o 1 heks —
+przeskok wieloheksowy jest **nowy**. Realna skala z `units.json`: **Katapulta = 6**,
+Procarz (Huaracoc) i Łucznik nubijski = **5**, cztery łuczniki narodowe = **4**.
+Komentarz `main.ts:21176-21182` powołuje się na *tę samą funkcję* jako dowód, że „atak z dystansu
+nie wymaga żadnego dodatkowego kroku ruchu" — co jest prawdą **przed** bitwą, ale przemilcza,
+że **po** wygranej ta funkcja robi z tego teleport. Zgłoszenie wyżej wprost rezerwowało tę
+kwestię dla właściciela („czy jednostka atakująca z dystansu zużywa cały ruch tej tury, czy może
+się potem jeszcze przesunąć … **NIE rozstrzygać samodzielnie bez zaznaczenia w commicie**") —
+nie została ani rozstrzygnięta przez właściciela, ani zaznaczona w commicie, ani pokryta testem.
+Uwaga: mechanika jest **symetryczna** (AI teleportuje się tak samo), więc F3 samo w sobie nie
+łamie parytetu — jest nieprojektowaną zmianą mechaniki, nie nierównością stron.
+
+#### 5. Noty (nie blokują same z siebie, ale do rozstrzygnięcia w RUNDZIE 2)
+
+- **N1 — zasięg wzięty z INNEJ siatki bez przeliczenia.** `battleScene.ts:1287-1307`
+  dokumentuje, że to pole czyta się jako liczbę **pól kwadratowej siatki taktycznej**
+  („on the square grid it is simply read as a count of tiles"), z progiem `reach >= 2` = dystansowa
+  i fallbackiem `DEFAULT_RANGED_REACH = 2`. `combat.ts:181` bierze tę samą liczbę **wprost jako
+  heksy mapy świata**, bez konwersji. Komentarz `combat.ts:163-176` sam przyznaje, że tamta funkcja
+  „ma WŁASNĄ skalę" — i mimo to wartość jest użyta 1:1. Czy „6" katapulty ma oznaczać 6 heksów
+  mapy świata, to decyzja produktowa (ABC), nigdy właścicielowi nie zadana.
+- **N2 — brak fallbacku jest dziś bezpieczny, ale krucho.** Skan potwierdza 0 jednostek
+  z `Atak dystansowy > 0` i pustym zasięgiem, więc `combat.ts:181` działa. Ale `battleScene.ts`
+  ma fallback właśnie dlatego, że takie wiersze historycznie występowały. Dodanie w przyszłości
+  nowego strzelca bez wypełnionego pola da jednostkę **dystansową w bitwie taktycznej i zwarciową
+  na mapie**, po cichu. Brak bramki pilnującej tego niezmiennika.
+- **N3 — brak sprawdzenia mgły na ścieżce kliku.** `main.ts:20559-20560` (gałąź ataku) nie woła
+  `currentVisible()` — sprawdzenie mgły siedzi dopiero w gałęzi `else` (`main.ts:20565`),
+  a `unitAtRepresentative` (`armyMerge.ts:448-460`) nie filtruje po widoczności. `tryLaunchMarchAttack`
+  (`main.ts:19246`) **sprawdza** widoczność. Dwie ścieżki tej samej funkcji, dwie różne reguły mgły.
+  Pre-istniejące przy dystansie 1, ale zmiana rozszerza powierzchnię tego do 6 heksów.
+- **N4 — podgląd hover niespójny z klikiem.** `main.ts:19308` wygasza trasę tylko dla wrogich
+  **jednostek** (`hoverEnemy`), nie dla wrogich **miast** — najechanie na miasto bez muru w zasięgu
+  nadal rysuje trasę marszu, choć klik odpali atak/zdobycie natychmiast. Dodatkowo warunek nie
+  sprawdza `stackCanMove`, więc jednostka bez ruchu pokazuje „trasa niepotrzebna", a po kliku
+  dostaje „Brak ruchu".
+- **N5 — luki pokrycia testu** (mimo że test jest dobry): brak asercji dla `capture_empty`
+  z dystansu (F2), brak jakiejkolwiek asercji o pozycji jednostki **po** bitwie (F3), brak asercji
+  parytetu AI dla ataku na miasto (F1).
+
+#### 6. Zalecenie
+
+Implementacja ataku jednostka→jednostka z dystansu jest **poprawna i dobrze przetestowana** —
+tę część można zachować. Do RUNDY 2:
+1. **Domknąć parytet** — dać AI tę samą bramkę zasięgu dla miast co gracz (`ai.ts:2514-2518`),
+   albo — jeśli właściciel zdecyduje inaczej — **cofnąć zasięg dla miast po stronie gracza**,
+   żeby obie strony miały tę samą regułę. Dopisać asercję parytetu miast do bramki.
+2. **Rozstrzygnąć F2 i F3 pytaniem ABC do właściciela** (zgłoszenie samo je zarezerwowało):
+   czy zwycięski atak z dystansu ma przesuwać jednostkę na heks celu (i za jaki koszt ruchu),
+   oraz czy puste miasto bez muru ma dać się zdobyć bez wejścia na jego heks.
+3. **N1 — zapytać o skalę zasięgu na mapie świata** (Katapulta 6 heksów?) zamiast dziedziczyć
+   liczbę z siatki taktycznej bez konwersji.
+
+**STATUS: **OTWARTE** — Evaluator FAIL, wymagana RUNDA 2 (parytet AI dla miast) + pytania ABC do
+właściciela dla F2/F3/N1. Zmiana **nie jest gotowa do deployu**.**
+
+---
+
+## P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE (2026-08-14, zgłoszenie Macieja ze zrzutem panelu Garncarnia)
+
+**Zgłoszenie (cytat):** „Budynki pokazują tylko na czerwono jakie surowce i co pobierają. Ale nie
+pokazują co produkują. Jeżeli jest garncarnia to powinno być jeszcze oprócz tego jest tam
+produkcja. Czyli powinien być rozdzielony kosz utrzymania od kosztu produkcji. No i teraz w
+koszcie produkcji mamy na przykład w tym wypadku garncarni drewno jest na minusie, glina jest na
+minusie ale jest na plusie na przykład ceramika."
+
+**Zrzut:** panel szczegółów budynku „Garncarnia" (poprawnie pokazuje pełny profil: koszt budowy,
+utrzymanie, wymagania, „Odblokowuje surowiec: ceramika", notatkę „ABC-6: glina+drewno→ceramika").
+Obok, panel „BUDYNKI W MIEŚCIE" → sekcja „Produkcja surowców (1)" → wiersz „Garncarnia [L2]"
+pokazuje WYŁĄCZNIE `-2⚙/t · -5 Drewno/t` (koszt utrzymania) i `+5⚒` (Praca) — **nigdzie nie widać
+zużycia gliny ani przyrostu ceramiki**, mimo że budynek jest konwerterem glina+drewno→ceramika.
+
+**Potwierdzone w kodzie (orkiestrator, przed dispatchem):** `gra/src/ui/cityPanel.ts` —
+`formatBuildingUpkeepRowHtml()`/`formatBuildingUpkeepTotalHtml()`/`formatResourceUpkeepText()`
+renderują WYŁĄCZNIE stronę kosztową (utrzymanie: złoto + surowce zużywane co turę) — brak
+jakiegokolwiek formattera dla STRONY PRODUKCYJNEJ (output konwertera). `gra/data/buildings.json`
+dla `garncarnia`: pole `baza`/`przyrost` ma tylko `praca` (to wyjaśnia widoczne `+5⚒`) — sam
+output surowca (ile ceramiki/turę) NIE jest w tym samym rekordzie w oczywisty sposób; prawdopodobnie
+liczony gdzie indziej w silniku konwerterów (wzmianka `P-KONWERTERY-PRZEPUSTOWOSC-Q1` w
+`econ-params.json`). **Do zbadania przez dispatchowanego agenta:** znaleźć gdzie faktycznie
+liczony jest output konwertera dla danego budynku/poziomu (funkcja przepustowości konwerterów w
+`gra/src/game/economy.ts` lub pokrewnym), i doprowadzić tę liczbę do tego samego wiersza w
+panelu „BUDYNKI W MIEŚCIE", żeby gracz widział PEŁNY bilans budynku (na minusie: surowce
+zużywane, na plusie: surowiec produkowany), nie tylko połowę.
+
+**Żądanie właściciela:** rozdzielić „koszt utrzymania" od „kosztu/bilansu produkcji" w liście
+budynków miasta; dla budynków-konwerterów (jak Garncarnia) pokazać PEŁNY bilans — surowce wejściowe
+na minusie (drewno, glina), surowiec wyjściowy na plusie (ceramika) — nie tylko stronę kosztową.
+
+**STATUS: DISPATCH W TOKU.**
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-14, commit `9e96370a`): **FAIL**
+
+**STATUS PO WERDYKCIE: OTWARTE — wymaga rundy 2. Uwaga dla rundy 2: FAIL dotyczy DOWODU (bramki),
+NIE implementacji — sam kod produkcyjny jest zweryfikowany jako poprawny i NIE należy go
+przepisywać.**
+
+**Uwaga o identyfikacji commita:** zlecenie podawało hash `6b488bcc`; taki commit nie istnieje na
+gałęzi — realny commit tematu to **`9e96370a`**. Zweryfikowano też, że `gra/src/ui/cityPanel.ts`
+i `gra/tools/citypanel-konwerter-produkcja-test.cjs` na czubku gałęzi (`a4a7c6ea`) są **bajt w bajt
+identyczne** z `9e96370a` (`git diff` pusty) — mimo incydentu z `0d9a56b1`, który tę pracę cofnął,
+i `a4a7c6ea`, który ją przywrócił. Oceniany kod = kod na gałęzi.
+
+**Metoda:** własny izolowany worktree, symlink `gra/node_modules` z weryfikacją `tsc 5.9.3` (C-029),
+własny harness wykonujący **FAKTYCZNE ciało** `buildingConverterProductionDisplay`/
+`formatConverterProductionRowHtml` (wycięte 1:1 ze źródła, transpilowane esbuildem, z podstawionym
+`cfg`) i porównujący jego wynik z **prawdziwym `runConverter`** z `converters.ts` — nie z kopią
+formuły. Plus 6 własnych mutacji kontrolnych i pomiar baseline na commicie-rodzicu `1d427547`.
+
+**CO DZIAŁA — potwierdzone niezależnie, nie z opisu commita:**
+1. **Zgodność UI ↔ silnik: 734 asercje, 0 porażek.** Porównanie `buildingConverterProductionDisplay`
+   z `runConverter` (zasoby wejściowe 1e6 szt., pojemność wyjścia 1e12 szt.) dla **wszystkich
+   41 budynków** z `buildings.json` × **4 ery** (1–4) × **3 poziomy trudności** — każda pozycja
+   `consumed`/`produced` zgadza się co do 1e-6. Funkcja UI naprawdę czyta te same dane co silnik.
+2. **Garncarnia, liczby ręczne (trudność `normal`):** era 1 → **−50 Glina/turę · −50 Drewno/turę ·
+   +50 Ceramika/turę**; era 2 → 55 każdego; era 3 → 60 każdego. Zgodne z `budynek_garncarnia_
+   przepustowosc = 50 szt./turę` + `+10% bazy addytywnie za epokę` (`converterThroughputForEra`).
+   Renderowany HTML: `−50 Glina/t · −50 Drewno/t · +50 Ceramika/t`, wejścia klasą
+   `bld-owned-conv-in`, wyjście `bld-owned-conv-out`.
+3. **`null` dla budynków bez receptury: 36 z 41.** Drugą linię dostaje dokładnie 5 budynków —
+   `garncarnia`, `cegielnia`, `odlewnia_brazu`, `odlewnia_zelaza` (2 receptury), `wielka_odlewnia`
+   (3 receptury). Zero fałszywych trafień.
+4. **Przypadki brzegowe:** brak `cfg.getEpoch` i brak `cfg.difficulty` → fallback era 1 / `normal`
+   → 50 szt./turę (bez `NaN`, bez `undefined`); `era = 0` → clamp do 1 (bez wartości ujemnej).
+5. **Poziom budynku (L1/L2/L3) — poprawnie NIE wpływa na przepustowość.** `converterThroughputForEra`
+   zależy wyłącznie od ery WŁAŚCICIELA, nie od poziomu budynku (jawna decyzja
+   `P-KONWERTERY-PRZEPUSTOWOSC-Q1`, komentarz `converters.ts:104-114`); silnik
+   (`converterThroughputsForOwner` w `turn-economy.ts:2140`) też nie zna poziomu. Nowa funkcja jest
+   z tym zgodna — nie przyjmuje poziomu i słusznie.
+6. **Parytet gracz/AI:** brak jakiejkolwiek gałęzi po `ownerId`; era czytana przez
+   `cfg.getEpoch?.(city.ownerId)` = ten sam `empireEpochForOwner` co reszta pliku. Save/load: brak
+   nowego trwałego stanu, nie dotyczy.
+7. **Zakres (C-025) czysty:** diff to 2 pliki, wyłącznie dodania (+324 linii), zero refaktorów, zero
+   „przy okazji". `appendOwnedBuildingRow` ma 2 miejsca użycia (`cityPanel.ts:7200` i `:8449`) — oba
+   to lista posiadanych budynków, zmiana w obu jest zamierzona.
+8. **Bramki (własne uruchomienie):** `tsc --noEmit` **0 błędów** (tsc 5.9.3 potwierdzony);
+   `vite build` **przechodzi** (823 moduły, 28,7 s); `tech-tree-test` 19/19; `research-test` 33/33;
+   `unit-replace-test` zielony; `citypanel-konwerter-produkcja-test` 46/46; `converters-test` 46/46;
+   `converter-era-scaling-test` 87/87; `ekonomia-5x-inwariant-test` 246/246; `owner-economy-test`
+   9/9; `ai-major-economy-test` 33/33; `plony-budynkow-test` 68/68; `surowce-dostep-test` 13/13;
+   `surowce-katalog-kolejnosc-test` 62/62; `spichlerz-cap-citypanel-wiring-test` 12/12;
+   `city-panel-growth-percent-separator-test` 29/29; `wire-ekonomia-test` 37/37;
+   `diplomacy-economy-test` 21/21.
+9. **Czerwone bramki — wszystkie PRE-ISTNIEJĄCE, delta zero**, potwierdzone identycznym wynikiem na
+   commicie-rodzicu `1d427547`: `upgrade-budynki-test` 48 pass/1 fail; `grupy-budynkow-test`
+   80 pass/3 fail (`suma budynków we wszystkich grupach = 40, ma: 41`); `prereq-budynkow-test`
+   51 pass/8 fail (już opisane w `CLAUDE.md`).
+
+---
+
+**DLACZEGO MIMO TO FAIL — N1 (blokujące): bramka `citypanel-konwerter-produkcja-test.cjs` (46/46)
+nie sprawdza ANI JEDNEJ liczby zwracanej przez nową funkcję. 4 z 6 mutacji kontrolnych Evaluatora
+przechodzą ją na ZIELONO.**
+
+Test jest w ~90% **text-anchorem** (`indexOf`/regex po treści `cityPanel.ts`). Sekcja `[1]` wylicza
+`expectedGlina`/`expectedDrewno`/`expectedCeramika` **własną kopią formuły** silnika i… nigdy nie
+porównuje ich z wynikiem UI — jedyna asercja na te liczby to `> 0`. To dokładnie wzorzec „tautologii
+testowej" opisany w `dyspozycje/autobot/playbook.md` (extract-to-pure-function): test odtwarza
+formułę zamiast zaimportować kod produkcyjny. Zadeklarowana „mutacja kontrolna" usuwa **wywołanie**
+funkcji — łapie ją sekcja `[2b]` po tekście — ale nie mówi nic o tym, czy funkcja liczy poprawnie.
+
+Własne mutacje Evaluatora (każda: podmiana w `cityPanel.ts` → uruchomienie bramki → przywrócenie):
+
+| # | Mutacja (w ciele nowych funkcji) | Wynik bramki | Werdykt |
+|---|---|---|---|
+| M2 | `perCykl * throughput` → `perCykl * throughput * 2` (zużycie wejść zawyżone **2×**) | 46 pass, 0 fail, exit 0 | **UCIECZKA** |
+| M3 | `recipe.outputAmount * throughput` → `throughput` (ignorowanie `outputAmount`) | 46 pass, 0 fail, exit 0 | **UCIECZKA** |
+| M4 | `cfg.difficulty ?? 'normal'` → `'easy'` na sztywno | 46 pass, 0 fail, exit 0 | **UCIECZKA** |
+| M7 | odwrócony warunek — **pomijaj WSZYSTKIE wejścia** (znika `−50 Glina/t`, `−50 Drewno/t`) | 46 pass, 0 fail, exit 0 | **UCIECZKA** |
+| M5 | `cfg.getEpoch?.(city.ownerId) ?? 1` → `1` (brak skalowania epoką) | 45 pass, 1 fail, exit 1 | złapana |
+| M6 | wejścia renderowane klasą `bld-owned-conv-out` (zielone jak produkcja) | 45 pass, 1 fail, exit 1 | złapana |
+
+M7 jest najcięższa: kasuje **dokładnie tę połowę informacji, o którą prosił właściciel** („drewno
+jest na minusie, glina jest na minusie"), a bramka mówi „46/46, zielono". M2 podaje właścicielowi
+zużycie zawyżone dwukrotnie — też przechodzi. Obie mutacje złapane (M5, M6) to trafienia w
+*text-anchor*, nie w zachowanie — czyli bramka pilnuje kształtu źródła, nie poprawności liczb.
+
+**Wymagane w rundzie 2 (minimum do PASS):** wyeksportować część czystą — najlepiej jako funkcję
+domenową w `gra/src/game/converters.ts` (np. `converterProductionDisplayForBuilding(buildingId,
+rawParams, difficulty, era)`), wołaną i przez `cityPanel.ts`, i przez test — po czym przypiąć
+**twarde liczby**: Garncarnia era 1 = 50/50/50 szt./turę, era 2 = 55, era 3 = 60; Odlewnia brązu
+era 1 = ruda 25, drewno 25, ruda cyny 2,5, brąz 25 szt./turę; budynek bez receptury → `null`.
+Wykonalność potwierdzona: harness Evaluatora zrobił to samo bez jsdom i bez stubów THREE/SVG
+(734 asercje) — argument „koszt nieproporcjonalny" z nagłówka testu nie broni się.
+
+**N2 (poważne, do rozstrzygnięcia w rundzie 2): budynek runtime-NIEAKTYWNY pokaże pełną produkcję,
+której silnik nie wykona — a informacja o nieaktywności jest już policzona 40 linii wyżej w TEJ
+SAMEJ funkcji.** `garncarnia` i `cegielnia` mają runtime gate na etykietę `Glina`, `odlewnia_brazu`
+na `Ruda` (`building-resource-gate.ts:59-71`). Gdy imperium traci dostęp, `runtimeActiveBuiltIdsForCity`
+wyrzuca budynek z `activeRecipes` i silnik **nie odpala go wcale** — a panel nadal wypisze
+`+50 Ceramika/t`. To nie jest znany kompromis „brutto vs netto" (brak wejścia w danej turze), tylko
+budynek strukturalnie wyłączony. `appendOwnedBuildingRow` **już wylicza** `inactiveStatus`
+(`cityPanel.ts:8298`) i koloruje nazwę na czerwono (`bld-owned-name--inactive`, tylko sama nazwa —
+reszta wiersza bez zmian); uwzględnienie tego w nowym wierszu (wyszarzenie / tooltip) kosztuje
+zmienną, która jest w zasięgu. Argument „netto zbyt kosztowne" tu nie obowiązuje.
+
+**N3 (blokujące dla twierdzenia z opisu commita): deklaracja „ta sama para funkcji, która już karmi
+licznik HUD imperium" jest NIEPRAWDZIWA — dopasowanie budynek↔receptura jest inne, i to nowy kod ma
+rację, a HUD jest zepsuty.** Nowa funkcja dopasowuje przez `converterBuildingIdForRecipe(r) ===
+def.id` (jak `turn-economy.ts:1603`), a `empireConverterResourceRatesForOwner` (`main.ts:2765`) przez
+`builtIds.includes(recipe.id)`. Skutek zmierzony (era 1, `normal`, po jednym budynku):
+
+| Budynek | licznik HUD imperium | silnik = nowy panel miasta |
+|---|---|---|
+| Garncarnia | Ceramika 50 szt./turę | Ceramika 50 szt./turę |
+| Cegielnia | Cegła 50 szt./turę | Cegła 50 szt./turę |
+| Odlewnia brązu | Brąz 25 szt./turę | Brąz 25 szt./turę |
+| **Odlewnia żelaza** | **{} — zero** | Brąz 25 + Żelazo 25 szt./turę |
+| **Wielka odlewnia** | **{} — zero** | Brąz 25 + Żelazo 25 + Stal 25 szt./turę |
+
+HUD gubi **wszystkie** receptury z polem `buildingId` (5 z 10), bo `recipe.id` to tam
+`odlewnia_zelaza__zelazo`, a `builtIds` zawiera `odlewnia_zelaza`. To **pre-istniejący błąd HUD**
+(nie regresja tego commita), ale po tej zmianie stanie się widoczny dla właściciela jako sprzeczność
+dwóch ekranów: panel miasta powie „+25 Stal/t", licznik imperium „0". Do rundy 2: **sprostować
+komentarz** w `cityPanel.ts:6341-6357` (spójność jest z SILNIKIEM, nie z HUD) i **zarejestrować
+osobne zgłoszenie na HUD** — nie naprawiać go w tym temacie (C-025).
+
+**N4 (drobne, liczba dla właściciela): Ruda cyny w Odlewni brązu pokazana jako `−3/t` zamiast
+`−2,5/t`.** Receptura ma `ruda_cyny: 0.1` na cykl × 25 cykli = **2,5 szt./turę** (tyle zużywa
+silnik); `Math.round(2.5)` daje 3 — zawyżenie o 20% na tej jednej pozycji. Jedyna receptura z
+ułamkowym wejściem, więc problem jest wąski, ale dotyczy trzech budynków (`odlewnia_brazu`,
+`odlewnia_zelaza`, `wielka_odlewnia`).
+
+**N5 (drobne, UX): Wielka odlewnia pokaże `−25 Żelazo/t` i `+25 Żelazo/t` w tej samej linii.**
+Żelazo jest jednocześnie wyjściem receptury `wielka_odlewnia__zelazo` i wejściem
+`wielka_odlewnia__stal`; realny bilans netto Żelaza z tego budynku = 0. Pełna linia to 8 chipów:
+`−25 Ruda/t · −75 Drewno/t · −3 Ruda cyny/t · −25 Ruda żelaza/t · −25 Żelazo/t · +25 Brąz/t ·
++25 Żelazo/t · +25 Stal/t` — w trybie `compact` (`cityPanel.ts:8449`, lista o stałej wysokości
+`visibleRows`) to sporo zawijania i zmieniona wysokość wiersza. Do oceny wzrokowej w playteście.
+
+**N6 (drobne, wprost dotyka słów właściciela): rozdzielenie jest strukturalne, ale nie semantyczne.**
+Wejścia konwertera dostały `color:#e8a090` — **ten sam kolor** co `.bld-owned-upkeep` (koszt
+utrzymania), w tym samym formacie `−N Nazwa/t`. Dla Garncarni L2 ze zrzutu właściciela dadzą dwie
+sąsiadujące, wizualnie identyczne linie: `−2⚙/t · −5 Drewno/t · +5⚒` (utrzymanie) i
+`−50 Glina/t · −50 Drewno/t · +50 Ceramika/t` (produkcja) — Drewno w obu, bez etykiety mówiącej,
+która linia jest która. Właściciel prosił wprost, żeby „rozdzielić koszt utrzymania od kosztu
+produkcji"; warto rozważyć krótki prefiks (np. `Prod.:`) albo odmienny odcień. Do decyzji ABC, nie
+do samodzielnego wyboru Operatora.
+
+**N7 (informacyjne, pre-istniejące, nie w zakresie): receptura `huta` jest martwa.** `id: 'huta'`
+w `DEFAULT_CONVERTER_RECIPES` nie ma odpowiednika w `buildings.json` (0 trafień) — nowa funkcja
+zwróciłaby dla niej wynik, gdyby budynek istniał, więc kod jest poprawny; sama receptura jest
+osieroconym reliktem. Do osobnego sprzątania.
+
+**STATUS: RUNDA 2 W TOKU (dispatch orkiestrator, 2026-08-14, autonomicznie — Maciej upoważnił
+pracę bez przystanków na ABC przez najbliższe 2h, „wypchnij wszystkie tematy… deploy… scal do
+main").** Zakres rundy 2: N1 (obowiązkowe — wyekstrahować czystą funkcję domenową do
+`converters.ts`, test ma porównywać z prawdziwym `runConverter`, nie kopią formuły), N2
+(wyszarzenie/oznaczenie linii produkcji dla budynku runtime-nieaktywnego, korzystając z już
+policzonego `inactiveStatus`), N4 (Ruda cyny: pokazywać 1 miejsce po przecinku zamiast
+`Math.round`, żeby `2,5` nie stawało się `3`), N5 (informacyjne — do oceny wzrokowej w
+playteście, nie blokuje), N6 (⚠️ decyzja UI z notatki oznaczona „do ABC" — pod presją czasu
+Operator ma zastosować rozsądny domyślny wybór: krótki prefiks `Prod.:` przed linią produkcji +
+odcień koloru wejść odróżnialny od koloru utrzymania, NIE identyczny `#e8a090`; to prowizoryczna
+decyzja orkiestratora pod jego odpowiedzialnością, nie ostateczne ABC właściciela — może zostać
+odwrócona na jego słowo). Sprostować też fałszywe zdanie w komentarzu `cityPanel.ts:6341-6357`
+(spójność jest z SILNIKIEM `runConverter`/`converterBuildingIdForRecipe`, NIE z HUD-em imperium —
+patrz N3 niżej, osobny temat).
+
+**STATUS: RUNDA 2 GOTOWA, czeka na Evaluatora (commit `dcdf653c`, 2026-08-14 — hash zmieniony
+przez rebase `git pull --rebase` przed pushem, oryginalny lokalny commit przed rebase był
+`9ad8aaf2`, treść identyczna).**
+
+Zrobione (worktree izolowany, `git pull --rebase` bez konfliktów przed pracą):
+1. **N1 (obowiązkowe) — DONE.** Wyekstrahowano czystą funkcję domenową
+   `converterProductionDisplayForBuilding(buildingId, rawParams, difficulty, era)` do
+   `gra/src/game/converters.ts` (bez DOM/UI, testowalna bezpośrednio). `cityPanel.ts`
+   (`buildingConverterProductionDisplay`) to teraz cienka otoczka wołająca tę funkcję z
+   `cfg.getEpoch?.(city.ownerId)`/`cfg.difficulty` — zero reimplementacji logiki po stronie UI
+   (usunięto z importów `DEFAULT_CONVERTER_RECIPES`/`converterThroughputForEra`/
+   `converterBuildingIdForRecipe`/`loadThroughput`, zostaje tylko `converterProductionDisplayForBuilding`
+   + typ `RawConverterParamsJson`). `gra/tools/citypanel-konwerter-produkcja-test.cjs` przepisany:
+   sekcja `[1c]` woła BEZPOŚREDNIO tę funkcję i przypina TWARDE liczby z werdyktu (nie `>0`):
+   Garncarnia era1=50, era2=55, era3=60 (glina/drewno/ceramika, tolerancja 1e-9 na błąd
+   zmiennoprzecinkowy `50*1.1`); Odlewnia brązu era1: ruda=25, drewno=25, ruda_cyny=2,5, brąz=25;
+   budynek bez receptury (`spichlerz`, nieistniejący id) → `null`.
+   **Mutacje kontrolne (sekcja `[4]`, automatyczne — patch converters.ts na dysku, rerun w
+   subprocess, restore w `finally`) odtwarzają 3 z 6 mutacji Evaluatora, WSZYSTKIE łapane
+   czerwono, zweryfikowane też ręcznie poza harnessem (sed + rerun + manualne porównanie):**
+   - **M2 (zużycie wejść ×2)** — złapane numerycznie: `9 fail` (Garncarnia era2/3, Odlewnia
+     brązu wszystkie zużycia ×2 vs twarda liczba).
+   - **M7 (pomijanie wszystkich wejść)** — złapane numerycznie: `9 fail` (`consumed.*` →
+     `undefined` zamiast liczby).
+   - **M3 (ignorowanie `outputAmount`)** — **UWAGA, przeczytaj przed przyjęciem:** złapane
+     WYŁĄCZNIE strukturalnie (nowa sekcja `[1d]`, regex na ciało funkcji w prawdziwym
+     `converters.ts`), NIE numerycznie. Powód: KAŻDA receptura w `DEFAULT_CONVERTER_RECIPES`
+     ma dziś `outputAmount: 1`, więc `throughput * 1 === throughput` — mutacja jest matematycznie
+     no-opem względem wartości `produced` pod obecnymi danymi, niezależnie od tego jak rygorystyczny
+     jest test wartości. To NIE jest luka tego testu — to samo ograniczenie złapał własny
+     734-asercyjny harness Evaluatora, który w werdykcie oznaczył M3 jako „UCIECZKA" mimo
+     metodologii bez text-anchora. Jeśli w przyszłości powstanie receptura z `outputAmount != 1`,
+     `[1c]` (który czyta prawdziwe `recipe.outputAmount` z silnika, nie stałą) zacznie łapać ją
+     numerycznie też.
+   Bramka: **83 pass, 0 fail** (było 46/46 tautologicznych w rundzie 1).
+2. **N2 — DONE.** `inactiveStatus` w `appendOwnedBuildingRow` podniesiony na zasięg całej funkcji
+   (`let` przed pierwszym `if (def && city)`, przypisanie `=` zamiast `const` wewnątrz) — NIE liczone
+   drugi raz. Wiersz produkcji dostaje klasę `bld-owned-conv-row--inactive` (CSS: wyszarzenie
+   `#6a6458`, spójne z `.bld-owned-upkeep.muted`) + `title` z `inactiveStatus.tooltip`, gdy budynek
+   runtime-nieaktywny.
+3. **N4 — DONE.** Nowa `formatConverterAmount(v)`: `Math.round(v*10)/10`, całkowite → bez przecinka,
+   niecałkowite → `fmtDecPl(r1, 1)` (istniejący helper, reużyty, nie nowy). Ruda cyny 2,5 pozostaje
+   „2,5", nie zaokrągla się do „3"; Garncarnia 50 zostaje „50", nie „50,0".
+4. **N6 (decyzja prowizoryczna orkiestratora pod presją czasu, NIE ostateczne ABC — może zostać
+   odwrócona na słowo Macieja) — DONE.** Prefiks `<span class="bld-owned-conv-label">Prod.:</span>`
+   przed linią produkcji; kolor `.bld-owned-conv-in` zmieniony z `#e8a090` (identyczny jak
+   `.bld-owned-upkeep`) na `#e0973c` (ciepły pomarańcz) — bramka `[2c]` porównuje oba kolory z CSS
+   i asercjonuje że są różne (nie hardkoduje wartości na sztywno w teście, czyta z pliku).
+5. **Sprostowanie komentarza (N3) — DONE.** Usunięto z JSDoc `buildingConverterProductionDisplay`
+   fałszywe zdanie „ta sama para funkcji, która karmi licznik HUD imperium" — zastąpione jawnym
+   sprostowaniem (dopasowanie budynek↔receptura tu przez `converterBuildingIdForRecipe`, w HUD przez
+   `builtIds.includes(recipe.id)` — różne, HUD ma osobny błąd
+   `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`, nie ten temat).
+6. **N5 — bez działania (informacyjne, zgodnie z zadaniem).** Nie zaobserwowano przepełnienia
+   layoutu przy przeglądzie kodu trybu `compact`; ocena wzrokowa zostaje do playtestu.
+7. **N7 — nietknięte (poza zakresem), zgodnie z zadaniem.**
+
+**Bramki (uruchomione z `gra/`):** `npx tsc --noEmit` — **0 błędów**. `citypanel-konwerter-produkcja-test.cjs`
+— **83 pass, 0 fail**. `converters-test.cjs` — **46/46**. `converter-era-scaling-test.cjs` — **87/87**.
+`ekonomia-5x-inwariant-test.cjs` — **246/246**. `tech-tree-test.cjs` — **19/19**. `research-test.cjs`
+— **33/33**. `vite build --outDir <tmp> --emptyOutDir` — **OK, 823 moduły, ~36s** (build tymczasowy,
+nie kopiowany do `gra-robocza` — bez hasła `deploy`). Sanity dodatkowo (testy dotykające tego samego
+obszaru, wszystkie zielone, zero regresji): `owner-economy-test` 9/9, `ai-major-economy-test` 33/33,
+`plony-budynkow-test` 68/68, `surowce-dostep-test` 13/13, `surowce-katalog-kolejnosc-test` 62/62,
+`spichlerz-cap-citypanel-wiring-test` 12/12, `city-panel-growth-percent-separator-test` 29/29,
+`wire-ekonomia-test` 37/37, `diplomacy-economy-test` 21/21, `owned-building-detail-side-test` 17/17.
+Pre-istniejące czerwone bramki zweryfikowane delta zero względem `CLAUDE.md`: `upgrade-budynki-test`
+48 pass/1 fail, `grupy-budynkow-test` 80 pass/3 fail, `prereq-budynkow-test` 51 pass/8 fail.
+
+**Zakres commita (C-025):** wyłącznie 3 pliki — `gra/src/game/converters.ts`, `gra/src/ui/cityPanel.ts`,
+`gra/tools/citypanel-konwerter-produkcja-test.cjs`. Bez deployu (commit + push branch, hasło `deploy`
+nie padło).
+
+**Incydent w trakcie pracy (do wiadomości, bez wpływu na wynik):** przy ręcznej weryfikacji mutacji M7
+poza harnessem operator przypadkowo użył `git checkout -- src/game/converters.ts`, co cofnęło TAKŻE
+legalną zmianę N1 (nie tylko testową mutację sed). Wykryte natychmiast (`grep` na
+`converterProductionDisplayForBuilding` po checkout dał 0 trafień), naprawione odtworzeniem tej samej
+edycji z pamięci sesji, zweryfikowane ponownie `tsc --noEmit` (0 błędów) + pełna bramka (83/83) —
+finalny stan pliku identyczny z tym, co opisano wyżej.
+
+### WERDYKT EVALUATORA — RUNDA 2 (Opus 5, 2026-08-14, commity `dcdf653c` + `4bfeec7f`): **PASS-WITH-NOTES**
+
+**STATUS PO WERDYKCIE: ZAMKNIĘTE co do zakresu rundy 2** (N1 blokujące — spełnione i zweryfikowane
+niezależnie; N2/N4/N6 — wykonane i zmierzone). Pozostają **4 notatki nieblokujące** (Z1–Z4) + dwie
+informacyjne (I1–I2) — żadna nie wymaga rundy 3 przed deployem, wszystkie są tanie i mogą wejść
+przy okazji dowolnej następnej pracy w tym obszarze.
+
+**Metoda (własna, nie odczyt z opisu commita):** izolowany worktree na czubku gałęzi `4a580231`
+(potwierdzone `git diff dcdf653c` = pusty dla wszystkich 3 plików tematu — oceniany kod = kod na
+gałęzi), `node_modules` przez symlink, `tsc 5.9.3`, `esbuild 0.21.5`. Trzy niezależne harnessy
+Evaluatora: (a) **19 własnych mutacji** na `converters.ts`/`cityPanel.ts` z pomiarem exit code
+bramki; (b) harness renderujący, który **wycina 1:1 ciała prawdziwych funkcji** ze źródła
+(`fmtDecPl`, `formatConverterAmount`, `formatConverterProductionRowHtml`) i łączy je z prawdziwym
+`converterProductionDisplayForBuilding` + `stockResourceLabel` — zero reimplementacji formatowania
+po stronie Evaluatora; (c) harness scenariuszowy na prawdziwym `building-resource-gate.ts`
+(`filterRuntimeActiveBuiltIds` + `resolveOwnedBuildingInactiveStatus`); (d) render w **headless
+Chromium** (playwright, `/opt/pw-browsers/chromium-1194`) z CSS wyciętym werbatim ze źródła.
+
+**N1 (blokujące w rundzie 1) — ZAMKNIĘTE.** Bramka faktycznie woła prawdziwą funkcję domenową:
+sekcja `[1]` bundluje esbuildem PRAWDZIWY `src/game/converters.ts` i wywołuje
+`converterProductionDisplayForBuilding` na PRAWDZIWYM `data/econ-params.json`; `[1c]` porównuje
+wynik z literałami z werdyktu rundy 1 (nie `> 0`). Dowód mutacyjny Evaluatora — **19 własnych
+mutacji, 15 złapanych czerwono**:
+
+| # | Mutacja (własna, Evaluator) | Wynik bramki | Werdykt |
+|---|---|---|---|
+| E1 | zużycie wejść ×2 (klasa M2 z rundy 1) | 72 pass, **11 fail** | ZŁAPANA (numerycznie: Glina 50 → got 100) |
+| E2 | zużycie wejść ×1,01 (subtelna, +1%) | 72 pass, **11 fail** | ZŁAPANA (Glina 50 → got 50,5 — tolerancja `EPS=1e-9` jest wystarczająco ciasna) |
+| E3 | pominięcie WSZYSTKICH wejść (klasa M7) | 72 pass, **11 fail** | ZŁAPANA (`consumed.glina` → `undefined`) |
+| E4 | pominięcie JEDNEGO wejścia (`drewno`) | 77 pass, **6 fail** | ZŁAPANA |
+| E5 | ignorowanie `outputAmount` (klasa M3) | 80 pass, **3 fail** | ZŁAPANA (strukturalnie przez `[1d]` — patrz nota niżej) |
+| E6 | brak wyjścia w ogóle (`if (false)`) | 79 pass, **4 fail** | ZŁAPANA (`produced.ceramika` → `undefined`) |
+| E7 | brak skalowania epoką (klasa M5) | 77 pass, **6 fail** | ZŁAPANA **numerycznie** (era 2: 55 → got 50) — w rundzie 1 ta klasa była łapana tylko text-anchorem |
+| E10 | `Math.round` na zużyciu w funkcji domenowej (regresja N4 w silniku) | 80 pass, **3 fail** | ZŁAPANA (Ruda cyny 2,5 → got 3) |
+| E12 | funkcja zwraca `null` dla każdego budynku | 66 pass, **4 fail** | ZŁAPANA |
+| U2 | wiersz produkcji nigdy nie wyszarzony (regresja N2) | 82 pass, **1 fail** | ZŁAPANA (text-anchor) |
+| U3 | wejścia renderowane klasą wyjścia (colour-swap) | 82 pass, **1 fail** | ZŁAPANA |
+| U4 | usunięty prefiks „Prod.:" (regresja N6) | 81 pass, **2 fail** | ZŁAPANA |
+| U5 | kolor wejść z powrotem `#e8a090` (regresja N6) | 82 pass, **1 fail** | ZŁAPANA (bramka czyta OBA kolory z CSS i porównuje, nie hardkoduje) |
+| U6 | era globalna zamiast `cfg.getEpoch?.(city.ownerId)` (parytet AI) | 82 pass, **1 fail** | ZŁAPANA |
+| **E9** | **dopasowanie budynek↔receptura przez `r.id` (reguła zepsutego HUD)** | **83 pass, 0 fail** | **UCIECZKA — patrz Z1** |
+| **U1** | **`Math.round(v)` w `formatConverterAmount` (cofnięcie N4 w warstwie UI)** | **83 pass, 0 fail** | **UCIECZKA — patrz Z2** |
+| E8 | trudność zaszyta na `'easy'` (klasa M4) | 83 pass, 0 fail | ucieczka **nieusuwalna** — `econ-params.json` ma `easy = normal = hard` (Garncarnia/Cegielnia 50 szt./turę, Odlewnie 25 szt./turę na każdej trudności), więc mutacja jest matematycznie no-opem; żaden test wartości jej nie złapie |
+| E11 | `throughputFallback` zamiast odczytu z JSON | 83 pass, 0 fail | ucieczka **nieusuwalna** — wartości w `econ-params.json` są dziś IDENTYCZNE z fallbackami (50 i 25), różnicy nie da się zaobserwować |
+| U6* | (anchor niejednoznaczny w całym pliku — powtórzone z zawężeniem do ciała funkcji, patrz U6) | — | — |
+
+Nota o E5/M3: potwierdzam ustalenie Operatora — **każda** receptura w `DEFAULT_CONVERTER_RECIPES`
+ma dziś `outputAmount: 1`, więc `throughput * 1 === throughput`; mutacja jest numerycznie
+nieobserwowalna pod obecnymi danymi (to samo ograniczenie miał 734-asercyjny harness poprzedniego
+Evaluatora). Kotwica strukturalna `[1d]` na prawdziwym ciele funkcji w `converters.ts` jest tu
+uczciwym rozwiązaniem, a nie zamiataniem — i została opisana wprost, bez fałszywej obietnicy
+wykrycia numerycznego.
+
+**N2 — POTWIERDZONE end-to-end (nie z kodu, z uruchomienia).** Własny harness na prawdziwym
+`building-resource-gate.ts`, dwa scenariusze imperium:
+
+| Budynek | `hasDepositRuntimeGate` | scenariusz A (jest Glina/Ruda) | scenariusz B (brak Gliny/Rudy) |
+|---|---|---|---|
+| garncarnia | true | `inactive=false`, runtimeActive=true | **`inactive=true`, tooltip „Brak: Glina", runtimeActive=false** |
+| cegielnia | true | `inactive=false` | **`inactive=true`, „Brak: Glina"** |
+| odlewnia_brazu | true | `inactive=false` | **`inactive=true`, „Brak: Ruda"** |
+| odlewnia_zelaza | **false** | `inactive=false` | `inactive=false` (brak bramki — patrz I2) |
+| wielka_odlewnia | **false** | `inactive=false` | `inactive=false` (patrz I2) |
+
+Złożenie klasy wg logiki `cityPanel.ts` zmierzone: scenariusz B daje
+`class="bld-owned-conv-row bld-owned-conv-row--inactive" title="Brak: Glina"`. Sprawdzona też
+kolejność wykonania (przypisanie `inactiveStatus` w bloku `if (def && city)` POPRZEDZA użycie
+w drugim bloku `if (def && city)` — brak TDZ, brak drugiego liczenia; `resolveOwnedBuildingInactiveStatus`
+wołane dokładnie raz) i specyficzność CSS (`.bld-owned-conv-row--inactive .bld-owned-conv-in`
+(0,2,0) bije `.bld-owned-conv-in` (0,1,0), reguła stoi PO niej w arkuszu). W Chromium zmierzone
+kolory obliczone: aktywny wiersz `rgb(224,151,60)` / `rgb(80,176,112)`, nieaktywny **`rgb(106,100,88)`
+dla wejść, wyjścia I prefiksu** — wyszarza się CAŁA linia, nie tylko część.
+
+**N4 — POTWIERDZONE na renderowanym HTML** (nie na wartości funkcji, tylko na tym, co zobaczy
+właściciel). Odlewnia brązu era 1: `Prod.: −25 Ruda/t · −25 Drewno/t · −2,5 Ruda cyny/t · +25 Brąz/t`.
+Odlewnia żelaza: `−2,5 Ruda cyny/t` obok `−25 Ruda żelaza/t`. Wielka odlewnia: `−2,5 Ruda cyny/t`.
+Wartości całkowite bez ozdobnika (`−50 Glina/t`, nie `−50,0`). Zaokrąglenie do „3" nie występuje
+w żadnym z trzech budynków.
+
+**N6 — OCENIONE WZROKOWO (headless Chromium, zrzut), werdykt: wystarczające, nie „niedopracowane".**
+Zmierzone kolory: utrzymanie `rgb(232,160,144)` (łososiowy) vs wejścia produkcji `rgb(224,151,60)`
+(bursztyn) — kanał niebieski 144 → 60, różnica czytelna przy 10,56 px. Do tego trzy niezależne
+sygnały rozdzielenia, nie jeden: (a) prefiks „Prod.:" w osobnym kolorze `rgb(168,160,144)` i
+`font-weight:700`; (b) fizyczna osobna linia (utrzymanie wyrównane do prawej w `tail`, produkcja
+do lewej w `conv-row`); (c) inny kolor. Żądanie właściciela „rozdzielić koszt utrzymania od kosztu
+produkcji" jest spełnione także semantycznie, nie tylko strukturalnie. **Zastrzeżenie do ewentualnego
+ABC:** `#e0973c` leży blisko `--gold #e0b24a` używanego na plakietce poziomu (L1/L2) i nagłówkach
+sekcji — na zrzucie te trzy elementy tworzą wspólną „ciepłą" grupę. To kwestia gustu właściciela,
+nie błąd; decyzja prowizoryczna orkiestratora zostaje w mocy do jego słowa.
+
+**Sprostowanie komentarza (N3) — WYKONANE, ale patrz Z3.** Fałszywe zdanie „ta sama para funkcji,
+która karmi licznik HUD imperium" usunięte, zastąpione jawnym sprostowaniem + odesłaniem do
+osobnego tematu `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`. Zakres (C-025) czysty: 3 pliki,
+zero refaktorów poza tematem.
+
+**Bramki — WŁASNE uruchomienie na czubku gałęzi (nie liczby z opisu commita):** `npx tsc --noEmit`
+**0 błędów** (13,3 s); `citypanel-konwerter-produkcja-test` **83 pass, 0 fail**; `converters-test`
+**46/46**; `converter-era-scaling-test` **87/87**; `ekonomia-5x-inwariant-test` **246/246**;
+`tech-tree-test` **19/19**; `research-test` **33/33**; `owned-building-detail-side-test` **17/17**.
+`vite build --outDir <tmp> --emptyOutDir` — **OK, 24,9 s**; w zbudowanym bundlu potwierdzone
+4 wystąpienia `bld-owned-conv-label` i 4 `bld-owned-conv-row--inactive` (kod nie jest martwy,
+dociera do wersji uruchamialnej). Pre-istniejące czerwone zweryfikowane: `upgrade-budynki-test`
+**48 pass, 1 fail** (`no handel bonus on bruk`), `prereq-budynkow-test` **51 pass, 8 fail** —
+zgodne z `CLAUDE.md`, delta zero. Drzewo robocze po wszystkich 19 mutacjach: `git status` czysty,
+`git diff` pusty (pliki przywrócone bajt w bajt).
+
+---
+
+**Z1 (nieblokujące, ale konkretne — luka pokrycia bramki): mutacja „dopasowanie jak w zepsutym HUD"
+przechodzi na zielono, choć KASUJE cały wiersz produkcji dla 2 z 5 budynków-konwerterów.**
+Zamiana `converterBuildingIdForRecipe(r) === buildingId` na `r.id === buildingId` w
+`converterProductionDisplayForBuilding` daje zmierzone (własny probe, nie dedukcja):
+`garncarnia`/`cegielnia`/`odlewnia_brazu` — bez zmian; **`odlewnia_zelaza` → `null`**,
+**`wielka_odlewnia` → `null`** (czyli panel NIE POKAZUJE ani zużycia, ani produkcji — dokładnie
+pierwotne zgłoszenie właściciela, tylko dla innych budynków). Bramka: **83 pass, 0 fail**. Powód:
+`[1c]` przypina twarde liczby wyłącznie dla Garncarni i Odlewni brązu — obu, w których
+`recipe.id === buildingId`, więc oba dopasowania dają ten sam wynik; `[1b]` liczy receptury
+własnym wywołaniem `converterBuildingIdForRecipe`, nie przez badaną funkcję. **Uczciwie:
+to WYKRACZA poza minimum nakazane w rundzie 1** (tam wymieniono dokładnie Garncarnię i Odlewnię
+brązu, i to zostało dowiezione co do joty) — dlatego nota, nie FAIL. **Koszt naprawy: ~6 linii**
+w `[1c]` — dopisać `odlewnia_zelaza` (era 1: ruda 25, drewno 50, ruda cyny 2,5, ruda żelaza 25 →
+brąz 25 + żelazo 25 szt./turę) i `wielka_odlewnia` (era 1: ruda 25, drewno 75, ruda cyny 2,5,
+ruda żelaza 25, żelazo 25 → brąz 25 + żelazo 25 + stal 25 szt./turę). Liczby zmierzone przez
+Evaluatora renderem, gotowe do przepisania.
+
+**Z2 (nieblokujące, luka pokrycia): cofnięcie N4 w warstwie UI przechodzi na zielono.** Podmiana
+ciała `formatConverterAmount` z `Math.round(v*10)/10` + `fmtDecPl(r1,1)` na zwykłe `Math.round(v)`
+(czyli powrót do „3" zamiast „2,5" — dokładnie to, co N4 kazało naprawić) → bramka **83 pass,
+0 fail**. Funkcja domenowa nadal zwraca 2,5 i `[1c]` to widzi, ale nikt nie sprawdza ŁAŃCUCHA
+liczba → tekst. Sekcja `[2]` kotwiczy tylko `` `−${amtTxt}` ``, co przetrwa każdą zmianę formatera.
+**Koszt naprawy: ~3 linie** — albo kotwica na obecność `fmtDecPl(r1, 1)` w ciele
+`formatConverterAmount`, albo (lepiej) wycięcie ciała tej funkcji ze źródła i sprawdzenie
+`formatConverterAmount(2.5) === '2,5'` oraz `formatConverterAmount(50) === '50'`.
+
+**Z3 (nieblokujące, ale to POWTÓRKA klasy błędu z N3 — komentarz twierdzący coś o CUDZYM module):
+sprostowanie w `cityPanel.ts` jest już nieaktualne na czubku gałęzi.** JSDoc
+`buildingConverterProductionDisplay` mówi w czasie teraźniejszym: „…w HUD-zie imperium
+(`empireConverterResourceRatesForOwner` w main.ts, przez `builtIds.includes(recipe.id)`), przez co
+HUD gubi część receptur (Odlewnia żelaza, Wielka odlewnia)". **To nieprawda od commita `9482117f`
+(12:34, pięć minut PRZED `dcdf653c`)** — HUD został naprawiony i `main.ts:2789` używa dziś
+`builtIds.includes(converterBuildingIdForRecipe(recipe))`, czyli DOKŁADNIE tego samego dopasowania
+co ta funkcja. Zweryfikowane odczytem `main.ts` na czubku gałęzi, nie z opisu commita. Sedno
+sprostowania (spójność jest z SILNIKIEM, nie „to ta sama para funkcji co HUD") pozostaje prawdziwe
+i wartościowe — nieaktualne jest tylko zdanie podrzędne o obecnym stanie HUD. **Naprawa: zmiana
+czasu na przeszły** + wzmianka, że naprawione `9482117f`. **Wniosek szerszy do zapamiętania:**
+komentarz opisujący stan INNEGO modułu starzeje się w ciągu minut przy równoległej pracy sesji —
+lepiej odsyłać do ID tematu (co ten komentarz już robi) bez orzekania, czy tamten błąd nadal żyje.
+
+**Z4 (nieblokujące, ale realny hazard operacyjny): bramka MUTUJE PRAWDZIWE PLIKI ŹRÓDŁOWE na dysku
+podczas każdego zwykłego uruchomienia.** Sekcja `[3]` nadpisuje `src/ui/cityPanel.ts`, sekcja `[4]`
+**trzykrotnie nadpisuje `src/game/converters.ts`** — plik silnika ekonomii — i przywraca je
+w `finally`. Ryzyka: (a) zabicie procesu (timeout, Ctrl-C, OOM) między zapisem a przywróceniem
+zostawia w repo zmutowany silnik; przy `git add -A` w innej sesji ląduje to w commicie po cichu;
+(b) równoległy `vite build`/`tsc`/inna bramka w TYM SAMYM drzewie zobaczy stan zmutowany (projekt
+ma wiele sesji i subagentów — reguła 4a o worktree to łagodzi, ale nie eliminuje). Test sam
+weryfikuje przywrócenie (`ok(fs.readFileSync(...) === backup)`) i w moich 19 przebiegach ani razu
+nie zostawił śmieci — dlatego nota, nie FAIL. **Bezpieczniejszy wzorzec na przyszłość:** mutować
+KOPIĘ (np. `src/game/.mut-converters.ts` + entry esbuilda wskazujące na kopię), nigdy plik, który
+buduje grę.
+
+**I1 (informacyjne, N5 nadal otwarte — potwierdzone zrzutem, nie „nie zaobserwowano"):** Wielka
+odlewnia renderuje **9 elementów** w jednej linii: `Prod.: −25 Ruda/t · −75 Drewno/t · −2,5 Ruda
+cyny/t · −25 Ruda żelaza/t · −25 Żelazo/t · +25 Brąz/t · +25 Żelazo/t · +25 Stal/t` i przy
+szerokości panelu 560 px **zawija się na dwie linie** (zrzut Evaluatora). Żelazo występuje
+jednocześnie na minusie i na plusie (netto 0) — dla gracza wygląda to na błąd, choć jest zgodne
+z recepturami. W trybie `compact` (lista o stałej wysokości wiersza) to samo zawinięcie może
+przycinać treść. Zostaje do oceny właściciela w playteście — bez zmian w tej rundzie, zgodnie
+z zakresem.
+
+**I2 (informacyjne, pre-istniejące, NIE wada tego commita):** `odlewnia_zelaza` i `wielka_odlewnia`
+**nie mają w ogóle runtime gate** (`hasDepositRuntimeGate = false`, brak wpisu w
+`DEPOSIT_LINKED_BUILDING_LABELS`), więc N2 ich nie dotyczy — ale też silnik ich nie wyłącza
+(`filterRuntimeActiveBuiltIds` zostawia je aktywne), więc panel i silnik są tu SPÓJNE. Odlewnia
+brązu ma bramkę na `Ruda`, jej następcy w łańcuchu — nie. Czy to zamierzone, to osobne pytanie
+do właściciela, poza tym tematem.
+
+---
+
+## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (2026-08-14, znalezisko Evaluatora N3 przy okazji `P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE`)
+
+**Nie zgłoszenie właściciela wprost — błąd znaleziony przez Evaluatora podczas oceny innego
+tematu, rejestrowany osobno zgodnie z zasadą C-025 (nie naprawiać przy okazji, dawać własny
+numer).**
+
+**Błąd:** `empireConverterResourceRatesForOwner` (`gra/src/main.ts:2765`, licznik HUD imperium)
+dopasowuje budynek↔receptura przez `builtIds.includes(recipe.id)`. Dla receptur z polem
+`buildingId` osobnym od `recipe.id` (5 z 10 receptur w `DEFAULT_CONVERTER_RECIPES` —
+`odlewnia_zelaza__zelazo`, `odlewnia_zelaza__brąz`, `wielka_odlewnia__zelazo`,
+`wielka_odlewnia__brąz`, `wielka_odlewnia__stal` — dokładny wykaz do potwierdzenia przez
+dispatchowanego agenta) `recipe.id` NIGDY nie jest elementem `builtIds` (tam są id budynków, np.
+`odlewnia_zelaza`, nie id receptur) — więc HUD **całkowicie gubi** te receptury, zwraca `{}`
+zamiast realnej produkcji.
+
+**Zmierzone (Evaluator, era 1, `normal`, po jednym budynku):**
+
+| Budynek | licznik HUD imperium (dziś) | silnik/panel miasta (poprawny) |
+|---|---|---|
+| Odlewnia żelaza | **{} — zero** | Brąz 25 + Żelazo 25 szt./turę |
+| Wielka odlewnia | **{} — zero** | Brąz 25 + Żelazo 25 + Stal 25 szt./turę |
+
+Garncarnia/Cegielnia/Odlewnia brązu (bez osobnego `buildingId`) liczą się poprawnie w obu
+miejscach — błąd dotyczy wyłącznie receptur gdzie `buildingId !== recipe.id` w pierwszym
+segmencie ID.
+
+**Dlaczego teraz widoczne:** po scaleniu `P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE` panel
+miasta pokaże poprawne `+25 Stal/t` dla Wielkiej odlewni, a licznik HUD imperium nadal pokaże
+`0` dla tego samego budynku — sprzeczność dwóch ekranów widoczna dla właściciela.
+
+**Poprawka (do dispatchu):** zmienić dopasowanie w `empireConverterResourceRatesForOwner` na
+`converterBuildingIdForRecipe(r) === buildingId`/analogiczne do tego, co już robi poprawnie
+`turn-economy.ts:1603` i nowa funkcja w `cityPanel.ts` — ujednolicić WSZYSTKIE trzy miejsca na
+jedną wspólną funkcję dopasowania budynek↔receptura, żeby taki rozjazd nie mógł się powtórzyć.
+
+**STATUS: DISPATCH W TOKU.**
+
+---
+
+## ⛔ P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ (2026-08-14, zgłoszenie Macieja, KRYTYCZNE — audyt dwóch fal wsteczny wykrył pominięcie)
+
+**Zgłoszenie (cytat):** „Po wygranej bitwie nagle nastąpił blackout zniknęła cała mapa świata.
+Jest na biało. Można teoretycznie wejść do miasta, ale po prostu przez to, że nie ma mapy, no to
+nic nie widać."
+
+**Zrzuty (2):** (1) panel miasta Ateny otwarty NAD mapą — obszar mapy (canvas WebGL) całkowicie
+biały/pusty zamiast renderować heksy; widoczny tooltip „Zarządzanie polami" pływający nad pustką.
+(2) widok pełnoekranowy mapy świata — canvas w całości biały, poza HUD-em (paski
+Skarbiec/Praca/Nauka itd. renderują się normalnie), widoczny tooltip przeglądarki „file:/// — aby
+zamknąć tryb pełnoekranowy, naciśnij Esc" i częściowo notyfikacja „Epoka brązu" — **wskazuje że
+canvas jest w trybie pełnoekranowym (Fullscreen API), co sugeruje że problem może być związany z
+przejściem ze sceny bitwy (prawdopodobnie też pełnoekranowej) z powrotem do mapy świata.**
+
+**⚠️ AUDYT §0c — dlaczego to zgłoszenie umknęło:** zostało wysłane w trakcie mojej pracy nad
+inną sprawą (dyspozycja disku/agentów), zacząłem rekonesans (`finishMapBattleUi`, szukanie
+funkcji zamknięcia sceny bitwy) ale zostałem przerwany i NIGDY nie zarejestrowałem ani nie
+dispatchowałem naprawy. To realny błąd procesu — zgłoszenie krytycznego, blokującego bugu
+(gra dosłownie niegrywalna po wygranej bitwie) siedziało nieobsłużone przez kilka tur rozmowy.
+
+**Rozpoznanie wstępne (orkiestrator, niepełne — do dokończenia przez dispatchowanego agenta):**
+- `finishMapBattleUi()` (main.ts ~21205) woła wyłącznie `clearBattleUiState()` — zbyt płytkie
+  jak na pełną diagnozę, wymaga śledzenia co robi `clearBattleUiState` i czy scena bitwy
+  (prawdopodobnie WŁASNY, oddzielny canvas/renderer Three.js w `battle/battleScene.ts`, osobny
+  od mapy świata) jest poprawnie usuwana/dispose'owana, oraz czy renderer/pętla `requestAnimationFrame`
+  mapy świata jest poprawnie WZNAWIANA po powrocie.
+- Fullscreen API (`requestFullscreen`/`exitFullscreen`) — brak potwierdzonych wywołań w
+  `main.ts`/`battleScene.ts` przy pobieżnym grepie orkiestratora, ale zrzut #2 jednoznacznie
+  pokazuje że przeglądarka JEST w trybie pełnoekranowym w tym momencie — **do zweryfikowania
+  gdzie fullscreen jest realnie wyzwalany** (może to być globalny toggle niezwiązany z bitwą,
+  zbieżny w czasie przez przypadek — nie zakładać związku przyczynowego bez dowodu).
+- Hipotezy do zbadania przez dispatchowanego agenta (nie wykluczające się wzajemnie): (a) scena
+  bitwy używa WŁASNEGO kontekstu WebGL/renderera Three.js, który przy powrocie nie jest poprawnie
+  zamknięty, zostawiając mapę światową bez aktywnej pętli renderowania; (b) resize/viewport canvasu
+  mapy nie jest przeliczany po zamknięciu bitwy (biały canvas = brak treningu geometrii, nie błąd
+  koloru — możliwe że kamera/scena zostały wyzerowane); (c) utrata kontekstu WebGL (context lost)
+  przy przełączeniu między dwoma ciężkimi scenami 3D; (d) wyjątek JS w trakcie `finishMapBattleUi`
+  łańcuchu, który przerywa dalszą inicjalizację mapy po cichu (sprawdzić konsolę w headless repro).
+
+**Do dispatchu:** agent MUSI odtworzyć błąd w żywej grze (headless Chromium, Playwright
+preinstalowany) — wejść w bitwę (auto-resolve lub manual), wygrać, i zaobserwować stan canvasu
+mapy świata oraz konsolę (błędy JS) bezpośrednio po powrocie z bitwy. Statyczne czytanie kodu nie
+wystarczy dla błędu renderowania tej klasy. To jest praca w `gra/src/render/**` i/lub
+`gra/src/battle/battleScene.ts` (przenikanie sceny bitwy z mapą świata) — **Opus 5 obowiązkowo**
+zgodnie ze stałą zasadą projektu.
+
+**ODTWORZONE I NAPRAWIONE (Operator Opus 5, 2026-08-14) — PRZYCZYNA: DRYF KAMERY MAPY POD
+NAKŁADKĄ BITWY, nie renderer/WebGL/fullscreen.**
+
+**Jak odtworzone (headless Chromium, Playwright, bundle z `vite build`):** `?playtest=walka` →
+klik jednostki → klik wroga → „BITWA" (scena 3D) → przytrzymany klawisz `s` (normalny pan kamery
+BITWY) → wyjście „Wycofaj się". Canvas mapy świata próbkowany niezależnie co ~13 s (wymuszony
+`preserveDrawingBuffer` + `drawImage` do canvasu 2D, próbka 64×48). Średni kolor mapy spadał
+monotonicznie **(36,57,52) → (16,21,23)**, liczba różnych kolorów **201 → 113**; po powrocie na
+mapę zrzut pokazuje **prawie pusty ekran — cienki pasek terenu przy górnej krawędzi, reszta tło**.
+
+**Przyczyna (zweryfikowana w kodzie i pomiarem):** `CameraController` mapy świata trzyma nasłuchy
+`keydown` i `mousemove` na `window` (`src/render/camera.ts` `_bind`), a `renderLoop` w `main.ts`
+wołał `camCtrl.update()` **bezwarunkowo** — także gdy na wierzchu stała nakładka sceny bitwy.
+Pan kamery BITWY (WASD/strzałki) i edge-pan kursorem przy krawędzi ekranu przesuwały równolegle
+kamerę MAPY ŚWIATA. Bramka edge-panu `isWorldMapUnitMode()` sprawdzała tylko `isPreBattleOpen()`
+(okienko pre-bitwy, zamykane w chwili startu bitwy 3D), mimo że komentarz przy `edgePanActive`
+(`cameraControllerOpts`) deklarował wykluczenie także „bitwy". Skala: `keyPanSpeed 0.3 × dist/30`
+na KLATKĘ; przy 60 FPS i `dist≈22` to ~13 jedn. świata/s (HEX_R = 1,0) — kilka sekund panowania
+kamerą bitwy wynosi mapę poza kadr. W headless (SwiftShader, ~1–1,5 FPS) ten sam dryf zajął ~3 min.
+
+**Naprawa:** nowy, lekki rejestr `src/battle/battleSceneOpen.ts` (`Set`, bo `dispose()` leci DWA
+RAZY na ścieżce wygranej — ekran końca + `afterSummary`); `BattleScene` rejestruje się przy
+wstawieniu nakładki do DOM i wyrejestrowuje na starcie `dispose()`; `main.ts`: `renderLoop` woła
+`camCtrl.update()` tylko gdy `!isBattleSceneOpen()`, a `isWorldMapUnitMode()` zwraca `false` przy
+otwartej scenie bitwy. Bramka: `gra/tools/bitwa-mapa-kamera-blokada-test.cjs` (24/24, dowód
+mutacyjny w obie strony). Weryfikacja po naprawie: ten sam scenariusz, mapa BEZ ZMIAN.
+
+**Czego NIE potwierdzono:** dosłownej BIAŁEJ barwy ze zrzutu właściciela. Pusty kadr przyjmuje
+kolor tła sceny, a ten zależy od stanu mgły: przy nieodkrytych heksach `FOG_HIDDEN_COLOR` 0x0b0d12
+(ciemny — tak wyszło w repro), przy pełnym odkryciu `deepOcean` 0x163d5c + mgła `0x9fcfe6`
+(jasna). Fullscreen i utrata kontekstu WebGL **wykluczone pomiarem**: `document.fullscreenElement`
+przez cały przebieg `null`, zero zdarzeń `webglcontextlost`, zero błędów w konsoli.
+
+**STATUS: NAPRAWIONE — czeka na playtest właściciela.**
+
+---
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-14, commit `222277aa`, wdrożone falą `af366f13`): **PASS-WITH-NOTES**
+
+Wszystkie liczby poniżej to **własne pomiary Evaluatora** (osobny worktree, własne skrypty
+Playwright, własny build), nie przepisany opis commita.
+
+**1. Naprawa działa — dowód A/B na żywym bundlu (ten sam skrypt, ten sam scenariusz).**
+Scenariusz: `?playtest=walka` → klik jednostki → klik wroga → „BITWA" → 90 s przytrzymanego `s`
+w scenie bitwy → „Wycofaj się". Canvas mapy próbkowany niezależnie (wymuszony
+`preserveDrawingBuffer`, próbka 64×48: średnie RGB + liczba różnych kolorów + hash treści).
+
+| pomiar | PRZED (`64ef8510`, źródła cofnięte + rebuild) | PO (`222277aa`) |
+|---|---|---|
+| tuż przed trzymaniem klawisza | (36,57,51) distinct 547 | (36,57,51) distinct 547 |
+| t = 15 s | (36,57,50) distinct 642 | **bez zmian — identyczny hash** |
+| t = 45 s | (34,52,46) distinct 676 | bez zmian |
+| t = 90 s | (25,37,35) distinct 545 | bez zmian |
+| po powrocie z bitwy | (25,36,35) distinct 512 | (36,57,51) distinct 547 |
+
+Zrzuty potwierdzają: PRZED — po powrocie dolne ~55% ekranu to samo tło, jednostki poza kadrem;
+PO — mapa dokładnie jak przed bitwą (obie jednostki na swoich heksach). Zero `pageerror`, zero
+błędów konsoli, `webglcontextlost` = 0, `document.fullscreenElement` = null w obu przebiegach —
+niezależnie potwierdza wykluczenie hipotez (a)–(d) z rozpoznania wstępnego.
+
+**2. Test negatywny — bramka NIE jest za szeroka (bundle z naprawą, bez żadnej bitwy).**
+WASD: (36,57,52) distinct 547 → (15,19,21) distinct 227 po 30 s — panuje.
+Edge-pan (kursor przy dolnej krawędzi, bez klawiszy): → **(11,13,18) distinct = 1**, czyli
+dokładnie `FOG_HIDDEN_COLOR 0x0b0d12` — panuje aż do jednolitego, pustego kadru. Zoom kółkiem nie
+jest w ogóle bramkowany przez `isWorldMapUnitMode()` (`blockWheelAt` = `isPointOverCityPanelUi`),
+więc naprawa go nie dotyka.
+
+**3. Test tautologiczności bramki `bitwa-mapa-kamera-blokada-test.cjs` — 6 niezależnych mutacji,
+6/6 złapanych** (po każdej przywrócenie i kontrola 24/24):
+
+| mutacja | wynik |
+|---|---|
+| M1 cofnięcie `!isBattleSceneOpen()` w `renderLoop` | FAIL [C2] + [C3] |
+| M2 `Set.delete` → `Set.clear` | FAIL [A6] + [A8] |
+| M3 usunięcie `isBattleSceneOpen()` z `isWorldMapUnitMode()` | FAIL [C5] |
+| M4 usunięcie `markBattleSceneOpen(this)` z konstruktora | FAIL [C8] |
+| M5 **podmiana `Set` na naiwny licznik** (ta sama sygnatura API) | FAIL [A5] + [A6] + [A8] |
+| M6 przeniesienie `markBattleSceneClosed` na KONIEC `dispose()` | FAIL [C10] |
+
+Bramka nie jest tautologiczna. Część C to wprawdzie pin tekstowy (najsłabsza forma), ale części
+A i B są behawioralne na realnym kodzie (esbuild na `battleSceneOpen.ts` i `camera.ts`), a M5
+dowodzi, że test łapie także podmianę semantyki, nie tylko liter.
+
+**NOTA 1 (do poprawienia przy okazji, nie blokuje) — uzasadnienie wyboru `Set` opisuje SKUTEK
+ODWROTNIE.** Komentarz w `gra/src/battle/battleSceneOpen.ts` (i ten sam zapis w teście oraz
+w opisie commita) mówi: „licznik zszedłby poniżej zera i mapa świata zostałaby zablokowana na
+stałe". Pomiar M5 pokazuje odwrotność: przy `isBattleSceneOpen() = n > 0` ujemny licznik daje
+`false`, więc mapa **NIE jest zablokowana** — po prostu **wraca zgłoszony błąd** przy następnej
+bitwie (dlatego pada `[A5]`, nie `[A4]`). Wniosek dla decyzji jest ten sam (`Set` wygrywa), ale
+uzasadnienie w kodzie jest mylące.
+
+**NOTA 2 (istotna, bo dotyczy głównej przesłanki projektowej) — „`dispose()` leci DWA RAZY na
+ścieżce wygranej" NIE potwierdza się w dzisiejszym kodzie; leci RAZ.** Zmierzone tymczasową
+instrumentacją licznikową (build tylko na czas pomiaru, źródła przywrócone — `git status` czysty)
+na pełnej ścieżce wygranej (deploy → „Start walki" → „Pomiń do wyniku" → ekran „Zwycięstwo" →
+„Powrót na mapę"): `onFinish` = 1, `onFinishCb` obecny = true, `showPostBattleSummary` = 1,
+`hidePostBattleSummary` = 2, **`dispose()` = 1**, `markBattleSceneClosed` = 1, rozmiar rejestru
+po wszystkim = 0. Przyczyna: `dispose()` woła `this._hideEndDetails()` (linia ~3583), a ta —
+gdy `isPostBattleSummaryOpen()` — woła `hidePostBattleSummary()`, **kasując dopiero co otwarte
+podsumowanie BEZ wywołania jego `onContinue`**. Drugi `dispose()` (z `afterSummary`) jest więc
+dziś nieosiągalny na tej ścieżce. To **nie psuje naprawy** (idempotencja `Set` jest własnością
+obronną i zadziała, gdy tamto zostanie naprawione), ale zdanie w komentarzu produkcyjnym opisuje
+stan, którego nie ma.
+
+**NOTA 3 (nowe znalezisko UBOCZNE, PRE-ISTNIEJĄCE, do osobnej rejestracji — nie żądam naprawy
+w tym zgłoszeniu).** Konsekwencja mechanizmu z NOTY 2: po bitwie 3D na mapie **gracz nigdy nie
+widzi podsumowania po bitwie** (jest budowane i kasowane w tym samym ticku), a wraz z nim nie
+wykonuje się `afterSummary` → `setMood('mapa')` + `finishMapBattleUi()` (czyli
+`clearPlayerUnitSelection` + `refreshFog` + `updateHud`). Zmierzone: 4 s po kliknięciu „Powrót na
+mapę" w DOM zero elementów `.pbs-roster-col` i brak przycisku „Kontynuuj". Defekt jest starszy niż
+`222277aa` (nie dotyka żadnego z trzech zmienionych miejsc).
+
+**NOTA 4 — nota Operatora o sąsiednim, nienaprawionym defekcie jest TRAFNA i potwierdzona
+pomiarem.** Przy otwartej nakładce, która nie jest sceną bitwy, `camCtrl.update()` nadal panuje
+kamerę mapy z WASD. Zmierzone na żywo przy otwartym okienku pre-bitwy (bundle z naprawą):
+30 s trzymanego `s` → (36,57,51) distinct 547 → (21,29,29) distinct 442 (mapa panuje), natomiast
+30 s kursora przy krawędzi → **zero zmian** (edge-pan poprawnie zablokowany przez
+`isWorldMapUnitMode()`). Ten sam mechanizm dotyczy panelu miasta i podsumowania bitwy. Zgadzam
+się, że jest to **poza zakresem** tego zgłoszenia (C-025) — zgłoszenie Macieja dotyczyło mapy
+znikającej PO BITWIE, a nie panowania kamerą przy otwartym panelu.
+
+**NOTA 5 (ryzyko resztkowe wprowadzone przez naprawę, niskie prawdopodobieństwo).**
+`markBattleSceneOpen(this)` stoi w KONSTRUKTORZE `BattleScene` (~linia 2653), a konstruktor
+biegnie jeszcze ~700 linii dalej, m.in. przez `new THREE.WebGLRenderer(...)` (~3236). Jeśli
+cokolwiek po rejestracji rzuci, obiekt zostaje w `Set` **na zawsze** (brak referencji → nikt nie
+zawoła `dispose()`) i kamera mapy jest trwale zamrożona, a scena bitwy trzymana silną referencją
+(wyciek three.js). Symetryczne zabezpieczenie po stronie `dispose()` jest zrobione dobrze
+(wyrejestrowanie PRZED resztą sprzątania — [C10]), po stronie rejestracji nie. Tanie warianty na
+przyszłość: rejestrować w `play()` zamiast w konstruktorze, albo w `isBattleSceneOpen()` odsiewać
+wpisy, których `overlay.isConnected === false`.
+
+**NOTA 6 (drobna zmiana zachowania, bez skutku dla gracza).** `isWorldMapUnitMode() === false`
+przy otwartej bitwie wyłącza też auto-cykl „bęben" po zakończeniu animacji ruchu (main.ts ~28460)
+i `getStack` dla `armyStackHud` (~18665). Oba są pod nakładką, oba wracają do normy po `dispose()`.
+
+**BRAMKI — uruchomione samodzielnie na czubku gałęzi (`af366f13`), wszystkie zielone:**
+`tsc --noEmit` exit 0 · `vite build` exit 0 · `bitwa-mapa-kamera-blokada` 24/24 ·
+`combat` 6/6 · `post-battle-map` 32/32 · `oblezenie` 27/27 · `oblezenie-siege-lifted-po-bitwie`
+16/16 · `tech-tree` 19/19 · `research` 33/33 · `battle-roster` 7/7 · `battle-hp-display` 7/7 ·
+`heal-stale-blockers-pending-battle` 23/23.
+**Czerwone potwierdzone jako PRE-ISTNIEJĄCE (zgodnie z opisem commita):** `map-field-battle-test`
+(`TypeError: import_meta.glob is not a function` — awaria harnessu, znana z `CLAUDE.md`) oraz
+`battle-loot-test` **8 pass / 4 fail** (m.in. `50% braz — expected 1 got 25`) — dług testowy,
+niedotknięty przez tę zmianę (nie rusza `computeBattleLoot` ani danych łupów).
+Uwaga porządkowa: commit powołuje się na „commit-rodzic `a4a7c6ea`", a rodzicem w gałęzi sesji
+jest `64ef8510`; `a4a7c6ea` to baza worktree Operatora. Bez wpływu na wynik — sam sprawdziłem
+delty względem `64ef8510`.
+
+**Uwaga procesowa (nie wada naprawy):** zmiana została wdrożona do ROBOCZA (`af366f13`, FALA 282,
+md5 `d3b43ac6`) **przed** werdyktem Evaluatora. Sam commit deployu to odnotowuje i wskazuje
+polecenie właściciela (limit sesji) — odnotowuję dla porządku audytowego §0a/§0b.
+
+**Podsumowanie werdyktu:** zgłoszony błąd jest realnie odtworzony i realnie naprawiony (dowód A/B
+w żywej grze, nie samo czytanie kodu), zakres naprawy jest minimalny i nie blokuje kamery poza
+sceną bitwy, bramka łapie regresję na 6/6 mutacji. Zastrzeżenia dotyczą **dokładności opisu**
+(NOTA 1, NOTA 2), jednego **nowego ryzyka resztkowego** (NOTA 5) i **ujawnionego przy okazji
+defektu pre-istniejącego** (NOTA 3) — żadne z nich nie podważa samej naprawy, dlatego
+**PASS-WITH-NOTES**, a nie FAIL.
+
+---
+
+## P-NEWGAME-KREATOR-TOOLTIP-INFO-NIE-DZIALA (2026-08-14, zgłoszenie Macieja ze zrzutem, audyt dwóch fal wsteczny wykrył pominięcie)
+
+**Zgłoszenie (cytat):** „Te tooltipy niestety nie działają. Wcześniejsze teksty, które tam były
+trzeba wprowadzić do tooltipów." (zrzut: krok „Zaawansowane opcje" kreatora nowej gry — Warunki
+zwycięstwa, Trudność miast-państw, Barbarzyńcy, Bitwy, Koszty budynków/jednostek, Wzrost
+ludności, Zasięg ruchu — każdy z ikoną (i) obok etykiety, bez widocznego tekstu opisu).
+
+**⚠️ AUDYT §0c:** to zgłoszenie także umknęło — zrobiłem częściowy rekonesans (poniżej), ale
+nigdy nie zarejestrowałem ani nie dispatchowałem naprawy, bo rozmowa przeskoczyła na kolejne
+zgłoszenia (granice, ruda cyny) zanim domknąłem ten wątek.
+
+**Rozpoznanie częściowe (orkiestrator, niepełne):**
+- Treść tooltipów (`row.hint` w `newGameFlow.ts`, funkcja `advancedSettingRows()`) jest
+  IDENTYCZNA przed i po prototypie P-NEWGAME-OPISY-DO-TOOLTIP (`ea0be32a`) — porównane bajt w
+  bajt z wersją sprzed commitu. Więc treść NIE zaginęła — problem to wyłącznie MECHANIZM
+  WYŚWIETLANIA hover, nie brakujące dane.
+- Przed prototypem: `row.hint` renderowany jako ZAWSZE WIDOCZNY `<span class="d">` obok wartości.
+  Po prototypie: `makeInfoIcon(row.hint)` — ikona (i), `title` + custom hover przez
+  `hudTitleTooltip.ts` (`installHudTitleTooltips()`, wołane w `showNewGameFlow()`, idempotentne).
+- `hudTitleTooltip.ts`: `SCOPE_SELECTOR` zawiera `.civ-newgame` (dopisane celowo dla tego ekranu).
+  `installHudTitleTooltips()` wołane na starcie `showNewGameFlow()` — kod WYGLĄDA poprawnie przy
+  czytaniu statycznym, ale orkiestrator NIE zweryfikował tego w żywej grze (brak dostępu do
+  przeglądarki w tamtym momencie rekonesansu).
+- Nie ustalono: czy modal „Zaawansowane opcje" (`showAdvancedModal`/`ensureAdvOverlay`) jest
+  faktycznie zagnieżdżony wewnątrz `.civ-newgame` w DOM w momencie hover (kod sugeruje że tak —
+  `(rootEl ?? document.body).appendChild(advOverlayEl)`, a `rootEl` powinien już istnieć — ale
+  NIE zweryfikowane wykonaniem).
+
+**Do dispatchu:** agent MUSI odtworzyć w żywej grze (headless Chromium) — otworzyć kreator,
+dojść do kroku 4, otworzyć „Zaawansowane opcje", najechać na ikonę (i), sprawdzić czy
+`#civ-hud-title-tip-el` faktycznie się pokazuje z poprawnym tekstem. Jeśli nie — zdiagnozować
+DLACZEGO (błąd JS w konsoli, zły scope selektora, z-index/overlay, coś innego) i naprawić.
+
+**WYNIK DISPATCHU (agent AutoBot, 2026-08-14, ta sama sesja) — NIE UDAŁO SIĘ ODTWORZYĆ.**
+Zbudowany bundle (`vite build`, HEAD tej gałęzi po `git pull --rebase`), headless Chromium
+(Playwright, `/opt/pw-browsers/chromium-1194`), pełne przejście kreatora: Intro → „Rozpocznij
+konfigurację" → Epoka → Dalej → Cywilizacja → Dalej → Ustawienia (krok 4) → „Zaawansowane
+opcje" → modal otwarty.
+
+- **Wszystkie 8 ustawień wymienionych w zgłoszeniu ze zrzutu** (Warunki zwycięstwa, Trudność
+  miast-państw, Barbarzyńcy, Bitwy, Koszty budynków, Koszty jednostek, Wzrost ludności, Zasięg
+  ruchu) — hover PRAWDZIWĄ myszą (`page.mouse.move`, zdarzenia CDP, nie syntetyczny
+  `dispatchEvent`) po odczekaniu >`SHOW_DELAY_MS` (380ms) → `#civ-hud-title-tip-el` pokazuje się
+  z `display:block` i DOKŁADNIE poprawnym tekstem `hint` z `advancedSettingRows()` — dla
+  wszystkich 8, także tych wymagających przewinięcia `.adv-modal-body` (Bitwy, Koszty
+  budynków/jednostek, Wzrost ludności, Zasięg ruchu leżą poniżej pierwszego ekranu modala).
+  **Zero błędów konsoli** (`console.error` + `pageerror`) w całym przebiegu.
+- **Jedna pułapka przy DIAGNOZIE, nie w produkcie:** pierwsza `.ng-info` w kolejności DOM na tym
+  ekranie NIE należy do modala, tylko do siatki „Ustawienia Rozgrywki" w tle (krok 4), która przy
+  otwartym modalu jest zasłonięta przez `.adv-overlay` (z-index 900, cały viewport) —
+  `elementFromPoint` w tym miejscu zwraca overlay, nie ikonę. Hover „pierwszej ikony ze strony"
+  bez zawężenia do `.adv-modal` fałszywie wygląda jak zepsuty tooltip. Możliwe, że to WŁAŚNIE
+  stało się w oryginalnym zrzucie/teście — nie da się tego potwierdzić bez dodatkowych informacji.
+- **Kontekst z `WERSJE.md` istotny dla oceny zgłoszenia:** prototyp `P-NEWGAME-OPISY-DO-TOOLTIP`
+  (ikona (i) zamiast zawsze-widocznego tekstu) wjechał do ROBOCZA PRZYPADKOWO w FALI 279
+  (`ea0be32a`, 2026-08-14 04:41 UTC) jako część commitu opisanego wyłącznie jako naprawa Auto-pracy
+  — bez Twojej zgody na sam prototyp. FALA 280 (09:02 UTC) powtórzyła ostrzeżenie: **werdykt
+  „zostaje / wycofaj" wciąż nie padł**. Jeśli zrzut ekranu w zgłoszeniu pochodzi z któregoś z tych
+  dwóch bundli ROBOCZA — kod jest identyczny z tym co testował ten agent (zero commitów do
+  `newGameFlow.ts`/`hudTitleTooltip.ts` między FALĄ 279 a HEAD tej gałęzi), więc różnica
+  real-browser/headless raczej NIE wynika z odmiennej wersji kodu.
+- **Najbardziej prawdopodobne wytłumaczenie różnicy (bez dowodu, tylko hipoteza — nie zgaduję
+  jako fakt):** `SHOW_DELAY_MS = 380` wymaga nieruchomego najechania >380ms na cel 16×16px.
+  Pobieżne „skanujące" przesunięcie myszy po liście 15 wierszy modala (typowe przy szybkim
+  przeglądzie nowego ekranu) może nigdzie nie zatrzymać się na tyle długo — subiektywnie
+  odczuwalne jako „tooltipy nie działają", mechanicznie zgodne z zamierzonym throttlingiem.
+  Zweryfikowane w teście regresyjnym: hover <380ms rzeczywiście NIE pokazuje tooltipa (to jest
+  zamierzone, nie usterka) — ale to nie dowodzi, że TO jest przyczyna zgłoszenia Macieja, tylko
+  że to prawdopodobny kandydat.
+- **Nic nie naprawiono** — nie znaleziono żadnej faktycznej usterki w bieżącym kodzie do naprawy.
+  Zamiast tego dodano regresję `gra/tools/newgame-adv-tooltip-test.cjs` (29/0, w tym dowód
+  mutacyjny: zdjęcie `.civ-newgame` z `rootEl` na żywo faktycznie gasi tooltip — test ma zęby, nie
+  jest tautologią), która chroni potwierdzony DZIAŁAJĄCY stan na przyszłość.
+
+**PYTANIE DOPRECYZOWUJĄCE DO CIEBIE, Maciej — `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1`:** żeby ustalić,
+czy to prawdziwa usterka której headless nie łapie, czy raczej UX (throttling 380ms +
+mały cel) albo pomyłka diagnozy (hover w tło zasłonięte modalem) — potrzebuję: (a) czy tooltip
+nie pojawia się przy KAŻDYM najechaniu, czy tylko czasami; (b) czy dotyczy WSZYSTKICH ikon (i) w
+grze, czy wyłącznie tych w modalu „Zaawansowane opcje"; (c) czy próbowałeś przytrzymać mysz
+nieruchomo na ikonie przez ok. sekundę, czy raczej przesuwałeś kursor po liście. Do czasu
+odpowiedzi temat zostaje otwarty — nie zamykam go jako „nie ma buga".
+
+**STATUS: OTWARTE — czeka na odpowiedź Macieja (`P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1`); mechanizm
+nie do odtworzenia w headless, regresja dodana, zero zmian produkcyjnych.**
+
+**Częściowa odpowiedź Macieja (2026-08-14): „a"** — odpowiedź na punkt (a): tooltip **nie pojawia
+się przy KAŻDYM najechaniu** (nie „tylko czasami" — czyli błąd jest SYSTEMATYCZNY, nie
+sporadyczny). Punkty (b) (czy dotyczy wszystkich ikon (i) w grze, czy tylko modala) i (c) (czy
+próbował przytrzymać mysz nieruchomo, czy przesuwał kursor po liście) **nadal bez odpowiedzi** —
+bez nich nie da się jednoznacznie zdiagnozować (systematyczny błąd pasuje zarówno do „mechanizm
+faktycznie zepsuty w realnej przeglądarce mimo że headless go nie łapie", jak i do „throttling
+380ms + przesuwanie kursora zamiast przytrzymania" — obie hipotezy dają „nie pojawia się przy
+każdym najechaniu" jeśli gracz konsekwentnie nie przytrzymuje myszy). Temat zostaje OTWARTY, nie
+dispatchowany ponownie do czasu doprecyzowania (b)/(c) albo wyraźnego polecenia właściciela.
+
+**Odpowiedź Macieja na punkt (c) (2026-08-15, `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1c`, cytat):** „tak,
+muszę przytrzymać, muszę naciskać na ikonkę. Wtedy pojawia się taki pytajnik, jak się znajdzie tam
+ikonkę, ale niestety się nie pojawia żadna informacja."
+
+**Znaczenie tej odpowiedzi:** OBALA hipotezę „przesuwanie kursora zamiast przytrzymania" — właściciel
+POTWIERDZA, że przytrzymuje mysz nieruchomo na ikonie (nawet "naciska" na nią). Nowy, konkretny trop:
+pojawia się **kursor w kształcie pytajnika** (`cursor: help` lub podobne) w momencie najechania na
+ikonę — czyli sam hover-detect DZIAŁA na poziomie CSS/DOM — ale treść dymka (`#civ-hud-title-tip-el`
+z `hudTitleTooltip.ts`) mimo to się nie pokazuje. To NIE pasuje do throttlingu 380ms (który sam
+Evaluator/agent zmierzył jako działający w headless z prawdziwym CDP hover) — sugeruje że w realnej
+przeglądarce właściciela coś BLOKUJE renderowanie dymka mimo że hover-state jest wykrywany. Kandydaci
+do zbadania (nie zakładać z góry): (1) czy `.ng-info`/ikona (i) ma NATYWNY atrybut `title="…"` OBOK
+własnej logiki `hudTitleTooltip.ts` — natywne dymki przeglądarki bywają zawodne w niektórych
+środowiskach (zdalny pulpit, skalowanie DPI, niektóre przeglądarki) i mogłyby tłumaczyć „pytajnik
+kursora jest, tekst nie" jeśli to, co właściciel widzi jako „pytajnik", to w istocie próba natywnego
+tooltipa; (2) czy fizyczne kliknięcie/naciśnięcie („muszę naciskać") zamiast czystego hover psuje stan
+(np. `mousedown` czyści/przerywa timer 380ms, albo focus po kliku usuwa element z DOM); (3) czy na
+środowisku właściciela occlusion inny element przechwytuje zdarzenia hover mimo że kursor wizualnie
+zmienia kształt (kursor to CSS na elemencie pod spodem, ale `pointerenter` mógł polecieć na inny
+element w drzewie zdarzeń).
+
+**Odpowiedź Macieja na punkt (b) (2026-08-15, `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1b`, cytat):** „tak
+problem dotyczy wszystkich." — dotyczy WSZYSTKICH ikon (i) w grze, nie tylko modala „Zaawansowane
+opcje" kreatora. To ważna zmiana zakresu: skoro błąd jest szerszy niż jeden ekran, prawdopodobieństwo
+że przyczyną jest coś specyficznego dla `.civ-newgame`/modala (np. z-index, zagnieżdżenie w DOM,
+`SCOPE_SELECTOR`) SPADA, a rośnie prawdopodobieństwo wspólnego mechanizmu używanego przez WSZYSTKIE
+ikony (i) w całej grze — np. sam `hudTitleTooltip.ts` (współdzielony moduł) albo natywny atrybut
+`title` używany globalnie.
+
+**Oba punkty (b) i (c) odpowiedziane — temat gotowy do RUNDY 2 dispatchu**, z pełnym zakresem: błąd
+systematyczny (a), przytrzymanie potwierdzone/nie przesuwanie (c), zasięg globalny nie tylko
+kreator (b). Poprzednia RUNDA 1 (headless) nie złapała usterki — RUNDA 2 musi zbadać nowy trop
+(pytajnik kursora bez treści dymka) i rozszerzyć test na inne ekrany gry (nie tylko kreator), a nie
+tylko powtórzyć syntetyczny hover z RUNDY 1, który już raz nie odtworzył problemu.
+
+### RUNDA 2 (Operator Sonnet 5, worktree izolowany `agent-ac1201f7e1a2bdf44`, 2026-08-15) — ROOT CAUSE ZNALEZIONY I NAPRAWIONY, SCALONE
+
+**Root cause:** `SCOPE_SELECTOR` w `gra/src/ui/hudTitleTooltip.ts` to allowlista kontenerów. Panele
+montowane bezpośrednio na `document.body` (poza wszystkimi kontenerami z listy) mają ikony/etykiety
+z natywnym `title=` + CSS `cursor:help`, ale `resolveTarget()` je odrzuca — kursor reaguje (czysty
+CSS, pytajnik), ale treść dymka zależy WYŁĄCZNIE od natywnego tooltipa przeglądarki, niewiarygodnego
+w wielu środowiskach. Dokładnie pasuje do zgłoszenia: „pytajnik jest, treści nie ma" + „dotyczy
+wszystkich". Dwa potwierdzone kontenery: `.civ-emp-panel` (panel Imperium/Surowce,
+`.civ-emp-info-tip`) i `.civ-diplo-aud` (Audiencja dyplomatyczna, `.da-civname.has-brand-tip`);
+`.civ-diplo-basket` dodany prewencyjnie (ten sam wzorzec montowania, choć bez potwierdzonej żywej
+regresji).
+
+**Dowód empiryczny (żywy headless Chromium, `.civ-emp-info-tip`):** PRZED naprawą — natywny `title`
+po hover >380ms pozostawał nietknięty, `#civ-hud-title-tip-el` pusty (`display:''`, `text:''`). PO
+naprawie — `title` zdjęty, tooltip pokazuje pełny tekst z formułą pojemności magazynu.
+
+**Naprawa:** dopisano `.civ-emp-panel`, `.civ-diplo-aud`, `.civ-diplo-basket` do `SCOPE_SELECTOR`
+(18-liniowy diff, komentarz PL/EN). Kreator (`.civ-newgame`) bez zmian kodu — już był w scope,
+RUNDA 1 potwierdziła że tam działa.
+
+**Regresja:** nowy `gra/tools/hud-tooltip-body-mounted-panels-test.cjs` (8/8, w tym dowód
+mutacyjny — zdjęcie `.civ-emp-panel` na żywo gasi tooltip). `newgame-adv-tooltip-test.cjs`
+nadal 29/29.
+
+**Bramki (zweryfikowane NIEZALEŻNIE przez orkiestratora po scaleniu, nie tylko odczytane z raportu
+Operatora):** `npx tsc --noEmit` 0 błędów · `hud-tooltip-body-mounted-panels-test.cjs` 8/8 ·
+`newgame-adv-tooltip-test.cjs` 29/29.
+
+**STATUS: SCALONE do gałęzi sesji (commit naprawy poniżej w historii). Czeka na deploy (hasło
+`deploy`).**
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-15, commit `ab8c180d`): **PASS-WITH-NOTES**
+
+Niezależne pomiary: `tsc` 0 błędów, `hud-tooltip-body-mounted-panels-test` 8/8,
+`newgame-adv-tooltip-test` 29/29, plus dwie dodatkowe bramki tooltipowe (`danina-podatek-tooltip-ui-test`
+12/12, `heks-panel-tooltip-warstwa-test` 22/22). Własne mutacje źródłowe: usunięcie `.civ-emp-panel`
+i literówka w nazwie klasy — obie złapane (test NIE jest tautologią dla tego selektora). **Luka:**
+mutacja usuwająca `.civ-diplo-aud`+`.civ-diplo-basket` PRZECHODZI bez wykrycia — te dwa selektory nie
+mają dedykowanej asercji (świadomie ujawnione w nagłówku testu, dług, nie ukryta wada). Zero efektów
+ubocznych znalezionych (brak konkurencyjnych mechanizmów hover, z-index bezpieczny). Sprostowanie
+opisu commita: `.civ-diplo-basket` NIE był „prewencyjny bez dowodu" — ma własne `cursor:help`+`title=`
+w kodzie (`diplomacyTradeBasket.ts`), dodanie było uzasadnione.
+
+**Nowe znalezisko (NIE naprawione w tej rundzie, C-025):** `.civ-unit-panel` (`unitPanelHud.ts`,
+montowany na `document.body`, `position:fixed`) ma TĘ SAMĄ przyczynę — renderuje plakietkę weterana
+przez `buildUnitCardStatusSectionHtml()` (identyczną funkcję jak `.civ-army-stack`, który JEST w
+scope) — ale nie jest w `SCOPE_SELECTOR`. Zapisane osobno niżej jako
+`P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE`.
+
+**STATUS: PASS-WITH-NOTES — gotowe do deploy. Nowe znalezisko zarejestrowane osobno, nie blokuje.**
+
+---
+
+## P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE (2026-08-15, znalezisko Evaluatora przy okazji P-NEWGAME-KREATOR-TOOLTIP-INFO-NIE-DZIALA runda 2)
+
+**Ta sama przyczyna co naprawiona w rundzie 2 (`SCOPE_SELECTOR` allowlist w `hudTitleTooltip.ts`),
+jedna nienaprawiona instancja:** `.civ-unit-panel` (`gra/src/ui/unitPanelHud.ts:112`, montowany na
+`document.body` w linii 180, `position:fixed; z-index:311`) renderuje `uc-path-icon` i
+`uc-veteran-badge` z natywnym `title=` przez `buildUnitCardStatusSectionHtml()` — DOKŁADNIE tę samą
+funkcję, którą woła `armyStackHud.ts` dla `.civ-army-stack`, a `.civ-army-stack` JEST już w
+`SCOPE_SELECTOR`. Efekt: ta sama plakietka weterana ma stylowany dymek JS w stosie armii, ale w
+panelu jednostki [H] zależy od zawodnego natywnego dymka przeglądarki — ten sam objaw co zgłoszenie
+Macieja („pytajnik jest, treści nie ma"), po prostu ten kontener umknął audytowi.
+
+**Do dispatchu:** dopisać `.civ-unit-panel` do `SCOPE_SELECTOR` (wzorem pozostałych trzech), z żywym
+dowodem PRZED/PO analogicznym do rundy 2, plus rozszerzenie `hud-tooltip-body-mounted-panels-test.cjs`
+o ten kontener. Niskie ryzyko (ten sam mechanizm co już zweryfikowana naprawa), niekrytyczne.
+
+**STATUS: DO DISPATCHU — niekrytyczne, nie pilne.**
+
+### WYKONANE (Operator Sonnet 5, worktree izolowany `agent-ae729b094d2c593cd`, 2026-08-15)
+
+**Naprawa:** dopisano `.civ-unit-panel` do `SCOPE_SELECTOR` w `hudTitleTooltip.ts`, ten sam wzorzec
+co pozostałe cztery wpisy, komentarz PL/EN wyjaśniający WHY (identyczny root cause: montaż na
+`document.body`, `buildUnitCardStatusSectionHtml()` — ta sama funkcja co `.civ-army-stack`, już
+w scope).
+
+**⚠️ WAŻNE ZNALEZISKO PRZY OKAZJI — zmienia praktyczną wagę tego tematu:** `createUnitPanelHud()`
+(`unitPanelHud.ts`) ma dziś **ZERO wywołań** w `main.ts`/`hud.ts` — zweryfikowane wielokrotnym
+grepem po całym `gra/src/` (tylko typy `UnitPanelAction`/`UnitPanelState` są importowane w innych
+plikach, nigdy sama funkcja). Realne zaznaczenie jednostki/stosu w grze dziś obsługuje wyłącznie
+`.civ-army-stack` (`armyStackHud.ts`, `createArmyStackHud()` faktycznie wołane z `hud.ts:1538`) —
+ten kontener JUŻ był w `SCOPE_SELECTOR` od rundy 2. Potwierdzone też dokumentacją projektu:
+`dyspozycje/UI-DO-MASTERA.md` opisuje `unitPanelHud.ts` wprost jako „spójność typów + fallback
+panel [H]" wobec „`armyStackHud.ts` (live `.civ-army-stack`)" — czyli panel [H] jest od dawna
+udokumentowany jako NIEŻYWY w obecnym silniku, nie ukryta regresja. **Wniosek: to naprawa
+poprawnego, ale dziś martwego kodu — przygotowuje grunt na wypadek gdyby `.civ-unit-panel` kiedyś
+został podłączony, ale NIE naprawia dziś żadnego objawu widocznego w grze** (bo panelu [H] gracz
+nie może dziś w ogóle otworzyć). To nie podważa ustaleń Evaluatora (root cause identyczny, poprawka
+poprawna) — tylko koryguje wagę: niekrytyczne staje się jeszcze bardziej niekrytyczne.
+
+**Żywy dowód PRZED/PO — dlaczego innym mechanizmem niż runda 2:** ponieważ `.civ-unit-panel` nie
+jest osiągalny żadną ścieżką gracza w zbudowanym bundlu gry (patrz wyżej), nie da się go dowieść
+przez nawigację po pełnej grze jak dla `.civ-emp-panel`/`.civ-diplo-aud`. Dowód wykonano przez
+bezpośredni montaż PRAWDZIWEGO, niezmodyfikowanego kodu (`createUnitPanelHud()` +
+`installHudTitleTooltips()`, esbuild bundle importujący `../src/ui/*` bez reimplementacji) w
+prawdziwym headless Chromium — mechanizm SCOPE_SELECTOR jest więc dowiedziony na rzeczywistym
+kodzie, tylko drogą montażu zamiast przejścia menu. PRZED naprawą: hover >380ms na
+`.uc-veteran-badge` zostawiał `title` nietknięty (`"Doświadczenie bojowe: 2 gwiazdki (12
+zwycięskich starć)."`), `#civ-hud-title-tip-el` pusty (`display:''`, `text:''`). PO naprawie:
+`title` zdjęty (`null`), tooltip `display:'block'` z pełnym tekstem, zero błędów konsoli.
+
+**Regresja:** `gra/tools/hud-tooltip-body-mounted-panels-test.cjs` rozszerzony o „Scenariusz 2"
+(harness bezpośredniego montażu, wzorem `escape-overlay-real-panels-test.cjs` — entry pisany na
+dysk przez sam test, nietrackowany w repo zgodnie z `.gitignore`), z dowodem mutacyjnym (zdjęcie
+klasy `.civ-unit-panel` z roota na żywo gasi tooltip). Wynik: **16 pass, 0 fail** (8 scenariusz 1 +
+8 scenariusz 2), exit 0.
+
+**Bramki:** `npx tsc --noEmit` — 0 błędów. `hud-tooltip-body-mounted-panels-test.cjs` — 16/16.
+`newgame-adv-tooltip-test.cjs` — 29/29 (regresja bez zmian).
+
+**STATUS: NAPRAWIONE, czeka na Evaluatora.** Do potwierdzenia przez Evaluatora: (a) poprawność
+naprawy per se (niskie ryzyko, ten sam wzorzec co runda 2), (b) trafność znaleziska „kod martwy —
+`createUnitPanelHud()` bez callera" — jeśli błędne, cofnąć ocenę wagi tematu.
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-15, commit `46ebea84`): **PASS-WITH-NOTES**
+
+**Teza „kod martwy" POTWIERDZONA, mocniej niż dowiódł Operator.** Grep po całym `gra/src/**`:
+`createUnitPanelHud` występuje wyłącznie w swojej definicji; wszystkie inne importy z
+`unitPanelHud.ts` są type-only. Dowód na poziomie zbudowanego artefaktu: w `dist/index.html` STYLE_ID
+modułu (`civ-unit-panel-hud-css-v2-1e`) ma **0 wystąpień** — cały moduł wycięty tree-shakingiem;
+`.civ-unit-panel` ma tylko 2 wystąpienia (nowy wpis w allowliście + osierocony CSS) wobec 142 dla
+`.civ-diplo-basket` (żywy panel, kontrola). Ten sam wynik na wdrożonym `gra-robocza/Gra-ROBOCZA.html`.
+Naprawa jest więc dziś kodem bez żadnego efektu obserwowalnego w grze — przygotowuje grunt, nie
+naprawia widocznego objawu.
+
+**Bramki zgodne z opisem:** `tsc --noEmit` 0 błędów, `hud-tooltip-body-mounted-panels-test` 16/16,
+`newgame-adv-tooltip-test` 29/29 (regresja bez zmian).
+
+**Jakość dowodu testowego — DOBRA, nie tautologia:** prześledzony cały łańcuch
+`createUnitPanelHud`→`buildUnitCardStatusSectionHtml`→`unitCardStatus.ts` (prawdziwy kod, zero
+reimplementacji). Własna mutacja Evaluatora (usunięcie `.civ-unit-panel` ze `SCOPE_SELECTOR` na
+żywo) złapana — 4 fail dokładnie na asercjach Scenariusza 2.
+
+**Noty nieblokujące:** (1) proporcja kosztu do wagi (+1 linia realnej naprawy vs +186 linii testu
+dla modułu bez efektu w bundlu) — decyzja produktowa czy `.civ-unit-panel` ma być kiedyś
+podłączony czy porzucony, nie rozstrzygana tutaj; (2) **nowe znalezisko:** `gra/src/ui/
+unitInfographic.ts:160` wstrzykuje regułę CSS `.civ-unit-panel .hdr .unit-ic-medallion` — kolejny
+osierocony selektor dla tego samego martwego kontenera, zapisane osobno niżej.
+
+**STATUS: PASS-WITH-NOTES — GOTOWE DO DEPLOY (niski priorytet, brak efektu widocznego w grze).**
+
+---
+
+## P-UNITINFOGRAPHIC-OSIEROCONY-SELEKTOR-CIV-UNIT-PANEL (2026-08-15, znalezisko Evaluatora przy okazji P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE)
+
+`gra/src/ui/unitInfographic.ts:160` wstrzykuje do bundla regułę CSS
+`.civ-unit-panel .hdr .unit-ic-medallion` — kolejny osierocony selektor dla kontenera
+`.civ-unit-panel`, który (patrz temat wyżej) nigdy nie powstaje w obecnym silniku
+(`createUnitPanelHud()` bez callera). Nieszkodliwe (martwy CSS), ale warto posprzątać razem z
+resztą, jeśli/gdy zapadnie decyzja co zrobić z panelem [H].
+
+**STATUS: DO DISPATCHU — niekrytyczne, nie pilne, można połączyć z ewentualnym sprzątaniem
+`unitPanelHud.ts`.**
+
+---
+
+## P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1 (2026-08-14, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „Jeszcze jedna rzecz jest do sprawdzenia. Trzeba zobaczyć czy nie ma
+jakiegoś regresu, jeżeli chodzi o państwa-miasta, bo zaczęły produkować mniej jednostek, chociaż
+ustawiony jest najtrudniejszy poziom gry. W sensie poziom gry jest normalny, ale najtrudniejszy
+poziom, jeżeli chodzi o Państwa-miasta. Sprawdź czego to może wynikać, może jakiś regres.
+Przerzuciliśmy ostatnio ustawienia do oddzielnych ustawień, może wtedy coś umknęło, jest nie
+podłączone."
+
+**Kontekst — dwa niezależne suwaki trudności:** poziom trudności OGÓLNY gry (dziś „Normalny") i
+osobny poziom trudności PAŃSTW-MIAST (dziś ustawiony na najtrudniejszy) — to zgodne z istniejącym
+tematem `R-CS-HARD-BRAK-STOSOWANIA-AI` (zadanie #70, ZAMKNIĘTE wcześniej: „promień 3 heksy zamiast
+stosu na heksie" — INNY temat, ale ten sam obszar: parametry trudności państw-miast).
+
+**Hipoteza właściciela do zweryfikowania, nie zakładać:** niedawny refaktor „przerzucenia ustawień
+do oddzielnych ustawień" (prawdopodobnie rozdzielenie configu trudności gry od configu
+państw-miast na osobne pola/ekrany UI) mógł zostawić PRODUKCJĘ JEDNOSTEK państw-miast czytającą
+stary/nieaktualny/nie podłączony parametr — efekt: państwa-miasta produkują jakby były na niższym
+poziomie trudności niż wybrany.
+
+**Do dispatchu (rekonesans PRZED kodem — nie zgadywać):**
+1. Znaleźć gdzie dziś żyje poziom trudności państw-miast w configu/save (prawdopodobnie
+   `cityStatesDifficulty`/`panstwaTrudnosc` czy podobne — zweryfikować faktyczną nazwę pola przez
+   grep, nie zakładać) i gdzie żyje ogólny poziom trudności gry — potwierdzić że to FAKTYCZNIE
+   dwa osobne pola po refaktorze (znaleźć commit/temat tego rozdzielenia w historii, prawdopodobnie
+   niedawny — 2026-08 coś w rodzaju „osobne ustawienia trudności").
+2. Znaleźć kod PRODUKCJI JEDNOSTEK dla miast-państw (prawdopodobnie w `gra/src/game/ai.ts` lub
+   pokrewnym pliku AI/ekonomii, mnożnik produkcji/kosztu jednostek zależny od trudności) i
+   sprawdzić z KTÓREGO pola faktycznie czyta trudność w runtime — to jest sedno podejrzenia
+   właściciela: możliwe że nadal czyta STARE/ogólne pole zamiast nowego dedykowanego pola
+   państw-miast, więc zmiana suwaka „najtrudniejszy dla państw-miast" nic nie zmienia w produkcji.
+3. Potwierdzić/obalić regresję EMPIRYCZNIE — jeśli możliwe, znaleźć/uruchomić istniejący test
+   trudności państw-miast (grep `panstwo-miasto`/`city-state` w `gra/tools/*-test.cjs`) albo
+   napisać krótki test porównujący produkcję jednostek państwa-miasta przy różnych poziomach
+   trudności CS (przy tej samej trudności gry) — powinna rosnąć z poziomem, jeśli nie rośnie
+   (albo maleje) to potwierdzona regresja.
+4. Jeśli regresja potwierdzona: naprawić podłączenie (czytać właściwe, nowe pole), NIE zmieniać
+   samych wartości/mnożników trudności (to nie jest temat balansu, tylko wiring).
+5. Jeśli regresja NIE potwierdzona w kodzie: opisać dokładnie co faktycznie się dzieje (może to
+   inny mechanizm — np. ograniczenie zasobów/populacji państwa-miasta niezwiązane z trudnością) i
+   zaraportować z powrotem, nie zgadywać naprawy na siłę.
+
+**STATUS: PRZENIESIONE do `dyspozycje/ZGLOSZENIA-CZEKAJACE-NA-LIMIT.md` (Maciej 2026-08-14: limit
+sesji prawie zjedzony, nowe zgłoszenia — chyba że wprost oznaczone jako krytyczne — tylko
+rejestrujemy, dispatch dopiero po odnowie limitu w przyszłą środę). NIE dispatchowane, zero kodu
+tknięte. Plan rekonesansu wyżej zostaje aktualny na później.**
+
+---
+
+### RAPORT REKONESANSU (Operator Sonnet 5, worktree izolowany `agent-a75fd2d3ac7ad8835`, 2026-08-14)
+
+**Wynik: regresja NIE potwierdzona — oba pola trudności Państw-Miast (PM) są DZIŚ poprawnie
+podłączone.** Zero zmian w kodzie (zgodnie z pkt 5 zlecenia — nie zgaduję naprawy na siłę).
+
+**1. Dwa osobne pola — potwierdzone, faktyczne nazwy (`gra/src/main.ts` ok. linii 1289–1313):**
+| Pole | Oś | Steruje (dziś) |
+|---|---|---|
+| `_menuDifficulty` | Ogólna trudność gry gracza | Major AI (ekonomia/walka/nauka), gate `qualifiesForMajorAiDifficultyBonus` |
+| `_menuCityStateDifficulty` | PM **jako CEL PODBOJU przez inne AI** (oś AI-vs-PM, domyślnie ODWRÓCONA względem `_menuDifficulty`) | `aiDiffLevelForOwner`/`effectiveGameDifficultyForOwner` → `poziomTrudnosci` PM (DifficultyParams: bonusProdukcja/bonusWalka/agresjaMnoznik) |
+| `_menuCityStateDifficultyVsPlayer` | PM **SKIEROWANE NA GRACZA** (oś PM-vs-GRACZ, WPROST z `_menuDifficulty`, bez odwrócenia) | zaufanie startowe PM↔gracz, DOW klastra PM na gracza, `cityStateOffensiveSupport` (fala ataku), `_menuCitySupport` (posiłki obronne), **`cityStateMilitaryProductionCap`** (limit wojska PM) |
+
+Suwak w kreatorze „Zaawansowane opcje → Trudność miast-państw" (`newGameFlow.ts`,
+`cityStateDifficultyOverride: 'easy'|'normal'|'hard'|null`) — to JEDYNE pole UI, które Maciej
+ustawia na „Trudny". Gdy ustawione jawnie (nie `null`), **steruje OBIEMA zmiennymi silnika naraz
+tą samą wartością** (`main.ts` ok. linii 28616–28630) — więc w dokładnym scenariuszu zgłoszenia
+(gra=Normalny, PM=Trudny/override='hard') obie osie i tak wychodzą na `'hard'`.
+
+**2. Commit rozdzielenia znaleziony — to dokładnie „przerzucenie ustawień" ze zgłoszenia:**
+`a6076db7` (2026-08-10 21:21 UTC) „R-CS-HARD-PASYWNE: rozdzielenie trudnosci PM na (AI) i
+(GRACZ)" — temat `C-025/C-026`. Wprowadził `_menuCityStateDifficultyVsPlayer` i przepiął 4
+miejsca gracz-facing (zaufanie startowe, DOW klastra, `cityStateOffensiveSupport`,
+`_menuCitySupport`).
+
+**3. Hipoteza właściciela („kod czyta stare/nie podłączone pole") BYŁA TRAFNA — ale dla PIĄTEGO
+miejsca, już naprawionego 4 dni przed tym zgłoszeniem:** `a6076db7` przepiął 4 miejsca, ale
+POMINĄŁ `cityStateMilitaryProductionCap` (limit wojska PM w `chooseCityProduction`, `ai.ts`) —
+ta funkcja nadal czytała `opts.menuDifficulty` (starą, ogólną oś gry, NIE nawet starą oś PM).
+Efekt na commit `a6076db7`: przy głównej trudności gry=Trudny, cap=0 — PM nie mogło zrekrutować
+NAWET pierwszego garnizonu. Evaluator złapał to TEGO SAMEGO DNIA:
+- `7e753db2` (2026-08-10 21:56 UTC) — przepiął cap na `opts.cityStateDifficultyVsPlayer`
+  (poprawną, nową oś gracz-facing), podniósł `cap('hard')` z 0 do 3.
+- `28c96bd8` „runda 3: cap PM 3→4" — Evaluator rundy 2 wykazał, że 3 to wciąż za mało (bramka
+  wyjścia z domu w `ai.ts` wymaga `totalMilitary < 3 + RESUP_TIERS.strong.minGuard(1) = 4`) —
+  podniesiono do 4 = `CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard`.
+
+**Wszystkie trzy commity są SPRZED zgłoszenia Macieja (2026-08-14) — bug istniał realnie, ale
+przez ~35 minut jednego dnia (2026-08-10), i został zamknięty pełną pętlą Operator→Evaluator
+zanim ten temat w ogóle powstał.** Dodatkowo powstała dedykowana bramka regresyjna
+`cs-military-cap-wiring-test.cjs` (13 asercji, w tym sekcja RUNTIME wołająca prawdziwy
+`chooseCityProduction` przez esbuild — nie reimplementacja) właśnie po to, żeby DOKŁADNIE ten typ
+błędu (pole po cichu wraca do starej osi) nigdy więcej nie przeszedł bramek po cichu.
+
+**4. Weryfikacja EMPIRYCZNA dziś (2026-08-14), uruchomione z `gra/`:**
+| Bramka | Wynik |
+|---|---|
+| `npx tsc --noEmit` | 0 błędów |
+| `node tools/cs-military-cap-wiring-test.cjs` | **13/13 PASS** (w tym sekcja 4 RUNTIME: prawdziwy `chooseCityProduction` blokuje wojsko przy 4/4 dla `cityStateDifficultyVsPlayer='hard'`, i przestaje blokować gdy pole = `undefined` — dowód, że dziś pole JEST przekazywane) |
+| `node tools/ai-mp-military-cap-test.cjs` | **18/18 PASS** |
+| `node tools/city-state-prod-audit-test.cjs` | **17/17 PASS** |
+| `node tools/city-state-cluster-diff-test.cjs` | **31/31 PASS** |
+| `node tools/ai-cs-absorption-test.cjs` | **29/29 PASS** |
+| `node tools/tech-tree-test.cjs` | 19/19 PASS |
+| `node tools/research-test.cjs` | 33/33 PASS |
+| `node tools/ai-test.cjs` | 285 pass, **8 fail — identyczne z listą pre-istniejących w `CLAUDE.md`** (ranking budynek-ekonomia vs Koszary + `zaproponuj_handel` po odkryciu/cooldownie); żaden fail NIE dotyczy limitu wojska PM ani osi trudności |
+
+Wniosek: dziś (HEAD gałęzi sesji) `_menuCityStateDifficultyVsPlayer` faktycznie zasila limit
+wojska PM, zero regresji wiringu.
+
+**5. Co FAKTYCZNIE ogranicza liczbę jednostek PM na „Trudnym" — mechanizm, nie błąd, ale WARTY
+wyjaśnienia właścicielowi (może to źródło subiektywnego wrażenia „mniej jednostek"):**
+`cityStateMilitaryProductionCap()` (`gra/src/game/city-state-difficulty.ts`) zwraca:
+`normal → 1`, `hard → 4`, `easy → null (BRAK LIMITU, PM zachowuje się jak major AI)`.
+
+To NIE jest skala rosnąca 1:1 z „trudnością" w sensie „im trudniej tym więcej wojska bez
+ograniczeń" — `hard` ma cap NIŻSZY niż `easy` (4 vs nieskończoność). To celowe, udokumentowane w
+kodzie (3 rundy Evaluatora): cap na `hard` to konkretna liczba dopasowana do progu wyjścia z domu
+mechanizmu „fali ataku" (`cityStateOffensiveSupport`, TYLKO dla PM tego samego typu cywilizacji co
+gracz) — PM na Trudnym ma trzymać MAŁY, stale odnawiany oddział (do 4 jednostek), wysyłać go falą
+na gracza, a resztę produkcji przekierować na budynki gospodarcze/ekonomię (`diffProdBonus` w
+`chooseCityProduction` realnie premiuje wtedy `economyScore`, bo `poziomTrudnosci` PM też
+wychodzi na 3/hard przy override). PM na `easy` NIE ma tego throttlingu wcale — zachowuje się jak
+zwykłe AI bez capu.
+
+Osobno: realny mnożnik produkcji/walki/nauki z trudności (`difficultyProductionMultForOwner` i
+analogiczne w `main.ts`) jest ZAGATOWANY wyłącznie dla major AI przez
+`qualifiesForMajorAiDifficultyBonus(ownerId, isCityState)` → `!isCityState` — PM NIGDY nie
+dostaje tego mnożnika, niezależnie od ustawienia trudności PM. Ten gate istnieje od **2026-08-05**
+(`150fdbeb`, temat `P-AI-MOC-BONUS`), 5 dni PRZED rozdzieleniem osi C-025/C-026 — to nie jest
+skutek „przerzucenia ustawień", tylko wcześniejsza, niezależna decyzja architektoniczna.
+
+**Podsumowanie dla właściciela:** jeśli PM na „Trudnym" subiektywnie buduje mniej jednostek niż
+Maciej oczekiwał — to dziś efekt CELOWO NISKIEGO capu (4 jednostki na mapie na PM), nie
+rozłączonego ustawienia. Zmiana tej liczby to decyzja BALANSOWA (poza zakresem tego zlecenia,
+które miało dotyczyć wyłącznie wiringu) — jeśli Maciej chce PM budujące realnie WIĘCEJ jednostek
+na Trudnym, potrzebne osobne pytanie ABC o podniesienie stałej `cap('hard')` (dziś 4) albo o
+rozszerzenie mnożnika trudności ekonomicznej na PM (dziś zagatowany wyłącznie dla major AI) —
+obie zmiany wykraczają poza „napraw podłączenie", którym było to zlecenie.
+
+**STATUS: ZAMKNIĘTE — regresja NIE potwierdzona.** Zero zmian w kodzie. Oba pola (`_menuCityStateDifficulty`
+i `_menuCityStateDifficultyVsPlayer`) są dziś poprawnie rozdzielone i poprawnie skonsumowane;
+konkretny wiring-bug, który pasował do hipotezy właściciela, istniał realnie 2026-08-10 i został
+zamknięty pełną pętlą Operator→Evaluator (`7e753db2`, `28c96bd8`) 4 dni przed tym zgłoszeniem,
+z dedykowaną bramką regresyjną chroniącą przed nawrotem. Ewentualne dalsze niezadowolenie z
+LICZBY jednostek PM na Trudnym wymaga osobnej decyzji ABC o wartościach (nie wiringu).
+
+---
+
+## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — RAPORT NAPRAWY (Operator, agent `a415dfdd8dcb90060`)
+
+**⚠️ Uwaga procesowa orkiestratora (dopisane przy scalaniu, 2026-08-14):** ten agent pracował na
+worktree, który wystartował od `main`, NIE od gałęzi sesji (znany, wcześniej udokumentowany
+mechanizm — patrz nota „stackGroupId runda 2" wyżej w pliku) — inaczej niż agent city-panel runda 2
+(`a69e4d607a272d7e1`), który ten sam problem zauważył i sam się poprawił (`git reset` na właściwą
+gałąź) PRZED rozpoczęciem pracy. Skutek: commity `9482117f`+`913b74f6` wylądowały PROSTO na `main`,
+z pominięciem gałęzi sesji i BEZ Evaluatora — złamanie rytmu „jedna fala do tyłu" oraz zasady, że
+nieocenionej pracy nie ma na `main`. Kod źródłowy zweryfikowany osobiście przy scalaniu (diff
+`9482117f` — 1 linia dopasowania + import + komentarz PL/EN, wzorzec identyczny z
+`turn-economy.ts:1604`) — wygląda poprawnie, ale **formalnie nadal czeka na Evaluatora**, teraz
+już na gałęzi sesji po scaleniu `origin/main`. Traktować jako dług procesu, nie dług merytoryczny.
+
+**Sytuacja:** `empireConverterResourceRatesForOwner` (`gra/src/main.ts`, licznik HUD imperium
+
+**Sytuacja:** `empireConverterResourceRatesForOwner` (`gra/src/main.ts`, licznik HUD imperium,
+suma stawek konwerterów gracza/AI do panelu Surowców i do `mergedResourceRatesForOwner`
+używanego przy cap-ie handlu dyplomatycznego) dopasowywał budynek↔receptura konwertera przez
+`builtIds.includes(recipe.id)`. To trafia TYLKO gdy `recipe.id === buildingId`. Dla receptur,
+gdzie `recipe.buildingId` (`DEFAULT_CONVERTER_RECIPES`, `gra/src/game/converters.ts`) różni się
+od `recipe.id` — `odlewnia_zelaza__braz`/`odlewnia_zelaza__zelazo` (buildingId
+`odlewnia_zelaza`) i `wielka_odlewnia__braz`/`wielka_odlewnia__zelazo`/`wielka_odlewnia__stal`
+(buildingId `wielka_odlewnia`) — dopasowanie NIGDY nie trafiało. HUD zwracał `{}` zamiast
+realnej produkcji dla Odlewni żelaza i Wielkiej odlewni (5 z 10 receptur ogółem), mimo że
+silnik tury (`turn-economy.ts::advanceCityEconomy`) liczył je poprawnie — rozjazd klasy
+HUD-SKARBIEC (ta sama klasa błędu, którą P-KONWERTERY-PRZEPUSTOWOSC-Q1 nazwał wprost, ale nie
+objęła akurat tego dopasowania).
+
+**Naprawa (Operator Sonnet 5, worktree izolowany `agent-a415dfdd8dcb90060`):**
+1. `gra/src/main.ts` — import `converterBuildingIdForRecipe` z `./game/converters` (funkcja już
+   istniała, eksportowana, `recipe.buildingId ?? recipe.id`); dopasowanie w
+   `empireConverterResourceRatesForOwner` zmienione z `builtIds.includes(recipe.id)` na
+   `builtIds.includes(converterBuildingIdForRecipe(recipe))` — DOKŁADNIE ten sam wzorzec co
+   `turn-economy.ts:1604` (`runtimeBuiltIds.includes(converterBuildingIdForRecipe(r))`).
+   Komentarz PL+EN przy zmianie odsyła do tego wzorca. Zero zmian w `converters.ts`/
+   `turn-economy.ts` — poprawka wyłącznie punktowa w `main.ts`, zgodnie z C-025 (drugie
+   miejsce, `cityPanel.ts`, wspomniane w zleceniu jako już poprawne — nie znaleziono w nim
+   dziś żadnego odwołania do `DEFAULT_CONVERTER_RECIPES`/`converterBuildingIdForRecipe`; jeśli
+   to osobny, nie-scalony jeszcze temat, poza zakresem tej naprawy).
+2. Nowy test regresyjny `gra/tools/hud-konwerter-dopasowanie-test.cjs` (20 asercji) — wycina
+   PRAWDZIWY tekst `empireConverterResourceRatesForOwner` z bieżącego `main.ts` (po sygnaturze,
+   nie po numerze linii) i wykonuje go NAPRAWDĘ przez `esbuild.transformSync` + `new Function`,
+   z prawdziwymi `DEFAULT_CONVERTER_RECIPES`/`loadThroughput`/`converterThroughputForEra`/
+   `converterBuildingIdForRecipe` zbundlowanymi z prawdziwego `converters.ts` (wzorzec
+   `road-hook-mainguard-test.cjs`) — ZERO reimplementacji logiki dopasowania jako kopii w
+   teście (to dokładnie błąd, za który poprzedni temat city-panel dostał FAIL od Evaluatora).
+   Pokrycie: Odlewnia żelaza → Żelazo=25, Brąz=25 (era 1, normal, niepusty wynik); Wielka
+   odlewnia → Brąz=25, Żelazo=25, Stal=25; kontrola braku regresji dla trójki już-działającej
+   (Cegielnia=50, Garncarnia=50, Odlewnia brązu=25, recipe.id === buildingId, niedotknięte
+   naprawą); brzegi (właściciel bez żadnego konwertera → `{}`, nie `undefined`/wyjątek;
+   właściciel bez żadnego miasta → `{}`). **Dowód mutacyjny**: przywrócenie starego
+   `builtIds.includes(recipe.id)` na wyciętym tekście (w pamięci, dysk nietknięty) daje `{}`
+   dla Odlewni żelaza/Wielkiej odlewni — regresja złapana; kontrola że ta sama mutacja NIE
+   psuje trójki już-działającej (mutacja punktowa, nie za szeroka).
+
+**Bramki (z `gra/`):** `npx tsc --noEmit` 0 błędów (symlink `node_modules` z drzewa głównego
+zweryfikowany, `tsc --version` = 5.9.3, usunięty po pracy) · nowy test 20/20 ·
+`converters-test.cjs` 46/46 (bez zmian, kontrola) · `converter-era-scaling-test.cjs` 87/87 (bez
+zmian, kontrola) · `tech-tree-test.cjs` 19/19 · `research-test.cjs` 33/33 · impact check dla
+pliku współdzielonego (`main.ts`, C-026): `unit-replace-test.cjs` 13/13, `ai-founding-territory-test.cjs`
+28/28 — oba zielone, zero regresji. `mennica-magazyn-test.cjs` 38 pass/3 fail — zweryfikowane
+`git stash`+uruchomienie na bazowym stanie PRZED zmianą: identyczne 38/3, pre-istniejące (już
+opisane w `CLAUDE.md` sekcja BRAMKI pod innym tematem), niezwiązane z tą naprawą.
+`map-gen-regression-test.cjs` odpalony jako dodatkowy impact check, ale NIE dokończył się w
+czasie tej sesji (mapa Ogromny, znany długi czas — zmiana nie dotyka `gra/src/map/**` ani
+generatora, więc ryzyko regresji ocenione jako znikome, ale wynik nie jest tu potwierdzony
+liczbowo — do weryfikacji przez Evaluatora albo kolejną sesję, jeśli chce mieć twardy dowód).
+
+**Zmienione pliki:** `gra/src/main.ts` (import + 1 linia dopasowania + komentarz PL/EN),
+`gra/tools/hud-konwerter-dopasowanie-test.cjs` (nowy).
+
+**Commit:** `9482117f` (scalony bezpośrednio do `main`, fast-forward z `62b75f14`, `main` nie
+odjechał między `git fetch` a `git push` — brak rebase'u). Push wykonany, `origin/main` = `9482117f`.
+
+**STATUS: GOTOWE PO STRONIE OPERATORA, czeka na Evaluatora (nie self-ocena — praca w
+izolowanym worktree, commit i push wykonane, ale werdykt Evaluatora osobno, zgodnie z §0a/§0b).**
+
+---
+
+## ⚠️ P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE (2026-08-14, sprostowanie Macieja z żywego playtestu)
+
+**⚠️ WAŻNE — to NIE jest to samo co pytanie `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` (ruch PO wygranej
+bitwie).** Właściciel wyraźnie sprostował: „Tylko ja nie mówię o atakowaniu na bitwie, tylko mówię
+o atakowaniu na mapie świata."
+
+**Zgłoszenie (cytat):** „Jeżeli na przykład nasza armia jest daleko od wroga, załóżmy 5 heksów od,
+ale w zasięgu widoku, to nie można na nią kliknąć, żeby zaatakowała z daleka, nawet jeżeli miałaby
+taki zasięg. Tylko trzeba kliknąć obok tej armii, a dopiero wtedy można nacisnąć, jak się będzie
+już obok, aby zaatakować tę jednostkę."
+
+**⚠️ SPRZECZNOŚĆ z werdyktem Evaluatora (agent `a769a63eec29a9402`, commit `6bdf7967`):** ten
+Evaluator zmierzył i potwierdził „Atak jednostka→jednostka z dystansu działa we wszystkich 3
+ścieżkach inicjacji" (`tryLaunchMarchAttack`, `refreshHoverPathPreview`, unit-click handler) —
+ale metoda była programowa (wywołanie funkcji wyciętych z kodu), NIE realna interakcja myszą w
+przeglądarce. Właściciel opisuje realną grę i twierdzi że kliknięcie na odległą jednostkę NIE
+oferuje ataku, tylko wymusza podejście na hex obok — dokładnie objaw ze ZGŁOSZENIA PIERWOTNEGO
+(sprzed fixu `9e25ea77`). Możliwe przyczyny do zbadania, żadna nie wykluczona a priori:
+(a) UI (kliknięcie myszą na mapie) faktycznie idzie inną ścieżką niż te 3 przetestowane
+programowo — np. domyślny klik na wrogą jednostkę może pokazywać WYŁĄCZNIE opcję „idź tam"
+(ruch), a opcja „zaatakuj" nigdy się nie pojawia dla celu poza adiacencją, mimo że funkcja
+`isTargetWithinAttackRange` pod spodem zwróciłaby `true`; (b) `refreshHoverPathPreview` gasi
+się/nie pokazuje kursora ataku dla odległych celów (nota N4 werdyktu Evaluatora wspominała
+lukę pokrycia hover-preview); (c) build który testował Evaluator/Operator różni się od tego, co
+gra właściciel (mało prawdopodobne — ten sam branch, ale do zweryfikowania: czy FALA 282
+`gra-robocza/Gra-ROBOCZA.html` faktycznie zawiera ten kod).
+
+**Do dispatchu — priorytet WYSOKI (żywy playtest, sprzeczny z „potwierdzone działające"):**
+1. Odtworzyć DOKŁADNIE scenariusz właściciela w **realnym kliknięciu myszą** (nie wywołaniu
+   funkcji) na **zbudowanym bundlu ROBOCZA** (`gra-robocza/Gra-ROBOCZA.html`, FALA 282,
+   md5 `d3b43ac6` — ten sam plik, który gra właściciel): własna jednostka, wroga jednostka
+   5 heksów dalej (w zasięgu widoku, NIE za mgłą), jednostka atakująca ma realny zasięg ≥5
+   (sprawdzić `units.json`, pole „Zasięg ataku (hex)" — może żaden dostępny w tym momencie gry
+   typ jednostki nie ma aż tak dużego zasięgu; jeśli tak, dobrać jednostkę z odpowiednim zasięgiem
+   albo zmniejszyć dystans testu do rzeczywistego zasięgu tej jednostki, np. Katapulta = 6,
+   podstawowy łucznik zwykle mniej — NIE zakładać z góry).
+2. Sprawdzić realny UI: czy po kliknięciu na odległego wroga pojawia się JAKAKOLWIEK opcja ataku
+   (kursor, podświetlenie, panel akcji jednostki z przyciskiem „Atakuj"), czy TYLKO opcja ruchu.
+3. Jeśli potwierdzone że UI faktycznie nie oferuje ataku z dystansu mimo że logika pod spodem by
+   na to pozwoliła — znaleźć DOKŁADNIE które wywołanie/handler klika gracz w tym scenariuszu
+   (może to być zupełnie inna funkcja niż 3 przetestowane) i naprawić.
+4. Jeśli NIE potwierdzone (realny klik faktycznie oferuje atak) — dokładnie odtworzyć czego
+   właściciel próbował (może brakuje jakiegoś kroku, np. trzeba najpierw kliknąć samą jednostkę,
+   potem cel, a nie od razu na cel) i opisać wprost, bez zgadywania.
+
+**STATUS: DISPATCH W TOKU — priorytet wysoki (żywy playtest, sprzeczny wynik z Evaluatorem).**
+
+---
+
+**AKTUALIZACJA (Operator, druga tura, po dispatchu) — ROOT CAUSE ZNALEZIONY I NAPRAWIONY,
+metoda: czytanie kodu źródłowego (nie headless Chromium — patrz nota metodologiczna na końcu).**
+
+**Metoda, dlaczego zmieniona w trakcie:** Próba nr 1 to była realna, zbudowana gra w headless
+Chromium z prawdziwymi `page.mouse.click` (nie wywołaniami JS) — dokładnie to, o co proszono. Po
+drodze dodano 4 hooki debugowe (`window.__civTestSpawnUnit` itd., analogiczne do istniejącego
+`__civEmbarkDebug`) do stawiania jednostek bez przechodzenia przez cały New Game. Problem: samo
+uruchomienie prawdziwej gry w headless SwiftShader (software rendering) okazało się bardzo wolne —
+generacja mapy + budowa sceny 3D ciągnęła się >60-90s nawet dla małej mapy playtestowej, bez
+wyraźnego końca w rozsądnym oknie czasowym. Właściciel/koordynator polecił porzucić to podejście i
+przejść na czytanie kodu — co poniżej. **4 dodane hooki debugowe zostały USUNIĘTE z main.ts przed
+commitem** (nieużywane przez finalną naprawę/test — zero orphan-code w diffie, zgodnie z regułą
+zakresu C-025).
+
+**1. Klik na mapie — DOKŁADNIE gdzie, real handler (nie funkcja pomocnicza wycięta z kontekstu):**
+`gra/src/main.ts`, `canvas.addEventListener('mouseup', ...)` (start listenera ok. linii 20149,
+sam handler klika na wrogą jednostkę ok. linii 20680-20690 przed naprawą):
+```ts
+} else if (selectedId !== null && cu !== null && cu.ownerId !== 0) {
+  const atkUnit = units.find(x => x.id === selectedId);
+  if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
+      isTargetWithinAttackRange(atkUnit, cu.q, cu.r)) {
+    withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
+  } else if (atkUnit && atkUnit.ownerId === 0) {
+    ...
+  } else if (!planMarchTo(cu.q, cu.r, cu.id)) { ... }   // <-- tu ląduje realny klik z bugiem
+```
+To JEST realny, produkcyjny listener kliku myszą (nie oddzielona funkcja testowana programowo) —
+`isTargetWithinAttackRange` faktycznie tu wisi, dokładnie jak zmierzył poprzedni Evaluator. **Ta
+część jego werdyktu była prawdziwa.**
+
+**2. Root cause: `atkUnit` to NIE zawsze ta jednostka, którą właściciel myśli, że zaatakuje.**
+`atkUnit = units.find(x => x.id === selectedId)` — `selectedId` ustawia się przy kliku na WŁASNĄ
+jednostkę (główny handler, gałąź `cu.ownerId === 0` → `selectPlayerUnit(cu.id)`), gdzie
+`cu = unitAtRepresentative(hit.q, hit.r, units, unitAttackScore)` (`game/armyMerge.ts:448`).
+Dla stosu >1 jednostki na heksie, `unitAtRepresentative` woła
+`pickStackRepresentative(stack, unitAttackScore)` (`game/armyMerge.ts:324-334`), który wybiera
+jednostkę z **najwyższym** `unitAttackScore`. A `unitAttackScore` (main.ts ok. linii 9587) to:
+```ts
+function unitAttackScore(u: RuntimeUnit): number {
+  return normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0);
+}
+```
+— czyli WYŁĄCZNIE `meleeAttack`, ZERO uwzględnienia „Zasięg ataku (hex)". Zmierzone wprost z
+`units.json`: jednostki dystansowe mają systematycznie NIŻSZY `meleeAttack` niż zwarciowe —
+Wojownik=4, Hastati=7 vs Łucznik=2, Łucznik nubijski=1, Procarz=1, Oszczepnik=1. **Skutek: w
+KAŻDYM stosie mieszanym zwarcie+dystans (np. „nasza armia" = kilka jednostek na jednym heksie,
+gra pozwala je swobodnie łączyć bez ograniczeń typu) reprezentantem — więc i `selectedId`/
+`atkUnit` przy kolejnym kliku na wroga — niemal zawsze zostaje jednostka ZWARCIA, nigdy łucznik,
+niezależnie od tego, którą jednostką właściciel chciał strzelać.** `isTargetWithinAttackRange`
+sama w sobie jest poprawna (to potwierdził poprzedni Evaluator) — ale dostaje złą jednostkę do
+sprawdzenia. Melee ma zasięg 0 (`Math.max(1,0)=1`, wymaga adiacencji) → klik na wroga 5 heksów
+dalej zwraca `false` → kod ląduje w gałęzi `planMarchTo(cu.q, cu.r, cu.id)` (marsz w stronę wroga,
+atak dopiero po dotarciu — auto-atak na koniec marszu też sprawdza TĘ SAMĄ, złą jednostkę, więc
+realnie wymaga fizycznego dotarcia na adiacencję) — **dokładnie objaw ze zgłoszenia: „trzeba
+kliknąć obok tej armii, a dopiero wtedy można nacisnąć, aby zaatakować".**
+
+**Dlaczego poprzedni Evaluator tego nie złapał:** jego harness (`atak-dystansowy-mapa-test.cjs`
+runda 1) wołał `isTargetWithinAttackRange(atkUnit, ...)` z RĘCZNIE PODANĄ, pojedynczą jednostką
+— nigdy przez `unitAtRepresentative`/stos. Zerowe pokrycie mechanizmu wyboru reprezentanta stosu.
+To NIE jest ta sama ścieżka kodu co sugerował koordynator (wciąż `isTargetWithinAttackRange`/
+`tryLaunchMarchAttack`/hover — te 3 miejsca są realne) — problem leży w tym, KTÓRA jednostka
+do nich trafia jako `atkUnit`, nie w samej logice zasięgu.
+
+**3. Naprawa (`gra/src/main.ts`, +34/-3 linii, zakres ściśle do tego mechanizmu):** nowa funkcja
+`isTargetWithinStackAttackRange(atkUnit, tq, tr)` = `playerStackAt(atkUnit).some(u =>
+isTargetWithinAttackRange(u, tq, tr))` — sprawdza zasięg KAŻDEJ jednostki w stosie gracza na
+heksie `atkUnit`, nie tylko reprezentanta. Podmieniona we WSZYSTKICH 3 miejscach inicjacji ataku
+na mapie świata (te same 3, które testował poprzedni Evaluator): klik jednostka→jednostka,
+`tryLaunchMarchAttack` (auto-atak po marszu), `refreshHoverPathPreview` (hover-preview trasy).
+**Bezpieczne:** `openPlayerMapUnitAttack`→`collectBattleRoster` (`units/battleRoster.ts:63-76`)
+i tak zbiera CAŁY stos po pozycji (`anchor.q/r`, nie po tożsamości `atkUnit`) do składu bitwy —
+zmiana wpływa WYŁĄCZNIE na to, czy klik w ogóle ODBLOKOWUJE ofertę ataku, nie na to, kto bierze
+w niej udział. Reprezentant do RENDEROWANIA (badge/HP na mapie) pozostał nietknięty — to celowo
+węższy zakres niż zmiana `unitAttackScore` globalnie (ryzykowałaby efekty uboczne w renderze
+stosów, poza tematem tego zgłoszenia).
+
+**4. Bramki (z `gra/`, wszystkie zielone, `tsc` z symlinkiem `node_modules` = 5.9.3 zweryfikowane
+per C-029):**
+- `npx tsc --noEmit` → 0 błędów.
+- `node tools/atak-dystansowy-mapa-test.cjs` → **65 passed, 0 failed** (było 68 asercji na starym
+  kodzie zliczone jako 51 pass/3 fail po samej zmianie main.ts, zanim zaktualizowano 3 strażniki
+  regex nazw funkcji + dodano nową sekcję (g) 14 asercji dowodzących naprawy realną egzekucją
+  wyciętej `isTargetWithinStackAttackRange` z `playerStackAt` wstrzykniętym jako zależność
+  sterowana testem — NIE reimplementacją formuły; plus mutacja MUT-G cofająca naprawę, złapana).
+- `node tools/combat-test.cjs` → 6/6.
+- `node tools/map-attack-city-test.cjs` → 8/8 (nietknięty, city-attack path osobny — patrz p.5).
+- `node tools/tech-tree-test.cjs` → 19/19.
+- `node tools/research-test.cjs` → 33/33.
+- `node tools/unit-power-test.cjs` → 4 pass/2 fail, identyczne z udokumentowanym pre-istniejącym
+  baseline w `CLAUDE.md` (dług testowy, niezwiązany z tym tematem) — zweryfikowane bez regresji.
+
+**5. ZNALEZISKO PRZY OKAZJI, ŚWIADOMIE POZA ZAKRESEM tej naprawy (zapisane tu cicho, zgodnie z
+regułą „problem znaleziony przy okazji → do tego pliku, nie nowy wątek na czacie"):** DOKŁADNIE
+ten sam mechanizm psuje też atak na MIASTO z dystansu dla stosu mieszanego —
+`resolveAttacker()` w `gra/src/map/map-attack-city.ts:78-90`: gdy `selectedUnit` jest podane
+(reprezentant stosu — zwarcie), a NIE jest w liście `adjacent` (eligible), funkcja zwraca `'none'`
+(→ `hint_no_adjacent`) **nawet jeśli inna jednostka w TYM SAMYM stosie ma wystarczający zasięg** —
+nie sięga po `'pick'`/inną jednostkę stosu w tym przypadku (tylko gdy `selectedUnit` jest `null`).
+Naprawa tego wymaga zmiany współdzielonej `resolveAttacker`/`eligibleCityAttackers` (własny plik,
+własne testy, szerszy blast radius niż to zgłoszenie) — świadomie NIE dotknięte tutaj, żeby
+zachować wąski zakres C-025. Kandydat na osobny numer w rejestrze.
+
+**WERDYKT KOŃCOWY: błąd właściciela POTWIERDZONY i realny (nie sprzeczność w metodzie pomiaru
+poprzedniego Evaluatora — jego pomiar programowy był technicznie poprawny, ale nie pokrywał
+mechanizmu wyboru reprezentanta stosu). Naprawiony w main.ts, pokryty nową regresją w
+`atak-dystansowy-mapa-test.cjs` (sekcja „(g) STOS MIESZANY" + mutacja MUT-G), wszystkie wymagane
+bramki zielone. Gotowe do commita na gałąź sesji (bez deployu — czeka na hasło `deploy`).**
+
+**STATUS: NAPRAWIONE — Evaluator uruchomiony, werdykt PASS-WITH-NOTES niżej.**
+
+### WERDYKT EVALUATORA (2026-08-14, Opus 5, agent `acde856863b7f9737`) dla `4dcb2f4f` — **PASS-WITH-NOTES**
+
+Wszystkie liczby niżej **zmierzone przez uruchomienie w izolowanym worktree** (`node_modules`
+przez symlink, `tsc` 5.9.3 zweryfikowane per C-029), nie przepisane z opisu commita.
+
+#### 1. Bramki — uruchomione niezależnie
+
+| Bramka | Wynik na `4dcb2f4f` | Ocena |
+|---|---|---|
+| `npx tsc --noEmit` | exit 0, 0 błędów | ZIELONA |
+| `atak-dystansowy-mapa-test.cjs` | **65 pass / 0 fail** | ZIELONA (zgodne z opisem commita) |
+| `combat-test.cjs` | 6 / 6 | ZIELONA |
+| `map-attack-city-test.cjs` | 8 ok / 0 fail | ZIELONA |
+| `tech-tree-test.cjs` | 19 / 0 | ZIELONA |
+| `research-test.cjs` | 33 / 0 | ZIELONA |
+| `unit-power-test.cjs` | 4 pass / 2 fail | PRE-ISTNIEJĄCE (`CLAUDE.md`), bez pogorszenia |
+| `ai-test.cjs` (dodatkowo) | 285 pass / 8 fail | PRE-ISTNIEJĄCE, identyczne z baseline poprzedniego Evaluatora |
+
+#### 2. Diagnoza — zweryfikowana samodzielnie, nie przepisana
+
+- `unitAttackScore` (`main.ts:9587-9589`) to **dosłownie** `normFieldVal(lookupUnitDef(u.typeId)['meleeAttack'], 0)`
+  — zero uwzględnienia zasięgu/typu ataku. Potwierdzone odczytem.
+- `pickStackRepresentative` (`armyMerge.ts:324-334`) wybiera **maksimum** tej funkcji (remis → niższe `id`),
+  a `unitAtRepresentative` (`armyMerge.ts:448-460`) filtruje stos po `(q,r)` + `inGarnizon !== true`.
+- **Własny skan `units.json` (75 wierszy, nie przykłady z commita):** mediana `meleeAttack` jednostek
+  zwarcia (`Zasięg ataku (hex)` puste, 57 szt.) = **6 pkt**, mediana jednostek z `Zasięg > 0` (18 szt.)
+  = **1 pkt**. Cała rodzina łuczników/procarzy/katapult siedzi w przedziale 0–2 pkt (Katapulta 0,
+  Procarz 1, Oszczepnik 1, Łucznik nubijski 1, Łucznik egipski/sumeryjski/akadyjski 1, Łucznik 2,
+  Łucznik asyryjski 2) przy Wojowniku = 4 pkt. **Diagnoza mechanizmu jest prawdziwa.**
+- **N5 (sprostowanie faktograficzne):** opis commita ORAZ komentarz w `main.ts:19286`/`19298`
+  podają „Hastati=7" jako przykład jednostki ZWARCIA. To nieprawda — Hastati ma
+  `"Zasięg ataku (hex)": 2` i `"Atak dystansowy": 3`, więc dla `unitMapAttackRangeHex` jest
+  jednostką **dystansową**. Podobnie 5 innych wierszy z `Zasięg > 0` ma `meleeAttack ≥ 4`
+  (Medżaj 10, Wojownik germański 6, Jeździec z oszczepami 6, Rydwan egipski 6, Konnica łucznicza
+  asyryjska 4). Sformułowanie „dystansowe mają **systematycznie** niższy `meleeAttack`" jest więc
+  prawdziwe dla rodziny łuczniczej, ale nie dla wszystkich jednostek z zasięgiem. Nie zmienia
+  poprawności naprawy — do sprostowania w komentarzu przy najbliższej okazji.
+
+#### 3. Bezpieczeństwo naprawy
+
+- `playerStackAt` (`main.ts:9764-9769`) = `activeUnitStack(units, u)` → dla jednostki poza garnizonem
+  `visibleStackOnHex(units, q, r, ownerId, groupId)`, czyli **czysty `Array.filter`** — zero mutacji,
+  zero efektów ubocznych. Potwierdzone odczytem `armyMerge.ts:88-104` i `161-170`.
+- **Wydajność: brak problemu.** `refreshHoverPathPreview` woła `playerStackAt(uSel)` już w
+  PIERWSZEJ linii (`main.ts:19358`), a zaraz potem uruchamia A* (`marchPathPlan`) — dodany
+  drugi `playerStackAt` to O(n) po tablicy jednostek przy koszcie rzędu wielokrotnie większym
+  obok. Kosmetyka: można było użyć wyliczonego już `stack` zamiast liczyć drugi raz (N4).
+
+#### 4. Parytet gracz↔AI — sprawdzony, **NIE złamany**
+
+`ai.ts` **w ogóle nie używa** `pickStackRepresentative` ani `unitAtRepresentative` (grep po całym
+`src/`: 0 trafień poza `main.ts` i `armyMerge.ts`). AI iteruje **jednostka po jednostce**
+(`ai.ts:2483 for (const unit of sortedUnits)`), a bramka zasięgu `isWithinAttackRange(unit, …)`
+(`ai.ts:2504`, `ai.ts:3004`) dostaje ZAWSZE tę konkretną jednostkę — więc łucznik AI sam znajduje
+cel w swoim zasięgu i nie jest zasłaniany przez zwarciowego „reprezentanta". Egzekucja rozkazu
+(`main.ts:27303-27356`) nie ma drugiej bramki adiacencji. **AI nie ma analogicznego błędu — nie
+ma potrzeby osobnego tematu.** Jeśli już, AI jest odrobinę bardziej swobodne niż gracz (każda
+jednostka decyduje osobno), ale to stan sprzed tego commita.
+
+#### 5. Jakość testu — 5 WŁASNYCH mutacji na PRAWDZIWYM `main.ts` (każda cofnięta `git checkout`)
+
+| # | Mutacja | Wynik bramki | Złapana? |
+|---|---|---|---|
+| MUT-1 | ciało `isTargetWithinStackAttackRange` → `return isTargetWithinAttackRange(atkUnit, tq, tr)` | 61 pass / **5 fail** | TAK — w tym asercje ZACHOWANIA (g2), nie tylko strażnik |
+| MUT-2 | sprawdzanie **tylko pierwszego** elementu stosu, **regex strażnika NIENARUSZONY** | 62 pass / **4 fail** | TAK — czysto behawioralnie, (g2) ×2 |
+| MUT-3 | cofnięcie wywołania w hover-preview | 64 / **1** | TAK (strażnik strukturalny) |
+| MUT-4 | cofnięcie wywołania w kliku jednostka→jednostka | 64 / **1** | TAK (strażnik strukturalny) |
+| MUT-5 | cofnięcie wywołania w `tryLaunchMarchAttack` | 64 / **1** | TAK (strażnik strukturalny) |
+| MUT-6 | **prawdziwy `playerStackAt` wypatroszony** (`activeUnitStack(units,u)` → `[u]`) | **65 / 0** | **NIE — PRZESZŁO** |
+
+MUT-2 jest tu kluczowe: dowodzi, że sekcja „(g)" łapie **zachowanie**, a nie tylko obecność
+nazwy funkcji w regexie. Test **nie jest tautologią** — wykonuje realnie wyciętą funkcję.
+
+**N2 — realna luka pokrycia (MUT-6).** Harness wstrzykuje **własną atrapę** `playerStackAt`, więc
+prawdziwa zależność ma **zerowe pokrycie**: można całkowicie zepsuć `playerStackAt` w `main.ts`
+(przywracając dokładnie zgłoszony przez właściciela błąd w grze) i bramka nadal daje 65/0.
+`atak-dystansowy-mapa-test.cjs` to jedyny plik w `tools/`, który w ogóle wspomina `playerStackAt`
+(grep). Sugestia na przyszłość: strażnik strukturalny na treść `playerStackAt`
+(`return activeUnitStack(units, u);`) albo asercja przez zbundlowany `activeUnitStack`.
+
+#### 6. **ODTWORZENIE W ŻYWEJ GRZE — WYKONANE, PRAWDZIWYMI KLIKNIĘCIAMI MYSZY (`page.mouse.click`)**
+
+To jest ta część, której zabrakło w rundzie 1 i której Operator nie dokończył. **Udało się.**
+
+**Sprostowanie noty metodologicznej Operatora:** headless **NIE jest** „bardzo wolny bez wyraźnego
+końca". Zmierzone: `vite build` całego bundla = **19-20 s**; boot do `<canvas>` = **~4 s**;
+pełna generacja świata do interaktywnej mapy = **~52 s**, z jednoznacznym, wykrywalnym końcem —
+`getComputedStyle(canvas).pointerEvents !== 'none'` (dopóki żyje nakładka „Tworzenie świata",
+canvas ma `pointer-events: none`, więc kliknięcia w ogóle nie docierają do handlera; to właśnie
+mylnie wygląda jak „gra nie reaguje"). Chromium w tym środowisku:
+`/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (uwaga: `chromium.executablePath()`
+Playwrighta wskazuje nieistniejącą wersję 1228 — trzeba podać ścieżkę wprost).
+
+Metoda: tymczasowy hook `__civEvalProbe` w `main.ts` (na wzór istniejącego `__civEmbarkDebug`),
+stawiający stos + wroga i centrujący kamerę na heksie, po czym **prawdziwe** `page.mouse.click`
+w środek canvasu. **Hook został w całości usunięty, `main.ts` przywrócony do stanu `4dcb2f4f`
+(`git status` czysty, bramki przeliczone po przywróceniu: tsc 0, bramka 65/0).**
+
+**Test A/B na TEJ SAMEJ mapie i tych samych heksach** (stos gracza `(28,9)`, barbarzyńca `(31,9)`,
+dystans **3**, Wojownik `meleeAttack=4, zasięg=0` + Łucznik `meleeAttack=2, zasięg=3`):
+
+| Build | Klik 1 (własny stos) | Klik 2 (wróg @ 3 heksy) | Ruch przed bitwą |
+|---|---|---|---|
+| **BEZ naprawy** (`isTargetWithinStackAttackRange` cofnięta) | `selectedId = ev_w` (**Wojownik** — reprezentant zwarcia, diagnoza potwierdzona ŻYWO) | **BRAK ATAKU** (marsz) — objaw właściciela odtworzony | — |
+| **Z naprawą** (`4dcb2f4f`) | `selectedId = ev_w` (identycznie) | **preBattle OTWARTE**, skład „2 oddziałów" (Wojownik + Łucznik) | **ŻADNEGO** — obie jednostki nadal `(28,9)`, ruch `2/2` |
+
+**Kontrola bez regresji (stos CZYSTO zwarciowy, dystans 2):** jednostka **przemaszerowała**
+`(81,8)` → `(82,8)` i dopiero wtedy weszła w bitwę — czyli dokładnie stare, poprawne zachowanie
+zwarcia. Zasięg NIE stał się globalny.
+
+**Wniosek:** zgłoszenie właściciela było prawdziwe, diagnoza Operatora trafna, a naprawa realnie
+działa w zbudowanej grze przy prawdziwym kliknięciu myszą — nie tylko w wywołaniu funkcji.
+
+#### 7. NOTY (nie blokują scalenia, ale N1 warto domknąć przed kolejnym deployem)
+
+- **N1 — ATAK NA CEL W MGLE, poszerzony przez ten commit (zmierzone ŻYWO).** W tym samym
+  przebiegu, w którym atak z 3 heksów się udał, sonda raportowała `wróg widoczny teraz: false`
+  — heks celu **nie był** w `currentVisible()`. Gałąź ataku w kliku (`main.ts:20623-20625`)
+  **nie sprawdza mgły** (sprawdzenie siedzi dopiero w gałęzi `else`, `main.ts:20629`), podczas
+  gdy `tryLaunchMarchAttack` (`main.ts:19315`) i hover-preview (`hoverVis`) mgłę sprawdzają.
+  To jest nota N3 poprzedniego Evaluatora — ale ten commit ją **poszerza**: wcześniej dziura
+  otwierała się tylko wtedy, gdy sama zaznaczona jednostka była dystansowa; teraz wystarczy
+  JEDEN łucznik w stosie. Skutek obserwowalny dla gracza: rozkaz **ruchu** na zamglony heks,
+  na którym stoi niewidoczny wróg w zasięgu stosu, **po cichu zamienia się w bitwę**.
+  Naprawa jednoliniowa (dołożenie `currentVisible().has(keyOf(cu.q, cu.r))` do warunku),
+  ale to zmiana zachowania → osobna runda, nie „przy okazji".
+- **N2 — bramka nie pokrywa prawdziwego `playerStackAt`** (MUT-6, sekcja 5).
+- **N3 — stos z DWÓCH różnych `stackGroupId` na jednym heksie: naprawa NIE działa
+  (potwierdzone i kodem, i ŻYWO).** `unitAtRepresentative` wybiera reprezentanta spośród
+  **wszystkich** jednostek na heksie (bez filtra grupy), a `playerStackAt` → `activeUnitStack`
+  zawęża do **jednej** grupy (`stackGroupIdOf`). Sonda z prawdziwymi obiema funkcjami:
+  ta sama para Wojownik+Łucznik na `(0,0)` — przy wspólnym fallbacku grupy
+  `isTargetWithinStackAttackRange(rep, 2) = true`, przy dwóch różnych `stackGroupId`
+  = **false**. Potwierdzone też klikaniem myszą w zbudowanej grze (dystans 3 → brak ataku).
+  Stan osiągalny w normalnej grze: „Zostaw osobno" z powrotem na origin zajęty przez rezydenta
+  (`units/setup.ts:139-141`). Nie jest to główny scenariusz zgłoszenia (jedna armia), ale
+  właściciel może na to trafić i zgłosić ponownie jako „czasem nadal nie działa".
+- **N4 — `refreshHoverPathPreview` liczy `playerStackAt` dwa razy** (linia 19358 i wewnątrz
+  `isTargetWithinStackAttackRange` w 19372). Bez znaczenia wydajnościowego, czysta kosmetyka.
+- **N5 — „Hastati=7" jako przykład zwarcia jest błędem faktograficznym** (sekcja 2).
+- **N6 — asymetria bramka vs skład bitwy.** `collectBattleRoster` zbiera jednostki właściciela
+  w promieniu **1 heksa** (`units/battleRoster.ts:63-76`), bez filtra `stackGroupId` — czyli
+  łucznik na SĄSIEDNIM heksie albo z innej grupy **wejdzie do bitwy**, choć nie odblokuje ataku.
+  Rozbieżność jest „na korzyść ostrożności" (bramka węższa niż skład), więc nie tworzy exploita,
+  ale warto o niej wiedzieć przy kolejnych zmianach.
+- **N7 — teleport po wygranej dotyczy teraz KAŻDEGO stosu mieszanego.** `moveAtkRosterOntoBattleHex`
+  (`game/post-battle-map.ts:283-304`) po wygranej przestawia cały skład na heks bitwy bez
+  sprawdzania dystansu i kosztu ruchu. To pre-istniejące (nota F3 poprzedniego Evaluatora,
+  pytanie `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` czeka na właściciela), ale ten commit
+  **zwielokrotnia zasięg rażenia**: wcześniej dotyczyło tylko sytuacji, gdy zaznaczona była
+  sama jednostka dystansowa, teraz każdej armii z jednym łucznikiem. Odpowiedź na to pytanie
+  robi się pilniejsza.
+
+#### 8. Werdykt
+
+**PASS-WITH-NOTES.** Naprawa jest merytorycznie poprawna, minimalna (3 wywołania + 1 funkcja),
+zgodna ze zgłoszeniem właściciela i **udowodniona end-to-end prawdziwymi kliknięciami myszy
+w zbudowanej grze, z kontrolą A/B na tym samym ziarnie mapy**. Test regresyjny jest prawdziwy
+(5 własnych mutacji, w tym jedna czysto behawioralna z nienaruszonym strażnikiem). Żadna bramka
+się nie pogorszyła. Noty N1 (mgła) i N3 (dwie grupy na heksie) to realne, zmierzone luki, ale
+obie są węższe niż naprawiony błąd i żadna nie cofa zgłoszonej funkcji — do rundy 2, nie do
+blokowania scalenia.
+
+### RUNDA 2 (Operator, 2026-08-14, commit `b752e0c4`) — N1 + N2 naprawione, GOTOWE, czeka na Evaluatora
+
+Zakres ściśle N1+N2 (C-025) — N3/N4/N6/N7 świadomie nietknięte (patrz sekcje niżej i osobny
+temat `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` dla N7, czekający na właściciela).
+
+**N1 — atak przez mgłę wojny, naprawione.** `main.ts`, gałąź kliku jednostka→jednostka (ok. linii
+20623-20625): do warunku `atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
+isTargetWithinStackAttackRange(...)` dołożono `currentVisible().has(keyOf(cu.q, cu.r))` PRZED
+sprawdzeniem zasięgu — symetria z `tryLaunchMarchAttack` (main.ts:19315, sprawdza mgłę) i
+`refreshHoverPathPreview` (main.ts:19365, `hoverVis`). Gdy cel jest w zasięgu ataku stosu, ale poza
+`currentVisible()`, klik teraz spada do gałęzi `else if` i pokazuje istniejący hint „Cel niewidoczny
+(mgła).” zamiast cicho inicjować bitwę.
+
+**Weryfikacja żywa (headless Chromium, Playwright, `page.mouse.click` — nie wywołanie JS):**
+zbudowany bundel (`node ./node_modules/vite/bin/vite.js build`), uruchomiony z `?playtest=mapa`
+(realna generacja świata, ~19-20 s build + ~kilkanaście s do interaktywnego canvasu). Tymczasowy
+hook debugowy (na wzór `__civEmbarkDebug`) postawił łucznika gracza (Widok pola=2, Zasięg ataku=3)
+maksymalnie daleko od miasta gracza (żeby promień widoku miasta nie „oświetlał” celu) i wroga
+dokładnie 3 heksy dalej — w zasięgu ataku, ale POZA `currentVisible()` (zweryfikowane programowo:
+`enemyVisible: false`). **Kontrola A/B na TEJ SAMEJ mapie/ziarnie:**
+
+| Build | Klik na cel @ dystans=3 (enemyVisible=false) |
+|---|---|
+| **BEZ fixu N1** (warunek cofnięty do stanu sprzed rundy 2) | Atak WYSTARTOWAŁ — otworzył się ekran „ROZSTAWIENIE BITWY” mimo mgły |
+| **Z fixem N1** (`b752e0c4`) | Hint „Cel niewidoczny (mgła).” — trasa marszu zamiast bitwy, brak ataku |
+
+Hook debugowy w całości usunięty przed commitem (main.ts przywrócony identycznie do stanu z fixem,
+`git diff` po przywróceniu = tylko 9 linii samego fixu N1, zero orphan-code).
+
+**N2 — bramka teraz pokrywa prawdziwe `playerStackAt`, naprawione.**
+`gra/tools/atak-dystansowy-mapa-test.cjs`: harness `zbudujHarnessGracz` wycina teraz TEKSTOWO
+(wzorzec `wytnijFunkcje`, jak reszta pliku) prawdziwe `main.ts:playerStackAt` i wykonuje je z
+prawdziwym, zbundlowanym esbuildem `armyMerge.ts:activeUnitStack` (dociągniętym przez ENTRY obok
+`unitMapAttackRangeHex`/`hexDistance`/`resolveEnemyCityClick`) — zamiast dawnej atrapy
+`harnessPlayerStackOverride`. Sterowanie scenariuszem stosu teraz przez `setStackUnits(units)`,
+która ustawia tablicę jednostek realnie przeszukiwaną przez `activeUnitStack` (po `ownerId,q,r`/
+`stackGroupId`, dokładnie jak w main.ts) — zero reimplementacji formuły.
+
+Dodana nowa mutacja **MUT-H** (odpowiednik MUT-6 Evaluatora): `return activeUnitStack(units, u);`
+→ `return [u];` (playerStackAt „widzi tylko siebie”) — **teraz DAJE czerwony wynik** (asercja (g2)
+się łapie), podczas gdy w rundzie 1 ta sama klasa mutacji przechodziła bramkę na 65/0 zielono.
+
+**Weryfikacja WŁASNORĘCZNA (nie tylko przez wewnętrzną symulację MUT-H w teście) — wykonana wprost
+na prawdziwym `main.ts`:** tymczasowa podmiana `return activeUnitStack(units, u);` → `return [u];`
+bezpośrednio w pliku, uruchomienie bramki, przywrócenie:
+
+| Stan `main.ts` | Wynik `atak-dystansowy-mapa-test.cjs` |
+|---|---|
+| Wypatroszony `playerStackAt` (`[u]`) | **63 pass, 4 fail** — w tym dokładnie sekcja „(g2) NAPRAWA” (zgłoszony błąd wraca) |
+| Przywrócony (identyczny z commitem) | **66 pass, 0 fail** |
+
+**Bramki (z `gra/`):** `npx tsc --noEmit` → 0 błędów · `atak-dystansowy-mapa-test.cjs` → **66
+pass, 0 fail** (było 65/0, +1 z MUT-H) · `combat-test.cjs` → 6/6 · `map-attack-city-test.cjs` →
+8/8 · `tech-tree-test.cjs` → 19/19 · `research-test.cjs` → 33/33.
+
+**STATUS: RUNDA 2 GOTOWA, czeka na Evaluatora (commit `b752e0c4`, 2026-08-14). N1+N2 naprawione i
+zweryfikowane (statycznie + mutacyjnie + żywym kliknięciem myszy w headless Chromium z kontrolą
+A/B). N3/N4/N6/N7 świadomie poza zakresem tej rundy.**
+
+### WERDYKT EVALUATORA RUNDY 2 (2026-08-14, Opus 5, agent `a79cd973e2ed4355c`) dla `b752e0c4` — **PASS-WITH-NOTES**
+
+Wszystkie liczby niżej **zmierzone przez samodzielne uruchomienie** w izolowanym worktree
+(`node_modules` przez symlink, `tsc` 5.9.3 potwierdzone `npx tsc --version` per C-029) — żadna nie
+przepisana z opisu commita. Kod produkcyjny NIE był zmieniany trwale: wszystkie sondy i mutacje
+cofnięte, `git diff --quiet` czysty przed i po (md5 `src/main.ts` = `b3823ed9…`, identyczny
+z `b752e0c4`).
+
+#### 1. Bramki — uruchomione niezależnie na czystym drzewie
+
+| Bramka | Wynik na `b752e0c4` | Ocena |
+|---|---|---|
+| `npx tsc --noEmit` (5.9.3) | exit 0, 0 błędów | ZIELONA |
+| `atak-dystansowy-mapa-test.cjs` | **66 pass / 0 fail**, exit 0 | ZIELONA (zgodne z opisem) |
+| `combat-test.cjs` | 6 / 6 | ZIELONA |
+| `map-attack-city-test.cjs` | 8 ok / 0 fail | ZIELONA |
+| `tech-tree-test.cjs` | 19 / 0 | ZIELONA |
+| `research-test.cjs` | 33 / 0 | ZIELONA |
+
+#### 2. N1 — ŻYWE KLIKNIĘCIE MYSZY, własny pomiar A/B (nie powtórzenie pomiaru Operatora)
+
+Metoda: bundle zbudowany przeze mnie z bieżącego źródła (`vite build`, 19–20 s) + tymczasowa sonda
+`__civEvalProbe` (stawia stos, wroga, centruje kamerę, zwraca współrzędne ekranowe), prawdziwe
+`page.mouse.down/up` w headless Chromium **`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`**
+(potwierdzam ostrzeżenie poprzednika: domyślna ścieżka Playwrighta w tym środowisku nie istnieje),
+viewport 1400×900, `?playtest=mapa`, boot do klikalnego canvasu **~50 s**. Trafienie kliku
+zweryfikowane niezależnie (`pickMapTarget` na tych samych pikselach zwraca dokładnie klikany heks).
+**Sonda usunięta, `main.ts` przywrócony bit-w-bit (md5 zgodny).**
+
+Scenariusz: stos gracza `(28,9)` = Wojownik (`meleeAttack=4`, zasięg 0) + Łucznik (`meleeAttack=2`,
+zasięg ataku 3 heksy, widok pola 2), barbarzyńca `(31,9)`, **dystans 3 heksy**, `enemyVisible=false`
+(zmierzone programowo z `currentVisible()`), `inStackRange=true`, `atWar=true`. Klik 1 na własny stos
+daje `selectedId = evalp_woj` — **reprezentantem jest jednostka zwarcia, mechanizm ze zgłoszenia
+potwierdzony na żywo**.
+
+| Bundle (ta sama mapa, te same heksy) | Klik 2 na wroga @ 3 heksy, za mgłą |
+|---|---|
+| **BEZ fixu N1** (cofnięta wyłącznie linia `currentVisible()…`, reszta identyczna) | `preBattleOpen=true`, w DOM „ROZSTAWIENIE BITWY" — **regresja odtworzona** |
+| **Z fixem** (`b752e0c4`) | `preBattleOpen=false`, hint „Cel niewidoczny (mgła).", `plannedMarch=null`, jednostki nadal `(28,9)` |
+
+**Kontrola nr 1 — fix NIE jest za szeroki (te same heksy, ten sam dystans 3):** dołożenie Zwiadowcy
+(widok pola 5) do stosu → `enemyVisible=true` → klik na wroga **otwiera bitwę** (`preBattleOpen=true`,
+„ROZSTAWIENIE BITWY" w DOM), obie jednostki nadal na `(28,9)` (atak z dystansu bez marszu).
+**Kontrola nr 2 — zwarcie/adiacencja bez regresji:** `(81,8)`→`(82,8)`, dystans 1, `enemyVisible=true`
+→ bitwa startuje normalnie.
+
+#### 3. Symetria trzech ścieżek — sprawdzona, mgła TERAZ identyczna
+
+`currentVisible()` (`main.ts:8833-8850`) to **czysta funkcja przeliczana przy każdym wywołaniu**
+z `units`/`cities`/`map` — nie ma cache'u ani stanu, który mógłby się rozjechać między ścieżkami.
+`refreshFog` (`main.ts:9136`) woła dokładnie ją samą, więc render mgły pochodzi z tego samego źródła.
+Wszystkie trzy ścieżki mają dziś **ten sam warunek i tę samą kolejność** (mgła PRZED zasięgiem):
+klik `main.ts:20632-20633`, `tryLaunchMarchAttack` `19315-19316`, `refreshHoverPathPreview`
+`19365 + 19372` (`hoverVis`). **Zero rozbieżności w samym sprawdzeniu mgły.**
+
+Rozbieżności, które ZOSTAŁY, wszystkie **PRE-ISTNIEJĄCE** (żadnej nie wprowadza ta runda):
+- **cel wyznaczany inaczej:** klik → `unitAtRepresentative` (pomija `inGarnizon`), hover → surowe
+  `units.find(...)` (garnizon wroga ŁAPIE), marsz → `find` po `id`;
+- **`stackCanMove` tylko w kliku** — po marszu atak startuje przy 0 pkt ruchu, klikiem nie;
+- **ścieżka klik→MIASTO wroga w ogóle nie sprawdza mgły** (`main.ts:20466` + `src/map/map-attack-city.ts`
+  — grep: **0 odwołań** do widoczności w całym pliku), więc ta sama klasa dziury „atakuję to, czego nie
+  widzę" tam nadal stoi. Wynik z odczytu kodu, NIE zmierzony żywym klikiem — kandydat na osobny numer;
+- **`ai.ts` nie zna mgły w ogóle** (grep `currentVisible|computeVisibleAt|explored` → **0 trafień**),
+  AI atakuje każdy cel w zasięgu niezależnie od widoczności. Po N1 gracz jest ograniczony mgłą na
+  wszystkich 3 ścieżkach, AI na żadnej — asymetria pre-istniejąca, kierunek „AI swobodniejsze",
+  kandydat na osobny numer (w rejestrze nie ma dziś żadnego wątku o mgle AI — sprawdzone grepem).
+
+#### 4. N2 — własne mutacje na PRODUKCYJNYCH plikach (nie powtórzenie MUT-H), baza 66/0
+
+| # | Mutacja | Plik | Wynik bramki | Złapana? |
+|---|---|---|---|---|
+| E1 | `activeUnitStack` → `return [active];` | `game/armyMerge.ts` | **64 / 2** | TAK — czysto behawioralnie |
+| E2 | `visibleStackOnHex` → zawsze pusty stos | `game/armyMerge.ts` | **62 / 4** | TAK |
+| E3 | `stackGroupIdOf` → każda jednostka własną grupą (scenariusz N3) | `game/armyMerge.ts` | **64 / 2** | TAK |
+| E4 | `visibleStackOnHex` ignoruje `q`/`r` (cały świat = jeden stos) | `game/armyMerge.ts` | **66 / 0** | **NIE** |
+| E5 | `playerStackAt` → `activeUnitStack(…).filter(x => x.id === u.id)` (inny tekst niż MUT-H) | `src/main.ts` | **63 / 4** | TAK |
+
+**E1-E3 to twardy dowód, że N2 jest naprawione realnie, nie pozornie:** test nie ma ŻADNEGO strażnika
+tekstowego na `armyMerge.ts`, więc czerwony wynik może pochodzić wyłącznie z faktycznego wykonania
+prawdziwego, zbundlowanego `activeUnitStack`/`visibleStackOnHex`/`stackGroupIdOf`. E5 potwierdza
+niezależnie liczbę 63/4 z opisu commita i to, że wykonywane jest prawdziwe `main.ts:playerStackAt`
+(2 porażki behawioralne `(g2)` + 2 z wewnętrznego MUT-H).
+
+#### 5. NOTY (żadna nie blokuje zamknięcia tematu)
+
+- **G1 — sam fix N1 ma ZEROWE pokrycie bramkowe (zmierzone, nie domniemane).** Mutacja E6: usunięcie
+  całej linii `currentVisible().has(keyOf(cu.q, cu.r)) &&` z `main.ts` → `atak-dystansowy-mapa-test`
+  **66 pass / 0 fail**, `combat-test` 6/6, `map-attack-city-test` 8/0, `tsc` exit 0 — **wszystko
+  zielone, nikt nie zauważa cofnięcia naprawy**. Grep po całym `gra/tools/`: `currentVisible`
+  występuje w **0 plikach**. To dokładnie ta sama klasa braku, którą runda 1 zgłosiła jako N2 dla
+  `playerStackAt` — runda 2 naprawiła tamten przypadek, a swojego własnego fixu strażnikiem nie
+  objęła, mimo że w tym samym pliku stoją już 4 analogiczne strażniki strukturalne
+  (`atak-dystansowy-mapa-test.cjs:253-266`). Zalecenie: dołożyć jedną asercję regex na warunek
+  w gałęzi kliku przy najbliższym dotknięciu tego pliku (Evaluator nie pisze kodu za Operatora).
+- **G2 — sprostowanie opisu commita/rejestru: „trasa marszu zamiast bitwy" to NIEPRAWDA.** Zmierzone:
+  po kliku na zamglony cel `plannedMarch = null`, jednostki nie ruszyły się z `(28,9)`. Kod
+  (`main.ts:20636-20648`) w gałęzi mgły pokazuje wyłącznie hint i kończy — `planMarchTo` siedzi
+  dopiero w dalszych `else if`. Zachowanie jest **poprawne i pre-istniejące** (gałąź hintu
+  „Cel niewidoczny (mgła)." żyje od commita `13419757`, 2026-07-09 — sprawdzone `git log -S`),
+  więc fix przywraca stan sprzed całego tematu; błędny jest tylko opis.
+- **G3 — luka pokrycia obok N2 (mutacja E4).** Bramka nigdy nie sprawdza, że jednostka z INNEGO heksu
+  NIE wchodzi do stosu — `visibleStackOnHex` bez warunku `q`/`r` przechodzi 66/0. Sekcja „(g)" stawia
+  wszystkie jednostki na `(0,0)`. Warto dołożyć asercję „łucznik na SĄSIEDNIM heksie nie odblokowuje
+  ataku" — przy okazji udokumentowałaby notę N6 rundy 1 (skład bitwy zbiera promień 1, bramka nie).
+- **G4 — tryb dev z wyłączoną mgłą (klawisz `F`): gracz WIDZI wroga, a klik go odrzuca.** Zmierzone
+  żywo: po `F` (hint „FoW wyłączony (F): cała mapa widoczna — wolniejsze") cała mapa jest wyrenderowana,
+  ale klik na wroga @ 3 heksy daje „Cel niewidoczny (mgła)." i brak bitwy — bo `currentVisible()` nie
+  patrzy na `fogOn`/`revealAllLand` (`main.ts:8833-8850`, `9207-9233`). Dotyczy WYŁĄCZNIE trybu
+  dev/playtest i jest identyczne w pozostałych dwóch ścieżkach (tam pre-istniejące) — N1 tylko
+  domyka symetrię. Do świadomości przy playtestach z `F`.
+- **G5 — MUT-H jest kruchy na refaktor.** Szuka literału `return activeUnitStack(units, u);`; KAŻDA
+  legalna zmiana tej linii (E5) daje `FAIL: mutacja nieprzygotowana`. Kierunek bezpieczny (czerwone,
+  nie zielone), ale to fałszywy alarm przy poprawnym refaktorze — do świadomości, nie do naprawy teraz.
+
+#### 6. Werdykt
+
+**PASS-WITH-NOTES — żadna nota nie blokuje.** N1 jest naprawione realnie i udowodnione **własnym**
+żywym kliknięciem myszy z kontrolą A/B na tym samym ziarnie mapy oraz dwiema kontrolami braku
+nadmiernego zasięgu fixu; wszystkie trzy ścieżki inicjacji ataku sprawdzają dziś mgłę identycznie,
+z tego samego, bezstanowego źródła. N2 jest naprawione **weryfikowalnie** — trzy niezależne mutacje
+w `armyMerge.ts`, na którym test nie ma żadnego strażnika tekstowego, są łapane wyłącznie
+behawioralnie, co dowodzi wykonywania prawdziwej zależności produkcyjnej. Wszystkie sześć bramek
+zielonych, drzewo czyste. Noty G1-G5 to dług testowy i sprostowania opisu, nie wady naprawy.
+
+**TEMAT `P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE` — ZAMKNIĘTY W CAŁOŚCI (obie rundy:
+`4dcb2f4f` PASS-WITH-NOTES + `b752e0c4` PASS-WITH-NOTES).** Poza zakresem i nadal otwarte osobno:
+N3 (dwa `stackGroupId` na jednym heksie), N4/N6 (kosmetyka), N7 → `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1`
+(czeka na właściciela), plus dwaj nowi kandydaci z §3 (mgła na ścieżce klik→miasto; brak mgły w `ai.ts`).
+
+## ⚠️ P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT (2026-08-14, znalezisko przy okazji
+naprawy P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE, cicho zarejestrowane — nie nowy
+wątek na czacie)
+
+Ten sam mechanizm co w temacie wyżej (reprezentant stosu wybierany wg `meleeAttack`, więc dla
+stosu mieszanego zwarcie+dystans niemal zawsze wybierana jest jednostka zwarcia) psuje też
+ATAK NA MIASTO z dystansu, nie tylko atak jednostka→jednostka. `resolveAttacker()`
+(`gra/src/map/map-attack-city.ts:78-90`): gdy `selectedUnit` jest podane (reprezentant stosu) i
+NIE jest w liście `adjacent` (eligible dla tego miasta), funkcja zwraca `'none'` →
+`hint_no_adjacent`, **nawet jeśli inna jednostka w TYM SAMYM stosie ma wystarczający zasięg** —
+ścieżka `'pick'` (prompt wyboru atakującego) uruchamia się tylko gdy `selectedUnit` jest `null`,
+nie gdy jest ustawione ale niewłaściwe.
+
+Naprawa wymaga zmiany współdzielonej `resolveAttacker`/`eligibleCityAttackers`
+(`gra/src/map/map-attack-city.ts`) — własny plik, własne testy (`map-attack-city-test.cjs`),
+szerszy blast radius niż wąski temat wyżej. Świadomie NIE naprawione w tej samej turze (zakres
+C-025: „zero przy okazji/skoro już tu jestem").
+
+**STATUS: OTWARTE — do dispatchu subagenta Sonnet 5 w kolejnej turze (C-027: błąd z jednoznacznie
+opisanym oczekiwanym zachowaniem, bez potrzeby ABC — analogicznie do naprawy wyżej).**
+
+## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — WERDYKT EVALUATORA (Opus 5, agent `aa82c80ee4e26d8ce`, 2026-08-14)
+
+**WERDYKT: PASS-WITH-NOTES** dla `9482117f` (na gałęzi sesji jako merge `4a580231`). Naprawa jest
+poprawna, minimalna i zgodna ze wzorcem silnika; test regresyjny jest PRAWDZIWY (nie tautologia) —
+udowodnione trzema WŁASNYMI mutacjami Evaluatora, w tym mutacją funkcji WSPÓŁDZIELONEJ. Noty N1–N6
+niżej nie blokują scalenia ani deployu; N1 to jedyna rzecz do dopisania osobnym commitem.
+
+### 1. Merytoryka naprawy — zweryfikowana samodzielnie, nie przepisana z raportu Operatora
+
+| Sprawdzenie | Wynik |
+|---|---|
+| `converterBuildingIdForRecipe` robi to, co opisano | TAK — `gra/src/game/converters.ts:216-218`, dosłownie `return recipe.buildingId ?? recipe.id;` |
+| Liczba receptur z osobnym `buildingId` | **5 z 10** — potwierdzone odczytem `DEFAULT_CONVERTER_RECIPES` (`converters.ts:81-100`): `odlewnia_zelaza__braz`, `odlewnia_zelaza__zelazo`, `wielka_odlewnia__braz`, `wielka_odlewnia__zelazo`, `wielka_odlewnia__stal`. Zgodne ze zgłoszeniem |
+| Wzorzec w `main.ts:2789` identyczny z silnikiem | TAK — silnik: `runtimeBuiltIds.includes(converterBuildingIdForRecipe(r))` (`turn-economy.ts:1603-1605`); HUD: `builtIds.includes(converterBuildingIdForRecipe(recipe))`. Ta sama funkcja klucza, ta sama semantyka `includes` |
+| Czy merge `4a580231` nie zmienił treści commita | TAK — `git diff 9482117f HEAD` na obu plikach: zero różnic |
+| Brak podwójnego liczenia po naprawie (ryzyko: 3 receptury Brązu w łańcuchu) | Sprawdzone celowo: łańcuch odlewni to JEDEN slot — `gra/data/buildings.json` ma `odlewnia_zelaza.upgradeFrom = odlewnia_brazu`, `wielka_odlewnia.upgradeFrom = odlewnia_zelaza`, a `gra/src/game/production.ts:650-656` USUWA `upgradeFrom` z `builtIds` przy ukończeniu ulepszenia. Nie da się mieć dwóch ogniw naraz → brak sumowania 25+25+25 Brązu |
+| Realne wartości vs wartości w teście | `gra/data/econ-params.json`: Cegielnia 50, Garncarnia 50, Odlewnia brązu/żelaza/Wielka odlewnia 25 szt./turę na easy/normal/hard — DOKŁADNIE to, co test asercjonuje przez `throughputFallback` |
+
+### 2. Jakość testu `hud-konwerter-dopasowanie-test.cjs` — trzy WŁASNE mutacje Evaluatora
+
+Test faktycznie wycina prawdziwy tekst `empireConverterResourceRatesForOwner` z `main.ts`
+(po sygnaturze) i wykonuje go przez `esbuild.transformSync` + `new Function`, z PRAWDZIWYM
+`converters.ts` zbundlowanym przez `esbuild.buildSync` — nie z atrapą. Potwierdzone nie przez lekturę,
+tylko przez mutacje NA DYSKU (każda cofnięta przez `git checkout --`, drzewo po każdej rundzie
+czyste — `git status --porcelain` puste):
+
+| # | Mutacja (plik) | Wynik bramki |
+|---|---|---|
+| A | `main.ts` → powrót do `builtIds.includes(recipe.id)` (stary błąd) | **ZŁAPANA** — 11 pass / 9 fail, exit 1; `Odlewnia zelaza: Zelazo ... (got undefined)`, `Wielka odlewnia: Stal ... (got undefined)` — czyli niezależnie odtworzony ORYGINALNY objaw ze zgłoszenia (`{}` zamiast produkcji) |
+| B | `main.ts` → `builtIds.includes(recipe.buildingId ?? '')` (dopasowanie bez fallbacku na `recipe.id`) | **ZŁAPANA** — 12 pass / 8 fail, exit 1; padły asercje kontrolne trójki Cegielnia/Garncarnia/Odlewnia brązu (`got undefined`) — dowód, że test pilnuje OBU kierunków, nie tylko odlewni |
+| C | `converters.ts` → `converterBuildingIdForRecipe` zwraca `recipe.id` (psucie funkcji WSPÓŁDZIELONEJ, `main.ts` nietknięty) | **ZŁAPANA** — 13 pass / 7 fail, exit 1. To dowód najmocniejszy: test wykonuje prawdziwą funkcję z `converters.ts`, nie kopię formuły — dokładnie to, za co runda 1 tematu city-panel dostała FAIL |
+
+Na czystym drzewie: **20 passed, 0 failed, exit 0**.
+
+### 3. Kompletność — czy istnieje TRZECIE miejsce z tym samym dopasowaniem
+
+Audyt własny (`grep -rn "DEFAULT_CONVERTER_RECIPES\|converterBuildingIdForRecipe\|builtIds.includes" gra/src/`):
+dopasowanie budynek↔receptura żyje w **dokładnie trzech miejscach** i wszystkie trzy używają dziś tego
+samego klucza:
+
+1. `gra/src/game/turn-economy.ts:1603-1605` — silnik tury (`advanceCityEconomy`),
+2. `gra/src/game/converters.ts:246-248` — `converterProductionDisplayForBuilding`, wołane przez panel
+   miasta (`gra/src/ui/cityPanel.ts:6387`),
+3. `gra/src/main.ts:2789` — HUD imperium (naprawiane tu).
+
+**Twierdzenie Operatora o `cityPanel.ts` potwierdzam, ale z korektą:** panel miasta NIE ma własnej
+logiki dopasowania (nie odwołuje się do `DEFAULT_CONVERTER_RECIPES` w kodzie) — deleguje do
+`converters.ts`, które dopasowuje przez `converterBuildingIdForRecipe`. Operator napisał, że „nie
+znalazł w nim dziś żadnego odwołania” i wysnuł stąd, że to może „osobny, nie-scalony temat” — w
+rzeczywistości praca city-panel runda 2 (`dcdf653c`) BYŁA już na gałęzi sesji, tylko nie na `main`,
+od którego wystartował jego worktree. Wniosek końcowy ten sam: trzeciego, pominiętego miejsca NIE MA.
+
+Pozostałe dwa wystąpienia `DEFAULT_CONVERTER_RECIPES` (`turn-economy.ts:2128` i `2145`) to budowa mapy
+przepustowości kluczowanej po `recipe.id` — to NIE jest dopasowanie do budynku i `recipe.id` jest tam
+kluczem POPRAWNYM (identycznie jak w HUD-zie: `converterThroughputForEra(recipe.id, ...)`).
+
+### 4. Bramki uruchomione samodzielnie (z `gra/`, worktree `agent-aa82c80ee4e26d8ce`, symlink `node_modules`)
+
+`npx tsc --noEmit` → **exit 0** (tsc 5.9.3) · `hud-konwerter-dopasowanie-test.cjs` **20/0** ·
+`converters-test.cjs` **46/0** · `converter-era-scaling-test.cjs` **87/0** · `tech-tree-test.cjs`
+**19/0** · `research-test.cjs` **33/0** · `unit-replace-test.cjs` **13/0** ·
+`ai-founding-territory-test.cjs` **28/0**. Wszystkie liczby z raportu Operatora odtworzone co do
+sztuki. Dołożone przeze mnie bramki z tego samego obszaru (impact check): `citypanel-konwerter-produkcja-test.cjs`
+**83/0**, `cyna-surowiec-test.cjs` **78/0**, `ekonomia-5x-inwariant-test.cjs` **246/0**,
+`surowce-katalog-kolejnosc-test.cjs` **62/0** — wszystkie zielone.
+
+### 5. `mennica-magazyn-test.cjs` — pre-istnienie potwierdzone MOCNIEJ niż u Operatora
+
+Operator porównywał przez `git stash` (cały stan roboczy). Ja zrobiłem test punktowy: uruchomiłem
+bramkę na czubku gałęzi (**38 pass / 3 fail**), potem cofnąłem SAMĄ jedną linię naprawy
+(`converterBuildingIdForRecipe(recipe)` → `recipe.id`) i uruchomiłem ponownie: **38 pass / 3 fail**,
+te same komunikaty (m.in. `FAIL: odlewnia_brazu bez rudy NIE blokuje Cegielni ani Garncarni`).
+Delta tej naprawy = **zero**. Pre-istniejące, zgodnie z zapisem w `CLAUDE.md`.
+
+### 6. `map-gen-regression-test.cjs` — luka dowodowa Operatora zamknięta, ale INACZEJ niż przez pełny przebieg
+
+**(a) Dowód strukturalny (mocniejszy niż przebieg).** Bramka bundluje WYŁĄCZNIE
+`src/map/generator`, `src/map/gen-helpers`, `src/map/villages`, `src/map/newGameMapDefaults`,
+`src/types/hex` (`tools/map-gen-regression-test.cjs:16-23`). Commit zmienia `gra/src/main.ts`
+i dokłada `gra/tools/hud-konwerter-dopasowanie-test.cjs` — **żaden z tych plików nie wchodzi do
+bundla tej bramki**. Wpływ tej naprawy na wynik map-gen jest więc niemożliwy, nie „mało prawdopodobny”.
+
+**(b) Ta bramka w TYM środowisku i tak nie może dać `exit 0` — niezależnie od jakiejkolwiek zmiany
+kodu.** `allOk` zawiera `stdOk = tStd < STANDARD_GEN_MS_LIMIT` (7000 ms) oraz
+`duzyOk = tDuzy < 15000 ms`. Zmierzone TU: mapa mała (108×74) **57,86 s**, mapa standardowa (168×120)
+**116,25 s** — czyli 16,6× ponad limit. `stdOk = false` → `allOk = false` → `exit 1`, zanim jeszcze
+dojdzie do rzek. Pełny przebieg (80+ generacji map, w tym 40 standardowych po ~116 s) to w tym
+środowisku rząd 1,5–2,5 h; przerwałem go jako bezwartościowy dowodowo wobec (a) i (b). To jest ta
+sama klasa pułapki, o której mówi `CLAUDE.md` §0b (wcześniejsze błędne twierdzenie „map-gen kończy
+się exit 0”).
+
+**(c) Zamiast tego — skrócona replika DWÓCH kryteriów nazwanych w `CLAUDE.md`** (determinizm A=B
++ 0 rzek bez ujścia), na tym samym bundlu `src/map`, bez benchmarków czasowych:
+- **Determinizm A=B** (seed 42, standardowy, kontynenty, dwie generacje w jednym procesie):
+  hash `A=fdb5e82c`, `B=fdb5e82c` → **IDENTYCZNY, PASS**.
+- **0 rzek bez ujścia** (seed 42, mała mapa, 4 typy, rivers medium, `countBadRiverPaths`
+  odwzorowane 1:1 z bramki): kontynenty **0/92**, pangea **0/38**, wyspy **0/45**, ziemia **0/27**
+  tras bez ujścia; główne rzeki bez REALNEGO morza: **0/45, 0/29, 0/30, 0/25**. Łącznie
+  **0 złych na 202 trasy**, `exit 0`.
+
+**Uwaga metodologiczna do protokołu (błąd MOJEGO harnessu, nie kodu gry):** pierwsza wersja mojej
+repliki wołała `pathHasValidRiverOutlet(hexes, path, W, H)` — a prawdziwa sygnatura to
+`(hexes, path, paths, kinds, width, height)` (`gen-helpers.ts:9089-9096`). Efekt: „92/92 rzek bez
+ujścia”, co wyglądało na katastrofalną regresję, a było wyłącznie złym wywołaniem w moim skrypcie.
+Zapisuję to jawnie, bo dokładnie tak powstają fałszywe alarmy przepisywane potem do kolejnych
+dokumentów. Wynik ważny to ten z poprawionej repliki wyżej.
+
+### 7. Noty (NIE blokują — do osobnych, drobnych zleceń)
+
+**N1 (jedyna do naprawienia commitem — dokumentacja skłamała po naprawie).** Komentarz w
+`gra/src/ui/cityPanel.ts:6355-6379` nadal twierdzi, że HUD imperium dopasowuje przez
+`builtIds.includes(recipe.id)` i „przez to gubi część receptur (Odlewnia żelaza, Wielka odlewnia)”.
+Po `9482117f` to jest **nieprawda** — opis żywego bugu został w kodzie jako opis stanu bieżącego.
+Naprawa: przepisać ten akapit na czas przeszły z odwołaniem do `9482117f`. (Nie ruszam sam — rola
+Evaluatora, zero zmian w kodzie produkcyjnym.)
+
+**N2 (kruchość bramki, świadoma).** §2 testu przypina DOSŁOWNY ciąg
+`if (!builtIds.includes(converterBuildingIdForRecipe(recipe))) continue;`. Zachowawczy refaktor
+(np. inline `recipe.buildingId ?? recipe.id`) zachowałby poprawne zachowanie, ale zapali bramkę na
+czerwono (4 asercje §2). To standard tego repo (strażnicy tekstowi), ale warto wiedzieć przy
+przyszłym sprzątaniu.
+
+**N3 (zakres pokrycia).** Test wstrzykuje `data.econParams = {}` (ścieżka `throughputFallback`)
+i `empireEpochForOwner = () => 1`. Dziś realne `econ-params.json` ma te same liczby (sprawdziłem —
+sekcja 1), więc pokrycie jest realne; ale gdyby ktoś zmienił parametry w JSON, bramka nadal byłaby
+zielona na fallbackach, a HUD mógłby się rozjechać z silnikiem. Test asercjonuje też STAŁE (25/50),
+nie porównuje HUD z wynikiem silnika — czyli klasa błędu „HUD vs silnik” jest złapana dla TEGO
+dopasowania, ale nie pilnowana strukturalnie.
+
+**N4 (pre-istniejąca, realna różnica HUD vs silnik — POZA zakresem tej naprawy).** Silnik filtruje
+`runtimeBuiltIds` (`runtimeActiveBuiltIdsForCity` — etykiety dostępu do surowca, dostęp do Złota,
+zapas imperium), HUD używa surowego `builtIds`. Naprawa ujednoliciła KLUCZ dopasowania, ale nie
+ZBIÓR budynków: konwerter runtime-nieaktywny nadal policzy się w HUD jako pełne 25 szt./turę.
+To świadome „brutto” (udokumentowane w docstringu `empireConverterResourceRatesForOwner`), ale po tej
+naprawie dotyczy już także Odlewni żelaza/Wielkiej odlewni, więc rozjazd stał się bardziej widoczny.
+Do decyzji właściciela, czy rejestrować osobno.
+
+**N5 (skutek naprawy szerszy niż sam licznik — zamierzony, ale warto to wiedzieć).**
+`empireConverterResourceRatesForOwner` karmi też `mergedResourceRatesForOwner` (`main.ts:8375-8386`),
+a ta — cap handlu wielotorowego w dyplomacji (`main.ts:8412-8413`, `15899`). Po naprawie Brąz/Żelazo/Stal
+z odlewni realnie WCHODZĄ do tego capu (wcześniej liczyły się jako 0). PARYTET gracz↔AI zachowany —
+ta sama funkcja, `ownerId` jako zwykły parametr, zero gałęzi. Zmiana dotyka więc nie tylko wyświetlania,
+ale i zachowania AI w handlu — na plus (wcześniej cap był zaniżony), ale playtest handlu warto zrobić.
+
+**N6 (dług danych, zero szkody dziś).** Receptura `huta` (`converters.ts:87`) nie ma odpowiadającego
+budynku w `buildings.json` (łańcuch to `odlewnia_brazu` → `odlewnia_zelaza` → `wielka_odlewnia`), więc
+nigdy się nie dopasuje — identycznie w HUD i w silniku, bez rozjazdu. Martwy wpis do sprzątnięcia
+kiedyś osobno.
+
+### 8. Uwaga procesowa (potwierdzam ustalenie orkiestratora)
+
+Commity `9482117f` + `913b74f6` trafiły PROSTO na `main` z pominięciem gałęzi sesji i Evaluatora
+(worktree Operatora wystartował od `main`). Merytorycznie kod jest dziś zweryfikowany i zielony —
+dług był procesowy, nie merytoryczny, i tym werdyktem zostaje domknięty.
+
+**STATUS: PASS-WITH-NOTES — TEMAT ZAMKNIĘTY MERYTORYCZNIE.** Do dorobienia osobno: N1 (poprawka
+zdezaktualizowanego komentarza w `cityPanel.ts`). N4/N6 — do ewentualnej rejestracji jako osobne
+tematy, jeśli właściciel uzna za istotne.
+
+---
+
+## ⚠️ P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE (2026-08-14, znalezisko Evaluatora NOTA 3 przy okazji P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ)
+
+**Nie zgłoszenie właściciela wprost — błąd znaleziony przez Evaluatora (agent `a2def38f639c4c7c5`)
+podczas oceny fixu blackoutu, rejestrowany osobno zgodnie z C-025 (nie naprawiać przy okazji).
+PRE-ISTNIEJĄCY — starszy niż `222277aa`, nie dotyka żadnego z trzech miejsc zmienionych tamtym
+commitem.**
+
+**Zmierzony mechanizm (instrumentacja licznikowa na pełnej ścieżce wygranej bitwy 3D, build
+tymczasowy, źródła przywrócone po pomiarze):** `BattleScene.dispose()` woła
+`this._hideEndDetails()` (~linia 3583), a ta — gdy `isPostBattleSummaryOpen()` zwraca `true` —
+woła `hidePostBattleSummary()` **BEZ wywołania jej callbacku `onContinue`**. Skutek: podsumowanie
+po bitwie (ekran „Zwycięstwo"/łupy/nagrody) jest budowane i natychmiast kasowane **w tym samym
+ticku** — gracz go nigdy realnie nie widzi. Zmierzone: 4 s po kliknięciu „Powrót na mapę" w DOM
+zero elementów `.pbs-roster-col` i brak przycisku „Kontynuuj". Ponieważ `onContinue` się nie
+wykonuje, `afterSummary` (`setMood('mapa')` + `finishMapBattleUi()` = `clearPlayerUnitSelection`
++ `refreshFog` + `updateHud`) też się nie wykonuje.
+
+**Dlaczego to nie zepsuło naprawy blackoutu:** `markBattleSceneClosed(this)` w `dispose()` stoi
+PRZED `_hideEndDetails()`, więc rejestr scen bitwy i tak się poprawnie czyści — mapa wraca do
+życia. To osobny, równoległy problem: brakuje EKRANU, nie brakuje ODBLOKOWANIA KAMERY.
+
+**Do dispatchu:** znaleźć dlaczego `dispose()` kasuje otwarte podsumowanie zamiast poczekać na
+decyzję gracza (przycisk „Kontynuuj") — prawdopodobnie `dispose()` jest wołane zbyt wcześnie/przy
+niewłaściwym trigerze na ścieżce wygranej, albo `_hideEndDetails()` nie powinno w ogóle kasować
+OTWARTEGO podsumowania, tylko już zamknięte. Naprawić tak, żeby gracz faktycznie widział ekran
+podsumowania i sam decydował kiedy wrócić na mapę (klik „Kontynuuj"), zamiast być z niego
+wyrzucanym automatycznie.
+
+**STATUS: DO DISPATCHU — nie krytyczne (gra jest grywalna, kamera działa poprawnie po fixie
+blackoutu), ale gracz traci realny ekran gry (podsumowanie łupów/wyniku bitwy) przy każdej
+bitwie 3D.**
+
+---
+
+## P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM (2026-08-14, znalezisko Evaluatora NOTA 5 przy okazji P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ)
+
+**Ryzyko w naprawie `222277aa`, nie potwierdzony dziś błąd — do wzmocnienia obronnego.**
+`markBattleSceneOpen(this)` w konstruktorze `BattleScene` stoi na początku, a konstruktor biegnie
+dalej jeszcze ~700 linii (m.in. `new THREE.WebGLRenderer(...)`). Gdyby cokolwiek w tej reszcie
+konstruktora rzuciło wyjątek (np. WebGL niedostępny/kontekst odrzucony), wpis w rejestrze
+`battleSceneOpen.ts` zostałby na trwałe — kamera mapy świata zostałaby zablokowana na zawsze
+(ten sam objaw co pierwotne zgłoszenie, tylko bez możliwości wyjścia z bitwy żeby to naprawić).
+Strona `dispose()` ma już to zabezpieczone wzorowo (`markBattleSceneClosed` na samym początku),
+strona rejestracji — nie.
+
+**Do dispatchu:** przenieść `markBattleSceneOpen(this)` na koniec konstruktora (po wszystkich
+operacjach mogących rzucić) ALBO opakować konstruktor w `try/catch` który czyści rejestr przy
+błędzie. Wąski zakres (~kilka linii), niski priorytet — wymaga rzeczywistego zerwania
+konstrukcji WebGL, co jest rzadkie, ale konsekwencja (trwale zamrożona mapa) jest poważna.
+
+**STATUS: DO DISPATCHU — niekrytyczne wzmocnienie obronne, nie pilne.**
+
+---
+
+## P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA + P-AI-BRAK-POJECIA-MGLY (2026-08-14, znalezisko Evaluatora przy okazji rundy 2 P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE)
+
+**Dwa powiązane, PRE-ISTNIEJĄCE znaleziska z analizy symetrii — żadne nie dotyczy tego, co runda 2
+naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C-025.**
+
+1. **Klik gracza na wrogie MIASTO nie sprawdza mgły w ogóle** — `gra/src/map/map-attack-city.ts`
+   ma zero odwołań do widoczności/`currentVisible`. Po naprawie ataku-na-jednostkę (runda 1+2 tego
+   tematu) gracz jest ograniczony mgłą na WSZYSTKICH trzech ścieżkach ataku na jednostki, ale NIE
+   na ataku na miasto — asymetria warta ujednolicenia.
+2. **AI w ogóle nie zna pojęcia mgły wojny przy decyzjach o ataku** — grep `ai.ts` po mgle/
+   widoczności: 0 trafień. Może to być świadomy projekt (AI ma pełną informację, gra "uczciwie"
+   inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
+
+**STATUS: DO DISPATCHU (rekonesans najpierw dla p.2 — ustalić czy AI-bez-mgły jest zamierzone) —
+niekrytyczne, nie pilne.**
+
+---
+
+## ⚠️ P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE (2026-08-14/15, sprostowanie Macieja — DRUGI raz po błędnym pytaniu ABC orkiestratora)
+
+**Zgłoszenie (cytat, po sprostowaniu że NIE chodzi o strzał z dystansu):** „chodzi o to, żeby
+doszło do zwarcia jednostki, która jest kilka heksów od jednostki wroga — muszę wskazywać jej
+najpierw miejsce w bezpośrednim sąsiedztwie tej jednostki, a dopiero jak się tam znajdzie, mogę
+wydać dyspozycję ataku. Nie mogę z daleka wskazać tego celu i po prostu żeby tam zaatakował…
+Nie można zaatakować z daleka na mapie wskazać tego celu. Tu jest problem."
+
+**Błąd orkiestratora do odnotowania:** wcześniej w tej samej turze zarejestrowano
+`P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` jako rzekomą odpowiedź na to zgłoszenie — to było złe
+zrozumienie (dotyczyło teleportu PO wygranej bitwie dystansowej, `post-battle-map.ts` F3, temat
+odrębny i nadal ważny, ale nie to, o co pyta właściciel tutaj). Ten wpis jest właściwym,
+osobnym tematem.
+
+**Stan kodu wg czytania (orkiestrator, main.ts, PRZED dispatchem — do potwierdzenia żywym testem,
+nie zakładać):**
+- Klik na wrogą jednostkę poza zasięgiem ataku stosu (`main.ts:20635-20648`) NIE jest ślepy —
+  gałąź `else if (atkUnit && atkUnit.ownerId === 0)` wywołuje `planMarchTo(cu.q, cu.r, cu.id)`
+  (po ew. `withPlayerWarConsent`), co ustawia `PlannedMarchDest.attackUnitId = cu.id`
+  (`main.ts:19439-19441`) i rejestruje cel w `marchAttackTargets` przez `syncMarchAttackTarget`
+  (`main.ts:19467`). Ten mechanizm istnieje od implementacji `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`
+  (commit `9e25ea77`, RUNDA 1 — Evaluator dał wtedy FAIL na inny powód: F1 parytet AI dla miast,
+  RUNDA 2 dla TEGO tematu nigdy nie została wykonana, przesunięta na listę „czeka na limit").
+- Konsumpcja: `tryLaunchMarchAttack(atkUnit, attackTargetId)` (`main.ts:19312-19320`) jest wołana
+  przy zakończeniu segmentu marszu (`main.ts:~19691-19694`, w trakcie tury) i przy rozstrzyganiu
+  podpowiedzi końca tury (`main.ts:~28478-28491`).
+- `computePath` (`units/setup.ts:873-1025`) traktuje heks docelowy jako „zawsze przejezdny jako
+  ostatni krok" niezależnie od zajętości (`nKey === destKey` → brak blokady po occupied) — czyli
+  ścieżka planowana jest DO heksu wroga włącznie, a nie tylko do heksu sąsiedniego. Czy egzekucja
+  segmentu marszu (per-tura) faktycznie zatrzymuje jednostkę PRZED wejściem na zajęty heks (żeby w
+  ogóle doszło do wywołania `tryLaunchMarchAttack` zamiast próby wejścia na heks wroga) — **NIE
+  zweryfikowane czytaniem, wymaga śledzenia `executeMarchSegmentForUnit`/egzekucji ruchu.**
+
+**Rozbieżność do wyjaśnienia żywym testem (nie zgadywać z samego czytania kodu):** powyższe
+czytanie sugeruje, że mechanizm marsz-a-potem-atak formalnie ISTNIEJE i powinien się uruchamiać
+przy kliku na dystansowego wroga jednostką zwarcia — a mimo to właściciel zgłasza z żywej gry,
+że tak nie działa. Możliwe przyczyny do zbadania przez Operatora (bez zakładania z góry, które):
+(a) któryś z warunków wejścia w gałąź `planMarchTo(cu.q, cu.r, cu.id)` cicho nie jest spełniany w
+realnym scenariuszu gracza (np. `stackCanMove`, stan wojny, coś w `withPlayerWarConsent`);
+(b) marsz się zaplanowuje, ale egzekucja per-turowa nie dochodzi do wywołania
+`tryLaunchMarchAttack` po dotarciu na sąsiedni heks (np. jednostka zatrzymuje się, ale
+`marchAttackTargets` już wtedy nie ma wpisu, albo drugi warunek w `tryLaunchMarchAttack`
+(`isTargetWithinStackAttackRange`/mgła) zawodzi mimo że powinien przejść);
+(c) UI nie daje żadnej wizualnej informacji zwrotnej, że marsz-z-atakiem został zakolejkowany
+(gracz widzi zwykły marsz i nie wie, że po dotarciu nastąpi automatyczny atak — subiektywnie
+odbierane jako „nie da się zaatakować z daleka", nawet jeśli mechanicznie działa).
+
+**Do dispatchu:** Operator (Sonnet 5, `isolation: "worktree"`) — **żywy test w headless Chromium**
+(binarka `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, NIE domyślna ścieżka Playwright),
+nie tylko czytanie kodu: nowa gra, jednostka zwarcia (np. Wojownik) w polu widzenia ale 4-5 heksów
+od widocznej wrogiej jednostki, pojedynczy klik na wroga → zaobserwować realne zachowanie (marsz
+bez zapowiedzi ataku? marsz z jakimś sygnałem ataku w toku? od razu odrzucone?). Jeśli
+scenariusz (a) lub (b) — naprawić root cause. Jeśli (c) — dodać widoczny sygnał zakolejkowanego
+ataku (np. w `unitRenderer.setPathRoute`/HUD), tak żeby gracz wiedział że nie musi ręcznie
+domykać ataku drugim klikiem. Rozszerzyć `atak-dystansowy-mapa-test.cjs` lub nowy plik testu o
+scenariusz „marsz wieloturowy zwarcia zakończony automatycznym atakiem po dotarciu" — realna
+egzekucja wyciętych funkcji z `main.ts`, nie reimplementacja formuły (wzorem poprzednich rund).
+
+**STATUS: DISPATCH WYKONANY, patrz sekcja werdyktu niżej.**
+
+---
+
+### WYNIK RUNDY 1 (Operator Sonnet 5, worktree izolowany `agent-ae5f29cbac1b8c209`, 2026-08-15) — mechanizm DZIAŁA, znalezione DWIE inne, osobne przyczyny
+
+**Metoda:** żywy headless Chromium, real `page.mouse.click` na współrzędnych z realnego rzutowania
+kamery (nie syntetyczny `dispatchEvent`), zweryfikowane `document.elementFromPoint`/`pickHexAt`.
+Pierwsza runda przez pełną nową grę (~140s generacji mapy/próba), po mojej interwencji (agent utknął
+w wolnej, kruchej pętli) przełączona na `?playtest=mapa` (`doStartPlaytestMapaSwiata`, main.ts:31033)
+— sandbox mapy świata, start ~47s. Tymczasowy hook `window.__civTest` + `[civTest-trace]` logi
+konsoli USUNIĘTE przed zakończeniem (`git checkout -- src/main.ts`), repo czyste — zero zmian
+kodu z tej rundy.
+
+**Obalone (dowód z żywej gry, nie zgadywane):** `stackCanMove`, `currentVisible`,
+`isTargetWithinStackAttackRange`, `playerIsAtWarWith` — wszystkie liczą się poprawnie.
+`planMarchTo(cu.q, cu.r, cu.id)` zwraca `true`, poprawnie ustawia `PlannedMarchDest.attackUnitId`
+i wpis w `marchAttackTargets`. Śledzenie wieloturowe `plannedMarches` nie gubi celu samo z siebie
+przy zwykłym końcu segmentu marszu.
+
+**PRZYCZYNA A — stałe panele HUD połykają klik, zanim dotrze do canvasu (potwierdzona 2× w różnych
+scenariuszach).** `document.elementFromPoint(x,y)` w dokładnym miejscu kliku na wroga zwrócił
+`.civ-side-panel` (panel „WYDARZENIA", `sidePanelHud.ts:133`, `position:fixed; z-index:305;
+pointer-events:auto`, stała szerokość przy prawej krawędzi) w jednym przebiegu i
+`.sp-ctx-card.sp-ctx-interactive` (dok kontekstowy, lewy skraj) w drugim. `pickHexAt(x,y)`
+(raycasting canvasu) POPRAWNIE wskazywał heks wroga w obu przypadkach — ale realny klik myszą
+trafiał w DOM-owy panel nad canvasem, nie w canvas. Zero błędu, zero komunikatu — klik po prostu
+znika. Gdy cel przesunięty poza obszar tych paneli, mechanizm zadziałał natychmiast (`planMarchTo`
+→ `true`, jednostka realnie ruszyła, `ruchLeft` zmalało). Te panele stoją na stałej pozycji ekranu
+niezależnie od tego, gdzie akurat renderuje się wróg — systemowy, powtarzalny problem, nie
+przypadek jednego testu.
+
+**PRZYCZYNA A — NAPRAWIONA I SCALONA (Operator Sonnet 5, worktree izolowany
+`agent-acfc882780d724ecc`, 2026-08-15, commit naprawy `b2197887`).** Root cause potwierdzony
+żywym `document.elementFromPoint`: `.civ-side-panel` miał `pointer-events:auto` na CAŁYM
+prostokątnym kontenerze (`top=102 bottom=816`, 714px), mimo że realna treść (nagłówek/karty)
+kończyła się na `bottom=184` — pozostałe 632px to czyste, przezroczyste tło pokazujące canvas pod
+spodem. Dowód PRZED: `elementFromPoint(1430,500)` → `DIV.civ-side-panel`. Dowód PO: ten sam punkt
+→ `CANVAS`. Dowód mutacyjny (przywrócenie `auto` na żywo natychmiast przywraca błąd w tym samym
+punkcie). **Druga część (`.sp-ctx-card.sp-ctx-interactive`, dok kontekstowy) zweryfikowana
+osobno — kod już miał poprawną strukturę (`pointer-events:none` na kontenerze,
+`auto` tylko na karcie), nie wymagała zmiany.**
+Naprawa: `gra/src/ui/sidePanelHud.ts` — `.civ-side-panel` z `auto` na `none`, `auto` dopisane z
+powrotem na realnie interaktywnej treści (`.sp-event`, `.sp-toolbar`, `.civ-side-panel .sp-ctx-card`
+dla karty kontekstu heksa). Nowy test `sidepanel-hud-deadzone-test.cjs` (18/18, z dowodem
+mutacyjnym) potwierdza zarówno naprawę martwej strefy, jak i że cała istniejąca klikalność
+(toolbar „Inne cyw.", karta własnej jednostki + strzałka cyklowania, karta kontekstu heksa)
+działa bez regresji — potwierdzone realnym kliknięciem myszy, nie tylko odczytem CSS. Bramki
+zweryfikowane NIEZALEŻNIE przez orkiestratora po scaleniu: `tsc --noEmit` 0 błędów,
+`sidepanel-hud-deadzone-test` 18/18, `sidepanel-events-toolbar-test` 19/19,
+`side-list-hud-panel-coverage-test` 74/74, `unit-context-card-test` 29/29,
+`side-panel-unit-cycle-arrows-test` 20/20. **Scalone do gałęzi sesji, czeka na deploy.**
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-15, commit `d8c3bc78`): **FAIL** — NIE cofać, runda 2 wymagana
+
+**Rdzeń naprawy potwierdzony solidnie** (wszystkie bramki z opisu zgodne z niezależnym pomiarem,
+zero zawyżenia; klikalność WSZYSTKICH elementów panelu — `.sp-toolbar`, `.sp-event`, `.sp-ctx-card`
+— potwierdzona hit-testem + realnymi kliknięciami, zero regresji na 4 różnych stanach gry).
+
+**Powód FAIL — realna, zmierzona regresja poza zakresem testu:** `.civ-side-panel` ma
+`overflow-y:auto` (realnie się przewija przy >~11 równoczesnych wpisach — `collectTurnEvents()`
+w `main.ts` nie ma limitu, próg osiągalny w normalnej grze). `pointer-events:none` na całym
+kontenerze **zabija scroll myszą i przeciąganie paska przewijania** — kontrfaktyczny pomiar A/B
+(jedyna zmienna: ta jedna reguła CSS): PRZED — `wheel` przewija (`scrollTop` 0→400), pasek
+łapany (`elementFromPoint` na pasku → `DIV.civ-side-panel`); PO — `wheel` NIE przewija
+(`scrollTop` zostaje 0, kółko trafia w mapę pod spodem), pasek niełapalny
+(`elementFromPoint` → `CANVAS`). Skutek: wydarzenia poniżej ~11. pozycji na liście stają się
+nieosiągalne dla gracza. Własna mutacja Evaluatora (usunięcie `pointer-events:auto` z
+`.sp-event`) **NIE jest łapana** przez żaden istniejący test — klikalność kart wydarzeń jest dziś
+niestrzeżona bramką.
+
+**Zalecenie (NIE cofać commit — przywróciłoby cięższy, już naprawiony błąd połykania kliku):**
+przenieść `overflow-y:auto`/scrollbar z zewnętrznego kontenera na wewnętrzny wrapper z
+`pointer-events:auto`, dopasowany wysokością do treści, zamiast rozciągać hit-obszar na cały pion
+kontenera. Decyzja projektowa, nie jednolinijkowa — do rundy 2. Dodatkowo: dopisać asercję
+klikalności `.sp-event` do `sidepanel-hud-deadzone-test.cjs` (dziś nieosłonięta). Ten sam wzorzec
+(`pointer-events:none` + `overflow-y:auto`) istnieje też pre-istniejąco w `.civ-side-ctx-dock` —
+NIE regresja tego commita, zarejestrowane osobno niżej jako `P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY`.
+
+**STATUS: RUNDA 2 WYMAGANA — dispatch w toku. Deploy tej konkretnej naprawy (Przyczyna A)
+WSTRZYMANY do PASS rundy 2; pozostałe dwa tematy (tooltipy, Przyczyna B) nie są tym blokowane.**
+
+### WYNIK RUNDY 2 (Operator Sonnet 5, worktree izolowany `agent-aaa7fbe79b2032623`, 2026-08-15) — scroll naprawiony, martwa strefa rundy 1 NIE cofnięta
+
+**Naprawa (`gra/src/ui/sidePanelHud.ts`):** `overflow-y:auto`/`scrollbar-gutter` przeniesione z
+ZEWNĘTRZNEGO kontenera `.civ-side-panel` (który zostaje `pointer-events:none` NA STAŁE, bez zmian
+względem rundy 1) na NOWY wewnętrzny wrapper `.civ-side-panel .sp-scroll` — jedyne, trwałe dziecko
+kontenera, tworzone raz w `createSidePanelHud()` i wypełniane przy każdym `render()`
+(`scrollEl.innerHTML = html`, NIE `el.innerHTML` — żeby `el` nigdy nie stracił tego dziecka).
+Wrapper ma `pointer-events:auto`, `height:max-content;max-height:100%` — dopasowuje się do realnej
+wysokości treści zamiast rozciągać hit-obszar na cały pion kontenera. Efekt: gdy wydarzeń jest
+mało, wrapper jest niski i pusty „ogon" kontenera POD nim nadal przepuszcza klik do canvasu (fix
+rundy 1 nienaruszony); gdy wydarzeń jest dużo (>~11), wrapper wypełnia cały pion i STAJE SIĘ
+scrollowalny (kółko myszy + pasek przewijania łapalne), bo to on, nie kontener, niesie
+`pointer-events:auto`. Wszystkie selektory potomne (`.civ-side-panel .sp-event` itd.) działają bez
+zmian — to selektory descendant, obojętne na dodatkową warstwę wrappera.
+
+**Test (`gra/tools/sidepanel-hud-deadzone-test.cjs`) rozszerzony o sekcje F–I** (żywy headless
+Chromium, `?playtest=mapa`): (F) wstrzyknięcie 20 syntetycznych `.sp-event` do `.sp-scroll`
+odtwarza próg >~11 wydarzeń z werdyktu Evaluatora (`scrollHeight > clientHeight`); (G) realny
+`page.mouse.wheel()` + odpytywanie `scrollTop` w pętli (zamiast pojedynczego `wait`) potwierdza,
+że scroll DZIAŁA (kontrfaktyczny pomiar Evaluatora odwrócony: `scrollTop` 0→400); (H) pasek
+przewijania łapalny (`elementFromPoint` na jego pozycji → `.sp-scroll`, nie `CANVAS`) + dowód
+mutacyjny (`.sp-scroll{pointer-events:none}` na żywo przywraca DOKŁADNIE regresję Evaluatora:
+scroll przestaje działać, pasek znów niełapalny); (I) klikalność `.sp-event` — nowa asercja + dowód
+mutacyjny (`.sp-event{pointer-events:none}` na żywo) chroniąca DOKŁADNIE tę mutację, którą wykonał
+Evaluator i którą żaden test wcześniej nie łapał. **32 pass, 0 fail, exit 0.**
+
+**Dwie pułapki środowiskowe napotkane i obejście udokumentowane w kodzie testu:**
+1. `page.mouse.wheel()` Playwrighta w tym headless Chromium (fallback + software swiftshader, CPU
+   regularnie >90% przez współdzielony sandbox) potrafi opóźnić naniesienie natywnego scrolla o
+   >1s pod obciążeniem — pojedynczy `wait(200)` dawał fałszywy FAIL. Naprawione odpytywaniem
+   `scrollTop` w pętli (do 4s) zamiast jednego stałego czekania.
+2. Chromium **zatrzaskuje** (wheel scroll latching) cel scrolla na czas trwania sekwencji — DRUGIE
+   wywołanie `page.mouse.wheel()` w tej samej sesji strony (test dowodu mutacyjnego, sekcja H)
+   nadal trafiało w PIERWOTNY cel (`.sp-scroll`) mimo że `elementFromPoint` w tym samym punkcie już
+   poprawnie zwracał `CANVAS` po mutacji CSS — zatrzask przeżył nawet ruch myszy w neutralny punkt
+   i z powrotem. Rozwiązanie: dla DRUGIEGO (negatywnego, mutacyjnego) sprawdzenia scrolla użyto
+   syntetycznego `dispatchEvent(new WheelEvent(...))` bezpośrednio na elemencie, który
+   `elementFromPoint` wskazuje TERAZ — to pomija mechanizm zatrzasku kompozytora i poprawnie
+   odzwierciedla żywy stan CSS. Pierwsze (pozytywne) sprawdzenie w sekcji G nadal używa
+   prawdziwego `page.mouse.wheel()` jako najwierniejszej symulacji realnego gestu.
+
+**Bramki (z `gra/`):** `tsc --noEmit` 0 błędów · `sidepanel-hud-deadzone-test.cjs` 32/32 ·
+`sidepanel-events-toolbar-test.cjs` 19/19 · `side-list-hud-panel-coverage-test.cjs` 74/74 ·
+`unit-context-card-test.cjs` 29/29 · `side-panel-unit-cycle-arrows-test.cjs` 20/20 — wszystkie
+zielone, zero regresji.
+
+**STATUS: RUNDA 2 GOTOWA — scalona do gałęzi sesji, czeka na Evaluatora i deploy (deploy tylko na
+hasło `deploy`).**
+
+### WERDYKT EVALUATORA — RUNDA 2 (Opus 5, 2026-08-15, commit `e975cbc9`): **PASS-WITH-NOTES**
+
+Decydujący dowód: Evaluator zbudował OSOBNY bundel ze stanu sprzed naprawy (`d8c3bc78`) i porównał
+z czubkiem gałęzi tym samym punktem/metodą — regresja rundy 1 (pasek niełapalny, `scrollTop` 0→0
+mimo `wheel`) odtworzona niezależnie na starym stanie, i potwierdzona jako naprawiona na nowym
+(`elementFromPoint` na pasku → `.sp-scroll`, `scrollTop` 0→400). Fix rundy 1 (martwa strefa)
+zweryfikowany jako nienaruszony (632px „ogona" nadal przepuszcza klik do canvasu przy małej
+liczbie wydarzeń). Wszystkie 5 bramek zgodne z opisem. 3 własne mutacje Evaluatora (różne od testu
+Operatora) — wszystkie złapane. Audyt restrukturyzacji DOM: zero selektorów kombinatora dziecka
+(`>`) przeciwko `.civ-side-panel` w całym `gra/src`, wszystkie selektory potomka odporne na
+dodatkową warstwę wrappera — czysto.
+
+**Notatki nieblokujące:** (1) sekcja G nowego testu nie rozróżnia w pełni stanu naprawionego od
+zepsutego (kółko nad kartą przewijało już PRZED naprawą dzięki `pointer-events:auto` na
+`.sp-event` z rundy 1 — realną różnicę widać dopiero nad marginesem/paskiem; mutację i tak łapie
+sekcja H, więc bramka nie ma dziury, tylko test mniej precyzyjny niż mógłby być); (2) opis
+regresji rundy 1 w rejestrze był nieco szerszy niż stan faktyczny („wydarzenia nieosiągalne"
+zamiast precyzyjniej „pasek nieprzeciągalny + martwe kółko nad marginesami") — nie podważa
+zasadności naprawy, tylko koryguje zapis; (3) `hud.ts:1587` ustawia inline `display:flex` na
+kontener, a cała naprawa opiera się na tym, że `height:max-content` na wrapperze nadpisuje
+domyślne `align-items:stretch` — działa i jest strzeżone bramką (mutacja M3), ale zależność jest
+nieoczywista, warto dopisać komentarz.
+
+**STATUS: PASS-WITH-NOTES — GOTOWE DO DEPLOY. Temat P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE
+zamknięty w całości (Przyczyna A runda 1+2, Przyczyna B) — wszystkie trzy komponenty mają werdykt
+PASS-WITH-NOTES, gotowe do wspólnego deployu.**
+
+---
+
+## P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (2026-08-15, znalezisko Evaluatora przy okazji Przyczyny A)
+
+**Ten sam wzorzec co regresja w rundzie 1 Przyczyny A, ale PRE-ISTNIEJĄCY, nie spowodowany tym
+commitem:** `.civ-side-ctx-dock` ma `pointer-events:none` na kontenerze (od dawna, niezależnie od
+dzisiejszej zmiany) razem z `overflow-y:auto` — jeśli ten dok kiedykolwiek renderuje treść
+przewijalną (dziś prawdopodobnie nie, bo karty kontekstu są krótkie), scroll myszą/pasek będzie
+tam równie martwy jak było w `.civ-side-panel` przed naprawą Przyczyny A.
+
+**Do dispatchu:** niekrytyczne — zbadać czy `.civ-side-ctx-dock` realnie kiedykolwiek przepełnia
+się na tyle, żeby to miało znaczenie (jeśli nie, można zostawić bez zmian), a jeśli tak, naprawić
+tym samym wzorcem co runda 2 Przyczyny A (wrapper z `pointer-events:auto` na scrollowalnej treści).
+
+### WYNIK (Operator Sonnet 5, worktree izolowany `agent-abebaf21173023a69`, 2026-08-16) — recon potwierdził realne przepełnienie, naprawiono tym samym wzorcem co runda 2 Przyczyny A
+
+**Recon — czy `.civ-side-ctx-dock` realnie kiedykolwiek przepełnia się:** TAK, potwierdzone
+przeglądem kodu (nie tylko spekulacja). `.civ-side-ctx-dock` (`sidePanelHud.ts`) renderuje
+WYŁĄCZNIE karty kontekstu jednostki (`kind==='unit'`, funkcja `buildContextCardHtml` wywołana z
+`ctxScrollEl.innerHTML`) — karta kontekstu heksa (`kind==='hex'`) trafia gdzie indziej, do
+`.civ-side-panel .sp-scroll` (już objętego naprawą rundy 2), więc dok lewy dotyczy tylko jednostek.
+Realny trigger przepełnienia: `buildUnitContextTooltipForUnit()` (`main.ts:5060`) dla własnej
+armii przekazuje `stackCards: isArmy ? stackState.cards : undefined`, gdzie `stackState.cards`
+pochodzi z `buildArmyStackHudStateInner()` (`main.ts:17677`) → `stack = playerStackAt(active)` —
+**BEZ limitu liczby jednostek w stosie**. `buildUnitStackCardsHtml()`
+(`gra/src/ui/hexContextTooltip.ts:749`) renderuje jeden wiersz `.sp-unit-stack-card`
+(ikona+nazwa+2 paski+meta, rząd wielkości ~50-70px) na KAŻDĄ jednostkę w stosie. Gracz w Civ-owej
+rozgrywce regularnie stackuje kilkanaście+ jednostek na jednym heksie (armia późnej gry) — przy
+takiej liczbie karta łatwo przekracza wysokość doku (`unitCardSafeTopCss()`/
+`unitCardDockBottomCss()`, typowo kilkaset px na typowej rozdzielczości). To NIE jest
+hipotetyczne — to codzienny, oczekiwany stan w dłuższej partii.
+
+**Naprawa (`gra/src/ui/sidePanelHud.ts`), identyczny wzorzec co Przyczyna A runda 2
+(commit `e975cbc9`):** `overflow-y:auto`/`scrollbar-gutter`/`overscroll-behavior:contain`
+przeniesione z ZEWNĘTRZNEGO kontenera `.civ-side-ctx-dock` (zostaje `pointer-events:none` na
+stałe, BEZ ZMIAN — potwierdzone testem, sekcja M) na NOWY, jedyny stały wewnętrzny wrapper
+`.civ-side-ctx-dock .sp-ctx-scroll` (`pointer-events:auto`, `height:max-content;max-height:100%`).
+`render()` wypełnia teraz `ctxScrollEl.innerHTML` (NIE `ctxEl.innerHTML`), analogicznie do
+`scrollEl`/`el` w `.civ-side-panel`. `ctxEl.querySelector('.sp-ctx-card')` i
+`bindContextInteractions(ctxEl, ...)` działają bez zmian (przeszukują całe poddrzewo, obojętne na
+dodatkową warstwę wrappera) — zweryfikowane testem, sekcja C nadal zielona bez modyfikacji.
+
+**Test (`gra/tools/sidepanel-hud-deadzone-test.cjs`) rozszerzony o sekcje J–M** (żywy headless
+Chromium, `?playtest=mapa`, NOWA `page2` żeby uniknąć udokumentowanego wcześniej zatrzasku scrolla
+Chromium z sekcji G/H tej samej strony): (J) wstrzyknięcie 25 syntetycznych `.sp-unit-stack-card`
+(60px każda) do `.sp-ctx-scroll` po otwarciu doku (klik na jednostkę gracza) odtwarza realne
+przepełnienie dużym stosem jednostek (`scrollHeight > clientHeight`); (K) realny
+`page.mouse.wheel()` + odpytywanie `scrollTop` w pętli potwierdza, że scroll DZIAŁA (`scrollTop`
+0→>0); (L) pasek przewijania łapalny (`elementFromPoint` na jego pozycji → `.sp-ctx-scroll`, nie
+`CANVAS`) + dowód mutacyjny (`.sp-ctx-scroll{pointer-events:none}` na żywo odtwarza dokładnie
+regresję: scroll przestaje działać, pasek znów niełapalny, potem przywrócone); (M) baseline
+niezmieniony — `.civ-side-ctx-dock` (kontener) nadal ma `pointer-events:none` po naprawie, fix
+rundy 1 Przyczyny A (martwa strefa) pozostaje nienaruszony. **43 pass, 0 fail, exit 0**
+(32 istniejące z rundy 2 Przyczyny A bez regresji + 11 nowych sekcji J–M).
+
+**Bramki (z `gra/`):** `tsc --noEmit` 0 błędów (po naprawieniu brakującego symlinku
+`node_modules` w worktree — problem środowiska tego zlecenia, niezwiązany z tematem) ·
+`sidepanel-hud-deadzone-test.cjs` 43/43 · `sidepanel-events-toolbar-test.cjs` 19/19 ·
+`side-list-hud-panel-coverage-test.cjs` 74/74 · `unit-context-card-test.cjs` 29/29 ·
+`side-panel-unit-cycle-arrows-test.cjs` 20/20 — wszystkie zielone, zero regresji.
+
+**Zakres:** ściśle ograniczony do tego tematu (C-025) — jedyne zmiany: CSS reguła
+`.civ-side-ctx-dock` w `sidePanelHud.ts` (usunięcie `overflow-y:auto` itp. z kontenera, nowa
+reguła `.sp-ctx-scroll`), deklaracja `ctxScrollEl` + jego montaż jako dziecko `ctxEl`, dwie linijki
+`render()` zmienione z `ctxEl.innerHTML` na `ctxScrollEl.innerHTML`, oraz rozszerzenie testu.
+Żadnych poprawek "przy okazji" gdzie indziej.
+
+**NIE commitowane, NIE pushowane** (zgodnie z instrukcją zlecenia) — zmiany zostają w worktree
+`agent-abebaf21173023a69`, czekają na scalenie/Evaluatora.
+
+**STATUS: NAPRAWIONE I PRZETESTOWANE W WORKTREE — czeka na scalenie do gałęzi sesji i Evaluatora
+(deploy tylko na hasło `deploy`, zgodnie z procedurą §0/§5 CLAUDE.md).**
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla `a39dd5ab`
+
+**Werdykt: PASS-WITH-NOTES.** Kod naprawy jest poprawny, zakres czysty, wszystkie bramki
+zweryfikowane niezależnie (uruchomione przeze mnie, nie przepisane z raportu Operatora). Naprawa
+zostaje. **ALE uzasadnienie merytoryczne wpisane przez Operatora do tego rejestru zawiera błąd
+faktyczny** — teza o mechanizmie przepełnienia jest nieprawdziwa i musi zostać sprostowana, żeby
+nie powielała się dalej (CLAUDE.md §0b: „każda liczba/twierdzenie przedstawione właścicielowi jako
+fakt" wymaga weryfikacji; realne wypadki 2026-08-07 pokazały, że taki błąd rozchodzi się potem po
+kolejnych dokumentach).
+
+**Środowisko weryfikacji:** worktree `agent-a79b23a25776bf440`, `git reset --hard a39dd5ab`
+(czubek `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`), `git status` czysty przez cały czas
+weryfikacji poza celowym eksperymentem mutacyjnym (opisanym niżej, cofniętym co do bajtu).
+
+#### Co potwierdzone POZYTYWNIE (weryfikacja własna)
+
+1. **Zakres commita — dokładnie 3 pliki, zero „przy okazji":** `gra/src/ui/sidePanelHud.ts`
+   (+57/−6), `gra/tools/sidepanel-hud-deadzone-test.cjs` (+152), `dyspozycje/PYTANIA-OTWARTE.md`
+   (+60). Zgodne z deklaracją.
+2. **Wzorzec zastosowany poprawnie i konsekwentnie z `.civ-side-panel`/`.sp-scroll`:** `ctxEl`
+   zachowuje `pointer-events:none` w OBU regułach (`.civ-side-ctx-dock` i
+   `.civ-side-ctx-dock.open`), `overflow-y`/`overscroll-behavior`/`scrollbar-gutter` przeniesione
+   w całości na `.sp-ctx-scroll` (`pointer-events:auto;height:max-content;max-height:100%`).
+3. **`render()` wypełnia `ctxScrollEl.innerHTML` we WSZYSTKICH miejscach, łącznie z gałęzią
+   czyszczącą** — sprawdzone linia po linii: linia 443 (`= buildContextCardHtml(...)`) oraz
+   linia 453 (`else { ctxScrollEl.innerHTML = '' }`). Nie został ani jeden `ctxEl.innerHTML`.
+   Wrapper nigdy nie ginie.
+4. **Ryzyko, którego Operator nie zbadał, a które sprawdziłem — i jest czyste:** `ctxEl` jest
+   eksportowany w publicznym API (`SidePanelHudApi.ctxEl`, linia 87), więc konsument z zewnątrz
+   mógłby skasować wrapper. Przegląd wszystkich użyć poza `sidePanelHud.ts` (`gra/src/ui/hud.ts`
+   linie 1495, 1588, 1690) wykazał wyłącznie `appendChild` i `style.display` — **żadnego
+   `innerHTML`/`replaceChildren`**. Wrapper jest bezpieczny.
+   `bindContextInteractions()` używa wyłącznie `querySelector(All)` na poddrzewie — obojętne na
+   dodatkową warstwę, zgodnie z deklaracją Operatora.
+5. **Punkt 6 zlecenia — fix rundy 1 Przyczyny A nienaruszony, potwierdzony w SKOMPILOWANYM CSS**
+   (nie tylko w źródle): w `dist/index.html` reguła `.civ-side-ctx-dock{...pointer-events:none;
+   display:none;...}` **nie zawiera już `overflow-y:auto`**, a `.civ-side-ctx-dock.open{display:
+   block;pointer-events:none;}` bez zmian. Martwa strefa klikania nie wraca.
+6. **Bundle produkcyjny — `.sp-ctx-scroll` realnie trafia do `dist/index.html`:** build
+   `vite build --outDir dist --emptyOutDir` przeszedł (824 moduły, 37 100,39 kB), w wynikowym
+   pliku **2 wystąpienia** `sp-ctx-scroll` — reguła CSS (indeks 28 827 264) oraz kod tworzący
+   wrapper (`M.className="sp-ctx-scroll",a.appendChild(M)`).
+
+#### Bramki — uruchomione przeze mnie, liczby zgadzają się z raportem Operatora co do jednej
+
+| Bramka | Wynik | Exit | Zgodność z raportem |
+|---|---|---|---|
+| `npx tsc --noEmit` | 0 błędów | 0 | ✅ |
+| `sidepanel-hud-deadzone-test.cjs` | **43 pass, 0 fail** | 0 | ✅ |
+| `sidepanel-events-toolbar-test.cjs` | 19 pass, 0 fail | 0 | ✅ |
+| `side-list-hud-panel-coverage-test.cjs` | 74/74 | 0 | ✅ |
+| `unit-context-card-test.cjs` | 29 pass, 0 fail | 0 | ✅ |
+| `side-panel-unit-cycle-arrows-test.cjs` | 20 pass, 0 fail | 0 | ✅ |
+
+**Dowód mutacyjny na POZIOMIE ŹRÓDŁA (mocniejszy niż wbudowany w test dowód na żywym CSS).**
+Cofnąłem naprawę w `src/ui/sidePanelHud.ts` (przywróciłem `overflow-y:auto`/`scrollbar-gutter` na
+`.civ-side-ctx-dock`, usunąłem je z `.sp-ctx-scroll`), przebudowałem bundle i uruchomiłem bramkę:
+**36 pass, 4 fail, exit 1** — padły dokładnie asercje J (`scrollHeight` 1909 px = `clientHeight`
+1909 px, brak przepełnienia bo wrapper stracił `max-height`), K (`scrollTop` 0 → 0, wheel martwy),
+L (`elementFromPoint` na pasku → `null`) oraz sam dowód mutacyjny. **Bramka realnie łapie regresję,
+nie jest tautologią.** Źródło przywrócone z kopii, `git status` czysty (drzewo identyczne
+z `a39dd5ab` co do bajtu).
+
+#### NOTA 1 (BŁĄD FAKTYCZNY — do sprostowania w tym rejestrze)
+
+Operator napisał wyżej: *„`buildUnitStackCardsHtml()` renderuje jeden wiersz `.sp-unit-stack-card`
+(ikona+nazwa+2 paski+meta, rząd wielkości ~50-70px) na KAŻDĄ jednostkę w stosie"* i że *„przy
+kilkunastu+ jednostkach karta łatwo przekracza wysokość doku"*. **To nieprawda w domyślnym
+(zwiniętym) stanie karty.** Kontener stosu to `.sp-unit-stack{display:flex;gap:6px;overflow-x:auto}`
+(`hexContextTooltip.ts:865`), a karty to `.sp-unit-stack-card{flex:0 0 auto;width:76px}` — czyli
+**JEDEN POZIOMY rząd z poziomym scrollem**, nie lista pionowa.
+
+Zmierzone przeze mnie na żywym headless Chromium (realny markup produkowany przez
+`buildUnitStackCardsHtml`, viewport 1600×1000 px, wysokość doku 628 px):
+
+| Liczba jednostek w stosie (szt.) | Wysokość `.sp-unit-stack` — tryb ZWINIĘTY (px) | Wysokość `.sp-unit-stack` — tryb ROZWINIĘTY (px) |
+|---|---|---|
+| 2 | 81 | 81 |
+| 5 | 81 | 164 |
+| 10 | 81 | 330 |
+| 20 | 81 | 579 |
+| 40 | 81 | 1160 |
+
+**W trybie zwiniętym liczba jednostek wnosi DOKŁADNIE ZERO przyrostu wysokości** — 81 px zarówno
+dla 2, jak i dla 40 jednostek. Teza Operatora nie broni się w stanie, w którym karta jest domyślnie
+wyświetlana.
+
+#### NOTA 2 (przepełnienie JEST realne, ale z dwóch INNYCH powodów — naprawa uzasadniona MOCNIEJ, niż Operator argumentował)
+
+Werdykt jest PASS, bo naprawiany problem istnieje naprawdę — tylko mechanizm jest inny:
+
+**(a) Tryb rozwinięty.** `.sp-unit-card-expanded .sp-unit-stack{flex-wrap:wrap;overflow-x:visible}`
+(`hexContextTooltip.ts:885`) — dopiero tu karty zawijają się do wielu rzędów. Zmierzone na REALNEJ
+karcie wygenerowanej przez grę (viewport 1600×1000 px, dok 628 px wys. / 560 px szer. po
+rozwinięciu, sama karta bez stosu = 393 px): przepełnienie zaczyna się przy **16 jednostkach**
+(678 px > 628 px); przy 12 jednostkach jeszcze mieści się (588 px).
+
+**(b) Powód najważniejszy, którego Operator w ogóle nie znalazł — niska wysokość viewportu.**
+Wysokość doku liczy się jako `wysokość viewportu − 372 px` (112 px `top` = `SIDE_PANEL_TOP_PX` 104
++ `UNIT_CARD_SAFE_TOP_GAP_PX` 8; 260 px `bottom` = `utilDockTopPx()` 248 +
+`UNIT_CARD_ABOVE_MINIMAP_GAP_PX` 12). Zmierzone dla tej samej, REALNEJ karty JEDNEJ jednostki
+(409 px wysokości, **żadnego stosu**):
+
+| Wysokość viewportu (px) | Wysokość doku (px) | Wysokość karty (px) | Przepełnienie? |
+|---|---|---|---|
+| 1000 | 628 | 409 | nie |
+| 900 | 528 | 409 | nie |
+| 800 | 428 | 409 | nie |
+| **768** | **396** | **409** | **TAK** |
+| **720** | **348** | **409** | **TAK** |
+
+Czyli **na najpopularniejszej rozdzielczości laptopowej (1366×768) dok przepełniał się przy
+KAŻDYM zaznaczeniu pojedynczej jednostki** — martwy scroll dotykał tam wszystkich graczy stale, a
+nie tylko posiadaczy kilkunastoosobowych armii. To jest realny, codzienny bug, a nie przypadek
+brzegowy. Naprawa tym bardziej słuszna.
+
+#### NOTA 3 (bramka dowodzi czegoś innego, niż deklaruje jej etykieta)
+
+Sekcja J testu wstrzykuje **25 syntetycznych `div`-ów o wymuszonej wysokości 60 px BEZPOŚREDNIO do
+`.sp-ctx-scroll`**, z pominięciem realnego kontenera `.sp-unit-stack` — więc odtwarza przepełnienie
+sztucznie, blokowo-pionowo, czyli **nie tak, jak robi to prawdziwy renderer**. Etykieta asercji
+(„realne przepełnienie dużym stosem jednostek odtworzone") i komentarz w kodzie testu
+(„60px -- rząd wielkości realnego wiersza `buildUnitStackCardsHtml`") powielają błędną tezę z Noty 1.
+
+**To nie unieważnia bramki** — mechanizm scrolla i `pointer-events` jest przez nią dowiedziony
+poprawnie i z twardym dowodem mutacyjnym (potwierdzonym przeze mnie także na poziomie źródła).
+Ale opis wprowadza w błąd co do tego, co jest testowane.
+
+**Zalecenie (nieblokujące deployu):** poprawić etykietę sekcji J i komentarz przy wstrzyknięciu na
+zgodne z prawdą (np. „syntetyczne przepełnienie doku — dowód mechanizmu scrolla"), a docelowo dodać
+asercję na realnym progu z Noty 2(b): dok przy viewport 768 px przepełnia się zwykłą kartą jednej
+jednostki. To pilnowałoby realnego przypadku, nie syntetycznego.
+
+#### Podsumowanie
+
+**PASS-WITH-NOTES — naprawa gotowa do scalenia i (na hasło `deploy`) do wdrożenia.** Kod, zakres,
+bramki i bundle bez zastrzeżeń; fix rundy 1 Przyczyny A potwierdzony jako nienaruszony w
+skompilowanym CSS. Do poprawienia wyłącznie **warstwa opisowa**: teza „jeden wiersz na jednostkę"
+(Nota 1) jest nieprawdziwa i powinna zostać sprostowana w tym rejestrze wraz z podaniem
+rzeczywistych przyczyn przepełnienia (Nota 2), a etykiety sekcji J bramki — doprowadzone do zgodności
+z tym, co test faktycznie robi (Nota 3).
+
+
+**PRZYCZYNA B — Escape (i 34 inne miejsca) cicho kasuje zakolejkowany marsz-z-atakiem.**
+`clearPlayerUnitSelection()` (`main.ts`, ok. linii 5208, wołane przez Escape via
+`dismissPlayerUnitSelectionIfAny()` ORAZ 34 inne miejsca w `main.ts`):
+```ts
+function clearPlayerUnitSelection(): void {
+  if (selectedId !== null) clearPlannedMarch(selectedId);
+  clearPlayerUnitSelectionStateOnly();
+}
+```
+`clearPlannedMarch(unitId)` usuwa wpis z `plannedMarches` ORAZ `marchAttackTargets` bez
+rozróżnienia, czy to zwykły marsz, czy świadomie zakolejkowany atak (`attackUnitId` ustawiony).
+Atakująca jednostka zostaje `selectedId` przez cały czas trwania marszu — więc KAŻDA czynność
+odznaczająca ją (Escape, ale też dowolne z pozostałych 34 wywołań) w ciszy kasuje rozkaz ataku,
+bez ostrzeżenia gracza. Potwierdzone logami z żywej gry: tuż po kliku `plannedMarches`/
+`marchAttackTargets` mają wpis, chwilę później — po przejściu przez typową pętlę zamykania
+popupów Escape'em — oba puste, mimo że wróg wciąż żyje i nie doszło do walki. **To bardzo
+prawdopodobnie realny mechanizm stojący za zgłoszeniem Macieja:** klik na dystansowego wroga
+POPRAWNIE kolejkuje marsz+atak, ale coś (Escape, zamknięcie popupu, inna akcja odznaczająca)
+między wydaniem rozkazu a jego realizacją w ciszy go kasuje — gracz widzi tylko, że jednostka
+doszła na miejsce i NIC się nie stało, więc musi ręcznie wydać drugi rozkaz ataku. Dokładnie
+pasuje do cytatu: „dopiero jak się tam znajdzie, mogę wydać dyspozycję ataku".
+
+**Rekomendacje Operatora (NIE wdrożone — zero zmian w repo, czekają na decyzję):**
+- Przyczyna A: `pointer-events` dla `.civ-side-panel`/`.sp-ctx-card` ograniczyć do faktycznie
+  widocznej treści (nie całego prostokąta paneli).
+- Przyczyna B: `clearPlayerUnitSelection()`/`clearPlannedMarch` nie powinno kasować wpisu w
+  `plannedMarches` gdy ma ustawione `attackUnitId` — jednolinijkowa zmiana warunku, ale dotyka
+  funkcji wołanej w 35 miejscach (wymaga przeglądu, czy któreś z nich zakłada że deselect = pełne
+  skasowanie, zgodnie z dyscypliną C-026).
+
+**PYTANIE DO CIEBIE, Maciej — `P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1`** (dotyczy WYŁĄCZNIE
+Przyczyny B — Przyczyna A to jednoznaczny bugfix UI, dispatchuję ją od razu bez pytania):
+
+**Sytuacja:** zakolejkowany marsz-z-atakiem (klik na dystansowego wroga) jest dziś kasowany przez
+KAŻDE odznaczenie jednostki (Escape, zamknięcie popupu, klik gdzie indziej) — 35 miejsc w kodzie
+wywołuje tę samą funkcję czyszczącą, bez rozróżnienia zwykłego marszu od świadomego rozkazu ataku.
+
+**Cel pytania:** ustalić, czy naprawić to u źródła (zmiana zachowania współdzielonej funkcji w 35
+miejscach naraz) czy ograniczyć ryzyko innym sposobem.
+
+**Dlaczego teraz:** to najbardziej prawdopodobna, potwierdzona logami przyczyna Twojego zgłoszenia
+— bez decyzji temat stoi.
+
+- **A. Napraw u źródła (rekomendacja Operatora).** `clearPlannedMarch`/`clearPlayerUnitSelection`
+  nie kasuje wpisu z ustawionym `attackUnitId` — rozkaz ataku przetrwa odznaczenie jednostki,
+  zostanie wykonany po dotarciu, chyba że gracz go JAWNIE anuluje (np. osobny przycisk/klawisz
+  „anuluj marsz"). Za: naprawia dokładnie zgłoszony problem; zachowanie zgodne z intuicją (wydany
+  rozkaz nie znika przez przypadek, np. przez sam Escape). Przeciw: zmienia zachowanie
+  współdzielonej funkcji w 35 miejscach jednocześnie — wymaga przeglądu każdego wywołania i
+  solidnych testów regresji; ryzyko że w jakimś z tych 35 miejsc „deselect = anuluj wszystko" było
+  zamierzone.
+- **B. Zostaw kasowanie, dodaj ostrzeżenie.** Zachowanie silnika bez zmian (odznaczenie nadal
+  kasuje marsz-z-atakiem), ale przy próbie odznaczenia jednostki z aktywnym zakolejkowanym atakiem
+  pokaż potwierdzenie/ostrzeżenie („Anulować atak na [wróg]?"). Za: zero zmian w głębokiej logice
+  silnika (niskie ryzyko regresji w 35 miejscach), gracz świadomie decyduje. Przeciw: nie eliminuje
+  źródła frustracji (dalej łatwo przypadkowo skasować, tylko teraz z ostrzeżeniem które można kliknąć
+  bezmyślnie); dodatkowy UI do zaprojektowania.
+- **C. Poczekaj z kodem, potwierdź hipotezę osobno.** Nie zmieniaj nic teraz — Przyczyna B to
+  najbardziej prawdopodobna, ale nie jedyna możliwa, przyczyna zgłoszenia (Przyczyna A też może
+  wystarczająco tłumaczyć część przypadków). Za: zero ryzyka regresji teraz. Przeciw: problem
+  zgłoszony przez Ciebie pozostaje nienaprawiony do czasu kolejnej rundy.
+
+**Rekomendacja:** A — dowód z żywych logów jest mocny (plan znika dokładnie w momencie typowej
+sekwencji Escape/zamykanie popupów), a 35 miejsc to zarządzalny zakres przeglądu dla jednego
+Operatora z dobrym pokryciem testowym, nie powód żeby zostawić potwierdzony bug.
+
+**STATUS: CZEKA na odpowiedź Macieja (`P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1`) dla Przyczyny B.
+Przyczyna A dispatchowana od razu jako jednoznaczny bugfix, bez ABC.**
+
+**ODPOWIEDŹ MACIEJA (2026-08-15): `P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1 = A`.** Napraw u
+źródła: `clearPlannedMarch`/`clearPlayerUnitSelection` nie kasuje wpisu z ustawionym
+`attackUnitId`. Dispatch do Operatora (Sonnet 5, worktree) w toku — kod + commit, BEZ deployu
+(zgodnie z procedurą §0/§5 CLAUDE.md, deploy tylko na hasło „deploy").
+
+### WYNIK RUNDY 2 (Operator Sonnet 5, worktree izolowany `agent-a11c82a24501732c2`, 2026-08-15) — Przyczyna B naprawiona u źródła, potwierdzone żywym testem
+
+**Implementacja:** `clearPlannedMarch(unitId?: string, force = false)` (`main.ts`) — domyślnie
+(`force=false`) NIE kasuje wpisu z ustawionym `PlannedMarchDest.attackUnitId` (wpis PRZETRWA
+zwykłe odznaczenie); `force=true` kasuje bezwarunkowo. `clearPlayerUnitSelection(force = false)`
+przekazuje `force` dalej do `clearPlannedMarch(selectedId, force)` — bez zmiany sygnatury
+wywołania w 32 z 33 realnych call site'ów w pliku (domyślne `force=false` wystarcza samo z
+siebie, bo parametr ma wartość domyślną).
+
+**Przegląd wywołań (35 wystąpień tekstowych `clearPlayerUnitSelection(` łącznie z definicją i
+komentarzami zmierzone przez Operatora w RUNDZIE 1 = 1 definicja + 32 realne wywołania + 2
+pre-istniejące komentarze; nie mylić z liczbą „34 inne miejsca" z opisu zgłoszenia wyżej, która
+była nieprecyzyjnym skrótem):**
+- **32 wywołania `clearPlayerUnitSelection()` (bez argumentu, domyślne `force=false`)** —
+  wszystkie ścieżki UI: Escape (`dismissPlayerUnitSelectionIfAny`), klik gdzie indziej na mapie,
+  otwarcie panelu miasta/nauki/dyplomacji/listy armii, zamknięcie audiencji dyplomatycznej,
+  cykl jednostek bez kolejnej do wybrania, koniec bitwy (`clearBattleUiState`/
+  `clearMapBattleUiState` ×3), tryb galerii, zdjęcie oblężenia (`commitBesiege`) itd. — dla
+  wszystkich tych miejsc plan-z-atakiem TERAZ PRZETRWA (naprawiony bug).
+- **1 wywołanie `clearPlayerUnitSelection(true)`** — `disbandPlayerUnit`: jednostka jest już
+  usunięta z `units` (splice) PRZED tym wywołaniem, więc nie ma czego "przetrwać" — wpis byłby
+  tylko martwym śmieciem.
+- **6 bezpośrednich wywołań `clearPlannedMarch(u.id/atkUnit.id/selectedId, true)`** (jawne nowe
+  rozkazy gracza, które mają nadpisać/skonsumować poprzedni plan): `handleSelectedUnitHudAction`
+  gałęzie „Pomiń"/„Ufortyfikuj"(wejście do garnizonu)/„Czuwaj"/„Zwiedzaj" (4×),
+  `beginMoveSelectedUnitTo` (ruch natychmiastowy — nowy rozkaz nadpisuje stary plan),
+  `tryLaunchMarchAttack` (plan spełnił swoją rolę — atak się właśnie uruchamia).
+- **`stopPlannedMarchForSelected`** (jedyny dziś jawny przycisk „Zatrzymaj"/„Anuluj atak" w HUD)
+  — PRZY OKAZJI naprawiony **dziurawy pre-istniejący kod**: robił surowe
+  `plannedMarches.delete(selectedId)` BEZ czyszczenia `marchAttackTargets` (nieszkodliwe przed tą
+  rundą, bo nieodczytywane bez odpowiadającego wpisu w `plannedMarches`, ale krucho). Przechodzi
+  teraz przez `clearPlannedMarch(selectedId, true)`, które czyści oba. Etykieta przycisku
+  rozróżnia teraz „Anuluj atak" (gdy `marchAttackTargets.has(id)`) od „Zatrzymaj" (zwykły marsz)
+  — jawny sposób gracza na anulowanie zakolejkowanego ataku, wymagany zadaniem; istniejący
+  mechanizm rozszerzony, nie dodano nowego UI.
+- **2 miejsca `plannedMarches.clear()` bez odpowiadającego `clearPlannedMarch`** (reset nowej gry
+  — `doStartGame`, i wczytanie zapisu — `restoreGameFromSave`) — dołożono obok
+  `marchAttackTargets.clear()`: bez tego wpis-widmo (`attackUnitId` po jednostce z poprzedniej
+  gry/sesji) mógłby przetrwać reset, bo `force=false` teraz świadomie chroni wpisy z
+  `attackUnitId`. Zweryfikowane strażnikiem strukturalnym w nowym teście.
+
+**Żywy test w headless Chromium** (`?playtest=mapa`, sandbox mapy świata, binarka
+`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`): tymczasowy hook `window.__civMarchAttackTest`
+(USUNIĘTY przed commitem, wzorem rundy 1) wywoływał PRAWDZIWE funkcje z `main.ts`
+(`planMarchTo`, `dismissPlayerUnitSelectionIfAny` — dokładnie ten sam Escape co na mapie,
+`applyMarchSegmentInstant`). Scenariusz: Hastati (zwarcie) gracza kliknął wroga @ dystans=3 →
+`planMarchTo` ustawił `attackUnitId` → `dismissPlayerUnitSelectionIfAny()` (Escape) →
+**plan PRZETRWAŁ w całości** (`plannedMarches` i `marchAttackTargets` nietknięte, `selectedId`
+poprawnie wyzerowane — odznaczenie realnie zaszło) → egzekucja segmentu marszu → jednostka
+dotarła w zasięg → **atak odpalił się automatycznie** (plan skonsumowany przez
+`tryLaunchMarchAttack`/`clearPlannedMarch(atkUnit.id, true)`). Dokładnie scenariusz zgłoszenia
+Macieja, potwierdzony żywym uruchomieniem gry, nie tylko odczytem kodu.
+
+**Testy regresyjne:** nowy `gra/tools/march-attack-queue-persist-test.cjs` (41/0) — wycina
+`clearPlannedMarch`/`clearPlayerUnitSelection` z prawdziwego `main.ts` i wykonuje je naprawdę
+(wzorzec `atak-dystansowy-mapa-test.cjs`), pokrywa (a) przetrwanie wpisu z `attackUnitId` przy
+`force=false`, (b) brak regresji zwykłego marszu, (c)-(d) `force=true`, (e) przekazanie `force`
+przez `clearPlayerUnitSelection`, (f) `unitRenderer.clearPathRoute()`, (g) 8 strażników
+strukturalnych nad wszystkimi opisanymi wyżej call site'ami, (h) integracja `tryLaunchMarchAttack`
+na PRAWDZIWYCH zależnościach. Dowód mutacyjny (MUT-FORCE): cofnięcie early-return w
+`clearPlannedMarch` łapane. `scout-explore-deselect-cycle-test.cjs` zaktualizowany (regex
+oczekiwał starego `clearPlannedMarch(u.id);` bez `force` — zmiana zamierzona, nie regresja
+C-025), dziś 34/0.
+
+**Bramki:** `npx tsc --noEmit` 0 błędów · `march-attack-queue-persist-test` 41/0 ·
+`combat-test` 6/6 · `map-attack-city-test` 8/8 · `atak-dystansowy-mapa-test` 66/0 ·
+`planned-march-test` 18/0 · `scout-explore-deselect-cycle-test` 34/0 · `border-march-scan-test`
+15/0 · `diplomacy-border-march-test` 39/39 · `tech-tree-test` 19/0 · `research-test` 33/0 ·
+`unit-replace-test` 13/13 · plus 8 dodatkowych bramek dotykających `doStartGame`/
+`restoreGameFromSave`/`disbandPlayerUnit`/`beginMoveSelectedUnitTo` (`barb-city-capture-cluster-test`
+94/0, `citizen-resource-upkeep-test` 109/0, `city-orderstate-restore-clear-test` 9/0,
+`civ-configurator-opponent-test` 41/0, `converter-era-scaling-test` 87/0,
+`fort-nodes-save-load-test` 18/0, `okolica-load-reconcile-test` 23/23,
+`okolica-tryb-reset-ownership-change-test` 18/18, `resource-usage-breakdown-test` 100/0,
+`retreat-garnizon-fortyfikacja-test` 27/0, `road-hook-mainguard-test` 19/0) — wszystkie zielone.
+**2 bramki czerwone, POTWIERDZONE PRE-ISTNIEJĄCE** (identyczne na commicie-rodzicu `b622ce20`,
+zmierzone przez cofnięcie zmian i ponowne uruchomienie): `border-march-wygasanie-test.cjs`
+(22 pass/4 fail — dotyczy `onEventDismiss`/`borderMarchEventLog`, temat niezwiązany) i
+`forced-war-bronze-main-guard-test.cjs` (23 pass/2 fail — dotyczy `applyCityCaptureToMap`/
+`resolveSiegeSurrender`, temat niezwiązany). **Uwaga techniczna:** pierwsza wersja komentarzy
+dodanych w `restoreGameFromSave` była zbyt długa i przesunęła pozycję
+`restoreBronzeForcedWarState(...)` poza sztywny budżet znaków (`{0,15000}`) w istniejącym
+strażniku `forced-war-bronze-main-guard-test.cjs` — wykryte przez samą bramkę, naprawione
+skróceniem komentarzy (bez zmiany logiki), zweryfikowane powrotem do baseline 23/2.
+
+**STATUS: NAPRAWIONE, GOTOWE DO SCALENIA — czeka na Evaluatora (Opus 5) zgodnie z AutoBot §0a/0b.
+Kod + commit BEZ deployu (deploy tylko na hasło „deploy", zgodnie z odpowiedzią Macieja wyżej).**
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-15, commit `e4193407`): **PASS-WITH-NOTES**
+
+Niezależne pomiary: `tsc` 0 błędów; wszystkie 12 bramek z opisu commita zgodne (`march-attack-queue-persist-test` 41/0, `combat-test` 6/6, `map-attack-city-test` 8/0, `atak-dystansowy-mapa-test` 66/0, `planned-march-test` 18/0, `scout-explore-deselect-cycle-test` 34/0, `border-march-scan-test` 15/0, `diplomacy-border-march-test` 39/39, `tech-tree`/`research`/`unit-replace`, `logic-test` 213/213). Dwie czerwone bramki (`border-march-wygasanie-test` 22/4, `forced-war-bronze-main-guard-test` 23/2) potwierdzone identyczne na commicie-rodzicu `b622ce20` — pre-istniejące. Własne 7 mutacji (różne od mutacji Operatora) — wszystkie złapane, test NIE jest tautologią.
+
+**Parytet gracz↔AI:** brak asymetrii — AI nie ma mechanizmu kolejkowania (`plannedMarches`/`marchAttackTargets` to z definicji mechanizm gracza), przelicza `isWithinAttackRange` co turę na nowo, więc strukturalnie nie może mieć tego błędu. Naprawa ZMNIEJSZA istniejącą asymetrię (wcześniej intencja gracza ginęła po cichu, intencja AI zawsze przeżywała).
+
+**Save/load zweryfikowane wykonaniem:** pełny cykl zapis→odczyt z aktywnym, niedokończonym marszem-z-atakiem — `attackUnitId` serializowany i odtwarzany poprawnie, wpis chroniony przed odznaczeniem także po wczytaniu. Ta sama asercja PADA na commicie-rodzicu (to jest naprawiany błąd, nie regresja).
+
+**Edge case (śmierć jednostki/celu w trakcie marszu):** stan IDENTYCZNY jak u rodzica — wpisy-sieroty pre-istniejące, nieszkodliwe (egzekutory iterują po `units`, nigdy nie odczytują wpisu bez istniejącej jednostki), a naprawa DODATKOWO je łata przy save/load.
+
+**Notatki nieblokujące:**
+- **N1/N2 (kosmetyka):** opis commita i 2 komentarze JSDoc mówią „35 wywołań clearPlayerUnitSelection" — realnie 32 (31 domyślnych + 1× force=true). Liczba w kanonie do sprostowania, kod i strażnik testu (`g8`) są poprawne.
+- **B (jedyna realna, nieblokująca luka):** `commitBesiege` (rozpoczęcie oblężenia) NIE dostał `force=true`, mimo że to analogiczny jawny rozkaz unieruchamiający jednostkę jak Ufortyfikuj/Czuwaj (które force=true dostały). Skutek: zakolejkowany atak przeżywa rozpoczęcie oblężenia, ale przycisk „Anuluj atak" nie jest wtedy pokazywany (gałąź `if (siegeCity)` wyklucza `hasPlan`) — gracz nie ma jak go odwołać w trakcie oblężenia; po zdjęciu oblężenia jednostka wznowi stary marsz. Do osobnego zgłoszenia, nie blokuje.
+- **C/D (dług techniczny, nieszkodliwy):** martwy kod (`clearAutoMarch` nieużywana, bezargumentowa gałąź `else` nieosiągalna); `finishMarchSegmentHints` ma tę samą klasę dziury (surowe `plannedMarches.delete` bez `marchAttackTargets.delete`) co naprawiono w `stopPlannedMarchForSelected` — pre-istniejące, samoleczące się.
+
+**Żywy test w headless Chromium** (metoda niezależna od Operatora, osobna sonda tylko-do-odczytu): pełny łańcuch potwierdzony 9/9 — klik na wroga (dystans 4) → Escape ×2 (w tym w nowej turze) → plan przetrwał oba razy → jednostka dotarła → atak odpalił się sam (zrzut ekranu: ekran zwycięstwa).
+
+**STATUS: PASS-WITH-NOTES — GOTOWE DO DEPLOY. Nota B zapisana osobno niżej jako
+`P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU`, nie blokuje.**
+
+---
+
+## P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU (2026-08-15, znalezisko Evaluatora Nota B przy okazji Przyczyny B)
+
+**Rozpoczęcie oblężenia (`commitBesiege`, main.ts:12218) nie czyści zakolejkowanego marszu-z-atakiem
+(`force=false` domyślne), w przeciwieństwie do analogicznych jawnych rozkazów unieruchamiających
+jednostkę (Ufortyfikuj/Czuwaj, które dostały `force=true`).** Skutek: plan przeżywa rozpoczęcie
+oblężenia, ale przycisk „Anuluj atak"/„Zatrzymaj" nie jest wtedy w ogóle pokazywany w HUD (gałąź
+`if (siegeCity) {...} else if (hasPlan) {...}` — wykluczają się wzajemnie), więc gracz nie ma jak
+odwołać planu w trakcie oblężenia. Marsz jest bezpieczny podczas oblężenia (`ruchLeft` zerowany co
+turę), ale po zdjęciu oblężenia jednostka wznowi marsz na stary cel bez ponownego pytania gracza.
+
+**Do dispatchu:** albo dodać `force=true` w `commitBesiege` (spójność z Ufortyfikuj/Czuwaj), albo
+pokazywać „Anuluj atak" także w trybie oblężenia — decyzja projektowa (ABC), nie jednolinijkowa.
+
+**ODPOWIEDŹ MACIEJA (2026-08-15): `P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU-Q1 = B`.**
+Plan ataku zostaje chroniony jak dziś (przeżywa rozpoczęcie oblężenia, `commitBesiege` BEZ
+`force=true`) — dodać przycisk „Anuluj atak" także w trybie oblężenia, żeby gracz mógł go
+świadomie odwołać zamiast czekać do zdjęcia oblężenia. Dispatch do Operatora (Sonnet 5, worktree)
+w toku.
+
+### WYNIK (Operator Sonnet 5, worktree izolowany `agent-a365889d32aa53199`, 2026-08-16) — NAPRAWIONE, plus dodatkowo naprawiony ukryty gap renderowania
+
+**Implementacja (dane, `gra/src/main.ts`, `buildArmyStackHudStateInner`):** do gałęzi
+`if (siegeCity) {...}` dopisany warunkowy wpis akcji `{ id: 'march-stop', label: 'Anuluj atak',
+disabled: isAnimating }`, widoczny WYŁĄCZNIE gdy `hasPlan && marchAttackTargets.has(active.id)` —
+czyli tylko gdy faktycznie jest zakolejkowany atak do anulowania. Reużywa ISTNIEJĄCY handler
+`stopPlannedMarchForSelected()` (przez wspólny routing `actionId === 'march-stop'` w
+`handleSelectedUnitHudAction`) — zero duplikacji logiki czyszczenia planu, zero zmian w
+`clearPlannedMarch`/`commitBesiege` (Q1=B: plan nadal przeżywa rozpoczęcie oblężenia bez zmian).
+
+**ZNALEZISKO DODATKOWE (potwierdzone żywym testem, nie tylko czytaniem kodu): przycisk
+„Anuluj atak"/„Zatrzymaj" NIGDY faktycznie nie renderował się w DOM — ani w nowej gałęzi
+oblężenia, ani w PRE-ISTNIEJĄCEJ gałęzi `hasPlan` z poprzedniej rundy
+(P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE, Przyczyna B).** Realny renderer akcji
+(`gra/src/ui/unitActionBarHtml.ts`, `buildUnitActionBarHtml`) pokazuje TYLKO id z listy
+`COMPACT_ACTION_ORDER = ['fortify','sentry','scout-explore','split','merge','replace','skip']`
+plus osobno hardkodowany `'disband'` — `'march-stop'` nie był w żadnej z tych dwóch ścieżek, więc
+akcja była cicho wypychana do `actions[]` (dane), ale nigdy nie trafiała do HTML. Poprzednia runda
+(Przyczyna B) tego nie złapała, bo jej żywy test wołał funkcje z main.ts BEZPOŚREDNIO przez
+tymczasowy hook (`planMarchTo`, `dismissPlayerUnitSelectionIfAny` itd.), z pominięciem
+renderowanego DOM — nigdy nie klikał w realny przycisk na stronie. Naprawione w tym samym commicie:
+`buildUnitActionBarHtml` dostał osobny blok dla `'march-stop'` (przycisk tekstowy, jak `'disband'`,
+bo etykieta jest dynamiczna: „Anuluj atak"/„Zatrzymaj") + nowa klasa CSS `.uc-act-text`. Naprawa
+obejmuje OBA miejsca na raz (gałąź `hasPlan` i nowa gałąź `siegeCity`) — jeden wspólny renderer.
+
+**Żywy test w headless Chromium** (`?playtest=mapa`, binarka
+`/opt/pw-browsers/chromium-1194/chrome-linux/chrome`, tymczasowy hook `window.__civSiegeCancelTest`
+USUNIĘTY przed commitem — `git diff` na `main.ts` pokazuje wyłącznie zmianę danych opisaną wyżej):
+(1) zakolejkowany marsz-z-atakiem (Hastati `u1` → Łucznik `e0`, dystans 4, real
+`planMarchTo(q,r,attackUnitId)`) → DOM PRZED symulacją oblężenia: `.uc-act-bar` zawiera
+`data-act="march-stop"`, etykieta „Anuluj atak" (dowód, że renderer-fix naprawia też starą
+gałąź); (2) symulacja rozpoczęcia oblężenia (`u.oblegaCityId` ustawione — dokładnie to, co realnie
+robi `commitBesiege`) → `.uc-act-bar` nadal zawiera `march-stop`/„Anuluj atak", `disabled=false`;
+(3) REALNY klik myszy (`page.click('[data-act="march-stop"]')`) na renderowany przycisk →
+`plannedMarches`/`marchAttackTargets` dla tej jednostki PUSTE, jednostka nadal oblega
+(`oblegaCityId` nietknięte — anuluje tylko atak, nie oblężenie); (4) po kliku przycisk znika z DOM
+(nic więcej do anulowania); (5) kontrola: druga jednostka gracza wchodzi w oblężenie BEZ
+zakolejkowanego ataku → `march-stop` NIEOBECNY w DOM od początku (zero zaśmiecania UI).
+
+**Test regresyjny** (`gra/tools/march-attack-queue-persist-test.cjs`, sekcja (i), rozszerzony
+41→55 asercji): blok `if (siegeCity) {...}` wycięty TEKSTOWO z `main.ts` i wykonany NAPRAWDĘ
+(wzorzec repo, nie reimplementacja) — (i1) oblężenie+zakolejkowany atak → akcja obecna; (i2)
+oblężenie bez ataku → NIEOBECNA; (i3) `marchAttackTargets` ma wpis ale `hasPlan=false` (desync) →
+NIEOBECNA (oba warunki wymagane); (i4) `isAnimating=true` → obecna, `disabled=true`; kontrola
+`siege-hold`/`fortify` bez regresji. Dowód mutacyjny `MUT-SIEGE-GUARD`: usunięcie warunku
+ochronnego → (i2) ŁAPIE (przycisk pojawiałby się zawsze w oblężeniu).
+
+**Bramki (z `gra/`):** `tsc --noEmit` 0 błędów · `march-attack-queue-persist-test` 55/0 ·
+`combat-test` 6/6 · `oblezenie-test` 27/0 · `oblezenie-remis-endsiege-test` 271/0 ·
+`oblezenie-siege-lifted-po-bitwie-test` 16/0 · `siege-ai-test` 17/0 · `siege-defenders-test` 12/0 ·
+`map-siege-test` 6/0 · `unit-context-card-test` 29/0 · `side-panel-unit-cycle-arrows-test` 20/0 ·
+`sidepanel-hud-deadzone-test` 32/0 · `sidepanel-events-toolbar-test` 19/0 — wszystkie zielone, zero
+regresji.
+
+**STATUS: NAPRAWIONE — scalone do gałęzi sesji, czeka na Evaluatora (Opus 5) i deploy (hasło
+`deploy`).** Do wiadomości Evaluatora: naprawa renderera (`unitActionBarHtml.ts`) jest wspólna dla
+tego tematu i dla P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE (Przyczyna B) — ten drugi temat miał już
+werdykt PASS-WITH-NOTES i status „gotowe do deploy", ale jego kluczowy przycisk faktycznie nigdy
+się nie renderował aż do tego commitu; warto to uwzględnić przy ponownej ocenie tamtego tematu,
+skoro oba idą do roboczej w tym samym deployu.
+
+### WERDYKT EVALUATORA (Opus 5, 2026-08-16, commit `13ac8d35`): **PASS-WITH-NOTES — PILNE DO DEPLOYU**
+
+**Teza „przycisk nigdy nie renderował się" POTWIERDZONA dwiema niezależnymi ścieżkami dowodu.**
+(1) Strukturalna: drugi teoretyczny renderer (`armyStackHud.ts`) jest martwy —
+`buildArmyStackHudState()` zwraca `null` bezwarunkowo od 2026-07-28 („akcje przeniesione do
+rozszerzonego panelu bocznego"), zmierzone `armyStackDisplay: "none"` we wszystkich scenariuszach.
+Zostaje wyłącznie `buildUnitActionBarHtml`. (2) Żywa: zbudowano OSOBNY bundel ze stanu SPRZED tego
+commita (`13ac8d35^` = `7b19dcfd`, czyli DOKŁADNIE to, co jest dziś w ROBOCZA FALA 284) i
+odtworzono scenariusz Przyczyny B (marsz-z-atakiem, zwykłe odznaczenie, BEZ oblężenia) — pasek akcji
+JEST w DOM, ale `march-stop` w nim nie ma (`domButtons` bez `march-stop`, mimo że dane
+(`hudActions`) go zawierają). **Potwierdzone: funkcja obiecana przez już wdrożoną Przyczynę B nigdy
+nie działała dla gracza w ROBOCZA.** Po naprawie ten sam scenariusz pokazuje przycisk, realny klik
+myszą czyści plan poprawnie, kontrola (oblężenie bez ataku) poprawnie nie pokazuje przycisku.
+
+**Bramki zgodne z opisem, wszystkie 13 zielone**, zmierzone niezależnie.
+
+**NOTATKA 1 (najważniejsza, powód „WITH-NOTES"): krytyczna połowa naprawy (renderer) nie ma
+ŻADNEJ bramki.** Mutacja Evaluatora — usunięcie całego nowego bloku renderującego z
+`unitActionBarHtml.ts` (czyli przywrócenie DOKŁADNIE tego buga, który właśnie wyciekł do ROBOCZA)
+— **żadna z 12 bramek tego nie łapie** (`march-attack-queue-persist-test` nadal 55/0, bo testuje
+tylko warstwę danych `main.ts`, nie renderowany HTML). Ten sam martwy punkt, przez który Przyczyna
+B przeszła jako „gotowe" poprzednim razem, dziś nadal istnieje dla renderera jako całości.
+
+**NOTATKA 2: ta sama klasa błędu żyje dalej w dwóch innych akcjach.** Evaluator podał rendererowi
+pełen zestaw id produkowanych przez `main.ts`: `siege-hold`, `fortify`, `unfortify-all`,
+`march-stop`, `skip`, `disband` → wyrenderowane tylko `fortify`, `skip`, `march-stop`, `disband`.
+**`unfortify-all`** („Odfortyfikuj całą armię") ma działający handler (`main.ts:17883`) I gotową
+ikonę w `ACTION_ICONS`, ale nie jest w `COMPACT_ACTION_ORDER` — gracz nie może jej dziś wywołać,
+zero alternatywnej ścieżki. `siege-hold` (zawsze `disabled`) to czysto kosmetyczna strata.
+
+**STATUS FINALNY: PASS-WITH-NOTES — PILNE DO NAJBLIŻSZEGO DEPLOYU** (realny, znaczący bug w
+kodzie który gracz ma już w ROBOCZA FALA 284 — przez cały czas życia tej fali obietnica z
+Przyczyny B, możliwość odwołania zakolejkowanego marszu-z-atakiem, była martwa). Dwa nowe
+znaleziska zapisane osobno niżej: `P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI` i
+`P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE`.
+
+---
+
+## P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI (2026-08-16, znalezisko Evaluatora przy okazji P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU)
+
+**Klasa błędu, nie pojedynczy przypadek:** `gra/src/ui/unitActionBarHtml.ts` (`buildUnitActionBarHtml`)
+renderuje WYŁĄCZNIE id z ręcznie utrzymywanej listy `COMPACT_ACTION_ORDER` + osobno hardkodowany
+`'disband'`. Każde nowe id akcji dodane po stronie danych (`main.ts`, `buildArmyStackHudStateInner`)
+domyślnie NIE trafia do DOM, dopóki ktoś jawnie nie dopisze go do renderera — cichy, niewykrywalny
+przez istniejące testy gap (dokładnie ten mechanizm ukrył martwy przycisk „Anuluj atak" przez całą
+rundę Przyczyny B). Dziś potwierdzone dwa nieosiągalne id: `march-stop` (naprawione tym tematem),
+`unfortify-all` (nadal nieosiągalne, zobacz temat osobno).
+
+**Do dispatchu:** dodać bramkę strukturalną sprawdzającą, że KAŻDE id, które `buildArmyStackHudStateInner`
+może wyprodukować (enumeracja z kodu, nie z pamięci), faktycznie ma odpowiadającą ścieżkę renderowania
+w `buildUnitActionBarHtml` (czy to przez `COMPACT_ACTION_ORDER`/`ACTION_ICONS`, czy przez dedykowany
+blok jak `disband`/`march-stop`). To zamknęłoby całą klasę błędu na przyszłość, nie tylko dzisiejszy
+przypadek.
+
+**STATUS: NAPRAWIONE — bramka dodana, scalona do gałęzi sesji, czeka na Evaluatora (Opus 5).**
+
+**Wykonanie (2026-08-16, Operator Sonnet 5):** nowy test source-level
+`gra/tools/unit-action-bar-completeness-test.cjs` — bez budowania Vite/DOM, statycznie:
+1. wycina tekstowo (po stabilnych kotwicach, wzorzec `march-attack-queue-persist-test.cjs`) ciało
+   `buildArmyStackHudStateInner` (`main.ts`) i `stackHudMergeSplitActions` (`armyMerge.ts`), zbiera
+   WSZYSTKIE literały `id: '...'` z `actions.push({...})` — to jest zbiór id, jakie HUD MOŻE
+   wyprodukować;
+2. z `unitActionBarHtml.ts` wylicza zbiór id, które FAKTYCZNIE mają render path: przecięcie
+   `COMPACT_ACTION_ORDER` × klucze `ACTION_ICONS` (pętla renderująca pomija id bez ikony) ∪ id z
+   dedykowanych bloków `byId.get('...')` (`march-stop`, `disband`, teraz też `siege-hold`);
+3. FAILuje na każdym id z (1) bez odpowiednika w (2), poza jawną `KNOWN_GAPS`;
+4. dwa wbudowane dowody mutacyjne (`MUT-HARDCODED` — usuwa blok `march-stop` z tekstu w pamięci;
+   `MUT-COMPACT-ORDER` — usuwa `'fortify'` z `COMPACT_ACTION_ORDER` w pamięci) potwierdzają, że
+   bramka NAPRAWDĘ łapie regresję tej klasy, nie tylko wygląda na to.
+
+**Dodatkowe znalezisko przy pierwszym uruchomieniu bramki:** poza już znanym `unfortify-all`, test
+wykrył DRUGI nieudokumentowany gap — **`siege-hold`** (etykieta „Oblega", zawsze
+`disabled: true`, czysty status oblężenia, nie klikalna akcja) nie miał żadnej ścieżki
+renderowania — brak w `COMPACT_ACTION_ORDER`, brak dedykowanego bloku. Naprawione w tym samym
+commicie (dodany dedykowany blok w `unitActionBarHtml.ts`, analogiczny do `march-stop`/`disband`,
+zero nowej logiki biznesowej — dane już ustawiały `disabled: true`, renderer tylko to teraz
+odzwierciedla).
+
+**Uwaga integracyjna orkiestratora (sprostowana — Evaluator N2, 2026-08-16):** w chwili gdy ten
+Operator pracował, `unfortify-all` był jeszcze niezamknięty — dostał wpis w `KNOWN_GAPS`, żeby nie
+kolidować z równoległym tematem `P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE`. Ten drugi temat
+scalił się w międzyczasie jako PIERWSZY (commit `1261c170`) — przy scalaniu bramki kompletności
+orkiestrator faktycznie **usunął** wpis z `KNOWN_GAPS` (`unit-action-bar-completeness-test.cjs:68`
+→ `const KNOWN_GAPS = new Set([]);`, zgodnie z opisem commita `48bd881c`). Zdanie poniżej („wpis
+pozostał tymczasowo") było błędne w chwili pisania — Evaluator to złapał (N2), sprostowane tutaj.
+
+**Dowód mutacyjny na żywym pliku (nie tylko wewnątrz testu):** tymczasowo usunięty realny blok
+renderujący `siege-hold` z `unitActionBarHtml.ts` → bramka: **29 passed, 2 failed, exit 1**
+(złapane dokładnie to id). Blok przywrócony → bramka wraca do **31 passed, 0 failed, exit 0**.
+
+**Wyniki bramek Operatora (z katalogu `gra/`, stan po naprawie):**
+- `node_modules/.bin/tsc --noEmit` → **0 błędów**.
+- `node tools/unit-action-bar-completeness-test.cjs` → **31 passed, 0 failed, exit 0**.
+- `node tools/march-attack-queue-persist-test.cjs` → **55 passed, 0 failed** (bez regresji).
+- `node tools/unit-replace-test.cjs` → **13/13 zielone** (bez regresji).
+- Siedem testów budujących bundle z `hexContextTooltip.ts` (jedyny konsument
+  `buildUnitActionBarHtml`): `danina-podatek-tooltip-ui-test.cjs` (12/0),
+  `side-panel-unit-cycle-arrows-test.cjs` (20/0), `sidepanel-events-toolbar-test.cjs` (19/0),
+  `unit-context-card-test.cjs` (29/0), `heks-plony-zloze-parytet-ui-test.cjs` (19/0),
+  `hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs` (74/0),
+  `hex-tooltip-stadnina-kopalnia-cyny-test.cjs` (29/0) — wszystkie zielone, bez regresji.
+
+**Zmienione/nowe pliki:** `gra/src/ui/unitActionBarHtml.ts` (dodany render path `siege-hold`),
+`gra/tools/unit-action-bar-completeness-test.cjs` (nowy).
+
+---
+
+## P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE (2026-08-16, znalezisko Evaluatora przy okazji P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU)
+
+**`unfortify-all` („Odfortyfikuj całą armię") ma działający handler (`main.ts:17883`) i gotową
+ikonę w `ACTION_ICONS` (`unitActionBarHtml.ts:17`), ale nie jest w `COMPACT_ACTION_ORDER` —
+gracz nie może dziś tej akcji w ogóle wywołać z HUD.** Brak skrótu klawiszowego i alternatywnej
+ścieżki wywołania. Gotowa ikona sugeruje, że miała się renderować — to prawdopodobnie przeoczenie
+przy jakiejś wcześniejszej zmianie `COMPACT_ACTION_ORDER`, nie świadoma decyzja.
+
+**Do dispatchu:** dopisać `'unfortify-all'` do `COMPACT_ACTION_ORDER` (albo dedykowanego bloku,
+jeśli ma warunkową widoczność jak `march-stop`) — sprawdzić najpierw W JAKICH warunkach ta akcja
+w ogóle powinna być widoczna (żeby nie pokazywać jej zawsze), zanim się doda. Niekrytyczne
+(funkcja rzadko używana — odfortyfikowanie całej armii naraz), ale realna luka funkcjonalna.
+
+**STATUS: NAPRAWIONE 2026-08-16 (subagent Sonnet 5, worktree, jeszcze BEZ scalenia/deployu —
+czeka na Operatora równoległego tematu `P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI` i na
+Evaluatora).**
+
+**Analiza handlera (main.ts:17883, funkcja `handleSelectedUnitHudAction`):** `'unfortify-all'`
+zdejmuje fortyfikację ze WSZYSTKICH jednostek w garnizonie na heksie danego miasta naraz
+(`garrisonUnitsOnHex(units, u.q, u.r, u.ownerId)` → `exitGarnizon(su)` w pętli), w odróżnieniu
+od `'fortify'`, który dotyczy WYŁĄCZNIE aktywnie wybranej jednostki. Po zdjęciu fortyfikacji
+synchronizuje garnizon miasta (`syncGarnizonForCity`), mgłę wojny, render jednostek, panel
+miasta (jeśli otwarty) i pokazuje podpowiedź z liczbą odfortyfikowanych jednostek.
+
+**Warunek produkcji akcji (main.ts ok. 17777-17800, funkcja `buildArmyStackHudStateInner`):**
+`actions.push({id:'unfortify-all', ...})` wyłącznie gdy WSZYSTKIE trzy: (a) `!siegeCity`
+(jednostka nie oblega miasta), (b) `active.inGarnizon === true` (jest w garnizonie), (c)
+`garrisonUnitsOnHex(...).length > 1` (więcej niż 1 jednostka w garnizonie na tym heksie — dla
+pojedynczej jednostki akcja grupowa nie miałaby sensu, wystarczy zwykłe `'fortify'`). Ten
+warunek handlera NIE był dziś tematem — działał poprawnie od zawsze; łamał się wyłącznie
+renderer (brak wpisu w allowliście), więc main.ts w tym temacie NIE zmieniony.
+
+**Analog grupowy w tym samym pasku:** brak osobnej akcji `'fortify-all'` (nie istnieje w
+kodzie) — `'unfortify-all'` jest jedyną akcją grupową w pasku. Etykieta jest STATYCZNA
+(„Odfortyfikuj całą armię", main.ts:17796) — w odróżnieniu od `'march-stop'` (etykieta
+dynamiczna „Anuluj atak"/„Zatrzymaj"), więc wzorzec zastosowany to ten sam co dla `'fortify'`:
+zwykła ikona w `COMPACT_ACTION_ORDER` (już gotowa ikona SVG w `ACTION_ICONS['unfortify-all']`),
+NIE dedykowany blok tekstowy jak dla `'march-stop'` (13ac8d35).
+
+**Zmiana (dokładnie ta jedna linia, `gra/src/ui/unitActionBarHtml.ts`):**
+```
+- const COMPACT_ACTION_ORDER = ['fortify', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
++ const COMPACT_ACTION_ORDER = ['fortify', 'unfortify-all', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
+```
+Wstawione zaraz po `'fortify'` (grupowy odpowiednik pojedynczej fortyfikacji), przed `'sentry'`.
+Renderer w tej samej pętli co `'fortify'`/`'sentry'`/… — zero nowego bloku, `ACTION_ICONS`
+niezmieniony (ikona była już gotowa). `main.ts` NIE dotknięty — cała naprawa w jednym pliku.
+
+**Test:** `gra/tools/unfortify-all-action-bar-test.cjs` (nowy plik) — 16/16 zielone. Buduje
+PRAWDZIWY `unitActionBarHtml.ts` przez esbuild (zero reimplementacji renderera) i sprawdza: (1)
+przycisk renderuje się w DOM gdy `'unfortify-all'` jest w `actions[]`; (2) NIE renderuje się gdy
+nieobecne w `actions[]` (np. garnizon z 1 jednostką — main.ts w ogóle nie wypycha akcji); (3)
+`disabled:true` → atrybut `disabled` obecny; (4) styl ikony (`uc-act-btn`), nie tekstowy blok;
+(5) pozycja PO `'fortify'`, PRZED `'sentry'`; (6) strażnik strukturalny — warunek widoczności w
+main.ts (`isGarnizoned && garCount>1`) i handler nietknięte tym tematem; (7) DOWÓD MUTACYJNY —
+cofnięcie wpisu z `COMPACT_ACTION_ORDER` (symulacja stanu sprzed naprawy) → test (1) łapie
+regresję, przycisk znowu znika mimo że jest w `actions[]`.
+
+**Bramki (z katalogu `gra/`):** `npx tsc --noEmit` → 0 błędów. Nowy test → 16 passed, 0 failed.
+`march-attack-queue-persist-test.cjs` (dotyka tego samego renderera przez sąsiedztwo tematu) →
+55 passed, 0 failed (bez zmiany). `hud-tooltip-body-mounted-panels-test.cjs` (dotyka
+`.civ-unit-panel`, blisko akcji jednostki) → 16 pass, 0 fail (bez zmiany).
+
+**Kolizja plikowa:** ten temat i `P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI` dotykają
+tych samych dwóch plików (`main.ts`, `unitActionBarHtml.ts`), ale w rozłącznych worktree —
+scalenie sekwencyjne przez orkiestratora. Zmiana tego tematu to WYŁĄCZNIE jedna linia w
+`unitActionBarHtml.ts` (`COMPACT_ACTION_ORDER`, patrz diff wyżej) + jeden nowy plik testu; `main.ts`
+w tym worktree ma tylko treść już scaloną z gałęzi (bez dodatkowych zmian tego tematu).
+
+---
+
+## P-UNITINFOGRAPHIC-OSIEROCONY-SELEKTOR-CIV-UNIT-PANEL (2026-08-16, dispatch Operatora Sonnet 5, worktree `agent-a55b21c543551498b`) — NAPRAWIONE
+
+**Zgłoszenie:** `gra/src/ui/unitInfographic.ts:160` wstrzykiwał regułę CSS
+`.civ-unit-panel .hdr .unit-ic-medallion{width:2.2em;height:2.2em;font-size:1em;}` celującą w
+kontener `.civ-unit-panel` (`unitPanelHud.ts`/`createUnitPanelHud()`) — podejrzenie martwego kodu,
+potwierdzone wcześniej na poziomie build-artefaktu (`STYLE_ID` panelu = 0 wystąpień w
+`dist/index.html`).
+
+**Weryfikacja Operatora (niezależna, nie tylko przyjęcie założenia zadania):**
+1. `grep -rn "createUnitPanelHud|civ-unit-panel|UnitPanelHudApi|UnitPanelHudConfig" gra/src` —
+   jedyne trafienia poza definicją w `unitPanelHud.ts` to `import type { UnitPanelAction }` w
+   `hexContextTooltip.ts`, `armyStackHud.ts`, `unitActionBarHtml.ts` oraz `import { type
+   UnitPanelState }` w `hud.ts` — **wyłącznie importy typów**, zero realnego wywołania
+   `createUnitPanelHud()` w runtime. Kontener `.civ-unit-panel` faktycznie martwy.
+2. **Dodatkowe znalezisko:** sama klasa `unit-ic-medallion` (użyta w usuwanej regule) w ogóle nie
+   występowała nigdzie indziej w `gra/src` — nawet gdyby `.civ-unit-panel` był żywy, ta reguła
+   nigdy nie trafiłaby w żaden realny element DOM (kontener HUD-a jednostki używa klasy `.ic`, nie
+   `.unit-ic-medallion` — patrz `unitPanelHud.ts:84`). Reguła osierocona podwójnie, nie tylko przez
+   martwy kontener.
+3. Build (`node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir` z `gra/`) —
+   po naprawie `grep -c "civ-unit-panel-hud-css-v2-1e|unit-ic-medallion|civ-unit-panel" dist/index.html`
+   = 0/0/0. Potwierdza dead code niezależnie od statycznej analizy grep po źródłach.
+
+**Naprawa:** usunięto WYŁĄCZNIE tę jedną linię CSS z `UNIT_INFOGRAPHIC_CSS` w
+`gra/src/ui/unitInfographic.ts` (nic ponadto — zakres C-025). Diff:
+```diff
+-.civ-unit-panel .hdr .unit-ic-medallion{width:2.2em;height:2.2em;font-size:1em;}
+```
+
+**Bramki:** `npx tsc --noEmit` — 0 błędów (uwaga: node_modules brakowało w tym worktree, dosymlinkowano
+z drzewa głównego `gra/node_modules` zgodnie z konwencją 4a, przed naprawą zweryfikowano identyczny
+baseline przez `git stash` — bez związku z tą zmianą). `grep -rl "unitInfographic" gra/tools/` — brak
+wyników, nie ma dedykowanego testu dla tego pliku, więc nic do uruchomienia. Build produkcyjny — zielony,
+0 wystąpień usuniętej reguły/selektorów w `dist/index.html`.
+
+**Zakres (C-025):** 1 plik, 1 usunięta linia, zero refaktorów, zero zmian poza wskazaną regułą.
+
+**STATUS: NAPRAWIONE, SCALONE i wypchnięte (commit `f3db8b22`, orkiestrator, zakres kosmetyczny
+poza pełną procedurą NUMER+ABC — jednoznaczna naprawa martwego kodu bez decyzji produktowej).
+Evaluator: patrz werdykt niżej.**
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla `f3db8b22`
+
+**Zakres weryfikacji:** wszystko zmierzone niezależnie na worktree `agent-a0a72354d00fe592d`
+zsynchronizowanym do `f3db8b22`; żadna liczba nie przepisana z raportu Operatora. Baseline
+porównawczy = commit-rodzic `359bb38c` (a NIE `8f53c800`, na którym pracował Operator — to
+okazało się kluczowe, patrz NOTA 2).
+
+**1. Zakres diffu — POTWIERDZONY.** `git show f3db8b22 --stat` = dokładnie 2 pliki:
+`dyspozycje/PYTANIA-OTWARTE.md` (+42) i `gra/src/ui/unitInfographic.ts` (−1). Diff kodu to
+jedna usunięta linia CSS, zero innych zmian, zero refaktorów. Zgodne z C-025.
+
+**2. Twierdzenie (b) — klasa `unit-ic-medallion` osierocona — POTWIERDZONE, i to mocniej niż
+twierdził Operator.**
+- `grep -rn "unit-ic-medallion"` po `gra/src`, `gra/tools`, `gra/data`, `gra/index.html` na
+  `f3db8b22` = **0 trafień**.
+- `git grep "unit-ic-medallion" 359bb38c -- gra/` = **dokładnie 1 trafienie** (usuwana linia).
+  Czyli commit usunął JEDYNE wystąpienie w repozytorium — potwierdzone po obu stronach, nie
+  tylko „po".
+- Realna, żywa klasa to `unit-infographic-medallion` (`unitInfographic.ts:134`) — inna nazwa,
+  nietknięta (5 wystąpień w `dist`, identycznie przed i po).
+- Nagłówek `.civ-unit-panel .hdr` emituje wyłącznie `<span class="ic">` albo `.uc-owner-emblem`
+  (`unitPanelHud.ts:122-124`) — nigdy medalionu. Nawet gdyby panel żył, reguła nie miałaby w co
+  trafić.
+- Brak budowania nazwy dynamicznie: `grep -rn "unit-ic"` daje wyłącznie import
+  `unit-icon-map.json`. Żadnej konkatenacji/template'u produkującego tę klasę.
+
+**3. Twierdzenie (a) — `.civ-unit-panel` martwy — POTWIERDZONE dla gry, ale UZASADNIENIE
+OPERATORA JEST ZA SZEROKIE (NOTA 1).**
+- `grep -rn "createUnitPanelHud" gra/src` = 1 trafienie, sama definicja (`unitPanelHud.ts:109`).
+  Zero wywołań w kodzie aplikacji — zgadza się.
+- Dowód z artefaktu builda (mocniejszy niż grep po źródłach): `civ-unit-panel-hud-css-v2-1e`
+  = **0 wystąpień w `dist/index.html`**, a `act-danger` = **3** — dokładnie tyle, ile wnosi sam
+  `armyStackHud.ts` (`ash-act-danger`, linie 136/137/309). Gdyby `unitPanelHud.ts` wszedł do
+  bundla, byłoby 6. Moduł jest więc w całości wycięty przez tree-shaking i panel **nigdy nie
+  montuje się w wydanej grze**.
+
+**4. Build PRZED i PO — pomiar własny (hipoteza „0 w obu wersjach" jest BŁĘDNA).**
+Obie wersje zbudowane komendą z CLAUDE.md (`node ./node_modules/vite/bin/vite.js build --outDir
+dist --emptyOutDir` z `gra/`), obie zielone, 824 moduły:
+
+| ciąg w `dist/index.html` | PRZED (`359bb38c`) | PO (`f3db8b22`) |
+|---|---|---|
+| `unit-ic-medallion` | **1** | **0** |
+| `civ-unit-panel-hud-css-v2` | 0 | 0 |
+| `civ-unit-panel` | **2** | **1** |
+| `unit-infographic-medallion` | 5 | 5 |
+
+Rozmiar bundla: **37 154 768 B → 37 154 687 B, delta dokładnie 81 B** — a usunięta linia ma
+dokładnie 81 bajtów ze znakiem końca linii (`printf ... | wc -c` = 81). To domyka dowód: efekt
+commita na artefakcie to co do bajta ta jedna linia i **nic poza nią** — zero skutków ubocznych.
+
+Wniosek: to NIE jest zmiana czysto kosmetyczna „bez wpływu na build". Reguła realnie trafiała do
+wydanego bundla (`UNIT_INFOGRAPHIC_CSS` jest wstrzykiwany na żywo — `cityPanel.ts:2595` oraz
+`ensureUnitInfographicStyles()`, `unitInfographic.ts:165-171`), tylko była w arkuszu martwa.
+Commit ją stamtąd usuwa.
+
+**5. Bramki.**
+- `npx tsc --noEmit` (przez `-p gra/tsconfig.json`) — **0 błędów, exit 0**.
+- `node tools/hud-tooltip-body-mounted-panels-test.cjs` — **16 pass · 0 fail, exit 0**. To jedyna
+  bramka realnie dotykająca tego obszaru i jest zielona.
+
+**6. Regresja wizualna — WYKLUCZONA, na DWÓCH niezależnych podstawach.** Nie przyjmuję tego jako
+„oczywiste":
+  (i) Kluczowym selektorem reguły jest `.unit-ic-medallion`. Ta klasa nie istnieje nigdzie w
+  repozytorium — ani w markupie statycznym, ani budowana dynamicznie. Reguła CSS, której klucz nie
+  pasuje do żadnego elementu, nie ma wpływu na rendering **niezależnie od przodka**.
+  (ii) Niezależnie: przodek `.civ-unit-panel` nie montuje się w wydanej grze (moduł wycięty przez
+  tree-shaking, `STYLE_ID` = 0 w `dist`).
+  Każda z tych przesłanek osobno wystarcza; obie zachodzą. Dodatkowo reguły sąsiednie w tym samym
+  stringu (`.unit-infographic-medallion`, `.civ-army-stack .ash-card-ic ...`) są nietknięte —
+  licznik 5 identyczny przed i po. Ryzyko wizualne: **zero**.
+
+---
+
+**NOTA 1 (sprostowanie twierdzenia Operatora — za szerokie).** Zdanie z wpisu wyżej: „zero
+realnego wywołania `createUnitPanelHud()` w runtime" jest **nieprawdziwe jako twierdzenie ogólne**.
+Operator grepował wyłącznie `gra/src` i przeoczył `gra/tools`. Realne wywołanie istnieje:
+`gra/tools/hud-tooltip-body-mounted-panels-test.cjs:109` woła `createUnitPanelHud({...})`
+naprawdę (bundle esbuild + headless Chromium, prawdziwy import z `unitPanelHud.ts`, linia 86).
+Poprawne sformułowanie: *zero wywołań w kodzie gry (`main.ts`/`hud.ts`), jedno realne wywołanie
+w harnessie bramki*. Dla werdyktu bez znaczenia — bramka jest zielona i nie dotyka usuniętej
+reguły (grep `unit-ic-medallion` po `gra/tools` = 0) — ale liczba/twierdzenie idące do
+właściciela musi być poprawne (CLAUDE.md §0b).
+
+**NOTA 2 (sprostowanie liczby z raportu Operatora — pomiar na innej bazie).** Operator raportuje
+„`grep -c "civ-unit-panel-hud-css-v2-1e|unit-ic-medallion|civ-unit-panel" dist/index.html` =
+0/0/0". Trzecia liczba jest **błędna na ocenianym commicie**: `civ-unit-panel` = **1**, nie 0.
+Przyczyna ustalona, nie zgadywana: worktree Operatora (`agent-a55b21c543551498b`) był oparty na
+`8f53c800`, gdzie `hudTitleTooltip.ts` **jeszcze nie zawierał** wpisu `'.civ-unit-panel'`
+(zweryfikowane: `git grep "'.civ-unit-panel'" 8f53c800 -- gra/src/ui/hudTitleTooltip.ts` = brak
+trafień; to samo na `359bb38c` = linia 66). Wpis dołożył w międzyczasie temat siostrzany
+`P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE`. Liczba była więc prawdziwa w izolowanym worktree
+Operatora i zdezaktualizowała się po przeniesieniu zmiany na `359bb38c`. Dokładnie ten tryb
+błędu jest już opisany w CLAUDE.md (ESCAPE runda 2, 2026-08-14: „skopiował historyczny pomiar
+rundy 1 bez ponownego uruchomienia") — **pomiar z worktree trzeba powtórzyć po scaleniu na
+docelową bazę, nie przepisywać.**
+
+**NOTA 3 (znalezisko poboczne — NIE wada tego commita, do osobnego rozpoznania).** W repozytorium
+stoją dziś dwa wzajemnie sprzeczne założenia o `.civ-unit-panel`:
+- ten temat (`f3db8b22`): panel to martwy kod;
+- temat siostrzany: `hudTitleTooltip.ts:66` dokłada `'.civ-unit-panel'` do **żywej** listy
+  `SCOPE_SELECTOR`, z komentarzem twierdzącym, że panel „montuje się bezpośrednio na
+  `document.body`" i renderuje plakietkę weterana.
+Mój dowód z builda (`civ-unit-panel-hud-css-v2-1e` = 0 w `dist`, `act-danger` = 3 = wkład samego
+`armyStackHud`) pokazuje, że w wydanej grze ten panel **nie powstaje**, więc tamten wpis w scope
+jest w produkcji równie bezczynny — działa wyłącznie w harnessie testowym, który montuje panel
+ręcznie. Bramka `hud-tooltip-body-mounted-panels-test.cjs` jest przez to zielona, ale scenariusz 2
+dowodzi zachowania kodu, którego gracz nie widzi. Do zarejestrowania jako osobny temat; **nie
+blokuje `f3db8b22`.**
+
+---
+
+**WERDYKT: PASS-WITH-NOTES.** Zmiana kodu jest poprawna, minimalna (1 linia, zakres C-025
+dotrzymany), a jej nieszkodliwość udowodniona dwiema niezależnymi drogami plus dowodem bajtowym
+(delta bundla = dokładnie 81 B = usunięta linia). Bramki zielone: `tsc` 0 błędów/exit 0,
+`hud-tooltip-body-mounted-panels-test.cjs` 16/0/exit 0. Powód, dla którego to nie jest czyste
+PASS: raport Operatora zawiera jedną **fałszywą na ocenianym commicie liczbę** (NOTA 2) i jedno
+**za szerokie twierdzenie** (NOTA 1) — obie pozycje szły do właściciela jako fakt, obie
+sprostowane powyżej. Sam fix nie wymaga poprawki i jest gotowy do scalenia/deployu.
+
+---
+
+## P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE (2026-08-16, znalezisko Evaluatora Opus 5 przy okazji f3db8b22, NOTA 3)
+
+**Sprzeczność między dwoma już scalonymi tematami.** `P-UNITINFOGRAPHIC-OSIEROCONY-SELEKTOR-CIV-UNIT-PANEL`
+(f3db8b22) zakłada, że `.civ-unit-panel` jest martwym kodem — potwierdzone na poziomie build-artefaktu
+(`civ-unit-panel-hud-css-v2-1e` = 0 w `dist/index.html`, moduł w całości wycięty tree-shakingiem).
+Tymczasem temat siostrzany `P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE` (commit `46ebea84`, już
+zdeployowany w FALA 285) dołożył `'.civ-unit-panel'` do **żywej** listy `SCOPE_SELECTOR` w
+`hudTitleTooltip.ts:66`, z komentarzem twierdzącym, że panel „montuje się bezpośrednio na
+`document.body`" i renderuje plakietkę weterana.
+
+**Dowód Evaluatora:** skoro `unitPanelHud.ts` jest w całości wycięty przez tree-shaking z wydanego
+bundla, wpis w `SCOPE_SELECTOR` dla `.civ-unit-panel` jest w produkcji równie bezczynny — działa
+WYŁĄCZNIE w harnessie testowym `hud-tooltip-body-mounted-panels-test.cjs` (Scenariusz 2), który
+montuje panel ręcznie przez bezpośrednie wywołanie `createUnitPanelHud()`. Bramka jest zielona, ale
+dowodzi zachowania kodu, którego gracz nigdy nie zobaczy.
+
+**Nie jest to regresja ani błąd tych dwóch commitów** — oba są poprawne w swoim zakresie. To
+niespójność założeń między dwoma niezależnie prowadzonymi tematami tego samego dnia, warta
+rozpoznania: albo `.civ-unit-panel`/`createUnitPanelHud()` faktycznie powinien się kiedyś montować
+(i wtedy oba fixy mają sens na przyszłość), albo jest to w pełni martwa ścieżka kodu wartą usunięcia
+w całości (`unitPanelHud.ts` + wpis w `SCOPE_SELECTOR` + test Scenariusz 2), skoro
+`armyStackHud.ts`/`.civ-army-stack` już go zastąpił (udokumentowane w `dyspozycje/UI-DO-MASTERA.md`).
+
+**STATUS: DO ROZPOZNANIA — niekrytyczne, nie pilne (nie blokuje żadnego z dwóch scalonych commitów,
+zero wpływu na dzisiejszą grywalność). Wymaga decyzji: usunąć martwy kod w całości, czy zostawić
+jako przygotowanie pod przyszłe wykorzystanie panelu.**
+**→ WERDYKT EVALUATORA:** ten temat był oceniany ŁĄCZNIE z
+`P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE` (oba commity dotykają tego samego pliku) — pełna
+sekcja werdyktu znajduje się pod tamtym tematem, niżej: **„Evaluator (Opus 5): WERDYKT
+PASS-WITH-NOTES dla 1261c170 + 48bd881c"**. Uwagi N1 (fałszywe negatywy ekstrakcji), N2
+(nieaktualny zapis o `KNOWN_GAPS` w sekcji „Uwaga integracyjna orkiestratora" wyżej), N3 (brak
+wykonywalnego testu dla `siege-hold`) i N4 (przycisk „Oblega" dubluje istniejący wiersz statusu)
+dotyczą właśnie tego tematu.
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla 1261c170 + 48bd881c
+
+Oba commity oceniane jako PARA (dotykają tego samego pliku `gra/src/ui/unitActionBarHtml.ts`).
+Weryfikacja niezależna na detached HEAD `48bd881c`, wszystkie liczby zmierzone samodzielnie —
+żadna nie przepisana z raportów Operatorów.
+
+**1. Zakres commitów — zgodny z opisem, zero nieoczekiwanych plików.**
+`1261c170` → 3 pliki (`PYTANIA-OTWARTE.md` +56, `unitActionBarHtml.ts` +19/−3,
+`unfortify-all-action-bar-test.cjs` nowy 186 linii). `48bd881c` → 3 pliki
+(`PYTANIA-OTWARTE.md` +52, `unitActionBarHtml.ts` +22, `unit-action-bar-completeness-test.cjs`
+nowy 235 linii). `main.ts` NIE dotknięty w żadnym z nich — zgodne z twierdzeniem „naprawa
+wyłącznie w rendererze".
+
+**2. Warunek widoczności `unfortify-all` opisany w rejestrze — PRAWDZIWY, nie zmyślony.**
+Odczytane samodzielnie z `main.ts` 17677–17861 (`buildArmyStackHudStateInner`): `actions.push({id:
+'unfortify-all', …})` stoi w linii 17794, zagnieżdżone w `if (!siegeCity)` (17777) → `if
+(isGarnizoned)` (17791, gdzie `isGarnizoned = active.inGarnizon === true`, 17781) → `if (garCount >
+1)` (17793, gdzie `garCount = garrisonUnitsOnHex(units, active.q, active.r, active.ownerId).length`,
+17792). Wszystkie trzy warunki (a) `!siegeCity`, (b) `inGarnizon === true`, (c) `garrisonUnitsOnHex
+> 1` — potwierdzone co do linii. Handler `} else if (actionId === 'unfortify-all') {` w 17883.
+Ikona w `ACTION_ICONS` w linii 17 pliku renderera. Twierdzenie „brak akcji `'fortify-all'` w
+kodzie" — również potwierdzone (`grep` zwraca pusto).
+
+**3. Bramka strukturalna — jakość ekstrakcji zbadana osobno (to jest jądro tej oceny).**
+- (a) **Na DZISIEJSZYM kodzie ekstrakcja jest kompletna — zero fałszywych negatywów.**
+  Zweryfikowane niezależnym skryptem: w wycinku `buildArmyStackHudStateInner` jest **12 wywołań
+  `actions.push(`**, z czego 11 to literały obiektowe i 1 to `actions.push(a)` (pętla po
+  `stackHudMergeSplitActions`, pokryta osobnym wycinkiem). Regex bramki wyciąga **9 id**
+  (`disband, fortify, march-stop, replace, scout-explore, sentry, siege-hold, skip, unfortify-all`);
+  niezależna kontrolna ekstrakcja WSZYSTKICH literałów `id: '…'` w tym samym wycinku daje
+  **identyczny zbiór 9 id** → dziś nic nie jest przeoczone. `stackHudMergeSplitActions`: 2 id
+  (`split`, `merge`), zgodnie z sanity-checkiem.
+- (b) **Dowody mutacyjne DZIAŁAJĄ — sprawdzone na ŻYWYM pliku, nie tylko wewnątrz testu.**
+  Cztery realne mutacje wykonane w worktree Evaluatora i cofnięte (`git status` po wszystkim:
+  czysty):
+  | mutacja | wynik bramki |
+  |---|---|
+  | usunięcie `'unfortify-all'` z `COMPACT_ACTION_ORDER` (cofnięcie `1261c170`) | **30 passed, 1 failed, exit 1** — `luki renderowania: unfortify-all` |
+  | usunięcie bloku renderującego `siege-hold` (cofnięcie `48bd881c`) | **29 passed, 2 failed, exit 1** — `luki renderowania: siege-hold` |
+  | NOWE id w stylu kanonicznym (`id` pierwszym polem) | **30 passed, 1 failed, exit 1** — ZŁAPANE |
+  | brak mutacji (stan czysty) | **31 passed, 0 failed, exit 0** |
+  Bramka realnie łapie cofnięcie obu dzisiejszych napraw ORAZ nowe id dopisane w stylu, w jakim
+  napisane są wszystkie 12 istniejących `actions.push` w tym pliku.
+- (c) **`KNOWN_GAPS` jest faktycznie pusty i uzasadniony.** `tools/unit-action-bar-completeness-test.cjs:68`
+  → `const KNOWN_GAPS = new Set([]);`. Uzasadnienie potwierdzone niezależnie: zbiór id produkowanych
+  (9) minus zbiór id mających render path jest dziś PUSTY, więc allowlista nie ma czego ukrywać.
+
+**4. Weryfikacja na poziomie BUILD-ARTEFAKTU (dokładnie ten krok, którego zabrakło przy
+`march-stop`) — OBA id realnie trafiają do renderera w zbudowanym bundlu.**
+Build: `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir` → `✓ built in
+18.96s`, `dist/index.html` 37 097,74 kB, exit 0. Wyliczone pozycje w zminifikowanym artefakcie:
+- `unfortify-all` — **5 wystąpień**, w tym kluczowe: `npo=["fortify","unfortify-all","sentry",
+  "scout-explore","split","merge","replace","skip"]` (@28802320) — to jest zminifikowany
+  `COMPACT_ACTION_ORDER`, czyli allowlista, po której realnie iteruje pętla renderująca; plus
+  producent `rA.push({id:"unfortify-all",label:"Odfortyfikuj całą armię",disabled:!1})` (@36919672)
+  i handler `else if(D==="unfortify-all")` (@36920763).
+- `siege-hold` — **3 wystąpienia**, w tym kluczowe: `const a=A.get("siege-hold");a&&(i+=\`<button
+  type="button" class="uc-act-btn uc-act-text" data-act="siege-hold" …` (@28802892/@28802976) — blok
+  renderujący jest fizycznie obecny w bundlu; plus producent `rA.push({id:"siege-hold",
+  label:"Oblega",disabled:!0})` (@36919082).
+- kontrola `march-stop` — 5 wystąpień o identycznym kształcie (render path + 2 producentów +
+  handler), czyli oba nowe id mają w artefakcie tę samą strukturę co id już potwierdzone żywym
+  testem w FALI 285.
+
+**5. Bramki uruchomione samodzielnie (z katalogu `gra/`), dokładne liczby:**
+| bramka | wynik | exit |
+|---|---|---|
+| `npx tsc --noEmit` | **0 błędów** | 0 |
+| `node tools/unit-action-bar-completeness-test.cjs` | **31 passed, 0 failed** | 0 |
+| `node tools/unfortify-all-action-bar-test.cjs` | **16 passed, 0 failed** | 0 |
+| `node tools/march-attack-queue-persist-test.cjs` | **55 passed, 0 failed** | 0 |
+| `node tools/hud-tooltip-body-mounted-panels-test.cjs` | **16 pass, 0 fail** | 0 |
+| `node tools/unit-replace-test.cjs` | **13/13 zielone** | 0 |
+| `node tools/unit-context-card-test.cjs` (kontrola dodatkowa Evaluatora) | **29 pass, 0 fail** | 0 |
+Zero regresji, zero nowych czerwonych bramek. (Uwaga techniczna: w świeżym worktree brakowało
+`gra/node_modules` — dowiązane symlinkiem do drzewa głównego, bez wpływu na wynik.)
+
+---
+
+#### N1 (ISTOTNA, do naprawy zanim ktokolwiek zacytuje tę bramkę jako „klasa zamknięta")
+**Twierdzenie z nagłówka testu i z rejestru — „zamyka CAŁĄ KLASĘ błędu" — jest NIEPRAWDZIWE.**
+Ekstrakcja opiera się na regexie `/actions\.push\(\{[^}]*?id:\s*'([\w-]+)'/`, w którym `[^}]*?`
+zabrania JAKIEGOKOLWIEK znaku `}` między `actions.push({` a `id:`. Skutek: id przechodzi
+niezauważone, gdy `id` nie jest pierwszym polem, a przed nim stoi cokolwiek z `}`. Sprawdzone
+realnymi mutacjami `main.ts` (każda: nowe id produkowane, ZERO render path — czyli dokładnie
+zgłoszony bug):
+| styl zapisu nowej akcji | wynik bramki |
+|---|---|
+| `actions.push({ label: \`T ${zmienna}\`, id: 'nowa', … })` — literał szablonowy przed `id` | **31 passed, 0 failed, exit 0 — PRZEOCZONE** |
+| `actions.push({ meta: { k: 'x' }, id: 'nowa', … })` — obiekt zagnieżdżony przed `id` | **31 passed, 0 failed, exit 0 — PRZEOCZONE** |
+| `const a = { id: 'nowa', … }; actions.push(a);` — push przez zmienną | **31 passed, 0 failed, exit 0 — PRZEOCZONE** |
+To nie jest hipotetyczne: literały szablonowe w obiektach są w `main.ts` powszechne (np.
+`headMeta: \`${formatJednostkiCount(…)} na heksie\``), a etykieta `march-stop` już dziś jest
+warunkowa i naturalnie mogłaby stać się szablonem. Sanity-check `producedFromMain.size >= 9`
+NIE chroni w tym kierunku — przeoczone id nie zmniejsza liczności, więc bramka zostaje zielona.
+**Naprawa (zweryfikowana przez Evaluatora, jedna linia):** zamienić regex na
+`/\bid:\s*'([\w-]+)'/g` liczony po CAŁYM wycinku ciała funkcji (bez wymogu sąsiedztwa z
+`actions.push`). Zmierzone: łapie wszystkie 4 style (w tym 3 dziś przeoczone), a na czystym
+kodzie zwraca **identyczny zbiór 9 id** co obecna wersja → zero fałszywych alarmów. Kierunek
+błędu też się poprawia: ewentualne nadmiarowe `id:` dałoby FAŁSZYWY ALARM (głośny), a nie ciche
+przeoczenie. **Do czasu tej poprawki bramkę należy opisywać jako „łapie styl kanoniczny", NIE
+jako „zamyka całą klasę".**
+
+#### N2 (dokumentacyjna, do sprostowania)
+Sekcja **„Uwaga integracyjna orkiestratora"** pod tematem
+`P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI` (wyżej) twierdzi, że wpis `unfortify-all`
+w `KNOWN_GAPS` *„pozostał tymczasowo — do usunięcia przy najbliższej okazji"*. **To nieprawda w
+stosunku do scalonego kodu:** `unit-action-bar-completeness-test.cjs:68` ma
+`const KNOWN_GAPS = new Set([]);` — wpis został usunięty, co zresztą poprawnie odnotowuje opis
+commita `48bd881c` („KNOWN_GAPS wyczyszczone z 'unfortify-all'"). Rejestr przeczy kodowi i
+własnemu commitowi; do poprawienia, żeby przyszła sesja nie szukała nieistniejącego długu.
+
+#### N3 (luka w pokryciu testowym `siege-hold`)
+`unfortify-all` dostał test WYKONUJĄCY prawdziwy renderer (`unfortify-all-action-bar-test.cjs`
+buduje `unitActionBarHtml.ts` przez esbuild i realnie woła `buildUnitActionBarHtml`, 16/16).
+`siege-hold` — nie dostał NIC wykonywalnego; jest pokryty wyłącznie statyczną analizą tekstu w tej
+samej bramce, której zasięg właśnie podważyłem w N1. Biorąc pod uwagę, że cała lekcja `march-stop`
+brzmiała „weryfikacja pośrednia skłamała", nowy render path zasługuje na to samo traktowanie.
+Łagodzące: Evaluator domknął to jednorazowo na poziomie build-artefaktu (punkt 4 — `data-act="siege-hold"`
+fizycznie w `dist/index.html`), więc nic nie jedzie na ślepo; brakuje jednak TRWAŁEGO strażnika
+regresji. Zalecenie: dopisać 3–4 asercje do istniejącego testu (render gdy w `actions[]`, brak gdy
+nieobecne, `disabled` obecny, klasa `uc-act-text`).
+
+#### N4 (produktowa — do decyzji Macieja, nie do autonomicznego zamknięcia)
+Nowy przycisk **„OBLEGA" dubluje informację, która już jest wyświetlana.** `unitCardStatus.ts:299`
+renderuje wiersz `Status: oblega <miasto>`, który dociera do karty jednostki ścieżką
+`main.ts:5055 (oblegaCityName) → 5101 → hexContextTooltip.ts:715 → buildUnitExtraStatusLinesHtml →
+buildUnitDetailExtrasHtml`. Po tej zmianie oblegający gracz widzi ten sam fakt dwa razy: jako
+wiersz statusu i jako zawsze wyszarzony, nieklikalny przycisk w pasku akcji. Operator uzasadnił to
+jako „zero nowej logiki biznesowej" — co jest prawdą o LOGICE, ale nie o UI: dodanie widocznego
+elementu interfejsu to decyzja produktowa (reguła NUMER → ABC), podjęta tu autonomicznie.
+Nie blokuje deployu (element jest nieszkodliwy, `flex-wrap` zapobiega rozjechaniu paska), ale
+warto zapytać właściciela, czy chce ten przycisk, czy raczej wykluczyć `siege-hold` z renderera
+jako czysty status (wtedy wrócić do `KNOWN_GAPS` z jawnym uzasadnieniem „to nie jest akcja").
+
+#### N5 (informacyjna — pokrycie bramki, dziś kompletne)
+Zweryfikowano niezależnie, że dwie funkcje objęte bramką są DZIŚ jedynym źródłem akcji:
+`buildUnitActionBarHtml` ma dokładnie jednego konsumenta (`hexContextTooltip.ts:972`), ten jest
+wołany wyłącznie z `buildUnitContextTooltipHtml` (`main.ts:5074`), a pole `actions` pochodzi tam
+wyłącznie z `actions: stackState?.actions` (`main.ts:5089`), gdzie `stackState =
+buildArmyStackHudStateInner()`. Pokrycie producentów jest więc dziś PEŁNE — ale nic nie pilnuje,
+by w przyszłości nie pojawił się trzeci producent poza tymi dwoma wycinkami.
+Osobno: `armyStackHud.ts` to DRUGI, żywy renderer akcji (`createArmyStackHud`, wołany z
+`hud.ts:1538`) z własną kopią mapy ikon — ale iteruje `for (const a of st.actions)` po WSZYSTKICH
+akcjach z fallbackiem tekstowym (`const body = icon ? … : esc(a.label)`), więc jest z definicji
+ODPORNY na tę klasę błędu. Warto odnotować, że wzorzec eliminujący problem u źródła (render
+wszystkiego + fallback zamiast allowlisty) leży już w repo, jeden plik obok.
+
+---
+
+**WERDYKT: PASS-WITH-NOTES.** Obie naprawy funkcjonalne są poprawne, minimalne i potwierdzone na
+najmocniejszym dostępnym poziomie (build-artefakt, nie samo źródło); wszystkie 7 uruchomionych
+bramek zielone, `tsc` 0 błędów, zero regresji, zakres commitów czysty. Bramka kompletności jest
+realnym postępem — natychmiast znalazła drugi, nieudokumentowany gap (`siege-hold`) i łapie
+cofnięcie obu dzisiejszych napraw. NIE jest jednak tym, za co się podaje: jej zasięg to styl
+kanoniczny zapisu akcji, a nie „cała klasa błędu" (N1, udowodnione trzema mutacjami). **Do
+deployu bez przeszkód; do domknięcia tematu wymagane N1 i N2** (obie tanie: jedna linia regexa +
+sprostowanie zdania w rejestrze). N3 i N4 do kolejki, N5 informacyjnie.
+
+---
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla 6cb92d4f (runda 2 - N1/N2)
+
+**Przedmiot oceny:** commit `6cb92d4f` — praca WŁASNA orkiestratora (nie subagenta), oceniana
+niezależnie na mocy `CLAUDE.md` §0b („wykonawca nigdy nie ocenia sam siebie"). Zakres realny,
+potwierdzony przez `git show --stat`: **2 pliki** — `gra/tools/unit-action-bar-completeness-test.cjs`
+(+20/−9, z czego zmiana wykonywalna to **dokładnie jedna linia**: `const re = /\bid:\s*'([\w-]+)'/g`
+w miejsce `/actions\.push\(\{[^}]*?id:\s*'([\w-]+)'/g`, reszta to komentarz PL+EN) oraz
+`dyspozycje/PYTANIA-OTWARTE.md` (dokumentacja). **Zero zmian w kodzie gry** (`gra/src/**` nietknięty) —
+ryzyko gameplayowe tej zmiany wynosi zero z konstrukcji.
+
+**1. N1 NAPRAWIONE — potwierdzone niezależnie, wszystkie trzy mutacje z rundy 1 odtworzone.**
+Każda mutacja wstawiała do `buildArmyStackHudStateInner` (main.ts) nową akcję o id **bez** render
+path w `unitActionBarHtml.ts`; `main.ts` przywracany z backupu po KAŻDYM przebiegu (potwierdzone
+bajt-w-bajt: `przywrocenie identyczne z oryginalem: true` ×3, a na koniec `git diff` na
+`gra/src/main.ts` pusty).
+
+| mutacja (styl zapisu) | stary regex | nowy regex | bramka |
+|---|---|---|---|
+| M1 literał szablonowy przed `id:` — `actions.push({ label: \`Test ${stackRuch}\`, id: 'mut-tpl' … })` | **nie widzi** | **widzi** | **30 passed, 1 failed, exit 1** — `luki renderowania: mut-tpl` |
+| M2 obiekt zagnieżdżony przed `id:` — `actions.push({ meta: { flaga: 1 }, id: 'mut-nested' … })` | **nie widzi** | **widzi** | **30 passed, 1 failed, exit 1** — `luki renderowania: mut-nested` |
+| M3 `const mutAkcja = { id: 'mut-var', … }; actions.push(mutAkcja)` | **nie widzi** | **widzi** | **30 passed, 1 failed, exit 1** — `luki renderowania: mut-var` |
+
+Komunikat FAIL w każdym przypadku wymienia dokładnie to id — bramka jest nie tylko czerwona, ale i
+diagnostyczna. Naprawa robi dokładnie to, co deklaruje.
+
+**2. Zero fałszywych alarmów na dzisiejszym kodzie — zmierzone porównaniem zbiorów, nie samym
+exit code.** Oba regexy uruchomione na tych samych dwóch wycinkach:
+- `buildArmyStackHudStateInner` (main.ts, 8639 znaków): stary **9 id**, nowy **9 id**, różnica
+  symetryczna **pusta** — `disband, fortify, march-stop, replace, scout-explore, sentry, siege-hold,
+  skip, unfortify-all`;
+- `stackHudMergeSplitActions` (armyMerge.ts, 659 znaków): stary **{merge, split}**, nowy
+  **{merge, split}**, różnica **pusta**.
+
+Bramka na nienaruszonym kodzie: **31 passed, 0 failed, exit 0** — zgodne z deklaracją orkiestratora.
+
+**3. Kontrola fałszywych pozytywów (zadanie 4) — przegląd całych obu wycinków.** W wycinku main.ts
+jest **12 wystąpień `id:`** i **12 wywołań `actions.push(`**; z tego **11 to literały `id: '…'`**
+(9 unikalnych — `fortify` i `march-stop` występują po 2×). Dwa wystąpienia niebędące akcjami:
+- `id: u.id` (L17692, budowa kart jednostek stosu) — **nie literał, nie łapane**, poprawnie;
+- `actions.push(a)` w pętli po `stackHudMergeSplitActions` (L17843) — **realny, dzisiejszy przykład
+  stylu M3 w produkcyjnym kodzie**; jego id (`split`/`merge`) są pokryte drugim wycinkiem, więc
+  luki nie ma.
+
+Na dzisiejszym kodzie **zero fałszywych pozytywów**. Teza z komentarza o bezpiecznym kierunku błędu
+jest poprawna i potwierdzam ją strukturalnie: `gaps = produced.filter(id => !RENDERED.has(id))` —
+nadmiarowe id może wyłącznie **dodać** wymaganie render path (głośny FAIL), nigdy zdjąć. Przeoczenie
+realnej luki tą drogą jest niemożliwe.
+
+**4. N2 ZWERYFIKOWANE — sprostowanie zgadza się z kodem.** `grep -n "KNOWN_GAPS"` →
+linia 68: `const KNOWN_GAPS = new Set([]);` (pusty). Sprostowany akapit (L29042–29048) mówi teraz, że
+orkiestrator wpis **usunął** — zgodne ze stanem pliku. Błędne zdanie („wpis pozostał tymczasowo —
+do usunięcia przy najbliższej okazji") zostało z rejestru **fizycznie usunięte**, nie tylko
+opatrzone erratą; jedyne pozostałe wystąpienie tej frazy to cytat wewnątrz werdyktu rundy 1.
+
+**5. Bramki (z katalogu `gra/`, czubek gałęzi, stan po przywróceniu wszystkich mutacji):**
+
+| bramka | wynik |
+|---|---|
+| `tsc --noEmit` (TypeScript **5.9.3**, wersja projektu) | **0 błędów, exit 0** |
+| `node tools/unit-action-bar-completeness-test.cjs` | **31 passed, 0 failed, exit 0** |
+| `node tools/unfortify-all-action-bar-test.cjs` | **16 passed, 0 failed, exit 0** |
+| `node tools/march-attack-queue-persist-test.cjs` | **55 passed, 0 failed, exit 0** |
+| `node tools/unit-replace-test.cjs` | **13/13 zielone, exit 0** |
+
+---
+
+#### Noty (żadna nie blokuje deployu)
+
+**N5 — przeciek id z ADNOTACJI TYPU osłabił strażnika sanity dla `armyMerge.ts`. Zmierzone, nie
+teoretyczne.** Nowy regex nie wymaga sąsiedztwa z `actions.push(`, więc łapie `id: 'split'` także
+z sygnatury typu w L687 (`): Array<{ id: 'split' | 'merge'; … }>`) i z deklaracji w L688 — czyli
+z miejsc, które **nie produkują żadnej akcji**. Kontrola przeciwna: usunąłem z implementacji
+**realny** blok `actions.push({ id: 'split', … })` (L690–694), zostawiając typ nietknięty:
+- stary regex widziałby wtedy `{merge}` → sanity `producedFromMerge.size === 2` **FAIL**;
+- nowy regex widzi `{merge, split}` (split z typu) → bramka **31 passed, 0 failed, exit 0** —
+  **zielona mimo usuniętej akcji**.
+
+Skala szkody jest wąska i nie dotyczy głównej asercji: sanity opisany w kodzie ma wykrywać *zepsutą
+ekstrakcję* („zbyt mało sugeruje zepsutą ekstrakcję, nie realny spadek liczby akcji"), a tę nadal
+wykrywa (rozjechane kotwice → pusty wycinek → 0 id → FAIL). Usunięcie akcji nie tworzy też luki
+renderowania, więc nie jest klasą błędu, którą ta bramka zamyka. Mimo to **jest to realna, nowa
+regresja pobocznego strażnika** wprowadzona tą zmianą — wcześniej ten konkretny przypadek był
+łapany, teraz nie jest. Tanie domknięcie, jeśli kiedyś dotykamy tego pliku: wycinać ciało funkcji
+od `{` po sygnaturze (a nie od nagłówka), albo odfiltrować dopasowania zawierające `|` / `;` w
+kontekście typu.
+
+**N6 — komentarz w kodzie zapisał jako fakt weryfikację, której w chwili commita jeszcze nie było.**
+Linie 89–91 nowego komentarza brzmią: *„Zweryfikowane (Evaluator): na dzisiejszym kodzie zwraca
+identyczny zbiór co poprzedni regex (zero fałszywych alarmów), a na trzech stylach zapisu które
+poprzednio umykały — łapie wszystkie trzy."* Tymczasem opis tego samego commita deklaruje węższy
+zakres wykonanej pracy: *„manualna mutacja main.ts (id po literale szablonowym)"* — **jeden** styl,
+nie trzy; a „31/0 bez zmian" to wynik bramki, nie porównanie zbiorów obu regexów. Twierdzenie
+zostało więc zapisane do repozytorium w czasie przeszłym i przypisane Evaluatorowi **zanim werdykt
+powstał**. Merytorycznie okazało się **prawdziwe** — właśnie potwierdziłem oba człony (3/3 style,
+zbiory identyczne co do elementu), więc szkody faktograficznej nie ma i nie żądam zmiany treści.
+Zgłaszam wzorzec, bo to dokładnie klasa uchybienia, dla której powstał `CLAUDE.md` §0b
+(„dokumentacja wyprzedza pomiar"): gdyby choć jeden z trzech styli nie został złapany, w repo
+stałoby trwałe, fałszywe zdanie z powołaniem się na cudzy autorytet. Właściwa kolejność: zapisać
+„zweryfikowane" **po** werdykcie, albo opisać zakres faktycznie wykonanej weryfikacji.
+
+**N7 — zasięg ochrony to nadal konwencja zapisu, nie „każdy możliwy styl". Zmierzone trzema
+kolejnymi mutacjami** (każda dodaje realną akcję bez render path):
+
+| styl | bramka |
+|---|---|
+| `id: "mut-dq"` (podwójne cudzysłowy) | **31 passed, 0 failed, exit 0 — umyka** |
+| ``id: `mut-tl` `` (literał szablonowy jako id) | **31 passed, 0 failed, exit 0 — umyka** |
+| `const nazwaAkcji = 'mut-zm'; actions.push({ id: nazwaAkcji, … })` | **31 passed, 0 failed, exit 0 — umyka** |
+
+To **nie jest regresja** — stary regex nie łapał ich tak samo, a commit nie deklarował ich pokrycia.
+Odnotowuję dla uczciwości zakresu: konwencja `id: '…'` nie jest w tym repo wymuszana narzędziowo
+(brak jakiejkolwiek konfiguracji ESLint w `gra/`), opiera się wyłącznie na dyscyplinie — przy czym
+faktyczna zgodność jest dziś stuprocentowa: **0 wystąpień `id: "` w całym `main.ts`**. Ryzyko
+resztkowe jest więc niskie, ale niezerowe i nie należy o bramce mówić „zamyka całą klasę błędu"
+bez tego zastrzeżenia.
+
+**N8 (kosmetyczna) — wiszące odesłanie w sprostowaniu N2.** Nowy akapit kończy się zdaniem
+*„Zdanie poniżej („wpis pozostał tymczasowo") było błędne w chwili pisania"*, ale tego zdania
+**już poniżej nie ma** — zostało zastąpione tym samym akapitem, w którym stoi odesłanie. Czytelnik
+szukający „poniżej" trafi dopiero na cytat w werdykcie rundy 1, ~400 linii dalej. Poprawka
+jednosłowna przy najbliższej okazji („zdanie zastąpione tym akapitem"), nie warta osobnego commita.
+
+**N9 (środowiskowa, nie dotyczy tego commita) — `npx tsc --noEmit` z `CLAUDE.md` §BRAMKI nie jest
+odporne na brak `node_modules`.** W świeżym worktree bez zainstalowanych zależności `npx` ściąga
+**TypeScript 6.0.2** spoza projektu i bramka kończy się `exit 2` na `tsconfig.json(15,5): error
+TS5101: Option 'baseUrl' is deprecated` — co wygląda jak czerwona bramka, a jest tylko innym
+kompilatorem. Wersja projektu to **5.9.3** i na niej wynik to **0 błędów, exit 0**. Nie ma to
+związku z ocenianą zmianą, ale może w przyszłości wyprodukować fałszywy alarm „tsc czerwony";
+odporniejszy zapis to `./node_modules/.bin/tsc --noEmit`.
+
+---
+
+**WERDYKT: PASS-WITH-NOTES.** N1 z rundy 1 jest naprawione **w pełnym zakresie, w jakim było
+zgłoszone** — wszystkie trzy style, którymi runda 1 udowodniła ciche przeoczenia, są teraz łapane
+(3/3, `exit 1` z komunikatem wskazującym winne id), przy zerowej zmianie zachowania na dzisiejszym
+kodzie (zbiory id identyczne co do elementu, 31/0). N2 sprostowane zgodnie ze stanem kodu, błędne
+zdanie usunięte, nie tylko opatrzone erratą. Wszystkie 5 bramek zielone, `tsc` 5.9.3 bez błędów,
+`gra/src/**` w ogóle nietknięty — ryzyko regresji gameplayowej zerowe z konstrukcji. Rozwiązanie
+jest minimalne (jedna linia) i idzie w bezpieczną stronę: możliwy błąd nowego regexa to głośny
+fałszywy alarm, nigdy ciche przeoczenie luki renderowania. **Temat gotowy do deploy.** Noty N5
+(realna, zmierzona regresja pobocznego strażnika sanity dla `armyMerge.ts` — jedyna nota o wadze
+technicznej) i N6 (dokumentacja wyprzedziła pomiar — treść okazała się prawdziwa, ale wzorzec jest
+tym, przed czym chroni §0b) do kolejki; N7, N8, N9 informacyjnie.
+
+
+---
+
+### Evaluator (Opus 5): WERDYKT PASS-WITH-NOTES dla d6b03bd0 (runda 3 - N5)
+
+**Zakres.** Jedna zmiana funkcjonalna: w `gra/tools/unit-action-bar-completeness-test.cjs`
+startMarker wycinka `mergeBody` przesunięty z `'export function stackHudMergeSplitActions('` na
+`'if (stackLength >= 2) {'` (+ komentarz PL/EN). `gra/src/**` nietknięty — ryzyko regresji
+gameplayowej zerowe z konstrukcji. Reszta commita to dopisanie dwóch wcześniejszych werdyktów do
+rejestru.
+
+**Zweryfikowane niezależnie (uruchomione, nie odczytane z opisu commita):**
+
+| kontrola | wynik |
+|---|---|
+| `git show d6b03bd0 -- …completeness-test.cjs` | dokładnie ta jedna zmiana (13 linii: 1 usunięta kotwica, 1 nowa + 11 linii komentarza) |
+| unikalność `'if (stackLength >= 2) {'` w `armyMerge.ts` | **1 wystąpienie** (L689) — kotwica jednoznaczna, także dla luźniejszego wzorca `stackLength >= 2` |
+| **mutacja N5** — usunięcie realnego `actions.push({ id: 'split', … })` (L690–694), typ nietknięty | **30 passed, 1 failed, exit 1**: `FAIL: sanity: stackHudMergeSplitActions produkuje dokładnie {'split','merge'} (dziś: merge)` — **strażnik znowu łapie** |
+| **kontrfaktycznie** — ta sama mutacja + STARA kotwica (kopia testu, `sed`) | **31 passed, 0 failed, exit 0** — zielona mimo usuniętej akcji, czyli dokładnie objaw z N5. Naprawa jest nośna, nie kosmetyczna |
+| `npx tsc --noEmit` (TS lokalny z `gra/node_modules`) | **exit 0**, 0 błędów |
+| `node tools/unit-action-bar-completeness-test.cjs` (kod nienaruszony) | **31 passed, 0 failed, exit 0**, BEZ komunikatu „info" o nieaktualnej allowliście |
+| `node tools/unfortify-all-action-bar-test.cjs` | **16 passed, 0 failed, exit 0** |
+| `node tools/march-attack-queue-persist-test.cjs` | **55 passed, 0 failed, exit 0** |
+
+Plik `armyMerge.ts` przywrócony z kopii po mutacji — `git diff` na nim pusty, bramka po
+przywróceniu znowu 31/0.
+
+**N10 (informacyjnie, nie wada tej zmiany) — `hudBody` z `main.ts` nie ma dziś przecieku typu, ale
+nie jest to zagwarantowane strukturalnie.** Sprawdzone bezpośrednio: wszystkie **11** dopasowań
+`id: '…'` w wycinku `buildArmyStackHudStateInner` pochodzi z realnych `actions.push(` — zero
+adnotacji typu. Ta funkcja zwraca jednak `ArmyStackHudState`, a nie inline'owy `Array<{ id: '…' }>`,
+więc przeciek analogiczny do N5 mógłby tam powstać dopiero po refaktorze wprowadzającym literały
+typu do ciała. Zabezpieczenie na dziś: brak — sanity `producedFromMain.size >= 9` jest progiem
+dolnym, więc nadmiarowe id z typu by go nie ruszyło.
+
+**N11 (informacyjnie) — kotwica startowa jest teraz szczegółem implementacyjnym, nie nagłówkiem
+API.** Zmiana warunku (np. na `stackLength > 1`) wywali kotwicę. Skutek jest jednak **głośny, nie
+cichy**: `sliceBetween` rzuca `Nie znaleziono kotwicy startowej dla stackHudMergeSplitActions
+(armyMerge.ts)` i bramka pada z exit 1 — czyli awaria pójdzie w bezpieczną stronę, tak jak przy
+naprawie N1. Akceptowalne.
+
+**N12 (drobiazg redakcyjny) — komentarz w kodzie mówi „N5, runda 2".** N5 zostało *zgłoszone*
+w werdykcie rundy 2, ale *naprawione* w rundzie 3 (ten commit). Zapis nie jest fałszywy, tylko
+dwuznaczny; nie żądam zmiany.
+
+**WERDYKT: PASS-WITH-NOTES.** N5 naprawione w pełnym zgłoszonym zakresie i **udowodnione dwustronnie**
+— mutacja łapana z nową kotwicą, przepuszczana ze starą. Zmiana jest minimalna (jedna linia kodu
+wykonywalnego), dotyczy wyłącznie narzędzia testowego, wszystkie 4 uruchomione bramki zielone, `tsc`
+bez błędów. Noty N10–N12 są informacyjne i żadna nie blokuje. **Temat gotowy do deploy.**

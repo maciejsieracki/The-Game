@@ -49,8 +49,23 @@ const ACTION_ICONS: Partial<Record<string, string>> = {
     + '</svg>',
 };
 
-/** Ikony akcji widoczne w kompaktowej karcie (bez rozwiąż w środku — osobno po prawej). */
-const COMPACT_ACTION_ORDER = ['fortify', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
+/** Ikony akcji widoczne w kompaktowej karcie (bez rozwiąż w środku — osobno po prawej).
+ * P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE (2026-08-16): 'unfortify-all' („Odfortyfikuj
+ * całą armię") miało już gotową ikonę w ACTION_ICONS i w pełni działający handler w
+ * main.ts (garnizon, >1 jednostka), ale nie było w tej liście — renderer pomija id spoza
+ * COMPACT_ACTION_ORDER (patrz pętla niżej), więc przycisk nigdy nie trafiał do DOM mimo że
+ * main.ts poprawnie wypychał go do `actions[]`. Etykieta jest statyczna (nie zależy od
+ * stanu jak w 'march-stop'), więc — tak jak 'fortify' — renderuje się jako ikona z tej
+ * listy, nie jako dedykowany tekstowy blok. Umieszczone zaraz po 'fortify', bo to jego
+ * odpowiednik grupowy (cała armia w garnizonie zamiast jednej jednostki). / EN:
+ * 'unfortify-all' ("Unfortify whole army") already had a ready icon in ACTION_ICONS and a
+ * fully working handler in main.ts (garrison, >1 unit), but was missing from this list —
+ * the renderer skips any id not in COMPACT_ACTION_ORDER (see loop below), so the button
+ * never reached the DOM even though main.ts correctly pushed it into `actions[]`. The
+ * label is static (unlike 'march-stop'), so — like 'fortify' — it renders as an icon from
+ * this list, not a dedicated text block. Placed right after 'fortify' as its group
+ * counterpart (whole garrisoned army instead of a single unit). */
+const COMPACT_ACTION_ORDER = ['fortify', 'unfortify-all', 'sentry', 'scout-explore', 'split', 'merge', 'replace', 'skip'] as const;
 
 export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): string {
   const byId = new Map(actions.map(a => [a.id, a]));
@@ -69,6 +84,51 @@ export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): str
       + ` title="${esc(a.label)}" aria-label="${esc(a.label)}"${ariaPressed}`
       + (a.disabled ? ' disabled' : '')
       + `><span class="uc-act-ic">${icon}</span></button>`;
+  }
+
+  // P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU (2026-08-16): 'march-stop'
+  // (etykieta „Anuluj atak"/„Zatrzymaj", ustalana w main.ts) NIE była w
+  // COMPACT_ACTION_ORDER ani w ACTION_ICONS — była wypychana do `actions[]` (zarówno
+  // przez istniejącą gałąź hasPlan, jak i nową siegeCity), ale ta funkcja renderowała
+  // TYLKO id ze stałej listy + osobno 'disband' -- akcja realnie NIGDY się nie
+  // wyświetlała w DOM, niezależnie od stanu gry (potwierdzone żywym testem headless
+  // Chromium, nie tylko czytaniem kodu). Etykieta bywa dynamiczna („Anuluj atak" vs
+  // „Zatrzymaj"), więc render jako tekstowy przycisk (jak 'disband'), nie ikona.
+  // / EN: 'march-stop' (label "Cancel attack"/"Stop", set in main.ts) was in neither
+  // COMPACT_ACTION_ORDER nor ACTION_ICONS -- it was pushed into `actions[]` (both by
+  // the pre-existing hasPlan branch and the new siegeCity branch), but this function
+  // only rendered ids from the fixed list + 'disband' separately -- the action never
+  // actually appeared in the DOM regardless of game state (confirmed via a live
+  // headless Chromium test, not just reading the code). The label is dynamic ("Cancel
+  // attack" vs "Stop"), so render as a text button (like 'disband'), not an icon.
+  // P-UNITACTIONBAR-RENDERER-BRAK-BRAMKI-KOMPLETNOSCI (2026-08-16): nowa bramka
+  // kompletności (unit-action-bar-completeness-test.cjs) wykryła, że 'siege-hold'
+  // (etykieta „Oblega", zawsze `disabled: true` — czysty status „ta jednostka oblega
+  // miasto", nie klikalna akcja) nie miał ŻADNEJ ścieżki renderowania — brak w
+  // COMPACT_ACTION_ORDER i brak dedykowanego bloku, dokładnie ta sama klasa błędu co
+  // wcześniej 'march-stop'. Renderowany jak 'march-stop'/'disband' — tekstowy przycisk,
+  // zawsze disabled (dane już ustawiają disabled:true, renderer tylko to odzwierciedla,
+  // bez nowej logiki biznesowej). / EN: the new completeness gate
+  // (unit-action-bar-completeness-test.cjs) found that 'siege-hold' (label "Oblega"/
+  // "Besieging", always `disabled: true` — a pure status indicator, not a clickable
+  // action) had NO render path at all — missing from COMPACT_ACTION_ORDER and missing a
+  // dedicated block, the same bug class as 'march-stop' before it. Rendered like
+  // 'march-stop'/'disband' — a text button, always disabled (the data layer already
+  // sets disabled:true, the renderer just reflects it, no new business logic).
+  const siegeHold = byId.get('siege-hold');
+  if (siegeHold) {
+    html += `<button type="button" class="uc-act-btn uc-act-text" data-act="siege-hold"`
+      + ` title="${esc(siegeHold.label)}" aria-label="${esc(siegeHold.label)}"`
+      + (siegeHold.disabled ? ' disabled' : '')
+      + `>${esc(siegeHold.label)}</button>`;
+  }
+
+  const marchStop = byId.get('march-stop');
+  if (marchStop) {
+    html += `<button type="button" class="uc-act-btn uc-act-text" data-act="march-stop"`
+      + ` title="${esc(marchStop.label)}" aria-label="${esc(marchStop.label)}"`
+      + (marchStop.disabled ? ' disabled' : '')
+      + `>${esc(marchStop.label)}</button>`;
   }
 
   const disband = byId.get('disband');
@@ -104,4 +164,6 @@ export const UNIT_ACTION_BAR_CSS = `
 .uc-act-disband{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.08em;
   color:#ffb0b0!important;border-color:rgba(200,64,64,.45)!important;min-width:72px;}
 .uc-act-disband:hover:not(:disabled){border-color:rgba(200,64,64,.65)!important;color:#ffd0d0!important;}
+.uc-act-text{min-width:auto;padding:0 10px;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;white-space:nowrap;}
 `;

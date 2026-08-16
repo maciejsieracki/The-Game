@@ -32,22 +32,47 @@ export interface ResolveEnemyCityClickInput {
   units: readonly RuntimeUnit[];
   /** Domyślnie 0 = gracz ludzki. */
   playerOwnerId?: number;
+  /**
+   * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE (Maciej 2026-08-14): zasięg ataku
+   * jednostki w heksach mapy (0 = zwarcie, wymaga adiacencji; patrz
+   * game/combat.ts unitMapAttackRangeHex). Opcjonalny i domyślnie ZAWSZE 0
+   * (adiacencja) — wywołania bez tego callbacku (np. istniejące testy tej
+   * funkcji, które nie znają statów jednostek) zachowują dawne zachowanie
+   * bez zmian.
+   */
+  unitAttackRangeHex?: (u: RuntimeUnit) => number;
 }
 
-function adjacentPlayerAttackers(
+/**
+ * Jednostki gracza uprawnione do zainicjowania ataku na `city`: sąsiednie
+ * (adiacencja, jak dotychczas — jedyna opcja dla miast z murem, bo oblężenie
+ * — mapSiegeDetect.canInitiateSiege — wymaga fizycznej adiacencji NIEZALEŻNIE
+ * od zasięgu i ta mechanika zostaje tu nietknięta) LUB, dla miast BEZ muru
+ * (pole_bitwy/capture_empty — mur nigdy nie wchodzi tu w grę), jednostki
+ * dystansowe w swoim zasięgu ataku. / EN: player units eligible to initiate
+ * an attack on `city`: adjacent (as before — the only option for walled
+ * cities, since sieging — mapSiegeDetect.canInitiateSiege — requires physical
+ * adjacency REGARDLESS of range, and that mechanic is left untouched here)
+ * OR, for unwalled cities (field_battle/capture_empty — the wall is never in
+ * play there), ranged units within their attack range.
+ */
+function eligibleCityAttackers(
   city: City,
   units: readonly RuntimeUnit[],
   playerOwnerId: number,
+  attackRangeHex: (u: RuntimeUnit) => number,
 ): RuntimeUnit[] {
-  return units.filter(
-    u =>
-      u.ownerId === playerOwnerId &&
-      u.ruchLeft > 0 &&
-      !isCivilianUnit(u) &&
-      // TEMAT #15: BRAK ataku z wody — jednostka zaokrętowana nie atakuje miast.
-      u.embarked !== true &&
-      hexDistance(u.q, u.r, city.q, city.r) === 1,
-  );
+  return units.filter(u => {
+    if (u.ownerId !== playerOwnerId) return false;
+    if (u.ruchLeft <= 0) return false;
+    if (isCivilianUnit(u)) return false;
+    // TEMAT #15: BRAK ataku z wody — jednostka zaokrętowana nie atakuje miast.
+    if (u.embarked === true) return false;
+    const dist = hexDistance(u.q, u.r, city.q, city.r);
+    if (dist === 1) return true;
+    if (city.maMur) return false;
+    return dist <= attackRangeHex(u);
+  });
 }
 
 function resolveAttacker(
@@ -97,7 +122,9 @@ export function resolveEnemyCityClick(
     return { kind: 'hint_civilian', cityName: city.name };
   }
 
-  const adjacent = adjacentPlayerAttackers(city, units, playerOwnerId);
+  const adjacent = eligibleCityAttackers(
+    city, units, playerOwnerId, input.unitAttackRangeHex ?? (() => 0),
+  );
   const attackerPick = resolveAttacker(adjacent, selectedUnit, playerOwnerId);
 
   if (attackerPick === 'none') {

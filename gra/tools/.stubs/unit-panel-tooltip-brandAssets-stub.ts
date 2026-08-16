@@ -1,0 +1,10 @@
+export function brandIconSvg() { return ''; }
+export function mapResourceIconSvg() { return ''; }
+export function terrainIconSvg() { return ''; }
+export function unitIconSvg() { return '🏹'; }
+export function improvementIconSvg() { return ''; }
+export function buildingIconSvg() { return ''; }
+export function civIconSvg() { return ''; }
+export function epochIconSvg() { return ''; }
+export function settingIconSvg() { return ''; }
+export function brandMenuComponentsCss() { return ''; }

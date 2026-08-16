@@ -21,7 +21,12 @@ export interface NegotiationBalanceSource {
   acceptanceMy?: AcceptanceSideBalance;
   acceptanceTheir?: AcceptanceSideBalance;
   canAccept?: boolean;
-  responderPreview?: { accepted: boolean; reason?: string };
+  /**
+   * `pwBalance` (P-DYPLO-BILANS-GATE-NIESPOJNY, Maciej 2026-08-14): JEDNA liczba PW z TEJ
+   * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
+   * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
+   */
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
   isGift?: boolean;
   awaitingAiResponse?: boolean;
   canCounter?: boolean;
@@ -39,7 +44,12 @@ export interface PnBalancePanelData {
   canAccept?: boolean;
   extraOnTable?: number;
   awaitingAiResponse?: boolean;
-  responderPreview?: { accepted: boolean; reason?: string };
+  /**
+   * `pwBalance` (P-DYPLO-BILANS-GATE-NIESPOJNY, Maciej 2026-08-14): JEDNA liczba PW z TEJ
+   * SAMEJ bramki, która policzyła `accepted` — patrz ProposalEvalResult w
+   * diplomacy-proposals.ts. `undefined` gdy akcja nie ma numerycznej bramki PW.
+   */
+  responderPreview?: { accepted: boolean; reason?: string; pwBalance?: number };
   canCounter?: boolean;
   uiActionId?: string;
 }
@@ -231,6 +241,27 @@ export function balancePanelDataFromRows(
   let myOfferPn = 0;
   let theirOfferPn = 0;
   let blockReason: string | undefined;
+  // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): gdy jest DOKŁADNIE jedna pozycja
+  // aktualna (typowy przypadek — pojedynczy "Traktat handlowy"/"Umowa wymiany" bez pakietu,
+  // patrz dyspozycje/PYTANIA-OTWARTE.md) i jej bramka ma numeryczny próg PW
+  // (responderPreview.pwBalance z evaluateProposal), użyj TEJ liczby jako JEDYNEGO
+  // wyświetlanego "Bilans" — zamiast osobno liczonej, surowej różnicy givePn-receivePn
+  // (`net` niżej), która ignorowała relację/mnożnik chęci partnera i dawała np. "+30" mimo
+  // że ta sama bramka odrzucała ofertę jako "wymagane ≥ 73 PW".
+  //
+  // RUNDA 2 (N4, Evaluator FAIL c94de5c8): dla pakietu >1 pozycji SUMA pwBalance NIE
+  // wystarcza jako kryterium — zmierzony przykład: 213 + (−77) = +136 ≥ 0 (zielone), mimo
+  // że druga pozycja z osobna jest nieuczciwa i realna bramka (canAccept, per-pozycja)
+  // blokuje pakiet. Jedna słaba pozycja nie może zostać "wyprana" nadwyżką innej — każda
+  // pozycja pakietu musi być uczciwa z osobna. `unifiedPwBalance` dla pakietu to teraz
+  // MIN po wszystkich pozycjach z numerycznym pwBalance (spójne z tym, że pakiet i tak
+  // jest odrzucany przez blockReason, gdy KTÓRAKOLWIEK pozycja ma accepted=false — to
+  // wyświetlany "Bilans" dogania rzeczywistą bramkę, a nie odwrotnie). Gdy choć jedna
+  // aktywna pozycja nie ma numerycznego pwBalance (np. nap/sojusz bez bramki PW), min nie
+  // ma sensu — zostaje dawny surowy `net` (myOfferPn−theirOfferPn), jak przed tą rundą.
+  let unifiedPwBalance: number | undefined;
+  let minPwBalance: number | undefined;
+  let allActionableHavePwBalance = true;
 
   for (const row of actionable) {
     const d = balancePanelDataFromRow(row, 0);
@@ -271,10 +302,20 @@ export function balancePanelDataFromRows(
         blockReason = row.responderPreview.reason
           ?? (row.direction === 'incoming' ? 'Warunki niespełnione' : 'Oferta nieuczciwa dla partnera');
       }
+      if (row.responderPreview?.pwBalance != null) {
+        minPwBalance = minPwBalance == null
+          ? row.responderPreview.pwBalance
+          : Math.min(minPwBalance, row.responderPreview.pwBalance);
+      } else {
+        allActionableHavePwBalance = false;
+      }
     }
   }
+  // Gdy actionable.length === 1, min po jednej wartości = ta wartość — zachowuje się
+  // dokładnie jak dawne `unifiedPwBalance` dla pojedynczej pozycji (bez zmiany).
+  unifiedPwBalance = allActionableHavePwBalance ? minPwBalance : undefined;
 
-  const net = myOfferPn - theirOfferPn;
+  const net = unifiedPwBalance ?? (myOfferPn - theirOfferPn);
   const canAccept = blockReason == null;
 
   const statusLabel = net > 0
@@ -439,11 +480,21 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
   const isTreatyMode = (myBal?.mode === 'treaty' || myBal?.mode === 'mixed'
     || their.mode === 'treaty' || their.mode === 'mixed')
     && !incomingTrade;
+  // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (N2, Evaluator FAIL c94de5c8): tryb traktatu
+  // dawniej liczył netPw jako SUROWĄ różnicę myOfferPn−theirOfferPn zamiast czytać
+  // `their.balancePn` — pole, do którego balancePanelDataFromRows zapisuje JEDNĄ,
+  // spójną z bramką liczbę (unifiedPwBalance z evaluateProposal, gdy dostępna).
+  // Renderer dla traktatów nigdy tego pola nie odczytywał, więc naprawa rundy 1
+  // (dopisanie pwBalance do ProposalEvalResult) nie miała jak dotrzeć do ekranu
+  // „Traktat handlowy". Teraz oba tryby (traktat / handel) czytają to samo źródło.
+  // EN: treaty mode used to recompute a raw myOfferPn−theirOfferPn difference instead
+  // of reading `their.balancePn` — the field balancePanelDataFromRows writes the one
+  // gate-consistent number into. This renderer never read it, so round 1's fix
+  // (adding pwBalance to ProposalEvalResult) never reached the "Traktat handlowy"
+  // screen. Both modes now read the same source.
   const netPw = incomingTrade
     ? incomingTradeNetBalancePw(data)
-    : isTreatyMode
-      ? data.myOfferPn - data.theirOfferPn
-      : their.balancePn;
+    : their.balancePn;
   const treatyAccepted = myBal?.accepted ?? their.accepted;
   // P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT: w trybie traktatu kolor i hint muszą iść
   // za data.canAccept (ten sam responderPreview per-pozycja, który bramkuje przycisk Przyjmij
@@ -547,7 +598,6 @@ export function renderPnBalancePanelFromBasket(
   }
   const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relTotal));
   const balancePn = givePn - fairMin;
-  const rawBalancePn = givePn - receivePn;
   const accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
@@ -583,8 +633,10 @@ export function renderPnBalancePanelFromBasket(
     + '</div>'
     + '</div>'
     + renderRelationDealModRowHtml(relTotal, 'trade')
-    + '<div class="da-pn-bal-meta">PW surowe (bez Relacji): oddajemy ' + givePn + ' · oni ' + receivePn
-    + ' · bilans ' + (rawBalancePn >= 0 ? '+' : '') + rawBalancePn + '</div>'
+    // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): usunięta osobna linia "PW surowe
+    // (bez Relacji) ... bilans +N" — pokazywała DRUGĄ, sprzeczną liczbę "bilans" tuż obok
+    // powyższego, prawdziwego Bilansu (Oni) @ Relacji, dokładnie ten wzorzec zamieszania,
+    // który zgłosił Maciej. Jedna liczba "Bilans" na panelu — ta @ Relacji, poniżej.
     + '<div class="da-pn-bal-meta">PW @ Rel ' + formatLiczbaPl(relTotal) + ': fair min ' + fairMin + ' · bilans '
     + (balancePn >= 0 ? '+' : '') + balancePn + '</div>'
     + '<div class="da-pn-bal-verdict ' + (accepted ? 'ok' : 'no') + '">' + esc(verdict) + '</div>'
@@ -615,8 +667,29 @@ export function renderPnBalancePanelForTreaty(
   const theirDisplay = partnerPw + basketReceivePn;
   const asymBalance = myDisplay - theirDisplay;
   const relOk = relRequired == null || relTotal >= relRequired;
-  const accepted = relOk && asymBalance >= 0;
-  const balancePn = asymBalance;
+  // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (N5, Evaluator FAIL c94de5c8): ten live-podgląd
+  // liczył WYŁĄCZNIE asymBalance (baza traktatu @ Relacji + koszyk) — pomijał, że
+  // treatyPnGate w silniku odrzuca DODATKOWO każdy koszyk z basketReceivePn>0, który sam
+  // z siebie nie przechodzi pnDealAcceptedByAi @ Relacji, NIEZALEŻNIE od tego, czy suma z
+  // bazą traktatu wychodzi na plus. Zmierzone (110 PW vs 50 PW @ Relacja 27,8): podgląd
+  // pokazywał "Bilans +2" (zielone), a realna bramka wymagała aż 180 PW — rozjazd 70 PW
+  // (39% progu), bo brakowało dokładnie tego sprawdzenia. `basketFairMin`/`basketFair` to
+  // TA SAMA matematyka co treatyPnGate (diplomacyFairGivePn + pnDealAcceptedByAi) — ta
+  // funkcja nadal nie ma dostępu do mnożnika chęci AI per-akcja (udokumentowany,
+  // mniejszy pozostały gap, patrz PYTANIA-OTWARTE.md), ale już nie pomija samą bramkę.
+  // EN: this live preview only summed the treaty-base-adjusted asymBalance — it ignored
+  // that the engine's treatyPnGate additionally rejects any basket with
+  // basketReceivePn>0 that fails pnDealAcceptedByAi @ Relation on its own, regardless of
+  // the treaty-base sum. Measured gap: preview showed a green "+2" while the real gate
+  // required up to 180 PW. `basketFairMin`/`basketFair` mirror treatyPnGate's exact math;
+  // the AI-willingness-multiplier gap remains a separate, smaller, documented residual.
+  const basketFairMin = basketReceivePn > 0
+    ? diplomacyFairGivePn(basketReceivePn, Math.min(100, relTotal))
+    : 0;
+  const basketFair = basketReceivePn <= 0
+    || pnDealAcceptedByAi(basketGivePn, basketReceivePn, relTotal);
+  const accepted = relOk && asymBalance >= 0 && basketFair;
+  const balancePn = basketFair ? asymBalance : (basketGivePn - basketFairMin);
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
@@ -643,18 +716,22 @@ export function renderPnBalancePanelForTreaty(
   // proposal system entirely.
   const hint = !relOk
     ? `Relacja ${formatLiczbaPl(relTotal)} — wym. ${formatLiczbaPl(relRequired!)}`
-    : (balancePn < 0
-      ? `Brakuje ${Math.abs(balancePn)} PW — zawrzyj osobną umowę`
-      : balancePn > 0
-        ? `Nadwyżka ${balancePn} PW`
-        : 'Równo — spełnia');
+    : !basketFair
+      ? `Brakuje ${Math.abs(balancePn)} PW w koszyku @ Relacji`
+      : (balancePn < 0
+        ? `Brakuje ${Math.abs(balancePn)} PW — zawrzyj osobną umowę`
+        : balancePn > 0
+          ? `Nadwyżka ${balancePn} PW`
+          : 'Równo — spełnia');
   const verdict = !relOk
     ? `Relacja ${formatLiczbaPl(relTotal)} — wymagane ≥ ${formatLiczbaPl(relRequired!)}`
-    : (balancePn < 0
-      ? `Zawrzyj osobną umowę na ${Math.abs(balancePn)} PW (Twoja strona słabsza przy tej Relacji)`
-      : balancePn > 0
-        ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
-        : treatyMetaLabel + ': Ty ' + playerPw + ' PW · Oni ' + partnerPw + ' PW — spełnione');
+    : !basketFair
+      ? `Oferta nieuczciwa dla partnera — poniżej wartości PW @ Relacji (masz ${basketGivePn} PW, potrzeba więcej wobec ${basketReceivePn} PW od partnera)`
+      : (balancePn < 0
+        ? `Zawrzyj osobną umowę na ${Math.abs(balancePn)} PW (Twoja strona słabsza przy tej Relacji)`
+        : balancePn > 0
+          ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
+          : treatyMetaLabel + ': Ty ' + playerPw + ' PW · Oni ' + partnerPw + ' PW — spełnione');
 
   const relNote = !relOk
     ? '<div class="da-pn-bal-meta warn">Relacja ' + formatLiczbaPl(relTotal)

@@ -7047,3 +7047,209 @@ ROBOCZA md5 `ab4ffc156f11fb6204355db7757b3dbf` · stempel `ROBOCZA · 92c5101d �
 |- Scalenie do `main`: **FALA 279 (`f9589690`) scalona osobno zaraz po tym deployu** (rytm „jedna fala do
    tyłu", `R-MERGE-MAIN-RYTM-Q1`). FALA 280 zostaje na gałęzi do testów, kwalifikuje się dopiero przy FALI 281.
 CZEKAM-NA: **sesja lokalna — pull na dysk właściciela** i meldunek „gotowe, testuj `ab4ffc15`".
+
+## [15:11 PL, 2026-08-14] SESJA CHMUROWA → SESJA LOKALNA — FALA 281 + FALA 282 (⛔ krytyczny fix), main scalony o jedną falę do tyłu
+
+Dwa deploye w krótkim odstępie, oba na wyraźne polecenie właściciela ("zrób deploy z tym co masz,
+a jak skończysz resztę, zrób ostatni").
+
+**FALA 281 (`7c92c364`, 12:40 UTC)** — drogi ruch/handel (×3/×5 + podłoga bruku), granice styk
+czytelność (2 rundy), reset ustawień okolicy po zmianie właściciela, nowa ikona Rudy cyny, bilans
+traktatu handlowego spójny z bramką akceptacji (2 rundy), usunięty wybór miasta przy handlu
+żywnością, wzmocniony test remisu oblężenia, ⚠️ atak z dystansu na mapie (Evaluator FAIL — AI bez
+parytetu przy ataku na miasto, capture zamiast attack na pustym mieście, teleport zwycięzcy do 6
+heksów — zdeployowane mimo FAIL na wyraźne polecenie właściciela, pytanie `P-BITWA-ATAK-DYSTANS-
+TELEPORT-Q1` czeka w `ZGLOSZENIA-CZEKAJACE-NA-LIMIT.md`).
+
+**FALA 282 (`d3b43ac6`, 13:11 UTC, ZASTĘPUJE 281) — ⛔ KRYTYCZNE:** naprawiony blackout mapy świata
+po wygranej bitwie (kamera mapy dryfowała pod nakładką bitwy — `camCtrl.update()` leciał
+bezwarunkowo, WASD/edge-pan kamery bitwy przesuwał kamerę mapy pod spodem; naprawa: rejestr
+`battleSceneOpen.ts` + bramka w `renderLoop`/`isWorldMapUnitMode`). Odtworzone i zweryfikowane w
+headless Chromium (próbkowanie koloru canvasu, 15 pomiarów przed/po, zero regresji). Do tego:
+produkcja konwerterów w liście budynków miasta (runda 2, funkcja domenowa w silniku zamiast
+tautologicznego testu) i naprawiony rozjazd HUD-u imperium vs silnik dla Odlewni żelaza/Wielkiej
+odlewni.
+
+⚠️ **Uwaga dla sesji lokalnej:** fix blackoutu, city-panel runda 2 i HUD-konwerter NIE mają jeszcze
+formalnego werdyktu Evaluatora — Maciej wstrzymał dispatch Evaluatorów z powodu limitu sesji
+(2026-08-14), wraca do tego po odnowie limitu w środę. Kod zweryfikowany osobiście przeze mnie
+(bramki + odczyt diffu) — solidny, ale to nie zastępuje niezależnej oceny. Pełna lista w
+`dyspozycje/ZGLOSZENIA-CZEKAJACE-NA-LIMIT.md` (nowa kategoria 6 raportu).
+
+**Scalenie do `main`: FALA 281 (`7c92c364`, deploy commit) scalona osobno zaraz po tym wpisie**
+(rytm „jedna fala do tyłu"). FALA 282 zostaje na gałęzi do testów, kwalifikuje się dopiero przy
+kolejnej fali.
+
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `d3b43ac6`".
+
+## [16:25 PL, 2026-08-14] Operator (sesja chmurowa) → obie sesje — P-BITWA-ATAK-DYSTANSOWY-MAPA-
+SWIATA-NIE-DZIALA-W-GRZE: root cause znaleziony, naprawione, commit `4dcb2f4f`
+
+Sprostowanie Macieja z żywego playtestu ("klik na odległego wroga nie oferuje ataku, tylko wymusza
+ruch obok") POTWIERDZONE jako realne, mimo że werdykt poprzedniego Evaluatora (`6bdf7967`) o
+poprawności `isTargetWithinAttackRange` był technicznie prawdziwy. Root cause: klik na WŁASNY stos
+>1 jednostki wybiera reprezentanta (`selectedId`) wg `unitAttackScore`=`meleeAttack` —
+jednostki dystansowe mają systematycznie niższy `meleeAttack` niż zwarciowe, więc w KAŻDYM stosie
+mieszanym reprezentantem (i atakującym przy kliku na wroga) zostaje jednostka zwarcia, gasząc
+zasięg łucznika w tym samym stosie. Naprawa: nowa `isTargetWithinStackAttackRange()` (sprawdza
+CAŁY stos, nie tylko reprezentanta) w 3 miejscach inicjacji ataku w `main.ts`. Test
+`atak-dystansowy-mapa-test.cjs` rozszerzony (65/0, było 51/68). Bramki: tsc 0, combat-test 6/6,
+map-attack-city-test 8/8, tech-tree-test 19/19, research-test 33/33. Pełny opis w
+`PYTANIA-OTWARTE.md` (sekcja tematu). Znalezisko przy okazji (ten sam mechanizm psuje też atak na
+MIASTO ze stosu mieszanego, `map-attack-city.ts:resolveAttacker`) zarejestrowane osobno jako
+`P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT`, świadomie NIE naprawione w tej turze (szerszy
+zakres, własny plik/testy).
+
+**Commit + push na gałąź sesji wykonane — BEZ deployu do ROBOCZA** (czeka na hasło `deploy` i na
+Evaluatora, jeszcze nie uruchomiony).
+
+CZEKAM-NA: Evaluator (Opus 5) na commit `4dcb2f4f`; ewentualnie dispatch subagenta na
+`P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT`.
+
+## [23:16 PL, 2026-08-14] SESJA CHMUROWA → SESJA LOKALNA — FALA 283, wszystkie tematy dnia zamknięte werdyktem Evaluatora
+
+**FALA 283 (`e0eb03a9`, 21:16 UTC), ZASTĘPUJE FALĘ 282.** Ostatni deploy dzisiejszej serii —
+temat `P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE` zamknięty w całości (2 rundy):
+przyczyna — klik na mieszany stos (zwarcie+dystans) wybierał "reprezentanta" po sile w zwarciu,
+więc łucznik w stosie z wojownikiem nigdy nie odblokowywał ataku z dystansu; runda 2 zamknęła
+lukę, którą runda 1 przypadkiem poszerzyła (atak przez mgłę wojny bez sprawdzenia widoczności).
+Obie rundy potwierdzone żywym kliknięciem myszy w przeglądarce, nie tylko programowo.
+
+**Wszystkie tematy z dzisiejszej serii ("wypchnijmy je") mają dziś werdykt Evaluatora:**
+regres produkcji państw-miast (zamknięty, brak regresji), city-panel konwertery runda 2
+(PASS-WITH-NOTES), HUD-konwerter (PASS-WITH-NOTES), blackout mapy — KRYTYCZNE (PASS-WITH-NOTES,
+już w FALI 282), atak dystansowy 2 rundy (PASS-WITH-NOTES, temat zamknięty).
+
+**Nowe znaleziska przy okazji, zarejestrowane, NIE dispatchowane (nie krytyczne):** gracz nigdy
+nie widzi ekranu podsumowania po bitwie 3D, atak na miasto nie sprawdza mgły, AI nie zna pojęcia
+mgły, dwa drobne wzmocnienia obronne.
+
+**Czeka na odpowiedź właściciela:** `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` (ruch zwycięzcy po bitwie
+z dystansu), `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1` punkty (b)/(c).
+
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `e0eb03a9`".
+
+## [14:13 PL, 2026-08-15] SESJA CHMUROWA → SESJA LOKALNA — FALA 284, trzy naprawy UI/rozkazów (md5 `68c7f238`)
+
+**FALA 284 (`68c7f238`, 12:13 UTC), ZASTĘPUJE FALĘ 283 (`e0eb03a9`).** VERIFY OK, `manifest match: OK`.
+Build z HEAD `97a61e7b` — 11 commitów od deployu FALI 283 (`118728a0`), 4 commity realnego kodu;
+7 plików pod `gra/` (`+1414/−24`), w `gra/src` tylko 3 (`main.ts`, `ui/sidePanelHud.ts`,
+`ui/hudTitleTooltip.ts`). **`gra/data` NIE ruszone · `gra/src/map/**` NIE ruszone.**
+
+**Co weszło (3 tematy, każdy z werdyktem Evaluatora PASS-WITH-NOTES):** (1) ikony (i) w panelu
+Imperium/Surowce i w Audiencji dyplomatycznej znów pokazują treść dymka (kontenery na
+`document.body` były poza `SCOPE_SELECTOR`); (2) panel HUD „WYDARZENIA" przestał połykać klik na
+mapę — runda 1 to naprawiła i zabrała scroll listy, Evaluator złapał, runda 2 wróciła scroll BEZ
+cofania naprawy; (3) rozkaz „marsz, potem atak" przeżywa odznaczenie jednostki — Escape i 34 inne
+miejsca w ciszy kasowały zakolejkowany atak (`P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1 = A`).
+
+**Bramki (10, exit 0):** `tsc` 0 błędów · `logic-test` 213/213 · `tech-tree` 19/0 · `research` 33/0 ·
+`unit-replace` 13/13 · `ai-founding-territory` 28/0 · nowe bramki tematów: `hud-tooltip-body-mounted-panels`
+8/0, `sidepanel-hud-deadzone` 32/0, `march-attack-queue-persist` 41/0 · `scout-explore-deselect-cycle` 34/0.
+`map-gen-regression`: **oba AC z `CLAUDE.md` zielone** — 0 rzek bez ujścia (2124/2124 tras,
+1235/1235 głównych, 0 fail) i determinizm A=B (`fdb5e82c`, zmierzony celowanym harnessem, bo główny
+przebieg ubity na 18/20 map sekcji sieci rzek). Progi czasowe AC czerwone (62 s/122 s/1120 s) — pomiar
+wydajności sandboksa, nie regresja (`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`). Fala nie rusza generatora
+(`gra/src/map/**` = 0 plików), więc regresja mapgenu jest tu strukturalnie niemożliwa.
+
+**Scalenie do `main`:** zgodnie z rytmem „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 284
+zostaje na gałęzi do testów; scalona zostaje **FALA 283** (`118728a0`) — osobny wpis niżej.
+
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `68c7f238`".
+
+## [15:55 PL, 2026-08-15] SESJA CHMUROWA → integrator lokalny — FALA 283 scalona do `main`
+
+Zgodnie z rytmem „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`), po deployu FALI 284 scaliłem do
+`main` **FALĘ 283** — do konkretnego commitu deployu `118728a0`, NIE do czubka gałęzi sesji.
+Czysty **fast-forward** (`af366f13` → `118728a0`), zero konfliktów, zero merge-commitów, brak
+force-push. Wykonane w tymczasowym `git worktree` z `origin/main`, usuniętym po wypchnięciu.
+
+**Bramki na `main` po scaleniu (wszystkie exit 0, `tsc` przez symlinkowany `node_modules`,
+`npx tsc --version` = 5.9.3 — wymóg `C-029`):** `tsc --noEmit` 0 błędów · `logic-test` 213/213 ·
+`tech-tree` exit 0 · `research` exit 0 · `unit-replace` exit 0.
+
+`main` stoi teraz na `118728a0` (było `af366f13`/FALA 282). **FALA 284 (`8f53c800`, md5 `68c7f238`)
+zostaje na gałęzi sesji do testów** — kwalifikuje się do scalenia dopiero gdy powstanie FALA 285.
+CZEKAM-NA: nic w tej sprawie — otwarte zostaje CZEKAM-NA z wpisu o FALI 284 (pull na dysk właściciela).
+
+## [12:02 PL, 2026-08-16] SESJA CHMUROWA → SESJA LOKALNA — FALA 285, ⛔ PILNA poprawka realnego buga z FALI 284 (md5 `97b3b12a`)
+
+**FALA 285 (`97b3b12a`, 10:02 UTC), ZASTĘPUJE FALĘ 284 (`68c7f238`).** VERIFY OK, `manifest match: OK`.
+Build z HEAD `597972be` — 8 commitów od deployu FALI 284 (`8f53c800`), 2 commity realnego kodu;
+7 plików pod `gra/`, w `gra/src` tylko 3 (`main.ts`, `ui/hudTitleTooltip.ts`, `ui/unitActionBarHtml.ts`).
+**`gra/data` NIE ruszone · `gra/src/map/**` NIE ruszone.**
+
+⛔ **NAJWAŻNIEJSZE: ta fala naprawia REALNY BUG, który gracz ma już w ROBOCZA FALA 284.** Przycisk
+„Anuluj atak"/„Zatrzymaj" **nigdy fizycznie nie renderował się w DOM** — renderer
+`unitActionBarHtml.ts` nie znał id `march-stop`, więc obietnica z Przyczyny B (FALA 284) była martwa
+przez cały czas życia tamtej fali. Zmierzone porównaniem dwóch bundli, nie odczytem kodu: w bundlu
+FALI 284 klasa `uc-act-text` **0 trafień**, w FALI 285 **2** (`march-stop` 2 → 5). Drugi temat
+(`.civ-unit-panel` w `SCOPE_SELECTOR`) to przygotowanie na przyszłość — panel [H] jest dziś martwym
+kodem, bez widocznego efektu w grze. Oba tematy: Evaluator **PASS-WITH-NOTES**.
+
+**Bramki (8, exit 0):** `tsc` 0 błędów (TS 5.9.3) · `logic-test` 213/213 · `tech-tree` 19/0 ·
+`research` 33/0 · `unit-replace` 13/13 · `ai-founding-territory` 28/0 · `combat` 6/6 ·
+`hud-tooltip-body-mounted-panels` 16/0 · `march-attack-queue-persist` 55/0. Build 824 moduły.
+13 znanych czerwonych bramek pre-istniejących — **wszystkie dokładnie na punkcie odniesienia, zero
+wzrostu**. `map-gen-regression`: **oba AC z `CLAUDE.md` zielone, zmierzone ŚWIEŻO w tej fali** — 0 rzek
+bez ujścia (2124/2124 tras, 1235/1235 głównych, 0 fail, pełne 40 map) i determinizm A=B (`fdb5e82c`);
+pełny przebieg utknął po ~13 min na benchmarku mapy „duża" i został świadomie zastąpiony dwoma
+celowanymi harnessami będącymi wiernymi wycinkami tego samego pliku testu (różnica: pominięte trzy
+benchmarki czasowe — pomiar wydajności sandboksa, `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`).
+
+**Scalenie do `main`:** zgodnie z rytmem „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 285
+zostaje na gałęzi do testów; scalona zostaje **FALA 284** (`8f53c800`) — osobny wpis niżej.
+
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `97b3b12a`".
+
+## [12:17 PL, 2026-08-16] SESJA CHMUROWA → integrator lokalny — FALA 284 scalona do `main`
+
+Zgodnie z rytmem „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`), po deployu FALI 285 scaliłem do
+`main` **FALĘ 284** — do konkretnego commitu deployu `8f53c800`, NIE do czubka gałęzi sesji.
+Czysty **fast-forward** (`118728a0` → `8f53c800`), zero konfliktów, zero merge-commitów, brak
+force-push. Wykonane w tymczasowym `git worktree` z `origin/main`, usuniętym po wypchnięciu.
+
+**Bramki na `main` po scaleniu (wszystkie exit 0, `tsc` przez symlinkowany `node_modules`,
+`npx tsc --version` = 5.9.3 — wymóg `C-029`):** `tsc --noEmit` 0 błędów · `logic-test` 213/213 ·
+`tech-tree` 19/0 · `research` ALL GREEN · `unit-replace` exit 0 · `ai-founding-territory` 28/0.
+
+`main` stoi teraz na `8f53c800` (było `118728a0`/FALA 283). **FALA 285 (`25104155`, md5 `97b3b12a`)
+zostaje na gałęzi sesji do testów** — kwalifikuje się do scalenia dopiero gdy powstanie FALA 286.
+
+⚠️ **Obserwacja do sprawdzenia przez właściciela (nie działanie tej sesji):** worktree
+`.claude/worktrees/agent-a6506cdef6b020241` (praca w toku nad `.civ-side-ctx-dock`, wg zlecenia
+niescommitowana) **nie istnieje dziś na dysku ani w `git worktree list`**, i nie ma dla niego gałęzi
+`zapas/`. Był już nieobecny, zanim ta sesja cokolwiek zapisała (pierwszy objaw: `getcwd` zwracał błąd
+dla tej ścieżki); deploy go nie dotykał żadną komendą. Jeśli ta praca była realnie w toku — trzeba ją
+odtworzyć, bo na dysku jej nie ma.
+CZEKAM-NA: nic w tej sprawie — otwarte zostaje CZEKAM-NA z wpisu o FALI 285 (pull na dysk właściciela).
+
+## [13:30 PL, 2026-08-16] SESJA CHMUROWA → SESJA LOKALNA — deploy FALA 286 (md5 `49594c1e`)
+
+**FALA 286 (`49594c1e`, 11:30 UTC), ZASTĘPUJE FALĘ 285 (`97b3b12a`).** `VERIFY OK`, `manifest match: OK`.
+Build z HEAD `8cdf6664` — 8 commitów od deployu FALI 285 (`25104155`). **`gra/data` NIE ruszone ·
+`gra/src/map/**` NIE ruszone** (zweryfikowane `git diff --name-only 25104155..HEAD` — pusto), więc
+`map-gen-regression` świadomie pominięty: regresja generatora strukturalnie niemożliwa (`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`).
+
+**Pięć tematów, wszystkie Evaluator PASS-WITH-NOTES:** (1) akcja „Zdejmij fortyfikację ze wszystkich"
+wreszcie osiągalna dla gracza (brak w `COMPACT_ACTION_ORDER`); (2) nowa bramka kompletności renderera
+akcji — od razu wyłapała kolejną martwą akcję `siege-hold`, naprawioną; (3) przewijanie kółkiem myszy
+w lewym doku `.civ-side-ctx-dock` (ten sam wzorzec co naprawa `.civ-side-panel` z FALI 284, martwa
+strefa nienaruszona); (4) usunięta osierocona reguła CSS `.unit-ic-medallion`; (5) 2 rundy poprawek
+jakości samej bramki (fałszywe negatywy regexa, przeciek id z adnotacji typu).
+
+**Bramki (7, exit 0):** `tsc` 0 błędów · `unit-action-bar-completeness` 31/0 (NOWA) ·
+`unfortify-all-action-bar` 16/0 · `march-attack-queue-persist` 55/0 · `sidepanel-hud-deadzone` 43/0 ·
+`hud-tooltip-body-mounted-panels` 16/0 · `unit-replace` 13/13. Build 824 moduły, 16,82 s, 37,16 MB.
+Dowód wejścia do bundla (porównanie z bundlem FALI 285): `unfortify-all` 4→5, `siege-hold` 1→3,
+`sp-ctx-scroll` 0→2, `unit-ic-medallion` 1→0.
+
+**Scalenie do `main`:** zgodnie z „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) FALA 286 zostaje na
+gałęzi do testów; do scalenia kwalifikuje się teraz **FALA 285** (`25104155`) — osobny krok orkiestratora.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `49594c1e`".
+
+## [12:15 PL, 2026-08-16] Sesja chmurowa → main — scalenie FALA 285 (jedna fala do tyłu)
+FALA 285 (`25104155`) scalona do `main` fast-forward (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 286). `origin/main`: `8f53c800` → `25104155`. Bramka `tsc --noEmit` na scalonym `main` — 0
+błędów. FALA 286 (`3ea531c6`) zostaje na gałęzi sesji do testów, nie scalona.
+CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpis wyżej).

@@ -109,7 +109,6 @@ export interface BasketItem {
   id: string;
   ilosc?: number;
   hexKey?: string;
-  cityId?: string;
 }
 
 export function diploPairKey(a: number, b: number): string {

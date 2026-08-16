@@ -1,6 +1,71 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-13 ~14:30** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-15 ~13:25** · Projekt: Civ „The Game"
+
+> **Handoff sesji 2026-08-14/15 (FALA 283+284, batch „wypchnijmy je" + marsz-potem-atak +
+> tooltipy):** ROBOCZA **AKTUALNA `68c7f238`** (FALA 284, branch
+> `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, czubek `2e78efa4`). `main` doganiany o FALĘ 283
+> (fast-forward `118728a0`) — FALA 284 świadomie NIESCALONA, zostaje do testów wg rytmu „jedna
+> fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`), scali się dopiero przy FALI 285.
+>
+> **FALA 283 (wieczór 2026-08-14, deploy `eb4c022d`→`118728a0`):** cały batch „wypchnijmy je"
+> zamknięty — `P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE` (2 rundy: stos mieszany
+> gasił zasięg ataku dystansowego, potem fix rundy 1 poszerzył lukę mgły — obie naprawione),
+> `P-CITYPANEL-BUDYNKI-BRAK-PRODUKCJI-W-LISCIE`, `P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE`,
+> `P-CS-PRODUKCJA-JEDNOSTEK-REGRES-USTAWIENIA-Q1` (zamknięty bez regresji), wszystkie
+> PASS-WITH-NOTES lub potwierdzone bez regresji.
+>
+> **FALA 284 (2026-08-15, deploy `8f53c800`→`68c7f238`), trzy tematy, wszystkie PASS-WITH-NOTES:**
+> 1. **Tooltipy ikon (i) bez treści** (`P-NEWGAME-KREATOR-TOOLTIP-INFO-NIE-DZIALA` runda 2,
+>    commit `ab8c180d`) — panel Imperium/Surowce i Audiencja dyplomatyczna montowane na
+>    `document.body` były poza `SCOPE_SELECTOR` w `hudTitleTooltip.ts`, więc kursor zmieniał
+>    się w pytajnik (czysty CSS) ale JS-owy dymek nigdy się nie uruchamiał — dopisano brakujące
+>    kontenery. **Znalezisko Evaluatora, NIE naprawione:** `.civ-unit-panel` ma tę samą
+>    przyczynę, wciąż poza scope (`P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE`).
+> 2. **Marsz-potem-atak, Przyczyna A: martwa strefa panelu HUD** (`P-BITWA-MARSZ-POTEM-ATAK-
+>    NIE-KOLEJKUJE`, 2 rundy, commity `d8c3bc78`+`e975cbc9`) — `.civ-side-panel` („WYDARZENIA")
+>    połykał klik na canvas w pustej strefie; runda 1 to naprawiła, ale zabrała przewijanie
+>    listy (Evaluator złapał FAIL), runda 2 wróciła scroll na wewnętrzny wrapper `.sp-scroll`
+>    bez cofania fixu rundy 1. **Znalezisko Evaluatora, NIE naprawione:** ten sam wzorzec
+>    pre-istniejący w `.civ-side-ctx-dock` (`P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY`).
+> 3. **Marsz-potem-atak, Przyczyna B: rozkaz ataku ginął przy odznaczeniu** (commit `e4193407`,
+>    decyzja właściciela `P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE-Q1 = A`) — klik na dystansowego
+>    wroga poprawnie kolejkował marsz-z-atakiem, ale Escape i 34 inne miejsca w ciszy kasowały
+>    ten plan; naprawione `clearPlannedMarch(unitId, force=false)` — domyślnie NIE kasuje wpisu
+>    z ustawionym `attackUnitId`. **Znalezisko Evaluatora, NIE naprawione:** `commitBesiege`
+>    (rozpoczęcie oblężenia) nie dostał `force=true` jak analogiczne rozkazy Ufortyfikuj/Czuwaj
+>    (`P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU`).
+>
+> **Wzorzec sesji:** dwa niezależne tematy zgłoszone przez właściciela z żywej gry
+> („nie mogę zaatakować z daleka") wymagały korekty błędnej interpretacji orkiestratora w
+> trakcie — pierwsza ABC-hipoteza (`P-BITWA-ATAK-DYSTANS-TELEPORT-Q1`) była nietrafiona,
+> właściciel jawnie sprostował dwukrotnie zanim ustalono właściwy temat
+> (`P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE`). Żywe testy w headless Chromium (nie samo
+> czytanie kodu) rozstrzygnęły obie Przyczyny A/B — czytanie kodu sugerowało że mechanizm
+> marsz-z-atakiem już działa, dopiero żywy klik+Escape ujawnił realną przyczynę.
+>
+> **Trzy `map-gen-regression-test.cjs` w tej sesji nie doszły do końca w oknie deployu**
+> (ubite po ~40-70 min, zawsze w sekcji „sieć rzek 20 map" — pre-istniejący, znany limit
+> `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`, NIE regresja tej sesji: żadna z trzech napraw nie
+> dotknęła `gra/src/map/**` ani `gra/data`). Determinizm zweryfikowany osobnym, celowanym
+> harnessem przy deployu FALI 284 (`hash A=fdb5e82c B=fdb5e82c`, PASS).
+>
+> **Otwarte, zarejestrowane, DO DISPATCHU (niekrytyczne, nie pilne):**
+> `P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE`, `P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY`,
+> `P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU` (wymaga krótkiego ABC),
+> `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA`, `P-AI-BRAK-POJECIA-MGLY`,
+> `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE`, `P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM`.
+> **Czeka na odpowiedź właściciela:** `P-BITWA-ATAK-DYSTANS-TELEPORT-Q1` (czy zwycięzca ataku
+> z dystansu ma się teleportować na heks celu), `P-NEWGAME-KREATOR-TOOLTIP-INFO-Q1b/c` —
+> **UWAGA: (b) i (c) już odpowiedziane 2026-08-15** („dotyczy wszystkich" / „przytrzymuję,
+> pojawia się pytajnik bez treści") — to właśnie doprowadziło do naprawy tooltipów w FALI 284,
+> temat zamknięty, nie pytać ponownie.
+>
+> **CZEKAM-NA (z kanału):** sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj
+> `68c7f238`". Pełne szczegóły: `dyspozycje/PYTANIA-OTWARTE.md` sekcje
+> `P-NEWGAME-KREATOR-TOOLTIP-INFO-NIE-DZIALA` i `P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE`,
+> `dyspozycje/WERSJE.md` (FALA 283/284), `dyspozycje/_handoff/KANAL-PRACA.md` (wpisy na końcu
+> pliku — konwencja od FALI 277 to dopisywać NA KOŃCU, nie na górze).
 
 > **Handoff sesji 2026-08-13 popołudnie (FALA 273+274, dokończenie maratonu + nowa zasada
 > AutoBot 3×Evaluator):** ROBOCZA **AKTUALNA `81ae686d`** (FALA 274, branch

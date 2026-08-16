@@ -1,5 +1,5 @@
 # PLAYBOOK — Civ „The Game"
-Ostatnia aktualizacja: 2026-08-10 · sesja nr 1 (w protokole AutoBot)
+Ostatnia aktualizacja: 2026-08-15 · sesja nr 1 (w protokole AutoBot)
 
 > Playbook zasiany lekcjami z sesji roboczych 2026-07-21…07-26 (praca nad grą przed wdrożeniem
 > protokołu). Zasady i wpisy w rejestrze pochodzą z rzeczywistych zdarzeń, nie z teorii.
@@ -114,6 +114,53 @@ Ostatnia aktualizacja: 2026-08-10 · sesja nr 1 (w protokole AutoBot)
 <!-- Najnowsze na górze. Ten dziennik jest ważniejszy od samych zasad —
      pokazuje, DLACZEGO zasady wyglądają tak, a nie inaczej.
      Gdy miary jeszcze nie ma, wpisz: „Skutek: oczekuje — patrz Sprawy otwarte”. -->
+### 2026-08-15 — FALA 284: 3 tematy, 5 rund Operator→Evaluator, jeden werdykt FAIL→runda 2, worktree-staleness recydywa ×4 (znana C-0xx, nie nowy incydent), zero nowych zasad wymaganych
+
+- Zrobiono: batch trzech tematów zgłoszonych przez właściciela z żywej gry — tooltipy ikon (i)
+  bez treści (runda 2, `SCOPE_SELECTOR` allowlist w `hudTitleTooltip.ts` nie obejmował
+  paneli montowanych na `document.body`), i dwuczęściowy `P-BITWA-MARSZ-POTEM-ATAK-NIE-
+  KOLEJKUJE` (Przyczyna A: panel HUD połykał klik na canvas w pustej strefie; Przyczyna B:
+  Escape/34 inne miejsca kasowały zakolejkowany marsz-z-atakiem). Wszystkie trzy scalone i
+  zdeployowane (FALA 284, `68c7f238`), FALA 283 scalona do `main`. Każdy temat przeszedł
+  pełną pętlę Operator(Sonnet 5, worktree)→orkiestrator (weryfikacja niezależna bramek PRZED
+  dispatchem Evaluatora, nie tylko po)→Evaluator(Opus 5, worktree).
+- Incydent proceduralny (skorygowany w locie, nie po fakcie): orkiestrator dwukrotnie źle
+  zinterpretował zgłoszenie właściciela („nie mogę zaatakować z daleka") jako pytanie o
+  teleport po wygranej walce dystansowej (`P-BITWA-ATAK-DYSTANS-TELEPORT-Q1`) — właściciel
+  sprostował dwukrotnie, wprost („my się kompletnie nie rozumiemy"), zanim ustalono właściwy
+  temat. Lekcja: żywy cytat właściciela („nie mogę z daleka wskazać celu, żeby tam
+  zaatakował") trzeba czytać dosłownie jako brakującą funkcję UI (marsz-a-potem-atak jednym
+  klikiem), nie od razu mapować na najbliższy wcześniej zamknięty temat o podobnych słowach
+  kluczowych („dystans", „atak").
+- Werdykt FAIL (`d8c3bc78`, Przyczyna A runda 1) — jedyny w tej sesji: Evaluator zbudował
+  OSOBNY bundel ze stanu sprzed naprawy i porównał kontrfaktycznie z naprawionym — złapał
+  realną regresję (`pointer-events:none` na całym `.civ-side-panel` zabiło scroll myszą/pasek
+  przewijania listy wydarzeń), której własna mutacja Operatora (inna niż mutacja Evaluatora)
+  by nie złapała, bo dotyczyła zachowania POZA zakresem testu Operatora, nie samej logiki
+  zmiany. Runda 2 naprawiła (wrapper `.sp-scroll` z osobnym `pointer-events:auto`), Evaluator
+  potwierdził PASS-WITH-NOTES tą samą metodą (bundel A/B).
+- **Worktree startujący od `main` zamiast czubka gałęzi sesji wystąpił 4× w tej sesji** (znany,
+  udokumentowany mechanizm z `civ-autobot/SKILL.md` §5, NIE nowy incydent) — za każdym razem
+  wykryty przez orkiestratora PRZED scaleniem (`git log --oneline -3` w worktree agenta),
+  naprawiony cherry-pickiem konkretnego commita zamiast ślepego `git diff`/merge całej gałęzi.
+  Zero utraconej pracy, ale realny koszt: 2 z 4 przypadków to Evaluatorzy, którzy przez to
+  najpierw zmierzyli STARY stan (`tsc` z niekompatybilnym globalnym kompilatorem, brak
+  `node_modules`) zanim się przełączyli — czysto koszt czasu, nie błędnych wniosków (złapane
+  zanim werdykt padł).
+- Skutek (zmierzony, nie z pamięci): 3/3 tematy PASS-WITH-NOTES, 0 regresji w zdeployowanym
+  kodzie (FAIL rundy 1 Przyczyny A NIE trafił do deployu — złapany i naprawiony przed
+  scaleniem do gałęzi sesji), 4 nowe znaleziska Evaluatorów zarejestrowane i świadomie
+  odłożone (`P-TOOLTIP-CIV-UNIT-PANEL-BRAK-W-SCOPE`, `P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY`,
+  `P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU`), `map-gen-regression-test.cjs` 3×
+  nie ukończony w oknie deployu (pre-istniejący, znany limit `P-SANDBOX-MAPGEN-WYDAJNOSC-
+  LIMITY`, zero zmian w `gra/src/map/**` tej sesji — determinizm zweryfikowany osobnym
+  celowanym harnessem zamiast pełnego przebiegu).
+- Wniosek: żadna nowa zasada C-0xx nie była potrzebna — wszystkie napotkane problemy (worktree
+  staleness, potrzeba kontrfaktycznego A/B pomiaru przy regresjach CSS/UI, dyscyplina C-025
+  przy rejestrowaniu znalezisk Evaluatora zamiast naprawiania przy okazji) już miały pokrycie
+  w istniejących regułach — sesja jest dowodem, że reguły działają, kiedy się je faktycznie
+  stosuje, nie powodem do ich mnożenia.
+
 ### 2026-08-10 — sesja całonocna: cztery incydenty w worktree + jeden proceduralny, zero utraty FUNKCJONALNOŚCI (ale realna utrata pokrycia testowego w jednym przypadku), pięć nowych zasad (C-033…C-037) + C-038
 
 - Zrobiono: sesja całonocna na wyraźne polecenie właściciela („postaraj się samodzielnie

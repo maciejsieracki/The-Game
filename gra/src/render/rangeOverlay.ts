@@ -241,101 +241,237 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
   yOffset: 0.055,
 };
 
-/** Obrys granicy państwa — szeroki pas (world units), nie cienka linia WebGL 1px. */
+/**
+ * Obrys granicy państwa — szeroki pas (world units), nie cienka linia WebGL 1px.
+ *
+ * R-GRANICE-STYK-CZYTELNOSC-Q1 = B (Maciej, 2026-08-14): ta sama liczba jest DZIŚ także
+ * WSUNIĘCIEM pasa tożsamości do wewnątrz terytorium. Wcześniej pas szedł na ZEWNĄTRZ, czyli
+ * na ziemię sąsiada — a że sąsiadujące terytoria dzielą tę SAMĄ polilinię obwodu (heksy
+ * stykają się krawędzią, szczeliny nie ma), pas jednej cywilizacji lądował dokładnie tam,
+ * gdzie pas drugiej. To NIE był z-fighting (materiały mają `depthWrite: false`), tylko
+ * deterministyczne przesłanianie zależne od sortowania przezroczystości, czyli od położenia
+ * kamery: kolor tożsamościowy sąsiada potrafił zniknąć na styku całkowicie. Dziś CAŁY pas
+ * leży po własnej stronie — tożsamość [0 … 0,45] w głąb od linii granicy, relacja
+ * [0,45 … 0,675]. Szerokości i proporcja 2:1 bez zmian; zmieniła się wyłącznie STRONA.
+ * Wsunięcia nie są osobnymi stałymi — `buildTerritoryBorderGroup` wyprowadza je z szerokości,
+ * które dostał, więc nie ma drugiego źródła prawdy do rozjechania się.
+ * / EN: this same number is now ALSO the identity band's inward inset. The band used to grow
+ * OUTWARD, i.e. onto the neighbour's land; since adjacent territories share the very same
+ * boundary polyline, one civ's band landed exactly where the other's did. Not z-fighting
+ * (materials use `depthWrite: false`) but deterministic, camera-dependent occlusion that could
+ * hide a neighbour's identity colour completely. The whole belt now sits on its own side:
+ * identity [0 … 0.45] inward, relation [0.45 … 0.675]. Widths and the 2:1 ratio unchanged.
+ *
+ * RUNDA 2: samo odwrócenie strony (`4de64fa8`) nie wystarczyło — o tym, GDZIE jest „wewnątrz",
+ * decydowało porównanie ze środkiem pętli, poprawne wyłącznie dla kształtów wypukłych, więc na
+ * realnych (niewypukłych) terytoriach część pasa i tak lądowała u sąsiada, a przy enklawie —
+ * w enklawie. Szczegóły przy `segmentOutwardNormal` (skąd bierze się kierunek),
+ * `insetBorderLoop` (co się dzieje we wklęsłej kieszeni) i `appendBandBetweenLoops` (dlaczego
+ * pas jest wstęgą między dwiema wsuniętymi pętlami, a nie pasem ze ściętymi narożami).
+ * / EN: round 2 — flipping the side was not enough; "inside" was decided by a centroid test
+ * valid only for convex shapes. See segmentOutwardNormal, insetBorderLoop, appendBandBetweenLoops.
+ */
 export const TERRITORY_BORDER_BAND_WIDTH = 0.45;
 /**
- * R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (Maciej, 2026-08-14): DRUGA obwódka, rysowana
- * do WEWNĄTRZ tego samego obwodu, „o połowę cieńsza" od zewnętrznej — stąd dokładnie
- * połowa `TERRITORY_BORDER_BAND_WIDTH`, a nie osobna liczba do rozjechania się.
- * / EN: SECOND band, drawn INWARD along the same loop, "half as thin" as the outer one —
- * hence exactly half of TERRITORY_BORDER_BAND_WIDTH, not a separate drifting constant.
+ * R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1 (Maciej, 2026-08-14): DRUGA obwódka, „o połowę
+ * cieńsza" od pasa tożsamości — stąd dokładnie połowa `TERRITORY_BORDER_BAND_WIDTH`,
+ * a nie osobna liczba do rozjechania się.
+ * / EN: SECOND band, "half as thin" as the identity one — hence exactly half of
+ * TERRITORY_BORDER_BAND_WIDTH, not a separate drifting constant.
  */
 export const TERRITORY_RELATION_BAND_WIDTH = TERRITORY_BORDER_BAND_WIDTH / 2;
 /** Jednolita przezroczystość pasa granicy terytorium. */
 export const TERRITORY_BORDER_OPACITY = 0.7;
 export const TERRITORY_BORDER_Y_OFFSET = 0.042;
-/** Podniesienie pasa zewnętrznego nad wspólną płaszczyznę obwodu. / EN: outer band y bump. */
+/** Podniesienie pasa tożsamości nad wspólną płaszczyznę obwodu. / EN: identity band y bump. */
 export const TERRITORY_BORDER_Y_BUMP = 0.004;
 /**
- * Pas wewnętrzny wyżej od zewnętrznego — oba stykają się wzdłuż tej samej polilinii
- * obwodu, więc bez tej różnicy krawędź styku migotałaby (z-fighting).
- * / EN: inner band sits above the outer one; they meet along the same loop polyline, so
- * without this delta the shared edge would z-fight.
+ * Pas relacji wyżej od pasa tożsamości — oba stykają się wzdłuż wspólnej linii (0,45 w głąb
+ * terytorium), a Three.js sortuje przezroczystość po głębokości środka bryły otaczającej,
+ * więc ta różnica przechyla sortowanie w stronę powtarzalnej kolejności rysowania.
+ * / EN: relation band sits above the identity band; they meet along a shared line, and
+ * Three.js sorts transparency by bounding-sphere depth, so this delta pins the draw order.
  */
 export const TERRITORY_RELATION_Y_BUMP = 0.008;
 
+/**
+ * Kierunek „na zewnątrz terytorium" dla segmentu obwodu A→B — wyłącznie z KIERUNKU OBIEGU
+ * pętli, bez porównywania z czymkolwiek.
+ *
+ * Dlaczego stała normalna, a nie porównanie ze środkiem pętli (tak było do `4de64fa8`
+ * włącznie): heurystyka „normalna ma wskazywać od centroidu" jest poprawna tylko dla
+ * kształtów WYPUKŁYCH. Realne terytoria wypukłe prawie nigdy nie są — na 44 tys. segmentów
+ * losowych spójnych klastrów 7–40 heksów centroid odwracał znak na ~20 % krawędzi, a że
+ * `insetBorderLoop` używa tej samej funkcji, pas wsuwał się tam w złą stronę i lądował
+ * u sąsiada. Kontrakt orientacji zapewnia `collectTerritoryBoundaryEdges`: każda krawędź
+ * obwodu jest zapisywana kanonicznie jako róg (dir+1) → (dir+2) swojego heksa, a
+ * `traceTerritoryBoundaryLoops` łączy je „głowa do ogona", więc CAŁA pętla ma jeden
+ * kierunek obiegu i terytorium leży zawsze po tej samej jego stronie.
+ *
+ * Dlaczego NIE znak pola powierzchni (shoelace): pętla wokół dziury/enklawy ma pole
+ * przeciwnego znaku niż pętla zewnętrzna (zmierzone: −18,187 vs +2,598 dla pierścienia
+ * 6 heksów), ale „na zewnątrz terytorium" znaczy dla niej „w głąb dziury" — czyli obie
+ * pętle potrzebują DOKŁADNIE TEJ SAMEJ reguły. Wybieranie strony po znaku pola odwróciłoby
+ * dziury i tylko przeniosło błąd. Zweryfikowane próbkowaniem membership: 0 błędów na
+ * 44 tys. segmentów, w tym pierścienie z dziurą, kształty wielowyspowe i styki rogiem.
+ * / EN: outward direction taken solely from the loop's winding — no centroid, no signed area.
+ * The centroid heuristic only holds for convex shapes and flipped ~20 % of edges on real
+ * territories. Signed area is wrong too: hole loops wind the opposite way yet need the very
+ * same rule, because "outside the territory" means "into the hole" for them. Orientation is
+ * guaranteed upstream by collectTerritoryBoundaryEdges' canonical edge direction.
+ */
 function segmentOutwardNormal(
   ax: number,
   az: number,
   bx: number,
   bz: number,
-  loop: BorderLoopPoint[],
 ): { nx: number; nz: number } {
   const dx = bx - ax;
   const dz = bz - az;
   const len = Math.hypot(dx, dz) || 1;
-  // Prawa normalna do kierunku A→B (obwód CCW → na zewnątrz terytorium).
-  let nx = dz / len;
-  let nz = -dx / len;
-  // Korekta: jeśli normalna wskazuje do środka pętli, odwróć.
-  let cx = 0;
-  let cz = 0;
-  for (const p of loop) {
-    cx += p.x;
-    cz += p.z;
+  return { nx: -dz / len, nz: dx / len };
+}
+
+/** Odległość punktu od CAŁEGO obwodu terytorium (wszystkie pętle, także wokół enklaw). */
+function distanceToBoundary(px: number, pz: number, loops: BorderLoopPoint[][]): number {
+  let best = Infinity;
+  for (const loop of loops) {
+    const n = loop.length;
+    for (let i = 0; i < n; i++) {
+      const a = loop[i]!;
+      const b = loop[(i + 1) % n]!;
+      const dx = b.x - a.x;
+      const dz = b.z - a.z;
+      const l2 = dx * dx + dz * dz;
+      let t = l2 > 0 ? ((px - a.x) * dx + (pz - a.z) * dz) / l2 : 0;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      const ex = px - (a.x + dx * t);
+      const ez = pz - (a.z + dz * t);
+      const d2 = ex * ex + ez * ez;
+      if (d2 < best) best = d2;
+    }
   }
-  cx /= loop.length;
-  cz /= loop.length;
-  const midx = (ax + bx) * 0.5;
-  const midz = (az + bz) * 0.5;
-  if ((cx - midx) * nx + (cz - midz) * nz > 0) {
-    nx = -nx;
-    nz = -nz;
-  }
-  return { nx, nz };
+  return Math.sqrt(best);
 }
 
 /**
- * Pas wzdłuż zamkniętej pętli obwodu — ciągły kontur, joiny w wierzchołkach.
- * `bandWidth` UJEMNY odwraca stronę: pas idzie DO WEWNĄTRZ terytorium (obwódka relacji
- * dyplomatycznej). Trójkąty odwracają wtedy nawinięcie, co jest nieszkodliwe — materiał
- * pasa jest `THREE.DoubleSide`.
- * / EN: NEGATIVE `bandWidth` flips the side: the band runs INWARD (diplomatic relation
- * band). Triangle winding flips, which is harmless — the band material is DoubleSide.
+ * Przesuwa pętlę obwodu DO WEWNĄTRZ terytorium o `inset` (world units) — mitra dokładna,
+ * więc każdy nowy wierzchołek leży w odległości równo `inset` od OBU sąsiednich krawędzi
+ * oryginału (przesunięta pętla jest do niego równoległa). Uśrednianie normalnych „przez 2"
+ * (tak budował zewnętrzną krawędź pasa dawny `appendBorderBandLoop`) dałoby tu 0,75·inset
+ * w narożach. Mianownik `1 + n_prev·n_next` wynosi dla siatki heksów zawsze 1,5 (normalne
+ * skręcają o ±60°); ogranicznik chroni tylko przed teoretycznym zwrotem o 180°, gdzie mitra
+ * ucieka do nieskończoności. `allLoops` to WSZYSTKIE pętle obwodu tego terytorium (razem
+ * z pętlami wokół enklaw) — potrzebne do przycięcia opisanego niżej.
+ * / EN: shifts the boundary loop INWARD by `inset` using an exact miter, so every new vertex
+ * keeps distance exactly `inset` from BOTH adjacent original edges. `allLoops` carries every
+ * boundary loop of the territory (enclave loops included) for the clamp described below.
  */
-function appendBorderBandLoop(
+function insetBorderLoop(
   loop: BorderLoopPoint[],
-  bandWidth: number,
+  inset: number,
+  allLoops: BorderLoopPoint[][],
+): BorderLoopPoint[] {
+  if (inset === 0) return loop;
+  const n = loop.length;
+  const out: BorderLoopPoint[] = new Array(n);
+  const EPS = 1e-4;
+  for (let i = 0; i < n; i++) {
+    const prev = loop[(i + n - 1) % n]!;
+    const cur = loop[i]!;
+    const next = loop[(i + 1) % n]!;
+    const a = segmentOutwardNormal(prev.x, prev.z, cur.x, cur.z);
+    const b = segmentOutwardNormal(cur.x, cur.z, next.x, next.z);
+    const denom = Math.max(1 + (a.nx * b.nx + a.nz * b.nz), 0.5);
+    // Kierunek dwusiecznej w głąb terytorium (niejednostkowy — długość niesie skalę mitry).
+    // / EN: inward bisector direction (non-unit — its length carries the miter scale).
+    const bx = -(a.nx + b.nx) / denom;
+    const bz = -(a.nz + b.nz) / denom;
+    let k = inset;
+    // Mitra zakłada, że po wsunięciu wierzchołek nadal jest oddalony od obwodu o `inset`.
+    // W WKLĘSŁYM narożu wąskiego terytorium to nieprawda: dwa takie wierzchołki jadą ku sobie
+    // i przeskakują przez siebie (dla terytorium 1×2 każdy o 0,779 j przy dzielącej ich
+    // odległości 1,0 j), a wtedy pas relacji wchodzi w strefę pasa tożsamości i przykrywa
+    // kolor cywilizacji (nota N4 Evaluatora do `4de64fa8`). Dlatego wsunięcie jest przycinane
+    // do rzeczywistej odległości od obwodu: gdy pełna mitra już do niej nie sięga, bierzemy
+    // największe wsunięcie, które trzyma dystans `inset`, a jeśli nawet ono nie istnieje
+    // (kieszeń płytsza niż `inset`) — wsunięcie o największym możliwym dystansie, czyli punkt
+    // na grzbiecie kieszeni. Kształty bez wklęsłych naroży nie płacą za to nic poza jednym
+    // sprawdzeniem: pełna mitra jest tam dokładna i warunek przechodzi od razu.
+    // / EN: the miter assumes the inset vertex still keeps distance `inset` from the boundary.
+    // In a concave corner of a narrow territory it does not: two such vertices travel toward
+    // each other and cross over, letting the relation band invade the identity band's zone.
+    // So the inset is clamped to the real distance-to-boundary — the largest shift that still
+    // keeps `inset`, or the ridge point of the pocket when no such shift exists.
+    if (distanceToBoundary(cur.x + bx * k, cur.z + bz * k, allLoops) < inset - EPS) {
+      const STEPS = 24;
+      let bestT = 0;
+      let bestD = -Infinity;
+      let keepT = -1;
+      for (let s = 1; s <= STEPS; s++) {
+        const t = (inset * s) / STEPS;
+        const d = distanceToBoundary(cur.x + bx * t, cur.z + bz * t, allLoops);
+        if (d > bestD) { bestD = d; bestT = t; }
+        if (d >= inset - EPS) keepT = t;
+      }
+      if (keepT >= 0) {
+        // Doprecyzowanie bisekcją w ostatnim przedziale, w którym dystans jeszcze się trzymał.
+        // / EN: refine by bisection inside the last interval that still held the distance.
+        let lo = keepT;
+        let hi = Math.min(keepT + inset / STEPS, inset);
+        for (let s = 0; s < 12; s++) {
+          const mid = (lo + hi) / 2;
+          if (distanceToBoundary(cur.x + bx * mid, cur.z + bz * mid, allLoops) >= inset - EPS) lo = mid;
+          else hi = mid;
+        }
+        k = lo;
+      } else {
+        k = bestT;
+      }
+    }
+    out[i] = { x: cur.x + bx * k, z: cur.z + bz * k };
+  }
+  return out;
+}
+
+/**
+ * Wstęga między dwiema pętlami o tej samej liczbie wierzchołków — `outer` (bliżej linii
+ * granicy) i `inner` (głębiej w terytorium). Obie powstają z tego samego obwodu przez
+ * `insetBorderLoop`, więc wierzchołek `i` jednej odpowiada wierzchołkowi `i` drugiej i quady
+ * sąsiadują pełnymi krawędziami — kontur jest ciągły, bez klinów do domykania.
+ *
+ * Zastąpiło ścięcie naroży (bevel: `(nPrev + nNext) · 0,5 · bandWidth`) plus trójkąty
+ * domykające. Bevel sięgał w narożu tylko `0,75 · bandWidth` prostopadle, co po decyzji
+ * `R-GRANICE-STYK-CZYTELNOSC-Q1` = B (pas w głąb własnego terytorium) wypadło od strony
+ * LINII GRANICY i zostawiało tam goły korytarz terenu (nota N2 Evaluatora do `4de64fa8`:
+ * średnio 0,0938 j, maks. 0,1505 j szczeliny). Wcześniej to samo ścięcie leżało po stronie
+ * sąsiada i było nieszkodliwe. Trójkąty domykające dotykały linii granicy tylko trzema
+ * izolowanymi wierzchołkami, więc asercje mierzące minimum po WIERZCHOŁKACH przechodziły,
+ * mimo że POWIERZCHNIA pasa linii nie dotykała.
+ * / EN: ribbon between two loops derived from the same boundary by insetBorderLoop, so vertex
+ * i matches vertex i and quads share full edges — no corner wedges left to patch. Replaces the
+ * bevelled outer edge (which only reached 0.75·bandWidth at corners) plus its closing
+ * triangles; after the band moved inward that bevel sat on the border-line side and left a
+ * bare corridor of terrain there.
+ */
+function appendBandBetweenLoops(
+  outer: BorderLoopPoint[],
+  inner: BorderLoopPoint[],
   y: number,
   positions: number[],
   indices: number[],
   viRef: { v: number },
 ): void {
-  const n = loop.length;
-  if (n < 3) return;
-  if (bandWidth === 0) return;
-
-  const outers: { x: number; z: number }[] = new Array(n);
-
-  for (let i = 0; i < n; i++) {
-    const prev = loop[(i + n - 1) % n]!;
-    const cur = loop[i]!;
-    const next = loop[(i + 1) % n]!;
-    const nPrev = segmentOutwardNormal(prev.x, prev.z, cur.x, cur.z, loop);
-    const nNext = segmentOutwardNormal(cur.x, cur.z, next.x, next.z, loop);
-    outers[i] = {
-      x: cur.x + (nPrev.nx + nNext.nx) * 0.5 * bandWidth,
-      z: cur.z + (nPrev.nz + nNext.nz) * 0.5 * bandWidth,
-    };
-  }
+  const n = outer.length;
+  if (n < 3 || inner.length !== n) return;
 
   for (let i = 0; i < n; i++) {
     const j = (i + 1) % n;
-    const a0 = loop[i]!;
-    const a1 = loop[j]!;
-    const b0 = outers[i]!;
-    const b1 = outers[j]!;
-    let vi = viRef.v;
+    const a0 = outer[i]!;
+    const a1 = outer[j]!;
+    const b1 = inner[j]!;
+    const b0 = inner[i]!;
+    const vi = viRef.v;
     positions.push(
       a0.x, y, a0.z,
       a1.x, y, a1.z,
@@ -344,24 +480,6 @@ function appendBorderBandLoop(
     );
     indices.push(vi, vi + 1, vi + 2, vi, vi + 2, vi + 3);
     viRef.v += 4;
-  }
-
-  for (let i = 0; i < n; i++) {
-    const cur = loop[i]!;
-    const prev = loop[(i + n - 1) % n]!;
-    const next = loop[(i + 1) % n]!;
-    const nPrev = segmentOutwardNormal(prev.x, prev.z, cur.x, cur.z, loop);
-    const nNext = segmentOutwardNormal(cur.x, cur.z, next.x, next.z, loop);
-    const oPrev = { x: cur.x + nPrev.nx * bandWidth, z: cur.z + nPrev.nz * bandWidth };
-    const oNext = { x: cur.x + nNext.nx * bandWidth, z: cur.z + nNext.nz * bandWidth };
-    let vi = viRef.v;
-    positions.push(
-      oPrev.x, y, oPrev.z,
-      oNext.x, y, oNext.z,
-      cur.x, y, cur.z,
-    );
-    indices.push(vi, vi + 1, vi + 2);
-    viRef.v += 3;
   }
 }
 
@@ -376,8 +494,13 @@ function buildTerritoryBorderMesh(
   bandWidth: number,
   flatY: number,
   opacity: number,
-  /** +1 = pas na zewnątrz obwodu (tożsamość civ), -1 = do wewnątrz (relacja). / EN: +1 outward, -1 inward. */
-  side: 1 | -1 = 1,
+  /**
+   * O ile pętla obwodu jest wsunięta DO WEWNĄTRZ, zanim wyrośnie na niej pas — pas zajmuje
+   * więc [inset − bandWidth … inset] licząc w głąb terytorium od linii granicy.
+   * / EN: how far the loop is inset before the band grows on it — the band occupies
+   * [inset − bandWidth … inset] measured inward from the border line.
+   */
+  inset: number,
   /** Podniesienie nad wspólną płaszczyznę obwodu. / EN: lift above the shared loop plane. */
   yBump: number = TERRITORY_BORDER_Y_BUMP,
 ): THREE.Mesh | null {
@@ -398,7 +521,15 @@ function buildTerritoryBorderMesh(
   const viRef = { v: 0 };
 
   for (const loop of loops) {
-    appendBorderBandLoop(loop, bandWidth * side, y, positions, indices, viRef);
+    // Pas zajmuje [inset − bandWidth … inset] w głąb od linii granicy: obie jego krawędzie to
+    // ta sama pętla obwodu, wsunięta o te dwie głębokości.
+    // / EN: the band spans [inset − bandWidth … inset] inward — both edges are the same
+    // boundary loop, inset by those two depths.
+    appendBandBetweenLoops(
+      insetBorderLoop(loop, inset - bandWidth, loops),
+      insetBorderLoop(loop, inset, loops),
+      y, positions, indices, viRef,
+    );
   }
 
   if (positions.length === 0) return null;
@@ -419,14 +550,20 @@ function buildTerritoryBorderMesh(
 }
 
 /**
- * Obrys granicy terytorium per właściciel: pas ZEWNĘTRZNY w kolorze cywilizacji
- * (`colorFn`) plus — gdy podano `relationColorFn` — pas WEWNĘTRZNY, o połowę węższy,
- * w kolorze relacji dyplomatycznej gracz↔właściciel (R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1).
- * Oba pasy leżą na tej samej polilinii obwodu z `computeTerritoryBorderLoops` — geometria
- * konturu jest liczona RAZ na pas, ale z tych samych pętli, więc nie mogą się rozjechać.
- * / EN: territory border per owner: OUTER band in the civ color plus — when
- * `relationColorFn` is given — an INNER, half-width band in the player↔owner diplomatic
- * relation color. Both bands ride the same boundary loops, so they cannot drift apart.
+ * Obrys granicy terytorium per właściciel: pas TOŻSAMOŚCI w kolorze cywilizacji (`colorFn`)
+ * przy samej linii granicy, plus — gdy podano `relationColorFn` — pas RELACJI, o połowę
+ * węższy, tuż za nim (R-GRANICE-RELACJA-DYPLOMATYCZNA-Q1). Kolejność czytania od granicy
+ * w głąb (tożsamość → relacja) jest ta sama co przed R-GRANICE-STYK-CZYTELNOSC-Q1 = B;
+ * zmieniła się wyłącznie STRONA: cały pas leży teraz W ŚRODKU własnego terytorium, więc
+ * na styku dwóch cywilizacji żadna nie rysuje po ziemi drugiej i obie są widoczne
+ * niezależnie od kąta kamery. Oba pasy wyrastają z tych samych pętli
+ * `computeTerritoryBorderLoops`, tylko wsuniętych na różną głębokość — nie mogą się rozjechać.
+ * / EN: per-owner territory border: IDENTITY band in the civ color right at the border line,
+ * then — when `relationColorFn` is given — the half-width RELATION band just behind it. The
+ * outside-in reading order is unchanged; only the SIDE changed (R-GRANICE-STYK-CZYTELNOSC-Q1
+ * = B): the whole belt now sits INSIDE its own territory, so at a two-civ contact neither
+ * paints over the other's land and both stay visible from any camera angle. Both bands grow
+ * from the same boundary loops, only inset by different amounts, so they cannot drift apart.
  */
 export function buildTerritoryBorderGroup(
   map: GameMap,
@@ -451,7 +588,7 @@ export function buildTerritoryBorderGroup(
       bandWidth,
       flatBorderY,
       opacity,
-      1,
+      bandWidth,
       TERRITORY_BORDER_Y_BUMP,
     );
     if (border) {
@@ -466,7 +603,7 @@ export function buildTerritoryBorderGroup(
       relationBandWidth,
       flatBorderY,
       opacity,
-      -1,
+      bandWidth + relationBandWidth,
       TERRITORY_RELATION_Y_BUMP,
     );
     if (relation) {

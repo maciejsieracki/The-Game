@@ -636,7 +636,8 @@ const RIVER_HEX_MOVE_COST = 1;
  * If hex.nakladka === Nakladka.Las, add forestExtra (+1 by default) to any
  * finite base cost.  Infinity stays Infinity regardless of overlay.
  * hex.ulepszenie === Droga → koszt ÷ {@link ROAD_MOVE_SPEED_MULT} (3× szybciej).
- * hex.ulepszenie === DrogaBrukowana → bonus_ruch z JSON (domyślnie −2 od kosztu).
+ * hex.ulepszenie === DrogaBrukowana → koszt ÷ ROAD_BRUK_MOVE_SPEED_MULT (5× szybciej,
+ * R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14; wcześniej −bonus_ruch z JSON, domyślnie −2).
  */
 export function terrainMoveCost(hex: Hex): number {
   if (hex.rzeka?.obecna === true) {

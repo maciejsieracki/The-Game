@@ -217,12 +217,27 @@ console.log('\n2.4 reset trybu wystepuje W TEJ SAMEJ funkcji co juz istniejace w
 
 console.log('\n2.5 mutacja kontrolna -- fizyczne usuniecie linii resetu trybu zawala TYLKO 2.1, dowod ze asercja nie jest tautologiczna');
 {
+  // P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE (2026-08-14): od naprawy tego tematu main.ts
+  // ma DWA legalne miejsca z substringiem "c.okolicaTryb = DEFAULT_OKOLICA_TRYB;" --
+  // tu (seedCityOwnerDefaults) i w restoreGameFromSave (load, patrz
+  // okolica-load-reconcile-test.cjs SEKCJA 4) -- sprawdzenie musi wiec byc
+  // PRZESKALOWANE do fnBody tej konkretnej funkcji, nie do calego pliku, inaczej mutacja
+  // w seedCityOwnerDefaults jest maskowana przez NIEZWIAZANY, legalny wpis gdzie indziej.
+  // / EN: since that fix landed, main.ts has TWO legitimate spots containing the
+  // "c.okolicaTryb = DEFAULT_OKOLICA_TRYB;" substring -- here (seedCityOwnerDefaults) and
+  // in restoreGameFromSave (load path, see okolica-load-reconcile-test.cjs SECTION 4) --
+  // so the check must be SCOPED to this function's body, not the whole file, otherwise a
+  // mutation here is masked by the other, unrelated, legitimate occurrence.
+  const fnStartMarker = 'function seedCityOwnerDefaults(c: City): void {';
   const target = 'c.okolicaTryb = DEFAULT_OKOLICA_TRYB;\n      delete c.okolicaReczne;\n';
   const occurrences = MAIN_TS_SRC.split(target).length - 1;
   eq(occurrences, 1, 'punkt mutacji (obie linie razem, w tej kolejnosci) wystepuje dokladnie raz w main.ts');
   const mutated = MAIN_TS_SRC.replace(target, '');
-  const stillMatches = /c\.okolicaTryb\s*=\s*DEFAULT_OKOLICA_TRYB;/.test(mutated);
-  ok(!stillMatches, 'PO usunieciu linii resetu: wzorzec 2.1 faktycznie przestaje pasowac (mutacja wykryta) -- asercja nie jest tautologiczna');
+  const mutatedFnStart = mutated.indexOf(fnStartMarker);
+  const mutatedFnEnd = mutatedFnStart >= 0 ? mutated.indexOf('\n    function ', mutatedFnStart + fnStartMarker.length) : -1;
+  const mutatedFnBody = mutatedFnStart >= 0 && mutatedFnEnd > mutatedFnStart ? mutated.slice(mutatedFnStart, mutatedFnEnd) : '';
+  const stillMatches = /c\.okolicaTryb\s*=\s*DEFAULT_OKOLICA_TRYB;/.test(mutatedFnBody);
+  ok(!stillMatches, 'PO usunieciu linii resetu Z CIALA seedCityOwnerDefaults: wzorzec 2.1 faktycznie przestaje pasowac W TEJ FUNKCJI (mutacja wykryta) -- asercja nie jest tautologiczna');
 }
 
 console.log('\n2.6 territory-work.ts (reconcileAllWorkedTiles/reconcileWorkedTilesForOwner) NIE czyta/pisze okolicaTryb -- kolejnosc reset-vs-reconcile w seedCityOwnerDefaults nie ma znaczenia funkcjonalnego');

@@ -392,8 +392,12 @@ check(
 );
 
 check(
-  "galaz enabling: clearPlannedMarch(u.id) na poczatku bloku zostaje nietkniete (C-025 zakres)",
-  /clearPlannedMarch\(u\.id\);/.test(enablingBody),
+  // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE (2026-08-15): clearPlannedMarch() dostalo drugi
+  // parametr `force` (domyslnie false = chroni zakolejkowany marsz-z-atakiem). "Zwiedzaj" to
+  // jawny nowy rozkaz gracza ktory ma nadpisac dowolny poprzedni plan marszu, wiec ta galaz
+  // MUSI wolac z force=true -- regex zaktualizowany celowo, to NIE regresja C-025.
+  "galaz enabling: clearPlannedMarch(u.id, true) na poczatku bloku (force=true, P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE)",
+  /clearPlannedMarch\(u\.id,\s*true\);/.test(enablingBody),
 );
 
 console.log('');

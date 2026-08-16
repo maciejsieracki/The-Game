@@ -130,29 +130,91 @@ function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
   const unitCardMaxRight = `${SIDE_PANEL_LEFT_PX + MINIMAP_EDGE}px`;
   const css = `
-.civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:305;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:auto;
+.civ-side-panel{position:fixed;top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM}px;right:${HUD_EDGE_PX}px;z-index:305;width:${HUD_CONTEXT_PANEL_W_PX}px;pointer-events:none;
+  /* P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE Przyczyna A runda 1 (2026-08-15): kontener jest
+     wysoki na cały pion mapy (top..bottom), ale karty wydarzeń wypełniają go tylko częściowo —
+     reszta to przezroczyste tło pokazujące canvas. pointer-events:auto na CAŁYM prostokącie
+     połykało klik gracza w tę pustą przestrzeń, mimo że wizualnie widać było mapę. Kontener
+     zostaje pointer-events:none na stałe; scroll (runda 2, patrz .sp-scroll niżej) i realna,
+     widoczna treść (karty/pasek narzędzi) dostają auto z powrotem osobno.
+     EN: container spans the full panel height but event cards only fill part of it — the rest
+     is transparent background showing the canvas through. pointer-events:auto on the WHOLE
+     rectangle swallowed clicks landing in that empty space. Container stays pointer-events:none
+     permanently; scroll (round 2, see .sp-scroll below) and real, visible content (cards/
+     toolbar) get auto back separately. */
+  ${CIV_BRAND_SCOPE_VARS}
+  font:13px var(--civ-font-ui);}
+html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM_ZOOM}px;right:${HUD_ZOOM_EDGE_PX}px;}
+.civ-side-panel .sp-scroll{
+  /* Przyczyna A runda 2 (Evaluator FAIL na d8c3bc78, 2026-08-15): overflow-y:auto/scrollbar-
+     gutter przeniesione z ZEWNĘTRZNEGO kontenera (.civ-side-panel, pointer-events:none) na TEN
+     wewnętrzny wrapper (pointer-events:auto). height:max-content dopasowuje wrapper do realnej
+     wysokości treści — gdy wydarzeń mało, wrapper jest niski i pusty „ogon" kontenera POD nim
+     zostaje bez elementu z pointer-events:auto, więc klik nadal przechodzi do canvasu (fix
+     rundy 1 nienaruszony). max-height:100% ogranicza wrapper do wysokości kontenera — gdy
+     wydarzeń dużo (>~11, collectTurnEvents() w main.ts bez limitu), wrapper wypełnia cały pion
+     i STAJE SIĘ scrollowalny (kółko myszy + pasek przewijania łapalne), bo to on, nie kontener,
+     niesie pointer-events:auto.
+     EN: overflow-y:auto/scrollbar-gutter moved from the OUTER container (.civ-side-panel,
+     pointer-events:none) onto this inner wrapper (pointer-events:auto). height:max-content
+     sizes the wrapper to real content height — few events -> short wrapper, the empty "tail"
+     below it carries no pointer-events:auto element, so clicks still pass through to the canvas
+     (round-1 fix intact). max-height:100% caps the wrapper at the container's height — many
+     events (>~11, collectTurnEvents() in main.ts has no cap) -> wrapper fills the full column
+     and BECOMES scrollable (wheel + draggable scrollbar work), because it — not the container —
+     carries pointer-events:auto. */
+  pointer-events:auto;height:max-content;max-height:100%;
   overflow-y:auto;overflow-x:hidden;
   overscroll-behavior:contain;scrollbar-gutter:stable;
-  ${CIV_BRAND_SCOPE_VARS}
-  display:flex;flex-direction:column;gap:8px;font:13px var(--civ-font-ui);}
-html.civ-ui-zoom-active .civ-side-panel{top:${EVENTS_PANEL_TOP}px;bottom:${EVENTS_PANEL_BOTTOM_ZOOM}px;right:${HUD_ZOOM_EDGE_PX}px;}
+  display:flex;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;}
 .civ-side-ctx-dock{position:fixed;left:${SIDE_PANEL_LEFT};top:${unitCardSafeTopCss()};bottom:${unitCardDockBottomCss()};
   --civ-unit-card-max-right:${unitCardMaxRight};
   z-index:316;width:${unitCardDockWidthCss()};pointer-events:none;
-  overflow-y:auto;overflow-x:hidden;
-  overscroll-behavior:contain;scrollbar-gutter:stable;display:none;
+  display:none;
   transition:width .18s ease;
   ${CIV_BRAND_SCOPE_VARS}
   font:13px var(--civ-font-ui);}
 .civ-side-ctx-dock.open{display:block;pointer-events:none;}
 .civ-side-ctx-dock.sp-ctx-expanded{width:${unitCardDockExpandedWidthCss()};}
+.civ-side-ctx-dock .sp-ctx-scroll{
+  /* P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (2026-08-16): ten sam wzorzec naprawy co
+     .civ-side-panel .sp-scroll (Przyczyna A runda 2, commit e975cbc9) — overflow-y:auto/
+     scrollbar-gutter przeniesione z ZEWNĘTRZNEGO kontenera (.civ-side-ctx-dock,
+     pointer-events:none, bez zmian) na TEN wewnętrzny wrapper (pointer-events:auto). Recon
+     potwierdził realny (nie hipotetyczny) trigger przepełnienia: karta armii
+     (buildUnitStackCardsHtml w hexContextTooltip.ts, zasilana przez playerStackAt() w main.ts,
+     BEZ limitu liczby jednostek w stosie) renderuje jeden wiersz .sp-unit-stack-card na każdą
+     jednostkę na heksie — przy kilkunastu+ jednostkach w jednej armii karta łatwo przekracza
+     wysokość doku (top..bottom liczone z unitCardSafeTopCss()/unitCardDockBottomCss(), typowo
+     kilkaset px). height:max-content dopasowuje wrapper do realnej wysokości treści (mała karta
+     -> krótki wrapper, pusty „ogon" doku pod nim nadal przepuszcza klik do canvasu — fix rundy 1
+     Przyczyny A pozostaje nienaruszony wzorcem). max-height:100% ogranicza wrapper do wysokości
+     doku -> rozbudowany stos jednostek wypełnia cały pion i STAJE SIĘ scrollowalny (kółko myszy
+     + pasek przewijania łapalne), bo to wrapper, nie kontener, niesie pointer-events:auto.
+     EN: same fix pattern as .civ-side-panel .sp-scroll (Przyczyna A round 2, commit e975cbc9) —
+     overflow-y:auto/scrollbar-gutter moved from the OUTER container (.civ-side-ctx-dock,
+     pointer-events:none, unchanged) onto this inner wrapper (pointer-events:auto). Recon
+     confirmed a real (not hypothetical) overflow trigger: the army stack card
+     (buildUnitStackCardsHtml in hexContextTooltip.ts, fed by playerStackAt() in main.ts, with NO
+     cap on unit count) renders one .sp-unit-stack-card row per unit on the hex — a dozen-plus
+     stacked units easily exceeds the dock's height (top..bottom from unitCardSafeTopCss()/
+     unitCardDockBottomCss(), typically a few hundred px). height:max-content sizes the wrapper to
+     real content height (short card -> short wrapper, the empty "tail" below it still passes
+     clicks to the canvas — round-1 fix stays intact by the same pattern). max-height:100% caps
+     the wrapper at the dock's height -> a large stack fills the full column and BECOMES
+     scrollable (wheel + draggable scrollbar work), since the wrapper — not the container —
+     carries pointer-events:auto. */
+  pointer-events:auto;height:max-content;max-height:100%;
+  overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;scrollbar-gutter:stable;
+  width:100%;box-sizing:border-box;}
 html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   top:${unitCardSafeTopCss()};
   bottom:calc(${unitCardDockBottomCss(true)} + (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px);}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
 .civ-side-panel .sp-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;
-  padding:0 4px 2px;margin-bottom:2px;}
+  padding:0 4px 2px;margin-bottom:2px;pointer-events:auto;}
 .civ-side-panel .sp-toolbar-chip{font:10px var(--civ-font-ui);letter-spacing:.06em;
   color:var(--civ-text-muted);background:rgba(20,26,38,.7);border:1px solid rgba(232,216,138,.22);
   border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
@@ -164,7 +226,7 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
 .civ-side-panel .sp-toolbar-dismiss-all:hover{border-color:var(--tg-red);color:var(--tg-red);}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;
-  cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s;pointer-events:auto;
   background:linear-gradient(90deg,rgba(200,64,64,.12),rgba(20,26,38,.92));
   border:1px solid rgba(232,216,138,.25);border-left:3px solid var(--tg-red);
   box-shadow:0 6px 16px rgba(0,0,0,.5);}
@@ -192,7 +254,7 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   background:linear-gradient(180deg,rgba(24,30,42,.98),rgba(10,12,18,.96));
   border:1px solid rgba(212,175,90,.38);box-shadow:0 6px 18px rgba(0,0,0,.45);}
 .civ-side-panel .sp-ctx-card{margin-bottom:10px;}
-.civ-side-ctx-dock .sp-ctx-card.sp-ctx-interactive,.civ-side-panel .sp-ctx-card.sp-ctx-interactive{pointer-events:auto;}
+.civ-side-ctx-dock .sp-ctx-card.sp-ctx-interactive,.civ-side-panel .sp-ctx-card{pointer-events:auto;}
 .civ-side-ctx-dock .sp-ctx-head,.civ-side-panel .sp-ctx-head{font-size:10px;color:var(--civ-text-muted,#a09880);text-transform:uppercase;
   letter-spacing:.22em;margin-bottom:8px;text-align:right;}
 .civ-side-ctx-dock .sp-ctx-nav,.civ-side-panel .sp-ctx-nav{display:flex;gap:8px;margin-bottom:10px;}
@@ -295,8 +357,34 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   const el = document.createElement('div');
   el.className = 'civ-side-panel';
 
+  // Przyczyna A runda 2: wrapper scrollowalny/klikalny, dziecko trwałe .civ-side-panel —
+  // render() wypełnia TEN element (scrollEl.innerHTML), nie el.innerHTML, żeby el (kontener,
+  // pointer-events:none) nigdy nie stracił tego jedynego dziecka. el.querySelector(All) dalej
+  // działa bez zmian, bo przeszukuje CAŁE poddrzewo, niezależnie od tej dodatkowej warstwy.
+  // EN: persistent scrollable/clickable wrapper child of .civ-side-panel — render() fills THIS
+  // element (scrollEl.innerHTML), not el.innerHTML, so el (the pointer-events:none container)
+  // never loses its one child. el.querySelector(All) below keeps working unchanged since it
+  // searches the whole subtree regardless of this extra layer.
+  const scrollEl = document.createElement('div');
+  scrollEl.className = 'sp-scroll';
+  el.appendChild(scrollEl);
+
   const ctxEl = document.createElement('div');
   ctxEl.className = 'civ-side-ctx-dock';
+
+  // P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY (2026-08-16): ten sam wzorzec co scrollEl wyżej —
+  // wrapper scrollowalny/klikalny, dziecko trwałe .civ-side-ctx-dock. render() wypełnia TEN
+  // element (ctxScrollEl.innerHTML), nie ctxEl.innerHTML, żeby ctxEl (kontener,
+  // pointer-events:none) nigdy nie stracił tego jedynego dziecka. ctxEl.querySelector(All) dalej
+  // działa bez zmian, bo przeszukuje CAŁE poddrzewo, niezależnie od tej dodatkowej warstwy.
+  // EN: same pattern as scrollEl above — persistent scrollable/clickable wrapper child of
+  // .civ-side-ctx-dock. render() fills THIS element (ctxScrollEl.innerHTML), not ctxEl.innerHTML,
+  // so ctxEl (the pointer-events:none container) never loses its one child.
+  // ctxEl.querySelector(All) keeps working unchanged since it searches the whole subtree
+  // regardless of this extra layer.
+  const ctxScrollEl = document.createElement('div');
+  ctxScrollEl.className = 'sp-ctx-scroll';
+  ctxEl.appendChild(ctxScrollEl);
 
   // R-WYDARZENIA-FILTR-KATEGORII: stan chipa 🌍 „Inne cyw." — zmienna domknięcia,
   // przeżywa update()/tury (nie jest resetowana przy każdym render()).
@@ -348,7 +436,11 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
 
     if (unitCtx !== null && !hideUnitDock) {
       const canCycle = config.canContextCycleUnit?.() ?? false;
-      ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded, canCycle);
+      // P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY: wypełniamy ctxScrollEl (wrapper pointer-events:auto),
+      // NIE ctxEl (kontener pointer-events:none) — patrz komentarz przy deklaracji ctxScrollEl.
+      // EN: fill ctxScrollEl (pointer-events:auto wrapper), NOT ctxEl (pointer-events:none
+      // container) — see comment at the ctxScrollEl declaration.
+      ctxScrollEl.innerHTML = buildContextCardHtml(unitCtx, expanded, canCycle);
       ctxEl.classList.add('open');
       if (expanded && unitCtx.expandable) {
         ctxEl.classList.add('sp-ctx-expanded');
@@ -358,7 +450,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       const card = ctxEl.querySelector('.sp-ctx-card');
       if (card) bindContextInteractions(ctxEl, unitCtx);
     } else {
-      ctxEl.innerHTML = '';
+      ctxScrollEl.innerHTML = '';
       ctxEl.classList.remove('open', 'sp-ctx-expanded');
     }
 
@@ -403,7 +495,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       }
     }
 
-    el.innerHTML = html;
+    scrollEl.innerHTML = html;
 
     if (hexCtx !== null) {
       const card = el.querySelector('.sp-ctx-card');

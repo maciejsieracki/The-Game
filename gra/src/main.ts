@@ -719,6 +719,7 @@ import { isLivestockAllowed, isLamaDepositVisibleForCiv } from './game/livestock
 import { ikonaIdToBronzeCiv, type BronzeCiv } from './render/bronzeCity';
 import { buildSettlementModel } from './render/settlementModel';
 import { BattleScene } from './battle/battleScene';
+import { isBattleSceneOpen } from './battle/battleSceneOpen';
 import { buildTestArmies, ensureSiegeMachines as ensureSiegeMachinesPreset } from './battle/testBattle';
 import type { PresetName } from './battle/testBattle';
 import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene';
@@ -733,7 +734,7 @@ import { UI_PARAMS } from './ui/uiParams';
 import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
 import { loadAmbiencePrefs, saveAmbiencePrefs } from './audio/ambiencePrefs';
 import { loadSfxPrefs, saveSfxPrefs } from './audio/sfxPrefs';
-import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier } from './game/combat';
+import { resolveCombat, combatUnitFromDef, terrainDefenseMultiplier, unitMapAttackRangeHex } from './game/combat';
 import type { CombatUnit, TerrainEntry } from './game/combat';
 import terrainCombatData from '../data/terrain-combat.json';
 import miastoParams from '../data/miasto-params.json';
@@ -1234,6 +1235,7 @@ import {
   DEFAULT_CONVERTER_RECIPES,
   loadThroughput,
   converterThroughputForEra,
+  converterBuildingIdForRecipe,
   type RawConverterParamsJson,
 } from './game/converters';
 
@@ -2768,10 +2770,24 @@ async function boot(): Promise<void> {
           rawForConverters, recipe.throughputParamKey, _menuDifficulty, recipe.throughputFallback,
         );
         const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
+        // P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE (Maciej 2026-08-14): dopasowanie
+        // budynek->receptura MUSI iść przez `converterBuildingIdForRecipe` (recipe.buildingId
+        // gdy ustawione, inaczej recipe.id), NIE przez recipe.id wprost -- dla receptur typu
+        // 'odlewnia_zelaza__zelazo' (buildingId: 'odlewnia_zelaza') `recipe.id !== buildingId`,
+        // więc `builtIds.includes(recipe.id)` NIGDY nie trafiał i HUD zwracał {} zamiast
+        // realnej produkcji Odlewni żelaza/Wielkiej odlewni. Ten sam wzorzec dopasowania co
+        // silnik tury (turn-economy.ts::advanceCityEconomy, `runtimeBuiltIds.includes(
+        // converterBuildingIdForRecipe(r))`) -- zero rozjazdu HUD vs silnik.
+        // / EN: building<->recipe matching MUST go through `converterBuildingIdForRecipe`
+        // (recipe.buildingId when set, else recipe.id), not recipe.id directly -- for recipes
+        // like 'odlewnia_zelaza__zelazo' (buildingId: 'odlewnia_zelaza') recipe.id never equals
+        // the built building id, so the old check never matched and the HUD returned {} instead
+        // of real Iron Foundry/Great Foundry output. Mirrors the turn engine's pattern
+        // (turn-economy.ts::advanceCityEconomy) so the HUD never drifts from the engine.
         for (const c of cities) {
           if (c.ownerId !== ownerId) continue;
           const builtIds = cityBuilt.get(c.id) ?? [];
-          if (!builtIds.includes(recipe.id)) continue;
+          if (!builtIds.includes(converterBuildingIdForRecipe(recipe))) continue;
           out[recipe.output] = (out[recipe.output] ?? 0) + throughput * recipe.outputAmount;
         }
       }
@@ -4868,6 +4884,13 @@ async function boot(): Promise<void> {
     function isWorldMapUnitMode(): boolean {
       if (isCityPanelOpen()) return false;
       if (isPreBattleOpen()) return false;
+      // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: `isPreBattleOpen()` łapie WYŁĄCZNIE okienko
+      // pre-bitwy; po kliknięciu „BITWA" jest ono zamykane (hidePreBattle) i przez całą
+      // scenę bitwy ta funkcja zwracała `true`, mimo że mapa świata jest przykryta
+      // nakładką — wbrew intencji opisanej przy `edgePanActive` (cameraControllerOpts).
+      // / EN: isPreBattleOpen() only covers the pre-battle dialog; it is hidden the moment
+      // the 3D battle starts, so the world map wrongly counted as interactive underneath.
+      if (isBattleSceneOpen()) return false;
       if (isPostBattleSummaryOpen()) return false;
       if (isArmyMergePanelOpen()) return false;
       if (isArmyMergePickPanelOpen()) return false;
@@ -5182,8 +5205,18 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
-    function clearPlayerUnitSelection(): void {
-      if (selectedId !== null) clearPlannedMarch(selectedId);
+    /**
+     * P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: domyślnie (force=false, prawie wszystkie 35
+     * wywołania w tym pliku) odznaczenie NIE kasuje świadomie zakolejkowanego marszu-z-atakiem
+     * (`attackUnitId` ustawiony) — patrz `clearPlannedMarch`. `force=true` dla miejsc, które
+     * NAPRAWDĘ mają jawnie anulować wszystko (np. rozwiązanie jednostki — `disbandPlayerUnit`).
+     * / EN: by default (force=false, nearly all 35 call sites in this file) deselecting does
+     * NOT cancel a consciously queued march-then-attack order (`attackUnitId` set) — see
+     * `clearPlannedMarch`. `force=true` for sites that genuinely mean to cancel everything
+     * explicitly (e.g. disbanding the unit — `disbandPlayerUnit`).
+     */
+    function clearPlayerUnitSelection(force = false): void {
+      if (selectedId !== null) clearPlannedMarch(selectedId, force);
       clearPlayerUnitSelectionStateOnly();
     }
 
@@ -5443,7 +5476,12 @@ async function boot(): Promise<void> {
 
       if (wasGarnizon && cityForGarnizon) syncGarnizonForCity(cityForGarnizon);
 
-      if (selectedId === unitId) clearPlayerUnitSelection();
+      // force=true: jednostka już usunięta z `units` powyżej (splice) — nie ma czego "przetrwać"
+      // odznaczeniu, wpis w plannedMarches/marchAttackTargets dla nieistniejącej już jednostki
+      // byłby tylko martwym śmieciem w mapie. / EN: force=true — the unit was already spliced out
+      // of `units` above, so there is nothing for a plannedMarches/marchAttackTargets entry to
+      // "survive" the deselect for; leaving it would just be dead litter in the map.
+      if (selectedId === unitId) clearPlayerUnitSelection(true);
       forceVisibleUnitId = null;
       syncUnitsRender();
       refreshFog();
@@ -14324,7 +14362,7 @@ async function boot(): Promise<void> {
     function previewNegotiationEntry(
       entry: PendingNegotiation,
       siblingOverride?: { givePn: number; receivePn: number },
-    ): { accepted: boolean; reason?: string } {
+    ): { accepted: boolean; reason?: string; pwBalance?: number } {
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
       const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling);
       const relTotal = treatyEvalRelationTotal(ctx.relation);
@@ -14343,7 +14381,20 @@ async function boot(): Promise<void> {
         if (playerAccept) return playerAccept;
       }
       const result = evaluateProposal(negotiationAsProposal(entry), ctx);
-      return { accepted: result.accepted, reason: result.reason };
+      // P-DYPLO-BILANS-GATE-NIESPOJNY runda 2 (N6, Evaluator FAIL c94de5c8, sprostowanie
+      // komentarza rundy 1): to NIE jest gwarancja "pwBalance przechodzi TYLKO dla own" —
+      // `incoming` też trafia tutaj i dostaje `result.pwBalance`, ilekroć
+      // `previewIncomingPlayerAccept` wyżej zwróci `null` (akcja spoza
+      // INCOMING_NET_PW_ACTIONS, albo tryb 'treaty' bez realnego koszyka). Dziś PRAKTYCZNIE
+      // nieosiągalne dla umowa_handlowa/umowa_szlakow incoming: `proposerIsTreatyPlayer`
+      // w case'ie traktatu (diplomacy-proposals.ts) wymaga proponenta=gracz, a przy
+      // incoming proponentem jest AI — więc `pwBalance` i tak wychodzi `undefined`.
+      // `balancePanelDataFromRows` NIE filtruje wierszy po `direction` przy czytaniu
+      // `pwBalance` — gdyby kiedyś któraś ścieżka zaczęła zwracać numeryczny pwBalance
+      // dla incoming, ten brak filtra stałby się realnym problemem, nie tylko nieścisłym
+      // komentarzem. Zostawione bez zmiany logiki (poza zakresem N6 — "nieszkodliwe dziś"),
+      // ale komentarz już nie obiecuje gwarancji, której kod nie daje.
+      return { accepted: result.accepted, reason: result.reason, pwBalance: result.pwBalance };
     }
 
     /** C-DYP-Q1=A: wiersze UI (diplomacyAudience.ts kolumna „Oczekujące propozycje") dla tej pary. */
@@ -17691,10 +17742,35 @@ async function boot(): Promise<void> {
           disabled: false,
           active: isFieldFortifiedSiege,
         });
+        // P-BITWA-OBLEZENIE-NIE-ANULUJE-ZAKOLEJKOWANEGO-ATAKU-Q1=B: commitBesiege NIE
+        // czyści zakolejkowany marsz-z-atakiem (force=false, jak dziś) — plan przeżywa
+        // rozpoczęcie oblężenia. Ale gałąź siegeCity wykluczała się z gałęzią hasPlan
+        // niżej, więc przycisk anulowania w ogóle się nie pojawiał. Pokaż go też tutaj,
+        // TYLKO gdy faktycznie jest zakolejkowany atak do anulowania — reużywa tego
+        // samego id/handlera 'march-stop' → stopPlannedMarchForSelected(), zero
+        // duplikacji logiki czyszczenia planu. / EN: commitBesiege does NOT clear a
+        // queued march-then-attack (force=false, unchanged) — the plan survives
+        // starting a siege. But the siegeCity branch excluded the hasPlan branch below,
+        // so the cancel button never appeared. Show it here too, ONLY when there is
+        // actually a queued attack to cancel — reuses the same 'march-stop' id/handler
+        // → stopPlannedMarchForSelected(), no duplicated clearing logic.
+        if (hasPlan && marchAttackTargets.has(active.id)) {
+          actions.push({
+            id: 'march-stop',
+            label: 'Anuluj atak',
+            disabled: isAnimating,
+          });
+        }
       } else if (hasPlan) {
+        // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: skoro zakolejkowany atak teraz PRZETRWA
+        // zwykłe odznaczenie, etykieta jasno mówi graczowi co dokładnie anuluje ten przycisk —
+        // sam marsz, czy marsz-i-atak. / EN: since a queued attack now SURVIVES an ordinary
+        // deselect, the label tells the player exactly what this button cancels — a plain
+        // march, or a march-then-attack.
+        const hasQueuedAttack = marchAttackTargets.has(active.id);
         actions.push({
           id: 'march-stop',
-          label: 'Zatrzymaj',
+          label: hasQueuedAttack ? 'Anuluj atak' : 'Zatrzymaj',
           disabled: isAnimating,
         });
       }
@@ -17794,7 +17870,11 @@ async function boot(): Promise<void> {
       } else if (actionId === 'march-stop') {
         stopPlannedMarchForSelected();
       } else if (actionId === 'skip') {
-        clearPlannedMarch(u.id);
+        // force=true: "Pomiń" to jawny rozkaz gracza kasujący plan tej jednostki (razem z
+        // zerowaniem ruchu poniżej) — nie zwykłe odznaczenie UI. / EN: force=true — "Skip" is an
+        // explicit player order cancelling this unit's plan (together with zeroing its movement
+        // below), not an ordinary UI deselect.
+        clearPlannedMarch(u.id, true);
         syncStackRuchLeft(stack, 0);
         reachable = new Set<string>();
         unitRenderer.clearHighlight();
@@ -17854,7 +17934,12 @@ async function boot(): Promise<void> {
           refreshD1bHud();
           return;
         }
-        clearPlannedMarch(u.id);
+        // force=true: "Ufortyfikuj"/wej\u015bcie do garnizonu to jawny nowy rozkaz gracza, kt\u00f3ry
+        // nadpisuje dowolny poprzedni plan marszu (w tym marsz-z-atakiem) \u2014 jednostka i tak
+        // przestaje si\u0119 przemieszcza\u0107. / EN: force=true \u2014 "Fortify"/entering garrison is an
+        // explicit new player order that supersedes any previous march plan (including a
+        // march-then-attack) \u2014 the unit stops moving either way.
+        clearPlannedMarch(u.id, true);
         reachable = new Set<string>();
         unitRenderer.clearHighlight();
         unitRenderer.clearPathRoute();
@@ -17888,7 +17973,11 @@ async function boot(): Promise<void> {
       } else if (actionId === 'sentry') {
         const enteringSentry = u.sentry !== true;
         if (enteringSentry) {
-          clearPlannedMarch(u.id);
+          // force=true: "Czuwaj" to jawny nowy rozkaz gracza (jednostka usypia, ruch zerowany
+          // poniżej) — nadpisuje dowolny poprzedni plan marszu. / EN: force=true — "Sentry" is an
+          // explicit new player order (the unit goes dormant, movement zeroed below) — it
+          // supersedes any previous march plan.
+          clearPlannedMarch(u.id, true);
           syncStackRuchLeft(stack, 0);
           for (const su of stack) su.sentry = true;
           showHintMessage(u.typeId + ' czuwa (obudź ręcznie)', 2500);
@@ -17909,7 +17998,11 @@ async function boot(): Promise<void> {
           // brakowało w sierpniu, stąd Q1). / EN: after enabling auto-explore the unit no longer
           // stays selected — the misleading movement highlight caused accidental clicks that
           // silently cancelled auto-explore. Visual feedback is now covered by the toast below.
-          clearPlannedMarch(u.id);
+          // force=true: "Zwiedzaj" to jawny nowy rozkaz gracza (auto-eksploracja przejmuje
+          // sterowanie ruchem) — nadpisuje dowolny poprzedni plan marszu.
+          // / EN: force=true — "Explore" is an explicit new player order (auto-explore takes
+          // over movement) — it supersedes any previous march plan.
+          clearPlannedMarch(u.id, true);
           // C-025: fortyfikacja w polu i auto-eksploracja wykluczają się wzajemnie —
           // włączenie Zwiedzaj zdejmuje fortyfikację (analogicznie do enterFieldFortify,
           // które zdejmuje autoExplore w drugą stronę), inaczej jednostka rusza się mimo
@@ -19154,13 +19247,40 @@ async function boot(): Promise<void> {
       movedByPlayerThisTurn.add(unitId);
     }
 
-    function clearPlannedMarch(unitId?: string): void {
+    /**
+     * P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE (root cause, Przyczyna B): domyślnie
+     * (`force=false`) NIE kasuje wpisu, który ma ustawione `PlannedMarchDest.attackUnitId`
+     * (świadomie zakolejkowany marsz-a-potem-atak) — rozkaz przetrwa zwykłe odznaczenie
+     * (Escape, klik gdzie indziej, otwarcie panelu — `clearPlayerUnitSelection()`, 35 wywołań
+     * w tym pliku) i wykona się po dotarciu (`tryLaunchMarchAttack`). `force=true` dla miejsc,
+     * które NAPRAWDĘ mają jawnie anulować wszystko: przycisk „Zatrzymaj"
+     * (`stopPlannedMarchForSelected`), rozwiązanie jednostki, nowe jawne rozkazy które
+     * nadpisują poprzedni plan (garnizon/Czuwaj/Zwiedzaj/Pomiń/ruch natychmiastowy),
+     * uruchomienie samego ataku (`tryLaunchMarchAttack` — plan spełnił swoją rolę).
+     * / EN: by default (`force=false`) does NOT clear an entry with
+     * `PlannedMarchDest.attackUnitId` set (a consciously queued march-then-attack order) — the
+     * order survives an ordinary deselect (Escape, click elsewhere, opening a panel —
+     * `clearPlayerUnitSelection()`, 35 call sites in this file) and fires on arrival
+     * (`tryLaunchMarchAttack`). `force=true` for sites that genuinely mean to cancel
+     * everything explicitly: the "Stop" button (`stopPlannedMarchForSelected`), disbanding the
+     * unit, a new explicit order that supersedes the old plan (garrison/Sentry/Explore/Skip/
+     * immediate move), or launching the attack itself (`tryLaunchMarchAttack` — the plan has
+     * served its purpose).
+     */
+    function clearPlannedMarch(unitId?: string, force = false): void {
       if (unitId !== undefined) {
+        if (!force && plannedMarches.get(unitId)?.attackUnitId) return;
         plannedMarches.delete(unitId);
         marchAttackTargets.delete(unitId);
-      } else {
+      } else if (force) {
         plannedMarches.clear();
         marchAttackTargets.clear();
+      } else {
+        for (const id of [...plannedMarches.keys()]) {
+          if (plannedMarches.get(id)?.attackUnitId) continue;
+          plannedMarches.delete(id);
+          marchAttackTargets.delete(id);
+        }
       }
       if (selectedId === null || unitId === selectedId || unitId === undefined) {
         unitRenderer.clearPathRoute();
@@ -19223,12 +19343,66 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: zasięg ataku `u` NA MAPIE ŚWIATA
+     * w heksach — 0 dla jednostek zwarcia (wymóg adiacencji bez zmian), N dla
+     * jednostek dystansowych (pole "Zasięg ataku (hex)" z units.json, ten sam
+     * odczyt co combat.ts:combatUnitFromDef). / EN: `u`'s world-map attack
+     * reach in hexes — 0 for melee units (adjacency requirement unchanged), N
+     * for ranged units (units.json "Zasięg ataku (hex)", same read as
+     * combat.ts:combatUnitFromDef).
+     */
+    function unitAttackRangeHex(u: RuntimeUnit): number {
+      return unitMapAttackRangeHex(lookupUnitDef(u.typeId));
+    }
+
+    /** Min. wymagany dystans do zainicjowania ataku: 1 (adiacencja) dla zwarcia, zasięg dla dystansu. */
+    function isTargetWithinAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {
+      const range = Math.max(1, unitAttackRangeHex(atkUnit));
+      return hexDistance(atkUnit.q, atkUnit.r, tq, tr) <= range;
+    }
+
+    /**
+     * P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE: czy cel jest w zasięgu
+     * KTÓREJKOLWIEK jednostki w stosie gracza na heksie `atkUnit` — nie tylko samej `atkUnit`.
+     * Powód: reprezentanta stosu do kliku wybiera unitAtRepresentative() wg unitAttackScore
+     * (=meleeAttack), a jednostki dystansowe mają meleeAttack systematycznie NIŻSZY niż
+     * zwarciowe (np. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Triari=8) — w
+     * KAŻDYM stosie mieszanym zwarcie+dystans reprezentantem (więc i `selectedId`/`atkUnit`
+     * przy kliku) niemal zawsze zostaje jednostka zwarcia. Bez tej funkcji isTargetWithinAttackRange
+     * cicho sprawdzała TYLKO zasięg=0 tej jednostki zwarcia, więc klik na wroga w zasięgu
+     * łucznika-w-tym-samym-stosie mylnie wypadał jako "poza zasięgiem" -> marsz zamiast ataku
+     * (dokładnie zgłoszenie właściciela: "trzeba kliknąć obok, dopiero wtedy można zaatakować").
+     * Bezpieczne: openPlayerMapUnitAttack/collectBattleRoster i tak zbiera CAŁY stos po pozycji
+     * (units/battleRoster.ts:collectBattleRoster), więc który konkretnie unit jest `atkUnit`
+     * nie zmienia składu bitwy — zmienia tylko to, czy klik w ogóle ODBLOKOWUJE atak.
+     * / EN: is the target within range of ANY unit in the player's stack at `atkUnit`'s hex --
+     * not just `atkUnit` itself. Reason: the stack's click representative is picked by
+     * unitAttackScore (=meleeAttack), and ranged units have a systematically LOWER meleeAttack
+     * than melee ones (e.g. Łucznik=2, Łucznik nubijski=1, Procarz=1 vs Wojownik=4, Triari=8) --
+     * in ANY mixed melee+ranged stack the representative (hence `selectedId`/`atkUnit` on click)
+     * is almost always the melee unit. Without this, isTargetWithinAttackRange silently checked
+     * ONLY that melee unit's range=0, so clicking an enemy within the stack's archer's range
+     * wrongly read as "out of range" -> march instead of attack (exactly the owner's report:
+     * "you have to click next to it first, only then can you attack"). Safe: openPlayerMapUnitAttack
+     * /collectBattleRoster already gathers the WHOLE stack by position (units/battleRoster.ts:
+     * collectBattleRoster), so which specific unit is `atkUnit` doesn't change the battle roster --
+     * it only changes whether the click unlocks the attack at all.
+     */
+    function isTargetWithinStackAttackRange(atkUnit: RuntimeUnit, tq: number, tr: number): boolean {
+      return playerStackAt(atkUnit).some(u => isTargetWithinAttackRange(u, tq, tr));
+    }
+
     function tryLaunchMarchAttack(atkUnit: RuntimeUnit, attackTargetId: string): boolean {
       const def = units.find(x => x.id === attackTargetId);
       if (!def) return false;
       if (!currentVisible().has(keyOf(def.q, def.r))) return false;
-      if (hexDistance(atkUnit.q, atkUnit.r, def.q, def.r) > 1) return false;
-      clearPlannedMarch(atkUnit.id);
+      if (!isTargetWithinStackAttackRange(atkUnit, def.q, def.r)) return false;
+      // force=true: plan spełnił swoją rolę — atak właśnie się uruchamia, więc czyścimy wpis
+      // bezwarunkowo (attackUnitId też, jest tu zawsze ustawione dla tej ścieżki).
+      // / EN: force=true — the plan has served its purpose, the attack is launching right now,
+      // so the entry is cleared unconditionally (attackUnitId is always set on this path anyway).
+      clearPlannedMarch(atkUnit.id, true);
       openPlayerMapUnitAttack(atkUnit, def);
       return true;
     }
@@ -19277,6 +19451,16 @@ async function boot(): Promise<void> {
         x => x.q === hitQ && x.r === hitR && x.ownerId !== uSel.ownerId,
       );
       const hoverVis = currentVisible().has(keyOf(hitQ, hitR));
+      // P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: cel już w zasięgu ataku (dystans
+      // lub adiacencja) -- atak nie wymaga marszu, więc podgląd trasy byłby
+      // mylący (sugerowałby zbędny ruch przed strzałem). / EN: target already
+      // within attack range (ranged or adjacent) -- the attack needs no march,
+      // so a route preview would be misleading (implying unnecessary movement
+      // before firing).
+      if (hoverEnemy && hoverVis && isTargetWithinStackAttackRange(uSel, hitQ, hitR)) {
+        unitRenderer.clearPathRoute();
+        return;
+      }
       const hoverDest: PlannedMarchDest = hoverEnemy && hoverVis
         ? { destQ: hitQ, destR: hitR, attackUnitId: hoverEnemy.id }
         : { destQ: hitQ, destR: hitR };
@@ -19625,10 +19809,25 @@ async function boot(): Promise<void> {
       executeMarchSegmentForUnit(selectedId);
     }
 
+    /**
+     * Przycisk „Zatrzymaj" HUD — jedyny dziś jawny sposób gracza na anulowanie zaplanowanego
+     * marszu, w tym świadomie zakolejkowanego marszu-z-atakiem (P-BITWA-MARSZ-POTEM-ATAK-NIE-
+     * KOLEJKUJE). Wcześniej robił surowe `plannedMarches.delete()` BEZ kasowania
+     * `marchAttackTargets` — dziurawe niezależnie od tej naprawy (martwy wpis zostawał w mapie,
+     * nieszkodliwy dziś bo nieodczytywany bez odpowiadającego `plannedMarches`, ale krucho).
+     * Przechodzi teraz przez `clearPlannedMarch(id, true)` (force=true — to jest DOKŁADNIE
+     * jawne anulowanie), które czyści oba. / EN: HUD "Stop" button — today's only explicit way
+     * for the player to cancel a planned march, including a consciously queued march-then-
+     * attack. Used to do a raw `plannedMarches.delete()` WITHOUT clearing `marchAttackTargets`
+     * — leaky independent of this fix (a dead entry stayed in the map, harmless today since
+     * unread without a matching `plannedMarches` entry, but fragile). Now routed through
+     * `clearPlannedMarch(id, true)` (force=true — this IS the explicit cancel), which clears
+     * both.
+     */
     function stopPlannedMarchForSelected(): void {
       if (selectedId === null) return;
-      if (plannedMarches.delete(selectedId)) {
-        unitRenderer.clearPathRoute();
+      if (plannedMarches.has(selectedId)) {
+        clearPlannedMarch(selectedId, true);
         showHintMessage('Zatrzymano', 2200);
         refreshD1bHud();
       }
@@ -19978,7 +20177,12 @@ async function boot(): Promise<void> {
       // R-SCOUT-ZWIEDZAJ-HIGHLIGHT: ręczny ruch (jak marsz) wyłącza auto-zwiedzanie.
       clearScoutAutoExplore(u);
       markPlayerMovedUnit(u.id);
-      clearPlannedMarch(u.id);
+      // force=true: gracz właśnie wydał NOWY, natychmiastowy rozkaz ruchu do innego celu —
+      // jawnie nadpisuje dowolny poprzedni zaplanowany marsz (w tym marsz-z-atakiem).
+      // / EN: force=true — the player just issued a NEW, immediate move order to a different
+      // destination — it explicitly supersedes any previous planned march (including a
+      // march-then-attack).
+      clearPlannedMarch(u.id, true);
       startAnimatedMove(u, movePath, moveDestQ, moveDestR, cost);
       return true;
     }
@@ -20402,7 +20606,9 @@ async function boot(): Promise<void> {
             return;
           case 'hint_no_adjacent':
             showHintMessage(
-              action.cityName + ' — miasto wrogie. Ustaw jednostkę na sąsiednim heksie i kliknij miasto.',
+              // P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE: dla muru zawsze adiacencja
+              // (oblężenie), dla miasta bez muru wystarczy zasięg jednostki dystansowej.
+              action.cityName + ' — miasto wrogie. Podejdź na sąsiedni heks (lub w zasięg jednostki dystansowej, jeśli miasto bez muru) i kliknij miasto.',
               4500,
             );
             clearPlayerUnitSelection();
@@ -20416,7 +20622,7 @@ async function boot(): Promise<void> {
             return;
           case 'hint_pick_attacker':
             showHintMessage(
-              action.cityName + ' — kilka jednostek obok. Zaznacz którą atakujesz, potem kliknij miasto.',
+              action.cityName + ' — kilka jednostek w zasięgu. Zaznacz którą atakujesz, potem kliknij miasto.',
               4500,
             );
             clearPlayerUnitSelection();
@@ -20438,6 +20644,7 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: 0,
+            unitAttackRangeHex,
           });
           const isMilitaryAction =
             enemyAction.kind === 'siege_panel' ||
@@ -20488,6 +20695,7 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: 0,
+          unitAttackRangeHex,
         });
         const isMilitaryAction =
           enemyAction.kind === 'siege_panel' ||
@@ -20517,10 +20725,20 @@ async function boot(): Promise<void> {
           selectPlayerUnit(cu.id);
         }
       } else if (selectedId !== null && cu !== null && cu.ownerId !== 0) {
-        // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01
+        // MAP PLAYER ATTACK: jednostka → jednostka (sąsiad LUB w zasięgu ataku
+        // dystansowego — P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE) → preBattle C-01
+        // N1 (P-BITWA-ATAK-DYSTANSOWY-MAPA-SWIATA-NIE-DZIALA-W-GRZE, runda 2):
+        // sprawdź mgłę PRZED zaakceptowaniem ataku — symetria z tryLaunchMarchAttack
+        // (main.ts:19315) i refreshHoverPathPreview (hoverVis); bez tego wystarczy
+        // JEDEN łucznik w stosie, żeby klik na zamglony heks po cichu zamienił się
+        // w atak zamiast marszu. / EN: check fog BEFORE accepting the attack —
+        // symmetry with tryLaunchMarchAttack (main.ts:19315) and
+        // refreshHoverPathPreview (hoverVis); without this, one archer anywhere in
+        // the stack silently turned a move onto a fogged hex into an attack.
         const atkUnit = units.find(x => x.id === selectedId);
         if (atkUnit && atkUnit.ownerId === 0 && stackCanMove(atkUnit) &&
-            hexDistance(atkUnit.q, atkUnit.r, cu.q, cu.r) <= 1) {
+            currentVisible().has(keyOf(cu.q, cu.r)) &&
+            isTargetWithinStackAttackRange(atkUnit, cu.q, cu.r)) {
           withPlayerWarConsent(cu.ownerId, () => openPlayerMapUnitAttack(atkUnit, cu));
         } else if (atkUnit && atkUnit.ownerId === 0) {
           if (!stackCanMove(atkUnit)) {
@@ -21136,7 +21354,14 @@ async function boot(): Promise<void> {
       });
     }
 
-    /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
+    /**
+     * MAP PLAYER ATTACK: jednostka → jednostka (sąsiad LUB w zasięgu ataku
+     * dystansowego) → preBattle C-01. Bitwa jest abstrakcyjna względem pozycji
+     * — atakujący NIE przemieszcza się fizycznie na heks obrońcy przed walką
+     * (patrz applyPostBattleMap/moveAtkRosterOntoBattleHex — repozycjonowanie
+     * następuje dopiero PO wygranej), więc atak z dystansu nie wymaga żadnego
+     * dodatkowego kroku ruchu tutaj — P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE.
+     */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
       if (atkUnit.ownerId === 0 && defUnit.ownerId !== 0 && !playerIsAtWarWith(defUnit.ownerId)) {
         withPlayerWarConsent(defUnit.ownerId, () => openPlayerMapUnitAttackCore(atkUnit, defUnit));
@@ -28454,7 +28679,16 @@ async function boot(): Promise<void> {
       }
 
       // --- Camera and render (always run, even during animation) ---
-      camCtrl.update();
+      // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: `camCtrl.update()` to jedyne miejsce, gdzie
+      // WASD/strzałki i edge-pan przesuwają kamerę MAPY ŚWIATA. Oba nasłuchy siedzą na
+      // `window` (camera.ts `_bind`), więc gdy gracz panuje kamerą SCENY BITWY tymi samymi
+      // klawiszami, mapa świata pod nakładką odjeżdżała razem z nią — po powrocie z bitwy
+      // kadr stał poza mapą i gracz widział pusty ekran. Bramka nie zmienia zachowania na
+      // samej mapie (brak nakładki = zero różnicy).
+      // / EN: camCtrl.update() is the only place WASD/edge-pan move the WORLD-MAP camera;
+      // both listeners live on `window`, so panning the BATTLE camera dragged the world map
+      // along under the overlay and left it off-screen after the battle.
+      if (!isBattleSceneOpen()) camCtrl.update();
       {
         const { dist } = camCtrl.getFocusState();
         const { minDist, maxDist } = camCtrl.getDistLimits();
@@ -29159,6 +29393,11 @@ async function boot(): Promise<void> {
       aiAudienceLastRequestTurn.clear();
       units.length = 0;
       plannedMarches.clear();
+      // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — inaczej wpis-widmo
+      // (attackUnitId po jednostce z poprzedniej gry) mógłby przetrwać reset (force=false chroni
+      // wpisy z attackUnitId). / EN: clear together with plannedMarches — otherwise a ghost entry
+      // could survive the reset (force=false protects entries with attackUnitId).
+      marchAttackTargets.clear();
       movedByPlayerThisTurn.clear();
       marchExecQueue.length = 0;
       pendingMarchHint = null;
@@ -30238,6 +30477,11 @@ async function boot(): Promise<void> {
       units.length = 0;
       for (const u of saved.units) units.push(u);
       plannedMarches.clear();
+      // P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE: czyść razem z plannedMarches — pętla niżej
+      // odbudowuje oba TYLKO dla jednostek z wczytanego save'a (reszta zostałaby wisząca).
+      // / EN: clear together with plannedMarches — the loop below only rebuilds both for units
+      // present in the loaded save (the rest would be left dangling).
+      marchAttackTargets.clear();
       movedByPlayerThisTurn.clear();
       marchExecQueue.length = 0;
       pendingMarchHint = null;
@@ -30251,6 +30495,44 @@ async function boot(): Promise<void> {
       cities.length = 0;
       for (const c of saved.cities) {
         ensureCitySaveDefaults(c);
+        // P-OKOLICA-TRYB-RECZNY-W-STARYM-ZAPISIE (2026-08-14, nota N1 Evaluatora przy
+        // werdykcie 7ec82223 dla 0d50bb81): naprawa 0d50bb81 resetuje okolicaTryb na
+        // 'auto' WYŁĄCZNIE w seedCityOwnerDefaults() -- wołanej PO zmianie city.ownerId
+        // W BIEŻĄCEJ grze. Zapis zrobiony PRZED tą naprawą (miasto GRACZA w trybie
+        // ręcznym przejęte przez AI/rebeliantów, zanim 0d50bb81 wylądował) niesie na
+        // stałe okolicaTryb:'reczny' w JSON-ie -- ensureCitySaveDefaults (cities.ts)
+        // nadpisuje pole TYLKO gdy jest puste (`if (!city.okolicaTryb)`), a 'reczny' to
+        // wartość prawdziwa (truthy), więc przechodzi bez zmian; reconcileAllWorkedTiles/
+        // reconcileWorkedTilesForOwner (territory-work.ts, wołane niżej) w ogóle nie znają
+        // pola okolicaTryb -- operują wyłącznie na okolicaReczne. Efekt bez tej naprawy:
+        // obywatele AI stoją bezczynnie mimo wolnych heksów, bo resolveWorkedTiles
+        // (okolica.ts) honoruje 'reczny' bez filtra właściciela, a AI nie ma ścieżki UI
+        // powrotu do auto. Filtr ownerId !== 0 jest KLUCZOWY -- miasto GRACZA w trybie
+        // ręcznym MUSI przetrwać load bez zmiany, inaczej cała funkcja trybu ręcznego
+        // przestaje działać dla gracza. Ten sam wzorzec resetu co seedCityOwnerDefaults
+        // (bezwarunkowy, niezależnie od bieżącej wartości -- okolicaReczne jest czytane
+        // wyłącznie gdy tryb==='reczny', więc kasowanie go dla miast już w 'auto' jest
+        // no-opem funkcjonalnym).
+        // / EN: fix 0d50bb81 resets okolicaTryb to 'auto' ONLY inside
+        // seedCityOwnerDefaults() -- called AFTER an ownerId change WITHIN the current
+        // game. A save written BEFORE that fix (a player city in manual mode captured by
+        // AI/rebels before 0d50bb81 landed) carries okolicaTryb:'reczny' permanently in
+        // the JSON -- ensureCitySaveDefaults (cities.ts) only fills the field when empty
+        // (`if (!city.okolicaTryb)`), and 'reczny' is truthy, so it passes through
+        // unchanged; reconcileAllWorkedTiles/reconcileWorkedTilesForOwner
+        // (territory-work.ts, called below) don't know the okolicaTryb field at all --
+        // they operate on okolicaReczne only. Effect without this fix: AI citizens sit
+        // idle despite free hexes, because resolveWorkedTiles (okolica.ts) honours
+        // 'reczny' with no owner filter and AI has no UI path back to auto. The
+        // ownerId !== 0 filter is CRITICAL -- a PLAYER city in manual mode MUST survive
+        // load unchanged, otherwise the whole manual-mode feature stops working for the
+        // player. Same unconditional reset pattern as seedCityOwnerDefaults --
+        // okolicaReczne is only ever read when tryb==='reczny', so clearing it for a city
+        // already in 'auto' is a functional no-op.
+        if (c.ownerId !== 0) {
+          c.okolicaTryb = DEFAULT_OKOLICA_TRYB;
+          delete c.okolicaReczne;
+        }
         if (c.maMur === undefined) {
           const built = saved.cityBuilt?.[c.id];
           if (built?.includes('mury') || built?.includes('fort') || built?.includes('palisada')) c.maMur = true;
