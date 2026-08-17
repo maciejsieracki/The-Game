@@ -55,6 +55,9 @@ export interface GameConfig {
 
   /** Konfiguracja stalych dyplomacji (progi, mnozniki, wartosci startowe). */
   dyplomacjaConfig: DiplomacyConfig;
+
+  /** Bazowy limit miast per cywilizacja (domyślnie 10); limit per epoka = base + (era-1)*5. / EN: base city limit per civilization (default 10); per-era limit = base + (era-1)*5. */
+  cityLimitBase: number;
 }
 
 // ---------------------------------------------------------------------------

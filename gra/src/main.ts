@@ -1335,6 +1335,7 @@ async function boot(): Promise<void> {
     let _menuCityStates: number = 6;
     let _menuTypSwiata: TypSwiata = 'kontynenty';
     let _menuEpochId: string = 'kamien';
+    let _menuCityLimitBase: number = 10; // R-MIASTA-LIMIT-PER-EPOKA-Q1: bazowy limit miast per epokę / EN: base city limit per era
     let _menuAdvanced: NewGameAdvancedOptions | undefined;
     let _menuWorldDensity: WorldGenerationPreset = { ...DEFAULT_WORLD_DENSITY };
     /** Ostatnie parametry kreatora — zapisywane w sejwie i używane przy wczytywaniu mapy. */
@@ -8847,7 +8848,13 @@ async function boot(): Promise<void> {
 
     /** Walidacja założenia miasta gracza (pierwsze miasto tylko w oświetlonym kręgu startu). */
     function canFoundPlayerCityAt(q: number, r: number): { ok: boolean; reason: string } {
-      const base = canFoundCity(q, r, cities, map, foundingTerritoryOpts(0));
+      const playerEra = player.era ?? 1; // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit per era
+      const base = canFoundCity(q, r, cities, map, {
+        ...foundingTerritoryOpts(0),
+        ownerId: 0,
+        ownerEra: playerEra,
+        gameConfig: { cityLimitBase: _menuCityLimitBase },
+      });
       return validateFirstPlayerCityPlacement(
         q,
         r,
@@ -27581,7 +27588,13 @@ async function boot(): Promise<void> {
                   // migawce stanu. / EN: AI gets the same hard withinTerritory requirement as the
                   // player, enforced HERE at command execution — ai.ts is only a planner on a
                   // state snapshot.
-                  const res = canFoundCity(cmd.q, cmd.r, cities, map, foundingTerritoryOpts(ownerId));
+                  const aiEra = ownerEraByOwner.get(ownerId) ?? 1; // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit per era
+                  const res = canFoundCity(cmd.q, cmd.r, cities, map, {
+                    ...foundingTerritoryOpts(ownerId),
+                    ownerId,
+                    ownerEra: aiEra,
+                    gameConfig: { cityLimitBase: _menuCityLimitBase },
+                  });
                   if (!res.ok) continue;
                   aiPracaPoolByOwner.set(
                     ownerId,
@@ -29016,6 +29029,7 @@ async function boot(): Promise<void> {
       );
       _menuRivals = _menuCityStates;
       _menuWorldDensity = params.worldDensity ?? { ...DEFAULT_WORLD_DENSITY };
+      _menuCityLimitBase = params.advanced?.cityLimitBase ?? 10; // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
 
       // Epoka startowa z kreatora (Kamień=1, Brąz=2, Żelazo=3)
       const ERA_MAP: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };

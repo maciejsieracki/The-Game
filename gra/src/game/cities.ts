@@ -715,6 +715,12 @@ export function canFoundCity(
     foundingCityState?: boolean;
     /** Slot z planu klastra (deferred spawn) — dystans do innych miast już zweryfikowany w map/clusters. */
     clusterStartSlot?: boolean;
+    /** ID właściciela (potrzebny do limitu miast per epokę). / EN: owner ID (needed for city limit per era). */
+    ownerId?: number;
+    /** Era bieżącego właściciela (potrzebna do obliczenia limitu miast). / EN: current owner's era (needed to compute city limit). */
+    ownerEra?: number;
+    /** Konfiguracja gry zawierająca bazowy limit miast. / EN: game config containing base city limit. */
+    gameConfig?: { cityLimitBase?: number };
   },
 ): { ok: boolean; reason: string } {
   const key = `${q},${r}`;
@@ -752,6 +758,19 @@ export function canFoundCity(
 
   if (opts?.withinTerritory && !opts.withinTerritory(q, r)) {
     return { ok: false, reason: 'poza terytorium' };
+  }
+
+  // R-MIASTA-LIMIT-PER-EPOKA-Q1: limit liczby miast per epokę
+  // / EN: city count limit per era
+  if (opts?.ownerId !== undefined && opts?.ownerEra !== undefined && opts?.gameConfig) {
+    const base = opts.gameConfig.cityLimitBase ?? 10;
+    const era = Math.max(1, opts.ownerEra);
+    // Limit: baza + (era-1)*5 (E0=baza, E1=baza+5, E2=baza+10, itd.)
+    const limit = base + (era - 1) * 5;
+    const ownersCities = cities.filter(c => c.ownerId === opts.ownerId).length;
+    if (ownersCities >= limit) {
+      return { ok: false, reason: 'limit miast na tej epoce' };
+    }
   }
 
   return { ok: true, reason: '' };

@@ -181,6 +181,8 @@ export interface NewGameAdvancedOptions {
    * dopóki gracz nie ustawi jej wprost w „Zaawansowane opcje". Zero regresji domyślnej.
    */
   cityStateDifficultyOverride: 'easy' | 'normal' | 'hard' | null;
+  /** R-MIASTA-LIMIT-PER-EPOKA-Q1: bazowy limit miast na epokę (10 / 15 / 20); per-era limit = base + (era-1)*5. / EN: base city limit per era. */
+  cityLimitBase: number;
 }
 
 const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
@@ -194,6 +196,7 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   landFractionPercent: 30,
   landFractionCustom: false,
   cityStateDifficultyOverride: null,
+  cityLimitBase: 10, // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
 };
 
 /** Kanon v1 (2026-07-07) — stabilny klucz localStorage kreatora. */
@@ -332,6 +335,9 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
     || raw.cityStateDifficultyOverride === 'hard'
   ) {
     base.cityStateDifficultyOverride = raw.cityStateDifficultyOverride;
+  }
+  if (typeof raw.cityLimitBase === 'number' && raw.cityLimitBase > 0) {
+    base.cityLimitBase = raw.cityLimitBase; // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
   }
   return base;
 }
