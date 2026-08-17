@@ -1019,6 +1019,7 @@ import {
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
+import { showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
@@ -8528,7 +8529,7 @@ async function boot(): Promise<void> {
             overlayDepositEra = player.era;
             rebuildResourceOverlays();
             setEra(player.era);
-            notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+            notifyPlayerEraChangeIfAdvanced(prevPlayerEra, [techId]);
           }
         }
       } else {
@@ -11932,7 +11933,7 @@ async function boot(): Promise<void> {
     }
 
     /** Awans epoki gracza — toast + trwały wpis WYDARZENIA (raz na przejście). */
-    function notifyPlayerEraChangeIfAdvanced(prevEra: number): void {
+    function notifyPlayerEraChangeIfAdvanced(prevEra: number, completedTechNames: readonly string[] = []): void {
       if (!shouldNotifyPlayerEraChange(prevEra, player.era)) return;
       const toastHtml = eraChangeNotifyToastHtml(player.era);
       // P-EPOKA-TOAST-EOT-POLYKANY: podczas endTurnInProgress showHintMessage() i tak
@@ -11958,6 +11959,14 @@ async function boot(): Promise<void> {
         if (warEventLog.length > 8) warEventLog.length = 8;
       }
       refreshD1bHud();
+      const eraTech = data.tech.find(t => t.awansDoEpoki === player.era);
+      if (eraTech && completedTechNames.includes(eraTech.Technologia)) {
+        showTechDiscoveryNotice({
+          techName: eraTech.Technologia,
+          eraIndex: player.era,
+          onOpenTree: () => showTechTreeView(0),
+        });
+      }
     }
 
     /**
@@ -19256,6 +19265,11 @@ async function boot(): Promise<void> {
         return { display: el.style.display, html: el.innerHTML, zIndex: el.style.zIndex };
       },
       getWarEventLogHead: () => warEventLog.slice(0, 3),
+      openTechDiscovery: (techName: string) => showTechDiscoveryNotice({
+        techName,
+        eraIndex: player.era,
+        onOpenTree: () => showTechTreeView(0),
+      }),
       isEndTurnInProgress: () => endTurnInProgress,
       getWorldState: () => ({ citiesLen: cities.length, unitsLen: units.length, turn }),
     };
@@ -19325,6 +19339,13 @@ async function boot(): Promise<void> {
       onStartResearch: (techSlug: string) => {
         selectPlayerResearchSlug(techSlug);
         refreshTechTreeViewIfOpen();
+      },
+      onOpenTechDetails: (techName: string) => {
+        showTechDiscoveryNotice({
+          techName,
+          eraIndex: player.era,
+          onOpenTree: () => showTechTreeView(0),
+        });
       },
       getPlan: (_ownerId: number) =>
         buildResearchPlanSnapshot().map(({ id, pos }) => ({ id, pos })),
@@ -20247,7 +20268,7 @@ async function boot(): Promise<void> {
               setEra(player.era);
             }
             if (eraAdvanced) {
-              notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+              notifyPlayerEraChangeIfAdvanced(prevPlayerEra, step.completed.map(done => done.id));
             }
           } else {
             // AI/MP: dolicz do puli nauki ownera i odpal TEN SAM resolver co coroczne
@@ -25581,7 +25602,7 @@ async function boot(): Promise<void> {
                 overlayDepositEra = player.era;
                 rebuildResourceOverlays();
                 setEra(player.era); // DYSPOZYCJA-MUZYKA §2 pkt 3 — awans epoki gracza
-                notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+                notifyPlayerEraChangeIfAdvanced(prevPlayerEra, step.completed.map(done => done.id));
               }
               console.log(
                 '[Nauka] Skarbiec=' + player.skarbiec +

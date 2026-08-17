@@ -54,6 +54,8 @@ export interface TechTreeViewConfig {
   onStartResearch?: (techSlug: string) => void;
   /** Plan badań (aktywny cel + kolejka): slug tech → pozycja 1..RESEARCH_QUEUE_MAX. */
   getPlan?: (ownerId: number) => { id: string; pos: number }[];
+  /** Otwórz pełną kartę odkrytej technologii (np. komunikat awansu epoki). */
+  onOpenTechDetails?: (techName: string) => void;
 }
 
 let cfg: TechTreeViewConfig = {};
@@ -932,6 +934,7 @@ function bindViewportInteractions(): void {
     const node = NODES.get(id);
     if (node === undefined) return;
     if (el.getAttribute('data-st') === 'av') tryStartResearch(node);
+    else if (el.getAttribute('data-st') === 'od') cfg.onOpenTechDetails?.(node.nazwa);
   });
 
   vp.addEventListener('mouseover', (e: MouseEvent) => {
