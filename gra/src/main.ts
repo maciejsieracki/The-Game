@@ -30067,6 +30067,7 @@ async function boot(): Promise<void> {
           forest: 'Normalnie',
           relief: 'Normalnie',
         },
+        villageRewardsEnabled: true,
       } as NewGameParams);
       hideMainMenu();
       hideNewGameFlow();
@@ -30280,6 +30281,7 @@ async function boot(): Promise<void> {
         cityStatesCount: 0,
         worldDensity: { ...ptMapDensity.preset },
         worldDensityLabels: { ...ptMapDensity.labels },
+        villageRewardsEnabled: true,
       } as NewGameParams);
       hideMainMenu();
       hideNewGameFlow();

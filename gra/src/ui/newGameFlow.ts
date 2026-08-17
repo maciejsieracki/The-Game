@@ -1189,6 +1189,7 @@ function advancedSettingRows(): AdvSettingRow[] {
       'relief_density',
       'Fair play: min. 2 góry / komórkę żelaza + 2 wzgórza / komórkę miedzi (Mało 35/21 · Normalnie 25/15 · Dużo 20/12). Wyższy tier = gęstsza siatka + bonus ukształtowania.',
     ),
+    advRowFromSett('village_rewards_enabled', 'Wioski na mapie dają losowe nagrody: złoto, jednostki, technologia lub relikt. Wyłączenie usywa wszystkie wioski.'),
     {
       key: 'landFraction',
       lbl: 'Udział lądu na mapie',
@@ -1311,6 +1312,21 @@ function advancedSettingRows(): AdvSettingRow[] {
       },
       setIdx: (i) => {
         advOpts.ruchSwiataPace = i === 1 ? 'normalny' : i === 2 ? 'dlugi' : 'krotki';
+      },
+    },
+    {
+      key: 'cityLimitBase',
+      lbl: 'Limit miast (baza)',
+      hint: 'Bazowa liczba miast na cywilizację — rzeczywisty limit per epoka = baza + (epoka−1)×5. Domyślnie = 10. / EN: base city limit per civilization — actual limit per era = base + (era−1)×5.',
+      opts: ['10 miast', '15 miast', '20 miast'],
+      getIdx: () => {
+        const limits = [10, 15, 20];
+        const i = limits.indexOf(advOpts.cityLimitBase);
+        return i >= 0 ? i : 0;
+      },
+      setIdx: (i) => {
+        const limits = [10, 15, 20];
+        advOpts.cityLimitBase = limits[i] ?? 10;
       },
     },
   ];
@@ -1654,6 +1670,11 @@ function renderGenStep(host: HTMLElement): void {
         : csOverride === 'normal'
           ? 'Normalny'
           : p.difficulty + ' (jak glowna)';
+    const cityLimitLabel = p.advanced.cityLimitBase === 15
+      ? '15 miast'
+      : p.advanced.cityLimitBase === 20
+        ? '20 miast'
+        : '10 miast';
     rows.push(
       ['Barbarzyncy', bLabel],
       ['Bitwy', p.advanced.battleAlwaysManual ? 'Ręczna' : 'Automatyczne'],
@@ -1663,6 +1684,7 @@ function renderGenStep(host: HTMLElement): void {
       ['Wzrost ludnosci', growthPaceLabel],
       ['Zasieg ruchu', ruchSwiataLabel],
       ['Trudnosc miast-panstw', csLabel],
+      ['Limit miast (baza)', cityLimitLabel],
     );
   }
   if (p.startPreview) {
