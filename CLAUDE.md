@@ -184,6 +184,23 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    Powód praktyczny: Sonnet poprawnie dobiera detale historyczne, ale nie ocenia proporcji i czytelności bryły
    z kąta kamery gry — modele wychodziły za niskie (0,62–0,64 zamiast 0,75 HEX_R), broń nieczytelna albo
    wystająca poza obrys heksu, tarcze niewidoczne. Każdy wymagał 2–3 rund poprawek po oględzinach zrzutu. Główna pętla zostaje do: rozmowy, dekompozycji, syntezy i decyzji ABC. Subagentowi dawaj samodzielny prompt: ścieżki, bramki, zakaz `npm run build`, zakaz commita/deployu.
+   **AKTUALIZACJA — nowy domyślny przydział Operator/Evaluator (Maciej, 2026-08-17), ZASTĘPUJE
+   powyższe „wszyscy subagenci-wykonawcy = Sonnet 5" / „EVALUATOR = Opus 5" jako domyślne:** jego
+   słowa: *„haiku będzie robił kod, zamiast teraz sonetu 5. Sonet 5 będzie robił ewaluatora zamiast
+   Opus 5. W przypadku trudniejszych tematów jeszcze puścimy ewaluatora Opus 5, ale tylko na
+   wyraźne twoje żądanie. Więc od teraz subagent Haiku jest operatorem, a subagent Sonet 5 jest
+   ewaluatorem. Zmień zasady i tylko na wyraźną prośbę ewaluator Opus 5 oraz kiedy są wymagane
+   tematy graficzne."*
+   - **Operator (wykonawca) = Haiku 4.5**, nowy domyślny, dla wszystkich zadań poza `gra/src/render/**`.
+   - **Evaluator = Sonnet 5**, nowy domyślny.
+   - **Evaluator = Opus 5** wyłącznie: (a) orkiestrator jawnie ocenia temat jako trudniejszy/wyższego
+     ryzyka i explicite o to prosi przy dispatchu (świadoma, wyartykułowana decyzja za każdym razem —
+     NIE domyślny fallback, NIE automatyczne), (b) temat dotyka `gra/src/render/**` — tam Opus 5
+     pozostaje obowiązkowy, patrz wyjątek wyżej, **niezmieniony tą aktualizacją i obowiązujący
+     RÓWNIEŻ dla Operatora** (nie tylko Evaluatora) — Haiku 4.5 jako Operator jest jeszcze mniej
+     przygotowany na ocenę proporcji/czytelności bryły niż Sonnet, więc render zostaje przy Opus 5
+     dla OBU ról bez wyjątku.
+   - **Deploy pozostaje Opus 5** (nie dotyczy tej aktualizacji, nieporuszone w poleceniu).
 4a. **KAŻDY SUBAGENT PRACUJE NA WŁASNEJ KOPII (Maciej, 2026-07-29).** Jego słowa: *„zasadą powinno
    być to, że zawsze pracę agenci robią na swoich kopiach, a dopiero po git pull nadpisują ewentualnie
    za moją zgodą pliki i dopiero później robią deploy — tak żeby jeden agent nie przeszkadzał drugiemu
