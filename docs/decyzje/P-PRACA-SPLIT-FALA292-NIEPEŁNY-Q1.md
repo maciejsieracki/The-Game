@@ -1,6 +1,6 @@
 # P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 — ECHO i kontrakt
 
-**Data:** 2026-08-17  
+**Data:** 2026-08-17
 **Źródło:** zgłoszenie właściciela po ROBOCZEJ FALI 292 (`90b6508d`), porównanie z FALĄ 291 (`13b771f4`).
 
 ## ECHO
