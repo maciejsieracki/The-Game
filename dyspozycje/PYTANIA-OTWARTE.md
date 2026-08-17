@@ -31067,3 +31067,26 @@ STATUS: **OTWARTE — do dispatchu po zamknięciu bieżących wątków** (wymaga
 `gra/src/render/**` — Opus 5, stała zgoda właściciela).
 
 ---
+
+## R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1 (2026-08-16, decyzja bezpośrednia Macieja)
+
+**Zgłoszenie (cytat):** „w momencie wybierania danej kopalni powinniśmy stworzyć jakiś system
+podświetlenia, na przykład na jasno niebiesko tych heksów, gdzie można tą daną kopalnię postawić.
+Na razie zróbmy to tylko i wyłącznie dla kopalni. to jasno niebieski ma być przezroczystość 30%."
+
+**Zakres (dosłowny, nie rozszerzać bez pytania):** WYŁĄCZNIE kopalnie (nie wszystkie ulepszenia
+terenu) — w momencie gdy gracz wybiera do budowy konkretny typ kopalni, heksy w zasięgu miasta,
+na których TĘ konkretną kopalnię można postawić, mają się podświetlić na jasnoniebiesko,
+przezroczystość 30%.
+
+**Świadome odejście od standardowej sekwencji AutoBot (nienegocjowalnej reguły §0):** właściciel
+wprost polecił zrobić to TERAZ, przed odnowieniem limitów, zamiast czekać na zakończenie kolejki
+tematów odłożonych do rejestru. To jest bezpośrednia decyzja produktowa, nie ABC — zakres jest
+jednoznaczny, bez dwuznaczności wymagającej pytania.
+
+**Dotyka `gra/src/render/**`** (podświetlenie heksów na mapie 3D) — zgodnie ze stałą zgodą
+właściciela (2026-07-25/08-06) cała praca w tym katalogu na Opus 5.
+
+STATUS: **OTWARTE — dispatch w toku (recon + implementacja, Opus 5, worktree).**
+
+---
