@@ -198,6 +198,19 @@ export function clampUlepszeniaPracaPercent(n: number | undefined | null): Uleps
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
+/** Maksymalny % budżetu Pracy przeznaczony do wspólnego worka (ulepszenia terenu).
+ * Pozostałe minimum 50% rezerwowane dla budynków/bezpośrednie kierowanie.
+ * R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 = A (2026-08-17). */
+export const MAX_PRACA_WSPOLNY_WOREK_PROCENT: UlepszeniaPracaPercent = 50;
+
+/** Ogranicza wartość % budżetu Pracy do wspólnego worka (ulepszenia) na maksimum 50%.
+ * Używane w UI (buildModeHud) i przy przyjmowaniu wartości ze zdarzenia zmiany.
+ * R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 = A (2026-08-17). */
+export function clampPracaWspolnyWorekPercent(n: number | undefined | null): UlepszeniaPracaPercent {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
+  return Math.max(0, Math.min(MAX_PRACA_WSPOLNY_WOREK_PROCENT, Math.round(n)));
+}
+
 /**
  * Migracja starego pola `perTurn`/`ulepszeniaPerTurn` (1|2|3 sztuk/miasto/turę) → nowy %.
  * Mapowanie liniowe do starego maksimum (3 sztuk = 100%): 1→33%, 2→66%, 3→100%.

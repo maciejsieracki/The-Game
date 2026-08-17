@@ -187,6 +187,7 @@ import {
   DEFAULT_ULEPSZENIA_TRYB,
   DEFAULT_ULEPSZENIA_FOCUS,
   clampUlepszeniaPracaPercent,
+  clampPracaWspolnyWorekPercent,
   resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
   resolveEffectiveUlepszenia,
@@ -18874,7 +18875,7 @@ async function boot(): Promise<void> {
           },
           onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
             const pol = ulepszeniaEmpireForOwner(0);
-            pol.pracaAutoPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
+            pol.pracaAutoPercent = clampPracaWspolnyWorekPercent(pracaAutoPercent);
             pol.tryb = 'auto';
             ulepszeniaEmpireByOwner.set(0, pol);
             showHintMessage(`Państwo: auto ulepszenia · ${pol.pracaAutoPercent}% budżetu Pracy`, 2800);
@@ -18950,7 +18951,7 @@ async function boot(): Promise<void> {
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
-            city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
+            city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(pracaAutoPercent);
             city.ulepszeniaTryb = 'auto';
             showHintMessage(
               `${city.name}: auto ulepszenia · ${city.ulepszeniaPracaPercent}% budżetu Pracy`,
