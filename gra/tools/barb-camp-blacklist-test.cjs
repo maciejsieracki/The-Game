@@ -113,11 +113,12 @@ const blockedKey = `${baseline[0].q},${baseline[0].r}`;
     '2: the exact destroyed camp coordinate is never recreated');
 
   // Edge cases: adjacent hex is allowed; duplicate blacklist entries are harmless.
-  const adjacentKey = `${camps[0].q + 1},${camps[0].r}`;
+  const adjacentQ = camps[0].q > 0 ? camps[0].q - 1 : camps[0].q + 1;
+  const adjacentKey = `${adjacentQ},${camps[0].r}`;
   const adjacent = spawnCamps(map, [], [], params, seed, new Set([blockedKey, blockedKey]));
   assert(adjacent.every(c => `${c.q},${c.r}` !== blockedKey),
     '2-edge: duplicate blacklist entries still block the cleared hex');
-  assert(adjacent.some(c => `${c.q},${c.r}` === adjacentKey) || adjacent.length > 0,
+  assert(adjacent.some(c => `${c.q},${c.r}` === adjacentKey),
     '2-edge: blacklist is exact-hex, not a neighbor-radius ban');
 }
 
