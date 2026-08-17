@@ -155,7 +155,7 @@ import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
-import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
+import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';
 import {
@@ -1021,6 +1021,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import {
   decideAiWonderBuild,
@@ -7287,6 +7288,7 @@ async function boot(): Promise<void> {
     let rejectedOfferCooldowns: RejectedOfferCooldown[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    const aiTargetMemoryByOwner: AiTargetMemoryByOwner = new Map();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
      *  (ownerLoop), zasilany w cmd.type==='build' po udanym purchaseRecruitmentUnit. */
@@ -8891,6 +8893,16 @@ async function boot(): Promise<void> {
         return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
       }
       return new Set<string>();
+    }
+
+    /** P-AI-BRAK-POJECIA-MGLY-Q1: widoczność konkretnego ownera AI, nie gracza. */
+    function currentVisibleForOwner(ownerId: number): Set<string> {
+      return computePlayerVisibility({
+        map,
+        playerUnits: units.filter(u => u.ownerId === ownerId),
+        playerCities: cities.filter(c => c.ownerId === ownerId),
+        unitSight,
+      });
     }
 
     /** Klucze oświetlonego kręgu startu — rzeki widoczne przed założeniem pierwszego miasta. */
@@ -24148,6 +24160,7 @@ async function boot(): Promise<void> {
           // Audyt #44: aiSkarbiecByOwner nie bylo w snapshotcie -- czyszczone przy
           // load bez odtworzenia, wiec skarbiec AI zerowal sie po kazdym wczytaniu.
           aiSkarbiecByOwner: Array.from(aiSkarbiecByOwner.entries()),
+          aiTargetMemoryByOwner: snapshotAiTargetMemory(aiTargetMemoryByOwner),
           aiPracaPoolByOwner: Array.from(aiPracaPoolByOwner.entries()),
           aiNaukaPoolByOwner: Array.from(aiNaukaPoolByOwner.entries()),
           aiBadanaByOwner: Array.from(aiBadanaByOwner.entries()),
@@ -26603,6 +26616,17 @@ async function boot(): Promise<void> {
             // z głównej trudności (patrz aiDiffLevelForOwner). Zasila opts.poziomTrudnosci
             // (DifficultyParams: bonusProdukcja/bonusWalka/agresjaMnoznik/celObranie) niżej.
             const aiDiffLevel = aiDiffLevelForOwner(ownerId);
+            const aiVisibleHexes = fogOn ? currentVisibleForOwner(ownerId) : undefined;
+            if (aiVisibleHexes !== undefined) {
+              rememberVisibleAiTargets(
+                aiTargetMemoryByOwner,
+                ownerId,
+                aiVisibleHexes,
+                units,
+                cities,
+                keyOf,
+              );
+            }
             const contactedOwners = getDiplomaticContacts();
             const aiCivIdForOpts = aiOwnerCivMap.get(ownerId) ?? 'grecy';
             const aiTypForOpts = (aiCivIdForOpts as TypCywilizacji);
@@ -26614,6 +26638,9 @@ async function boot(): Promise<void> {
               { cityStateOpts: ownerCityStateOpts() },
             );
             const opts: AITurnOpts = {
+              // P-AI-BRAK-POJECIA-MGLY-Q1: AI widzi wyłącznie własny snapshot.
+              visibleHexes: aiVisibleHexes,
+              rememberedTargets: rememberedAiTargets(aiTargetMemoryByOwner, ownerId),
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
               poziomTrudnosci: aiDiffLevel,
               menuDifficulty: _menuDifficulty,
@@ -27547,6 +27574,18 @@ async function boot(): Promise<void> {
                 if (cmd.type === 'move') {
                   const u = units.find(x => x.id === cmd.unitId);
                   if (!u || u.ownerId !== ownerId) continue;
+                  const destinationCity = cities.find(
+                    c => c.q === cmd.toQ && c.r === cmd.toR && c.ownerId !== ownerId,
+                  );
+                  if (
+                    fogOn
+                    && destinationCity !== undefined
+                    && !currentVisibleForOwner(ownerId).has(keyOf(destinationCity.q, destinationCity.r))
+                  ) {
+                    // Pamięć pozycji służy do marszu, ale nie może zamienić się
+                    // w niewidoczny atak/przejęcie miasta.
+                    continue;
+                  }
                   if (!canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
                   const path = computePath(u, map, cmd.toQ, cmd.toR, (() => {
                     const occ = addForeignCityBlocks(new Set<string>(), u.ownerId, cities);
@@ -27654,6 +27693,10 @@ async function boot(): Promise<void> {
                   if (attacker.embarked === true) continue;
                   if (!areEnemyOwners(ownerId, defender.ownerId)) {
                     console.warn(`[AI ${ownerId}] Atak na owner ${defender.ownerId} bez wojny — pominięto`);
+                    continue;
+                  }
+                  if (fogOn && !currentVisibleForOwner(ownerId).has(keyOf(defender.q, defender.r))) {
+                    console.warn(`[AI ${ownerId}] Atak na niewidoczny cel — pominięto`);
                     continue;
                   }
                   const atkRoster = collectBattleRoster(attacker, units, 'attacker');
@@ -30915,6 +30958,11 @@ async function boot(): Promise<void> {
       const savedAiPracaPool = saved.meta?.aiPracaPoolByOwner as Array<[number, number]> | undefined;
       if (savedAiPracaPool?.length) {
         for (const [oid, v] of savedAiPracaPool) aiPracaPoolByOwner.set(oid, v);
+      }
+      aiTargetMemoryByOwner.clear();
+      const restoredAiTargetMemory = restoreAiTargetMemory(saved.meta?.aiTargetMemoryByOwner ?? []);
+      for (const [oid, entries] of restoredAiTargetMemory) {
+        aiTargetMemoryByOwner.set(oid, entries);
       }
       aiNaukaPoolByOwner.clear();
       const savedAiNaukaPool = saved.meta?.aiNaukaPoolByOwner as Array<[number, number]> | undefined;

@@ -58,6 +58,7 @@ import {
 import { splitEmpirePracaBudget } from './production';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
+import type { AiTargetMemoryEntry } from './ai-fog';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -206,6 +207,16 @@ function getAiParam(data: GameData, key: string, fallback: number): number {
 
 /** Optional configuration for decideAITurn. */
 export interface AITurnOpts {
+  /**
+   * Migła AI liczona przez silnik dla konkretnego ownera. Gdy podana, cele
+   * poza widocznością nie trafiają do listy celów bojowych.
+   */
+  visibleHexes?: ReadonlySet<string>;
+  /**
+   * Ostatnio znane pozycje celów. Służą wyłącznie do planowania ruchu;
+   * egzekutor ataku musi dostać cel z aktualnej widoczności.
+   */
+  rememberedTargets?: readonly AiTargetMemoryEntry[];
   /** Civilization type string (TypCywilizacji value) for archetype modifiers. */
   civType?: string;
   /**
@@ -2365,8 +2376,14 @@ export function decideAITurn(
 
   const myUnits      = units.filter(u => u.ownerId === playerId);
   const myCities     = cities.filter(c => c.ownerId === playerId);
-  const enemyUnits   = units.filter(u => u.ownerId !== playerId);
-  const enemyCities  = cities.filter(c => c.ownerId !== playerId);
+  const enemyUnits   = units.filter(
+    u => u.ownerId !== playerId
+      && (opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(u.q, u.r))),
+  );
+  const enemyCities  = cities.filter(
+    c => c.ownerId !== playerId
+      && (opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(c.q, c.r))),
+  );
   const engageableEnemyUnits = enemyUnits.filter(u => aiCanEngageOwner(opts, u.ownerId));
   const engageableEnemyCities = enemyCities.filter(c => aiCanEngageOwner(opts, c.ownerId));
 
@@ -2623,6 +2640,23 @@ export function decideAITurn(
       }
 
       const step = firstStep(unit, map, targetCity.q, targetCity.r, units);
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        unitActed.add(unit.id);
+        continue;
+      }
+    }
+
+    // A+C: gdy nie ma aktualnie widocznego miasta do marszu, można planować
+    // do ostatniej znanej pozycji celu. To NIE tworzy celu ataku — przy braku
+    // ponownego wykrycia trafia tu wyłącznie komenda ruchu.
+    const rememberedTarget = (opts.rememberedTargets ?? [])
+      .filter(t => t.targetOwnerId !== playerId)
+      .sort((a, b) =>
+        hexDistance(unit.q, unit.r, a.q, a.r) - hexDistance(unit.q, unit.r, b.q, b.r)
+      )[0];
+    if (rememberedTarget !== undefined) {
+      const step = firstStep(unit, map, rememberedTarget.q, rememberedTarget.r, units);
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
         unitActed.add(unit.id);
