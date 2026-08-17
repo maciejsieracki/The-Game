@@ -19,4 +19,5 @@ tylko spawner.”
 Czarna lista jest częścią save/load. Stary save bez pola otrzymuje bezpieczny
 default `[]`. Przy rozpoczęciu nowej gry lista jest pusta.
 
-**Status:** ECHO A zapisane; implementacja i testy w toku. Bez deployu.
+**Status:** GOTOWE LOKALNIE, bez deployu. ECHO commit `e6c2ea2b`;
+implementacja `85f70a91`; testy `0e720a70`, `e0548514`, `49f01e7d`.
