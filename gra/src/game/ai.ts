@@ -70,6 +70,8 @@ export interface AICmdMove {
   unitId: string;
   toQ: number;
   toR: number;
+  /** Cel miasta, który musi zostać ponownie wykryty przed przejęciem. */
+  targetCityId?: string;
 }
 
 /** Found a city at (q, r) via panel budowy (foundCityAt — bez osadnika). */
@@ -2549,7 +2551,13 @@ export function decideAITurn(
       ec => isWithinCityAttackRange(unit, ec, data),
     );
     if (adjacentEnemyCity !== undefined) {
-      commands.push({ type: 'move', unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r });
+      commands.push({
+        type: 'move',
+        unitId: unit.id,
+        toQ: adjacentEnemyCity.q,
+        toR: adjacentEnemyCity.r,
+        targetCityId: adjacentEnemyCity.id,
+      });
       unitActed.add(unit.id);
       continue;
     }
@@ -2641,7 +2649,13 @@ export function decideAITurn(
 
       const step = firstStep(unit, map, targetCity.q, targetCity.r, units);
       if (step !== null) {
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        commands.push({
+          type: 'move',
+          unitId: unit.id,
+          toQ: step.q,
+          toR: step.r,
+          targetCityId: targetCity.id,
+        });
         unitActed.add(unit.id);
         continue;
       }
@@ -2658,7 +2672,13 @@ export function decideAITurn(
     if (rememberedTarget !== undefined) {
       const step = firstStep(unit, map, rememberedTarget.q, rememberedTarget.r, units);
       if (step !== null) {
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        commands.push({
+          type: 'move',
+          unitId: unit.id,
+          toQ: step.q,
+          toR: step.r,
+          ...(rememberedTarget.kind === 'city' ? { targetCityId: rememberedTarget.targetId } : {}),
+        });
         unitActed.add(unit.id);
         continue;
       }

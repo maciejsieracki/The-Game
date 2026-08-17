@@ -1021,7 +1021,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
-import { aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
+import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import {
   decideAiWonderBuild,
@@ -27579,8 +27579,12 @@ async function boot(): Promise<void> {
                   );
                   if (
                     destinationCity !== undefined
-                    && !aiTargetVisibleForAction(
-                      currentVisibleForOwner(ownerId), fogOn, destinationCity.q, destinationCity.r, keyOf,
+                    && !aiCityCaptureAllowed(
+                      cmd.targetCityId,
+                      destinationCity,
+                      currentVisibleForOwner(ownerId),
+                      fogOn,
+                      keyOf,
                     )
                   ) {
                     // Pamięć pozycji służy do marszu, ale nie może zamienić się

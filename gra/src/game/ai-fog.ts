@@ -35,6 +35,19 @@ export function aiTargetVisibleForAction(
   return !fogEnabled || visibleHexes === undefined || visibleHexes.has(keyOf(q, r));
 }
 
+/** Waliduje przejęcie konkretnego miasta, nie tylko jego współrzędne. */
+export function aiCityCaptureAllowed(
+  expectedTargetCityId: string | undefined,
+  actualCity: AiFogTarget | undefined,
+  visibleHexes: ReadonlySet<string> | undefined,
+  fogEnabled: boolean,
+  keyOf: (q: number, r: number) => string,
+): boolean {
+  if (actualCity === undefined) return true;
+  if (expectedTargetCityId !== undefined && actualCity.id !== expectedTargetCityId) return false;
+  return aiTargetVisibleForAction(visibleHexes, fogEnabled, actualCity.q, actualCity.r, keyOf);
+}
+
 function memoryKey(kind: AiTargetKind, targetId: string): string {
   return `${kind}:${targetId}`;
 }

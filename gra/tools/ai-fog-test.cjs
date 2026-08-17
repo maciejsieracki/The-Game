@@ -16,7 +16,7 @@ const bundle = path.join(__dirname, '.ai-fog-bundle.cjs');
 fs.writeFileSync(entry, `
 export { decideAITurn } from ${JSON.stringify(path.join(root, 'src/game/ai'))};
 export {
-  aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets,
+  aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets,
   restoreAiTargetMemory, snapshotAiTargetMemory,
 } from ${JSON.stringify(path.join(root, 'src/game/ai-fog'))};
 `, 'utf8');
@@ -152,4 +152,26 @@ console.log('W7 mutation: memory snapshots are detached');
   assert.strictEqual(api.rememberedAiTargets(memory, 1)[0].q, 3);
 }
 
-console.log('AI fog tests PASS (7/7)');
+console.log('W8 remembered city A cannot capture replacement city B; A can be recaptured');
+{
+  const commands = api.decideAITurn(
+    1,
+    [unit('a8', 1, 5, 5)],
+    [city('home', 1, 4, 4), city('city-a', 2, 6, 5)],
+    makeMap(), data,
+    { canEngageOwner: atWar, visibleHexes: new Set(['6,5']) },
+  );
+  const cityMove = commands.find(c => c.type === 'move' && c.targetCityId !== undefined);
+  assert.strictEqual(cityMove.targetCityId, 'city-a');
+  const cityB = { id: 'city-b', ownerId: 2, q: 6, r: 5 };
+  assert.strictEqual(
+    api.aiCityCaptureAllowed('city-a', cityB, new Set(['6,5']), true, keyOf),
+    false,
+  );
+  assert.strictEqual(
+    api.aiCityCaptureAllowed('city-a', { ...cityB, id: 'city-a' }, new Set(['6,5']), true, keyOf),
+    true,
+  );
+}
+
+console.log('AI fog tests PASS (8/8)');
