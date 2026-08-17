@@ -31033,3 +31033,37 @@ w komentarzu kodu (`ROBOCZE ZAŁOŻENIE... do potwierdzenia`) do usunięcia przy
 edycji tego pliku (kosmetyka, nie pilne, nie samodzielny dispatch).
 
 ---
+
+## P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „nie wiem też co jest cyną. Nie mogę jej znaleźć na mapie. Nawet nie wiem,
+czy w ogóle ustawiliśmy specjalny wygląd dla surowca cyna. Chyba nie. Jest możliwe, że w ogóle go
+nie rostawia system." + osobna uwaga na przyszłość: „musimy zrobić jakiś system łatwiejszego
+rozpoznawania surowców."
+
+**Zweryfikowane w kodzie (orkiestrator, przed dispatchem, potwierdzone nie zgadywane):**
+- Cyna JEST umieszczana przez generator: `gra/data/map-gen-params.json`
+  `deposit_rules.cyna = {rarity: 0.02}`, `metal_deposit_min_era.cyna = 2` (Brąz),
+  **`FAIR_PLAY_DEPOSIT_IDS`** (`gen-helpers.ts:12114-12115`) obejmuje `cyna` — czyli GWARANTOWANA
+  każdej cywilizacji, tak jak żelazo/miedź/glina, mimo że rzadkość 5× mniejsza niż miedzi.
+  `allowedOn`: Wzgórza LUB Góry, tak jak złoto (`gen-helpers.ts:12184-12185`).
+- **Cyna NIE MA żadnego dedykowanego wyglądu 3D na mapie świata.** Grep po „cyna" w
+  `gra/src/render/**` → **zero trafień**. Dla porównania: miedź/żelazo/złoto mają dedykowane pliki
+  renderujące (m.in. `gra/src/render/kopalnia-zlota-opus5.ts` — osobny model kopalni złota).
+  Cyna jest więc funkcjonalnie w grze (można ją wydobywać, jest w ekonomii — `resources.json`,
+  `econ-params.json`, `terrain-improvements.json`), ale wizualnie renderuje się jako zwykłe
+  wzgórze/góra bez żadnego znacznika złoża — **to jest realna przyczyna, że nie da się jej
+  znaleźć na mapie, nie wrażenie.**
+- Ikona UI (2D, panel/tooltip) istnieje — `P-IKONA-RUDA-CYNY-PLACEHOLDER` (2026-08-13, zamknięty)
+  wymienił placeholder na dedykowaną ikonę. To dotyczy WYŁĄCZNIE ikony w interfejsie (panele,
+  tooltipy), nie modelu/dekalu na samej mapie świata — dwie różne rzeczy.
+
+**Osobna uwaga Macieja na przyszłość (zarejestrowana, nie temat do dispatchu teraz):** potrzebny
+jakiś ogólny system ułatwiający rozpoznawanie surowców na mapie (nie tylko cyna) — do rozważenia
+przy przyszłym przeglądzie UX mapy, wymaga osobnego ABC co do formy (highlight/filtr/tryb
+podświetlenia złóż itp.).
+
+STATUS: **OTWARTE — do dispatchu po zamknięciu bieżących wątków** (wymaga pracy w
+`gra/src/render/**` — Opus 5, stała zgoda właściciela).
+
+---
