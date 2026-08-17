@@ -31098,6 +31098,20 @@ rozszerzyć później, ale rozszerzenie samo w sobie to osobny, przyszły temat.
 
 STATUS: **OTWARTE — dispatch w toku (recon + implementacja, Opus 5, worktree).**
 
+**Implementacja odebrana i scalona (2026-08-17), commit `b0f9bcb9`:** warstwa
+`MINE_ELIGIBLE_STYLE` (`gra/src/render/rangeOverlay.ts`, kolor `0x66ccff`, opacity 0.30,
+nowe pole `RangeOverlayStyle.alwaysOnTop`), przeliczana w `refreshBuildHighlight()`
+(`gra/src/main.ts`) wyłącznie gdy `isMineImprovementKey(activeImprovementKey)`
+(`gra/src/map/improvement-build.ts`, WYŁĄCZNIE 4 kopalnie: miedź/żelazo/węgiel/cyna) —
+zero dodatkowych skanów terytorium ponad istniejący `getQualifyingHexes`, `qualifies()`/
+`createQualifier()` nietknięte. Bramki zweryfikowane niezależnie przez orkiestratora:
+tsc 0, vite build OK, nowy test `kopalnia-podswietlenie-heksow-test.cjs` 71/0, logic-test
+213/213, map-improvement-qualify-test 112/0, improvement-territory-gate-test 6/0.
+Baseline pre-istniejących porażek bez zmian: zloto-test 38/7, tarasy-cywilizacje-test 16/1
+(identyczne przed i po). Evaluator (Opus 5, worktree) dispatchowany — czeka na werdykt.
+
+STATUS: **W TRAKCIE — Evaluator pracuje.**
+
 ---
 
 ## R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1 (2026-08-16, decyzja/prośba Macieja)
