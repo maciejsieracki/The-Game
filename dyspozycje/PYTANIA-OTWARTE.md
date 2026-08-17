@@ -31077,12 +31077,16 @@ rozproszony po wielu miejscach wołających tę samą kosztowną funkcję — wy
 profilowania (DevTools performance trace albo żywy test z `performance.now()` wokół typowych
 akcji: ruch jednostką, otwarcie panelu, przełączenie zaznaczenia), nie dalszego zgadywania z grep.
 
+**Decyzja Macieja (AskUserQuestion, 2026-08-17): „Do kolejki"** — NIE dispatchować teraz mimo
+wagi znaleziska; zajmiemy się po odnowieniu limitu kontekstu/tokenów sesji, razem z resztą
+tematów w kolejce (12 surowców, potrojenie kopalni×3 itd.).
+
 STATUS: **OTWARTE — TRZY powiązane wątki pod tym ID: (1) pamięć/GPU czyste w zmierzonym oknie,
 stuck-turn wymaga potwierdzenia na aktualnym HEAD; (2) opóźnienie panelu miasta; (3) NAJSZERSZY i
 najbardziej precyzyjny opis — spowolnienie KAŻDEJ interakcji (ruch, przełączanie, klik),
 nieobecne na starcie gry, rosnące z liczbą miast — prawdopodobnie wspólny kosztowny handler
-wołany po każdej akcji gracza. Czeka na decyzję właściciela: dispatch teraz (odstępstwo od
-standing rule) czy do kolejki.**
+wołany po każdej akcji gracza. Świadomie odłożone do kolejki (decyzja Macieja powyżej), NIE do
+dispatchu teraz mimo wagi.**
 
 **Wskazówka diagnostyczna Macieja (dopisana po dispatchu reconu):** „myślę, że też duży wpływ na to,
 jak działa szybko gra jest to, jak dużo gracz posiada miast. Im więcej posiadam miast, [im więcej]
