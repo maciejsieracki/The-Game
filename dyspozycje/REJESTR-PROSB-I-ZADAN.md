@@ -2467,6 +2467,20 @@ oraz ruszenia przypiętej bramki `empire-miasta-table-test.cjs` (dziś 89/0, pin
 nominalną). Pełna treść pytania w `PYTANIA-OTWARTE.md`, sekcja
 `P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD`.
 
+## P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 — ECHO C (2026-08-17)
+Maciej: `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 = C`. Po odkryciu technologii
+umożliwiającej wejście do epoki Brązu ma pojawić się modal pełnej karty technologii
+(budynki, jednostki, ulepszenia, kolejne technologie, wymagania i efekty), oparty
+na prawdziwych danych tech tree. Modal nie anuluje tury ani badań, nie jest popupem
+podboju miast-państw. Zakres: istniejący toast/zdarzenie epoki, karta, Escape/
+zamknięcie, ponowne otwarcie z drzewa, długie listy/brak sekcji, test produkcyjnej
+ścieżki i starego save. Bez Designera i linkowania zewnętrznego.
+
+Kanon: `docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md`.
+Status: **W TRAKCIE** — implementacja `1383c31e`/`b047ff73`; tsc PASS,
+tech-tree 19/19, research 33/33, defer 7/7 + mutacje 8/8. Live build PASS,
+egzekucja Chromium zablokowana brakiem executable w środowisku.
+
 ## P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 — ECHO (2026-08-16)
 Maciej: `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 = A`. Realne przejęcie miasta jak barbarzyńcy —
 wejście AI na pusty, niebroniony heks miasta w kontekście ataku dystansowego ma wołać tę samą

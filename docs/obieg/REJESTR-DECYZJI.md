@@ -44,6 +44,7 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
+| **P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1** | 2026-08-17 | **C** — po odkryciu technologii awansu do Brązu modal pełnej karty technologii; bez anulowania tury/badań; nie popup miast-państw | B+E+F | 🔵 **W TRAKCIE** | `techDiscoveryNotice.ts` · `main.ts` · tsc + tech-tree 19/19 + research 33/33 + defer 7/7 | live build PASS, Chromium zablokowany brak executable; bez Designera/Civpedii/Wikipedii |
 | **AI-BALANS-STEP6-Q1** | 2026-08-06 | **A** — kara score 2. zwiadowca −80 pkt w `chooseCityProduction` | D | 🟡 **ZAPISANA** | `docs/decyzje/AI-BALANS-STEP6-Q1.md` | czeka `działaj` · paczka ABC 2026-08-06 |
 | **P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1** | 2026-08-17 | **B** — gracz, AI i miasta-państwa kupują jednostki wyłącznie za Skarbiec/Pieniądze; brak jednostek w kolejce Pracy budynków | B+D+F | **GOTOWE — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.md` · ECHO `bc200aee` · implementacja `914ce8da` · test `rekrutacja-skarbiec-only-test.cjs` **13/13** | pre-existing dług osobno: `unit-stock-cost-test.cjs` **41/58**, `ai-recruit-upkeep-gate-test.cjs` **18/27**; bez push/merge/deploy |
 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | 2026-08-06 | **A** + reguła — `kopalnia` legacy + wszystkie kopalnie teraz i przyszłe zachowują relief | A+F | 🟡 **ZAPISANA** | `docs/decyzje/R-KAMIEN-RELIEF-FOLLOWUP-Q1.md` | czeka `działaj` |
