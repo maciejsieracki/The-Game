@@ -31096,7 +31096,8 @@ glinianki, stadniny, itd.), nie tylko kopalnie. To świadomie odłożone — dzi
 implementuje wyłącznie kopalnie, architektura ma być na tyle ogólna, żeby dało się to łatwo
 rozszerzyć później, ale rozszerzenie samo w sobie to osobny, przyszły temat.
 
-STATUS: **OTWARTE — dispatch w toku (recon + implementacja, Opus 5, worktree).**
+(Status pośredni „dispatch w toku" — ZASTĄPIONY niżej, patrz `STATUS: **ZAMKNIĘTE**` na
+końcu tej sekcji.)
 
 **Implementacja odebrana i scalona (2026-08-17), commit `b0f9bcb9`:** warstwa
 `MINE_ELIGIBLE_STYLE` (`gra/src/render/rangeOverlay.ts`, kolor `0x66ccff`, opacity 0.30,
