@@ -157,30 +157,6 @@ export function unitRowStat(
   return fallback;
 }
 
-/**
- * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE (Maciej 2026-08-14): zasięg ataku
- * jednostki NA MAPIE ŚWIATA, w heksach mapy. 0 = jednostka zwarcia, wymaga
- * adiacencji (dystans dokładnie 1) — bez zmian względem dotychczasowego
- * zachowania. Czyta WPROST "Zasięg ataku (hex)" z units.json (ten sam wzorzec
- * odczytu co combatUnitFromDef/unitRowStat wyżej) — BEZ domyślnego fallbacku
- * dla jednostek z pustym polem, bo dziś każda jednostka z "Atak dystansowy" >
- * 0 ma to pole wypełnione (zweryfikowane przez skan units.json przy tym
- * zgłoszeniu). NIE mylić z attackRange() w battleScene.ts — tamta funkcja ma
- * WŁASNĄ skalę i fallback dla bitwy taktycznej (inna siatka niż mapa świata).
- * / EN: unit's WORLD-MAP attack reach in map hexes. 0 = melee unit, requires
- * adjacency (distance exactly 1) — unchanged from prior behaviour. Reads
- * "Zasięg ataku (hex)" from units.json DIRECTLY (same read pattern as
- * combatUnitFromDef/unitRowStat above) — NO default fallback for units with
- * an empty field, since today every unit with "Atak dystansowy" > 0 has the
- * field filled in (verified by scanning units.json for this report). NOT to
- * be confused with attackRange() in battleScene.ts — that function has its
- * OWN scale and fallback for the tactical battle grid (a different grid than
- * the world map).
- */
-export function unitMapAttackRangeHex(def: Record<string, unknown> | null | undefined): number {
-  return unitRowStat(def, 'Zasięg ataku (hex)', 'Zasieg ataku (hex)', 0);
-}
-
 function combatStatField(s: Record<string, unknown>, ...keys: string[]): unknown {
   for (const k of keys) {
     const v = s[k];

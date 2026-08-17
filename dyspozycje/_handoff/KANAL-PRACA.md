@@ -7326,3 +7326,49 @@ FALI 288). `origin/main`: `3ea531c6` → `17baa179`. Scalenie celowało w **comm
 nie w czubek gałęzi — zgodnie z regułą. FALA 288 (`10efff7c`) zostaje na gałęzi sesji **wyłącznie
 do testów**, nie scalona; scali się dopiero przy FALI 289.
 CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpis wyżej).
+
+## [23:37 PL, 2026-08-16] Sesja chmurowa → sesja lokalna — deploy ROBOCZA FALA 289
+FALA 289 (`e457e054`) — build z HEAD `2ce69b8f`, 11 commitów od FALI 288 (`5b471f32`). Zawartość:
+**cofnięcie mechaniki „atak bez adiacencji"** (`P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`, ECHO
+`COFNIECIE-Q1=A`) — właściciel sprostował że cała 4-rundowa saga z FAL 281-288 (strzelanie bez
+ruchu, AI zdobywające miasta z dystansu) była nieporozumieniem zakresu; chodziło wyłącznie o
+marsz-potem-atak (osobny, już działający mechanizm, nietknięty). Cofnięte do stanu funkcjonalnie
+równoważnego kodowi sprzed całej sagi (`9e96370a`), 2 pliki bajt-w-bajt identyczne, zweryfikowane
+przez Evaluatora żywym uruchomieniem (marsz-potem-atak działa identycznie dla wszystkich typów
+stosu). **WAŻNE dla playtestu: łucznicy/procarze/kusznicy/katapulty NIE strzelają już bez
+podejścia na sąsiedni heks — to jest oczekiwane, świadome cofnięcie, nie regresja.** `gra/data`
+NIE ruszone. Szczegóły: `WERSJE.md`.
+CZEKAM-NA: **sesja lokalna — pull na dysk właściciela**, meldunek „gotowe, testuj `e457e054`".
+
+## [23:38 PL, 2026-08-16] Sesja chmurowa → main — scalenie FALA 288 (jedna fala do tyłu)
+FALA 288 (`5b471f32`) scalona do `main` **fast-forward** (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 289). `origin/main`: `17baa179` → `5b471f32`. Scalenie celowało w **commit deployu** FALI 288,
+nie w czubek gałęzi. FALA 289 (`0528dccc`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
+scalona; scali się dopiero przy FALI 290.
+CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpisy wyżej).
+
+## [12:56 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — Deploy ROBOCZA FALA 290
+md5 `67fc4b0bc30802bbc75ccc31f110f471` (skrót `67fc4b0b`), źródłowy HEAD `d152be56`. Dwa tematy:
+(1) `R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1` — podświetlenie heksów pod kopalnie (jasnoniebieskie,
+30% przezroczystości, wyłącznie 4 kopalnie: miedź/żelazo/cyna/złoto); (2)
+`R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1` — potrojenie rzadkości złóż miedzi/cyny (0.10→0.30,
+0.02→0.06). Oba z werdyktem Evaluatora (Opus 5) PASS-WITH-NOTES. `verify-robocza-bundle.cjs` →
+VERIFY OK. `map-gen-regression-test.cjs` uruchomiony bezpośrednio w drzewie, jeszcze się liczy
+(>95 min CPU) — świadoma decyzja właściciela nie czekać, pokrycie przez inne bramki (fair-play-grid,
+deposit-coast) uznane za wystarczające. Szczegóły: `WERSJE.md` FALA 290.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `67fc4b0b`".
+
+## [12:58 PL, 2026-08-17] Sesja chmurowa → main — scalenie FALA 289 (jedna fala do tyłu)
+FALA 289 (`0528dccc`) scalona do `main` **fast-forward** (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 290). `origin/main`: `5b471f32` → `0528dccc`. Scalenie celowało w **commit deployu** FALI 289,
+nie w czubek gałęzi. FALA 290 (`3786cedc`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
+scalona; scali się dopiero przy FALI 291.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela (patrz wpis FALA 290 wyżej).
+
+## [13:XX PL, 2026-08-17] Sesja chmurowa — uzupełnienie: map-gen-regression-test dokończony
+Wynik dla FALI 290 (`67fc4b0b`): exit 1, ale WYŁĄCZNIE z powodu znanego limitu wydajności
+sandboksa (`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`, ten sam co FALA 287) — progi czasowe `<7s`/`<15s`
+przekroczone (85,84s / 1291,92s), wszystkie asercje POPRAWNOŚCI (determinizm, rzeki, Pangea, chat)
+zielone. Potwierdza brak regresji generatora po potrojeniu rzadkości miedzi/cyny. Szczegóły:
+`WERSJE.md` FALA 290.
+CZEKAM-NA: nic (informacyjne uzupełnienie).

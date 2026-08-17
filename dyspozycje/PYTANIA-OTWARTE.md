@@ -30712,3 +30712,661 @@ pilne, świadomie odłożone zgodnie z zasadą „jeden wątek na raz" — nie p
 deployu).
 
 ---
+
+## P-BITWA-ATAK-DYSTANSOWY-ZAKRES-NIEPOROZUMIENIE-KRYTYCZNE (2026-08-16, sprostowanie Macieja)
+
+**⛔ KRYTYCZNE — możliwe nieporozumienie co do zakresu całego tematu `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`, przez 4 rundy implementacji, już zdeployowane do ROBOCZA (FALA 288) i częściowo scalone do `main` (FALA 287).**
+
+**Oryginalny cytat zgłoszenia (2026-08-14):** „jest jeden błąd. Nie da się z większej odległości
+zaatakować jednostki przeciwnika. Trzeba podejść na HEX obok i dopiero przeprowadzić atak. Zarówno
+atak na miasto jak i atak na jedną jednostkę powinien być możliwy z daleka, jeżeli tylko jest dana
+jednostka lub miasto w zasięgu." — orkiestrator odczytał to literalnie jako żądanie ataku BEZ
+wymogu adiacencji (jednostka strzela z dystansu, jeśli cel mieści się w jej `"Zasięg ataku (hex)"`)
+i tak zaimplementował przez 4 rundy (FALA 281→288).
+
+**Sprostowanie Macieja (2026-08-16, dosłownie):** „ustaliliśmy, że chodziło mi tylko o to, że można
+było z dalszej odległości wyznaczyć do ataku inną jednostkę. a nie żeby z kilku pul, z kilku heksów
+rozpoczynała się bitwa." Doprecyzowane przez `AskUserQuestion` — wybrana opcja: **„Wybór celu wśród
+kilku wrogów"** — chodziło o możliwość wskazania, KTÓRĄ konkretnie jednostkę przeciwnika (spośród
+kilku widocznych) zaatakować, **NIE** o rezygnację z wymogu adiacencji. Bitwa ma nadal wymagać
+podejścia na sąsiedni heks.
+
+**Skutek:** cała mechanika „atak bez adiacencji" (rundy 1-4, `9e25ea77`/`13f595bc`/`6826b16c` i
+pokrewne), łącznie z realnym przejęciem miasta przez AI wchodzącą na dystans
+(`tryAutoCaptureEmptyCityAt` z egzekutora), może być **poza pierwotnie żądanym zakresem** — zbudowano
+funkcjonalność, o którą nikt nie prosił, kosztem 4 rund pracy Operator+Evaluator, kilku ECHO-decyzji
+ABC (`P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B`, `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A`) i już
+zdeployowanej/scalonej wersji.
+
+**Dispatchowany recon (agent `af665691a77dc4362`, Explore, w toku):** (1) czy mechanizm wyboru celu
+wśród kilku wrogów w adiacencji istnieje dziś w jakiejkolwiek formie, (2) dokładna skala kodu do
+ewentualnego cofnięcia (wszystkie pliki/funkcje dotknięte 4 rundami), (3) czy coś z tego da się
+bezpiecznie zachować (np. `isTargetWithinStackAttackRange` z FALI 283 dotyczy wyboru WŁAŚCIWEJ
+jednostki we WŁASNYM stosie, nie zasięgu ataku — potencjalnie ortogonalne do tego nieporozumienia).
+
+**Recon zakończony (agent `af665691a77dc4362`):** dziś NIE istnieje żaden dedykowany UI wyboru celu
+wśród kilku widocznych wrogów — jedyny „wybór" to kliknięcie we właściwy heks (bitwa i tak zbiera
+pełny roster obu stron niezależnie od tego, kto był „reprezentantem" stosu). Skala kodu 4 rund:
+`main.ts` (~8 funkcji/gałęzi: `tryLaunchMarchAttack`, `isTargetWithinAttackRange`, gałęzie kliku
+jednostka→miasto i jednostka→jednostka, `refreshHoverPathPreview`, `planMarchTo`, egzekutor AI z
+`rangedCityAttackEntry`, wywołania `tryAutoCaptureEmptyCityAt` z tej ścieżki), `game/ai.ts`
+(`isWithinAttackRange`, `isWithinCityAttackRange`), `game/city-hex-movement.ts`
+(`canAiEnterUndefendedCityHex` — cała funkcja tylko dla tej mechaniki), `map/map-attack-city.ts`
+(`eligibleCityAttackers`), `game/combat.ts` (`unitMapAttackRangeHex` — nowa funkcja). Testy:
+`atak-dystansowy-mapa-test.cjs` (888 linii) + `atak-dystansowy-egzekucja-test.cjs` (666 linii).
+**Ortogonalne, do zachowania:** `isTargetWithinStackAttackRange` (FALA 283, wybór WŁAŚCIWEJ
+jednostki we WŁASNYM stosie przy kliku — nie zasięgu ataku) i cały mechanizm marsz-potem-atak
+(`P-BITWA-MARSZ-POTEM-ATAK-NIE-KOLEJKUJE`, FALA 284-285).
+
+**ECHO właściciela (2026-08-16): `P-BITWA-ATAK-DYSTANSOWY-COFNIECIE-Q1 = A` — cofnij całkowicie.**
+Przywrócić wymóg fizycznej adiacencji (dist=1) do inicjacji ataku, jednostka-jednostka i
+jednostka-miasto, gracz i AI — dokładnie jak przed 2026-08-14 (baseline `9e96370a`). Zachować
+marsz-potem-atak i wybór jednostki we własnym stosie. **Cofa decyzje ECHO z rund 1-4 tego samego
+tematu:** `P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B`, `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A` — obie
+były odpowiedziami na źle zrozumiany zakres, unieważnione tym ECHO.
+
+**Cofnięcie zaimplementowane (commit `2acf7c08`).** Wszystkie 5 dotkniętych plików źródłowych
+(`main.ts`, `game/ai.ts`, `game/city-hex-movement.ts`, `map/map-attack-city.ts`, `game/combat.ts`)
+przywrócone do stanu funkcjonalnie równoważnego baseline `9e96370a` — 2 z nich zweryfikowane jako
+**bajt-w-bajt identyczne**. Usunięte testy `atak-dystansowy-mapa-test.cjs`/`atak-dystansowy-
+egzekucja-test.cjs` (testowały funkcjonalność, która przestała istnieć), nowy strażnik regresyjny
+`atak-adiacencja-wymagana-test.cjs` (57/0). Bramki zielone: tsc 0, build exit 0, combat-test 6/6,
+map-attack-city-test 8/0, barb-city-capture-cluster-test 94/0, march-attack-queue-persist-test
+57/0. `ai-test` (285/8) i `unit-power-test` (4/2) niezmienione, pre-istniejące.
+
+**Evaluator (`a511947fa1b30eb34`, Opus 5, 2026-08-16): PASS-WITH-NOTES.** Zweryfikowane niezależnie:
+oba twierdzenia „bajt-w-bajt" potwierdzone (`git diff 9e96370a` pusty dla obu plików), zero
+pozostałości 8 usuniętych nazw w `gra/src/**`, `"Zasięg ataku (hex)"` czytany dziś wyłącznie w
+scenie bitwy taktycznej (jak przed całą sagą). **Marsz-potem-atak zweryfikowany żywym
+uruchomieniem** (własny harness esbuild, 33/0) dla 3 typów stosu (zwarcie/dystans/mieszany) —
+działa identycznie dla wszystkich, plan przetrwał przy dist=2/3, atak wystartował przy dist=1.
+Asymetryczna decyzja Operatora (embarked-check zachowany w `isWithinAttackRange`, usunięty w
+`isWithinCityAttackRange`) zweryfikowana jako merytorycznie uzasadniona, nie niekonsekwencja —
+`canUnitOccupyCityHex` blokuje każdy obcy heks miasta bezwarunkowo, bez wzorca specyficznego dla
+`embarked`, więc dołożenie bramki tam nic by nie dało.
+
+Noty nieblokujące: **N1** — zdeployowana ROBOCZA (FALA 288) nadal zawiera cofniętą mechanikę,
+cofnięcie będzie widoczne dla właściciela dopiero po nowym deployu. **N2** — ten wpis rejestru
+(naprawione tym samym commitem dokumentacji). **N3** — embarked-check to jedyne świadome
+odstępstwo od dosłownego „identyczne jak baseline", udokumentowane i uzasadnione. **N4 — WAŻNE,
+osobny temat, wydzielony niżej w pliku jako `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA`**: AI
+nie ma dziś ŻADNEJ ścieżki zdobycia miasta przez adiacencję — gałąź `ai.ts:2517` emituje `move` na
+heks obcego miasta, egzekutor zawsze go odrzuca (`canUnitOccupyCityHex`), jednostka traci turę.
+To pre-istniejące (identyczne w baseline `9e96370a`), NIE regresja tego cofnięcia — dokładnie ten
+problem próbowały (źle) naprawić rundy 3-4 pod pomyłkowo zrozumianym zakresem. Evaluator wyraźnie
+zalecił: zarejestrować z własnym ABC, świadomie NIE naprawiać „przy okazji" — to właśnie ten odruch
+wygenerował całą 4-rundową sagę. **N5** — jakość nowego strażnika potwierdzona, lista 8 zakazanych
+nazw w pełni trafna (`git log -S` potwierdza że każda faktycznie istniała i została usunięta).
+
+STATUS: **ZAMKNIĘTE** — kod gotowy do deployu. **N1: właściciel powinien wiedzieć, że aktualna
+ROBOCZA (FALA 288) jeszcze pokazuje starą mechanikę — cofnięcie wymaga nowego deployu.**
+
+---
+
+## P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat, lekko poprawione literówki):** „jest inny problem, mianowicie wydaje mi się,
+że AI i czy państwa miasta zamiast rekrutować, za pieniądze wojsko, to one budują je tak jak
+budynki. To jest prawda, bo po zdobyciu miast w liście do wybudowania budynków widnieją jednostki
+wojskowe."
+
+**Interpretacja (do potwierdzenia reconem, nie zgadywać):** Maciej podejrzewa, że AI (i/lub
+miasta-państwa, MP) nie korzysta z mechanizmu rekrutacji jednostek za Pieniądz (jak gracz), tylko
+umieszcza jednostki wojskowe w tej samej kolejce produkcji co budynki (Praca/tury), co potwierdza
+obserwacją: po zdobyciu takiego miasta przez gracza, w liście „do wybudowania" (budynki) widnieją
+jednostki wojskowe — sugeruje to, że były one wpisane do tej samej kolejki/listy co budynki, a nie
+osobnej ścieżki rekrutacji.
+
+**Nie zbadane jeszcze przez orkiestratora — do reconu:** czy to faktyczny mechanizm silnika (AI/MP
+mają osobną, tańszą/inną ścieżkę tworzenia jednostek niż gracz), czy tylko artefakt UI (kolejka
+produkcji zdobytego miasta pokazuje pozycje, które i tak istniały, niezależnie od tego jak zostały
+tam wstawione), czy błąd (jednostki faktycznie trafiają do kolejki budynków zamiast właściwej
+kolejki rekrutacji wojska).
+
+STATUS: **OTWARTE — do reconu po zamknięciu bieżącego wątku (cofnięcie ataku dystansowego).**
+
+---
+
+## P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA (2026-08-16, znalezisko Evaluatora cofnięcia N4)
+
+**Znalezisko (Evaluator `a511947fa1b30eb34`, zweryfikowane porównaniem z baseline `9e96370a` —
+identyczne, więc NIE jest to regresja cofnięcia ataku dystansowego):** gałąź AI `ai.ts:2517`
+(komentarz w kodzie: `// 4b: adjacent enemy city -> move onto it (engine handles capture)`) emituje
+rozkaz `move` na heks obcego, niebronionego miasta w adiacencji — ale egzekutor (`main.ts`) ZAWSZE
+odrzuca ten rozkaz przez `canUnitOccupyCityHex` (blokuje bezwarunkowo każdy obcy heks miasta), po
+czym jednostka trafia do `unitActed.add()` i traci całą turę nic nie robiąc. Jedyne dziś istniejące
+wywołania `tryAutoCaptureEmptyCityAt` prowadzą od gracza (3×) i barbarzyńców (1×) — **zero od
+cywilizacji AI**. AI major nie ma więc dziś ŻADNEJ działającej ścieżki zdobycia miasta przez zwykłą
+adiacencję (nie mylić z atakiem dystansowym, który dotyczył czegoś innego i został świadomie
+cofnięty).
+
+**Dlaczego to osobny temat, nie „naprawa przy okazji":** to dokładnie ten sam problem, który rundy
+3-4 tematu `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE` próbowały naprawić — pod pomyłkowo zrozumianym
+zakresem (przez ścieżkę ataku dystansowego zamiast zwykłej adiacencji). Naprawienie go teraz, przy
+okazji zamykania tamtego tematu, powtórzyłoby dokładnie ten sam błąd procesowy (rozszerzanie
+zakresu bez jawnej decyzji właściciela), który wygenerował całą 4-rundową sagę.
+
+**Do ABC przy najbliższym przeglądzie tematów AI/bitewnych, nie pilne** (pre-istniejące, AI radzi
+sobie dziś bez tej ścieżki — barbarzyńcy i gracz mają działającą, cywilizacje major nie).
+
+STATUS: **OTWARTE — zarejestrowane, świadomie NIE naprawiane teraz.**
+
+---
+
+## P-EPOKA-BRAK-INFO-REGRESJA-BRAZ (2026-08-16, sprostowanie Macieja — temat "zamknięty" nadal wadliwy)
+
+**Zgłoszenie (cytat):** „przyszedłem do brązu, ale nie widziałem żadnej informacji o tym."
+
+**Kontekst krytyczny:** temat `P-EPOKA-BRAK-INFO-PODBOJ-PANSTW-MIAST` jest formalnie
+**ZAMKNIĘTY** (commity `6936d4d3`/`90661f91`, mechanizm `pendingEraChangeToastForNextTurn` +
+`flushPendingEraChangeToast()`), Evaluator PASS-WITH-NOTES w dwóch rundach, wdrożony w FALI 288.
+Mimo to Maciej zgłasza brak toastu — doprecyzowane przez `AskUserQuestion`: **nowa gra, zaczęta PO
+ostatnim pull/odświeżeniu** — to NIE stary zapis ani stara karta przeglądarki, więc to prawdopodobnie
+realna luka w naprawie, nie artefakt cache.
+
+**Recon (orkiestrator, przed dispatchem):** `notifyPlayerEraChangeIfAdvanced()` (`main.ts:11854`) ma
+**5 miejsc wywołania** w kodzie (linie 3281, 3638, 8521, 20108, 25390) — fix z rundy „toast połykany
+przez EOT" naprawiał WYŁĄCZNIE ścieżkę `endTurnInProgress` (deferowanie do `pendingEraChangeToastForNextTurn`
++ flush po zakończeniu overlay). Nie zweryfikowane jeszcze: czy WSZYSTKIE 5 miejsc wywołania
+faktycznie prowadzi do poprawnego toastu, czy któreś z nich (np. przejście epoki wywołane przez
+dokończenie badania NIE w fazie EOT, albo pierwsze-w-grze przejście Kamień→Brąz konkretnie) ma inną,
+nienaprawioną przyczynę zniknięcia komunikatu.
+
+**Do dispatchu:** żywy test w headless Chromium (wzorem wcześniejszych tematów bitewnych w tej
+sesji) — nowa gra, odegranie tur do faktycznego przejścia Kamień→Brąz, obserwacja czy toast się
+pojawia. Jeśli nie — ustalić którą z 5 ścieżek wywołania faktycznie przechodzi gracz i dlaczego
+akurat ta nie pokazuje toastu, zamiast zgadywać.
+
+**Wynik reconu (agent `a38bed1f2ba5518bd`): mechanizm POPRAWNY, to nie był bug kodu.** Żywa
+reprodukcja w headless Chromium (nowa gra → jedno naturalne przejście Kamień→Brąz przez realny
+`triggerPlayerEndTurn()`, ta sama ścieżka co przycisk gracza) potwierdziła: toast się pokazuje
+(`display:block`, treść „Nowa epoka"/„Brązu"), razem z wpisem w dzienniku Wydarzeń. Nowa bramka
+regresyjna `era-change-toast-live-test.cjs` (17/17, realny build+Chromium, zero reimplementacji
+formuły) scalona do drzewa głównego (`9590ccca`), zweryfikowana niezależnie przez orkiestratora
+identycznie 17/17.
+
+**Rzeczywista przyczyna zgłoszenia — pomyłka diagnostyczna po drodze, nie regresja silnika.**
+Worktree Operatora dispatchowanego do tego reconu miał STARĄ kopię `gra-robocza/Gra-ROBOCZA.html`
+(md5 `a2afa359`, FALA 287, bez fixu) i na tej podstawie błędnie zdiagnozował „lukę w deployu".
+Zweryfikowane przez orkiestratora **w głównym drzewie repo**: `git log -- gra-robocza/Gra-ROBOCZA.html`
+pokazuje commit `5b471f32` („bundle pliki pominięte w poprzednim commicie"), a `md5sum` na tym
+pliku w głównym drzewie daje **`3d37608e` (FALA 288, z fixem)** — deploy w repo jest poprawny.
+**Najbardziej prawdopodobna prawdziwa przyczyna u Macieja:** lokalna kopia dysku, którą faktycznie
+gra, może nie być jeszcze zsynchronizowana z FALĄ 288 — sync na dysk właściciela wykonuje sesja
+lokalna (protokół „push", CLAUDE.md §6) i nie ma dowodu, że to nastąpiło po tym deployu. **Nie
+zgadywane dalej — do potwierdzenia wprost z Maciejem**, jak dokładnie uzyskuje dostęp do grywalnej
+wersji.
+
+STATUS: **ZAMKNIĘTE** — mechanizm zweryfikowany poprawny, nowa bramka regresyjna w drzewie. Do
+wyjaśnienia z właścicielem: kanał dystrybucji bundla, którym faktycznie gra.
+
+---
+
+## P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA (2026-08-16, zrzuty Macieja — potwierdzenie N-E1 + nowy wątek staleness)
+
+**Kontekst:** temat macierzysty `P-DYPLO-BILANS-GATE-NIESPOJNY` (runda 2, Evaluator PASS-WITH-NOTES,
+`20a988c6`) zostawił jawnie udokumentowaną resztkę **N-E1** — panel „Wymiana"
+(`renderPnBalancePanelFromBasket`) ma ~1,6% rozjazdów, nienaprawione w rundzie 2. Ten wpis to
+świeża reprodukcja z żywej gry, ze zrzutami, plus nowa obserwacja wykraczająca poza N-E1.
+
+**Zrzut 1 (pakiet Rzymianie, zablokowany):** panel „PUNKTY WYMIANY PW" — MY ODDAJEMY 221 PW, BILANS
+(ONI) **+141** (Nadwyżka 141 PW, zielone pole), ONI ODDAJĄ 80 PW. Mimo dodatniego bilansu:
+„WPŁYW RELACJI NA DEAL: −55,1% · Relacja 44,9 · musisz dać więcej (×2,2 PW), by oferta była
+uczciwa" i blokada „Nie spełnia warunków: Brakuje 9 PW do uczciwej oferty traktatu handlowego @
+Relacji (baza 80 PW) — oferta nieuczciwa dla partnera". Przycisk „Przyjmij" wyszarzony.
+
+**Cytat Macieja przy zrzucie 1:** „Pomyłkę tego, że bilans jest na plus, to jesteś na plusie, to
+nadal nie mogę przyjąć oferty." — dokładnie ten sam wzorzec sprzeczności co w oryginalnym
+zgłoszeniu tematu macierzystego (2026-08-14): wyświetlany bilans dodatni, bramka mimo to blokuje.
+
+**Zrzut 2 (ta sama para, po interwencji Macieja — działa):** Maciej (cytat): „wygląda jakby się
+propozycja zablokowała, usunąłem i wprowadziłem ponownie i następna, chociaż była mniejsza, to
+pozwoliła zawrzeć umowę." Panel po usunięciu i ponownym dodaniu (MNIEJSZEJ) oferty: MY ODDAJEMY
+**93 PW** (baza 80, Relacja −11,1% siła), **BILANS (NETTO): +13** (Nadwyżka 13 PW), ONI ODDAJĄ 80
+PW — „WPŁYW RELACJI NA DEAL: −11,1% · Relacja 88,9 · Twoja strona słabsza (−11,1% PW); oni: baza
+(punkt balansu: 100)" — „Spełnia warunki — użyj Przyjmij, aby wysłać propozycję do partnera",
+przycisk „Przyjmij" aktywny (zielony).
+
+**Dwie różne, możliwe (nie wykluczające się) przyczyny do zbadania — NIE zgadywać, ustalić reconem:**
+1. **N-E1 potwierdzone ponownie** — sama formuła bilansu w panelu „PUNKTY WYMIANY PW"/„Wymiana"
+   nadal niespójna z bramką akceptacji dla pakietów wielo-umowowych (Traktat handlowy + Umowa
+   wymiany surowców razem) — zrzut 1 pokazuje `BILANS (ONI)` (stara etykieta?), zrzut 2 pokazuje
+   `BILANS (NETTO)` (**inna etykieta w tym samym miejscu UI** — do zweryfikowania, czy to dwie różne
+   wersje panelu, czy odświeżona etykieta po edycji, ślad że coś się realnie przeliczyło).
+2. **NOWY wątek — stan panelu nie odświeża się (staleness) po edycji pozycji w koszyku.** Maciej
+   opisuje, że usunięcie i ponowne dodanie oferty (nawet MNIEJSZEJ) odblokowało akceptację — to
+   sugeruje, że panel bilansu w zrzucie 1 mógł pokazywać NIEAKTUALNE dane (stara `Relacja 44,9` vs
+   nowa `Relacja 88,9` dla tej samej pary Rzymianie — różnica prawie ×2, zbyt duża jak na zwykły
+   upływ tur między dwoma zrzutami z tej samej krótkiej sesji testowej), a nie że math per se był
+   błędny. Do ustalenia: czy `Relacja` faktycznie tak skoczyła (np. przez wcześniej zawartą inną
+   umowę) — jeśli TAK, to zrzut 1 był poprawny na starą Relację i to nie jest bug; jeśli NIE
+   (Relacja realnie była już 88,9 w chwili zrzutu 1, ale panel pokazywał starą wartość 44,9 z
+   poprzedniej iteracji edycji koszyka) — to jest realny bug odświeżania stanu, osobny od N-E1.
+
+**Do dispatchu (po zamknięciu bieżącego wątku — recon toastu epoki, Operator w toku):** żywy test
+w headless Chromium odtwarzający dokładnie tę sekwencję (dodaj ofertę → sprawdź panel → edytuj
+ofertę w miejscu → sprawdź czy panel się przelicza NA ŻYWO bez usuwania/dodawania) — ustalić czy to
+faktycznie problem odświeżania, czy zbieg okoliczności (realna zmiana Relacji między zrzutami).
+
+STATUS: **OTWARTE — zarejestrowane ze zrzutami, do reconu po zamknięciu bieżącego wątku.**
+
+---
+
+## P-PERF-SPOWALNIANIE-SESJA-DLUGA-Q1 (2026-08-16, ponowne zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „czym dalej w las tę gra bardziej spowalnia. Już raz o tym rozmawialiśmy i
+niby miała być coś naprawione. pytałem się, czy można zwiększyć zasoby w przeglądarce, żeby miała
+większą pamięć. I to stała odpowiedźi."
+
+**Kontekst — poprzednie naprawy tego samego OBSZARU (2026-08-12), oba SCALONE + Evaluator
+PASS-WITH-NOTES:** `P-PERF-SCENE-STYLEDOVERLAYS-WYCIEK` (`scene.ts::dispose()` nie zwalniał
+zmergowanych grup overlayów — las/dżungla/szczyty/plaże/wydmy/oazy — przy każdej przebudowie sceny
+w tej samej sesji przeglądarki; naprawione dopisaniem `disposeMergedDecor(group)`) i
+`P-PERF-BUILDSCENE-TRY-FINALLY` (`buildScene()` bez `try/finally` — wyjątek w trakcie budowy
+porzucał scenę i listenery `resize`/`fullscreenchange` bez zwolnienia, dodatkowo trzymając przy
+życiu cały graf sceny w hałdzie JS, nie tylko bufory GPU). To jest prawdopodobnie „już raz
+naprawione", o którym mówi Maciej — ale zgłoszenie wraca 4 dni później, więc albo naprawa nie
+objęła wszystkich źródeł wycieku, albo od tego czasu (setki commitów, wiele reskinów paneli
+imperium, nowe mechaniki bitewne) doszły NOWE źródła.
+
+**Odpowiedź wprost na pytanie o „zwiększenie zasobów przeglądarki" (nie odkładać, bo to właśnie
+zabrakło poprzednio):** NIE — nowoczesne przeglądarki (Chrome/Edge) nie mają user-facing ustawienia
+„daj tej karcie więcej pamięci". Limit sterty V8 skaluje się automatycznie do dostępnego RAM
+systemu, nie jest sztucznie zaniżony przez przeglądarkę do podniesienia. Istnieją flagi
+uruchomieniowe (`--js-flags="--max-old-space-size=…"`) ale wymagają startu przeglądarki z linii
+komend ze specjalnymi parametrami i i tak nie rozwiązują PRAWDZIWEGO problemu: jeśli gra ma wyciek
+pamięci (rosnące zużycie, które nigdy nie spada), podniesienie limitu tylko odsuwa moment
+spowolnienia/awarii w czasie, nie usuwa przyczyny — pamięć i tak rośnie bez końca. Jedyna właściwa
+naprawa to znalezienie i zamknięcie źródła(deł) wycieku w kodzie gry, nie ustawienia przeglądarki.
+
+**Do dispatchu:** żywy, wieloturowy test w headless Chromium mierzący realny wzrost pamięci
+(`performance.memory`/CDP heap snapshot jeśli dostępne w tym środowisku, alternatywnie liczba
+obiektów w kluczowych rejestrach silnika — `scene.children.length`, liczba aktywnych
+event-listenerów, rozmiar `warEventLog`/`deferredEotHints`/innych rosnących tablic) przez wiele
+dziesiątek tur, żeby ustalić: (a) czy poprzednie 2 naprawy faktycznie trzymają (regresja?), (b)
+czy jest NOWE źródło wycieku spoza `scene.ts` (np. w panelach UI dodanych po 2026-08-12 — 6
+reskinowanych zakładek imperium, nowe testy DOM-owe sugerują dużo nowego kodu renderującego HTML
+per tura). Jeśli źródło jest w `gra/src/render/**` — wymaga Opus 5 (stała zgoda właściciela);
+jeśli poza (np. rosnące tablice w `main.ts`, nieusuwane listenery UI) — Sonnet 5 wystarczy, do
+ustalenia dopiero po reconie, nie zakładać z góry.
+
+**Diagnostyka wykonana (2026-08-17), narzędzie `gra/tools/perf-long-session-live-test.cjs`
+(150 tur, checkpoint co 10, realny headless Chromium + realny `triggerPlayerEndTurn()`), wynik
+w tle task `b7s60ytu5`:**
+
+Pamięć/GPU — **BEZ oznak wycieku w mierzonym oknie**: `heapUsed slope = -0.554 MB/checkpoint`
+(spada, nie rośnie), `geometries slope = 1.61`, `sceneChildren slope = 0.0`, wszystkie 17
+monitorowanych tablic-kandydatów płaskie (slope 0 poza `warEventLog` które ustabilizowało się na
+3 po jednej bitwie i już nigdy nie wzrosło). Dwie naprawy z 2026-08-12 wyglądają na trzymające —
+w tym konkretnym oknie 150 iteracji, żadna nowa pamięciowa/GPU-wa przyczyna nie ujawniła się.
+
+**⚠️ ZNALEZISKO POWAŻNIEJSZE NIŻ SZUKANE — tura utyka na stałe, nie „wolniej":** `world.turn`
+przeszło 1→2 przy pierwszej iteracji, po czym **przez pozostałe 140 z 150 iteracji NIGDY nie
+ruszyło dalej** (checkpointy tura=10..150 pokazują identyczne `"world":{"turn":2,...}`, identyczne
+`citiesLen:2`, `unitsLen:4` — świat kompletnie zamrożony). Każda pojedyncza próba `endTurn()`
+wymagała odklikania 5-14 blokerów bitwa/dyplomacja i trwała 60-76 sekund, ZA KAŻDYM RAZEM kończąc
+się `settled=false` (limit 60s). To nie jest „gra zwalnia" — to gra utyka w pętli tego samego
+blokera bitwy/dyplomacji, który się cyklicznie odtwarza mimo automatycznego rozstrzygania.
+
+**⚠️ KRYTYCZNE ZASTRZEŻENIE METODOLOGICZNE (samodzielnie ustalone, nie ignorować przy ocenie
+wagi):** ten przebieg wykonano w worktree `agent-a8b9be08d973d3292` na commicie **`17baa179`** —
+**sprzed** rewertu `2acf7c08` („Cofnięcie ataku dystansowego bez adiacencji — nieporozumienie
+zakresu"), czyli na kodzie, który JESZCZE MIAŁ mechanikę ataku bez adiacencji opartą na
+nieporozumieniu zgłoszenia (temat `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`, w pełni cofnięty i
+zamknięty 2026-08-16/17). Powtarzający się bloker bitwy który nigdy się nie rozstrzyga jest
+**dokładnie tego rodzaju objawem**, jakiego można by się spodziewać po błędnej mechanice ataku
+zdalnego — więc **niewykluczone, że to zjawisko już nie istnieje na aktualnym HEAD** po rewercie.
+Dokładnie ten sam wzorzec błędu (stary worktree → fałszywy alarm) złapano już raz w tej sesji przy
+`P-EPOKA-BRAK-INFO-REGRESJA-BRAZ` (stały bundle w innym worktree dał fałszywe „brak naprawy").
+
+**Do zrobienia przed jakąkolwiek naprawą (nie zakładać, że problem żyje lub nie żyje):**
+powtórzyć dokładnie ten sam przebieg (`node tools/perf-long-session-live-test.cjs 150 10`) na
+AKTUALNYM HEAD gałęzi — jeśli tura nadal utyka na 2, to realny, świeży, wysoki priorytet bug
+(silnik end-turn, nie pamięć) i bezpośrednio tłumaczy część zgłoszeń Macieja o „grze która się
+zawiesza/zwalnia z czasem"; jeśli tura przechodzi normalnie, to był artefakt starego kodu i temat
+pamięci/wycieku pozostaje jedynym wątkiem tego zgłoszenia (i wygląda dziś na czysty).
+
+**⚠️ DOPRECYZOWANIE OBJAWU (Maciej, 2026-08-17) — zmienia kierunek poszukiwań:** „Tutaj problem
+nie jest tura, bo ona leci bardzo szybko; problemem jest, że w trakcie gry bardzo długo czeka się
+potem na to, żeby wejść do miasta, zmienić miasto lub cokolwiek zrobić – trzeba kilka sekund
+czekać, aż to nastąpi." — to NIE jest koniec tury (`endTurn`) ani ogólne FPS/render, tylko
+**opóźnienie przy otwieraniu panelu miasta / przełączaniu miasta w trakcie normalnej gry**.
+Brzmi jak ciężkie, synchroniczne przeliczenie JS na głównym wątku wywoływane przy otwarciu
+panelu (np. przeliczanie statystyk miasta od zera), NIE problem GPU/pamięci/generowania mapy —
+hipoteza „stuck-turn" wyżej dotyczy innego mechanizmu i zostaje osobno.
+
+**Pytanie Macieja „czy można prościej dać więcej zasobów, zanim znajdziemy przyczynę" —
+odpowiedź wprost:** w grze JUŻ ISTNIEJE panel „Test wydajności" (`gra/src/ui/perfTestPanel.ts`,
+Batch 7, pomysł Macieja 2026-07-05) z benchmarkiem sprzętu (CPU 1-wątkowo, CPU wielowątkowo,
+GPU) i przyciskiem „Zastosuj zalecane" → ustawia `renderQuality` (Niska/Średnia/Wysoka),
+`maxMapSizeLabel`, `workerLimit` jako wartość startową kreatora nowej gry
+(`gra/src/perf/hardwareProfile.ts`). **Ale to prawdopodobnie NIE naprawi TEGO konkretnego
+objawu** — benchmark celuje w szybkość generowania mapy i FPS renderu, nie w pojedynczą wolną
+funkcję JS blokującą główny wątek przy otwarciu panelu. JavaScript w przeglądarce jest
+jednowątkowy — więcej RAM/GPU nie przyspiesza pojedynczego wolnego obliczenia. Nie ma prostego
+przełącznika „daj więcej zasobów" na ten konkretny objaw; wymaga zlokalizowania konkretnej
+funkcji/handlera otwarcia panelu miasta.
+
+**Do dispatchu (osobno od stuck-turn):** żywy test mierzący czas między kliknięciem otwarcia
+panelu miasta / przełączenia miasta a pełnym wyrenderowaniem (analogicznie do dzisiejszego
+testu end-turn, ale mierzący inny punkt w cyklu), + profilowanie który handler/funkcja jest
+wywoływana przy tym zdarzeniu i czy jej koszt rośnie z liczbą miast/tur (co tłumaczyłoby „im
+dalej w las").
+
+**⚠️ DALSZE DOPRECYZOWANIE (Maciej, 2026-08-17, tuż po powyższym) — zakres znacznie szerszy niż
+sam panel miasta:** „Ale tutaj na wszystko się czeka, nawet na ruch jednostkami. Przełączanie
+między jednostkami na wszystko podczas gry działa, jakby było w spowolnionym trybie. Każda
+zmiana, każde kliknięcie działa bardzo powoli i trzeba odczekać zawsze kilka sekund na reakcję."
+— to NIE jest ograniczone do panelu miasta. Dotyczy KAŻDEJ interakcji: ruch jednostką,
+przełączanie jednostek, „wszystko". Wskazuje na WSPÓLNY mianownik wywoływany po każdym kliknięciu
+(np. jedna globalna funkcja odświeżenia UI/sceny wołana po każdej akcji gracza, licząca coś od
+zera za każdym razem), nie osobny problem samego panelu miasta.
+
+**+ potwierdzenie korelacji z rozmiarem gry (Maciej, tuż po):** „tego efektu nie ma na początku
+gry. Podejrzewam, że tutaj jest kwestia ilości miast; na początku jest ich mniej, a im więcej
+miast, tym większe obciążenie i wszystko zaczyna spowalniać." — spójne z wcześniejszą wskazówką
+niżej (linia poniżej, „im więcej posiadam miast"). Efekt NIEOBECNY na starcie gry, narasta z
+liczbą miast — to praktycznie wyklucza jednorazowy koszt stały (np. inicjalizację) i wskazuje na
+funkcję o koszcie rosnącym z rozmiarem stanu gry (miasta/jednostki/budynki), wołaną przy KAŻDEJ
+interakcji użytkownika, nie tylko przy końcu tury czy otwarciu jednego konkretnego panelu.
+
+**Recon (orkiestrator, read-only, zanim padnie decyzja o dispatchu):** szybki grep pod kątem
+wspólnego globalnego handlera (`setInterval`/`requestAnimationFrame`/`gameLoop` w `main.ts`) —
+zero trafień pod tymi nazwami; jeśli wspólny mianownik istnieje, żyje pod inną nazwą lub jest
+rozproszony po wielu miejscach wołających tę samą kosztowną funkcję — wymaga realnego
+profilowania (DevTools performance trace albo żywy test z `performance.now()` wokół typowych
+akcji: ruch jednostką, otwarcie panelu, przełączenie zaznaczenia), nie dalszego zgadywania z grep.
+
+**Decyzja Macieja (AskUserQuestion, 2026-08-17): „Do kolejki"** — NIE dispatchować teraz mimo
+wagi znaleziska; zajmiemy się po odnowieniu limitu kontekstu/tokenów sesji, razem z resztą
+tematów w kolejce (12 surowców, potrojenie kopalni×3 itd.).
+
+STATUS: **OTWARTE — TRZY powiązane wątki pod tym ID: (1) pamięć/GPU czyste w zmierzonym oknie,
+stuck-turn wymaga potwierdzenia na aktualnym HEAD; (2) opóźnienie panelu miasta; (3) NAJSZERSZY i
+najbardziej precyzyjny opis — spowolnienie KAŻDEJ interakcji (ruch, przełączanie, klik),
+nieobecne na starcie gry, rosnące z liczbą miast — prawdopodobnie wspólny kosztowny handler
+wołany po każdej akcji gracza. Świadomie odłożone do kolejki (decyzja Macieja powyżej), NIE do
+dispatchu teraz mimo wagi.**
+
+**Wskazówka diagnostyczna Macieja (dopisana po dispatchu reconu):** „myślę, że też duży wpływ na to,
+jak działa szybko gra jest to, jak dużo gracz posiada miast. Im więcej posiadam miast, [im więcej]
+inne cywilizacje [mają miast], tym bardziej gra spowalnia, ale głównie chyba chodzi o moje miasta."
+— sugeruje korelację ze skalą liczby miast GRACZA konkretnie (nie tylko liczby cywilizacji/AI w
+grze ogólnie). Do uwzględnienia w pomiarze: rozdzielić wpływ liczby miast gracza od liczby tur
+(dwie różne, możliwe zmienne) — np. porównać sesję z małą liczbą miast trwającą wiele tur vs sesję
+z dużą liczbą miast trwającą niewiele tur, żeby odróżnić „wyciek narastający z czasem" od „koszt
+liniowy/kwadratowy rosnący z liczbą miast gracza" (to drugie może być kosztem oczekiwanym, nie
+bugiem — do rozstrzygnięcia pomiarem, nie zgadywania).
+
+---
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA-COOLDOWN-Q1 (2026-08-16, dopytanie orkiestratora + ECHO Macieja)
+
+**Kontekst:** `gra/src/game/forced-war-bronze.ts:55-65` ma roboczy placeholder
+`WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20` z jawnym komentarzem w kodzie, że zdanie
+Macieja z 2026-08-09 („nie będzie atakować tej samej cywilizacji przez okres [???] tur") urwało
+się przed podaniem liczby — nigdy nie potwierdzone.
+
+**Pytanie zadane wprost (orkiestrator, w czacie, 2026-08-16):** A) zostaw 20 tur (obecne robocze
+założenie) B) inna liczba.
+
+**ECHO Macieja: A — 20 tur, z doprecyzowaniem: „Ale może atakować inną cywilizację w tym
+okresie."** Czyli cooldown 20 tur dotyczy WYŁĄCZNIE ponownego ataku na TĘ SAMĄ cywilizację —
+AI w tym czasie może swobodnie wypowiedzieć wojnę wymuszoną innej cywilizacji.
+
+**Zweryfikowane (orkiestrator, czytanie kodu) — to JUŻ jest dokładnie tak zaimplementowane, zero
+zmian kodu potrzebnych.** Komentarz nagłówkowy pliku (`forced-war-bronze.ts:10-12`): „Po pokoju
+cywilizacja odpoczywa `WOJNA_WYMUSZONA_ODPOCZYNEK_TUR` tur, po czym szuka NOWEGO celu (może być
+inna cywilizacja, niekoniecznie ta sama) — do tej samej cywilizacji wraca dopiero po
+`WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR` turach." Stała `WOJNA_WYMUSZONA_ODPOCZYNEK_TUR
+= 20` (linia 53) to ogólny odpoczynek przed szukaniem JAKIEGOKOLWIEK nowego celu — krótszy/równy
+cooldownowi per-para, więc AI może zaatakować inną cywilizację już po 20 turach odpoczynku, nawet
+gdy cooldown na TĘ SAMĄ cywilizację (też 20 tur w tym przypadku, bo obie stałe mają dziś tę samą
+wartość) jeszcze trwa — to jest DOKŁADNIE potwierdzone przez Macieja zachowanie.
+
+STATUS: **ZAMKNIĘTE — potwierdzone, kod już zgodny z ECHO, brak zmian do wdrożenia.** Placeholder
+w komentarzu kodu (`ROBOCZE ZAŁOŻENIE... do potwierdzenia`) do usunięcia przy najbliższej okazji
+edycji tego pliku (kosmetyka, nie pilne, nie samodzielny dispatch).
+
+---
+
+## P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE (2026-08-16, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „nie wiem też co jest cyną. Nie mogę jej znaleźć na mapie. Nawet nie wiem,
+czy w ogóle ustawiliśmy specjalny wygląd dla surowca cyna. Chyba nie. Jest możliwe, że w ogóle go
+nie rostawia system." + osobna uwaga na przyszłość: „musimy zrobić jakiś system łatwiejszego
+rozpoznawania surowców."
+
+**Zweryfikowane w kodzie (orkiestrator, przed dispatchem, potwierdzone nie zgadywane):**
+- Cyna JEST umieszczana przez generator: `gra/data/map-gen-params.json`
+  `deposit_rules.cyna = {rarity: 0.02}`, `metal_deposit_min_era.cyna = 2` (Brąz),
+  **`FAIR_PLAY_DEPOSIT_IDS`** (`gen-helpers.ts:12114-12115`) obejmuje `cyna` — czyli GWARANTOWANA
+  każdej cywilizacji, tak jak żelazo/miedź/glina, mimo że rzadkość 5× mniejsza niż miedzi.
+  `allowedOn`: Wzgórza LUB Góry, tak jak złoto (`gen-helpers.ts:12184-12185`).
+- **Cyna NIE MA żadnego dedykowanego wyglądu 3D na mapie świata.** Grep po „cyna" w
+  `gra/src/render/**` → **zero trafień**. Dla porównania: miedź/żelazo/złoto mają dedykowane pliki
+  renderujące (m.in. `gra/src/render/kopalnia-zlota-opus5.ts` — osobny model kopalni złota).
+  Cyna jest więc funkcjonalnie w grze (można ją wydobywać, jest w ekonomii — `resources.json`,
+  `econ-params.json`, `terrain-improvements.json`), ale wizualnie renderuje się jako zwykłe
+  wzgórze/góra bez żadnego znacznika złoża — **to jest realna przyczyna, że nie da się jej
+  znaleźć na mapie, nie wrażenie.**
+- Ikona UI (2D, panel/tooltip) istnieje — `P-IKONA-RUDA-CYNY-PLACEHOLDER` (2026-08-13, zamknięty)
+  wymienił placeholder na dedykowaną ikonę. To dotyczy WYŁĄCZNIE ikony w interfejsie (panele,
+  tooltipy), nie modelu/dekalu na samej mapie świata — dwie różne rzeczy.
+
+**Osobna uwaga Macieja na przyszłość (zarejestrowana, nie temat do dispatchu teraz):** potrzebny
+jakiś ogólny system ułatwiający rozpoznawanie surowców na mapie (nie tylko cyna) — do rozważenia
+przy przyszłym przeglądzie UX mapy, wymaga osobnego ABC co do formy (highlight/filtr/tryb
+podświetlenia złóż itp.).
+
+STATUS: **OTWARTE — do dispatchu po zamknięciu bieżących wątków** (wymaga pracy w
+`gra/src/render/**` — Opus 5, stała zgoda właściciela).
+
+---
+
+## R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1 (2026-08-16, decyzja bezpośrednia Macieja)
+
+**Zgłoszenie (cytat):** „w momencie wybierania danej kopalni powinniśmy stworzyć jakiś system
+podświetlenia, na przykład na jasno niebiesko tych heksów, gdzie można tą daną kopalnię postawić.
+Na razie zróbmy to tylko i wyłącznie dla kopalni. to jasno niebieski ma być przezroczystość 30%."
+
+**Zakres (dosłowny, nie rozszerzać bez pytania):** WYŁĄCZNIE kopalnie (nie wszystkie ulepszenia
+terenu) — w momencie gdy gracz wybiera do budowy konkretny typ kopalni, heksy w zasięgu miasta,
+na których TĘ konkretną kopalnię można postawić, mają się podświetlić na jasnoniebiesko,
+przezroczystość 30%.
+
+**Świadome odejście od standardowej sekwencji AutoBot (nienegocjowalnej reguły §0):** właściciel
+wprost polecił zrobić to TERAZ, przed odnowieniem limitów, zamiast czekać na zakończenie kolejki
+tematów odłożonych do rejestru. To jest bezpośrednia decyzja produktowa, nie ABC — zakres jest
+jednoznaczny, bez dwuznaczności wymagającej pytania.
+
+**Dotyka `gra/src/render/**`** (podświetlenie heksów na mapie 3D) — zgodnie ze stałą zgodą
+właściciela (2026-07-25/08-06) cała praca w tym katalogu na Opus 5.
+
+**Doprecyzowanie zakresu (Maciej, tuż po dispatchu):** przykłady konkretnych kopalni, których ma
+dotyczyć mechanizm — kopalnia miedzi i kopalnia cyny (spójne z „wyłącznie kopalnie" wyżej, nie
+rozszerza zakresu). **Szersza wizja na przyszłość (zarejestrowana, NIE do wdrożenia teraz):**
+„Każda... rozbudowa w terenie powinna mieć taki mechanizm wbudowany" — docelowo mechanizm
+podświetlenia dostępnych heksów ma objąć WSZYSTKIE ulepszenia terenu (tartaki, kamieniołomy,
+glinianki, stadniny, itd.), nie tylko kopalnie. To świadomie odłożone — dzisiejszy dispatch
+implementuje wyłącznie kopalnie, architektura ma być na tyle ogólna, żeby dało się to łatwo
+rozszerzyć później, ale rozszerzenie samo w sobie to osobny, przyszły temat.
+
+(Status pośredni „dispatch w toku" — ZASTĄPIONY niżej, patrz `STATUS: **ZAMKNIĘTE**` na
+końcu tej sekcji.)
+
+**Implementacja odebrana i scalona (2026-08-17), commit `b0f9bcb9`:** warstwa
+`MINE_ELIGIBLE_STYLE` (`gra/src/render/rangeOverlay.ts`, kolor `0x66ccff`, opacity 0.30,
+nowe pole `RangeOverlayStyle.alwaysOnTop`), przeliczana w `refreshBuildHighlight()`
+(`gra/src/main.ts`) wyłącznie gdy `isMineImprovementKey(activeImprovementKey)`
+(`gra/src/map/improvement-build.ts`, WYŁĄCZNIE 4 kopalnie: miedź/żelazo/cyna/**złoto**) —
+zero dodatkowych skanów terytorium ponad istniejący `getQualifyingHexes`, `qualifies()`/
+`createQualifier()` nietknięte. Bramki zweryfikowane niezależnie przez orkiestratora:
+tsc 0, vite build OK, nowy test `kopalnia-podswietlenie-heksow-test.cjs` 71/0, logic-test
+213/213, map-improvement-qualify-test 112/0, improvement-territory-gate-test 6/0.
+Baseline pre-istniejących porażek bez zmian: zloto-test 38/7, tarasy-cywilizacje-test 16/1
+(identyczne przed i po).
+
+**SPROSTOWANIE (Evaluator, N1):** wcześniejszy zapis „miedź/żelazo/węgiel/cyna" wyżej i w
+opisie commita `b0f9bcb9` był BŁĘDNY — w kodzie kopalnia węgla jako ulepszenie nie istnieje,
+czwarta kopalnia to **złoto** (`kopalnia_zlota`). Kod od początku był poprawny (4 klucze:
+`kopalnia_miedzi`/`kopalnia_zelaza`/`kopalnia_cyny`/`kopalnia_zlota`), pomyłka była wyłącznie
+w opisie tekstowym (dwa miejsca: ten wpis + komunikat commita) — poprawiono tu, commita nie
+amendujemy (już wypchnięty).
+
+**Evaluator (Opus 5, worktree) — werdykt PASS-WITH-NOTES.** Bramki zmierzone niezależnie
+identyczne z powyższymi + zweryfikowane mutacyjnie w 4 niezależnych miejscach (opacity,
+alwaysOnTop, ścieżka gaszenia, scope creep na kamieniołom) — wszystkie złapane przez nowy
+test. Pozostałe notatki (nieblokujące, brak fixu teraz — zgodnie ze standing rule „tylko
+rejestruj"):
+- **N2** — `depthTest:false` maluje warstwę PRZEZ bryłę terenu globalnie, nie tylko nad
+  własnym heksem: heks zasłonięty grzbietem góry i tak dostaje niebieski krążek, a modele 3D
+  jednostek stojących na podświetlonym wzgórzu/górze dostają niebieską poświatę od spodu
+  (żetony nieprzezroczyste, `renderOrder=0`, warstwa rysuje się PO nich). Świadomy kompromis
+  Operatora (bez tego nic nie widać), ale wizualny artefakt do oceny w playteście.
+- **N3** — `applySceneResult()` (`main.ts:29346-29362`) nie zeruje `mineEligibleGroup` po
+  nowej grze/wczytaniu, niespójnie z 3 pozostałymi warstwami (`cultureRangeGroup` itd.).
+  Evaluator: praktycznie nieszkodliwe, NIE jest to wyciek pamięci — `clearMineEligibleOverlay`
+  i tak sprząta przez zmienną. Kosmetyczna niespójność, jedna linijka przy okazji.
+- **N4 (PRE-ISTNIEJĄCE, osobny temat, nie ten commit)** — `onSelectWonder`
+  (`main.ts:18800-18823`) ma 3 wczesne `return` przy zablokowanym cudzie, które nie wołają
+  `refreshBuildHighlight()` po wyzerowaniu `activeImprovementKey`. Zweryfikowane identyczne na
+  commicie-rodzicu. Wcześniej niewidoczne (ogólny highlight tonął pod bryłą kopalni per N2),
+  teraz może zostawić widoczną nieaktualną niebieską warstwę. Do osobnego zgłoszenia.
+- **N5, N6** — kosmetyka: tautologiczna asercja w nowym teście (linia 277) i komentarz w
+  `rangeOverlay.ts` przeszacowujący efekt („zniknąłby w całości" — realnie widoczny byłby
+  wąski pierścień, bo promień tinta 0.97·HEX_R &gt; footprint bryły 0.87-0.92). Bez wpływu na
+  poprawność.
+
+STATUS: **ZAMKNIĘTE (Evaluator PASS-WITH-NOTES, commit `b0f9bcb9` + sprostowanie N1 w tym
+wpisie).**
+
+---
+
+## R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1 (2026-08-16, decyzja/prośba Macieja)
+
+**Zgłoszenie (cytat):** „zwiększyłbym 3 krotnie ilość kopalni miedzi oraz cyny, ponieważ moim
+zdaniem jest ich za mało i może to utrudniać AI budowę bardziej sprawnych jednostek z kolejnych
+epok."
+
+**Stan obecny (zweryfikowany w kodzie, nie zgadywany):** `gra/data/map-gen-params.json`,
+`deposit_rules`: `miedz.rarity = 0.10`, `cyna.rarity = 0.02` (cyna celowo 5× rzadsza niż miedź,
+decyzja Macieja 2026-08-13, ale GWARANTOWANA każdej cywilizacji przez `FAIR_PLAY_DEPOSIT_IDS` —
+inaczej niż złoto). Potrojenie: `miedz.rarity → 0.30`, `cyna.rarity → 0.06` (zachowuje proporcję
+5:1 między nimi, o ile nie ma innej intencji — do potwierdzenia przy dispatchu, nie zakładać).
+
+**Do ustalenia przy dispatchu, nie zgadywać:** czy „3-krotnie" ma dosłownie przemnożyć
+`rarity` ×3, czy chodzi o inny parametr (np. rozmiar/liczbę skupisk per złoże, jeśli taki
+istnieje osobno od `rarity`) — recon do zrobienia przed zmianą liczby. Zmiana dotyka
+`gra/data/map-gen-params.json` (dane, NIE `gra/src/render/**` — Sonnet 5 wystarczy) oraz
+generatora `gra/src/map/**` pośrednio (parametr wejściowy, nie zmiana logiki) — wymaga
+przebiegu `map-gen-regression-test.cjs` (determinizm + fair-play siatka złóż) po zmianie,
+żeby potwierdzić brak regresji generatora.
+
+**ECHO Macieja (2026-08-17):** dispatch TERAZ (override standing rule „tylko rejestruj" dla
+tego jednego tematu, wprost na pytanie). Potwierdzone: „3-krotnie" = dosłownie `rarity × 3`:
+`miedz.rarity: 0.10 → 0.30`, `cyna.rarity: 0.02 → 0.06`.
+
+STATUS: **W TRAKCIE — dispatch Operatora (Sonnet 5, worktree).**
+
+---
+
+## P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT (2026-08-17, znalezisko Evaluatora N4 przy R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1)
+
+**Zgłoszenie:** `onSelectWonder` (`gra/src/main.ts:18800-18823`) ma 3 wczesne `return` przy
+zablokowanym cudzie (linie 18811/18815/18819), które zerują `activeImprovementKey = null` ale
+NIE wołają `refreshBuildHighlight()` po drodze — nieaktualne podświetlenie zostaje na ekranie.
+
+**Status w czasie:** PRE-ISTNIEJĄCE, zweryfikowane niezależnie identyczne na commicie-rodzicu
+`b0f9bcb9^` — NIE regresja tematu podświetlenia kopalni. Wcześniej niewidoczne, bo ogólny
+`unitRenderer.setHighlight` i tak tonął pod bryłą terenu na Wzgórzach/Górach (patrz N2 w
+R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1) — teraz, dla kopalń, nowa warstwa jest widoczna nad
+terenem, więc efekt (nieaktualna niebieska warstwa po zablokowanym cudzie) może się ujawnić.
+
+STATUS: **OTWARTE — zarejestrowane, do dispatchu po zamknięciu bieżących wątków** (zgodnie z
+zasadą „nowe tematy tylko rejestruj" do czasu zbliżenia się do limitu kontekstu sesji).
+
+---
+
+## P-KOPALNIA-PODSWIETLENIE-KOSMETYKA (2026-08-17, znaleziska Evaluatora N2/N3/N5/N6 przy R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1)
+
+Cztery drobne, nieblokujące uwagi z werdyktu PASS-WITH-NOTES dla `b0f9bcb9`, żadna nie wymaga
+natychmiastowej naprawy, zapisane żeby nie zgubić przy przyszłym sprzątaniu:
+
+- **N2 — artefakt wizualny do oceny w playteście:** `depthTest:false` maluje warstwę
+  podświetlenia PRZEZ bryłę terenu globalnie (nie tylko nad własnym heksem) — heks zasłonięty
+  grzbietem góry i tak dostaje krążek, modele jednostek na podświetlonym terenie dostają
+  niebieską poświatę od spodu. Świadomy kompromis (bez tego nic nie widać pod bryłą kopalni).
+- **N3 — kosmetyczna niespójność:** `applySceneResult()` (`main.ts:29346-29362`) nie zeruje
+  `mineEligibleGroup` po nowej grze/wczytaniu, niespójnie z 3 pozostałymi warstwami. Nie jest
+  to wyciek pamięci (sprzątane i tak przez `clearMineEligibleOverlay`).
+- **N5 — martwy kod w teście:** tautologiczna alternatywa w asercji
+  `gra/tools/kopalnia-podswietlenie-heksow-test.cjs:277`.
+- **N6 — komentarz przeszacowuje efekt:** `rangeOverlay.ts:284-296` twierdzi że krążek
+  „zniknąłby w całości" pod bryłą — realnie widoczny byłby wąski pierścień na obrzeżu heksa
+  (promień tinta 0.97·HEX_R &gt; footprint bryły 0.87-0.92·HEX_R).
+
+STATUS: **OTWARTE — zarejestrowane, niska priorytet, do sprzątnięcia przy okazji kolejnej
+pracy w tym obszarze** (zgodnie z zasadą „nowe tematy tylko rejestruj").
+
+---
+
+## R-SUROWCE-12-PROPOZYCJA-WZGORZA-GORY-Q1 (2026-08-17, propozycja projektowa Macieja, wątek zamknięty do odnowienia limitu)
+
+**Zgłoszenie (cytat):** „przemyślmy, jakiego typu surowce możemy potrzebować w przyszłości, aż
+do współczesnej cywilizacji. Możemy to podzielić w sumie na dwanaście surowców, gdzie część
+występuje tylko na wzgórzach, a część tylko na górach. Każdy surowiec zajmuje jedną z części
+ścianki heksa." Wymóg zachowania owiec na Wzgórzach (nie rezygnujemy).
+
+**Stan pracy:** dostarczono roboczy arkusz Excel do edycji przez właściciela
+(`Propozycja-12-surowcow-Wzgorza-Gory.xlsx`, wysłany przez SendUserFile, NIE zapisany w repo —
+to materiał do dyskusji, nie dane gry). Dwie rundy iteracji:
+- Runda 1: 6 surowców/Wzgórza (Miedź, Cyna, Owce, Srebro, Saletra, Boksyt) + 6/Góry (Żelazo,
+  Złoto, Węgiel, Marmur, Siarka, Uran) — z legendą „mamy dziś" vs „nowa propozycja".
+- Runda 2 (Maciej): odrzucone Marmur, Siarka, Srebro jako niepotrzebne. Zamienniki: **Wapień**
+  (Góry — cement/beton, odpowiedź na pytanie „co potrzebne do betonu oprócz piasku"), **Cynk**
+  (Wzgórza — stop z miedzią → mosiądz), **Grafit** (Góry — elektrody/baterie/moderator
+  reaktora, synergia z Uranem).
+
+**Otwarte punkty do rozstrzygnięcia przy wznowieniu:**
+1. Maciej zapowiedział własną kontrpropozycję: „a ja coś wymyślę jeszcze" — czeka się na jego
+   wersję arkusza, NIE na dalsze iteracje Claude'a.
+2. Zgłoszone ryzyko nazewnicze: **Cyna** (Sn, już w grze, brąz) vs **Cynk** (Zn, nowa
+   propozycja, mosiądz) — nazwy bardzo podobne w polskim UI, oba na tym samym terenie
+   (Wzgórza). Alternatywa zaproponowana: **Ałun** (garbowanie/zaprawa) zamiast Cynku — do
+   decyzji Macieja.
+3. Złoto i Cyna dziś w kodzie (`gra/src/map/gen-helpers.ts`) mogą wystąpić na OBU terenach
+   (Wzgórza LUB Góry) — czysty podział 6+6 wymagałby zawężenia każdego do jednego terenu, nie
+   rozstrzygnięte.
+4. Powiązane, już zarejestrowane osobno tematy tej samej rodziny: `R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1`
+   (potrojenie rzadkości kopalni miedzi/cyny) i `P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE` (brak
+   modelu 3D dla cyny na mapie) — nie mieszać z tym tematem projektowym, każdy osobno.
+
+**Decyzja Macieja (2026-08-17):** „na razie zakończmy temat podświetlania surowców [tu: całej
+listy nowych surowców]. Nową listą nowych surowców zajmiemy się, jak się odnowi nam limit, a na
+razie zapisz to do tematów na przyszłość." — WYŁĄCZNIE rejestracja, żadnej dalszej pracy nad
+tym teraz (ani nad arkuszem, ani nad implementacją).
+
+STATUS: **OTWARTE — wstrzymane na wyraźne polecenie Macieja, do wznowienia po odnowieniu
+limitu kontekstu/tokenów sesji (razem z pozostałymi tematami z tej samej kolejki).**
+
+---
+
+## R-PLATFORMA-DESKTOP-ROADMAP-Q1 (2026-08-17, decyzja strategiczna Macieja)
+
+**Decyzja (cytat):** „OK, w takim razie pierwszy krok Tauri, a drugi krok pełny silnik gry."
+Wynikła z rozmowy o żalu, że projekt poszedł w wersję przeglądarkową zamiast natywnej.
+
+**Pełny kanon decyzji:** `docs/decyzje/R-PLATFORMA-DESKTOP-ROADMAP-Q1.md` — dwuetapowa mapa
+drogowa (Etap 1: Tauri jako natywna powłoka wokół istniejącego kodu, zero przepisywania UI/
+silnika; Etap 2: pełny silnik gry, całkowite przepisanie, konkretny wybór silnika nierozstrzygnięty).
+
+**Jawnie zastrzeżone:** to NIE naprawia bieżącego buga spowolnienia (`P-PERF-SPOWALNIANIE-
+SESJA-DLUGA-Q1`, wątek „każda interakcja wolna") — przyczyna jest algorytmiczna, nie platformowa.
+Nie blokuje bieżącej pracy nad wersją przeglądarkową. Żaden etap nie ma dziś przydzielonego
+dispatchu ani terminu.
+
+STATUS: **OTWARTE — zarejestrowany kierunek strategiczny, do wznowienia w osobnej, przyszłej
+sesji dedykowanej temu tematowi (nie razem z bieżącą kolejką bugów/feature'ów).**
+
+---

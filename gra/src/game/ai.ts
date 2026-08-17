@@ -18,7 +18,6 @@ import type { GameData } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
-import { unitMapAttackRangeHex } from './combat';
 import {
   cityStateMilitaryProductionCap,
   type DifficultyLevel,
@@ -58,7 +57,6 @@ import {
 } from './auto-improvements';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
-import { hasCityDefenders } from './siegeDefenders';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -70,23 +68,6 @@ export interface AICmdMove {
   unitId: string;
   toQ: number;
   toR: number;
-  /**
-   * P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B (Maciej 2026-08-16): oznacza, że TA
-   * komenda pochodzi WYŁĄCZNIE z gałęzi ataku na miasto w zasięgu (`isWithinCityAttackRange`,
-   * niżej) -- daje egzekutorowi w main.ts (cmd.type==='move') prawo zastosować wąski
-   * wyjątek `canAiEnterUndefendedCityHex` (city-hex-movement.ts) zamiast bezwarunkowej
-   * blokady `canUnitOccupyCityHex` dla obcego heksu miasta. Ustawiane WYŁĄCZNIE w
-   * miejscu emisji tej jednej gałęzi -- inne gałęzie (marsz, patrol, obrona domu, wioski)
-   * NIGDY nie ustawiają tego pola, więc wyjątek w egzekutorze nie otwiera ogólnej furtki
-   * dla wszystkich rozkazów `move`. / EN: marks that THIS command comes EXCLUSIVELY from
-   * the in-range city-attack branch (`isWithinCityAttackRange`, below) -- lets the
-   * main.ts executor (cmd.type==='move') apply the narrow `canAiEnterUndefendedCityHex`
-   * exception instead of the unconditional `canUnitOccupyCityHex` block for a foreign
-   * city hex. Set ONLY at that one emission site -- every other branch (march, patrol,
-   * home defense, village explore) never sets it, so the executor's exception cannot
-   * widen into a general escape hatch for all `move` commands.
-   */
-  rangedCityAttackEntry?: true;
 }
 
 /** Found a city at (q, r) via panel budowy (foundCityAt — bez osadnika). */
@@ -738,110 +719,33 @@ function isAdjacent(aq: number, ar: number, bq: number, br: number): boolean {
 }
 
 /**
- * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE (Maciej 2026-08-14, PARYTET AI): zasięg
- * ataku jednostki AI na mapie świata w heksach — 0 dla zwarcia (adiacencja bez
- * zmian), N dla dystansu. Ten sam odczyt "Zasięg ataku (hex)" co po stronie
- * gracza (main.ts:unitAttackRangeHex → game/combat.ts:unitMapAttackRangeHex) —
- * bez tego AI z łucznikiem/procarzem zostałaby ślepa na własny zasięg strzału,
- * mimo że gracz już go dostał (regresja parytetu). / EN: an AI unit's world-map
- * attack reach in hexes — 0 for melee (adjacency unchanged), N for ranged. Same
- * "Zasięg ataku (hex)" read as the player side (main.ts:unitAttackRangeHex →
- * game/combat.ts:unitMapAttackRangeHex) — without this the AI would stay blind
- * to its own firing range with an archer/slinger even though the player already
- * got it (a parity regression).
- */
-function unitAttackRangeHexAi(unit: RuntimeUnit, data: GameData): number {
-  const def = data.units.find(u => u.Jednostka === unit.typeId);
-  return unitMapAttackRangeHex(def as unknown as Record<string, unknown> | undefined);
-}
-
-/**
- * Czy (tq,tr) jest w zasięgu ataku `unit` — adiacencja dla zwarcia, zasięg dla dystansu.
- * RUNDA 4 (N-D werdyktu rundy 3, 2026-08-16, analogiczna 1-linijkowa poprawka bez ryzyka):
- * `embarked` sprawdzane PIERWSZE, tak samo jak `isWithinCityAttackRange` wyżej —
- * egzekutor ataku jednostka→jednostka (main.ts, `if (attacker.embarked === true) continue;`)
- * i tak kasuje rozkaz zaokrętowanej jednostki, więc bez tej bramki tu jednostka dostawała
- * rozkaz `attack`, który ginął w egzekucji, zamiast spaść do innej gałęzi decyzji (zamiast
- * zamierać, tak jak B3 dla miast przed tą samą poprawką w `isWithinCityAttackRange`).
- * / EN: `embarked` checked FIRST, mirroring `isWithinCityAttackRange` above — the
- * unit-vs-unit attack executor (main.ts, `if (attacker.embarked === true) continue;`)
- * drops the order for an embarked unit anyway, so without this gate the unit got an
- * `attack` order that died in execution instead of falling through to another decision
- * branch (freezing, same class of bug as B3 for cities before the analogous fix in
- * `isWithinCityAttackRange`).
+ * Czy (tq,tr) jest w zasięgu ataku `unit` — adiacencja (dystans dokładnie 1).
+ * `embarked` sprawdzane PIERWSZE: egzekutor ataku jednostka→jednostka (main.ts,
+ * `if (attacker.embarked === true) continue;`) i tak kasuje rozkaz zaokrętowanej
+ * jednostki, więc bez tej bramki tu jednostka dostawała rozkaz `attack`, który
+ * ginął w egzekucji, zamiast spaść do innej gałęzi decyzji (zamiast zamierać
+ * przez cały tur). Niezależne od P-BITWA-ATAK-DYSTANSOWY (cofniętego całkowicie
+ * decyzją właściciela, `P-BITWA-ATAK-DYSTANSOWY-COFNIECIE-Q1=A`) — zachowane przy
+ * cofnięciu jako neutralne/bezpieczne. / EN: `embarked` checked FIRST — the
+ * unit-vs-unit attack executor (main.ts, `if (attacker.embarked === true)
+ * continue;`) drops the order for an embarked unit anyway, so without this gate
+ * the unit got an `attack` order that died in execution instead of falling
+ * through to another decision branch (freezing for the whole turn). Independent
+ * of P-BITWA-ATAK-DYSTANSOWY (fully reverted per owner decision,
+ * `P-BITWA-ATAK-DYSTANSOWY-COFNIECIE-Q1=A`) — kept on revert as neutral/safe.
  */
 function isWithinAttackRange(unit: RuntimeUnit, tq: number, tr: number, data: GameData): boolean {
   if (unit.embarked === true) return false;
-  const range = Math.max(1, unitAttackRangeHexAi(unit, data));
-  return hexDistance(unit.q, unit.r, tq, tr) <= range;
+  return hexDistance(unit.q, unit.r, tq, tr) === 1;
 }
 
-/**
- * P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE (RUNDA 2, PARYTET AI dla miast, Evaluator F1
- * 2026-08-14): czy `city` jest w zasięgu ataku AI `unit` — adiacencja ZAWSZE (jak
- * dotychczas, także dla miast z murem — oblężenie to inna mechanika, canInitiateSiege,
- * nietknięta tu), a dla miast BEZ muru DODATKOWO dystans jednostki dystansowej w jej
- * zasięgu ataku. Dokładne odzwierciedlenie reguły gracza —
- * map/map-attack-city.ts:eligibleCityAttackers (`dist === 1 → true; city.maMur → false;
- * else dist <= attackRangeHex(u)`) — bez tej funkcji AI z łucznikiem/procarzem zostaje
- * ślepa na miasta bez muru w zasięgu, mimo że gracz już ten zasięg dostał (regresja
- * parytetu, werdykt Evaluatora F1). / EN: whether `city` is within AI `unit`'s attack
- * reach — adjacency ALWAYS (unchanged, including walled cities — sieging is a separate
- * mechanic, canInitiateSiege, untouched here), and for UNWALLED cities additionally a
- * ranged unit's attack range. Exact mirror of the player's rule —
- * map/map-attack-city.ts:eligibleCityAttackers — without this the AI stays blind to
- * unwalled cities within range even though the player already got that range (parity
- * regression, Evaluator verdict F1).
- *
- * P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B (RUNDA 3, Evaluator N1 2026-08-16): `embarked`
- * sprawdzane PIERWSZE, tak samo jak w `eligibleCityAttackers`
- * (map-attack-city.ts:70 `if (u.embarked === true) return false;`, PRZED sprawdzeniem
- * adiacencji) — TEMAT #15 (brak ataku z wody) dotyczy miast tak samo jak jednostek, i to
- * zarówno adiacencji (dist===1), jak i zasięgu dystansowego. Bez tego wąski wyjątek
- * egzekucji `canAiEnterUndefendedCityHex` (city-hex-movement.ts) wpuściłby zaokrętowaną
- * jednostkę AI na heks miasta z wody. / EN: `embarked` checked FIRST, mirroring
- * `eligibleCityAttackers` (map-attack-city.ts:70, BEFORE the adjacency check) — TOPIC #15
- * (no attack from water) applies to cities the same as units, for both adjacency
- * (dist===1) and ranged reach. Without this, the narrow execution exception
- * `canAiEnterUndefendedCityHex` (city-hex-movement.ts) would let an embarked AI unit walk
- * onto a city hex straight from the water.
- *
- * RUNDA 4 (P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1=A, zalecenie Evaluatora rundy 3, punkt 1,
- * 2026-08-16): decyzja MUSI zwracać `false` wszędzie, gdzie egzekucja
- * (`canAiEnterUndefendedCityHex`, city-hex-movement.ts: `!maMur && !hasCityDefenders`)
- * i tak by odmówiła — mur LUB obrońcy — inaczej jednostka dostaje rozkaz `move`, egzekucja
- * go odrzuca, i jednostka zamiera (B3 werdyktu rundy 3) zamiast spaść do gałęzi
- * odwrotu/marszu (4c „ranged hold back", niżej w `decideAITurn`). To TERAZ obejmuje też
- * adiacencję (dist===1) — inaczej niż u gracza (`eligibleCityAttackers`: dist===1 zawsze
- * `true`, bo gracz z tego punktu ma osobną ścieżkę oblężenia/szturmu) — bo AI
- * (`AICommand`) NIE MA odpowiednika tej ścieżki (N2, świadomie poza zakresem tego tematu):
- * jedyny skutek „true" tu to identyczny rozkaz `move` na heks miasta, który egzekutor i
- * tak by odrzucił dla miasta bronionego/z murem, więc różnicowanie adiacencja-vs-zasięg
- * przy tym warunku nie ma dziś żadnego obserwowalnego skutku.
- * / EN: the decision MUST return `false` everywhere the execution
- * (`canAiEnterUndefendedCityHex`, city-hex-movement.ts: `!maMur && !hasCityDefenders`)
- * would refuse anyway — wall OR defenders — otherwise the unit gets a `move` order, the
- * executor rejects it, and the unit freezes (round-3 verdict B3) instead of falling
- * through to the retreat/march branch (4c "ranged hold back", below in `decideAITurn`).
- * This NOW also covers adjacency (dist===1) — unlike the player's rule
- * (`eligibleCityAttackers`: dist===1 is always `true`, because the player has a separate
- * siege/storm path from that point) — because the AI (`AICommand`) has NO equivalent path
- * (N2, deliberately out of scope for this topic): the only effect of "true" here is the
- * same `move` order onto the city hex, which the executor would reject anyway for a
- * defended/walled city, so distinguishing adjacency from ranged reach on this condition
- * has no observable effect today.
- */
+/** Czy `city` jest w zasięgu ataku AI `unit` — adiacencja (dystans dokładnie 1). */
 function isWithinCityAttackRange(
   unit: RuntimeUnit,
   city: AICity,
   data: GameData,
-  units: readonly RuntimeUnit[],
 ): boolean {
-  if (unit.embarked === true) return false;
-  if (city.maMur || hasCityDefenders(city, units)) return false;
-  const dist = hexDistance(unit.q, unit.r, city.q, city.r);
-  if (dist === 1) return true;
-  return dist <= unitAttackRangeHexAi(unit, data);
+  return hexDistance(unit.q, unit.r, city.q, city.r) === 1;
 }
 
 /** Nearest element from list by hex distance to (fromQ, fromR). */
@@ -2598,9 +2502,7 @@ export function decideAITurn(
 
     // Military
 
-    // 4b: enemy unit adjacent LUB w zasięgu ataku dystansowego -> attack (tylko
-    // engageable — np. gracz tylko w wojnie). P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE,
-    // PARYTET AI: ta sama bramka zasięgu co main.ts:isTargetWithinAttackRange.
+    // 4b: adjacent enemy unit -> attack (tylko engageable — np. gracz tylko w wojnie)
     const adjacentEnemy = engageableEnemyUnits.find(
       eu => isWithinAttackRange(unit, eu.q, eu.r, data),
     );
@@ -2611,24 +2513,14 @@ export function decideAITurn(
       continue;
     }
 
-    // 4b: enemy city adjacent LUB (miasto bez muru) w zasięgu ataku dystansowego ->
-    // move onto it (engine handles capture). P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE,
-    // RUNDA 2, PARYTET AI dla miast (Evaluator F1): ta sama bramka co
-    // map/map-attack-city.ts:eligibleCityAttackers po stronie gracza.
+    // 4b: adjacent enemy city -> move onto it (engine handles capture)
     const adjacentEnemyCity = (clusterConsolidationPhase ? clusterEnemyCities : engageableEnemyCities).find(
-      ec => isWithinCityAttackRange(unit, ec, data, units),
+      ec => isWithinCityAttackRange(unit, ec, data),
     ) ?? engageableEnemyCities.find(
-      ec => isWithinCityAttackRange(unit, ec, data, units),
+      ec => isWithinCityAttackRange(unit, ec, data),
     );
     if (adjacentEnemyCity !== undefined) {
-      // RUNDA 3 (P-BITWA-ATAK-DYSTANSOWY-EGZEKUCJA-Q1=B): oznacz komendę jako
-      // pochodzącą Z TEJ gałęzi -- patrz doc-comment `rangedCityAttackEntry` na
-      // AICmdMove. Egzekutor (main.ts) używa tego pola WYŁĄCZNIE do wąskiego
-      // wyjątku wejścia na pusty/niebroniony/nieobmurowany heks miasta.
-      commands.push({
-        type: 'move', unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r,
-        rangedCityAttackEntry: true,
-      });
+      commands.push({ type: 'move', unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r });
       unitActed.add(unit.id);
       continue;
     }
@@ -3108,9 +3000,6 @@ function decideDefensiveCopyTurn(
   for (const unit of myUnits) {
     if (unit.ruchLeft <= 0) continue;
 
-    // P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE, PARYTET AI: adjacent LUB w zasięgu
-    // ataku dystansowego (miasta-państwa/kopie defensywne dostają tę samą bramkę
-    // co zwykłe AI wyżej i gracz w main.ts).
     const adjacentEnemy = nonSisterEnemyUnits.find(
       eu => isWithinAttackRange(unit, eu.q, eu.r, data),
     );
