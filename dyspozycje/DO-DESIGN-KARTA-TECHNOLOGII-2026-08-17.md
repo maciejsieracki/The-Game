@@ -1,8 +1,8 @@
 # DO DESIGN — karta technologii po odkryciu
 
-**Data:** 2026-08-17  
-**Kontekst:** FALA 291 · prototyp `docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md` · baza Operator card commit `8bf85cd9`  
-**Status:** brief dla Designera · docs-only · bez implementacji w `gra/`  
+**Data:** 2026-08-17
+**Kontekst:** FALA 291 · prototyp `docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md` · baza Operator card commit `8bf85cd9`
+**Status:** brief dla Designera · docs-only · bez implementacji w `gra/`
 **Styl:** kanon 1E (Painted Imperial), zgodny z aktualnym drzewkiem technologii i istniejącymi kartami UI
 
 ## 0. Zadanie w jednym zdaniu
@@ -527,4 +527,3 @@ Wymagania kontraktu:
 - `gra/src/ui/techTreeView.ts`
 - `gra/src/ui/sciencePicker.ts`
 - `gra/src/ui/scienceHubHud.ts`
-
