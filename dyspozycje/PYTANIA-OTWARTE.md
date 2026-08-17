@@ -31099,3 +31099,28 @@ rozszerzyć później, ale rozszerzenie samo w sobie to osobny, przyszły temat.
 STATUS: **OTWARTE — dispatch w toku (recon + implementacja, Opus 5, worktree).**
 
 ---
+
+## R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1 (2026-08-16, decyzja/prośba Macieja)
+
+**Zgłoszenie (cytat):** „zwiększyłbym 3 krotnie ilość kopalni miedzi oraz cyny, ponieważ moim
+zdaniem jest ich za mało i może to utrudniać AI budowę bardziej sprawnych jednostek z kolejnych
+epok."
+
+**Stan obecny (zweryfikowany w kodzie, nie zgadywany):** `gra/data/map-gen-params.json`,
+`deposit_rules`: `miedz.rarity = 0.10`, `cyna.rarity = 0.02` (cyna celowo 5× rzadsza niż miedź,
+decyzja Macieja 2026-08-13, ale GWARANTOWANA każdej cywilizacji przez `FAIR_PLAY_DEPOSIT_IDS` —
+inaczej niż złoto). Potrojenie: `miedz.rarity → 0.30`, `cyna.rarity → 0.06` (zachowuje proporcję
+5:1 między nimi, o ile nie ma innej intencji — do potwierdzenia przy dispatchu, nie zakładać).
+
+**Do ustalenia przy dispatchu, nie zgadywać:** czy „3-krotnie" ma dosłownie przemnożyć
+`rarity` ×3, czy chodzi o inny parametr (np. rozmiar/liczbę skupisk per złoże, jeśli taki
+istnieje osobno od `rarity`) — recon do zrobienia przed zmianą liczby. Zmiana dotyka
+`gra/data/map-gen-params.json` (dane, NIE `gra/src/render/**` — Sonnet 5 wystarczy) oraz
+generatora `gra/src/map/**` pośrednio (parametr wejściowy, nie zmiana logiki) — wymaga
+przebiegu `map-gen-regression-test.cjs` (determinizm + fair-play siatka złóż) po zmianie,
+żeby potwierdzić brak regresji generatora.
+
+STATUS: **OTWARTE — zarejestrowane, do dispatchu po zamknięciu bieżących wątków** (zgodnie z
+zasadą „nowe tematy tylko rejestruj" do czasu zbliżenia się do limitu kontekstu sesji).
+
+---
