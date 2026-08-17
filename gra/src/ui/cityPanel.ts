@@ -84,9 +84,7 @@ import {
   cityPracaInteger,
   buildingGoldPurchaseCost,
   buildingTypeQueued,
-  enqueueRecruitment,
   dequeueRecruitment,
-  unitProductionItem,
   unitNacjaForCivKey,
   etaTurns,
   type CityProduction,
@@ -5887,14 +5885,9 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
       deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
     }
   } else if (item.kind === 'jednostka') {
-    // JEDNOSTKI-SUROWIEC-01 + R-AI-RECRUIT-UPKEEP-GATE: łączna bramka PRZED poborem.
-    const cost = unitStockCostForItem(item);
-    const pool = ownerSurowcePoolFor(city);
-    const def = gameData()?.units.find(u => u.Jednostka === item.id);
-    if (!canAffordUnitRecruitFull(pool, def)) return;
-    if (Object.keys(cost).length > 0) {
-      deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
-    }
+    // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostki nie są
+    // budowane za Pracę. Rekrutacja ma własną ścieżkę zakupu poniżej.
+    return;
   }
   setProd(city.id, enqueue(getProd(city.id), item));
   rerender();
@@ -7473,11 +7466,6 @@ function recruitUnit(city: City, item: ProductionItem): void {
   if (!canAffordUnitRecruitFull(pool, udef)) return;
   if (cfg.onPurchaseUnit) {
     cfg.onPurchaseUnit(city.id, item.id, item.koszt);
-  } else {
-    const data = gameData();
-    const prodItem = data ? unitProductionItem(item.id, data) : item;
-    if (!prodItem) return;
-    setProd(city.id, enqueueRecruitment(getProd(city.id), prodItem));
   }
   rerender();
 }

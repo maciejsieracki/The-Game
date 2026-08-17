@@ -43,6 +43,7 @@
  *   availableProduction() - what a city may queue right now
  *   advanceProduction()   - pour one turn of Praca into the queue
  *   enqueue() / dequeue() - immutable queue helpers
+ *   sanitizeBuildQueue() - removes legacy unit entries from the Praca queue
  *   frontItem()           - the item currently being built (or null)
  */
 
@@ -1118,11 +1119,61 @@ export function etaTurns(koszt: number, postep: number, praca: number): number |
  * item is untouched).
  */
 export function enqueue(prod: CityProduction, item: ProductionItem): CityProduction {
+  // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostki mają osobną,
+  // opłaconą kolejkę rekrutacji. Twarda bramka tutaj chroni także przyszłych
+  // wywołujących przed przypadkowym powrotem jednostki do kolejki Pracy.
+  if (item.kind !== 'budynek') {
+    return {
+      ...prod,
+      kolejka: [...prod.kolejka],
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    };
+  }
   return {
     kolejka: [...prod.kolejka, item],
     postep: prod.postep,
     wstrzymana: prod.wstrzymana,
     rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+  };
+}
+
+export interface BuildQueueSanitizeResult {
+  prod: CityProduction;
+  /** Praca odzyskana z usuniętych, legacy jednostek. */
+  refundedPraca: number;
+}
+
+/**
+ * Migracja starych save'ów: jednostki zapisane dawniej w `kolejka` nie mogą
+ * pozostać martwymi wpisami ani zostać ukończone za Pracę. Ich aktywny postęp
+ * (front) i zbankowany postęp (pozycje oczekujące) wraca do puli Pracy
+ * właściciela; budynki i osobna `rekrutacja` pozostają nietknięte.
+ */
+export function sanitizeBuildQueue(prod: CityProduction): BuildQueueSanitizeResult {
+  const hasLegacyUnit = prod.kolejka.some(item => item.kind === 'jednostka');
+  if (!hasLegacyUnit) {
+    return {
+      prod: {
+        ...prod,
+        kolejka: [...prod.kolejka],
+        rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+      },
+      refundedPraca: 0,
+    };
+  }
+
+  const refundedWaiting = prod.kolejka
+    .slice(1)
+    .filter(item => item.kind === 'jednostka')
+    .reduce((sum, item) => sum + (Number.isFinite(item.postep) && item.postep! > 0 ? item.postep! : 0), 0);
+  const frontIsLegacyUnit = prod.kolejka[0]?.kind === 'jednostka';
+  const filtered = filterQueue(prod, item => item.kind === 'budynek');
+  return {
+    prod: {
+      ...filtered.prod,
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    },
+    refundedPraca: refundedWaiting + (frontIsLegacyUnit ? filtered.forfeitedPostep : 0),
   };
 }
 
@@ -1475,6 +1526,16 @@ export function insertAtFront(
   item: ProductionItem,
   activePostep: number,
 ): CityProduction {
+  // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: nawet ścieżka
+  // „odłóż z powodu braku Manpower” nie może odtworzyć jednostki w kolejce
+  // finansowanej Pracą. Opłacona rekrutacja ma własny rekrutacja[].
+  if (item.kind !== 'budynek') {
+    return {
+      ...prod,
+      kolejka: [...prod.kolejka],
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    };
+  }
   const kolejka = [...prod.kolejka];
   if (kolejka.length > 0 && Number.isFinite(prod.postep) && prod.postep > 0) {
     kolejka[0] = { ...(kolejka[0] as ProductionItem), postep: prod.postep };

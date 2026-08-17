@@ -779,7 +779,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, splitEmpirePracaBudget, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
-  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue,
+  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
@@ -3539,7 +3539,11 @@ async function boot(): Promise<void> {
      * unchanged behaviour, nothing to transfer.
      */
     function sanitizeProductionQueue(ownerId: number, prod: CityProduction): CityProduction {
-      const { prod: sanitized, forfeitedPostep } = filterQueue(prod, (item) => {
+      const migrated = sanitizeBuildQueue(prod);
+      if (migrated.refundedPraca > 0) {
+        setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + migrated.refundedPraca);
+      }
+      const { prod: sanitized, forfeitedPostep } = filterQueue(migrated.prod, (item) => {
         const wid = parseWonderProdId(item.id);
         if (!wid) return true;
         return wonderGateOk(ownerId, wid);
@@ -27922,22 +27926,17 @@ async function boot(): Promise<void> {
                     }
                     cityProd.set(cmd.cityId, enqueue(prod0, item));
                   } else if (item.kind === 'jednostka') {
-                    // R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): przed zwykłym
-                    // kolejkowaniem Pracą, spróbuj ZACHOWAWCZEGO rush-zakupu za złoto --
-                    // sama decyzja to CZYSTY predykat shouldAIRushBuyUnit (game/ai.ts,
-                    // testy w tools/ai-unit-rush-test.cjs). AI kupuje tylko gdy jest w
-                    // stanie wojny z kimkolwiek, zostaje bufor >= reserve po zapłacie,
-                    // miasto ma pokrycie Manpower i owner nie kupił jeszcze w tej turze
-                    // (cap aiRushParams.maxPerTurn, R-STAWKI-STROJENIE: econ-params.json
-                    // globalne.ai_rush_jednostka_max_na_ture). purchaseRecruitmentUnit
-                    // (ownerId-agnostyczne, patrz definicja) sam pobiera złoto+surowiec+
-                    // Manpower i kolejkuje -- NIE pobieramy nic drugi raz tutaj.
+                    // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostka
+                    // nigdy nie wraca do kolejki Pracy. Zachowujemy istniejącą
+                    // zachowawczą politykę AI (wojna + rezerwa + limit), ale
+                    // jedynym skutkiem pozytywnej decyzji jest zakup przez
+                    // purchaseRecruitmentUnit.
                     const atWarWithAnyone = getDiploRelation(ownerId, 0).status === 'wojna'
                       || aiOwnerList.some(
                         (other) => other !== ownerId && getDiploRelation(ownerId, other).status === 'wojna',
                       );
                     const boughtThisTurn = aiUnitGoldRushBoughtByOwner.get(ownerId) ?? 0;
-                    const wantsRush = shouldAIRushBuyUnit({
+                    const wantsPurchase = shouldAIRushBuyUnit({
                       atWar: atWarWithAnyone,
                       treasury: ownerTreasury(ownerId),
                       reserve: aiRushParams.reserve,
@@ -27949,34 +27948,10 @@ async function boot(): Promise<void> {
                       boughtThisTurn,
                       maxPerTurn: aiRushParams.maxPerTurn,
                     });
-                    if (wantsRush && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
+                    if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
                       aiUnitGoldRushBoughtByOwner.set(ownerId, boughtThisTurn + 1);
-                      console.log(`[AI ${ownerId}] Rush jednostki za zloto: ${candId}`);
-                      continue;
+                      console.log(`[AI ${ownerId}] Zakup jednostki za Skarbiec: ${candId}`);
                     }
-                    const unitDef = data.units.find(u => u.Jednostka === item.id);
-                    const cost = unitStockCost(unitDef);
-                    const pool = ownerSurowcePoolFor(ownerId);
-                    if (!canAffordUnitRecruitFull(pool, unitDef)) {
-                      // P-AI-MOC-GAP-EVAL/R2 (Maciej 2026-08-08): checks.canAfford (wyżej) już
-                      // wymagał canAffordUnitRecruitFull===true dla TEGO kandydata przed jego
-                      // wyborem, a pula między selekcją a tym miejscem NIE mogła się zmienić --
-                      // rush powyżej (purchaseRecruitmentUnit) albo się udał (return true,
-                      // continue wcześniej), albo zawiódł PRZED jakąkolwiek mutacją PULI
-                      // SUROWCÓW (jego pickUnitRecruitHint-check jest przed deductem puli --
-                      // Manpower może zostać dotknięty osobno, patrz definicja funkcji).
-                      // Ta gałąź jest więc dziś realnie nieosiągalna -- zostaje jako siatka
-                      // bezpieczeństwa na wypadek przyszłej zmiany porządku operacji, tak samo
-                      // jak bliźniacza gałąź budynku wyżej (linia ~22845).
-                      console.warn(
-                        `[AI ${ownerId}] Build skipped (brak surowca / rezerwy utrzymania): ${candId}`,
-                      );
-                      continue;
-                    }
-                    if (Object.keys(cost).length > 0) {
-                      deductOwnerStockCost(ownerId, cost);
-                    }
-                    cityProd.set(cmd.cityId, enqueue(prod0, item));
                   }
                   continue;
                 }
@@ -30893,7 +30868,11 @@ async function boot(): Promise<void> {
       overlayDepositEra = player.era;
       cityProd.clear();
       if (saved.cityProd) {
-        for (const [cid, prod] of Object.entries(saved.cityProd)) cityProd.set(cid, prod as any);
+        for (const [cid, prod] of Object.entries(saved.cityProd)) {
+          // Migrację wykonamy po odtworzeniu puli Pracy poniżej, aby ewentualny
+          // zwrot postępu ze starej jednostki nie został nadpisany stanem save'a.
+          cityProd.set(cid, prod as CityProduction);
+        }
       }
       cityBuilt.clear();
       if (saved.cityBuilt) {
@@ -31198,6 +31177,14 @@ async function boot(): Promise<void> {
         playerPracaPool = 0;
       }
       _lastPraca = playerPracaPool;
+      if (saved.cityProd) {
+        // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: stare zapisy mogły
+        // mieć jednostkę w kolejce Pracy. Teraz pula właściciela jest już
+        // odtworzona, więc migracja może bezpiecznie oddać jej postęp.
+        for (const [cid, prod] of cityProd.entries()) {
+          setCityProduction(cid, prod);
+        }
+      }
       _lastPieniadzRate = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
