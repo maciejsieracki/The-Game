@@ -82,6 +82,13 @@ const archer = {
   ruchLeft: 2,
   ruch: 2,
 };
+const mixedStackArcher = {
+  ...archer,
+  id: 'u3',
+  q: 4,
+  r: 0,
+  stackGroupId: 'mixed-stack',
+};
 const garrison = {
   id: 'u1',
   ownerId: 1,
