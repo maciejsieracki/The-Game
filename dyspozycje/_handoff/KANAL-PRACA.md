@@ -7284,3 +7284,11 @@ FALI 290). `origin/main`: `5b471f32` → `0528dccc`. Scalenie celowało w **comm
 nie w czubek gałęzi. FALA 290 (`3786cedc`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
 scalona; scali się dopiero przy FALI 291.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela (patrz wpis FALA 290 wyżej).
+
+## [13:XX PL, 2026-08-17] Sesja chmurowa — uzupełnienie: map-gen-regression-test dokończony
+Wynik dla FALI 290 (`67fc4b0b`): exit 1, ale WYŁĄCZNIE z powodu znanego limitu wydajności
+sandboksa (`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`, ten sam co FALA 287) — progi czasowe `<7s`/`<15s`
+przekroczone (85,84s / 1291,92s), wszystkie asercje POPRAWNOŚCI (determinizm, rzeki, Pangea, chat)
+zielone. Potwierdza brak regresji generatora po potrojeniu rzadkości miedzi/cyny. Szczegóły:
+`WERSJE.md` FALA 290.
+CZEKAM-NA: nic (informacyjne uzupełnienie).
