@@ -31167,8 +31167,11 @@ generatora `gra/src/map/**` pośrednio (parametr wejściowy, nie zmiana logiki) 
 przebiegu `map-gen-regression-test.cjs` (determinizm + fair-play siatka złóż) po zmianie,
 żeby potwierdzić brak regresji generatora.
 
-STATUS: **OTWARTE — zarejestrowane, do dispatchu po zamknięciu bieżących wątków** (zgodnie z
-zasadą „nowe tematy tylko rejestruj" do czasu zbliżenia się do limitu kontekstu sesji).
+**ECHO Macieja (2026-08-17):** dispatch TERAZ (override standing rule „tylko rejestruj" dla
+tego jednego tematu, wprost na pytanie). Potwierdzone: „3-krotnie" = dosłownie `rarity × 3`:
+`miedz.rarity: 0.10 → 0.30`, `cyna.rarity: 0.02 → 0.06`.
+
+STATUS: **W TRAKCIE — dispatch Operatora (Sonnet 5, worktree).**
 
 ---
 
