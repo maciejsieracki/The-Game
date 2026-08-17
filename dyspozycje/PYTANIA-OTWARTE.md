@@ -31402,9 +31402,36 @@ JSON-ie). Ponieważ mnożnik ×2 stosuje się zawsze, wartość bazowa w JSON-ie
 `5 → 2.5`. Nic więcej (nie dotyka `scaleImprovementWorkCost`, nie dotyka innych ulepszeń).
 
 **Test modelu Operator/Evaluator (Maciej, przy tej samej wiadomości):** "Zobaczymy, ile tokenów
-zje Haiku." — pierwszy żywy test nowego domyślnego przydziału (`R-MODELE-HAIKU-OPERATOR-SONNET-EVALUATOR`,
-CLAUDE.md §4, aktualizacja 2026-08-17): Operator = Haiku 4.5, Evaluator = Sonnet 5.
+zje Haiku." — pierwszy żywy test nowego domyślnego przydziału (CLAUDE.md §4, aktualizacja
+2026-08-17): Operator = Haiku 4.5, Evaluator = Sonnet 5.
 
-STATUS: **W TRAKCIE — dispatch Operatora (Haiku 4.5, worktree).**
+**Wynik — commit `a7b16859`, Evaluator PASS-WITH-NOTES:**
+- **Zużycie tokenów (pierwszy punkt odniesienia dla nowego przydziału):** Operator (Haiku 4.5)
+  85 003 tokenów / 27 wywołań narzędzi / ~4,5 min; Evaluator (Sonnet 5) 101 816 tokenów / 56
+  wywołań / ~8,5 min. Razem ~186 800 tokenów na pojedynczą, jednoliniową zmianę danych + pełną
+  weryfikację.
+- **Zmiana sama w sobie poprawna** — zweryfikowana niezależnie trzema metodami: arytmetyka
+  (`2.5×2=5` dokładnie, bez zaokrągleń), obecność w zbudowanym bundlu (`grep` w `dist/index.html`
+  → dokładnie 1 trafienie `koszt_praca:2.5`, wartość unikalna wśród wszystkich ulepszeń), ścieżka
+  UI (`buildModeHud.ts` zawsze przechodzi przez `scaleImprovementWorkCost` — gracz zobaczy „5 P",
+  nigdy „2.5 P").
+- **⚠️ Kluczowe znalezisko procesowe (N1, powód PASS-WITH-NOTES zamiast czystego PASS):**
+  Operator (Haiku) zaktualizował test `pending-improvements-test.cjs`, ale ten test w ogóle NIE
+  przechodzi przez `scaleImprovementWorkCost` (czysty bookkeeping, `kosztPraca` to tam dowolny
+  literał) — **nie chroni tej zmiany przed regresją**, mimo że commit sugerował inaczej.
+  Evaluator (Sonnet 5) znalazł WŁAŚCIWY test w repo, którego Haiku nie uruchomił ani nie
+  wspomniał: `tools/grupa-b-lane-test.cjs:134` (`wyrMeta?.kosztPraca === 5`, przechodzi przez
+  skalowanie) — zweryfikowany mutacyjnie: przy `koszt_praca=5` FAIL, przy `2.5` PASS. **Wniosek do
+  obserwacji w kolejnych zleceniach na Haiku: dobór/weryfikacja WŁAŚCIWEGO testu regresyjnego, nie
+  tylko „coś jest zielone".**
+- N2 (nieblokujące) — nieaktualny plik cache diagnostyczny, niepowiązany z tą zmianą.
+- N3 (nieblokujące, na przyszłość) — `diplomacy-value-catalog.ts` czyta `koszt_praca` z pominięciem
+  skalowania, ale funkcja jest dziś martwym kodem (brak wywołań), nieszkodliwe teraz.
+- Przy okazji: `grupa-b-lane-test.cjs` ma pre-istniejący problem harnessu (zawsze `exit 0`
+  niezależnie od liczby FAIL) + 3 pre-istniejące, niepowiązane porażki — niezwiązane z tym
+  tematem, nie naprawiane teraz.
+
+STATUS: **ZAMKNIĘTE — commit `a7b16859`, Evaluator PASS-WITH-NOTES. Zmiana poprawna i
+zweryfikowana, notatki procesowe o Haiku zapisane do obserwacji.**
 
 ---
