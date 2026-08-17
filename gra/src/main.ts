@@ -1021,7 +1021,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
-import { rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
+import { aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import {
   decideAiWonderBuild,
@@ -27578,9 +27578,10 @@ async function boot(): Promise<void> {
                     c => c.q === cmd.toQ && c.r === cmd.toR && c.ownerId !== ownerId,
                   );
                   if (
-                    fogOn
-                    && destinationCity !== undefined
-                    && !currentVisibleForOwner(ownerId).has(keyOf(destinationCity.q, destinationCity.r))
+                    destinationCity !== undefined
+                    && !aiTargetVisibleForAction(
+                      currentVisibleForOwner(ownerId), fogOn, destinationCity.q, destinationCity.r, keyOf,
+                    )
                   ) {
                     // Pamięć pozycji służy do marszu, ale nie może zamienić się
                     // w niewidoczny atak/przejęcie miasta.
@@ -27695,7 +27696,9 @@ async function boot(): Promise<void> {
                     console.warn(`[AI ${ownerId}] Atak na owner ${defender.ownerId} bez wojny — pominięto`);
                     continue;
                   }
-                  if (fogOn && !currentVisibleForOwner(ownerId).has(keyOf(defender.q, defender.r))) {
+                  if (!aiTargetVisibleForAction(
+                    currentVisibleForOwner(ownerId), fogOn, defender.q, defender.r, keyOf,
+                  )) {
                     console.warn(`[AI ${ownerId}] Atak na niewidoczny cel — pominięto`);
                     continue;
                   }

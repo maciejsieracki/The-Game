@@ -24,6 +24,17 @@ export interface AiFogTarget {
   r: number;
 }
 
+/** Twarda bramka egzekucji ataku/akcji celu. */
+export function aiTargetVisibleForAction(
+  visibleHexes: ReadonlySet<string> | undefined,
+  fogEnabled: boolean,
+  q: number,
+  r: number,
+  keyOf: (q: number, r: number) => string,
+): boolean {
+  return !fogEnabled || visibleHexes === undefined || visibleHexes.has(keyOf(q, r));
+}
+
 function memoryKey(kind: AiTargetKind, targetId: string): string {
   return `${kind}:${targetId}`;
 }

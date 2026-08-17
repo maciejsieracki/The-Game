@@ -16,7 +16,8 @@ const bundle = path.join(__dirname, '.ai-fog-bundle.cjs');
 fs.writeFileSync(entry, `
 export { decideAITurn } from ${JSON.stringify(path.join(root, 'src/game/ai'))};
 export {
-  rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory,
+  aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets,
+  restoreAiTargetMemory, snapshotAiTargetMemory,
 } from ${JSON.stringify(path.join(root, 'src/game/ai-fog'))};
 `, 'utf8');
 try {
@@ -76,6 +77,8 @@ console.log('W2 invisible target -> not selected/attacked');
     makeMap(), data, { canEngageOwner: atWar, visibleHexes: new Set(['5,5']) },
   );
   assert.strictEqual(commands.some(c => c.type === 'attack'), false);
+  assert.strictEqual(api.aiTargetVisibleForAction(new Set(['5,5']), true, 6, 5, keyOf), false);
+  assert.strictEqual(api.aiTargetVisibleForAction(undefined, false, 6, 5, keyOf), true);
 }
 
 console.log('W3 remembered target -> planning only, no attack');
