@@ -4,6 +4,10 @@
 **Zakres tej notatki:** jedna karta demonstracyjna i propozycja UX. **Bez implementacji, bez zmian w `gra/src` i `gra/data`.**
 **Data:** 2026-08-17
 
+**Ograniczenia zakresu prototypu:**
+- Wzór graficzny popupu/karty pozostaje osobnym etapem przygotowywanym przez Designera po akceptacji prototypu Brązownictwa.
+- Linkowanie jednostek, budynków, ulepszeń i technologii do Civpedii/Wikipedii jest kolejnym etapem po akceptacji prototypu i briefu Designera; nie jest częścią obecnej implementacji.
+
 ## 1. Wybór przykładu
 
 Wybrano **Brązownictwo**, ponieważ jest technologią o największej liczbie jawnie zapisanych typów odblokowań spośród dwóch rozważanych przykładów:
