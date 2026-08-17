@@ -5,7 +5,7 @@ description: >
   w TYM repozytorium działa inaczej niż w dowolnym innym: rytuał startu sesji (pull →
   KANAL-PRACA → STAN-PRACY-HANDOFF → playbook.md), nienegocjowalna reguła „żadnej pracy
   poza pętlą AutoBot" z dwoma wąskimi wyjątkami, pętla Operator → Evaluator →
-  final z przydziałem modeli (wykonawca Haiku 4.5, Evaluator Sonnet 5, Opus 5 dla render i deploy), procedura NUMER → ABC → COMMIT → DEPLOY
+  final z przydziałem modeli (Operator i Evaluator Sonnet 5 effort="medium", Opus 5 dla render i deploy), procedura NUMER → ABC → COMMIT → DEPLOY
   z rejestrem próśb, obowiązkowy turniej dwóch niezależnych projektów przed każdym
   nowym pytaniem ABC, twarde FAIL Evaluatora dla edge/parytetu gracz-AI/save-load,
   izolacja pracy subagentów w worktree i wpis-blokada w kanale przed serią zmian, progi
@@ -75,17 +75,25 @@ do ROBOCZA. „format" / „ABC" = przepisz pytanie w pełnej formie.
 | Rola | Model |
 |------|-------|
 | Sesja główna (orkiestrator) | Sonnet 5 |
-| Operator (wykonawca), domyślnie | **Haiku 4.5** |
-| **Evaluator**, domyślnie | **Sonnet 5** |
+| Operator (wykonawca), domyślnie | **Sonnet 5, `effort="medium"`** |
+| **Evaluator**, domyślnie | **Sonnet 5, `effort="medium"`** |
 | **Deploy** (build + weryfikacja + publikacja) | **Opus 5** |
 | **Operator i Evaluator dla `gra/src/render/**`** | **Opus 5, obowiązkowy dla obu ról** |
 
-**Mechanizm dispatchu (2026-08-17):** Evaluator pracuje na jawnym `effort="medium"` (narzędzie Workflow,
-model Sonnet 5). Operator (Haiku 4.5) jest dispatchowany bez narzuconego effort (domyślna szybkość).
+**AKTUALIZACJA (Maciej, 2026-08-17): Operator wraca z Haiku 4.5 na Sonnet 5, `effort="medium"`.**
+Powód: w tej samej sesji 2026-08-17 Haiku 4.5 jako Operator trzykrotnie sfabrykował szczegółowe
+raporty o edycjach dokumentacji (m.in. tego pliku, dwukrotnie), których fizycznie nie było na
+dysku — `git status` w jego własnym worktree pokazywał czyste drzewo mimo cytowanego „diffu".
+Złapane wyłącznie dzięki temu, że orkiestrator zawsze niezależnie weryfikował `git status`/`git diff`
+przed scaleniem, nigdy nie ufając samemu opisowi zmiany. Kanon: `CLAUDE.md` §4.
 
-Wyjątek renderowy obowiązuje **równolegle** do reguły „Operatora na Haiku 4.5" i nie
-jest przez nią zniesiony: Haiku 4.5 jest jeszcze mniej przygotowany na ocenę proporcji
-i czytelności bryły z kąta kamery gry niż Sonnet 5. **Fable 5 zablokowany** —
+**Mechanizm dispatchu (2026-08-17):** zarówno Operator jak i Evaluator pracują na jawnym
+`effort="medium"` (narzędzie Workflow, model Sonnet 5).
+
+Wyjątek renderowy obowiązuje **równolegle** do reguły „Operator/Evaluator na Sonnet 5" i nie
+jest przez nią zniesiony: ani Sonnet 5, ani tym bardziej Haiku 4.5 nie oceniają wystarczająco
+dobrze proporcji i czytelności bryły z kąta kamery gry — dlatego render zostaje przy Opus 5 dla
+OBU ról bez wyjątku. **Fable 5 zablokowany** —
 `R-FABLE-RETENCJA-NASTER = B`: wymaga 30-dniowej retencji, wymagania NASTER nieustalone;
 zgoda na model ≠ potwierdzenie retencji, potrzebne oba.
 
@@ -445,6 +453,15 @@ w czacie + wpis w `KANAL-PRACA.md`**.
 Evaluator → **Sonnet 5** (zamiast Opus 5). Opus 5 zostaje obowiązkowy dla `gra/src/render/**` (dla obu ról)
 i dostępny dla Evaluatora na wyraźne żądanie orkiestratora dla trudniejszych tematów. Dispatcher zmienił się
 z narzędzia Agent na Workflow z `effort="medium"` dla Evaluatora (Sonnet 5). Deploy pozostaje Opus 5.
+
+## 11a. Aktualizacja 2026-08-17 (dalszy ciąg tego samego dnia) — Operator wraca na Sonnet 5
+
+Powyższa decyzja (Operator = Haiku 4.5) została **cofnięta tego samego dnia**: w tej sesji Haiku
+4.5 jako Operator trzykrotnie sfabrykował szczegółowe, przekonujące raporty o edycjach
+dokumentacji (`CLAUDE.md`, ten plik dwukrotnie, fragment `PYTANIA-OTWARTE.md`), których fizycznie
+nie było na dysku — `git status` w jego własnym worktree pokazywał czyste drzewo mimo cytowanego
+w raporcie „diffu". Nowy domyślny **Operator = Sonnet 5, `effort="medium"`** (ten sam poziom co
+Evaluator). Evaluator bez zmian. Wyjątek renderowy (Opus 5, obie role) bez zmian.
 
 ## 12. Dwie świadome różnice względem oryginalnego Ponytaila
 
