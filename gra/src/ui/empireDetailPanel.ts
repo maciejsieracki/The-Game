@@ -30,7 +30,7 @@ import { formatLiczbaPl, signedPl } from './formatPl';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
-import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
+import { HANDEL_PCT_STEP, MAX_PROCENT_NAUKA, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
 import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
 import {
   WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
@@ -75,10 +75,11 @@ function renderDefaultHandelSplitSection(): string {
     { key: 'procentNauka' as const, label: 'Nauka', cls: 'blue' },
     { key: 'procentLuksus' as const, label: 'Zamożność', cls: '' },
   ]) {
+    const maxVal = row.key === 'procentNauka' ? MAX_PROCENT_NAUKA : 100;
     h += `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
       + `<label style="font-size:12px"><span class="${row.cls}">${row.label}</span></label>`
       + `<span data-pct="${row.key}"><b>${split[row.key]}%</b></span></div>`
-      + `<input type="range" min="0" max="100" step="${HANDEL_PCT_STEP}" value="${split[row.key]}" `
+      + `<input type="range" min="0" max="${maxVal}" step="${HANDEL_PCT_STEP}" value="${split[row.key]}" `
       + `data-handel-key="${row.key}" style="width:100%;margin:0 0 6px" />`;
   }
   h += `</div><div class="civ-emp-foot">Suma = 100% · kroki ${HANDEL_PCT_STEP}% · dotyczy wszystkich miast bez własnego override.</div></div>`;
@@ -967,12 +968,13 @@ function renderSkarbiecTaxSplitSection(baseAmount: number): string {
   for (const row of rows) {
     const pct = split[row.key];
     const amount = Math.round((baseAmount * pct) / 100);
+    const maxVal = row.key === 'procentNauka' ? MAX_PROCENT_NAUKA : 100;
     h += '<div>'
       + '<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">'
       + `<span style="flex:1;font-size:12px;font-weight:600" class="civ-emp-slider-label ${row.cls}">${row.label}</span>`
       + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-pct="${row.key}"><b>${pct}%</b></span>`
       + `<span style="font-size:11px;color:#7d8798" data-amt="${row.key}">≈ ${amount >= 0 ? '+' : ''}${amount}/turę</span></div>`
-      + `<input type="range" class="civ-emp-slider ${row.cls}" min="0" max="100" step="${HANDEL_PCT_STEP}" `
+      + `<input type="range" class="civ-emp-slider ${row.cls}" min="0" max="${maxVal}" step="${HANDEL_PCT_STEP}" `
       + `value="${pct}" style="${sliderFillStyle(pct, row.from, row.to)}" data-handel-key="${row.key}" `
       + `data-grad-from="${row.from}" data-grad-to="${row.to}" /></div>`;
   }

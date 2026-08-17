@@ -31507,3 +31507,51 @@ ich nie rozszerzy się na inne części mapy.
 STATUS: **GOTOWE DO EVALUATORA — commit `f7be3d95` (Operator Haiku 4.5). Czeka na werdykt (Evaluator Sonnet 5).**
 
 ---
+
+## R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1 (2026-08-17, zgłoszenie Macieja)
+
+**Zgłoszenie (dosłownie, 2026-08-17):** „Ostatnia kwestia to maksymalny podział na badania. Na
+badania można przeznaczyć maksymalnie 60% całego budżetu. Na razie jest to ustawienie standardowe
+dla pierwszego poziomu ustroju. Na razie ustroje zostawiamy; w przyszłości zapisz, że musimy
+wprowadzić rodzaje ustrojów." + doprecyzowanie: „To samo dotyczy ograniczenia dla nauki, gdzie
+można przeznaczyć do 60% budżetu, ale można przeznaczyć mniej."
+
+**Interpretacja (orkiestrator):**
+- Nowa reguła: gracz (i AI) może przydzielić na Naukę **maksymalnie 60%** całego budżetu Pracy
+  imperium — górny twardy limit (hard cap).
+- Można dać mniej, nie można więcej.
+- Dotyczy zarówno gracza (UI, suwak) jak i AI (logika decyzyjna alokacji zasobów).
+- System ustrojów (mogący w przyszłości diferencyć ten limit per-ustrój) **nie istnieje jeszcze**
+  — limit 60% ma być STAŁĄ globalną regułą gry na razie, NIE parametrem per-ustrój.
+- Rejestracja przepisów na ustroje w osobnym wpisie `R-USTROJE-RODZAJE-PRZYSZLOSC` (zobacz niżej).
+
+**Niejednoznaczności w trakcie rekonu:** trzeba sprawdzić:
+1. Gdzie w silniku żyje alokacja budżetu na Naukę — czy to część systemu auto-pracy % czy
+   oddzielny mechanizm?
+2. Co dokładnie oznacza „cały budżet" — całkowity budżet Pracy imperium?
+3. Czy istnieje dziś UI suwak pozwalający ustawić Naukę >60% — tam trzeba dodać hard cap.
+4. Jak AI decyduje o alokacji na naukę i czy tam również trzeba wymusić limit.
+
+**Status rekonu:** CZEKA NA DISPATCHER — orkiestrator nie zleciał jeszcze, bo to polecenie ma
+być najpierw tutaj zarejestrowane (procedura NUMER→ABC→COMMIT→DEPLOY).
+
+STATUS: **OTWARTE — czeka na dispatch** (mogą pojawić się pytania ABC jeśli recon ujawni
+niejednoznaczności lub opcje projektowe).
+
+---
+
+## R-USTROJE-RODZAJE-PRZYSZLOSC (2026-08-17, zgłoszenie Macieja — notatka na przyszłość)
+
+**Zgłoszenie (fragment z powyższego, 2026-08-17):** „Na razie ustroje zostawiamy; w przyszłości
+zapisz, że musimy wprowadzić rodzaje ustrojów."
+
+**Interpretacja:** system ustrojów (regymów) nie istnieje. Przyszłościowa funkcjonalność, która
+będzie mogła różnicować limity budżetu na Naukę (i ewentualnie inne aspekty gry) w zależności od
+wybranego ustroju — np. autarkia (mały limit na naukę), demokracja (wysoki limit), itd.
+
+**Obywatel:** brak. To notatka rejestracyjna, nie do implementacji teraz.
+
+STATUS: **ZAREJESTROWANE NA PRZYSZŁOŚĆ — do wznowienia w osobnej sesji dedykowanej systemowi
+ustrojów (nie razem z bieżącą implementacją limitu 60%).**
+
+---

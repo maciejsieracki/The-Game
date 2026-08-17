@@ -338,6 +338,9 @@ export const DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
 /** Suwak podziału handlu — tylko wielokrotności 10 (0, 10, …, 100). */
 export const HANDEL_PCT_STEP = 10;
 
+/** Maksymalny procent budżetu, który można przeznaczyć na Naukę (hard cap). / EN: maximum percentage of budget for Science. */
+export const MAX_PROCENT_NAUKA = 60;
+
 export function snapHandelPct(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
 }
@@ -347,12 +350,22 @@ export function normalizePodzialHandlu(split: CityPodzialHandlu): CityPodzialHan
   let p = snapHandelPct(split.procentPieniadz);
   let n = snapHandelPct(split.procentNauka);
   let l = snapHandelPct(split.procentLuksus);
+
+  // Limit na Naukę: maksymalnie 60% (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: enforce hard cap on Science.
+  n = Math.min(n, MAX_PROCENT_NAUKA);
+
   let sum = p + n + l;
   if (sum !== 100) {
     l = Math.max(0, Math.min(100, l + (100 - sum)));
     sum = p + n + l;
     if (sum !== 100) {
       n = Math.max(0, Math.min(100, n + (100 - sum)));
+      // Po redystrybucji, ponownie limituj Naukę. / EN: re-enforce cap after redistribution.
+      n = Math.min(n, MAX_PROCENT_NAUKA);
+      sum = p + n + l;
+      if (sum !== 100) {
+        p = Math.max(0, Math.min(100, p + (100 - sum)));
+      }
     }
   }
   return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
@@ -366,6 +379,12 @@ export function adjustHandelSplit(
 ): CityPodzialHandlu {
   const next: CityPodzialHandlu = { ...current };
   next[changed] = snapHandelPct(newVal);
+
+  // Limit na Naukę: maksymalnie 60% budżetu (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: cap Science at 60% of budget.
+  if (changed === 'procentNauka') {
+    next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+  }
+
   const keys = (['procentPieniadz', 'procentNauka', 'procentLuksus'] as const)
     .filter(k => k !== changed);
   let remainder = 100 - next[changed];
@@ -381,12 +400,20 @@ export function adjustHandelSplit(
     const half = Math.round(remainder / 2 / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
     next[k0] = half;
     next[k1] = remainder - half;
+    // Jeśli Nauka jest jednym z k0/k1, także limituj do 60%. / EN: if Science is one of the redistributed fields, cap it too.
+    if (k0 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+    if (k1 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
     return next;
   }
   let v0 = snapHandelPct(remainder * current[k0] / sumOthers);
   if (v0 > remainder) v0 = Math.floor(remainder / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
   next[k0] = v0;
   next[k1] = remainder - v0;
+
+  // Limitujesz Naukę również po redystrybucji (gdy zmienił się inny parametr). / EN: enforce cap on Science even when adjusting other fields.
+  if (k0 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+  if (k1 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+
   return next;
 }
 

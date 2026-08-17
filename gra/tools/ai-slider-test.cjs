@@ -180,13 +180,14 @@ console.log('\n-- B. Suwaki Praca/Nauka: wojna vs pokoj --');
   eq(r.procentNauka, 10, 'deficyt+wojna -> procentNauka -10');
 }
 
-// 11. Brak zadnego wyzwalacza (zapasy neutralne + pokoj juz na docelowych wartosciach) -> changed=false
+// 11. Hard cap na Naukę (60%, R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1): nawet jeśli Nauka startuje na 100, musi być limitowana do 60 (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1)
 {
   const r = decideAIEconomySliders(
     inp({ atWar: false, zapasyPanstwa: 25, current: { procentRozwoj: 100, procentBudynki: 0, procentNauka: 100 } }),
     PARAMS,
   );
-  eq(r.changed, false, 'brak wyzwalacza (juz na skrajnych wartosciach pokoju) -> changed=false');
+  eq(r.changed, true, 'hard cap Nauka 60% wymusza zmianę (100->60)');
+  eq(r.procentNauka, 60, 'procentNauka limitowany do 60%');
 }
 
 console.log('\n-- C. Zabezpieczenie przed oscylacja (minOdstepTur) --');
