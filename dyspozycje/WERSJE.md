@@ -9,6 +9,13 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
+## ROBOCZA 90b6508d - 2026-08-17 22:00 UTC - FALA 292: integracja zatwierdzonych paczek AutoBot
+|- md5 (peĹ‚ne): 90b6508d06cc652f598addb8c2b3b266 · stempel: ROBOCZA · label 90b6508d · źródłowy commit integracji: `dc4c5a1b`
+|- Kod: limit wspólnej Pracy 50% z parytetem AI; blacklist obozów; mgła AI + pamięć celów; rekrutacja wyłącznie za Skarbiec; bazowe plony Drewna/Kamienia/Gliny; bramka widoczności miasta; bilans dyplomacji; stale highlight cudu; mixed stack miasta; podsumowanie bitwy; rejestracja sceny.
+|- Docs: ECHO/registry rekrutacji i barbarzyńców; karta technologii + brief Designera; rozdzielenie komunikatu Brązu i popupu triumfu. Design i linkowanie Civpedii/Wikipedii pozostają poza implementacją.
+|- Bramki: tsc 5.9.3 PASS · logic 213/213 · production-overflow 31/31 · AI improvements 52/52 · barbarzyńcy 201/201 · AI fog 8/8 · rekrutacja 13/13 · plony bazowe 9/9 · map attack 13/13 · dyplomacja 8/8 · wonder 8/8 · kamera bitwy 24/24 · VERIFY OK.
+|- `map-gen-regression-test.cjs` nie uruchomiony — znany limit wydajności sandboxa; zmiany nie dotykają algorytmu generatora terenu. **AKTUALNA**
+
 
 
 
