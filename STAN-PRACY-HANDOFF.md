@@ -1,6 +1,10 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-17 22:00 (deploy FALA 292)** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-17 23:45 (deploy FALA 293)** · Projekt: Civ „The Game"
+
+> **FALA 293 ROBOCZA:** md5 `8fa80b7c` · VERIFY OK · pełny split całej puli Pracy budynki ↔ ulepszenia.
+> FALA 292 miała tylko częściowe spięcie; FALA 293 domyka routing `doBudynkow` dla gracza/AI/MP.
+> Designer, linkowanie Civpedii/Wikipedii, pytania ABC i tematy NEEDS_FIX pozostają poza bundłem.
 
 > **FALA 292 ROBOCZA:** md5 `90b6508d` · VERIFY OK · integracja zatwierdzonych paczek AutoBot.
 > FALA 291 `13b771f4` zostaje zakwalifikowana do scalenia z `main` zgodnie z rytmem jednej fali do tyłu.

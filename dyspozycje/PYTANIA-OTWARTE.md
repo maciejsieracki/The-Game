@@ -31714,3 +31714,22 @@ Ten popup **nie jest warunkiem** odblokowania ani przejścia do epoki Brązu.
 **Na tym etapie:** nie zadano ABC i nie implementować.
 
 ---
+
+## P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 — niepełny routing podziału Pracy · STATUS: **W TRAKCIE** (2026-08-17)
+
+**Zgłoszenie właściciela po FALI 292:** „Podział Pracy nadal działa nieprawidłowo. Nie dzieli się maksymalnie 50% całej puli Pracy na ulepszenia, a jednocześnie został stary mechanizm, że tylko 50% budżetu można ustawić na automatyczną budowę ulepszeń. Wygląda, jakby nowej zmiany nie było.”
+
+**Repro na branchu `cursor/deploy-fala-292-63a1` (`90b6508d`):**
+`splitEmpirePracaBudget()` ogranicza cap pickera ulepszeń, ale produkcja budynków nadal
+działa przez niezależny per-miasto `splitPraca()`. F292 zawiera więc tylko częściową
+naprawę routingu, nie pełny podział jednej puli imperium.
+
+**Kontrakt:** pula imperium = 100%; udział ulepszeń wybierany przez użytkownika, maks.
+50%; reszta dostępna budynkom; wspólna reguła dla gracza i AI; kolejka, overflow,
+wiele miast, override per miasto i stare save nie mogą łamać sumy ani capu.
+ECHO/kontrakt: [`docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md`](../docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md).
+
+**Stan:** implementacja naprawcza w toku; bez zmiany bundla/deployu. Wymagany realny
+test przepływu, minimum dwa edge case’y i mutacja.
+
+---

@@ -20,7 +20,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.production-overflow-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.production-overflow-bundle.cjs');
 
 const ENTRY_TS = `
-export { advanceProduction, splitPraca, splitEmpirePracaBudget, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto } from '../src/game/production';
+export { advanceProduction, splitPraca, splitEmpirePracaBudget, allocateEmpirePracaToBuildings, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto } from '../src/game/production';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -147,6 +147,63 @@ console.log('\n9. Split z override per-miasto i edge case małej puli');
   eq(r.doUlepszen, 1, 'mała pula: floor(50% z 3) = 1 na ulepszenia');
   eq(r.doBudynkow, 2, 'mała pula: remainder 2 dla budynków');
   eq(r.doBudynkow + r.doUlepszen, r.total, 'mała pula zachowuje sumę 100%');
+}
+
+console.log('\n10. Integracja: globalna pula → remainder budynków + cap ulepszeń');
+{
+  const split = M.splitEmpirePracaBudget(100, 80); // UI/legalnie zaciska do 50%.
+  const allocation = M.allocateEmpirePracaToBuildings(split.doBudynkow, [
+    { cityId: 'ai-city-2', prod: { kolejka: [{ kind: 'budynek', id: 'mur', koszt: 40 }], postep: 0 } },
+    { cityId: 'ai-city-1', prod: { kolejka: [{ kind: 'budynek', id: 'spichlerz', koszt: 40 }], postep: 0 } },
+  ]);
+  eq(split.doUlepszen, 50, 'legalny cap: ulepszenia dostają maks. 50% puli');
+  eq(split.doBudynkow, 50, 'remainder tej samej puli = 50 Pracy dla budynków');
+  eq(allocation.used, 50, 'remainder jest faktycznie użyty przez kolejki budynków');
+  eq(allocation.remainder, 0, 'po legalnych kolejkach nie zostaje niewydany remainder');
+  eq(allocation.allocations[0].cityId, 'ai-city-1', 'multi-city: kolejność jest deterministyczna po cityId');
+  eq(allocation.allocations[0].used, 40, 'pierwsze miasto dostaje koszt budynku');
+  eq(allocation.allocations[1].used, 10, 'drugie miasto dostaje pozostały remainder');
+  eq(allocation.used + split.doUlepszen, split.total, 'budynki + ulepszenia pokrywają całą pulę');
+}
+
+console.log('\n11. Integracja edge: mała pula, override i brak legalnej kolejki');
+{
+  const split = M.splitEmpirePracaBudget(3, 50);
+  const allocation = M.allocateEmpirePracaToBuildings(split.doBudynkow, [
+    { cityId: 'paused', prod: { kolejka: [{ kind: 'budynek', id: 'mur', koszt: 1 }], postep: 0, wstrzymana: true } },
+    { cityId: 'empty', prod: { kolejka: [], postep: 0 } },
+  ]);
+  eq(split.doUlepszen, 1, 'mała pula: 1 Pracy na ulepszenia');
+  eq(split.doBudynkow, 2, 'mała pula: 2 Pracy remainder dla budynków');
+  eq(allocation.used, 0, 'brak legalnej kolejki nie zużywa remainder');
+  eq(allocation.remainder, 2, 'niewykorzystany remainder wraca do puli');
+}
+
+console.log('\n12. Integracja wiring: main używa remainder dla gracza i AI');
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  ok(
+    /applyEmpireBuildingBudget\(\s*0,/.test(mainSrc)
+      && /playerPracaBudget\.doBudynkow/.test(mainSrc),
+    'gracz: playerPracaBudget.doBudynkow trafia do produkcji budynków',
+  );
+  ok(
+    /applyEmpireBuildingBudget\(ownerId, aiBudget\.doBudynkow\)/.test(mainSrc),
+    'AI: aiBudget.doBudynkow trafia do produkcji budynków',
+  );
+  ok(
+    /improvementBudgetCap: playerPracaBudget\.doUlepszen/.test(mainSrc),
+    'gracz: osobny strumień ulepszeń używa doUlepszen tej samej puli',
+  );
+  const hasPlayerRemainderWiring = source =>
+    /applyEmpireBuildingBudget\(\s*0,/.test(source)
+      && source.includes('playerPracaBudget.doBudynkow');
+  const mutantMain = mainSrc.replace(
+    'playerPracaBudget.doBudynkow',
+    'playerPracaBudget.doUlepszen',
+  );
+  ok(hasPlayerRemainderWiring(mainSrc), 'mutacja bazowa: remainder budynków jest podpięty');
+  ok(!hasPlayerRemainderWiring(mutantMain), 'mutant omijający remainder budynków zostaje wykryty');
 }
 
 console.log('\n--- production-overflow-test: ' + passed + ' OK, ' + failed + ' FAIL ---');

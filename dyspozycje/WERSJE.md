@@ -9,7 +9,13 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA 90b6508d - 2026-08-17 22:00 UTC - FALA 292: integracja zatwierdzonych paczek AutoBot
+## ROBOCZA 8fa80b7c - 2026-08-17 23:45 UTC - FALA 293: pełny split Pracy budynki ↔ ulepszenia
+|- md5 (pełne): 8fa80b7c554c52254b41734deb0423da · stempel: ROBOCZA · label 8fa80b7c · źródłowy commit integracji: `f2e454f6`
+|- FALA 293 jest korektą FALI 292: `doBudynkow` jest faktycznie konsumowane przez produkcję gracza/AI/MP; 50% dotyczy całej puli Pracy, a nie tylko pickera ulepszeń.
+|- Bramki: tsc 5.9.3 PASS · logic 213/213 · praca-limit-50 23/23 · production-overflow 48/48 · auto-improvements 41/41 · ai-improvements 52/52 · ulepszenia-praca-percent 27/27 · wire-ekonomia 37/37 · VERIFY OK.
+|- `map-gen-regression-test.cjs` nie uruchomiony — znany limit wydajności sandboxa. Pozostałe zatwierdzone paczki pozostają w bundlu FALI 292.
+
+## ROBOCZA 90b6508d - 2026-08-17 22:00 UTC - FALA 292: integracja zatwierdzonych paczek AutoBot — **ZASTĄPIONA** (→ 8fa80b7c)
 |- md5 (peĹ‚ne): 90b6508d06cc652f598addb8c2b3b266 · stempel: ROBOCZA · label 90b6508d · źródłowy commit integracji: `dc4c5a1b`
 |- Kod: limit wspólnej Pracy 50% z parytetem AI; blacklist obozów; mgła AI + pamięć celów; rekrutacja wyłącznie za Skarbiec; bazowe plony Drewna/Kamienia/Gliny; bramka widoczności miasta; bilans dyplomacji; stale highlight cudu; mixed stack miasta; podsumowanie bitwy; rejestracja sceny.
 |- Docs: ECHO/registry rekrutacji i barbarzyńców; karta technologii + brief Designera; rozdzielenie komunikatu Brązu i popupu triumfu. Design i linkowanie Civpedii/Wikipedii pozostają poza implementacją.
