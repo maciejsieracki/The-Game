@@ -31211,3 +31211,44 @@ STATUS: **OTWARTE — zarejestrowane, niska priorytet, do sprzątnięcia przy ok
 pracy w tym obszarze** (zgodnie z zasadą „nowe tematy tylko rejestruj").
 
 ---
+
+## R-SUROWCE-12-PROPOZYCJA-WZGORZA-GORY-Q1 (2026-08-17, propozycja projektowa Macieja, wątek zamknięty do odnowienia limitu)
+
+**Zgłoszenie (cytat):** „przemyślmy, jakiego typu surowce możemy potrzebować w przyszłości, aż
+do współczesnej cywilizacji. Możemy to podzielić w sumie na dwanaście surowców, gdzie część
+występuje tylko na wzgórzach, a część tylko na górach. Każdy surowiec zajmuje jedną z części
+ścianki heksa." Wymóg zachowania owiec na Wzgórzach (nie rezygnujemy).
+
+**Stan pracy:** dostarczono roboczy arkusz Excel do edycji przez właściciela
+(`Propozycja-12-surowcow-Wzgorza-Gory.xlsx`, wysłany przez SendUserFile, NIE zapisany w repo —
+to materiał do dyskusji, nie dane gry). Dwie rundy iteracji:
+- Runda 1: 6 surowców/Wzgórza (Miedź, Cyna, Owce, Srebro, Saletra, Boksyt) + 6/Góry (Żelazo,
+  Złoto, Węgiel, Marmur, Siarka, Uran) — z legendą „mamy dziś" vs „nowa propozycja".
+- Runda 2 (Maciej): odrzucone Marmur, Siarka, Srebro jako niepotrzebne. Zamienniki: **Wapień**
+  (Góry — cement/beton, odpowiedź na pytanie „co potrzebne do betonu oprócz piasku"), **Cynk**
+  (Wzgórza — stop z miedzią → mosiądz), **Grafit** (Góry — elektrody/baterie/moderator
+  reaktora, synergia z Uranem).
+
+**Otwarte punkty do rozstrzygnięcia przy wznowieniu:**
+1. Maciej zapowiedział własną kontrpropozycję: „a ja coś wymyślę jeszcze" — czeka się na jego
+   wersję arkusza, NIE na dalsze iteracje Claude'a.
+2. Zgłoszone ryzyko nazewnicze: **Cyna** (Sn, już w grze, brąz) vs **Cynk** (Zn, nowa
+   propozycja, mosiądz) — nazwy bardzo podobne w polskim UI, oba na tym samym terenie
+   (Wzgórza). Alternatywa zaproponowana: **Ałun** (garbowanie/zaprawa) zamiast Cynku — do
+   decyzji Macieja.
+3. Złoto i Cyna dziś w kodzie (`gra/src/map/gen-helpers.ts`) mogą wystąpić na OBU terenach
+   (Wzgórza LUB Góry) — czysty podział 6+6 wymagałby zawężenia każdego do jednego terenu, nie
+   rozstrzygnięte.
+4. Powiązane, już zarejestrowane osobno tematy tej samej rodziny: `R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1`
+   (potrojenie rzadkości kopalni miedzi/cyny) i `P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE` (brak
+   modelu 3D dla cyny na mapie) — nie mieszać z tym tematem projektowym, każdy osobno.
+
+**Decyzja Macieja (2026-08-17):** „na razie zakończmy temat podświetlania surowców [tu: całej
+listy nowych surowców]. Nową listą nowych surowców zajmiemy się, jak się odnowi nam limit, a na
+razie zapisz to do tematów na przyszłość." — WYŁĄCZNIE rejestracja, żadnej dalszej pracy nad
+tym teraz (ani nad arkuszem, ani nad implementacją).
+
+STATUS: **OTWARTE — wstrzymane na wyraźne polecenie Macieja, do wznowienia po odnowieniu
+limitu kontekstu/tokenów sesji (razem z pozostałymi tematami z tej samej kolejki).**
+
+---
