@@ -2481,5 +2481,9 @@ Pełna treść pytania w `PYTANIA-OTWARTE.md`, sekcja `P-BITWA-ATAK-DYSTANSOWY-B
 Maciej zdecydował: gracz, AI i miasta-państwa pozyskują jednostki wyłącznie przez zakup
 za Skarbiec/Pieniądze; jednostki nie trafiają do tej samej kolejki Pracy co budynki.
 Zakres obejmuje produkcję, zakup/rush, limity, środki, save/load i migrację starych kolejek.
-Status: **W TOKU — ECHO zapisane, commit ECHO osobno; implementacja po commicie**.
+Status: **GOTOWE — zaakceptowane przez Evaluatora, PASS-WITH-NOTES**.
+Dowód: ECHO `bc200aee`; implementacja `914ce8da`; testy kontraktów/migracji
+`f30e13d7`, `c2a72a98`; `rekrutacja-skarbiec-only-test.cjs` **13/13 PASS**.
+Pre-existing dług testowy, niezwiązany z tą zmianą: `unit-stock-cost-test.cjs`
+**41/58 PASS** oraz `ai-recruit-upkeep-gate-test.cjs` **18/27 PASS**.
 Kanon: `docs/decyzje/P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.md`.

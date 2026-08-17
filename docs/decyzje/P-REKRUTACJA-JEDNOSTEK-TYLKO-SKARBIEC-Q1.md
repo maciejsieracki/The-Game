@@ -41,5 +41,24 @@ nieudokumentowanym założeniem.
 
 ## Status
 
-**ECHO zapisane — 🟡 ZAPISANA.** Implementacja następuje po osobnym commicie ECHO.
+**ECHO zapisane — 🟡 ZAPISANA.** (historia zachowana; commit ECHO:
+`bc200aee`).
+
+**Implementacja: GOTOWE — zaakceptowane przez Evaluatora jako
+PASS-WITH-NOTES.** Dowód:
+
+- implementacja: `914ce8da` (`fix: wymus jednostki tylko przez zakup ze skarbca`);
+- testy kontraktów/migracji: `f30e13d7`, `c2a72a98`;
+- test dedykowany: `rekrutacja-skarbiec-only-test.cjs` — **13/13 PASS**;
+- zakres potwierdzony w `gra/src/game/production.ts`, `gra/src/main.ts` i
+  `gra/src/ui/cityPanel.ts`.
+
+**Pre-existing dług testowy — poza tą zmianą, nie przypisywać implementacji:**
+
+- `unit-stock-cost-test.cjs` — **41/58 PASS**;
+- `ai-recruit-upkeep-gate-test.cjs` — **18/27 PASS**.
+
+Oba czerwone wyniki dotyczą istniejących rozbieżności kosztów magazynowych,
+nie mechanizmu rekrutacji wyłącznie za Skarbiec.
+
 Deploy, merge i push pozostają poza zakresem.
