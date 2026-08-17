@@ -18894,7 +18894,7 @@ async function boot(): Promise<void> {
               city.ulepszeniaFocus = city.ulepszeniaFocus ?? pol.focus;
               city.ulepszeniaTryb = city.ulepszeniaTryb ?? pol.tryb;
               city.ulepszeniaOnlyWorked = city.ulepszeniaOnlyWorked ?? pol.onlyWorked;
-              city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
+              city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(
                 city.ulepszeniaPracaPercent ?? pol.pracaAutoPercent,
               );
             }
@@ -31076,7 +31076,9 @@ async function boot(): Promise<void> {
             focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
             onlyWorked: (pol.onlyWorked as boolean) ?? false,
-            pracaAutoPercent: resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
+            pracaAutoPercent: clampPracaWspolnyWorekPercent(
+              resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
+            ),
           });
         }
       } else {

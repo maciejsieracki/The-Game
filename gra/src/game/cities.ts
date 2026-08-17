@@ -275,7 +275,7 @@ export function resolveEffectiveUlepszenia(
       focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
       tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
       onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-      pracaAutoPercent: clampUlepszeniaPracaPercent(city.ulepszeniaPracaPercent),
+      pracaAutoPercent: clampPracaWspolnyWorekPercent(city.ulepszeniaPracaPercent),
       override: true,
     };
   }

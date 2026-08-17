@@ -29,6 +29,9 @@ export {
   MAX_PRACA_WSPOLNY_WOREK_PROCENT,
   clampUlepszeniaPracaPercent,
   DEFAULT_ULEPSZENIA_PRACA_PERCENT,
+  resolveEffectiveUlepszenia,
+  resolveUlepszeniaPracaPercentFromRaw,
+  migrateUlepszeniaPerTurnToPercent,
 } from ${JSON.stringify(SRC + '/game/cities')};
 `;
 
@@ -56,6 +59,9 @@ const {
   MAX_PRACA_WSPOLNY_WOREK_PROCENT,
   clampUlepszeniaPracaPercent,
   DEFAULT_ULEPSZENIA_PRACA_PERCENT,
+  resolveEffectiveUlepszenia,
+  resolveUlepszeniaPracaPercentFromRaw,
+  migrateUlepszeniaPerTurnToPercent,
 } = require(BUNDLE_FILE);
 
 let passed = 0;
@@ -103,6 +109,62 @@ console.log('4. Kontrast: clampPracaWspolnyWorekPercent (50) vs clampUlepszeniaP
   const resultOld = clampUlepszeniaPracaPercent(testVal);
   eq(resultNew, 50, `nowa funkcja: ${testVal} -> 50 (limit wspólnego worka)`);
   eq(resultOld, 75, `stara funkcja: ${testVal} -> 75 (bez zmian, dla migracji)`);
+}
+
+// 5. Scenariusz: resolveEffectiveUlepszenia() — miasto z override pracaAutoPercent=80
+console.log('5. Scenariusz: resolveEffectiveUlepszenia() — override miasta z pracaAutoPercent > 50');
+{
+  // Symulujemy stary/nielegalny zapis gdzie city.ulepszeniaPracaPercent = 80
+  // Po przejściu przez resolveEffectiveUlepszenia() z override=true, powinno być ≤50
+  const city = {
+    id: 'test-city',
+    ulepszeniaOverride: true,
+    ulepszeniaFocus: 'produkcja',
+    ulepszeniaTryb: 'auto',
+    ulepszeniaOnlyWorked: false,
+    ulepszeniaPracaPercent: 80, // Stary/nielegalny zapis > 50
+  };
+  const empire = {
+    focus: 'zrownowazone',
+    tryb: 'reczny',
+    onlyWorked: false,
+    pracaAutoPercent: 33,
+  };
+  const effective = resolveEffectiveUlepszenia(city, empire);
+  eq(effective.pracaAutoPercent, 50, 'override cidade z 80% clampuje do 50% (limit wspólnego worka)');
+  eq(effective.override, true, 'flaga override zachowana');
+}
+
+// 6. Scenariusz: wczytanie zapisu gry — stary zapis z pracaAutoPercent=90
+console.log('6. Scenariusz: wczytanie zapisu — stary pracaAutoPercent=90 clampuje do 50%');
+{
+  // Symulujemy wczytywanie starego zapisu gdzie pol.pracaAutoPercent = 90 (przed limitacją)
+  // Po resolveUlepszeniaPracaPercentFromRaw() + clampPracaWspolnyWorekPercent() powinno być 50
+  const result = clampPracaWspolnyWorekPercent(
+    resolveUlepszeniaPracaPercentFromRaw(90, undefined)
+  );
+  eq(result, 50, 'zapis pol.pracaAutoPercent=90 → resolveFromRaw(90) → clampTo50 → 50');
+}
+
+// 7. Scenariusz: wczytanie zapisu gry — stary perTurn=3 (migruje do 100, potem clampuje)
+console.log('7. Scenariusz: wczytanie zapisu — stary perTurn=3 (100%) clampuje do 50%');
+{
+  // Symulujemy wczytywanie bardzo starego zapisu gdzie perTurn=3 (=100%)
+  // Po migracji i clampowaniu powinno być 50
+  const result = clampPracaWspolnyWorekPercent(
+    resolveUlepszeniaPracaPercentFromRaw(undefined, 3)
+  );
+  eq(result, 50, 'zapis perTurn=3 → resolveFromRaw(undef, 3) → 100% → clampTo50 → 50');
+}
+
+// 8. Scenariusz: wczytanie zapisu gry — mieszany: pracaAutoPercent=60, perTurn=2
+console.log('8. Scenariusz: mieszany zapis (pracaAutoPercent ma pierwszeństwo)');
+{
+  // resolveUlepszeniaPracaPercentFromRaw daje pierwszeństwo newVal, ignoruje legacyPerTurn
+  const result = clampPracaWspolnyWorekPercent(
+    resolveUlepszeniaPracaPercentFromRaw(60, 2)
+  );
+  eq(result, 50, 'zapis (pracaAutoPercent=60, perTurn=2) → 60 → clampTo50 → 50');
 }
 
 console.log(`\npraca-limit-50-test: ${passed} passed, ${failed} failed`);
