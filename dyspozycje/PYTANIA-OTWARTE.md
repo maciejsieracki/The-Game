@@ -8,6 +8,43 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **OTWARTE**
+
+**Sytuacja:** Po odkryciu technologii istnieją dziś skrócone informacje w hubie badań oraz tooltip/karta węzła drzewa. Nie ma jednej rozbudowanej karty pokazującej pełny efekt odkrycia. Prototyp opisano na przykładzie Brązownictwa w [`docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`](../docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md).
+
+**Cel pytania:** Ustalić, czy zaakceptować układ i zakres jednej karty jako wzorzec przed przygotowaniem kontraktu danych oraz wdrożeniem dla wszystkich technologii.
+
+**Dlaczego teraz:** W repo są już trzy częściowe wzorce informacji (`techTreeView.ts`, `sciencePicker.ts`, `scienceHubHud.ts`), ale dane mają wykryte rozbieżności: `tech.json` deklaruje 12 jednostek i Popalnię brązu, a `units.json` ma 20 jednostek z `Tech: "Brązownictwo"`, zaś `terrain-improvements.json` ma Kopalnię miedzi i Kopalnię cyny. Nie należy implementować karty, dopóki ta granica źródeł nie jest jawna.
+
+### Opcje
+
+**A — zaakceptować prototyp jako wzorzec (rekomendacja).** Najpierw uznać układ karty i UX: popup po faktycznym odkryciu, zamknięcie przez przycisk/Esc, brak blokowania tury, ponowne otwarcie z drzewa; przed kodem rozstrzygnąć rozbieżności danych.
+
+- **Za:** ogranicza ryzyko wdrożenia niepełnej listy odblokowań; daje jeden konkretny wzorzec do powielenia.
+- **Za:** zachowuje istniejące informacje z tooltipów i huba, zamiast tworzyć drugi niezależny opis.
+- **Przeciw:** wymaga jeszcze decyzji, czy kanonem listy jednostek jest `tech.json`, czy `units.json`.
+- **Przeciw:** wdrożenie wszystkich technologii nastąpi dopiero po domknięciu kontraktu danych.
+
+**B — zaakceptować wdrożenie kart dla wszystkich technologii od razu.**
+
+- **Za:** szybciej pojawi się kompletna funkcja w całym drzewie.
+- **Za:** niespójności można próbować obsłużyć wyjątkami w trakcie implementacji.
+- **Przeciw:** karta może pokazywać różną liczbę jednostek zależnie od źródła i nieistniejącą Popalnię brązu.
+- **Przeciw:** utrudni to późniejsze poprawienie danych i zwiększy ryzyko fałszywych obietnic dla gracza.
+
+**C — odłożyć popup i pozostać przy istniejących tooltipach.**
+
+- **Za:** brak nowych zależności UI i brak ryzyka wynikającego z niespójności danych.
+- **Za:** obecne drzewo już pokazuje podstawowe wymagania i odblokowania.
+- **Przeciw:** gracz nadal nie dostanie jednego podsumowania „co mogę teraz zrobić”.
+- **Przeciw:** informacje pozostaną rozproszone między kartą węzła, hubem i katalogami budowy/jednostek.
+
+**Rekomendacja:** **A** — zaakceptować prototyp dokumentacyjny, ale przed implementacją rozstrzygnąć wskazane rozbieżności źródeł.
+
+**Decyzja właściciela:** `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 = A/B/C`.
+
+---
+
 ## R-CYWILIZACJE-EPOKA-PULA-Q1 — zwiększenie limitu cywilizacji per epoka · STATUS: **ZAMKNIĘTE** (2026-08-17)
 
 **ECHO:** `R-CYWILIZACJE-EPOKA-PULA-Q1 = A` (Maciej 2026-08-17) — „żadna mapa nie może przekroczyć maksymalnego limitu danej epoki, bo nie powtarzamy tych samych cywilizacji na mapie. Duże mapy, które są już na granicy (najwyższy poziom), nie zmieniamy nic. Główna zmiana będzie przy mniejszych mapach. Zwiększamy też o jeden możliwość większej ilości państw-miast na każdej mapie."
