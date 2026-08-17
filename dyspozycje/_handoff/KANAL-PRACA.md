@@ -7320,3 +7320,10 @@ ROBOCZA md5 `90b6508d06cc652f598addb8c2b3b266` (skrót `90b6508d`) · źródło 
 |- Bramki: tsc 5.9.3 PASS · logic 213/213 · production-overflow 31/31 · AI improvements 52/52 · barbarians 201/201 · AI fog 8/8 · rekrutacja 13/13 · plony 9/9 · map attack 13/13 · dyplomacja 8/8 · wonder 8/8 · kamera 24/24 · VERIFY OK.
 |- `map-gen-regression-test.cjs` pominięty — znany limit wydajności sandboxa; brak zmiany algorytmu generatora terenu.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `90b6508d`; FALA 291 kwalifikuje się do scalenia do `main`.
+
+## [23:45 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — DEPLOY ROBOCZA FALA 293
+FALA 293 md5 `8fa80b7c554c52254b41734deb0423da` (skrót `8fa80b7c`) · korekta FALI 292.
+|- Pełny split Pracy budynki↔ulepszenia: `doBudynkow` konsumowane przez kolejki gracza/AI/MP; cap 50% całej puli; UI 0–50% jednoznaczne.
+|- Bramki: tsc PASS · logic 213/213 · praca-limit 23/23 · production-overflow 48/48 · auto 41/41 · AI 52/52 · percent 27/27 · wire 37/37 · VERIFY OK.
+|- Build z czubka integracji F292 + korekta `f2e454f6`; brak Designera, otwartych ABC i tematów NEEDS_FIX.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `8fa80b7c`; po FALI 294 scalić FALĘ 293 do `main`.
