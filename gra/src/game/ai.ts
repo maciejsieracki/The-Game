@@ -4670,7 +4670,11 @@ export function decideAIEconomySliders(
   }
 
   // Finalnie, limituj Naukę na 60% (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: enforce hard cap on Science allocation.
+  const prevNauka = procentNauka;
   procentNauka = Math.min(procentNauka, MAX_PROCENT_NAUKA);
+  if (procentNauka !== prevNauka) {
+    changed = true;
+  }
 
   return { procentRozwoj, procentBudynki, procentNauka, changed };
 }

@@ -57,7 +57,7 @@ import {
   BUDOWA_TYP_FOCUS,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
 } from '../game/cities';
-import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
+import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit, MAX_PROCENT_NAUKA } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
@@ -4388,7 +4388,7 @@ function appendPodzialHandlu(
   mount.appendChild(grid);
 
   const sliders = el('div', 'handel-w4-sliders');
-  const makeSlider = (key: keyof PodzialHandluSplit, label: string, cls: string, rowCls = '') => {
+  const makeSlider = (key: keyof PodzialHandluSplit, label: string, cls: string, rowCls = '', maxVal = 100) => {
     const row = el('div', `slider-row ${rowCls}`.trim());
     const lab = el('label');
     lab.innerHTML = `<span class="${cls}">${label}</span><span class="val ${cls}">${split[key]}%</span>`;
@@ -4396,7 +4396,7 @@ function appendPodzialHandlu(
     const inp = document.createElement('input');
     inp.type = 'range';
     inp.min = '0';
-    inp.max = '100';
+    inp.max = String(maxVal);
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(split[key]);
     inp.disabled = !editable;
@@ -4411,7 +4411,7 @@ function appendPodzialHandlu(
     sliders.appendChild(row);
   };
   makeSlider('procentPieniadz', 'Skarb', 'gold');
-  makeSlider('procentNauka', 'Nauka', 'blue', 'slider-nauka');
+  makeSlider('procentNauka', 'Nauka', 'blue', 'slider-nauka', MAX_PROCENT_NAUKA);
   makeSlider('procentLuksus', HANDEL_ZAMOZNOSC_LABEL, 'happy');
   // R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10): "Skarbiec i Nauka to JEDNA
   // grupa" -- JEDEN przycisk Indywidualne dla całego suwaka (Skarb+Nauka+Zamożność
