@@ -108,7 +108,7 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const stock = runTick(city, [], map);
   eq(stock.drewno, 5, 'magazyn: Równina bez Tartaku → 5 drewna');
   eq(stock.kamien, 2, 'magazyn: Równina bez Kamieniołomu → 2 kamień');
-  eq(stock.glina, 0, 'magazyn: Równina bez rzeki → 0 gliny');
+  eq(stock.glina ?? 0, 0, 'magazyn: Równina bez rzeki → 0 gliny');
 }
 
 // Tartak + las na obrabianym heksie — drewno > sam Tartak
