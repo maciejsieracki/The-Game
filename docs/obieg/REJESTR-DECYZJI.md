@@ -45,6 +45,7 @@
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
 | **AI-BALANS-STEP6-Q1** | 2026-08-06 | **A** — kara score 2. zwiadowca −80 pkt w `chooseCityProduction` | D | 🟡 **ZAPISANA** | `docs/decyzje/AI-BALANS-STEP6-Q1.md` | czeka `działaj` · paczka ABC 2026-08-06 |
+| **P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1** | 2026-08-17 | **B** — gracz, AI i miasta-państwa kupują jednostki wyłącznie za Skarbiec/Pieniądze; brak jednostek w kolejce Pracy budynków | B+D+F | 🟡 **ZAPISANA** | `docs/decyzje/P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.md` · ECHO commit osobno | implementacja po ECHO; bez push/merge/deploy |
 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | 2026-08-06 | **A** + reguła — `kopalnia` legacy + wszystkie kopalnie teraz i przyszłe zachowują relief | A+F | 🟡 **ZAPISANA** | `docs/decyzje/R-KAMIEN-RELIEF-FOLLOWUP-Q1.md` | czeka `działaj` |
 | **MAP-UX-CLUSTER-LABEL-Q1** | 2026-08-06 | **B+C** — stolica: nazwa cywilizacji + korona/obwódka; MP: nazwa + dopisek | A+E | 🟡 **ZAPISANA** | `docs/decyzje/MAP-UX-CLUSTER-LABEL-Q1.md` | czeka `działaj` |
 | **R-WIARYGODNOSC-S9-Q1** | 2026-08-06 | **A** — pełna paczka strojenia liczb §9 (JSON + testy) | D | 🟡 **ZAPISANA** | `docs/decyzje/R-WIARYGODNOSC-S9-Q1.md` | czeka `działaj` |
