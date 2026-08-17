@@ -31102,15 +31102,47 @@ STATUS: **OTWARTE — dispatch w toku (recon + implementacja, Opus 5, worktree).
 `MINE_ELIGIBLE_STYLE` (`gra/src/render/rangeOverlay.ts`, kolor `0x66ccff`, opacity 0.30,
 nowe pole `RangeOverlayStyle.alwaysOnTop`), przeliczana w `refreshBuildHighlight()`
 (`gra/src/main.ts`) wyłącznie gdy `isMineImprovementKey(activeImprovementKey)`
-(`gra/src/map/improvement-build.ts`, WYŁĄCZNIE 4 kopalnie: miedź/żelazo/węgiel/cyna) —
+(`gra/src/map/improvement-build.ts`, WYŁĄCZNIE 4 kopalnie: miedź/żelazo/cyna/**złoto**) —
 zero dodatkowych skanów terytorium ponad istniejący `getQualifyingHexes`, `qualifies()`/
 `createQualifier()` nietknięte. Bramki zweryfikowane niezależnie przez orkiestratora:
 tsc 0, vite build OK, nowy test `kopalnia-podswietlenie-heksow-test.cjs` 71/0, logic-test
 213/213, map-improvement-qualify-test 112/0, improvement-territory-gate-test 6/0.
 Baseline pre-istniejących porażek bez zmian: zloto-test 38/7, tarasy-cywilizacje-test 16/1
-(identyczne przed i po). Evaluator (Opus 5, worktree) dispatchowany — czeka na werdykt.
+(identyczne przed i po).
 
-STATUS: **W TRAKCIE — Evaluator pracuje.**
+**SPROSTOWANIE (Evaluator, N1):** wcześniejszy zapis „miedź/żelazo/węgiel/cyna" wyżej i w
+opisie commita `b0f9bcb9` był BŁĘDNY — w kodzie kopalnia węgla jako ulepszenie nie istnieje,
+czwarta kopalnia to **złoto** (`kopalnia_zlota`). Kod od początku był poprawny (4 klucze:
+`kopalnia_miedzi`/`kopalnia_zelaza`/`kopalnia_cyny`/`kopalnia_zlota`), pomyłka była wyłącznie
+w opisie tekstowym (dwa miejsca: ten wpis + komunikat commita) — poprawiono tu, commita nie
+amendujemy (już wypchnięty).
+
+**Evaluator (Opus 5, worktree) — werdykt PASS-WITH-NOTES.** Bramki zmierzone niezależnie
+identyczne z powyższymi + zweryfikowane mutacyjnie w 4 niezależnych miejscach (opacity,
+alwaysOnTop, ścieżka gaszenia, scope creep na kamieniołom) — wszystkie złapane przez nowy
+test. Pozostałe notatki (nieblokujące, brak fixu teraz — zgodnie ze standing rule „tylko
+rejestruj"):
+- **N2** — `depthTest:false` maluje warstwę PRZEZ bryłę terenu globalnie, nie tylko nad
+  własnym heksem: heks zasłonięty grzbietem góry i tak dostaje niebieski krążek, a modele 3D
+  jednostek stojących na podświetlonym wzgórzu/górze dostają niebieską poświatę od spodu
+  (żetony nieprzezroczyste, `renderOrder=0`, warstwa rysuje się PO nich). Świadomy kompromis
+  Operatora (bez tego nic nie widać), ale wizualny artefakt do oceny w playteście.
+- **N3** — `applySceneResult()` (`main.ts:29346-29362`) nie zeruje `mineEligibleGroup` po
+  nowej grze/wczytaniu, niespójnie z 3 pozostałymi warstwami (`cultureRangeGroup` itd.).
+  Evaluator: praktycznie nieszkodliwe, NIE jest to wyciek pamięci — `clearMineEligibleOverlay`
+  i tak sprząta przez zmienną. Kosmetyczna niespójność, jedna linijka przy okazji.
+- **N4 (PRE-ISTNIEJĄCE, osobny temat, nie ten commit)** — `onSelectWonder`
+  (`main.ts:18800-18823`) ma 3 wczesne `return` przy zablokowanym cudzie, które nie wołają
+  `refreshBuildHighlight()` po wyzerowaniu `activeImprovementKey`. Zweryfikowane identyczne na
+  commicie-rodzicu. Wcześniej niewidoczne (ogólny highlight tonął pod bryłą kopalni per N2),
+  teraz może zostawić widoczną nieaktualną niebieską warstwę. Do osobnego zgłoszenia.
+- **N5, N6** — kosmetyka: tautologiczna asercja w nowym teście (linia 277) i komentarz w
+  `rangeOverlay.ts` przeszacowujący efekt („zniknąłby w całości" — realnie widoczny byłby
+  wąski pierścień, bo promień tinta 0.97·HEX_R &gt; footprint bryły 0.87-0.92). Bez wpływu na
+  poprawność.
+
+STATUS: **ZAMKNIĘTE (Evaluator PASS-WITH-NOTES, commit `b0f9bcb9` + sprostowanie N1 w tym
+wpisie).**
 
 ---
 
@@ -31136,5 +31168,45 @@ przebiegu `map-gen-regression-test.cjs` (determinizm + fair-play siatka złóż)
 
 STATUS: **OTWARTE — zarejestrowane, do dispatchu po zamknięciu bieżących wątków** (zgodnie z
 zasadą „nowe tematy tylko rejestruj" do czasu zbliżenia się do limitu kontekstu sesji).
+
+---
+
+## P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT (2026-08-17, znalezisko Evaluatora N4 przy R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1)
+
+**Zgłoszenie:** `onSelectWonder` (`gra/src/main.ts:18800-18823`) ma 3 wczesne `return` przy
+zablokowanym cudzie (linie 18811/18815/18819), które zerują `activeImprovementKey = null` ale
+NIE wołają `refreshBuildHighlight()` po drodze — nieaktualne podświetlenie zostaje na ekranie.
+
+**Status w czasie:** PRE-ISTNIEJĄCE, zweryfikowane niezależnie identyczne na commicie-rodzicu
+`b0f9bcb9^` — NIE regresja tematu podświetlenia kopalni. Wcześniej niewidoczne, bo ogólny
+`unitRenderer.setHighlight` i tak tonął pod bryłą terenu na Wzgórzach/Górach (patrz N2 w
+R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1) — teraz, dla kopalń, nowa warstwa jest widoczna nad
+terenem, więc efekt (nieaktualna niebieska warstwa po zablokowanym cudzie) może się ujawnić.
+
+STATUS: **OTWARTE — zarejestrowane, do dispatchu po zamknięciu bieżących wątków** (zgodnie z
+zasadą „nowe tematy tylko rejestruj" do czasu zbliżenia się do limitu kontekstu sesji).
+
+---
+
+## P-KOPALNIA-PODSWIETLENIE-KOSMETYKA (2026-08-17, znaleziska Evaluatora N2/N3/N5/N6 przy R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1)
+
+Cztery drobne, nieblokujące uwagi z werdyktu PASS-WITH-NOTES dla `b0f9bcb9`, żadna nie wymaga
+natychmiastowej naprawy, zapisane żeby nie zgubić przy przyszłym sprzątaniu:
+
+- **N2 — artefakt wizualny do oceny w playteście:** `depthTest:false` maluje warstwę
+  podświetlenia PRZEZ bryłę terenu globalnie (nie tylko nad własnym heksem) — heks zasłonięty
+  grzbietem góry i tak dostaje krążek, modele jednostek na podświetlonym terenie dostają
+  niebieską poświatę od spodu. Świadomy kompromis (bez tego nic nie widać pod bryłą kopalni).
+- **N3 — kosmetyczna niespójność:** `applySceneResult()` (`main.ts:29346-29362`) nie zeruje
+  `mineEligibleGroup` po nowej grze/wczytaniu, niespójnie z 3 pozostałymi warstwami. Nie jest
+  to wyciek pamięci (sprzątane i tak przez `clearMineEligibleOverlay`).
+- **N5 — martwy kod w teście:** tautologiczna alternatywa w asercji
+  `gra/tools/kopalnia-podswietlenie-heksow-test.cjs:277`.
+- **N6 — komentarz przeszacowuje efekt:** `rangeOverlay.ts:284-296` twierdzi że krążek
+  „zniknąłby w całości" pod bryłą — realnie widoczny byłby wąski pierścień na obrzeżu heksa
+  (promień tinta 0.97·HEX_R &gt; footprint bryły 0.87-0.92·HEX_R).
+
+STATUS: **OTWARTE — zarejestrowane, niska priorytet, do sprzątnięcia przy okazji kolejnej
+pracy w tym obszarze** (zgodnie z zasadą „nowe tematy tylko rejestruj").
 
 ---
