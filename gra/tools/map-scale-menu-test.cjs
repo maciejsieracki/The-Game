@@ -57,34 +57,34 @@ const MP_EXPECT = {
 /** CIV-MAP-EPOCH-Q1 = A — macierz mapa × epoka */
 const TYPY_EXPECT = {
   Malenki: {
-    kamien: [2, 3, 4],
-    braz: [3, 4, 5],
-    zelazo: [3, 4, 5],
+    kamien: [2, 3, 5],
+    braz: [3, 4, 6],
+    zelazo: [3, 4, 6],
   },
   Mały: {
-    kamien: [3, 4, 5],
-    braz: [4, 5, 6],
-    zelazo: [4, 5, 6],
+    kamien: [3, 4, 6],
+    braz: [4, 5, 7],
+    zelazo: [4, 5, 7],
   },
   Standardowy: {
-    kamien: [4, 5, 6],
-    braz: [5, 6, 7],
-    zelazo: [5, 6, 7],
+    kamien: [4, 5, 7],
+    braz: [5, 6, 8],
+    zelazo: [5, 6, 8],
   },
   Duży: {
-    kamien: [5, 6, 7],
-    braz: [8, 9, 10],
-    zelazo: [9, 10, 11],
+    kamien: [5, 6, 8],
+    braz: [8, 9, 11],
+    zelazo: [9, 10, 12],
   },
   Ogromny: {
-    kamien: [6, 7, 8],
-    braz: [10, 11, 12],
-    zelazo: [11, 12, 13],
+    kamien: [6, 7, 9],
+    braz: [10, 11, 13],
+    zelazo: [11, 12, 14],
   },
   'Super Huge': {
     kamien: [6, 7, 8],
-    braz: [12, 13, 14],
-    zelazo: [13, 14, 15],
+    braz: [12, 13, 15],
+    zelazo: [13, 14, 16],
   },
 };
 
@@ -137,7 +137,7 @@ const duzyKamien = M.civTypesTripleForMapLabel('Duży', 'kamien');
 assert(duzyKamien.min < duzyKamien.max && duzyKamien.max <= 8, 'Duży+kamień min<max i max≤8');
 
 const superZelazo = M.civTypesTripleForMapLabel('Super Huge', 'zelazo');
-assert(superZelazo.max === 15, 'Super Huge+żelazo max=15');
+assert(superZelazo.max === 16, 'Super Huge+żelazo max=16');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

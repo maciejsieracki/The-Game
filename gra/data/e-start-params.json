@@ -12,9 +12,9 @@
       "miasta_panstwa": 3,
       "typy_cywilizacji": 4,
       "typy_cywilizacji_per_epoka": {
-        "kamien": { "default": 3, "min": 2, "max": 4 },
-        "braz": { "default": 4, "min": 3, "max": 5 },
-        "zelazo": { "default": 4, "min": 3, "max": 5 }
+        "kamien": { "default": 3, "min": 2, "max": 5 },
+        "braz": { "default": 4, "min": 3, "max": 6 },
+        "zelazo": { "default": 4, "min": 3, "max": 6 }
       },
       "hex_w": 76,
       "hex_h": 52
@@ -24,9 +24,9 @@
       "miasta_panstwa": 4,
       "typy_cywilizacji": 5,
       "typy_cywilizacji_per_epoka": {
-        "kamien": { "default": 4, "min": 3, "max": 5 },
-        "braz": { "default": 5, "min": 4, "max": 6 },
-        "zelazo": { "default": 5, "min": 4, "max": 6 }
+        "kamien": { "default": 4, "min": 3, "max": 6 },
+        "braz": { "default": 5, "min": 4, "max": 7 },
+        "zelazo": { "default": 5, "min": 4, "max": 7 }
       },
       "hex_w": 108,
       "hex_h": 74
@@ -36,9 +36,9 @@
       "miasta_panstwa": 5,
       "typy_cywilizacji": 6,
       "typy_cywilizacji_per_epoka": {
-        "kamien": { "default": 5, "min": 4, "max": 6 },
-        "braz": { "default": 6, "min": 5, "max": 7 },
-        "zelazo": { "default": 6, "min": 5, "max": 7 }
+        "kamien": { "default": 5, "min": 4, "max": 7 },
+        "braz": { "default": 6, "min": 5, "max": 8 },
+        "zelazo": { "default": 6, "min": 5, "max": 8 }
       },
       "hex_w": 168,
       "hex_h": 120
@@ -48,9 +48,9 @@
       "miasta_panstwa": 6,
       "typy_cywilizacji": 10,
       "typy_cywilizacji_per_epoka": {
-        "kamien": { "default": 6, "min": 5, "max": 7 },
-        "braz": { "default": 9, "min": 8, "max": 10 },
-        "zelazo": { "default": 10, "min": 9, "max": 11 }
+        "kamien": { "default": 6, "min": 5, "max": 8 },
+        "braz": { "default": 9, "min": 8, "max": 11 },
+        "zelazo": { "default": 10, "min": 9, "max": 12 }
       },
       "hex_w": 240,
       "hex_h": 168
@@ -60,9 +60,9 @@
       "miasta_panstwa": 7,
       "typy_cywilizacji": 12,
       "typy_cywilizacji_per_epoka": {
-        "kamien": { "default": 7, "min": 6, "max": 8 },
-        "braz": { "default": 11, "min": 10, "max": 12 },
-        "zelazo": { "default": 12, "min": 11, "max": 13 }
+        "kamien": { "default": 7, "min": 6, "max": 9 },
+        "braz": { "default": 11, "min": 10, "max": 13 },
+        "zelazo": { "default": 12, "min": 11, "max": 14 }
       },
       "hex_w": 336,
       "hex_h": 238
@@ -73,8 +73,8 @@
       "typy_cywilizacji": 14,
       "typy_cywilizacji_per_epoka": {
         "kamien": { "default": 8, "min": 7, "max": 8 },
-        "braz": { "default": 13, "min": 12, "max": 14 },
-        "zelazo": { "default": 14, "min": 13, "max": 15 }
+        "braz": { "default": 13, "min": 12, "max": 15 },
+        "zelazo": { "default": 14, "min": 13, "max": 16 }
       },
       "hex_w": 672,
       "hex_h": 476
