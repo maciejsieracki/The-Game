@@ -31378,3 +31378,33 @@ STATUS: **OTWARTE — zarejestrowany kierunek strategiczny, do wznowienia w osob
 sesji dedykowanej temu tematowi (nie razem z bieżącą kolejką bugów/feature'ów).**
 
 ---
+
+## R-WYRAB-KOSZT-PRACA-5P-Q1 (2026-08-17, decyzja bezpośrednia Macieja)
+
+**Zgłoszenie:** "Zmieńmy koszt pracy wycięcia drzew z 20 na 5 jednostek pracy. Możesz teraz to
+robić." — świadome odstępstwo od standing rule "tylko rejestruj" (obowiązującej dla reszty
+tematów do środy), wyraźnie dozwolone tym poleceniem.
+
+**Recon (orkiestrator, przed dispatchem, żeby nie zgadywać):** wartość 20 nigdzie w kodzie nie
+istnieje dla tego mechanizmu. Rzeczywisty stan: `gra/data/terrain-improvements.json`, klucz
+`wyrab`, pole `koszt_praca: 5` (baza) — ale wyświetlany w grze koszt to **10 P** (potwierdzone
+zrzutem ekranu Macieja: karta "Wyrąb", E1 · 10 P), bo `readWorkCost()`
+(`gra/src/map/improvement-build.ts:593-596`) przepuszcza bazę przez
+`scaleImprovementWorkCost()` (`gra/src/game/r-stawki-strojenie.ts:50-53`), globalny mnożnik
+×2 (`R_STAWKI_FALA2_MULT`, Maciej 2026-08-04) stosowany do WSZYSTKICH ulepszeń terenu, nie tylko
+Wyrębu.
+
+**Doprecyzowanie (AskUserQuestion):** docelowy koszt WIDOCZNY w grze = **5 P** (nie sama liczba w
+JSON-ie). Ponieważ mnożnik ×2 stosuje się zawsze, wartość bazowa w JSON-ie musi się zmienić na
+**2.5** (`2.5 × 2 = 5` dokładnie, bez zaokrągleń — `Math.round(2.5*2) = Math.round(5) = 5`).
+
+**Zakres zmiany:** WYŁĄCZNIE `gra/data/terrain-improvements.json`, klucz `wyrab.koszt_praca`:
+`5 → 2.5`. Nic więcej (nie dotyka `scaleImprovementWorkCost`, nie dotyka innych ulepszeń).
+
+**Test modelu Operator/Evaluator (Maciej, przy tej samej wiadomości):** "Zobaczymy, ile tokenów
+zje Haiku." — pierwszy żywy test nowego domyślnego przydziału (`R-MODELE-HAIKU-OPERATOR-SONNET-EVALUATOR`,
+CLAUDE.md §4, aktualizacja 2026-08-17): Operator = Haiku 4.5, Evaluator = Sonnet 5.
+
+STATUS: **W TRAKCIE — dispatch Operatora (Haiku 4.5, worktree).**
+
+---
