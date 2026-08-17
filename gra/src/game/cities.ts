@@ -573,7 +573,12 @@ export interface City {
    * ownerDefaultPoziomRacji imperium.
    */
   poziomRacjiOverride?: boolean;
-  /** R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia. Gracz: default false/undefined=WYŁ. AI: ignorowane (zawsze auto). */
+  /**
+   * R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia.
+   * Gracz: true=WŁ, false/undefined=WYŁ (stary zapis bez pola = WYŁ).
+   * Nowe miasto (foundCity/foundCityAt): zawsze true — R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE.
+   * AI: ignorowane przez isCityAutoWyzywienieEnabled (zawsze auto).
+   */
   autoWyzywienie?: boolean;
   /** Jednorazowa migracja starych racji 1|2|3 → 2|4|6. */
   rationMigratedV114?: boolean;
@@ -787,6 +792,7 @@ export function foundCity(
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
     poziomRacjiOverride: false,
+    autoWyzywienie: true,
   };
 }
 
@@ -823,6 +829,7 @@ export function foundCityAt(
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
     poziomRacjiOverride: false,
+    autoWyzywienie: true,
     ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }
