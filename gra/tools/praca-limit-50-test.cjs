@@ -32,6 +32,7 @@ export {
   resolveEffectiveUlepszenia,
   resolveUlepszeniaPracaPercentFromRaw,
   migrateUlepszeniaPerTurnToPercent,
+  ensureCitySaveDefaults,
 } from ${JSON.stringify(SRC + '/game/cities')};
 `;
 
@@ -62,6 +63,7 @@ const {
   resolveEffectiveUlepszenia,
   resolveUlepszeniaPracaPercentFromRaw,
   migrateUlepszeniaPerTurnToPercent,
+  ensureCitySaveDefaults,
 } = require(BUNDLE_FILE);
 
 let passed = 0;
@@ -165,6 +167,26 @@ console.log('8. Scenariusz: mieszany zapis (pracaAutoPercent ma pierwszeństwo)'
     resolveUlepszeniaPracaPercentFromRaw(60, 2)
   );
   eq(result, 50, 'zapis (pracaAutoPercent=60, perTurn=2) → 60 → clampTo50 → 50');
+}
+
+// 9. Scenariusz: ensureCitySaveDefaults() — migracja miasta z override + wysokim ulepszeniaPracaPercent
+console.log('9. Scenariusz: ensureCitySaveDefaults() — clampowanie ulepszeniaPracaPercent w migracji');
+{
+  // Symulujemy miasto z ulepszeniaOverride=true i ulepszeniaPracaPercent=80 (stary/nielegalny zapis)
+  // Po ensureCitySaveDefaults() powinno być ≤50
+  const city = {
+    id: 'migrate-test-city',
+    q: 0,
+    r: 0,
+    ownerId: 1,
+    ludnosc: 1,
+    fokus: 'zrownowazone',
+    ulepszeniaOverride: true,
+    ulepszeniaPracaPercent: 80, // Stary/nielegalny zapis > 50
+  };
+  ensureCitySaveDefaults(city);
+  assert(city.ulepszeniaPracaPercent <= 50, `ensureCitySaveDefaults() clampuje: got ${city.ulepszeniaPracaPercent}, expected ≤ 50`);
+  assert(city.ulepszeniaOverride === true, 'flaga override zachowana po ensureCitySaveDefaults()');
 }
 
 console.log(`\npraca-limit-50-test: ${passed} passed, ${failed} failed`);

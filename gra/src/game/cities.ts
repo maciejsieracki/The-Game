@@ -525,9 +525,11 @@ export function ensureCitySaveDefaults(city: City): void {
     // new one only `ulepszeniaPracaPercent`; the new field wins, so re-running this migration on
     // the same city is idempotent.
     const rawCity = city as unknown as { ulepszeniaPracaPercent?: unknown; ulepszeniaPerTurn?: unknown };
-    city.ulepszeniaPracaPercent = resolveUlepszeniaPracaPercentFromRaw(
-      rawCity.ulepszeniaPracaPercent,
-      rawCity.ulepszeniaPerTurn,
+    city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(
+      resolveUlepszeniaPracaPercentFromRaw(
+        rawCity.ulepszeniaPracaPercent,
+        rawCity.ulepszeniaPerTurn,
+      )
     );
   }
   const buf = readCityFoodBuffer(city.magazynZywnosci);
