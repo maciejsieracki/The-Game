@@ -31087,6 +31087,15 @@ jednoznaczny, bez dwuznaczności wymagającej pytania.
 **Dotyka `gra/src/render/**`** (podświetlenie heksów na mapie 3D) — zgodnie ze stałą zgodą
 właściciela (2026-07-25/08-06) cała praca w tym katalogu na Opus 5.
 
+**Doprecyzowanie zakresu (Maciej, tuż po dispatchu):** przykłady konkretnych kopalni, których ma
+dotyczyć mechanizm — kopalnia miedzi i kopalnia cyny (spójne z „wyłącznie kopalnie" wyżej, nie
+rozszerza zakresu). **Szersza wizja na przyszłość (zarejestrowana, NIE do wdrożenia teraz):**
+„Każda... rozbudowa w terenie powinna mieć taki mechanizm wbudowany" — docelowo mechanizm
+podświetlenia dostępnych heksów ma objąć WSZYSTKIE ulepszenia terenu (tartaki, kamieniołomy,
+glinianki, stadniny, itd.), nie tylko kopalnie. To świadomie odłożone — dzisiejszy dispatch
+implementuje wyłącznie kopalnie, architektura ma być na tyle ogólna, żeby dało się to łatwo
+rozszerzyć później, ale rozszerzenie samo w sobie to osobny, przyszły temat.
+
 STATUS: **OTWARTE — dispatch w toku (recon + implementacja, Opus 5, worktree).**
 
 ---
