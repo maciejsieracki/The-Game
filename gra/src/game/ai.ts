@@ -357,6 +357,12 @@ export interface AITurnOpts {
    */
   pracaAvailable?: number;
   /**
+   * Wspólny budżet ulepszeń już zaplanowany wcześniej w tej samej turze.
+   * Ustawia go decideAITurn przed planExpansionFortBuilding, aby posterunek
+   * nie dołożył drugiego wydatku ponad cap 50% całej puli.
+   */
+  plannedImprovementCost?: number;
+  /**
    * P-AI-011 (Maciej 2026-07-26): surowce ilościowe z zapasem < 1 pakietu handlowego.
    * Silnik (main.ts) — priorytet: (1) handel, (2) budowa/ulepszenie pod brak.
    */
@@ -2035,6 +2041,11 @@ export function planExpansionFortBuilding(
   const meta = getImprovementMeta('posterunek');
   if (!meta) return null;
   if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
+  const pracaBudget = splitEmpirePracaBudget(pracaAvailable, 50);
+  const plannedCost = Number.isFinite(opts.plannedImprovementCost)
+    ? Math.max(0, opts.plannedImprovementCost as number)
+    : 0;
+  if (plannedCost + meta.kosztPraca > pracaBudget.doUlepszen) return null;
   if (!isImprovementTechUnlocked('posterunek', opts.improvementTechs ?? new Set())) return null;
 
   const territoryNodes = opts.territoryNodes ?? [];
@@ -2416,11 +2427,20 @@ export function decideAITurn(
     for (const k of opts.recruitStockDeficitScratch) merged.add(k);
     opts.resourceDeficitKeys = [...merged];
   }
-  for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
-    commands.push(cmd);
-  }
+  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts);
+  for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
-  const expansionFortCmd = planExpansionFortBuilding(playerId, myCities, myUnits, map, opts);
+  const plannedImprovementCost = cityImprovementCommands.reduce(
+    (sum, cmd) => sum + (getImprovementMeta(cmd.key)?.kosztPraca ?? 0),
+    0,
+  );
+  const expansionFortCmd = planExpansionFortBuilding(
+    playerId,
+    myCities,
+    myUnits,
+    map,
+    { ...opts, plannedImprovementCost },
+  );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
   // -------------------------------------------------------------------------
@@ -2887,11 +2907,20 @@ function decideDefensiveCopyTurn(
     for (const k of opts.recruitStockDeficitScratch) merged.add(k);
     opts.resourceDeficitKeys = [...merged];
   }
-  for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
-    commands.push(cmd);
-  }
+  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts);
+  for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
-  const expansionFortCmd = planExpansionFortBuilding(playerId, myCities, myUnits, map, opts);
+  const plannedImprovementCost = cityImprovementCommands.reduce(
+    (sum, cmd) => sum + (getImprovementMeta(cmd.key)?.kosztPraca ?? 0),
+    0,
+  );
+  const expansionFortCmd = planExpansionFortBuilding(
+    playerId,
+    myCities,
+    myUnits,
+    map,
+    { ...opts, plannedImprovementCost },
+  );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
   // ---------------------------------------------------------------------------

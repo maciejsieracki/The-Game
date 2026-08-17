@@ -335,7 +335,45 @@ console.log('10. AI: cap 50% całej puli (40 -> 0, 80 -> 1)');
 }
 
 // ===========================================================================
-// 11. P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A -- egzekucja komendy wyrab
+// 11. P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: combined guard. Zwykła ścieżka
+// i defensive copy planują przez wspólny cap; farma (40) + posterunek (30)
+// nie mogą razem wydać 70 z puli 80, bo limit wynosi 40.
+// ===========================================================================
+console.log('11. combined AI + defensive copy: city improvements + posterunek <= 50%');
+{
+  const combinedMap = makeFlatMap(60, 60);
+  const city = makeCity('combined-city', PLAYER_ID, 15, 15, 3);
+  const unit = { id: 'combined-unit', ownerId: PLAYER_ID, q: 45, r: 45, inGarnizon: false };
+  const combinedOpts = {
+    ...baseOpts(city),
+    pracaAvailable: 80,
+    improvementTechs: new Set(['Rolnictwo', 'Obróbka drewna', 'Murarstwo']),
+    placedImprovements: new Map(),
+    fortNodes: [],
+  };
+  const improvementCost = cmd => cmd.key === 'farma' ? 40 : (cmd.key === 'posterunek' ? 30 : 0);
+  for (const defensiveCopy of [false, true]) {
+    const commands = decideAITurn(
+      PLAYER_ID,
+      [unit],
+      [city],
+      combinedMap,
+      data,
+      { ...combinedOpts, defensiveCopy },
+    );
+    const improvements = buildImprovementCmds(commands);
+    const spent = improvements.reduce((sum, cmd) => sum + improvementCost(cmd), 0);
+    assert(spent <= 40, `combined ${defensiveCopy ? 'defensive' : 'normal'}: ${spent} <= floor(80*50%)`);
+    assert(
+      improvements.filter(cmd => cmd.key === 'farma').length
+        + improvements.filter(cmd => cmd.key === 'posterunek').length <= 1,
+      `combined ${defensiveCopy ? 'defensive' : 'normal'}: nie ma farmy i posterunku jednocześnie`,
+    );
+  }
+}
+
+// ===========================================================================
+// 12. P-AI-WYRAB-REFUNDACJA-PRACA-ZAMIAST-DREWNA = A -- egzekucja komendy wyrab
 //     kredytuje DREWNO (nie Pracę); Praca traci wyłącznie koszt startu.
 // ===========================================================================
 console.log('11. egzekucja wyrab (AI) — refundacja idzie do Drewna, nie Pracy');
