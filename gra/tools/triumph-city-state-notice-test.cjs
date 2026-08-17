@@ -121,14 +121,15 @@ async function main() {
   ok(document.getElementById('civ-triumph-cs-notice-host') === null, '11) hideTriumphCityStateNotice() usuwa host');
 
   // -------------------------------------------------------------------------
-  // SCENARIUSZ 5: drugie wywołanie show zastępuje poprzedni host (nie duplikuje).
+  // SCENARIUSZ 5: ponowne wywołanie tego samego zdarzenia nie duplikuje
+  // ani nie podmienia oczekującego na potwierdzenie modala.
   // -------------------------------------------------------------------------
   showTriumphCityStateNotice({ civLabel: 'Rzymianie', cityName: 'Kartagina' });
   showTriumphCityStateNotice({ civLabel: 'Egipcjanie', cityName: 'Teby' });
   ok(document.querySelectorAll('#civ-triumph-cs-notice-host').length === 1, '12) drugi show nie duplikuje hosta');
   ok(
-    (document.getElementById('civ-triumph-cs-notice-host').textContent || '').includes('Egipcjanie'),
-    '13) drugi show pokazuje najnowszą treść',
+    (document.getElementById('civ-triumph-cs-notice-host').textContent || '').includes('Rzymianie'),
+    '13) drugie wywołanie nie zmienia treści oczekującego modala',
   );
 
   // -------------------------------------------------------------------------

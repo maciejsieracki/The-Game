@@ -1,6 +1,6 @@
 /**
  * triumphCityStateNotice.ts — modal „TRIUMF!" po zjednoczeniu miast-państw tej
- * samej cywilizacji co gracz (P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK).
+ * tej samej kultury co gracz (P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1=A).
  *
  * Strukturalnie wzorowany na `wonderCompletedNotice.ts` (host wyśrodkowany na
  * ekranie, backdrop półprzezroczysty klikalny-do-zamknięcia, karta ze złotym
@@ -75,7 +75,10 @@ function laurelSvg(): string {
 
 export function showTriumphCityStateNotice(opts: TriumphCityStateNoticeOpts): void {
   ensureStyles();
-  document.getElementById(HOST_ID)?.remove();
+  // Jedno zdarzenie przejęcia może przejść przez więcej niż jedną ścieżkę
+  // powiadomień. Nie twórz drugiego modala, dopóki pierwszy czeka na
+  // potwierdzenie gracza.
+  if (document.getElementById(HOST_ID)) return;
 
   const civ = (opts.civLabel ?? '').trim() || 'Twoja cywilizacja';
   const city = (opts.cityName ?? '').trim() || 'miasto';
@@ -97,7 +100,7 @@ export function showTriumphCityStateNotice(opts: TriumphCityStateNoticeOpts): vo
       <div class="tn-ttl">TRIUMF!</div>
       <div class="tn-sub">${esc(civ)} zjednoczeni!</div></div>
     <div class="tn-nb">
-      <div class="tn-body">Ostatnie miasto-państwo Twojej cywilizacji (${esc(city)}) padło. Jesteś jedynym władcą.</div>
+      <div class="tn-body">Zjednoczyłeś całą kulturę ${esc(civ)}.<br>Ostatnie miasto-państwo — ${esc(city)} — znalazło się pod Twoją władzą.</div>
       <div class="tn-btnrow"><button type="button" class="tn-btn" data-act="close">Rozumiem</button></div>
     </div>`;
 
