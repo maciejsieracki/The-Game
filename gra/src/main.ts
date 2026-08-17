@@ -671,6 +671,7 @@ import {
   buildTerritoryBorderGroup,
   disposeRangeOverlayGroup,
   CULTURE_RANGE_STYLE,
+  MINE_ELIGIBLE_STYLE,
   RELIGION_RANGE_STYLE,
   TERRITORY_BORDER_BAND_WIDTH,
   TERRITORY_BORDER_OPACITY,
@@ -693,6 +694,7 @@ import {
   computeImprovementBuildImpact,
   getImprovementForestBlockHint,
   isImprovementBlockedOnForest,
+  isMineImprovementKey,
   type ImprovementBuildImpact,
   type ImprovementBuildRequest,
   type ImprovementBuildCallbacks,
@@ -10344,6 +10346,14 @@ async function boot(): Promise<void> {
     let cultureRangeGroup: THREE.Group | null = null;
     let religionRangeGroup: THREE.Group | null = null;
     let territoryBorderGroup: THREE.Group | null = null;
+    /**
+     * R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1: jasnoniebieska warstwa heksów, na których da się
+     * postawić AKTUALNIE wybraną kopalnię. Żyje wyłącznie w trybie budowy z wybraną kopalnią;
+     * przeliczana w `refreshBuildHighlight()`, czyli przy zmianie stanu wyboru — nigdy przy
+     * ruchu myszy. / EN: light-blue layer of hexes where the CURRENTLY selected mine can be
+     * built; recomputed only on selection-state change, never on mouse move.
+     */
+    let mineEligibleGroup: THREE.Group | null = null;
 
     // --- E7 (epik Handel): łuki tras handlowych na mapie 3D ---
     let tradeRoutesOverlayGroup: THREE.Group | null = null;
@@ -10469,6 +10479,29 @@ async function boot(): Promise<void> {
       scene.remove(territoryBorderGroup);
       disposeRangeOverlayGroup(territoryBorderGroup);
       territoryBorderGroup = null;
+    }
+
+    /** R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1: gasi warstwę heksów pod kopalnię (jeśli istnieje). */
+    function clearMineEligibleOverlay(): void {
+      if (!mineEligibleGroup) return;
+      scene.remove(mineEligibleGroup);
+      disposeRangeOverlayGroup(mineEligibleGroup);
+      mineEligibleGroup = null;
+    }
+
+    /**
+     * R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1: przebudowuje warstwę z gotowej listy heksów.
+     * Lista przychodzi z `refreshBuildHighlight()`, gdzie i tak została policzona raz przez
+     * `buildApi.getQualifyingHexes(...)` — ten temat NIE dokłada ani jednego dodatkowego
+     * przebiegu po terytorium. / EN: rebuilds the layer from the hex list already computed once
+     * in refreshBuildHighlight(); this feature adds zero extra territory scans.
+     */
+    function refreshMineEligibleOverlay(hexes: ReadonlyArray<{ q: number; r: number }>): void {
+      clearMineEligibleOverlay();
+      if (hexes.length === 0) return;
+      const keys = new Set(hexes.map(h => keyOf(h.q, h.r)));
+      mineEligibleGroup = buildRangeOverlayGroup(map, keys, MINE_ELIGIBLE_STYLE);
+      scene.add(mineEligibleGroup);
     }
 
     function saveTerritoryBorderBeforeCityPanel(): void {
@@ -11114,6 +11147,7 @@ async function boot(): Promise<void> {
 
     function refreshBuildHighlight(): void {
       if (foundCityMode) {
+        clearMineEligibleOverlay();
         const qual = new Set<string>();
         for (const hex of Object.values(map.hexes)) {
           const { q, r } = hex.coords;
@@ -11124,22 +11158,38 @@ async function boot(): Promise<void> {
         return;
       }
       if (activeWonderId) {
+        clearMineEligibleOverlay();
         const hexes = qualifyingWonderHexesForPlayer();
         unitRenderer.setHighlight(new Set(hexes.map(h => keyOf(h.q, h.r))));
         return;
       }
       if (!buildModeOpen || !activeImprovementKey || !buildApi) {
+        clearMineEligibleOverlay();
         unitRenderer.clearHighlight();
         return;
       }
       const hexes = buildApi.getQualifyingHexes(activeImprovementKey);
+      // R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1: dla czterech kopalń złoża warstwa jasnoniebieska
+      // ZASTĘPUJE ogólny krążek setHighlight, a nie nakłada się na niego — dwie półprzezroczyste
+      // płachty na tym samym heksie zsumowałyby się do ok. 0,55 krycia zamiast żądanych 0,30,
+      // a ogólny krążek i tak tonie w bryle Wzgórza/Góry (patrz komentarz przy MINE_ELIGIBLE_STYLE).
+      // / EN: for the four deposit mines the light-blue layer REPLACES the generic highlight disc
+      // instead of stacking on it — two translucent sheets would compound to ~0.55 coverage
+      // instead of the requested 0.30, and the generic disc sinks into the hill/mountain body anyway.
+      if (isMineImprovementKey(activeImprovementKey)) {
+        unitRenderer.clearHighlight();
+        refreshMineEligibleOverlay(hexes);
+        return;
+      }
+      clearMineEligibleOverlay();
       unitRenderer.setHighlight(new Set(hexes.map(h => keyOf(h.q, h.r))));
     }
 
-    /** Usuwa tymczasowe warstwy 3D trybu budowy (ghost + highlight kandydatów). */
+    /** Usuwa tymczasowe warstwy 3D trybu budowy (ghost + highlight kandydatów + warstwa kopalni). */
     function clearBuildModeVisuals(): void {
       removeBuildGhosts();
       unitRenderer.clearHighlight();
+      clearMineEligibleOverlay();
     }
 
     function beginOnboardingFoundCity(): void {

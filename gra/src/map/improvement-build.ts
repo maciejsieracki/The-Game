@@ -400,6 +400,26 @@ const TERRAIN_ALLOW: Partial<Record<ImprovementKey, TerenSet | null>> = {
 };
 
 /**
+ * Cztery ulepszenia będące KOPALNIĄ konkretnego złoża — R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1
+ * (Maciej): tylko dla nich tryb budowy podświetla zbiorczo heksy terytorium, na których dana
+ * kopalnia jest dopuszczalna. `kamieniolom` NIE należy do tej grupy (nie jest kopalnią złoża
+ * surowca), tak samo tartak / glinianka / warzelnia soli / stadnina.
+ * / EN: the four improvements that are a MINE of a specific deposit; only these get the
+ * collective eligible-hex highlight. `kamieniolom` (quarry) is deliberately excluded.
+ */
+export const MINE_IMPROVEMENT_KEYS: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>([
+  'kopalnia_miedzi',
+  'kopalnia_zelaza',
+  'kopalnia_cyny',
+  'kopalnia_zlota',
+]);
+
+/** Czy `key` to jedna z czterech kopalń złoża (patrz MINE_IMPROVEMENT_KEYS). */
+export function isMineImprovementKey(key: ImprovementKey | null | undefined): boolean {
+  return key != null && MINE_IMPROVEMENT_KEYS.has(key);
+}
+
+/**
  * Panel 🔨 ULEPSZENIA TERENU — pozycje niedostępne dla cywilizacji są UKRYTE (nie wyszarzone).
  * Lama: tylko Inkowie (`typCywilizacji` inkowie / isIncaCiv). Hodowla Nowego Świata: epoka ≥3.
  */

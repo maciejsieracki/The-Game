@@ -223,6 +223,35 @@ export interface RangeOverlayStyle {
   /** Grubość pasa na zewnętrznych krawędziach (world units); 0 = cienka linia. */
   borderBandWidth?: number;
   yOffset?: number;
+  /**
+   * Rysuj z `depthTest: false` — warstwa jest widoczna także tam, gdzie bryła terenu
+   * wystaje ponad wierzch pryzmu heksa (Wzgórza, Góry). Domyślnie `false`, więc kultura
+   * i religia zachowują dotychczasowe zachowanie co do piksela.
+   * / EN: draw with `depthTest: false` so the layer stays visible where the terrain body
+   * rises above the hex prism top (Hills, Mountains). Defaults to false, so the culture and
+   * religion overlays keep their current behaviour pixel for pixel.
+   */
+  alwaysOnTop?: boolean;
+}
+
+/**
+ * Kolejność rysowania warstwy `alwaysOnTop`: PONAD terenem i warstwami zasięgu (renderOrder
+ * 3/5/6) oraz łukami tras handlowych (7), ale PONIŻEJ żetonów jednostek (10/12) i etykiet
+ * miast (18/20) — inaczej półprzezroczysta płachta przymgliłaby czytelność liczb na plakietkach.
+ * / EN: draw order for the `alwaysOnTop` layer: above terrain, range overlays (3/5/6) and trade
+ * arcs (7), but below unit tokens (10/12) and city labels (18/20), which must stay crisp.
+ */
+const ALWAYS_ON_TOP_TINT_ORDER = 8;
+const ALWAYS_ON_TOP_BORDER_ORDER = 9;
+
+/** Wyłącza test głębi i przypina kolejność rysowania dla jednego obiektu warstwy. */
+function applyAlwaysOnTop(obj: THREE.Object3D, renderOrder: number): void {
+  const mesh = obj as THREE.Mesh;
+  const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  for (const m of mats) {
+    if (m) (m as THREE.Material).depthTest = false;
+  }
+  obj.renderOrder = renderOrder;
 }
 
 export const CULTURE_RANGE_STYLE: RangeOverlayStyle = {
@@ -239,6 +268,37 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
   borderColor: 0xffd070,
   borderOpacity: 0.85,
   yOffset: 0.055,
+};
+
+/**
+ * R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1 (Maciej): po wybraniu w trybie budowy konkretnego typu
+ * KOPALNI (miedzi / żelaza / cyny / złota) wszystkie heksy terytorium, na których TĘ kopalnię
+ * da się postawić, świecą na jasnoniebiesko z przezroczystością 30 %.
+ *
+ * `alwaysOnTop` NIE jest ozdobnikiem, tylko warunkiem widoczności tej konkretnej warstwy:
+ * wszystkie cztery kopalnie kwalifikują się WYŁĄCZNIE na Wzgórzach i Górach (TERRAIN_ALLOW
+ * w map/improvement-build.ts), a bryła wzgórza wyrasta 0,392 j nad wierzch pryzmu heksa przy
+ * podstawie do 0,92·HEX_R, góra zaś 1,10–1,25 j przy podstawie 0,87·HEX_R (stałe
+ * WZGORZE_SZCZYT_Y / GORA_APEX_Y / *_FOOTPRINT_R w render/teren-gory-wzgorza.ts). Płaski krążek
+ * o promieniu 0,97·HEX_R położony na wierzchu pryzmu zniknąłby więc w całości WEWNĄTRZ tej bryły
+ * — dokładnie to spotyka istniejące, ogólne podświetlenie `UnitRenderer.setHighlight`
+ * (krążek 0,88·HEX_R, 0,005·HEX_R nad pryzmem), przez co dla kopalń nie widać dziś niczego.
+ * / EN: the `alwaysOnTop` flag is a visibility requirement, not decoration: all four mines
+ * qualify on Hills and Mountains only, whose bodies rise 0.392 / 1.10–1.25 world units above the
+ * hex prism top over a footprint of 0.92 / 0.87·HEX_R. A flat disc laid on the prism top is
+ * swallowed whole by that body — which is exactly what happens to the existing generic
+ * `UnitRenderer.setHighlight` disc, so mines show no highlight at all today.
+ */
+export const MINE_ELIGIBLE_TINT_COLOR = 0x66ccff;
+/** Przezroczystość 30 % — dokładnie wartość podana przez właściciela, bez zaokrąglania. */
+export const MINE_ELIGIBLE_TINT_OPACITY = 0.30;
+export const MINE_ELIGIBLE_STYLE: RangeOverlayStyle = {
+  tintColor: MINE_ELIGIBLE_TINT_COLOR,
+  tintOpacity: MINE_ELIGIBLE_TINT_OPACITY,
+  borderColor: 0x99ddff,
+  borderOpacity: 0.9,
+  yOffset: 0.06,
+  alwaysOnTop: true,
 };
 
 /**
@@ -624,15 +684,25 @@ export function buildRangeOverlayGroup(
   group.name = 'range-overlay';
   const yOff = style.yOffset ?? 0.05;
   const flatBorderY = terrainSurfaceTopY(TerenBazowy.Laka, GAME_MAP_RENDER_STYLE, yOff + 0.008);
+  const onTop = style.alwaysOnTop === true;
   const tint = buildTintMesh(map, hexKeys, style.tintColor, style.tintOpacity, yOff);
-  if (tint) group.add(tint);
+  if (tint) {
+    if (onTop) applyAlwaysOnTop(tint, ALWAYS_ON_TOP_TINT_ORDER);
+    group.add(tint);
+  }
   const bandW = style.borderBandWidth ?? 0;
   if (bandW > 0) {
     const band = buildBorderBandMesh(map, hexKeys, style.borderColor, style.borderOpacity, yOff + 0.006, bandW);
-    if (band) group.add(band);
+    if (band) {
+      if (onTop) applyAlwaysOnTop(band, ALWAYS_ON_TOP_BORDER_ORDER);
+      group.add(band);
+    }
   } else {
     const border = buildBorderLine(map, hexKeys, style.borderColor, style.borderOpacity, yOff + 0.008, flatBorderY);
-    if (border) group.add(border);
+    if (border) {
+      if (onTop) applyAlwaysOnTop(border, ALWAYS_ON_TOP_BORDER_ORDER);
+      group.add(border);
+    }
   }
   return group;
 }
