@@ -5,6 +5,7 @@
  */
 
 import type { City } from '../game/cities';
+import { stackGroupIdOf } from '../game/armyMerge';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, isCivilianUnit } from '../units/setup';
 import {
@@ -61,6 +62,15 @@ function resolveAttacker(
   if (adjacent.length === 0) return 'none';
   if (selectedUnit && selectedUnit.ownerId === playerOwnerId) {
     if (adjacent.some(u => u.id === selectedUnit.id)) return selectedUnit;
+    // Reprezentant stosu może stać poza sąsiednim heksiem (np. po rozpadzie
+    // pozycji stosu), podczas gdy inny członek tej samej armii już stoi przy
+    // mieście. Zachowujemy wymóg adiacencji: szukamy wyłącznie wśród
+    // kwalifikujących się sąsiadów i tylko w tym samym stackGroupId.
+    const sameStackAdjacent = adjacent.filter(
+      u => stackGroupIdOf(u) === stackGroupIdOf(selectedUnit),
+    );
+    if (sameStackAdjacent.length === 1) return sameStackAdjacent[0]!;
+    if (sameStackAdjacent.length > 1) return 'pick';
     return 'none';
   }
   if (adjacent.length === 1) return adjacent[0]!;
