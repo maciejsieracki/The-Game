@@ -28324,8 +28324,8 @@ Naprawa wymaga zmiany współdzielonej `resolveAttacker`/`eligibleCityAttackers`
 szerszy blast radius niż wąski temat wyżej. Świadomie NIE naprawione w tej samej turze (zakres
 C-025: „zero przy okazji/skoro już tu jestem").
 
-**STATUS: OTWARTE — do dispatchu subagenta Sonnet 5 w kolejnej turze (C-027: błąd z jednoznacznie
-opisanym oczekiwanym zachowaniem, bez potrzeby ABC — analogicznie do naprawy wyżej).**
+**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 
 ## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — WERDYKT EVALUATORA (Opus 5, agent `aa82c80ee4e26d8ce`, 2026-08-14)
 
@@ -28516,9 +28516,8 @@ OTWARTEGO podsumowania, tylko już zamknięte. Naprawić tak, żeby gracz faktyc
 podsumowania i sam decydował kiedy wrócić na mapę (klik „Kontynuuj"), zamiast być z niego
 wyrzucanym automatycznie.
 
-**STATUS: DO DISPATCHU — nie krytyczne (gra jest grywalna, kamera działa poprawnie po fixie
-blackoutu), ale gracz traci realny ekran gry (podsumowanie łupów/wyniku bitwy) przy każdej
-bitwie 3D.**
+**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, gracz nadal traci ekran podsumowania po każdej bitwie 3D — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 
 ---
 
@@ -28538,7 +28537,8 @@ operacjach mogących rzucić) ALBO opakować konstruktor w `try/catch` który cz
 błędzie. Wąski zakres (~kilka linii), niski priorytet — wymaga rzeczywistego zerwania
 konstrukcji WebGL, co jest rzadkie, ale konsekwencja (trwale zamrożona mapa) jest poważna.
 
-**STATUS: DO DISPATCHU — niekrytyczne wzmocnienie obronne, nie pilne.**
+**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 
 ---
 
@@ -28555,8 +28555,8 @@ naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C
    widoczności: 0 trafień. Może to być świadomy projekt (AI ma pełną informację, gra "uczciwie"
    inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
 
-**STATUS: DO DISPATCHU (rekonesans najpierw dla p.2 — ustalić czy AI-bez-mgły jest zamierzone) —
-niekrytyczne, nie pilne.**
+**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, asymetria mgły (gracz ograniczony na atakach na jednostki ale nie na miasta) i brak mgły w AI wciąż nierozstrzygnięte — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 
 ---
 
@@ -29620,9 +29620,8 @@ rozpoznania: albo `.civ-unit-panel`/`createUnitPanelHud()` faktycznie powinien s
 w całości (`unitPanelHud.ts` + wpis w `SCOPE_SELECTOR` + test Scenariusz 2), skoro
 `armyStackHud.ts`/`.civ-army-stack` już go zastąpił (udokumentowane w `dyspozycje/UI-DO-MASTERA.md`).
 
-**STATUS: DO ROZPOZNANIA — niekrytyczne, nie pilne (nie blokuje żadnego z dwóch scalonych commitów,
-zero wpływu na dzisiejszą grywalność). Wymaga decyzji: usunąć martwy kod w całości, czy zostawić
-jako przygotowanie pod przyszłe wykorzystanie panelu.**
+**STATUS: OTWARTE — ZAPOMNIANE, do rozpoznania** (Operator Sonnet 5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-16, NIGDY nie dispatchowany, sprzeczność między `.civ-unit-panel` (martwy w tree-shakingu) a wpisem w `SCOPE_SELECTOR` (żywy) wciąż nierozstrzygnięta — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 **→ WERDYKT EVALUATORA:** ten temat był oceniany ŁĄCZNIE z
 `P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE` (oba commity dotykają tego samego pliku) — pełna
 sekcja werdyktu znajduje się pod tamtym tematem, niżej: **„Evaluator (Opus 5): WERDYKT
