@@ -30652,12 +30652,8 @@ obiektu dla faktycznie nowego miasta, obecnie pomija to pole całkowicie (dopier
 ma komentarz „AI: ignorowane" — jeśli faktycznie ignorowane przez silnik AI, ustawienie `true` dla
 AI jest nieszkodliwe, ale do zweryfikowania w kodzie, nie zgadywania).
 
-STATUS: **OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17
-(na pytanie Macieja „czy ta prośba była zarejestrowana i wykonana") potwierdził: zarejestrowane
-2026-08-16, NIGDY nie dispatchowane, `foundCityAt()` nadal pomija `autoWyzywienie` (potwierdzone
-bezpośrednim odczytem kodu 2026-08-17, linie 793-828). Kandydat do dispatchu przy najbliższej
-okazji (poza standing rule „tylko rejestruj do środy" — Maciej może zdecydować inaczej przy
-raporcie).
+STATUS: **ZAMKNIĘTE (2026-08-17)** — PASS Evaluatora, commit `eb03cb94`, wdrożone w FALI 291.
+`foundCityAt()` zwraca teraz `autoWyzywienie: true` domyślnie.
 
 ---
 
@@ -30677,9 +30673,8 @@ zapisów. Do zweryfikowania przy implementacji: czy pole ma jakikolwiek efekt dl
 `foundCityAt()` obsługuje `ownerId` gracza i AI) — jeśli AI ma własną, niezależną logikę budowy
 ignorującą to pole, ustawienie jest neutralne; jeśli nie, może wymagać warunku `ownerId === gracz`.
 
-STATUS: **OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17:
-sam wątek zgłoszenia (autowyżywienie + autobudowa, jedno zdanie Macieja) — zarejestrowane
-2026-08-16, NIGDY nie dispatchowane, `foundCityAt()` nadal pomija `budowaTryb` całkowicie.
+STATUS: **ZAMKNIĘTE (2026-08-17)** — PASS Evaluatora, commit `eb03cb94`, wdrożone w FALI 291.
+`foundCityAt()` zwraca teraz `budowaTryb: 'zrownowazone'` domyślnie.
 
 ---
 
@@ -30704,12 +30699,10 @@ Operatora, ale jeśli w trakcie implementacji okaże się dwuznaczne (np. `defau
 `max` dla części map, co zrobiłoby niejawną zmianę defaultu przy podniesieniu tylko `max`), Operator
 ma zatrzymać się i zgłosić do ABC zamiast zgadywać (CLAUDE.md §6/§7).
 
-STATUS: **OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17
-(Maciej: „nie wiem, czy zostało realizowane") potwierdził: NIE zostało zrealizowane —
-zarejestrowane 2026-08-16, nigdy nie dispatchowane, `e-start-params.json` nie zmieniony od
-rejestracji. Niejednoznaczność `max` vs `default`/`min` wciąż nierozstrzygnięta (patrz wyżej) —
-przy dispatchu Operator ma się zatrzymać i zapytać ABC, jeśli okaże się, że `default` już dziś
-równa się `max` dla którejś mapy.
+STATUS: **ZAMKNIĘTE (2026-08-17)** — PASS Evaluatora, commit `48246469`, wdrożone w FALI 291.
+Niejednoznaczność rozstrzygnięta jedną odpowiedzią ABC właściciela (`R-CYWILIZACJE-EPOKA-PULA-Q1
+= A`, patrz osobna sekcja tego ID) — mapy na suficie puli `EPOCH_CIV_TYPE_POOL` bez zmian, reszta
++1; `miasta_panstwa` +1 na wszystkich 6 rozmiarach.
 
 ---
 
@@ -31199,8 +31192,9 @@ jakiś ogólny system ułatwiający rozpoznawanie surowców na mapie (nie tylko 
 przy przyszłym przeglądzie UX mapy, wymaga osobnego ABC co do formy (highlight/filtr/tryb
 podświetlenia złóż itp.).
 
-STATUS: **OTWARTE — do dispatchu po zamknięciu bieżących wątków** (wymaga pracy w
-`gra/src/render/**` — Opus 5, stała zgoda właściciela).
+STATUS: **ZAMKNIĘTE (2026-08-17)** — PASS Evaluatora, commit `34700709`, wdrożone w FALI 291.
+Dedykowany model 3D (Opus 5, `kopalnia-cyny-opus5.ts`), naprawiono zarówno generyczny fallback dla
+zbudowanej kopalni jak i brak wizualizacji surowego złoża. Zweryfikowane headless Playwright render.
 
 ---
 
@@ -31307,7 +31301,8 @@ przebiegu `map-gen-regression-test.cjs` (determinizm + fair-play siatka złóż)
 tego jednego tematu, wprost na pytanie). Potwierdzone: „3-krotnie" = dosłownie `rarity × 3`:
 `miedz.rarity: 0.10 → 0.30`, `cyna.rarity: 0.02 → 0.06`.
 
-STATUS: **W TRAKCIE — dispatch Operatora (Sonnet 5, worktree).**
+STATUS: **ZAMKNIĘTE (2026-08-17)** — commit `d0fc4b94`, już na `origin/main` (widoczne jako HEAD
+`main` sprzed FALI 291), wdrożone w FALI 290 (opis deployu: „potrojenie rzadkosci").
 
 ---
 

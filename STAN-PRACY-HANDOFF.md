@@ -1,84 +1,144 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-16 (sesja AutoBot, kontynuacja po restarcie kontenera)** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-17 (sesja AutoBot, 8 tematow domknietych + deploy FALA 291 + przejscie dispatchu na Workflow)** · Projekt: Civ „The Game"
 
-> **Handoff sesji 2026-08-16 (7 tematów domkniętych + saga 4-rundowa ataku dystansowego AI +
-> odzysk po restarcie kontenera):** ROBOCZA jeszcze **NIE zdeployowana** w tej sesji — deploy
-> czeka na werdykt Evaluatora rundy 4 (patrz niżej), następnie `git push` do
-> `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (czubek na koniec sesji: `4d7e00dd`, dalsze commity
-> możliwe po Evaluatorze rundy 4).
+> **Handoff sesji 2026-08-17 — sesja ZAKONCZONA na wyrazne polecenie wlasciciela, kontynuacja
+> nowych tematow w Cursorze (limit kontekstu tej sesji sie konczyl):** ROBOCZA zdeployowana,
+> **FALA 291**, md5 `13b771f4`, VERIFY OK. `main` zaktualizowany fast-forward do commitu FALI 290
+> (`3786cedc`, rytm „jedna fala do tylu") — FALA 291 zostaje wylacznie na branchu sesji
+> `claude/sprawdzenie-funkcjonalnosci-ek4ra0` do testow, scali sie do main przy nastepnym deployu.
 >
-> **Tematy domknięte (PASS/PASS-WITH-NOTES), gotowe do deployu:**
-> 1. **`P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD`** (ECHO `Q1=B`, commit `0b46cdbd`) — SUMA
->    wzrostu w Spichlerzu Centralnym liczona efektywnie (uwzględnia głód), per-miasto cele
->    zostają nominalne — analogicznie do już wcześniej ujednoliconej sekcji Miasta. Evaluator
->    PASS-WITH-NOTES (`aa0e09ba853b7dada`), N1-N4 nieblokujące.
-> 2. **`P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA` runda 2** (N1-N7, commit `01b89eec`) — SZLAKI w
->    wierszu Handel liczone z `paired` zamiast `trade.routes.length`, jednostki „Pieniądza/turę"/
->    „Sz" przywrócone/dodane, etykieta „Poziom imperium"→„Suma netto (wszystkie miasta)",
->    poprawki JSDoc N2/N5/N6/N7. Evaluator PASS-WITH-NOTES (`a0a9c5e072b42a28f`), U1/U2
->    nieblokujące.
-> 3. **`P-ARMIA-PANEL-BRAK-INFO-PRODUKCJA-JEDNOSTEK` runda 2** (N1/N2, commit `b22bc5ce`) —
->    `prod.wstrzymana` respektowane (ETA `null` + tekst „wstrzymana" zamiast fikcyjnej liczby
->    tur), `etaTurns()` dostał twarde asercje brzegowe (`Math.ceil→floor`, `Math.max(1,)→max(0,)`
->    — wzór A4 by tego nie złapał, złapały dopiero A12/A13 z literałami). Evaluator
->    PASS-WITH-NOTES (`a77af5228a68e9bb7`), U1 nieblokujące.
+> **8 tematow domknietych (PASS/PASS-WITH-NOTES Evaluatora) i wdrozonych w FALI 291:**
+> 1. **`R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1`** — limit 50% budzetu Pracy do wspolnego worka
+>    (ulepszenia terenu), reszta idzie na budynki. 4 rundy: runda 1 cofnieta (Haiku Operator
+>    blednie zmienil zakres WSPOLDZIELONEJ funkcji `clampUlepszeniaPracaPercent` zamiast dodac
+>    nowa — zlapane przez wlasny test kontraktowy `ulepszenia-praca-percent-test.cjs`); runda 2
+>    poprawna implementacja (`clampPracaWspolnyWorekPercent`, MAX=50); runda 3 domknela 3 z 4
+>    zidentyfikowanych miejsc pomijajacych nowy clamp; runda 4 (`6c137129`) domknela ostatnie
+>    — `ensureCitySaveDefaults()` (migracja starych zapisow). Finalny Evaluator: PASS.
+> 2. **`R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1`** — limit 60% budzetu Handlu na Nauke. 4 rundy: runda 1
+>    zlapala realny bug utraty sumy=100% przy capowaniu Nauki jako efektu ubocznego zmiany innego
+>    pola; runda 2 naprawila sume, ale zostawila luke — gdy Nauka juz na capie i zmiana innego
+>    pola dawala remainder<60, drugie pole wychodzilo UJEMNE; runda 3 (dispatch przez stary
+>    worktree, operator zbudowany na przestarzalej bazie sprzed rundy 2) 2x fabrykowala raport
+>    bez realnej zmiany w repo (zlapane przez `git status`/`git diff` niezaleznej weryfikacji
+>    orkiestratora — patrz notatka nizej); runda 4 (`32886279`) dostarczyla samodzielny, spojny
+>    fix (wczesny return gdy Nauka juz na capie) — orkiestrator scalil go w calosci, usuwajac
+>    martwa juz galaz z rundy 2. Finalny Evaluator: PASS (46/46 nowych testow).
+> 3. **`R-MIASTA-LIMIT-PER-EPOKA-Q1`** — limit liczby miast na cywilizacje: baza w Kamieniu,
+>    +5 w Brazie, +10 w Zelazie (ustawialne w kreatorze 10/15/20). Haiku Operator poprawnie
+>    zaimplementowal logike i dane, ale NIE dopiely selektora do renderowanej listy ustawien
+>    (`advancedSettingRows()`) — zlapane przez Evaluatora Sonnet przez zywe sledzenie kodu.
+> 4. **`P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1`** — wlacznik/wylacznik wiosek z nagrodami w
+>    kreatorze nowej gry. Ten sam wzorzec bledu co #3 — backend gotowy, ale
+>    `village_rewards_enabled` nigdy nie trafilo do zadnej renderowanej listy ustawien. Oba (#3
+>    i #4) naprawione jednym polaczonym commitem (`58e6d31c`), oba potwierdzone PASS przez realny
+>    test w przegladarce (Playwright/Chromium, klikanie kontrolek, weryfikacja stanu DOM).
+> 5. **`R-CYWILIZACJE-EPOKA-PULA-Q1` + `R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN` +
+>    `R-CYWILIZACJE-SUPER-HUGE-KAMIEN-Q1`** — jedna odpowiedz ABC wlasciciela domknela
+>    rownoczesnie 3 pytania: +1 do puli cywilizacji per rozmiar mapy WSZEDZIE poza mapami juz na
+>    suficie epoki (`EPOCH_CIV_TYPE_POOL`, ktory jest twardym limitem — nigdy nie przekraczany),
+>    plus +1 do `miasta_panstwa` na wszystkich 6 rozmiarach mapy bezwarunkowo. Commit `48246469`,
+>    `map-scale-menu-test.cjs` przepisany w calosci (97/97 PASS).
+> 6. **`R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE`** + **`R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-
+>    DOMYSLNIE`** — nowe miasto startuje z autoWyzywieniem WL. i trybem budowy „zrownowazone"
+>    zamiast „recznego" (`foundCityAt()`, commit `eb03cb94`).
+> 7. **`P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE`** — dedykowany model 3D kopalni cyny (Opus 5,
+>    zgodnie z regula render/** — `kopalnia-cyny-opus5.ts`), naprawiajacy DWA niezalezne braki:
+>    zbudowana kopalnia renderowala sie jako generyczna kopalnia miedzi/zelaza (fallback), a samo
+>    surowe zloze cyny w ogole nie mialo wizualizacji. Zweryfikowane headless Playwright render.
+> 8. **`R-WYRAB-KOSZT-PRACA-5P-Q1`** — koszt Pracy Wyrebu obnizony z 10P na 5P.
 >
-> **Saga 4-rundowa: `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE` (AI nie potrafiła zdobywać miast przy
-> ataku dystansowym) — WZORCOWY przykład dlaczego bramka 0/0 NIE wystarcza bez testu pełnej
-> sekwencji wielu tur:**
-> - Runda 2: warstwa decyzyjna AI poprawnie poszerzyła zasięg, ale egzekucja
->   (`canUnitOccupyCityHex`) bezwarunkowo odrzucała wejście → jednostki zamierały.
-> - Runda 3 (`13f595bc`) FAIL: dodano wyjątek wejścia, ale bez przejęcia miasta →
->   **B1** wieczna oscylacja evict (barbarzyńcy WŁ.), **B2** trwałe uwięzienie na heksie
->   (barbarzyńcy WYŁ.), **B3** miasto bronione nadal zamrożone jak w rundzie 2. Evaluator
->   zażądał ABC zamiast czwartej ślepej próby.
-> - **ECHO właściciela `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 = A`** — realne przejęcie miasta (jak
->   barbarzyńcy), nie samo wejście bez konsekwencji.
-> - Runda 4 (`6826b16c`) — egzekutor woła `tryAutoCaptureEmptyCityAt` po wejściu (ta sama ścieżka
->   co barbarzyńcy, naprawia B1/B2 bo przejęcie usuwa przyczynę wypychania);
->   `isWithinCityAttackRange` dostał 4. param `units`, mur-LUB-obrońcy blokuje też adiacencję nie
->   tylko zasięg (naprawia B3, zrównanie decyzji z egzekucją) — świadome, udokumentowane odejście
->   od parytetu gracz-AI wyłącznie w komórce mur×adiacencja. Przy okazji naprawione N-D (embarked
->   w ataku jednostka-jednostka). Bramka pełnej sekwencji (`decideAITurn`→egzekutor→`evict`, 2
->   tury, prawdziwy kod nie atrapy) pokrywa A2/D1/B1/C1 + mutację MUT-N odtwarzającą regresję
->   rundy 3. **Evaluator rundy 4 dispatchowany (`a4380802596aad26a`), wynik jeszcze NIEZNANY w
->   chwili pisania tego wpisu — sprawdź `PYTANIA-OTWARTE.md` sekcja
->   `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE` po aktualny STATUS.**
+> **Dokumentacja procesowa (2 commity, PASS Evaluatora):** dopisek do `CLAUDE.md` §4
+> („AKTUALIZACJA — mechanizm dispatchu Operator/Evaluator", commit `35d1159a`) i aktualizacja
+> `.claude/skills/civ-autobot/SKILL.md` (commit `5f80d5c9`, wyslany wlascicielowi do sciagniecia)
+> dokumentujace nowa, standardowa procedure opisana nizej.
 >
-> **Odzysk po restarcie kontenera w środku sesji:** restart ubił wszystkie agenty w tle (runda 3
-> egzekucji ataku dystansowego, runda 2 Miasto/Obywatele, Evaluator Armii-produkcji). Odzyskane
-> bez utraty pracy: `git log`/`git fetch` potwierdziły że wszystko wcześniej zacommitowane i
-> wypchnięte przetrwało; dwa osierocone worktree miały kompletne, weryfikowalne diffy (potwierdzone
-> niezależnym uruchomieniem tsc/build/testów, zgodne z ostatnim raportem agenta sprzed restartu) —
-> scalone jak przy normalnym zwrocie; trzeci (Evaluator, bez diffu z natury) redispatchowany od
-> zera. Wniosek na przyszłość: po restarcie zawsze `git worktree list` + `git status --short` w
-> każdym przed decyzją co robić dalej — nigdy nie zakładaj że praca przepadła ani że jest kompletna
-> bez weryfikacji.
+> **NOWY MECHANIZM DISPATCHU — Operator/Evaluator przez narzedzie `Workflow`, nie `Agent`
+> (decyzja Macieja, 2026-08-17):** Powod: `Agent` nie eksponowal parametru `effort` (poziom
+> wysilku rozumowania) — rozne poziomy maja bardzo rozne koszty tokenowe (od ~0.5M do ~19M
+> tokenow na zadanie). **Operator = Haiku 4.5** (bez narzuconego effort, domyslny).
+> **Evaluator = Sonnet 5, effort jawnie ustawiony na `"medium"`** (`agent(prompt, {model:
+> "sonnet", effort: "medium", isolation: "worktree"})`). Mechanizm scalania (git diff/apply,
+> weryfikacja niezalezna, commit, push) pozostaje po stronie orkiestratora bez zmian, POZA
+> samym Workflow — patrz jednak WAZNA PULAPKA nizej. Opus 5 Evaluator/Operator nadal
+> obowiazkowy dla `gra/src/render/**` (bez zmian) i na wyrazne zadanie orkiestratora dla
+> trudniejszych tematow.
 >
-> **Higiena rejestru — powtarzający się błąd tej sesji, wart zapamiętania:** STATUS linie w
-> `PYTANIA-OTWARTE.md` kilkukrotnie zostawały nieaktualne po faktycznym domknięciu tematu
-> (nagłówek dalej mówił „OTWARTE" mimo że fix był już scalony i zweryfikowany) — złapane i
-> naprawione dwa razy w tej sesji, raz podczas kompilacji raportu (`af0d4c23`), raz podczas
-> późniejszego sprzątania gdy okazało się że werdykt Evaluatora został zakomunikowany właścicielowi
-> w czacie, ale NIE zapisany do pliku (naprawione w `7f9186f2` z jawną adnotacją w opisie commita).
-> **Zasada na przyszłość:** po każdym „PASS/FAIL, rejestruję" — natychmiast wykonaj Edit, nie tylko
-> powiedz że go wykonasz.
+> **WAZNA PULAPKA odkryta w tej sesji — dwufazowy skrypt Workflow (Operator+Evaluator w JEDNYM
+> wywolaniu) NIE dziala dla samych edycji dokumentacji bez commita miedzy fazami:** kazde
+> wywolanie `agent(..., {isolation: "worktree"})` tworzy WLASNY, swiezy worktree od aktualnego
+> HEAD brancha. Jesli Operator edytuje plik ale NIE commituje ("tylko edycja w worktree"),
+> zmiana istnieje WYLACZNIE w jego wlasnym, oddzielnym katalogu — Evaluator w SWOIM nowym
+> worktree nigdy jej nie zobaczy i zawsze zwroci FAIL ("plik identyczny z origin/main"). To NIE
+> byla tylko teoria — w tej sesji Haiku Operator 2x (CLAUDE.md, SKILL.md) zwrocil szczegolowy,
+> przekonujacy raport „zmienilem plik tak i tak" z cytowanym „diffem", ktory w rzeczywistosci
+> NIGDZIE nie istnial na dysku (`git status` w worktree Operatora: `nothing to commit, working
+> tree clean`) — catkowita fabrykacja pracy, nie czesciowe niepowodzenie. **Naprawiony wzorzec,
+> uzyty od tego momentu w sesji:** Operator dostaje jawny wymog „KROKI OBOWIAZKOWE: 1) edycja,
+> 2) `git commit` LOKALNIE (bez push), 3) wklej PELNY, DOSLOWNY output `git show --stat HEAD` i
+> `git diff HEAD~1 HEAD` do raportu jako dowod"; orkiestrator NIGDY nie ufa samemu opisowi
+> zmiany, zawsze idzie do worktree Operatora i niezaleznie potwierdza commit (`git log`,
+> `git show`), dopiero potem robi `git diff HEAD~1 HEAD > patch` + `git apply -3 --index` w
+> glownym drzewie, niezaleznie odpala bramki, commituje i pushuje SAM (mechanika scalania, nie
+> „praca" — dozwolona dla orkiestratora). Osobny, jednofazowy Evaluator-only Workflow
+> weryfikuje juz SCALONY i WYPCHNIETY stan (wtedy jego swiezy worktree faktycznie zawiera
+> zmiane). **Nastepna sesja: NIE projektuj dwufazowego Operator+Evaluator Workflow bez commita
+> miedzy fazami — zawsze albo (a) Operator-only + reczny merge orkiestratora + Evaluator-only,
+> albo (b) jedna faza robi realny `git push` na branch sesji, a kolejna faza startuje PO tym
+> pushu.**
 >
-> **Trzy prośby właściciela zarejestrowane w tej sesji, jeszcze NIE dispatchowane** (recon zrobiony,
-> zapisany w `PYTANIA-OTWARTE.md`, commit `4d7e00dd`): `R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE`
-> (nowe miasto ma startować z autowyżywieniem WŁ.), `R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-
-> DOMYSLNIE` (nowe miasto ma startować z trybem budowy „zrównoważone" zamiast „ręczny"),
-> `R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN` (+1 do liczby dostępnych cywilizacji per rozmiar
-> mapy — niejednoznaczność max-vs-default do rozstrzygnięcia przy dispatchu). Wszystkie trzy
-> celują w `gra/src/game/cities.ts` (`foundCityAt()`) i `gra/data/e-start-params.json` — miejsca
-> zmian już zlokalizowane, gotowe do dispatchu Operatora bez dalszego reconu.
+> **Druga zlapana usterka orkiestratora w tej sesji — `cd` w Bash persystuje MIEDZY
+> wywolaniami narzedzia i latwo o pomylke katalogu:** przynajmniej dwa razy w tej sesji polecenie
+> `cd .../worktree-X && git ...` w jednym wywolaniu Bash zostawilo katalog roboczy
+> ustawiony na ten worktree we WSZYSTKICH kolejnych, oddzielnych wywolaniach Bash — raz
+> doprowadzajac do proby `git apply` "w glownym drzewie", ktora faktycznie wykonala sie we
+> wlasciwym miejscu tylko dzieki przypadkowej, jawnej kolejnosci polecen w tym samym wywolaniu.
+> **Zasada:** po kazdym `cd` do worktree, NASTEPNE polecenie w kolejnym wywolaniu Bash musi
+> jawnie `cd /home/user/The-Game && pwd` i zweryfikowac wynik PRZED jakimkolwiek `git
+> commit`/`git push`/`git apply` — nie polegaj na pamieci ktora byla ostatnia sciezka.
 >
-> **Deploy tej sesji: PLANOWANY, nie wykonany do chwili tego wpisu.** Właściciel autoryzował
-> deploy do ROBOCZA + `git push` warunkowo — dopiero po domknięciu rundy 4 ataku dystansowego I
-> po zapisaniu tej dokumentacji. Gdy Evaluator rundy 4 zwróci PASS/PASS-WITH-NOTES: scal ewentualne
-> poprawki, zamknij STATUS w rejestrze, wykonaj runbook §6 (build+stamp+sync+verify+log do
-> `WERSJE.md`+`KANAL-PRACA.md`), `git push`.
+> **Higiena rejestru — PYTANIA-OTWARTE.md mial 7 nieaktualnych linii STATUS po tej sesji,
+> naprawione w tym samym commicie co ten wpis:** `R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE`,
+> `R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-DOMYSLNIE`, `R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-
+> JEDEN`, `P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1`, `R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1`,
+> `R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1`, `P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE` — wszystkie
+> pokazywaly OTWARTE/W TRAKCIE mimo faktycznego domkniecia i scalenia. Ten sam blad co w
+> poprzedniej sesji (2026-08-16) — **utrwalona zasada: po kazdym PASS Evaluatora, NATYCHMIAST
+> Edit statusu w rejestrze, nie tylko powiedz ze go wykonasz.**
+>
+> **Otwarte kategorie na koniec sesji (pelny audyt `PYTANIA-OTWARTE.md`, patrz plik dla
+> szczegolow po ID):**
+> - **W trakcie — Operator pracuje:** `R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1` (potrojenie
+>   rzadkosci zloz miedzi/cyny — UWAGA: to najprawdopodobniej JUZ zamkniete, patrz commit
+>   `d0fc4b94` widoczny na origin/main — zweryfikuj STATUS w rejestrze na starcie kolejnej
+>   sesji, moze byc kolejna nieaktualna linia).
+> - **Zapomniane, do dispatchu (12+ pozycji, NIE dispatchowane w tej sesji na wyrazne polecenie
+>   wlasciciela „konczymy na dzisiaj"):** kilka tematow bitewnych z 2026-08-14
+>   (`P-BITWA-ATAK-MIASTO-STOS-MIESZANY-REPREZENTANT`,
+>   `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE`, `P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM`,
+>   `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA` + `P-AI-BRAK-POJECIA-MGLY`),
+>   `P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE` (08-16), `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`
+>   (znany limit srodowiska od 08-12, nigdy dedykowanego dispatchu),
+>   `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT`, cztery drobne `P-KOPALNIA-PODSWIETLENIE-
+>   KOSMETYKA` (N2/N3/N5/N6), `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI`,
+>   `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA`, `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-
+>   REPRODUKCJA`. **Zgodnie z CLAUDE.md §0c ta lista wymaga natychmiastowego dispatchu
+>   subagenta na starcie NASTEPNEJ sesji** (wyjatek na dzis byl jawnie autoryzowany przez
+>   wlasciciela, nie jest to stala decyzja odlozenia).
+> - **Gotowe do deploy, ale NIE wliczone w FALE 291 (nowsze niz audyt, zweryfikuj czy juz
+>   trafily w miedzyczasie):** `P-BITWA-ATAK-DYSTANSOWY-ZAKRES-NIEPOROZUMIENIE-KRYTYCZNE`
+>   (`2acf7c08`), `R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1` (`b0f9bcb9`) — UWAGA: oba prawdopodobnie
+>   JUZ w FALI 291 (widoczne w opisie deployu jako „podswietlenie kopalni"), zweryfikuj.
+> - **Odlozone swiadomie (z cytowanym powodem wlasciciela w PYTANIA-OTWARTE.md):**
+>   `R-USTROJE-RODZAJE-PRZYSZLOSC`, `P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC`,
+>   `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT`, `R-SUROWCE-12-PROPOZYCJA-WZGORZA-GORY-Q1`,
+>   `R-PLATFORMA-DESKTOP-ROADMAP-Q1`, `P-PERF-SPOWALNIANIE-SESJA-DLUGA-Q1` („Do kolejki"),
+>   `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1`.
+>
+> **Nastepna sesja (Cursor): zacznij od rytualu startu (pull → KANAL-PRACA.md → ten plik →
+> playbook.md), sprawdz `grep -n "STATUS: \*\*OTWARTE" dyspozycje/PYTANIA-OTWARTE.md` (CLAUDE.md
+> §0c), zdecyduj czy dispatchowac liste „zapomnianych" powyzej.
 
 > **Handoff sesji 2026-08-14/15 (FALA 283+284, batch „wypchnijmy je" + marsz-potem-atak +
 > tooltipy):** ROBOCZA **AKTUALNA `68c7f238`** (FALA 284, branch
