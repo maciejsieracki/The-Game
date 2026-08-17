@@ -7327,3 +7327,9 @@ FALA 293 md5 `8fa80b7c554c52254b41734deb0423da` (skrót `8fa80b7c`) · korekta F
 |- Bramki: tsc PASS · logic 213/213 · praca-limit 23/23 · production-overflow 48/48 · auto 41/41 · AI 52/52 · percent 27/27 · wire 37/37 · VERIFY OK.
 |- Build z czubka integracji F292 + korekta `f2e454f6`; brak Designera, otwartych ABC i tematów NEEDS_FIX.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `8fa80b7c`; po FALI 294 scalić FALĘ 293 do `main`.
+
+## [23:55 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — DEPLOY ROBOCZA FALA 294
+ROBOCZA md5 `a0f804d7593333e34c989dc3565cb0c6` (skrót `a0f804d7`) · modal odkrycia Brązu + popup triumfu miast-państw.
+|- Bramki: tsc PASS · tech-tree 19/19 · research 33/33 · era toast 7/7 + mutacje 8/8 · triumph 13/13 · notice 16/16 · VERIFY OK.
+|- Chromium live test niedostępny (brak executable); nota środowiskowa. Linkowanie CivPedii/Wikipedii i Design pozostają poza falą.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `a0f804d7`; po FALI 295 scalić FALĘ 294 do `main`.

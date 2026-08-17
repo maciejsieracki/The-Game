@@ -1,6 +1,9 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-17 23:45 (deploy FALA 293)** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-17 23:55 (deploy FALA 294)** · Projekt: Civ „The Game"
+
+> **FALA 294 ROBOCZA:** md5 `a0f804d7` · VERIFY OK · modal odkrycia Brązu + osobny popup triumfu miast-państw.
+> Linkowanie Civpedii/Wikipedii i wzór Designera pozostają odłożone do kolejnego etapu.
 
 > **FALA 293 ROBOCZA:** md5 `8fa80b7c` · VERIFY OK · pełny split całej puli Pracy budynki ↔ ulepszenia.
 > FALA 292 miała tylko częściowe spięcie; FALA 293 domyka routing `doBudynkow` dla gracza/AI/MP.

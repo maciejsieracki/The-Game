@@ -9,6 +9,14 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
+## ROBOCZA a0f804d7 - 2026-08-17 23:55 UTC - FALA 294: modal odkrycia Brązu + popup triumfu miast-państw
+|- md5 (pełne): a0f804d7593333e34c989dc3565cb0c6 · stempel: ROBOCZA · label a0f804d7 · źródłowy commit integracji: `546f6a51`
+|- `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1=C`: pełna karta Brązownictwa po odkryciu, realne dane tech tree, Escape/zamknięcie, bez anulowania badań/tury.
+|- `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1=A`: ceremonialny popup po ostatnim aktywnym mieście-państwie właściwej kultury, z blokadą duplikacji.
+|- Bramki: tsc 5.9.3 PASS · tech-tree 19/19 · research 33/33 · era toast 7/7 + mutacje 8/8 · triumph 13/13 · triumph notice 16/16 · VERIFY OK.
+|- Chromium live test niedostępny w środowisku (brak executable); nie blokuje bramek logicznych, ale pozostaje notą.
+|- Linkowanie Civpedii/Wikipedii i wzór Designera pozostają poza implementacją tej fali. **AKTUALNA**
+
 ## ROBOCZA 8fa80b7c - 2026-08-17 23:45 UTC - FALA 293: pełny split Pracy budynki ↔ ulepszenia
 |- md5 (pełne): 8fa80b7c554c52254b41734deb0423da · stempel: ROBOCZA · label 8fa80b7c · źródłowy commit integracji: `f2e454f6`
 |- FALA 293 jest korektą FALI 292: `doBudynkow` jest faktycznie konsumowane przez produkcję gracza/AI/MP; 50% dotyczy całej puli Pracy, a nie tylko pickera ulepszeń.
