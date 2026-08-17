@@ -8,6 +8,43 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **OTWARTE**
+
+**Sytuacja:** Po odkryciu technologii istnieją dziś skrócone informacje w hubie badań oraz tooltip/karta węzła drzewa. Nie ma jednej rozbudowanej karty pokazującej pełny efekt odkrycia. Prototyp opisano na przykładzie Brązownictwa w [`docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`](../docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md).
+
+**Cel pytania:** Ustalić, czy zaakceptować układ i zakres jednej karty jako wzorzec przed przygotowaniem kontraktu danych oraz wdrożeniem dla wszystkich technologii.
+
+**Dlaczego teraz:** W repo są już trzy częściowe wzorce informacji (`techTreeView.ts`, `sciencePicker.ts`, `scienceHubHud.ts`), ale dane mają wykryte rozbieżności: `tech.json` deklaruje 12 jednostek i Popalnię brązu, a `units.json` ma 20 jednostek z `Tech: "Brązownictwo"`, zaś `terrain-improvements.json` ma Kopalnię miedzi i Kopalnię cyny. Nie należy implementować karty, dopóki ta granica źródeł nie jest jawna.
+
+### Opcje
+
+**A — zaakceptować prototyp jako wzorzec (rekomendacja).** Najpierw uznać układ karty i UX: popup po faktycznym odkryciu, zamknięcie przez przycisk/Esc, brak blokowania tury, ponowne otwarcie z drzewa; przed kodem rozstrzygnąć rozbieżności danych.
+
+- **Za:** ogranicza ryzyko wdrożenia niepełnej listy odblokowań; daje jeden konkretny wzorzec do powielenia.
+- **Za:** zachowuje istniejące informacje z tooltipów i huba, zamiast tworzyć drugi niezależny opis.
+- **Przeciw:** wymaga jeszcze decyzji, czy kanonem listy jednostek jest `tech.json`, czy `units.json`.
+- **Przeciw:** wdrożenie wszystkich technologii nastąpi dopiero po domknięciu kontraktu danych.
+
+**B — zaakceptować wdrożenie kart dla wszystkich technologii od razu.**
+
+- **Za:** szybciej pojawi się kompletna funkcja w całym drzewie.
+- **Za:** niespójności można próbować obsłużyć wyjątkami w trakcie implementacji.
+- **Przeciw:** karta może pokazywać różną liczbę jednostek zależnie od źródła i nieistniejącą Popalnię brązu.
+- **Przeciw:** utrudni to późniejsze poprawienie danych i zwiększy ryzyko fałszywych obietnic dla gracza.
+
+**C — odłożyć popup i pozostać przy istniejących tooltipach.**
+
+- **Za:** brak nowych zależności UI i brak ryzyka wynikającego z niespójności danych.
+- **Za:** obecne drzewo już pokazuje podstawowe wymagania i odblokowania.
+- **Przeciw:** gracz nadal nie dostanie jednego podsumowania „co mogę teraz zrobić”.
+- **Przeciw:** informacje pozostaną rozproszone między kartą węzła, hubem i katalogami budowy/jednostek.
+
+**Rekomendacja:** **A** — zaakceptować prototyp dokumentacyjny, ale przed implementacją rozstrzygnąć wskazane rozbieżności źródeł.
+
+**Decyzja właściciela:** `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 = A/B/C`.
+
+---
+
 ## R-CYWILIZACJE-EPOKA-PULA-Q1 — zwiększenie limitu cywilizacji per epoka · STATUS: **ZAMKNIĘTE** (2026-08-17)
 
 **ECHO:** `R-CYWILIZACJE-EPOKA-PULA-Q1 = A` (Maciej 2026-08-17) — „żadna mapa nie może przekroczyć maksymalnego limitu danej epoki, bo nie powtarzamy tych samych cywilizacji na mapie. Duże mapy, które są już na granicy (najwyższy poziom), nie zmieniamy nic. Główna zmiana będzie przy mniejszych mapach. Zwiększamy też o jeden możliwość większej ilości państw-miast na każdej mapie."
@@ -13348,6 +13385,21 @@ jako niewłaściwy mechanizm, zastąpione nowym hookiem ruchu.
 
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree ręczny) — implementacja od nowa wg
 doprecyzowanej mechaniki, z pełnym pokryciem testowym (w tym że stare jednostki NIE znikają).**
+
+### Follow-up ECHO A — 2026-08-17
+
+Właściciel doprecyzował trwałość efektu wejścia:
+
+> „po wejściu jednostki cywilizacji na heks obozu barbarzyńskiego heks ma być
+> trwale wykluczony z przyszłego tworzenia obozów w tej rozgrywce. Istniejące
+> jednostki barbarzyńskie pozostają; zatrzymuje się tylko spawner.”
+
+To jest decyzja **A** dla osobnego follow-upu `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1`.
+Pełny ECHO zapisano w `docs/decyzje/P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1.md`.
+Implementacja obejmuje blacklistę heksów per gra, save/load z defaultem dla
+starych zapisów oraz wszystkie losowe ścieżki spawnowania. Status: **GOTOWE
+LOKALNIE, bez deployu** — ECHO `e6c2ea2b`, implementacja `85f70a91`,
+testfix `0e720a70`; `barb-camp-blacklist-test.cjs` 18/18, typecheck 0.
 
 ## P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej, temat deweloperski, worktree eval-pool-4)
 
@@ -28578,8 +28630,11 @@ naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C
    widoczności: 0 trafień. Może to być świadomy projekt (AI ma pełną informację, gra "uczciwie"
    inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
 
-**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
-potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, asymetria mgły (gracz ograniczony na atakach na jednostki ale nie na miasta) i brak mgły w AI wciąż nierozstrzygnięte — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
+**Statusy rozdzielone po wykonaniu:**
+- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA`: **GOTOWE DO EVALUATORA** —
+  commit `9044e39d` gotowy, ale niezależny werdykt nie jest zapisany w rejestrze.
+- `P-AI-BRAK-POJECIA-MGLY`: **GOTOWE — Evaluator PASS-WITH-NOTES** —
+  własna widoczność per owner, pamięć celu i ponowne wykrycie; wcześniejsza decyzja A+C pozostaje dowodem.
 
 ---
 
@@ -31601,5 +31656,61 @@ STATUS: **OTWARTE — rekon w toku, czeka na implementację po uzupełnieniu zro
 
 STATUS: **SCALONE DO GŁÓWNEGO DRZEWA, CZEKA NA NIEZALEŻNĄ WERYFIKACJĘ ORKIESTRATORA (tsc/testy)
 i Evaluatora — NIE `WDROŻONE`, korekta wcześniejszego zbyt optymistycznego wpisu Operatora.**
+
+---
+
+## P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1 (2026-08-17, korekta zakresu po FALI 291)
+
+**Korekta właściciela:** poprzednie `R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1` ograniczało
+tylko parametr automatycznych ulepszeń. Właściwy kontrakt jest nadrzędnym podziałem całej
+puli Pracy imperium: budynki + ulepszenia terenu = 100%; ulepszenia najwyżej 50%; minimum
+50% pozostaje dostępne dla budynków. Dotyczy gracza i AI, także przy override per-miasto.
+
+**Zakres implementacji:** nowy produkcyjny `splitEmpirePracaBudget()` wylicza absolutny
+budżet obu strumieni, a picker dostaje ten budżet jako nadrzędny cap. Przy braku legalnej
+kolejki budynków zachowuje się istniejąca reguła overflow: niewykorzystany remainder zostaje
+w puli, nie jest spalany. Migracja starych zapisów pozostaje bez zmiany; clamp nadal działa
+przy odczycie pól legacy i nowych.
+
+STATUS: **W TRAKCIE — osobna gałąź/worktree, bez merge/push/deploy.**
+
+## KOREKTA ID P-EPOKA-BRAZU-KOMUNIKAT-PODBOJ-MIAST-Q1 — ZASTĄPIONY / UNIEWAŻNIONY (2026-08-17)
+
+Poprzedni temat łączył dwa niezależne zdarzenia: (1) odblokowanie/przejście do epoki Brązu
+po odkryciu odpowiednich badań/technologii oraz (2) triumf po zajęciu wszystkich miast-państw
+danej kultury. Właściciel sprostował, że jedno zdarzenie nie jest warunkiem drugiego.
+
+**Status:** **ZASTĄPIONY / UNIEWAŻNIONY przez sprostowanie**. Historia poprzedniego ID
+pozostaje zachowana w rejestrze; dalsze pytania prowadzone są wyłącznie jako dwa osobne ID:
+`P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` oraz
+`P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1`.
+
+---
+
+## P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 — komunikat odblokowania/przejścia do Brązu · STATUS: **OTWARTE — KOREKTA DOCS-ONLY** (2026-08-17)
+
+**Zakres:** osobny komunikat informujący, że po odkryciu/odblokowaniu odpowiednich
+badań/technologii gracz może wejść do epoki Brązu oraz jakie nowe możliwości się otwierają.
+Treść, forma i szczegółowy zakres komunikatu pozostają do ustalenia w późniejszym pytaniu.
+
+**Warunek:** odkrycie/odblokowanie odpowiednich badań/technologii prowadzących do epoki Brązu.
+Zajęcie wszystkich miast-państw danej kultury **nie jest warunkiem** tego komunikatu.
+Ten komunikat **nie jest warunkiem** triumfu po podboju miast-państw.
+
+**Na tym etapie:** nie zadano ABC i nie implementować.
+
+---
+
+## P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — popup po zajęciu wszystkich miast-państw kultury · STATUS: **OTWARTE — KOREKTA DOCS-ONLY** (2026-08-17)
+
+**Zakres:** osobny, potencjalnie bardziej rozbudowany popup triumfu/podboju po zajęciu
+wszystkich miast-państw należących do danej kultury. Dokładny warunek grupy kultury,
+treść, forma i zakres informacji pozostają do ustalenia w późniejszym pytaniu.
+
+**Warunek:** zajęcie wszystkich miast-państw danej kultury. Przejście do epoki Brązu ani
+odkrycie konkretnej technologii **nie jest warunkiem** tego popupu.
+Ten popup **nie jest warunkiem** odblokowania ani przejścia do epoki Brązu.
+
+**Na tym etapie:** nie zadano ABC i nie implementować.
 
 ---

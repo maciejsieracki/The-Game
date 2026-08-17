@@ -20,7 +20,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.production-overflow-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.production-overflow-bundle.cjs');
 
 const ENTRY_TS = `
-export { advanceProduction, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto } from '../src/game/production';
+export { advanceProduction, splitPraca, splitEmpirePracaBudget, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto } from '../src/game/production';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -130,6 +130,23 @@ console.log('\n7. HUD preview: 100% budowa, pusta kolejka → brutto = cała Pra
     { queueEmpty: [false], paused: [false] },
   );
   eq(hudWithBuild, 0, 'z budynkiem w kolejce → tylko doPuli (0)');
+}
+
+console.log('\n8. Nadrzędny split całej puli: ulepszenia ≤50%, budynki = remainder');
+{
+  const r = M.splitEmpirePracaBudget(1000, 100);
+  eq(r.total, 1000, 'cała pula Pracy = 1000');
+  eq(r.doUlepszen, 500, 'żądane 100% jest ograniczone do 50% całej puli');
+  eq(r.doBudynkow, 500, 'minimum 50% pozostaje dla budynków');
+  eq(r.doBudynkow + r.doUlepszen, r.total, 'budynki + ulepszenia = 100% puli');
+}
+
+console.log('\n9. Split z override per-miasto i edge case małej puli');
+{
+  const r = M.splitEmpirePracaBudget(3, 80);
+  eq(r.doUlepszen, 1, 'mała pula: floor(50% z 3) = 1 na ulepszenia');
+  eq(r.doBudynkow, 2, 'mała pula: remainder 2 dla budynków');
+  eq(r.doBudynkow + r.doUlepszen, r.total, 'mała pula zachowuje sumę 100%');
 }
 
 console.log('\n--- production-overflow-test: ' + passed + ' OK, ' + failed + ' FAIL ---');

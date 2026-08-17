@@ -248,7 +248,7 @@ export interface TileYield {
   handel:  number;
   drewno:  number;
   kamien:  number;
-  /** GLINA-Q1=A (2026-07-20): stala ilosc z bonusu ulepszenia (glinianka); baza terenu zawsze 0. */
+  /** P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1=A: baza terenu może dawać glinę; bonusy nakładek są addytywne. */
   glina:   number;
   /** Ruda miedzi (kopalnia_miedzi / kopalnia na złożu miedzi) — stock do Odlewni brązu. */
   ruda:          number;

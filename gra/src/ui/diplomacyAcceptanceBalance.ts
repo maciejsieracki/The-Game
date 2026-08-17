@@ -587,6 +587,7 @@ export function renderPnBalancePanelFromBasket(
   receivePn: number | null,
   relTotal: number,
   actionLabel = 'Wymiana',
+  fairnessPreview?: { accepted: boolean; pwBalance?: number },
 ): string {
   if (givePn == null || receivePn == null) {
     return (
@@ -597,8 +598,16 @@ export function renderPnBalancePanelFromBasket(
     );
   }
   const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relTotal));
-  const balancePn = givePn - fairMin;
-  const accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
+  // The live basket preview has no access to the responder's diplomacy stance,
+  // so relation-only math could show green while the real `handel` gate raises
+  // the required PW by its willingness multiplier. When the game layer supplies
+  // the evaluator result, use that exact gate balance; keep the old pure fallback
+  // for standalone callers and contexts without a full proposal evaluator.
+  const balancePn = fairnessPreview?.pwBalance ?? (givePn - fairMin);
+  const previewFairMin = fairnessPreview?.pwBalance != null
+    ? givePn - fairnessPreview.pwBalance
+    : fairMin;
+  const accepted = fairnessPreview?.accepted ?? pnDealAcceptedByAi(givePn, receivePn, relTotal);
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
@@ -609,7 +618,7 @@ export function renderPnBalancePanelFromBasket(
     ? (balancePn > 0
       ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
       : 'Równo — partner spełnia oczekiwania przy tej Relacji')
-    : 'Poniżej progu fair min (' + fairMin + ' PW) — ryzyko odrzucenia';
+    : 'Poniżej progu fair min (' + previewFairMin + ' PW) — ryzyko odrzucenia';
 
   return (
     '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket">'
@@ -637,7 +646,7 @@ export function renderPnBalancePanelFromBasket(
     // (bez Relacji) ... bilans +N" — pokazywała DRUGĄ, sprzeczną liczbę "bilans" tuż obok
     // powyższego, prawdziwego Bilansu (Oni) @ Relacji, dokładnie ten wzorzec zamieszania,
     // który zgłosił Maciej. Jedna liczba "Bilans" na panelu — ta @ Relacji, poniżej.
-    + '<div class="da-pn-bal-meta">PW @ Rel ' + formatLiczbaPl(relTotal) + ': fair min ' + fairMin + ' · bilans '
+    + '<div class="da-pn-bal-meta">PW @ Rel ' + formatLiczbaPl(relTotal) + ': fair min ' + previewFairMin + ' · bilans '
     + (balancePn >= 0 ? '+' : '') + balancePn + '</div>'
     + '<div class="da-pn-bal-verdict ' + (accepted ? 'ok' : 'no') + '">' + esc(verdict) + '</div>'
     + '</div>'

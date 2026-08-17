@@ -2647,13 +2647,6 @@ export class BattleScene {
       justifyContent: 'flex-start',
     });
     document.body.appendChild(this.overlay);
-    // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: od tej chwili nakładka bitwy przykrywa mapę
-    // świata — main.ts czyta ten stan, żeby wstrzymać WŁASNĄ kamerę mapy (WASD/edge-pan
-    // lecą na window i inaczej przesuwałyby mapę pod spodem przez całą bitwę).
-    // / EN: from here the battle overlay covers the world map; main.ts uses this to
-    // freeze the world-map camera (WASD/edge-pan are window-level listeners).
-    markBattleSceneOpen(this);
-
     const titleBar = document.createElement('div');
     Object.assign(titleBar.style, {
       color:         '#f0d080',
@@ -3355,6 +3348,12 @@ export class BattleScene {
     this.canvas.addEventListener('pointermove', this._onCanvasHoverMove);
     this.canvas.addEventListener('pointerleave', this._onCanvasHoverLeave);
     this._startLoop();
+    // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: rejestruj scenę dopiero po pełnym
+    // skonstruowaniu. Jeśli inicjalizacja WebGL/UI rzuci wyjątek, niedokończona
+    // scena nie może zostawić mapy świata zablokowanej na zawsze.
+    // / EN: register only after construction succeeds; a constructor failure
+    // must not leave the world map blocked by a stale registry entry.
+    markBattleSceneOpen(this);
   }
 
   // -------------------------------------------------------------------------
@@ -9003,7 +9002,11 @@ export class BattleScene {
   }
 
   private _hideEndDetails(): void {
-    if (this._battleStatsOpen || isPostBattleSummaryOpen()) {
+    // `_battleStatsOpen` identifies the summary overlay owned by this scene's
+    // "Szczegóły bitwy" view. The map-level post-battle summary is created by
+    // `onFinishCb` immediately before `dispose()` runs; hiding every open
+    // post-battle summary here used to remove that new screen in the same tick.
+    if (this._battleStatsOpen) {
       hidePostBattleSummary();
     }
     if (this._endDetailsEl?.parentNode) {

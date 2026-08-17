@@ -55,8 +55,10 @@ import {
   AI_IMPROVEMENT_PRIORITY,
   pickAutoImprovements,
 } from './auto-improvements';
+import { splitEmpirePracaBudget } from './production';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
+import type { AiTargetMemoryEntry } from './ai-fog';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -68,6 +70,8 @@ export interface AICmdMove {
   unitId: string;
   toQ: number;
   toR: number;
+  /** Cel miasta, który musi zostać ponownie wykryty przed przejęciem. */
+  targetCityId?: string;
 }
 
 /** Found a city at (q, r) via panel budowy (foundCityAt — bez osadnika). */
@@ -205,6 +209,16 @@ function getAiParam(data: GameData, key: string, fallback: number): number {
 
 /** Optional configuration for decideAITurn. */
 export interface AITurnOpts {
+  /**
+   * Migła AI liczona przez silnik dla konkretnego ownera. Gdy podana, cele
+   * poza widocznością nie trafiają do listy celów bojowych.
+   */
+  visibleHexes?: ReadonlySet<string>;
+  /**
+   * Ostatnio znane pozycje celów. Służą wyłącznie do planowania ruchu;
+   * egzekutor ataku musi dostać cel z aktualnej widoczności.
+   */
+  rememberedTargets?: readonly AiTargetMemoryEntry[];
   /** Civilization type string (TypCywilizacji value) for archetype modifiers. */
   civType?: string;
   /**
@@ -355,6 +369,12 @@ export interface AITurnOpts {
    * wydajności (większość tur wraca [] natychmiast, bez skanu heksów).
    */
   pracaAvailable?: number;
+  /**
+   * Wspólny budżet ulepszeń już zaplanowany wcześniej w tej samej turze.
+   * Ustawia go decideAITurn przed planExpansionFortBuilding, aby posterunek
+   * nie dołożył drugiego wydatku ponad cap 50% całej puli.
+   */
+  plannedImprovementCost?: number;
   /**
    * P-AI-011 (Maciej 2026-07-26): surowce ilościowe z zapasem < 1 pakietu handlowego.
    * Silnik (main.ts) — priorytet: (1) handel, (2) budowa/ulepszenie pod brak.
@@ -1942,6 +1962,7 @@ function planCityImprovements(
   // schodził z puli poniżej 30 po budowie farmy (koszt 20 przy puli 35) — regres MP.
   if (pracaAvailable <= pracaSurplusGate) return [];
 
+  const pracaBudget = splitEmpirePracaBudget(pracaAvailable, 50);
   const picks = pickAutoImprovements({
     cities: myCities,
     ownerId,
@@ -1951,20 +1972,10 @@ function planCityImprovements(
     pracaAvailable,
     unlockedTechs: opts.improvementTechs ?? new Set<string>(),
     pracaSurplusThreshold: 0,
-    // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (2026-08-14): AI NIE korzysta z %-budżetu Pracy — ten
-    // mechanizm to wybór GRACZA ("zostaw mi część Pracy"), AI nie ma gracza dla którego miałaby
-    // cokolwiek zostawiać. pracaBudgetPercent=100 = jawny brak ograniczenia % (bez tego pola
-    // funkcja i tak domyślnie nie ogranicza % — ustawione jawnie dla czytelności/odporności na
-    // przyszłą zmianę domyślnej wartości). Throttle AI to WYŁĄCZNIE maxItemsPerCity=1 niżej —
-    // dawniej niejawny efekt uboczny usuniętego domyślnego `maxPerCity=1`, teraz jawny (patrz
-    // testy 4-6/9/10 w ai-improvements-test.cjs, które ten dokładny throttle asercjonują).
-    // / EN: AI does NOT use the %-budget — that mechanism is the PLAYER'S choice ("leave me some
-    // Work"), AI has no player to leave anything for. pracaBudgetPercent=100 = explicit no-%-cap
-    // (the function already defaults to no cap without this, set explicitly for
-    // clarity/future-proofing). AI's throttle is ONLY maxItemsPerCity=1 below — previously an
-    // implicit side effect of the removed default `maxPerCity=1`, now explicit (see tests
-    // 4-6/9/10 in ai-improvements-test.cjs, which assert this exact throttle).
-    pracaBudgetPercent: 100,
+    // P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: AI podlega temu samemu
+    // nadrzędnemu splitowi całej puli co gracz.
+    pracaBudgetPercent: 50,
+    improvementBudgetCap: pracaBudget.doUlepszen,
     maxItemsPerCity: 1,
     skipWyrab: false,
     civArchetype: opts.civType,
@@ -2043,6 +2054,11 @@ export function planExpansionFortBuilding(
   const meta = getImprovementMeta('posterunek');
   if (!meta) return null;
   if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
+  const pracaBudget = splitEmpirePracaBudget(pracaAvailable, 50);
+  const plannedCost = Number.isFinite(opts.plannedImprovementCost)
+    ? Math.max(0, opts.plannedImprovementCost as number)
+    : 0;
+  if (plannedCost + meta.kosztPraca > pracaBudget.doUlepszen) return null;
   if (!isImprovementTechUnlocked('posterunek', opts.improvementTechs ?? new Set())) return null;
 
   const territoryNodes = opts.territoryNodes ?? [];
@@ -2362,8 +2378,14 @@ export function decideAITurn(
 
   const myUnits      = units.filter(u => u.ownerId === playerId);
   const myCities     = cities.filter(c => c.ownerId === playerId);
-  const enemyUnits   = units.filter(u => u.ownerId !== playerId);
-  const enemyCities  = cities.filter(c => c.ownerId !== playerId);
+  const enemyUnits   = units.filter(
+    u => u.ownerId !== playerId
+      && (opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(u.q, u.r))),
+  );
+  const enemyCities  = cities.filter(
+    c => c.ownerId !== playerId
+      && (opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(c.q, c.r))),
+  );
   const engageableEnemyUnits = enemyUnits.filter(u => aiCanEngageOwner(opts, u.ownerId));
   const engageableEnemyCities = enemyCities.filter(c => aiCanEngageOwner(opts, c.ownerId));
 
@@ -2424,11 +2446,20 @@ export function decideAITurn(
     for (const k of opts.recruitStockDeficitScratch) merged.add(k);
     opts.resourceDeficitKeys = [...merged];
   }
-  for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
-    commands.push(cmd);
-  }
+  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts);
+  for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
-  const expansionFortCmd = planExpansionFortBuilding(playerId, myCities, myUnits, map, opts);
+  const plannedImprovementCost = cityImprovementCommands.reduce(
+    (sum, cmd) => sum + (getImprovementMeta(cmd.key)?.kosztPraca ?? 0),
+    0,
+  );
+  const expansionFortCmd = planExpansionFortBuilding(
+    playerId,
+    myCities,
+    myUnits,
+    map,
+    { ...opts, plannedImprovementCost },
+  );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
   // -------------------------------------------------------------------------
@@ -2520,7 +2551,13 @@ export function decideAITurn(
       ec => isWithinCityAttackRange(unit, ec, data),
     );
     if (adjacentEnemyCity !== undefined) {
-      commands.push({ type: 'move', unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r });
+      commands.push({
+        type: 'move',
+        unitId: unit.id,
+        toQ: adjacentEnemyCity.q,
+        toR: adjacentEnemyCity.r,
+        targetCityId: adjacentEnemyCity.id,
+      });
       unitActed.add(unit.id);
       continue;
     }
@@ -2612,7 +2649,36 @@ export function decideAITurn(
 
       const step = firstStep(unit, map, targetCity.q, targetCity.r, units);
       if (step !== null) {
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        commands.push({
+          type: 'move',
+          unitId: unit.id,
+          toQ: step.q,
+          toR: step.r,
+          targetCityId: targetCity.id,
+        });
+        unitActed.add(unit.id);
+        continue;
+      }
+    }
+
+    // A+C: gdy nie ma aktualnie widocznego miasta do marszu, można planować
+    // do ostatniej znanej pozycji celu. To NIE tworzy celu ataku — przy braku
+    // ponownego wykrycia trafia tu wyłącznie komenda ruchu.
+    const rememberedTarget = (opts.rememberedTargets ?? [])
+      .filter(t => t.targetOwnerId !== playerId)
+      .sort((a, b) =>
+        hexDistance(unit.q, unit.r, a.q, a.r) - hexDistance(unit.q, unit.r, b.q, b.r)
+      )[0];
+    if (rememberedTarget !== undefined) {
+      const step = firstStep(unit, map, rememberedTarget.q, rememberedTarget.r, units);
+      if (step !== null) {
+        commands.push({
+          type: 'move',
+          unitId: unit.id,
+          toQ: step.q,
+          toR: step.r,
+          ...(rememberedTarget.kind === 'city' ? { targetCityId: rememberedTarget.targetId } : {}),
+        });
         unitActed.add(unit.id);
         continue;
       }
@@ -2895,11 +2961,20 @@ function decideDefensiveCopyTurn(
     for (const k of opts.recruitStockDeficitScratch) merged.add(k);
     opts.resourceDeficitKeys = [...merged];
   }
-  for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
-    commands.push(cmd);
-  }
+  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts);
+  for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
-  const expansionFortCmd = planExpansionFortBuilding(playerId, myCities, myUnits, map, opts);
+  const plannedImprovementCost = cityImprovementCommands.reduce(
+    (sum, cmd) => sum + (getImprovementMeta(cmd.key)?.kosztPraca ?? 0),
+    0,
+  );
+  const expansionFortCmd = planExpansionFortBuilding(
+    playerId,
+    myCities,
+    myUnits,
+    map,
+    { ...opts, plannedImprovementCost },
+  );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
   // ---------------------------------------------------------------------------

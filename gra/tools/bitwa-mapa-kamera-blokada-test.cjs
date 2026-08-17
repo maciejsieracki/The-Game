@@ -218,10 +218,10 @@ const battleSrc = fs.readFileSync(BATTLE_TS, 'utf8');
 ok(/import \{ markBattleSceneOpen, markBattleSceneClosed \} from '\.\/battleSceneOpen';/.test(battleSrc),
   '[C7] battleScene.ts importuje markBattleSceneOpen/markBattleSceneClosed');
 {
-  const appendIdx = battleSrc.indexOf('document.body.appendChild(this.overlay);');
+  const loopIdx = battleSrc.indexOf('    this._startLoop();');
   const markIdx = battleSrc.indexOf('markBattleSceneOpen(this);');
-  ok(appendIdx >= 0 && markIdx > appendIdx,
-    '[C8] markBattleSceneOpen(this) wołane PO wstawieniu nakładki do DOM (konstruktor)');
+  ok(loopIdx >= 0 && markIdx > loopIdx,
+    '[C8] markBattleSceneOpen(this) wołane dopiero po pomyślnym zakończeniu konstruktora');
   const disposeIdx = battleSrc.indexOf('  dispose(): void {');
   const closeIdx = battleSrc.indexOf('markBattleSceneClosed(this);');
   ok(disposeIdx >= 0 && closeIdx > disposeIdx,

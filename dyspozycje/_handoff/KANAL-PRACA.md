@@ -7392,3 +7392,11 @@ FALI 291). `origin/main`: `0528dccc` → `3786cedc`. Scalenie celowało w **comm
 nie w czubek gałęzi. FALA 291 (`01940a9a`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
 scalona; scali się dopiero przy FALI 292.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela (patrz wpis FALA 291 wyżej).
+
+## [22:00 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — DEPLOY ROBOCZA FALA 292
+ROBOCZA md5 `90b6508d06cc652f598addb8c2b3b266` (skrót `90b6508d`) · źródło integracji `dc4c5a1b`.
+|- Zintegrowane zatwierdzone paczki AutoBot: split Pracy 50% z AI/expansion · blacklist obozów · mgła AI/pamięć · rekrutacja za Skarbiec · bazowe plony · bramka mgły miasta · bilans dyplomacji · stale wonder · mixed stack · podsumowanie bitwy · rejestracja sceny.
+|- Docs: karta technologii + brief Designera, rozdzielenie komunikatu Brązu i triumfu, ECHO/rejestry. Linkowanie CivPedii/Wikipedii i Design pozostają poza kodem tej fali.
+|- Bramki: tsc 5.9.3 PASS · logic 213/213 · production-overflow 31/31 · AI improvements 52/52 · barbarians 201/201 · AI fog 8/8 · rekrutacja 13/13 · plony 9/9 · map attack 13/13 · dyplomacja 8/8 · wonder 8/8 · kamera 24/24 · VERIFY OK.
+|- `map-gen-regression-test.cjs` pominięty — znany limit wydajności sandboxa; brak zmiany algorytmu generatora terenu.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `90b6508d`; FALA 291 kwalifikuje się do scalenia do `main`.

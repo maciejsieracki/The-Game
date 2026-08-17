@@ -5,6 +5,7 @@
  */
 
 import type { City } from '../game/cities';
+import { stackGroupIdOf } from '../game/armyMerge';
 import type { RuntimeUnit } from '../units/setup';
 import { hexDistance, isCivilianUnit } from '../units/setup';
 import {
@@ -20,6 +21,7 @@ export type MapEnemyCityClickAction =
   | { kind: 'attack_choice'; attacker: RuntimeUnit; ctx: MapSiegeContext }
   | { kind: 'field_battle'; attacker: RuntimeUnit; ctx: MapSiegeContext }
   | { kind: 'capture_empty'; attacker: RuntimeUnit; ctx: MapSiegeContext }
+  | { kind: 'hint_city_not_visible'; cityName: string }
   | { kind: 'hint_no_adjacent'; cityName: string }
   | { kind: 'hint_civilian'; cityName: string }
   | { kind: 'hint_pick_attacker'; cityName: string; adjacentCount: number };
@@ -32,6 +34,8 @@ export interface ResolveEnemyCityClickInput {
   units: readonly RuntimeUnit[];
   /** Domyślnie 0 = gracz ludzki. */
   playerOwnerId?: number;
+  /** Bramka mgły dla kliknięcia gracza; brak predykatu zachowuje dotychczasowe API. */
+  isCityVisible?: (city: City) => boolean;
 }
 
 function adjacentPlayerAttackers(
@@ -58,6 +62,15 @@ function resolveAttacker(
   if (adjacent.length === 0) return 'none';
   if (selectedUnit && selectedUnit.ownerId === playerOwnerId) {
     if (adjacent.some(u => u.id === selectedUnit.id)) return selectedUnit;
+    // Reprezentant stosu może stać poza sąsiednim heksiem (np. po rozpadzie
+    // pozycji stosu), podczas gdy inny członek tej samej armii już stoi przy
+    // mieście. Zachowujemy wymóg adiacencji: szukamy wyłącznie wśród
+    // kwalifikujących się sąsiadów i tylko w tym samym stackGroupId.
+    const sameStackAdjacent = adjacent.filter(
+      u => stackGroupIdOf(u) === stackGroupIdOf(selectedUnit),
+    );
+    if (sameStackAdjacent.length === 1) return sameStackAdjacent[0]!;
+    if (sameStackAdjacent.length > 1) return 'pick';
     return 'none';
   }
   if (adjacent.length === 1) return adjacent[0]!;
@@ -68,10 +81,20 @@ function resolveAttacker(
 export function resolveEnemyCityClick(
   input: ResolveEnemyCityClickInput,
 ): MapEnemyCityClickAction {
-  const { city, selectedUnit, units, playerOwnerId = 0 } = input;
+  const {
+    city,
+    selectedUnit,
+    units,
+    playerOwnerId = 0,
+    isCityVisible = () => true,
+  } = input;
 
   if (city.ownerId === playerOwnerId) {
     return { kind: 'not_enemy' };
+  }
+
+  if (!isCityVisible(city)) {
+    return { kind: 'hint_city_not_visible', cityName: city.name };
   }
 
   if (city.oblegane) {

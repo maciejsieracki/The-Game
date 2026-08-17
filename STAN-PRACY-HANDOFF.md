@@ -1,6 +1,10 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-17 (sesja AutoBot, 8 tematow domknietych + deploy FALA 291 + przejscie dispatchu na Workflow)** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-17 22:00 (deploy FALA 292)** · Projekt: Civ „The Game"
+
+> **FALA 292 ROBOCZA:** md5 `90b6508d` · VERIFY OK · integracja zatwierdzonych paczek AutoBot.
+> FALA 291 `13b771f4` zostaje zakwalifikowana do scalenia z `main` zgodnie z rytmem jednej fali do tyłu.
+> Designer i linkowanie CivPedii/Wikipedii pozostają poza implementacją tej fali.
 
 > **Handoff sesji 2026-08-17 — sesja ZAKONCZONA na wyrazne polecenie wlasciciela, kontynuacja
 > nowych tematow w Cursorze (limit kontekstu tej sesji sie konczyl):** ROBOCZA zdeployowana,

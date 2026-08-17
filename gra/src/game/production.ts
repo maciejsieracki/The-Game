@@ -2,11 +2,12 @@
  * production.ts
  * City PRODUCTION QUEUE -- pure logic (task A2).
  *
- * A city builds units and buildings.  Each turn it pours its Praca (production
- * output, see game/turn-economy.ts) into the item at the FRONT of its queue.
- * When the accumulated Praca reaches that item's cost, the item is produced:
- * it is popped off the queue and any leftover Praca is carried onto the next
- * item.
+ * A city builds buildings in the Praca queue. Units are represented in the
+ * catalogue as production items for the separate, paid recruitment queue.
+ * Each turn the city pours its Praca (production output, see
+ * game/turn-economy.ts) into the building at the FRONT of its queue. When the
+ * accumulated Praca reaches that building's cost, it is popped off the queue
+ * and any leftover Praca is carried onto the next building.
  *
  * Pure logic -- no DOM, no THREE, no I/O, no global state, no mutation of the
  * inputs.  Every function returns fresh values, which makes the module directly
@@ -43,6 +44,7 @@
  *   availableProduction() - what a city may queue right now
  *   advanceProduction()   - pour one turn of Praca into the queue
  *   enqueue() / dequeue() - immutable queue helpers
+ *   sanitizeBuildQueue() - removes legacy unit entries from the Praca queue
  *   frontItem()           - the item currently being built (or null)
  */
 
@@ -1118,11 +1120,61 @@ export function etaTurns(koszt: number, postep: number, praca: number): number |
  * item is untouched).
  */
 export function enqueue(prod: CityProduction, item: ProductionItem): CityProduction {
+  // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostki mają osobną,
+  // opłaconą kolejkę rekrutacji. Twarda bramka tutaj chroni także przyszłych
+  // wywołujących przed przypadkowym powrotem jednostki do kolejki Pracy.
+  if (item.kind !== 'budynek') {
+    return {
+      ...prod,
+      kolejka: [...prod.kolejka],
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    };
+  }
   return {
     kolejka: [...prod.kolejka, item],
     postep: prod.postep,
     wstrzymana: prod.wstrzymana,
     rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+  };
+}
+
+export interface BuildQueueSanitizeResult {
+  prod: CityProduction;
+  /** Praca odzyskana z usuniętych, legacy jednostek. */
+  refundedPraca: number;
+}
+
+/**
+ * Migracja starych save'ów: jednostki zapisane dawniej w `kolejka` nie mogą
+ * pozostać martwymi wpisami ani zostać ukończone za Pracę. Ich aktywny postęp
+ * (front) i zbankowany postęp (pozycje oczekujące) wraca do puli Pracy
+ * właściciela; budynki i osobna `rekrutacja` pozostają nietknięte.
+ */
+export function sanitizeBuildQueue(prod: CityProduction): BuildQueueSanitizeResult {
+  const hasLegacyUnit = prod.kolejka.some(item => item.kind === 'jednostka');
+  if (!hasLegacyUnit) {
+    return {
+      prod: {
+        ...prod,
+        kolejka: [...prod.kolejka],
+        rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+      },
+      refundedPraca: 0,
+    };
+  }
+
+  const refundedWaiting = prod.kolejka
+    .slice(1)
+    .filter(item => item.kind === 'jednostka')
+    .reduce((sum, item) => sum + (Number.isFinite(item.postep) && item.postep! > 0 ? item.postep! : 0), 0);
+  const frontIsLegacyUnit = prod.kolejka[0]?.kind === 'jednostka';
+  const filtered = filterQueue(prod, item => item.kind === 'budynek');
+  return {
+    prod: {
+      ...filtered.prod,
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    },
+    refundedPraca: refundedWaiting + (frontIsLegacyUnit ? filtered.forfeitedPostep : 0),
   };
 }
 
@@ -1475,6 +1527,16 @@ export function insertAtFront(
   item: ProductionItem,
   activePostep: number,
 ): CityProduction {
+  // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: nawet ścieżka
+  // „odłóż z powodu braku Manpower” nie może odtworzyć jednostki w kolejce
+  // finansowanej Pracą. Opłacona rekrutacja ma własny rekrutacja[].
+  if (item.kind !== 'budynek') {
+    return {
+      ...prod,
+      kolejka: [...prod.kolejka],
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    };
+  }
   const kolejka = [...prod.kolejka];
   if (kolejka.length > 0 && Number.isFinite(prod.postep) && prod.postep > 0) {
     kolejka[0] = { ...(kolejka[0] as ProductionItem), postep: prod.postep };
@@ -1823,6 +1885,26 @@ export function splitPraca(cityPraca: number, udzialBudynki: number): { doBudynk
   const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
   const doBudynkow = Math.round(total * u);
   return { doBudynkow, doPuli: total - doBudynkow };
+}
+
+/**
+ * Nadrzędny podział całej puli Pracy imperium między budynki i ulepszenia terenu.
+ *
+ * Ulepszenia mogą dostać najwyżej 50% całej puli; reszta pozostaje dostępna dla
+ * budynków (albo jako jawnie zachowany remainder, gdy nie ma legalnej kolejki).
+ * To nie jest limit wewnątrz pickera ulepszeń — wynik tej funkcji jest realnym
+ * budżetem przekazywanym dalej do produkcji gracza i AI.
+ */
+export function splitEmpirePracaBudget(
+  pracaPool: number,
+  requestedImprovementPercent: number,
+): { total: number; doBudynkow: number; doUlepszen: number } {
+  const total = Number.isFinite(pracaPool) && pracaPool > 0 ? Math.floor(pracaPool) : 0;
+  const percent = Number.isFinite(requestedImprovementPercent)
+    ? Math.max(0, Math.min(50, Math.round(requestedImprovementPercent)))
+    : 0;
+  const doUlepszen = Math.floor(total * percent / 100);
+  return { total, doBudynkow: total - doUlepszen, doUlepszen };
 }
 
 /**

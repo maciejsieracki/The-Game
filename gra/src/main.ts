@@ -155,7 +155,7 @@ import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
-import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
+import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';
 import {
@@ -776,10 +776,10 @@ import {
 import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
-  enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
+  enqueue, buildingProductionItem, splitPraca, splitEmpirePracaBudget, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
-  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue,
+  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
@@ -1021,6 +1021,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import {
   decideAiWonderBuild,
@@ -3538,7 +3539,11 @@ async function boot(): Promise<void> {
      * unchanged behaviour, nothing to transfer.
      */
     function sanitizeProductionQueue(ownerId: number, prod: CityProduction): CityProduction {
-      const { prod: sanitized, forfeitedPostep } = filterQueue(prod, (item) => {
+      const migrated = sanitizeBuildQueue(prod);
+      if (migrated.refundedPraca > 0) {
+        setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + migrated.refundedPraca);
+      }
+      const { prod: sanitized, forfeitedPostep } = filterQueue(migrated.prod, (item) => {
         const wid = parseWonderProdId(item.id);
         if (!wid) return true;
         return wonderGateOk(ownerId, wid);
@@ -7287,6 +7292,7 @@ async function boot(): Promise<void> {
     let rejectedOfferCooldowns: RejectedOfferCooldown[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    const aiTargetMemoryByOwner: AiTargetMemoryByOwner = new Map();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
      *  (ownerLoop), zasilany w cmd.type==='build' po udanym purchaseRecruitmentUnit. */
@@ -8730,6 +8736,13 @@ async function boot(): Promise<void> {
 
     /** Barbarian camps on the map. */
     let barbCamps: BarbCamp[] = [];
+    /**
+     * P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: heksy, na które cywilizacja
+     * weszła i tym samym trwale wyłączyła spawner obozu w tej rozgrywce.
+     * Osobny stan od `barbCamps`, bo sama lista aktywnych obozów nie pamięta
+     * wyczyszczonych miejsc po późniejszym losowaniu.
+     */
+    const clearedBarbCampHexes = new Set<string>();
     /** Barbarian params loaded from ai-params.json (with fallbacks). */
     const barbParams = loadBarbParams(data);
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
@@ -8884,6 +8897,16 @@ async function boot(): Promise<void> {
         return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
       }
       return new Set<string>();
+    }
+
+    /** P-AI-BRAK-POJECIA-MGLY-Q1: widoczność konkretnego ownera AI, nie gracza. */
+    function currentVisibleForOwner(ownerId: number): Set<string> {
+      return computePlayerVisibility({
+        map,
+        playerUnits: units.filter(u => u.ownerId === ownerId),
+        playerCities: cities.filter(c => c.ownerId === ownerId),
+        unitSight,
+      });
     }
 
     /** Klucze oświetlonego kręgu startu — rzeki widoczne przed założeniem pierwszego miasta. */
@@ -17858,6 +17881,22 @@ async function boot(): Promise<void> {
             playerSkarbiec: Math.floor(player.skarbiec),
             tempoGry: player.tempoGry ?? 'standardowa',
             difficulty: _menuDifficulty,
+            // P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA: live podgląd
+            // „Wymiana" musi używać tej samej bramki co wysłana propozycja.
+            // Sam panel UI zna Relację i kwoty, ale nie zna nastawienia partnera;
+            // evaluator ma pełny kontekst AI i zwraca dokładny pwBalance.
+            tradeFairnessPreview: (givePn: number, receivePn: number) => {
+              const result = evaluateProposal(
+                {
+                  actionId: 'handel',
+                  proposerOwnerId: 0,
+                  responderOwnerId: ownerId,
+                  payload: { givePn, receivePn },
+                },
+                buildProposalEvalContext(0, ownerId),
+              );
+              return { accepted: result.accepted, pwBalance: result.pwBalance };
+            },
           };
         },
         onBreakTreaty: (dealId: string) => breakTreatyVoluntarily(dealId),
@@ -18816,14 +18855,17 @@ async function boot(): Promise<void> {
             } else {
               if (!wonderGateOk(0, wonderId)) {
                 showHintMessage('Ten cud nie jest teraz dostępny', 3000);
+                refreshBuildHighlight();
                 return;
               }
               if (ownerHasWonderBuildInProgress(wonderBuildSites, 0)) {
                 showHintMessage('Masz już cud w budowie na mapie', 3500);
+                refreshBuildHighlight();
                 return;
               }
               if (qualifyingWonderHexesForPlayer().length === 0) {
                 showHintMessage('Brak heksów w twoim terytorium na cud', 3500);
+                refreshBuildHighlight();
                 return;
               }
               activeWonderId = wonderId;
@@ -20322,6 +20364,7 @@ async function boot(): Promise<void> {
       const result = destroyCampAt(barbCamps, q, r);
       if (result.destroyedCampId === null) return false;
       barbCamps = result.camps;
+      clearedBarbCampHexes.add(keyOf(q, r));
       console.log(`[Barbarzyncy] Obóz zniszczony (najechany): ${result.destroyedCampId}`);
       refreshFog();
       return true;
@@ -20828,6 +20871,9 @@ async function boot(): Promise<void> {
               collectAtkRosterNearCity(action.ctx.city, action.attacker, units),
             );
             return;
+          case 'hint_city_not_visible':
+            showHintMessage(action.cityName + ' — cel niewidoczny (mgła).', 3500);
+            return;
           case 'hint_no_adjacent':
             showHintMessage(
               action.cityName + ' — miasto wrogie. Ustaw jednostkę na sąsiednim heksie i kliknij miasto.',
@@ -20866,7 +20912,13 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: 0,
+            isCityVisible: city =>
+              !fogOn || currentVisible().has(keyOf(city.q, city.r)),
           });
+          if (enemyAction.kind === 'hint_city_not_visible') {
+            dispatchMapEnemyCityClick(enemyAction);
+            return;
+          }
           const isMilitaryAction =
             enemyAction.kind === 'siege_panel' ||
             enemyAction.kind === 'attack_choice' ||
@@ -20916,7 +20968,13 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: 0,
+          isCityVisible: city =>
+            !fogOn || currentVisible().has(keyOf(city.q, city.r)),
         });
+        if (enemyAction.kind === 'hint_city_not_visible') {
+          dispatchMapEnemyCityClick(enemyAction);
+          return;
+        }
         const isMilitaryAction =
           enemyAction.kind === 'siege_panel' ||
           enemyAction.kind === 'attack_choice' ||
@@ -24140,6 +24198,7 @@ async function boot(): Promise<void> {
           // Audyt #44: aiSkarbiecByOwner nie bylo w snapshotcie -- czyszczone przy
           // load bez odtworzenia, wiec skarbiec AI zerowal sie po kazdym wczytaniu.
           aiSkarbiecByOwner: Array.from(aiSkarbiecByOwner.entries()),
+          aiTargetMemoryByOwner: snapshotAiTargetMemory(aiTargetMemoryByOwner),
           aiPracaPoolByOwner: Array.from(aiPracaPoolByOwner.entries()),
           aiNaukaPoolByOwner: Array.from(aiNaukaPoolByOwner.entries()),
           aiBadanaByOwner: Array.from(aiBadanaByOwner.entries()),
@@ -24178,6 +24237,10 @@ async function boot(): Promise<void> {
           // Audyt #42: barbCamps nie bylo w snapshotcie -- obozy z zapisu
           // przepadaly (lub zostawaly z poprzedniej gry na innej mapie).
           barbCamps: barbCamps.slice(),
+          // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: sam brak obozu nie
+          // wystarcza, bo przyszły spawn mógłby losowo odtworzyć go na tym
+          // samym heksie. Zapisujemy trwałą blacklistę per rozgrywka.
+          clearedBarbCampHexes: Array.from(clearedBarbCampHexes),
           // Audyt #43: cityRelig/autoManageCities nie byly ani zapisywane, ani
           // czyszczone -- kolizja id 'cityN' po restarcie skutkowala zombie
           // stanem religii/auto-zarzadzania z poprzedniej gry.
@@ -26289,6 +26352,10 @@ async function boot(): Promise<void> {
                 const playerCivArch = civTypeForOwner(0);
                 const workingPlaced = new Map(placedImprovements);
                 const empirePol = ulepszeniaEmpireForOwner(0);
+                const pracaBudget = splitEmpirePracaBudget(
+                  playerPracaPool,
+                  empirePol.pracaAutoPercent,
+                );
                 const picks = pickAutoImprovements({
                   cities: autoImpCities,
                   ownerId: 0,
@@ -26296,6 +26363,10 @@ async function boot(): Promise<void> {
                   territoryNodes: territoryNodesAuto,
                   placedImprovements: workingPlaced,
                   pracaAvailable: playerPracaPool,
+                  // P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: nadrzędny podział
+                  // całej puli imperium; picker nie wylicza już sam limitu
+                  // „wewnątrz automatu”.
+                  improvementBudgetCap: pracaBudget.doUlepszen,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
                   skipWyrab: true,
@@ -26583,6 +26654,17 @@ async function boot(): Promise<void> {
             // z głównej trudności (patrz aiDiffLevelForOwner). Zasila opts.poziomTrudnosci
             // (DifficultyParams: bonusProdukcja/bonusWalka/agresjaMnoznik/celObranie) niżej.
             const aiDiffLevel = aiDiffLevelForOwner(ownerId);
+            const aiVisibleHexes = fogOn ? currentVisibleForOwner(ownerId) : undefined;
+            if (aiVisibleHexes !== undefined) {
+              rememberVisibleAiTargets(
+                aiTargetMemoryByOwner,
+                ownerId,
+                aiVisibleHexes,
+                units,
+                cities,
+                keyOf,
+              );
+            }
             const contactedOwners = getDiplomaticContacts();
             const aiCivIdForOpts = aiOwnerCivMap.get(ownerId) ?? 'grecy';
             const aiTypForOpts = (aiCivIdForOpts as TypCywilizacji);
@@ -26594,6 +26676,9 @@ async function boot(): Promise<void> {
               { cityStateOpts: ownerCityStateOpts() },
             );
             const opts: AITurnOpts = {
+              // P-AI-BRAK-POJECIA-MGLY-Q1: AI widzi wyłącznie własny snapshot.
+              visibleHexes: aiVisibleHexes,
+              rememberedTargets: rememberedAiTargets(aiTargetMemoryByOwner, ownerId),
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
               poziomTrudnosci: aiDiffLevel,
               menuDifficulty: _menuDifficulty,
@@ -27527,6 +27612,23 @@ async function boot(): Promise<void> {
                 if (cmd.type === 'move') {
                   const u = units.find(x => x.id === cmd.unitId);
                   if (!u || u.ownerId !== ownerId) continue;
+                  const destinationCity = cities.find(
+                    c => c.q === cmd.toQ && c.r === cmd.toR && c.ownerId !== ownerId,
+                  );
+                  if (
+                    destinationCity !== undefined
+                    && !aiCityCaptureAllowed(
+                      cmd.targetCityId,
+                      destinationCity,
+                      currentVisibleForOwner(ownerId),
+                      fogOn,
+                      keyOf,
+                    )
+                  ) {
+                    // Pamięć pozycji służy do marszu, ale nie może zamienić się
+                    // w niewidoczny atak/przejęcie miasta.
+                    continue;
+                  }
                   if (!canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
                   const path = computePath(u, map, cmd.toQ, cmd.toR, (() => {
                     const occ = addForeignCityBlocks(new Set<string>(), u.ownerId, cities);
@@ -27634,6 +27736,12 @@ async function boot(): Promise<void> {
                   if (attacker.embarked === true) continue;
                   if (!areEnemyOwners(ownerId, defender.ownerId)) {
                     console.warn(`[AI ${ownerId}] Atak na owner ${defender.ownerId} bez wojny — pominięto`);
+                    continue;
+                  }
+                  if (!aiTargetVisibleForAction(
+                    currentVisibleForOwner(ownerId), fogOn, defender.q, defender.r, keyOf,
+                  )) {
+                    console.warn(`[AI ${ownerId}] Atak na niewidoczny cel — pominięto`);
                     continue;
                   }
                   const atkRoster = collectBattleRoster(attacker, units, 'attacker');
@@ -27852,22 +27960,17 @@ async function boot(): Promise<void> {
                     }
                     cityProd.set(cmd.cityId, enqueue(prod0, item));
                   } else if (item.kind === 'jednostka') {
-                    // R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): przed zwykłym
-                    // kolejkowaniem Pracą, spróbuj ZACHOWAWCZEGO rush-zakupu za złoto --
-                    // sama decyzja to CZYSTY predykat shouldAIRushBuyUnit (game/ai.ts,
-                    // testy w tools/ai-unit-rush-test.cjs). AI kupuje tylko gdy jest w
-                    // stanie wojny z kimkolwiek, zostaje bufor >= reserve po zapłacie,
-                    // miasto ma pokrycie Manpower i owner nie kupił jeszcze w tej turze
-                    // (cap aiRushParams.maxPerTurn, R-STAWKI-STROJENIE: econ-params.json
-                    // globalne.ai_rush_jednostka_max_na_ture). purchaseRecruitmentUnit
-                    // (ownerId-agnostyczne, patrz definicja) sam pobiera złoto+surowiec+
-                    // Manpower i kolejkuje -- NIE pobieramy nic drugi raz tutaj.
+                    // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostka
+                    // nigdy nie wraca do kolejki Pracy. Zachowujemy istniejącą
+                    // zachowawczą politykę AI (wojna + rezerwa + limit), ale
+                    // jedynym skutkiem pozytywnej decyzji jest zakup przez
+                    // purchaseRecruitmentUnit.
                     const atWarWithAnyone = getDiploRelation(ownerId, 0).status === 'wojna'
                       || aiOwnerList.some(
                         (other) => other !== ownerId && getDiploRelation(ownerId, other).status === 'wojna',
                       );
                     const boughtThisTurn = aiUnitGoldRushBoughtByOwner.get(ownerId) ?? 0;
-                    const wantsRush = shouldAIRushBuyUnit({
+                    const wantsPurchase = shouldAIRushBuyUnit({
                       atWar: atWarWithAnyone,
                       treasury: ownerTreasury(ownerId),
                       reserve: aiRushParams.reserve,
@@ -27879,34 +27982,10 @@ async function boot(): Promise<void> {
                       boughtThisTurn,
                       maxPerTurn: aiRushParams.maxPerTurn,
                     });
-                    if (wantsRush && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
+                    if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
                       aiUnitGoldRushBoughtByOwner.set(ownerId, boughtThisTurn + 1);
-                      console.log(`[AI ${ownerId}] Rush jednostki za zloto: ${candId}`);
-                      continue;
+                      console.log(`[AI ${ownerId}] Zakup jednostki za Skarbiec: ${candId}`);
                     }
-                    const unitDef = data.units.find(u => u.Jednostka === item.id);
-                    const cost = unitStockCost(unitDef);
-                    const pool = ownerSurowcePoolFor(ownerId);
-                    if (!canAffordUnitRecruitFull(pool, unitDef)) {
-                      // P-AI-MOC-GAP-EVAL/R2 (Maciej 2026-08-08): checks.canAfford (wyżej) już
-                      // wymagał canAffordUnitRecruitFull===true dla TEGO kandydata przed jego
-                      // wyborem, a pula między selekcją a tym miejscem NIE mogła się zmienić --
-                      // rush powyżej (purchaseRecruitmentUnit) albo się udał (return true,
-                      // continue wcześniej), albo zawiódł PRZED jakąkolwiek mutacją PULI
-                      // SUROWCÓW (jego pickUnitRecruitHint-check jest przed deductem puli --
-                      // Manpower może zostać dotknięty osobno, patrz definicja funkcji).
-                      // Ta gałąź jest więc dziś realnie nieosiągalna -- zostaje jako siatka
-                      // bezpieczeństwa na wypadek przyszłej zmiany porządku operacji, tak samo
-                      // jak bliźniacza gałąź budynku wyżej (linia ~22845).
-                      console.warn(
-                        `[AI ${ownerId}] Build skipped (brak surowca / rezerwy utrzymania): ${candId}`,
-                      );
-                      continue;
-                    }
-                    if (Object.keys(cost).length > 0) {
-                      deductOwnerStockCost(ownerId, cost);
-                    }
-                    cityProd.set(cmd.cityId, enqueue(prod0, item));
                   }
                   continue;
                 }
@@ -28086,7 +28165,14 @@ async function boot(): Promise<void> {
 
             // Spawn new camps if needed (seed from turn to vary each game).
             // TEMAT #15: sloty lądowe liczone bez obozów nadmorskich (osobny limit).
-            const newCamps = spawnCamps(map, barbCamps.filter(c => c.naval !== true), cities, barbLive, turn * 31337);
+            const newCamps = spawnCamps(
+              map,
+              barbCamps.filter(c => c.naval !== true),
+              cities,
+              barbLive,
+              turn * 31337,
+              clearedBarbCampHexes,
+            );
             barbCamps = [...barbCamps, ...newCamps];
             if (newCamps.length > 0) {
               console.log(`[Barbarzyncy] Tura ${turn}: nowe obozy: ${newCamps.length}`);
@@ -29662,6 +29748,7 @@ async function boot(): Promise<void> {
       battlePowerPtsByOwner.clear();
       lootedVillageHexKeys.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
       // koliduja miedzy rozgrywkami) -- nowe miasto dziedziczylo zombie stan
       // religii/auto-zarzadzania z poprzedniej gry bez przeladowania strony.
@@ -29930,6 +30017,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30180,6 +30268,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30407,6 +30496,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30812,7 +30902,11 @@ async function boot(): Promise<void> {
       overlayDepositEra = player.era;
       cityProd.clear();
       if (saved.cityProd) {
-        for (const [cid, prod] of Object.entries(saved.cityProd)) cityProd.set(cid, prod as any);
+        for (const [cid, prod] of Object.entries(saved.cityProd)) {
+          // Migrację wykonamy po odtworzeniu puli Pracy poniżej, aby ewentualny
+          // zwrot postępu ze starej jednostki nie został nadpisany stanem save'a.
+          cityProd.set(cid, prod as CityProduction);
+        }
       }
       cityBuilt.clear();
       if (saved.cityBuilt) {
@@ -30885,6 +30979,11 @@ async function boot(): Promise<void> {
       if (savedAiPracaPool?.length) {
         for (const [oid, v] of savedAiPracaPool) aiPracaPoolByOwner.set(oid, v);
       }
+      aiTargetMemoryByOwner.clear();
+      const restoredAiTargetMemory = restoreAiTargetMemory(saved.meta?.aiTargetMemoryByOwner ?? []);
+      for (const [oid, entries] of restoredAiTargetMemory) {
+        aiTargetMemoryByOwner.set(oid, entries);
+      }
       aiNaukaPoolByOwner.clear();
       const savedAiNaukaPool = saved.meta?.aiNaukaPoolByOwner as Array<[number, number]> | undefined;
       if (savedAiNaukaPool?.length) {
@@ -30938,6 +31037,18 @@ async function boot(): Promise<void> {
       // Odtworz z zapisu; brak pola (stary zapis) = reset do pustej tablicy.
       const savedBarbCamps = saved.meta?.barbCamps as BarbCamp[] | undefined;
       barbCamps = Array.isArray(savedBarbCamps) ? savedBarbCamps.slice() : [];
+      // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: stary save bez blacklisty
+      // dostaje pusty, bezpieczny default; błędne wpisy nie mogą zablokować
+      // losowych heksów przez przypadkowe wartości.
+      clearedBarbCampHexes.clear();
+      const savedClearedBarbCampHexes = saved.meta?.clearedBarbCampHexes;
+      if (Array.isArray(savedClearedBarbCampHexes)) {
+        for (const hexKey of savedClearedBarbCampHexes) {
+          if (typeof hexKey === 'string' && /^-?\d+,-?\d+$/.test(hexKey)) {
+            clearedBarbCampHexes.add(hexKey);
+          }
+        }
+      }
       // P-BARBARZYNCY-LOAD-REKONCYLIACJA-Q1: zapis mógł powstać PRZED hakiem
       // niszczącym obozy (stary zapis) albo przez lukę w onSplit sprzed jej
       // naprawy -- w obu przypadkach mógł legalnie zawierać jednostkę
@@ -31100,6 +31211,14 @@ async function boot(): Promise<void> {
         playerPracaPool = 0;
       }
       _lastPraca = playerPracaPool;
+      if (saved.cityProd) {
+        // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: stare zapisy mogły
+        // mieć jednostkę w kolejce Pracy. Teraz pula właściciela jest już
+        // odtworzona, więc migracja może bezpiecznie oddać jej postęp.
+        for (const [cid, prod] of cityProd.entries()) {
+          setCityProduction(cid, prod);
+        }
+      }
       _lastPieniadzRate = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;

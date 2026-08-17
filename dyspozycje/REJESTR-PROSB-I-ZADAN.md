@@ -30,6 +30,8 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 
 **Notatka 2026-08-09:** źródło prawdy deployu dziś = **FALA 263** (`89176ced318b7e7d03b2fd6b197df80d`), branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie `main`). Szczegóły sesji: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`.
 
+| P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 | 2026-08-17 | Po odkryciu technologii rozbudowana karta: efekt, budynki, jednostki, ulepszenia terenu, następne technologie, wymagania i działania gracza; prototyp na Brązownictwie | **CZEKA-NA-DECYZJĘ — DOCS-ONLY, NIE KODOWAĆ** | Prototyp i UX: `docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`; wykryto rozbieżności `tech.json` (12 jednostek + Popalnia brązu) vs `units.json` (20 jednostek) / `terrain-improvements.json` (Kopalnia miedzi + Kopalnia cyny). Wzór graficzny przygotuje Designer po akceptacji prototypu; linkowanie do Civpedii/Wikipedii to kolejny etap po akceptacji prototypu i briefu Designera, poza obecną implementacją. |
+
 | R-AI-TRUDNOSC-AUDYT | 2026-08-05 | Audyt + **P0** (Maciej „1"): realna Praca · Spichlerz id · L3 nauka=2 | **ZDEPLOYOWANE `efab84db`** (FALA 229) | `docs/decyzje/R-AI-TRUDNOSC-AUDYT.md` · PR #111 · AutoBot PASS |
 | R-AI-TRUDNOSC-P1 | 2026-08-05 | P1: majorEarly ×0.70 · scout −80 · L1 early turn 25 | **ZDEPLOYOWANE `7f8bdc74`** (FALA 230) | §F audytu · PR #112 |
 | R-AI-TRUDNOSC-P1-3 | 2026-08-05 | Spryt AI → ai-params.json (agresja/dyplomacja/cel ×3) | **ZDEPLOYOWANE `7f8bdc74`** (FALA 230) | §G audytu · PR #113 · behavior-neutral |
@@ -58,6 +60,7 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | R-RABAT-SOL-GARNIZON-Q1 | 2026-08-06 | Podwójny rabat garnizonu przy Soli — sumują się czy nie | **ZAMKNIĘTA** — potwierdzenie status quo, zero zmian w kodzie | `docs/decyzje/R-RABAT-SOL-GARNIZON-Q1.md` · A |
 | R-FENICJA-SKARB-CAP-Q1 | 2026-08-06 | Mnożnik Skarbu Fenicjan ×11,4 — exploit czy zamierzone | **ZAMKNIĘTE — FAŁSZYWY ALARM**: ×11,4 to artefakt sprzed refaktoru 2026-07-25, dziś nieistniejący; realny szczyt ×5,79 (normal) | `docs/decyzje/R-FENICJA-SKARB-CAP-Q1.md` · A |
 | R-KONTRY-BITWA-SPOJNOSC-Q1 | 2026-08-06 | Ujednolicenie tabeli kontr bitwy do `counters.json` | **SCALONE+PUSH** `162b306` — zero utraconych bonusow (0/98) potwierdzone niezaleznie | `docs/decyzje/R-KONTRY-BITWA-SPOJNOSC-Q1.md` · A |
+| **P-AI-BRAK-POJECIA-MGLY-Q1** | 2026-08-17 | AI: własna mgła per owner, pamięć ostatniej pozycji celu, atak dopiero po ponownym wykryciu | **W TOKU — ECHO A+C** | `docs/decyzje/P-AI-BRAK-POJECIA-MGLY-Q1.md`; scope: `currentVisible()`, `decideAITurn`, `enemyUnits`/`enemyCities`, save/load, testy |
 | R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1 | 2026-08-06 | Priorytet bramek uczciwość vs chęć do handlu | **SCALONE** (runda 4, PASS-WITH-NOTES) — uczciwość PW pozostaje priorytetem, chęć respondenta-AI moduluje próg (−15%…+20%) WYŁĄCZNIE gdy respondentem jest AI (nie gracz), podłoga parytetu chroni przed przepłatą AI (R-PW-ACCEPT-OVERPAY-Q1), komunikat zawsze z realną przyczyną i liczbami PW. 4 rundy: r1 fałszywa przyczyna, r2 regresja AI→gracz, r3 regresja overpay (usunięcie z PROPOSER_PW_FAIRNESS_ACTIONS bez podłogi), r4 domknięcie podłogą parytetu | `docs/decyzje/R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1.md` · B+C połączone · efekt uboczny AI↔AI w `PYTANIA-OTWARTE.md` |
 | LOGIC-TEST-2BUGS-Q1 | 2026-08-06 | 2 nowe awarie logic-test.cjs: canFoundCity dist=4, city food store undefined | **SCALONE** (PASS-WITH-NOTES) — oba testowe: prog dystansu byl zgadywany (5 zamiast realnych 4 z JSON), magazynZywnosci jest CELOWO legacy/tylko-oblezenie od refaktoru population-growth-v85 (asercja poprawiona na `number>=0 LUB undefined`) | logic-test 207/208 |
 | UNIT-REPLACE-EVOCATI-Q1 | 2026-08-06 | unit-replace-test.cjs 2/10: Evocati znika z listy "Zastąp" | **SCALONE** (runda 2, PASS-WITH-NOTES) — realny bug produkcyjny naprawiony w `main.ts` (`replaceAvailabilityCtxForCity`/`replaceAvailabilityCtxEmpireWide` → `empireResourceStock: citySurowceSumForOwner(...)`, wzorem `productionCtxForCity`), od FALI 96 (`daacd43`) mechanizm "Zastąp" gubił wszystkie jednostki brązowe/żelazne. Brak pokrycia testowego naprawy w main.ts — nota w `PYTANIA-OTWARTE.md` | unit-replace-test 10/10, logic-test 207/208, tsc 0, build 797 modułów |
@@ -84,6 +87,7 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | R-PROC-AUTOBOT-EVAL-STRICT-EDGE | 2026-08-05 | Evaluator STRICT-EDGE: testy tematu tylko happy-path bez edge/negacji/repro → FAIL #7 | **🟢 OBOWIĄZUJE** · Maciej „2 Jeszcze twardszy” · rule_107 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` |
 | R-PROC-AUTOBOT-EVAL-STRICT-PARITY | 2026-08-05 | Evaluator STRICT-PARITY: asymetria gracz/AI/MP lub test tylko ownerId=0 bez decyzji → FAIL #8 | **🟢 OBOWIĄZUJE** · Maciej „2 = Tylko A (parytet)” · rule_108 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md` |
 | R-PROC-AUTOBOT-EVAL-STRICT-SAVE | 2026-08-05 | Evaluator STRICT-SAVE: luki save/load nowego pola lub restore bez ?? default → FAIL #9 | **🟢 OBOWIĄZUJE** · Maciej „1+2” oś B · rule_109 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md` |
+| P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 | 2026-08-17 | Po wejściu cywilizacji obóz znika, a heks dostaje trwałą blacklistę spawnera | **GOTOWE LOKALNIE — bez deployu** · ECHO `e6c2ea2b` · implementacja `85f70a91` · testy `0e720a70`/`e0548514`/`49f01e7d` | `docs/decyzje/P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1.md` · blacklist/save-load/test 18/18 |
 | P-MP-SPAWN-WYZYWIENIE | 2026-08-05 | Spawn MP: suwak Wyżywienie start ~3 zamiast 4 | **ZDEPLOYOWANE `ea921d1e`** (FALA 238) | `foundCity*` → `poziomRacji:4` · tip `5fecbcf` · test 14/14 |
 | R-AUTO-RACJE-RAISE | 2026-08-05 | Auto Wyżywienie + Spichlerz ≥ 0 + przełącznik auto w każdym mieście | **ZDEPLOYOWANE** FALA 225→227 `3840f218` · fokus playtest **ODŁOŻONY** (R-AUTO-RACJE-RAISE-PT=B, 2026-08-06) | Q1=B · Q2–Q5=A · bez ABC o playtest (`R-ABC-BEZ-PLAYTEST`) · `docs/decyzje/R-AUTO-RACJE-RAISE-PT.md` |
 | R-REKRUT-LUDNOSC-UI | 2026-08-04 | Teksty rekrutacji: nie sugerować −1 obywatela; ludność miasta nie spada (tylko Manpower) | **ZDEPLOYOWANE `38df6ad7`** (FALA 224) | `docs/decyzje/R-REKRUT-LUDNOSC-UI.md` · cityPanel |
@@ -2470,7 +2474,40 @@ otwiera zakres N2 (ogólny brak ścieżki zdobycia miasta przez AI) wcześniej n
 tylko w obrębie tej jednej ścieżki (atak dystansowy), nie ogólnego marszu AI na puste miasta.
 Pełna treść pytania w `PYTANIA-OTWARTE.md`, sekcja `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`.
 
-| R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE | 2026-08-16 | Nowo założone miasto ma zaczynać z automatycznie włączonym autowyżywieniem | **NOWE** | Recon w `PYTANIA-OTWARTE.md`, miejsce zmiany: `foundCityAt()` w `gra/src/game/cities.ts` |
-| R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-DOMYSLNIE | 2026-08-16 | Nowo założone miasto ma zaczynać z trybem budowy „zrównoważone" zamiast „ręczny" | **NOWE** | Recon w `PYTANIA-OTWARTE.md`, to samo miejsce `foundCityAt()` |
-| R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN | 2026-08-16 | +1 do liczby dostępnych cywilizacji dla każdego rozmiaru mapy | **NOWE** | Recon w `PYTANIA-OTWARTE.md`, `gra/data/e-start-params.json`; niejednoznaczność max-vs-default do rozstrzygnięcia przy dispatchu |
+| R-NOWE-MIASTO-AUTOWYZYWIENIE-DOMYSLNIE | 2026-08-16 | Nowo założone miasto ma zaczynać z automatycznie włączonym autowyżywieniem | **ZAMKNIETE (2026-08-17)** | PASS Evaluatora, commit `eb03cb94`, wdrozone w FALI 291. `foundCityAt()` zwraca `autoWyzywienie: true` domyslnie. |
+| R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-DOMYSLNIE | 2026-08-16 | Nowo założone miasto ma zaczynać z trybem budowy „zrównoważone" zamiast „ręczny" | **ZAMKNIETE (2026-08-17)** | PASS Evaluatora, commit `eb03cb94`, wdrozone w FALI 291. `foundCityAt()` zwraca `budowaTryb: 'zrownowazone'` domyslnie. |
+| R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN | 2026-08-16 | +1 do liczby dostępnych cywilizacji dla każdego rozmiaru mapy | **ZAMKNIETE (2026-08-17)** | PASS Evaluatora, commit `48246469`, wdrozone w FALI 291. Niejednoznacznosc rozstrzygnieta ABC (`R-CYWILIZACJE-EPOKA-PULA-Q1 = A`) - mapy na suficie puli EPOCH_CIV_TYPE_POOL bez zmian, reszta +1; miasta_panstwa +1 wszedzie. |
 | P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE | 2026-08-14 | Atak dystansowy AI na miasta — 4 rundy | **ZAMKNIĘTE — Evaluator PASS-WITH-NOTES `6826b16c`** | ECHO `EGZEKUCJA-Q1=B`+`WEJSCIE-Q1=A`; N1 wydzielony do `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` (osobne ABC, nie pilne) |
+
+## P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1 — ECHO B (2026-08-17)
+Maciej zdecydował: gracz, AI i miasta-państwa pozyskują jednostki wyłącznie przez zakup
+za Skarbiec/Pieniądze; jednostki nie trafiają do tej samej kolejki Pracy co budynki.
+Zakres obejmuje produkcję, zakup/rush, limity, środki, save/load i migrację starych kolejek.
+Status: **GOTOWE — zaakceptowane przez Evaluatora, PASS-WITH-NOTES**.
+Dowód: ECHO `bc200aee`; implementacja `914ce8da`; testy kontraktów/migracji
+`f30e13d7`, `c2a72a98`; `rekrutacja-skarbiec-only-test.cjs` **13/13 PASS**.
+Pre-existing dług testowy, niezwiązany z tą zmianą: `unit-stock-cost-test.cjs`
+**41/58 PASS** oraz `ai-recruit-upkeep-gate-test.cjs` **18/27 PASS**.
+Kanon: `docs/decyzje/P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.md`.
+
+| P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1 | 2026-08-17 | Bazowa produkcja Drewna/Kamienia/Gliny z terenu; rzeka pozostaje osobnym modyfikatorem | **GOTOWE — Evaluator PASS-WITH-NOTES** | `gra/data/terrain-yields.json` · commit `3ee0c52f` · testy bazowy 9/9, magazyn 14/14, konwertery 46/46, warstwy 24/24, parytet 101/101 |
+| P-EPOKA-BRAZU-KOMUNIKAT-PODBOJ-MIAST-Q1 | 2026-08-17 | **POPRZEDNI POŁĄCZONY TEMAT — ZASTĄPIONY / UNIEWAŻNIONY** | **ZASTĄPIONY / UNIEWAŻNIONY przez sprostowanie właściciela** | Łączył błędnie dwa niezależne zdarzenia: komunikat odblokowania/przejścia do Brązu po badaniach/technologiach oraz triumf po zajęciu wszystkich miast-państw kultury. Historia zachowana; nowe ID: `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` i `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1`. Żadne z tych zdarzeń nie jest wzajemnym warunkiem. |
+| P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 | 2026-08-17 | Osobny komunikat o możliwości wejścia do epoki Brązu i nowych możliwościach po odkryciu/odblokowaniu odpowiednich badań/technologii | **CZEKA-NA-DECYZJĘ — DOCS-ONLY, NIE KODOWAĆ** | Niezależne od zajęcia wszystkich miast-państw danej kultury; podbój nie jest warunkiem tego komunikatu, a komunikat nie jest warunkiem triumfu podboju. ABC jeszcze nie zadano. |
+| P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 | 2026-08-17 | Osobny, bardziej rozbudowany popup triumfu po zajęciu wszystkich miast-państw danej kultury | **CZEKA-NA-DECYZJĘ — DOCS-ONLY, NIE KODOWAĆ** | Niezależne od odkrycia technologii i przejścia do epoki Brązu; Brąz nie jest warunkiem popupu, a popup nie jest warunkiem wejścia do Brązu. ABC jeszcze nie zadano. |
+## KOREKTA STATUSÓW — FALA 291 (docs-only, 2026-08-17)
+
+Poniższe wpisy porządkują wyłącznie aktywny status rejestru. Historia i dowody pozostają
+w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
+
+| ID | Status bieżący | Dowód / uwaga |
+|---|---|---|
+| P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE | **GOTOWE DO EVALUATORA** | commit `38025d4b` |
+| P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM | **GOTOWE DO EVALUATORA** | commit `083dc4d2` |
+| P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA | **GOTOWE DO EVALUATORA** | commit `9044e39d`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-AI-BRAK-POJECIA-MGLY | **ABC OTWARTE** | nie dispatchować kodu |
+| P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE | **ZAMKNIĘTE — NO-ACTION** | panel tree-shaken |
+| P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA | **OTWARTE — ODŁOŻONE DO ABC** | realny brak ścieżki AI potwierdzony; bez dispatchu kodu po cofnięciu sagi |
+| P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA | **GOTOWE DO EVALUATORA** | commit `a277486a`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-SUROWCE-KOLEJNOSC-KART | **ZAMKNIĘTE** | test `62/0` |
+| P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT | **GOTOWE DO EVALUATORA** | commit `a1d37daf`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY | **ZDEPLOYOWANE** | FALA 286 |

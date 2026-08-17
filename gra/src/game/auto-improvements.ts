@@ -155,6 +155,12 @@ export interface PickAutoImprovementsOpts {
    */
   pracaBudgetPercent?: number;
   /**
+   * Nadrzędny, absolutny budżet ulepszeń wyliczony z całej puli imperium.
+   * Gdy podany, zastępuje procentowy pułap imperium; per-miasto override nadal
+   * liczy się od pełnej puli wejściowej i nie może go przebić.
+   */
+  improvementBudgetCap?: number;
+  /**
    * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: % (0–100) PER MIASTO — nadpisuje `pracaBudgetPercent` dla
    * TEGO miasta (np. override gracza w panelu miasta, `city.ulepszeniaPracaPercent`). UWAGA: to
    * NIE tworzy dodatkowego budżetu obok wspólnej puli — % tego miasta jest jego WŁASNYM pułapem
@@ -312,7 +318,15 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   // when it's LOWER than the empire policy — when it's HIGHER, it grants neither priority nor a
   // bigger share.
   const imperiumPercentClamped = Math.max(0, Math.min(100, pracaBudgetPercent));
-  const imperiumBudgetCap = (imperiumPercentClamped / 100) * globalPracaPulaAtEntry;
+  const imperiumBudgetCap = Math.max(
+    0,
+    Math.min(
+      globalPracaPulaAtEntry,
+      Number.isFinite(opts.improvementBudgetCap)
+        ? (opts.improvementBudgetCap as number)
+        : (imperiumPercentClamped / 100) * globalPracaPulaAtEntry,
+    ),
+  );
 
   const workingPlaced = new Map<string, string[]>();
   if (placedImprovements) {

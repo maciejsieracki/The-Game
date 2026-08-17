@@ -1761,7 +1761,13 @@ function summaryHtml(
 
   let html = '<div class="cdb-summary">';
   if (mode === 'trade') {
-    html += renderPnBalancePanelFromBasket(givePn, receivePn, rel, 'Wymiana');
+    html += renderPnBalancePanelFromBasket(
+      givePn,
+      receivePn,
+      rel,
+      'Wymiana',
+      ctx.tradeFairnessPreview?.(givePn ?? 0, receivePn ?? 0),
+    );
   }
 
   if (mode === 'trade') {
