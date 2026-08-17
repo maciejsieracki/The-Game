@@ -31053,10 +31053,36 @@ testu end-turn, ale mierzący inny punkt w cyklu), + profilowanie który handler
 wywoływana przy tym zdarzeniu i czy jej koszt rośnie z liczbą miast/tur (co tłumaczyłoby „im
 dalej w las").
 
-STATUS: **OTWARTE — DWA osobne wątki pod tym ID: (1) pamięć/GPU czyste w zmierzonym oknie,
-stuck-turn wymaga potwierdzenia na aktualnym HEAD; (2) NOWY, doprecyzowany główny podejrzany —
-opóźnienie otwierania panelu miasta, prawdopodobnie ciężkie obliczenie JS, nie GPU/pamięć — do
-dispatchu po zamknięciu bieżących wątków.**
+**⚠️ DALSZE DOPRECYZOWANIE (Maciej, 2026-08-17, tuż po powyższym) — zakres znacznie szerszy niż
+sam panel miasta:** „Ale tutaj na wszystko się czeka, nawet na ruch jednostkami. Przełączanie
+między jednostkami na wszystko podczas gry działa, jakby było w spowolnionym trybie. Każda
+zmiana, każde kliknięcie działa bardzo powoli i trzeba odczekać zawsze kilka sekund na reakcję."
+— to NIE jest ograniczone do panelu miasta. Dotyczy KAŻDEJ interakcji: ruch jednostką,
+przełączanie jednostek, „wszystko". Wskazuje na WSPÓLNY mianownik wywoływany po każdym kliknięciu
+(np. jedna globalna funkcja odświeżenia UI/sceny wołana po każdej akcji gracza, licząca coś od
+zera za każdym razem), nie osobny problem samego panelu miasta.
+
+**+ potwierdzenie korelacji z rozmiarem gry (Maciej, tuż po):** „tego efektu nie ma na początku
+gry. Podejrzewam, że tutaj jest kwestia ilości miast; na początku jest ich mniej, a im więcej
+miast, tym większe obciążenie i wszystko zaczyna spowalniać." — spójne z wcześniejszą wskazówką
+niżej (linia poniżej, „im więcej posiadam miast"). Efekt NIEOBECNY na starcie gry, narasta z
+liczbą miast — to praktycznie wyklucza jednorazowy koszt stały (np. inicjalizację) i wskazuje na
+funkcję o koszcie rosnącym z rozmiarem stanu gry (miasta/jednostki/budynki), wołaną przy KAŻDEJ
+interakcji użytkownika, nie tylko przy końcu tury czy otwarciu jednego konkretnego panelu.
+
+**Recon (orkiestrator, read-only, zanim padnie decyzja o dispatchu):** szybki grep pod kątem
+wspólnego globalnego handlera (`setInterval`/`requestAnimationFrame`/`gameLoop` w `main.ts`) —
+zero trafień pod tymi nazwami; jeśli wspólny mianownik istnieje, żyje pod inną nazwą lub jest
+rozproszony po wielu miejscach wołających tę samą kosztowną funkcję — wymaga realnego
+profilowania (DevTools performance trace albo żywy test z `performance.now()` wokół typowych
+akcji: ruch jednostką, otwarcie panelu, przełączenie zaznaczenia), nie dalszego zgadywania z grep.
+
+STATUS: **OTWARTE — TRZY powiązane wątki pod tym ID: (1) pamięć/GPU czyste w zmierzonym oknie,
+stuck-turn wymaga potwierdzenia na aktualnym HEAD; (2) opóźnienie panelu miasta; (3) NAJSZERSZY i
+najbardziej precyzyjny opis — spowolnienie KAŻDEJ interakcji (ruch, przełączanie, klik),
+nieobecne na starcie gry, rosnące z liczbą miast — prawdopodobnie wspólny kosztowny handler
+wołany po każdej akcji gracza. Czeka na decyzję właściciela: dispatch teraz (odstępstwo od
+standing rule) czy do kolejki.**
 
 **Wskazówka diagnostyczna Macieja (dopisana po dispatchu reconu):** „myślę, że też duży wpływ na to,
 jak działa szybko gra jest to, jak dużo gracz posiada miast. Im więcej posiadam miast, [im więcej]
