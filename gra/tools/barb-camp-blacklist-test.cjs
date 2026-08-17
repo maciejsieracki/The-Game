@@ -144,13 +144,13 @@ const blockedKey = `${baseline[0].q},${baseline[0].r}`;
   const main = fs.readFileSync(path.join(ROOT, 'src/main.ts'), 'utf8');
   assert(main.includes('clearedBarbCampHexes.add(keyOf(q, r))'),
     '4: production destruction path records the entered hex');
-  assert(main.includes('turn * 31337,\\n              clearedBarbCampHexes,'),
+  assert(main.includes('turn * 31337,\n              clearedBarbCampHexes,'),
     '4: production spawn path receives the per-game blacklist');
   assert(main.includes('clearedBarbCampHexes: Array.from(clearedBarbCampHexes)'),
     '4: production save path serializes the blacklist');
   assert(main.includes('const savedClearedBarbCampHexes = saved.meta?.clearedBarbCampHexes'),
     '4: production load path reads the optional blacklist field');
-  assert(main.includes(\"typeof hexKey === 'string' && /^-?\\\\d+,-?\\\\d+$/.test(hexKey)\"),
+  assert(main.includes("typeof hexKey === 'string' && /^-?\\d+,-?\\d+$/.test(hexKey)"),
     '4: production load path validates old/malformed blacklist entries');
 }
 
