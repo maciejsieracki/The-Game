@@ -31026,9 +31026,37 @@ AKTUALNYM HEAD gałęzi — jeśli tura nadal utyka na 2, to realny, świeży, w
 zawiesza/zwalnia z czasem"; jeśli tura przechodzi normalnie, to był artefakt starego kodu i temat
 pamięci/wycieku pozostaje jedynym wątkiem tego zgłoszenia (i wygląda dziś na czysty).
 
-STATUS: **OTWARTE — pamięć/GPU wygląda czysto w tym oknie; ZNALEZISKO stuck-turn wymaga
-potwierdzenia na aktualnym HEAD przed dispatchem naprawy (może być już nieaktualne po rewercie
-ataku dystansowego) — do dispatchu po zamknięciu bieżących wątków.**
+**⚠️ DOPRECYZOWANIE OBJAWU (Maciej, 2026-08-17) — zmienia kierunek poszukiwań:** „Tutaj problem
+nie jest tura, bo ona leci bardzo szybko; problemem jest, że w trakcie gry bardzo długo czeka się
+potem na to, żeby wejść do miasta, zmienić miasto lub cokolwiek zrobić – trzeba kilka sekund
+czekać, aż to nastąpi." — to NIE jest koniec tury (`endTurn`) ani ogólne FPS/render, tylko
+**opóźnienie przy otwieraniu panelu miasta / przełączaniu miasta w trakcie normalnej gry**.
+Brzmi jak ciężkie, synchroniczne przeliczenie JS na głównym wątku wywoływane przy otwarciu
+panelu (np. przeliczanie statystyk miasta od zera), NIE problem GPU/pamięci/generowania mapy —
+hipoteza „stuck-turn" wyżej dotyczy innego mechanizmu i zostaje osobno.
+
+**Pytanie Macieja „czy można prościej dać więcej zasobów, zanim znajdziemy przyczynę" —
+odpowiedź wprost:** w grze JUŻ ISTNIEJE panel „Test wydajności" (`gra/src/ui/perfTestPanel.ts`,
+Batch 7, pomysł Macieja 2026-07-05) z benchmarkiem sprzętu (CPU 1-wątkowo, CPU wielowątkowo,
+GPU) i przyciskiem „Zastosuj zalecane" → ustawia `renderQuality` (Niska/Średnia/Wysoka),
+`maxMapSizeLabel`, `workerLimit` jako wartość startową kreatora nowej gry
+(`gra/src/perf/hardwareProfile.ts`). **Ale to prawdopodobnie NIE naprawi TEGO konkretnego
+objawu** — benchmark celuje w szybkość generowania mapy i FPS renderu, nie w pojedynczą wolną
+funkcję JS blokującą główny wątek przy otwarciu panelu. JavaScript w przeglądarce jest
+jednowątkowy — więcej RAM/GPU nie przyspiesza pojedynczego wolnego obliczenia. Nie ma prostego
+przełącznika „daj więcej zasobów" na ten konkretny objaw; wymaga zlokalizowania konkretnej
+funkcji/handlera otwarcia panelu miasta.
+
+**Do dispatchu (osobno od stuck-turn):** żywy test mierzący czas między kliknięciem otwarcia
+panelu miasta / przełączenia miasta a pełnym wyrenderowaniem (analogicznie do dzisiejszego
+testu end-turn, ale mierzący inny punkt w cyklu), + profilowanie który handler/funkcja jest
+wywoływana przy tym zdarzeniu i czy jej koszt rośnie z liczbą miast/tur (co tłumaczyłoby „im
+dalej w las").
+
+STATUS: **OTWARTE — DWA osobne wątki pod tym ID: (1) pamięć/GPU czyste w zmierzonym oknie,
+stuck-turn wymaga potwierdzenia na aktualnym HEAD; (2) NOWY, doprecyzowany główny podejrzany —
+opóźnienie otwierania panelu miasta, prawdopodobnie ciężkie obliczenie JS, nie GPU/pamięć — do
+dispatchu po zamknięciu bieżących wątków.**
 
 **Wskazówka diagnostyczna Macieja (dopisana po dispatchu reconu):** „myślę, że też duży wpływ na to,
 jak działa szybko gra jest to, jak dużo gracz posiada miast. Im więcej posiadam miast, [im więcej]
