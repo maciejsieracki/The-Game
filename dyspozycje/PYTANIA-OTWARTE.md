@@ -31578,3 +31578,33 @@ STATUS: **ZAREJESTROWANE NA PRZYSZŁOŚĆ — do wznowienia w osobnej sesji dedy
 ustrojów (nie razem z bieżącą implementacją limitu 60%).**
 
 ---
+
+## R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 (2026-08-17, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „Maksymalna ilość pracy, którą można przeznaczyć z budżetu pracy, to 50% do wspólnego worka, a reszta idzie na budynki. Czyli można dać mniej na pracę, w sensie na ulepszenia, ale nie można dać więcej niż 50."
+
+**Kontekst:** Istniejący system „auto-praca budżet %" (z decyzji `R-AUTO-PRACA-BUDZET-PROCENT-Q1` i jej override per-miasto). Wspólny worek = pula pracy Imperium przeznaczona na auto-pracę (ulepszenia terenu), w odróżnieniu od Pracy kierowanej bezpośrednio na budynki w miastach. Wymaganie: twardy górny limit **50%** budżetu Pracy imperium na wspólny worek/auto-pracę; pozostałe minimum 50% na budynki. Dotyczy zarówno gracza jak i AI.
+
+**Stan pracy:** Recon — zbieranie informacji o systemie i punktach implementacji (gdzie gracz ustawia %, gdzie logika to stosuje, czy AI ma osobną ścieżkę, czy limit dotyczy override per-miasto).
+
+STATUS: **OTWARTE — rekon w toku, czeka na implementację po uzupełnieniu zrozumienia architektury.**
+
+---
+
+**AKTUALIZACJA (2026-08-17, implementacja domknięta):** rekon i implementacja zakończone:
+- **Punkty zmiany:** 
+  (a) `gra/src/game/cities.ts:198` — `clampUlepszeniaPracaPercent()` limituje teraz do 0-50 zamiast 0-100;
+  (b) `gra/src/ui/buildModeHud.ts:246` — slider HTML zmieniony z `max="100"` na `max="50"`;
+  (c) `gra/src/ui/buildModeHud.ts:548, 554, 588, 595` — event listeners ograniczają wartości do 0-50.
+- **Egzekwacja limitu:** każde ustawienie budżetu pracy (gracz lub AI) przechodzi przez `clampUlepszeniaPracaPercent()`, więc limit 50% jest obowiązkowy wszędzie.
+- **Override per-miasto:** limit dotyczy także override per-miasto (funkcja `clampUlepszeniaPracaPercent` jest wywoływana zarówno dla polityki imperium jak i dla override miast).
+- **AI:** domyślnie korzysta z tej samej logiki limitu co gracz (żaden osobny path).
+- **Weryfikacja (Operator, twierdzona):** `npx tsc --noEmit` — 0 błędów. UWAGA: worktree Operatora nie miał zainstalowanego `node_modules`
+  (odstępstwo od standardowej izolacji §4a) — nie uruchomił ŻADNEGO testu regresyjnego, sam to
+  przyznał w raporcie. Twierdzenie o tsc do potwierdzenia niezależnie przez orkiestratora po
+  scaleniu, zanim uzna się temat za faktycznie zamknięty.
+
+STATUS: **SCALONE DO GŁÓWNEGO DRZEWA, CZEKA NA NIEZALEŻNĄ WERYFIKACJĘ ORKIESTRATORA (tsc/testy)
+i Evaluatora — NIE `WDROŻONE`, korekta wcześniejszego zbyt optymistycznego wpisu Operatora.**
+
+---
