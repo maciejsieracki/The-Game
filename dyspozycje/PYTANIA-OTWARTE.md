@@ -30823,7 +30823,15 @@ produkcji zdobytego miasta pokazuje pozycje, które i tak istniały, niezależni
 tam wstawione), czy błąd (jednostki faktycznie trafiają do kolejki budynków zamiast właściwej
 kolejki rekrutacji wojska).
 
-STATUS: **OTWARTE — do reconu po zamknięciu bieżącego wątku (cofnięcie ataku dystansowego).**
+**Ponowne zgłoszenie + nowe pytanie (Maciej, 2026-08-17):** „Nadal państwa miasta, zamiast
+rekrutować jednostki z handlu, budują je tak jak budynki. Trzeba zapisać i zarejestrować to do
+zmiany. Pytanie też: jak jest u innych AI, a nie państw miast?" — potwierdza, że objaw wciąż
+obserwowany (nie epizod jednorazowy). Nowe pytanie do reconu: czy główne cywilizacje AI (nie
+tylko miasta-państwa) mają ten sam mechanizm/błąd, czy różnią się od MP w tym zakresie —
+świadomie NIE zgadywane teraz, wymaga tego samego reconu co reszta tematu.
+
+STATUS: **OTWARTE — zarejestrowane, do reconu po odnowieniu limitu (zgodnie z zasadą „tylko
+rejestruj" do środy, 2026-08-17).**
 
 ---
 
