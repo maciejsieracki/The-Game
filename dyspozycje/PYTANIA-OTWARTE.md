@@ -13360,8 +13360,9 @@ Właściciel doprecyzował trwałość efektu wejścia:
 To jest decyzja **A** dla osobnego follow-upu `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1`.
 Pełny ECHO zapisano w `docs/decyzje/P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1.md`.
 Implementacja obejmuje blacklistę heksów per gra, save/load z defaultem dla
-starych zapisów oraz wszystkie losowe ścieżki spawnowania. Status: **W TOKU,
-bez deployu**.
+starych zapisów oraz wszystkie losowe ścieżki spawnowania. Status: **GOTOWE
+LOKALNIE, bez deployu** — ECHO `e6c2ea2b`, implementacja `85f70a91`,
+testfix `0e720a70`; `barb-camp-blacklist-test.cjs` 18/18, typecheck 0.
 
 ## P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej, temat deweloperski, worktree eval-pool-4)
 
