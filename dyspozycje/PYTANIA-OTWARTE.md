@@ -31672,4 +31672,43 @@ przy odczycie pól legacy i nowych.
 
 STATUS: **W TRAKCIE — osobna gałąź/worktree, bez merge/push/deploy.**
 
+## KOREKTA ID P-EPOKA-BRAZU-KOMUNIKAT-PODBOJ-MIAST-Q1 — ZASTĄPIONY / UNIEWAŻNIONY (2026-08-17)
+
+Poprzedni temat łączył dwa niezależne zdarzenia: (1) odblokowanie/przejście do epoki Brązu
+po odkryciu odpowiednich badań/technologii oraz (2) triumf po zajęciu wszystkich miast-państw
+danej kultury. Właściciel sprostował, że jedno zdarzenie nie jest warunkiem drugiego.
+
+**Status:** **ZASTĄPIONY / UNIEWAŻNIONY przez sprostowanie**. Historia poprzedniego ID
+pozostaje zachowana w rejestrze; dalsze pytania prowadzone są wyłącznie jako dwa osobne ID:
+`P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` oraz
+`P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1`.
+
+---
+
+## P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 — komunikat odblokowania/przejścia do Brązu · STATUS: **OTWARTE — KOREKTA DOCS-ONLY** (2026-08-17)
+
+**Zakres:** osobny komunikat informujący, że po odkryciu/odblokowaniu odpowiednich
+badań/technologii gracz może wejść do epoki Brązu oraz jakie nowe możliwości się otwierają.
+Treść, forma i szczegółowy zakres komunikatu pozostają do ustalenia w późniejszym pytaniu.
+
+**Warunek:** odkrycie/odblokowanie odpowiednich badań/technologii prowadzących do epoki Brązu.
+Zajęcie wszystkich miast-państw danej kultury **nie jest warunkiem** tego komunikatu.
+Ten komunikat **nie jest warunkiem** triumfu po podboju miast-państw.
+
+**Na tym etapie:** nie zadano ABC i nie implementować.
+
+---
+
+## P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — popup po zajęciu wszystkich miast-państw kultury · STATUS: **OTWARTE — KOREKTA DOCS-ONLY** (2026-08-17)
+
+**Zakres:** osobny, potencjalnie bardziej rozbudowany popup triumfu/podboju po zajęciu
+wszystkich miast-państw należących do danej kultury. Dokładny warunek grupy kultury,
+treść, forma i zakres informacji pozostają do ustalenia w późniejszym pytaniu.
+
+**Warunek:** zajęcie wszystkich miast-państw danej kultury. Przejście do epoki Brązu ani
+odkrycie konkretnej technologii **nie jest warunkiem** tego popupu.
+Ten popup **nie jest warunkiem** odblokowania ani przejścia do epoki Brązu.
+
+**Na tym etapie:** nie zadano ABC i nie implementować.
+
 ---
