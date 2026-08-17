@@ -81,7 +81,7 @@
  */
 import * as THREE from 'three';
 
-export type ZlozeTyp = 'miedz' | 'zelazo' | 'wegiel' | 'sol' | 'glina' | 'zloto';
+export type ZlozeTyp = 'miedz' | 'zelazo' | 'wegiel' | 'sol' | 'glina' | 'zloto' | 'cyna';
 
 function mat(c: number): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({ color: c, flatShading: true });
@@ -148,6 +148,12 @@ export const P3B = {
   wegiel: 0x17171b, wegielHi: 0x40454d, wegielBaza: 0x2c2e33,
   sol: 0xf7fbff, solDk: 0xdfe9f2, solanka: 0xbfe4f2,
   zloto: 0xffc21a, zlotoHi: 0xffe86e, zlotoDk: 0xc98505, zlotoSkala: 0x4b4453,
+  // Cyna (2026-08-17): rudą jest KASYTERYT — czarnobrunatny, nie metaliczny;
+  // srebrzysta cyna to dopiero wytop. Jasny akcent (cynaOkruch) jest punktowy,
+  // bo złoże leży na Wzgórzach/Górach, gdzie biel myli się ze śniegiem i solą.
+  // / EN: tin ore is cassiterite — near-black; the silvery tone is a tiny accent
+  // only, since white masses read as snow/salt on Hills and Mountains.
+  kasyteryt: 0x2a201a, kasytHi: 0x4a3a2e, cynaOkruch: 0xc6ccd4, cynaSkala: 0x76797e,
   glinaA: 0xb85c33, glinaB: 0xd97742, glinaC: 0xe8935a, glinaMokra: 0xc44f22,
   plomien: 0xffc02e, plomienDk: 0xff7a1a, metal: 0x545d66,
 } as const;
@@ -407,6 +413,24 @@ export function buildZlozeKlaster(typ: ZlozeTyp, du = 0): THREE.Group {
     B(g, 0.105, 0.09, 0.095, 0.055, 0.19, -0.035, zlM, 0.32, 0.6 + du, -0.26); // samorodek glowny
     B(g, 0.065, 0.06, 0.065, -0.055, 0.235, 0.04, zlHiM, 0.38, du, 0.5);       // blik na szczycie
     B(g, 0.065, 0.05, 0.06, 0.105, 0.026, 0.085, zlDkM, 0, 0.4 + du, 0.14);    // okruch u podnoza
+  } else if (typ === 'cyna') {
+    // Cyna: KASYTERYT — czarnobrunatne, KANCIASTE bryly WBITE w jasnoszara skale
+    // macierzysta. Sylwetka celowo odwrotna do zlota (tam ciemna skala + jasna zyla):
+    // tu jasny cokol i CIEMNY szczyt, wiec z 52° oba zloza czytaja sie inaczej nawet
+    // w skali mapy. Jeden maly srebrzysty okruch = jedyny sygnal „to metal".
+    // / EN: cassiterite — dark angular chunks set in PALE host rock, the exact
+    // inverse of gold's dark rock + bright vein, so the two never look alike.
+    const skalaM = mat(P.cynaSkala), ksM = mat(P.kasyteryt), ksHiM = mat(P.kasytHi), cynM = mat(P.cynaOkruch);
+    // KOR-1 (po ogledzinach zrzutu): cokol POWIEKSZONY i podniesiony. Sama czarna
+    // ruda znika na ciemnym terenie Gor; sama jasna skala znika na jasnym Wzgorzu.
+    // Dopiero PARA jasny cokol + czarny szczyt czyta sie na obu terenach naraz.
+    // / EN: pale plinth enlarged — black ore alone vanishes on Mountains, pale rock
+    // alone vanishes on Hills; the light/dark PAIR reads on both.
+    B(g, 0.215, 0.105, 0.185, 0, 0.052, 0, skalaM, 0, 0.25 + du, 0.06);        // jasny cokol skalny
+    B(g, 0.125, 0.150, 0.115, -0.005, 0.175, 0.005, ksM, 0.10, 0.5 + du, 0.14); // glowna bryla rudy
+    B(g, 0.090, 0.100, 0.085, 0.080, 0.130, -0.055, ksM, -0.15, du, -0.30);    // druga bryla
+    B(g, 0.058, 0.052, 0.055, -0.080, 0.112, 0.058, ksHiM, 0, 0.4 + du, 0.20); // odlupek z jasnym licem
+    B(g, 0.044, 0.038, 0.042, 0.030, 0.262, 0.018, cynM, 0.2, 0.6 + du, 0.25); // srebrzysty okruch
   } else {
     const gA = mat(P.glinaA), gB = mat(P.glinaB), gC = mat(P.glinaC), mokraM = mat(P.glinaMokra);
     B(g, 0.175, 0.05, 0.15, 0, 0.025, 0, gA, 0, 0.2 + du, 0);                 // warstwy tarasowe
@@ -477,6 +501,20 @@ export function buildZlozeZloto(): THREE.Group {
     B(g, 0.05, 0.045, 0.05, c2.x, 0.023, c2.z, mat(P.zlotoHi), 0, -0.3, 0);    // okruch z blikiem
   });
 }
+/**
+ * Cyna — SUROWE zloze kasyterytu („stan przed zbudowaniem czegokolwiek"):
+ * jasne cokoly skalne z czarnobrunatnymi brylami rudy w 4 skupiskach obrzeza.
+ * Zadnych konstrukcji (piec/pluczka/sztabki) — te ma dopiero Kopalnia cyny
+ * (render/kopalnia-cyny-opus5.ts). / EN: raw cassiterite outcrops only; the
+ * furnace, buddle and tin ingots belong to the built Tin Mine improvement.
+ */
+export function buildZlozeCyna(): THREE.Group {
+  return zlozeZeSkupisk('cyna', ZL().cyna, g => {
+    const c1 = azXZ(95, 0.56), c2 = azXZ(265, 0.55);
+    B(g, 0.062, 0.052, 0.058, c1.x, 0.026, c1.z, mat(P.kasyteryt), 0, 0.5, 0);  // luzna bryla rudy
+    B(g, 0.046, 0.040, 0.044, c2.x, 0.020, c2.z, mat(P.kasytHi), 0, -0.3, 0);   // okruch z jasnym licem
+  });
+}
 /** Glina — pomaranczowe warstwy tarasowe. 216 tri. */
 export function buildZlozeGlina(): THREE.Group {
   return zlozeZeSkupisk('glina', ZL().glina, g => {
@@ -524,6 +562,10 @@ export const ULEPSZENIA_P3B_LAYOUT = {
     zloto: [
       { az: 25, r: 0.62, s: 1.0, rotY: 0.6 }, { az: 115, r: 0.64, s: 0.9, rotY: -0.5 },
       { az: 215, r: 0.62, s: 0.95, rotY: 1.4 }, { az: 310, r: 0.66, s: 0.82, rotY: 2.1 },
+    ],
+    cyna: [
+      { az: 45, r: 0.62, s: 1.0, rotY: -0.6 }, { az: 135, r: 0.66, s: 0.88, rotY: 1.1 },
+      { az: 225, r: 0.62, s: 0.95, rotY: -1.5 }, { az: 320, r: 0.64, s: 0.84, rotY: 0.7 },
     ],
   },
 } as const;

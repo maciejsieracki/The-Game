@@ -9,6 +9,7 @@ import { GAME_MAP_RENDER_STYLE, type MapRenderStyle, buildStyleTarasyTerrace } f
 import { buildRobloxImprovement, buildRobloxFoodStack } from './robloxImprovements';
 import { placeLivestockPair } from './styleResources';
 import { buildKopalniaZlota } from './kopalnia-zlota-opus5';
+import { buildKopalniaCyny } from './kopalnia-cyny-opus5';
 import { buildDrogaGwiazda, type RoadTyp } from './droga-6-ramion';
 import { ROAD_MASK_FULL } from '../map/road-network';
 
@@ -368,17 +369,14 @@ export function buildImprovement(
     // Odkrywka z płytkim szybem: trójnóg z koszem, rynna płuczkowa z runem,
     // sadzawka, misa ze złotym pyłem. Uzasadnienie historyczne w nagłówku pliku.
     case 'kopalnia_zlota': return buildKopalniaZlota();
-    // Kopalnia cyny (2026-08-13): TYMCZASOWE reużycie generycznego modelu kopalni (jak
-    // kopalnia_zelaza) — wymagane, żeby ImprovementKey/przełącznik pozostał wyczerpujący
-    // (bez tego build TS pada). Własna bryła 3D to praca render/** zastrzeżona dla Opus 5
-    // (CLAUDE.md) — POZA zakresem tego zlecenia (Sonnet 5); do rozważenia jako osobne
-    // zlecenie, jak wcześniej kopalnia_zlota (patrz komentarz wyżej).
-    // EN: Kopalnia cyny (tin mine) TEMPORARILY reuses the generic mine model (like
-    // kopalnia_zelaza) — required so the ImprovementKey/switch stays exhaustive (otherwise
-    // TS build fails). A dedicated 3D shape is render/** work reserved for Opus 5
-    // (CLAUDE.md) — OUT OF SCOPE for this ticket (Sonnet 5); candidate for a follow-up,
-    // like kopalnia_zlota got earlier (see comment above).
-    case 'kopalnia_cyny': return kopalnia();
+    // WŁASNY model 3D (Opus 5, 2026-08-17, P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE) —
+    // koniec TYMCZASOWEGO reużycia kopalnia() (od 2026-08-13 Kopalnia cyny wyglądała
+    // dokładnie jak Kopalnia żelaza i Kopalnia miedzi). Wąski chodnik w wychodni
+    // kasyterytu, kamienne młoty, płaska płuczka korytkowa, piec z gliniana kopułą
+    // i sztabki cyny. Uzasadnienie historyczne w nagłówku pliku.
+    // / EN: dedicated 3D model replaces the temporary reuse of the generic mine —
+    // the tin mine used to be pixel-identical to the iron and copper mines.
+    case 'kopalnia_cyny': return buildKopalniaCyny();
   }
 }
 
