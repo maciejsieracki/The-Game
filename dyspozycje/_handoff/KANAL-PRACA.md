@@ -7305,3 +7305,10 @@ wizualizacji · Wyręb 10P → 5P. `npx tsc --noEmit` 0 błędów · `verify-rob
 logic-test 213/213. `map-gen-regression-test` NIE uruchomiony (limit wydajności sandboksa, zmiany
 pod `src/map` nie dotykają generatora terenu). Szczegóły: `WERSJE.md` FALA 291.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `13b771f4`".
+
+## [20:12 PL, 2026-08-17] Sesja chmurowa → main — scalenie FALA 290 (jedna fala do tyłu)
+FALA 290 (`3786cedc`) scalona do `main` **fast-forward** (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 291). `origin/main`: `0528dccc` → `3786cedc`. Scalenie celowało w **commit deployu** FALI 290,
+nie w czubek gałęzi. FALA 291 (`01940a9a`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
+scalona; scali się dopiero przy FALI 292.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela (patrz wpis FALA 291 wyżej).
