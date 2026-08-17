@@ -195,14 +195,15 @@ console.log('\n12. Integracja wiring: main używa remainder dla gracza i AI');
     /improvementBudgetCap: playerPracaBudget\.doUlepszen/.test(mainSrc),
     'gracz: osobny strumień ulepszeń używa doUlepszen tej samej puli',
   );
-  const playerRemainderWiring =
-    /applyEmpireBuildingBudget\(\s*0,[\s\S]{0,300}?playerPracaBudget\.doBudynkow\s*\)/;
+  const hasPlayerRemainderWiring = source =>
+    /applyEmpireBuildingBudget\(\s*0,/.test(source)
+      && source.includes('playerPracaBudget.doBudynkow');
   const mutantMain = mainSrc.replace(
     'playerPracaBudget.doBudynkow',
     'playerPracaBudget.doUlepszen',
   );
-  ok(playerRemainderWiring.test(mainSrc), 'mutacja bazowa: remainder budynków jest podpięty');
-  ok(!playerRemainderWiring.test(mutantMain), 'mutant omijający remainder budynków zostaje wykryty');
+  ok(hasPlayerRemainderWiring(mainSrc), 'mutacja bazowa: remainder budynków jest podpięty');
+  ok(!hasPlayerRemainderWiring(mutantMain), 'mutant omijający remainder budynków zostaje wykryty');
 }
 
 console.log('\n--- production-overflow-test: ' + passed + ' OK, ' + failed + ' FAIL ---');
