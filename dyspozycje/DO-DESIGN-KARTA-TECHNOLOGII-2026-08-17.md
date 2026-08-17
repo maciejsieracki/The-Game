@@ -30,7 +30,7 @@ Po zakończeniu badania gracz powinien w kilka sekund:
 - desktopowy układ bazowy i responsywna wersja węższa;
 - komplet stanów wymienionych w §7;
 - komponenty, warianty, copy i kontrakt dla implementera;
-- klikalne odsyłacze do CivPedii/Wikipedii po stabilnych ID.
+- przygotowanie stabilnej tożsamości elementów (`kind + id`) pod przyszłe rozszerzenia.
 
 ### Poza zakresem
 
@@ -242,46 +242,26 @@ Domyślnie otwórz sekcję „Co możesz teraz zrobić” i pierwsze sekcje zawi
 - kliknięcie odkrytej technologii w drzewie otwiera tę samą kartę w trybie **„Podgląd technologii”**;
 - tryb podglądu nie emituje ponownie toastu/animacji „Technologia odkryta”;
 - karta może zmienić kicker z „TECHNOLOGIA ODKRYTA” na „TECHNOLOGIA”;
-- elementy dostępne w trybie podglądu zachowują te same linki i sekcje.
+- elementy dostępne w trybie podglądu zachowują te same sekcje.
 
 ### Kliknięcie elementu
 
-Kliknięcie budynku, jednostki, ulepszenia albo technologii otwiera właściwy szczegół przez stabilny ID. Nie używaj samej nazwy jako klucza nawigacji. Kliknięcie technologii może otworzyć kartę tej technologii albo przejść do węzła drzewa — Designer ma pokazać wybrany wzorzec i przekazać go implementerowi.
+Kliknięcie elementu może otwierać lokalny szczegół karty albo rozwijać jego opis, jeżeli taki wzorzec zostanie pokazany w makiecie. W tej paczce nie projektuj ani nie wymagaj routingu do CivPedii/Wikipedii. Stabilny `kind + id` pozostaje wyłącznie przygotowaniem danych pod późniejszą integrację.
 
-## 6. CivPedia/Wikipedia i stabilne linki
+## 6. ETAP PÓŹNIEJSZY — po akceptacji prototypu i briefu Designera
 
-Każdy element następujących typów musi być klikalny, jeśli istnieje jego wpis:
+Linkowanie CivPedii/Wikipedii jest świadomie wyłączone z bieżącej paczki Design. Nie wchodzi do obecnych deliverables, klatek, komponentów, wariantów ani Definition of Done.
 
-- budynek;
-- jednostka;
-- ulepszenie terenu;
-- technologia.
+Po akceptacji prototypu i briefu Designera można osobno zaprojektować i wdrożyć:
 
-### Kontrakt linku
+- klikalność budynków, jednostek, ulepszeń terenu i technologii;
+- routing po stabilnym kontrakcie `kind + id`;
+- powiązanie stabilnego `id` z wpisem CivPedii/Wikipedii;
+- stan rekordu bez wpisu, np. **„Opis w CivPedii niedostępny”**, bez martwego przycisku;
+- warianty `CivpediaLink` i `CivpediaMissing`;
+- osobne klatki normal/hover/focus-visible oraz brakującego wpisu.
 
-Wizualnie każdy element powinien wyglądać jak interaktywny wiersz/karta: hover, focus-visible, aktywny stan i jednoznaczny affordance. Implementacyjnie link ma przekazywać:
-
-```ts
-type TechDiscoveryLink =
-  | { kind: 'building'; id: string }
-  | { kind: 'unit'; id: string }
-  | { kind: 'terrainImprovement'; id: string }
-  | { kind: 'technology'; id: string };
-```
-
-`id` jest stabilnym ID kanonicznego rekordu, nie tekstem prezentowanym graczowi. Tłumaczenie/nazwa, ikona i opis są odczytywane osobno z danych.
-
-### Brak wpisu CivPedii
-
-Jeśli rekord gameplayowy istnieje, ale nie ma odpowiadającego hasła CivPedii/Wikipedii:
-
-- element nadal ma być widoczny, bo odblokowanie wynika z danych gry;
-- pokaż stan neutralny, np. **„Opis w CivPedii niedostępny”**;
-- nie pokazuj martwego przycisku ani linku wyglądającego na aktywny;
-- zachowaj miejsce/komponent dla przyszłego wpisu;
-- nie zastępuj brakującego hasła zmyślonym opisem.
-
-Designer ma pokazać ten stan na osobnej klatce lub jako wariant komponentu.
+Przygotowanie pod ten etap może pozostać w kontrakcie implementera jako stabilne `kind + id`, ale w bieżącej paczce nie wolno wymagać działających linków, routingu ani stanów brakującego wpisu.
 
 ## 7. Stany obowiązkowe
 
@@ -296,7 +276,7 @@ Brief wymaga pokazania w makiecie wszystkich poniższych stanów:
 2. **Otwarta ponownie z drzewa**
    - kicker „TECHNOLOGIA” albo „PODGLĄD”;
    - brak toastu/celebracyjnej animacji;
-   - ten sam układ i te same linki.
+   - ten sam układ i te same sekcje.
 
 3. **Brak odblokowań**
    - karta nie może wyglądać na uszkodzoną;
@@ -314,16 +294,7 @@ Brief wymaga pokazania w makiecie wszystkich poniższych stanów:
    - scroll wewnętrzny;
    - zachowana kolejność i czytelne grupowanie.
 
-6. **Brak wpisu w CivPedii**
-   - rekord widoczny;
-   - stan „Opis w CivPedii niedostępny”;
-   - brak pozornego linku/przycisku.
-
-7. **Interakcja elementu**
-   - normal, hover, focus-visible i aktywny/kliknięty stan linku;
-   - wariant elementu z wpisem CivPedii i bez wpisu.
-
-8. **Brak elementów opcjonalnych**
+6. **Brak elementów opcjonalnych**
    - brak wymagań;
    - brak kolejnych technologii;
    - brak zmian ekonomicznych;
@@ -364,8 +335,8 @@ Dostarcz minimum **7 klatek** w jednym pliku `.dc.html` albo równoważnym kanon
 3. Technologia bez bezpośrednich odblokowań.
 4. Wiele elementów — długie listy i przewijanie.
 5. Długie nazwy — technologia, budynek i jednostka.
-6. Element z wpisem CivPedii: normal/hover/focus-visible.
-7. Element bez wpisu CivPedii: stan nieaktywny bez martwego przycisku.
+6. Elementy sekcji w stanach normal/hover/focus-visible, bez wymagania działającego routingu.
+7. Karta z lokalnym rozwinięciem szczegółu elementu, bez linkowania do CivPedii/Wikipedii.
 
 Co najmniej jedna klatka ma pokazywać tło mapy/HUD-u za kartą i potwierdzać, że modal nie zasłania bez potrzeby całego kontekstu.
 
@@ -389,11 +360,9 @@ Przekaż listę komponentów z nazwami i wariantami:
 - `NextTechnologyItem`;
 - `EconomyChangeItem`;
 - `ActionList`;
-- `CivpediaLink`;
-- `CivpediaMissing`;
 - `CloseButton`.
 
-Warianty obowiązkowe: `newly-discovered`, `preview`, `empty`, `long-content`, `long-name`, `has-civpedia`, `missing-civpedia`, `hover`, `focus-visible`, `disabled/unavailable`.
+Warianty obowiązkowe: `newly-discovered`, `preview`, `empty`, `long-content`, `long-name`, `hover`, `focus-visible`, `disabled/unavailable`.
 
 ### 9.4 Copy
 
@@ -402,8 +371,6 @@ Dołącz tabelę copy:
 - etykiety nagłówków;
 - kicker nowego odkrycia i podglądu;
 - komunikaty pustych sekcji;
-- komunikat braku wpisu CivPedii;
-- etykiety linków;
 - copy „Co możesz teraz zrobić”;
 - tekst zamknięcia i tooltipów;
 - odmiana liczników elementów.
@@ -431,23 +398,13 @@ Designer ma przekazać implementerowi następujące założenia:
 ```ts
 type TechnologyDiscoveryViewMode = 'newly-discovered' | 'preview';
 
-type TechnologyDiscoveryItem =
-  | {
-      kind: 'building' | 'unit' | 'terrainImprovement' | 'technology';
-      id: string;
-      label: string;
-      iconId?: string;
-      summary?: string;
-      civpediaId?: string;
-    }
-  | {
-      kind: 'building' | 'unit' | 'terrainImprovement' | 'technology';
-      id: string;
-      label: string;
-      iconId?: string;
-      summary?: string;
-      civpediaId?: undefined;
-    };
+type TechnologyDiscoveryItem = {
+  kind: 'building' | 'unit' | 'terrainImprovement' | 'technology';
+  id: string;
+  label: string;
+  iconId?: string;
+  summary?: string;
+};
 
 type TechnologyDiscoveryCardData = {
   technologyId: string;
@@ -477,36 +434,33 @@ type TechnologyDiscoveryCardData = {
     label: string;
     state: 'available' | 'requires-gate' | 'informational';
     summary?: string;
-    link?: TechnologyDiscoveryItem;
   }>;
 };
 ```
 
-To jest kontrakt ilustracyjny, nie polecenie zmiany kodu w tej paczce. Implementer musi dopasować go do istniejących typów i loaderów, a nie tworzyć drugi słownik danych.
+To jest kontrakt ilustracyjny i przygotowanie danych, nie polecenie zmiany kodu w tej paczce. `kind + id` służy do stabilnej identyfikacji elementu, ale w bieżącej paczce nie uruchamia linku, routingu ani integracji z CivPedią/Wikipedią. Implementer musi dopasować go do istniejących typów i loaderów, a nie tworzyć drugi słownik danych.
 
 Wymagania kontraktu:
 
 1. `technologyId` i wszystkie `id` pochodzą z danych kanonicznych.
 2. Widok nie zawiera hardkodowanych list Brązownictwa.
-3. Brak wpisu CivPedii jest stanem danych, nie błędem renderowania.
+3. `kind + id` identyfikuje element, bez bieżącego routingu.
 4. Brak elementów renderuje stan pusty.
 5. Długie listy renderują się z wewnętrznym scrollem.
 6. Zamknięcie nie modyfikuje stanu badań.
 7. Tryb `preview` nie wywołuje efektu „nowe odkrycie”.
-8. Linki są routowane po `kind + id`.
-9. Karta nie wymaga nowych decyzji gameplayowych.
-10. Karta nie blokuje zakończenia ani wykonania tury.
+8. Karta nie wymaga nowych decyzji gameplayowych.
+9. Karta nie blokuje zakończenia ani wykonania tury.
 
 ## 11. Definition of Done
 
 - [ ] Jest jeden spójny brief i jeden plik makiety z wymaganymi klatkami.
 - [ ] Cel ekranu i hierarchia odpowiadają kolejności „co odkryłem → co mogę zrobić”.
 - [ ] Nagłówek, efekt, wymagania i sześć sekcji są zaprojektowane.
-- [ ] Są stany nowego odkrycia, podglądu, pusty, długie nazwy, wiele elementów i brak CivPedii.
+- [ ] Są stany nowego odkrycia, podglądu, pusty, długie nazwy i wiele elementów.
 - [ ] Jest desktop i responsywność jednokolumnowa.
-- [ ] Są stany hover/focus-visible dla elementów klikalnych.
-- [ ] Każdy element ma miejsce na stabilny ID i link do CivPedii/Wikipedii.
-- [ ] Brak wpisu CivPedii nie tworzy martwego przycisku.
+- [ ] Są stany hover/focus-visible dla lokalnych elementów interaktywnych.
+- [ ] Każdy element ma stabilny `kind + id` jako przygotowanie pod przyszłą integrację.
 - [ ] Brązownictwo jest przykładem, a nie hardkodowanym zakresem.
 - [ ] Nie dodano żadnych niepotwierdzonych danych gameplayowych.
 - [ ] Dostarczono komponenty, warianty, copy, eksport i kontrakt dla implementera.
