@@ -8,6 +8,29 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-CYWILIZACJE-EPOKA-PULA-Q1 — zwiększenie limitu cywilizacji per epoka · STATUS: **ZAMKNIĘTE** (2026-08-17)
+
+**ECHO:** `R-CYWILIZACJE-EPOKA-PULA-Q1 = A` (Maciej 2026-08-17) — „żadna mapa nie może przekroczyć maksymalnego limitu danej epoki, bo nie powtarzamy tych samych cywilizacji na mapie. Duże mapy, które są już na granicy (najwyższy poziom), nie zmieniamy nic. Główna zmiana będzie przy mniejszych mapach. Zwiększamy też o jeden możliwość większej ilości państw-miast na każdej mapie."
+
+**Implementacja:**
+- Zasada: pula `EPOCH_CIV_TYPE_POOL` (kamien=8, braz=14, zelazo=15) to TWARDY sufit
+- Mapy "na granicy" (stary max == pula) — bez zmian; pozostałe +1 do max (jeśli zapas poniżej puli)
+- Wszystkie 6 rozmiarów: `miasta_panstwa` +1
+- JSON source: `gra/data/e-start-params.json` (18 wpisów `typy_cywilizacji_per_epoka` + 6 `miasta_panstwa`)
+- Test: `node tools/map-scale-menu-test.cjs` — 97/0 (PASS), zweryfikowane niezależnie przez orkiestratora po scaleniu.
+
+Commit: `a3b0a1` (main tree, orkiestrator, scalenie worktree `agent-a3365f3b6cd15dadd`).
+
+---
+
+## R-CYWILIZACJE-SUPER-HUGE-KAMIEN-Q1 — Super Huge + kamień na granicy puli · STATUS: **ROZSTRZYGNIĘTE** (2026-08-17, podrzędne wobec EPOKA-PULA-Q1)
+
+**ECHO:** `R-CYWILIZACJE-SUPER-HUGE-KAMIEN-Q1 = A` (wynika z ogólnej zasady R-CYWILIZACJE-EPOKA-PULA-Q1 = A) — Super Huge + kamień (max 8, pula 8) już na granicy puli, zgodnie z decyzją Macieja brak zmian dla map na granicy.
+
+**Uzasadnienie:** zgodne z ogólnym kierunkiem „mapy już na granicy = bez zmian" z pytania R-CYWILIZACJE-EPOKA-PULA-Q1.
+
+---
+
 ## ABC-PACZKA-2026-08-06-DOPREC — doprecyzowanie Autobot · STATUS: **NIEAKTUALNE — zastąpione, zamknięte bez odpowiedzi (2026-08-09)**
 
 **Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md)

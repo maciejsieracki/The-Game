@@ -647,6 +647,14 @@ function mapMenuTierIndex(menuLabel: string): number {
 }
 
 function miastaPanstwaTriple(menuLabel: string): MapScaleTriple {
+  const fromE = eStartMiastaPanstwa(menuLabel);
+  if (fromE != null && fromE > 0) {
+    const clampedDef = clampMiastaPanstwaCount(fromE);
+    const max = Math.min(clampedDef + 1, MAX_MIAST_PANSTWA);
+    let min = Math.max(1, clampedDef - 1);
+    if (min >= max) min = Math.max(1, max - 1);
+    return { min, default: clampedDef, max };
+  }
   return MIASTA_PANSTWA_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? MIASTA_PANSTWA_MENU_BY_TIER[2]!;
 }
 

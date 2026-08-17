@@ -46,12 +46,12 @@ function assert(c, msg) {
 }
 
 const MP_EXPECT = {
-  Malenki: [2, 3, 4],
-  Mały: [3, 4, 5],
-  Standardowy: [4, 6, 7],
-  Duży: [5, 7, 8],
-  Ogromny: [6, 8, 9],
-  'Super Huge': [7, 8, 9],
+  Malenki: [3, 4, 5],
+  Mały: [4, 5, 6],
+  Standardowy: [5, 6, 7],
+  Duży: [6, 7, 8],
+  Ogromny: [7, 8, 9],
+  'Super Huge': [8, 9, 9],
 };
 
 /** CIV-MAP-EPOCH-Q1 = A — macierz mapa × epoka */
@@ -77,14 +77,14 @@ const TYPY_EXPECT = {
     zelazo: [9, 10, 12],
   },
   Ogromny: {
-    kamien: [6, 7, 9],
+    kamien: [6, 7, 8],
     braz: [10, 11, 13],
     zelazo: [11, 12, 14],
   },
   'Super Huge': {
-    kamien: [6, 7, 8],
-    braz: [12, 13, 15],
-    zelazo: [13, 14, 16],
+    kamien: [7, 8, 8],
+    braz: [12, 13, 14],
+    zelazo: [13, 14, 15],
   },
 };
 
@@ -137,7 +137,7 @@ const duzyKamien = M.civTypesTripleForMapLabel('Duży', 'kamien');
 assert(duzyKamien.min < duzyKamien.max && duzyKamien.max <= 8, 'Duży+kamień min<max i max≤8');
 
 const superZelazo = M.civTypesTripleForMapLabel('Super Huge', 'zelazo');
-assert(superZelazo.max === 16, 'Super Huge+żelazo max=16');
+assert(superZelazo.max === 15, 'Super Huge+żelazo max=15');
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
