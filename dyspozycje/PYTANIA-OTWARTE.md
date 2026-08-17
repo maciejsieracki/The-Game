@@ -28593,8 +28593,9 @@ naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C
    widoczności: 0 trafień. Może to być świadomy projekt (AI ma pełną informację, gra "uczciwie"
    inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
 
-**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
-potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, asymetria mgły (gracz ograniczony na atakach na jednostki ale nie na miasta) i brak mgły w AI wciąż nierozstrzygnięte — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
+**STATUS: ECHO ZAPISANE — A+C (2026-08-17), implementacja w toku.** AI dostaje własną widoczność
+per owner, pamięć ostatniej znanej pozycji celu oraz zakaz ataku/akcji bez ponownego wykrycia celu.
+Atak na miasto gracza pozostaje osobnym, nieobjętym tym zleceniem tematem.
 
 ---
 
