@@ -7277,3 +7277,10 @@ VERIFY OK. `map-gen-regression-test.cjs` uruchomiony bezpośrednio w drzewie, je
 (>95 min CPU) — świadoma decyzja właściciela nie czekać, pokrycie przez inne bramki (fair-play-grid,
 deposit-coast) uznane za wystarczające. Szczegóły: `WERSJE.md` FALA 290.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `67fc4b0b`".
+
+## [12:58 PL, 2026-08-17] Sesja chmurowa → main — scalenie FALA 289 (jedna fala do tyłu)
+FALA 289 (`0528dccc`) scalona do `main` **fast-forward** (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 290). `origin/main`: `5b471f32` → `0528dccc`. Scalenie celowało w **commit deployu** FALI 289,
+nie w czubek gałęzi. FALA 290 (`3786cedc`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
+scalona; scali się dopiero przy FALI 291.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela (patrz wpis FALA 290 wyżej).
