@@ -1,6 +1,6 @@
 # P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1 — bazowa produkcja terenu
 
-**Status:** 🟡 ZAPISANA — decyzja właściciela, ECHO 2026-08-17  
+**Status:** 🔵 W TRAKCIE — implementacja lokalna, bez deployu  
 **Baza:** ROBOCZA FALA 291, `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`
 
 ## Cytat / decyzja właściciela
