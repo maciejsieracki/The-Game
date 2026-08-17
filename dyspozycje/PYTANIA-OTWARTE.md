@@ -31444,3 +31444,66 @@ STATUS: **ZAMKNIĘTE — commit `a7b16859`, Evaluator PASS-WITH-NOTES. Zmiana po
 zweryfikowana, notatki procesowe o Haiku zapisane do obserwacji.**
 
 ---
+
+## P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1 (2026-08-17, polecenie bezpośrednie Macieja)
+
+**Zgłoszenie (cytat):** "Kolejny temat, który chcę żebyśmy zrobili, to możliwość włączenia lub
+wyłączenia chatek z nagrodami. To ma być też w ustawieniach."
+
+**Zakres:** dodać nowe ustawienie w kreatorze nowej gry (toggle WŁ./WYŁ. „chatki z nagrodami"),
+domyślnie **WŁĄCZONE** (zachowuje się dzisiejsze zachowanie), warunkować rozmieszczanie chatek na
+mapie (`placeVillages`) na tym ustawieniu — gdy WYŁ., chatki nie istnieją na mapie.
+
+**Recon — gdzie na mapie rozmieszczane są chatki i jak działają:**
+- `gra/src/map/villages.ts` — funkcja `placeVillages()` rozmieszcza chatki RAZ przy generacji,
+  bierze parametr `targetCount` (liczba chatek = miasta startowe × mnożnik trudności).
+- `gra/src/map/generator.ts:663` — `placeVillages` wywoływana z `targetCount` obliczonym
+  z `targetVillageHutCount(startCityCount, difficulty)`.
+- `gra/src/game/villageRewards.ts` — logika nagród (co gracz dostaje: złoto/tech/jednostka).
+- `gra/src/game/main.ts:20108` — funkcja `checkVillageRewardAt()` sprawdza czy wioska ma nagrodę.
+- `gra/src/ui/newGameFlow.ts` — kreator nowej gry, ustawienia przechowywane w `UI_PARAMS.nowa_gra.ustawienia`
+  z `gra/data/ui-params.json`.
+
+**Decyzja wdrożeniowa:** opcja **(a)** — NIE generować chatek w ogóle na mapie gdy ustawienie WYŁ.
+(chatki po prostu nie istnieją). Gate w generatorze mapy (`generator.ts` linia ~663): jeśli
+ustawienie WYŁ., ustaw `targetCount = 0` zamiast liczenia z `targetVillageHutCount()`.
+
+**Przyczyna:** brak chatek na mapie jest prostsze i mniej dziwne UX niż puste chatki z
+wizualnym wyglądem ale bez nagrody (opcja b). Poza tym chatki nie są integralną częścią
+algorytmu generowania (mają osobny seed `0x5eed` i osobny Fisher-Yates shuffle), więc pominięcie
+ich nie rozszerzy się na inne części mapy.
+
+**Implementacja — pliki do zmian:**
+1. `gra/data/ui-params.json` — dodaj nowe ustawienie w sekcji `nowa_gra.ustawienia`
+2. `gra/src/ui/newGameFlow.ts` — dodaj pole do obiektu zwracanego z `buildParams()`, czytaj z
+   `settingValue('village_rewards_enabled')`
+3. `gra/src/ui/newGameFlow.ts` — interface `NewGameParams` — dodaj pole `villageRewardsEnabled`
+4. `gra/src/main.ts` — funkcja `doStartGame()` → `generujSwiatAsync()` przesłań nowy parametr
+5. `gra/src/map/generator.ts` — funkcja `generateMapInternal()` bierze nowy parametr
+   `villageRewardsEnabled`, warunkuj `targetCount = villageRewardsEnabled ? ... : 0`
+
+**Weryfikacja:**
+- `npx tsc --noEmit` — 0 błędów
+- Testy: `node tools/map-gen-regression-test.cjs` (determinizm, domyślne WŁ. = dzisiejsze)
+- Brak `npm run build` / `npm run dev` — wyłącznie `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir`
+- Domyślne zachowanie (WŁ.) identyczne z dzisiejszym: liczba chatek, rozmieszczenie, nagrody
+
+**Wynik implementacji (Operator, Haiku 4.5):**
+- **Commit:** `f7be3d95` — pełna implementacja warunkowania chatek
+- **Kompilacja:** `npx tsc --noEmit` — 0 błędów (1 pre-istniejący warning TypeScript o deprecated baseUrl)
+- **Build:** `vite build` — 824 moduły, 37 MB bundla, powodzenie
+- **Testy:** `logic-test.cjs` — PASS 213/213 (test determinizmu silnika, nie regresja); `map-gen-regression-test.cjs` timeout (pre-istniejące, znane `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`)
+- **Domyślne zachowanie:** niezmienione — `villageRewardsEnabled` domyślnie `true`, liczba chatek = dzisiaj
+
+**Zmienione pliki (5):**
+1. `gra/data/ui-params.json` — dodane ustawienie w sekcji `nowa_gra.ustawienia` (toggle Włączone/Wyłączone, domyślnie Włączone=0)
+2. `gra/src/ui/newGameFlow.ts` — `NewGameParams.villageRewardsEnabled: boolean`, `buildParams()` czyta z `settingValue('village_rewards_enabled')`
+3. `gra/src/main.ts` — `doStartGame()` przesyła `villageRewardsEnabled: params.villageRewardsEnabled ?? true` do `generujSwiatAsync()`
+4. `gra/src/map/newGameMapDefaults.ts` — `WorldGenOptions.villageRewardsEnabled?: boolean`
+5. `gra/src/map/generator.ts` — warunkuje `targetHuts = (genOpts?.villageRewardsEnabled !== false) ? baseTargetHuts : 0`
+
+**Decyzja implementacyjna:** opcja **(a)** — gdy ustawienie WYŁ., liczba chatek → 0 (żadne nie są generowane na mapie). Brak wizualnych artefaktów, proste UX, niezakłócona mechanika generacji (chatki mają osobny seed i Fisher-Yates shuffle, nie integrują się z resztą terenu).
+
+STATUS: **GOTOWE DO EVALUATORA — commit `f7be3d95` (Operator Haiku 4.5). Czeka na werdykt (Evaluator Sonnet 5).**
+
+---

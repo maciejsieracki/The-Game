@@ -134,6 +134,9 @@ export interface NewGameParams {
    * selection order). Empty/undefined = today's random pick (backward-compatible).
    */
   selectedAiCivIds?: string[];
+  /** P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: czy chatki z nagrodami mają być generowane na mapie.
+   * / EN: whether village treasure huts should be generated on the map. */
+  villageRewardsEnabled: boolean;
 }
 
 /**
@@ -1564,6 +1567,7 @@ function buildParams(): NewGameParams {
     advanced: { ...advOpts },
     startPreview,
     selectedAiCivIds: [...selAiCivIds],
+    villageRewardsEnabled: settingValue('village_rewards_enabled') !== 'Wyłączone',
   };
 }
 

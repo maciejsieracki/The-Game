@@ -451,6 +451,9 @@ export interface WorldGenOptions {
   civTypesCount?: number;
   /** Liczba miast-państw w klastrze (kreator). */
   cityStatesCount?: number;
+  /** P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: czy rozmieszczać chatki z nagrodami na mapie.
+   * / EN: whether to place village treasure huts on the map. */
+  villageRewardsEnabled?: boolean;
 }
 
 /** Suwak zaawansowany — procent lądu (reszta morze). */

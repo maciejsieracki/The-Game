@@ -660,7 +660,10 @@ export function generateMap(
       genOpts?.cityStatesCount ?? defaultMiastaPanstwaFromMapLabel(mapMenuLabel),
     ),
   );
-  const targetHuts = targetVillageHutCount(startCityCount, genOpts?.difficulty ?? 'normal');
+  // P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: warunkuj liczbę chatek na ustawieniu.
+  // / EN: conditional village count based on setting.
+  const baseTargetHuts = targetVillageHutCount(startCityCount, genOpts?.difficulty ?? 'normal');
+  const targetHuts = (genOpts?.villageRewardsEnabled !== false) ? baseTargetHuts : 0;
   const villageSites = placeVillages(hexes, startPositions, [], (effectiveSeed ^ 0x5eed) >>> 0, {
     targetCount: targetHuts,
   });

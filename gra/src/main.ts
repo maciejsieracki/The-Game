@@ -29326,6 +29326,7 @@ async function boot(): Promise<void> {
           resources: 'Średnia', rivers: 'Średnia', desert: 'Średnia', forest: 'Średnia', relief: 'Średnia',
         },
         landFractionPercent: (meta?.loadLandFraction as number) ?? 30,
+        villageRewardsEnabled: true,
       };
     }
 
@@ -29516,6 +29517,7 @@ async function boot(): Promise<void> {
           difficulty: _menuDifficulty,
           civTypesCount: _menuCivTypesCount,
           cityStatesCount: _menuCityStates,
+          villageRewardsEnabled: params.villageRewardsEnabled ?? true,
         }, (faza, pct, phaseNum, phaseTotal) => {
           loading.setProgress(faza, pct, phaseNum, phaseTotal);
         });
@@ -29786,6 +29788,7 @@ async function boot(): Promise<void> {
           relief: 'Normalnie',
         },
         landFractionPercent: 50,
+        villageRewardsEnabled: true,
       };
       applyMenuParams(params);
       hideMainMenu();
