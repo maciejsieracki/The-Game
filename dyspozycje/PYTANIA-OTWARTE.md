@@ -30630,7 +30630,12 @@ obiektu dla faktycznie nowego miasta, obecnie pomija to pole całkowicie (dopier
 ma komentarz „AI: ignorowane" — jeśli faktycznie ignorowane przez silnik AI, ustawienie `true` dla
 AI jest nieszkodliwe, ale do zweryfikowania w kodzie, nie zgadywania).
 
-STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+STATUS: **OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17
+(na pytanie Macieja „czy ta prośba była zarejestrowana i wykonana") potwierdził: zarejestrowane
+2026-08-16, NIGDY nie dispatchowane, `foundCityAt()` nadal pomija `autoWyzywienie` (potwierdzone
+bezpośrednim odczytem kodu 2026-08-17, linie 793-828). Kandydat do dispatchu przy najbliższej
+okazji (poza standing rule „tylko rejestruj do środy" — Maciej może zdecydować inaczej przy
+raporcie).
 
 ---
 
@@ -30650,7 +30655,9 @@ zapisów. Do zweryfikowania przy implementacji: czy pole ma jakikolwiek efekt dl
 `foundCityAt()` obsługuje `ownerId` gracza i AI) — jeśli AI ma własną, niezależną logikę budowy
 ignorującą to pole, ustawienie jest neutralne; jeśli nie, może wymagać warunku `ownerId === gracz`.
 
-STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+STATUS: **OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17:
+sam wątek zgłoszenia (autowyżywienie + autobudowa, jedno zdanie Macieja) — zarejestrowane
+2026-08-16, NIGDY nie dispatchowane, `foundCityAt()` nadal pomija `budowaTryb` całkowicie.
 
 ---
 
@@ -30675,9 +30682,12 @@ Operatora, ale jeśli w trakcie implementacji okaże się dwuznaczne (np. `defau
 `max` dla części map, co zrobiłoby niejawną zmianę defaultu przy podniesieniu tylko `max`), Operator
 ma zatrzymać się i zgłosić do ABC zamiast zgadywać (CLAUDE.md §6/§7).
 
-STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
-
----
+STATUS: **OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Sonnet 5, worktree). Audyt 2026-08-17
+(Maciej: „nie wiem, czy zostało realizowane") potwierdził: NIE zostało zrealizowane —
+zarejestrowane 2026-08-16, nigdy nie dispatchowane, `e-start-params.json` nie zmieniony od
+rejestracji. Niejednoznaczność `max` vs `default`/`min` wciąż nierozstrzygnięta (patrz wyżej) —
+przy dispatchu Operator ma się zatrzymać i zapytać ABC, jeśli okaże się, że `default` już dziś
+równa się `max` dla którejś mapy.
 
 ---
 
