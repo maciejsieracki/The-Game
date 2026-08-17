@@ -164,8 +164,8 @@
     },
     "surowiecOdblokowany": null,
     "teren": "Las",
-    "warunek": "koszt 5 Pracy na start; plon +25 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24; R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B2: x5 -> 25, bylo 5 -- koszt startu 5 Pracy NIE jest surowcem budowlanym, zostaje bez zmian); potem teren bazowy bez lasu",
-    "koszt_praca": 5,
+    "warunek": "koszt 2.5 Pracy na start; plon +25 Drewna × 1 tura (surowiec do puli państwa, Maciej 2026-07-24; R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2, Maciej 2026-08-13, B2: x5 -> 25, bylo 5 -- koszt startu 2.5 Pracy (Maciej 2026-08-17) NIE jest surowcem budowlanym, zostaje bez zmian); potem teren bazowy bez lasu",
+    "koszt_praca": 2.5,
     "tech": null,
     "wycinka": {
       "praca_per_tura": 25,
