@@ -9003,7 +9003,11 @@ export class BattleScene {
   }
 
   private _hideEndDetails(): void {
-    if (this._battleStatsOpen || isPostBattleSummaryOpen()) {
+    // `_battleStatsOpen` identifies the summary overlay owned by this scene's
+    // "Szczegóły bitwy" view. The map-level post-battle summary is created by
+    // `onFinishCb` immediately before `dispose()` runs; hiding every open
+    // post-battle summary here used to remove that new screen in the same tick.
+    if (this._battleStatsOpen) {
       hidePostBattleSummary();
     }
     if (this._endDetailsEl?.parentNode) {
