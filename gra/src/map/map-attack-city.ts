@@ -20,6 +20,7 @@ export type MapEnemyCityClickAction =
   | { kind: 'attack_choice'; attacker: RuntimeUnit; ctx: MapSiegeContext }
   | { kind: 'field_battle'; attacker: RuntimeUnit; ctx: MapSiegeContext }
   | { kind: 'capture_empty'; attacker: RuntimeUnit; ctx: MapSiegeContext }
+  | { kind: 'hint_city_not_visible'; cityName: string }
   | { kind: 'hint_no_adjacent'; cityName: string }
   | { kind: 'hint_civilian'; cityName: string }
   | { kind: 'hint_pick_attacker'; cityName: string; adjacentCount: number };
@@ -32,6 +33,8 @@ export interface ResolveEnemyCityClickInput {
   units: readonly RuntimeUnit[];
   /** Domyślnie 0 = gracz ludzki. */
   playerOwnerId?: number;
+  /** Bramka mgły dla kliknięcia gracza; brak predykatu zachowuje dotychczasowe API. */
+  isCityVisible?: (city: City) => boolean;
 }
 
 function adjacentPlayerAttackers(
@@ -68,10 +71,20 @@ function resolveAttacker(
 export function resolveEnemyCityClick(
   input: ResolveEnemyCityClickInput,
 ): MapEnemyCityClickAction {
-  const { city, selectedUnit, units, playerOwnerId = 0 } = input;
+  const {
+    city,
+    selectedUnit,
+    units,
+    playerOwnerId = 0,
+    isCityVisible = () => true,
+  } = input;
 
   if (city.ownerId === playerOwnerId) {
     return { kind: 'not_enemy' };
+  }
+
+  if (!isCityVisible(city)) {
+    return { kind: 'hint_city_not_visible', cityName: city.name };
   }
 
   if (city.oblegane) {

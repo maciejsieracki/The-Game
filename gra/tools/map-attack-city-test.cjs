@@ -108,6 +108,17 @@ const walledChoice = resolveEnemyCityClick({
 });
 assert(walledChoice.kind === 'attack_choice', 'walled + adjacent sel → attack_choice');
 
+const hiddenCity = resolveEnemyCityClick({
+  city: walledEnemy,
+  selectedUnit: hastati,
+  units: [hastati, garrison],
+  isCityVisible: () => false,
+});
+assert(
+  hiddenCity.kind === 'hint_city_not_visible',
+  'hidden enemy city + adjacent sel → no attack/siege action',
+);
+
 const walledAuto = resolveEnemyCityClick({
   city: walledEnemy,
   selectedUnit: null,

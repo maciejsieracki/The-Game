@@ -20852,6 +20852,9 @@ async function boot(): Promise<void> {
               collectAtkRosterNearCity(action.ctx.city, action.attacker, units),
             );
             return;
+          case 'hint_city_not_visible':
+            showHintMessage(action.cityName + ' — cel niewidoczny (mgła).', 3500);
+            return;
           case 'hint_no_adjacent':
             showHintMessage(
               action.cityName + ' — miasto wrogie. Ustaw jednostkę na sąsiednim heksie i kliknij miasto.',
@@ -20890,7 +20893,13 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: 0,
+            isCityVisible: city =>
+              !fogOn || currentVisible().has(keyOf(city.q, city.r)),
           });
+          if (enemyAction.kind === 'hint_city_not_visible') {
+            dispatchMapEnemyCityClick(enemyAction);
+            return;
+          }
           const isMilitaryAction =
             enemyAction.kind === 'siege_panel' ||
             enemyAction.kind === 'attack_choice' ||
@@ -20940,7 +20949,13 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: 0,
+          isCityVisible: city =>
+            !fogOn || currentVisible().has(keyOf(city.q, city.r)),
         });
+        if (enemyAction.kind === 'hint_city_not_visible') {
+          dispatchMapEnemyCityClick(enemyAction);
+          return;
+        }
         const isMilitaryAction =
           enemyAction.kind === 'siege_panel' ||
           enemyAction.kind === 'attack_choice' ||
