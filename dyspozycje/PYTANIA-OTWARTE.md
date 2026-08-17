@@ -31351,3 +31351,22 @@ STATUS: **OTWARTE — wstrzymane na wyraźne polecenie Macieja, do wznowienia po
 limitu kontekstu/tokenów sesji (razem z pozostałymi tematami z tej samej kolejki).**
 
 ---
+
+## R-PLATFORMA-DESKTOP-ROADMAP-Q1 (2026-08-17, decyzja strategiczna Macieja)
+
+**Decyzja (cytat):** „OK, w takim razie pierwszy krok Tauri, a drugi krok pełny silnik gry."
+Wynikła z rozmowy o żalu, że projekt poszedł w wersję przeglądarkową zamiast natywnej.
+
+**Pełny kanon decyzji:** `docs/decyzje/R-PLATFORMA-DESKTOP-ROADMAP-Q1.md` — dwuetapowa mapa
+drogowa (Etap 1: Tauri jako natywna powłoka wokół istniejącego kodu, zero przepisywania UI/
+silnika; Etap 2: pełny silnik gry, całkowite przepisanie, konkretny wybór silnika nierozstrzygnięty).
+
+**Jawnie zastrzeżone:** to NIE naprawia bieżącego buga spowolnienia (`P-PERF-SPOWALNIANIE-
+SESJA-DLUGA-Q1`, wątek „każda interakcja wolna") — przyczyna jest algorytmiczna, nie platformowa.
+Nie blokuje bieżącej pracy nad wersją przeglądarkową. Żaden etap nie ma dziś przydzielonego
+dispatchu ani terminu.
+
+STATUS: **OTWARTE — zarejestrowany kierunek strategiczny, do wznowienia w osobnej, przyszłej
+sesji dedykowanej temu tematowi (nie razem z bieżącą kolejką bugów/feature'ów).**
+
+---
