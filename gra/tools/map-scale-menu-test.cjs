@@ -38,8 +38,6 @@ esbuild.buildSync({
 
 const M = require(bundle);
 
-const eStartParams = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'e-start-params.json'), 'utf8'));
-
 let passed = 0;
 let failed = 0;
 function assert(c, msg) {
@@ -47,49 +45,48 @@ function assert(c, msg) {
   else { failed++; console.error('FAIL:', msg); }
 }
 
-/**
- * Menu miast-państw (min·domyślne·max) — drabinka MIASTA_PANSTWA_MENU_BY_TIER,
- * stała ZASZYTA W KODZIE (gra/src/map/newGameMapDefaults.ts), NIEZALEŻNA od
- * e-start-params.json. Jeśli ta drabinka kiedyś się zmieni, uaktualnij ręcznie —
- * to celowy kontrakt kodu, nie dane do wyprowadzenia z JSON-a.
- */
-const MP_LADDER_EXPECT = {
-  Malenki: [2, 3, 4],
-  Mały: [3, 4, 5],
-  Standardowy: [4, 5, 7],
-  Duży: [5, 6, 8],
-  Ogromny: [6, 7, 9],
-  'Super Huge': [7, 8, 9],
+const MP_EXPECT = {
+  Malenki: [3, 4, 5],
+  Mały: [4, 5, 6],
+  Standardowy: [5, 6, 7],
+  Duży: [6, 7, 8],
+  Ogromny: [7, 8, 9],
+  'Super Huge': [8, 9, 9],
 };
 
-/**
- * Domyślna liczba miast-państw (defaultMiastaPanstwaFromMapLabel) czyta NAJPIERW
- * Panel-E (skala_mapy[label].miasta_panstwa), przez clampMiastaPanstwaCount —
- * dlatego wyprowadzamy oczekiwanie z żywego e-start-params.json zamiast wpisywać
- * liczbę na sztywno (2026-08-08: commit 6f96f08 obniżył te wartości o 1,
- * a test został ze starymi liczbami — ten rozjazd ma się nie powtórzyć).
- */
-function jsonMiastaPanstwaDefault(label) {
-  const raw = eStartParams.skala_mapy?.[label]?.miasta_panstwa;
-  if (typeof raw !== 'number') throw new Error(`brak skala_mapy.${label}.miasta_panstwa w e-start-params.json`);
-  const n = Math.floor(raw);
-  return Math.max(1, Math.min(n, M.MAX_MIAST_PANSTWA));
-}
-
-/**
- * Macierz mapa × epoka (CIV-MAP-EPOCH-Q1 = A) — civTypesTripleForMapLabel() czyta
- * bezpośrednio skala_mapy[label].typy_cywilizacji_per_epoka[epoch] z Panel-E (pełny
- * passthrough, gdy JSON ma wpis dla danej pary mapa/epoka — dziś ma dla wszystkich).
- * Wyprowadzamy oczekiwania z żywego JSON-a z tego samego powodu co miasta-państwa wyżej.
- */
-function jsonTypyTriple(label, epoch) {
-  const t = eStartParams.skala_mapy?.[label]?.typy_cywilizacji_per_epoka?.[epoch];
-  if (!t) throw new Error(`brak skala_mapy.${label}.typy_cywilizacji_per_epoka.${epoch} w e-start-params.json`);
-  return [t.min, t.default, t.max];
-}
-
-const TYPY_LABELS = ['Malenki', 'Mały', 'Standardowy', 'Duży', 'Ogromny', 'Super Huge'];
-const TYPY_EPOCHS = ['kamien', 'braz', 'zelazo'];
+/** CIV-MAP-EPOCH-Q1 = A — macierz mapa × epoka */
+const TYPY_EXPECT = {
+  Malenki: {
+    kamien: [2, 3, 5],
+    braz: [3, 4, 6],
+    zelazo: [3, 4, 6],
+  },
+  Mały: {
+    kamien: [3, 4, 6],
+    braz: [4, 5, 7],
+    zelazo: [4, 5, 7],
+  },
+  Standardowy: {
+    kamien: [4, 5, 7],
+    braz: [5, 6, 8],
+    zelazo: [5, 6, 8],
+  },
+  Duży: {
+    kamien: [5, 6, 8],
+    braz: [8, 9, 11],
+    zelazo: [9, 10, 12],
+  },
+  Ogromny: {
+    kamien: [6, 7, 8],
+    braz: [10, 11, 13],
+    zelazo: [11, 12, 14],
+  },
+  'Super Huge': {
+    kamien: [7, 8, 8],
+    braz: [12, 13, 14],
+    zelazo: [13, 14, 15],
+  },
+};
 
 const EPOCH_POOL = { kamien: 8, braz: 14, zelazo: 15 };
 
@@ -101,32 +98,30 @@ assert(M.EPOCH_CIV_TYPE_POOL.kamien === 8, 'pula kamień=8');
 assert(M.EPOCH_CIV_TYPE_POOL.braz === 14, 'pula brąz=14');
 assert(M.EPOCH_CIV_TYPE_POOL.zelazo === 15, 'pula żelazo=15');
 
-for (const [label, exp] of Object.entries(MP_LADDER_EXPECT)) {
+for (const [label, exp] of Object.entries(MP_EXPECT)) {
   const mp = M.miastaPanstwaMenuForMapLabel(label);
   assert(
     mp.opts.join(',') === exp.join(','),
-    `${label} mp menu ${mp.opts.join('·')} (exp ${exp.join('·')}, drabinka kodu)`,
+    `${label} mp menu ${mp.opts.join('·')} (exp ${exp.join('·')})`,
   );
-  const expectedDefault = jsonMiastaPanstwaDefault(label);
   assert(
-    M.defaultMiastaPanstwaFromMapLabel(label) === expectedDefault,
-    `${label} domyślne mp=${expectedDefault} (Panel-E e-start-params.json)`,
+    M.defaultMiastaPanstwaFromMapLabel(label) === exp[1],
+    `${label} domyślne mp=${exp[1]}`,
   );
   const maxMp = parseInt(mp.opts[mp.opts.length - 1], 10);
   assert(maxMp <= M.MAX_MIAST_PANSTWA, `${label} mp max ${maxMp} ≤ ${M.MAX_MIAST_PANSTWA}`);
 }
 
-for (const label of TYPY_LABELS) {
-  for (const epoch of TYPY_EPOCHS) {
-    const exp = jsonTypyTriple(label, epoch);
+for (const [label, epochs] of Object.entries(TYPY_EXPECT)) {
+  for (const [epoch, exp] of Object.entries(epochs)) {
     const typy = M.civTypesMenuForMapLabel(label, epoch);
     assert(
       typy.opts.join(',') === exp.join(','),
-      `${label}+${epoch} typy menu ${typy.opts.join('·')} (exp ${exp.join('·')}, Panel-E)`,
+      `${label}+${epoch} typy menu ${typy.opts.join('·')} (exp ${exp.join('·')})`,
     );
     assert(
       M.defaultCivTypesFromMapLabel(label, epoch) === exp[1],
-      `${label}+${epoch} domyślne typy=${exp[1]} (Panel-E)`,
+      `${label}+${epoch} domyślne typy=${exp[1]}`,
     );
     const triple = M.civTypesTripleForMapLabel(label, epoch);
     const min = triple.min;

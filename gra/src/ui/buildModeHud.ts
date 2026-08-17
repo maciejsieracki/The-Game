@@ -243,9 +243,9 @@ function renderUlepszeniaPercentRow(pct: number, scope: 'empire' | 'city'): stri
   return '<div class="civ-build-percent-row">'
     + '<div class="civ-build-percent-head"><span title="Jaki % budżetu Pracy imperium dostaje auto-manager tej tury">'
     + 'Budżet Pracy dla automatu:</span><b data-ulepszenia-' + scope + '-percent-label>' + pct + '%</b></div>'
-    + `<input type="range" class="civ-build-percent-slider" min="0" max="100" step="1" value="${pct}" `
+    + `<input type="range" class="civ-build-percent-slider" min="0" max="50" step="1" value="${pct}" `
     + `style="${ulepszeniaPercentSliderFillStyle(pct)}" data-ulepszenia-${scope}-percent `
-    + `title="0% = cała Praca dla gracza · 100% = auto-manager może wydać całą dostępną pulę" />`
+    + `title="0% = cała Praca dla gracza · 50% = maksimum dla wspólnego worka (ulepszenia terenu)" />`
     + '</div>';
 }
 
@@ -545,13 +545,13 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     // suwaka) commituje wartość do stanu gry i dopiero wtedy robi pełny render().
     const empirePercentInput = el.querySelector('[data-ulepszenia-empire-percent]') as HTMLInputElement | null;
     empirePercentInput?.addEventListener('input', () => {
-      const pct = Math.max(0, Math.min(100, Math.round(Number(empirePercentInput.value))));
+      const pct = Math.max(0, Math.min(50, Math.round(Number(empirePercentInput.value))));
       empirePercentInput.style.background = ulepszeniaPercentSliderFillStyle(pct);
       const label = el.querySelector('[data-ulepszenia-empire-percent-label]');
       if (label) label.textContent = `${pct}%`;
     });
     empirePercentInput?.addEventListener('change', () => {
-      const pct = Math.max(0, Math.min(100, Math.round(Number(empirePercentInput.value))));
+      const pct = Math.max(0, Math.min(50, Math.round(Number(empirePercentInput.value))));
       config.onUlepszeniaEmpirePracaPercentChange?.(pct);
       render();
     });
@@ -583,14 +583,14 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
 
     const cityPercentInput = el.querySelector('[data-ulepszenia-city-percent]') as HTMLInputElement | null;
     cityPercentInput?.addEventListener('input', () => {
-      const pct = Math.max(0, Math.min(100, Math.round(Number(cityPercentInput.value))));
+      const pct = Math.max(0, Math.min(50, Math.round(Number(cityPercentInput.value))));
       cityPercentInput.style.background = ulepszeniaPercentSliderFillStyle(pct);
       const label = el.querySelector('[data-ulepszenia-city-percent-label]');
       if (label) label.textContent = `${pct}%`;
     });
     cityPercentInput?.addEventListener('change', () => {
       const cityId = config.getUlepszeniaCityId?.();
-      const pct = Math.max(0, Math.min(100, Math.round(Number(cityPercentInput.value))));
+      const pct = Math.max(0, Math.min(50, Math.round(Number(cityPercentInput.value))));
       if (cityId) config.onUlepszeniaCityPracaPercentChange?.(cityId, pct);
       render();
     });

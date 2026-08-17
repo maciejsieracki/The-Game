@@ -260,6 +260,19 @@
           "Więcej gór i wzgórz — więcej rzek"
         ],
         "domyslny": 1
+      },
+      {
+        "key": "village_rewards_enabled",
+        "label": "Chatki z nagrodami",
+        "opts": [
+          "Włączone",
+          "Wyłączone"
+        ],
+        "descs": [
+          "Wioski na mapie dają nagrody (złoto, jednostki, technologia)",
+          "Brak wiosek na mapie"
+        ],
+        "domyslny": 0
       }
     ]
   }

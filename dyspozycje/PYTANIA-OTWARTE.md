@@ -8,6 +8,29 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-CYWILIZACJE-EPOKA-PULA-Q1 — zwiększenie limitu cywilizacji per epoka · STATUS: **ZAMKNIĘTE** (2026-08-17)
+
+**ECHO:** `R-CYWILIZACJE-EPOKA-PULA-Q1 = A` (Maciej 2026-08-17) — „żadna mapa nie może przekroczyć maksymalnego limitu danej epoki, bo nie powtarzamy tych samych cywilizacji na mapie. Duże mapy, które są już na granicy (najwyższy poziom), nie zmieniamy nic. Główna zmiana będzie przy mniejszych mapach. Zwiększamy też o jeden możliwość większej ilości państw-miast na każdej mapie."
+
+**Implementacja:**
+- Zasada: pula `EPOCH_CIV_TYPE_POOL` (kamien=8, braz=14, zelazo=15) to TWARDY sufit
+- Mapy "na granicy" (stary max == pula) — bez zmian; pozostałe +1 do max (jeśli zapas poniżej puli)
+- Wszystkie 6 rozmiarów: `miasta_panstwa` +1
+- JSON source: `gra/data/e-start-params.json` (18 wpisów `typy_cywilizacji_per_epoka` + 6 `miasta_panstwa`)
+- Test: `node tools/map-scale-menu-test.cjs` — 97/0 (PASS), zweryfikowane niezależnie przez orkiestratora po scaleniu.
+
+Commit: `a3b0a1` (main tree, orkiestrator, scalenie worktree `agent-a3365f3b6cd15dadd`).
+
+---
+
+## R-CYWILIZACJE-SUPER-HUGE-KAMIEN-Q1 — Super Huge + kamień na granicy puli · STATUS: **ROZSTRZYGNIĘTE** (2026-08-17, podrzędne wobec EPOKA-PULA-Q1)
+
+**ECHO:** `R-CYWILIZACJE-SUPER-HUGE-KAMIEN-Q1 = A` (wynika z ogólnej zasady R-CYWILIZACJE-EPOKA-PULA-Q1 = A) — Super Huge + kamień (max 8, pula 8) już na granicy puli, zgodnie z decyzją Macieja brak zmian dla map na granicy.
+
+**Uzasadnienie:** zgodne z ogólnym kierunkiem „mapy już na granicy = bez zmian" z pytania R-CYWILIZACJE-EPOKA-PULA-Q1.
+
+---
+
 ## ABC-PACZKA-2026-08-06-DOPREC — doprecyzowanie Autobot · STATUS: **NIEAKTUALNE — zastąpione, zamknięte bez odpowiedzi (2026-08-09)**
 
 **Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md)
@@ -28324,8 +28347,8 @@ Naprawa wymaga zmiany współdzielonej `resolveAttacker`/`eligibleCityAttackers`
 szerszy blast radius niż wąski temat wyżej. Świadomie NIE naprawione w tej samej turze (zakres
 C-025: „zero przy okazji/skoro już tu jestem").
 
-**STATUS: OTWARTE — do dispatchu subagenta Sonnet 5 w kolejnej turze (C-027: błąd z jednoznacznie
-opisanym oczekiwanym zachowaniem, bez potrzeby ABC — analogicznie do naprawy wyżej).**
+**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 
 ## P-HUD-KONWERTER-DOPASOWANIE-BUDYNKI-NIESPOJNE — WERDYKT EVALUATORA (Opus 5, agent `aa82c80ee4e26d8ce`, 2026-08-14)
 
@@ -28516,9 +28539,8 @@ OTWARTEGO podsumowania, tylko już zamknięte. Naprawić tak, żeby gracz faktyc
 podsumowania i sam decydował kiedy wrócić na mapę (klik „Kontynuuj"), zamiast być z niego
 wyrzucanym automatycznie.
 
-**STATUS: DO DISPATCHU — nie krytyczne (gra jest grywalna, kamera działa poprawnie po fixie
-blackoutu), ale gracz traci realny ekran gry (podsumowanie łupów/wyniku bitwy) przy każdej
-bitwie 3D.**
+**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, gracz nadal traci ekran podsumowania po każdej bitwie 3D — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 
 ---
 
@@ -28538,7 +28560,8 @@ operacjach mogących rzucić) ALBO opakować konstruktor w `try/catch` który cz
 błędzie. Wąski zakres (~kilka linii), niski priorytet — wymaga rzeczywistego zerwania
 konstrukcji WebGL, co jest rzadkie, ale konsekwencja (trwale zamrożona mapa) jest poważna.
 
-**STATUS: DO DISPATCHU — niekrytyczne wzmocnienie obronne, nie pilne.**
+**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 
 ---
 
@@ -28555,8 +28578,8 @@ naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C
    widoczności: 0 trafień. Może to być świadomy projekt (AI ma pełną informację, gra "uczciwie"
    inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
 
-**STATUS: DO DISPATCHU (rekonesans najpierw dla p.2 — ustalić czy AI-bez-mgły jest zamierzone) —
-niekrytyczne, nie pilne.**
+**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, asymetria mgły (gracz ograniczony na atakach na jednostki ale nie na miasta) i brak mgły w AI wciąż nierozstrzygnięte — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 
 ---
 
@@ -29620,9 +29643,8 @@ rozpoznania: albo `.civ-unit-panel`/`createUnitPanelHud()` faktycznie powinien s
 w całości (`unitPanelHud.ts` + wpis w `SCOPE_SELECTOR` + test Scenariusz 2), skoro
 `armyStackHud.ts`/`.civ-army-stack` już go zastąpił (udokumentowane w `dyspozycje/UI-DO-MASTERA.md`).
 
-**STATUS: DO ROZPOZNANIA — niekrytyczne, nie pilne (nie blokuje żadnego z dwóch scalonych commitów,
-zero wpływu na dzisiejszą grywalność). Wymaga decyzji: usunąć martwy kod w całości, czy zostawić
-jako przygotowanie pod przyszłe wykorzystanie panelu.**
+**STATUS: OTWARTE — ZAPOMNIANE, do rozpoznania** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
+potwierdził: zarejestrowany 2026-08-16, NIGDY nie dispatchowany, sprzeczność między `.civ-unit-panel` (martwy w tree-shakingu) a wpisem w `SCOPE_SELECTOR` (żywy) wciąż nierozstrzygnięta — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
 **→ WERDYKT EVALUATORA:** ten temat był oceniany ŁĄCZNIE z
 `P-UNITACTIONBAR-UNFORTIFY-ALL-NIEOSIAGALNE` (oba commity dotykają tego samego pliku) — pełna
 sekcja werdyktu znajduje się pod tamtym tematem, niżej: **„Evaluator (Opus 5): WERDYKT
@@ -30630,7 +30652,8 @@ obiektu dla faktycznie nowego miasta, obecnie pomija to pole całkowicie (dopier
 ma komentarz „AI: ignorowane" — jeśli faktycznie ignorowane przez silnik AI, ustawienie `true` dla
 AI jest nieszkodliwe, ale do zweryfikowania w kodzie, nie zgadywania).
 
-STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+STATUS: **ZAMKNIĘTE (2026-08-17)** — PASS Evaluatora, commit `eb03cb94`, wdrożone w FALI 291.
+`foundCityAt()` zwraca teraz `autoWyzywienie: true` domyślnie.
 
 ---
 
@@ -30650,7 +30673,8 @@ zapisów. Do zweryfikowania przy implementacji: czy pole ma jakikolwiek efekt dl
 `foundCityAt()` obsługuje `ownerId` gracza i AI) — jeśli AI ma własną, niezależną logikę budowy
 ignorującą to pole, ustawienie jest neutralne; jeśli nie, może wymagać warunku `ownerId === gracz`.
 
-STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
+STATUS: **ZAMKNIĘTE (2026-08-17)** — PASS Evaluatora, commit `eb03cb94`, wdrożone w FALI 291.
+`foundCityAt()` zwraca teraz `budowaTryb: 'zrownowazone'` domyślnie.
 
 ---
 
@@ -30675,9 +30699,10 @@ Operatora, ale jeśli w trakcie implementacji okaże się dwuznaczne (np. `defau
 `max` dla części map, co zrobiłoby niejawną zmianę defaultu przy podniesieniu tylko `max`), Operator
 ma zatrzymać się i zgłosić do ABC zamiast zgadywać (CLAUDE.md §6/§7).
 
-STATUS: **OTWARTE** — do dispatchu (Operator Sonnet 5, worktree).
-
----
+STATUS: **ZAMKNIĘTE (2026-08-17)** — PASS Evaluatora, commit `48246469`, wdrożone w FALI 291.
+Niejednoznaczność rozstrzygnięta jedną odpowiedzią ABC właściciela (`R-CYWILIZACJE-EPOKA-PULA-Q1
+= A`, patrz osobna sekcja tego ID) — mapy na suficie puli `EPOCH_CIV_TYPE_POOL` bez zmian, reszta
++1; `miasta_panstwa` +1 na wszystkich 6 rozmiarach.
 
 ---
 
@@ -30823,7 +30848,15 @@ produkcji zdobytego miasta pokazuje pozycje, które i tak istniały, niezależni
 tam wstawione), czy błąd (jednostki faktycznie trafiają do kolejki budynków zamiast właściwej
 kolejki rekrutacji wojska).
 
-STATUS: **OTWARTE — do reconu po zamknięciu bieżącego wątku (cofnięcie ataku dystansowego).**
+**Ponowne zgłoszenie + nowe pytanie (Maciej, 2026-08-17):** „Nadal państwa miasta, zamiast
+rekrutować jednostki z handlu, budują je tak jak budynki. Trzeba zapisać i zarejestrować to do
+zmiany. Pytanie też: jak jest u innych AI, a nie państw miast?" — potwierdza, że objaw wciąż
+obserwowany (nie epizod jednorazowy). Nowe pytanie do reconu: czy główne cywilizacje AI (nie
+tylko miasta-państwa) mają ten sam mechanizm/błąd, czy różnią się od MP w tym zakresie —
+świadomie NIE zgadywane teraz, wymaga tego samego reconu co reszta tematu.
+
+STATUS: **OTWARTE — zarejestrowane, do reconu po odnowieniu limitu (zgodnie z zasadą „tylko
+rejestruj" do środy, 2026-08-17).**
 
 ---
 
@@ -31159,8 +31192,9 @@ jakiś ogólny system ułatwiający rozpoznawanie surowców na mapie (nie tylko 
 przy przyszłym przeglądzie UX mapy, wymaga osobnego ABC co do formy (highlight/filtr/tryb
 podświetlenia złóż itp.).
 
-STATUS: **OTWARTE — do dispatchu po zamknięciu bieżących wątków** (wymaga pracy w
-`gra/src/render/**` — Opus 5, stała zgoda właściciela).
+STATUS: **ZAMKNIĘTE (2026-08-17)** — PASS Evaluatora, commit `34700709`, wdrożone w FALI 291.
+Dedykowany model 3D (Opus 5, `kopalnia-cyny-opus5.ts`), naprawiono zarówno generyczny fallback dla
+zbudowanej kopalni jak i brak wizualizacji surowego złoża. Zweryfikowane headless Playwright render.
 
 ---
 
@@ -31267,7 +31301,8 @@ przebiegu `map-gen-regression-test.cjs` (determinizm + fair-play siatka złóż)
 tego jednego tematu, wprost na pytanie). Potwierdzone: „3-krotnie" = dosłownie `rarity × 3`:
 `miedz.rarity: 0.10 → 0.30`, `cyna.rarity: 0.02 → 0.06`.
 
-STATUS: **W TRAKCIE — dispatch Operatora (Sonnet 5, worktree).**
+STATUS: **ZAMKNIĘTE (2026-08-17)** — commit `d0fc4b94`, już na `origin/main` (widoczne jako HEAD
+`main` sprzed FALI 291), wdrożone w FALI 290 (opis deployu: „potrojenie rzadkosci").
 
 ---
 
@@ -31368,5 +31403,203 @@ dispatchu ani terminu.
 
 STATUS: **OTWARTE — zarejestrowany kierunek strategiczny, do wznowienia w osobnej, przyszłej
 sesji dedykowanej temu tematowi (nie razem z bieżącą kolejką bugów/feature'ów).**
+
+---
+
+## R-WYRAB-KOSZT-PRACA-5P-Q1 (2026-08-17, decyzja bezpośrednia Macieja)
+
+**Zgłoszenie:** "Zmieńmy koszt pracy wycięcia drzew z 20 na 5 jednostek pracy. Możesz teraz to
+robić." — świadome odstępstwo od standing rule "tylko rejestruj" (obowiązującej dla reszty
+tematów do środy), wyraźnie dozwolone tym poleceniem.
+
+**Recon (orkiestrator, przed dispatchem, żeby nie zgadywać):** wartość 20 nigdzie w kodzie nie
+istnieje dla tego mechanizmu. Rzeczywisty stan: `gra/data/terrain-improvements.json`, klucz
+`wyrab`, pole `koszt_praca: 5` (baza) — ale wyświetlany w grze koszt to **10 P** (potwierdzone
+zrzutem ekranu Macieja: karta "Wyrąb", E1 · 10 P), bo `readWorkCost()`
+(`gra/src/map/improvement-build.ts:593-596`) przepuszcza bazę przez
+`scaleImprovementWorkCost()` (`gra/src/game/r-stawki-strojenie.ts:50-53`), globalny mnożnik
+×2 (`R_STAWKI_FALA2_MULT`, Maciej 2026-08-04) stosowany do WSZYSTKICH ulepszeń terenu, nie tylko
+Wyrębu.
+
+**Doprecyzowanie (AskUserQuestion):** docelowy koszt WIDOCZNY w grze = **5 P** (nie sama liczba w
+JSON-ie). Ponieważ mnożnik ×2 stosuje się zawsze, wartość bazowa w JSON-ie musi się zmienić na
+**2.5** (`2.5 × 2 = 5` dokładnie, bez zaokrągleń — `Math.round(2.5*2) = Math.round(5) = 5`).
+
+**Zakres zmiany:** WYŁĄCZNIE `gra/data/terrain-improvements.json`, klucz `wyrab.koszt_praca`:
+`5 → 2.5`. Nic więcej (nie dotyka `scaleImprovementWorkCost`, nie dotyka innych ulepszeń).
+
+**Test modelu Operator/Evaluator (Maciej, przy tej samej wiadomości):** "Zobaczymy, ile tokenów
+zje Haiku." — pierwszy żywy test nowego domyślnego przydziału (CLAUDE.md §4, aktualizacja
+2026-08-17): Operator = Haiku 4.5, Evaluator = Sonnet 5.
+
+**Wynik — commit `a7b16859`, Evaluator PASS-WITH-NOTES:**
+- **Zużycie tokenów (pierwszy punkt odniesienia dla nowego przydziału):** Operator (Haiku 4.5)
+  85 003 tokenów / 27 wywołań narzędzi / ~4,5 min; Evaluator (Sonnet 5) 101 816 tokenów / 56
+  wywołań / ~8,5 min. Razem ~186 800 tokenów na pojedynczą, jednoliniową zmianę danych + pełną
+  weryfikację.
+- **Zmiana sama w sobie poprawna** — zweryfikowana niezależnie trzema metodami: arytmetyka
+  (`2.5×2=5` dokładnie, bez zaokrągleń), obecność w zbudowanym bundlu (`grep` w `dist/index.html`
+  → dokładnie 1 trafienie `koszt_praca:2.5`, wartość unikalna wśród wszystkich ulepszeń), ścieżka
+  UI (`buildModeHud.ts` zawsze przechodzi przez `scaleImprovementWorkCost` — gracz zobaczy „5 P",
+  nigdy „2.5 P").
+- **⚠️ Kluczowe znalezisko procesowe (N1, powód PASS-WITH-NOTES zamiast czystego PASS):**
+  Operator (Haiku) zaktualizował test `pending-improvements-test.cjs`, ale ten test w ogóle NIE
+  przechodzi przez `scaleImprovementWorkCost` (czysty bookkeeping, `kosztPraca` to tam dowolny
+  literał) — **nie chroni tej zmiany przed regresją**, mimo że commit sugerował inaczej.
+  Evaluator (Sonnet 5) znalazł WŁAŚCIWY test w repo, którego Haiku nie uruchomił ani nie
+  wspomniał: `tools/grupa-b-lane-test.cjs:134` (`wyrMeta?.kosztPraca === 5`, przechodzi przez
+  skalowanie) — zweryfikowany mutacyjnie: przy `koszt_praca=5` FAIL, przy `2.5` PASS. **Wniosek do
+  obserwacji w kolejnych zleceniach na Haiku: dobór/weryfikacja WŁAŚCIWEGO testu regresyjnego, nie
+  tylko „coś jest zielone".**
+- N2 (nieblokujące) — nieaktualny plik cache diagnostyczny, niepowiązany z tą zmianą.
+- N3 (nieblokujące, na przyszłość) — `diplomacy-value-catalog.ts` czyta `koszt_praca` z pominięciem
+  skalowania, ale funkcja jest dziś martwym kodem (brak wywołań), nieszkodliwe teraz.
+- Przy okazji: `grupa-b-lane-test.cjs` ma pre-istniejący problem harnessu (zawsze `exit 0`
+  niezależnie od liczby FAIL) + 3 pre-istniejące, niepowiązane porażki — niezwiązane z tym
+  tematem, nie naprawiane teraz.
+
+STATUS: **ZAMKNIĘTE — commit `a7b16859`, Evaluator PASS-WITH-NOTES. Zmiana poprawna i
+zweryfikowana, notatki procesowe o Haiku zapisane do obserwacji.**
+
+---
+
+## P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1 (2026-08-17, polecenie bezpośrednie Macieja)
+
+**Zgłoszenie (cytat):** "Kolejny temat, który chcę żebyśmy zrobili, to możliwość włączenia lub
+wyłączenia chatek z nagrodami. To ma być też w ustawieniach."
+
+**Zakres:** dodać nowe ustawienie w kreatorze nowej gry (toggle WŁ./WYŁ. „chatki z nagrodami"),
+domyślnie **WŁĄCZONE** (zachowuje się dzisiejsze zachowanie), warunkować rozmieszczanie chatek na
+mapie (`placeVillages`) na tym ustawieniu — gdy WYŁ., chatki nie istnieją na mapie.
+
+**Recon — gdzie na mapie rozmieszczane są chatki i jak działają:**
+- `gra/src/map/villages.ts` — funkcja `placeVillages()` rozmieszcza chatki RAZ przy generacji,
+  bierze parametr `targetCount` (liczba chatek = miasta startowe × mnożnik trudności).
+- `gra/src/map/generator.ts:663` — `placeVillages` wywoływana z `targetCount` obliczonym
+  z `targetVillageHutCount(startCityCount, difficulty)`.
+- `gra/src/game/villageRewards.ts` — logika nagród (co gracz dostaje: złoto/tech/jednostka).
+- `gra/src/game/main.ts:20108` — funkcja `checkVillageRewardAt()` sprawdza czy wioska ma nagrodę.
+- `gra/src/ui/newGameFlow.ts` — kreator nowej gry, ustawienia przechowywane w `UI_PARAMS.nowa_gra.ustawienia`
+  z `gra/data/ui-params.json`.
+
+**Decyzja wdrożeniowa:** opcja **(a)** — NIE generować chatek w ogóle na mapie gdy ustawienie WYŁ.
+(chatki po prostu nie istnieją). Gate w generatorze mapy (`generator.ts` linia ~663): jeśli
+ustawienie WYŁ., ustaw `targetCount = 0` zamiast liczenia z `targetVillageHutCount()`.
+
+**Przyczyna:** brak chatek na mapie jest prostsze i mniej dziwne UX niż puste chatki z
+wizualnym wyglądem ale bez nagrody (opcja b). Poza tym chatki nie są integralną częścią
+algorytmu generowania (mają osobny seed `0x5eed` i osobny Fisher-Yates shuffle), więc pominięcie
+ich nie rozszerzy się na inne części mapy.
+
+**Implementacja — pliki do zmian:**
+1. `gra/data/ui-params.json` — dodaj nowe ustawienie w sekcji `nowa_gra.ustawienia`
+2. `gra/src/ui/newGameFlow.ts` — dodaj pole do obiektu zwracanego z `buildParams()`, czytaj z
+   `settingValue('village_rewards_enabled')`
+3. `gra/src/ui/newGameFlow.ts` — interface `NewGameParams` — dodaj pole `villageRewardsEnabled`
+4. `gra/src/main.ts` — funkcja `doStartGame()` → `generujSwiatAsync()` przesłań nowy parametr
+5. `gra/src/map/generator.ts` — funkcja `generateMapInternal()` bierze nowy parametr
+   `villageRewardsEnabled`, warunkuj `targetCount = villageRewardsEnabled ? ... : 0`
+
+**Weryfikacja:**
+- `npx tsc --noEmit` — 0 błędów
+- Testy: `node tools/map-gen-regression-test.cjs` (determinizm, domyślne WŁ. = dzisiejsze)
+- Brak `npm run build` / `npm run dev` — wyłącznie `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir`
+- Domyślne zachowanie (WŁ.) identyczne z dzisiejszym: liczba chatek, rozmieszczenie, nagrody
+
+**Wynik implementacji (Operator, Haiku 4.5):**
+- **Commit:** `f7be3d95` — pełna implementacja warunkowania chatek
+- **Kompilacja:** `npx tsc --noEmit` — 0 błędów (1 pre-istniejący warning TypeScript o deprecated baseUrl)
+- **Build:** `vite build` — 824 moduły, 37 MB bundla, powodzenie
+- **Testy:** `logic-test.cjs` — PASS 213/213 (test determinizmu silnika, nie regresja); `map-gen-regression-test.cjs` timeout (pre-istniejące, znane `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`)
+- **Domyślne zachowanie:** niezmienione — `villageRewardsEnabled` domyślnie `true`, liczba chatek = dzisiaj
+
+**Zmienione pliki (5):**
+1. `gra/data/ui-params.json` — dodane ustawienie w sekcji `nowa_gra.ustawienia` (toggle Włączone/Wyłączone, domyślnie Włączone=0)
+2. `gra/src/ui/newGameFlow.ts` — `NewGameParams.villageRewardsEnabled: boolean`, `buildParams()` czyta z `settingValue('village_rewards_enabled')`
+3. `gra/src/main.ts` — `doStartGame()` przesyła `villageRewardsEnabled: params.villageRewardsEnabled ?? true` do `generujSwiatAsync()`
+4. `gra/src/map/newGameMapDefaults.ts` — `WorldGenOptions.villageRewardsEnabled?: boolean`
+5. `gra/src/map/generator.ts` — warunkuje `targetHuts = (genOpts?.villageRewardsEnabled !== false) ? baseTargetHuts : 0`
+
+**Decyzja implementacyjna:** opcja **(a)** — gdy ustawienie WYŁ., liczba chatek → 0 (żadne nie są generowane na mapie). Brak wizualnych artefaktów, proste UX, niezakłócona mechanika generacji (chatki mają osobny seed i Fisher-Yates shuffle, nie integrują się z resztą terenu).
+
+STATUS: **GOTOWE DO EVALUATORA — commit `f7be3d95` (Operator Haiku 4.5). Czeka na werdykt (Evaluator Sonnet 5).**
+
+---
+
+## R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1 (2026-08-17, zgłoszenie Macieja)
+
+**Zgłoszenie (dosłownie, 2026-08-17):** „Ostatnia kwestia to maksymalny podział na badania. Na
+badania można przeznaczyć maksymalnie 60% całego budżetu. Na razie jest to ustawienie standardowe
+dla pierwszego poziomu ustroju. Na razie ustroje zostawiamy; w przyszłości zapisz, że musimy
+wprowadzić rodzaje ustrojów." + doprecyzowanie: „To samo dotyczy ograniczenia dla nauki, gdzie
+można przeznaczyć do 60% budżetu, ale można przeznaczyć mniej."
+
+**Interpretacja (orkiestrator):**
+- Nowa reguła: gracz (i AI) może przydzielić na Naukę **maksymalnie 60%** całego budżetu Pracy
+  imperium — górny twardy limit (hard cap).
+- Można dać mniej, nie można więcej.
+- Dotyczy zarówno gracza (UI, suwak) jak i AI (logika decyzyjna alokacji zasobów).
+- System ustrojów (mogący w przyszłości diferencyć ten limit per-ustrój) **nie istnieje jeszcze**
+  — limit 60% ma być STAŁĄ globalną regułą gry na razie, NIE parametrem per-ustrój.
+- Rejestracja przepisów na ustroje w osobnym wpisie `R-USTROJE-RODZAJE-PRZYSZLOSC` (zobacz niżej).
+
+**Niejednoznaczności w trakcie rekonu:** trzeba sprawdzić:
+1. Gdzie w silniku żyje alokacja budżetu na Naukę — czy to część systemu auto-pracy % czy
+   oddzielny mechanizm?
+2. Co dokładnie oznacza „cały budżet" — całkowity budżet Pracy imperium?
+3. Czy istnieje dziś UI suwak pozwalający ustawić Naukę >60% — tam trzeba dodać hard cap.
+4. Jak AI decyduje o alokacji na naukę i czy tam również trzeba wymusić limit.
+
+**Status rekonu:** CZEKA NA DISPATCHER — orkiestrator nie zleciał jeszcze, bo to polecenie ma
+być najpierw tutaj zarejestrowane (procedura NUMER→ABC→COMMIT→DEPLOY).
+
+STATUS: **OTWARTE — czeka na dispatch** (mogą pojawić się pytania ABC jeśli recon ujawni
+niejednoznaczności lub opcje projektowe).
+
+---
+
+## R-USTROJE-RODZAJE-PRZYSZLOSC (2026-08-17, zgłoszenie Macieja — notatka na przyszłość)
+
+**Zgłoszenie (fragment z powyższego, 2026-08-17):** „Na razie ustroje zostawiamy; w przyszłości
+zapisz, że musimy wprowadzić rodzaje ustrojów."
+
+**Interpretacja:** system ustrojów (regymów) nie istnieje. Przyszłościowa funkcjonalność, która
+będzie mogła różnicować limity budżetu na Naukę (i ewentualnie inne aspekty gry) w zależności od
+wybranego ustroju — np. autarkia (mały limit na naukę), demokracja (wysoki limit), itd.
+
+**Obywatel:** brak. To notatka rejestracyjna, nie do implementacji teraz.
+
+STATUS: **ZAREJESTROWANE NA PRZYSZŁOŚĆ — do wznowienia w osobnej sesji dedykowanej systemowi
+ustrojów (nie razem z bieżącą implementacją limitu 60%).**
+
+---
+
+## R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 (2026-08-17, zgłoszenie Macieja)
+
+**Zgłoszenie (cytat):** „Maksymalna ilość pracy, którą można przeznaczyć z budżetu pracy, to 50% do wspólnego worka, a reszta idzie na budynki. Czyli można dać mniej na pracę, w sensie na ulepszenia, ale nie można dać więcej niż 50."
+
+**Kontekst:** Istniejący system „auto-praca budżet %" (z decyzji `R-AUTO-PRACA-BUDZET-PROCENT-Q1` i jej override per-miasto). Wspólny worek = pula pracy Imperium przeznaczona na auto-pracę (ulepszenia terenu), w odróżnieniu od Pracy kierowanej bezpośrednio na budynki w miastach. Wymaganie: twardy górny limit **50%** budżetu Pracy imperium na wspólny worek/auto-pracę; pozostałe minimum 50% na budynki. Dotyczy zarówno gracza jak i AI.
+
+**Stan pracy:** Recon — zbieranie informacji o systemie i punktach implementacji (gdzie gracz ustawia %, gdzie logika to stosuje, czy AI ma osobną ścieżkę, czy limit dotyczy override per-miasto).
+
+STATUS: **OTWARTE — rekon w toku, czeka na implementację po uzupełnieniu zrozumienia architektury.**
+
+---
+
+**AKTUALIZACJA (2026-08-17, implementacja domknięta):** rekon i implementacja zakończone:
+- **Punkty zmiany:** 
+  (a) `gra/src/game/cities.ts:198` — `clampUlepszeniaPracaPercent()` limituje teraz do 0-50 zamiast 0-100;
+  (b) `gra/src/ui/buildModeHud.ts:246` — slider HTML zmieniony z `max="100"` na `max="50"`;
+  (c) `gra/src/ui/buildModeHud.ts:548, 554, 588, 595` — event listeners ograniczają wartości do 0-50.
+- **Egzekwacja limitu:** każde ustawienie budżetu pracy (gracz lub AI) przechodzi przez `clampUlepszeniaPracaPercent()`, więc limit 50% jest obowiązkowy wszędzie.
+- **Override per-miasto:** limit dotyczy także override per-miasto (funkcja `clampUlepszeniaPracaPercent` jest wywoływana zarówno dla polityki imperium jak i dla override miast).
+- **AI:** domyślnie korzysta z tej samej logiki limitu co gracz (żaden osobny path).
+- **Weryfikacja (Operator, twierdzona):** `npx tsc --noEmit` — 0 błędów. UWAGA: worktree Operatora nie miał zainstalowanego `node_modules`
+  (odstępstwo od standardowej izolacji §4a) — nie uruchomił ŻADNEGO testu regresyjnego, sam to
+  przyznał w raporcie. Twierdzenie o tsc do potwierdzenia niezależnie przez orkiestratora po
+  scaleniu, zanim uzna się temat za faktycznie zamknięty.
+
+STATUS: **SCALONE DO GŁÓWNEGO DRZEWA, CZEKA NA NIEZALEŻNĄ WERYFIKACJĘ ORKIESTRATORA (tsc/testy)
+i Evaluatora — NIE `WDROŻONE`, korekta wcześniejszego zbyt optymistycznego wpisu Operatora.**
 
 ---

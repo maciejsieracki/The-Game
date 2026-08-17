@@ -5,8 +5,7 @@ description: >
   w TYM repozytorium działa inaczej niż w dowolnym innym: rytuał startu sesji (pull →
   KANAL-PRACA → STAN-PRACY-HANDOFF → playbook.md), nienegocjowalna reguła „żadnej pracy
   poza pętlą AutoBot" z dwoma wąskimi wyjątkami, pętla Operator → Evaluator →
-  final z przydziałem modeli (wykonawca Sonnet 5, Evaluator i deploy Opus 5, każdy
-  render w `gra/src/render/**` zawsze Opus 5), procedura NUMER → ABC → COMMIT → DEPLOY
+  final z przydziałem modeli (wykonawca Haiku 4.5, Evaluator Sonnet 5, Opus 5 dla render i deploy), procedura NUMER → ABC → COMMIT → DEPLOY
   z rejestrem próśb, obowiązkowy turniej dwóch niezależnych projektów przed każdym
   nowym pytaniem ABC, twarde FAIL Evaluatora dla edge/parytetu gracz-AI/save-load,
   izolacja pracy subagentów w worktree i wpis-blokada w kanale przed serią zmian, progi
@@ -76,32 +75,35 @@ do ROBOCZA. „format" / „ABC" = przepisz pytanie w pełnej formie.
 | Rola | Model |
 |------|-------|
 | Sesja główna (orkiestrator) | Sonnet 5 |
-| Każdy subagent-wykonawca (Operator) | Sonnet 5 |
-| **Evaluator** (adwokat diabła, werdykt) | **Opus 5** |
+| Operator (wykonawca), domyślnie | **Haiku 4.5** |
+| **Evaluator**, domyślnie | **Sonnet 5** |
 | **Deploy** (build + weryfikacja + publikacja) | **Opus 5** |
-| **Modele 3D jednostek i cała praca w `gra/src/render/**`** | **Opus 5, bez wyjątku** |
+| **Operator i Evaluator dla `gra/src/render/**`** | **Opus 5, obowiązkowy dla obu ról** |
 
-Wyjątek renderowy obowiązuje **równolegle** do reguły „subagenci na Sonnet 5" i nie
-jest przez nią zniesiony: Sonnet dobiera detale historyczne poprawnie, ale nie ocenia
-proporcji i czytelności bryły z kąta kamery gry. **Fable 5 zablokowany** —
+**Mechanizm dispatchu (2026-08-17):** Evaluator pracuje na jawnym `effort="medium"` (narzędzie Workflow,
+model Sonnet 5). Operator (Haiku 4.5) jest dispatchowany bez narzuconego effort (domyślna szybkość).
+
+Wyjątek renderowy obowiązuje **równolegle** do reguły „Operatora na Haiku 4.5" i nie
+jest przez nią zniesiony: Haiku 4.5 jest jeszcze mniej przygotowany na ocenę proporcji
+i czytelności bryły z kąta kamery gry niż Sonnet 5. **Fable 5 zablokowany** —
 `R-FABLE-RETENCJA-NASTER = B`: wymaga 30-dniowej retencji, wymagania NASTER nieustalone;
 zgoda na model ≠ potwierdzenie retencji, potrzebne oba.
 
-**⛔ DOMYŚLNIE ZAWSZE 1x Evaluator, Opus 5 — `R-EVALUATOR-3X-ZGODA-Q1` (Maciej 2026-08-13,
-koryguje `R-EVALUATOR-3X-MODEL-KOSZT-Q1` z tego samego dnia).** Wzorzec 3x niezależny
+**⛔ DOMYŚLNIE — 1x Evaluator, Sonnet 5** (`R-EVALUATOR-3X-ZGODA-Q1`, Maciej 2026-08-13; **AKTUALIZACJA domyślnego modelu Sonnet 5 zamiast Opus 5: 2026-08-17**). Wzorzec 3x niezależny
 Evaluator NIE jest już progiem automatycznym (nawet dla combat-adjacent/P0) — kosztuje za
 dużo tokenów przy rutynowym stosowaniu. Jego słowa: „nie przepalajmy niepotrzebnie
 tokenów... jeżeli miałbyś odpalać kiedykolwiek 3 ewaluatory to po prostu napisz do mnie o
-zgodę. To w wyjątkowych tylko sytuacjach. Na ten moment przyjmujemy jeden ewaluator opus
-5." **Zanim dispatchujesz 3x — zapytaj właściciela wprost, opisz dlaczego temat jest
+zgodę. To w wyjątkowych tylko sytuacjach." **Zanim dispatchujesz 3x — zapytaj właściciela wprost, opisz dlaczego temat jest
 wyjątkowo ciężki/wysokiego ryzyka, i czekaj na jego zgodę.** Nie zgaduj i nie dispatchuj
-z góry na podstawie samej kategorii tematu (combat-adjacent itd.) — to już nie wystarcza
-jako uzasadnienie bez pytania.
+z góry na podstawie samej kategorii tematu.
+
+**Opus 5 jako Evaluator — WYŁĄCZNIE gdy:** (a) orkiestrator jawnie prosi dla tematu o wyższym ryzyku,
+(b) temat dotyczy `gra/src/render/**`. Druga kategoria to OBOWIĄZKOWY Opus 5, niezmienny od
+wcześniejszych reguł.
 
 **Gdy zgoda na 3x padnie** — przydział modeli: Evaluator #1 i #2 na Sonnet 5, Evaluator #3
-(ostatni) na Opus 5. Powód: koszt/limit trzech Opus 5 naraz jest wysoki. Nie zmniejsza to
-liczby Evaluatorów ani rygoru — trzy niezależne perspektywy zostają, zmienia się tylko
-model dwóch pierwszych.
+(ostatni) na Opus 5. Nie zmniejsza to liczby Evaluatorów ani rygoru — trzy niezależne perspektywy
+zostają, model trzeciego jest wyższy ze względu na koszt/limit trzech Opus naraz.
 
 ## 2. NUMER → ABC → COMMIT → DEPLOY
 
@@ -437,7 +439,14 @@ append-only JSONL, jeden rekord na run, pola `run_id` · `timestamp` · `metric_
 — tutaj tylko miejsce zapisu. Gdy scaffold na to nie pozwala, **minimum: raport Evaluatora
 w czacie + wpis w `KANAL-PRACA.md`**.
 
-## 11. Dwie świadome różnice względem oryginalnego Ponytaila
+## 11. Aktualizacja 2026-08-17 — zmiana domyślnych modeli
+
+**Nowy domyślny przydział Operator/Evaluator** (2026-08-17): Operator → **Haiku 4.5** (zamiast Sonnet 5),
+Evaluator → **Sonnet 5** (zamiast Opus 5). Opus 5 zostaje obowiązkowy dla `gra/src/render/**` (dla obu ról)
+i dostępny dla Evaluatora na wyraźne żądanie orkiestratora dla trudniejszych tematów. Dispatcher zmienił się
+z narzędzia Agent na Workflow z `effort="medium"` dla Evaluatora (Sonnet 5). Deploy pozostaje Opus 5.
+
+## 12. Dwie świadome różnice względem oryginalnego Ponytaila
 
 `lean-loop` wyrósł z rodziny skilli `ponytail-*` i w dwóch miejscach celowo od niej odchodzi
 — odnotowane, żeby nie zaskoczyły kogoś, kto zna oryginał:

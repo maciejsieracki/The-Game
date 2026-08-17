@@ -198,6 +198,19 @@ export function clampUlepszeniaPracaPercent(n: number | undefined | null): Uleps
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
+/** Maksymalny % budżetu Pracy przeznaczony do wspólnego worka (ulepszenia terenu).
+ * Pozostałe minimum 50% rezerwowane dla budynków/bezpośrednie kierowanie.
+ * R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 = A (2026-08-17). */
+export const MAX_PRACA_WSPOLNY_WOREK_PROCENT: UlepszeniaPracaPercent = 50;
+
+/** Ogranicza wartość % budżetu Pracy do wspólnego worka (ulepszenia) na maksimum 50%.
+ * Używane w UI (buildModeHud) i przy przyjmowaniu wartości ze zdarzenia zmiany.
+ * R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 = A (2026-08-17). */
+export function clampPracaWspolnyWorekPercent(n: number | undefined | null): UlepszeniaPracaPercent {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
+  return Math.max(0, Math.min(MAX_PRACA_WSPOLNY_WOREK_PROCENT, Math.round(n)));
+}
+
 /**
  * Migracja starego pola `perTurn`/`ulepszeniaPerTurn` (1|2|3 sztuk/miasto/turę) → nowy %.
  * Mapowanie liniowe do starego maksimum (3 sztuk = 100%): 1→33%, 2→66%, 3→100%.
@@ -262,7 +275,7 @@ export function resolveEffectiveUlepszenia(
       focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
       tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
       onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-      pracaAutoPercent: clampUlepszeniaPracaPercent(city.ulepszeniaPracaPercent),
+      pracaAutoPercent: clampPracaWspolnyWorekPercent(city.ulepszeniaPracaPercent),
       override: true,
     };
   }
@@ -338,6 +351,9 @@ export const DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
 /** Suwak podziału handlu — tylko wielokrotności 10 (0, 10, …, 100). */
 export const HANDEL_PCT_STEP = 10;
 
+/** Maksymalny procent budżetu, który można przeznaczyć na Naukę (hard cap). / EN: maximum percentage of budget for Science. */
+export const MAX_PROCENT_NAUKA = 60;
+
 export function snapHandelPct(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
 }
@@ -347,25 +363,48 @@ export function normalizePodzialHandlu(split: CityPodzialHandlu): CityPodzialHan
   let p = snapHandelPct(split.procentPieniadz);
   let n = snapHandelPct(split.procentNauka);
   let l = snapHandelPct(split.procentLuksus);
+
+  // Limit na Naukę: maksymalnie 60% (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: enforce hard cap on Science.
+  n = Math.min(n, MAX_PROCENT_NAUKA);
+
   let sum = p + n + l;
   if (sum !== 100) {
     l = Math.max(0, Math.min(100, l + (100 - sum)));
     sum = p + n + l;
     if (sum !== 100) {
       n = Math.max(0, Math.min(100, n + (100 - sum)));
+      // Po redystrybucji, ponownie limituj Naukę. / EN: re-enforce cap after redistribution.
+      n = Math.min(n, MAX_PROCENT_NAUKA);
+      sum = p + n + l;
+      if (sum !== 100) {
+        p = Math.max(0, Math.min(100, p + (100 - sum)));
+      }
     }
   }
   return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
 }
 
-/** Redystrybucja pozostałych dwóch pól tak, by suma = 100 po zmianie jednego (kroki 10%). */
+/** Redystrybucja pozostałych dwóch pól tak, by suma = 100 po zmianie jednego (kroki 10%).
+ *  Nauka ma limit MAX_PROCENT_NAUKA (60%) — nigdy nie może przekroczyć tej wartości,
+ *  a gdy jest już na capie, pozostałe pola są prawidłowo clampowane do [0, 100].
+ *  / EN: Redistribute the other two fields so sum = 100 after one changes (10% steps).
+ *  Science has a MAX_PROCENT_NAUKA cap (60%) — never exceeds it, and when at cap,
+ *  other fields are properly clamped to [0, 100].
+ */
 export function adjustHandelSplit(
   current: CityPodzialHandlu,
   changed: keyof CityPodzialHandlu,
   newVal: number,
 ): CityPodzialHandlu {
   const next: CityPodzialHandlu = { ...current };
-  next[changed] = snapHandelPct(newVal);
+  let changedVal = snapHandelPct(newVal);
+
+  // Jeśli zmienia się Nauka bezpośrednio, clamp do MAX_PROCENT_NAUKA. / EN: cap Science at 60% when changed directly.
+  if (changed === 'procentNauka') {
+    changedVal = Math.min(changedVal, MAX_PROCENT_NAUKA);
+  }
+
+  next[changed] = changedVal;
   const keys = (['procentPieniadz', 'procentNauka', 'procentLuksus'] as const)
     .filter(k => k !== changed);
   let remainder = 100 - next[changed];
@@ -376,17 +415,62 @@ export function adjustHandelSplit(
   }
   const [k0, k1] = keys;
   if (k0 === undefined || k1 === undefined) return next;
+
+  // Obsługa limitu MAX_PROCENT_NAUKA: jeśli Nauka jest jednym z k0 lub k1,
+  // to clamp ją do maximum (ale nigdy nie poniżej current value jeśli już tam była).
+  const naukaKey = (k0 === 'procentNauka' ? k0 : k1 === 'procentNauka' ? k1 : null);
+  const nonNaukaKey = naukaKey === k0 ? k1 : naukaKey === k1 ? k0 : null;
+
+  if (naukaKey && nonNaukaKey) {
+    // Nauka już na capie — trzymaj ją tam, clamp drugie pole.
+    if (current[naukaKey] >= MAX_PROCENT_NAUKA) {
+      next.procentNauka = Math.min(MAX_PROCENT_NAUKA, remainder);
+      next[nonNaukaKey] = Math.max(0, remainder - next.procentNauka);
+      return next;
+    }
+  }
+
   const sumOthers = current[k0] + current[k1];
   if (sumOthers <= 0) {
     const half = Math.round(remainder / 2 / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
     next[k0] = half;
     next[k1] = remainder - half;
+    // Jeśli k0 to Nauka, clamp do MAX_PROCENT_NAUKA. / EN: if k0 is Science, clamp to cap.
+    if (k0 === 'procentNauka' && next.procentNauka > MAX_PROCENT_NAUKA) {
+      next.procentNauka = MAX_PROCENT_NAUKA;
+      next[k1] = remainder - next.procentNauka;
+    } else if (k1 === 'procentNauka' && next.procentNauka > MAX_PROCENT_NAUKA) {
+      next.procentNauka = MAX_PROCENT_NAUKA;
+      next[k0] = remainder - next.procentNauka;
+    }
+    // Ensure both are in [0, 100]. / EN: clamp both fields to [0, 100].
+    next[k0] = Math.max(0, Math.min(100, next[k0]));
+    next[k1] = Math.max(0, Math.min(100, next[k1]));
     return next;
   }
+
   let v0 = snapHandelPct(remainder * current[k0] / sumOthers);
   if (v0 > remainder) v0 = Math.floor(remainder / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
+
+  // Jeśli k0 to Nauka, clamp do MAX_PROCENT_NAUKA. / EN: if k0 is Science, clamp to cap.
+  if (k0 === 'procentNauka' && v0 > MAX_PROCENT_NAUKA) {
+    v0 = MAX_PROCENT_NAUKA;
+  }
+
   next[k0] = v0;
   next[k1] = remainder - v0;
+
+  // Clamp both fields to [0, 100] — k1 może być ujemne jeśli coś poszło nie tak.
+  next[k0] = Math.max(0, Math.min(100, next[k0]));
+  next[k1] = Math.max(0, Math.min(100, next[k1]));
+
+  // Jeśli k1 to Nauka, clamp do MAX_PROCENT_NAUKA. / EN: if k1 is Science, clamp to cap.
+  if (k1 === 'procentNauka' && next.procentNauka > MAX_PROCENT_NAUKA) {
+    next.procentNauka = MAX_PROCENT_NAUKA;
+    next[k0] = remainder - next.procentNauka;
+    next[k0] = Math.max(0, Math.min(100, next[k0]));
+  }
+
   return next;
 }
 
@@ -463,9 +547,11 @@ export function ensureCitySaveDefaults(city: City): void {
     // new one only `ulepszeniaPracaPercent`; the new field wins, so re-running this migration on
     // the same city is idempotent.
     const rawCity = city as unknown as { ulepszeniaPracaPercent?: unknown; ulepszeniaPerTurn?: unknown };
-    city.ulepszeniaPracaPercent = resolveUlepszeniaPracaPercentFromRaw(
-      rawCity.ulepszeniaPracaPercent,
-      rawCity.ulepszeniaPerTurn,
+    city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(
+      resolveUlepszeniaPracaPercentFromRaw(
+        rawCity.ulepszeniaPracaPercent,
+        rawCity.ulepszeniaPerTurn,
+      )
     );
   }
   const buf = readCityFoodBuffer(city.magazynZywnosci);
@@ -715,6 +801,12 @@ export function canFoundCity(
     foundingCityState?: boolean;
     /** Slot z planu klastra (deferred spawn) — dystans do innych miast już zweryfikowany w map/clusters. */
     clusterStartSlot?: boolean;
+    /** ID właściciela (potrzebny do limitu miast per epokę). / EN: owner ID (needed for city limit per era). */
+    ownerId?: number;
+    /** Era bieżącego właściciela (potrzebna do obliczenia limitu miast). / EN: current owner's era (needed to compute city limit). */
+    ownerEra?: number;
+    /** Konfiguracja gry zawierająca bazowy limit miast. / EN: game config containing base city limit. */
+    gameConfig?: { cityLimitBase?: number };
   },
 ): { ok: boolean; reason: string } {
   const key = `${q},${r}`;
@@ -752,6 +844,19 @@ export function canFoundCity(
 
   if (opts?.withinTerritory && !opts.withinTerritory(q, r)) {
     return { ok: false, reason: 'poza terytorium' };
+  }
+
+  // R-MIASTA-LIMIT-PER-EPOKA-Q1: limit liczby miast per epokę
+  // / EN: city count limit per era
+  if (opts?.ownerId !== undefined && opts?.ownerEra !== undefined && opts?.gameConfig) {
+    const base = opts.gameConfig.cityLimitBase ?? 10;
+    const era = Math.max(1, opts.ownerEra);
+    // Limit: baza + (era-1)*5 (E0=baza, E1=baza+5, E2=baza+10, itd.)
+    const limit = base + (era - 1) * 5;
+    const ownersCities = cities.filter(c => c.ownerId === opts.ownerId).length;
+    if (ownersCities >= limit) {
+      return { ok: false, reason: 'limit miast na tej epoce' };
+    }
   }
 
   return { ok: true, reason: '' };
@@ -823,6 +928,8 @@ export function foundCityAt(
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
     poziomRacjiOverride: false,
+    autoWyzywienie: true, // Włączone automatyczne wyżywienie dla nowo założonych miast / EN: enable auto-feeding for newly founded cities
+    budowaTryb: 'zrownowazone', // Domyślna zrównoważona budowa dla nowych miast / EN: default balanced build mode for new cities
     ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }

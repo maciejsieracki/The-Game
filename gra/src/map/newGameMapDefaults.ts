@@ -451,6 +451,9 @@ export interface WorldGenOptions {
   civTypesCount?: number;
   /** Liczba miast-państw w klastrze (kreator). */
   cityStatesCount?: number;
+  /** P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: czy rozmieszczać chatki z nagrodami na mapie.
+   * / EN: whether to place village treasure huts on the map. */
+  villageRewardsEnabled?: boolean;
 }
 
 /** Suwak zaawansowany — procent lądu (reszta morze). */
@@ -644,6 +647,14 @@ function mapMenuTierIndex(menuLabel: string): number {
 }
 
 function miastaPanstwaTriple(menuLabel: string): MapScaleTriple {
+  const fromE = eStartMiastaPanstwa(menuLabel);
+  if (fromE != null && fromE > 0) {
+    const clampedDef = clampMiastaPanstwaCount(fromE);
+    const max = Math.min(clampedDef + 1, MAX_MIAST_PANSTWA);
+    let min = Math.max(1, clampedDef - 1);
+    if (min >= max) min = Math.max(1, max - 1);
+    return { min, default: clampedDef, max };
+  }
   return MIASTA_PANSTWA_MENU_BY_TIER[mapMenuTierIndex(menuLabel)] ?? MIASTA_PANSTWA_MENU_BY_TIER[2]!;
 }
 

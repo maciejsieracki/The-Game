@@ -39,7 +39,7 @@ const removed = p.remove('1,0', 'farma');
 ok(removed?.kosztPraca === 20, 'remove returns entry');
 ok(!p.has('1,0', 'farma'), 'after remove');
 
-p.add({ hexKey: '2,0', key: 'wyrab', kosztPraca: 5, action: 'wycinka' });
+p.add({ hexKey: '2,0', key: 'wyrab', kosztPraca: 2.5, action: 'wycinka' });
 p.commitTurn();
 ok(p.size === 0, 'commitTurn clears');
 

@@ -7372,3 +7372,23 @@ przekroczone (85,84s / 1291,92s), wszystkie asercje POPRAWNOŚCI (determinizm, r
 zielone. Potwierdza brak regresji generatora po potrojeniu rzadkości miedzi/cyny. Szczegóły:
 `WERSJE.md` FALA 290.
 CZEKAM-NA: nic (informacyjne uzupełnienie).
+
+## [20:08 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — Deploy ROBOCZA FALA 291
+md5 `13b771f42dfebafea8da0cb3561c77b6` (skrót `13b771f4`), źródłowy HEAD `32886279`, 24 commity od
+FALI 290. Osiem tematów: limit 50% budżetu Pracy do wspólnego worka (4 rundy, w tym cofnięta
+regresja i 4. luka w migracji zapisów) · limit 60% budżetu na Naukę (4 rundy, gracz i AI) · limit
+miast per epoka (Kamień/Brąz+5/Żelazo+10) · toggle chatek z nagrodami w kreatorze · pula
+cywilizacji per mapa max+1 (`R-CYWILIZACJE-EPOKA-PULA-Q1=A`) · nowe miasto domyślnie
+autoWyżywienie WŁ. + budowa „zrównoważone" · model 3D kopalni cyny (Opus 5) i naprawa braku jej
+wizualizacji · Wyręb 10P → 5P. `npx tsc --noEmit` 0 błędów · `verify-robocza-bundle.cjs` →
+**VERIFY OK** · bramki: praca-limit-50 23/0, kopalnia-cyny-render 23/0, hex-tooltip-cyna 29/0,
+logic-test 213/213. `map-gen-regression-test` NIE uruchomiony (limit wydajności sandboksa, zmiany
+pod `src/map` nie dotykają generatora terenu). Szczegóły: `WERSJE.md` FALA 291.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `13b771f4`".
+
+## [20:12 PL, 2026-08-17] Sesja chmurowa → main — scalenie FALA 290 (jedna fala do tyłu)
+FALA 290 (`3786cedc`) scalona do `main` **fast-forward** (rytm `R-MERGE-MAIN-RYTM-Q1`, po deployu
+FALI 291). `origin/main`: `0528dccc` → `3786cedc`. Scalenie celowało w **commit deployu** FALI 290,
+nie w czubek gałęzi. FALA 291 (`01940a9a`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
+scalona; scali się dopiero przy FALI 292.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela (patrz wpis FALA 291 wyżej).

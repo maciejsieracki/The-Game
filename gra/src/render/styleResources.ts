@@ -11,7 +11,7 @@ import { buildTrzoda } from './swinia-trzoda';
 import { buildZlozeKonie } from './kon-nowy-model';
 import {
   buildZlozeMiedz, buildZlozeZelazo, buildZlozeWegiel, buildZlozeSol, buildZlozeGlina,
-  buildZlozeZloto,
+  buildZlozeZloto, buildZlozeCyna,
 } from './ulepszenia-modele-p3b';
 
 const S = 2.05 / 3; // małe nakładki surowcowe (~1/3 poprzedniej skali)
@@ -359,6 +359,32 @@ function styledGoldOre(style: MapRenderStyle): THREE.Group {
   return g;
 }
 
+/**
+ * Ruda cyny — kasyteryt (wzgórza/góry): JASNE skały macierzyste z czarnobrunatnymi
+ * bryłami rudy. Odwrotność złota (tam ciemna skała + jasna żyła), żeby dwa złoża
+ * z tych samych terenów nie czytały się tak samo. / EN: pale host rock + near-black
+ * cassiterite — the inverse of gold, so the two hill/mountain deposits never match.
+ */
+function styledTinOre(style: MapRenderStyle): THREE.Group {
+  const g = new THREE.Group();
+  const rock = mat(style === 'roblox' ? 0x76797e : 0x8a8d92);
+  const ore = mat(0x2a201a);
+  const oreHi = mat(0x4a3a2e);
+  const s = style === 'roblox' ? S : 1;
+  const spots: Array<[number, number, number]> = [[0, 0, 1.0], [0.075 * s, 0.04 * s, 0.8], [-0.055 * s, 0.045 * s, 0.72]];
+  for (const [px, pz, sc] of spots) {
+    const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.05 * s * sc, 0), rock);
+    r.position.set(px, 0.04 * s * sc, pz);
+    r.rotation.set(px * 2, pz * 3, sc);
+    r.castShadow = true;
+    g.add(r);
+    // bryła rudy WYSTAJE PONAD skałę — ciemny szczyt na jasnym cokole
+    box(g, 0.042 * s * sc, 0.05 * s * sc, 0.038 * s * sc, px, 0.06 * s * sc, pz, ore);
+    box(g, 0.022 * s * sc, 0.022 * s * sc, 0.022 * s * sc, px + 0.016 * s, 0.05 * s * sc, pz - 0.008 * s, oreHi);
+  }
+  return g;
+}
+
 /** Ruda — sterta skał ze złotymi żyłami (legacy Nakladka.ZlozeRudy). */
 function styledOre(style: MapRenderStyle): THREE.Group {
   const g = new THREE.Group();
@@ -450,6 +476,12 @@ export function buildStyledResourceOverlay(nakladka: Nakladka, style: MapRenderS
       case 'wegiel': g = style === 'roblox' ? buildZlozeWegiel() : styledCoal(style); break;
       case 'sol': g = style === 'roblox' ? buildZlozeSol() : styledSalt(style); break;
       case 'zloto': g = style === 'roblox' ? buildZlozeZloto() : styledGoldOre(style); break;
+      // P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE (2026-08-17): przed tą zmianą 'cyna'
+      // NIE miała tu żadnej gałęzi — surowe złoże cyny zwracało null i heks
+      // renderował się jak zwykłe Wzgórze/Góra, więc gracz nie mógł go znaleźć.
+      // / EN: 'cyna' had no branch here, so a raw tin deposit returned null and the
+      // hex rendered as plain Hills/Mountains — the deposit was invisible in game.
+      case 'cyna': g = style === 'roblox' ? buildZlozeCyna() : styledTinOre(style); break;
       case 'glina': g = style === 'roblox' ? buildZlozeGlina() : styledClay(style); break;
       case 'konie':
         g = style === 'roblox' ? buildZlozeKonie() : styledHorse(style);

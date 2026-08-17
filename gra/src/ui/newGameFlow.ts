@@ -134,6 +134,9 @@ export interface NewGameParams {
    * selection order). Empty/undefined = today's random pick (backward-compatible).
    */
   selectedAiCivIds?: string[];
+  /** P-CHATKI-NAGRODY-TOGGLE-USTAWIENIA-Q1: czy chatki z nagrodami mają być generowane na mapie.
+   * / EN: whether village treasure huts should be generated on the map. */
+  villageRewardsEnabled: boolean;
 }
 
 /**
@@ -181,6 +184,8 @@ export interface NewGameAdvancedOptions {
    * dopóki gracz nie ustawi jej wprost w „Zaawansowane opcje". Zero regresji domyślnej.
    */
   cityStateDifficultyOverride: 'easy' | 'normal' | 'hard' | null;
+  /** R-MIASTA-LIMIT-PER-EPOKA-Q1: bazowy limit miast na epokę (10 / 15 / 20); per-era limit = base + (era-1)*5. / EN: base city limit per era. */
+  cityLimitBase: number;
 }
 
 const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
@@ -194,6 +199,7 @@ const DEFAULT_ADVANCED: NewGameAdvancedOptions = {
   landFractionPercent: 30,
   landFractionCustom: false,
   cityStateDifficultyOverride: null,
+  cityLimitBase: 10, // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
 };
 
 /** Kanon v1 (2026-07-07) — stabilny klucz localStorage kreatora. */
@@ -332,6 +338,9 @@ function migrateAdvanced(raw: Record<string, unknown>): NewGameAdvancedOptions {
     || raw.cityStateDifficultyOverride === 'hard'
   ) {
     base.cityStateDifficultyOverride = raw.cityStateDifficultyOverride;
+  }
+  if (typeof raw.cityLimitBase === 'number' && raw.cityLimitBase > 0) {
+    base.cityLimitBase = raw.cityLimitBase; // R-MIASTA-LIMIT-PER-EPOKA-Q1 / EN: city limit base
   }
   return base;
 }
@@ -1180,6 +1189,7 @@ function advancedSettingRows(): AdvSettingRow[] {
       'relief_density',
       'Fair play: min. 2 góry / komórkę żelaza + 2 wzgórza / komórkę miedzi (Mało 35/21 · Normalnie 25/15 · Dużo 20/12). Wyższy tier = gęstsza siatka + bonus ukształtowania.',
     ),
+    advRowFromSett('village_rewards_enabled', 'Wioski na mapie dają losowe nagrody: złoto, jednostki, technologia lub relikt. Wyłączenie usywa wszystkie wioski.'),
     {
       key: 'landFraction',
       lbl: 'Udział lądu na mapie',
@@ -1302,6 +1312,21 @@ function advancedSettingRows(): AdvSettingRow[] {
       },
       setIdx: (i) => {
         advOpts.ruchSwiataPace = i === 1 ? 'normalny' : i === 2 ? 'dlugi' : 'krotki';
+      },
+    },
+    {
+      key: 'cityLimitBase',
+      lbl: 'Limit miast (baza)',
+      hint: 'Bazowa liczba miast na cywilizację — rzeczywisty limit per epoka = baza + (epoka−1)×5. Domyślnie = 10. / EN: base city limit per civilization — actual limit per era = base + (era−1)×5.',
+      opts: ['10 miast', '15 miast', '20 miast'],
+      getIdx: () => {
+        const limits = [10, 15, 20];
+        const i = limits.indexOf(advOpts.cityLimitBase);
+        return i >= 0 ? i : 0;
+      },
+      setIdx: (i) => {
+        const limits = [10, 15, 20];
+        advOpts.cityLimitBase = limits[i] ?? 10;
       },
     },
   ];
@@ -1558,6 +1583,7 @@ function buildParams(): NewGameParams {
     advanced: { ...advOpts },
     startPreview,
     selectedAiCivIds: [...selAiCivIds],
+    villageRewardsEnabled: settingValue('village_rewards_enabled') !== 'Wyłączone',
   };
 }
 
@@ -1644,6 +1670,11 @@ function renderGenStep(host: HTMLElement): void {
         : csOverride === 'normal'
           ? 'Normalny'
           : p.difficulty + ' (jak glowna)';
+    const cityLimitLabel = p.advanced.cityLimitBase === 15
+      ? '15 miast'
+      : p.advanced.cityLimitBase === 20
+        ? '20 miast'
+        : '10 miast';
     rows.push(
       ['Barbarzyncy', bLabel],
       ['Bitwy', p.advanced.battleAlwaysManual ? 'Ręczna' : 'Automatyczne'],
@@ -1653,6 +1684,7 @@ function renderGenStep(host: HTMLElement): void {
       ['Wzrost ludnosci', growthPaceLabel],
       ['Zasieg ruchu', ruchSwiataLabel],
       ['Trudnosc miast-panstw', csLabel],
+      ['Limit miast (baza)', cityLimitLabel],
     );
   }
   if (p.startPreview) {

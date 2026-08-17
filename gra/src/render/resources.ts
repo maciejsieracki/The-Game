@@ -105,6 +105,24 @@ function oreRocks(): THREE.Group {
   return g;
 }
 
+/**
+ * Kasyteryt (ruda cyny) — jasne skałki z CIEMNYMI bryłami rudy na wierzchu.
+ * Osobno od oreRocks(), bo tamta ma żółtawą żyłę (złoto/miedź), a ruda cyny
+ * jest czarnobrunatna. / EN: separate from oreRocks() — that one has a yellowish
+ * vein, while cassiterite is near-black.
+ */
+function tinOreRocks(): THREE.Group {
+  const g = new THREE.Group(); const rock = mat(0x8a8d92), ore = mat(0x2a201a);
+  const spots: Array<[number, number, number]> = [[0, 0, 1.0], [0.05, 0.02, 0.7], [-0.03, 0.04, 0.65]];
+  for (const [px, pz, s] of spots) {
+    const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.032 * s, 0), rock);
+    r.position.set(px, 0.028 * s, pz); r.rotation.set(px * 3, pz * 5, s); r.castShadow = true; g.add(r);
+    const v = new THREE.Mesh(new THREE.BoxGeometry(0.026 * s, 0.03 * s, 0.024 * s), ore);
+    v.position.set(px, 0.05 * s, pz); v.castShadow = true; g.add(v);
+  }
+  return g;
+}
+
 export function buildResourceOverlay(nakladka: Nakladka): THREE.Group | null {
   switch (nakladka) {
     case Nakladka.ZlozeKonia: {
@@ -131,6 +149,11 @@ export function buildResourceOverlayFromZloze(zloze?: string): THREE.Group | nul
     case 'sol':
     case 'zloto':
       return oreRocks();
+    // P-CYNA-BRAK-WIZUALIZACJI-3D-NA-MAPIE (2026-08-17): brak tej gałęzi = null =
+    // złoże cyny niewidoczne na mapie w stylu 'civ'. / EN: without this branch the
+    // tin deposit returned null and stayed invisible in the 'civ' style.
+    case 'cyna':
+      return tinOreRocks();
     case 'glina':
       return clayPots();
     case 'konie': {

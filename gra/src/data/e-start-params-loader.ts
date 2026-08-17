@@ -30,9 +30,11 @@ type RawEStart = {
     start_epoch_id?: string;
     map_quality_default?: string;
     render_quality_bundled?: string;
+    city_limit_base_default?: number;
   };
   skala_mapy?: Record<string, SkalaRow>;
   tempo_gry?: Record<string, number>;
+  city_limits?: Record<string, number>;
   zwyciestwo?: {
     ostatnia_epoka_v1?: number;
     prog_dominacji_power?: number;
@@ -153,4 +155,16 @@ export function eStartTempoMultiplier(label: string): number | undefined {
     if (normMenuLabel(k) === n && typeof v === 'number') return v;
   }
   return undefined;
+}
+
+export function eStartCityLimitBaseDefault(): number {
+  const v = R.defaulty?.city_limit_base_default;
+  return typeof v === 'number' && v > 0 ? v : 10;
+}
+
+export function eStartCityLimitBaseOptions(): number[] {
+  const limits = R.city_limits;
+  if (!limits || typeof limits !== 'object') return [10, 15, 20];
+  const opts = Object.values(limits).filter(v => typeof v === 'number' && v > 0).sort((a, b) => a - b);
+  return opts.length > 0 ? opts : [10, 15, 20];
 }

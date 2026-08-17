@@ -23,7 +23,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City }       from './cities';
-import { canFoundCity }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -4631,7 +4631,7 @@ export function decideAIEconomySliders(
       && inp.upkeepGoldCost !== undefined
       && inp.treasuryGold < inp.upkeepGoldCost
     ) {
-      const nextNauka = Math.max(0, procentNauka - params.krokProcentPracaNauka);
+      const nextNauka = Math.max(0, Math.min(MAX_PROCENT_NAUKA, procentNauka - params.krokProcentPracaNauka));
       if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
     }
 
@@ -4651,7 +4651,7 @@ export function decideAIEconomySliders(
     if (inp.atWar) {
       const nextBudynki = Math.min(100, procentBudynki + params.krokProcentPracaNauka);
       if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
-      const nextNauka = Math.max(0, procentNauka - params.krokProcentPracaNauka);
+      const nextNauka = Math.max(0, Math.min(MAX_PROCENT_NAUKA, procentNauka - params.krokProcentPracaNauka));
       if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
     } else if (!inp.isMajorAi || !inp.isEarlyGame) {
       // Pokój: major early NIE obniża procentBudynki (szkodzi ulepszeniom/wzrostowi).
@@ -4663,10 +4663,17 @@ export function decideAIEconomySliders(
       if (!moneyCrisis) {
         const nextBudynki = Math.max(0, procentBudynki - params.krokProcentPracaNauka);
         if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
-        const nextNauka = Math.min(100, procentNauka + params.krokProcentPracaNauka);
+        const nextNauka = Math.min(MAX_PROCENT_NAUKA, procentNauka + params.krokProcentPracaNauka);
         if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
       }
     }
+  }
+
+  // Finalnie, limituj Naukę na 60% (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: enforce hard cap on Science allocation.
+  const prevNauka = procentNauka;
+  procentNauka = Math.min(procentNauka, MAX_PROCENT_NAUKA);
+  if (procentNauka !== prevNauka) {
+    changed = true;
   }
 
   return { procentRozwoj, procentBudynki, procentNauka, changed };

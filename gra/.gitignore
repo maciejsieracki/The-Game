@@ -8,3 +8,8 @@ gra/tools/.city-map-badge-bundle.cjs
 gra/tools/.city-map-badge-entry.ts
 gra/tools/.zloze-zloto-render-bundle.cjs
 gra/tools/.zloze-zloto-render-entry.ts
+# Artefakty bramki kopalnia-cyny-render-test.cjs (esbuild generuje je przy każdym uruchomieniu).
+# Wzorzec WZGLĘDNY — ten plik leży w gra/, więc prefiks `gra/` wyżej i tak nie działa.
+# / EN: relative pattern — this file lives in gra/, so the `gra/` prefix above never matches.
+tools/.kopalnia-cyny-render-bundle.cjs
+tools/.kopalnia-cyny-render-entry.ts
