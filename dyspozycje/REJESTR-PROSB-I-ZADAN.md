@@ -2490,7 +2490,24 @@ Pre-existing dług testowy, niezwiązany z tą zmianą: `unit-stock-cost-test.cj
 **41/58 PASS** oraz `ai-recruit-upkeep-gate-test.cjs` **18/27 PASS**.
 Kanon: `docs/decyzje/P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.md`.
 
-| P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1 | 2026-08-17 | Bazowa produkcja Drewna/Kamienia/Gliny z terenu; rzeka pozostaje osobnym modyfikatorem | **W TOKU — ECHO zapisane, commit ECHO osobno; implementacja po commicie** | `docs/decyzje/P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1.md` · decyzja A · bez paneli Excel/WERSJE/bundli/deployu |
+| P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1 | 2026-08-17 | Bazowa produkcja Drewna/Kamienia/Gliny z terenu; rzeka pozostaje osobnym modyfikatorem | **GOTOWE — Evaluator PASS-WITH-NOTES** | `gra/data/terrain-yields.json` · commit `3ee0c52f` · testy bazowy 9/9, magazyn 14/14, konwertery 46/46, warstwy 24/24, parytet 101/101 |
 | P-EPOKA-BRAZU-KOMUNIKAT-PODBOJ-MIAST-Q1 | 2026-08-17 | **POPRZEDNI POŁĄCZONY TEMAT — ZASTĄPIONY / UNIEWAŻNIONY** | **ZASTĄPIONY / UNIEWAŻNIONY przez sprostowanie właściciela** | Łączył błędnie dwa niezależne zdarzenia: komunikat odblokowania/przejścia do Brązu po badaniach/technologiach oraz triumf po zajęciu wszystkich miast-państw kultury. Historia zachowana; nowe ID: `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` i `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1`. Żadne z tych zdarzeń nie jest wzajemnym warunkiem. |
 | P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 | 2026-08-17 | Osobny komunikat o możliwości wejścia do epoki Brązu i nowych możliwościach po odkryciu/odblokowaniu odpowiednich badań/technologii | **CZEKA-NA-DECYZJĘ — DOCS-ONLY, NIE KODOWAĆ** | Niezależne od zajęcia wszystkich miast-państw danej kultury; podbój nie jest warunkiem tego komunikatu, a komunikat nie jest warunkiem triumfu podboju. ABC jeszcze nie zadano. |
 | P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 | 2026-08-17 | Osobny, bardziej rozbudowany popup triumfu po zajęciu wszystkich miast-państw danej kultury | **CZEKA-NA-DECYZJĘ — DOCS-ONLY, NIE KODOWAĆ** | Niezależne od odkrycia technologii i przejścia do epoki Brązu; Brąz nie jest warunkiem popupu, a popup nie jest warunkiem wejścia do Brązu. ABC jeszcze nie zadano. |
+## KOREKTA STATUSÓW — FALA 291 (docs-only, 2026-08-17)
+
+Poniższe wpisy porządkują wyłącznie aktywny status rejestru. Historia i dowody pozostają
+w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
+
+| ID | Status bieżący | Dowód / uwaga |
+|---|---|---|
+| P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE | **GOTOWE DO EVALUATORA** | commit `38025d4b` |
+| P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM | **GOTOWE DO EVALUATORA** | commit `083dc4d2` |
+| P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA | **GOTOWE DO EVALUATORA** | commit `9044e39d`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-AI-BRAK-POJECIA-MGLY | **ABC OTWARTE** | nie dispatchować kodu |
+| P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE | **ZAMKNIĘTE — NO-ACTION** | panel tree-shaken |
+| P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA | **OTWARTE — ODŁOŻONE DO ABC** | realny brak ścieżki AI potwierdzony; bez dispatchu kodu po cofnięciu sagi |
+| P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA | **GOTOWE DO EVALUATORA** | commit `a277486a`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-SUROWCE-KOLEJNOSC-KART | **ZAMKNIĘTE** | test `62/0` |
+| P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT | **GOTOWE DO EVALUATORA** | commit `a1d37daf`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY | **ZDEPLOYOWANE** | FALA 286 |

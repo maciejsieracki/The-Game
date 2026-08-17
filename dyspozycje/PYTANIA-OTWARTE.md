@@ -28630,9 +28630,11 @@ naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C
    widoczności: 0 trafień. Może to być świadomy projekt (AI ma pełną informację, gra "uczciwie"
    inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
 
-**STATUS: ECHO ZAPISANE — A+C (2026-08-17), implementacja w toku.** AI dostaje własną widoczność
-per owner, pamięć ostatniej znanej pozycji celu oraz zakaz ataku/akcji bez ponownego wykrycia celu.
-Atak na miasto gracza pozostaje osobnym, nieobjętym tym zleceniem tematem.
+**Statusy rozdzielone po wykonaniu:**
+- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA`: **GOTOWE DO EVALUATORA** —
+  commit `9044e39d` gotowy, ale niezależny werdykt nie jest zapisany w rejestrze.
+- `P-AI-BRAK-POJECIA-MGLY`: **GOTOWE — Evaluator PASS-WITH-NOTES** —
+  własna widoczność per owner, pamięć celu i ponowne wykrycie; wcześniejsza decyzja A+C pozostaje dowodem.
 
 ---
 
