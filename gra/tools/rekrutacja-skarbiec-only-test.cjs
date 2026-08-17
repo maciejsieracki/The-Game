@@ -109,6 +109,10 @@ assert(aiUnitBranch.includes('purchaseRecruitmentUnit(cmd.cityId, candId, item.k
   'AI jednostkę kieruje do zakupu za Skarbiec');
 assert(!aiUnitBranch.includes('enqueue(prod0, item)'),
   'AI nie dodaje jednostki do kolejki Pracy');
+assert(mainSource.includes('if (ownerTreasury(ownerId) < koszt) return false;'),
+  'zakup gracza/AI/MP odrzuca brak środków Skarbca');
+assert(mainSource.includes('if (!city || city.ownerId !== ownerId) return false;'),
+  'wspólna ścieżka zakupu pilnuje właściciela miasta także dla MP');
 const cityPanelSource = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'ui', 'cityPanel.ts'), 'utf8');
 const addItemUnitBranch = cityPanelSource.slice(
   cityPanelSource.indexOf("} else if (item.kind === 'jednostka')"),
