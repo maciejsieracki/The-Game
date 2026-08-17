@@ -183,7 +183,7 @@ console.log('\n12. Integracja wiring: main używa remainder dla gracza i AI');
 {
   const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
   ok(
-    /applyEmpireBuildingBudget\(\s*0,[\s\S]{0,120}?playerPracaBudget\.doBudynkow\s*\)/.test(mainSrc),
+    /applyEmpireBuildingBudget\(\s*0,[\s\S]{0,220}?playerPracaBudget\.doBudynkow\s*\)/.test(mainSrc),
     'gracz: playerPracaBudget.doBudynkow trafia do produkcji budynków',
   );
   ok(

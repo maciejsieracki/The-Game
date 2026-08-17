@@ -517,8 +517,8 @@ console.log('-- 17. FALA 292: STRUKTURA (regex na main.ts) — split absolutny j
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
   const RE_SPLIT_CALL =
-    /const pracaBudget = splitEmpirePracaBudget\(\s*playerPracaPool,\s*empirePol\.pracaAutoPercent,/;
-  const RE_ABSOLUTE_CAP = /improvementBudgetCap: pracaBudget\.doUlepszen,/;
+    /const playerPracaBudget = splitEmpirePracaBudget\(\s*playerPracaPool,\s*ulepszeniaEmpireForOwner\(0\)\.pracaAutoPercent,/;
+  const RE_ABSOLUTE_CAP = /improvementBudgetCap: playerPracaBudget\.doUlepszen,/;
   const RE_NO_SECOND_PERCENT_CAP = /pracaBudgetPercent: 100,/;
   assert(RE_SPLIT_CALL.test(mainSrc),
     '17a: main liczy split całej puli przed pickerem');
