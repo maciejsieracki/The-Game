@@ -23,7 +23,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City }       from './cities';
-import { canFoundCity }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -4667,6 +4667,13 @@ export function decideAIEconomySliders(
         if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
       }
     }
+  }
+
+  // Finalnie, limituj Naukę na 60% (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: enforce hard cap on Science allocation.
+  const prevNauka = procentNauka;
+  procentNauka = Math.min(procentNauka, MAX_PROCENT_NAUKA);
+  if (procentNauka !== prevNauka) {
+    changed = true;
   }
 
   return { procentRozwoj, procentBudynki, procentNauka, changed };

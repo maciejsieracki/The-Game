@@ -342,6 +342,9 @@ export function snapHandelPct(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
 }
 
+/** Limit procentu Nauki w budżecie (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: hard cap on Science allocation. */
+export const MAX_PROCENT_NAUKA = 60;
+
 /** Wymusza kroki 10% i sumę = 100 (naprawa starych zapisów / błędnego UI). */
 export function normalizePodzialHandlu(split: CityPodzialHandlu): CityPodzialHandlu {
   let p = snapHandelPct(split.procentPieniadz);
@@ -366,6 +369,12 @@ export function adjustHandelSplit(
 ): CityPodzialHandlu {
   const next: CityPodzialHandlu = { ...current };
   next[changed] = snapHandelPct(newVal);
+
+  // Limit na Naukę: maksymalnie 60% budżetu (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: cap Science at 60% of budget.
+  if (changed === 'procentNauka') {
+    next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+  }
+
   const keys = (['procentPieniadz', 'procentNauka', 'procentLuksus'] as const)
     .filter(k => k !== changed);
   let remainder = 100 - next[changed];
@@ -381,12 +390,43 @@ export function adjustHandelSplit(
     const half = Math.round(remainder / 2 / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
     next[k0] = half;
     next[k1] = remainder - half;
+    // Jeśli Nauka jest jednym z k0/k1, także limituj do 60%. / EN: if Science is one of the redistributed fields, cap it too.
+    if (k0 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+    if (k1 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
     return next;
   }
-  let v0 = snapHandelPct(remainder * current[k0] / sumOthers);
-  if (v0 > remainder) v0 = Math.floor(remainder / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
-  next[k0] = v0;
-  next[k1] = remainder - v0;
+
+  // Specjalny przypadek: jeśli Nauka jest JUŻ na capie w bieżącym stanie, przytrzymaj ją na capie
+  // i redystrybuuj CAŁĄ resztę między inne pola. / EN: if Science is already at cap, keep it there and redistribute the rest.
+  const naukaIsAtCap = (k0 === 'procentNauka' && current.procentNauka >= MAX_PROCENT_NAUKA)
+                    || (k1 === 'procentNauka' && current.procentNauka >= MAX_PROCENT_NAUKA);
+
+  if (naukaIsAtCap && (k0 === 'procentNauka' || k1 === 'procentNauka')) {
+    const nonNaukaKey = (k0 === 'procentNauka') ? k1 : k0;
+    next.procentNauka = MAX_PROCENT_NAUKA;
+    next[nonNaukaKey] = remainder - MAX_PROCENT_NAUKA;
+  } else {
+    // Normalna redystrybucja proporcjonalna
+    let v0 = snapHandelPct(remainder * current[k0] / sumOthers);
+    if (v0 > remainder) v0 = Math.floor(remainder / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
+    next[k0] = v0;
+    next[k1] = remainder - v0;
+
+    // Limitujesz Naukę również po redystrybucji (gdy zmienił się inny parametr). / EN: enforce cap on Science even when adjusting other fields.
+    // Zapisz wartość Nauki PRZED capowaniem, aby odkwantować straconą część. / EN: record Science value before capping to recover the difference.
+    const naukaBeforeCap = next.procentNauka;
+    if (k0 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+    if (k1 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+
+    // Jeśli capowanie zmniejszyło Naukę, oddaj różnicę z powrotem do drugiego redystrybuowanego pola. / EN: if capping reduced Science, return the difference to the other redistributed field.
+    const cappedDiff = naukaBeforeCap - next.procentNauka;
+    if (cappedDiff > 0) {
+      // Jeśli Nauka to k0, oddaj k1; jeśli Nauka to k1, oddaj k0.
+      const otherKey = (k0 === 'procentNauka') ? k1 : k0;
+      next[otherKey] = Math.max(0, Math.min(100, next[otherKey] + cappedDiff));
+    }
+  }
+
   return next;
 }
 
