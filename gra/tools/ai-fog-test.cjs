@@ -154,6 +154,32 @@ console.log('W7 mutation: memory snapshots are detached');
 
 console.log('W8 remembered city A cannot capture replacement city B; A can be recaptured');
 {
+  const rememberedCommands = api.decideAITurn(
+    1,
+    [unit('a8-memory', 1, 5, 5)],
+    [city('home', 1, 4, 4), city('city-b', 2, 6, 5)],
+    makeMap(), data,
+    {
+      canEngageOwner: atWar,
+      visibleHexes: new Set(['5,5']),
+      rememberedTargets: [{ targetId: 'city-a', targetOwnerId: 2, kind: 'city', q: 6, r: 5 }],
+    },
+  );
+  const rememberedCityMove = rememberedCommands.find(
+    c => c.type === 'move' && c.targetCityId !== undefined,
+  );
+  assert.strictEqual(rememberedCityMove.targetCityId, 'city-a');
+  assert.strictEqual(
+    api.aiCityCaptureAllowed(
+      rememberedCityMove.targetCityId,
+      { id: 'city-b', ownerId: 2, q: 6, r: 5 },
+      new Set(['6,5']),
+      true,
+      keyOf,
+    ),
+    false,
+  );
+
   const commands = api.decideAITurn(
     1,
     [unit('a8', 1, 5, 5)],
