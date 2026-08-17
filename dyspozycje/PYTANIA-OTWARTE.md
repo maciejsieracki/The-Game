@@ -31003,3 +31003,33 @@ liniowy/kwadratowy rosnący z liczbą miast gracza" (to drugie może być koszte
 bugiem — do rozstrzygnięcia pomiarem, nie zgadywania).
 
 ---
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA-COOLDOWN-Q1 (2026-08-16, dopytanie orkiestratora + ECHO Macieja)
+
+**Kontekst:** `gra/src/game/forced-war-bronze.ts:55-65` ma roboczy placeholder
+`WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR = 20` z jawnym komentarzem w kodzie, że zdanie
+Macieja z 2026-08-09 („nie będzie atakować tej samej cywilizacji przez okres [???] tur") urwało
+się przed podaniem liczby — nigdy nie potwierdzone.
+
+**Pytanie zadane wprost (orkiestrator, w czacie, 2026-08-16):** A) zostaw 20 tur (obecne robocze
+założenie) B) inna liczba.
+
+**ECHO Macieja: A — 20 tur, z doprecyzowaniem: „Ale może atakować inną cywilizację w tym
+okresie."** Czyli cooldown 20 tur dotyczy WYŁĄCZNIE ponownego ataku na TĘ SAMĄ cywilizację —
+AI w tym czasie może swobodnie wypowiedzieć wojnę wymuszoną innej cywilizacji.
+
+**Zweryfikowane (orkiestrator, czytanie kodu) — to JUŻ jest dokładnie tak zaimplementowane, zero
+zmian kodu potrzebnych.** Komentarz nagłówkowy pliku (`forced-war-bronze.ts:10-12`): „Po pokoju
+cywilizacja odpoczywa `WOJNA_WYMUSZONA_ODPOCZYNEK_TUR` tur, po czym szuka NOWEGO celu (może być
+inna cywilizacja, niekoniecznie ta sama) — do tej samej cywilizacji wraca dopiero po
+`WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR` turach." Stała `WOJNA_WYMUSZONA_ODPOCZYNEK_TUR
+= 20` (linia 53) to ogólny odpoczynek przed szukaniem JAKIEGOKOLWIEK nowego celu — krótszy/równy
+cooldownowi per-para, więc AI może zaatakować inną cywilizację już po 20 turach odpoczynku, nawet
+gdy cooldown na TĘ SAMĄ cywilizację (też 20 tur w tym przypadku, bo obie stałe mają dziś tę samą
+wartość) jeszcze trwa — to jest DOKŁADNIE potwierdzone przez Macieja zachowanie.
+
+STATUS: **ZAMKNIĘTE — potwierdzone, kod już zgodny z ECHO, brak zmian do wdrożenia.** Placeholder
+w komentarzu kodu (`ROBOCZE ZAŁOŻENIE... do potwierdzenia`) do usunięcia przy najbliższej okazji
+edycji tego pliku (kosmetyka, nie pilne, nie samodzielny dispatch).
+
+---
