@@ -16,7 +16,7 @@ const bundle = path.join(__dirname, '.ai-fog-bundle.cjs');
 fs.writeFileSync(entry, `
 export { decideAITurn } from ${JSON.stringify(path.join(root, 'src/game/ai'))};
 export {
-  rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory,
+  rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory,
 } from ${JSON.stringify(path.join(root, 'src/game/ai-fog'))};
 `, 'utf8');
 try {
@@ -113,6 +113,13 @@ console.log('W5 old save without memory -> empty, no crash');
   const restored = api.restoreAiTargetMemory(undefined);
   assert.strictEqual(restored.size, 0);
   assert.strictEqual(api.rememberedAiTargets(restored, 1).length, 0);
+  const persisted = new Map([[1, new Map([['unit:e5', {
+    targetId: 'e5', targetOwnerId: 2, kind: 'unit', q: 7, r: 7,
+  }]])]]);
+  const roundTrip = api.restoreAiTargetMemory(api.snapshotAiTargetMemory(persisted));
+  assert.deepStrictEqual(api.rememberedAiTargets(roundTrip, 1), [{
+    targetId: 'e5', targetOwnerId: 2, kind: 'unit', q: 7, r: 7,
+  }]);
 }
 
 console.log('W6 edge cases: invalid entry and own target ignored');
