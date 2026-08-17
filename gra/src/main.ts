@@ -26363,9 +26363,10 @@ async function boot(): Promise<void> {
                   territoryNodes: territoryNodesAuto,
                   placedImprovements: workingPlaced,
                   pracaAvailable: playerPracaPool,
-                  // P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: nadrzędny podział
-                  // całej puli imperium; picker nie wylicza już sam limitu
-                  // „wewnątrz automatu”.
+                  // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: split całej puli jest
+                  // policzony raz poza pickerem. Picker dostaje absolutny budżet
+                  // ulepszeń; jego stary procentowy cap nie może drugi raz
+                  // dzielić tej wartości.
                   improvementBudgetCap: pracaBudget.doUlepszen,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
@@ -26374,15 +26375,9 @@ async function boot(): Promise<void> {
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
-                  // R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14): `pracaBudgetPercent`
-                  // MUSI być polityką IMPERIUM (empirePol), nie per-miasto — to jest źródło
-                  // nadrzędnego pułapu (`imperiumBudgetCap` w pickAutoImprovements), który
-                  // per-miasto override (`getPracaBudgetPercent` niżej) nie może przebić.
-                  // / EN: `pracaBudgetPercent` MUST be the EMPIRE policy (empirePol), not
-                  // per-city — it's the source of the overarching cap (`imperiumBudgetCap` in
-                  // pickAutoImprovements) that the per-city override (`getPracaBudgetPercent`
-                  // below) cannot exceed.
-                  pracaBudgetPercent: empirePol.pracaAutoPercent,
+                  // Absolutny split powyżej jest jedynym źródłem limitu. 100%
+                  // oznacza tu „nie stosuj drugiego procentowego capu pickera”.
+                  pracaBudgetPercent: 100,
                   getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(

@@ -1972,9 +1972,10 @@ function planCityImprovements(
     pracaAvailable,
     unlockedTechs: opts.improvementTechs ?? new Set<string>(),
     pracaSurplusThreshold: 0,
-    // P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: AI podlega temu samemu
-    // nadrzędnemu splitowi całej puli co gracz.
-    pracaBudgetPercent: 50,
+    // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: AI podlega temu samemu
+    // absolutnemu splitowi całej puli co gracz. Picker nie może wykonać
+    // drugiego, procentowego podziału na już wydzielonym budżecie.
+    pracaBudgetPercent: 100,
     improvementBudgetCap: pracaBudget.doUlepszen,
     maxItemsPerCity: 1,
     skipWyrab: false,

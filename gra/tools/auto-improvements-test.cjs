@@ -511,41 +511,45 @@ console.log('16. Q3=B REGRESSION GUARD — bez override (wszystkie miasta = poli
   eq(spentExplicitSame, spentNoOverrideFn, 'getPracaBudgetPercent zwracajacy TA SAMA wartosc co polityka imperium daje IDENTYCZNY wynik jak brak override — nowy pulap imperium nie zmienia zachowania gdy brak realnego override');
 }
 
-console.log('-- 17. N2 (Evaluator, R-AUTO-PRACA-BUDZET-PROCENT-Q3=B): STRUKTURA (regex na main.ts) — jedyne wywolanie pickAutoImprovements() przekazuje pracaBudgetPercent: empirePol.pracaAutoPercent --');
+console.log('-- 17. FALA 292: STRUKTURA (regex na main.ts) — split absolutny jest policzony przed pickerem, a picker nie dzieli go drugi raz --');
 {
-  // N2 z werdyktu Evaluatora (PYTANIA-OTWARTE.md, R-AUTO-PRACA-BUDZET-PROCENT-Q3=B
-  // PASS-WITH-NOTES): main.ts jest JEDYNYM miejscem laczacym polityke gracza
-  // (empirePol.pracaAutoPercent, panel Praca) z silnikiem budzetu imperium (imperiumBudgetCap w
-  // auto-improvements.ts). Cichy revert tego jednego parametru (literowka, refaktor, zly merge)
-  // przechodzi tsc BEZ bledu — pracaBudgetPercent ma domyslna wartosc 100 w funkcji, wiec brak
-  // parametru = "bez ograniczenia %", nie blad kompilacji — i przechodzi wszystkie istniejace
-  // bramki 1-16 powyzej, bo ten plik testuje WYLACZNIE game/auto-improvements.ts w izolacji
-  // (main.ts nigdy sie tu nie uruchamia). Ten test jest jedynym straznikiem: bramka
-  // STRUKTURALNA (regex na TEKST main.ts), wzorem promote-to-front-test.cjs sekcja 24
-  // (fs.readFileSync + regex, kotwiczony na nazwe zmiennej/wywolania, odporny na
-  // przeformatowanie bialych znakow, lapie powrot do braku parametru).
-  // / EN: N2 from the Evaluator's verdict (PYTANIA-OTWARTE.md, R-AUTO-PRACA-BUDZET-PROCENT-Q3=B
-  // PASS-WITH-NOTES): main.ts is the ONLY place wiring the player's policy
-  // (empirePol.pracaAutoPercent, the Praca panel) into the empire budget engine
-  // (imperiumBudgetCap in auto-improvements.ts). Silently reverting this one parameter (a typo,
-  // a refactor, a bad merge) passes tsc CLEANLY — pracaBudgetPercent defaults to 100 in the
-  // function, so a missing parameter means "no % restriction", not a compile error — and it
-  // passes every existing gate 1-16 above, since this file exercises ONLY
-  // game/auto-improvements.ts in isolation (main.ts never runs here). This test is the only
-  // guard: a STRUCTURAL gate (regex on main.ts TEXT), same pattern as
-  // promote-to-front-test.cjs section 24 (fs.readFileSync + regex, anchored on the
-  // variable/call name, resilient to whitespace reformatting, catches a reversion to a missing
-  // parameter).
   const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
-  const RE_CALL_PASSES_EMPIRE_POLICY =
-    /const picks = pickAutoImprovements\(\{[\s\S]{0,2000}?pracaBudgetPercent: empirePol\.pracaAutoPercent,/;
-  assert(RE_CALL_PASSES_EMPIRE_POLICY.test(mainSrc),
-    '17a: jedyne wywolanie pickAutoImprovements() w main.ts przekazuje pracaBudgetPercent: empirePol.pracaAutoPercent (polityke imperium, zrodlo imperiumBudgetCap) -- bez tego parametru automat uzywa domyslnych 100% (brak ograniczenia)');
+  const RE_SPLIT_BEFORE_PICKER =
+    /const pracaBudget = splitEmpirePracaBudget\(\s*playerPracaPool,\s*empirePol\.pracaAutoPercent,\s*\);[\s\S]{0,900}?improvementBudgetCap: pracaBudget\.doUlepszen,[\s\S]{0,900}?pracaBudgetPercent: 100,/;
+  assert(RE_SPLIT_BEFORE_PICKER.test(mainSrc),
+    '17a: main liczy split całej puli i przekazuje absolutny budżet ulepszeń bez drugiego procentowego capu');
 
   const CALL_COUNT = (mainSrc.match(/pickAutoImprovements\(/g) || []).length;
   eq(CALL_COUNT, 1, '17b: dokladnie JEDNO wywolanie pickAutoImprovements() w main.ts -- jesli ta liczba sie zmieni, straznik 17a nie pokrywa automatycznie nowego wywolania i wymaga rewizji');
+}
+
+console.log('-- 18. FALA 292: realny picker respektuje absolutny split mimo starego override per-miasto --');
+{
+  const map = makeFlatMap(60, 60);
+  const cityA = makeCity('cA', 0, 15, 15, 6, { ulepszeniaFocus: 'zywnosc' });
+  const cityB = makeCity('cB', 0, 45, 45, 6, { ulepszeniaFocus: 'zywnosc' });
+  const picks = pickAutoImprovements({
+    cities: [cityA, cityB],
+    ownerId: 0,
+    map,
+    territoryNodes: [
+      { q: cityA.q, r: cityA.r, pop: cityA.population, level: 1, ownerId: 0 },
+      { q: cityB.q, r: cityB.r, pop: cityB.population, level: 1, ownerId: 0 },
+    ],
+    placedImprovements: new Map(),
+    pracaAvailable: 200,
+    pracaBudgetPercent: 100,
+    improvementBudgetCap: 40,
+    getPracaBudgetPercent: () => 80,
+    unlockedTechs: new Set(['Rolnictwo', 'Kamieniarstwo']),
+    pracaSurplusThreshold: 0,
+    skipWyrab: true,
+  });
+  const spent = picks.reduce((sum, pick) => sum + pick.kosztPraca, 0);
+  eq(spent, 40, 'override 80% nie przebija absolutnego capu 40 Pracy (jedno ulepszenie)');
+  assert(spent <= 100, 'realny wydatek pozostaje poniżej 50% puli 200 Pracy');
 }
 
 console.log(`\nauto-improvements-test: ${passed} passed, ${failed} failed`);
