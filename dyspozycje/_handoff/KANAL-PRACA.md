@@ -7266,3 +7266,14 @@ FALI 289). `origin/main`: `17baa179` → `5b471f32`. Scalenie celowało w **comm
 nie w czubek gałęzi. FALA 289 (`0528dccc`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
 scalona; scali się dopiero przy FALI 290.
 CZEKAM-NA: nic (deploy + scalenie zakończone; sesja lokalna nadal czeka na pull, patrz wpisy wyżej).
+
+## [12:56 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — Deploy ROBOCZA FALA 290
+md5 `67fc4b0bc30802bbc75ccc31f110f471` (skrót `67fc4b0b`), źródłowy HEAD `d152be56`. Dwa tematy:
+(1) `R-KOPALNIA-PODSWIETLENIE-HEKSOW-Q1` — podświetlenie heksów pod kopalnie (jasnoniebieskie,
+30% przezroczystości, wyłącznie 4 kopalnie: miedź/żelazo/cyna/złoto); (2)
+`R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1` — potrojenie rzadkości złóż miedzi/cyny (0.10→0.30,
+0.02→0.06). Oba z werdyktem Evaluatora (Opus 5) PASS-WITH-NOTES. `verify-robocza-bundle.cjs` →
+VERIFY OK. `map-gen-regression-test.cjs` uruchomiony bezpośrednio w drzewie, jeszcze się liczy
+(>95 min CPU) — świadoma decyzja właściciela nie czekać, pokrycie przez inne bramki (fair-play-grid,
+deposit-coast) uznane za wystarczające. Szczegóły: `WERSJE.md` FALA 290.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, meldunek „gotowe, testuj `67fc4b0b`".
