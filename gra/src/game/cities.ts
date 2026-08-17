@@ -823,6 +823,8 @@ export function foundCityAt(
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
     poziomRacjiOverride: false,
+    autoWyzywienie: true, // Włączone automatyczne wyżywienie dla nowo założonych miast / EN: enable auto-feeding for newly founded cities
+    budowaTryb: 'zrownowazone', // Domyślna zrównoważona budowa dla nowych miast / EN: default balanced build mode for new cities
     ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }
