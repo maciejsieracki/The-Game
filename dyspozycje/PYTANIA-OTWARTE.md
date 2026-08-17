@@ -13349,6 +13349,20 @@ jako niewłaściwy mechanizm, zastąpione nowym hookiem ruchu.
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree ręczny) — implementacja od nowa wg
 doprecyzowanej mechaniki, z pełnym pokryciem testowym (w tym że stare jednostki NIE znikają).**
 
+### Follow-up ECHO A — 2026-08-17
+
+Właściciel doprecyzował trwałość efektu wejścia:
+
+> „po wejściu jednostki cywilizacji na heks obozu barbarzyńskiego heks ma być
+> trwale wykluczony z przyszłego tworzenia obozów w tej rozgrywce. Istniejące
+> jednostki barbarzyńskie pozostają; zatrzymuje się tylko spawner.”
+
+To jest decyzja **A** dla osobnego follow-upu `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1`.
+Pełny ECHO zapisano w `docs/decyzje/P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1.md`.
+Implementacja obejmuje blacklistę heksów per gra, save/load z defaultem dla
+starych zapisów oraz wszystkie losowe ścieżki spawnowania. Status: **W TOKU,
+bez deployu**.
+
 ## P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej, temat deweloperski, worktree eval-pool-4)
 
 Cytat właściciela: *"Cegielnia przepustowość 10 plus 10% możliwość awansu i ulepszenia co
