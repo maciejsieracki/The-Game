@@ -42,7 +42,11 @@ export function rememberVisibleAiTargets(
     ownerMemory = new Map();
     memory.set(ownerId, ownerMemory);
   }
-  for (const [kind, targets] of [['unit', units], ['city', cities] as const]) {
+  const targetGroups: Array<[AiTargetKind, readonly AiFogTarget[]]> = [
+    ['unit', units],
+    ['city', cities],
+  ];
+  for (const [kind, targets] of targetGroups) {
     for (const target of targets) {
       if (target.ownerId === ownerId || !visibleHexes.has(keyOf(target.q, target.r))) continue;
       ownerMemory.set(memoryKey(kind, target.id), {
