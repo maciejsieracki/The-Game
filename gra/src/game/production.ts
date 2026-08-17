@@ -1826,6 +1826,26 @@ export function splitPraca(cityPraca: number, udzialBudynki: number): { doBudynk
 }
 
 /**
+ * Nadrzędny podział całej puli Pracy imperium między budynki i ulepszenia terenu.
+ *
+ * Ulepszenia mogą dostać najwyżej 50% całej puli; reszta pozostaje dostępna dla
+ * budynków (albo jako jawnie zachowany remainder, gdy nie ma legalnej kolejki).
+ * To nie jest limit wewnątrz pickera ulepszeń — wynik tej funkcji jest realnym
+ * budżetem przekazywanym dalej do produkcji gracza i AI.
+ */
+export function splitEmpirePracaBudget(
+  pracaPool: number,
+  requestedImprovementPercent: number,
+): { total: number; doBudynkow: number; doUlepszen: number } {
+  const total = Number.isFinite(pracaPool) && pracaPool > 0 ? Math.floor(pracaPool) : 0;
+  const percent = Number.isFinite(requestedImprovementPercent)
+    ? Math.max(0, Math.min(50, Math.round(requestedImprovementPercent)))
+    : 0;
+  const doUlepszen = Math.floor(total * percent / 100);
+  return { total, doBudynkow: total - doUlepszen, doUlepszen };
+}
+
+/**
  * Ile Pracy miasta trafia do puli imperium w tej turze.
  * Kolejka pusta → całość (doPuli + niewykorzystane doBudynkow); inaczej tylko doPuli.
  */

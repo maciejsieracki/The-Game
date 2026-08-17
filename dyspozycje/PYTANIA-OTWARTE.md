@@ -31603,3 +31603,20 @@ STATUS: **SCALONE DO GŁÓWNEGO DRZEWA, CZEKA NA NIEZALEŻNĄ WERYFIKACJĘ ORKIE
 i Evaluatora — NIE `WDROŻONE`, korekta wcześniejszego zbyt optymistycznego wpisu Operatora.**
 
 ---
+
+## P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1 (2026-08-17, korekta zakresu po FALI 291)
+
+**Korekta właściciela:** poprzednie `R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1` ograniczało
+tylko parametr automatycznych ulepszeń. Właściwy kontrakt jest nadrzędnym podziałem całej
+puli Pracy imperium: budynki + ulepszenia terenu = 100%; ulepszenia najwyżej 50%; minimum
+50% pozostaje dostępne dla budynków. Dotyczy gracza i AI, także przy override per-miasto.
+
+**Zakres implementacji:** nowy produkcyjny `splitEmpirePracaBudget()` wylicza absolutny
+budżet obu strumieni, a picker dostaje ten budżet jako nadrzędny cap. Przy braku legalnej
+kolejki budynków zachowuje się istniejąca reguła overflow: niewykorzystany remainder zostaje
+w puli, nie jest spalany. Migracja starych zapisów pozostaje bez zmiany; clamp nadal działa
+przy odczycie pól legacy i nowych.
+
+STATUS: **W TRAKCIE — osobna gałąź/worktree, bez merge/push/deploy.**
+
+---

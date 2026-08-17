@@ -776,7 +776,7 @@ import {
 import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
-  enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
+  enqueue, buildingProductionItem, splitPraca, splitEmpirePracaBudget, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue,
@@ -26289,6 +26289,10 @@ async function boot(): Promise<void> {
                 const playerCivArch = civTypeForOwner(0);
                 const workingPlaced = new Map(placedImprovements);
                 const empirePol = ulepszeniaEmpireForOwner(0);
+                const pracaBudget = splitEmpirePracaBudget(
+                  playerPracaPool,
+                  empirePol.pracaAutoPercent,
+                );
                 const picks = pickAutoImprovements({
                   cities: autoImpCities,
                   ownerId: 0,
@@ -26296,6 +26300,10 @@ async function boot(): Promise<void> {
                   territoryNodes: territoryNodesAuto,
                   placedImprovements: workingPlaced,
                   pracaAvailable: playerPracaPool,
+                  // P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: nadrzędny podział
+                  // całej puli imperium; picker nie wylicza już sam limitu
+                  // „wewnątrz automatu”.
+                  improvementBudgetCap: pracaBudget.doUlepszen,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
                   skipWyrab: true,

@@ -55,6 +55,7 @@ import {
   AI_IMPROVEMENT_PRIORITY,
   pickAutoImprovements,
 } from './auto-improvements';
+import { splitEmpirePracaBudget } from './production';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 
@@ -1942,6 +1943,7 @@ function planCityImprovements(
   // schodził z puli poniżej 30 po budowie farmy (koszt 20 przy puli 35) — regres MP.
   if (pracaAvailable <= pracaSurplusGate) return [];
 
+  const pracaBudget = splitEmpirePracaBudget(pracaAvailable, 50);
   const picks = pickAutoImprovements({
     cities: myCities,
     ownerId,
@@ -1951,20 +1953,10 @@ function planCityImprovements(
     pracaAvailable,
     unlockedTechs: opts.improvementTechs ?? new Set<string>(),
     pracaSurplusThreshold: 0,
-    // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (2026-08-14): AI NIE korzysta z %-budżetu Pracy — ten
-    // mechanizm to wybór GRACZA ("zostaw mi część Pracy"), AI nie ma gracza dla którego miałaby
-    // cokolwiek zostawiać. pracaBudgetPercent=100 = jawny brak ograniczenia % (bez tego pola
-    // funkcja i tak domyślnie nie ogranicza % — ustawione jawnie dla czytelności/odporności na
-    // przyszłą zmianę domyślnej wartości). Throttle AI to WYŁĄCZNIE maxItemsPerCity=1 niżej —
-    // dawniej niejawny efekt uboczny usuniętego domyślnego `maxPerCity=1`, teraz jawny (patrz
-    // testy 4-6/9/10 w ai-improvements-test.cjs, które ten dokładny throttle asercjonują).
-    // / EN: AI does NOT use the %-budget — that mechanism is the PLAYER'S choice ("leave me some
-    // Work"), AI has no player to leave anything for. pracaBudgetPercent=100 = explicit no-%-cap
-    // (the function already defaults to no cap without this, set explicitly for
-    // clarity/future-proofing). AI's throttle is ONLY maxItemsPerCity=1 below — previously an
-    // implicit side effect of the removed default `maxPerCity=1`, now explicit (see tests
-    // 4-6/9/10 in ai-improvements-test.cjs, which assert this exact throttle).
-    pracaBudgetPercent: 100,
+    // P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: AI podlega temu samemu
+    // nadrzędnemu splitowi całej puli co gracz.
+    pracaBudgetPercent: 50,
+    improvementBudgetCap: pracaBudget.doUlepszen,
     maxItemsPerCity: 1,
     skipWyrab: false,
     civArchetype: opts.civType,
