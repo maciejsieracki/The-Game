@@ -384,20 +384,27 @@ export function normalizePodzialHandlu(split: CityPodzialHandlu): CityPodzialHan
   return { procentPieniadz: p, procentNauka: n, procentLuksus: l };
 }
 
-/** Redystrybucja pozostałych dwóch pól tak, by suma = 100 po zmianie jednego (kroki 10%). */
+/** Redystrybucja pozostałych dwóch pól tak, by suma = 100 po zmianie jednego (kroki 10%).
+ *  Nauka ma limit MAX_PROCENT_NAUKA (60%) — nigdy nie może przekroczyć tej wartości,
+ *  a gdy jest już na capie, pozostałe pola są prawidłowo clampowane do [0, 100].
+ *  / EN: Redistribute the other two fields so sum = 100 after one changes (10% steps).
+ *  Science has a MAX_PROCENT_NAUKA cap (60%) — never exceeds it, and when at cap,
+ *  other fields are properly clamped to [0, 100].
+ */
 export function adjustHandelSplit(
   current: CityPodzialHandlu,
   changed: keyof CityPodzialHandlu,
   newVal: number,
 ): CityPodzialHandlu {
   const next: CityPodzialHandlu = { ...current };
-  next[changed] = snapHandelPct(newVal);
+  let changedVal = snapHandelPct(newVal);
 
-  // Limit na Naukę: maksymalnie 60% budżetu (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: cap Science at 60% of budget.
+  // Jeśli zmienia się Nauka bezpośrednio, clamp do MAX_PROCENT_NAUKA. / EN: cap Science at 60% when changed directly.
   if (changed === 'procentNauka') {
-    next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+    changedVal = Math.min(changedVal, MAX_PROCENT_NAUKA);
   }
 
+  next[changed] = changedVal;
   const keys = (['procentPieniadz', 'procentNauka', 'procentLuksus'] as const)
     .filter(k => k !== changed);
   let remainder = 100 - next[changed];
@@ -408,45 +415,60 @@ export function adjustHandelSplit(
   }
   const [k0, k1] = keys;
   if (k0 === undefined || k1 === undefined) return next;
+
+  // Obsługa limitu MAX_PROCENT_NAUKA: jeśli Nauka jest jednym z k0 lub k1,
+  // to clamp ją do maximum (ale nigdy nie poniżej current value jeśli już tam była).
+  const naukaKey = (k0 === 'procentNauka' ? k0 : k1 === 'procentNauka' ? k1 : null);
+  const nonNaukaKey = naukaKey === k0 ? k1 : naukaKey === k1 ? k0 : null;
+
+  if (naukaKey && nonNaukaKey) {
+    // Nauka już na capie — trzymaj ją tam, clamp drugie pole.
+    if (current[naukaKey] >= MAX_PROCENT_NAUKA) {
+      next.procentNauka = Math.min(MAX_PROCENT_NAUKA, remainder);
+      next[nonNaukaKey] = Math.max(0, remainder - next.procentNauka);
+      return next;
+    }
+  }
+
   const sumOthers = current[k0] + current[k1];
   if (sumOthers <= 0) {
     const half = Math.round(remainder / 2 / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
     next[k0] = half;
     next[k1] = remainder - half;
-    // Jeśli Nauka jest jednym z k0/k1, także limituj do 60%. / EN: if Science is one of the redistributed fields, cap it too.
-    if (k0 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
-    if (k1 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
+    // Jeśli k0 to Nauka, clamp do MAX_PROCENT_NAUKA. / EN: if k0 is Science, clamp to cap.
+    if (k0 === 'procentNauka' && next.procentNauka > MAX_PROCENT_NAUKA) {
+      next.procentNauka = MAX_PROCENT_NAUKA;
+      next[k1] = remainder - next.procentNauka;
+    } else if (k1 === 'procentNauka' && next.procentNauka > MAX_PROCENT_NAUKA) {
+      next.procentNauka = MAX_PROCENT_NAUKA;
+      next[k0] = remainder - next.procentNauka;
+    }
+    // Ensure both are in [0, 100]. / EN: clamp both fields to [0, 100].
+    next[k0] = Math.max(0, Math.min(100, next[k0]));
+    next[k1] = Math.max(0, Math.min(100, next[k1]));
     return next;
   }
-  // Specjalny przypadek: jeśli Nauka jest JUŻ na capie w bieżącym stanie, przytrzymaj ją na capie
-  // i redystrybuuj CAŁĄ resztę między inne pola. / EN: if Science is already at cap, keep it there and redistribute the rest.
-  const naukaIsAtCap = (k0 === 'procentNauka' && current.procentNauka >= MAX_PROCENT_NAUKA)
-                    || (k1 === 'procentNauka' && current.procentNauka >= MAX_PROCENT_NAUKA);
 
-  if (naukaIsAtCap && (k0 === 'procentNauka' || k1 === 'procentNauka')) {
-    const nonNaukaKey = (k0 === 'procentNauka') ? k1 : k0;
+  let v0 = snapHandelPct(remainder * current[k0] / sumOthers);
+  if (v0 > remainder) v0 = Math.floor(remainder / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
+
+  // Jeśli k0 to Nauka, clamp do MAX_PROCENT_NAUKA. / EN: if k0 is Science, clamp to cap.
+  if (k0 === 'procentNauka' && v0 > MAX_PROCENT_NAUKA) {
+    v0 = MAX_PROCENT_NAUKA;
+  }
+
+  next[k0] = v0;
+  next[k1] = remainder - v0;
+
+  // Clamp both fields to [0, 100] — k1 może być ujemne jeśli coś poszło nie tak.
+  next[k0] = Math.max(0, Math.min(100, next[k0]));
+  next[k1] = Math.max(0, Math.min(100, next[k1]));
+
+  // Jeśli k1 to Nauka, clamp do MAX_PROCENT_NAUKA. / EN: if k1 is Science, clamp to cap.
+  if (k1 === 'procentNauka' && next.procentNauka > MAX_PROCENT_NAUKA) {
     next.procentNauka = MAX_PROCENT_NAUKA;
-    next[nonNaukaKey] = remainder - MAX_PROCENT_NAUKA;
-  } else {
-    // Normalna redystrybucja proporcjonalna
-    let v0 = snapHandelPct(remainder * current[k0] / sumOthers);
-    if (v0 > remainder) v0 = Math.floor(remainder / HANDEL_PCT_STEP) * HANDEL_PCT_STEP;
-    next[k0] = v0;
-    next[k1] = remainder - v0;
-
-    // Limitujesz Naukę również po redystrybucji (gdy zmienił się inny parametr). / EN: enforce cap on Science even when adjusting other fields.
-    // Zapisz wartość Nauki PRZED capowaniem, aby odkwantować straconą część. / EN: record Science value before capping to recover the difference.
-    const naukaBeforeCap = next.procentNauka;
-    if (k0 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
-    if (k1 === 'procentNauka') next.procentNauka = Math.min(next.procentNauka, MAX_PROCENT_NAUKA);
-
-    // Jeśli capowanie zmniejszyło Naukę, oddaj różnicę z powrotem do drugiego redystrybuowanego pola. / EN: if capping reduced Science, return the difference to the other redistributed field.
-    const cappedDiff = naukaBeforeCap - next.procentNauka;
-    if (cappedDiff > 0) {
-      // Jeśli Nauka to k0, oddaj k1; jeśli Nauka to k1, oddaj k0.
-      const otherKey = (k0 === 'procentNauka') ? k1 : k0;
-      next[otherKey] = Math.max(0, Math.min(100, next[otherKey] + cappedDiff));
-    }
+    next[k0] = remainder - next.procentNauka;
+    next[k0] = Math.max(0, Math.min(100, next[k0]));
   }
 
   return next;
