@@ -97,7 +97,7 @@
     }
   },
   "deposit_rules": {
-    "miedz": { "rarity": 0.10 },
+    "miedz": { "rarity": 0.30, "_opis": "Maciej 2026-08-16/17 (R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1): ×3 gęstości złóż miedzi vs poprzedni standard (0.10→0.30) — za mało kopalń utrudniało AI budowę jednostek z kolejnych epok." },
     "zelazo": { "rarity": 0.08 },
     "glina": {
       "rarity": 0.30,
@@ -107,7 +107,7 @@
     "wegiel": { "rarity": 0, "_opis": "SUR-WEGIEL=B: ukryty — brak spawnu na mapie (dyplomacja bez zmian)" },
     "sol": { "rarity": 0.12 },
     "zloto": { "rarity": 0.03 },
-    "cyna": { "rarity": 0.02, "_opis": "Maciej 2026-08-13: Ruda cyny — rzadkość = miedź (0.10) / 5. GWARANTOWANA każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), inaczej niż złoto." }
+    "cyna": { "rarity": 0.06, "_opis": "Maciej 2026-08-13: Ruda cyny — rzadkość = miedź / 5 (proporcja zachowana po ×3 z 2026-08-17). Maciej 2026-08-16/17 (R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1): ×3 gęstości złóż cyny vs poprzedni standard (0.02→0.06). GWARANTOWANA każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), inaczej niż złoto." }
   },
   "metal_deposit_min_era": {
     "miedz": 2,
