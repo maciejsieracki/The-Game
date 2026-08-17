@@ -30990,7 +30990,45 @@ per tura). Jeśli źródło jest w `gra/src/render/**` — wymaga Opus 5 (stała
 jeśli poza (np. rosnące tablice w `main.ts`, nieusuwane listenery UI) — Sonnet 5 wystarczy, do
 ustalenia dopiero po reconie, nie zakładać z góry.
 
-STATUS: **OTWARTE — do dispatchu po zamknięciu bieżących wątków.**
+**Diagnostyka wykonana (2026-08-17), narzędzie `gra/tools/perf-long-session-live-test.cjs`
+(150 tur, checkpoint co 10, realny headless Chromium + realny `triggerPlayerEndTurn()`), wynik
+w tle task `b7s60ytu5`:**
+
+Pamięć/GPU — **BEZ oznak wycieku w mierzonym oknie**: `heapUsed slope = -0.554 MB/checkpoint`
+(spada, nie rośnie), `geometries slope = 1.61`, `sceneChildren slope = 0.0`, wszystkie 17
+monitorowanych tablic-kandydatów płaskie (slope 0 poza `warEventLog` które ustabilizowało się na
+3 po jednej bitwie i już nigdy nie wzrosło). Dwie naprawy z 2026-08-12 wyglądają na trzymające —
+w tym konkretnym oknie 150 iteracji, żadna nowa pamięciowa/GPU-wa przyczyna nie ujawniła się.
+
+**⚠️ ZNALEZISKO POWAŻNIEJSZE NIŻ SZUKANE — tura utyka na stałe, nie „wolniej":** `world.turn`
+przeszło 1→2 przy pierwszej iteracji, po czym **przez pozostałe 140 z 150 iteracji NIGDY nie
+ruszyło dalej** (checkpointy tura=10..150 pokazują identyczne `"world":{"turn":2,...}`, identyczne
+`citiesLen:2`, `unitsLen:4` — świat kompletnie zamrożony). Każda pojedyncza próba `endTurn()`
+wymagała odklikania 5-14 blokerów bitwa/dyplomacja i trwała 60-76 sekund, ZA KAŻDYM RAZEM kończąc
+się `settled=false` (limit 60s). To nie jest „gra zwalnia" — to gra utyka w pętli tego samego
+blokera bitwy/dyplomacji, który się cyklicznie odtwarza mimo automatycznego rozstrzygania.
+
+**⚠️ KRYTYCZNE ZASTRZEŻENIE METODOLOGICZNE (samodzielnie ustalone, nie ignorować przy ocenie
+wagi):** ten przebieg wykonano w worktree `agent-a8b9be08d973d3292` na commicie **`17baa179`** —
+**sprzed** rewertu `2acf7c08` („Cofnięcie ataku dystansowego bez adiacencji — nieporozumienie
+zakresu"), czyli na kodzie, który JESZCZE MIAŁ mechanikę ataku bez adiacencji opartą na
+nieporozumieniu zgłoszenia (temat `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`, w pełni cofnięty i
+zamknięty 2026-08-16/17). Powtarzający się bloker bitwy który nigdy się nie rozstrzyga jest
+**dokładnie tego rodzaju objawem**, jakiego można by się spodziewać po błędnej mechanice ataku
+zdalnego — więc **niewykluczone, że to zjawisko już nie istnieje na aktualnym HEAD** po rewercie.
+Dokładnie ten sam wzorzec błędu (stary worktree → fałszywy alarm) złapano już raz w tej sesji przy
+`P-EPOKA-BRAK-INFO-REGRESJA-BRAZ` (stały bundle w innym worktree dał fałszywe „brak naprawy").
+
+**Do zrobienia przed jakąkolwiek naprawą (nie zakładać, że problem żyje lub nie żyje):**
+powtórzyć dokładnie ten sam przebieg (`node tools/perf-long-session-live-test.cjs 150 10`) na
+AKTUALNYM HEAD gałęzi — jeśli tura nadal utyka na 2, to realny, świeży, wysoki priorytet bug
+(silnik end-turn, nie pamięć) i bezpośrednio tłumaczy część zgłoszeń Macieja o „grze która się
+zawiesza/zwalnia z czasem"; jeśli tura przechodzi normalnie, to był artefakt starego kodu i temat
+pamięci/wycieku pozostaje jedynym wątkiem tego zgłoszenia (i wygląda dziś na czysty).
+
+STATUS: **OTWARTE — pamięć/GPU wygląda czysto w tym oknie; ZNALEZISKO stuck-turn wymaga
+potwierdzenia na aktualnym HEAD przed dispatchem naprawy (może być już nieaktualne po rewercie
+ataku dystansowego) — do dispatchu po zamknięciu bieżących wątków.**
 
 **Wskazówka diagnostyczna Macieja (dopisana po dispatchu reconu):** „myślę, że też duży wpływ na to,
 jak działa szybko gra jest to, jak dużo gracz posiada miast. Im więcej posiadam miast, [im więcej]
