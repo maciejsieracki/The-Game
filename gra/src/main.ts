@@ -18855,14 +18855,17 @@ async function boot(): Promise<void> {
             } else {
               if (!wonderGateOk(0, wonderId)) {
                 showHintMessage('Ten cud nie jest teraz dostępny', 3000);
+                refreshBuildHighlight();
                 return;
               }
               if (ownerHasWonderBuildInProgress(wonderBuildSites, 0)) {
                 showHintMessage('Masz już cud w budowie na mapie', 3500);
+                refreshBuildHighlight();
                 return;
               }
               if (qualifyingWonderHexesForPlayer().length === 0) {
                 showHintMessage('Brak heksów w twoim terytorium na cud', 3500);
+                refreshBuildHighlight();
                 return;
               }
               activeWonderId = wonderId;
