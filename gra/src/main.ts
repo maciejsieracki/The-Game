@@ -17881,6 +17881,22 @@ async function boot(): Promise<void> {
             playerSkarbiec: Math.floor(player.skarbiec),
             tempoGry: player.tempoGry ?? 'standardowa',
             difficulty: _menuDifficulty,
+            // P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA: live podgląd
+            // „Wymiana" musi używać tej samej bramki co wysłana propozycja.
+            // Sam panel UI zna Relację i kwoty, ale nie zna nastawienia partnera;
+            // evaluator ma pełny kontekst AI i zwraca dokładny pwBalance.
+            tradeFairnessPreview: (givePn: number, receivePn: number) => {
+              const result = evaluateProposal(
+                {
+                  actionId: 'handel',
+                  proposerOwnerId: 0,
+                  responderOwnerId: ownerId,
+                  payload: { givePn, receivePn },
+                },
+                buildProposalEvalContext(0, ownerId),
+              );
+              return { accepted: result.accepted, pwBalance: result.pwBalance };
+            },
           };
         },
         onBreakTreaty: (dealId: string) => breakTreatyVoluntarily(dealId),

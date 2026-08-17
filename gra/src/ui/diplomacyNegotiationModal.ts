@@ -96,6 +96,15 @@ export interface NegotiationModalContext {
   playerSkarbiec?: number;
   /** Trwa wojna z partnerem — blokuje zwykły handel/dar złotem (tylko ugoda pokojowa). */
   atWar?: boolean;
+  /**
+   * Live preview of the same PW gate used by `evaluateProposal` for the ordinary
+   * exchange. The basket renderer cannot reconstruct the partner's willingness
+   * from relation/amounts alone, so the game layer may provide this callback.
+   */
+  tradeFairnessPreview?: (
+    givePn: number,
+    receivePn: number,
+  ) => { accepted: boolean; pwBalance?: number };
   /** Id akcji dyplomatycznej (np. '10' pokój, '8' trybut) — kontekst koszyka. */
   negotiationActionId?: string;
   /** R-GRACZ-WCHLONIECIE: wymagana opłata ¤ za wchłonięcie MP */
