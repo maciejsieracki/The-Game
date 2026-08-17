@@ -1907,6 +1907,59 @@ export function splitEmpirePracaBudget(
   return { total, doBudynkow: total - doUlepszen, doUlepszen };
 }
 
+export interface EmpirePracaBuildingTarget {
+  cityId: string;
+  prod: CityProduction;
+}
+
+export interface EmpirePracaBuildingAllocation {
+  cityId: string;
+  prod: CityProduction;
+  completed: ProductionItem | null;
+  used: number;
+  returnedToPool: number;
+}
+
+/**
+ * Wydaje remainder budynkowy z tej samej puli imperium na legalne kolejki.
+ * Miasta są obsługiwane deterministycznie po id; pusta/wstrzymana kolejka
+ * nie konsumuje budżetu i zostawia go w puli dla drugiego strumienia.
+ */
+export function allocateEmpirePracaToBuildings(
+  buildingBudget: number,
+  targets: readonly EmpirePracaBuildingTarget[],
+): { allocations: EmpirePracaBuildingAllocation[]; used: number; remainder: number } {
+  let remaining = Number.isFinite(buildingBudget) && buildingBudget > 0
+    ? buildingBudget
+    : 0;
+  const allocations: EmpirePracaBuildingAllocation[] = [];
+  const ordered = [...targets].sort((a, b) => a.cityId.localeCompare(b.cityId));
+
+  for (const target of ordered) {
+    if (remaining <= 0) break;
+    const front = frontItem(target.prod);
+    if (!front || front.kind !== 'budynek' || target.prod.wstrzymana) continue;
+    const before = remaining;
+    const advanced = advanceProduction(target.prod, remaining);
+    const returnedToPool = advanced.overflowToPool ?? 0;
+    const used = Math.max(0, before - returnedToPool);
+    remaining = Math.max(0, remaining - used);
+    allocations.push({
+      cityId: target.cityId,
+      prod: advanced.prod,
+      completed: advanced.completed,
+      used,
+      returnedToPool,
+    });
+  }
+
+  return {
+    allocations,
+    used: Math.max(0, (Number.isFinite(buildingBudget) ? buildingBudget : 0) - remaining),
+    remainder: remaining,
+  };
+}
+
 /**
  * Ile Pracy miasta trafia do puli imperium w tej turze.
  * Kolejka pusta → całość (doPuli + niewykorzystane doBudynkow); inaczej tylko doPuli.

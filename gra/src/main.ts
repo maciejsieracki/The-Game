@@ -776,7 +776,7 @@ import {
 import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
-  enqueue, buildingProductionItem, splitPraca, splitEmpirePracaBudget, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
+  enqueue, buildingProductionItem, splitPraca, splitEmpirePracaBudget, allocateEmpirePracaToBuildings, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
@@ -22763,6 +22763,37 @@ async function boot(): Promise<void> {
         aiPracaPoolByOwner.set(ownerId, v);
       }
     }
+
+    /**
+     * P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: wydaj remainder budynkowy z tej samej
+     * puli imperium. To jest drugi, realny odbiorca splitu obok auto-ulepszeń;
+     * nie zostawiamy `doBudynkow` jako niewykorzystanej wartości pomocniczej.
+     */
+    function applyEmpireBuildingBudget(ownerId: number, buildingBudget: number): number {
+      const targets = cities
+        .filter(city => city.ownerId === ownerId)
+        .map(city => ({
+          cityId: city.id,
+          prod: cityProd.get(city.id) ?? { kolejka: [], postep: 0 },
+        }));
+      const allocation = allocateEmpirePracaToBuildings(buildingBudget, targets);
+      for (const item of allocation.allocations) {
+        const city = cities.find(candidate => candidate.id === item.cityId);
+        if (!city) continue;
+        let prodFinal = item.prod;
+        cityProd.set(item.cityId, prodFinal);
+        if (item.completed) {
+          const applied = applyProductionCompleted(city, item.cityId, item.completed, prodFinal);
+          prodFinal = applied.prod;
+          cityProd.set(item.cityId, prodFinal);
+          if (isAutoBudowaTryb(city.budowaTryb) && frontItem(prodFinal) === null) {
+            tryAutoEnqueueBuild(item.cityId);
+          }
+        }
+      }
+      return allocation.used;
+    }
+
     function ownerNaukaPool(ownerId: number): number {
       return ownerId === 0 ? player.nauka : (aiNaukaPoolByOwner.get(ownerId) ?? 0);
     }
@@ -26336,6 +26367,29 @@ async function boot(): Promise<void> {
             } catch (errWonderMap) {
               console.error('[Cuda] Błąd postępu budowy na mapie:', errWonderMap);
             }
+            // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: obie części splitu są realnie
+            // konsumowane z tej samej puli. Najpierw legalne kolejki budynków
+            // dostają remainder; niewykorzystana część pozostaje w puli.
+            const playerPracaBudget = splitEmpirePracaBudget(
+              playerPracaPool,
+              ulepszeniaEmpireForOwner(0).pracaAutoPercent,
+            );
+            const usedPlayerBuildingBudget = applyEmpireBuildingBudget(
+              0,
+              playerPracaBudget.doBudynkow,
+            );
+            if (usedPlayerBuildingBudget > 0) {
+              playerPracaPool = Math.max(0, playerPracaPool - usedPlayerBuildingBudget);
+              _lastPraca = playerPracaPool;
+            }
+            for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
+              const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;
+              const aiBudget = splitEmpirePracaBudget(aiPool, 50);
+              const usedAiBuildingBudget = applyEmpireBuildingBudget(ownerId, aiBudget.doBudynkow);
+              if (usedAiBuildingBudget > 0) {
+                aiPracaPoolByOwner.set(ownerId, Math.max(0, aiPool - usedAiBuildingBudget));
+              }
+            }
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
             // Q4=A: commit od razu na EOT (bez pendingImprovementsTurn / cofnięcia).
             try {
@@ -26352,10 +26406,6 @@ async function boot(): Promise<void> {
                 const playerCivArch = civTypeForOwner(0);
                 const workingPlaced = new Map(placedImprovements);
                 const empirePol = ulepszeniaEmpireForOwner(0);
-                const pracaBudget = splitEmpirePracaBudget(
-                  playerPracaPool,
-                  empirePol.pracaAutoPercent,
-                );
                 const picks = pickAutoImprovements({
                   cities: autoImpCities,
                   ownerId: 0,
@@ -26367,7 +26417,7 @@ async function boot(): Promise<void> {
                   // policzony raz poza pickerem. Picker dostaje absolutny budżet
                   // ulepszeń; jego stary procentowy cap nie może drugi raz
                   // dzielić tej wartości.
-                  improvementBudgetCap: pracaBudget.doUlepszen,
+                  improvementBudgetCap: playerPracaBudget.doUlepszen,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
                   skipWyrab: true,

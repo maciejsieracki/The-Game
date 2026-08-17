@@ -76,7 +76,7 @@ export interface BuildModeHudConfig {
   onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
   onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
   onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
-  /** R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: suwak 0-100% budżetu Pracy (zastępuje dawne przyciski 1/2/3). */
+  /** P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: udział ulepszeń 0–50% całej puli Pracy. */
   onUlepszeniaEmpirePracaPercentChange?: (pracaAutoPercent: UlepszeniaPracaPercent) => void;
   getUlepszeniaCityOverride?: (cityId: string) => boolean;
   onUlepszeniaCityOverrideChange?: (cityId: string, override: boolean) => void;
@@ -230,22 +230,18 @@ function ulepszeniaPercentSliderFillStyle(pct: number): string {
 }
 
 /**
- * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: suwak 0-100% budżetu Pracy dla auto-managera ulepszeń —
- * zastępuje dawne przyciski „Na turę: 1 2 3" (limit sztuk). 0% = auto-ulepszenia terenu
- * wyłączone (cała Praca zostaje dla gracza), 100% = auto-manager może wydać całą dostępną pulę
- * (do flat-rezerwy AUTO_ULEPSZENIA_PRACA_RESERVE w silniku — patrz auto-improvements.ts).
- * / EN: 0-100% slider for the auto-manager's Work budget — replaces the old "Per turn: 1 2 3"
- * buttons (item-count cap). 0% = terrain auto-improvements disabled (all Work stays with the
- * player), 100% = the auto-manager may spend the whole available pool (down to the flat reserve
- * floor AUTO_ULEPSZENIA_PRACA_RESERVE in the engine — see auto-improvements.ts).
+ * P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: udział ulepszeń terenu w całej puli Pracy
+ * imperium. 0% = całość budżetu pozostaje dostępna dla budynków, 50% = maksymalnie
+ * połowa puli może trafić na ulepszenia. To nie jest drugi limit wewnętrznego
+ * automatu.
  */
 function renderUlepszeniaPercentRow(pct: number, scope: 'empire' | 'city'): string {
   return '<div class="civ-build-percent-row">'
-    + '<div class="civ-build-percent-head"><span title="Jaki % budżetu Pracy imperium dostaje auto-manager tej tury">'
-    + 'Budżet Pracy dla automatu:</span><b data-ulepszenia-' + scope + '-percent-label>' + pct + '%</b></div>'
+    + '<div class="civ-build-percent-head"><span title="Jaki udział całej puli Pracy imperium trafia na ulepszenia terenu">'
+    + 'Udział Pracy na ulepszenia:</span><b data-ulepszenia-' + scope + '-percent-label>' + pct + '%</b></div>'
     + `<input type="range" class="civ-build-percent-slider" min="0" max="50" step="1" value="${pct}" `
     + `style="${ulepszeniaPercentSliderFillStyle(pct)}" data-ulepszenia-${scope}-percent `
-    + `title="0% = cała Praca dla gracza · 50% = maksimum dla wspólnego worka (ulepszenia terenu)" />`
+    + `title="0% = całość dla budynków · 50% = maksymalnie połowa puli na ulepszenia terenu" />`
     + '</div>';
 }
 
