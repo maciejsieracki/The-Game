@@ -2487,3 +2487,5 @@ Dowód: ECHO `bc200aee`; implementacja `914ce8da`; testy kontraktów/migracji
 Pre-existing dług testowy, niezwiązany z tą zmianą: `unit-stock-cost-test.cjs`
 **41/58 PASS** oraz `ai-recruit-upkeep-gate-test.cjs` **18/27 PASS**.
 Kanon: `docs/decyzje/P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.md`.
+
+| P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1 | 2026-08-17 | Bazowa produkcja Drewna/Kamienia/Gliny z terenu; rzeka pozostaje osobnym modyfikatorem | **W TOKU — ECHO zapisane, commit ECHO osobno; implementacja po commicie** | `docs/decyzje/P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1.md` · decyzja A · bez paneli Excel/WERSJE/bundli/deployu |
