@@ -2,11 +2,12 @@
  * production.ts
  * City PRODUCTION QUEUE -- pure logic (task A2).
  *
- * A city builds units and buildings.  Each turn it pours its Praca (production
- * output, see game/turn-economy.ts) into the item at the FRONT of its queue.
- * When the accumulated Praca reaches that item's cost, the item is produced:
- * it is popped off the queue and any leftover Praca is carried onto the next
- * item.
+ * A city builds buildings in the Praca queue. Units are represented in the
+ * catalogue as production items for the separate, paid recruitment queue.
+ * Each turn the city pours its Praca (production output, see
+ * game/turn-economy.ts) into the building at the FRONT of its queue. When the
+ * accumulated Praca reaches that building's cost, it is popped off the queue
+ * and any leftover Praca is carried onto the next building.
  *
  * Pure logic -- no DOM, no THREE, no I/O, no global state, no mutation of the
  * inputs.  Every function returns fresh values, which makes the module directly

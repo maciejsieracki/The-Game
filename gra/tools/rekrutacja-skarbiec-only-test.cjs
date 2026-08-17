@@ -99,6 +99,24 @@ mutationInput.kolejka[0].id = 'Zmieniono';
 assert(mutationResult.prod.kolejka[0].id === 'spichlerz',
   'wynik migracji nie wskazuje na zmutowany wpis legacy');
 
+console.log('\n-- kontrakt ścieżek gracz/AI --');
+const mainSource = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'main.ts'), 'utf8');
+const aiUnitBranch = mainSource.slice(
+  mainSource.indexOf("} else if (item.kind === 'jednostka')"),
+  mainSource.indexOf('                  }\n                  continue;', mainSource.indexOf("} else if (item.kind === 'jednostka')")),
+);
+assert(aiUnitBranch.includes('purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)'),
+  'AI jednostkę kieruje do zakupu za Skarbiec');
+assert(!aiUnitBranch.includes('enqueue(prod0, item)'),
+  'AI nie dodaje jednostki do kolejki Pracy');
+const cityPanelSource = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'ui', 'cityPanel.ts'), 'utf8');
+const addItemUnitBranch = cityPanelSource.slice(
+  cityPanelSource.indexOf("} else if (item.kind === 'jednostka')"),
+  cityPanelSource.indexOf('\n  }\n  setProd(city.id, enqueue', cityPanelSource.indexOf("} else if (item.kind === 'jednostka')")),
+);
+assert(addItemUnitBranch.includes('return;'),
+  'panel budowy odrzuca jednostkę zamiast dodawać ją za Pracę');
+
 console.log(`\nrekrutacja-skarbiec-only-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(entry); } catch (_) {}
 try { fs.unlinkSync(bundle); } catch (_) {}
