@@ -1,6 +1,6 @@
 # P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — ceremonialny popup triumfu
 
-**Data ECHO:** 2026-08-17  
+**Data ECHO:** 2026-08-17
 **Status:** 🔵 W TRAKCIE — implementacja zapisana w commicie `ae5ef14b`
 
 ## Cytat Macieja
@@ -17,4 +17,3 @@
 - `gra/src/ui/triumphCityStateNotice.ts`
 - testy triumfu miast-państw: `triumph-city-state-test.cjs` 13/13, `triumph-city-state-notice-test.cjs` 16/16
 - `npx tsc --noEmit`: PASS
-
