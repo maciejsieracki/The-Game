@@ -316,17 +316,22 @@ console.log('9. defensiveCopy -- ta sama intensywnosc co zwykle AI');
 }
 
 // ===========================================================================
-// 10. Regres FALA 204: praca > próg ale < próg+koszt — AI buduje (MP nie „utknięte”)
+// 10. P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1: AI respektuje nadrzędny cap 50%
+// całej puli. Przy puli 40 budżet ulepszeń wynosi 20, więc farma (koszt 40
+// po stawkach ×2) nie może zostać wybrana; przy puli 80 budżet wynosi 40.
 // ===========================================================================
-console.log('10. praca=40 (ponad prog 30, ponizej 50) -- farma nadal');
+console.log('10. AI: cap 50% całej puli (40 -> 0, 80 -> 1)');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
   opts.pracaAvailable = 40;
   opts.defensiveCopy = true;
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
-  eq(cmds.length, 1, 'praca=40 -> 1 buildImprovement (bez podwojnej rezerwy po kosztu)');
-  eq(cmds[0].key, 'farma', 'praca=40 -> farma (koszt 20, pula po budowie < 30 OK dla AI)');
+  eq(cmds.length, 0, 'praca=40 -> 0 (budżet ulepszeń 20 < koszt farmy 40)');
+  opts.pracaAvailable = 80;
+  const cmds80 = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
+  eq(cmds80.length, 1, 'praca=80 -> 1 (budżet ulepszeń 40 = koszt farmy 40)');
+  eq(cmds80[0].key, 'farma', 'praca=80 -> farma');
 }
 
 // ===========================================================================
