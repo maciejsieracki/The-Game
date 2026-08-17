@@ -81,6 +81,17 @@ export interface BarbCamp {
   naval?: boolean;
 }
 
+/** Trwała identyfikacja heksu, na którym spawner został wyczyszczony. */
+export type ClearedBarbCampHexes = ReadonlySet<string>;
+
+function campHexIsCleared(
+  clearedHexes: ClearedBarbCampHexes | undefined,
+  q: number,
+  r: number,
+): boolean {
+  return clearedHexes?.has(keyOf(q, r)) === true;
+}
+
 /**
  * A barbarian unit on the map.
  * Extends the shared RuntimeUnit so the engine can pass plain RuntimeUnit[]
@@ -852,6 +863,7 @@ export function spawnCamps(
   cities: CityLike[],
   params: BarbParams,
   seed: number,
+  clearedHexes?: ClearedBarbCampHexes,
 ): BarbCamp[] {
   const slotsLeft = params.maxCamps - existing.length;
   if (slotsLeft <= 0) return [];
@@ -865,6 +877,10 @@ export function spawnCamps(
     if (isImpassableTerrain(hex.terenBazowy)) continue;
 
     const { q, r } = hex.coords;
+    // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: wejście cywilizacji czyści
+    // spawner bezpowrotnie w tej rozgrywce; kolejny losowy spawn nie może
+    // ponownie wybrać tego samego heksu.
+    if (campHexIsCleared(clearedHexes, q, r)) continue;
     const tooCloseToCity = cities.some(c => hexDistance(q, r, c.q, c.r) < params.minDistFromCity);
     if (tooCloseToCity) continue;
 
@@ -926,6 +942,7 @@ export function spawnSeaCamps(
   params: BarbParams,
   seaParams: SeaBarbParams,
   seed: number,
+  clearedHexes?: ClearedBarbCampHexes,
 ): BarbCamp[] {
   const existingSea = existing.filter(c => c.naval === true).length;
   const slotsLeft = seaParams.maxSeaCamps - existingSea;
@@ -938,6 +955,7 @@ export function spawnSeaCamps(
     if (hex.wlasciciel !== null) continue;
 
     const { q, r } = hex.coords;
+    if (campHexIsCleared(clearedHexes, q, r)) continue;
     let ok = false;
     if (hex.terenBazowy === TerenBazowy.Wybrzeze) {
       ok = true; // (a) obóz plażowy na płytkiej wodzie

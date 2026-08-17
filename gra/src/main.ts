@@ -8730,6 +8730,13 @@ async function boot(): Promise<void> {
 
     /** Barbarian camps on the map. */
     let barbCamps: BarbCamp[] = [];
+    /**
+     * P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: heksy, na które cywilizacja
+     * weszła i tym samym trwale wyłączyła spawner obozu w tej rozgrywce.
+     * Osobny stan od `barbCamps`, bo sama lista aktywnych obozów nie pamięta
+     * wyczyszczonych miejsc po późniejszym losowaniu.
+     */
+    const clearedBarbCampHexes = new Set<string>();
     /** Barbarian params loaded from ai-params.json (with fallbacks). */
     const barbParams = loadBarbParams(data);
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
@@ -20322,6 +20329,7 @@ async function boot(): Promise<void> {
       const result = destroyCampAt(barbCamps, q, r);
       if (result.destroyedCampId === null) return false;
       barbCamps = result.camps;
+      clearedBarbCampHexes.add(keyOf(q, r));
       console.log(`[Barbarzyncy] Obóz zniszczony (najechany): ${result.destroyedCampId}`);
       refreshFog();
       return true;
@@ -24178,6 +24186,10 @@ async function boot(): Promise<void> {
           // Audyt #42: barbCamps nie bylo w snapshotcie -- obozy z zapisu
           // przepadaly (lub zostawaly z poprzedniej gry na innej mapie).
           barbCamps: barbCamps.slice(),
+          // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: sam brak obozu nie
+          // wystarcza, bo przyszły spawn mógłby losowo odtworzyć go na tym
+          // samym heksie. Zapisujemy trwałą blacklistę per rozgrywka.
+          clearedBarbCampHexes: Array.from(clearedBarbCampHexes),
           // Audyt #43: cityRelig/autoManageCities nie byly ani zapisywane, ani
           // czyszczone -- kolizja id 'cityN' po restarcie skutkowala zombie
           // stanem religii/auto-zarzadzania z poprzedniej gry.
@@ -28094,7 +28106,14 @@ async function boot(): Promise<void> {
 
             // Spawn new camps if needed (seed from turn to vary each game).
             // TEMAT #15: sloty lądowe liczone bez obozów nadmorskich (osobny limit).
-            const newCamps = spawnCamps(map, barbCamps.filter(c => c.naval !== true), cities, barbLive, turn * 31337);
+            const newCamps = spawnCamps(
+              map,
+              barbCamps.filter(c => c.naval !== true),
+              cities,
+              barbLive,
+              turn * 31337,
+              clearedBarbCampHexes,
+            );
             barbCamps = [...barbCamps, ...newCamps];
             if (newCamps.length > 0) {
               console.log(`[Barbarzyncy] Tura ${turn}: nowe obozy: ${newCamps.length}`);
@@ -29670,6 +29689,7 @@ async function boot(): Promise<void> {
       battlePowerPtsByOwner.clear();
       lootedVillageHexKeys.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
       // koliduja miedzy rozgrywkami) -- nowe miasto dziedziczylo zombie stan
       // religii/auto-zarzadzania z poprzedniej gry bez przeladowania strony.
@@ -29938,6 +29958,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30188,6 +30209,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30415,6 +30437,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30946,6 +30969,18 @@ async function boot(): Promise<void> {
       // Odtworz z zapisu; brak pola (stary zapis) = reset do pustej tablicy.
       const savedBarbCamps = saved.meta?.barbCamps as BarbCamp[] | undefined;
       barbCamps = Array.isArray(savedBarbCamps) ? savedBarbCamps.slice() : [];
+      // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: stary save bez blacklisty
+      // dostaje pusty, bezpieczny default; błędne wpisy nie mogą zablokować
+      // losowych heksów przez przypadkowe wartości.
+      clearedBarbCampHexes.clear();
+      const savedClearedBarbCampHexes = saved.meta?.clearedBarbCampHexes;
+      if (Array.isArray(savedClearedBarbCampHexes)) {
+        for (const hexKey of savedClearedBarbCampHexes) {
+          if (typeof hexKey === 'string' && /^-?\d+,-?\d+$/.test(hexKey)) {
+            clearedBarbCampHexes.add(hexKey);
+          }
+        }
+      }
       // P-BARBARZYNCY-LOAD-REKONCYLIACJA-Q1: zapis mógł powstać PRZED hakiem
       // niszczącym obozy (stary zapis) albo przez lukę w onSplit sprzed jej
       // naprawy -- w obu przypadkach mógł legalnie zawierać jednostkę
