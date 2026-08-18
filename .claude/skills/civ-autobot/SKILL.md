@@ -450,7 +450,8 @@ problemów, których nie ma**: najprostsze rozwiązanie spełniające wymaganie 
 ### Hasło `raport` — aktywny format dziesięciu kategorii
 
 Na hasło **`raport`** (Master / orkiestrator) dostarcz zestawienie **zawsze**
-w tej kolejności (pusta sekcja → `— (brak)`):
+w tej kolejności (pusta sekcja → `— (brak)`), **plus** sekcja
+**„Brak dowodu / nie zgaduję"** pod kategorią 10:
 
 1. **Gotowe do integracji/deployu** — w tym już zdeployowane, z jawnym statusem.
 2. **W trakcie — Operator.**
@@ -466,11 +467,24 @@ w tej kolejności (pusta sekcja → `— (brak)`):
 10. **Playtesty** — wyłącznie najnowszy wpis `Playtest — na co patrzeć` z
     `dyspozycje/WERSJE.md`.
 
-Kategoria 6 **nie** może zawierać ID z commitem Operatora ani werdyktem
-Evaluatora. W kategoriach 3 i 5 wpisuj wyłącznie realny raport/commit/werdykt —
+Format wpisu: **`ID — status — dowód — następny gate`**. **Sam status w rejestrze
+nie wystarcza** — wymagany commit SHA, raport Operatora/Evaluatora, werdykt lub
+wynik testu.
+
+**Dowody w kategoriach 1–5:** kat. **1** — artefakt + werdykt przy deployu;
+kat. **2** — dispatch Operatora; kat. **3** — raport/commit Operatora (ew.
+**WSTRZYMANY** + blokada); kat. **4** — dispatch Evaluatora; kat. **5** — werdykt
+Evaluatora. Kategoria 6 wymaga minimalnego kontraktu (a)–(e) — sama litera A/B/C
+nie wystarcza. Brak werdyktu Evaluatora → **brak** wpisu w kategoriach **1** i **5**.
+
+**Zakres:** najnowsza ROBOCZA + aktywna kolejka — nie cała historia.
+**Źródła (kolejność):** `WERSJE.md` → `KANAL-PRACA.md` → `REJESTR-PROSB-I-ZADAN.md`
+→ `PYTANIA-OTWARTE.md` → `docs/decyzje/<ID>.md` → handoff/audyt → git/worktree
+(tylko weryfikacja). W kategoriach 2–5 wpisuj wyłącznie realny raport/commit/werdykt —
 nie worktree.
 
-Pełny kanon i snapshot referencyjny:
+Pełny kanon, macierz kategorii 1–10, dowody Operatora/Evaluatora i **procedura
+krok po kroku (§4 — obowiązkowa przed każdym raportem):**
 [`docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](../../../docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
 Poprzedni układ siedmiu kategorii:
 [`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](../../../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md)

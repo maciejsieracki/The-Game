@@ -24,11 +24,17 @@ Gdy Maciej wpisze jedno z poniższych haseł, agent **natychmiast** odpowiada w 
 
 **Gdzie:** czat **Master** (orkiestracja). **Hasło Macieja:** wpisz **`raport`**.
 Pełny kanon: [`R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1`](../../docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
+**Procedura krok po kroku (obowiązkowa):** ten sam plik, **§4** — zakres
+(najnowsza ROBOCZA + aktywna kolejka), kolejność źródeł, dowody Operatora/
+Evaluatora, checklista przed wysłaniem, sekcja „Brak dowodu / nie zgaduję".
 Poprzedni układ 7 kategorii (`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`) pozostaje
 w historii gita — nie używać go w odpowiedzi `raport`.
 
+**Zakres:** najnowsza ROBOCZA (`WERSJE.md`) + aktywna kolejka — **nie** cała
+historia commitów, starszych FAL ani pełnej kolejki PT.
+
 Odpowiedz **zawsze** w dziesięciu nagłówkach, w tej kolejności (pusta sekcja →
-`— (brak)`):
+`— (brak)`), **plus** sekcja **„Brak dowodu / nie zgaduję"** pod kategorią 10:
 
 1. **Gotowe do integracji/deployu** — w tym już zdeployowane, z jawnym statusem.
 2. **W trakcie — Operator.**
@@ -43,10 +49,25 @@ Odpowiedz **zawsze** w dziesięciu nagłówkach, w tej kolejności (pusta sekcja
 9. **Otwarte ABC.**
 10. **Playtesty.**
 
-Każdy punkt ma format **ID — jedno zdanie statusu — dowód albo następna
-czynność**. Raport jawnie podaje stan aktywnego Operatora i Evaluatora; worktree,
-branch ani ukryte powiadomienie nie są dowodem żywego procesu. W kategoriach 3 i 5
-wpisuj wyłącznie realny raport/commit Operatora lub werdykt Evaluatora — nie worktree.
+Każdy punkt ma format **`ID — status — dowód — następny gate`**. **Sam status
+w rejestrze nie wystarcza** — wymagany konkretny dowód (commit SHA, raport,
+werdykt, wynik testu). Worktree, branch ani ukryte powiadomienie nie są dowodem
+żywego procesu.
+
+**Dowody w kategoriach 1–5 (skrót obowiązkowy):**
+
+| Kat. | Co musi być w polu „dowód" |
+|------|----------------------------|
+| **1** | artefakt + commit/test/handoff lub wpis ROBOCZEJ; przy deployu: werdykt Evaluatora + md5/FALA |
+| **2** | **dispatch Operatora** (`KANAL-PRACA.md`/handoff: kto, kiedy, ID, zakres) — brak raportu końcowego |
+| **3** | **raport/commit Operatora** (SHA, testy); przy **WSTRZYMANY**: dowód blokady zewnętrznej |
+| **4** | **dispatch Evaluatora** (kanał/handoff) — brak werdyktu PASS/FAIL |
+| **5** | **werdykt Evaluatora** (PASS/PASS-WITH-NOTES) + zakres oceny |
+
+**Brak werdyktu Evaluatora = brak wpisu w kategoriach 1 i 5** (jako gotowe do
+integracji/deployu). ECHO A/B/C zamyka ABC (kat. 9), ale **nie** oznacza
+automatycznie gotowości do Operatora (kat. 6) — sprawdź wdrożenie/odłożenie/blokadę
+oraz pełny kontrakt (§3 kanonu).
 
 **Nadrzędny obieg AutoBot:** `Operator → Evaluator → finalna kontrola → integracja →
 deploy/push`. Raport Operatora nie kończy procesu: po jego otrzymaniu Evaluator jest
@@ -55,12 +76,12 @@ finalna kontrola rozstrzyga następny krok: aktualizacja statusu dla tematu zamk
 pełne ABC z pełnym ID, gdy potrzebna jest decyzja, albo skierowanie gotowego tematu do
 integracji. `FAIL` wraca do Operatora. Deploy/push dopiero po bramkach i autoryzacji.
 
-Źródła czytaj w kolejności: `dyspozycje/PYTANIA-OTWARTE.md`,
-`dyspozycje/REJESTR-PROSB-I-ZADAN.md`, `docs/decyzje/<ID>.md`,
-`dyspozycje/WERSJE.md`, `dyspozycje/_handoff/KANAL-PRACA.md` oraz handoff/audyt.
-Przed pokazaniem ABC sprawdź ECHO/status w dokumencie decyzji. Odpowiedzi A/B/C
-i inne jawne decyzje pozostają w historii, ale znikają z aktywnego ABC; pokazuj
-je wyłącznie jako **ZAMKNIĘTE/GOTOWE/W TOKU/DO INTEGRACJI**.
+Źródła czytaj w kolejności (§2 kanonu): `dyspozycje/WERSJE.md`,
+`dyspozycje/_handoff/KANAL-PRACA.md`, `dyspozycje/REJESTR-PROSB-I-ZADAN.md`,
+`dyspozycje/PYTANIA-OTWARTE.md`, `docs/decyzje/<ID>.md`, handoff/audyt,
+na końcu git/worktree (weryfikacja, nie pierwsze źródło). Przed wysłaniem —
+checklista §4 Faza F (10 nagłówków, md5, test kat. 6 vs 7, brak zgadywania).
+Raport **tylko czatowy** nie wymaga `git diff --check`; zapis w pliku repo — tak.
 
 Kategoria 10 korzysta wyłącznie z najnowszej ROBOCZEJ pozycji
 `Playtest — na co patrzeć` w `dyspozycje/WERSJE.md`; nie wolno dopisywać
@@ -255,11 +276,14 @@ Agent odpowiada **natychmiast** (skrót; pełny tekst: `docs/obieg/MAPA-KANON-GE
 
 ## Zasady wspólne
 - Odpowiadaj **w czacie** (Maciej nie czyta plików). Zwięźle.
-- **Master hub** (`start` / `master` / `raport` w czacie Mastera): **4 sekcje** (Maciej 2026-07-02):
-  1. **A — Grupy (do uzupełnienia)** — per Grupa A…E: co agent ma wdrożyć / dokończyć (🎯 TERAZ, brak meldunku). Grupy IDLE = jedna linia „IDLE".
-  2. **B — Integrator F (wisi u F)** — batchy z dyspozycją, bez meldunku `F-do-MASTER`.
-  3. **C — Master (wisi u Mastera)** — review, promocja kanon, dyspozycje do F/grup, otwarte ABC do Twojej decyzji.
-  4. **Playtesty** — **pomiń** w `start`/`raport` dla Macieja. Informuje **tylko Master** (na prośbę: `playtest lista`).
+- **Master hub — `raport`:** **10 kategorii** + sekcja **„Brak dowodu / nie zgaduję"**
+  (kanon: [`R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1`](../../docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md),
+  procedura §4). Pusta sekcja → `— (brak)`.
+- **Master hub — `start` / `master`:** krótki skan operacyjny; pełny status stanu pracy
+  na żądanie → **`raport`** (10 kategorii, nie układ A/B/C/4).
+- **ARCHIWUM — SUPERSEDED:** dawny format **`raport`** w **4 sekcjach** A·B·C·4
+  (Maciej 2026-07-02) — patrz sekcja ARCHIWUM powyżej; **nie** używać dla aktywnej
+  komendy `raport` od 2026-08-18.
 - Nie mieszaj z formatem **`raport2`** grup A–E (3 sekcje: wdrożone / w toku / u Mastera).
 - Jeśli sekcja pusta — napisz „— (brak)", nie pomijaj nagłówka.
 - Nie myl warstw: „przekazane" = u kogoś innego; „nie ruszone" = u tej grupy.

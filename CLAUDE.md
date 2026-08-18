@@ -251,7 +251,8 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    powstają. Format: polska wersja, potem `/ EN: ...` w tej samej linii/bloku.
 10. **HASŁO „raport" — aktywny kanon dziesięciu kategorii
     (`R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1`, 2026-08-18).** Na słowo `raport`
-    dostarcz zestawienie zawsze w tej kolejności:
+    dostarcz zestawienie zawsze w tej kolejności (pusta sekcja → `— (brak)`),
+    **plus** sekcja **„Brak dowodu / nie zgaduję"** pod kategorią 10:
     1. **Gotowe do integracji/deployu** — w tym już zdeployowane, z jawnym statusem.
     2. **W trakcie — Operator.**
     3. **Operator zakończony — czeka na Evaluatora.**
@@ -265,24 +266,23 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
     9. **Otwarte ABC.**
     10. **Playtesty.**
 
-    Każdy punkt ma format: **ID — jedno zdanie statusu — dowód albo następna
-    czynność**; pusta kategoria otrzymuje `— (brak)`. Raport musi osobno i jawnie
-    podać stan Operatora oraz Evaluatora. Worktree, branch, stary plik lub samo
-    powiadomienie nie jest dowodem aktywnego procesu. W kategoriach 3 i 5 wpisuj
-    wyłącznie realny raport/commit Operatora lub werdykt Evaluatora.
+    Każdy punkt: **`ID — status — dowód — następny gate`**. **Sam status w rejestrze
+    nie wystarcza** — wymagany commit SHA, raport Operatora/Evaluatora, werdykt
+    PASS/FAIL/PASS-WITH-NOTES lub wynik testu. Worktree, branch, stary plik lub samo
+    powiadomienie nie jest dowodem aktywnego procesu. Brak werdyktu Evaluatora → brak
+    wpisu w kategoriach **1** i **5**. ECHO A/B/C zamyka ABC (kat. 9), ale nie oznacza
+    automatycznie kat. 6 — sprawdź wdrożenie/odłożenie/blokadę.
 
-    Źródła i kolejność weryfikacji: `dyspozycje/PYTANIA-OTWARTE.md`,
-    `dyspozycje/REJESTR-PROSB-I-ZADAN.md`, `docs/decyzje/<ID>.md`,
-    `dyspozycje/WERSJE.md`, `dyspozycje/_handoff/KANAL-PRACA.md` oraz właściwy
-    handoff/audyt. Przed pokazaniem każdego ABC sprawdź ECHO/status w dokumencie
-    decyzji. Pytanie z literą A/B/C albo inną jawną decyzją znika z aktywnego ABC,
-    ale zostaje w historii i może być pokazane wyłącznie jako
-    **ZAMKNIĘTE/GOTOWE/W TOKU/DO INTEGRACJI**.
+    **Zakres:** najnowsza ROBOCZA + aktywna kolejka — nie cała historia.
+    **Źródła (kolejność):** `WERSJE.md` → `KANAL-PRACA.md` → `REJESTR-PROSB-I-ZADAN.md`
+    → `PYTANIA-OTWARTE.md` → `docs/decyzje/<ID>.md` → handoff/audyt → git/worktree.
+    **Procedura obowiązkowa:** kanon §4 (krok po kroku, re-bundle, sprzeczne SHA,
+    checklista przed wysłaniem). Pełna definicja i snapshot referencyjny:
+    [`docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
 
     Kategoria 10 korzysta wyłącznie z najnowszego wpisu ROBOCZEJ
     `Playtest — na co patrzeć` w `dyspozycje/WERSJE.md`; nie przenosi historycznej
-    kolejki PT ani starszych fal. Pełna definicja i snapshot referencyjny:
-    [`docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
+    kolejki PT ani starszych fal.
 
     **ARCHIWUM — SUPERSEDED:** poprzedni format raportu 7-kategorii
     (`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`, snapshot FALA 294), starszy format
