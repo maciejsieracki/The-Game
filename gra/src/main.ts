@@ -12252,6 +12252,19 @@ async function boot(): Promise<void> {
         const oldOwner = city.ownerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
+        // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: kapitulacja głodowa
+        // jest drugim (obok podboju bojowego) wejściem przejęcia miasta. Legacy
+        // jednostki z kolejki Pracy nie mogą przejść do nowego właściciela;
+        // zwrot Pracy należy do starego właściciela, a opłacona rekrutacja[]
+        // pozostaje nietknięta.
+        const prodSurrender = cityProd.get(city.id);
+        if (prodSurrender) {
+          const migrated = sanitizeBuildQueue(prodSurrender);
+          if (migrated.refundedPraca > 0) {
+            setOwnerPracaPool(oldOwner, ownerPracaPool(oldOwner) + migrated.refundedPraca);
+          }
+          cityProd.set(city.id, sanitizeProductionQueue(newOwner, migrated.prod));
+        }
         // B1 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): kapitulacja głodowa
         // to DRUGIE (obok applyCityCaptureToMap) miejsce, gdzie city.ownerId się zmienia w
         // wyniku wojny — dla par AI↔AI to dziś JEDYNA droga zakończenia wojny poza tym
