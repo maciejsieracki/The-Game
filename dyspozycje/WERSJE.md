@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA 4322f5aa - 2026-08-18 19:52 UTC - FALA 298: limit miast zdobytych i wojna wymuszona Kamienia
+## ROBOCZA ed229ec6 - 2026-08-18 20:36 UTC - FALA 299: właściwa warstwa splitu Pracy
+|- md5 (pełne): ed229ec6b3cc2f6bd26964a8d037ec0b · stempel: ROBOCZA · label ed229ec6 · źródłowy commit integracji: `ce95d461`
+|- Historyczny `pracaAutoPercent` automatu zachowuje zakres 0–100%; nie jest ograniczany przez split.
+|- Nadrzędny split: ulepszenia 0–50%, budynki = remainder; przykład 10% ulepszeń → 90% budynków.
+|- Gracz/AI/MP/override/save-load: parity 19/19 · auto 43/43 · overflow 51/51 · limit 23/23 · UI 12/12.
+|- Dyplomacja: live 8/8 · stół 166/166 · fairness 24/24; typecheck PASS · Vite 831 modułów · VERIFY OK. **AKTUALNA**
+
+## ROBOCZA 4322f5aa - 2026-08-18 19:52 UTC - FALA 298: limit miast zdobytych i wojna wymuszona Kamienia — **ZASTĄPIONA** (→ ed229ec6)
 |- md5 (pełne): 4322f5aafa6e0becc988885dc38e907b · stempel: ROBOCZA · label 4322f5aa · źródłowy commit integracji: `004e8f9e`
 |- `R-MIASTA-LIMIT-PODBÓJ-Q1=A`: limit dotyczy wyłącznie miast założonych; podbój bitewny, bez bitwy i kapitulacja nie zużywają puli; test 11/11, AI founding 28/28.
 |- `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1`: start po 20 turach, najbliższy sąsiad, pokój po 2 miastach, odpoczynek 20 tur, cooldown pary 20 tur; Stone 32/32 + guard 18/18.

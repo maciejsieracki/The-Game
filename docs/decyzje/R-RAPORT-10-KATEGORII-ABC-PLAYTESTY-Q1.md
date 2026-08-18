@@ -438,8 +438,8 @@ Przed dostarczeniem raportu właścicielowi — **wszystkie punkty TAK**:
 > wynik może różnić się od tej listy po nowej ROBOCZEJ, dispatchu lub decyzji
 > właściciela.
 
-Baza przykładu: **FALA 298**, ROBOCZA `4322f5aa`, audyt
-`dyspozycje/_handoff/KANAL-PRACA.md` (wpisy 09:59–19:52 UTC 2026-08-18) oraz
+Baza przykładu: **FALA 299**, ROBOCZA `ed229ec6`, audyt
+`dyspozycje/_handoff/KANAL-PRACA.md` (wpisy 09:59–20:36 UTC 2026-08-18) oraz
 `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
 
 ### 1. Gotowe do integracji/deployu
@@ -478,6 +478,9 @@ Baza przykładu: **FALA 298**, ROBOCZA `4322f5aa`, audyt
   founding limit 11/11, AI founding 28/28.
 - `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` — **ZDEPLOYOWANE FALA 298
   `4322f5aa`** — Stone 32/32, guard 18/18, Brąz guard 25/25.
+- `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` — **ZDEPLOYOWANE FALA 299
+  `ed229ec6`** — automat historyczny 0–100%, ulepszenia 0–50%,
+  budynki jako remainder; parity 19/19, UI 12/12.
 
 ### 2. W trakcie — Operator
 

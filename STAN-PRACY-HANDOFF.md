@@ -1,6 +1,6 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-18 19:52 (deploy FALA 298)** · Projekt: Civ „The Game”
+**Ostatnia aktualizacja: 2026-08-18 20:36 (deploy FALA 299)** · Projekt: Civ „The Game”
 
 ## AUDYT DOKUMENTACJI 2026-08-18 — AKTUALNY PUNKT ODNIESIENIA
 
@@ -13,8 +13,10 @@ nie usuwamy.
   md5 `13b771f4`.
 - **FALA 292:** historyczna integracja paczek, zastąpiona korektą FALI 293.
 - **FALA 293:** pełny split Pracy budynki↔ulepszenia, PASS, md5 `8fa80b7c`.
+- **FALA 299:** właściwa warstwa splitu Pracy: automat 0–100%, ulepszenia
+  0–50%, budynki jako remainder; `VERIFY OK`, md5 `ed229ec6`.
 - **FALA 298:** limit miast zdobytych oraz wojna wymuszona epoki Kamienia;
-  `VERIFY OK`, md5 `4322f5aa`.
+  zastąpiona przez FALĘ 299, md5 `4322f5aa`.
 - **FALA 297:** pełny split Pracy AI/MP oraz czytelność globalnego splitu w UI;
   zastąpiona przez FALĘ 298, md5 `bdb3f91a`.
 - **FALA 296:** mapgen B, overlay kopalni N2/N3/N5/N6 oraz barbarzyńcy;
