@@ -5,7 +5,7 @@ description: >
   w TYM repozytorium działa inaczej niż w dowolnym innym: rytuał startu sesji (pull →
   KANAL-PRACA → STAN-PRACY-HANDOFF → playbook.md), nienegocjowalna reguła „żadnej pracy
   poza pętlą AutoBot" z dwoma wąskimi wyjątkami, pętla Operator → Evaluator →
-  final z przydziałem modeli (Operator i Evaluator Sonnet 5 effort="medium", Opus 5 dla render i deploy), procedura NUMER → ABC → COMMIT → DEPLOY
+  finalna kontrola → integracja → deploy/push z aktywnym przydziałem modeli (Operator GPT-5.6 Luna Medium, Evaluator GPT-5.6 Luna High, GPT-5.6 Luna Medium dla orkiestratora/final), procedura NUMER → ABC → COMMIT → DEPLOY
   z rejestrem próśb, obowiązkowy turniej dwóch niezależnych projektów przed każdym
   nowym pytaniem ABC, twarde FAIL Evaluatora dla edge/parytetu gracz-AI/save-load,
   izolacja pracy subagentów w worktree i wpis-blokada w kanale przed serią zmian, progi
@@ -30,7 +30,8 @@ Gdyby `lean-loop` był niedostępny, jego rdzeń AutoBota stoi w `AUTOBOT.md` w 
 ## ⛔ Reguła nadrzędna: żadnej pracy poza pętlą AutoBot
 
 **KAŻDA praca w tym repozytorium — kod, fix, docs procesu, audyt, przygotowanie deployu —
-idzie przez pętlę Operator → Evaluator → final. Reguła NIENEGOCJOWALNA**
+idzie przez nadrzędny obieg `Operator → Evaluator → finalna kontrola → integracja → deploy/push`.
+Reguła NIENEGOCJOWALNA**
 (`CLAUDE.md` §0a · `.cursor/rules/autobot-evaluator-operator.mdc` · `R-PROC-AUTOBOT`),
 **bez wyjątku „to tylko drobiazg" / „zrobię sam poza pętlą"**. Obejmuje tak samo pracę
 własną orkiestratora (§4) jak pracę subagenta.
@@ -45,7 +46,13 @@ własną orkiestratora (§4) jak pracę subagenta.
    zmiana; (c) zawsze zalogowany w `KANAL-PRACA.md` lub treści commita. Brak
    któregokolwiek warunku → pełna pętla, bez zgadywania czy „to tylko drobiazg".
 
-Wszystko ponad te dwa wyjątki → pełna pętla Operator→Evaluator. Kanon wyjątku 2:
+Wszystko ponad te dwa wyjątki → pełna pętla Operator→Evaluator. Raport Operatora jest
+przekazaniem sterowania, nie końcem procesu: orkiestrator automatycznie uruchamia
+Evaluatora, bez czekania na kolejne polecenie. Po `PASS` wykonuje finalną kontrolę i:
+automatycznie aktualizuje status tematu zamkniętego, przygotowuje i zadaje pełne ABC
+z pełnym ID, jeśli potrzebna jest decyzja, albo kieruje gotowy temat do integracji.
+`FAIL` wraca do Operatora. Deploy/push następuje dopiero po wszystkich bramkach
+i autoryzacji deployu. Kanon wyjątku 2:
 `.cursor/rules/autobot-evaluator-operator.mdc:28`.
 
 Kanon procesu: `docs/decyzje/R-PROC-AUTOBOT.md` · `R-PROC-AUTOBOT-EVAL-SCOPE.md` ·
@@ -70,24 +77,32 @@ na dysku**. „push" (sesja lokalna) = pull → odczyt ostatniego wpisu kanału 
 dysku właściciela → meldunek „gotowe, testuj `<md5>`". „deploy" = dopiero wtedy publikacja
 do ROBOCZA. „format" / „ABC" = przepisz pytanie w pełnej formie.
 
-## 1. Przydział modeli (Claude Code; nie dotyczy Cursora)
+## 1. Przydział modeli — aktywny kanon (2026-08-18)
 
 | Rola | Model |
 |------|-------|
-| Sesja główna (orkiestrator) | Sonnet 5 |
-| Operator (wykonawca), domyślnie | **Sonnet 5, `effort="medium"`** |
-| **Evaluator**, domyślnie | **Sonnet 5, `effort="medium"`** |
-| **Deploy** (build + weryfikacja + publikacja) | **Opus 5** |
+| Sesja główna (orkiestrator/final) | **GPT-5.6 Luna Medium** |
+| Operator (wykonawca), domyślnie | **GPT-5.6 Luna Medium** |
+| **Evaluator**, domyślnie | **GPT-5.6 Luna High** |
+| **Integracja/deploy** | główny orkiestrator, wyłącznie po wyraźnym sygnale właściciela |
 | **Operator i Evaluator dla `gra/src/render/**`** | **Opus 5, obowiązkowy dla obu ról** |
 
-**AKTUALIZACJA (Maciej, 2026-08-17): Operator wraca z Haiku 4.5 na Sonnet 5, `effort="medium"`.**
+Operator pracuje w izolacji, Evaluator pozostaje niezależny, a finalna kontrola
+procesu należy do głównego orkiestratora. Sam opis modelu ani powiadomienie nie
+jest dowodem wykonania — raport musi zawierać artefakt i stan procesu.
+
+**ARCHIWUM — zastąpione routingi:** dalsze historyczne akapity o Haiku 4.5,
+Sonnet 5, Opus 5, Workflow i wcześniejszym przydziale pozostają dla śladu
+decyzyjnego, ale nie są aktywnym routingiem od 2026-08-18.
+
+**ARCHIWALNA AKTUALIZACJA (Maciej, 2026-08-17): Operator wracał z Haiku 4.5 na Sonnet 5, `effort="medium"`.**
 Powód: w tej samej sesji 2026-08-17 Haiku 4.5 jako Operator trzykrotnie sfabrykował szczegółowe
 raporty o edycjach dokumentacji (m.in. tego pliku, dwukrotnie), których fizycznie nie było na
 dysku — `git status` w jego własnym worktree pokazywał czyste drzewo mimo cytowanego „diffu".
 Złapane wyłącznie dzięki temu, że orkiestrator zawsze niezależnie weryfikował `git status`/`git diff`
 przed scaleniem, nigdy nie ufając samemu opisowi zmiany. Kanon: `CLAUDE.md` §4.
 
-**Mechanizm dispatchu (2026-08-17):** zarówno Operator jak i Evaluator pracują na jawnym
+**ARCHIWALNY mechanizm dispatchu (2026-08-17):** zarówno Operator jak i Evaluator pracowali na jawnym
 `effort="medium"` (narzędzie Workflow, model Sonnet 5).
 
 Wyjątek renderowy obowiązuje **równolegle** do reguły „Operator/Evaluator na Sonnet 5" i nie
@@ -97,7 +112,7 @@ OBU ról bez wyjątku. **Fable 5 zablokowany** —
 `R-FABLE-RETENCJA-NASTER = B`: wymaga 30-dniowej retencji, wymagania NASTER nieustalone;
 zgoda na model ≠ potwierdzenie retencji, potrzebne oba.
 
-**⛔ DOMYŚLNIE — 1x Evaluator, Sonnet 5** (`R-EVALUATOR-3X-ZGODA-Q1`, Maciej 2026-08-13; **AKTUALIZACJA domyślnego modelu Sonnet 5 zamiast Opus 5: 2026-08-17**). Wzorzec 3x niezależny
+**⛔ DOMYŚLNIE — 1x Evaluator, GPT-5.6 Luna High** (`R-EVALUATOR-3X-ZGODA-Q1`; wcześniejsze wpisy o Sonnet 5 są historyczne). Wzorzec 3x niezależny
 Evaluator NIE jest już progiem automatycznym (nawet dla combat-adjacent/P0) — kosztuje za
 dużo tokenów przy rutynowym stosowaniu. Jego słowa: „nie przepalajmy niepotrzebnie
 tokenów... jeżeli miałbyś odpalać kiedykolwiek 3 ewaluatory to po prostu napisz do mnie o
@@ -105,11 +120,11 @@ zgodę. To w wyjątkowych tylko sytuacjach." **Zanim dispatchujesz 3x — zapyta
 wyjątkowo ciężki/wysokiego ryzyka, i czekaj na jego zgodę.** Nie zgaduj i nie dispatchuj
 z góry na podstawie samej kategorii tematu.
 
-**Opus 5 jako Evaluator — WYŁĄCZNIE gdy:** (a) orkiestrator jawnie prosi dla tematu o wyższym ryzyku,
+**Opus 5 jako Evaluator — WYJĄTEK renderowy lub jawna eskalacja:** (a) orkiestrator jawnie prosi dla tematu o wyższym ryzyku,
 (b) temat dotyczy `gra/src/render/**`. Druga kategoria to OBOWIĄZKOWY Opus 5, niezmienny od
 wcześniejszych reguł.
 
-**Gdy zgoda na 3x padnie** — przydział modeli: Evaluator #1 i #2 na Sonnet 5, Evaluator #3
+**Gdy zgoda na 3x padnie** — przydział modeli: Evaluator #1 i #2 na GPT-5.6 Luna High, Evaluator #3
 (ostatni) na Opus 5. Nie zmniejsza to liczby Evaluatorów ani rygoru — trzy niezależne perspektywy
 zostają, model trzeciego jest wyższy ze względu na koszt/limit trzech Opus naraz.
 
@@ -126,7 +141,7 @@ Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 **Rozwidlenie NUMER → co dalej (`C-027`, Maciej 2026-08-08):** krok „ABC" dotyczy WYŁĄCZNIE
 zgłoszeń wymagających realnego wyboru z kompromisem (balans/gameplay/UX z alternatywami).
 Gdy zgłoszenie jest błędem do naprawienia albo prośbą z jednoznacznie opisanym oczekiwanym
-zachowaniem (brak realnej alternatywy do wyboru) — **NUMER → od razu subagent Sonnet 5**
+zachowaniem (brak realnej alternatywy do wyboru) — **NUMER → od razu Operator GPT-5.6 Luna Medium**
 w pętli Operator → Evaluator, **w tej samej turze**, bez czekania na cokolwiek. „Rejestr to
 punkt startowy pracy, nie miejsce składowania" — jego słowa po serii skarg: *„a myślisz, że
 po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?"*, *„tak właśnie gubią się
@@ -164,13 +179,13 @@ Kanon: `R-PROC-AUTOBOT-ABC-TURNIEJ.md` · `playbook.md` → `C-018` ·
 
 **Każde NOWE pytanie ABC** (temat, na który właściciel jeszcze nie odpowiedział literą)
 przechodzi przed pokazaniem właścicielowi przez trzy role: **Proponent 1** (orkiestrator
-lub Operator, który natrafił na temat) · **Proponent 2** — niezależny agent Sonnet 5
+lub Operator, który natrafił na temat) · **Proponent 2** — niezależny agent GPT-5.6 Luna Medium
 **bez podglądu** projektu 1, dostaje wyłącznie surowe fakty i dane źródłowe. **Obaj
 Proponenci wskazują własny „typ"** — którą literę uważają za najlepszą, z uzasadnieniem
 odwołującym się wprost do `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md` (który wzorzec pasuje
 do kategorii tematu).
 
-**Sędzia** (rola Evaluatora, Opus 5) ocenia dwuwarstwowo: **Warstwa 1 (dominująca)** —
+**Sędzia** (rola Evaluatora, GPT-5.6 Luna High) ocenia dwuwarstwowo: **Warstwa 1 (dominująca)** —
 trafność rozpoznania kategorii i jakość uzasadnienia „typu" względem profilu, nie czy
 zgadł literę właściciela; **Warstwa 2 (niuanse, tiebreaker)** — zgodność ze źródłami,
 kompletność wariantów, trafność Za/Przeciw. Wybiera zwycięzcę albo syntetyzuje finalną
@@ -230,7 +245,7 @@ poprawki tego, co już było naprawione"):
 
 **Orkiestrator nie jest zwolniony z pętli** (`CLAUDE.md` §0b, `playbook.md` → `C-017`):
 każda zmiana zapisana do repozytorium i każda liczba podana właścicielowi jako fakt
-przechodzi przez osobnego Evaluatora na Opus 5; orkiestrator jest wtedy Operatorem
+przechodzi przez osobnego Evaluatora na GPT-5.6 Luna High; orkiestrator jest wtedy Operatorem
 własnej zmiany i **nie ocenia sam siebie**. Czynności czysto odczytowe są wyłączone.
 Furtka z `lean-loop` („gdy nie ma niezależnego recenzenta, przejdź listę sam i oznacz werdykt
 jako samoocenę") **w tym repozytorium nie obowiązuje**: subagent-Evaluator jest zawsze
@@ -280,7 +295,7 @@ przeczyły sobie, jeden ekran od siebie. Złapane dopiero, bo Evaluator drugiego
 - **Wycofywanie zasad jest zautomatyzowane** (`retireWeakRules`, `dyspozycje/autobot/src/playbook-manager.ts`): `win_rate < deprecateBelowWinRate` (0,3) po co najmniej `minRunsForSignificance` zastosowaniach → `RETIRED` + przeniesienie do `quarantine_rules`. Zasada **CHRONIONA** (`protected: true`) jest z tego automatu **wyłączona bez względu na liczniki** — status nadaje wyłącznie właściciel.
   **Rozbieżność do rozstrzygnięcia przez właściciela:** kanon v2 i wartość domyślna w kodzie to **10** zastosowań (`R-PROC-AUTOBOT` §v2 · `dyspozycje/autobot/README.md`: „podniesiony z 5 do 10"), ale żywy `dyspozycje/autobot/playbook.json` ma dziś **`minRunsForSignificance: 5`** — a generator `playbook-md-to-json.cjs` przepisuje `thresholds` bez zmian, więc 5 obowiązuje aż do ręcznej poprawki. Odczytaj wartość z pliku, nie z pamięci.
 - **`promoteMinWinRate = 0,6` nie jest progiem powrotu zasady do AKTYWNEJ** — takiej ścieżki w kodzie nie ma, wycofaną przywraca wyłącznie człowiek. To domyślna wartość `min_confidence_threshold`: progu, od którego zasada ACTIVE w ogóle trafia do promptu Operatora (`getOperatorSystemRules`; zasada z 0 runów i zasada CHRONIONA przechodzą zawsze).
-- **`R-PROC-POTROJNA-WARSTWA` jest WBUDOWANA w kroki 1–3** pętli Operator → Evaluator → final — nie jest osobnym, opcjonalnym rytuałem, którego można „nie odpalić przy drobiazgu".
+- **`R-PROC-POTROJNA-WARSTWA` jest WBUDOWANA w nadrzędny obieg** Operator → Evaluator → finalna kontrola → integracja → deploy/push — nie jest osobnym, opcjonalnym rytuałem, którego można „nie odpalić przy drobiazgu".
 
 **Bariery są w KODZIE, nie tylko w prompcie** (`dyspozycje/autobot/src/guardrails.ts`) — prompt
 agent zawsze może sobie zreinterpretować, uprawnienia nie. `assertActionAllowed` działa
@@ -447,14 +462,14 @@ append-only JSONL, jeden rekord na run, pola `run_id` · `timestamp` · `metric_
 — tutaj tylko miejsce zapisu. Gdy scaffold na to nie pozwala, **minimum: raport Evaluatora
 w czacie + wpis w `KANAL-PRACA.md`**.
 
-## 11. Aktualizacja 2026-08-17 — zmiana domyślnych modeli
+## 11. ARCHIWUM — aktualizacja 2026-08-17 (zastąpiona 2026-08-18)
 
 **Nowy domyślny przydział Operator/Evaluator** (2026-08-17): Operator → **Haiku 4.5** (zamiast Sonnet 5),
 Evaluator → **Sonnet 5** (zamiast Opus 5). Opus 5 zostaje obowiązkowy dla `gra/src/render/**` (dla obu ról)
 i dostępny dla Evaluatora na wyraźne żądanie orkiestratora dla trudniejszych tematów. Dispatcher zmienił się
 z narzędzia Agent na Workflow z `effort="medium"` dla Evaluatora (Sonnet 5). Deploy pozostaje Opus 5.
 
-## 11a. Aktualizacja 2026-08-17 (dalszy ciąg tego samego dnia) — Operator wraca na Sonnet 5
+## 11a. ARCHIWUM — aktualizacja 2026-08-17 (zastąpiona 2026-08-18)
 
 Powyższa decyzja (Operator = Haiku 4.5) została **cofnięta tego samego dnia**: w tej sesji Haiku
 4.5 jako Operator trzykrotnie sfabrykował szczegółowe, przekonujące raporty o edycjach

@@ -9,14 +9,22 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
 
 ## ⛔ ZASADY KRYTYCZNE (złamanie = utrata pracy)
 0. **NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03).** Każdy case/bug/poprawka/innowacja → ID w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Nie koduj od razu** — przedstaw rozwiązanie ± ABC. Commit dopiero po **`numer + A|B|C`**. **Deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
-0a. **AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05).** **KAŻDA praca** wyłącznie w systemie AutoBot: Operator (`composer-2.5`) → Evaluator (adwokat + twarde metryki) → Grok final. **ZAKAZ** pracy poza pętlą / „gotowe” bez Evaluatora. Playbook + guardrails. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` · `docs/decyzje/R-PROC-AUTOBOT.md`.
+0a. **AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05, routing zaktualizowany 2026-08-18).** **KAŻDA praca** wyłącznie w systemie AutoBot: Operator (**GPT-5.6 Luna Medium**) → Evaluator (**GPT-5.6 Luna High**) → główny orkiestrator/final (**GPT-5.6 Luna Medium**). **ZAKAZ** pracy poza pętlą / „gotowe” bez Evaluatora. Playbook + guardrails. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` · `docs/decyzje/R-PROC-AUTOBOT.md`.
+   **Nadrzędny obieg procesu:** `Operator → Evaluator → finalna kontrola → integracja → deploy/push`.
+   Raport Operatora jest przekazaniem sterowania, nie końcem pracy i nie powodem do czekania
+   na ponowne popychanie właściciela. Po raporcie orkiestrator automatycznie uruchamia
+   Evaluatora. Po `PASS` wykonuje finalną kontrolę, a następnie: (a) automatycznie aktualizuje
+   status, jeśli temat jest zamknięty; (b) przygotowuje i zadaje pełne ABC z pełnym ID, jeśli
+   potrzebna jest decyzja; albo (c) kieruje gotowy temat do integracji. `FAIL` wraca do
+   Operatora z konkretną listą poprawek. Deploy/push następuje dopiero po wszystkich bramkach
+   i wyraźnej autoryzacji deployu.
 0b. **AUTOBOT OBEJMUJE TAKŻE PRACĘ GŁÓWNEJ SESJI (Maciej 2026-08-07).** Jego słowa: *„Dla siebie
    też przyjmij zasadę autobot na każdym temacie, nie tylko dla subagentów. Czyli każdą swoją
    decyzję sprawdzaj ewaluatorem"* oraz *„zasada Autobots obejmuje nie tylko zleconą pracę
    subagentowi, ale **po pierwsze Twoją pracę**"*.
-   **Skutek:** orkiestrator (główna sesja) **nie jest zwolniony** z pętli. Każda zmiana, którą
+   **Skutek:** główny orkiestrator (**GPT-5.6 Luna Medium**) **nie jest zwolniony** z pętli. Każda zmiana, którą
    wprowadza SAM — kod, dane, kanon, dokument decyzji, wpis w rejestrze, sprostowanie — przechodzi
-   przez **Evaluatora na Opus 5**, tak samo jak praca subagenta. Orkiestrator jest wtedy Operatorem
+   przez **Evaluatora na GPT-5.6 Luna High**, tak samo jak praca subagenta. Orkiestrator jest wtedy Operatorem
    własnej zmiany i **nie ocenia sam siebie** (zasada z §1 playbooka: „wykonawca nigdy nie ocenia
    sam siebie").
    **Powód (realne wypadki 2026-08-07, wszystkie w pracy własnej orkiestratora, żaden nie złapany
@@ -162,7 +170,17 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    Pieniądz / Zadowolenie / Obrona), **w jakiej jednostce** (pkt na turę, %, pkt Prawa) i **w jakim kontekście**
    (poziom, epoka, poziom trudności). Nagłówek kolumny „Baza" jest zakazany — ma być „Kultura (baza)".
    Jego słowa: „wpisujesz baza, ale baza do czego? potem chodzimy po omacku".
-4. **PRZYDZIAŁ MODELI — Claude Code (Maciej, 2026-08-06; NIE dotyczy Cursora):** główny model
+4. **PRZYDZIAŁ MODELI — AKTYWNY KANON (decyzja właściciela 2026-08-18).** Główny orkiestrator
+   = **GPT-5.6 Luna Medium**. Operator = **GPT-5.6 Luna Medium**. Evaluator =
+   **GPT-5.6 Luna High**. Orkiestrator wykonuje finalną kontrolę procesu; nie jest to dodatkowy
+   model ponad głównym orkiestratorem. Render/Designer pozostaje wyjątkiem: modele 3D jednostek
+   i cała praca w `gra/src/render/**` = **Opus 5** dla roli wykonawczej i oceniającej. Fable 5
+   wyłącznie za wyraźną zgodą Macieja.
+
+   **ARCHIWUM — poprzednie routingi (zastąpione 2026-08-18):** poniższe wpisy historyczne
+   dokumentują wcześniejsze decyzje Sonnet/Haiku/Opus i nie są aktywnym routingiem.
+
+4. **ARCHIWALNE — PRZYDZIAŁ MODELI — Claude Code (Maciej, 2026-08-06; NIE dotyczy Cursora):** główny model
    sesji = **Sonnet 5**; **wszyscy subagenci-wykonawcy (Operator) = Sonnet 5** (`Agent`,
    `model: "sonnet"`; `general-purpose` do pracy w repo, `Explore` do read-only reconu).
    **EVALUATOR (adwokat diabła, werdykt AutoBot) = Opus 5. DEPLOY (build+weryfikacja+publikacja
@@ -231,37 +249,38 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 9. **Komentarze w kodzie (`gra/src/**`) dwujęzyczne PL+EN (Maciej 2026-08-09).** Nie zmienia zasady „domyślnie
    bez komentarzy, tylko gdy WHY nieoczywiste" — dotyczy WYŁĄCZNIE tych rzadkich komentarzy, które i tak
    powstają. Format: polska wersja, potem `/ EN: ...` w tej samej linii/bloku.
-10. **HASŁO „raport" — status pracy w 5 kategoriach (Maciej, 2026-08-10; kategoria 6 dopisana
-    2026-08-12, ZAWIESZONA 2026-08-12 po sprostowaniu właściciela — patrz nota niżej).** Na słowo
-    `raport` (w dowolnym momencie, niezależnie od wątku) dostarcz zestawienie w DOKŁADNIE tych
-    5 kategoriach, w tej kolejności:
-    1. **Gotowe do deploy do ROBOCZA i czekające** (scalone na gałąź sesji, bramki zielone, deploy jeszcze
-       nie wykonany).
-    2. **W trakcie — Operator pracuje** (dispatchowany, jeszcze bez dostarczonego raportu).
-    3. **W trakcie — Evaluator pracuje** (Operator dostarczył, czeka na werdykt).
-    4. **Zapomniane — do dispatchu subagenta** (zarejestrowane w `PYTANIA-OTWARTE.md`, bez żadnego
-       aktywnego wykonawcy ANI jawnej decyzji odłożenia właściciela — patrz procedura audytu C-030/C-031 w
-       `dyspozycje/autobot/playbook.md`: grep `STATUS: \*\*OTWARTE` BEZ kotwicy `^## `, dla każdego trafienia
-       sprawdź czy jest dispatch/ABC/cytat właściciela o odłożeniu).
-    5. **Odłożone świadomie** (z udokumentowanym w tym samym pliku powodem — cytat właściciela, „do
-       backlogu", „pre-istniejące nie blokuje" itp., NIE samoocena „niepilne" agenta rejestrującego —
-       to nie liczy się jako świadome odłożenie).
-    Źródło danych zawsze `dyspozycje/PYTANIA-OTWARTE.md` (pełny przegląd nagłówków `## `, nie próbka z
-    pamięci sesji) + stan aktywnie dispatchowanych agentów. Format odpowiedzi: krótko, per temat ID/nazwa +
-    1 zdanie stanu — bez wklejania pełnych raportów Operatora/Evaluatora. Jeśli plik rejestru jest duży,
-    dispatchuj subagenta (Explore/general-purpose) do systematycznego audytu zamiast zgadywać z pamięci.
+10. **HASŁO „raport" — aktywny kanon siedmiu kategorii
+    (`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`, 2026-08-18).** Na słowo `raport`
+    dostarcz zestawienie zawsze w tej kolejności:
+    1. **Gotowe do integracji/deployu.**
+    2. **W trakcie — Operator.**
+    3. **W trakcie — Evaluator.**
+    4. **Zapomniane — do dispatchu.**
+    5. **Świadomie odłożone.**
+    6. **Otwarte ABC.**
+    7. **Playtesty.**
 
-    **Nota o kategorii 6 (ZAWIESZONA, 2026-08-12).** Kategoria 6 „wszystkie nowe zlecenia od
-    ostatniej fali" została dopisana 2026-08-12 na podstawie zdania właściciela „Raport powinien
-    obejmować zawsze wszystkie nowe zlecenia od ostatniej fali" — ale to zdanie okazało się
-    dotyczyć czegoś innego: właściciel sprostował (2026-08-12, po dochodzeniu w historii sesji —
-    zobacz link do pytania w rejestrze), że chodziło mu o **wszystkie tematy zarejestrowane od
-    ostatniej fali, wypisane wprost, niezależnie od tego, do której kategorii 1-5 trafiają** —
-    czyli DOKŁADNIE to, co kategoria 6 już robiła. Ponieważ jednak te same tematy i tak są
-    widoczne rozbite na kategorie 1-5, właściciel zdecydował: **nie utrzymywać osobnej kategorii 6
-    na razie, dopóki nie znajdzie się dla niej inne zastosowanie.** Jeśli w przyszłości padnie
-    nowe polecenie „dodaj kategorię 6" — dopytaj wprost co ma zawierać, nie zakładaj że to ten
-    sam koncept.
+    Każdy punkt ma format: **ID — jedno zdanie statusu — dowód albo następna
+    czynność**; pusta kategoria otrzymuje `— (brak)`. Raport musi osobno i jawnie
+    podać stan Operatora oraz Evaluatora. Worktree, branch, stary plik lub samo
+    powiadomienie nie jest dowodem aktywnego procesu.
+
+    Źródła i kolejność weryfikacji: `dyspozycje/PYTANIA-OTWARTE.md`,
+    `dyspozycje/REJESTR-PROSB-I-ZADAN.md`, `docs/decyzje/<ID>.md`,
+    `dyspozycje/WERSJE.md`, `dyspozycje/_handoff/KANAL-PRACA.md` oraz właściwy
+    handoff/audyt. Przed pokazaniem każdego ABC sprawdź ECHO/status w dokumencie
+    decyzji. Pytanie z literą A/B/C albo inną jawną decyzją znika z aktywnego ABC,
+    ale zostaje w historii i może być pokazane wyłącznie jako
+    **ZAMKNIĘTE/GOTOWE/W TOKU/DO INTEGRACJI**.
+
+    Kategoria 7 korzysta wyłącznie z najnowszego wpisu ROBOCZEJ
+    `Playtest — na co patrzeć` w `dyspozycje/WERSJE.md`; nie przenosi historycznej
+    kolejki PT ani starszych fal. Pełna definicja i snapshot referencyjny:
+    [`docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md).
+
+    **ARCHIWUM — SUPERSEDED:** poprzedni format raportu 5-kategorii oraz
+    zawieszona wersja kategorii 6 pozostają w historii dokumentów i commitów, ale
+    nie są już formatem odpowiedzi `raport`.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)

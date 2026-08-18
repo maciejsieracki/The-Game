@@ -20,11 +20,15 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 4. **`deploy`** (hasło) → dopiero ROBOCZA / `WERSJE.md`.
 
 ## ⛔ AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — KAŻDA PRACA TYLKO TĘDY
-**KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot: Operator → Evaluator → Grok final. **ZAKAZ** omijania pętli.  
-Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) · `.cursor/rules/autobot-evaluator-operator.mdc`.
-1. **Operator** — `composer-2.5` + `playbook.json` + guardrails.
-2. **Evaluator** — adwokat diabła + twarde metryki → postmortem → playbook.
-3. **Grok** — final; dopiero potem „gotowe” / `deploy`.
+**KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot:
+Operator (**GPT-5.6 Luna Medium**) → Evaluator (**GPT-5.6 Luna High**) →
+główny orkiestrator/final (**GPT-5.6 Luna Medium**). **ZAKAZ** omijania pętli.
+Kanon: [`autobot/README.md`](autobot/README.md) ·
+[`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) ·
+`.cursor/rules/autobot-evaluator-operator.mdc`.
+
+**ARCHIWUM — SUPERSEDED:** wcześniejsze wpisy o `composer-2.5`, Grok, Haiku
+i Sonnet pozostają poniżej jako historia, ale nie są aktywnym routingiem.
 
 **Notatka 2026-08-05:** Cleanup przestarzałych „czeka deploy" / „bez deploy" dla pozycji już w `WERSJE.md`; źródło prawdy deployu w owym momencie = FALA 228 (`29bfdf00`).
 
@@ -33,6 +37,8 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 **KOREKTA AUDYTU 2026-08-18:** aktywny routing tej sesji to Operator **GPT-5.6 Luna Medium** →
 Evaluator **GPT-5.6 Luna High** → główny orkiestrator/final **GPT-5.6 Luna Medium**.
 Wpisy o composer/Grok/Haiku/Sonnet poniżej są historyczne i pozostają zachowane.
+
+| R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Kanon raportu właściciela: siedem kategorii, filtr ECHO dla ABC i wyłącznie najnowszy wpis Playtest ROBOCZEJ | **WDROŻONE (docs-only) — nie jest pytaniem ABC** | `docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`; zasady: `CLAUDE.md`, `.claude/skills/civ-autobot/SKILL.md`, `.cursor/rules/komendy-raport.mdc`; bez zmian kodu/danych/bundli/WERSJE/deployu |
 
 | P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 | 2026-08-17 | Ogólny wzorzec rozbudowanej karty technologii; prototyp na Brązownictwie | **CZEKA-NA-DECYZJĘ — PROPOZYCJA DOCS-ONLY** | Ogólny prototyp nadal czeka na akceptację i rozstrzygnięcie źródeł (12 vs 20 jednostek, „Popalnia brązu"). Konkretna karta Brązownictwa została wdrożona osobno jako `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1=C` w FALI 294. Design i linkowanie Civpedii/Wikipedii pozostają późniejszym etapem. |
 | P-JEDNOSTKI-KARTA-3D-INFO-Q1 | 2026-08-18 | Integracja tymczasowej, generycznej karty jednostki z istniejącym ekranem armii; Hastati jako wzorzec, prawdziwe dane i slot modelu 3D | **W TOKU — bez balansu, linków zewnętrznych, zmian modeli i deployu** | ECHO/zakres: `docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md`; prototyp: commity `5997eafa`, `02572360`, mockup `be407afb`/`31b8c9fa`; baza `origin/cursor/deploy-fala-294-63a1` |

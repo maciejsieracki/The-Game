@@ -8,6 +8,22 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1 — KANON RAPORTU, NIE OTWARTE ABC
+
+Decyzja procesowa z 2026-08-18: raport właściciela ma zawsze siedem kategorii:
+gotowe do integracji/deployu, w trakcie — Operator, w trakcie — Evaluator,
+zapomniane — do dispatchu, świadomie odłożone, otwarte ABC oraz playtesty.
+Pełna definicja, źródła i reguły klasyfikacji są w
+[`docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md).
+
+Ten wpis nie jest pytaniem do właściciela i nie trafia do aktywnej listy ABC.
+Odpowiedzi A/B/C pozostają w historii, ale przed pokazaniem ich jako otwarte ABC
+trzeba zweryfikować ECHO/status w `docs/decyzje/<ID>.md`. Kategoria playtestów
+czyta wyłącznie najnowszy wpis `Playtest — na co patrzeć` z ROBOCZEJ w
+`dyspozycje/WERSJE.md`; nie przenosi historycznej kolejki PT.
+
+---
+
 ## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **OTWARTE — OGÓLNY PROTOTYP**
 
 **Sytuacja:** Po odkryciu technologii istnieją dziś skrócone informacje w hubie badań oraz tooltip/karta węzła drzewa. Nie ma jednej rozbudowanej karty pokazującej pełny efekt odkrycia. Prototyp opisano na przykładzie Brązownictwa w [`docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`](../docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md).

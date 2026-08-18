@@ -215,3 +215,16 @@ automatycznie dowodem, że temat nadal jest otwarty.
 - Obce, niezacommitowane zmiany `CLAUDE.md` i `.cursor/rules/model-routing.mdc`
   oraz nieśledzone katalogi worktree nie należą do tego docs-only audytu i
   nie mogą wejść do jego commita.
+
+## 10. Kanon raportu właściciela
+
+Raport bieżącego stanu opisuje osobny dokument procesowy
+[`docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](../../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md).
+Ten audyt jest handoffem/snapshotem dla bazy FALI 294, ale nie zastępuje
+odczytu najnowszej ROBOCZEJ z `WERSJE.md`.
+
+Przy raporcie należy jawnie rozdzielić stan Operatora od stanu Evaluatora;
+worktree, branch i ukryte powiadomienie nie są dowodem aktywnego procesu.
+Odpowiedzi A/B/C pozostają w historii, lecz po weryfikacji ECHO/statusu nie
+mogą wracać do aktywnej kategorii „Otwarte ABC”. Kategoria „Playtesty” bierze
+wyłącznie najnowszy wpis `Playtest — na co patrzeć` z ROBOCZEJ.

@@ -1,5 +1,5 @@
 ---
-description: TWARDA REGUŁA — KAŻDA praca wyłącznie w systemie AutoBot. Maciej 2026-08-05. NIENEGOCJOWALNE.
+description: TWARDA REGUŁA — AutoBot: Operator → Evaluator → finalna kontrola → integracja → deploy/push. Maciej 2026-08-18.
 globs:
   - "**/*"
 alwaysApply: true
@@ -7,11 +7,18 @@ alwaysApply: true
 
 # AutoBot — KAŻDA PRACA TYLKO TĘDY (NIENEGOCJOWALNE)
 
-**Decyzja Maciej 2026-08-05 (`R-PROC-AUTOBOT`):**  
-**Każda praca, którą wykonuje agent (kod, fix, docs procesu, audyt, deploy-prep), MUSI iść przez system AutoBot.**  
+**Decyzja Maciej 2026-08-18 (`R-PROC-AUTOBOT`):**
+**Każda praca, którą wykonuje agent (kod, fix, docs procesu, audyt, deploy-prep), MUSI iść przez system AutoBot.**
 Bez wyjątku „to tylko drobiazg” / „zrobię sam poza pętlą”.
 
 Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · scaffold: `dyspozycje/autobot/` · playbook: `dyspozycje/autobot/playbook.json`
+
+**Nadrzędny obieg:** `Operator → Evaluator → finalna kontrola → integracja → deploy/push`.
+Raport Operatora uruchamia automatycznie następną fazę — orkiestrator nie zatrzymuje procesu
+i nie czeka na ponowne popychanie właściciela. Po `PASS` Evaluatora finalna kontrola:
+aktualizuje status zamkniętego tematu, przygotowuje pełne ABC z pełnym ID, gdy potrzebna
+jest decyzja, albo kieruje gotowy temat do integracji. `FAIL` wraca do Operatora.
+Deploy/push jest dozwolony dopiero po spełnieniu bramek i autoryzacji deployu.
 
 ---
 
@@ -19,9 +26,11 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · scaffold: `dyspozycje/autobot/` · pl
 
 | Krok | Rola AutoBot | Kto u nas | Wymagane |
 |------|----------------|-----------|----------|
-| **1** | **Operator** | `composer-2.5` (implementer) | Czyta `playbook.json` + zadanie → wykonuje akcję w guardrails |
-| **2** | **Evaluator** | Osobny `composer-2.5` (adwokat diabła) + twarde metryki | Score z KPI (nie self-grade), postmortem, win/loss playbook, prune |
-| **3** | **Final / Gate** | Grok 4.5 | Kontrola #1+#2; dopiero potem „gotowe” / czekaj na `deploy` |
+| **1** | **Operator** | **GPT-5.6 Luna Medium** | Czyta `playbook.json` + zadanie → wykonuje akcję w guardrails i składa raport z artefaktem |
+| **2** | **Evaluator** | **GPT-5.6 Luna High** | Niezależny adwokat diabła: twarde metryki, SCOPE, regresja, postmortem, werdykt |
+| **3** | **Finalna kontrola** | **GPT-5.6 Luna Medium** | Kontrola raportów i zakresu; po `PASS` kieruje temat do statusu, ABC albo integracji |
+| **4** | **Integracja** | główny orkiestrator / uprawniony Integrator | Wpięcie zatwierdzonej paczki po bramkach; bez samowolnego deployu |
+| **5** | **Deploy/push** | uprawniona rola po autoryzacji właściciela | Publikacja dopiero po bramkach i wyraźnym sygnale deployu |
 
 **ZAKAZ:**
 
@@ -30,11 +39,11 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · scaffold: `dyspozycje/autobot/` · pl
   czysto tekstowe, WYŁĄCZNIE w plikach dokumentacji/notatek (NIGDY w `gra/src`), i WYŁĄCZNIE
   jako dopisek do paczki, która już przeszła przez Evaluatora w tej samej sesji — nie jako
   samodzielna, nieoceniona zmiana. Zawsze z wpisem w `KANAL-PRACA.md` lub treści commita.
-- ❌ Zamknąć „gotowe w kodzie” / prosić `deploy` bez Evaluator + final Groka
+- ❌ Zamknąć „gotowe” / skierować do integracji / prosić o `deploy` bez Evaluatora i finalnej kontroli
 - ❌ Omijać `playbook.json` / guardrails „na skróty”
 - ❌ Self-grade bez twardej metryki (testy, typecheck, playtest OK/BUG, md5)
 
-**Wyjątek wąski (tylko):** czysta rozmowa ABC / zapis decyzji Macieja bez zmiany `gra/src` — wtedy Operator nie koduje, ale Grok i tak trzyma reguły playbooka (NUMER→ABC, deploy gate).
+**Wyjątek wąski (tylko):** czysta rozmowa ABC / zapis decyzji Macieja bez zmiany `gra/src` — wtedy Operator nie koduje, ale główny orkiestrator nadal trzyma reguły playbooka (NUMER→ABC, deploy gate).
 
 ---
 
@@ -89,7 +98,9 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`
 
 **Przy NIE (SCOPE lub STRICT):** **FAIL** — **ZAKAZ** czystego PASS i PASS-WITH-NOTES „bo brakuje testu, ale wygląda OK”.
 
-Grok wkleja do promptu Evaluatora szablon 5 pytań z decision doc (sekcja „SCOPE + regresja + STRICT”).
+Główny orkiestrator wkleja do promptu Evaluatora szablon 5 pytań z decision doc
+(sekcja „SCOPE + regresja + STRICT”), a po raporcie Operatora uruchamia Evaluatora
+automatycznie.
 
 ---
 
@@ -258,8 +269,8 @@ Workflow nie jest obowiązkowe dla każdej pojedynczej paczki.
 
 | Rola AutoBot | Krok Workflow | Model |
 |---|---|---|
-| **Operator** | `phase('Operator')` → `agent(prompt, opts)` | domyślny model sesji (Sonnet 5, per CLAUDE.md §4) |
-| **Evaluator** | `phase('Evaluator')` → `agent(prompt, {model:'opus', effort:'high'})` | Opus 5 (per CLAUDE.md §4) |
+| **Operator** | `phase('Operator')` → `agent(prompt, opts)` | GPT-5.6 Luna Medium |
+| **Evaluator** | `phase('Evaluator')` → `agent(prompt, {model:'gpt-5.6-luna-high'})` | GPT-5.6 Luna High |
 
 **WYMÓG TWARDY:** obie fazy żyją w **JEDNYM skrypcie Workflow**, Operator → Evaluator jako
 dwa kroki sekwencyjne tego samego przebiegu — **NIGDY jako dwa osobne, niezależnie
@@ -304,7 +315,7 @@ nie próbuje naprawiać tego wewnątrz złego worktree.
 
 ### Adversarialna weryfikacja (N niezależnych Evaluatorów) — kiedy 1, kiedy 3
 
-Domyślnie **1 Evaluator wystarcza** (Opus 5, `effort:'high'`, adwokat diabła jak w reszcie
+Domyślnie **1 Evaluator wystarcza** (GPT-5.6 Luna High, adwokat diabła jak w reszcie
 tej reguły). **3 niezależnych Evaluatorów głosujących (większość musi się zgodzić, żeby
 werdykt PASS przetrwał)** dla zmian wysokiego ryzyka — dotykających:
 - silnika bitwy (`gra/src/**/combat*`, `battle*`, moc jednostek, wynik starcia),
@@ -318,12 +329,13 @@ diabła" (Warstwa 2 potrójnej warstwy) — Workflow go automatyzuje jako wbudow
 
 ### Co ZOSTAJE poza Workflow — zawsze ręczne, zawsze orkiestrator
 
-Workflow kończy robotę na **„kod zatwierdzony przez Evaluatora"** — nigdy nie commituje ani
-nie deployuje samo. Zawsze poza Workflow, zawsze ręką orkiestratora:
+Workflow kończy robotę na **„materiał zatwierdzony przez Evaluatora"** i przekazuje go do
+finalnej kontroli oraz integracji — nigdy nie commituje ani nie deployuje samo. Zawsze poza
+Workflow, zawsze ręką orkiestratora:
 - `git commit` / `git push`,
 - wpisy do `dyspozycje/PYTANIA-OTWARTE.md` / `dyspozycje/WERSJE.md` /
   `dyspozycje/REJESTR-PROSB-I-ZADAN.md` / `dyspozycje/_handoff/KANAL-PRACA.md`,
-- CAŁY deploy (hasło `deploy`, wyłącznie Opus 5, per CLAUDE.md §4).
+- CAŁY deploy (hasło `deploy`, po bramkach i autoryzacji właściciela).
 
 **Reguła 0b obowiązuje TAKŻE przy ręcznym scalaniu konfliktów.** Gdy orkiestrator sam
 rozwiązuje konflikt scalenia (`git apply -3` z konfliktem, ręczny merge trójstronny), to
@@ -338,9 +350,9 @@ Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_i
 
 ## Self-check przed „gotowe”
 
-1. Czy był **Operator** (osobny przebieg implementacji / jasny przebieg Autobot)?  
-2. Czy był **Evaluator** (adwokat + metryki)?  
-3. Czy **Grok** zrobił final?  
-4. Czy playbook / guardrails uszanowane?  
+1. Czy był **Operator** (osobny przebieg implementacji / jasny przebieg AutoBot)?
+2. Czy był **Evaluator** (adwokat + metryki), uruchomiony po raporcie bez dodatkowego popychania?
+3. Czy główny orkiestrator wykonał **finalną kontrolę** i skierował temat do statusu, ABC albo integracji?
+4. Czy playbook / guardrails uszanowane oraz czy deploy/push ma wymaganą autoryzację?
 
 **Choć jedno NIE → nie zamykaj paczki.**

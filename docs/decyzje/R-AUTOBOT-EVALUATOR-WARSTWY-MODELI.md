@@ -1,6 +1,12 @@
 # Podział etapów Evaluatora AutoBot na warstwy modeli (Sonnet 5 / Opus 5 / Fable 5)
 
 **Data:** 2026-08-07 · **Powiązane ID:** `R-AUTOBOT-EVALUATOR-MODEL-Q1` (wersja 2)
+**Status:** **HISTORYCZNE / ZASTĄPIONE 2026-08-18.** Ten dokument zachowuje pomiary
+i uzasadnienie wcześniejszego routingu. Nie jest aktywną instrukcją modeli ani kolejności
+procesu. Aktualny kanon: `docs/decyzje/R-PROC-AUTOBOT.md` —
+`Operator → Evaluator → finalna kontrola → integracja → deploy/push`, z Operatorem
+GPT-5.6 Luna Medium, Evaluatorem GPT-5.6 Luna High i głównym orkiestratorem
+GPT-5.6 Luna Medium.
 **Zakres pomiaru:** wyłącznie **tor Claude Code / sesja chmurowa**. Sesja lokalna (Windows) i tor
 Cursora są dla tego pomiaru niewidoczne — a `.cursor/rules/model-routing.mdc` (alwaysApply) stanowi,
 że w Cursorze adwokatem diabła jest `composer-2.5`, nie Opus 5. Zmiana tamtej reguły wymagałaby

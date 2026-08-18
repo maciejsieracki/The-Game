@@ -1,11 +1,33 @@
-# R-PROC-AUTOBOT — AutoBot (Evaluator–Operator)
+# R-PROC-AUTOBOT — AutoBot (Operator–Evaluator–integracja)
 
-**Status:** 🟢 **TWARDA REGUŁA OBOWIĄZUJE** (Maciej 2026-08-05) — **KAŻDA praca agenta wyłącznie w AutoBot**  
+**Status:** 🟢 **TWARDA REGUŁA OBOWIĄZUJE** (Maciej 2026-08-05; obieg doprecyzowany 2026-08-18) — **KAŻDA praca agenta wyłącznie w AutoBot**
 **Źródło:** Maciej — „każda praca którą wykonujesz ma być teraz wykonywana w systemie AutoBot” + Architectural Spec  
 **Reguła Cursor (alwaysApply):** `.cursor/rules/autobot-evaluator-operator.mdc`  
 **Kod / playbook:** `dyspozycje/autobot/`
 
 ---
+
+## Nadrzędny obieg procesu (aktywny od 2026-08-18)
+
+**`Operator → Evaluator → finalna kontrola → integracja → deploy/push`**
+
+To jest obowiązkowa kolejność i jedyny aktualny opis przejścia paczki przez proces:
+
+1. **Operator** wykonuje zadanie w izolacji i składa raport z artefaktem oraz dowodami.
+2. **Evaluator** jest uruchamiany automatycznie po raporcie Operatora. Orkiestrator nie
+   zatrzymuje procesu i nie czeka na ponowne popychanie właściciela.
+3. Po `PASS` **główny orkiestrator wykonuje finalną kontrolę**: sprawdza raporty,
+   zakres, bramki i stan repozytorium. Po `FAIL` zwraca Operatorowi konkretną listę
+   poprawek; nie ma statusu „gotowe”.
+4. Po pozytywnej kontroli orkiestrator:
+   - automatycznie aktualizuje status, jeśli temat jest zamknięty;
+   - przygotowuje i zadaje ABC z pełnym ID, jeśli wymagana jest decyzja;
+   - kieruje gotowy temat do integracji, gdy decyzja i zakres są już zamknięte.
+5. **Integracja** włącza zatwierdzoną paczkę dopiero po przejściu bramek. **Deploy/push**
+   następuje dopiero po spełnieniu bramek i wyraźnej autoryzacji deployu właściciela.
+
+Raport Operatora nie jest zgodą na integrację ani publikację. Operator i Evaluator nie
+wykonują samowolnego merge, deployu ani pushu.
 
 ## Cel
 
@@ -13,7 +35,8 @@ Self-improving agent framework w patternie **Evaluator–Operator**:
 - **Operator** wykonuje zadanie według `playbook.json`
 - **Evaluator** mierzy twarde metryki, liczy deltę, robi postmortem i aktualizuje playbook
 
-**U nas:** **nie wolno** wykonywać pracy „obok” systemu. Każda paczka = Operator → Evaluator → Grok final.
+**U nas:** **nie wolno** wykonywać pracy „obok” systemu. Każda paczka przechodzi
+`Operator → Evaluator → finalna kontrola → integracja → deploy/push`.
 
 ---
 
@@ -21,13 +44,16 @@ Self-improving agent framework w patternie **Evaluator–Operator**:
 
 | AutoBot | U nas |
 |---------|--------|
-| **OperatorAgent** | Implementer (`composer-2.5`) — czyta playbook + dyspozycję, wykonuje kod/testy |
-| **EvaluatorAgent** | Adwokat diabła + Grok final (+ metryki: testy PASS/FAIL, playtest OK/BUG, **SCOPE + regresja** — `R-PROC-AUTOBOT-EVAL-SCOPE`) |
+| **OperatorAgent** | **GPT-5.6 Luna Medium** — czyta playbook + dyspozycję, wykonuje kod/testy/docs |
+| **EvaluatorAgent** | **GPT-5.6 Luna High** — niezależny adwokat diabła, metryki, **SCOPE + regresja** (`R-PROC-AUTOBOT-EVAL-SCOPE`) |
+| **Finalna kontrola / integracja** | **GPT-5.6 Luna Medium** — kontrola, status/ABC, skierowanie do integracji |
 | **playbook.json** | `dyspozycje/autobot/playbook.json` — reguły z win/loss / win_rate |
 | **Guardrails** | Zakaz merge→main / deploy bez hasła `deploy` / krytyczne = bramka Macieja |
 | **Feature pruning** | Nie pakować do kontekstu Operatora atrybutów bez mocy predykcyjnej (śmieciowy kontekst) |
 
-**Potrójna warstwa** (`R-PROC-POTROJNA-WARSTWA`) = konkretna realizacja Evaluator przed „gotowe”/deploy. AutoBot = szersza pętla uczenia się z playbooka.
+**Potrójna warstwa** (`R-PROC-POTROJNA-WARSTWA`) = część obiegu Operator → Evaluator →
+finalna kontrola. Integracja i deploy/push są kolejnymi, odrębnymi bramkami; AutoBot =
+szersza pętla uczenia się z playbooka.
 
 ---
 
@@ -175,14 +201,16 @@ JĄ automatyzować, nie zastępować. Guardrails z sekcji „Twarde guardrails" 
 merge→`main`, bez deploy bez hasła, mandatory human approval na akcje krytyczne) obowiązują
 identycznie, czy praca idzie przez Workflow, czy przez ręczny dispatch.
 
-**Mapowanie ról:**
+**Mapowanie ról (aktywny routing):**
 
 | Rola AutoBot | Workflow | Model |
 |---|---|---|
-| Operator | `phase('Operator')` | domyślny model sesji (Sonnet 5) |
-| Evaluator | `phase('Evaluator')`, `model:'opus', effort:'high'` | Opus 5 |
+| Operator | `phase('Operator')` | GPT-5.6 Luna Medium |
+| Evaluator | `phase('Evaluator')` | GPT-5.6 Luna High |
 
-Obie fazy — **jeden skrypt, dwa kroki sekwencyjne, nigdy dwa osobne dispatche** — to
+Obie fazy mogą być uruchomione w jednym przebiegu Workflow albo sekwencyjnie po raporcie
+Operatora, ale **Evaluator zawsze startuje automatycznie** i nie wymaga ponownego sygnału
+właściciela. To
 strukturalne zabezpieczenie przed powtórką incydentu tej sesji, w którym ~11 zmian
 Operatora zostało scalonych i skomitowanych bez pośredniego Evaluatora. `pipeline()`
 zastępuje ręczne sekwencjonowanie „poczekaj → scal → dopiero Evaluator": temat A może być
@@ -197,9 +225,10 @@ brak).
 dla zmian dotykających silnika bitwy, save/load, lub migracji danych kanonicznych
 (`gra/data/**`).
 
-**Zawsze poza Workflow, zawsze ręką orkiestratora:** `git commit`/`push`, wpisy do
-`PYTANIA-OTWARTE.md`/`WERSJE.md`/`REJESTR-PROSB-I-ZADAN.md`/`KANAL-PRACA.md`, cały deploy
-(hasło `deploy`, Opus 5). Workflow kończy na „kod zatwierdzony przez Evaluatora".
+**Zawsze poza Workflow, zawsze ręką orkiestratora:** finalna kontrola, integracja,
+`git commit`/`push`, wpisy do `PYTANIA-OTWARTE.md`/`WERSJE.md`/`REJESTR-PROSB-I-ZADAN.md`/
+`KANAL-PRACA.md` oraz cały deploy. Workflow kończy na „materiał zatwierdzony przez
+Evaluatora”, a deploy wymaga bramek i autoryzacji właściciela.
 
 Reguła 0b (orkiestrator nie ocenia sam siebie) obowiązuje **także** przy ręcznym scalaniu
 konfliktów (`git apply -3` z konfliktem) — to też jest zmiana zapisana do repozytorium i

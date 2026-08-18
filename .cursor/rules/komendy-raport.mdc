@@ -20,28 +20,54 @@ Gdy Maciej wpisze jedno z poniższych haseł, agent **natychmiast** odpowiada w 
 
 ---
 
-## `raport` — Master hub (4 sekcje A·B·C·4)
+## `raport` — aktywny kanon 7 kategorii
 
 **Gdzie:** czat **Master** (orkiestracja). **Hasło Macieja:** wpisz **`raport`**.
+Pełny kanon: [`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`](../../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md).
 
-**Ten sam układ** stosuj też na końcu odpowiedzi po **`master`** (skan + wykonanie). **`start`** = krótszy skan; pełny status 4-sekcyjny na żądanie **`raport`**.
+Odpowiedz **zawsze** w siedmiu nagłówkach, w tej kolejności (pusta sekcja →
+`— (brak)`):
 
-Odpowiedz **zawsze** w czterech nagłówkach (pusta sekcja → „— (brak)"):
+1. **Gotowe do integracji/deployu.**
+2. **W trakcie — Operator.**
+3. **W trakcie — Evaluator.**
+4. **Zapomniane — do dispatchu.**
+5. **Świadomie odłożone.**
+6. **Otwarte ABC.**
+7. **Playtesty.**
 
-### A — Grupy (do uzupełnienia)
-Per **Grupa A…E**: co ma wdrożyć / dokończyć (🎯 TERAZ, brak meldunku). IDLE = jedna linia.
+Każdy punkt ma format **ID — jedno zdanie statusu — dowód albo następna
+czynność**. Raport jawnie podaje stan aktywnego Operatora i Evaluatora; worktree,
+branch ani ukryte powiadomienie nie są dowodem żywego procesu.
 
-### B — Integrator F (wisi u F)
-Batchy z dyspozycją Mastera, **bez** meldunku `F-do-MASTER*`.
+**Nadrzędny obieg AutoBot:** `Operator → Evaluator → finalna kontrola → integracja →
+deploy/push`. Raport Operatora nie kończy procesu: po jego otrzymaniu Evaluator jest
+uruchamiany automatycznie, bez czekania na ponowne popychanie właściciela. Po `PASS`
+finalna kontrola rozstrzyga następny krok: aktualizacja statusu dla tematu zamkniętego,
+pełne ABC z pełnym ID, gdy potrzebna jest decyzja, albo skierowanie gotowego tematu do
+integracji. `FAIL` wraca do Operatora. Deploy/push dopiero po bramkach i autoryzacji.
 
-### C — Master (wisi u Mastera)
-Review, promocja kanon, dyspozycje do F/grup, otwarte ABC czekające na Ciebie.
+Źródła czytaj w kolejności: `dyspozycje/PYTANIA-OTWARTE.md`,
+`dyspozycje/REJESTR-PROSB-I-ZADAN.md`, `docs/decyzje/<ID>.md`,
+`dyspozycje/WERSJE.md`, `dyspozycje/_handoff/KANAL-PRACA.md` oraz handoff/audyt.
+Przed pokazaniem ABC sprawdź ECHO/status w dokumencie decyzji. Odpowiedzi A/B/C
+i inne jawne decyzje pozostają w historii, ale znikają z aktywnego ABC; pokazuj
+je wyłącznie jako **ZAMKNIĘTE/GOTOWE/W TOKU/DO INTEGRACJI**.
 
-### 4 — Playtesty (**tylko Master → Maciej**)
+Kategoria 7 korzysta wyłącznie z najnowszej ROBOCZEJ pozycji
+`Playtest — na co patrzeć` w `dyspozycje/WERSJE.md`; nie wolno dopisywać
+historycznej kolejki PT ani starszych fal.
 
-**Lane A–F: ZAKAZ** informować Macieja o playtestach (także zaległych). Kandydaci → [`REJESTR-PLAYTESTOW.md`](docs/master/REJESTR-PLAYTESTOW.md) §2.
+### ARCHIWUM — SUPERSEDED: poprzedni raport 4-sekcyjny
 
-W odpowiedzi **`start`/`raport` dla Macieja:** **pomiń** sekcję 4. Maciej pyta **`playtest lista`** → Master czyta §1 rejestru.
+Poniższy układ zachowujemy wyłącznie jako historię i nie używamy go dla komendy
+`raport`:
+
+- **A — Grupy (do uzupełnienia)** — per Grupa A…E, co ma wdrożyć/dokończyć.
+- **B — Integrator F (wisi u F)** — batchy bez meldunku `F-do-MASTER*`.
+- **C — Master (wisi u Mastera)** — review, promocja i dyspozycje.
+- **4 — Playtesty** — dawny wpis oparty o historyczny rejestr; zastąpiony
+  filtrem najnowszej ROBOCZEJ opisanym powyżej.
 
 ---
 
