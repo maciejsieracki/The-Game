@@ -41,15 +41,17 @@ nieudokumentowanym założeniem.
 
 ## Status
 
-**ECHO zapisane — 🟡 ZAPISANA.** (historia zachowana; commit ECHO:
-`bc200aee`).
+**Status końcowy: GOTOWE/ZAMKNIĘTE — zaakceptowane przez Evaluatora jako
+PASS-WITH-NOTES.** ECHO pozostaje zachowane historycznie (`bc200aee`).
+Wdrożenie z FALI 292 zostało utrzymane w ROBOCZEJ FALI 293 i aktualnym
+snapshotcie FALI 294.
 
-**Implementacja: GOTOWE — zaakceptowane przez Evaluatora jako
-PASS-WITH-NOTES.** Dowód:
+Dowód:
 
 - implementacja: `914ce8da` (`fix: wymus jednostki tylko przez zakup ze skarbca`);
 - testy kontraktów/migracji: `f30e13d7`, `c2a72a98`;
 - test dedykowany: `rekrutacja-skarbiec-only-test.cjs` — **13/13 PASS**;
+- ROBOCZA: FALA 293 `8fa80b7c` → FALA 294 `a0f804d7`, `VERIFY OK`;
 - zakres potwierdzony w `gra/src/game/production.ts`, `gra/src/main.ts` i
   `gra/src/ui/cityPanel.ts`.
 
