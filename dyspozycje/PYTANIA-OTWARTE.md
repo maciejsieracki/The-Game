@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców i koncentracja armii AI). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -64,6 +64,37 @@ Evaluator wykrył jeszcze brak Wealth w dwóch podglądach `growthPreview` w
 `garncarniaSurplusZadowolenie`; nie zmieniamy tej wartości bez osobnej decyzji.
 Najpierw trzeba pokazać rozbicie składników i odseparować legalne bonusy od
 ewentualnego nadmiernego skalowania.
+
+### R-BARB-CHATKA-LIMIT-15-Q1 — chatka barbarzyńców produkuje bez limitu lifetime · STATUS: **NOWE — POTWIERDZONA LUKA**
+
+**Zgłoszenie Macieja:** z jednej chatki powinno wyjść maksymalnie **15 jednostek
+barbarzyńców łącznie**, niezależnie od tego, czy wcześniejsze jednostki odeszły,
+zginęły albo zostały rozproszone. Ustawienie „Nieliczni” powinno zmniejszać
+napór, a nie pozostawiać chatkę bez limitu całkowitej produkcji.
+
+**Wstępny dowód kodowy:** `gra/src/game/barbarians.ts:162-196,679-727`
+ma wyłącznie limit żywych jednostek w promieniu `campControlRadius`.
+`unitsPerCamp` wynosi domyślnie **2**, a `scaleBarbParamsForLevel('nieliczni')`
+zmniejsza go do **1** oraz zwiększa interwał spawnu. `tickCamps()` nie przechowuje
+licznika `spawnedTotal`/`producedByCamp`, więc po odejściu jednostek od chatki
+warunek limitu znów jest spełniony i ta sama chatka może produkować bez końca.
+
+**Kontrakt do wdrożenia:** osobny, zapisywalny licznik lifetime per `campId`,
+twardy cap 15 na chatkę oraz test: po 15 spawnach chatka nie emituje 16. jednostki;
+test osobno dla „Wielu” i „Nielicznych”. Nie zastępować capu lifetime samym
+`unitsPerCamp`, bo to jest limit chwilowej kontroli obozu.
+
+### R-BARB-AI-KONCENTRACJA-ARMII-Q1 — cywilizacje AI mają rozproszone wojska · STATUS: **NOWE — AUDYT TAKTYKI**
+
+**Zgłoszenie Macieja:** cywilizacje AI przegrywają z barbarzyńcami także dlatego,
+że ich jednostki są rozproszone. AI powinno zbierać większą armię w bezpiecznym,
+odległym od bieżącego ataku miejscu, połączyć ją w jedną siłę i dopiero wtedy
+wykonać kontratak.
+
+**Zakres audytu:** osobno sprawdzić rekrutację AI, wybór miejsca koncentracji,
+łączenie oddziałów, priorytet obrony zagrożonych miast oraz warunek rozpoczęcia
+kontrataku. Nie łączyć tego z limitem chatki — naprawa limitu zmniejszy napór,
+ale nie rozwiąże rozproszenia jednostek AI.
 
 ---
 
