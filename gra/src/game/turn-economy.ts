@@ -2083,6 +2083,7 @@ export function advanceCityEconomy(
   manpowerHeal?: {
     units: ManpowerHealUnit[];
     getMaxHp: (typeId: string) => number;
+    onUnitHpChanged?: (unitId: string, hp: number, hpMax: number) => void;
   },
   /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: domyślny podział Pracy per owner. */
   ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
@@ -2686,6 +2687,8 @@ export function advanceCityEconomy(
         return key ? civBonusyForCivKey(key, data.civs) : [];
       },
       manpowerHeal.getMaxHp,
+      undefined,
+      manpowerHeal.onUnitHpChanged,
     );
   }
 
