@@ -1,6 +1,6 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-17 23:55 (deploy FALA 294)** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-18 09:59 (deploy FALA 295)** · Projekt: Civ „The Game"
 
 ## AUDYT DOKUMENTACJI 2026-08-18 — AKTUALNY PUNKT ODNIESIENIA
 
@@ -13,9 +13,11 @@ nie usuwamy.
   md5 `13b771f4`.
 - **FALA 292:** historyczna integracja paczek, zastąpiona korektą FALI 293.
 - **FALA 293:** pełny split Pracy budynki↔ulepszenia, PASS, md5 `8fa80b7c`.
-- **FALA 294:** karta Brązownictwa (**ECHO C**) i triumf miast-państw
-  (**ECHO A**), oba `ZDEPLOYOWANE`, PASS-WITH-NOTES z notą o braku Chromium;
-  md5 `a0f804d7`.
+- **FALA 295:** zweryfikowana kolejka AI/MP, capture/surrender, dyplomacja,
+  podsumowanie bitwy, stale highlight cudu i karta jednostki; `VERIFY OK`,
+  md5 `8589d294`.
+- **FALA 294:** karta Brązownictwa (**ECHO C**) i triumf miast-państw,
+  zastąpiona przez FALĘ 295; `a0f804d7`.
 - **Ogólny prototyp karty technologii** pozostaje otwarty (rozbieżność
   `tech.json` 12 vs `units.json` 20 i „Popalnia brązu"); nie pytać ponownie
   o wdrożony wycinek Brązownictwa.
@@ -39,7 +41,7 @@ nie usuwamy.
 - **Workery:** worktree jest śladem pracy/rezerwacji, nie dowodem żywego
   procesu. Snapshot operatorów i branchy znajduje się w §8 raportu audytu.
 
-> **FALA 294 ROBOCZA:** md5 `a0f804d7` · VERIFY OK · modal odkrycia Brązu + osobny popup triumfu miast-państw.
+> **FALA 295 ROBOCZA:** md5 `8589d294` · VERIFY OK · kolejka AI/MP, capture/surrender, dyplomacja, karta jednostki i bramki bitewne.
 > Linkowanie Civpedii/Wikipedii i wzór Designera pozostają odłożone do kolejnego etapu.
 
 > **FALA 293 ROBOCZA:** md5 `8fa80b7c` · VERIFY OK · pełny split całej puli Pracy budynki ↔ ulepszenia.

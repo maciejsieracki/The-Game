@@ -9,7 +9,17 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA a0f804d7 - 2026-08-17 23:55 UTC - FALA 294: modal odkrycia Brązu + popup triumfu miast-państw
+## ROBOCZA 8589d294 - 2026-08-18 09:59 UTC - FALA 295: kolejka AI/MP, capture/surrender, dyplomacja i karta jednostki
+|- md5 (pełne): 8589d2946a234935231bcf0d52c1a11a · stempel: ROBOCZA · label 8589d294 · źródłowy commit integracji: `e6465768`
+|- `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI`: aktywny zakup AI/MP przez Skarbiec; migracja legacy kolejki po capture i surrender; testy 20/20, 11/11, 13/13.
+|- `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA`: puste miasto AI wyłącznie przez adiacencję; testy capture 14/14 i movement 13/13.
+|- `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA`: live preview 8/8, stół 166/166, fairness 24/24; pełny pakiet dyplomacji zielony.
+|- `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE`: fix dispose + test repro/negacji 16/16; rejestracja sceny i mgła miasta zachowane z FALI 294.
+|- `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT`: test 8/8; karta jednostki 3D: kontrakt 23/23, wiring 6/6, interakcja 7/7.
+|- Bramki integracyjne: logic 213/213 · combat 6/6 · tech-tree 19/19 · research 33/33 · unit-replace 13/13 · typecheck PASS · Vite 829 modułów · VERIFY OK.
+|- `map-gen-regression-test.cjs` pominięty — znany limit wydajności sandboxa; brak zmian algorytmu generatora terenu. **AKTUALNA**
+
+## ROBOCZA a0f804d7 - 2026-08-17 23:55 UTC - FALA 294: modal odkrycia Brązu + popup triumfu miast-państw — **ZASTĄPIONA** (→ 8589d294)
 |- md5 (pełne): a0f804d7593333e34c989dc3565cb0c6 · stempel: ROBOCZA · label a0f804d7 · źródłowy commit integracji: `546f6a51`
 |- `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1=C`: pełna karta Brązownictwa po odkryciu, realne dane tech tree, Escape/zamknięcie, bez anulowania badań/tury.
 |- `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1=A`: ceremonialny popup po ostatnim aktywnym mieście-państwie właściwej kultury, z blokadą duplikacji.

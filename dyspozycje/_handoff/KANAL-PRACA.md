@@ -7352,3 +7352,13 @@ odpowiedzianych pytań.
 
 CZEKAM-NA: niezależny Evaluator dokumentacji — sprawdzenie spójności
 statusów i diffu docs-only; brak deployu.
+
+## [09:59 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 295
+ROBOCZA md5 `8589d2946a234935231bcf0d52c1a11a` (skrót `8589d294`) · źródło `e6465768`.
+|- Zweryfikowane: rekrutacja AI/MP przez Skarbiec oraz migracja legacy kolejki po capture/surrender; AI capture pustego miasta przez adiacencję.
+|- Dyplomacja: live preview 8/8 · stół 166/166 · fairness 24/24 · pozostałe testy pakietu zielone.
+|- Bitwa: podsumowanie dispose 16/16; cud 8/8; karta jednostki 23/23 + wiring 6/6 + interakcja 7/7.
+|- Integracyjne: logic 213/213 · combat 6/6 · tech-tree 19/19 · research 33/33 · unit-replace 13/13 · tsc PASS · Vite 829 modułów.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; stamp + synchronizacja 6 bundli + START hub; `verify-robocza-bundle.cjs` → **VERIFY OK**.
+|- Znany wyjątek: `map-gen-regression-test.cjs` poza limitem sandboxa; poprawność generatora nie była zmieniana.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `8589d294`**.
