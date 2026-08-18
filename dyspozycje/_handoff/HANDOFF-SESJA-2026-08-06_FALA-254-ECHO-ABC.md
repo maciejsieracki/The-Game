@@ -47,8 +47,12 @@ Kanon: [`docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md`](../../docs/decyzje/ABC-
 | 5 | **R-DESIGN-PANEL-MIASTA-V2-Q1** | **C** | Pilne zlecenie Design klatek v2; kod **nie** zamrożony | `docs/decyzje/R-DESIGN-PANEL-MIASTA-V2-Q1.md` |
 | 6 | **R-OBRONA-MIASTA-MP-Q1** | **A** | Mechanika bez zmian; **rozbicie bonusów w preBattle** | `docs/decyzje/R-OBRONA-MIASTA-MP.md` §ECHO |
 
-**Status rejestru:** `ECHO ZAPISANA` · czeka **`działaj`** · potem Autobot per ID.  
-Źródła: `REJESTR-PROSB-I-ZADAN.md` · `PYTANIA-OTWARTE.md` · `docs/obieg/REJESTR-DECYZJI.md`.
+**Status rejestru:** powyższy stan jest snapshotem z 2026-08-06. Tematy
+`R-KAMIEN-RELIEF-FOLLOWUP-Q1` i `MAP-UX-CLUSTER-LABEL-Q1` zostały później
+scalone i zdeployowane w FALI 296 ROBOCZA `a37f7123`; nie wymagają ponownego
+`działaj` ani dispatchu. Pozostałe pozycje zachowują status z rejestrów.
+Źródła aktualnego statusu: `REJESTR-PROSB-I-ZADAN.md` · `PYTANIA-OTWARTE.md` ·
+`docs/obieg/REJESTR-DECYZJI.md`.
 
 ---
 
@@ -59,8 +63,10 @@ Po merge ECHO na `main` + hasło Macieja **`działaj`** (lub „działaj wszystk
 **Kolejność rekomendowana (1 Autobot = 1 ID = osobny branch):**
 
 1. **AI-BALANS-STEP6-Q1=A** — `ai.ts` scoring + test (🟢 mała dźwignia)
-2. **R-KAMIEN-RELIEF-FOLLOWUP-Q1=A** — `PRESERVES_HILL_RELIEF_KEYS` + reguła przyszłych kopalń (`main.ts` / render)
-3. **MAP-UX-CLUSTER-LABEL-Q1=B+C** — `cityMapStatChip` / `cities.ts` / etykiety
+2. ~~**R-KAMIEN-RELIEF-FOLLOWUP-Q1=A**~~ — **ZDEPLOYOWANE FALA 296
+   `a37f7123`**, nie dispatchować ponownie
+3. ~~**MAP-UX-CLUSTER-LABEL-Q1=B+C**~~ — **ZDEPLOYOWANE FALA 296
+   `a37f7123`**, nie dispatchować ponownie
 4. **R-OBRONA-MIASTA-MP-Q1=A** — UI preBattle rozbicie (🟡 cross)
 5. **R-WIARYGODNOSC-S9-Q1=A** — duża paczka JSON §9 + `wiarygodnosc-test.cjs`
 6. **R-DESIGN-PANEL-MIASTA-V2-Q1=C** — głównie **zlecenie/handoff Design** (docs), nie duży kod

@@ -1,6 +1,6 @@
 # R-KAMIEN-RELIEF-FOLLOWUP-Q1 — relief wzgórza dla kopalń
 
-**Status:** 🟡 **ZAPISANA** · **A** + reguła (2026-08-06)  
+**Status:** ✅ **ZDEPLOYOWANA / ZAMKNIĘTA** · **A** + reguła · FALA 296 ROBOCZA `a37f7123` (2026-08-18)
 **Cytat Macieja:** „Dodać legacy `kopalnia` do `PRESERVES_HILL_RELIEF_KEYS` **ORAZ** zasada: **wszystkie kopalnie (obecne i przyszłe)** zachowują relief wzgórza — nie tylko legacy"  
 **Źródło:** [`ABC-PACZKA-2026-08-06-KOLEJKA.md`](ABC-PACZKA-2026-08-06-KOLEJKA.md) · follow-up po `R-KAMIEN-RELIEF`
 
@@ -20,4 +20,16 @@ Ulepszenie kopalni na wzgórzu nie spłaszcza terenu — model siada na kopcu ja
 
 ## Wdrożenie
 
-Czeka na hasło **`działaj`** → AutoBot Operator (🟢 izolowana warstwa renderu).
+Zrealizowane w commicie `85932371c8d94be43111b725876fd5f52f26c2a5`:
+predykat prefiksu `kopalnia` / `kopalnia_*` zachowuje relief także dla
+przyszłych typów kopalń. Commit jest przodkiem aktualnego `main` oraz źródła
+FALI 296 (`a6e2967f`), a ROBOCZA FALA 296 ma md5 `a37f7123`.
+
+## Dowód wcześniejszego Evaluatora i wdrożenia (korekta 2026-08-18)
+
+- AutoBot Operator → Evaluator: **PASS-WITH-NOTES** (zapis w commicie
+  `85932371`; niezależne zsynchronizowanie statusu w `cd4399df`).
+- Zakres bramek z wcześniejszej weryfikacji: `tsc --noEmit` 0,
+  `deposit-building-gate-test` 47/47, Vite 792 moduły.
+- Po scaleniu/deployu FALI 296 nie ma już statusu „branch roboczy, nie main”:
+  wcześniejsza nota z 2026-08-06 jest historyczna, nie opisuje stanu bieżącego.

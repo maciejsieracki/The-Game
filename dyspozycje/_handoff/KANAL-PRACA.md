@@ -7487,3 +7487,10 @@ fast-forward do `main`; źródło ROBOCZA pozostaje `a37f7123`.
 |- Zakres: FALA 295 + FALA 296, testy i `VERIFY OK` zapisane powyżej.
 |- Warunek: `origin/main` jest przodkiem HEAD; force-push nieużywany.
 CZEKAM-NA: **sesja lokalna — git pull origin main**.
+
+## [15:19 UTC, 2026-08-18] AUDYT DOKUMENTACJI → SESJA LOKALNA — korekta statusów mapy/reliefu
+Wcześniejszy wpis z 2026-08-06 „branch roboczy, nie main” jest historyczny.
+|- `85932371` (relief kopalni), `9d33e8f` (marker + etykieta) i `d3470ed` (wyłączenie korony dla MP) są przodkami `origin/main`/HEAD `67de03e1` oraz źródła FALI 296 `a6e2967f`.
+|- FALA 296 ROBOCZA `a37f7123` obejmuje ten zakres; manifest ROBOCZEJ ma md5 `a37f71239248fe287d37c9d44c0137e6`.
+|- Wcześniejszy Evaluator: **PASS-WITH-NOTES**; relief `23/23`, display `27/27`, badge `31/31`, tsc PASS; korekta MP domknięta przez `d3470ed`.
+CZEKAM-NA: **nic** — korekta docs-only, bez kodu, danych, bundli, WERSJE i deployu.

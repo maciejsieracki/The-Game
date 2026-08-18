@@ -497,9 +497,11 @@ Baza przykładu: **FALA 296**, ROBOCZA `a37f7123`, audyt
 - `— (brak)` — mapgen B i N2/N3/N5/N6 zostały wykonane,
   zweryfikowane i zdeployowane w FALI 296.
   Wykluczone ze snapshotu: `AI-BALANS-STEP6-Q1` (**już wdrożone** — `dadcb48`,
-  rejestr); `R-KAMIEN-RELIEF-FOLLOWUP-Q1` (**commit** `8593237` na branchu);
+  rejestr); `R-KAMIEN-RELIEF-FOLLOWUP-Q1` (**ZDEPLOYOWANE FALA 296 `a37f7123`**;
+  commit `85932371` jest przodkiem `main` i źródła ROBOCZEJ);
   `R-DESIGN-PANEL-MIASTA-V2-Q1` (**blokada zewnętrzna** Design — kategoria 8);
-  `MAP-UX-CLUSTER-LABEL-Q1` (**commity** `9d33e8f`/`d3470ed`); `R-OBRONA-MIASTA-MP-Q1`
+  `MAP-UX-CLUSTER-LABEL-Q1` (**ZDEPLOYOWANE FALA 296 `a37f7123`**;
+  commity `9d33e8f`/`d3470ed` są przodkami `main` i źródła ROBOCZEJ); `R-OBRONA-MIASTA-MP-Q1`
   (**SCALONE** runda 3); `R-WIARYGODNOSC-S9-Q1` (Operator+Evaluator — kategoria 5).
 
 ### 7. Zapomniane — do dispatchu

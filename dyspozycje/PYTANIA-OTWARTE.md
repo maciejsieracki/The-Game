@@ -130,8 +130,8 @@ nieaktualnych pytań jako żywych.
 | # | ID | Litera | Status |
 |---|-----|--------|--------|
 | 1 | **AI-BALANS-STEP6-Q1** | **A** | 🟡 ZAPISANA — czeka `działaj` |
-| 2 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | **A** + reguła | 🟡 ZAPISANA — czeka `działaj` |
-| 3 | **MAP-UX-CLUSTER-LABEL-Q1** | **B+C** | 🟡 ZAPISANA — czeka `działaj` |
+| 2 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | **A** + reguła | ✅ ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES · test prefiksu 23/23 |
+| 3 | **MAP-UX-CLUSTER-LABEL-Q1** | **B+C** | ✅ ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES · display 27/27 · badge 31/31 |
 | 4 | **R-WIARYGODNOSC-S9-Q1** | **A** | 🟢 ZDEPLOYOWANE FALA 259 `e028045c` — `wiarygodnosc-test` 270/270 |
 | 5 | **R-DESIGN-PANEL-MIASTA-V2-Q1** | **C** | 🟡 ZAPISANA — czeka `działaj` |
 | 6 | **R-OBRONA-MIASTA-MP-Q1** | **A** | 🟡 ZAPISANA — czeka `działaj` |

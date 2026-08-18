@@ -425,13 +425,13 @@ Deploy/push dopiero po bramkach i autoryzacji. Pełny zapis:
 
 **KOLEJKA — stan na 2026-08-06 popołudnie (sesja chmurowa, po AutoBot Operator→Evaluator dla wszystkich 6):**
 1. ~~AI-BALANS-STEP6-Q1=A~~ — **JUŻ BYŁO WDROŻONE** przed decyzją (commit `dadcb48`, poprzedzał zapis). Nie dublować.
-2. **R-KAMIEN-RELIEF-FOLLOWUP-Q1=A/C** — **COMMIT+PUSH** `8593237` (branch roboczy `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, nie w main jeszcze)
-3. **MAP-UX-CLUSTER-LABEL-Q1=B+C** — **COMMIT+PUSH** `9d33e8f` + `d3470ed` (branch roboczy, nie w main jeszcze)
+2. **R-KAMIEN-RELIEF-FOLLOWUP-Q1=A/C** — **ZDEPLOYOWANE FALA 296** `a37f7123`; commit `85932371` jest przodkiem aktualnego `main` i źródła ROBOCZEJ
+3. **MAP-UX-CLUSTER-LABEL-Q1=B+C** — **ZDEPLOYOWANE FALA 296** `a37f7123`; commity `9d33e8f` + `d3470ed` są przodkami aktualnego `main` i źródła ROBOCZEJ
 4. **R-OBRONA-MIASTA-MP-Q1=A** — FAIL Evaluatora (panel niezgodny z realną walką), powtórka Operatora w toku; doprecyzowanie R-OBRONA-MIASTA-MP-SCOPE-Q1=B (dodać bonus murów) czeka na kolejną rundę
 5. **R-WIARYGODNOSC-S9-Q1=A/B** — tabela liczb gotowa, commit `22df1b1`, czeka OK Macieja przed jakimkolwiek kodem
 6. **R-DESIGN-PANEL-MIASTA-V2-Q1=C** — FAIL Evaluatora (opis niezgodny ze stanem HEAD), powtórka Operatora w toku
 
-Szczegóły w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Żaden z powyższych commitów nie jest jeszcze w `origin/main`/ROBOCZA** — to wciąż branch roboczy.
+Szczegóły w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Punkty 2–3 są historycznym wpisem kolejki z 2026-08-06; zostały później scalone i zdeployowane w FALI 296.** Aktualny dowód: `origin/main` = `67de03e1`, ROBOCZA = `a37f7123`, Evaluatorzy wcześniejszej paczki: PASS-WITH-NOTES.
 
 **Zaparkowane:** relief tip `9c098944` · KANON · `R-DOTYK-MVP` · playtesty R-AUTO / F226 AI. (`P-TEST-UPKEEP-R-STAWKI` ZAMKNIĘTE 2026-08-09 — wpis był nieaktualny, test już 73/73, patrz `PYTANIA-OTWARTE.md`.) **Nowe 2026-08-09:** `P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1=B` — decyzja podjęta, wdrożenie odłożone do następnej paczki (szczegóły w handoffie FALA 263 §2b/§7).
 
