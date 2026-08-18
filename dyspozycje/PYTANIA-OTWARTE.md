@@ -31792,6 +31792,9 @@ integracji. Nie oznaczają jeszcze deployu ROBOCZA:
   PASS-WITH-NOTES**; `9044e39d`, klik gracza, map attack 9/9, siege 6/6.
 - `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA` — **GOTOWE DO INTEGRACJI,
   PASS-WITH-NOTES**; capture 14/14, movement 13/13, tsc PASS.
+- `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI` — **GOTOWE DO INTEGRACJI,
+  PASS**; aktywny zakup AI/MP idzie przez Skarbiec, a capture i surrender
+  czyszczą legacy kolejkę; testy 20/20, 11/11, 13/13.
 - `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA` — **GOTOWE DO
   INTEGRACJI, PASS-WITH-NOTES**; live preview 8/8 i pakiet dyplomacji zielony.
 - `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT` — **GOTOWE DO INTEGRACJI,

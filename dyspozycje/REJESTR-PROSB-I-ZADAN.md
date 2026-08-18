@@ -2539,6 +2539,7 @@ w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
 | P-AI-BRAK-POJECIA-MGLY | **GOTOWE / ZAMKNIĘTE — Evaluator PASS-WITH-NOTES** | FALA 292, zachowane w ROBOCZA FALI 294 (`a0f804d7`, `VERIFY OK`); `ai-fog-test.cjs` 8/8; save/load W5 |
 | P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE | **ZAMKNIĘTE — NO-ACTION** | panel tree-shaken |
 | P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | predykat + executor + wiring; test capture 14/14, movement 13/13, tsc PASS; brak pełnego E2E pathfindingu |
+| P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI | **GOTOWE DO INTEGRACJI — Evaluator PASS** | aktywny flow AI/MP Skarbiec→rekrutacja; capture i surrender sanitizują legacy kolejkę; testy 20/20, 11/11, 13/13, tsc PASS |
 | P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | commit `a277486a`; live preview 8/8, stół 166/166, proposal 187/187, negotiation 62/62, fairness 24/24, tsc PASS |
 | P-SUROWCE-KOLEJNOSC-KART | **ZAMKNIĘTE** | test `62/0` |
 | P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT | **GOTOWE DO INTEGRACJI — Evaluator PASS** | commit `a1d37daf`/`8e0e70e7`; test 8/8, rodzic 2/8, tsc PASS |

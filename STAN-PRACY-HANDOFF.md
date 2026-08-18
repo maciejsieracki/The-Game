@@ -24,10 +24,11 @@ nie usuwamy.
 - **Kolejka AutoBot 2026-08-18:** podsumowanie bitwy, rejestracja sceny,
   mgła ataku na miasto, adiacencyjne zdobycie miasta AI, bilans dyplomacji
   i stale highlight cudu mają niezależne werdykty i są gotowe do integracji.
-- **Pozostają osobno:** rekrutacja AI/MP jako budowa wymaga reconu; zwykła
-  ścieżka zdobycia miasta AI była decyzją ABC i nie może być zgadywana;
-  kosmetyka kopalni, limit mapgena oraz tematy wydajności/teleportu pozostają
-  poza tym batch’em.
+- **Rekrutacja AI/MP jako budowa:** aktywny flow już korzysta ze Skarbca;
+  migracja legacy kolejki po capture i surrender ma PASS, gotowa do integracji.
+- **Pozostają osobno:** zwykła ścieżka zdobycia miasta AI była decyzją ABC i nie
+  może być zgadywana; kosmetyka kopalni, limit mapgena oraz tematy wydajności/
+  teleportu pozostają poza tym batch’em.
 - **`P-AI-BRAK-POJECIA-MGLY-Q1`:** GOTOWE / ZAMKNIĘTE — własna mgła AI per
   owner, pamięć celów, ponowne wykrycie przed akcją; FALA 292 zachowana w
   aktualnej ROBOCZA FALI 294, `ai-fog-test.cjs` 8/8, kamera bitwy 24/24,
