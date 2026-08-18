@@ -7400,3 +7400,10 @@ ROBOCZA md5 `a37f71239248fe287d37c9d44c0137e6` (skrót `a37f7123`) · źródło 
 |- Build `/tmp/civ-dist` → `gra-robocza/`; stamp + synchronizacja 6 bundli + START hub; `VERIFY OK`.
 |- `relief-grid-coverage-test.cjs` TIMEOUT po 5 min w znanym etapie; nie zostawiono procesu, pozostałe bramki zielone.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `a37f7123`**.
+
+## [15:02 UTC, 2026-08-18] CHMURA → main — fast-forward FALI 296
+Zweryfikowana gałąź `cursor/integrate-unit-card-3d-0f9b` zostaje promowana
+fast-forward do `main`; źródło ROBOCZA pozostaje `a37f7123`.
+|- Zakres: FALA 295 + FALA 296, testy i `VERIFY OK` zapisane powyżej.
+|- Warunek: `origin/main` jest przodkiem HEAD; force-push nieużywany.
+CZEKAM-NA: **sesja lokalna — git pull origin main**.
