@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karta ukończonych badań i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -153,6 +153,31 @@ tytuł „Badania zakończone”/„Nowe odkrycie”, treść z nazwą i kosztem
 „Otwórz kartę”. Kliknięcie otwiera kartę ukończonej technologii, a zamknięcie
 tylko usuwa komunikat. Awans epoki może mieć dodatkowy komunikat, ale nie może
 ukrywać karty badania.
+
+**Korekta po obserwacji w grze 2026-08-18:** karta badań nie jest obecnie
+widoczna jako część komunikatu — źródło nadal używa efemerycznego
+`showHintMessage`, bez trwałego zdarzenia i bez przycisku otwarcia. Temat
+pozostaje **NIEZINTEGROWANY**, mimo że `sciencePicker`/`openScienceTreeDocked`
+istnieją jako osobne ekrany.
+
+### R-TRIUMF-CS-KOMUNIKAT-KARTA-W-GRZE-Q1 — ważny triumf jest tylko chwilowym tekstem · STATUS: **NOWE — BRAK INTEGRACJI UX**
+
+**Zgłoszenie Macieja:** informacja o zajęciu wszystkich miast-państw danej
+cywilizacji powinna być widoczna w grze jako ważne zdarzenie/karta, tak aby
+gracz wiedział, co się wydarzyło i mógł wrócić do informacji. Nie wystarczy
+krótki toast znikający po kilku sekundach.
+
+**Wstępny dowód kodowy:** `gra/src/main.ts:18549-18565` wywołuje
+`showHintMessage(buildTriumphCityStateUnificationMessage(...))`. Funkcja
+`triumph-city-state.ts` dostarcza tekst i czas wyświetlania, ale nie tworzy
+zdarzenia z identyfikatorem, kartą ani akcją kliknięcia. Istniejący wpis
+`R-TRIUMPH-CS` opisuje logikę warunku, lecz nie domyka prezentacji w HUD.
+
+**Kontrakt:** ważne zdarzenia (ukończenie badań, triumf miast-państw,
+awans epoki, przejęcie stolicy) muszą trafiać do wspólnego rejestru wydarzeń
+z tytułem, treścią, priorytetem, czasem oraz opcjonalnym `onOpen`. Toast może
+być skrótem, ale kliknięcie ma otwierać kartę szczegółów, a wpis ma pozostać
+do odczytania w panelu Wydarzenia.
 
 ### R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 — pomoc przeciw barbarzyńcom z automatycznym prawem przemarszu · STATUS: **NOWE — PROPOZYCJA**
 
