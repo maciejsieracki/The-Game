@@ -44,7 +44,7 @@ Wpisy o composer/Grok/Haiku/Sonnet poniżej są historyczne i pozostają zachowa
 | R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Kanon raportu właściciela: siedem kategorii, filtr ECHO dla ABC i wyłącznie najnowszy wpis Playtest ROBOCZEJ | **WDROŻONE (docs-only) — nie jest pytaniem ABC** | `docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`; zasady: `CLAUDE.md`, `.claude/skills/civ-autobot/SKILL.md`, `.cursor/rules/komendy-raport.mdc`; bez zmian kodu/danych/bundli/WERSJE/deployu |
 
 | P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 | 2026-08-17 | Ogólny wzorzec rozbudowanej karty technologii; prototyp na Brązownictwie | **CZEKA-NA-DECYZJĘ — PROPOZYCJA DOCS-ONLY** | Ogólny prototyp nadal czeka na akceptację i rozstrzygnięcie źródeł (12 vs 20 jednostek, „Popalnia brązu"). Konkretna karta Brązownictwa została wdrożona osobno jako `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1=C` w FALI 294. Design i linkowanie Civpedii/Wikipedii pozostają późniejszym etapem. |
-| P-JEDNOSTKI-KARTA-3D-INFO-Q1 | 2026-08-18 | Integracja tymczasowej, generycznej karty jednostki z istniejącym ekranem armii; Hastati jako wzorzec, prawdziwe dane i slot modelu 3D | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES; bez deployu** | Testy karty 23/23, wiring 6/6, interakcja armii 7/7, istniejący kontekst 29/29, side-list 74/74, tsc PASS, build PASS; noty: brak live 3D, opcjonalny UX/status tech; zakres i decyzja: `docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md` |
+| P-JEDNOSTKI-KARTA-3D-INFO-Q1 | 2026-08-18 | Integracja tymczasowej, generycznej karty jednostki z istniejącym ekranem armii; Hastati jako wzorzec, prawdziwe dane i slot modelu 3D | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | Testy karty 23/23, wiring 6/6, interakcja armii 7/7, istniejący kontekst 29/29, side-list 74/74, tsc PASS, build PASS; nota: brak live 3D/WebGL; dowód bundla `WERSJE.md` FALA 295 |
 | P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 | 2026-08-17 | Korekta niepełnego splitu FALI 292: cała pula Pracy, budynki + ulepszenia, cap 50% | **ZDEPLOYOWANE FALA 293 `8fa80b7c` — PASS** | FALA 292 była częściowa; FALA 293 domknęła `doBudynkow` dla gracza/AI/MP, kolejki, overflow i UI. Historia FALI 292 pozostaje w `WERSJE.md` i `PYTANIA-OTWARTE.md`. |
 
 | R-AI-TRUDNOSC-AUDYT | 2026-08-05 | Audyt + **P0** (Maciej „1"): realna Praca · Spichlerz id · L3 nauka=2 | **ZDEPLOYOWANE `efab84db`** (FALA 229) | `docs/decyzje/R-AI-TRUDNOSC-AUDYT.md` · PR #111 · AutoBot PASS |
@@ -2533,14 +2533,14 @@ w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
 
 | ID | Status bieżący | Dowód / uwaga |
 |---|---|---|
-| P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | fix `38025d4b` + test repro/negacji `6fc4703b`; test 16/16, battle summary PASS, overlay 84/84, tsc PASS |
-| P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | commit `083dc4d2`; test kamery 24/24, battle summary PASS, cleanup 23/0, tsc PASS |
-| P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | commit `9044e39d`; map attack 9/9, siege 6/6, tsc PASS; zakres = klik gracza |
+| P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | fix `8f45ae6d` + test repro/negacji; test 16/16, battle summary PASS, overlay 84/84, tsc PASS |
+| P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | commit `46efc847`; test kamery 24/24, battle summary PASS, cleanup 23/0, tsc PASS |
+| P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | commit `8e90aa53`; map attack 13/13, siege 6/6, tsc PASS; zakres = klik gracza |
 | P-AI-BRAK-POJECIA-MGLY | **GOTOWE / ZAMKNIĘTE — Evaluator PASS-WITH-NOTES** | FALA 292, zachowane w ROBOCZA FALI 294 (`a0f804d7`, `VERIFY OK`); `ai-fog-test.cjs` 8/8; save/load W5 |
 | P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE | **ZAMKNIĘTE — NO-ACTION** | panel tree-shaken |
-| P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | predykat + executor + wiring; test capture 14/14, movement 13/13, tsc PASS; brak pełnego E2E pathfindingu |
-| P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI | **GOTOWE DO INTEGRACJI — Evaluator PASS** | aktywny flow AI/MP Skarbiec→rekrutacja; capture i surrender sanitizują legacy kolejkę; testy 20/20, 11/11, 13/13, tsc PASS |
-| P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | commit `a277486a`; live preview 8/8, stół 166/166, proposal 187/187, negotiation 62/62, fairness 24/24, tsc PASS |
+| P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | predykat + executor + wiring; test capture 14/14, movement 13/13, tsc PASS; brak pełnego E2E pathfindingu |
+| P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS** | aktywny flow AI/MP Skarbiec→rekrutacja; capture i surrender sanitizują legacy kolejkę; testy 20/20, 11/11, 13/13, tsc PASS |
+| P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | commit `4fda539a`; live preview 8/8, stół 166/166, proposal 187/187, negotiation 62/62, fairness 24/24, tsc PASS |
 | P-SUROWCE-KOLEJNOSC-KART | **ZAMKNIĘTE** | test `62/0` |
-| P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT | **GOTOWE DO INTEGRACJI — Evaluator PASS** | commit `a1d37daf`/`8e0e70e7`; test 8/8, rodzic 2/8, tsc PASS |
+| P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS** | commit `8e0e70e7`; test 8/8, rodzic 2/8, tsc PASS |
 | P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY | **ZDEPLOYOWANE** | FALA 286 |

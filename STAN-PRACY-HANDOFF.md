@@ -22,7 +22,7 @@ nie usuwamy.
   `tech.json` 12 vs `units.json` 20 i „Popalnia brązu"); nie pytać ponownie
   o wdrożony wycinek Brązownictwa.
 - **Karta jednostki 3D:** osobny temat `P-JEDNOSTKI-KARTA-3D-INFO-Q1`,
-  gotowa do integracji, bez deployu; nie mieszać z FALĄ 294.
+  zdeployowana w FALI 295; nie mieszać z FALĄ 294.
 - **Kolejka AutoBot 2026-08-18:** podsumowanie bitwy, rejestracja sceny,
   mgła ataku na miasto, adiacencyjne zdobycie miasta AI, bilans dyplomacji
   i stale highlight cudu mają niezależne werdykty i są gotowe do integracji.

@@ -7362,3 +7362,18 @@ ROBOCZA md5 `8589d2946a234935231bcf0d52c1a11a` (skrót `8589d294`) · źródło 
 |- Build `/tmp/civ-dist` → `gra-robocza/`; stamp + synchronizacja 6 bundli + START hub; `verify-robocza-bundle.cjs` → **VERIFY OK**.
 |- Znany wyjątek: `map-gen-regression-test.cjs` poza limitem sandboxa; poprawność generatora nie była zmieniana.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `8589d294`**.
+
+## [10:00 UTC, 2026-08-18] Audyt AutoBot FALI 295 — status łańcucha
+Audyt read-only potwierdził: każdy nowy temat gameplay miał realny ślad Operatora
+(commit/worktree), a ukończone tematy mają testy i werdykty PASS/PASS-WITH-NOTES.
+FALA 295 jest już w ROBOCZA `8589d294`; **gotowych paczek oczekujących na ponowne
+wgranie: 0**.
+|- Korekta rejestrów: stare SHA worktree zastąpiono rzeczywistymi commitami na HEAD:
+`8f45ae6d`, `46efc847`, `8e90aa53`, `4fda539a`, `8e0e70e7`.
+|- Karta jednostki otrzymała status ZDEPLOYOWANE FALA 295; mgła miasta ma jawny
+status historyczny oraz aktualny PASS-WITH-NOTES.
+|- Nota procesowa: dla części historycznych re-bundle’ów brak osobnego raportu
+`bc-*` w kanale; nie jest to brak testów ani brak deployu, ale obniża siłę śladu audytowego.
+|- Docs-only kanon AutoBot również nie ma osobnego wpisu Evaluatora w kanale;
+nie dotyka kodu gry ani bundla.
+CZEKAM-NA: **nic dla ROBOCZA; sesja lokalna — pull `8589d294`**.

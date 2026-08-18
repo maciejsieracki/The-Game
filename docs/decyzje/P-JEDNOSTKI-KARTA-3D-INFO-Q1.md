@@ -1,6 +1,6 @@
 # P-JEDNOSTKI-KARTA-3D-INFO-Q1 — integracja tymczasowej karty jednostki
 
-**Status:** **🟠 GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES; bez deployu**
+**Status:** **🟢 ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES**
 **Data:** 2026-08-18
 
 ## ECHO właściciela

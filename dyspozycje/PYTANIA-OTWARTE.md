@@ -28653,8 +28653,10 @@ naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C
    inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
 
 **Statusy rozdzielone po wykonaniu:**
-- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA`: **GOTOWE DO EVALUATORA** —
-  commit `9044e39d` gotowy, ale niezależny werdykt nie jest zapisany w rejestrze.
+- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA`: **STATUS HISTORYCZNY** —
+  commit `9044e39d` był gotowy, ale w tamtym momencie niezależny werdykt nie
+  był jeszcze zapisany. Aktualnie: **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**, dowód `8e90aa53` i bramki klik miasta 13/13 + siege 6/6.
 - `P-AI-BRAK-POJECIA-MGLY`: **GOTOWE — Evaluator PASS-WITH-NOTES** —
   własna widoczność per owner, pamięć celu i ponowne wykrycie; wcześniejsza decyzja A+C pozostaje dowodem.
 
@@ -31781,23 +31783,23 @@ percent/wiring są zielone, VERIFY OK. Nie traktować tego wpisu jako otwartego.
 
 ## KOREKTA STATUSÓW — kolejka AutoBot 2026-08-18
 
-Poniższe statusy wynikają z niezależnych Evaluatorów i dotyczą gotowości do
-integracji. Nie oznaczają jeszcze deployu ROBOCZA:
+Poniższe statusy wynikają z niezależnych Evaluatorów i zostały następnie
+opublikowane w ROBOCZA FALI 295 (`8589d294`):
 
-- `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE` — **GOTOWE DO INTEGRACJI,
-  PASS-WITH-NOTES**; fix `38025d4b`, test repro/negacji `6fc4703b`, 16/16.
-- `P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM` — **GOTOWE DO INTEGRACJI,
-  PASS-WITH-NOTES**; `083dc4d2`, test kamery 24/24, tsc PASS.
-- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA` — **GOTOWE DO INTEGRACJI,
-  PASS-WITH-NOTES**; `9044e39d`, klik gracza, map attack 9/9, siege 6/6.
-- `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA` — **GOTOWE DO INTEGRACJI,
+- `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; fix `8f45ae6d`, test repro/negacji, 16/16.
+- `P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; `46efc847`, test kamery 24/24, tsc PASS.
+- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; `8e90aa53`, klik gracza, map attack 13/13, siege 6/6.
+- `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA` — **ZDEPLOYOWANE FALA 295,
   PASS-WITH-NOTES**; capture 14/14, movement 13/13, tsc PASS.
-- `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI` — **GOTOWE DO INTEGRACJI,
+- `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI` — **ZDEPLOYOWANE FALA 295,
   PASS**; aktywny zakup AI/MP idzie przez Skarbiec, a capture i surrender
   czyszczą legacy kolejkę; testy 20/20, 11/11, 13/13.
-- `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA` — **GOTOWE DO
-  INTEGRACJI, PASS-WITH-NOTES**; live preview 8/8 i pakiet dyplomacji zielony.
-- `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT` — **GOTOWE DO INTEGRACJI,
+- `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; live preview 8/8 i pakiet dyplomacji zielony.
+- `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT` — **ZDEPLOYOWANE FALA 295,
   PASS**; test 8/8, rodzic wykazuje regresję 6/8.
 
 Osobne braki pozostają poza tym batch’em: pełne E2E pathfindingu AI,
