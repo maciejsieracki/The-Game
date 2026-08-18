@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA a37f7123 - 2026-08-18 13:04 UTC - FALA 296: mapgen B, overlay kopalni N2/N3/N5/N6 i barbarzyńcy
+## ROBOCZA bdb3f91a - 2026-08-18 15:53 UTC - FALA 297: pełny split Pracy AI/MP + czytelność UI
+|- md5 (pełne): bdb3f91a966bd33c64f3657f281bd8b6 · stempel: ROBOCZA · label bdb3f91a · źródłowy commit integracji: `333ae41b`
+|- `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1`: AI major i miasta-państwa zachowują pierwotny `doUlepszen`; brak drugiego capowania 50%; parity test 14/14.
+|- Wspólny split: production-overflow 48/48 · auto-improvements 41/41 · ai-improvements 52/52 · praca-limit-50 23/23.
+|- UI: globalny split widoczny przy automatyzacji OFF, `X% ulepszenia / Y% budynki`, lokalny suwak miasta rozdzielony; `praca-split-ui` 7/7.
+|- Dyplomacja: live 8/8 · stół 166/166 · fairness 24/24; typecheck PASS · Vite 829 modułów · VERIFY OK. **AKTUALNA**
+
+## ROBOCZA a37f7123 - 2026-08-18 13:04 UTC - FALA 296: mapgen B, overlay kopalni N2/N3/N5/N6 i barbarzyńcy — **ZASTĄPIONA** (→ bdb3f91a)
 |- md5 (pełne): a37f71239248fe287d37c9d44c0137e6 · stempel: ROBOCZA · label a37f7123 · źródłowy commit integracji: `ac09c091`
 |- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY=B`: przekroczenie progu czasu raportowane jako WARN; poprawność generatora pozostaje twardą bramką; kontrakt 2/2 PASS.
 |- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2=C`: targeted overlay z `depthTest:true` i reliefem; N3 reset cleanupu, N5 asercja testu, N6 komentarz; test overlay 76/76, relief 24/24, cyna 23/23.

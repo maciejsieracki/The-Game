@@ -7481,6 +7481,15 @@ ROBOCZA md5 `a37f71239248fe287d37c9d44c0137e6` (skrót `a37f7123`) · źródło 
 |- `relief-grid-coverage-test.cjs` TIMEOUT po 5 min w znanym etapie; nie zostawiono procesu, pozostałe bramki zielone.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `a37f7123`**.
 
+## [15:53 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 297
+ROBOCZA md5 `bdb3f91a966bd33c64f3657f281bd8b6` (skrót `bdb3f91a`) · źródło `333ae41b`.
+|- Naprawiony pełny split Pracy AI/MP: pula 100 → 50 budynki + 50 ulepszenia, bez drugiego capowania.
+|- Testy parity 14/14 · production-overflow 48/48 · auto 41/41 · AI 52/52 · limit 23/23.
+|- UI globalnego splitu widoczne przy automatyzacji OFF; globalne 0–50% odróżnione od lokalnego suwaka; UI 7/7.
+|- Dyplomacja: live 8/8 · stół 166/166 · fairness 24/24; typecheck PASS.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; synchronizacja 6 bundli + START hub; `VERIFY OK`.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `bdb3f91a`**.
+
 ## [15:02 UTC, 2026-08-18] CHMURA → main — fast-forward FALI 296
 Zweryfikowana gałąź `cursor/integrate-unit-card-3d-0f9b` zostaje promowana
 fast-forward do `main`; źródło ROBOCZA pozostaje `a37f7123`.
