@@ -21,12 +21,13 @@ function ok(condition, message) {
 
 ok(armySource.includes('unitTypeId'), 'wpis armii przechowuje typ reprezentanta stosu');
 ok(armySource.includes('onOpenUnitCard'), 'panel armii deklaruje callback otwarcia karty');
-ok(armySource.includes('config.onOpenUnitCard?.(a.unitTypeId)'),
-  'klik wpisu armii wywołuje callback karty');
+ok(armySource.includes('config.onOpenUnitCard?.(a.id, a.unitTypeId!)'),
+  'osobny przycisk wpisu armii wywołuje callback karty');
 ok(mainSource.includes('showUnitInfoCardDialog'), 'main podłącza dialog karty');
-ok(mainSource.includes('data.units.find(u => u.Jednostka === unitTypeId)'),
+ok(mainSource.includes('data.units.find(u => u.Jednostka === resolvedTypeId)'),
   'wiring wyszukuje prawdziwą definicję jednostki');
-ok(mainSource.includes('hideArmyListHud()'), 'otwarcie karty zamyka listę armii');
+ok(mainSource.includes('u.id === unitId && u.ownerId === 0'),
+  'wiring rozpoznaje właściwą jednostkę runtime');
 
 console.log(`\nunit-info-card-wiring-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);

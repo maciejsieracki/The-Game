@@ -18682,11 +18682,11 @@ async function boot(): Promise<void> {
           }
           refreshD1bHud();
         },
-        onOpenUnitCard: (unitTypeId) => {
-          const unitDef = data.units.find(u => u.Jednostka === unitTypeId);
+        onOpenUnitCard: (unitId, unitTypeId) => {
+          const runtimeUnit = units.find(u => u.id === unitId && u.ownerId === 0);
+          const resolvedTypeId = runtimeUnit?.typeId ?? unitTypeId;
+          const unitDef = data.units.find(u => u.Jednostka === resolvedTypeId);
           if (!unitDef) return;
-          hideArmyListHud();
-          const runtimeUnit = units.find(u => u.typeId === unitTypeId && u.ownerId === 0);
           const statusLines = runtimeUnit
             ? [
                 runtimeUnit.inGarnizon ? 'W garnizonie' : '',

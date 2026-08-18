@@ -56,7 +56,7 @@ export interface ArmyListHudConfig {
   getArmies: () => ArmyListEntry[];
   onSelectArmy: (unitId: string) => void;
   /** Otwiera kartę prawdziwych danych reprezentanta stosu, jeśli dostępna. */
-  onOpenUnitCard?: (unitTypeId: string) => void;
+  onOpenUnitCard?: (unitId: string, unitTypeId: string) => void;
   onClose?: () => void;
 }
 
@@ -88,6 +88,10 @@ function ensureStyles(): void {
 .civ-army-list-hud .al-hex{font-size:11px;color:var(--muted);margin-top:.2em;}
 .civ-army-list-hud .al-detail{font-size:0.78em;color:#d4cba0;margin-top:0.18em;line-height:1.35;}
 .civ-army-list-hud .al-meta{font-size:0.72em;color:var(--muted);margin-top:0.1em;}
+.civ-army-list-hud .sl-unit-card-btn{margin-left:auto;flex:0 0 auto;border:1px solid rgba(232,216,138,.38);
+  border-radius:50%;width:1.65em;height:1.65em;padding:0;background:rgba(8,10,16,.45);
+  color:#e8d88a;cursor:pointer;font-size:.82em;line-height:1;}
+.civ-army-list-hud .sl-unit-card-btn:hover{border-color:#e8d88a;background:rgba(232,216,138,.14);}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -172,7 +176,7 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
             ? formatZaznaczArmieLabel(a.unitCount)
                 : 'Zaznacz ' + a.name;
         if (a.unitTypeId && config.onOpenUnitCard) {
-          row.title += ' — klik otwiera kartę jednostki';
+          row.title += ' — przycisk ⓘ otwiera kartę jednostki';
         }
 
         const ico = document.createElement('span');
@@ -201,6 +205,19 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
           nameRow.appendChild(badgesWrap);
         }
         body.appendChild(nameRow);
+        if (a.unitTypeId && config.onOpenUnitCard) {
+          const cardBtn = document.createElement('button');
+          cardBtn.type = 'button';
+          cardBtn.className = 'sl-unit-card-btn';
+          cardBtn.title = 'Otwórz kartę jednostki';
+          cardBtn.setAttribute('aria-label', 'Otwórz kartę jednostki ' + a.unitTypeId);
+          cardBtn.textContent = 'ⓘ';
+          cardBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            config.onOpenUnitCard?.(a.id, a.unitTypeId!);
+          });
+          nameRow.appendChild(cardBtn);
+        }
 
         const hex = document.createElement('div');
         hex.className = 'al-hex';
@@ -260,10 +277,7 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         }
         row.appendChild(ico);
         row.appendChild(body);
-        const go = () => {
-          config.onSelectArmy(a.id);
-          if (a.unitTypeId) config.onOpenUnitCard?.(a.unitTypeId);
-        };
+        const go = () => config.onSelectArmy(a.id);
         row.addEventListener('click', go);
         row.addEventListener('keydown', (ev: KeyboardEvent) => {
           if (ev.key === 'Enter' || ev.key === ' ') {
