@@ -492,8 +492,12 @@ Baza przykładu: **FALA 295**, ROBOCZA `8589d294`, audyt
 
 ### 6. Czeka na Operatora — gotowe do dispatchu
 
-- `— (brak)` — ponowny skan rejestrów (FALA 295): żaden ID nie spełnia
-  jednocześnie pełnego ECHO/kontraktu **i** braku realnego Operatora/commitu.
+- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY` — ECHO **B**, pełny kontrakt i bramki
+  zapisane; czeka Operator Workflow. Dowód:
+  `docs/decyzje/P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.md`.
+- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2` — ECHO **C**, osobny kontrakt
+  targeted overlay i zakres N2; czeka Operator Workflow. Dowód:
+  `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md`.
   Wykluczone ze snapshotu: `AI-BALANS-STEP6-Q1` (**już wdrożone** — `dadcb48`,
   rejestr); `R-KAMIEN-RELIEF-FOLLOWUP-Q1` (**commit** `8593237` na branchu);
   `R-DESIGN-PANEL-MIASTA-V2-Q1` (**blokada zewnętrzna** Design — kategoria 8);
@@ -502,11 +506,9 @@ Baza przykładu: **FALA 295**, ROBOCZA `8589d294`, audyt
 
 ### 7. Zapomniane — do dispatchu
 
-- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY` — rozpoznanie dostarczone, brak decyzji
-  ABC o progach; wymaga recon/kontraktu przed dispatch. Dowód:
-  `PYTANIA-OTWARTE.md` (sekcja 2026-08-13).
-- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA` — noty N2/N3/N5/N6 z Evaluatora bez
-  zakresu naprawy i bez dispatchu. Dowód: `PYTANIA-OTWARTE.md` (2026-08-17).
+- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA` — noty N3/N5/N6 pozostają osobnymi
+  zadaniami technicznymi bez kontraktu; N2 ma osobne ECHO i kategorię 6.
+  Dowód: `PYTANIA-OTWARTE.md` (2026-08-17/18).
 
 ### 8. Świadomie odłożone
 

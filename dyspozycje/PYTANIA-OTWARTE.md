@@ -31811,3 +31811,15 @@ opublikowane w ROBOCZA FALI 295 (`8589d294`):
 Osobne braki pozostają poza tym batch’em: pełne E2E pathfindingu AI,
 live Chromium/WebGL oraz test live edycji koszyka dyplomacji. Nie blokują
 obecnych kontraktów, ale są zapisane jako noty Evaluatorów.
+
+## ECHO — decyzje ABC 2026-08-18
+
+- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY` — **B**: przekroczenie czasu jest
+  ostrzeżeniem, a determinizm, ujścia rzek i poprawność mapy pozostają
+  twardymi kryteriami. Kontrakt: `docs/decyzje/P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.md`.
+- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2` — **C**: targeted overlay bez
+  globalnego przebijania przez teren i jednostki. Kontrakt:
+  `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md`.
+
+Oba tematy: **ZAPISANE — gotowe do dispatchu Operatora Workflow**. Nie
+uruchamiać implementacji poza Workflow.
