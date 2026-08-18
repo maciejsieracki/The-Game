@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji i karta ukończonych badań). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karta ukończonych badań i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -153,6 +153,27 @@ tytuł „Badania zakończone”/„Nowe odkrycie”, treść z nazwą i kosztem
 „Otwórz kartę”. Kliknięcie otwiera kartę ukończonej technologii, a zamknięcie
 tylko usuwa komunikat. Awans epoki może mieć dodatkowy komunikat, ale nie może
 ukrywać karty badania.
+
+### R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 — pomoc przeciw barbarzyńcom z automatycznym prawem przemarszu · STATUS: **NOWE — PROPOZYCJA**
+
+**Propozycja Macieja:** dodać akcję dyplomatyczną, w której druga cywilizacja
+wyraża zgodę na wspólną walkę z barbarzyńcami na swoim terytorium. Zaakceptowana
+zgoda daje od razu obustronne prawo wejścia na terytorium bez kary za
+nieautoryzowany przemarsz.
+
+**Istniejące mechanizmy:** `gra/data/diplomacy.json:190-203` ma pełny/defensywny
+sojusz i osobny Traktat przemarszu. Sojusz opisuje automatyczne wejście w wojny
+partnera przeciw cywilizacjom, ale nie definiuje wspólnej walki z barbarzyńcami.
+Traktat przemarszu jest osobną akcją i obecnie nie wynika automatycznie z pomocy
+wojskowej. `wspolnyWrog` istnieje jako czynnik Zaufania, ale nie jest kontraktem
+udziału w walce.
+
+**Kontrakt do doprecyzowania przed implementacją:** zgoda obejmuje wojskowy
+przemarsz w obie strony i brak kary za wejście na terytorium partnera; nie
+oznacza automatycznego sojuszu przeciw wszystkim cywilizacjom. Trzeba ustalić
+czas trwania (do zniszczenia zagrożenia / określona liczba tur / odwołanie),
+czy obejmuje wyłącznie barbarzyńców lądowych, oraz czy po zakończeniu zgody
+jednostki pozostające na obcym terytorium dostają karencję na wyjście.
 
 ---
 
