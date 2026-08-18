@@ -1048,6 +1048,18 @@ import {
   restoreBronzeForcedWarState,
   type BronzeForcedWarPairState,
 } from './game/forced-war-bronze';
+import {
+  WOJNA_KAMIEN_WYMUSZONA_START_TURY,
+  WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
+  WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  isEligibleForStoneForcedWar,
+  pickStoneForcedWarTargetId,
+  shouldEndStoneForcedWarByCityCount,
+  isRestingFromStoneForcedWar,
+  serializeStoneForcedWarState,
+  restoreStoneForcedWarState,
+  type StoneForcedWarPairState,
+} from './game/forced-war-stone';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
@@ -1598,6 +1610,15 @@ async function boot(): Promise<void> {
     const bronzeForceWarRestUntilByOwner = new Map<number, number>();
     /** Aktywne wojny wymuszone Brązu, klucz = diploPairKey(attackerId, targetId) — liczniki miast do auto-pokoju. / EN: active Bronze forced wars, keyed by diploPairKey — city counters driving auto-peace. */
     const bronzeForceWarActiveByPairKey = new Map<string, BronzeForcedWarPairState>();
+    /**
+     * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: osobny rejestr od Brązu. Ochrona startowa
+     * kończy się po 20 turach gry; dalej cykl działa według tych samych reguł
+     * odpoczynku, cooldownu pary i progu miast, ale nie miesza się ze stanem Brązu.
+     */
+    const stoneForceWarPendingOwners = new Set<number>();
+    const stoneForceWarCycleOwners = new Set<number>();
+    const stoneForceWarRestUntilByOwner = new Map<number, number>();
+    const stoneForceWarActiveByPairKey = new Map<string, StoneForcedWarPairState>();
 
     const ERA_ID_TO_NUM: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
 
@@ -8083,6 +8104,17 @@ async function boot(): Promise<void> {
       return isPeaceTreatyLocked(getDiploPairMeta(a, b), turn);
     }
 
+    function cleanupStoneForcedWarOnPeace(proposerId: number, responderId: number): void {
+      const stonePairKey = diploPairKey(proposerId, responderId);
+      const stoneSt = stoneForceWarActiveByPairKey.get(stonePairKey);
+      if (!stoneSt) return;
+      stoneForceWarActiveByPairKey.delete(stonePairKey);
+      stoneForceWarRestUntilByOwner.set(
+        stoneSt.attackerId,
+        turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
+      );
+    }
+
     /**
      * Zawarcie pokoju + blokada DOW na PEACE_TREATY_LOCK_TURNS tur (lub `lockTurnsOverride`,
      * jeśli podane).
@@ -8115,6 +8147,9 @@ async function boot(): Promise<void> {
           lockTurnsOverride,
         ),
       );
+      // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: pokój czyści osobny rejestr Kamienia
+      // przed zachowaniem istniejącego cleanupu Brązu.
+      cleanupStoneForcedWarOnPeace(proposerId, responderId);
       // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: pokój między tą parą (jakkolwiek zawarty — auto-pokój
       // po progu miast LUB zwykła negocjacja AI/gracza) kończy ewentualną aktywną wojnę
       // wymuszoną — sprzątamy stan i uzbrajamy odpoczynek napastnika PRZED szukaniem
@@ -12259,6 +12294,9 @@ async function boot(): Promise<void> {
         const oldOwner = city.ownerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
+        // R-MIASTA-LIMIT-PODBÓJ-Q1=A: kapitulacja wojenna przejmuje miasto
+        // bez zużywania puli miast zakładanych przez nowego właściciela.
+        city.foundedByOwner = false;
         // B1 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): kapitulacja głodowa
         // to DRUGIE (obok applyCityCaptureToMap) miejsce, gdzie city.ownerId się zmienia w
         // wyniku wojny — dla par AI↔AI to dziś JEDYNA droga zakończenia wojny poza tym
@@ -12269,6 +12307,7 @@ async function boot(): Promise<void> {
         // path to end a forced war outside this counter (peace negotiations only handle
         // targetId===0), so skipping this hook here means an AI↔AI forced war that never ends.
         maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner);
+        maybeResolveStoneForcedWarOnCityCapture(oldOwner, newOwner);
         // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: kapitulacja głodowa
         // jest drugim (obok podboju bojowego) wejściem przejęcia miasta. Legacy
         // jednostki z kolejki Pracy nie mogą przejść do nowego właściciela;
@@ -23255,6 +23294,14 @@ async function boot(): Promise<void> {
           bronzeForceWarActiveByPairKey.delete(key);
         }
       }
+      stoneForceWarPendingOwners.delete(ownerId);
+      stoneForceWarCycleOwners.delete(ownerId);
+      stoneForceWarRestUntilByOwner.delete(ownerId);
+      for (const [key, st] of Array.from(stoneForceWarActiveByPairKey.entries())) {
+        if (st.attackerId === ownerId || st.targetId === ownerId) {
+          stoneForceWarActiveByPairKey.delete(key);
+        }
+      }
 
       for (const key of Array.from(diplomacyRelations.keys())) {
         if (diploPairKeyHasOwner(key, ownerId)) diplomacyRelations.delete(key);
@@ -23484,6 +23531,39 @@ async function boot(): Promise<void> {
       );
     }
 
+    /**
+     * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: wspólny punkt rozliczenia przejęcia/
+     * utraty miasta dla wojny wymuszonej Kamienia. Wywoływany z obu funnel-i
+     * zmiany city.ownerId, tak jak mechanizm Brązu.
+     */
+    function maybeResolveStoneForcedWarOnCityCapture(oldOwner: number, newOwner: number): void {
+      if (oldOwner === newOwner) return;
+      const pairKey = diploPairKey(oldOwner, newOwner);
+      const st = stoneForceWarActiveByPairKey.get(pairKey);
+      if (!st) return;
+      if (newOwner === st.attackerId) st.capturedByAttacker++;
+      else if (newOwner === st.targetId) st.capturedByDefender++;
+      else return;
+      if (!shouldEndStoneForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
+      if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
+        stoneForceWarActiveByPairKey.delete(pairKey);
+        stoneForceWarRestUntilByOwner.set(
+          st.attackerId,
+          turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
+        );
+        return;
+      }
+      console.log(
+        `[Dyplomacja] R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: auto-pokój AI${st.attackerId}`
+        + `↔AI${st.targetId} (zdobyte ${st.capturedByAttacker}/stracone ${st.capturedByDefender})`,
+      );
+      finalizePeaceTreatyBetween(
+        st.attackerId,
+        st.targetId,
+        WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+      );
+    }
+
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
     /** `eliminatedCivLabel`/`eliminatedDetails` — patrz komentarz `runCapitalCapturePlunder`:
      * niepuste WYŁĄCZNIE gdy to przejęcie eliminuje ostatnie miasto danej cywilizacji I
@@ -23520,6 +23600,7 @@ async function boot(): Promise<void> {
         },
       );
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
+      maybeResolveStoneForcedWarOnCityCapture(oldOwner, atkOwner);
       // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
       // tickBarbarianCityGarrisons niżej w ticku barbarzyńców): capture NIE czyścił
       // odziedziczonej kolejki budowy ofiary -- budynek W TOKU (front kolejki, np.
@@ -24221,6 +24302,12 @@ async function boot(): Promise<void> {
         bronzeForceWarRestUntilByOwner,
         bronzeForceWarActiveByPairKey,
       );
+      const stoneForceWarSave = serializeStoneForcedWarState(
+        stoneForceWarPendingOwners,
+        stoneForceWarCycleOwners,
+        stoneForceWarRestUntilByOwner,
+        stoneForceWarActiveByPairKey,
+      );
       return {
         wersja: 2,
         tura: turn,
@@ -24332,6 +24419,10 @@ async function boot(): Promise<void> {
           bronzeForceWarCycleOwners: bronzeForceWarSave.cycleOwners,
           bronzeForceWarRestUntilByOwner: bronzeForceWarSave.restUntilByOwner,
           bronzeForceWarActiveByPairKey: bronzeForceWarSave.activeByPairKey,
+          stoneForceWarPendingOwners: stoneForceWarSave.pendingOwners,
+          stoneForceWarCycleOwners: stoneForceWarSave.cycleOwners,
+          stoneForceWarRestUntilByOwner: stoneForceWarSave.restUntilByOwner,
+          stoneForceWarActiveByPairKey: stoneForceWarSave.activeByPairKey,
           lootedVillageHexKeys: Array.from(lootedVillageHexKeys),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
@@ -27377,6 +27468,7 @@ async function boot(): Promise<void> {
                 // already be at war (or has every candidate blocked) is retried next turn
                 // instead of permanently losing its one shot.
                 let bronzeForceWarTargetId: number | undefined;
+                let stoneForceWarTargetId: number | undefined;
                 if (
                   ownerId > 0
                   && !typCityCopyOwners.has(ownerId)
@@ -27433,6 +27525,86 @@ async function boot(): Promise<void> {
                     if (bronzePicked != null) bronzeForceWarTargetId = bronzePicked;
                   }
                 }
+                // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA (Q1=A): po 20 turach od startu
+                // gry główna cywilizacja AI pozostająca w Kamieniu dostaje
+                // jednorazowy wpis pending. Wpis nie jest konsumowany przy samej
+                // próbie — dzięki temu wojna czeka, jeśli owner jest chwilowo w
+                // innej wojnie albo wszystkie cele są zablokowane.
+                if (
+                  turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
+                  && ownerId > 0
+                  && !typCityCopyOwners.has(ownerId)
+                  && !isBarbarian(ownerId)
+                  && !eliminatedOwners.has(ownerId)
+                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+                  && empireEpochForOwner(ownerId) === 1
+                  && !stoneForceWarPendingOwners.has(ownerId)
+                  && !stoneForceWarCycleOwners.has(ownerId)
+                ) {
+                  stoneForceWarPendingOwners.add(ownerId);
+                }
+                if (
+                  ownerId > 0
+                  && !typCityCopyOwners.has(ownerId)
+                  && !isBarbarian(ownerId)
+                  && !eliminatedOwners.has(ownerId)
+                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+                ) {
+                  const wasPending = stoneForceWarPendingOwners.has(ownerId);
+                  const alreadyAtWarAnyRole = countActiveWarsForOwner(ownerId) > 0;
+                  const hasActiveForcedWarAsAttacker = [...stoneForceWarActiveByPairKey.values()]
+                    .some(st => st.attackerId === ownerId);
+                  const searchingAfterRest = !wasPending
+                    && stoneForceWarCycleOwners.has(ownerId)
+                    && empireEpochForOwner(ownerId) === 1
+                    && !hasActiveForcedWarAsAttacker
+                    && !alreadyAtWarAnyRole
+                    && !isRestingFromStoneForcedWar(
+                      turn,
+                      stoneForceWarRestUntilByOwner.get(ownerId),
+                    );
+                  const shouldSearch = wasPending
+                    ? isEligibleForStoneForcedWar({
+                      isMainAiCiv: true,
+                      isStoneEra: empireEpochForOwner(ownerId) === 1,
+                      currentTurn: turn,
+                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                    })
+                    : searchingAfterRest;
+                  if (shouldSearch) {
+                    const refCity = cities.find(c => c.ownerId === ownerId);
+                    const stoneCandidates = aiOwnerList
+                      .filter(oid =>
+                        oid !== ownerId
+                        && oid > 0
+                        && !typCityCopyOwners.has(oid)
+                        && !isBarbarian(oid)
+                        && !eliminatedOwners.has(oid)
+                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
+                      )
+                      .map(oid => {
+                        const c = cities.find(cc => cc.ownerId === oid);
+                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
+                      })
+                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
+                    const stoneBlockedOwnerIds = new Set(
+                      stoneCandidates
+                        .filter(c =>
+                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
+                          || isPeaceLockedBetween(ownerId, c.ownerId)
+                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
+                        )
+                        .map(c => c.ownerId),
+                    );
+                    const stonePicked = pickStoneForcedWarTargetId(
+                      stoneCandidates,
+                      refCity ? { q: refCity.q, r: refCity.r } : undefined,
+                      hexDistance,
+                      { blockedOwnerIds: stoneBlockedOwnerIds },
+                    );
+                    if (stonePicked != null) stoneForceWarTargetId = stonePicked;
+                  }
+                }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
                   relacje: relacjeDip,
@@ -27450,6 +27622,7 @@ async function boot(): Promise<void> {
                   clusterForceWarTargetId,
                   bronzeForceWarTargetId,
                 };
+                diploInp.stoneForceWarTargetId = stoneForceWarTargetId;
                 const dipCmdsRaw = decideAIDiplomacy(
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
                   effectiveGameDifficultyForOwner(ownerId),
@@ -27485,6 +27658,13 @@ async function boot(): Promise<void> {
                       if (hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji)) {
                         continue;
                       }
+                      if (
+                        stoneForceWarTargetId != null
+                        && targetId === stoneForceWarTargetId
+                        && allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null
+                      ) {
+                        continue;
+                      }
                       chargeWarDeclarationCredibility(ownerId, targetId);
                       breakTreatiesOnWar(ownerId, targetId, false);
                       applyAllianceObligationsOnWar(ownerId, targetId);
@@ -27511,6 +27691,19 @@ async function boot(): Promise<void> {
                         bronzeForceWarPendingOwners.delete(ownerId);
                         console.log(
                           `[Dyplomacja] R-EPOKA-BRAZU-WYMUSZONA-WOJNA: AI${ownerId} wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
+                        );
+                      }
+                      // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: analogiczny wpis tylko
+                      // dla komendy wybranego celu Kamienia. Nie dotyka stanu Brązu.
+                      if (stoneForceWarTargetId != null && targetId === stoneForceWarTargetId) {
+                        stoneForceWarActiveByPairKey.set(diploPairKey(ownerId, targetId), {
+                          attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+                        });
+                        stoneForceWarCycleOwners.add(ownerId);
+                        stoneForceWarPendingOwners.delete(ownerId);
+                        console.log(
+                          `[Dyplomacja] R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: AI${ownerId} `
+                          + `wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
                         );
                       }
                       if (targetId === 0 || ownerId === 0) {
@@ -29909,6 +30102,10 @@ async function boot(): Promise<void> {
       zdobyczePowerByOwner.clear();
       battlePowerPtsByOwner.clear();
       lootedVillageHexKeys.clear();
+      stoneForceWarPendingOwners.clear();
+      stoneForceWarCycleOwners.clear();
+      stoneForceWarRestUntilByOwner.clear();
+      stoneForceWarActiveByPairKey.clear();
       barbCamps = [];
       clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
@@ -31180,6 +31377,25 @@ async function boot(): Promise<void> {
       for (const [oid, t] of bronzeForceWarRestored.restUntilByOwner) bronzeForceWarRestUntilByOwner.set(oid, t);
       bronzeForceWarActiveByPairKey.clear();
       for (const [key, st] of bronzeForceWarRestored.activeByPairKey) bronzeForceWarActiveByPairKey.set(key, st);
+      const stoneForceWarRestored = restoreStoneForcedWarState({
+        pendingOwners: saved.meta?.stoneForceWarPendingOwners as number[] | undefined,
+        cycleOwners: saved.meta?.stoneForceWarCycleOwners as number[] | undefined,
+        restUntilByOwner: saved.meta?.stoneForceWarRestUntilByOwner as Array<[number, number]> | undefined,
+        activeByPairKey: saved.meta?.stoneForceWarActiveByPairKey as
+          Array<[string, StoneForcedWarPairState]> | undefined,
+      });
+      stoneForceWarPendingOwners.clear();
+      for (const oid of stoneForceWarRestored.pendingOwners) stoneForceWarPendingOwners.add(oid);
+      stoneForceWarCycleOwners.clear();
+      for (const oid of stoneForceWarRestored.cycleOwners) stoneForceWarCycleOwners.add(oid);
+      stoneForceWarRestUntilByOwner.clear();
+      for (const [oid, t] of stoneForceWarRestored.restUntilByOwner) {
+        stoneForceWarRestUntilByOwner.set(oid, t);
+      }
+      stoneForceWarActiveByPairKey.clear();
+      for (const [key, st] of stoneForceWarRestored.activeByPairKey) {
+        stoneForceWarActiveByPairKey.set(key, st);
+      }
       // Audyt #13: reaplikuj zlupienie wiosek na (ewentualnie świeżo zregenerowanej
       // z seeda) mapie -- generator/placeVillages zawsze stawia je jako istnieje=true.
       lootedVillageHexKeys.clear();

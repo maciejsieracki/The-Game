@@ -3807,6 +3807,12 @@ export interface DiplomacjaInputs {
    * alliance (B3, round 2) targets when picking; this is just the same guard closed off here.
    */
   bronzeForceWarTargetId?: number;
+  /**
+   * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: wymuszona wojna głównej cywilizacji AI
+   * po 20 turach ochrony startowej w epoce Kamienia. To ten sam końcowy guard
+   * co dla Brązu, ale z osobnym priorytetem/staniem w main.ts.
+   */
+  stoneForceWarTargetId?: number;
 }
 
 /**
@@ -4103,6 +4109,27 @@ export function decideAIDiplomacy(
         type:     'wypowiedz_wojne',
         targetId: forcedId,
         powod:    `R-EPOKA-BRAZU-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura ${inp.currentTurn ?? 0})`,
+      }];
+    }
+  }
+
+  // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: cel został wybrany przez main.ts według
+  // identycznych filtrów terytorialnych jak w mechanizmie Brązu. Nie omijamy
+  // tu aktywnej wojny, NAP, blokady pokoju ani sojuszu z samym celem.
+  if (inp.stoneForceWarTargetId != null) {
+    const forcedId = String(inp.stoneForceWarTargetId);
+    const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
+    if (
+      forcedRel
+      && !forcedRel.stanWojny
+      && !forcedRel.peaceLocked
+      && !forcedRel.hasNapTreaty
+      && !forcedRel.hasAllianceTreaty
+    ) {
+      return [{
+        type:     'wypowiedz_wojne',
+        targetId: forcedId,
+        powod:    `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: wymuszona wojna po ochronie startowej (tura ${inp.currentTurn ?? 0})`,
       }];
     }
   }

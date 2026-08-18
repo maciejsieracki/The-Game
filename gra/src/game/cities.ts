@@ -738,6 +738,12 @@ export interface City {
   /** Tura założenia miasta (opcjonalnie; immunitet W liczy też wealthImmunityRemaining). */
   foundedTurn?: number;
   /**
+   * Czy miasto powstało przez założenie, a więc zużywa pulę zakładania miast.
+   * `false` oznacza miasto przejęte; brak pola w starym zapisie zachowuje
+   * dotychczasową interpretację jako miasto założone.
+   */
+  foundedByOwner?: boolean;
+  /**
    * Pula Manpower (siła rekrutacyjna miasta). Brak = przy pierwszym odczycie równa manpowerMax.
    * Koszt jednostki: manpowerNaJednostke[epoka] — patrz gra/src/game/manpower.ts.
    */
@@ -790,6 +796,11 @@ export interface City {
 export const MIN_CITY_DISTANCE = (miastoParams.min_dystans_miast?.wartosc as number) ?? 5;
 /** Min dystans od startowych miast-państw przy zakładaniu nowych miast (Maciej 2026-07-04). */
 export const MIN_CITY_DISTANCE_START_CITY_STATE = 3;
+
+/** Tylko miasta założone przez cywilizację zużywają limit zakładania. */
+export function countsTowardCityFoundingLimit(city: Pick<City, 'foundedByOwner'>): boolean {
+  return city.foundedByOwner !== false;
+}
 
 export function canFoundCity(
   q: number,
@@ -853,7 +864,9 @@ export function canFoundCity(
     const era = Math.max(1, opts.ownerEra);
     // Limit: baza + (era-1)*5 (E0=baza, E1=baza+5, E2=baza+10, itd.)
     const limit = base + (era - 1) * 5;
-    const ownersCities = cities.filter(c => c.ownerId === opts.ownerId).length;
+    const ownersCities = cities.filter(
+      c => c.ownerId === opts.ownerId && countsTowardCityFoundingLimit(c),
+    ).length;
     if (ownersCities >= limit) {
       return { ok: false, reason: 'limit miast na tej epoce' };
     }
@@ -892,6 +905,7 @@ export function foundCity(
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
     poziomRacjiOverride: false,
+    foundedByOwner: true,
   };
 }
 
@@ -930,6 +944,7 @@ export function foundCityAt(
     poziomRacjiOverride: false,
     autoWyzywienie: true, // Włączone automatyczne wyżywienie dla nowo założonych miast / EN: enable auto-feeding for newly founded cities
     budowaTryb: 'zrownowazone', // Domyślna zrównoważona budowa dla nowych miast / EN: default balanced build mode for new cities
+    foundedByOwner: true,
     ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }
