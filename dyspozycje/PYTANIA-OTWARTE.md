@@ -205,7 +205,7 @@ opłacana ze Skarbca, czy tylko określone sytuacje (wojna/obrona). Jeśli pełn
 zakup, trzeba usunąć fallback do kolejki Pracy dla jednostek wojskowych,
 zachować koszt Manpower i surowca oraz dodać testy osobno dla AI major i MP.
 
-### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **NOWE — ZAPISANA PROPOZYCJA**
+### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **WDROŻONE W PR #131 — CZEKA INTEGRACJA**
 
 **Zgłoszenie Macieja:** wartość ilościowych surowców w dyplomacji należy obniżyć
 pięciokrotnie. Dotyczy to wartości pozycji w koszyku PW, bilansu fair-min,
@@ -222,6 +222,12 @@ używa tej samej funkcji w szybkiej umowie. Obecne ceny obejmują m.in. Drewno
 (`handel_surowce.cena_*`) na `wartość / 5`, zachowując rozmiar pakietu
 10 sztuk oraz osobny cennik dostępu do złoża (`handel_zloze`). Po decyzji trzeba
 sprawdzić zaokrąglenia dla cen ułamkowych i parytet gracz–AI.
+
+**Wdrożenie PR #131:** ceny `handel_surowce.cena_*` obniżone ×5 w
+`gra/data/econ-params.json`; pakiet 10 sztuk i `handel_zloze` bez zmian.
+Test akceptacji: **225/225 PASS**. Typecheck: **PASS**. Katalog wartości:
+**61 PASS / 1 pre-existing FAIL** (`surowiec ruda=kopalnia`, osobny cennik
+boolean: obecnie 22 zamiast starego oczekiwania 25).
 
 ### R-DYPLO-INFOGRAFIKI-TOOLTIPY-Q1 — dodatkowe opisy rozbijają ekran dyplomacji · STATUS: **NOWE — AUDYT UX**
 
