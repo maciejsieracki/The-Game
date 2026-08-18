@@ -1,10 +1,10 @@
-# AutoBot — Evaluator–Operator (R-PROC-AUTOBOT)
+# AutoBot — Operator–Evaluator–integracja (R-PROC-AUTOBOT)
 
 **Status:** ⛔ **TWARDA REGUŁA** — **KAŻDA praca agenta wyłącznie tędy** (Maciej 2026-08-05)  
 **Decyzja:** [`docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md)  
 **Reguła Cursor (alwaysApply):** `.cursor/rules/autobot-evaluator-operator.mdc`
 
-> Operator → Evaluator → Grok final. **ZAKAZ** omijania pętli.
+> Operator → Evaluator → finalna kontrola → integracja → deploy/push. **ZAKAZ** omijania pętli.
 
 **Evaluator — SCOPE:** przed werdyktem sprawdza, czy diff dotyczy **wyłącznie** zgłoszonego problemu/AC i nie wprowadza ubocznych zmian ani regresji w innych miejscach (`rule_105`, `R-PROC-AUTOBOT-EVAL-SCOPE`). Naruszenie SCOPE → FAIL.
 
@@ -170,19 +170,22 @@ node dyspozycje/autobot/tools/autobot-smoke.cjs
 
 | AutoBot | Sesja Cursor |
 |---------|----------------|
-| Operator | Composer implementer |
-| Evaluator | Adwokat diabła + Grok (+ testy) · **SCOPE** — diff tylko do tematu (`rule_105`) · **STRICT** — luki testów → FAIL (`rule_106`) · **STRICT-EDGE** — happy-path-only → FAIL (`rule_107`) · **STRICT-PARITY** — asymetria gracz/AI/MP → FAIL (`rule_108`) · **STRICT-SAVE** — luki save/load → FAIL (`rule_109`) |
+| Operator | **GPT-5.6 Luna Medium** — implementer |
+| Evaluator | **GPT-5.6 Luna High** — adwokat diabła + testy · **SCOPE** — diff tylko do tematu (`rule_105`) · **STRICT** — luki testów → FAIL (`rule_106`) · **STRICT-EDGE** — happy-path-only → FAIL (`rule_107`) · **STRICT-PARITY** — asymetria gracz/AI/MP → FAIL (`rule_108`) · **STRICT-SAVE** — luki save/load → FAIL (`rule_109`) |
+| Finalna kontrola / integracja | **GPT-5.6 Luna Medium** — status/ABC albo skierowanie do integracji |
 | playbook | ten katalog + reguły procesu |
 | Dev scorer | typecheck + testy + deploy gate |
 
-Następny krok: podpięcie metryk z `WERSJE.md` / testów → dashboard z `logs/`.
+Po raporcie Operatora Evaluator jest uruchamiany automatycznie. `PASS` przechodzi przez
+finalną kontrolę, a następnie do aktualizacji statusu, pełnego ABC z ID albo integracji;
+`FAIL` wraca do Operatora. Deploy/push wymaga bramek i autoryzacji właściciela.
 
 ## Integracja z Ultracode/Workflow (Maciej 2026-08-12)
 
 Workflow (Ultracode, Claude Agent SDK) jest narzędziem wykonawczym, które automatyzuje
 dokładnie architekturę opisaną wyżej — nie zastępuje żadnego z 5 modułów. `OperatorAgent`
-odpowiada `phase('Operator')` (domyślny model sesji), a `EvaluatorAgent` odpowiada
-`phase('Evaluator')` z `model:'opus', effort:'high'`; obie fazy MUSZĄ być krokami jednego
+odpowiada `phase('Operator')` z modelem GPT-5.6 Luna Medium, a `EvaluatorAgent` odpowiada
+`phase('Evaluator')` z modelem GPT-5.6 Luna High; obie fazy MUSZĄ być krokami jednego
 skryptu Workflow, nigdy dwoma osobno zlecanymi uruchomieniami — bo dokładnie ten podział
 umożliwił w tej sesji scalenie ~11 zmian Operatora bez pośredniego Evaluatora. `pipeline()`
 z Workflow przepuszcza wiele tematów przez `OperatorAgent → EvaluatorAgent` niezależnie
@@ -200,7 +203,8 @@ istnieć na właściwej gałęzi; brak trafienia = STOP i zgłoszenie, nie ręcz
 kodu) — dokładny szablon: `.cursor/rules/autobot-evaluator-operator.mdc`
 §„Integracja z Ultracode/Workflow".
 
-**Co zostaje poza Workflow, zawsze ręką orkiestratora:** `git commit`/`push`, wpisy do
+**Co zostaje poza Workflow, zawsze ręką orkiestratora:** finalna kontrola, integracja,
+`git commit`/`push`, wpisy do
 `PYTANIA-OTWARTE.md`/`WERSJE.md`/`REJESTR-PROSB-I-ZADAN.md`/`KANAL-PRACA.md`, cały deploy
-(hasło `deploy`, Opus 5). Moduł 5 (Dashboard Logger) pozostaje docelowym miejscem na
+(hasło `deploy`, po bramkach i autoryzacji). Moduł 5 (Dashboard Logger) pozostaje docelowym miejscem na
 postmortemy z przebiegów Workflow, gdy scaffold na to pozwoli.

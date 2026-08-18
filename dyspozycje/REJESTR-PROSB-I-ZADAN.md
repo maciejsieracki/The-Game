@@ -22,7 +22,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 ## ⛔ AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — KAŻDA PRACA TYLKO TĘDY
 **KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot:
 Operator (**GPT-5.6 Luna Medium**) → Evaluator (**GPT-5.6 Luna High**) →
-główny orkiestrator/final (**GPT-5.6 Luna Medium**). **ZAKAZ** omijania pętli.
+finalna kontrola → integracja → deploy/push. **ZAKAZ** omijania pętli.
 Kanon: [`autobot/README.md`](autobot/README.md) ·
 [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) ·
 `.cursor/rules/autobot-evaluator-operator.mdc`.
@@ -35,7 +35,10 @@ i Sonnet pozostają poniżej jako historia, ale nie są aktywnym routingiem.
 **Notatka 2026-08-09:** źródło prawdy deployu dziś = **FALA 263** (`89176ced318b7e7d03b2fd6b197df80d`), branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie `main`). Szczegóły sesji: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`.
 
 **KOREKTA AUDYTU 2026-08-18:** aktywny routing tej sesji to Operator **GPT-5.6 Luna Medium** →
-Evaluator **GPT-5.6 Luna High** → główny orkiestrator/final **GPT-5.6 Luna Medium**.
+Evaluator **GPT-5.6 Luna High** → finalna kontrola/integracja przez głównego orkiestratora
+**GPT-5.6 Luna Medium**. Raport Operatora automatycznie uruchamia Evaluatora; po `PASS`
+status jest aktualizowany, przygotowywane jest pełne ABC z ID albo temat trafia do integracji.
+Deploy/push dopiero po bramkach i autoryzacji.
 Wpisy o composer/Grok/Haiku/Sonnet poniżej są historyczne i pozostają zachowane.
 
 | R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Kanon raportu właściciela: siedem kategorii, filtr ECHO dla ABC i wyłącznie najnowszy wpis Playtest ROBOCZEJ | **WDROŻONE (docs-only) — nie jest pytaniem ABC** | `docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`; zasady: `CLAUDE.md`, `.claude/skills/civ-autobot/SKILL.md`, `.cursor/rules/komendy-raport.mdc`; bez zmian kodu/danych/bundli/WERSJE/deployu |

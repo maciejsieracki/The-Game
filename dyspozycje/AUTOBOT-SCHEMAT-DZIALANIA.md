@@ -11,19 +11,20 @@
 ```mermaid
 flowchart TD
   M[Maciej — decyzje ABC / hasła deploy] --> ID[NUMER w REJESTR-PROSB]
-  ID --> PROP[Grok: propozycja ± ABC]
+  ID --> PROP[Orkiestrator: propozycja ± ABC]
   PROP --> DEC{Maciej: ID + A/B/C<br/>lub działaj}
-  DEC -->|tak| OP[OPERATOR — composer-2.5<br/>kod / testy / playbook]
-  OP --> EV[EVALUATOR — osobny composer-2.5<br/>adwokat diabła + hard metrics]
-  EV --> GR[GROK — final gate]
-  GR -->|gotowe| WAIT[Czeka na hasło Macieja]
-  WAIT -->|deploy| DEP[GROK — jedyny deploy ROBOCZA]
+  DEC -->|tak| OP[OPERATOR — GPT-5.6 Luna Medium<br/>kod / testy / playbook]
+  OP --> EV[EVALUATOR — GPT-5.6 Luna High<br/>adwokat diabła + hard metrics]
+  EV --> GR[FINALNA KONTROLA — GPT-5.6 Luna Medium]
+  GR --> INT[INTEGRACJA]
+  INT -->|bramki + autoryzacja| DEP[DEPLOY/PUSH]
   DEP --> PLAY[Maciej — playtest OK/BUG]
   PLAY -->|BUG| ID
   PLAY -->|OK| DONE[Zamknięte / FALA]
 ```
 
-**Zasada nadrzędna:** nic „obok” pętli. Operator → Evaluator → Grok → (opcjonalnie) deploy.
+**Zasada nadrzędna:** nic „obok” pętli. Operator → Evaluator → finalna kontrola →
+integracja → deploy/push. Raport Operatora automatycznie uruchamia Evaluatora.
 
 ---
 
@@ -32,20 +33,20 @@ flowchart TD
 | Rola | Kto | Odpowiada za | Nie robi |
 |------|-----|--------------|----------|
 | **Decydent** | **Maciej** | ABC gameplay/produkt, hasła `działaj` / `deploy`, playtest OK/BUG | Terminal, kod, merge na ślepo |
-| **Orkiestrator / Final** | **Grok 4.5** (czat główny) | Plan, ABC, dekompozycja, **final** po Evaluatorze, **jedyny deploy**, WERSJE/KANAL | Masowa implementacja „bo szybko” |
-| **Operator (AutoBot)** | **composer-2.5** (Task) | Kod, testy lane, eksporty, docs techniczne wg `playbook.json` | Merge `main`, deploy, self-grade bez KPI |
-| **Evaluator (AutoBot)** | **osobny composer-2.5** | Adwokat diabła: regresje, uboczne zepsucia, hard metrics, postmortem, win/loss playbook | Implementacja (chyba że Grok każe fix po FAIL) |
-| **Integrator / F** *(gdy w obiegu)* | Sesja Integrator | Wpięcie `main.ts`, bramka, publish ROBOCZA **po** `deploy` od Groka/Macieja | ABC gameplay zamiast Macieja |
+| **Orkiestrator / Final** | **GPT-5.6 Luna Medium** | Plan, ABC, finalna kontrola, status/ABC/integracja; bez samowolnego deployu | Masowa implementacja „bo szybko” |
+| **Operator (AutoBot)** | **GPT-5.6 Luna Medium** | Kod, testy lane, eksporty, docs techniczne wg `playbook.json` | Merge `main`, deploy, self-grade bez KPI |
+| **Evaluator (AutoBot)** | **GPT-5.6 Luna High** | Adwokat diabła: regresje, uboczne zepsucia, hard metrics, postmortem, win/loss playbook | Implementacja |
+| **Integrator / F** *(gdy w obiegu)* | Sesja Integrator | Wpięcie zatwierdzonej paczki po finalnej kontroli i bramkach | ABC gameplay zamiast Macieja |
 
 ### Mapowanie AutoBot ↔ nasze sesje
 
 | AutoBot Spec | U nas |
 |--------------|--------|
-| Operator Agent | Subagent `composer-2.5` (implementer) |
-| Evaluator Agent | Subagent `composer-2.5` (adwokat) + KPI (tsc/testy/playtest) |
+| Operator Agent | GPT-5.6 Luna Medium (implementer) |
+| Evaluator Agent | GPT-5.6 Luna High (adwokat) + KPI (tsc/testy) |
 | Playbook / Vector memory | `dyspozycje/autobot/playbook.json` + logs |
 | Human gate | Maciej (`deploy`, ABC, playtest) |
-| Final controller | Grok |
+| Final controller | GPT-5.6 Luna Medium |
 
 ---
 
@@ -53,11 +54,11 @@ flowchart TD
 
 | # | ID / plik | Co mówi |
 |---|-----------|---------|
-| **1** | **`R-PROC-AUTOBOT`** · `.cursor/rules/autobot-evaluator-operator.mdc` | **KAŻDA praca** = Operator → Evaluator → Grok. Zakaz omijania. |
+| **1** | **`R-PROC-AUTOBOT`** · `.cursor/rules/autobot-evaluator-operator.mdc` | **KAŻDA praca** = Operator → Evaluator → finalna kontrola → integracja → deploy/push. |
 | **2** | **`R-PROC-NUMER-ABC`** · `PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md` | Case → ID → propozycja ± ABC → kod dopiero po literze → deploy tylko hasło. |
-| **3** | **`R-PROC-POTROJNA-WARSTWA`** | = kroki 1–3 AutoBot (implementer + adwokat + Grok). Nie osobna opcja. |
+| **3** | **`R-PROC-POTROJNA-WARSTWA`** | = Operator + Evaluator + finalna kontrola. Integracja i deploy/push są kolejnymi bramkami. |
 | **4** | **`R-PROC-NO-REGRESS`** | Przed commit/deploy: diff + usunięcia; nie cofaj cudzych fixów. |
-| **5** | **`model-routing.mdc`** | Grok = mózg + deploy; Composer = ręce; **nie** `composer-2.5-fast`. |
+| **5** | **`model-routing.mdc`** | GPT-5.6 Luna Medium = orkiestrator/Operator; GPT-5.6 Luna High = Evaluator. |
 | **6** | **Guardrails AutoBot** (`guardrails.ts` + CLAUDE) | Bez merge→`main`; bez `npm run build/dev` w `gra/`; deploy tylko hasło; HITL na krytyczne. |
 | **7** | **Playbook** | Reguły z win_rate; &lt;30% → RETIRED; feature pruning corr &lt; 0.05. |
 | **8** | **Kanał / WERSJE** | Prawda między sesjami = `KANAL-PRACA.md` + `WERSJE.md` (nie sam czat). |
@@ -66,13 +67,13 @@ flowchart TD
 
 ## 4. Przebieg jednej paczki (checklist)
 
-1. **Grok:** nadaj/odszukaj ID · zapisz rejestr · ABC jeśli trzeba.  
-2. **Maciej:** litera / `działaj`.  
-3. **Operator:** implementacja + testy · raport plików + PASS/FAIL.  
-4. **Evaluator:** adwokat diabła + hard metrics · WERDYKT PASS/FAIL/NOTES.  
-5. **Grok:** final · jeśli NOTES → fix (znów Operator lub drobny patch) → ponów Evaluator na delcie.  
-6. **Meldunek Maciejowi:** `✅ Gotowe` · czeka na **`deploy`**.  
-7. **Po `deploy`:** tylko Grok → ROBOCZA + WERSJE + KANAL.  
+1. **Orkiestrator:** nadaj/odszukaj ID · zapisz rejestr · ABC jeśli trzeba.
+2. **Maciej:** litera / `działaj`.
+3. **Operator:** implementacja + testy · raport plików + PASS/FAIL. Po raporcie Evaluator startuje automatycznie.
+4. **Evaluator:** adwokat diabła + hard metrics · WERDYKT PASS/FAIL/NOTES.
+5. **Orkiestrator:** finalna kontrola; `FAIL` wraca do Operatora, `PASS` prowadzi do statusu, ABC albo integracji.
+6. **Integracja:** wpięcie po przejściu bramek.
+7. **Deploy/push:** dopiero po bramkach i wyraźnej autoryzacji właściciela.
 8. **Maciej:** playtest → OK zamyka / BUG wraca do ID.
 
 ---
@@ -82,8 +83,8 @@ flowchart TD
 | Hasło | Skutek |
 |-------|--------|
 | `ID A\|B\|C` / `działaj` | Start Operatora (po ECHO) |
-| `deploy` | Grok publikuje ROBOCZA |
-| `raport` / `status` / `co dalej` | Grok — status (bez omijania AutoBot przy kolejnej pracy) |
+| `deploy` | uprawniona rola publikuje ROBOCZA po bramkach |
+| `raport` / `status` / `co dalej` | orkiestrator — status bez zatrzymywania aktywnego AutoBota |
 | `format` / `ABC` | Przepisz pytanie w pełnej formie |
 
 ---
@@ -102,13 +103,14 @@ flowchart TD
 
 ## 7. Jedno zdanie dla agenta
 
-> Najpierw ID i decyzja Macieja → **Operator** robi → **Evaluator** sprawdza na twardych metrykach → **Grok** zatwierdza → **deploy** tylko gdy Maciej powie.
+> Najpierw ID i decyzja Macieja → **Operator** robi → **Evaluator** sprawdza na twardych metrykach → **finalna kontrola** → **integracja** → **deploy/push** po bramkach i autoryzacji.
 
 ---
 
-## 8. Integracja z Ultracode/Workflow (Maciej 2026-08-12)
+## 8. ARCHIWUM — Integracja z Ultracode/Workflow (Maciej 2026-08-12)
 
-**Uwaga o modelach:** ten schemat (Sekcja 2–3) mówi o `composer-2.5`/„Grok" — starszym
+**Uwaga historyczna o modelach:** poniższy opis zachowuje wcześniejszy routing
+`composer-2.5`/„Grok" —
 wariancie z sesji Cursor, sprzed aktualizacji modeli 2026-08-06 (zaznaczone już wyżej w
 pliku jako możliwa rozbieżność). W sesjach Claude Code (gdzie działa narzędzie Workflow
 opisane niżej) obowiązuje CLAUDE.md §4: Operator = Sonnet 5, Evaluator = Opus 5, Deploy =

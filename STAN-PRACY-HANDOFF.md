@@ -386,7 +386,10 @@ nie usuwamy.
 
 > **⛔ PROCES 2026-08-03:** `R-PROC-NUMER-ABC` — każdy case → ID → propozycja ± ABC → kod+commit dopiero po `ID+A|B|C` → **deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 >
-> **⛔ AUTOBOT 2026-08-05 — TWARDA REGUŁA:** `R-PROC-AUTOBOT` — **KAŻDA praca** wyłącznie AutoBot (Operator → Evaluator → Grok). **ZAKAZ** omijania. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc`.
+> **⛔ AUTOBOT 2026-08-18 — TWARDA REGUŁA:** `R-PROC-AUTOBOT` — **KAŻDA praca** wyłącznie AutoBot:
+> Operator → Evaluator → finalna kontrola → integracja → deploy/push. Raport Operatora
+> automatycznie uruchamia Evaluatora; po `PASS` status/ABC/integracja, po `FAIL` powrót do Operatora.
+> Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc`.
 
 
 **TAK — ale najpierw sprawdź stan drzewa:**
@@ -406,7 +409,10 @@ git status --short
 
 **Stan FALA 254 (historyczny):** ROBOCZA `232634a9` (10:11) · Escape + recruit + Panel-C + audyty.
 
-**Ważne dla agentów:** **KAŻDA praca** = AutoBot (Operator `composer-2.5` → Evaluator `composer-2.5` → Grok final). Deploy **tylko Grok** na hasło. Pełny zapis: [`HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md).
+**Ważne dla agentów:** **KAŻDA praca** = AutoBot (Operator GPT-5.6 Luna Medium →
+Evaluator GPT-5.6 Luna High → finalna kontrola GPT-5.6 Luna Medium → integracja).
+Deploy/push dopiero po bramkach i autoryzacji. Pełny zapis:
+[`HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md).
 
 **KOLEJKA — stan na 2026-08-06 popołudnie (sesja chmurowa, po AutoBot Operator→Evaluator dla wszystkich 6):**
 1. ~~AI-BALANS-STEP6-Q1=A~~ — **JUŻ BYŁO WDROŻONE** przed decyzją (commit `dadcb48`, poprzedzał zapis). Nie dublować.
