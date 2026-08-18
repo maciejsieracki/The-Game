@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, uzupełnianie HP z Manpower, fałszywa ikona głodu, limit barbarzyńców, zdobywanie miast przez barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, uzupełnianie HP z Manpower, fałszywa ikona głodu, rekrutacja AI/miast-państw za Skarbiec, limit barbarzyńców, zdobywanie miast przez barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -171,6 +171,28 @@ ostatni tick z `empire-food.ts:320-323`.
 **Do sprawdzenia:** czy po dodatnim bilansie Żywności `_lastTicks` jest
 odświeżany przed `syncUnitsRender()` i czy czaszka jest zdejmowana przy
 `glodWojska=false`. Fortyfikacja nie może sama włączać alertu głodu.
+
+### R-AI-MP-REKRUTACJA-SKARBIEC-ZAMIAST-BUDOWY-Q1 — AI/MP nadal budują jednostki z Pracy · STATUS: **NOWE — POTWIERDZONA ASYMETRIA**
+
+**Zgłoszenie Macieja:** sprawdzić, czy główne cywilizacje AI i miasta-państwa
+rekrutują jednostki przez zapłatę ze Skarbca, a nie przez zwykłą kolejkę
+„Budowa” w panelu produkcji.
+
+**Wynik audytu:** obecny `R-AI-KUP-JEDN` jest tylko warunkowym zakupem rush.
+W `gra/src/main.ts:21874-21919` AI najpierw próbuje
+`purchaseRecruitmentUnit(...)`, ale tylko gdy `shouldAIRushBuyUnit` przejdzie
+warunki wojny, rezerwy Skarbca, Manpower i limitu zakupów na turę. Gdy warunek
+nie przejdzie, kod wykonuje `cityProd.set(... enqueue(prod0, item))`, czyli
+jednostka jest budowana zwykłą Pracą.
+
+**Miasta-państwa:** korzystają z tej samej gałęzi komendy produkcji, ale nie mają
+gwarantowanego zakupu za Skarbiec; poza warunkowym rushem również wpadają do
+kolejki budowy. Poprzedni wpis `R-AI-KUP-JEDN` nie domyka więc pełnego parytetu.
+
+**Kontrakt do decyzji:** ustalić, czy każda jednostka wojskowa AI/MP ma być
+opłacana ze Skarbca, czy tylko określone sytuacje (wojna/obrona). Jeśli pełny
+zakup, trzeba usunąć fallback do kolejki Pracy dla jednostek wojskowych,
+zachować koszt Manpower i surowca oraz dodać testy osobno dla AI major i MP.
 
 ### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **NOWE — ZAPISANA PROPOZYCJA**
 
