@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców i koncentracja armii AI). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI i wycena surowców w dyplomacji). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -95,6 +95,24 @@ wykonać kontratak.
 łączenie oddziałów, priorytet obrony zagrożonych miast oraz warunek rozpoczęcia
 kontrataku. Nie łączyć tego z limitem chatki — naprawa limitu zmniejszy napór,
 ale nie rozwiąże rozproszenia jednostek AI.
+
+### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **NOWE — ZAPISANA PROPOZYCJA**
+
+**Zgłoszenie Macieja:** wartość ilościowych surowców w dyplomacji należy obniżyć
+pięciokrotnie. Dotyczy to wartości pozycji w koszyku PW, bilansu fair-min,
+nadmiaru wpływającego na Zaufanie, ofert AI oraz szybkiej umowy — wszystkie te
+ścieżki powinny korzystać z tego samego cennika.
+
+**Wstępny dowód kodowy:** `gra/data/econ-params.json:707-813` zawiera centralny
+cennik `handel_surowce.cena_*` w PN/szt.; `gra/src/game/diplomacy-value-catalog.ts:
+287-306` liczy z niego wartość pozycji, a `diplomacy-pn-engine.ts:383-391`
+używa tej samej funkcji w szybkiej umowie. Obecne ceny obejmują m.in. Drewno
+1 PN/szt., Kamień 3, Brąz 15, Żelazo 20, Stal 25 i Złoto 50.
+
+**Zakres propozycji:** zmienić wyłącznie ilościowy handel surowcami
+(`handel_surowce.cena_*`) na `wartość / 5`, zachowując rozmiar pakietu
+10 sztuk oraz osobny cennik dostępu do złoża (`handel_zloze`). Po decyzji trzeba
+sprawdzić zaokrąglenia dla cen ułamkowych i parytet gracz–AI.
 
 ---
 
