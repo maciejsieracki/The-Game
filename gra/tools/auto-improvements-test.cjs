@@ -517,15 +517,25 @@ console.log('-- 17. FALA 292: STRUKTURA (regex na main.ts) — split absolutny j
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
   const RE_SPLIT_CALL =
-    /const playerPracaBudget = splitEmpirePracaBudget\(\s*playerPracaPool,\s*ulepszeniaEmpireForOwner\(0\)\.pracaAutoPercent,/;
+    /const playerPracaBudget = splitEmpirePracaBudget\(\s*playerPracaPool,\s*effectivePracaSplitForOwner\(0\)\.procentUlepszenia,/;
   const RE_ABSOLUTE_CAP = /improvementBudgetCap: playerPracaBudget\.doUlepszen,/;
   const RE_NO_SECOND_PERCENT_CAP = /pracaBudgetPercent: 100,/;
+  const RE_OWNER_SPLIT_SAVE =
+    /ownerDefaultPracaSplit:\s*Array\.from\(ownerDefaultPracaSplit\.entries\(\)\)/;
+  const RE_OWNER_SPLIT_LOAD =
+    /const savedPracaSplit = saved\.meta\?\.ownerDefaultPracaSplit/;
+  const RE_OWNER_SPLIT_MIGRATION =
+    /ownerDefaultPracaSplit\.set\(oid,\s*\{\s*procentUlepszenia:\s*clampPracaWspolnyWorekPercent\(raw\?\.procentUlepszenia\)/s;
   assert(RE_SPLIT_CALL.test(mainSrc),
     '17a: main liczy split całej puli przed pickerem');
   assert(RE_ABSOLUTE_CAP.test(mainSrc),
     '17b: picker dostaje absolutny budżet ulepszeń');
   assert(RE_NO_SECOND_PERCENT_CAP.test(mainSrc),
     '17c: picker nie nakłada drugiego procentowego capu');
+  assert(RE_OWNER_SPLIT_SAVE.test(mainSrc) && RE_OWNER_SPLIT_LOAD.test(mainSrc),
+    '17e: nadrzędny split ownera ma jawny roundtrip zapisu/odczytu');
+  assert(RE_OWNER_SPLIT_MIGRATION.test(mainSrc),
+    '17f: odczyt starego/brakującego splitu zaciska tylko warstwę 0–50%');
 
   const CALL_COUNT = (mainSrc.match(/pickAutoImprovements\(/g) || []).length;
   eq(CALL_COUNT, 1, '17d: dokladnie JEDNO wywolanie pickAutoImprovements() w main.ts -- jesli ta liczba sie zmieni, straznik 17a nie pokrywa automatycznie nowego wywolania i wymaga rewizji');

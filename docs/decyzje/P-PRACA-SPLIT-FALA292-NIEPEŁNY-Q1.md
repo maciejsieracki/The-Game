@@ -25,13 +25,18 @@ Zarejestrowano niepełne wdrożenie/regresję pod nowym ID, bez kasowania histor
 8. Stare zapisy zachowują kompatybilność; wartości poza nowym capem są bezpiecznie
    ograniczane.
 
-## Semantyka UI
+## Korekta semantyki UI — ECHO właściciela 2026-08-18
 
-Suwak udziału ulepszeń pokazuje zakres legalny 0–50%: 0% oznacza całość dla
-budynków, 50% oznacza maksymalny udział ulepszeń. Nie jest to drugi limit
-wydatku automatu. Istniejący suwak per-miasto „Budynki / Ulepszenia” pozostaje
-osobnym mechanizmem alokacji lokalnego przyrostu Pracy do kolejki i puli; routing
-całej zakumulowanej puli imperium musi jednak respektować nadrzędny split.
+Historyczny budżet automatycznego rozdysponowania Pracy pozostaje bez zmian:
+zakres `pracaAutoPercent` wynosi **0–100%**. Ten parametr opisuje wewnętrzny
+budżet automatu ulepszeń i nie jest nadrzędnym podziałem całej Pracy.
+
+Nowy limit **maksymalnie 50% na ulepszenia** ma być egzekwowany wyłącznie
+w nadrzędnym podziale w zakładce **Praca**. Zakresy kontrolek są odrębne:
+**Budynki = 0–100%**, **Ulepszenia = 0–50%**. Nie wolno wyprowadzać jednego
+zakresu jako dopełnienia drugiego ani przenosić limitu 50% do budżetu automatu.
+Lokalny suwak „Budynki / Ulepszenia” musi odzwierciedlać tę rozdzielność.
+Nie zmieniać zakresu ani semantyki suwaka budżetu automatycznych ulepszeń.
 
 ## Zakres implementacji
 

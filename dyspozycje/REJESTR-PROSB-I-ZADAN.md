@@ -2554,3 +2554,12 @@ w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
 |---|---|---|---|
 | P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY | **B** — czas ponad próg ostrzeżeniem, poprawność nadal twardą bramką | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.md` · kontrakt 2/2 |
 | P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2 | **C** — targeted overlay bez globalnego przebijania | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md` · overlay 76/76 |
+
+## KOREKTA ECHO — P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1
+
+Maciej potwierdził 2026-08-18: historyczny parametr budżetu automatycznego
+rozdysponowania Pracy `pracaAutoPercent` zachowuje zakres **0–100%** i nie
+może być ograniczany przez nowy split. W zakładce **Praca** zakresy są
+odrębne: **Budynki 0–100%**, **Ulepszenia 0–50%**. Przyszły Operator ma
+odkręcić zmiany w niewłaściwym suwaku, nie zmieniając historycznego budżetu
+automatu ani nie traktując zakresów jako dopełnienia 100%.

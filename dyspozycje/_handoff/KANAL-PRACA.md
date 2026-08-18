@@ -7498,6 +7498,14 @@ ROBOCZA md5 `4322f5aafa6e0becc988885dc38e907b` (skrót `4322f5aa`) · źródło 
 |- Build `/tmp/civ-dist` → `gra-robocza/`; synchronizacja 6 bundli + START hub; `VERIFY OK`.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `4322f5aa`**.
 
+## [20:36 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 299
+ROBOCZA md5 `ed229ec6b3cc2f6bd26964a8d037ec0b` (skrót `ed229ec6`) · źródło `ce95d461`.
+|- Historyczny automat `pracaAutoPercent` pozostaje 0–100%; nadrzędny split w zakładce Praca: ulepszenia 0–50%, budynki = remainder.
+|- Przykład kontraktowy: 10% ulepszeń → 90% budynków; parity gracz/AI/MP/override/save-load.
+|- Bramki: AI parity 19/19 · auto 43/43 · overflow 51/51 · limit 23/23 · UI 12/12 · dyplomacja 8/8, 166/166, 24/24 · tsc PASS.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; synchronizacja 6 bundli + START hub; `VERIFY OK`.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `ed229ec6`**.
+
 ## [19:55 UTC, 2026-08-18] CHMURA → main — promocja FALI 298
 FALA 298 `4322f5aa` jest gotowa po bramkach i deployu ROBOCZA; bieżąca gałąź
 zostanie scalona fast-forward do `main`.
