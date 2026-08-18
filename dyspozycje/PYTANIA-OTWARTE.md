@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, uzupełnianie HP z Manpower, limit barbarzyńców, zdobywanie miast przez barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, uzupełnianie HP z Manpower, fałszywa ikona głodu, limit barbarzyńców, zdobywanie miast przez barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -154,6 +154,23 @@ kwalifikowane jednostki tej frakcji mają dostać ustalony procent maksymalnego
 HP, z jednym wspólnym budżetem Manpower. Przy niedoborze budżetu potrzebny jest
 jawny rozdział proporcjonalny, nie zależny od kolejności `unit.id`. Zachować
 wyjątki: zwiadowcy, jednostki z pełnym HP i jednostki w oblężonym mieście.
+
+### R-ARMIA-IKONA-GLOD-FALSZYWA-Q1 — przekreślony talerz/czaszka mimo dostępnej Żywności · STATUS: **NOWE — AUDYT**
+
+**Zgłoszenie Macieja:** po odfortyfikowaniu jednostka pokazuje na sobie
+przekreślony talerz/czerwoną czaszkę, mimo że zapasy Żywności są wystarczające.
+Nie jest jasne, czy to głód, czy stan fortyfikacji.
+
+**Rozpoznanie:** grafika jest `STARVING_SKULL` w
+`gra/src/render/units.ts:224-235,4950-5000`; oznacza głód armii, nie fortyfikację.
+Stan `ufortyfikowanyWPolu` jest osobnym polem i osobnym statusem karty jednostki
+(`units.ts` / `unitCardStatus.ts`). Render czaszki opiera się na
+`main.ts:7767-7783`, który pyta `isArmyHungry(ownerId)`, a ten odczytuje
+ostatni tick z `empire-food.ts:320-323`.
+
+**Do sprawdzenia:** czy po dodatnim bilansie Żywności `_lastTicks` jest
+odświeżany przed `syncUnitsRender()` i czy czaszka jest zdejmowana przy
+`glodWojska=false`. Fortyfikacja nie może sama włączać alertu głodu.
 
 ### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **NOWE — ZAPISANA PROPOZYCJA**
 
