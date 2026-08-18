@@ -19700,11 +19700,10 @@ async function boot(): Promise<void> {
                 inGarnizon: u.inGarnizon,
               })),
               getMaxHp: (typeId: string) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
-              onUnitHpChanged: (unitId: string, hp: number, hpMax: number) => {
+              onUnitHpChanged: (unitId: string, hp: number, _hpMax: number) => {
                 const live = units.find(u => u.id === unitId);
                 if (!live) return;
                 live.hp = hp;
-                live.hpMax = hpMax;
               },
             },
           );
