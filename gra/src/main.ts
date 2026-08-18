@@ -23541,6 +23541,20 @@ async function boot(): Promise<void> {
       // closes ONLY the case of an INHERITED, already-started building of the victim.
       if (isBarbarian(atkOwner)) {
         cityProd.set(city.id, { kolejka: [], postep: 0 });
+      } else {
+        // P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI / P-REKRUTACJA-JEDNOSTEK-TYLKO-
+        // SKARBIEC-Q1=B: zdobyte miasto nie może odziedzczyć legacy jednostek w
+        // kolejce Pracy (stary save lub bundle sprzed migracji). Postęp zwracamy
+        // poprzedniemu właścicielowi; opłacona rekrutacja[] zostaje (zakup ze
+        // Skarbca, nie Praca).
+        const prodCapture = cityProd.get(city.id);
+        if (prodCapture) {
+          const migrated = sanitizeBuildQueue(prodCapture);
+          if (migrated.refundedPraca > 0) {
+            setOwnerPracaPool(oldOwner, ownerPracaPool(oldOwner) + migrated.refundedPraca);
+          }
+          cityProd.set(city.id, sanitizeProductionQueue(atkOwner, migrated.prod));
+        }
       }
       // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1 -- kontekst): barbarzyńcy nie
       // mają realnej kultury/religii -- civKeyForOwnerId(BARBARIAN_OWNER_ID) fałszuje ją
