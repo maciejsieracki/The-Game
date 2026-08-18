@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, limit barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, limit barbarzyńców, zdobywanie miast przez barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -106,6 +106,28 @@ najbliższy celowi dla barbarzyńców), scala je na jednym heksie i dopiero wted
 wydaje rozkaz marszu/ataku. Nie scalać różnych ownerów, nie łączyć cywilów
 z wojskiem i nie traktować samego renderowanego badge jako zwiększenia Mocy —
 Moc ma wynikać z rzeczywistego stosu używanego w walce.
+
+### R-BARB-ZDOBYCIE-MIAST-Q1 — barbarzyńcy nie mogą zdobywać miast · STATUS: **NOWE — POTWIERDZONA LUKA KRYTYCZNA**
+
+**Zgłoszenie Macieja:** barbarzyńcy nie zdobywają ani miast gracza, ani miast
+innych cywilizacji, również na najwyższym poziomie trudności.
+
+**Potwierdzona przyczyna:** `gra/src/game/barbarians.ts:133-138` definiuje
+`BarbCmdAttack` wyłącznie z `targetUnitId`; `decideBarbarianMoves()` w
+`:964-999` szuka sąsiednich jednostek do ataku, a miasto traktuje tylko jako
+odległy cel ruchu. Nie ma komendy `attackCity`/`siegeCity`. W `main.ts`
+obsługa zdobycia miasta istnieje dla innych ścieżek (`captureCityWithoutBattle`,
+`applyCityCaptureToMap`), ale dispatcher barbarzyńców
+`:22124-22132` przekazuje wyłącznie komendy ruchu/ataku jednostek/rajdu i nie
+wywołuje przejęcia po zwycięstwie. To brak funkcji, nie problem poziomu
+trudności.
+
+**Kontrakt do wdrożenia:** barbarzyńcy po dojściu do sąsiedniego heksu miasta
+muszą móc rozpocząć szturm lub — gdy miasto jest puste i spełnione są warunki —
+przejąć je bez walki. Po zwycięstwie właścicielem zostaje frakcja barbarzyńska
+albo ustalony typ obozu barbarzyńskiego; trzeba zachować zasady garnizonu,
+oblężenia, eliminacji właściciela i późniejszego zachowania miasta. Dodać test
+osobno dla miasta gracza i miasta AI.
 
 ### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **NOWE — ZAPISANA PROPOZYCJA**
 
