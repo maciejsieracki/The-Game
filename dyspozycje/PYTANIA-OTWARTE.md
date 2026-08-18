@@ -65,24 +65,35 @@ Evaluator wykrył jeszcze brak Wealth w dwóch podglądach `growthPreview` w
 Najpierw trzeba pokazać rozbicie składników i odseparować legalne bonusy od
 ewentualnego nadmiernego skalowania.
 
-### R-BARB-CHATKA-LIMIT-15-Q1 — chatka barbarzyńców produkuje bez limitu lifetime · STATUS: **NOWE — POTWIERDZONA LUKA**
+### R-BARB-CHATKA-LIMIT-15-Q1 — chatka barbarzyńców produkuje bez limitu lifetime · STATUS: **ZASTĄPIONE PRZEZ R-BARB-CHATKA-LIMIT-POZIOMY-Q1**
 
-**Zgłoszenie Macieja:** z jednej chatki powinno wyjść maksymalnie **15 jednostek
-barbarzyńców łącznie**, niezależnie od tego, czy wcześniejsze jednostki odeszły,
-zginęły albo zostały rozproszone. Ustawienie „Nieliczni” powinno zmniejszać
-napór, a nie pozostawiać chatkę bez limitu całkowitej produkcji.
+**Korekta Macieja 2026-08-18:** wcześniejszy pomysł limitu 15 jednostek
+łącznie zostaje zastąpiony limitem żywego kontyngentu zależnym od poziomu.
 
 **Wstępny dowód kodowy:** `gra/src/game/barbarians.ts:162-196,679-727`
 ma wyłącznie limit żywych jednostek w promieniu `campControlRadius`.
 `unitsPerCamp` wynosi domyślnie **2**, a `scaleBarbParamsForLevel('nieliczni')`
 zmniejsza go do **1** oraz zwiększa interwał spawnu. `tickCamps()` nie przechowuje
-licznika `spawnedTotal`/`producedByCamp`, więc po odejściu jednostek od chatki
-warunek limitu znów jest spełniony i ta sama chatka może produkować bez końca.
+licznika lifetime — i po korekcie nie powinien go przechowywać.
 
-**Kontrakt do wdrożenia:** osobny, zapisywalny licznik lifetime per `campId`,
-twardy cap 15 na chatkę oraz test: po 15 spawnach chatka nie emituje 16. jednostki;
-test osobno dla „Wielu” i „Nielicznych”. Nie zastępować capu lifetime samym
-`unitsPerCamp`, bo to jest limit chwilowej kontroli obozu.
+### R-BARB-CHATKA-LIMIT-POZIOMY-Q1 — żywy kontyngent chatki wg poziomu · STATUS: **ZAPISANA DECYZJA — CZEKA `DZIAŁAJ`**
+
+**ECHO decyzji Macieja:** chatka utrzymuje maksymalnie:
+
+| Poziom barbarzyńców | Żywe jednostki na chatkę |
+|---|---:|
+| Łatwy | 1 jednostka |
+| Standardowy | 2 jednostki |
+| Trudny | 3 jednostki |
+
+Po śmierci jednostek chatka może wyprodukować kolejne, aby uzupełnić brak do
+limitu. Nie ma limitu lifetime 15; nie może jednak nigdy utrzymywać więcej niż
+ustalony kontyngent żywych jednostek.
+
+**Zakres wdrożenia:** mapowanie poziomu „Łatwy/Standardowy/Trudny” na
+`unitsPerCamp`, test capu bieżącego oraz test odtworzenia po śmierci. Trzeba
+zweryfikować, że „Standardowy” oznacza dokładnie 2, a nie wcześniejsze
+semantyczne „Nieliczni”.
 
 ### R-ARMIA-KONCENTRACJA-AI-BARB-Q1 — AI i barbarzyńcy mają rozproszone wojska · STATUS: **NOWE — POTWIERDZONA LUKA TAKTYCZNA**
 
