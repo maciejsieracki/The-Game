@@ -436,13 +436,50 @@ const fieldOk = { id: 'fo', ownerId: 0, typeId: 'Wojownik', category: 'miecznik'
 const mixRes = mp.tickManpowerUnitReplenishment(mixCities, [fieldOk], 'normal', () => 1, () => [], () => 100);
 ok(mixRes.healedCount === 1 && fieldOk.hp === 30, 'pole poza oblezeniem: +20 HP');
 
-// Garnizon pierwszy przy ograniczonej puli MP (100 MP = 1× pełne leczenie 20% przy koszcie 500)
+// Wszystkie jednostki dostają proporcjonalny udział przy ograniczonej puli MP:
+// 100 MP = połowa pełnego leczenia obu jednostek, nie leczenie tylko garnizonu.
 const orderCities = [{ id: 'oc', ownerId: 0, population: 10, manpower: 100, q: 1, r: 1, oblegane: false }];
 const garUnit = { id: 'g1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 1, r: 1, inGarnizon: true };
 const fldUnit = { id: 'f1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 8, r: 8 };
 mp.tickManpowerUnitReplenishment(orderCities, [fldUnit, garUnit], 'normal', () => 1, () => [], () => 100);
-ok(garUnit.hp === 30 && fldUnit.hp === 10, 'garnizon leczony przed jednostka w polu przy malo MP');
-ok(orderCities[0].manpower === 0, 'garnizon: wydano cala pule 100 MP');
+ok(garUnit.hp === 20 && fldUnit.hp === 20, 'niedobor MP: obie jednostki lecza sie proporcjonalnie po 10 HP');
+ok(orderCities[0].manpower === 0, 'niedobor MP: wydano cala pule 100 MP bez priorytetu kolejności');
+
+// Przy pełnej puli wszystkie jednostki dostają pełny limit w tej samej turze.
+const allAtOnceCities = [{ id: 'aa', ownerId: 0, population: 10, manpower: 200, q: 1, r: 1, oblegane: false }];
+const allAtOnceA = { id: 'aa1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 8, r: 8 };
+const allAtOnceB = { id: 'aa2', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 40, hpMax: 100, q: 9, r: 9 };
+const allAtOnceRes = mp.tickManpowerUnitReplenishment(
+  allAtOnceCities,
+  [allAtOnceA, allAtOnceB],
+  'normal',
+  () => 1,
+  () => [],
+  () => 100,
+);
+ok(allAtOnceRes.healedCount === 2 && allAtOnceA.hp === 30 && allAtOnceB.hp === 60,
+  'pełna pula: wszystkie uszkodzone jednostki dostają +20% maxHP w jednej turze');
+ok(allAtOnceCities[0].manpower === 0, 'pełna pula: koszt obu równych limitów leczenia pobrany z MP');
+
+// Integracja kopia -> żywa jednostka: callback musi zapisać wynik do runtime.
+const copiedUnit = { id: 'copy1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 8, r: 8 };
+const liveUnit = { id: 'copy1', hp: 10, hpMax: 100 };
+mp.tickManpowerUnitReplenishment(
+  [{ id: 'cp', ownerId: 0, population: 10, manpower: 100, q: 0, r: 0, oblegane: false }],
+  [copiedUnit],
+  'normal',
+  () => 1,
+  () => [],
+  () => 100,
+  undefined,
+  (id, hp, hpMax) => {
+    if (id === liveUnit.id) {
+      liveUnit.hp = hp;
+      liveUnit.hpMax = hpMax;
+    }
+  },
+);
+ok(liveUnit.hp === 30 && liveUnit.hpMax === 100, 'callback integracji zapisuje HP do żywej jednostki');
 
 // Zwiadowca pomijany (koszt MP = 0)
 const scoutCities = [{ id: 'sc', ownerId: 0, population: 10, manpower: 5000, q: 0, r: 0, oblegane: false }];
