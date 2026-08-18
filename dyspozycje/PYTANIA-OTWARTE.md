@@ -31847,3 +31847,9 @@ sąsiad terytorialny, bez aktywnej wojny, NAP, blokady pokoju ani sojuszu z
 celem. **Q3 = A:** automatyczny pokój po 2 zdobytych/utraconych miastach,
 20 tur odpoczynku i 20 tur cooldownu na tę samą cywilizację. Kontrakt
 kompletny — gotowy do dispatchu Operatora Luna Medium.
+
+## KOREKTA ECHO — P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1
+
+Maciej doprecyzował zakresy kontrolek: **Budynki 0–100%**, **Ulepszenia
+0–50%**. Są to dwa odrębne zakresy; nie traktować ich jako dopełnienia 100%.
+Historyczny `pracaAutoPercent` automatu pozostaje bez zmian w zakresie 0–100%.
