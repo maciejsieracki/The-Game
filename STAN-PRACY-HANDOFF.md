@@ -22,10 +22,14 @@ nie usuwamy.
 - **Karta jednostki 3D:** osobny temat `P-JEDNOSTKI-KARTA-3D-INFO-Q1`,
   implementacja na branchu/worktree, bez deployu; nie mieszać z FALĄ 294.
 - **Otwarte NEEDS_FIX/OTWARTE:** podsumowanie bitwy, rejestracja sceny,
-  mgła miasta/AI, rekrutacja AI/MP jako budowa, ścieżka zdobycia miasta AI,
+  mgła ataku na miasto, rekrutacja AI/MP jako budowa, ścieżka zdobycia miasta AI,
   bilans dyplomacji, tooltip martwego panelu, stale highlight cudu,
   kosmetyka highlightu kopalni, limit wydajności mapgena i osobne tematy
   wydajności/teleportu — pełna lista w raporcie audytu.
+- **`P-AI-BRAK-POJECIA-MGLY-Q1`:** GOTOWE / ZAMKNIĘTE — własna mgła AI per
+  owner, pamięć celów, ponowne wykrycie przed akcją; FALA 292 zachowana w
+  aktualnej ROBOCZA FALI 294, `ai-fog-test.cjs` 8/8, kamera bitwy 24/24,
+  save/load W5, `VERIFY OK`.
 - **Odłożone:** Design/Civpedia/Wikipedia, ustroje, platforma desktopowa
   i propozycja 12 surowców są późniejszym etapem; nie dispatchować ich
   ponownie w ramach tego audytu.

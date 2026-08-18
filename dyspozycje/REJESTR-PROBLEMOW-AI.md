@@ -24,7 +24,7 @@
 | **P-AI-012** | 2026-07-26 | Pełne cywilizacje **nie produkują zwiadowców** na starcie — brak wyścigu o wioski | **NAPRAWIONE (kod)** | `ai.ts`: min. 2× Zwiadowca, ruch na wioski; `defensiveCopy` wyłączone |
 | **P-AI-013** | 2026-07-26 | Dyplomacja AI **jednakowa** dla wszystkich typów cywilizacji (stuby grecy/rzym) | **NAPRAWIONE (kod)** | `resolveDiplomacyCivBias` + `civ-ai.json`; pakt/handlu vs haracz/wojna; `ai-test` T12 |
 | **P-AI-015** | 2026-08-02 | **BUG-DYP-GIFT-WAR** — dar 50¤ od miasta-państwa widoczny i akceptowalny podczas wojny | **NAPRAWIONE (kod)** | `pruneInvalidNegotiations` po DOW; filtr UI + bramka Accept; `resolvePlayerAcceptsAiPending` + `isGift` · branch `cursor/fix-gift-during-war-63a1` |
-| **P-AI-016** | 2026-08-17 | AI nie uwzględnia mgły wojny przy wyborze i egzekucji celów | **OTWARTE** | Decyzja `P-AI-BRAK-POJECIA-MGLY-Q1=A+C`; implementacja widoczności per owner, pamięci celów i ponownego wykrycia przed atakiem |
+| **P-AI-016** | 2026-08-17 | AI nie uwzględnia mgły wojny przy wyborze i egzekucji celów | **ZDEPLOYOWANE / ZAMKNIĘTE** | Decyzja `P-AI-BRAK-POJECIA-MGLY-Q1=A+C`; FALA 292, zachowane w aktualnej ROBOCZA FALI 294 (`a0f804d7`, `VERIFY OK`); `ai-fog-test.cjs` 8/8, save/load W5 |
 
 ---
 

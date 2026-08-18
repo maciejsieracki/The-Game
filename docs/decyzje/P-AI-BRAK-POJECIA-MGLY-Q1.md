@@ -1,8 +1,16 @@
 # P-AI-BRAK-POJECIA-MGLY-Q1 — mgła wojny AI
 
-**Status:** 🟡 ZAPISANA — ECHO 2026-08-17  
+**Status:** ✅ GOTOWE / ZAMKNIĘTE — wdrożone w ROBOCZA FALA 292, zachowane w aktualnej FALI 294
 **Decyzja właściciela:** **A+C**  
 **Rejestry:** `dyspozycje/REJESTR-PROSB-I-ZADAN.md` · `docs/obieg/REJESTR-DECYZJI.md` · `dyspozycje/REJESTR-PROBLEMOW-AI.md`
+
+**Dowód wdrożenia i weryfikacji:** ROBOCZA FALA 292 (`90b6508d`, pełny md5
+`90b6508d06cc652f598addb8c2b3b266`), zachowana w aktualnej ROBOCZA FALI 294
+(`a0f804d7593333e34c989dc3565cb0c6`, `VERIFY OK`). Evaluator: **PASS-WITH-NOTES**.
+Testy powtórzone 2026-08-18: `ai-fog-test.cjs` **8/8** oraz
+`bitwa-mapa-kamera-blokada-test.cjs` **24/24**; `npx tsc --noEmit` **PASS**.
+Save/load obejmuje pusty default dla starego zapisu oraz round-trip pamięci celu
+(W5 testu mgły AI).
 
 ## ECHO (cytat)
 

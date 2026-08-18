@@ -81,6 +81,12 @@ obozów, mgłę i pamięć AI, rekrutację za Skarbiec, bazowe plony, bramkę
 widoczności miasta, bilans dyplomacji, stale highlight cudu, mixed stack,
 podsumowanie bitwy i rejestrację sceny. FALA 292 ma status historyczny
 **ZASTĄPIONA**; pełny split opisuje i dowozi FALA 293.
+Włączona w tę falę mgła AI jest jednak wdrożona i nadal obecna w aktualnej
+ROBOCZA: własna widoczność per owner, pamięć celów, blokada akcji bez
+ponownego wykrycia oraz save/load. Dowód: `ai-fog-test.cjs` 8/8,
+`bitwa-mapa-kamera-blokada-test.cjs` 24/24, `npx tsc --noEmit` PASS,
+Evaluator **PASS-WITH-NOTES**, a manifest aktualnej ROBOCZA FALI 294
+(`a0f804d7593333e34c989dc3565cb0c6`) przechodzi `VERIFY OK`.
 
 ### FALA 293 — korekta splitu Pracy
 
@@ -145,6 +151,7 @@ branchu/worktree i obecność bundla to dwa różne statusy.
 - pula cywilizacji per mapa z twardym sufitem epoki;
 - brak modelu/wizualizacji cyny;
 - koszt Wyrębu 5 P;
+- mgła AI per owner, pamięć celów i ponowne wykrycie;
 - karta Brązownictwa po odkryciu;
 - ceremonialny popup triumfu miast-państw.
 
@@ -153,7 +160,6 @@ branchu/worktree i obecność bundla to dwa różne statusy.
 - `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE`;
 - `P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM`;
 - `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA`;
-- `P-AI-BRAK-POJECIA-MGLY`;
 - `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI`;
 - `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACENCJA`;
 - `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA`;
