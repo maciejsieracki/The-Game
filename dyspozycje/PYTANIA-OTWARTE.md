@@ -31838,3 +31838,10 @@ Wyniki FALI 296:
 zdobyte nie zużywają tej puli i nie są przez nią blokowane. Status:
 **ZAMKNIĘTE bez zmiany kodu**. Szczegóły:
 `docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md`.
+
+## ECHO częściowe — R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1
+
+**Q1 = A:** wojna wymuszona w Kamieniu może uruchomić się po **20 turach od
+rozpoczęcia gry**. Q2 (wybór celu) i Q3 (próg zakończenia, odpoczynek,
+cooldown) pozostają otwarte. Nie dispatchować implementacji przed ich
+domknięciem.
