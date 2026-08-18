@@ -188,6 +188,12 @@ function ensureStyles(): void {
 .civ-build-percent-row{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
 .civ-build-percent-head{display:flex;align-items:baseline;gap:6px;font-size:10px;color:#9a9070;}
 .civ-build-percent-head b{font-size:11px;color:#f0e8b8;}
+.civ-build-global-split{margin:2px 0 8px;padding:7px 8px;border:1px solid rgba(232,216,138,.22);
+  border-radius:5px;background:rgba(232,216,138,.045);}
+.civ-build-global-split-title{font-size:10px;font-weight:600;color:#f0e8b8;}
+.civ-build-global-split-value{margin-top:3px;font-size:12px;color:#e8d88a;}
+.civ-build-global-split-note,.civ-build-city-split-note{font-size:9px;color:#9a9070;line-height:1.35;margin-top:3px;}
+.civ-build-city-split-note{margin:4px 0 2px;}
 .civ-build-percent-slider{-webkit-appearance:none;-moz-appearance:none;appearance:none;
   width:100%;height:6px;border-radius:999px;cursor:pointer;margin:0;background:rgba(0,0,0,.35);
   display:block;}
@@ -235,13 +241,41 @@ function ulepszeniaPercentSliderFillStyle(pct: number): string {
  * połowa puli może trafić na ulepszenia. To nie jest drugi limit wewnętrznego
  * automatu.
  */
-function renderUlepszeniaPercentRow(pct: number, scope: 'empire' | 'city'): string {
+function renderUlepszeniaPercentRow(
+  pct: number,
+  scope: 'empire' | 'city',
+  label: string,
+  sliderTitle: string,
+): string {
   return '<div class="civ-build-percent-row">'
-    + '<div class="civ-build-percent-head"><span title="Jaki udział całej puli Pracy imperium trafia na ulepszenia terenu">'
-    + 'Udział Pracy na ulepszenia:</span><b data-ulepszenia-' + scope + '-percent-label>' + pct + '%</b></div>'
+    + '<div class="civ-build-percent-head"><span title="' + sliderTitle.replace(/"/g, '&quot;') + '">'
+    + label + '</span><b data-ulepszenia-' + scope + '-percent-label>' + pct + '%</b></div>'
     + `<input type="range" class="civ-build-percent-slider" min="0" max="50" step="1" value="${pct}" `
     + `style="${ulepszeniaPercentSliderFillStyle(pct)}" data-ulepszenia-${scope}-percent `
-    + `title="0% = całość dla budynków · 50% = maksymalnie połowa puli na ulepszenia terenu" />`
+    + `title="${sliderTitle.replace(/"/g, '&quot;')}" />`
+    + '</div>';
+}
+
+/**
+ * Globalny split jest niezależny od tego, czy automat ulepszeń wykonuje akcje.
+ * Pokazujemy go stale, żeby użytkownik widział rozdział całej puli Pracy imperium.
+ */
+function renderEmpirePracaSplit(pct: number): string {
+  const safePct = Number.isFinite(pct) ? Math.max(0, Math.min(50, Math.round(pct))) : 0;
+  const buildingPct = 100 - safePct;
+  const globalTip =
+    'Globalny podział całej puli Pracy imperium: ten udział może trafić na ulepszenia terenu, a reszta na budynki.';
+  return '<div class="civ-build-global-split" data-praca-split-scope="empire">'
+    + '<div class="civ-build-global-split-title">Cała pula Pracy imperium</div>'
+    + `<div class="civ-build-global-split-value" aria-label="Globalny podział całej puli Pracy imperium">`
+    + `${safePct}% ulepszenia / ${buildingPct}% budynki</div>`
+    + `<div class="civ-build-global-split-note">${globalTip}</div>`
+    + renderUlepszeniaPercentRow(
+      safePct,
+      'empire',
+      'Udział całej puli Pracy imperium na ulepszenia:',
+      globalTip + ' Zakres: 0–50%.',
+    )
     + '</div>';
 }
 
@@ -366,7 +400,8 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const cityOverride = uCityId ? (config.getUlepszeniaCityOverride?.(uCityId) ?? false) : false;
       if (playerCities.length > 0 && empireState) {
         html += '<div class="civ-build-auto">';
-        html += '<div class="lbl">Polityka państwa — auto ulepszenia</div>';
+        html += renderEmpirePracaSplit(empireState.pracaAutoPercent);
+        html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
         html += renderUlepszeniaProfileRow(
           empireState.focus,
           empireState.tryb,
@@ -379,7 +414,6 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             + ` aria-pressed="${empireState.onlyWorked ? 'true' : 'false'}"`
             + ` title="Buduj tylko na polach z obywatelami (👤)">Tylko pola z obywatelami</button>`;
           html += '</div>';
-          html += renderUlepszeniaPercentRow(empireState.pracaAutoPercent, 'empire');
         }
         if (playerCities.length > 1) {
           html += '<div class="civ-build-auto-city-wrap">';
@@ -407,7 +441,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           + ` aria-pressed="${cityOverride ? 'true' : 'false'}">Własne ustawienia tego miasta</button>`
           + '</div>';
         if (cityOverride && uCityId && effState) {
-          html += '<div class="lbl">Ustawienia miasta</div>';
+          html += '<div class="lbl">Ustawienia miasta — lokalny split</div>';
+          html += '<div class="civ-build-city-split-note">'
+            + 'Lokalny suwak dotyczy tylko wybranego miasta i nie zmienia globalnego podziału całej puli Pracy imperium.'
+            + '</div>';
           html += renderUlepszeniaProfileRow(
             effState.focus,
             effState.tryb,
@@ -419,7 +456,12 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             html += `<button type="button" class="civ-build-hbtn${onC}" data-ulepszenia-city-only-worked`
               + ` aria-pressed="${effState.onlyWorked ? 'true' : 'false'}">Tylko pola z obywatelami</button>`;
             html += '</div>';
-            html += renderUlepszeniaPercentRow(effState.pracaAutoPercent, 'city');
+            html += renderUlepszeniaPercentRow(
+              effState.pracaAutoPercent,
+              'city',
+              'Udział Pracy tego miasta na ulepszenia:',
+              'Lokalny podział Pracy wybranego miasta; nie zmienia globalnego splitu całej puli Pracy imperium.',
+            );
           }
         }
         html += '</div>';

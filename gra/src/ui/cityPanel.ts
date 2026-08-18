@@ -4811,9 +4811,11 @@ function renderPodzialPracy(
   const sliderWrap = el('div', 'praca-w4-sliders');
   const sliderRow = el('div', 'slider-row');
   const sliderLabel = el('label');
-  const podzialTip = 'Kroki co 10%. W lewo → więcej do ulepszeń · w prawo → szybsza kolejka budowy.';
+  const podzialTip =
+    'Lokalny podział Pracy tego miasta. Kroki co 10%. W lewo → więcej do ulepszeń · '
+    + 'w prawo → szybsza kolejka budowy. Nie zmienia globalnego splitu całej puli Pracy imperium.';
   sliderLabel.innerHTML =
-    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki / Ulepszenia</span>` +
+    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki / Ulepszenia (lokalnie)</span>` +
     `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
   sliderRow.appendChild(sliderLabel);
 
@@ -4824,7 +4826,7 @@ function renderPodzialPracy(
     inp.max = '100';
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
-    inp.setAttribute('aria-label', 'Podział pracy: budynki versus ulepszenia');
+    inp.setAttribute('aria-label', 'Lokalny podział Pracy tego miasta: budynki versus ulepszenia');
     inp.title = podzialTip;
     inp.addEventListener('input', () => {
       const v = snapHandelPct(Number(inp.value));
