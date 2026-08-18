@@ -129,7 +129,7 @@ albo ustalony typ obozu barbarzyńskiego; trzeba zachować zasady garnizonu,
 oblężenia, eliminacji właściciela i późniejszego zachowania miasta. Dodać test
 osobno dla miasta gracza i miasta AI.
 
-### R-MANPOWER-UZUPELNIENIE-HP-NIEZAPISUJE-Q1 — uszkodzone jednostki nie odzyskują HP z Manpower · STATUS: **NOWE — POTWIERDZONA REGRESJA KRYTYCZNA**
+### R-MANPOWER-UZUPELNIENIE-HP-NIEZAPISUJE-Q1 — uszkodzone jednostki nie odzyskują HP z Manpower · STATUS: **NAPRAWIONE W PR #130 — CZEKA INTEGRACJA**
 
 **Zgłoszenie Macieja:** jednostki z ubytkami HP nie uzupełniają sił mimo
 dostępnego Manpower albo robią to wolniej niż ustalony procent. Trzeba też
@@ -154,6 +154,10 @@ kwalifikowane jednostki tej frakcji mają dostać ustalony procent maksymalnego
 HP, z jednym wspólnym budżetem Manpower. Przy niedoborze budżetu potrzebny jest
 jawny rozdział proporcjonalny, nie zależny od kolejności `unit.id`. Zachować
 wyjątki: zwiadowcy, jednostki z pełnym HP i jednostki w oblężonym mieście.
+
+**Wdrożenie PR #130:** callback zapisuje HP do żywej jednostki w `main.ts`;
+podział niedoboru jest proporcjonalny. Dowód: `manpower-test.cjs` **65/65 PASS**
+oraz `npx tsc --noEmit` **PASS**. Do integracji pozostaje kontrola pełnego bundla.
 
 ### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **NOWE — ZAPISANA PROPOZYCJA**
 
