@@ -31842,6 +31842,7 @@ zdobyte nie zużywają tej puli i nie są przez nią blokowane. Status:
 ## ECHO częściowe — R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1
 
 **Q1 = A:** wojna wymuszona w Kamieniu może uruchomić się po **20 turach od
-rozpoczęcia gry**. Q2 (wybór celu) i Q3 (próg zakończenia, odpoczynek,
-cooldown) pozostają otwarte. Nie dispatchować implementacji przed ich
-domknięciem.
+rozpoczęcia gry**. **Q2:** wybór celu identyczny jak przy Brązie — najbliższy
+sąsiad terytorialny, bez aktywnej wojny, NAP, blokady pokoju ani sojuszu z
+celem. Q3 (próg zakończenia, odpoczynek, cooldown) pozostaje otwarte. Nie
+dispatchować implementacji przed domknięciem Q3.

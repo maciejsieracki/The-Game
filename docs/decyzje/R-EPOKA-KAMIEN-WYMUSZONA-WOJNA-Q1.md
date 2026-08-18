@@ -1,6 +1,6 @@
 # R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1 — moment uruchomienia
 
-**Status:** 🟡 **ECHO częściowe — Q1 zapisane; Q2 i Q3 otwarte**
+**Status:** 🟡 **ECHO częściowe — Q1/Q2 zapisane; Q3 otwarte**
 **Data:** 2026-08-18
 
 ## Decyzja właściciela
@@ -9,14 +9,19 @@
 **20 turach od rozpoczęcia gry**. Ten okres jest ochroną startową i nie jest
 jeszcze implementacją całego mechanizmu.
 
-## Pozostałe pytania
+## Q2 — wybór celu
 
-- **Q2:** wybór celu wojny — najbliższy sąsiad, najsłabszy sąsiad czy dowolny
-  kwalifikowany przeciwnik.
+**Q2 = identyczne zasady jak przy wojnie wymuszonej Brązu.** Cel ma być
+najbliższą terytorialnie cywilizacją AI, z wykluczeniem aktywnej wojny, NAP,
+blokady pokoju i aktywnego sojuszu z samym celem. Nie zrywać sojuszy z innymi
+cywilizacjami.
+
+## Pozostałe pytanie
+
 - **Q3:** skala i zakończenie wojny — próg miast, odpoczynek oraz cooldown
   ponownego celu.
 
 ## Zasada procesu
 
-Nie uruchamiać Operatora implementacji przed odpowiedzią na Q2 i Q3, ponieważ
-moment startu nie definiuje jeszcze celu ani zakończenia wojny.
+Nie uruchamiać Operatora implementacji przed odpowiedzią na Q3, ponieważ
+moment startu i wybór celu nie definiują jeszcze zakończenia wojny.
