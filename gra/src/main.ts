@@ -7323,6 +7323,13 @@ async function boot(): Promise<void> {
      *  ownerPracaPool/setOwnerPracaPool -- przy przejęciu stolicy AI ta pula PRZEPADA
      *  (jak playerPracaPool gracza), patrz capital-capture.ts. */
     const aiPracaPoolByOwner = new Map<number, number>();
+    /**
+     * P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: absolutny budżet ulepszeń z pierwotnej
+     * puli AI, zachowany po wydaniu części budynkowej. Odczytuje go później
+     * wspólna ścieżka decideAITurn/defensiveCopy; bez tej mapy pozostała pula
+     * byłaby drugi raz dzielona przez planCityImprovements().
+     */
+    const aiImprovementBudgetByOwner = new Map<number, number>();
     /** Pula Nauki AI (symetryczna do player.nauka) — bankowana z aiEcon.nauka co turę. */
     const aiNaukaPoolByOwner = new Map<number, number>();
     /** Bieżąca tech badana przez AI (symetryczna do player.badana). */
@@ -26467,9 +26474,11 @@ async function boot(): Promise<void> {
               playerPracaPool = Math.max(0, playerPracaPool - usedPlayerBuildingBudget);
               _lastPraca = playerPracaPool;
             }
+            aiImprovementBudgetByOwner.clear();
             for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
               const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;
               const aiBudget = splitEmpirePracaBudget(aiPool, 50);
+              aiImprovementBudgetByOwner.set(ownerId, aiBudget.doUlepszen);
               const usedAiBuildingBudget = applyEmpireBuildingBudget(ownerId, aiBudget.doBudynkow);
               if (usedAiBuildingBudget > 0) {
                 aiPracaPoolByOwner.set(ownerId, Math.max(0, aiPool - usedAiBuildingBudget));
@@ -26849,6 +26858,9 @@ async function boot(): Promise<void> {
               placedImprovements,
               improvementTechs: aiResearchDone.get(ownerId) ?? new Set<string>(),
               pracaAvailable: aiPracaPoolByOwner.get(ownerId) ?? 0,
+              // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: przekazujemy budżet
+              // ulepszeń z pierwotnego splitu, nie drugą połowę pozostałej puli.
+              improvementBudgetCap: aiImprovementBudgetByOwner.get(ownerId),
               resourceDeficitKeys: resourceDeficitKeysForOwner(ownerId),
               civEra: empireEpochForOwner(ownerId),
               vassalizedCityStateOwnerIds: vassalizedCsOwnerIds,

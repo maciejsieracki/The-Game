@@ -370,9 +370,17 @@ export interface AITurnOpts {
    */
   pracaAvailable?: number;
   /**
-   * Wspólny budżet ulepszeń już zaplanowany wcześniej w tej samej turze.
+   * Absolutny budżet ulepszeń wydzielony wcześniej z pierwotnej puli Pracy.
+   * Silnik ustawia go po podziale `aiBudget` (np. 100 → 50 budynki + 50
+   * ulepszenia). Nie wolno dzielić tej wartości procentowo ponownie po
+   * wydaniu `aiBudget.doBudynkow`; brak pola zachowuje stary kontrakt
+   * bezpośrednich wywołań testowych.
+   */
+  improvementBudgetCap?: number;
+  /**
+   * Wspólny koszt ulepszeń już zaplanowany wcześniej w tej samej turze.
    * Ustawia go decideAITurn przed planExpansionFortBuilding, aby posterunek
-   * nie dołożył drugiego wydatku ponad cap 50% całej puli.
+   * nie dołożył drugiego wydatku ponad absolutny budżet ulepszeń.
    */
   plannedImprovementCost?: number;
   /**
@@ -1962,7 +1970,12 @@ function planCityImprovements(
   // schodził z puli poniżej 30 po budowie farmy (koszt 20 przy puli 35) — regres MP.
   if (pracaAvailable <= pracaSurplusGate) return [];
 
-  const pracaBudget = splitEmpirePracaBudget(pracaAvailable, 50);
+  // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: gdy silnik przekazał absolutny budżet
+  // wydzielony z pierwotnej puli, użyj go wprost. Ponowne splitowanie
+  // pozostałych 50 pkt po wydaniu budynków dawałoby błędne 25 pkt ulepszeń.
+  const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
+    ? Math.max(0, opts.improvementBudgetCap as number)
+    : splitEmpirePracaBudget(pracaAvailable, 50).doUlepszen;
   const picks = pickAutoImprovements({
     cities: myCities,
     ownerId,
@@ -1976,7 +1989,7 @@ function planCityImprovements(
     // absolutnemu splitowi całej puli co gracz. Picker nie może wykonać
     // drugiego, procentowego podziału na już wydzielonym budżecie.
     pracaBudgetPercent: 100,
-    improvementBudgetCap: pracaBudget.doUlepszen,
+    improvementBudgetCap: improvementBudget,
     maxItemsPerCity: 1,
     skipWyrab: false,
     civArchetype: opts.civType,
@@ -2055,11 +2068,15 @@ export function planExpansionFortBuilding(
   const meta = getImprovementMeta('posterunek');
   if (!meta) return null;
   if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
-  const pracaBudget = splitEmpirePracaBudget(pracaAvailable, 50);
+  // Ten sam absolutny budżet obowiązuje także posterunek, aby koszt
+  // zaplanowanych ulepszeń i ekspansji dzielił jedną kopertę.
+  const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
+    ? Math.max(0, opts.improvementBudgetCap as number)
+    : splitEmpirePracaBudget(pracaAvailable, 50).doUlepszen;
   const plannedCost = Number.isFinite(opts.plannedImprovementCost)
     ? Math.max(0, opts.plannedImprovementCost as number)
     : 0;
-  if (plannedCost + meta.kosztPraca > pracaBudget.doUlepszen) return null;
+  if (plannedCost + meta.kosztPraca > improvementBudget) return null;
   if (!isImprovementTechUnlocked('posterunek', opts.improvementTechs ?? new Set())) return null;
 
   const territoryNodes = opts.territoryNodes ?? [];
