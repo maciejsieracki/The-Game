@@ -7498,6 +7498,14 @@ ROBOCZA md5 `4322f5aafa6e0becc988885dc38e907b` (skrót `4322f5aa`) · źródło 
 |- Build `/tmp/civ-dist` → `gra-robocza/`; synchronizacja 6 bundli + START hub; `VERIFY OK`.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `4322f5aa`**.
 
+## [19:55 UTC, 2026-08-18] CHMURA → main — promocja FALI 298
+FALA 298 `4322f5aa` jest gotowa po bramkach i deployu ROBOCZA; bieżąca gałąź
+zostanie scalona fast-forward do `main`.
+|- Zakres: limit miast założonych vs zdobytych oraz wojna wymuszona Kamienia;
+  Brąz 44/44, Stone 32/32 + guard 18/18.
+|- Warunek: `origin/main` ma być przodkiem HEAD; bez force-push.
+CZEKAM-NA: **sesja lokalna — git pull origin main**.
+
 ## [15:02 UTC, 2026-08-18] CHMURA → main — fast-forward FALI 296
 Zweryfikowana gałąź `cursor/integrate-unit-card-3d-0f9b` zostaje promowana
 fast-forward do `main`; źródło ROBOCZA pozostaje `a37f7123`.
