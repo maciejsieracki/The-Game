@@ -31724,7 +31724,7 @@ PASS-WITH-NOTES środowiskowe. Nie łączyć z triumfem miast-państw.
 
 ---
 
-## P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — popup po zajęciu wszystkich miast-państw kultury · STATUS: **ZDEPLOYOWANE FALA 294 — PASS-WITH-NOTES** (2026-08-18)
+## P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — popup po zajęciu wszystkich miast-państw kultury · STATUS: **GOTOWE / ZAMKNIĘTE — ZDEPLOYOWANE FALA 294 — PASS-WITH-NOTES** (2026-08-18)
 
 **Zakres:** osobny, potencjalnie bardziej rozbudowany popup triumfu/podboju po zajęciu
 wszystkich miast-państw należących do danej kultury. Dokładny warunek grupy kultury,

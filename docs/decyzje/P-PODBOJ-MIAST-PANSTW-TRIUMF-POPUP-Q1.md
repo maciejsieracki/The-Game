@@ -1,7 +1,7 @@
 # P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — ceremonialny popup triumfu
 
 **Data ECHO:** 2026-08-17
-**Status:** 🔵 W TRAKCIE — implementacja zapisana w commicie `ae5ef14b`
+**Status:** ✅ GOTOWE / ZAMKNIĘTE — ZDEPLOYOWANE w ROBOCZA FALA 294 `a0f804d7` — PASS-WITH-NOTES
 
 ## Cytat Macieja
 
@@ -17,3 +17,5 @@
 - `gra/src/ui/triumphCityStateNotice.ts`
 - testy triumfu miast-państw: `triumph-city-state-test.cjs` 13/13, `triumph-city-state-notice-test.cjs` 16/16
 - `npx tsc --noEmit`: PASS
+- ROBOCZA: `gra-robocza/Gra-ROBOCZA.html`, md5 `a0f804d7593333e34c989dc3565cb0c6`; `ROBOCZA-MANIFEST.json` zgodny, `verify-robocza-bundle.cjs`: `VERIFY OK`
+- Nota środowiskowa: test live Chromium niedostępny; nie jest to FAIL logiki ani bundla.
