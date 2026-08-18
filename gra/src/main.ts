@@ -12252,6 +12252,16 @@ async function boot(): Promise<void> {
         const oldOwner = city.ownerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
+        // B1 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): kapitulacja głodowa
+        // to DRUGIE (obok applyCityCaptureToMap) miejsce, gdzie city.ownerId się zmienia w
+        // wyniku wojny — dla par AI↔AI to dziś JEDYNA droga zakończenia wojny poza tym
+        // licznikiem (negocjacje pokojowe obsługują wyłącznie targetId===0), więc pominięcie
+        // tego haka tutaj = wojna wymuszona AI↔AI, która nigdy się nie kończy.
+        // EN: starvation surrender is the SECOND place (besides applyCityCaptureToMap)
+        // where city.ownerId changes due to war — for AI↔AI pairs this is TODAY the only
+        // path to end a forced war outside this counter (peace negotiations only handle
+        // targetId===0), so skipping this hook here means an AI↔AI forced war that never ends.
+        maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner);
         // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: kapitulacja głodowa
         // jest drugim (obok podboju bojowego) wejściem przejęcia miasta. Legacy
         // jednostki z kolejki Pracy nie mogą przejść do nowego właściciela;
@@ -12265,16 +12275,6 @@ async function boot(): Promise<void> {
           }
           cityProd.set(city.id, sanitizeProductionQueue(newOwner, migrated.prod));
         }
-        // B1 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): kapitulacja głodowa
-        // to DRUGIE (obok applyCityCaptureToMap) miejsce, gdzie city.ownerId się zmienia w
-        // wyniku wojny — dla par AI↔AI to dziś JEDYNA droga zakończenia wojny poza tym
-        // licznikiem (negocjacje pokojowe obsługują wyłącznie targetId===0), więc pominięcie
-        // tego haka tutaj = wojna wymuszona AI↔AI, która nigdy się nie kończy.
-        // EN: starvation surrender is the SECOND place (besides applyCityCaptureToMap)
-        // where city.ownerId changes due to war — for AI↔AI pairs this is TODAY the only
-        // path to end a forced war outside this counter (peace negotiations only handle
-        // targetId===0), so skipping this hook here means an AI↔AI forced war that never ends.
-        maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner);
         if (city.rebelState) city.rebelState = false;
         // B2 (Evaluator RUNDA 1: FAIL): zdobycie przez oblężenie na mapie musi
         // zresetować override i zsynchronizować pola z globalnym defaultem NOWEGO
