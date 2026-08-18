@@ -7333,3 +7333,22 @@ ROBOCZA md5 `a0f804d7593333e34c989dc3565cb0c6` (skrót `a0f804d7`) · modal odkr
 |- Bramki: tsc PASS · tech-tree 19/19 · research 33/33 · era toast 7/7 + mutacje 8/8 · triumph 13/13 · notice 16/16 · VERIFY OK.
 |- Chromium live test niedostępny (brak executable); nota środowiskowa. Linkowanie CivPedii/Wikipedii i Design pozostają poza falą.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `a0f804d7`; po FALI 295 scalić FALĘ 294 do `main`.
+
+## [10:45 PL, 2026-08-18] Audyt dokumentacji → Evaluator — FALA 291–294
+
+Audyt docs-only zakończony i zapisany w
+`dyspozycje/_handoff/AUDYT-DOKUMENTACJI-FALA291-294-2026-08-18.md`.
+Ujednolicono aktywne statusy w `REJESTR-PROSB-I-ZADAN.md` i
+`PYTANIA-OTWARTE.md`, bez kasowania historii i bez ponownego otwierania
+odpowiedzianych pytań.
+
+- FALA 291: osiem tematów zamkniętych po PASS lub PASS-WITH-NOTES.
+- FALA 292: oznaczona jako zastąpiona korektą FALI 293; pełny split Pracy
+  ma status ZDEPLOYOWANE/PASS w FALI 293.
+- FALA 294: ECHO C = karta Brązownictwa, ECHO A = triumf miast-państw;
+  oba ZDEPLOYOWANE/PASS-WITH-NOTES z notą o braku Chromium.
+- Karta jednostki 3D pozostaje osobną paczką w toku; Design/Civpedia/
+  Wikipedia pozostają późniejszym etapem.
+
+CZEKAM-NA: niezależny Evaluator dokumentacji — sprawdzenie spójności
+statusów i diffu docs-only; brak deployu.

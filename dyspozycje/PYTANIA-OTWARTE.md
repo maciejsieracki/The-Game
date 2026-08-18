@@ -8,7 +8,7 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **OTWARTE**
+## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **OTWARTE — OGÓLNY PROTOTYP**
 
 **Sytuacja:** Po odkryciu technologii istnieją dziś skrócone informacje w hubie badań oraz tooltip/karta węzła drzewa. Nie ma jednej rozbudowanej karty pokazującej pełny efekt odkrycia. Prototyp opisano na przykładzie Brązownictwa w [`docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`](../docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md).
 
@@ -42,6 +42,12 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 **Rekomendacja:** **A** — zaakceptować prototyp dokumentacyjny, ale przed implementacją rozstrzygnąć wskazane rozbieżności źródeł.
 
 **Decyzja właściciela:** `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 = A/B/C`.
+
+**KOREKTA AUDYTU 2026-08-18:** ten wpis dotyczy ogólnego wzorca i nadal
+czeka na akceptację prototypu oraz rozstrzygnięcie rozbieżności źródeł.
+Konkretna karta Brązownictwa została zatwierdzona i wdrożona osobno jako
+`P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 = C` w FALI 294. Nie otwierać ponownie
+tego pytania z powodu wdrożenia konkretnego wycinka.
 
 ---
 
@@ -31577,7 +31583,12 @@ ich nie rozszerzy się na inne części mapy.
 
 **Decyzja implementacyjna:** opcja **(a)** — gdy ustawienie WYŁ., liczba chatek → 0 (żadne nie są generowane na mapie). Brak wizualnych artefaktów, proste UX, niezakłócona mechanika generacji (chatki mają osobny seed i Fisher-Yates shuffle, nie integrują się z resztą terenu).
 
-STATUS: **GOTOWE DO EVALUATORA — commit `f7be3d95` (Operator Haiku 4.5). Czeka na werdykt (Evaluator Sonnet 5).**
+STATUS HISTORYCZNY: **GOTOWE DO EVALUATORA — commit `f7be3d95`**.
+
+**KOREKTA AUDYTU 2026-08-18:** status bieżący =
+**ZAMKNIĘTE / ZDEPLOYOWANE FALA 291 `13b771f4` — PASS**. WERSJE FALI 291
+potwierdzają toggle, domyślne zachowanie oraz VERIFY OK; nie tworzyć nowego
+dispatchu ani pytania o ten sam temat.
 
 ---
 
@@ -31608,8 +31619,12 @@ można przeznaczyć do 60% budżetu, ale można przeznaczyć mniej."
 **Status rekonu:** CZEKA NA DISPATCHER — orkiestrator nie zleciał jeszcze, bo to polecenie ma
 być najpierw tutaj zarejestrowane (procedura NUMER→ABC→COMMIT→DEPLOY).
 
-STATUS: **OTWARTE — czeka na dispatch** (mogą pojawić się pytania ABC jeśli recon ujawni
-niejednoznaczności lub opcje projektowe).
+STATUS HISTORYCZNY: **OTWARTE — czekało na dispatch**.
+
+**KOREKTA AUDYTU 2026-08-18:** status bieżący =
+**ZAMKNIĘTE / ZDEPLOYOWANE FALA 291 `13b771f4` — PASS**. Wdrożono limit
+60% budżetu Nauki dla gracza i AI; poprawiono sumę 100% oraz przypadek
+ujemnej wartości przy Nauka=60%. Nie tworzyć nowego pytania ABC.
 
 ---
 
@@ -31637,7 +31652,7 @@ ustrojów (nie razem z bieżącą implementacją limitu 60%).**
 
 **Stan pracy:** Recon — zbieranie informacji o systemie i punktach implementacji (gdzie gracz ustawia %, gdzie logika to stosuje, czy AI ma osobną ścieżkę, czy limit dotyczy override per-miasto).
 
-STATUS: **OTWARTE — rekon w toku, czeka na implementację po uzupełnieniu zrozumienia architektury.**
+STATUS HISTORYCZNY: **OTWARTE — rekon w toku**.
 
 ---
 
@@ -31654,8 +31669,12 @@ STATUS: **OTWARTE — rekon w toku, czeka na implementację po uzupełnieniu zro
   przyznał w raporcie. Twierdzenie o tsc do potwierdzenia niezależnie przez orkiestratora po
   scaleniu, zanim uzna się temat za faktycznie zamknięty.
 
-STATUS: **SCALONE DO GŁÓWNEGO DRZEWA, CZEKA NA NIEZALEŻNĄ WERYFIKACJĘ ORKIESTRATORA (tsc/testy)
-i Evaluatora — NIE `WDROŻONE`, korekta wcześniejszego zbyt optymistycznego wpisu Operatora.**
+STATUS HISTORYCZNY: **SCALONE DO GŁÓWNEGO DRZEWA, CZEKAŁO NA WERYFIKACJĘ**.
+
+**KOREKTA AUDYTU 2026-08-18:** status bieżący =
+**ZAMKNIĘTE / ZDEPLOYOWANE FALA 291 `13b771f4` — PASS**. Pełny routing
+budynki↔ulepszenia został następnie domknięty korektą
+`P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` w FALI 293.
 
 ---
 
@@ -31687,7 +31706,7 @@ pozostaje zachowana w rejestrze; dalsze pytania prowadzone są wyłącznie jako 
 
 ---
 
-## P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 — komunikat odblokowania/przejścia do Brązu · STATUS: **OTWARTE — KOREKTA DOCS-ONLY** (2026-08-17)
+## P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 — komunikat odblokowania/przejścia do Brązu · STATUS: **ZDEPLOYOWANE FALA 294 — PASS-WITH-NOTES** (2026-08-18)
 
 **Zakres:** osobny komunikat informujący, że po odkryciu/odblokowaniu odpowiednich
 badań/technologii gracz może wejść do epoki Brązu oraz jakie nowe możliwości się otwierają.
@@ -31697,11 +31716,15 @@ Treść, forma i szczegółowy zakres komunikatu pozostają do ustalenia w póź
 Zajęcie wszystkich miast-państw danej kultury **nie jest warunkiem** tego komunikatu.
 Ten komunikat **nie jest warunkiem** triumfu po podboju miast-państw.
 
-**Na tym etapie:** nie zadano ABC i nie implementować.
+**KOREKTA AUDYTU 2026-08-18:** ECHO **C** zapisane w
+`docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md`; implementacja
+`1383c31e`/`b047ff73` weszła do FALI 294 `a0f804d7`. Bramki logiczne są
+zielone; live Chromium był niedostępny w środowisku, więc pozostaje
+PASS-WITH-NOTES środowiskowe. Nie łączyć z triumfem miast-państw.
 
 ---
 
-## P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — popup po zajęciu wszystkich miast-państw kultury · STATUS: **OTWARTE — KOREKTA DOCS-ONLY** (2026-08-17)
+## P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — popup po zajęciu wszystkich miast-państw kultury · STATUS: **ZDEPLOYOWANE FALA 294 — PASS-WITH-NOTES** (2026-08-18)
 
 **Zakres:** osobny, potencjalnie bardziej rozbudowany popup triumfu/podboju po zajęciu
 wszystkich miast-państw należących do danej kultury. Dokładny warunek grupy kultury,
@@ -31711,11 +31734,15 @@ treść, forma i zakres informacji pozostają do ustalenia w późniejszym pytan
 odkrycie konkretnej technologii **nie jest warunkiem** tego popupu.
 Ten popup **nie jest warunkiem** odblokowania ani przejścia do epoki Brązu.
 
-**Na tym etapie:** nie zadano ABC i nie implementować.
+**KOREKTA AUDYTU 2026-08-18:** ECHO **A** zapisane w
+`docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md`; implementacja
+`ae5ef14b` weszła do FALI 294 `a0f804d7`. Testy triumfu 13/13 i 16/16,
+tsc PASS. Live Chromium był niedostępny w środowisku, więc status pozostaje
+PASS-WITH-NOTES środowiskowe.
 
 ---
 
-## P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 — niepełny routing podziału Pracy · STATUS: **W TRAKCIE** (2026-08-17)
+## P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 — niepełny routing podziału Pracy · STATUS: **ZDEPLOYOWANE FALA 293 — PASS** (2026-08-18)
 
 **Zgłoszenie właściciela po FALI 292:** „Podział Pracy nadal działa nieprawidłowo. Nie dzieli się maksymalnie 50% całej puli Pracy na ulepszenia, a jednocześnie został stary mechanizm, że tylko 50% budżetu można ustawić na automatyczną budowę ulepszeń. Wygląda, jakby nowej zmiany nie było.”
 
@@ -31729,7 +31756,9 @@ naprawę routingu, nie pełny podział jednej puli imperium.
 wiele miast, override per miasto i stare save nie mogą łamać sumy ani capu.
 ECHO/kontrakt: [`docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md`](../docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md).
 
-**Stan:** implementacja naprawcza w toku; bez zmiany bundla/deployu. Wymagany realny
-test przepływu, minimum dwa edge case’y i mutacja.
+**KOREKTA AUDYTU 2026-08-18:** opis powyżej zachowuje stan sprzed korekty.
+FALA 293 `8fa80b7c` domknęła routing `doBudynkow` dla gracza/AI/MP,
+kolejki, overflow, wiele miast, override i UI; bramki split/overflow/auto/AI/
+percent/wiring są zielone, VERIFY OK. Nie traktować tego wpisu jako otwartego.
 
 ---

@@ -2,6 +2,36 @@
 
 **Ostatnia aktualizacja: 2026-08-17 23:55 (deploy FALA 294)** · Projekt: Civ „The Game"
 
+## AUDYT DOKUMENTACJI 2026-08-18 — AKTUALNY PUNKT ODNIESIENIA
+
+Pełny audyt FAL 291–294 zapisano w
+[`dyspozycje/_handoff/AUDYT-DOKUMENTACJI-FALA291-294-2026-08-18.md`](dyspozycje/_handoff/AUDYT-DOKUMENTACJI-FALA291-294-2026-08-18.md).
+Ten blok jest aktualniejszy niż starsze, historyczne listy poniżej; historii
+nie usuwamy.
+
+- **FALA 291:** osiem tematów zamkniętych po PASS lub PASS-WITH-NOTES;
+  md5 `13b771f4`.
+- **FALA 292:** historyczna integracja paczek, zastąpiona korektą FALI 293.
+- **FALA 293:** pełny split Pracy budynki↔ulepszenia, PASS, md5 `8fa80b7c`.
+- **FALA 294:** karta Brązownictwa (**ECHO C**) i triumf miast-państw
+  (**ECHO A**), oba `ZDEPLOYOWANE`, PASS-WITH-NOTES z notą o braku Chromium;
+  md5 `a0f804d7`.
+- **Ogólny prototyp karty technologii** pozostaje otwarty (rozbieżność
+  `tech.json` 12 vs `units.json` 20 i „Popalnia brązu"); nie pytać ponownie
+  o wdrożony wycinek Brązownictwa.
+- **Karta jednostki 3D:** osobny temat `P-JEDNOSTKI-KARTA-3D-INFO-Q1`,
+  implementacja na branchu/worktree, bez deployu; nie mieszać z FALĄ 294.
+- **Otwarte NEEDS_FIX/OTWARTE:** podsumowanie bitwy, rejestracja sceny,
+  mgła miasta/AI, rekrutacja AI/MP jako budowa, ścieżka zdobycia miasta AI,
+  bilans dyplomacji, tooltip martwego panelu, stale highlight cudu,
+  kosmetyka highlightu kopalni, limit wydajności mapgena i osobne tematy
+  wydajności/teleportu — pełna lista w raporcie audytu.
+- **Odłożone:** Design/Civpedia/Wikipedia, ustroje, platforma desktopowa
+  i propozycja 12 surowców są późniejszym etapem; nie dispatchować ich
+  ponownie w ramach tego audytu.
+- **Workery:** worktree jest śladem pracy/rezerwacji, nie dowodem żywego
+  procesu. Snapshot operatorów i branchy znajduje się w §8 raportu audytu.
+
 > **FALA 294 ROBOCZA:** md5 `a0f804d7` · VERIFY OK · modal odkrycia Brązu + osobny popup triumfu miast-państw.
 > Linkowanie Civpedii/Wikipedii i wzór Designera pozostają odłożone do kolejnego etapu.
 

@@ -30,9 +30,13 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 
 **Notatka 2026-08-09:** źródło prawdy deployu dziś = **FALA 263** (`89176ced318b7e7d03b2fd6b197df80d`), branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie `main`). Szczegóły sesji: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`.
 
-| P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 | 2026-08-17 | Po odkryciu technologii rozbudowana karta: efekt, budynki, jednostki, ulepszenia terenu, następne technologie, wymagania i działania gracza; prototyp na Brązownictwie | **CZEKA-NA-DECYZJĘ — DOCS-ONLY, NIE KODOWAĆ** | Prototyp i UX: `docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`; wykryto rozbieżności `tech.json` (12 jednostek + Popalnia brązu) vs `units.json` (20 jednostek) / `terrain-improvements.json` (Kopalnia miedzi + Kopalnia cyny). Wzór graficzny przygotuje Designer po akceptacji prototypu; linkowanie do Civpedii/Wikipedii to kolejny etap po akceptacji prototypu i briefu Designera, poza obecną implementacją. |
+**KOREKTA AUDYTU 2026-08-18:** aktywny routing tej sesji to Operator **GPT-5.6 Luna Medium** →
+Evaluator **GPT-5.6 Luna High** → główny orkiestrator/final **GPT-5.6 Luna Medium**.
+Wpisy o composer/Grok/Haiku/Sonnet poniżej są historyczne i pozostają zachowane.
+
+| P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 | 2026-08-17 | Ogólny wzorzec rozbudowanej karty technologii; prototyp na Brązownictwie | **CZEKA-NA-DECYZJĘ — PROPOZYCJA DOCS-ONLY** | Ogólny prototyp nadal czeka na akceptację i rozstrzygnięcie źródeł (12 vs 20 jednostek, „Popalnia brązu"). Konkretna karta Brązownictwa została wdrożona osobno jako `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1=C` w FALI 294. Design i linkowanie Civpedii/Wikipedii pozostają późniejszym etapem. |
 | P-JEDNOSTKI-KARTA-3D-INFO-Q1 | 2026-08-18 | Integracja tymczasowej, generycznej karty jednostki z istniejącym ekranem armii; Hastati jako wzorzec, prawdziwe dane i slot modelu 3D | **W TOKU — bez balansu, linków zewnętrznych, zmian modeli i deployu** | ECHO/zakres: `docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md`; prototyp: commity `5997eafa`, `02572360`, mockup `be407afb`/`31b8c9fa`; baza `origin/cursor/deploy-fala-294-63a1` |
-| P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 | 2026-08-17 | Naprawić pełny podział puli Pracy imperium: ulepszenia maks. 50%, reszta budynki; parytet gracz/AI; kolejka, overflow, wiele miast, override i stare save | **W TOKU — niepełne wdrożenie F292** | ECHO/kontrakt: `docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md`; baza F292 `90b6508d`; bez bundla/deployu |
+| P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 | 2026-08-17 | Korekta niepełnego splitu FALI 292: cała pula Pracy, budynki + ulepszenia, cap 50% | **ZDEPLOYOWANE FALA 293 `8fa80b7c` — PASS** | FALA 292 była częściowa; FALA 293 domknęła `doBudynkow` dla gracza/AI/MP, kolejki, overflow i UI. Historia FALI 292 pozostaje w `WERSJE.md` i `PYTANIA-OTWARTE.md`. |
 
 | R-AI-TRUDNOSC-AUDYT | 2026-08-05 | Audyt + **P0** (Maciej „1"): realna Praca · Spichlerz id · L3 nauka=2 | **ZDEPLOYOWANE `efab84db`** (FALA 229) | `docs/decyzje/R-AI-TRUDNOSC-AUDYT.md` · PR #111 · AutoBot PASS |
 | R-AI-TRUDNOSC-P1 | 2026-08-05 | P1: majorEarly ×0.70 · scout −80 · L1 early turn 25 | **ZDEPLOYOWANE `7f8bdc74`** (FALA 230) | §F audytu · PR #112 |
@@ -101,7 +105,7 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | R-TRZODA-SCALE-MAP | 2026-08-04 | Skala zwierząt pastwiska/trzody ×1,5 na mapie | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| Q1=**B** (krowa+świnia+owca+lama) · `docs/decyzje/R-TRZODA-SCALE-MAP.md` |
 | R-SCOUT-ZWIEDZAJ-HIGHLIGHT | 2026-08-04 | Zwiedzaj ma złoty stan WŁ jak Czuwaj/Fortyfikuj (select nie kasuje autoExplore) | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| korekta R-SCOUT-EXIT-AUTO · `docs/decyzje/R-SCOUT-ZWIEDZAJ-HIGHLIGHT.md` |
 | R-SCOUT-ZWIEDZAJ-PODSWIETLENIE | 2026-08-04 | Po kliknięciu Zwiedzaj brak złotej ramki (Uśpienie OK) | **ZDEPLOYOWANE `ee0e7e04`** (FALA 223) | Q1=A · zostań + złoto od razu · `docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md` |
-| P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 | 2026-08-17 | Ceremonialny popup po zajęciu ostatniego aktywnego miasta-państwa tego samego klucza kultury co gracz; bez zmiany mechaniki epoki Brązu ani innych podbojów | **W TOKU** · commit `ae5ef14b` | ECHO `94a70850` · `docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md` · testy `13/13`, `16/16`, tsc PASS |
+| P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 | 2026-08-17 | Ceremonialny popup po zajęciu ostatniego aktywnego miasta-państwa tego samego klucza kultury co gracz; bez zmiany mechaniki epoki Brązu ani innych podbojów | **ZDEPLOYOWANE FALA 294 `a0f804d7` — PASS-WITH-NOTES** | ECHO `94a70850` · testy `13/13`, `16/16`, tsc PASS · live Chromium niedostępny w środowisku |
 | R-BATTLE-TEMPO-UI | 2026-08-04 | Panel Tempo bitwy: ± zamiast ×1/×2/×4; AUTO = komputer; prędkość w tooltipach | **ZDEPLOYOWANE `132401ef`** (FALA 222) | Q1=**A** · Q2=**B** · `docs/decyzje/R-BATTLE-TEMPO-UI.md` · branch `cursor/feat-battle-tempo-ui-63a1` |
 | R-DYPLO-STOL-PW-SUM | 2026-08-04 | Stół: bilans PW liczy tylko 1. umowę, nie sumuje wymiany surowców na stole | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| panel `negotiationBalanceBarHtml` · suma PW wszystkich pending · `docs/decyzje/R-DYPLO-STOL-PW-SUM.md` |
 | R-DYPLO-PRZYJMIJ-TRADE | 2026-08-04 | Stół negocjacji: Przyjmij na Traktat handlowy nic nie robi (umowa_handlowa vs umowa_szlakow w evaluateProposal) | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| branch `cursor/fix-dyplo-przyjmij-traktat-63a1` · `docs/decyzje/R-DYPLO-PRZYJMIJ-TRADE.md` |
@@ -2479,9 +2483,10 @@ zamknięcie, ponowne otwarcie z drzewa, długie listy/brak sekcji, test produkcy
 ścieżki i starego save. Bez Designera i linkowania zewnętrznego.
 
 Kanon: `docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md`.
-Status: **W TRAKCIE** — implementacja `1383c31e`/`b047ff73`; tsc PASS,
-tech-tree 19/19, research 33/33, defer 7/7 + mutacje 8/8. Live build PASS,
-egzekucja Chromium zablokowana brakiem executable w środowisku.
+Status: **ZDEPLOYOWANE FALA 294 `a0f804d7` — PASS-WITH-NOTES** —
+implementacja `1383c31e`/`b047ff73`; tsc PASS, tech-tree 19/19, research 33/33,
+defer 7/7 + mutacje 8/8. Live build PASS; egzekucja Chromium zablokowana
+brakiem executable w środowisku. To ograniczenie środowiskowe, nie funkcjonalny FAIL.
 
 ## P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 — ECHO (2026-08-16)
 Maciej: `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 = A`. Realne przejęcie miasta jak barbarzyńcy —
@@ -2509,8 +2514,8 @@ Kanon: `docs/decyzje/P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.md`.
 
 | P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1 | 2026-08-17 | Bazowa produkcja Drewna/Kamienia/Gliny z terenu; rzeka pozostaje osobnym modyfikatorem | **GOTOWE — Evaluator PASS-WITH-NOTES** | `gra/data/terrain-yields.json` · commit `3ee0c52f` · testy bazowy 9/9, magazyn 14/14, konwertery 46/46, warstwy 24/24, parytet 101/101 |
 | P-EPOKA-BRAZU-KOMUNIKAT-PODBOJ-MIAST-Q1 | 2026-08-17 | **POPRZEDNI POŁĄCZONY TEMAT — ZASTĄPIONY / UNIEWAŻNIONY** | **ZASTĄPIONY / UNIEWAŻNIONY przez sprostowanie właściciela** | Łączył błędnie dwa niezależne zdarzenia: komunikat odblokowania/przejścia do Brązu po badaniach/technologiach oraz triumf po zajęciu wszystkich miast-państw kultury. Historia zachowana; nowe ID: `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` i `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1`. Żadne z tych zdarzeń nie jest wzajemnym warunkiem. |
-| P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 | 2026-08-17 | Osobny komunikat o możliwości wejścia do epoki Brązu i nowych możliwościach po odkryciu/odblokowaniu odpowiednich badań/technologii | **CZEKA-NA-DECYZJĘ — DOCS-ONLY, NIE KODOWAĆ** | Niezależne od zajęcia wszystkich miast-państw danej kultury; podbój nie jest warunkiem tego komunikatu, a komunikat nie jest warunkiem triumfu podboju. ABC jeszcze nie zadano. |
-| P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 | 2026-08-17 | Osobny, bardziej rozbudowany popup triumfu po zajęciu wszystkich miast-państw danej kultury | **CZEKA-NA-DECYZJĘ — DOCS-ONLY, NIE KODOWAĆ** | Niezależne od odkrycia technologii i przejścia do epoki Brązu; Brąz nie jest warunkiem popupu, a popup nie jest warunkiem wejścia do Brązu. ABC jeszcze nie zadano. |
+| P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 | 2026-08-17 | Osobny komunikat o możliwości wejścia do epoki Brązu i nowych możliwościach po odkryciu/odblokowaniu odpowiednich badań/technologii | **ZDEPLOYOWANE FALA 294 `a0f804d7` — PASS-WITH-NOTES** | ECHO C; niezależne od zajęcia wszystkich miast-państw danej kultury; testy logiczne zielone, live Chromium niedostępny |
+| P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 | 2026-08-17 | Osobny popup triumfu po zajęciu wszystkich miast-państw danej kultury | **ZDEPLOYOWANE FALA 294 `a0f804d7` — PASS-WITH-NOTES** | ECHO A; niezależne od odkrycia technologii i przejścia do epoki Brązu; testy 13/13 i 16/16, live Chromium niedostępny |
 ## KOREKTA STATUSÓW — FALA 291 (docs-only, 2026-08-17)
 
 Poniższe wpisy porządkują wyłącznie aktywny status rejestru. Historia i dowody pozostają
