@@ -1,10 +1,69 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-04 (sync FALA 220 + push `b47a2e8`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
 Nowy case → **ID w REJESTR-PROSB** + wpis tu (jeśli ABC) → agent **proponuje, nie koduje** → Maciej: **`ID + A|B|C`** → commit → **`deploy`** osobno.
 Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
+
+---
+
+## REGRESJE DO ROZPOZNANIA — 2026-08-18
+
+### R-REKRUT-SUROWIEC-BEZ-UPKEEP-REZERWY-Q1 — koszt rekrutacji nie może zawierać utrzymania · STATUS: **NOWE — AUDYT**
+
+**Zgłoszenie Macieja:** jeżeli jednostka wymaga **50 Drewna** przy rekrutacji, bramka
+rekrutacji ma sprawdzać i pobierać dokładnie 50 Drewna. **10 Drewna utrzymania/turę**
+ma być rozliczane dopiero przy wejściu w następną turę; nie wolno blokować rekrutacji
+warunkiem posiadania 60 Drewna.
+
+**Kontrakt do sprawdzenia:** koszt jednorazowy rekrutacji i koszt utrzymania/turę są
+dwoma niezależnymi zobowiązaniami. Brak Drewna na utrzymanie nie cofa rekrutacji —
+jednostka przechodzi w stan braku utrzymania zgodnie z istniejącą mechaniką głodu/
+utrzymania.
+
+**Wstępny dowód kodowy:** `gra/src/game/building-stock-cost.ts:326-343`
+wylicza `unitStockCost()` z pola `Surowiec` oraz osobnego dodatku Koni dla jednostek
+jezdnych; utrzymanie jednostek jest liczone osobno w
+`gra/src/game/economy-upkeep.ts:705-732, 876-895`. Bramka zakupu w
+`gra/src/main.ts:2691-2695` używa wyłącznie `unitStockCost()`, więc trzeba jeszcze
+sprawdzić, czy widoczne 60 pochodzi z UI/podpowiedzi albo z innego wejścia do
+rekrutacji. Nie uznajemy tematu za zamknięty bez testu 50-versus-60.
+
+### R-GRANICE-NARUSZENIE-ZAUFANIE-KIERUNEK-Q1 — kara za naruszenie granicy spada na niewłaściwą stronę · STATUS: **NOWE — POTWIERDZONY KIERUNEK AUDYTU**
+
+**Zgłoszenie Macieja:** gdy obca cywilizacja przekracza granicę gracza, ujemne
+Zaufanie ma dostać cywilizacja naruszająca granicę; właściciel granicy nie powinien
+być karany za cudze wtargnięcie.
+
+**Wstępny dowód regresji:** `gra/src/main.ts:12465-12466`,
+`12501-12502` i `21219-21221` ustawiają jedną symetryczną flagę
+`ekspansjaPrzyGranicy` na podstawie liczby miast obu stron (`> 2`), bez sprawdzenia
+geometrii granicy i bez wskazania właściciela naruszającej jednostki. Następnie
+`gra/src/game/diplomacy.ts:1604-1609` odejmuje tę samą wartość od relacji pary,
+a `diplomacy-factors.ts:183-185` pokazuje ją jako „Ekspansja przy granicy”.
+
+**Ryzyko:** obecny model jest parowy, a kara wymaga kierunku
+`sprawca → właściciel granicy`. Audyt musi rozdzielić: (a) faktyczne wejście
+jednostki na cudzy heks, (b) ekspansję własnego miasta/terytorium oraz
+(c) stronę, której Zaufanie ma się zmienić. Nie wolno naprawiać tego przez
+proste odwrócenie znaku bez testu obu perspektyw.
+
+### R-WZROST-SZCZESCIE-DUBEL-WEALTH-I-CERAMIKA-Q1 — nadmierny składnik Szczęścia we wzroście · STATUS: **W TOKU — RDZEŃ NAPRAWY W PR #129**
+
+**Zgłoszenie Macieja:** wzrost miasta pokazuje około **+32%**, w tym
+**Szczęście +32%**, podczas gdy oczekiwany wzrost zwykle wynosił kilka procent.
+
+**Rozpoznanie:** potwierdzono osobny błąd techniczny — `population-growth-v85.ts`
+ponownie dodawał `wealthPoziom` do `szczescieNetto`, mimo że Wealth jest już w
+`ordPct.sz.netto`. Rdzeń poprawki usuwa dubel i ma test regresyjny w PR #129.
+Evaluator wykrył jeszcze brak Wealth w dwóch podglądach `growthPreview` w
+`turn-economy.ts`, więc paczka nie jest domknięta.
+
+**Osobny punkt balansowy:** Garncarnia/Ceramika może podnosić Szczęście przez
+`garncarniaSurplusZadowolenie`; nie zmieniamy tej wartości bez osobnej decyzji.
+Najpierw trzeba pokazać rozbicie składników i odseparować legalne bonusy od
+ewentualnego nadmiernego skalowania.
 
 ---
 
