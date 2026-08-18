@@ -31801,6 +31801,9 @@ opublikowane w ROBOCZA FALI 295 (`8589d294`):
   PASS-WITH-NOTES**; live preview 8/8 i pakiet dyplomacji zielony.
 - `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT` — **ZDEPLOYOWANE FALA 295,
   PASS**; test 8/8, rodzic wykazuje regresję 6/8.
+- `P-JEDNOSTKI-KARTA-3D-INFO-Q1` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; karta 23/23, wiring 6/6, interakcja 7/7, build PASS;
+  nota: brak live Chromium/WebGL.
 
 Osobne braki pozostają poza tym batch’em: pełne E2E pathfindingu AI,
 live Chromium/WebGL oraz test live edycji koszyka dyplomacji. Nie blokują

@@ -1,6 +1,6 @@
 {
-  "version": 32,
-  "updatedAtIso": "2026-08-10T13:11:19.865Z",
+  "version": 33,
+  "updatedAtIso": "2026-08-18T10:25:32.303Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -352,7 +352,7 @@
     },
     {
       "id": "rule_135",
-      "rule_text": "KAŻDE zgłoszenie właściciela (błąd/prośba/pomysł) przechodzi natychmiast, w tej samej turze, przez trzy kroki bez przerwy: (1) rejestracja w PYTANIA-OTWARTE.md+REJESTR-PROSB-I-ZADAN.md; (2) jeśli rozwiązanie wymaga wyboru z realnym kompromisem (balans/gameplay/UX z alternatywami) → pytanie ABC od razu, nie odkładane; (3) jeśli NIE wymaga ABC (błąd do naprawienia, prośba z jednoznacznie opisanym oczekiwanym zachowaniem) → **odpalenie subagenta Sonnet 5 od razu**, w tej samej turze, w pętli AutoBot (Operator → Evaluator), nie „zarejestrowane, zajmę się później\". Rejestr to punkt startowy pracy, nie miejsce składowania. Zasada Macieja 2026-08-08 po serii skarg na temat gubienia zgłoszeń: „a myślisz, że po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?\" i „tak właśnie gubią się tematy, które ci zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie robicie z tym nic\" — dopisz: „jeżeli coś jest zgłoszone rejestrujesz dane zadanie, jeżeli trzeba zadać pytanie ABC to zadajesz, jeżeli nie to odpalasz subagenta Sonet od razu do rozwiązania tego problemu zgodnie z zasadą autobot — to jest najważniejsze, żeby sprawy szły do przodu i nic nie zostało zapomniane\" [C-027]",
+      "rule_text": "KAŻDE zgłoszenie właściciela (błąd/prośba/pomysł) przechodzi natychmiast, w tej samej turze, przez trzy kroki bez przerwy: (1) rejestracja w PYTANIA-OTWARTE.md+REJESTR-PROSB-I-ZADAN.md; (2) jeśli rozwiązanie wymaga wyboru z realnym kompromisem (balans/gameplay/UX z alternatywami) → pytanie ABC od razu, nie odkładane; (3) jeśli NIE wymaga ABC (błąd do naprawienia, prośba z jednoznacznie opisanym oczekiwanym zachowaniem) → **odpalenie Operatora zgodnie z aktywnym routingiem AutoBot od razu**, w tej samej turze, w pętli AutoBot (Operator → Evaluator), nie „zarejestrowane, zajmę się później\". Aktywny routing modeli jest źródłem prawdy w .cursor/rules/autobot-evaluator-operator.mdc; historyczne nazwy modeli z wcześniejszych sesji nie są instrukcją. Rejestr to punkt startowy pracy, nie miejsce składowania. Zasada Macieja 2026-08-08 po serii skarg na temat gubienia zgłoszeń: „a myślisz, że po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?\" i „tak właśnie gubią się tematy, które ci zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie robicie z tym nic\" — dopisz: „jeżeli coś jest zgłoszone rejestrujesz dane zadanie, jeżeli trzeba zadać pytanie ABC to zadajesz, jeżeli nie to odpalasz Operatora od razu do rozwiązania tego problemu zgodnie z zasadą AutoBot — to jest najważniejsze, żeby sprawy szły do przodu i nic nie zostało zapomniane\" [C-027]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
@@ -499,6 +499,16 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-10T13:00:29.129Z"
+    },
+    {
+      "id": "rule_150",
+      "rule_text": "Narzędzie Workflow (Ultracode, Claude Agent SDK) AUTOMATYZUJE pętlę Operator→Evaluator z C-017, nie zastępuje jej: phase('Operator') na domyślnym modelu sesji (Sonnet 5) i phase('Evaluator') na model:'opus', effort:'high' MUSZĄ żyć w JEDNYM skrypcie jako dwa kroki sekwencyjne — nigdy jako dwa osobne, niezależnie zlecane uruchomienia, bo dokładnie ten podział pozwolił orkiestratorowi w tej sesji scalić i skomitować serię ~11 zmian Operatora BEZPOŚREDNIO, bez pośredniego Evaluatora, łamiąc C-017 (wykryte dopiero na wprost zadane pytanie właściciela „czy każdy Operator ma swojego Evaluatora\"). Dodatkowo: isolation:'worktree' (czy to w Workflow, czy w ręcznym Agent) niesie ten sam bug złej bazy worktree co C-035 — KAŻDY prompt agent() z isolation:'worktree' zaczyna się od obowiązkowego kroku weryfikacji bazy (grep symbolu, który MUSI istnieć na właściwej gałęzi; brak trafienia = STOP, zero prób ręcznego odtwarzania kodu, zgłoszenie orkiestratorowi) — dokładny szablon w .cursor/rules/autobot-evaluator-operator.mdc §„Integracja z Ultracode/Workflow\". Dla zmian dotykających silnika bitwy, save/load lub migracji danych kanonicznych (gra/data/**) — 1 Evaluator nie wystarcza, wymagane 3 niezależne, głosujące większością (wzorzec „adversarial verify\" wbudowany w Workflow). Workflow NIGDY nie commituje/nie pushuje/nie deployuje samo i nie wpisuje do PYTANIA-OTWARTE.md/WERSJE.md/REJESTR-PROSB-I-ZADAN.md/KANAL-PRACA.md — te kroki zawsze ręką orkiestratora, po zakończeniu Workflow. Reguła C-017 (orkiestrator nie ocenia sam siebie) obowiązuje TAKŻE gdy orkiestrator ręcznie rozwiązuje konflikt scalania (git apply -3 z konfliktem) — to też zmiana zapisana do repozytorium, wymaga osobnego Evaluatora, „to tylko scalanie\" nie jest zwolnieniem z pętli. Zasada Macieja 2026-08-12: „przeczytaj jeszcze raz całe zasady autobots i dostosuj je do pracy ultracode tak żeby się uzupełniały i razem usprawniały pracę oraz generowało jak najmniej błędów\" [C-042]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-18T10:25:32.300Z"
     }
   ],
   "quarantine_rules": []

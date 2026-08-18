@@ -25,7 +25,7 @@ nie usuwamy.
   zdeployowana w FALI 295; nie mieszać z FALĄ 294.
 - **Kolejka AutoBot 2026-08-18:** podsumowanie bitwy, rejestracja sceny,
   mgła ataku na miasto, adiacencyjne zdobycie miasta AI, bilans dyplomacji
-  i stale highlight cudu mają niezależne werdykty i są gotowe do integracji.
+  i stale highlight cudu mają niezależne werdykty i są zdeployowane w FALI 295.
 - **Rekrutacja AI/MP jako budowa:** aktywny flow już korzysta ze Skarbca;
   migracja legacy kolejki po capture i surrender ma PASS, gotowa do integracji.
 - **Pozostają osobno:** zwykła ścieżka zdobycia miasta AI była decyzją ABC i nie
@@ -157,8 +157,8 @@ nie usuwamy.
 > poprzedniej sesji (2026-08-16) — **utrwalona zasada: po kazdym PASS Evaluatora, NATYCHMIAST
 > Edit statusu w rejestrze, nie tylko powiedz ze go wykonasz.**
 >
-> **Otwarte kategorie na koniec sesji (pelny audyt `PYTANIA-OTWARTE.md`, patrz plik dla
-> szczegolow po ID):**
+> **HISTORYCZNY SNAPSHOT kolejki przed FALĄ 295** (nie jest aktualną listą
+> dispatchu; aktualne statusy są w korekcie FALI 295 w `PYTANIA-OTWARTE.md`):
 > - **W trakcie — Operator pracuje:** `R-SUROWCE-KOPALNIE-MIEDZ-CYNA-3X-Q1` (potrojenie
 >   rzadkosci zloz miedzi/cyny — UWAGA: to najprawdopodobniej JUZ zamkniete, patrz commit
 >   `d0fc4b94` widoczny na origin/main — zweryfikuj STATUS w rejestrze na starcie kolejnej

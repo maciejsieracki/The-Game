@@ -7377,3 +7377,16 @@ status historyczny oraz aktualny PASS-WITH-NOTES.
 |- Docs-only kanon AutoBot również nie ma osobnego wpisu Evaluatora w kanale;
 nie dotyka kodu gry ani bundla.
 CZEKAM-NA: **nic dla ROBOCZA; sesja lokalna — pull `8589d294`**.
+
+## [10:19 UTC, 2026-08-18] Evaluator → CHMURA — closeout dokumentacji AutoBot
+Werdykt: **PASS-WITH-NOTES** dla docs-only. Aktywny łańcuch Operator →
+Evaluator → finalna kontrola → integracja → deploy/push jest spójny w kanonie.
+Usunięto drift C-027 w `playbook.md` i wygenerowano `playbook.json`; dry-run:
+42/42 OK, różnic brak.
+|- Ujednolicono status karty jednostki, mgły miasta, historycznych SHA i listy
+przeddeployowej; FALA 295 pozostaje bez zmian (`8589d294`, VERIFY OK).
+|- Nie dopisano fikcyjnych `bc-*`: historyczne re-bundle’y mają dowód commitów,
+testów i wcześniejszych werdyktów, ale nie osobny raport Evaluatora w tym kanale.
+|- Pozostają noty nieblokujące: historyczne literalne nazwy modeli w C-042 oraz
+brak osobnego raportu dla docs-only w dawnym przebiegu.
+CZEKAM-NA: **nic dla ROBOCZA; docs-only zapisane, bez redeployu**.
