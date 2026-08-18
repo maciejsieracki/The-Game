@@ -1,6 +1,6 @@
 # R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1 — moment uruchomienia
 
-**Status:** 🟡 **ECHO częściowe — Q1/Q2 zapisane; Q3 otwarte**
+**Status:** 🟡 **ECHO kompletne — Q1/Q2/Q3 zapisane; gotowe do dispatchu Operatora**
 **Data:** 2026-08-18
 
 ## Decyzja właściciela
@@ -16,12 +16,15 @@ najbliższą terytorialnie cywilizacją AI, z wykluczeniem aktywnej wojny, NAP,
 blokady pokoju i aktywnego sojuszu z samym celem. Nie zrywać sojuszy z innymi
 cywilizacjami.
 
-## Pozostałe pytanie
+## Q3 — skala i zakończenie wojny
 
-- **Q3:** skala i zakończenie wojny — próg miast, odpoczynek oraz cooldown
-  ponownego celu.
+**Q3 = A — identyczne wartości jak przy wojnie wymuszonej Brązu:**
 
-## Zasada procesu
+- automatyczny pokój po zdobyciu lub utracie **2 miast**;
+- **20 tur odpoczynku** po pokoju;
+- **20 tur cooldownu** przed ponownym wyborem tej samej cywilizacji.
 
-Nie uruchamiać Operatora implementacji przed odpowiedzią na Q3, ponieważ
-moment startu i wybór celu nie definiują jeszcze zakończenia wojny.
+## Zakończenie decyzji
+
+Wszystkie trzy elementy kontraktu są zapisane. Temat jest gotowy do osobnego
+dispatchu Operatora Luna Medium, a następnie Evaluatora Luna High.
