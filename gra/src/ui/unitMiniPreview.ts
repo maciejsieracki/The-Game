@@ -112,7 +112,7 @@ function renderUnitThumbCanvas(u: UnitDef, ownerColor: number): HTMLCanvasElemen
   return out;
 }
 
-const queue: { u: UnitDef; color: number; container: HTMLElement }[] = [];
+const queue: { u: UnitDef; color: number; container: HTMLElement; fallbackText?: string }[] = [];
 let draining = false;
 
 function drainQueue(): void {
@@ -127,7 +127,7 @@ function drainQueue(): void {
         canvas.className = 'unit-mini-canvas';
         job.container.appendChild(canvas);
       } else {
-        job.container.textContent = '⚔';
+        job.container.textContent = job.fallbackText ?? '⚔';
         job.container.classList.add('unit-mini-fallback');
       }
     } finally {
@@ -142,10 +142,11 @@ export function mountUnitMiniPreview(
   container: HTMLElement,
   u: UnitDef,
   ownerColor: number = OWNER_DEFAULT,
+  fallbackText?: string,
 ): void {
   container.classList.add('unit-mini-preview');
   container.innerHTML = '<span class="unit-mini-loading">…</span>';
-  queue.push({ u, color: ownerColor, container });
+  queue.push({ u, color: ownerColor, container, fallbackText });
   drainQueue();
 }
 

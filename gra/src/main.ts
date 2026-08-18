@@ -630,6 +630,10 @@ import {
   type ArmyListEntry,
 } from './ui/armyListHud';
 import {
+  ensureUnitInfoCardStyles,
+  showUnitInfoCardDialog,
+} from './ui/unitInfoCard';
+import {
   createDiploListHud,
   hideDiploListHud,
   isDiploListHudOpen,
@@ -5787,6 +5791,7 @@ async function boot(): Promise<void> {
         if (ruchLeft === 0) detailParts.push('Ruch wykorzystany w tej turze');
         out.push({
           id: lead.id,
+          unitTypeId: lead.typeId,
           name,
           unitCount: group.length,
           hexLabel: `(${lead.q}, ${lead.r})`,
@@ -18676,6 +18681,25 @@ async function boot(): Promise<void> {
             camCtrl.focusAt(x, z, dist);
           }
           refreshD1bHud();
+        },
+        onOpenUnitCard: (unitTypeId) => {
+          const unitDef = data.units.find(u => u.Jednostka === unitTypeId);
+          if (!unitDef) return;
+          hideArmyListHud();
+          const runtimeUnit = units.find(u => u.typeId === unitTypeId && u.ownerId === 0);
+          const statusLines = runtimeUnit
+            ? [
+                runtimeUnit.inGarnizon ? 'W garnizonie' : '',
+                runtimeUnit.ufortyfikowanyWPolu ? 'Ufortyfikowana w polu' : '',
+                runtimeUnit.sentry ? 'Czuwa' : '',
+                runtimeUnit.autoExplore ? 'Auto-eksploracja' : '',
+              ].filter(Boolean)
+            : [];
+          ensureUnitInfoCardStyles();
+          showUnitInfoCardDialog(unitDef, data, {
+            statusLines,
+            ownerColor: 0x3b7dd8,
+          });
         },
         onClose: () => refreshD1bHud(),
       });

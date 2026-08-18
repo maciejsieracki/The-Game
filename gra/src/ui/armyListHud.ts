@@ -24,6 +24,8 @@ import {
 export interface ArmyListEntry {
   /** Id reprezentatywnej jednostki (do zaznaczenia). */
   id: string;
+  /** Typ jednostki używany do otwarcia generycznej karty informacyjnej. */
+  unitTypeId?: string;
   /** Nazwa stosu / typu. */
   name: string;
   unitCount: number;
@@ -53,6 +55,8 @@ export interface ArmyListEntry {
 export interface ArmyListHudConfig {
   getArmies: () => ArmyListEntry[];
   onSelectArmy: (unitId: string) => void;
+  /** Otwiera kartę prawdziwych danych reprezentanta stosu, jeśli dostępna. */
+  onOpenUnitCard?: (unitTypeId: string) => void;
   onClose?: () => void;
 }
 
@@ -166,7 +170,10 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
                 ? 'Zaznacz ' + a.name + ' — w auto-eksploracji; pomijana przez Spację, rusza się sama na koniec tury'
                 : a.unitCount > 1
             ? formatZaznaczArmieLabel(a.unitCount)
-            : 'Zaznacz ' + a.name;
+                : 'Zaznacz ' + a.name;
+        if (a.unitTypeId && config.onOpenUnitCard) {
+          row.title += ' — klik otwiera kartę jednostki';
+        }
 
         const ico = document.createElement('span');
         ico.className = 'sl-ico';
@@ -253,7 +260,10 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         }
         row.appendChild(ico);
         row.appendChild(body);
-        const go = () => config.onSelectArmy(a.id);
+        const go = () => {
+          config.onSelectArmy(a.id);
+          if (a.unitTypeId) config.onOpenUnitCard?.(a.unitTypeId);
+        };
         row.addEventListener('click', go);
         row.addEventListener('keydown', (ev: KeyboardEvent) => {
           if (ev.key === 'Enter' || ev.key === ' ') {
