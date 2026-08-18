@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI i wycena surowców w dyplomacji). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI, wycena surowców i porządek infografik dyplomacji). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -113,6 +113,25 @@ używa tej samej funkcji w szybkiej umowie. Obecne ceny obejmują m.in. Drewno
 (`handel_surowce.cena_*`) na `wartość / 5`, zachowując rozmiar pakietu
 10 sztuk oraz osobny cennik dostępu do złoża (`handel_zloze`). Po decyzji trzeba
 sprawdzić zaokrąglenia dla cen ułamkowych i parytet gracz–AI.
+
+### R-DYPLO-INFOGRAFIKI-TOOLTIPY-Q1 — dodatkowe opisy rozbijają ekran dyplomacji · STATUS: **NOWE — AUDYT UX**
+
+**Zgłoszenie Macieja:** infografiki i pasek akcji dyplomacji powinny być zwarte
+i uporządkowane. Dodatkowe objaśnienia nie powinny być wypisywane małym tekstem
+pod ikonami ani pod kartami, tylko dostępne po najechaniu w tooltipie.
+
+**Wstępny dowód kodowy:** `gra/src/ui/diplomacyAudience.ts:1335-1359`
+renderuje pasek ikon z osobnym hover-label oraz natywnym `title`; dodatkowo
+`dealsColumnHtml():1375-1395` wypisuje `shortNote` jako widoczne
+`.da-note`, mimo że pełny opis jest już w `title`. To dubluje treść i zwiększa
+wysokość/chaos układu. Rozbicie czynników relacji w `:1685-1700` również
+renderuje opisy jako stałe wiersze — trzeba odróżnić wartości kluczowe od tekstu
+wyjaśniającego.
+
+**Kontrakt UX do audytu:** widok główny pokazuje tylko ikonę, nazwę, stan
+(aktywna/zablokowana) i najważniejszą wartość; powód blokady, opis działania,
+czas trwania i konsekwencje trafiają do jednego spójnego tooltipu. Nie zmieniać
+logiki progów ani wartości dyplomacji — to osobna warstwa od porządkowania UI.
 
 ---
 
