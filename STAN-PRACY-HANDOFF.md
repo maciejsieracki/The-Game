@@ -20,12 +20,14 @@ nie usuwamy.
   `tech.json` 12 vs `units.json` 20 i „Popalnia brązu"); nie pytać ponownie
   o wdrożony wycinek Brązownictwa.
 - **Karta jednostki 3D:** osobny temat `P-JEDNOSTKI-KARTA-3D-INFO-Q1`,
-  implementacja na branchu/worktree, bez deployu; nie mieszać z FALĄ 294.
-- **Otwarte NEEDS_FIX/OTWARTE:** podsumowanie bitwy, rejestracja sceny,
-  mgła ataku na miasto, rekrutacja AI/MP jako budowa, ścieżka zdobycia miasta AI,
-  bilans dyplomacji, tooltip martwego panelu, stale highlight cudu,
-  kosmetyka highlightu kopalni, limit wydajności mapgena i osobne tematy
-  wydajności/teleportu — pełna lista w raporcie audytu.
+  gotowa do integracji, bez deployu; nie mieszać z FALĄ 294.
+- **Kolejka AutoBot 2026-08-18:** podsumowanie bitwy, rejestracja sceny,
+  mgła ataku na miasto, adiacencyjne zdobycie miasta AI, bilans dyplomacji
+  i stale highlight cudu mają niezależne werdykty i są gotowe do integracji.
+- **Pozostają osobno:** rekrutacja AI/MP jako budowa wymaga reconu; zwykła
+  ścieżka zdobycia miasta AI była decyzją ABC i nie może być zgadywana;
+  kosmetyka kopalni, limit mapgena oraz tematy wydajności/teleportu pozostają
+  poza tym batch’em.
 - **`P-AI-BRAK-POJECIA-MGLY-Q1`:** GOTOWE / ZAMKNIĘTE — własna mgła AI per
   owner, pamięć celów, ponowne wykrycie przed akcją; FALA 292 zachowana w
   aktualnej ROBOCZA FALI 294, `ai-fog-test.cjs` 8/8, kamera bitwy 24/24,

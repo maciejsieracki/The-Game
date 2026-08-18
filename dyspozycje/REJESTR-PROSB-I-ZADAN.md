@@ -2533,13 +2533,13 @@ w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
 
 | ID | Status bieżący | Dowód / uwaga |
 |---|---|---|
-| P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE | **GOTOWE DO EVALUATORA** | commit `38025d4b` |
-| P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM | **GOTOWE DO EVALUATORA** | commit `083dc4d2` |
-| P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA | **GOTOWE DO EVALUATORA** | commit `9044e39d`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | fix `38025d4b` + test repro/negacji `6fc4703b`; test 16/16, battle summary PASS, overlay 84/84, tsc PASS |
+| P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | commit `083dc4d2`; test kamery 24/24, battle summary PASS, cleanup 23/0, tsc PASS |
+| P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | commit `9044e39d`; map attack 9/9, siege 6/6, tsc PASS; zakres = klik gracza |
 | P-AI-BRAK-POJECIA-MGLY | **GOTOWE / ZAMKNIĘTE — Evaluator PASS-WITH-NOTES** | FALA 292, zachowane w ROBOCZA FALI 294 (`a0f804d7`, `VERIFY OK`); `ai-fog-test.cjs` 8/8; save/load W5 |
 | P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE | **ZAMKNIĘTE — NO-ACTION** | panel tree-shaken |
-| P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA | **OTWARTE — ODŁOŻONE DO ABC** | realny brak ścieżki AI potwierdzony; bez dispatchu kodu po cofnięciu sagi |
-| P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA | **GOTOWE DO EVALUATORA** | commit `a277486a`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | predykat + executor + wiring; test capture 14/14, movement 13/13, tsc PASS; brak pełnego E2E pathfindingu |
+| P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA | **GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES** | commit `a277486a`; live preview 8/8, stół 166/166, proposal 187/187, negotiation 62/62, fairness 24/24, tsc PASS |
 | P-SUROWCE-KOLEJNOSC-KART | **ZAMKNIĘTE** | test `62/0` |
-| P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT | **GOTOWE DO EVALUATORA** | commit `a1d37daf`; niezależny werdykt nie jest zapisany w rejestrze |
+| P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT | **GOTOWE DO INTEGRACJI — Evaluator PASS** | commit `a1d37daf`/`8e0e70e7`; test 8/8, rodzic 2/8, tsc PASS |
 | P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY | **ZDEPLOYOWANE** | FALA 286 |

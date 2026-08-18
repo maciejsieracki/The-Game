@@ -242,6 +242,7 @@ import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-cl
 import {
   canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
+import { executeAiCityMove } from './game/ai-city-capture-executor';
 import {
   evaluateFoundCityAffordance,
   foundCityCostLabel,
@@ -27717,34 +27718,53 @@ async function boot(): Promise<void> {
                   const destinationCity = cities.find(
                     c => c.q === cmd.toQ && c.r === cmd.toR && c.ownerId !== ownerId,
                   );
-                  if (
-                    destinationCity !== undefined
-                    && !aiCityCaptureAllowed(
+                  const targetVisible = destinationCity === undefined
+                    || aiCityCaptureAllowed(
                       cmd.targetCityId,
                       destinationCity,
                       currentVisibleForOwner(ownerId),
                       fogOn,
                       keyOf,
-                    )
-                  ) {
+                    );
+                  if (!targetVisible) {
                     // Pamięć pozycji służy do marszu, ale nie może zamienić się
                     // w niewidoczny atak/przejęcie miasta.
                     continue;
                   }
-                  if (!canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
-                  const path = computePath(u, map, cmd.toQ, cmd.toR, (() => {
-                    const occ = addForeignCityBlocks(new Set<string>(), u.ownerId, cities);
-                    for (const ou of units) { if (ou.id !== u.id) occ.add(keyOf(ou.q, ou.r)); }
-                    return occ;
-                  })(), moveCostFnForUnit(u));
-                  if (path.length > 0) {
-                    const last = path[path.length - 1]!;
-                    if (!canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
-                    u.q = last.q;
-                    u.r = last.r;
-                    u.ruchLeft = 0;
+                  const blockedKeys = addForeignCityBlocks(
+                    new Set<string>(),
+                    u.ownerId,
+                    cities,
+                  );
+                  for (const ou of units) {
+                    if (ou.id !== u.id) blockedKeys.add(keyOf(ou.q, ou.r));
+                  }
+                  const moveResult = executeAiCityMove({
+                    command: cmd,
+                    unit: u,
+                    cities,
+                    cityBuiltIds: destinationCity
+                      ? cityBuilt.get(destinationCity.id) ?? []
+                      : [],
+                    hasCityDefenders: destinationCity !== undefined
+                      && hasCityDefenders(destinationCity, units),
+                    targetVisible,
+                    canOccupyCityHex: canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities),
+                    blockedKeys,
+                    destinationKey: keyOf(cmd.toQ, cmd.toR),
+                    computePath: (_moveUnit, toQ, toR, occupied) =>
+                      computePath(u, map, toQ, toR, occupied, moveCostFnForUnit(u)),
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
-                    applyEmbarkStateAfterMove([u], map);
+                    onMoved: () => applyEmbarkStateAfterMove([u], map),
+                    onCapture: (city) => tryAutoCaptureEmptyCityAt(
+                      city.q,
+                      city.r,
+                      [u],
+                    ),
+                  });
+                  if (moveResult.moved) {
+                    const path = moveResult.path;
+                    const last = path[path.length - 1]!;
                     // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: symetria z ruchem gracza --
                     // `ownerId` tu to zawsze prawdziwa cywilizacja AI (1..N), nigdy
                     // barbarzyńcy (ci mają własną pętlę ruchu niżej, poza AICommand).

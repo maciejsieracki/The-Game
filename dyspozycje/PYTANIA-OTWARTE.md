@@ -31778,3 +31778,25 @@ kolejki, overflow, wiele miast, override i UI; bramki split/overflow/auto/AI/
 percent/wiring są zielone, VERIFY OK. Nie traktować tego wpisu jako otwartego.
 
 ---
+
+## KOREKTA STATUSÓW — kolejka AutoBot 2026-08-18
+
+Poniższe statusy wynikają z niezależnych Evaluatorów i dotyczą gotowości do
+integracji. Nie oznaczają jeszcze deployu ROBOCZA:
+
+- `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE` — **GOTOWE DO INTEGRACJI,
+  PASS-WITH-NOTES**; fix `38025d4b`, test repro/negacji `6fc4703b`, 16/16.
+- `P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM` — **GOTOWE DO INTEGRACJI,
+  PASS-WITH-NOTES**; `083dc4d2`, test kamery 24/24, tsc PASS.
+- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA` — **GOTOWE DO INTEGRACJI,
+  PASS-WITH-NOTES**; `9044e39d`, klik gracza, map attack 9/9, siege 6/6.
+- `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA` — **GOTOWE DO INTEGRACJI,
+  PASS-WITH-NOTES**; capture 14/14, movement 13/13, tsc PASS.
+- `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA` — **GOTOWE DO
+  INTEGRACJI, PASS-WITH-NOTES**; live preview 8/8 i pakiet dyplomacji zielony.
+- `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT` — **GOTOWE DO INTEGRACJI,
+  PASS**; test 8/8, rodzic wykazuje regresję 6/8.
+
+Osobne braki pozostają poza tym batch’em: pełne E2E pathfindingu AI,
+live Chromium/WebGL oraz test live edycji koszyka dyplomacji. Nie blokują
+obecnych kontraktów, ale są zapisane jako noty Evaluatorów.
