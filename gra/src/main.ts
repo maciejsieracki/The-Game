@@ -18671,7 +18671,7 @@ async function boot(): Promise<void> {
       createArmyListHud({
         getArmies: buildPlayerArmyListEntries,
         onSelectArmy: (unitId) => {
-          selectPlayerUnit(unitId);
+          selectPlayerUnit(unitId, true);
           // K: po kliknięciu jednostki w panelu ARMIE wycentruj kamerę na jej heksie
           // (zachowując bieżący zoom).
           const su = units.find(x => x.id === unitId);

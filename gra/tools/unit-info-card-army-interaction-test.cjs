@@ -22,7 +22,10 @@ function ok(condition, message) {
 const ordinaryClick = armySource.match(
   /const go = \(\) => config\.onSelectArmy\(a\.id\);[\s\S]{0,180}row\.addEventListener\('click', go\);/,
 );
-ok(!!ordinaryClick, 'zwykły klik wpisu wykonuje tylko zaznaczenie armii');
+ok(!!ordinaryClick
+  && mainSource.includes('onSelectArmy: (unitId) => {\n          selectPlayerUnit(unitId, true);')
+  && !mainSource.includes('onSelectArmy: (unitId) => {\n          selectPlayerUnit(unitId);'),
+  'główny wiring utrzymuje otwartą listę Armie (keepListOpen=true)');
 ok(!ordinaryClick?.[0].includes('onOpenUnitCard'),
   'zwykły klik nie otwiera karty');
 ok(armySource.includes("ev.stopPropagation();\n            config.onOpenUnitCard?.(a.id, a.unitTypeId!)"),
@@ -40,6 +43,5 @@ const callback = callbackStart >= 0 && callbackEnd > callbackStart
   : '';
 ok(!callback.includes('hideArmyListHud()'),
   'otwarcie karty nie niszczy/domyka listy Armie');
-
 console.log(`\nunit-info-card-army-interaction-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);
