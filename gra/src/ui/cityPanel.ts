@@ -4659,7 +4659,7 @@ function buildPracaDetailCard(
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
-  head.innerHTML = '<span>Podział pracy — ściąga</span>';
+  head.innerHTML = '<span>Lokalny przyrost Pracy — ściąga</span>';
   card.appendChild(head);
 
   const pctB = praca?.pctBudynki ?? pctCfg.procentBudynki;
@@ -4673,8 +4673,8 @@ function buildPracaDetailCard(
 
   const intro = el('div', 'dc-note');
   setNoteHtml(intro,
-    'Praca 🔨 to surowiec z pól okolicy (👤 na heksach). Nie idzie wszystko w jedno miejsce — suwak dzieli ją między ' +
-    'kolejkę budowy/rekrutacji a pulę imperium (załóż miasto, ulepszenia / projekty mapy). Razem zawsze 100%.',
+    'Praca 🔨 to surowiec z pól okolicy (👤 na heksach). Lokalny suwak dzieli przyrost między ' +
+    'kolejkę budowy/rekrutacji a pulę imperium. Nadrzędny podział puli na budynki i ulepszenia jest ustawiany osobno.',
   );
   card.appendChild(intro);
 
@@ -4688,7 +4688,7 @@ function buildPracaDetailCard(
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Praca', praca ? `${signed(praca.total)} 🔨` : '—');
   gridDetailRow(g1, '→ Budynki', praca ? `${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—');
-  gridDetailRow(g1, '→ Pula imperium', praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—');
+  gridDetailRow(g1, '→ Pula Pracy imperium', praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—');
 
   appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
   appendDetailFormula(card, 'doPuli = praca − doBudynkow  (nigdy nie gubi reszty)');
@@ -4696,14 +4696,14 @@ function buildPracaDetailCard(
   appendDetailSection(card, 'Trade-off (po co ten wybór)');
   const gt = appendDetailGrid(card);
   gridDetailRow(gt, 'Więcej 🏛', 'Szybciej kończysz budynki i rekrutację w kolejce — miasto rośnie „w pionie”.');
-  gridDetailRow(gt, 'Więcej 📦', 'Szybciej kumulujesz pulę imperium — załóż miasto, ulepszenia terenu na mapie, projekty.');
-  gridDetailRow(gt, 'Skrajności', '100% 🏛 = zero wpływu do puli. 100% 📦 = kolejka stoi w miejscu (chyba że pusta — wtedy całość i tak idzie do puli).');
+  gridDetailRow(gt, 'Więcej 📦', 'Szybciej kumulujesz pulę Pracy imperium — załóż miasto i finansuj nadrzędnie limitowane ulepszenia terenu.');
+  gridDetailRow(gt, 'Skrajności', '100% 🏛 = zero wpływu do puli. 100% 📦 = kolejka stoi w miejscu; to lokalny podział przyrostu, nie limit automatu.');
   gridDetailRow(gt, 'Brak pracy', 'Gdy 🔨 = 0, suwak nic nie da — przypisz 👤 w okolicy (prawa kolumna).');
 
   appendDetailAlgo(card, 'Algorytm (splitPraca + productionProgress)', [
     'Praca netto = suma z obrabianych pól + budynki − strata (korupcja).',
     'doBudynkow idzie do kolejki produkcji (budynki, jednostki) co turę.',
-    'doPuli trafia do zapasu Pracy imperium (nie do ulepszeń pól — te kosztują pulę przy akcji na mapie).',
+    'doPuli trafia do zapasu Pracy imperium (nie oznacza automatycznie wydatku na ulepszenia pól).',
     'Kolejka pusta: cała Praca miasta (doBudynkow + doPuli) idzie do puli imperium.',
     'Kolejka zajęta: postęp += doBudynkow; gdy postęp ≥ koszt → budynek gotowy; reszta → doPuli.',
     maTargowisko
@@ -4713,7 +4713,7 @@ function buildPracaDetailCard(
   ]);
 
   appendDetailAlgo(card, 'Suwak UI', [
-    'Kroki co 10%. Zmiana %Budynki automatycznie ustawia resztę na pulę imperium.',
+    'Kroki co 10%. Zmiana %Budynki automatycznie ustawia resztę na pulę Pracy imperium.',
     'Per miasto — każde miasto może mieć inny podział.',
     'Brak pracy w turze — przypisz 👤 na mapie okolicy. Miasto rywala: tylko podgląd.',
   ]);
@@ -4812,10 +4812,10 @@ function renderPodzialPracy(
   const sliderRow = el('div', 'slider-row');
   const sliderLabel = el('label');
   const podzialTip =
-    'Lokalny podział Pracy tego miasta. Kroki co 10%. W lewo → więcej do ulepszeń · '
-    + 'w prawo → szybsza kolejka budowy. Nie zmienia globalnego splitu całej puli Pracy imperium.';
+    'Lokalny podział przyrostu Pracy tego miasta. Kroki co 10%. W lewo → więcej do puli Pracy · '
+    + 'w prawo → szybsza kolejka budowy. Nie zmienia nadrzędnego podziału puli ani budżetu automatu.';
   sliderLabel.innerHTML =
-    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki / Ulepszenia (lokalnie)</span>` +
+    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki / Pula Pracy (lokalnie)</span>` +
     `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
   sliderRow.appendChild(sliderLabel);
 
@@ -4826,7 +4826,7 @@ function renderPodzialPracy(
     inp.max = '100';
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
-    inp.setAttribute('aria-label', 'Lokalny podział Pracy tego miasta: budynki versus ulepszenia');
+    inp.setAttribute('aria-label', 'Lokalny podział przyrostu Pracy tego miasta: budynki versus pula Pracy');
     inp.title = podzialTip;
     inp.addEventListener('input', () => {
       const v = snapHandelPct(Number(inp.value));

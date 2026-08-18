@@ -132,7 +132,15 @@ console.log('\n7. HUD preview: 100% budowa, pusta kolejka → brutto = cała Pra
   eq(hudWithBuild, 0, 'z budynkiem w kolejce → tylko doPuli (0)');
 }
 
-console.log('\n8. Nadrzędny split całej puli: ulepszenia ≤50%, budynki = remainder');
+console.log('\n8. Nadrzędny split: 10% ulepszeń → 90% budynków');
+{
+  const r = M.splitEmpirePracaBudget(100, 10);
+  eq(r.doUlepszen, 10, '10% całej puli Pracy trafia na ulepszenia');
+  eq(r.doBudynkow, 90, 'pozostałe 90% całej puli Pracy trafia na budynki');
+  eq(r.doBudynkow + r.doUlepszen, r.total, 'remainder zachowuje całą pulę');
+}
+
+console.log('\n9. Nadrzędny split całej puli: ulepszenia ≤50%, budynki = remainder');
 {
   const r = M.splitEmpirePracaBudget(1000, 100);
   eq(r.total, 1000, 'cała pula Pracy = 1000');
@@ -141,7 +149,7 @@ console.log('\n8. Nadrzędny split całej puli: ulepszenia ≤50%, budynki = rem
   eq(r.doBudynkow + r.doUlepszen, r.total, 'budynki + ulepszenia = 100% puli');
 }
 
-console.log('\n9. Split z override per-miasto i edge case małej puli');
+console.log('\n10. Split z override per-miasto i edge case małej puli');
 {
   const r = M.splitEmpirePracaBudget(3, 80);
   eq(r.doUlepszen, 1, 'mała pula: floor(50% z 3) = 1 na ulepszenia');
@@ -149,7 +157,7 @@ console.log('\n9. Split z override per-miasto i edge case małej puli');
   eq(r.doBudynkow + r.doUlepszen, r.total, 'mała pula zachowuje sumę 100%');
 }
 
-console.log('\n10. Integracja: globalna pula → remainder budynków + cap ulepszeń');
+console.log('\n11. Integracja: globalna pula → remainder budynków + cap ulepszeń');
 {
   const split = M.splitEmpirePracaBudget(100, 80); // UI/legalnie zaciska do 50%.
   const allocation = M.allocateEmpirePracaToBuildings(split.doBudynkow, [
@@ -166,7 +174,7 @@ console.log('\n10. Integracja: globalna pula → remainder budynków + cap uleps
   eq(allocation.used + split.doUlepszen, split.total, 'budynki + ulepszenia pokrywają całą pulę');
 }
 
-console.log('\n11. Integracja edge: mała pula, override i brak legalnej kolejki');
+console.log('\n12. Integracja edge: mała pula, override i brak legalnej kolejki');
 {
   const split = M.splitEmpirePracaBudget(3, 50);
   const allocation = M.allocateEmpirePracaToBuildings(split.doBudynkow, [
@@ -179,7 +187,7 @@ console.log('\n11. Integracja edge: mała pula, override i brak legalnej kolejki
   eq(allocation.remainder, 2, 'niewykorzystany remainder wraca do puli');
 }
 
-console.log('\n12. Integracja wiring: main używa remainder dla gracza i AI');
+console.log('\n13. Integracja wiring: main używa remainder dla gracza i AI');
 {
   const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
   ok(
