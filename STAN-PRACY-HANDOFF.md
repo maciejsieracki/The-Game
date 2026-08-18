@@ -489,7 +489,9 @@ Szczegóły w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Żaden z powyższych comm
 5. `gra/src` + `gra/data` to **kanon**. Kopie w innych katalogach są zamrożone/historyczne.
 6. **KAŻDY deploy loguj natychmiast** w `dyspozycje/WERSJE.md` (md5+stempel+co weszło; poprzednią oznacz ZASTĄPIONA) **i** `dyspozycje/_handoff/KANAL-PRACA.md` (meldunek dla drugiego integratora). Narracja w czacie NIE jest meldunkiem.
 7. **Przy niejednoznaczności/sprzecznych danych — pytaj właściciela, nie zgaduj.**
-8. **Deploy ROBOCZA tylko Grok 4.5** (2026-07-29) — subagenci Composer 2.5 kończą raportem „gotowe do deployu"; szczegóły: `.cursor/rules/model-routing.mdc`.
+8. **Deploy/push dopiero po pełnej pętli AutoBot i autoryzacji właściciela** —
+   Operator i Evaluator kończą na raporcie/weryfikacji; integrację i publikację wykonuje
+   uprawniona rola po przejściu bramek. Szczegóły: `.cursor/rules/autobot-evaluator-operator.mdc`.
 
 ---
 

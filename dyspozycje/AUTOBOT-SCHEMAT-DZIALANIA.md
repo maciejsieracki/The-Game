@@ -72,9 +72,10 @@ integracja → deploy/push. Raport Operatora automatycznie uruchamia Evaluatora.
 3. **Operator:** implementacja + testy · raport plików + PASS/FAIL. Po raporcie Evaluator startuje automatycznie.
 4. **Evaluator:** adwokat diabła + hard metrics · WERDYKT PASS/FAIL/NOTES.
 5. **Orkiestrator:** finalna kontrola; `FAIL` wraca do Operatora, `PASS` prowadzi do statusu, ABC albo integracji.
-6. **Integracja:** wpięcie po przejściu bramek.
-7. **Deploy/push:** dopiero po bramkach i wyraźnej autoryzacji właściciela.
-8. **Maciej:** playtest → OK zamyka / BUG wraca do ID.
+6. **Meldunek:** po finalnej kontroli zapisz `✅ Gotowe` i dopisz paczkę do `docs/MACIEJ-GOTOWE.md`.
+7. **Integracja:** wpięcie po przejściu bramek.
+8. **Deploy/push:** dopiero po bramkach i wyraźnej autoryzacji właściciela.
+9. **Maciej:** playtest → OK zamyka / BUG wraca do ID.
 
 ---
 
@@ -109,14 +110,19 @@ integracja → deploy/push. Raport Operatora automatycznie uruchamia Evaluatora.
 
 ## 8. ARCHIWUM — Integracja z Ultracode/Workflow (Maciej 2026-08-12)
 
+**Uwaga: cała sekcja 8 jest archiwalnym opisem integracji Workflow z 2026-08-12.**
+Aktywny kanon procesu znajduje się wyłącznie w sekcjach 1–7 oraz w
+`.cursor/rules/autobot-evaluator-operator.mdc`; poniższy opis nie zmienia obecnych
+ról, bramek ani odpowiedzialności.
+
 **Uwaga historyczna o modelach:** poniższy opis zachowuje wcześniejszy routing
 `composer-2.5`/„Grok" —
 wariancie z sesji Cursor, sprzed aktualizacji modeli 2026-08-06 (zaznaczone już wyżej w
 pliku jako możliwa rozbieżność). W sesjach Claude Code (gdzie działa narzędzie Workflow
-opisane niżej) obowiązuje CLAUDE.md §4: Operator = Sonnet 5, Evaluator = Opus 5, Deploy =
-Opus 5, „Grok" nie występuje jako final gate — tę rolę pełni orkiestrator (główna sesja
-Claude Code). Pętla z Sekcji 1 (`OP → EV → GR`) pozostaje kanoniczna jako **struktura**;
-poniższe punkty tłumaczą ją na narzędzie Workflow bez zmiany kolejności kroków.
+opisane niżej) obowiązywał historyczny routing Claude Code: Operator = Sonnet 5,
+Evaluator = Opus 5, a publikację wykonywała uprawniona rola po autoryzacji.
+Pętla z Sekcji 1 pozostaje tu wyłącznie historycznym opisem struktury; aktywny
+łańcuch to `Operator → Evaluator → finalna kontrola → integracja → deploy/push`.
 
 Workflow (Ultracode, Claude Agent SDK) to **narzędzie wykonawcze** — skrypt z `agent()`,
 `pipeline()`, `parallel()`, `phase()`, wbudowanym limitem współbieżności i izolacją
@@ -129,7 +135,7 @@ adwokat diabła"): `phase('Operator')` i `phase('Evaluator')` żyją w JEDNYM sk
 jako dwa kroki sekwencyjne tego samego przebiegu — nigdy jako dwa osobne, oddzielnie
 zlecane uruchomienia. `pipeline()` pozwala tematowi A być już w kroku 4 (Evaluator), gdy
 temat B jeszcze jest w kroku 3 (Operator) — bez ręcznego pilnowania kolejności przez
-orkiestratora/Grok.
+orkiestratora.
 
 Każdy prompt agenta uruchamianego w izolowanym worktree (Workflow albo ręczny `Agent` tool)
 zaczyna się od weryfikacji bazy worktree: grep symbolu, który musi istnieć na właściwej
@@ -137,11 +143,12 @@ gałęzi; brak trafienia = agent się zatrzymuje i zgłasza, zamiast zgadywać, 
 nie scalony". Zmiany dotykające silnika bitwy, zapisu/wczytania gry lub migracji danych w
 `gra/data/**` przechodzą przez 3 niezależnych Evaluatorów głosujących większością, nie 1.
 
-Krok 6–7 checklisty (meldunek „Gotowe" → `deploy` → tylko Grok/orkiestrator publikuje) NIE
-wchodzi w zakres Workflow — `git commit`/`push`, wpisy do `WERSJE.md`/`KANAL-PRACA.md`/
-`REJESTR-PROSB-I-ZADAN.md` i cały deploy zostają zawsze poza skryptem, ręką
-orkiestratora/Grok, dokładnie jak dziś. Workflow kończy pracę na „kod zatwierdzony przez
-Evaluatora" (koniec kroku 4), nie dalej.
+Historyczny krok 6–7 (meldunek „Gotowe" → `deploy`) nie wchodził w zakres
+Workflow — `git commit`/`push`, wpisy do `WERSJE.md`/`KANAL-PRACA.md`/
+`REJESTR-PROSB-I-ZADAN.md` i deploy pozostawały poza skryptem, ręką uprawnionej roli.
+W aktualnym procesie po Evaluatorze obowiązują jeszcze finalna kontrola i integracja;
+Workflow kończy się na zatwierdzeniu przez Evaluatora, a dalsze kroki wykonuje
+orkiestrator zgodnie z aktywnym kanonem.
 
 Pełny szczegół (dokładny szablon KROK 0, tabela modeli Sonnet 5/Opus 5): patrz
 `.cursor/rules/autobot-evaluator-operator.mdc` §„Integracja z Ultracode/Workflow" i
