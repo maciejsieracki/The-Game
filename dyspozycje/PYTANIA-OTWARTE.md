@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, limit barbarzyńców, zdobywanie miast przez barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, uzupełnianie HP z Manpower, limit barbarzyńców, zdobywanie miast przez barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -128,6 +128,32 @@ przejąć je bez walki. Po zwycięstwie właścicielem zostaje frakcja barbarzy�
 albo ustalony typ obozu barbarzyńskiego; trzeba zachować zasady garnizonu,
 oblężenia, eliminacji właściciela i późniejszego zachowania miasta. Dodać test
 osobno dla miasta gracza i miasta AI.
+
+### R-MANPOWER-UZUPELNIENIE-HP-NIEZAPISUJE-Q1 — uszkodzone jednostki nie odzyskują HP z Manpower · STATUS: **NOWE — POTWIERDZONA REGRESJA KRYTYCZNA**
+
+**Zgłoszenie Macieja:** jednostki z ubytkami HP nie uzupełniają sił mimo
+dostępnego Manpower albo robią to wolniej niż ustalony procent. Trzeba też
+sprawdzić, czy każda uszkodzona jednostka dostaje swój limit w tej samej turze,
+czy budżet jest zabierany jednej armii po drugiej.
+
+**Potwierdzona przyczyna zapisu:** `gra/src/main.ts:19690-19703` przekazuje do
+`advanceCityEconomy()` tablicę utworzoną przez `units.map(...)`. Funkcja
+`tickManpowerUnitReplenishment()` (`gra/src/game/manpower.ts:172-238`) mutuje
+`u.hp`, ale jest to kopia obiektu, więc HP żywej jednostki w `units[]` nie
+zmienia się trwale. Następna tura ponownie widzi stare HP.
+
+**Druga luka kontraktu:** `manpower.ts:197-235` sortuje wszystkie jednostki
+właściciela i leczy je sekwencyjnie. Jeśli wspólna pula Manpower nie wystarcza
+na pełny limit wszystkich, wcześniejsze jednostki w kolejności dostają leczenie,
+a późniejsze mogą dostać zero. To nie jest równoczesny, sprawiedliwy procent
+dla całej armii.
+
+**Kontrakt do wdrożenia:** przekazać referencje albo zastosować jawny wynik
+uzupełnienia z zapisaniem HP do żywych jednostek; w jednej turze wszystkie
+kwalifikowane jednostki tej frakcji mają dostać ustalony procent maksymalnego
+HP, z jednym wspólnym budżetem Manpower. Przy niedoborze budżetu potrzebny jest
+jawny rozdział proporcjonalny, nie zależny od kolejności `unit.id`. Zachować
+wyjątki: zwiadowcy, jednostki z pełnym HP i jednostki w oblężonym mieście.
 
 ### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **NOWE — ZAPISANA PROPOZYCJA**
 
