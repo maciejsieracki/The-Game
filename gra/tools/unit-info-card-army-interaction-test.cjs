@@ -43,4 +43,3 @@ ok(!callback.includes('hideArmyListHud()'),
 
 console.log(`\nunit-info-card-army-interaction-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);
-
