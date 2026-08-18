@@ -289,6 +289,13 @@ nie cały magazyn) i dodać test regresyjny, który zabrania wzrostu rzędu
 100% tylko dlatego, że magazyn Ceramiki jest pełny. Wartości nowego limitu są
 decyzją balansową — nie zgadywać ich przy poprawce technicznej.
 
+**Doprecyzowanie po screenie 2026-08-18:** wartość `+306` pokazana jako
+„Budynki (+1/budynek)” nie pochodzi z kilku budynków. `main.ts:20314-20325`
+przekazuje do `buildingZadowolenie` sumę zwykłych budynków **plus**
+`econTick.garncarniaSurplusZadowolenie`; przy około 300 sztukach Ceramiki
+powstaje około +300 Szczęścia oraz kilka punktów z budynków. Etykieta UI jest
+więc dodatkowo myląca, bo ukrywa bonus Garncarni pod kategorią budynków.
+
 ### R-TRIUMF-CS-KOMUNIKAT-KARTA-W-GRZE-Q1 — ważny triumf jest tylko chwilowym tekstem · STATUS: **NOWE — BRAK INTEGRACJI UX**
 
 **Zgłoszenie Macieja:** informacja o zajęciu wszystkich miast-państw danej
