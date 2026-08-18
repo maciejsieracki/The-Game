@@ -8,13 +8,16 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1 — KANON RAPORTU, NIE OTWARTE ABC
+## R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1 — KANON RAPORTU, NIE OTWARTE ABC
 
-Decyzja procesowa z 2026-08-18: raport właściciela ma zawsze siedem kategorii:
-gotowe do integracji/deployu, w trakcie — Operator, w trakcie — Evaluator,
-zapomniane — do dispatchu, świadomie odłożone, otwarte ABC oraz playtesty.
-Pełna definicja, źródła i reguły klasyfikacji są w
-[`docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md).
+Decyzja procesowa z 2026-08-18: raport właściciela ma **dziesięć** kategorii
+(osobne stany przejściowe Operator/Evaluator, „czeka na Operatora” vs
+„zapomniane”, świadomie odłożone, otwarte ABC, playtesty). Pełna definicja,
+źródła, reguły klasyfikacji i snapshot referencyjny:
+[`docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](../docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
+
+Poprzedni układ siedmiu kategorii (`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`) —
+plik kompatybilności historycznej, **SUPERSEDED**; treść w historii gita.
 
 Ten wpis nie jest pytaniem do właściciela i nie trafia do aktywnej listy ABC.
 Odpowiedzi A/B/C pozostają w historii, ale przed pokazaniem ich jako otwarte ABC

@@ -447,6 +447,35 @@ niejednoznaczności lub sprzecznych danych — **pytaj, nie zgaduj**. Ale też *
 problemów, których nie ma**: najprostsze rozwiązanie spełniające wymaganie wygrywa.
 „Nie zmieniamy tego, co już działa — tylko dostosuj".
 
+### Hasło `raport` — aktywny format dziesięciu kategorii
+
+Na hasło **`raport`** (Master / orkiestrator) dostarcz zestawienie **zawsze**
+w tej kolejności (pusta sekcja → `— (brak)`):
+
+1. **Gotowe do integracji/deployu** — w tym już zdeployowane, z jawnym statusem.
+2. **W trakcie — Operator.**
+3. **Operator zakończony — czeka na Evaluatora.**
+4. **W trakcie — Evaluator.**
+5. **Evaluator zakończony — czeka na finalną kontrolę/integrację.**
+6. **Czeka na Operatora — gotowe do dispatchu** — pełny ECHO/kontrakt, **zero**
+   realnego Operatora/commitu; dowód w `docs/decyzje/<ID>.md` lub rejestrze.
+7. **Zapomniane — do dispatchu** — brak kompletnego kontraktu **albo** brak śladu
+   procesu (odróżnij od kategorii 6).
+8. **Świadomie odłożone.**
+9. **Otwarte ABC** — tylko bez jawnej odpowiedzi właściciela (filtr ECHO).
+10. **Playtesty** — wyłącznie najnowszy wpis `Playtest — na co patrzeć` z
+    `dyspozycje/WERSJE.md`.
+
+Kategoria 6 **nie** może zawierać ID z commitem Operatora ani werdyktem
+Evaluatora. W kategoriach 3 i 5 wpisuj wyłącznie realny raport/commit/werdykt —
+nie worktree.
+
+Pełny kanon i snapshot referencyjny:
+[`docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](../../../docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
+Poprzedni układ siedmiu kategorii:
+[`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](../../../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md)
+(**SUPERSEDED**, kompatybilność linków).
+
 ## 10. Zamknięcie
 
 Po każdej większej paczce zaktualizuj `playbook.md` (dziennik wniosków: zrobiono →

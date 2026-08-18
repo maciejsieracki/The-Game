@@ -20,25 +20,33 @@ Gdy Maciej wpisze jedno z poniższych haseł, agent **natychmiast** odpowiada w 
 
 ---
 
-## `raport` — aktywny kanon 7 kategorii
+## `raport` — aktywny kanon 10 kategorii
 
 **Gdzie:** czat **Master** (orkiestracja). **Hasło Macieja:** wpisz **`raport`**.
-Pełny kanon: [`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`](../../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md).
+Pełny kanon: [`R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1`](../../docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
+Poprzedni układ 7 kategorii (`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`) pozostaje
+w historii gita — nie używać go w odpowiedzi `raport`.
 
-Odpowiedz **zawsze** w siedmiu nagłówkach, w tej kolejności (pusta sekcja →
+Odpowiedz **zawsze** w dziesięciu nagłówkach, w tej kolejności (pusta sekcja →
 `— (brak)`):
 
-1. **Gotowe do integracji/deployu.**
+1. **Gotowe do integracji/deployu** — w tym już zdeployowane, z jawnym statusem.
 2. **W trakcie — Operator.**
-3. **W trakcie — Evaluator.**
-4. **Zapomniane — do dispatchu.**
-5. **Świadomie odłożone.**
-6. **Otwarte ABC.**
-7. **Playtesty.**
+3. **Operator zakończony — czeka na Evaluatora.**
+4. **W trakcie — Evaluator.**
+5. **Evaluator zakończony — czeka na finalną kontrolę/integrację.**
+6. **Czeka na Operatora — gotowe do dispatchu** — pełny kontrakt/ECHO/ABC, Operator
+   jeszcze nie uruchomiony; podaj plik decyzji/rejestru jako dowód.
+7. **Zapomniane — do dispatchu** — brak kompletnego kontraktu albo brak śladu
+   procesu; odróżnij od kategorii 6.
+8. **Świadomie odłożone.**
+9. **Otwarte ABC.**
+10. **Playtesty.**
 
 Każdy punkt ma format **ID — jedno zdanie statusu — dowód albo następna
 czynność**. Raport jawnie podaje stan aktywnego Operatora i Evaluatora; worktree,
-branch ani ukryte powiadomienie nie są dowodem żywego procesu.
+branch ani ukryte powiadomienie nie są dowodem żywego procesu. W kategoriach 3 i 5
+wpisuj wyłącznie realny raport/commit Operatora lub werdykt Evaluatora — nie worktree.
 
 **Nadrzędny obieg AutoBot:** `Operator → Evaluator → finalna kontrola → integracja →
 deploy/push`. Raport Operatora nie kończy procesu: po jego otrzymaniu Evaluator jest
@@ -54,7 +62,7 @@ Przed pokazaniem ABC sprawdź ECHO/status w dokumencie decyzji. Odpowiedzi A/B/C
 i inne jawne decyzje pozostają w historii, ale znikają z aktywnego ABC; pokazuj
 je wyłącznie jako **ZAMKNIĘTE/GOTOWE/W TOKU/DO INTEGRACJI**.
 
-Kategoria 7 korzysta wyłącznie z najnowszej ROBOCZEJ pozycji
+Kategoria 10 korzysta wyłącznie z najnowszej ROBOCZEJ pozycji
 `Playtest — na co patrzeć` w `dyspozycje/WERSJE.md`; nie wolno dopisywać
 historycznej kolejki PT ani starszych fal.
 

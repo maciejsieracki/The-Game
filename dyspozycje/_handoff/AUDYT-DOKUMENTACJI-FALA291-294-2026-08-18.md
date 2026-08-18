@@ -218,10 +218,12 @@ automatycznie dowodem, że temat nadal jest otwarty.
 
 ## 10. Kanon raportu właściciela
 
-Raport bieżącego stanu opisuje osobny dokument procesowy
-[`docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](../../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md).
-Ten audyt jest handoffem/snapshotem dla bazy FALI 294, ale nie zastępuje
-odczytu najnowszej ROBOCZEJ z `WERSJE.md`.
+Raport bieżącego stanu opisuje dokument procesowy
+[`docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](../../docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md)
+(dziesięć kategorii; snapshot referencyjny FALA 295 `8589d294`). Poprzedni
+kanon siedmiu kategorii: [`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](../../docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md)
+(**SUPERSEDED**, kompatybilność linków). Ten audyt jest handoffem/snapshotem
+dla bazy FALI 294, ale nie zastępuje odczytu najnowszej ROBOCZEJ z `WERSJE.md`.
 
 Przy raporcie należy jawnie rozdzielić stan Operatora od stanu Evaluatora;
 worktree, branch i ukryte powiadomienie nie są dowodem aktywnego procesu.

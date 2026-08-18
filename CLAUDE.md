@@ -249,21 +249,27 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 9. **Komentarze w kodzie (`gra/src/**`) dwujęzyczne PL+EN (Maciej 2026-08-09).** Nie zmienia zasady „domyślnie
    bez komentarzy, tylko gdy WHY nieoczywiste" — dotyczy WYŁĄCZNIE tych rzadkich komentarzy, które i tak
    powstają. Format: polska wersja, potem `/ EN: ...` w tej samej linii/bloku.
-10. **HASŁO „raport" — aktywny kanon siedmiu kategorii
-    (`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`, 2026-08-18).** Na słowo `raport`
+10. **HASŁO „raport" — aktywny kanon dziesięciu kategorii
+    (`R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1`, 2026-08-18).** Na słowo `raport`
     dostarcz zestawienie zawsze w tej kolejności:
-    1. **Gotowe do integracji/deployu.**
+    1. **Gotowe do integracji/deployu** — w tym już zdeployowane, z jawnym statusem.
     2. **W trakcie — Operator.**
-    3. **W trakcie — Evaluator.**
-    4. **Zapomniane — do dispatchu.**
-    5. **Świadomie odłożone.**
-    6. **Otwarte ABC.**
-    7. **Playtesty.**
+    3. **Operator zakończony — czeka na Evaluatora.**
+    4. **W trakcie — Evaluator.**
+    5. **Evaluator zakończony — czeka na finalną kontrolę/integrację.**
+    6. **Czeka na Operatora — gotowe do dispatchu** — pełny kontrakt/ECHO/ABC, Operator
+       jeszcze nie uruchomiony; dowód w pliku decyzji/rejestru.
+    7. **Zapomniane — do dispatchu** — brak kompletnego kontraktu albo brak śladu
+       procesu; odróżnij od kategorii 6.
+    8. **Świadomie odłożone.**
+    9. **Otwarte ABC.**
+    10. **Playtesty.**
 
     Każdy punkt ma format: **ID — jedno zdanie statusu — dowód albo następna
     czynność**; pusta kategoria otrzymuje `— (brak)`. Raport musi osobno i jawnie
     podać stan Operatora oraz Evaluatora. Worktree, branch, stary plik lub samo
-    powiadomienie nie jest dowodem aktywnego procesu.
+    powiadomienie nie jest dowodem aktywnego procesu. W kategoriach 3 i 5 wpisuj
+    wyłącznie realny raport/commit Operatora lub werdykt Evaluatora.
 
     Źródła i kolejność weryfikacji: `dyspozycje/PYTANIA-OTWARTE.md`,
     `dyspozycje/REJESTR-PROSB-I-ZADAN.md`, `docs/decyzje/<ID>.md`,
@@ -273,14 +279,15 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
     ale zostaje w historii i może być pokazane wyłącznie jako
     **ZAMKNIĘTE/GOTOWE/W TOKU/DO INTEGRACJI**.
 
-    Kategoria 7 korzysta wyłącznie z najnowszego wpisu ROBOCZEJ
+    Kategoria 10 korzysta wyłącznie z najnowszego wpisu ROBOCZEJ
     `Playtest — na co patrzeć` w `dyspozycje/WERSJE.md`; nie przenosi historycznej
     kolejki PT ani starszych fal. Pełna definicja i snapshot referencyjny:
-    [`docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md`](docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md).
+    [`docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
 
-    **ARCHIWUM — SUPERSEDED:** poprzedni format raportu 5-kategorii oraz
-    zawieszona wersja kategorii 6 pozostają w historii dokumentów i commitów, ale
-    nie są już formatem odpowiedzi `raport`.
+    **ARCHIWUM — SUPERSEDED:** poprzedni format raportu 7-kategorii
+    (`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`, snapshot FALA 294), starszy format
+    5-kategorii oraz zawieszona wersja kategorii 6 pozostają w historii dokumentów
+    i commitów, ale nie są już formatem odpowiedzi `raport`.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)
