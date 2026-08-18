@@ -9,7 +9,16 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA 8589d294 - 2026-08-18 09:59 UTC - FALA 295: kolejka AI/MP, capture/surrender, dyplomacja i karta jednostki
+## ROBOCZA a37f7123 - 2026-08-18 13:04 UTC - FALA 296: mapgen B, overlay kopalni N2/N3/N5/N6 i barbarzyńcy
+|- md5 (pełne): a37f71239248fe287d37c9d44c0137e6 · stempel: ROBOCZA · label a37f7123 · źródłowy commit integracji: `ac09c091`
+|- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY=B`: przekroczenie progu czasu raportowane jako WARN; poprawność generatora pozostaje twardą bramką; kontrakt 2/2 PASS.
+|- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2=C`: targeted overlay z `depthTest:true` i reliefem; N3 reset cleanupu, N5 asercja testu, N6 komentarz; test overlay 76/76, relief 24/24, cyna 23/23.
+|- `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1`: blacklist dokładnych heksów obozów, save/load, parytet; testy 18/18 i 84/84, tsc PASS.
+|- Dyplomacja/regresja: live preview 8/8 · stół 166/166 · fairness 24/24; AI capture 14/14 · AI/MP 20/20 · surrender 11/11.
+|- Bramki: tsc 5.9.3 PASS · Vite 829 modułów · VERIFY OK.
+|- `relief-grid-coverage-test.cjs` TIMEOUT po 5 min w znanym długim etapie; pozostałe bramki tematyczne zielone. **AKTUALNA**
+
+## ROBOCZA 8589d294 - 2026-08-18 09:59 UTC - FALA 295: kolejka AI/MP, capture/surrender, dyplomacja i karta jednostki — **ZASTĄPIONA** (→ a37f7123)
 |- md5 (pełne): 8589d2946a234935231bcf0d52c1a11a · stempel: ROBOCZA · label 8589d294 · źródłowy commit integracji: `e6465768`
 |- `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI`: aktywny zakup AI/MP przez Skarbiec; migracja legacy kolejki po capture i surrender; testy 20/20, 11/11, 13/13.
 |- `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA`: puste miasto AI wyłącznie przez adiacencję; testy capture 14/14 i movement 13/13.

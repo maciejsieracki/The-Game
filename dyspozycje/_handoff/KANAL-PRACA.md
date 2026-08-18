@@ -7390,3 +7390,13 @@ testów i wcześniejszych werdyktów, ale nie osobny raport Evaluatora w tym kan
 |- Pozostają noty nieblokujące: historyczne literalne nazwy modeli w C-042 oraz
 brak osobnego raportu dla docs-only w dawnym przebiegu.
 CZEKAM-NA: **nic dla ROBOCZA; docs-only zapisane, bez redeployu**.
+
+## [13:04 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 296
+ROBOCZA md5 `a37f71239248fe287d37c9d44c0137e6` (skrót `a37f7123`) · źródło `ac09c091`.
+|- Mapgen decyzja B: czas ponad progiem = WARN, poprawność twarda; kontrakt 2/2 PASS.
+|- Kopalnia N2 targeted overlay + N3 cleanup + N5 test + N6 komentarz; overlay 76/76, relief 24/24, cyna 23/23.
+|- Barbarzyńcy: blacklist/save-load/parytet; testy 18/18 i 84/84, tsc PASS.
+|- Dyplomacja: live 8/8 · stół 166/166 · fairness 24/24; AI/rekrutacja/surrender zielone.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; stamp + synchronizacja 6 bundli + START hub; `VERIFY OK`.
+|- `relief-grid-coverage-test.cjs` TIMEOUT po 5 min w znanym etapie; nie zostawiono procesu, pozostałe bramki zielone.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `a37f7123`**.

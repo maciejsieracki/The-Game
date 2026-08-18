@@ -1,6 +1,6 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-18 09:59 (deploy FALA 295)** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-18 13:04 (deploy FALA 296)** · Projekt: Civ „The Game"
 
 ## AUDYT DOKUMENTACJI 2026-08-18 — AKTUALNY PUNKT ODNIESIENIA
 
@@ -13,9 +13,11 @@ nie usuwamy.
   md5 `13b771f4`.
 - **FALA 292:** historyczna integracja paczek, zastąpiona korektą FALI 293.
 - **FALA 293:** pełny split Pracy budynki↔ulepszenia, PASS, md5 `8fa80b7c`.
+- **FALA 296:** mapgen B, overlay kopalni N2/N3/N5/N6 oraz barbarzyńcy;
+  `VERIFY OK`, md5 `a37f7123`.
 - **FALA 295:** zweryfikowana kolejka AI/MP, capture/surrender, dyplomacja,
-  podsumowanie bitwy, stale highlight cudu i karta jednostki; `VERIFY OK`,
-  md5 `8589d294`.
+  podsumowanie bitwy, stale highlight cudu i karta jednostki; zastąpiona przez
+  FALĘ 296, md5 `8589d294`.
 - **FALA 294:** karta Brązownictwa (**ECHO C**) i triumf miast-państw,
   zastąpiona przez FALĘ 295; `a0f804d7`.
 - **Ogólny prototyp karty technologii** pozostaje otwarty (rozbieżność

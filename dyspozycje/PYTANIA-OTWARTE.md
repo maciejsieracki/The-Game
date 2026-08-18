@@ -31821,5 +31821,13 @@ obecnych kontraktów, ale są zapisane jako noty Evaluatorów.
   globalnego przebijania przez teren i jednostki. Kontrakt:
   `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md`.
 
-Oba tematy: **ZAPISANE — gotowe do dispatchu Operatora Workflow**. Nie
-uruchamiać implementacji poza Workflow.
+Oba tematy: **ZDEPLOYOWANE FALA 296 `a37f7123`** po osobnych parach
+Operator Luna → Evaluator Luna High. Nie uruchamiać ponownego dispatchu.
+
+Wyniki FALI 296:
+- mapgen B: kontrakt 2/2 PASS; czas ponad progiem jest WARN;
+- N2 targeted overlay: 76/76, relief 24/24, render cyny 23/23;
+- N3 reset cleanupu: 72/72;
+- N5 asercja testu: 71/71 + mutacja wykryta;
+- N6 komentarz: diff-check PASS;
+- barbarzyńcy: 18/18 i 84/84, typecheck PASS.

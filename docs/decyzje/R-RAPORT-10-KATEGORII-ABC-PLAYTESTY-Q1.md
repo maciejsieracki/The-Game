@@ -438,8 +438,8 @@ Przed dostarczeniem raportu właścicielowi — **wszystkie punkty TAK**:
 > wynik może różnić się od tej listy po nowej ROBOCZEJ, dispatchu lub decyzji
 > właściciela.
 
-Baza przykładu: **FALA 295**, ROBOCZA `8589d294`, audyt
-`dyspozycje/_handoff/KANAL-PRACA.md` (wpisy 09:59–10:19 UTC 2026-08-18) oraz
+Baza przykładu: **FALA 296**, ROBOCZA `a37f7123`, audyt
+`dyspozycje/_handoff/KANAL-PRACA.md` (wpisy 09:59–13:04 UTC 2026-08-18) oraz
 `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
 
 ### 1. Gotowe do integracji/deployu
@@ -462,6 +462,13 @@ Baza przykładu: **FALA 295**, ROBOCZA `8589d294`, audyt
 - `P-JEDNOSTKI-KARTA-3D-INFO-Q1` — **ZDEPLOYOWANE FALA 295 `8589d294`** —
   Evaluator PASS-WITH-NOTES; dowód: `docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md`,
   rejestr, `WERSJE.md`.
+- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY` — **ZDEPLOYOWANE FALA 296 `a37f7123`** —
+  decyzja B, kontrakt 2/2, czas raportowany jako WARN.
+- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2` + N3/N5/N6 —
+  **ZDEPLOYOWANE FALA 296 `a37f7123`** — overlay 76/76, relief 24/24,
+  cyna 23/23, typecheck PASS.
+- `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1` — **ZDEPLOYOWANE FALA 296
+  `a37f7123`** — Evaluator PASS, testy 18/18 i 84/84.
 
 ### 2. W trakcie — Operator
 
@@ -470,11 +477,8 @@ Baza przykładu: **FALA 295**, ROBOCZA `8589d294`, audyt
 
 ### 3. Operator zakończony — czeka na Evaluatora
 
-- `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1` — **Operator zakończony — Evaluator
-  WSTRZYMANY**: implementacja lokalna bez deployu; runda 5 wstrzymana do
-  wspólnej naprawy `fix-barb-city-v2` (`PYTANIA-OTWARTE.md`). Dowód Operatora:
-  commit `85f70a91`, testy `0e720a70`/`e0548514`/`49f01e7d` —
-  `docs/decyzje/P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1.md`, `REJESTR-PROSB-I-ZADAN.md`.
+- `— (brak)` — barbarzyńcy przeszli Evaluatora i zostali zdeployowani w FALI
+  296; brak paczki oczekującej na werdykt.
 
 ### 4. W trakcie — Evaluator
 
@@ -492,12 +496,8 @@ Baza przykładu: **FALA 295**, ROBOCZA `8589d294`, audyt
 
 ### 6. Czeka na Operatora — gotowe do dispatchu
 
-- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY` — ECHO **B**, pełny kontrakt i bramki
-  zapisane; czeka Operator Workflow. Dowód:
-  `docs/decyzje/P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.md`.
-- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2` — ECHO **C**, osobny kontrakt
-  targeted overlay i zakres N2; czeka Operator Workflow. Dowód:
-  `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md`.
+- `— (brak)` — mapgen B i N2/N3/N5/N6 zostały wykonane,
+  zweryfikowane i zdeployowane w FALI 296.
   Wykluczone ze snapshotu: `AI-BALANS-STEP6-Q1` (**już wdrożone** — `dadcb48`,
   rejestr); `R-KAMIEN-RELIEF-FOLLOWUP-Q1` (**commit** `8593237` na branchu);
   `R-DESIGN-PANEL-MIASTA-V2-Q1` (**blokada zewnętrzna** Design — kategoria 8);
@@ -506,9 +506,8 @@ Baza przykładu: **FALA 295**, ROBOCZA `8589d294`, audyt
 
 ### 7. Zapomniane — do dispatchu
 
-- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA` — noty N3/N5/N6 pozostają osobnymi
-  zadaniami technicznymi bez kontraktu; N2 ma osobne ECHO i kategorię 6.
-  Dowód: `PYTANIA-OTWARTE.md` (2026-08-17/18).
+- `— (brak)` — N2/N3/N5/N6 zostały rozdzielone, zweryfikowane i zdeployowane
+  w FALI 296; pozostałe dawne noty nie mają aktywnego kontraktu.
 
 ### 8. Świadomie odłożone
 
