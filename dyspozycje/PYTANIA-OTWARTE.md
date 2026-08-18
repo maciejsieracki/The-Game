@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI, wycena surowców i porządek infografik dyplomacji). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji i karta ukończonych badań). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -132,6 +132,27 @@ wyjaśniającego.
 (aktywna/zablokowana) i najważniejszą wartość; powód blokady, opis działania,
 czas trwania i konsekwencje trafiają do jednego spójnego tooltipu. Nie zmieniać
 logiki progów ani wartości dyplomacji — to osobna warstwa od porządkowania UI.
+
+### R-NAUKA-KOMUNIKAT-KARTA-UKONCZENIA-Q1 — komunikat „Koniec tury” nie otwiera karty badań · STATUS: **NOWE — POTWIERDZONA LUKA**
+
+**Zgłoszenie Macieja:** komunikat w rodzaju „Zbadano: Koło (−352 nauki)”
+nie powinien być nazwany „Koniec tury”. Powinien mieć tytuł związany z badaniami,
+np. „Badania zakończone” albo „Nowe odkrycie”. Kliknięcie komunikatu powinno
+otwierać kartę/infografikę właśnie ukończonej technologii; samo zamknięcie
+komunikatu nie może być jedyną dostępną akcją.
+
+**Wstępny dowód kodowy:** `gra/src/main.ts:20098-20110` buduje tekst
+`Zbadano: ...` i przekazuje go do `showHintMessage(...)`, bez `techId`,
+callbacku kliknięcia ani akcji otwierającej kartę. Jednocześnie istnieją już
+ścieżki `openScienceTreeDocked(focusTechId)` (`main.ts:4701-4709`) oraz
+`showSciencePickerDocked(...)`, które mogą otrzymać identyfikator ukończonej
+technologii.
+
+**Kontrakt:** nowy komunikat badań ma własny typ/identyfikator zdarzenia,
+tytuł „Badania zakończone”/„Nowe odkrycie”, treść z nazwą i kosztem oraz akcję
+„Otwórz kartę”. Kliknięcie otwiera kartę ukończonej technologii, a zamknięcie
+tylko usuwa komunikat. Awans epoki może mieć dodatkowy komunikat, ale nie może
+ukrywać karty badania.
 
 ---
 
