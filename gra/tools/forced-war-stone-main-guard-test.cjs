@@ -80,7 +80,10 @@ check(
 );
 check(
   'siege surrender funnel rozlicza Stone',
-  /city\.ownerId = newOwner;[\s\S]{0,1000}maybeResolveStoneForcedWarOnCityCapture\(oldOwner, newOwner\);/.test(main),
+  siegeSurrender.includes('city.ownerId = newOwner;')
+    && siegeSurrender.includes(stoneSurrenderHook)
+    && siegeSurrender.indexOf(stoneSurrenderHook)
+      > siegeSurrender.indexOf('city.ownerId = newOwner;'),
 );
 check(
   'resolveSiegeSurrender: Stone hook jest po zmianie city.ownerId',
