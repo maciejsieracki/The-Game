@@ -13,10 +13,10 @@ alwaysApply: true
 
 ```
 ### Następny krok
-1. **…** — jedno zdanie (rekomendacja pierwsza)
-2. **…** — alternatywa
-3. **…** — opcjonalnie trzecia
-Napisz: działaj / 1 / 2 / 3 (albo inną dyspozycję).
+1. **R-TEMAT-Q1 / NK1: …** — jedno zdanie (rekomendacja pierwsza)
+2. **R-TEMAT-Q1 / NK2: …** — alternatywa
+3. **R-TEMAT-Q1 / NK3: …** — opcjonalnie trzecia
+Odpowiedz: `R-TEMAT-Q1 + NK1` / `NK2` / `NK3` (albo własną dyspozycją).
 ```
 
 ## Reguły
@@ -27,13 +27,20 @@ Napisz: działaj / 1 / 2 / 3 (albo inną dyspozycję).
 4. **Nie czekaj** aż Maciej zapyta „co dalej?” — blok jest obowiązkowy.
 5. Wyjątek: Maciej wyraźnie kończy sesję („stop”, „na dziś”, „wyłączam komputer”) — wtedy krótki status bez menu.
 6. Nie mylić z ABC gameplay — to **kolejka operacyjna**, nie decyzja produktowa A/B/C.
+7. **ID jest obowiązkowe:** menu musi wskazywać istniejący numer zgłoszenia z
+   `REJESTR-PROSB-I-ZADAN.md` albo numer aktualnej paczki. Nie używaj gołego
+   „1 / 2 / 3”, bo odpowiedź może zostać pomylona z kolejnym zgłoszeniem.
+8. **Odpowiedź musi być przypisana:** `NK1/NK2/NK3` bez ID nie zamyka pytania.
+   Jeśli Maciej zamiast numeru poda własną dyspozycję, traktuj ją jako nową
+   dyspozycję i zapisz ją pod odpowiednim ID; nie oznaczaj automatycznie
+   poprzedniego menu jako odpowiedzianego.
 
 ## Przykład
 
 Po deployu FALA N:
 ### Następny krok
-1. **Pomiar Budowania sceny** — Ctrl+F5 + Nowa gra, czas ostatniego etapu (rekomendacja)
-2. **Fix Jin/Argos (ownerId)** — miasta-państwa Chin vs etykieta Grecy
-3. **Spawn: 10 hex od morza** — skala Standard
+1. **R-SCENA-PERF-FALA138 / NK1: Pomiar budowania sceny** — czas ostatniego etapu
+2. **R-MP-NAZWA-CIV-MISMATCH / NK2: Fix Jin/Argos** — zgodność ownerId i etykiety
+3. **R-SPAWN-ODLEGLOSC-MORZE / NK3: Spawn 10 hex od morza** — skala Standard
 
-Napisz: działaj / 1 / 2 / 3.
+Odpowiedz: `R-SCENA-PERF-FALA138 + NK1` / `NK2` / `NK3`.
