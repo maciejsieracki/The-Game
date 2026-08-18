@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, limit barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-18 (rejestracja regresji: koszt rekrutacji, kierunek kary za granice, wzrost ludności, skala bonusu Garncarni, limit barbarzyńców, koncentracja armii AI, wycena surowców, porządek infografik dyplomacji, karty ważnych zdarzeń i wspólna walka z barbarzyńcami). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -159,6 +159,26 @@ widoczna jako część komunikatu — źródło nadal używa efemerycznego
 `showHintMessage`, bez trwałego zdarzenia i bez przycisku otwarcia. Temat
 pozostaje **NIEZINTEGROWANY**, mimo że `sciencePicker`/`openScienceTreeDocked`
 istnieją jako osobne ekrany.
+
+### R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1 — cały zapas Ceramiki zamieniany na wzrost · STATUS: **NOWE — POTWIERDZONA REGRESJA**
+
+**Zgłoszenie Macieja:** miasto z Wyżywieniem 4 pokazuje tylko **+4,5%** z
+Wyżywienia, ale całkowity wzrost wynosi **116,5%**, w tym **Szczęście +111%**.
+To nie jest prawidłowy wpływ suwaka Wyżywienia.
+
+**Potwierdzona przyczyna:** `gra/src/game/turn-economy.ts:1348-1363`
+wylicza `garncarniaSurplusZadowolenie` z całego `ceramikaPoDrainSpichlerza`,
+a `computeGarncarniaSurplusBonus(... efekt: 'zadowolenie', zadowolenieNaSztuke: 1)`
+przekazuje praktycznie 1 pkt Szczęścia za 1 sztukę zapasu. Następnie
+`main.ts:20314-20325` dodaje ten wynik do `buildingZadowolenie`, a
+`population-growth-v85.ts` przelicza netto Szczęścia przez `floor(netto / 10)`.
+Zapas około 1100 Ceramiki daje więc około +110 punktów procentowych wzrostu.
+
+**Wniosek:** to odrębny błąd od dubla Wealth. Trzeba ograniczyć lub inaczej
+przeliczyć wpływ zapasu Ceramiki (najlepiej przez kontrolowaną nadwyżkę/turę,
+nie cały magazyn) i dodać test regresyjny, który zabrania wzrostu rzędu
+100% tylko dlatego, że magazyn Ceramiki jest pełny. Wartości nowego limitu są
+decyzją balansową — nie zgadywać ich przy poprawce technicznej.
 
 ### R-TRIUMF-CS-KOMUNIKAT-KARTA-W-GRZE-Q1 — ważny triumf jest tylko chwilowym tekstem · STATUS: **NOWE — BRAK INTEGRACJI UX**
 
