@@ -7490,6 +7490,14 @@ ROBOCZA md5 `bdb3f91a966bd33c64f3657f281bd8b6` (skrót `bdb3f91a`) · źródło 
 |- Build `/tmp/civ-dist` → `gra-robocza/`; synchronizacja 6 bundli + START hub; `VERIFY OK`.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `bdb3f91a`**.
 
+## [19:52 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 298
+ROBOCZA md5 `4322f5aafa6e0becc988885dc38e907b` (skrót `4322f5aa`) · źródło `004e8f9e`.
+|- Limit miast: miasta założone zużywają limit, zdobyte nie; test 11/11, AI founding 28/28.
+|- Wojna Kamienia: start t.20, cel/guardy, 2 miasta, rest/cooldown 20; Stone 32/32 + guard 18/18.
+|- Brąz bez regresji: 44/44 + guard 25/25; typecheck PASS.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; synchronizacja 6 bundli + START hub; `VERIFY OK`.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `4322f5aa`**.
+
 ## [15:02 UTC, 2026-08-18] CHMURA → main — fast-forward FALI 296
 Zweryfikowana gałąź `cursor/integrate-unit-card-3d-0f9b` zostaje promowana
 fast-forward do `main`; źródło ROBOCZA pozostaje `a37f7123`.

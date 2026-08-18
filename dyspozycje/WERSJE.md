@@ -9,7 +9,14 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
-## ROBOCZA bdb3f91a - 2026-08-18 15:53 UTC - FALA 297: pełny split Pracy AI/MP + czytelność UI
+## ROBOCZA 4322f5aa - 2026-08-18 19:52 UTC - FALA 298: limit miast zdobytych i wojna wymuszona Kamienia
+|- md5 (pełne): 4322f5aafa6e0becc988885dc38e907b · stempel: ROBOCZA · label 4322f5aa · źródłowy commit integracji: `004e8f9e`
+|- `R-MIASTA-LIMIT-PODBÓJ-Q1=A`: limit dotyczy wyłącznie miast założonych; podbój bitewny, bez bitwy i kapitulacja nie zużywają puli; test 11/11, AI founding 28/28.
+|- `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1`: start po 20 turach, najbliższy sąsiad, pokój po 2 miastach, odpoczynek 20 tur, cooldown pary 20 tur; Stone 32/32 + guard 18/18.
+|- Brąz zachowany bez regresji: Bronze 44/44 + guard 25/25; typecheck PASS · Vite 831 modułów · VERIFY OK.
+|- **AKTUALNA**
+
+## ROBOCZA bdb3f91a - 2026-08-18 15:53 UTC - FALA 297: pełny split Pracy AI/MP + czytelność UI — **ZASTĄPIONA** (→ 4322f5aa)
 |- md5 (pełne): bdb3f91a966bd33c64f3657f281bd8b6 · stempel: ROBOCZA · label bdb3f91a · źródłowy commit integracji: `333ae41b`
 |- `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1`: AI major i miasta-państwa zachowują pierwotny `doUlepszen`; brak drugiego capowania 50%; parity test 14/14.
 |- Wspólny split: production-overflow 48/48 · auto-improvements 41/41 · ai-improvements 52/52 · praca-limit-50 23/23.
