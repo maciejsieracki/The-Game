@@ -706,100 +706,100 @@
   },
   "handel_surowce": {
     "cena_drewno": {
-      "easy": 1,
-      "normal": 1,
-      "hard": 1,
+      "easy": 0.2,
+      "normal": 0.2,
+      "hard": 0.2,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Drewna (surowiec_ilosc). Wartość pozycji koszyka = pakiety × pakiet_wielkosc × cena (PN/szt.). Ta sama cena na wszystkich trudnościach."
     },
     "cena_glina": {
-      "easy": 2,
-      "normal": 2,
-      "hard": 2,
+      "easy": 0.4,
+      "normal": 0.4,
+      "hard": 0.4,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Gliny — patrz cena_drewno."
     },
     "cena_kamien": {
-      "easy": 3,
-      "normal": 3,
-      "hard": 3,
+      "easy": 0.6,
+      "normal": 0.6,
+      "hard": 0.6,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Kamienia — patrz cena_drewno."
     },
     "cena_ruda": {
-      "easy": 5,
-      "normal": 5,
-      "hard": 5,
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Rudy miedzi (klucz magazynu: ruda) — patrz cena_drewno."
     },
     "cena_ruda_zelaza": {
-      "easy": 10,
-      "normal": 10,
-      "hard": 10,
-      "jednostka": "PN/szt.",
-      "opis": "Maciej 2026-07-29: PN za 1 szt. Rudy żelaza (klucz magazynu: ruda_zelaza) — patrz cena_drewno."
-    },
-    "cena_cegla": {
-      "easy": 5,
-      "normal": 5,
-      "hard": 5,
-      "jednostka": "PN/szt.",
-      "opis": "Maciej 2026-07-29: PN za 1 szt. Cegły — patrz cena_drewno."
-    },
-    "cena_sol": {
       "easy": 2,
       "normal": 2,
       "hard": 2,
       "jednostka": "PN/szt.",
+      "opis": "Maciej 2026-07-29: PN za 1 szt. Rudy żelaza (klucz magazynu: ruda_zelaza) — patrz cena_drewno."
+    },
+    "cena_cegla": {
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
+      "jednostka": "PN/szt.",
+      "opis": "Maciej 2026-07-29: PN za 1 szt. Cegły — patrz cena_drewno."
+    },
+    "cena_sol": {
+      "easy": 0.4,
+      "normal": 0.4,
+      "hard": 0.4,
+      "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Soli (jak glina) — patrz cena_drewno."
     },
     "cena_kon": {
-      "easy": 5,
-      "normal": 5,
-      "hard": 5,
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Konia (jak ruda miedzi) — patrz cena_drewno."
     },
     "cena_ceramika": {
-      "easy": 5,
-      "normal": 5,
-      "hard": 5,
+      "easy": 1,
+      "normal": 1,
+      "hard": 1,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Ceramiki (jak cegła) — patrz cena_drewno."
     },
     "cena_braz": {
-      "easy": 15,
-      "normal": 15,
-      "hard": 15,
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Brązu (przetworzone) — patrz cena_drewno."
     },
     "cena_zelazo": {
-      "easy": 20,
-      "normal": 20,
-      "hard": 20,
+      "easy": 4,
+      "normal": 4,
+      "hard": 4,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Żelaza przetworzonego — patrz cena_drewno."
     },
     "cena_stal": {
-      "easy": 25,
-      "normal": 25,
-      "hard": 25,
+      "easy": 5,
+      "normal": 5,
+      "hard": 5,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Stali (przetworzone) — patrz cena_drewno."
     },
     "cena_zloto": {
-      "easy": 50,
-      "normal": 50,
-      "hard": 50,
+      "easy": 10,
+      "normal": 10,
+      "hard": 10,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Złota (surowiec w magazynie państwa, klucz zloto) — patrz cena_drewno. Odrębne od Pieniądza (¤) w koszyku typ zloto."
     },
     "cena_wegiel": {
-      "easy": 20,
-      "normal": 20,
-      "hard": 20,
+      "easy": 4,
+      "normal": 4,
+      "hard": 4,
       "jednostka": "PN/szt.",
       "opis": "Maciej 2026-07-29: PN za 1 szt. Węgla w magazynie (gdy stock istnieje). Dostęp do złoża węgla = osobny cennik złoża (handel_zloze)."
     },

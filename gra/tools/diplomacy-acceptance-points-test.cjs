@@ -296,16 +296,16 @@ ok(goldEasyReceive.givePn === 50, 'AI gives 100¤ easy → player receives ×0.5
 ok(goldEasyReceive.receivePn === 60, 'player gives 40¤ easy (AI proposal) → ×1.5 = 60 PN');
 
 // Maciej 2026-07-29: surowiec_ilosc PN/szt. w koszyku akceptacji
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('sol') === 2, 'acceptance: sol 2 PN/szt.');
-ok(mod.diplomacyPnSurowiecIlosc('braz', 1) === 150, 'acceptance: 1 pakiet braz = 150 PN');
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('zloto') === 50, 'acceptance: zloto-surowiec 50 PN/szt.');
-ok(mod.diplomacyHandelSurowiecCenaJednostkowa('wegiel') === 20, 'acceptance: wegiel 20 PN/szt.');
-ok(mod.diplomacyPnSurowiecIlosc('zloto', 1) === 500, 'acceptance: 1 pakiet zloto = 500 PN');
+ok(mod.diplomacyHandelSurowiecCenaJednostkowa('sol') === 0.4, 'acceptance: sol 0.4 PN/szt. po obniżce ×5');
+ok(mod.diplomacyPnSurowiecIlosc('braz', 1) === 30, 'acceptance: 1 pakiet braz = 30 PN po obniżce ×5');
+ok(mod.diplomacyHandelSurowiecCenaJednostkowa('zloto') === 10, 'acceptance: zloto-surowiec 10 PN/szt. po obniżce ×5');
+ok(mod.diplomacyHandelSurowiecCenaJednostkowa('wegiel') === 4, 'acceptance: wegiel 4 PN/szt. po obniżce ×5');
+ok(mod.diplomacyPnSurowiecIlosc('zloto', 1) === 100, 'acceptance: 1 pakiet zloto = 100 PN po obniżce ×5');
 const woodTradePn = mod.resolveProposalPn({
   giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
 }, { difficulty: 'normal', proposerOwnerId: 0, playerOwnerId: 0 });
-ok(woodTradePn.givePn === 10, 'resolveProposalPn: 1 pakiet drewno = 10 PN');
+ok(woodTradePn.givePn === 2, 'resolveProposalPn: 1 pakiet drewno = 2 PN po obniżce ×5');
 
 // Pokój @ rel 77 — asymetria: gracz 385 PW, partner 500 PW (baza)
 ok(mod.effectiveTreatyPnRequired(500, 77) === 385, 'pokój @ rel 77: traktat gracz 385 PW');
