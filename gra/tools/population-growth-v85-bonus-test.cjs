@@ -135,6 +135,18 @@ console.log('--- Q9 Zdrowie → wzrost% ---');
   eq(bd.zdrowie, 2, 'zdrowie 25 pkt → +2% wzrostu (floor÷10)');
 }
 
+// R-GROWTH-WEALTH-NO-DOUBLE: szczescieNetto już zawiera Wealth (haWealth) — wealthPoziom nie zmienia wzrostu
+console.log('--- R-GROWTH-WEALTH-NO-DOUBLE ---');
+{
+  const shared = baseInput({ szczescieNetto: 20, poziomRacji: 4, population: 4 });
+  const lowWealth = M.computeGrowthPercentV85({ ...shared, wealthPoziom: 1 });
+  const highWealth = M.computeGrowthPercentV85({ ...shared, wealthPoziom: 100 });
+  eq(lowWealth.szczescie, 2, 'szczescieNetto=20 → szczescie=2% (floor÷10)');
+  eq(highWealth.szczescie, 2, 'wealthPoziom=100 nie podbija szczescie gdy netto już liczone');
+  eq(lowWealth.total, highWealth.total, 'total bez zmian przy tym samym szczescieNetto');
+  eq(lowWealth.szczescie, highWealth.szczescie, 'breakdown.szczescie identyczne przy zmianie wealthPoziom');
+}
+
 // Składniki nazwane w breakdown
 {
   const bd = M.computeGrowthPercentV85(baseInput({ poziomRacji: 4, population: 3 }));
