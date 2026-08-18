@@ -29595,6 +29595,7 @@ async function boot(): Promise<void> {
     }
 
     function applySceneResult(newSceneResult: SceneResult): void {
+      clearMineEligibleOverlay();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;

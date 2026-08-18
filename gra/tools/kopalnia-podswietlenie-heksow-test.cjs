@@ -14,10 +14,10 @@
  *       trzech kopalń (różne złoża = różne zbiory, więc przełączenie typu MUSI przeliczać).
  *       Plus grupa kopalń: `isMineImprovementKey` obejmuje dokładnie 4 klucze.
  *   (2) STYL I STRUKTURA WARSTWY — `MINE_ELIGIBLE_STYLE` + `buildRangeOverlayGroup`
- *       z src/render/rangeOverlay.ts: kolor jasnoniebieski, krycie DOKŁADNIE 0.30, jedna
- *       instancja tinta na heks, `depthTest: false` (bez tego płachta ginie w bryle Wzgórza/Góry
- *       — a wszystkie cztery kopalnie stoją WYŁĄCZNIE na Wzgórzach i Górach) oraz kolejność
- *       rysowania poniżej żetonów jednostek (10/12) i etykiet miast (18/20).
+ *       z src/render/rangeOverlay.ts: kolor jasnoniebieski, krycie DOKŁADNIE 0.30 oraz
+ *       siatka oblekająca relief heksa. Test głębi ma pozostać włączony, a warstwa ma być
+ *       rysowana poniżej żetonów jednostek (10/12) i etykiet miast (18/20), żeby nie
+ *       przebijała globalnie przez teren ani jednostki.
  *   (3) WPIĘCIE W main.ts — asercje na źródle, bo main.ts bootuje całą scenę przy imporcie
  *       (ta sama sytuacja co w granice-relacja-dyplomatyczna-test.cjs / camera-zoom-block-test.cjs).
  *       Strażnik STRUKTURALNY: warstwa buduje się w `refreshBuildHighlight()` (jedyny punkt
@@ -213,7 +213,7 @@ function fakeMap(entries) {
     const [q, r] = key.split(',').map(Number);
     h[key] = { coords: { q, r }, terenBazowy: teren };
   }
-  return { hexes: h };
+  return { hexes: h, seed: 0 };
 }
 
 {
@@ -221,24 +221,34 @@ function fakeMap(entries) {
   const fm = fakeMap([['1,0', TB.Wzgorza], ['0,1', TB.Wzgorza], ['1,-1', TB.Gory]]);
   const group = M.buildRangeOverlayGroup(fm, new Set(keys), S);
 
-  const tint = group.children.find((c) => c.isInstancedMesh);
-  ok(!!tint, 'grupa zawiera InstancedMesh z podświetleniem (tint)');
-  ok(tint.count === keys.length, `jedna instancja na heks (${tint.count} = ${keys.length})`);
+  const tint = group.children.find((c) => c.isMesh && !c.isLineSegments);
+  ok(!!tint, 'grupa zawiera siatkę podświetlenia (tint)');
+  ok(tint && !tint.isInstancedMesh, 'tint reliefowy nie jest płaską instancją krążka');
+  ok(
+    tint?.userData?.hexKeys?.length === keys.length
+      && keys.every((key) => tint.userData.hexKeys.includes(key)),
+    'tint reliefowy obejmuje dokładnie wskazane heksy',
+  );
+  ok(
+    tint?.userData?.triangles === keys.length * 96,
+    `siatka ma 96 trójkątów na heks (${tint?.userData?.triangles} dla ${keys.length} heksów)`,
+  );
+  ok(tint?.userData?.subdivisions === 4, 'relief jest dzielony na 4 odcinki w sektorze');
   ok(tint.material.color.getHex() === M.MINE_ELIGIBLE_TINT_COLOR,
     `materiał tinta w kolorze ${hex(M.MINE_ELIGIBLE_TINT_COLOR)}`);
   ok(tint.material.opacity === 0.30, `materiał tinta ma opacity 0.30 (jest ${tint.material.opacity})`);
   ok(tint.material.transparent === true, 'materiał tinta transparent (inaczej opacity nie działa)');
 
-  // KLUCZOWE dla tego tematu: cztery kopalnie stoją wyłącznie na Wzgórzach i Górach, których
-  // bryła wyrasta 0.392 / 1.10–1.25 j nad wierzch pryzmu heksa. Bez wyłączonego testu głębi
-  // płaski krążek zniknąłby w środku tej bryły i gracz nie zobaczyłby NICZEGO.
-  ok(tint.material.depthTest === false,
-    'tint z depthTest:false — warstwa widoczna mimo bryły Wzgórza/Góry nad wierzchem heksa');
+  // Warstwa leży na powierzchni reliefu, więc może być widoczna bez globalnego
+  // wyłączenia testu głębi. Dzięki temu teren i obiekty przed nią nadal ją zasłaniają.
+  ok(tint.material.depthTest === true,
+    'tint reliefowy ma depthTest:true — teren i obiekty nadal mogą go zasłonić');
   ok(tint.material.depthWrite === false, 'tint z depthWrite:false (nie zasłania innych przezroczystości)');
+  ok(tint.material.polygonOffset === true, 'tint reliefowy ma polygonOffset przeciw migotaniu');
 
-  const border = group.children.find((c) => c.isLineSegments || (c.isMesh && !c.isInstancedMesh));
+  const border = group.children.find((c) => c.isLineSegments);
   ok(!!border, 'grupa zawiera obwódkę zbioru heksów');
-  ok(border.material.depthTest === false, 'obwódka też z depthTest:false (spójnie z tintem)');
+  ok(border.material.depthTest === true, 'obwódka zachowuje test głębi (nie przebija globalnie terenu)');
   ok(border.renderOrder > tint.renderOrder,
     `obwódka rysowana PO tincie (${border.renderOrder} > ${tint.renderOrder}) — brak migotania na wspólnej płaszczyźnie`);
 
@@ -256,7 +266,7 @@ function fakeMap(entries) {
 {
   const fm = fakeMap([['0,0', TB.Laka]]);
   for (const [nazwa, styl] of [['kultury', M.CULTURE_RANGE_STYLE], ['religii', M.RELIGION_RANGE_STYLE]]) {
-    ok(styl.alwaysOnTop !== true, `styl ${nazwa} nadal bez alwaysOnTop (brak regresji)`);
+    ok(styl.hugTerrainRelief !== true, `styl ${nazwa} nadal bez oblewania reliefu (brak regresji)`);
     const g = M.buildRangeOverlayGroup(fm, new Set(['0,0']), styl);
     const t = g.children.find((c) => c.isInstancedMesh);
     ok(t.material.depthTest === true, `warstwa ${nazwa}: depthTest nietknięty (domyślne true)`);
@@ -265,7 +275,7 @@ function fakeMap(entries) {
   }
 }
 
-ok(S.alwaysOnTop === true, 'MINE_ELIGIBLE_STYLE ma alwaysOnTop = true');
+ok(S.hugTerrainRelief === true, 'MINE_ELIGIBLE_STYLE włącza celowane oblewanie reliefu');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. WPIĘCIE W main.ts — strażnik strukturalny (main.ts bootuje scenę przy imporcie)
@@ -274,7 +284,7 @@ console.log('\n3. Wpięcie w main.ts (asercje na źródle)');
 
 const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
 
-ok(/MINE_ELIGIBLE_STYLE,?\n/.test(mainSrc) || /MINE_ELIGIBLE_STYLE/.test(mainSrc),
+ok(/import\s*\{[^}]*\bMINE_ELIGIBLE_STYLE\b[^}]*\}\s*from\s*['"]\.\/render\/rangeOverlay['"]\s*;/.test(mainSrc),
   'main.ts importuje MINE_ELIGIBLE_STYLE z render/rangeOverlay');
 ok(/isMineImprovementKey/.test(mainSrc), 'main.ts importuje isMineImprovementKey z map/improvement-build');
 
@@ -322,15 +332,31 @@ ok(/isMineImprovementKey/.test(mainSrc), 'main.ts importuje isMineImprovementKey
     'clearBuildModeVisuals gasi warstwę kopalni (Escape / wczytanie gry / restart sesji)');
 }
 
+// Regresja N3: nowa scena podmienia referencję scene podczas nowej gry i loadu.
+// Samo clearBuildModeVisuals nie wystarcza, bo stara grupa należy do starej sceny;
+// applySceneResult musi wyzerować stan referencji przed dalszym odświeżaniem.
+{
+  const start = mainSrc.indexOf('function applySceneResult(newSceneResult: SceneResult): void {');
+  ok(start > 0, 'main.ts: funkcja applySceneResult istnieje');
+  const end = mainSrc.indexOf('\n    }', start);
+  const body = start > 0 && end > start ? mainSrc.slice(start, end) : '';
+  const clearIdx = body.indexOf('clearMineEligibleOverlay();');
+  const sceneReplaceIdx = body.indexOf('scene = newSceneResult.scene;');
+  ok(clearIdx >= 0 && sceneReplaceIdx > clearIdx,
+    'applySceneResult sprząta stary overlay przed podmianą sceny (nowa gra / wczytanie)');
+}
+
 // Funkcja czyszcząca faktycznie zdejmuje grupę ze sceny i zwalnia zasoby.
 {
   const start = mainSrc.indexOf('function clearMineEligibleOverlay(): void {');
   ok(start > 0, 'main.ts: funkcja clearMineEligibleOverlay istnieje');
   const end = mainSrc.indexOf('\n    }', start);
   const body = start > 0 && end > start ? mainSrc.slice(start, end) : '';
+  const disposeIdx = body.indexOf('disposeRangeOverlayGroup(mineEligibleGroup);');
+  const resetIdx = body.indexOf('mineEligibleGroup = null;');
   ok(/scene\.remove\(mineEligibleGroup\)/.test(body), 'clearMineEligibleOverlay zdejmuje grupę ze sceny');
-  ok(/disposeRangeOverlayGroup\(mineEligibleGroup\)/.test(body), 'clearMineEligibleOverlay zwalnia geometrię/materiały');
-  ok(/mineEligibleGroup = null/.test(body), 'clearMineEligibleOverlay zeruje referencję');
+  ok(disposeIdx >= 0 && resetIdx > disposeIdx,
+    'clearMineEligibleOverlay zwalnia geometrię/materiały przed wyzerowaniem referencji');
 }
 
 // WYDAJNOŚĆ: przeliczenie NIE może wisieć na ruchu myszy (handleBuildModeHover leci przy
