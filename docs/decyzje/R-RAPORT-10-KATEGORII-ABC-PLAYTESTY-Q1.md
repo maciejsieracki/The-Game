@@ -469,6 +469,8 @@ Baza przykładu: **FALA 296**, ROBOCZA `a37f7123`, audyt
   cyna 23/23, typecheck PASS.
 - `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1` — **ZDEPLOYOWANE FALA 296
   `a37f7123`** — Evaluator PASS, testy 18/18 i 84/84.
+- `R-WIARYGODNOSC-S9-Q1` — **ZDEPLOYOWANE FALA 259 `e028045c`** —
+  Evaluator PASS-WITH-NOTES, `wiarygodnosc-test` 270/270, tsc PASS.
 
 ### 2. W trakcie — Operator
 
@@ -487,12 +489,8 @@ Baza przykładu: **FALA 296**, ROBOCZA `a37f7123`, audyt
 
 ### 5. Evaluator zakończony — czeka na finalną kontrolę/integrację
 
-- `R-WIARYGODNOSC-S9-Q1` — faza tabeli liczb: Evaluator **PASS-WITH-NOTES**,
-  commit Operatora `22df1b1` (`REJESTR-PROSB-I-ZADAN.md`); pełne strojenie JSON
-  czeka OK właściciela przed kolejnym dispatch — **nie** kategoria 6 (ślad
-  Operatora i Evaluatora już istnieje). Dowód:
-  `docs/decyzje/R-WIARYGODNOSC-S9-TABELA-LICZB.md`,
-  `docs/decyzje/R-WIARYGODNOSC-S9-Q1.md`.
+- `— (brak)` — Wiarygodność S9 została wcześniej wdrożona w FALI 259;
+  nie wymaga nowego Operatora.
 
 ### 6. Czeka na Operatora — gotowe do dispatchu
 
