@@ -1,6 +1,6 @@
 # P-JEDNOSTKI-KARTA-3D-INFO-Q1 — integracja tymczasowej karty jednostki
 
-**Status:** **🔵 W TRAKCIE — ECHO 2026-08-18; integracja wzorca Hastati**
+**Status:** **🟠 GOTOWE DO INTEGRACJI — Evaluator PASS-WITH-NOTES; bez deployu**
 **Data:** 2026-08-18
 
 ## ECHO właściciela
