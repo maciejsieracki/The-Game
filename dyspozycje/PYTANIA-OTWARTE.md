@@ -31831,3 +31831,10 @@ Wyniki FALI 296:
 - N5 asercja testu: 71/71 + mutacja wykryta;
 - N6 komentarz: diff-check PASS;
 - barbarzyńcy: 18/18 i 84/84, typecheck PASS.
+
+## ECHO — R-MIASTA-LIMIT-PODBÓJ-Q1
+
+**Decyzja właściciela: A.** Limit dotyczy wyłącznie miast założonych; miasta
+zdobyte nie zużywają tej puli i nie są przez nią blokowane. Status:
+**ZAMKNIĘTE bez zmiany kodu**. Szczegóły:
+`docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md`.
