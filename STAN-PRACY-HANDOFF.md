@@ -26,13 +26,15 @@ nie usuwamy.
 - **Karta jednostki 3D:** osobny temat `P-JEDNOSTKI-KARTA-3D-INFO-Q1`,
   zdeployowana w FALI 295; nie mieszać z FALĄ 294.
 - **Kolejka AutoBot 2026-08-18:** podsumowanie bitwy, rejestracja sceny,
-  mgła ataku na miasto, adiacencyjne zdobycie miasta AI, bilans dyplomacji
-  i stale highlight cudu mają niezależne werdykty i są zdeployowane w FALI 295.
-- **Rekrutacja AI/MP jako budowa:** aktywny flow już korzysta ze Skarbca;
-  migracja legacy kolejki po capture i surrender ma PASS, gotowa do integracji.
+  mgła ataku na miasto, adiacencyjne zdobycie miasta AI, bilans dyplomacji,
+  mapgen B, overlay kopalni i barbarzyńcy — zdeployowane w FALI 296.
+- **Rekrutacja AI/MP jako budowa:** aktywny flow korzysta ze Skarbca;
+  migracja legacy kolejki po capture i surrender jest zdeployowana i ma PASS.
+- **Wiarygodność S9:** zdeployowana wcześniej w FALI 259 `e028045c`;
+  poprzedni wpis „czeka na działaj” był nieaktualny.
 - **Pozostają osobno:** zwykła ścieżka zdobycia miasta AI była decyzją ABC i nie
-  może być zgadywana; kosmetyka kopalni, limit mapgena oraz tematy wydajności/
-  teleportu pozostają poza tym batch’em.
+  może być zgadywana; N3/N5/N6 domknięte w FALI 296. Pozostają tylko tematy
+  ABC, Design i świadomie odłożone.
 - **`P-AI-BRAK-POJECIA-MGLY-Q1`:** GOTOWE / ZAMKNIĘTE — własna mgła AI per
   owner, pamięć celów, ponowne wykrycie przed akcją; FALA 292 zachowana w
   aktualnej ROBOCZA FALI 294, `ai-fog-test.cjs` 8/8, kamera bitwy 24/24,
