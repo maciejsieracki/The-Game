@@ -84,17 +84,28 @@ twardy cap 15 na chatkę oraz test: po 15 spawnach chatka nie emituje 16. jednos
 test osobno dla „Wielu” i „Nielicznych”. Nie zastępować capu lifetime samym
 `unitsPerCamp`, bo to jest limit chwilowej kontroli obozu.
 
-### R-BARB-AI-KONCENTRACJA-ARMII-Q1 — cywilizacje AI mają rozproszone wojska · STATUS: **NOWE — AUDYT TAKTYKI**
+### R-ARMIA-KONCENTRACJA-AI-BARB-Q1 — AI i barbarzyńcy mają rozproszone wojska · STATUS: **NOWE — POTWIERDZONA LUKA TAKTYCZNA**
 
-**Zgłoszenie Macieja:** cywilizacje AI przegrywają z barbarzyńcami także dlatego,
-że ich jednostki są rozproszone. AI powinno zbierać większą armię w bezpiecznym,
-odległym od bieżącego ataku miejscu, połączyć ją w jedną siłę i dopiero wtedy
-wykonać kontratak.
+**Zgłoszenie Macieja:** cywilizacje AI i barbarzyńcy chodzą rozproszeni zamiast
+łączyć własne jednostki w jedną armię. Cywilizacja AI powinna zbierać większą
+armię w bezpiecznym, odległym od bieżącego ataku miejscu, połączyć ją w jedną
+siłę, zwiększyć prezentowaną Moc i dopiero wtedy wykonać kontratak. Analogiczna
+koncentracja barbarzyńców ograniczałaby ich chaotyczne rozchodzenie się.
 
-**Zakres audytu:** osobno sprawdzić rekrutację AI, wybór miejsca koncentracji,
-łączenie oddziałów, priorytet obrony zagrożonych miast oraz warunek rozpoczęcia
-kontrataku. Nie łączyć tego z limitem chatki — naprawa limitu zmniejszy napór,
-ale nie rozwiąże rozproszenia jednostek AI.
+**Wstępny dowód kodowy:** `gra/src/game/armyMerge.ts:200-235,464-500`
+potrafi zgrupować jednostki tego samego właściciela stojące na jednym heksie
+i policzyć Moc stosu, ale jest to warstwa prezentacji/operacji na już
+zajętym heksie. `main.ts:22124-22132` przekazuje barbarzyńcom listę komend
+ruchu z `decideBarbarianMoves`/`decideSeaPeoplesRaids`; nie ma osobnej fazy
+rally/concentrate. Dla AI należy sprawdzić analogiczny dispatcher ruchu,
+rekrutację i wybór celu.
+
+**Kontrakt do wdrożenia:** owner-agnostyczny mechanizm zbiera jednostki tej
+samej frakcji, wybiera punkt koncentracji (najbezpieczniejszy dla obrońcy lub
+najbliższy celowi dla barbarzyńców), scala je na jednym heksie i dopiero wtedy
+wydaje rozkaz marszu/ataku. Nie scalać różnych ownerów, nie łączyć cywilów
+z wojskiem i nie traktować samego renderowanego badge jako zwiększenia Mocy —
+Moc ma wynikać z rzeczywistego stosu używanego w walce.
 
 ### R-DYPLO-SUROWCE-WARTOSC-5X-Q1 — surowce w dyplomacji mają zbyt wysoką wartość · STATUS: **NOWE — ZAPISANA PROPOZYCJA**
 
