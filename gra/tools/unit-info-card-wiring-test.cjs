@@ -30,4 +30,3 @@ ok(mainSource.includes('hideArmyListHud()'), 'otwarcie karty zamyka listę armii
 
 console.log(`\nunit-info-card-wiring-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);
-

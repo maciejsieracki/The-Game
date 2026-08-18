@@ -56,4 +56,3 @@ ok(!cardSource.includes('Civpedia') && !cardSource.includes('Wikipedia'),
 
 console.log(`\nunit-info-card-contract-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);
-

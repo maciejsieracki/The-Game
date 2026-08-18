@@ -43,4 +43,3 @@ renderera.
   `tsc` i build przechodzą;
 - jeśli zrzut/render 3D nie jest możliwy w środowisku, blocker zostaje
   jawnie odnotowany w raporcie.
-
