@@ -70,6 +70,10 @@ const surrenderSource = extractFunction(
   'function resolveSiegeSurrender(cityId: string): void {',
 );
 
+function hasSurrenderMigration(source) {
+  return /const prodSurrender = cityProd\.get\(city\.id\);[\s\S]*?const migrated = sanitizeBuildQueue\(prodSurrender\);[\s\S]*?setOwnerPracaPool\(oldOwner, ownerPracaPool\(oldOwner\) \+ migrated\.refundedPraca\);[\s\S]*?cityProd\.set\(city\.id, sanitizeProductionQueue\(newOwner, migrated\.prod\)\);/.test(source);
+}
+
 console.log('\n-- kontrakt resolveSiegeSurrender --');
 assert(!!surrenderSource, 'resolveSiegeSurrender jest obecne w main.ts');
 if (surrenderSource) {
@@ -78,7 +82,7 @@ if (surrenderSource) {
   assert(migration > ownerChange,
     'surrender migruje kolejkę w ścieżce faktycznej zmiany właściciela');
   assert(
-    /const prodSurrender = cityProd\.get\(city\.id\);[\s\S]*?const migrated = sanitizeBuildQueue\(prodSurrender\);[\s\S]*?setOwnerPracaPool\(oldOwner, ownerPracaPool\(oldOwner\) \+ migrated\.refundedPraca\);[\s\S]*?cityProd\.set\(city\.id, sanitizeProductionQueue\(newOwner, migrated\.prod\)\);/.test(surrenderSource),
+    hasSurrenderMigration(surrenderSource),
     'surrender usuwa legacy, zwraca Pracę staremu właścicielowi i filtruje kolejkę dla nowego',
   );
 
@@ -88,7 +92,7 @@ if (surrenderSource) {
     'const migrated = prodSurrender;',
   );
   assert(
-    !/const migrated = sanitizeBuildQueue\(prodSurrender\);/.test(mutant),
+    !hasSurrenderMigration(mutant),
     'negacja: brak sanitizeBuildQueue w surrender jest wykrywalny',
   );
 }
