@@ -13158,6 +13158,7 @@ async function boot(): Promise<void> {
           title: 'Dyplomacja: ' + ownerDiploLabel(aiOwnerId),
           subtitle: negotiationSummary(n) + ` (runda ${n.round}/${NEGOTIATION_MAX_ROUNDS})`,
           kind: 'diplo',
+          blocking: true,
         });
       }
       return events.filter(e => !dismissedSidePanelEventIds.has(e.id));
