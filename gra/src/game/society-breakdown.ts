@@ -66,6 +66,8 @@ export interface HappinessBreakdownInput {
   population: number;
   /** Suma zadowolenia z budynków (pkt). */
   buildingZadowolenie: number;
+  /** Nadwyżka Ceramiki z Garncarni (pkt) — osobna linia od bonusu budynków. */
+  ceramikaZadowolenie?: number;
   haKult?: number;
   haRel?: number;
   haWealth?: number;
@@ -325,6 +327,14 @@ export function computeHappinessBreakdown(
 
   if (input.buildingZadowolenie !== 0) {
     lines.push({ id: 'budynki', label: 'Budynki (+1/budynek)', value: input.buildingZadowolenie });
+  }
+  const ceramikaZadowolenie = input.ceramikaZadowolenie ?? 0;
+  if (ceramikaZadowolenie !== 0) {
+    lines.push({
+      id: 'ceramika',
+      label: 'Ceramika (nadwyżka Garncarni)',
+      value: ceramikaZadowolenie,
+    });
   }
   if (input.haKult) {
     lines.push({ id: 'kultura', label: cultureHappinessLineLabel(input.haKult, input.ownCultureShare), value: input.haKult });

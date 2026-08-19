@@ -97,6 +97,26 @@ const ord = M.computeOrderPctBreakdown(sz, pr, params);
 eq(ord.porPct > 0, true, 'PorPct > 0');
 eq(M.porPctBand(ord.porPct).length > 0, true, 'band ok');
 
+// R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1: regresja obserwacji +306/+111.
+// Nadwyżka Ceramiki nie może zostać pokazana jako część linii „Budynki”.
+const garncarniaRegression = M.computeHappinessBreakdown({
+  population: 6,
+  era: 2,
+  buildingZadowolenie: 306,
+  ceramikaZadowolenie: 111,
+}, null);
+eq(
+  garncarniaRegression.lines.find(l => l.id === 'budynki')?.value,
+  306,
+  'R-GARNCARNIA...: linia Budynki zachowuje +306',
+);
+eq(
+  garncarniaRegression.lines.find(l => l.id === 'ceramika')?.value,
+  111,
+  'R-GARNCARNIA...: osobna linia Ceramika pokazuje +111',
+);
+eq(garncarniaRegression.netto, 417, 'R-GARNCARNIA...: netto = +306 + +111');
+
 // Tier mapping
 eq(M.tierFromPorPct(95), 'order', 'PorPct 95 -> order');
 eq(M.tierFromPorPct(50), 'neutral', 'PorPct 50 -> neutral');

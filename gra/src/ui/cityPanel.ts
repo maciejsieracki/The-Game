@@ -2577,10 +2577,15 @@ function PH(): string {
 // Lewa kolumna — społeczeństwo (B2: Mieszkańcy, Porządek, Zdrowie)
 // ---------------------------------------------------------------------------
 
-function buildingHappinessSum(cityId: string, data: GameData, era: number, ownerId: number): number {
+function buildingHappinessBreakdown(
+  cityId: string,
+  data: GameData,
+  era: number,
+  ownerId: number,
+): { buildingZadowolenie: number; ceramikaZadowolenie: number } {
   const builtIds = cfg.getBuiltBuildingIds?.(cityId) ?? [];
   const techs = cfg.getUnlockedTechs?.(ownerId) ?? [];
-  let sum = sumBuildingHappinessFromBuiltIds(
+  const buildingZadowolenie = sumBuildingHappinessFromBuiltIds(
     builtIds,
     data.buildings,
     bdef => buildingLevelForEpoch(
@@ -2591,15 +2596,17 @@ function buildingHappinessSum(cityId: string, data: GameData, era: number, owner
       techs,
     ),
   );
+  let ceramikaZadowolenie = 0;
   if (builtIds.includes('garncarnia')) {
     const allCities = cfg.getCities?.() ?? [];
     const builtByCity = new Map<string, readonly string[]>();
     for (const c of allCities) {
       builtByCity.set(c.id, cfg.getBuiltBuildingIds?.(c.id) ?? []);
     }
-    sum += computeGarncarniaSurplusZadowolenieByOwner(allCities, builtByCity, false).get(ownerId) ?? 0;
+    ceramikaZadowolenie =
+      computeGarncarniaSurplusZadowolenieByOwner(allCities, builtByCity, false).get(ownerId) ?? 0;
   }
-  return sum;
+  return { buildingZadowolenie, ceramikaZadowolenie };
 }
 
 /** B2-Q7=1C: pełny model % z silnika lub lokalnie (evaluateOrderFromBreakdown). */
@@ -2658,13 +2665,15 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const stolicaBonus = stolicaEasyBonusActive(
     difficulty, gameTurn, city, allCities, 10, cfg.getCapitalCityId?.(city.ownerId) ?? null,
   );
+  const happinessFromBuildings = buildingHappinessBreakdown(city.id, data, era, city.ownerId);
 
   const ordPctRaw = evaluateOrderFromBreakdown(
     {
       difficulty,
       era,
       population: city.population,
-      buildingZadowolenie: buildingHappinessSum(city.id, data, era, city.ownerId),
+      buildingZadowolenie: happinessFromBuildings.buildingZadowolenie,
+      ceramikaZadowolenie: happinessFromBuildings.ceramikaZadowolenie,
       haKult,
       haRel,
       haWealth,
