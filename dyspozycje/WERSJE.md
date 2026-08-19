@@ -3535,3 +3535,7 @@ worktree, nie sa regresja tej fali.
 - 2026-07-08 21:02 Â· **605761807eb0b79f43c047c4e70916f7** Â· stempel FINALNA Â· zsynchronizowana z kanonem 51c2eb24 (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 676809f2, 2026-07-09)
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
+
+## ROBOCZA — FALA 299 (2026-08-19)
+- **AKTUALNA** · źródło `4f099cb18605e0cecac55a19218e539962e30fd7` · ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · `VERIFY OK`.
+  Zakres: zweryfikowane integracje FALI 299 oraz korekta parytetu rekrutacji AI — AI kupuje jednostki za Skarbiec, wspólną ścieżką z graczem, bez kosztu Pracy i niezależnie od produkcji budynków. Deploy wykonany z czystego commita; ręczny `START.html` zachowany.

@@ -7518,4 +7518,10 @@ Wcześniejszy wpis z 2026-08-06 „branch roboczy, nie main” jest historyczny.
 |- `85932371` (relief kopalni), `9d33e8f` (marker + etykieta) i `d3470ed` (wyłączenie korony dla MP) są przodkami `origin/main`/HEAD `67de03e1` oraz źródła FALI 296 `a6e2967f`.
 |- FALA 296 ROBOCZA `a37f7123` obejmuje ten zakres; manifest ROBOCZEJ ma md5 `a37f71239248fe287d37c9d44c0137e6`.
 |- Wcześniejszy Evaluator: **PASS-WITH-NOTES**; relief `23/23`, display `27/27`, badge `31/31`, tsc PASS; korekta MP domknięta przez `d3470ed`.
-CZEKAM-NA: **nic** — korekta docs-only, bez kodu, danych, bundli, WERSJE i deployu.
+ CZEKAM-NA: **nic** — korekta docs-only, bez kodu, danych, bundli, WERSJE i deployu.
+
+## [20:31 PL, 2026-08-19] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 299
+ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · źródło `4f099cb18605e0cecac55a19218e539962e30fd7`.
+|- Zakres: FALA 299 oraz korekta AI — rekrutacja za Skarbiec, bez kosztu Pracy, niezależnie od produkcji budynków; testy Operator/Evaluator zakończone PASS-WITH-NOTES.
+|- Build z czystego commita · `VERIFY OK` · ręczny `START.html` zachowany.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `5dba37a1`**.
