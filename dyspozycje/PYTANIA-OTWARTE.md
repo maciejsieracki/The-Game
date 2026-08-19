@@ -84,7 +84,7 @@ twardy cap 15 na chatkę oraz test: po 15 spawnach chatka nie emituje 16. jednos
 test osobno dla „Wielu” i „Nielicznych”. Nie zastępować capu lifetime samym
 `unitsPerCamp`, bo to jest limit chwilowej kontroli obozu.
 
-### R-ARMIA-KONCENTRACJA-AI-BARB-Q1 — AI i barbarzyńcy mają rozproszone wojska · STATUS: **NOWE — POTWIERDZONA LUKA TAKTYCZNA**
+### R-ARMIA-KONCENTRACJA-AI-BARB-Q1 — AI i barbarzyńcy mają rozproszone wojska · STATUS: **CZEKA-NA-DECYZJĘ**
 
 **Zgłoszenie Macieja:** cywilizacje AI i barbarzyńcy chodzą rozproszeni zamiast
 łączyć własne jednostki w jedną armię. Cywilizacja AI powinna zbierać większą
@@ -106,6 +106,25 @@ najbliższy celowi dla barbarzyńców), scala je na jednym heksie i dopiero wted
 wydaje rozkaz marszu/ataku. Nie scalać różnych ownerów, nie łączyć cywilów
 z wojskiem i nie traktować samego renderowanego badge jako zwiększenia Mocy —
 Moc ma wynikać z rzeczywistego stosu używanego w walce.
+
+**Pełne ABC:** [`docs/decyzje/R-ARMIA-KONCENTRACJA-AI-BARB-Q1.md`](../docs/decyzje/R-ARMIA-KONCENTRACJA-AI-BARB-Q1.md).
+
+- **A (rekomendacja):** kontrolowana koncentracja obu frakcji; AI zbiera
+  jednostki do bezpiecznego punktu, barbarzyńcy tworzą lokalny kontyngent, a
+  marsz/atak zaczyna się dopiero po rzeczywistym stosie. **Za:** rozwiązuje
+  zgłoszenie po obu stronach; Moc wynika z realnego rosteru. **Przeciw:**
+  większy zakres zmian; potrzebne jawne progi i wyjątki dla morza, garnizonów
+  i oblężeń.
+- **B:** koncentracja tylko cywilizacji AI, barbarzyńcy bez zmian. **Za:**
+  mniejsze ryzyko dla obozów i Ludów Morza; prostsze testy. **Przeciw:**
+  pozostawia rozproszenie barbarzyńców; tworzy dwa różne modele strategii.
+- **C:** bez strategicznego rally, tylko obecne scalanie na zajętym heksie.
+  **Za:** brak nowych parametrów i najmniejsze ryzyko regresji. **Przeciw:**
+  luka pozostaje; większa Moc powstaje wyłącznie przypadkiem po spotkaniu
+  jednostek.
+
+**Rekomendacja:** **A**. Nie ustalam przed decyzją arbitralnych wartości
+odległości, czasu oczekiwania ani minimalnej siły armii.
 
 ### R-BARB-ZDOBYCIE-MIAST-Q1 — barbarzyńcy nie mogą zdobywać miast · STATUS: **NOWE — POTWIERDZONA LUKA KRYTYCZNA**
 
