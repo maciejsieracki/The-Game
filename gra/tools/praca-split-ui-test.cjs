@@ -72,7 +72,30 @@ async function main() {
   global.Node = dom.window.Node;
   global.MouseEvent = dom.window.MouseEvent;
 
+  let splitChanged = null;
   const { createBuildModeHud } = require(BUNDLE);
+  const empirePanelSource = fs.readFileSync(
+    path.resolve(GRA, 'src/ui/empireDetailPanel.ts'),
+    'utf8',
+  );
+  const cityPanelSource = fs.readFileSync(
+    path.resolve(GRA, 'src/ui/cityPanel.ts'),
+    'utf8',
+  );
+  check(
+    'panel imperium ma jeden nadrzędny suwak ulepszeń 0–50%',
+    empirePanelSource.includes('min="0" max="50" step="1" value="${pctU}"')
+      && empirePanelSource.includes('data-praca-empire-split'),
+  );
+  check(
+    'panel imperium opisuje budynki jako remainder 100% − ulepszenia',
+    empirePanelSource.includes('Budynki zawsze = 100% − Ulepszenia.'),
+  );
+  check(
+    'panel miasta odróżnia lokalną pulę Pracy od nadrzędnych ulepszeń',
+    cityPanelSource.includes('Budynki / Pula Pracy (lokalnie)')
+      && !cityPanelSource.includes('Budynki / Ulepszenia (lokalnie)'),
+  );
   const config = {
     listTypes: () => [],
     getActiveKey: () => null,
@@ -81,13 +104,15 @@ async function main() {
     isOpen: () => true,
     listPlayerCities: () => [{ id: 'ateny', name: 'Ateny' }],
     getUlepszeniaCityId: () => 'ateny',
-    // Automatyzacja jest wyłączona: globalny split mimo tego musi być widoczny.
+    // Globalny split jest niezależny od historycznego budżetu automatu.
     getUlepszeniaEmpireState: () => ({
       focus: 'zrownowazone',
-      tryb: 'reczny',
+      tryb: 'auto',
       onlyWorked: false,
       pracaAutoPercent: 33,
     }),
+    getEmpirePracaSplit: () => 10,
+    onEmpirePracaSplitChange: (pct) => { splitChanged = pct; },
     getUlepszeniaCityOverride: () => true,
     getUlepszeniaEffectiveState: () => ({
       focus: 'zywnosc',
@@ -100,42 +125,60 @@ async function main() {
 
   const hud = createBuildModeHud(config);
   const globalSummary = hud.el.querySelector('[data-praca-split-scope="empire"]');
-  const globalSlider = hud.el.querySelector('[data-ulepszenia-empire-percent]');
+  const globalSlider = hud.el.querySelector('[data-praca-empire-split]');
+  const autoSlider = hud.el.querySelector('[data-ulepszenia-empire-percent]');
   const citySlider = hud.el.querySelector('[data-ulepszenia-city-percent]');
 
   check(
-    'globalne podsumowanie renderuje się przy wyłączonej automatyzacji',
+    'globalne podsumowanie renderuje się niezależnie od automatyzacji',
     !!globalSummary,
   );
   check(
-    'podsumowanie nazywa zakres jako całą pulę Pracy imperium',
-    !!globalSummary && globalSummary.textContent.includes('Cała pula Pracy imperium'),
+    'podsumowanie nazywa nadrzędny podział Pracy',
+    !!globalSummary && globalSummary.textContent.includes('Podział Praca: budynki / ulepszenia'),
     globalSummary?.textContent,
   );
   check(
-    'podsumowanie pokazuje ulepszenia i budynki jako 100% wspólnego splitu',
-    !!globalSummary && globalSummary.textContent.includes('33% ulepszenia / 67% budynki'),
+    '10% ulepszeń daje 90% budynków jako remainder',
+    !!globalSummary && globalSummary.textContent.includes('10% ulepszenia / 90% budynki'),
     globalSummary?.textContent,
   );
   check(
-    'globalny suwak ma zakres 0–50%',
+    'nadrzędny suwak ulepszeń ma zakres 0–50%',
     !!globalSlider && globalSlider.getAttribute('min') === '0' && globalSlider.getAttribute('max') === '50',
   );
   check(
-    'globalny suwak ma opis całej puli Pracy imperium',
+    'nadrzędny suwak opisuje remainder budynków i odróżnia automat',
     !!globalSlider
-      && (globalSlider.getAttribute('title') || '').includes('całej puli Pracy imperium'),
+      && (globalSlider.getAttribute('title') || '').includes('budynki dostają remainder')
+      && (globalSlider.getAttribute('title') || '').includes('To nie jest globalny budżet automatu'),
+    globalSlider?.getAttribute('title'),
+  );
+  check(
+    'historyczny suwak automatu ma niezależny zakres 0–100%',
+    !!autoSlider && autoSlider.getAttribute('min') === '0' && autoSlider.getAttribute('max') === '100',
   );
   check(
     'lokalny suwak miasta nadal jest osobnym elementem',
-    !!globalSlider && !!citySlider && globalSlider !== citySlider
+    !!globalSlider && !!autoSlider && !!citySlider
+      && globalSlider !== autoSlider && globalSlider !== citySlider
       && citySlider.getAttribute('data-ulepszenia-city-percent') === '',
   );
   check(
     'lokalny suwak ma tekst, że dotyczy tylko wybranego miasta',
     !!citySlider
-      && (citySlider.getAttribute('title') || '').includes('wybranego miasta')
-      && (citySlider.getAttribute('title') || '').includes('nie zmienia globalnego splitu'),
+      && (citySlider.getAttribute('title') || '').includes('tego miasta')
+      && (citySlider.getAttribute('title') || '').includes('Nie zmienia nadrzędnego splitu Praca'),
+    citySlider?.getAttribute('title'),
+  );
+
+  globalSlider.value = '100';
+  globalSlider.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+  check(
+    'zdarzenie nadrzędnego suwaka zaciska ulepszenia do 50%',
+    splitChanged === 50
+      && globalSlider.value === '50'
+      && globalSummary.textContent.includes('50% ulepszenia / 50% budynki'),
   );
 
   hud.destroy();

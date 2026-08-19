@@ -179,6 +179,24 @@ console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
     !aiSource.includes('const pracaBudget = splitEmpirePracaBudget(pracaAvailable, 50);'),
     'ai.ts nie wykonuje ponownego splitu na pozostałej puli',
   );
+  assert(
+    mainSource.includes('effectivePracaSplitForOwner(0).procentUlepszenia')
+      && mainSource.includes('effectivePracaSplitForOwner(ownerId).procentUlepszenia'),
+    'gracz i AI pobierają nadrzędny split z osobnej polityki ownera',
+  );
+  assert(
+    mainSource.includes('ownerDefaultPracaSplit: Array.from(ownerDefaultPracaSplit.entries())')
+      && mainSource.includes('const savedPracaSplit = saved.meta?.ownerDefaultPracaSplit'),
+    'MP/stary save mają serializację i migrację osobnego splitu ownera',
+  );
+}
+
+console.log('6. Kontrakt 10% ulepszeń → 90% budynków działa identycznie dla ownera AI/MP');
+{
+  const split = splitEmpirePracaBudget(100, 10);
+  eq(split.doUlepszen, 10, 'AI/MP: 10% puli na ulepszenia');
+  eq(split.doBudynkow, 90, 'AI/MP: remainder 90% puli na budynki');
+  eq(split.total, split.doUlepszen + split.doBudynkow, 'AI/MP: split zachowuje sumę');
 }
 
 console.log(`\nai-praca-split-parity-test: ${passed} passed, ${failed} failed`);

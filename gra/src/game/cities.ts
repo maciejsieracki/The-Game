@@ -198,16 +198,27 @@ export function clampUlepszeniaPracaPercent(n: number | undefined | null): Uleps
   return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-/** Maksymalny % budżetu Pracy przeznaczony do wspólnego worka (ulepszenia terenu).
- * Pozostałe minimum 50% rezerwowane dla budynków/bezpośrednie kierowanie.
- * R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 = A (2026-08-17). */
+/**
+ * Nadrzędny split całej puli Pracy imperium. To osobna warstwa od
+ * `UlepszeniaEmpirePolicy.pracaAutoPercent`: tutaj wybieramy udział ulepszeń,
+ * a budynki dostają pozostałą część 100% − ulepszenia.
+ */
+export interface EmpirePracaSplit {
+  /** Udział całej puli Pracy na ulepszenia terenu (0–50%). */
+  procentUlepszenia: number;
+}
+
+export const DEFAULT_EMPIRE_PRACA_SPLIT: Readonly<EmpirePracaSplit> = {
+  procentUlepszenia: DEFAULT_ULEPSZENIA_PRACA_PERCENT,
+};
+
+/** Maksymalny udział całej puli Pracy przeznaczony na ulepszenia terenu. */
 export const MAX_PRACA_WSPOLNY_WOREK_PROCENT: UlepszeniaPracaPercent = 50;
 
-/** Ogranicza wartość % budżetu Pracy do wspólnego worka (ulepszenia) na maksimum 50%.
- * Używane w UI (buildModeHud) i przy przyjmowaniu wartości ze zdarzenia zmiany.
- * R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 = A (2026-08-17). */
+/** Ogranicza nadrzędny udział ulepszeń do zakresu 0–50%.
+ * Nie wolno używać tej funkcji dla historycznego `pracaAutoPercent`. */
 export function clampPracaWspolnyWorekPercent(n: number | undefined | null): UlepszeniaPracaPercent {
-  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
+  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_EMPIRE_PRACA_SPLIT.procentUlepszenia;
   return Math.max(0, Math.min(MAX_PRACA_WSPOLNY_WOREK_PROCENT, Math.round(n)));
 }
 
@@ -275,7 +286,8 @@ export function resolveEffectiveUlepszenia(
       focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
       tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
       onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-      pracaAutoPercent: clampPracaWspolnyWorekPercent(city.ulepszeniaPracaPercent),
+      // To jest historyczny budżet automatu, więc zachowuje zakres 0–100%.
+      pracaAutoPercent: clampUlepszeniaPracaPercent(city.ulepszeniaPracaPercent),
       override: true,
     };
   }
@@ -547,7 +559,9 @@ export function ensureCitySaveDefaults(city: City): void {
     // new one only `ulepszeniaPracaPercent`; the new field wins, so re-running this migration on
     // the same city is idempotent.
     const rawCity = city as unknown as { ulepszeniaPracaPercent?: unknown; ulepszeniaPerTurn?: unknown };
-    city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(
+    // `ulepszeniaPracaPercent` jest lokalnym ustawieniem historycznego automatu,
+    // nie nadrzędnym splitem puli Pracy. Nie przenosić tu capu 50%.
+    city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
       resolveUlepszeniaPracaPercentFromRaw(
         rawCity.ulepszeniaPracaPercent,
         rawCity.ulepszeniaPerTurn,

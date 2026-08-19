@@ -188,6 +188,7 @@ import {
   DEFAULT_ULEPSZENIA_FOCUS,
   clampUlepszeniaPracaPercent,
   clampPracaWspolnyWorekPercent,
+  DEFAULT_EMPIRE_PRACA_SPLIT,
   resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
   resolveEffectiveUlepszenia,
@@ -203,6 +204,7 @@ import {
   type UlepszeniaFocus,
   type UlepszeniaTryb,
   type UlepszeniaPracaPercent,
+  type EmpirePracaSplit,
   type UlepszeniaEmpirePolicy,
   type EffectiveUlepszeniaSettings,
 } from './game/cities';
@@ -4027,6 +4029,11 @@ async function boot(): Promise<void> {
      * ownerDefaultPodzialHandlu wyżej. Miasto BEZ override dziedziczy z tej mapy.
      */
     const ownerDefaultPodzialPracy = new Map<number, CityPodzialPracy>();
+    /**
+     * Nadrzędny split całej puli Pracy: osobno od per-city `podzialPracy`
+     * i osobno od historycznego budżetu automatu `pracaAutoPercent`.
+     */
+    const ownerDefaultPracaSplit = new Map<number, EmpirePracaSplit>();
     const ownerDefaultOkolicaFocus = new Map<number, OkolicaFocus>();
     const ownerDefaultBudowaProfil = new Map<number, CityBudowaProfil>();
     /**
@@ -4585,6 +4592,8 @@ async function boot(): Promise<void> {
     function initOwnerDefaultCityFields(): void {
       ownerDefaultPodzialPracy.clear();
       ownerDefaultPodzialPracy.set(0, freshOwnerDefaultPodzialPracy());
+      ownerDefaultPracaSplit.clear();
+      ownerDefaultPracaSplit.set(0, { ...DEFAULT_EMPIRE_PRACA_SPLIT });
       ownerDefaultOkolicaFocus.clear();
       ownerDefaultOkolicaFocus.set(0, freshOwnerDefaultOkolicaFocus());
       ownerDefaultBudowaProfil.clear();
@@ -4594,6 +4603,9 @@ async function boot(): Promise<void> {
       for (const ai of aiStartHexes) {
         if (!ownerDefaultPodzialPracy.has(ai.ownerId)) {
           ownerDefaultPodzialPracy.set(ai.ownerId, freshOwnerDefaultPodzialPracy());
+        }
+        if (!ownerDefaultPracaSplit.has(ai.ownerId)) {
+          ownerDefaultPracaSplit.set(ai.ownerId, { ...DEFAULT_EMPIRE_PRACA_SPLIT });
         }
         if (!ownerDefaultOkolicaFocus.has(ai.ownerId)) {
           ownerDefaultOkolicaFocus.set(ai.ownerId, freshOwnerDefaultOkolicaFocus());
@@ -4624,6 +4636,9 @@ async function boot(): Promise<void> {
       }
       if (!ownerDefaultPodzialPracy.has(c.ownerId)) {
         ownerDefaultPodzialPracy.set(c.ownerId, freshOwnerDefaultPodzialPracy());
+      }
+      if (!ownerDefaultPracaSplit.has(c.ownerId)) {
+        ownerDefaultPracaSplit.set(c.ownerId, { ...DEFAULT_EMPIRE_PRACA_SPLIT });
       }
       if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
         ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());
@@ -4729,6 +4744,13 @@ async function boot(): Promise<void> {
     /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: analogiczne readery dla trzy nowe pola. */
     function effectivePodzialPracy(city: City): CityPodzialPracy {
       return resolveCityPodzialPracy(city, ownerDefaultPodzialPracy.get(city.ownerId));
+    }
+
+    function effectivePracaSplitForOwner(ownerId: number): EmpirePracaSplit {
+      const split = ownerDefaultPracaSplit.get(ownerId);
+      return split
+        ? { procentUlepszenia: clampPracaWspolnyWorekPercent(split.procentUlepszenia) }
+        : { ...DEFAULT_EMPIRE_PRACA_SPLIT };
     }
 
     function effectiveOkolicaFocus(city: City): OkolicaFocus {
@@ -18989,6 +19011,14 @@ async function boot(): Promise<void> {
             const pol = ulepszeniaEmpireForOwner(0);
             return { ...pol };
           },
+          getEmpirePracaSplit: () => effectivePracaSplitForOwner(0).procentUlepszenia,
+          onEmpirePracaSplitChange: (procentUlepszenia: number) => {
+            ownerDefaultPracaSplit.set(0, {
+              procentUlepszenia: clampPracaWspolnyWorekPercent(procentUlepszenia),
+            });
+            markCityStateDirty();
+            refreshD1bHud();
+          },
           onUlepszeniaEmpireFocusChange: (focus: UlepszeniaFocus) => {
             const pol = ulepszeniaEmpireForOwner(0);
             pol.focus = focus;
@@ -19022,7 +19052,9 @@ async function boot(): Promise<void> {
           },
           onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
             const pol = ulepszeniaEmpireForOwner(0);
-            pol.pracaAutoPercent = clampPracaWspolnyWorekPercent(pracaAutoPercent);
+            // Historyczny suwak automatu ma zakres 0–100%; cap 50% należy
+            // wyłącznie do nadrzędnego splitu ownerDefaultPracaSplit.
+            pol.pracaAutoPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             pol.tryb = 'auto';
             ulepszeniaEmpireByOwner.set(0, pol);
             showHintMessage(`Państwo: auto ulepszenia · ${pol.pracaAutoPercent}% budżetu Pracy`, 2800);
@@ -19041,7 +19073,7 @@ async function boot(): Promise<void> {
               city.ulepszeniaFocus = city.ulepszeniaFocus ?? pol.focus;
               city.ulepszeniaTryb = city.ulepszeniaTryb ?? pol.tryb;
               city.ulepszeniaOnlyWorked = city.ulepszeniaOnlyWorked ?? pol.onlyWorked;
-              city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(
+              city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
                 city.ulepszeniaPracaPercent ?? pol.pracaAutoPercent,
               );
             }
@@ -19098,7 +19130,7 @@ async function boot(): Promise<void> {
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
-            city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(pracaAutoPercent);
+            city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             city.ulepszeniaTryb = 'auto';
             showHintMessage(
               `${city.name}: auto ulepszenia · ${city.ulepszeniaPracaPercent}% budżetu Pracy`,
@@ -19299,6 +19331,15 @@ async function boot(): Promise<void> {
         onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
           if (ownerId !== 0) return;
           ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+          markCityStateDirty();
+          updateHud();
+        },
+        getOwnerDefaultPracaSplit: (ownerId) => effectivePracaSplitForOwner(ownerId),
+        onOwnerDefaultPracaSplitChange: (ownerId, split) => {
+          if (ownerId !== 0) return;
+          ownerDefaultPracaSplit.set(0, {
+            procentUlepszenia: clampPracaWspolnyWorekPercent(split.procentUlepszenia),
+          });
           markCityStateDirty();
           updateHud();
         },
@@ -24369,6 +24410,9 @@ async function boot(): Promise<void> {
           // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): serializacja
           // globalnych domyślnych dla trzy nowe pola, wzorem ownerDefaultPodzialHandlu wyżej.
           ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries()),
+          // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: nadrzędny split całej puli
+          // jest osobny od per-city podziału Pracy i od pracaAutoPercent.
+          ownerDefaultPracaSplit: Array.from(ownerDefaultPracaSplit.entries()),
           ownerDefaultOkolicaFocus: Array.from(ownerDefaultOkolicaFocus.entries()),
           ownerDefaultBudowaProfil: Array.from(ownerDefaultBudowaProfil.entries()),
           // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): serializacja
@@ -26577,7 +26621,7 @@ async function boot(): Promise<void> {
             // dostają remainder; niewykorzystana część pozostaje w puli.
             const playerPracaBudget = splitEmpirePracaBudget(
               playerPracaPool,
-              ulepszeniaEmpireForOwner(0).pracaAutoPercent,
+              effectivePracaSplitForOwner(0).procentUlepszenia,
             );
             const usedPlayerBuildingBudget = applyEmpireBuildingBudget(
               0,
@@ -26590,7 +26634,10 @@ async function boot(): Promise<void> {
             aiImprovementBudgetByOwner.clear();
             for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
               const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;
-              const aiBudget = splitEmpirePracaBudget(aiPool, 50);
+              const aiBudget = splitEmpirePracaBudget(
+                aiPool,
+                effectivePracaSplitForOwner(ownerId).procentUlepszenia,
+              );
               aiImprovementBudgetByOwner.set(ownerId, aiBudget.doUlepszen);
               const usedAiBuildingBudget = applyEmpireBuildingBudget(ownerId, aiBudget.doBudynkow);
               if (usedAiBuildingBudget > 0) {
@@ -31551,6 +31598,21 @@ async function boot(): Promise<void> {
       ownerDefaultPodzialPracy.clear();
       const savedPodzialPracy = saved.meta?.ownerDefaultPodzialPracy as Array<[number, CityPodzialPracy]> | undefined;
       migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, savedPodzialPracy);
+      ownerDefaultPracaSplit.clear();
+      const savedPracaSplit = saved.meta?.ownerDefaultPracaSplit as
+        Array<[number, Partial<EmpirePracaSplit>]> | undefined;
+      if (savedPracaSplit?.length) {
+        for (const [oid, raw] of savedPracaSplit) {
+          ownerDefaultPracaSplit.set(oid, {
+            procentUlepszenia: clampPracaWspolnyWorekPercent(raw?.procentUlepszenia),
+          });
+        }
+      }
+      for (const city of cities) {
+        if (!ownerDefaultPracaSplit.has(city.ownerId)) {
+          ownerDefaultPracaSplit.set(city.ownerId, { ...DEFAULT_EMPIRE_PRACA_SPLIT });
+        }
+      }
       ownerDefaultOkolicaFocus.clear();
       const savedOkolicaFocus = saved.meta?.ownerDefaultOkolicaFocus as Array<[number, OkolicaFocus]> | undefined;
       migrateOkolicaFocusOnLoad(cities, ownerDefaultOkolicaFocus, savedOkolicaFocus);
@@ -31574,7 +31636,9 @@ async function boot(): Promise<void> {
             focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
             onlyWorked: (pol.onlyWorked as boolean) ?? false,
-            pracaAutoPercent: clampPracaWspolnyWorekPercent(
+            // Historyczny automat migruje przez clamp 0–100, bez capu nadrzędnego
+            // splitu. Stary save nie może tracić wartości 60–100%.
+            pracaAutoPercent: clampUlepszeniaPracaPercent(
               resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
             ),
           });
