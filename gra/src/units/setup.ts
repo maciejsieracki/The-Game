@@ -56,6 +56,8 @@ export interface RuntimeUnit {
   fortifyRuchSnapshot?: number;
   /** HP po walce (undefined = pełne z definicji jednostki). */
   hp?: number;
+  /** Zapisany maksymalny HP runtime jednostki (uzupełniany przy pierwszym użyciu). */
+  hpMax?: number;
   /** Tura: liczba porażek obrony w tej turze (L2 — 2. = wipe). */
   defLossesThisTurn?: number;
   /** Miasto oblegane — jednostka trzyma oblężenie (ruch zablokowany do końca / szturmu). */

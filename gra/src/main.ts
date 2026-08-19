@@ -25295,10 +25295,11 @@ async function boot(): Promise<void> {
               // would disappear before the next save.
               units,
               getMaxHp: (typeId: string) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
-              onUnitHpChanged: (unitId: string, hp: number, _hpMax: number) => {
+              onUnitHpChanged: (unitId: string, hp: number, hpMax: number) => {
                 const live = units.find(u => u.id === unitId);
                 if (!live) return;
                 live.hp = hp;
+                live.hpMax = hpMax;
               },
             },
             ownerDefaultPodzialPracy,
