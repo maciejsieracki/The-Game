@@ -22032,7 +22032,7 @@ async function boot(): Promise<void> {
         await yieldTurnTransitionUi();
         try {
           const barbLevel = _menuAdvanced?.barbariansLevel ?? 'wielu';
-          const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel);
+          const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel, _menuDifficulty);
           if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
             const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
 

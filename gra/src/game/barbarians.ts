@@ -3,7 +3,7 @@
  * Neutral hostile faction ("barbarzyncy") for The Game -- pure functions only.
  * No DOM, no THREE, no main.ts. Deterministic (all randomness via a seed).
  *
- * Scope (BACKLOG C4): camp spawning, a per-camp unit cap, simple aggression,
+ * Scope (BACKLOG C4): camp spawning, a per-camp living-unit cap, simple aggression,
  * and movement toward the nearest player unit / city. The engine (SILNIK) wires
  * the returned commands into the turn loop later; this module never mutates
  * shared game state itself -- it returns plain data the caller applies.
@@ -94,7 +94,10 @@ export interface BarbUnit extends RuntimeUnit {
    * Omit when HP is not tracked -- the unit then always advances.
    */
   healthFrac?: number;
-  /** Id of the camp this unit was spawned from (informational; optional). */
+  /**
+   * Id of the camp this unit was spawned from. Used to enforce the living-unit
+   * cap even after the unit has marched away from the camp.
+   */
   campId?: string;
   /**
    * TEMAT #15: jednostka Ludów Morza (spawn z obozu nadmorskiego) — prowadzona
@@ -170,7 +173,10 @@ export interface BarbParams {
   campSpacing: number;
   /** Turns between unit spawns at a camp (reset after a successful spawn). */
   spawnInterval: number;
-  /** Max living barbarian units counted within campControlRadius of a camp. */
+  /**
+   * Max living barbarian units attributed to one camp. Legacy units without
+   * campId are counted by campControlRadius as a save-compatibility fallback.
+   */
   unitsPerCamp: number;
   /** Radius (hexes) used to count a camp's "owned" units for the cap. */
   campControlRadius: number;
@@ -276,22 +282,47 @@ export function loadSeaBarbParams(
 /** Poziom z kreatora (Maciej 2026-07-04). */
 export type BarbariansLevel = 'wielu' | 'nieliczni' | 'wylaczeni';
 
+/** Główna trudność gry sterująca liczbą żywych jednostek jednej chatki. */
+export type BarbDifficulty = 'easy' | 'normal' | 'hard';
+
+/** Kanon R-BARB-CHATKA-LIMIT-POZIOMY-Q1: Easy=1, Standard=2, Hard=3. */
+export function barbarianUnitsPerCampForDifficulty(
+  difficulty: BarbDifficulty | undefined,
+): number {
+  if (difficulty === 'easy') return 1;
+  if (difficulty === 'hard') return 3;
+  return 2;
+}
+
 export function barbariansEnabledForLevel(level: BarbariansLevel | undefined): boolean {
   return level !== 'wylaczeni';
 }
 
-/** Skala obozów/spawnu dla „Nieliczni”; „Wielu” = parametry z JSON. */
+/**
+ * Skala obozów/spawnu dla poziomu z kreatora.
+ *
+ * Gdy podano główną trudność gry, unitsPerCamp jest kanonicznie ustawiane na
+ * 1/2/3 żywe jednostki na chatkę. Bez argumentu zachowujemy dotychczasową
+ * wartość z parametrów, dla zgodności z istniejącymi wywołaniami/testami.
+ */
 export function scaleBarbParamsForLevel(
   params: BarbParams,
   level: BarbariansLevel | undefined,
+  difficulty?: BarbDifficulty,
 ): BarbParams {
-  if (!level || level === 'wielu') return params;
-  if (level === 'wylaczeni') return { ...params, maxCamps: 0 };
+  const withDifficulty = difficulty === undefined
+    ? params
+    : {
+      ...params,
+      unitsPerCamp: barbarianUnitsPerCampForDifficulty(difficulty),
+    };
+  if (!level || level === 'wielu') return withDifficulty;
+  if (level === 'wylaczeni') return { ...withDifficulty, maxCamps: 0 };
   return {
-    ...params,
-    maxCamps: Math.max(1, Math.ceil(params.maxCamps * 0.45)),
-    spawnInterval: Math.ceil(params.spawnInterval * 1.5),
-    unitsPerCamp: Math.max(1, params.unitsPerCamp - 1),
+    ...withDifficulty,
+    maxCamps: Math.max(1, Math.ceil(withDifficulty.maxCamps * 0.45)),
+    spawnInterval: Math.ceil(withDifficulty.spawnInterval * 1.5),
+    unitsPerCamp: Math.max(1, withDifficulty.unitsPerCamp - 1),
   };
 }
 
@@ -679,8 +710,8 @@ export interface TickResult {
 /**
  * Advances every camp one turn:
  *   - decrements spawnCooldown (floored at 0);
- *   - when a camp's cooldown is 0 AND it controls fewer than
- *     params.unitsPerCamp living barbarian units within campControlRadius,
+ *   - when a camp's cooldown is 0 AND it has fewer than
+ *     params.unitsPerCamp living barbarian units attributed to it,
  *     emits one BarbSpawn on a free passable land hex next to the camp and
  *     resets the cooldown to params.spawnInterval;
  *   - if the cooldown is 0 but the cap is reached or no free adjacent hex
@@ -689,7 +720,9 @@ export interface TickResult {
  * Pure: returns new camp objects and a spawn list; never mutates inputs.
  *
  * @param camps      Current camps.
- * @param barbUnits  All living barbarian units (for the per-camp cap).
+ * @param barbUnits  All living barbarian units (for the per-camp cap). Units
+ *   with campId count even after marching away; legacy units without campId
+ *   fall back to campControlRadius.
  * @param allUnits   All units on the map (to avoid spawning onto an occupied hex).
  * @param map        Game map (terrain / hex existence).
  * @param params     Tunable coefficients.
@@ -715,10 +748,9 @@ export function tickCamps(
       continue;
     }
 
-    // Cooldown ready: check the per-camp cap.
-    const owned = barbUnits.filter(
-      u => hexDistance(u.q, u.r, camp.q, camp.r) <= params.campControlRadius,
-    ).length;
+    // Cooldown ready: check the living-unit cap for this camp. A unit that
+    // marched away is still alive and must keep occupying the camp's slot.
+    const owned = countCampLivingUnits(camp, barbUnits, params.campControlRadius);
 
     if (owned >= params.unitsPerCamp) {
       // At cap -- hold at 0 so it spawns as soon as a slot frees up.
@@ -841,6 +873,23 @@ function countCampGarrison(
 ): number {
   return barbUnits.filter(
     u => hexDistance(u.q, u.r, camp.q, camp.r) <= campControlRadius,
+  ).length;
+}
+
+/**
+ * Counts living units produced by a camp. New units carry campId, so leaving
+ * the camp does not free a spawn slot. Old saves may lack campId; those units
+ * use the former proximity rule until they leave the control radius.
+ */
+function countCampLivingUnits(
+  camp: BarbCamp,
+  barbUnits: BarbUnit[],
+  campControlRadius: number,
+): number {
+  return barbUnits.filter(
+    u => u.campId === camp.id
+      || (u.campId === undefined
+        && hexDistance(u.q, u.r, camp.q, camp.r) <= campControlRadius),
   ).length;
 }
 

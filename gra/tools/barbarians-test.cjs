@@ -28,6 +28,7 @@ const ENTRY_TS = `
 export {
   BARBARIAN_OWNER_ID, isBarbarian,
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
+  barbarianUnitsPerCampForDifficulty, scaleBarbParamsForLevel,
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
@@ -66,6 +67,7 @@ const B = require(BUNDLE_FILE);
 const {
   BARBARIAN_OWNER_ID, isBarbarian,
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
+  barbarianUnitsPerCampForDifficulty, scaleBarbParamsForLevel,
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
@@ -167,6 +169,24 @@ assert(barbariansActive(P.startTurn, P, 3) === true, 'active era3 (v0.1 max)');
 assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false, 'inactive from Sredniowiecze');
 
 // ===========================================================================
+// 3b. R-BARB-CHATKA-LIMIT-POZIOMY-Q1 -- living units per camp by difficulty
+// ===========================================================================
+{
+  eq(barbarianUnitsPerCampForDifficulty('easy'), 1, 'Łatwy -> 1 żywa jednostka/chatkę');
+  eq(barbarianUnitsPerCampForDifficulty('normal'), 2, 'Standard -> 2 żywe jednostki/chatkę');
+  eq(barbarianUnitsPerCampForDifficulty('hard'), 3, 'Trudny -> 3 żywe jednostki/chatkę');
+
+  eq(scaleBarbParamsForLevel(P, 'wielu', 'easy').unitsPerCamp, 1,
+    'Łatwy skaluje limit żywych jednostek/chatkę');
+  eq(scaleBarbParamsForLevel(P, 'wielu', 'normal').unitsPerCamp, 2,
+    'Standard skaluje limit żywych jednostek/chatkę');
+  eq(scaleBarbParamsForLevel(P, 'wielu', 'hard').unitsPerCamp, 3,
+    'Trudny skaluje limit żywych jednostek/chatkę');
+  eq(scaleBarbParamsForLevel(P, 'nieliczni', 'hard').unitsPerCamp, 2,
+    'Nieliczni zachowuje dodatkowe ograniczenie względem Trudnego');
+}
+
+// ===========================================================================
 // 4. spawnCamps
 // ===========================================================================
 {
@@ -247,6 +267,74 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
   const r3 = tickCamps([{ id: 'c', q: 5, r: 5, spawnCooldown: 0 }], near, near, map, P);
   eq(r3.spawns.length, 0, 'no spawn when per-camp cap reached');
   eq(r3.camps[0].spawnCooldown, 0, 'cooldown stays 0 while capped');
+
+  // 5d-live. The cap follows living units attributed to the camp even after
+  // they march away; after death/removal the camp may produce again (no
+  // lifetime cap).
+  {
+    const hard = scaleBarbParamsForLevel(P, 'wielu', 'hard');
+    const farAlive = [
+      barb('far1', 0, 0, { campId: 'respawn', ruchLeft: 0 }),
+      barb('far2', 1, 0, { campId: 'respawn', ruchLeft: 0 }),
+      barb('far3', 2, 0, { campId: 'respawn', ruchLeft: 0 }),
+    ];
+    const cappedAway = tickCamps(
+      [{ id: 'respawn', q: 5, r: 5, spawnCooldown: 0 }],
+      farAlive,
+      farAlive,
+      map,
+      hard,
+    );
+    eq(cappedAway.spawns.length, 0,
+      'Trudny: 3 żywe jednostki blokują spawn także po odejściu od chatki');
+
+    const afterDeath = tickCamps(
+      cappedAway.camps,
+      farAlive.slice(0, 2),
+      farAlive.slice(0, 2),
+      map,
+      hard,
+    );
+    eq(afterDeath.spawns.length, 1,
+      'po śmierci jednej jednostki chatka odtwarza brakujący slot');
+    eq(afterDeath.spawns[0].campId, 'respawn',
+      'odtworzona jednostka pochodzi z tej samej chatki');
+
+    const easy = scaleBarbParamsForLevel(
+      Object.assign({}, P, { spawnInterval: 1 }),
+      'wielu',
+      'easy',
+    );
+    const first = tickCamps(
+      [{ id: 'easy-respawn', q: 5, r: 5, spawnCooldown: 0 }],
+      [],
+      [],
+      map,
+      easy,
+    );
+    eq(first.spawns.length, 1, 'Łatwy: chatka produkuje pierwszą jednostkę');
+    const livingFirst = [barb('easy-1', first.spawns[0].q, first.spawns[0].r, {
+      campId: 'easy-respawn',
+    })];
+    const blockedWhileAlive = tickCamps(
+      first.camps,
+      livingFirst,
+      livingFirst,
+      map,
+      easy,
+    );
+    eq(blockedWhileAlive.spawns.length, 0,
+      'Łatwy: jedna żywa jednostka blokuje kolejny spawn');
+    const respawned = tickCamps(
+      blockedWhileAlive.camps,
+      [],
+      [],
+      map,
+      easy,
+    );
+    eq(respawned.spawns.length, 1,
+      'Łatwy: po śmierci jednostki chatka może odtworzyć ją bez lifetime capu');
+  }
 
   // 5e. Spawn never lands on an occupied hex (ring-1 fully blocked -> ring-2).
   const occupants = [
