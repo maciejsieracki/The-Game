@@ -1,10 +1,100 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-09 (FALA 263 — maraton AutoBot: isWorkable 4 rundy + akcja-6 handel tech 3 rundy + regresja tooltip naprawiona; szczegóły `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-19 (zapis ECHO `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 = 1A + 2A + 3A`; pełne A/B/C zachowane poniżej). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
 Nowy case → **ID w REJESTR-PROSB** + wpis tu (jeśli ABC) → agent **proponuje, nie koduje** → Maciej: **`ID + A|B|C`** → commit → **`deploy`** osobno.
 Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
+
+---
+
+## R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 — ECHO właściciela: **1A + 2A + 3A** · STATUS: **DECYZJA ZAPISANA, IMPLEMENTACJA NIEZLECONA**
+
+**Decyzja właściciela otrzymana w głównym czacie:** `1A, 2A, 3A`. To jest
+decyzja właściciela, nie rekomendacja.
+
+### Sytuacja i zakres
+
+Temat dotyczy terminowej umowy na wspólną walkę z barbarzyńcami oraz wojskowe
+prawo przemarszu. Umowa jest obustronna, nie jest automatycznym ogólnym
+sojuszem przeciw wszystkim cywilizacjom, a zasady zerwania muszą określać
+karę Zaufania, moment wygaśnięcia autoryzacji i zachowanie jednostek.
+
+### 1. Czas i zakres umowy
+
+**A — umowa terminowa obejmująca wspólną walkę i przemarsz — WYBRANE (1A).**
+
+- **Za:** jeden ograniczony kontrakt obejmuje oba uzgodnione uprawnienia.
+- **Za:** terminowość ogranicza ryzyko pozostawienia otwartego dostępu po ustaniu celu.
+- **Przeciw:** wymaga określenia czasu trwania w mechanice.
+- **Przeciw:** po wygaśnięciu trzeba obsłużyć jednostki pozostające na terytorium partnera.
+
+**B — umowa trwa do zniszczenia zagrożenia barbarzyńskiego.**
+
+- **Za:** czas wynika bezpośrednio z celu umowy.
+- **Za:** umowa może zakończyć się naturalnie po usunięciu zagrożenia.
+- **Przeciw:** „zniszczenie zagrożenia” może być niejednoznaczne przy wielu obozach i jednostkach.
+- **Przeciw:** kontrakt może trwać dłużej, jeśli warunek końcowy nie zostanie wykryty.
+
+**C — umowa bezterminowa, do odwołania przez strony.**
+
+- **Za:** strony nie muszą ustalać czasu przy zawarciu.
+- **Za:** zakończenie następuje wtedy, gdy współpraca nie jest już potrzebna.
+- **Przeciw:** rośnie ryzyko zapomnianego, stale aktywnego prawa przemarszu.
+- **Przeciw:** potrzebna byłaby silniejsza kontrola aktywnych umów.
+
+### 2. Obustronność przemarszu i udziału w walce
+
+**A — pełna obustronność — WYBRANE (2A).** Obie strony mogą przechodzić przez
+swoje terytoria, a oddziały obu stron mogą wejść do wspólnej walki.
+
+- **Za:** obie strony mają identyczne prawa i obowiązki.
+- **Za:** udział w walce nie zależy od tego, kto zawarł umowę.
+- **Przeciw:** trzeba sprawdzać uprawnienia dla obu kierunków ruchu.
+- **Przeciw:** partner uzyskuje dostęp do większej liczby sytuacji bojowych na terytorium drugiej strony.
+
+**B — przemarsz i udział w walce tylko po stronie wskazanej w umowie.**
+
+- **Za:** ogranicza dostęp do jasno wskazanej strony.
+- **Za:** zmniejsza ryzyko niezamierzonego wejścia drugiej strony.
+- **Przeciw:** prawa stron nie są symetryczne.
+- **Przeciw:** wymaga rozróżnienia strony uprawnionej i udostępniającej terytorium.
+
+**C — przemarsz obustronny, ale do wspólnej walki może wejść tylko wskazana strona.**
+
+- **Za:** zachowuje swobodę przejścia przy ograniczeniu udziału bojowego.
+- **Za:** może pasować do umowy, w której jedna strona zaprasza drugą do pomocy.
+- **Przeciw:** miesza dwa różne poziomy uprawnienia.
+- **Przeciw:** wymaga osobnej obsługi wejścia do walki dla każdej strony.
+
+### 3. Zerwanie umowy i jednostki pozostające na terytorium partnera
+
+**A — natychmiastowe zerwanie przez każdą stronę z karą Zaufania — WYBRANE (3A).**
+Autoryzacja wygasa od następnej kontroli ruchu, a jednostki pozostają na miejscu
+bez teleportowania.
+
+- **Za:** każda strona może natychmiast zakończyć zobowiązanie.
+- **Za:** kara Zaufania zachowuje koszt dyplomatyczny zerwania.
+- **Przeciw:** jednostka może chwilowo pozostać na nieautoryzowanym terytorium.
+- **Przeciw:** brak teleportowania wymaga dalszej obsługi legalnego ruchu jednostki.
+
+**B — zerwanie na koniec bieżącej tury, bez natychmiastowego wygaszenia autoryzacji.**
+
+- **Za:** daje przewidywalne zamknięcie bieżącej tury.
+- **Za:** ogranicza przerwanie aktywnej akcji ruchu.
+- **Przeciw:** strona nie może odebrać dostępu natychmiast.
+- **Przeciw:** autoryzacja musi trwać po decyzji o zerwaniu.
+
+**C — natychmiastowe zerwanie bez kary, z karencją na wyjście jednostek.**
+
+- **Za:** pozwala zakończyć umowę bez sankcji i dać jednostkom czas na wyjście.
+- **Za:** zmniejsza ryzyko utknięcia jednostek po odebraniu dostępu.
+- **Przeciw:** brak kary osłabia koszt zerwania zobowiązania.
+- **Przeciw:** karencja oznacza częściowo aktywny dostęp po zerwaniu.
+
+**Kontrakt wybrany:** `1A + 2A + 3A`. Szczegółowy dokument decyzji:
+[`docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md`](../docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md).
+Ten zapis nie zleca implementacji i nie zmienia plików `gra/`.
 
 ---
 
