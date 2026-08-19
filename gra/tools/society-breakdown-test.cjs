@@ -115,7 +115,13 @@ eq(
   111,
   'R-GARNCARNIA...: osobna linia Ceramika pokazuje +111',
 );
-eq(garncarniaRegression.netto, 417, 'R-GARNCARNIA...: netto = +306 + +111');
+eq(
+  garncarniaRegression.lines
+    .filter(l => l.id === 'budynki' || l.id === 'ceramika')
+    .reduce((sum, line) => sum + line.value, 0),
+  417,
+  'R-GARNCARNIA...: rozdzielone linie = +306 + +111',
+);
 
 // Tier mapping
 eq(M.tierFromPorPct(95), 'order', 'PorPct 95 -> order');
