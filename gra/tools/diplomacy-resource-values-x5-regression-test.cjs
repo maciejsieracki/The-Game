@@ -45,7 +45,16 @@ function eq(actual, expected, message) {
 const blockPrices = {
   drewno: 1,
   glina: 2,
+  kamien: 3,
+  ruda: 5,
   ruda_zelaza: 10,
+  ruda_cyny: 10,
+  cegla: 5,
+  sol: 2,
+  kon: 5,
+  ceramika: 5,
+  braz: 15,
+  zelazo: 20,
   stal: 25,
 };
 for (const [resource, pricePerBlock] of Object.entries(blockPrices)) {
