@@ -28,7 +28,7 @@ fs.writeFileSync(entry, `
     chooseCityProduction,
     decideAITurn,
     decideDefensiveCopyTurn,
-    shouldAIRushBuyUnit,
+    shouldAIPurchaseUnit,
     buildCandidateIds,
     pickExecutableCandidate,
     loadDifficultyParams,
@@ -61,7 +61,7 @@ const {
   buildableProduction,
   purchasableUnits,
   chooseCityProduction,
-  shouldAIRushBuyUnit,
+  shouldAIPurchaseUnit,
   pickAutoBuildItem,
   loadDifficultyParams,
 } = M;
@@ -202,10 +202,14 @@ console.log('\n-- T7: chooseCityProduction MP/AI planuje jednostki (egzekucja = 
     canAfford: () => true,
   }, map, diff);
   assert(pick === 'Wojownik' || pick === 'mury', 'T7a: MP defensiveCopy priorytet garnizon/mury');
-  eq(shouldAIRushBuyUnit({
+  eq(shouldAIPurchaseUnit({
     atWar: false, treasury: 500, reserve: 100, goldCost: 40,
     hasManpower: true, boughtThisTurn: 0, maxPerTurn: 1,
-  }), false, 'T7b: poza wojną AI nie rush-kupuje (nie mylić z enqueue Pracy)');
+  }), true, 'T7b: poza wojną AI kupuje jak gracz (wojna nie jest bramką)');
+  eq(shouldAIPurchaseUnit({
+    atWar: true, treasury: 500, reserve: 100, goldCost: 40,
+    hasManpower: true, boughtThisTurn: 0, maxPerTurn: 1,
+  }), true, 'T7c: w wojnie AI nadal kupuje przez tę samą bramkę Skarbca/Manpower');
 }
 
 console.log(`\nai-mp-rekrutacja-build-gate-test: ${passed} passed, ${failed} failed`);
