@@ -1,6 +1,12 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~00:40** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-19 15:35 (handoff bez deployu)** · Projekt: Civ „The Game”
+
+> **HANDOFF PRZEJĘCIA 2026-08-19:** pełna lista tematów po ostatnim deployu,
+> statusy Operator/Evaluator, blokady artefaktów i instrukcja dalszej pracy:
+> [`dyspozycje/_handoff/HANDOFF-PRZEJECIE-AUTOBOT-2026-08-19.md`](dyspozycje/_handoff/HANDOFF-PRZEJECIE-AUTOBOT-2026-08-19.md).
+> **ROBOCZA: bez zmian.** Nie wykonywać deployu bez weryfikowalnego PASS
+> Evaluatora i finalnej kontroli.
 
 > **FALA 224 (2026-08-05):** ROBOCZA `38df6ad7` · stempel menu `eef4e87e` · `main` includes cleanup `c44a190`. Batch: R-REKRUT-LUDNOSC-UI (teksty UI) + docs zamknięcie zrównoważonego. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra. **Handoff sesji:** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md)
 
