@@ -10,7 +10,7 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ## REGRESJE DO ROZPOZNANIA — 2026-08-18
 
-### R-REKRUT-SUROWIEC-BEZ-UPKEEP-REZERWY-Q1 — koszt rekrutacji nie może zawierać utrzymania · STATUS: **NOWE — AUDYT**
+### R-REKRUT-SUROWIEC-BEZ-UPKEEP-REZERWY-Q1 — koszt rekrutacji nie może zawierać utrzymania · STATUS: **ZAMKNIĘTE — BRAK REGRESJI**
 
 **Zgłoszenie Macieja:** jeżeli jednostka wymaga **50 Drewna** przy rekrutacji, bramka
 rekrutacji ma sprawdzać i pobierać dokładnie 50 Drewna. **10 Drewna utrzymania/turę**
@@ -29,6 +29,11 @@ jezdnych; utrzymanie jednostek jest liczone osobno w
 `gra/src/main.ts:2691-2695` używa wyłącznie `unitStockCost()`, więc trzeba jeszcze
 sprawdzić, czy widoczne 60 pochodzi z UI/podpowiedzi albo z innego wejścia do
 rekrutacji. Nie uznajemy tematu za zamknięty bez testu 50-versus-60.
+
+**Werdykt Evaluatora:** PASS — `unit-stock-cost-test.cjs` 58/58, test 50 vs 60
+PASS, typecheck PASS. Koszt jednorazowy = 50 Drewna; utrzymanie Drewna nie
+istnieje w danych jednostek, więc nie dodano nowej mechaniki. `upkeep-test.cjs`
+49/73 pozostaje niezwiązanym baseline’em.
 
 ### R-GRANICE-NARUSZENIE-ZAUFANIE-KIERUNEK-Q1 — kara za naruszenie granicy spada na niewłaściwą stronę · STATUS: **NOWE — POTWIERDZONY KIERUNEK AUDYTU**
 
