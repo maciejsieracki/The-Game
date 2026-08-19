@@ -48,5 +48,15 @@ const loaded = JSON.parse(JSON.stringify({ units: [liveUnit], cities: [city] }))
 ok(loaded.units[0].hp === 40, 'healed HP survives save JSON snapshot');
 ok(loaded.cities[0].manpower === 4700, 'Manpower survives save JSON snapshot');
 
+const multiCity = { id: 'c2', ownerId: 0, population: 10, manpower: 100, q: 0, r: 0, oblegane: false };
+const multiGarrison = { id: 'u2', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 0, r: 0, inGarnizon: true };
+const multiField = { id: 'u3', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 8, r: 8 };
+const multiResult = tickManpowerUnitReplenishment(
+  [multiCity], [multiGarrison, multiField], 'normal', () => 1, () => [], () => 100,
+);
+ok(multiResult.healedCount === 2, 'proporcjonalny tick obejmuje wszystkie jednostki');
+ok(multiGarrison.hp === 15 && multiField.hp === 15, 'ograniczony Manpower dzieli leczenie po równo');
+ok(multiCity.manpower === 0, 'proporcjonalny tick wydaje całą dostępną pulę');
+
 console.log(`[r-manpower-uzupelnienie-hp-niezapisuje-q1-test] ${pass} OK, ${fail} FAIL`);
 process.exit(fail > 0 ? 1 : 0);
