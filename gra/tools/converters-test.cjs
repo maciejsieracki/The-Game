@@ -21,6 +21,7 @@ fs.writeFileSync(ENTRY_FILE, `
 export {
   loadThroughput, DEFAULT_CONVERTER_RECIPES, runConverter, runConverters,
   computeGarncarniaSurplusBonus,
+  ceramikaHappinessBonus,
 } from '../src/game/converters';
 `, 'utf8');
 
@@ -131,8 +132,11 @@ eq(u14bNoGarnc.zdrowieBonus, 0, 'U-14bA: bez Garncarni -> 0 (nawet przy stocku)'
 const u14bZad = C.computeGarncarniaSurplusBonus({
   ceramikaPoDrainSpichlerza: 2, maGarncarnie: true, efekt: 'zadowolenie', zadowolenieNaSztuke: 1,
 });
-eq(u14bZad.zadowolenieBonus, 2, 'U-14b zapas: efekt zadowolenie -> +2');
+eq(u14bZad.zadowolenieBonus, 1, 'R-GARNCARNIA...: Ceramika daje dokładnie +1 Szczęścia');
 eq(u14bZad.zdrowieBonus, 0, 'U-14b zapas: efekt zadowolenie -> 0 zdrowia');
+eq(C.ceramikaHappinessBonus(1, true), 1, 'R-GARNCARNIA...: dostęp +1');
+eq(C.ceramikaHappinessBonus(1100, true), 1, 'R-GARNCARNIA...: 1100 sztuk nadal +1, bez skalowania ilością');
+eq(C.ceramikaHappinessBonus(1100, false), 0, 'R-GARNCARNIA...: brak Garncarni, brak owner-wide bonusu');
 
 eq(C.loadThroughput({}, 'budynek_cegielnia_przepustowosc', 'normal', 2), 2, 'load: missing -> fallback');
 

@@ -97,6 +97,22 @@ const ord = M.computeOrderPctBreakdown(sz, pr, params);
 eq(ord.porPct > 0, true, 'PorPct > 0');
 eq(M.porPctBand(ord.porPct).length > 0, true, 'band ok');
 
+// R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1: dwa niezależne bonusy są binarne
+// i sumują się per miasto; żaden nie jest mnożony przez liczbę miast ownera.
+const ceramicAndGranary = M.computeHappinessBreakdown({
+  population: 6,
+  era: 2,
+  buildingZadowolenie: 0,
+  ceramikaZadowolenie: 1,
+  spichlerzZadowolenie: 1,
+}, null);
+eq(ceramicAndGranary.lines.find(l => l.id === 'ceramika')?.value, 1,
+  'R-GARNCARNIA...: Ceramika = dokładnie +1 na miasto');
+eq(ceramicAndGranary.lines.find(l => l.id === 'spichlerz')?.value, 1,
+  'R-GARNCARNIA...: działający Spichlerz = dokładnie +1 na miasto');
+eq(ceramicAndGranary.lines.filter(l => ['ceramika', 'spichlerz'].includes(l.id)).reduce((sum, line) => sum + line.value, 0), 2,
+  'R-GARNCARNIA...: Ceramika + Spichlerz = +2, bez owner-wide multiplication');
+
 // Tier mapping
 eq(M.tierFromPorPct(95), 'order', 'PorPct 95 -> order');
 eq(M.tierFromPorPct(50), 'neutral', 'PorPct 50 -> neutral');

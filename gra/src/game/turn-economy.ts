@@ -1394,7 +1394,7 @@ function simulateCeramikaAfterSpichlerzDrains(
   return ceramika;
 }
 
-/** U-14bA / R7-C: +Zadowolenie z nadwyżki Ceramiki po drain Spichlerza (per owner, miasto z Garncarnią). */
+/** R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1: +1 z dostępu do Ceramiki per miasto z Garncarnią. */
 export function computeGarncarniaSurplusZadowolenieByOwner(
   cities: ReadonlyArray<City>,
   builtByCity: ReadonlyMap<string, readonly string[]>,

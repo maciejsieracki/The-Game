@@ -66,6 +66,10 @@ export interface HappinessBreakdownInput {
   population: number;
   /** Suma zadowolenia z budynków (pkt). */
   buildingZadowolenie: number;
+  /** Dostęp do Ceramiki (pkt), osobno od bonusu budynków. */
+  ceramikaZadowolenie?: number;
+  /** Działający Spichlerz (pkt), niezależnie od Ceramiki. */
+  spichlerzZadowolenie?: number;
   haKult?: number;
   haRel?: number;
   haWealth?: number;
@@ -334,6 +338,12 @@ export function computeHappinessBreakdown(
 
   if (input.buildingZadowolenie !== 0) {
     lines.push({ id: 'budynki', label: 'Budynki (+1/budynek)', value: input.buildingZadowolenie });
+  }
+  if (input.ceramikaZadowolenie) {
+    lines.push({ id: 'ceramika', label: 'Ceramika (dostęp)', value: input.ceramikaZadowolenie });
+  }
+  if (input.spichlerzZadowolenie) {
+    lines.push({ id: 'spichlerz', label: 'Spichlerz (działający)', value: input.spichlerzZadowolenie });
   }
   if (input.haKult) {
     lines.push({ id: 'kultura', label: cultureHappinessLineLabel(input.haKult, input.ownCultureShare), value: input.haKult });
