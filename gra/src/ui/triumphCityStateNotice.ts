@@ -33,6 +33,7 @@ export interface TriumphCityStateNoticeOpts {
 
 const STYLE_ID = 'civ-triumph-cs-notice-css-v1';
 const HOST_ID = 'civ-triumph-cs-notice-host';
+const TITLE_ID = 'civ-triumph-cs-notice-title';
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -73,6 +74,23 @@ function laurelSvg(): string {
     + '<circle cx="27" cy="12" r="5"></circle><path d="M27 7v-3M27 20v3"></path></svg>';
 }
 
+/**
+ * Buduje jedyną kartę komunikatu triumfu. Eksport jest celowy: regresja może
+ * sprawdzić kontrakt karty bez odtwarzania całego hooka przejęcia miasta.
+ */
+export function buildTriumphCityStateNoticeMarkup(civLabel: string, cityName: string): string {
+  const civ = (civLabel ?? '').trim() || 'Twoja cywilizacja';
+  const city = (cityName ?? '').trim() || 'miasto';
+  return `<div class="tn-nh">${laurelSvg()}
+      <div class="tn-kick">Triumf</div>
+      <div class="tn-ttl" id="${TITLE_ID}">TRIUMF!</div>
+      <div class="tn-sub">${esc(civ)} zjednoczeni!</div></div>
+    <div class="tn-nb">
+      <div class="tn-body">Zjednoczyłeś całą kulturę ${esc(civ)}.<br>Ostatnie miasto-państwo — ${esc(city)} — znalazło się pod Twoją władzą.</div>
+      <div class="tn-btnrow"><button type="button" class="tn-btn" data-act="close">Rozumiem</button></div>
+    </div>`;
+}
+
 export function showTriumphCityStateNotice(opts: TriumphCityStateNoticeOpts): void {
   ensureStyles();
   // Jedno zdarzenie przejęcia może przejść przez więcej niż jedną ścieżkę
@@ -95,14 +113,10 @@ export function showTriumphCityStateNotice(opts: TriumphCityStateNoticeOpts): vo
 
   const card = document.createElement('div');
   card.className = 'tn-card';
-  card.innerHTML = `<div class="tn-nh">${laurelSvg()}
-      <div class="tn-kick">Triumf</div>
-      <div class="tn-ttl">TRIUMF!</div>
-      <div class="tn-sub">${esc(civ)} zjednoczeni!</div></div>
-    <div class="tn-nb">
-      <div class="tn-body">Zjednoczyłeś całą kulturę ${esc(civ)}.<br>Ostatnie miasto-państwo — ${esc(city)} — znalazło się pod Twoją władzą.</div>
-      <div class="tn-btnrow"><button type="button" class="tn-btn" data-act="close">Rozumiem</button></div>
-    </div>`;
+  card.setAttribute('role', 'dialog');
+  card.setAttribute('aria-modal', 'true');
+  card.setAttribute('aria-labelledby', TITLE_ID);
+  card.innerHTML = buildTriumphCityStateNoticeMarkup(civ, city);
 
   card.querySelector('[data-act="close"]')?.addEventListener('click', close);
 
