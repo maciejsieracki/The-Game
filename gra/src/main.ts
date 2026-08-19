@@ -25251,17 +25251,11 @@ async function boot(): Promise<void> {
             makeOwnerEmpireStockResolver(),
             ownerDefaultPodzialHandlu,
             {
-              units: units.map(u => ({
-                id: u.id,
-                ownerId: u.ownerId,
-                typeId: u.typeId,
-                category: u.category,
-                hp: u.hp,
-                hpMax: unitHealth(data.units.find(ud => ud.Jednostka === u.typeId) ?? {}),
-                q: u.q,
-                r: u.r,
-                inGarnizon: u.inGarnizon,
-              })),
+              // HP replenishment MUST receive the live RuntimeUnit objects.
+              // A mapped copy is mutated by tickManpowerUnitReplenishment(),
+              // but buildSaveGameSnapshot() serializes `units`, so the heal
+              // would disappear before the next save.
+              units,
               getMaxHp: (typeId: string) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
             },
             ownerDefaultPodzialPracy,
