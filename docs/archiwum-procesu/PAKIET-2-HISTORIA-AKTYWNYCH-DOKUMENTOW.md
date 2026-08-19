@@ -1,4 +1,4 @@
-+# PAKIET 2 — archiwum aktywnych dokumentów przed skróceniem
+# PAKIET 2 — archiwum aktywnych dokumentów przed skróceniem
 
 > Status: HISTORYCZNE SNAPSHOTY zachowane wyłącznie dla śladu i odtworzenia treści. Nie są routingiem ani instrukcją aktywną. Źródła aktywne wskazuje [`INDEX-PROCESU.md`](../procesy/INDEX-PROCESU.md).
 

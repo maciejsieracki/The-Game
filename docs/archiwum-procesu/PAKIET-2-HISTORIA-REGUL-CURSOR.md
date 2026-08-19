@@ -1,4 +1,4 @@
-+# PAKIET 2 — archiwum aktywnych reguł Cursor przed skróceniem
+# PAKIET 2 — archiwum aktywnych reguł Cursor przed skróceniem
 
 > Status: HISTORYCZNE SNAPSHOTY zachowane dla informacji. Poniższe treści nie są aktywnym routingiem; aktywne reguły znajdują się w `.cursor/rules/*.mdc`, a proces w [`INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md) i [`R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md).
 
