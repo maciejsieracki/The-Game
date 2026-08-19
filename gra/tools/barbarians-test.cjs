@@ -34,7 +34,7 @@ export {
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
-  scaleBarbParamsForLevel, barbariansEnabledForLevel, migrateBarbariansLevel,
+  scaleBarbParamsForLevel, barbarianUnitsPerCampForDifficulty, barbariansEnabledForLevel, migrateBarbariansLevel,
 } from '../src/game/barbarians';
 export {
   hexDistance, computePath, computeReachable, keyOf,
@@ -70,7 +70,7 @@ const {
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
-  scaleBarbParamsForLevel, barbariansEnabledForLevel, migrateBarbariansLevel,
+  scaleBarbParamsForLevel, barbarianUnitsPerCampForDifficulty, barbariansEnabledForLevel, migrateBarbariansLevel,
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
@@ -249,6 +249,43 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
   const r3 = tickCamps([{ id: 'c', q: 5, r: 5, spawnCooldown: 0 }], near, near, map, P);
   eq(r3.spawns.length, 0, 'no spawn when per-camp cap reached');
   eq(r3.camps[0].spawnCooldown, 0, 'cooldown stays 0 while capped');
+
+  // R-BARB-CHATKA-LIMIT-POZIOMY-Q1: difficulty controls the exact living
+  // contingent, and campId keeps a slot occupied after the unit marches away.
+  eq(barbarianUnitsPerCampForDifficulty('easy'), 1, 'Łatwy -> 1 żywa jednostka/chatkę');
+  eq(barbarianUnitsPerCampForDifficulty('normal'), 2, 'Standard -> 2 żywe jednostki/chatkę');
+  eq(barbarianUnitsPerCampForDifficulty('hard'), 3, 'Trudny -> 3 żywe jednostki/chatkę');
+  eq(scaleBarbParamsForLevel(P, 'latwy', 'easy').unitsPerCamp, 1,
+    'Łatwy: limit chatki wynosi 1');
+  eq(scaleBarbParamsForLevel(P, 'normalny', 'normal').unitsPerCamp, 2,
+    'Standard: limit chatki wynosi 2');
+  eq(scaleBarbParamsForLevel(P, 'trudny', 'hard').unitsPerCamp, 3,
+    'Trudny: limit chatki wynosi 3');
+
+  const hard = scaleBarbParamsForLevel(P, 'normalny', 'hard');
+  const farAlive = [
+    barb('far1', 0, 0, { campId: 'away' }),
+    barb('far2', 1, 0, { campId: 'away' }),
+    barb('far3', 2, 0, { campId: 'away' }),
+  ];
+  const cappedAway = tickCamps(
+    [{ id: 'away', q: 5, r: 5, spawnCooldown: 0 }],
+    farAlive,
+    farAlive,
+    map,
+    hard,
+  );
+  eq(cappedAway.spawns.length, 0,
+    'Trudny: 3 żywe jednostki blokują spawn po odejściu od chatki');
+  const afterDeath = tickCamps(
+    cappedAway.camps,
+    farAlive.slice(0, 2),
+    farAlive.slice(0, 2),
+    map,
+    hard,
+  );
+  eq(afterDeath.spawns.length, 1,
+    'po śmierci jednej jednostki chatka uzupełnia brakujący slot');
 
   // 5e. Spawn never lands on an occupied hex (ring-1 fully blocked -> ring-2).
   const occupants = [
@@ -740,10 +777,10 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
 //     gry, + migracja starej skali 'wielu'/'nieliczni'/'wylaczeni'.
 // ===========================================================================
 {
-  // 11a. Sygnatury funkcji NIE przyjmują trudności gry -- dowód strukturalny
-  // niezależności od _menuDifficulty/cityStateDifficultyOverride: jedyny
-  // parametr obok `params` to poziom barbarzyńców, nic więcej.
-  eq(scaleBarbParamsForLevel.length, 2, 'scaleBarbParamsForLevel(params, level) -- brak parametru trudności');
+  // 11a. Sygnatura skali przyjmuje opcjonalną trudność gry wyłącznie po to,
+  // aby wyznaczyć limit żywego kontyngentu chatki; pozostałe funkcje pozostają
+  // niezależne od _menuDifficulty/cityStateDifficultyOverride.
+  eq(scaleBarbParamsForLevel.length, 3, 'scaleBarbParamsForLevel(params, level, difficulty)');
   eq(barbariansEnabledForLevel.length, 1, 'barbariansEnabledForLevel(level) -- brak parametru trudności');
   eq(migrateBarbariansLevel.length, 1, 'migrateBarbariansLevel(level) -- brak parametru trudności');
 

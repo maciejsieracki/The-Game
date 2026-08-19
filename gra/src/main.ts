@@ -18282,6 +18282,7 @@ async function boot(): Promise<void> {
           const siegeStack = playerStackAt(u);
           if (u.ufortyfikowanyWPolu === true) {
             for (const su of siegeStack) exitFieldFortify(su);
+            syncUnitsRender();
             showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119 (obl\u0119\u017cenie trwa)', 2500);
             selectPlayerUnit(u.id, true);
           } else {
@@ -18294,6 +18295,7 @@ async function boot(): Promise<void> {
         if (u.ufortyfikowanyWPolu === true) {
           const fieldStack = playerStackAt(u);
           for (const su of fieldStack) exitFieldFortify(su);
+          syncUnitsRender();
           showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119', 2000);
           selectPlayerUnit(u.id, true);
           refreshD1bHud();
@@ -28504,7 +28506,7 @@ async function boot(): Promise<void> {
           // 'normalny') and legacy strings that may still linger in an old
           // save's newGameParams after load, without crashing on an unknown string.
           const barbLevel = migrateBarbariansLevel(_menuAdvanced?.barbariansLevel);
-          const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel);
+          const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel, _menuDifficulty);
           if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
             const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
 

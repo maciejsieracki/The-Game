@@ -530,6 +530,18 @@ export function loadSeaBarbParams(
  */
 export type BarbariansLevel = 'latwy' | 'normalny' | 'trudny' | 'brak';
 
+/** Trudność gry sterująca limitem żywych jednostek jednej chatki. */
+export type BarbDifficulty = 'easy' | 'normal' | 'hard';
+
+/** R-BARB-CHATKA-LIMIT-POZIOMY-Q1: Easy=1, Standard=2, Hard=3. */
+export function barbarianUnitsPerCampForDifficulty(
+  difficulty: BarbDifficulty | undefined,
+): number {
+  if (difficulty === 'easy') return 1;
+  if (difficulty === 'hard') return 3;
+  return 2;
+}
+
 /** Stara skala (przed 2026-08-13) — WYŁĄCZNIE do migracji starych zapisów/configów. */
 export type LegacyBarbariansLevel = 'wielu' | 'nieliczni' | 'wylaczeni';
 
@@ -584,31 +596,41 @@ export function barbariansEnabledForLevel(level: BarbariansLevel | undefined): b
 export function scaleBarbParamsForLevel(
   params: BarbParams,
   level: BarbariansLevel | undefined,
+  difficulty?: BarbDifficulty,
 ): BarbParams {
+  const withDifficulty = difficulty === undefined
+    ? params
+    : { ...params, unitsPerCamp: barbarianUnitsPerCampForDifficulty(difficulty) };
   switch (level) {
     case 'brak':
-      return { ...params, maxCamps: 0 };
+      return { ...withDifficulty, maxCamps: 0 };
     case 'latwy':
       return {
-        ...params,
-        maxCamps: Math.max(1, Math.round(params.maxCamps * 0.2)),
-        spawnInterval: Math.max(1, Math.round(params.spawnInterval * 2)),
-        unitsPerCamp: Math.max(1, params.unitsPerCamp - 1),
+        ...withDifficulty,
+        maxCamps: Math.max(1, Math.round(withDifficulty.maxCamps * 0.2)),
+        spawnInterval: Math.max(1, Math.round(withDifficulty.spawnInterval * 2)),
+        unitsPerCamp: difficulty === undefined
+          ? Math.max(1, withDifficulty.unitsPerCamp - 1)
+          : barbarianUnitsPerCampForDifficulty(difficulty),
       };
     case 'trudny':
       return {
-        ...params,
-        maxCamps: Math.max(1, Math.round(params.maxCamps * 2)),
-        spawnInterval: Math.max(1, Math.round(params.spawnInterval / 2)),
-        unitsPerCamp: params.unitsPerCamp + 1,
+        ...withDifficulty,
+        maxCamps: Math.max(1, Math.round(withDifficulty.maxCamps * 2)),
+        spawnInterval: Math.max(1, Math.round(withDifficulty.spawnInterval / 2)),
+        unitsPerCamp: difficulty === undefined
+          ? withDifficulty.unitsPerCamp + 1
+          : barbarianUnitsPerCampForDifficulty(difficulty),
       };
     case 'normalny':
     default:
       return {
-        ...params,
-        maxCamps: Math.max(1, Math.round(params.maxCamps / 4)),
-        spawnInterval: Math.max(1, Math.round(params.spawnInterval * 1.5)),
-        unitsPerCamp: Math.max(1, params.unitsPerCamp - 1),
+        ...withDifficulty,
+        maxCamps: Math.max(1, Math.round(withDifficulty.maxCamps / 4)),
+        spawnInterval: Math.max(1, Math.round(withDifficulty.spawnInterval * 1.5)),
+        unitsPerCamp: difficulty === undefined
+          ? Math.max(1, withDifficulty.unitsPerCamp - 1)
+          : barbarianUnitsPerCampForDifficulty(difficulty),
       };
   }
 }
@@ -1164,10 +1186,9 @@ export function tickCamps(
       continue;
     }
 
-    // Cooldown ready: check the per-camp cap.
-    const owned = barbUnits.filter(
-      u => hexDistance(u.q, u.r, camp.q, camp.r) <= params.campControlRadius,
-    ).length;
+    // Cooldown ready: a living unit keeps its camp slot after marching away.
+    // Legacy units without campId retain the former proximity fallback.
+    const owned = countCampLivingUnits(camp, barbUnits, params.campControlRadius);
 
     if (owned >= params.unitsPerCamp) {
       // At cap -- hold at 0 so it spawns as soon as a slot frees up.
@@ -1384,6 +1405,18 @@ function countCampGarrison(
 ): number {
   return barbUnits.filter(
     u => hexDistance(u.q, u.r, camp.q, camp.r) <= campControlRadius,
+  ).length;
+}
+
+function countCampLivingUnits(
+  camp: BarbCamp,
+  barbUnits: BarbUnit[],
+  campControlRadius: number,
+): number {
+  return barbUnits.filter(
+    u => u.campId === camp.id
+      || (u.campId === undefined
+        && hexDistance(u.q, u.r, camp.q, camp.r) <= campControlRadius),
   ).length;
 }
 
