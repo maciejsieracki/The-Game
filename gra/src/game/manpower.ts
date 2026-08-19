@@ -180,6 +180,7 @@ export function tickManpowerUnitReplenishment(
   resolveOwnerBonusy: (ownerId: number) => readonly CivBonusPoborLite[] | undefined,
   getMaxHp: (typeId: string) => number,
   rawMiastoParams?: typeof miastoParams,
+  onUnitHpChanged?: (unitId: string, hp: number, hpMax: number) => void,
 ): ManpowerReplenishResult {
   const params = loadManpowerReplenishParams(difficulty, rawMiastoParams);
   if (params.healPctMaxPerTurn <= 0 || units.length === 0) {
@@ -208,6 +209,15 @@ export function tickManpowerUnitReplenishment(
       return keyDiff !== 0 ? keyDiff : a.id.localeCompare(b.id);
     });
 
+    const candidates: Array<{
+      unit: ManpowerHealUnit;
+      maxHp: number;
+      curHp: number;
+      unitCost: number;
+      desiredHeal: number;
+      fullMpCost: number;
+    }> = [];
+
     for (const u of sorted) {
       if (isUnitInBesiegedLocation(u, cities)) continue;
 
@@ -224,16 +234,46 @@ export function tickManpowerUnitReplenishment(
       const desiredHeal = manpowerHealCapForTurn(maxHp, curHp, params);
       if (desiredHeal <= 0) continue;
 
-      const healHp = maxAffordableManpowerHeal(desiredHeal, maxHp, unitCost, empireMp);
+      candidates.push({
+        unit: u,
+        maxHp,
+        curHp,
+        unitCost,
+        desiredHeal,
+        fullMpCost: manpowerCostForHeal(desiredHeal, maxHp, unitCost),
+      });
+    }
+
+    const totalFullMpCost = candidates.reduce((sum, c) => sum + c.fullMpCost, 0);
+    if (totalFullMpCost <= 0) continue;
+
+    // Każda kwalifikowana jednostka dostaje ten sam udział swojego limitu.
+    // Przy pełnej puli jest to 100%; przy niedoborze wspólny budżet dzielimy
+    // proporcjonalnie, zamiast leczyć pierwszą jednostkę do wyczerpania puli.
+    const allocationRatio = Math.min(1, empireMp / totalFullMpCost);
+    for (const candidate of candidates) {
+      let healHp = allocationRatio >= 1
+        ? candidate.desiredHeal
+        : Math.floor(candidate.desiredHeal * allocationRatio);
       if (healHp <= 0) continue;
 
-      const mpCost = manpowerCostForHeal(healHp, maxHp, unitCost);
-      if (mpCost <= 0) continue;
+      let mpCost = manpowerCostForHeal(healHp, candidate.maxHp, candidate.unitCost);
+      if (mpCost > empireMp) {
+        healHp = maxAffordableManpowerHeal(
+          healHp,
+          candidate.maxHp,
+          candidate.unitCost,
+          empireMp,
+        );
+        mpCost = manpowerCostForHeal(healHp, candidate.maxHp, candidate.unitCost);
+      }
+      if (healHp <= 0 || mpCost <= 0) continue;
       if (!deductManpowerFromEmpire(cities, ownerId, epoka, mpCost, maxMult)) continue;
 
       empireMp -= mpCost;
       totalMpSpent += mpCost;
-      u.hp = Math.min(maxHp, curHp + healHp);
+      candidate.unit.hp = Math.min(candidate.maxHp, candidate.curHp + healHp);
+      onUnitHpChanged?.(candidate.unit.id, candidate.unit.hp, candidate.maxHp);
       healedCount++;
     }
   }
