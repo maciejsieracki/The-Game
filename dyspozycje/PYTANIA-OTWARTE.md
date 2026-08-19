@@ -18,7 +18,7 @@ Bieżący status procesu używa zamkniętej listy z rejestru:
 | `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1` | `OPERATOR` | ECHO `1A+2A+3A` jest zapisana; implementacja nie została zlecona. |
 | `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `OPERATOR` | ABC kompletne; końcowy wpis mówi o gotowości do dispatchu Operatora. |
 | `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `ABC-OCZEKUJE` | Ogólny prototyp nadal czeka na rozstrzygnięcie źródeł i akceptację. |
-| `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT` | `ABC-OCZEKUJE` | Nowa funkcja jawnie wymaga rozpoznania/ABC przed implementacją. |
+| `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT` | `ODŁOŻONE` | Nowa funkcja pozostaje odłożona; wznowić dopiero po decyzji właściciela. |
 | `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ABC-OCZEKUJE` | Czeka na uznanie właściciela za zamknięte przy kolejnym przeglądzie. |
 | `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` | `ABC-OCZEKUJE` | Zarejestrowane do ABC przy przeglądzie tematów bitewnych. |
 | `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `OPERATOR` | Osobna gałąź/worktree; bez merge, push i deployu. |
