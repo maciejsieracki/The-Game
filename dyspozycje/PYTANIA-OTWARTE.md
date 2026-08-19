@@ -8,6 +8,45 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+### R-AI-MP-REKRUTACJA-SKARBIEC-ZAMIAST-BUDOWY-Q1 — zakup jednostki ze Skarbca czy budowa · STATUS: **CZEKA-NA-DECYZJĘ**
+
+**Sytuacja.** Silnik ma wspólną ścieżkę zakupu jednostki za Pieniądz dla dowolnego
+właściciela (`gra/src/main.ts`) oraz predykat `shouldAIRushBuyUnit`
+(`gra/src/game/ai.ts`). Obecny predykat ogranicza zakup do wojny, posiadania Manpower,
+rezerwy Skarbca i limitu zakupów na turę. Nie ma decyzji, czy zakup ma zastępować
+budowę zawsze, czy być tylko warunkowym przyspieszeniem wojska.
+
+**Cel.** Ustalić priorytet między budową a zakupem jednostki ze Skarbca dla sztucznej
+inteligencji, w tym miast-państw sterowanych przez sztuczną inteligencję.
+
+**Dlaczego teraz.** Bez decyzji pełny zakup i warunkowy rush mogłyby zostać
+zaimplementowane jako różne, niezgodne reguły ekonomii. Temat wymaga decyzji przed
+zmianą planera produkcji.
+
+**A — Pełny zakup przed budową.** Zakup ze Skarbca ma pierwszeństwo, gdy jednostka,
+Manpower, surowiec i Pieniądz są dostępne; nie wymaga wojny. Za: wojsko rośnie także
+w pokoju; prosta reguła priorytetu. Przeciw: wypiera budynki i ulepszenia; powoduje
+stały odpływ Pieniądza bez potrzeby militarnej.
+
+**B — Warunkowy rush przy wojnie lub realnym zagrożeniu (rekomendacja).** Budowa jest
+domyślna, a zakup działa tylko przy zagrożeniu, po zachowaniu rezerwy Skarbca i limitu
+na turę. Za: chroni gospodarkę w pokoju; rozwija istniejący wzorzec `shouldAIRushBuyUnit`.
+Przeciw: armia może być zbyt mała przed wykryciem zagrożenia; trzeba jednoznacznie
+zdefiniować i przetestować sygnał zagrożenia.
+
+**C — Rush tylko przy zagrożeniu i braku sensownej budowy.** Budowa pozostaje pierwsza;
+zakup awaryjny jest możliwy dopiero, gdy nie ma kwalifikującej się budowy albo kolejka
+jest zablokowana. Za: najlepiej chroni rozwój; ogranicza wydatki ze Skarbca. Przeciw:
+reakcja wojskowa może być spóźniona; więcej warunków może dać inne zachowanie miast
+państw niż oczekiwany priorytet wojskowy.
+
+**Rekomendacja:** **B** — warunkowy rush przy wojnie lub realnym zagrożeniu, bez
+automatycznego wypierania budowy.
+
+**Ask:** `R-AI-MP-REKRUTACJA-SKARBIEC-ZAMIAST-BUDOWY-Q1` = **A / B / C**.
+
+---
+
 ## REGRESJE DO ROZPOZNANIA — 2026-08-18
 
 ### R-REKRUT-SUROWIEC-BEZ-UPKEEP-REZERWY-Q1 — koszt rekrutacji nie może zawierać utrzymania · STATUS: **NOWE — AUDYT**
