@@ -35,7 +35,7 @@ import { addForeignCityBlocks } from './city-hex-movement';
 import { canCaptureCityWithoutBattle } from './siegeDefenders';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost } from '../units/setup';
+import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit } from '../units/setup';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -730,6 +730,66 @@ function firstStep(
   const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return null;
   return path[0] ?? null;
+}
+
+/**
+ * R-ARMIA-KONCENTRACJA-AI-BARB-Q1=A: plan lokalnego rally barbarzyńców.
+ *
+ * To jest faza przygotowania, nie bonus do Mocy: jednostki lądowe tej samej
+ * frakcji przypisane do tego samego żywego obozu idą do jego heksu, dopóki
+ * kontyngent nie znajdzie się w promieniu 1. Nie ma teleportu ani łączenia z
+ * Ludami Morza; obóz jest już kanonicznym punktem odwrotu/regeneracji.
+ */
+export function planBarbarianRally(
+  barbUnits: readonly BarbUnit[],
+  camps: readonly BarbCamp[],
+  map: GameMap,
+  allUnits: readonly RuntimeUnit[],
+  cities: readonly CityLike[],
+): BarbCommand[] {
+  const landCamps = camps.filter(c => c.naval !== true);
+  if (landCamps.length === 0) return [];
+
+  const eligible = barbUnits.filter(u =>
+    u.ruchLeft > 0
+    && u.embarked !== true
+    && u.seaRaider !== true
+    && u.inGarnizon !== true
+    && u.oblegaCityId === undefined
+    && !isCivilianUnit(u),
+  );
+  const byCamp = new Map<string, BarbUnit[]>();
+  for (const unit of eligible) {
+    const camp = unit.campId !== undefined
+      ? landCamps.find(c => c.id === unit.campId)
+      : nearest(unit.q, unit.r, landCamps);
+    if (camp === undefined) continue;
+    const group = byCamp.get(camp.id) ?? [];
+    group.push(unit);
+    byCamp.set(camp.id, group);
+  }
+
+  const commands: BarbCommand[] = [];
+  for (const group of byCamp.values()) {
+    if (group.length < 2) continue;
+    const camp = landCamps.find(c => c.id === (group[0]?.campId ?? ''))
+      ?? nearest(group[0]!.q, group[0]!.r, landCamps);
+    if (camp === undefined) continue;
+    const gathered = group.every(u => hexDistance(u.q, u.r, camp.q, camp.r) <= 1);
+    if (gathered) continue;
+
+    for (const unit of group) {
+      if (hexDistance(unit.q, unit.r, camp.q, camp.r) <= 1) continue;
+      const occupied = addForeignCityBlocks(
+        occupiedExcluding([...allUnits], unit.id),
+        unit.ownerId,
+        cities as readonly Pick<City, 'q' | 'r' | 'ownerId'>[],
+      );
+      const step = firstStep(unit, map, camp.q, camp.r, occupied);
+      if (step !== null) commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+    }
+  }
+  return commands;
 }
 
 // ---------------------------------------------------------------------------
@@ -1690,6 +1750,18 @@ export function decideBarbarianMoves(
   // All units occupy hexes for pathing (barbs + players).
   const allUnits: RuntimeUnit[] = [...barbUnits, ...enemies];
 
+  // R-ARMIA-KONCENTRACJA-AI-BARB-Q1=A: rally precedes chase/attack. A unit
+  // receives at most one command below; once the group is physically gathered
+  // at the camp, the existing tactical planner resumes unchanged.
+  const rallyCommands = planBarbarianRally(barbUnits, camps, map, allUnits, cities);
+  const ralliedUnitIds = new Set(rallyCommands.map(c => c.unitId));
+  const rallyCampIds = new Set(
+    rallyCommands
+      .map(c => barbUnits.find(u => u.id === c.unitId)?.campId)
+      .filter((id): id is string => id !== undefined),
+  );
+  commands.push(...rallyCommands);
+
   // F2-PERF (RUNDA 6, Evaluator B): etykietowanie spójnych składowych lądu
   // liczone LENIWIE, co najwyżej RAZ na to wywołanie (czyli raz na turę),
   // WSPÓLNE dla wszystkich jednostek barbarzyńskich w tej turze -- nie raz na
@@ -1711,6 +1783,7 @@ export function decideBarbarianMoves(
 
   for (const unit of barbUnits) {
     if (unit.ruchLeft <= 0) continue;
+    if (ralliedUnitIds.has(unit.id) || (unit.campId !== undefined && rallyCampIds.has(unit.campId))) continue;
     // TEMAT #15: jednostki Ludów Morza (rajderzy / zaokrętowane) prowadzi
     // decideSeaPeoplesRaids — logika lądowa ich nie rusza.
     if (unit.embarked === true || unit.seaRaider === true) continue;
