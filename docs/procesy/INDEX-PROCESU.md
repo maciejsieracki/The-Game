@@ -74,11 +74,9 @@ decyzje właściciela i dowody wdrożenia. Stosuj poniższą hierarchię zakreso
 | Pamięć AutoBota | `playbook.md` jest źródłem treści reguł; `playbook.json` jest generowanym obrazem | Nie edytuj JSON ręcznie; nie przywracaj starej reguły z pamięci lub czatu |
 | Dowód integracji/deployu | Faktyczny artefakt, commit, test, manifest/verify, `WERSJE.md` i `KANAL-PRACA.md` | Sam status, nazwa worktree, stary plik, UI ani wiadomość nie wystarczają |
 
-Najnowsze ustalenie właściciela z 2026-08-19, uwzględnione w tym indeksie,
-doprecyzowuje starsze mirrory procesu: **Final Control jest osobnym subagentem
-GPT-5.6 Luna High**, a nie częścią roli głównego orkiestratora Medium. Starsze
-zdania łączące „finalną kontrolę/integrację” w jednej roli należy traktować jako
-nieaktualne w tym zakresie, dopóki nie zostaną osobno ujednolicone.
+Źródło decyzji właściciela: właściwe ECHO w `dyspozycje/PYTANIA-OTWARTE.md`
+oraz powiązany dokument `docs/decyzje/<ID>.md`. Ten indeks zawiera wyłącznie
+odsyłacz do źródeł, nie treść decyzji ani jej status.
 
 Ten indeks jest mapą. Nie zastępuje źródła normatywnego, nie rozstrzyga za
 właściciela i nie legalizuje sprzecznego zapisu w innym pliku.
