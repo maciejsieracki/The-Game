@@ -892,6 +892,7 @@ import {
   DIPLOMACY_MSG_PREFIX,
   type DeferredEotHint,
 } from './game/eot-event-defer';
+import { isBlockingSidePanelEvent } from './game/side-panel-event-priority';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -11915,7 +11916,7 @@ async function boot(): Promise<void> {
 
     /** Wydarzenia wymagające akcji gracza (WYKONAJ). Nagrody z chatek są już rozliczone — tylko podgląd. */
     function isActionableEvent(ev: SidePanelEvent): boolean {
-      return !ev.id.startsWith('village-');
+      return isBlockingSidePanelEvent(ev);
     }
 
     function countBlockingEvents(): number {
@@ -13105,6 +13106,7 @@ async function boot(): Promise<void> {
             title: 'KRYTYCZNE: ' + city.name,
             subtitle: revoltWarningMessage(city.name, st.revoltGraceRemaining),
             kind: 'city',
+            blocking: true,
           });
         }
         if (st?.bunt) {
@@ -13114,6 +13116,7 @@ async function boot(): Promise<void> {
             title: 'Bunt: ' + city.name,
             subtitle: 'Migracja mieszkańców',
             kind: 'city',
+            blocking: true,
           });
         }
         const prod = cityProd.get(city.id);
@@ -13128,6 +13131,7 @@ async function boot(): Promise<void> {
               title: 'Produkcja: ' + city.name,
               subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
               kind: 'city',
+              blocking: true,
             });
           }
         }
@@ -13139,6 +13143,7 @@ async function boot(): Promise<void> {
           title: 'Dyplomacja: ' + p.civName,
           subtitle: diploPendingTitle(p.cmdType) + (p.reason ? ' — ' + p.reason : ''),
           kind: 'diplo',
+          blocking: true,
         });
       }
       // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — wpisy czekające na GRACZA (własne
