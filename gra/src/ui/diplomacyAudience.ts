@@ -1481,9 +1481,9 @@ function actionIconId(id: string): string {
     case '9': return 'chip-warning';
     case '10': return 'dip-peace';
     case '11': return 'dip-war';
-    case '12': return 'tb-army';
-    case '15': return 'tb-army';
-    case '13': return 'res-culture';
+    case '12': return 'dip-vassal';
+    case '15': return 'dip-vassal';
+    case '13': return 'dip-gift';
     default: return 'tb-diplomacy';
   }
 }
@@ -1502,10 +1502,9 @@ function treatyIconId(label: string): string {
 }
 
 /**
- * FAZA 3 pkt 8 — pasek szybkich akcji: inline SVG 1:1 z Makieta DYPLOMACJA v1.1
- * (KROK 3 pkt 8, linie 483-490 + 369 dla „Zerwij"). Brand-icon-manifest nie ma
- * odpowiedników (dar/rozerwane ogniwo), więc — jak w makiecie — SVG jest wpisane
- * wprost, nie przez dipBrandIconHtml/manifest.
+ * FAZA 3 pkt 8 — pasek szybkich akcji. Ikony akcji są pobierane z tego samego
+ * mapowania co kafelki „Możliwe umowy”; inline SVG pozostaje tylko dla CTA
+ * „Szybka wymiana” i „Zerwij”, które nie są akcjami z katalogu.
  */
 const ACTION_BAR_SVG: Record<string, string> = {
   war: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 5l-7 7 7 7M20 5l-7 7 7 7"/></svg>',
@@ -1550,10 +1549,12 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
     const tip = enabled ? spec.label : (action?.lockNote || (isLocked ? action?.tooltip : undefined) || spec.label);
     const lockNote = audienceActionBarLockNote(action);
     const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '');
+    const actionIcon = dipBrandIconHtml(actionIconId(spec.aid), 24, 'da-action-ic') || ACTION_BAR_SVG[spec.svg];
+    const visibleTip = enabled ? spec.label : (tip || spec.label);
     const btn =
-      '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(spec.label) + '</span>' +
+      '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(visibleTip) + '</span>' +
       '<button type="button" class="' + cls + '" data-aid="' + esc(spec.aid) + '"' +
-      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '">' + ACTION_BAR_SVG[spec.svg] + '</button>' +
+      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '" aria-label="' + esc(visibleTip) + '">' + actionIcon + '</button>' +
       '</span>';
     return (
       '<span class="da-abtn-cell">' + btn +
@@ -1568,7 +1569,7 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
   const qdLockNote = handelEnabled ? '' : audienceActionBarLockNote(handel);
   const quickdealBtn =
     '<button type="button" class="da-quickdeal"' + (handelEnabled ? '' : ' disabled') +
-    ' title="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
+    ' title="' + esc(qdTitle) + '" aria-label="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
     '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span></button>';
   const quickdeal =
     '<span class="da-abtn-cell">' + quickdealBtn +
