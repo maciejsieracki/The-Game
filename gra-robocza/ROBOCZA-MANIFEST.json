@@ -1,8 +1,8 @@
 {
-  "publishedAt": "2026-08-19T20:28:33",
   "publisher": "Integrator F",
-  "bundle": "Gra-ROBOCZA.html",
-  "sourceBuild": "C:\\Users\\macie\\AppData\\Local\\Temp\\civ-dist-4f099cb1",
+  "publishedAt": "2026-08-19T21:01:15",
+  "sourceBuild": "C:\\Users\\macie\\AppData\\Local\\Temp\\civ-dist",
+  "md5": "b4dbfb6ddb7b5ef5f63584a42e706908",
   "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
-  "md5": "5dba37a12900d8f9a03a2da592d2cd8c"
+  "bundle": "Gra-ROBOCZA.html"
 }
