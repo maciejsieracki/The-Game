@@ -1,25 +1,32 @@
 ---
-description: Warstwa AutoBot — Operator + Evaluator + finalna kontrola + integracja. Maciej 2026-08-18.
+description: Warstwa AutoBot — Operator + Evaluator + finalna kontrola + integracja. Maciej 2026-08-19.
 globs:
   - "**/*"
 alwaysApply: true
 ---
 
-# Warstwa AutoBot: Operator → Evaluator → finalna kontrola → integracja → deploy/push
+# Warstwa AutoBot: Operator → Evaluator → finalna kontrola → integracja → READY_FOR_DEPLOY
 
-**Decyzja Maciej 2026-08-18:** raport Operatora automatycznie uruchamia Evaluatora;
+**Decyzja Maciej 2026-08-19:** raport Operatora automatycznie uruchamia Evaluatora;
 po `PASS` główny orkiestrator wykonuje finalną kontrolę, aktualizuje status albo
-przygotowuje pełne ABC z pełnym ID, albo kieruje temat do integracji. Deploy/push
+przygotowuje pełne ABC z pełnym ID, albo kieruje temat do integracji. Integracja
+kończy przygotowanie na `READY_FOR_DEPLOY`; deploy/push jest osobną bramką,
 wyłącznie po bramkach i autoryzacji. **Nie zatrzymuj procesu po raporcie Operatora.**
+
+## C-043 — kanał komunikacji właściciela (Maciej 2026-08-19)
+
+Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora. Subagenci są
+kanałami technicznymi: ich raporty wracają do orkiestratora, który przekazuje
+właścicielowi status, pytania i decyzje w głównym czacie.
 
 ## Trzy warstwy (kolejność obowiązkowa)
 
 | # | Rola | Kto | Co robi |
 |---|------|-----|---------|
-| **1** | **Operator** | **GPT-5.6 Luna Medium** | Kod, testy, docs i raport z artefaktem. **Bez deployu.** |
+| **1** | **Operator** | **GPT-5.6 Luna High** | Kod, testy, docs i raport z artefaktem. **Bez deployu.** |
 | **2** | **Evaluator** | **GPT-5.6 Luna High** — osobny przebieg | Niezależna kontrola, SCOPE, regresja, twarde metryki i werdykt. |
 | **3** | **Finalna kontrola** | **GPT-5.6 Luna Medium** (główny orkiestrator) | Kontrola raportów, status/ABC albo skierowanie do integracji. |
-| **4** | **Integracja → deploy/push** | uprawniony orkiestrator/Integrator | Wpięcie po bramkach; publikacja dopiero po autoryzacji. |
+| **4** | **Integracja → READY_FOR_DEPLOY** | uprawniony orkiestrator/Integrator | Wpięcie po bramkach i przygotowanie paczki; bez publikacji. |
 
 **ZAKAZ:** raportować „gotowe” / kierować do integracji / robić deploy po samym #1 —
 bez #2 i #3.

@@ -5,7 +5,7 @@ description: >
   w TYM repozytorium działa inaczej niż w dowolnym innym: rytuał startu sesji (pull →
   KANAL-PRACA → STAN-PRACY-HANDOFF → playbook.md), nienegocjowalna reguła „żadnej pracy
   poza pętlą AutoBot" z dwoma wąskimi wyjątkami, pętla Operator → Evaluator →
-  finalna kontrola → integracja → deploy/push z aktywnym przydziałem modeli (Operator GPT-5.6 Luna Medium, Evaluator GPT-5.6 Luna High, GPT-5.6 Luna Medium dla orkiestratora/final), procedura NUMER → ABC → COMMIT → DEPLOY
+  finalna kontrola → integracja → READY_FOR_DEPLOY z aktywnym przydziałem modeli (Operator GPT-5.6 Luna High, Evaluator GPT-5.6 Luna High, GPT-5.6 Luna Medium dla orkiestratora/final); deploy/push to osobna bramka, procedura NUMER → ABC → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH
   z rejestrem próśb, obowiązkowy turniej dwóch niezależnych projektów przed każdym
   nowym pytaniem ABC, twarde FAIL Evaluatora dla edge/parytetu gracz-AI/save-load,
   izolacja pracy subagentów w worktree i wpis-blokada w kanale przed serią zmian, progi
@@ -27,10 +27,16 @@ przegląd zakres+przerost, 5-krokowy protokół błędu, playbook, turniej, bari
 Ten plik go **nie powtarza** — dokłada wyłącznie to, co specyficzne dla Civ.
 Gdyby `lean-loop` był niedostępny, jego rdzeń AutoBota stoi w `AUTOBOT.md` w korzeniu.
 
+## C-043 — kanał komunikacji właściciela (Maciej 2026-08-19)
+
+Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora. Subagenci są
+kanałami technicznymi: ich raporty wracają do orkiestratora, który przekazuje
+właścicielowi status, pytania i decyzje w głównym czacie.
+
 ## ⛔ Reguła nadrzędna: żadnej pracy poza pętlą AutoBot
 
 **KAŻDA praca w tym repozytorium — kod, fix, docs procesu, audyt, przygotowanie deployu —
-idzie przez nadrzędny obieg `Operator → Evaluator → finalna kontrola → integracja → deploy/push`.
+idzie przez nadrzędny obieg `Operator → Evaluator → finalna kontrola → integracja → READY_FOR_DEPLOY`.
 Reguła NIENEGOCJOWALNA**
 (`CLAUDE.md` §0a · `.cursor/rules/autobot-evaluator-operator.mdc` · `R-PROC-AUTOBOT`),
 **bez wyjątku „to tylko drobiazg" / „zrobię sam poza pętlą"**. Obejmuje tak samo pracę
@@ -49,10 +55,12 @@ własną orkiestratora (§4) jak pracę subagenta.
 Wszystko ponad te dwa wyjątki → pełna pętla Operator→Evaluator. Raport Operatora jest
 przekazaniem sterowania, nie końcem procesu: orkiestrator automatycznie uruchamia
 Evaluatora, bez czekania na kolejne polecenie. Po `PASS` wykonuje finalną kontrolę i:
-automatycznie aktualizuje status tematu zamkniętego, przygotowuje i zadaje pełne ABC
-z pełnym ID, jeśli potrzebna jest decyzja, albo kieruje gotowy temat do integracji.
-`FAIL` wraca do Operatora. Deploy/push następuje dopiero po wszystkich bramkach
-i autoryzacji deployu. Kanon wyjątku 2:
+przygotowuje oraz zadaje pełne ABC z pełnym ID, jeśli potrzebna jest decyzja, albo kieruje
+zatwierdzony zakres do integracji. `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA` i `ZWIS`
+wracają bez czekania do Operatora, a potem Evaluatora z tym samym ID; ABC pauzuje tylko
+temat wymagający decyzji właściciela. Dopiero pozytywna finalna kontrola i integracja mogą
+dać `READY_FOR_DEPLOY`; deploy/push następuje dopiero po tym statusie i osobnej autoryzacji.
+Kanon wyjątku 2:
 `.cursor/rules/autobot-evaluator-operator.mdc:28`.
 
 Kanon procesu: `docs/decyzje/R-PROC-AUTOBOT.md` · `R-PROC-AUTOBOT-EVAL-SCOPE.md` ·
@@ -72,24 +80,32 @@ złapała 3 kolejne rundy realnych braków, zanim zmiana była naprawdę komplet
 4. `playbook.md` **w całości** — zasady AKTYWNE / W OBSERWACJI / CHRONIONE stosujesz od pierwszej minuty, rejestr błędów to lista pomyłek zakazanych do powtórzenia, sprawy otwarte przejrzyj i domknij te, których dane już spłynęły. Ten plik jest kanonem; `dyspozycje/autobot/playbook.json` jest z niego **generowany** (`dyspozycje/autobot/tools/playbook-md-to-json.cjs`) — **nigdy nie edytuj JSON-a ręcznie**, nowa zasada zawsze startuje 0/0, liczników nie wpisujesz z pamięci.
 5. Potwierdź jednym zdaniem: ile zasad aktywnych, ile wpisów w rejestrze błędów, data ostatniego wpisu, otwarte `CZEKAM-NA:`.
 
-**Hasła właściciela:** „sprawdź" / „sprawdź kanał" = kroki 1–3 + relacja, **bez działania
-na dysku**. „push" (sesja lokalna) = pull → odczyt ostatniego wpisu kanału → synchronizacja
-dysku właściciela → meldunek „gotowe, testuj `<md5>`". „deploy" = dopiero wtedy publikacja
-do ROBOCZA. „format" / „ABC" = przepisz pytanie w pełnej formie.
+**Hasła właściciela:** „sprawdź" oznacza pełny audyt bieżącej puli oraz historycznych
+`not_found`: status terminalny, ostatni ruch, każdy raport, klasyfikacja, zamknięcie
+zakończonych i uruchomienie następnej fazy. `not_found` bez raportu nie jest dowodem
+zakończenia. „push" i „deploy" pozostają osobnymi poleceniami publikacyjnymi po
+`READY_FOR_DEPLOY`; „format" / „ABC" = przepisz pytanie w pełnej formie.
 
-## 1. Przydział modeli — aktywny kanon (2026-08-18)
+## 1. Przydział modeli — aktywny kanon (2026-08-19)
 
 | Rola | Model |
 |------|-------|
 | Sesja główna (orkiestrator/final) | **GPT-5.6 Luna Medium** |
-| Operator (wykonawca), domyślnie | **GPT-5.6 Luna Medium** |
+| Operator (wykonawca), domyślnie | **GPT-5.6 Luna High** |
 | **Evaluator**, domyślnie | **GPT-5.6 Luna High** |
-| **Integracja/deploy** | główny orkiestrator, wyłącznie po wyraźnym sygnale właściciela |
-| **Operator i Evaluator dla `gra/src/render/**`** | **Opus 5, obowiązkowy dla obu ról** |
+| **Integracja** | główny orkiestrator / uprawniony Integrator, po finalnej kontroli i bramkach; przygotowuje `READY_FOR_DEPLOY` |
+| **Deploy/push** | osobna bramka, wyłącznie po `READY_FOR_DEPLOY` i wyraźnym sygnale właściciela |
 
 Operator pracuje w izolacji, Evaluator pozostaje niezależny, a finalna kontrola
 procesu należy do głównego orkiestratora. Sam opis modelu ani powiadomienie nie
-jest dowodem wykonania — raport musi zawierać artefakt i stan procesu.
+jest dowodem wykonania — raport terminalny musi zawierać `STATUS`, pełne ID, zmiany/commity,
+testy, blokady, następny krok i `DEPLOY/PUSH`. `READY_FOR_DEPLOY` może wystawić wyłącznie
+orkiestrator po finalnej kontroli i integracji; Operator i Evaluator nie ogłaszają go sami.
+
+**Sloty i sygnały:** limit to 6 otwartych subagentów. Po terminalnym raporcie zamknij
+zakończonego subagenta i natychmiast obsadź slot następnym wymaganym etapem albo innym
+niezablokowanym tematem; przy dostępnej pracy wszystkie 6 slotów mają być wykorzystane.
+Samo „gotowe", UI `działa` i `GOTÓW DO TESTU` nie są raportem terminalnym.
 
 **ARCHIWUM — zastąpione routingi:** dalsze historyczne akapity o Haiku 4.5,
 Sonnet 5, Opus 5, Workflow i wcześniejszym przydziale pozostają dla śladu
@@ -128,7 +144,7 @@ wcześniejszych reguł.
 (ostatni) na Opus 5. Nie zmniejsza to liczby Evaluatorów ani rygoru — trzy niezależne perspektywy
 zostają, model trzeciego jest wyższy ze względu na koszt/limit trzech Opus naraz.
 
-## 2. NUMER → ABC → COMMIT → DEPLOY
+## 2. NUMER → ABC → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH
 
 Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 
@@ -141,7 +157,7 @@ Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 **Rozwidlenie NUMER → co dalej (`C-027`, Maciej 2026-08-08):** krok „ABC" dotyczy WYŁĄCZNIE
 zgłoszeń wymagających realnego wyboru z kompromisem (balans/gameplay/UX z alternatywami).
 Gdy zgłoszenie jest błędem do naprawienia albo prośbą z jednoznacznie opisanym oczekiwanym
-zachowaniem (brak realnej alternatywy do wyboru) — **NUMER → od razu Operator GPT-5.6 Luna Medium**
+zachowaniem (brak realnej alternatywy do wyboru) — **NUMER → od razu Operator GPT-5.6 Luna High**
 w pętli Operator → Evaluator, **w tej samej turze**, bez czekania na cokolwiek. „Rejestr to
 punkt startowy pracy, nie miejsce składowania" — jego słowa po serii skarg: *„a myślisz, że
 po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?"*, *„tak właśnie gubią się
@@ -295,7 +311,7 @@ przeczyły sobie, jeden ekran od siebie. Złapane dopiero, bo Evaluator drugiego
 - **Wycofywanie zasad jest zautomatyzowane** (`retireWeakRules`, `dyspozycje/autobot/src/playbook-manager.ts`): `win_rate < deprecateBelowWinRate` (0,3) po co najmniej `minRunsForSignificance` zastosowaniach → `RETIRED` + przeniesienie do `quarantine_rules`. Zasada **CHRONIONA** (`protected: true`) jest z tego automatu **wyłączona bez względu na liczniki** — status nadaje wyłącznie właściciel.
   **Rozbieżność do rozstrzygnięcia przez właściciela:** kanon v2 i wartość domyślna w kodzie to **10** zastosowań (`R-PROC-AUTOBOT` §v2 · `dyspozycje/autobot/README.md`: „podniesiony z 5 do 10"), ale żywy `dyspozycje/autobot/playbook.json` ma dziś **`minRunsForSignificance: 5`** — a generator `playbook-md-to-json.cjs` przepisuje `thresholds` bez zmian, więc 5 obowiązuje aż do ręcznej poprawki. Odczytaj wartość z pliku, nie z pamięci.
 - **`promoteMinWinRate = 0,6` nie jest progiem powrotu zasady do AKTYWNEJ** — takiej ścieżki w kodzie nie ma, wycofaną przywraca wyłącznie człowiek. To domyślna wartość `min_confidence_threshold`: progu, od którego zasada ACTIVE w ogóle trafia do promptu Operatora (`getOperatorSystemRules`; zasada z 0 runów i zasada CHRONIONA przechodzą zawsze).
-- **`R-PROC-POTROJNA-WARSTWA` jest WBUDOWANA w nadrzędny obieg** Operator → Evaluator → finalna kontrola → integracja → deploy/push — nie jest osobnym, opcjonalnym rytuałem, którego można „nie odpalić przy drobiazgu".
+- **`R-PROC-POTROJNA-WARSTWA` jest WBUDOWANA w nadrzędny obieg** Operator → Evaluator → finalna kontrola → integracja → `READY_FOR_DEPLOY`; deploy/push jest osobną bramką — nie jest osobnym, opcjonalnym rytuałem, którego można „nie odpalić przy drobiazgu".
 
 **Bariery są w KODZIE, nie tylko w prompcie** (`dyspozycje/autobot/src/guardrails.ts`) — prompt
 agent zawsze może sobie zreinterpretować, uprawnienia nie. `assertActionAllowed` działa

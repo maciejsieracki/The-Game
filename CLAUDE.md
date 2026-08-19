@@ -8,16 +8,38 @@ Gra strategiczna 4X (heksy, cywilizacje, epoki Kamień → Brąz → Żelazo). K
 To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy A", `organizationId`, planu E0–E8, hubu pracy NASTER — to Planify (inny projekt), zignoruj przy pracy nad Civ.
 
 ## ⛔ ZASADY KRYTYCZNE (złamanie = utrata pracy)
-0. **NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03).** Każdy case/bug/poprawka/innowacja → ID w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Nie koduj od razu** — przedstaw rozwiązanie ± ABC. Commit dopiero po **`numer + A|B|C`**. **Deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
-0a. **AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05, routing zaktualizowany 2026-08-18).** **KAŻDA praca** wyłącznie w systemie AutoBot: Operator (**GPT-5.6 Luna Medium**) → Evaluator (**GPT-5.6 Luna High**) → główny orkiestrator/final (**GPT-5.6 Luna Medium**). **ZAKAZ** pracy poza pętlą / „gotowe” bez Evaluatora. Playbook + guardrails. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` · `docs/decyzje/R-PROC-AUTOBOT.md`.
-   **Nadrzędny obieg procesu:** `Operator → Evaluator → finalna kontrola → integracja → deploy/push`.
+0. **NUMER → ABC → COMMIT → READY_FOR_DEPLOY (Maciej 2026-08-03).** Każdy case/bug/poprawka/innowacja → ID w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Nie koduj od razu** — przedstaw rozwiązanie ± ABC. Commit dopiero po **`numer + A|B|C`**. **Deploy dopiero po `READY_FOR_DEPLOY` i wyłącznie na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
+0a. **AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05, routing zaktualizowany 2026-08-19).** **KAŻDA praca** wyłącznie w systemie AutoBot: Operator (**GPT-5.6 Luna High**) → Evaluator (**GPT-5.6 Luna High**) → główny orkiestrator/final (**GPT-5.6 Luna Medium**). W tym eksperymencie przy każdym cyklu zapisuj liczbę rund Operator → Evaluator i poprawek po werdykcie, aby porównać jakość z wcześniejszym routingiem Medium. **ZAKAZ** pracy poza pętlą / „gotowe” bez Evaluatora. Playbook + guardrails. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` · `docs/decyzje/R-PROC-AUTOBOT.md`.
+   **Nadrzędny obieg procesu:** `Operator → Evaluator → finalna kontrola → integracja → READY_FOR_DEPLOY`.
    Raport Operatora jest przekazaniem sterowania, nie końcem pracy i nie powodem do czekania
    na ponowne popychanie właściciela. Po raporcie orkiestrator automatycznie uruchamia
-   Evaluatora. Po `PASS` wykonuje finalną kontrolę, a następnie: (a) automatycznie aktualizuje
-   status, jeśli temat jest zamknięty; (b) przygotowuje i zadaje pełne ABC z pełnym ID, jeśli
-   potrzebna jest decyzja; albo (c) kieruje gotowy temat do integracji. `FAIL` wraca do
-   Operatora z konkretną listą poprawek. Deploy/push następuje dopiero po wszystkich bramkach
-   i wyraźnej autoryzacji deployu.
+   Evaluatora. Po `PASS` wykonuje finalną kontrolę, a następnie: (a) przygotowuje i zadaje
+   pełne ABC z pełnym ID, jeśli potrzebna jest decyzja; albo kieruje
+   zatwierdzony zakres do integracji. `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA` i `ZWIS`
+   uruchamiają bez czekania `Operator → Evaluator` z tym samym ID. ABC pauzuje tylko temat,
+   który wymaga decyzji właściciela.
+   **Sygnalizacja:** subagent kończy raportem `STATUS: PASS|PASS-WITH-NOTES|FAIL|BLOCK|TIMEOUT|INFRA`
+   z ID tematu, plikami/commitami, testami, blokadami, następnym krokiem oraz polem `DEPLOY/PUSH`.
+   UI `działa`, samo „gotowe” i `GOTÓW DO TESTU` nie wystarczają. `PASS-WITH-NOTES` przechodzi dalej
+   tylko z jawnymi, nieblokującymi uwagami zaakceptowanymi przez finalną kontrolę. Po raporcie zamykaj subagenta; limit to 6
+   otwartych slotów. Brak ruchu przez 7 minut = `ZWIS` i przejęcie tematu przez orkiestratora.
+   Jeśli istnieją niezablokowane tematy, wszystkie 6 slotów musi być wykorzystane; po zakończeniu
+   subagenta natychmiast zamknij go i uruchom następną fazę albo kolejny niezależny temat.
+   **Ciągła pętla:** `FAIL`/techniczny `BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS` → bez czekania
+   `Operator → Evaluator`, zawsze z tym samym ID; przy `ZWIS` orkiestrator przejmuje wykonanie.
+   `PASS` przechodzi przez finalną kontrolę i integrację. `READY_FOR_DEPLOY` kończy proces
+   przygotowania dopiero po allowliście, izolacji i bramkach; nie oznacza wykonanego deployu
+   ani pushu. Deploy/push wymaga osobnej autoryzacji. Temat pozostaje aktywny pod tym samym
+   ID aż do `READY_FOR_DEPLOY`; ABC pauzuje tylko temat wymagający decyzji właściciela.
+   `READY_FOR_DEPLOY` może wystawić wyłącznie orkiestrator po finalnej kontroli i integracji;
+   Operator ani Evaluator nie ogłaszają samodzielnie końca procesu.
+   **C-043:** właściciel komunikuje się wyłącznie w głównym czacie orkiestratora;
+   subagenci są kanałami technicznymi, a ich raporty wracają do orkiestratora.
+   **Komenda `sprawdź`:** wykonaj audyt: cała bieżąca pula + historyczne `not_found` do reconciliacji;
+   sprawdź statusy, raporty, blokady i następne kroki, zamknij zakończonych i uruchom wymagane kolejne
+   fazy. Klasyfikacja obejmuje `PASS`, `PASS-WITH-NOTES`, `FAIL`, `BLOCK`, `TIMEOUT`, `INFRA`,
+   `READY_FOR_DEPLOY` albo wynik niepewny. `not_found` bez raportu wymaga reconciliacji i nie jest
+   zakończeniem.
 0b. **AUTOBOT OBEJMUJE TAKŻE PRACĘ GŁÓWNEJ SESJI (Maciej 2026-08-07).** Jego słowa: *„Dla siebie
    też przyjmij zasadę autobot na każdym temacie, nie tylko dla subagentów. Czyli każdą swoją
    decyzję sprawdzaj ewaluatorem"* oraz *„zasada Autobots obejmuje nie tylko zleconą pracę
@@ -61,7 +83,7 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
    (c) przed jakimkolwiek „koniec pracy" / deployem. Dla KAŻDEGO trafienia potwierdź jedno z trzech:
    subagent w locie, pytanie ABC czekające na odpowiedź, LUB udokumentowany w tej samej sekcji powód
    odłożenia (np. „pre-istniejące, nie blokuje"). Brak wszystkich trzech = natychmiastowy dispatch
-   subagenta Sonnet 5, bez pytania o zgodę (C-027) — nie zostawiaj tego „na później".
+   Operatora GPT-5.6 Luna High, bez pytania o zgodę (C-027) — nie zostawiaj tego „na później”.
    **Druga warstwa (automatyczna, nie tylko z pamięci) — ZDARZENIOWA, nie stały cykl (Maciej
    2026-08-08 po wprowadzeniu godzinowego Routine, zamieniona tego samego dnia):** stały
    godzinowy Routine został **usunięty** — kosztował ~20+ wywołań/dobę niezależnie od tego, czy
@@ -129,7 +151,7 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
    - **Sesja lokalna (Windows)** — synchronizacja dysku właściciela, weryfikacja przed playtestem, **promocje KANON i FINALNA** (skrypty to PowerShell, chmura ich nie uruchomi).
 
    **HASŁA WŁAŚCICIELA** (skróty — właściciel nie przekleja treści, jedno słowo uruchamia czynność):
-   - **„sprawdź"** (lub „sprawdź kanał") = wykonaj `git pull --ff-only origin main`, przeczytaj **nowe wpisy** `KANAL-PRACA.md` + `STAN-PRACY-HANDOFF.md` (może czekać cenny przekaz od drugiej sesji), zrelacjonuj stan i zaproponuj następny krok. **Bez działania na dysku** — samo odczytanie.
+   - **„sprawdź”** (lub „sprawdź kanał”) = pełny audyt bieżącej puli i historycznych `not_found`: wykonaj synchronizację źródeł, przeczytaj raport każdego subagenta, sprawdź ostatni ruch i status, zamknij zakończonych oraz uruchom wymagany następny etap. `not_found` bez raportu nie jest dowodem zakończenia.
    - **„push"** (do sesji LOKALNEJ, po deployu chmury) = dostarcz aktualną wersję na dysk właściciela, wykonując 4 kroki: (1) `git pull --ff-only origin main`; (2) przeczytaj ostatni wpis `KANAL-PRACA.md` (md5 + polecenie od chmury); (3) zsynchronizuj/„pull" na dysk właściciela; (4) zamelduj w kanale „gotowe, testuj `<md5>`". **Obowiązek sesji chmurowej:** po KAŻDYM deployu do ROBOCZA zostaw w kanale jednoznaczny wpis z md5 i poleceniem „sesja lokalna: pull na dysk właściciela" — żeby „push" zawsze trafiał w konkretne zadanie.
 
    ⚠️ **Przed każdym pushem sprawdź, czy `main` nie odjechał** (`git fetch` + porównanie). Jeśli odjechał — **rebase, NIGDY force-push**; cudza praca ma przetrwać. Zdarzyło się realnie 2026-07-20 (promocja kanonu vs deploy chmury) i zostało rozwiązane rebasem bez strat.
@@ -165,19 +187,26 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
  `dyspozycje/PYTANIA-OTWARTE.md` i **nie wspominasz o nich w czacie** — **każde pytanie/bug Macieja → ten plik zanim zmienisz temat** (2026-07-29). Powód (jego słowa): „ja odpowiadam na jedno,
  a ty generujesz kolejnych pięć… nie jesteśmy w stanie zakończyć jednego, a ty wyciągasz kolejne".
  **Kończymy jeden temat, dopiero potem następny.** Nie mieszaj wątków w jednej odpowiedzi.
+2a. **⛔ JEDEN KANAŁ ROZMOWY Z WŁAŚCICIELEM (Maciej, 2026-08-19).** Właściciel kontynuuje pracę
+   wyłącznie w głównym czacie orkiestratora. Poboczne czaty Operatorów/Evaluatorów są technicznymi
+   kanałami wykonawczymi, nie są miejscem podejmowania decyzji ani dalszej rozmowy. Orkiestrator
+   odbiera ich raporty i przedstawia wynik tutaj; wszystkie pytania ABC i odpowiedzi właściciela
+   są prowadzone tutaj. Po zakończeniu subagenta zamknij jego pomocniczy czat/worktree, jeśli nie
+   jest potrzebny do zachowania artefaktu. Jeżeli interfejs mimo to pokazuje poboczny czat, nie
+   kieruj do niego właściciela i nie traktuj go jako drugiego źródła kontekstu.
 3. **KAŻDA LICZBA MUSI MIEĆ NAZWANY PARAMETR I JEDNOSTKĘ (Maciej, 2026-07-25).** Zakaz pisania „baza 16",
    „przyrost +7", „daje 35" bez powiedzenia CZEGO dotyczy liczba. Zawsze: **czego** (Kultura / Praca / Prawo /
    Pieniądz / Zadowolenie / Obrona), **w jakiej jednostce** (pkt na turę, %, pkt Prawa) i **w jakim kontekście**
    (poziom, epoka, poziom trudności). Nagłówek kolumny „Baza" jest zakazany — ma być „Kultura (baza)".
    Jego słowa: „wpisujesz baza, ale baza do czego? potem chodzimy po omacku".
-4. **PRZYDZIAŁ MODELI — AKTYWNY KANON (decyzja właściciela 2026-08-18).** Główny orkiestrator
-   = **GPT-5.6 Luna Medium**. Operator = **GPT-5.6 Luna Medium**. Evaluator =
+4. **PRZYDZIAŁ MODELI — AKTYWNY KANON (decyzja właściciela 2026-08-19).** Główny orkiestrator
+   = **GPT-5.6 Luna Medium**. Operator = **GPT-5.6 Luna High**. Evaluator =
    **GPT-5.6 Luna High**. Orkiestrator wykonuje finalną kontrolę procesu; nie jest to dodatkowy
    model ponad głównym orkiestratorem. Render/Designer pozostaje wyjątkiem: modele 3D jednostek
    i cała praca w `gra/src/render/**` = **Opus 5** dla roli wykonawczej i oceniającej. Fable 5
    wyłącznie za wyraźną zgodą Macieja.
 
-   **ARCHIWUM — poprzednie routingi (zastąpione 2026-08-18):** poniższe wpisy historyczne
+**ARCHIWUM — poprzednie routingi (zastąpione 2026-08-19):** poniższe wpisy historyczne
    dokumentują wcześniejsze decyzje Sonnet/Haiku/Opus i nie są aktywnym routingiem.
 
 4. **ARCHIWALNE — PRZYDZIAŁ MODELI — Claude Code (Maciej, 2026-08-06; NIE dotyczy Cursora):** główny model

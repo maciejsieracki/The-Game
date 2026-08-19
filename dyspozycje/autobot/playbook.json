@@ -1,6 +1,6 @@
 {
-  "version": 33,
-  "updatedAtIso": "2026-08-18T10:25:32.303Z",
+  "version": 39,
+  "updatedAtIso": "2026-08-19T21:40:14.157Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -422,7 +422,7 @@
     },
     {
       "id": "rule_142",
-      "rule_text": "Scalenie (merge) pracy Operatora z worktree do drzewa głównego jest OSOBNYM zleceniem, wykonanym NATYCHMIAST po werdykcie PASS/PASS-WITH-NOTES Evaluatora — nigdy nie łącz go z merytoryczną pracą tego samego Operatora w jednym dispatchu, i nigdy nie zostawiaj „do zrobienia później\" (dokładnie ta zwłoka jest przyczyną źródłową incydentu R-BUDYNEK-PORTOWY z C-033 — praca leżała scalona-ocenioną, ale niedospatchowaną do scalenia, gdy sprzątanie dysku ją skasowało). Incydent (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, 2026-08-10): agent dostał zlecenie „dopisz test B-R5-1 I scal do głównego drzewa\"; po dopisaniu testu jego wywołanie EnterWorktree (przełączenie na drzewo główne) zostało odrzucone/przerwane, sesja agenta zakończyła się bez wysłania JAKIEJKOLWIEK notyfikacji — orkiestrator nie dostał ani raportu sukcesu, ani błędu. Temat (6 rund pracy) cicho utknął, wyglądając z zewnątrz jak nigdy niezaczęty, dopóki kolejny Operator — przy okazji innego zlecenia (BB2/stackGroupId), nie w wyniku celowego audytu tego tematu — nie zauważył braku śladu w git log --all. Praca ocalała wyłącznie dlatego, że oba źródłowe worktree pozostały fizycznie nietknięte na dysku (nie zdążyły zostać posprzątane przez C-032) — gdyby audyt dysku zdążył je usunąć najpierw, byłaby to trwała utrata. **Poprawka mechaniczna:** zlecenie Operatora kończy się na „gotowe do scalenia, worktree nietknięty\" — scalenie zawsze dostaje własny, dedykowany dispatch, ODPALONY OD RAZU po PASS/PASS-WITH-NOTES, z TWARDYM dowodem sukcesu jako ostatnim krokiem: git log --all --oneline [C-034]",
+      "rule_text": "Scalenie pracy Operatora z worktree do drzewa głównego jest osobnym zleceniem dopiero po pozytywnej finalnej kontroli i akceptacji integracji — nigdy bezpośrednio po samym werdykcie Operatora ani Evaluatora. PASS-WITH-NOTES wymaga najpierw potwierdzenia, że uwagi są nieblokujące; przed scaleniem trzeba potwierdzić allowlistę, diff, testy i brak cudzych zmian. Scalenie ma własny twardy dowód w historii gita i w drzewie głównym; awaria tego kroku wraca do orkiestratora bez zamykania tematu. [C-034]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
@@ -502,13 +502,43 @@
     },
     {
       "id": "rule_150",
-      "rule_text": "Narzędzie Workflow (Ultracode, Claude Agent SDK) AUTOMATYZUJE pętlę Operator→Evaluator z C-017, nie zastępuje jej: phase('Operator') na domyślnym modelu sesji (Sonnet 5) i phase('Evaluator') na model:'opus', effort:'high' MUSZĄ żyć w JEDNYM skrypcie jako dwa kroki sekwencyjne — nigdy jako dwa osobne, niezależnie zlecane uruchomienia, bo dokładnie ten podział pozwolił orkiestratorowi w tej sesji scalić i skomitować serię ~11 zmian Operatora BEZPOŚREDNIO, bez pośredniego Evaluatora, łamiąc C-017 (wykryte dopiero na wprost zadane pytanie właściciela „czy każdy Operator ma swojego Evaluatora\"). Dodatkowo: isolation:'worktree' (czy to w Workflow, czy w ręcznym Agent) niesie ten sam bug złej bazy worktree co C-035 — KAŻDY prompt agent() z isolation:'worktree' zaczyna się od obowiązkowego kroku weryfikacji bazy (grep symbolu, który MUSI istnieć na właściwej gałęzi; brak trafienia = STOP, zero prób ręcznego odtwarzania kodu, zgłoszenie orkiestratorowi) — dokładny szablon w .cursor/rules/autobot-evaluator-operator.mdc §„Integracja z Ultracode/Workflow\". Dla zmian dotykających silnika bitwy, save/load lub migracji danych kanonicznych (gra/data/**) — 1 Evaluator nie wystarcza, wymagane 3 niezależne, głosujące większością (wzorzec „adversarial verify\" wbudowany w Workflow). Workflow NIGDY nie commituje/nie pushuje/nie deployuje samo i nie wpisuje do PYTANIA-OTWARTE.md/WERSJE.md/REJESTR-PROSB-I-ZADAN.md/KANAL-PRACA.md — te kroki zawsze ręką orkiestratora, po zakończeniu Workflow. Reguła C-017 (orkiestrator nie ocenia sam siebie) obowiązuje TAKŻE gdy orkiestrator ręcznie rozwiązuje konflikt scalania (git apply -3 z konfliktem) — to też zmiana zapisana do repozytorium, wymaga osobnego Evaluatora, „to tylko scalanie\" nie jest zwolnieniem z pętli. Zasada Macieja 2026-08-12: „przeczytaj jeszcze raz całe zasady autobots i dostosuj je do pracy ultracode tak żeby się uzupełniały i razem usprawniały pracę oraz generowało jak najmniej błędów\" [C-042]",
+      "rule_text": "Narzędzie Workflow (Ultracode, Claude Agent SDK) automatyzuje aktualny obieg AutoBot, ale go nie zastępuje: phase('Operator') działa na GPT-5.6 Luna High, phase('Evaluator') na GPT-5.6 Luna High, a finalna kontrola/integracja należy do orkiestratora na GPT-5.6 Luna Medium. Fazy są sekwencyjne dla każdego ID, Evaluator startuje po raporcie Operatora bez ponownego sygnału właściciela, a FAIL/techniczny BLOCK/TIMEOUT/INFRA/ZWIS wraca do tej samej pętli. Workflow nie wystawia READY_FOR_DEPLOY, nie integruje poza zatwierdzonym zakresem, nie commituje, nie pushuje i nie deployuje samodzielnie; READY_FOR_DEPLOY może wystawić tylko orkiestrator po finalnej kontroli i integracji. isolation:'worktree' wymaga sprawdzenia bazy przed pracą, a zmiany wysokiego ryzyka podlegają zasadom niezależnej ewaluacji z kanonu. [C-042]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-18T10:25:32.300Z"
+    },
+    {
+      "id": "rule_151",
+      "rule_text": "**JEDEN KANAŁ DLA WŁAŚCICIELA:** właściciel kontynuuje rozmowę wyłącznie w głównym czacie orkiestratora. Poboczne czaty utworzone przez Operatora/Evaluatora są kanałami technicznymi: nie kieruj do nich właściciela, nie oczekuj odpowiedzi w nich i nie traktuj ich jako równoległego źródła decyzji. Orkiestrator przekazuje do głównego czatu status, raport i wynik kontroli; decyzje ABC właściciel podejmuje wyłącznie tutaj. Po zakończeniu pracy zamknij pomocnicze czaty/worktree, o ile nie są potrzebne do zachowania artefaktu. Jeśli narzędzie nie pozwala ukryć subagenta i pokazuje go jako osobny czat, wyjaśnij to raz i nadal utrzymuj główny czat jako jedyne miejsce komunikacji [C-043]",
+      "status": "ACTIVE",
+      "protected": true,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-19T19:29:17.826Z"
+    },
+    {
+      "id": "rule_152",
+      "rule_text": "**KANON ROUTINGU AUTOBOT:** każdy temat ma jeden pełny ID i przechodzi bez zatrzymania Operator (GPT-5.6 Luna High) → Evaluator (GPT-5.6 Luna High) → finalna kontrola/integracja (orkiestrator GPT-5.6 Luna Medium) → READY_FOR_DEPLOY. Raport terminalny każdego subagenta musi zawierać STATUS (PASS, PASS-WITH-NOTES, FAIL, BLOCK, TIMEOUT, INFRA), ID, zmiany/commity, testy, blokady, następny krok i DEPLOY/PUSH. READY_FOR_DEPLOY może wystawić wyłącznie orkiestrator po pozytywnej finalnej kontroli i integracji; deploy/push jest osobną bramką na wyraźne polecenie właściciela. FAIL, techniczny BLOCK, TIMEOUT, INFRA i ZWIS wracają natychmiast do Operatora, a następnie Evaluatora z tym samym ID; BLOCK wymagający decyzji uruchamia ABC i pauzuje tylko ten temat. PASS-WITH-NOTES nie kończy procesu bez akceptacji finalnej kontroli. Limit wynosi 6 otwartych subagentów: po terminalnym raporcie zamknij zakończonego i natychmiast obsadź slot następnym wymaganym etapem albo innym niezablokowanym tematem; przy dostępnej pracy wszystkie 6 slotów mają być wykorzystane. Komenda sprawdź oznacza audyt całej bieżącej puli i historycznych not_found, lekturę raportów, klasyfikację statusów, zamknięcie zakończonych i uruchomienie następnych etapów; not_found bez raportu nie jest dowodem zakończenia. [C-044]",
+      "status": "ACTIVE",
+      "protected": true,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-19T20:45:40.695Z"
+    },
+    {
+      "id": "rule_153",
+      "rule_text": "**EKSPERYMENT MODELOWY (Maciej, 2026-08-19):** od tej decyzji zarówno Operator, jak i Evaluator są uruchamiani na GPT-5.6 Luna High; orkiestrator/final pozostaje na GPT-5.6 Luna Medium. Każdy raport zapisuje liczbę rund Operator → Evaluator oraz liczbę poprawek po werdykcie, aby porównać tempo i jakość z wcześniejszym routingiem Operator Medium. Nie zmieniaj retroaktywnie już uruchomionych faz. [C-045]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-19T21:26:27.521Z"
     }
   ],
   "quarantine_rules": []

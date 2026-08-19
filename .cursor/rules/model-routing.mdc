@@ -1,5 +1,5 @@
 ---
-description: Aktywny routing modeli — główny orkiestrator i Operator GPT-5.6 Luna Medium, Evaluator GPT-5.6 Luna High.
+description: Aktywny routing modeli — główny orkiestrator GPT-5.6 Luna Medium, Operator i Evaluator GPT-5.6 Luna High.
 globs:
   - "**/*"
 alwaysApply: true
@@ -7,20 +7,27 @@ alwaysApply: true
 
 # Routing modeli — aktywny kanon (NIENEGOCJOWALNE)
 
-**Źródło:** decyzja właściciela z **2026-08-18**. Dotyczy bieżącej bazy ROBOCZEJ.
+**Źródło:** decyzja właściciela z **2026-08-19**. Dotyczy bieżącej bazy ROBOCZEJ.
 
 | Rola | Aktywny model | Zakres |
 |---|---|---|
 | **Główny orkiestrator / final** | **GPT-5.6 Luna Medium** | plan, kontrola, synteza, decyzje procesowe oraz finalna bramka |
-| **Operator AutoBot** | **GPT-5.6 Luna Medium** | wykonanie zleconej pracy w izolacji i guardrails |
+| **Operator AutoBot** | **GPT-5.6 Luna High** | wykonanie zleconej pracy w izolacji i guardrails |
 | **Evaluator AutoBot** | **GPT-5.6 Luna High** | niezależny adwokat, metryki, SCOPE i regresja |
 
 Render/Designer pozostaje istniejącym wyjątkiem: modele 3D jednostek i cała praca
 w `gra/src/render/**` używają **Opus 5** dla Operatora i Evaluatora.
 
 Operator nie wykonuje merge/deployu. Finalna kontrola należy do głównego orkiestratora;
-publikacja nadal wymaga wyraźnego polecenia właściciela i nie zmienia plików `WERSJE.md`,
-bundli ani deployu w ramach samego routingu.
+po integracji wystawia `READY_FOR_DEPLOY`. Deploy/push jest osobną bramką i wymaga
+wyraźnego polecenia właściciela; sam routing nie zmienia plików `WERSJE.md`, bundli
+ani środowiska deployu.
+
+## C-043 — kanał komunikacji właściciela (Maciej 2026-08-19)
+
+Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora. Subagenci są
+kanałami technicznymi: ich raporty wracają do orkiestratora, który przekazuje
+właścicielowi status, pytania i decyzje w głównym czacie.
 
 ## Historia zastąpiona
 

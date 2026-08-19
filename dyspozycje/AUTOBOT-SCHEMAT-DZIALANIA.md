@@ -1,6 +1,6 @@
 # Schemat działania — kto za co · jakimi regułami
 
-**Status:** OBOWIĄZUJE · 2026-08-05  
+**Status:** OBOWIĄZUJE · 2026-08-19
 **Maciej:** AutoBot = twarda reguła; każda praca agenta wyłącznie tędy.  
 **Powiązane:** `R-PROC-AUTOBOT` · `R-PROC-POTROJNA-WARSTWA` · `R-PROC-NUMER-ABC` · `R-PROC-NO-REGRESS`
 
@@ -13,18 +13,25 @@ flowchart TD
   M[Maciej — decyzje ABC / hasła deploy] --> ID[NUMER w REJESTR-PROSB]
   ID --> PROP[Orkiestrator: propozycja ± ABC]
   PROP --> DEC{Maciej: ID + A/B/C<br/>lub działaj}
-  DEC -->|tak| OP[OPERATOR — GPT-5.6 Luna Medium<br/>kod / testy / playbook]
+  DEC -->|tak| OP[OPERATOR — GPT-5.6 Luna High<br/>kod / testy / playbook]
   OP --> EV[EVALUATOR — GPT-5.6 Luna High<br/>adwokat diabła + hard metrics]
   EV --> GR[FINALNA KONTROLA — GPT-5.6 Luna Medium]
   GR --> INT[INTEGRACJA]
-  INT -->|bramki + autoryzacja| DEP[DEPLOY/PUSH]
+  INT --> READY[READY_FOR_DEPLOY]
+  READY -. osobna bramka + autoryzacja .-> DEP[DEPLOY/PUSH]
   DEP --> PLAY[Maciej — playtest OK/BUG]
   PLAY -->|BUG| ID
   PLAY -->|OK| DONE[Zamknięte / FALA]
 ```
 
 **Zasada nadrzędna:** nic „obok” pętli. Operator → Evaluator → finalna kontrola →
-integracja → deploy/push. Raport Operatora automatycznie uruchamia Evaluatora.
+integracja → `READY_FOR_DEPLOY`. Deploy/push jest osobną bramką po autoryzacji.
+Raport Operatora automatycznie uruchamia Evaluatora.
+
+## C-043 — kanał komunikacji właściciela (Maciej 2026-08-19)
+
+Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora. Subagenci są
+kanałami technicznymi; ich raporty nie są kanałem decyzyjnym dla właściciela.
 
 ---
 
@@ -34,7 +41,7 @@ integracja → deploy/push. Raport Operatora automatycznie uruchamia Evaluatora.
 |------|-----|--------------|----------|
 | **Decydent** | **Maciej** | ABC gameplay/produkt, hasła `działaj` / `deploy`, playtest OK/BUG | Terminal, kod, merge na ślepo |
 | **Orkiestrator / Final** | **GPT-5.6 Luna Medium** | Plan, ABC, finalna kontrola, status/ABC/integracja; bez samowolnego deployu | Masowa implementacja „bo szybko” |
-| **Operator (AutoBot)** | **GPT-5.6 Luna Medium** | Kod, testy lane, eksporty, docs techniczne wg `playbook.json` | Merge `main`, deploy, self-grade bez KPI |
+| **Operator (AutoBot)** | **GPT-5.6 Luna High** | Kod, testy lane, eksporty, docs techniczne wg `playbook.json`; zapisuje liczbę rund i poprawek | Merge `main`, deploy, self-grade bez KPI |
 | **Evaluator (AutoBot)** | **GPT-5.6 Luna High** | Adwokat diabła: regresje, uboczne zepsucia, hard metrics, postmortem, win/loss playbook | Implementacja |
 | **Integrator / F** *(gdy w obiegu)* | Sesja Integrator | Wpięcie zatwierdzonej paczki po finalnej kontroli i bramkach | ABC gameplay zamiast Macieja |
 
@@ -42,7 +49,7 @@ integracja → deploy/push. Raport Operatora automatycznie uruchamia Evaluatora.
 
 | AutoBot Spec | U nas |
 |--------------|--------|
-| Operator Agent | GPT-5.6 Luna Medium (implementer) |
+| Operator Agent | GPT-5.6 Luna High (implementer) |
 | Evaluator Agent | GPT-5.6 Luna High (adwokat) + KPI (tsc/testy) |
 | Playbook / Vector memory | `dyspozycje/autobot/playbook.json` + logs |
 | Human gate | Maciej (`deploy`, ABC, playtest) |
@@ -54,11 +61,11 @@ integracja → deploy/push. Raport Operatora automatycznie uruchamia Evaluatora.
 
 | # | ID / plik | Co mówi |
 |---|-----------|---------|
-| **1** | **`R-PROC-AUTOBOT`** · `.cursor/rules/autobot-evaluator-operator.mdc` | **KAŻDA praca** = Operator → Evaluator → finalna kontrola → integracja → deploy/push. |
+| **1** | **`R-PROC-AUTOBOT`** · `.cursor/rules/autobot-evaluator-operator.mdc` | **KAŻDA praca** = Operator → Evaluator → finalna kontrola → integracja → `READY_FOR_DEPLOY`; deploy/push osobną bramką. |
 | **2** | **`R-PROC-NUMER-ABC`** · `PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md` | Case → ID → propozycja ± ABC → kod dopiero po literze → deploy tylko hasło. |
-| **3** | **`R-PROC-POTROJNA-WARSTWA`** | = Operator + Evaluator + finalna kontrola. Integracja i deploy/push są kolejnymi bramkami. |
+| **3** | **`R-PROC-POTROJNA-WARSTWA`** | = Operator + Evaluator + finalna kontrola. Integracja kończy przygotowanie na `READY_FOR_DEPLOY`; deploy/push jest osobną bramką. |
 | **4** | **`R-PROC-NO-REGRESS`** | Przed commit/deploy: diff + usunięcia; nie cofaj cudzych fixów. |
-| **5** | **`model-routing.mdc`** | GPT-5.6 Luna Medium = orkiestrator/Operator; GPT-5.6 Luna High = Evaluator. |
+| **5** | **`model-routing.mdc`** | GPT-5.6 Luna Medium = orkiestrator/final; GPT-5.6 Luna High = Operator i Evaluator. |
 | **6** | **Guardrails AutoBot** (`guardrails.ts` + CLAUDE) | Bez merge→`main`; bez `npm run build/dev` w `gra/`; deploy tylko hasło; HITL na krytyczne. |
 | **7** | **Playbook** | Reguły z win_rate; &lt;30% → RETIRED; feature pruning corr &lt; 0.05. |
 | **8** | **Kanał / WERSJE** | Prawda między sesjami = `KANAL-PRACA.md` + `WERSJE.md` (nie sam czat). |
@@ -104,7 +111,7 @@ integracja → deploy/push. Raport Operatora automatycznie uruchamia Evaluatora.
 
 ## 7. Jedno zdanie dla agenta
 
-> Najpierw ID i decyzja Macieja → **Operator** robi → **Evaluator** sprawdza na twardych metrykach → **finalna kontrola** → **integracja** → **deploy/push** po bramkach i autoryzacji.
+> Najpierw ID i decyzja Macieja → **Operator** robi → **Evaluator** sprawdza na twardych metrykach → **finalna kontrola** → **integracja** → **READY_FOR_DEPLOY**; deploy/push osobną bramką po autoryzacji.
 
 ---
 

@@ -4,7 +4,12 @@
 **Decyzja:** [`docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md)  
 **Reguła Cursor (alwaysApply):** `.cursor/rules/autobot-evaluator-operator.mdc`
 
-> Operator → Evaluator → finalna kontrola → integracja → deploy/push. **ZAKAZ** omijania pętli.
+> Operator (**GPT-5.6 Luna High**) → Evaluator (**GPT-5.6 Luna High**) → finalna kontrola/
+> integracja przez orkiestratora (**GPT-5.6 Luna Medium**) → `READY_FOR_DEPLOY`. Deploy/push
+> jest osobną bramką po autoryzacji. **ZAKAZ** omijania pętli.
+
+**C-043 (Maciej 2026-08-19):** właściciel komunikuje się wyłącznie w głównym czacie
+orkiestratora; subagenci są kanałami technicznymi.
 
 **Evaluator — SCOPE:** przed werdyktem sprawdza, czy diff dotyczy **wyłącznie** zgłoszonego problemu/AC i nie wprowadza ubocznych zmian ani regresji w innych miejscach (`rule_105`, `R-PROC-AUTOBOT-EVAL-SCOPE`). Naruszenie SCOPE → FAIL.
 
@@ -170,7 +175,7 @@ node dyspozycje/autobot/tools/autobot-smoke.cjs
 
 | AutoBot | Sesja Cursor |
 |---------|----------------|
-| Operator | **GPT-5.6 Luna Medium** — implementer |
+| Operator | **GPT-5.6 Luna High** — implementer |
 | Evaluator | **GPT-5.6 Luna High** — adwokat diabła + testy · **SCOPE** — diff tylko do tematu (`rule_105`) · **STRICT** — luki testów → FAIL (`rule_106`) · **STRICT-EDGE** — happy-path-only → FAIL (`rule_107`) · **STRICT-PARITY** — asymetria gracz/AI/MP → FAIL (`rule_108`) · **STRICT-SAVE** — luki save/load → FAIL (`rule_109`) |
 | Finalna kontrola / integracja | **GPT-5.6 Luna Medium** — status/ABC albo skierowanie do integracji |
 | playbook | ten katalog + reguły procesu |
@@ -178,13 +183,14 @@ node dyspozycje/autobot/tools/autobot-smoke.cjs
 
 Po raporcie Operatora Evaluator jest uruchamiany automatycznie. `PASS` przechodzi przez
 finalną kontrolę, a następnie do aktualizacji statusu, pełnego ABC z ID albo integracji;
-`FAIL` wraca do Operatora. Deploy/push wymaga bramek i autoryzacji właściciela.
+`FAIL` wraca do Operatora. Integracja kończy przygotowanie na `READY_FOR_DEPLOY`;
+deploy/push wymaga osobnej bramki i autoryzacji właściciela.
 
 ## Integracja z Ultracode/Workflow (Maciej 2026-08-12)
 
 Workflow (Ultracode, Claude Agent SDK) jest narzędziem wykonawczym, które automatyzuje
 dokładnie architekturę opisaną wyżej — nie zastępuje żadnego z 5 modułów. `OperatorAgent`
-odpowiada `phase('Operator')` z modelem GPT-5.6 Luna Medium, a `EvaluatorAgent` odpowiada
+odpowiada `phase('Operator')` z modelem GPT-5.6 Luna High, a `EvaluatorAgent` odpowiada
 `phase('Evaluator')` z modelem GPT-5.6 Luna High; obie fazy MUSZĄ być krokami jednego
 skryptu Workflow, nigdy dwoma osobno zlecanymi uruchomieniami — bo dokładnie ten podział
 umożliwił w tej sesji scalenie ~11 zmian Operatora bez pośredniego Evaluatora. `pipeline()`

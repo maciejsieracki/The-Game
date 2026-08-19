@@ -14,6 +14,16 @@ a commit deployowy to `90e607c0`.
 Starsze listy i sekcje poniżej zachowują historię, ale nie mogą nadpisywać tego punktu
 odniesienia bez nowego audytu.
 
+## AKTYWNY ROUTING AUTOBOT — AUTOBOT-ROUTING (2026-08-19)
+
+Kanon przygotowania: **Operator (GPT-5.6 Luna High) → Evaluator (GPT-5.6 Luna High)
+→ finalna kontrola/integracja orkiestratora (GPT-5.6 Luna Medium) →
+`READY_FOR_DEPLOY`**. Deploy/push jest osobną bramką i nie wynika z samego
+`READY_FOR_DEPLOY`; wymaga dalszych bramek oraz wyraźnej autoryzacji właściciela.
+
+**C-043:** właściciel komunikuje się wyłącznie w głównym czacie orkiestratora;
+subagenci są kanałami technicznymi, a ich raporty trafiają do orkiestratora.
+
 ## AUDYT DOKUMENTACJI 2026-08-18 — AKTUALNY PUNKT ODNIESIENIA
 
 Pełny audyt FAL 291–294 zapisano w
@@ -124,7 +134,7 @@ nie usuwamy.
 > `.claude/skills/civ-autobot/SKILL.md` (commit `5f80d5c9`, wyslany wlascicielowi do sciagniecia)
 > dokumentujace nowa, standardowa procedure opisana nizej.
 >
-> **NOWY MECHANIZM DISPATCHU — Operator/Evaluator przez narzedzie `Workflow`, nie `Agent`
+> **ARCHIWUM — NOWY MECHANIZM DISPATCHU — Operator/Evaluator przez narzedzie `Workflow`, nie `Agent`
 > (decyzja Macieja, 2026-08-17):** Powod: `Agent` nie eksponowal parametru `effort` (poziom
 > wysilku rozumowania) — rozne poziomy maja bardzo rozne koszty tokenowe (od ~0.5M do ~19M
 > tokenow na zadanie). **Operator = Haiku 4.5** (bez narzuconego effort, domyslny).
@@ -412,7 +422,8 @@ nie usuwamy.
 > **⛔ PROCES 2026-08-03:** `R-PROC-NUMER-ABC` — każdy case → ID → propozycja ± ABC → kod+commit dopiero po `ID+A|B|C` → **deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 >
 > **⛔ AUTOBOT 2026-08-18 — TWARDA REGUŁA:** `R-PROC-AUTOBOT` — **KAŻDA praca** wyłącznie AutoBot:
-> Operator → Evaluator → finalna kontrola → integracja → deploy/push. Raport Operatora
+> Operator → Evaluator → finalna kontrola → integracja → READY_FOR_DEPLOY. Deploy/push
+> jest osobną bramką. Raport Operatora
 > automatycznie uruchamia Evaluatora; po `PASS` status/ABC/integracja, po `FAIL` powrót do Operatora.
 > Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc`.
 
@@ -434,7 +445,7 @@ git status --short
 
 **Stan FALA 254 (historyczny):** ROBOCZA `232634a9` (10:11) · Escape + recruit + Panel-C + audyty.
 
-**Ważne dla agentów:** **KAŻDA praca** = AutoBot (Operator GPT-5.6 Luna Medium →
+**Ważne dla agentów:** **KAŻDA praca** = AutoBot (Operator GPT-5.6 Luna High →
 Evaluator GPT-5.6 Luna High → finalna kontrola GPT-5.6 Luna Medium → integracja).
 Deploy/push dopiero po bramkach i autoryzacji. Pełny zapis:
 [`HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md).

@@ -1,15 +1,25 @@
 # R-PROC-AUTOBOT — AutoBot (Operator–Evaluator–integracja)
 
-**Status:** 🟢 **TWARDA REGUŁA OBOWIĄZUJE** (Maciej 2026-08-05; obieg doprecyzowany 2026-08-18) — **KAŻDA praca agenta wyłącznie w AutoBot**
+**Status:** 🟢 **TWARDA REGUŁA OBOWIĄZUJE** (Maciej 2026-08-05; routing zaktualizowany 2026-08-19) — **KAŻDA praca agenta wyłącznie w AutoBot**
 **Źródło:** Maciej — „każda praca którą wykonujesz ma być teraz wykonywana w systemie AutoBot” + Architectural Spec  
 **Reguła Cursor (alwaysApply):** `.cursor/rules/autobot-evaluator-operator.mdc`  
 **Kod / playbook:** `dyspozycje/autobot/`
 
 ---
 
-## Nadrzędny obieg procesu (aktywny od 2026-08-18)
+## Nadrzędny obieg procesu (aktywny od 2026-08-19)
 
-**`Operator → Evaluator → finalna kontrola → integracja → deploy/push`**
+**`Operator → Evaluator → finalna kontrola → integracja → READY_FOR_DEPLOY`**
+
+**Aktywny routing modeli:** Operator (**GPT-5.6 Luna High**) → Evaluator
+(**GPT-5.6 Luna High**) → finalna kontrola/integracja przez głównego orkiestratora
+(**GPT-5.6 Luna Medium**). Deploy/push jest osobną bramką po `READY_FOR_DEPLOY`.
+
+## C-043 — kanał komunikacji właściciela (Maciej 2026-08-19)
+
+Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora. Subagenci są
+kanałami technicznymi: ich raporty, pytania i werdykty wracają do orkiestratora,
+który przekazuje właścicielowi wynik w głównym czacie.
 
 To jest obowiązkowa kolejność i jedyny aktualny opis przejścia paczki przez proces:
 
@@ -20,14 +30,67 @@ To jest obowiązkowa kolejność i jedyny aktualny opis przejścia paczki przez 
    zakres, bramki i stan repozytorium. Po `FAIL` zwraca Operatorowi konkretną listę
    poprawek; nie ma statusu „gotowe”.
 4. Po pozytywnej kontroli orkiestrator:
-   - automatycznie aktualizuje status, jeśli temat jest zamknięty;
    - przygotowuje i zadaje ABC z pełnym ID, jeśli wymagana jest decyzja;
-   - kieruje gotowy temat do integracji, gdy decyzja i zakres są już zamknięte.
-5. **Integracja** włącza zatwierdzoną paczkę dopiero po przejściu bramek. **Deploy/push**
-   następuje dopiero po spełnieniu bramek i wyraźnej autoryzacji deployu właściciela.
+   - kieruje zatwierdzony zakres do integracji.
+5. **Integracja** przygotowuje zatwierdzoną paczkę dopiero po przejściu bramek.
+   **Główny orkiestrator potwierdza integrację i wystawia** `READY_FOR_DEPLOY`. To koniec
+   procesu przygotowania, nie wykonany deploy ani push.
 
 Raport Operatora nie jest zgodą na integrację ani publikację. Operator i Evaluator nie
 wykonują samowolnego merge, deployu ani pushu.
+
+## Sygnalizacja subagentów i zarządzanie slotami
+
+Każdy subagent przekazuje zakończenie w raporcie terminalnym z polami: `STATUS` (`PASS`,
+`PASS-WITH-NOTES`, `FAIL`, `BLOCK`, `TIMEOUT` albo `INFRA`), pełne ID tematu,
+zmiany/commity, testy, blokady, następny krok oraz `DEPLOY/PUSH: wykonano albo nie wykonano`.
+Sam komunikat „gotowe” lub wskaźnik UI `działa` nie potwierdza zakończenia. `GOTÓW DO TESTU`
+jest wyłącznie sygnałem pośrednim i nie zastępuje raportu terminalnego. `PASS-WITH-NOTES`
+nie kończy procesu; może przejść dalej wyłącznie z jawnymi, nieblokującymi uwagami
+zaakceptowanymi przez finalną kontrolę.
+Raport Operatora automatycznie uruchamia Evaluatora. Po zakończeniu roli orkiestrator zamyka
+subagenta, ponieważ zakończony, lecz otwarty subagent nadal zajmuje slot. Limit wynosi
+6 otwartych subagentów. Brak ruchu w transcriptcie przez 7 minut jest sygnałem `ZWIS`;
+orkiestrator weryfikuje transcript i przejmuje temat.
+Jeżeli istnieją niezablokowane tematy, wszystkie 6 slotów powinno być stale wykorzystane.
+Po terminalnym raporcie zakończonego subagenta należy go zamknąć i natychmiast uruchomić
+następny wymagany etap albo kolejny niezależny temat. Wolny slot bez uzasadnionej blokady
+jest błędem operacyjnym.
+
+## Ciągła pętla domknięcia
+
+AutoBot nie jest jednorazową delegacją. Ten sam temat pozostaje aktywny pod tym samym ID
+i przechodzi kolejne rundy aż do osiągnięcia celu:
+
+```text
+Operator PASS → Evaluator
+Evaluator FAIL/BLOCK techniczny → Operator z listą poprawek → Evaluator
+Evaluator PASS → finalna kontrola
+finalna kontrola FAIL → Operator → Evaluator → finalna kontrola
+finalna kontrola PASS → integracja → READY_FOR_DEPLOY → koniec procesu
+```
+
+`BLOCK` wymagający decyzji właściciela zatrzymuje tylko ten temat i uruchamia pełne ABC;
+nie zatrzymuje niezależnych tematów. `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA` i `ZWIS`
+uruchamiają bez czekania `Operator → Evaluator` z tym samym ID; przy ZWIS orkiestrator
+przejmuje wykonanie. Po `FAIL` orkiestrator nie czeka na kolejne
+polecenie właściciela i nie tworzy nowego ID dla tej samej usterki. Temat można zatrzymać
+tylko z powodu oczekiwania na ABC albo wyraźnego anulowania przez właściciela. `PASS`
+Evaluatora sam w sobie nie oznacza końca; koniec procesu następuje po pozytywnej finalnej
+kontroli i integracji, gdy istnieje izolowana wersja `READY_FOR_DEPLOY`
+z prawidłową allowlistą, bez niezwiązanych zmian, z przejściem wszystkich bramek i gotowa do
+oddania na ROBOCZĄ. Dopiero to jest koniec danego procesu przygotowania. Jeżeli poprawka nie została
+prawidłowo przygotowana do deployu, temat nie jest zakończony i biegnie dalej w cyklu.
+Sam deploy pozostaje osobną bramką
+na hasło `deploy` i nie jest wykonywany automatycznie.
+
+## Komenda właściciela: `sprawdź`
+
+`sprawdź` oznacza pełny audyt: cała bieżąca pula + historyczne `not_found` do reconciliacji.
+terminalny, ostatni ruch, lektura raportu, klasyfikacja wyniku (`PASS`, `PASS-WITH-NOTES`, `FAIL`,
+`BLOCK`, `TIMEOUT`, `INFRA`, `READY_FOR_DEPLOY` albo niepewne), zamknięcie zakończonych oraz
+uruchomienie następnego etapu dla każdego tematu. `not_found` bez raportu wymaga odtworzenia
+statusu z transcriptu/logu albo zgłoszenia braku dowodu.
 
 ## Cel
 
@@ -36,7 +99,7 @@ Self-improving agent framework w patternie **Evaluator–Operator**:
 - **Evaluator** mierzy twarde metryki, liczy deltę, robi postmortem i aktualizuje playbook
 
 **U nas:** **nie wolno** wykonywać pracy „obok” systemu. Każda paczka przechodzi
-`Operator → Evaluator → finalna kontrola → integracja → deploy/push`.
+`Operator → Evaluator → finalna kontrola → integracja → READY_FOR_DEPLOY`.
 
 ---
 
@@ -44,7 +107,7 @@ Self-improving agent framework w patternie **Evaluator–Operator**:
 
 | AutoBot | U nas |
 |---------|--------|
-| **OperatorAgent** | **GPT-5.6 Luna Medium** — czyta playbook + dyspozycję, wykonuje kod/testy/docs |
+| **OperatorAgent** | **GPT-5.6 Luna High** — czyta playbook + dyspozycję, wykonuje kod/testy/docs; zapisuje liczbę rund i poprawek |
 | **EvaluatorAgent** | **GPT-5.6 Luna High** — niezależny adwokat diabła, metryki, **SCOPE + regresja** (`R-PROC-AUTOBOT-EVAL-SCOPE`) |
 | **Finalna kontrola / integracja** | **GPT-5.6 Luna Medium** — kontrola, status/ABC, skierowanie do integracji |
 | **playbook.json** | `dyspozycje/autobot/playbook.json` — reguły z win/loss / win_rate |
@@ -54,6 +117,10 @@ Self-improving agent framework w patternie **Evaluator–Operator**:
 **Potrójna warstwa** (`R-PROC-POTROJNA-WARSTWA`) = część obiegu Operator → Evaluator →
 finalna kontrola. Integracja i deploy/push są kolejnymi, odrębnymi bramkami; AutoBot =
 szersza pętla uczenia się z playbooka.
+
+`READY_FOR_DEPLOY` jest statusem orkiestratora po finalnej kontroli i integracji, a nie
+werdyktem Operatora ani Evaluatora. Operator raportuje wynik wykonania, Evaluator raportuje
+niezależną ocenę, a orkiestrator sprawdza artefakt i dopiero wtedy kieruje go do integracji.
 
 ---
 
@@ -115,7 +182,8 @@ Pełna implementacja w `dyspozycje/autobot/`:
 | **REGRESSION** | Czy nie cofa wcześniejszych fixów / nie psuje innego zachowania? |
 | **COUPLING** | Czy nie wprowadza sprzężeń poza zakresem tematu? |
 
-**Werdykt:** naruszenie → **FAIL** lub **PASS-WITH-NOTES** z blockerami (nie akceptować cicho).
+**Werdykt:** naruszenie → **FAIL**; **PASS-WITH-NOTES** dopuszczalne wyłącznie z jawnymi,
+nieblokującymi uwagami i bez uwag wymagających blokady.
 
 ---
 
@@ -205,7 +273,7 @@ identycznie, czy praca idzie przez Workflow, czy przez ręczny dispatch.
 
 | Rola AutoBot | Workflow | Model |
 |---|---|---|
-| Operator | `phase('Operator')` | GPT-5.6 Luna Medium |
+| Operator | `phase('Operator')` | GPT-5.6 Luna High |
 | Evaluator | `phase('Evaluator')` | GPT-5.6 Luna High |
 
 Obie fazy mogą być uruchomione w jednym przebiegu Workflow albo sekwencyjnie po raporcie
@@ -227,8 +295,8 @@ dla zmian dotykających silnika bitwy, save/load, lub migracji danych kanoniczny
 
 **Zawsze poza Workflow, zawsze ręką orkiestratora:** finalna kontrola, integracja,
 `git commit`/`push`, wpisy do `PYTANIA-OTWARTE.md`/`WERSJE.md`/`REJESTR-PROSB-I-ZADAN.md`/
-`KANAL-PRACA.md` oraz cały deploy. Workflow kończy na „materiał zatwierdzony przez
-Evaluatora”, a deploy wymaga bramek i autoryzacji właściciela.
+`KANAL-PRACA.md` oraz cały deploy. Workflow kończy na przygotowanej paczce
+`READY_FOR_DEPLOY`, a deploy wymaga dalszych bramek i autoryzacji właściciela.
 
 Reguła 0b (orkiestrator nie ocenia sam siebie) obowiązuje **także** przy ręcznym scalaniu
 konfliktów (`git apply -3` z konfliktem) — to też jest zmiana zapisana do repozytorium i

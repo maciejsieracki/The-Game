@@ -12,17 +12,18 @@ Przy zamknięciu tematu: aktualizuj STATUS + wpisz commit/md5. Szczegóły decyz
 
 **Problemy/błędy z numeracją:** `dyspozycje/REJESTR-PROBLEMOW-AI.md` — format **`P-AI-###`** (Maciej 2026-07-26). Każdy nowy problem od razu dostaje numer; w czacie odwołujesz się po ID.
 
-## ⛔ NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03)
+## ⛔ NUMER → ABC → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH (Maciej 2026-08-03)
 Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
 1. Case / bug / poprawka / innowacja → **ID tutaj od razu** (status zwykle `CZEKA-NA-DECYZJĘ`).
 2. Agent **nie koduje** — proponuje rozwiązanie ± ABC.
 3. Maciej: **`ID + A|B|C`** → dopiero commit.
-4. **`deploy`** (hasło) → dopiero ROBOCZA / `WERSJE.md`.
+4. **`READY_FOR_DEPLOY`** → orkiestrator potwierdza finalną kontrolę i integrację; dopiero osobne hasło `deploy`/`push` publikuje ROBOCZĄ / aktualizuje `WERSJE.md`.
 
 ## ⛔ AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — KAŻDA PRACA TYLKO TĘDY
 **KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot:
-Operator (**GPT-5.6 Luna Medium**) → Evaluator (**GPT-5.6 Luna High**) →
-finalna kontrola → integracja → deploy/push. **ZAKAZ** omijania pętli.
+Operator (**GPT-5.6 Luna High**) → Evaluator (**GPT-5.6 Luna High**) →
+finalna kontrola → integracja → `READY_FOR_DEPLOY`. Deploy/push jest osobną bramką
+po bramkach i autoryzacji. **ZAKAZ** omijania pętli.
 Kanon: [`autobot/README.md`](autobot/README.md) ·
 [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) ·
 `.cursor/rules/autobot-evaluator-operator.mdc`.
@@ -34,13 +35,18 @@ i Sonnet pozostają poniżej jako historia, ale nie są aktywnym routingiem.
 
 **Notatka 2026-08-09:** źródło prawdy deployu dziś = **FALA 263** (`89176ced318b7e7d03b2fd6b197df80d`), branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie `main`). Szczegóły sesji: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`.
 
-**KOREKTA AUDYTU 2026-08-18:** aktywny routing tej sesji to Operator **GPT-5.6 Luna Medium** →
+**KOREKTA AUDYTU 2026-08-19:** aktywny routing tej sesji to Operator **GPT-5.6 Luna High** →
 Evaluator **GPT-5.6 Luna High** → finalna kontrola/integracja przez głównego orkiestratora
 **GPT-5.6 Luna Medium**. Raport Operatora automatycznie uruchamia Evaluatora; po `PASS`
 status jest aktualizowany, przygotowywane jest pełne ABC z ID albo temat trafia do integracji.
-Deploy/push dopiero po bramkach i autoryzacji.
+Integracja kończy przygotowanie na `READY_FOR_DEPLOY`; deploy/push dopiero po osobnej
+bramce i autoryzacji.
 Wpisy o composer/Grok/Haiku/Sonnet poniżej są historyczne i pozostają zachowane.
 
+**C-043 (2026-08-19):** właściciel komunikuje się wyłącznie w głównym czacie
+orkiestratora; subagenci są kanałami technicznymi.
+
+| R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 | 2026-08-19 | Umowa terminowa na wspólną walkę z barbarzyńcami i obustronny wojskowy przemarsz; zasady zerwania i jednostek pozostających na miejscu | **ECHO 1A + 2A + 3A — DECYZJA ZAPISANA; IMPLEMENTACJA NIEZLECONA** | `docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md` · pełne A/B/C i ECHO w `PYTANIA-OTWARTE.md` · bez zmian `gra/`, bez deployu/pushu |
 | R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Kanon raportu właściciela: **dziesięć** kategorii (stany Operator/Evaluator, czeka na Operatora vs zapomniane), filtr ECHO, Playtest z ROBOCZEJ | **WDROŻONE (docs-only) — nie jest pytaniem ABC** | `docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`; zasady: `CLAUDE.md`, `.claude/skills/civ-autobot/SKILL.md`, `.cursor/rules/komendy-raport.mdc`; snapshot FALA 295 `8589d294` |
 | R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Poprzedni kanon siedmiu kategorii (FALA 294) | **SUPERSEDED → R-RAPORT-10** | `docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md` — tylko kompatybilność linków; pełna treść w historii gita |
 
@@ -99,7 +105,7 @@ Wpisy o composer/Grok/Haiku/Sonnet poniżej są historyczne i pozostają zachowa
 | R-KOPALNIA-RELIEF | 2026-07-25 | Kopalnie nie spłaszczają wzgórza | **ZAMKNIĘTE / ZDEPLOYOWANE FALA 296 `a37f7123`** przez `R-KAMIEN-RELIEF-FOLLOWUP-Q1` | miedź/żelazo/złoto + legacy `kopalnia` oraz przyszłe `kopalnia_*` zachowują relief; test prefiksu 23/23 |
 | P-AI-006 | 2026-07-26 | ekspansywnosc=0 wszędzie | **ZAMKNIĘTE** — `civ-ai.json` 2–5; `ai-expansion.ts` czyta per nacja | REJESTR-DECYZJI 🟢 WDROŻONA FALA 36 |
 | P-AI-010 | 2026-07-26 | Poradnik „konkuruj osadnikiem” | **ZAMKNIĘTE** — poradnik rev.G bez osadnika | `14-ai-zagrozenia.md` |
-| R-PROC-AUTOBOT | 2026-08-05 | **KAŻDA praca** wyłącznie AutoBot (Operator→Evaluator→Grok) | **TWARDA REGUŁA OBOWIĄZUJE** · P0 zmergowane `#108`/`9068115` · Maciej przypomniał 13:41 | `docs/decyzje/R-PROC-AUTOBOT.md` · `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` |
+| R-PROC-AUTOBOT | 2026-08-05 | **KAŻDA praca** wyłącznie AutoBot (Operator→Evaluator→finalna kontrola→integracja→READY_FOR_DEPLOY; deploy/push osobną bramką) | **TWARDA REGUŁA OBOWIĄZUJE** · P0 zmergowane `#108`/`9068115` · Maciej przypomniał 13:41 | `docs/decyzje/R-PROC-AUTOBOT.md` · `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` |
 | R-PROC-AUTOBOT-EVAL-SCOPE | 2026-08-05 | Evaluator: scope=tylko temat + brak regresji/ubocznych zmian | **🟢 OBOWIĄZUJE** · tip `eb84533`+ · rule_105 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` |
 | R-PROC-AUTOBOT-EVAL-STRICT | 2026-08-05 | Evaluator STRICT: luki testów / brak asercji AC → FAIL (nie NOTES) | **🟢 OBOWIĄZUJE** · Maciej „2” · rule_106 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` |
 | R-PROC-AUTOBOT-EVAL-STRICT-EDGE | 2026-08-05 | Evaluator STRICT-EDGE: testy tematu tylko happy-path bez edge/negacji/repro → FAIL #7 | **🟢 OBOWIĄZUJE** · Maciej „2 Jeszcze twardszy” · rule_107 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` |
