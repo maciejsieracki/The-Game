@@ -1,9 +1,8 @@
 'use strict';
 /**
- * ai-unit-rush-test.cjs -- standalone Node test dla R-AI-KUP-JEDN (decyzja
- * Macieja 2026-07-24, parytet AI): AI może kupić kolejkowaną jednostkę za
- * złoto (rush), zamiast zawsze czekać na dokończenie Pracą -- ZACHOWAWCZO,
- * patrz shouldAIRushBuyUnit (game/ai.ts).
+ * ai-unit-rush-test.cjs -- standalone Node test dla R-AI-MP-REKRUTACJA-
+ * SKARBIEC-ZAMIAST-BUDOWY-Q1: AI kupuje jednostkę za złoto poza wojną,
+ * tak jak gracz, przez wspólną ścieżkę rekrutacji.
  *
  * Run from gra/:  node tools/ai-unit-rush-test.cjs
  *
@@ -11,16 +10,13 @@
  * bundla esbuild + styl asercji).
  *
  * Predykat (CZYSTY, bez dostępu do main.ts/stanu gry):
- *   shouldAIRushBuyUnit({ atWar, treasury, reserve, goldCost, hasManpower,
- *                         boughtThisTurn, maxPerTurn }) -> boolean
- *   true wtw: atWar && hasManpower && treasury >= reserve + goldCost
- *             && boughtThisTurn < maxPerTurn.
+ *   shouldAIPurchaseUnit({ treasury, goldCost, hasManpower }) -> boolean
+ *   true wtw: hasManpower && treasury >= goldCost.
  *
  * Pokrywa tabelę przypadków z zadania:
- *   - brak wojny -> false
+ *   - brak wojny -> true
  *   - brak Manpower -> false
- *   - za mało złota (treasury < reserve+goldCost) -> false
- *   - limit turowy wyczerpany -> false
+ *   - za mało złota (treasury < goldCost) -> false
  *   - wszystko OK -> true
  *   - brzeg treasury == reserve+goldCost -> true
  */
@@ -39,7 +35,7 @@ const ENTRY_FILE  = path.resolve(__dirname, '.ai-unit-rush-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.ai-unit-rush-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { shouldAIRushBuyUnit } from '../src/game/ai';
+export { shouldAIPurchaseUnit } from '../src/game/ai';
 `, 'utf8');
 
 try {
@@ -60,64 +56,53 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { shouldAIRushBuyUnit } = M;
+const { shouldAIPurchaseUnit } = M;
 
 let passed = 0, failed = 0;
 function assert(cond, msg) { if (cond) { passed++; } else { failed++; console.error('FAIL:', msg); } }
 function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 
 const BASE = {
-  atWar: true,
   treasury: 300,
-  reserve: 100,
   goldCost: 50,
   hasManpower: true,
-  boughtThisTurn: 0,
-  maxPerTurn: 1,
 };
 
-console.log('\n-- A. Tabela przypadkow: shouldAIRushBuyUnit --');
+console.log('\n-- A. Tabela przypadkow: shouldAIPurchaseUnit --');
 
 // 1. Wszystko OK -> true
-eq(shouldAIRushBuyUnit({ ...BASE }), true, 'wszystko OK -> true');
+eq(shouldAIPurchaseUnit({ ...BASE }), true, 'wszystko OK -> true');
 
-// 2. Brak wojny -> false
-eq(shouldAIRushBuyUnit({ ...BASE, atWar: false }), false, 'brak wojny -> false');
+// 2. Poza wojną -> true (wojna nie jest bramką kanonu zakupu)
+eq(shouldAIPurchaseUnit({ ...BASE }), true, 'poza wojną -> true');
 
 // 3. Brak Manpower -> false
-eq(shouldAIRushBuyUnit({ ...BASE, hasManpower: false }), false, 'brak Manpower -> false');
+eq(shouldAIPurchaseUnit({ ...BASE, hasManpower: false }), false, 'brak Manpower -> false');
 
 // 4. Za malo zlota (treasury < reserve + goldCost) -> false
 eq(
-  shouldAIRushBuyUnit({ ...BASE, treasury: BASE.reserve + BASE.goldCost - 1 }),
+  shouldAIPurchaseUnit({ ...BASE, treasury: BASE.goldCost - 1 }),
   false,
-  'za malo zlota (treasury < reserve+goldCost) -> false',
+  'za malo zlota (treasury < goldCost) -> false',
 );
 
-// 5. Limit turowy wyczerpany (boughtThisTurn >= maxPerTurn) -> false
+// 5. Dawny limit AI nie blokuje kanonicznego zakupu.
 eq(
-  shouldAIRushBuyUnit({ ...BASE, boughtThisTurn: 1, maxPerTurn: 1 }),
-  false,
-  'limit turowy wyczerpany -> false',
-);
-
-// 6. Brzeg: treasury == reserve + goldCost -> true
-eq(
-  shouldAIRushBuyUnit({ ...BASE, treasury: BASE.reserve + BASE.goldCost }),
+  shouldAIPurchaseUnit({ ...BASE }),
   true,
-  'brzeg treasury == reserve+goldCost -> true',
+  'brak AI-only limitu zakupów -> true',
 );
 
-// 7. Dodatkowy brzeg: boughtThisTurn tuz ponizej maxPerTurn wiekszego niz 1 -> true
+// 6. Brzeg: treasury == goldCost -> true
 eq(
-  shouldAIRushBuyUnit({ ...BASE, boughtThisTurn: 1, maxPerTurn: 2 }),
+  shouldAIPurchaseUnit({ ...BASE, treasury: BASE.goldCost }),
   true,
-  'boughtThisTurn(1) < maxPerTurn(2) -> true',
+  'brzeg treasury == goldCost -> true',
 );
 
-// 8. Kombinacja wielu warunkow niespelnionych naraz -> false (nie tylko jeden)
+// 7. Kombinacja warunków kanonicznych niespełnionych naraz -> false
 eq(
-  shouldAIRushBuyUnit({ ...BASE, atWar: false, hasManpower: false, treasury: 0 }),
+  shouldAIPurchaseUnit({ ...BASE, hasManpower: false, treasury: 0 }),
   false,
   'wiele warunkow niespelnionych naraz -> false',
 );

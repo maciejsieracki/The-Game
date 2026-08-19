@@ -4558,71 +4558,29 @@ export function pickExecutableCandidate<TItem>(
 }
 
 /**
- * R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): decyzja CZY AI powinno kupić
- * właśnie kolejkowaną jednostkę za złoto (rush), zamiast czekać na dokończenie
- * Pracą. CELOWO zachowawcza -- AI nie roztrwania skarbca:
- *   - tylko gdy jest w stanie wojny z kimkolwiek (presja bojowa uzasadnia rush),
- *   - tylko gdy zostaje bufor >= reserve PO zapłaceniu koszt,
- *   - tylko gdy miasto ma pokrycie Manpower (inaczej zakup i tak by się nie udał),
- *   - tylko raz (maxPerTurn) na turę na ownera -- twardy cap, nie farma złota.
- * Funkcja jest CZYSTA (bez dostępu do main.ts/stanu gry) -- testowalna w izolacji,
- * patrz tools/ai-unit-rush-test.cjs. main.ts wywołuje ją zamiast duplikować logikę.
+ * R-AI-MP-REKRUTACJA-SKARBIEC-ZAMIAST-BUDOWY-Q1: czysta bramka decyzji AI
+ * dla zakupu jednostki. AI używa tej samej ekonomii zakupu co gracz: musi mieć
+ * złoto na cenę i Manpower; wojna, rezerwa skarbca i limit „rushów” nie są
+ * częścią kanonu zakupu gracza, więc nie mogą blokować rekrutacji AI.
+ * Walidacja zasobów rekrutacyjnych oraz pobranie kosztów pozostają atomowo w
+ * purchaseRecruitmentUnit (main.ts), wspólnej ścieżce gracza i AI.
  */
-export function shouldAIRushBuyUnit(inp: {
-  atWar: boolean;
+export function shouldAIPurchaseUnit(inp: {
   treasury: number;
-  reserve: number;
   goldCost: number;
   hasManpower: boolean;
-  boughtThisTurn: number;
-  maxPerTurn: number;
 }): boolean {
-  return (
-    inp.atWar
-    && inp.hasManpower
-    && inp.treasury >= inp.reserve + inp.goldCost
-    && inp.boughtThisTurn < inp.maxPerTurn
-  );
+  return inp.hasManpower && inp.treasury >= inp.goldCost;
 }
+
+/** Kompatybilny alias dla istniejących testów/narzędzi; parametry AI-only są ignorowane. */
+export const shouldAIRushBuyUnit = shouldAIPurchaseUnit;
 
 /** Difficulty key shared with economy.ts / economy-upkeep.ts (easy/normal/hard). */
 type EconDifficulty = 'easy' | 'normal' | 'hard';
 
 /** A raw econ-params.json row: difficulty values plus jednostka/opis metadata. */
 type RawAiRushRow = Record<string, number | string | undefined>;
-
-/**
- * Resolved rush-buy thresholds for shouldAIRushBuyUnit (reserve + per-turn cap).
- */
-export interface AiRushParams {
-  reserve: number;
-  maxPerTurn: number;
-}
-
-/**
- * R-STAWKI-STROJENIE (2026-07-24): loads the AI-rush thresholds from
- * econ-params.json (globalne.ai_rush_jednostka_rezerwa_zlota /
- * globalne.ai_rush_jednostka_max_na_ture) instead of main.ts constants, so
- * they become data-tunable like every other econ-params value. Robust by
- * design (same pattern as loadEconParams/loadUpkeepParams): any missing/
- * non-numeric row falls back to the previous hardcoded values (100 / 1) so a
- * malformed row can never break a turn.
- */
-export function loadAiRushParams(
-  raw: { globalne?: Record<string, RawAiRushRow> },
-  difficulty: EconDifficulty,
-): AiRushParams {
-  const g = raw.globalne ?? {};
-  const read = (key: string, fallback: number): number => {
-    const row = g[key];
-    const v   = row ? row[difficulty] : undefined;
-    return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
-  };
-  return {
-    reserve:    read('ai_rush_jednostka_rezerwa_zlota', 100),
-    maxPerTurn: read('ai_rush_jednostka_max_na_ture',   1),
-  };
-}
 
 // ---------------------------------------------------------------------------
 // R-AI-SUWAKI (decyzja Maciej 2026-07-26, C-AI-SUWAKI=A): dotąd AI siedziało na

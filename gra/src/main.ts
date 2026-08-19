@@ -1027,7 +1027,7 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import {
@@ -7325,12 +7325,6 @@ async function boot(): Promise<void> {
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
      *  (ownerLoop), zasilany w cmd.type==='build' po udanym purchaseRecruitmentUnit. */
-    const aiUnitGoldRushBoughtByOwner = new Map<number, number>();
-    /** R-STAWKI-STROJENIE (2026-07-24): progi rush-zakupu jednostek za zloto,
-     *  przeniesione z zakodowanych stalych do econ-params.json (globalne.
-     *  ai_rush_jednostka_rezerwa_zlota / ai_rush_jednostka_max_na_ture) --
-     *  patrz loadAiRushParams (game/ai.ts). Wartosci bez zmian (100 / 1). */
-    const aiRushParams = loadAiRushParams(data.econParams, _menuDifficulty);
     /** R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A, PARYTET AI): dotąd AI nigdy nie
      *  ruszało suwakami żywność/Praca/Handel -- siedziało na wartościach startowych całą
      *  partię. Stan suwaków AI PER OWNER (nie per-miasto -- AI ustawia jedną politykę dla
@@ -26806,7 +26800,6 @@ async function boot(): Promise<void> {
               // tury -- NIE przy wznowieniu (isCommandResume) tej samej listy komend po
               // przerwie async (np. animacja bitwy), żeby nie odblokować drugiego zakupu
               // w tej samej turze.
-              if (!isCommandResume) aiUnitGoldRushBoughtByOwner.set(ownerId, 0);
               // R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): raz na turę tego ownera
               // (NIE przy wznowieniu po przerwie async -- isCommandResume -- inaczej dwie
               // korekty tej samej tury by się zliczyły), czysta decyzja decideAIEconomySliders
@@ -28343,29 +28336,17 @@ async function boot(): Promise<void> {
                     cityProd.set(cmd.cityId, enqueue(prod0, item));
                   } else if (item.kind === 'jednostka') {
                     // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostka
-                    // nigdy nie wraca do kolejki Pracy. Zachowujemy istniejącą
-                    // zachowawczą politykę AI (wojna + rezerwa + limit), ale
-                    // jedynym skutkiem pozytywnej decyzji jest zakup przez
-                    // purchaseRecruitmentUnit.
-                    const atWarWithAnyone = getDiploRelation(ownerId, 0).status === 'wojna'
-                      || aiOwnerList.some(
-                        (other) => other !== ownerId && getDiploRelation(ownerId, other).status === 'wojna',
-                      );
-                    const boughtThisTurn = aiUnitGoldRushBoughtByOwner.get(ownerId) ?? 0;
-                    const wantsPurchase = shouldAIRushBuyUnit({
-                      atWar: atWarWithAnyone,
+                    // nigdy nie wraca do kolejki Pracy. Zakup przechodzi przez
+                    // tę samą bramkę skarbca/Manpower co zakup gracza.
+                    const wantsPurchase = shouldAIPurchaseUnit({
                       treasury: ownerTreasury(ownerId),
-                      reserve: aiRushParams.reserve,
                       goldCost: item.koszt,
                       hasManpower: canAffordUnitManpowerEmpire(
                         cities, ownerId, city, empireEpochForOwner(ownerId),
                         UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, candId,
                       ),
-                      boughtThisTurn,
-                      maxPerTurn: aiRushParams.maxPerTurn,
                     });
                     if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
-                      aiUnitGoldRushBoughtByOwner.set(ownerId, boughtThisTurn + 1);
                       console.log(`[AI ${ownerId}] Zakup jednostki za Skarbiec: ${candId}`);
                     }
                   }
