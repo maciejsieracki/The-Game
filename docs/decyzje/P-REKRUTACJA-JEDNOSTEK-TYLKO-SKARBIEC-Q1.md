@@ -13,6 +13,14 @@
 nie może być frontem ani wpisem w kolejce budynków finansowanej Pracą. Zasada obowiązuje
 gracza, AI i miasta-państwa.
 
+## Doprecyzowanie właściciela — 2026-08-19
+
+Właściciel potwierdził, że AI ma **zawsze** zachowywać się tak jak gracz: kupować jednostki
+za pieniądze, nie produkować ich w miejscu, gdzie wykorzystuje Pracę na budynki, i nie dostawać
+osobnej furtki „tylko w czasie wojny”. Zakup jednostki i produkcja budynku są niezależne w tym
+samym mieście. To doprecyzowanie nie zmienia litery `B`; usuwa tylko wcześniejsze, niekanoniczne
+limity/rush-only po stronie AI.
+
 ## Zakres wdrożenia
 
 - odłączenie jednostek od kolejki budynków przy zachowaniu produkcji budynków;
@@ -42,16 +50,18 @@ nieudokumentowanym założeniem.
 ## Status
 
 **Status końcowy: GOTOWE/ZAMKNIĘTE — zaakceptowane przez Evaluatora jako
-PASS-WITH-NOTES.** ECHO pozostaje zachowane historycznie (`bc200aee`).
-Wdrożenie z FALI 292 zostało utrzymane w ROBOCZEJ FALI 293 i aktualnym
-snapshotcie FALI 294.
+PASS-WITH-NOTES i potwierdzone w aktualnej ROBOCZEJ FALI 299.** ECHO pozostaje
+zachowane historycznie (`bc200aee`); najnowsze doprecyzowanie i korekta AI są w
+commicie `4f099cb1`, a deploy w `90e607c0`.
 
 Dowód:
 
 - implementacja: `914ce8da` (`fix: wymus jednostki tylko przez zakup ze skarbca`);
 - testy kontraktów/migracji: `f30e13d7`, `c2a72a98`;
 - test dedykowany: `rekrutacja-skarbiec-only-test.cjs` — **13/13 PASS**;
+- parytet AI: `ai-unit-rush-test.cjs` **7/7** i `ai-rekrutacja-parytet-test.cjs` **7/7**;
 - ROBOCZA: FALA 293 `8fa80b7c` → FALA 294 `a0f804d7`, `VERIFY OK`;
+- aktualna ROBOCZA FALA 299: md5 `5dba37a12900d8f9a03a2da592d2cd8c`, `VERIFY OK`;
 - zakres potwierdzony w `gra/src/game/production.ts`, `gra/src/main.ts` i
   `gra/src/ui/cityPanel.ts`.
 
@@ -63,4 +73,6 @@ Dowód:
 Oba czerwone wyniki dotyczą istniejących rozbieżności kosztów magazynowych,
 nie mechanizmu rekrutacji wyłącznie za Skarbiec.
 
-Deploy, merge i push pozostają poza zakresem.
+Historyczne zdanie „Deploy, merge i push pozostają poza zakresem” dotyczyło
+ówczesnej paczki i nie opisuje aktualnego snapshotu; FALA 299 została już
+zdeployowana do ROBOCZEJ i wypchnięta jako `90e607c0`.

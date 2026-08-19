@@ -1,6 +1,18 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-18 19:52 (deploy FALA 298)** · Projekt: Civ „The Game”
+**Ostatnia aktualizacja: 2026-08-19 (porządkowanie dokumentacji po deployu FALI 299)** · Projekt: Civ „The Game”
+
+## AKTUALNY PUNKT ODNIESIENIA — FALA 299
+
+Najnowszy handoff przejęcia znajduje się w
+[`dyspozycje/_handoff/HANDOFF-FALA-299-2026-08-19.md`](dyspozycje/_handoff/HANDOFF-FALA-299-2026-08-19.md).
+Zawiera potwierdzone odpowiedzi ABC, decyzje właściciela, mapowanie commitów do tematów,
+testy, status formalnie otwartych ABC i instrukcję przejęcia. Aktualna ROBOCZA ma md5
+`5dba37a12900d8f9a03a2da592d2cd8c`, `VERIFY OK`; źródło kodu FALI 299 to `4f099cb1`,
+a commit deployowy to `90e607c0`.
+
+Starsze listy i sekcje poniżej zachowują historię, ale nie mogą nadpisywać tego punktu
+odniesienia bez nowego audytu.
 
 ## AUDYT DOKUMENTACJI 2026-08-18 — AKTUALNY PUNKT ODNIESIENIA
 
