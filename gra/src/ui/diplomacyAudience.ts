@@ -1664,9 +1664,12 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
 }
 
 /** FAZA 2 pkt 3 kol.4 (prawo) — „Aktywne traktaty" (od ilu tur + kara zerwania + „Zerwij" — zaległość #2). */
-export function treatiesColumnHtml(st: DiplomacyAudienceState): string {
+export function treatiesColumnHtml(
+  st: DiplomacyAudienceState,
+  breakTreatyHandler: ((dealId: string) => void) | undefined = cfg?.onBreakTreaty,
+): string {
   const treaties = st.activeTreaties ?? [];
-  const canBreak = typeof cfg?.onBreakTreaty === 'function';
+  const canBreak = typeof breakTreatyHandler === 'function';
   const items = treaties.map(t => {
     const icon = dipBrandIconHtml(treatyIconId(t.label), 14, 'da-ti');
     const metaParts: string[] = [];
