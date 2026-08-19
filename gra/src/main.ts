@@ -19366,6 +19366,12 @@ async function boot(): Promise<void> {
         eraIndex: player.era,
         onOpenTree: () => showTechTreeView(0),
       }),
+      openTechCompletion: (techName: string) => showTechDiscoveryNotice({
+        techName,
+        eraIndex: player.era,
+        kind: 'completion',
+        onOpenTree: () => showTechTreeView(0),
+      }),
       isEndTurnInProgress: () => endTurnInProgress,
       getWorldState: () => ({ citiesLen: cities.length, unitsLen: units.length, turn }),
     };
@@ -20366,6 +20372,15 @@ async function boot(): Promise<void> {
             if (eraAdvanced) {
               queueEraDiscoveryTech(step.completed.map(done => done.id));
               notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+            } else if (step.completed.length > 0) {
+              // Nagroda nauki może dokończyć technologię bez awansu epoki — pokaż tę
+              // samą pełną kartę co przy EOT, ale z komunikatem zwykłego ukończenia.
+              showTechDiscoveryNotice({
+                techName: step.completed[step.completed.length - 1]!.id,
+                eraIndex: player.era,
+                kind: 'completion',
+                onOpenTree: () => showTechTreeView(0),
+              });
             }
           } else {
             // AI/MP: dolicz do puli nauki ownera i odpal TEN SAM resolver co coroczne
@@ -25767,6 +25782,15 @@ async function boot(): Promise<void> {
                 setEra(player.era); // DYSPOZYCJA-MUZYKA §2 pkt 3 — awans epoki gracza
                 queueEraDiscoveryTech(step.completed.map(done => done.id));
                 notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+              } else {
+                // Auto-research ukończył technologię bez przejścia epoki: karta jest
+                // komunikatem głównym, a dotychczasowy toast pozostaje krótkim śladem.
+                showTechDiscoveryNotice({
+                  techName: step.completed[step.completed.length - 1]!.id,
+                  eraIndex: player.era,
+                  kind: 'completion',
+                  onOpenTree: () => showTechTreeView(0),
+                });
               }
               console.log(
                 '[Nauka] Skarbiec=' + player.skarbiec +

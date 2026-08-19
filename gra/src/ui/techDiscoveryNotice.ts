@@ -1,5 +1,5 @@
 /**
- * Karta odkrytej technologii, otwierana przy awansie epoki.
+ * Karta odkrytej technologii, otwierana przy ukończeniu badań.
  * Dane są czytane z tych samych JSON-ów co drzewko — bez kopii balansowych.
  */
 
@@ -125,6 +125,8 @@ function buildBody(tech: TechRow): string {
 export function showTechDiscoveryNotice(opts: {
   techName: string;
   eraIndex: number;
+  /** Awans epoki zachowuje dotychczasowy nagłówek; zwykłe badanie ma neutralny komunikat. */
+  kind?: 'era' | 'completion';
   onOpenTree?: () => void;
 }): void {
   const tech = (techData as unknown as { technologie: TechRow[] }).technologie
@@ -135,9 +137,16 @@ export function showTechDiscoveryNotice(opts: {
   const host = document.createElement('div');
   host.id = HOST_ID;
   const close = () => { popOverlay(OVERLAY_ID); host.remove(); };
+  const isEraAdvance = (opts.kind ?? 'era') === 'era';
+  const kick = isEraAdvance
+    ? `Awans do epoki ${esc(tech.Epoka ?? opts.eraIndex)}`
+    : 'Ukończono badania';
+  const subtitle = isEraAdvance
+    ? 'Technologia odkryta · pełna karta odblokowań'
+    : 'Technologia zbadana · pełna karta odblokowań';
   host.innerHTML = `<div class="tdn-back"></div><article class="tdn-card" role="dialog" aria-modal="true"
-    aria-label="Odkryta technologia"><header class="tdn-head"><div class="tdn-kick">Awans do epoki ${esc(tech.Epoka ?? opts.eraIndex)}</div>
-    <h2>${esc(tech.Technologia)}</h2><div class="tdn-sub">Technologia odkryta · pełna karta odblokowań</div></header>
+    aria-label="Odkryta technologia"><header class="tdn-head"><div class="tdn-kick">${kick}</div>
+    <h2>${esc(tech.Technologia)}</h2><div class="tdn-sub">${subtitle}</div></header>
     <div class="tdn-scroll">${buildBody(tech) || '<p>Brak dodatkowych danych w drzewie technologii.</p>'}</div>
     <footer class="tdn-foot"><button type="button" data-act="tree">Otwórz drzewo</button>
     <button type="button" data-act="close">Zamknij</button></footer></article>`;

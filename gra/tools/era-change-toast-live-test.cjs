@@ -214,6 +214,18 @@ async function main() {
       !!document.querySelector('.civ-ttv-overlay')), {});
     await page.keyboard.press('Escape');
 
+    console.log('\n-- G2. Zwykłe ukończenie technologii zachowuje tę samą kartę bez nagłówka awansu epoki --');
+    await page.evaluate(() => window.__eraTestDebug.openTechCompletion('Brązownictwo'));
+    const completionCard = await page.evaluate(() => ({
+      kick: document.querySelector('#civ-tech-discovery-notice-host .tdn-kick')?.textContent ?? '',
+      subtitle: document.querySelector('#civ-tech-discovery-notice-host .tdn-sub')?.textContent ?? '',
+      title: document.querySelector('#civ-tech-discovery-notice-host h2')?.textContent ?? '',
+    }));
+    assert('karta zwykłego ukończenia jest widoczna', completionCard.title === 'Brązownictwo', completionCard);
+    assert('zwykła karta nie udaje awansu epoki', completionCard.kick === 'Ukończono badania', completionCard);
+    assert('zwykła karta ma opis ukończenia badań', completionCard.subtitle.includes('Technologia zbadana'), completionCard);
+    await page.keyboard.press('Escape');
+
     console.log('\n-- H. Stary save / brak sekcji: karta nadal ma bezpieczny fallback --');
     await page.evaluate(() => window.__eraTestDebug.openTechDiscovery('Brązownictwo'));
     const fallback = await page.evaluate(() => ({
