@@ -16,12 +16,11 @@ const bundleName = '.r-manpower-uzupelnienie-hp-bundle.cjs';
 const entry = path.join(__dirname, entryName);
 const bundle = path.join(__dirname, bundleName);
 fs.writeFileSync(entry, `
-import { tickManpowerUnitReplenishment } from '../src/game/manpower';
-module.exports = { tickManpowerUnitReplenishment };
+import { tickManpowerUnitReplenishment, syncLiveUnitHp } from '../src/game/manpower';
+module.exports = { tickManpowerUnitReplenishment, syncLiveUnitHp };
 `, 'utf8');
 esbuild.buildSync({ entryPoints: [`./${entryName}`], absWorkingDir: __dirname, bundle: true, platform: 'node', format: 'cjs', outfile: bundleName, logLevel: 'silent' });
-const { tickManpowerUnitReplenishment } = require(bundle);
-const mainSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'main.ts'), 'utf8');
+const { tickManpowerUnitReplenishment, syncLiveUnitHp } = require(bundle);
 
 let pass = 0;
 let fail = 0;
@@ -48,10 +47,9 @@ ok(city.manpower === 4700, 'Manpower is debited by 300');
 const loaded = JSON.parse(JSON.stringify({ units: [liveUnit], cities: [city] }));
 ok(loaded.units[0].hp === 40, 'healed HP survives save JSON snapshot');
 ok(loaded.cities[0].manpower === 4700, 'Manpower survives save JSON snapshot');
-ok(
-  /live\.hp = hp;[\s\S]{0,120}live\.hpMax = hpMax;/.test(mainSource),
-  'main.ts zapisuje HP i hpMax do żywego RuntimeUnit',
-);
+const callbackLiveUnit = { id: 'callback-live', hp: 10, hpMax: 100 };
+syncLiveUnitHp([callbackLiveUnit], callbackLiveUnit.id, 40, 100);
+ok(callbackLiveUnit.hp === 40 && callbackLiveUnit.hpMax === 100, 'callback zapisuje HP i hpMax do żywego RuntimeUnit');
 
 const multiCity = { id: 'c2', ownerId: 0, population: 10, manpower: 100, q: 0, r: 0, oblegane: false };
 const multiGarrison = { id: 'u2', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 0, r: 0, inGarnizon: true };

@@ -846,7 +846,7 @@ import {
   tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
-  canAffordUnitManpowerEmpire, refundManpowerToEmpire,
+  canAffordUnitManpowerEmpire, refundManpowerToEmpire, syncLiveUnitHp,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
 import { filterOwnersForPowerRanking, computeAbsolutePowerRank } from './game/power-ranking';
@@ -25295,12 +25295,8 @@ async function boot(): Promise<void> {
               // would disappear before the next save.
               units,
               getMaxHp: (typeId: string) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
-              onUnitHpChanged: (unitId: string, hp: number, hpMax: number) => {
-                const live = units.find(u => u.id === unitId);
-                if (!live) return;
-                live.hp = hp;
-                live.hpMax = hpMax;
-              },
+              onUnitHpChanged: (unitId: string, hp: number, hpMax: number) =>
+                syncLiveUnitHp(units, unitId, hp, hpMax),
             },
             ownerDefaultPodzialPracy,
           );

@@ -108,6 +108,19 @@ export interface ManpowerHealUnit {
   inGarnizon?: boolean;
 }
 
+/** Synchronizuje wynik leczenia z żywym obiektem RuntimeUnit przed zapisem gry. */
+export function syncLiveUnitHp(
+  units: Array<Pick<ManpowerHealUnit, 'id' | 'hp' | 'hpMax'>>,
+  unitId: string,
+  hp: number,
+  hpMax: number,
+): void {
+  const live = units.find(unit => unit.id === unitId);
+  if (!live) return;
+  live.hp = hp;
+  live.hpMax = hpMax;
+}
+
 type CityReplenishFields = Pick<City, 'id' | 'ownerId' | 'population' | 'manpower' | 'q' | 'r' | 'oblegane'>;
 
 /** Jednostka w oblężonym mieście (hex własnego miasta z oblegane=true lub garnizon takiego miasta). */
