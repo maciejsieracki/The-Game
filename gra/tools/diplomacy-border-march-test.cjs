@@ -161,6 +161,35 @@ const n4 = M.classifyPlayerBorderMarchNotice(
 ok(n4.playerBorderViolated === true, 'tura mieszana: playerBorderViolated=true (obcy↔obcy zignorowana)');
 ok(n4.playerTrespassing === true, 'tura mieszana: playerTrespassing=true (obcy↔obcy zignorowana)');
 
+// 5d.1) Przeciwne kierunki tej samej pary w jednej turze muszą zachować role:
+// 3→0 = naruszenie terytorium gracza, 0→3 = wkroczenie jednostki gracza.
+// To regresja przeciw starej symetrycznej fladze, która mogła zgubić kierunek
+// intruderOwnerId → territoryOwnerId przy agregowaniu komunikatu.
+const n4dir = M.classifyPlayerBorderMarchNotice(
+  [
+    { intruderOwnerId: 3, territoryOwnerId: 0, q: 1, r: 2 },
+    { intruderOwnerId: 0, territoryOwnerId: 3, q: 4, r: 5 },
+  ],
+  resolveOpenCivil,
+  0,
+);
+ok(n4dir.playerBorderViolated === true, 'przeciwne kierunki: 3→0 ustawia playerBorderViolated=true');
+ok(n4dir.playerTrespassing === true, 'przeciwne kierunki: 0→3 ustawia playerTrespassing=true');
+ok(
+  n4dir.violatingIntruders.length === 1
+    && n4dir.violatingIntruders[0].ownerId === 3
+    && n4dir.violatingIntruders[0].q === 1
+    && n4dir.violatingIntruders[0].r === 2,
+  'przeciwne kierunki: naruszenie wskazuje intruza 3 i jego heks',
+);
+ok(
+  n4dir.trespassedOwners.length === 1
+    && n4dir.trespassedOwners[0].ownerId === 3
+    && n4dir.trespassedOwners[0].q === 4
+    && n4dir.trespassedOwners[0].r === 5,
+  'przeciwne kierunki: wkroczenie wskazuje właściciela 3 i jego heks',
+);
+
 // 5e) para z graczem, ale AUTORYZOWANA (otwarte granice cywil) → oba flagi false mimo udzialu gracza
 const dealsOG = M.addTreaty([], {
   id: 'og-player', rodzaj: 'otwarte_granice', strony: [0, 9], wygasaTura: null,
