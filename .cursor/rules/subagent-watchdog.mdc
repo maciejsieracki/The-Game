@@ -1,111 +1,15 @@
 ---
-description: Watchdog — 1 temat=1 agent, cisza 7 min=ZWIS→orkiestrator przejmuje (Maciej 2026-08-02, aktualizacja 2026-08-19)
+description: Watchdog subagentów — jeden temat, dowód stanu, przejęcie po zwisie.
 alwaysApply: true
 ---
 
-# Watchdog subagentów (Maciej 2026-08-02, limit zaktualizowany 2026-08-19)
+# Watchdog
 
-## 1. Jeden temat = jeden subagent
+Jeden temat ma jeden aktywny przebieg Operatora. Po raporcie zamknij zakończony przebieg
+i automatycznie uruchom Evaluatora, potem Final Control. Brak ruchu przez 7 minut to
+`ZWIS`: sprawdź transcript, Git i artefakty; jeśli brak dowodu postępu, orkiestrator
+przejmuje temat zamiast go anulować lub bezmyślnie restartować.
 
-- Każdy temat → **osobny** subagent.
-- Zakaz dwóch agentów na ten sam temat.
-- Maksymalnie **6 otwartych** subagentów równolegle; tematy muszą być niezależne.
-- Subagent zakończony, ale niezamknięty, nadal zajmuje slot i musi zostać zamknięty przez orkiestratora.
-- Gdy istnieją niezablokowane tematy, wszystkie 6 slotów mają być wykorzystane. Po zakończeniu
-  jednego subagenta jego slot natychmiast przechodzi do kolejnej wymaganej fazy.
-
-## 1a. Obowiązkowy sygnał zakończenia
-
-Raport końcowy musi zawierać `STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA`, pełne ID tematu,
-zmiany/commity, dokładne wyniki testów, blokady i następny krok. Samo `gotowe` ani UI
-`działa` nie jest dowodem zakończenia. Raport Operatora uruchamia Evaluatora; po terminalnym
-raporcie rola jest zamykana albo przechodzi do następnej fazy. Raport musi również zawierać
-`DEPLOY/PUSH: wykonano albo nie wykonano`. `PASS-WITH-NOTES` nie kończy procesu; przechodzi
-dalej tylko z jawnymi, nieblokującymi uwagami zaakceptowanymi przez finalną kontrolę.
-`READY_FOR_DEPLOY` jest zastrzeżone dla orkiestratora po finalnej kontroli i integracji;
-Operator i Evaluator raportują wynik swojej roli, nie końcową gotowość publikacyjną.
-
-## 1b. Pętla bez zatrzymania
-
-`FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA` i `ZWIS` zawsze uruchamiają bez czekania
-`Operator → Evaluator` z tym samym pełnym ID; Operator dostaje konkretną listę poprawek.
-Tylko `BLOCK` wymagający decyzji właściciela uruchamia ABC i pauzuje wyłącznie ten temat.
-`PASS` przechodzi do finalnej kontroli.
-Pętla trwa dla tego samego ID aż do `PASS` Evaluatora, pozytywnej finalnej kontroli i
-rzeczywistego przygotowania izolowanej paczki `READY_FOR_DEPLOY`. Paczka z cudzymi zmianami,
-niepełną allowlistą, nieprzejściem bramek albo nierozwiązanym konfliktem nie jest zakończona;
-wraca do Operatora.
-
-## 2. Cisza 7 minut = ZWIS → orkiestrator przejmuje (nie restart)
-
-| Sygnał | Próg | Akcja |
-|--------|------|--------|
-| Brak ruchu w transcriptcie (mtime / nowe linie) | **7 min** | **ZWIS** → interrupt + orkiestrator przejmuje temat |
-| UI „Working” bez ruchu w pliku | **7 min** | to samo |
-
-**Decyzja Macieja (2026-08-02 wieczór):** nawet **1×** zawieszenie subagenta → **STOP delegacji**, orkiestrator **sam doprowadza temat do końca**.
-**ZAKAZ:** restartować tego samego tematu kolejnym subagentem po ZWIS. Orkiestrator przejmuje
-wykonanie i uruchamia dalszą pętlę `Operator → Evaluator` z tym samym ID.
-
-**ZAKAZ:** traktować ZWIS jako „Stop All / anuluj / odpuszczamy temat”.  
-**ZWIS = temat nadal żywy** → orkiestrator kontynuuje w czacie głównym.
-
-Wyjątek anulowania: tylko gdy Maciej **wyraźnie** kasuje temat albo temat był czysto informacyjny i odpowiedź już padła.
-
-**Obowiązek orkiestratora:** po starcie zadania w tle — **po 7 min** sprawdź transcript **sam**. Nie czekaj, aż Maciej zapyta.
-
-Hasło: **`status agentów`** / **`czy zwisł?`** → tabela: temat · ostatni ruch · pracuje/ZWIS.
-
-Komunikat przy ZWIS: `1× ZWIS → orkiestrator przejmuje temat.`
-
-## 3. Prompt (żeby mniej wieszać)
-
-- Shell / mapgen wall-clock **max ~3 min**.
-- Zakaz ciężkiej Pangea × wiele seedów w tle.
-- Sygnał pośredni: `GOTÓW DO TESTU` + md5 albo `STOP: …` / `✅ Gotowe w źródłach — wrzucić na ROBOCZA?`.
-  Nie zastępuje obowiązkowego raportu terminalnego i nie oznacza `READY_FOR_DEPLOY`.
-
-## 4. Nie wprowadzaj Macieja w błąd (status procesu)
-
-## 4a. Znaczenie komendy właściciela „sprawdź”
-
-Gdy właściciel pisze `sprawdź`, orkiestrator wykonuje pełny audyt: obejmuje całą bieżącą pulę
-oraz historyczne `not_found` do reconciliacji. Sprawdza status terminalny i
-ostatni ruch, czyta każdy dostępny raport, klasyfikuje wynik (`PASS`, `PASS-WITH-NOTES`,
-`FAIL`, `BLOCK`, `TIMEOUT`, `INFRA`, `READY_FOR_DEPLOY` albo niepewne), zamyka zakończonych i uruchamia
-obowiązkowy następny etap dla każdego wyniku. `not_found` bez raportu wymaga odtworzenia
-statusu z transcriptu/logu albo zgłoszenia braku dowodu.
-
-**ZAKAZ** mówić „READY_FOR_DEPLOY” bez **twardej weryfikacji w tej turze**. Ten status
-oznacza koniec procesu przygotowania, nie wykonany deploy/push.
-
-Przed statusem „gotowe” sprawdź dowody (nie pamięć, nie UI „Working”):
-1. transcript: `turn_ended` + `success` **albo** brak końca = **nie gotowe**,
-2. efekt w repo: WERSJE md5 / diff / test PASS / plik zmieniony,
-3. jeśli nie sprawdziłeś → status tylko: **„niepewne — sprawdzam”** / **„w toku”** / **„ZWIS — przejmuję”**.
-
-**ZAKAZ:** zgadywać z podtytułu UI („Deployed…”) że temat zamknięty.  
-**ZAKAZ:** potem robić twarde sprawdzenie i zmieniać wersję historii („jednak niedokończone”) — najpierw sprawdź, **potem** mów.
-
-## 5. Routing modeli i odpowiedzialności
-
-- `Operator` = **GPT-5.6 Luna High**: wykonuje jeden temat w izolacji, zgodnie z playbookiem,
-  i składa raport terminalny.
-- `Evaluator` = **GPT-5.6 Luna High**: niezależnie sprawdza zakres, regresje, testy, artefakt
-  i blokady; nie zastępuje Operatora i nie integruje paczki.
-- `Finalna kontrola/integracja` = główny orkiestrator na **GPT-5.6 Luna Medium**: czyta raport,
-  weryfikuje stan repozytorium, obsługuje ABC, integruje wyłącznie zatwierdzony zakres i może
-  wystawić `READY_FOR_DEPLOY`.
-- `deploy`/`push` są osobną bramką po `READY_FOR_DEPLOY` i wymagają wyraźnej autoryzacji;
-  żaden subagent nie wykonuje ich samowolnie.
-
-## C-043 — kanał komunikacji właściciela (Maciej 2026-08-19)
-
-Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora. Subagenci są
-kanałami technicznymi: ich raporty wracają do orkiestratora, który przekazuje
-właścicielowi status, pytania i decyzje w głównym czacie.
-
-Po każdym terminalnym raporcie orkiestrator: (1) odczytuje raport i weryfikuje artefakt,
-(2) zamyka zakończonego subagenta, (3) natychmiast uruchamia wymagany następny etap albo
-kolejny niezależny temat. Gdy istnieje niezablokowana praca, wszystkie 6 slotów musi być
-wykorzystane; wolny slot bez blokady jest błędem routingu.
+Nie ogłaszaj `READY_FOR_DEPLOY` na podstawie UI, nazwy worktree ani samego raportu.
+Wymagane są faktyczne raporty, diff, testy i integracja. Routing:
+Operator High → Evaluator High → Final Control High → orkiestrator Medium.

@@ -1,36 +1,20 @@
 ---
-description: Aktywny routing modeli — główny orkiestrator GPT-5.6 Luna Medium, Operator i Evaluator GPT-5.6 Luna High.
-globs:
-  - "**/*"
+description: Aktywny routing modeli AutoBot i osobna bramka deploy/push.
 alwaysApply: true
 ---
 
-# Routing modeli — aktywny kanon (NIENEGOCJOWALNE)
+# Routing modeli — aktywny kanon
 
-**Źródło:** decyzja właściciela z **2026-08-19**. Dotyczy bieżącej bazy ROBOCZEJ.
+| Rola | Model |
+|---|---|
+| Operator | GPT-5.6 Luna High |
+| Evaluator | GPT-5.6 Luna High |
+| Final Control, osobny subagent | GPT-5.6 Luna High |
+| Główny orkiestrator/integracja | GPT-5.6 Luna Medium |
 
-| Rola | Aktywny model | Zakres |
-|---|---|---|
-| **Główny orkiestrator / final** | **GPT-5.6 Luna Medium** | plan, kontrola, synteza, decyzje procesowe oraz finalna bramka |
-| **Operator AutoBot** | **GPT-5.6 Luna High** | wykonanie zleconej pracy w izolacji i guardrails |
-| **Evaluator AutoBot** | **GPT-5.6 Luna High** | niezależny adwokat, metryki, SCOPE i regresja |
+Kolejność: Operator → Evaluator → Final Control → integracja orkiestratora → `READY_FOR_DEPLOY`.
+Deploy/push jest osobną bramką i wymaga wyraźnego polecenia właściciela. C-043 oznacza,
+że właściciel komunikuje się wyłącznie w głównym czacie orkiestratora.
 
-Render/Designer pozostaje istniejącym wyjątkiem: modele 3D jednostek i cała praca
-w `gra/src/render/**` używają **Opus 5** dla Operatora i Evaluatora.
-
-Operator nie wykonuje merge/deployu. Finalna kontrola należy do głównego orkiestratora;
-po integracji wystawia `READY_FOR_DEPLOY`. Deploy/push jest osobną bramką i wymaga
-wyraźnego polecenia właściciela; sam routing nie zmienia plików `WERSJE.md`, bundli
-ani środowiska deployu.
-
-## C-043 — kanał komunikacji właściciela (Maciej 2026-08-19)
-
-Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora. Subagenci są
-kanałami technicznymi: ich raporty wracają do orkiestratora, który przekazuje
-właścicielowi status, pytania i decyzje w głównym czacie.
-
-## Historia zastąpiona
-
-Wcześniejsze wpisy o Grok 4.5, `composer-2.5`, Haiku 4.5, Sonnet 5 i Opus 5 jako
-domyślnym Operatorze/Evaluatorze są archiwalne. Zachowujemy je w historii commitów i
-dokumentach decyzji, ale nie są aktywnym routingiem od 2026-08-18.
+Pełna mapa: [`docs/procesy/INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md).
+Dawne modele i routingi są tylko historią w [`docs/archiwum-procesu/`](../../docs/archiwum-procesu/).

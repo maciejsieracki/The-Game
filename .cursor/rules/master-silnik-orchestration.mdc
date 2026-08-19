@@ -1,61 +1,14 @@
 ---
-description: Obieg gry — F publikuje gra-robocza/; Master promuje gra-kanon/; review subagent. Opus wycofany.
-globs:
-  - "**/*"
+description: Orkiestrator gry — zakres hubu, handoff i zakaz samowolnej integracji.
 alwaysApply: true
 ---
 
-> ⛔ REGUŁA HISTORYCZNA — ładuje się automatycznie, ale NIE OBOWIĄZUJE od 2026-07-06.
-> Ignoruj procedury ról/publish/komend/Slack/AskQuestion/eksportu opisane niżej.
-> Aktualny ład: dyspozycje/START-TU.md + OBIEG-KOMUNIKACJI-2026-07-06.md + ROLE-I-ZAKRESY-2026-07-06.md.
-> Produkcja: 3 czaty Cowork (MASTER/INTEGRATOR/UX) na gra-robocza; roboczą publikuje WYŁĄCZNIE
-> INTEGRATOR; kanon/finalną WYŁĄCZNIE Grupa G Cursor (pakiety DO-KANONU). Pytania do Macieja:
-> tekstem w kanale, max 3, format A/B/C, BEZ popupów. Wersje: tylko dyspozycje/WERSJE.md.
+# Orkiestrator — reguła techniczna
 
-# Schemat obiegu — źródło prawdy
+Orkiestrator koordynuje, ale nie omija AutoBot. Każda zmiana zapisana do repozytorium
+przechodzi Operator → Evaluator → Final Control. Integruj dopiero po pozytywnym Final Control,
+wyłącznie z zatwierdzoną allowlistą. `READY_FOR_DEPLOY` wystaw po faktycznej integracji;
+deploy/push pozostaje osobną bramką.
 
-> **Obieg:** `docs/obieg/OBIEG-AKCEPTACJA-2026-06-30.md` · **Dwie wersje:** `docs/obieg/DWIE-WERSJE-GRY.md` · **Plan izolacji:** `docs/obieg/PLAN-DWIE-WERSJE-IZOLACJA.md`
-> **Zadania Master:** `docs/obieg/MASTER-ZADANIA.md` · **Opus wycofany** — review = subagent readonly (Master hub).
-
-| Katalog | Kto | Start |
-|---------|-----|-------|
-| **`gra-robocza/`** | **Grupa F** po bramce · A–E test · Master (test) | `gra-robocza/START.html` |
-| **`gra-kanon/`** | **Master** po APPROVE (`publish-kanon-snapshot.ps1`) | `gra-kanon/START.html` |
-
-**Lane A–E + F: ZAKAZ `gra-kanon/`.** Kod źródłowy wspólny: `gra/`.
-
-## Podział ról
-
-| Etap | Grupa F (Integrator) | Master (hub) |
-|------|----------------------|--------------|
-| Kod wdrożenia lane | ✅ build · bramka · `gra-robocza/` | ❌ **nie koduje · nie builduje** |
-| `main.ts` | ✅ jedyny editor | ❌ |
-| ① Przekaż batch | odbiera dyspozycję od Mastera | **dyspozycja F** + uruchom F (Task / czat F) |
-| Bramka + `gra-robocza/` | ✅ `publish-robocza-snapshot.ps1` | ❌ **ZAKAZ** `vite build` / `publish-robocza` u Mastera |
-| ② Sprawdź wykonanie | meldunek `→ MASTER: GOTOWE-ROBOCZA` | weryfikacja md5 + testy (pliki, nie terminal) |
-| ③ Grywalna część | ❌ | review → APPROVE → **`publish-kanon-snapshot.ps1`** → `gra-kanon/` |
-| Kopia dzienna | ❌ | `backup-grywalna-dzien.ps1` przy `start` |
-
-> **Maciej 2026-07-04:** wdrożenia z lane'ów → **Integrator F** → odsyła Masterowi. Master **nie robi wdrożenia sam**.
-
-## Zasada kanon (2026-07-01): dyspozycja → wykonanie
-
-**Krok 1:** przyjmij (ACK, pliki). **Krok 2:** wykonaj w tej samej turze. Szczegóły: [`MASTER-ZADANIA.md`](MASTER-ZADANIA.md).
-
-## Pętla Mastera (skrót)
-
-Meldunek lane → **krok 1** dyspozycja → **krok 2** uruchom F (Task) → F `gra-robocza/` → **krok 2** Master: weryfikacja + review + promocja.
-
-## Slack (trigger)
-
-Lane GOTOWE → `#grupa-X` · F ROBOCZA → `#grupa-f` · Master promocja → `#master` · Maciej: **`slack`**
-
-## Zasady
-
-1. Grupy A–E: **`przekaż do Mastera`** → `→ MASTER: GOTOWE` + handoff · graj **`gra-robocza/START.html`**.
-2. Master → **natychmiast dyspozycja Integratora F** (handoff `MASTER-do-INTEGRATOR_*` + kolejka) — **nie** build/test/publish roboczej u Mastera.
-3. **Integrator F** → build · bramka · **`→ MASTER: GOTOWE-ROBOCZA`** + md5 z `gra-robocza/ROBOCZA-MANIFEST.json` — **nie** `GOTOWE-KANON`, **nie** `gra-kanon/`.
-4. Master → weryfikacja meldunku F (pliki, md5, scope) → review → APPROVE → **tylko** `publish-kanon-snapshot.ps1` (kopia `gra-robocza/` → `gra-kanon/`).
-5. BLOCK → grupa źródłowa (nie F „dopnij" bez kontekstu lane).
-
-**ZAKAZ Master (hub):** `npx vite build` · `publish-robocza-snapshot.ps1` · edycja `gra/src/**` · integracja batchy lane — to rola **F**.
+Nie ustanawiaj w tym pliku routingu modeli ani nie kopiuj starego podziału lane'ów.
+Aktualny routing: [`docs/procesy/INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md).

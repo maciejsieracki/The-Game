@@ -1,52 +1,11 @@
 ---
-description: Automatyczny eksport pełnej korespondencji czatu Civ — start sesji, ≥60% kontekstu, koniec sesji
+description: Automatyczny eksport korespondencji czatu Civ zgodnie z procedurą archiwizacji.
 alwaysApply: true
 ---
 
-> ⛔ REGUŁA HISTORYCZNA — ładuje się automatycznie, ale NIE OBOWIĄZUJE od 2026-07-06.
-> Ignoruj procedury ról/publish/komend/Slack/AskQuestion/eksportu opisane niżej.
-> Aktualny ład: dyspozycje/START-TU.md + OBIEG-KOMUNIKACJI-2026-07-06.md + ROLE-I-ZAKRESY-2026-07-06.md.
-> Produkcja: 3 czaty Cowork (MASTER/INTEGRATOR/UX) na gra-robocza; roboczą publikuje WYŁĄCZNIE
-> INTEGRATOR; kanon/finalną WYŁĄCZNIE Grupa G Cursor (pakiety DO-KANONU). Pytania do Macieja:
-> tekstem w kanale, max 3, format A/B/C, BEZ popupów. Wersje: tylko dyspozycje/WERSJE.md.
+# Eksport czatu — jedna reguła
 
-# Eksport korespondencji (automatyczny — bez Macieja)
-
-**Maciej nie eksportuje ręcznie.** Agent uruchamia `gra/tools/sync-chat-export.py` zgodnie z `docs/archiwum-czatow/ARCHIWIZACJA-AUTO.md`.
-
-## Slot → plik
-
-| Czat | `--slot` | Plik |
-|------|----------|------|
-| Master Silnik | `MASTER-Silnik` | `docs/archiwum-czatow/eksport-pelny/MASTER-Silnik_KORESPONDENCJA.md` |
-| Grupa A–F | `GRUPA-A` … `GRUPA-F` | `docs/archiwum-czatow/eksport-pelny/GRUPA-{X}_KORESPONDENCJA.md` |
-
-Chat ID: `docs/archiwum-czatow/eksport-pelny/REJESTR-CZATOW.md` lub `transcript_location` w metadanych sesji.
-
-## OBOWIĄZKOWO — pierwsza odpowiedź sesji
-
-Po `master`, `czaty` lub wklejce `DYSPOZYCJA`:
-
-```powershell
-python gra/tools/sync-chat-export.py --slot <SLOT> --chat-id <UUID> --mode auto
-```
-
-1. Uruchom sync **przed** inną pracą (chyba że Maciej wyraźnie pilnuje innego P0).
-2. Nowy chat ID → zaktualizuj `REJESTR-CZATOW.md`.
-3. Dopisz `SYNC-EKSPORT: …` do `dyspozycje/DZIENNIK-MASTERA.md`.
-
-## Kontekst ≥60%
-
-```powershell
-python gra/tools/sync-chat-export.py --slot <SLOT> --chat-id <UUID> --mode delta --context-pct <N>
-```
-
-- Tworzy `{SLOT}_HANDOFF-KONTEKST.md`.
-- W czacie: jedna linia — korespondencja zarchiwizowana, ścieżka pliku.
-- Przy **>85%**: zaproponuj nowy czat z tą samą `DYSPOZYCJA`.
-
-## Zakazy
-
-- Nie proś o ⋯ → Export w UI.
-- Nie wklejaj pełnej korespondencji do `DO-MASTERA` / `OD-MASTERA`.
-- Pliki `eksport-pelny/` = tylko historia; operacyjne = `docs/czaty/`, `dyspozycje/`.
+Eksport pełnej korespondencji wykonuj skryptem `gra/tools/sync-chat-export.py` według
+[`docs/archiwum-czatow/ARCHIWIZACJA-AUTO.md`](../../docs/archiwum-czatow/ARCHIWIZACJA-AUTO.md).
+Obejmuje start sesji, próg co najmniej 60% kontekstu i koniec sesji. Nie proś właściciela
+o ręczne kopiowanie rozmowy. Nie traktuj eksportu jako dowodu integracji ani deployu.
