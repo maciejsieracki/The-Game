@@ -1027,7 +1027,7 @@ import {
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
-import { showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
+import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
@@ -19693,9 +19693,11 @@ async function boot(): Promise<void> {
       getCivBonusy: civBonusyForOwnerId,
       // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
       // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
-      // scalenia armii, nie generyczny stos overlayów (ten obejmuje też m.in. panel miasta/
-      // drzewko tech, które NIE są modalami końca tury i nie powinny blokować preBattle).
-      isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen(),
+      // scalenia armii oraz karta ukończenia badań, nie generyczny stos overlayów (ten
+      // obejmuje też m.in. panel miasta/drzewko tech, które NIE są modalami końca tury).
+      isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen()
+        || isArmyMergePanelOpen()
+        || isTechDiscoveryNoticeOpen(),
     });
 
     // -----------------------------------------------------------------------
@@ -29771,9 +29773,11 @@ async function boot(): Promise<void> {
         getCivBonusy: civBonusyForOwnerId,
         // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
         // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
-        // scalenia armii, nie generyczny stos overlayów (ten obejmuje też m.in. panel miasta/
-        // drzewko tech, które NIE są modalami końca tury i nie powinny blokować preBattle).
-        isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen(),
+        // scalenia armii oraz karta ukończenia badań, nie generyczny stos overlayów (ten
+        // obejmuje też m.in. panel miasta/drzewko tech, które NIE są modalami końca tury).
+        isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen()
+          || isArmyMergePanelOpen()
+          || isTechDiscoveryNoticeOpen(),
       });
       _lastNewGameParams = {
         ...params,
