@@ -1540,7 +1540,7 @@ const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: s
  * `.da-quickdeal`) który woła openQuickDealBasket (zaległość #1: realna auto-uczciwa
  * oferta, nie zaślepka) zamiast generycznego handlera po data-aid.
  */
-function actionBarHtml(st: DiplomacyAudienceState): string {
+export function actionBarHtml(st: DiplomacyAudienceState): string {
   const byId = new Map(st.actions.map(a => [a.id, a] as const));
   const btns = ACTION_BAR_SPECS.map(spec => {
     const action = byId.get(spec.aid);
@@ -1664,7 +1664,7 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
 }
 
 /** FAZA 2 pkt 3 kol.4 (prawo) — „Aktywne traktaty" (od ilu tur + kara zerwania + „Zerwij" — zaległość #2). */
-function treatiesColumnHtml(st: DiplomacyAudienceState): string {
+export function treatiesColumnHtml(st: DiplomacyAudienceState): string {
   const treaties = st.activeTreaties ?? [];
   const canBreak = typeof cfg?.onBreakTreaty === 'function';
   const items = treaties.map(t => {
@@ -1685,7 +1685,7 @@ function treatiesColumnHtml(st: DiplomacyAudienceState): string {
         /* Zaległość #2 — ikona rozerwanego ogniwa + podpis „Zerwij traktat" TYLKO na hover. */
         '<span class="da-ttip"><span class="da-ttip-lbl" style="bottom:34px">Zerwij traktat</span>' +
         '<button type="button" class="da-brk" data-deal-id="' + esc(dealId ?? '') + '"' +
-        (enabled ? '' : ' disabled') + ' title="' + esc(brkTitle) + '">' + ACTION_BAR_SVG.brk + '</button></span>' +
+        (enabled ? '' : ' disabled') + ' title="' + esc(brkTitle) + '" aria-label="' + esc(brkTitle) + '">' + ACTION_BAR_SVG.brk + '</button></span>' +
       '</div>'
     );
   }).join('');
