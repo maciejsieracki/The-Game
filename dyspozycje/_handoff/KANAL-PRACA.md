@@ -7525,3 +7525,14 @@ ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · źródło `4f099cb18605e0cecac
 |- Zakres: FALA 299 oraz korekta AI — rekrutacja za Skarbiec, bez kosztu Pracy, niezależnie od produkcji budynków; testy Operator/Evaluator zakończone PASS-WITH-NOTES.
 |- Build z czystego commita · `VERIFY OK` · ręczny `START.html` zachowany.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `5dba37a1`**.
+## [2026-08-20] PAKIET-3 — punkt wejścia dokumentacji
+
+Aktualny handoff procesu: [`HANDOFF-AKTUALNY.md`](HANDOFF-AKTUALNY.md).
+Indeks statusów: [`../REJESTR-PROSB-I-ZADAN.md`](../REJESTR-PROSB-I-ZADAN.md).
+Aktywne ABC i odsyłacze decyzji: [`../PYTANIA-OTWARTE.md`](../PYTANIA-OTWARTE.md).
+Run templates: [`../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/`](../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/).
+
+Zakres tej paczki jest docs-only; brak zmian w `gra/`, brak deployu i pushu.
+Poniższe meldunki pozostają historią kanału.
+
+---

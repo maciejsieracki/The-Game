@@ -1,4 +1,42 @@
-# REJESTR PRÓŚB I ZADAŃ — jedyne miejsce śledzenia próśb Macieja
+# REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
+
+## MIGRACJA STATUSÓW — 2026-08-20 (Pakiet 3)
+
+Od tej daty bieżący status tematu może przyjmować wyłącznie jedną z wartości:
+
+`NOWE` · `ABC-OCZEKUJE` · `OPERATOR` · `EVALUATOR` · `FINALNA-KONTROLA` ·
+`DO-INTEGRACJI` · `ZINTEGROWANE` · `DEPLOY-ROBOCZA` · `ZAMKNIĘTE` · `BLOCK` ·
+`ODŁOŻONE` · `ODRZUCONE` · `DUPLIKAT`
+
+Znaczenie statusu jest procesowe, a nie opisowe: dowód w raporcie/handoffie ma
+pierwszeństwo przed nazwą starej etykiety. `DEPLOY-ROBOCZA` oznacza potwierdzone
+opublikowanie w ROBOCZEJ; nie jest równoznaczne z `ZAMKNIĘTE`. `ZAMKNIĘTE`
+oznacza brak dalszej pracy w tym temacie albo jawne zamknięcie bez implementacji.
+
+### Indeks bieżący — tylko wpisy z jednoznacznym dowodem
+
+Poniższa tabela jest warstwą operacyjną migracji. Nie przepisuje ani nie kasuje
+historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgadywane.
+
+| ID | STATUS KANONICZNY | Dowód / punkt odniesienia |
+|---|---|---|
+| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `OPERATOR` | ECHO Q1/Q2/Q3 kompletne; wpis końcowy `PYTANIA-OTWARTE.md` mówi „gotowy do dispatchu Operatora”. |
+| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `ABC-OCZEKUJE` | Prototyp ogólny pozostaje otwarty; decyzja o źródłach danych nie została zapisana. |
+| `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `OPERATOR` | Ostatni jawny wpis: osobna gałąź/worktree, bez merge/push/deploy. |
+| `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Jawnie zarejestrowane na przyszłość, do osobnej sesji o ustrojach. |
+| `R-MIASTA-LIMIT-PODBÓJ-Q1` | `ZAMKNIĘTE` | ECHO A: limit dotyczy miast założonych; decyzja zamknięta bez zmiany kodu. |
+| `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` | `DEPLOY-ROBOCZA` | Korekta potwierdzona w FALI 293 `8fa80b7c`; wpis nie jest już otwarty. |
+
+### Zasada migracji i historii
+
+Wiersze oraz sekcje poniżej są append-only historią. Stare etykiety (`W TOKU`,
+`WDROŻONE`, `ZDEPLOYOWANE`, `SCALONE`, `CZEKA-NA-DECYZJĘ`, `SUPERSEDED` itd.)
+pozostają nietknięte jako zapis stanu z chwili powstania. Nie traktuj ich jako
+bieżącego statusu, dopóki nie ma wpisu w tym indeksie albo nowej, udokumentowanej
+korekty z dowodem. Migracja nie zmienia merytorycznego statusu żadnego tematu bez
+takiego dowodu.
+
+---
 
 ## ⛔ ZASADA PROCESU (Maciej 2026-07-24, obowiązkowa dla KAŻDEJ sesji)
 **KAŻDA prośba Macieja, która powinna skończyć się jakąkolwiek zmianą w grze/kodzie/danych,
@@ -7,7 +45,9 @@ od razu realizowana. Powód: prośby z samego czatu giną (potwierdzony przypade
 trudności per państwo/miasto" — poproszona dawno, nigdzie nie zapisana, nie wdrożona, nikt tego
 nie pilnował). Narracja w czacie NIE jest śledzeniem. Ten plik jest jedynym rejestrem statusu.
 
-**Format wiersza:** ID · data zgłoszenia · prośba (zwięźle) · STATUS (`NOWE` / `W TOKU` / `WDROŻONE` / `ZDEPLOYOWANE` / `ODRZUCONE` / `CZEKA-NA-DECYZJĘ`) · commit/deploy · uwagi.
+**Format bieżącego wiersza:** ID · data zgłoszenia · prośba (zwięźle) ·
+`STATUS-KANONICZNY` z listy powyżej · commit/deploy · uwagi. Historyczne wiersze
+zachowują swój pierwotny zapis i wymagają korekty dopiero po sprawdzeniu dowodu.
 Przy zamknięciu tematu: aktualizuj STATUS + wpisz commit/md5. Szczegóły decyzji ekonomicznych → `DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md`.
 
 **Problemy/błędy z numeracją:** `dyspozycje/REJESTR-PROBLEMOW-AI.md` — format **`P-AI-###`** (Maciej 2026-07-26). Każdy nowy problem od razu dostaje numer; w czacie odwołujesz się po ID.

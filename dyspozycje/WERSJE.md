@@ -9,6 +9,10 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
+> Punkt wejścia bieżącego handoffu procesu: [`_handoff/HANDOFF-AKTUALNY.md`](_handoff/HANDOFF-AKTUALNY.md).
+> Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
+> ten plik pozostaje wyłącznie rejestrem publikacji bundli.
+
 ## ROBOCZA 4322f5aa - 2026-08-18 19:52 UTC - FALA 298: limit miast zdobytych i wojna wymuszona Kamienia
 |- md5 (pełne): 4322f5aafa6e0becc988885dc38e907b · stempel: ROBOCZA · label 4322f5aa · źródłowy commit integracji: `004e8f9e`
 |- `R-MIASTA-LIMIT-PODBÓJ-Q1=A`: limit dotyczy wyłącznie miast założonych; podbój bitewny, bez bitwy i kapitulacja nie zużywają puli; test 11/11, AI founding 28/28.
