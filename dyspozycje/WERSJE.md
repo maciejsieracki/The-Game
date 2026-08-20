@@ -3548,6 +3548,17 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
+## ROBOCZA — FALA 301 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `45ad3443b8ae560f0986d1ef80aa6963` · stempel `45ad3443` · manifest/bundle `VERIFY OK`.
+  Zakres: trzy wcześniej potwierdzone tematy `R-PRACA-JEDEN-SUWAK-UI-Q1`,
+  `R-TECHNOLOGIA-KARTY-PODGLAD-KLIK-Q1` oraz `R-BITWA-KOLORY-GRACZ-PRZECIWNIK-Q1` (selektywnie).
+  Build izolowany z bazy `47cdca15`, bez obcych zmian; źródłowy build md5
+  `cb27ee8644bf80b9a27c61c4add25b96`, Vite `837` modułów. Opcjonalny bundle pola bitwy
+  pominięty — checkout nie zawierał lokalnego Vite. Deploy wykonany do `gra-robocza/`;
+  push nie wykonywano. Nowe trzy karty po Final Control pozostają poza tą falą.
+  Legacy `verify-publish-markers.ps1` zgłosił fałszywy alarm dla tekstowej stałej
+  `CIV-BUILD-STAMP-PENDING` w runtime; aktywny znacznik ROBOCZA i MD5 manifestu są prawidłowe.
+
 ## ROBOCZA — FALA 300 (2026-08-20)
 - **AKTUALNA** · ROBOCZA md5 `47149d70bf2af52ae26e410899d6f133` · stempel `47149d70` · `VERIFY OK`.
   Zakres: `R-TRZY-KARTY-WDROZENIE-Q1` — trzy karty od Designu (paczka `TRZY-KARTY-2026-08-19`)

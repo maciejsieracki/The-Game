@@ -131,44 +131,6 @@ export function configureEmpireGlobalDefaults(cfg: EmpireGlobalDefaultsUiConfig)
   empireGlobalDefaultsUi = { ...empireGlobalDefaultsUi, ...cfg };
 }
 
-function renderDefaultPodzialPracySection(): string {
-  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
-  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
-  if (!getDef || !onChange) return '';
-  const split = getDef(0) ?? { procentBudynki: 70 };
-  const id = 'emp-praca-split';
-  const pctB = split.procentBudynki;
-  const pctU = 100 - pctB;
-  let h = `<div class="civ-emp-sect" data-section="ekonomia-praca-split" id="${id}">`
-    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ PRACY</div>`
-    + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten podział.</div>`;
-  h += `<div class="civ-emp-mini" style="margin-top:8px">`
-    + `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
-    + `<label style="font-size:12px"><span class="gold">Budynki</span> / <span class="blue">Do puli imperium</span></label>`
-    + `<span data-praca-pct><b>${pctB}% / ${pctU}%</b></span></div>`
-    + `<input type="range" min="0" max="100" step="${HANDEL_PCT_STEP}" value="${pctB}" `
-    + `data-praca-key="procentBudynki" style="width:100%;margin:0 0 6px" /></div>`
-    + `<div class="civ-emp-foot">Kroki ${HANDEL_PCT_STEP}% · w lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.</div></div>`;
-  queueMicrotask(() => wireDefaultPodzialPracyInputs(pctB, onChange));
-  return h;
-}
-
-function wireDefaultPodzialPracyInputs(
-  initialPct: number,
-  onChange: (ownerId: number, split: CityPodzialPracy) => void,
-): void {
-  const host = document.getElementById('emp-praca-split');
-  if (!host) return;
-  const inp = host.querySelector<HTMLInputElement>('input[data-praca-key="procentBudynki"]');
-  if (!inp) return;
-  inp.addEventListener('input', () => {
-    const pctB = snapHandelPct(Number(inp.value));
-    onChange(0, { procentBudynki: pctB });
-    const lbl = host.querySelector('[data-praca-pct] b');
-    if (lbl) lbl.textContent = `${pctB}% / ${100 - pctB}%`;
-  });
-}
-
 function renderDefaultPoziomRacjiSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPoziomRacji;
   const onChange = empireGlobalDefaultsUi.onOwnerDefaultPoziomRacjiChange;
@@ -1129,15 +1091,14 @@ function renderPracaSection(
   }
 
   h += renderEmpirePracaBudgetSplitSection();
-  h += renderPracaSplitSection();
   h += '</div>';
   return h;
 }
 
 /**
- * Nadrzędny split całej puli Pracy. Jedynym suwakiem jest udział ulepszeń
- * (0–50%); Budynki są wyliczanym remainder 100% − ulepszenia. Nie mieszać
- * tego z lokalnym podziałem przyrostu miasta ani z budżetem automatu.
+ * Nadrzędny split całej puli Pracy. Jedynym suwakiem jest Pula Pracy
+ * (0–50%); Budynki są wyliczanym remainder 100% − Pula Pracy. Nie mieszać
+ * tego z budżetem automatu.
  */
 function renderEmpirePracaBudgetSplitSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPracaSplit;
@@ -1147,22 +1108,22 @@ function renderEmpirePracaBudgetSplitSection(): string {
   const pctU = Math.max(0, Math.min(50, Math.round(split.procentUlepszenia)));
   const pctB = 100 - pctU;
   const id = 'emp-praca-empire-budget-split';
-  const tip = 'Nadrzędny podział Pracy: globalny budżet ulepszeń terenu 0–50%; '
-    + 'budynki dostają remainder 100% − ulepszenia (np. 10% → 90%). '
+  const tip = 'Nadrzędny podział Pracy: Pula Pracy 0–50%; '
+    + 'budynki dostają remainder 100% − Pula Pracy (np. 10% → 90%). '
     + 'To nie jest globalny budżet automatu.';
   let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
-    + '<div class="civ-emp-eyebrow" style="margin-bottom:6px">PODZIAŁ PRACA: BUDYNKI / ULEPSZENIA</div>'
-    + `<div class="civ-emp-note" title="${esc(tip)}">Ulepszenia ${pctU}% · Budynki ${pctB}% (remainder)</div>`;
+    + '<div class="civ-emp-eyebrow" style="margin-bottom:6px">PODZIAŁ PRACY: BUDYNKI / PULA</div>'
+    + `<div class="civ-emp-note" title="${esc(tip)}">Pula Pracy ${pctU}% · Budynki ${pctB}% (remainder)</div>`;
   h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:7px">'
     + '<div style="display:flex;align-items:baseline;gap:8px">'
-    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label blue">Ulepszenia terenu (0–50%)</b> / '
-    + '<b class="civ-emp-slider-label gold">Budynki (remainder 0–100%)</b></span>'
+    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label gold">Budynki (50–100%)</b> / '
+    + '<b class="civ-emp-slider-label blue">Pula Pracy (0–50%)</b></span>'
     + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-praca-empire-split-value>`
     + `${pctU}% / ${pctB}%</span></div>`
     + `<input type="range" class="civ-emp-slider blue" min="0" max="50" step="1" value="${pctU}" `
     + `style="width:100%;margin:0" data-praca-empire-split />`
     + `<div class="civ-emp-foot" style="margin:0" title="${esc(tip)}">`
-    + 'Suwak steruje tylko udziałem ulepszeń; Budynki zawsze = 100% − Ulepszenia.</div></div></div>';
+    + 'Suwak steruje tylko Pulą Pracy; Budynki zawsze = 100% − Pula Pracy.</div></div></div>';
   queueMicrotask(() => {
     const host = document.getElementById(id);
     const input = host?.querySelector<HTMLInputElement>('input[data-praca-empire-split]');
@@ -1175,54 +1136,6 @@ function renderEmpirePracaBudgetSplitSection(): string {
     });
   });
   return h;
-}
-
-/**
- * Suwak „Domyślny podział pracy" w nowym stylu `.civ-emp-slider` (Klatka 2 §C zlecenia) — WŁASNA
- * funkcja, analogicznie do `renderSkarbiecTaxSplitSection` dla Skarbca (faza 1). NIE modyfikuje
- * `renderDefaultPodzialPracySection()` wyżej, która nadal obsługuje ten sam suwak wewnątrz
- * filtrowanego wiersza „Praca" w bloku `ekonomia` (pełny przegląd, gdy activeSection===null) —
- * ten sam mechanizm danych (`empireGlobalDefaultsUi`), inny markup: tor suwaka dwukolorowy
- * (złoto=Budynki, błękit=Pula imperium) przez `laborSliderFillStyle()`.
- */
-function renderPracaSplitSection(): string {
-  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
-  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
-  if (!getDef || !onChange) return '';
-  const split = getDef(0) ?? { procentBudynki: 70 };
-  const id = 'emp-praca-tab-split';
-  const pctB = split.procentBudynki;
-  const pctU = 100 - pctB;
-  let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
-    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">LOKALNY PRZYROST MIASTA: BUDYNKI / PULA</div>`
-    + '<div class="civ-emp-note">To lokalny podział przyrostu miasta (Budynki 0–100% / Pula Pracy). '
-    + 'Nie zmienia nadrzędnego podziału całej puli na ulepszenia.</div>';
-  h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:7px">'
-    + '<div style="display:flex;align-items:baseline;gap:8px">'
-    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label gold">Budynki (0–100%)</b> / '
-    + '<b class="civ-emp-slider-label blue">Pula Pracy (remainder)</b></span>'
-    + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-praca-pct>${pctB}% / ${pctU}%</span></div>`
-    + `<input type="range" class="civ-emp-slider gold" min="0" max="100" step="${HANDEL_PCT_STEP}" `
-    + `value="${pctB}" style="background:${laborSliderFillStyle(pctB)}" data-praca-key="procentBudynki" /></div>`;
-  h += `<div class="civ-emp-foot">Kroki ${HANDEL_PCT_STEP}% · w lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.</div></div>`;
-  queueMicrotask(() => wirePracaSplitInputs(onChange));
-  return h;
-}
-
-function wirePracaSplitInputs(
-  onChange: (ownerId: number, split: CityPodzialPracy) => void,
-): void {
-  const host = document.getElementById('emp-praca-tab-split');
-  if (!host) return;
-  const inp = host.querySelector<HTMLInputElement>('input[data-praca-key="procentBudynki"]');
-  if (!inp) return;
-  inp.addEventListener('input', () => {
-    const pctB = snapHandelPct(Number(inp.value));
-    onChange(0, { procentBudynki: pctB });
-    inp.style.background = laborSliderFillStyle(pctB);
-    const lbl = host.querySelector('[data-praca-pct]');
-    if (lbl) lbl.textContent = `${pctB}% / ${100 - pctB}%`;
-  });
 }
 
 /**
@@ -3368,7 +3281,6 @@ function render(): void {
   // intact — only these two slider calls, outside the loop, are affected.
   const sliderVis = econSliderVisibilityForOnlyEconId(onlyEconId);
   if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();
-  if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — SKARBIEC (R-DESIGN-11-ZAKLADEK faza 1, Maciej 2026-08-13) — hero „Netto ±N / turę",

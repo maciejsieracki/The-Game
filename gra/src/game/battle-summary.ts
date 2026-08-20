@@ -44,6 +44,8 @@ export interface PostBattleSummaryData {
   mode: 'auto' | 'manual' | 'szturm';
   atakujacy: BattleSummarySide;
   obronca: BattleSummarySide;
+  /** Strona gracza sterowana przez UI; role pozostają opisem przebiegu walki. */
+  playerSide?: 'atk' | 'def';
   /** Krótki opis łupu (np. „+16 Pieniądz, +2 Brąz”) — tylko gdy gracz wygrał. */
   lootNote?: string;
 }
@@ -60,6 +62,7 @@ export interface BuildBattleSummaryInput {
   atkBefore: BattleUnitBeforeSnap[];
   defBefore: BattleUnitBeforeSnap[];
   lookupHp: (id: string) => number | null;
+  playerSide?: 'atk' | 'def';
 }
 
 function pct(hp: number, maxHp: number): number {
@@ -143,5 +146,6 @@ export function buildPostBattleSummary(input: BuildBattleSummaryInput): PostBatt
     mode: input.mode,
     atakujacy: atkSide,
     obronca: defSide,
+    playerSide: input.playerSide ?? 'atk',
   };
 }

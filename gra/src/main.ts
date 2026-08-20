@@ -22091,6 +22091,9 @@ async function boot(): Promise<void> {
     ): void {
       const atkBefore = snapshotRosterForSummary(atkRoster);
       const defBefore = snapshotRosterForSummary(defRoster);
+      const playerSide: 'atk' | 'def' =
+        atkRoster[0]?.ownerId === 0 ? 'atk'
+          : defRoster[0]?.ownerId === 0 ? 'def' : 'atk';
       const playerWon =
         (winner === 'atakujacy' && atkRoster[0]?.ownerId === 0)
         || (winner === 'obronca' && defRoster[0]?.ownerId === 0);
@@ -22106,6 +22109,7 @@ async function boot(): Promise<void> {
         mode: summary.mode,
         atkBefore,
         defBefore,
+        playerSide,
         lookupHp: makeHpLookupAfterBattle(),
       });
       if (playerWon && loot && !battleLootIsEmpty(loot)) {

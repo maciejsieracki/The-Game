@@ -678,7 +678,7 @@ function rosterHtml(side: PreBattleSide, role: 'atk' | 'def', isYou: boolean): s
   const rows = shown.map(u => unitRowHtml(u)).join('');
   const more = hidden > 0 ? '<div class="pb-more">+' + String(hidden) + ' więcej…</div>' : '';
   const sideCls = isYou ? 'pb-you' : 'pb-foe';
-  const posCls = role === 'atk' ? 'pb-l' : 'pb-r';
+  const posCls = isYou ? 'pb-l' : 'pb-r';
   return (
     '<div class="pb-roster ' + sideCls + ' ' + posCls + '">' +
     '<div class="pb-rlbl">' + esc(label) + ' · ' + String(total) + '</div>' +
@@ -699,7 +699,7 @@ function commanderHtml(
   const civ = esc(side.cywilizacja ?? side.nazwa);
   const who = esc(side.wodz ?? side.nazwa);
   const sideCls = isYou ? 'pb-you' : 'pb-foe';
-  const posCls = role === 'atk' ? 'pb-l' : 'pb-r';
+  const posCls = isYou ? 'pb-l' : 'pb-r';
   const bonusy = resolveSideBonusy(side, explicit, getBonusy);
   const chipTexts = bonusChipTexts(bonusy);
   const chipsHtml = chipTexts.length

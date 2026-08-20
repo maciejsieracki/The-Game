@@ -12,6 +12,7 @@ import { techIconSvg } from './techIcons';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 import { RESEARCH_QUEUE_MAX } from '../game/playerState';
 import type { EraGateInfo } from '../game/era-gate-ui';
+import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 
 export interface ScienceHubProgress {
   targetName: string | null;
@@ -126,6 +127,8 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-prog{margin-bottom:0.35em;}
 .civ-science-hub-hud .sh-prog-target{font-family:Georgia,'Times New Roman',serif;font-size:1em;font-weight:600;
   color:var(--gold);line-height:1.25;display:flex;align-items:center;gap:0.4em;}
+.civ-science-hub-hud .sh-prog-target.sh-clickable{cursor:pointer;border-radius:4px;padding:2px 3px;margin:-2px -3px;}
+.civ-science-hub-hud .sh-prog-target.sh-clickable:hover{background:rgba(232,216,138,.08);}
 .civ-science-hub-hud .sh-prog-target .sh-owl{display:inline-flex;align-items:center;}
 .civ-science-hub-hud .sh-prog-meta{font-size:0.72em;color:var(--muted);margin-top:0.2em;line-height:1.4;font-variant-numeric:tabular-nums;}
 .civ-science-hub-hud .sh-prog-meta b{color:var(--sci-light);font-weight:600;}
@@ -172,7 +175,7 @@ function ensureStyles(): void {
   font-size:0.72em;font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-family:inherit;
   transition:filter .15s,box-shadow .15s;display:inline-flex;align-items:center;justify-content:center;gap:0.35em;}
 .civ-science-hub-hud .sh-tree-btn:hover{filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 10px rgba(232,216,138,.25);}
-.civ-science-hub-hud .sh-hint{font-size:9.5px;color:#6f6a5e;line-height:1.5;margin-top:0.55em;padding-top:0.5em;
+.civ-science-hub-hud .sh-hint{font-size:9.5px;color:#b7c9df;line-height:1.5;margin-top:0.55em;padding-top:0.5em;
   border-top:1px solid rgba(232,216,138,.12);font-style:normal;}
 .civ-science-hub-hud .sh-plan-empty-wrap{display:flex;align-items:flex-start;gap:0.45em;padding:0.55em 0.65em;
   border-radius:7px;border:1px dashed rgba(232,216,138,.28);background:rgba(232,216,138,.03);}
@@ -277,6 +280,11 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       + '<div class="sh-prog-meta">Pula ' + Math.round(prog.pula) + ' / ' + Math.round(prog.kosztCelu) + ' PN'
       + ' · <b>' + pct + '%</b> · ETA ' + esc(eta) + rate + '</div>'
       + '<div class="sh-bar"><div class="sh-bar-fill" style="width:' + pct + '%"></div></div>';
+    box.querySelector('.sh-prog-target')?.addEventListener('click', () => showTechDiscoveryNotice({
+      techName: prog.targetName!, eraIndex: 1, kind: 'preview', onOpenTree: config.onOpenTreeView,
+    }));
+    (box.querySelector('.sh-prog-target') as HTMLElement | null)?.setAttribute('title', 'Kliknij, aby otworzyć kartę technologii');
+    (box.querySelector('.sh-prog-target') as HTMLElement | null)?.classList.add('sh-clickable');
     return box;
   }
 
@@ -441,6 +449,13 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
         });
       }
 
+      row.addEventListener('click', (ev) => {
+        if ((ev.target as Element | null)?.closest('.sh-plan-del')) return;
+        showTechDiscoveryNotice({
+          techName: entry.name, eraIndex: 1, kind: 'preview', onOpenTree: config.onOpenTreeView,
+        });
+      });
+
       box.appendChild(row);
     });
 
@@ -548,9 +563,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
 
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
-    hint.textContent = config.getPlan
-      ? 'Klik technologii = dodaj do planu (do ' + PLAN_MAX + '). Przeciągnij pozycję w planie, by zmienić kolejność. Esc zamyka hub.'
-      : 'Klik technologii = ustaw cel. Esc zamyka hub.';
+    hint.textContent = 'Klik technologii/ikony = otwórz kartę podglądu. Wybór badania lub dodanie do planu to osobna akcja. Esc zamyka kartę/hub.';
 
     listPanel.appendChild(hint);
     scroll.appendChild(listPanel);
@@ -609,13 +622,13 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       }
 
       const act = () => {
-        if (lockedRow) {
-          // C-DESIGN-BADANIA-Q2: siatka v1.1 zamiast legacy sciencePicker gdy dostępna.
-          if (config.onOpenTreeView) config.onOpenTreeView();
-          else config.onShowInTree(e.id);
-        } else {
-          config.onSelectTech(e.id);
-        }
+        showTechDiscoveryNotice({
+          techName: e.name,
+          eraIndex: 1,
+          kind: 'preview',
+          onStartResearch: lockedRow ? undefined : () => config.onSelectTech(e.id),
+          onOpenTree: config.onOpenTreeView ?? (() => config.onShowInTree(e.id)),
+        });
       };
       row.addEventListener('click', act);
       row.addEventListener('keydown', (ev: KeyboardEvent) => {

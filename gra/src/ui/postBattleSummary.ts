@@ -91,8 +91,13 @@ function ensureStyles(): void {
   document.head.appendChild(s);
 }
 
-function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTMLElement {
+function buildCommanderCorner(
+  side: BattleSummarySide,
+  role: 'atk' | 'def',
+  playerSide: 'atk' | 'def',
+): HTMLElement {
   const isAtk = role === 'atk';
+  const isPlayer = role === playerSide;
   const wrap = el('div');
   css(wrap, {
     position: 'absolute',
@@ -101,9 +106,9 @@ function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTM
     display: 'flex',
     alignItems: 'center',
     gap: '14px',
-    flexDirection: isAtk ? 'row' : 'row-reverse',
-    textAlign: isAtk ? 'left' : 'right',
-    ...(isAtk ? { left: '30px' } : { right: '30px' }),
+    flexDirection: isPlayer ? 'row' : 'row-reverse',
+    textAlign: isPlayer ? 'left' : 'right',
+    ...(isPlayer ? { left: '30px' } : { right: '30px' }),
   });
 
   const medal = el('div');
@@ -114,10 +119,10 @@ function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTM
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: isAtk ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
-    background: isAtk ? 'radial-gradient(circle at 40% 34%,#12202e,#0a0d14)' : 'radial-gradient(circle at 40% 34%,#2a1414,#0a0d14)',
-    border: '3px solid ' + (isAtk ? BATTLE_PLAYER : BATTLE_ENEMY),
-    boxShadow: isAtk ? '0 0 26px rgba(58,106,208,.4)' : '0 0 26px rgba(200,64,64,.4)',
+    color: isPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
+    background: isPlayer ? 'radial-gradient(circle at 40% 34%,#12202e,#0a0d14)' : 'radial-gradient(circle at 40% 34%,#2a1414,#0a0d14)',
+    border: '3px solid ' + (isPlayer ? BATTLE_PLAYER : BATTLE_ENEMY),
+    boxShadow: isPlayer ? '0 0 26px rgba(58,106,208,.4)' : '0 0 26px rgba(200,64,64,.4)',
     flexShrink: '0',
   });
   medal.innerHTML = PB_SVG.commander;
@@ -128,7 +133,7 @@ function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTM
   css(name, {
     fontFamily: BATTLE_FONT_TITLE,
     fontSize: '22px',
-    color: isAtk ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
+    color: isPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
   });
   name.textContent = side.label;
   txt.appendChild(name);
@@ -141,15 +146,19 @@ function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTM
     color: '#8a8070',
     marginTop: '2px',
   });
-  const civ = side.civLabel ?? (isAtk ? 'Gracz' : 'Wr\u00F3g');
+  const civ = side.civLabel ?? (isPlayer ? 'Gracz' : 'Wr\u00F3g');
   sub.textContent = civ + ' \u00B7 ' + (isAtk ? 'Atakuj\u0105cy' : 'Obro\u0144ca');
   txt.appendChild(sub);
   wrap.appendChild(txt);
   return wrap;
 }
 
-function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElement {
-  const isAtk = role === 'atk';
+function buildUnitRow(
+  u: BattleSummaryUnitCard,
+  role: 'atk' | 'def',
+  playerSide: 'atk' | 'def',
+): HTMLElement {
+  const isPlayer = role === playerSide;
   const kind = unitKind(u.kategoria);
   const row = el('div');
   css(row, {
@@ -157,9 +166,9 @@ function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElemen
     flexDirection: 'column',
     gap: '6px',
     padding: '9px 11px',
-    border: '1px solid ' + (u.dead ? 'rgba(200,64,64,.55)' : isAtk ? 'rgba(90,155,212,.4)' : 'rgba(200,64,64,.4)'),
+    border: '1px solid ' + (u.dead ? 'rgba(200,64,64,.55)' : isPlayer ? 'rgba(90,155,212,.4)' : 'rgba(200,64,64,.4)'),
     borderRadius: '8px',
-    background: u.dead ? 'rgba(40,12,12,.55)' : isAtk ? 'rgba(18,30,44,.5)' : 'rgba(30,14,14,.5)',
+    background: u.dead ? 'rgba(40,12,12,.55)' : isPlayer ? 'rgba(18,30,44,.5)' : 'rgba(30,14,14,.5)',
   });
 
   const top = el('div');
@@ -167,7 +176,7 @@ function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElemen
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    flexDirection: isAtk ? 'row' : 'row-reverse',
+    flexDirection: isPlayer ? 'row' : 'row-reverse',
   });
 
   const iconWrap = el('span');
@@ -179,20 +188,20 @@ function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElemen
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: isAtk ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
-    background: isAtk ? 'radial-gradient(circle at 38% 30%,#12202e,#0a0d14)' : 'radial-gradient(circle at 38% 30%,#2a1414,#0a0d14)',
-    border: '1.5px solid ' + (isAtk ? BATTLE_PLAYER : BATTLE_ENEMY),
+    color: isPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
+    background: isPlayer ? 'radial-gradient(circle at 38% 30%,#12202e,#0a0d14)' : 'radial-gradient(circle at 38% 30%,#2a1414,#0a0d14)',
+    border: '1.5px solid ' + (isPlayer ? BATTLE_PLAYER : BATTLE_ENEMY),
     opacity: u.dead ? '0.45' : '1',
   });
   iconWrap.innerHTML = unitSvgHtml(kind);
   top.appendChild(iconWrap);
 
   const meta = el('div');
-  css(meta, { flex: '1', minWidth: '0', textAlign: isAtk ? 'left' : 'right' });
+  css(meta, { flex: '1', minWidth: '0', textAlign: isPlayer ? 'left' : 'right' });
   const nm = el('div');
   css(nm, {
     fontSize: '12px',
-    color: isAtk ? '#bcd6f0' : '#e8c8c8',
+    color: isPlayer ? '#bcd6f0' : '#e8c8c8',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -231,7 +240,7 @@ function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElemen
     bottom: '0',
     width: (u.dead ? 0 : u.hpAfterPct) + '%',
     borderRadius: '4px',
-    background: isAtk
+    background: isPlayer
       ? 'linear-gradient(90deg,#3a6ad0,#5a9bd4)'
       : 'linear-gradient(90deg,#c05050,#8a3a3a)',
   });
@@ -258,8 +267,12 @@ function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElemen
   return row;
 }
 
-function buildRosterColumn(side: BattleSummarySide, role: 'atk' | 'def'): HTMLElement {
-  const isAtk = role === 'atk';
+function buildRosterColumn(
+  side: BattleSummarySide,
+  role: 'atk' | 'def',
+  playerSide: 'atk' | 'def',
+): HTMLElement {
+  const isPlayer = role === playerSide;
   const col = el('div');
   col.className = 'pbs-roster-col';
   css(col, {
@@ -273,7 +286,7 @@ function buildRosterColumn(side: BattleSummarySide, role: 'atk' | 'def'): HTMLEl
     gap: '7px',
     overflowY: 'auto',
     overflowX: 'hidden',
-    ...(isAtk ? { left: '20px' } : { right: '20px' }),
+    ...(isPlayer ? { left: '20px' } : { right: '20px' }),
   });
 
   const head = el('div');
@@ -281,12 +294,12 @@ function buildRosterColumn(side: BattleSummarySide, role: 'atk' | 'def'): HTMLEl
     fontSize: '10px',
     letterSpacing: '.2em',
     textTransform: 'uppercase',
-    color: isAtk ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
+    color: isPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
     marginBottom: '2px',
     flexShrink: '0',
-    textAlign: isAtk ? 'left' : 'right',
+    textAlign: isPlayer ? 'left' : 'right',
   });
-  head.textContent = (isAtk ? 'Twoje wojska' : 'Wojska AI') + ' \u00B7 ' + side.totalBefore;
+  head.textContent = (isPlayer ? 'Twoje wojska' : 'Wojska AI') + ' \u00B7 ' + side.totalBefore;
   col.appendChild(head);
 
   const tot = el('div');
@@ -294,7 +307,7 @@ function buildRosterColumn(side: BattleSummarySide, role: 'atk' | 'def'): HTMLEl
     fontSize: '10px',
     color: BATTLE_TEXT_DIM,
     marginBottom: '6px',
-    textAlign: isAtk ? 'left' : 'right',
+    textAlign: isPlayer ? 'left' : 'right',
   });
   tot.textContent = 'Po walce: ' + side.totalAfter
     + (side.totalDead > 0 ? ' \u00B7 poleg\u0142o: ' + side.totalDead : '');
@@ -303,7 +316,7 @@ function buildRosterColumn(side: BattleSummarySide, role: 'atk' | 'def'): HTMLEl
   if (side.units.length === 0) {
     col.appendChild(el('div', 'Brak jednostek'));
   } else {
-    for (const u of side.units) col.appendChild(buildUnitRow(u, role));
+    for (const u of side.units) col.appendChild(buildUnitRow(u, role, playerSide));
   }
   return col;
 }
@@ -441,6 +454,7 @@ function buildOverlay(
   opts?: PostBattleSummaryShowOptions,
 ): HTMLDivElement {
   ensureStyles();
+  const playerSide = data.playerSide ?? 'atk';
   const overlay = el('div');
   css(overlay, {
     position: 'fixed',
@@ -463,10 +477,10 @@ function buildOverlay(
   });
   overlay.appendChild(vignette);
 
-  overlay.appendChild(buildCommanderCorner(data.atakujacy, 'atk'));
-  overlay.appendChild(buildCommanderCorner(data.obronca, 'def'));
-  overlay.appendChild(buildRosterColumn(data.atakujacy, 'atk'));
-  overlay.appendChild(buildRosterColumn(data.obronca, 'def'));
+  overlay.appendChild(buildCommanderCorner(data.atakujacy, 'atk', playerSide));
+  overlay.appendChild(buildCommanderCorner(data.obronca, 'def', playerSide));
+  overlay.appendChild(buildRosterColumn(data.atakujacy, 'atk', playerSide));
+  overlay.appendChild(buildRosterColumn(data.obronca, 'def', playerSide));
   overlay.appendChild(buildCenterPanel(data, opts?.statusHeading));
   overlay.appendChild(buildContinueButton(onContinue, opts?.continueLabel));
 
