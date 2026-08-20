@@ -2621,3 +2621,9 @@ w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
 |---|---|---|---|---|
 | R-AUTOBOT-LIMIT-5-RUND-Q1 | 2026-08-20 | Limit 5 rund pętli domknięcia Operator->Evaluator->Final Control na ten sam temat/ID; po przekroczeniu orkiestrator zgłasza właścicielowi zamiast kontynuować w nieskończoność | **WDROŻONE (docs-only) — nie jest pytaniem ABC** | Kanon: docs/decyzje/R-PROC-AUTOBOT.md §3 + .claude/skills/autobots/SKILL.md |
 | R-AUTOBOT-FINALCONTROL-SUBAGENT-Q1 | 2026-08-20 | Final Control zawsze wykonuje osobny subagent (nigdy glowny agent samodzielnie); dla Claude Code ten sam model/effort co Evaluator | **WDROZONE (docs-only) — nie jest pytaniem ABC** | Kanon: docs/decyzje/R-PROC-AUTOBOT.md §1 + §5a + .claude/skills/autobots/SKILL.md |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-20 (Maciej)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1 | 2026-08-20 | Panel boczny wydarzeń (`sidePanelHud.ts`) stackuje wiele identycznych kart informacyjnych „Koniec tury" (ta sama treść, np. „Wyrąb: +25 Drewna (pozostało 0 tury)" powtórzona per miasto) zamiast łączyć je w jeden wpis. Poza zakresem `DYSPOZYCJA-WDROZENIE.md` Karty 3 — brief pokrywał wyłącznie rozróżnienie blokująca/informacyjna i kolejkę dla blokujących, nie deduplikację treści informacyjnych. | **OTWARTE — do sprawdzenia/wdrożenia, nie rozpoczęte** | Zgłoszone przez właściciela na zrzucie ekranu; źródło duplikatów: `eot-event-defer.ts` → `deferredHintsToSidePanelEvents` (jeden hint per miasto/zdarzenie, etykieta „Koniec tury" + `kind:'info'`). Wymaga GOAL, allowlisty i dispatchu Operatora przed startem — zgodnie z zasadą rejestracji przed pracą. |
