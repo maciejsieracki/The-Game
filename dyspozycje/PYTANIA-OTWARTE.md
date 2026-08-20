@@ -1,6 +1,48 @@
-# PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-19 (zapis ECHO `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 = 1A + 2A + 3A`; pełne A/B/C zachowane poniżej). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+# PYTANIA OTWARTE — aktywne ABC + odsyłacze decyzji
+Aktualizacja: 2026-08-20 (migracja indeksu; zapis ECHO `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 = 1A + 2A + 3A`; pełne A/B/C zachowane poniżej). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
+
+## INDEKS OPERACYJNY — MIGRACJA 2026-08-20 (Pakiet 3)
+
+To jest aktualny punkt nawigacji. Pełne opisy, odpowiedzi, werdykty i pomyłki
+pozostają poniżej jako historia; nie usuwamy ich i nie przepisujemy ich treści.
+Bieżący status procesu używa zamkniętej listy z rejestru:
+`NOWE`, `ABC-OCZEKUJE`, `OPERATOR`, `EVALUATOR`, `FINALNA-KONTROLA`,
+`DO-INTEGRACJI`, `ZINTEGROWANE`, `DEPLOY-ROBOCZA`, `ZAMKNIĘTE`, `BLOCK`,
+`ODŁOŻONE`, `ODRZUCONE`, `DUPLIKAT`.
+
+### Aktywne ABC / wejścia do dalszej pracy
+
+| ID | STATUS KANONICZNY | Następny dowód / miejsce |
+|---|---|---|
+| `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1` | `OPERATOR` | ECHO `1A+2A+3A` jest zapisana; implementacja nie została zlecona. |
+| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `OPERATOR` | ABC kompletne; końcowy wpis mówi o gotowości do dispatchu Operatora. |
+| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `ABC-OCZEKUJE` | Ogólny prototyp nadal czeka na rozstrzygnięcie źródeł i akceptację. |
+| `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT` | `ODŁOŻONE` | Nowa funkcja pozostaje odłożona; wznowić dopiero po decyzji właściciela. |
+| `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ABC-OCZEKUJE` | Czeka na uznanie właściciela za zamknięte przy kolejnym przeglądzie. |
+| `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` | `ABC-OCZEKUJE` | Zarejestrowane do ABC przy przeglądzie tematów bitewnych. |
+| `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `OPERATOR` | Osobna gałąź/worktree; bez merge, push i deployu. |
+| `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Wznowić wyłącznie w osobnej sesji o systemie ustrojów. |
+
+### Zamknięte — odsyłacze do decyzji i dowodów
+
+Poniższe odsyłacze są indeksem, nie nowymi werdyktami. Szczegóły i historyczne
+stemple pozostają w sekcjach niżej oraz w dokumentach decyzji.
+
+| ID | STATUS KANONICZNY | Decyzja / dowód |
+|---|---|---|
+| `R-MIASTA-LIMIT-PODBÓJ-Q1` | `ZAMKNIĘTE` | [`docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md`](../docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md) |
+| `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md`](../docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md), FALA 294 |
+| `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md`](../docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md), FALA 294 |
+| `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md`](../docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md), FALA 293 |
+| `P-JEDNOSTKI-KARTA-3D-INFO-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md`](../docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md), FALA 295 |
+
+### Retencja historii
+
+Sekcje od `## Obieg` w dół są dotychczasowym rejestrem append-only. Historyczne
+statusy nie są automatycznie przepisywane na kanoniczne: korektę można dodać tylko
+z datą, dowodem i odsyłaczem do decyzji/raportu. To zabezpiecza przed fałszywym
+zamykaniem tematów podczas migracji.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
 Nowy case → **ID w REJESTR-PROSB** + wpis tu (jeśli ABC) → agent **proponuje, nie koduje** → Maciej: **`ID + A|B|C`** → commit → **`deploy`** osobno.

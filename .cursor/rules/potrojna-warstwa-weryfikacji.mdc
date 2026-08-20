@@ -1,66 +1,18 @@
 ---
-description: Warstwa AutoBot — Operator + Evaluator + finalna kontrola + integracja. Maciej 2026-08-19.
-globs:
-  - "**/*"
+description: Trzy warstwy AutoBot — Operator High, Evaluator High, Final Control High.
 alwaysApply: true
 ---
 
-# Warstwa AutoBot: Operator → Evaluator → finalna kontrola → integracja → READY_FOR_DEPLOY
+# Potrójna warstwa
 
-**Decyzja Maciej 2026-08-19:** raport Operatora automatycznie uruchamia Evaluatora;
-po `PASS` główny orkiestrator wykonuje finalną kontrolę, aktualizuje status albo
-przygotowuje pełne ABC z pełnym ID, albo kieruje temat do integracji. Integracja
-kończy przygotowanie na `READY_FOR_DEPLOY`; deploy/push jest osobną bramką,
-wyłącznie po bramkach i autoryzacji. **Nie zatrzymuj procesu po raporcie Operatora.**
+1. **Operator — GPT-5.6 Luna High:** wykonuje temat w izolacji i raportuje.
+2. **Evaluator — GPT-5.6 Luna High:** niezależnie sprawdza SCOPE, regresję, testy i dowody.
+3. **Final Control — GPT-5.6 Luna High, osobny subagent:** kontroluje kompletność i gotowość
+   do integracji.
 
-## C-043 — kanał komunikacji właściciela (Maciej 2026-08-19)
+Po Final Control integruje główny orkiestrator GPT-5.6 Luna Medium i dopiero po faktycznej
+integracji może wystawić `READY_FOR_DEPLOY`. Deploy/push jest osobną bramką. Raport
+Operatora automatycznie uruchamia Evaluatora; `FAIL`, `BLOCK`, `TIMEOUT`,
+`INFRA` i `ZWIS` wracają do tej samej pętli. C-043 obowiązuje.
 
-Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora. Subagenci są
-kanałami technicznymi: ich raporty wracają do orkiestratora, który przekazuje
-właścicielowi status, pytania i decyzje w głównym czacie.
-
-## Trzy warstwy (kolejność obowiązkowa)
-
-| # | Rola | Kto | Co robi |
-|---|------|-----|---------|
-| **1** | **Operator** | **GPT-5.6 Luna High** | Kod, testy, docs i raport z artefaktem. **Bez deployu.** |
-| **2** | **Evaluator** | **GPT-5.6 Luna High** — osobny przebieg | Niezależna kontrola, SCOPE, regresja, twarde metryki i werdykt. |
-| **3** | **Finalna kontrola** | **GPT-5.6 Luna Medium** (główny orkiestrator) | Kontrola raportów, status/ABC albo skierowanie do integracji. |
-| **4** | **Integracja → READY_FOR_DEPLOY** | uprawniony orkiestrator/Integrator | Wpięcie po bramkach i przygotowanie paczki; bez publikacji. |
-
-**ZAKAZ:** raportować „gotowe” / kierować do integracji / robić deploy po samym #1 —
-bez #2 i #3.
-
-## Checklista adwokata diabła (#2)
-
-Agent #2 **musi** odpowiedzieć na:
-
-1. **AC / decyzja** — czy każda litera Q/ABC jest spełniona w plikach (nie tylko w opisie)?
-2. **SCOPE** — czy diff dotyczy **ściśle** zgłoszonego problemu/błędu (nie „przy okazji” innych tematów)? → kanon `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105` · **STRICT** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · `rule_106`
-3. **Regresja** — czy coś wcześniej działającego zostało usunięte, wyłączone lub osłabione (np. SPICH-AUTO lower, Q1=B, karencja głodu wojska, parytet AI/MP)?
-4. **Skutki uboczne** — czy fix w module A psuje B (inne ownerId, save/load, UI, EOT order)?
-5. **Testy** — czy asercje naprawdę łapią bug, czy tylko happy-path? **Luka testów / czerwone testy tematu / tsc≠0 → FAIL** (nie NOTES) — `R-PROC-AUTOBOT-EVAL-STRICT`. **Tylko happy-path bez edge/negacji/repro → FAIL #7** — `R-PROC-AUTOBOT-EVAL-STRICT-EDGE` · `rule_107`. **Asymetria gracz/AI/MP bez decyzji lub test tylko ownerId=0 → FAIL #8** — `R-PROC-AUTOBOT-EVAL-STRICT-PARITY` · `rule_108`. **Luka save/load nowego pola → FAIL #9** — `R-PROC-AUTOBOT-EVAL-STRICT-SAVE` · `rule_109`.
-6. **Werdykt** — `PASS` / `FAIL` / `PASS-WITH-NOTES` + konkretne pliki:linie + co poprawić (bez wdrażania). **ZAKAZ** czystego PASS przy znanym naruszeniu SCOPE. **ZAKAZ** NOTES „brakuje testu, ale wygląda OK”.
-
-## Kiedy obowiązuje
-
-- Każda paczka kodu po `działaj` / implementacji z Task.
-- Bugfix, feature, refaktor > ~50 linii lub > 1 plik silnika/UI.
-- **Wyjątek wąski:** 1–3 linie czysto dokumentacyjne (bez `gra/src`) — wtedy #2 opcjonalne; finalna kontrola nadal obowiązuje.
-
-## Jak odpalać (#2)
-
-```
-Evaluator · model GPT-5.6 Luna High · prompt: „ADWOKAT DIABŁA — nie implementuj.
-Branch / commit / lista plików / AC decyzji.
-Przeczytaj diff i powiązany kod (przed/po zachowania).
-Szukaj regresji i luk. Raport: PASS|FAIL + lista usterek.”
-```
-
-Główny orkiestrator po #2: jeśli FAIL → fix (kolejny #1 lub sam drobny patch) →
-**ponów #2** na delcie fixu → #3 → integracja.
-
-## Powiązane
-
-- Routing modeli: `.cursor/rules/model-routing.mdc`
-- Opis dla Macieja: `dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md`
+Pełny opis: [`docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md).

@@ -57,6 +57,7 @@ import {
   aiProposalPlayerBenefitSurplus,
   trimProposalForZeroBalance,
 } from './diplomacy-ai-offer-balance';
+import { BARBARIAN_COOPERATION_TURNS } from './diplomacy-barbarian-cooperation';
 
 export { AI_TRADE_GOLD_MAX, AI_TRIBUTE_PEACE_MAX, capAiGoldOffer } from './diplomacy-economy';
 
@@ -98,6 +99,8 @@ export interface ProposalPayload {
   /** Namów do wojny — cel */
   targetOwnerId?: number;
   borderMilitary?: boolean;
+  /** R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1: wojskowy przemarsz + wspólna walka. */
+  barbarianCooperation?: boolean;
   /** Sojusz: defensywny vs pełny (Maciej 2026-07-29). */
   allianceKind?: 'defensywny' | 'pelny';
   techId?: string;
@@ -345,6 +348,7 @@ function buildDeal(
   handelJednorazowy?: boolean,
   handelPayload?: HandelDealPayload,
   handelSurowiecCykliczny?: HandelSurowiecCyklicznyItem[],
+  wspolnaWalkaBarbarzyncy = false,
 ): ActiveDeal {
   return {
     id: makeDealId(rodzaj, turn, a, b),
@@ -356,6 +360,7 @@ function buildDeal(
     handelJednorazowy,
     handelPayload,
     handelSurowiecCykliczny,
+    wspolnaWalkaBarbarzyncy: wspolnaWalkaBarbarzyncy || undefined,
   };
 }
 
@@ -1302,19 +1307,31 @@ export function evaluateProposal(
       if (payload.borderMilitary && ctx.proposerRespekt < p.progGraniceWojskoweRespekt) {
         return { accepted: false, reason: `Prawo wojskowe wymaga Respekt ≥ ${p.progGraniceWojskoweRespekt}` };
       }
-      const rodzaj = payload.borderMilitary
-        ? RodzajTraktatu.PrawoWojskowePrzemarszu
-        : RodzajTraktatu.OtwartGranice;
+      if (payload.barbarianCooperation && !payload.borderMilitary) {
+        return { accepted: false, reason: 'Wspólna walka z barbarzyńcami wymaga wariantu wojskowego' };
+      }
+      const rodzaj = payload.barbarianCooperation
+        ? RodzajTraktatu.WspolnaWalkaBarbarzyncy
+        : payload.borderMilitary
+          ? RodzajTraktatu.PrawoWojskowePrzemarszu
+          : RodzajTraktatu.OtwartGranice;
       const deal = buildDeal(
         rodzaj,
         proposerOwnerId,
         responderOwnerId,
         ctx.turn,
-        null,
+        payload.barbarianCooperation ? ctx.turn + BARBARIAN_COOPERATION_TURNS : null,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        payload.barbarianCooperation,
       );
       return {
         accepted: true,
-        reason: marchTreatyLabel(payload.borderMilitary),
+        reason: payload.barbarianCooperation
+          ? 'Wspólna walka z barbarzyńcami i przemarsz — 3 tury'
+          : marchTreatyLabel(payload.borderMilitary),
         deal,
       };
     }
@@ -1665,13 +1682,31 @@ export function resolvePlayerAcceptsAiPending(
     case 'pokoj':
       return { accepted: true, reason: 'Pokój zawarty', oneShotTrade: true };
     case 'granice': {
-      const rodzaj = payload.borderMilitary
-        ? RodzajTraktatu.PrawoWojskowePrzemarszu
-        : RodzajTraktatu.OtwartGranice;
-      const deal = buildDeal(rodzaj, fromOwnerId, toOwnerId, turn, null);
+      if (payload.barbarianCooperation && !payload.borderMilitary) {
+        return { accepted: false, reason: 'Wspólna walka z barbarzyńcami wymaga wariantu wojskowego' };
+      }
+      const rodzaj = payload.barbarianCooperation
+        ? RodzajTraktatu.WspolnaWalkaBarbarzyncy
+        : payload.borderMilitary
+          ? RodzajTraktatu.PrawoWojskowePrzemarszu
+          : RodzajTraktatu.OtwartGranice;
+      const deal = buildDeal(
+        rodzaj,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        payload.barbarianCooperation ? turn + BARBARIAN_COOPERATION_TURNS : null,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        payload.barbarianCooperation,
+      );
       return {
         accepted: true,
-        reason: marchTreatyLabel(payload.borderMilitary),
+        reason: payload.barbarianCooperation
+          ? 'Wspólna walka z barbarzyńcami i przemarsz — 3 tury'
+          : marchTreatyLabel(payload.borderMilitary),
         deal,
       };
     }

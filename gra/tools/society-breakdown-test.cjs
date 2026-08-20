@@ -103,13 +103,13 @@ const ceramicAndGranary = M.computeHappinessBreakdown({
   population: 6,
   era: 2,
   buildingZadowolenie: 0,
-  ceramikaZadowolenie: 1,
-  spichlerzZadowolenie: 1,
+  ceramikaZadowolenie: 111,
+  spichlerzZadowolenie: 111,
 }, null);
 eq(ceramicAndGranary.lines.find(l => l.id === 'ceramika')?.value, 1,
-  'R-GARNCARNIA...: Ceramika = dokładnie +1 na miasto');
+  'R-GARNCARNIA...: Ceramika = dokładnie +1 na miasto (także przy wejściu 111)');
 eq(ceramicAndGranary.lines.find(l => l.id === 'spichlerz')?.value, 1,
-  'R-GARNCARNIA...: działający Spichlerz = dokładnie +1 na miasto');
+  'R-GARNCARNIA...: działający Spichlerz = dokładnie +1 na miasto (także przy wejściu 111)');
 eq(ceramicAndGranary.lines.filter(l => ['ceramika', 'spichlerz'].includes(l.id)).reduce((sum, line) => sum + line.value, 0), 2,
   'R-GARNCARNIA...: Ceramika + Spichlerz = +2, bez owner-wide multiplication');
 

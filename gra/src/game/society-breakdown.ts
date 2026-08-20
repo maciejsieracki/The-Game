@@ -339,11 +339,15 @@ export function computeHappinessBreakdown(
   if (input.buildingZadowolenie !== 0) {
     lines.push({ id: 'budynki', label: 'Budynki (+1/budynek)', value: input.buildingZadowolenie });
   }
-  if (input.ceramikaZadowolenie) {
-    lines.push({ id: 'ceramika', label: 'Ceramika (dostęp)', value: input.ceramikaZadowolenie });
+  const ceramikaBonus = Number.isFinite(input.ceramikaZadowolenie)
+    && (input.ceramikaZadowolenie ?? 0) > 0 ? 1 : 0;
+  if (ceramikaBonus) {
+    lines.push({ id: 'ceramika', label: 'Ceramika (dostęp)', value: ceramikaBonus });
   }
-  if (input.spichlerzZadowolenie) {
-    lines.push({ id: 'spichlerz', label: 'Spichlerz (działający)', value: input.spichlerzZadowolenie });
+  const spichlerzBonus = Number.isFinite(input.spichlerzZadowolenie)
+    && (input.spichlerzZadowolenie ?? 0) > 0 ? 1 : 0;
+  if (spichlerzBonus) {
+    lines.push({ id: 'spichlerz', label: 'Spichlerz (działający)', value: spichlerzBonus });
   }
   if (input.haKult) {
     lines.push({ id: 'kultura', label: cultureHappinessLineLabel(input.haKult, input.ownCultureShare), value: input.haKult });

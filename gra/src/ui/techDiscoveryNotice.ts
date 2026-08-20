@@ -164,3 +164,8 @@ export function hideTechDiscoveryNotice(): void {
   popOverlay(OVERLAY_ID);
   document.getElementById(HOST_ID)?.remove();
 }
+
+/** Czy karta badań jest aktualnie otwarta jako modal końca tury. */
+export function isTechDiscoveryNoticeOpen(): boolean {
+  return document.getElementById(HOST_ID) !== null;
+}

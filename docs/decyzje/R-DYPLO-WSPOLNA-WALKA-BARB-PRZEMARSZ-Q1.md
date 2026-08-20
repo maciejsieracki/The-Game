@@ -2,7 +2,27 @@
 
 **Data zapisu:** 2026-08-19
 **Źródło:** decyzja właściciela otrzymana w głównym czacie
-**Status:** decyzja zapisana; wyłącznie dokumentacja procesu; implementacja mechaniki gry nie jest częścią tego zapisu
+**Status:** decyzja właściciela kompletna; implementacja Operatora w toku / bez deployu
+
+## AKTUALNE ECHO WŁAŚCICIELA — obowiązujące
+
+Późniejsze odpowiedzi właściciela zastępują wcześniejsze warianty zapisane niżej:
+
+| Pytanie | Decyzja |
+|---|---|
+| 1 — czas i zakres | **1B** — długość ustalana przy zawarciu; dla tego wdrożenia **3 tury**; umowa obejmuje wspólną walkę z barbarzyńcami i wojskowy przemarsz |
+| 2 — obustronność | **2A** — pełna obustronność przemarszu i udziału w walce |
+| 3 — naturalne wygaśnięcie | **3B** — autoryzacja kończy się natychmiast, jednostki pozostają na miejscu |
+| 8 — promień | **8B** — promień 2 heksów |
+| 9 — jednostki | **9A** — aktywne lądowe jednostki bojowe; bez zwiadowców, cywilów, garnizonów, zaokrętowanych, oblężonych i rajderów morskich |
+| 10 — jednostka w walce | **10B** — może dołączyć dopiero po zakończeniu bieżącej walki |
+
+Implementacja używa osobnego rodzaju dealu `wspolna_walka_barbarzyncy`, z
+`wygasaTura = zawartaTura + 3`. Pytania 4–7 dotyczą odrębnego tematu
+koncentracji AI i nie są częścią tego kontraktu.
+
+Poniższy pierwotny zapis `1A/2A/3A` jest **historyczny** i nie może nadpisywać
+aktualnego ECHO.
 
 ## Zakres tematu
 

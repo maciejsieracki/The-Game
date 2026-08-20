@@ -1051,6 +1051,14 @@ wyra?n? decyzj? Macieja, w ostateczno?ci; domy?lnie zawsze naprawiamy do przodu.
 
 ---
 
+## [12:39 PL, 2026-08-20] SESJA LOKALNA → ROBOCZA — DEPLOY PO INTEGRACJI SZEŚCIU TEMATÓW AUTOBOT
+ROBOCZA md5 `d2276783cef8d0718e9573a67181b596` (skrót `d2276783`) · źródło `8996dca8`.
+|- Zakres: cennik surowców ×5, Manpower/HP, koncentracja AI/barbarzyńców, wzrost i szczęście, zdobywanie miast przez barbarzyńców, wspólna walka i przemarsz.
+|- Wszystkie sześć tematów miało finalną kontrolę **READY_FOR_DEPLOY**; artefakt opublikowano do lokalnego `gra-robocza/`, manifest zgodny, `VERIFY OK`.
+|- Zachowano `START.html` oraz stare pliki pomocnicze; nie promowano do KANON/FINALNA i nie wykonano `git push`.
+|- Nota środowiskowa: lokalna bramka nie mogła uruchomić testów zależnych od `esbuild`/`tsc` ani świeżego `npx vite`; zależności były niedostępne, a wcześniejsze kontrole integracyjne tematów były zielone.
+CZEKAM-NA: **test właściciela na ROBOCZA `d2276783`; push tylko na osobne polecenie**.
+
 ## [00:30] MASTER ? INTEGRATOR ? ZADANIE 1: audyt batch´┐Żw + doko?czenie rzek + publish
 
 KONTEKST PLAYTESTU MACIEJA (bundle b04524f1, stempel `2026-07-05 ´┐Ż d3b1aee7f5af`):
@@ -7525,3 +7533,14 @@ ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · źródło `4f099cb18605e0cecac
 |- Zakres: FALA 299 oraz korekta AI — rekrutacja za Skarbiec, bez kosztu Pracy, niezależnie od produkcji budynków; testy Operator/Evaluator zakończone PASS-WITH-NOTES.
 |- Build z czystego commita · `VERIFY OK` · ręczny `START.html` zachowany.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `5dba37a1`**.
+## [2026-08-20] PAKIET-3 — punkt wejścia dokumentacji
+
+Aktualny handoff procesu: [`HANDOFF-AKTUALNY.md`](HANDOFF-AKTUALNY.md).
+Indeks statusów: [`../REJESTR-PROSB-I-ZADAN.md`](../REJESTR-PROSB-I-ZADAN.md).
+Aktywne ABC i odsyłacze decyzji: [`../PYTANIA-OTWARTE.md`](../PYTANIA-OTWARTE.md).
+Run templates: [`../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/`](../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/).
+
+Zakres tej paczki jest docs-only; brak zmian w `gra/`, brak deployu i pushu.
+Poniższe meldunki pozostają historią kanału.
+
+---
