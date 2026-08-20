@@ -46,6 +46,13 @@ Operatora, Evaluatora i Final Control z tym samym ID. `ZWIS` nie anuluje tematu;
 sprawdza stan, a orkiestrator przejmuje pracę. Jedyną pauzą jest ABC wymagające decyzji
 właściciela; niezależne tematy nadal działają.
 
+**Limit rund (Maciej, 2026-08-20):** pętla domknięcia dla jednego ID ma TWARDY limit 5 rund
+(Operator→Evaluator→Final Control, ten sam temat). Po 5. nieudanej rundzie (bez czystego
+PASS/PASS-WITH-NOTES) orkiestrator ZATRZYMUJE dalsze automatyczne rundy tego tematu i
+zgłasza przekroczenie limitu wprost właścicielowi, opisując dotychczasowe FAIL-e/BLOCK-i,
+zamiast kontynuować dispatch bez końca. Nie dotyczy to niezależnych tematów ani watchdogu
+ZWIS (§1/§3 wyżej) — tylko powtarzających się rund tego samego ID.
+
 ## 4. Rejestry i artefakty
 
 - `dyspozycje/REJESTR-PROSB-I-ZADAN.md` — jeden aktualny status tematu;
