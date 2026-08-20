@@ -1051,6 +1051,14 @@ wyra?n? decyzj? Macieja, w ostateczno?ci; domy?lnie zawsze naprawiamy do przodu.
 
 ---
 
+## [12:39 PL, 2026-08-20] SESJA LOKALNA → ROBOCZA — DEPLOY PO INTEGRACJI SZEŚCIU TEMATÓW AUTOBOT
+ROBOCZA md5 `d2276783cef8d0718e9573a67181b596` (skrót `d2276783`) · źródło `8996dca8`.
+|- Zakres: cennik surowców ×5, Manpower/HP, koncentracja AI/barbarzyńców, wzrost i szczęście, zdobywanie miast przez barbarzyńców, wspólna walka i przemarsz.
+|- Wszystkie sześć tematów miało finalną kontrolę **READY_FOR_DEPLOY**; artefakt opublikowano do lokalnego `gra-robocza/`, manifest zgodny, `VERIFY OK`.
+|- Zachowano `START.html` oraz stare pliki pomocnicze; nie promowano do KANON/FINALNA i nie wykonano `git push`.
+|- Nota środowiskowa: lokalna bramka nie mogła uruchomić testów zależnych od `esbuild`/`tsc` ani świeżego `npx vite`; zależności były niedostępne, a wcześniejsze kontrole integracyjne tematów były zielone.
+CZEKAM-NA: **test właściciela na ROBOCZA `d2276783`; push tylko na osobne polecenie**.
+
 ## [00:30] MASTER ? INTEGRATOR ? ZADANIE 1: audyt batch´┐Żw + doko?czenie rzek + publish
 
 KONTEKST PLAYTESTU MACIEJA (bundle b04524f1, stempel `2026-07-05 ´┐Ż d3b1aee7f5af`):

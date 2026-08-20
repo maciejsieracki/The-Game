@@ -13,6 +13,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA d2276783 - 2026-08-20 10:39 UTC - deploy po integracji sześciu tematów AutoBot
+|- md5 (pełne): d2276783cef8d0718e9573a67181b596 · stempel: ROBOCZA · label d2276783 · źródłowy commit integracji: `8996dca8`
+|- Zakres: cennik surowców ×5, proporcjonalne uzupełnianie HP Manpower, koncentracja armii AI/barbarzyńców, korekta wzrostu/szczęścia Ceramiki/Spichlerza/Wealth, zdobywanie miast przez barbarzyńców oraz wspólna walka i przemarsz.
+|- Finalna kontrola wszystkich sześciu tematów: **READY_FOR_DEPLOY**; testy tematyczne i TypeScript PASS w zatwierdzonych raportach, Vite PASS w kontroli integracyjnej.
+|- Publikacja: `gra-robocza/` + 7 bundli playtestowych + manifest; `Gra-ROBOCZA-POLE-BITWY.html` pozostawiony bez zmian, bo lokalny build sceny pola bitwy był niedostępny bez `node_modules/vite`.
+|- Bieżąca bramka lokalna nie uruchomiła testów wymagających `esbuild`/`tsc` ani świeżego `npx vite` z powodu braku zależności i blokady EPERM; artefakt zweryfikowany przez manifest: **VERIFY OK**.
+|- **AKTUALNA**
+
 ## ROBOCZA 4322f5aa - 2026-08-18 19:52 UTC - FALA 298: limit miast zdobytych i wojna wymuszona Kamienia
 |- md5 (pełne): 4322f5aafa6e0becc988885dc38e907b · stempel: ROBOCZA · label 4322f5aa · źródłowy commit integracji: `004e8f9e`
 |- `R-MIASTA-LIMIT-PODBÓJ-Q1=A`: limit dotyczy wyłącznie miast założonych; podbój bitewny, bez bitwy i kapitulacja nie zużywają puli; test 11/11, AI founding 28/28.
