@@ -61,5 +61,18 @@ ok(multiResult.healedCount === 2, 'proporcjonalny tick obejmuje wszystkie jednos
 ok(multiGarrison.hp === 15 && multiField.hp === 15, 'ograniczony Manpower dzieli leczenie po równo');
 ok(multiCity.manpower === 0, 'proporcjonalny tick wydaje całą dostępną pulę');
 
+// Proporcja ma dotyczyć brakującego HP, nie kolejności tablicy: przy dwóch
+// różnych maxHP każda jednostka dostaje połowę ograniczonej puli MP, więc
+// większa jednostka odzyskuje proporcjonalnie więcej HP.
+const weightedCity = { id: 'c3', ownerId: 0, population: 10, manpower: 300, q: 0, r: 0, oblegane: false };
+const smallUnit = { id: 'u4', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 9, r: 9 };
+const largeUnit = { id: 'u5', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 20, hpMax: 200, q: 10, r: 10 };
+const weightedResult = tickManpowerUnitReplenishment(
+  [weightedCity], [largeUnit, smallUnit], 'normal', () => 1, () => [], () => 100,
+);
+ok(weightedResult.healedCount === 2, 'proporcjonalny tick leczy obie jednostki o różnym maxHP');
+ok(smallUnit.hp === 25 && largeUnit.hp === 50, 'proporcjonalny tick dzieli MP wg niedoboru HP, niezależnie od kolejności');
+ok(weightedCity.manpower === 0, 'proporcjonalny tick nie przekracza dostępnej puli MP');
+
 console.log(`[r-manpower-uzupelnienie-hp-niezapisuje-q1-test] ${pass} OK, ${fail} FAIL`);
 process.exit(fail > 0 ? 1 : 0);
