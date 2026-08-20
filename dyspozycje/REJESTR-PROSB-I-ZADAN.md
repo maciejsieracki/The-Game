@@ -1,57 +1,4 @@
-# REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
-
-## AKTYWNA PACZKA DOKUMENTACYJNA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
-
-GOAL: dokończyć pakiety dokumentacyjne 1–3 i wdrożyć jeden, zamknięty obieg AutoBot
-bez zmian w `gra/`. Dowód przebiegu: [`dyspozycje/autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/`](autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/).
-
-| ID pakietu | STATUS KANONICZNY | Dowód |
-|---|---|---|
-| `R-PROC-AUTOBOT-PAKIET-1-INDEX-Q1` | `ZINTEGROWANE` | `docs/procesy/INDEX-PROCESU.md` wskazuje `HANDOFF-AKTUALNY` i miejsca zapisu artefaktów. |
-| `R-PROC-AUTOBOT-PAKIET-2-AKTYWNE-DOKUMENTY-Q1` | `ZINTEGROWANE` | `CLAUDE.md`, aktywna reguła, skill i `R-PROC-AUTOBOT`; historia w `docs/archiwum-procesu/`. |
-| `R-PROC-AUTOBOT-PAKIET-3-REJESTRY-RUNS-Q1` | `ZINTEGROWANE` | rejestr, `PYTANIA-OTWARTE.md`, `HANDOFF-AKTUALNY` i run `00–04`. |
-
-Statusy pakietów są aktualne w tym indeksie; historyczne wiersze poniżej pozostają
-append-only. `READY_FOR_DEPLOY` jest bramką po integracji, nie statusem publikacji;
-deploy/push pozostają osobno i w tej paczce nie zostały wykonane.
-
-## MIGRACJA STATUSÓW — 2026-08-20 (Pakiet 3)
-
-Od tej daty bieżący status tematu może przyjmować wyłącznie jedną z wartości:
-
-`NOWE` · `ABC-OCZEKUJE` · `OPERATOR` · `EVALUATOR` · `FINALNA-KONTROLA` ·
-`DO-INTEGRACJI` · `ZINTEGROWANE` · `DEPLOY-ROBOCZA` · `ZAMKNIĘTE` · `BLOCK` ·
-`ODŁOŻONE` · `ODRZUCONE` · `DUPLIKAT`
-
-Znaczenie statusu jest procesowe, a nie opisowe: dowód w raporcie/handoffie ma
-pierwszeństwo przed nazwą starej etykiety. `DEPLOY-ROBOCZA` oznacza potwierdzone
-opublikowanie w ROBOCZEJ; nie jest równoznaczne z `ZAMKNIĘTE`. `ZAMKNIĘTE`
-oznacza brak dalszej pracy w tym temacie albo jawne zamknięcie bez implementacji.
-
-### Indeks bieżący — tylko wpisy z jednoznacznym dowodem
-
-Poniższa tabela jest warstwą operacyjną migracji. Nie przepisuje ani nie kasuje
-historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgadywane.
-
-| ID | STATUS KANONICZNY | Dowód / punkt odniesienia |
-|---|---|---|
-| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `OPERATOR` | ECHO Q1/Q2/Q3 kompletne; wpis końcowy `PYTANIA-OTWARTE.md` mówi „gotowy do dispatchu Operatora”. |
-| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `ABC-OCZEKUJE` | Prototyp ogólny pozostaje otwarty; decyzja o źródłach danych nie została zapisana. |
-| `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `OPERATOR` | Ostatni jawny wpis: osobna gałąź/worktree, bez merge/push/deploy. |
-| `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Jawnie zarejestrowane na przyszłość, do osobnej sesji o ustrojach. |
-| `R-MIASTA-LIMIT-PODBÓJ-Q1` | `ZAMKNIĘTE` | ECHO A: limit dotyczy miast założonych; decyzja zamknięta bez zmiany kodu. |
-| `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` | `DEPLOY-ROBOCZA` | Korekta potwierdzona w FALI 293 `8fa80b7c`; wpis nie jest już otwarty. |
-
-### Zasada migracji i historii
-
-Wiersze oraz sekcje poniżej są append-only historią. Stare etykiety (`W TOKU`,
-`WDROŻONE`, `ZDEPLOYOWANE`, `SCALONE`, `CZEKA-NA-DECYZJĘ`, `SUPERSEDED` itd.)
-pozostają nietknięte jako zapis stanu z chwili powstania. Nie traktuj ich jako
-bieżącego statusu, dopóki nie ma wpisu w tym indeksie albo nowej, udokumentowanej
-korekty z dowodem. Migracja nie zmienia merytorycznego statusu żadnego tematu bez
-takiego dowodu.
-
----
+# REJESTR PRÓŚB I ZADAŃ — jedyne miejsce śledzenia próśb Macieja
 
 ## ⛔ ZASADA PROCESU (Maciej 2026-07-24, obowiązkowa dla KAŻDEJ sesji)
 **KAŻDA prośba Macieja, która powinna skończyć się jakąkolwiek zmianą w grze/kodzie/danych,
@@ -60,20 +7,17 @@ od razu realizowana. Powód: prośby z samego czatu giną (potwierdzony przypade
 trudności per państwo/miasto" — poproszona dawno, nigdzie nie zapisana, nie wdrożona, nikt tego
 nie pilnował). Narracja w czacie NIE jest śledzeniem. Ten plik jest jedynym rejestrem statusu.
 
-**Format bieżącego wiersza:** ID · data zgłoszenia · prośba (zwięźle) ·
-`STATUS-KANONICZNY` z listy powyżej · commit/deploy · uwagi. Historyczne wiersze
-zachowują swój pierwotny zapis i wymagają korekty dopiero po sprawdzeniu dowodu.
+**Format wiersza:** ID · data zgłoszenia · prośba (zwięźle) · STATUS (`NOWE` / `W TOKU` / `WDROŻONE` / `ZDEPLOYOWANE` / `ODRZUCONE` / `CZEKA-NA-DECYZJĘ`) · commit/deploy · uwagi.
 Przy zamknięciu tematu: aktualizuj STATUS + wpisz commit/md5. Szczegóły decyzji ekonomicznych → `DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md`.
 
 **Problemy/błędy z numeracją:** `dyspozycje/REJESTR-PROBLEMOW-AI.md` — format **`P-AI-###`** (Maciej 2026-07-26). Każdy nowy problem od razu dostaje numer; w czacie odwołujesz się po ID.
 
-## ⛔ NUMER → ABC/ECHO → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH
+## ⛔ NUMER → ABC → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH (Maciej 2026-08-03)
 Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
-1. Każdy temat → **pełne ID tutaj od razu**; status bieżący wybierz z zamkniętej listy.
-2. Jeśli potrzebna jest decyzja właściciela, zapisz pełne ABC w `PYTANIA-OTWARTE.md`.
-3. Po odpowiedzi zapisz ECHO i decyzję; temat kontynuuje ten sam ID przez run `00–04`.
-4. **`READY_FOR_DEPLOY`** → orkiestrator potwierdza Final Control i integrację; dopiero
-   osobne polecenie `deploy`/`push` publikuje i aktualizuje `WERSJE.md`.
+1. Case / bug / poprawka / innowacja → **ID tutaj od razu** (status zwykle `CZEKA-NA-DECYZJĘ`).
+2. Agent **nie koduje** — proponuje rozwiązanie ± ABC.
+3. Maciej: **`ID + A|B|C`** → dopiero commit.
+4. **`READY_FOR_DEPLOY`** → orkiestrator potwierdza finalną kontrolę i integrację; dopiero osobne hasło `deploy`/`push` publikuje ROBOCZĄ / aktualizuje `WERSJE.md`.
 
 ## ⛔ AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — KAŻDA PRACA TYLKO TĘDY
 **KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot:
@@ -84,22 +28,25 @@ Kanon: [`autobot/README.md`](autobot/README.md) ·
 [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) ·
 `.cursor/rules/autobot-evaluator-operator.mdc`.
 
-**ARCHIWUM:** wcześniejsze wpisy o modelach i routingach pozostają poniżej jako historia,
-ale nie są aktywnym routingiem.
+**ARCHIWUM — SUPERSEDED:** wcześniejsze wpisy o `composer-2.5`, Grok, Haiku
+i Sonnet pozostają poniżej jako historia, ale nie są aktywnym routingiem.
 
 **Notatka 2026-08-05:** Cleanup przestarzałych „czeka deploy" / „bez deploy" dla pozycji już w `WERSJE.md`; źródło prawdy deployu w owym momencie = FALA 228 (`29bfdf00`).
 
 **Notatka 2026-08-09:** źródło prawdy deployu dziś = **FALA 263** (`89176ced318b7e7d03b2fd6b197df80d`), branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie `main`). Szczegóły sesji: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`.
 
-**AKTYWNY ROUTING:** Operator **GPT-5.6 Luna High** → Evaluator **GPT-5.6 Luna High** →
-Final Control **GPT-5.6 Luna High** → integracja orkiestratora **GPT-5.6 Luna Medium** →
-`READY_FOR_DEPLOY`; deploy/push dopiero po osobnej bramce i autoryzacji. Pełny ślad
-nowego przebiegu zapisuj w `dyspozycje/autobot/runs/<ID>/`.
+**KOREKTA AUDYTU 2026-08-19:** aktywny routing tej sesji to Operator **GPT-5.6 Luna High** →
+Evaluator **GPT-5.6 Luna High** → finalna kontrola/integracja przez głównego orkiestratora
+**GPT-5.6 Luna Medium**. Raport Operatora automatycznie uruchamia Evaluatora; po `PASS`
+status jest aktualizowany, przygotowywane jest pełne ABC z ID albo temat trafia do integracji.
+Integracja kończy przygotowanie na `READY_FOR_DEPLOY`; deploy/push dopiero po osobnej
+bramce i autoryzacji.
+Wpisy o composer/Grok/Haiku/Sonnet poniżej są historyczne i pozostają zachowane.
 
 **C-043 (2026-08-19):** właściciel komunikuje się wyłącznie w głównym czacie
 orkiestratora; subagenci są kanałami technicznymi.
 
-| R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 | 2026-08-19 | Umowa terminowa na wspólną walkę z barbarzyńcami i obustronny wojskowy przemarsz; zasady zerwania i jednostek pozostających na miejscu | **ECHO 1A + 2A + 3A — DECYZJA ZAPISANA; IMPLEMENTACJA NIEZLECONA** | `docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md` · pełne A/B/C i ECHO w `PYTANIA-OTWARTE.md` · bez zmian `gra/`, bez deployu/pushu |
+| R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 | 2026-08-19 | Umowa terminowa na wspólną walkę z barbarzyńcami i obustronny wojskowy przemarsz; zasady zerwania i jednostek pozostających na miejscu | **ECHO 1B + 2A + 3B, 3 tury, 8B + 9A + 10B — ZDEPLOYOWANE ROBOCZA d2276783; proces domknięty** | Operator `45092ca8` · Evaluator `PASS-WITH-NOTES` · final control `READY_FOR_DEPLOY` · implementacja `c912c8ce` + `12ca89f9` · `WERSJE.md` i manifest ROBOCZEJ |
 | R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Kanon raportu właściciela: **dziesięć** kategorii (stany Operator/Evaluator, czeka na Operatora vs zapomniane), filtr ECHO, Playtest z ROBOCZEJ | **WDROŻONE (docs-only) — nie jest pytaniem ABC** | `docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`; zasady: `CLAUDE.md`, `.claude/skills/civ-autobot/SKILL.md`, `.cursor/rules/komendy-raport.mdc`; snapshot FALA 295 `8589d294` |
 | R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Poprzedni kanon siedmiu kategorii (FALA 294) | **SUPERSEDED → R-RAPORT-10** | `docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md` — tylko kompatybilność linków; pełna treść w historii gita |
 

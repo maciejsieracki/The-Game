@@ -1,68 +1,21 @@
-# PYTANIA OTWARTE — aktywne ABC + odsyłacze decyzji
-Aktualizacja: 2026-08-20 (migracja indeksu; zapis ECHO `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 = 1A + 2A + 3A`; pełne A/B/C zachowane poniżej). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+# PYTANIA OTWARTE — czekają na decyzję Macieja
+Aktualizacja: 2026-08-20 (najnowsze ECHO: wspólna walka `1B / 2A / 3B`, 3 tury; koncentracja AI `4A / 5A / 6A / 7A`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
-## PACZKA PROCESOWA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
-
-Zakres tej paczki został jednoznacznie określony przez właściciela; nowe ABC nie było
-wymagane. Nie dodawaj tu raportów Operatora/Evaluatora ani statusów pakietów — ich
-miejsce jest w `dyspozycje/autobot/runs/<ID>/` i w rejestrze. Jeśli później pojawi się
-decyzja produktowa, otwórz osobne pełne ABC i zachowaj jej ECHO.
-
-## INDEKS OPERACYJNY — MIGRACJA 2026-08-20 (Pakiet 3)
-
-To jest aktualny punkt nawigacji. Pełne opisy, odpowiedzi, werdykty i pomyłki
-pozostają poniżej jako historia; nie usuwamy ich i nie przepisujemy ich treści.
-Bieżący status procesu używa zamkniętej listy z rejestru:
-`NOWE`, `ABC-OCZEKUJE`, `OPERATOR`, `EVALUATOR`, `FINALNA-KONTROLA`,
-`DO-INTEGRACJI`, `ZINTEGROWANE`, `DEPLOY-ROBOCZA`, `ZAMKNIĘTE`, `BLOCK`,
-`ODŁOŻONE`, `ODRZUCONE`, `DUPLIKAT`.
-
-### Aktywne ABC / wejścia do dalszej pracy
-
-| ID | STATUS KANONICZNY | Następny dowód / miejsce |
-|---|---|---|
-| `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1` | `OPERATOR` | ECHO `1A+2A+3A` jest zapisana; implementacja nie została zlecona. |
-| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `OPERATOR` | ABC kompletne; końcowy wpis mówi o gotowości do dispatchu Operatora. |
-| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `ABC-OCZEKUJE` | Ogólny prototyp nadal czeka na rozstrzygnięcie źródeł i akceptację. |
-| `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT` | `ODŁOŻONE` | Nowa funkcja pozostaje odłożona; wznowić dopiero po decyzji właściciela. |
-| `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ABC-OCZEKUJE` | Czeka na uznanie właściciela za zamknięte przy kolejnym przeglądzie. |
-| `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` | `ABC-OCZEKUJE` | Zarejestrowane do ABC przy przeglądzie tematów bitewnych. |
-| `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `OPERATOR` | Osobna gałąź/worktree; bez merge, push i deployu. |
-| `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Wznowić wyłącznie w osobnej sesji o systemie ustrojów. |
-
-### Zamknięte — odsyłacze do decyzji i dowodów
-
-Poniższe odsyłacze są indeksem, nie nowymi werdyktami. Szczegóły i historyczne
-stemple pozostają w sekcjach niżej oraz w dokumentach decyzji.
-
-| ID | STATUS KANONICZNY | Decyzja / dowód |
-|---|---|---|
-| `R-MIASTA-LIMIT-PODBÓJ-Q1` | `ZAMKNIĘTE` | [`docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md`](../docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md) |
-| `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md`](../docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md), FALA 294 |
-| `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md`](../docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md), FALA 294 |
-| `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md`](../docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md), FALA 293 |
-| `P-JEDNOSTKI-KARTA-3D-INFO-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md`](../docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md), FALA 295 |
-
-### Retencja historii
-
-Sekcje od `## Obieg` w dół są dotychczasowym rejestrem append-only. Historyczne
-statusy nie są automatycznie przepisywane na kanoniczne: korektę można dodać tylko
-z datą, dowodem i odsyłaczem do decyzji/raportu. To zabezpiecza przed fałszywym
-zamykaniem tematów podczas migracji.
-
-## ⛔ Obieg
-Nowy temat → **pełne ID w REJESTR-PROSB** → ABC tylko jeśli wymagana decyzja →
-Operator → Evaluator → Final Control → integracja → `READY_FOR_DEPLOY` → deploy/push
-osobno. Pętla `FAIL`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS` wraca do tego samego ID.
-Kanon: [`docs/procesy/INDEX-PROCESU.md`](../docs/procesy/INDEX-PROCESU.md).
+## ⛔ Obieg (Maciej 2026-08-03)
+Nowy case → **ID w REJESTR-PROSB** + wpis tu (jeśli ABC) → agent **proponuje, nie koduje** → Maciej: **`ID + A|B|C`** → commit → **`deploy`** osobno.
+Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
 
 ---
 
-## R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 — ECHO właściciela: **1A + 2A + 3A** · STATUS: **DECYZJA ZAPISANA, IMPLEMENTACJA NIEZLECONA**
+## R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 — ECHO właściciela: **1B / 2A / 3B, 3 tury, 8B / 9A / 10B** · STATUS: **ZDEPLOYOWANE ROBOCZA d2276783; proces domknięty**
 
-**Decyzja właściciela otrzymana w głównym czacie:** `1A, 2A, 3A`. To jest
-decyzja właściciela, nie rekomendacja.
+**Najnowsza decyzja właściciela otrzymana w głównym czacie:** `1B / 2A / 3B`,
+długość umowy **3 tury**, uzupełniona o `8B / 9A / 10B`. To jest decyzja
+właściciela, nie rekomendacja.
+Zastępuje wcześniejsze `1A` i `3A`; `2A` pozostaje pełną obustronnością i
+obejmuje automatyczne dołączanie lokalnych oddziałów partnera. Parametry
+techniczne osi 2 zostały rozstrzygnięte odpowiedziami `8B / 9A / 10B`.
 
 ### Sytuacja i zakres
 
@@ -73,7 +26,7 @@ karę Zaufania, moment wygaśnięcia autoryzacji i zachowanie jednostek.
 
 ### 1. Czas i zakres umowy
 
-**A — umowa terminowa obejmująca wspólną walkę i przemarsz — WYBRANE (1A).**
+**A — umowa terminowa obejmująca wspólną walkę i przemarsz — wariant historyczny, zastąpiony przez 1B.**
 
 - **Za:** jeden ograniczony kontrakt obejmuje oba uzgodnione uprawnienia.
 - **Za:** terminowość ogranicza ryzyko pozostawienia otwartego dostępu po ustaniu celu.
@@ -96,7 +49,7 @@ karę Zaufania, moment wygaśnięcia autoryzacji i zachowanie jednostek.
 
 ### 2. Obustronność przemarszu i udziału w walce
 
-**A — pełna obustronność — WYBRANE (2A).** Obie strony mogą przechodzić przez
+**A — pełna obustronność — potwierdzone ponownie jako 2A.** Obie strony mogą przechodzić przez
 swoje terytoria, a oddziały obu stron mogą wejść do wspólnej walki.
 
 - **Za:** obie strony mają identyczne prawa i obowiązki.
@@ -120,7 +73,7 @@ swoje terytoria, a oddziały obu stron mogą wejść do wspólnej walki.
 
 ### 3. Zerwanie umowy i jednostki pozostające na terytorium partnera
 
-**A — natychmiastowe zerwanie przez każdą stronę z karą Zaufania — WYBRANE (3A).**
+**A — natychmiastowe zerwanie przez każdą stronę z karą Zaufania — wariant historyczny, zastąpiony przez 3B.**
 Autoryzacja wygasa od następnej kontroli ruchu, a jednostki pozostają na miejscu
 bez teleportowania.
 
@@ -143,9 +96,59 @@ bez teleportowania.
 - **Przeciw:** brak kary osłabia koszt zerwania zobowiązania.
 - **Przeciw:** karencja oznacza częściowo aktywny dostęp po zerwaniu.
 
-**Kontrakt wybrany:** `1A + 2A + 3A`. Szczegółowy dokument decyzji:
+**Najnowszy kontrakt wybrany:** `1B / 2A / 3B`, długość **3 tury**, uzupełniony odpowiedziami `8B / 9A / 10B`. Szczegółowy dokument decyzji:
 [`docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md`](../docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md).
 Ten zapis nie zleca implementacji i nie zmienia plików `gra/`.
+
+### Uzupełniające pytania ABC do osi 2A
+
+**Pytanie 8 — jaki promień oznacza „lokalne oddziały”?**
+
+- **A:** promień 1 heksa, zgodnie z istniejącym lokalnym rosterem bitewnym.
+- **B:** promień 2 heksów, aby objąć najbliższe wsparcie operacyjne.
+- **C:** inny promień — podaj liczbę heksów.
+
+**Pytanie 9 — jakie typy jednostek kwalifikują się do automatycznego udziału?**
+
+- **A:** aktywne lądowe jednostki bojowe; bez zwiadowców, cywilów, garnizonów, jednostek zaokrętowanych i oblężonych.
+- **B:** aktywne lądowe jednostki bojowe wraz ze zwiadowcami i oblężniczymi.
+- **C:** wszystkie ruchome jednostki lądowe, poza garnizonami i jednostkami zaokrętowanymi.
+
+**Pytanie 10 — co z jednostką już zaangażowaną w inną walkę?**
+
+- **A:** nie może zostać dołączona do drugiej walki.
+- **B:** może zostać dołączona dopiero po zakończeniu bieżącej walki.
+- **C:** może uczestniczyć w obu rozstrzygnięciach w tej samej turze.
+
+**ODPOWIEDŹ MACIEJA (2026-08-20): `8B / 9A / 10B`.**
+
+- **8B:** promień lokalnych oddziałów wynosi 2 heksy.
+- **9A:** kwalifikują się aktywne lądowe jednostki bojowe; bez zwiadowców, cywilów,
+  garnizonów, jednostek zaokrętowanych i oblężonych.
+- **10B:** jednostka już zaangażowana w inną walkę może dołączyć dopiero po jej
+  zakończeniu.
+
+Decyzja ABC jest kompletna. Rekomendacja Operatora **A / A / A** pozostaje wyłącznie
+archiwalną rekomendacją i nie zastępuje odpowiedzi właściciela. Temat gotowy do
+dispatchu Operatora; przed integracją wymagany pełny obieg Operator → Evaluator →
+finalna kontrola.
+
+---
+
+## R-ARMIA-KONCENTRACJA-AI-BARB-Q1 — ECHO właściciela: **4A / 5A / 6A / 7A** · STATUS: **DECYZJA ZAPISANA, GOTOWE DO DISPATCHU**
+
+**Najnowsza decyzja właściciela otrzymana w głównym czacie:** `4A / 5A / 6A / 7A`.
+To jest decyzja właściciela, nie rekomendacja.
+
+### Decyzje
+
+- **Pytanie 4 — A:** wspólny model owner-agnostyczny: kwalifikacja, punkt zbiórki, istniejący pathfinding, a następnie marsz/atak po faktycznym zgrupowaniu.
+- **Pytanie 5 — A:** minimum 3 kwalifikowanych jednostek w promieniu 4 heksów; marsz/atak po faktycznym stosie minimum 3 jednostek.
+- **Pytanie 6 — A:** utrzymać obecny lokalny rally barbarzyńców przy żywym obozie, bez rozszerzania na międzyobozową koncentrację i rajdy morskie.
+- **Pytanie 7 — A:** aktywne lądowe jednostki bojowe; wykluczyć zwiadowców, cywilów, garnizony, jednostki zaokrętowane, oblężone i rajderów morskich.
+
+Szczegółowy zapis decyzji: [`docs/decyzje/R-ARMIA-KONCENTRACJA-AI-BARB-Q1.md`](../docs/decyzje/R-ARMIA-KONCENTRACJA-AI-BARB-Q1.md).
+Nie zmieniać kodu ani nie integrować przed pełnym obiegiem AutoBot.
 
 ---
 
@@ -320,7 +323,7 @@ Szczegóły: [`docs/decyzje/R-BUDOWA-ZROWNOWAZONE-TRYB.md`](../docs/decyzje/R-BU
 
 ## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **ZDEPLOYOWANE FALA 215** `2a5a66d1` (2026-08-04)
 
-Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](../docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
+Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
 
 ---
 
@@ -328,12 +331,12 @@ Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły
 
 | ID | Decyzja | Status | Docs |
 |----|---------|--------|------|
-| **MP-ARMY-Q1** | **A** — cap = łącznie żywe jednostki bojowe (garnizon wliczony); odbudowa do limitu | **WDROŻONE FALA 220** | [`MP-ARMY-Q1.md`](../docs/decyzje/MP-ARMY-Q1.md) |
-| **MP-GARRISON-Q1** | **A** — Hard: istniejące garnizony zostają, zakaz nowej produkcji wojskowej | **WDROŻONE FALA 220** | [`MP-GARRISON-Q1.md`](../docs/decyzje/MP-GARRISON-Q1.md) |
-| **MP-DIPLO-Q1** | **A** — ułatwienie tylko AI major→MP; same-civ Zaufanie max ~100; priorytet absorpcji klastra | **WDROŻONE FALA 220** | [`MP-DIPLO-Q1.md`](../docs/decyzje/MP-DIPLO-Q1.md) |
-| **AI-FOUND-Q1** | **A** — founding AI major pop ≥ 2 (jak gracz) | **WDROŻONE FALA 220** | [`AI-FOUND-Q1.md`](../docs/decyzje/AI-FOUND-Q1.md) |
-| **AI-LOCAL-Q1** | **A** — faza lokalna ~tura 20 LUB 1 zwiadowca; wioski nie blokują | **WDROŻONE FALA 220** | [`AI-LOCAL-Q1.md`](../docs/decyzje/AI-LOCAL-Q1.md) |
-| **AI-MANAGE-Q1** | **A** — auto-zarządca dla major AI (nie MP) | **WDROŻONE FALA 220** | [`AI-MANAGE-Q1.md`](../docs/decyzje/AI-MANAGE-Q1.md) |
+| **MP-ARMY-Q1** | **A** — cap = łącznie żywe jednostki bojowe (garnizon wliczony); odbudowa do limitu | **WDROŻONE FALA 220** | [`MP-ARMY-Q1.md`](docs/decyzje/MP-ARMY-Q1.md) |
+| **MP-GARRISON-Q1** | **A** — Hard: istniejące garnizony zostają, zakaz nowej produkcji wojskowej | **WDROŻONE FALA 220** | [`MP-GARRISON-Q1.md`](docs/decyzje/MP-GARRISON-Q1.md) |
+| **MP-DIPLO-Q1** | **A** — ułatwienie tylko AI major→MP; same-civ Zaufanie max ~100; priorytet absorpcji klastra | **WDROŻONE FALA 220** | [`MP-DIPLO-Q1.md`](docs/decyzje/MP-DIPLO-Q1.md) |
+| **AI-FOUND-Q1** | **A** — founding AI major pop ≥ 2 (jak gracz) | **WDROŻONE FALA 220** | [`AI-FOUND-Q1.md`](docs/decyzje/AI-FOUND-Q1.md) |
+| **AI-LOCAL-Q1** | **A** — faza lokalna ~tura 20 LUB 1 zwiadowca; wioski nie blokują | **WDROŻONE FALA 220** | [`AI-LOCAL-Q1.md`](docs/decyzje/AI-LOCAL-Q1.md) |
+| **AI-MANAGE-Q1** | **A** — auto-zarządca dla major AI (nie MP) | **WDROŻONE FALA 220** | [`AI-MANAGE-Q1.md`](docs/decyzje/AI-MANAGE-Q1.md) |
 
 **Ustalenia produktowe (nie ABC):** wzmacniać tylko **AI major** (nie MP); major AI = te same reguły gospodarcie co gracz. Trudność: Easy ≈ dziś MP wojsko/diplo · Normal max1 wojsko + mid absorb · Hard 0 wojska MP + prawie zawsze accept AI→MP.
 
@@ -3504,7 +3507,9 @@ Testy: `diplomacy-basket-edit-test.cjs` 25/25, `diplomacy-proposal-test.cjs` 126
 `hud-moc-warstwa-test.cjs` 28/28, `tsc` 0 błędów. STRICT-PARITY: wyłącznie UI gracza.
 **Model:** Sonnet 5 (poza `render/**`).
 
-## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **WPIS HISTORYCZNY — NIEAKTUALNY OPIS CENNIKA; SKORYGOWANY PÓŹNIEJ, DECYZJA BEZ ZMIANY**
+
+> **Korekta dokumentacyjna (R-DYPLO-SUROWCE-WARTOSC-5X-Q1):** poniższa sekcja zachowuje historyczny stan z 2026-08-08, ale jej opis „PN/szt.” i „pakiet ×10” jest nieaktualny. Obowiązująca semantyka to cena za blok 5 szt. dla 13 surowców oraz krok 1 dla Złota i Węgla; decyzja cenowa i opisany niżej bug nie są przez tę korektę zmieniane.
 
 ### Część 1 — tabela cen (na żądanie: „wypisz mi wartość surowców jakie mamy przypisane")
 **Potwierdzone w kodzie:** „40" pokazane przy 4 pakietach Drewna (pakiet ×10) **to Punkty

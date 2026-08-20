@@ -1,28 +1,8 @@
 # R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 — decyzja właściciela
 
-**Data zapisu:** 2026-08-19
+**Data zapisu:** 2026-08-20
 **Źródło:** decyzja właściciela otrzymana w głównym czacie
-**Status:** decyzja właściciela kompletna; implementacja Operatora w toku / bez deployu
-
-## AKTUALNE ECHO WŁAŚCICIELA — obowiązujące
-
-Późniejsze odpowiedzi właściciela zastępują wcześniejsze warianty zapisane niżej:
-
-| Pytanie | Decyzja |
-|---|---|
-| 1 — czas i zakres | **1B** — długość ustalana przy zawarciu; dla tego wdrożenia **3 tury**; umowa obejmuje wspólną walkę z barbarzyńcami i wojskowy przemarsz |
-| 2 — obustronność | **2A** — pełna obustronność przemarszu i udziału w walce |
-| 3 — naturalne wygaśnięcie | **3B** — autoryzacja kończy się natychmiast, jednostki pozostają na miejscu |
-| 8 — promień | **8B** — promień 2 heksów |
-| 9 — jednostki | **9A** — aktywne lądowe jednostki bojowe; bez zwiadowców, cywilów, garnizonów, zaokrętowanych, oblężonych i rajderów morskich |
-| 10 — jednostka w walce | **10B** — może dołączyć dopiero po zakończeniu bieżącej walki |
-
-Implementacja używa osobnego rodzaju dealu `wspolna_walka_barbarzyncy`, z
-`wygasaTura = zawartaTura + 3`. Pytania 4–7 dotyczą odrębnego tematu
-koncentracji AI i nie są częścią tego kontraktu.
-
-Poniższy pierwotny zapis `1A/2A/3A` jest **historyczny** i nie może nadpisywać
-aktualnego ECHO.
+**Status:** decyzja ABC kompletna; gotowe do ponownego dispatchu Operatora; implementacja mechaniki gry nie jest częścią tego zapisu
 
 ## Zakres tematu
 
@@ -31,22 +11,39 @@ z barbarzyńcami i uzyskują wojskowe prawo przemarszu przez terytorium partnera
 Umowa nie jest przez ten zapis utożsamiana z automatycznym, ogólnym sojuszem
 przeciw wszystkim cywilizacjom.
 
-## Decyzja właściciela — ECHO
+## Najnowsze ECHO właściciela — 2026-08-20
 
-Właściciel wybrał warianty **1A, 2A, 3A**. Jest to decyzja właściciela,
-a nie rekomendacja Operatora.
+Właściciel wybrał **1B / 2A / 3B**, doprecyzowując dla osi 1 długość
+**3 tur**. Jest to decyzja właściciela, a nie rekomendacja Operatora.
+Najnowsze ECHO zastępuje wcześniejsze `1A` i `3A`; `2A` pozostaje pełną
+obustronnością i zostaje rozszerzone o automatyczne dołączanie lokalnych
+oddziałów partnera do wspólnej walki.
 
 | Oś | Wybrany wariant | Znaczenie decyzji |
 |---|---|---|
-| 1 | **1A** | Umowa terminowa obejmuje wspólną walkę z barbarzyńcami oraz wojskowe prawo przemarszu. |
-| 2 | **2A** | Pełna obustronność: obie strony mogą przechodzić przez swoje terytoria, a oddziały obu stron mogą wejść do wspólnej walki. |
-| 3 | **3A** | Każda strona może natychmiast zerwać umowę z karą Zaufania; autoryzacja wygasa od następnej kontroli ruchu, a jednostki pozostają na miejscu bez teleportowania. |
+| 1 | **1B — 3 tury** | Długość umowy jest wybierana przy zawarciu; w tej decyzji wynosi 3 tury. Umowa obejmuje wspólną walkę z barbarzyńcami i wojskowy przemarsz. |
+| 2 | **2A** | Pełna obustronność oraz automatyczne dołączanie lokalnych, kwalifikowanych oddziałów partnera do wspólnej walki. |
+| 3 | **3B** | Po naturalnym upływie 3 tur autoryzacja wygasa natychmiast, a jednostki pozostają na miejscu bez teleportowania. |
 
-## Pełne A/B/C
+## Uzupełniające ECHO właściciela — 2026-08-20
+
+Właściciel uzupełnił parametry osi 2 odpowiedziami **8B / 9A / 10B**:
+
+| Pytanie | Wybrany wariant | Znaczenie decyzji |
+|---|---|---|
+| 8 | **B** | „Lokalne oddziały” obejmują jednostki w promieniu 2 heksów. |
+| 9 | **A** | Kwalifikują się aktywne lądowe jednostki bojowe; bez zwiadowców, cywilów, garnizonów, jednostek zaokrętowanych i oblężonych. |
+| 10 | **B** | Jednostka już zaangażowana w inną walkę może dołączyć dopiero po zakończeniu bieżącej walki. |
+
+To są decyzje właściciela, nie rekomendacje Operatora. Odpowiedzi 8–10 zamykają
+brakujące parametry wykonawcze osi 2. Przed integracją nadal wymagany jest pełny
+obieg Operator → Evaluator → finalna kontrola.
+
+## Pełne A/B/C — archiwum pytania przed najnowszym ECHO
 
 ### 1. Czas i zakres umowy
 
-**A — umowa terminowa obejmująca wspólną walkę i przemarsz — WYBRANE (1A).**
+**A — umowa terminowa obejmująca wspólną walkę i przemarsz — wariant historyczny, zastąpiony przez 1B.**
 
 - **Za:** łączy w jednym, jasno ograniczonym kontrakcie wspólną walkę z barbarzyńcami i wojskowy przemarsz.
 - **Za:** terminowość ogranicza ryzyko pozostawienia otwartego dostępu po ustaniu celu umowy.
@@ -69,7 +66,7 @@ a nie rekomendacja Operatora.
 
 ### 2. Obustronność przemarszu i udziału w walce
 
-**A — pełna obustronność — WYBRANE (2A).** Obie strony mogą przechodzić przez
+**A — pełna obustronność — potwierdzone ponownie jako 2A.** Obie strony mogą przechodzić przez
 swoje terytoria i oddziały obu stron mogą wejść do wspólnej walki.
 
 - **Za:** obie strony mają identyczne prawa i obowiązki w ramach tej samej umowy.
@@ -93,7 +90,7 @@ swoje terytoria i oddziały obu stron mogą wejść do wspólnej walki.
 
 ### 3. Zerwanie umowy i jednostki pozostające na terytorium partnera
 
-**A — natychmiastowe zerwanie przez każdą stronę z karą Zaufania — WYBRANE (3A).**
+**A — natychmiastowe zerwanie przez każdą stronę z karą Zaufania — wariant historyczny, zastąpiony przez 3B.**
 Autoryzacja wygasa od następnej kontroli ruchu. Jednostki pozostają na miejscu;
 nie są teleportowane.
 
@@ -118,6 +115,7 @@ nie są teleportowane.
 
 ## Granice tego zapisu
 
+- Najnowszy zapis decyzji właściciela to **1B / 2A / 3B**, przy czym długość umowy wynosi **3 tury**, uzupełniony o **8B / 9A / 10B**.
 - To jest zapis decyzji właściciela i pełnego ABC; nie jest rekomendacją.
 - Ten commit obejmuje wyłącznie dokumentację procesu.
 - Nie zmieniono mechaniki gry, danych gry ani plików w `gra/`.

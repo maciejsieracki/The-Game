@@ -129,11 +129,6 @@ export function hasAuthorizedBorderCrossing(
       intruderOwnerId,
       territoryOwnerId,
       RodzajTraktatu.PrawoWojskowePrzemarszu,
-    ) || treaties.some(d =>
-      d.strony.includes(intruderOwnerId)
-      && d.strony.includes(territoryOwnerId)
-      && (normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.WspolnaWalkaBarbarzyncy
-        || d.wspolnaWalkaBarbarzyncy === true),
     );
   }
 

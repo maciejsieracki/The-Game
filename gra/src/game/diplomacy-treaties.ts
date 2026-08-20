@@ -92,8 +92,6 @@ export interface ActiveDeal {
    * całe życie umowy. Dotyczy WYŁĄCZNIE dealów z handelSurowiecCykliczny.
    */
   handelCyklicznyKiedykolwiekNiedostarczono?: boolean;
-  /** R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1: zakres wspólnej walki z barbarzyńcami. */
-  wspolnaWalkaBarbarzyncy?: boolean;
 }
 
 export type AllianceEvent =
@@ -319,23 +317,10 @@ const BREAK_ON_WAR: ReadonlySet<TreatyKind> = new Set([
   'sojusz_pelny',
   RodzajTraktatu.OtwartGranice,
   RodzajTraktatu.PrawoWojskowePrzemarszu,
-  RodzajTraktatu.WspolnaWalkaBarbarzyncy,
   RodzajTraktatu.UmowaHandlowa,
   RodzajTraktatu.UmowaSzlakow,
   RodzajTraktatu.UmowaWymiany,
 ]);
-
-/** Czy para ma aktywną umowę wspólnej walki z barbarzyńcami. */
-export function hasBarbarianCooperationTreaty(
-  state: readonly ActiveDeal[],
-  a: number,
-  b: number,
-): boolean {
-  return dealsForPair([...state], a, b).some(d =>
-    normalizeTreatyKind(d.rodzaj) === RodzajTraktatu.WspolnaWalkaBarbarzyncy
-      || d.wspolnaWalkaBarbarzyncy === true,
-  );
-}
 
 export function treatiesBrokenByWar(
   state: ActiveDeal[],

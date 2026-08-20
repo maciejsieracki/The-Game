@@ -20,7 +20,6 @@ export enum RodzajTraktatu {
   SojuszPelny       = 'sojusz_pelny',       // v1.1 T2: wojna sojusznika → auto-dołączenie
   OtwartGranice     = 'otwarte_granice',    // prawo przemarszu cywilnego
   PrawoWojskowePrzemarszu = 'prawo_wojskowe_przemarszu',
-  WspolnaWalkaBarbarzyncy = 'wspolna_walka_barbarzyncy', // wojskowy przemarsz + wspólna walka z barbarzyńcami
   UmowaHandlowa     = 'umowa_handlowa',     // legacy — hydrate → umowa_szlakow | umowa_wymiany
   UmowaSzlakow      = 'umowa_szlakow',     // HANDEL-SPLIT-Q1=B: szlaki, granty, +1 Zaufanie/turę
   UmowaWymiany      = 'umowa_wymiany',     // HANDEL-SPLIT-Q1=B: koszyk PN / wymiana cykliczna

@@ -1,3 +1,32 @@
+# AKTUALNY RAPORT TERMINALNY OPERATORA — `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1`
+
+**STATUS: READY_FOR_EVALUATOR** · Operator GPT-5.6 Luna High
+
+**GOAL:** decyzja `1B / 2A / 3B`, 3 tury, `8B / 9A / 10B`; przygotować gotowy do
+niezależnej oceny kontrakt wspólnej walki z barbarzyńcami i przemarszu.
+
+**Weryfikacja:** czysty snapshot `e69419e533d1da9cee8e4022aa8f2b0d0bf0cb27`
+(`ROBOCZA d2276783`). Implementacja była już obecna; nie przepisywałem kodu ani
+nie tworzyłem nowego diffu. Bazowe commity implementacji: `c912c8ce` oraz korekta
+rajderów `12ca89f9`.
+
+**Dowody:** kontrakt **10/10 PASS**, traktaty **17/17 PASS**, przemarsz
+**43/43 PASS**, parytet gracz/AI PASS, save/load `seaRaider` PASS z kompatybilnym
+starym zapisem, `tsc` PASS, Vite **837 modułów PASS**, `git diff --check` PASS.
+Test obejmuje promień 2, termin 3 tur, wygaśnięcie, obustronność, negacje,
+rajdera morskiego, jednostkę w aktywnej walce i brak duplikatów. Zweryfikowane
+call-site'y: `main.ts` (import, collect, merge), `diplomacy-border-march.ts`
+(autoryzacja) oraz `diplomacy-barbarian-cooperation.ts` (wykrywanie); brak innych
+użyć poza zakresem.
+
+**DEPLOY/PUSH:** nie wykonano w tej rundzie; istniejąca ROBOCZA `d2276783` już
+zawiera temat. Operator nie wystawia `READY_FOR_DEPLOY`.
+
+**Następny krok:** niezależny Evaluator Luna High, potem finalna kontrola i
+integracja. Treść poniżej jest historycznym raportem poprzedniej rundy.
+
+---
+
 # Raport Operatora — `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1`
 
 STATUS: READY_FOR_EVALUATOR

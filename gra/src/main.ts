@@ -409,10 +409,6 @@ import {
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import { collectAtkRosterNearCity, collectBattleRoster as collectBattleRosterPure, collectDefRosterNearCity } from './units/battleRoster';
-import {
-  collectBarbarianCooperationUnits,
-  mergeBattleRosterWithBarbarianCooperation,
-} from './game/diplomacy-barbarian-cooperation';
 import { canCaptureCityWithoutBattle, hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
 import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
@@ -7329,8 +7325,6 @@ async function boot(): Promise<void> {
     let diplomaticContactTrackingReady = false;
     /** v1.1: aktywne traktaty dyplomatyczne (save/load meta.diplomacyDeals). */
     let activeDeals: ActiveDeal[] = [];
-    /** Jednostki z otwartej bitwy są niedostępne dla drugiej bitwy do jej zakończenia. */
-    const activeBattleUnitIds = new Set<string>();
     /**
      * C-DYP-Q1=A (2026-07-26, Maciej): STÓŁ NEGOCJACYJNY — stan „propozycja oczekuje"
      * per para właścicieli, PRZENOSZONY przez zapis/odczyt gry (save/load
@@ -14702,9 +14696,7 @@ async function boot(): Promise<void> {
             : `Pakt nieagresji na ${p.turns ?? 15} tur`;
         case 'sojusz_defensywny': return 'Sojusz obronny';
         case 'sojusz_pelny': return 'Sojusz wojskowy';
-        case 'granice': return p.barbarianCooperation
-          ? 'Wspólna walka z barbarzyńcami i przemarsz — 3 tury'
-          : (p.borderMilitary ? 'Traktat przemarszu (wojskowy)' : 'Traktat przemarszu (cywilny)');
+        case 'granice': return p.borderMilitary ? 'Traktat przemarszu (wojskowy)' : 'Traktat przemarszu (cywilny)';
         case 'handel':
           return basketDetail || (p.goldOnce ? `jednorazowo ${p.goldOnce} ¤` : '');
         case 'umowa_handlowa':
@@ -14881,7 +14873,6 @@ async function boot(): Promise<void> {
                 turns: p.turns,
                 allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
                 borderMilitary: p.borderMilitary,
-                barbarianCooperation: p.barbarianCooperation,
                 goldPerTurn: p.goldPerTurn,
                 goldOnce: p.goldOnce,
                 tributeMode: entry.actionId === 'trybut_oferta' ? 'offer' : 'demand',
@@ -14910,7 +14901,6 @@ async function boot(): Promise<void> {
               turns: uiActionId === '2' ? p.turns : undefined,
               allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
               borderMilitary: p.borderMilitary,
-              barbarianCooperation: p.barbarianCooperation,
               goldPerTurn: p.goldPerTurn,
               goldOnce: p.goldOnce,
               tributeMode: entry.actionId === 'trybut_oferta' ? 'offer' : 'demand',
@@ -17047,11 +17037,7 @@ async function boot(): Promise<void> {
           typ = 'strumien_sojusz';
         } else if (kind === RodzajTraktatu.PaktNieagresji) {
           typ = 'strumien_nap';
-        } else if (
-          kind === RodzajTraktatu.OtwartGranice
-          || kind === RodzajTraktatu.PrawoWojskowePrzemarszu
-          || kind === RodzajTraktatu.WspolnaWalkaBarbarzyncy
-        ) {
+        } else if (kind === RodzajTraktatu.OtwartGranice || kind === RodzajTraktatu.PrawoWojskowePrzemarszu) {
           typ = 'strumien_przemarsz';
         } else if (kind === RodzajTraktatu.UmowaSzlakow) {
           typ = 'strumien_handel';
@@ -17488,7 +17474,6 @@ async function boot(): Promise<void> {
         amount: payload.amount,
         targetOwnerId: payload.targetOwnerId,
         borderMilitary: payload.borderMilitary,
-        barbarianCooperation: payload.barbarianCooperation,
         techId: payload.techId,
         techDirection: payload.techDirection,
         // BLOKER 1 (Evaluator runda 3): techPaymentMode/techOfferId brakowały w tej białej
@@ -21711,29 +21696,6 @@ async function boot(): Promise<void> {
       return collectBattleRosterPure(anchor, allUnits, side);
     }
 
-    /**
-     * R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1: przy starciu z barbarzyńcami
-     * automatycznie dołącz partnerów z aktywnego kontraktu w promieniu 2 heksów.
-     * Zwykłe bitwy cywilizacja↔cywilizacja zachowują dotychczasowy roster.
-     */
-    function collectBarbarianAwareBattleRoster(
-      anchor: RuntimeUnit,
-      opponent: RuntimeUnit,
-      side: 'attacker' | 'defender',
-    ): RuntimeUnit[] {
-      const base = collectBattleRoster(anchor, units, side);
-      if (!isBarbarian(anchor.ownerId) && !isBarbarian(opponent.ownerId)) return base;
-      const helpers = collectBarbarianCooperationUnits(
-        anchor.ownerId,
-        opponent.q,
-        opponent.r,
-        units,
-        activeDeals,
-        activeBattleUnitIds,
-      );
-      return mergeBattleRosterWithBarbarianCooperation(base, helpers);
-    }
-
     function preBattleUnitFromRuntime(u: RuntimeUnit): PreBattleUnit {
       const def = unitDefFor(u);
       const maxHp = unitHealth(def);
@@ -21851,8 +21813,8 @@ async function boot(): Promise<void> {
         showHintMessage('Jednostka zaokrętowana nie może atakować — zejdź na ląd.', 3800);
         return;
       }
-      const atkRoster = collectBarbarianAwareBattleRoster(atkUnit, defUnit, 'attacker');
-      const defRoster = collectBarbarianAwareBattleRoster(defUnit, atkUnit, 'defender');
+      const atkRoster = collectBattleRoster(atkUnit, units, 'attacker');
+      const defRoster = collectBattleRoster(defUnit, units, 'defender');
       const dHexKey4 = keyOf(defUnit.q, defUnit.r);
       const dHex4 = map.hexes[dHexKey4];
       const dTeren4: string = dHex4 ? (dHex4.terenBazowy as string) : 'Rownina';
@@ -21882,7 +21844,6 @@ async function boot(): Promise<void> {
 
       const atkRosterRef = atkRoster.slice();
       const defRosterRef = defRoster.slice();
-      for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.add(unit.id);
       const atkStartSnap = snapshotRosterPositions(atkRosterRef);
       const battleHex = { q: defUnit.q, r: defUnit.r };
 
@@ -21902,7 +21863,6 @@ async function boot(): Promise<void> {
 
       function finishMapBattleUi(): void {
         clearBattleUiState();
-        for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.delete(unit.id);
       }
 
       function mapBattleSummaryMeta(mode: 'auto' | 'manual') {
@@ -22379,7 +22339,6 @@ async function boot(): Promise<void> {
         onResolved();
         return;
       }
-      for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.add(unit.id);
 
       const atkLead = atkRosterRef[0]!;
       const defLead = defRosterRef[0]!;
@@ -22491,7 +22450,6 @@ async function boot(): Promise<void> {
           onResolved();
         } finally {
           battleUiResolving = false;
-          for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.delete(unit.id);
         }
         // P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (Maciej 2026-08-14): ta bitwa
         // przychodząca (AI/barbarzyńcy) właśnie się rozstrzygnęła (auto, pole bitwy albo
@@ -28212,8 +28170,8 @@ async function boot(): Promise<void> {
                     console.warn(`[AI ${ownerId}] Atak na niewidoczny cel — pominięto`);
                     continue;
                   }
-                  const atkRoster = collectBarbarianAwareBattleRoster(attacker, defender, 'attacker');
-                  const defRoster = collectBarbarianAwareBattleRoster(defender, attacker, 'defender');
+                  const atkRoster = collectBattleRoster(attacker, units, 'attacker');
+                  const defRoster = collectBattleRoster(defender, units, 'defender');
                   const hexKey = keyOf(defender.q, defender.r);
                   const hexObj = map.hexes[hexKey];
                   const teren: string = hexObj ? (hexObj.terenBazowy as string) : 'Rownina';
@@ -28861,8 +28819,8 @@ async function boot(): Promise<void> {
                 } else if (bcmd.type === 'attack') {
                   const target = units.find(u => u.id === bcmd.targetUnitId);
                   if (!target) continue;
-                  const atkRoster = collectBarbarianAwareBattleRoster(bu, target, 'attacker');
-                  const defRoster = collectBarbarianAwareBattleRoster(target, bu, 'defender');
+                  const atkRoster = collectBattleRoster(bu, units, 'attacker');
+                  const defRoster = collectBattleRoster(target, units, 'defender');
                   const hexKey2 = keyOf(target.q, target.r);
                   const hexObj2 = map.hexes[hexKey2];
                   const teren2: string = hexObj2 ? (hexObj2.terenBazowy as string) : 'Rownina';

@@ -495,7 +495,6 @@ interface TreatyFormState {
   turns: number;
   allianceKind: 'defensywny' | 'pelny';
   borderMilitary: boolean;
-  barbarianCooperation: boolean;
   tributeMode: 'demand' | 'offer';
   goldPerTurn: number;
   tributeTurns: number;
@@ -582,7 +581,6 @@ function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?
     turns,
     allianceKind: initial?.allianceKind === 'defensywny' ? 'defensywny' : 'pelny',
     borderMilitary: initial?.borderMilitary ?? false,
-    barbarianCooperation: initial?.barbarianCooperation ?? false,
     tributeMode: initial?.tributeMode === 'offer' ? 'offer' : 'demand',
     goldPerTurn: initial?.goldPerTurn ?? (actionId === '12' ? 10 : 15),
     tributeTurns: initial?.tributeTurns ?? 0,
@@ -638,9 +636,6 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '<div class="cdb-row" style="display:flex;gap:8px;align-items:center;margin:6px 0">'
         + '<input type="checkbox" id="cdb-treaty-mil" class="cdb-treaty-mil"' + (state.borderMilitary ? ' checked' : '') + ' />'
         + '<label for="cdb-treaty-mil" style="margin:0">Wariant wojskowy (+ opłata)</label></div>'
-        + '<div class="cdb-row" style="display:flex;gap:8px;align-items:center;margin:6px 0">'
-        + '<input type="checkbox" id="cdb-treaty-barb" class="cdb-treaty-barb"' + (state.barbarianCooperation ? ' checked' : '') + ' />'
-        + '<label for="cdb-treaty-barb" style="margin:0">Wspólna walka z barbarzyńcami (3 tury)</label></div>'
         + '<p class="cdb-sub">Opłata cywilne: ' + feeC + ' ¤ · wojskowe: ' + feeM + ' ¤ (jednorazowo)</p>';
       break;
     }
@@ -783,7 +778,6 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState, ctx?: N
     state.allianceKind = v === 'defensywny' ? 'defensywny' : 'pelny';
   } else if (actionId === '4') {
     state.borderMilitary = (document.querySelector('.cdb-treaty-mil') as HTMLInputElement)?.checked ?? false;
-    state.barbarianCooperation = (document.querySelector('.cdb-treaty-barb') as HTMLInputElement)?.checked ?? false;
   } else if (actionId === '8') {
     const mode = (document.querySelector('.cdb-treaty-trib-mode') as HTMLSelectElement)?.value;
     state.tributeMode = mode === 'offer' ? 'offer' : 'demand';
@@ -1047,7 +1041,6 @@ function buildTreatyPayload(
       break;
     case '4':
       payload.borderMilitary = state.borderMilitary;
-      payload.barbarianCooperation = state.barbarianCooperation;
       payload.goldOnce = state.borderMilitary
         ? (ctx.borderFeeMilitary ?? 40)
         : (ctx.borderFeeCivil ?? 20);
@@ -2187,7 +2180,6 @@ export interface TradeBasketInitial {
   resourceTradeMode?: 'once' | 'per_turn';
   allianceKind?: 'defensywny' | 'pelny';
   borderMilitary?: boolean;
-  barbarianCooperation?: boolean;
   goldPerTurn?: number;
   goldOnce?: number;
   tributeMode?: 'demand' | 'offer';

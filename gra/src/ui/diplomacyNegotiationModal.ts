@@ -18,7 +18,6 @@ export interface NegotiationPayload {
   amount?: number;
   targetOwnerId?: number;
   borderMilitary?: boolean;
-  barbarianCooperation?: boolean;
   techId?: string;
   /** R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A: kierunek handlu tech (akcja '6'). Domyślnie 'sell'. */
   techDirection?: 'sell' | 'buy';

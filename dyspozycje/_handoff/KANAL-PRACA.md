@@ -1,3 +1,11 @@
+## [12:39 PL, 2026-08-20] SESJA LOKALNA → ROBOCZA — DEPLOY PO INTEGRACJI SZEŚCIU TEMATÓW AUTOBOT
+ROBOCZA md5 `d2276783cef8d0718e9573a67181b596` (skrót `d2276783`) · źródło `8996dca8`.
+|- Zakres: cennik surowców ×5, Manpower/HP, koncentracja AI/barbarzyńców, wzrost i szczęście, zdobywanie miast przez barbarzyńców, wspólna walka i przemarsz.
+|- Wszystkie sześć tematów miało finalną kontrolę **READY_FOR_DEPLOY**; artefakt opublikowano do lokalnego `gra-robocza/`, manifest zgodny, `VERIFY OK`.
+|- Zachowano `START.html` oraz stare pliki pomocnicze; nie promowano do KANON/FINALNA i nie wykonano `git push`.
+|- Nota środowiskowa: lokalna bramka nie mogła uruchomić testów zależnych od `esbuild`/`tsc` ani świeżego `npx vite`; zależności były niedostępne, a wcześniejsze kontrole integracyjne tematów były zielone.
+CZEKAM-NA: **test właściciela na ROBOCZA `d2276783`; push tylko na osobne polecenie**.
+
 ## [20:59 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 276 md5 `58c0afe2`
 
 ROBOCZA md5 `58c0afe2bf4bc687ac0e9fd87a5f1960` · stempel `ROBOCZA · d7e9320b · 2026-08-13 18:59` UTC · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 276, na górze).
@@ -1050,14 +1058,6 @@ WY?SZEGO szczebla ?a?cucha (kanon/finalna) ? ale si?gni?cie po niego tylko na
 wyra?n? decyzj? Macieja, w ostateczno?ci; domy?lnie zawsze naprawiamy do przodu.
 
 ---
-
-## [12:39 PL, 2026-08-20] SESJA LOKALNA → ROBOCZA — DEPLOY PO INTEGRACJI SZEŚCIU TEMATÓW AUTOBOT
-ROBOCZA md5 `d2276783cef8d0718e9573a67181b596` (skrót `d2276783`) · źródło `8996dca8`.
-|- Zakres: cennik surowców ×5, Manpower/HP, koncentracja AI/barbarzyńców, wzrost i szczęście, zdobywanie miast przez barbarzyńców, wspólna walka i przemarsz.
-|- Wszystkie sześć tematów miało finalną kontrolę **READY_FOR_DEPLOY**; artefakt opublikowano do lokalnego `gra-robocza/`, manifest zgodny, `VERIFY OK`.
-|- Zachowano `START.html` oraz stare pliki pomocnicze; nie promowano do KANON/FINALNA i nie wykonano `git push`.
-|- Nota środowiskowa: lokalna bramka nie mogła uruchomić testów zależnych od `esbuild`/`tsc` ani świeżego `npx vite`; zależności były niedostępne, a wcześniejsze kontrole integracyjne tematów były zielone.
-CZEKAM-NA: **test właściciela na ROBOCZA `d2276783`; push tylko na osobne polecenie**.
 
 ## [00:30] MASTER ? INTEGRATOR ? ZADANIE 1: audyt batch´┐Żw + doko?czenie rzek + publish
 
@@ -7533,25 +7533,13 @@ ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · źródło `4f099cb18605e0cecac
 |- Zakres: FALA 299 oraz korekta AI — rekrutacja za Skarbiec, bez kosztu Pracy, niezależnie od produkcji budynków; testy Operator/Evaluator zakończone PASS-WITH-NOTES.
 |- Build z czystego commita · `VERIFY OK` · ręczny `START.html` zachowany.
 CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `5dba37a1`**.
-## [2026-08-20] PAKIET-3 — punkt wejścia dokumentacji
-
-Aktualny handoff procesu: [`HANDOFF-AKTUALNY.md`](HANDOFF-AKTUALNY.md).
-Indeks statusów: [`../REJESTR-PROSB-I-ZADAN.md`](../REJESTR-PROSB-I-ZADAN.md).
-Aktywne ABC i odsyłacze decyzji: [`../PYTANIA-OTWARTE.md`](../PYTANIA-OTWARTE.md).
-Run templates: [`../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/`](../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/).
-
-Zakres tej paczki jest docs-only; brak zmian w `gra/`, brak deployu i pushu.
-Poniższe meldunki pozostają historią kanału.
-
-## [2026-08-20] OPERATOR → EVALUATOR → FINAL CONTROL → INTEGRACJA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
-
-GOAL: dokończyć pakiety dokumentacyjne 1–3 i domknąć AutoBot bez zmian w `gra/`.
-|- Pakiet 1: indeks wskazuje `HANDOFF-AKTUALNY` i miejsca zapisu artefaktów.
-|- Pakiet 2: aktywne CLAUDE/reguła/skill/R-PROC są krótkie; historia jest w archiwum.
-|- Pakiet 3: rejestr, ABC/ECHO, handoff i `runs/<ID>/00–04` mają jeden obieg i statusy.
-|- Final Control: PASS-WITH-NOTES; gotowość do integracji: TAK. Integracja docs-only lokalna.
-|- `gra/`: brak zmian. Deploy/push: NIE WYKONANO.
-
-CZEKAM-NA: osobne polecenie właściciela przed deploy/push; bez niego nic nie publikować.
-
----
+## [aktualizacja sesji, 2026-08-20] ORKIESTRATOR → KANAŁ PRACY — DOMKNIĘCIE LISTY 1 I 3
+`R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1`: decyzja `1B/2A/3B`, 3 tury,
+`8B/9A/10B`; Operator `45092ca8` → Evaluator `PASS-WITH-NOTES` → finalna
+kontrola `READY_FOR_DEPLOY`.
+|- Implementacja `c912c8ce` + `12ca89f9` jest w czystym snapshotcie `e69419e5`.
+|- Lista 1: wszystkie sześć tematów potwierdzone w ROBOCZEJ `d2276783`, MD5
+   manifestu zgodny, `verify-robocza-bundle.cjs` → `VERIFY OK`.
+|- Nowego bundla nie budowano: bieżący checkout ma lokalne zmiany cofające część
+   mechaniki; używać istniejącej ROBOCZEJ `d2276783`.
+CZEKAM-NA: playtest właściciela; push tylko na osobne polecenie.
