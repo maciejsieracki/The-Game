@@ -59,6 +59,7 @@ import { splitEmpirePracaBudget } from './production';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
+import { planArmyConcentration } from './army-concentration';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -2534,10 +2535,39 @@ export function decideAITurn(
   // maszerować do celu, który ktoś inny właśnie obsługuje/zabija.
   const handledThreatIds = new Set<string>();
 
+  // R-ARMIA-KONCENTRACJA-AI-BARB-Q1 (4A/5A/7A): major AI gathers a real
+  // field roster before issuing ordinary march/attack decisions. The planner
+  // is owner-agnostic; this call only gates the main-civilization path and
+  // leaves the existing barbarian local rally untouched. Home defenders keep
+  // their higher-priority assignment and are not pulled into the rally.
+  const concentration = isMajorAiOwner(opts)
+    ? planArmyConcentration(playerId, myUnits, {
+      excludedUnitIds: new Set(homeDefenderAssignments.keys()),
+    })
+    : null;
+  const concentrationDeferred = new Set(concentration?.deferredUnitIds ?? []);
+  if (concentration !== null) {
+    for (const unitId of concentration.moveUnitIds) {
+      const unit = myUnits.find(u => u.id === unitId);
+      if (unit === undefined) continue;
+      const step = firstStep(
+        unit,
+        map,
+        concentration.rallyPoint.q,
+        concentration.rallyPoint.r,
+        units,
+      );
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+      }
+    }
+  }
+
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
 
     if (unit.ruchLeft <= 0) continue;
+    if (concentrationDeferred.has(unit.id)) continue;
 
     // Zwiadowcy: wyścig o wioski — poza logiką bojową (nie atakują, nie patrolują „do domu").
     if (isScoutUnit(unit)) {
