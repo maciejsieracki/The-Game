@@ -3,7 +3,7 @@
 Ten katalog zawiera historyczne snapshoty aktywnych dokumentów i dawnych routingów.
 Nie jest źródłem bieżących zasad.
 
-Aktywny proces i miejsca zapisu artefaktów: [`../procesy/INDEX-PROCESU.md`](../procesy/INDEX-PROCESU.md).  
+Aktywny proces i miejsca zapisu artefaktów: [`../procesy/INDEX-PROCESU.md`](../procesy/INDEX-PROCESU.md).
 Pełna norma: [`../decyzje/R-PROC-AUTOBOT.md`](../decyzje/R-PROC-AUTOBOT.md).
 
 Zachowane snapshoty:

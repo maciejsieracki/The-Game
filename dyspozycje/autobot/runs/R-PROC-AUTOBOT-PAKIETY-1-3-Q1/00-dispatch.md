@@ -34,3 +34,11 @@ Poza zakresem: `gra/`, deploy, push oraz promocja jakiejkolwiek bundli.
 3. Aktywne dokumenty nie zawierają starych, konkurencyjnych routingów.
 4. Rejestr, ABC/ECHO, handoff i run używają jednego ID/statusu i jednej pętli.
 5. `git diff --check`, `process-docs-audit.cjs` i kontrola `gra/` przechodzą.
+
+## Raport terminalny
+
+ZMIANY/COMMIT: docs-only allowlista; commit integracji zostanie podany po kontroli.
+TESTY: kryteria powyżej.
+BLOKADY: brak.
+NASTĘPNY KROK: Operator.
+DEPLOY/PUSH: NIE WYKONANO.

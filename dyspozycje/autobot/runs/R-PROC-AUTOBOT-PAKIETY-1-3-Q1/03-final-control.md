@@ -20,3 +20,14 @@ UWAGI: `PASS-WITH-NOTES` dotyczy wyłącznie retencji historycznych etykiet; nie
 nowego routingu. Final Control nie wystawia samodzielnie `READY_FOR_DEPLOY`.
 NASTĘPNY KROK: integracja orkiestratora.
 DEPLOY/PUSH: NIE WYKONANO.
+
+## Raport terminalny
+
+STATUS: PASS-WITH-NOTES
+TEMAT: `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
+GOAL: Dokończyć pakiety dokumentacyjne 1–3 i domknąć routing AutoBot bez zmian w `gra/`.
+ZMIANY/COMMIT: brak zmian; kontrola commitów, diffu i allowlisty.
+TESTY: `git diff --check`; `process-docs-audit.cjs`; playbook dry-run; brak zmian w `gra/`.
+BLOKADY: brak blokady merytorycznej.
+NASTĘPNY KROK: integracja orkiestratora.
+DEPLOY/PUSH: NIE WYKONANO.

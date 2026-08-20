@@ -25,3 +25,14 @@ nie zostały przepisywane ani uznane za aktywny routing.
 BLOKADY: brak blokady procesu.
 NASTĘPNY KROK: Final Control.
 DEPLOY/PUSH: NIE WYKONANO.
+
+## Raport terminalny
+
+STATUS: PASS-WITH-NOTES
+TEMAT: `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
+GOAL: Dokończyć pakiety dokumentacyjne 1–3 i domknąć routing AutoBot bez zmian w `gra/`.
+ZMIANY/COMMIT: niezależna kontrola commitów i allowlisty; brak zmian własnych.
+TESTY: `git diff --check`; audyt procesu; playbook dry-run; kontrola braku zmian w `gra/`.
+BLOKADY: brak; noty wyłącznie o zachowaniu historii append-only.
+NASTĘPNY KROK: Final Control.
+DEPLOY/PUSH: NIE WYKONANO.
