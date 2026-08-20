@@ -1,23 +1,20 @@
 # INDEX PROCESU — mapa źródeł prawdy i artefaktów AutoBot
 
-Ten dokument jest jedyną mapą nawigacyjną procesu. Nie przechowuje bieżących statusów,
+Ten dokument jest mapą „co gdzie jest" — nie punktem startowym. Uniwersalny,
+niezależny od narzędzia punkt startowy to [`README.md`](../../README.md); ten
+indeks czyta się jako jego krok 2. Nie przechowuje bieżących statusów,
 decyzji ABC ani wyników runu. Aktualny stan przejęcia jest zawsze w
 [`dyspozycje/_handoff/HANDOFF-AKTUALNY.md`](../../dyspozycje/_handoff/HANDOFF-AKTUALNY.md).
 
 ## 1. Start sesji
 
-Czytaj w tej kolejności:
+Pełna kolejność czytania jest w [`README.md`](../../README.md) — ten indeks jej
+nie powtarza, żeby nie rozjeżdżała się w dwóch miejscach. Skrót: `README.md` →
+ten indeks → `R-PROC-AUTOBOT.md` → `playbook.md` w całości → `HANDOFF-AKTUALNY.md`
+→ `KANAL-PRACA.md` → rejestr/ABC/decyzja → dopiero na końcu Git i kod.
 
-1. [`CLAUDE.md`](../../CLAUDE.md) — bariery krytyczne;
-2. [`STAN-PRACY-HANDOFF.md`](../../STAN-PRACY-HANDOFF.md) — skrócony punkt wejścia;
-3. [`HANDOFF-AKTUALNY.md`](../../dyspozycje/_handoff/HANDOFF-AKTUALNY.md) — jedyny aktualny handoff;
-4. końcówkę [`KANAL-PRACA.md`](../../dyspozycje/_handoff/KANAL-PRACA.md) — przekazania między sesjami;
-5. aktywne reguły `.cursor/rules/`, zwłaszcza AutoBot, routing modeli, ABC, izolację i watchdog;
-6. [`.claude/skills/civ-autobot/SKILL.md`](../../.claude/skills/civ-autobot/SKILL.md);
-7. [`R-PROC-AUTOBOT.md`](../decyzje/R-PROC-AUTOBOT.md);
-8. `playbook.md` i wygenerowany `dyspozycje/autobot/playbook.json`;
-9. rejestr tematu, aktywne ABC/ECHO, właściwą decyzję i właściwy run;
-10. dopiero na końcu faktyczny Git, testy, manifest i artefakt integracji.
+Jeśli temat jest zmianą samego AutoBota, dodatkowo przeczytaj mapę warstw
+[`dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md`](../../dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md).
 
 Nie zaczynaj od starego handoffu, płaskiego logu ani samego czatu. Nie czytaj i nie
 zmieniaj `gra/` dla paczki dokumentacyjnej.
@@ -57,6 +54,10 @@ porównaj najnowsze ECHO, handoff i dowód na dysku, a rozjazd zapisz do korekty
 | Kanał pracy | `dyspozycje/_handoff/KANAL-PRACA.md` | ≤ krótki meldunek między sesjami, `CZEKAM-NA:` |
 | Publikacja | `dyspozycje/WERSJE.md` | dopiero po deployu/pushu; nie wpisuj samego READY |
 | Postmortem | `dyspozycje/autobot/logs/postmortems.jsonl` | append-only JSONL zgodny z playbookiem |
+| Kryteria STRICT Evaluatora | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT*.md`, `-SCOPE.md` | happy-path, parytet gracz/AI, save/load — trzy twarde FAIL-e domeny gry |
+| Turniej ABC | `docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md` | obowiązkowy dla każdego NOWEGO pytania ABC; `playbook.md` → C-018 |
+| Format raportu „raport" | `docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md` | dziesięć kategorii statusu, wyzwalane hasłem `raport` |
+| Bezpieczna edycja AutoBota | `dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` | mapa wszystkich warstw mechanizmu; czytaj przed zmianą reguł samego AutoBota |
 
 `dyspozycje/autobot/logs/` pozostaje miejscem historycznych raportów legacy. Nowego
 raportu nie zapisuj wyłącznie w logu ani w czacie; run jest kanonicznym śladem.

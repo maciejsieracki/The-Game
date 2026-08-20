@@ -489,4 +489,62 @@ recenzent świadomie porównał z wcześniejszą decyzją, nie tylko oceniał te
 
 ---
 
+## 13. Dodatkowe techniki (wnioski z drugiej rundy wdrożenia)
+
+Poniższe cztery wnioski pochodzą z audytu i naprawy WŁASNEGO routingu tego
+protokołu w realnym projekcie — czyli agent stosujący AutoBota sprawdzał sam
+siebie. Wszystkie cztery są ogólne, niezależne od konkretnego projektu.
+
+**Nie zamieniaj niepewnej wypowiedzi w formalną decyzję.** Rozszerzenie reguły 1
+(„Pytaj przed budowaniem"): odpowiedź w stylu „chyba tak", luźna dygresja w
+rozmowie albo Twoja własna rekomendacja **nie są decyzją człowieka**, nawet
+jeśli brzmią jak zgoda. Decyzję zapisujesz do playbooka wyłącznie po
+jednoznacznej odpowiedzi — jeśli nie jesteś pewien, czy odpowiedź była
+jednoznaczna, dopytaj wprost, zanim zapiszesz.
+
+**Krytyczna kontrola mechaniczna potrzebuje dwóch nośników: pliku ładowanego
+automatycznie i playbooka.** Jeśli Twoje środowisko ładuje jeden plik
+instrukcji automatycznie do każdej sesji (odpowiednik `CLAUDE.md`), a
+playbook wymaga świadomego odczytu — najważniejsza, jednorazowa komenda
+weryfikacyjna (np. „sprawdź, czy żadne zgłoszenie nie zostało zgubione")
+powinna być zapisana W OBU miejscach, nie tylko w playbooku. Playbook
+potrafi wypaść z pola widzenia po długiej sesji lub kompresji kontekstu;
+plik auto-ładowany — nie. To jedyny przypadek w tym protokole, gdzie
+świadomie duplikujesz treść zamiast trzymać jedno źródło prawdy — bo cel
+tej konkretnej reguły to właśnie odporność na zawodną indirekcję.
+
+**Skracanie dokumentacji gubi linki częściej niż treść.** Gdy porządkujesz
+rozrośnięte pliki procesu, największe ryzyko nie leży w tym, co usuwasz z
+głównego pliku — leży w tym, że plik SZCZEGÓŁOWY, do którego głównie
+odsyłałeś, zostaje na dysku, ale nic już do niego nie prowadzi. Po każdym
+skróceniu przejdź listę wszystkich plików pomocniczych, które istniały
+PRZED zmianą, i sprawdź jawnie: czy coś nadal do nich linkuje? Plik, który
+istnieje, ale jest nieosiągalny ze ścieżki czytania, jest dla praktycznych
+celów usunięty — tylko nikt tego nie zauważy, dopóki go nie zabraknie.
+
+**Bariery bezpieczeństwa z sekcji 7 są silniejsze, gdy część z nich wymuszasz
+mechanicznie, nie tylko opisowo.** Prompt/instrukcja tekstowa zawsze może
+zostać przez agenta zreinterpretowana pod presją zadania — kod, który
+odrzuca akcję spoza jawnej listy dozwolonych (deny-by-default), już nie.
+Jeśli Twoje środowisko na to pozwala (skrypt, hook, wrapper narzędzia),
+najcięższe zakazy z sekcji 7 (transakcje finansowe, kasowanie oryginałów,
+masowa korespondencja, publikacja bez zgody) warto zabezpieczyć dodatkowo
+w kodzie, nie tylko w tekście tego protokołu. To nie zastępuje czytania
+reguł — jest ostatnią linią obrony, gdy inne zabezpieczenia zawiodą.
+
+### Opcjonalna technika: turniej dwóch propozycji dla decyzji wysokiego ryzyka
+
+Gdy masz dostęp do więcej niż jednego agenta i decyzja dotyczy czegoś, czego
+nie da się łatwo cofnąć (architektura, ceny, nieodwracalny wybór produktowy)
+— zamiast przedstawiać człowiekowi jedną propozycję A/B/C, poproś DRUGIEGO,
+niezależnego agenta (bez podglądu pierwszej propozycji) o własną, osobną
+propozycję tego samego wyboru. Trzeci agent (albo Ty, jeśli nie masz
+trzeciego) porównuje obie pod kątem trafności rozpoznania problemu, nie
+tego, która „brzmi lepiej", i przedstawia człowiekowi zwycięską/zsyntetyzowaną
+wersję z jawną adnotacją, dlaczego. To kosztuje więcej niż pojedyncza
+propozycja — stosuj wybiórczo, dla decyzji, których cena błędu jest wysoka,
+nie rutynowo dla każdego wyboru.
+
+---
+
 *Koniec protokołu. Potwierdź wczytanie zgodnie z sekcją 1 i czekaj na pierwsze zadanie.*

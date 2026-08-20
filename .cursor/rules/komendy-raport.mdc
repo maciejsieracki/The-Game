@@ -13,4 +13,13 @@ odpowiadają wyłącznie na podstawie plikowych dowodów.
 Raport roli ma pola: `STATUS`, `TEMAT`, `GOAL`, `ZMIANY/COMMIT`, `TESTY`,
 `BLOKADY`, `NASTĘPNY KROK`, `DEPLOY/PUSH`. Brak raportu lub werdyktu
 Evaluator/Final Control oznacza brak dowodu zakończenia. Pełny routing i hierarchia:
-[`INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md).
+[`README.md`](../../README.md) i [`INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md).
+
+## Kontrola kompletności zgłoszeń (C-031)
+
+Po każdej serii rejestracji w `dyspozycje/PYTANIA-OTWARTE.md`, przed zmianą
+wątku — uruchom `grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md`
+(bez kotwicy `^## ` — gubi nagłówki `### `) i potwierdź dla każdego trafienia:
+subagent w locie / pytanie ABC zadane / udokumentowany powód odłożenia. Ta sama
+komenda żyje TAKŻE w `CLAUDE.md` §0c — dwa niezależne, zawsze ładowane nośniki
+dla dwóch różnych narzędzi.

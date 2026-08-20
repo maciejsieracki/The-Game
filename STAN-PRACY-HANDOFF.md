@@ -1,8 +1,8 @@
-# STAN PRACY — PUNKT WEJŚCIA
+# STAN PRACY — MOST KOMPATYBILNOŚCI
 
-Aktualny stan i następny krok są wyłącznie w
-[`dyspozycje/_handoff/HANDOFF-AKTUALNY.md`](dyspozycje/_handoff/HANDOFF-AKTUALNY.md).
-Mapa procesu i miejsca zapisu artefaktów są w
-[`docs/procesy/INDEX-PROCESU.md`](docs/procesy/INDEX-PROCESU.md).
+Ten plik nie jest już częścią aktywnej kolejności czytania. Punktem startowym
+dla każdego agenta jest [`README.md`](README.md) — zacznij tam.
 
-Poprzednie snapshoty są archiwalne; nie używaj ich jako bieżącego źródła prawdy.
+Zostaje wyłącznie jako wskaźnik dla starych odsyłaczy: aktualny stan jest w
+[`dyspozycje/_handoff/HANDOFF-AKTUALNY.md`](dyspozycje/_handoff/HANDOFF-AKTUALNY.md),
+mapa procesu w [`docs/procesy/INDEX-PROCESU.md`](docs/procesy/INDEX-PROCESU.md).

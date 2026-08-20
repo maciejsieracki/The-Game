@@ -1,19 +1,35 @@
 # CLAUDE.md — Civ „The Game"
 
-**Status:** aktywny punkt wejścia. Mapa procesu i routing artefaktów są w
-[`docs/procesy/INDEX-PROCESU.md`](docs/procesy/INDEX-PROCESU.md), a bieżący stan w
-[`dyspozycje/_handoff/HANDOFF-AKTUALNY.md`](dyspozycje/_handoff/HANDOFF-AKTUALNY.md).
+**Status:** łącznik specyficzny dla Claude Code. Uniwersalny, niezależny od
+narzędzia punkt startowy to [`README.md`](README.md) — przeczytaj go najpierw,
+w całości. Ten plik istnieje osobno wyłącznie dlatego, że jest jedynym plikiem
+w tym repo ładowanym automatycznie do kontekstu Claude Code na starcie każdej
+tury — więc niesie dodatkowo jedną komendę wymagającą stałej, automatycznej
+obecności (§0c niżej), nieduplikowaną nigdzie poza analogiczną regułą Cursor
+(`.cursor/rules/komendy-raport.mdc`).
 
 ## Start
 
-1. Czytaj `INDEX-PROCESU.md`, `STAN-PRACY-HANDOFF.md` i wskazany przez niego
-   `HANDOFF-AKTUALNY.md`.
-2. Dla pracy AutoBotem czytaj
-   [`R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md),
-   [skill](.claude/skills/civ-autobot/SKILL.md) oraz aktywne reguły
-   [`.cursor/rules/`](.cursor/rules/).
+1. Przeczytaj [`README.md`](README.md) w całości — pełna kolejność czytania jest tam.
+2. Bramki (komendy testowe i punkty odniesienia): [`R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md) §Bramki.
 3. Stan tematu potwierdzaj w rejestrze, ABC/ECHO, runie i faktycznym Git; czat,
    UI, nazwa brancha ani sam status nie są dowodem.
+
+## §0c — kontrola kompletności zgłoszeń (C-031, obowiązkowa na starcie sesji)
+
+Po każdej serii rejestracji w `dyspozycje/PYTANIA-OTWARTE.md`, przed zmianą
+wątku — uruchom:
+
+```bash
+grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md
+```
+
+(bez kotwicy `^## ` — gubi nagłówki `### `). Dla każdego trafienia potwierdź:
+subagent w locie / pytanie ABC zadane / udokumentowany powód odłożenia. Brak
+któregokolwiek → zgłoszenie zgubione. Ta komenda żyje TAKŻE w
+`.cursor/rules/komendy-raport.mdc` — dwa niezależne, zawsze ładowane nośniki,
+bo `playbook.md` i `README.md` wymagają świadomego `Read` i po kompaktowaniu
+długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playbook.md` → C-031.
 
 ## Bariery krytyczne
 

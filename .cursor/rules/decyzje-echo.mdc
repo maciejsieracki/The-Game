@@ -13,3 +13,8 @@ Po odpowiedzi właściciela w formie pełnego ID + A/B/C:
 
 Poboczne czaty nie są miejscem decyzji (C-043). Nie proś właściciela o przenoszenie meldunków
 między czatami. Nie wykonuj deployu bez `READY_FOR_DEPLOY` i osobnego polecenia.
+
+**Nie zamieniaj odpowiedzi „chyba", luźnej rozmowy ani rekomendacji agenta w
+formalną decyzję ABC.** ECHO zapisujesz wyłącznie po jednoznacznej odpowiedzi
+właściciela w formie pełne ID + litera. Niepewna wypowiedź, dywagacja albo
+własna sugestia agenta nie kwalifikują się jako decyzja — dopytaj wprost.
