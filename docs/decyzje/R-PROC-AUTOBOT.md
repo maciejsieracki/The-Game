@@ -3,7 +3,7 @@
 **Status:** obowiązujący opis dla człowieka. Mapa źródeł prawdy i lokalizacja artefaktów
 znajdują się w [`INDEX-PROCESU.md`](../procesy/INDEX-PROCESU.md); techniczny skrót egzekwuje
 [reguła Cursor](../../.cursor/rules/autobot-evaluator-operator.mdc), a instrukcja wykonawcza
-jest w [skillu](../../.claude/skills/civ-autobot/SKILL.md).
+jest w [skillu](../../.claude/skills/autobots/SKILL.md).
 
 ## 1. Role i kolejność
 

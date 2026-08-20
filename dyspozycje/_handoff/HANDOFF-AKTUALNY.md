@@ -23,7 +23,7 @@ integracji. Deploy i push: `NIE WYKONANO`.
 - mapa: [`../../docs/procesy/INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md);
 - norma: [`../../docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md);
 - aktywna reguła: [`../../.cursor/rules/autobot-evaluator-operator.mdc`](../../.cursor/rules/autobot-evaluator-operator.mdc);
-- skill: [`../../.claude/skills/civ-autobot/SKILL.md`](../../.claude/skills/civ-autobot/SKILL.md);
+- skill: [`../../.claude/skills/autobots/SKILL.md`](../../.claude/skills/autobots/SKILL.md);
 - pełny run: [`../autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/`](../autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/).
 
 ## OBIEG

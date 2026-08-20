@@ -9,7 +9,7 @@ rozstrzyga konfliktów. Czytaj:
 - [INDEX-PROCESU.md](../docs/procesy/INDEX-PROCESU.md) — routing, GOAL, pętla, dowody,
   integracja i deploy/push;
 - [R-PROC-AUTOBOT.md](../docs/decyzje/R-PROC-AUTOBOT.md) — pełny opis dla człowieka;
-- [`.claude/skills/civ-autobot/SKILL.md`](../.claude/skills/civ-autobot/SKILL.md) — instrukcja skill;
+- [`.claude/skills/autobots/SKILL.md`](../.claude/skills/autobots/SKILL.md) — instrukcja skill;
 - [`.cursor/rules/autobot-evaluator-operator.mdc`](../.cursor/rules/autobot-evaluator-operator.mdc) —
   aktywna reguła techniczna.
 
