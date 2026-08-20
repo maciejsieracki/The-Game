@@ -1,13 +1,16 @@
-# AutoBot runs — struktura artefaktów
+# AutoBot runs — kanoniczny ślad obiegu
 
-Każdy nowy run ma własny katalog `runs/<ID>/` i pięć etapów:
+Każdy nowy temat ma własny katalog `runs/<pełne-ID>/` i dokładnie pięć etapów:
 
 `00-dispatch.md` → `01-operator.md` → `02-evaluator.md` →
 `03-final-control.md` → `04-integration.md`.
 
-Raporty są śladem procesu, nie substytutem rejestru tematów. Nie dopisuj
-historycznych wyników z pamięci, nie przenoś starych raportów bez linku i nie
-deklaruj `READY_FOR_DEPLOY` bez dowodu finalnej kontroli oraz integracji.
+Wszystkie pliki runu używają tego samego pełnego ID. Przy `FAIL`, technicznym `BLOCK`,
+`TIMEOUT`, `INFRA`, `ZWIS` lub braku gotowości dopisz rundę/korektę w tym samym
+katalogu; nie twórz nowego ID. Raporty z `logs/` są historią legacy, nie zastępują runu.
 
-Wzorzec referencyjny dla Pakietu 3 znajduje się w
-`runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/`.
+`04-integration.md` może oznaczyć `READY_FOR_DEPLOY` dopiero po faktycznej integracji.
+Deploy/push zapisuje się osobno i wymaga autoryzacji właściciela.
+
+Wzorzec zakończonej paczki dokumentacyjnej:
+[`R-PROC-AUTOBOT-PAKIETY-1-3-Q1/`](R-PROC-AUTOBOT-PAKIETY-1-3-Q1/).

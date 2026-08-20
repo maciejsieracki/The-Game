@@ -1,8 +1,8 @@
 # STAN PRACY — PUNKT WEJŚCIA
 
-Ten plik jest krótkim punktem wejścia. Aktualny stan pracy i instrukcja przejęcia
-znajdują się w [`dyspozycje/_handoff/HANDOFF-AKTUALNY.md`](dyspozycje/_handoff/HANDOFF-AKTUALNY.md).
+Aktualny stan i następny krok są wyłącznie w
+[`dyspozycje/_handoff/HANDOFF-AKTUALNY.md`](dyspozycje/_handoff/HANDOFF-AKTUALNY.md).
+Mapa procesu i miejsca zapisu artefaktów są w
+[`docs/procesy/INDEX-PROCESU.md`](docs/procesy/INDEX-PROCESU.md).
 
-Pełna poprzednia treść została zachowana obok tego pliku w
-[`STAN-PRACY-HANDOFF-ARCHIWUM-2026-08-20.md`](STAN-PRACY-HANDOFF-ARCHIWUM-2026-08-20.md).
-Nie używaj archiwum jako bieżącego źródła prawdy bez sprawdzenia aktualnego handoffu.
+Poprzednie snapshoty są archiwalne; nie używaj ich jako bieżącego źródła prawdy.

@@ -2,6 +2,13 @@
 Aktualizacja: 2026-08-20 (migracja indeksu; zapis ECHO `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 = 1A + 2A + 3A`; pełne A/B/C zachowane poniżej). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
+## PACZKA PROCESOWA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
+
+Zakres tej paczki został jednoznacznie określony przez właściciela; nowe ABC nie było
+wymagane. Nie dodawaj tu raportów Operatora/Evaluatora ani statusów pakietów — ich
+miejsce jest w `dyspozycje/autobot/runs/<ID>/` i w rejestrze. Jeśli później pojawi się
+decyzja produktowa, otwórz osobne pełne ABC i zachowaj jej ECHO.
+
 ## INDEKS OPERACYJNY — MIGRACJA 2026-08-20 (Pakiet 3)
 
 To jest aktualny punkt nawigacji. Pełne opisy, odpowiedzi, werdykty i pomyłki
@@ -44,9 +51,11 @@ statusy nie są automatycznie przepisywane na kanoniczne: korektę można dodać
 z datą, dowodem i odsyłaczem do decyzji/raportu. To zabezpiecza przed fałszywym
 zamykaniem tematów podczas migracji.
 
-## ⛔ Obieg (Maciej 2026-08-03)
-Nowy case → **ID w REJESTR-PROSB** + wpis tu (jeśli ABC) → agent **proponuje, nie koduje** → Maciej: **`ID + A|B|C`** → commit → **`deploy`** osobno.
-Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
+## ⛔ Obieg
+Nowy temat → **pełne ID w REJESTR-PROSB** → ABC tylko jeśli wymagana decyzja →
+Operator → Evaluator → Final Control → integracja → `READY_FOR_DEPLOY` → deploy/push
+osobno. Pętla `FAIL`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS` wraca do tego samego ID.
+Kanon: [`docs/procesy/INDEX-PROCESU.md`](../docs/procesy/INDEX-PROCESU.md).
 
 ---
 
@@ -311,7 +320,7 @@ Szczegóły: [`docs/decyzje/R-BUDOWA-ZROWNOWAZONE-TRYB.md`](../docs/decyzje/R-BU
 
 ## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **ZDEPLOYOWANE FALA 215** `2a5a66d1` (2026-08-04)
 
-Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
+Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](../docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
 
 ---
 
@@ -319,12 +328,12 @@ Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły
 
 | ID | Decyzja | Status | Docs |
 |----|---------|--------|------|
-| **MP-ARMY-Q1** | **A** — cap = łącznie żywe jednostki bojowe (garnizon wliczony); odbudowa do limitu | **WDROŻONE FALA 220** | [`MP-ARMY-Q1.md`](docs/decyzje/MP-ARMY-Q1.md) |
-| **MP-GARRISON-Q1** | **A** — Hard: istniejące garnizony zostają, zakaz nowej produkcji wojskowej | **WDROŻONE FALA 220** | [`MP-GARRISON-Q1.md`](docs/decyzje/MP-GARRISON-Q1.md) |
-| **MP-DIPLO-Q1** | **A** — ułatwienie tylko AI major→MP; same-civ Zaufanie max ~100; priorytet absorpcji klastra | **WDROŻONE FALA 220** | [`MP-DIPLO-Q1.md`](docs/decyzje/MP-DIPLO-Q1.md) |
-| **AI-FOUND-Q1** | **A** — founding AI major pop ≥ 2 (jak gracz) | **WDROŻONE FALA 220** | [`AI-FOUND-Q1.md`](docs/decyzje/AI-FOUND-Q1.md) |
-| **AI-LOCAL-Q1** | **A** — faza lokalna ~tura 20 LUB 1 zwiadowca; wioski nie blokują | **WDROŻONE FALA 220** | [`AI-LOCAL-Q1.md`](docs/decyzje/AI-LOCAL-Q1.md) |
-| **AI-MANAGE-Q1** | **A** — auto-zarządca dla major AI (nie MP) | **WDROŻONE FALA 220** | [`AI-MANAGE-Q1.md`](docs/decyzje/AI-MANAGE-Q1.md) |
+| **MP-ARMY-Q1** | **A** — cap = łącznie żywe jednostki bojowe (garnizon wliczony); odbudowa do limitu | **WDROŻONE FALA 220** | [`MP-ARMY-Q1.md`](../docs/decyzje/MP-ARMY-Q1.md) |
+| **MP-GARRISON-Q1** | **A** — Hard: istniejące garnizony zostają, zakaz nowej produkcji wojskowej | **WDROŻONE FALA 220** | [`MP-GARRISON-Q1.md`](../docs/decyzje/MP-GARRISON-Q1.md) |
+| **MP-DIPLO-Q1** | **A** — ułatwienie tylko AI major→MP; same-civ Zaufanie max ~100; priorytet absorpcji klastra | **WDROŻONE FALA 220** | [`MP-DIPLO-Q1.md`](../docs/decyzje/MP-DIPLO-Q1.md) |
+| **AI-FOUND-Q1** | **A** — founding AI major pop ≥ 2 (jak gracz) | **WDROŻONE FALA 220** | [`AI-FOUND-Q1.md`](../docs/decyzje/AI-FOUND-Q1.md) |
+| **AI-LOCAL-Q1** | **A** — faza lokalna ~tura 20 LUB 1 zwiadowca; wioski nie blokują | **WDROŻONE FALA 220** | [`AI-LOCAL-Q1.md`](../docs/decyzje/AI-LOCAL-Q1.md) |
+| **AI-MANAGE-Q1** | **A** — auto-zarządca dla major AI (nie MP) | **WDROŻONE FALA 220** | [`AI-MANAGE-Q1.md`](../docs/decyzje/AI-MANAGE-Q1.md) |
 
 **Ustalenia produktowe (nie ABC):** wzmacniać tylko **AI major** (nie MP); major AI = te same reguły gospodarcie co gracz. Trudność: Easy ≈ dziś MP wojsko/diplo · Normal max1 wojsko + mid absorb · Hard 0 wojska MP + prawie zawsze accept AI→MP.
 
