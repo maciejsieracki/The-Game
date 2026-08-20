@@ -159,7 +159,17 @@ stosowania.
 **Statusy i progi.** Skuteczność = sprawdziła się / (sprawdziła się + zawiodła).
 Status zmieniaj dopiero od min. 10 zastosowań danej zasady:
 
-- skuteczność poniżej 30% → **WYCOFANA** — znika z pracy, ale zostaje w pliku.
+- skuteczność poniżej 30% → **DO PRZEGLĄDU** (decyzja właściciela 2026-08-20;
+  zastępuje dawne ciche automatyczne WYCOFANA opisane niżej) — automat NIE
+  wycofuje zasady sam. Przestaje ją proponować w pracy (jak WYCOFANA), ale
+  zasada ZOSTAJE w pliku playbooka bez przenoszenia do kwarantanny, a agent
+  jawnie zgłasza fakt w rejestrze pytań otwartych (`PYTANIA-OTWARTE.md` w
+  Civ; odpowiednik dla innych projektów — miejsce decyzji produktowych).
+  Decyduje wyłącznie człowiek: zostawić, poprawić warunek stosowania, albo
+  świadomie przenieść w status WYCOFANA,
+- **WYCOFANA** — znika z pracy, ale zostaje w pliku. To status ręcznego,
+  ŚWIADOMEGO wycofania przez człowieka (np. z DO PRZEGLĄDU, albo wprost) —
+  nie jest już nadawany automatycznie przez samo przekroczenie progu 30%.
   Przywrócić może ją wyłącznie człowiek; przywrócenie zeruje liczniki i ustawia
   status W OBSERWACJI (albo CHRONIONA, jeśli człowiek tak zdecyduje),
 - skuteczność 30–60% → **W OBSERWACJI** — nadal stosowana! Zasada odstawiona
@@ -269,7 +279,7 @@ Ostatnia aktualizacja: RRRR-MM-DD · sesja nr N
 |---|---|---|
 
 ## 2. Zasady
-<!-- Statusy: AKTYWNA / W OBSERWACJI / WYCOFANA / CHRONIONA.
+<!-- Statusy: AKTYWNA / W OBSERWACJI / DO PRZEGLĄDU / WYCOFANA / CHRONIONA.
      Nowa zasada startuje jako AKTYWNA z licznikiem 0/0.
      Licznik aktualizuj tylko wtedy, gdy zasada miała zastosowanie.
      Przykład wiersza: | R-001 | treść | warunek stosowania | 0 | 0 | AKTYWNA | -->

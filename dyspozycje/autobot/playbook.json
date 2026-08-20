@@ -5,7 +5,7 @@
   "thresholds": {
     "promoteMinWinRate": 0.6,
     "deprecateBelowWinRate": 0.3,
-    "minRunsForSignificance": 5,
+    "minRunsForSignificance": 10,
     "thresholdAdjustDelayHours": 24,
     "minEventsForWinner": 1000,
     "evaluationDelayHours": 48

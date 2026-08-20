@@ -137,12 +137,28 @@ wymagają jednocześnie `humanApproved` i `deployPasswordGiven`. `assertProdIsol
 blokuje wszystko z tej listy przy `env=production`. To jest ostatnia linia obrony, gdy
 pętla Operator→Evaluator zawiedzie — nie zastępuje jej czytania.
 
-**Otwarty rozjazd, nierozstrzygnięty (zgłoszony właścicielowi, nie do samodzielnej
-decyzji agenta):** specyfikacja (`R-PROC-AUTOBOT` §v2, `dyspozycje/autobot/README.md`)
-mówi `minRunsForSignificance = 10`, ale żywy `dyspozycje/autobot/playbook.json` ma
-dziś `5`, a generator `playbook-md-to-json.cjs` przepisuje `thresholds` bez zmian —
-więc `5` faktycznie obowiązuje. Odczytaj wartość z pliku, nie z tego dokumentu, dopóki
-właściciel nie rozstrzygnie, która ma być kanoniczna.
+**Rozstrzygnięte (2026-08-20, decyzja właściciela — poprzedni rozjazd spec vs. żywy
+plik zamknięty):** `minRunsForSignificance = 10` jest teraz kanoniczne wszędzie —
+specyfikacja (`R-PROC-AUTOBOT` §v2, `dyspozycje/autobot/README.md`), domyślna wartość
+w kodzie (`playbook-manager.ts`, zawsze była `10`) i żywy `dyspozycje/autobot/playbook.json`
+(poprawiony z `5` na `10`) są zgodne. Nie ma już potrzeby odczytywać wartości z pliku
+zamiast z dokumentu.
+
+**Mechanizm wycofywania słabych reguł zmieniony (2026-08-20, decyzja właściciela):**
+`retireWeakRules` (`dyspozycje/autobot/src/playbook-manager.ts`) już NIE wycofuje
+cicho zasady poniżej `deprecateBelowWinRate` po osiągnięciu progu istotności.
+Zamiast automatycznego `status='RETIRED'` + przeniesienia do `quarantine_rules`
+(co czyniło regułę niewidoczną dla każdego przyszłego Operatora bez żadnego
+powiadomienia człowieka), zasada dostaje status `REVIEW` i **zostaje** w `rules[]`
+— nic nie znika z pliku ani z historii. `getOperatorSystemRules` nadal filtruje po
+`status === 'ACTIVE'`, więc REVIEW przestaje być sugerowana Operatorowi (efekt
+zamierzony — nie ciągniemy dalej reguły o niskiej skuteczności), ale fakt trafia
+jawnie do `dyspozycje/PYTANIA-OTWARTE.md` (dopisywane przez
+`evaluator-agent.ts` przy wywołaniu `retireWeakRules` w `evaluate()`, tekst wpisu
+budowany przez `formatReviewFlagForOpenQuestions` w `playbook-manager.ts`).
+Decyzję — zostawić, poprawić warunek stosowania, czy świadomie wycofać
+(status `RETIRED`) — podejmuje wyłącznie właściciel. Status `RETIRED` istnieje
+nadal jako oznaczenie świadomego, ręcznego wycofania.
 
 ## 8. Hasła właściciela
 
