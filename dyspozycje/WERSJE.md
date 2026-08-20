@@ -3548,6 +3548,23 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
+## ROBOCZA — FALA 300 (2026-08-20)
+- **AKTUALNA** · ROBOCZA md5 `47149d70bf2af52ae26e410899d6f133` · stempel `47149d70` · `VERIFY OK`.
+  Zakres: `R-TRZY-KARTY-WDROZENIE-Q1` — trzy karty od Designu (paczka `TRZY-KARTY-2026-08-19`)
+  wdrożone do realnego kodu, pełny cykl Operator→Evaluator (Sonnet 5 Medium/High, przez
+  Workflow). Karta 1 — odkrycie technologii (`techDiscoveryNotice.ts`, redesign, Esc zamyka,
+  przycisk „Otwórz hub badań" świadomie pominięty — brak w żadnej klatce makiety, zweryfikowane
+  dwukrotnie, sprzeczne z handoffem designera, otwarte dla właściciela, nieblokujące). Karta 2 —
+  jednostka (`unitInfoCard.ts`, puste sekcje znikają, kontry jako plakietki, stały rozmiar slotu
+  3D, Esc naprawiony po FAIL pierwszej rundy Evaluatora, rant złoto kanonu). Karta 3 — wydarzenia
+  (`sidePanelHud.ts`+`bottomBarHud.ts`, kolejka nie stos, 9-poziomowa różnica blokująca/
+  informacyjna, 3 warstwy czysto wizualnej sygnalizacji na „Zakończ turę", przycisk „Zignoruj"
+  przy buncie; **twardy zakaz blokady tury zweryfikowany testem mutacyjnym** — wstrzyknięcie
+  zakazanego `getBlockingCount()` w handler end-turn poprawnie obróciło PASS w FAIL). 5 nowych
+  tokenów w `tokens.css`. Bramki na całości: `tsc` 0, 13 zestawów testów zielonych, 2 znane
+  przedistniejące awarie niezwiązane z diffem (`unit-info-card-army-interaction-test` 5/2).
+  Deploy wykonany z czystego commita `83405147`.
+
 ## ROBOCZA — FALA 299 (2026-08-19)
-- **AKTUALNA** · źródło `4f099cb18605e0cecac55a19218e539962e30fd7` · ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · `VERIFY OK`.
+- źródło `4f099cb18605e0cecac55a19218e539962e30fd7` · ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · `VERIFY OK`.
   Zakres: zweryfikowane integracje FALI 299 oraz korekta parytetu rekrutacji AI — AI kupuje jednostki za Skarbiec, wspólną ścieżką z graczem, bez kosztu Pracy i niezależnie od produkcji budynków. Deploy wykonany z czystego commita; ręczny `START.html` zachowany.

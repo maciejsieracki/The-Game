@@ -1,3 +1,12 @@
+## [17:20 PL, 2026-08-20] SESJA LOKALNA — DEPLOY ROBOCZA FALA 300 md5 `47149d70`
+
+ROBOCZA md5 `47149d70bf2af52ae26e410899d6f133` · stempel `47149d70` · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 300, na górze).
+Temat `R-TRZY-KARTY-WDROZENIE-Q1` — trzy karty od Designu (paczka `TRZY-KARTY-2026-08-19`), pełny cykl Operator→Evaluator przez Workflow (Sonnet 5 Medium/High). Dwa commity rozdzielone: `3dd3ff64` (routing AutoBot, docs-only) i `83405147` (kod trzech kart).
+Karta 2 przeszła realny FAIL→poprawkę (brak Esc + nieprawdziwe TESTY w raporcie Operatora, złapane przez Evaluatora, naprawione i potwierdzone niezależnie). Karta 3: twardy zakaz blokady tury zweryfikowany testem mutacyjnym (wstrzyknięcie zakazanego wzorca poprawnie obróciło PASS w FAIL).
+**Otwarte dla właściciela, nieblokujące:** Karta 1, przycisk „Otwórz hub badań" pominięty — żadna klatka makiety go nie rysuje (zweryfikowane dwukrotnie, niezależnie), mimo że handoff designera (`DYSPOZYCJA-WDROZENIE.md`) twierdzi inaczej. Rozbieżność między handoffem a rzeczywistą makietą, nie błąd implementacji.
+**Otwarty rozjazd guardrails, zgłoszony wcześniej dziś:** `minRunsForSignificance` spec=10 vs `playbook.json`=5 — nierozstrzygnięty, nie do samodzielnej decyzji agenta.
+CZEKAM-NA: właściciel — playtest FALI 300, decyzja ws. „hub badań" i rozjazdu progu.
+
 ## [20:59 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 276 md5 `58c0afe2`
 
 ROBOCZA md5 `58c0afe2bf4bc687ac0e9fd87a5f1960` · stempel `ROBOCZA · d7e9320b · 2026-08-13 18:59` UTC · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 276, na górze).
