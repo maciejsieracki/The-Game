@@ -357,6 +357,7 @@ export function treatyDisplayLabel(rodzaj: TreatyKind): string {
     case RodzajTraktatu.UmowaWymiany: return 'Umowa wymiany';
     case RodzajTraktatu.OtwartGranice: return 'Traktat przemarszu (cywilny)';
     case RodzajTraktatu.PrawoWojskowePrzemarszu: return 'Traktat przemarszu (wojskowy)';
+    case RodzajTraktatu.WspolnaWalkaBarbarzyncy: return 'Wspólna walka z barbarzyńcami (3 tury)';
     case RodzajTraktatu.Wasalizacja: return 'Wasalizacja';
     case RodzajTraktatu.Rozejm: return 'Rozejm';
     default: return String(k);
