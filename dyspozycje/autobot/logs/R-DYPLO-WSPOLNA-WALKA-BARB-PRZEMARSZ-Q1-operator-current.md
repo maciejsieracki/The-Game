@@ -1,67 +1,76 @@
-# Raport Operatora — `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1`
+# Raport terminalny Operatora AutoBot — `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1`
 
-STATUS: READY_FOR_EVALUATOR
-TEMAT: R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1
-OPERATOR: Luna High
-BAZA: `9e576da2048eb2f2083e0c5684ae01c66ff8d6eb`
-WORKTREE: `_worktrees/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1-operator-current`
-COMMIT: `936eaf2ee6dd9e64c3795c1b810deb8092ba105b`
+**STATUS: READY_FOR_EVALUATOR**
 
-## GOAL
+- **Rola/model:** Operator, GPT-5.6 Luna High
+- **GOAL:** przygotować kontrakt wspólnej walki z barbarzyńcami i wojskowego
+  przemarszu zgodnie z decyzją `1B / 2A / 3B`, 3 tury, `8B / 9A / 10B`.
+- **Weryfikowany snapshot:** `e69419e533d1da9cee8e4022aa8f2b0d0bf0cb27`
+  (`ROBOCZA d2276783`), czysty worktree integracyjny.
+- **Decyzja właściciela:** kompletna; nowych pytań ABC nie zadawałem.
 
-Gotowy do niezależnej oceny kontrakt wspólnej walki z barbarzyńcami i wojskowego
-przemarszu: pełna obustronność, 3 tury, promień 2 heksów, kwalifikowane aktywne
-jednostki lądowe oraz blokada ponownego użycia jednostki podczas bieżącej walki.
+## Wynik pracy
 
-## ZAKRES I ZMIANY
+Implementacja była już obecna w repozytorium i odpowiada decyzji właściciela.
+Nie przepisywałem kodu i nie wprowadzałem nowego diffu w tej rundzie.
+Zakres implementacji pochodzi z `c912c8ce`, a korekta rajderów morskich z
+`12ca89f9`; oba commity są przodkami weryfikowanego snapshotu.
 
-- `gra/src/types/diplomacy.ts` — nowy rodzaj dealu `wspolna_walka_barbarzyncy`.
-- `gra/src/game/diplomacy-treaties.ts` — pole kontraktu, wykrywanie obustronne,
-  wygasanie i zerwanie przez wojnę.
-- `gra/src/game/diplomacy-border-march.ts` — wojskowy przemarsz autoryzowany
-  w obu kierunkach przez ten kontrakt.
-- `gra/src/game/diplomacy-proposals.ts` — zawarcie z terminem 3 tur oraz obsługa
-  akceptacji ścieżki gracz/AI; wariant wymaga wojskowego przemarszu.
-- `gra/src/ui/diplomacyTradeBasket.ts` i `gra/src/ui/diplomacyNegotiationModal.ts` —
-  checkbox wspólnej walki przy traktacie przemarszu i przeniesienie payloadu.
-- `gra/src/game/diplomacy-barbarian-cooperation.ts` — czyste reguły promienia,
-  kwalifikacji i merge rosteru.
-- `gra/src/main.ts` — dołączanie partnerów do walk z barbarzyńcami oraz blokada
-  jednostek w trwającej bitwie; zwykłe walki cywilizacja–cywilizacja bez zmiany.
-- `gra/src/game/diplomacy-display.ts` — etykieta dealu.
-- `gra/tools/diplomacy-barbarian-cooperation-test.cjs` — regresja kontraktu.
-- `docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md` — aktualne ECHO
-  właściciela; wcześniejsze 1A/2A/3A oznaczone jako historyczne.
+Sprawdzony zakres:
 
-## ZASADY ZAIMPLEMENTOWANE
+- `gra/src/types/diplomacy.ts` — rodzaj umowy wspólnej walki;
+- `gra/src/game/diplomacy-treaties.ts` — obustronne wykrywanie, termin i
+  wygasanie traktatu;
+- `gra/src/game/diplomacy-proposals.ts` — ścieżka zawarcia i akceptacji dla
+  gracza oraz AI;
+- `gra/src/game/diplomacy-border-march.ts` — autoryzacja przemarszu w obu
+  kierunkach;
+- `gra/src/game/diplomacy-barbarian-cooperation.ts` oraz `gra/src/main.ts` —
+  kwalifikacja i dołączanie jednostek do walki z barbarzyńcami;
+- `gra/src/ui/diplomacyTradeBasket.ts`, `gra/src/ui/diplomacyNegotiationModal.ts`
+  i `gra/src/game/diplomacy-display.ts` — UI i etykieta umowy;
+- test kontraktowy `gra/tools/diplomacy-barbarian-cooperation-test.cjs`.
 
-- 1B/2A/3B: długość tego wdrożenia 3 tury, pełna obustronność, natychmiastowe
-  wygaśnięcie autoryzacji po terminie bez teleportowania jednostek.
-- 8B/9A/10B: promień 2 heksów; tylko aktywne lądowe jednostki bojowe; bez
-  zwiadowców, cywilów, garnizonów, zaokrętowanych i oblężonych;
-  jednostka w aktywnej bitwie jest pomijana do jej zakończenia.
+## Impact / miejsca użycia
 
-## TESTY
+Przed implementacją funkcji współpracy nie było call-site'ów. Po implementacji
+zweryfikowano wszystkie użycia: eksport/import helperów w `gra/src/main.ts`,
+wywołanie zbierania rosteru w `main.ts` przy walce z barbarzyńcami, merge rosteru
+w tym samym miejscu, autoryzację nowego rodzaju umowy w
+`gra/src/game/diplomacy-border-march.ts` oraz wykrywanie umowy w
+`gra/src/game/diplomacy-barbarian-cooperation.ts`. Nie znaleziono dodatkowych
+call-site'ów poza zakresem.
 
-- `node tools/diplomacy-barbarian-cooperation-test.cjs`: **9 passed, 0 failed**.
-- `node tools/diplomacy-treaties-test.cjs`: **17/17 PASS**.
-- `node tools/diplomacy-border-march-test.cjs`: **43/43 PASS**.
-- `node node_modules/typescript/bin/tsc --noEmit`: **BLOCKED przez istniejące
-  błędy bazy** (brak `three`, błędy `filePlayer.ts`/rendererów); brak błędów w
-  zmienionych plikach mechaniki po odfiltrowaniu błędów bazowych.
+## Testy i dowody
 
-## BLOKADY
+- kontrakt wspólnej walki: **10/10 PASS** — termin 3 tury, promień 2,
+  obustronność, wygaśnięcie, negacje, rajder morski, aktywna bitwa i brak dubli;
+- traktaty: **17/17 PASS**;
+- przemarsz: **43/43 PASS**;
+- parytet gracz/AI: PASS — test obejmuje walkę ownera 0 z partnerem AI oraz
+  walkę ownera AI z partnerem gracza;
+- save/load: PASS — `seaRaider: true` przechodzi `serializeGame →
+  deserializeGame`, a stary zapis bez pola zachowuje kompatybilny brak wartości;
+- TypeScript: **PASS**, exit 0;
+- Vite: **PASS**, 837 modułów;
+- `git diff --check`: **PASS**;
+- ROBOCZA: manifest `d2276783cef8d0718e9573a67181b596`, zakres obejmuje ten temat.
 
-- Niezależna ocena Evaluatora i Final Control jeszcze nie wykonana.
-- Nie wykonano deployu ani pushu.
-- Worktree zawierał wcześniejsze, niezwiązane modyfikacje w
-  `gra/tools/.stubs/*`; nie zostały dotknięte ani nie należą do allowlisty tego tematu.
+## Blokady i bramki
 
-## NASTĘPNY KROK
+- Brak blokady technicznej w czystym snapshotcie.
+- Bieżący główny checkout ma niezacommitowane, niespójne zmiany użytkownika
+  poza tym snapshotem; nie zostały dotknięte ani użyte do oceny.
+- Operator nie wystawia `READY_FOR_DEPLOY`; wymagany jest niezależny Evaluator,
+  następnie finalna kontrola i integracja.
 
-Evaluator Luna High ma sprawdzić SCOPE, obustronność, termin, save/load, obie
-strony walki z barbarzyńcami, przypadki negatywne i faktyczny diff. Po PASS
-uruchomić Final Control Luna High. Integracja i `READY_FOR_DEPLOY` pozostają po
-stronie orkiestratora; deploy/push nie wykonano.
+## DEPLOY/PUSH
 
-DEPLOY/PUSH: nie wykonano.
+**Nie wykonano w tej rundzie.** Istniejąca ROBOCZA `d2276783` już zawiera zakres
+tematu, ale ten Operator nie wykonywał ponownej publikacji ani pushu.
+
+## Następny krok
+
+Evaluator Luna High: niezależnie sprawdzić ten snapshot, exact diff, parytet,
+edge/negative/repro i save/load. Po `PASS` uruchomić finalną kontrolę; dopiero
+po pozytywnej kontroli i integracji można utrzymać status `READY_FOR_DEPLOY`.
