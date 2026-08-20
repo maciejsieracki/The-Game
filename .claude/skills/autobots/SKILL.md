@@ -119,6 +119,7 @@ dispatch → Operator → Evaluator → Final Control → integracja → READY_F
 
 Limit 5 rund pętli na ten sam temat (Maciej, 2026-08-20) — po przekroczeniu orkiestrator
 zgłasza właścicielowi zamiast kontynuować bez końca. Pełny opis: R-PROC-AUTOBOT.md §3.
+Final Control jest zawsze osobnym subagentem (nigdy główny agent sam) na tym samym modelu co Evaluator - nigdy nie pomijaj tego kroku ani nie wykonuj go samodzielnie.
 
 1. Przed dispatchiem zapisz `00-dispatch.md`: pełne ID, GOAL, kryteria końca, zakres,
    allowlistę, izolację, bazę worktree i plan testów.

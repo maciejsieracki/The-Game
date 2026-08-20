@@ -24,6 +24,9 @@ Operator GPT-5.6 Luna High
 | Orkiestrator | Weryfikuje faktyczny Git i integruje wyłącznie zatwierdzoną allowlistę | Nie omija raportów ani bramek |
 | Deploy/push | Publikuje po `READY_FOR_DEPLOY` i osobnej autoryzacji | Nie wynika z commita ani raportu |
 
+Final Control jest — dokładnie jak Operator i Evaluator — zawsze osobnym subagentem;
+nigdy nie jest wykonywany bezpośrednio przez głównego/orkiestrującego agenta.
+
 ## 2. GOAL, ID i izolacja
 
 Przed dispatchiem każdy temat ma pełne ID, jawny `GOAL`, mierzalne kryteria końca,
@@ -104,7 +107,10 @@ niedostępne w danej sesji — wtedy pojedynczy dispatch pozostaje w pełni
 poprawny.
 
 **Dla sesji Claude Code (potwierdzone przez właściciela, 2026-08-20):**
-Operator → **Sonnet 5, effort Medium**; Evaluator → **Sonnet 5, effort High**.
+Operator → **Sonnet 5, effort Medium**; Evaluator → **Sonnet 5, effort High**;
+Final Control → ten sam model i effort co Evaluator (Sonnet 5, effort High),
+wykonywany przez OSOBNEGO subagenta, nigdy bezpośrednio przez głównego
+orkiestratora (Maciej, 2026-08-20).
 Oba na tym samym modelu, różni je wyłącznie wysiłek — Evaluator dostaje więcej
 przestrzeni na adwersaryjne rozumowanie, nie inny, droższy model. Ta reguła
 dotyczy WYŁĄCZNIE sesji Claude Code — nazwy modeli w §1 wyżej („GPT-5.6 Luna
