@@ -7543,4 +7543,15 @@ Run templates: [`../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/`](.
 Zakres tej paczki jest docs-only; brak zmian w `gra/`, brak deployu i pushu.
 Poniższe meldunki pozostają historią kanału.
 
+## [2026-08-20] OPERATOR → EVALUATOR → FINAL CONTROL → INTEGRACJA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
+
+GOAL: dokończyć pakiety dokumentacyjne 1–3 i domknąć AutoBot bez zmian w `gra/`.
+|- Pakiet 1: indeks wskazuje `HANDOFF-AKTUALNY` i miejsca zapisu artefaktów.
+|- Pakiet 2: aktywne CLAUDE/reguła/skill/R-PROC są krótkie; historia jest w archiwum.
+|- Pakiet 3: rejestr, ABC/ECHO, handoff i `runs/<ID>/00–04` mają jeden obieg i statusy.
+|- Final Control: PASS-WITH-NOTES; gotowość do integracji: TAK. Integracja docs-only lokalna.
+|- `gra/`: brak zmian. Deploy/push: NIE WYKONANO.
+
+CZEKAM-NA: osobne polecenie właściciela przed deploy/push; bez niego nic nie publikować.
+
 ---

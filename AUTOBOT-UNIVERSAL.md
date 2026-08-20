@@ -1,4 +1,9 @@
-# PROTOKÓŁ AUTOBOT — WERSJA UNIWERSALNA (v1.2)
+# PROTOKÓŁ AUTOBOT — WERSJA UNIWERSALNA (v1.2), REFERENCYJNY
+
+> Dokument uniwersalny/historyczny. Dla projektu Civ obowiązuje
+> [`docs/procesy/INDEX-PROCESU.md`](docs/procesy/INDEX-PROCESU.md) oraz
+> [`docs/decyzje/R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md); poniższy tekst
+> nie ustanawia aktywnego routingu projektu.
 
 > **Nota wydawcy.** To jest wersja **uniwersalna**, wyekstrahowana z konkretnego,
 > działającego wdrożenia projektowego (repozytorium kodu z pracą wieloagentową,

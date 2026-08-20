@@ -1,5 +1,20 @@
 # REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
 
+## AKTYWNA PACZKA DOKUMENTACYJNA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
+
+GOAL: dokończyć pakiety dokumentacyjne 1–3 i wdrożyć jeden, zamknięty obieg AutoBot
+bez zmian w `gra/`. Dowód przebiegu: [`dyspozycje/autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/`](autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/).
+
+| ID pakietu | STATUS KANONICZNY | Dowód |
+|---|---|---|
+| `R-PROC-AUTOBOT-PAKIET-1-INDEX-Q1` | `ZINTEGROWANE` | `docs/procesy/INDEX-PROCESU.md` wskazuje `HANDOFF-AKTUALNY` i miejsca zapisu artefaktów. |
+| `R-PROC-AUTOBOT-PAKIET-2-AKTYWNE-DOKUMENTY-Q1` | `ZINTEGROWANE` | `CLAUDE.md`, aktywna reguła, skill i `R-PROC-AUTOBOT`; historia w `docs/archiwum-procesu/`. |
+| `R-PROC-AUTOBOT-PAKIET-3-REJESTRY-RUNS-Q1` | `ZINTEGROWANE` | rejestr, `PYTANIA-OTWARTE.md`, `HANDOFF-AKTUALNY` i run `00–04`. |
+
+Statusy pakietów są aktualne w tym indeksie; historyczne wiersze poniżej pozostają
+append-only. `READY_FOR_DEPLOY` jest bramką po integracji, nie statusem publikacji;
+deploy/push pozostają osobno i w tej paczce nie zostały wykonane.
+
 ## MIGRACJA STATUSÓW — 2026-08-20 (Pakiet 3)
 
 Od tej daty bieżący status tematu może przyjmować wyłącznie jedną z wartości:
@@ -52,12 +67,13 @@ Przy zamknięciu tematu: aktualizuj STATUS + wpisz commit/md5. Szczegóły decyz
 
 **Problemy/błędy z numeracją:** `dyspozycje/REJESTR-PROBLEMOW-AI.md` — format **`P-AI-###`** (Maciej 2026-07-26). Każdy nowy problem od razu dostaje numer; w czacie odwołujesz się po ID.
 
-## ⛔ NUMER → ABC → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH (Maciej 2026-08-03)
+## ⛔ NUMER → ABC/ECHO → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH
 Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
-1. Case / bug / poprawka / innowacja → **ID tutaj od razu** (status zwykle `CZEKA-NA-DECYZJĘ`).
-2. Agent **nie koduje** — proponuje rozwiązanie ± ABC.
-3. Maciej: **`ID + A|B|C`** → dopiero commit.
-4. **`READY_FOR_DEPLOY`** → orkiestrator potwierdza finalną kontrolę i integrację; dopiero osobne hasło `deploy`/`push` publikuje ROBOCZĄ / aktualizuje `WERSJE.md`.
+1. Każdy temat → **pełne ID tutaj od razu**; status bieżący wybierz z zamkniętej listy.
+2. Jeśli potrzebna jest decyzja właściciela, zapisz pełne ABC w `PYTANIA-OTWARTE.md`.
+3. Po odpowiedzi zapisz ECHO i decyzję; temat kontynuuje ten sam ID przez run `00–04`.
+4. **`READY_FOR_DEPLOY`** → orkiestrator potwierdza Final Control i integrację; dopiero
+   osobne polecenie `deploy`/`push` publikuje i aktualizuje `WERSJE.md`.
 
 ## ⛔ AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — KAŻDA PRACA TYLKO TĘDY
 **KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot:
@@ -68,20 +84,17 @@ Kanon: [`autobot/README.md`](autobot/README.md) ·
 [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) ·
 `.cursor/rules/autobot-evaluator-operator.mdc`.
 
-**ARCHIWUM — SUPERSEDED:** wcześniejsze wpisy o `composer-2.5`, Grok, Haiku
-i Sonnet pozostają poniżej jako historia, ale nie są aktywnym routingiem.
+**ARCHIWUM:** wcześniejsze wpisy o modelach i routingach pozostają poniżej jako historia,
+ale nie są aktywnym routingiem.
 
 **Notatka 2026-08-05:** Cleanup przestarzałych „czeka deploy" / „bez deploy" dla pozycji już w `WERSJE.md`; źródło prawdy deployu w owym momencie = FALA 228 (`29bfdf00`).
 
 **Notatka 2026-08-09:** źródło prawdy deployu dziś = **FALA 263** (`89176ced318b7e7d03b2fd6b197df80d`), branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie `main`). Szczegóły sesji: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`.
 
-**KOREKTA AUDYTU 2026-08-19:** aktywny routing tej sesji to Operator **GPT-5.6 Luna High** →
-Evaluator **GPT-5.6 Luna High** → finalna kontrola/integracja przez głównego orkiestratora
-**GPT-5.6 Luna Medium**. Raport Operatora automatycznie uruchamia Evaluatora; po `PASS`
-status jest aktualizowany, przygotowywane jest pełne ABC z ID albo temat trafia do integracji.
-Integracja kończy przygotowanie na `READY_FOR_DEPLOY`; deploy/push dopiero po osobnej
-bramce i autoryzacji.
-Wpisy o composer/Grok/Haiku/Sonnet poniżej są historyczne i pozostają zachowane.
+**AKTYWNY ROUTING:** Operator **GPT-5.6 Luna High** → Evaluator **GPT-5.6 Luna High** →
+Final Control **GPT-5.6 Luna High** → integracja orkiestratora **GPT-5.6 Luna Medium** →
+`READY_FOR_DEPLOY`; deploy/push dopiero po osobnej bramce i autoryzacji. Pełny ślad
+nowego przebiegu zapisuj w `dyspozycje/autobot/runs/<ID>/`.
 
 **C-043 (2026-08-19):** właściciel komunikuje się wyłącznie w głównym czacie
 orkiestratora; subagenci są kanałami technicznymi.
