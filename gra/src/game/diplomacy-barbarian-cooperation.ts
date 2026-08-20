@@ -21,6 +21,7 @@ export function isEligibleBarbarianCooperationUnit(
   return !isCivilianUnit(unit)
     && unit.inGarnizon !== true
     && unit.embarked !== true
+    && unit.seaRaider !== true
     && unit.oblegaCityId === undefined
     && !activeBattleUnitIds.has(unit.id);
 }
