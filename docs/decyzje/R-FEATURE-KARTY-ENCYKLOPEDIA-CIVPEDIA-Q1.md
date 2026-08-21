@@ -84,6 +84,36 @@ Dziś nie istnieje ŻADNE miejsce w UI gdzie gracz klika na ulepszenie terenu ja
 
 ---
 
-## ECHO
+## ECHO (Maciej, 2026-08-21)
 
-_(czeka na odpowiedź właściciela)_
+- **Pytanie 1 = B** — pełny refaktor w jeden wspólny renderer/kontrakt, z którego korzystają
+  wszystkie miejsca (mapa, panel miasta, hub badań, CivPedia). NIE opcja A (linki nad
+  istniejącym stanem) — właściciel świadomie wybrał większy zakres niż rekomendacja.
+- **Pytanie 2 = A** — dwa równoległe kanały: żywa karta pokazuje liczby/mechanikę bieżącego
+  stanu gry, link otwiera osobny wpis CivPedii z prozą/kontekstem (zgodne z rekomendacją).
+- **Pytanie 3 = B** — osobna, zawsze widoczna mała ikonka „ⓘ" na ikonach technologii w hubie
+  badań, niezależna od kliknięcia całego wiersza/węzła (zgodne z rekomendacją; wymaga
+  rozdzielenia stref kliknięcia w `buildEntryRow()` i węzłach `.civ-ttv-tn`).
+- **Pytanie 4 = C** — karta ulepszenia terenu ma być otwieralna wszędzie tam gdzie nazwa
+  ulepszenia się dziś pojawia: popup odkrycia technologii, tryb budowy, panel miasta
+  (zgodne z rekomendacją).
+
+## Wnioski dla kolejności prac (po ECHO)
+
+Wybór B w Pytaniu 1 oznacza, że fazy 3 (karta ulepszeń terenu) i 4 (CivPedia: kategoria
+technologii) z rekonu powinny być budowane OD RAZU na nowym wspólnym kontrakcie, a nie jako
+tymczasowe osobne implementacje do późniejszego refaktoru — inaczej refaktor w fazie 5
+musiałby przerabiać także je. Praktyczna kolejność:
+
+1. Zaprojektować wspólny kontrakt „karta encji" (typ `EntityKind = building|unit|improvement|
+   technology`, wspólna funkcja `openEntityCard(kind, id)`, wspólny format danych/renderer DOM)
+   — to jest teraz WIĘKSZY pierwszy krok niż zakładał recon, bo wszystko inne go używa.
+2. Domknięcie hubu badań (Pytanie 3=B) — może być zrobione RÓWNOLEGLE/niezależnie, bo to
+   tylko rozdzielenie stref kliknięcia w UI, nie dotyczy renderera karty.
+3. Migracja 3 istniejących kart (jednostka, budynek, technologia) na wspólny kontrakt.
+4. Nowa karta ulepszeń terenu na wspólnym kontrakcie, wywoływana z 3 miejsc (Pytanie 4=C).
+5. CivPedia: kategoria technologii + link „więcej informacji" (Pytanie 2=A) z każdej karty.
+6. Wzajemne linkowanie 4×4 na bazie wspólnego kontraktu (naturalnie wynika z kroku 1).
+
+To duży, wieloetapowy projekt — każdy krok osobnym tematem/dispatchem AutoBot, nie jeden
+Operator na całość.
