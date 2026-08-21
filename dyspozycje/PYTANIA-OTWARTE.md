@@ -31,6 +31,7 @@ Bieżący status procesu używa zamkniętej listy z rejestru:
 | `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `OPERATOR` | Osobna gałąź/worktree; bez merge, push i deployu. |
 | `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Wznowić wyłącznie w osobnej sesji o systemie ustrojów. |
 | `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` | `OPERATOR` | ECHO Wątek C = `A` (wymuś cap 50% też w mieście), Wątek E = zależny od reconu — pełne ECHO w `docs/decyzje/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1.md`. Implementacja w toku (Operator). |
+| `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` | `ABC-OCZEKUJE` | Recon zamknięty (`dyspozycje/autobot/runs/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1/01-operator-recon.md`), 4 pytania ABC z rekomendacjami w `docs/decyzje/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1.md`. Implementacja wstrzymana do ECHO. |
 
 ### Zamknięte — odsyłacze do decyzji i dowodów
 
