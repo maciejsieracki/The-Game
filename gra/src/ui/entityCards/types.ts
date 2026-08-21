@@ -10,6 +10,23 @@
 /** Cztery rodzaje encji obsługiwane przez wspólną kartę. */
 export type EntityKind = 'unit' | 'building' | 'technology' | 'improvement';
 
+/** Ikona per wiersz — kafelek SVG wstawiany jako markup (nie `.textContent`),
+ * wzorem `unlockItemRow()`/`iconTile()` w `techDiscoveryNotice.ts:148-152,179-187`
+ * (T1b). `svg` musi być zaufaną, statyczną treścią (tak jak `EntityCardMedallion`
+ * `{kind:'icon'}` już dziś) — renderer nie sanityzuje. */
+export interface EntityCardRowIcon {
+  kind: 'svg';
+  svg: string;
+}
+
+/** Kolorowany, per-wiersz badge (jeden na wiersz) — wzorem `actionItemRow(kind, label, text)`
+ * w `techDiscoveryNotice.ts:189-191` (T1b). Odrębne od `EntityCardSection.badges`, które
+ * to płaska lista renderowana razem na dole sekcji. */
+export interface EntityCardRowBadge {
+  kind: 'ok' | 'warn' | 'muted';
+  label: string;
+}
+
 /** Jeden wiersz w sekcji karty (np. "Atak: 6"). */
 export interface EntityCardRow {
   label: string;
@@ -17,6 +34,16 @@ export interface EntityCardRow {
   emphasize?: boolean;
   /** Jeśli podane — wiersz jest klikalny i otwiera kartę innej encji (T10). */
   linkTo?: { kind: EntityKind; id: string };
+  /** Ikona per wiersz (T1b) — patrz `EntityCardRowIcon`. */
+  icon?: EntityCardRowIcon;
+  /** Tekst po prawej, osobny od `value` (np. rola/typ jednostki), wzorem
+   * `unlockItemRow()` opts.trailing, `techDiscoveryNotice.ts:179-187` (T1b). */
+  trailing?: string;
+  /** Kolorowany badge (ok/warn/muted) + dowolny tekst przypięty do TEGO wiersza (T1b) —
+   * patrz `EntityCardRowBadge`. Gdy podany razem z `label`/`value`, renderer traktuje
+   * `label` jako etykietę badge'a (`actionItemRow`'s `label`) i `value` jako tekst
+   * (`actionItemRow`'s `text`), zamiast siatki label/value. */
+  badge?: EntityCardRowBadge;
 }
 
 /** Jedna sekcja karty (np. "Walka", "Ekonomia", "Wymagania"). */
@@ -29,6 +56,18 @@ export interface EntityCardSection {
   /** Akordeon — potrzebne dla kart technologii z wieloma odblokowaniami. */
   collapsible?: boolean;
   openDefault?: boolean;
+  /** Wyróżnienie sekcji (np. "Co możesz teraz zrobić"), wzorem `tdn-sec--hi`
+   * w `techDiscoveryNotice.ts:358-361` (T1b). */
+  highlighted?: boolean;
+  /** Ile wierszy pokazać domyślnie — reszta trafia za przycisk „Pokaż pozostałe N",
+   * wzorem `UNIT_PREVIEW`/`techDiscoveryNotice.ts:373-386` (T1b). `undefined`/brak =
+   * pokaż wszystkie (zachowanie sprzed T1b, bez zmian). */
+  previewLimit?: number;
+  /** Tryb renderowania wierszy sekcji: `'grid'` (domyślny, siatka label/value jak dziś)
+   * albo `'pills'` — zawijana lista pigułek z trailing „✓", wzorem
+   * `techDiscoveryNotice.ts:435-438` (T1b, sekcja "Wymagania"). W trybie `'pills'`
+   * renderer używa `row.label` jako tekstu pigułki (`row.value` ignorowane). */
+  layout?: 'grid' | 'pills';
 }
 
 /** Medalion nagłówka karty: statyczna ikona SVG albo montowany 3D-podgląd jednostki. */
@@ -64,6 +103,13 @@ export interface EntityCardData {
   civpediaLink?: EntityCardCivpediaLink | null;
   statusBadges?: string[];
   actions?: EntityCardAction[];
+  /** Gdy `true` — po kliknięciu „Pokaż pozostałe N" w KTÓREJKOLWIEK sekcji z
+   * `previewLimit`, karta (root `.entity-card`) dostaje klasę `entity-card--compact`,
+   * wzorem `tdn-card--compact`/`wireInteractions()` w `techDiscoveryNotice.ts:463-472`
+   * (T1b, sprzężenie paginacji sekcji z wariantem kompaktowym nagłówka CAŁEJ karty —
+   * patrz raport 14-operator-T1b.md, wymaga tego pola NA POZIOMIE karty + logiki w
+   * rendererze, nie da się rozwiązać lokalnie w obrębie samej sekcji). */
+  compactHeaderOnExpand?: boolean;
 }
 
 /** Tryb otwarcia karty. `dialog` w T1 jest jedynym w pełni obsługiwanym przez renderer
