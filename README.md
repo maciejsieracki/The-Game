@@ -10,12 +10,15 @@ dowolny agent, człowiek) — zacznij tutaj, ten plik wystarczy.
 ## Co nowego w regułach AutoBota
 
 Aktualizuj tę listę przy każdej nowej regule C-0XX w `playbook.md` — dopisz na
-górze, usuń najstarszą jeśli lista przekracza 12 wpisów.
+górze, usuń najstarszą jeśli lista przekracza 12 wpisów. „Najnowsze" liczone po
+numerze ID, nie po dacie incydentu w treści — reguły odzyskane z archiwum pod
+niższym numerem (np. C-046…C-049, wstawione 2026-08-20) tu się nie pojawią,
+mimo że tego dnia też trafiły do playbooka.
 
 - **C-061** (2026-08-21) — dwie ścieżki dispatchu Operator/Evaluator: różnicowanie `effort` per rola tylko przez narzędzie Workflow (gdy dostępne i autoryzowane), inaczej wyłącznie przez treść promptu.
 - **C-060** (2026-08-20) — watchdog dispatchu liczy się jako zajęty slot, jeśli dzieli limit wątków z Operatorami/Evaluatorami — efektywna pojemność na tematy to 5, nie 6.
 - **C-059** (2026-08-20/21) — integracja jest allowlist-only per plik i per hunk; gdy nie da się bezpiecznie rozdzielić brudnego drzewa, status pośredni `INTEGRATION_PENDING` zamiast `BLOCK`.
-- **C-058** — nie odtwarzaj sztucznie brakujących historycznych liczników/wyników; lukę w danych zapisz jako notę z datą, decyzję opieraj na aktualnym, reprodukowalnym teście.
+- **C-058** (brak daty w regule źródłowej) — nie odtwarzaj sztucznie brakujących historycznych liczników/wyników; lukę w danych zapisz jako notę z datą, decyzję opieraj na aktualnym, reprodukowalnym teście.
 - **C-057** (2026-08-20) — rejestr duplikatów tematów: tag `[duplicate_of]`/`[related_to]`/`[supersedes]` w `REJESTR-PROSB-I-ZADAN.md` przed otwarciem nowego tematu.
 - **C-056** (2026-08-20/21) — czy funkcja jest już wdrożona sprawdzaj komendą `git merge-base --is-ancestor`, nigdy z pamięci „co jest w najnowszej Fali".
 - **C-055** (2026-08-20) — każdy raport etapu dostaje pole `DOMAIN:` (`GAME`/`PROCESS`/`INFRA`/`INFORMATIONAL`) zaraz po `STATUS:`.
