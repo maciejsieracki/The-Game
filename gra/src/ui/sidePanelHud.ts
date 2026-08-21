@@ -235,7 +235,10 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   background:linear-gradient(180deg,rgba(20,26,34,.96),rgba(10,13,19,.96));
   border:1px solid rgba(232,216,138,.28);border-left:3px solid var(--tg-gold-primary);}
 .civ-side-panel .sp-event:hover{border-color:rgba(232,216,138,.45);}
-.civ-side-panel .sp-event:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
+/* R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 runda 3, podmiana 5 (EventCardInfo): bez outline —
+   zaznaczenie = obramówka elementu + poświata na zewnątrz, nigdy drugi kontur obok. */
+.civ-side-panel .sp-event:focus-visible{border-color:#e8d88a;
+  box-shadow:inset 0 0 0 1px rgba(232,216,138,.35),0 0 16px rgba(232,216,138,.45);}
 .civ-side-panel .sp-event.sp-info-adverse{border-left-color:var(--tg-orange);}
 .civ-side-panel .sp-kicker{display:block;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;
   color:var(--civ-text-muted);font-weight:700;}
@@ -246,21 +249,11 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   border:var(--tg-border-blocking,3px) solid var(--tg-gold-primary);border-radius:12px;
   background:linear-gradient(180deg,rgba(30,24,20,.99),rgba(10,10,14,.99));
   box-shadow:0 12px 32px rgba(0,0,0,.65),var(--tg-glow-gold);}
-/* R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 runda 2: zamiennik diagonalnego paska sp-blk-stripe.
-   Wzorzec 1:1 z .civ-emp-alert/.civ-emp-sp-alert (docs/ux/claude-design/_dist/
-   11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13/, już użyty w gra/src/ui/empireDetailPanel.ts) —
-   ikona chip-warning + ta sama paleta (border #4a2a2a, tło rgba(224,122,122,.07), tekst
-   #e6c4c4), NIE nowy, wymyślony styl. Bar ma pozostać widoczny (twardy wymóg ECHO właściciela
-   z rundy 2) — dlatego ikona + etykieta, nie samo usunięcie.
-   EN: chip-warning icon + the exact civ-emp-alert palette, replacing the diagonal stripe —
-   the owner's round-2 ECHO required a visible replacement, not a bare removal. */
-.civ-side-panel .sp-blk-alert{display:flex;align-items:center;gap:7px;flex:none;
-  padding:6px 14px;border-bottom:1px solid #4a2a2a;background:rgba(224,122,122,.07);}
-.civ-side-panel .sp-blk-alert-ic{display:inline-flex;align-items:center;justify-content:center;
-  width:16px;height:16px;flex:none;}
-.civ-side-panel .sp-blk-alert-ic svg{width:100%;height:100%;display:block;}
-.civ-side-panel .sp-blk-alert-txt{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
-  color:#e6c4c4;font-weight:700;}
+/* R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 runda 3: świeża makieta Designera (podmien.zip,
+   2026-08-21) zastępuje w całości rundę 2 — usunięto pasek diagonalny sp-blk-stripe
+   (runda 1) ORAZ zamiennik sp-blk-alert/-ic/-txt (runda 2, ikona chip-warning + paleta
+   civ-emp-alert). Karta blokująca zostaje z samą obramówką 3px solid #e8d88a (patrz
+   .sp-event.sp-blocking.sp-expanded wyżej) — bez paska, bez bloku ostrzegawczego. */
 .civ-side-panel .sp-blk-body{display:flex;align-items:flex-start;gap:11px;padding:13px 14px 11px;}
 .civ-side-panel .sp-blk-kicker-row{display:flex;align-items:center;gap:8px;}
 .civ-side-panel .sp-badge-decision{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#0c1018;
@@ -278,7 +271,10 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-panel .sp-action-row{display:flex;gap:8px;flex-wrap:wrap;}
 .civ-side-panel .sp-action-btn{flex:1;min-width:110px;padding:9px 12px;font-size:12px;text-align:center;
   font-family:var(--civ-font-ui);}
-.civ-side-panel .sp-action-btn:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
+/* runda 3, podmiana 5 (EventCardAction): bez outline — wypukłość insetami + poświata. */
+.civ-side-panel .sp-action-btn:focus-visible{border-color:#fff2c8;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6),inset 0 -1.5px 0 rgba(70,52,8,.35),
+    0 0 16px rgba(232,216,138,.5);}
 .civ-side-panel .sp-action-ignore{align-self:flex-start;padding:4px 2px;border:0;background:transparent;
   color:var(--civ-text-muted);font-size:11.5px;cursor:pointer;font-family:inherit;text-decoration:underline;
   text-underline-offset:3px;}
@@ -612,9 +608,6 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
             // Rozwinięta — zawsze dokładnie jedna, pierwsza blokująca w kolejce.
             const ignorable = isIgnorableRevoltEvent(ev);
             html += '<div class="sp-event sp-blocking sp-expanded" data-id="' + ev.id + '">'
-              + '<div class="sp-blk-alert"><span class="sp-blk-alert-ic" aria-hidden="true">'
-              + brandIconSvg('chip-warning', 16) + '</span>'
-              + '<span class="sp-blk-alert-txt">Wymaga natychmiastowej decyzji</span></div>'
               + '<div class="sp-blk-body">'
               + '<span class="sp-ico">' + icoContent + '</span>'
               + '<div>'
