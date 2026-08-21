@@ -3548,9 +3548,48 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 313 (2026-08-21) — CivPedia T7b: karta ulepszenia terenu + drobiazgi panelu imperium
+## ROBOCZA — FALA 314 (2026-08-21) — CivPedia T6: karta jednostki w panelu miasta/rekrutacji + T9: mostek gra-id
 
-- **AKTUALNA** · ROBOCZA md5 `518b0f48bb0a07c05ad5835df9d8d76f` · stempel `518b0f48` · manifest/bundle `VERIFY OK`.
+- **AKTUALNA** · ROBOCZA md5 `1bf1976bcfdbc63e8f799d8a921980f0` · stempel `1bf1976b` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T6 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: karta jednostki w panelu miasta/
+  rekrutacji (`cityPanel.ts::buildUnitDetailCard`/`attachUnitRowThumb`) migruje do TEGO SAMEGO
+  `unitAdapter.ts` co karta jednostki na mapie (T4) — jeden wspólny renderer zamiast dwóch
+  rozbieżnych implementacji. Publiczna sygnatura bez zmian, stara implementacja jako
+  `_legacyBuildUnitDetailCard` fallback. Jawna tabela porównawcza karta-mapa/karta-rekrutacja
+  sporządzona przez Operatora i zweryfikowana niezależnie, wiersz-po-wierszu, przez Evaluatora
+  i Final Control. Dwie decyzje podjęte bez ABC (ocenione jako czysto addytywne, zgodne z celem
+  zadania „gracz w obu miejscach patrzy na tę samą jednostkę"): **„Kontry" widoczne teraz też w
+  karcie rekrutacji** (wcześniej tylko na mapie); **~10 pól bojowo-moralowych z karty rekrutacji
+  dopisanych do wspólnego adaptera** (Obrażenia broni, Bonus szarży, Ruch w bitwie, Pociski,
+  Widok pola, Kara flanki/tyłu, Próg dezercji, Morale bazowe/ucieczki, Linia, Klasa) — karta mapy
+  też zaczyna je pokazywać. Medalion 3D pozostaje wyłącznie na mapie i w thumbnailu wiersza listy
+  rekrutacji (niezmienione) — karta rekrutacji nadal statyczna ikona SVG. Sekcje Technologie/
+  Uwagi pozostają wyłącznie w karcie rekrutacji (wzorzec z T5).
+
+  **CivPedia T9**: mostek gra-id między kartami encji a CivPedią dla przypadków gdzie prosty
+  derywowany slug nie wystarcza. Nowe opcjonalne pole frontmatter `gra-id` → `EncyEntry.gameIds`,
+  publiczna `WikiHubHudApi.openEncyEntry(folder, id)` z resolverem gameIds-first + fallback
+  `slug===id`. Zakres okazał się mały: tylko **4 warianty kopalni** (`kopalnia_miedzi`/`_zelaza`/
+  `_cyny`/`_zlota` → jeden wspólny `kopalnia.md`) i **1 jednostka** (`Wojownik celtycki`→
+  `soldurii`) wymagały mostka — programowo potwierdzone (nie zgadywane), że wszystkie 32
+  technologie i pozostałe budynki/ulepszenia działają 1:1 przez `slugify()`. `openEncyEntry` nie
+  ma jeszcze wołających (świadomie — użyje go dopiero T10).
+
+  Oba tematy: Operator→Evaluator→Final Control PASS niezależnie, oba trywialne fast-forward z
+  aktualnego `main` (zero konfliktów integracyjnych). Bramki zbiorcze na scalonym `main`: `tsc` 0;
+  `unit-detail-card-entitycard-migration-test` 39/39 (nowy); `unit-detail-card-hover-layout-real-
+  render-test` 11/11 (nowy, real Chromium); `civpedia-gra-id-mostek-test` 20/20 (nowy, bundler
+  idempotentny); `entity-card-contract-test` 75/75; `unit-info-card-*` (army-interaction 7/7,
+  badges-real-render 19/19, contract 23/23, entitycard-migration 26/26 — karta mapy T4 nadal
+  zielona mimo rozszerzonego wspólnego adaptera, wiring 6/6); `building-detail-card-*` (52/52 +
+  11/11); `tech-discovery-card-*`/`technology-discovery-card-visual-test` (13/13, 12/12, 48/48);
+  `improvement-card-callsites-test` 36/36; `logic-test` 213/213; `tech-tree-test` 19/19;
+  `research-test` 33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 313 (2026-08-21) — CivPedia T7b: karta ulepszenia terenu + drobiazgi panelu imperium — **ZASTĄPIONA** (→ 1bf1976b, FALA 314)
+
+- ROBOCZA md5 `518b0f48bb0a07c05ad5835df9d8d76f` · stempel `518b0f48` · manifest/bundle `VERIFY OK`.
 
   **CivPedia T7b (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: karta ulepszenia terenu, wszystkie
   3 miejsca wywołania otwierają teraz tę samą kartę (`openEntityCard('improvement', key,
