@@ -27,6 +27,7 @@ const CAT_LABELS = {
   cuda: 'Cuda świata',
   cywilizacje: 'Cywilizacje',
   pojecia: 'Pojęcia',
+  technologie: 'Technologie',
 };
 
 function readUtf8(p) {
