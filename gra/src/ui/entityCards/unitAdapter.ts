@@ -1,9 +1,22 @@
 /**
- * entityCards/unitAdapter.ts — `UnitDef` (`units.json`) → `EntityCardData` (T4).
+ * entityCards/unitAdapter.ts — `UnitDef` (`units.json`) → `EntityCardData` (T4, rozszerzone w T6).
  *
  * Treść wypełniona 1:1 wg dzisiejszego `unitInfoCard.ts::buildUnitInfoCard`
  * (sekcje: Statystyki bojowe, Koszty i utrzymanie, Wymagania i kontry — w tym
  * pole „Kontry" z `counters.json`, `unitInfoCard.ts:190`/`collectCounters()`).
+ *
+ * T6 MIGRACJA-KARTA-JEDNOSTKI-PANEL-MIASTA (`cityPanel.ts::buildUnitDetailCard`) dodało
+ * do tego adaptera pola, które dotąd istniały TYLKO w karcie rekrutacji (`cityPanel.ts`),
+ * a nie w karcie mapy (`unitInfoCard.ts`): sekcja `characteristics` („Linia", „Klasa") oraz
+ * dodatkowe wiersze `combat` („Obrażenia broni", „Bonus szarży", „Ruch (bitwa)", „Pociski",
+ * „Widok pola", „Kara flanki", „Kara od tyłu", „Próg dezercji", „Morale bazowe",
+ * „Morale ucieczki"). Decyzja Operatora T6 (bez ABC — patrz tabela porównawcza w raporcie
+ * T6): to jest CZYSTO ADDYTYWNE wzbogacenie — żadna dotychczasowa wartość nie znika z
+ * żadnej karty, obie karty (mapa i rekrutacja) zaczynają pokazywać TĘ SAMĄ, pełniejszą
+ * treść tej samej jednostki, zgodnie z celem tego zadania („gracz w obu miejscach patrzy
+ * na tę samą jednostkę"). Ponieważ adapter jest DZIELONY z już wdrożoną kartą mapy (T4),
+ * ta zmiana wzbogaca też kartę mapy (dotąd nie pokazywała tych pól) — świadomie, nie
+ * przez przeoczenie.
  *
  * Adapter jest samodzielny (jak `buildingAdapter.ts`/`technologyAdapter.ts`) — czyta
  * `counters.json` bezpośrednio (ten sam wzorzec co `technologyAdapter.ts` czytający
@@ -46,6 +59,13 @@ function hasValue(value: unknown): boolean {
   return t !== '' && t !== '—';
 }
 
+/** 1:1 z `cityPanel.ts::unitExtraField` — odczyt pól spoza typowanego `UnitDef`
+ * (kolumny arkusza bez dedykowanego typu, np. „Klasa"/„Bonus szarży"/„Morale ..."). */
+function extra(unit: UnitDef, key: string): string {
+  const v = (unit as unknown as Record<string, unknown>)[key];
+  return hasValue(v) ? text(v) : '';
+}
+
 /** 1:1 z `unitInfoCard.ts::collectCounters` — kontry per typ atakujący jednostki. */
 function collectCounters(unit: UnitDef): string[] {
   const typ = text(unit.Typ).toLowerCase();
@@ -69,7 +89,19 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
     unit.Typ,
   );
 
-  // --- Statystyki bojowe — 1:1 z `unitInfoCard.ts` (`combat` sekcja) ------------------------
+  // --- Charakterystyka — dotąd TYLKO w karcie rekrutacji (`cityPanel.ts::buildUnitDetailCard`
+  // sekcja „Charakterystyka"), T6 dodaje do wspólnego adaptera (patrz nagłówek pliku) --------
+  const characteristicsRows: EntityCardRow[] = [
+    { label: 'Linia', value: text(unit['Rola (linia)']) },
+    { label: 'Klasa', value: extra(unit, 'Klasa') },
+  ].filter((r) => hasValue(r.value));
+  const characteristicsSection: EntityCardSection = {
+    key: 'characteristics', title: 'Charakterystyka', rows: characteristicsRows,
+  };
+
+  // --- Statystyki bojowe — 1:1 z `unitInfoCard.ts` (`combat` sekcja); wiersze poniżej
+  // „Przebicie" dodane w T6 — dotąd TYLKO w karcie rekrutacji (patrz nagłówek pliku) --------
+  const progDezercji = unit['Próg dezercji (% health)'];
   const combatRows: EntityCardRow[] = [
     { label: 'Atak', value: text(unit.Atak) },
     { label: 'Obrona', value: text(unit.Obrona) },
@@ -79,6 +111,16 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
     { label: 'Atak dystansowy', value: text(unit['Atak dystansowy']), emphasize: true },
     { label: 'Pancerz', value: text(unit.Pancerz) },
     { label: 'Przebicie', value: text(unit.Przebicie) },
+    { label: 'Obrażenia broni', value: text(unit.Uderzenie) },
+    { label: 'Bonus szarży', value: extra(unit, 'Bonus szarży') },
+    { label: 'Ruch (bitwa)', value: hasValue(unit['Ruch w bitwie (heksy)']) ? `${text(unit['Ruch w bitwie (heksy)'])} hex` : '' },
+    { label: 'Pociski', value: text(unit['Ilość pocisków']) },
+    { label: 'Widok pola', value: hasValue(unit['Widok pola']) ? `${text(unit['Widok pola'])} hex` : '' },
+    { label: 'Kara flanki', value: hasValue(unit['Kara obrony z flanki (%)']) ? `${text(unit['Kara obrony z flanki (%)'])}%` : '' },
+    { label: 'Kara od tyłu', value: hasValue(unit['Kara obrony z tyłu (%)']) ? `${text(unit['Kara obrony z tyłu (%)'])}%` : '' },
+    { label: 'Próg dezercji', value: progDezercji != null ? `${Math.round(Number(progDezercji) * 100)}% HP` : '' },
+    { label: 'Morale bazowe', value: extra(unit, 'Morale bazowe') },
+    { label: 'Morale ucieczki', value: extra(unit, 'Morale ucieczki') },
   ].filter((r) => hasValue(r.value));
   const combatSection: EntityCardSection = { key: 'combat', title: 'Statystyki bojowe', rows: combatRows };
 
@@ -138,7 +180,7 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
     title: unit.Jednostka,
     subtitle,
     medallion: { kind: 'icon', svg: iconSvg },
-    sections: [combatSection, economySection, requirementsSection, statusesSection],
+    sections: [characteristicsSection, combatSection, economySection, requirementsSection, statusesSection],
     civpediaLink: null,
     statusBadges: isSuperUnit ? ['Super-jednostka'] : undefined,
   };
