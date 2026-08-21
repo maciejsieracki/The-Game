@@ -1107,14 +1107,15 @@ function renderPracaSection(
  * (0–50%); Budynki są wyliczanym remainder 100% − Ulepszenia. Nie mieszać
  * tego z budżetem automatu.
  *
- * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek B): etykiety opisują
- * NOMINALNY zakres każdej strony podziału (Budynki 0–100%, Ulepszenia
- * 0–50%), nie tylko efektywny remainder tej konkretnej chwili — wcześniej
- * „Pula Pracy (0–50%)" myliło tę wartość z realną, akumulowaną PULA
- * IMPERIUM (`economy.praca`, zupełnie inny licznik pokazany wyżej w tej
- * samej sekcji), a „Budynki (50–100%)" sugerowało twardy dolny limit 50%,
- * którego budynki jako takie nie mają — dolny limit dotyczy wyłącznie
- * Ulepszeń (`MAX_PRACA_WSPOLNY_WOREK_PROCENT`, gra/src/game/cities.ts).
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek B, 2026-08-21): nazewnictwo Budynki/Ulepszenia
+ * (zamiast dawnej „Pula Pracy", mylącej z realną PULA IMPERIUM) — patrz `docs/decyzje/...md`.
+ *
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F, przeprojektowanie prezentacji, ta runda):
+ * czysto wizualna zmiana, logika procentów niezmieniona (0–50% Ulepszenia / remainder Budynki).
+ * - Sygnał „Ulepszenia N%" na samej górze sekcji (był dopiero w wierszu opisowym niżej suwaka).
+ * - Budynki po lewej / Ulepszenia po prawej w dwóch wyraźnie oddzielonych boxach (`.civ-emp-two`,
+ *   wzorem PULA IMPERIUM / UTRZYMANIE ULEPSZEŃ wyżej w tej samej zakładce), zamiast jednego
+ *   wiersza tekstu powtarzającego trzy razy tę samą parę liczb (eyebrow + note + label + footer).
  */
 function renderEmpirePracaBudgetSplitSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPracaSplit;
@@ -1124,22 +1125,18 @@ function renderEmpirePracaBudgetSplitSection(): string {
   const pctU = Math.max(0, Math.min(50, Math.round(split.procentUlepszenia)));
   const pctB = 100 - pctU;
   const id = 'emp-praca-empire-budget-split';
-  const tip = 'Nadrzędny podział Pracy: Ulepszenia 0–50%; '
-    + 'budynki dostają remainder 100% − Ulepszenia (czyli 50–100%). '
-    + 'To nie jest globalny budżet automatu.';
+  const tip = 'Nadrzędny podział całej puli Pracy imperium: Ulepszenia 0–50%, Budynki = reszta '
+    + '(100% − Ulepszenia). To nie jest budżet automatu ulepszeń.';
   let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
-    + '<div class="civ-emp-eyebrow" style="margin-bottom:6px">PODZIAŁ PRACY: BUDYNKI / ULEPSZENIA</div>'
-    + `<div class="civ-emp-note" title="${esc(tip)}">Ulepszenia ${pctU}% · Budynki ${pctB}% (remainder)</div>`;
-  h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:7px">'
-    + '<div style="display:flex;align-items:baseline;gap:8px">'
-    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label gold">Budynki (0–100%)</b> / '
-    + '<b class="civ-emp-slider-label blue">Ulepszenia (0–50%)</b></span>'
-    + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-praca-empire-split-value>`
-    + `${pctU}% / ${pctB}%</span></div>`
+    + `<div class="civ-emp-eyebrow" title="${esc(tip)}">PODZIAŁ PRACY</div>`
+    + `<div class="civ-emp-hero" style="margin:2px 0 10px;font-size:20px" data-praca-empire-split-hero>Ulepszenia ${pctU}%</div>`
+    + '<div class="civ-emp-two">'
+    + `<div class="civ-emp-box"><div class="k civ-emp-slider-label gold">BUDYNKI</div>`
+    + `<div class="v" data-praca-empire-split-buildings>${pctB}%</div></div>`
+    + '<div class="civ-emp-box"><div class="k civ-emp-slider-label blue">ULEPSZENIA</div>'
     + `<input type="range" class="civ-emp-slider blue" min="0" max="50" step="1" value="${pctU}" `
-    + `style="width:100%;margin:0" data-praca-empire-split />`
-    + `<div class="civ-emp-foot" style="margin:0" title="${esc(tip)}">`
-    + 'Suwak steruje tylko Ulepszeniami; Budynki zawsze = 100% − Ulepszenia.</div></div></div>';
+    + `style="width:100%;margin-top:6px" data-praca-empire-split title="${esc(tip)}" /></div>`
+    + '</div></div>';
   queueMicrotask(() => {
     const host = document.getElementById(id);
     const input = host?.querySelector<HTMLInputElement>('input[data-praca-empire-split]');
@@ -1147,8 +1144,10 @@ function renderEmpirePracaBudgetSplitSection(): string {
     input.addEventListener('input', () => {
       const pctU = Math.max(0, Math.min(50, Math.round(Number(input.value))));
       onChange(0, { procentUlepszenia: pctU });
-      const value = host?.querySelector('[data-praca-empire-split-value]');
-      if (value) value.textContent = `${pctU}% / ${100 - pctU}%`;
+      const hero = host?.querySelector('[data-praca-empire-split-hero]');
+      if (hero) hero.textContent = `Ulepszenia ${pctU}%`;
+      const buildings = host?.querySelector('[data-praca-empire-split-buildings]');
+      if (buildings) buildings.textContent = `${100 - pctU}%`;
     });
   });
   return h;

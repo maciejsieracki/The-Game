@@ -1803,15 +1803,6 @@ function plonyChipRowHtml(view: CityView): string {
   );
 }
 
-function pracaSplitBarLabelHtml(pctB: number, pctU: number, budAmt?: number, uleAmt?: number): string {
-  const bPart = budAmt != null ? ` +${budAmt}` : '';
-  const uPart = uleAmt != null ? ` +${uleAmt}` : '';
-  return (
-    `${pctB}% ${cityPanelChipIconWrap('cp-buildings', 14)}${bPart}` +
-    ` · ${pctU}% ${cityPanelChipIconWrap('chip-crate', 14)}${uPart}`
-  );
-}
-
 function psiRowLabel(iconId: string, text: string, title?: string): string {
   const t = title ? ` title="${title.replace(/"/g, '&quot;')}"` : '';
   return `${cityPanelChipIconWrap(iconId, 16)}<span${t}>${text}</span>`;
@@ -2089,6 +2080,18 @@ function ensureStyles(): void {
 .civ-cs .praca-w4-sliders input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:5px;background:rgba(255,255,255,0.08);outline:none;}
 .civ-cs .praca-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
 .civ-cs .praca-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
+/* R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F) — sygnał Ulepszeń na samej górze panelu
+   „Podział pracy" + dwie wyraźnie oddzielone kolumny Budynki/Ulepszenia nad suwakiem. */
+.civ-cs .praca-split-summary{display:flex;align-items:baseline;gap:0.3em;font-size:0.86em;font-weight:700;
+  color:#8ec5ff;margin:0.1em 0 0.3em;}
+.civ-cs .praca-split-summary b{font-size:1.1em;}
+.civ-cs .praca-split-cols{display:flex;gap:0.5em;margin-bottom:0.32em;}
+.civ-cs .praca-split-col{flex:1 1 50%;padding:0.3em 0.42em;border-radius:6px;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);}
+.civ-cs .praca-split-col.right{border-left:2px solid rgba(142,197,255,0.35);}
+.civ-cs .praca-split-col-lbl{display:flex;align-items:center;gap:0.16em;font-size:0.7em;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.14em;}
+.civ-cs .praca-split-col b{font-size:0.92em;}
 .civ-cs .civ-w4-order-banner{display:flex;align-items:center;justify-content:center;gap:0.55em;margin-top:0.42em;padding:0.68em 0.75em;border-radius:9px;font-size:0.82em;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;}
 .civ-cs .civ-w4-order-banner.ok{color:#7ad0a0;border:1px solid rgba(74,158,106,0.45);background:rgba(74,158,106,0.08);}
 .civ-cs .civ-w4-order-banner.warn{color:#e0a860;border:1px solid rgba(224,168,96,0.4);background:rgba(224,168,96,0.08);}
@@ -4746,7 +4749,7 @@ function appendPodzialPracyInfo(
   const chips = el('div', 'chip-row praca-split-chips');
   chips.innerHTML =
     statChipBrand('res-work', 'Miasto', praca ? signed(praca.total) : '—', 'gold') +
-    statChipBrand('cp-buildings', 'Budowa', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
+    statChipBrand('cp-buildings', 'Budynki', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
     statChipBrand('tb-build', 'Ulepszenia', praca ? `+${praca.doUlepszen}` : '—', 'blue');
   mount.appendChild(chips);
 
@@ -4800,6 +4803,18 @@ function appendPodzialPracyInfo(
   mount.appendChild(info);
 }
 
+/**
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F, przeprojektowanie prezentacji — Maciej
+ * 2026-08-21): czysto wizualna zmiana, ŻADNEJ zmiany logiki procentów poza tym, co wymusza
+ * Wątek C gdzie indziej (ten konkretny suwak, kontrolka #4, MIN=50/MAX=100 na Budynki, JUŻ miał
+ * cap 50% na Ulepszenia — nietknięty tu).
+ * - Sygnał „Ulepszenia" na samej górze panelu (przed suwakiem), zamiast dopiero w wierszu info.
+ * - Budynki po lewej / Ulepszenia po prawej, w dwóch wyraźnie oddzielonych kolumnach (ikona +
+ *   etykieta + wartość), zamiast jednego zdania tekstowego powtarzającego to, co mówi ikona.
+ * - Nazewnictwo: „Pula Pracy" (myliło z realną, akumulowaną PULA IMPERIUM) → „Ulepszenia",
+ *   zgodnie z tym, co Wątek B ustalił już dla suwaka #1/#2 w `empireDetailPanel.ts` — tu ta sama
+ *   zmiana zastosowana w kontrolce #4 (nie była dotąd zrobiona, sprawdzone przed zmianą).
+ */
 function renderPodzialPracy(
   mount: HTMLElement,
   city: City,
@@ -4814,17 +4829,26 @@ function renderPodzialPracy(
   const pctB = praca?.pctBudynki ?? pctCfg.procentBudynki;
   const pctU = praca?.pctUlepszenia ?? (100 - pctB);
   const player = city.ownerId === 0;
+  const podzialTip = 'Lokalny podział przyrostu Pracy tego miasta między Budynki i Ulepszenia. Kroki co 10%.';
+
+  // Sygnał na samej górze: ile z tegorocznego przyrostu Pracy trafia do Ulepszeń.
+  const summary = el('div', 'praca-split-summary');
+  summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} Ulepszenia <b>${pctU}%</b>`
+    + (praca ? ` <span class="muted" style="font-weight:400">(+${praca.doUlepszen} 🔨/turę)</span>` : '');
+  mount.appendChild(summary);
 
   const sliderWrap = el('div', 'praca-w4-sliders');
-  const sliderRow = el('div', 'slider-row');
-  const sliderLabel = el('label');
-  const podzialTip =
-    'Lokalny podział przyrostu Pracy tego miasta. Budynki 50–100%, a Pula Pracy jest resztą 0–50%. '
-    + 'Kroki co 10%. Nie zmienia nadrzędnego podziału puli ani budżetu automatu 0–100%.';
-  sliderLabel.innerHTML =
-    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki 50–100% / Pula Pracy 0–50% (lokalnie)</span>` +
-    `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
-  sliderRow.appendChild(sliderLabel);
+
+  const cols = el('div', 'praca-split-cols');
+  const colBud = el('div', 'praca-split-col left');
+  colBud.innerHTML = `<div class="praca-split-col-lbl">${cityPanelChipIconWrap('cp-buildings', 13)} Budynki</div>`
+    + `<b>${pctB}%${praca ? ` · +${praca.doBudynkow}` : ''}</b>`;
+  const colUle = el('div', 'praca-split-col right');
+  colUle.innerHTML = `<div class="praca-split-col-lbl">${cityPanelChipIconWrap('chip-crate', 13)} Ulepszenia</div>`
+    + `<b>${pctU}%${praca ? ` · +${praca.doUlepszen}` : ''}</b>`;
+  cols.appendChild(colBud);
+  cols.appendChild(colUle);
+  sliderWrap.appendChild(cols);
 
   if (player) {
     const inp = document.createElement('input');
@@ -4833,21 +4857,20 @@ function renderPodzialPracy(
     inp.max = '100';
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
-    inp.setAttribute('aria-label', 'Lokalny podział przyrostu Pracy tego miasta: budynki versus pula Pracy');
+    inp.setAttribute('aria-label', 'Lokalny podział przyrostu Pracy tego miasta: budynki versus ulepszenia');
     inp.title = podzialTip;
     inp.addEventListener('input', () => {
       const v = clampPodzialPracyBudynkiPercent(Number(inp.value));
       cfg.onPodzialPracyChange?.(city.id, { procentBudynki: v });
       rerender();
     });
-    sliderRow.appendChild(inp);
+    sliderWrap.appendChild(inp);
   } else {
     const ro = el('div', 'muted');
     ro.style.cssText = 'font-size:0.68em;margin-top:0.06em;';
     ro.textContent = 'Tylko podgląd (miasto rywala).';
-    sliderRow.appendChild(ro);
+    sliderWrap.appendChild(ro);
   }
-  sliderWrap.appendChild(sliderRow);
   if (player && cfg.onPodzialPracyOverrideToggle) {
     appendIndywidualneToggle(
       sliderWrap,

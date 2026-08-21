@@ -19068,8 +19068,9 @@ async function boot(): Promise<void> {
           },
           onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
             const pol = ulepszeniaEmpireForOwner(0);
-            // Historyczny suwak automatu ma zakres 0–100%; cap 50% należy
-            // wyłącznie do nadrzędnego splitu ownerDefaultPracaSplit.
+            // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A: historyczny suwak
+            // automatu teraz respektuje ten sam nadrzędny cap co ownerDefaultPracaSplit —
+            // clampUlepszeniaPracaPercent clampuje do MAX_PRACA_WSPOLNY_WOREK_PROCENT.
             pol.pracaAutoPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             pol.tryb = 'auto';
             ulepszeniaEmpireByOwner.set(0, pol);
@@ -31716,8 +31717,11 @@ async function boot(): Promise<void> {
             focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
             onlyWorked: (pol.onlyWorked as boolean) ?? false,
-            // Historyczny automat migruje przez clamp 0–100, bez capu nadrzędnego
-            // splitu. Stary save nie może tracić wartości 60–100%.
+            // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A: od tej decyzji
+            // clampUlepszeniaPracaPercent egzekwuje nadrzędny cap (MAX_PRACA_WSPOLNY_WOREK_PROCENT).
+            // Stary save z wartością >50% (np. legacy perTurn=3 → 100%, albo empire >50% z
+            // czasów przed tą decyzją) zostaje tu ścięty do capu przy wczytaniu — zgodnie z ECHO
+            // właściciela (`docs/decyzje/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1.md`).
             pracaAutoPercent: clampUlepszeniaPracaPercent(
               resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
             ),

@@ -9,6 +9,7 @@ import { HUD_EDGE_PX } from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
+import { MAX_PRACA_WSPOLNY_WOREK_PROCENT } from '../game/cities';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -426,8 +427,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             empireState.pracaAutoPercent,
             'empire',
             'Globalny budżet automatu:',
-            'Historyczny globalny budżet automatu ulepszeń terenu; zakres 0–100%. Nie zmienia nadrzędnego splitu Praca.',
-            100,
+            `Historyczny globalny budżet automatu ulepszeń terenu; zakres 0–${MAX_PRACA_WSPOLNY_WOREK_PROCENT}% ` +
+              '(od R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 respektuje ten sam nadrzędny cap co podział Praca). ' +
+              'Nie zmienia nadrzędnego splitu Praca.',
+            MAX_PRACA_WSPOLNY_WOREK_PROCENT,
           );
         }
         if (playerCities.length > 1) {
@@ -475,8 +478,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
               effState.pracaAutoPercent,
               'city',
               'Lokalny budżet automatu:',
-              'Lokalny override historycznego budżetu automatu tego miasta; zakres 0–100%. Nie zmienia nadrzędnego splitu Praca.',
-              100,
+              `Lokalny override historycznego budżetu automatu tego miasta; zakres 0–${MAX_PRACA_WSPOLNY_WOREK_PROCENT}% ` +
+                '(od R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 miasto NIE może już obejść nadrzędnego capu ' +
+                'cywilizacji przełączeniem się w tryb „Indywidualne"). Nie zmienia nadrzędnego splitu Praca.',
+              MAX_PRACA_WSPOLNY_WOREK_PROCENT,
             );
           }
         }
