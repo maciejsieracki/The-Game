@@ -1,8 +1,8 @@
 {
-  "publishedAt": "2026-08-21T12:37:00",
-  "sourceBuild": "/home/user/The-Game/gra/dist",
+  "publishedAt": "2026-08-21T00:00:00",
+  "sourceBuild": "/tmp/civ-dist-309",
   "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "26e45d4ee692f7c725fb35a1d6128e36"
+  "md5": "809a36e9c554fd0bfa58d63a4b155e8f"
 }

@@ -151,9 +151,16 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-item.locked:hover{background:rgba(232,216,138,.05);border-color:rgba(232,216,138,.22);}
 .civ-science-hub-hud .sh-item:focus-visible,.civ-science-hub-hud .sh-plan-item:focus-visible{
   outline:2px solid #f4e6a8;outline-offset:2px;}
-.civ-science-hub-hud .sh-ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.5em;height:1.5em;
+.civ-science-hub-hud .sh-ico{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.5em;height:1.5em;
   border-radius:50%;border:1px solid rgba(232,216,138,.35);background:radial-gradient(circle at 38% 30%,#1c2432,#0a0d14);}
 .civ-science-hub-hud .sh-ico svg{width:72%;height:72%;display:block;}
+.civ-science-hub-hud .sh-item-side{display:flex;flex-direction:column;align-items:flex-end;gap:0.3em;
+  flex-shrink:0;margin-top:0.1em;}
+.civ-science-hub-hud .sh-card-btn{font-size:0.62em;font-weight:700;letter-spacing:.06em;
+  color:var(--gold-bright);background:rgba(232,216,138,.12);border:1px solid rgba(232,216,138,.5);
+  border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+.civ-science-hub-hud .sh-card-btn:hover,.civ-science-hub-hud .sh-card-btn:focus-visible{
+  background:rgba(232,216,138,.28);outline:none;}
 .civ-science-hub-hud .sh-close-ic{display:inline-flex;align-items:center;justify-content:center;width:1.1em;height:1.1em;}
 .civ-science-hub-hud .sh-close-ic svg{width:100%;height:100%;display:block;}
 .civ-science-hub-hud .sh-tree-btn .sh-tree-ic{display:inline-flex;align-items:center;margin-right:0.35em;vertical-align:middle;}
@@ -563,7 +570,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
 
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
-    hint.textContent = 'Klik technologii/ikony = otwórz kartę podglądu. Wybór badania lub dodanie do planu to osobna akcja. Esc zamyka kartę/hub.';
+    hint.textContent = 'Klik odblokowanej technologii = dodaj do planu badań. Przycisk „Karta" = podgląd karty technologii. Esc zamyka kartę/hub.';
 
     listPanel.appendChild(hint);
     scroll.appendChild(listPanel);
@@ -606,21 +613,28 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       row.appendChild(ico);
       row.appendChild(body);
 
+      const side = document.createElement('div');
+      side.className = 'sh-item-side';
+
       const planPos = planPosById.get(e.id);
       if (planPos !== undefined) {
         const badge = document.createElement('span');
         badge.className = 'sh-num-badge';
         badge.title = 'Pozycja ' + planPos + ' w planie badań';
         badge.textContent = String(planPos);
-        row.appendChild(badge);
+        side.appendChild(badge);
       } else if (!lockedRow && canEnqueue) {
         const planAct = document.createElement('span');
         planAct.className = 'sh-plan-act';
         planAct.textContent = '+ PLAN';
         planAct.setAttribute('aria-hidden', 'true');
-        row.appendChild(planAct);
+        side.appendChild(planAct);
       }
 
+      // act() otwiera kartę podglądu — dawna funkcja klikniętego wiersza (przed T-KLIK-
+      // WIERSZA), teraz wołana WYŁĄCZNIE przez przycisk „Karta" (poniżej) oraz — dla
+      // wierszy zablokowanych — przez klik samego wiersza (nie da się dodać zablokowanej
+      // technologii do planu, więc podgląd wymagań zostaje domyślną akcją kliknięcia).
       const act = () => {
         showTechDiscoveryNotice({
           techName: e.name,
@@ -630,10 +644,35 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
           onOpenTree: config.onOpenTreeView ?? (() => config.onShowInTree(e.id)),
         });
       };
-      row.addEventListener('click', act);
+
+      // Klik CAŁEGO WIERSZA odblokowanej technologii = dodaj bezpośrednio do planu badań
+      // (przywrócone zachowanie sprzed „trybu podglądu"; zgłoszenie właściciela 2026-08-21).
+      // Wiersz zablokowany zachowuje dawne zachowanie: klik = podgląd karty/wymagań.
+      const rowActivate = () => {
+        if (!lockedRow && canEnqueue) { config.onSelectTech(e.id); return; }
+        act();
+      };
+      row.addEventListener('click', rowActivate);
       row.addEventListener('keydown', (ev: KeyboardEvent) => {
-        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); act(); }
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); rowActivate(); }
       });
+
+      // Przycisk „Karta" — wyraźny baner z tekstem (nie kryptyczna ikonka), niezależny od
+      // kliknięcia wiersza (stopPropagation), wołający dawną funkcję podglądu karty (act()).
+      const cardBtn = document.createElement('button');
+      cardBtn.type = 'button';
+      cardBtn.className = 'sh-card-btn';
+      cardBtn.textContent = 'Karta';
+      cardBtn.title = 'Otwórz kartę technologii';
+      cardBtn.setAttribute('aria-label', 'Otwórz kartę: ' + e.name);
+      cardBtn.addEventListener('click', (ev: MouseEvent) => { ev.stopPropagation(); act(); });
+      cardBtn.addEventListener('keydown', (ev: KeyboardEvent) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); act(); }
+      });
+      side.appendChild(cardBtn);
+
+      row.appendChild(side);
+
       return row;
     }
   }

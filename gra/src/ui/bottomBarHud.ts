@@ -70,29 +70,46 @@ html.civ-ui-zoom-active .civ-bottom-bar{bottom:${HUD_ZOOM_EDGE_PX}px;right:${HUD
 .civ-bottom-bar .wyk-badge{font-size:11px;font-weight:700;letter-spacing:0;color:#0c1018;
   background:linear-gradient(180deg,#ffe08a,#e0b24a);border-radius:999px;padding:1px 7px;line-height:1.5;}
 .civ-bottom-bar .et-wrap{position:relative;width:100%;}
+/* R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 runda 3 (podmien.zip 2026-08-21), podmiana 2:
+   usunięto border-top-color:#f8eea8 (rozjaśniony górny rant — sprzeczny z zasadą designera:
+   wypukłość = insety wewnątrz jednolitej obramówki, nigdy rozjaśniony border-top), cień
+   zamieniony na dwa insety (góra+dół) zamiast samego górnego. */
 .civ-bottom-bar .end-turn{min-width:0;width:100%;height:${BOTTOM_BAR_END_TURN_H_PX}px;padding:5px 18px;
   display:flex;flex-direction:row;align-items:center;justify-content:center;gap:10px;
   background:linear-gradient(180deg,#f0dc88,#b99a28);
-  border:1px solid #6a5212;border-top-color:#f8eea8;border-radius:9px;cursor:pointer;color:#2e2708;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 18px rgba(232,216,138,.22);font-family:var(--civ-font-ui);}
+  border:1px solid #6a5212;border-radius:9px;cursor:pointer;color:#2e2708;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.55),inset 0 -1.5px 0 rgba(70,52,8,.5),
+    0 6px 18px rgba(232,216,138,.22);font-family:var(--civ-font-ui);}
 .civ-bottom-bar .end-turn:hover:not(:disabled){filter:brightness(1.04);}
 .civ-bottom-bar .end-turn:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:3px;}
-.civ-bottom-bar .end-turn.is-disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.5);box-shadow:none;}
-.civ-bottom-bar .end-turn:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.5);box-shadow:none;}
+/* podmiana 3: było box-shadow:none — teraz inset delikatny (wypukłość widoczna nawet
+   w stanie wyłączonym, bez border-top-color: usunięty razem z bazowym .end-turn wyżej). */
+.civ-bottom-bar .end-turn.is-disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.5);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.25);}
+.civ-bottom-bar .end-turn:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(.5);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.25);}
 /* R-TRZY-KARTY-WDROZENIE-Q1: sygnalizacja WYŁĄCZNIE wizualna — nigdy razem z is-disabled
    (render() gwarantuje showBlockSignal = blocking>0 && !hideEnd && !endVisuallyDisabled),
-   więc te dwa stany nie mieszają znaczeń. Przycisk zostaje w pełni klikalny. */
-.civ-bottom-bar .end-turn.et-signal{border-style:dashed;border-width:2px;border-color:rgba(208,128,48,.7);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 16px rgba(208,128,48,.4);}
+   więc te dwa stany nie mieszają znaczeń. Przycisk zostaje w pełni klikalny.
+   Podmiana 4 (runda 3): border wraca do tego samego 1px #6a5212 co stan aktywny (zaznaczenie
+   sygnalizowane WYŁĄCZNIE poświatą na zewnątrz, nigdy drugim konturem obok), box-shadow
+   dostaje wewnętrzny inset (wypukłość) + poświatę na zewnątrz. */
+.civ-bottom-bar .end-turn.et-signal{border:1px solid #6a5212;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.35),0 0 14px rgba(232,216,138,.3);}
 .civ-bottom-bar .et-meta{display:none;}
 .civ-bottom-bar .et-action{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;
   text-transform:uppercase;letter-spacing:.14em;color:#2e2708;}
 .civ-bottom-bar .et-turn-lbl{text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8a8070;margin-top:2px;}
 @keyframes civ-wyk-glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 16px rgba(208,128,48,.5)}}
 
-/* Warstwa 2 — pasek nad HUD nazywający blokady. Siedzi TAM, gdzie kod trzyma panel
-   wydarzeń (nad stosem WYKONAJ/Zakończ turę), więc nie wchodzi w sam stos ani nie
-   przesuwa jego przycisków (position:absolute, bottom:100% względem .civ-bottom-bar). */
+/* Warstwa 2 — pasek nad HUD nazywający blokady. R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1: musi
+   siedzieć nad CAŁYM stosem (WYKONAJ + Zakończ turę + etykieta tury), nie tylko nad
+   .et-wrap — inaczej (wysokość paska > HUD_GAP_PX) nachodzi na przycisk „Wykonaj"
+   powyżej .et-wrap w tym samym stosie flex, co po zniknięciu paska ujawniało pod spodem
+   pusty wyszarzony prostoką „Wykonaj" (zgłoszenie właściciela, zrzut 2). Dlatego .et-hint
+   i .et-tooltip są teraz bezpośrednimi dziećmi .civ-bottom-bar (position:fixed, więc
+   już jest kontekstem pozycjonowania) — bottom:calc(100% + gap) liczy się od górnej
+   krawędzi CAŁEGO paska, nie tylko .et-wrap, więc nigdy nie nachodzi na żaden przycisk. */
 .civ-bottom-bar .et-hint{position:absolute;left:0;right:0;bottom:calc(100% + ${HUD_GAP_PX}px);
   display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border-radius:9px;
   border:2px solid rgba(208,128,48,.55);background:rgba(208,128,48,.12);
@@ -107,7 +124,8 @@ html.civ-ui-zoom-active .civ-bottom-bar{bottom:${HUD_ZOOM_EDGE_PX}px;right:${HUD
 .civ-bottom-bar .et-hint-show:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
 
 /* Warstwa 3 — tooltip na hover, numerowana lista; zajmuje to samo miejsce co pasek
-   (bez nakładania — pasek gaśnie na hover całego widżetu, patrz .civ-bottom-bar:hover wyżej). */
+   (bez nakładania — pasek gaśnie na hover całego widżetu, patrz .civ-bottom-bar:hover wyżej).
+   Tak samo jak .et-hint: bezpośrednie dziecko .civ-bottom-bar, nad całym stosem. */
 .civ-bottom-bar .et-tooltip{position:absolute;left:0;right:0;bottom:calc(100% + ${HUD_GAP_PX}px);
   padding:11px 12px;border:2px solid rgba(232,216,138,.45);border-radius:9px;
   background:linear-gradient(180deg,rgba(26,32,44,.99),rgba(10,13,19,.99));
@@ -205,14 +223,18 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
         + '</div>'
       : '';
 
-    el.innerHTML = '<button type="button" class="wykonaj' + (wykOn ? ' on' : '') + '" data-wykonaj'
+    // R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1: hintHtml/tooltipHtml są teraz bezpośrednimi dziećmi
+    // .civ-bottom-bar (przed .wykonaj w DOM) — pozycjonowane bottom:calc(100% + gap) względem
+    // CAŁEGO paska (patrz komentarz przy .et-hint w CSS wyżej), więc siedzą ponad całym
+    // stosem WYKONAJ + Zakończ turę i nigdy go nie zasłaniają/nie nachodzą na niego.
+    el.innerHTML = hintHtml
+      + tooltipHtml
+      + '<button type="button" class="wykonaj' + (wykOn ? ' on' : '') + '" data-wykonaj'
       + (wykOn ? '' : ' disabled') + '>Wykonaj'
       + (wykOn ? '<span class="wyk-badge">' + blocking + '</span>' : '')
       + '</button>'
       + (hideEnd ? '' : (
         '<div class="et-wrap">'
-        + hintHtml
-        + tooltipHtml
         + '<button type="button" class="end-turn'
         + (endVisuallyDisabled ? ' is-disabled' : '')
         + (showBlockSignal ? ' et-signal' : '')

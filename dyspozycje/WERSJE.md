@@ -3548,8 +3548,183 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 303 (2026-08-21)
-- **AKTUALNA** · ROBOCZA md5 `26e45d4ee692f7c725fb35a1d6128e36` · stempel `26e45d4e` · manifest/bundle `VERIFY OK`.
+## ROBOCZA — FALA 309 (2026-08-21) — CivPedia T4: karta jednostki na mapie, odznaki statusu
+
+- **AKTUALNA** · ROBOCZA md5 `809a36e9c554fd0bfa58d63a4b155e8f` · stempel `809a36e9` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T4 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: migracja karty jednostki na mapie
+  (`unitInfoCard.ts`) do wspólnego systemu `entityCards` — publiczna sygnatura bez zmian, stara
+  implementacja jako fallback w try/catch, 3D-podgląd jednostki zachowany. Runda 2: Evaluator
+  T4 znalazł w żywej przeglądarce, że sekcja „Statusy" (odznaki garnizon/ufortyfikowanie/
+  sentry/auto-eksploracja z `main.ts`) renderuje wiele odznak, ale klasy `.entity-card-badges`/
+  `.entity-card-badge` nie miały ŻADNEJ reguły CSS w repo od T1 — luka niewidoczna, dopóki
+  żadna karta nie renderowała ≥2 odznak naraz (karta technologii T3 zawsze renderowała
+  dokładnie jedną). Odznaki sklejały się w jeden nieczytelny ciąg tekstu bez odstępu/tła.
+  Naprawa: brakujące reguły `.entity-card-badges{display:flex;flex-wrap:wrap;gap:6px}` +
+  `.entity-card-badge{...pigułka...}` w `entityCards/renderer.ts`. Nowy trwały test
+  `unit-info-card-badges-real-render-test.cjs` (Playwright/real Chromium, mierzy prawdziwą
+  geometrię DOM przez `getBoundingClientRect`/`getComputedStyle`, nie tylko markup) — 19/19.
+  Operator→Evaluator→Final Control PASS niezależnie (dwóch osobnych agentów, każdy z własnym
+  izolowanym worktree i własnym mutation-testem: usunięcie CSS → 13/19 FAIL, przywrócenie →
+  19/19 PASS). Bramki zbiorcze na scalonym `main`: `tsc` 0; `entity-card-contract-test` 75/75;
+  `unit-info-card-entitycard-migration-test` 26/26; `unit-info-card-contract-test` 23/23;
+  `unit-info-card-wiring-test` 6/6; `technology-discovery-card-visual-test` 48/48;
+  `logic-test` 213/213; `tech-tree-test` 19/19; `research-test` 33/33; `unit-replace-test`
+  13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 308 (2026-08-21) — naprawa awarii FALI 307 + 3 dodatkowe poprawki — **ZASTĄPIONA** (→ 809a36e9, FALA 309)
+- ROBOCZA md5 `e4317354b95f8ab3966ac7bb56bea1d2` · stempel `e4317354` · manifest/bundle `VERIFY OK`.
+
+  **Naprawa krytycznego regresu FALI 307** (`R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1`):
+  przyciski „Rozpocznij badanie"/„Otwórz drzewo" w karcie odkrycia technologii nie
+  reagowały na klik. Przyczyna: `.entity-card` nie miało własnego `position`, więc malowało
+  się we WCZEŚNIEJSZYM kroku CSS stacking-context niż `.tdn-back` (tło modala,
+  `position:fixed`) — tło przechwytywało kliknięcia mimo poprawnej kolejności DOM i
+  poprawnie podpiętych event listenerów. Naprawa: jedna linia CSS (`position:relative` na
+  `.entity-card` w lokalnym override `techDiscoveryNotice.ts`). Znaleziona i zweryfikowana
+  PRZEZ REALNĄ PRZEGLĄDARKĘ (Playwright/Chromium, `elementFromPoint()` + `page.mouse.click()`
+  na rzeczywistych współrzędnych) — jsdom (używany we wcześniejszych testach tej sesji) NIE
+  robi hit-testingu i dawał fałszywie zielony wynik dla tej klasy buga. Operator, Evaluator
+  i Final Control NIEZALEŻNIE odtworzyli regres na kodzie sprzed naprawy (test mutacyjny:
+  usunięcie linii → 6/12 FAIL, przywrócenie → 12/12 PASS) i potwierdzili naprawę. Dwa nowe
+  trwałe testy: `tech-discovery-card-click-test.cjs` (jsdom, 13/13) i
+  `tech-discovery-card-real-click-test.cjs` (Playwright/Chromium, prawdziwy hit-test, 12/12)
+  — ten drugi zamyka `P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1`.
+
+  **`R-SCIENCEHUB-KLIK-WIERSZA-ENQUEUE-Q1`**: klik odblokowanej technologii w panelu
+  „Badania" znów dodaje bezpośrednio do planu badań (przywrócone stare zachowanie);
+  podgląd karty dostępny przez wyraźny przycisk tekstowy „Karta" (zastąpił małą ikonkę „ⓘ"
+  z fazy 1). Zweryfikowane realnym renderem+klikiem (jsdom+esbuild, prawdziwe dane), 13/13.
+
+  **`R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1`**: hover-karta drzewka technologii i
+  tooltip `sciencePicker.ts` pokazują teraz kompletną, poprawną listę odblokowywanych
+  jednostek z `units.json` (np. 20 zamiast 12 dla Brązownictwa) zamiast przestarzałego,
+  osadzonego tekstu w `tech.json`; `sciencePicker.ts` już nie miesza nazw jednostek z
+  budynkami pod „Odblokowuje budynki:". Nowy wspólny moduł `techUnlockParse.ts`.
+
+  **`R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1`**: pasek „N karta wymaga decyzji" i przycisk
+  „Wykonaj" w dolnym pasku UI już się nie nakładają po rozwiązaniu blokującej decyzji —
+  przyczyna: zły kontekst pozycjonowania (`.et-hint` był dzieckiem `.et-wrap`, nie całego
+  `.civ-bottom-bar`). Zweryfikowane realną przeglądarką — zrzuty ekranu przed/po pixel-for-pixel.
+
+  Wszystkie 4 tematy: pełny cykl Operator→Evaluator→Final Control (Sonnet 5 Medium/High,
+  Workflow, osobne subagenty), zweryfikowane niezależnie przez orkiestratora po scaleniu.
+  Bramki zbiorcze: `tsc` 0; `entity-card-contract-test` 75/75; `technology-discovery-card-
+  visual-test` 48/48; `tech-tree-test` 19/19; `bottom-bar-hud-wykonaj-overlap-test` 33/33;
+  `important-event-cards-test` 10/10; `tech-unlock-units-test` 41/41; `building-tech-gate-
+  test` 89/89; `citypanel-uwagi-abc-filter-test` 35/35; Vite 845 modułów. `science-hub-test`
+  5/7 — 2 faile pre-istniejące, niezwiązane (`P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1`). Deploy
+  wykonany do `gra-robocza/`; push osobno.
+
+## AWARIA — ROLLBACK FALA 307 → 306 (2026-08-21, pilne)
+
+**Zgłoszenie właściciela (na żywo, stempel `6c1433ef` = FALA 307):** kliknięcie technologii na
+liście „Badania" otwiera kartę podglądu zamiast dodać do kolejki (regres UX), oraz **przyciski
+„Rozpocznij badanie" i „Otwórz drzewo" w karcie NIE DZIAŁAJĄ w ogóle — nigdzie nie da się
+rozpocząć badania.** Krytyczne, blokuje rozgrywkę.
+
+**Natychmiastowe działanie:** przywrócono bundle FALA 306 (`gra-robocza/Gra-ROBOCZA.html` +
+7 kopii playtest, md5 `5900b3fb603fbec52edd97fc95966fdb`) jako AKTUALNY — T3 (migracja karty
+technologii na `entityCards`, FALA 307) podejrzewana o wprowadzenie regresu w podpięciu
+przycisków akcji (`renderer.ts`'s `entity-card-actions`). Kod źródłowy T1b/T3 NIE został
+cofnięty na `main` — tylko WDROŻONY bundle w `gra-robocza/` wraca do stanu sprzed FALI 307,
+do czasu znalezienia i zweryfikowania naprawy. Ślad znanej luki w pokryciu testowym:
+`P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1` (zarejestrowane wcześniej tego samego dnia)
+— żaden test nie sprawdzał realnego kliknięcia przycisków akcji na żywym DOM, dlatego ten
+regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
+
+## ROBOCZA — FALA 307 (2026-08-21) — **WYCOFANA (rollback, regres krytyczny — patrz wyżej)**
+- ROBOCZA md5 `bec9797ed7eea4a94115ad21d71ef1cd` · stempel `bec9797e` · manifest/bundle `VERIFY OK` (w chwili publikacji).
+  Zakres: `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` T1b + T3 (retry) — fundament karty encji
+  rozszerzony o akordeon, ikony/trailing/kolorowane odznaki per wiersz, paginację „Pokaż
+  pozostałe N" (sprzężoną z kompaktowym nagłówkiem), layout pigułek-z-checkmarkiem (T1b,
+  wyłącznie nowe pola opcjonalne w `entityCards/types.ts`/`renderer.ts`, 75/75 testów).
+  Karta odkrycia technologii (`techDiscoveryNotice.ts`) **migrowana** na wspólny kontrakt
+  (`technologyAdapter.ts` + `renderEntityCard`) — pierwsza faktycznie migrowana karta w tym
+  systemie, publiczna sygnatura `showTechDiscoveryNotice()` bez zmian, wszystkie 5 świadomych
+  odstępstw produktowych zachowanych (bez paska „Efekt", logika „Możesz badać", tryb
+  podglądu, brak przycisku „Otwórz hub badań"), stara implementacja zostaje jako fallback
+  (`_legacyShowTechDiscoveryNotice`). Final Control napisał własny, jednorazowy harness DOM
+  (esbuild+jsdom) żeby dowodowo potwierdzić że AKTYWNA ścieżka (nie fallback) faktycznie
+  renderuje wszystkie nowe mechanizmy — 23/23 asercji. Operator→Evaluator→Final Control PASS
+  na obu podtematach (T1b, T3), zweryfikowane niezależnie przez orkiestratora po scaleniu.
+  Bramki: `tsc` 0; `technology-discovery-card-visual-test.cjs` 48/48;
+  `entity-card-contract-test.cjs` 75/75; Vite 844 modułów. Znalezisko Evaluatora (nie
+  blokujące): istniejący test karty odkrycia sprawdza tylko surowy tekst źródła (trafia w
+  martwy fallback, nie w aktywną ścieżkę) — zarejestrowane osobno jako
+  `P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1`. Deploy wykonany do `gra-robocza/`;
+  push osobno.
+
+## ROBOCZA — FALA 306 (2026-08-21) — **ZASTĄPIONA** (→ `e4317354`, FALA 308 — po tymczasowym rollbacku z 307)
+- ROBOCZA md5 `5900b3fb603fbec52edd97fc95966fdb` · stempel `5900b3fb` · manifest/bundle `VERIFY OK`.
+  Zakres: `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` — filtr `playerFacingNote()`/
+  `isDevOnlyPlayerText()`/`stripInlineDevAnnotations()` w `cityPanel.ts` teraz poprawnie
+  usuwa notatki deweloperskie ze wzorcem „ABC-<numer>:" z pola `tech.Uwagi` wyświetlanego
+  w karcie budynku/jednostki (`appendTechDetailBlock`), zachowując resztę legalnej treści
+  (np. „kończy Epokę 1" zostaje, „ABC-7: Popalnia brązu na mapie" znika). Runda 1 błędnie
+  usuwała CAŁĄ notatkę (whole-string reject) — regresja złapana przez Evaluatora, naprawiona
+  w rundzie 2 (partial strip, wzorem istniejącego traktowania „PYTANIE=..."). Operator→
+  Evaluator (PASS-WITH-NOTES, złapał regres rundy 1 + zgłosił analogiczny, nieblokujący,
+  poza zakresem tego tematu problem w `buildings.json`) → Final Control PASS. Bramki: `tsc`
+  0; `citypanel-uwagi-abc-filter-test.cjs` 35/35 (rozszerzony o przypadek mieszany). Deploy
+  wykonany do `gra-robocza/`; push do `origin/main` osobno.
+
+## ROBOCZA — FALA 305 (2026-08-21) — **ZASTĄPIONA** (→ `5900b3fb`, FALA 306)
+- ROBOCZA md5 `0b83f269e30a9136107d3d069626c377` · stempel `0b83f269` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` faza 1/6 (z 6 zaplanowanych — patrz
+  `docs/decyzje/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1.md`) — osobna, zawsze widoczna
+  ikonka informacyjna „ⓘ" na węzłach technologii w `scienceHubHud.ts` i `techTreeView.ts`
+  (własny `stopPropagation`, woła te same funkcje co dotychczasowe kliknięcie całego
+  wiersza/węzła — zero zmian w tym zachowaniu), oraz zamiana martwej ikony
+  `techIconHintSpan()` w `cityPanel.ts` na klikalny link do karty podglądu technologii
+  (`showTechDiscoveryNotice(..., kind:'preview')`). `techDiscoveryNotice.ts` nietknięty.
+  Pozostałe 5 faz tego tematu (wspólny kontrakt karty encji — ECHO właściciela: pełny
+  refaktor, plan architektury gotowy w `05-architektura-plan.md`; karta ulepszeń terenu;
+  kategoria technologii w CivPedii; migracja 3 istniejących kart; linkowanie 4×4) — jeszcze
+  nie zaczęte, duży wieloetapowy projekt.
+  Pełny cykl Operator (Sonnet 5 Medium) → Evaluator (Sonnet 5 High, PASS-WITH-NOTES — 2
+  drobne, nieblokujące uwagi stylu: efekt uboczny na poziomie modułu w `cityPanel.ts`,
+  brak escapowania cudzysłowu w nowym atrybucie) → Final Control (Sonnet 5 High, osobny
+  subagent, PASS/READY_FOR_DEPLOY), zweryfikowany niezależnie przez orkiestratora po
+  scaleniu. Bramki: `tsc` 0; `tech-tree-test` 19/19; `building-tech-gate-test` 89/89;
+  `technology-discovery-card-visual-test` 48/48; `research-test` 33/33;
+  `science-hub-test` 5/7 — 2 faile pre-istniejące, potwierdzone identyczne na czystym
+  `main` przez Evaluator i Final Control niezależnie. Deploy wykonany do `gra-robocza/`;
+  push nie wykonywano jeszcze do `origin/main` (osobny krok).
+
+## ROBOCZA — FALA 304 (2026-08-21) — **ZASTĄPIONA** (→ `0b83f269`, FALA 305)
+- ROBOCZA md5 `cab0f532d7285e13488cc4acc642cdea` · stempel `cab0f532` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` (runda 3, zastępuje w całości rundę 2) —
+  5 podmian CSS designera (`podmien.zip`, ECHO: świeża makieta wygrywa): karta blokująca
+  wraca do samej obramówki `3px solid #e8d88a` (usunięty blok chip-warning z rundy 2 razem
+  z paskiem diagonalnym), 4 poprawki cieni/border/focus-visible na przycisku „Zakończ
+  turę" i kartach wydarzeń w `sidePanelHud.ts`/`bottomBarHud.ts`. Efekt uboczny świadomy
+  i objęty ECHO: zniknięcie przerywanej obwódki `.et-signal` z `R-TRZY-KARTY-WDROZENIE-Q1`
+  (zastąpiona nowym stylem focus-visible). `R-UI-POPUP-ODKRYCIE-OVERFLOW-Q1` — twardy
+  margines viewportowy w karcie odkrycia technologii już istniał; dodano złoty pasek
+  przewijania (`techDiscoveryNotice.ts`, wzorzec 1:1 z `preBattle.ts`/`postBattleSummary.ts`),
+  `STYLE_ID` v2→v3. `R-UI-PASKI-DIAGONALNE-PRODUKCJA-Q1` — recon zamknięty, brak aktywnego
+  bugu w kodzie (docs-only, bez zmian w `gra/`).
+  Oba tematy kodowe przeszły pełny cykl Operator (Sonnet 5 Medium) → Evaluator (Sonnet 5
+  High) → Final Control (Sonnet 5 High, osobny subagent) → `READY_FOR_DEPLOY`, każdy
+  niezależnie zweryfikowany przez orkiestratora po scaleniu (diff ograniczony do allowlisty,
+  zero konfliktów przy merge). Build: `node ./node_modules/vite/bin/vite.js build --outDir
+  /tmp/civ-dist --emptyOutDir` (kanon C-001), 837 modułów; oblężenie-bitwa build osobno,
+  bez nadpisania `outDir` (plugin `copyHtmlToRoot`). Bramki: `tsc` 0; `sidepanel-events-
+  toolbar-test` 19/19; `sidepanel-hud-deadzone-test` 43/43; `technology-discovery-card-
+  visual-test` 48/48; `side-list-hud-panel-coverage-test` 74/74; `heal-stale-blockers-
+  pending-battle-test` 23/23; `diplomacy-audience-close-flush-test` 37/37; `barbarzyncy-
+  podwojny-atak-prebattle-test` 18/18; `important-event-cards-test` 10/10 +
+  `important-event-cards-regression-test` PASS. 2 faile pre-istniejące w `main.ts`
+  (`end-turn-modal-sequencing-test`, `koniec-tury-f1-f4-runda3-test`) potwierdzone
+  niezwiązane z tym diffem (Final Control zweryfikował identyczne faile na czystym `main`
+  sprzed zmian). Deploy wykonany do `gra-robocza/`; push nie wykonywano.
+  Poza zakresem tej fali (jeszcze nie READY_FOR_DEPLOY): `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-
+  MIASTO-Q1` (runda 1: Wątki A/B/D naprawione przez Operatora, czeka na Evaluator+Final
+  Control zanim wejdzie do `main`) i `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` (recon-only).
+
+## ROBOCZA — FALA 303 (2026-08-21) — **ZASTĄPIONA** (→ `cab0f532`, FALA 304)
+- ROBOCZA md5 `26e45d4ee692f7c725fb35a1d6128e36` · stempel `26e45d4e` · manifest/bundle `VERIFY OK`.
   Zakres: konsolidacja sześciu tematów z sesji orkiestratora, zintegrowanych na
   `integration/2026-08-21-consolidacja` (baza `origin/work/clean-main-2026-08-21`, po
   FALI 302). `P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1` — scalanie identycznych kart „Koniec
