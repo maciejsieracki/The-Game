@@ -206,6 +206,8 @@ import {
 } from '../game/trade-routes';
 import { improvementKeysForHex } from '../game/terrain-improvements';
 import type { Hex } from '../types/hex';
+import terrainImprovementsData from '../../data/terrain-improvements.json';
+import { openEntityCard } from './entityCards/renderer';
 import { loadOrderParams, type OrderYieldMults } from '../game/order';
 import {
   evaluateOrderFromBreakdown,
@@ -2525,6 +2527,9 @@ function ensureStyles(): void {
 .civ-detail-scope .detail-card .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.12em 0.5em;margin-top:0.15em;}
 .civ-detail-scope .detail-card .dc-l{color:var(--muted);}
 .civ-detail-scope .detail-card .dc-v{word-break:break-word;}
+.civ-detail-scope .detail-card .dc-v-btn{background:none;border:0;padding:0;margin:0;font:inherit;color:var(--gold);
+  text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.civ-detail-scope .detail-card .dc-v-btn:hover{color:#f4e6a8;}
 .civ-detail-scope .detail-card .dc-section{font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
   color:#d4af5a;margin:0.55em 0 0.2em;padding-bottom:0.12em;border-bottom:1px solid rgba(212,175,90,0.18);}
 .civ-detail-scope .detail-card .dc-section:first-of-type{margin-top:0.15em;}
@@ -2610,6 +2615,9 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-cs .detail-card .dc-h .mini-thumb{width:1.85em;height:1.85em;font-size:0.95em;border-width:1px;}
 .civ-cs .detail-card .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.12em 0.5em;margin-top:0.15em;}
 .civ-cs .detail-card .dc-l{color:var(--muted);}
+.civ-cs .detail-card .dc-v-btn{background:none;border:0;padding:0;margin:0;font:inherit;color:var(--gold);
+  text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.civ-cs .detail-card .dc-v-btn:hover{color:#f4e6a8;}
 .civ-cs .detail-card .dc-note{margin-top:0.25em;color:var(--muted);font-size:0.92em;font-style:italic;}
 .civ-cs .detail-card.bld-detail-card{padding:0.32em 0.38em;}
 .civ-cs .detail-card.bld-detail-card .dc-h{margin-bottom:0.3em;padding-bottom:0.24em;border-bottom:1px solid rgba(212,175,90,0.24);}
@@ -8918,6 +8926,67 @@ function okStat(key: string, val: string, sub: string): string {
   return `<div class="okstat"><span class="ks">${key}</span><b>${val}</b> <span class="muted">${sub}</span></div>`;
 }
 
+/** Mapa `ImprovementKey` (klucz obiektu w `terrain-improvements.json`) → nazwa gracza
+ * (`row.nazwa`) — T7b (KARTA-ULEPSZENIA-TERENU), call-site 3/3, sekcja „Ulepszenia
+ * w zasięgu". Ten sam wzorzec odwrotny co `IMPROVEMENT_NAME_TO_KEY` w
+ * `techDiscoveryNotice.ts`/`technologyAdapter.ts` (Bug B, R-TECH-ULEPSZENIA-TERENU-SYNC-Q1),
+ * tylko w drugą stronę (tu KLUCZ jest już znany — z `improvementKeysForHex` — brakuje
+ * tylko etykiety do wyświetlenia w wierszu). */
+const IMPROVEMENT_KEY_TO_NAME: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {
+    if (key.startsWith('_')) continue;
+    if (typeof row?.nazwa === 'string' && row.nazwa) map[key] = row.nazwa;
+  }
+  return map;
+})();
+
+/**
+ * Zbiera unikalne typy ulepszeń terenu (i liczbę heksów każdego typu) w zasięgu
+ * roboczym miasta (`Rwork`) — T7b, call-site 3/3. Recon (T7a) potwierdził: dziś w
+ * `cityPanel.ts` nie istnieje żadna lista ulepszeń terenu z nazwami w zakładce
+ * „Okolica" (tylko zagregowane plony per-hex) — to jest pierwsza taka lista.
+ * Czyta WSZYSTKIE warstwy ulepszeń przez `improvementKeysForHex` (nie legacy
+ * `hex.ulepszenie`), tak jak `tileYieldLabel`/`appendOkolicaYieldLabel` niżej w pliku.
+ */
+function improvementsInCityRange(
+  city: City,
+  map: GameMap | undefined,
+  Rwork: number | undefined,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  if (!map || Rwork === undefined) return counts;
+  for (let dq = -Rwork; dq <= Rwork; dq++) {
+    for (let dr = -Rwork; dr <= Rwork; dr++) {
+      const q = city.q + dq;
+      const r = city.r + dr;
+      if (hexDist(city.q, city.r, q, r) > Rwork) continue;
+      const hex = map.hexes[`${q},${r}`];
+      if (!hex) continue;
+      for (const key of improvementKeysForHex(hex)) {
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    }
+  }
+  return counts;
+}
+
+/** Jeden wiersz klikalny w gridzie „Ulepszenia w zasięgu" — cała wartość (`.dc-v`) jest
+ * przyciskiem otwierającym tę samą kartę encji co pozostałe 2 miejsca wywołania T7b
+ * (`openEntityCard('improvement', key, {mode:'dialog'})`). */
+function improvementRangeRow(grid: HTMLElement, key: string, nazwa: string, count: number): void {
+  const lEl = el('span', 'dc-l');
+  lEl.textContent = nazwa;
+  grid.appendChild(lEl);
+  const vBtn = el('button', 'dc-v dc-v-btn');
+  vBtn.type = 'button';
+  vBtn.textContent = `${count}× — szczegóły →`;
+  vBtn.setAttribute('data-entity-kind', 'improvement');
+  vBtn.setAttribute('data-entity-id', key);
+  vBtn.addEventListener('click', () => openEntityCard('improvement', key, { mode: 'dialog' }));
+  grid.appendChild(vBtn);
+}
+
 function buildOkolicaDetailCard(
   city: City,
   opts: {
@@ -8928,9 +8997,11 @@ function buildOkolicaDetailCard(
     focus: OkolicaFocus;
     tryb: OkolicaTryb;
     clickHint: string;
+    /** T7b: potrzebna do zebrania ulepszeń w zasięgu (sekcja „Ulepszenia w zasięgu"). */
+    map?: GameMap;
   },
 ): HTMLDivElement {
-  const { Rwork, workedCount, tilesInRange, borderR, focus, tryb, clickHint } = opts;
+  const { Rwork, workedCount, tilesInRange, borderR, focus, tryb, clickHint, map } = opts;
   const card = el('div', 'detail-card okolica-detail-card');
   const head = el('div', 'dc-h');
   head.innerHTML = '<span>Okolica — ściąga</span>';
@@ -9006,6 +9077,20 @@ function buildOkolicaDetailCard(
     'Stan',
     `${tryb === 'reczny' ? 'Ręczny' : 'Auto'} · ${focusLbl[focus] ?? focus} · ${wN}/${city.population} 👤`,
   );
+
+  // T7b (KARTA-ULEPSZENIA-TERENU), call-site 3/3 — recon T7a potwierdził brak dziś
+  // jakiejkolwiek listy ulepszeń terenu z nazwami w tej zakładce (tylko zagregowane
+  // plony per-hex). Unikalne typy w zasięgu roboczym miasta + licznik heksów, każdy
+  // wiersz klikalny → ta sama karta co pozostałe 2 miejsca wywołania.
+  const improvementCounts = improvementsInCityRange(city, map, Rwork);
+  if (improvementCounts.size > 0) {
+    appendDetailSection(card, 'Ulepszenia w zasięgu');
+    const gImp = appendDetailGrid(card);
+    const sortedImprovements = [...improvementCounts.entries()].sort((a, b) => b[1] - a[1]);
+    for (const [key, count] of sortedImprovements) {
+      improvementRangeRow(gImp, key, IMPROVEMENT_KEY_TO_NAME[key] ?? key, count);
+    }
+  }
 
   const note = el('div', 'dc-note');
   setNoteHtml(note, clickHint.trim()
@@ -9342,6 +9427,7 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
     clickHint: Rwork !== undefined
       ? `Pełny zasięg (~${1 + 3 * Rwork * (Rwork + 1) + (borderR > 0 ? ringsTiles(Rwork, borderR) : 0)} pól) na mapie świata.${clickHint ? ' ' + clickHint : ''}`
       : clickHint,
+    map,
   });
 
   if (headEl) {

@@ -8,6 +8,7 @@ import type { ImprovementKey } from '../render/improvements';
 import { HUD_EDGE_PX } from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
+import { openEntityCard } from './entityCards/renderer';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
 import { MAX_PRACA_WSPOLNY_WOREK_PROCENT } from '../game/cities';
 
@@ -152,6 +153,10 @@ function ensureStyles(): void {
 .civ-build-item.sel{background:rgba(232,216,138,.12);border-color:rgba(232,216,138,.5);color:#f0e8b8;}
 .civ-build-item .ic{display:flex;align-items:center;justify-content:center;width:22px;height:18px;flex-shrink:0;color:#e8d88a;}
 .civ-build-item .ic svg{display:block;}
+.civ-build-info-ic{flex-shrink:0;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:9px;font-weight:800;line-height:1;cursor:pointer;
+  background:#141a24;border:1px solid rgba(232,216,138,.55);color:#e8d88a;}
+.civ-build-info-ic:hover,.civ-build-info-ic:focus-visible{background:rgba(232,216,138,.24);outline:none;}
 .civ-build-item .meta{font-size:9px;color:#7a7055;margin-left:auto;}
 .civ-build-item.disabled{opacity:.38;pointer-events:none;filter:grayscale(.85);}
 .civ-build-item.locked{opacity:.48;cursor:help;}
@@ -516,6 +521,12 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         + ' title="' + (locked && hint ? hint : t.label) + '">'
         + '<span class="ic">' + ic + '</span>'
         + '<span>' + t.label + '</span>'
+        // Osobna, zawsze widoczna ikonka info — niezależna strefa klikalna od wyboru typu
+        // budowy (T7b KARTA-ULEPSZENIA-TERENU): klik reszty wiersza (wybór typu) bez zmian,
+        // klik TEJ ikonki otwiera kartę encji ulepszenia, z własnym stopPropagation (wzorem
+        // `.ttv-info-ic` w techTreeView.ts, R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 faza 1).
+        + '<span class="civ-build-info-ic" role="button" tabindex="0" title="Podgląd karty ulepszenia"'
+        + ' aria-label="Podgląd karty: ' + t.label + '">ⓘ</span>'
         + '<span class="meta">' + (locked && hint ? (hintTechIcWrap + hint) : ('E' + t.epoka + ' · ' + costLabel + techHint)) + '</span></div>';
     }
 
@@ -558,6 +569,24 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         }
         config.onSelectType(key === active ? null : key);
         render();
+      });
+      // Ikonka info: strefa klikalna NIEZALEŻNA od wyboru typu budowy — `stopPropagation`
+      // uniemożliwia dotarciu kliku do listenera wiersza wyżej (wybór typu bez zmian,
+      // T7b KARTA-ULEPSZENIA-TERENU). Działa nawet gdy wiersz jest `locked` — podgląd karty
+      // encji nie jest akcją budowy, więc nie podlega blokadzie technologii/Pracy.
+      const infoIc = elItem.querySelector<HTMLElement>('.civ-build-info-ic');
+      infoIc?.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const key = elItem.getAttribute('data-key') as ImprovementKey | null;
+        if (key) openEntityCard('improvement', key, { mode: 'dialog' });
+      });
+      infoIc?.addEventListener('keydown', (ev) => {
+        const key = (ev as KeyboardEvent).key;
+        if (key !== 'Enter' && key !== ' ') return;
+        ev.stopPropagation();
+        ev.preventDefault();
+        const impKey = elItem.getAttribute('data-key') as ImprovementKey | null;
+        if (impKey) openEntityCard('improvement', impKey, { mode: 'dialog' });
       });
     });
 
