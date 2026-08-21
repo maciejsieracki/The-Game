@@ -93,12 +93,6 @@ Cursor, GPT) zostań w TYM pliku: pojedynczy `Agent` nie ma parametru
 `effort`/`reasoning_effort` w schemacie, więc role różnicujesz WYŁĄCZNIE treścią
 promptu. Pełne uzasadnienie dwóch ścieżek i incydent źródłowy: playbook C-061.
 
-Jeśli pracujesz jako **Cursor Automation** (agent uruchomiony zdarzeniem —
-PR/Slack/webhook — lub harmonogramem, bez właściciela w czacie) — to trzecia,
-osobna ścieżka: [`.claude/skills/civ-autobot-cursor-automations/SKILL.md`](../civ-autobot-cursor-automations/SKILL.md),
-zakres wyłącznie recon+Operator zakończony otwarciem PR, nigdy samodzielny
-merge/deploy/push do `main` (playbook C-062).
-
 ## 4. Routing modeli i ról
 
 ```text

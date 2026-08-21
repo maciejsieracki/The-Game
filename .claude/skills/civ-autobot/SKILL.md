@@ -20,12 +20,6 @@ Bez obu warunków (co jest normą — Cursor/GPT nie mają koncepcji Workflow z
 `effort` per agent) zostań w tym pliku: role różnicujesz wyłącznie treścią
 promptu, bez parametru effort. Pełne uzasadnienie: playbook C-061.
 
-**Jesteś Cursor Automation** (agent uruchomiony zdarzeniem/harmonogramem, bez
-właściciela w czacie)? Użyj zamiast tego
-[`civ-autobot-cursor-automations/SKILL.md`](../civ-autobot-cursor-automations/SKILL.md)
-— Ścieżka C, zakres wyłącznie recon+Operator zakończony PR, nigdy merge/deploy
-(playbook C-062).
-
 ## Obieg
 
 ```text

@@ -175,42 +175,6 @@ High/Medium") odnoszą się do innego narzędzia wykonawczego pracującego nad
 tym samym repozytorium i nie są tu nadpisywane. Pełny opis integracji z
 narzędziem orkiestracji: `AUTOBOT-UNIVERSAL.md` §11.
 
-## 5b. Trzecia ścieżka: Cursor Automations — recon+PR-only, nigdy auto-integracja/deploy
-
-Cursor ma funkcję **Automations**: zawsze-włączeni agenci uruchamiani zdarzeniem
-(PR na GitHub/GitLab/Bitbucket, wiadomość/reakcja na Slacku, dowolny webhook
-POST, zdarzenie z Linear/Sentry/PagerDuty) albo harmonogramem (cron) — **bez
-człowieka w pętli przy każdym uruchomieniu**. Zakres jest per-repo (albo
-multi-repo przez wspólne środowisko), narzędzia (GitHub/Slack/MCP) opcjonalne,
-możliwy jest tryb „no-repo" (tylko Slack/webhook/MCP, bez edycji kodu, bez PR).
-
-To jest **Ścieżka C**, obok Ścieżki A (Workflow) i Ścieżki B (prompt-only) z §5a
-— opisana pełnym szkieletem w
-[`.claude/skills/civ-autobot-cursor-automations/SKILL.md`](../../.claude/skills/civ-autobot-cursor-automations/SKILL.md).
-Różni się strukturalnie od obu poprzednich: nie ma właściciela inicjującego
-temat w głównym czacie (C-043), bo Automation startuje sama, z zewnętrznego
-zdarzenia.
-
-**Twarde ograniczenie potwierdzone przez właściciela (2026-08-21):** Automation
-wolno WYŁĄCZNIE robić recon i pracę na poziomie Operatora oraz otwierać PR do
-przeglądu właściciela — NIGDY samodzielnie integrować, deployować ani pushować
-do `main`. Otwarty PR jest jej strukturalnym STOP; przegląd i decyzja o
-scaleniu pozostają wyłącznie w rękach Macieja.
-
-**Rejestracja mimo braku głównego czatu:** pierwszy krok każdego uruchomienia
-Automation to zapis `00-dispatch.md` w `dyspozycje/autobot/runs/<ID>/` oraz
-wpis w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`, gdzie polem „Zgłoszenie
-właściciela" jest opis zdarzenia wyzwalającego (np. „Automation `nazwa`,
-trigger: PR #123 na `github.com/...`, otwarty przez `<autor>`, data"), nie
-fikcyjna wypowiedź Macieja — namiastka rejestracji zgodna z duchem C-027 mimo
-braku czatu. Dopiero po tym wpisie Automation robi recon/pracę.
-
-**Rola Evaluatora** dla pracy Automation to zwykła, ludzka lub AI-wspomagana
-recenzja otwartego PR przez właściciela/orkiestratora — nie osobny subagent
-wewnątrz samej Automation, bo Automation nie ma dostępu do wielo-agentowego
-Workflow tak jak sesja Claude Code. Pełny opis, checklist i format raportu:
-`.claude/skills/civ-autobot-cursor-automations/SKILL.md`; kanon: `playbook.md` C-062.
-
 ## 6. Bramki
 
 Uruchamiaj z katalogu `gra/`. Zweryfikowane świeżo 2026-08-20 na czystym checkoucie

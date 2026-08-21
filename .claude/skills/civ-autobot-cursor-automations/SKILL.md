@@ -11,11 +11,30 @@ description: >
 
 # Civ — AutoBot dispatch przez Cursor Automations (Ścieżka C)
 
-Ten skill jest **Ścieżką C**, obok Ścieżki A (Workflow, `civ-autobot-workflow/SKILL.md`)
-i Ścieżki B (prompt-only, `civ-autobot/SKILL.md` / `autobots/SKILL.md`) — patrz
-`playbook.md` C-061 i C-062. Różni się od obu tym, że nie ma żadnego człowieka
+Ten skill jest **w pełni samodzielny** — dotyczy WYŁĄCZNIE Cursor Automations i
+celowo żyje osobno od reguł współdzielonych przez pozostałe sesje pracujące nad
+tym repo (Claude Code, Cursor w trybie interaktywnym). Właściciel (Maciej)
+zdecydował wprost: to, co projektowane dla Cursora, nie ma wpływać na to, czego
+używają pozostałe sesje — dlatego cała specyfika tej ścieżki (limity, rejestracja,
+checklist) jest tu, w jednym pliku, nie rozproszona po wspólnym kanonie. Możesz
+używać tego skilla w izolacji, bez czytania niczego innego.
+
+Dla orientacji (opcjonalny kontekst, nie wymagana lektura): pozostałe sesje w
+tym repo rozróżniają Ścieżkę A (Workflow, `civ-autobot-workflow/SKILL.md`) i
+Ścieżkę B (prompt-only, `civ-autobot/SKILL.md` / `autobots/SKILL.md`) —
+patrz `playbook.md` C-061. Ten skill jest wobec nich nieformalnie „Ścieżką C",
+ale nie jest wpisany do tamtej wspólnej tabeli reguł ani do wspólnego dokumentu
+normy procesu (`docs/decyzje/R-PROC-AUTOBOT.md`) — świadomie, na życzenie
+właściciela. Różni się od obu tamtych ścieżek tym, że nie ma żadnego człowieka
 (właściciela) inicjującego temat w głównym czacie — Automation startuje sama, z
 zewnętrznego zdarzenia.
+
+**Incydent źródłowy (2026-08-21):** właściciel zapytał o funkcję Cursor
+Automations po researchu dotyczącym orkiestracji agentów w tym projekcie i
+zdecydował: zakres tej ścieżki to WYŁĄCZNIE recon + praca na poziomie Operatora,
+zakończona otwarciem PR — nigdy samodzielna integracja, merge, deploy ani push
+do `main`. To ograniczenie jest twarde i nie podlega interpretacji przez samą
+Automation.
 
 ## 0. Warunki wstępne — sprawdź PRZED użyciem tego skilla
 
@@ -96,6 +115,11 @@ inny kanał niż interaktywna sesja) — ale integracja i deploy nigdy nie dziej
 się automatycznie ani przez samą Automation, ani przez kolejne, niezależne
 uruchomienie tej samej Automation.
 
+**Kryterium FAIL** (dla przeglądu przez właściciela/orkiestratora, niezależnie
+od jakości samego kodu): Automation, która scaliła/zmergowała lub zdeployowała
+cokolwiek bez przeglądu właściciela, jest uznawana za nieudaną — bez wyjątków,
+bez względu na to, jak dobry byłby wynik.
+
 ## 3. Rola „Evaluator" w tej ścieżce — recenzja PR, nie subagent
 
 W Ścieżce A i B, Evaluator jest osobnym dispatchem (subagent albo faza
@@ -141,12 +165,20 @@ same pola co raport Operatora w Ścieżce B (`STATUS`, `DOMAIN`, `TEMAT`, `GOAL`
 
 ## 6. Powiązane
 
+Ten skill jest kompletny sam w sobie — poniższe to wyłącznie dodatkowy
+kontekst/inspiracja formatu dla kogoś, kto chce zrozumieć skąd wzięły się te
+konwencje we wspólnym kanonie repo; nic z tego nie trzeba czytać, żeby
+poprawnie uruchomić Automation w tej ścieżce.
+
 - `playbook.md` C-043 (jeden kanał dla właściciela), C-027 (rejestracja w tej
   samej turze), C-044 (kanon routingu), C-059 (integracja allowlist-only —
   dotyczy orkiestratora PO scaleniu PR), C-061 (dwie ścieżki dispatchu z
-  `effort`), C-062 (ta ścieżka — Cursor Automations, incydent źródłowy)
-- `docs/decyzje/R-PROC-AUTOBOT.md` §5a (Ścieżki A/B), §5b (ta ścieżka)
-- `.claude/skills/civ-autobot-workflow/SKILL.md` — Ścieżka A (Workflow)
+  `effort`, dla sesji Claude Code/Cursor interaktywnego — kontrast dla tej,
+  osobnej ścieżki Automations)
+- `docs/decyzje/R-PROC-AUTOBOT.md` §5a — format ról Operator/Evaluator, na
+  którym wzorowany jest checklist/raport w tym pliku
+- `.claude/skills/civ-autobot-workflow/SKILL.md` — Ścieżka A (Workflow),
+  używana w sesjach Claude Code z autoryzowanym Workflow
 - `.claude/skills/civ-autobot/SKILL.md` i `.claude/skills/autobots/SKILL.md` —
   Ścieżka B (prompt-only), używana w sesjach interaktywnych bez Workflow
 - `dyspozycje/REJESTR-PROSB-I-ZADAN.md` — format wpisu tematu
