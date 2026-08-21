@@ -25,6 +25,8 @@ const SRC = path.join(GRA, 'src', 'ui', 'techDiscoveryNotice.ts');
 const TECH_JSON = path.join(GRA, 'data', 'tech.json');
 const UNITS_JSON = path.join(GRA, 'data', 'units.json');
 const TECH_ICONS_SRC = path.join(GRA, 'src', 'ui', 'techIcons.ts');
+const TERRAIN_IMPROVEMENTS_JSON = path.join(GRA, 'data', 'terrain-improvements.json');
+const IMPROVEMENT_ICON_MAP_JSON = path.join(GRA, 'src', 'ui', 'icons', 'brand', 'improvement-icon-map.json');
 
 let passed = 0;
 let failed = 0;
@@ -96,6 +98,115 @@ const missing = tech.technologie
   .map(t => t.Technologia)
   .filter(name => !new RegExp(`'${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}':\\s*'<svg`).test(iconsSrc));
 assert(missing.length === 0, `wszystkie ${tech.technologie.length} technologii mają ikonę w TECH_ICON_SVG_BY_NAME (brakujące: ${JSON.stringify(missing)})`);
+
+// --- [4] R-TECH-ULEPSZENIA-TERENU-SYNC-Q1: sekcja "Ulepszenia terenu" -- Bug A (dane, ------
+// nazwy zsynchronizowane z terrain-improvements.json) + Bug B (ikona faktycznie dopasowana
+// po ImprovementKey, nie po polskiej etykiecie -- bez cichego fallbacku do imp-farm) --------
+console.log('\n[4] "Ulepszenia terenu": nazwy zsynchronizowane + ikony dopasowane (nie fallback imp-farm)');
+
+// Ten sam regex co list() w techDiscoveryNotice.ts -- rozdziela pole tekstowe na pozycje.
+function listLike(raw) {
+  return (raw ?? '').split(/[;,+]/).map(x => x.trim())
+    .filter(x => x !== '' && x !== '-' && x !== '—');
+}
+
+const terrainImprovements = JSON.parse(fs.readFileSync(TERRAIN_IMPROVEMENTS_JSON, 'utf8'));
+const improvementIconMap = JSON.parse(fs.readFileSync(IMPROVEMENT_ICON_MAP_JSON, 'utf8')).map;
+
+// Odtwarza IMPROVEMENT_NAME_TO_KEY z techDiscoveryNotice.ts: klucz obiektu terrain-improvements.json
+// (ImprovementKey) -> pole `nazwa` (etykieta gracza), tu w odwrotną stronę: nazwa -> klucz.
+const nameToKey = {};
+for (const [key, row] of Object.entries(terrainImprovements)) {
+  if (key.startsWith('_')) continue;
+  if (row && typeof row.nazwa === 'string' && row.nazwa) nameToKey[row.nazwa] = key;
+}
+
+function byTech(name) {
+  return tech.technologie.find(t => t.Technologia === name);
+}
+
+// -- Bug A: widma usunięte, dryf nazw poprawiony ------------------------------------------
+const brazownictwo = byTech('Brązownictwo');
+assert(brazownictwo['Odblokowuje ulepszenie terenu'] == null,
+  `Brązownictwo: "Odblokowuje ulepszenie terenu" jest puste/null po usunięciu widma "Popalnia brązu" (got=${JSON.stringify(brazownictwo['Odblokowuje ulepszenie terenu'])})`);
+assert(listLike(brazownictwo['Odblokowuje ulepszenie terenu']).length === 0,
+  'Brązownictwo: sekcja "Ulepszenia terenu" znika (count=0, accordionSection() nie renderuje pustej sekcji)');
+
+const murarstwo = byTech('Murarstwo');
+const murarstwoNames = listLike(murarstwo['Odblokowuje ulepszenie terenu']);
+assert(!murarstwoNames.includes('Kopalnia'), 'Murarstwo: widmowa "Kopalnia" usunięta z pola');
+assert(murarstwoNames.includes('Kamieniołom'), `Murarstwo: "Kamieniołom" zostaje w polu (got=${JSON.stringify(murarstwoNames)})`);
+assert(murarstwoNames.includes('Posterunek (Strażnica)'), `Murarstwo: "Posterunek (Strażnica)" zostaje w polu (got=${JSON.stringify(murarstwoNames)})`);
+assert(murarstwoNames.length === 2, `Murarstwo: dokładnie 2 pozycje po usunięciu widma (got=${JSON.stringify(murarstwoNames)})`);
+
+const oswojenie = byTech('Oswojenie zwierząt');
+const oswojenieNames = listLike(oswojenie['Odblokowuje ulepszenie terenu']);
+assert(!oswojenieNames.includes('Bydło'), 'Oswojenie zwierząt: przestarzała nazwa "Bydło" usunięta');
+assert(oswojenieNames.includes('Trzoda'), `Oswojenie zwierząt: aktualna nazwa "Trzoda" obecna (got=${JSON.stringify(oswojenieNames)})`);
+
+const wojskowosc = byTech('Wojskowość');
+const wojskowoscNames = listLike(wojskowosc['Odblokowuje ulepszenie terenu']);
+assert(!wojskowoscNames.includes('Fort / umocnienia'), 'Wojskowość: przestarzała nazwa "Fort / umocnienia" usunięta');
+assert(wojskowoscNames.includes('Fort'), `Wojskowość: aktualna nazwa "Fort" obecna (got=${JSON.stringify(wojskowoscNames)})`);
+
+// -- Bug A globalnie: KAŻDA nazwa w KAŻDEJ technologii z niepustym polem ma pokrycie w -----
+// terrain-improvements.json (żadnych widm, żadnego dryfu nazw pozostałego w danych) --------
+let dataMismatches = 0;
+for (const t of tech.technologie) {
+  for (const name of listLike(t['Odblokowuje ulepszenie terenu'])) {
+    if (!(name in nameToKey)) {
+      console.error(`  MISMATCH: ${t.Technologia} -> "${name}" nie ma pokrycia w terrain-improvements.json`);
+      dataMismatches++;
+    }
+  }
+}
+assert(dataMismatches === 0, `zero rozbieżności nazw ulepszeń terenu w całym tech.json (got=${dataMismatches})`);
+
+// -- Bug B: dla wszystkich technologii z niepustym polem, ikona faktycznie się dopasowuje --
+// (klucz istnieje w improvement-icon-map.json jako WŁASNY wpis, nie tylko przez _default) ---
+let iconFallbacks = 0;
+let iconChecks = 0;
+for (const t of tech.technologie) {
+  for (const name of listLike(t['Odblokowuje ulepszenie terenu'])) {
+    const key = nameToKey[name];
+    iconChecks++;
+    if (!key || !(key in improvementIconMap)) {
+      console.error(`  FALLBACK: ${t.Technologia} -> "${name}" (klucz=${JSON.stringify(key)}) nie ma WŁASNEGO wpisu w improvement-icon-map.json -- fallback do _default (imp-farm)`);
+      iconFallbacks++;
+    }
+  }
+}
+assert(iconChecks >= 5, `sprawdzono ikony dla co najmniej 5 pozycji ulepszeń terenu w całym tech.json (got=${iconChecks})`);
+assert(iconFallbacks === 0, `żadna z ${iconChecks} pozycji nie fallbackuje cicho do domyślnej ikony farmy (got fallbacks=${iconFallbacks})`);
+
+// Punktowa weryfikacja min. 3 różnych technologii z RÓŻNYMI, poprawnymi ikonami (nie wszystkie imp-farm):
+const spotChecks = [
+  { techName: 'Rolnictwo', name: 'Farma', expectKey: 'farma', expectIcon: 'imp-farm' },
+  { techName: 'Oswojenie zwierząt', name: 'Trzoda', expectKey: 'bydlo', expectIcon: 'imp-pasture' },
+  { techName: 'Murarstwo', name: 'Kamieniołom', expectKey: 'kamieniolom', expectIcon: 'imp-quarry' },
+  { techName: 'Wojskowość', name: 'Fort', expectKey: 'fort', expectIcon: 'imp-fort' },
+  { techName: 'Waluta', name: 'Kopalnia złota', expectKey: 'kopalnia_zlota', expectIcon: 'imp-mine' },
+];
+for (const sc of spotChecks) {
+  const row = byTech(sc.techName);
+  const names = listLike(row['Odblokowuje ulepszenie terenu']);
+  assert(names.includes(sc.name), `${sc.techName}: pole zawiera "${sc.name}" (got=${JSON.stringify(names)})`);
+  const key = nameToKey[sc.name];
+  assert(key === sc.expectKey, `${sc.techName} -> "${sc.name}" mapuje na ImprovementKey '${sc.expectKey}' (got=${JSON.stringify(key)})`);
+  const icon = key ? improvementIconMap[key] : undefined;
+  assert(icon === sc.expectIcon, `${sc.techName} -> "${sc.name}" (klucz '${key}') pokazuje ikonę '${sc.expectIcon}', NIE domyślną farmę (got=${JSON.stringify(icon)})`);
+}
+// Rolnictwo->Farma jest jedynym z powyższych, gdzie poprawna ikona TO imp-farm -- reszta musi
+// się różnić, inaczej test nie odróżniłby poprawnego dopasowania od starego cichego fallbacku.
+const nonFarmSpotChecks = spotChecks.filter(sc => sc.techName !== 'Rolnictwo');
+assert(nonFarmSpotChecks.every(sc => sc.expectIcon !== 'imp-farm'),
+  'kontrola testu: poza Rolnictwem żadna oczekiwana ikona w spotChecks nie jest imp-farm (inaczej test nie wykryłby starego bugu)');
+
+// -- Bug B w źródle: wywołanie improvementIconSvg() dostaje zmapowany klucz, nie surową nazwę --
+assert(/IMPROVEMENT_NAME_TO_KEY\[name\]\s*\?\?\s*name/.test(src),
+  'improvementIconSvg() w sekcji "Ulepszenia terenu" woła z IMPROVEMENT_NAME_TO_KEY[name] (mapowanie nazwa->ImprovementKey), nie z surową polską etykietą');
+assert(/from ['"]\.\.\/\.\.\/data\/terrain-improvements\.json['"]/.test(src),
+  'techDiscoveryNotice.ts importuje terrain-improvements.json jako źródło mapy nazwa->ImprovementKey (ten sam kanon co B1-tech-MACIEJ-2026-06-29)');
 
 console.log(`\n${passed} PASS, ${failed} FAIL`);
 process.exit(failed > 0 ? 1 : 0);
