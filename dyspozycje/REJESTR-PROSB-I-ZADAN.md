@@ -2614,3 +2614,29 @@ w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
 |---|---|---|---|
 | P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY | **B** — czas ponad próg ostrzeżeniem, poprawność nadal twardą bramką | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.md` · kontrakt 2/2 |
 | P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2 | **C** — targeted overlay bez globalnego przebijania | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md` · overlay 76/76 |
+
+## R-PROC-AUTOBOT-DOPISKI-PETLA-FINALCONTROL-Q1 — dwa braki procesu z porównania zewnętrznego opisu routingu (2026-08-20)
+
+**Zgłoszenie:** samodzielnie zarejestrowane przez orkiestratora (sesja Work3) po tym, jak
+właściciel poprosił o porównanie naszego routingu AutoBot z opisem od innego narzędzia i
+zgodę „jeśli są warte dopisania, to dopisz je" (2026-08-20, rozmowa główna). Porównanie
+wykazało dwa braki nieobecne w `R-PROC-AUTOBOT.md`, niezależnie od tego co dopisała
+równolegle pracująca druga sesja (C-051 ledger/watchdog — już potwierdzone jako
+zaimplementowane, nie dublować).
+
+**GOAL:** dopisać do `docs/decyzje/R-PROC-AUTOBOT.md`, bez zmiany istniejącej treści:
+(A) w §3 — wymóg, by Operator przed rundą poprawkową potwierdził w raporcie zrozumienie
+każdej blokady Evaluatora z osobna (brak potwierdzenia = podstawa FAIL rundy);
+(B) w §1, wiersz „Final Control" — jawny zakaz akceptacji na podstawie samej zielonej
+bramki testowej głównej, kompletność śladu sprawdzana niezależnie od statusu Evaluatora.
+Dokładny tekst obu dopisków: `dyspozycje/autobot/runs/R-PROC-AUTOBOT-DOPISKI-PETLA-FINALCONTROL-Q1/00-dispatch.md`.
+
+**STATUS:** ZINTEGROWANE — Operator PASS, Evaluator FAIL (dwa punkty rozstrzygnięte
+przez Final Control jako nieblokujące: rejestracja poprzedzająca dispatch nie jest
+naruszeniem allowlisty; cytat zaczepienia w dispatchu odnosił się do niescommitowanej
+wersji pliku z drugiej sesji, nie do bazy `origin/main`), Final Control PASS. Oba
+dopiski obecne dosłownie i we właściwym miejscu, `process-docs-audit.cjs` zielony
+niezależnie potwierdzony. Do zrobienia przy przyszłym scaleniu z `origin/main`:
+pogodzić z równoległym rozszerzeniem §3 (rundy/`LIMIT-5-EXCEEDED`) drugiej sesji,
+gdy zostanie scommitowane. Pełny ślad: `dyspozycje/autobot/runs/R-PROC-AUTOBOT-DOPISKI-PETLA-FINALCONTROL-Q1/`.
+Zakres: wyłącznie `docs/decyzje/R-PROC-AUTOBOT.md`, docs-only, bez zmian w `gra/`.

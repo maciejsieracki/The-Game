@@ -20,7 +20,7 @@ Operator GPT-5.6 Luna High
 |---|---|---|
 | Operator | Wykonuje jeden temat w izolacji, zgodnie z GOAL i allowlistą; zapisuje artefakt, testy i raport | Nie ocenia własnej pracy, nie integruje, nie deployuje, nie pushuje |
 | Evaluator | Niezależnie sprawdza SCOPE, regresję, testy, dowody i blokady; wydaje werdykt. Dla kodu obowiązują dodatkowo trzy twarde FAIL-e domeny gry (happy-path bez brzegów, asymetria gracz/AI/MP, luka save/load) — pełne kryteria w [`R-PROC-AUTOBOT-EVAL-STRICT.md`](R-PROC-AUTOBOT-EVAL-STRICT.md), [`-EDGE`](R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md), [`-PARITY`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md), [`-SAVE`](R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md) i [`-SCOPE`](R-PROC-AUTOBOT-EVAL-SCOPE.md) | Nie zastępuje Operatora i nie publikuje |
-| Final Control | Kontroluje kompletność śladu, zgodność z GOAL i gotowość do integracji | Nie integruje i nie wystawia samodzielnie `READY_FOR_DEPLOY` |
+| Final Control | Kontroluje kompletność śladu, zgodność z GOAL i gotowość do integracji | Nie integruje i nie wystawia samodzielnie `READY_FOR_DEPLOY`; nie akceptuje braków tylko dlatego, że główna bramka testowa jest zielona — kompletność śladu (GOAL, allowlista, testy edge/parytetu/save-load, brak nieautoryzowanych zmian) sprawdza niezależnie od statusu Evaluatora, nie na jego podstawie |
 | Orkiestrator | Weryfikuje faktyczny Git i integruje wyłącznie zatwierdzoną allowlistę | Nie omija raportów ani bramek |
 | Deploy/push | Publikuje po `READY_FOR_DEPLOY` i osobnej autoryzacji | Nie wynika z commita ani raportu |
 
@@ -45,6 +45,14 @@ Control, następnie do integracji. Każdy wymieniony wynik negatywny wraca bez c
 Operatora, Evaluatora i Final Control z tym samym ID. `ZWIS` nie anuluje tematu; watchdog
 sprawdza stan, a orkiestrator przejmuje pracę. Jedyną pauzą jest ABC wymagające decyzji
 właściciela; niezależne tematy nadal działają.
+
+Przed rozpoczęciem rundy poprawkowej Operator potwierdza w swoim raporcie
+(`01-operator.md`), że: przeczytał raport Evaluatora w całości, rozumie każdą
+wymienioną blokadę z osobna, poprawia wyłącznie zakres tego tematu (bez czyszczenia
+ani resetowania zmian innych, równoległych tematów w tym samym drzewie). Brak tego
+potwierdzenia w raporcie jest samo w sobie podstawą do `FAIL` rundy — nie wystarczy
+sama poprawka bez wykazania, że blokada została zrozumiana, nie tylko obejściowo
+naprawiona.
 
 ## 4. Rejestry i artefakty
 
