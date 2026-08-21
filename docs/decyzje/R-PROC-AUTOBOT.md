@@ -169,7 +169,10 @@ z warunkiem w środku:**
 **Dla sesji Claude Code, Ścieżka A (potwierdzone przez właściciela, 2026-08-20):**
 Operator → **Sonnet 5, effort Medium**; Evaluator → **Sonnet 5, effort High**.
 Oba na tym samym modelu, różni je wyłącznie wysiłek — Evaluator dostaje więcej
-przestrzeni na adwersaryjne rozumowanie, nie inny, droższy model. Ta reguła
+przestrzeni na adwersaryjne rozumowanie, nie inny, droższy model. Final
+Control → ten sam model i effort co Evaluator (Sonnet 5, effort High),
+wykonywany przez OSOBNEGO subagenta, nigdy bezpośrednio przez głównego
+orkiestratora — analogicznie do zapisu w §1 dla GPT-5.6 Luna. Ta reguła
 dotyczy WYŁĄCZNIE sesji Claude Code — nazwy modeli w §1 wyżej („GPT-5.6 Luna
 High/Medium") odnoszą się do innego narzędzia wykonawczego pracującego nad
 tym samym repozytorium i nie są tu nadpisywane. Pełny opis integracji z
