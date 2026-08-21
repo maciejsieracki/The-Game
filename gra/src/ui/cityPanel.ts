@@ -164,6 +164,7 @@ import {
 import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
 import { renderEntityCard, ENTITY_CARD_CSS } from './entityCards/renderer';
 import { buildingAdapter, type BuildingCardCityState } from './entityCards/buildingAdapter';
+import { unitAdapter } from './entityCards/unitAdapter';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { showTechDiscoveryNotice } from './techDiscoveryNotice';
@@ -7390,7 +7391,63 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
   return card;
 }
 
+/**
+ * Karta szczegółów jednostki w panelu miasta/rekrutacji (T6 MIGRACJA-KARTA-JEDNOSTKI-
+ * PANEL-MIASTA). Buduje treść przez WSPÓLNY `unitAdapter` (`entityCards/unitAdapter.ts`)
+ * — TEN SAM adapter co karta jednostki na mapie (`unitInfoCard.ts`, T4) — i renderuje
+ * przez wspólny `renderEntityCard`, zamiast własnego DOM-buildera — wzorem T3/T4/T5.
+ * Stara implementacja zostaje pod prywatną nazwą (`_legacyBuildUnitDetailCard`) jako
+ * fallback, dopóki Final Control nie potwierdzi parytetu (wzorem T5).
+ *
+ * Sekcje „Technologie"/„Uwagi" dopełnione TU (host), NIE w adapterze — 1:1 z tym, jak
+ * `buildBuildingDetailCardViaEntityCard` dopełnia te same dwie sekcje dla budynków
+ * (`appendTechDetailBlock` świadomie NIE migrowane w tym kroku, plan architektury §3
+ * krok 2/§7 pkt 2) — więc pozostają WYŁĄCZNIE w karcie rekrutacji, karta mapy
+ * (`unitInfoCard.ts`, poza allowlistą T6) ich nie dostaje; udokumentowane w tabeli
+ * porównawczej raportu T6 jako świadoma, uzasadniona różnica (dziedziczona z T5, nie
+ * nowa w T6).
+ *
+ * Pola „Charakterystyka"/dodatkowe wiersze „Statystyki bojowe" (Obrażenia broni, Bonus
+ * szarży, Ruch w bitwie, Pociski, Widok pola, Kara flanki, Kara od tyłu, Próg dezercji,
+ * Morale bazowe/ucieczki, Linia, Klasa) — dotąd TYLKO w tej karcie — zostały w T6
+ * DOPISANE do wspólnego `unitAdapter.ts` (patrz nagłówek tego pliku), więc karta mapy
+ * zaczyna je też pokazywać. To świadoma decyzja Operatora T6 (bez ABC): czysto
+ * addytywne wzbogacenie, zero utraconej treści po żadnej stronie.
+ */
+function buildUnitDetailCardViaEntityCard(u: UnitDef, data: GameData): HTMLDivElement {
+  ensureEntityCardBuildingStyles();
+  const built = unitAdapter(u, {});
+  const card = renderEntityCard(built) as HTMLDivElement;
+  card.classList.add('unit-detail-card', 'bld-detail-card');
+
+  const techBody = beginBuildingDetailTile(card, 'Technologie');
+  appendTechDetailBlock(techBody, data, u.Tech);
+
+  if (u.Uwagi && !isEmptyDataVal(u.Uwagi)) {
+    const noteBody = beginBuildingDetailTile(card, 'Uwagi');
+    const note = el('div', 'dc-note');
+    note.style.fontStyle = 'normal';
+    note.textContent = u.Uwagi;
+    noteBody.appendChild(note);
+  }
+  return card;
+}
+
+/** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T6), fallback do starej
+ * implementacji (`_legacyBuildUnitDetailCard`) w razie wyjątku — wzorem T3/T4/T5. */
 function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
+  try {
+    return buildUnitDetailCardViaEntityCard(u, data);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[cityPanel] buildUnitDetailCard: błąd ścieżki entityCards, fallback do starej implementacji:', err);
+    return _legacyBuildUnitDetailCard(u, data);
+  }
+}
+
+/** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
+ * (wzorem `_legacyBuildBuildingDetailCard`/`_legacyBuildUnitInfoCard`). ZERO zmian treści. */
+function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
   const thumb = el('span');
