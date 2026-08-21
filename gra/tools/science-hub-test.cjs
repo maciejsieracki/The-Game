@@ -84,11 +84,19 @@ function hubUnlocked(researchedNames, targetName, era) {
 }
 
 // T1: świeża gra
+// Próg P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1: era Kamień ma dokładnie 4 technologie
+// Poziom=1 bez prereq (Obróbka drewna, Rolnictwo, Łowiectwo, Oswojenie zwierząt —
+// patrz data/tech.json), więc na świeżej grze (researched=∅, gate=∅) dostępne są
+// zawsze dokładnie te 4, nigdy 5. Stary próg „>=5" był błędny od pierwszego
+// commitu tego pliku (zweryfikowano: liczba Poziom=1 w Kamień nie zmieniła się
+// w całej dostępnej historii tech.json) — to literówka/nietrafione założenie
+// przy pisaniu testu, nie regresja danych. Jeśli kiedyś przybędzie 5. tech
+// Poziom=1 bez prereq w Kamień, podnieś to do >=5 razem z komentarzem.
 {
   const unlocked = hubUnlocked([], null, 1);
   const engine = M.availableTechs(techData, new Set(), gate);
-  ok(engine.length >= 5, `engine available=${engine.length} (>=5)`);
-  ok(unlocked.length >= 5, `hub unlocked=${unlocked.length} (>=5)`);
+  ok(engine.length >= 4, `engine available=${engine.length} (>=4)`);
+  ok(unlocked.length >= 4, `hub unlocked=${unlocked.length} (>=4)`);
   ok(unlocked.length === engine.length,
     `hub unlocked matches engine (${unlocked.length} vs ${engine.length})`);
 }
