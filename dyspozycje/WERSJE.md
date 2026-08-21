@@ -3548,9 +3548,50 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 314 (2026-08-21) — CivPedia T6: karta jednostki w panelu miasta/rekrutacji + T9: mostek gra-id
+## ROBOCZA — FALA 315 (2026-08-21) — CivPedia T10: linkowanie krzyżowe — CAŁA MIGRACJA (T1-T10) ZAKOŃCZONA
 
-- **AKTUALNA** · ROBOCZA md5 `1bf1976bcfdbc63e8f799d8a921980f0` · stempel `1bf1976b` · manifest/bundle `VERIFY OK`.
+- **AKTUALNA** · ROBOCZA md5 `f66e7242a8b8f0ab0e7f42f6e5463d69` · stempel `f66e7242` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T10 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`) — OSTATNI krok całej migracji.**
+  Pełne linkowanie krzyżowe 4×4 między wszystkimi 4 kartami encji: klik na dowolną nazwaną encję
+  w którejkolwiek karcie (jednostka/budynek/technologia/ulepszenie terenu) otwiera właściwą kartę
+  docelową jako nowy, zagnieżdżony overlay. Jeden delegowany listener w `entityCards/renderer.ts`
+  honoruje pole `linkTo` jednolicie we wszystkich 3 layoutach wiersza (zwykły `grid`, `grid` z
+  odznaką, `pills`) — wcześniej `linkTo` był tylko rysowany, nigdy klikalny. `stopImmediatePropagation()`
+  zapobiega podwójnemu otwarciu nakładki w miejscu, gdzie T7b ma własny, tymczasowy listener na
+  tym samym elemencie (sekcja „Ulepszenia terenu" w popupie odkrycia).
+
+  Nowe linki: `unitAdapter.ts` (Technologia→technologia, Zastępuje→jednostka), `technologyAdapter.ts`
+  (Budynki, Jednostki, Ulepszenia terenu, Kolejne technologie, Zmiany ekonomiczne, Wymagania),
+  `improvementAdapter.ts` (Technologia — z guardem: „Irygacja" świadomie pominięta, pole `tech`
+  wskazuje na wpis nieistniejący w `tech.json`, zweryfikowane; Ulepszenie bazowe). `buildingAdapter.ts`
+  bez zmian — recon na realnych danych potwierdził brak jednoznacznych id do linkowania. Jeden
+  nowy link w `cityPanel.ts::appendTechDetailBlock` do pełnej karty technologii.
+
+  **Stos Esc/overlay przy 2+ zagnieżdżonych kartach** — kryterium ukończenia najwyższego ryzyka —
+  zweryfikowany TRZEMA niezależnymi testami w realnej przeglądarce (Playwright/Chromium), każdy
+  z innym scenariuszem (Operator: jednostka→technologia; Evaluator: popup odkrycia→ulepszenie,
+  double-listener; Final Control: ulepszenie→ulepszenie→technologia, plus negatywna weryfikacja
+  że „Irygacja" poprawnie NIE renderuje linku). Operator→Evaluator→Final Control PASS niezależnie,
+  trywialny fast-forward z aktualnego `main`.
+
+  **System `entityCards` (T1-T10) jest teraz kompletny**: 4 rodzaje encji, 4 w pełni wypełnione
+  adaptery, wspólny renderer z trybami `dialog`/`inline`/`hover`, pełne linkowanie krzyżowe,
+  zero TODO/FIXME w całym katalogu. Bramki zbiorcze na scalonym `main` (16 testów CivPedia +
+  5 referencyjnych, wszystkie zielone): `tsc` 0; `entity-card-cross-links-nested-overlay-test`
+  24/24 (nowy); `entity-card-contract-test` 75/75; `civpedia-gra-id-mostek-test`; `improvement-
+  card-callsites-test` 36/36; `tech-discovery-card-click-test` 13/13; `tech-discovery-card-real-
+  click-test` 12/12; `technology-discovery-card-visual-test` 48/48; `unit-detail-card-entitycard-
+  migration-test` 39/39; `unit-info-card-entitycard-migration-test` 26/26; `unit-info-card-
+  contract-test` 23/23; `unit-info-card-wiring-test` 6/6; `building-detail-card-entitycard-
+  migration-test` 52/52; `building-detail-card-hover-layout-real-render-test` 11/11; `unit-
+  detail-card-hover-layout-real-render-test` 11/11; `unit-info-card-army-interaction-test` 7/7;
+  `unit-info-card-badges-real-render-test` 19/19; `logic-test` 213/213; `tech-tree-test` 19/19;
+  `research-test` 33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 314 (2026-08-21) — CivPedia T6: karta jednostki w panelu miasta/rekrutacji + T9: mostek gra-id — **ZASTĄPIONA** (→ f66e7242, FALA 315)
+
+- ROBOCZA md5 `1bf1976bcfdbc63e8f799d8a921980f0` · stempel `1bf1976b` · manifest/bundle `VERIFY OK`.
 
   **CivPedia T6 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: karta jednostki w panelu miasta/
   rekrutacji (`cityPanel.ts::buildUnitDetailCard`/`attachUnitRowThumb`) migruje do TEGO SAMEGO
