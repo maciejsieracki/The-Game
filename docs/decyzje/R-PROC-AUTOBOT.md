@@ -238,6 +238,7 @@ nadal jako oznaczenie świadomego, ręcznego wycofania.
 | `push`, `deploy` | osobne polecenia publikacyjne, wyłącznie po `READY_FOR_DEPLOY` |
 | `format`, `ABC` | przepisz pytanie w pełnej formie A/B/C |
 | `raport` | zestawienie statusu w formacie dziesięciu kategorii — pełny kanon: [`R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md) |
+| `co nowego` (warianty: „sprawdź co nowego w Autobots", „co nowego w Autobots") | pokaż wyłącznie sekcję „Co nowego w regułach AutoBota" z `README.md` — bez pełnego audytu jak przy haśle `sprawdź` |
 
 **Zmieniasz reguły samego AutoBota (nie kod gry)?** Najpierw przeczytaj
 [`dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md`](../../dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md) —

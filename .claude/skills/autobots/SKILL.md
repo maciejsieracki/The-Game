@@ -206,8 +206,9 @@ hunk, zakaz `git add -A`/`git add .` z brudnego drzewa współdzielonego z inną
 
 Konkretne komendy testowe i punkty odniesienia są w `docs/decyzje/R-PROC-AUTOBOT.md`
 §Bramki — nie kopiuj ich tutaj, sprawdzaj tam (liczby się zmieniają z każdą falą).
-Tabela haseł właściciela (`sprawdź`, `push`, `deploy`, `format`/`ABC`, `raport`) jest
-tamże §Hasła właściciela.
+Tabela haseł właściciela (`sprawdź`, `push`, `deploy`, `format`/`ABC`, `raport`,
+`co nowego` — pokazuje wyłącznie sekcję „Co nowego w regułach AutoBota" z `README.md`,
+bez pełnego audytu) jest tamże §Hasła właściciela.
 
 ## 9. Watchdog i wykorzystanie subagentów
 
