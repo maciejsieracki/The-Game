@@ -117,3 +117,33 @@ musiałby przerabiać także je. Praktyczna kolejność:
 
 To duży, wieloetapowy projekt — każdy krok osobnym tematem/dispatchem AutoBot, nie jeden
 Operator na całość.
+
+## Pytanie 5 (nowe, z T1 — realny BLOCK, nie kosmetyka)
+
+Operator T1 (fundament kontraktu) zatrzymał się PRZED napisaniem `entityCards/slug.ts`.
+Weryfikacja na WSZYSTKICH 131 realnych polskich nazwach z `tech.json`/`units.json`/
+`terrain-improvements.json` wykazała, że dwie dziś istniejące implementacje slugify
+(`sciencePicker.ts:99`, NFD-strip) i (`research.ts:199` `slugifyImprovementLabel`, jawna
+tabela `PL_DIACRITICS`) dają RÓŻNY wynik na 14/131 nazwach — wszystkich zawierających „ł"
+(np. `Łucznik` → `ucznik` w wariancie A, `lucznik` w wariancie B; wariant A **gubi literę**,
+nie tylko different formatting). Obie funkcje są dziś load-bearing w żywej grze: `TECH_MAP`
+w `sciencePicker.ts` (całe drzewko technologii) używa wariantu A; `improvementGateMet` w
+`research.ts` (realny gating budowy ulepszeń terenu) używa wariantu B. Pełna tabela i
+uzasadnienie: `dyspozycje/autobot/runs/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1/07-operator-T1.md`.
+
+- **A. Kanoniczny = wariant `research.ts`** (poprawna, kompletna tabela). Trzeba by wtedy
+  dopilnować, żeby nowy `entityCards/slug.ts` NIE zastępował dzisiejszego `TECH_MAP` (ten
+  zostaje na swoim starym, wadliwym wariancie, żeby nie zepsuć drzewka technologii) —
+  adapter technologii identyfikuje encję przez `techToSlug()`/`TECH_MAP`, nie przez nowy slug.
+- **B. Kanoniczny = wariant `sciencePicker.ts`** (NFD-strip, dzisiejszy). Nie zaleca się —
+  to wariant z utratą liter, ryzykowałby cichym zepsuciem `improvementGateMet` dla dowolnej
+  przyszłej etykiety z „ł" (dziś żadna nie ma, ale to przypadek danych, nie gwarancja).
+- **C. Trzeci, nowy, poprawny algorytm w `entityCards/slug.ts`, używany WYŁĄCZNIE przez nowy
+  system kart** — nie zastępuje żadnego z dwóch istniejących w tej fazie. Zero ryzyka
+  regresji w T1. Zostawia osobne pytanie na T4+ (jednostki, gdzie `unitToSlug` nie ma dziś
+  żadnego poprzednika): czy docelowo scalić wszystko w jeden `slug.ts`, czy trzy warianty
+  współistnieją na zawsze.
+
+**Rekomendacja Operatora i orkiestratora: C** — zero ryzyka dla dwóch dziś działających,
+przetestowanych systemów (drzewko technologii, gating ulepszeń), a fundament nowego systemu
+kart dostaje od razu poprawny algorytm bez kompromisu.

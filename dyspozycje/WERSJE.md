@@ -3548,8 +3548,31 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 304 (2026-08-21)
-- **AKTUALNA** · ROBOCZA md5 `cab0f532d7285e13488cc4acc642cdea` · stempel `cab0f532` · manifest/bundle `VERIFY OK`.
+## ROBOCZA — FALA 305 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `0b83f269e30a9136107d3d069626c377` · stempel `0b83f269` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` faza 1/6 (z 6 zaplanowanych — patrz
+  `docs/decyzje/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1.md`) — osobna, zawsze widoczna
+  ikonka informacyjna „ⓘ" na węzłach technologii w `scienceHubHud.ts` i `techTreeView.ts`
+  (własny `stopPropagation`, woła te same funkcje co dotychczasowe kliknięcie całego
+  wiersza/węzła — zero zmian w tym zachowaniu), oraz zamiana martwej ikony
+  `techIconHintSpan()` w `cityPanel.ts` na klikalny link do karty podglądu technologii
+  (`showTechDiscoveryNotice(..., kind:'preview')`). `techDiscoveryNotice.ts` nietknięty.
+  Pozostałe 5 faz tego tematu (wspólny kontrakt karty encji — ECHO właściciela: pełny
+  refaktor, plan architektury gotowy w `05-architektura-plan.md`; karta ulepszeń terenu;
+  kategoria technologii w CivPedii; migracja 3 istniejących kart; linkowanie 4×4) — jeszcze
+  nie zaczęte, duży wieloetapowy projekt.
+  Pełny cykl Operator (Sonnet 5 Medium) → Evaluator (Sonnet 5 High, PASS-WITH-NOTES — 2
+  drobne, nieblokujące uwagi stylu: efekt uboczny na poziomie modułu w `cityPanel.ts`,
+  brak escapowania cudzysłowu w nowym atrybucie) → Final Control (Sonnet 5 High, osobny
+  subagent, PASS/READY_FOR_DEPLOY), zweryfikowany niezależnie przez orkiestratora po
+  scaleniu. Bramki: `tsc` 0; `tech-tree-test` 19/19; `building-tech-gate-test` 89/89;
+  `technology-discovery-card-visual-test` 48/48; `research-test` 33/33;
+  `science-hub-test` 5/7 — 2 faile pre-istniejące, potwierdzone identyczne na czystym
+  `main` przez Evaluator i Final Control niezależnie. Deploy wykonany do `gra-robocza/`;
+  push nie wykonywano jeszcze do `origin/main` (osobny krok).
+
+## ROBOCZA — FALA 304 (2026-08-21) — **ZASTĄPIONA** (→ `0b83f269`, FALA 305)
+- ROBOCZA md5 `cab0f532d7285e13488cc4acc642cdea` · stempel `cab0f532` · manifest/bundle `VERIFY OK`.
   Zakres: `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` (runda 3, zastępuje w całości rundę 2) —
   5 podmian CSS designera (`podmien.zip`, ECHO: świeża makieta wygrywa): karta blokująca
   wraca do samej obramówki `3px solid #e8d88a` (usunięty blok chip-warning z rundy 2 razem
