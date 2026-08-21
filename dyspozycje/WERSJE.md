@@ -3548,6 +3548,41 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
+## ROBOCZA — FALA 303 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `26e45d4ee692f7c725fb35a1d6128e36` · stempel `26e45d4e` · manifest/bundle `VERIFY OK`.
+  Zakres: konsolidacja sześciu tematów z sesji orkiestratora, zintegrowanych na
+  `integration/2026-08-21-consolidacja` (baza `origin/work/clean-main-2026-08-21`, po
+  FALI 302). `P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1` — scalanie identycznych kart „Koniec
+  tury" w panelu wydarzeń (`eot-event-defer.ts`). `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1` —
+  synchronizacja 4 pól ulepszeń terenu w `tech.json` (Brązownictwo, Murarstwo, Oswojenie
+  zwierząt, Wojskowość) z `terrain-improvements.json` + poprawka doboru ikony w karcie
+  odkrycia technologii (`techDiscoveryNotice.ts`, mapa `IMPROVEMENT_NAME_TO_KEY`).
+  `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` (runda 2, zastępuje rundę 1 innej gałęzi tej
+  samej sesji) — diagonalny pasek `.sp-blk-stripe` zastąpiony blokiem `chip-warning` +
+  paletą `.civ-emp-alert` skopiowaną 1:1 z `empireDetailPanel.ts`, zgodnie z bardziej
+  szczegółowym ECHO właściciela z równoległej sesji (nie usuwać całkowicie).
+  `R-AUTOBOT-FINALCONTROL-SUBAGENT-RESTORE-Q1`, `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`
+  (recon zamknięty) i `R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1` (recon zamknięty, brak
+  bugu) — docs-only, bez zmian w `gra/`. Pełny cykl Operator→Evaluator→Final Control
+  (Sonnet 5 Medium/High, Workflow, osobne subagenty) dla wszystkich sześciu tematów,
+  zweryfikowany niezależnie przez orkiestratora na każdym etapie integracji.
+  Konflikty scalania (dokumentacja procesu, tylko pliki `.md` — `R-PROC-AUTOBOT.md`,
+  `REJESTR-PROSB-I-ZADAN.md`, `PYTANIA-OTWARTE.md`,
+  `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`) rozwiązane ręcznie przez orkiestratora,
+  zachowując treść obu stron. Kod (`eot-event-defer.ts`, `tech.json`,
+  `techDiscoveryNotice.ts`, `sidePanelHud.ts`) scalił się bez konfliktów (3-way merge,
+  różne funkcje/pola tego samego pliku w przypadku `techDiscoveryNotice.ts` — zweryfikowano
+  po scaleniu, że obie zmiany, moja i równoległej sesji [tryb podglądu], są obecne).
+  Build: `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir` (kanon
+  C-001, NIE `npm run build` — nadpisałoby `tech.json` przez `export-data.py`), `837`
+  modułów, zero zmian w `gra/data/tech.json` po buildzie. Bramki: `tsc` 0; `eot-event-
+  defer-test` 19/19; `era-change-toast-defer-test` 7/7 + 8/8 mutacji; `dyplo-karta-
+  duplikat-komunikat-test` 15/15; `eot-diplomacy-header-test` 18/18; `sidepanel-events-
+  toolbar-test` 19/19; `technology-discovery-card-visual-test` 48/48; `sidepanel-hud-
+  deadzone-test` 43/43 (build+Playwright). Deploy wykonany do `gra-robocza/`; push nie
+  wykonywano — integracja z `origin/main`/`origin/work/clean-main-2026-08-21` pozostaje
+  osobną bramką po autoryzacji właściciela.
+
 ## ROBOCZA — FALA 302 (2026-08-21)
 - **AKTUALNA** · ROBOCZA md5 `426fb8ef1a15ce765fc68a4906c8d56c` · stempel `426fb8ef` · manifest/bundle `VERIFY OK`.
   Zakres: `R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1` — lokalny podział Pracy miasta

@@ -1,8 +1,8 @@
 {
-  "publishedAt": "2026-08-21T10:00:51",
-  "sourceBuild": "C:\\Users\\macie\\AppData\\Local\\Temp\\civ-dist-F302",
+  "publishedAt": "2026-08-21T12:37:00",
+  "sourceBuild": "/home/user/The-Game/gra/dist",
   "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
-  "publisher": "Integrator F",
+  "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "426fb8ef1a15ce765fc68a4906c8d56c"
+  "md5": "26e45d4ee692f7c725fb35a1d6128e36"
 }
