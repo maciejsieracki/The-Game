@@ -147,3 +147,8 @@ uzasadnienie: `dyspozycje/autobot/runs/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1/
 **Rekomendacja Operatora i orkiestratora: C** — zero ryzyka dla dwóch dziś działających,
 przetestowanych systemów (drzewko technologii, gating ulepszeń), a fundament nowego systemu
 kart dostaje od razu poprawny algorytm bez kompromisu.
+
+**ECHO (Maciej, 2026-08-21) = C.** Nowy, poprawny `entityCards/slug.ts` (pełna tabela
+`PL_DIACRITICS`), używany WYŁĄCZNIE przez nowy system kart. `TECH_MAP`/`sciencePicker.ts` i
+`improvementGateMet`/`research.ts` zostają nietknięte na swoich dzisiejszych wariantach.
+Pytanie o docelowe scalenie w jeden `slug.ts` zostaje otwarte na T4+ (jednostki).

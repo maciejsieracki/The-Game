@@ -31,7 +31,7 @@ Bieżący status procesu używa zamkniętej listy z rejestru:
 | `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `OPERATOR` | Osobna gałąź/worktree; bez merge, push i deployu. |
 | `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Wznowić wyłącznie w osobnej sesji o systemie ustrojów. |
 | `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` | `OPERATOR` | ECHO Wątek C = `A` (wymuś cap 50% też w mieście), Wątek E = zależny od reconu — pełne ECHO w `docs/decyzje/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1.md`. Implementacja w toku (Operator). |
-| `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` | `BLOCK` | ECHO 1-4 zapisane (`docs/decyzje/...md`). Faza 1/T2 (ikonka hub badań) zdeployowana FALA 305. **T1 (fundament kontraktu) zablokowany na nowym Pytaniu 5** — realny dryf slugify() na 14/131 polskich nazw z „ł" między `sciencePicker.ts` i `research.ts`, oba dziś load-bearing w żywej grze. Pełna tabela + 3 opcje w `docs/decyzje/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1.md`, rekomendacja C. Czeka na ECHO właściciela. |
+| `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` | `OPERATOR` | ECHO 1-5 zapisane (`docs/decyzje/...md`, Pytanie 5=C). Faza 1/T2 (ikonka hub badań) zdeployowana FALA 305. T1 (fundament kontraktu) wznawiany z decyzją C: nowy niezależny `slug.ts`, nie zastępuje `TECH_MAP`/`research.ts`. |
 
 ### Zamknięte — odsyłacze do decyzji i dowodów
 
