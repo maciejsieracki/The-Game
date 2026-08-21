@@ -109,6 +109,14 @@ function bundleEncyklopedia() {
     const slug = path.basename(rel, '.md');
     const title = metaField(md, 'tytuł') || titleFromMd(md);
     const category = metaField(md, 'kategoria') || CAT_LABELS[folder] || folder;
+    // T9 (R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1): mostek gra-id — opcjonalne pole
+    // frontmatter dla haseł, gdzie prosty derywowany slug NIE wystarcza (np. warianty
+    // kopalni: kopalnia_miedzi/zelaza/cyny/zlota → jeden wspólny plik kopalnia.md).
+    // Format: "| gra-id | id1, id2, id3 |". Puste/brak pola → [] (fallback na e.slug===id).
+    const gameIdsRaw = metaField(md, 'gra-id');
+    const gameIds = gameIdsRaw
+      ? gameIdsRaw.split(',').map((s) => s.trim()).filter(Boolean)
+      : [];
     const wikiS = extractSection(md, ['Wiki‑S', 'Wiki-S']);
     const wikiM = extractSection(md, ['Wiki‑M', 'Wiki-M']);
     const body = stripFrontMatter(md);
@@ -118,6 +126,7 @@ function bundleEncyklopedia() {
       folder,
       category,
       title,
+      gameIds,
       wikiS: wikiS || title,
       wikiM: wikiM || body.slice(0, 1200),
       full: body,
