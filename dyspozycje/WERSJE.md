@@ -3548,8 +3548,22 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 305 (2026-08-21)
-- **AKTUALNA** · ROBOCZA md5 `0b83f269e30a9136107d3d069626c377` · stempel `0b83f269` · manifest/bundle `VERIFY OK`.
+## ROBOCZA — FALA 306 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `5900b3fb603fbec52edd97fc95966fdb` · stempel `5900b3fb` · manifest/bundle `VERIFY OK`.
+  Zakres: `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` — filtr `playerFacingNote()`/
+  `isDevOnlyPlayerText()`/`stripInlineDevAnnotations()` w `cityPanel.ts` teraz poprawnie
+  usuwa notatki deweloperskie ze wzorcem „ABC-<numer>:" z pola `tech.Uwagi` wyświetlanego
+  w karcie budynku/jednostki (`appendTechDetailBlock`), zachowując resztę legalnej treści
+  (np. „kończy Epokę 1" zostaje, „ABC-7: Popalnia brązu na mapie" znika). Runda 1 błędnie
+  usuwała CAŁĄ notatkę (whole-string reject) — regresja złapana przez Evaluatora, naprawiona
+  w rundzie 2 (partial strip, wzorem istniejącego traktowania „PYTANIE=..."). Operator→
+  Evaluator (PASS-WITH-NOTES, złapał regres rundy 1 + zgłosił analogiczny, nieblokujący,
+  poza zakresem tego tematu problem w `buildings.json`) → Final Control PASS. Bramki: `tsc`
+  0; `citypanel-uwagi-abc-filter-test.cjs` 35/35 (rozszerzony o przypadek mieszany). Deploy
+  wykonany do `gra-robocza/`; push do `origin/main` osobno.
+
+## ROBOCZA — FALA 305 (2026-08-21) — **ZASTĄPIONA** (→ `5900b3fb`, FALA 306)
+- ROBOCZA md5 `0b83f269e30a9136107d3d069626c377` · stempel `0b83f269` · manifest/bundle `VERIFY OK`.
   Zakres: `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` faza 1/6 (z 6 zaplanowanych — patrz
   `docs/decyzje/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1.md`) — osobna, zawsze widoczna
   ikonka informacyjna „ⓘ" na węzłach technologii w `scienceHubHud.ts` i `techTreeView.ts`
