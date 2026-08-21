@@ -280,6 +280,20 @@ DEPLOY/PUSH: NIE WYKONANO
 
 ## SHA i diff
 
-Commit lokalny (branch `autobot/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`), SHA i pełny
-`git diff` — patrz commit bezpośrednio po tym raporcie w historii Git tego worktree
-(`git log -1`, `git show --stat`).
+Baza (po `git merge --ff-only af91c79d` w KROKU 0): `af91c79d8420a67bbff3d320f0dd9a0423ce2a24`.
+
+Commit tej rundy (branch `autobot/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`, lokalny, NIE
+pushowany): `2249b1718d3dcd0cfe1224fa9d60774f19085ff8`.
+
+```
+$ git show --stat HEAD
+ dyspozycje/.../R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1/01-operator.md | 285 +++++++++
+ gra/src/main.ts                                                       |  16 ++
+ gra/src/ui/empireDetailPanel.ts                                       |  48 ++--
+ gra/tools/praca-pula-rate-parity-test.cjs                             |  77 ++++
+ gra/tools/praca-split-ui-test.cjs                                     |  17 +-
+ 5 files changed, 424 insertions(+), 19 deletions(-)
+```
+
+Pełny `git diff af91c79d..2249b171` dostępny w repo tego worktree (`git show
+2249b1718d3dcd0cfe1224fa9d60774f19085ff8` / `git diff af91c79d 2249b171`).
