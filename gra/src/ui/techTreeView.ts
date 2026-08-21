@@ -348,11 +348,16 @@ function ensureStyles(): void {
   display:flex;gap:8px;align-items:flex-start;
   background:linear-gradient(180deg,rgba(24,30,42,.96),rgba(10,13,20,.97));
   border:1.5px solid rgba(232,216,138,.28);box-shadow:0 3px 10px rgba(0,0,0,.45);}
-.civ-ttv-tn .ti{flex-shrink:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+.civ-ttv-tn .ti{position:relative;flex-shrink:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;background:radial-gradient(circle at 38% 30%,rgba(232,216,138,.14),rgba(10,13,20,.4));
   border:1.5px solid rgba(232,216,138,.4);color:#e8d88a;}
 .civ-ttv-tn .ti svg{width:19px;height:19px;}
 .civ-ttv-tn .ti:empty{display:none;}
+.civ-ttv-tn .ttv-info-ic{position:absolute;right:-4px;bottom:-4px;width:13px;height:13px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;z-index:3;
+  background:#141a24;border:1px solid rgba(232,216,138,.65);color:#f4e6a8;
+  font-size:9px;font-weight:800;line-height:1;cursor:pointer;}
+.civ-ttv-tn .ttv-info-ic:hover,.civ-ttv-tn .ttv-info-ic:focus-visible{background:rgba(232,216,138,.28);outline:none;}
 .civ-ttv-tn .tx{flex:1;min-width:0;}
 .civ-ttv-tn .tx b{display:block;font-size:11.5px;color:#e8e0c8;line-height:1.2;}
 .civ-ttv-tn .tx i{display:block;font-style:normal;font-size:9px;color:#8a8070;margin-top:2px;
@@ -611,7 +616,7 @@ function renderWorldHTML(s: TtvState): string {
   // Węzły
   for (const node of NODES.values()) {
     const st = statusOf(node, s);
-    let inner = `<span class="ti">${techIconSvg(node.nazwa, 19) ?? ''}</span>`;
+    let inner = `<span class="ti">${techIconSvg(node.nazwa, 19) ?? ''}<span class="ttv-info-ic" role="button" tabindex="0" title="Podgląd karty technologii" aria-label="Podgląd karty: ${esc(node.nazwa)}">ⓘ</span></span>`;
     inner += `<span class="tx"><b>${esc(node.nazwa)}</b>`;
     if (st === 'ip') {
       const pct = Math.max(0, Math.min(100, Math.round(s.postepFraction * 100)));
@@ -926,15 +931,7 @@ function bindViewportInteractions(): void {
   vp.addEventListener('pointerup', endPan);
   vp.addEventListener('pointercancel', endPan);
 
-  vp.addEventListener('click', (e: MouseEvent) => {
-    if (panMoved) { panMoved = false; return; }
-    const el = (e.target as Element | null)?.closest('.civ-ttv-tn');
-    if (!(el instanceof HTMLElement)) return;
-    const id = el.getAttribute('data-id');
-    if (id === null) return;
-    const node = NODES.get(id);
-    if (node === undefined) return;
-    const st = el.getAttribute('data-st');
+  const openTechPreview = (node: TreeNode, st: string | null): void => {
     if (st === 'lk' || st === 'ip' || st === 'od' || st === 'av') {
       showTechDiscoveryNotice({
         techName: node.nazwa,
@@ -944,6 +941,43 @@ function bindViewportInteractions(): void {
         onOpenTree: () => showTechTreeView(activeOwner),
       });
     }
+  };
+
+  vp.addEventListener('click', (e: MouseEvent) => {
+    if (panMoved) { panMoved = false; return; }
+    const target = e.target as Element | null;
+    const el = target?.closest('.civ-ttv-tn');
+    if (!(el instanceof HTMLElement)) return;
+    const id = el.getAttribute('data-id');
+    if (id === null) return;
+    const node = NODES.get(id);
+    if (node === undefined) return;
+    const st = el.getAttribute('data-st');
+    // Osobna, zawsze widoczna ikonka info wewnątrz węzła — niezależna strefa
+    // klikalna, ta sama akcja co klik całego węzła, ale z własnym stopPropagation
+    // (R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 faza 1). Klik reszty węzła bez zmian.
+    if (target?.closest('.ttv-info-ic')) {
+      e.stopPropagation();
+      openTechPreview(node, st);
+      return;
+    }
+    openTechPreview(node, st);
+  });
+
+  vp.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const target = e.target as Element | null;
+    const infoIc = target?.closest('.ttv-info-ic');
+    if (!infoIc) return;
+    const el = infoIc.closest('.civ-ttv-tn');
+    if (!(el instanceof HTMLElement)) return;
+    const id = el.getAttribute('data-id');
+    if (id === null) return;
+    const node = NODES.get(id);
+    if (node === undefined) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openTechPreview(node, el.getAttribute('data-st'));
   });
 
   vp.addEventListener('mouseover', (e: MouseEvent) => {

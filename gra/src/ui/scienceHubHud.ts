@@ -151,9 +151,15 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-item.locked:hover{background:rgba(232,216,138,.05);border-color:rgba(232,216,138,.22);}
 .civ-science-hub-hud .sh-item:focus-visible,.civ-science-hub-hud .sh-plan-item:focus-visible{
   outline:2px solid #f4e6a8;outline-offset:2px;}
-.civ-science-hub-hud .sh-ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.5em;height:1.5em;
+.civ-science-hub-hud .sh-ico{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.5em;height:1.5em;
   border-radius:50%;border:1px solid rgba(232,216,138,.35);background:radial-gradient(circle at 38% 30%,#1c2432,#0a0d14);}
 .civ-science-hub-hud .sh-ico svg{width:72%;height:72%;display:block;}
+.civ-science-hub-hud .sh-info-ic{position:absolute;right:-4px;bottom:-4px;width:1em;height:1em;
+  border-radius:50%;background:#141a24;border:1px solid rgba(232,216,138,.6);color:var(--gold-bright);
+  display:flex;align-items:center;justify-content:center;font-size:0.62em;font-weight:800;line-height:1;
+  cursor:pointer;}
+.civ-science-hub-hud .sh-info-ic:hover,.civ-science-hub-hud .sh-info-ic:focus-visible{
+  background:rgba(232,216,138,.22);outline:none;}
 .civ-science-hub-hud .sh-close-ic{display:inline-flex;align-items:center;justify-content:center;width:1.1em;height:1.1em;}
 .civ-science-hub-hud .sh-close-ic svg{width:100%;height:100%;display:block;}
 .civ-science-hub-hud .sh-tree-btn .sh-tree-ic{display:inline-flex;align-items:center;margin-right:0.35em;vertical-align:middle;}
@@ -634,6 +640,22 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       row.addEventListener('keydown', (ev: KeyboardEvent) => {
         if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); act(); }
       });
+
+      // Osobna, zawsze widoczna ikonka info — niezależna strefa klikalna, ta sama
+      // akcja co klik całego wiersza (R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 faza 1).
+      const infoIc = document.createElement('span');
+      infoIc.className = 'sh-info-ic';
+      infoIc.setAttribute('role', 'button');
+      infoIc.tabIndex = 0;
+      infoIc.title = 'Podgląd karty technologii';
+      infoIc.setAttribute('aria-label', 'Podgląd karty: ' + e.name);
+      infoIc.textContent = 'ⓘ';
+      infoIc.addEventListener('click', (ev: MouseEvent) => { ev.stopPropagation(); act(); });
+      infoIc.addEventListener('keydown', (ev: KeyboardEvent) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); act(); }
+      });
+      ico.appendChild(infoIc);
+
       return row;
     }
   }
