@@ -24,7 +24,8 @@ Bieżący status procesu używa zamkniętej listy z rejestru:
 |---|---|---|
 | `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1` | `ZDEPLOYOWANE` | KOREKTA 2026-08-21: status byl nieaktualny. Zaimplementowane zgodnie z najnowszym ECHO (1B/2A/3B/8B/9A/10B, nie historycznym 1A/2A/3A) — `RodzajTraktatu.WspolnaWalkaBarbarzyncy`, `diplomacy-border-march.ts` i in. `diplomacy-barbarian-cooperation-test.cjs` 10/10 PASS, zweryfikowane ponownie. |
 | `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `ZDEPLOYOWANE` | KOREKTA 2026-08-21: status byl nieaktualny. Zaimplementowane w `forced-war-stone.ts` (stale 20/2/20/20 tur 1:1 z ECHO), zdeployowane FALA 298 (`4322f5aa`). `forced-war-stone-test.cjs`+`-main-guard-test.cjs` zweryfikowane ponownie, zielone. |
-| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `RECON ZAMKNIĘTY` | ECHO `A` zapisane (2026-08-21); recon zamknięty, naprawa 2 znalezionych bugów wydzielona do `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1` (READY_FOR_DEPLOY). |
+| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `RECON ZAMKNIĘTY` | ECHO `A` zapisane (2026-08-21); recon zamknięty, naprawa 2 znalezionych bugów wydzielona do `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1` (READY_FOR_DEPLOY). Recon runda 2 (2026-08-21, po T3): 3/4 pytania §4 potwierdzone zamknięte; Evaluator znalazł nowy realny bug (12 vs 20 jednostek w `techTreeView.ts`/`sciencePicker.ts`) — wydzielony jako `R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1`. |
+| `R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1` | `OPERATOR` | Nie wymaga ABC. Dispatchowane 2026-08-21 — patrz `REJESTR-PROSB-I-ZADAN.md`. |
 | `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT` | `ODŁOŻONE` | Nowa funkcja pozostaje odłożona; wznowić dopiero po decyzji właściciela. |
 | `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ABC-OCZEKUJE` | Czeka na uznanie właściciela za zamknięte przy kolejnym przeglądzie. |
 | `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` | `ABC-OCZEKUJE` | Zarejestrowane do ABC przy przeglądzie tematów bitewnych. |
