@@ -26662,6 +26662,11 @@ async function boot(): Promise<void> {
               if (usedPlayer > 0) {
                 playerPracaPool -= usedPlayer;
                 _lastPraca = playerPracaPool;
+                // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): bez tej linii
+                // "+N" w PULA IMPERIUM pokazywał brutto przyrost sprzed tego zużycia
+                // (Cuda na mapie), więc stan wizualnie "nie akumulował się" mimo
+                // dodatniego wskaźnika -- patrz analogiczna naprawa upkeep Pracy wyżej.
+                _lastPracaRate -= usedPlayer;
               }
               for (const oid of new Set(wonderBuildSites.map(s => s.ownerId).filter(id => id > 0))) {
                 const pool = aiPracaPoolByOwner.get(oid) ?? 0;
@@ -26687,6 +26692,13 @@ async function boot(): Promise<void> {
             if (usedPlayerBuildingBudget > 0) {
               playerPracaPool = Math.max(0, playerPracaPool - usedPlayerBuildingBudget);
               _lastPraca = playerPracaPool;
+              // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): budżet budynków
+              // nadrzędnego splitu (`splitEmpirePracaBudget`) realnie zabiera Pracę z
+              // puli TEJ SAMEJ tury, w której doliczono ją do `_lastPracaRate` powyżej
+              // (poolGain/overflowToPool) -- bez odjęcia tutaj wyświetlany "+N" nie
+              // odzwierciedlał tego zużycia i pula wizualnie "nie rosła" mimo dodatniej
+              // stawki.
+              _lastPracaRate -= usedPlayerBuildingBudget;
             }
             aiImprovementBudgetByOwner.clear();
             for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
@@ -26762,6 +26774,10 @@ async function boot(): Promise<void> {
                   if (prevLayers.includes(pick.key)) continue;
                   playerPracaPool -= pick.kosztPraca;
                   _lastPraca = playerPracaPool;
+                  // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): jak wyżej --
+                  // auto-ulepszenia zużywają pulę TEJ SAMEJ tury bez odjęcia od
+                  // wyświetlanej stawki.
+                  _lastPracaRate -= pick.kosztPraca;
                   const nextLayers: PlacedLayers = [...prevLayers, pick.key];
                   placedImprovements.set(hexKey, nextLayers);
                   workingPlaced.set(hexKey, nextLayers);

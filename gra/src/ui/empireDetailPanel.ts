@@ -1049,8 +1049,6 @@ function renderPracaSection(
   let sumPula = 0;
   for (const c of rows) { sumBudynki += c.pracaBudynki; sumPula += c.pracaPula; }
   const total = sumBudynki + sumPula;
-  const pctBudynki = total > 0 ? Math.round((sumBudynki / total) * 100) : 0;
-  const pctPula = 100 - pctBudynki;
   const upkeep = Math.round(economy.pracaUpkeep ?? 0);
   const stock = Math.round(economy.praca ?? 0);
   const rate = Math.round(economy.pracaRate ?? 0);
@@ -1059,11 +1057,20 @@ function renderPracaSection(
     + `<div class="civ-emp-hero-sub"><b>${sumBudynki}</b> do budynków · <b>${sumPula}</b> do puli imperium · `
     + `${rows.length} ${miastoCountWord(rows.length)}</div>`;
 
-  h += split2BarHtml(pctBudynki, '#6a4010', '#d9a441', pctPula, '#2c4a6b', '#8ec5ff');
-  h += '<div style="display:flex;gap:8px;margin-top:6px;font-size:11px">'
-    + `<span style="flex:1" class="civ-emp-slider-label gold">Budynki ${pctBudynki}% · ${sumBudynki}</span>`
-    + `<span class="civ-emp-slider-label blue">Pula imperium ${pctPula}% · ${sumPula}</span></div>`;
-
+  // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek A): tu wcześniej stał drugi,
+  // NIEINTERAKTYWNY pasek (`split2BarHtml`) plus wiersz etykiet „Budynki X% / Pula
+  // imperium Y%" stylowany DOKŁADNIE tymi samymi klasami (`.civ-emp-slider-label
+  // gold/blue`) co prawdziwy, interaktywny suwak niżej w tej sekcji
+  // (`renderEmpirePracaBudgetSplitSection`, „PODZIAŁ PRACY: BUDYNKI / ULEPSZENIA").
+  // To był rzeczywisty duplikat z perspektywy gracza: dwa identycznie nazwane i
+  // ostylowane odczyty procentowe Budynki/Pula w jednym panelu, które mogły (i
+  // legalnie mogą) pokazywać RÓŻNE liczby, bo ten usunięty pasek sumował REALNY,
+  // per-miastowy wynik tej tury (zależny też od lokalnych override'ów miast —
+  // Wątek C), a suwak niżej pokazuje NOMINALNE ustawienie na kolejne tury. Sama
+  // treść (sumBudynki/sumPula) nie ginie — zostaje w `hero-sub` wyżej (opisowo,
+  // bez slider-owego stylu) i w wierszu SUMA tabeli per-miasto niżej (dokładne
+  // liczby). Regres po R-PRACA-JEDEN-SUWAK-UI-Q1 (który usuwał DRUGI <input>, nie
+  // ten nieinteraktywny banner) — ten temat usuwa właśnie ten banner.
   h += '<div class="civ-emp-two">'
     + `<div class="civ-emp-box"><div class="k">PULA IMPERIUM</div><div class="v">${stock} ${deltaHtml(rate)}</div></div>`
     + `<div class="civ-emp-box"><div class="k">UTRZYMANIE ULEPSZEŃ</div>`
@@ -1096,9 +1103,18 @@ function renderPracaSection(
 }
 
 /**
- * Nadrzędny split całej puli Pracy. Jedynym suwakiem jest Pula Pracy
- * (0–50%); Budynki są wyliczanym remainder 100% − Pula Pracy. Nie mieszać
+ * Nadrzędny split całej puli Pracy. Jedynym suwakiem jest Ulepszenia
+ * (0–50%); Budynki są wyliczanym remainder 100% − Ulepszenia. Nie mieszać
  * tego z budżetem automatu.
+ *
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek B): etykiety opisują
+ * NOMINALNY zakres każdej strony podziału (Budynki 0–100%, Ulepszenia
+ * 0–50%), nie tylko efektywny remainder tej konkretnej chwili — wcześniej
+ * „Pula Pracy (0–50%)" myliło tę wartość z realną, akumulowaną PULA
+ * IMPERIUM (`economy.praca`, zupełnie inny licznik pokazany wyżej w tej
+ * samej sekcji), a „Budynki (50–100%)" sugerowało twardy dolny limit 50%,
+ * którego budynki jako takie nie mają — dolny limit dotyczy wyłącznie
+ * Ulepszeń (`MAX_PRACA_WSPOLNY_WOREK_PROCENT`, gra/src/game/cities.ts).
  */
 function renderEmpirePracaBudgetSplitSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPracaSplit;
@@ -1108,22 +1124,22 @@ function renderEmpirePracaBudgetSplitSection(): string {
   const pctU = Math.max(0, Math.min(50, Math.round(split.procentUlepszenia)));
   const pctB = 100 - pctU;
   const id = 'emp-praca-empire-budget-split';
-  const tip = 'Nadrzędny podział Pracy: Pula Pracy 0–50%; '
-    + 'budynki dostają remainder 100% − Pula Pracy (czyli 50–100%). '
+  const tip = 'Nadrzędny podział Pracy: Ulepszenia 0–50%; '
+    + 'budynki dostają remainder 100% − Ulepszenia (czyli 50–100%). '
     + 'To nie jest globalny budżet automatu.';
   let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
-    + '<div class="civ-emp-eyebrow" style="margin-bottom:6px">PODZIAŁ PRACY: BUDYNKI / PULA</div>'
-    + `<div class="civ-emp-note" title="${esc(tip)}">Pula Pracy ${pctU}% · Budynki ${pctB}% (remainder)</div>`;
+    + '<div class="civ-emp-eyebrow" style="margin-bottom:6px">PODZIAŁ PRACY: BUDYNKI / ULEPSZENIA</div>'
+    + `<div class="civ-emp-note" title="${esc(tip)}">Ulepszenia ${pctU}% · Budynki ${pctB}% (remainder)</div>`;
   h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:7px">'
     + '<div style="display:flex;align-items:baseline;gap:8px">'
-    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label gold">Budynki (50–100%)</b> / '
-    + '<b class="civ-emp-slider-label blue">Pula Pracy (0–50%)</b></span>'
+    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label gold">Budynki (0–100%)</b> / '
+    + '<b class="civ-emp-slider-label blue">Ulepszenia (0–50%)</b></span>'
     + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-praca-empire-split-value>`
     + `${pctU}% / ${pctB}%</span></div>`
     + `<input type="range" class="civ-emp-slider blue" min="0" max="50" step="1" value="${pctU}" `
     + `style="width:100%;margin:0" data-praca-empire-split />`
     + `<div class="civ-emp-foot" style="margin:0" title="${esc(tip)}">`
-    + 'Suwak steruje tylko Pulą Pracy; Budynki zawsze = 100% − Pula Pracy.</div></div></div>';
+    + 'Suwak steruje tylko Ulepszeniami; Budynki zawsze = 100% − Ulepszenia.</div></div></div>';
   queueMicrotask(() => {
     const host = document.getElementById(id);
     const input = host?.querySelector<HTMLInputElement>('input[data-praca-empire-split]');
