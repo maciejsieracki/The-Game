@@ -74,8 +74,11 @@ z właścicielem.
 - **Cursor** — `.cursor/rules/*.mdc` z `alwaysApply: true` odsyłają tutaj i do
   `R-PROC-AUTOBOT.md`; niosą techniczne, zawsze-egzekwowane bramki.
 - **Skill dla agentów wspierających mechanizm Skills** (Claude Code i pochodne):
-  [`.claude/skills/autobots/SKILL.md`](.claude/skills/autobots/SKILL.md) — ten sam
-  routing w formie zoptymalizowanej pod wywołanie skillowe.
+  [`.claude/skills/autobots/SKILL.md`](.claude/skills/autobots/SKILL.md) — uniwersalny
+  szkielet procesu AutoBot, bez konkretów tego repo; konkretne wiązania dla Civ
+  (ścieżki, modele, bariery) są w
+  [`.claude/skills/civ-autobot/SKILL.md`](.claude/skills/civ-autobot/SKILL.md) —
+  przeczytaj oba, w tej kolejności.
 - **Dowolny inny agent** — ten plik + kolejność czytania wyżej wystarczy.
 
 Po starcie zamelduj krótko: jakie źródła przeczytałeś, jaki jest bieżący stan,
