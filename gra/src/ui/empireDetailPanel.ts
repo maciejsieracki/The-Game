@@ -1109,7 +1109,7 @@ function renderEmpirePracaBudgetSplitSection(): string {
   const pctB = 100 - pctU;
   const id = 'emp-praca-empire-budget-split';
   const tip = 'Nadrzędny podział Pracy: Pula Pracy 0–50%; '
-    + 'budynki dostają remainder 100% − Pula Pracy (np. 10% → 90%). '
+    + 'budynki dostają remainder 100% − Pula Pracy (czyli 50–100%). '
     + 'To nie jest globalny budżet automatu.';
   let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
     + '<div class="civ-emp-eyebrow" style="margin-bottom:6px">PODZIAŁ PRACY: BUDYNKI / PULA</div>'

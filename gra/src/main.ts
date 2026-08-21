@@ -187,6 +187,7 @@ import {
   DEFAULT_ULEPSZENIA_TRYB,
   DEFAULT_ULEPSZENIA_FOCUS,
   clampUlepszeniaPracaPercent,
+  clampPodzialPracyBudynkiPercent,
   clampPracaWspolnyWorekPercent,
   DEFAULT_EMPIRE_PRACA_SPLIT,
   resolveUlepszeniaPracaPercentFromRaw,
@@ -19345,7 +19346,9 @@ async function boot(): Promise<void> {
         getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
         onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
           if (ownerId !== 0) return;
-          ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+          ownerDefaultPodzialPracy.set(0, {
+            procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
+          });
           markCityStateDirty();
           updateHud();
         },
@@ -19651,9 +19654,13 @@ async function boot(): Promise<void> {
           // wartość globalną imperium (wszystkie miasta bez override); z override —
           // zmiana tylko tego miasta.
           if (c.podzialPracyOverride) {
-            c.podzialPracy = { procentBudynki: split.procentBudynki };
+            c.podzialPracy = {
+              procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
+            };
           } else {
-            ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+            ownerDefaultPodzialPracy.set(0, {
+              procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
+            });
           }
           markCityStateDirty(); // D10: podział pracy → przelicz
           updateHud();
@@ -22104,12 +22111,12 @@ async function boot(): Promise<void> {
         defLabel: summary.defLabel,
         atkCivLabel: summary.atkCivLabel,
         defCivLabel: summary.defCivLabel,
+        playerSide,
         teren: summary.teren,
         placeLabel: summary.placeLabel,
         mode: summary.mode,
         atkBefore,
         defBefore,
-        playerSide,
         lookupHp: makeHpLookupAfterBattle(),
       });
       if (playerWon && loot && !battleLootIsEmpty(loot)) {
@@ -26977,19 +26984,20 @@ async function boot(): Promise<void> {
                   // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: AI zmienia suwak Pracy
                   // dla CAŁEGO imperium (paritet z Daniną powyżej) — global default,
                   // nie tylko per-city broadcast.
-                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: sliderDecision.procentBudynki });
+                  const aiProcentBudynki = clampPodzialPracyBudynkiPercent(sliderDecision.procentBudynki);
+                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: aiProcentBudynki });
                   for (const c of cities) {
                     if (c.ownerId !== ownerId) continue;
                     c.poziomRacji = migrateProcentRozwojToPoziomRacji(sliderDecision.procentRozwoj);
                     c.procentRozwoj = sliderDecision.procentRozwoj;
-                    c.podzialPracy = { procentBudynki: sliderDecision.procentBudynki };
+                    c.podzialPracy = { procentBudynki: aiProcentBudynki };
                     c.podzialPracyOverride = false;
                     c.podzialHandluOverride = false;
                     delete c.podzialHandlu;
                   }
                   aiSliderStateByOwner.set(ownerId, {
                     procentRozwoj:  sliderDecision.procentRozwoj,
-                    procentBudynki: sliderDecision.procentBudynki,
+                    procentBudynki: aiProcentBudynki,
                     procentNauka:   sliderDecision.procentNauka,
                     lastChangeTurn: turn,
                   });
@@ -29767,9 +29775,13 @@ async function boot(): Promise<void> {
           const c = cities.find(ct => ct.id === cityId);
           if (c && c.ownerId === 0) {
             if (c.podzialPracyOverride) {
-              c.podzialPracy = { procentBudynki: split.procentBudynki };
+              c.podzialPracy = {
+                procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
+              };
             } else {
-              ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+              ownerDefaultPodzialPracy.set(0, {
+                procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
+              });
             }
             markCityStateDirty(); // D10: podział pracy → przelicz
             updateHud();

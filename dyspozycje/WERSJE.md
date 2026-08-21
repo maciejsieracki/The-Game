@@ -3548,6 +3548,20 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
+## ROBOCZA — FALA 302 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `426fb8ef1a15ce765fc68a4906c8d56c` · stempel `426fb8ef` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1` — lokalny podział Pracy miasta
+  ograniczony do **Budynki 50–100% / Pula Pracy 0–50%**, z normalizacją zapisu,
+  dziedziczenia imperium, override miasta oraz parytetem AI. `R-PRACA-PULA-NIEAKUMULUJE-Q1`
+  zamknięty decyzją B: globalny floor 50% pozostaje nadrzędny; budżet automatu ulepszeń
+  zachowuje niezależny zakres 0–100%.
+  Build selektywny na bazie FALI 301, bez obcych zmian; źródłowy build md5
+  `2c1290fcf75e3de3cb9b1c66bf82b28f`, Vite `837` modułów. Bramki: `tsc` 0,
+  podział miasta 32/32, globalny live 7/7, UI 10/10, defaulty miasta 49/49,
+  panel imperium 15/15, AI parity 19/19. Deploy wykonany do `gra-robocza/`;
+  push nie wykonywano. Temat rekrutacji pozostaje poza tą falą — jego gate
+  upkeepowy nadal wymaga osobnej korekty.
+
 ## ROBOCZA — FALA 301 (2026-08-21)
 - **AKTUALNA** · ROBOCZA md5 `45ad3443b8ae560f0986d1ef80aa6963` · stempel `45ad3443` · manifest/bundle `VERIFY OK`.
   Zakres: trzy wcześniej potwierdzone tematy `R-PRACA-JEDEN-SUWAK-UI-Q1`,

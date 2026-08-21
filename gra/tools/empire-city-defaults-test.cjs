@@ -106,10 +106,10 @@ function ok(cond, msg) {
   // (b) miasto z override dostaje wartość lokalną NIEZALEŻNIE od zmiany globalnej.
   const cityOverride = { ownerId: 0, podzialPracyOverride: true, podzialPracy: { procentBudynki: 30 } };
   const rB1 = M.resolveCityPodzialPracy(cityOverride, ownerDefault);
-  ok(rB1.procentBudynki === 30, `Podział Pracy (b) z override → lokalna 30 (got ${rB1.procentBudynki})`);
+  ok(rB1.procentBudynki === 50, `Podział Pracy (b) z override → lokalna 30 znormalizowana do minimum 50 (got ${rB1.procentBudynki})`);
   const ownerDefaultChanged = { procentBudynki: 90 };
   const rB2 = M.resolveCityPodzialPracy(cityOverride, ownerDefaultChanged);
-  ok(rB2.procentBudynki === 30, `Podział Pracy (b) override przeżywa zmianę globalnej (got ${rB2.procentBudynki}, globalna teraz 90)`);
+  ok(rB2.procentBudynki === 50, `Podział Pracy (b) override przeżywa zmianę globalnej i clamp 50 (got ${rB2.procentBudynki}, globalna teraz 90)`);
 
   // brak ownerDefault (np. świeży ownerId bez wpisu w Map) → fallback na city.podzialPracy, potem params.
   const cityNoOverrideNoDefault = { ownerId: 5, podzialPracyOverride: false, podzialPracy: { procentBudynki: 55 } };
@@ -117,7 +117,7 @@ function ok(cond, msg) {
   ok(rFallback.procentBudynki === 55, `Podział Pracy brak ownerDefault → fallback city.podzialPracy 55 (got ${rFallback.procentBudynki})`);
   const paramsFallback = { procentBudynki: 42 };
   const rParamsFallback = M.resolveCityPodzialPracy({ ownerId: 5, podzialPracyOverride: false }, undefined, paramsFallback);
-  ok(rParamsFallback.procentBudynki === 42, `Podział Pracy brak city.podzialPracy i ownerDefault → paramsFallback 42 (got ${rParamsFallback.procentBudynki})`);
+  ok(rParamsFallback.procentBudynki === 50, `Podział Pracy brak city.podzialPracy i ownerDefault → paramsFallback 42 znormalizowany do 50 (got ${rParamsFallback.procentBudynki})`);
 
   // (c) migracja starego zapisu (bez ownerDefault, bez flag override) — jedno miasto z
   // wartością różną od pierwszej (owner default), jedno takie samo.

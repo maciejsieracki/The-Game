@@ -57,7 +57,14 @@ import {
   BUDOWA_TYP_FOCUS,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
 } from '../game/cities';
-import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit, MAX_PROCENT_NAUKA } from '../game/cities';
+import {
+  HANDEL_PCT_STEP,
+  normalizePodzialHandlu,
+  snapHandelPct,
+  adjustHandelSplit,
+  MAX_PROCENT_NAUKA,
+  clampPodzialPracyBudynkiPercent,
+} from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
@@ -974,15 +981,15 @@ function readOwnerDefaultPodzialHandlu(city: City, data: GameData | null): Podzi
 
 function readPodzialPracy(city: City, data: GameData | null): PodzialPracySplit {
   const fromHook = cfg.getPodzialPracy?.(city.id);
-  if (fromHook) return { procentBudynki: snapHandelPct(fromHook.procentBudynki) };
+  if (fromHook) return { procentBudynki: clampPodzialPracyBudynkiPercent(fromHook.procentBudynki) };
   const ext = city as CityWithSliders;
   const stored = ext.podzialPracy ?? ext.podziałPracy;
-  if (stored) return { procentBudynki: snapHandelPct(stored.procentBudynki) };
+  if (stored) return { procentBudynki: clampPodzialPracyBudynkiPercent(stored.procentBudynki) };
   if (data) {
     const params = buildEconParams(data, cfg.difficulty ?? 'normal');
-    return { procentBudynki: snapHandelPct(params.suwaakPracaBudynki) };
+    return { procentBudynki: clampPodzialPracyBudynkiPercent(params.suwaakPracaBudynki) };
   }
-  return { procentBudynki: snapHandelPct(DEFAULT_PODZIAL_PRACY.procentBudynki) };
+  return { procentBudynki: clampPodzialPracyBudynkiPercent(DEFAULT_PODZIAL_PRACY.procentBudynki) };
 }
 
 // ---------------------------------------------------------------------------
@@ -4812,24 +4819,24 @@ function renderPodzialPracy(
   const sliderRow = el('div', 'slider-row');
   const sliderLabel = el('label');
   const podzialTip =
-    'Lokalny podział przyrostu Pracy tego miasta. Kroki co 10%. W lewo → więcej do puli Pracy · '
-    + 'w prawo → szybsza kolejka budowy. Nie zmienia nadrzędnego podziału puli ani budżetu automatu.';
+    'Lokalny podział przyrostu Pracy tego miasta. Budynki 50–100%, a Pula Pracy jest resztą 0–50%. '
+    + 'Kroki co 10%. Nie zmienia nadrzędnego podziału puli ani budżetu automatu 0–100%.';
   sliderLabel.innerHTML =
-    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki / Pula Pracy (lokalnie)</span>` +
+    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki 50–100% / Pula Pracy 0–50% (lokalnie)</span>` +
     `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
   sliderRow.appendChild(sliderLabel);
 
   if (player) {
     const inp = document.createElement('input');
     inp.type = 'range';
-    inp.min = '0';
+    inp.min = '50';
     inp.max = '100';
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
     inp.setAttribute('aria-label', 'Lokalny podział przyrostu Pracy tego miasta: budynki versus pula Pracy');
     inp.title = podzialTip;
     inp.addEventListener('input', () => {
-      const v = snapHandelPct(Number(inp.value));
+      const v = clampPodzialPracyBudynkiPercent(Number(inp.value));
       cfg.onPodzialPracyChange?.(city.id, { procentBudynki: v });
       rerender();
     });

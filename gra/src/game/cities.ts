@@ -352,6 +352,22 @@ export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
   procentBudynki: 70,
 };
 
+/**
+ * Lokalny podział Pracy miasta: 50–100% trafia do budynków, a pozostałe
+ * 0–50% trafia do puli Pracy. To pole jest niezależne od budżetu automatu
+ * ulepszeń, który zachowuje osobny zakres 0–100%.
+ */
+export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;
+export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;
+
+export function clampPodzialPracyBudynkiPercent(n: number | undefined | null): number {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_PODZIAL_PRACY.procentBudynki;
+  return Math.max(
+    MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
+    Math.min(MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, Math.round(n)),
+  );
+}
+
 /** Domyślny suwak żywność→wzrost (reszta idzie do zapasów armii). Zgodny z suwak_zywnosc_rozwoj_domyslnie normal=100. */
 export const DEFAULT_PROCENT_ROZWOJ = 100;
 
@@ -499,7 +515,13 @@ export function ensureCityPodzialDefaults(city: City): void {
   } else if (city.podzialHandluOverride && !city.podzialHandlu) {
     city.podzialHandlu = { ...DEFAULT_PODZIAL_HANDLU };
   }
-  if (!city.podzialPracy) city.podzialPracy = { ...DEFAULT_PODZIAL_PRACY };
+  if (!city.podzialPracy) {
+    city.podzialPracy = { ...DEFAULT_PODZIAL_PRACY };
+  } else {
+    city.podzialPracy = {
+      procentBudynki: clampPodzialPracyBudynkiPercent(city.podzialPracy.procentBudynki),
+    };
+  }
 }
 
 /** Migracja zapisu v0.1 — podział Handlu/Pracy + Wealth po load. */
