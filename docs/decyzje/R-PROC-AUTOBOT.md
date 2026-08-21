@@ -66,6 +66,15 @@ to samo ID i musi jawnie zezwolić na nowy cykl/wyzerowanie licznika, nie zaś s
 tworzyć nowe ID. `ZWIS` nie anuluje tematu przed osiągnięciem limitu; watchdog sprawdza
 stan, a orkiestrator przejmuje pracę. ABC pauzuje temat i nie zużywa rundy.
 
+### 3a. Konflikt kontraktu, domena raportu, duplikaty i weryfikacja wdrożenia
+
+Cztery dopełnienia pętli, pełny opis w `playbook.md`: **C-054** (`DECISION_REQUIRED` dla
+konfliktu dispatch/kod/testy — nie substytut turnieju C-018 przy wpływie na gameplay/UX),
+**C-055** (pole `DOMAIN` w raporcie, błąd procesowy/provenance ≠ błąd gry), **C-056**
+(weryfikacja „już wdrożone" wyłącznie przez `git merge-base --is-ancestor`, nigdy z pamięci)
+i **C-057** (rejestr duplikatów tematów tagiem `duplicate_of`/`related_to`/`supersedes` w
+`REJESTR-PROSB-I-ZADAN.md`, sprawdzany przed otwarciem nowego ID).
+
 ## 4. Rejestry i artefakty
 
 - `dyspozycje/REJESTR-PROSB-I-ZADAN.md` — jeden aktualny status tematu;
@@ -80,7 +89,8 @@ stan, a orkiestrator przejmuje pracę. ABC pauzuje temat i nie zużywa rundy.
 Raport etapu zawiera:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED | DECISION_REQUIRED | INTEGRATION_PENDING
+DOMAIN: GAME | PROCESS | INFRA | INFORMATIONAL
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>
@@ -90,6 +100,12 @@ RUNDY: <nr tej rundy>/<5; po limicie także liczba zużytych rund, ostatni werdy
 NASTĘPNY KROK: <kolejna bramka>
 DEPLOY/PUSH: WYKONANO albo NIE WYKONANO
 ```
+
+`DECISION_REQUIRED` sygnalizuje konflikt dispatch/kod/testy dla tego samego ID — patrz
+playbook C-054. Nie zwiększa licznika rund, wstrzymuje Evaluatora i Final Control do decyzji
+właściciela (i turnieju C-018, jeśli dotyczy gameplay/UX). `INTEGRATION_PENDING` sygnalizuje
+kod gotowy, którego nie da się jeszcze bezpiecznie zintegrować (współdzielony plik) — patrz
+playbook C-059; nie jest to `BLOCK`.
 
 ## 5. ABC, integracja i deploy
 
@@ -105,6 +121,11 @@ formie pełne ID + litera. Ta sama bariera jest zduplikowana w
 Każde NOWE pytanie ABC (temat bez odpowiedzi literą) przechodzi przez obowiązkowy turniej
 dwóch niezależnych projektów przed pokazaniem właścicielowi. Pełna procedura:
 [`R-PROC-AUTOBOT-ABC-TURNIEJ.md`](R-PROC-AUTOBOT-ABC-TURNIEJ.md) i `playbook.md` → C-018.
+
+**Integracja z drzewa współdzielonego z inną, niepowiązaną pracą jest allowlist-only, per
+plik i per hunk** (playbook C-059) — zakaz `git add -A`/`git add .`; współdzielony plik
+niemożliwy do bezpiecznego rozdzielenia dostaje status `INTEGRATION_PENDING`, nie `BLOCK`.
+Watchdog liczy się jako zajęty slot puli 6, jeśli dzieli z nią limit wątków (playbook C-060).
 
 ## 5a. Narzędzie orkiestracji wieloagentowej — używaj, gdy dostępne
 

@@ -173,7 +173,8 @@ Nowy przebieg zapisuj w `dyspozycje/autobot/runs/<ID>/`:
 Każdy raport musi zawierać:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED | DECISION_REQUIRED | INTEGRATION_PENDING
+DOMAIN: GAME | PROCESS | INFRA | INFORMATIONAL
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>
@@ -185,7 +186,11 @@ DEPLOY/PUSH: WYKONANO albo NIE WYKONANO
 
 Status rejestru pochodzi z zamkniętej listy w indeksie procesu. Nie zmieniaj go na
 podstawie samej nazwy worktree, UI, deklaracji agenta albo nieistniejącego raportu.
-`not_found` bez artefaktu nie jest dowodem zakończenia.
+`not_found` bez artefaktu nie jest dowodem zakończenia. `DECISION_REQUIRED` (playbook C-054)
+sygnalizuje konflikt dispatch/kod/testy — nie zwiększa licznika rund, nie jest `BLOCK`.
+`INTEGRATION_PENDING` (playbook C-059) sygnalizuje kod gotowy, którego integracja czeka na
+rozdzielenie współdzielonego pliku — integracja jest zawsze allowlist-only, per plik i per
+hunk, zakaz `git add -A`/`git add .` z brudnego drzewa współdzielonego z inną pracą.
 
 ## 8. Bramki i hasła właściciela
 

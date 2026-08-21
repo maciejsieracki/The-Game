@@ -101,7 +101,8 @@ statusu rejestru i nie oznacza wykonanego deployu.
 Każdy etap zapisuje:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED | DECISION_REQUIRED | INTEGRATION_PENDING
+DOMAIN: GAME | PROCESS | INFRA | INFORMATIONAL
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>
@@ -110,6 +111,12 @@ BLOKADY: <jawna lista albo brak>
 NASTĘPNY KROK: <kolejna bramka>
 DEPLOY/PUSH: WYKONANO albo NIE WYKONANO
 ```
+
+`DECISION_REQUIRED` (konflikt dispatch/kod/testy, playbook C-054) i `INTEGRATION_PENDING`
+(kod gotowy, integracja czeka na rozdzielenie współdzielonego pliku, playbook C-059) nie są
+`BLOCK` — pierwszy nie zwiększa licznika rund, drugi nie jest błędem tematu. Integracja z
+drzewa współdzielonego z inną pracą jest allowlist-only, per plik i per hunk — zakaz
+`git add -A`/`git add .` (playbook C-059).
 
 Przed integracją orkiestrator sprawdza wszystkie trzy raporty, GOAL, allowlistę,
 faktyczny diff, commit, testy, blokady, run i brak zmian w `gra/` dla docs-only. Po

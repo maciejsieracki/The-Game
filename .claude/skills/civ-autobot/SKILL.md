@@ -50,10 +50,27 @@ otwarte ABC w `dyspozycje/PYTANIA-OTWARTE.md`, ECHO i decyzję w
 a przekazania w `KANAL-PRACA.md`. `WERSJE.md` aktualizuj dopiero po faktycznym
 deployu.
 
-Raport etapu zawiera `STATUS`, `TEMAT`, `GOAL`, `ZMIANY/COMMIT`, `TESTY`, `BLOKADY`,
-`NASTĘPNY KROK` i `DEPLOY/PUSH`. Operator, Evaluator i Final Control nie integrują,
-nie deployują i nie pushują. Historyczne routingi są wyłącznie w
-[`docs/archiwum-procesu/`](../../../docs/archiwum-procesu/).
+Raport etapu zawiera `STATUS`, `DOMAIN` (`GAME`/`PROCESS`/`INFRA`/`INFORMATIONAL` —
+błąd provenance/worktree/ledgeru NIE jest automatycznie błędem gry), `TEMAT`, `GOAL`,
+`ZMIANY/COMMIT`, `TESTY`, `BLOKADY`, `NASTĘPNY KROK` i `DEPLOY/PUSH`. Operator, Evaluator
+i Final Control nie integrują, nie deployują i nie pushują. Historyczne routingi są
+wyłącznie w [`docs/archiwum-procesu/`](../../../docs/archiwum-procesu/).
+
+## Konflikt kontraktu i integracja allowlist-only
+
+Gdy dispatch/kod/testy wymagają sprzecznego zachowania dla tego samego ID — Operator STOP,
+nie koduje dalej, nie liczy to jako rundy, zapisuje `dyspozycje/autobot/runs/<ID>/decision-abc.md`
+(opis konfliktu, bez proponowanego rozwiązania) i ustawia razem `DECISION_REQUIRED` (ledger)
+oraz `ABC-OCZEKUJE` (rejestr tematu). Konflikt czysto inżynierski bez wpływu na gameplay/UX
+idzie lekką ścieżką (jedna propozycja); konflikt z wpływem na gameplay/balans/UX wymaga
+pełnego turnieju C-018 — `decision-abc.md` jest tylko wyzwalaczem, nigdy substytutem.
+
+Integracja z drzewa współdzielonego z inną, niepowiązaną pracą jest **allowlist-only, per
+plik i per hunk** — zakaz `git add -A`/`git add .`. Współdzielony plik niemożliwy do
+bezpiecznego rozdzielenia dostaje status `INTEGRATION_PENDING` (nie `BLOCK`); orkiestrator
+adresuje go przy najbliższym wolnym slocie, nie zostawia biernie czekającego. Weryfikację
+„czy funkcja już jest wdrożona" rób wyłącznie przez `git merge-base --is-ancestor
+<commit_funkcji> <commit_release>`, nigdy z pamięci. Pełny opis: playbook C-054–C-060.
 
 ## Ledger i watchdog dispatchu
 

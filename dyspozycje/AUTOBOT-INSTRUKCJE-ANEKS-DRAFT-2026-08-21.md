@@ -1,6 +1,6 @@
 # Draft: konkretne instrukcje dla agentów AutoBot (na bazie aneksu z 2026-08-20/21)
 
-Status: DRAFT do przeniesienia do `playbook.md` przez sesję, która go aktualnie edytuje. Nie nadpisuje C-051 samodzielnie — patrz uwaga na dole.
+Status: **SCALONE DO KANONU 2026-08-21** jako `playbook.md` C-054–C-060 (numeracja C-051 zachowana bez zmian — dopełniona, nie nadpisana). Ten plik pozostaje jako pełny zapis procesu decyzyjnego i uzasadnień; źródłem prawdy jest teraz `playbook.md`/`civ-autobot/SKILL.md`/`autobots/SKILL.md`/`R-PROC-AUTOBOT.md`.
 
 Źródło: 9 wniosków z retrospektywy + 11-punktowy aneks zaproponowany przez inną sesję, zweryfikowany i uzupełniony w tej rozmowie.
 
