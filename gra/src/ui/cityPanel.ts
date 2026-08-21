@@ -162,6 +162,8 @@ import {
   UNIT_INFOGRAPHIC_CSS,
 } from './unitInfographic';
 import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
+import { renderEntityCard, ENTITY_CARD_CSS } from './entityCards/renderer';
+import { buildingAdapter, type BuildingCardCityState } from './entityCards/buildingAdapter';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { showTechDiscoveryNotice } from './techDiscoveryNotice';
@@ -7035,7 +7037,79 @@ function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: st
   if (techNote) gridDetailRow(grid, 'Uwagi tech', techNote);
 }
 
+const ENTITY_CARD_BUILDING_STYLE_ID = 'civ-city-panel-entity-card-css-v1';
+
+/** Wstrzykuje `ENTITY_CARD_CSS` (bazowe style `.entity-card*` z `entityCards/renderer.ts`)
+ * raz do dokumentu, plus lokalne dopasowanie szerokości karty (434px domyślnie) do
+ * hover-docku panelu miasta (`HOVER_DETAIL_DOCK_W`=400px, `hoverDetailDock.ts`) i
+ * pływającego tooltipu poza dockiem — bez tego karta (dziś renderowana przez wspólny
+ * `renderEntityCard`) przycinałaby się w docku. Zaimplementowane TUTAJ (wewnątrz
+ * `buildBuildingDetailCard`, jedynej funkcji z allowlisty T5 dotykającej stylów) zamiast
+ * w głównym `ensureStyles()`/`css` template (poza allowlistą T5) — wzorem
+ * `ensureUnitInfoCardStyles()` z T4 (`unitInfoCard.ts`), tylko wołane lazily przy
+ * pierwszym zbudowaniu karty budynku zamiast osobnej eksportowanej funkcji. */
+function ensureEntityCardBuildingStyles(): void {
+  if (document.getElementById(ENTITY_CARD_BUILDING_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = ENTITY_CARD_BUILDING_STYLE_ID;
+  style.textContent = `${ENTITY_CARD_CSS}
+.civ-hover-detail-content .entity-card,
+.civ-hover-detail-float .entity-card{width:100%;max-width:100%;box-sizing:border-box;}`;
+  document.head.appendChild(style);
+}
+
+/** Buduje kartę budynku przez `buildingAdapter` + wspólny `renderEntityCard`
+ * (T5 MIGRACJA-KARTA-BUDYNKU-PANEL-MIASTA), zamiast własnego DOM-buildera — wzorem T3/T4.
+ * Sekcje „Technologie"/„Uwagi" dopełnione TU (host), bo zależą od `data: GameData`/
+ * `appendTechDetailBlock` — funkcji świadomie NIE migrowanej w tym kroku (plan
+ * architektury §3 krok 2: `appendTechDetailBlock` zostaje nietknięta do T10, współdzielona
+ * też z kartą jednostki). Adapter dostarcza WSZYSTKO, co da się policzyć z samego
+ * `BuildingDef` + czystych funkcji `game/*` (patrz `buildingAdapter.ts` nagłówek). */
+function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
+  ensureEntityCardBuildingStyles();
+  const displayLevel = buildingUiDisplayLevel(def, city);
+  const cityState: BuildingCardCityState = {
+    hasCity: city !== undefined,
+    displayLevel,
+    buildCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
+    difficulty: cfg.getDifficulty?.() ?? 'normal',
+    ownerId: 0, // 1:1 ze świadomym hardcode'em dawnego `buildBuildingDetailCard`
+  };
+  const built = buildingAdapter(def, { city: cityState });
+  const card = renderEntityCard(built) as HTMLDivElement;
+  card.classList.add('bld-detail-card');
+
+  // --- Technologie / Uwagi — dopełnione TU (host), NIE w adapterze; patrz komentarz wyżej ---
+  const techBody = beginBuildingDetailTile(card, 'Technologie');
+  appendTechDetailBlock(techBody, data, def.techUnlock);
+
+  const playerNote = playerFacingNote(def.uwagi);
+  if (playerNote) {
+    const noteBody = beginBuildingDetailTile(card, 'Uwagi');
+    const note = el('div', 'dc-note');
+    note.style.fontStyle = 'normal';
+    note.textContent = playerNote;
+    noteBody.appendChild(note);
+  }
+  return card;
+}
+
+/** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T5), fallback do starej
+ * implementacji (`_legacyBuildBuildingDetailCard`) w razie wyjątku — wzorem T3/T4, dopóki
+ * Final Control nie potwierdzi parytetu. */
 function buildBuildingDetailCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
+  try {
+    return buildBuildingDetailCardViaEntityCard(def, data, city);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[cityPanel] buildBuildingDetailCard: błąd ścieżki entityCards, fallback do starej implementacji:', err);
+    return _legacyBuildBuildingDetailCard(def, data, city);
+  }
+}
+
+/** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
+ * (wzorem `_legacyBuildUnitInfoCard`/`_legacyShowTechDiscoveryNotice`). ZERO zmian treści. */
+function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
   const card = el('div', 'detail-card bld-detail-card');
   const head = el('div', 'dc-h');
   head.appendChild(makeBuildingThumb(def));

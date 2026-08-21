@@ -9,6 +9,7 @@
  * `unitInfoCard.ts`/`cityPanel.ts`/`techDiscoveryNotice.ts` (migracja to T3+).
  */
 import { pushOverlay, popOverlay } from '../escapeOverlayStack';
+import { attachHoverDetail } from '../hoverDetailDock';
 import { resolveBuildingRow, resolveImprovementRow, resolveTechnologyRow, resolveUnitRow } from './registry';
 import { unitAdapter } from './unitAdapter';
 import { buildingAdapter } from './buildingAdapter';
@@ -330,13 +331,52 @@ function openInline(data: EntityCardData, container: HTMLElement): EntityCardDis
 }
 
 /**
- * `openEntityCard(kind, id, opts)` — punkt wejścia publiczny. T1: `dialog` w pełni
- * zaimplementowany; `inline` zaimplementowany minimalnie (bez hover-timera, T5
- * dopełnia); `hover` — rzuca (jeszcze nieobsłużony, patrz T5).
- * Zwraca `dismiss()`. Zwraca funkcję no-op jeśli encja nie istnieje (resolver null).
+ * Tryb `hover` (T5 MIGRACJA-KARTA-BUDYNKU-PANEL-MIASTA) — doczepia się do
+ * `attachHoverDetail(anchor, buildContent, 220, 'left')` (`hoverDetailDock.ts`) zamiast
+ * backdropu (`dialog`) czy natychmiastowego appendChild (`inline`). `opts.container` jest
+ * tu REUŻYTY jako punkt zaczepienia hover (anchor — np. wiersz listy budynków), NIE jako
+ * cel natychmiastowego montażu — `EntityCardCtx`/`OpenEntityCardOptions` (`types.ts`) nie
+ * mają osobnego pola `anchor`, a `types.ts` jest poza allowlistą T5; `container` już
+ * istnieje w kontrakcie i pasuje semantycznie („element HTML powiązany z otwarciem karty").
+ *
+ * KRYTYCZNE dla wydajności hover (wymóg dispatchu T5): `buildEntityCardData`/
+ * `renderEntityCard` są wołane DOPIERO wewnątrz callbacku `attachHoverDetail` — czyli
+ * DOPIERO gdy użytkownik faktycznie najedzie (po `delayMs`), identycznie jak dzisiejsze
+ * `attachHoverDetail(row, () => buildXDetailCard(...), ...)` w `cityPanel.ts` — zero
+ * kosztu przy samym wywołaniu `openEntityCard(..., {mode:'hover'})` (tylko rejestracja
+ * listenerów mouseenter/mouseleave).
+ */
+function openHover(kind: EntityKind, id: string, ctx: EntityCardCtx, anchor: HTMLElement): EntityCardDismiss {
+  attachHoverDetail(anchor, () => {
+    const data = buildEntityCardData(kind, id, ctx);
+    if (data == null) {
+      // eslint-disable-next-line no-console
+      console.warn(`[entityCards] openEntityCard(hover): brak encji ${kind}/${id}`);
+      return el('div', 'entity-card-hover-empty');
+    }
+    return renderEntityCard(data);
+  }, 220, 'left');
+  // `attachHoverDetail` nie oferuje dziś odłączenia własnych listenerów (ten sam brak co
+  // wszystkie dzisiejsze wywołania w `cityPanel.ts`) — dismiss() jest tu no-op, spójnie z
+  // resztą kodu bazowego, nie regresja wprowadzona przez `openEntityCard`.
+  return () => {};
+}
+
+/**
+ * `openEntityCard(kind, id, opts)` — punkt wejścia publiczny. `dialog`/`inline` w pełni
+ * zaimplementowane od T1; `hover` dochodzi w T5 (patrz `openHover` wyżej).
+ * Zwraca `dismiss()`. Zwraca funkcję no-op jeśli encja nie istnieje (resolver null) —
+ * WYJĄTEK: w trybie `hover` istnienie encji jest sprawdzane DOPIERO przy faktycznym
+ * hoverze (patrz `openHover`), więc ta wczesna gałąź go nie dotyczy.
  */
 export function openEntityCard(kind: EntityKind, id: string, opts: OpenEntityCardOptions = {}): EntityCardDismiss {
   const mode = opts.mode ?? 'dialog';
+  if (mode === 'hover') {
+    if (!opts.container) {
+      throw new Error('openEntityCard: mode "hover" wymaga opts.container jako punktu zaczepienia (anchor)');
+    }
+    return openHover(kind, id, opts.ctx ?? {}, opts.container);
+  }
   const data = buildEntityCardData(kind, id, opts.ctx ?? {});
   if (data == null) {
     // eslint-disable-next-line no-console
@@ -346,9 +386,6 @@ export function openEntityCard(kind: EntityKind, id: string, opts: OpenEntityCar
   if (mode === 'inline') {
     if (!opts.container) throw new Error('openEntityCard: mode "inline" wymaga opts.container');
     return openInline(data, opts.container);
-  }
-  if (mode === 'hover') {
-    throw new Error('openEntityCard: mode "hover" nie jest jeszcze obsługiwany (T5)');
   }
   return openDialog(data);
 }
