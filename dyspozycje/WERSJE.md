@@ -3548,8 +3548,30 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 306 (2026-08-21)
-- **AKTUALNA** · ROBOCZA md5 `5900b3fb603fbec52edd97fc95966fdb` · stempel `5900b3fb` · manifest/bundle `VERIFY OK`.
+## ROBOCZA — FALA 307 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `bec9797ed7eea4a94115ad21d71ef1cd` · stempel `bec9797e` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` T1b + T3 (retry) — fundament karty encji
+  rozszerzony o akordeon, ikony/trailing/kolorowane odznaki per wiersz, paginację „Pokaż
+  pozostałe N" (sprzężoną z kompaktowym nagłówkiem), layout pigułek-z-checkmarkiem (T1b,
+  wyłącznie nowe pola opcjonalne w `entityCards/types.ts`/`renderer.ts`, 75/75 testów).
+  Karta odkrycia technologii (`techDiscoveryNotice.ts`) **migrowana** na wspólny kontrakt
+  (`technologyAdapter.ts` + `renderEntityCard`) — pierwsza faktycznie migrowana karta w tym
+  systemie, publiczna sygnatura `showTechDiscoveryNotice()` bez zmian, wszystkie 5 świadomych
+  odstępstw produktowych zachowanych (bez paska „Efekt", logika „Możesz badać", tryb
+  podglądu, brak przycisku „Otwórz hub badań"), stara implementacja zostaje jako fallback
+  (`_legacyShowTechDiscoveryNotice`). Final Control napisał własny, jednorazowy harness DOM
+  (esbuild+jsdom) żeby dowodowo potwierdzić że AKTYWNA ścieżka (nie fallback) faktycznie
+  renderuje wszystkie nowe mechanizmy — 23/23 asercji. Operator→Evaluator→Final Control PASS
+  na obu podtematach (T1b, T3), zweryfikowane niezależnie przez orkiestratora po scaleniu.
+  Bramki: `tsc` 0; `technology-discovery-card-visual-test.cjs` 48/48;
+  `entity-card-contract-test.cjs` 75/75; Vite 844 modułów. Znalezisko Evaluatora (nie
+  blokujące): istniejący test karty odkrycia sprawdza tylko surowy tekst źródła (trafia w
+  martwy fallback, nie w aktywną ścieżkę) — zarejestrowane osobno jako
+  `P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1`. Deploy wykonany do `gra-robocza/`;
+  push osobno.
+
+## ROBOCZA — FALA 306 (2026-08-21) — **ZASTĄPIONA** (→ `bec9797e`, FALA 307)
+- ROBOCZA md5 `5900b3fb603fbec52edd97fc95966fdb` · stempel `5900b3fb` · manifest/bundle `VERIFY OK`.
   Zakres: `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` — filtr `playerFacingNote()`/
   `isDevOnlyPlayerText()`/`stripInlineDevAnnotations()` w `cityPanel.ts` teraz poprawnie
   usuwa notatki deweloperskie ze wzorcem „ABC-<numer>:" z pola `tech.Uwagi` wyświetlanego
