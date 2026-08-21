@@ -2194,11 +2194,20 @@ function cityPoborMiniRekruci(
   // R-DESIGN-11-ZAKLADEK / Armia: zakładka „Armia" pokazuje DOKŁADNIE te same liczby w hero
   // (jednostki na mapie) + podpisie (pula rekrutów, werb, koszt/szt.) i we własnym pasku NAD
   // tabelą, zgodnie z klatką 7 makiety — dlatego tam nagłówek tej funkcji jest pomijany, żeby
-  // nie dublować pary „notatka + pasek". Domyślne wywołanie (blok ZASOBY IMPERIUM) bez zmian.
+  // nie dublować pary „notatka + pasek". To JEDYNA różnica między dwoma wywołaniami: sama
+  // TABELA (naprawa N11 Evaluatora, runda 2 — poprzedni komentarz mówił „domyślne wywołanie
+  // bez zmian", co było nieścisłe) jest wspólna dla obu wywołań i zmienia się identycznie w
+  // OBU — klasa `civ-emp-armia-rekr-tbl` wyrównuje kolumny liczbowe (nagłówek + wiersze) do
+  // prawej, a wiersz RAZEM dostaje pogrubiony styl `.civ-emp-mini-summary` — także w domyślnym
+  // wywołaniu (blok ZASOBY IMPERIUM).
   // / EN: the "Armia" tab renders the very same numbers in its hero (units on map) + subtitle
   // (recruit pool, recruitable units, cost/unit) and its own bar ABOVE the table, per mockup
-  // frame 7 — so the header is skipped there to avoid duplicating the note+bar pair. The
-  // default call (EMPIRE RESOURCES block) is unchanged.
+  // frame 7 — so the header is skipped there to avoid duplicating the note+bar pair. That is the
+  // ONLY difference between the two call sites: the TABLE itself (fixed comment, N11, round 2 —
+  // the previous comment claimed "the default call is unchanged", which was inaccurate) is
+  // shared by, and changes identically in, BOTH calls — the `civ-emp-armia-rekr-tbl` class
+  // right-aligns the numeric columns (header + rows) and the RAZEM row gets the bold
+  // `.civ-emp-mini-summary` style — including in the default call (EMPIRE RESOURCES block).
   if (!opts?.skipHero) {
     h += `<div class="civ-emp-note">Pula rekrutów imperium: <b style="color:#d9a441">${esc(p.rekruciLabel)}</b> / `
       + `<b style="color:#d9a441">${esc(p.rekruciMaxLabel)}</b> · można werbować: <b>${p.rekrutEkw}</b> jedn. `
@@ -2927,8 +2936,18 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   // / EN: the sign is printed by `signedPl()` instead of a hardcoded "+" — the `neg` branch above
   // assumes `totalIncome` can go negative, which the literal "+" would render as "+-5". The sum
   // is non-negative today, so this was an internal inconsistency rather than a live bug.
+  // Naprawa N12 (Evaluator, runda 2): makieta ma ikonę przy eyebrow w KAŻDEJ z 11 zakładek, ale
+  // dziś ją renderowały tylko Surowce (`chip-crate`, `.civ-emp-res-hdr-ic`/`-row`). Handel/Armia/
+  // Kultura wzorem tego samego, ogólnego (nie surowcowego) wzorca `.civ-emp-res-hdr-row` — tu z
+  // `cp-trade`, tym samym brand-iconem, którego już używa chip HUD „Handel" (iconRegistry.ts
+  // `res-trade`).
+  // / EN: the mockup has an eyebrow icon in EVERY one of the 11 tabs, but only Surowce rendered
+  // one (`chip-crate`, `.civ-emp-res-hdr-ic`/`-row`). Handel/Armia/Kultura now reuse the same
+  // generic (non-resource-specific) `.civ-emp-res-hdr-row` pattern — here with `cp-trade`, the
+  // same brand icon already used by the HUD "Handel" chip (iconRegistry.ts `res-trade`).
   let h = `<div class="civ-emp-sect sep" data-section="handel">`
-    + `<div class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</div>`
+    + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-trade', 14)}</span>`
+    + `<span class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</span></div>`
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
@@ -2940,9 +2959,34 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   const cudaSub = wonderPct > 0
     ? `<span style="font-size:11px;color:#78c95a;font-weight:600">+${wonderPct}% cuda</span>`
     : '';
+  // Naprawa N5 (Evaluator, runda 2): box pokazywał `t.totalIncome` — DOKŁADNIE tę samą liczbę
+  // co hero powyżej — mimo że bonus cudów już stoi obok jako `cudaSub` (%). Makieta oczekiwała
+  // dwóch RÓŻNYCH liczb: bazy (bez bonusu cudów) i sumy (hero). `t` (EmpireDetailSnap['trade'])
+  // nie niesie osobnego pola „baza" per trasę (main.ts liczy `base` lokalnie i odrzuca je,
+  // zostawiając tylko `income` już PO bonusie — poza allowlistą tego zgłoszenia), więc bazę
+  // odtwarzamy tu z tego, co snapshot już ma: `income` każdej trasy odwracamy przez bonus %
+  // właściwy dla jej medium (ląd/morze) — zaokrąglone (patrz komentarz przy `Math.round` niżej),
+  // nie `Math.floor` jak forward w main.ts. Przy braku bonusu (0%) baza = income, więc box i
+  // hero legalnie pokazują tę samą liczbę — to nie regresja, tylko brak różnicy do pokazania.
+  // EN: the box showed `t.totalIncome` — the EXACT same number as the hero above — even though
+  // the wonder bonus already sits next to it as `cudaSub` (%). The mockup expected two DIFFERENT
+  // numbers: base (no wonder bonus) and total (hero). The snapshot has no per-route "base" field
+  // (main.ts computes and discards it), so we reconstruct it here from what the snapshot already
+  // carries: each route's `income` is reversed through its medium's bonus % — rounded (see the
+  // `Math.round` comment below), not `Math.floor` like the forward direction in main.ts. With no
+  // bonus the base equals the total, so box and hero legitimately show the same number then — not
+  // a regression, just nothing to differ.
+  const tradeBase = t.routes.reduce((sum, r) => {
+    const bonusPct = r.medium === 'morze' ? t.wonderBonusMorzePct : t.wonderBonusLadPct;
+    // Math.round (nie Math.floor) tutaj — floor-po-floor odwrotności `main.ts` bywa niestabilny
+    // na błędach zaokrągleń IEEE-754 (np. 110/1.1 = 99.99999999999999 w JS, floor dałby 99
+    // zamiast realnej bazy 100). Round jest odporne na ten konkretny błąd zmiennoprzecinkowy,
+    // a to i tak wartość informacyjna (etykieta boxa), nie pole używane do bilansu skarbca.
+    return sum + (bonusPct > 0 ? Math.round(r.income / (1 + bonusPct / 100)) : r.income);
+  }, 0);
   h += `<div class="civ-emp-two">`
-    + `<div class="civ-emp-box"><div class="k">DOCHÓD SZLAKÓW</div>`
-    + `<div class="v">${signedPl(t.totalIncome)} ${cudaSub}</div></div>`
+    + `<div class="civ-emp-box"><div class="k">DOCHÓD SZLAKÓW (BAZA)</div>`
+    + `<div class="v">${signedPl(tradeBase)} ${cudaSub}</div></div>`
     + `<div class="civ-emp-box"><div class="k">SUROWCE Z WYMIANY</div>`
     + `<div class="v">${t.resourceGrants.length} ${typCountWord(t.resourceGrants.length)}</div></div>`
     + `</div>`;
@@ -3342,8 +3386,14 @@ function render(): void {
   const glodTeraz = !!e.glodWojska;
   const glodZaTur = e.zywnoscKarencjaZaTur != null && e.zywnoscKarencjaZaTur > 0;
   const magazynCls = glodTeraz || glodZaTur ? 'neg' : 'pos';
+  // Naprawa N12 (Evaluator, runda 2, patrz komentarz w renderHandelSection) — ikona eyebrow
+  // `tb-army` (już używana przez chip toolbara Armii, hud.ts/armyListHud.ts), ten sam wzorzec
+  // `.civ-emp-res-hdr-row` co Surowce/Handel.
+  // / EN: eyebrow icon `tb-army` (already used by the Army toolbar chip), same
+  // `.civ-emp-res-hdr-row` pattern as Surowce/Handel.
   let armia = `<div class="civ-emp-sect sep" data-section="armia">`
-    + `<div class="civ-emp-eyebrow">ARMIA</div>`
+    + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('tb-army', 14)}</span>`
+    + `<span class="civ-emp-eyebrow">ARMIA</span></div>`
     + `<div class="civ-emp-hero">${p.unitsOnMap} jednostek na mapie</div>`
     + `<div class="civ-emp-hero-sub">Rekruci <b>${esc(p.rekruciLabel)}</b> / <b>${esc(p.rekruciMaxLabel)}</b>`
     + ` · można werbować <b>${p.rekrutEkw}</b> jedn. (${p.kosztJednostki} rekr./szt.)</div>`
@@ -3383,10 +3433,21 @@ function render(): void {
       + `${cityPoborMiniRekruci(cp, p, { skipHero: true })}</div>`;
   }
   armia += renderArmiaProdukcjaMini(snap.armiaProdukcja);
+  // Naprawa N9 (Evaluator, runda 2): plakietka drukowała `<span class="d neg">−0 / turę</span>`
+  // nawet przy ZEROWYM koszcie — czerwony kolor + minus czytają się jak ostrzeżenie/koszt, mimo
+  // że koszt zero oznacza „nic nie kosztuje". Konwencja już istnieje w tym pliku: box
+  // ZAOPATRZENIE tuż powyżej (`zywTxt`) i `treasuryDeltaHtml()` pokazują 0 NEUTRALNIE (bez
+  // koloru, bez minusa) i czerwień/minus WYŁĄCZNIE dla wartości > 0 — ten wiersz teraz robi to
+  // samo, ponownie używając `zywTxt`/`kosztWojska` policzonych wyżej zamiast liczyć osobno.
+  // / EN: the badge printed `<span class="d neg">−0 / turę</span>` even at ZERO cost — red +
+  // minus read like a warning/cost even though zero means "costs nothing". The convention
+  // already exists in this file: the ZAOPATRZENIE box right above (`zywTxt`) and
+  // `treasuryDeltaHtml()` show 0 NEUTRALLY (no color, no minus) and red/minus ONLY for values > 0
+  // — this row now matches, reusing `zywTxt`/`kosztWojska` computed above instead of re-deriving.
   armia += `<div class="civ-emp-res-lbl civ-emp-lbl-ic">Zaopatrzenie wojska`
     + `<span class="civ-emp-mini-h-ic" aria-hidden="true">${brandIconSvg('res-food', 12)}</span></div>`
     + `<div class="civ-emp-zrow brd"><span class="lbl">Koszt żywności armii</span>`
-    + `<span class="val"><span class="d neg">−${kosztWojska} / turę</span></span></div>`
+    + `<span class="val"><span class="d ${kosztWojska > 0 ? 'neg' : 'z'}">${zywTxt} / turę</span></span></div>`
     + `<div class="civ-emp-zrow"><span class="lbl">Magazyn państwa</span>`
     + `<span class="val"><span class="d ${magazynCls}">${esc(e.zywnoscLabel)}${maxZywnPart}</span></span></div>`;
   if (glodTeraz) {
@@ -3428,8 +3489,14 @@ function render(): void {
   // / EN: three cases, not two — a ZERO rate used to render green, and since `signedTxt(0)`
   // prints "—", the result was a green dash reading like growth. Zero is no change, not success.
   const kultRateColor = k.rate < 0 ? '#e07a7a' : (k.rate > 0 ? '#78c95a' : '#9aa4b2');
+  // Naprawa N12 (Evaluator, runda 2, patrz komentarz w renderHandelSection) — ikona eyebrow
+  // `cp-culture`, ten sam brand-icon co chip „Kultura" panelu miasta (cityPanel.ts), ten sam
+  // wzorzec `.civ-emp-res-hdr-row` co Surowce/Handel/Armia.
+  // / EN: eyebrow icon `cp-culture`, the same brand icon as the city panel's "Kultura" chip,
+  // same `.civ-emp-res-hdr-row` pattern as Surowce/Handel/Armia.
   let kult = `<div class="civ-emp-sect sep" data-section="kultura">`
-    + `<div class="civ-emp-eyebrow">KULTURA IMPERIUM</div>`
+    + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-culture', 14)}</span>`
+    + `<span class="civ-emp-eyebrow">KULTURA IMPERIUM</span></div>`
     + `<div class="civ-emp-hero ${k.rate < 0 ? 'neg' : 'pos'}">${k.total} kultury</div>`
     + `<div class="civ-emp-hero-sub">Przyrost <b style="color:${kultRateColor}">${signedTxt(k.rate)}</b>`
     + ` / turę · ${k.cities.length} ${miastoCountWord(k.cities.length)}</div>`;
