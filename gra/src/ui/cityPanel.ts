@@ -6764,13 +6764,26 @@ function isEmptyDataVal(v: unknown): boolean {
   return v == null || v === '' || v === '—' || v === '-';
 }
 
-/** Ukrywa wewnętrzne notatki decyzyjne (PYTANIE/DECYZJA) przed graczem. */
+/**
+ * Ukrywa wewnętrzne notatki decyzyjne (PYTANIE/DECYZJA/DEC-.../ABC-...) przed graczem.
+ *
+ * NAPRAWA (P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1): filtr rozpoznawał tylko PYTANIE/DECYZJA/
+ * DEC-\d{8}/„patrz unit-building-bonuses" — NIE rozpoznawał serii odniesień decyzyjnych
+ * „ABC-<numer>" (np. „ABC-7:", „ABC-21 B" — patrz docs/decyzje/DECYZJE-MNOZNIK-ABC.md i
+ * dyspozycje/_handoff/*-ABC-*.md, ta sama rodzina co PYTANIE/DECYZJA, tylko inne
+ * oznaczenie), więc np. `tech.json` Brązownictwo → Uwagi „kończy Epokę 1; ABC-7: Popalnia
+ * brązu na mapie" przeciekało graczowi w cityPanel.ts::appendTechDetailBlock(). Wzorzec
+ * „ABC-\d+" dopasowywany WSZĘDZIE w tekście (nie tylko na początku), tak jak już istniejący
+ * wzorzec „patrz unit-building-bonuses" — bo w danych notatka z ABC-owym odniesieniem
+ * dekoracyjnym pojawia się w środku zdania, nie tylko na jego początku.
+ */
 function isDevOnlyPlayerText(text: string): boolean {
   const t = text.trim();
   return /^PYTANIE\s+\d+/i.test(t)
     || /^DECYZJA\b/i.test(t)
     || /^DEC-\d{8}/i.test(t)
-    || /\bpatrz\s+unit-building-bonuses/i.test(t);
+    || /\bpatrz\s+unit-building-bonuses/i.test(t)
+    || /\bABC-\d+\b/i.test(t);
 }
 
 function stripInlineDevAnnotations(text: string): string {
