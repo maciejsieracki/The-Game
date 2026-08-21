@@ -3548,9 +3548,37 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 309 (2026-08-21) — CivPedia T4: karta jednostki na mapie, odznaki statusu
+## ROBOCZA — FALA 310 (2026-08-21) — R-PRACA-SUWAKI: cap 50% ujednolicony, naprawa puli, przeprojektowanie panelu
 
-- **AKTUALNA** · ROBOCZA md5 `809a36e9c554fd0bfa58d63a4b155e8f` · stempel `809a36e9` · manifest/bundle `VERIFY OK`.
+- **AKTUALNA** · ROBOCZA md5 `90ec5e7cf7b92217e7553d32478fde92` · stempel `90ec5e7c` · manifest/bundle `VERIFY OK`.
+
+  **`R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` (Wątki A-F)**: (A) usunięty zdublowany, nie-
+  interaktywny suwak w panelu „PRACA IMPERIUM" (miał zniknąć po `R-PRACA-JEDEN-SUWAK-UI-Q1`,
+  FALA 301, ale pozostał). (C, ECHO=A) cap nadrzędny cywilizacji (`MAX_PRACA_WSPOLNY_WOREK_
+  PROCENT`, 50%) egzekwowany TERAZ TAKŻE na historycznym budżecie automatu ulepszeń miasta
+  (`clampUlepszeniaPracaPercent`) — miasto w trybie „Indywidualne" nie może już obejść
+  nadrzędnego capu; migracja starych zapisów >50% ścina wartość przy wczytaniu. (D) naprawiona
+  „+N" niezgodność w puli PRACA IMPERIUM — `_lastPracaRate` w `main.ts` nie odejmował trzech
+  drenaży puli (budowa cudów, empire building-budget, auto-ulepszenia); teraz odjęte w tej samej
+  turze co zużycie. (F) przeprojektowana prezentacja panelu „Podział pracy" w `cityPanel.ts`/
+  `empireDetailPanel.ts` — czytelny rozdział dwóch kolumn Budynki/Ulepszenia (lewo/prawo),
+  sygnał „Ulepszenia N%" widoczny na górze, nazwy „Budowa"→„Budynki", „Pula Pracy"→„Ulepszenia".
+
+  Runda 3 (naprawa proceduralna): branch odgałęził się przed 3 commitami już wdrożonymi na
+  `main` (FALA 304), Final Control rundy 2 słusznie odrzucił scalenie (cofnęłoby te zmiany) —
+  naprawione mergem aktualnego `main` do brancha, zero konfliktów w kodzie gry. Operator→
+  Evaluator→Final Control PASS niezależnie (Final Control: PASS-WITH-NOTES, jedyna uwaga —
+  układ kolumn Wątku F zweryfikowany przeglądem kodu + testem kontraktowym, nie realnym
+  Playwright-renderem, z powodu udokumentowanego ograniczenia bundlowania `empireDetailPanel.ts`;
+  ryzyko niskie, czysty flexbox). Bramki: `tsc` 0; `praca-limit-50-test` 23/23; `praca-miasto-
+  limit-50-cap-test` 46/46 (nowy); `praca-miasto-limit-50-test` 33/33; `praca-split-ui-test`
+  14/14; `praca-pula-rate-parity-test` 3/3 (nowy); `praca-na-pieniadz-test` 23/23; `praca-
+  global-default-live-test` 7/7; `logic-test` 213/213; `tech-tree-test` 19/19; `research-test`
+  33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 309 (2026-08-21) — CivPedia T4: karta jednostki na mapie, odznaki statusu — **ZASTĄPIONA** (→ 90ec5e7c, FALA 310)
+
+- ROBOCZA md5 `809a36e9c554fd0bfa58d63a4b155e8f` · stempel `809a36e9` · manifest/bundle `VERIFY OK`.
 
   **CivPedia T4 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: migracja karty jednostki na mapie
   (`unitInfoCard.ts`) do wspólnego systemu `entityCards` — publiczna sygnatura bez zmian, stara
