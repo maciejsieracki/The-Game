@@ -51,6 +51,9 @@ import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { techIconSvg } from './techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from './icons/brandAssets';
 import type { ImprovementKey } from '../render/improvements';
+import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS } from './entityCards/renderer';
+import { technologyIdFromName } from './entityCards/registry';
+import type { EntityCardData, EntityCardAction } from './entityCards/types';
 
 type TechRow = {
   Technologia: string;
@@ -472,7 +475,7 @@ function wireInteractions(host: HTMLElement): void {
   }
 }
 
-export function showTechDiscoveryNotice(opts: {
+type ShowTechDiscoveryNoticeOpts = {
   techName: string;
   eraIndex: number;
   /** Awans epoki zachowuje dotychczasowy nagłówek; completion i preview są jawne. */
@@ -480,10 +483,142 @@ export function showTechDiscoveryNotice(opts: {
   onOpenTree?: () => void;
   /** Opcjonalna, osobna akcja wyboru/rozpoczęcia badania z karty podglądu. */
   onStartResearch?: () => void;
-}): void {
+};
+
+/**
+ * Punkt wejścia publiczny (T3, MIGRACJA-KARTA-TECHNOLOGII) — sygnatura BEZ ZMIAN
+ * względem sprzed T3 (patrz `11-dispatch-T3-migracja-technologia.md`). Wewnątrz:
+ * treść budowana przez `technologyAdapter.ts` (`buildEntityCardData`) i renderowana
+ * przez wspólny `renderer.ts` (`renderEntityCard`) — `showTechDiscoveryNoticeViaEntityCard`
+ * niżej. `_legacyShowTechDiscoveryNotice` (stara implementacja DOM-buildera,
+ * `buildBody`/`accordionSection`/... powyżej) zostaje jako fallback bezpieczeństwa,
+ * używany WYŁĄCZNIE gdy nowa ścieżka rzuci wyjątek (np. resolver `entityCards` nie
+ * znajdzie wiersza) — patrz plan §3 „nie usuwaj starego kodu w tym samym commicie".
+ */
+export function showTechDiscoveryNotice(opts: ShowTechDiscoveryNoticeOpts): void {
   const tech = (techData as unknown as { technologie: TechRow[] }).technologie
     .find(t => t.Technologia === opts.techName);
   if (!tech) return;
+  try {
+    showTechDiscoveryNoticeViaEntityCard(tech, opts);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(
+      '[techDiscoveryNotice] Ścieżka entityCards (technologyAdapter+renderEntityCard) rzuciła wyjątek — ' +
+      'fallback na starą implementację DOM-buildera:', err,
+    );
+    _legacyShowTechDiscoveryNotice(tech, opts);
+  }
+}
+
+/** Nowa ścieżka (T3): `technologyAdapter.ts` + `renderEntityCard` (wspólny kontrakt T1/T1b). */
+function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDiscoveryNoticeOpts): void {
+  ensureStyles();
+  ensureEntityCardOverrideStyles();
+  hideTechDiscoveryNotice();
+
+  const kind = opts.kind ?? 'era';
+  const isEraAdvance = kind === 'era';
+  const isPreview = kind === 'preview';
+  const kick = isPreview
+    ? 'Podgląd technologii'
+    : isEraAdvance
+    ? `Awans do epoki ${EPOCH_LABEL[opts.eraIndex] ?? opts.eraIndex}`
+    : 'Ukończono badania';
+  const statusWord = isPreview ? 'Informacja' : 'Ukończona';
+  const milestoneEpoch = typeof tech.awansDoEpoki === 'number'
+    ? (EPOCH_LABEL[tech.awansDoEpoki] ?? String(tech.awansDoEpoki)) : null;
+  const metaParts = [
+    tech.Epoka ? `Epoka ${tech.Epoka}` : null,
+    tech.Poziom != null ? `Poziom ${tech.Poziom}` : null,
+  ].filter((x): x is string => !!x);
+  if (milestoneEpoch) metaParts.push(`Kamień milowy — awans do epoki ${milestoneEpoch}`);
+  if (isPreview) metaParts.push('Kliknięcie otwiera kartę podglądu — wybór badania jest osobną akcją.');
+  const subtitleText = metaParts.join(' · ');
+
+  const id = technologyIdFromName(tech.Technologia);
+  const cardData = buildEntityCardData('technology', id, {});
+  if (!cardData) {
+    throw new Error(`entityCards: brak wiersza technologii dla "${tech.Technologia}" (id="${id}")`);
+  }
+
+  const host = document.createElement('div');
+  host.id = HOST_ID;
+  const close = () => { popOverlay(OVERLAY_ID); host.remove(); };
+
+  const actions: EntityCardAction[] = [];
+  if (opts.onStartResearch) {
+    actions.push({
+      id: 'research', label: 'Rozpocznij badanie', kind: 'primary',
+      onClick: () => { opts.onStartResearch?.(); close(); },
+    });
+  }
+  if (opts.onOpenTree) {
+    actions.push({
+      id: 'tree', label: 'Otwórz drzewo', kind: actions.length > 0 ? 'secondary' : 'primary',
+      onClick: () => { opts.onOpenTree?.(); close(); },
+    });
+  }
+
+  const finalData: EntityCardData = {
+    ...cardData,
+    subtitle: subtitleText || cardData.subtitle,
+    statusBadges: [kick, statusWord],
+    actions,
+  };
+
+  const card = renderEntityCard(finalData);
+  card.classList.add('tdn-entity-card-v2');
+  // Przycisk zamknięcia (✕) — `renderEntityCard`/`renderer.ts` (poza allowlistą T3) nie
+  // rysuje żadnego, więc dodajemy go tu, po zbudowaniu karty, zamiast edytować renderer.
+  const headerEl = card.querySelector('.entity-card-header');
+  if (headerEl) {
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'tdn-entity-close';
+    closeBtn.title = 'Zamknij (Esc)';
+    closeBtn.setAttribute('aria-label', 'Zamknij kartę technologii');
+    closeBtn.textContent = '✕';
+    closeBtn.addEventListener('click', close);
+    headerEl.appendChild(closeBtn);
+  }
+
+  host.innerHTML = `<div class="tdn-back"></div>`;
+  host.querySelector('.tdn-back')?.addEventListener('click', close);
+  host.appendChild(card);
+  document.body.appendChild(host);
+  pushOverlay(OVERLAY_ID, close);
+}
+
+let entityCardOverrideStylesInjected = false;
+/** Wstrzykuje `ENTITY_CARD_CSS` (reeksport `renderer.ts`, nigdy dotąd nie wołany
+ * przez żadnego z 4 kinds — T3 jest pierwszym realnym konsumentem) plus lokalne
+ * nadpisania potrzebne, żeby karta `.entity-card` mieściła się w dotychczasowym
+ * hoście `#${HOST_ID}` (ten sam wzorzec pozycjonowania co stary `.tdn-card`). */
+function ensureEntityCardOverrideStyles(): void {
+  if (entityCardOverrideStylesInjected) return;
+  entityCardOverrideStylesInjected = true;
+  const style = document.createElement('style');
+  style.id = 'civ-tech-discovery-entity-card-css-v1';
+  style.textContent = ENTITY_CARD_CSS + `
+#${HOST_ID} .entity-card{pointer-events:auto;width:min(660px,96vw);max-height:calc(100vh - 36px);
+  overflow:auto;border-color:var(--tg-gold-primary,#e8d88a);
+  box-shadow:var(--tg-glow-gold,0 0 24px rgba(232,216,138,.28)),0 12px 40px rgba(0,0,0,.6);}
+#${HOST_ID} .entity-card-header{position:relative;padding-right:44px;}
+.tdn-entity-close{position:absolute;top:10px;right:10px;width:28px;height:28px;
+  border-radius:var(--tg-radius-btn,8px);border:2px solid rgba(232,216,138,.4);
+  background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--tg-gold-primary,#e8d88a);
+  font-size:13px;line-height:1;cursor:pointer;font-family:inherit;}
+.tdn-entity-close:hover{border-color:var(--tg-gold-primary,#e8d88a);color:#f4e6a8;}
+.tdn-entity-close:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
+`;
+  document.head.appendChild(style);
+}
+
+/** Stara implementacja (sprzed T3) — DOM-builder własny (`buildBody`/`accordionSection`/
+ * `wireInteractions`), zachowana jako fallback bezpieczeństwa (plan §3), wołana WYŁĄCZNIE
+ * z `catch` w `showTechDiscoveryNotice` gdy ścieżka `entityCards` rzuci wyjątek. */
+function _legacyShowTechDiscoveryNotice(tech: TechRow, opts: ShowTechDiscoveryNoticeOpts): void {
   ensureStyles();
   hideTechDiscoveryNotice();
   const host = document.createElement('div');
