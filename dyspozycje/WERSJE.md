@@ -3548,8 +3548,39 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 303 (2026-08-21)
-- **AKTUALNA** · ROBOCZA md5 `26e45d4ee692f7c725fb35a1d6128e36` · stempel `26e45d4e` · manifest/bundle `VERIFY OK`.
+## ROBOCZA — FALA 304 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `cab0f532d7285e13488cc4acc642cdea` · stempel `cab0f532` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` (runda 3, zastępuje w całości rundę 2) —
+  5 podmian CSS designera (`podmien.zip`, ECHO: świeża makieta wygrywa): karta blokująca
+  wraca do samej obramówki `3px solid #e8d88a` (usunięty blok chip-warning z rundy 2 razem
+  z paskiem diagonalnym), 4 poprawki cieni/border/focus-visible na przycisku „Zakończ
+  turę" i kartach wydarzeń w `sidePanelHud.ts`/`bottomBarHud.ts`. Efekt uboczny świadomy
+  i objęty ECHO: zniknięcie przerywanej obwódki `.et-signal` z `R-TRZY-KARTY-WDROZENIE-Q1`
+  (zastąpiona nowym stylem focus-visible). `R-UI-POPUP-ODKRYCIE-OVERFLOW-Q1` — twardy
+  margines viewportowy w karcie odkrycia technologii już istniał; dodano złoty pasek
+  przewijania (`techDiscoveryNotice.ts`, wzorzec 1:1 z `preBattle.ts`/`postBattleSummary.ts`),
+  `STYLE_ID` v2→v3. `R-UI-PASKI-DIAGONALNE-PRODUKCJA-Q1` — recon zamknięty, brak aktywnego
+  bugu w kodzie (docs-only, bez zmian w `gra/`).
+  Oba tematy kodowe przeszły pełny cykl Operator (Sonnet 5 Medium) → Evaluator (Sonnet 5
+  High) → Final Control (Sonnet 5 High, osobny subagent) → `READY_FOR_DEPLOY`, każdy
+  niezależnie zweryfikowany przez orkiestratora po scaleniu (diff ograniczony do allowlisty,
+  zero konfliktów przy merge). Build: `node ./node_modules/vite/bin/vite.js build --outDir
+  /tmp/civ-dist --emptyOutDir` (kanon C-001), 837 modułów; oblężenie-bitwa build osobno,
+  bez nadpisania `outDir` (plugin `copyHtmlToRoot`). Bramki: `tsc` 0; `sidepanel-events-
+  toolbar-test` 19/19; `sidepanel-hud-deadzone-test` 43/43; `technology-discovery-card-
+  visual-test` 48/48; `side-list-hud-panel-coverage-test` 74/74; `heal-stale-blockers-
+  pending-battle-test` 23/23; `diplomacy-audience-close-flush-test` 37/37; `barbarzyncy-
+  podwojny-atak-prebattle-test` 18/18; `important-event-cards-test` 10/10 +
+  `important-event-cards-regression-test` PASS. 2 faile pre-istniejące w `main.ts`
+  (`end-turn-modal-sequencing-test`, `koniec-tury-f1-f4-runda3-test`) potwierdzone
+  niezwiązane z tym diffem (Final Control zweryfikował identyczne faile na czystym `main`
+  sprzed zmian). Deploy wykonany do `gra-robocza/`; push nie wykonywano.
+  Poza zakresem tej fali (jeszcze nie READY_FOR_DEPLOY): `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-
+  MIASTO-Q1` (runda 1: Wątki A/B/D naprawione przez Operatora, czeka na Evaluator+Final
+  Control zanim wejdzie do `main`) i `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` (recon-only).
+
+## ROBOCZA — FALA 303 (2026-08-21) — **ZASTĄPIONA** (→ `cab0f532`, FALA 304)
+- ROBOCZA md5 `26e45d4ee692f7c725fb35a1d6128e36` · stempel `26e45d4e` · manifest/bundle `VERIFY OK`.
   Zakres: konsolidacja sześciu tematów z sesji orkiestratora, zintegrowanych na
   `integration/2026-08-21-consolidacja` (baza `origin/work/clean-main-2026-08-21`, po
   FALI 302). `P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1` — scalanie identycznych kart „Koniec
