@@ -164,6 +164,7 @@ import {
 import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
+import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
   freshWealthState,
@@ -2574,6 +2575,8 @@ function ensureStyles(): void {
 .civ-cs .bld-req-chip.met,.civ-detail-scope .bld-req-chip.met{color:#6eb5ff;border-color:rgba(90,155,212,.55);background:rgba(90,155,212,.12);}
 .civ-cs .bld-req-chip.unmet,.civ-detail-scope .bld-req-chip.unmet{color:#ff6b6b;border-color:rgba(232,110,90,.5);background:rgba(232,90,70,.1);}
 .civ-cs .bld-req-chip .bld-req-tech-ic,.civ-detail-scope .bld-req-chip .bld-req-tech-ic{color:currentColor;opacity:0.92;}
+.cp-tech-hint-link{border-radius:50%;transition:box-shadow .15s,opacity .15s;}
+.cp-tech-hint-link:hover,.cp-tech-hint-link:focus-visible{box-shadow:0 0 0 2px rgba(232,216,138,.55);outline:none;}
 .civ-cs .bld-infocard-chips,.civ-detail-scope .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
 .civ-cs .bld-infocard-eyebrow,.civ-detail-scope .bld-infocard-eyebrow{font-size:0.54em;letter-spacing:.14em;text-transform:uppercase;color:#8a8478;margin-top:0.15em;}
 .civ-cs .bld-infocard-eyebrow.req,.civ-detail-scope .bld-infocard-eyebrow.req{color:#c9a35a;}
@@ -6788,7 +6791,14 @@ function playerFacingNote(text: string | null | undefined): string | null {
   return cleaned || null;
 }
 
-/** Mały medalion ikony technologii (14px) do wklejenia w tekst-podpowiedzi (innerHTML). */
+/**
+ * Mały medalion ikony technologii (14px) do wklejenia w tekst-podpowiedzi (innerHTML).
+ * Klikalny link do karty podglądu technologii (`showTechDiscoveryNotice(..., kind:'preview')`)
+ * — ta sama karta co w hubie badań / drzewku tech (R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1
+ * faza 1). Klik obsłużony przez delegację na `document` (`bindTechHintLinkDelegation`
+ * niżej), bo ten span jest wklejany jako string przez `innerHTML` w wielu miejscach karty
+ * miasta — nie ma tu bezpośredniego uchwytu DOM w momencie tworzenia.
+ */
 function techIconHintSpan(
   techName: string | null | undefined,
   sizePx = 14,
@@ -6797,10 +6807,46 @@ function techIconHintSpan(
   if (!techName) return '';
   const svg = techIconSvg(techName, sizePx);
   if (!svg) return '';
-  const icCls = opts?.inheritColor ? 'bld-req-tech-ic' : '';
+  const icCls = 'cp-tech-hint-link' + (opts?.inheritColor ? ' bld-req-tech-ic' : '');
   const color = opts?.inheritColor ? 'currentColor' : 'var(--gold)';
-  return `<span class="${icCls}" style="display:inline-flex;width:${sizePx}px;height:${sizePx}px;vertical-align:-3px;margin-right:4px;color:${color};">${svg}</span>`;
+  return `<span class="${icCls}" data-tech-hint-name="${techName}" role="button" tabindex="0" `
+    + `title="Podgląd karty technologii" aria-label="Podgląd karty: ${techName}" `
+    + `style="display:inline-flex;width:${sizePx}px;height:${sizePx}px;vertical-align:-3px;margin-right:4px;color:${color};cursor:pointer;">${svg}</span>`;
 }
+
+let techHintLinkDelegationBound = false;
+
+/**
+ * Jednorazowa delegacja kliknięcia/klawiatury na `document` dla ikon-linków z
+ * `techIconHintSpan()` — otwiera tę samą kartę podglądu co hub badań i drzewko tech.
+ * Bezpieczne wołanie wielokrotne (flaga chroni przed podwójnym bindowaniem).
+ */
+function bindTechHintLinkDelegation(): void {
+  if (techHintLinkDelegationBound) return;
+  techHintLinkDelegationBound = true;
+  const openPreview = (techName: string): void => {
+    showTechDiscoveryNotice({ techName, eraIndex: 1, kind: 'preview' });
+  };
+  document.addEventListener('click', (e: MouseEvent) => {
+    const link = (e.target as Element | null)?.closest('.cp-tech-hint-link');
+    if (!link) return;
+    const name = link.getAttribute('data-tech-hint-name');
+    if (!name) return;
+    e.stopPropagation();
+    openPreview(name);
+  });
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const link = (e.target as Element | null)?.closest('.cp-tech-hint-link');
+    if (!link) return;
+    const name = link.getAttribute('data-tech-hint-name');
+    if (!name) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openPreview(name);
+  });
+}
+bindTechHintLinkDelegation();
 
 function unitExtraField(u: UnitDef, key: string): string | number | null {
   const v = (u as unknown as Record<string, unknown>)[key];
