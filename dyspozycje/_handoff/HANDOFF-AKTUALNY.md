@@ -1,49 +1,22 @@
-# HANDOFF-AKTUALNY — R-PROC-AUTOBOT-PAKIETY-1-3-Q1
+# HANDOFF-AKTUALNY — wskaźnik na najnowszą sesję
 
-**Data:** 2026-08-20
-**Worktree:** `codex/process-packets-complete`
-**Zakres:** dokumentacja procesu AutoBot; `gra/` poza zakresem.
+**Aktualna sesja:** 2026-08-21 · FALA 308 · korekta rejestru + krytyczny regres karty CivPedia
++ T4 runda 2 (odznaki jednostki).
 
-## STATUS
+**Pełny handoff:** [`HANDOFF-SESJA-2026-08-21_FALA-308-CIVPEDIA-BUGFIXY.md`](HANDOFF-SESJA-2026-08-21_FALA-308-CIVPEDIA-BUGFIXY.md)
+— czytaj TEN plik najpierw, ma pełną chronologię, ABC/ECHO, znane pułapki i listę „do zrobienia
+natychmiast" (m.in. dokończenie Evaluator+Final Control dla CivPedia T4 runda 2, sprawdzenie
+`R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`).
 
-Paczki dokumentacyjne 1–3 są zintegrowane lokalnie w izolowanym worktree i mają
-pełny ślad `runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/00–04`.
-
-| Pakiet | Zakres | Status | Dowód |
-|---|---|---|---|
-| 1 | indeks źródeł prawdy i routing artefaktów | `ZINTEGROWANE` | `docs/procesy/INDEX-PROCESU.md` |
-| 2 | skrócenie aktywnych CLAUDE/reguły/skill/R-PROC | `ZINTEGROWANE` | aktywne pliki + `docs/archiwum-procesu/` |
-| 3 | rejestr/statusy/ABC/handoff/runs | `ZINTEGROWANE` | rejestr, `PYTANIA-OTWARTE.md`, ten handoff, run 00–04 |
-
-Brama procesu: `READY_FOR_DEPLOY = TAK` dla paczki docs-only po Final Control i lokalnej
-integracji. Deploy i push: `NIE WYKONANO`.
+**Poprzednia sesja (archiwum, wciąż aktywna paczka dokumentacyjna, deploy/push NIE WYKONANO):**
+[`HANDOFF-SESJA-2026-08-20_PROC-AUTOBOT-PAKIETY-1-3.md`](HANDOFF-SESJA-2026-08-20_PROC-AUTOBOT-PAKIETY-1-3.md)
+— `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`, patrz „AKTYWNA PACZKA DOKUMENTACYJNA" na górze
+`dyspozycje/REJESTR-PROSB-I-ZADAN.md` dla aktualnego statusu tego pakietu.
 
 ## ŹRÓDŁA BIEŻĄCE
 
 - mapa: [`../../docs/procesy/INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md);
 - norma: [`../../docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md);
-- aktywna reguła: [`../../.cursor/rules/autobot-evaluator-operator.mdc`](../../.cursor/rules/autobot-evaluator-operator.mdc);
-- skill: [`../../.claude/skills/autobots/SKILL.md`](../../.claude/skills/autobots/SKILL.md);
-- pełny run: [`../autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/`](../autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/).
-
-## OBIEG
-
-`Operator → Evaluator → Final Control → integracja → READY_FOR_DEPLOY`; `FAIL`,
-techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS` i niegotowość wracają do Operatora
-z tym samym ID. ABC pauzuje wyłącznie temat wymagający decyzji właściciela.
-
-## BLOKADY I RYZYKA
-
-- Brak blokady merytorycznej.
-- Historyczne etykiety w append-only rejestrach/logach pozostają historią i nie są
-  nowym routingiem.
-- Brak niezależnego deploy/push; oba działania wymagają osobnej autoryzacji.
-
-## NASTĘPNY KROK
-
-Przed jakąkolwiek publikacją ponownie sprawdzić `git status`, diff, allowlistę i raporty
-runu; deploy/push wykonać tylko po wyraźnym poleceniu właściciela.
-
-## DEPLOY / PUSH
-
-Nie wykonywać w ramach tego zadania.
+- rejestr: [`../REJESTR-PROSB-I-ZADAN.md`](../REJESTR-PROSB-I-ZADAN.md) — „Indeks bieżący" na górze;
+- ABC/ECHO: [`../PYTANIA-OTWARTE.md`](../PYTANIA-OTWARTE.md) — indeks operacyjny na górze;
+- wersje: [`../WERSJE.md`](../WERSJE.md) — sekcja ROBOCZA, najnowsza FALA na górze.
