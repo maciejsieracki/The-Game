@@ -383,6 +383,15 @@ export const ENTITY_CARD_CSS = `
 .entity-card-row-badge--ok{background:rgba(120,200,120,.18);color:#9fe39f;}
 .entity-card-row-badge--warn{background:rgba(230,180,90,.18);color:#e6c07a;}
 .entity-card-row-badge--muted{background:rgba(180,180,180,.14);color:#b8b8b8;}
+/* R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 T4 runda 2: brakujący styl dla section.badges
+   (kontener .entity-card-badges + pojedyncza .entity-card-badge) — istniał od T1, ale zero
+   kart do tej pory renderowało >=2 odznak na raz, więc luka pozostawała niewidoczna aż do
+   karty jednostki (sekcja „Statusy"), gdzie odznaki bez tego stylu sklejały się w jeden
+   nieczytelny ciąg tekstu bez odstępu. Ta sama, neutralna pigułka co .entity-card-row-badge
+   (bez wariantu koloru — section.badges to zwykłe stringi, nie {kind,label}). */
+.entity-card-badges{display:flex;flex-wrap:wrap;gap:6px;}
+.entity-card-badge{border-radius:999px;padding:1px 8px;font-size:11px;font-weight:600;
+  flex:none;background:rgba(232,216,138,.14);color:#e0d4a0;}
 .entity-card-section--hi{background:rgba(232,216,138,.07);border-radius:8px;padding:6px 8px;
   margin-left:-8px;margin-right:-8px;}
 .entity-card-section-head{display:flex;align-items:center;gap:6px;width:100%;
