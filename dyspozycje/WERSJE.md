@@ -3548,9 +3548,40 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 312 (2026-08-21) — CivPedia T5: karta budynku w panelu miasta
+## ROBOCZA — FALA 313 (2026-08-21) — CivPedia T7b: karta ulepszenia terenu + drobiazgi panelu imperium
 
-- **AKTUALNA** · ROBOCZA md5 `ddf499fb8ae299e9aabcbd4bb4813d09` · stempel `ddf499fb` · manifest/bundle `VERIFY OK`.
+- **AKTUALNA** · ROBOCZA md5 `518b0f48bb0a07c05ad5835df9d8d76f` · stempel `518b0f48` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T7b (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: karta ulepszenia terenu, wszystkie
+  3 miejsca wywołania otwierają teraz tę samą kartę (`openEntityCard('improvement', key,
+  {mode:'dialog'})`): (1) popup odkrycia technologii — wiersze „Ulepszenia terenu" klikalne;
+  (2) tryb budowy — osobna, zawsze widoczna ikonka info (klik + klawiatura Enter/Space),
+  niezależna od wyboru typu budowy; (3) panel miasta — nowa sekcja „Ulepszenia w zasięgu" w
+  karcie hexa (zgodnie z ECHO T7a=opcja 2, po recon potwierdzającym brak takiej listy wcześniej).
+  Nowy `improvementAdapter.ts` w pełni wypełniony (24/24 pól z `terrain-improvements.json`).
+
+  **`P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI`**: naprawione 4 z 5 zarejestrowanych
+  drobnych uwag Evaluatora w panelu imperium — N5 (box „DOCHÓD SZLAKÓW" pokazuje teraz odrębną
+  liczbę bazy zamiast duplikatu głównej liczby karty), N9 (zerowy koszt żywności armii nie
+  pokazuje już czerwonej plakietki „-0/turę"), N11 (poprawiony nieścisły komentarz w kodzie),
+  N12 (ikona eyebrow dodana do zakładek Handel/Armia/Kultura, wzorem Surowców). N1 pozostaje
+  zamknięte bez akcji (korekta historii commita). **Znana, udokumentowana usterka kosmetyczna
+  N5**: rekonstrukcja bazy przez `Math.round` daje błąd ±1 złota w ~10-20% realnych kombinacji
+  baza/bonus (forward-obliczenie w `main.ts` używa `Math.floor` i traci informację) — nie dotyka
+  skarbca/bilansu, potwierdzone niezależnie własnymi skryptami przez Evaluatora i Final Control.
+
+  Oba tematy: Operator→Evaluator→Final Control PASS/PASS-WITH-NOTES niezależnie, zero konfliktów
+  mimo równoległej integracji z T5/T8/R-PRACA-SUWAKI. Bramki zbiorcze na scalonym `main`: `tsc` 0;
+  `improvement-card-callsites-test` 36/36 (nowy); `entity-card-contract-test` 75/75; `tech-
+  discovery-card-click-test` 13/13; `tech-discovery-card-real-click-test` 12/12; `technology-
+  discovery-card-visual-test` 48/48; `build-mode-hud-affordability-test` 7/7; `okolica-test`
+  72/72; `citypanel-uwagi-abc-filter-test` 35/35; `empire-panel-drobiazgi-runda2-test` 33/33
+  (nowy) + 12 bramek panelu imperium bez regresji; `logic-test` 213/213; `tech-tree-test` 19/19;
+  `research-test` 33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 312 (2026-08-21) — CivPedia T5: karta budynku w panelu miasta — **ZASTĄPIONA** (→ 518b0f48, FALA 313)
+
+- ROBOCZA md5 `ddf499fb8ae299e9aabcbd4bb4813d09` · stempel `ddf499fb` · manifest/bundle `VERIFY OK`.
 
   **CivPedia T5 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: migracja karty budynku w panelu
   miasta (`cityPanel.ts::buildBuildingDetailCard`/`buildBuildingBuildTabDetailCard`) do wspólnego
