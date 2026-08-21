@@ -3548,8 +3548,25 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 307 (2026-08-21)
-- **AKTUALNA** · ROBOCZA md5 `bec9797ed7eea4a94115ad21d71ef1cd` · stempel `bec9797e` · manifest/bundle `VERIFY OK`.
+## AWARIA — ROLLBACK FALA 307 → 306 (2026-08-21, pilne)
+
+**Zgłoszenie właściciela (na żywo, stempel `6c1433ef` = FALA 307):** kliknięcie technologii na
+liście „Badania" otwiera kartę podglądu zamiast dodać do kolejki (regres UX), oraz **przyciski
+„Rozpocznij badanie" i „Otwórz drzewo" w karcie NIE DZIAŁAJĄ w ogóle — nigdzie nie da się
+rozpocząć badania.** Krytyczne, blokuje rozgrywkę.
+
+**Natychmiastowe działanie:** przywrócono bundle FALA 306 (`gra-robocza/Gra-ROBOCZA.html` +
+7 kopii playtest, md5 `5900b3fb603fbec52edd97fc95966fdb`) jako AKTUALNY — T3 (migracja karty
+technologii na `entityCards`, FALA 307) podejrzewana o wprowadzenie regresu w podpięciu
+przycisków akcji (`renderer.ts`'s `entity-card-actions`). Kod źródłowy T1b/T3 NIE został
+cofnięty na `main` — tylko WDROŻONY bundle w `gra-robocza/` wraca do stanu sprzed FALI 307,
+do czasu znalezienia i zweryfikowania naprawy. Ślad znanej luki w pokryciu testowym:
+`P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1` (zarejestrowane wcześniej tego samego dnia)
+— żaden test nie sprawdzał realnego kliknięcia przycisków akcji na żywym DOM, dlatego ten
+regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
+
+## ROBOCZA — FALA 307 (2026-08-21) — **WYCOFANA (rollback, regres krytyczny — patrz wyżej)**
+- ROBOCZA md5 `bec9797ed7eea4a94115ad21d71ef1cd` · stempel `bec9797e` · manifest/bundle `VERIFY OK` (w chwili publikacji).
   Zakres: `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` T1b + T3 (retry) — fundament karty encji
   rozszerzony o akordeon, ikony/trailing/kolorowane odznaki per wiersz, paginację „Pokaż
   pozostałe N" (sprzężoną z kompaktowym nagłówkiem), layout pigułek-z-checkmarkiem (T1b,
@@ -3570,7 +3587,7 @@ worktree, nie sa regresja tej fali.
   `P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1`. Deploy wykonany do `gra-robocza/`;
   push osobno.
 
-## ROBOCZA — FALA 306 (2026-08-21) — **ZASTĄPIONA** (→ `bec9797e`, FALA 307)
+## ROBOCZA — FALA 306 (2026-08-21) — **AKTUALNA (przywrócona rollbackiem FALI 307)**
 - ROBOCZA md5 `5900b3fb603fbec52edd97fc95966fdb` · stempel `5900b3fb` · manifest/bundle `VERIFY OK`.
   Zakres: `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` — filtr `playerFacingNote()`/
   `isDevOnlyPlayerText()`/`stripInlineDevAnnotations()` w `cityPanel.ts` teraz poprawnie
