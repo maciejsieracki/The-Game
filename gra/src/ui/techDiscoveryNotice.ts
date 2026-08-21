@@ -88,7 +88,7 @@ type UnitRow = {
 };
 
 const HOST_ID = 'civ-tech-discovery-notice-host';
-const STYLE_ID = 'civ-tech-discovery-notice-css-v2';
+const STYLE_ID = 'civ-tech-discovery-notice-css-v3';
 const OVERLAY_ID = 'tech-discovery-notice';
 
 /** Etykieta epoki po numerze — ten sam wzorzec co EPOCH_LABEL w cityPanel.ts / EPOCH_ORDER w techTreeView.ts. */
@@ -254,7 +254,10 @@ border:2px solid rgba(232,216,138,.4);background:linear-gradient(180deg,#161c28,
 color:var(--tg-gold-primary,#e8d88a);font-size:14px;line-height:1;cursor:pointer;font-family:inherit}
 #${HOST_ID} .tdn-close:hover{border-color:var(--tg-gold-primary,#e8d88a);color:#f4e6a8}
 
-#${HOST_ID} .tdn-scroll{flex:1;min-height:0;overflow:auto;padding:14px 16px 14px;display:flex;flex-direction:column;gap:12px}
+#${HOST_ID} .tdn-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 16px 14px;display:flex;flex-direction:column;gap:12px;
+scrollbar-width:thin;scrollbar-color:rgba(232,216,138,.25) transparent}
+#${HOST_ID} .tdn-scroll::-webkit-scrollbar{width:5px}
+#${HOST_ID} .tdn-scroll::-webkit-scrollbar-thumb{background:rgba(232,216,138,.22);border-radius:4px}
 
 #${HOST_ID} .tdn-foot{flex:none;display:flex;justify-content:flex-end;padding:10px 16px 14px;
 border-top:1px solid rgba(232,216,138,.16)}
