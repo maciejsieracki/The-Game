@@ -45,7 +45,7 @@
       "Odblokowuje budynek": "Warsztat kamieniarski; Stela / Pomnik",
       "Koszt nauki": 28,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Kopalnia, Kamieniołom, Posterunek (Strażnica)"
+      "Odblokowuje ulepszenie terenu": "Kamieniołom, Posterunek (Strażnica)"
     },
     {
       "Technologia": "Rolnictwo",
@@ -97,7 +97,7 @@
       "Odblokowuje budynek": null,
       "Koszt nauki": 5,
       "Uwagi": "tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)",
-      "Odblokowuje ulepszenie terenu": "Bydło, Owce, Lama"
+      "Odblokowuje ulepszenie terenu": "Trzoda, Owce, Lama"
     },
     {
       "Technologia": "Mistycyzm",
@@ -162,7 +162,7 @@
       "Odblokowuje budynek": "Odlewnia brązu; Kuźnia brązu; Jednostki: Włócznik, Wojownik z mieczem i tarczą, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz",
       "Koszt nauki": 90,
       "Uwagi": "kończy Epokę 1; ABC-7: Popalnia brązu na mapie",
-      "Odblokowuje ulepszenie terenu": "Popalnia brązu",
+      "Odblokowuje ulepszenie terenu": null,
       "awansDoEpoki": 2
     },
     {
@@ -229,7 +229,7 @@
       "Odblokowuje budynek": "Koszary",
       "Koszt nauki": 104,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Fort / umocnienia"
+      "Odblokowuje ulepszenie terenu": "Fort"
     },
     {
       "Technologia": "Matematyka",

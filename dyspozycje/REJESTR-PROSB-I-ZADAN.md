@@ -2861,10 +2861,13 @@ jednocześnie w UI, zamiast jednego aktualnego.
 zidentyfikować i usunąć martwy/stary element UI pozostawiony po wcześniejszej zmianie
 (prawdopodobnie regresja podobna do C-040/C-049 — nowy element wpięty bez usunięcia starego).
 
-**STATUS:** ZAREJESTROWANE — brak dopasowanego wcześniejszego zgłoszenia w tym pliku ani w
-`PYTANIA-OTWARTE.md` mimo przeszukania (właściciel twierdzi, że już to zgłaszał — jeśli tak,
-zgłoszenie nigdy nie trafiło do żadnego pliku repo). Wymaga reconu, który dokładnie plik/komponent
-renderuje oba przyciski, zanim powstanie dispatch Operatora. Nie wymaga ABC — jednoznaczny bug.
+**STATUS (zaktualizowane 2026-08-21 po recon równoległej sesji orkiestratora):**
+**RECON ZAMKNIĘTY — brak bugu w kodzie.** 3 hipotezy (podwójny montaż `bottomBarHud.ts`,
+osobny przycisk `preBattle.ts`, race condition `cfg`) wykluczone niezależnie zweryfikowanym
+recon (`dyspozycje/autobot/runs/R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1/01-operator.md`).
+Najbardziej prawdopodobna przyczyna: stary zbuforowany build przeglądarki (ten sam mechanizm
+co karta technologii z tej samej sesji). Rekomendacja: ABC do właściciela — czy duplikat
+utrzymuje się po twardym odświeżeniu (Ctrl+Shift+R) przed ostatecznym zamknięciem tematu.
 
 ## R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 — pasek w stylu taśmy ostrzegawczej na kartach blokujących (2026-08-21)
 
@@ -2886,8 +2889,14 @@ spójne z resztą nowego stylu, bez czekania na nowy mockup designera.
 **ECHO (Maciej, 2026-08-21):** zastąp istniejącym językiem designu (nie usuwać całkowicie,
 nie zlecać nowego mockupu).
 
-**STATUS:** ZAREJESTROWANE, kierunek ustalony — gotowe do reconu/dispatchu Operatora.
-Nie wymaga dalszej ABC.
+**STATUS (zaktualizowane 2026-08-21 po dwóch rundach równoległej sesji orkiestratora):**
+**READY_FOR_DEPLOY (Final Control, runda 2).** Runda 1 (recon inny niż to ECHO) usunęła pasek
+całkowicie bez zamiennika — to było BŁĘDNE względem tego ECHO ("nie usuwać całkowicie").
+Runda 2 zastępuje ją: pasek zamieniony na blok z ikoną `chip-warning` i paletą `.civ-emp-alert`
+skopiowaną 1:1 z `empireDetailPanel.ts` (border `#4a2a2a`, tło `rgba(224,122,122,.07)`, tekst
+`#e6c4c4`), zweryfikowane niezależnie przez Evaluatora i Final Control. Testy 19/19 + 43/43,
+`tsc` czysty. Ślad: `dyspozycje/autobot/runs/R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1/`
+(`00-dispatch-r2.md`, `01-operator-r2.md`, `02-evaluator-r2.md`, `03-final-control-r2.md`).
 
 ## NOWE ZGŁOSZENIA PROCESOWE 2026-08-20 (Maciej)
 
@@ -2901,3 +2910,10 @@ Nie wymaga dalszej ABC.
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1 | 2026-08-20 | Panel boczny wydarzeń (`sidePanelHud.ts`) stackuje wiele identycznych kart informacyjnych „Koniec tury" (ta sama treść, np. „Wyrąb: +25 Drewna (pozostało 0 tury)" powtórzona per miasto) zamiast łączyć je w jeden wpis. Poza zakresem `DYSPOZYCJA-WDROZENIE.md` Karty 3 — brief pokrywał wyłącznie rozróżnienie blokująca/informacyjna i kolejkę dla blokujących, nie deduplikację treści informacyjnych. | **READY_FOR_DEPLOY (Final Control, izolowany branch) — czeka na integrację** | Operator PASS (19/19 nowych testów, 0 regresji) → Evaluator PASS (adwersaryjnie, bez zmian kodu) → Final Control PASS (osobny subagent, READY_FOR_DEPLOY). Ślad: `dyspozycje/autobot/runs/P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1/`. |
+| P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 | 2026-08-17 | Ogólny wzorzec karty odkrycia technologii. | **ECHO=A ZAPISANE, RECON ZAMKNIĘTY (2026-08-21)** | Recon wykazał 2 realne bugi w żywym kodzie FALI 300 (widmowe/nieaktualne nazwy ulepszeń terenu + systemowy zły dobór ikony) — naprawa wydzielona jako osobny temat `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1`. Ślad: `dyspozycje/autobot/runs/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1/01-operator-recon.md`. |
+| R-TECH-ULEPSZENIA-TERENU-SYNC-Q1 | 2026-08-21 | Naprawa dwóch bugów znalezionych w recon `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`: widmowe/nieaktualne nazwy ulepszeń terenu w `tech.json` (Brązownictwo, Murarstwo, Oswojenie zwierząt, Wojskowość) + systemowy zły dobór ikony w `techDiscoveryNotice.ts` dla wszystkich technologii z tą sekcją. | **READY_FOR_DEPLOY (Final Control, PASS-WITH-NOTES) — czeka na integrację** | Operator PASS (48/48 testów, `tsc` czysty) → Evaluator PASS (adwersaryjnie, niezależny skrypt weryfikacyjny 0/18 rozbieżności) → Final Control PASS-WITH-NOTES: uwaga nieblokująca, poza zakresem — `tech.Uwagi` dla Brązownictwa ("ABC-7: Popalnia brązu na mapie") przecieka do gracza OSOBNYM kanałem (`cityPanel.ts::appendTechDetailBlock`, poza allowlistą tego tematu), zarejestrowane osobno niżej jako `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1`. `terrain-improvements.json` nietknięty. Ślad: `dyspozycje/autobot/runs/R-TECH-ULEPSZENIA-TERENU-SYNC-Q1/`. |
+| P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1 | 2026-08-21 | Znalezisko Final Control przy okazji `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1`: pole `tech.Uwagi` (notatki deweloperskie, np. "ABC-7: Popalnia brązu na mapie") przecieka do gracza w `cityPanel.ts::appendTechDetailBlock()` (wywoływane z paneli budynku/jednostki) — filtr `playerFacingNote()` rozpoznaje tylko wzorce `PYTANIE`/`DECYZJA`/`DEC-\d{8}`/"patrz unit-building-bonuses", NIE rozpoznaje "ABC-7:". `techDiscoveryNotice.ts` (ten sam problem, inne miejsce) już świadomie NIE renderuje `Uwagi` — `cityPanel.ts` to przeoczył. | **OTWARTE — nie rozpoczęte, tylko odnotowane** | Nie wymaga ABC (bug filtra, nie decyzja). Brak brancha/dispatchu — do zarejestrowania z pełnym GOAL/allowlistą przed startem, jeśli właściciel zdecyduje się to naprawić. |
+
+Uwaga: `R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1` i `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` — patrz sekcje narracyjne
+z 2026-08-21 wyżej w tym pliku (zarejestrowane równolegle przez inną sesję pod tym samym ID; status pierwszego
+zamknięty jako recon bez bugu, drugiego zaktualizowany do READY_FOR_DEPLOY runda 2 poniżej po integracji).

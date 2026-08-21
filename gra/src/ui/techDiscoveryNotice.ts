@@ -46,9 +46,11 @@
 import techData from '../../data/tech.json';
 import buildingsData from '../../data/buildings.json';
 import unitsData from '../../data/units.json';
+import terrainImprovementsData from '../../data/terrain-improvements.json';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { techIconSvg } from './techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from './icons/brandAssets';
+import type { ImprovementKey } from '../render/improvements';
 
 type TechRow = {
   Technologia: string;
@@ -101,6 +103,25 @@ function list(raw: string | null | undefined): string[] {
   return (raw ?? '').split(/[;,+]/).map(x => x.trim())
     .filter(x => x !== '' && x !== '-' && x !== '—');
 }
+
+/**
+ * Bug B (R-TECH-ULEPSZENIA-TERENU-SYNC-Q1): `improvementIconSvg()` jest kluczowany po
+ * `ImprovementKey` (np. `bydlo`, `fort` — patrz improvement-icon-map.json), nie po
+ * polskiej etykiecie z tech.json (np. „Trzoda", „Fort"). Zbudowana raz odwrotna mapa
+ * nazwa→klucz z terrain-improvements.json (klucz obiektu = ImprovementKey, pole `nazwa`
+ * = etykieta gracza) — ten sam wzorzec co poprawne użycie w buildModeHud.ts. Fallback na
+ * samą nazwę (jak przed poprawką) zachowany dla nierozpoznanych etykiet — improvementIconSvg
+ * i tak spadnie na `_default` (imp-farm), bez wyjątku w runtime.
+ */
+const IMPROVEMENT_NAME_TO_KEY: Record<string, ImprovementKey> = (() => {
+  const map: Record<string, ImprovementKey> = {};
+  for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {
+    if (key.startsWith('_')) continue;
+    const nazwa = row?.nazwa;
+    if (typeof nazwa === 'string' && nazwa) map[nazwa] = key as ImprovementKey;
+  }
+  return map;
+})();
 
 /** Polska odmiana rzeczownika po liczbie (1 / 2-4 / 5+, z wyjątkiem 12-14). */
 function pluralPl(n: number, one: string, few: string, many: string): string {
@@ -365,7 +386,7 @@ function buildBody(tech: TechRow): { html: string } {
   });
 
   const improvementsBody = improvementNames.map(name => unlockItemRow({
-    icon: improvementIconSvg(name),
+    icon: improvementIconSvg(IMPROVEMENT_NAME_TO_KEY[name] ?? name),
     title: name,
   })).join('');
   const improvementsSection = accordionSection({
