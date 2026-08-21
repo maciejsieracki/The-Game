@@ -1,9 +1,15 @@
-# HANDOFF SESJI — 2026-08-21 · FALA 308 · korekta rejestru + krytyczny regres karty CivPedia + T4 runda 2
+# HANDOFF SESJI — 2026-08-21 · FALA 306→309 · korekta rejestru + krytyczny regres karty CivPedia + T4 (migracja + runda 2)
 
 **Dla następnego agenta (dowolna sesja — lokalna, chmurowa).**
 **Czytaj najpierw ten plik**, potem `dyspozycje/PYTANIA-OTWARTE.md` (indeks operacyjny na
 górze) · `dyspozycje/REJESTR-PROSB-I-ZADAN.md` (indeks bieżący na górze) · `dyspozycje/WERSJE.md`
-(FALA 308 na górze sekcji ROBOCZA).
+(FALA 309 na górze sekcji ROBOCZA).
+
+**Aktualizacja (ta sama sesja, po pierwotnym zapisie tego pliku):** T4 runda 2 (§2f) dostała
+PASS od Evaluatora i Final Control (niezależnie, 197/197 testów, mutation-test potwierdzony,
+`git merge-tree` bez konfliktów) i została zmergowana do `main` + zdeployowana jako **FALA 309**.
+Sekcja „Do zrobienia natychmiast" w §5 poniżej jest już NIEAKTUALNA co do tego punktu — patrz
+§1 i §2f dla aktualnego stanu.
 
 **Cel tego dokumentu:** konsolidacja tego, co w tej sesji ZNALEZIONE i NAPRAWIONE, żeby żaden
 kolejny agent nie odkrywał tego od nowa ani nie dispatchował ponownie tematów już zamkniętych.
@@ -16,10 +22,10 @@ skróconym, chronologicznym lustrem.
 
 | Pole | Wartość |
 |---|---|
-| **AKTUALNA FALA** | **308** |
-| **md5** | `e4317354b95f8ab3966ac7bb56bea1d2` (stempel `e4317354`) |
-| **Commit deploy** | `88b47e32` na `main` |
-| **Poprzednia fala** | FALA 307 `6c1433ef` — **ZASTĄPIONA/WYCOFANA** (patrz §3, regres krytyczny) |
+| **AKTUALNA FALA** | **309** |
+| **md5** | `809a36e9c554fd0bfa58d63a4b155e8f` (stempel `809a36e9`) |
+| **Commit deploy** | `ed6dc9f2` na `main` |
+| **Poprzednia fala** | FALA 308 `e4317354` — **ZASTĄPIONA** (→ 809a36e9, FALA 309, samo T4 poniżej); FALA 307 `6c1433ef` — **ZASTĄPIONA/WYCOFANA** wcześniej (patrz §3, regres krytyczny) |
 | **Branch pracy** | `main` bezpośrednio — ta sesja integruje każdy zweryfikowany temat wprost do `main` i pushuje, bez osobnych branchy integracyjnych |
 
 ---
@@ -146,9 +152,17 @@ w markupie) — **19/19 PASS** po korekcie dwóch błędów w samym teście (lic
 nakładania prostokątów zamiast założenia jednego wiersza, bo `flex-wrap:wrap` legalnie zawija
 odznaki do nowego wiersza).
 
-Commit `54c3bb1c` na branchu `autobot/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`, wypchnięty na
-origin. **Evaluator + Final Control dispatchowane niezależnie (Workflow, w toku na koniec tej
-sesji — patrz §5, „Do zrobienia natychmiast").**
+Commit `54c3bb1c` na branchu `autobot/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`. **Evaluator +
+Final Control PASS niezależnie** (dwóch osobnych agentów, każdy z własnym izolowanym
+`git worktree`, własnym mutation-testem i własnym `git merge-tree` sprawdzeniem — zero
+konfliktów). Final Control skorygował jeden drobny błąd w raporcie Evaluatora (twierdzenie o
+„0 commitów różnicy" względem `main` było już nieaktualne o 1 czysto-dokumentacyjny commit —
+bez wpływu na bezpieczeństwo merge'a). **Zmergowane do `main` (merge commit, `git worktree`
+zbędny — merge bezpośrednio w głównym worktree, wzorem wszystkich wcześniejszych integracji tej
+sesji) i zdeployowane jako FALA 309** (`ed6dc9f2`), po niezależnej re-weryfikacji orkiestratora
+na scalonym stanie: `tsc` 0, 6 bramek CivPedia zielonych (197/197) + 5 bramek referencyjnych z
+`R-PROC-AUTOBOT.md` §Bramki (`logic-test` 213/213, `tech-tree-test` 19/19, `research-test`
+33/33, `unit-replace-test` 13/13, `combat-test` 6/6).
 
 ---
 
@@ -195,13 +209,10 @@ git log --oneline -5 origin/main
 git fetch origin autobot/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1
 ```
 
-1. **Do zrobienia natychmiast:** sprawdź wynik Workflow Evaluator+Final Control dla T4 runda 2
-   (commit `54c3bb1c`, branch `autobot/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`) — dispatchowane
-   pod koniec tej sesji, wynik mógł przyjść jako notyfikacja w międzyczasie. Jeśli PASS: merge do
-   `main` (po `git fetch origin main` + sprawdzeniu ancestora), re-weryfikacja (`tsc --noEmit` +
-   6 zestawów testów wymienionych w §2f), decyzja o osobnej FALI ROBOCZA (prawdopodobnie
-   zasadna — realny, gracz-widoczny bug na mapie).
-2. Sprawdź status `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` (Wątki C/E/F) — dispatchowany
+1. ~~Do zrobienia natychmiast: sprawdź wynik Workflow Evaluator+Final Control dla T4 runda 2~~ —
+   **ZROBIONE w tej samej sesji**: PASS obustronny, zmergowane do `main`, zdeployowane FALA 309
+   (patrz §1, §2f). Nic do kontynuacji na tym konkretnym punkcie.
+2. **Do zrobienia teraz:** sprawdź status `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` (Wątki C/E/F) — dispatchowany
    wcześniej tej samej sesji, worktree `.claude/worktrees/wf_f89d7fbb-50a-1` na branchu
    `autobot/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`, commit lokalny `e21bc639` — sprawdź czy
    Workflow zakończył się (notyfikacja mogła przyjść), zanim dispatchujesz cokolwiek nowego na

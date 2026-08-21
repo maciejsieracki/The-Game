@@ -1,12 +1,12 @@
 # HANDOFF-AKTUALNY — wskaźnik na najnowszą sesję
 
-**Aktualna sesja:** 2026-08-21 · FALA 308 · korekta rejestru + krytyczny regres karty CivPedia
-+ T4 runda 2 (odznaki jednostki).
+**Aktualna sesja:** 2026-08-21 · FALA 309 · korekta rejestru + krytyczny regres karty CivPedia
++ T4 (migracja karty jednostki na mapie + runda 2, odznaki statusu).
 
 **Pełny handoff:** [`HANDOFF-SESJA-2026-08-21_FALA-308-CIVPEDIA-BUGFIXY.md`](HANDOFF-SESJA-2026-08-21_FALA-308-CIVPEDIA-BUGFIXY.md)
 — czytaj TEN plik najpierw, ma pełną chronologię, ABC/ECHO, znane pułapki i listę „do zrobienia
-natychmiast" (m.in. dokończenie Evaluator+Final Control dla CivPedia T4 runda 2, sprawdzenie
-`R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`).
+teraz" (T4 już zdeployowane FALA 309; pozostaje sprawdzenie
+`R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` i kontynuacja migracji T5+).
 
 **Poprzednia sesja (archiwum, wciąż aktywna paczka dokumentacyjna, deploy/push NIE WYKONANO):**
 [`HANDOFF-SESJA-2026-08-20_PROC-AUTOBOT-PAKIETY-1-3.md`](HANDOFF-SESJA-2026-08-20_PROC-AUTOBOT-PAKIETY-1-3.md)
