@@ -594,14 +594,30 @@ let entityCardOverrideStylesInjected = false;
 /** Wstrzykuje `ENTITY_CARD_CSS` (reeksport `renderer.ts`, nigdy dotąd nie wołany
  * przez żadnego z 4 kinds — T3 jest pierwszym realnym konsumentem) plus lokalne
  * nadpisania potrzebne, żeby karta `.entity-card` mieściła się w dotychczasowym
- * hoście `#${HOST_ID}` (ten sam wzorzec pozycjonowania co stary `.tdn-card`). */
+ * hoście `#${HOST_ID}` (ten sam wzorzec pozycjonowania co stary `.tdn-card`).
+ *
+ * R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1 (naprawa): `.tdn-back` (tło, sibling
+ * karty w `showTechDiscoveryNoticeViaEntityCard`) jest `position:fixed` — to
+ * tworzy kontekst stackowania na "stack level 0" niezależnie od z-index. Bez
+ * własnego `position` na `.entity-card` (domyślnie `static`), karta ląduje we
+ * WCZEŚNIEJSZYM etapie malowania niż pozycjonowane tło (CSS2.1 Appendix E: kroki
+ * 3 vs 6) — tło faktycznie renderuje się (i przechwytuje kliknięcia) NAD kartą,
+ * mimo że w DOM karta jest zagnieżdżona wizualnie "na wierzchu". Potwierdzone
+ * realnym Chromium (Playwright): `document.elementFromPoint()` na środku
+ * przycisku „Rozpocznij badanie" zwracał `.tdn-back`, nie przycisk — realny
+ * `page.mouse.click()` w tym miejscu zamykał kartę (trafiał w listener `.tdn-back`),
+ * NIGDY nie wywołując `onClick` przycisku. Stary `.tdn-card` (przed T3) miał
+ * `position:relative` explicite — stąd tam ten sam wzorzec (tło+karta jako
+ * siblingi) działał poprawnie. `position:relative` tutaj przywraca ten sam
+ * kontekst stackowania (krok 6, po `.tdn-back` w kolejności DOM → karta na
+ * wierzchu), bez zmiany wspólnego `ENTITY_CARD_CSS`/`renderer.ts` (T4 nietknięty). */
 function ensureEntityCardOverrideStyles(): void {
   if (entityCardOverrideStylesInjected) return;
   entityCardOverrideStylesInjected = true;
   const style = document.createElement('style');
   style.id = 'civ-tech-discovery-entity-card-css-v1';
   style.textContent = ENTITY_CARD_CSS + `
-#${HOST_ID} .entity-card{pointer-events:auto;width:min(660px,96vw);max-height:calc(100vh - 36px);
+#${HOST_ID} .entity-card{position:relative;pointer-events:auto;width:min(660px,96vw);max-height:calc(100vh - 36px);
   overflow:auto;border-color:var(--tg-gold-primary,#e8d88a);
   box-shadow:var(--tg-glow-gold,0 0 24px rgba(232,216,138,.28)),0 12px 40px rgba(0,0,0,.6);}
 #${HOST_ID} .entity-card-header{position:relative;padding-right:44px;}
