@@ -13,6 +13,9 @@ alwaysApply: true
 Po Final Control integruje główny orkiestrator GPT-5.6 Luna Medium i dopiero po faktycznej
 integracji może wystawić `READY_FOR_DEPLOY`. Deploy/push jest osobną bramką. Raport
 Operatora automatycznie uruchamia Evaluatora; `FAIL`, `BLOCK`, `TIMEOUT`,
-`INFRA` i `ZWIS` wracają do tej samej pętli. C-043 obowiązuje.
+`INFRA` i `ZWIS` wracają do tej samej pętli tylko po wspólnym `authorizeDispatch`
+z licznikiem rund i `lastVerdict`. Próba 6 zatrzymuje się statusem
+`LIMIT-5-EXCEEDED`; manual resume wymaga jawnej decyzji i zachowuje `lastVerdict`.
+C-043/C-044/C-050 obowiązują.
 
 Pełny opis: [`docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md).
