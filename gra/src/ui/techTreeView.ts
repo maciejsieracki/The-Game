@@ -17,6 +17,7 @@
 
 import techData from '../../data/tech.json';
 import { techToSlug } from './sciencePicker';
+import { splitList, parseUnlockBuildings, unitsUnlockedByTech } from './techUnlockParse';
 import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
 import { TEMPO_GRY, type TempoGry } from '../game/tech-tempo';
 import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
@@ -151,22 +152,6 @@ function starLabel(r: RawTech): string | null {
   return null;
 }
 
-function splitList(raw: string | null | undefined, sep: RegExp): string[] {
-  return (raw ?? '').split(sep).map(s => s.trim()).filter(s => s !== '' && s !== '—' && s !== '-');
-}
-
-/** „Odblokowuje budynek" → budynki + jednostki (segment „Jednostki: A, B"). */
-function parseUnlockBuildings(raw: string | null): { budynki: string[]; jednostki: string[] } {
-  const budynki: string[] = [];
-  const jednostki: string[] = [];
-  for (const part of splitList(raw, /;/)) {
-    const m = /^Jednostki:\s*(.*)$/i.exec(part);
-    if (m) jednostki.push(...splitList(m[1] ?? '', /,/));
-    else budynki.push(part);
-  }
-  return { budynki, jednostki };
-}
-
 function buildTreeNodes(): Map<string, TreeNode> {
   const rawList = (techData as unknown as { technologie: RawTech[] }).technologie;
   const map = new Map<string, TreeNode>();
@@ -175,7 +160,10 @@ function buildTreeNodes(): Map<string, TreeNode> {
 
   for (const r of rawList) {
     const id = techToSlug(r['Technologia']);
-    const { budynki, jednostki } = parseUnlockBuildings(r['Odblokowuje budynek']);
+    const { budynki } = parseUnlockBuildings(r['Odblokowuje budynek']);
+    // Jednostki: NIE z osadzonego, przestarzałego tekstu tech.json (niekompletny —
+    // patrz 00-dispatch.md) — z units.json's pola `Tech`, wzorem technologyAdapter.ts:100.
+    const jednostki = unitsUnlockedByTech(r['Technologia']);
     const terenFromCode = terrainUnlockLabelsForTech(r['Technologia']);
     const teren = terenFromCode.length > 0
       ? terenFromCode
