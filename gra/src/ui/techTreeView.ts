@@ -24,6 +24,7 @@ import { epochIconSvg } from './icons/brandAssets';
 import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 import { techIconSvg } from './techIcons';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 
 // ---------------------------------------------------------------------------
 // Konfiguracja (haki wstrzykiwane przez silnik — main.ts)
@@ -589,7 +590,7 @@ function updateMiniViewport(): void {
 function nodeInfoLine(node: TreeNode, st: TtvStatus, s: TtvState): string {
   const parts: string[] = [effectiveCost(node, s) + ' PN', 'Poziom ' + node.poziom];
   if (node.star !== null) parts.push(node.star);
-  if (st === 'av') parts.push('kliknij, by badać');
+  if (st === 'av') parts.push('kliknij, by podejrzeć kartę');
   return parts.join(' · ');
 }
 
@@ -725,7 +726,7 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
   } else {
     h += `<div class="row"><span class="k">Koszt nauki</span><span class="v">`
       + `<b style="color:#e8d88a">${eff} PN</b> · baza ${node.koszt} PN · ${esc(tempoTxt)}</span></div>`;
-    if (st === 'av') {
+      if (st === 'av') {
       const remaining = Math.max(0, eff - s.pula);
       const czas = rate > 0
         ? `≈ ${Math.max(1, Math.ceil(remaining / rate))} tur przy ${rate} PN/turę`
@@ -765,7 +766,7 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
   // Stopka wg stanu
   let ft: string;
   if (st === 'av') {
-    ft = 'Kliknij = rozpocznij badanie' + (deps.length > 0 ? ' · prereq dla: ' + esc(deps.join(' · ')) : '');
+    ft = 'Kliknij = podgląd karty · osobno: rozpocznij badanie' + (deps.length > 0 ? ' · prereq dla: ' + esc(deps.join(' · ')) : '');
   } else if (st === 'ip') {
     ft = 'W trakcie — pierścień postępu jak chip Nauki w HUD';
   } else if (st === 'od') {
@@ -933,8 +934,16 @@ function bindViewportInteractions(): void {
     if (id === null) return;
     const node = NODES.get(id);
     if (node === undefined) return;
-    if (el.getAttribute('data-st') === 'av') tryStartResearch(node);
-    else if (el.getAttribute('data-st') === 'od') cfg.onOpenTechDetails?.(node.nazwa);
+    const st = el.getAttribute('data-st');
+    if (st === 'lk' || st === 'ip' || st === 'od' || st === 'av') {
+      showTechDiscoveryNotice({
+        techName: node.nazwa,
+        eraIndex: 1,
+        kind: 'preview',
+        onStartResearch: st === 'av' ? () => tryStartResearch(node) : undefined,
+        onOpenTree: () => showTechTreeView(activeOwner),
+      });
+    }
   });
 
   vp.addEventListener('mouseover', (e: MouseEvent) => {

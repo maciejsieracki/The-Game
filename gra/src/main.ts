@@ -12315,6 +12315,11 @@ async function boot(): Promise<void> {
       let citySiegeOwnerChanged = false;
       if (newOwner !== null && newOwner !== city.ownerId) {
         const oldOwner = city.ownerId;
+        // Snapshot before the surrender changes city.ownerId. Otherwise the final city's
+        // city/population/building/territory contribution is absent from loot Power.
+        const powerBeforeCapture = !isBarbarian(oldOwner)
+          ? buildObjectivePowerForOwner(oldOwner)
+          : null;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
         // R-MIASTA-LIMIT-PODBÓJ-Q1=A: kapitulacja wojenna przejmuje miasto
@@ -12372,7 +12377,7 @@ async function boot(): Promise<void> {
         // last city AND the player was the captor, the label was silently lost. We capture it
         // and MERGE it with the capitulation toast into ONE showHintMessage call (same
         // collision pattern/fix as Defekt A).
-        const captureOutcome = runCapitalCapturePlunder(city, oldOwner, newOwner);
+        const captureOutcome = runCapitalCapturePlunder(city, oldOwner, newOwner, powerBeforeCapture);
         const capitulationBaseMsg =
           city.name + ' — kapitulacja z głodu! Miasto przejęte przez ' + civLabelForOwner(newOwner) + '.';
         const capitulationMsg = captureOutcome
@@ -23493,6 +23498,7 @@ async function boot(): Promise<void> {
      */
     function runCapitalCapturePlunder(
       city: City, oldOwner: number, newOwner: number,
+      powerBeforeCapture: ObjectivePowerResult | null = null,
     ): CapitalCapturePlunderResult | null {
       // #25: frakcja rebeliancka (-99) nie jest realną cywilizacją — nie ma
       // skarbca/stolicy/Power. Bez tego guarda odbicie jej miasta wpadało w
@@ -23552,15 +23558,20 @@ async function boot(): Promise<void> {
       // Power ofiary -- `barbarianCapturedPowerGain` (capital-capture.ts, RUNDA 3).
       // / EN: barbarians do not inherit the victim's Power --
       // `barbarianCapturedPowerGain` (capital-capture.ts, ROUND 3).
-      const lostPower = buildObjectivePowerForOwner(oldOwner).power;
+      // Power must describe the defeated empire before its last city changes owner.
+      // `applyCityCaptureAfterBattle` has already moved the city by the time this
+      // function is called, so the caller snapshots the objective Power beforehand.
+      // The fallback keeps this helper safe for any legacy/internal caller.
+      const lostPower = powerBeforeCapture?.power ?? buildObjectivePowerForOwner(oldOwner).power;
       const powerGain = barbarianCapturedPowerGain(lostPower, barbCaptor);
       if (powerGain > 0) {
         zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + powerGain);
       }
       const eliminatedCivLabel = civLabelForOwner(oldOwner);
       const eliminatedDetails = barbCaptor
-        ? 'Skarbiec i nauka przepadły (barbarzyńcy nie dziedziczą łupu).'
-        : `Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
+        ? 'Skarbiec: +0, Nauka: +0, techy: +0, Power: +0 (barbarzyńcy nie dziedziczą łupu).'
+        : `Skarbiec: +${outcome.skarbiecPrzejety}, Nauka: +${outcome.naukaPrzejeta}, `
+          + `techy: +${outcome.techSkopiowane.length}, Power: +${lostPower}.`;
       const isTriumph = newOwner === 0 && shouldShowPlayerTriumphCityStateUnification({
         newOwner,
         oldOwner,
@@ -23681,6 +23692,11 @@ async function boot(): Promise<void> {
       eliminatedDetails: string | null;
     } {
       const oldOwner = city.ownerId;
+      // Snapshot before the city owner changes. Otherwise the final city's
+      // city/population/building/territory contribution is absent from loot Power.
+      const powerBeforeCapture = !isBarbarian(oldOwner)
+        ? buildObjectivePowerForOwner(oldOwner)
+        : null;
       const lead = applyCityCaptureAfterBattle(
         city,
         atkRoster,
@@ -23764,7 +23780,7 @@ async function boot(): Promise<void> {
       if (atkOwner === 0) playerEverOwnedCity = true;
       syncCityGarnizon(city);
       endMapSiege(city.id);
-      const captureOutcome = runCapitalCapturePlunder(city, oldOwner, atkOwner);
+      const captureOutcome = runCapitalCapturePlunder(city, oldOwner, atkOwner, powerBeforeCapture);
       return {
         lead,
         eliminatedCivLabel: captureOutcome?.eliminatedCivLabel ?? null,

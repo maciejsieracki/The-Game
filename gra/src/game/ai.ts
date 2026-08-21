@@ -23,7 +23,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City }       from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, clampPodzialPracyBudynkiPercent }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -1126,8 +1126,8 @@ export const AI_MAJOR_EARLY_MAX_BUILDINGS_AVG = 4;
 export const AI_L3_PEACE_WARRIOR_SCORE_PENALTY = 40;
 /** Bias 60/40: ±5% udziału wojska na punkt różnicy priorytetów archetypu (ai-params). */
 export const AI_ARCHETYPE_BIAS_PER_POINT = 0.05;
-/** Early major: ~60% Pracy do puli państwa (ulepszenia), ~40% kolejka budowy. */
-export const AI_MAJOR_EARLY_PROCENT_BUDYNKI = 40;
+/** Early major: maksymalnie 50% Pracy do puli państwa (ulepszenia), reszta do budynków. */
+export const AI_MAJOR_EARLY_PROCENT_BUDYNKI = 50;
 /** Mid major: ~50/50 budynki ↔ ulepszenia. */
 export const AI_MAJOR_MID_PROCENT_BUDYNKI = 50;
 /** Early major: niższy próg Pracy zanim AI buduje ulepszenie terenu. */
@@ -4769,13 +4769,17 @@ export function decideAIEconomySliders(
         && inp.upkeepGoldCost !== undefined
         && inp.treasuryGold < inp.upkeepGoldCost;
       if (!moneyCrisis) {
-        const nextBudynki = Math.max(0, procentBudynki - params.krokProcentPracaNauka);
+        const nextBudynki = Math.max(50, procentBudynki - params.krokProcentPracaNauka);
         if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
         const nextNauka = Math.min(MAX_PROCENT_NAUKA, procentNauka + params.krokProcentPracaNauka);
         if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
       }
     }
   }
+
+  const prevBudynki = procentBudynki;
+  procentBudynki = clampPodzialPracyBudynkiPercent(procentBudynki);
+  if (procentBudynki !== prevBudynki) changed = true;
 
   // Finalnie, limituj Naukę na 60% (R-NAUKA-LIMIT-60-PROC-BUDZETU-Q1). / EN: enforce hard cap on Science allocation.
   const prevNauka = procentNauka;

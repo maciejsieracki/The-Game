@@ -126,8 +126,11 @@ dispatch → Operator → Evaluator → Final Control → integracja → READY_F
    raporty i allowlistę, a następnie integruje.
 5. Dopiero po faktycznej integracji orkiestrator może zapisać `READY_FOR_DEPLOY`.
 6. Każdy `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS`, brak artefaktu,
-   błąd izolacji lub niegotowość Final Control wraca do Operatora, potem Evaluatora
-   i Final Control z tym samym ID. Nie twórz nowego tematu dla poprawki.
+   błąd izolacji lub niegotowość Final Control wraca automatycznie do Operatora,
+   potem Evaluatora i Final Control z tym samym ID wyłącznie po wywołaniu wspólnego
+   guarda `authorizeDispatch` z bieżącą liczbą rund i `lastVerdict`. Dozwolone są tylko
+   rundy 1–5; próba 6 zatrzymuje się statusem `LIMIT-5-EXCEEDED` i raportem. Manual
+   resume wymaga jawnej decyzji oraz zachowuje ID, licznik i `lastVerdict`.
 7. Jedyna normalna pauza to `ABC-OCZEKUJE`. Pauzuje tylko temat wymagający decyzji;
    pozostałe niezależne tematy pracują dalej.
 
@@ -170,7 +173,7 @@ Nowy przebieg zapisuj w `dyspozycje/autobot/runs/<ID>/`:
 Każdy raport musi zawierać:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>

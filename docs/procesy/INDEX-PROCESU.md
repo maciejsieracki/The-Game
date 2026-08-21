@@ -77,10 +77,7 @@ Operator GPT-5.6 Luna High
   → osobna autoryzacja deploy/push
 ```
 
-`FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS`, błąd izolacji, brak dowodu
-albo niegotowość Final Control wracają bez czekania do Operatora → Evaluatora → Final
-Control. Zawsze zachowaj pełne ID; poprawka nie tworzy nowego tematu. `ZWIS` nie
-anuluje pracy — watchdog sprawdza Git i artefakty, a orkiestrator przejmuje temat.
+`FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS`, błąd izolacji, brak dowodu albo niegotowość Final Control wracają bez czekania do Operatora → Evaluatora → Final Control tylko po wykonaniu guarda licznika rund przed dispatchiem i wyłącznie dla rund 1–5. Próba 6 zostaje zatrzymana statusem `LIMIT-5-EXCEEDED`; zachowaj pełne ID. Wznowienie po limicie wymaga jawnej decyzji orkiestratora/właściciela i nie resetuje licznika. `ZWIS` nie anuluje pracy — watchdog sprawdza Git i artefakty.
 
 Jedyną pauzą jest `ABC-OCZEKUJE` wymagające decyzji właściciela. Decyzje prowadzi się
 wyłącznie w głównym czacie orkiestratora (C-043), a zapisuje plikowo. `READY_FOR_DEPLOY`
@@ -104,7 +101,7 @@ statusu rejestru i nie oznacza wykonanego deployu.
 Każdy etap zapisuje:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>

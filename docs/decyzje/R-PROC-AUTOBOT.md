@@ -24,6 +24,13 @@ Operator GPT-5.6 Luna High
 | Orkiestrator | Weryfikuje faktyczny Git i integruje wyłącznie zatwierdzoną allowlistę | Nie omija raportów ani bramek |
 | Deploy/push | Publikuje po `READY_FOR_DEPLOY` i osobnej autoryzacji | Nie wynika z commita ani raportu |
 
+### 1a. Jawny model dispatchu Codex
+
+Przy użyciu `multi_agent_v1` Operator i Evaluator są uruchamiani jawnie z
+`model="gpt-5.6-luna"` oraz `reasoning_effort="high"`. Nie wolno dziedziczyć modelu
+po orkiestratorze. Final Control używa Luna High, a integracja orkiestratora Luna
+Medium. Żądany model i effort muszą być zapisane w `00-dispatch.md` oraz raporcie etapu.
+
 ## 2. GOAL, ID i izolacja
 
 Przed dispatchiem każdy temat ma pełne ID, jawny `GOAL`, mierzalne kryteria końca,
@@ -32,7 +39,13 @@ nie rozszerza zakresu „przy okazji”. Każda zapisana zmiana wymaga niezależ
 
 ## 3. Pętla domknięcia
 
-Temat zachowuje to samo ID przez wszystkie rundy:
+Temat zachowuje to samo ID przez wszystkie rundy. Dla jednego pełnego ID obowiązuje
+twardy limit **5 rund Operator→Evaluator**. Runda to jedna faktycznie uruchomiona
+próba Operatora oraz przypisany do niej Evaluator: runda początkowa i każda kolejna
+korekta liczą się osobno. Licznik zwiększa się przed dispatchiem Operatora, więc
+techniczny `BLOCK`, `TIMEOUT`, `INFRA` lub `ZWIS` po rozpoczęciu próby także zużywa
+jedną rundę; nie wolno obchodzić limitu przez ponawianie techniczne. `ABC-OCZEKUJE`
+przed dispatchiem nie zwiększa licznika.
 
 ```text
 Operator → Evaluator → Final Control → integracja → READY_FOR_DEPLOY
@@ -42,9 +55,16 @@ Operator → Evaluator → Final Control → integracja → READY_FOR_DEPLOY
 
 Po raporcie Operatora Evaluator uruchamia się automatycznie. `PASS` prowadzi do Final
 Control, następnie do integracji. Każdy wymieniony wynik negatywny wraca bez czekania do
-Operatora, Evaluatora i Final Control z tym samym ID. `ZWIS` nie anuluje tematu; watchdog
-sprawdza stan, a orkiestrator przejmuje pracę. Jedyną pauzą jest ABC wymagające decyzji
-właściciela; niezależne tematy nadal działają.
+Operatora, Evaluatora i Final Control z tym samym ID **tylko dopóty, dopóki kolejna
+runda ma numer ≤5**. Gdy po piątej rundzie potrzebna byłaby kolejna próba, nie wolno
+dispatchować Operatora: zgłoś `LIMIT-5-EXCEEDED`, podaj
+liczbę zużytych rund, ostatni faktyczny werdykt, blokadę oraz decyzję wymaganą od
+orkiestratora/właściciela. Jest to dodatkowa bramka zatrzymująca automatyczny dispatch,
+a nie zamiennik `BLOCK`, `TIMEOUT`, `INFRA` ani `ZWIS` — ostatni z tych statusów nadal
+opisuje przyczynę. Wznowienie wymaga jawnej decyzji orkiestratora/właściciela; zachowuje
+to samo ID i musi jawnie zezwolić na nowy cykl/wyzerowanie licznika, nie zaś samoczynnie
+tworzyć nowe ID. `ZWIS` nie anuluje tematu przed osiągnięciem limitu; watchdog sprawdza
+stan, a orkiestrator przejmuje pracę. ABC pauzuje temat i nie zużywa rundy.
 
 ## 4. Rejestry i artefakty
 
@@ -60,12 +80,13 @@ właściciela; niezależne tematy nadal działają.
 Raport etapu zawiera:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>
 TESTY: <dokładny wynik albo powód pominięcia>
 BLOKADY: <lista albo brak>
+RUNDY: <nr tej rundy>/<5; po limicie także liczba zużytych rund, ostatni werdykt i decyzja wymagana>
 NASTĘPNY KROK: <kolejna bramka>
 DEPLOY/PUSH: WYKONANO albo NIE WYKONANO
 ```

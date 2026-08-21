@@ -235,8 +235,8 @@ let wchlonieciaBlockCode = '';
   ok(!/\n[ \t]*runCapitalCapturePlunder\(city, oldOwner, newOwner\);/.test(fnBodyCode),
     'Defekt B/1: runCapitalCapturePlunder(...) NIE jest już wołane jako bare statement '
     + '(wartość zwracana musi być odebrana)');
-  ok(/const\s+\w+\s*=\s*runCapitalCapturePlunder\(city, oldOwner, newOwner\);/.test(fnBodyCode),
-    'Defekt B/1: runCapitalCapturePlunder(city, oldOwner, newOwner) ma odebraną wartość zwracaną');
+  ok(/const\s+\w+\s*=\s*runCapitalCapturePlunder\(city, oldOwner, newOwner(?:,\s*powerBeforeCapture)?\);/.test(fnBodyCode),
+    'Defekt B/1: runCapitalCapturePlunder(...) ma odebraną wartość zwracaną, z opcjonalnym snapshotem Power');
 
   const showHintCount = countOf(fnBodyCode, 'showHintMessage(');
   // 1 dla gałęzi "newOwner !== city.ownerId" (scalony toast kapitulacji) + 1 dla gałęzi

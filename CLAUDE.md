@@ -36,9 +36,7 @@ długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playboo
 - Każdy temat ma pełne ID, `GOAL`, kryteria końca, allowlistę i izolowany worktree.
 - Obowiązuje obieg:
   `Operator GPT-5.6 Luna High → Evaluator GPT-5.6 Luna High → Final Control GPT-5.6 Luna High → integracja orkiestratora GPT-5.6 Luna Medium → READY_FOR_DEPLOY`.
-- `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA` i `ZWIS` wracają do Operatora,
-  następnie do Evaluatora i Final Control, zawsze z tym samym ID. ABC pauzuje
-  tylko temat wymagający decyzji właściciela.
+- `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA` i `ZWIS` wracają do Operatora tylko po sprawdzeniu licznika rund przed dispatchiem i wyłącznie dla rund 1–5. Próba 6 jest zatrzymana statusem `LIMIT-5-EXCEEDED`; wznowienie po limicie wymaga jawnej decyzji orkiestratora/właściciela, zachowuje ID i nie resetuje licznika. ABC pauzuje tylko temat wymagający decyzji właściciela.
 - Właściciel komunikuje się wyłącznie w głównym czacie orkiestratora (C-043).
   Subagenci są kanałami technicznymi.
 - Operator, Evaluator i Final Control nie integrują, nie deployują i nie pushują.
@@ -51,7 +49,7 @@ długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playboo
 Każdy etap zapisuje w `dyspozycje/autobot/runs/<ID>/`:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>

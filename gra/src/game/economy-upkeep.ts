@@ -798,9 +798,14 @@ export function unitResourceUpkeep(
  */
 export const UNIT_RECRUIT_UPKEEP_RESERVE_TURNS = 1;
 
-/** Hint gracza gdy pula pokrywa koszt rekrutacji, ale nie łączny koszt rekrut+rezerwa. */
+/**
+ * Rekrutacja nie rezerwuje przyszłego utrzymania. Utrzymanie jest rozliczane
+ * w następnym ticku ekonomii, więc nie ma osobnego komunikatu o braku rezerwy.
+ * Stała pozostaje eksportowana dla zgodności narzędzi/legacy, ale nie jest już
+ * używana przez affordability gate.
+ */
 export const UNIT_RECRUIT_FULL_HINT =
-  'Za mało surowca (rekrutacja + utrzymanie 1 tura)';
+  'Za mało surowca w magazynie państwa';
 
 /** Hint gracza gdy pula nie pokrywa samego kosztu rekrutacji surowcowego. */
 export const UNIT_RECRUIT_STOCK_ONLY_HINT = 'Za mało surowca w magazynie państwa';
@@ -828,7 +833,7 @@ export function canAffordUnitRecruitUpkeepReserve(
   return canAffordBuildingStock(pool, unitRecruitUpkeepReserve(unitDef, turns));
 }
 
-/** Łączny koszt surowcowy rekrutacji: unitStockCost + rezerwa utrzymania (merge per klucz). */
+/** Legacy diagnostyka: koszt rekrutacji + rezerwa upkeep; nie używać jako gate zakupu. */
 export function unitRecruitFullStockCost(
   unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
   turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
@@ -839,21 +844,21 @@ export function unitRecruitFullStockCost(
 }
 
 /**
- * Bramka łączna: pula państwa musi pokryć koszt rekrutacji + rezerwę utrzymania
- * (nie osobno — np. Włócznik 10+2 brązu wymaga 12 w puli, nie 10 ani 11).
+ * Bramka zakupu: pula państwa musi pokryć wyłącznie jednorazowy koszt
+ * rekrutacji. Przyszłe utrzymanie jest potrącane w następnej turze.
  */
 export function canAffordUnitRecruitFull(
   pool: Record<string, number> | undefined,
   unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
   turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 ): boolean {
-  return canAffordBuildingStock(pool, unitRecruitFullStockCost(unitDef, turns));
+  void turns;
+  return canAffordBuildingStock(pool, unitStockCost(unitDef));
 }
 
 /**
  * Czy chip surowca rekrutacji (klucz z unitStockCost) ma klasę stock-missing.
- * Uwzględnia łączny koszt unitRecruitFullStockCost (rekrutacja + rezerwa utrzymania),
- * nie tylko sam koszt rekrutacji — spójnie z canAffordUnitRecruitFull / tooltipem.
+ * Ocenia wyłącznie jednorazowy koszt rekrutacji; upkeep nie wpływa na chip.
  */
 export function isUnitRecruitStockChipMissing(
   pool: Record<string, number> | undefined,
@@ -861,25 +866,25 @@ export function isUnitRecruitStockChipMissing(
   resourceKey: string,
   turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 ): boolean {
-  const fullMissing = missingStockFor(pool, unitRecruitFullStockCost(unitDef, turns));
-  return (fullMissing[resourceKey] ?? 0) > 0;
+  void turns;
+  const stockMissing = missingStockFor(pool, unitStockCost(unitDef));
+  return (stockMissing[resourceKey] ?? 0) > 0;
 }
 
 /**
- * Hint UI przy odmowie rekrutacji surowcowej: null gdy full gate OK;
- * STOCK_ONLY gdy brak kosztu rekrutacji; FULL gdy stock OK ale brak rezerwy utrzymania.
+ * Hint UI przy odmowie rekrutacji surowcowej: null gdy koszt zakupu jest OK;
+ * STOCK_ONLY gdy brakuje jednorazowego kosztu rekrutacji.
  */
 export function pickUnitRecruitHint(
   pool: Record<string, number> | undefined,
   unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
   turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 ): string | null {
-  if (canAffordUnitRecruitFull(pool, unitDef, turns)) return null;
+  void turns;
   const stockCost = unitStockCost(unitDef);
-  if (Object.keys(stockCost).length > 0 && !canAffordBuildingStock(pool, stockCost)) {
-    return UNIT_RECRUIT_STOCK_ONLY_HINT;
-  }
-  return UNIT_RECRUIT_FULL_HINT;
+  return Object.keys(stockCost).length > 0 && !canAffordBuildingStock(pool, stockCost)
+    ? UNIT_RECRUIT_STOCK_ONLY_HINT
+    : null;
 }
 
 /** Suma utrzymania surowcowego po żywych jednostkach (typeId → resolveDef). */

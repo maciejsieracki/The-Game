@@ -17,18 +17,44 @@ Operator GPT-5.6 Luna High
 → osobna bramka deploy/push
 ```
 
-Raport Operatora uruchamia Evaluatora bez czekania. Po `PASS` uruchom Final Control;
+## Kontrakt modelu dla dispatchu Codex
+
+Przy użyciu `multi_agent_v1` każdy dispatch Operatora i Evaluatora musi jawnie
+ustawić `model: "gpt-5.6-luna"` oraz `reasoning_effort: "high"`. Dziedziczenie
+modelu po orkiestratorze jest niedozwolone. Final Control również używa Luna High;
+integracja orkiestratora używa Luna Medium. Raport i `00-dispatch.md` zapisują
+żądany model oraz effort.
+
+Raport Operatora uruchamia Evaluatora bez czekania. Jedna runda to jeden faktyczny
+dispatch Operatora i przypisany Evaluator; runda początkowa oraz każda korekta są
+liczone jawnie, a licznik zwiększa się przed dispatchiem. Po `PASS` uruchom Final Control;
 po jego pozytywnym wyniku orkiestrator integruje wyłącznie zatwierdzoną allowlistę.
 Żadna rola poza orkiestratorem po integracji nie wystawia `READY_FOR_DEPLOY`.
 
 `FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS` albo niegotowość Final Control
-wracają do `Operator → Evaluator → Final Control` z tym samym pełnym ID. `ZWIS` nie
-anuluje tematu: watchdog sprawdza stan, a orkiestrator przejmuje wykonanie. ABC
+wracają do `Operator → Evaluator → Final Control` z tym samym pełnym ID, ale tylko
+jeżeli następna runda ma numer ≤5. Po piątej nieudanej/niezamkniętej rundzie blokada
+przed kolejnym dispatchiem jest obowiązkowa: raportuj
+`LIMIT-5-EXCEEDED`, liczbę rund, ostatni werdykt, blokadę
+i decyzję wymaganą od orkiestratora/właściciela. To dodatkowa bramka, nie zamiennik
+statusu BLOCK/TIMEOUT/INFRA/ZWIS. `ABC-OCZEKUJE` przed dispatchiem nie zwiększa
+licznika. Wznowienie/nowy cykl wymaga jawnej decyzji, zachowuje ID i nie resetuje
+licznika bez wyraźnej zgody. `ZWIS` nie anuluje tematu: watchdog sprawdza stan, a orkiestrator przejmuje wykonanie. ABC
 rezerwuje tylko temat wymagający decyzji właściciela. C-043: decyzje właściciela są
 wyłącznie w głównym czacie orkiestratora.
 
 Raporty zapisuj w `dyspozycje/autobot/runs/<ID>/` jako `00-dispatch.md` do
 `04-integration.md`. Nie uznawaj samego raportu, statusu, brancha, worktree, UI ani
-commita za zakończenie. Deploy/push wymaga osobnego polecenia.
+commita za zakończenie. Każdy dispatch ma dokładnie jeden rekord ledgeru z polami:
+`agent_id`, `temat`, `rola`, `runda`, `start`, `oczekiwany_artefakt`, `ostatni_status`,
+`timestamp_zakonczenia`, `routing_nastepnego_kroku`. Rekord przechodzi jawnie przez
+`pending → running → completed|interrupted|timeout|not_found|BLOCK|CLOSED` (brak raportu
+nie może zostać pustym przebiegiem). Watchdog sprawdza każdy aktywny rekord co minutę;
+`not_found` bez dowodu raportu klasyfikuje jako `BLOCK`, ciszę jako `ZWIS`, a przekroczenie
+limitu jako `TIMEOUT`. `FAIL`/`BLOCK` automatycznie routuje do tego samego ID i Operatora
+po guardzie rundy. Przy nieznanym statusie nie wolno tworzyć duplikatu ani dispatchować
+równoległej kopii — rekord pozostaje zablokowany do rozstrzygnięcia. Watchdog kończy
+monitoring po `READY_FOR_DEPLOY`, jawnym `BLOCK` albo `ABC-OCZEKUJE`. Deploy/push wymaga
+osobnego polecenia.
 
 Pełny opis i routing artefaktów: [`INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md).

@@ -611,10 +611,6 @@ const HUD_TEXT       = BATTLE_TEXT;
 const HUD_TEXT_DIM   = BATTLE_TEXT_DIM;
 const HUD_FONT       = BATTLE_FONT;
 /** Gracz (Ty) atakuje w typowym flow — kolory z DECYZJA-C-kolory-stron-bitwa.md */
-const FACTION_ATK    = BATTLE_PLAYER;
-const FACTION_DEF    = BATTLE_ENEMY;
-const FACTION_ATK_TEXT = BATTLE_PLAYER_TEXT;
-const FACTION_DEF_TEXT = BATTLE_ENEMY_TEXT;
 const HOVER_TOOLTIP_MS = 300;
 
 /** C2-Q7 TW: kontekstowe kursory (luk / miecz) — SVG data-URL. */
@@ -973,16 +969,15 @@ const AMMOBAR_COLOR = 0x2f7adf;         // BLUE ammo bar
 // billboards to the camera and follows the unit's Y (terrain/hill) for free --
 // exactly like the bars.
 //
-// SIDE_COLOR is a small lookup keyed by side so MORE ally colours can be added
-// later (today there are only two sides -- attacker = RED, defender = BLUE).
-// Extend by adding keys here; nothing else needs to change.
-const SIDE_COLOR: Record<'atk' | 'def', number> = {
-  atk: 0xe53935, // ATTACKER -> red
-  def: 0x1e88e5, // DEFENDER -> blue
-};
-/** Side -> faction outline colour, with a neutral grey fallback. */
-function sideColor(side: 'atk' | 'def'): number {
-  return SIDE_COLOR[side] ?? 0x9e9e9e;
+// Identity colours are intentionally independent from combat role. The player
+// remains blue and the opponent remains red even when the player defends.
+const SIDE_COLOR_BY_IDENTITY = {
+  player: 0x1e88e5,
+  enemy: 0xe53935,
+} as const;
+/** Role -> visual colour, resolved through the side controlled by the player. */
+function sideColor(side: 'atk' | 'def', playerSide: 'atk' | 'def' = 'atk'): number {
+  return side === playerSide ? SIDE_COLOR_BY_IDENTITY.player : SIDE_COLOR_BY_IDENTITY.enemy;
 }
 // The coloured frame extends this far (world units) beyond the bar cluster on
 // every edge, so only a thin rim of colour is visible around the slim bars.
@@ -2887,15 +2882,15 @@ export class BattleScene {
     this.overlay.appendChild(commanderPanel);
     this._commanderPanel = commanderPanel;
 
-    const mkCommanderCard = (side: 'atk' | 'def'): void => {
+    const mkCommanderCard = (side: 'atk' | 'def', left: boolean): void => {
       const isAtk = side === 'atk';
       const civLabel = isAtk ? this._attackerCivLabel : this._defenderCivLabel;
       const roleLabel = isAtk ? 'atakujacy' : 'obronca';
-      const sideColor = isAtk ? FACTION_ATK : FACTION_DEF;
+      const sideColor = this._factionColor(side);
       const card = document.createElement('div');
       Object.assign(card.style, {
         display: 'flex', alignItems: 'center', gap: '11px', padding: '10px 16px',
-        flexDirection: isAtk ? 'row' : 'row-reverse',
+        flexDirection: left ? 'row' : 'row-reverse',
       });
       const portraitWrap = document.createElement('div');
       Object.assign(portraitWrap.style, { position: 'relative', width: '52px', height: '52px', flexShrink: '0' });
@@ -2906,12 +2901,12 @@ export class BattleScene {
       const medallion = document.createElement('span');
       Object.assign(medallion.style, {
         position: 'absolute', inset: '5px', borderRadius: '50%',
-        background: isAtk
+        background: sideColor === BATTLE_PLAYER
           ? 'radial-gradient(circle at 38% 30%,#22314c,#0c1626)'
           : 'radial-gradient(circle at 38% 30%,#3a1c1c,#160a0a)',
         border: `2px solid ${sideColor}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: isAtk ? FACTION_ATK_TEXT : FACTION_DEF_TEXT, lineHeight: '0',
+        color: this._factionTextColor(side), lineHeight: '0',
       });
       const civIconId = isAtk ? this._attackerCivIconId : this._defenderCivIconId;
       const era = isAtk ? this._attackerEra : this._defenderEra;
@@ -2953,11 +2948,11 @@ export class BattleScene {
       card.appendChild(portraitWrap);
 
       const textCol = document.createElement('div');
-      Object.assign(textCol.style, { textAlign: isAtk ? 'left' : 'right', minWidth: '0' });
+      Object.assign(textCol.style, { textAlign: left ? 'left' : 'right', minWidth: '0' });
       const nameLbl = document.createElement('div');
       Object.assign(nameLbl.style, {
         fontFamily: BATTLE_FONT_TITLE, fontSize: '14px',
-        color: isAtk ? '#cfe0f4' : '#f0c8c8', lineHeight: '1.15', whiteSpace: 'nowrap',
+        color: this._factionTextColor(side), lineHeight: '1.15', whiteSpace: 'nowrap',
       });
       nameLbl.textContent = civLabel;
       textCol.appendChild(nameLbl);
@@ -2989,7 +2984,8 @@ export class BattleScene {
         this._topCasDTxt = countsEl as unknown as HTMLSpanElement;
       }
     };
-    mkCommanderCard('atk');
+    const playerSideForHud = this._playerControlSide();
+    mkCommanderCard(playerSideForHud, true);
 
     // Centrum: zegar bitwy + pasek przewagi (SS2 - podlaczony do istniejacego
     // zrodla paska mocy, TYLKO nowy widok; stary pelnoszerokosciowy pasek
@@ -3049,12 +3045,12 @@ export class BattleScene {
       fontSize: '10px', color: '#c8b898', marginTop: '6px', letterSpacing: '0.02em',
       whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums',
     });
-    momentumCaption.innerHTML = 'Szacunkowa przewaga: <b style="color:' + FACTION_ATK_TEXT + '">50% Ty</b> \u00B7 <b style="color:' + FACTION_DEF_TEXT + '">50% wr\u00F3g</b>';
+    momentumCaption.innerHTML = 'Szacunkowa przewaga: <b style="color:' + this._factionTextColor(playerSideForHud) + '">50% Ty</b> \u00B7 <b style="color:' + this._factionTextColor(playerSideForHud === 'atk' ? 'def' : 'atk') + '">50% wr\u00F3g</b>';
     clockCell.appendChild(momentumCaption);
     this._momentumCaptionEl = momentumCaption;
 
     commanderPanel.appendChild(clockCell);
-    mkCommanderCard('def');
+    mkCommanderCard(playerSideForHud === 'atk' ? 'def' : 'atk', false);
 
     // Prawa czesc gornego paska (TW v5 \u00a72 \u2014 rail 56px zlikwidowany, wszystko tu):
     // zebatka ustawien (popup Muzyka/Efekty/Paski/Statystyki/Pomoc) + Pomin + Wycofaj sie.
@@ -4111,9 +4107,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);
@@ -4124,7 +4120,7 @@ export class BattleScene {
 
       const ammo0 = ammoCount(bu);
       const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-      const bars = makeUnitBars(sideColor(side), ammoShown);
+      const bars = makeUnitBars(sideColor(side, this._playerControlSide()), ammoShown);
       bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
       this.scene.add(bars.hpBarGroup);
       bars.hpBarGroup.traverse(obj => {
@@ -4279,9 +4275,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor('def', this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor('def', this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(Dir.W); // face attacker
@@ -4291,7 +4287,7 @@ export class BattleScene {
       const perTokenGeos: THREE.BufferGeometry[] = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
       const ammo0 = ammoCount(bu);
       const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-      const bars = makeUnitBars(sideColor('def'), ammoShown);
+      const bars = makeUnitBars(sideColor('def', this._playerControlSide()), ammoShown);
       bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
       this.scene.add(bars.hpBarGroup);
       bars.hpBarGroup.traverse(obj => {
@@ -4996,9 +4992,9 @@ export class BattleScene {
           // key the renderer/buildNamedUnit match on); bu.nazwa now holds the
           // ENGLISH display name, so use stats['Jednostka'] for dispatch.
           const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-          group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+          group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
         } catch (_) {
-          group = makeFallbackAvatar(bu.ownerColor);
+          group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
         }
         // Stand on the VISIBLE top of this tile (hill summit if on a hill) so
         // the figure rests ON the terrain instead of sinking into a raised bump.
@@ -5017,7 +5013,7 @@ export class BattleScene {
         // AMMO bar (+ 3-ci slot/ramka) tylko dla jednostek z amunicja > 0; czysto
         // wrecz / nieskonczone strzaly -> tylko 2 paski (HP+morale) i ramka na dwa (Naster).
         const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-        const bars = makeUnitBars(sideColor(side), ammoShown);
+        const bars = makeUnitBars(sideColor(side, this._playerControlSide()), ammoShown);
         bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
         this.scene.add(bars.hpBarGroup);
         // Register the six bar meshes' geometries + materials for disposal
@@ -8724,8 +8720,9 @@ export class BattleScene {
     if (this._momentumMarker) this._momentumMarker.style.left = tyPct + '%';
     if (this._momentumCaptionEl) {
       const label = this.started ? 'Przewaga na polu' : 'Szacunkowa przewaga';
-      this._momentumCaptionEl.innerHTML = label + ': <b style="color:' + FACTION_ATK_TEXT + '">'
-        + tyPct + '% Ty</b> · <b style="color:' + FACTION_DEF_TEXT + '">' + foePct + '% wróg</b>';
+      const playerSide = this._playerControlSide();
+      this._momentumCaptionEl.innerHTML = label + ': <b style="color:' + this._factionTextColor(playerSide) + '">'
+        + tyPct + '% Ty</b> · <b style="color:' + this._factionTextColor(playerSide === 'atk' ? 'def' : 'atk') + '">' + foePct + '% wróg</b>';
     }
 
     // Gorny pasek: sklad armii (przed walka = startowy; w walce = pozostali)
@@ -8929,6 +8926,7 @@ export class BattleScene {
         continueLabel: mode === 'end' ? '\u2190 Wroc do podsumowania' : 'Zamknij',
         zIndex: '100530',
         statusHeading: live ? 'Status' : undefined,
+        playerSide: this._playerControlSide(),
       },
     );
     this._battleStatsOpen = true;
@@ -10456,7 +10454,7 @@ export class BattleScene {
       units.push({
         q: ru.q,
         r: ru.r,
-        color: ru.side === 'atk' ? FACTION_ATK : FACTION_DEF,
+        color: this._factionColor(ru.side),
       });
     }
     return {
@@ -10923,6 +10921,19 @@ export class BattleScene {
 
   private _playerControlSide(): 'atk' | 'def' {
     return this._deployPlayerSideOpt;
+  }
+
+  /** Battle UI identity palette: player=blue, enemy=red; role stays separate. */
+  private _factionColor(side: 'atk' | 'def'): string {
+    return sideColor(side, this._playerControlSide()) === SIDE_COLOR_BY_IDENTITY.player
+      ? BATTLE_PLAYER
+      : BATTLE_ENEMY;
+  }
+
+  private _factionTextColor(side: 'atk' | 'def'): string {
+    return sideColor(side, this._playerControlSide()) === SIDE_COLOR_BY_IDENTITY.player
+      ? BATTLE_PLAYER_TEXT
+      : BATTLE_ENEMY_TEXT;
   }
 
   /** Czy gracz wygrał bitwę — uwzględnia deployPlayerSide (atk/def). */
@@ -15657,9 +15668,9 @@ export class BattleScene {
       let group: THREE.Group;
       try {
         const modelName = String((bu.stats as any)?.['Jednostka'] ?? bu.nazwa);
-        group = buildUnitModel(bu.kategoria, bu.ownerColor, modelName);
+        group = buildUnitModel(bu.kategoria, sideColor(side, this._playerControlSide()), modelName);
       } catch (_) {
-        group = makeFallbackAvatar(bu.ownerColor);
+        group = makeFallbackAvatar(sideColor(side, this._playerControlSide()));
       }
       group.position.set(x, topY, z);
       group.rotation.y = dirYaw(faceDir);
@@ -15670,7 +15681,7 @@ export class BattleScene {
 
       const ammo0 = ammoCount(bu);
       const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-      const bars = makeUnitBars(sideColor(side), ammoShown);
+      const bars = makeUnitBars(sideColor(side, this._playerControlSide()), ammoShown);
       bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
       this.scene.add(bars.hpBarGroup);
       bars.hpBarGroup.traverse(obj => {

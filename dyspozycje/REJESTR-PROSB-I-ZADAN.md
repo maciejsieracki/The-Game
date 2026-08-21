@@ -2614,3 +2614,203 @@ w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
 |---|---|---|---|
 | P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY | **B** — czas ponad próg ostrzeżeniem, poprawność nadal twardą bramką | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.md` · kontrakt 2/2 |
 | P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2 | **C** — targeted overlay bez globalnego przebijania | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md` · overlay 76/76 |
+
+## R-HANDEL-MIEDZYCYWILIZACYJNY-PRZYCHOD-BUDYNEK-Q1 — recon mechaniki handlu (2026-08-20)
+
+**Zgłoszenie właściciela:** ustalić przychody z handlu między cywilizacjami, moment wejścia
+mechaniki i wymagany budynek; nie dublować istniejącej mechaniki.
+
+**GOAL:** potwierdzić faktyczny przychód, bramki technologiczne/budynkowe, warunki umowy,
+parytet stron i save/load oraz wskazać, czy potrzebna jest zmiana kodu.
+
+**STATUS:** RECON PASS-WITH-NOTES — mechanika istnieje; brak zmiany kodu. Ewentualne
+rozszerzenie AI↔AI wymaga osobnej decyzji ABC.
+
+## R-PRACA-MIASTO-LIMIT-50-Q1 — lokalny limit ulepszeń względem budynków (2026-08-20)
+
+**Zgłoszenie właściciela:** „W oddziale pracy w miastach powinna być maksymalna możliwość
+przeznaczenia do 50% na ulepszenia, a reszta na budynki. Powinna obowiązywać miasta dokładnie
+ta sama zasada, która jest dla całej cywilizacji.”
+
+**GOAL:** lokalny podział Pracy w mieście respektuje ten sam kontrakt co nadrzędny podział
+cywilizacji: ulepszenia terenu maksymalnie 50% dostępnej puli, pozostała część trafia do
+budynków; UI, logika gracza/AI i wartości zapisywane nie mogą pozwolić na przekroczenie capu.
+
+**STATUS:** ZAREJESTROWANE — przed dispatchingiem wymaga reconu aktualnej implementacji,
+sprawdzenia relacji z `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` oraz pełnej bramki AutoBot.
+
+**Następny krok:** `00-dispatch.md`, następnie Operator Luna Medium.
+
+## R-AUTOBOT-LIMIT-5-RUND-Q1 — limit pętli Operator–Evaluator (2026-08-20)
+
+**Zgłoszenie właściciela:** pętla AutoBot nie może trwać bez końca; maksymalnie pięć prób
+tego samego tematu, po czym należy jawnie zgłosić przekroczenie limitu.
+
+**GOAL:** kanon procesu, skrót wejściowy, reguły egzekwujące i playbook definiują jednolity
+limit 5 rund Operator→Evaluator dla jednego ID oraz status/akcję po przekroczeniu; temat
+nie może być automatycznie ponawiany w nieskończoność.
+
+**STATUS:** ZAREJESTROWANE — zmiana samego AutoBota; wymaga dispatchu Operatora, niezależnego
+Evaluatora i aktualizacji wygenerowanego `playbook.json` wyłącznie przez generator.
+
+## R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1 — rekrutacja nie może blokować się kosztem utrzymania (2026-08-20)
+
+**Zgłoszenie właściciela:** przy rekrutacji system ma sprawdzać wyłącznie surowce wymagane
+do samego zakupu jednostki, a nie przyszły koszt jej utrzymania. Utrzymanie ma być pobierane
+w kolejnej turze; niedobór może wtedy powodować właściwe szkody/konsekwencje dla jednostki.
+
+**GOAL:** gracz z wystarczającymi zasobami rekrutacyjnymi może kupić jednostkę niezależnie
+od przyszłego utrzymania; kontrola kosztu rekrutacji i rozliczenie utrzymania są rozdzielone
+dla gracza, AI/MP, UI, logiki i starych zapisów.
+
+**STATUS:** ZAREJESTROWANE — wymaga reconu regresu, implementacji w aktualnej ścieżce
+rekrutacji i pełnego obiegu AutoBot. Decyzja właściciela jest literalna; nowe ABC nie jest
+potrzebne, o ile kod nie ujawni dodatkowej niejednoznaczności zakresu.
+
+## R-TECHNOLOGIA-KARTY-PODGLAD-KLIK-Q1 — podgląd kart w drzewku i panelu badań (2026-08-20)
+
+**Zgłoszenie właściciela:** gotowe karty technologii mają być klikalne w drzewku technologii
+oraz w menu Badań na mapie; kliknięcie ma otwierać podgląd karty i nie może przypadkowo
+rozpoczynać badania. Interfejs ma oznaczać możliwość podglądu.
+
+**GOAL:** jedna istniejąca karta technologii jest dostępna z obu ścieżek UI, dla wszystkich
+stanów technologii, z osobną akcją rozpoczęcia badania oraz poprawnym zamykaniem/focusem.
+
+**STATUS:** ZAREJESTROWANE — Operator i Evaluator wykonani; formalny dispatch/allowlista
+uzupełnione po kontroli Final Control, przed ponowną kontrolą gotowości.
+
+## R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1 — rozdzielenie budżetu od trybu automatyzacji (2026-08-20)
+
+**Zgłoszenie właściciela:** blok „Podział Praca: budynki / ulepszenia” dotyczy już zebranego
+budżetu i nie powinien sterować ani ograniczać automatycznego użycia ulepszeń; kontrolka jest
+źle opisana i ma zostać rozdzielona od trybu pracy ulepszeń. Recon ma rozstrzygnąć, czy blok
+budżetu usunąć, czy zastąpić właściwym sterowaniem 0–100% trybu automatyzacji.
+
+**GOAL:** UI i logika nie mylą nadrzędnego budżetu ulepszeń z automatyzacją kolejki ulepszeń;
+nie ma błędnej blokady 0–50% tam, gdzie właściciel oczekuje sterowania trybem pracy 0–100%.
+
+**STATUS:** ZAREJESTROWANE — recon Operatora ma rozdzielić dwie kontrolki; przy niejednoznaczności
+przygotować ABC zamiast wdrażać sprzeczną interpretację.
+
+## R-ZDOBYCZE-ELIMINACJA-POWER-Q1 — brak zdobyczy po eliminacji (2026-08-20)
+
+**Zgłoszenie właściciela:** popup eliminacji pokazuje `Skarbiec, nauka i 0 tech(y) przejęte`
+oraz `Zdobycze Power: +0`, co jest niewiarygodne; po zdobyciu państwa/miasta powinny zostać
+przejęte właściwe zasoby i power zgodnie z faktycznym stanem pokonanego.
+
+**GOAL:** eliminacja poprawnie wylicza i pokazuje zdobycze Skarbca, Nauki, technologii i Power;
+wartość nie może być zerowana przez błędny moment odczytu ani mylona z brakiem zdobyczy.
+
+**STATUS:** ZAREJESTROWANE — wymaga reconu źródła popupu, snapshotu pokonanego państwa i testu
+niezerowych oraz zerowych wartości; implementacja dopiero po potwierdzeniu kontraktu w kodzie.
+
+## R-BITWA-KOLORY-GRACZ-PRZECIWNIK-Q1 — stała tożsamość stron bitwy (2026-08-20)
+
+**Zgłoszenie właściciela:** gracz ma być zawsze niebieski, przeciwnik zawsze czerwony,
+niezależnie od tego, kto atakuje lub się broni; preferowany układ to gracz po lewej,
+przeciwnik po prawej, a rola atakujący/obrońca ma być tylko informacją.
+
+**GOAL:** ekran bitwy zachowuje stałą tożsamość kolorów i stron dla gracza/przeciwnika,
+bez regresji podpisów, wyniku i logiki ataku/obrony.
+
+**STATUS:** ZAREJESTROWANE — wymaga reconu renderowania stron i testów obu kierunków bitwy.
+
+## R-PRACA-JEDEN-SUWAK-UI-Q1 — usunięcie drugiego suwaka (2026-08-20)
+
+**Zgłoszenie właściciela:** usunąć dolny, niepotrzebny suwak; pozostawić jeden nadrzędny
+suwak z nazwami „Budynki (0–100%)” i „Pula Pracy (0–50%)”, bez rozjechanych stanów.
+
+**GOAL:** UI ma renderować jeden suwak i jeden stan podziału, z komplementarnymi wartościami
+budynków/puli pracy oraz bez drugiego niezależnego event handlera.
+
+**STATUS:** ZAREJESTROWANE — Operator zakończył zmianę i raport; brak jeszcze pełnej kontroli
+Evaluator/Final Control. Nie integrować bez weryfikacji z późniejszym rozdzieleniem budżetu
+i automatyzacji w `R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1`.
+
+## R-REPO-CHECKOUT-PULL-AUTH-Q1 — właściwy checkout i weryfikacja pull (2026-08-20)
+
+**Zgłoszenie właściciela:** pracować na świeżym checkoutcie, potwierdzić obecność README.md,
+Falę 300 i możliwość synchronizacji z `origin/main`; nie używać starego, zaśmieconego katalogu.
+
+**GOAL:** właściwy checkout `Civ-clean-main-2026-08-20` jest rozpoznany, ma HEAD `47cdca15`
+i upstream `origin/main`; pull nie może być wykonywany na nieprawidłowym/nieczystym katalogu
+ani omijać problemu poświadczeń.
+
+**STATUS:** ZWERYFIKOWANE — właściwy checkout i `origin/main` potwierdzone; README.md oraz
+Fala 300 są obecne. Pull nie został wykonany na obecnym nieczystym worktree, aby nie nadpisać
+równoległych zmian; wcześniejszy problem poświadczeń pozostaje warunkiem środowiskowym.
+
+## R-PRACA-PULA-NIEAKUMULUJE-Q1 — pula pracy nie odkłada przychodu (2026-08-20)
+
+**Zgłoszenie właściciela:** przy podziale 0% budynki / 100% pula pracy, a także przy 50/50,
+globalna pula pozostaje na poziomie `8` zamiast odkładać bieżący przyrost Pracy; UI pokazuje
+sprzeczność między `+9 do puli`, stanem `8 +9` i lokalnym `Praca w mieście +9`.
+
+**GOAL:** każda tura prawidłowo rozdziela bieżącą Pracę między budynki i pulę, odkłada część
+przeznaczoną do puli w trwałym stanie, nie zeruje jej po odświeżeniu oraz zachowuje zgodność
+panelu imperium, panelu miasta, utrzymania ulepszeń i starego save/load.
+
+**STATUS:** ZAREJESTROWANE — wymaga reconu źródła akumulacji i implementacji Operatora;
+nie zakładać, że problem wynika wyłącznie z suwaka. Trzeba sprawdzić kolejność naliczenia,
+cache/globalny stan puli, utrzymanie ulepszeń oraz ścieżkę tury.
+
+## R-PROC-NUMERACJA-FAL-DEPLOY-Q1 — numer fali po każdym deployu (2026-08-20)
+
+**Zgłoszenie właściciela:** przy każdym deployu numeracja fali ma być zwiększona i zapisana,
+żeby wdrożenia nie ginęły w historii.
+
+**GOAL:** każdy faktyczny deploy ma jeden jawny numer Fali, commit i wpis w `dyspozycje/WERSJE.md`;
+numer nie jest zwiększany przy samym commicie, integracji ani pracy roboczej.
+
+**STATUS:** ZAREJESTROWANE — kanon C-004 już wymaga logowania deployu; ten wpis doprecyzowuje
+obowiązek numeracji dla bieżącej serii. W tej Fali nie wykonano nowego deployu.
+
+## R-PROC-AGENT-CLEANUP-QUEUE-Q1 — zamykanie zakończonych subagentów (2026-08-20)
+
+**Zgłoszenie właściciela:** zakończonych lub niepracujących subagentów trzeba usuwać/zamykać,
+żeby nie blokowali kolejki.
+
+**GOAL:** po odebraniu końcowego raportu agent jest zamykany; aktywny pozostaje wyłącznie agent,
+który faktycznie pracuje lub oczekuje na wynik. Nie wolno zamykać agenta aktywnego bez sprawdzenia
+statusu i zabezpieczenia jego raportu.
+
+**STATUS:** ZAREJESTROWANE — bieżący audyt kolejki wykonany; zakończeni agenci tej serii zostali
+zamknięci, a aktywny Operator puli pracy pozostaje otwarty do czasu raportu.
+
+## R-AUTOBOT-ROUTING-STATUS-LEDGER-Q1 — brak pewnego statusu subagentów (2026-08-20)
+
+**Zgłoszenie właściciela:** routing nie przekazuje niezawodnie informacji o zakończeniu lub
+przerwaniu subagenta; powstają puste przebiegi, marnuje się czas i nie wiadomo, czy uruchamiać
+kolejną rolę.
+
+**GOAL:** każde dispatchowanie ma jawny rekord `agent_id`, temat, rolę, rundę, czas startu,
+oczekiwany artefakt i końcowy status (`PASS`, `FAIL`, `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS` albo
+`CLOSED`). Brak notyfikacji nie może być traktowany jako aktywna praca ani jako sukces.
+
+**STATUS:** ZAREJESTROWANE — wymaga audytu i wdrożenia mechanizmu ledger/watchdog w procesie
+AutoBot; nie zmienia mechaniki gry.
+
+## R-AUTOBOT-CAPACITY-LEDGER-VS-THREAD-LIMIT-Q1 — rozjazd wolnego slotu i limitu wątków (2026-08-20)
+
+**Zgłoszenie właściciela:** ledger może wskazywać wolny slot po zamknięciu agenta,
+podczas gdy silnik wykonawczy nadal zwraca `agent thread limit reached`; trzeba ustalić,
+czy zamknięcie jest asynchroniczne, czy Watchdog zajmuje ten sam limit.
+
+**GOAL:** zmierzyć rzeczywistą pojemność narzędzia względem liczby agentów raportowanych
+jako aktywni, rozdzielić status księgowy od statusu wykonawczego oraz ustalić, czy Watchdog
+liczy się do limitu. Wynik ma zawierać reprodukcję albo brak reprodukcji, czasy zwolnienia
+slotu i regułę bezpiecznej rezerwacji slotów.
+
+**STATUS:** ZAREJESTROWANE — diagnostyka procesu; bez zmian w `gra/**`, bez deployu i pushu.
+
+## R-AUTOBOT-MODEL-LUNA-HIGH-OPERATOR-EVALUATOR-Q1 — zmiana modelu ról jakościowych (2026-08-20)
+
+**Zgłoszenie właściciela:** zbyt wiele błędnych rund Operatora/Evaluatora przepala tokeny;
+Operator i Evaluator mają pracować na Luna High.
+
+**GOAL:** wymusić w dispatchach Codex `model=gpt-5.6-luna` oraz
+`reasoning_effort=high` dla Operatora i Evaluatora, bez dziedziczenia przypadkowego modelu
+rodzica. Każdy nowy raport ma podawać żądany model i effort; Final Control pozostaje Luna
+High, a integracja orkiestratora Luna Medium.
+
+**STATUS:** ZAREJESTROWANE — zmiana procesu; bez zmian w `gra/**`, bez deployu i pushu.

@@ -347,10 +347,16 @@ export const DEFAULT_PODZIAL_HANDLU: Readonly<CityPodzialHandlu> = {
   procentLuksus:   20,
 };
 
-/** Domyslny podzial Pracy — zgodny z buildEconParams (70% budynki). */
+/** Domyślny podział Pracy — zgodny z buildEconParams (70% budynki). */
 export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
   procentBudynki: 70,
 };
+
+/** Ogranicza lokalny suwak Budynki: ulepszenia mogą dostać maksymalnie 50%. */
+export function clampPodzialPracyBudynkiPercent(n: number | undefined | null): number {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_PODZIAL_PRACY.procentBudynki;
+  return Math.max(50, Math.min(100, Math.round(n)));
+}
 
 /** Domyślny suwak żywność→wzrost (reszta idzie do zapasów armii). Zgodny z suwak_zywnosc_rozwoj_domyslnie normal=100. */
 export const DEFAULT_PROCENT_ROZWOJ = 100;
@@ -499,7 +505,9 @@ export function ensureCityPodzialDefaults(city: City): void {
   } else if (city.podzialHandluOverride && !city.podzialHandlu) {
     city.podzialHandlu = { ...DEFAULT_PODZIAL_HANDLU };
   }
-  if (!city.podzialPracy) city.podzialPracy = { ...DEFAULT_PODZIAL_PRACY };
+  city.podzialPracy = {
+    procentBudynki: clampPodzialPracyBudynkiPercent(city.podzialPracy?.procentBudynki),
+  };
 }
 
 /** Migracja zapisu v0.1 — podział Handlu/Pracy + Wealth po load. */

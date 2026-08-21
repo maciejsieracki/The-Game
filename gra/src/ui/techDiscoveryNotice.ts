@@ -451,9 +451,11 @@ function wireInteractions(host: HTMLElement): void {
 export function showTechDiscoveryNotice(opts: {
   techName: string;
   eraIndex: number;
-  /** Awans epoki zachowuje dotychczasowy nagłówek; zwykłe badanie ma neutralny komunikat. */
-  kind?: 'era' | 'completion';
+  /** Awans epoki zachowuje dotychczasowy nagłówek; completion i preview są jawne. */
+  kind?: 'era' | 'completion' | 'preview';
   onOpenTree?: () => void;
+  /** Opcjonalna, osobna akcja wyboru/rozpoczęcia badania z karty podglądu. */
+  onStartResearch?: () => void;
 }): void {
   const tech = (techData as unknown as { technologie: TechRow[] }).technologie
     .find(t => t.Technologia === opts.techName);
@@ -463,8 +465,12 @@ export function showTechDiscoveryNotice(opts: {
   const host = document.createElement('div');
   host.id = HOST_ID;
   const close = () => { popOverlay(OVERLAY_ID); host.remove(); };
-  const isEraAdvance = (opts.kind ?? 'era') === 'era';
-  const kick = isEraAdvance
+  const kind = opts.kind ?? 'era';
+  const isEraAdvance = kind === 'era';
+  const isPreview = kind === 'preview';
+  const kick = isPreview
+    ? 'Podgląd technologii'
+    : isEraAdvance
     ? `Awans do epoki ${esc(EPOCH_LABEL[opts.eraIndex] ?? opts.eraIndex)}`
     : 'Ukończono badania';
   const milestoneEpoch = typeof tech.awansDoEpoki === 'number' ? (EPOCH_LABEL[tech.awansDoEpoki] ?? String(tech.awansDoEpoki)) : null;
@@ -481,17 +487,22 @@ export function showTechDiscoveryNotice(opts: {
     aria-label="Odkryta technologia"><header class="tdn-head">
     <span class="tdn-medallion">${icon ?? ''}</span>
     <span class="tdn-headtext">
-      <span class="tdn-kickrow"><span class="tdn-kick">${kick}</span><span class="tdn-status-dot"></span><span class="tdn-status">Ukończona</span></span>
+      <span class="tdn-kickrow"><span class="tdn-kick">${kick}</span><span class="tdn-status-dot"></span><span class="tdn-status">${isPreview ? 'Informacja' : 'Ukończona'}</span></span>
       <h2>${esc(tech.Technologia)}</h2>
       <span class="tdn-meta">${metaParts.join('')}</span>
     </span>
     <button type="button" class="tdn-close" data-act="close" title="Zamknij (Esc)" aria-label="Zamknij kartę technologii">✕</button>
     </header>
     <div class="tdn-scroll">${bodyHtml}</div>
-    ${opts.onOpenTree ? `<footer class="tdn-foot"><button type="button" class="tdn-tree-btn" data-act="tree">Otwórz drzewo</button></footer>` : ''}
+    ${isPreview ? `<div class="tdn-preview-hint" style="color:#b7c9df;font-size:.78rem;padding:.55rem .9rem;border-top:1px solid rgba(232,216,138,.18);">Kliknięcie otwiera kartę podglądu. Wybór badania jest osobną akcją.</div>` : ''}
+    ${(opts.onOpenTree || opts.onStartResearch) ? `<footer class="tdn-foot">${opts.onStartResearch ? `<button type="button" class="tdn-tree-btn" data-act="research">Rozpocznij badanie</button>` : ''}${opts.onOpenTree ? `<button type="button" class="tdn-tree-btn" data-act="tree">Otwórz drzewo</button>` : ''}</footer>` : ''}
     </article>`;
   host.querySelector('.tdn-back')?.addEventListener('click', close);
   host.querySelector('[data-act="close"]')?.addEventListener('click', close);
+  host.querySelector('[data-act="research"]')?.addEventListener('click', () => {
+    opts.onStartResearch?.();
+    close();
+  });
   host.querySelector('[data-act="tree"]')?.addEventListener('click', () => {
     opts.onOpenTree?.();
     close();

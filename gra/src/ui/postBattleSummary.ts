@@ -29,6 +29,7 @@ export interface PostBattleSummaryShowOptions {
   zIndex?: string;
   /** Nadpisuje „Werdykt” / „Wynik auto-walki” nad głównym tekstem. */
   statusHeading?: string;
+  playerSide?: 'atk' | 'def';
 }
 
 type StyleMap = { [K in keyof CSSStyleDeclaration]?: string };
@@ -91,8 +92,9 @@ function ensureStyles(): void {
   document.head.appendChild(s);
 }
 
-function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTMLElement {
+function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def', playerSide: 'atk' | 'def' = 'atk'): HTMLElement {
   const isAtk = role === 'atk';
+  const isPlayer = role === playerSide;
   const wrap = el('div');
   css(wrap, {
     position: 'absolute',
@@ -101,9 +103,9 @@ function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTM
     display: 'flex',
     alignItems: 'center',
     gap: '14px',
-    flexDirection: isAtk ? 'row' : 'row-reverse',
-    textAlign: isAtk ? 'left' : 'right',
-    ...(isAtk ? { left: '30px' } : { right: '30px' }),
+    flexDirection: isPlayer ? 'row' : 'row-reverse',
+    textAlign: isPlayer ? 'left' : 'right',
+    ...(isPlayer ? { left: '30px' } : { right: '30px' }),
   });
 
   const medal = el('div');
@@ -114,10 +116,10 @@ function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTM
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: isAtk ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
-    background: isAtk ? 'radial-gradient(circle at 40% 34%,#12202e,#0a0d14)' : 'radial-gradient(circle at 40% 34%,#2a1414,#0a0d14)',
-    border: '3px solid ' + (isAtk ? BATTLE_PLAYER : BATTLE_ENEMY),
-    boxShadow: isAtk ? '0 0 26px rgba(58,106,208,.4)' : '0 0 26px rgba(200,64,64,.4)',
+    color: isPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
+    background: isPlayer ? 'radial-gradient(circle at 40% 34%,#12202e,#0a0d14)' : 'radial-gradient(circle at 40% 34%,#2a1414,#0a0d14)',
+    border: '3px solid ' + (isPlayer ? BATTLE_PLAYER : BATTLE_ENEMY),
+    boxShadow: isPlayer ? '0 0 26px rgba(58,106,208,.4)' : '0 0 26px rgba(200,64,64,.4)',
     flexShrink: '0',
   });
   medal.innerHTML = PB_SVG.commander;
@@ -128,7 +130,7 @@ function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTM
   css(name, {
     fontFamily: BATTLE_FONT_TITLE,
     fontSize: '22px',
-    color: isAtk ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
+    color: isPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT,
   });
   name.textContent = side.label;
   txt.appendChild(name);
@@ -148,8 +150,8 @@ function buildCommanderCorner(side: BattleSummarySide, role: 'atk' | 'def'): HTM
   return wrap;
 }
 
-function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElement {
-  const isAtk = role === 'atk';
+function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def', playerSide: 'atk' | 'def' = 'atk'): HTMLElement {
+  const isAtk = role === playerSide;
   const kind = unitKind(u.kategoria);
   const row = el('div');
   css(row, {
@@ -258,8 +260,8 @@ function buildUnitRow(u: BattleSummaryUnitCard, role: 'atk' | 'def'): HTMLElemen
   return row;
 }
 
-function buildRosterColumn(side: BattleSummarySide, role: 'atk' | 'def'): HTMLElement {
-  const isAtk = role === 'atk';
+function buildRosterColumn(side: BattleSummarySide, role: 'atk' | 'def', playerSide: 'atk' | 'def' = 'atk'): HTMLElement {
+  const isAtk = role === playerSide;
   const col = el('div');
   col.className = 'pbs-roster-col';
   css(col, {
@@ -303,7 +305,7 @@ function buildRosterColumn(side: BattleSummarySide, role: 'atk' | 'def'): HTMLEl
   if (side.units.length === 0) {
     col.appendChild(el('div', 'Brak jednostek'));
   } else {
-    for (const u of side.units) col.appendChild(buildUnitRow(u, role));
+    for (const u of side.units) col.appendChild(buildUnitRow(u, role, playerSide));
   }
   return col;
 }
@@ -463,10 +465,11 @@ function buildOverlay(
   });
   overlay.appendChild(vignette);
 
-  overlay.appendChild(buildCommanderCorner(data.atakujacy, 'atk'));
-  overlay.appendChild(buildCommanderCorner(data.obronca, 'def'));
-  overlay.appendChild(buildRosterColumn(data.atakujacy, 'atk'));
-  overlay.appendChild(buildRosterColumn(data.obronca, 'def'));
+  const playerSide = opts?.playerSide ?? 'atk';
+  overlay.appendChild(buildCommanderCorner(data.atakujacy, 'atk', playerSide));
+  overlay.appendChild(buildCommanderCorner(data.obronca, 'def', playerSide));
+  overlay.appendChild(buildRosterColumn(data.atakujacy, 'atk', playerSide));
+  overlay.appendChild(buildRosterColumn(data.obronca, 'def', playerSide));
   overlay.appendChild(buildCenterPanel(data, opts?.statusHeading));
   overlay.appendChild(buildContinueButton(onContinue, opts?.continueLabel));
 

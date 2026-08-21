@@ -1,8 +1,8 @@
 'use strict';
 /**
  * ai-recruit-upkeep-gate-test.cjs — R-AI-RECRUIT-UPKEEP-GATE
- * Bramka rekrutacji: pula państwa musi pokryć 1× utrzymanie surowcowe/turę
- * (unitResourceUpkeep) oprócz kosztu rekrutacji (unitStockCost).
+ * Bramka rekrutacji: pula państwa musi pokryć wyłącznie jednorazowy koszt
+ * rekrutacji (unitStockCost); upkeep rozlicza się w następnej turze.
  *
  * Run from gra/:  node tools/ai-recruit-upkeep-gate-test.cjs
  */
@@ -81,13 +81,13 @@ function makeCities(spec) {
   return spec.map(s => ({ id: s.id, ownerId: s.ownerId, surowce: { ...(s.surowce ?? {}) } }));
 }
 
-console.log('\n-- unitRecruitUpkeepReserve: próg 1× utrzymanie/turę --');
+console.log('\n-- unitRecruitUpkeepReserve: próg 1× utrzymanie/turę (FALA 300 ×5) --');
 const wlocznik = findUnit('Włócznik');
-deepEq(M.unitRecruitUpkeepReserve(wlocznik), { braz: 2 }, 'Włócznik reserve -> {braz:2}');
+deepEq(M.unitRecruitUpkeepReserve(wlocznik), { braz: 10 }, 'Włócznik reserve -> {braz:10}');
 assert(M.UNIT_RECRUIT_UPKEEP_RESERVE_TURNS === 1, 'UNIT_RECRUIT_UPKEEP_RESERVE_TURNS === 1');
 assert(
-  M.UNIT_RECRUIT_FULL_HINT === 'Za mało surowca (rekrutacja + utrzymanie 1 tura)',
-  'UNIT_RECRUIT_FULL_HINT — łączny komunikat (nie samo utrzymanie)',
+  M.UNIT_RECRUIT_FULL_HINT === 'Za mało surowca w magazynie państwa',
+  'UNIT_RECRUIT_FULL_HINT — brak blokady przez upkeep',
 );
 assert(
   M.UNIT_RECRUIT_STOCK_ONLY_HINT === 'Za mało surowca w magazynie państwa',
@@ -95,53 +95,51 @@ assert(
 );
 
 console.log('\n-- canAffordUnitRecruitUpkeepReserve: blokada gdy brak rezerwy --');
-const poolLow = { braz: 1 };
-const poolOk = { braz: 2 };
+const poolLow = { braz: 9 };
+const poolOk = { braz: 10 };
 assert(
   !M.canAffordUnitRecruitUpkeepReserve(poolLow, wlocznik),
-  '1 braz < 2/t upkeep -> odmowa rekrutacji',
+  '9 braz < 10/t upkeep -> odmowa rekrutacji',
 );
 assert(
   M.canAffordUnitRecruitUpkeepReserve(poolOk, wlocznik),
-  '2 braz >= 2/t upkeep -> OK (upkeep-only gate)',
+  '10 braz >= 10/t upkeep -> OK (upkeep-only gate)',
 );
 
-console.log('\n-- canAffordUnitRecruitFull: łączna bramka rekrut+reserve (Włócznik 10+2) --');
-deepEq(M.unitRecruitFullStockCost(wlocznik), { braz: 12 }, 'Włócznik full cost -> {braz:12}');
+console.log('\n-- canAffordUnitRecruitFull: tylko koszt rekrutacji (Włócznik 50) --');
+deepEq(M.unitRecruitFullStockCost(wlocznik), { braz: 60 }, 'legacy full cost pozostaje diagnostyczny');
 assert(
-  !M.canAffordUnitRecruitFull({ braz: 10 }, wlocznik),
-  'pool braz=10 < 12 (rekrut+reserve) -> odmowa',
+  M.canAffordUnitRecruitFull({ braz: 50 }, wlocznik),
+  'pool braz=50 pokrywa koszt rekrutacji -> OK mimo braku rezerwy',
 );
 assert(
-  !M.canAffordUnitRecruitFull({ braz: 11 }, wlocznik),
-  'pool braz=11 < 12 -> odmowa',
+  M.canAffordUnitRecruitFull({ braz: 51 }, wlocznik),
+  'pool braz=51 pokrywa koszt rekrutacji',
 );
 assert(
-  M.canAffordUnitRecruitFull({ braz: 12 }, wlocznik),
-  'pool braz=12 >= 12 -> OK',
+  M.canAffordUnitRecruitFull({ braz: 60 }, wlocznik),
+  'pool braz=60 >= 60 -> OK',
 );
 
 console.log('\n-- pickUnitRecruitHint: STOCK_ONLY / FULL / null (Włócznik) --');
 assert(
-  M.pickUnitRecruitHint({ braz: 9 }, wlocznik) === M.UNIT_RECRUIT_STOCK_ONLY_HINT,
-  'pool braz=9 < 10 stock -> STOCK_ONLY',
+  M.pickUnitRecruitHint({ braz: 49 }, wlocznik) === M.UNIT_RECRUIT_STOCK_ONLY_HINT,
+  'pool braz=49 < 50 stock -> STOCK_ONLY',
 );
+assert(M.pickUnitRecruitHint({ braz: 50 }, wlocznik) === null,
+  'pool braz=50 stock OK, upkeep nie tworzy hintu');
 assert(
-  M.pickUnitRecruitHint({ braz: 11 }, wlocznik) === M.UNIT_RECRUIT_FULL_HINT,
-  'pool braz=11 stock OK, full fail -> FULL',
-);
-assert(
-  M.pickUnitRecruitHint({ braz: 12 }, wlocznik) === null,
-  'pool braz=12 full OK -> null',
+  M.pickUnitRecruitHint({ braz: 60 }, wlocznik) === null,
+  'pool braz=60 full OK -> null',
 );
 
 console.log('\n-- parytet ownerId: gracz (0) vs AI (7) — ta sama bramka --');
 const citiesPlayer = makeCities([
-  { id: 'c1', ownerId: 0, surowce: { braz: 10 } },
+  { id: 'c1', ownerId: 0, surowce: { braz: 50 } },
   { id: 'c2', ownerId: 0, surowce: { braz: 0 } },
 ]);
 const citiesAi = makeCities([
-  { id: 'a1', ownerId: 7, surowce: { braz: 10 } },
+  { id: 'a1', ownerId: 7, surowce: { braz: 50 } },
   { id: 'a2', ownerId: 7, surowce: { braz: 0 } },
 ]);
 const poolPlayer = M.ownerResourceStockAll(citiesPlayer, 0);
@@ -149,63 +147,63 @@ const poolAi = M.ownerResourceStockAll(citiesAi, 7);
 const stockCost = M.unitStockCost(wlocznik);
 assert(
   M.canAffordBuildingStock(poolPlayer, stockCost),
-  'gracz: stock rekrutacji (10 braz) OK',
+  'gracz: stock rekrutacji (50 braz) OK',
 );
 assert(
   M.canAffordBuildingStock(poolAi, stockCost),
-  'AI: stock rekrutacji (10 braz) OK',
+  'AI: stock rekrutacji (50 braz) OK',
 );
 assert(
   M.canAffordUnitRecruitUpkeepReserve(poolPlayer, wlocznik),
-  'gracz: 10 braz pokrywa reserve 2/t (upkeep-only)',
+  'gracz: 50 braz pokrywa reserve 10/t (upkeep-only)',
 );
 assert(
   M.canAffordUnitRecruitUpkeepReserve(poolAi, wlocznik),
-  'AI ownerId=7: identyczna pula 10 braz -> OK reserve (upkeep-only)',
+  'AI ownerId=7: identyczna pula 50 braz -> OK reserve (upkeep-only)',
 );
 assert(
-  !M.canAffordUnitRecruitFull(poolPlayer, wlocznik),
-  'gracz: 10 braz NIE pokrywa łącznego kosztu 12',
+  M.canAffordUnitRecruitFull(poolPlayer, wlocznik),
+  'gracz: 50 braz pokrywa zakup mimo upkeep 10',
 );
 assert(
-  !M.canAffordUnitRecruitFull(poolAi, wlocznik),
-  'AI: 10 braz NIE pokrywa łącznego kosztu 12',
+  M.canAffordUnitRecruitFull(poolAi, wlocznik),
+  'AI: 50 braz pokrywa zakup mimo upkeep 10',
 );
 
 const citiesBare = makeCities([
-  { id: 'c1', ownerId: 0, surowce: { braz: 10 } },
-  { id: 'a1', ownerId: 7, surowce: { braz: 10 } },
+  { id: 'c1', ownerId: 0, surowce: { braz: 50 } },
+  { id: 'a1', ownerId: 7, surowce: { braz: 50 } },
 ]);
 const barePlayer = M.ownerResourceStockAll(citiesBare.filter(c => c.ownerId === 0), 0);
 const bareAi = M.ownerResourceStockAll(citiesBare.filter(c => c.ownerId === 7), 7);
 assert(
   M.canAffordUnitRecruitUpkeepReserve(barePlayer, wlocznik)
   === M.canAffordUnitRecruitUpkeepReserve(bareAi, wlocznik),
-  'parytet gracz=AI przy tej samej puli (upkeep-only, 10 braz)',
+  'parytet gracz=AI przy tej samej puli (upkeep-only, 50 braz)',
 );
 assert(
   M.canAffordUnitRecruitFull(barePlayer, wlocznik)
   === M.canAffordUnitRecruitFull(bareAi, wlocznik),
-  'parytet gracz=AI przy tej samej puli (full gate, 10 braz -> false)',
+  'parytet gracz=AI przy tej samej puli (full gate, 50 braz -> true)',
 );
 
 console.log('\n-- isUnitRecruitStockChipMissing: chip vs full cost (Eval F253) --');
 assert(
-  M.isUnitRecruitStockChipMissing({ braz: 10 }, wlocznik, 'braz'),
-  'pool braz=10: chip stock-missing (full 12, nie sam stock 10)',
+  !M.isUnitRecruitStockChipMissing({ braz: 50 }, wlocznik, 'braz'),
+  'pool braz=50: chip OK (tylko stock 50)',
 );
 assert(
-  M.isUnitRecruitStockChipMissing({ braz: 11 }, wlocznik, 'braz'),
-  'pool braz=11: chip stock-missing (tooltip Brakuje 1 — spójność)',
+  !M.isUnitRecruitStockChipMissing({ braz: 51 }, wlocznik, 'braz'),
+  'pool braz=51: chip OK',
 );
 assert(
-  !M.isUnitRecruitStockChipMissing({ braz: 12 }, wlocznik, 'braz'),
-  'pool braz=12: chip OK (full gate pass)',
+  !M.isUnitRecruitStockChipMissing({ braz: 60 }, wlocznik, 'braz'),
+  'pool braz=60: chip OK',
 );
 assert(
-  M.isUnitRecruitStockChipMissing({ braz: 11 }, wlocznik, 'braz')
-  === !M.canAffordUnitRecruitFull({ braz: 11 }, wlocznik),
-  'chip missing === negacja canAffordUnitRecruitFull (pula 11)',
+  M.isUnitRecruitStockChipMissing({ braz: 9 }, wlocznik, 'braz')
+  === !M.canAffordUnitRecruitFull({ braz: 9 }, wlocznik),
+  'chip missing === negacja canAffordUnitRecruitFull (pula 9)',
 );
 
 console.log('\n-- jednostka bez utrzymania surowcowego: bramka przepuszcza --');

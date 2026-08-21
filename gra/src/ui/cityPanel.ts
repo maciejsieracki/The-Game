@@ -57,7 +57,7 @@ import {
   BUDOWA_TYP_FOCUS,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
 } from '../game/cities';
-import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit, MAX_PROCENT_NAUKA } from '../game/cities';
+import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit, MAX_PROCENT_NAUKA, clampPodzialPracyBudynkiPercent } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
@@ -188,7 +188,6 @@ import {
   addResourceCosts,
   unitResourceUpkeep,
   canAffordUnitRecruitFull,
-  unitRecruitFullStockCost,
   isUnitRecruitStockChipMissing,
 } from '../game/economy-upkeep';
 import {
@@ -974,15 +973,15 @@ function readOwnerDefaultPodzialHandlu(city: City, data: GameData | null): Podzi
 
 function readPodzialPracy(city: City, data: GameData | null): PodzialPracySplit {
   const fromHook = cfg.getPodzialPracy?.(city.id);
-  if (fromHook) return { procentBudynki: snapHandelPct(fromHook.procentBudynki) };
+  if (fromHook) return { procentBudynki: clampPodzialPracyBudynkiPercent(fromHook.procentBudynki) };
   const ext = city as CityWithSliders;
   const stored = ext.podzialPracy ?? ext.podziałPracy;
-  if (stored) return { procentBudynki: snapHandelPct(stored.procentBudynki) };
+  if (stored) return { procentBudynki: clampPodzialPracyBudynkiPercent(stored.procentBudynki) };
   if (data) {
     const params = buildEconParams(data, cfg.difficulty ?? 'normal');
-    return { procentBudynki: snapHandelPct(params.suwaakPracaBudynki) };
+    return { procentBudynki: clampPodzialPracyBudynkiPercent(params.suwaakPracaBudynki) };
   }
-  return { procentBudynki: snapHandelPct(DEFAULT_PODZIAL_PRACY.procentBudynki) };
+  return { procentBudynki: clampPodzialPracyBudynkiPercent(DEFAULT_PODZIAL_PRACY.procentBudynki) };
 }
 
 // ---------------------------------------------------------------------------
@@ -4822,14 +4821,14 @@ function renderPodzialPracy(
   if (player) {
     const inp = document.createElement('input');
     inp.type = 'range';
-    inp.min = '0';
+    inp.min = '50';
     inp.max = '100';
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
     inp.setAttribute('aria-label', 'Lokalny podział przyrostu Pracy tego miasta: budynki versus pula Pracy');
     inp.title = podzialTip;
     inp.addEventListener('input', () => {
-      const v = snapHandelPct(Number(inp.value));
+      const v = clampPodzialPracyBudynkiPercent(Number(inp.value));
       cfg.onPodzialPracyChange?.(city.id, { procentBudynki: v });
       rerender();
     });
@@ -7392,7 +7391,7 @@ function empireRekruciAffordable(city: City, mpCost: number): boolean {
  * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): chip(y) kosztu surowcowego jednostki
  * (units.json Surowiec/Surowiec (ilość)) na karcie rekrutacji — czerwony gdy pula
  * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza na łączny
- * koszt rekrutacji (unitRecruitFullStockCost = stock + rezerwa utrzymania 1 tura).
+ * koszt rekrutacji. Przyszłe utrzymanie jest informacyjne i nie blokuje zakupu.
  * Pusty string gdy jednostka nie ma kosztu surowcowego.
  * Wzorzec: buildingStockCostChipsHtml; bramka: isUnitRecruitStockChipMissing.
  */
@@ -7431,10 +7430,9 @@ function appendUnitRecruitCompactRow(
   if (!udef) return;
   const mpCost = recruitManpowerCost(city, item.id);
   const canMp = empireRekruciAffordable(city, mpCost);
-  // JEDNOSTKI-SUROWIEC-01 + R-AI-RECRUIT-UPKEEP-GATE: łączna bramka na puli państwa.
-  const fullCost = unitRecruitFullStockCost(udef);
-  const fullMissing = missingStockFor(ownerSurowcePoolFor(city), fullCost);
-  const recruitOk = Object.keys(fullMissing).length === 0;
+  // JEDNOSTKI-SUROWIEC-01: bramka obejmuje wyłącznie jednorazowy koszt zakupu.
+  const stockMissing = missingStockFor(ownerSurowcePoolFor(city), unitStockCost(udef));
+  const recruitOk = Object.keys(stockMissing).length === 0;
   const row = buildUnitRecruitCard({
     udef,
     item,
@@ -7447,7 +7445,7 @@ function appendUnitRecruitCompactRow(
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
     resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(udef),
     stockMissingLabel: !recruitOk
-      ? 'Brakuje w magazynie: ' + Object.entries(fullMissing)
+      ? 'Brakuje w magazynie: ' + Object.entries(stockMissing)
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
       : undefined,

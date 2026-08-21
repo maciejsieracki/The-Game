@@ -15,9 +15,14 @@ Operator GPT-5.6 Luna High
 → osobna bramka deploy/push
 ```
 
+W Codex `multi_agent_v1` Operator i Evaluator wymagają jawnych parametrów
+`model=gpt-5.6-luna` i `reasoning_effort=high`; nie używaj dziedziczenia modelu.
+
 C-043: właściciel komunikuje się tylko w głównym czacie orkiestratora. Każdy temat ma
-GOAL, pełne ID, allowlistę i izolację. To samo ID wraca do Operatora po FAIL/BLOCK/TIMEOUT/
-INFRA/ZWIS; ABC pauzuje tylko temat wymagający decyzji. Nowe raporty zapisuj w
+GOAL, pełne ID, allowlistę i izolację. To samo ID wraca do Operatora po FAIL/BLOCK/TIMEOUT/INFRA/ZWIS
+wyłącznie po `authorizeDispatch({ id, roundsUsed, lastVerdict, automatic: true })`; próba 6 jest
+blokowana statusem `LIMIT-5-EXCEEDED`. Manual resume wymaga jawnej decyzji i zachowuje ID,
+licznik oraz `lastVerdict`; ABC pauzuje tylko temat wymagający decyzji. Nowe raporty zapisuj w
 `runs/<ID>/00–04`; raporty ról są dowodami, nie zastępują Final Control ani integracji.
 
 ## Runtime AutoBot

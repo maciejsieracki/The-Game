@@ -55,7 +55,9 @@ z sekcji 3, nigdy na pamięci własnych intencji z wykonania.
 5. **TWARDE METRYKI**: zbierz komplet z sekcji 3 — liczbowo, z porównaniem do baseline'u
    zmierzonego OSOBNO na czystym stanie sprzed zmiany (nie „z pamięci").
 6. **EVALUATOR WERDYKT**: szablon 5 pytań + reguły STRICT z sekcji 5. FAIL → wraca do
-   Operatora z listą konkretów; pętla aż PASS. Zakaz „PASS z uwagami" dla braków testów.
+   Operatora z listą konkretów tylko po `authorizeDispatch` z bieżącym `roundsUsed` i
+   `lastVerdict`; próba 6 kończy się `LIMIT-5-EXCEEDED`, a manual resume wymaga jawnej
+   decyzji i zachowuje ID, licznik oraz `lastVerdict`. Zakaz „PASS z uwagami" dla braków testów.
 7. **POSTMORTEM + PLAYBOOK**: wpis do dziennika (format w sekcji 6); reguła playbooka,
    której dotyczyła paczka, dostaje win/fail; wniosek z porażki → nowa reguła.
 8. **MELDUNEK + GATE**: raport dla właściciela w formacie z sekcji 7. Deploy WYŁĄCZNIE

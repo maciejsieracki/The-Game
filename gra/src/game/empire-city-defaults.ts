@@ -45,6 +45,7 @@
 import type { City, CityPodzialPracy, OkolicaFocus, BudowaFocus, BudowaTryb } from './cities';
 import {
   DEFAULT_PODZIAL_PRACY,
+  clampPodzialPracyBudynkiPercent,
   DEFAULT_OKOLICA_FOCUS,
   DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
@@ -56,7 +57,8 @@ import { DEFAULT_POZIOM_RACJI, type PoziomRacji } from './population-growth-v85'
 // ---------------------------------------------------------------------------
 
 export function podzialPracyEqual(a: CityPodzialPracy, b: CityPodzialPracy): boolean {
-  return a.procentBudynki === b.procentBudynki;
+  return clampPodzialPracyBudynkiPercent(a.procentBudynki)
+    === clampPodzialPracyBudynkiPercent(b.procentBudynki);
 }
 
 /** Efektywny podział Pracy dla miasta: override lokalny lub domyślny imperium. */
@@ -66,15 +68,16 @@ export function resolveCityPodzialPracy(
   paramsFallback?: CityPodzialPracy,
 ): CityPodzialPracy {
   if (city.podzialPracyOverride && city.podzialPracy) {
-    return city.podzialPracy;
+    return { procentBudynki: clampPodzialPracyBudynkiPercent(city.podzialPracy.procentBudynki) };
   }
   if (ownerDefault) {
-    return ownerDefault;
+    return { procentBudynki: clampPodzialPracyBudynkiPercent(ownerDefault.procentBudynki) };
   }
   if (city.podzialPracy) {
-    return city.podzialPracy;
+    return { procentBudynki: clampPodzialPracyBudynkiPercent(city.podzialPracy.procentBudynki) };
   }
-  return paramsFallback ?? DEFAULT_PODZIAL_PRACY;
+  const fallback = paramsFallback ?? DEFAULT_PODZIAL_PRACY;
+  return { procentBudynki: clampPodzialPracyBudynkiPercent(fallback.procentBudynki) };
 }
 
 /** Migracja starych zapisów (per-miasto bez globalnego) → global + flagi override. */
@@ -85,12 +88,14 @@ export function migratePodzialPracyOnLoad(
 ): void {
   if (savedDefaults?.length) {
     for (const [oid, split] of savedDefaults) {
-      ownerDefaults.set(oid, { ...split });
+      ownerDefaults.set(oid, { procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki) });
     }
   } else {
     for (const city of cities) {
       if (!ownerDefaults.has(city.ownerId)) {
-        ownerDefaults.set(city.ownerId, { ...(city.podzialPracy ?? DEFAULT_PODZIAL_PRACY) });
+        ownerDefaults.set(city.ownerId, {
+          procentBudynki: clampPodzialPracyBudynkiPercent(city.podzialPracy?.procentBudynki),
+        });
       }
     }
     for (const city of cities) {
@@ -100,6 +105,7 @@ export function migratePodzialPracyOnLoad(
         city.podzialPracyOverride = false;
         continue;
       }
+      city.podzialPracy.procentBudynki = clampPodzialPracyBudynkiPercent(city.podzialPracy.procentBudynki);
       const differs = !podzialPracyEqual(city.podzialPracy, def);
       city.podzialPracyOverride = differs;
       if (!differs) {
