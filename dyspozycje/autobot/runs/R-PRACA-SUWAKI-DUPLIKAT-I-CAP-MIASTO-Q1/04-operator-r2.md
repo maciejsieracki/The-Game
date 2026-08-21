@@ -232,6 +232,22 @@ DEPLOY/PUSH: NIE WYKONANO
 
 Baza (HEAD startowy tej rundy, zweryfikowany zgodnie z dyspozycją): `94d9483b3e65a2557b497a6c3cb4b565afc93301`.
 
-Commit tej rundy zostanie wykonany zaraz po zapisaniu tego raportu (patrz `git log` po
-commicie w tym worktree — commit lokalny na branchu
-`autobot/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`, NIE pushowany).
+Commit tej rundy (branch `autobot/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`, lokalny, NIE
+pushowany): `bd03ed3e`.
+
+```
+$ git show --stat HEAD
+ dyspozycje/.../R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1/04-operator-r2.md | (nowy raport)
+ gra/src/game/cities.ts                                                   |  ~20 ++--
+ gra/src/main.ts                                                          |   ~8 ++--
+ gra/src/ui/buildModeHud.ts                                               |  ~10 ++--
+ gra/src/ui/cityPanel.ts                                                  | ~110 +++++++--
+ gra/src/ui/empireDetailPanel.ts                                          |  ~35 ++--
+ gra/tools/praca-limit-50-test.cjs                                        |  ~70 +++--
+ gra/tools/praca-miasto-limit-50-cap-test.cjs                             | (nowy plik)
+ gra/tools/praca-miasto-limit-50-test.cjs                                 |   ~6 ++--
+ gra/tools/praca-split-ui-test.cjs                                        |  ~25 ++--
+ 10 files changed, 604 insertions(+), 101 deletions(-)
+```
+
+Pełny `git diff 94d9483b..bd03ed3e` dostępny w repo tego worktree.
