@@ -30,6 +30,11 @@ catch (e) {
 const GRA = path.resolve(__dirname, '..');
 const STUB_DIR = path.resolve(__dirname, '.stubs');
 const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'buildmodehud-brandassets-stub.ts');
+// T7b (KARTA-ULEPSZENIA-TERENU): `buildModeHud.ts` teraz importuje `openEntityCard` z
+// `entityCards/renderer.ts`, który przez `registry.ts` -> `sciencePicker.ts` ->
+// `scienceHubHud.ts` ciągnie też `icons/scienceOwlIcon` (`.svg?raw`, Vite-only) — ten sam
+// łańcuch co `tech-discovery-click-scienceOwlIcon-stub.ts`, więc potrzebny osobny stub tu.
+const SCIENCE_OWL_STUB = path.resolve(STUB_DIR, 'buildmodehud-scienceOwlIcon-stub.ts');
 const ENTRY = path.resolve(__dirname, '.build-mode-hud-affordability-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.build-mode-hud-affordability-bundle.cjs');
 
@@ -43,6 +48,7 @@ const stubBrandAssetsPlugin = {
   name: 'stub-brand-assets',
   setup(build) {
     build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_ASSETS_STUB }));
+    build.onResolve({ filter: /icons\/scienceOwlIcon$/ }, () => ({ path: SCIENCE_OWL_STUB }));
   },
 };
 

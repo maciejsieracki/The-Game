@@ -51,7 +51,7 @@ import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { techIconSvg } from './techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from './icons/brandAssets';
 import type { ImprovementKey } from '../render/improvements';
-import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS } from './entityCards/renderer';
+import { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS, openEntityCard } from './entityCards/renderer';
 import { technologyIdFromName } from './entityCards/registry';
 import type { EntityCardData, EntityCardAction } from './entityCards/types';
 
@@ -542,6 +542,23 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
     throw new Error(`entityCards: brak wiersza technologii dla "${tech.Technologia}" (id="${id}")`);
   }
 
+  // T7b (KARTA-ULEPSZENIA-TERENU), call-site 1/3: sekcja „Ulepszenia terenu" —
+  // dziś zwykłe wiersze bez interakcji (`technologyAdapter.ts`, poza allowlistą T7b) —
+  // dopinamy `linkTo` TU, na już zbudowanych danych, żeby otwierały tę samą kartę co
+  // pozostałe 2 miejsca wywołania (`openEntityCard('improvement', key, {mode:'dialog'})`).
+  // `IMPROVEMENT_NAME_TO_KEY` (góra pliku) — ten sam mostek nazwa→klucz co reszta pliku.
+  const sectionsWithImprovementLinks = cardData.sections.map((section) => {
+    if (section.key !== 'improvements') return section;
+    return {
+      ...section,
+      rows: section.rows.map((row) => {
+        const impKey = IMPROVEMENT_NAME_TO_KEY[row.label];
+        if (!impKey) return row;
+        return { ...row, value: 'Szczegóły →', linkTo: { kind: 'improvement' as const, id: impKey } };
+      }),
+    };
+  });
+
   const host = document.createElement('div');
   host.id = HOST_ID;
   const close = () => { popOverlay(OVERLAY_ID); host.remove(); };
@@ -562,6 +579,7 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
 
   const finalData: EntityCardData = {
     ...cardData,
+    sections: sectionsWithImprovementLinks,
     subtitle: subtitleText || cardData.subtitle,
     statusBadges: [kick, statusWord],
     actions,
@@ -569,6 +587,17 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
 
   const card = renderEntityCard(finalData);
   card.classList.add('tdn-entity-card-v2');
+  // Delegowany listener dla wierszy „Ulepszenia terenu" (linkTo powyżej) — `renderer.ts`
+  // (poza allowlistą T7b) rysuje `data-entity-kind`/`data-entity-id` na przycisku wiersza,
+  // ale nie dopina żadnego kliku do nich (to zakres T10, nie tego tematu) — więc wpinamy
+  // go tu, lokalnie, wyłącznie dla `kind==='improvement'`, wzorem `wireInteractions()`.
+  card.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const linkEl = target?.closest<HTMLElement>('[data-entity-kind="improvement"][data-entity-id]');
+    if (!linkEl) return;
+    const impId = linkEl.getAttribute('data-entity-id');
+    if (impId) openEntityCard('improvement', impId, { mode: 'dialog' });
+  });
   // Przycisk zamknięcia (✕) — `renderEntityCard`/`renderer.ts` (poza allowlistą T3) nie
   // rysuje żadnego, więc dodajemy go tu, po zbudowaniu karty, zamiast edytować renderer.
   const headerEl = card.querySelector('.entity-card-header');
@@ -627,6 +656,12 @@ function ensureEntityCardOverrideStyles(): void {
   font-size:13px;line-height:1;cursor:pointer;font-family:inherit;}
 .tdn-entity-close:hover{border-color:var(--tg-gold-primary,#e8d88a);color:#f4e6a8;}
 .tdn-entity-close:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
+/* T7b: wiersze "Ulepszenia terenu" wolajace openEntityCard('improvement',...) - te same
+   przyciski co renderer.ts renderuje dla row.linkTo, tylko wskaznik interaktywnosci
+   (renderer.ts jest poza allowlista T7b, nie dodaje wlasnego stylu hover/cursor). */
+#${HOST_ID} .entity-card-row-value[data-entity-kind="improvement"]{cursor:pointer;color:var(--tg-gold-primary,#e8d88a);
+  text-decoration:underline;text-underline-offset:2px;background:none;border:0;font:inherit;padding:0;}
+#${HOST_ID} .entity-card-row-value[data-entity-kind="improvement"]:hover{color:#f4e6a8;}
 `;
   document.head.appendChild(style);
 }
