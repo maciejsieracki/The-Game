@@ -20,3 +20,12 @@ PLAN/AKCEPTACJA:
 
 RAPORT: zapisać 01-operator.md z dokładnym diffem, plikami, testami, blokadami i statusem kontraktu.
 DEPLOY/PUSH: NIE WYKONANO
+
+## RE-RUN ROUTING — RUNDA 3/5 (2026-08-20)
+
+POPRZEDNI WERDYKT: `BLOCK` z Evaluatora (`.isolated/R-PRACA-JEDEN-SUWAK-UI-Q1-fresh2`, 2026-08-20T22:24:25+02:00).
+PRZYCZYNA BLOCK: izolacja bez `HEAD`, brak lokalnego `00-dispatch.md`, brak lokalnych zależności TSC oraz brak dowodu allowlisty/diffu.
+ROUTING: ten sam Operator i ten sam ID; bez duplikatu. Runda 3/5 — limit 5 nieosiągnięty.
+PROVENANCE: pracować wyłącznie w `C:\Users\macie\OneDrive - NASTER S.A\_NOWA_STRUKTURA\06_Prywatne\Gry\Civ-clean-main-2026-08-20`, `HEAD 47cdca15757efb89d5e634e9e9ddff370925708d`, `README.md` obecny, `dyspozycje/WERSJE.md` zawiera `ROBOCZA — FALA 300`.
+ALLOWLISTA/DÓWÓD: przed raportem zapisać `git diff --name-only --` dla `gra/src/ui/empireDetailPanel.ts`, `gra/tools/praca-split-ui-test.cjs` oraz artefaktów tego runu; zastanych zmian poza allowlistą nie resetować, nie czyścić i nie przypisywać temu runowi.
+KRYTERIA RUNDY: potwierdzić HEAD/README/Falę 300, allowlistę, harness 7/7, TSC, `git diff --check`; kontraktu UI nie zmieniać, jeśli pozostaje spełniony.

@@ -1,14 +1,11 @@
-# DISPATCH — `R-BITWA-KOLORY-GRACZ-PRZECIWNIK-Q1`
+# 00-dispatch — R-BITWA-KOLORY-GRACZ-PRZECIWNIK-Q1
 
-**Runda:** 1/5 · **Etap:** Operator
-**MODEL:** `gpt-5.6-luna` · **REASONING:** `high`
-
-**GOAL:** gracz jest zawsze niebieski i po lewej, przeciwnik zawsze czerwony i po
-prawej; status atakujący/obrońca pozostaje wyłącznie informacją.
-
-**Kryteria:** test ataku gracza, test obrony gracza, poprawne podpisy, kolory, wynik
-bitwy i brak zmiany logiki walki. Operator ogranicza się do allowlisty i zapisuje diff
-oraz testy w `01-operator.md`.
-
-Bez integracji, deployu i pushu. Po PASS automatycznie kierować ten sam ID do
-niezależnego Evaluatora Luna High.
+STATUS: DISPATCHED
+TEMAT: R-BITWA-KOLORY-GRACZ-PRZECIWNIK-Q1
+GOAL: Gracz jest zawsze niebieski i preferencyjnie po lewej, przeciwnik zawsze czerwony i po prawej; role atakujący/obrońca są niezależnym opisem.
+KRYTERIA KOŃCA: oba kierunki bitwy; stałe kolory/strony; poprawne podpisy i wynik; testy renderu/wiring; brak zmiany logiki walki; Evaluator.
+ALLOWLISTA: właściwe pliki UI sceny bitwy w gra/src/battle i gra/src/ui; celowane testy gra/tools; artefakty runu.
+IZOLACJA: Civ-clean-main-2026-08-20, HEAD 47cdca15, Fala 300.
+PLAN TESTÓW: gracz atakuje; gracz broni się; AI/AI jeśli wspierane; test kolorów, stron i etykiet.
+ABC: brak — właściciel podał kontrakt UI literalnie.
+DEPLOY/PUSH: NIE WYKONANO

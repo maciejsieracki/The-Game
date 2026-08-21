@@ -1,34 +1,40 @@
-# AutoBot Operator — R-PRACA-JEDEN-SUWAK-UI-Q1 — runda 5/5
+# AutoBot operator — R-PRACA-JEDEN-SUWAK-UI-Q1 — runda 3/5 po BLOCK
 
-STATUS: DONE — poprawka po BLOCK Evaluatora, bez duplikowania runu
-MODEL: gpt-5.6-luna
-REASONING: high
+STATUS: PASS-WITH-NOTES
+TIMESTAMP: 2026-08-20T22:28:04.8055579+02:00 (Europe/Warsaw)
+RUNDY: 3/5
 TEMAT: R-PRACA-JEDEN-SUWAK-UI-Q1
-HEAD: `47cdca15757efb89d5e634e9e9ddff370925708d` (`47cdca15`)
+BAZA: Civ-clean-main-2026-08-20, HEAD 47cdca15757efb89d5e634e9e9ddff370925708d; README.md obecny; Fala 300 potwierdzona.
 
-## Ledger i routing
+## Routing i provenance
 
-- Odczytano ledger Evaluatora z `Civ-clean-main-2026-08-20`: **runda 4/5**, BLOCK; następna runda to **5/5**, więc limit nie został przekroczony.
-- Nie utworzono nowego ID ani duplikatu runu.
-- Praca wykonana w osobnej sparse izolacji od HEAD `47cdca15`. Obcy diff z `Civ-clean-main-2026-08-20` pozostał nietknięty i nie został skopiowany, zresetowany ani zintegrowany.
+- To jest kolejna runda tego samego ID po `BLOCK` Evaluatora; nie utworzono duplikatu.
+- Poprzedni `fresh2` został odrzucony jako pusty Git bez `HEAD`; nie wykonano na nim pracy.
+- Pracowano wyłącznie w poprawnym checkoutcie `Civ-clean-main-2026-08-20` z `HEAD 47cdca15`.
+- Uzupełniono `00-dispatch.md` o przyczynę poprzedniego BLOCK, routing rundy 3/5 i wymagany dowód allowlisty/diffu.
 
-## Zakres poprawki
+## Zakres zmian
 
-Allowlista: `gra/src/ui/empireDetailPanel.ts`, `gra/tools/praca-split-ui-test.cjs` oraz ten raport.
+- Kontrakt UI był już spełniony, więc nie zmieniano produkcji.
+- Pozostaje dokładnie jeden nadrzędny slider `data-praca-empire-split`, jeden listener `input`, jeden stan wejściowy `procentUlepszenia` i zapis przez `onOwnerDefaultPracaSplitChange`.
+- Etykiety pozostają dokładne: `Budynki (0–100%)` oraz `Pula Pracy (0–50%)`.
+- Harness pozostaje statyczny; nie generuje plików tymczasowych.
 
-- Usunięto obie stare ścieżki lokalnego suwaka Pracy: `renderDefaultPodzialPracySection`/`data-praca-key` oraz `renderPracaSplitSection`.
-- Pozostawiono jeden nadrzędny renderowany slider `data-praca-empire-split`, jeden stan `procentUlepszenia` i jeden handler `onOwnerDefaultPracaSplitChange`.
-- Ustawiono dokładne etykiety `Budynki (0–100%)` oraz `Pula Pracy (0–50%)`.
-- Budynki są prezentowane jako wyliczenie `100% − Pula Pracy`; zakres slidera pozostaje `0–50`.
-- Test focused został sprowadzony do bezpiecznego, statycznego kontraktu 7 asercji i nie tworzy plików tymczasowych.
+## Dowód allowlisty i weryfikacja
 
-## Weryfikacja
+- `git rev-parse HEAD` — `47cdca15757efb89d5e634e9e9ddff370925708d`.
+- `README.md` — obecny; `dyspozycje/WERSJE.md` — `ROBOCZA — FALA 300 (2026-08-20)`.
+- `git diff --name-only -- gra/src/ui/empireDetailPanel.ts gra/tools/praca-split-ui-test.cjs` — dokładnie te dwa pliki; to zastany diff poprzedniej pracy, nie zmiana wykonana w tej rundzie.
+- `git status --short --` potwierdza także obce zmiany checkoutu; pozostawiono je nietknięte i nie przypisano temu runowi.
+- `node tools/praca-split-ui-test.cjs` — **7/7 PASS**.
+- `npm exec --offline tsc -- --noEmit` — **PASS**, exit 0.
+- `git diff --check` — **PASS**, exit 0; ostrzeżenia LF→CRLF są informacyjne.
 
-- `node tools/praca-split-ui-test.cjs` — **7 pass, 0 fail**.
-- `tsc --noEmit` — **PASS**; zależności były dostępne przez lokalny junction `gra/node_modules` tylko w izolacji testowej.
-- `git diff --check` — **PASS**.
-- Allowlista — **PASS**: zmienione ścieżki kodu/testu to wyłącznie dwa pliki z allowlisty; raport jest artefaktem tego samego runu.
-- Provenance — **PASS**: `HEAD = 47cdca15757efb89d5e634e9e9ddff370925708d`.
-- Brak `esbuild` — **NOTE**, nie podstawa BLOCK; focused harness nie wymaga esbuild.
+## Zasady wykonania
 
-INTEGRACJA/COMMIT/DEPLOY/PUSH: NIE WYKONANO
+- Nie wykonano reset, clean, pull, integracji, commita, deployu ani pushu.
+- Nie zmieniono `WERSJE.md`, numeracji Fali ani żadnego pliku produkcyjnego.
+- Nie naruszono cudzych zmian poza allowlistą.
+
+ARTEFAKT: `dyspozycje/autobot/runs/R-PRACA-JEDEN-SUWAK-UI-Q1/01-operator.md`.
+ROUTING: przekazać ten sam run do Evaluatora. Przy kolejnym `BLOCK`/`FAIL` użyć tego samego ID i guarda rund; nie integrować, nie commitować, nie deployować, nie pushować.

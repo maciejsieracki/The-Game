@@ -1,45 +1,29 @@
-# AutoBot Evaluator Luna High — R-PRACA-JEDEN-SUWAK-UI-Q1 — runda 5/5
+# Evaluator — R-PRACA-JEDEN-SUWAK-UI-Q1
 
-STATUS: PASS
-MODEL: gpt-5.6-luna
-REASONING: high
+STATUS: FAIL (izolacja/allowlista)
 TEMAT: R-PRACA-JEDEN-SUWAK-UI-Q1
-HEAD: `47cdca15757efb89d5e634e9e9ddff370925708d` (`47cdca15`)
+GOAL: Usunąć dolny niezależny suwak podziału pracy i pozostawić dokładnie jeden renderowany suwak z kontraktem „Budynki (0–100%)” oraz „Pula Pracy (0–50%)”, jednym stanem i jednym handlerem.
 
-## Werdykt
+BAZA: `Civ-clean-main-2026-08-20`, HEAD `47cdca15757efb89d5e634e9e9ddff370925708d`, zgodny z dispatch. README.md obecny. Evaluator nie wykonał reset/clean/pull/integracji/commita/deployu/push.
 
-**PASS — kontrakt UI spełniony.** To ostatnia dozwolona runda Operatora; nie uruchamiam rundy 6 ani automatycznego retry.
+ALLOWLISTA VS FAKTYCZNY DIFF:
 
-## Rzeczywisty diff i allowlista
+- Dozwolone zmiany pakietu: `gra/src/ui/empireDetailPanel.ts`, `gra/tools/praca-split-ui-test.cjs`, `dyspozycje/autobot/runs/R-PRACA-JEDEN-SUWAK-UI-Q1/*`.
+- Zmiany targetowe są obecne w dwóch pierwszych plikach; raport `01-operator.md` i bieżący raport są nieśledzonymi artefaktami runu.
+- Worktree nie jest clean/allowlist-only: `git status --short` wykazuje 25 zmodyfikowanych plików śledzonych poza pakietem oraz wiele nieśledzonych katalogów/plików innych runów (m.in. `R-AUTOBOT-*`, `R-PRACA-MIASTO-*`, `R-REKRUTACJA-*`, `R-TECHNOLOGIA-*`, `dyspozycje/autobot/src/*`, `dyspozycje/autobot/tools/*` i inne testy `gra/tools/*`). Nie przypisuję tych zmian Operatorowi, ale przy żądaniu clean checkout nie można zaliczyć izolacji.
 
-- Checkout: `_operator-r5-R-PRACA-JEDEN-SUWAK-UI-Q1-shared`.
-- Rzeczywisty diff kodu obejmuje wyłącznie:
-  - `gra/src/ui/empireDetailPanel.ts`
-  - `gra/tools/praca-split-ui-test.cjs`
-- Nowy raport `01-operator.md` i ten raport są artefaktami tego samego runu.
-- `git diff --check`: **PASS**.
-- Nie wykonano integracji, commita, deployu ani pushu.
+WERYFIKACJA KONTRAKTU: PASS
 
-## Kontrakt UI
+- W `gra/src/ui/empireDetailPanel.ts` usunięto dolny render/wiring: brak `renderPracaSplitSection`, `wireDefaultPodzialPracyInputs` i `data-praca-key`.
+- Pozostaje dokładnie jeden renderowany target `data-praca-empire-split` i jeden listener `input` w `renderEmpirePracaBudgetSplitSection()`, zapisujący przez `onOwnerDefaultPracaSplitChange`.
+- Literalne etykiety są obecne: `Budynki (0–100%)` oraz `Pula Pracy (0–50%)`.
+- Stan wejściowy to `procentUlepszenia`, zaciskany do 0–50%; Budynki są wyliczane jako `100 - pctPulaPracy`, więc nie ma niezależnych wartości sprzecznych.
 
-- Stara ścieżka `renderDefaultPodzialPracySection` wraz z wiringiem i wywołaniem `showLaborSplit` została usunięta z panelu imperium.
-- Stara ścieżka `renderPracaSplitSection` wraz z `data-praca-key` i wiringiem została usunięta.
-- `renderPracaSection()` renderuje jeden nadrzędny blok przez `renderEmpirePracaBudgetSplitSection()`.
-- Jedyny nadrzędny input ma `data-praca-empire-split`, zakres `min="0" max="50" step="1"`, a jedyny handler zapisuje `procentUlepszenia` przez `onOwnerDefaultPracaSplitChange`.
-- Budynki są wyliczane jako `100% − Pula Pracy`.
-- Dokładne etykiety produkcyjnego UI są obecne:
-  - `Budynki (0–100%)`
-  - `Pula Pracy (0–50%)`
-- Lokalny suwak w `gra/src/ui/cityPanel.ts` pozostaje osobnym override’em konkretnego miasta; nie jest drugą ścieżką nadrzędnego suwaka panelu imperium i nie został zmieniony w tym diffie.
+TESTY:
 
-## Weryfikacja
+- `node tools/praca-split-ui-test.cjs` — PASS, 7/7, exit 0.
+- `npm exec tsc -- --noEmit` — PASS, exit 0.
+- `npm run build` / `npm run dev` — nie uruchamiano zgodnie z dispatch.
+- Deploy/push — nie wykonano.
 
-- `node tools/praca-split-ui-test.cjs`: **7 pass, 0 fail**.
-- `npm run typecheck` / `tsc --noEmit`: **PASS**.
-- Allowlista: **PASS**.
-- Provenance HEAD: **PASS**.
-- Esbuild/runtime harness: **NOTE** — focused test jest celowo statycznym kontraktem i nie tworzy plików tymczasowych; brak esbuild nie blokuje tego werdyktu.
-
-## Decyzja operacyjna
-
-**PASS.** Brak podstaw do LIMIT-5-EXCEEDED. Nie uruchamiać rundy 6. Bez integracji, commita, deployu i pushu.
+WERDYKT: Funkcjonalny kontrakt UI i oba wymagane checki przechodzą, lecz całość FAIL z powodu faktycznego diffu poza allowlistą i braku clean checkout. Wymagana jest ponowna ewaluacja na rzeczywiście czystej bazie albo formalne odseparowanie obcych zmian; evaluator nie wykonuje tych operacji.
