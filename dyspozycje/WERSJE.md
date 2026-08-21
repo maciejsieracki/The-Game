@@ -3548,9 +3548,63 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 310 (2026-08-21) — R-PRACA-SUWAKI: cap 50% ujednolicony, naprawa puli, przeprojektowanie panelu
+## ROBOCZA — FALA 312 (2026-08-21) — CivPedia T5: karta budynku w panelu miasta
 
-- **AKTUALNA** · ROBOCZA md5 `90ec5e7cf7b92217e7553d32478fde92` · stempel `90ec5e7c` · manifest/bundle `VERIFY OK`.
+- **AKTUALNA** · ROBOCZA md5 `ddf499fb8ae299e9aabcbd4bb4813d09` · stempel `ddf499fb` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T5 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: migracja karty budynku w panelu
+  miasta (`cityPanel.ts::buildBuildingDetailCard`/`buildBuildingBuildTabDetailCard`) do wspólnego
+  systemu `entityCards` — publiczna sygnatura bez zmian, stara implementacja zachowana jako
+  `_legacyBuildBuildingDetailCard` (fallback w try/catch). Nowy `buildingAdapter.ts` w pełni
+  wypełniony treścią (Charakterystyka/Plony i efekty/Koszty budowy i utrzymania/Poziomy/Wymagania),
+  czysto-danowy (bez I/O), zachowuje wydajność hover-preview. Nowy, czysto addytywny tryb render
+  `hover` w `entityCards/renderer.ts` (infrastruktura pod przyszłe wywołania T6/T7b, jeszcze nie
+  podpięty do UI — dzisiejsze hover-preview budynku nadal korzysta z tego samego mechanizmu co
+  wcześniej, tylko wewnętrzna treść karty idzie teraz przez wspólny adapter+renderer).
+
+  Operator→Evaluator→Final Control PASS niezależnie. Nowy test w realnej przeglądarce
+  (Playwright/Chromium) zweryfikował geometrię i timing hover-preview i **złapał realny bug**:
+  karta 434px nie mieściła się w 400px hover-docku (2px overflow) — naprawione dodaniem
+  `box-sizing:border-box`, ponownie zweryfikowane zielono. Zero zmian w `entityCards/types.ts`/
+  `registry.ts`/`unitAdapter.ts`/`technologyAdapter.ts`/`improvementAdapter.ts`/`unitInfoCard.ts`/
+  `techDiscoveryNotice.ts`/`main.ts`.
+
+  Bramki zbiorcze na scalonym `main`: `tsc` 0; `entity-card-contract-test` 75/75; `unit-info-card-
+  contract-test` 23/23; `unit-info-card-wiring-test` 6/6; `unit-info-card-army-interaction-test`
+  7/7; `unit-info-card-entitycard-migration-test` 26/26; `unit-info-card-badges-real-render-test`
+  19/19; `technology-discovery-card-visual-test` 48/48; `tech-discovery-card-click-test` 13/13;
+  `building-detail-card-entitycard-migration-test` 52/52 (nowy); `building-detail-card-hover-
+  layout-real-render-test` 11/11 (nowy, real Chromium); `logic-test` 213/213; `tech-tree-test`
+  19/19; `research-test` 33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 311 (2026-08-21) — CivPedia T8: kategoria Technologie (32/32) — **ZASTĄPIONA** (→ ddf499fb, FALA 312)
+
+- ROBOCZA md5 `b596af6baa912f13f2855970f256ec4c` · stempel `b596af6b` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T8 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: nowa kategoria „Technologie" w
+  CivPedii — pełne pokrycie, wszystkie 32/32 technologie z `tech.json`, nie próbka. Format
+  treści (Metadane/Wiki-S/Wiki-M/Poradnik-L/Historia) spójny z istniejącą kategorią budynków.
+  `CAT_LABELS.technologie='Technologie'` w `bundle-wiki-for-game.cjs`, `wikiBundle.json`
+  zregenerowany komendą (nigdy ręcznie edytowany — potwierdzone bitowo identyczne przy
+  ponownej regeneracji). `wikiHubHud.ts` w pełni dynamiczny (kategoria zadziałała bez zmian
+  kodu tam). Operator→Evaluator→Final Control PASS-WITH-NOTES niezależnie (32/32 zgodność
+  slugify() z plikami .md, 32/32 spójność folder/category w `wikiBundle.json`, zero literówek
+  w slugach; jedyna uwaga Final Control — proceduralna, branch był 17 commitów za `main` w
+  chwili weryfikacji, rozwiązana przy integracji zwykłym mergem, zero konfliktów).
+
+  **`P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1`** (bez wpływu na grę, tylko test): 2 pre-istniejące
+  faile w `science-hub-test.cjs` ("engine available=4 (>=5)", "hub unlocked=4 (>=5)")
+  zdiagnozowane jako błąd konstrukcyjny progu w samym teście od początku — era Kamień ma
+  stabilnie 4 technologie Poziom=1 bez prerekwizytów, nie 5. Próg poprawiony na `>=4` z
+  komentarzem wyjaśniającym. Zero zmian w `gra/src/`/`gra/data/`.
+
+  Bramki zbiorcze na scalonym `main`: `tsc` 0; `science-hub-test` 7/7; `tech-tree-test` 19/19;
+  `research-test` 33/33; `tech-unlock-units-test` 41/41; `entity-card-contract-test` 75/75;
+  `logic-test` 213/213; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 310 (2026-08-21) — R-PRACA-SUWAKI: cap 50% ujednolicony, naprawa puli, przeprojektowanie panelu — **ZASTĄPIONA** (→ b596af6b, FALA 311)
+
+- ROBOCZA md5 `90ec5e7cf7b92217e7553d32478fde92` · stempel `90ec5e7c` · manifest/bundle `VERIFY OK`.
 
   **`R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` (Wątki A-F)**: (A) usunięty zdublowany, nie-
   interaktywny suwak w panelu „PRACA IMPERIUM" (miał zniknąć po `R-PRACA-JEDEN-SUWAK-UI-Q1`,
