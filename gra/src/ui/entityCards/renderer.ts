@@ -67,14 +67,21 @@ export function buildEntityCardData(kind: EntityKind, id: string, ctx: EntityCar
 /** Buduje jeden wiersz 'grid' — label/value zwykłe, plus opcjonalne icon/trailing/badge
  * (T1b). Gdy `row.badge` jest podany, wiersz renderuje się jak `actionItemRow()`
  * (`techDiscoveryNotice.ts:189-191`): badge kolorowy + `row.value` jako tekst obok,
- * `row.label` staje się etykietą badge'a — zamiast siatki label/value. */
+ * `row.label` staje się etykietą badge'a — zamiast siatki label/value. `row.linkTo`
+ * (T10) jest honorowany JEDNOLICIE również w tej gałęzi — tekst obok badge'a staje
+ * się `<button data-entity-kind data-entity-id>` zamiast `<span>`, złapane przez ten
+ * sam delegowany listener w `renderEntityCard` co zwykłe wiersze niżej. */
 function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
   if (row.badge) {
     const rowEl = el('div', 'entity-card-row entity-card-row-action');
     const badgeEl = el('span', `entity-card-row-badge entity-card-row-badge--${row.badge.kind}`);
     badgeEl.textContent = row.badge.label;
-    const text = el('span', 'entity-card-row-action-text');
+    const text = el(row.linkTo ? 'button' : 'span', 'entity-card-row-action-text');
     text.textContent = row.value;
+    if (row.linkTo) {
+      text.setAttribute('data-entity-kind', row.linkTo.kind);
+      text.setAttribute('data-entity-id', row.linkTo.id);
+    }
     rowEl.append(badgeEl, text);
     return rowEl;
   }
@@ -105,11 +112,18 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
 }
 
 /** Buduje jedną pigułkę w trybie `layout: 'pills'` — wzorem `tdn-req-pill` w
- * `techDiscoveryNotice.ts:435-438` (checkmark trailing, `row.label` jako tekst). */
+ * `techDiscoveryNotice.ts:435-438` (checkmark trailing, `row.label` jako tekst).
+ * `row.linkTo` (T10) honorowany jednolicie z `buildGridRowEl` — tekst pigułki staje
+ * się `<button data-entity-kind data-entity-id>`, złapany przez ten sam delegowany
+ * listener w `renderEntityCard`. */
 function buildPillRowEl(row: EntityCardData['sections'][number]['rows'][number]): HTMLElement {
   const pill = el('span', 'entity-card-pill');
-  const text = el('span', 'entity-card-pill-text');
+  const text = el(row.linkTo ? 'button' : 'span', 'entity-card-pill-text');
   text.textContent = row.label;
+  if (row.linkTo) {
+    text.setAttribute('data-entity-kind', row.linkTo.kind);
+    text.setAttribute('data-entity-id', row.linkTo.id);
+  }
   const check = el('b', 'entity-card-pill-check');
   check.textContent = '✓';
   pill.append(text, check);
@@ -291,6 +305,37 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
     // `unitInfoCard.ts:150-162`) — inaczej Three.js dostaje odłączony element.
     data.medallion.mount(medallionEl);
   }
+
+  // Linkowanie krzyżowe (T10 LINKOWANIE-KRZYZOWE) — dispatch JEDNOLITY dla wszystkich
+  // 4 kinds i wszystkich trybów (dialog/inline/hover): klik na dowolny wiersz z
+  // `row.linkTo` (renderowany jako `<button data-entity-kind data-entity-id>` w
+  // `buildGridRowEl`/`buildPillRowEl` wyżej) otwiera kartę docelową jako NOWY,
+  // zagnieżdżony overlay (`mode:'dialog'`, więc zawsze przez `pushOverlay`/`popOverlay`
+  // — `openDialog` niżej), NIE zamykając karty źródłowej. Delegowany listener na `card`
+  // (nie na każdym przycisku z osobna) — jeden słuchacz per zbudowana karta, jednolity
+  // dla wszystkich adapterów, zgodnie z wymogiem dispatchu T10 ("nie osobne wiring
+  // per-adapter jak robił T7b tymczasowo"). Selektor `button[data-entity-kind]` celowo
+  // nie łapie atrybutów `data-entity-kind`/`data-entity-id` na samym korzeniu `card`
+  // (to `div`, nie `button`) — zero kolizji z tożsamością karty nadrzędnej.
+  //
+  // `stopImmediatePropagation()` po obsłużeniu — ten listener jest rejestrowany TU,
+  // wewnątrz `renderEntityCard`, więc zawsze PRZED jakimkolwiek dodatkowym listenerem,
+  // który wołający dopina PO otrzymaniu `card` z powrotem (np. lokalne wiązanie
+  // `openEntityCard('improvement', ...)` dla sekcji „Ulepszenia terenu" w
+  // `techDiscoveryNotice.ts`, pozostawione tam z T7b jako „tymczasowe" — poza allowlistą
+  // T10, więc nie usuwane w tym kroku). Bez tego dwa niezależne listenery na tym samym
+  // `card` obsłużyłyby TEN SAM klik i otworzyłyby DWIE nakładki naraz — realny,
+  // sprawdzony scenariusz regresji (technologyAdapter → sekcja „Ulepszenia terenu").
+  card.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest('button[data-entity-kind]') as HTMLButtonElement | null;
+    if (btn == null) return;
+    const linkKind = btn.getAttribute('data-entity-kind') as EntityKind | null;
+    const linkId = btn.getAttribute('data-entity-id');
+    if (linkKind == null || linkId == null) return;
+    event.stopImmediatePropagation();
+    openEntityCard(linkKind, linkId, { mode: 'dialog' });
+  });
 
   return card;
 }

@@ -17,6 +17,7 @@
  */
 import terrainImprovementsData from '../../../data/terrain-improvements.json';
 import { improvementIconSvg } from '../icons/brandAssets';
+import { resolveImprovementRow, resolveTechnologyRow, technologyIdFromName } from './registry';
 import type { ImprovementRow } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 
@@ -104,11 +105,24 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   };
 
   // --- Wymagania (teren, warunek, technologia, koszt) ----------------------------------------
+  // T10 LINKOWANIE-KRZYZOWE: `improvement.tech` bywa placeholderem "-"/"—" LUB (potwierdzone
+  // reconem na realnych danych, np. `irygacja`) nazwą bez odpowiednika w `tech.json` —
+  // link tylko gdy `resolveTechnologyRow` faktycznie znajdzie wiersz.
+  const techName = text(improvement.tech);
+  const techSlug = techName ? technologyIdFromName(techName) : null;
+  const techLinkTo = techSlug != null && resolveTechnologyRow(techSlug) != null
+    ? ({ kind: 'technology', id: techSlug } as const) : undefined;
+  // „Ulepszenie bazowe" (`upgradeFrom`) jest już kluczem obiektu `terrain-improvements.json`
+  // (nie nazwą gracza) — resolver bierze go wprost, weryfikacja przez `resolveImprovementRow`.
+  const upgradeFromKey = text(improvement.upgradeFrom);
+  const upgradeFromLinkTo = upgradeFromKey && resolveImprovementRow(upgradeFromKey) != null
+    ? ({ kind: 'improvement', id: upgradeFromKey } as const) : undefined;
   const requirementRows: EntityCardRow[] = [
     { label: 'Teren', value: text(improvement.teren) },
     {
       label: 'Technologia',
-      value: text(improvement.tech) + (hasValue(improvement.tech_uwaga) ? ` (${text(improvement.tech_uwaga)})` : ''),
+      value: techName + (hasValue(improvement.tech_uwaga) ? ` (${text(improvement.tech_uwaga)})` : ''),
+      linkTo: techLinkTo,
     },
     { label: 'Koszt (Praca)', value: hasValue(improvement.koszt_praca) ? `${text(improvement.koszt_praca)} P` : '' },
     { label: 'Warunek', value: text(improvement.warunek) },
@@ -118,7 +132,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
         ? improvement.cywilizacje.join(', ') + (hasValue(improvement.cywilizacje_uwaga) ? ` (${text(improvement.cywilizacje_uwaga)})` : '')
         : '',
     },
-    { label: 'Ulepszenie bazowe', value: text(improvement.upgradeFrom) },
+    { label: 'Ulepszenie bazowe', value: upgradeFromKey, linkTo: upgradeFromLinkTo },
   ].filter((r) => hasValue(r.value));
   const requirementsSection: EntityCardSection = {
     key: 'requirements', title: 'Wymagania', rows: requirementRows,

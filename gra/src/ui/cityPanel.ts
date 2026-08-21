@@ -209,6 +209,7 @@ import { improvementKeysForHex } from '../game/terrain-improvements';
 import type { Hex } from '../types/hex';
 import terrainImprovementsData from '../../data/terrain-improvements.json';
 import { openEntityCard } from './entityCards/renderer';
+import { resolveTechnologyRow, technologyIdFromName } from './entityCards/registry';
 import { loadOrderParams, type OrderYieldMults } from '../game/order';
 import {
   evaluateOrderFromBreakdown,
@@ -7044,6 +7045,29 @@ function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: st
   }
   const techNote = playerFacingNote(t.Uwagi);
   if (techNote) gridDetailRow(grid, 'Uwagi tech', techNote);
+
+  // T10 LINKOWANIE-KRZYZOWE: JEDEN nowy link wyjścia z tego wbudowanego bloku (celowo
+  // NIE migrowanego do entityCards, patrz nagłówek funkcji) do PEŁNEJ karty technologii
+  // (T3, `technologyAdapter.ts` + `renderEntityCard`) jako OSOBNY, zagnieżdżony overlay
+  // — `openEntityCard('technology', slug, {mode:'dialog'})` korzysta z tego samego
+  // `pushOverlay`/`popOverlay` (`escapeOverlayStack.ts`) co reszta kart, więc Esc na
+  // wierzchu zamyka TYLKO tę nową kartę, karta budynku/jednostki pod spodem zostaje.
+  // Wzorem `improvementRangeRow()` wyżej (`.dc-v.dc-v-btn`, T7b) — przycisk jako
+  // WŁASNA wartość wiersza (`.dc-v`), nie jako `techIconHintSpan()` wstrzykiwany przez
+  // `.innerHTML` (ikonka pozostaje jak dziś, osobno, w wierszu „Odblokowuje tech" wyżej).
+  const techSlug = technologyIdFromName(techName);
+  if (resolveTechnologyRow(techSlug) != null) {
+    const lEl = el('span', 'dc-l');
+    lEl.textContent = 'Pełna karta';
+    grid.appendChild(lEl);
+    const vBtn = el('button', 'dc-v dc-v-btn');
+    vBtn.type = 'button';
+    vBtn.textContent = 'Zobacz pełną kartę technologii →';
+    vBtn.setAttribute('data-entity-kind', 'technology');
+    vBtn.setAttribute('data-entity-id', techSlug);
+    vBtn.addEventListener('click', () => openEntityCard('technology', techSlug, { mode: 'dialog' }));
+    grid.appendChild(vBtn);
+  }
 }
 
 const ENTITY_CARD_BUILDING_STYLE_ID = 'civ-city-panel-entity-card-css-v1';

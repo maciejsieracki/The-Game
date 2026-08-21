@@ -40,7 +40,7 @@ import type { CounterDef, UnitDef } from '../../data/loader';
 import countersData from '../../../data/counters.json';
 import { categoryOf } from '../../units/setup';
 import { unitInfographicLabel, unitInfographicSvg } from '../unitInfographic';
-import { unitToSlug } from './registry';
+import { resolveTechnologyRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 
 const COUNTERS = countersData as unknown as CounterDef[];
@@ -144,17 +144,39 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
 
   // --- Wymagania i kontry — 1:1 z `unitInfoCard.ts` (`requirements` sekcja, w tym „Kontry") --
   const counters = collectCounters(unit);
+  const techName = text(unit.Tech);
+  // T10 LINKOWANIE-KRZYZOWE: `unit.Tech` niesie nazwę technologii, ale bywa placeholderem
+  // "-"/"—" (brak wymogu) LUB (potwierdzone reconem na realnych danych, np. wiersz
+  // `irygacja` w `terrain-improvements.json`) nazwą, która nie istnieje w `tech.json` —
+  // link tylko gdy `resolveTechnologyRow` faktycznie znajdzie wiersz (nigdy nie zgadujemy).
+  const techSlug = techName ? technologyIdFromName(techName) : null;
+  const techRow: EntityCardRow = { label: 'Technologia', value: techName };
+  if (techSlug != null && resolveTechnologyRow(techSlug) != null) {
+    techRow.linkTo = { kind: 'technology', id: techSlug };
+  }
+  const replacesName = text(unit['W zamian za']);
+  // "Zastępuje" — nazwa jednostki-poprzednika; link tylko gdy realnie istnieje w
+  // `UNIT_MAP` (ten sam wzorzec zabezpieczenia co dla „Technologia" wyżej).
+  const replacesSlug = replacesName ? unitToSlug(replacesName) : null;
+  const replacesRow: EntityCardRow = { label: 'Zastępuje', value: replacesName };
+  if (replacesSlug != null && resolveUnitRow(replacesSlug) != null) {
+    replacesRow.linkTo = { kind: 'unit', id: replacesSlug };
+  }
   const requirementsRows: EntityCardRow[] = [
-    { label: 'Technologia', value: text(unit.Tech) },
+    techRow,
     { label: 'Kultura', value: text(unit.Kultura) },
-    { label: 'Zastępuje', value: text(unit['W zamian za']) },
+    replacesRow,
   ].filter((r) => hasValue(r.value));
-  // „Kontry" — kontrakt `EntityCardRow.badge` niesie JEDEN badge na wiersz (patrz
-  // `types.ts`), nie listę pigułek pod jednym wierszem jak dawny `appendBadgeRow()`.
-  // Zamiast rozszerzać `types.ts`/`renderer.ts` (poza allowlistą T4), kontry trafiają
-  // jako pojedynczy wiersz z wartościami połączonymi przecinkiem — treść identyczna
-  // (te same pary cel/bonus), układ inny (delta świadoma, wzorem precedensu T3
-  // „treść równoważna, nie identyczny HTML").
+  // „Kontry" — CELOWO bez `linkTo` (T10): `Cel (typ)`/`Typ atakujący` w `counters.json`
+  // są kategoriami TYPU jednostki (np. "Mount", "Distance"), którymi dzieli się wiele
+  // różnych jednostek naraz — nie ma tu jednoznacznego, pojedynczego `id` encji do podpięcia
+  // (patrz dyspozycja T10: "NIE dodawaj linkTo tam gdzie nie ma jednoznacznego,
+  // rozwiazywalnego ID"). Kontrakt `EntityCardRow.badge` niesie JEDEN badge na wiersz
+  // (patrz `types.ts`), nie listę pigułek pod jednym wierszem jak dawny
+  // `appendBadgeRow()`. Zamiast rozszerzać `types.ts`/`renderer.ts` (poza allowlistą T4),
+  // kontry trafiają jako pojedynczy wiersz z wartościami połączonymi przecinkiem —
+  // treść identyczna (te same pary cel/bonus), układ inny (delta świadoma, wzorem
+  // precedensu T3 „treść równoważna, nie identyczny HTML").
   if (counters.length > 0) {
     requirementsRows.push({ label: 'Kontry', value: counters.join(', ') });
   }

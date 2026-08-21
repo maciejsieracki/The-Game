@@ -27,7 +27,7 @@ import techData from '../../../data/tech.json';
 import { techIconSvg } from '../techIcons';
 import { buildingIconSvg, unitIconSvg, improvementIconSvg } from '../icons/brandAssets';
 import type { RawTech } from './registry';
-import { technologyIdFromName } from './registry';
+import { resolveBuildingRow, resolveUnitRow, technologyIdFromName, unitToSlug } from './registry';
 import type { EntityCardAdapter, EntityCardRow, EntityCardSection } from './types';
 
 const PLACEHOLDER_ICON_SVG =
@@ -145,23 +145,32 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   };
 
   // --- Budynki ---------------------------------------------------------------------------
+  // T10 LINKOWANIE-KRZYZOWE: `b.id` pochodzi wprost z `buildingsData` (ten sam plik co
+  // `resolveBuildingRow`), więc jest ZAWSZE kanonicznym, rozwiązywalnym id budynku —
+  // weryfikacja przez `resolveBuildingRow` mimo to (spójny wzorzec zabezpieczenia z
+  // resztą tego zadania, nie zakładamy cichej niezmienności między plikami danych).
   const buildingsRows: EntityCardRow[] = buildings.map((b) => ({
     label: b.nazwa ?? b.id,
     value: [epokaLabel ? `Epoka ${epokaLabel}` : null, b.wymagania ?? (buildingEffectText(b) || null)]
       .filter((x): x is string => !!x).join(' · '),
     icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
+    linkTo: resolveBuildingRow(b.id) != null ? { kind: 'building', id: b.id } : undefined,
   }));
   const buildingsSection: EntityCardSection = {
     key: 'buildings', title: 'Budynki', rows: buildingsRows, collapsible: true, openDefault: true,
   };
 
   // --- Jednostki (paginacja: previewLimit=UNIT_PREVIEW, sprzężone z compactHeaderOnExpand) ---
-  const unitsRows: EntityCardRow[] = units.map((u) => ({
-    label: u.Jednostka,
-    value: '',
-    trailing: u['Rola (linia)'] ?? u.Typ ?? undefined,
-    icon: { kind: 'svg', svg: unitIconSvg(undefined, u.Jednostka) },
-  }));
+  const unitsRows: EntityCardRow[] = units.map((u) => {
+    const slug = unitToSlug(u.Jednostka);
+    return {
+      label: u.Jednostka,
+      value: '',
+      trailing: u['Rola (linia)'] ?? u.Typ ?? undefined,
+      icon: { kind: 'svg', svg: unitIconSvg(undefined, u.Jednostka) },
+      linkTo: resolveUnitRow(slug) != null ? { kind: 'unit', id: slug } : undefined,
+    };
+  });
   const unitsSection: EntityCardSection = {
     key: 'units', title: 'Jednostki', rows: unitsRows, collapsible: true, openDefault: true,
     previewLimit: unitsRows.length > UNIT_PREVIEW ? UNIT_PREVIEW : undefined,
@@ -174,10 +183,16 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // mechanizm ujawniania), ale mniej precyzyjne językowo niż dzisiejszy tekst.
 
   // --- Ulepszenia terenu -------------------------------------------------------------------
-  const improvementsRows: EntityCardRow[] = improvementNames.map((name) => ({
-    label: name, value: '',
-    icon: { kind: 'svg', svg: improvementIconSvg(IMPROVEMENT_NAME_TO_KEY[name] ?? name) },
-  }));
+  const improvementsRows: EntityCardRow[] = improvementNames.map((name) => {
+    const key = IMPROVEMENT_NAME_TO_KEY[name];
+    return {
+      label: name, value: '',
+      icon: { kind: 'svg', svg: improvementIconSvg(key ?? name) },
+      // Link tylko gdy nazwa realnie odtworzyła się do klucza `terrain-improvements.json`
+      // (`IMPROVEMENT_NAME_TO_KEY`) — bez tego nie mamy jednoznacznego `id` ulepszenia.
+      linkTo: key != null ? { kind: 'improvement', id: key } : undefined,
+    };
+  });
   const improvementsSection: EntityCardSection = {
     key: 'improvements', title: 'Ulepszenia terenu', rows: improvementsRows,
     collapsible: true, openDefault: false,
@@ -186,13 +201,18 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // --- Kolejne technologie -------------------------------------------------------------------
   const nextTechsRows: EntityCardRow[] = nextTechRows.map((t) => {
     const otherPrereqs = list(t['Wymaga (prereq)']).filter((name) => name !== tech['Technologia']);
+    const nextSlug = technologyIdFromName(t['Technologia']);
     if (otherPrereqs.length === 0) {
-      return { label: 'Możesz badać', value: t['Technologia'], badge: { kind: 'ok', label: 'Możesz badać' } };
+      return {
+        label: 'Możesz badać', value: t['Technologia'], badge: { kind: 'ok', label: 'Możesz badać' },
+        linkTo: { kind: 'technology', id: nextSlug },
+      };
     }
     const icon = techIconSvg(t['Technologia'], 14);
     return {
       label: t['Technologia'], value: `Wymaga też: ${otherPrereqs.join(', ')}`,
       icon: icon ? { kind: 'svg', svg: icon } : undefined,
+      linkTo: { kind: 'technology', id: nextSlug },
     };
   });
   const nextTechsSection: EntityCardSection = {
@@ -202,17 +222,21 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // --- Zmiany ekonomiczne --------------------------------------------------------------------
   const econRows: EntityCardRow[] = [];
   for (const b of buildings) {
+    const buildingLinkTo = resolveBuildingRow(b.id) != null
+      ? ({ kind: 'building', id: b.id } as const) : undefined;
     const effect = buildingEffectText(b);
     if (effect) {
       econRows.push({
         label: b.nazwa ?? b.id, value: effect,
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
+        linkTo: buildingLinkTo,
       });
     }
     if (b.utrzymanie != null) {
       econRows.push({
         label: `${b.nazwa ?? b.id} — utrzymanie`, value: `${b.utrzymanie} złota na turę`,
         icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
+        linkTo: buildingLinkTo,
       });
     }
   }
@@ -226,7 +250,10 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // --- Wymagania (pigułki z checkmarkiem, layout='pills') -------------------------------------
   const requirementsSection: EntityCardSection = {
     key: 'requirements', title: 'Wymagania', layout: 'pills',
-    rows: requirements.map((r) => ({ label: r, value: '' })),
+    rows: requirements.map((r) => {
+      const reqSlug = technologyIdFromName(r);
+      return { label: r, value: '', linkTo: { kind: 'technology', id: reqSlug } as const };
+    }),
     badges: requirements.length > 0 ? [`${requirements.length} · spełnione`] : undefined,
   };
 
