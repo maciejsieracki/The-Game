@@ -1,10 +1,33 @@
 /**
- * Tymczasowa, generyczna karta informacyjna jednostki.
+ * Karta informacyjna jednostki (mapa) — T4 MIGRACJA-KARTA-JEDNOSTKI-MAPA.
  *
- * Dane pochodzą z GameData/UnitDef. Slot wizualny korzysta z istniejącego
- * pipeline'u Three.js; medalion SVG jest wyłącznie identyfikacją jednostki.
+ * `buildUnitInfoCard`/`showUnitInfoCardDialog` (sygnatury BEZ ZMIAN) budują treść przez
+ * `entityCards/unitAdapter.ts` i renderują przez wspólny `entityCards/renderer.ts`
+ * (`renderEntityCard`), zamiast własnego DOM-buildera — wzorem T3
+ * (`techDiscoveryNotice.ts`). Stara implementacja zostaje pod prywatną nazwą
+ * (`_legacyBuildUnitInfoCard`) jako fallback, dopóki nie potwierdzimy parytetu w
+ * produkcji (patrz `_legacyShowTechDiscoveryNotice` z T3).
+ *
+ * KRYTYCZNE — mechanizm 3D (patrz `19-dispatch-T4-migracja-jednostka-mapa.md` i
+ * `entityCards/renderer.ts` komentarz nad `data.medallion.mount(medallionEl)`):
+ * `renderEntityCard()` woła `medallion.mount(medallionEl)` DOPIERO PO `appendChild`
+ * medalionu do nagłówka karty (i nagłówka do karty) — więc `mountUnitMiniPreview`
+ * zawsze dostaje element już osadzony w drzewku karty w momencie wywołania, dokładnie
+ * jak w dawnym `unitInfoCard.ts:150-162` (`commitSection()` PRZED `mountUnitMiniPreview`).
+ * Zweryfikowane czytaniem `renderer.ts` (nie zmienione w tym kroku) — kolejność
+ * potwierdzona też testem `unit-info-card-entitycard-migration-test.cjs`.
+ *
+ * Medalion 3D w nowym kontrakcie mieści się w małym okrągłym slocie nagłówka karty
+ * (`.entity-card-medallion`, 34×34px — patrz `entityCards/types.ts` `EntityCardMedallion`
+ * i `renderer.ts` `buildMedallionEl`), NIE w osobnej, dużej sekcji „Model 3D" jak dawniej
+ * — to jest zamierzony kształt kontraktu T1/T1b (medalion = mały nagłówkowy podgląd dla
+ * wszystkich 4 kinds), nie regresja wprowadzona w T4. Lokalne nadpisania CSS niżej
+ * (`ensureUnitInfoCardStyles`) tylko dopasowują canvas/fallback do rozmiaru slotu.
  */
 import type { GameData, UnitDef } from '../data/loader';
+import { unitAdapter } from './entityCards/unitAdapter';
+import { renderEntityCard, ENTITY_CARD_CSS } from './entityCards/renderer';
+import type { EntityCardData } from './entityCards/types';
 import { categoryOf } from '../units/setup';
 import { unitInfographicLabel, unitInfographicMedallionHtml } from './unitInfographic';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
@@ -34,6 +57,109 @@ function node<K extends keyof HTMLElementTagNameMap>(
   if (className) el.className = className;
   return el;
 }
+
+// ---------------------------------------------------------------------------------------
+// Ścieżka T4 — adapter + renderer wspólny.
+// ---------------------------------------------------------------------------------------
+
+/** Buduje kartę przez `unitAdapter` + `renderEntityCard`. Woła adapter BEZPOŚREDNIO
+ * (nie `buildEntityCardData`/resolver) — wołający ma już konkretny `UnitDef`, nie
+ * samo `id`, więc pomijamy zbędne wyszukiwanie w rejestrze. */
+function buildUnitInfoCardViaEntityCard(
+  unit: UnitDef,
+  options: UnitInfoCardOptions,
+): HTMLDivElement {
+  const built = unitAdapter(unit, {});
+  const ownerColor = options.ownerColor ?? defaultOwnerColor();
+  const fallbackMsg = 'Render 3D niedostępny w tym środowisku';
+
+  // Medalion 3D i sekcja „Statusy" (dopełniona o `options.statusLines`) zależą od
+  // KONKRETNEGO wywołania, nie samych danych jednostki — nadpisywane tu, wzorem
+  // nagłówka karty technologii w T3 (patrz komentarz nad `unitAdapter.ts`).
+  const cardData: EntityCardData = {
+    ...built,
+    medallion: {
+      kind: 'unit3d',
+      mount: (slot: HTMLElement) => mountUnitMiniPreview(slot, unit, ownerColor, fallbackMsg),
+    },
+    sections: built.sections.map((section) => {
+      if (section.key !== 'statuses' || !options.statusLines || options.statusLines.length === 0) return section;
+      return { ...section, badges: [...(section.badges ?? []), ...options.statusLines] };
+    }),
+  };
+
+  const card = renderEntityCard(cardData) as HTMLDivElement;
+  // Parytet z dawnym markerem DOM (testowany string-match, `unit-info-card-contract-test.cjs`
+  // i wiring realnego renderu 3D) — zachowany niezależnie od wewnętrznej implementacji.
+  card.dataset.unitName = text(unit.Jednostka);
+  card.dataset.unit3dHook = UNIT_3D_RENDER_HOOK;
+
+  if (options.onClose) {
+    const header = card.querySelector<HTMLElement>('.entity-card-header');
+    if (header) {
+      const close = node('button', 'unit-info-card-close');
+      close.type = 'button';
+      close.textContent = '✕';
+      close.title = 'Zamknij (Esc)';
+      close.setAttribute('aria-label', 'Zamknij kartę jednostki');
+      close.addEventListener('click', () => options.onClose?.());
+      header.appendChild(close);
+    }
+  }
+
+  return card;
+}
+
+// ---------------------------------------------------------------------------------------
+// Publiczne API — sygnatury BEZ ZMIAN. Próbuje ścieżki T4, fallback do starej
+// implementacji w razie wyjątku (wzorem `_legacyShowTechDiscoveryNotice`, T3).
+// ---------------------------------------------------------------------------------------
+
+export function buildUnitInfoCard(
+  unit: UnitDef,
+  data: GameData,
+  options: UnitInfoCardOptions = {},
+): HTMLDivElement {
+  try {
+    return buildUnitInfoCardViaEntityCard(unit, options);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[unitInfoCard] błąd ścieżki entityCards, fallback do starej implementacji:', err);
+    return _legacyBuildUnitInfoCard(unit, data, options);
+  }
+}
+
+export function showUnitInfoCardDialog(
+  unit: UnitDef,
+  data: GameData,
+  options: UnitInfoCardOptions = {},
+): () => void {
+  const backdrop = node('div', 'unit-info-card-backdrop');
+  const dialog = node('div', 'unit-info-card-dialog');
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-label', `Informacje: ${text(unit.Jednostka)}`);
+  let closed = false;
+  const dismiss = (): void => {
+    if (closed) return;
+    closed = true;
+    popOverlay('unit-info-card');
+    backdrop.remove();
+  };
+  const card = buildUnitInfoCard(unit, data, { ...options, onClose: dismiss });
+  dialog.appendChild(card);
+  backdrop.appendChild(dialog);
+  document.body.appendChild(backdrop);
+  backdrop.addEventListener('click', event => {
+    if (event.target === backdrop) dismiss();
+  });
+  pushOverlay('unit-info-card', dismiss);
+  return dismiss;
+}
+
+// ---------------------------------------------------------------------------------------
+// Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
+// (wzorem `_legacyShowTechDiscoveryNotice` z T3). ZERO zmian w treści.
+// ---------------------------------------------------------------------------------------
 
 function appendRow(grid: HTMLElement, label: string, value: unknown, emphasize = false): void {
   if (!hasValue(value)) return;
@@ -101,7 +227,7 @@ function collectCounters(unit: UnitDef, data: GameData): string[] {
     .filter(Boolean);
 }
 
-export function buildUnitInfoCard(
+function _legacyBuildUnitInfoCard(
   unit: UnitDef,
   data: GameData,
   options: UnitInfoCardOptions = {},
@@ -201,33 +327,6 @@ export function buildUnitInfoCard(
   return card;
 }
 
-export function showUnitInfoCardDialog(
-  unit: UnitDef,
-  data: GameData,
-  options: UnitInfoCardOptions = {},
-): () => void {
-  const backdrop = node('div', 'unit-info-card-backdrop');
-  const dialog = node('div', 'unit-info-card-dialog');
-  dialog.setAttribute('role', 'dialog');
-  dialog.setAttribute('aria-label', `Informacje: ${text(unit.Jednostka)}`);
-  let closed = false;
-  const dismiss = (): void => {
-    if (closed) return;
-    closed = true;
-    popOverlay('unit-info-card');
-    backdrop.remove();
-  };
-  const card = buildUnitInfoCard(unit, data, { ...options, onClose: dismiss });
-  dialog.appendChild(card);
-  backdrop.appendChild(dialog);
-  document.body.appendChild(backdrop);
-  backdrop.addEventListener('click', event => {
-    if (event.target === backdrop) dismiss();
-  });
-  pushOverlay('unit-info-card', dismiss);
-  return dismiss;
-}
-
 export const UNIT_INFO_CARD_CSS = `
 .unit-info-card-backdrop{position:fixed;inset:0;z-index:520;display:flex;align-items:center;
   justify-content:center;padding:16px;background:rgba(0,0,0,.62);}
@@ -284,10 +383,33 @@ export const UNIT_INFO_CARD_CSS = `
   .unit-info-card-3d-slot{height:128px;}
   .unit-info-card-3d-slot .unit-mini-canvas{width:96px;height:96px;}
 }
+/* Ścieżka T4 (entityCards): karta jest zbudowana przez \`renderEntityCard\` (klasy
+   \`.entity-card*\`, style bazowe z \`ENTITY_CARD_CSS\` wstrzykiwane niżej w
+   \`ensureUnitInfoCardStyles()\`) — poniższe reguły to WYŁĄCZNIE lokalne nadpisania
+   dopasowujące medalion 3D (34×34, kontrakt T1/T1b) do canvasu miniatury jednostki
+   i przycisku zamknięcia, bez edycji \`entityCards/renderer.ts\`. */
+.entity-card-unit .entity-card-medallion{overflow:hidden;border-radius:50%;
+  background:radial-gradient(circle at 50% 35%,rgba(65,95,120,.42),rgba(8,10,16,.1));}
+.entity-card-unit .entity-card-medallion .unit-mini-canvas{width:100%;height:100%;
+  object-fit:cover;}
+.entity-card-unit .entity-card-medallion .unit-mini-loading{font-size:9px;color:#a8a090;}
+.entity-card-unit .entity-card-medallion.unit-mini-fallback{font-size:12px;
+  color:var(--tg-render-fallback,#e0a06a);}
 `;
 
 const STYLE_ID = 'civ-unit-info-card-css-v1';
+const ENTITY_STYLE_ID = 'civ-unit-info-card-entity-css-v1';
 export function ensureUnitInfoCardStyles(): void {
+  if (!document.getElementById(ENTITY_STYLE_ID)) {
+    // Ścieżka T4 renderuje przez `renderEntityCard` (klasy `.entity-card*`) — te style
+    // bazowe muszą być wstrzyknięte, bo dotąd żaden kod produkcyjny nie wołał
+    // `renderEntityCard` z kontekstu `unitInfoCard.ts` (poza testami T1). Wzorem
+    // `ensureEntityCardOverrideStyles()` z T3 (`techDiscoveryNotice.ts`).
+    const entityStyle = document.createElement('style');
+    entityStyle.id = ENTITY_STYLE_ID;
+    entityStyle.textContent = ENTITY_CARD_CSS;
+    document.head.appendChild(entityStyle);
+  }
   if (document.getElementById(STYLE_ID)) return;
   const style = document.createElement('style');
   style.id = STYLE_ID;
