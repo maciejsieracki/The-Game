@@ -246,8 +246,21 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   border:var(--tg-border-blocking,3px) solid var(--tg-gold-primary);border-radius:12px;
   background:linear-gradient(180deg,rgba(30,24,20,.99),rgba(10,10,14,.99));
   box-shadow:0 12px 32px rgba(0,0,0,.65),var(--tg-glow-gold);}
-.civ-side-panel .sp-blk-stripe{height:5px;flex:none;
-  background:repeating-linear-gradient(135deg,var(--tg-gold-primary) 0 10px,var(--tg-gold-dim) 10px 20px);}
+/* R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 runda 2: zamiennik diagonalnego paska sp-blk-stripe.
+   Wzorzec 1:1 z .civ-emp-alert/.civ-emp-sp-alert (docs/ux/claude-design/_dist/
+   11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13/, już użyty w gra/src/ui/empireDetailPanel.ts) —
+   ikona chip-warning + ta sama paleta (border #4a2a2a, tło rgba(224,122,122,.07), tekst
+   #e6c4c4), NIE nowy, wymyślony styl. Bar ma pozostać widoczny (twardy wymóg ECHO właściciela
+   z rundy 2) — dlatego ikona + etykieta, nie samo usunięcie.
+   EN: chip-warning icon + the exact civ-emp-alert palette, replacing the diagonal stripe —
+   the owner's round-2 ECHO required a visible replacement, not a bare removal. */
+.civ-side-panel .sp-blk-alert{display:flex;align-items:center;gap:7px;flex:none;
+  padding:6px 14px;border-bottom:1px solid #4a2a2a;background:rgba(224,122,122,.07);}
+.civ-side-panel .sp-blk-alert-ic{display:inline-flex;align-items:center;justify-content:center;
+  width:16px;height:16px;flex:none;}
+.civ-side-panel .sp-blk-alert-ic svg{width:100%;height:100%;display:block;}
+.civ-side-panel .sp-blk-alert-txt{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
+  color:#e6c4c4;font-weight:700;}
 .civ-side-panel .sp-blk-body{display:flex;align-items:flex-start;gap:11px;padding:13px 14px 11px;}
 .civ-side-panel .sp-blk-kicker-row{display:flex;align-items:center;gap:8px;}
 .civ-side-panel .sp-badge-decision{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#0c1018;
@@ -599,7 +612,9 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
             // Rozwinięta — zawsze dokładnie jedna, pierwsza blokująca w kolejce.
             const ignorable = isIgnorableRevoltEvent(ev);
             html += '<div class="sp-event sp-blocking sp-expanded" data-id="' + ev.id + '">'
-              + '<div class="sp-blk-stripe"></div>'
+              + '<div class="sp-blk-alert"><span class="sp-blk-alert-ic" aria-hidden="true">'
+              + brandIconSvg('chip-warning', 16) + '</span>'
+              + '<span class="sp-blk-alert-txt">Wymaga natychmiastowej decyzji</span></div>'
               + '<div class="sp-blk-body">'
               + '<span class="sp-ico">' + icoContent + '</span>'
               + '<div>'
