@@ -3,7 +3,7 @@
 **Status:** obowiązujący opis dla człowieka. Mapa źródeł prawdy i lokalizacja artefaktów
 znajdują się w [`INDEX-PROCESU.md`](../procesy/INDEX-PROCESU.md); techniczny skrót egzekwuje
 [reguła Cursor](../../.cursor/rules/autobot-evaluator-operator.mdc), a instrukcja wykonawcza
-jest w [skillu](../../.claude/skills/civ-autobot/SKILL.md).
+jest w [skillu](../../.claude/skills/autobots/SKILL.md).
 
 ## 1. Role i kolejność
 
@@ -23,6 +23,9 @@ Operator GPT-5.6 Luna High
 | Final Control | Kontroluje kompletność śladu, zgodność z GOAL i gotowość do integracji | Nie integruje i nie wystawia samodzielnie `READY_FOR_DEPLOY` |
 | Orkiestrator | Weryfikuje faktyczny Git i integruje wyłącznie zatwierdzoną allowlistę | Nie omija raportów ani bramek |
 | Deploy/push | Publikuje po `READY_FOR_DEPLOY` i osobnej autoryzacji | Nie wynika z commita ani raportu |
+
+Final Control jest — dokładnie jak Operator i Evaluator — zawsze osobnym subagentem;
+nigdy nie jest wykonywany bezpośrednio przez głównego/orkiestrującego agenta.
 
 ### 1a. Jawny model dispatchu Codex
 
@@ -74,6 +77,13 @@ konfliktu dispatch/kod/testy — nie substytut turnieju C-018 przy wpływie na g
 (weryfikacja „już wdrożone" wyłącznie przez `git merge-base --is-ancestor`, nigdy z pamięci)
 i **C-057** (rejestr duplikatów tematów tagiem `duplicate_of`/`related_to`/`supersedes` w
 `REJESTR-PROSB-I-ZADAN.md`, sprawdzany przed otwarciem nowego ID).
+
+**Limit rund (Maciej, 2026-08-20):** pętla domknięcia dla jednego ID ma TWARDY limit 5 rund
+(Operator→Evaluator→Final Control, ten sam temat). Po 5. nieudanej rundzie (bez czystego
+PASS/PASS-WITH-NOTES) orkiestrator ZATRZYMUJE dalsze automatyczne rundy tego tematu i
+zgłasza przekroczenie limitu wprost właścicielowi, opisując dotychczasowe FAIL-e/BLOCK-i,
+zamiast kontynuować dispatch bez końca. Nie dotyczy to niezależnych tematów ani watchdogu
+ZWIS (§1/§3 wyżej) — tylko powtarzających się rund tego samego ID.
 
 ## 4. Rejestry i artefakty
 
