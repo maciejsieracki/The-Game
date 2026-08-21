@@ -177,6 +177,128 @@ async function main() {
   if (typeof noopDismiss === 'function') noopDismiss();
   check('openEntityCard z nieistniejącym id NIE dodaje backdropu', document.querySelector('.entity-card-backdrop') === null);
 
+  // ---------------------------------------------------------------------
+  // T1b — rozszerzenie kontraktu renderera: 6 funkcjonalności na fixture'ach
+  // (patrz `13-dispatch-T1b-rozszerzenie-renderera.md`). Wszystkie nowe pola są
+  // opcjonalne — powyższe 47 asercji (T1, bez zmian) musi nadal przechodzić.
+  // ---------------------------------------------------------------------
+  const SVG_STAR = '<svg data-t1b-icon="star" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg>';
+
+  function fixtureCardData(sections) {
+    return {
+      kind: 'unit',
+      id: 't1b-fixture',
+      title: 'T1b Fixture',
+      medallion: { kind: 'icon', svg: '<svg></svg>' },
+      sections,
+    };
+  }
+
+  // (1) Akordeon — collapsible/openDefault realnie obsłużone + highlighted.
+  {
+    const data = fixtureCardData([
+      { key: 'acc-open', title: 'Sekcja otwarta', rows: [{ label: 'A', value: '1' }], collapsible: true, openDefault: true, highlighted: true },
+      { key: 'acc-closed', title: 'Sekcja zwinięta', rows: [{ label: 'B', value: '2' }], collapsible: true, openDefault: false },
+    ]);
+    const cardEl = renderEntityCard(data);
+    const openSec = cardEl.querySelector('[data-section-key="acc-open"]');
+    const closedSec = cardEl.querySelector('[data-section-key="acc-closed"]');
+    check('(1) akordeon: sekcja highlighted ma klasę entity-card-section--hi', openSec && openSec.classList.contains('entity-card-section--hi'));
+    check('(1) akordeon: sekcja openDefault=true ma data-open="1"', openSec && openSec.getAttribute('data-open') === '1');
+    check('(1) akordeon: sekcja openDefault=false ma data-open="0"', closedSec && closedSec.getAttribute('data-open') === '0');
+    const closedBody = closedSec && closedSec.querySelector('.entity-card-section-body');
+    check('(1) akordeon: body sekcji zwiniętej ma hidden', closedBody && closedBody.hidden === true);
+    const headBtn = closedSec && closedSec.querySelector('.entity-card-section-head');
+    check('(1) akordeon: przycisk nagłówka ma aria-expanded="false"', headBtn && headBtn.getAttribute('aria-expanded') === 'false');
+    if (headBtn) headBtn.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    check('(1) akordeon: klik nagłówka rozwija (aria-expanded="true", hidden usunięty)',
+      headBtn.getAttribute('aria-expanded') === 'true' && closedBody.hidden === false);
+  }
+
+  // (2) Ikona per wiersz — wstawiana jako markup (SVG realny w DOM, nie tekst).
+  {
+    const data = fixtureCardData([
+      { key: 'icons', title: 'Ikony', rows: [{ label: 'Łucznik', value: 'Jednostka', icon: { kind: 'svg', svg: SVG_STAR } }] },
+    ]);
+    const cardEl = renderEntityCard(data);
+    const iconEl = cardEl.querySelector('.entity-card-row-icon');
+    check('(2) ikona: kafelek ikony obecny w wierszu', iconEl !== null);
+    check('(2) ikona: SVG wstawiony jako markup (querySelector("svg") działa)', iconEl && iconEl.querySelector('svg[data-t1b-icon="star"]') !== null);
+    check('(2) ikona: NIE wstawiony jako tekst (textContent nie zawiera "<svg")', iconEl && !iconEl.textContent.includes('<svg'));
+  }
+
+  // (3) Pole "trailing" — osobne od value.
+  {
+    const data = fixtureCardData([
+      { key: 'trailing', title: 'Jednostki', rows: [{ label: 'Rydwan', value: 'Opis', trailing: 'Kawaleria' }] },
+    ]);
+    const cardEl = renderEntityCard(data);
+    const trailingEl = cardEl.querySelector('.entity-card-row-trailing');
+    check('(3) trailing: element trailing obecny', trailingEl !== null);
+    check('(3) trailing: tekst trailing poprawny', trailingEl && trailingEl.textContent === 'Kawaleria');
+    const valueEl = cardEl.querySelector('.entity-card-row-value');
+    check('(3) trailing: value pozostaje osobne od trailing', valueEl && valueEl.textContent === 'Opis');
+  }
+
+  // (4) Kolorowane odznaki per wiersz (ok/warn/muted).
+  {
+    const data = fixtureCardData([
+      {
+        key: 'actions', title: 'Co możesz teraz zrobić', rows: [
+          { label: 'Możesz teraz', value: 'Sprawdź dostęp do surowca.', badge: { kind: 'ok', label: 'Możesz teraz' } },
+          { label: 'Najpierw spełnij', value: 'Zbuduj X.', badge: { kind: 'warn', label: 'Najpierw spełnij' } },
+          { label: 'Nie oznacza', value: 'Odkrycie nie buduje automatycznie.', badge: { kind: 'muted', label: 'Nie oznacza' } },
+        ],
+      },
+    ]);
+    const cardEl = renderEntityCard(data);
+    const badges = cardEl.querySelectorAll('.entity-card-row-badge');
+    check('(4) badge: 3 odznaki per-wiersz w DOM', badges.length === 3, String(badges.length));
+    check('(4) badge: kind="ok" ma klasę entity-card-row-badge--ok', cardEl.querySelector('.entity-card-row-badge--ok') !== null);
+    check('(4) badge: kind="warn" ma klasę entity-card-row-badge--warn', cardEl.querySelector('.entity-card-row-badge--warn') !== null);
+    check('(4) badge: kind="muted" ma klasę entity-card-row-badge--muted', cardEl.querySelector('.entity-card-row-badge--muted') !== null);
+    check('(4) badge: etykieta odznaki poprawna', cardEl.querySelector('.entity-card-row-badge--ok').textContent === 'Możesz teraz');
+  }
+
+  // (5) Paginacja "Pokaż pozostałe N" (previewLimit) + sprzężenie z compactHeaderOnExpand.
+  {
+    const rows = [1, 2, 3, 4, 5].map(n => ({ label: `Jednostka ${n}`, value: 'x' }));
+    const data = { ...fixtureCardData([{ key: 'units', title: 'Jednostki', rows, previewLimit: 3 }]), compactHeaderOnExpand: true };
+    const cardEl = renderEntityCard(data);
+    const grids = cardEl.querySelectorAll('.entity-card-section-grid');
+    check('(5) paginacja: pierwsza siatka pokazuje dokładnie previewLimit=3 wiersze', grids[0] && grids[0].querySelectorAll('.entity-card-row').length === 3);
+    const moreBtn = cardEl.querySelector('.entity-card-more');
+    check('(5) paginacja: przycisk "Pokaż pozostałe N" obecny z poprawnym N (=5-3=2)', moreBtn && moreBtn.textContent === 'Pokaż pozostałe 2');
+    const restGrid = grids[1];
+    check('(5) paginacja: reszta wierszy (2) ukryta domyślnie (hidden)', restGrid && restGrid.hidden === true);
+    if (moreBtn) moreBtn.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    check('(5) paginacja: klik "Pokaż pozostałe" odkrywa resztę (hidden usunięty)', restGrid.hidden === false);
+    check('(5) paginacja: compactHeaderOnExpand=true dodaje entity-card--compact na karcie po kliknięciu', cardEl.classList.contains('entity-card--compact'));
+
+    // Sekcja BEZ previewLimit (undefined) renderuje wszystkie wiersze bez przycisku — brak regresji.
+    const dataNoLimit = fixtureCardData([{ key: 'units2', title: 'Jednostki2', rows }]);
+    const cardElNoLimit = renderEntityCard(dataNoLimit);
+    check('(5) paginacja: bez previewLimit — wszystkie 5 wierszy widoczne, brak przycisku "Pokaż pozostałe"',
+      cardElNoLimit.querySelectorAll('.entity-card-row').length === 5 && cardElNoLimit.querySelector('.entity-card-more') === null);
+  }
+
+  // (6) Layout 'pills' z checkmarkiem (Wymagania).
+  {
+    const data = fixtureCardData([
+      { key: 'requirements', title: 'Wymagania', rows: [{ label: 'Rolnictwo', value: '' }, { label: 'Koło', value: '' }], layout: 'pills' },
+    ]);
+    const cardEl = renderEntityCard(data);
+    const pillsWrap = cardEl.querySelector('.entity-card-section-pills');
+    check('(6) pills: kontener pigułek obecny (layout="pills")', pillsWrap !== null);
+    const pills = cardEl.querySelectorAll('.entity-card-pill');
+    check('(6) pills: 2 pigułki w DOM', pills.length === 2, String(pills.length));
+    check('(6) pills: tekst pierwszej pigułki poprawny', pills[0] && pills[0].querySelector('.entity-card-pill-text').textContent === 'Rolnictwo');
+    check('(6) pills: checkmark "✓" obecny w pigułce', pills[0] && pills[0].querySelector('.entity-card-pill-check').textContent === '✓');
+    check('(6) pills: sekcja BEZ layout (domyślnie "grid") NIE renderuje pigułek',
+      renderEntityCard(fixtureCardData([{ key: 'grid-default', title: 'Domyślnie grid', rows: [{ label: 'X', value: 'Y' }] }]))
+        .querySelector('.entity-card-section-pills') === null);
+  }
+
   console.log('');
   console.log(`[entity-card-contract-test] ${pass} pass, ${fail} fail`);
   if (fail > 0) process.exit(1);
