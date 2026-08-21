@@ -10,16 +10,26 @@
  * `appendTechDetailBlock()` (panel szczegółów budynku/jednostki wymagającego tej
  * technologii). To bug filtra (nierozpoznany wzorzec), nie decyzja projektowa.
  *
+ * RUNDA 2 — REGRES rundy 1: rozpoznawanie „ABC-<numer>" dodano w rundzie 1 do
+ * `isDevOnlyPlayerText()` (funkcja odrzucająca CAŁĄ notatkę → null), co dla Brązownictwa
+ * usuwało graczowi TAKŻE legalną część „kończy Epokę 1", nie tylko dev-adnotację
+ * „ABC-7: ...". Naprawa rundy 2: rozpoznawanie wzorca „ABC-<numer>:" (z otaczającą
+ * interpunkcją, aż do końca zdania/stringa) przeniesione do `stripInlineDevAnnotations()`
+ * (funkcja WYCINAJĄCA tylko adnotację, zachowująca resztę notatki) — dla notatek
+ * CAŁKOWICIE devowych (np. same PYTANIE/DECYZJA/DEC-...) `isDevOnlyPlayerText()` nadal
+ * zwraca null; dla notatek MIESZANYCH (legalny tekst + „ABC-...:") `playerFacingNote()`
+ * ma teraz zwracać niepusty string z samą legalną częścią.
+ *
  * Ten test:
  * 1. Wycina PRAWDZIWE źródło `isDevOnlyPlayerText`/`stripInlineDevAnnotations`/
  *    `playerFacingNote` z cityPanel.ts i wykonuje je (vm), żeby sprawdzić rzeczywiste
  *    zachowanie funkcji — nie tylko obecność wzorca w tekście źródła.
  * 2. Odpytuje `gra/data/tech.json` grep-em (bez zgadywania) o WSZYSTKIE wartości pola
  *    `Uwagi` zawierające znany wzorzec notatki deweloperskiej (PYTANIE/DECYZJA/DEC-\d{8}/
- *    ABC-\d+/„patrz unit-building-bonuses") i wymaga, żeby KAŻDA z nich została odrzucona
- *    przez `playerFacingNote()` (zwrot null) — regres na konkretnym wpisie
- *    Brązownictwo/„ABC-7:" i na każdym analogicznym wpisie, obecnym dziś lub dodanym
- *    później w tym samym wzorcu.
+ *    ABC-\d+/„patrz unit-building-bonuses") i sprawdza oczekiwane zachowanie:
+ *    - wpisy CAŁKOWICIE dev-owe → `playerFacingNote()` zwraca null;
+ *    - wpis MIESZANY (Brązownictwo/„ABC-7:") → `playerFacingNote()` zwraca niepusty
+ *      string zawierający legalną część, BEZ fragmentu „ABC-7".
  * 3. Weryfikuje strukturalnie, że `appendTechDetailBlock()` faktycznie filtruje
  *    `t.Uwagi` przez `playerFacingNote(...)` przed wyrenderowaniem (korzeń przeoczenia z
  *    dispatcha — cityPanel.ts ma mieć TEN SAM filtr co reszta panelu, nie osobną kopię
@@ -106,11 +116,20 @@ ok(typeof isDevOnlyPlayerText === 'function', 'isDevOnlyPlayerText wykonalne w s
 
 // ---------------------------------------------------------------------------
 // 2a. Regres dokładnego przypadku ze znaleziska: Brązownictwo w tech.json.
+//
+// RUNDA 2: notatka MIESZANA (legalny tekst „kończy Epokę 1" + dev-adnotacja
+// „ABC-7: ..."). playerFacingNote() MUSI zwrócić niepusty string z legalną częścią,
+// BEZ fragmentu ABC-7 — NIE null (to był regres rundy 1: cała notatka znikała).
 // ---------------------------------------------------------------------------
 if (playerFacingNote) {
   const brazownictwoUwagi = 'kończy Epokę 1; ABC-7: Popalnia brązu na mapie';
-  ok(playerFacingNote(brazownictwoUwagi) === null,
-    `Uwagi Brązownictwa ("${brazownictwoUwagi}") odrzucone przez playerFacingNote() (regres dokładnego znaleziska)`);
+  const result = playerFacingNote(brazownictwoUwagi);
+  ok(result !== null,
+    `Uwagi Brązownictwa ("${brazownictwoUwagi}") NIE są odrzucone w całości przez playerFacingNote() (regres rundy 1: legalna część "kończy Epokę 1" ma zostać)`);
+  ok(result === 'kończy Epokę 1',
+    `playerFacingNote() zwraca dokładnie legalną część "kończy Epokę 1" (otrzymano: ${JSON.stringify(result)})`);
+  ok(typeof result === 'string' && !/ABC-7/i.test(result),
+    `playerFacingNote() NIE zawiera fragmentu "ABC-7" w wyniku (otrzymano: ${JSON.stringify(result)})`);
 }
 
 // ---------------------------------------------------------------------------
@@ -149,10 +168,28 @@ ok(flaggedByGrep.length > 0,
 ok(flaggedByGrep.some((v) => /\bABC-\d+\b/i.test(v)),
   'wśród znalezionych wzorców jest przynajmniej jeden ABC-<numer> (dokładnie ten typ zgłoszony w dispatchu)');
 
+// Wzorce, dla których CAŁA notatka ma zniknąć (nie ma legalnej reszty do pokazania).
+// „ABC-<numer>" NIE jest tu, bo w danych współistnieje z legalnym tekstem (Brązownictwo)
+// — dla niego oczekiwane jest wycięcie SAMEJ adnotacji, nie całej notatki (runda 2).
+const wholeNoteDevPatterns = [
+  /^PYTANIE\s+\d+/i,
+  /^DECYZJA\b/i,
+  /^DEC-\d{8}/i,
+  /\bpatrz\s+unit-building-bonuses/i,
+];
+
 if (playerFacingNote) {
   for (const v of flaggedByGrep) {
-    ok(playerFacingNote(v) === null,
-      `Uwagi tech.json z wzorcem dev-notatki ODRZUCONE przez playerFacingNote(): "${v}"`);
+    const result = playerFacingNote(v);
+    if (wholeNoteDevPatterns.some((re) => re.test(v))) {
+      ok(result === null,
+        `Uwagi tech.json CAŁKOWICIE dev-owe ODRZUCONE (null) przez playerFacingNote(): "${v}"`);
+    } else if (/\bABC-\d+\b/i.test(v)) {
+      ok(result !== null,
+        `Uwagi tech.json z ABC-<numer> WSPÓŁISTNIEJĄCYM z legalnym tekstem NIE są odrzucone w całości: "${v}" -> ${JSON.stringify(result)}`);
+      ok(typeof result === 'string' && !/\bABC-\d+\b/i.test(result),
+        `playerFacingNote() usuwa fragment ABC-<numer> z wyniku: "${v}" -> ${JSON.stringify(result)}`);
+    }
   }
 }
 

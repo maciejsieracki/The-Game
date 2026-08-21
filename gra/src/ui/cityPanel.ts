@@ -6765,33 +6765,37 @@ function isEmptyDataVal(v: unknown): boolean {
 }
 
 /**
- * Ukrywa wewnętrzne notatki decyzyjne (PYTANIE/DECYZJA/DEC-.../ABC-...) przed graczem.
- *
- * NAPRAWA (P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1): filtr rozpoznawał tylko PYTANIE/DECYZJA/
- * DEC-\d{8}/„patrz unit-building-bonuses" — NIE rozpoznawał serii odniesień decyzyjnych
- * „ABC-<numer>" (np. „ABC-7:", „ABC-21 B" — patrz docs/decyzje/DECYZJE-MNOZNIK-ABC.md i
- * dyspozycje/_handoff/*-ABC-*.md, ta sama rodzina co PYTANIE/DECYZJA, tylko inne
- * oznaczenie), więc np. `tech.json` Brązownictwo → Uwagi „kończy Epokę 1; ABC-7: Popalnia
- * brązu na mapie" przeciekało graczowi w cityPanel.ts::appendTechDetailBlock(). Wzorzec
- * „ABC-\d+" dopasowywany WSZĘDZIE w tekście (nie tylko na początku), tak jak już istniejący
- * wzorzec „patrz unit-building-bonuses" — bo w danych notatka z ABC-owym odniesieniem
- * dekoracyjnym pojawia się w środku zdania, nie tylko na jego początku.
+ * Ukrywa wewnętrzne notatki decyzyjne (PYTANIE/DECYZJA/DEC-...) przed graczem, gdy CAŁA
+ * notatka jest wewnętrzna (nic legalnego do pokazania). Odniesienia „ABC-<numer>:"
+ * współistniejące z legalnym tekstem w tej samej notatce (np. „kończy Epokę 1; ABC-7:
+ * Popalnia brązu na mapie") NIE mają trafiać tutaj — patrz `stripInlineDevAnnotations()`
+ * niżej i P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1 runda 2.
  */
 function isDevOnlyPlayerText(text: string): boolean {
   const t = text.trim();
   return /^PYTANIE\s+\d+/i.test(t)
     || /^DECYZJA\b/i.test(t)
     || /^DEC-\d{8}/i.test(t)
-    || /\bpatrz\s+unit-building-bonuses/i.test(t)
-    || /\bABC-\d+\b/i.test(t);
+    || /\bpatrz\s+unit-building-bonuses/i.test(t);
 }
 
+/**
+ * NAPRAWA (P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1, runda 2): runda 1 dodała rozpoznawanie
+ * wzorca „ABC-<numer>" do `isDevOnlyPlayerText()` (funkcja odrzucająca CAŁĄ notatkę),
+ * co spowodowało REGRES — dla `tech.json` Brązownictwo, Uwagi = „kończy Epokę 1; ABC-7:
+ * Popalnia brązu na mapie", cała notatka znikała graczowi, w tym legalna część „kończy
+ * Epokę 1", nie tylko dev-adnotacja „ABC-7: ...". Naprawa: wzorzec „ABC-<numer>:" (wraz z
+ * otaczającą interpunkcją, np. „; ABC-7: ...", aż do końca zdania/stringa) jest tu
+ * WYCINANY, a reszta notatki (legalny tekst) zostaje — analogicznie do już istniejącego
+ * wzorca „PYTANIE ...=.../(Maciej daty)" niżej.
+ */
 function stripInlineDevAnnotations(text: string): string {
   return text
     .replace(/^PYTANIE\s+\d+\s*=\s*[ABC]\s*\([^)]*\)\s*:?\s*/i, '')
     .replace(/\bPYTANIE\s+\d+\s*=\s*[ABC]\s*\([^)]*\)/gi, '')
     .replace(/\(Maciej\s+\d{4}-\d{2}-\d{2}\)/g, '')
     .replace(/\bdecyzj[aą]\s+Maciej\s+\d{4}-\d{2}-\d{2}/gi, '')
+    .replace(/[\s;,.]*\bABC-\d+(?:\s?[A-Za-z])?\s*:\s*[^.]*\.?/gi, ' ')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
