@@ -3548,6 +3548,50 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
+## ROBOCZA — FALA 308 (2026-08-21) — naprawa awarii FALI 307 + 3 dodatkowe poprawki
+- **AKTUALNA** · ROBOCZA md5 `e4317354b95f8ab3966ac7bb56bea1d2` · stempel `e4317354` · manifest/bundle `VERIFY OK`.
+
+  **Naprawa krytycznego regresu FALI 307** (`R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1`):
+  przyciski „Rozpocznij badanie"/„Otwórz drzewo" w karcie odkrycia technologii nie
+  reagowały na klik. Przyczyna: `.entity-card` nie miało własnego `position`, więc malowało
+  się we WCZEŚNIEJSZYM kroku CSS stacking-context niż `.tdn-back` (tło modala,
+  `position:fixed`) — tło przechwytywało kliknięcia mimo poprawnej kolejności DOM i
+  poprawnie podpiętych event listenerów. Naprawa: jedna linia CSS (`position:relative` na
+  `.entity-card` w lokalnym override `techDiscoveryNotice.ts`). Znaleziona i zweryfikowana
+  PRZEZ REALNĄ PRZEGLĄDARKĘ (Playwright/Chromium, `elementFromPoint()` + `page.mouse.click()`
+  na rzeczywistych współrzędnych) — jsdom (używany we wcześniejszych testach tej sesji) NIE
+  robi hit-testingu i dawał fałszywie zielony wynik dla tej klasy buga. Operator, Evaluator
+  i Final Control NIEZALEŻNIE odtworzyli regres na kodzie sprzed naprawy (test mutacyjny:
+  usunięcie linii → 6/12 FAIL, przywrócenie → 12/12 PASS) i potwierdzili naprawę. Dwa nowe
+  trwałe testy: `tech-discovery-card-click-test.cjs` (jsdom, 13/13) i
+  `tech-discovery-card-real-click-test.cjs` (Playwright/Chromium, prawdziwy hit-test, 12/12)
+  — ten drugi zamyka `P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1`.
+
+  **`R-SCIENCEHUB-KLIK-WIERSZA-ENQUEUE-Q1`**: klik odblokowanej technologii w panelu
+  „Badania" znów dodaje bezpośrednio do planu badań (przywrócone stare zachowanie);
+  podgląd karty dostępny przez wyraźny przycisk tekstowy „Karta" (zastąpił małą ikonkę „ⓘ"
+  z fazy 1). Zweryfikowane realnym renderem+klikiem (jsdom+esbuild, prawdziwe dane), 13/13.
+
+  **`R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1`**: hover-karta drzewka technologii i
+  tooltip `sciencePicker.ts` pokazują teraz kompletną, poprawną listę odblokowywanych
+  jednostek z `units.json` (np. 20 zamiast 12 dla Brązownictwa) zamiast przestarzałego,
+  osadzonego tekstu w `tech.json`; `sciencePicker.ts` już nie miesza nazw jednostek z
+  budynkami pod „Odblokowuje budynki:". Nowy wspólny moduł `techUnlockParse.ts`.
+
+  **`R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1`**: pasek „N karta wymaga decyzji" i przycisk
+  „Wykonaj" w dolnym pasku UI już się nie nakładają po rozwiązaniu blokującej decyzji —
+  przyczyna: zły kontekst pozycjonowania (`.et-hint` był dzieckiem `.et-wrap`, nie całego
+  `.civ-bottom-bar`). Zweryfikowane realną przeglądarką — zrzuty ekranu przed/po pixel-for-pixel.
+
+  Wszystkie 4 tematy: pełny cykl Operator→Evaluator→Final Control (Sonnet 5 Medium/High,
+  Workflow, osobne subagenty), zweryfikowane niezależnie przez orkiestratora po scaleniu.
+  Bramki zbiorcze: `tsc` 0; `entity-card-contract-test` 75/75; `technology-discovery-card-
+  visual-test` 48/48; `tech-tree-test` 19/19; `bottom-bar-hud-wykonaj-overlap-test` 33/33;
+  `important-event-cards-test` 10/10; `tech-unlock-units-test` 41/41; `building-tech-gate-
+  test` 89/89; `citypanel-uwagi-abc-filter-test` 35/35; Vite 845 modułów. `science-hub-test`
+  5/7 — 2 faile pre-istniejące, niezwiązane (`P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1`). Deploy
+  wykonany do `gra-robocza/`; push osobno.
+
 ## AWARIA — ROLLBACK FALA 307 → 306 (2026-08-21, pilne)
 
 **Zgłoszenie właściciela (na żywo, stempel `6c1433ef` = FALA 307):** kliknięcie technologii na
@@ -3587,7 +3631,7 @@ regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
   `P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1`. Deploy wykonany do `gra-robocza/`;
   push osobno.
 
-## ROBOCZA — FALA 306 (2026-08-21) — **AKTUALNA (przywrócona rollbackiem FALI 307)**
+## ROBOCZA — FALA 306 (2026-08-21) — **ZASTĄPIONA** (→ `e4317354`, FALA 308 — po tymczasowym rollbacku z 307)
 - ROBOCZA md5 `5900b3fb603fbec52edd97fc95966fdb` · stempel `5900b3fb` · manifest/bundle `VERIFY OK`.
   Zakres: `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` — filtr `playerFacingNote()`/
   `isDevOnlyPlayerText()`/`stripInlineDevAnnotations()` w `cityPanel.ts` teraz poprawnie
