@@ -30,9 +30,10 @@ ZMIANY/COMMIT:
   brak refaktoru kontraktu karty, tylko nowy punkt wejścia do istniejącej funkcji. Dodano import
   `showTechDiscoveryNotice` z `./techDiscoveryNotice`. Drobny CSS hover/focus dla
   `.cp-tech-hint-link` obok istniejącego bloku `.bld-req-chip`.
-- SHA (working tree, PRZED commitem lokalnym): brak — commit wykonany w tym samym runie,
-  patrz `git log --oneline -1` po commicie: 3f8c2a1 (autobot(faza1): ...) — patrz repo po
-  commicie, dokładny SHA w wyniku `git log` poniżej.
+- Commit lokalny (kod + ten raport razem): `c986a611` —
+  `autobot(faza1): R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 - osobna ikonka info na hubie
+  badan, drzewku tech i cityPanel`, na branchu `autobot/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`
+  (tip po commicie), rodzic `41d0d829` (dispatch). NIE mergowane do `main`.
 - Brak zmian w `showTechDiscoveryNotice`/`techDiscoveryNotice.ts` (zgodnie z ograniczeniem) —
   tylko nowe punkty wejścia wołające istniejącą, niezmienioną funkcję.
 
