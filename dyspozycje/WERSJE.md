@@ -3548,8 +3548,32 @@ worktree, nie sa regresja tej fali.
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
 
-## ROBOCZA — FALA 308 (2026-08-21) — naprawa awarii FALI 307 + 3 dodatkowe poprawki
-- **AKTUALNA** · ROBOCZA md5 `e4317354b95f8ab3966ac7bb56bea1d2` · stempel `e4317354` · manifest/bundle `VERIFY OK`.
+## ROBOCZA — FALA 309 (2026-08-21) — CivPedia T4: karta jednostki na mapie, odznaki statusu
+
+- **AKTUALNA** · ROBOCZA md5 `809a36e9c554fd0bfa58d63a4b155e8f` · stempel `809a36e9` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T4 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: migracja karty jednostki na mapie
+  (`unitInfoCard.ts`) do wspólnego systemu `entityCards` — publiczna sygnatura bez zmian, stara
+  implementacja jako fallback w try/catch, 3D-podgląd jednostki zachowany. Runda 2: Evaluator
+  T4 znalazł w żywej przeglądarce, że sekcja „Statusy" (odznaki garnizon/ufortyfikowanie/
+  sentry/auto-eksploracja z `main.ts`) renderuje wiele odznak, ale klasy `.entity-card-badges`/
+  `.entity-card-badge` nie miały ŻADNEJ reguły CSS w repo od T1 — luka niewidoczna, dopóki
+  żadna karta nie renderowała ≥2 odznak naraz (karta technologii T3 zawsze renderowała
+  dokładnie jedną). Odznaki sklejały się w jeden nieczytelny ciąg tekstu bez odstępu/tła.
+  Naprawa: brakujące reguły `.entity-card-badges{display:flex;flex-wrap:wrap;gap:6px}` +
+  `.entity-card-badge{...pigułka...}` w `entityCards/renderer.ts`. Nowy trwały test
+  `unit-info-card-badges-real-render-test.cjs` (Playwright/real Chromium, mierzy prawdziwą
+  geometrię DOM przez `getBoundingClientRect`/`getComputedStyle`, nie tylko markup) — 19/19.
+  Operator→Evaluator→Final Control PASS niezależnie (dwóch osobnych agentów, każdy z własnym
+  izolowanym worktree i własnym mutation-testem: usunięcie CSS → 13/19 FAIL, przywrócenie →
+  19/19 PASS). Bramki zbiorcze na scalonym `main`: `tsc` 0; `entity-card-contract-test` 75/75;
+  `unit-info-card-entitycard-migration-test` 26/26; `unit-info-card-contract-test` 23/23;
+  `unit-info-card-wiring-test` 6/6; `technology-discovery-card-visual-test` 48/48;
+  `logic-test` 213/213; `tech-tree-test` 19/19; `research-test` 33/33; `unit-replace-test`
+  13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 308 (2026-08-21) — naprawa awarii FALI 307 + 3 dodatkowe poprawki — **ZASTĄPIONA** (→ 809a36e9, FALA 309)
+- ROBOCZA md5 `e4317354b95f8ab3966ac7bb56bea1d2` · stempel `e4317354` · manifest/bundle `VERIFY OK`.
 
   **Naprawa krytycznego regresu FALI 307** (`R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1`):
   przyciski „Rozpocznij badanie"/„Otwórz drzewo" w karcie odkrycia technologii nie
