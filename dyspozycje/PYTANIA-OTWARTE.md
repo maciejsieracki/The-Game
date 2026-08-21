@@ -24,7 +24,7 @@ Bieżący status procesu używa zamkniętej listy z rejestru:
 |---|---|---|
 | `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1` | `OPERATOR` | ECHO `1A+2A+3A` jest zapisana; implementacja nie została zlecona. |
 | `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `OPERATOR` | ABC kompletne; końcowy wpis mówi o gotowości do dispatchu Operatora. |
-| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `ABC-OCZEKUJE` | Ogólny prototyp nadal czeka na rozstrzygnięcie źródeł i akceptację. |
+| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `ECHO=A ZAPISANE — RECON W TOKU` | ECHO A (Maciej, 2026-08-21): prototyp zaakceptowany, recon rozbieżności źródeł (§4) przed wdrożeniem — patrz `docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`. |
 | `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT` | `ODŁOŻONE` | Nowa funkcja pozostaje odłożona; wznowić dopiero po decyzji właściciela. |
 | `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ABC-OCZEKUJE` | Czeka na uznanie właściciela za zamknięte przy kolejnym przeglądzie. |
 | `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` | `ABC-OCZEKUJE` | Zarejestrowane do ABC przy przeglądzie tematów bitewnych. |
@@ -168,7 +168,12 @@ czyta wyłącznie najnowszy wpis `Playtest — na co patrzeć` z ROBOCZEJ w
 
 ---
 
-## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **OTWARTE — OGÓLNY PROTOTYP**
+## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **ECHO=A ZAPISANE — RECON W TOKU**
+
+**ECHO (Maciej, 2026-08-21):** `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1=A`. Pełna treść ECHO
+i ostrzeżenie o `techDiscoveryNotice.ts` (FALA 300) wdrożonym PRZED zamknięciem tego recon —
+w `docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`. Temat izolowany na branchu
+`autobot/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`, poza `main`.
 
 **Sytuacja:** Po odkryciu technologii istnieją dziś skrócone informacje w hubie badań oraz tooltip/karta węzła drzewa. Nie ma jednej rozbudowanej karty pokazującej pełny efekt odkrycia. Prototyp opisano na przykładzie Brązownictwa w [`docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`](../docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md).
 
