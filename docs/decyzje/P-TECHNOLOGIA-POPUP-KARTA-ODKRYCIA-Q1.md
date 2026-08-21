@@ -1,11 +1,23 @@
 # P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — karta odkrycia technologii
 
-**Status:** ECHO `A` ZAPISANE (Maciej, 2026-08-21) — patrz `dyspozycje/PYTANIA-OTWARTE.md`
-→ `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`. Prototyp zaakceptowany jako wzorzec; przed
-dispatchem implementacji dla wszystkich technologii Operator rozstrzyga rozbieżność
-źródeł danych (sekcja 4 niżej).
+**Status:** ECHO `A` ZAPISANE (Maciej, 2026-08-21) — RECON ZAMKNIĘTY, naprawa wydzielona do
+`R-TECH-ULEPSZENIA-TERENU-SYNC-Q1` (patrz `dyspozycje/PYTANIA-OTWARTE.md` →
+`P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` i ECHO poniżej). Prototyp zaakceptowany jako wzorzec;
+rozbieżność źródeł danych (sekcja 4 niżej) rozstrzygnięta przez recon Operatora.
 **Zakres tej notatki:** jedna karta demonstracyjna i propozycja UX. **Bez implementacji, bez zmian w `gra/src` i `gra/data`.**
 **Data:** 2026-08-17
+
+**ECHO P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1=A (Maciej, 2026-08-21, w czacie orkiestratora):**
+zaakceptowany prototyp/UX jako wzorzec (§3 niżej); przed jakimkolwiek dalszym wdrożeniem
+ogólnego wzorca dla WSZYSTKICH technologii — recon rozbieżności źródeł z §4 (12 vs 20
+jednostek, status „Popalnia brązu”). WAŻNE: od czasu spisania tej notatki (2026-08-17)
+`gra/src/ui/techDiscoveryNotice.ts` został ogólnie przeprojektowany i wdrożony dla
+WSZYSTKICH technologii w FALI 300 (`R-TRZY-KARTY-WDROZENIE-Q1`, 2026-08-20) — bez
+uprzedniego zamknięcia recon z tej notatki. Recon musi teraz w pierwszej kolejności
+ustalić, czy ten już-wdrożony kod nadepnął na te same rozbieżności (np. czy pokazuje
+nazwę „Popalnia brązu” mimo braku odpowiadającego wpisu w `terrain-improvements.json`)
+zamiast zakładać, że wdrożenie jeszcze nie miało miejsca. Temat izolowany na branchu
+`autobot/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`.
 
 **Ograniczenia zakresu prototypu:**
 - Wzór graficzny popupu/karty pozostaje osobnym etapem przygotowywanym przez Designera po akceptacji prototypu Brązownictwa.
