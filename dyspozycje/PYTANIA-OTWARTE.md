@@ -31,7 +31,7 @@ Bieżący status procesu używa zamkniętej listy z rejestru:
 | `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `OPERATOR` | Osobna gałąź/worktree; bez merge, push i deployu. |
 | `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Wznowić wyłącznie w osobnej sesji o systemie ustrojów. |
 | `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` | `OPERATOR` | ECHO Wątek C = `A` (wymuś cap 50% też w mieście), Wątek E = zależny od reconu — pełne ECHO w `docs/decyzje/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1.md`. Implementacja w toku (Operator). |
-| `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` | `OPERATOR` | ECHO 1-5 zapisane (`docs/decyzje/...md`). Faza 1/T2 (ikonka hub badań) zdeployowana FALA 305. **T1 (fundament kontraktu) ZINTEGROWANE do `main`** — Operator→Evaluator→Final Control PASS, wyłącznie nowe pliki `gra/src/ui/entityCards/**`, zero edycji istniejących kart, 47/47 testów. Brak zmiany widocznej dla gracza (nic jeszcze nie woła nowego kontraktu) — bez osobnej FALI ROBOCZA, dołączy do deployu przy T3. Następny krok: T3 (migracja karty technologii). |
+| `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` | `OPERATOR` | ECHO 1-5 zapisane. T1 (fundament) ZINTEGROWANE do `main`. **T3 (migracja karty technologii) zablokowany BLOCK Operatora** — kontrakt T1 nie obsługiwał 6 realnych, dziś istniejących zachowań karty odkrycia (akordeon, ikony per wiersz, trailing, kolorowane odznaki, paginacja „Pokaż pozostałe N", pigułki wymagań), pinowanych testem `technology-discovery-card-visual-test.cjs`. **Nie ABC** — czysto techniczna konieczność, orkiestrator zdecydował samodzielnie: wstawiony nowy krok T1b (rozszerzenie renderera, wstecznie kompatybilne) między T1 a T3, w toku. |
 
 ### Zamknięte — odsyłacze do decyzji i dowodów
 
