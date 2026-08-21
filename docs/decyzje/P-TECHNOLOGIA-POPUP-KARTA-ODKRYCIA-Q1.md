@@ -1,6 +1,9 @@
 # P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — karta odkrycia technologii
 
-**Status:** PROPOZYCJA DESIGN / CZEKA-NA-DECYZJĘ
+**Status:** ECHO `A` ZAPISANE (Maciej, 2026-08-21) — patrz `dyspozycje/PYTANIA-OTWARTE.md`
+→ `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`. Prototyp zaakceptowany jako wzorzec; przed
+dispatchem implementacji dla wszystkich technologii Operator rozstrzyga rozbieżność
+źródeł danych (sekcja 4 niżej).
 **Zakres tej notatki:** jedna karta demonstracyjna i propozycja UX. **Bez implementacji, bez zmian w `gra/src` i `gra/data`.**
 **Data:** 2026-08-17
 

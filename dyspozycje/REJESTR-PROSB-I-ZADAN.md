@@ -2878,10 +2878,13 @@ panelu bocznym (`sp-event.sp-blocking.sp-expanded`). Wizualnie przypomina taśm�
 Brak jakiegokolwiek wcześniejszego zlecenia dla designera ani zgłoszenia pod tym opisem w
 `REJESTR-PROSB-I-ZADAN.md` ani `PYTANIA-OTWARTE.md`.
 
-**GOAL:** ustalić z właścicielem kierunek zamiany — usunąć pasek, zastąpić istniejącym językiem
-wizualnym paczki designu panelu imperium (`chip-warning.svg`/`.civ-emp-alert` z
-`Ulepszenie_infografik.zip`), czy zlecić nowy mockup designerowi — przed jakimkolwiek dispatchem
-kodu.
+**GOAL:** zastąpić `.sp-blk-stripe` istniejącym językiem wizualnym paczki designu panelu
+imperium (`chip-warning.svg`/`.civ-emp-alert` z `Ulepszenie_infografik.zip`,
+`docs/ux/claude-design/_dist/11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13/`) zamiast paska —
+spójne z resztą nowego stylu, bez czekania na nowy mockup designera.
 
-**STATUS:** ZAREJESTROWANE — wymaga decyzji kierunku od właściciela (nie jest to jednoznaczny
-bug, tylko rozbieżność stylu); nie dispatchować Operatora bez tej decyzji.
+**ECHO (Maciej, 2026-08-21):** zastąp istniejącym językiem designu (nie usuwać całkowicie,
+nie zlecać nowego mockupu).
+
+**STATUS:** ZAREJESTROWANE, kierunek ustalony — gotowe do reconu/dispatchu Operatora.
+Nie wymaga dalszej ABC.

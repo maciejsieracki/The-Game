@@ -24,7 +24,7 @@ Bieżący status procesu używa zamkniętej listy z rejestru:
 |---|---|---|
 | `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1` | `OPERATOR` | ECHO `1A+2A+3A` jest zapisana; implementacja nie została zlecona. |
 | `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `OPERATOR` | ABC kompletne; końcowy wpis mówi o gotowości do dispatchu Operatora. |
-| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `ABC-OCZEKUJE` | Ogólny prototyp nadal czeka na rozstrzygnięcie źródeł i akceptację. |
+| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `OPERATOR` | ECHO `A` zapisane (2026-08-21); recon rozbieżności `tech.json` vs `units.json` przed dispatchem implementacji dla wszystkich technologii. |
 | `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT` | `ODŁOŻONE` | Nowa funkcja pozostaje odłożona; wznowić dopiero po decyzji właściciela. |
 | `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ABC-OCZEKUJE` | Czeka na uznanie właściciela za zamknięte przy kolejnym przeglądzie. |
 | `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` | `ABC-OCZEKUJE` | Zarejestrowane do ABC przy przeglądzie tematów bitewnych. |
@@ -168,7 +168,7 @@ czyta wyłącznie najnowszy wpis `Playtest — na co patrzeć` z ROBOCZEJ w
 
 ---
 
-## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **OTWARTE — OGÓLNY PROTOTYP**
+## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **OPERATOR — ECHO A ZAPISANE**
 
 **Sytuacja:** Po odkryciu technologii istnieją dziś skrócone informacje w hubie badań oraz tooltip/karta węzła drzewa. Nie ma jednej rozbudowanej karty pokazującej pełny efekt odkrycia. Prototyp opisano na przykładzie Brązownictwa w [`docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`](../docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md).
 
@@ -201,7 +201,14 @@ czyta wyłącznie najnowszy wpis `Playtest — na co patrzeć` z ROBOCZEJ w
 
 **Rekomendacja:** **A** — zaakceptować prototyp dokumentacyjny, ale przed implementacją rozstrzygnąć wskazane rozbieżności źródeł.
 
-**Decyzja właściciela:** `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 = A/B/C`.
+**Decyzja właściciela:** `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 = A`.
+
+**ECHO (Maciej, 2026-08-21):** `A` — zaakceptować układ/UX prototypu jako wzorzec; przed
+dispatchem implementacji dla wszystkich technologii Operator musi rozstrzygnąć rozbieżność
+źródeł danych (`tech.json` vs `units.json` vs `terrain-improvements.json`) opisaną wyżej.
+Kontekst zgłoszenia: właściciel zgłosił „regres wyglądu na niektórych badaniach, dziwne
+infografiki niezgodne ze stylem gry" — to jest dokładnie efekt braku tego wzorca dla
+technologii innych niż Brązownictwo; ECHO A odblokowuje ujednolicenie.
 
 **KOREKTA AUDYTU 2026-08-18:** ten wpis dotyczy ogólnego wzorca i nadal
 czeka na akceptację prototypu oraz rozstrzygnięcie rozbieżności źródeł.
