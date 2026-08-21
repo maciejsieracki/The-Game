@@ -15,6 +15,7 @@ numerze ID, nie po dacie incydentu w treści — reguły odzyskane z archiwum po
 niższym numerem (np. C-046…C-049, wstawione 2026-08-20) tu się nie pojawią,
 mimo że tego dnia też trafiły do playbooka.
 
+- **C-062** (2026-08-21) — przywrócono zapis: Final Control (Claude Code) = Sonnet 5 effort High, zawsze osobny subagent, nigdy główny orkiestrator — zaginął z §5a przy nadpisaniu pliku przez równoległą sesję, przywrócony po audycie właściciela.
 - **C-061** (2026-08-21) — dwie ścieżki dispatchu Operator/Evaluator: różnicowanie `effort` per rola tylko przez narzędzie Workflow (gdy dostępne i autoryzowane), inaczej wyłącznie przez treść promptu.
 - **C-060** (2026-08-20) — watchdog dispatchu liczy się jako zajęty slot, jeśli dzieli limit wątków z Operatorami/Evaluatorami — efektywna pojemność na tematy to 5, nie 6.
 - **C-059** (2026-08-20/21) — integracja jest allowlist-only per plik i per hunk; gdy nie da się bezpiecznie rozdzielić brudnego drzewa, status pośredni `INTEGRATION_PENDING` zamiast `BLOCK`.
@@ -26,7 +27,6 @@ mimo że tego dnia też trafiły do playbooka.
 - **C-053** (2026-08-20) — po `LIMIT-5-EXCEEDED` ręczny nowy cykl tego samego ID wymaga jawnej decyzji właściciela i raportu porównawczego, nie jest automatyczną rundą 6.
 - **C-052** (2026-08-20) — w dispatchach Codex `multi_agent_v1` Operator i Evaluator muszą dostać jawnie `model=gpt-5.6-luna` i `reasoning_effort=high`, bez dziedziczenia po orkiestratorze.
 - **C-051** (2026-08-20) — ledger + watchdog dispatchu: jeden rekord na dispatch (9 pól), watchdog sprawdza co minutę, brak raportu zawsze dostaje klasyfikację (nigdy pusty przebieg).
-- **C-050** (2026-08-20) — limit 5 rund Operator→Evaluator na jeden pełny ID; po piątej nieudanej rundzie zgłoś `LIMIT-5-EXCEEDED` zamiast automatycznej szóstej próby.
 
 ## Zanim cokolwiek zrobisz
 
