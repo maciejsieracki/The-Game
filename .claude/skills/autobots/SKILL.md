@@ -78,10 +78,20 @@ tutaj, żeby nie rozjeżdżała się w dwóch miejscach. Skrót ról:
 ## 3a. Narzędzie orkiestracji wieloagentowej — używaj, gdy dostępne
 
 Jeśli masz dostęp do narzędzia agentic workflow (przypisanie modelu/effort per
-rola, `pipeline()`/`parallel()`) — używaj go zawsze do dispatchu Operatora i
-Evaluatora, nie pojedynczych wywołań. Dla sesji Claude Code: **Operator =
+rola, `pipeline()`/`parallel()`) **i** właściciel dał jawną, opt-in zgodę na
+multi-agent orchestration w tej sesji — używaj go zawsze do dispatchu Operatora
+i Evaluatora, nie pojedynczych wywołań `Agent`. Dla sesji Claude Code: **Operator =
 Sonnet 5, effort Medium; Evaluator = Sonnet 5, effort High** — pełne
 uzasadnienie w `docs/decyzje/R-PROC-AUTOBOT.md` §5a.
+
+Gotowy, wcześniej przygotowany szkielet skryptu Workflow (Operator→Evaluator,
+`agent()`/`phase()`, effort per rolę) jest w
+[`.claude/skills/civ-autobot-workflow/SKILL.md`](../civ-autobot-workflow/SKILL.md)
+— użyj go zamiast pisania dispatchu ad-hoc. Bez obu warunków wyżej (Workflow
+niedostępny, brak zgody, albo narzędzie inne niż Claude Code z Workflow — np.
+Cursor, GPT) zostań w TYM pliku: pojedynczy `Agent` nie ma parametru
+`effort`/`reasoning_effort` w schemacie, więc role różnicujesz WYŁĄCZNIE treścią
+promptu. Pełne uzasadnienie dwóch ścieżek i incydent źródłowy: playbook C-061.
 
 ## 4. Routing modeli i ról
 

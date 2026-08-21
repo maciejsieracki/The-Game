@@ -127,18 +127,45 @@ plik i per hunk** (playbook C-059) — zakaz `git add -A`/`git add .`; współdz
 niemożliwy do bezpiecznego rozdzielenia dostaje status `INTEGRATION_PENDING`, nie `BLOCK`.
 Watchdog liczy się jako zajęty slot puli 6, jeśli dzieli z nią limit wątków (playbook C-060).
 
-## 5a. Narzędzie orkiestracji wieloagentowej — używaj, gdy dostępne
+## 5a. Narzędzie orkiestracji wieloagentowej — dwie ścieżki dispatchu
 
 Jeśli narzędzie wykonawcze, którym pracujesz, ma zdolność agentic workflow
 (przypisanie modelu i poziomu wysiłku/effort per rola, uruchamianie wielu
 subagentów w jednym skrypcie, `pipeline()`/`parallel()`) — **używaj go zawsze
 do dispatchu Operatora i Evaluatora**, nie pojedynczych, ręcznych wywołań
 agenta. To jedyny sposób ustawić `effort` per rola; pojedynczy dispatch agenta
-bez takiego narzędzia nie ma tego parametru w ogóle. Wyjątek: narzędzie
-niedostępne w danej sesji — wtedy pojedynczy dispatch pozostaje w pełni
-poprawny.
+bez takiego narzędzia nie ma tego parametru w ogóle.
 
-**Dla sesji Claude Code (potwierdzone przez właściciela, 2026-08-20):**
+**Konkretny, zweryfikowany gap (2026-08-21):** narzędzie `Agent` — podstawowy
+dispatch subagentów w Claude Code — ma w swoim schemacie parametr `model`, ale
+**nie ma** parametru `effort`/`reasoning_effort` (sprawdzone bezpośrednio w
+schemacie, nie z pamięci). Różnicowanie Operator/Evaluator przez effort jest
+więc dziś fizycznie niemożliwe przez `Agent`, wyłącznie przez narzędzie
+Workflow z `opts.effort` per agent — a Workflow wymaga jawnej, opt-in zgody
+właściciela na multi-agent orchestration w danej sesji, więc nie zawsze jest
+dostępne nawet w Claude Code. Ten gap i incydent, który go ujawnił
+(orkiestrator dispatchował dwa tematy przez `Agent` z niewłaściwym modelem i
+bez różnicowania effort, złapane przez właściciela, nie przez samoocenę), są
+opisane w `playbook.md` C-061.
+
+**Dlatego kanon rozdziela dwie ścieżki, każda jako osobny skill, nie jeden plik
+z warunkiem w środku:**
+
+- **Ścieżka A — Workflow dostępny w sesji ORAZ właściciel dał jawną, opt-in
+  zgodę na multi-agent orchestration w tej sesji:** dispatch Operator/Evaluator/
+  Final Control przez gotowy, wcześniej przygotowany skrypt Workflow —
+  [`.claude/skills/civ-autobot-workflow/SKILL.md`](../../.claude/skills/civ-autobot-workflow/SKILL.md)
+  — z jawnym `model`/`effort` per rolę zgodnie z kanonem niżej. Zgoda na
+  Workflow nie jest automatyczna i nie przenosi się między sesjami.
+- **Ścieżka B — wszystko inne** (Workflow niedostępny, brak zgody na niego, albo
+  inne narzędzie wykonawcze bez koncepcji `effort` per agent — Cursor, GPT i
+  inne): różnicowanie ról WYŁĄCZNIE przez treść promptu (jawna instrukcja
+  „jesteś Evaluatorem, szukaj adwersaryjnie powodów do FAIL"), bez parametru
+  effort — to robią dziś `.claude/skills/civ-autobot/SKILL.md` i
+  `.claude/skills/autobots/SKILL.md`, pojedynczy dispatch pozostaje w pełni
+  poprawny.
+
+**Dla sesji Claude Code, Ścieżka A (potwierdzone przez właściciela, 2026-08-20):**
 Operator → **Sonnet 5, effort Medium**; Evaluator → **Sonnet 5, effort High**.
 Oba na tym samym modelu, różni je wyłącznie wysiłek — Evaluator dostaje więcej
 przestrzeni na adwersaryjne rozumowanie, nie inny, droższy model. Ta reguła

@@ -11,6 +11,15 @@ Najpierw przeczytaj [`docs/procesy/INDEX-PROCESU.md`](../../../docs/procesy/INDE
 następnie aktywną regułę [`.cursor/rules/autobot-evaluator-operator.mdc`](../../../.cursor/rules/autobot-evaluator-operator.mdc)
 i pełny opis [`R-PROC-AUTOBOT.md`](../../../docs/decyzje/R-PROC-AUTOBOT.md).
 
+**Masz dostępny i autoryzowany Workflow?** Jeśli narzędzie orkiestracji
+wieloagentowej Workflow jest dostępne w tej sesji ORAZ właściciel dał jawną,
+opt-in zgodę na multi-agent orchestration w tej sesji — patrz
+[`civ-autobot-workflow/SKILL.md`](../civ-autobot-workflow/SKILL.md) zamiast tego
+pliku dla dispatchu Operator/Evaluator/Final Control z jawnym `effort` per rolę.
+Bez obu warunków (co jest normą — Cursor/GPT nie mają koncepcji Workflow z
+`effort` per agent) zostań w tym pliku: role różnicujesz wyłącznie treścią
+promptu, bez parametru effort. Pełne uzasadnienie: playbook C-061.
+
 ## Obieg
 
 ```text
