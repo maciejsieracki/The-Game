@@ -193,9 +193,21 @@ export const DEFAULT_ULEPSZENIA_TRYB: UlepszeniaTryb = 'reczny';
  *  po migracji 1→33% (patrz migrateUlepszeniaPerTurnToPercent). */
 export const DEFAULT_ULEPSZENIA_PRACA_PERCENT: UlepszeniaPracaPercent = 33;
 
+/**
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A, ECHO właściciela 2026-08-21:
+ * cap nadrzędny cywilizacji (`MAX_PRACA_WSPOLNY_WOREK_PROCENT`, dziś 50%) obowiązuje TAKŻE
+ * historyczny budżet automatu ulepszeń (`pracaAutoPercent`/`ulepszeniaPracaPercent`), zarówno
+ * globalny (empire), jak i lokalny override miasta w trybie „Indywidualne" — miasto nie może
+ * już obejść nadrzędnego capu przełączeniem się w ten tryb. Cofa wcześniejszą, świadomą decyzję
+ * (0–100% bez związku z capem cywilizacji) udokumentowaną historycznie w tym miejscu; patrz
+ * `gra/tools/praca-miasto-limit-50-cap-test.cjs` i zaktualizowany `praca-limit-50-test.cjs`
+ * (scenariusz 5). Wpływa też na migrację starych zapisów (`ensureCitySaveDefaults` niżej) —
+ * zapis z override >50% (np. z legacy `ulepszeniaPerTurn=3` → 100%) zostaje ścięty do capu przy
+ * pierwszym wczytaniu, zgodnie z ECHO.
+ */
 export function clampUlepszeniaPracaPercent(n: number | undefined | null): UlepszeniaPracaPercent {
   if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
-  return Math.max(0, Math.min(100, Math.round(n)));
+  return Math.max(0, Math.min(MAX_PRACA_WSPOLNY_WOREK_PROCENT, Math.round(n)));
 }
 
 /**
@@ -286,7 +298,9 @@ export function resolveEffectiveUlepszenia(
       focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
       tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
       onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-      // To jest historyczny budżet automatu, więc zachowuje zakres 0–100%.
+      // Historyczny budżet automatu — od R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C,
+      // ECHO=A) respektuje ten sam nadrzędny cap co #1/#2 (`clampUlepszeniaPracaPercent`
+      // teraz clampuje do `MAX_PRACA_WSPOLNY_WOREK_PROCENT`, nie do 100%).
       pracaAutoPercent: clampUlepszeniaPracaPercent(city.ulepszeniaPracaPercent),
       override: true,
     };
@@ -581,8 +595,10 @@ export function ensureCitySaveDefaults(city: City): void {
     // new one only `ulepszeniaPracaPercent`; the new field wins, so re-running this migration on
     // the same city is idempotent.
     const rawCity = city as unknown as { ulepszeniaPracaPercent?: unknown; ulepszeniaPerTurn?: unknown };
-    // `ulepszeniaPracaPercent` jest lokalnym ustawieniem historycznego automatu,
-    // nie nadrzędnym splitem puli Pracy. Nie przenosić tu capu 50%.
+    // `ulepszeniaPracaPercent` jest lokalnym ustawieniem historycznego automatu. Od
+    // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C, ECHO=A) `clampUlepszeniaPracaPercent`
+    // egzekwuje ten sam nadrzędny cap co #1/#2 — stary zapis z override >50% (np. legacy
+    // `ulepszeniaPerTurn=3` → 100%) zostaje tu ścięty do capu przy pierwszym wczytaniu.
     city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
       resolveUlepszeniaPracaPercentFromRaw(
         rawCity.ulepszeniaPracaPercent,
