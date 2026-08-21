@@ -102,9 +102,14 @@ html.civ-ui-zoom-active .civ-bottom-bar{bottom:${HUD_ZOOM_EDGE_PX}px;right:${HUD
 .civ-bottom-bar .et-turn-lbl{text-align:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#8a8070;margin-top:2px;}
 @keyframes civ-wyk-glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 16px rgba(208,128,48,.5)}}
 
-/* Warstwa 2 — pasek nad HUD nazywający blokady. Siedzi TAM, gdzie kod trzyma panel
-   wydarzeń (nad stosem WYKONAJ/Zakończ turę), więc nie wchodzi w sam stos ani nie
-   przesuwa jego przycisków (position:absolute, bottom:100% względem .civ-bottom-bar). */
+/* Warstwa 2 — pasek nad HUD nazywający blokady. R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1: musi
+   siedzieć nad CAŁYM stosem (WYKONAJ + Zakończ turę + etykieta tury), nie tylko nad
+   .et-wrap — inaczej (wysokość paska > HUD_GAP_PX) nachodzi na przycisk „Wykonaj"
+   powyżej .et-wrap w tym samym stosie flex, co po zniknięciu paska ujawniało pod spodem
+   pusty wyszarzony prostoką „Wykonaj" (zgłoszenie właściciela, zrzut 2). Dlatego .et-hint
+   i .et-tooltip są teraz bezpośrednimi dziećmi .civ-bottom-bar (position:fixed, więc
+   już jest kontekstem pozycjonowania) — bottom:calc(100% + gap) liczy się od górnej
+   krawędzi CAŁEGO paska, nie tylko .et-wrap, więc nigdy nie nachodzi na żaden przycisk. */
 .civ-bottom-bar .et-hint{position:absolute;left:0;right:0;bottom:calc(100% + ${HUD_GAP_PX}px);
   display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border-radius:9px;
   border:2px solid rgba(208,128,48,.55);background:rgba(208,128,48,.12);
@@ -119,7 +124,8 @@ html.civ-ui-zoom-active .civ-bottom-bar{bottom:${HUD_ZOOM_EDGE_PX}px;right:${HUD
 .civ-bottom-bar .et-hint-show:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
 
 /* Warstwa 3 — tooltip na hover, numerowana lista; zajmuje to samo miejsce co pasek
-   (bez nakładania — pasek gaśnie na hover całego widżetu, patrz .civ-bottom-bar:hover wyżej). */
+   (bez nakładania — pasek gaśnie na hover całego widżetu, patrz .civ-bottom-bar:hover wyżej).
+   Tak samo jak .et-hint: bezpośrednie dziecko .civ-bottom-bar, nad całym stosem. */
 .civ-bottom-bar .et-tooltip{position:absolute;left:0;right:0;bottom:calc(100% + ${HUD_GAP_PX}px);
   padding:11px 12px;border:2px solid rgba(232,216,138,.45);border-radius:9px;
   background:linear-gradient(180deg,rgba(26,32,44,.99),rgba(10,13,19,.99));
@@ -217,14 +223,18 @@ export function createBottomBarHud(config: BottomBarHudConfig): BottomBarHudApi 
         + '</div>'
       : '';
 
-    el.innerHTML = '<button type="button" class="wykonaj' + (wykOn ? ' on' : '') + '" data-wykonaj'
+    // R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1: hintHtml/tooltipHtml są teraz bezpośrednimi dziećmi
+    // .civ-bottom-bar (przed .wykonaj w DOM) — pozycjonowane bottom:calc(100% + gap) względem
+    // CAŁEGO paska (patrz komentarz przy .et-hint w CSS wyżej), więc siedzą ponad całym
+    // stosem WYKONAJ + Zakończ turę i nigdy go nie zasłaniają/nie nachodzą na niego.
+    el.innerHTML = hintHtml
+      + tooltipHtml
+      + '<button type="button" class="wykonaj' + (wykOn ? ' on' : '') + '" data-wykonaj'
       + (wykOn ? '' : ' disabled') + '>Wykonaj'
       + (wykOn ? '<span class="wyk-badge">' + blocking + '</span>' : '')
       + '</button>'
       + (hideEnd ? '' : (
         '<div class="et-wrap">'
-        + hintHtml
-        + tooltipHtml
         + '<button type="button" class="end-turn'
         + (endVisuallyDisabled ? ' is-disabled' : '')
         + (showBlockSignal ? ' et-signal' : '')
