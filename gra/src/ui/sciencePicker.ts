@@ -12,6 +12,7 @@
 
 import type {} from '../../data/tech.json';
 import techData from '../../data/tech.json';
+import { parseUnlockBuildings, unitsUnlockedByTech } from './techUnlockParse';
 import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
 import type { TempoGry } from '../game/tech-tempo';
 import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
@@ -122,6 +123,7 @@ interface TechNode {
   wymaganyBudynek: string;
   wymaganeUlepszenie: string;
   odblokujeBudynek: string;
+  odblokujeJednostki: string[];
   odblokujeSurowiec: string;
   odblokujeUlepszenie: string;
   koszt: number;
@@ -149,7 +151,12 @@ function buildNodes(): Map<string, TechNode> {
       prereqIds: [],
       wymaganyBudynek: (r['wymagany budynek'] ?? '').trim(),
       wymaganeUlepszenie: (r['wymagane ulepszenie'] ?? '').trim(),
-      odblokujeBudynek: r['Odblokowuje budynek'] ?? '',
+      // „Odblokowuje budynek" zawiera osadzony segment „Jednostki: A, B" — rozdzielony
+      // tu na budynki (właściwe) + jednostki (prawdziwe, kompletne źródło: units.json's
+      // Tech, NIE osadzony tekst — patrz techUnlockParse.ts, R-TECHTREE-SCIENCEPICKER-
+      // -JEDNOSTKI-STALE-Q1).
+      odblokujeBudynek: parseUnlockBuildings(r['Odblokowuje budynek']).budynki.join(', '),
+      odblokujeJednostki: unitsUnlockedByTech(r['Technologia']),
       odblokujeSurowiec: r['Odblokowuje surowiec.'] ?? '',
       odblokujeUlepszenie: resolveTerrainUnlockLabel(r['Technologia'], r['Odblokowuje ulepszenie terenu']),
       koszt: r['Koszt nauki'],
@@ -903,6 +910,10 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
   if (node.odblokujeBudynek) {
     h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Odblokowuje budynki:</div>`;
     h += `<ul class="tt-items">${node.odblokujeBudynek.split(',').map(b => `<li>${esc(b.trim())}</li>`).join('')}</ul>`;
+  }
+  if (node.odblokujeJednostki.length > 0) {
+    h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Odblokowuje jednostki:</div>`;
+    h += `<ul class="tt-items">${node.odblokujeJednostki.map(j => `<li>${esc(j)}</li>`).join('')}</ul>`;
   }
   if (node.odblokujeSurowiec) {
     h += `<div class="tt-section" style="margin-top:6px;color:#907030;font-size:0.68em;text-transform:uppercase">Odblokowuje surowce:</div>`;
