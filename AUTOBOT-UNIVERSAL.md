@@ -351,6 +351,18 @@ tego wprost wymaga. Dla 1–2 tematów ręczny dispatch pojedynczego subagenta
 (izolowany, np. przez osobny worktree) pozostaje w pełni poprawny — narzędzie
 orkiestracji nie jest obowiązkowe dla każdej pojedynczej paczki.
 
+Ten próg (≥3 tematy / tryb pracy tego wymaga) decyduje WYŁĄCZNIE o tym, czy w ogóle
+orkiestrować wieloma tematami naraz. To osobna decyzja od użycia narzędzia orkiestracji
+konkretnie do dispatchu Operator/Evaluator z jawnym `model`/`effort` per rolę
+(sekcja „Mapowanie ról” niżej) — nawet gdy próg ≥3 tematy jest spełniony, TO drugie
+WCIĄŻ wymaga jawnej, opt-in zgody właściciela na multi-agent orchestration w danej
+sesji (nie jest automatyczne z samego spełnienia progu). Powód: narzędzie
+podstawowego, pojedynczego dispatchu subagenta (`Agent` w Claude Code) nie ma
+parametru `effort`/`reasoning_effort` w swoim schemacie — różnicowanie Operator/
+Evaluator przez effort jest fizycznie możliwe wyłącznie przez narzędzie Workflow,
+a to wymaga tej zgody. Pełny opis gapu i incydentu, który go ujawnił: playbook C-061
+i [`.claude/skills/civ-autobot-workflow/SKILL.md`](.claude/skills/civ-autobot-workflow/SKILL.md).
+
 ### Mapowanie ról AutoBot → narzędzie orkiestracji
 
 | Rola AutoBot | Krok w narzędziu orkiestracji | Model |

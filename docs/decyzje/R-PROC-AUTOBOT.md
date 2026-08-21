@@ -131,10 +131,11 @@ Watchdog liczy się jako zajęty slot puli 6, jeśli dzieli z nią limit wątkó
 
 Jeśli narzędzie wykonawcze, którym pracujesz, ma zdolność agentic workflow
 (przypisanie modelu i poziomu wysiłku/effort per rola, uruchamianie wielu
-subagentów w jednym skrypcie, `pipeline()`/`parallel()`) — **używaj go zawsze
-do dispatchu Operatora i Evaluatora**, nie pojedynczych, ręcznych wywołań
-agenta. To jedyny sposób ustawić `effort` per rola; pojedynczy dispatch agenta
-bez takiego narzędzia nie ma tego parametru w ogóle.
+subagentów w jednym skrypcie, `pipeline()`/`parallel()`) **i** właściciel dał
+jawną, opt-in zgodę na multi-agent orchestration w tej sesji — **używaj go
+zawsze do dispatchu Operatora i Evaluatora**, nie pojedynczych, ręcznych
+wywołań agenta. To jedyny sposób ustawić `effort` per rola; pojedynczy
+dispatch agenta bez takiego narzędzia nie ma tego parametru w ogóle.
 
 **Konkretny, zweryfikowany gap (2026-08-21):** narzędzie `Agent` — podstawowy
 dispatch subagentów w Claude Code — ma w swoim schemacie parametr `model`, ale
