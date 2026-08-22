@@ -188,6 +188,28 @@ High/Medium") odnoszą się do innego narzędzia wykonawczego pracującego nad
 tym samym repozytorium i nie są tu nadpisywane. Pełny opis integracji z
 narzędziem orkiestracji: `AUTOBOT-UNIVERSAL.md` §11.
 
+**Wyjątek graficzny/wizualny (Maciej, 2026-08-22).** Dla tematów, których
+istotą jest wygląd/UX (CSS, layout, ikony, pozycjonowanie tooltipów, zgodność
+z makietą designera — nie logika/dane/ekonomia): **Operator I Evaluator →
+Opus 5** (effort jak wyżej — Medium/High odpowiednio), Final Control zostaje
+przy Sonnet 5/effort High jak w regule bazowej (trzecia, niezależna
+weryfikacja nie wymaga tego samego modelu co wykonawca/oceniający). Powód
+(Maciej): „Sonet 5 sobie z tym tematem zwyczajnie nie poradził" — po
+potwierdzonym w tej sesji (2026-08-22) regresie T10 migracji CivPedia (brak
+CSS dla `.entity-card-row-key`/`.entity-card-row-value`, niezłapany przez
+żadną z rund T1-T10 mimo Operator→Evaluator→Final Control na każdym etapie).
+Evaluator na Opus 5 ma DODATKOWO obowiązek zweryfikować poprawkę realnym
+zrzutem ekranu z żywej przeglądarki (Playwright/Chromium), nie tylko
+testem kontraktowym/jsdom — właśnie taka luka (jsdom nie renderuje
+faktycznego wyglądu) pozwoliła defektowi przejść niezauważonym wcześniej.
+Ten wyjątek jest WĘŻSZY niż wcześniejsza, historyczna reguła „Opus 5 dla
+`gra/src/render/**`" (modele 3D, `docs/archiwum-procesu/`) — TA jest osobna,
+dotyczy 2D UI/CSS, nie nadpisuje ani nie zastępuje tamtej (obie mogą
+obowiązywać jednocześnie, dla różnych zakresów kodu). Orkiestrator klasyfikuje
+każdy temat jawnie w dyspozycji (graficzny → Opus 5 obie role; logika/dane →
+Sonnet 5 baza) i zapisuje tę klasyfikację w raporcie/rejestrze, tak jak inne
+decyzje model+effort per rola.
+
 ## 6. Bramki
 
 Uruchamiaj z katalogu `gra/`. Zweryfikowane świeżo 2026-08-20 na czystym checkoucie
