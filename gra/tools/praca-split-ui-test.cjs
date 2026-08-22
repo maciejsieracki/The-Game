@@ -24,14 +24,38 @@ function check(name, condition) {
 // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek B): nazewnictwo "Budynki" / "Ulepszenia"
 // (zamiast dawnej "Pula Pracy", mylącej z realną akumulowaną PULA IMPERIUM).
 //
-// R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F, ta runda): panel PRACA IMPERIUM
-// przeprojektowany — sygnał "Ulepszenia N%" na samej górze sekcji (hero), Budynki po lewej /
-// Ulepszenia po prawej w dwóch oddzielonych boxach (`.civ-emp-two`/`.civ-emp-box`) zamiast
-// potrójnie powtarzanego tekstu etykiet + noty + stopki. Asercje niżej zastąpione pod nowy
-// markup; zachowują tę samą intencję (nazewnictwo + brak duplikacji + zakres suwaka 0–50%).
+// R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F): sygnał "Ulepszenia N%" na samej górze
+// sekcji (hero) — zostaje.
+//
+// P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1 (Maciej 2026-08-22, ta runda): dwa boksy `.civ-emp-two`
+// (lewy "BUDYNKI" bez kontrolki, prawy "ULEPSZENIA" z połówkowym suwakiem) zastąpione JEDNYM
+// suwakiem pełnej szerokości: etykiety "Ulepszenia" (lewo, błękit) / "Budynki" (prawo, złoto)
+// nad torem, dwukolorowy gradient `laborSliderFillStyle()` na torze, klikalne znaczniki MIN/MAX
+// pod krańcami. Asercje niżej przepisane pod nowy markup; intencja bez zmian (nazewnictwo +
+// jeden input + zakres 0–50% + brak drugiej ścieżki zapisu podziału).
 check('sygnał "Ulepszenia" na samej górze sekcji (hero)', source.includes('data-praca-empire-split-hero>Ulepszenia ${pctU}%'));
-check('kolumna BUDYNKI (lewa, wyliczany remainder)', source.includes('civ-emp-slider-label gold">BUDYNKI</div>') && source.includes('data-praca-empire-split-buildings'));
-check('kolumna ULEPSZENIA (prawa, suwak)', source.includes('civ-emp-slider-label blue">ULEPSZENIA</div>'));
+check(
+  'etykieta "Ulepszenia" po lewej stronie suwaka (błękit, procent na żywo)',
+  source.includes('<span class="civ-emp-slider-label blue">Ulepszenia ')
+    && source.includes('data-praca-empire-split-upgrades'),
+);
+check(
+  'etykieta "Budynki" po prawej stronie suwaka (złoto, wyliczany remainder)',
+  source.includes('<span class="civ-emp-slider-label gold">Budynki ')
+    && source.includes('data-praca-empire-split-buildings'),
+);
+check('dwa boksy .civ-emp-two zastąpione jednym suwakiem pełnej szerokości', !/civ-emp-slider-label gold">BUDYNKI<|civ-emp-slider-label blue">ULEPSZENIA</.test(source));
+check('suwak pełnej szerokości z dwukolorowym torem laborSliderFillStyle()', source.includes('style="width:100%;background:${laborSliderFillStyle(pctU * 2)}" '));
+// `pctU * 2` = pozycja uchwytu na torze 0–100% przy zakresie suwaka 0–50, więc granica kolorów
+// leży dokładnie pod uchwytem. Dwa wystąpienia = render początkowy + przeliczenie na żywo.
+check('laborSliderFillStyle NIE jest już martwym kodem (render początkowy + odświeżenie na żywo)', (source.match(/laborSliderFillStyle\(pctU \* 2\)/g) || []).length === 2);
+check('klikalny znacznik MIN na krańcu suwaka', source.includes('data-praca-empire-split-min title=') && source.includes('>MIN 0%</button>'));
+check('klikalny znacznik MAX na krańcu suwaka', source.includes('data-praca-empire-split-max title=') && source.includes('>MAX 50%</button>'));
+check(
+  'MIN/MAX przechodzą przez TEN SAM handler co drag (input.value + dispatch "input"), bez drugiej ścieżki zapisu',
+  source.includes("input.dispatchEvent(new Event('input', { bubbles: true }));")
+    && (source.match(/onChange\(0, \{ procentUlepszenia: pctU \}\)/g) || []).length === 1,
+);
 check('jeden renderowany nadrzędny input', (source.match(/data-praca-empire-split title=/g) || []).length === 1);
 check('jeden listener input dla nadrzędnego suwaka', (source.match(/input\.addEventListener\('input'/g) || []).length === 1);
 check('brak usuniętego lokalnego renderu/wiringu', !source.includes('renderPracaSplitSection') && !source.includes('data-praca-key'));
