@@ -511,6 +511,23 @@ function ensureStyles(): void {
 .civ-emp-slider-label.gold{color:#d9a441;}
 .civ-emp-slider-label.blue{color:#8ec5ff;}
 .civ-emp-slider-label.neutral{color:#cfd5de;}
+/* P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1 (Maciej 2026-08-22) — „PODZIAŁ PRACY" jako JEDEN suwak pełnej
+   szerokości: wiersz etykiet nad torem (Ulepszenia po lewej / Budynki po prawej, po tej samej
+   stronie co ich odcinek gradientu) i klikalne znaczniki krańców pod torem. Wszystko zakresowane
+   pod .civ-emp-praca-split-*, żeby nie ruszyć pozostałych suwaków panelu.
+   EN: "LABOR SPLIT" as ONE full-width slider — label row above the track (Upgrades left /
+   Buildings right, each on the side of its own gradient segment) and clickable end markers below
+   it. Everything scoped under .civ-emp-praca-split-* so no other slider in the panel is affected. */
+.civ-emp-praca-split-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  margin:0 0 7px;font-size:12px;font-weight:600;}
+.civ-emp-praca-split-head b{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;}
+.civ-emp-praca-split-ends{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.civ-emp-praca-split-end{-webkit-appearance:none;appearance:none;font:inherit;font-size:10px;
+  font-weight:700;letter-spacing:0.5px;line-height:1.2;font-variant-numeric:tabular-nums;
+  padding:3px 9px;border-radius:999px;border:1px solid #2b3543;background:#1a2230;color:#8a93a4;
+  cursor:pointer;}
+.civ-emp-praca-split-end:hover{background:#222c3c;border-color:#5a6879;color:#e8ebf0;}
+.civ-emp-praca-split-end.on{background:#222c3c;border-color:#5a6879;color:#e8ebf0;}
 /* — R-DESIGN-11-ZAKLADEK klatka 4 (Maciej 2026-08-13) — SPICHLERZ CENTRALNY, oba stany makiety
    (A: zapas zdrowy, B: realny deficyt). Wszystko zakresowane pod .civ-emp-sp-*, żeby reskin
    tej jednej zakładki nie ruszył pozostałych sekcji panelu.
@@ -1016,13 +1033,25 @@ function split2BarHtml(
     + `<span style="width:${b}%;background:linear-gradient(90deg,${colorFromB},${colorToB})"></span></div>`;
 }
 
-/** Tor suwaka `.civ-emp-slider` z DWOMA odcinkami gradientu po obu stronach wartości `pctA` (%) —
- *  odpowiednik `sliderFillStyle()` dla suwaka reprezentującego DWA strumienie na raz (Budynki
- *  0..pctA w złocie, Pula imperium pctA..100 w błękicie), nie „wartość + puste tło" jak przy
- *  pojedynczym zasobie (suwak podatku Skarbca). */
-function laborSliderFillStyle(pctBudynki: number): string {
-  const p = Math.max(0, Math.min(100, pctBudynki));
-  return `linear-gradient(90deg,#6a4010 0%,#d9a441 ${p}%,#3a4657 ${p}%,#8ec5ff 100%)`;
+/** Tor suwaka `.civ-emp-slider` z DWOMA odcinkami gradientu po obu stronach uchwytu —
+ *  odpowiednik `sliderFillStyle()` dla suwaka reprezentującego DWA strumienie na raz, nie
+ *  „wartość + puste tło" jak przy pojedynczym zasobie (suwak podatku Skarbca).
+ *
+ *  P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1 (Maciej 2026-08-22, czysto wizualne): funkcja była martwym
+ *  kodem od czasu rozbicia „PODZIAŁ PRACY" na dwa boksy — wraca do użycia w JEDNYM suwaku
+ *  „Ulepszenia / Budynki". Kolejność odcinków jest ODWRÓCONA względem pierwotnej wersji
+ *  (błękit → złoto zamiast złoto → błękit), bo suwak steruje procentem ULEPSZEŃ (`min=0`,
+ *  `max=50` — bez zmian): przesunięcie uchwytu w prawo MUSI powiększać odcinek Ulepszeń, więc
+ *  Ulepszenia (błękit) są odcinkiem lewym, a Budynki (złoto) resztą toru. Sama para kolorów bez
+ *  zmian — złoto = Budynki, błękit = Ulepszenia, dokładnie jak etykiety
+ *  `.civ-emp-slider-label gold/blue`.
+ *
+ *  Parametr to POZYCJA UCHWYTU na torze w procentach szerokości toru (0–100), a NIE wartość
+ *  procentu podziału: dla suwaka 0–50 jest to `pctUlepszenia * 2`. Dzięki temu granica kolorów
+ *  leży dokładnie pod uchwytem, zamiast żyć własnym życiem w innej skali. */
+function laborSliderFillStyle(pctUlepszeniaTrack: number): string {
+  const p = Math.max(0, Math.min(100, pctUlepszeniaTrack));
+  return `linear-gradient(90deg,#3a4657 0%,#8ec5ff ${p}%,#6a4010 ${p}%,#d9a441 100%)`;
 }
 
 /**
@@ -1110,12 +1139,25 @@ function renderPracaSection(
  * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek B, 2026-08-21): nazewnictwo Budynki/Ulepszenia
  * (zamiast dawnej „Pula Pracy", mylącej z realną PULA IMPERIUM) — patrz `docs/decyzje/...md`.
  *
- * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F, przeprojektowanie prezentacji, ta runda):
- * czysto wizualna zmiana, logika procentów niezmieniona (0–50% Ulepszenia / remainder Budynki).
- * - Sygnał „Ulepszenia N%" na samej górze sekcji (był dopiero w wierszu opisowym niżej suwaka).
- * - Budynki po lewej / Ulepszenia po prawej w dwóch wyraźnie oddzielonych boxach (`.civ-emp-two`,
- *   wzorem PULA IMPERIUM / UTRZYMANIE ULEPSZEŃ wyżej w tej samej zakładce), zamiast jednego
- *   wiersza tekstu powtarzającego trzy razy tę samą parę liczb (eyebrow + note + label + footer).
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F): sygnał „Ulepszenia N%" na samej górze sekcji
+ * (był dopiero w wierszu opisowym niżej suwaka) — zostaje.
+ *
+ * P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1 (Maciej 2026-08-22, CZYSTY UX — logika procentów, zakres 0–50%
+ * i pojedynczy `input` handler bez zmian): Wątek F rozbił tę sekcję na DWA boksy `.civ-emp-two`
+ * — lewy „BUDYNKI" był samym odczytem tekstowym bez żadnej kontrolki, prawy „ULEPSZENIA" niósł
+ * jedyny faktyczny `<input type="range">` zwężony do połowy szerokości panelu. Właściciel prosi
+ * o powrót do JEDNEGO suwaka pełnej szerokości (świadoma, ponowna zmiana zdania wobec Wątku F,
+ * nie renegocjacja tamtej decyzji):
+ * - jeden tor na całą szerokość, dwukolorowy przez `laborSliderFillStyle()` — błękitny odcinek
+ *   Ulepszeń rośnie w prawo razem z uchwytem, złoty odcinek Budynków to reszta toru, granica
+ *   kolorów leży dokładnie pod uchwytem (stąd `pctU * 2` — tor 0–100% przy zakresie 0–50);
+ * - etykieta „Ulepszenia" po lewej (błękit) i „Budynki" po prawej (złoto), obie z procentem
+ *   przeliczanym NA ŻYWO przy przeciąganiu, po tej samej stronie co odpowiadający im odcinek;
+ * - klikalne znaczniki MIN/MAX na krańcach toru — ustawiają wartość skrajną (0% / 50%) bez
+ *   przeciągania, przez ten sam handler co drag (`input.value = X` + `dispatchEvent('input')`),
+ *   więc nie ma drugiej ścieżki zapisu podziału.
+ * Uchwyt celowo `neutral`, a nie `blue`/`gold` — jest granicą MIĘDZY dwoma strumieniami, więc nie
+ * bierze koloru żadnego z nich.
  */
 function renderEmpirePracaBudgetSplitSection(): string {
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPracaSplit;
@@ -1127,28 +1169,54 @@ function renderEmpirePracaBudgetSplitSection(): string {
   const id = 'emp-praca-empire-budget-split';
   const tip = 'Nadrzędny podział całej puli Pracy imperium: Ulepszenia 0–50%, Budynki = reszta '
     + '(100% − Ulepszenia). To nie jest budżet automatu ulepszeń.';
+  const tipMin = 'Kliknij, aby ustawić minimum: Ulepszenia 0% — cała Praca do Budynków.';
+  const tipMax = 'Kliknij, aby ustawić maksimum: Ulepszenia 50% — połowa Pracy do Ulepszeń.';
   let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
     + `<div class="civ-emp-eyebrow" title="${esc(tip)}">PODZIAŁ PRACY</div>`
     + `<div class="civ-emp-hero" style="margin:2px 0 10px;font-size:20px" data-praca-empire-split-hero>Ulepszenia ${pctU}%</div>`
-    + '<div class="civ-emp-two">'
-    + `<div class="civ-emp-box"><div class="k civ-emp-slider-label gold">BUDYNKI</div>`
-    + `<div class="v" data-praca-empire-split-buildings>${pctB}%</div></div>`
-    + '<div class="civ-emp-box"><div class="k civ-emp-slider-label blue">ULEPSZENIA</div>'
-    + `<input type="range" class="civ-emp-slider blue" min="0" max="50" step="1" value="${pctU}" `
-    + `style="width:100%;margin-top:6px" data-praca-empire-split title="${esc(tip)}" /></div>`
+    + '<div class="civ-emp-praca-split-head">'
+    + '<span class="civ-emp-slider-label blue">Ulepszenia '
+    + `<b data-praca-empire-split-upgrades>${pctU}%</b></span>`
+    + '<span class="civ-emp-slider-label gold">Budynki '
+    + `<b data-praca-empire-split-buildings>${pctB}%</b></span>`
+    + '</div>'
+    + `<input type="range" class="civ-emp-slider neutral" min="0" max="50" step="1" value="${pctU}" `
+    + `style="width:100%;background:${laborSliderFillStyle(pctU * 2)}" `
+    + `data-praca-empire-split title="${esc(tip)}" />`
+    + '<div class="civ-emp-praca-split-ends">'
+    + `<button type="button" class="civ-emp-praca-split-end${pctU === 0 ? ' on' : ''}" `
+    + `data-praca-empire-split-min title="${esc(tipMin)}">MIN 0%</button>`
+    + `<button type="button" class="civ-emp-praca-split-end${pctU === 50 ? ' on' : ''}" `
+    + `data-praca-empire-split-max title="${esc(tipMax)}">MAX 50%</button>`
     + '</div></div>';
   queueMicrotask(() => {
     const host = document.getElementById(id);
     const input = host?.querySelector<HTMLInputElement>('input[data-praca-empire-split]');
     if (!input) return;
+    const btnMin = host?.querySelector<HTMLButtonElement>('[data-praca-empire-split-min]');
+    const btnMax = host?.querySelector<HTMLButtonElement>('[data-praca-empire-split-max]');
     input.addEventListener('input', () => {
       const pctU = Math.max(0, Math.min(50, Math.round(Number(input.value))));
       onChange(0, { procentUlepszenia: pctU });
+      input.style.background = laborSliderFillStyle(pctU * 2);
       const hero = host?.querySelector('[data-praca-empire-split-hero]');
       if (hero) hero.textContent = `Ulepszenia ${pctU}%`;
+      const upgrades = host?.querySelector('[data-praca-empire-split-upgrades]');
+      if (upgrades) upgrades.textContent = `${pctU}%`;
       const buildings = host?.querySelector('[data-praca-empire-split-buildings]');
       if (buildings) buildings.textContent = `${100 - pctU}%`;
+      btnMin?.classList.toggle('on', pctU === 0);
+      btnMax?.classList.toggle('on', pctU === 50);
     });
+    // Klik w znacznik krańca = dokładnie to samo, co przeciągnięcie uchwytu do końca toru:
+    // ustawiamy `value` i odpalamy TEN SAM event `input`, żeby zapis podziału i odświeżenie
+    // etykiet/gradientu miały jedną jedyną ścieżkę (handler wyżej).
+    const jumpTo = (value: number) => {
+      input.value = String(value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    btnMin?.addEventListener('click', () => jumpTo(0));
+    btnMax?.addEventListener('click', () => jumpTo(50));
   });
   return h;
 }
