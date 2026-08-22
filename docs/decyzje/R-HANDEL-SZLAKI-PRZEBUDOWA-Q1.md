@@ -1,6 +1,6 @@
 # R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 — przebudowa mechaniki szlaków handlowych
 
-**Status:** ABC-OCZEKUJE (5 pytań poniżej). Zarejestrowane 2026-08-21.
+**Status:** ECHO ZAPISANE (5/5 pytań rozstrzygniętych, 2026-08-21). Gotowe do dispatchu Operatora po zapisaniu T1-T6.
 
 ## Zlecenie właściciela (werbatim, dyktowane — literówki oryginalne)
 
@@ -84,44 +84,70 @@ to jednostka waluty skarbca, w której liczy się wszystko od zawsze.
   istniejącej tabeli o rozbicie dochodu (dystans + 5%, z jawnym
   wskazaniem gdy 5% czeka na budynek) — techniczna konsekwencja rozstrzygnięć
   punktów 1/2/4/6, nie osobna decyzja.
-- **Kryterium wyboru lądu vs morza** (`detectBestConnection`) — skoro morze
-  ma teraz dawać wyższy dochód (×2), wybór między dostępnymi trasami ma iść
-  za KOŃCOWYM dochodem, nie surową odległością jak dziś. To logiczna
-  konsekwencja celu (nie osobna decyzja produktowa).
+## ECHO właściciela (2026-08-21) — 5/5 pytań rozstrzygnięte
 
-## Punkty WYMAGAJĄCE ABC (patrz pytania zadane właścicielowi w czacie)
+**Q1 — Zakres odwrócenia dystansu = OSOBNY per medium.** Ląd liczony
+względem własnego max=12 heksów, morze względem własnego max=20 heksów —
+w rezultacie najdalsza możliwa trasa lądowa (12 heks.) i najdalsza możliwa
+trasa morska (20 heks.) dają IDENTYCZNY szczytowy dochód, mimo różnych
+odległości bezwzględnych. Formuła musi więc przyjmować osobny `maxDist`
+per medium przy wyliczaniu odwróconego wzoru.
 
-1. **Zakres odwrócenia dystansu** — wspólny zakres ląd+morze (jeden wzór,
-   jeden max=20) czy osobny per medium (ląd względem swojego max=12, morze
-   swojego max=20 — wtedy najdalsza trasa lądowa i najdalsza morska dają
-   identyczny szczytowy dochód mimo różnych odległości bezwzględnych).
-2. **Bonus morski ×2 vs istniejący `PORT_SEA_TRADE_BONUS_PIENIADZ`** —
-   zastępuje go całkowicie, czy się z nim sumuje jako dodatkowy, niezależny
-   strumień.
-3. **Wariant atrybucji 5% do konkretnej trasy** — (A) proporcjonalnie do
-   własnego dochodu dystansowego trasy z globalnej puli miasta; (B) równy
-   podział globalnej puli przez liczbę tras; (C) per-trasa stały 5% JEJ
-   WŁASNEGO dochodu dystansowego, sumowane globalnie (odwraca dzisiejszy
-   kierunek zależności — realny transfer budżetu z Podatku do Handlu, nie
-   tylko kosmetyka UI).
-4. **Zakres „jedna umowa na cywilizację"** — nowy limit: TOTAL 1 umowa
-   szlakowa na cywilizację (gracz/AI, z jednym partnerem na raz, trzeba
-   zrywać nadmiarowe istniejące), czy właściciel miał na myśli już istniejące
-   ograniczenie (1 umowa per PARA cywilizacji, bez zmian).
-5. **Port jako wymóg trasy morskiej** — trasa morska nadal wymaga Portu do
-   samego ISTNIENIA (tylko ląd korzysta z nowej reguły „umowa+łączność
-   wystarczy"), czy Port staje się tylko warunkiem bonusu 5% (jak budynek na
-   lądzie) — statek handlowy może dobić bez portu, czysto geometrycznie.
+**Q2 — Bonus morski ×2 = SUMUJE SIĘ** z istniejącym `PORT_SEA_TRADE_BONUS_PIENIADZ`
+(+1 Pieniądza/turę za trasę morską ponad pierwszą). Oba mechanizmy działają
+równolegle i niezależnie — ×2 dokłada się do (nowej, odwróconej) formuły
+dystansowej trasy morskiej, stary +1/trasę-ponad-pierwszą zostaje bez
+żadnych zmian.
 
-## Podział na tematy AutoBot (proponowany, po ECHO)
+**Q3 — Atrybucja 5% = Wariant C, stały 5% WŁASNEGO dochodu trasy.** Każda
+trasa dostaje własny bonus = `0.05 × (jej dochód dystansowy, po odwróceniu
+i ×5)`, sumowane globalnie do civ/city-wide wpływu. To **realny transfer
+budżetu z Podatku do Handlu** (mechanizm ekonomicznie inny niż dzisiejszy
+`economy.ts:954-957`, nie tylko sposób wyświetlania) — stary globalny
+mnożnik na `handelBrutto` **zostaje zastąpiony** sumą per-trasowych bonusów
+5%, nie utrzymywany równolegle (inaczej podwójne liczenie tego samego 5%).
 
-| # | Temat | Zależność |
-|---|---|---|
-| T1 | Wzór dystansowy: kierunek + stałe ×5 | ABC pkt 1 |
-| T2 | Bonus morski ×2 + kryterium wyboru medium | T1, ABC pkt 2 |
-| T3 | Rozdzielenie gatingu budynkami od istnienia trasy | ABC pkt 5 |
-| T4 | Atrybucja 5% per trasa | T3, ABC pkt 3 |
-| T5 | Limit „jedna umowa na cywilizację" | ABC pkt 4 (niezależny od T1-T4) |
-| T6 | UI per-trasa pełny rozkład dochodu | T1, T2, T4 |
+**Q4 — Limit „jedna umowa" = BEZ ZMIAN.** Właściciel miał na myśli już
+istniejące, poprawnie działające ograniczenie (jedna `UmowaSzlakow` per
+PARA cywilizacji — nie da się zawrzeć dwóch identycznych traktatów między
+tą samą parą). Żaden nowy limit total-na-cywilizację nie jest wymagany;
+temat T5 (limit) **wypada z zakresu tej przebudowy**.
 
-Kolejność bezpieczna: T1→T2→T3→T4→T5 (równolegle)→T6.
+**Q5 — Port jako wymóg trasy morskiej = ZOSTAJE, plus nowa zasada priorytetu
+lądu.** Port pozostaje twardym wymogiem samego ISTNIENIA połączenia
+morskiego (bez zmian względem dziś — `findCityConnection` linia 349-351).
+**Dodatkowo, nowa zasada priorytetu wybrana przez właściciela**: trasa
+morska/portowa ma być w ogóle ROZWAŻANA wyłącznie wtedy, gdy trasa lądowa
+między danymi dwoma miastami jest FIZYCZNIE NIEMOŻLIWA (inny kontynent,
+wyspa — brak ciągłej ścieżki lądowej niezależnie od dystansu). Innymi
+słowy: **ląd ma zawsze pierwszeństwo, gdy istnieje jakiekolwiek połączenie
+lądowe** (nawet gorsze/dłuższe niż potencjalne morskie) — morze jest
+wyłącznie fallbackiem dla par miast bez żadnej lądowej ścieżki. To
+**anuluje wcześniejsze założenie „wybór po końcowym dochodzie"** (patrz
+niżej, było błędnie zaklasyfikowane jako rozstrzygnięte bez ABC) —
+`detectBestConnection` NIE ma wybierać między lądem i morzem po dochodzie;
+ma próbować ląd jako pierwszy, i sprawdzać morze DOPIERO gdy ląd zwraca
+`connected=false`.
+
+## Korekta punktu błędnie sklasyfikowanego jako „bez ABC"
+
+~~Kryterium wyboru lądu vs morza ma iść za końcowym dochodem~~ — **NIEAKTUALNE
+po Q5**. Prawidłowa zasada: ląd ma bezwarunkowe pierwszeństwo, gdy fizycznie
+istnieje (niezależnie od tego, że morze mogłoby dziś dawać wyższy dochód
+po ×2); morze jest sprawdzane wyłącznie gdy `findCityConnection` nie
+znajduje żadnej ścieżki lądowej. `detectBestConnection` (`trade-routes.ts:498-515`)
+wymaga zmiany kolejności prób (ląd najpierw, twardy fallback do morza), nie
+porównania dochodu obu wariantów.
+
+## Podział na tematy AutoBot (finalny, po ECHO)
+
+| # | Temat | Zależność | Zakres |
+|---|---|---|---|
+| T1 | Wzór dystansowy: kierunek osobny per medium + stałe ×5 | ECHO Q1 | `trade-routes.ts` (formuła + stałe), `econ-params.json` |
+| T2 | Bonus morski ×2 (sumuje się) + priorytet lądu nad morzem w `detectBestConnection` | T1, ECHO Q2+Q5 | `trade-routes.ts`, `main.ts` (oba miejsca wzoru — łączy się z `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`) |
+| T3 | Rozdzielenie gatingu budynkami od istnienia trasy (umowa+łączność=dochód od razu; budynek=odblokuj 5%). Port zostaje wymogiem istnienia morza (bez zmian) | ECHO — dwuetapowa aktywacja (nie było osobnym pytaniem, jednoznaczne z cytatu) | `trade-routes.ts::refreshTradeRoutes` |
+| T4 | Atrybucja 5% per trasa (Wariant C) — zastępuje stary globalny mnożnik w `economy.ts` | T3, ECHO Q3 | `trade-routes.ts`, `economy.ts` |
+| ~~T5~~ | ~~Limit „jedna umowa"~~ | **WYPADA** — ECHO Q4 = bez zmian, temat zamknięty bez implementacji | — |
+| T6 | UI per-trasa pełny rozkład dochodu (dystans + 5%, wskazanie gdy 5% czeka na budynek) | T1, T2, T4 | `empireDetailPanel.ts`, `main.ts::buildEmpireTradeSnap()` |
+
+Kolejność bezpieczna: T1 → T2 → T3 → T4 → T6. Bez osobnego T5 (zamknięte ECHO=bez zmian).
