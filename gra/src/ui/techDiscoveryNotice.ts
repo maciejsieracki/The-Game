@@ -656,12 +656,15 @@ function ensureEntityCardOverrideStyles(): void {
   font-size:13px;line-height:1;cursor:pointer;font-family:inherit;}
 .tdn-entity-close:hover{border-color:var(--tg-gold-primary,#e8d88a);color:#f4e6a8;}
 .tdn-entity-close:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
-/* T7b: wiersze "Ulepszenia terenu" wolajace openEntityCard('improvement',...) - te same
-   przyciski co renderer.ts renderuje dla row.linkTo, tylko wskaznik interaktywnosci
-   (renderer.ts jest poza allowlista T7b, nie dodaje wlasnego stylu hover/cursor). */
-#${HOST_ID} .entity-card-row-value[data-entity-kind="improvement"]{cursor:pointer;color:var(--tg-gold-primary,#e8d88a);
-  text-decoration:underline;text-underline-offset:2px;background:none;border:0;font:inherit;padding:0;}
-#${HOST_ID} .entity-card-row-value[data-entity-kind="improvement"]:hover{color:#f4e6a8;}
+/* T7b: wiersze "Ulepszenia terenu" wolajace openEntityCard('improvement',...) mialy TUTAJ
+   jednorazowy, lokalny styl linku ("Szczegoly ->": zloty, podkreslony, kursor pointer), bo
+   renderer.ts byl wtedy poza allowlista T7b i nie dodawal wlasnego hover/cursor.
+   P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1: ten sam jezyk wizualny zostal
+   przeniesiony do WSPOLNEGO ENTITY_CARD_CSS (renderer.ts, blok .entity-card-row-key /
+   .entity-card-row-value) i obejmuje juz WSZYSTKIE rodzaje linkow krzyzowych
+   (building/unit/technology/improvement), a ENTITY_CARD_CSS jest doklejany do tego
+   arkusza wyzej — lokalna kopia zostala usunieta, zeby nie utrzymywac dwoch rozjezdzajacych
+   sie definicji tego samego stylu. */
 `;
   document.head.appendChild(style);
 }

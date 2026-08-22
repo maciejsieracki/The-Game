@@ -7087,7 +7087,47 @@ function ensureEntityCardBuildingStyles(): void {
   style.id = ENTITY_CARD_BUILDING_STYLE_ID;
   style.textContent = `${ENTITY_CARD_CSS}
 .civ-hover-detail-content .entity-card,
-.civ-hover-detail-float .entity-card{width:100%;max-width:100%;box-sizing:border-box;}`;
+.civ-hover-detail-float .entity-card{width:100%;max-width:100%;box-sizing:border-box;}
+/* P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1 (trzeci komponent ze zgloszenia).
+   Sekcje "Technologie"/"Uwagi" tej karty buduje beginBuildingDetailTile() +
+   appendTechDetailBlock() (.bld-detail-tile*, .dc-grid, .dc-l, .dc-v, .dc-note) — czyli
+   STARY, wbudowany renderer panelu miasta, swiadomie NIE migrowany do entityCards.
+   Caly jego CSS jest jednak zapisany WYLACZNIE pod selektorami zakotwiczonymi w klasie
+   detail-card (.civ-detail-scope .detail-card .dc-grid, .civ-cs .detail-card .dc-grid,
+   linie ~2529 i ~2618) — a karta z T5/T6 dostaje tylko bld-detail-card/unit-detail-card
+   dopiete do .entity-card (stary _legacyBuildBuildingDetailCard tworzyl div o klasach
+   "detail-card bld-detail-card", migracja te klase zgubila). Efekt: .dc-grid zostawal
+   zwyklym blokiem, a .dc-l/.dc-v inline'owymi spanami bez odstepu — pola zlewaly sie
+   w jeden ciag ("Odblokowuje techObrobka drewnaEpoka techKamienPoziom drzewka...").
+   Nie dopinamy klasy detail-card (nalozylaby drugie tlo/ramke/padding na i tak juz
+   oprawiona .entity-card — podwojna ramka), tylko odtwarzamy TE SAME reguly siatki i
+   kafla pod selektorem .entity-card.bld-detail-card, w jednostkach px pasujacych do
+   typografii karty encji (13px) zamiast em-ow starej karty (0.78em). */
+.entity-card.bld-detail-card .bld-detail-tile{margin:0 14px 10px;padding:6px 9px 7px;
+  background:rgba(0,0,0,.24);border:1px solid rgba(212,175,90,.18);border-radius:6px;
+  box-shadow:inset 0 1px 0 rgba(232,216,138,.04);}
+.entity-card.bld-detail-card .bld-detail-tile-hd{font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.08em;color:#d4af5a;margin:0 0 4px;
+  padding-bottom:3px;border-bottom:1px solid rgba(212,175,90,.2);}
+.entity-card.bld-detail-card .dc-grid{display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2px 8px;margin-top:2px;
+  font-size:13px;line-height:1.35;align-items:baseline;}
+.entity-card.bld-detail-card .dc-l{min-width:0;word-break:break-word;
+  color:var(--tg-text-muted,#9aa6b6);}
+.entity-card.bld-detail-card .dc-v{min-width:0;word-break:break-word;}
+.entity-card.bld-detail-card .dc-v .civ-cs-chip-ic-wrap,
+.entity-card.bld-detail-card .dc-note .civ-cs-chip-ic-wrap{display:inline-flex;
+  align-items:center;vertical-align:middle;margin-right:.08em;}
+/* Link "Zobacz pelna karte technologii ->" (T10) — ten sam zloty, podkreslony jezyk
+   wizualny co linki krzyzowe w ENTITY_CARD_CSS, zamiast natywnego przycisku. */
+.entity-card.bld-detail-card .dc-v-btn{-webkit-appearance:none;appearance:none;background:none;
+  border:0;margin:0;padding:0;font:inherit;line-height:inherit;text-align:left;cursor:pointer;
+  color:var(--tg-gold-primary,#e8d88a);text-decoration:underline;text-underline-offset:2px;}
+.entity-card.bld-detail-card .dc-v-btn:hover{color:#f4e6a8;}
+.entity-card.bld-detail-card .dc-v-btn:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary,#e8d88a));
+  outline-offset:2px;border-radius:3px;}
+.entity-card.bld-detail-card .dc-note{margin-top:4px;font-size:12px;line-height:1.35;
+  color:var(--tg-text-muted,#9aa6b6);}`;
   document.head.appendChild(style);
 }
 
