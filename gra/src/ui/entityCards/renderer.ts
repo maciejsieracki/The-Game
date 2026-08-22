@@ -455,6 +455,50 @@ export const ENTITY_CARD_CSS = `
 .entity-card-section h3{margin:0 0 4px;font-size:13px;opacity:.8;}
 .entity-card-row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:2px 0;}
 .entity-card-row-emphasis{font-weight:600;}
+/* P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1: brakujace od T1 (c1365bfa) reguly
+   dla pary etykieta/wartosc wiersza siatki. Do T10 .entity-card-row-value renderowalo sie
+   zawsze jako span — brak stylu byl niewidoczny (dziedziczony kolor otoczenia). T10
+   (f17e257e, LINKOWANIE-KRZYZOWE) zamienil wartosci z row.linkTo na button, przez co
+   przegladarka ubierala je w natywny, jasny/wypukly przycisk z czarnym tekstem ("dziwne
+   napisy na bialym tle" ze zgloszenia wlasciciela). Ponizszy blok: (1) daje etykiecie
+   wyciszony kolor, a wartosci wyrownanie do prawej krawedzi wiersza (.entity-card-row to
+   flex ze space-between); (2) resetuje natywny wyglad przycisku i nadaje WSZYSTKIM linkom
+   krzyzowym (building/unit/technology/improvement, w trzech wariantach wiersza: grid,
+   badge/action, pill) DOKLADNIE ten sam, juz zaakceptowany jezyk wizualny co lokalny styl
+   linku ulepszenia "Szczegoly ->" z T7b (techDiscoveryNotice.ts): zloty, podkreslony,
+   kursor pointer, jasniejszy hover, czytelny focus-ring na ciemnym tle. Brak makiety
+   designera dla tego elementu (DO-DESIGN-KARTA-TECHNOLOGII-2026-08-17.md par. 6 odracza
+   cross-linking) — swiadome rozszerzenie istniejacego wzorca zamiast nowego projektu. */
+/* margin-right:auto zamiast polegania na samym space-between: wiersz z ikona ma TRZY
+   dzieci (ikona/klucz/wartosc), wiec space-between wypychal etykiete na SRODEK wiersza
+   zamiast trzymac ja przy ikonie. Auto-margines przykleja etykiete do lewej, a wartosc
+   do prawej krawedzi — niezaleznie od tego, czy ikona jest. */
+.entity-card-row-key{opacity:.72;margin-right:auto;}
+/* BEZ text-align:right — sam flex (space-between + auto-margines etykiety) dosuwa pudelko
+   wartosci do prawej krawedzi, wiec krotkie wartosci i tak sa wyrownane do prawej, a dlugie,
+   zawijane opisy zostaja czytelnie wyrownane do lewej zamiast lamac sie w postrzepiona
+   lewa krawedz. min-width NIE jest zerowane — inaczej etykieta moglaby sie sciesnic ponizej
+   wlasnej tresci i nachodzic na wartosc. */
+.entity-card-row-value{overflow-wrap:anywhere;}
+button.entity-card-row-value,
+button.entity-card-row-action-text,
+button.entity-card-pill-text,
+button.entity-card-civpedia-link{-webkit-appearance:none;appearance:none;background:none;border:0;
+  margin:0;padding:0;font:inherit;line-height:inherit;cursor:pointer;
+  color:var(--tg-gold-primary,#e8d88a);text-decoration:underline;text-underline-offset:2px;}
+button.entity-card-row-value,
+button.entity-card-row-action-text,
+button.entity-card-pill-text,
+button.entity-card-civpedia-link{text-align:left;}
+button.entity-card-row-value:hover,
+button.entity-card-row-action-text:hover,
+button.entity-card-pill-text:hover,
+button.entity-card-civpedia-link:hover{color:#f4e6a8;}
+button.entity-card-row-value:focus-visible,
+button.entity-card-row-action-text:focus-visible,
+button.entity-card-pill-text:focus-visible,
+button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary,#e8d88a));
+  outline-offset:2px;border-radius:3px;}
 .entity-card-row-icon{width:15px;height:15px;flex:none;display:flex;align-items:center;
   justify-content:center;opacity:.9;}
 .entity-card-row-trailing{opacity:.7;font-size:12px;}
