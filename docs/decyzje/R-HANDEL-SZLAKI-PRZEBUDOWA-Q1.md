@@ -1,6 +1,7 @@
 # R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 — przebudowa mechaniki szlaków handlowych
 
-**Status:** ECHO ZAPISANE (5/5 pytań rozstrzygniętych, 2026-08-21). Gotowe do dispatchu Operatora po zapisaniu T1-T6.
+**Status:** W TRAKCIE (2026-08-22) — T1+T2+T2b ZINTEGROWANE do `main` (commit `f303760a`),
+oczekuje na zbiorczy deploy ROBOCZA (decyzja właściciela). T3/T4/T6 w kolejce, nie dispatchowane.
 
 ## Zlecenie właściciela (werbatim, dyktowane — literówki oryginalne)
 
@@ -218,5 +219,25 @@ Kolejność bezpieczna: T1 → T2 → T2b → T3 → T4 → T6. Bez osobnego T5 
   zamierzoną semantykę zamiast polegać na przypadkowej własności geometrii. Nie
   wpływa na wynik gry ani na żadną decyzję ECHO — czysto informacyjne.
 
-- **T2b — następny w kolejce** (gate propozycji `UmowaSzlakow` w panelu dyplomacji wg
-  finalnego ECHO Q5), wymaga reconu `diplomacy-proposals.ts`/UI panelu dyplomacji.
+- **T2b — ZINTEGROWANE (2026-08-22).** Dispatch przez Workflow (Operator→Evaluator→Final
+  Control, wszystkie PASS, run `wf_39d8ddec-8ff`, branch `autobot/HANDEL-SZLAKI-T2b`).
+  Recon wcześniejszy (subagent, przed dispatchem) znalazł gotową funkcję
+  `citiesHaveTradeConnection` (`trade-routes.ts`, komentarz „E6") już implementującą
+  dokładnie regułę ląd-LUB-dwa-porty z ECHO Q5 — zero nowej logiki połączeniowej.
+  Nowe pole `hasTradeConnection: boolean` na `DiplomacyActionLockContext`
+  (`diplomacy-locks.ts`), liczone w `main.ts::buildDiplomacyLockContextBase` przez
+  wywołanie tej funkcji dla miast gracza vs partnera. Gate wpięty w
+  `resolveDiplomacyActionLock` case `'5'` (traktat `UmowaSzlakow`) z kolejnością
+  `atWar > hasHandel(już aktywny, nigdy nie blokowany wstecznie) > hasTradeConnection
+  > relacjaGate`. UI (`diplomacyAudience.ts`) nie wymagał zmian — mechanizm
+  `locked`/`note`→disabled+tooltip już generyczny. Niezależnie zweryfikowane przez
+  orkiestratora po zmergowaniu do `main` (fast-forward, commit `f303760a`): `tsc
+  --noEmit` czyste, `vite build` OK, `diplomacy-locks-test.cjs` (78/0) i
+  `diplomacy-audience-actions-test.cjs` (20/0) nowe/zaktualizowane testy zielone,
+  wszystkie testy handel/econ zgodne z raportami (te same pre-istniejące FAIL
+  H2/`trade-ilosc-test.cjs`), 5 bramek referencyjnych zielone. Wypchnięte do
+  `origin/main`.
+
+- **T3, T4, T6 — pozostają w kolejce** (nie dispatchowane w tej turze). Właściciel
+  zdecydował poczekać z dalszym dispatchem: po T1+T2+T2b zrobić zbiorczy deploy
+  ROBOCZA (FALA) i push, zanim ruszy T3.
