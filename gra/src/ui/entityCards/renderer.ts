@@ -537,4 +537,47 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
 .entity-card--compact .entity-card-medallion{width:24px;height:24px;}
 .entity-card-footer{padding:8px 14px;border-top:1px solid rgba(232,216,138,.18);}
 .entity-card-actions{display:flex;gap:8px;padding:10px 14px;border-top:1px solid rgba(232,216,138,.18);}
+/* P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1: brakujace od T1 (c1365bfa) reguly dla
+   samych PRZYCISKOW AKCJI karty. Kontener liczby mnogiej (.entity-card-actions, linia wyzej)
+   byl ostylowany od poczatku, ale ".entity-card-action" / "-primary" / "-secondary" — czyli
+   przyciski budowane z "data.actions" w "renderEntityCard" (np. "Rozpocznij badanie" /
+   "Otworz drzewo" ustawiane przez techDiscoveryNotice.ts) — nie mialy w calym repo ZADNEJ
+   reguly. Przegladarka rysowala je natywnie; realna sonda Chromium na zywym popupie odkrycia:
+   background rgb(239,239,239), color rgb(0,0,0), border-top-width 2px, cursor default — ten sam
+   brzydki, jasny prostokat, ktory wlasciciel opisal jako "dziwne napisy na bialym tle" przy
+   linkach krzyzowych. To NIE jest regres T10: klasa nie miala stylu od poczatku, po prostu
+   zaden test nie renderowal karty z ustawionym "actions" (stad przeoczenie w tamtym temacie).
+
+   Dlaczego INNY jezyk wizualny niz linki (.entity-card-row-value wyzej): tamte to NAWIGACJA
+   do innej karty (zloty, podkreslony link). Te sa PRAWDZIWYMI AKCJAMI zmieniajacymi stan gry,
+   wiec dostaja wypelniony przycisk. Wzorzec nie jest wymyslony — to 1:1 przedmigracyjny
+   przycisk TEJ SAMEJ karty (".tdn-tree-btn", techDiscoveryNotice.ts, stopka starego
+   ".tdn-card") oraz kanon design systemu 1E: ".tg-btn-primary" / ".tg-btn-outline"
+   (icons/brand/tokens.css, icons/brand/menu-components.css). Hierarchia odpowiada temu, jak
+   renderer dostaje "action.kind" z techDiscoveryNotice.ts: "primary" = akcja glowna
+   ("Rozpocznij badanie"; a gdy jej nie ma — samotne "Otworz drzewo" awansuje na primary),
+   "secondary" = akcja pomocnicza obok juz obecnej glownej. Stad primary = pelny zloty
+   gradient, secondary = stonowany ciemny wariant z zlota obwodka. */
+.entity-card-action{-webkit-appearance:none;appearance:none;display:inline-flex;
+  align-items:center;justify-content:center;gap:8px;padding:7px 18px;
+  border-radius:var(--tg-radius-btn,8px);cursor:pointer;
+  font-family:var(--tg-font-ui,'Segoe UI',Tahoma,sans-serif);font-size:11px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;line-height:1.2;}
+.entity-card-action-primary{border:1px solid #6a5212;border-top-color:#f8eea8;
+  background:var(--tg-btn-primary,linear-gradient(180deg,#f0dc88,#b99a28));
+  color:var(--tg-btn-primary-ink,#2e2708);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 18px rgba(232,216,138,.2);}
+.entity-card-action-primary:hover{filter:brightness(1.06);}
+/* font-weight 600 (nie 700) i 2px rant — dokladnie jak .tg-btn-outline w menu-components.css;
+   celowo lzejszy niz primary, zeby hierarchia byla czytelna takze bez koloru. */
+.entity-card-action-secondary{border:2px solid rgba(232,216,138,.4);
+  background:linear-gradient(180deg,#161c28,#0a0d14);color:var(--tg-gold-primary,#e8d88a);
+  font-weight:600;box-shadow:inset 0 1px 0 rgba(232,216,138,.14);}
+.entity-card-action-secondary:hover{border-color:var(--tg-gold-primary,#e8d88a);color:#f4e6a8;}
+.entity-card-action:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary,#e8d88a));
+  outline-offset:2px;}
+/* koniec bloku P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1 — ta linia jest KOTWICA
+   KONCOWA dla mutacji w tools/entity-card-action-buttons-real-render-test.cjs (wycina
+   dokladnie ten blok z arkusza i sprawdza, ze asercje wracaja na czerwono). Nie usuwaj jej
+   przy dopisywaniu kolejnych regul — nowe reguly dopisuj PO niej. */
 `;
