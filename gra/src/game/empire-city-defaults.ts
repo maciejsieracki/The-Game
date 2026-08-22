@@ -324,6 +324,22 @@ export function broadcastPoziomRacjiToOwnerCities(
   }
 }
 
+/**
+ * P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: jednorazowa akcja "ustaw teraz" (nie stan
+ * trwały/toggle) — dla WSZYSTKICH miast ownera BEZ poziomRacjiOverride ustawia
+ * `autoWyzywienie = true`. Miasta z poziomRacjiOverride===true SĄ POMIJANE (pin 📌),
+ * dokładnie ten sam wzorzec filtra co `broadcastPoziomRacjiToOwnerCities` wyżej.
+ */
+export function broadcastAutoWyzywienieToOwnerCities(
+  cities: ReadonlyArray<City>,
+  ownerId: number,
+): void {
+  for (const c of cities) {
+    if (c.ownerId !== ownerId || c.poziomRacjiOverride) continue;
+    c.autoWyzywienie = true;
+  }
+}
+
 /** Migracja starych zapisów (poziomRacji zawsze per-miasto) → global + flagi override. */
 export function migratePoziomRacjiOnLoad(
   cities: ReadonlyArray<City>,

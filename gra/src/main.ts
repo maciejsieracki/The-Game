@@ -239,6 +239,7 @@ import {
   migratePoziomRacjiOnLoad,
   freshOwnerDefaultPoziomRacji,
   broadcastPoziomRacjiToOwnerCities,
+  broadcastAutoWyzywienieToOwnerCities,
   resolveCityPoziomRacji,
 } from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
@@ -19376,6 +19377,18 @@ async function boot(): Promise<void> {
           broadcastPoziomRacjiToOwnerCities(cities, 0, clamped);
           markCityStateDirty();
           updateHud();
+        },
+        // P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: jednorazowa akcja "ustaw teraz" —
+        // dla WSZYSTKICH miast ownera BEZ poziomRacjiOverride ustawia autoWyzywienie=true.
+        // Wzorem onOwnerDefaultPoziomRacjiChange/broadcastPoziomRacjiToOwnerCities wyżej, ale
+        // to NIE jest stan trwały ani toggle -- kliknięcie po prostu stosuje wartość teraz.
+        onOwnerSetAutoWyzywienieForAll: (ownerId) => {
+          if (ownerId !== 0) return;
+          broadcastAutoWyzywienieToOwnerCities(cities, 0);
+          showHintMessage('Auto-Żywienie włączone we wszystkich miastach bez indywidualnego ustawienia', 2800);
+          markCityStateDirty();
+          updateHud();
+          refreshCityPanelIfOpen();
         },
       });
     }

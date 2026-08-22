@@ -51,6 +51,7 @@ fs.writeFileSync(
   budowaProfilEqual,
   resolveCityPoziomRacji,
   broadcastPoziomRacjiToOwnerCities,
+  broadcastAutoWyzywienieToOwnerCities,
   migratePoziomRacjiOnLoad,
   freshOwnerDefaultPoziomRacji,
 } from '../src/game/empire-city-defaults';
@@ -342,6 +343,30 @@ function ok(cond, msg) {
     ok(effective === 'zywnosc',
       `świeżo założone miasto: efektywny okolicaFocus (jak w seedCityOwnerDefaults) = 'zywnosc' (got ${effective})`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// 8. P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: broadcastAutoWyzywienieToOwnerCities
+//    — jednorazowa akcja "ustaw teraz" (nie stan trwały/toggle). Miasta ownera BEZ
+//    poziomRacjiOverride dostają autoWyzywienie=true; miasto Z override (pin 📌) jest
+//    POMIJANE; inny owner nietknięty; działa dla wielu miast naraz.
+// ---------------------------------------------------------------------------
+{
+  const cities = [
+    { id: 'c1', ownerId: 0, poziomRacjiOverride: false, autoWyzywienie: false },
+    { id: 'c2', ownerId: 0, poziomRacjiOverride: false, autoWyzywienie: false },
+    { id: 'c3', ownerId: 0, poziomRacjiOverride: true, autoWyzywienie: false },
+    { id: 'c4', ownerId: 1, poziomRacjiOverride: false, autoWyzywienie: false },
+  ];
+  M.broadcastAutoWyzywienieToOwnerCities(cities, 0);
+  ok(cities[0].autoWyzywienie === true,
+    `broadcastAutoWyzywienie: c1 (owner 0, bez override) dostaje autoWyzywienie=true (got ${cities[0].autoWyzywienie})`);
+  ok(cities[1].autoWyzywienie === true,
+    `broadcastAutoWyzywienie: c2 (owner 0, bez override) dostaje autoWyzywienie=true — dwa miasta naraz (got ${cities[1].autoWyzywienie})`);
+  ok(cities[2].autoWyzywienie === false,
+    `broadcastAutoWyzywienie: c3 (owner 0, poziomRacjiOverride=true) NIE zmienia się, pin 📌 (got ${cities[2].autoWyzywienie})`);
+  ok(cities[3].autoWyzywienie === false,
+    `broadcastAutoWyzywienie: c4 (inny owner) nie dotknięte (got ${cities[3].autoWyzywienie})`);
 }
 
 console.log(`empire-city-defaults-test: ${pass} pass, ${fail} fail`);

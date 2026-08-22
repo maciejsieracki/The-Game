@@ -123,6 +123,10 @@ export interface EmpireGlobalDefaultsUiConfig {
   onOwnerDefaultPracaSplitChange?: (ownerId: number, split: EmpirePracaSplit) => void;
   getOwnerDefaultPoziomRacji?: (ownerId: number) => PoziomRacji | null;
   onOwnerDefaultPoziomRacjiChange?: (ownerId: number, poziom: PoziomRacji) => void;
+  // P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: jednorazowa akcja "ustaw teraz" — dla
+  // WSZYSTKICH miast ownera BEZ poziomRacjiOverride ustawia city.autoWyzywienie = true.
+  // Nie jest stanem trwałym/toggle (spójne z broadcastPoziomRacjiToOwnerCities).
+  onOwnerSetAutoWyzywienieForAll?: (ownerId: number) => void;
 }
 
 let empireGlobalDefaultsUi: EmpireGlobalDefaultsUiConfig = {};
@@ -155,16 +159,27 @@ function renderDefaultPoziomRacjiSection(): string {
     + `<input type="range" class="civ-emp-slider green" min="${minSteps}" max="${maxSteps}" step="1" `
     + `value="${steps}" style="${sliderFillStyle(fillPct, '#4e9a3f', '#78c95a')}" `
     + `data-racje-key="poziom" /></div>`
-    + `<div class="civ-emp-foot">Miasta z lokalnym limitem Spichlerza poniżej tego poziomu i tak obniżą go automatycznie na koniec tury (bez zmiany globalnego ustawienia).</div></div>`;
-  queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange));
+    + `<div class="civ-emp-foot">Miasta z lokalnym limitem Spichlerza poniżej tego poziomu i tak obniżą go automatycznie na koniec tury (bez zmiany globalnego ustawienia).</div>`;
+  const onSetAutoWyzywienieForAll = empireGlobalDefaultsUi.onOwnerSetAutoWyzywienieForAll;
+  if (onSetAutoWyzywienieForAll) {
+    h += `<button type="button" class="civ-emp-autofeed-btn" data-autofeed-all-btn>`
+      + `Włącz Auto-Żywienie we wszystkich miastach bez indywidualnego ustawienia</button>`;
+  }
+  h += `</div>`;
+  queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange, onSetAutoWyzywienieForAll));
   return h;
 }
 
 function wireDefaultPoziomRacjiInputs(
   onChange: (ownerId: number, poziom: PoziomRacji) => void,
+  onSetAutoWyzywienieForAll?: (ownerId: number) => void,
 ): void {
   const host = document.getElementById('emp-zywnosc-racje');
   if (!host) return;
+  const autofeedBtn = host.querySelector<HTMLButtonElement>('button[data-autofeed-all-btn]');
+  if (autofeedBtn && onSetAutoWyzywienieForAll) {
+    autofeedBtn.addEventListener('click', () => onSetAutoWyzywienieForAll(0));
+  }
   const inp = host.querySelector<HTMLInputElement>('input[data-racje-key="poziom"]');
   if (!inp) return;
   const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
@@ -301,6 +316,12 @@ function ensureStyles(): void {
   background:#171e2a;color:#9aa4b2;font-size:11px;font-weight:600;cursor:pointer;text-align:center;}
 .civ-emp-mocview-btn:hover{border-color:#3a4657;color:#cfd5de;}
 .civ-emp-mocview-btn.active{background:rgba(217,164,65,0.16);border-color:#d9a441;color:#d9a441;}
+/* P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: przycisk jednorazowej akcji "ustaw teraz"
+   (nie toggle stanu) — wzorem broadcastPoziomRacjiToOwnerCities, ale dla autoWyzywienie. */
+.civ-emp-autofeed-btn{width:100%;margin-top:8px;padding:8px 10px;border-radius:6px;
+  border:1px solid #2b3543;background:#171e2a;color:#78c95a;font-size:11.5px;font-weight:700;
+  cursor:pointer;text-align:center;}
+.civ-emp-autofeed-btn:hover{border-color:#4e9a3f;background:rgba(78,154,63,0.14);}
 .civ-emp-resp{margin:12px 0 4px;padding:11px 14px;border-radius:8px;background:#1c2431;
   border:1px solid #2b3543;font-size:12.5px;color:#cfd5de;}
 .civ-emp-resp b{color:#e8ebf0;}
