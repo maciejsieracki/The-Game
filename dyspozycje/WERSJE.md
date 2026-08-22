@@ -13,7 +13,15 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
-## ROBOCZA 0df8953e - 2026-08-22 15:58 UTC - FALA 317: masowa paczka 9 poprawek UI/UX/ekonomii (zgłoszenia właściciela z gry)
+## ROBOCZA aab7e1e7 - 2026-08-22 16:20 UTC - FALA 318: emoji -> ikony marki w panelu Praca miasta
+|- md5 (pełne): aab7e1e7a7071ca1c1da62b5cd44be5a · stempel: ROBOCZA · label aab7e1e7 · źródłowy commit integracji: `3b1e70b6`
+|- `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`: surowe emoji (🔨/🏛/📦/👤) w panelu miasta „PODZIAŁ PRACY" zastąpione ikonami marki przez istniejący system `CP_INLINE_EMOJI_BRAND`/`cpInlineIcons()`/`cityPanelChipIconWrap()` — bez projektowania nowego języka wizualnego (dodane brakujące mapowanie `📦`→`chip-crate`, naprawione 2 miejsca omijające helper: hero i intro karty „Praca — co to znaczy").
+|- Operator→Evaluator→Final Control (Opus 5 High dla Operatora/Evaluatora, temat wizualny wg `R-PROC-AUTOBOT.md` §5a; Sonnet 5 High Final Control) — wszystkie PASS/PASS-WITH-NOTES, zweryfikowane realnym renderem Playwright/Chromium z dwustopniową kontrolą negatywną. Zmergowane non-ff do `main`, niezależnie zweryfikowane przez orkiestratora (tsc/build/testy tematu/5 bramek referencyjnych zielone).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `dyspozycje/PYTANIA-OTWARTE.md` wpis `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`. Analogiczny wzorzec znaleziony w innych panelach/plikach (poza zakresem, nie naprawiony) zarejestrowany jako `P-EMOJI-SUROWE-INNE-PANELE-Q1`.
+|- **AKTUALNA**
+
+## ROBOCZA 0df8953e - 2026-08-22 15:58 UTC - FALA 317: masowa paczka 9 poprawek UI/UX/ekonomii (zgłoszenia właściciela z gry) — **ZASTĄPIONA** (→ aab7e1e7)
 |- md5 (pełne): 0df8953e5760af21d2b22a505b42f2ab · stempel: ROBOCZA · label 0df8953e · źródłowy commit integracji: `36dff8e9`
 |- #1 `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1`: cap automatycznej budowy ulepszeń przywrócony do 0–100% (był omyłkowo 0–50%, dzielił stałą z niezależnego pola podziału Praca budynki/ulepszenia).
 |- #2 `P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1`: panel „PRACA IMPERIUM" — jeden suwak pełnej szerokości (Ulepszenia/Budynki) zamiast dwóch boksów, klikalne oznaczenia MIN/MAX.
