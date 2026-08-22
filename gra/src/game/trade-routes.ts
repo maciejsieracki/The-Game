@@ -491,8 +491,14 @@ interface TradeRouteCandidate {
 }
 
 /**
- * Wybiera lepsze medium (ląd/morze) dla pary miast: krótszy dystans spośród
- * połączonych; remis rozstrzyga na korzyść lądu (deterministyczne, tańsze).
+ * Wybiera medium (ląd/morze) dla pary miast: LĄD MA BEZWARUNKOWE PIERWSZEŃSTWO,
+ * gdy fizycznie istnieje — nawet jeśli morze dawałoby wyższy dochód (np. po
+ * bonusie ×2, patrz tradeRouteTotalDistanceIncome). Morze jest sprawdzane
+ * WYŁĄCZNIE jako fallback, gdy `findCityConnection` dla lądu zwraca
+ * connected=false (inny kontynent/wyspa) — nie jako alternatywa dochodowa.
+ * (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, ECHO Q5 — "Korekta punktu błędnie
+ * sklasyfikowanego jako bez ABC": poprzednia zasada "krótszy dystans wygrywa,
+ * remis na korzyść lądu" jest NIEAKTUALNA.)
  * Zwraca null, gdy żadne medium nie łączy miast.
  */
 function detectBestConnection(
@@ -503,14 +509,9 @@ function detectBestConnection(
   builtByCity: ReadonlyMap<string, readonly string[]>,
 ): { medium: TradeRouteMedium; distance: number } | null {
   const land = findCityConnection(a, b, map, 'lad', params, builtByCity);
-  const sea  = findCityConnection(a, b, map, 'morze', params, builtByCity);
-  if (land.connected && sea.connected) {
-    return land.distance <= sea.distance
-      ? { medium: 'lad', distance: land.distance }
-      : { medium: 'morze', distance: sea.distance };
-  }
   if (land.connected) return { medium: 'lad', distance: land.distance };
-  if (sea.connected)  return { medium: 'morze', distance: sea.distance };
+  const sea = findCityConnection(a, b, map, 'morze', params, builtByCity);
+  if (sea.connected) return { medium: 'morze', distance: sea.distance };
   return null;
 }
 
@@ -800,6 +801,29 @@ export function tradeRouteDistanceIncome(
   return Math.min(params.dochodSzczyt, Math.max(params.dochodPodloga, Math.floor(raw)));
 }
 
+/**
+ * Dochód FINALNY (dystansowy) z trasy — przebudowa ECHO Q2, 2026-08-21: trasa
+ * morska dostaje bonus ×2 wobec czystej krzywej dystansowej
+ * (tradeRouteDistanceIncome), trasa lądowa zostaje bez zmian. Ten bonus SUMUJE
+ * SIĘ z istniejącym, osobnym mechanizmem PORT_SEA_TRADE_BONUS_PIENIADZ
+ * (+1 Pieniądza/turę za trasę morską ponad pierwszą, computeSeaTradeBonusIncomeByCity)
+ * — oba działają równolegle, żadne z nich nie zastępuje drugiego.
+ *
+ * Wszyscy wywołujący, którzy dziś liczą FINALNY dochód trasy (nie samą krzywą
+ * dystansową) mają używać TEJ funkcji zamiast tradeRouteDistanceIncome —
+ * m.in. computeTradeRouteIncomeByCity niżej (ścieżka realnego wpisu do
+ * skarbca przez turn-economy.ts) oraz main.ts (panel Handlu, chip HUD,
+ * event log nowej trasy).
+ */
+export function tradeRouteTotalDistanceIncome(
+  dystans: number,
+  medium: TradeRouteMedium,
+  params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+): number {
+  const base = tradeRouteDistanceIncome(dystans, medium, params);
+  return medium === 'morze' ? base * 2 : base;
+}
+
 interface RawEconParamsJsonTradeIncome {
   handel_szlaki?: Record<string, RawParamRow>;
 }
@@ -853,7 +877,7 @@ export function computeTradeRouteIncomeByCity(
   const out = new Map<string, number>();
   for (const route of routes) {
     if (route.status !== 'polaczony') continue;
-    const baseIncome = tradeRouteDistanceIncome(route.dystans, route.medium, params);
+    const baseIncome = tradeRouteTotalDistanceIncome(route.dystans, route.medium, params);
     const fromMult = 1 + wonderTradeBonusForOwner(route.ownerId, route.medium);
     const toMult   = 1 + wonderTradeBonusForOwner(route.toOwnerId, route.medium);
     const fromIncome = fromMult === 1 ? baseIncome : Math.floor(baseIncome * fromMult);

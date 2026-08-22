@@ -35,7 +35,7 @@ fs.writeFileSync(ENTRY_FILE, `
 export {
   refreshTradeRoutes, tradeRouteId, tradeRouteLimitForCity, TRADE_BUILDING_IDS,
   DEFAULT_TRADE_ROUTE_PARAMS, loadTradeRouteParams,
-  tradeRouteDistanceIncome, DEFAULT_TRADE_ROUTE_INCOME_PARAMS, loadTradeRouteIncomeParams,
+  tradeRouteDistanceIncome, tradeRouteTotalDistanceIncome, DEFAULT_TRADE_ROUTE_INCOME_PARAMS, loadTradeRouteIncomeParams,
   computeTradeRouteIncomeByCity, computeTradeRouteCountByCity,
 } from '../src/game/trade-routes';
 export { cityYieldPerTurn } from '../src/game/economy';
@@ -246,10 +246,39 @@ const routeF3suspended = { id: 'r3', fromCityId: 'A', toCityId: 'D', ownerId: 0,
 const incomeByCity = TR.computeTradeRouteIncomeByCity([routeF1, routeF2, routeF3suspended], incP);
 const inc5  = TR.tradeRouteDistanceIncome(5, 'lad', incP);
 const inc10 = TR.tradeRouteDistanceIncome(10, 'morze', incP);
-eq(incomeByCity.get('A'), inc5 + inc10, 'F: miasto A uczestniczy w 2 trasach (lad+morze) -> suma obu dochodow');
+// R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 T2 (ECHO Q2): computeTradeRouteIncomeByCity liczy teraz
+// dochod FINALNY przez tradeRouteTotalDistanceIncome -- trasa morska dostaje bonus x2
+// wobec czystej krzywej dystansowej (tradeRouteDistanceIncome, NIEZMIENIONA), lad bez zmian.
+const inc10Total = inc10 * 2;
+eq(incomeByCity.get('A'), inc5 + inc10Total, 'F: miasto A uczestniczy w 2 trasach (lad+morze x2) -> suma obu dochodow finalnych');
 eq(incomeByCity.get('B'), inc5, 'F: miasto B (druga strona trasy 1, lad) dostaje PELNA kwote (Q8=B, nie polowe)');
-eq(incomeByCity.get('C'), inc10, 'F: miasto C (druga strona trasy 2, morze) dostaje PELNA kwote');
+eq(incomeByCity.get('C'), inc10Total, 'F: miasto C (druga strona trasy 2, morze) dostaje PELNA kwote FINALNA (x2 morza)');
 eq(incomeByCity.has('D'), false, 'F: trasa ze statusem brak_polaczenia NIE liczy sie do dochodu');
+
+// ---------------------------------------------------------------------------
+// F2. tradeRouteTotalDistanceIncome -- nowa funkcja opakowujaca (T2, ECHO Q2):
+//     LAD bez zmian (== tradeRouteDistanceIncome), MORZE x2 (SUMUJE SIE z
+//     osobnym, niezmienionym PORT_SEA_TRADE_BONUS_PIENIADZ -- nietestowanym tu,
+//     patrz trade-routes-test.cjs sekcja l4-l6).
+// ---------------------------------------------------------------------------
+console.log('\n-- F2. tradeRouteTotalDistanceIncome: lad bez zmian, morze x2 --');
+for (const d of [0, 6, 12, 1000]) {
+  eq(
+    TR.tradeRouteTotalDistanceIncome(d, 'lad', incP),
+    TR.tradeRouteDistanceIncome(d, 'lad', incP),
+    `F2: LAD dystans=${d} -> tradeRouteTotalDistanceIncome === tradeRouteDistanceIncome (bez mnoznika)`,
+  );
+}
+for (const d of [0, 10, 20, 1000]) {
+  eq(
+    TR.tradeRouteTotalDistanceIncome(d, 'morze', incP),
+    TR.tradeRouteDistanceIncome(d, 'morze', incP) * 2,
+    `F2: MORZE dystans=${d} -> tradeRouteTotalDistanceIncome === tradeRouteDistanceIncome x2`,
+  );
+}
+eq(TR.tradeRouteTotalDistanceIncome(0, 'morze', incP), 10, 'F2: MORZE dystans=0 -> podloga=5 x2 = 10');
+eq(TR.tradeRouteTotalDistanceIncome(20, 'morze', incP), 80, 'F2: MORZE dystans=20 (=morzeMaxDist) -> szczyt=40 x2 = 80');
+eq(TR.tradeRouteTotalDistanceIncome(12, 'lad', incP), 40, 'F2: LAD dystans=12 (=ladMaxDist) -> szczyt=40, BEZ mnoznika (tylko morze dostaje x2)');
 
 const countByCity = TR.computeTradeRouteCountByCity([routeF1, routeF2, routeF3suspended]);
 eq(countByCity.get('A'), 2, 'F: licznik tras miasta A = 2 (obie aktywne trasy)');
@@ -368,6 +397,42 @@ const onlyCount = runTickH(new Map(), new Map([['pH', 3], ['fH', 3]]));
 assert(onlyCount.pH.pieniadzBrutto > base.pH.pieniadzBrutto,
   'H4: liczbaAktywnychTrasHandlowych=3 (bez dochodu $) podnosi pieniadzBrutto gracza wzgledem 0 tras');
 eq(onlyCount.pH.pieniadzZTras, 0, 'H4: (kontrola) pieniadzZTras=0 gdy tradeIncomeByCity puste');
+
+// ---------------------------------------------------------------------------
+// I. Priorytet lądu BEZWARUNKOWY w detectBestConnection (T2, ECHO Q5 finalne
+//    doprecyzowanie): gdy ląd I morze są OBA geometrycznie połączone (porty w
+//    obu miastach), trasa MA BYĆ lądowa -- morze NIE jest brane pod uwagę jako
+//    alternatywa, nawet gdyby (po Zmianie A / bonusie x2) dawało wyższy dochód.
+//    Fixture: dwa miasta rozdzielone pasem wody (rzad r=100), ALE z dodatkowym
+//    ladowym "objazdem" (rzad r=99, w calosci lad), wiec obie sciezki (lad
+//    objazdem, morze wprost przez woda z portami) sa geometrycznie mozliwe.
+// ---------------------------------------------------------------------------
+console.log('\n-- I. refreshTradeRoutes: priorytet ladu bezwarunkowy (ECHO Q5) mimo mozliwego morza --');
+function buildLandDetourMap() {
+  const hexes = {};
+  // rzad r=100: q=0..10, woda na q=4..6 (szlak morski wprost, z portami)
+  for (let q = 0; q <= 10; q++) {
+    const isWater = q >= 4 && q <= 6;
+    hexes[`${q},100`] = { terenBazowy: isWater ? 'morze' : 'rownina' };
+  }
+  // rzad r=99: q=0..10, caly lad -- objazd ladowy dookola pasa wody
+  for (let q = 0; q <= 10; q++) {
+    hexes[`${q},99`] = { terenBazowy: 'rownina' };
+  }
+  return { szerokoscQ: 11, wysokoscR: 101, hexes, seed: 1, riverPaths: [] };
+}
+const mapI = buildLandDetourMap();
+const pI = city('pI', 0, 3); pI.r = 100;
+const fI = city('fI', 1, 7); fI.r = 100;
+const builtI = new Map([
+  ['pI', ['targowisko', 'port']],
+  ['fI', ['targowisko', 'port']],
+]);
+
+const routesI = TR.refreshTradeRoutes([pI, fI], [], mapI, builtI, NO_WAR, HAS_TREATY);
+eq(routesI.length, 1, 'I: (setup) dokladnie jedna trasa pI<->fI powstaje (oba media geometrycznie mozliwe)');
+eq(routesI[0].medium, 'lad', 'I: mimo mozliwego szlaku morskiego (porty + woda), wybrany medium = lad (bezwarunkowy priorytet ladu, ECHO Q5)');
+eq(routesI[0].dystans, 4, 'I: (kontrola) dystans = hexDistance(3,100 -> 7,100) = 4, taki sam dla obu mediow');
 
 console.log(`\ntrade-routes-income-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}
