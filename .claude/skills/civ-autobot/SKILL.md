@@ -89,6 +89,21 @@ zasada ECHO (`dyspozycje/PYTANIA-OTWARTE.md` + `docs/decyzje/<ID>.md`) — patrz
 [`.claude/skills/autobots/SKILL.md`](../autobots/SKILL.md) §6 dla samej
 metodologii.
 
+## Delegacja wstępnego rozpoznania do subagenta (Maciej, 2026-08-21)
+
+Gdy właściciel przekazuje złożony, wieloznaczny albo obszerny temat (nowe
+żądanie przebudowy mechaniki, prośba o recon, audyt rejestru) — orkiestrator
+NIE analizuje go najpierw samodzielnie w pełni. Zamiast tego niezwłocznie
+dispatchuje osobnego subagenta z pełną, dosłowną treścią żądania właściciela
+(zachowując każdy niuans, bez własnej wstępnej interpretacji na skróty) i
+zleca mu: recon kodu/rejestru, rozbicie żądania na punkty, oznaczenie co jest
+jednoznaczne a co wymaga ABC, ew. warianty pytań A/B/C. Orkiestrator dostaje z
+powrotem gotowe podsumowanie i na jego podstawie prowadzi dalszą rozmowę z
+właścicielem (rejestruje temat, zadaje ABC, dispatchuje Operatora) — nie
+powtarza samodzielnie tej samej analizy. Powód: własne przetwarzanie złożonego
+tematu przez orkiestratora zajmuje czas i spowalnia rozmowę; subagent robi to
+w tle, równolegle do dalszej pracy orkiestratora.
+
 ## Twarde bariery projektu Civ
 
 - Nie używaj `git add -A` przy cudzej lub nieznanej pracy.
