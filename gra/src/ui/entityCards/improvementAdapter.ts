@@ -143,8 +143,7 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   if (hasValue(improvement.surowiecOdblokowany)) {
     resourceRows.push({
       label: 'Odblokowuje surowiec',
-      value: text(improvement.surowiecOdblokowany)
-        + (hasValue(improvement.surowiecOdblokowany_uwaga) ? ` (${text(improvement.surowiecOdblokowany_uwaga)})` : ''),
+      value: text(improvement.surowiecOdblokowany),
     });
   }
   if (hasValue(improvement.surowiec_ilosc_tura)) {
