@@ -114,19 +114,36 @@ tą samą parą). Żaden nowy limit total-na-cywilizację nie jest wymagany;
 temat T5 (limit) **wypada z zakresu tej przebudowy**.
 
 **Q5 — Port jako wymóg trasy morskiej = ZOSTAJE, plus nowa zasada priorytetu
-lądu.** Port pozostaje twardym wymogiem samego ISTNIENIA połączenia
-morskiego (bez zmian względem dziś — `findCityConnection` linia 349-351).
-**Dodatkowo, nowa zasada priorytetu wybrana przez właściciela**: trasa
-morska/portowa ma być w ogóle ROZWAŻANA wyłącznie wtedy, gdy trasa lądowa
-między danymi dwoma miastami jest FIZYCZNIE NIEMOŻLIWA (inny kontynent,
-wyspa — brak ciągłej ścieżki lądowej niezależnie od dystansu). Innymi
-słowy: **ląd ma zawsze pierwszeństwo, gdy istnieje jakiekolwiek połączenie
-lądowe** (nawet gorsze/dłuższe niż potencjalne morskie) — morze jest
-wyłącznie fallbackiem dla par miast bez żadnej lądowej ścieżki. To
-**anuluje wcześniejsze założenie „wybór po końcowym dochodzie"** (patrz
-niżej, było błędnie zaklasyfikowane jako rozstrzygnięte bez ABC) —
-`detectBestConnection` NIE ma wybierać między lądem i morzem po dochodzie;
-ma próbować ląd jako pierwszy, i sprawdzać morze DOPIERO gdy ląd zwraca
+lądu I nowy gate na poziomie PROPOZYCJI TRAKTATU (doprecyzowane przez
+właściciela trzykrotnie, finalna wersja poniżej).**
+
+**Finalna zasada (dosłownie z ostatniej wiadomości właściciela):**
+Możliwość zawarcia `UmowaSzlakow` między dwiema cywilizacjami w panelu
+dyplomacji wymaga JEDNEGO z:
+1. **Dostępność lądowa** między cywilizacjami — jeśli istnieje, umowę można
+   zawrzeć bez żadnych dodatkowych warunków (port nie jest wymagany).
+2. **Brak dostępności lądowej** (inny kontynent/wyspa) — umowę można zawrzeć
+   WYŁĄCZNIE gdy OBIE strony mają port (jedna i druga cywilizacja).
+
+**Jeśli żaden z powyższych warunków nie jest spełniony** (brak lądu I
+co najmniej jedna strona bez portu) — **opcja zawarcia umowy handlowej NIE
+JEST W OGÓLE DOSTĘPNA w panelu dyplomacji/opcjach handlowych.** To jest
+warunek konieczny sprawdzany PRZY PROPOZYCJI TRAKTATU, nie tylko przy
+późniejszym powstawaniu trasy — inaczej niż dziś, gdzie `hasSzlakowTreaty`
+i `findCityConnection`/Port są sprawdzane dopiero w `refreshTradeRoutes`
+PO already zawartej umowie (dziś można dziś podpisać `UmowaSzlakow` z
+cywilizacją, z którą fizycznie nigdy nie powstanie żadna trasa — to ma
+się zmienić, taka opcja ma być wyszarzona/niedostępna od razu w panelu
+propozycji).
+
+Dodatkowo (z priorytetu lądu): gdy dostępność lądowa istnieje, trasa MA BYĆ
+lądowa — morze nie jest brane pod uwagę jako alternatywa nawet jeśli
+dawałoby wyższy dochód (×2). Morze jest wyłącznie dla par bez żadnej
+dostępności lądowej. To **anuluje wcześniejsze założenie „wybór po
+końcowym dochodzie"** (patrz niżej, było błędnie zaklasyfikowane jako
+rozstrzygnięte bez ABC) — `detectBestConnection` NIE ma wybierać między
+lądem i morzem po dochodzie; ma próbować ląd jako pierwszy, i sprawdzać
+morze DOPIERO gdy ląd zwraca
 `connected=false`.
 
 ## Korekta punktu błędnie sklasyfikowanego jako „bez ABC"
@@ -144,10 +161,11 @@ porównania dochodu obu wariantów.
 | # | Temat | Zależność | Zakres |
 |---|---|---|---|
 | T1 | Wzór dystansowy: kierunek osobny per medium + stałe ×5 | ECHO Q1 | `trade-routes.ts` (formuła + stałe), `econ-params.json` |
-| T2 | Bonus morski ×2 (sumuje się) + priorytet lądu nad morzem w `detectBestConnection` | T1, ECHO Q2+Q5 | `trade-routes.ts`, `main.ts` (oba miejsca wzoru — łączy się z `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`) |
+| T2 | Bonus morski ×2 (sumuje się) + priorytet lądu nad morzem w `detectBestConnection` (ląd zawsze wygrywa gdy istnieje, morze tylko fallback) | T1, ECHO Q2+Q5 | `trade-routes.ts`, `main.ts` (oba miejsca wzoru — łączy się z `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`) |
+| T2b | **NOWY (ECHO Q5, doprecyzowane 2×).** Gate na poziomie PROPOZYCJI traktatu w panelu dyplomacji: opcja zawarcia `UmowaSzlakow` dostępna WYŁĄCZNIE gdy (a) istnieje dostępność lądowa między cywilizacjami, LUB (b) brak dostępności lądowej ALE obie strony mają port. W przeciwnym razie opcja ma być niedostępna/wyszarzona w panelu — nie tylko "umowa zawarta, ale trasa nigdy nie powstanie" jak dziś. Wymaga reconu dokładnego miejsca walidacji propozycji traktatów (prawdopodobnie `diplomacy-proposals.ts`/panel dyplomacji UI) — dziś `hasSzlakowTreaty`/Port sprawdzane dopiero w `refreshTradeRoutes`, PO zawarciu umowy. | T1, T2, ECHO Q5 | `diplomacy-proposals.ts` (lub odpowiednik — recon), UI panelu dyplomacji, `trade-routes.ts` (reużycie logiki łączności lądowej/portowej) |
 | T3 | Rozdzielenie gatingu budynkami od istnienia trasy (umowa+łączność=dochód od razu; budynek=odblokuj 5%). Port zostaje wymogiem istnienia morza (bez zmian) | ECHO — dwuetapowa aktywacja (nie było osobnym pytaniem, jednoznaczne z cytatu) | `trade-routes.ts::refreshTradeRoutes` |
 | T4 | Atrybucja 5% per trasa (Wariant C) — zastępuje stary globalny mnożnik w `economy.ts` | T3, ECHO Q3 | `trade-routes.ts`, `economy.ts` |
 | ~~T5~~ | ~~Limit „jedna umowa"~~ | **WYPADA** — ECHO Q4 = bez zmian, temat zamknięty bez implementacji | — |
 | T6 | UI per-trasa pełny rozkład dochodu (dystans + 5%, wskazanie gdy 5% czeka na budynek) | T1, T2, T4 | `empireDetailPanel.ts`, `main.ts::buildEmpireTradeSnap()` |
 
-Kolejność bezpieczna: T1 → T2 → T3 → T4 → T6. Bez osobnego T5 (zamknięte ECHO=bez zmian).
+Kolejność bezpieczna: T1 → T2 → T2b → T3 → T4 → T6. Bez osobnego T5 (zamknięte ECHO=bez zmian).
