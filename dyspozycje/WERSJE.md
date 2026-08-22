@@ -13,7 +13,23 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
-## ROBOCZA 5bcde74d - 2026-08-22 12:26 UTC - FALA 316: przebudowa szlaków handlowych T1+T2+T2b
+## ROBOCZA 0df8953e - 2026-08-22 15:58 UTC - FALA 317: masowa paczka 9 poprawek UI/UX/ekonomii (zgłoszenia właściciela z gry)
+|- md5 (pełne): 0df8953e5760af21d2b22a505b42f2ab · stempel: ROBOCZA · label 0df8953e · źródłowy commit integracji: `36dff8e9`
+|- #1 `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1`: cap automatycznej budowy ulepszeń przywrócony do 0–100% (był omyłkowo 0–50%, dzielił stałą z niezależnego pola podziału Praca budynki/ulepszenia).
+|- #2 `P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1`: panel „PRACA IMPERIUM" — jeden suwak pełnej szerokości (Ulepszenia/Budynki) zamiast dwóch boksów, klikalne oznaczenia MIN/MAX.
+|- #3 `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1`: nowy przycisk w Spichlerzu centralnym — jednorazowo włącza auto-żywienie wszystkim miastom bez indywidualnego override.
+|- #4 `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1`: ujednolicono ikonę „Ulepszenia" w panelu podziału pracy miasta do `chip-crate` (był regres — dwie różne ikony dla tego samego pojęcia); potwierdzono wizualnie, że ikona wagi nie wycieka do tego panelu (złudzenie sąsiedztwa z pionowym railem ikon).
+|- #5 `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1`: naprawiono poważny regres ekonomii — live-refresh HUD nadpisywał poprawnie policzony `_lastPracaRate` z końca tury niepełną formułą (znała tylko upkeep, nie 3 pozostałe drenaże), przez co gracz nigdy nie widział realnego przyrostu puli Pracy; nowa flaga-guard `_pracaRateFreshFromEndTurn`.
+|- #6 `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1`: naprawiono brakujący CSS linków krzyżowych w kartach encji (regres T10) w 3 lokalizacjach (popup odkrycia, pełna karta CivPedia, podgląd w panelu budowy miasta).
+|- #7 `P-CIVPEDIA-KARTY-NOTATKI-DEWELOPERSKIE-Q1`: usunięto wyciek wewnętrznego dziennika balansu („uwaga") z pola „Odblokowuje surowiec" w kartach ulepszeń.
+|- #8 `P-BUILDMODE-LOCKTIP-ZASLANIA-LISTE-Q1`: tooltip blokady technologii w panelu budowania ulepszeń — flip/clamp pozycjonowanie zamiast sztywnego offsetu, przestał zasłaniać listę.
+|- #9 `P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1`: dodano brakujący CSS przycisków akcji karty encji (`.entity-card-action`/`-primary`/`-secondary`, np. „Rozpocznij badanie"/„Otwórz drzewo") — bez stylu od T1, znalezisko Final Control przy #6.
+|- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), tematy graficzne/wizualne (#2,#4,#6,#8,#9) dispatchowane do Opus 5 High zgodnie z nowym wyjątkiem `R-PROC-AUTOBOT.md` §5a, zweryfikowane realnym renderem Playwright/Chromium; tematy logika/dane (#1,#3,#5,#7) do Sonnet 5. Każdy zmergowany non-ff do `main`, niezależnie zweryfikowany przez orkiestratora po każdym scaleniu (tsc czyste, Vite 845 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły zgłoszeń, recon i pełna treść ECHO: `dyspozycje/PYTANIA-OTWARTE.md` (wpisy #1–#9 powyżej, ZINTEGROWANE). Jeden dodatkowy temat znaleziony przy #4 (emoji zamiast ikon marki w panelu pracy) zarejestrowany jako `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`, NIE dispatchowany.
+|- **AKTUALNA**
+
+## ROBOCZA 5bcde74d - 2026-08-22 12:26 UTC - FALA 316: przebudowa szlaków handlowych T1+T2+T2b — **ZASTĄPIONA** (→ 0df8953e)
 |- md5 (pełne): 5bcde74dd67ad516b10900ece1a15e8f · stempel: ROBOCZA · label 5bcde74d · źródłowy commit integracji: `33cd3248`
 |- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` T1: wzór dystansowy odwrócony (dalej=więcej), stawki ×5 (`dochodPodloga=5`/`dochodSzczyt=40`), osobny zakres per medium (ląd max=12, morze max=20, identyczny szczyt); `econ-params.json` zaktualizowany (bez cichego nadpisania).
 |- T2: bonus morski ×2 (`tradeRouteTotalDistanceIncome`, sumuje się z istniejącym `PORT_SEA_TRADE_BONUS_PIENIADZ`); priorytet lądu bezwarunkowy w `detectBestConnection`; skonsolidowano duplikat formuły dochodu w `main.ts` (panel Handlu + chip HUD, było `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`).
@@ -21,7 +37,6 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), zmergowany fast-forward do `main`, niezależnie zweryfikowany przez orkiestratora po każdym scaleniu (tsc czyste, Vite 845 modułów, testy handel/econ/diplomacy zgodne z raportami — te same pre-istniejące, niezwiązane FAIL w `trade-routes-income-test.cjs`/H2 i `trade-ilosc-test.cjs`, 5 bramek referencyjnych zielone za każdym razem).
 |- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`, node_modules/vite dostępny) + manifest.
 |- Szczegóły decyzji, ECHO właściciela i pełny podział na tematy: `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md` (T3/T4/T6 pozostają w kolejce, nie dispatchowane).
-|- **AKTUALNA**
 
 ## ROBOCZA d2276783 - 2026-08-20 10:39 UTC - deploy po integracji sześciu tematów AutoBot — **ZASTĄPIONA** (→ 5bcde74d)
 |- md5 (pełne): d2276783cef8d0718e9573a67181b596 · stempel: ROBOCZA · label d2276783 · źródłowy commit integracji: `8996dca8`
