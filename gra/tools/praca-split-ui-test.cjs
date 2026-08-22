@@ -107,5 +107,16 @@ check(
   !/tb-build'[^\n]*Ulepszenia/.test(citySource) && !/Ulepszenia[^\n]*'tb-build/.test(citySource),
 );
 
+// P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1 (Maciej 2026-08-22): ten sam kontrakt „jedno pojęcie =
+// jedna ikona", tylko DRUGA ścieżka renderu — reskin emoji przez `CP_INLINE_EMOJI_BRAND` /
+// `cpInlineIcons()`. Skrzynki 📦 w ogóle nie było w mapie, więc „ściąga" panelu Pracy i karta
+// paska górnego pokazywały goły glif zamiast TEJ SAMEJ skrzynki `chip-crate` co chipy wyżej.
+// Pełne pokrycie (realny render w Chromium + mutacja) jest w
+// `praca-panel-emoji-brand-icons-real-render-test.cjs`; tu zostaje sama kotwica spójności ikon.
+check(
+  'skrzynka 📦 w mapie reskinu wskazuje na TĘ SAMĄ ikonę chip-crate co chipy „Ulepszenia"',
+  /'\u{1F4E6}':\s*'chip-crate'/u.test(citySource),
+);
+
 console.log(`\n[praca-split-ui-test] ${pass} pass, ${fail} fail`);
 if (fail > 0) process.exit(1);
