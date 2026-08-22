@@ -124,16 +124,18 @@ eq(loadedCity.podzialPracy.procentBudynki, 50, 'ensureCityPodzialDefaults normal
 const loadedEffective = M.resolveCityPodzialPracy(loadedCity, undefined);
 eq(loadedEffective.procentBudynki, 50, 'wczytany lokalny zapis 0% nie schodzi poniżej 50%');
 
-// R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A, ECHO właściciela 2026-08-21: od tej
-// decyzji clampUlepszeniaPracaPercent (historyczny budżet automatu, empire i per-city override)
-// egzekwuje TEN SAM nadrzędny cap 50% co clampPracaWspolnyWorekPercent — nie ma już własnego,
-// niezależnego maksimum 100%. Cofa wcześniejsze zachowanie testowane tu do FALI poprzedzającej
-// tę decyzję; pełne pokrycie w `gra/tools/praca-limit-50-test.cjs` (scenariusze 3-9) i
-// `gra/tools/praca-miasto-limit-50-cap-test.cjs` (nowy test tego wątku).
+// P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: pole (b) Ręczny/auto % automatu ulepszeń
+// (clampUlepszeniaPracaPercent) ma WŁASNY, niezależny zakres 0–100%
+// (MAX_ULEPSZENIA_PRACA_AUTO_PERCENT) i NIE jest już ucinane do nadrzędnego capu 50%
+// pola (a) Pula Pracy (clampPracaWspolnyWorekPercent/MAX_PRACA_WSPOLNY_WOREK_PROCENT,
+// nietknięte przez ten temat). Poprzednia wersja tych asercji testowała stary,
+// wadliwy kontrakt (Wątek C = A) i regresowała po naprawie tego pola — patrz
+// `gra/tools/praca-limit-50-test.cjs` (scenariusze 3-9, pole (a)) i
+// `gra/tools/praca-miasto-limit-50-cap-test.cjs` (pole (a), nietknięte).
 eq(M.clampUlepszeniaPracaPercent(0), 0, 'automat 0% pozostaje legalny');
-eq(M.clampUlepszeniaPracaPercent(50), 50, 'automat 50% pozostaje legalny (górny limit nadrzędnego capu)');
-eq(M.clampUlepszeniaPracaPercent(100), 50, 'automat 100% zostaje ścięty do nadrzędnego capu 50% (Wątek C = A)');
-eq(M.clampUlepszeniaPracaPercent(150), 50, 'automat clampuje do nadrzędnego capu 50%, nie własnego maksimum 100%');
+eq(M.clampUlepszeniaPracaPercent(50), 50, 'automat 50% pozostaje legalny (w połowie własnego zakresu)');
+eq(M.clampUlepszeniaPracaPercent(100), 100, 'automat 100% pozostaje legalny (własne maksimum, bez ucinania do capu pola (a))');
+eq(M.clampUlepszeniaPracaPercent(150), 100, 'automat clampuje do własnego maksimum 100%, nie do nadrzędnego capu 50% pola (a)');
 
 console.log(`\n[praca-miasto-limit-50-test] ${passed} pass, ${failed} fail`);
 process.exit(failed > 0 ? 1 : 0);
