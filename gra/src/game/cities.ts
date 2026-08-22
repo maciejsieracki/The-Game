@@ -194,20 +194,31 @@ export const DEFAULT_ULEPSZENIA_TRYB: UlepszeniaTryb = 'reczny';
 export const DEFAULT_ULEPSZENIA_PRACA_PERCENT: UlepszeniaPracaPercent = 33;
 
 /**
- * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A, ECHO właściciela 2026-08-21:
- * cap nadrzędny cywilizacji (`MAX_PRACA_WSPOLNY_WOREK_PROCENT`, dziś 50%) obowiązuje TAKŻE
- * historyczny budżet automatu ulepszeń (`pracaAutoPercent`/`ulepszeniaPracaPercent`), zarówno
- * globalny (empire), jak i lokalny override miasta w trybie „Indywidualne" — miasto nie może
- * już obejść nadrzędnego capu przełączeniem się w ten tryb. Cofa wcześniejszą, świadomą decyzję
- * (0–100% bez związku z capem cywilizacji) udokumentowaną historycznie w tym miejscu; patrz
- * `gra/tools/praca-miasto-limit-50-cap-test.cjs` i zaktualizowany `praca-limit-50-test.cjs`
- * (scenariusz 5). Wpływa też na migrację starych zapisów (`ensureCitySaveDefaults` niżej) —
- * zapis z override >50% (np. z legacy `ulepszeniaPerTurn=3` → 100%) zostaje ścięty do capu przy
- * pierwszym wczytaniu, zgodnie z ECHO.
+ * Maksymalny udział budżetu Pracy (JUŻ przydzielonej polu ulepszeń) rozdysponowywany
+ * automatycznie przez `pracaAutoPercent`/`ulepszeniaPracaPercent` — pole (b), niezależne
+ * od nadrzędnego splitu całej puli Pracy `EmpirePracaSplit.procentUlepszenia` (pole (a),
+ * patrz `MAX_PRACA_WSPOLNY_WOREK_PROCENT` niżej).
+ */
+export const MAX_ULEPSZENIA_PRACA_AUTO_PERCENT: UlepszeniaPracaPercent = 100;
+
+/**
+ * P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: naprawia regresję z
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C = A, ECHO właściciela 2026-08-21), która
+ * OMYŁKOWO ograniczyła to pole (b) — „Automatyzacja ulepszeń → Ręczny", ile z już
+ * przydzielonej puli Pracy na ulepszenia automat rozdysponowuje automatycznie — do
+ * nadrzędnego capu cywilizacji `MAX_PRACA_WSPOLNY_WOREK_PROCENT` (50%), który dotyczy
+ * WYŁĄCZNIE niezależnego pola (a) `EmpirePracaSplit.procentUlepszenia`
+ * (`clampPracaWspolnyWorekPercent`, nietknięte przez ten temat). Pole (b) wraca do
+ * własnego zakresu 0–100% (`MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`), zarówno globalnie
+ * (empire), jak i w lokalnym override miasta w trybie „Indywidualne". Patrz
+ * zaktualizowane `gra/tools/praca-miasto-limit-50-cap-test.cjs` i
+ * `gra/tools/praca-limit-50-test.cjs` (scenariusze 3–9). Wpływa też na migrację starych
+ * zapisów (`ensureCitySaveDefaults` niżej) — zapis z override >50% (np. z legacy
+ * `ulepszeniaPerTurn=3` → 100%) NIE jest już ścinany do 50% przy wczytaniu.
  */
 export function clampUlepszeniaPracaPercent(n: number | undefined | null): UlepszeniaPracaPercent {
   if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
-  return Math.max(0, Math.min(MAX_PRACA_WSPOLNY_WOREK_PROCENT, Math.round(n)));
+  return Math.max(0, Math.min(MAX_ULEPSZENIA_PRACA_AUTO_PERCENT, Math.round(n)));
 }
 
 /**
@@ -298,9 +309,9 @@ export function resolveEffectiveUlepszenia(
       focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
       tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
       onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-      // Historyczny budżet automatu — od R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C,
-      // ECHO=A) respektuje ten sam nadrzędny cap co #1/#2 (`clampUlepszeniaPracaPercent`
-      // teraz clampuje do `MAX_PRACA_WSPOLNY_WOREK_PROCENT`, nie do 100%).
+      // Historyczny budżet automatu (pole (b)) — od P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1
+      // ma znów własny zakres 0–100% (`clampUlepszeniaPracaPercent` /
+      // `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`), niezależny od nadrzędnego capu pola (a).
       pracaAutoPercent: clampUlepszeniaPracaPercent(city.ulepszeniaPracaPercent),
       override: true,
     };
@@ -595,10 +606,10 @@ export function ensureCitySaveDefaults(city: City): void {
     // new one only `ulepszeniaPracaPercent`; the new field wins, so re-running this migration on
     // the same city is idempotent.
     const rawCity = city as unknown as { ulepszeniaPracaPercent?: unknown; ulepszeniaPerTurn?: unknown };
-    // `ulepszeniaPracaPercent` jest lokalnym ustawieniem historycznego automatu. Od
-    // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C, ECHO=A) `clampUlepszeniaPracaPercent`
-    // egzekwuje ten sam nadrzędny cap co #1/#2 — stary zapis z override >50% (np. legacy
-    // `ulepszeniaPerTurn=3` → 100%) zostaje tu ścięty do capu przy pierwszym wczytaniu.
+    // `ulepszeniaPracaPercent` jest lokalnym ustawieniem historycznego automatu (pole (b)).
+    // Od P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1 `clampUlepszeniaPracaPercent` znów egzekwuje
+    // własny zakres 0–100% (`MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`) — stary zapis (np. legacy
+    // `ulepszeniaPerTurn=3` → 100%) NIE jest tu ścinany do 50%.
     city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
       resolveUlepszeniaPracaPercentFromRaw(
         rawCity.ulepszeniaPracaPercent,

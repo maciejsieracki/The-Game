@@ -4,13 +4,15 @@
  * Testuje limit 50% dla wspólnego worka (ulepszenia terenu).
  * Test nowej funkcji clampPracaWspolnyWorekPercent() i powiązanych ograniczeń.
  *
- * ZAKTUALIZOWANY w R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A, ECHO właściciela
- * 2026-08-21 (`docs/decyzje/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1.md`): historyczny budżet
- * automatu (`clampUlepszeniaPracaPercent`) PRZESTAŁ być niezależny od nadrzędnego capu 50% —
- * cofnięto wcześniejszą decyzję z 2026-08-17, że miasto w trybie „Indywidualne"/automat może
- * przekroczyć 50%. Scenariusze 3-9 poniżej zaktualizowane, żeby dokumentować NOWE zachowanie
- * (cap 50% wszędzie); patrz też `gra/tools/praca-miasto-limit-50-cap-test.cjs` (nowy test,
- * per-city automat, dokładniejsze pokrycie tej samej decyzji).
+ * ZAKTUALIZOWANY w P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1 (2026-08-22): R-PRACA-SUWAKI-DUPLIKAT-
+ * I-CAP-MIASTO-Q1 (Wątek C) = A, ECHO właściciela 2026-08-21, OMYŁKOWO nałożyła nadrzędny cap
+ * 50% TAKŻE na niezależny historyczny budżet automatu (`clampUlepszeniaPracaPercent`, pole (b)).
+ * Ten temat naprawia tę regresję: pole (b) wraca do własnego zakresu 0-100%
+ * (`MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`), NIEZALEŻNIE od nadrzędnego capu 50% pola (a)
+ * (`clampPracaWspolnyWorekPercent`/`MAX_PRACA_WSPOLNY_WOREK_PROCENT`, scenariusze 1-2 niżej —
+ * BEZ zmian). Scenariusze 3-9 poniżej zaktualizowane, żeby dokumentować NOWE (naprawione)
+ * zachowanie (cap 100% dla pola (b)); patrz też `gra/tools/praca-miasto-limit-50-cap-test.cjs`
+ * (dokładniejsze pokrycie tego samego pola).
  * Run from gra/:  node tools/praca-limit-50-test.cjs
  */
 
@@ -36,6 +38,7 @@ export {
   clampPracaWspolnyWorekPercent,
   MAX_PRACA_WSPOLNY_WOREK_PROCENT,
   clampUlepszeniaPracaPercent,
+  MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
   DEFAULT_ULEPSZENIA_PRACA_PERCENT,
   resolveEffectiveUlepszenia,
   resolveUlepszeniaPracaPercentFromRaw,
@@ -67,6 +70,7 @@ const {
   clampPracaWspolnyWorekPercent,
   MAX_PRACA_WSPOLNY_WOREK_PROCENT,
   clampUlepszeniaPracaPercent,
+  MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
   DEFAULT_ULEPSZENIA_PRACA_PERCENT,
   resolveEffectiveUlepszenia,
   resolveUlepszeniaPracaPercentFromRaw,
@@ -102,33 +106,33 @@ console.log('2. clampPracaWspolnyWorekPercent — zakres 0-50');
   eq(clampPracaWspolnyWorekPercent(150), 50, '150 -> 50 (górny klamr — NOWY limit)');
 }
 
-// 3. clampUlepszeniaPracaPercent — od Wątku C egzekwuje TEN SAM cap 50% co clampPracaWspolnyWorekPercent
-console.log('3. clampUlepszeniaPracaPercent — od Wątku C egzekwuje cap 50% (ZMIENIONA)');
+// 3. clampUlepszeniaPracaPercent (pole b) — NAPRAWIONE: własny cap 100%, niezależny od pola (a)
+console.log('3. clampUlepszeniaPracaPercent (pole b) — własny cap 100% (P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1)');
 {
+  eq(MAX_ULEPSZENIA_PRACA_AUTO_PERCENT, 100, 'MAX_ULEPSZENIA_PRACA_AUTO_PERCENT = 100 (naprawiona regresja)');
   eq(clampUlepszeniaPracaPercent(0), 0, '0 -> 0');
-  eq(clampUlepszeniaPracaPercent(50), 50, '50 -> 50 (górny limit)');
-  eq(clampUlepszeniaPracaPercent(100), 50, '100 -> 50 (NOWY cap, dawniej 100)');
-  eq(clampUlepszeniaPracaPercent(150), 50, '150 -> 50 (NOWY cap)');
+  eq(clampUlepszeniaPracaPercent(50), 50, '50 -> 50 (wewnątrz, dawny cap pola (a))');
+  eq(clampUlepszeniaPracaPercent(100), 100, '100 -> 100 (NAPRAWIONE: znów 100, nie 50)');
+  eq(clampUlepszeniaPracaPercent(150), 100, '150 -> 100 (górny klamr własnego zakresu 0-100)');
 }
 
-// 4. Kontrast: obie funkcje limitują teraz do 50 (Wątek C ujednolicił cap)
-console.log('4. Kontrast: clampPracaWspolnyWorekPercent (50) vs clampUlepszeniaPracaPercent (teraz też 50)');
+// 4. Kontrast: pole (a) ogranicza do 50, pole (b) ma własny, niezależny zakres 0-100
+console.log('4. Kontrast: clampPracaWspolnyWorekPercent (a, 50) vs clampUlepszeniaPracaPercent (b, teraz 100)');
 {
   const testVal = 75;
-  const resultNew = clampPracaWspolnyWorekPercent(testVal);
-  const resultOld = clampUlepszeniaPracaPercent(testVal);
-  eq(resultNew, 50, `nowa funkcja: ${testVal} -> 50 (limit wspólnego worka)`);
-  eq(resultOld, 50, `historyczny automat: ${testVal} -> 50 (Wątek C = A, ujednolicony cap, dawniej 75)`);
+  const resultA = clampPracaWspolnyWorekPercent(testVal);
+  const resultB = clampUlepszeniaPracaPercent(testVal);
+  eq(resultA, 50, `pole (a) wspólny worek: ${testVal} -> 50 (bez zmian)`);
+  eq(resultB, 75, `pole (b) historyczny automat: ${testVal} -> 75 (NAPRAWIONE: niezależny zakres 0-100, nie ścinane do 50)`);
 }
 
 // 5. Scenariusz: resolveEffectiveUlepszenia() — miasto z override pracaAutoPercent=80
-// R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A: historyczny budżet automatu TERAZ
-// dziedziczy cap nadrzędnego splitu 50% — miasto w trybie „Indywidualne" nie może już go
-// obejść. Cofa decyzję z 2026-08-17 testowaną tu wcześniej.
-console.log('5. Scenariusz: resolveEffectiveUlepszenia() — override miasta z pracaAutoPercent > 50 zostaje ścięty do 50 (Wątek C = A)');
+// P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: historyczny budżet automatu (pole b) znów NIE dziedziczy
+// capu nadrzędnego splitu (a) — miasto w trybie „Indywidualne" może ponownie ustawić > 50%.
+console.log('5. Scenariusz: resolveEffectiveUlepszenia() — override miasta z pracaAutoPercent=80 NIE jest już ścinany do 50');
 {
   // Symulujemy zapis miasta, w którym historyczny automat ma ustawione 80%.
-  // Po przejściu przez resolveEffectiveUlepszenia() z override=true, cap 50% ma być wymuszony.
+  // Po przejściu przez resolveEffectiveUlepszenia() z override=true, 80% ma zostać bez zmian.
   const city = {
     id: 'test-city',
     ulepszeniaOverride: true,
@@ -144,49 +148,48 @@ console.log('5. Scenariusz: resolveEffectiveUlepszenia() — override miasta z p
     pracaAutoPercent: 33,
   };
   const effective = resolveEffectiveUlepszenia(city, empire);
-  eq(effective.pracaAutoPercent, 50, 'override miasta z 80% zostaje ścięty do 50% (cap nadrzędny, Wątek C = A)');
+  eq(effective.pracaAutoPercent, 80, 'override miasta z 80% pozostaje 80% (naprawiona regresja, cap pola (b) = 100)');
   eq(effective.override, true, 'flaga override zachowana');
 }
 
-// 6. Scenariusz: wczytanie zapisu gry — stary zapis z pracaAutoPercent=90 zostaje ścięty do 50
-console.log('6. Scenariusz: wczytanie zapisu — stary pracaAutoPercent=90 zostaje ścięty do capu 50 (migracja, Wątek C)');
+// 6. Scenariusz: wczytanie zapisu gry — stary zapis z pracaAutoPercent=90 pozostaje 90
+console.log('6. Scenariusz: wczytanie zapisu — pracaAutoPercent=90 pozostaje 90 (cap pola (b) = 100)');
 {
-  // Symulujemy wczytywanie starego zapisu gdzie pol.pracaAutoPercent = 90 (sprzed capu).
-  // Po resolveUlepszeniaPracaPercentFromRaw() + NOWYM clampie 0–50 ma wyjść 50.
+  // Symulujemy wczytywanie zapisu gdzie pol.pracaAutoPercent = 90.
+  // Po resolveUlepszeniaPracaPercentFromRaw() + clampie 0-100 (pole b) ma wyjść 90 bez zmian.
   const result = clampUlepszeniaPracaPercent(
     resolveUlepszeniaPracaPercentFromRaw(90, undefined)
   );
-  eq(result, 50, 'zapis pol.pracaAutoPercent=90 → resolveFromRaw(90) → clampTo50 (Wątek C) → 50');
+  eq(result, 90, 'zapis pol.pracaAutoPercent=90 → resolveFromRaw(90) → clamp 0-100 (pole b) → 90 (bez zmian)');
 }
 
-// 7. Scenariusz: wczytanie zapisu gry — stary perTurn=3 (migruje do 100, potem ścięty do capu)
-console.log('7. Scenariusz: wczytanie zapisu — stary perTurn=3 (100%) zostaje ścięty do capu 50 (migracja, Wątek C)');
+// 7. Scenariusz: wczytanie zapisu gry — stary perTurn=3 (migruje do 100, zostaje 100)
+console.log('7. Scenariusz: wczytanie zapisu — stary perTurn=3 (100%) zostaje 100 (cap pola (b) = 100)');
 {
   // Symulujemy wczytywanie bardzo starego zapisu gdzie perTurn=3 (=100% wg migracji).
-  // Migracja daje surowe 100, ale NOWY clamp (Wątek C) ścina do 50 przy tym samym wczytaniu.
+  // Migracja daje surowe 100, clamp 0-100 (pole b) zostawia bez zmian.
   const result = clampUlepszeniaPracaPercent(
     resolveUlepszeniaPracaPercentFromRaw(undefined, 3)
   );
-  eq(result, 50, 'zapis perTurn=3 → resolveFromRaw(undef, 3) → 100% (migracja) → clampTo50 (Wątek C) → 50');
+  eq(result, 100, 'zapis perTurn=3 → resolveFromRaw(undef, 3) → 100% (migracja) → clamp 0-100 (pole b) → 100');
 }
 
-// 8. Scenariusz: wczytanie zapisu gry — mieszany: pracaAutoPercent=60, perTurn=2, ścięte do capu
-console.log('8. Scenariusz: mieszany zapis (pracaAutoPercent ma pierwszeństwo, potem cap 50 z Wątku C)');
+// 8. Scenariusz: wczytanie zapisu gry — mieszany: pracaAutoPercent=60, perTurn=2, bez ścinania
+console.log('8. Scenariusz: mieszany zapis (pracaAutoPercent ma pierwszeństwo, cap pola (b) = 100 -> bez ścinania)');
 {
   // resolveUlepszeniaPracaPercentFromRaw daje pierwszeństwo newVal (60), ignoruje legacyPerTurn (2);
-  // NOWY clamp (Wątek C) ścina 60 -> 50.
+  // clamp 0-100 (pole b) zostawia 60 bez zmian.
   const result = clampUlepszeniaPracaPercent(
     resolveUlepszeniaPracaPercentFromRaw(60, 2)
   );
-  eq(result, 50, 'zapis (pracaAutoPercent=60, perTurn=2) → 60 → clampTo50 (Wątek C) → 50');
+  eq(result, 60, 'zapis (pracaAutoPercent=60, perTurn=2) → 60 → clamp 0-100 (pole b) → 60 (bez zmian)');
 }
 
 // 9. Scenariusz: ensureCitySaveDefaults() — migracja miasta z override + wysokim ulepszeniaPracaPercent
-console.log('9. Scenariusz: ensureCitySaveDefaults() — migracja TERAZ przenosi cap 50% do automatu (Wątek C = A)');
+console.log('9. Scenariusz: ensureCitySaveDefaults() — migracja NIE przenosi już capu 50% na pole (b)');
 {
-  // Symulujemy miasto z ulepszeniaOverride=true i historycznym automatem ustawionym na 80%
-  // (istniejący zapis sprzed tej decyzji). Po ensureCitySaveDefaults() ma zostać ścięte do 50 —
-  // to jest dokładnie migracja save/load, o którą prosiło ECHO właściciela.
+  // Symulujemy miasto z ulepszeniaOverride=true i historycznym automatem ustawionym na 80%.
+  // Po ensureCitySaveDefaults() ma zostać bez zmian (80) — naprawiona regresja pola (b).
   const city = {
     id: 'migrate-test-city',
     q: 0,
@@ -198,7 +201,7 @@ console.log('9. Scenariusz: ensureCitySaveDefaults() — migracja TERAZ przenosi
     ulepszeniaPracaPercent: 80,
   };
   ensureCitySaveDefaults(city);
-  eq(city.ulepszeniaPracaPercent, 50, 'ensureCitySaveDefaults() TERAZ przenosi cap 50% do automatu (Wątek C = A)');
+  eq(city.ulepszeniaPracaPercent, 80, 'ensureCitySaveDefaults() NIE ścina już do 50% (pole (b) ma własny cap 100)');
   assert(city.ulepszeniaOverride === true, 'flaga override zachowana po ensureCitySaveDefaults()');
 }
 

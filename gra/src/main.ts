@@ -19074,9 +19074,9 @@ async function boot(): Promise<void> {
           },
           onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
             const pol = ulepszeniaEmpireForOwner(0);
-            // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A: historyczny suwak
-            // automatu teraz respektuje ten sam nadrzędny cap co ownerDefaultPracaSplit —
-            // clampUlepszeniaPracaPercent clampuje do MAX_PRACA_WSPOLNY_WOREK_PROCENT.
+            // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: historyczny suwak automatu (pole (b))
+            // ma własny zakres 0–100% — clampUlepszeniaPracaPercent clampuje do
+            // MAX_ULEPSZENIA_PRACA_AUTO_PERCENT, niezależnie od ownerDefaultPracaSplit (a).
             pol.pracaAutoPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             pol.tryb = 'auto';
             ulepszeniaEmpireByOwner.set(0, pol);
@@ -31723,11 +31723,9 @@ async function boot(): Promise<void> {
             focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
             onlyWorked: (pol.onlyWorked as boolean) ?? false,
-            // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A: od tej decyzji
-            // clampUlepszeniaPracaPercent egzekwuje nadrzędny cap (MAX_PRACA_WSPOLNY_WOREK_PROCENT).
-            // Stary save z wartością >50% (np. legacy perTurn=3 → 100%, albo empire >50% z
-            // czasów przed tą decyzją) zostaje tu ścięty do capu przy wczytaniu — zgodnie z ECHO
-            // właściciela (`docs/decyzje/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1.md`).
+            // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: clampUlepszeniaPracaPercent egzekwuje
+            // własny zakres 0–100% (MAX_ULEPSZENIA_PRACA_AUTO_PERCENT) dla tego historycznego
+            // pola (b) — stary save (np. legacy perTurn=3 → 100%) nie jest tu ścinany do 50%.
             pracaAutoPercent: clampUlepszeniaPracaPercent(
               resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
             ),
