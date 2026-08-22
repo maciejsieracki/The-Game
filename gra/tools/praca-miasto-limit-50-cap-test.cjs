@@ -1,20 +1,22 @@
 'use strict';
 /**
- * praca-miasto-limit-50-cap-test.cjs — R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C) = A,
- * ECHO właściciela 2026-08-21 (`docs/decyzje/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1.md`).
+ * praca-miasto-limit-50-cap-test.cjs — P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1.
  *
- * Analogiczny do `gra/tools/praca-limit-50-test.cjs`, ale skupiony WYŁĄCZNIE na ścieżce
- * "historyczny automat" per-miasto (kontrolka #3 z reconu 01-operator.md: miasto w trybie
- * „Indywidualne" / `ulepszeniaEmpireByOwner.pracaAutoPercent` / `city.ulepszeniaPracaPercent`).
- * Dokumentuje, że ta kontrolka NIE MOŻE już pozwolić miastu (ani globalnemu automatowi
- * imperium) ustawić więcej niż `MAX_PRACA_WSPOLNY_WOREK_PROCENT` (dziś 50%) na ulepszenia —
- * ten sam cap, jaki obowiązuje suwak #1/#2 (`clampPracaWspolnyWorekPercent`).
+ * Naprawia regresję z R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C = A, ECHO
+ * właściciela 2026-08-21, `docs/decyzje/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1.md`), która
+ * OMYŁKOWO nałożyła nadrzędny cap cywilizacji `MAX_PRACA_WSPOLNY_WOREK_PROCENT` (50%) TAKŻE
+ * na niezależne pole (b) — historyczny budżet automatu ulepszeń per-miasto/imperium
+ * (`ulepszeniaEmpireByOwner.pracaAutoPercent` / `city.ulepszeniaPracaPercent`, kontrolka #3 z
+ * reconu 01-operator.md, suwak „Automatyzacja ulepszeń terenu → Ręczny"). To pole NIE dzieli
+ * clampu z polem (a) `EmpirePracaSplit.procentUlepszenia` (suwak #1/#2,
+ * `clampPracaWspolnyWorekPercent`) — od tego tematu ma znów własny zakres 0–100%
+ * (`MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`).
  *
- * `praca-limit-50-test.cjs` (istniejący, zaktualizowany w tej samej rundzie) pilnuje tego
- * samego zachowania z perspektywy "dawna decyzja się zmieniła" (kontrast starych/nowych
- * wartości granicznych); ten plik jest nowy i pilnuje go z perspektywy "pełne pokrycie ścieżki
- * per-city automat + empire automat + granice + save/load", żeby żaden przyszły refaktor nie
- * mógł po cichu przywrócić 0–100% w jednym miejscu, a zapomnieć o drugim.
+ * `praca-limit-50-test.cjs` (scenariusze 3–9, zaktualizowany w tej samej rundzie) pilnuje tego
+ * samego zachowania z perspektywy "dawna decyzja się zmieniła"; ten plik pilnuje go z
+ * perspektywy "pełne pokrycie ścieżki per-city automat + empire automat + granice + save/load"
+ * dla pola (b), żeby żaden przyszły refaktor nie mógł po cichu z powrotem złączyć clampu (b)
+ * z clampem (a).
  *
  * Run from gra/:  node tools/praca-miasto-limit-50-cap-test.cjs
  */
@@ -39,6 +41,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.praca-miasto-limit-50-cap-test-bun
 const ENTRY_TS = `
 export {
   clampUlepszeniaPracaPercent,
+  MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
   MAX_PRACA_WSPOLNY_WOREK_PROCENT,
   clampPracaWspolnyWorekPercent,
   resolveEffectiveUlepszenia,
@@ -69,6 +72,7 @@ try {
 
 const {
   clampUlepszeniaPracaPercent,
+  MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
   MAX_PRACA_WSPOLNY_WOREK_PROCENT,
   clampPracaWspolnyWorekPercent,
   resolveEffectiveUlepszenia,
@@ -97,30 +101,33 @@ function freshCity(overrides) {
   };
 }
 
-console.log('1. Cap współdzielony: MAX_PRACA_WSPOLNY_WOREK_PROCENT jest tym samym górnym limitem dla obu kontrolek');
+console.log('1. Cap NIEwspółdzielony: pole (b) ma własny zakres 0-100%, pole (a) zostaje przy 50%');
 {
-  eq(MAX_PRACA_WSPOLNY_WOREK_PROCENT, 50, 'stała capu = 50');
-  eq(clampPracaWspolnyWorekPercent(80), MAX_PRACA_WSPOLNY_WOREK_PROCENT, 'suwak #1/#2 ścina 80 do capu');
-  eq(clampUlepszeniaPracaPercent(80), MAX_PRACA_WSPOLNY_WOREK_PROCENT, 'automat (kontrolka #3) ścina 80 do TEGO SAMEGO capu');
+  eq(MAX_PRACA_WSPOLNY_WOREK_PROCENT, 50, 'stała capu pola (a) = 50 — bez zmian');
+  eq(MAX_ULEPSZENIA_PRACA_AUTO_PERCENT, 100, 'stała capu pola (b) = 100 (naprawiona regresja)');
+  eq(clampPracaWspolnyWorekPercent(80), MAX_PRACA_WSPOLNY_WOREK_PROCENT, 'suwak #1/#2 (a) nadal ścina 80 do 50');
+  eq(clampUlepszeniaPracaPercent(80), 80, 'automat (b, kontrolka #3) NIE ścina 80 — wewnątrz 0-100%');
 }
 
-console.log('2. clampUlepszeniaPracaPercent — pełny zakres graniczny 0..150');
+console.log('2. clampUlepszeniaPracaPercent (pole b) — pełny zakres graniczny 0..150');
 {
   eq(clampUlepszeniaPracaPercent(-10), 0, '-10 -> 0');
   eq(clampUlepszeniaPracaPercent(0), 0, '0 -> 0');
   eq(clampUlepszeniaPracaPercent(1), 1, '1 -> 1 (wewnątrz)');
   eq(clampUlepszeniaPracaPercent(49), 49, '49 -> 49 (wewnątrz)');
-  eq(clampUlepszeniaPracaPercent(50), 50, '50 -> 50 (dokładnie na capie)');
-  eq(clampUlepszeniaPracaPercent(51), 50, '51 -> 50 (jeden punkt powyżej capu — ścięte)');
-  eq(clampUlepszeniaPracaPercent(70), 50, '70 -> 50 (zrzut ekranu właściciela: miasto 70/30)');
-  eq(clampUlepszeniaPracaPercent(100), 50, '100 -> 50');
-  eq(clampUlepszeniaPracaPercent(150), 50, '150 -> 50');
+  eq(clampUlepszeniaPracaPercent(50), 50, '50 -> 50 (dawny cap, teraz zwykła wartość wewnątrz)');
+  eq(clampUlepszeniaPracaPercent(51), 51, '51 -> 51 (powyżej dawnego capu — już nieścinane)');
+  eq(clampUlepszeniaPracaPercent(70), 70, '70 -> 70 (zrzut ekranu właściciela: miasto 70/30 — dozwolone)');
+  eq(clampUlepszeniaPracaPercent(99), 99, '99 -> 99 (wewnątrz)');
+  eq(clampUlepszeniaPracaPercent(100), 100, '100 -> 100 (na nowym capie)');
+  eq(clampUlepszeniaPracaPercent(101), 100, '101 -> 100 (jeden punkt powyżej nowego capu — ścięte)');
+  eq(clampUlepszeniaPracaPercent(150), 100, '150 -> 100');
 }
 
-console.log('3. Miasto w trybie „Indywidualne" (override) NIE może przekroczyć capu — pełny zakres wartości');
+console.log('3. Miasto w trybie „Indywidualne" (override) — pełny zakres 0-100%, bez ścinania do 50');
 {
   const empire = { ...freshUlepszeniaEmpirePolicy(), pracaAutoPercent: 33 };
-  for (const raw of [0, 10, 49, 50, 51, 60, 70, 80, 99, 100, 150]) {
+  for (const raw of [0, 10, 49, 50, 51, 60, 70, 80, 99, 100]) {
     const city = freshCity({
       ulepszeniaOverride: true,
       ulepszeniaFocus: 'produkcja',
@@ -129,42 +136,51 @@ console.log('3. Miasto w trybie „Indywidualne" (override) NIE może przekroczy
       ulepszeniaPracaPercent: raw,
     });
     const effective = resolveEffectiveUlepszenia(city, empire);
-    const expected = Math.min(raw, MAX_PRACA_WSPOLNY_WOREK_PROCENT);
-    eq(effective.pracaAutoPercent, expected,
-      `override miasta ${raw}% -> efektywne ${expected}% (cap ${MAX_PRACA_WSPOLNY_WOREK_PROCENT}%)`);
+    eq(effective.pracaAutoPercent, raw,
+      `override miasta ${raw}% -> efektywne ${raw}% (bez ścinania, cap pola (b) = 100%)`);
     eq(effective.override, true, `override miasta ${raw}%: flaga override zachowana`);
   }
+  const cityAbove = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 150 });
+  eq(resolveEffectiveUlepszenia(cityAbove, empire).pracaAutoPercent, 100,
+    'override miasta 150% (poza zakresem) -> ścięte do 100%, nie do 50%');
 }
 
-console.log('4. Miasto BEZ override dziedziczy politykę imperium — polityka imperium też ma teraz cap');
+console.log('4. Miasto BEZ override dziedziczy politykę imperium — polityka imperium ma teraz cap 100%');
 {
   const empireOver = { ...freshUlepszeniaEmpirePolicy(), pracaAutoPercent: clampUlepszeniaPracaPercent(90) };
-  eq(empireOver.pracaAutoPercent, 50, 'polityka imperium ustawiana przez clampUlepszeniaPracaPercent też ścięta do 50');
+  eq(empireOver.pracaAutoPercent, 90, 'polityka imperium 90% NIE jest ścinana (wewnątrz 0-100%)');
   const city = freshCity({ ulepszeniaOverride: false });
   const effective = resolveEffectiveUlepszenia(city, empireOver);
-  eq(effective.pracaAutoPercent, 50, 'miasto bez override dziedziczy ścięte 50% imperium');
+  eq(effective.pracaAutoPercent, 90, 'miasto bez override dziedziczy 90% imperium bez ścinania');
   eq(effective.override, false, 'flaga override = false zachowana');
+
+  const empireOverCap = { ...freshUlepszeniaEmpirePolicy(), pracaAutoPercent: clampUlepszeniaPracaPercent(150) };
+  eq(empireOverCap.pracaAutoPercent, 100, 'polityka imperium 150% (poza zakresem) -> ścięta do 100%');
 }
 
-console.log('5. Zrzuty ekranu właściciela: 70/30 i 30/70 — obie strony >50% ulepszeń zostają ścięte do 50');
+console.log('5. Zrzuty ekranu właściciela: 70/30 i 30/70 — pole (b) dopuszcza obie strony bez ścinania');
 {
   const empire = { ...freshUlepszeniaEmpirePolicy(), pracaAutoPercent: 33 };
   const city70 = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 70 });
-  eq(resolveEffectiveUlepszenia(city70, empire).pracaAutoPercent, 50, 'miasto 70% ulepszeń -> ścięte do 50%');
-  // "30%/70%" z opisu właściciela to 30% ulepszeń / 70% budynków — to WEWNĄTRZ capu, bez zmian.
+  eq(resolveEffectiveUlepszenia(city70, empire).pracaAutoPercent, 70,
+    'miasto 70% ulepszeń -> bez zmian (dawny błąd ścinał to do 50%)');
   const city30 = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 30 });
-  eq(resolveEffectiveUlepszenia(city30, empire).pracaAutoPercent, 30, 'miasto 30% ulepszeń (wewnątrz capu) -> bez zmian');
+  eq(resolveEffectiveUlepszenia(city30, empire).pracaAutoPercent, 30, 'miasto 30% ulepszeń (wewnątrz) -> bez zmian');
 }
 
-console.log('6. Migracja save/load — override miasta >50% z zapisu sprzed tej decyzji zostaje ścięty przy wczytaniu');
+console.log('6. Migracja save/load — override miasta >50% z zapisu NIE jest już ścinany do 50% (tylko do 100%)');
 {
-  const savedOverCap = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 80 });
-  ensureCitySaveDefaults(savedOverCap);
-  eq(savedOverCap.ulepszeniaPracaPercent, 50, 'ensureCitySaveDefaults: zapis z 80% -> ścięty do 50% przy migracji');
+  const savedOverOldCap = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 80 });
+  ensureCitySaveDefaults(savedOverOldCap);
+  eq(savedOverOldCap.ulepszeniaPracaPercent, 80, 'ensureCitySaveDefaults: zapis z 80% -> bez zmian (naprawiona regresja)');
 
-  const savedAtCap = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 50 });
-  ensureCitySaveDefaults(savedAtCap);
-  eq(savedAtCap.ulepszeniaPracaPercent, 50, 'ensureCitySaveDefaults: zapis dokładnie na capie -> bez zmian');
+  const savedAt100 = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 100 });
+  ensureCitySaveDefaults(savedAt100);
+  eq(savedAt100.ulepszeniaPracaPercent, 100, 'ensureCitySaveDefaults: zapis dokładnie na nowym capie (100%) -> bez zmian');
+
+  const savedAboveNewCap = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 150 });
+  ensureCitySaveDefaults(savedAboveNewCap);
+  eq(savedAboveNewCap.ulepszeniaPracaPercent, 100, 'ensureCitySaveDefaults: zapis 150% -> ścięty do 100%');
 
   const savedUnderCap = freshCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 20 });
   ensureCitySaveDefaults(savedUnderCap);
@@ -173,16 +189,16 @@ console.log('6. Migracja save/load — override miasta >50% z zapisu sprzed tej 
   // Bardzo stary zapis: tylko legacy `ulepszeniaPerTurn=3` (=100% wg migracji), bez nowego pola.
   const savedLegacy = freshCity({ ulepszeniaOverride: true, ulepszeniaPerTurn: 3 });
   ensureCitySaveDefaults(savedLegacy);
-  eq(savedLegacy.ulepszeniaPracaPercent, 50,
-    'ensureCitySaveDefaults: legacy perTurn=3 (100% po migracji) -> ścięty do 50% (Wątek C = A)');
+  eq(savedLegacy.ulepszeniaPracaPercent, 100,
+    'ensureCitySaveDefaults: legacy perTurn=3 (100% po migracji) -> zostaje 100%, nie jest ścinane do 50%');
 }
 
 console.log('7. resolveUlepszeniaPracaPercentFromRaw + clamp — kompozycja jak przy wczytaniu polityki imperium z zapisu');
 {
-  eq(clampUlepszeniaPracaPercent(resolveUlepszeniaPracaPercentFromRaw(90, undefined)), 50,
-    'zapis imperium pracaAutoPercent=90 -> ścięty do 50 przy wczytaniu');
-  eq(clampUlepszeniaPracaPercent(resolveUlepszeniaPracaPercentFromRaw(undefined, 3)), 50,
-    'zapis imperium legacy perTurn=3 (100%) -> ścięty do 50 przy wczytaniu');
+  eq(clampUlepszeniaPracaPercent(resolveUlepszeniaPracaPercentFromRaw(90, undefined)), 90,
+    'zapis imperium pracaAutoPercent=90 -> bez zmian przy wczytaniu (wewnątrz 0-100%)');
+  eq(clampUlepszeniaPracaPercent(resolveUlepszeniaPracaPercentFromRaw(undefined, 3)), 100,
+    'zapis imperium legacy perTurn=3 (100%) -> pozostaje 100 przy wczytaniu');
   eq(clampUlepszeniaPracaPercent(resolveUlepszeniaPracaPercentFromRaw(45, 3)), 45,
     'zapis imperium pracaAutoPercent=45 (pierwszeństwo, wewnątrz capu) -> bez zmian');
 }
