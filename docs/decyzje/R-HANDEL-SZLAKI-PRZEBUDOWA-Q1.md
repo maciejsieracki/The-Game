@@ -169,3 +169,20 @@ porównania dochodu obu wariantów.
 | T6 | UI per-trasa pełny rozkład dochodu (dystans + 5%, wskazanie gdy 5% czeka na budynek) | T1, T2, T4 | `empireDetailPanel.ts`, `main.ts::buildEmpireTradeSnap()` |
 
 Kolejność bezpieczna: T1 → T2 → T2b → T3 → T4 → T6. Bez osobnego T5 (zamknięte ECHO=bez zmian).
+
+## Postęp implementacji
+
+- **T1 — ZINTEGROWANE (2026-08-22).** Dispatch przez Workflow (Operator→Evaluator→Final
+  Control, wszystkie PASS, run `wf_e9da30e1-0e2`, branch `autobot/HANDEL-SZLAKI-T1`).
+  `tradeRouteDistanceIncome()` przebudowany: `dochodPodloga=5`, `dochodSzczyt=40`,
+  osobna stawka wzrostu per medium (ląd `(40-5)/12≈2.9167`, morze `(40-5)/20=1.75`),
+  clamp `[5,40]`. Zaktualizowano też `econ-params.json` (usunięto stare
+  `dochod_bazowy`/`dochod_na_dystans`, żeby nie nadpisywały cicho nowej formuły).
+  Niezależnie zweryfikowane przez orkiestratora po zmergowaniu do `main`
+  (fast-forward, commit `65315319`): `tsc --noEmit` czyste, `vite build` OK,
+  wszystkie testy handel/econ zgodne z raportami trzech agentów (te same
+  pre-istniejące, niezwiązane FAIL w `trade-routes-income-test.cjs`/H2 i
+  `trade-ilosc-test.cjs`), 5 bramek referencyjnych zielone. Wypchnięte do
+  `origin/main`. Zakres T2/T2b/T3/T4/T6 nietknięty.
+- **T2 — dispatchowane** (bonus morski ×2 + priorytet lądu w `detectBestConnection`),
+  wynik w kolejnej turze.
