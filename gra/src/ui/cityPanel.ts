@@ -4746,6 +4746,14 @@ function buildPracaDetailCard(
   return card;
 }
 
+/**
+ * P-PRACA-PANEL-IKONY-NIESPOJNE-Q1 (Maciej 2026-08-22, ECHO (a)+(b)): pojęcie „Ulepszenia" miało
+ * w tym panelu DWIE różne ikony — `tb-build` (młotek) tutaj i `chip-crate` (skrzynka) w
+ * `renderPodzialPracy()` niżej (dodane `bd03ed3e`). Ujednolicone do `chip-crate` we WSZYSTKICH
+ * wystąpieniach; ikony zostają (właściciel odrzucił wariant czysto tekstowy).
+ * Uwaga przy edycji: „Ulepszenia" = pula Pracy imperium (skrzynka/zapas), a nie akt budowania —
+ * młotek `tb-build`/`res-work` jest zarezerwowany dla samego surowca Praca.
+ */
 function appendPodzialPracyInfo(
   mount: HTMLElement,
   city: City,
@@ -4765,7 +4773,7 @@ function appendPodzialPracyInfo(
   chips.innerHTML =
     statChipBrand('res-work', 'Miasto', praca ? signed(praca.total) : '—', 'gold') +
     statChipBrand('cp-buildings', 'Budynki', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
-    statChipBrand('tb-build', 'Ulepszenia', praca ? `+${praca.doUlepszen}` : '—', 'blue');
+    statChipBrand('chip-crate', 'Ulepszenia', praca ? `+${praca.doUlepszen}` : '—', 'blue');
   mount.appendChild(chips);
 
   const info = el('div', 'praca-split-info');
@@ -4799,7 +4807,7 @@ function appendPodzialPracyInfo(
   const rowPool = el('div', 'psi-row');
   const poolTip = `Zapas całej cywilizacji: ${pool} Pracy · załóż miasto, ulepszenia / projekty mapy`;
   rowPool.innerHTML =
-    `<span class="psi-lbl">${psiRowLabel('tb-build', 'Ulepszenia', poolTip)}</span>` +
+    `<span class="psi-lbl">${psiRowLabel('chip-crate', 'Ulepszenia', poolTip)}</span>` +
     `<span class="psi-val blue">${praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
     `<div class="psi-sub">Zapas Pracy na ulepszenia pól: ${pool}${cityPanelChipIconWrap('res-work', 14)} · farma, kamieniołom, projekty mapy</div></span>`;
   info.appendChild(rowPool);

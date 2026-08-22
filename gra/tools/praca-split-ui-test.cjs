@@ -77,5 +77,35 @@ check('sygnał "Ulepszenia" na samej górze panelu miasta', citySource.includes(
 check('dwie kolumny Budynki/Ulepszenia w panelu miasta (Wątek F)', citySource.includes("el('div', 'praca-split-col left')") && citySource.includes("el('div', 'praca-split-col right')"));
 check('nazwa "Pula Pracy" usunięta z suwaka miasta (zastąpiona "Ulepszenia", Wątek F)', !citySource.includes('Pula Pracy 0–50% (lokalnie)'));
 
+// P-PRACA-PANEL-IKONY-NIESPOJNE-Q1 (Maciej 2026-08-22, ECHO): jedno pojęcie = jedna ikona.
+// „Ulepszenia" w panelu miasta „PODZIAŁ PRACY" miało dwie różne ikony — `tb-build` (młotek,
+// appendPodzialPracyInfo) i `chip-crate` (skrzynka, renderPodzialPracy). ECHO właściciela:
+// wszędzie `chip-crate`, ikony zostają (bez przejścia na czysty tekst).
+check(
+  'chip „Ulepszenia" w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)',
+  citySource.includes("statChipBrand('chip-crate', 'Ulepszenia'"),
+);
+check(
+  'wiersz info „Ulepszenia" w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)',
+  citySource.includes("psiRowLabel('chip-crate', 'Ulepszenia'"),
+);
+// Kontrakt anty-regresowy: ŻADNE wystąpienie etykiety „Ulepszenia" w cityPanel.ts nie może
+// wrócić do `tb-build` ani do jakiejkolwiek innej ikony niż `chip-crate`.
+{
+  const ulepszeniaIcons = [...citySource.matchAll(/'([a-z0-9-]+)',\s*(?:'Ulepszenia'|13\)\} Ulepszenia|16\)\} Ulepszenia)/g)]
+    .map((m) => m[1]);
+  const wrapIcons = [...citySource.matchAll(/cityPanelChipIconWrap\('([a-z0-9-]+)',\s*\d+\)\}\s*Ulepszenia/g)]
+    .map((m) => m[1]);
+  const all = [...ulepszeniaIcons, ...wrapIcons];
+  check(
+    `wszystkie ikony przy etykiecie „Ulepszenia" to chip-crate (znaleziono: ${all.join(', ') || 'brak'})`,
+    all.length >= 4 && all.every((id) => id === 'chip-crate'),
+  );
+}
+check(
+  'młotek tb-build nie jest już użyty przy „Ulepszenia" w cityPanel.ts',
+  !/tb-build'[^\n]*Ulepszenia/.test(citySource) && !/Ulepszenia[^\n]*'tb-build/.test(citySource),
+);
+
 console.log(`\n[praca-split-ui-test] ${pass} pass, ${fail} fail`);
 if (fail > 0) process.exit(1);
