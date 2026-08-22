@@ -162,7 +162,12 @@ function ensureStyles(): void {
 .civ-build-item.locked{opacity:.48;cursor:help;}
 .civ-build-item.locked:hover{background:rgba(232,176,74,.08);border-color:rgba(232,176,74,.35);}
 .civ-build-item.locked .meta{color:#c9a060;font-size:8px;max-width:95px;text-align:right;line-height:1.2;}
-.civ-build-lock-tip{position:fixed;z-index:320;max-width:480px;padding:16px 20px;
+/* box-sizing jawnie w regule (nie tylko z globalnego gwiazdkowego resetu w index.html) —
+   showLockTip() liczy pozycję z offsetWidth, więc padding MUSI mieścić się w max-width,
+   inaczej tooltip wychodzi 42px szerszy niż wolny pas obok listy i znów ją zasłania.
+   max-height + overflow:hidden — twardy limit dla skrajnie długiego lockHintu. */
+.civ-build-lock-tip{position:fixed;z-index:320;box-sizing:border-box;max-width:480px;
+  max-height:calc(100vh - 16px);overflow:hidden;padding:16px 20px;
   background:rgba(24,16,8,.96);border:1px solid rgba(232,176,74,.5);border-radius:12px;
   font:22px/1.35 'Segoe UI',Tahoma,sans-serif;color:#ffe8c0;pointer-events:none;
   box-shadow:0 8px 32px rgba(0,0,0,.55);display:none;}
@@ -331,12 +336,59 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     unbindOutside = () => document.removeEventListener('pointerdown', onPointer, true);
   }
 
+  /**
+   * Pozycjonowanie tooltipa blokady — flip/clamp wzorem `techTreeView.ts::showCardFor()`
+   * (pomiar `offsetWidth/offsetHeight`, flip przy braku miejsca, clamp do viewportu),
+   * rozszerzony o JEDEN dodatkowy warunek wymuszony przez kontekst tego HUD-a:
+   * anchorem jest wiersz PRZEWIJANEJ listy `.civ-build-panel`, więc sam clamp do
+   * viewportu nie wystarcza — tooltip musi wylądować poza prostokątem CAŁEJ listy,
+   * inaczej (stary sztywny `left = r.left - 250`, przy `max-width:480px`) rozlewa się
+   * z powrotem na panel i zasłania wiersze pod/nad triggerem.
+   * Dlatego kotwicą poziomą jest rect PANELU, nie rect wiersza.
+   */
   function showLockTip(text: string, anchor: HTMLElement): void {
     lockTip.textContent = '🔒 ' + text;
     lockTip.style.display = 'block';
+    // Reset PRZED pomiarem: dla elementu `position:fixed` szerokość shrink-to-fit jest
+    // ograniczona przez `viewport - left`, więc pozostałość po poprzednim hoverze (albo
+    // po zmianie rozmiaru okna) zaniża `offsetWidth` i cała arytmetyka niżej liczy się
+    // ze złej szerokości — tooltip ląduje wtedy z powrotem na liście.
+    lockTip.style.left = '0px';
+    lockTip.style.top = '0px';
+
+    const pad = 8;   // margines od krawędzi viewportu
+    const gap = 12;  // odstęp tooltip ↔ panel (jak `+12` w techTreeView.ts)
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
     const r = anchor.getBoundingClientRect();
-    lockTip.style.left = Math.max(8, r.left - 250) + 'px';
-    lockTip.style.top = r.top + 'px';
+    const panel = el.getBoundingClientRect();
+    // Panel może być jeszcze niezmierzony (width 0) — wtedy fallback na rect wiersza.
+    const listLeft = panel.width > 0 ? panel.left : r.left;
+    const listRight = panel.width > 0 ? panel.right : r.right;
+
+    // Szerokość ograniczona do wolnego pasa NA LEWO od listy — gwarantuje, że tooltip
+    // fizycznie nie ma jak nachodzić na wiersze (bazowe 480px z CSS jako górny limit).
+    const spaceLeft = listLeft - gap - pad;
+    const spaceRight = vw - listRight - gap - pad;
+    const useLeftSide = spaceLeft >= spaceRight;
+    const avail = Math.max(160, Math.floor(useLeftSide ? spaceLeft : spaceRight));
+    lockTip.style.maxWidth = Math.min(480, avail) + 'px';
+
+    const tw = lockTip.offsetWidth;
+    const th = lockTip.offsetHeight;
+
+    // Poziomo: domyślnie na lewo od całej listy, flip na prawo gdy tam ciasno.
+    let x = useLeftSide ? listLeft - tw - gap : listRight + gap;
+    if (x + tw > vw - pad) x = vw - tw - pad;
+    if (x < pad) x = pad;
+
+    // Pionowo: start przy wierszu-triggerze, clamp do dołu i góry viewportu.
+    let y = r.top;
+    if (y + th > vh - pad) y = vh - th - pad;
+    if (y < pad) y = pad;
+
+    lockTip.style.left = x + 'px';
+    lockTip.style.top = y + 'px';
   }
   function hideLockTip(): void {
     lockTip.style.display = 'none';
