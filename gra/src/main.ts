@@ -13033,7 +13033,7 @@ async function boot(): Promise<void> {
         const fromName = from?.name ?? route.fromCityId;
         const toName = to?.name ?? route.toCityId;
         const civLabel = ownerDiploLabel(route.toOwnerId);
-        const income = tradeRouteDistanceIncome(route.dystans, incomeParams);
+        const income = tradeRouteDistanceIncome(route.dystans, route.medium, incomeParams);
         const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
         showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
         pushOnce({
@@ -13880,7 +13880,7 @@ async function boot(): Promise<void> {
           // (ta sama formuła co niżej przy `handelIncome`, patrz komentarz tam) —
           // inaczej trzy miejsca pokazywałyby trzy różne liczby dla tego samego dochodu.
           const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
-          const base = tradeRouteDistanceIncome(r.dystans, incomeParams);
+          const base = tradeRouteDistanceIncome(r.dystans, r.medium, incomeParams);
           const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
           return {
             id: r.id,
@@ -15612,7 +15612,7 @@ async function boot(): Promise<void> {
         // CUDA-HANDEL-01: chip HUD musi odzwierciedlać ten sam bonus % cudów, co
         // realny wpis do skarbca (tradeIncomeByCity) — inaczej HUD i skarbiec by się rozjechały.
         const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
-        const base = tradeRouteDistanceIncome(r.dystans, handelIncomeParams);
+        const base = tradeRouteDistanceIncome(r.dystans, r.medium, handelIncomeParams);
         handelIncome += bonus === 0 ? base : Math.floor(base * (1 + bonus));
         handelRouteCount++;
       }

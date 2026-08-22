@@ -750,33 +750,54 @@ export function refreshTradeRoutes(
 
 /** Parametry dochodu dystansowego (data/econ-params.json, blok "handel_szlaki"). */
 export interface TradeRouteIncomeParams {
-  /** Dochód (pieniądz) trasy przy dystansie 0. */
-  dochodBazowy: number;
-  /** Ile pieniędzy odejmujemy za każdy heks dystansu. */
-  dochodNaDystans: number;
-  /** Podłoga dochodu — aktywna trasa nigdy nie daje mniej niż to. */
+  /** Dochód (pieniądz) trasy przy dystansie 0 — dolna podłoga wzoru. */
   dochodPodloga: number;
+  /** Dochód (pieniądz) trasy przy dystansie = maxDist DLA DANEGO MEDIUM — szczyt wzoru. */
+  dochodSzczyt: number;
+  /** Maks. dystans heksowy dla szlaku lądowego (ten sam parametr geografii co TradeRouteParams). */
+  ladMaxDist: number;
+  /** Maks. dystans heksowy dla szlaku morskiego (ten sam parametr geografii co TradeRouteParams). */
+  morzeMaxDist: number;
 }
 
 /**
- * Wartości domyślne (gdy econ-params.json niedostępny / brak kluczy) — dobrane
- * ostrożnie: przy typowym dystansie sąsiednich miast (kilka-kilkanaście heksów)
- * dochód jest zauważalny, ale niedominujący względem Handlu z pól/budynków;
- * właściciel dostroi w panelu Excel (gen-panel-*.py), to placeholder startowy.
+ * Wartości domyślne (gdy econ-params.json niedostępny / brak kluczy).
+ *
+ * PRZEBUDOWA R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, ECHO właściciela 2026-08-21:
+ * zasada odwrócona (dochód ROŚNIE z dystansem, nie maleje) + stawki ×5.
+ * Derywacja (patrz T1 w docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md):
+ *   - stary floor=1 ×5 -> nowa PODŁOGA=5 (dystans=0).
+ *   - stary bazowy=8 ×5 -> nowy SZCZYT=40 (dystans=maxDist DLA DANEGO MEDIUM).
+ *   - Q1: zakres odwrócenia OSOBNY per medium — najdalsza trasa lądowa
+ *     (ladMaxDist=12) i najdalsza trasa morska (morzeMaxDist=20) dają
+ *     IDENTYCZNY szczytowy dochód (40), mimo różnych maxDist -> stawka
+ *     wzrostu per heks jest inna dla lądu ((40-5)/12) i morza ((40-5)/20).
  */
 export const DEFAULT_TRADE_ROUTE_INCOME_PARAMS: TradeRouteIncomeParams = {
-  dochodBazowy: 8,
-  dochodNaDystans: 0.4,
-  dochodPodloga: 1,
+  dochodPodloga: 5,
+  dochodSzczyt: 40,
+  ladMaxDist: 12,
+  morzeMaxDist: 20,
 };
 
-/** Wzór dystansowy (Q7=A, decyzja właściciela 2026-07-20): bazowy − dystans×wspolczynnik, z podłogą. */
+/**
+ * Wzór dystansowy (przebudowa ECHO Q1 + p.3, 2026-08-21): dochód ROŚNIE liniowo
+ * z dystansem, od dochodPodloga (dystans=0) do dochodSzczyt (dystans=maxDist
+ * WŁAŚCIWEGO DLA TEGO MEDIUM — ląd vs morze mają osobne maxDist, ale ten sam
+ * szczyt). Wynik zawsze przycięty do [dochodPodloga, dochodSzczyt] (clamp),
+ * na wypadek dystansu spoza [0, maxDist] (nie powinien się zdarzyć w praktyce,
+ * bo geometria trasy jest ograniczona osobnym progiem, ale funkcja jest pure
+ * i nie zakłada tego u wywołującego).
+ */
 export function tradeRouteDistanceIncome(
   dystans: number,
+  medium: TradeRouteMedium,
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 ): number {
-  const raw = params.dochodBazowy - dystans * params.dochodNaDystans;
-  return Math.max(params.dochodPodloga, Math.floor(raw));
+  const maxDist = medium === 'lad' ? params.ladMaxDist : params.morzeMaxDist;
+  const stawkaWzrostu = (params.dochodSzczyt - params.dochodPodloga) / maxDist;
+  const raw = params.dochodPodloga + dystans * stawkaWzrostu;
+  return Math.min(params.dochodSzczyt, Math.max(params.dochodPodloga, Math.floor(raw)));
 }
 
 interface RawEconParamsJsonTradeIncome {
@@ -785,7 +806,7 @@ interface RawEconParamsJsonTradeIncome {
 
 /**
  * Wczytaj TradeRouteIncomeParams z surowego econ-params.json (grupa "handel_szlaki",
- * te same trzy klucze na wszystkich poziomach trudności — to parametr geografii/
+ * te same klucze na wszystkich poziomach trudności — to parametr geografii/
  * gameplayu jak lad_max_dystans/morze_max_dystans, nie skalowanie trudności).
  */
 export function loadTradeRouteIncomeParams(
@@ -799,9 +820,10 @@ export function loadTradeRouteIncomeParams(
     return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
   };
   return {
-    dochodBazowy:    read('dochod_bazowy', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodBazowy),
-    dochodNaDystans: read('dochod_na_dystans', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodNaDystans),
-    dochodPodloga:   read('dochod_podloga', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodPodloga),
+    dochodPodloga: read('dochod_podloga', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodPodloga),
+    dochodSzczyt:  read('dochod_szczyt', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.dochodSzczyt),
+    ladMaxDist:    read('lad_max_dystans', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.ladMaxDist),
+    morzeMaxDist:  read('morze_max_dystans', DEFAULT_TRADE_ROUTE_INCOME_PARAMS.morzeMaxDist),
   };
 }
 
@@ -831,7 +853,7 @@ export function computeTradeRouteIncomeByCity(
   const out = new Map<string, number>();
   for (const route of routes) {
     if (route.status !== 'polaczony') continue;
-    const baseIncome = tradeRouteDistanceIncome(route.dystans, params);
+    const baseIncome = tradeRouteDistanceIncome(route.dystans, route.medium, params);
     const fromMult = 1 + wonderTradeBonusForOwner(route.ownerId, route.medium);
     const toMult   = 1 + wonderTradeBonusForOwner(route.toOwnerId, route.medium);
     const fromIncome = fromMult === 1 ? baseIncome : Math.floor(baseIncome * fromMult);
