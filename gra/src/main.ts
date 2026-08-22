@@ -9602,6 +9602,35 @@ async function boot(): Promise<void> {
     let _lastPracaUpkeep: number = 0;
     let _lastKultura: number = 0;
     let _lastPracaRate: number = 0;
+    /** P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1 (Maciej 2026-08-22): koniec tury
+     *  liczy `_lastPracaRate` POPRAWNIE (4 drenaże: upkeep/cuda mapy/budżet budynków/
+     *  auto-ulepszenia -- patrz blok "ZADANIE 1"/"CUDA-MAPA"/auto-ulepszenia w
+     *  triggerPlayerEndTurn niżej), ale zaraz potem `triggerPlayerEndTurn()` woła
+     *  `markCityStateDirty()` + `updateHud()` -> `refreshLiveEmpireRatesUnsafe()`
+     *  (bo empireEconDirty=true), która NA NOWO przypisywała `_lastPracaRate` z formuły
+     *  znającej TYLKO upkeep -- nadpisując poprawną wartość martwym zapisem na KAŻDYM
+     *  końcu tury (deklarowane "+3" realnie akumulowało tylko "+1"). Ta flaga to
+     *  jednorazowy guard: koniec tury ustawia ją `true` PO poprawnym policzeniu
+     *  `_lastPracaRate`; `refreshLiveEmpireRatesUnsafe()` przy `true` pomija WYŁĄCZNIE
+     *  przypisanie do `_lastPracaRate` (reszta funkcji -- _lastPracaUpkeep, inne stawki --
+     *  liczy się jak dotychczas) i od razu konsumuje flagę (`= false`) -- więc dotyczy
+     *  TYLKO tego jednego, natychmiastowego wywołania po końcu tury. Każdy KOLEJNY,
+     *  realny trigger (`markCityStateDirty()` z innego miejsca -- suwak podziału Pracy,
+     *  nowe miasto, zmiana kolejki...) ustawia `empireEconDirty=true` i woła
+     *  `refreshLiveEmpireRatesUnsafe()` z flagą już `false` -- liczy się wtedy jak
+     *  wcześniej (live-preview, bez regresji dla przypadków poza końcem tury).
+     *  / EN: end-of-turn correctly computes `_lastPracaRate` (all 4 known drains), but
+     *  `triggerPlayerEndTurn()` then calls `markCityStateDirty()` + `updateHud()`, which
+     *  fires `refreshLiveEmpireRatesUnsafe()` (empireEconDirty=true) -- and THAT function
+     *  used to reassign `_lastPracaRate` from a formula that only knows about upkeep,
+     *  clobbering the correct value on every single end of turn (declared "+3" only ever
+     *  accumulated "+1"). This flag is a one-shot guard: end-of-turn sets it `true` right
+     *  after correctly computing `_lastPracaRate`; `refreshLiveEmpireRatesUnsafe()` skips
+     *  ONLY the `_lastPracaRate` assignment while the flag is `true` (everything else in
+     *  the function still runs normally) and immediately consumes the flag (`= false`) --
+     *  so it only ever affects that one immediate post-end-of-turn call. Any subsequent
+     *  real trigger recomputes live as before (no regression outside end-of-turn). */
+    let _pracaRateFreshFromEndTurn: boolean = false;
     let _lastKulturaRate: number = 0;
     let _lastPieniadzRate: number = 0;
     let _lastWealthLevel: number = 1;
@@ -15534,7 +15563,18 @@ async function boot(): Promise<void> {
         queueEmpty: pracaQueueEmpty,
         paused: pracaPaused,
       });
-      _lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;
+      // P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1: `pracaPoolBrutto -
+      // pracaUpkeepPreview` zna TYLKO upkeep -- nie wonder-map-builds/building-budget/
+      // auto-ulepszenia. Zaraz po końcu tury `_lastPracaRate` jest już policzone
+      // POPRAWNIE (wszystkie 4 drenaże, patrz komentarz przy deklaracji flagi wyżej) --
+      // ten guard chroni tamtą wartość przed nadpisaniem martwym zapisem z niepełnej
+      // formuły na tym jednym, natychmiastowym wywołaniu. Konsumowane od razu (`= false`),
+      // więc każdy KOLEJNY realny trigger nadal liczy live-preview jak dotychczas.
+      if (_pracaRateFreshFromEndTurn) {
+        _pracaRateFreshFromEndTurn = false;
+      } else {
+        _lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;
+      }
       let brutto = 0;
       for (const tk of preview.perCity) {
         if (tk.ownerId !== 0 || tk.oblegany) continue;
@@ -26804,6 +26844,13 @@ async function boot(): Promise<void> {
             } catch (errAutoImp) {
               console.error('[Ulepszenia] Błąd auto-ulepszeń gracza:', errAutoImp);
             }
+            // P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1: `_lastPracaRate` jest tu
+            // JUŻ policzone poprawnie (wszystkie 4 drenaże powyżej -- upkeep/cuda mapy/
+            // budżet budynków/auto-ulepszenia). Flaga chroni tę wartość przed nadpisaniem
+            // przez `refreshLiveEmpireRatesUnsafe()`, którą zaraz odpali
+            // `markCityStateDirty()` + `updateHud()` na końcu tej funkcji (patrz komentarz
+            // przy deklaracji flagi i przy jej konsumpcji w refreshLiveEmpireRatesUnsafe).
+            _pracaRateFreshFromEndTurn = true;
             _lastKultura = cities
               .filter(c => c.ownerId === 0)
               .reduce((s, c) => s + ((c as { kultura?: number }).kultura ?? 0), 0);
