@@ -184,5 +184,39 @@ Kolejność bezpieczna: T1 → T2 → T2b → T3 → T4 → T6. Bez osobnego T5 
   pre-istniejące, niezwiązane FAIL w `trade-routes-income-test.cjs`/H2 i
   `trade-ilosc-test.cjs`), 5 bramek referencyjnych zielone. Wypchnięte do
   `origin/main`. Zakres T2/T2b/T3/T4/T6 nietknięty.
-- **T2 — dispatchowane** (bonus morski ×2 + priorytet lądu w `detectBestConnection`),
-  wynik w kolejnej turze.
+- **T2 — ZINTEGROWANE (2026-08-22).** Dispatch przez Workflow (Operator→Evaluator→Final
+  Control; Operator/Evaluator PASS, Final Control PASS-WITH-NOTES — uwaga niewiążąca,
+  patrz niżej; run `wf_5973ab38-00f`, branch `autobot/HANDEL-SZLAKI-T2`). Nowa
+  eksportowana funkcja `tradeRouteTotalDistanceIncome(dystans, medium, params)`
+  opakowuje niezmienioną `tradeRouteDistanceIncome()` i mnoży wynik ×2 wyłącznie dla
+  `medium='morze'` (ECHO Q2 — sumuje się z istniejącym, osobnym
+  `PORT_SEA_TRADE_BONUS_PIENIADZ`, który zostaje nietknięty). Użyta we wszystkich
+  miejscach liczących finalny dochód trasy: `computeTradeRouteIncomeByCity`
+  (rzeczywisty wpis do skarbca) oraz 3 miejsca w `main.ts` (event log, panel Handlu,
+  chip HUD) — koniec z duplikacją formuły (`P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`
+  rozwiązane przy okazji). `detectBestConnection` przebudowane: ląd sprawdzany i
+  zwracany bezwarunkowo pierwszy gdy połączony, morze liczone/wybierane WYŁĄCZNIE gdy
+  ląd niepołączony (fallback). Niezależnie zweryfikowane przez orkiestratora po
+  zmergowaniu do `main` (fast-forward, commit `a3276dda`): `tsc --noEmit` czyste,
+  `vite build` OK, wszystkie testy handel/econ zgodne z raportami trzech agentów (te
+  same pre-istniejące FAIL H2/`trade-ilosc-test.cjs`), 5 bramek referencyjnych
+  zielone. Wypchnięte do `origin/main`.
+
+  **Uwaga Final Control (niewiążąca, do wiadomości dla przyszłych agentów):**
+  `findCityConnection` zwraca `distance` jako czysty `hexDistance` między centrami
+  miast, NIEZALEŻNY od medium — więc dla tej samej pary miast `land.distance` i
+  `sea.distance` są zawsze identyczne. Stara reguła sprzed T2
+  (`land.distance <= sea.distance`) była więc arytmetycznie ZAWSZE prawdziwa (remis
+  na korzyść lądu) — stary kod i tak ZAWSZE wybierał ląd, gdy oba media były
+  połączone, niezależnie od dochodu. Scenariusz „morze mogło wygrać z lądem dzięki
+  wyższemu dochodowi po ×2", który motywował ECHO Q5/Zmianę B, nie mógł się zdarzyć
+  nawet przed T2 — potwierdzone empirycznie (bit-identyczne wyjście starej i nowej
+  wersji `detectBestConnection` na tych samych fixture'ach). Zmiana B jest więc
+  bezpieczna i poprawna, ale jej realna wartość to (a) pominięcie zbędnego liczenia
+  połączenia morskiego/Portu/BFS wody gdy ląd już połączony (optymalizacja
+  wydajności) i (b) doprecyzowanie kodu/komentarza tak, by explicite odzwierciedlał
+  zamierzoną semantykę zamiast polegać na przypadkowej własności geometrii. Nie
+  wpływa na wynik gry ani na żadną decyzję ECHO — czysto informacyjne.
+
+- **T2b — następny w kolejce** (gate propozycji `UmowaSzlakow` w panelu dyplomacji wg
+  finalnego ECHO Q5), wymaga reconu `diplomacy-proposals.ts`/UI panelu dyplomacji.
