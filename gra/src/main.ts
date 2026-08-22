@@ -17636,6 +17636,12 @@ async function boot(): Promise<void> {
         respekt: rel.respekt ?? 0,
         hasNap: hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji),
         hasHandel: hasSzlakowTreaty(activeDeals, 0, ownerId),
+        hasTradeConnection: citiesHaveTradeConnection(
+          cities.filter(c => c.ownerId === 0),
+          cities.filter(c => c.ownerId === ownerId),
+          map,
+          cityBuilt,
+        ),
         hasWymiana: hasWymianaTreaty(activeDeals, 0, ownerId),
         hasSojusz,
         breaksTreatyLabel: breakingDeal ? treatyDisplayLabel(breakingDeal.rodzaj) : undefined,
