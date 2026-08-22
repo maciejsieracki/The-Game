@@ -1761,6 +1761,12 @@ const CP_INLINE_EMOJI_BRAND: Record<string, string> = {
   '👤': 'chip-manpower',
   '⚔': 'tb-army',
   '🏛': 'cp-buildings',
+  // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1: skrzynka „Ulepszenia" — TA SAMA ikona `chip-crate`,
+  // która została zatwierdzona dla tego pojęcia w P-PRACA-PANEL-IKONY-NIESPOJNE-Q1 (żadnego
+  // nowego assetu). Bez tego wpisu `cpInlineIcons()` przepuszczało 📦 nietknięte przez CAŁĄ
+  // ścieżkę helperów (`gridDetailRow`, `appendDetailAlgo`, `el()`), więc „ściąga" panelu
+  // Pracy i karta paska górnego pokazywały goły glif mimo poprawnie działającego reskinu.
+  '📦': 'chip-crate',
   '🛠': 'tb-build',
   '📈': 'cp-trade',
   '😊': 'chip-happiness',
@@ -4857,7 +4863,11 @@ function renderPodzialPracy(
   // Sygnał na samej górze: ile z tegorocznego przyrostu Pracy trafia do Ulepszeń.
   const summary = el('div', 'praca-split-summary');
   summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} Ulepszenia <b>${pctU}%</b>`
-    + (praca ? ` <span class="muted" style="font-weight:400">(+${praca.doUlepszen} 🔨/turę)</span>` : '');
+    // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1: ten string jest sklejany wprost do `innerHTML`,
+    // z pominięciem `cpInlineIcons()` — literalny 🔨 docierał do gracza jako goły glif.
+    // Ikona wstawiana tak samo jak w sąsiednich liniach tej samej funkcji (kolumny
+    // Budynki/Ulepszenia niżej), żeby nie wprowadzać trzeciego wzorca.
+    + (praca ? ` <span class="muted" style="font-weight:400">(+${praca.doUlepszen} ${cityPanelChipIconWrap('res-work', 13)}/turę)</span>` : '');
   mount.appendChild(summary);
 
   const sliderWrap = el('div', 'praca-w4-sliders');
@@ -5506,9 +5516,12 @@ function buildTopBarPracaDetailCard(
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>🔨 Praca — co to znaczy</span>'));
   const intro = el('div', 'dc-note');
-  intro.style.fontStyle = 'normal';
-  intro.textContent =
-    'Praca to surowiec z pól okolicy (👤). Duża liczba to pula imperium; złoty i niebieski dopisek to podział pracy tylko tego miasta.';
+  // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1: było `.textContent =`, które z definicji NIE renderuje
+  // HTML — nawet zmapowany 👤 lądował u gracza jako goły glif. `setNoteHtml` to ten sam helper
+  // (`fontStyle:'normal'` + `innerHTML = cpInlineIcons(...)`), którym intro karty „Podział pracy"
+  // już jest ustawiane w `buildPracaDetailCard`.
+  setNoteHtml(intro,
+    'Praca to surowiec z pól okolicy (👤). Duża liczba to pula imperium; złoty i niebieski dopisek to podział pracy tylko tego miasta.');
   card.appendChild(intro);
 
   appendDetailSection(card, 'Co widzisz na pasku');
