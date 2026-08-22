@@ -13,13 +13,22 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
-## ROBOCZA d2276783 - 2026-08-20 10:39 UTC - deploy po integracji sześciu tematów AutoBot
+## ROBOCZA 5bcde74d - 2026-08-22 12:26 UTC - FALA 316: przebudowa szlaków handlowych T1+T2+T2b
+|- md5 (pełne): 5bcde74dd67ad516b10900ece1a15e8f · stempel: ROBOCZA · label 5bcde74d · źródłowy commit integracji: `33cd3248`
+|- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` T1: wzór dystansowy odwrócony (dalej=więcej), stawki ×5 (`dochodPodloga=5`/`dochodSzczyt=40`), osobny zakres per medium (ląd max=12, morze max=20, identyczny szczyt); `econ-params.json` zaktualizowany (bez cichego nadpisania).
+|- T2: bonus morski ×2 (`tradeRouteTotalDistanceIncome`, sumuje się z istniejącym `PORT_SEA_TRADE_BONUS_PIENIADZ`); priorytet lądu bezwarunkowy w `detectBestConnection`; skonsolidowano duplikat formuły dochodu w `main.ts` (panel Handlu + chip HUD, było `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`).
+|- T2b: nowy gate na poziomie propozycji traktatu `UmowaSzlakow` w panelu dyplomacji — opcja dostępna wyłącznie gdy istnieje dostępność lądowa LUB oba porty (reużyto istniejącej `citiesHaveTradeConnection`); UI bez zmian.
+|- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), zmergowany fast-forward do `main`, niezależnie zweryfikowany przez orkiestratora po każdym scaleniu (tsc czyste, Vite 845 modułów, testy handel/econ/diplomacy zgodne z raportami — te same pre-istniejące, niezwiązane FAIL w `trade-routes-income-test.cjs`/H2 i `trade-ilosc-test.cjs`, 5 bramek referencyjnych zielone za każdym razem).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`, node_modules/vite dostępny) + manifest.
+|- Szczegóły decyzji, ECHO właściciela i pełny podział na tematy: `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md` (T3/T4/T6 pozostają w kolejce, nie dispatchowane).
+|- **AKTUALNA**
+
+## ROBOCZA d2276783 - 2026-08-20 10:39 UTC - deploy po integracji sześciu tematów AutoBot — **ZASTĄPIONA** (→ 5bcde74d)
 |- md5 (pełne): d2276783cef8d0718e9573a67181b596 · stempel: ROBOCZA · label d2276783 · źródłowy commit integracji: `8996dca8`
 |- Zakres: cennik surowców ×5, proporcjonalne uzupełnianie HP Manpower, koncentracja armii AI/barbarzyńców, korekta wzrostu/szczęścia Ceramiki/Spichlerza/Wealth, zdobywanie miast przez barbarzyńców oraz wspólna walka i przemarsz.
 |- Finalna kontrola wszystkich sześciu tematów: **READY_FOR_DEPLOY**; testy tematyczne i TypeScript PASS w zatwierdzonych raportach, Vite PASS w kontroli integracyjnej.
 |- Publikacja: `gra-robocza/` + 7 bundli playtestowych + manifest; `Gra-ROBOCZA-POLE-BITWY.html` pozostawiony bez zmian, bo lokalny build sceny pola bitwy był niedostępny bez `node_modules/vite`.
 |- Bieżąca bramka lokalna nie uruchomiła testów wymagających `esbuild`/`tsc` ani świeżego `npx vite` z powodu braku zależności i blokady EPERM; artefakt zweryfikowany przez manifest: **VERIFY OK**.
-|- **AKTUALNA**
 
 ## ROBOCZA 4322f5aa - 2026-08-18 19:52 UTC - FALA 298: limit miast zdobytych i wojna wymuszona Kamienia
 |- md5 (pełne): 4322f5aafa6e0becc988885dc38e907b · stempel: ROBOCZA · label 4322f5aa · źródłowy commit integracji: `004e8f9e`
