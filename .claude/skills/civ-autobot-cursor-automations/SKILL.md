@@ -176,7 +176,10 @@ poprawnie uruchomić Automation w tej ścieżce.
   `effort`, dla sesji Claude Code/Cursor interaktywnego — kontrast dla tej,
   osobnej ścieżki Automations)
 - `docs/decyzje/R-PROC-AUTOBOT.md` §5a — format ról Operator/Evaluator, na
-  którym wzorowany jest checklist/raport w tym pliku
+  którym wzorowany jest checklist/raport w tym pliku; §2a — trzy składniki zapisu
+  dispatchu (pole `TRIGGER` tej ścieżki jest wypełnieniem składnika **wyzwalacz**);
+  §9 — granice nienaruszalne domeny gry, obowiązujące tę Automation tak samo jak
+  Operatora w Ścieżkach A i B; §11 — zasada czystości raportu (destylat, nie logi)
 - `.claude/skills/civ-autobot-workflow/SKILL.md` — Ścieżka A (Workflow),
   używana w sesjach Claude Code z autoryzowanym Workflow
 - `.claude/skills/civ-autobot/SKILL.md` i `.claude/skills/autobots/SKILL.md` —

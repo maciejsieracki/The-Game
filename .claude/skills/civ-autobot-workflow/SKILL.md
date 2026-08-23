@@ -152,7 +152,14 @@ export default async function autobotOperatorEvaluator(input) {
 - [ ] Workflow dostępny w tej konkretnej sesji (zweryfikowane, nie zgadywane).
 - [ ] Właściciel dał jawną, opt-in zgodę na multi-agent orchestration w TEJ sesji.
 - [ ] `00-dispatch.md` zapisany przed wywołaniem: pełne ID, GOAL, allowlista, izolacja,
-      plan testów (C-044, C-051).
+      plan testów (C-044, C-051), plus trzy składniki pętli — **wyzwalacz**, zadanie,
+      binarne kryterium (`R-PROC-AUTOBOT.md` §2a). „Bo była kolej" nie jest wyzwalaczem.
+- [ ] Szerokość fali policzona komendą `nproc`, nie z pamięci (§6) — nadmiar zadań
+      połączony w grubsze paczki, nie rozbity na cienkich agentów.
+- [ ] Prompt każdego wywołania ma komplet czterech pól, w tym **regułę przeciw
+      samooszukiwaniu** dobraną z tabeli obserwowanych trybów (§7, §7a).
+- [ ] Temat dotykający tych samych plików co inny aktywny temat — dispatchowany
+      **sekwencyjnie**, nie w tej samej fali (`R-PROC-AUTOBOT.md` §2b).
 - [ ] Licznik rund (C-050) i ledger (C-051) prowadzone przez orkiestratora — nie
       polegaj na tym, że skrypt Workflow sam je aktualizuje.
 - [ ] Model i effort per rola zapisane w raporcie etapu, jak przy dispatchu ręcznym
@@ -162,9 +169,147 @@ export default async function autobotOperatorEvaluator(input) {
 - [ ] Raport końcowy jawnie stwierdza, że dispatch przebiegł Ścieżką A (Workflow),
       nie Ścieżką B (prompt) — patrz playbook C-061.
 
-## 5. Powiązane
+## 6. Szerokość fan-outu — policz limit, zanim zaplanujesz falę
 
-- `docs/decyzje/R-PROC-AUTOBOT.md` §5a (uzasadnienie effort per rola), §1a (jawny model Codex)
+Workflow uruchamia równolegle **najwyżej `min(16, liczba_CPU − 2)`** agentów.
+Nadmiar czeka w kolejce. **Sprawdź limit komendą, nie z pamięci ani z tego
+dokumentu** — jest własnością maszyny, na której akurat działa orkiestrator,
+i zmienia się między kontenerami:
+
+```bash
+nproc        # limit = min(16, nproc - 2)
+```
+
+| Rdzenie | Rdzenie − 2 | Sufit | **Limit** |
+|---|---|---|---|
+| 4 | 2 | 16 | **2** |
+| 8 | 6 | 16 | **6** |
+| 16 | 14 | 16 | **14** |
+| 18 i więcej | ≥16 | 16 | **16** |
+
+Wzór czyta się jako „mniejsza z dwóch liczb": sufit 16 oraz rdzenie minus 2
+rezerwy dla orkiestratora i systemu. Sufit zaczyna cokolwiek znaczyć **dopiero
+od 18 rdzeni** — poniżej wiąże człon z procesorów. Przeskok z 4 na 8 rdzeni
+**potraja** liczbę równoległych agentów.
+
+**Limit nie zależy od obciążenia maszyny.** Rezerwa dwóch rdzeni jest odejmowana
+z góry, niezależnie od tego, czy cokolwiek je zajmuje. Czekanie na „spokojniejszą
+porę" niczego nie zmieni — zmienia to wyłącznie większy kontener.
+
+**Reguła planowania:** liczba równoległych wywołań w jednej fali ma odpowiadać
+limitowi. Gdy zadań jest więcej niż miejsc, **łącz je w grubsze paczki** zamiast
+mnożyć cienkich agentów. Cztery paczki przy limicie dwóch kończą się szybciej niż
+siedem drobnych — każdy agent powtarza wstęp/kontekst promptu, a ten narzut się
+sumuje (patrz `civ-autobot/SKILL.md` §Koszt).
+
+**To nie jest ta sama liczba co pula tematów.** Limit fan-outu wynika z mocy
+maszyny; pula 6 subagentów / efektywnie 5 tematów (C-060) wynika z pojemności
+przeglądu właściciela. Przy zmianie którejkolwiek sprawdź, czy druga nadal ma
+sens — zbieżność obu liczb bywa przypadkowa.
+
+### 6a. `ZWIS`, `TIMEOUT` i `INFRA` przy dispatchu przez Workflow
+
+Skrypt Workflow **nie prowadzi watchdogu** — robi to orkiestrator poza skryptem,
+dokładnie jak przy dispatchu ręcznym (C-051). Progi i klasyfikacja są te same:
+brak ruchu ok. 7 minut = `ZWIS`, brak artefaktu przy `not_found` = `BLOCK`,
+przekroczony czas = `TIMEOUT`. Przy `ZWIS` sprawdź przebieg, worktree i artefakty
+**zamiast anulować w ciemno**.
+
+**`INFRA` jest osobną kategorią od `FAIL`** i wymaga innej reakcji: nie poprawia
+się jej ponownym dispatchem tego samego zlecenia. Typowe przyczyny w tym
+projekcie: brak miejsca na dysku po nagromadzeniu worktree oraz `WorktreeIsolationError`
+przy zakładaniu izolacji. Procedura sprzątania — **kolejność jest obowiązkowa**:
+
+```bash
+df -h /                                              # 1. zmierz stan, nie zgaduj
+git worktree list                                    # 2. wypisz istniejące
+git merge-base --is-ancestor <commit> origin/main    # 3. PRZED usunięciem każdego
+```
+
+Usuwaj wyłącznie worktree, którego praca jest już przodkiem `origin/main` albo
+został jawnie odrzucony po `FAIL`. **Nigdy nie usuwaj worktree używanego przez
+wciąż działający wątek** — także wtedy, gdy dysk jest pełny i wygląda to na
+najszybsze rozwiązanie (C-014, C-032, C-033; `R-PROC-AUTOBOT.md` §2b).
+
+Zakładaj worktree przez sparse-checkout, bez `gra-robocza/`, `gra-kanon/` i
+katalogów `dist/` — ~370 MB zamiast ~810 MB na worktree (C-015). To jest
+najtańsza profilaktyka przeciw całej tej klasie `INFRA`.
+
+## 7. Wzorzec promptu dla wywołania `agent()`
+
+Cztery pola obowiązkowe (`R-PROC-AUTOBOT.md` §15) plus wiązania techniczne tej
+ścieżki. Kopiuj i wypełnij — pola oznaczone `<…>` uzupełnia orkiestrator
+z `00-dispatch.md`, nigdy sam agent.
+
+```text
+KONTEKST PROJEKTU
+Przeczytaj obowiązkowo, w tej kolejności: README.md, docs/procesy/INDEX-PROCESU.md,
+docs/decyzje/R-PROC-AUTOBOT.md, playbook.md,
+dyspozycje/_handoff/HANDOFF-AKTUALNY.md, dyspozycje/autobot/runs/<ID>/00-dispatch.md
+Civ „The Game" to gra 4X. Ten temat dotyczy <GAME | PROCESS | INFRA | INFORMATIONAL>.
+
+TWOJA ROLA: Operator | Evaluator | Final Control
+TEMAT:      <PEŁNE ID>[-<litera węzła>]
+RUNDA:      <n>/5
+MODEL+EFFORT: <model>, effort <medium|high>   ← zapisz też w raporcie (C-052)
+
+ZADANIE
+<wąski zakres, jedno zdanie — co ma być prawdą po zakończeniu>
+
+REGUŁA PRZECIW SAMOOSZUKIWANIU (ANTY-HALUCYNACYJNA)
+<konkretny tryb z tabeli „Nasze tryby samooszukiwania" w civ-autobot/SKILL.md —
+ np. „zakaz uznania tematu wizualnego za zamknięty bez zrzutu z żywego Chromium
+ i bez pokazania, że test czerwienieje po mutacji źródła">
+
+BINARNE KRYTERIUM SUKCESU
+<sprawdzalne PRAWDA/FAŁSZ>
+Dodatkowo zielone: tsc --noEmit, <testy tematu>, 5 bramek referencyjnych
+(logic-test, tech-tree-test, research-test, unit-replace-test, combat-test).
+
+ALLOWLISTA
+<pozycje, per plik/katalog>
+Zakazane bezwzględnie: pliki z sekretami, docs/decyzje/<ID>.md, .git/**,
+dyspozycje/WERSJE.md, gra-robocza/ROBOCZA-MANIFEST.json, playbook.json.
+
+IZOLACJA
+worktree <ścieżka>, gałąź autobot/<ID>, baza <jawnie: origin/main albo inna>.
+Zakaz `npm run build` i `npm run dev` w gra/ (C-001) — dozwolone wyłącznie
+node ./node_modules/vite/bin/vite.js build --outDir <scratch> --emptyOutDir
+oraz node ./node_modules/typescript/bin/tsc --noEmit.
+
+PROCEDURA NAPRAWCZA PRZY FAIL
+Evaluator wskazuje jeden konkretny defekt i poprawkę; runda N+1 idzie na TYM SAMYM
+ID i TEJ SAMEJ gałęzi, nie na nowej od zera. Po 5 rundach: LIMIT-5-EXCEEDED.
+
+OGRANICZENIA WYJŚCIA
+- maksymalnie ok. 400 słów w raporcie (R-PROC-AUTOBOT.md §11)
+- destylat, nie surowe dane: ścieżki + SHA zamiast diffu, wynik bramki zamiast logu
+- nie edytujesz plików spoza allowlisty; zakaz `git add -A` / `git add .`
+- przy decyzji produktowej zatrzymujesz się ze statusem DECISION_REQUIRED
+- nie integrujesz, nie deployujesz, nie pushujesz
+
+FORMAT ODPOWIEDZI
+STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
+DEPLOY/PUSH: NIE WYKONANO
+```
+
+### 7a. Czego w prompcie nie może zabraknąć
+
+| Pole | Co się dzieje przy braku |
+|---|---|
+| Reguła przeciw samooszukiwaniu | agent wypełni lukę domysłem i nie zauważy, że zgaduje — to jest pole pomijane najczęściej |
+| Binarne kryterium | Evaluator nie ma wobec czego orzekać, ocena robi się uznaniowa |
+| Limit objętości | do syntezy trafiają surowe logi i zatruwają kontekst orkiestratora |
+| Allowlista | zmiana wychodzi poza zakres tematu, integracja staje się ryzykowna |
+| Kolejność czytania | agent zaczyna od przypadkowego pliku i buduje na nieaktualnym stanie |
+| Izolacja z jawną bazą | agent pracuje na gałęzi o kilka fal wstecz i „gubi" cudzą pracę (C-035) |
+| Jawny `model` + `effort` | przydział z §5a nie został zastosowany — to jest właśnie powód istnienia tej ścieżki (C-052, C-061) |
+
+## 8. Powiązane
+
+- `docs/decyzje/R-PROC-AUTOBOT.md` §5a (uzasadnienie effort per rola), §1a (jawny model Codex),
+  §9 (granice nienaruszalne), §11 (zasada czystości raportu), §12 (podział na węzły),
+  §15 (cztery pola promptu), §16 (checklisty Evaluatora i Final Control)
 - `playbook.md` C-042 (Workflow nie zastępuje AutoBota), C-044 (kanon routingu), C-050
   (limit 5 rund), C-051 (ledger+watchdog), C-054 (`DECISION_REQUIRED`), C-059
   (integracja allowlist-only), C-061 (dwie ścieżki dispatchu, incydent źródłowy)
