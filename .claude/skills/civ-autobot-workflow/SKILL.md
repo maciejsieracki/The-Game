@@ -105,7 +105,7 @@ export default async function autobotOperatorEvaluator(input) {
     return agent({
       role: "evaluator",
       model: "sonnet-5", // POTWIERDŹ
-      effort: "high", // Sonnet 5, effort High — adwersaryjne rozumowanie, kanon §5a
+      effort: "high", // Sonnet 5, effort High — adwersaryjne rozumowanie, R-PROC-AUTOBOT.md §5a
       isolation: "worktree",
       prompt: buildEvaluatorPrompt({ fullId, goal, operatorReport }),
       // Evaluator NIE zastępuje Operatora, NIE integruje, NIE publikuje (C-044).
@@ -154,10 +154,10 @@ export default async function autobotOperatorEvaluator(input) {
 - [ ] `00-dispatch.md` zapisany przed wywołaniem: pełne ID, GOAL, allowlista, izolacja,
       plan testów (C-044, C-051), plus trzy składniki pętli — **wyzwalacz**, zadanie,
       binarne kryterium (`R-PROC-AUTOBOT.md` §2a). „Bo była kolej" nie jest wyzwalaczem.
-- [ ] Szerokość fali policzona komendą `nproc`, nie z pamięci (§6) — nadmiar zadań
+- [ ] Szerokość fali policzona komendą `nproc`, nie z pamięci (§5) — nadmiar zadań
       połączony w grubsze paczki, nie rozbity na cienkich agentów.
 - [ ] Prompt każdego wywołania ma komplet czterech pól, w tym **regułę przeciw
-      samooszukiwaniu** dobraną z tabeli obserwowanych trybów (§7, §7a).
+      samooszukiwaniu** dobraną z tabeli obserwowanych trybów (§6, §6a).
 - [ ] Temat dotykający tych samych plików co inny aktywny temat — dispatchowany
       **sekwencyjnie**, nie w tej samej fali (`R-PROC-AUTOBOT.md` §2b).
 - [ ] Licznik rund (C-050) i ledger (C-051) prowadzone przez orkiestratora — nie
@@ -169,7 +169,7 @@ export default async function autobotOperatorEvaluator(input) {
 - [ ] Raport końcowy jawnie stwierdza, że dispatch przebiegł Ścieżką A (Workflow),
       nie Ścieżką B (prompt) — patrz playbook C-061.
 
-## 6. Szerokość fan-outu — policz limit, zanim zaplanujesz falę
+## 5. Szerokość fan-outu — policz limit, zanim zaplanujesz falę
 
 Workflow uruchamia równolegle **najwyżej `min(16, liczba_CPU − 2)`** agentów.
 Nadmiar czeka w kolejce. **Sprawdź limit komendą, nie z pamięci ani z tego
@@ -203,11 +203,12 @@ siedem drobnych — każdy agent powtarza wstęp/kontekst promptu, a ten narzut 
 sumuje (patrz `civ-autobot/SKILL.md` §Koszt).
 
 **To nie jest ta sama liczba co pula tematów.** Limit fan-outu wynika z mocy
-maszyny; pula 6 subagentów / efektywnie 5 tematów (C-060) wynika z pojemności
+maszyny; pula 6 subagentów (efektywnie 5 tematów, **jeśli** watchdog dzieli z nią
+limit wątków — C-060) wynika z pojemności
 przeglądu właściciela. Przy zmianie którejkolwiek sprawdź, czy druga nadal ma
 sens — zbieżność obu liczb bywa przypadkowa.
 
-### 6a. `ZWIS`, `TIMEOUT` i `INFRA` przy dispatchu przez Workflow
+### 5a. `ZWIS`, `TIMEOUT` i `INFRA` przy dispatchu przez Workflow
 
 Skrypt Workflow **nie prowadzi watchdogu** — robi to orkiestrator poza skryptem,
 dokładnie jak przy dispatchu ręcznym (C-051). Progi i klasyfikacja są te same:
@@ -235,7 +236,7 @@ Zakładaj worktree przez sparse-checkout, bez `gra-robocza/`, `gra-kanon/` i
 katalogów `dist/` — ~370 MB zamiast ~810 MB na worktree (C-015). To jest
 najtańsza profilaktyka przeciw całej tej klasie `INFRA`.
 
-## 7. Wzorzec promptu dla wywołania `agent()`
+## 6. Wzorzec promptu dla wywołania `agent()`
 
 Cztery pola obowiązkowe (`R-PROC-AUTOBOT.md` §15) plus wiązania techniczne tej
 ścieżki. Kopiuj i wypełnij — pola oznaczone `<…>` uzupełnia orkiestrator
@@ -273,9 +274,13 @@ dyspozycje/WERSJE.md, gra-robocza/ROBOCZA-MANIFEST.json, playbook.json.
 
 IZOLACJA
 worktree <ścieżka>, gałąź autobot/<ID>, baza <jawnie: origin/main albo inna>.
-Zakaz `npm run build` i `npm run dev` w gra/ (C-001) — dozwolone wyłącznie
-node ./node_modules/vite/bin/vite.js build --outDir <scratch> --emptyOutDir
-oraz node ./node_modules/typescript/bin/tsc --noEmit.
+C-001 (bariera CHRONIONA), brzmienie dosłowne z playbook.md: „Zakaz npm run
+build/dev w gra/ (export-data nadpisuje JSON) — dozwolona komenda:
+node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir".
+Zakaz dotyczy rodziny komend build/compile, nie wszystkich komend w gra/:
+jedyna dozwolona kompilacja to node ./node_modules/typescript/bin/tsc --noEmit;
+bramki referencyjne node tools/*-test.cjs nie są nim objęte (R-PROC-AUTOBOT.md
+§6, §9 poz. 1).
 
 PROCEDURA NAPRAWCZA PRZY FAIL
 Evaluator wskazuje jeden konkretny defekt i poprawkę; runda N+1 idzie na TYM SAMYM
@@ -293,7 +298,7 @@ STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NAST�
 DEPLOY/PUSH: NIE WYKONANO
 ```
 
-### 7a. Czego w prompcie nie może zabraknąć
+### 6a. Czego w prompcie nie może zabraknąć
 
 | Pole | Co się dzieje przy braku |
 |---|---|
@@ -303,9 +308,9 @@ DEPLOY/PUSH: NIE WYKONANO
 | Allowlista | zmiana wychodzi poza zakres tematu, integracja staje się ryzykowna |
 | Kolejność czytania | agent zaczyna od przypadkowego pliku i buduje na nieaktualnym stanie |
 | Izolacja z jawną bazą | agent pracuje na gałęzi o kilka fal wstecz i „gubi" cudzą pracę (C-035) |
-| Jawny `model` + `effort` | przydział z §5a nie został zastosowany — to jest właśnie powód istnienia tej ścieżki (C-052, C-061) |
+| Jawny `model` + `effort` | przydział z `R-PROC-AUTOBOT.md` §5a nie został zastosowany — to jest właśnie powód istnienia tej ścieżki (C-052, C-061) |
 
-## 8. Powiązane
+## 7. Powiązane
 
 - `docs/decyzje/R-PROC-AUTOBOT.md` §5a (uzasadnienie effort per rola), §1a (jawny model Codex),
   §9 (granice nienaruszalne), §11 (zasada czystości raportu), §12 (podział na węzły),

@@ -262,11 +262,11 @@ zmian, bo jest niezależny od projektu.
 | — wyjątek graficzny/wizualny | Operator **i** Evaluator → Opus 5 (effort Medium/High); Final Control zostaje Sonnet 5 High | `R-PROC-AUTOBOT.md` §5a, decyzja właściciela 2026-08-22 |
 | — Codex `multi_agent_v1` | Operator/Evaluator/Final Control → `gpt-5.6-luna`, `reasoning_effort=high`; integracja orkiestratora → `gpt-5.6-luna`, `medium` | `R-PROC-AUTOBOT.md` §1, §1a; C-052 |
 | {liczba-podejsc-przed-eskalacja} | **5 rund** na jedno pełne ID, potem `LIMIT-5-EXCEEDED`; cichy reset = naruszenie | C-050, C-053, `R-PROC-AUTOBOT.md` §3, §3a |
-| {liczba-tematow-rownoleglych} | pula 6 subagentów, **efektywna pojemność 5 tematów** (watchdog zajmuje slot) | C-060 |
+| {liczba-tematow-rownoleglych} | pula 6 subagentów. **Jeśli watchdog dzieli z nią limit wątków/procesów — efektywna pojemność to 5 tematów**, szósty slot rezerwowany dla watchdoga. **Jeśli działa poza tą pulą — zapisz to jawnie, nie zakładaj domyślnie** | C-060, `R-PROC-AUTOBOT.md` §5 |
 | {czas-do-uznania-zawieszenia} | ok. **7 minut** ciszy = `ZWIS` | `.cursor/rules/subagent-watchdog.mdc`; §„Ledger i watchdog" wyżej |
-| {limit-rownoleglosci-wywolan} | `min(16, nproc − 2)` — **przeliczaj komendą, nie z pamięci** | `civ-autobot-workflow/SKILL.md` §6 |
-| {progi-podzialu-tematu-na-wezly} | 2 niezależne obszary allowlisty / >3 nazwane bramki w kryteriach / >6 plików w allowliście | `R-PROC-AUTOBOT.md` §12 |
-| {konwencja-numeracji-wezlow} | sufiks litery: `-a`, `-b`, `-c`; licznik rund liczony dla całego tematu | `R-PROC-AUTOBOT.md` §12 |
+| {limit-rownoleglosci-wywolan} | `min(16, nproc − 2)` — **przeliczaj komendą, nie z pamięci** | `civ-autobot-workflow/SKILL.md` §5 |
+| {progi-podzialu-tematu-na-wezly} | 2 niezależne obszary allowlisty / >3 nazwane bramki **specyficzne dla tematu** / >6 plików w allowliście. **Stała część wspólna nie liczy się do progu**: `tsc --noEmit` i 5 bramek referencyjnych są w każdym dispatchu z definicji; `gra/src/**` + `gra/tools/*-test.cjs` jednej zmiany to jeden obszar, nie dwa | `R-PROC-AUTOBOT.md` §12 |
+| {konwencja-numeracji-wezlow} | sufiks litery: `-a`, `-b`, `-c`; licznik rund liczony dla całego tematu — **jedna fala węzłów = jedna runda**, niezależnie od liczby węzłów | `R-PROC-AUTOBOT.md` §12 |
 | {limit-objetosci-raportu} | ok. 400 słów na raport etapu (destylat, nie surowe logi) | `R-PROC-AUTOBOT.md` §11 |
 | {miejsce-i-szablon-zapisu-zlecenia} | `dyspozycje/autobot/runs/<ID>/00-dispatch.md` … `04-integration.md` | C-044, C-051 |
 | {kolejnosc-plikow-startowych} | `README.md` → `INDEX-PROCESU.md` → `R-PROC-AUTOBOT.md` → `playbook.md` → `HANDOFF-AKTUALNY.md` → `KANAL-PRACA.md` → rejestr/ABC/run → Git | §„Kolejność czytania" wyżej |
@@ -353,4 +353,4 @@ przewyższa on koszt czegokolwiek innego o rząd wielkości. Stąd optymalizujem
 **dobór modelu per rola i objętość kontekstu**, nie infrastrukturę: raport niesie
 destylat, nie surowe logi (`R-PROC-AUTOBOT.md` §11), a przy fan-oucie łączymy
 zadania w grubsze paczki zamiast mnożyć cienkich agentów, bo każdy węzeł powtarza
-wstęp do promptu (`civ-autobot-workflow/SKILL.md` §6).
+wstęp do promptu (`civ-autobot-workflow/SKILL.md` §5).

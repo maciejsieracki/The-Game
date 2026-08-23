@@ -59,13 +59,14 @@ długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playboo
 Każdy etap zapisuje w `dyspozycje/autobot/runs/<ID>/`:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | DECISION_REQUIRED
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED | DECISION_REQUIRED | INTEGRATION_PENDING
 DOMAIN: GAME | PROCESS | INFRA | INFORMATIONAL
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>
 TESTY: <dokładne wyniki albo powód pominięcia>
 BLOKADY: <jawna lista albo brak>
+RUNDY: <nr tej rundy>/<5; po limicie także liczba zużytych rund, ostatni werdykt i decyzja wymagana>
 NASTĘPNY KROK: <kolejna bramka>
 DEPLOY/PUSH: WYKONANO albo NIE WYKONANO
 ```

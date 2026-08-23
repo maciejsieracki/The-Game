@@ -393,12 +393,12 @@ nie z teorii; każda pozycja ma źródło.
 
 | # | Granica | Skąd |
 |---|---|---|
-| 1 | **Nigdy `npm run build` ani `npm run dev` w `gra/`** — `export-data` nadpisuje pliki JSON danych gry i niszczy dane. Dozwolone wyłącznie: `node ./node_modules/vite/bin/vite.js build --outDir <katalog-scratch> --emptyOutDir` oraz `node ./node_modules/typescript/bin/tsc --noEmit` | C-001, bariera CHRONIONA; wymuszane też przez `guardrails.ts` (`npm-run-build-gra`, `npm-run-dev-gra`) |
+| 1 | **Nigdy `npm run build` ani `npm run dev` w `gra/`** — `export-data` nadpisuje pliki JSON danych gry i niszczy dane. Brzmienie wiążące jest dosłownym cytatem z `playbook.md` C-001 (bariera CHRONIONA): „Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON) — dozwolona komenda: node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir". Zakaz obejmuje **rodzinę komend build/compile**, nie wszystkie komendy w `gra/`: jedynym dozwolonym buildem jest komenda w powyższym, dosłownym brzmieniu, a jedyną dozwoloną kompilacją `node ./node_modules/typescript/bin/tsc --noEmit`. Bramki referencyjne z §6 (`node tools/*-test.cjs`) nie należą do tej rodziny i nie są tym zakazem objęte. Zmiana brzmienia cytatu — w tym innego `--outDir` — jest zmianą bariery CHRONIONEJ i wymaga ECHO | C-001, bariera CHRONIONA; wymuszane też przez `guardrails.ts` (`npm-run-build-gra`, `npm-run-dev-gra`) |
 | 2 | **Nigdy `git add -A` ani `git add .`** — integracja wyłącznie allowlist-only, per plik i per hunk. Współdzielony plik niemożliwy do bezpiecznego rozdzielenia dostaje `INTEGRATION_PENDING`, nie `BLOCK` | C-008, C-034, C-059 |
 | 3 | **Żadnych wartości sekretów, kluczy API ani poświadczeń w repozytorium** — także w przykładach, komentarzach, plikach testowych i artefaktach runów. Sekret w diffie = `FAIL` i rotacja klucza | granica ogólna; egzekwuje Evaluator (§16, pkt 5) |
 | 4 | **Zmiana samego procesu nigdy nie jedzie w allowliście tematu produktowego** — nawet jednolinijkowa. To osobny temat w domenie `PROCESS`, z własnym ID i własnym dispatchem | §2a; `JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` |
 | 5 | **`WERSJE.md` i `gra-robocza/ROBOCZA-MANIFEST.json` nigdy nie są aktualizowane przed faktycznym deployem** — md5 wpisuje się dopiero po publishu, przeliczone z opublikowanego bundla, nigdy przepisane z pamięci ani z innego pliku. `WERSJE.md` jest jedynym rejestrem md5; inne pliki linkują, nie kopiują | `dyspozycje/WERSJE.md` (zasada nagłówkowa: „stary system miał 4 sprzeczne aktualne md5") |
-| 6 | **Temat wizualny/UX bez realnej weryfikacji w przeglądarce jest `FAIL`** — zrzut z żywego Chromium przez Playwright, nigdy sam jsdom ani test kontraktowy. Wymagany dowód nietautologiczności: zmutuj źródło i pokaż, że test faktycznie czerwienieje | §5a, regres T10 migracji CivPedia (2026-08-22) |
+| 6 | **(a) Dowód — bezwarunkowo, na KAŻDEJ ścieżce dispatchu.** Temat wizualny/UX bez realnej weryfikacji w przeglądarce jest `FAIL`: zrzut z żywego Chromium przez Playwright, nigdy sam jsdom ani test kontraktowy, plus dowód nietautologiczności — zmutuj źródło i pokaż, że test faktycznie czerwienieje. Ta część dotyczy **dowodu, nie modelu**, więc obowiązuje tak samo Ścieżkę A (Workflow), Ścieżkę B (prompt) i Ścieżkę C (Cursor Automations). **(b) Przypisanie modelu — wyłącznie sesje Claude Code.** Wymóg „Operator i Evaluator → Opus 5" dla tematów wizualnych obowiązuje **tylko w sesjach Claude Code**, zgodnie z jawnym zapisem §5a („Ta reguła dotyczy WYŁĄCZNIE sesji Claude Code"). Ścieżki nieznające modelu Opus 5 jako pojęcia — m.in. `civ-autobot-cursor-automations` — nie są nim związane i jego niezastosowanie **nie** jest naruszeniem tej granicy; wymóg (a) obowiązuje je nadal, bez wyjątku | §5a, regres T10 migracji CivPedia (2026-08-22) |
 | 7 | **`playbook.json` jest generowany z `playbook.md`, nigdy edytowany ręcznie** — ręczna edycja rozjeżdża liczniki i gubi zasady | C-013, incydent 2026-08-07 (zgubione `C-002` i fragment `C-001`) |
 | 8 | **Deploy/push wyłącznie po `READY_FOR_DEPLOY` i osobnej, jawnej autoryzacji właściciela, wyłącznie tam, gdzie wskazał.** Operator, Evaluator i Final Control nie wykonują tego kroku nigdy | §1, §8; `guardrails.ts` (`deploy-robocza`/`-kanon`/`-finalna` wymagają `humanApproved` + `deployPasswordGiven`) |
 | 9 | **Nigdy nie ufaj naiwnemu `git diff origin/main..<branch>`** przy integracji. `main` przesuwa się między dispatchem a mergem przy tematach równoległych — ustal najpierw `git merge-base origin/main origin/<branch>`, czytaj diff od tego punktu, scalaj `git merge --no-ff` | C-034, C-056, C-059 |
@@ -472,22 +472,46 @@ Przed dispatchem odpowiedz na dwa pytania:
 
 | Pytanie | Próg dla tego projektu |
 |---|---|
-| Czy temat ma co najmniej dwa niezależne obszary allowlisty, więcej niż 3 nazwane bramki/testy w kryteriach końca, albo więcej niż 6 plików w allowliście? | dowolny z trzech |
+| Czy temat ma co najmniej dwa niezależne obszary allowlisty, więcej niż 3 nazwane bramki/testy **specyficzne dla tego tematu** w kryteriach końca, albo więcej niż 6 plików w allowliście? | dowolny z trzech |
 | Czy przetworzenie w jednym ciągu grozi przepełnieniem kontekstu jednego Operatora (audyt wielu plików, migracja przekrojowa, przegląd rejestru)? | tak/nie |
 
 **Choć jedno „tak" i kroki nie są sekwencyjnie zależne** → podziel na węzły.
 Kroki zależne (krok 2 potrzebuje wyniku kroku 1) **nie dzielą się**, niezależnie
 od progów. Obie odpowiedzi „nie" → jeden Operator, bez podziału.
 
+**Co się NIE liczy do progu — stała część wspólna.** `tsc --noEmit` i pięć bramek
+referencyjnych z §6 (`logic-test`, `tech-tree-test`, `research-test`,
+`unit-replace-test`, `combat-test`) są wymagane w **każdym** dispatchu tego repo
+z definicji, więc same z siebie dają już ≥6 pozycji, zanim temat wniesie
+cokolwiek własnego. Wliczanie ich do progu odpalałoby podział na praktycznie
+każdym temacie i przeczyłoby zdaniu „dziel, gdy progi są przekroczone, nie
+dlatego, że się da" oraz sekcji „Koszt" w `civ-autobot/SKILL.md` („grubsze paczki
+zamiast cienkich agentów"). **Do progu liczą się wyłącznie nazwane sprawdzenia
+specyficzne dla tematu** — nowe testy, nowe scenariusze, weryfikacja wizualna
+konkretnego ekranu — a nie stała część wspólna.
+
+**Co NIE jest „dwoma niezależnymi obszarami allowlisty".** Artefakty runu
+(`dyspozycje/autobot/runs/<ID>/**`) nie są obszarem allowlisty w tym sensie —
+towarzyszą każdemu tematowi. Tak samo `gra/src/**` i `gra/tools/*-test.cjs`
+tworzące jedną zmianę (kod plus jego testy) to **jeden** obszar, nie dwa: prawie
+każdy temat kodowy dotyka obu, więc liczenie ich osobno odpalałoby ten próg
+automatycznie. Obszary są niezależne, gdy mogą wejść do `main` osobno, w
+dowolnej kolejności, bez wzajemnego czekania.
+
 **Podział kosztuje.** Każdy węzeł powtarza wstęp i kontekst, wymaga własnej
 koordynacji i własnego przekazania wyniku — więcej węzłów nie skraca pracy
 proporcjonalnie do ich liczby. Dziel, gdy progi są przekroczone, nie dlatego,
 że się da. Szerokość fali dobierz do faktycznego limitu równoległości
-(`civ-autobot-workflow/SKILL.md` §6), nie do liczby węzłów.
+(`civ-autobot-workflow/SKILL.md` §5), nie do liczby węzłów.
 
 **ID węzła:** pełne ID rodzica z sufiksem litery — `-a`, `-b`, `-c`. Węzeł nie
 dostaje osobnego wpisu w `REJESTR-PROSB-I-ZADAN.md`. **Licznik 5 rund liczy się
 dla całego tematu**, nie osobno dla każdego węzła.
+
+**Jedna fala węzłów (dispatch wszystkich węzłów tego samego tematu naraz) = jedna
+runda w liczniku, niezależnie od liczby węzłów w tej fali.** Rozstrzyga to styk
+z §3: podział na węzły nie zużywa i nie mnoży rund — ponowny dispatch po `FAIL`
+choć jednego węzła jest kolejną, pojedynczą rundą tego samego pełnego ID.
 
 Przy `FAIL` choć jednego węzła Evaluator wskazuje **dokładnie jeden** wadliwy
 węzeł i precyzyjną poprawkę wyłącznie dla niego — węzły z `PASS` nie wracają
@@ -577,7 +601,7 @@ wykonawca uzna niedokończoną albo błędną pracę za gotową.** To dwie róż
 
 Reguły przeciw samooszukiwaniu **pochodzą z faktycznie zaobserwowanych błędów
 tego projektu** (`playbook.md`), nie z teorii. Pełny szablon promptu i tabela
-„czego w prompcie nie może zabraknąć" — `civ-autobot-workflow/SKILL.md` §7.
+„czego w prompcie nie może zabraknąć" — `civ-autobot-workflow/SKILL.md` §6.
 
 ## 16. Checklisty ról — co dokładnie sprawdza Evaluator i Final Control
 

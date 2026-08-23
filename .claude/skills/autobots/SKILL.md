@@ -224,12 +224,15 @@ dispatch → Operator → Evaluator → Final Control → integracja → READY_F
 ### 4.1 Format ID
 
 ```text
-{prefiks-identyfikatora-tematu}-<OBSZAR>-<slug>-<NNN>
+{prefiks-identyfikatora-tematu}-<ETAP>-<NNN>-<slug>
 ```
 
-Prefiks i zestaw obszarów/etapów ({nazwy-etapow-projektu}) są parametrem
-projektu, ustalonym raz przy starcie procesu. ID jest **niezmienne przez
-wszystkie rundy** i nigdy nieużywane ponownie.
+Prefiks i zestaw etapów ({nazwy-etapow-projektu}) są parametrem projektu,
+ustalonym raz przy starcie procesu. **To jest wzór domyślny szkieletu, nie
+wymóg** — konkretny projekt może mieć własny i wtedy obowiązuje jego wersja
+zapisana w wypełnieniu parametrów (np. Civ „The Game" nie ma jednego prefiksu
+i używa ID opisowego z sufiksem `-Q<n>`). ID jest **niezmienne przez wszystkie
+rundy** i nigdy nieużywane ponownie.
 
 Pytanie decyzyjne dostaje pełne ID tematu plus numer: `<PEŁNE-ID>-Q2` —
 **nigdy samo „Q2"**. Nie numeruj pytań tak, by kolidowały z wcześniejszymi.
