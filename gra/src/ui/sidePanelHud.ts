@@ -81,6 +81,17 @@ export interface SidePanelHudConfig {
   /** Czy jest >1 armia gracza do cyklowania (steruje disabled strzałek). */
   canContextCycleUnit?: () => boolean;
   onEventClick?: (id: string) => void;
+  /** P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skrót karty NIE-blokującej do istniejącego miejsca
+   * w grze — `{ label }` rysuje widoczną afordancję („Pokaż na mapie →"), `null` zostawia
+   * kartę czysto informacyjną (bez skrótu, bez `cursor:pointer`). Silnik (main.ts) zwraca
+   * `null` także wtedy, gdy rodzina zdarzenia MA miejsce docelowe, ale ten konkretny cel już
+   * nie istnieje (miasto utracone, brak zapamiętanego heksu) — dzięki temu afordancja i
+   * handler `onEventClick` nie mogą się rozjechać. Brak konfiguracji = zero skrótów
+   * (zachowanie sprzed tematu, m.in. dla renderu zastępczego i testów).
+   * EN: a non-blocking card's shortcut to an existing place in the game; `null` keeps the card
+   * purely informational. The engine also returns `null` when the family has a destination but
+   * this particular target no longer exists, so affordance and handler cannot drift apart. */
+  getEventLink?: (ev: SidePanelEvent) => { label: string } | null;
   onEventDismiss?: (id: string) => void;
   /** R-WYDARZENIA-FILTR-KATEGORII: „Usuń wszystkie" — silnik decyduje co to znaczy
    * (patrz main.ts clearAllSidePanelEvents: iteruje NIEfiltrowaną listę, więc kasuje
@@ -316,6 +327,28 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
    znaków wstecznych (backtick) w komentarzach. */
 .civ-side-panel .sp-event:not(.sp-blocking) .sp-title.sp-title-generic{margin-top:0;}
 .civ-side-panel .sp-event:not(.sp-blocking) .sp-sub{font-size:11px;color:#c8b898;margin-top:1px;}
+/* P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1 — skrót karty informacyjnej („Pokaż na mapie →").
+   CELOWO NIE jest to ani złocony badge „Wymaga decyzji", ani przycisk „Otwórz →" karty
+   blokującej: zdarzenie informacyjne niczego od gracza nie chce, tylko OFERUJE skrót, więc
+   dostaje najlżejszy z trzech wariantów — pigułkę z konturem, bez wypełnienia i poświaty.
+   Rant rozjaśnia się dopiero przy hover CAŁEJ karty (klikalna jest cała karta, nie sama
+   pigułka). margin-left:auto odpycha skrót na prawo; następujący po nim ✕ (.sp-close, też
+   z margin-left:auto) siada tuż za nim, bo auto-margines konsumuje pierwszy element.
+   UWAGA: ten blok CSS żyje w template literalu TS — bez znaków wstecznych w komentarzach.
+   EN: an info card's shortcut. Deliberately the lightest of the three CTA variants — an
+   outlined pill, no fill, no glow — because an info event demands nothing, it only offers a
+   shortcut. The border brightens on hovering the WHOLE card, since the whole card is the
+   click target, not the pill itself. */
+.civ-side-panel .sp-event:not(.sp-blocking) .sp-goto-cta{flex:none;margin-left:auto;
+  font-size:10.5px;letter-spacing:.04em;color:var(--tg-gold-primary);white-space:nowrap;
+  border:1px solid rgba(232,216,138,.3);border-radius:999px;padding:2px 8px;
+  transition:border-color .15s,color .15s;}
+.civ-side-panel .sp-event:not(.sp-blocking):hover .sp-goto-cta{border-color:rgba(232,216,138,.65);}
+/* Karta bez miejsca docelowego (kategoria „czysto informacyjna" z audytu): kursor przestaje
+   kłamać, że coś się stanie po kliknięciu. Klik i tak jest dziś no-opem — zmienia się sam
+   sygnał. Karty blokujące i te ze skrótem zachowują cursor:pointer z reguły bazowej.
+   EN: a card with no destination stops advertising a click that does nothing. */
+.civ-side-panel .sp-event.sp-no-link{cursor:default;}
 
 .civ-side-panel .sp-ico{width:32px;height:32px;flex:none;border-radius:50%;
   background:var(--tg-medallion-bg);border:1.5px solid var(--tg-gold-dim);
@@ -673,7 +706,23 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         // EMPTY `title`, not a comparison against the "Koniec tury" literal (which no longer
         // exists in the code, and matching on string content would be brittle).
         const hasOwnTitle = ev.title.trim() !== '';
-        html += '<div class="sp-event' + adverseCls + '" data-id="' + ev.id + '">'
+        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: karta informacyjna dostaje widoczny skrót
+        // TYLKO wtedy, gdy silnik potwierdzi gotowe miejsce docelowe dla TEGO zdarzenia
+        // (patrz `getEventLink` w konfiguracji i `sidePanelEventLinkFor` w main.ts). Cała
+        // karta była klikalna już wcześniej — brakowało wyłącznie sygnału, że klik gdzieś
+        // prowadzi (i sygnału, że NIE prowadzi: `sp-no-link` + `cursor:default`).
+        // `role="button"`/`tabindex` nadajemy również tylko kartom ze skrótem — karta bez
+        // celu nie ma po co siedzieć w kolejności Tab.
+        // EN: an info card gets the visible shortcut only when the engine confirms a ready
+        // destination for THIS event. The whole card was already clickable; what was missing
+        // was the signal that clicking leads somewhere (and that it does not).
+        // (dotarliśmy tu wyłącznie gałęzią NIE-blokującą — blokujące zrobiły `continue` wyżej)
+        const link = config.getEventLink?.(ev) ?? null;
+        const linkCls = link === null ? ' sp-no-link' : '';
+        const linkAttrs = link === null
+          ? ''
+          : ' role="button" tabindex="0" aria-label="' + ev.title + ' — ' + link.label + '"';
+        html += '<div class="sp-event' + adverseCls + linkCls + '" data-id="' + ev.id + '"' + linkAttrs + '>'
           + '<span class="sp-ico">' + icoContent + '</span>'
           + '<div>'
           + (hasOwnTitle
@@ -681,6 +730,9 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
             : '<div class="sp-title sp-title-generic">Wydarzenie</div>')
           + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')
           + '</div>';
+        if (link !== null) {
+          html += '<span class="sp-goto-cta" data-sp-goto="' + ev.id + '">' + link.label + ' →</span>';
+        }
         if (!isPlaceholder && config.onEventDismiss !== undefined) {
           html += '<span class="sp-close" data-dismiss="' + ev.id + '" title="Zamknij" aria-label="Zamknij powiadomienie">✕</span>';
         }
@@ -719,6 +771,22 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         const id = (chip as HTMLElement).getAttribute('data-id');
         if (id !== null) config.onEventClick?.(id);
       });
+      // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: klawiatura tylko dla kart, które FAKTYCZNIE
+      // gdzieś prowadzą (tylko one dostały `role="button"`/`tabindex` w renderze wyżej) —
+      // Enter/Spacja robią dokładnie to samo co klik. Karta bez skrótu nie jest fokusowalna,
+      // więc ten listener nigdy się dla niej nie odpali. Escape (delegacja na `el` przy
+      // montażu) zamyka kartę — bez zmian, teraz po prostu osiągalny z klawiatury.
+      // EN: keyboard activation only for cards that actually lead somewhere (only those got
+      // role/tabindex above); Enter/Space do exactly what a click does.
+      if (chip.querySelector('[data-sp-goto]') !== null) {
+        chip.addEventListener('keydown', (e: Event) => {
+          const ke = e as KeyboardEvent;
+          if (ke.key !== 'Enter' && ke.key !== ' ') return;
+          ke.preventDefault();
+          const id = (chip as HTMLElement).getAttribute('data-id');
+          if (id !== null) config.onEventClick?.(id);
+        });
+      }
     });
 
     el.querySelectorAll('.sp-close[data-dismiss]').forEach(btn => {
