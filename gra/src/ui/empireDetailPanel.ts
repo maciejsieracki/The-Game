@@ -162,8 +162,19 @@ function renderDefaultPoziomRacjiSection(): string {
     + `<div class="civ-emp-foot">Miasta z lokalnym limitem Spichlerza poniżej tego poziomu i tak obniżą go automatycznie na koniec tury (bez zmiany globalnego ustawienia).</div>`;
   const onSetAutoWyzywienieForAll = empireGlobalDefaultsUi.onOwnerSetAutoWyzywienieForAll;
   if (onSetAutoWyzywienieForAll) {
-    h += `<button type="button" class="civ-emp-autofeed-btn" data-autofeed-all-btn>`
-      + `Włącz Auto-Żywienie we wszystkich miastach bez indywidualnego ustawienia</button>`;
+    // P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1 (Maciej): na przycisku ma stać SAMA nazwa
+    // funkcji, cały zakres i zastrzeżenia idą do tooltipa. Czasownik „Włącz" zostaje w etykiecie
+    // — bez niego „Auto-Żywienie" nie mówi, czy przycisk włącza czy wyłącza (przycisk jest
+    // jednorazową akcją „ustaw teraz", nie przełącznikiem stanu). Tooltip natywny `title`, tak
+    // jak sąsiednie przyciski tej sekcji (`civ-emp-praca-split-end` MIN/MAX) — bez budowania
+    // osobnego komponentu dla jednego elementu.
+    // EN: label = feature name only; scope + caveats moved into the native `title` tooltip.
+    const autofeedTip = 'Włącza Auto-Żywienie we wszystkich miastach bez indywidualnego '
+      + 'ustawienia poziomu Racji. Miasta z własnym ustawieniem („Indywidualne") pozostają '
+      + 'bez zmian. Akcja jednorazowa — ustawia stan teraz, nie jest trwałym przełącznikiem.';
+    h += `<button type="button" class="civ-emp-autofeed-btn" data-autofeed-all-btn `
+      + `title="${esc(autofeedTip).replace(/"/g, '&quot;')}">`
+      + `Włącz Auto-Żywienie</button>`;
   }
   h += `</div>`;
   queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange, onSetAutoWyzywienieForAll));
@@ -318,9 +329,13 @@ function ensureStyles(): void {
 .civ-emp-mocview-btn.active{background:rgba(217,164,65,0.16);border-color:#d9a441;color:#d9a441;}
 /* P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: przycisk jednorazowej akcji "ustaw teraz"
    (nie toggle stanu) — wzorem broadcastPoziomRacjiToOwnerCities, ale dla autoWyzywienie. */
+/* P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1: etykieta skrócona do samej nazwy funkcji, więc
+   font 11.5px (dobrany pod DWUWIERSZOWY długi tekst) był teraz optycznie za drobny na pełną
+   szerokość — 12.5px + line-height 1.2 + min-height trzymają tę samą wysokość przycisku co
+   wcześniej, bez zmiany rytmu sekcji. */
 .civ-emp-autofeed-btn{width:100%;margin-top:8px;padding:8px 10px;border-radius:6px;
-  border:1px solid #2b3543;background:#171e2a;color:#78c95a;font-size:11.5px;font-weight:700;
-  cursor:pointer;text-align:center;}
+  border:1px solid #2b3543;background:#171e2a;color:#78c95a;font-size:12.5px;font-weight:700;
+  line-height:1.2;min-height:34px;cursor:pointer;text-align:center;}
 .civ-emp-autofeed-btn:hover{border-color:#4e9a3f;background:rgba(78,154,63,0.14);}
 .civ-emp-resp{margin:12px 0 4px;padding:11px 14px;border-radius:8px;background:#1c2431;
   border:1px solid #2b3543;font-size:12.5px;color:#cfd5de;}
