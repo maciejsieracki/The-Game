@@ -13,13 +13,24 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
-## ROBOCZA aab7e1e7 - 2026-08-22 16:20 UTC - FALA 318: emoji -> ikony marki w panelu Praca miasta
+## ROBOCZA 79bae2c4 - 2026-08-22 18:10 UTC - FALA 319: 5 poprawek (slider budzetu automatu, przycisk auto-zywienie, REGRES3 pula Pracy, naglowek wydarzen, audyt przekierowan)
+|- md5 (pełne): 79bae2c49a4119337ceaac98730522d8 · stempel: ROBOCZA · label 79bae2c4 · źródłowy commit integracji: `ab66195c`
+|- `P-PRACA-BUDMODE-SLIDER-MAX-50-NIESPOJNY-Q1`: suwaki „budżetu automatu" ulepszeń terenu (empire+city) w panelu budowy akceptują teraz pełny zakres 0–100% (były fizycznie ograniczone do 50% mimo naprawionego wcześniej backendu — druga część tego samego regresu).
+|- `P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1`: przycisk zbiorczego Auto-Żywienia pokazuje teraz krótką etykietę „Włącz Auto-Żywienie", pełne wyjaśnienie w tooltipie.
+|- `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1`: naprawiono drugi, bliźniaczy bug tej samej klasy co poprzedni regres — guard end-of-turn chronił tylko `_lastPracaRate`, nie chronił równoległego nadpisania `_lastPlayerCityEcon` (tabela popupu imperium) projekcją zamiast realnym tickiem tury.
+|- `P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1`: karty zdarzeń w panelu bocznym pokazują teraz „Wydarzenie" jako dominujący nagłówek zamiast redundantnego „Koniec tury"; zdarzenia ze specyficznym tytułem (np. „Dyplomacja") bez zmian.
+|- `P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1`: pełny audyt 16 rodzin zdarzeń panelu bocznego; 8 rodzin dostało klikalny skrót do już istniejącego miejsca docelowego (eliminacje, wojny, naruszenia granic, chatki, szlaki handlowe, auto-racje, nowa epoka) — karty bez potwierdzonego celu jawnie NIE udają klikalnych. Dwa DECISION_REQUIRED czekają na właściciela (karta eliminacji przez podbój, dług architektoniczny kolejki end-of-turn).
+|- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), zweryfikowane niezależnie przez orkiestratora po każdym scaleniu (tsc czyste, Vite 846 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `dyspozycje/PYTANIA-OTWARTE.md` (wpisy #11–#15). Dwa nowe tematy `P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1`/`P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1` czekają na decyzję właściciela.
+|- **AKTUALNA**
+
+## ROBOCZA aab7e1e7 - 2026-08-22 16:20 UTC - FALA 318: emoji -> ikony marki w panelu Praca miasta — **ZASTĄPIONA** (→ 79bae2c4)
 |- md5 (pełne): aab7e1e7a7071ca1c1da62b5cd44be5a · stempel: ROBOCZA · label aab7e1e7 · źródłowy commit integracji: `3b1e70b6`
 |- `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`: surowe emoji (🔨/🏛/📦/👤) w panelu miasta „PODZIAŁ PRACY" zastąpione ikonami marki przez istniejący system `CP_INLINE_EMOJI_BRAND`/`cpInlineIcons()`/`cityPanelChipIconWrap()` — bez projektowania nowego języka wizualnego (dodane brakujące mapowanie `📦`→`chip-crate`, naprawione 2 miejsca omijające helper: hero i intro karty „Praca — co to znaczy").
 |- Operator→Evaluator→Final Control (Opus 5 High dla Operatora/Evaluatora, temat wizualny wg `R-PROC-AUTOBOT.md` §5a; Sonnet 5 High Final Control) — wszystkie PASS/PASS-WITH-NOTES, zweryfikowane realnym renderem Playwright/Chromium z dwustopniową kontrolą negatywną. Zmergowane non-ff do `main`, niezależnie zweryfikowane przez orkiestratora (tsc/build/testy tematu/5 bramek referencyjnych zielone).
 |- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
 |- Szczegóły: `dyspozycje/PYTANIA-OTWARTE.md` wpis `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`. Analogiczny wzorzec znaleziony w innych panelach/plikach (poza zakresem, nie naprawiony) zarejestrowany jako `P-EMOJI-SUROWE-INNE-PANELE-Q1`.
-|- **AKTUALNA**
 
 ## ROBOCZA 0df8953e - 2026-08-22 15:58 UTC - FALA 317: masowa paczka 9 poprawek UI/UX/ekonomii (zgłoszenia właściciela z gry) — **ZASTĄPIONA** (→ aab7e1e7)
 |- md5 (pełne): 0df8953e5760af21d2b22a505b42f2ab · stempel: ROBOCZA · label 0df8953e · źródłowy commit integracji: `36dff8e9`
