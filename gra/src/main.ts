@@ -901,6 +901,12 @@ import {
   type DeferredEotHint,
 } from './game/eot-event-defer';
 import { isBlockingSidePanelEvent } from './game/side-panel-event-priority';
+import {
+  sidePanelEventLinkKind,
+  sidePanelEventLinkLabel,
+  villageEventHex,
+  type SidePanelEventLink,
+} from './game/side-panel-event-link';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -12752,6 +12758,23 @@ async function boot(): Promise<void> {
     // wpis w WYDARZENIACH, symetrycznie do villageEventLog — czyszczony co turę
     // w tym samym miejscu, zob. `villageEventLog.length = 0;` przy turn++).
     const tradeRouteEventLog: SidePanelEvent[] = [];
+    /**
+     * P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: id wpisu `trade-new-*`/`trade-lost-*` → id miasta
+     * GRACZA będącego początkiem szlaku (klucz = SidePanelEvent.id, analogicznie do
+     * `borderMarchEventTargets`/`civElimEventDetails` wyżej). `route.fromCityId` jest zawsze
+     * miastem gracza — `refreshTradeRoutes` (trade-routes.ts) trzyma wyłącznie pary
+     * gracz→obcy (`from.ownerId !== 0 || to.ownerId === 0 → continue`), więc druga strona
+     * szlaku nigdy nie ma panelu miasta (panel jest gracz-only). Kliknięcie karty otwiera
+     * panel tego miasta — sekcję „Szlaki handlowe" (cityPanel.ts), czyli miejsce, w którym
+     * gracz widzi i zmienia stan szlaków. Wpis może się „zestarzeć" (miasto utracone /
+     * zniknęło — jeden z powodów zerwania szlaku), dlatego `sidePanelEventLinkFor` sprawdza
+     * istnienie miasta ZANIM pokaże skrót.
+     * EN: event id → the PLAYER city that anchors the route (routes are always player→foreign),
+     * so clicking opens that city's panel and its "Trade routes" section. The entry can go
+     * stale (city lost — one of the reasons a route breaks), so the link resolver re-checks
+     * that the city still exists before offering the shortcut.
+     */
+    const tradeRouteEventPlayerCityIds = new Map<string, string>();
     /** SPICH-AUTO-Q1: komunikat auto-obniżenia racji — widoczny przez turę gracza po EOT. */
     const rationAutoEventLog: SidePanelEvent[] = [];
     // R-PRZEMARSZ-WYGASANIE-Q1=A: log per-turowy naruszeń granic (przemarsz/wtargnięcie),
@@ -13066,6 +13089,8 @@ async function boot(): Promise<void> {
         const income = tradeRouteTotalDistanceIncome(route.dystans, route.medium, incomeParams);
         const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
         showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
+        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: zapamiętaj miasto gracza pod tym samym id.
+        tradeRouteEventPlayerCityIds.set('trade-new-' + turn + '-' + route.id, route.fromCityId);
         pushOnce({
           id: 'trade-new-' + turn + '-' + route.id,
           icon: '\u{1F9ED}', // 🧭
@@ -13100,6 +13125,10 @@ async function boot(): Promise<void> {
 
         const summary = `${fromName} ↔ ${toName} (${civLabel})` + (reason ? ' — ' + reason : '');
         showHintMessage('⛓️ Szlak handlowy zerwany: ' + summary, 4500);
+        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: jw. — przy zerwaniu miasto gracza może już
+        // nie istnieć (powód „miasto zniknęło"/„zmiana właściciela"); zapis jest tani, a
+        // `sidePanelEventLinkFor` i tak weryfikuje istnienie miasta przed pokazaniem skrótu.
+        tradeRouteEventPlayerCityIds.set('trade-lost-' + turn + '-' + route.id, route.fromCityId);
         pushOnce({
           id: 'trade-lost-' + turn + '-' + route.id,
           icon: '⛓️', // ⛓️‍💥 (fallback bez kombinujacego znaku dla zgodnosci fontow)
@@ -13215,6 +13244,105 @@ async function boot(): Promise<void> {
         });
       }
       return events.filter(e => !dismissedSidePanelEventIds.has(e.id));
+    }
+
+    /**
+     * P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1 — JEDNO miejsce rozstrzygające „czy ta karta panelu
+     * bocznego prowadzi gdzieś dalej". Woła je i renderer (`getEventLink` → rysuje skrót
+     * „Pokaż na mapie →"), i handler kliknięcia (`openSidePanelEventLink` niżej), więc
+     * afordancja i akcja nie mogą się rozjechać: skrót pojawia się DOKŁADNIE wtedy, gdy klik
+     * ma dokąd prowadzić.
+     *
+     * Dwie warstwy:
+     *  1. `sidePanelEventLinkKind` (side-panel-event-link.ts) — statyczny kontrakt po prefiksie
+     *     id: która RODZINA zdarzeń w ogóle ma miejsce docelowe;
+     *  2. `switch` niżej — czy cel istnieje TERAZ (heks pary zapamiętany, szczegóły eliminacji
+     *     w mapie, miasto gracza nadal stoi). Brak celu → `null`, czyli karta zostaje czysto
+     *     informacyjna zamiast obiecywać martwy skok.
+     *
+     * EN: the single decision point for "does this card lead somewhere" — used both by the
+     * renderer (to draw the shortcut) and by the click handler (to perform the jump), so the
+     * affordance can never promise a jump the handler will not make.
+     */
+    function sidePanelEventLinkFor(id: string): SidePanelEventLink | null {
+      const kind = sidePanelEventLinkKind(id);
+      if (kind === null) return null;
+      switch (kind) {
+        case 'map-focus': {
+          if (id.startsWith('village-')) return villageEventHex(id) !== null ? { kind, label: sidePanelEventLinkLabel(kind) } : null;
+          // `borderMarchEventTargets` trzyma `null`, gdy para nie niosła q/r — wtedy nie ma
+          // dokąd skakać i skrót się nie pokazuje (dotąd klik był po cichu no-opem).
+          return (borderMarchEventTargets.get(id) ?? null) !== null
+            ? { kind, label: sidePanelEventLinkLabel(kind) }
+            : null;
+        }
+        case 'civ-elim':
+          return civElimEventDetails.has(id) ? { kind, label: sidePanelEventLinkLabel(kind) } : null;
+        case 'city-panel': {
+          const cityId = tradeRouteEventPlayerCityIds.get(id);
+          if (cityId === undefined) return null;
+          // Miasto mogło zostać utracone/zniknąć (to jeden z powodów zerwania szlaku) —
+          // panel miasta jest gracz-only, więc bez tego sprawdzenia skrót prowadziłby donikąd.
+          const city = cities.find(c => c.id === cityId && c.ownerId === 0);
+          return city ? { kind, label: sidePanelEventLinkLabel(kind) } : null;
+        }
+        case 'diplo-wars':
+        case 'empire-spichlerz':
+        case 'tech-tree':
+          // Widoki globalne (panel dyplomacji / panel imperium — blok Spichlerz / drzewo
+          // technologii) istnieją zawsze, niezależnie od stanu partii — brak warunku runtime.
+          return { kind, label: sidePanelEventLinkLabel(kind) };
+      }
+    }
+
+    /**
+     * Wykonanie skrótu karty NIE-blokującej. `true` = zdarzenie miało gotowe miejsce docelowe
+     * i zostało obsłużone (wołający kończy), `false` = brak skrótu, wołający schodzi do swoich
+     * dalszych gałęzi (karty blokujące: `diplo-pend-`, `negot-`, `prod-empty-`, `revolt-`).
+     * Każda gałąź używa funkcji, która istniała w kodzie PRZED tym tematem — temat nie tworzy
+     * ani jednego nowego ekranu, tylko podpina istniejące (patrz audyt w raporcie).
+     */
+    function openSidePanelEventLink(id: string): boolean {
+      const link = sidePanelEventLinkFor(id);
+      if (link === null) return false;
+      switch (link.kind) {
+        case 'map-focus': {
+          const hex = id.startsWith('village-') ? villageEventHex(id) : (borderMarchEventTargets.get(id) ?? null);
+          if (hex === null) return false;
+          const pos = axialToWorld(hex.q, hex.r, HEX_R);
+          camCtrl.focusAt(pos.x, pos.z, 22);
+          return true;
+        }
+        case 'diplo-wars':
+          openDiploListWarEnemies();
+          return true;
+        case 'civ-elim': {
+          // Karta side-panelu niesie tylko treść skróconą (recordCivElimEvent) — pełna treść
+          // zapisana pod tym samym id trafia do modalu ELIMINACJA! (civElimNotice.ts).
+          const info = civElimEventDetails.get(id);
+          if (!info) return false;
+          showCivElimNotice({ civLabel: info.civLabel, details: info.details });
+          return true;
+        }
+        case 'city-panel': {
+          const cityId = tradeRouteEventPlayerCityIds.get(id);
+          const city = cityId === undefined ? undefined : cities.find(c => c.id === cityId && c.ownerId === 0);
+          if (!city) return false;
+          openCityPanelForPlayer(city);
+          return true;
+        }
+        case 'empire-spichlerz':
+          // Treść karty wprost mówi o Spichlerzu („Spichlerz nie pokrywa deficytu miast",
+          // spich-auto-ration-notify.ts) — otwieramy dokładnie ten blok panelu imperium.
+          showEmpireDetailPanel('spichlerz');
+          return true;
+        case 'tech-tree':
+          // Ten sam widok, który oferuje popup odkrycia epokowego tuż obok emitera karty
+          // (`showTechDiscoveryNotice({ onOpenTree: () => showTechTreeView(0) })`,
+          // notifyPlayerEraChangeIfAdvanced) — bez wymyślania nowego ekranu „historii epok".
+          showTechTreeView(0);
+          return true;
+      }
     }
 
     /** Kolejka otwartych propozycji dyplomatycznych (FIFO: inbox → stół negocjacji). */
@@ -19316,37 +19444,25 @@ async function boot(): Promise<void> {
         onContextCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta, { all: true }),
         canContextCycleUnit: () => cyclablePlayerArmyLeadsAll().length > 1,
         getContextPanelMessage: () => buildContextPanelMessage(),
+        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: renderer pyta o skrót dla karty
+        // NIE-blokującej — TA SAMA funkcja, której używa `onEventClick` niżej.
+        getEventLink: (ev) => (ev.blocking === true ? null : sidePanelEventLinkFor(ev.id)),
         onEventClick: (id) => {
-          if (id.startsWith('border-march-')) {
-            // R-PRZEMARSZ-ATRYBUCJA-Q1=B: skok kamery na heks pary, gdy znany (patrz
-            // borderMarchEventTargets / applyBorderMarchPenaltiesEndTurn). Wzorzec identyczny do
-            // 'revolt-' niżej (axialToWorld + camCtrl.focusAt) — bez otwierania dodatkowego panelu,
-            // bo naruszyciel nie ma jednego miasta/jednostki do pokazania w kontekście.
-            const target = borderMarchEventTargets.get(id);
-            if (target) {
-              const pos = axialToWorld(target.q, target.r, HEX_R);
-              camCtrl.focusAt(pos.x, pos.z, 22);
-            }
-            return;
-          }
-          if (id.startsWith('war-')) {
-            openDiploListWarEnemies();
-            return;
-          }
+          // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skróty kart NIE-blokujących idą przez jedno
+          // wspólne rozstrzygnięcie (`sidePanelEventLinkFor`), to samo, które steruje widoczną
+          // afordancją na karcie. Obejmuje dawne, rozsypane tu gałęzie `border-march-`,
+          // `war-`, `elim-cs-` (zachowanie 1:1) oraz nowo podpięte `village-`, `trade-new-`/
+          // `trade-lost-`, `auto-ration-t`, `era-`. `false` = brak miejsca docelowego, więc
+          // schodzimy do gałęzi kart BLOKUJĄCYCH poniżej (te mają własny przycisk „Otwórz →").
+          // EN: non-blocking shortcuts all go through the one resolver that also drives the
+          // visible affordance; `false` falls through to the blocking-card branches below.
+          if (openSidePanelEventLink(id)) return;
           if (id.startsWith('diplo-pend-')) {
             openDiplomacyPendingById(id);
             return;
           }
           if (id.startsWith('negot-')) {
             openDiplomacyAudienceForNegotiation(id);
-            return;
-          }
-          if (id.startsWith('elim-cs-')) {
-            // RUNDA 5: karta side-panelu niesie tylko treść skróconą (recordCivElimEvent) —
-            // kliknięcie otwiera modal z pełną treścią zapisaną pod tym samym id
-            // (civElimEventDetails), zamiast dawnego, kolidującego toastu #hintToast.
-            const info = civElimEventDetails.get(id);
-            if (info) showCivElimNotice({ civLabel: info.civLabel, details: info.details });
             return;
           }
           const prodCityId = cityIdFromProdEmptyEventId(id);
@@ -19493,6 +19609,68 @@ async function boot(): Promise<void> {
       }),
       isEndTurnInProgress: () => endTurnInProgress,
       getWorldState: () => ({ citiesLen: cities.length, unitsLen: units.length, turn }),
+    };
+
+    // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug` wyżej /
+    // `__civEmbarkDebug` niżej) — wołany WYŁĄCZNIE z Playwright w
+    // `tools/sidepanel-event-przekierowania-real-render-test.cjs`
+    // (P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1). Pozwala zainscenizować w ŻYWEJ, zbudowanej grze
+    // konkretne karty panelu WYDARZENIA (eliminacja miasta-państwa, nowy/zerwany szlak,
+    // auto-racje, awans epoki, chatka, naruszenie granic) bez rozgrywania dziesiątek tur w
+    // headless Chromium — a potem kliknąć je PRAWDZIWĄ myszą i sprawdzić, czy otworzył się
+    // właściwy, istniejący widok. Hak WYŁĄCZNIE zapisuje dane wejściowe zdarzeń i czyta stan;
+    // nie omija ani nie duplikuje ścieżki klikalności — klik idzie normalnym `onEventClick`.
+    // EN: test hook (same pattern/rationale as `__eraTestDebug`) — called ONLY from Playwright.
+    // Stages concrete Events cards in the LIVE, built game so the test can click them with a
+    // real mouse and assert the correct existing view opened. The hook only seeds event inputs
+    // and reads state; the click itself goes through the normal `onEventClick` path.
+    (window as any).__sidePanelLinkTestDebug = {
+      seedEvents: (evs: SidePanelEvent[]): number => {
+        warEventLog.length = 0;
+        for (let i = evs.length - 1; i >= 0; i--) warEventLog.unshift(evs[i]!);
+        dismissedSidePanelEventIds.clear();
+        refreshD1bHud();
+        return warEventLog.length;
+      },
+      setBorderMarchTarget: (id: string, q: number, r: number): void => {
+        borderMarchEventTargets.set(id, { q, r });
+      },
+      setCivElimDetails: (id: string, civLabel: string, details: string): void => {
+        civElimEventDetails.set(id, { civLabel, details });
+      },
+      setTradeCity: (id: string, cityId: string): void => {
+        tradeRouteEventPlayerCityIds.set(id, cityId);
+      },
+      firstPlayerCity: (): { id: string; name: string } | null => {
+        const c = cities.find(x => x.ownerId === 0);
+        return c ? { id: c.id, name: c.name } : null;
+      },
+      linkFor: (id: string): SidePanelEventLink | null => sidePanelEventLinkFor(id),
+      cameraTarget: (): { x: number; z: number; dist: number } => camCtrl.getFocusState(),
+      /** Stan „który widok jest otwarty" czytany WŁASNYMI predykatami gry (nie zgadywaniem
+       * po klasach CSS) — to one decydują o widoczności panelu w reszcie kodu. */
+      openViews: (): Record<string, unknown> => ({
+        cityPanel: isCityPanelOpen(),
+        cityPanelCityId: getOpenCityPanelCityId(),
+        diploList: isDiploListHudOpen(),
+        diploListFilter: getDiploListFilter(),
+        empirePanel: isEmpireDetailPanelOpen(),
+        techTree: isTechTreeViewOpen(),
+        civElimModal: document.getElementById('civ-elim-notice-host') !== null,
+      }),
+      /** Heks → punkt świata, tą samą funkcją co skok kamery — do porównania w teście. */
+      hexToWorld: (q: number, r: number): { x: number; z: number } => {
+        const p = axialToWorld(q, r, HEX_R);
+        return { x: p.x, z: p.z };
+      },
+      closeAll: (): void => {
+        hideEmpireDetailPanel();
+        hideTechTreeView();
+        hideCityPanel();
+        if (isDiploListHudOpen()) hideDiploListHud();
+        document.getElementById('civ-elim-notice-host')?.remove();
+        refreshD1bHud();
+      },
     };
 
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---

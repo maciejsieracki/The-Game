@@ -274,6 +274,9 @@ export interface HudConfig {
   /** Panel boczny (D1=C): wydarzenia z tury od silnika. */
   getEvents?: () => SidePanelEvent[];
   onEventClick?: (id: string) => void;
+  /** P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: przelot do panelu bocznego — skrót karty
+   * NIE-blokującej do istniejącego miejsca w grze (patrz `getEventLink` w sidePanelHud.ts). */
+  getEventLink?: (ev: SidePanelEvent) => { label: string } | null;
   onEventDismiss?: (id: string) => void;
   /** R-WYDARZENIA-FILTR-KATEGORII: przycisk „Usuń wszystkie" w toolbarze panelu WYDARZENIA. */
   onDismissAll?: () => void;
@@ -1488,6 +1491,7 @@ function mountSidePanel(): void {
     onContextCycleUnit: cfg.onContextCycleUnit,
     canContextCycleUnit: cfg.canContextCycleUnit,
     onEventClick: cfg.onEventClick,
+    getEventLink: cfg.getEventLink,
     onEventDismiss: cfg.onEventDismiss,
     onDismissAll: cfg.onDismissAll,
   });
