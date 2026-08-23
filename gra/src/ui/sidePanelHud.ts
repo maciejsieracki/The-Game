@@ -31,6 +31,14 @@ export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enem
 export interface SidePanelEvent {
   id: string;
   icon: string;
+  /** Własny, konkretny tytuł karty („Dyplomacja”, „Produkcja: Rzym”). PUSTY łańcuch `''`
+   * znaczy „to zdarzenie nie ma własnego tytułu” — karta informacyjna renderuje wtedy samo
+   * słowo „Wydarzenie” w slocie tytułu, zamiast doklejać generyczny placeholder nad
+   * `subtitle` (P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1). Karty blokujące
+   * (`blocking:true`) ZAWSZE mają własny tytuł — nie przechodzą tą ścieżką.
+   * EN: the card's own concrete title. An EMPTY string `''` means "this event has no title of
+   * its own" — an info card then renders just the word "Wydarzenie" in the title slot instead
+   * of a generic placeholder above `subtitle`. Blocking cards always carry a real title. */
   title: string;
   subtitle?: string;
   kind: SidePanelEventKind;
@@ -300,6 +308,13 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-panel .sp-event:not(.sp-blocking) .sp-ico .sp-ic-svg{width:15px;height:15px;opacity:.9;}
 .civ-side-panel .sp-event:not(.sp-blocking) .sp-title{font-family:var(--tg-font-title);font-size:13.5px;
   color:#f4e6a8;margin-top:2px;}
+/* P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1: „Wydarzenie” awansowane do slotu tytułu
+   (karta bez własnego tytułu). Ta sama rodzina/rozmiar/kolor co każdy inny .sp-title
+   — dominacja wizualna 1:1 z dawnym wierszem „Koniec tury”, który tu stał. Zerowy
+   margin-top, bo to teraz PIERWSZY wiersz nagłówka: 2px odstępu miało sens tylko
+   pod overline .sp-kicker. UWAGA: ten blok CSS żyje w template literalu TS — bez
+   znaków wstecznych (backtick) w komentarzach. */
+.civ-side-panel .sp-event:not(.sp-blocking) .sp-title.sp-title-generic{margin-top:0;}
 .civ-side-panel .sp-event:not(.sp-blocking) .sp-sub{font-size:11px;color:#c8b898;margin-top:1px;}
 
 .civ-side-panel .sp-ico{width:32px;height:32px;flex:none;border-radius:50%;
@@ -637,10 +652,33 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         }
 
         const adverseCls = isAdverseInfoEvent(ev) ? ' sp-info-adverse' : '';
+        // P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1 — nagłówek karty informacyjnej ma
+        // DOKŁADNIE JEDEN dominujący wiersz, nigdy dwa.
+        //  • zdarzenie z własnym, konkretnym tytułem („Dyplomacja”, „Produkcja: Rzym”,
+        //    „Wypowiedzieliśmy wojnę: Egipt”) — BEZ ZMIAN względem dotychczasowego wyglądu:
+        //    mały overline „Wydarzenie” + ten tytuł dużą czcionką (`.sp-title`).
+        //  • zdarzenie BEZ własnego tytułu (`title === ''` — generyczne zdarzenie końca tury
+        //    z `deferredHintsToSidePanelEvents`, dawniej placeholder „Koniec tury”) — słowo
+        //    „Wydarzenie” AWANSUJE z overline do slotu tytułu i jedzie tą samą dużą czcionką,
+        //    a redundantny wiersz znika. Nic się nie traci informacyjnie: konkretna treść
+        //    („Sumerowie · miasto-państwo — ELIMINACJA! …”) w całości siedzi w `subtitle`.
+        // Rozróżnienie idzie po PUSTYM `title`, a nie po porównaniu z literałem „Koniec tury” —
+        // literał nie istnieje już w kodzie, a warunek na treści łańcucha byłby kruchy
+        // (złapałby też przyszły, celowo nazwany tak tytuł).
+        // EN: an info card's header has EXACTLY ONE dominant line, never two. An event with its
+        // own concrete title renders unchanged (small "Wydarzenie" overline + big title); an
+        // event with `title === ''` (generic end-of-turn event, formerly the "Koniec tury"
+        // placeholder) promotes the word "Wydarzenie" into the title slot and drops the
+        // redundant row — the concrete text lives in `subtitle` anyway. The discriminator is the
+        // EMPTY `title`, not a comparison against the "Koniec tury" literal (which no longer
+        // exists in the code, and matching on string content would be brittle).
+        const hasOwnTitle = ev.title.trim() !== '';
         html += '<div class="sp-event' + adverseCls + '" data-id="' + ev.id + '">'
           + '<span class="sp-ico">' + icoContent + '</span>'
-          + '<div><span class="sp-kicker">Wydarzenie</span>'
-          + '<div class="sp-title">' + ev.title + '</div>'
+          + '<div>'
+          + (hasOwnTitle
+            ? '<span class="sp-kicker">Wydarzenie</span><div class="sp-title">' + ev.title + '</div>'
+            : '<div class="sp-title sp-title-generic">Wydarzenie</div>')
           + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')
           + '</div>';
         if (!isPlaceholder && config.onEventDismiss !== undefined) {

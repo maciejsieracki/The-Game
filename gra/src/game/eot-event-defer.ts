@@ -106,17 +106,19 @@ interface EotEventDraft {
  * + `kind:'diplo'` (spójnie z innymi kartami dyplomacji z main.ts). Tylko handel AI↔AI (jedyny
  * „nie-nasz” typ hintu odłożonego tą ścieżką) dostaje dodatkowo `origin:'other-civs'`, żeby chip
  * 🌍 „Inne cyw.” mógł go filtrować — komunikaty gracz↔AI dotyczą gracza wprost, więc origin nie jest
- * im nadawany. Wszystkie pozostałe hinty EOT zachowują dotychczasową etykietę „Koniec tury” i
- * `kind:'info'`.
+ * im nadawany. Wszystkie pozostałe hinty EOT dostają PUSTY `title` (`''`) i `kind:'info'`
+ * — P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1 skasowało dawny generyczny placeholder
+ * „Koniec tury”; patrz komentarz przy samym `title:` niżej.
  * EN: diplomacy entries — AI↔AI trade (" handluje z " marker) AND player↔AI diplomacy messages
  * (text starting with "Dyplomacja:") — get the "Dyplomacja" label + `kind:'diplo'` (consistent with
  * other diplomacy cards from main.ts). Only AI↔AI trade (the sole "not-ours" hint type deferred via
  * this path) additionally gets `origin:'other-civs'`, so the 🌍 "Other civs" chip can filter it —
  * player↔AI messages concern the player directly, so no origin is set for them. All remaining EOT
- * hints keep the existing "Koniec tury" label and `kind:'info'`.
+ * hints get an EMPTY `title` (`''`) and `kind:'info'` — P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1
+ * dropped the former generic "Koniec tury" placeholder; see the comment at `title:` below.
  *
- * P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1: wpisy `kind:'info'` o identycznej treści (title + subtitle
- * PO stripie HTML) w obrębie tej samej listy (czyli tej samej tury) scalają się w JEDNĄ kartę
+ * P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1: wpisy `kind:'info'` o identycznej treści (`subtitle`
+ * PO stripie HTML — patrz nota przy `const key` niżej) w obrębie tej samej listy (czyli tej samej tury) scalają się w JEDNĄ kartę
  * z widocznym licznikiem wystąpień dopisanym do `subtitle` — dziś kilka niezależnych wyrębów
  * lasu w tej samej turze generowało kilka identycznych kart „Koniec tury” w rzędzie (zgłoszenie
  * właściciela). Kolejność wynikowej listy = pozycja PIERWSZEGO wystąpienia w grupie (scalona
@@ -125,7 +127,7 @@ interface EotEventDraft {
  * zlanie dwóch osobnych negocjacji w jedną kartę byłoby mylące, a duplikaty w praktyce
  * zaobserwowano tylko dla `kind:'info'`. `id` finalnych kart używa indeksu PO scaleniu (nie
  * oryginalnego indeksu przed scaleniem), żeby uniknąć kolizji/dziur w numeracji.
- * EN: `kind:'info'` entries with identical content (title + subtitle after HTML strip) within
+ * EN: `kind:'info'` entries with identical content (`subtitle` after HTML strip) within
  * the same list (i.e. the same turn) are merged into a SINGLE card with a visible occurrence
  * count appended to `subtitle` — several independent forest-clearing hints in the same turn
  * used to produce several identical "Koniec tury" cards in a row (owner report). The resulting
@@ -164,15 +166,28 @@ export function deferredHintsToSidePanelEvents(
     const isDiplomacy = isAiAiTrade || isPlayerAiDiplomacy;
     return {
       icon: '\u2139\ufe0f',
-      title: isDiplomacy ? 'Dyplomacja' : 'Koniec tury',
+      // P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1: wpisy dyplomatyczne zachowuj\u0105 w\u0142asny,
+      // konkretny tytu\u0142 \u201eDyplomacja". Wszystkie pozosta\u0142e hinty EOT dostaj\u0105 PUSTY `title`
+      // (`''` = \u201ebrak w\u0142asnego tytu\u0142u"), a nie dawny generyczny placeholder \u201eKoniec tury" \u2014
+      // ten wiersz nic nie wnosi\u0142 (fakt, \u017ce rzecz dzieje si\u0119 pod koniec tury, jest oczywisty),
+      // a zas\u0142ania\u0142 konkretn\u0105 tre\u015b\u0107, kt\u00f3ra i tak w ca\u0142o\u015bci siedzi w `subtitle` (np.
+      // \u201eSumerowie \u00b7 miasto-pa\u0144stwo \u2014 ELIMINACJA! \u2026"). Kart\u0119 z pustym `title` renderuje
+      // sidePanelHud tak, \u017ce s\u0142owo \u201eWydarzenie" awansuje z overline do slotu tytu\u0142u.
+      // EN: diplomacy entries keep their own concrete "Dyplomacja" title. All remaining EOT
+      // hints get an EMPTY `title` (`''` = "no own title") instead of the former generic
+      // "Koniec tury" placeholder \u2014 that row carried no information (end-of-turn timing is
+      // obvious) while pushing down the concrete text, which lives in `subtitle` anyway.
+      // sidePanelHud renders an empty-`title` card by promoting the word "Wydarzenie" from
+      // the overline into the title slot.
+      title: isDiplomacy ? 'Dyplomacja' : '',
       subtitle: h.msg.replace(/<[^>]+>/g, ''),
       kind: isDiplomacy ? ('diplo' as const) : ('info' as const),
       ...(isAiAiTrade ? { origin: 'other-civs' as const } : {}),
     };
   });
 
-  // P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1 — scalanie: tylko `kind:'info'`, klucz = title +
-  // subtitle (już po stripie HTML powyżej). `infoGroupIndexByKey` pamięta pozycję w `merged`,
+  // P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1 — scalanie: tylko `kind:'info'`, klucz = sam
+  // `subtitle` (już po stripie HTML powyżej). `infoGroupIndexByKey` pamięta pozycję w `merged`,
   // w której wylądowała grupa PIERWSZEGO wystąpienia — kolejne duplikaty tylko inkrementują
   // `count` tej pozycji, nie tworzą nowego wpisu i nie przesuwają grupy (kolejność = pozycja
   // pierwszego wystąpienia). Wpisy `diplo` zawsze trafiają jako nowa, osobna pozycja (count
@@ -181,7 +196,21 @@ export function deferredHintsToSidePanelEvents(
   const infoGroupIndexByKey = new Map<string, number>();
   for (const d of drafts) {
     if (d.kind === 'info') {
-      const key = d.title + ' ' + d.subtitle;
+      // P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1: klucz = SAM `subtitle` (już po stripie
+      // HTML), nie `title + subtitle`. Powód: po tej zmianie każdy scalany wpis (`kind:'info'`)
+      // ma `title === ''`, więc człon tytułowy był stałą dla całej grupy kandydatów i nie niósł
+      // ŻADNEJ mocy rozróżniającej — dokładnie tak samo jak wcześniej, gdy wszystkie miały stałe
+      // „Koniec tury". Cała konkretna treść (miasto-państwo, surowiec, liczby) jest w `subtitle`,
+      // więc dwa RÓŻNE zdarzenia nadal dają różne klucze i NIE zlewają się w jedną kartę.
+      // Trzymanie `title` w kluczu byłoby dziś martwym kodem sugerującym rozróżnianie, którego
+      // nie ma — a separator NUL istniał wyłącznie po to, by rozdzielić te dwa człony (i czynił
+      // ten plik binarnym dla grepa). EN: key = `subtitle` ALONE (post HTML-strip), not
+      // `title + subtitle`: every mergeable `kind:'info'` entry now has `title === ''`, so the
+      // title part was a constant across the whole candidate set and carried zero discriminating
+      // power (exactly as before, when they all shared the constant "Koniec tury"). All concrete
+      // content lives in `subtitle`, so genuinely different events still produce different keys
+      // and are not merged; the NUL separator existed only to join the two parts.
+      const key = d.subtitle;
       const existingIdx = infoGroupIndexByKey.get(key);
       if (existingIdx !== undefined) {
         merged[existingIdx]!.count++;
