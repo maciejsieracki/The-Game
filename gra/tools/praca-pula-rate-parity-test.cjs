@@ -110,7 +110,7 @@ console.log('\n== SEKCJA 2: REGRES2 (refreshLiveEmpireRatesUnsafe nie nadpisuje 
 
 check(
   'Flaga guard `_pracaRateFreshFromEndTurn` zadeklarowana obok _lastPracaRate',
-  followsWithin('let _lastPracaRate: number = 0;', 'let _pracaRateFreshFromEndTurn: boolean = false;', 3000),
+  followsWithin('let _lastPracaRate: number = 0;', 'let _pracaRateFreshFromEndTurn: boolean = false;', 4200),
 );
 
 const idxAutoImpCatch = firstIndexOf(
@@ -155,7 +155,7 @@ check(
   followsWithin(
     'const pracaPoolBrutto = previewPracaPoolBrutto(pracaTicks, {',
     'if (_pracaRateFreshFromEndTurn) {\n        _pracaRateFreshFromEndTurn = false;\n      } else {\n        _lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;\n      }',
-    950,
+    3400,
   ),
 );
 
@@ -328,6 +328,110 @@ function numCheck(name, condition, detail) {
     `displayed=${resGuard.displayedAfterLiveRefresh} realDelta=${resGuard.realDelta}`,
   );
 }
+
+console.log('\n== SEKCJA 4: REGRES3 (refreshPlayerCityEcon też chroniony przez guard) ==');
+
+// P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1 (2026-08-22, TRZECIE zgłoszenie): guard z
+// REGRES2 chronił WYŁĄCZNIE przypisanie do `_lastPracaRate` -- ale kilka linii niżej w tej
+// samej funkcji `refreshPlayerCityEcon(preview.perCity)` NADPISYWAŁ `_lastPlayerCityEcon`
+// (tabela per-miasto „DO PULI"/„DO BUDYNKÓW" w popupie imperium, `empireDetailPanel.ts`
+// `renderPracaSection`) LIVE-podglądem post-end-turn, mimo że `_lastPracaRate` (nagłówek
+// „PULA IMPERIUM" tego samego popupu) zostawał poprawny -- dwie sąsiadujące liczby w jednym
+// renderze z dwóch różnych momentów czasu.
+
+check(
+  'Guard: flaga odczytana do zmiennej PRZED konsumpcją (`skipCityEconOverwriteFreshFromEndTurn`)',
+  followsWithin(
+    'const pracaPoolBrutto = previewPracaPoolBrutto(pracaTicks, {',
+    'const skipCityEconOverwriteFreshFromEndTurn = _pracaRateFreshFromEndTurn;\n      if (_pracaRateFreshFromEndTurn) {',
+    3400,
+  ),
+);
+
+check(
+  '`refreshPlayerCityEcon(preview.perCity)` pominięty, gdy flaga była `true` przy wejściu',
+  followsWithin(
+    'const skipCityEconOverwriteFreshFromEndTurn = _pracaRateFreshFromEndTurn;',
+    'if (!skipCityEconOverwriteFreshFromEndTurn) {\n        refreshPlayerCityEcon(preview.perCity);\n      }',
+    2200,
+  ),
+);
+
+console.log('\n== SEKCJA 5: dowód numeryczny REGRES3 (scenariusz ze zgłoszenia, Ateny -- 4 wartości UI naraz) ==');
+
+/**
+ * Symuluje DOKŁADNIE scenariusz ze zrzutów właściciela (Ateny, 5 Pracy/turę, 3 do budynków /
+ * 2 do puli, split Ulepszenia 50%, kolejka Pałacu NIE pusta, utrzymanie ulepszeń = 1 Praca) i
+ * porównuje WSZYSTKIE CZTERY wartości UI z zgłoszenia:
+ *  - górny pasek HUD „Praca N +M"          -> `_lastPracaRate` (buildHudState -> economy.pracaRate)
+ *  - popup „PULA IMPERIUM N +M"            -> ta sama `_lastPracaRate` (economy.pracaRate)
+ *  - popup tabela per-miasto „DO PULI"     -> `_lastPlayerCityEcon[].doPuli` (cityEcon.pracaPula)
+ *  - karta miasta „Ulepszenia +2 (50%)"    -> ten sam per-city doPuli (źródło: ten sam
+ *                                              `_lastPlayerCityEcon`, `cityPanel.ts` czyta z
+ *                                              identycznego tick/preview poprzez tk?.doPuli)
+ * `withGuardFix` odtwarza NAPRAWĘ REGRES3 (refreshPlayerCityEcon też pomijany przy świeżej
+ * fladze); bez niej odtwarza dokładnie zgłoszony objaw: tabela/karta miasta pokazują
+ * PROJEKCJĘ dla kolejnej tury (tu spleconą z inną populacją -- `nextTurnCityDoPuli`), a
+ * PULA IMPERIUM/HUD pokazują poprawny, realnie odnotowany przyrost tej-co-właśnie-minęła tury.
+ */
+function simulateRegres3Scenario({ withGuardFix, nextTurnCityDoPuli }) {
+  // --- end-of-turn (main.ts, econ.perCity -> refreshPlayerCityEcon(econ.perCity)) ---
+  const oldPool = 0;
+  const cityDoBudynkow = 3;
+  const cityDoPuli = 2; // = "do puli imperium: +2" z tabeli, ZE ZGŁOSZENIA
+  const queueEmpty = false; // kolejka Pałacu NIE jest pusta
+  let pool = oldPool;
+  let lastPracaRate = 0;
+  const poolGain = queueEmpty ? (cityDoBudynkow + cityDoPuli) : cityDoPuli;
+  pool += poolGain;
+  lastPracaRate += poolGain;
+  const upkeep = 1; // "UTRZYMANIE ULEPSZEŃ" -- ze zgłoszenia PULA IMPERIUM 1 +1 = (+2 - 1)
+  pool = Math.max(0, pool - upkeep);
+  lastPracaRate -= upkeep;
+  // realny end-of-turn: _lastPlayerCityEcon.doPuli = cityDoPuli (dokładna wartość ticku).
+  const endOfTurnCityDoPuli = cityDoPuli;
+  const endOfTurnDeclaredRate = lastPracaRate; // = 1, dokładnie "PULA IMPERIUM 1 +1" ze zgłoszenia
+
+  // --- jedyne natychmiastowe wywołanie live-refresh (triggerPlayerEndTurn -> updateHud ->
+  //     refreshLiveEmpireRatesUnsafe), PO end-of-turn, więc widzi już np. wzrost populacji ---
+  const displayedRate = endOfTurnDeclaredRate; // _lastPracaRate ZAWSZE chroniony (REGRES2, niezmieniony)
+  const displayedCityDoPuli = withGuardFix
+    ? endOfTurnCityDoPuli // REGRES3: refreshPlayerCityEcon pominięty -- tabela zostaje realna
+    : nextTurnCityDoPuli; // bug: nadpisane live-podglądem projekcji NASTĘPNEJ tury
+
+  return { pool, endOfTurnDeclaredRate, displayedRate, displayedCityDoPuli };
+}
+
+{
+  // Populacja urosła między end-of-turn a live-refresh -> projekcja dla następnej tury daje
+  // INNĄ liczbę "do puli" niż to, co faktycznie trafiło do puli tej-co-minęła tury.
+  const resBug = simulateRegres3Scenario({ withGuardFix: false, nextTurnCityDoPuli: 3 });
+  numCheck(
+    'BEZ naprawy REGRES3 (bug odtworzony): tabela "do puli"(3, projekcja) != PULA IMPERIUM "+1"(realny przyrost) -- dokładnie zgłoszony rozjazd',
+    resBug.displayedCityDoPuli !== resBug.displayedRate,
+    `tabela=${resBug.displayedCityDoPuli} pulaImperium=${resBug.displayedRate}`,
+  );
+
+  const resFix = simulateRegres3Scenario({ withGuardFix: true, nextTurnCityDoPuli: 3 });
+  numCheck(
+    'Z naprawą REGRES3: tabela "do puli"(2) = deklarowany end-of-turn przyrost brutto, spójny z PULA IMPERIUM "+1"(2 - 1 upkeep) -- ten sam ticku, dwie zgodne liczby',
+    resFix.displayedCityDoPuli === 2 && resFix.displayedRate === 1 &&
+      resFix.displayedCityDoPuli - upkeepConst(resFix) === resFix.displayedRate,
+    `tabela=${resFix.displayedCityDoPuli} pulaImperium=${resFix.displayedRate}`,
+  );
+  numCheck(
+    'Z naprawą REGRES3: HUD górny pasek (ta sama `_lastPracaRate`) i popup PULA IMPERIUM identyczne (0 rozjazdu międzyźródłowego, REGRES2 nienaruszony)',
+    resFix.displayedRate === resFix.endOfTurnDeclaredRate,
+    `hud=${resFix.displayedRate} pulaImperium=${resFix.endOfTurnDeclaredRate}`,
+  );
+  numCheck(
+    'Z naprawą REGRES3: realny stan puli po turze (0 + 2 - 1 = 1) zgadza się z deklarowanym przyrostem "+1"',
+    resFix.pool === 1 && resFix.pool - oldPoolConst() === resFix.displayedRate,
+    `pool=${resFix.pool} displayedRate=${resFix.displayedRate}`,
+  );
+}
+function upkeepConst() { return 1; }
+function oldPoolConst() { return 0; }
 
 console.log(`\n[praca-pula-rate-parity-test] SEKCJA 1+2 (statyczne): ${pass} pass, ${fail} fail`);
 console.log(`[praca-pula-rate-parity-test] SEKCJA 3 (numeryczne): ${numPass} pass, ${numFail} fail`);

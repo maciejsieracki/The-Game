@@ -9612,7 +9612,7 @@ async function boot(): Promise<void> {
      *  znającej TYLKO upkeep -- nadpisując poprawną wartość martwym zapisem na KAŻDYM
      *  końcu tury (deklarowane "+3" realnie akumulowało tylko "+1"). Ta flaga to
      *  jednorazowy guard: koniec tury ustawia ją `true` PO poprawnym policzeniu
-     *  `_lastPracaRate`; `refreshLiveEmpireRatesUnsafe()` przy `true` pomija WYŁĄCZNIE
+     *  `_lastPracaRate`; `refreshLiveEmpireRatesUnsafe()` przy `true` pomija
      *  przypisanie do `_lastPracaRate` (reszta funkcji -- _lastPracaUpkeep, inne stawki --
      *  liczy się jak dotychczas) i od razu konsumuje flagę (`= false`) -- więc dotyczy
      *  TYLKO tego jednego, natychmiastowego wywołania po końcu tury. Każdy KOLEJNY,
@@ -9620,6 +9620,13 @@ async function boot(): Promise<void> {
      *  nowe miasto, zmiana kolejki...) ustawia `empireEconDirty=true` i woła
      *  `refreshLiveEmpireRatesUnsafe()` z flagą już `false` -- liczy się wtedy jak
      *  wcześniej (live-preview, bez regresji dla przypadków poza końcem tury).
+     *  P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1 (Maciej 2026-08-22): ten sam
+     *  odczyt flagi TERAZ pomija RÓWNIEŻ `refreshPlayerCityEcon(preview.perCity)` w tym
+     *  samym wywołaniu -- inaczej `_lastPlayerCityEcon` (tabela per-miasto „DO PULI"/„DO
+     *  BUDYNKÓW" w popupie imperium, `empireDetailPanel.ts`) był nadpisywany LIVE
+     *  PODGLĄDEM z post-end-turn stanu mimo że `_lastPracaRate` (nagłówek „PULA
+     *  IMPERIUM" tego samego popupu) zostawał poprawny -- dwie sąsiadujące liczby w
+     *  jednym renderze z dwóch różnych momentów czasu.
      *  / EN: end-of-turn correctly computes `_lastPracaRate` (all 4 known drains), but
      *  `triggerPlayerEndTurn()` then calls `markCityStateDirty()` + `updateHud()`, which
      *  fires `refreshLiveEmpireRatesUnsafe()` (empireEconDirty=true) -- and THAT function
@@ -9627,10 +9634,15 @@ async function boot(): Promise<void> {
      *  clobbering the correct value on every single end of turn (declared "+3" only ever
      *  accumulated "+1"). This flag is a one-shot guard: end-of-turn sets it `true` right
      *  after correctly computing `_lastPracaRate`; `refreshLiveEmpireRatesUnsafe()` skips
-     *  ONLY the `_lastPracaRate` assignment while the flag is `true` (everything else in
+     *  the `_lastPracaRate` assignment while the flag is `true` (everything else in
      *  the function still runs normally) and immediately consumes the flag (`= false`) --
      *  so it only ever affects that one immediate post-end-of-turn call. Any subsequent
-     *  real trigger recomputes live as before (no regression outside end-of-turn). */
+     *  real trigger recomputes live as before (no regression outside end-of-turn).
+     *  REGRES3: the same flag read now ALSO skips `refreshPlayerCityEcon(preview.perCity)`
+     *  in that same call -- otherwise `_lastPlayerCityEcon` (the per-city „DO PULI"/„DO
+     *  BUDYNKÓW" table in the empire popup) got overwritten with a post-end-turn live
+     *  preview while `_lastPracaRate` (the same popup's „PULA IMPERIUM" header) stayed
+     *  correct -- two adjacent numbers in one render, from two different points in time. */
     let _pracaRateFreshFromEndTurn: boolean = false;
     let _lastKulturaRate: number = 0;
     let _lastPieniadzRate: number = 0;
@@ -15571,6 +15583,33 @@ async function boot(): Promise<void> {
       // ten guard chroni tamtą wartość przed nadpisaniem martwym zapisem z niepełnej
       // formuły na tym jednym, natychmiastowym wywołaniu. Konsumowane od razu (`= false`),
       // więc każdy KOLEJNY realny trigger nadal liczy live-preview jak dotychczas.
+      // P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1 (Maciej 2026-08-22, TRZECIE
+      // zgłoszenie): guard z REGRES2 chronił WYŁĄCZNIE przypisanie do `_lastPracaRate`
+      // (HUD chip „Praca N +M" i box „PULA IMPERIUM" w popupie imperium) -- ale
+      // `refreshPlayerCityEcon(preview.perCity)` kilka linii niżej NIE był objęty tym
+      // samym guardem i nadpisywał `_lastPlayerCityEcon` (skąd tabela per-miasto „DO
+      // PULI"/„DO BUDYNKÓW" w TYM SAMYM popupie czyta `doPuli`/`doBudynkow`, patrz
+      // `empireDetailPanel.ts` `renderPracaSection`) LIVE-PODGLĄDEM policzonym z
+      // POST-end-turn stanu (po wzroście populacji, po wszystkim), zamiast zostawić
+      // POPRAWNĄ wartość zapisaną chwilę wcześniej w tej samej `triggerPlayerEndTurn()`
+      // przez `refreshPlayerCityEcon(econ.perCity)` (main.ts, tuż po bloku P3a). Efekt:
+      // dwie sąsiadujące liczby w JEDNYM renderze popupu „Grecy" ("do puli imperium: +2"
+      // w tabeli vs „PULA IMPERIUM ... +1" dwie linie niżej) pochodziły z DWÓCH różnych
+      // momentów czasu -- tabela z przyszłej projekcji, nagłówek z realnie odnotowanego
+      // przyrostu -- mimo że oba renderują się z tego samego, jednego wywołania
+      // `buildEmpireDetailSnap()`. Naprawa: ten sam jednorazowy guard, który już chroni
+      // `_lastPracaRate`, chroni TERAZ RÓWNIEŻ ten wołanie -- odczytany PRZED
+      // konsumpcją flagi niżej, żeby jeden odczyt decydował o obu pominięciach.
+      // / EN: the REGRES2 guard protected ONLY the `_lastPracaRate` assignment (HUD
+      // chip + „PULA IMPERIUM" box) -- but `refreshPlayerCityEcon(preview.perCity)` a
+      // few lines below was NOT covered by the same guard and overwrote
+      // `_lastPlayerCityEcon` (which feeds the per-city „DO PULI"/„DO BUDYNKÓW" table in
+      // the SAME popup) with a live preview computed from POST-end-turn state, instead
+      // of keeping the correct value written moments earlier in the same
+      // `triggerPlayerEndTurn()` by `refreshPlayerCityEcon(econ.perCity)`. Fix: the same
+      // one-shot guard now also protects this call, read BEFORE the flag is consumed so
+      // one read drives both skips.
+      const skipCityEconOverwriteFreshFromEndTurn = _pracaRateFreshFromEndTurn;
       if (_pracaRateFreshFromEndTurn) {
         _pracaRateFreshFromEndTurn = false;
       } else {
@@ -15585,7 +15624,9 @@ async function boot(): Promise<void> {
       for (const tk of preview.perCity) {
         if (tk.ownerId === 0) lastCityKulturaTick.set(tk.cityId, tk.kultura);
       }
-      refreshPlayerCityEcon(preview.perCity);
+      if (!skipCityEconOverwriteFreshFromEndTurn) {
+        refreshPlayerCityEcon(preview.perCity);
+      }
     }
 
     function buildHudState(): HudState {
