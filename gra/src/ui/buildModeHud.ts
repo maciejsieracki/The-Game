@@ -10,7 +10,7 @@ import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
-import { MAX_PRACA_WSPOLNY_WOREK_PROCENT } from '../game/cities';
+import { MAX_PRACA_WSPOLNY_WOREK_PROCENT, MAX_ULEPSZENIA_PRACA_AUTO_PERCENT } from '../game/cities';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -484,10 +484,11 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             empireState.pracaAutoPercent,
             'empire',
             'Globalny budżet automatu:',
-            `Historyczny globalny budżet automatu ulepszeń terenu; zakres 0–${MAX_PRACA_WSPOLNY_WOREK_PROCENT}% ` +
-              '(od R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 respektuje ten sam nadrzędny cap co podział Praca). ' +
+            `Historyczny globalny budżet automatu ulepszeń terenu; zakres 0–${MAX_ULEPSZENIA_PRACA_AUTO_PERCENT}% ` +
+              '(P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: własny, niezależny zakres tego pola — NIE respektuje ' +
+              `nadrzędnego capu ${MAX_PRACA_WSPOLNY_WOREK_PROCENT}% podziału całej puli Pracy powyżej). ` +
               'Nie zmienia nadrzędnego splitu Praca.',
-            MAX_PRACA_WSPOLNY_WOREK_PROCENT,
+            MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
           );
         }
         if (playerCities.length > 1) {
@@ -535,10 +536,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
               effState.pracaAutoPercent,
               'city',
               'Lokalny budżet automatu:',
-              `Lokalny override historycznego budżetu automatu tego miasta; zakres 0–${MAX_PRACA_WSPOLNY_WOREK_PROCENT}% ` +
-                '(od R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 miasto NIE może już obejść nadrzędnego capu ' +
-                'cywilizacji przełączeniem się w tryb „Indywidualne"). Nie zmienia nadrzędnego splitu Praca.',
-              MAX_PRACA_WSPOLNY_WOREK_PROCENT,
+              `Lokalny override historycznego budżetu automatu tego miasta; zakres 0–${MAX_ULEPSZENIA_PRACA_AUTO_PERCENT}% ` +
+                '(P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: własny, niezależny zakres tego pola, także w trybie ' +
+                '„Indywidualne"). Nie zmienia nadrzędnego splitu Praca.',
+              MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
             );
           }
         }
