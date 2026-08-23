@@ -393,7 +393,7 @@ nie z teorii; każda pozycja ma źródło.
 
 | # | Granica | Skąd |
 |---|---|---|
-| 1 | **Nigdy `npm run build` ani `npm run dev` w `gra/`** — `export-data` nadpisuje pliki JSON danych gry i niszczy dane. Brzmienie wiążące jest dosłownym cytatem z `playbook.md` C-001 (bariera CHRONIONA): „Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON) — dozwolona komenda: node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir". Zakaz obejmuje **rodzinę komend build/compile**, nie wszystkie komendy w `gra/`: jedynym dozwolonym buildem jest komenda w powyższym, dosłownym brzmieniu, a jedyną dozwoloną kompilacją `node ./node_modules/typescript/bin/tsc --noEmit`. Bramki referencyjne z §6 (`node tools/*-test.cjs`) nie należą do tej rodziny i nie są tym zakazem objęte. Zmiana brzmienia cytatu — w tym innego `--outDir` — jest zmianą bariery CHRONIONEJ i wymaga ECHO | C-001, bariera CHRONIONA; wymuszane też przez `guardrails.ts` (`npm-run-build-gra`, `npm-run-dev-gra`) |
+| 1 | **Nigdy `npm run build` ani `npm run dev` w `gra/`** — `export-data` nadpisuje pliki JSON danych gry i niszczy dane. Brzmienie wiążące jest dosłownym cytatem z `playbook.md` C-001 (bariera CHRONIONA): „Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON) — dozwolona komenda: node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir". Zakaz obejmuje **rodzinę komend build/compile**, nie wszystkie komendy w `gra/`: jedynym dozwolonym buildem jest wywołanie `vite` bezpośrednio przez binarkę z `node_modules` (nigdy przez skrypt `npm`), a jedyną dozwoloną kompilacją `node ./node_modules/typescript/bin/tsc --noEmit`. Bramki referencyjne z §6 (`node tools/*-test.cjs`) nie należą do tej rodziny i nie są tym zakazem objęte. **Wiążący jest zakaz `npm run build`/`npm run dev` — to jest istota tej bariery.** Wartość `--outDir` w cytacie jest **parametrem katalogu docelowego, nie treścią zakazu**: w praktyce tego repo musi wskazywać katalog **poza drzewem repo** (scratch/tmp, np. `--outDir /tmp/civ-dist --emptyOutDir`), bo „OneDrive blokuje `unlink` w `gra/dist/` (`EPERM`), więc `vite` nie może wyczyścić katalogu wyjściowego. Budujemy do `/tmp` (dysk lokalny piaskownicy) i kopiujemy gotowy plik do kanonu" (`SILNIK/SILNIK-ARCHITEKTURA-DEWELOPER.md:265`); dosłowne `--outDir dist` fizycznie nie działa na maszynie właściciela. Tak też robi istniejąca bramka `gra/tools/sidepanel-event-header-wydarzenie-real-render-test.cjs` (build do `os.tmpdir()`, komentarz: „kanon C-001 buduje dokładnie tak"). Zmiana samego zakazu — dopuszczenie `npm run build`/`npm run dev`, choćby warunkowe — jest osłabieniem bariery CHRONIONEJ i wymaga ECHO; **podanie innego katalogu w `--outDir` nie jest zmianą bariery i ECHO nie wymaga** | C-001, bariera CHRONIONA; wymuszane też przez `guardrails.ts` (`npm-run-build-gra`, `npm-run-dev-gra`) |
 | 2 | **Nigdy `git add -A` ani `git add .`** — integracja wyłącznie allowlist-only, per plik i per hunk. Współdzielony plik niemożliwy do bezpiecznego rozdzielenia dostaje `INTEGRATION_PENDING`, nie `BLOCK` | C-008, C-034, C-059 |
 | 3 | **Żadnych wartości sekretów, kluczy API ani poświadczeń w repozytorium** — także w przykładach, komentarzach, plikach testowych i artefaktach runów. Sekret w diffie = `FAIL` i rotacja klucza | granica ogólna; egzekwuje Evaluator (§16, pkt 5) |
 | 4 | **Zmiana samego procesu nigdy nie jedzie w allowliście tematu produktowego** — nawet jednolinijkowa. To osobny temat w domenie `PROCESS`, z własnym ID i własnym dispatchem | §2a; `JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` |
@@ -490,13 +490,47 @@ zamiast cienkich agentów"). **Do progu liczą się wyłącznie nazwane sprawdze
 specyficzne dla tematu** — nowe testy, nowe scenariusze, weryfikacja wizualna
 konkretnego ekranu — a nie stała część wspólna.
 
-**Co NIE jest „dwoma niezależnymi obszarami allowlisty".** Artefakty runu
-(`dyspozycje/autobot/runs/<ID>/**`) nie są obszarem allowlisty w tym sensie —
-towarzyszą każdemu tematowi. Tak samo `gra/src/**` i `gra/tools/*-test.cjs`
-tworzące jedną zmianę (kod plus jego testy) to **jeden** obszar, nie dwa: prawie
-każdy temat kodowy dotyka obu, więc liczenie ich osobno odpalałoby ten próg
-automatycznie. Obszary są niezależne, gdy mogą wejść do `main` osobno, w
-dowolnej kolejności, bez wzajemnego czekania.
+**Doprecyzowanie: „nowe kryteria tematu" liczą się, „istniejące bramki
+uruchamiane defensywnie" nie liczą się.** Wyłączenie z progu nie ogranicza się
+do stałej piątki referencyjnej z §6. Do progu liczą się **wyłącznie (a)
+faktycznie NOWE sprawdzenia/scenariusze wprowadzone przez TEN temat** — nowe
+asercje w nowym albo rozszerzonym pliku testu, nowy scenariusz weryfikacji
+wizualnej. **Nie liczą się (b) istniejące bramki regresyjne i sąsiednie
+uruchamiane wyłącznie jako zabezpieczenie przed regresją**, nawet gdy są
+imiennie nazwane w kryteriach końca i nawet gdy **nie** należą do stałej piątki
+z §6. Kryterium rozróżnienia: czy to sprawdzenie **istniałoby bez tego tematu**?
+Jeśli tak (uruchamiamy je tylko po to, żeby potwierdzić, że nic nie zepsuliśmy) —
+nie liczy się do progu. Jeśli nie (powstaje razem z tematem i opisuje, co ma być
+prawdą po zmianie) — liczy się.
+
+Kontrola na faktycznym przykładzie z tego repo
+(`dyspozycje/autobot/runs/P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1/00-dispatch.md`,
+temat historycznie zamknięty **jednym Operatorem w jednej rundzie, bez
+dekompozycji**): kryteria końca wymieniają `eot-event-defer-test.cjs` z nowymi
+asercjami (a–e) — to **1 nowe sprawdzenie**; cztery bramki sąsiednie
+(`era-change-toast-defer-test.cjs`, `dyplo-karta-duplikat-komunikat-test.cjs`,
+`eot-diplomacy-header-test.cjs`, `sidepanel-events-toolbar-test.cjs`) są
+uruchamiane wyłącznie defensywnie, a `tsc` jest stałą częścią wspólną — razem
+**0** pozycji liczonych do progu. Wynik: 1 ≤ 3, **próg się nie odpala**, zgodnie
+z faktyczną historią tematu.
+
+**Co NIE jest „dwoma niezależnymi obszarami allowlisty" i co nie liczy się do
+progu liczby plików.** Artefakty runu (`dyspozycje/autobot/runs/<ID>/**`) nie są
+obszarem allowlisty w tym sensie — towarzyszą każdemu tematowi. Tak samo
+`gra/src/**` i `gra/tools/*-test.cjs` tworzące jedną zmianę (kod plus jego
+testy) to **jeden** obszar, nie dwa: prawie każdy temat kodowy dotyka obu, więc
+liczenie ich osobno odpalałoby ten próg automatycznie. Obszary są niezależne,
+gdy mogą wejść do `main` osobno, w dowolnej kolejności, bez wzajemnego czekania.
+
+**Artefakty runu nie liczą się również do progu „więcej niż 6 plików w
+allowliście"** — nie tylko do progu „niezależne obszary". Powód jest ten sam:
+`00-dispatch.md`, `01-operator.md`, `02-evaluator.md`, `03-final-control.md`
+powstają w każdym temacie z definicji procesu, więc ich wliczanie podnosiłoby
+licznik o stałą wartość niezależną od faktycznego rozmiaru tematu. Liczy się
+wyłącznie liczba **merytorycznych** plików allowlisty (kod, testy, dokumentacja
+przedmiotu tematu). W przykładzie wyżej: allowlista ma 3 pozycje, z czego
+`dyspozycje/autobot/runs/P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1/` odpada →
+2 pliki ≤ 6, próg się nie odpala.
 
 **Podział kosztuje.** Każdy węzeł powtarza wstęp i kontekst, wymaga własnej
 koordynacji i własnego przekazania wyniku — więcej węzłów nie skraca pracy

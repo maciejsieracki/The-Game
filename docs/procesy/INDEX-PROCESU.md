@@ -108,6 +108,7 @@ GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>
 TESTY: <dokładne wyniki albo powód pominięcia>
 BLOKADY: <jawna lista albo brak>
+RUNDY: <nr tej rundy>/<5; po limicie także liczba zużytych rund, ostatni werdykt i decyzja wymagana>
 NASTĘPNY KROK: <kolejna bramka>
 DEPLOY/PUSH: WYKONANO albo NIE WYKONANO
 ```

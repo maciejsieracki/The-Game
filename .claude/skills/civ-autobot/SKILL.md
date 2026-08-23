@@ -319,13 +319,16 @@ Punkty potwierdzone dotychczasową praktyką repozytorium:
 - **Nie mieszamy zmiany procesu ze zmianą produktową** w jednym dispatchu
   (granica §9 pkt 4).
 
-**Lista zakresu produktowego — co ta gra świadomie robi, a czego świadomie nie
-robi, choć mogłaby — jest na razie pusta i nie wolno jej wymyślić.** To jest
-decyzja właściciela o granicach projektu, nie ustalenie techniczne; wpisanie tu
-listy bez pokrycia w jego odpowiedzi byłoby fałszywą strukturą, gorszą niż jej
-brak. Orkiestrator uzupełnia tę sekcję dopiero po jednoznacznej odpowiedzi,
-zapisanej jako ECHO. Do tego czasu obowiązują wyłącznie cztery punkty powyżej,
-wynikające z udokumentowanych ustaleń procesowych.
+**Listy zakresu produktowego — co ta gra świadomie robi, a czego świadomie nie
+robi, choć mogłaby — nie wolno wymyślić.** Dziś stoi tu **jeden** taki punkt
+(parytet funkcji z grami 4X, z `R-PROC-AUTOBOT.md` §14); pozostałe trzy punkty
+powyżej dotyczą sposobu pracy, nie samej gry. Granice zakresu gry są decyzją
+właściciela, nie ustaleniem technicznym; dopisanie tu listy bez pokrycia w jego
+odpowiedzi byłoby fałszywą strukturą, gorszą niż jej brak. Orkiestrator dopisuje
+kolejne punkty dopiero po jednoznacznej odpowiedzi, zapisanej jako ECHO — zgodnie
+z regułą wzrostu na początku tej sekcji („wyłącznie o rzeczy faktycznie rozważone
+i odrzucone"). Sama ta reguła nie została dotąd potwierdzona przez właściciela
+wprost — to przedmiot pytania `R-PROC-AUTOBOT-PRZEBUDOWA-SZKIELET-Q1-Q2`.
 
 ## Nasze tryby samooszukiwania — obserwowane, nie hipotetyczne
 

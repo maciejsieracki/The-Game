@@ -281,6 +281,17 @@ Zakaz dotyczy rodziny komend build/compile, nie wszystkich komend w gra/:
 jedyna dozwolona kompilacja to node ./node_modules/typescript/bin/tsc --noEmit;
 bramki referencyjne node tools/*-test.cjs nie są nim objęte (R-PROC-AUTOBOT.md
 §6, §9 poz. 1).
+WIĄŻĄCY jest zakaz npm run build / npm run dev — to jest istota tej bariery.
+Wartość --outDir jest PARAMETREM katalogu docelowego, nie treścią zakazu: w tym
+repo musi wskazywać katalog POZA drzewem repo (scratch/tmp, np.
+--outDir /tmp/civ-dist --emptyOutDir), bo „OneDrive blokuje unlink w gra/dist/
+(EPERM), więc vite nie może wyczyścić katalogu wyjściowego"
+(SILNIK/SILNIK-ARCHITEKTURA-DEWELOPER.md:265) — dosłowne --outDir dist
+fizycznie nie działa na maszynie właściciela; tak samo buduje istniejąca bramka
+gra/tools/sidepanel-event-header-wydarzenie-real-render-test.cjs (os.tmpdir(),
+komentarz „kanon C-001 buduje dokładnie tak"). Podanie innego katalogu w
+--outDir NIE jest zmianą bariery i nie wymaga ECHO; ECHO wymaga dopiero
+dopuszczenie npm run build / npm run dev (R-PROC-AUTOBOT.md §9 poz. 1).
 
 PROCEDURA NAPRAWCZA PRZY FAIL
 Evaluator wskazuje jeden konkretny defekt i poprawkę; runda N+1 idzie na TYM SAMYM
