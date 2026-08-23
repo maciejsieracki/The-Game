@@ -45,18 +45,28 @@ długiej sesji potrafią zniknąć z pola widzenia. Historia incydentu: `playboo
   Deploy/push wymaga osobnej autoryzacji po `READY_FOR_DEPLOY`.
 - Nie zmieniaj `gra/` ani `gra/`-zależnych artefaktów przy paczce dokumentacyjnej.
   Przed zapisem sprawdź allowlistę, `git status`, diff i `git diff --check`.
+- Pełna lista granic, których naruszenie oznacza natychmiastowy `FAIL` niezależnie
+  od jakości reszty pracy (m.in. zakaz `npm run build`/`dev` w `gra/`, zakaz
+  `git add -A`, zakaz aktualizacji `WERSJE.md` przed deployem, wymóg realnej
+  weryfikacji w przeglądarce dla tematów wizualnych):
+  [`R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md) §9.
+- Raport `PASS`, nazwa gałęzi, commit ani status w UI **nie są dowodem
+  zakończenia** — dowodem jest faktyczny stan w `main` z zielonymi bramkami
+  (§1b tamże).
 
 ## Minimalny kontrakt raportu
 
 Każdy etap zapisuje w `dyspozycje/autobot/runs/<ID>/`:
 
 ```text
-STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA
+STATUS: PASS | PASS-WITH-NOTES | FAIL | BLOCK | TIMEOUT | INFRA | LIMIT-5-EXCEEDED | DECISION_REQUIRED | INTEGRATION_PENDING
+DOMAIN: GAME | PROCESS | INFRA | INFORMATIONAL
 TEMAT: <pełne ID>
 GOAL: <cel końcowy>
 ZMIANY/COMMIT: <allowlista, artefakt, SHA albo brak zmian>
 TESTY: <dokładne wyniki albo powód pominięcia>
 BLOKADY: <jawna lista albo brak>
+RUNDY: <nr tej rundy>/<5; po limicie także liczba zużytych rund, ostatni werdykt i decyzja wymagana>
 NASTĘPNY KROK: <kolejna bramka>
 DEPLOY/PUSH: WYKONANO albo NIE WYKONANO
 ```

@@ -7,6 +7,14 @@ description: >
 
 # Civ — skill AutoBot
 
+**Czym jest ten plik.** To jest **wypełnienie** uniwersalnego szkieletu procesu
+([`autobots/SKILL.md`](../autobots/SKILL.md)) wartościami tego konkretnego
+projektu: ścieżkami, modelami, liczbami, twardymi barierami i obserwowanymi
+trybami samooszukiwania. Szkielet mówi, **jaką funkcję** pełni dane pojęcie;
+ten plik mówi, **jaką ma postać w Civ „The Game"**. Pełna norma procesu (role,
+pętla, bramki, granice, hasła) jest w `docs/decyzje/R-PROC-AUTOBOT.md` — tu jej
+nie dubluję, żeby nie rozjeżdżała się w dwóch miejscach.
+
 Kolejność czytania na starcie sesji jest w §„Kolejność czytania na starcie
 sesji" poniżej — zacznij tam. Dla sesji Cursor dodatkowo aktywna jest reguła
 [`.cursor/rules/autobot-evaluator-operator.mdc`](../../../.cursor/rules/autobot-evaluator-operator.mdc),
@@ -211,3 +219,141 @@ Konkretne komendy testowe i punkty odniesienia są w `docs/decyzje/R-PROC-AUTOBO
 Tabela haseł właściciela (`sprawdź`, `push`, `deploy`, `format`/`ABC`, `raport`,
 `co nowego` — pokazuje wyłącznie sekcję „Co nowego w regułach AutoBota" z `README.md`,
 bez pełnego audytu) jest w `docs/decyzje/R-PROC-AUTOBOT.md` §8.
+
+**Pięć bramek referencyjnych** uruchamianych po KAŻDYM merge'u do `main`, obok
+`tsc --noEmit` i testów samego tematu — pełne komendy i wyniki referencyjne
+w `R-PROC-AUTOBOT.md` §6:
+
+```text
+gra/tools/logic-test.cjs        gra/tools/tech-tree-test.cjs
+gra/tools/research-test.cjs     gra/tools/unit-replace-test.cjs
+gra/tools/combat-test.cjs
+```
+
+---
+
+# Wypełnienie szkieletu dla tego projektu
+
+Odpowiednik dodatku „wypełnienie dla projektu" z uniwersalnego szkieletu.
+Wymieniane jest wyłącznie to; sam szkielet (`autobots/SKILL.md`) zostaje bez
+zmian, bo jest niezależny od projektu.
+
+## Odwzorowanie pojęć procesu w tej dziedzinie
+
+| Pojęcie szkieletu | Postać w Civ „The Game" |
+|---|---|
+| Wytwór | Zmiana w `gra/`, dokumentacji albo rejestrze spełniająca `GOAL`, **faktycznie scalona do `main`** — nie diff, nie raport, nie deklaracja Operatora (`R-PROC-AUTOBOT.md` §1b) |
+| Dowód wykonania | `tsc --noEmit` = 0 błędów + testy tematu + **5 bramek referencyjnych** zielone na aktualnym stanie, uruchomione niezależnie od Operatora; przy temacie wizualnym dodatkowo zrzut z żywego Chromium (Playwright) z dowodem nietautologiczności |
+| Miejsce pracy w toku | worktree + gałąź `autobot/<ID>`, oddzielone od `main` |
+| Izolacja | osobny worktree na jeden temat, zakładany przez sparse-checkout bez `gra-robocza/`, `gra-kanon/` i `dist/` (C-015) |
+| Wersja obowiązująca | `origin/main`; publikacja ROBOCZA/KANON/FINALNA to **osobne, późniejsze bramki** |
+| Zapis punktu kontrolnego | commit git — zapis, **nie** integracja |
+| Rejestr scenariuszy / kryteriów | testy w `gra/tools/*-test.cjs` + kryteria końca w `00-dispatch.md` |
+| Źródło rozstrzygające faktu | faktyczny schemat narzędzia / kod w repo / wynik uruchomionej komendy — nigdy pamięć (`R-PROC-AUTOBOT.md` §13a) |
+
+## Parametry i ich wartości
+
+| Parametr szkieletu | Wartość w tym projekcie | Źródło |
+|---|---|---|
+| {prefiks-identyfikatora-tematu} | brak jednego prefiksu — ID opisowe z sufiksem `-Q<n>` (np. `R-PROC-AUTOBOT-PRZEBUDOWA-SZKIELET-Q1`), niezmienne przez wszystkie rundy | praktyka repo, `REJESTR-PROSB-I-ZADAN.md` |
+| {nazwy-domen-raportu} | `GAME` · `PROCESS` · `INFRA` · `INFORMATIONAL` | C-055, `R-PROC-AUTOBOT.md` §4 |
+| {zestaw-statusow-raportu} | `PASS` · `PASS-WITH-NOTES` · `FAIL` · `BLOCK` · `TIMEOUT` · `INFRA` · `LIMIT-5-EXCEEDED` · `DECISION_REQUIRED` · `INTEGRATION_PENDING` | `R-PROC-AUTOBOT.md` §4 |
+| {model-wykonawcy} / {model-sprawdzajacego} / {model-kontroli-koncowej} — Claude Code, Ścieżka A | Sonnet 5 Medium / Sonnet 5 High / Sonnet 5 High (osobny subagent) | `R-PROC-AUTOBOT.md` §5a; C-062 |
+| — wyjątek graficzny/wizualny | Operator **i** Evaluator → Opus 5 (effort Medium/High); Final Control zostaje Sonnet 5 High | `R-PROC-AUTOBOT.md` §5a, decyzja właściciela 2026-08-22 |
+| — Codex `multi_agent_v1` | Operator/Evaluator/Final Control → `gpt-5.6-luna`, `reasoning_effort=high`; integracja orkiestratora → `gpt-5.6-luna`, `medium` | `R-PROC-AUTOBOT.md` §1, §1a; C-052 |
+| {liczba-podejsc-przed-eskalacja} | **5 rund** na jedno pełne ID, potem `LIMIT-5-EXCEEDED`; cichy reset = naruszenie | C-050, C-053, `R-PROC-AUTOBOT.md` §3, §3a |
+| {liczba-tematow-rownoleglych} | pula 6 subagentów. **Jeśli watchdog dzieli z nią limit wątków/procesów — efektywna pojemność to 5 tematów**, szósty slot rezerwowany dla watchdoga. **Jeśli działa poza tą pulą — zapisz to jawnie, nie zakładaj domyślnie** | C-060, `R-PROC-AUTOBOT.md` §5 |
+| {czas-do-uznania-zawieszenia} | ok. **7 minut** ciszy = `ZWIS` | `.cursor/rules/subagent-watchdog.mdc`; §„Ledger i watchdog" wyżej |
+| {limit-rownoleglosci-wywolan} | `min(16, nproc − 2)` — **przeliczaj komendą, nie z pamięci** | `civ-autobot-workflow/SKILL.md` §5 |
+| {progi-podzialu-tematu-na-wezly} | 2 niezależne obszary allowlisty / >3 nazwane bramki **specyficzne dla tematu** / >6 plików w allowliście. **Stała część wspólna nie liczy się do progu**: `tsc --noEmit` i 5 bramek referencyjnych są w każdym dispatchu z definicji; `gra/src/**` + `gra/tools/*-test.cjs` jednej zmiany to jeden obszar, nie dwa | `R-PROC-AUTOBOT.md` §12 |
+| {konwencja-numeracji-wezlow} | sufiks litery: `-a`, `-b`, `-c`; licznik rund liczony dla całego tematu — **jedna fala węzłów = jedna runda**, niezależnie od liczby węzłów | `R-PROC-AUTOBOT.md` §12 |
+| {limit-objetosci-raportu} | ok. 400 słów na raport etapu (destylat, nie surowe logi) | `R-PROC-AUTOBOT.md` §11 |
+| {miejsce-i-szablon-zapisu-zlecenia} | `dyspozycje/autobot/runs/<ID>/00-dispatch.md` … `04-integration.md` | C-044, C-051 |
+| {kolejnosc-plikow-startowych} | `README.md` → `INDEX-PROCESU.md` → `R-PROC-AUTOBOT.md` → `playbook.md` → `HANDOFF-AKTUALNY.md` → `KANAL-PRACA.md` → rejestr/ABC/run → Git | §„Kolejność czytania" wyżej |
+| {zestaw-plikow-trwalej-prawdy} | `playbook.md`, `REJESTR-PROSB-I-ZADAN.md`, `PYTANIA-OTWARTE.md`, `docs/decyzje/<ID>.md`, `WERSJE.md` | §„Hierarchia plików" wyżej |
+| {lista-twardych-barier} | 10 granic nienaruszalnych domeny gry | `R-PROC-AUTOBOT.md` §9 |
+| {jezyk-dokumentacji-i-procesu} | polski wszędzie; nazwy techniczne, ścieżki i identyfikatory po angielsku, bez znaków diakrytycznych | praktyka repo |
+| {miejsce-i-warunek-wlaczenia-do-wersji-obowiazujacej} | `origin/main`, merge `--no-ff` po pozytywnym Final Control, allowlist-only per plik/hunk | C-034, C-059 |
+
+Wartości nietypowe — limit 5 rund zamiast domyślnych 3 w szkielecie, pula 6 zamiast
+2, wyjątek graficzny — **pochodzą z decyzji właściciela**, nie z ustawień domyślnych
+szkieletu. Zmiana którejkolwiek wymaga ECHO, nie jest korektą redakcyjną.
+
+Limit `{limit-rownoleglosci-wywolan}` jako jedyny **nie pochodzi z rozmowy
+z właścicielem** — wynika z liczby rdzeni maszyny orkiestratora i przelicza się
+komendą `nproc`, bez pytania.
+
+## Format wersji
+
+`dyspozycje/WERSJE.md` jest **jedynym** rejestrem md5 bundli. Inne pliki linkują,
+nigdy nie kopiują — stary system miał cztery sprzeczne „aktualne" md5. Format
+nagłówka wpisu:
+
+```text
+## ROBOCZA <md5-skrócone> - <RRRR-MM-DD HH:MM UTC> - FALA <N>: <opis jednym zdaniem>
+```
+
+Wpis powstaje **dopiero po faktycznym publishu**, z md5 przeliczonym z opublikowanego
+bundla. `gra-robocza/ROBOCZA-MANIFEST.json` nigdy nie jest nadpisywany bez
+przeliczenia md5 (granica §9 pkt 5).
+
+## Czego ten projekt świadomie nie robi
+
+Lista granic zakresu — chroni przed powolnym rozrostem („skoro już przy tym
+jesteśmy"). **Temat naruszający którykolwiek punkt wymaga pytania ABC, nie
+decyzji Operatora.** Lista rośnie wyłącznie o rzeczy **faktycznie rozważone
+i odrzucone** — nigdy jako spis z góry wszystkiego, czego teoretycznie projekt
+mógłby nie robić.
+
+Punkty potwierdzone dotychczasową praktyką repozytorium:
+
+- **Nie gonimy parytetu funkcji z komercyjnymi grami 4X.** Budujemy pod
+  zgłoszenia właściciela i istniejące kryteria, nie pod cudzą listę funkcji
+  (`R-PROC-AUTOBOT.md` §14).
+- **Nie naprawiamy „przy okazji".** Zadanie naprawiające zgłoszony błąd ma
+  zakres = tylko ten błąd; refaktory i ulepszenia sąsiednie to osobne tematy
+  (C-025).
+- **Nie naprawiamy bramek czerwonych pre-istniejąco**, gdy nie są przedmiotem
+  tematu — np. `unit-power-test.cjs` (4/2) jest znanym, świadomie niezamykanym
+  stanem, nie regresją (`R-PROC-AUTOBOT.md` §6).
+- **Nie mieszamy zmiany procesu ze zmianą produktową** w jednym dispatchu
+  (granica §9 pkt 4).
+
+**Listy zakresu produktowego — co ta gra świadomie robi, a czego świadomie nie
+robi, choć mogłaby — nie wolno wymyślić.** Dziś stoi tu **jeden** taki punkt
+(parytet funkcji z grami 4X, z `R-PROC-AUTOBOT.md` §14); pozostałe trzy punkty
+powyżej dotyczą sposobu pracy, nie samej gry. Granice zakresu gry są decyzją
+właściciela, nie ustaleniem technicznym; dopisanie tu listy bez pokrycia w jego
+odpowiedzi byłoby fałszywą strukturą, gorszą niż jej brak. Orkiestrator dopisuje
+kolejne punkty dopiero po jednoznacznej odpowiedzi, zapisanej jako ECHO — zgodnie
+z regułą wzrostu na początku tej sekcji („wyłącznie o rzeczy faktycznie rozważone
+i odrzucone"). Sama ta reguła nie została dotąd potwierdzona przez właściciela
+wprost — to przedmiot pytania `R-PROC-AUTOBOT-PRZEBUDOWA-SZKIELET-Q1-Q2`.
+
+## Nasze tryby samooszukiwania — obserwowane, nie hipotetyczne
+
+Reguły przeciw samooszukiwaniu w promptach Operatora/Evaluatora **pochodzą
+stąd**, nie z teorii. Nie kopiuj cudzych przykładów — błąd popełniony w innym
+projekcie rzadko trafia w to, co faktycznie zawodzi tutaj.
+
+| Tryb | Przypadek z tego repozytorium | Reguła zakazująca |
+|---|---|---|
+| Test tautologiczny | test kontraktowy/jsdom przechodził mimo brakującego CSS — regres T10 migracji CivPedia przeszedł przez pełne Operator→Evaluator→Final Control na każdym z 10 etapów | zakaz uznania tematu wizualnego za zamknięty bez zrzutu z żywego Chromium **i** bez pokazania, że test czerwienieje po mutacji źródła (§9 pkt 6) |
+| Wynik bramki z pamięci | porównanie „czy funkcja jest już wdrożona" zrobione z pamięci zamiast komendą — fałszywy alarm „temat zniknął w kolejnej Fali" | zakaz twierdzenia „już wdrożone"/„zniknęło" bez wklejonego wyniku `git merge-base --is-ancestor` (C-056) |
+| Deklaracja zamiast artefaktu | wpis w rejestrze twierdzący, że runda Evaluatora „się odbyła", bez istniejącego raportu | zakaz raportowania czynności bez ID runu albo SHA (C-038) |
+| Samoocena liczników | orkiestrator wpisał liczniki skuteczności zasad z pamięci zamiast z realnych przebiegów; przy tym samym scaleniu zgubiono całą regułę i fragment innej | liczniki wyłącznie z mechanizmu, nowe zasady startują 0/0; `playbook.json` generowany, nigdy edytowany ręcznie (C-013) |
+| Praca na nieaktualnej bazie | Operator w świeżym worktree od `main` nie znalazł pracy scalonej do gałęzi sesji i zaczął ją odtwarzać ręcznie | wykrycie przez `git merge-base --is-ancestor` na starcie; gdy zlecenie wymaga stanu gałęzi sesji, prompt musi to rozstrzygnąć wprost (C-035) |
+| Cichy dispatch bez różnicowania | dwa tematy dispatchowane z niewłaściwym modelem i bez różnicowania effort — złapane przez właściciela, nie przez samoocenę | jawny `model` i `effort` per rola zapisane w `00-dispatch.md` i w raporcie etapu (C-052, C-061) |
+
+Żaden z powyższych nie został złapany przez regułę procesu w chwili wystąpienia,
+bo takiej reguły jeszcze nie było. Każdy kolejny obserwowany tryb dopisuj tutaj
+**i** do `playbook.md` — jedno bez drugiego znika po kompaktowaniu sesji.
+
+## Koszt
+
+Głównym składnikiem kosztu w tym projekcie jest rachunek za modele językowe —
+przewyższa on koszt czegokolwiek innego o rząd wielkości. Stąd optymalizujemy
+**dobór modelu per rola i objętość kontekstu**, nie infrastrukturę: raport niesie
+destylat, nie surowe logi (`R-PROC-AUTOBOT.md` §11), a przy fan-oucie łączymy
+zadania w grubsze paczki zamiast mnożyć cienkich agentów, bo każdy węzeł powtarza
+wstęp do promptu (`civ-autobot-workflow/SKILL.md` §5).
