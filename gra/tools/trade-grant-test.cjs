@@ -163,16 +163,23 @@ const grantsF = TR.computeTradeRouteResourceGrants(routesF_peace, nativeAccess_p
 eq(grantsF.length, 1, 'F: grant wraca po odtworzeniu trasy');
 eq(TR.hasTradeRouteResourceAccess(grantsF, 0, 'braz'), true, 'F: gracz odzyskuje dostep do brazu');
 
-// Rownowaznie: zerwanie umowy handlowej symulowane brakiem trasy w ogole
-// (np. limit tras spadl do 0 po zniszczeniu Targowiska) -- ta sama sciezka co wojna,
-// bo trade-routes.ts juz usuwa trase z listy (refreshTradeRoutes), a grant jest
-// czysta pochodna tej listy.
-console.log('\n-- F2. "zerwanie" (limit tras = 0, budynek handlowy zniszczony) -> grant znika --');
+// F2 -- T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, 2026-08-24): PRZED T3 zniszczenie
+// jedynego budynku handlowego (limit tras -> 0) usuwalo trase CALKOWICIE (limit
+// budynkowy gatingowal samo istnienie), wiec grant surowcowy tez znikal. OD T3
+// budynek handlowy juz NIE warunkuje istnienia trasy (patrz refreshTradeRoutes) --
+// trasa (i pochodny od niej grant surowcowy, ktory zawsze zalezal WYLACZNIE od
+// route.status, nigdy od budynku) PRZETRWA zniszczenie Targowiska. Budynek
+// warunkuje odtad wylacznie TradeRoute.budynekOdblokowany (bonus 5%, T4) --
+// grant surowcowy (odrebny mechanizm, HANDEL-Q11) nie byl i nadal nie jest
+// zalezny od budynekOdblokowany.
+console.log('\n-- F2. zniszczenie budynku handlowego (Targowisko) -> trasa i grant PRZETRWALY (T3) --');
 const builtNoTargowisko = new Map([['p1', []], ['f1', ['targowisko']]]);
 const routesF2 = TR.refreshTradeRoutes([p1, f1], routesF_peace, map, builtNoTargowisko, NO_WAR, HAS_TREATY);
-eq(routesF2.length, 0, 'F2: (kontrola) limit tras=0 po stronie gracza -> trasa usunieta');
+eq(routesF2.length, 1, 'F2: T3 -- zniszczenie Targowiska u gracza NIE usuwa trasy (istnienie juz nie gatingowane budynkiem)');
+eq(routesF2[0].budynekOdblokowany, false, 'F2: budynekOdblokowany=false po stronie gracza (brak budynku) -- ale trasa nadal istnieje');
 const grantsF2 = TR.computeTradeRouteResourceGrants(routesF2, nativeAccess_partnerBrazOnly);
-eq(grantsF2.length, 0, 'F2: grant znika razem z trasa (zerwanie != wojna, ten sam mechanizm)');
+eq(grantsF2.length, 1, 'F2: grant surowcowy PRZETRWAL -- zawsze zalezal wylacznie od route.status, nigdy od budynku handlowego');
+eq(TR.hasTradeRouteResourceAccess(grantsF2, 0, 'braz'), true, 'F2: gracz zachowuje dostep do brazu mimo zniszczenia Targowiska');
 
 // ---------------------------------------------------------------------------
 // G. firstTradeRouteResourceGrant -- helper UI (zrodlo "szlak handlowy z X")

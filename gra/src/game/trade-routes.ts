@@ -18,9 +18,12 @@
  *   - refreshTradeRoutes() — ustala/utrzymuje/usuwa trasy GRACZ<->OBCA CYWILIZACJA
  *     co turę: filtr obcy właściciel + pokój (nie wojna) + AKTYWNA Umowa Handlowa
  *     (RodzajTraktatu.UmowaHandlowa — decyzja właściciela C-HANDEL-UMOWA=B,
- *     2026-07-23: sam pokój już NIE wystarcza, trasa wymaga zawartego traktatu),
- *     limit tras na miasto = liczba budynków handlowych (Targowisko/
- *     Port/Port wielki).
+ *     2026-07-23: sam pokój już NIE wystarcza, trasa wymaga zawartego traktatu).
+ *     T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, 2026-08-24): liczba budynków handlowych
+ *     (Targowisko/Port/Port wielki) w mieście już NIE ogranicza istnienie trasy —
+ *     ogranicza wyłącznie pole `TradeRoute.budynekOdblokowany` (czy dana trasa ma
+ *     dziś pokrycie budynkowe, konsumowane w T4 do bonusu 5%). Fizyczny Port jako
+ *     wymóg samej łączności morskiej (`cityHasPort`) zostaje bez zmian.
  *   - Dochód = DWA SKŁADNIKI (wpięte oddzielnie):
  *     (1) składnik dystansowy (tradeRouteDistanceIncome / computeTradeRouteIncomeByCity)
  *         — wzór liniowy z podłogą, kredytowany OBU miastom trasy w pełnej kwocie
@@ -75,6 +78,22 @@ export interface TradeRoute {
   /** Uproszczony dystans heksowy (hexDistance) między centrami miast. */
   dystans: number;
   status: TradeRouteStatus;
+  /**
+   * T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1) — czy TA KONKRETNA trasa ma dziś pokrycie
+   * budynkowe (Targowisko/Port/Port wielki) po OBU stronach, zgodnie z
+   * `tradeRouteLimitForCity`. NIE wpływa na to, czy trasa istnieje (od T3 trasa
+   * istnieje i daje dochód dystansowy niezależnie od budynków — cytat właściciela:
+   * „Umowa handlowa od początku [...] daje nam pomimo braku wybudowanych budynków
+   * już środki samej odległości [...] Natomiast w momencie, gdy budynki staną
+   * wybudowane, to dochodzi dodatkowo tych 5% handlu"). Konsumowane dopiero w T4
+   * (economy.ts) do naliczenia realnego bonusu 5% — samo w sobie nie niesie żadnej
+   * kwoty. Liczba budynkowych „slotów" per miasto pozostaje ograniczona
+   * (`tradeRouteLimitForCity`), więc gdy tras jest więcej niż slotów, o tym, KTÓRA
+   * trasa dostaje `budynekOdblokowany=true` decyduje ten sam mechanizm priorytetu
+   * co dawniej decydował o istnieniu: najpierw istniejące trasy (`existingRoutes`,
+   * sortowane po id), potem nowe wg rosnącego dystansu — patrz `refreshTradeRoutes`.
+   */
+  budynekOdblokowany: boolean;
 }
 
 /** Minimalny kształt miasta wymagany do detekcji połączenia (podzbiór City). */
@@ -399,6 +418,12 @@ export function createTradeRoute(
     const r = findCityConnection(fromCity, toCity, map, medium, params, builtByCity);
     return { connected: r.connected, dystans: r.distance };
   })();
+  // T3: standalone constructor, poza mechanizmem priorytetu wielu tras z
+  // refreshTradeRoutes (nie zna innych tras/slotów) — pokrycie budynkowe liczone
+  // wprost z obu miast tej jednej trasy, bez rywalizacji o slot.
+  const budynekOdblokowany =
+    tradeRouteLimitForCity(fromCity.id, builtByCity) > 0 &&
+    tradeRouteLimitForCity(toCity.id, builtByCity) > 0;
 
   return {
     id: tradeRouteId(fromCity.id, toCity.id, medium),
@@ -409,6 +434,7 @@ export function createTradeRoute(
     medium,
     dystans,
     status: connected ? 'polaczony' : 'brak_polaczenia',
+    budynekOdblokowany,
   };
 }
 
@@ -547,8 +573,19 @@ export function citiesHaveTradeConnection(
 /**
  * Diagnoza, dlaczego między graczem a partnerem nie ma aktywnej trasy handlowej
  * mimo zawartej Umowy Handlowej (panel imperium → Aktywne umowy handlowe).
- * Zwraca komunikat PL lub null, gdy połączenie geometryczne jest możliwe
- * (wtedy brak trasy to kwestia slotów / odświeżenia, nie blokady terytorialnej).
+ * Zwraca komunikat PL lub null, gdy połączenie geometryczne jest możliwe (wtedy
+ * trasa PODJĘŁA już istnieć — patrz T3 niżej — i brak jej w danych to kwestia
+ * odświeżenia, nie blokady terytorialnej ani budynkowej).
+ *
+ * T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, 2026-08-24): PRZED T3 ta funkcja filtrowała
+ * miasta po `tradeRouteLimitForCity(...) > 0` (budynek handlowy), bo bez niego
+ * trasa faktycznie nie mogła istnieć — stąd komunikaty „brak Targowiska/Portu"
+ * i „brak wolnego slotu trasy". Od T3 budynek handlowy JUŻ NIE warunkuje
+ * istnienia trasy (tylko `TradeRoute.budynekOdblokowany`, konsumowane w T4) —
+ * te dwa komunikaty są więc nieaktualne jako powód BRAKU trasy i zostały
+ * usunięte; diagnoza sprawdza teraz geometrię/wojnę bezpośrednio na WSZYSTKICH
+ * miastach (fizyczny wymóg Portu na morze pozostaje bez zmian, wewnątrz
+ * `findCityConnection`/`citiesHaveTradeConnection`).
  */
 export function diagnoseMissingTradeRouteForPartner(
   playerOwnerId: number,
@@ -567,33 +604,26 @@ export function diagnoseMissingTradeRouteForPartner(
   const label = partnerLabel ?? `cywilizacja ${partnerOwnerId}`;
   const playerCities = cities.filter(c => c.ownerId === playerOwnerId);
   const partnerCities = cities.filter(c => c.ownerId === partnerOwnerId);
-  const playerTradeCities = playerCities.filter(c => tradeRouteLimitForCity(c.id, builtByCity) > 0);
-  const partnerTradeCities = partnerCities.filter(c => tradeRouteLimitForCity(c.id, builtByCity) > 0);
 
-  if (playerTradeCities.length === 0) {
-    const displayName = (playerCities[0] as { name?: string }).name ?? playerCities[0]?.id ?? 'mieście';
-    return `brak Targowiska/Portu w ${displayName}`;
+  if (playerCities.length === 0 || partnerCities.length === 0) {
+    return 'brak miast do handlu';
   }
 
-  if (partnerTradeCities.length === 0) {
-    return `brak Targowiska/Portu u ${label}`;
-  }
-
-  if (citiesHaveTradeConnection(playerTradeCities, partnerTradeCities, map, builtByCity, params)) {
-    return 'brak wolnego slotu trasy w mieście';
+  if (citiesHaveTradeConnection(playerCities, partnerCities, map, builtByCity, params)) {
+    return null; // T3: geometria połączona + traktat aktywny + brak wojny => trasa istnieje, nic do zdiagnozowania.
   }
 
   let minDist = Infinity;
-  for (const a of playerTradeCities) {
-    for (const b of partnerTradeCities) {
+  for (const a of playerCities) {
+    for (const b of partnerCities) {
       const d = hexDistance(a.q, a.r, b.q, b.r);
       if (d < minDist) minDist = d;
     }
   }
 
   let seaPossible = false;
-  for (const a of playerTradeCities) {
-    for (const b of partnerTradeCities) {
+  for (const a of playerCities) {
+    for (const b of partnerCities) {
       if (findCityConnection(a, b, map, 'morze', params, builtByCity).connected) {
         seaPossible = true;
         break;
@@ -624,14 +654,37 @@ export function diagnoseMissingTradeRouteForPartner(
  *     Handlowej (RodzajTraktatu.UmowaHandlowa) między stronami. Wojna nadal zrywa
  *     trasę niezależnie od traktatu (traktat i tak pada przy wypowiedzeniu wojny,
  *     patrz breakTreatiesOnWar w main.ts — to tylko druga, redundantna bramka).
- *   - Limit tras NA MIASTO, po OBU stronach (tradeRouteLimitForCity) = liczba
- *     zbudowanych budynków handlowych w TYM mieście. Miasto bez żadnego z nich
- *     ma limit 0 -> nie może uczestniczyć w żadnej trasie.
- *   - Stabilność między turami: trasy z `existingRoutes`, które nadal spełniają
- *     wszystkie warunki i mieszczą się w (odświeżonym) limicie, są PRIORYTETOWO
- *     zachowywane. Nowe kandydatury wypełniają dopiero pozostałe sloty, w
- *     kolejności rosnącego dystansu (deterministyczny tie-break: id trasy) —
- *     „najbliższe wygrywają", zgodnie ze wskazówką z zadania.
+ *   - T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, cytat właściciela: „Umowa handlowa od
+ *     początku [...] daje nam pomimo braku wybudowanych budynków już środki samej
+ *     odległości [...] Natomiast w momencie, gdy budynki staną wybudowane, to
+ *     dochodzi dodatkowo tych 5% handlu"): `tradeRouteLimitForCity` (budynki
+ *     Targowisko/Port/Port wielki) NIE ogranicza już ISTNIENIE trasy — trasa
+ *     istnieje i daje dochód dystansowy natychmiast po spełnieniu warunków
+ *     wyżej (dla morza dodatkowo fizyczny Port w obu miastach, wymóg
+ *     `findCityConnection`/`cityHasPort` — TO INNY BYT niż budynkowy limit tras:
+ *     `cityHasPort` sprawdza wyłącznie 'port'/'port_wielki' jako warunek fizycznej
+ *     łączności morskiej, `tradeRouteLimitForCity` liczy Targowisko+Port+Port
+ *     wielki jako pojemność slotów „pokrycia budynkowego"). Zamiast gatingu
+ *     istnienia, budynkowy limit slotów per miasto decyduje wyłącznie o polu
+ *     `budynekOdblokowany` (patrz `TradeRoute.budynekOdblokowany`) — flaga
+ *     konsumowana dopiero w T4 (economy.ts) do naliczenia bonusu 5%.
+ *   - Stabilność między turami — DWA POZIOMY: (1) ISTNIENIE trasy: skoro od T3
+ *     nie jest już ograniczone slotami, każda trasa z `existingRoutes`, która
+ *     nadal spełnia warunki geometrii/wojny/traktatu, zostaje zachowana
+ *     bezwarunkowo (nowe pary też mogą dojść — nic już z nikim nie rywalizuje
+ *     o samo istnienie). (2) Pole `budynekOdblokowany`: budynkowe sloty per
+ *     miasto (`tradeRouteLimitForCity`) POZOSTAJĄ ograniczone, więc gdy tras
+ *     istnieje więcej niż slotów, o tym KTÓRA trasa dostaje
+ *     `budynekOdblokowany=true` decyduje DOKŁADNIE ten sam mechanizm priorytetu,
+ *     co dawniej decydował o samym istnieniu: najpierw istniejące trasy
+ *     (`existingRoutes`, sortowane po id — trasa, która miała pokrycie budynkowe
+ *     w poprzedniej turze, nie traci go byle nowej, bliższej trasie), potem nowe
+ *     kandydatury wg rosnącego dystansu (tie-break: id) — „najbliższe wygrywają".
+ *     Uzasadnienie: właściciel opisał 5% jako coś, co „dochodzi dodatkowo" do
+ *     już istniejącego dochodu dystansowego, nie jako nowy, nieograniczony zasób —
+ *     budynek fizycznie obsługuje ograniczoną liczbę szlaków, więc jego
+ *     „odblokowanie" 5% powinno pozostać rzadkim, przydzielanym zasobem, tak jak
+ *     przed T3 był rzadkim zasobem sam slot trasy.
  *
  * Czysta funkcja — nie mutuje `existingRoutes`; zwraca nową listę (wyłącznie
  * trasy aktualnie połączone => wszystkie mają status 'polaczony'; trasa, która
@@ -646,7 +699,8 @@ export function diagnoseMissingTradeRouteForPartner(
  *                       zna pojęcia "barbarzyńca".
  * @param existingRoutes trasy z poprzedniej tury (dla ciągłości/stabilności).
  * @param map           mapa świata (do findCityConnection).
- * @param builtByCity   cityId -> zbudowane budynki (limit tras + wymóg Portu na morzu).
+ * @param builtByCity   cityId -> zbudowane budynki (T3: sloty `budynekOdblokowany`
+ *                       + niezmieniony wymóg fizycznego Portu na morzu).
  * @param isAtWar       (ownerA, ownerB) => czy strony są w stanie wojny.
  * @param hasTradeTreaty (ownerA, ownerB) => czy strony mają AKTYWNĄ Umowę Handlową
  *                       (RodzajTraktatu.UmowaHandlowa). Wstrzyknięte przez wywołującego
@@ -670,17 +724,32 @@ export function refreshTradeRoutes(
   const foreignCities = cities.filter(c => c.ownerId !== 0);
   if (playerCities.length === 0 || foreignCities.length === 0) return [];
 
+  // T3: sloty budynkowe NIE decydują już o istnieniu trasy — wyłącznie o polu
+  // `budynekOdblokowany` (patrz docstring wyżej). Ten sam mechanizm priorytetu
+  // co dawniej gatingował istnienie: najpierw istniejące trasy (po id), potem
+  // nowe wg rosnącego dystansu.
   const usedSlots = new Map<string, number>();
   const limitOf  = (cityId: string): number => tradeRouteLimitForCity(cityId, builtByCity);
   const hasRoom  = (cityId: string): boolean => (usedSlots.get(cityId) ?? 0) < limitOf(cityId);
   const useSlot  = (cityId: string): void => {
     usedSlots.set(cityId, (usedSlots.get(cityId) ?? 0) + 1);
   };
+  // Trasa dostaje budynekOdblokowany=true tylko gdy OBIE strony mają wolny slot —
+  // jeśli tylko jedna strona ma slot, żadna nie jest zużywana (analogicznie do
+  // starego hasRoom(from)&&hasRoom(to) przed konsumpcją, żeby nie "psuć" slotu
+  // jednej strony na trasę, która i tak nie dostanie flagi).
+  const grantBuilding = (fromId: string, toId: string): boolean => {
+    if (!hasRoom(fromId) || !hasRoom(toId)) return false;
+    useSlot(fromId);
+    useSlot(toId);
+    return true;
+  };
 
   const kept: TradeRoute[] = [];
   const keptIds = new Set<string>();
 
-  // --- Pass 1: zachowaj istniejące trasy, które nadal spełniają warunki ---
+  // --- Pass 1: zachowaj WSZYSTKIE istniejące trasy, które nadal spełniają warunki
+  //     istnienia (bez gatingu slotami — patrz T3 wyżej) ---
   const stillValid: TradeRouteCandidate[] = [];
   for (const route of existingRoutes) {
     const from = cityById.get(route.fromCityId);
@@ -690,14 +759,11 @@ export function refreshTradeRoutes(
     if (isAtWar(from.ownerId, to.ownerId)) continue;
     if (!hasTradeTreaty(from.ownerId, to.ownerId)) continue; // C-HANDEL-UMOWA=B: brak/zerwana Umowa Handlowa -> trasa znika
     const conn = findCityConnection(from, to, map, route.medium, params, builtByCity);
-    if (!conn.connected) continue;
+    if (!conn.connected) continue; // dla morza wciąż wymaga fizycznego Portu w obu miastach (cityHasPort) — bez zmian
     stillValid.push({ from, to, medium: route.medium, distance: conn.distance, id: route.id });
   }
   stillValid.sort((x, y) => x.id.localeCompare(y.id));
   for (const cand of stillValid) {
-    if (!hasRoom(cand.from.id) || !hasRoom(cand.to.id)) continue;
-    useSlot(cand.from.id);
-    useSlot(cand.to.id);
     keptIds.add(cand.id);
     kept.push({
       id: cand.id,
@@ -708,17 +774,20 @@ export function refreshTradeRoutes(
       medium: cand.medium,
       dystans: cand.distance,
       status: 'polaczony',
+      budynekOdblokowany: grantBuilding(cand.from.id, cand.to.id),
     });
   }
 
-  // --- Pass 2: nowe kandydatury wypełniają pozostałe sloty (najbliższe pierwsze) ---
+  // --- Pass 2: nowe kandydatury (wszystkie geometrycznie/traktatowo poprawne
+  //     pary gracz<->obcy dostają trasę; kolejność rosnącego dystansu decyduje
+  //     wyłącznie o priorytecie przydziału budynekOdblokowany z pozostałych slotów) ---
   const fresh: TradeRouteCandidate[] = [];
   for (const p of playerCities) {
     for (const f of foreignCities) {
       if (isAtWar(p.ownerId, f.ownerId)) continue;
       if (!hasTradeTreaty(p.ownerId, f.ownerId)) continue; // C-HANDEL-UMOWA=B: bez Umowy Handlowej trasa nie powstaje
       const best = detectBestConnection(p, f, map, params, builtByCity);
-      if (!best) continue;
+      if (!best) continue; // dla morza detectBestConnection/findCityConnection nadal wymaga Portu w obu miastach
       const id = tradeRouteId(p.id, f.id, best.medium);
       if (keptIds.has(id)) continue;
       fresh.push({ from: p, to: f, medium: best.medium, distance: best.distance, id });
@@ -727,9 +796,6 @@ export function refreshTradeRoutes(
   fresh.sort((a, b) => a.distance - b.distance || a.id.localeCompare(b.id));
 
   for (const cand of fresh) {
-    if (!hasRoom(cand.from.id) || !hasRoom(cand.to.id)) continue;
-    useSlot(cand.from.id);
-    useSlot(cand.to.id);
     kept.push({
       id: cand.id,
       fromCityId: cand.from.id,
@@ -739,6 +805,7 @@ export function refreshTradeRoutes(
       medium: cand.medium,
       dystans: cand.distance,
       status: 'polaczony',
+      budynekOdblokowany: grantBuilding(cand.from.id, cand.to.id),
     });
   }
 
