@@ -98,6 +98,13 @@ import { buildRydwanKapadokijskiOpus5 } from './braz-rydwan-kapadokijski-opus5';
 // wczesnym jeźdźcem epoki Brązu: BEZ strzemion, BEZ siodła z łękami, czaprak
 // na poprągu/napierśniku/pośliśniku, uzda z brązowym wędzidłem.
 import { buildKonnicaBrazOpus5 } from './braz-konnica-opus5';
+// ASYRIA ŻELAZO OPUS 5 — dwa dedykowane modele kawalerii (Konnica lancowa i
+// Konnica łucznicza asyryjska), zastępujące dotychczasowy wspólny fallback
+// `case 'konnica'` dla tej pary jednostek kulturowych (R-ZELAZO-MODELE-BRAKUJACE-Q1-T1).
+import {
+  buildZelazoKonnicaLancowaAsyryjska,
+  buildZelazoKonnicaLuczniczaAsyryjska,
+} from './zelazo-konnica-asyryjska-opus5';
 // BRĄZ OPUS 5 — „Rydwan konny"/„War Chariot" (Kultura=null, Tech=Jeździectwo).
 // Do 2026-08-06 jedyna uniwersalna jednostka Brązu BEZ własnej grafiki: leciała
 // na wspólny model kategorii 'rydwan' bez żadnej dekoracji (warianty kulturowe
@@ -1321,6 +1328,14 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n === 'wojownik z mieczem i tarcza' || n === 'swordsman') return buildMiecznikBrazOpus5(ownerColor_);
   if (n === 'procarz' || n === 'slinger') return buildProcarzBrazOpus5(ownerColor_);
   if (n === 'rydwan (woly)' || n === 'rydwan woly' || n === 'ox chariot') return buildRydwanWolyBrazOpus5(ownerColor_);
+  // ASYRIA ŻELAZO — Konnica lancowa / łucznicza (R-ZELAZO-MODELE-BRAKUJACE-Q1-T1):
+  // dedykowane modele, MUSZĄ stać PRZED generycznym dopasowaniem 'konnica' niżej,
+  // inaczej obie warianty kulturowe wpadałyby w ten sam, wspólny model Brązu.
+  // units.json: „Konnica lancowa asyryjska"/„Assyrian Lancer" (Atak dystansowy=0,
+  // długa lanca + okrągła tarcza) i „Konnica łucznicza asyryjska"/„Assyrian Horse
+  // Archer" (Atak dystansowy=6 — MUSI dzierżyć łuk, nie broń drzewcową).
+  if (n.includes('konnica lancowa asyryjsk') || n.includes('assyrian lancer')) return buildZelazoKonnicaLancowaAsyryjska(ownerColor_);
+  if (n.includes('konnica lucznicza asyryjsk') || n.includes('assyrian horse archer')) return buildZelazoKonnicaLuczniczaAsyryjska(ownerColor_);
   // KONNICA (Brąz, Kultura=null): dopasowanie po PEŁNEJ nazwie, żeby warianty
   // kulturowe („Konnica lancowa asyryjska", „Konnica łucznicza asyryjska",
   // „Jeździec chiński"…) zachowały swoje modele — mają własne wpisy wyżej
