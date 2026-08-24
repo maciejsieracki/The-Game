@@ -115,11 +115,39 @@ Operator → Evaluator → Final Control → integracja orkiestratora, jedno ID,
 gałąź. Limit 5 rund. Model/effort: **Opus 5 High dla Operatora i Evaluatora**
 (temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a), Final Control Sonnet 5 High.
 
+## Runda 1 — FAIL (błąd orkiestratora przy dispatchu, nie treść pracy)
+
+Operator PASS-WITH-NOTES, Evaluator PASS-WITH-NOTES, Final Control **FAIL**
+(`03-final-control-runda1-FAIL.md`). Werdykt: sama praca (kod, historia, testy,
+25/25 real-render, dowód nietautologiczności, proporcje HEX_R) potwierdzona
+niezależnie przez WSZYSTKIE TRZY role jako poprawna i kompletna — ale Operator i
+Evaluator zostali uruchomieni jako **Sonnet 5**, nie **Opus 5 High** wymagane
+przez ten dispatch (§Pętla wyżej) i przez `R-PROC-AUTOBOT.md` §5a/§9 poz. 6(b)
+(granica nienaruszalna, natychmiastowy FAIL niezależnie od jakości reszty pracy).
+
+**Przyczyna techniczna (orkiestrator):** skrypt Workflow ustawiał `model` WYŁĄCZNIE
+w metadanych `meta.phases` (kosmetyczne, tylko do wyświetlania postępu), NIE w
+`opts.model` samego wywołania `agent()` — więc agent dziedziczył domyślny model
+sesji (Sonnet 5) zamiast Opus 5. To nie jest gap C-061 (ten dotyczy `effort`) —
+`model` jest w pełni dostępnym parametrem `agent()`, po prostu źle użytym przy
+tym dispatchu. Poprawka: jawne `opts.model: 'claude-opus-5'` w wywołaniu `agent()`
+dla Operatora i Evaluatora w rundzie 2 (i we wszystkich kolejnych dispatchach T2-T4
+tego tematu).
+
+**Runda 2** — TEN SAM ID, TA SAMA gałąź (`autobot/ZELAZO-T1-Q1`, HEAD `c41acac7`).
+Zgodnie z rekomendacją Final Control: Operator MOŻE zweryfikować/dopracować
+istniejący `zelazo-konnica-asyryjska-opus5.ts` na Opus 5 zamiast zaczynać od zera
+(precyzyjna poprawka, nie zlecenie od nowa) — pod warunkiem że raport jawnie
+potwierdzi rzeczywisty model wykonawczy tym razem.
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: jeszcze brak — dispatch.
-TESTY: kryteria sukcesu 1–9 wyżej.
-BLOKADY: brak.
-RUNDY: 0/5 (dispatch).
-NASTĘPNY KROK: Operator, runda 1.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-T1-Q1`, commit `c41acac7` (runda 1, kod
+gotowy, treściowo niekwestionowany) — czeka na potwierdzenie rundy 2 na
+właściwym modelu.
+TESTY: kryteria sukcesu 1–9 wyżej — wszystkie spełnione treściowo w rundzie 1,
+do potwierdzenia na Opus 5 w rundzie 2.
+BLOKADY: patrz „Runda 1 — FAIL" wyżej.
+RUNDY: 1/5 (zużyta rundą 1).
+NASTĘPNY KROK: Operator, runda 2, jawnie na Opus 5 High.
 DEPLOY/PUSH: NIE WYKONANO.
