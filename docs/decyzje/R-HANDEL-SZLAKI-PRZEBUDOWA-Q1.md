@@ -1,9 +1,9 @@
 # R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 — przebudowa mechaniki szlaków handlowych
 
-**Status:** W TRAKCIE (2026-08-23) — T1+T2+T2b+T3 ZINTEGROWANE do `main` (T3 commit
-`f552f8e3`). T4 dispatchowane natychmiast (ten sam plik, sekwencyjnie). T6 w kolejce po T4.
-Zbiorczy deploy ROBOCZA wstrzymany do zintegrowania T4 (ryzyko sekwencjonowania — patrz
-notatka Final Control przy T3 niżej).
+**Status:** W TRAKCIE (2026-08-23) — T1+T2+T2b+T3+T4 ZINTEGROWANE do `main` (T4 commit
+`fee7f455`). Ryzyko sekwencjonowania z T3 (miasto bez budynku dostające stary bonus 5%)
+ZAMKNIĘTE. T6 dispatchowane natychmiast (ostatni temat tej serii). Zbiorczy deploy ROBOCZA
+nastąpi po zintegrowaniu T6.
 
 ## Zlecenie właściciela (werbatim, dyktowane — literówki oryginalne)
 
@@ -262,7 +262,25 @@ Kolejność bezpieczna: T1 → T2 → T2b → T3 → T4 → T6. Bez osobnego T5 
   T3 a T4 miasto z trasą ale BEZ budynku dostawałoby stary bonus +5%, dokładnie odwrotnie
   niż wymaga zlecenie właściciela. T3 NIE MOŻE trafić do zbiorczego deployu ROBOCZA
   samodzielnie — deploy obejmujący T3 wymaga, żeby T4 był już zintegrowany.**
-- **T4, T6 — w kolejce, dispatch T4 następuje natychmiast po T3** (ten sam plik
-  `trade-routes.ts` + nowo dotykany `economy.ts` — sekwencyjnie, nie równolegle, zgodnie
-  z `R-PROC-AUTOBOT.md` §2b). Zbiorczy deploy ROBOCZA nastąpi dopiero po zintegrowaniu
-  WSZYSTKICH T3+T4+T6 razem, właśnie z powodu ryzyka opisanego wyżej.
+- **T4 — ZINTEGROWANE (2026-08-23, 2 rundy).** Runda 1: `BLOCK` (konflikt kontraktu, nie
+  `FAIL` — nie zużył licznika) — Operator znalazł, że mechanizm wymaga danych na poziomie
+  trasy podłączonych przez `turn-economy.ts`/`main.ts` (istniejące punkty wpięcia
+  `liczbaAktywnychTrasHandlowych`)/`cityPanel.ts` (jedna zduplikowana linia wyświetlania),
+  żadnego z tych plików pierwotna allowlista nie obejmowała. Orkiestrator rozszerzył
+  allowlistę o te trzy pliki jako czysto techniczną korektę zakresu (`R-PROC-AUTOBOT.md`
+  §10 — decyzja bez konsekwencji dla kosztu/ryzyka/zakresu gry, nie wymaga pytania
+  właściciela), Operator wznowiony na tym samym ID/gałęzi. Runda 2: PASS/PASS/PASS. Stary
+  globalny mnożnik `handelBrutto *= (1+0.05×liczbaTrasHandlowych)` zastąpiony addytywną
+  sumą per-trasowych bonusów `0.05 × własny dochód dystansowy` (nowa funkcja
+  `computeTradeRouteBuildingBonusByCity()`), naliczaną WYŁĄCZNIE dla tras z
+  `budynekOdblokowany===true` — dokładnie zamyka ryzyko sekwencjonowania z T3. Wszystkie
+  10 istniejących punktów wpięcia w `main.ts` zaktualizowane, martwy stary mechanizm
+  usunięty (potwierdzone grepem), `cityPanel.ts` przestał pokazywać fałszywe „+X%" i liczy
+  premię na żywo. Zweryfikowane niezależnie przez orkiestratora (tsc/build/8 testów
+  handlu-ekonomii-dyplomacji + 5 bramek referencyjnych zielone, pre-istniejące FAIL w
+  `trade-routes-income-test.cjs`/H2 rozwiązane przez przepisanie testu, 5 pre-istniejących
+  FAIL w `trade-ilosc-test.cjs` potwierdzone niezmienione), zmergowane do `main` (merge
+  non-ff, commit `fee7f455`), wypchnięte.
+- **T6 — dispatchowane natychmiast po T4** (ostatni temat tej serii, `empireDetailPanel.ts`
+  + `main.ts::buildEmpireTradeSnap()` — dane per-trasowe z T4 już gotowe do wyświetlenia).
+  Zbiorczy deploy ROBOCZA nastąpi po zintegrowaniu T6.
