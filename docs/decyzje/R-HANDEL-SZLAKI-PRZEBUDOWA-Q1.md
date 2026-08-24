@@ -1,7 +1,9 @@
 # R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 — przebudowa mechaniki szlaków handlowych
 
-**Status:** W TRAKCIE (2026-08-22) — T1+T2+T2b ZINTEGROWANE do `main` (commit `f303760a`),
-oczekuje na zbiorczy deploy ROBOCZA (decyzja właściciela). T3/T4/T6 w kolejce, nie dispatchowane.
+**Status:** W TRAKCIE (2026-08-23) — T1+T2+T2b+T3 ZINTEGROWANE do `main` (T3 commit
+`f552f8e3`). T4 dispatchowane natychmiast (ten sam plik, sekwencyjnie). T6 w kolejce po T4.
+Zbiorczy deploy ROBOCZA wstrzymany do zintegrowania T4 (ryzyko sekwencjonowania — patrz
+notatka Final Control przy T3 niżej).
 
 ## Zlecenie właściciela (werbatim, dyktowane — literówki oryginalne)
 
@@ -238,6 +240,29 @@ Kolejność bezpieczna: T1 → T2 → T2b → T3 → T4 → T6. Bez osobnego T5 
   H2/`trade-ilosc-test.cjs`), 5 bramek referencyjnych zielone. Wypchnięte do
   `origin/main`.
 
-- **T3, T4, T6 — pozostają w kolejce** (nie dispatchowane w tej turze). Właściciel
-  zdecydował poczekać z dalszym dispatchem: po T1+T2+T2b zrobić zbiorczy deploy
-  ROBOCZA (FALA) i push, zanim ruszy T3.
+- **T3 — ZINTEGROWANE (2026-08-23).** Dispatch przez Workflow (Operator→Evaluator→Final
+  Control, Sonnet 5, wg nowego szkieletu procesu `R-PROC-AUTOBOT.md`, zapis dispatchu
+  `dyspozycje/autobot/runs/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T3/00-dispatch.md`), wszystkie
+  role PASS/PASS-WITH-NOTES. Gating budynkami handlowymi (`tradeRouteLimitForCity`)
+  przestał ograniczać ISTNIENIE trasy — trasa (umowa + łączność + brak wojny, Port
+  fizyczny nadal wymagany dla morza, bez zmian) daje dochód dystansowy od razu. Nowe
+  pole `TradeRoute.budynekOdblokowany: boolean` niesie, czy dana trasa ma dziś pokrycie
+  budynkowe (ten sam mechanizm priorytetu co dawniej gatingował istnienie: istniejące
+  trasy pierwszeństwo, nowe wg rosnącego dystansu) — gotowe do konsumpcji w T4. Efekt
+  uboczny (poza kodem, tylko test zaktualizowany): granty surowcowe brąz/żelazo/koń
+  zawsze zależały wyłącznie od `route.status`, nigdy od budynku — teraz naturalnie
+  przetrwają brak budynku, zgodnie z cytatem właściciela „handel dostępny jest od
+  początku". Zweryfikowane niezależnie przez orkiestratora (tsc/build/6 testów tematu
+  (65/91[1 pre-existing]/62/35[5 pre-existing]/49/54)/5 bramek referencyjnych zielone),
+  zmergowane do `main` (merge non-ff, commit `f552f8e3`), wypchnięte.
+  **⚠️ RYZYKO SEKWENCJONOWANIA ZNALEZIONE PRZEZ FINAL CONTROL (nie defekt T3 samego w
+  sobie, dispatch jawnie wykluczał `economy.ts`): `computeTradeRouteCountByCity()` liczy
+  WSZYSTKIE połączone trasy bez względu na `budynekOdblokowany`, a ta liczba wciąż zasila
+  stary, globalny mnożnik +5% Handlu w `economy.ts:954-957` — czyli między zmergowaniem
+  T3 a T4 miasto z trasą ale BEZ budynku dostawałoby stary bonus +5%, dokładnie odwrotnie
+  niż wymaga zlecenie właściciela. T3 NIE MOŻE trafić do zbiorczego deployu ROBOCZA
+  samodzielnie — deploy obejmujący T3 wymaga, żeby T4 był już zintegrowany.**
+- **T4, T6 — w kolejce, dispatch T4 następuje natychmiast po T3** (ten sam plik
+  `trade-routes.ts` + nowo dotykany `economy.ts` — sekwencyjnie, nie równolegle, zgodnie
+  z `R-PROC-AUTOBOT.md` §2b). Zbiorczy deploy ROBOCZA nastąpi dopiero po zintegrowaniu
+  WSZYSTKICH T3+T4+T6 razem, właśnie z powodu ryzyka opisanego wyżej.
