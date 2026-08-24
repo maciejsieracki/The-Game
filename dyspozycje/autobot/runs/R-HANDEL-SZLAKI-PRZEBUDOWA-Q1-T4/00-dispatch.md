@@ -34,6 +34,21 @@ osobny worktree per rola.
 - `gra/src/game/trade-routes.ts` (dodanie funkcji liczącej sumę per-trasowych
   bonusów 5%, jeśli potrzebna jako eksport konsumowany przez `economy.ts`)
 - `gra/src/game/economy.ts` (zastąpienie starego globalnego mnożnika)
+- `gra/src/game/turn-economy.ts` (dopisane w rundzie 2, konflikt kontraktu —
+  patrz niżej: podłączenie nowych danych per-trasowych do kontekstu przekazywanego
+  do `economy.ts`, ten sam kształt co dziś ma `liczbaAktywnychTrasHandlowych`)
+- `gra/src/main.ts` (dopisane w rundzie 2 — WYŁĄCZNIE istniejące punkty wpięcia
+  `computeTradeRouteCountByCity`/`ctx.liczbaAktywnychTrasHandlowych`: budowa,
+  zasilenie kontekstu, przekazanie, `.clear()`. Allowlista zatwierdzona PLIKIEM,
+  nie sztywną liczbą linii — Final Control rundy 1 zweryfikował że dokładna
+  liczba punktów wpięcia jest sporna między rolami (8/9/10), więc liczenie ich
+  z góry jest zawodne. Poza zakresem: `buildEmpireTradeSnap()` i cokolwiek innego
+  w tym pliku niezwiązane z tym konkretnym mechanizmem — to T6.)
+- `gra/src/ui/cityPanel.ts` (dopisane w rundzie 2 — WYŁĄCZNIE zduplikowana kopia
+  starej formuły procentowej używana do wyświetlenia napisu „premia za trasy
+  handlowe: +X%” (stała `TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE`, okolice linii
+  10360-10521) — ma teraz pokazywać liczbę zgodną z nowym mechanizmem, żeby gracz
+  nie widział błędnego napisu. Nic innego w tym pliku nie wchodzi w zakres.)
 - `gra/tools/*trade*test.cjs`, `gra/tools/*economy*test.cjs`,
   `gra/tools/mennica-uspienie-test.cjs`, `gra/tools/zloto-szlak-test.cjs`
   (rozszerzenie/aktualizacja testów dotkniętych zmianą formuły)
@@ -42,6 +57,26 @@ Poza zakresem: `gra/src/ui/empireDetailPanel.ts`, `gra/src/main.ts::buildEmpireT
 (T6 — UI, osobny dispatch po T4), formuła dystansowa/stawki T1/T2 (nietykalne),
 `refreshTradeRoutes()`'s gating logic z T3 poza tym, co niezbędne do odczytania
 `budynekOdblokowany`.
+
+### Runda 2 — rozstrzygnięcie konfliktu kontraktu (orkiestrator, bez zużycia rundy)
+
+Runda 1 zakończyła się `BLOCK` (Operator, Evaluator i Final Control zgodnie
+potwierdzili — nie `FAIL`, zgodnie z `R-PROC-AUTOBOT.md` §3a/C-054, licznik rund
+pozostaje 0/5): mechanizm z kryteriów 1-4 wymaga danych NA POZIOMIE TRASY
+podłączonych przez `turn-economy.ts`/`main.ts`/`cityPanel.ts`, których pierwotna
+allowlista nie obejmowała — bez nich naprawa albo zostaje martwa w rozgrywce,
+albo usunięcie starego mnożnika zostawia miasta bez żadnego bonusu do czasu T6.
+Pełny opis w `dyspozycje/autobot/runs/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T4/decision-abc.md`
+(branch `autobot/HANDEL-T4-Q1`, commit `127143bb`).
+
+**Rozstrzygnięcie orkiestratora:** to jest czysto techniczna korekta zakresu —
+podmiana kształtu już istniejącej mapy danych w plikach, które i tak trzeba
+dotknąć, żeby już zatwierdzony mechanizm (formuła i liczby z ECHO Q3, NIE
+przedmiot sporu) w ogóle zadziałał w rozgrywce. Zero nowej decyzji produktowej,
+zero zmiany kosztu/ryzyka/zakresu gry — kwalifikuje się do samodzielnej decyzji
+orkiestratora (`R-PROC-AUTOBOT.md` §10, „technika bez konsekwencji”), nie do
+pytania właściciela. Allowlista rozszerzona jak wyżej. Operator wznawia na TYM
+SAMYM ID i TEJ SAMEJ gałęzi (`autobot/HANDEL-T4-Q1`), runda 2.
 
 ## Kryteria sukcesu
 
