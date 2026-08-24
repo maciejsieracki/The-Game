@@ -449,10 +449,12 @@ export interface EmpireTradeRouteRow {
   income: number;
   /**
    * T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): czy ta konkretna trasa ma dziś pokrycie
-   * budynkiem handlowym w mieście gracza — `TradeRoute.budynekOdblokowany` z T3,
-   * przekazane WPROST, bez przeliczania. Od T3 budynek NIE warunkuje istnienia trasy
-   * (dochód dystansowy leci od zawarcia umowy) — odblokowuje wyłącznie premię 5%
-   * (`premiaBudynku`). `false` = 5% czeka na Targowisko/Port w tym mieście.
+   * budynkiem handlowym PO OBU STRONACH (Twoje miasto i miasto partnera) —
+   * `TradeRoute.budynekOdblokowany` z T3, przekazane WPROST, bez przeliczania.
+   * Od T3 budynek NIE warunkuje istnienia trasy (dochód dystansowy leci od
+   * zawarcia umowy) — odblokowuje wyłącznie premię 5% (`premiaBudynku`).
+   * `false` = 5% czeka na Targowisko/Port po obu stronach trasy (może brakować
+   * po stronie partnera, nie tylko Twojego miasta).
    */
   budynekOdblokowany: boolean;
   /**

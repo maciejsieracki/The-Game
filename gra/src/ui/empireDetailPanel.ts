@@ -807,12 +807,12 @@ function splitAmountTxt(n: number): string {
 function routeBonusSplitHtml(premiaBudynku: number, budynekOdblokowany: boolean): string {
   if (!budynekOdblokowany) {
     const tip = 'Premia 5% z tej trasy czeka na budynek handlowy (Targowisko / Port / Port wielki) '
-      + 'w Twoim mieście. Dochód dystansowy obok naliczasz już teraz — od zawarcia Umowy Handlowej, '
-      + 'bez żadnego budynku. Po wybudowaniu doliczy się dodatkowo 5% dochodu dystansowego TEJ trasy '
-      + 'do Podatku tego miasta.';
+      + 'po obu stronach trasy (Twoje miasto i miasto partnera). Dochód dystansowy obok naliczasz już '
+      + 'teraz — od zawarcia Umowy Handlowej, bez żadnego budynku. Po wybudowaniu po obu stronach '
+      + 'doliczy się dodatkowo 5% dochodu dystansowego TEJ trasy do Podatku tego miasta.';
     return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak budynku</span>`;
   }
-  const tip = 'Premia 5% za budynek handlowy w Twoim mieście: 5% dochodu dystansowego TEJ trasy, '
+  const tip = 'Premia 5% za budynek handlowy po obu stronach trasy: 5% dochodu dystansowego TEJ trasy, '
     + 'doliczone addytywnie do Podatku tego miasta (nie wprost do skarbca — przechodzi jeszcze '
     + 'przez korupcję i podział suwakami Nauka/Skarb/Zamożność).';
   return `<span class="civ-emp-route-split on"${tipAttr(tip)}>${splitAmountTxt(premiaBudynku)} · 5% budynek</span>`;
@@ -2121,7 +2121,7 @@ export function renderMiastoSection(
     h += anyRoutes
       ? '<div class="civ-emp-foot">SZLAKI = liczba aktywnych tras handlowych tego miasta · DOCHÓD = dochód '
         + 'DYSTANSOWY tych tras (pkt Pieniądza/turę, wprost do skarbca), a pod nim osobno składnik <b>5% za '
-        + 'budynek handlowy</b> — naliczany tylko z tras, których miasto ma Targowisko/Port, i wchodzący do '
+        + 'budynek handlowy</b> — naliczany tylko z tras, które mają Targowisko/Port po obu stronach, i wchodzący do '
         + 'Podatku miasta, nie wprost do skarbca. Rozpiska tras (partner, medium, dystans, rozkład per trasa) '
         + '— zakładka Handel.</div>'
       : '<div class="civ-emp-empty">Brak aktywnych tras handlowych w zakresie.</div>';
@@ -3286,7 +3286,7 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     const brakBudynku = t.routes.filter(r => !r.budynekOdblokowany).length;
     const sumaSplit = brakBudynku > 0
       ? `<span class="civ-emp-route-split off"${tipAttr('Tyle tras nie ma jeszcze budynku handlowego '
-        + '(Targowisko/Port) w Twoim mieście — ich premia 5% nie jest naliczana.')}>`
+        + '(Targowisko/Port) po obu stronach trasy — ich premia 5% nie jest naliczana.')}>`
         + `${splitAmountTxt(sumaPremii)} · 5% (${brakBudynku} bez budynku)</span>`
       : `<span class="civ-emp-route-split on">${splitAmountTxt(sumaPremii)} · 5%</span>`;
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
