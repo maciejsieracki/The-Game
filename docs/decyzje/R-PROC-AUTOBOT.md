@@ -258,6 +258,20 @@ dostępne nawet w Claude Code. Ten gap i incydent, który go ujawnił
 bez różnicowania effort, złapane przez właściciela, nie przez samoocenę), są
 opisane w `playbook.md` C-061.
 
+**C-062 (2026-08-24, Ścieżka A, Workflow) — `model` w `meta.phases` jest wyłącznie
+kosmetyczny.** Skrypt Workflow dla `R-ZELAZO-MODELE-BRAKUJACE-Q1-T1` ustawił
+`model: 'claude-opus-5'` TYLKO w deklaracji `meta.phases` (pole używane wyłącznie do
+etykiety w widoku postępu `/workflows`), nie w `opts.model` samego wywołania
+`agent(prompt, opts)`. Efekt: Operator i Evaluator wykonali się na domyślnym modelu
+sesji (Sonnet 5) mimo poprawnie wyglądającej deklaracji na górze skryptu — złapane
+dopiero przez Final Control (§9 poz. 6b), nie przez orkiestratora. W odróżnieniu od
+C-061 (parametr `effort` fizycznie nieobecny w narzędziu `Agent`), tu parametr
+`model` był W PEŁNI dostępny — błąd był w MIEJSCU jego ustawienia, nie w jego braku.
+**Reguła:** przy pisaniu skryptu Workflow, `opts.model`/`opts.effort` MUSZĄ być
+przekazane w każdym wywołaniu `agent()` z osobna (Operator, Evaluator, Final
+Control) — `meta.phases[].model` wolno dodać dodatkowo dla czytelności widoku
+postępu, ale nigdy zamiast `opts.model` na wywołaniu.
+
 **Dlatego kanon rozdziela dwie ścieżki, każda jako osobny skill, nie jeden plik
 z warunkiem w środku:**
 
