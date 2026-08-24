@@ -26,6 +26,10 @@
  *   H. Integracja advanceCityEconomy: pieniadzZTras wchodzi do skarbca CZYSTO (bez Wealth),
  *      premiaHandluTrasHandlowych (tylko trasy z budynkiem) podnosi Handel, obie strony
  *      (wlasciciele) zarabiaja.
+ *   K. T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T6): tradeRouteBuildingBonusForRoute -- per-trasowa
+ *      wersja premii 5%, ktora konsumuje panel imperium; (a) kwota dla trasy z budynkiem,
+ *      (b) 0 dla trasy bez budynku i dla trasy nieaktywnej, (c) SPOJNOSC: agregat T4
+ *      zasilajacy economy.ts jest co do bitu suma tych per-trasowych skladnikow.
  */
 
 const fs   = require('fs');
@@ -47,6 +51,7 @@ export {
   DEFAULT_TRADE_ROUTE_PARAMS, loadTradeRouteParams,
   tradeRouteDistanceIncome, tradeRouteTotalDistanceIncome, DEFAULT_TRADE_ROUTE_INCOME_PARAMS, loadTradeRouteIncomeParams,
   computeTradeRouteIncomeByCity, computeTradeRouteBuildingBonusByCity,
+  tradeRouteBuildingBonusForRoute, TRADE_ROUTE_BUILDING_BONUS_RATE,
 } from '../src/game/trade-routes';
 export { cityYieldPerTurn } from '../src/game/economy';
 export { advanceCityEconomy } from '../src/game/turn-economy';
@@ -551,6 +556,68 @@ const routesI = TR.refreshTradeRoutes([pI, fI], [], mapI, builtI, NO_WAR, HAS_TR
 eq(routesI.length, 1, 'I: (setup) dokladnie jedna trasa pI<->fI powstaje (oba media geometrycznie mozliwe)');
 eq(routesI[0].medium, 'lad', 'I: mimo mozliwego szlaku morskiego (porty + woda), wybrany medium = lad (bezwarunkowy priorytet ladu, ECHO Q5)');
 eq(routesI[0].dystans, 4, 'I: (kontrola) dystans = hexDistance(3,100 -> 7,100) = 4, taki sam dla obu mediow');
+
+// ---------------------------------------------------------------------------
+// K. T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): tradeRouteBuildingBonusForRoute --
+//    per-trasowa wersja premii 5%, ktora konsumuje panel imperium
+//    (main.ts::buildEmpireTradeSnap -> EmpireTradeRouteRow.premiaBudynku).
+//
+//    Ta sekcja pilnuje TRZECH rzeczy naraz:
+//      (a) trasa Z budynkiem zwraca DOKLADNIE kwote 5% wlasnego dochodu dystansowego,
+//      (b) trasa BEZ budynku (i trasa nieaktywna) zwraca 0 -- to jest to "zero z
+//          powodem", ktore UI tlumaczy graczowi slowem "brak budynku",
+//      (c) SPOJNOSC: agregat T4 (computeTradeRouteBuildingBonusByCity), ktory realnie
+//          zasila silnik (economy.ts::premiaHandluTrasHandlowych), jest co do bitu suma
+//          tych per-trasowych skladnikow -- inaczej panel pokazywalby inna liczbe niz
+//          ta, ktora gracz faktycznie dostaje. To jest sedno kryterium 2 dispatchu i
+//          powod, dla ktorego T6 NIE zaklada wlasnej, czwartej kopii wzoru
+//          (precedens P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1).
+// ---------------------------------------------------------------------------
+console.log('\n-- K. T6: tradeRouteBuildingBonusForRoute (per trasa) + spojnosc z agregatem T4 i economy.ts --');
+
+eq(TR.TRADE_ROUTE_BUILDING_BONUS_RATE, 0.05, 'K0: stawka premii budynkowej to 5% (jedno miejsce prawdy)');
+
+// (a) trasa Z budynkiem -- kwota, nie flaga.
+eq(TR.tradeRouteBuildingBonusForRoute(routeF1, incP), 0.05 * TR.tradeRouteTotalDistanceIncome(5, 'lad', incP),
+  'K(a): trasa Z budynkiem (routeF1, lad d=5) -> 0.05 * wlasny dochod dystansowy, co do liczby');
+eq(TR.tradeRouteBuildingBonusForRoute(routeF4mixed, incP), 0.05 * TR.tradeRouteTotalDistanceIncome(8, 'lad', incP),
+  'K(a): trasa Z budynkiem (routeF4mixed, lad d=8) -> 0.05 * wlasny dochod dystansowy');
+const routeJsea = { id: 'rJs', fromCityId: 'A', toCityId: 'S', ownerId: 0, toOwnerId: 5, medium: 'morze', dystans: 20, status: 'polaczony', budynekOdblokowany: true };
+eq(TR.tradeRouteBuildingBonusForRoute(routeJsea, incP), 0.05 * 80,
+  'K(a): trasa MORSKA Z budynkiem liczy premie od dochodu PO bonusie morskim x2 (T2), czyli 0.05*80 = 4');
+
+// (b) trasa BEZ budynku oraz trasa nieaktywna -- twarde 0.
+eq(TR.tradeRouteBuildingBonusForRoute(routeF2, incP), 0,
+  'K(b): trasa BEZ budynku (routeF2, budynekOdblokowany=false) -> 0 (UI pokazuje "5% - brak budynku", nie kwote)');
+eq(TR.tradeRouteBuildingBonusForRoute(routeF3suspended, incP), 0,
+  'K(b): trasa nieaktywna (status brak_polaczenia) -> 0 mimo budynekOdblokowany=true');
+
+// (c) SPOJNOSC: agregat T4 == suma per-trasowych skladnikow, dla obu rol miasta.
+const routesJ = [routeF1, routeF2, routeF3suspended, routeF4mixed, routeJsea];
+const aggJ = TR.computeTradeRouteBuildingBonusByCity(routesJ, incP);
+const perRouteSumJ = new Map();
+for (const r of routesJ) {
+  const b = TR.tradeRouteBuildingBonusForRoute(r, incP);
+  if (b === 0) continue; // te same dwa `continue` co w agregacie -- brak wpisow-zer
+  perRouteSumJ.set(r.fromCityId, (perRouteSumJ.get(r.fromCityId) ?? 0) + b);
+  perRouteSumJ.set(r.toCityId,   (perRouteSumJ.get(r.toCityId)   ?? 0) + b);
+}
+eq(perRouteSumJ.size, aggJ.size,
+  'K(c): agregat T4 i suma per-trasowa maja te same miasta-klucze (zaden wpis-zero nie doszedl ani nie zniknal)');
+for (const [cityId, v] of aggJ) {
+  eq(perRouteSumJ.get(cityId), v,
+    `K(c): miasto ${cityId} -- agregat T4 (zasila economy.ts) == suma skladnikow per trasa pokazywanych w panelu`);
+}
+
+// (c-bis) SPOJNOSC KONCOWA z economy.ts: liczba pokazywana w panelu jako suma skladnikow
+// 5% miasta A jest DOKLADNIE ta, ktora cityYieldPerTurn dostaje jako premiaHandluTrasHandlowych.
+const premiaPanelA = perRouteSumJ.get('A');
+const yldJ0 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(0));
+const yldJA = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(premiaPanelA));
+eq(yldJA.handelBrutto, Math.floor(yldJ0.handelBrutto + premiaPanelA),
+  'K(c-bis): premia zsumowana z pol premiaBudynku panelu wchodzi do handelBrutto co do jednostki (economy.ts Step 4, addytywnie)');
+eq(premiaPanelA, aggJ.get('A'),
+  'K(c-bis): ta sama liczba jest wejsciem silnika -- zero rozjazdu wyswietlanej wartosci od realnego wplywu (kryterium 2 dispatchu T6)');
 
 console.log(`\ntrade-routes-income-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}

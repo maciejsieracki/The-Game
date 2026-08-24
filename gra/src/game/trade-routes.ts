@@ -956,6 +956,39 @@ export function computeTradeRouteIncomeByCity(
 }
 
 /**
+ * T4 (ECHO Q3 Wariant C): stawka per-trasowego bonusu Handlu za budynek handlowy
+ * — 5% własnego dochodu dystansowego trasy. Jedno miejsce prawdy dla tej liczby
+ * (dawniej literał `0.05` w ciele computeTradeRouteBuildingBonusByCity).
+ */
+export const TRADE_ROUTE_BUILDING_BONUS_RATE = 0.05;
+
+/**
+ * T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): bonus 5% JEDNEJ, KONKRETNEJ trasy — dokładnie
+ * ten sam składnik, który `computeTradeRouteBuildingBonusByCity()` (T4, niżej) sumuje
+ * per miasto. To CZYSTA EKSTRAKCJA ciała pętli tamtej funkcji, wprowadzona wyłącznie
+ * po to, by warstwa prezentacji (main.ts::buildEmpireTradeSnap → panel imperium,
+ * zakładka Handel) pokazywała rozkład dochodu per trasa z TEJ SAMEJ formuły, a nie
+ * z czwartej, własnej kopii wzoru — precedens `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`
+ * (trzy rozjechane kopie wzoru dystansowego, zamknięte przy T2). ŻADNEJ zmiany
+ * logiki liczenia: agregat niżej woła tę funkcję, więc obie ścieżki są z definicji
+ * bit-identyczne (pilnuje tego sekcja K w tools/trade-routes-income-test.cjs).
+ *
+ * Zwraca `0` dla trasy niepołączonej ORAZ dla trasy bez pokrycia budynkowego
+ * (`budynekOdblokowany === false`) — dokładnie te dwa `continue` z pętli agregatu.
+ * BEZ mnożnika bonusu cudów (CUDA-HANDEL-01) — osobny, niepowiązany mechanizm,
+ * tak samo jak w T4.
+ */
+export function tradeRouteBuildingBonusForRoute(
+  route: TradeRoute,
+  params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
+): number {
+  if (route.status !== 'polaczony') return 0;
+  if (!route.budynekOdblokowany) return 0;
+  return TRADE_ROUTE_BUILDING_BONUS_RATE
+    * tradeRouteTotalDistanceIncome(route.dystans, route.medium, params);
+}
+
+/**
  * T4 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, ECHO Q3 Wariant C, runda 2): suma
  * per-trasowych bonusów Handlu — dla każdej trasy TEGO miasta (obie role —
  * from i to) z `budynekOdblokowany===true`, dolicz `0.05 × własny dochód
@@ -974,10 +1007,14 @@ export function computeTradeRouteBuildingBonusByCity(
 ): Map<string, number> {
   const out = new Map<string, number>();
   for (const route of routes) {
+    // T6: te dwa `continue` ZOSTAJĄ tutaj (mimo że tradeRouteBuildingBonusForRoute
+    // zwróciłoby dla nich 0) — inaczej mapa dostawałaby wpisy o wartości 0 dla miast,
+    // które dziś nie mają w niej klucza w ogóle. Wszyscy konsumenci czytają przez
+    // `?? 0`, więc arytmetyka byłaby ta sama, ale `map.size`/`has()` już nie — a to
+    // obserwowalna zmiana kontraktu T4, której T6 (warstwa prezentacji) nie robi.
     if (route.status !== 'polaczony') continue;
     if (!route.budynekOdblokowany) continue;
-    const baseIncome = tradeRouteTotalDistanceIncome(route.dystans, route.medium, params);
-    const bonus = 0.05 * baseIncome;
+    const bonus = tradeRouteBuildingBonusForRoute(route, params);
     out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + bonus);
     out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + bonus);
   }

@@ -429,6 +429,16 @@ function ensureStyles(): void {
 .civ-emp-res-flag-note{font-size:10px;line-height:1.3;font-weight:600;margin-top:-2px;}
 .civ-emp-res-flag-note.warn{color:#d9a441;}
 .civ-emp-res-flag-note.bad{color:#e07a7a;}
+/* — T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): druga linia komórki DOCHÓD w tabelach tras —
+   składnik 5% za budynek handlowy pokazany OSOBNO od składnika dystansowego. Typografia
+   1:1 z .civ-emp-res-flag-note wyżej (10px / 1.3 / 600) i te same dwa kolory stanu,
+   których panel używa wszędzie: #78c95a = naliczone teraz, #d9a441 = czeka/ostrzeżenie.
+   / EN: second line of the DOCHÓD cell — the 5% component shown apart from the distance
+   one; typography and state colours reuse the panel's existing pair. */
+.civ-emp-route-split{display:block;font-size:10px;line-height:1.3;font-weight:600;margin-top:1px;
+  white-space:normal;overflow-wrap:anywhere;}
+.civ-emp-route-split.on{color:#78c95a;}
+.civ-emp-route-split.off{color:#d9a441;}
 .civ-emp-res-bar{height:6px;border-radius:999px;background:#1f2733;overflow:hidden;}
 .civ-emp-res-bar>span{display:block;height:100%;border-radius:999px;}
 .civ-emp-res-bar.good>span{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
@@ -756,6 +766,87 @@ function miniHeader(cols: MiniColHeader[], grid: string): string {
 function miniRow(cells: string[], grid: string): string {
   const c = cells.map(x => `<div>${x}</div>`).join('');
   return `<div class="civ-emp-mini-r" style="grid-template-columns:${grid}">${c}</div>`;
+}
+
+/** Atrybut `title="…"` z bezpiecznym cudzysłowem — ten sam wzorzec co przycisk Auto-Żywienia. */
+function tipAttr(text: string): string {
+  return ` title="${esc(text).replace(/"/g, '&quot;')}"`;
+}
+
+/**
+ * T6 — kwota składnika 5% do wyświetlenia: ze znakiem, jedno miejsce po przecinku.
+ *
+ * `Math.round(n * 10) / 10` PRZED `signedPl()` (a nie samo `signedPl`, które opiera się na
+ * `toFixed`) — bo premia jest z natury ułamkowa (0,05 × dochód dystansowy) i trafia dokładnie
+ * na granicę „,x5" częściej niż cokolwiek innego w tym panelu, a `toFixed` na tej granicy
+ * schodzi w dół przez reprezentację IEEE-754 (`(0.35).toFixed(1) === '0.3'`). Ten sam zabieg
+ * i z tego samego powodu robi już `formatRawCount()` wyżej w tym pliku oraz odwracanie bonusu
+ * cudów w `renderHandelSection`. Wyłącznie prezentacja — silnik liczy dalej na pełnej wartości.
+ */
+function splitAmountTxt(n: number): string {
+  return signedPl(Math.round(n * 10) / 10);
+}
+
+/**
+ * T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1) — druga linia komórki DOCHÓD dla JEDNEJ trasy:
+ * składnik 5% za budynek handlowy, pokazany OSOBNO od składnika dystansowego (pierwsza
+ * linia). Od T3 budynek NIE warunkuje istnienia trasy — dochód dystansowy leci od
+ * zawarcia umowy — więc gracz widzący tu „0" bez wyjaśnienia nie miałby jak zgadnąć, że
+ * brakuje mu Targowiska/Portu. Dlatego wariant bez budynku NIE drukuje kwoty 0, tylko
+ * mówi WPROST, na co ta premia czeka (`budynekOdblokowany === false`, pole przekazane
+ * z `TradeRoute` przez snapshot, patrz `EmpireTradeRouteRow.budynekOdblokowany`).
+ *
+ * Kolor niesie stan, ale NIGDY sam: obie gałęzie mają też słowo („5%" / „brak budynku")
+ * — ta sama zasada co `.civ-emp-res-flag-pill` w sekcji Surowce.
+ *
+ * / EN: second line of the DOCHÓD cell for ONE route — the 5% building component shown
+ * apart from the distance component. Since T3 the building no longer gates the route's
+ * existence, so a bare "0" would be unexplainable; the locked branch names what it waits
+ * for instead. Colour never carries state alone — both branches carry words too.
+ */
+function routeBonusSplitHtml(premiaBudynku: number, budynekOdblokowany: boolean): string {
+  if (!budynekOdblokowany) {
+    const tip = 'Premia 5% z tej trasy czeka na budynek handlowy (Targowisko / Port / Port wielki) '
+      + 'po obu stronach trasy (Twoje miasto i miasto partnera). Dochód dystansowy obok naliczasz już '
+      + 'teraz — od zawarcia Umowy Handlowej, bez żadnego budynku. Po wybudowaniu po obu stronach '
+      + 'doliczy się dodatkowo 5% dochodu dystansowego TEJ trasy do Podatku tego miasta.';
+    return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak budynku</span>`;
+  }
+  const tip = 'Premia 5% za budynek handlowy po obu stronach trasy: 5% dochodu dystansowego TEJ trasy, '
+    + 'doliczone addytywnie do Podatku tego miasta (nie wprost do skarbca — przechodzi jeszcze '
+    + 'przez korupcję i podział suwakami Nauka/Skarb/Zamożność).';
+  return `<span class="civ-emp-route-split on"${tipAttr(tip)}>${splitAmountTxt(premiaBudynku)} · 5% budynek</span>`;
+}
+
+/**
+ * T6 — ta sama druga linia, ale dla WIERSZA MIASTA (zakładka Miasto, „Handel — szlaki per
+ * miasto") i dla wiersza podsumowania: składnik 5% zsumowany po trasach tego zakresu plus
+ * — gdy któraś trasa nie ma pokrycia budynkowego — jawna liczba tras czekających na budynek.
+ * Suma liczona przez wołającego z TYCH SAMYCH `premiaBudynku`, które niesie snapshot, więc
+ * nie może rozjechać się z rozpiską per trasa w zakładce Handel.
+ *
+ * `brakBudynku > 0` przy zerowej premii to najczęstszy przypadek początku gry (są trasy,
+ * nie ma jeszcze Targowiska) — i dokładnie ten, w którym gołe „0" nie mówiłoby nic.
+ */
+function cityBonusSplitHtml(premia: number, brakBudynku: number): string {
+  if (brakBudynku > 0) {
+    const word = brakBudynku === 1 ? 'trasa' : brakBudynku >= 2 && brakBudynku <= 4 ? 'trasy' : 'tras';
+    const tip = `${brakBudynku} ${word} bez budynku handlowego (Targowisko/Port) — dochód dystansowy `
+      + 'naliczasz z nich normalnie, ale premia 5% czeka na budynek.';
+    // Gdy ŻADNA trasa tego zakresu nie ma budynku, premia jest dokładnie 0 (najmniejsza możliwa
+    // niezerowa to 0,05×5 = 0,25, więc zero nie może tu wyjść z zaokrąglenia) — wtedy zamiast
+    // „0 · 5%" mówimy to samo, co wiersz pojedynczej trasy: „5% — brak budynku". Jedno brzmienie
+    // w obu tabelach, zero milczącego zera. / EN: with no building-backed route the bonus is
+    // exactly 0, so both tables say the same thing instead of printing a bare "0".
+    if (premia === 0) {
+      return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak budynku</span>`;
+    }
+    return `<span class="civ-emp-route-split off"${tipAttr(tip)}>`
+      + `${splitAmountTxt(premia)} · 5% (${brakBudynku} bez budynku)</span>`;
+  }
+  const tip = 'Premia 5% za budynek handlowy: 5% dochodu dystansowego każdej trasy tego zakresu, '
+    + 'doliczone do Podatku miasta (nie wprost do skarbca).';
+  return `<span class="civ-emp-route-split on"${tipAttr(tip)}>${splitAmountTxt(premia)} · 5% budynek</span>`;
 }
 
 /** Delta netto skarbca — 0 jako „0", nie „—". */
@@ -1986,18 +2077,33 @@ export function renderMiastoSection(
   // `cityId`, patrz JSDoc pola w empireDetailTypes.ts) —
   h += subHdr('Handel — szlaki per miasto');
   {
-    const grid = '1fr 0.6fr 0.95fr';
+    // T6: kolumna DOCHÓD dostaje drugą linię ze składnikiem 5% (albo z informacją, ile tras
+    // tego miasta czeka na budynek handlowy) — ten sam rozkład i te same dane co tabela tras
+    // w zakładce Handel, tylko zagregowane per miasto. Kolumna SZLAKI (tylko licznik) zostaje
+    // wąska, szerokość idzie do DOCHODU, który niesie teraz dwa składniki.
+    const grid = '1fr 0.55fr 1.15fr';
     h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'SZLAKI', 'DOCHÓD'], grid)}`;
     let anyRoutes = false;
     let sRoutes = 0;
     let sIncome = 0;
+    let sPremia = 0;
+    let sBrakBudynku = 0;
     for (const { pob } of paired) {
       const cityRoutes = trade.routes.filter(r => r.cityId === pob.cityId);
       if (cityRoutes.length > 0) anyRoutes = true;
       sRoutes += cityRoutes.length;
       const income = cityRoutes.reduce((s, r) => s + r.income, 0);
       sIncome += income;
-      h += miniRow([esc(pob.name), String(cityRoutes.length), treasuryBalanceSignedTxt(Math.round(income))], grid);
+      const premia = cityRoutes.reduce((s, r) => s + r.premiaBudynku, 0);
+      sPremia += premia;
+      const brakBudynku = cityRoutes.filter(r => !r.budynekOdblokowany).length;
+      sBrakBudynku += brakBudynku;
+      h += miniRow([
+        esc(pob.name),
+        String(cityRoutes.length),
+        treasuryBalanceSignedTxt(Math.round(income))
+          + (cityRoutes.length > 0 ? cityBonusSplitHtml(premia, brakBudynku) : ''),
+      ], grid);
     }
     // Naprawa N3 (runda 2, Evaluator FAIL 6366e81e): SZLAKI w wierszu podsumowania MUSI liczyć
     // się z `sRoutes` (suma po `paired`, ten sam zakres co DOCHÓD obok), NIE z
@@ -2009,12 +2115,15 @@ export function renderMiastoSection(
     // the scope switch) — matches the pattern used by the sections above.
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CAŁA CYWILIZACJA</div><div>${sRoutes}</div>`
-      + `<div>${treasuryBalanceSignedTxt(Math.round(sIncome))}</div></div>`;
+      + `<div>${treasuryBalanceSignedTxt(Math.round(sIncome))}`
+      + `${sRoutes > 0 ? cityBonusSplitHtml(sPremia, sBrakBudynku) : ''}</div></div>`;
     h += '</div>';
     h += anyRoutes
-      ? '<div class="civ-emp-foot">SZLAKI = liczba aktywnych tras handlowych tego miasta · DOCHÓD = suma '
-        + 'dochodu tych tras (pkt Pieniądza/turę). Rozpiska tras (partner, medium, dystans) — zakładka '
-        + 'Handel.</div>'
+      ? '<div class="civ-emp-foot">SZLAKI = liczba aktywnych tras handlowych tego miasta · DOCHÓD = dochód '
+        + 'DYSTANSOWY tych tras (pkt Pieniądza/turę, wprost do skarbca), a pod nim osobno składnik <b>5% za '
+        + 'budynek handlowy</b> — naliczany tylko z tras, które mają Targowisko/Port po obu stronach, i wchodzący do '
+        + 'Podatku miasta, nie wprost do skarbca. Rozpiska tras (partner, medium, dystans, rozkład per trasa) '
+        + '— zakładka Handel.</div>'
       : '<div class="civ-emp-empty">Brak aktywnych tras handlowych w zakresie.</div>';
   }
 
@@ -3128,14 +3237,35 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     // ~74px, inaczej łamie się w środku wyrazu; „Morze · 14 heks." (11px) ~88px.
     // EN: widths measured on the real 404px render: the "DOCHÓD/TURĘ" header needs ~74px or it
     // breaks mid-word; the "Morze · 14 heks." cell needs ~88px.
-    const grid = '0.95fr 0.9fr 1.1fr 0.95fr';
+    // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): ostatnia kolumna niesie teraz DWA składniki
+    // (dystans + 5%), więc potrzebuje więcej miejsca. Podział zmierzony na realnym renderze
+    // 404px (tools/empire-trade-route-split-real-render-test.cjs sekcja D, pomiar
+    // scrollWidth-clientWidth per komórka), NIE dobrany na oko:
+    //   MIASTO   0,80fr ≈ 76px — tyle samo co przed T6,
+    //   PARTNER  0,90fr ≈ 85px — SZERZEJ niż przed T6 (było 72px i „(Sumerowie)" wystawało
+    //            o 4px; ta zmiana kasuje pre-istniejące przepełnienie),
+    //   MEDIUM   0,90fr ≈ 85px — 2px mniej niż przed T6, ale mierzone przepełnienie = 0,
+    //            bo twarda spacja niżej trzyma „20 heks." w całości i łamie po „Morze ·",
+    //   DOCHÓD   1,25fr ≈ 119px — miejsce na drugą linię rozkładu bez łamania w środku wyrazu.
+    // / EN: column widths measured on the real 404px render (per-cell overflow), not guessed;
+    // PARTNER actually gets WIDER than before, fixing a pre-existing 4px overflow.
+    const grid = '0.8fr 0.9fr 0.9fr 1.25fr';
     h += `<div class="civ-emp-mini">${miniHeader(['TWOJE MIASTO', 'PARTNER', 'MEDIUM · DYSTANS', 'DOCHÓD/TURĘ'], grid)}`;
     for (const r of t.routes) {
       h += miniRow([
         esc(r.cityName),
         `${esc(r.partnerCityName)} (${esc(r.partnerOwnerLabel)})`,
-        `<span style="font-size:11px;color:#9aa4b2">${r.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.dystans} heks.</span>`,
-        `<span style="color:#78c95a">+${r.income}</span>`,
+        // Twarda spacja między liczbą a jednostką: po zwężeniu kolumny (T6) „12 heks." potrafiło
+        // się złamać na „12" / „heks.", co czytało się jak osobna wartość. Wolno się złamać po
+        // „Morze ·", nigdy w środku pomiaru. / EN: nbsp keeps the number and its unit together.
+        `<span style="font-size:11px;color:#9aa4b2">${r.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.dystans}&nbsp;heks.</span>`,
+        // Linia 1 = dochód DYSTANSOWY (wprost do skarbca), linia 2 = składnik 5% albo
+        // wprost powiedziane, że czeka na budynek. Nie sumujemy ich w jedną liczbę:
+        // trafiają do DWÓCH różnych strumieni (skarbiec vs Podatek miasta, economy.ts
+        // Step 4) — jedna liczba byłaby czwartą, nieprawdziwą wersją tego dochodu.
+        `<span style="color:#78c95a"${tipAttr('Dochód dystansowy tej trasy — wpływa do skarbca wprost, '
+          + 'co turę, niezależnie od budynków (od T3 handel działa od zawarcia umowy).')}>+${r.income}</span>`
+        + routeBonusSplitHtml(r.premiaBudynku, r.budynekOdblokowany),
       ], grid);
     }
     // Wiersz SUMA — `totalIncome` to dokładnie suma income wszystkich tras (main.ts), więc gracz
@@ -3147,12 +3277,30 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     // „+-5" tutaj i „−5" w hero łamałoby dokładnie tę weryfikowalność.
     // / EN: same sign fix as the hero — the SUM row exists to let the player verify the hero
     // number, so it must format it identically.
+    // T6: wiersz SUMA sumuje KAŻDY składnik osobno w tej samej kolumnie, w której stoi —
+    // suma 5% liczona TU, z tych samych `r.premiaBudynku`, które widać w wierszach wyżej
+    // (nie z osobnego pola snapshotu), więc z definicji nie może się z nimi rozjechać.
+    // Liczba tras czekających na budynek stoi obok, żeby zerowa/niska suma 5% miała
+    // widoczne wytłumaczenie także w podsumowaniu, nie tylko w pojedynczym wierszu.
+    const sumaPremii = t.routes.reduce((s, r) => s + r.premiaBudynku, 0);
+    const brakBudynku = t.routes.filter(r => !r.budynekOdblokowany).length;
+    const sumaSplit = brakBudynku > 0
+      ? `<span class="civ-emp-route-split off"${tipAttr('Tyle tras nie ma jeszcze budynku handlowego '
+        + '(Targowisko/Port) po obu stronach trasy — ich premia 5% nie jest naliczana.')}>`
+        + `${splitAmountTxt(sumaPremii)} · 5% (${brakBudynku} bez budynku)</span>`
+      : `<span class="civ-emp-route-split on">${splitAmountTxt(sumaPremii)} · 5%</span>`;
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
-      + `<div>SUMA</div><div></div><div></div><div>${signedPl(t.totalIncome)}</div></div>`;
+      + `<div>SUMA</div><div></div><div></div><div>${signedPl(t.totalIncome)}${sumaSplit}</div></div>`;
     h += `</div>`;
   } else {
-    h += `<div class="civ-emp-empty">Brak aktywnych tras handlowych. Wymagany: budynek handlowy `
-      + `(Targowisko/Port) w mieście + zawarta Umowa Handlowa z obcą cywilizacją w zasięgu (bez wojny).</div>`;
+    // T3 (zintegrowane): budynek handlowy PRZESTAŁ warunkować istnienie trasy — stary
+    // tekst „Wymagany: budynek handlowy (Targowisko/Port)" wysyłał gracza budować coś,
+    // co nie odblokuje mu ani jednej trasy. Warunki niżej to faktyczne warunki
+    // `refreshTradeRoutes` po T2b/T3.
+    h += `<div class="civ-emp-empty">Brak aktywnych tras handlowych. Wymagane: Umowa Handlowa `
+      + `(szlaków) z obcą cywilizacją, brak wojny z nią i łączność między miastami — lądowa, `
+      + `albo morska, jeśli lądowej nie ma (morska wymaga Portu po OBU stronach). Budynek `
+      + `handlowy nie jest już potrzebny do powstania trasy — odblokowuje wyłącznie premię 5%.</div>`;
   }
 
   // DYSPOZYCJA 85 (Maciej 2026-07-26): bonus cudów świata "handel_procent" (Petra,
@@ -3184,8 +3332,21 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     h += `</div>`;
   }
 
-  h += `<div class="civ-emp-foot">Dochód trasy = max(podłoga, bazowy − dystans×współczynnik), kredytowany w pełnej kwocie `
-    + `OBU miastom trasy. Każda aktywna trasa dodaje też +5% ${daninaLabelGenitive(t.daninaLabel)} z pól tego miasta (osobno od Targowiska, nie w tej sumie). `
+  // T6: ten podpis opisywał stan sprzed T1/T2/T4 — wzór dystansowy był już wtedy odwrócony
+  // (im dalej, tym więcej; osobny zasięg dla lądu i morza; morze ×2), a „+5% Podatku z pól"
+  // zastąpiła w T4 premia liczona od dochodu KONKRETNEJ trasy i tylko dla tras z budynkiem.
+  // Zostawiony bez zmian byłby CZWARTYM, nieprawdziwym opisem tej samej mechaniki obok
+  // trzech policzonych już zgodnie (skarbiec, chip HUD, tabela wyżej) —
+  // patrz P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1.
+  // / EN: this caption still described the pre-T1/T2/T4 mechanics; left alone it would be a
+  // fourth, untrue description of a number the other three places already agree on.
+  h += `<div class="civ-emp-foot">Dochód trasy ma DWA składniki, pokazane osobno w kolumnie DOCHÓD/TURĘ. `
+    + `(1) <b>Dystans</b> — im dalej, tym więcej (ląd i morze mają osobne zasięgi, trasa morska ×2); `
+    + `kredytowany w pełnej kwocie OBU miastom trasy i wpływa do skarbca wprost, od zawarcia umowy, `
+    + `bez żadnego budynku. (2) <b>5% za budynek</b> — 5% dochodu dystansowego TEJ trasy, naliczane `
+    + `wyłącznie gdy miasto ma budynek handlowy (Targowisko/Port); dolicza się do ${daninaLabelGenitive(t.daninaLabel)} `
+    + `tego miasta (a więc jeszcze przez korupcję i suwaki), nie wprost do skarbca — dlatego nie sumujemy `
+    + `obu składników w jedną liczbę. Trasa bez budynku ma to jawnie napisane w swoim wierszu. `
     + `Szczegóły i warunki per miasto — panel miasta → Plony i ${t.daninaLabel.toLowerCase()} → Podział ${daninaLabelGenitive(t.daninaLabel)}.</div>`;
   h += `</div>`;
   return h;
