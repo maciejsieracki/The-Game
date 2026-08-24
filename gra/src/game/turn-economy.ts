@@ -1849,7 +1849,8 @@ export function previewCityEconomy(
   orderMultByCity: ReadonlyMap<string, OrderYieldMults> = new Map(),
   resolveOwnerEra?: OwnerEraResolver,
   resolveOwnerTech?: OwnerTechResolver,
-  tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
+  /** T4 (runda 2): cityId -> suma premii Handlu z tras Z BUDYNKIEM (0.05*dochod dystansowy per trasa). */
+  tradeRouteBuildingBonusByCity: ReadonlyMap<string, number> = new Map(),
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
   territoryNodes?: readonly TerritoryNode[],
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
@@ -1997,7 +1998,7 @@ export function previewCityEconomy(
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
-    const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    const premiaTrasHandlowych = tradeRouteBuildingBonusByCity.get(city.id) ?? 0;
     // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
     // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
     // wlasciciel rejestruje swoje pierwsze miasto w pre-passie powyzej). D4: redukcja
@@ -2033,7 +2034,7 @@ export function previewCityEconomy(
       walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
-      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych,
+      premiaHandluTrasHandlowych: premiaTrasHandlowych,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2266,8 +2267,8 @@ export function advanceCityEconomy(
   resolveOwnerEra?: OwnerEraResolver,
   resolveOwnerTech?: OwnerTechResolver,
   wzrostLudnosciPace: WzrostLudnosciPace = 'wysoki',
-  /** Handel E3: cityId -> liczba aktywnych tras handlowych (+5% Handlu/trasa). */
-  tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
+  /** T4 (runda 2): cityId -> suma premii Handlu z tras Z BUDYNKIEM (0.05*dochod dystansowy per trasa). */
+  tradeRouteBuildingBonusByCity: ReadonlyMap<string, number> = new Map(),
   /** Handel E3: cityId -> dochod dystansowy z tras tej tury (czysto do skarbca). */
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
@@ -2559,7 +2560,7 @@ export function advanceCityEconomy(
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
-    const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    const premiaTrasHandlowych = tradeRouteBuildingBonusByCity.get(city.id) ?? 0;
     // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
     // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
     // wlasciciel rejestruje swoje pierwsze miasto w pre-passie powyzej). D4: redukcja
@@ -2595,7 +2596,7 @@ export function advanceCityEconomy(
       walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
-      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych, // Handel E3: +5%/trasa
+      premiaHandluTrasHandlowych: premiaTrasHandlowych, // T4: suma 0.05*dochod per trasa Z BUDYNKIEM
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni:       runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };

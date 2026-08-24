@@ -956,18 +956,30 @@ export function computeTradeRouteIncomeByCity(
 }
 
 /**
- * Liczba aktywnych tras dotykających danego miasta (licząc obie role — from
- * i to). Wejście do mnożnika Handlu (1 + 0.05×liczbaTras) w economy.ts
- * (CityYieldContext.liczbaAktywnychTrasHandlowych).
+ * T4 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, ECHO Q3 Wariant C, runda 2): suma
+ * per-trasowych bonusów Handlu — dla każdej trasy TEGO miasta (obie role —
+ * from i to) z `budynekOdblokowany===true`, dolicz `0.05 × własny dochód
+ * dystansowy tej strony trasy` (tradeRouteTotalDistanceIncome — T1+T2, ląd
+ * bez mnożnika, morze ×2 — CELOWO BEZ mnożnika bonusu cudów CUDA-HANDEL-01,
+ * osobny niepowiązany mechanizm; recon rundy 1, decision-abc.md). Trasa BEZ
+ * budynku (budynekOdblokowany=false) nie wnosi nic — zamyka ryzyko znalezione
+ * przez Final Control T3 (stary computeTradeRouteCountByCity liczył WSZYSTKIE
+ * połączone trasy niezależnie od budynku). Wejście do addytywnego składnika
+ * Handlu w economy.ts (CityYieldContext.premiaHandluTrasHandlowych),
+ * ZASTĘPUJE stary computeTradeRouteCountByCity/mnożnik (1+0.05×n).
  */
-export function computeTradeRouteCountByCity(
+export function computeTradeRouteBuildingBonusByCity(
   routes: readonly TradeRoute[],
+  params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 ): Map<string, number> {
   const out = new Map<string, number>();
   for (const route of routes) {
     if (route.status !== 'polaczony') continue;
-    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + 1);
-    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + 1);
+    if (!route.budynekOdblokowany) continue;
+    const baseIncome = tradeRouteTotalDistanceIncome(route.dystans, route.medium, params);
+    const bonus = 0.05 * baseIncome;
+    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + bonus);
+    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + bonus);
   }
   return out;
 }

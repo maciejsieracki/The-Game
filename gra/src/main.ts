@@ -511,7 +511,7 @@ import {
 import {
   refreshTradeRoutes,
   computeTradeRouteIncomeByCity,
-  computeTradeRouteCountByCity,
+  computeTradeRouteBuildingBonusByCity,
   computeTradeRouteResourceGrants,
   hasTradeRouteResourceAccess,
   firstTradeRouteResourceGrant,
@@ -2576,9 +2576,10 @@ async function boot(): Promise<void> {
     const cityRelig = new Map<string, ReligionState>();
     /** Handel E3: aktywne trasy gracz<->obca cywilizacja (odswiezane co ture). */
     let tradeRoutes: TradeRoute[] = [];
-    /** Handel E3: liczba aktywnych tras per miasto (odswiezane razem z tradeRoutes) — wejście
-     *  do UI (panel miasta E7) i do mnożnika Handlu (getCityBuildingFlags, cityYieldPerTurn). */
-    let tradeRouteCountByCity: Map<string, number> = new Map();
+    /** T4 (runda 2): suma premii Handlu z tras Z BUDYNKIEM per miasto (odswiezane razem
+     *  z tradeRoutes) — wejście do UI (panel miasta E7) i do addytywnego skladnika Handlu
+     *  (getCityBuildingFlags, cityYieldPerTurn). Zastepuje stary tradeRouteCountByCity. */
+    let tradeRouteBuildingBonusByCity: Map<string, number> = new Map();
     /**
      * Temat #4 (Handel E3b): granty dostępu do surowca civ-wide (braz/zelazo/kon)
      * "z trasy handlowej" — CELOWO NIEZAPISYWANE w save (patrz trade-routes.ts,
@@ -13048,7 +13049,7 @@ async function boot(): Promise<void> {
       } catch (eTrade) {
         console.error('[Handel] Blad odswiezania tras:', eTrade);
       }
-      tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+      tradeRouteBuildingBonusByCity = computeTradeRouteBuildingBonusByCity(tradeRoutes);
       try {
         recomputeTradeRouteResourceGrants();
       } catch (eTradeGrant) {
@@ -19811,7 +19812,7 @@ async function boot(): Promise<void> {
       getCapitalCityId: (ownerId: number) => capitalCityIdForOwner(ownerId),
       onSetCapital: (cityId: string) => { trySetPlayerCapital(cityId); },
       getCityBuildingFlags: (cityId: string) => ({
-        liczbaAktywnychTrasHandlowych: tradeRouteCountByCity.get(cityId) ?? 0,
+        premiaHandluTrasHandlowych: tradeRouteBuildingBonusByCity.get(cityId) ?? 0,
       }),
       getEpoch: (ownerId: number) => empireEpochForOwner(ownerId),
       getManpowerSnapshot: (cityId: string) => {
@@ -25612,7 +25613,7 @@ async function boot(): Promise<void> {
             player.era, player.zbadane, ownerCivMap, orderMultMap,
             empireEpochForOwner, unlockedTechSetForOwner,
             player.wzrostLudnosciPace ?? 'wysoki',
-            tradeRouteCountByCity, tradeIncomeByCity,
+            tradeRouteBuildingBonusByCity, tradeIncomeByCity,
             cityRelig,
             // CUDA-EKON-01: dotyczy gracza I AI (ownerId-agnostic) — patrz raport C-CUDA-BONUS=A.
             buildWonderCityYieldsByOwnerMap(cities.map(c => c.ownerId)),
@@ -29969,7 +29970,7 @@ async function boot(): Promise<void> {
         getTradeRoutes: () => tradeRoutes,
         getOwnerLabel: (ownerId: number) => ownerDiploLabel(ownerId),
         getCityBuildingFlags: (cityId: string) => ({
-          liczbaAktywnychTrasHandlowych: tradeRouteCountByCity.get(cityId) ?? 0,
+          premiaHandluTrasHandlowych: tradeRouteBuildingBonusByCity.get(cityId) ?? 0,
         }),
         getEpoch: (ownerId: number) => empireEpochForOwner(ownerId),
       getManpowerSnapshot: (cityId: string) => {
@@ -30442,7 +30443,7 @@ async function boot(): Promise<void> {
       // Reset stanu przed klastrem
       cities.length = 0;
       tradeRoutes.length = 0;
-      tradeRouteCountByCity.clear();
+      tradeRouteBuildingBonusByCity.clear();
       tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       explored.clear();
@@ -30769,7 +30770,7 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
-      tradeRouteCountByCity.clear();
+      tradeRouteBuildingBonusByCity.clear();
       tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
@@ -31014,7 +31015,7 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
-      tradeRouteCountByCity.clear();
+      tradeRouteBuildingBonusByCity.clear();
       tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
@@ -31240,7 +31241,7 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
-      tradeRouteCountByCity.clear();
+      tradeRouteBuildingBonusByCity.clear();
       tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
@@ -31496,7 +31497,7 @@ async function boot(): Promise<void> {
         syncLivestockAndPlacedMeshes();
         syncUnitsRender();
         cityRenderer.sync(cities, _cityRenderOpts());
-        tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+        tradeRouteBuildingBonusByCity = computeTradeRouteBuildingBonusByCity(tradeRoutes);
         try {
           recomputeTradeRouteResourceGrants();
         } catch (eTradeGrantLoad) {

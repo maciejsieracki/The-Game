@@ -204,6 +204,7 @@ import {
 } from '../game/economy-upkeep';
 import {
   type TradeRoute,
+  computeTradeRouteBuildingBonusByCity,
 } from '../game/trade-routes';
 import { improvementKeysForHex } from '../game/terrain-improvements';
 import type { Hex } from '../types/hex';
@@ -10356,13 +10357,15 @@ function buildHandelDetailCard(
   const daninaLbl = daninaLabelForCity(city);
   const daninaLblGen = daninaLabelGenitive(daninaLbl);
   const daninaLblAcc = daninaLabelAccusative(daninaLbl);
-  // DYSPOZYCJA 85 (Maciej 2026-07-26): premia za trasy handlowe realnie mnoży
-  // handelBrutto w silniku (economy.ts, ctx.liczbaAktywnychTrasHandlowych, +5%/trasa
-  // -- NIE ruszane tutaj). W UI zostaje WYŁĄCZNIE ta jedna zbiorcza linia (bez listy
-  // szlaków, bez nazw partnerów, bez dochodu ze szlaków — to przeniesione do panelu
-  // Handel, empireDetailPanel.ts, zgodnie z zasadą rozdziału z dyspozycji).
+  // DYSPOZYCJA 85 (Maciej 2026-07-26) + T4 (runda 2, naprawa napisu po przebudowie
+  // mnoznika): premia za trasy handlowe realnie DOLICZA SIE (addytywnie) do
+  // handelBrutto w silniku (economy.ts, ctx.premiaHandluTrasHandlowych -- NIE
+  // ruszane tutaj), TYLKO dla tras Z BUDYNKIEM (budynekOdblokowany===true). W UI
+  // zostaje WYŁĄCZNIE ta jedna zbiorcza linia (bez listy szlaków, bez nazw
+  // partnerów, bez dochodu ze szlaków — to przeniesione do panelu Handel,
+  // empireDetailPanel.ts, zgodnie z zasadą rozdziału z dyspozycji).
   const aktywneTrasyCount = activeTradeRouteCountForCity(city);
-  const premiaTrasPct = aktywneTrasyCount * TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE;
+  const premiaTrasHandlowych = computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? []).get(city.id) ?? 0;
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
@@ -10406,8 +10409,8 @@ function buildHandelDetailCard(
     g0,
     'Premia za trasy handlowe',
     aktywneTrasyCount > 0
-      ? `+${premiaTrasPct}% (${aktywneTrasyCount} aktywnych) — już w brutto powyżej`
-      : 'brak aktywnych tras',
+      ? `+${Math.round(premiaTrasHandlowych)} Handlu (${aktywneTrasyCount} z budynkiem) — już w brutto powyżej`
+      : 'brak tras z budynkiem handlowym',
   );
 
   appendDetailSection(card, 'Aktualny podział');
@@ -10421,7 +10424,7 @@ function buildHandelDetailCard(
 
   appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
     + (maTargowisko ? ' × (1 + bonus Targowiska)' : '')
-    + (aktywneTrasyCount > 0 ? ' × (1 + premia tras handlowych)' : ''));
+    + (aktywneTrasyCount > 0 ? ' + premia tras handlowych (z budynkiem)' : ''));
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
   appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
     mennicaAktywna
@@ -10438,8 +10441,8 @@ function buildHandelDetailCard(
     `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
     maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
     aktywneTrasyCount > 0
-      ? `Trasy handlowe: +${premiaTrasPct}% do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
-      : 'Bez aktywnych tras handlowych — brak premii do handelBrutto.',
+      ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
+      : 'Bez aktywnych tras handlowych z budynkiem — brak premii do handelBrutto.',
     `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
     'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
@@ -10500,22 +10503,22 @@ function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView
   appendPodzialHandlu(mount, city, view, data, { skipSubhd: true });
 }
 
-/** E7 — bonus Handlu na trasę (musi zgadzać się z hardcoded 0.05 w game/economy.ts cityYieldPerTurn). */
-const TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE = 5;
-
 /**
- * DYSPOZYCJA 85 (Maciej 2026-07-26): panel miasta NIE pokazuje już listy szlaków/
- * partnerów/dochodu z tras (to poszło do panelu Handel — imperium, empireDetailPanel.ts).
- * Tu zostaje WYŁĄCZNIE liczba aktywnych tras tego miasta — potrzebna do JEDNEJ linii
- * "premia za trasy handlowe: +X%" w rozbiciu Podatku/Daniny (ta premia realnie mnoży
- * handelBrutto w silniku, patrz economy.ts ctx.liczbaAktywnychTrasHandlowych — silnik
- * NIE jest tu ruszany, tylko odczytany ten sam fakt co silnik już liczy).
+ * DYSPOZYCJA 85 (Maciej 2026-07-26) + T4 (runda 2): panel miasta NIE pokazuje już
+ * listy szlaków/partnerów/dochodu z tras (to poszło do panelu Handel — imperium,
+ * empireDetailPanel.ts). Tu zostaje WYŁĄCZNIE liczba tras tego miasta Z BUDYNKIEM
+ * (budynekOdblokowany===true) — potrzebna do JEDNEJ linii "premia za trasy
+ * handlowe: +X Handlu" w rozbiciu Podatku/Daniny (ta premia realnie dolicza się
+ * do handelBrutto w silniku, patrz economy.ts ctx.premiaHandluTrasHandlowych —
+ * silnik NIE jest tu ruszany, tylko odczytany ten sam fakt co silnik już liczy).
+ * Trasa BEZ budynku nie liczy się tutaj (dokładnie jak w silniku, T4 kryterium 2).
  */
 function activeTradeRouteCountForCity(city: City): number {
   const all = cfg.getTradeRoutes?.() ?? [];
   let n = 0;
   for (const route of all) {
     if (route.status !== 'polaczony') continue;
+    if (!route.budynekOdblokowany) continue;
     if (route.fromCityId === city.id || route.toCityId === city.id) n++;
   }
   return n;

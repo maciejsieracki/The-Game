@@ -19,9 +19,13 @@
  *      (budynekOdblokowany=false); trasa morska nadal wymaga fizycznego Portu
  *      niezaleznie od budynekOdblokowany.
  *   F. Dochod dystansowy (wzor Q7=A + podloga) + kredytowanie OBU miast (Q8=B).
- *   G. +5% Handlu za kazda aktywna trase, kumulatywnie (economy.ts cityYieldPerTurn).
+ *   G. T4 (runda 2, R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T4): suma per-trasowych bonusow
+ *      0.05*wlasny dochod dystansowy, WYLACZNIE dla tras z budynekOdblokowany=true
+ *      (computeTradeRouteBuildingBonusByCity), addytywna do handelBrutto (economy.ts
+ *      cityYieldPerTurn) -- ZASTEPUJE stary mnoznik (1+0.05*n) ze WSZYSTKICH tras.
  *   H. Integracja advanceCityEconomy: pieniadzZTras wchodzi do skarbca CZYSTO (bez Wealth),
- *      liczbaAktywnychTrasHandlowych podnosi Handel, obie strony (wlasciciele) zarabiaja.
+ *      premiaHandluTrasHandlowych (tylko trasy z budynkiem) podnosi Handel, obie strony
+ *      (wlasciciele) zarabiaja.
  */
 
 const fs   = require('fs');
@@ -42,7 +46,7 @@ export {
   refreshTradeRoutes, tradeRouteId, tradeRouteLimitForCity, TRADE_BUILDING_IDS,
   DEFAULT_TRADE_ROUTE_PARAMS, loadTradeRouteParams,
   tradeRouteDistanceIncome, tradeRouteTotalDistanceIncome, DEFAULT_TRADE_ROUTE_INCOME_PARAMS, loadTradeRouteIncomeParams,
-  computeTradeRouteIncomeByCity, computeTradeRouteCountByCity,
+  computeTradeRouteIncomeByCity, computeTradeRouteBuildingBonusByCity,
 } from '../src/game/trade-routes';
 export { cityYieldPerTurn } from '../src/game/economy';
 export { advanceCityEconomy } from '../src/game/turn-economy';
@@ -335,9 +339,13 @@ eq(TR.tradeRouteDistanceIncome(10, 'morze', incP), Math.floor(5 + (40 - 5) / 20 
 eq(TR.tradeRouteDistanceIncome(20, 'morze', incP), 40, 'F: MORZE dystans=20 (=morzeMaxDist) -> szczyt=40 (IDENTYCZNY jak lad d=12, ECHO Q1)');
 eq(TR.tradeRouteDistanceIncome(1000, 'morze', incP), 40, 'F: MORZE dystans poza zakresem -> clamp do szczytu=40, nigdy wiecej');
 
-const routeF1 = { id: 'r1', fromCityId: 'A', toCityId: 'B', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 5, status: 'polaczony' };
-const routeF2 = { id: 'r2', fromCityId: 'A', toCityId: 'C', ownerId: 0, toOwnerId: 2, medium: 'morze', dystans: 10, status: 'polaczony' };
-const routeF3suspended = { id: 'r3', fromCityId: 'A', toCityId: 'D', ownerId: 0, toOwnerId: 3, medium: 'lad', dystans: 1, status: 'brak_polaczenia' };
+// T4 (runda 2): budynekOdblokowany dodane do fixture'ow -- routeF1 MA budynek
+// (A<->B), routeF2 NIE MA budynku (A<->C), routeF3suspended MA budynek ale jest
+// nieaktywna (status brak_polaczenia). computeTradeRouteIncomeByCity (test F
+// nizej) ignoruje to pole, wiec dodanie go nie zmienia wynikow sekcji F.
+const routeF1 = { id: 'r1', fromCityId: 'A', toCityId: 'B', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 5, status: 'polaczony', budynekOdblokowany: true };
+const routeF2 = { id: 'r2', fromCityId: 'A', toCityId: 'C', ownerId: 0, toOwnerId: 2, medium: 'morze', dystans: 10, status: 'polaczony', budynekOdblokowany: false };
+const routeF3suspended = { id: 'r3', fromCityId: 'A', toCityId: 'D', ownerId: 0, toOwnerId: 3, medium: 'lad', dystans: 1, status: 'brak_polaczenia', budynekOdblokowany: true };
 const incomeByCity = TR.computeTradeRouteIncomeByCity([routeF1, routeF2, routeF3suspended], incP);
 const inc5  = TR.tradeRouteDistanceIncome(5, 'lad', incP);
 const inc10 = TR.tradeRouteDistanceIncome(10, 'morze', incP);
@@ -375,15 +383,25 @@ eq(TR.tradeRouteTotalDistanceIncome(0, 'morze', incP), 10, 'F2: MORZE dystans=0 
 eq(TR.tradeRouteTotalDistanceIncome(20, 'morze', incP), 80, 'F2: MORZE dystans=20 (=morzeMaxDist) -> szczyt=40 x2 = 80');
 eq(TR.tradeRouteTotalDistanceIncome(12, 'lad', incP), 40, 'F2: LAD dystans=12 (=ladMaxDist) -> szczyt=40, BEZ mnoznika (tylko morze dostaje x2)');
 
-const countByCity = TR.computeTradeRouteCountByCity([routeF1, routeF2, routeF3suspended]);
-eq(countByCity.get('A'), 2, 'F: licznik tras miasta A = 2 (obie aktywne trasy)');
-eq(countByCity.get('B'), 1, 'F: licznik tras miasta B = 1');
-eq(countByCity.has('D'), false, 'F: trasa nieaktywna nie liczy sie do licznika');
+// T4 (runda 2): computeTradeRouteBuildingBonusByCity zastepuje stary
+// computeTradeRouteCountByCity -- suma 0.05*wlasny dochod dystansowy WYLACZNIE
+// dla tras z budynekOdblokowany=true (routeF1: A<->B ma budynek; routeF2: A<->C
+// NIE ma budynku; routeF3suspended: budynek jest, ale trasa nieaktywna).
+const routeF4mixed = { id: 'r4', fromCityId: 'A', toCityId: 'E', ownerId: 0, toOwnerId: 4, medium: 'lad', dystans: 8, status: 'polaczony', budynekOdblokowany: true };
+const bonusByCity = TR.computeTradeRouteBuildingBonusByCity([routeF1, routeF2, routeF3suspended, routeF4mixed], incP);
+const inc8Lad = TR.tradeRouteTotalDistanceIncome(8, 'lad', incP);
+eq(bonusByCity.get('B'), 0.05 * inc5, 'T4(b): miasto B (trasa Z budynkiem) dostaje dokladnie 0.05*wlasny dochod dystansowy trasy');
+eq(bonusByCity.has('C'), false, 'T4(a): miasto C -- jedyna jego trasa (routeF2) jest BEZ budynku -> ZERO bonusu');
+eq(bonusByCity.has('D'), false, 'T4: trasa nieaktywna (status brak_polaczenia) nie liczy sie mimo budynekOdblokowany=true');
+eq(bonusByCity.get('E'), 0.05 * inc8Lad, 'T4(b): miasto E (routeF4mixed, budynek) dostaje 0.05*wlasny dochod dystansowy tej trasy');
+eq(bonusByCity.get('A'), 0.05 * inc5 + 0.05 * inc8Lad,
+  'T4(c): miasto A -- MIESZANY przypadek: sumuje TYLKO trasy z budynkiem (r1+r4), routeF2 (bez budynku) i routeF3 (nieaktywna) pomijane -- brak podwojnego liczenia (d)');
 
 // ---------------------------------------------------------------------------
-// G. +5% Handlu za kazda aktywna trase, kumulatywnie (economy.ts)
+// G. T4 (runda 2): premia addytywna do Handlu -- WYLACZNIE dla tras Z BUDYNKIEM,
+//    suma 0.05*wlasny dochod dystansowy per trasa (economy.ts cityYieldPerTurn)
 // ---------------------------------------------------------------------------
-console.log('\n-- G. cityYieldPerTurn: +5%/trase na Handel, kumulatywnie, osobny czynnik --');
+console.log('\n-- G. cityYieldPerTurn: premia addytywna Handlu z tras Z BUDYNKIEM, osobny czynnik --');
 function makeEconCity() {
   return {
     id: 'gc1', ludnosc: 3, zdrowie: 0, czyStolica: true,
@@ -393,19 +411,18 @@ function makeEconCity() {
     podziałPracy:  { procentBudynki: 70 },
   };
 }
-function makeCtx(liczbaTras) {
+function makeCtx(premiaTras) {
   return {
     wojskoZuzycieZywnosci: 0, strataFraction: 0,
     maMlyn: false, maCegielnia: false, maTargowisko: false, maBiblioteka: false,
     maMennica: false, mennicaMnoznik: 1, walutaOdkryta: false,
-    liczbaAktywnychTrasHandlowych: liczbaTras,
+    premiaHandluTrasHandlowych: premiaTras,
   };
 }
 // 40 pol (nie realistyczne dla jednego miasta, ale cityYieldPerTurn przyjmuje
-// dowolna tablice WorkedTile -- tu chcemy baseHandel na tyle duzy, zeby kazdy
-// krok +5% byl widoczny osobno mimo floor() (przy malej bazie kolejne floor()
-// moga dac te sama wartosc dla n i n+1, co nie znaczy braku efektu -- tylko
-// zbyt gruboziarnisty test; 40 pol daje baseHandel=40, krok 5%=2/trase).
+// dowolna tablice WorkedTile -- tu chcemy baseHandel na tyle duzy, zeby premia
+// byla widoczna osobno mimo floor() koncowego (Step 5, korupcja=0 tutaj wiec
+// bez wplywu). 40 pol daje baseHandel=40.
 const gTiles = Array(40).fill({ terenBazowy: 'rownina', nakladka: 'brak', maRzeke: false });
 const pParamsForG = { budynekTargowiskoBonusHandlu: 0.5, budynekBibliotekaBonusNauki: 0.5,
   suwaakHandelNaukaDefault: 60, suwaakHandelPieniadz: 30, suwaakHandelLuksus: 10,
@@ -420,19 +437,21 @@ const yld0 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCt
 const baseHandel = yld0.handelBrutto;
 assert(baseHandel > 0, 'G: (setup) baza Handlu > 0 bez tras');
 
-for (const n of [1, 2, 3, 4]) {
-  const yldN = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(n));
-  const expected = Math.floor(baseHandel * (1 + 0.05 * n));
-  eq(yldN.handelBrutto, expected, `G: n=${n} trasy -> handelBrutto = floor(base*(1+0.05*${n})) = ${expected}`);
-  assert(yldN.pieniadz >= yld0.pieniadz, `G: n=${n} trasy -> pieniadz nie maleje wzgledem braku tras`);
+for (const premia of [2, 5, 8.4, 12]) {
+  const yldN = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(premia));
+  // yield.handelBrutto jest zawsze Math.floor()-owane (economy.ts) -- premia sama
+  // moze byc niecalkowita (0.05*dochod dystansowy), stad floor tutaj rowniez.
+  const expected = Math.floor(baseHandel + premia);
+  eq(yldN.handelBrutto, expected, `G: premia=${premia} -> handelBrutto = floor(base+premia) = ${expected} (addytywne, NIE mnoznikowe)`);
+  assert(yldN.pieniadz >= yld0.pieniadz, `G: premia=${premia} -> pieniadz nie maleje wzgledem braku premii`);
 }
 
-// Kumulatywnosc: n=2 daje dokladnie posrodku miedzy n=1 a n=3 skali (liniowo w n).
-const yld1 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(1));
-const yld2 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(2));
-const yld3 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(3));
+// Kumulatywnosc: rosnaca premia daje monotonicznie rosnacy handelBrutto.
+const yld1 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(2));
+const yld2 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(5));
+const yld3 = TR.cityYieldPerTurn(makeEconCity(), gTiles, [], pParamsForG, makeCtx(8));
 assert(yld2.handelBrutto > yld1.handelBrutto && yld3.handelBrutto > yld2.handelBrutto,
-  'G: kumulatywnie rosnie z kazda kolejna trasa (1 < 2 < 3)');
+  'G: handelBrutto rosnie monotonicznie z rosnaca premia tras (2 < 5 < 8)');
 
 // ---------------------------------------------------------------------------
 // H. Integracja advanceCityEconomy: pieniadzZTras CZYSTO do skarbca (bez Wealth),
@@ -450,7 +469,7 @@ const fH = makeRuntimeCity('fH', 1, 205);
 const builtH = new Map([['pH', ['targowisko']], ['fH', ['targowisko']]]);
 const playerZbadaneH = new Set();
 
-function runTickH(tradeIncomeByCity, tradeRouteCountByCity) {
+function runTickH(tradeIncomeByCity, tradeRouteBuildingBonusByCity) {
   const cities = [
     { ...pH, wealthState: { ...pH.wealthState } },
     { ...fH, wealthState: { ...fH.wealthState } },
@@ -458,7 +477,7 @@ function runTickH(tradeIncomeByCity, tradeRouteCountByCity) {
   const econ = TR.advanceCityEconomy(
     cities, map, gameData, 'normal', [], new Map(), builtH,
     1, playerZbadaneH, new Map(), new Map(), undefined, undefined, 'wysoki',
-    tradeRouteCountByCity, tradeIncomeByCity,
+    tradeRouteBuildingBonusByCity, tradeIncomeByCity,
   );
   return {
     pH: econ.perCity.find(t => t.cityId === 'pH'),
@@ -475,23 +494,27 @@ eq(base.fH.pieniadzZTras, 0, 'H1: brak tras -> pieniadzZTras=0 (obca cyw)');
 const TRADE_AMOUNT = 37; // wartosc dowolna, nieokragla wzgledem typowych mnoznikow Wealth
 const withTrade = runTickH(
   new Map([['pH', TRADE_AMOUNT], ['fH', TRADE_AMOUNT]]),
-  new Map([['pH', 1], ['fH', 1]]),
+  new Map(), // T4: premia z tras Z BUDYNKIEM=0 tutaj -- sprawdzana osobno w H3/H4
 );
 eq(withTrade.pH.pieniadzZTras, TRADE_AMOUNT, 'H2: pieniadzZTras gracza = kwota trasy');
 eq(withTrade.fH.pieniadzZTras, TRADE_AMOUNT, 'H2: pieniadzZTras obcej cyw = kwota trasy (obie strony zarabiaja)');
 eq(withTrade.pH.pieniadz - base.pH.pieniadz, TRADE_AMOUNT,
-  'H2: pieniadz gracza wzrasta DOKLADNIE o kwote trasy (bez mnoznika Wealth, +5% Handlu tu wylaczone -- count=1 ale sprawdzane osobno w H3)');
+  'H2: pieniadz gracza wzrasta DOKLADNIE o kwote trasy (bez mnoznika Wealth, brak premii tras handlowych w tym wywolaniu)');
 
-// H3: liczbaAktywnychTrasHandlowych=1 w tym samym wywolaniu podnosi tez Handel-z-pol
+// H3: premiaHandluTrasHandlowych>0 w tym samym wywolaniu podnosi tez Handel-z-pol
 // (osobny kanal) -- pieniadzBrutto (przed dochodem z tras) powinien byc >= baseline.
-assert(withTrade.pH.pieniadzBrutto >= base.pH.pieniadzBrutto,
-  'H3: +5% Handlu (1 trasa) nie obniza pieniadzBrutto wzgledem braku tras');
+const withPremia = runTickH(
+  new Map([['pH', TRADE_AMOUNT], ['fH', TRADE_AMOUNT]]),
+  new Map([['pH', 5], ['fH', 5]]),
+);
+assert(withPremia.pH.pieniadzBrutto >= base.pH.pieniadzBrutto,
+  'H3: premia Handlu z tras (z budynkiem) nie obniza pieniadzBrutto wzgledem braku tras');
 
-// H4: sam count (bez kwoty $) tez podnosi pieniadzBrutto lokalnie, niezaleznie od pieniadzZTras.
-const onlyCount = runTickH(new Map(), new Map([['pH', 3], ['fH', 3]]));
-assert(onlyCount.pH.pieniadzBrutto > base.pH.pieniadzBrutto,
-  'H4: liczbaAktywnychTrasHandlowych=3 (bez dochodu $) podnosi pieniadzBrutto gracza wzgledem 0 tras');
-eq(onlyCount.pH.pieniadzZTras, 0, 'H4: (kontrola) pieniadzZTras=0 gdy tradeIncomeByCity puste');
+// H4: sama premia (bez kwoty $ z tras) tez podnosi pieniadzBrutto lokalnie, niezaleznie od pieniadzZTras.
+const onlyPremia = runTickH(new Map(), new Map([['pH', 5], ['fH', 5]]));
+assert(onlyPremia.pH.pieniadzBrutto > base.pH.pieniadzBrutto,
+  'H4: premiaHandluTrasHandlowych=5 (bez dochodu $ z tras) podnosi pieniadzBrutto gracza wzgledem 0 premii');
+eq(onlyPremia.pH.pieniadzZTras, 0, 'H4: (kontrola) pieniadzZTras=0 gdy tradeIncomeByCity puste');
 
 // ---------------------------------------------------------------------------
 // I. Priorytet lądu BEZWARUNKOWY w detectBestConnection (T2, ECHO Q5 finalne
