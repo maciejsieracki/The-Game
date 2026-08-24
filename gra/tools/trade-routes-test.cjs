@@ -127,9 +127,27 @@ eq(route.fromCityId, 'c1', 'TradeRoute: fromCityId'); eq(route.toCityId, 'c2', '
 eq(route.ownerId, 0, 'TradeRoute: ownerId = fromCity.ownerId'); eq(route.toOwnerId, 1, 'TradeRoute: toOwnerId = toCity.ownerId');
 eq(route.medium, 'lad', 'TradeRoute: medium'); eq(route.dystans, 5, 'TradeRoute: dystans');
 eq(route.status, 'polaczony', 'TradeRoute: status polaczony gdy connected');
+// T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): budynekOdblokowany -- domyslnie builtByCity
+// pusty -> zadne miasto nie ma budynku handlowego -> false. createTradeRoute jest
+// samodzielnym konstruktorem (poza priorytetem wielu tras z refreshTradeRoutes) --
+// liczy pokrycie wprost z obu miast tej jednej trasy.
+eq(route.budynekOdblokowany, false, 'TradeRoute: budynekOdblokowany=false gdy builtByCity pusty (domyslny)');
+
+const routeWithBuildings = TR.createTradeRoute(
+  cityNear1, cityNear2, map, 'lad', TR.DEFAULT_TRADE_ROUTE_PARAMS,
+  new Map([['c1', ['targowisko']], ['c2', ['targowisko']]]),
+);
+eq(routeWithBuildings.budynekOdblokowany, true, 'TradeRoute: budynekOdblokowany=true gdy oba miasta maja budynek handlowy');
+
+const routeOneSided = TR.createTradeRoute(
+  cityNear1, cityNear2, map, 'lad', TR.DEFAULT_TRADE_ROUTE_PARAMS,
+  new Map([['c1', ['targowisko']]]),
+);
+eq(routeOneSided.budynekOdblokowany, false, 'TradeRoute: budynekOdblokowany=false gdy tylko JEDNA strona ma budynek handlowy');
 
 const routeFar = TR.createTradeRoute(cityFar1, cityFar2, map, 'lad');
 eq(routeFar.status, 'brak_polaczenia', 'TradeRoute: status brak_polaczenia gdy not connected');
+eq(routeFar.budynekOdblokowany, false, 'TradeRoute: budynekOdblokowany=false gdy trasa nawet nie polaczona (brak builtByCity)');
 
 // loadTradeRouteParams -- odporne na braki + czyta z JSON
 eq(

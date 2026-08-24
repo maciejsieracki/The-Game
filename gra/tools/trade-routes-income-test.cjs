@@ -10,8 +10,14 @@
  *      zawarcie traktatu -> trasa powstaje; zerwanie traktatu -> trasa znika (bez wojny).
  *   B. Wojna -> trasa znika (nie zostaje z flaga "zawieszona" -- po prostu znika z listy).
  *   C. Wlasne<->wlasne NIGDY nie tworzy trasy (filtr zewnetrzny).
- *   D. Limit tras na miasto = liczba budynkow handlowych -- po stronie gracza I obcego.
- *   E. Stabilnosc: istniejaca trasa jest utrzymana mimo pojawienia sie blizszego kandydata.
+ *   D. T3 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, 2026-08-24): limit budynkow handlowych juz
+ *      NIE ogranicza ISTNIENIE trasy -- ogranicza wylacznie pole budynekOdblokowany
+ *      (priorytet: istniejace trasy po id, potem nowe wg rosnacego dystansu).
+ *   E. Stabilnosc: istniejaca trasa (istnienie ORAZ budynekOdblokowany) jest
+ *      priorytetowo zachowana mimo pojawienia sie blizszego kandydata.
+ *   J. T3: trasa istnieje i daje dochod BEZ zadnego budynku handlowego w miescie
+ *      (budynekOdblokowany=false); trasa morska nadal wymaga fizycznego Portu
+ *      niezaleznie od budynekOdblokowany.
  *   F. Dochod dystansowy (wzor Q7=A + podloga) + kredytowanie OBU miast (Q8=B).
  *   G. +5% Handlu za kazda aktywna trase, kumulatywnie (economy.ts cityYieldPerTurn).
  *   H. Integracja advanceCityEconomy: pieniadzZTras wchodzi do skarbca CZYSTO (bez Wealth),
@@ -156,62 +162,151 @@ const routesC = TR.refreshTradeRoutes([p1c, p2c], [], map, builtC, NO_WAR, HAS_T
 eq(routesC.length, 0, 'C: dwa miasta gracza, brak obcego -> zero tras (own<->own wykluczone)');
 
 // ---------------------------------------------------------------------------
-// D. Limit tras na miasto = liczba budynkow handlowych (obie strony)
+// D. T3: limit budynkow handlowych NIE ogranicza juz ISTNIENIE trasy -- wylacznie
+//    pole budynekOdblokowany (ten sam mechanizm priorytetu, co dawniej dla istnienia:
+//    najpierw istniejace trasy po id, potem nowe wg rosnacego dystansu).
 // ---------------------------------------------------------------------------
-console.log('\n-- D. refreshTradeRoutes: limit tras budynkami handlowymi --');
+console.log('\n-- D. refreshTradeRoutes: T3 -- budynki gatuja budynekOdblokowany, NIE istnienie --');
 
-// D1: limit po stronie GRACZA -- pD ma tylko 1 slot (Targowisko), dwaj obcy kandydaci.
+// D1: pD ma tylko 1 slot budynkowy (Targowisko), dwaj obcy kandydaci -- OBIE trasy
+// teraz ISTNIEJA, ale tylko blizsza (fD1) dostaje budynekOdblokowany=true.
 const pD  = city('pD', 0, 60);
 const fD1 = city('fD1', 1, 63); // dystans 3 -- blizej
 const fD2 = city('fD2', 2, 64); // dystans 4 -- dalej
 const builtD1 = new Map([
-  ['pD',  ['targowisko']],          // limit 1
+  ['pD',  ['targowisko']],          // 1 slot
   ['fD1', ['targowisko']],
   ['fD2', ['targowisko']],
 ]);
 const routesD1 = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1, NO_WAR, HAS_TREATY);
-eq(routesD1.length, 1, 'D1: limit=1 po stronie gracza -> tylko jedna trasa');
-eq(routesD1[0].toCityId, 'fD1', 'D1: wygrywa blizszy kandydat (dystans 3 < 4)');
+eq(routesD1.length, 2, 'D1: T3 -- limit budynkowy=1 po stronie gracza, ALE obie trasy ISTNIEJA');
+const routeD1_fD1 = routesD1.find(r => r.toCityId === 'fD1');
+const routeD1_fD2 = routesD1.find(r => r.toCityId === 'fD2');
+eq(routeD1_fD1.budynekOdblokowany, true, 'D1: blizszy kandydat (dystans 3) dostaje wolny slot -> budynekOdblokowany=true');
+eq(routeD1_fD2.budynekOdblokowany, false, 'D1: dalszy kandydat (dystans 4) -- brak wolnego slotu -> budynekOdblokowany=false');
+assert(routeD1_fD1.dystans === 3 && routeD1_fD1.status === 'polaczony', 'D1: fD1 ma pelny dochod dystansowy mimo dzielonego slotu');
+assert(routeD1_fD2.dystans === 4 && routeD1_fD2.status === 'polaczony', 'D1: fD2 (bez slotu) NADAL ma dochod dystansowy (T3 -- dochod dostepny od poczatku)');
 
-// D1-bis: podniesienie limitu gracza do 2 (Targowisko + Port wielki) -> obie trasy.
+// D1-bis: podniesienie limitu gracza do 2 (Targowisko + Port wielki) -> obie trasy
+// dostaja budynekOdblokowany=true (istnienie bez zmian -- juz bylo 2).
 const builtD1b = new Map([
-  ['pD',  ['targowisko', 'port_wielki']], // limit 2
+  ['pD',  ['targowisko', 'port_wielki']], // 2 sloty
   ['fD1', ['targowisko']],
   ['fD2', ['targowisko']],
 ]);
 const routesD1b = TR.refreshTradeRoutes([pD, fD1, fD2], [], map, builtD1b, NO_WAR, HAS_TREATY);
-eq(routesD1b.length, 2, 'D1-bis: limit=2 po stronie gracza -> obie trasy powstaja');
+eq(routesD1b.length, 2, 'D1-bis: 2 sloty po stronie gracza -> nadal obie trasy istnieja');
+assert(routesD1b.every(r => r.budynekOdblokowany === true), 'D1-bis: 2 sloty -> OBIE trasy dostaja budynekOdblokowany=true');
 
-// D2: limit po stronie OBCEGO miasta -- fD ma tylko 1 slot, dwaj gracze konkuruja.
+// D2: limit po stronie OBCEGO miasta -- fD ma tylko 1 slot, dwaj gracze konkuruja
+// o budynekOdblokowany (obie trasy jednak istnieja).
 const fD  = city('fD', 1, 90);
 const pF1 = city('pF1', 0, 91); // dystans 1 -- blizej
 const pF2 = city('pF2', 0, 88); // dystans 2 -- dalej
 const builtD2 = new Map([
-  ['fD',  ['targowisko']],  // limit 1 (obce miasto)
+  ['fD',  ['targowisko']],  // 1 slot (obce miasto)
   ['pF1', ['targowisko']],
   ['pF2', ['targowisko']],
 ]);
 const routesD2 = TR.refreshTradeRoutes([fD, pF1, pF2], [], map, builtD2, NO_WAR, HAS_TREATY);
-eq(routesD2.length, 1, 'D2: limit=1 po stronie obcego -> tylko jedna trasa');
-eq(routesD2[0].fromCityId, 'pF1', 'D2: wygrywa blizszy gracz (dystans 1 < 2)');
+eq(routesD2.length, 2, 'D2: T3 -- limit budynkowy=1 po stronie obcego, ALE obie trasy ISTNIEJA');
+const routeD2_pF1 = routesD2.find(r => r.fromCityId === 'pF1');
+const routeD2_pF2 = routesD2.find(r => r.fromCityId === 'pF2');
+eq(routeD2_pF1.budynekOdblokowany, true, 'D2: blizszy gracz (dystans 1) dostaje wolny slot obcego -> budynekOdblokowany=true');
+eq(routeD2_pF2.budynekOdblokowany, false, 'D2: dalszy gracz (dystans 2) -- brak wolnego slotu -> budynekOdblokowany=false');
 
 // ---------------------------------------------------------------------------
-// E. Stabilnosc: istniejaca trasa utrzymana mimo blizszego nowego kandydata
+// E. Stabilnosc: DWA POZIOMY (T3) -- (1) istnienie trasy z existingRoutes zawsze
+//    zachowane gdy nadal spelnia warunki (nie jest juz ograniczone slotami);
+//    (2) budynekOdblokowany: istniejaca trasa ma PIERWSZENSTWO do slotu przed
+//    nowym, blizszym kandydatem.
 // ---------------------------------------------------------------------------
-console.log('\n-- E. refreshTradeRoutes: stabilnosc (utrzymaj istniejaca trase) --');
+console.log('\n-- E. refreshTradeRoutes: stabilnosc istnienia ORAZ budynekOdblokowany (T3) --');
 const pE = city('pE', 0, 120);
 const fEOld = city('fEOld', 1, 125); // dystans 5 -- istniejaca trasa
 const fENew = city('fENew', 1, 122); // dystans 2 -- blizszy NOWY kandydat
 const builtE = new Map([
-  ['pE',    ['targowisko']], // limit 1
+  ['pE',    ['targowisko']], // 1 slot
   ['fEOld', ['targowisko']],
   ['fENew', ['targowisko']],
 ]);
 const existingE = TR.refreshTradeRoutes([pE, fEOld], [], map, builtE, NO_WAR, HAS_TREATY);
 eq(existingE.length, 1, 'E: (setup) trasa poczatkowa pE<->fEOld istnieje');
+eq(existingE[0].budynekOdblokowany, true, 'E: (setup) jedyna trasa -> od razu ma budynekOdblokowany=true (1 slot wolny)');
+
 const routesE = TR.refreshTradeRoutes([pE, fEOld, fENew], existingE, map, builtE, NO_WAR, HAS_TREATY);
-eq(routesE.length, 1, 'E: limit=1 -> nadal tylko jedna trasa');
-eq(routesE[0].toCityId, 'fEOld', 'E: istniejaca trasa PRIORYTETOWO zachowana mimo blizszego fENew');
+eq(routesE.length, 2, 'E: T3 -- OBIE trasy (stara + nowa, blizsza) TERAZ ISTNIEJA (1 slot juz nie ogranicza istnienia)');
+const routeE_old = routesE.find(r => r.toCityId === 'fEOld');
+const routeE_new = routesE.find(r => r.toCityId === 'fENew');
+eq(routeE_old.budynekOdblokowany, true, 'E: istniejaca trasa fEOld PRIORYTETOWO zachowuje budynekOdblokowany=true mimo blizszego fENew');
+eq(routeE_new.budynekOdblokowany, false, 'E: nowy, blizszy kandydat fENew NIE dostaje slotu -- zajety przez istniejaca trase');
+
+// ---------------------------------------------------------------------------
+// J. T3: dochod dystansowy dostepny BEZ zadnego budynku handlowego; trasa morska
+//    nadal wymaga fizycznego Portu (cityHasPort) do samego POLACZENIA, niezaleznie
+//    od budynekOdblokowany.
+// ---------------------------------------------------------------------------
+console.log('\n-- J. refreshTradeRoutes: T3 -- dochod od razu bez budynku; Port nadal wymagany dla morza --');
+
+// J1: LAD, ZERO budynkow handlowych w obu miastach -> trasa mimo to ISTNIEJE,
+// ma dochod dystansowy, ale budynekOdblokowany=false.
+const pJ = city('pJ', 0, 150);
+const fJ = city('fJ', 1, 155);
+const builtJEmpty = new Map(); // brak jakichkolwiek budynkow w obu miastach
+const routesJ1 = TR.refreshTradeRoutes([pJ, fJ], [], map, builtJEmpty, NO_WAR, HAS_TREATY);
+eq(routesJ1.length, 1, 'J1: trasa ISTNIEJE mimo braku jakiegokolwiek budynku handlowego w obu miastach');
+eq(routesJ1[0].status, 'polaczony', 'J1: status polaczony');
+eq(routesJ1[0].dystans, 5, 'J1: dystans dystansowy liczony normalnie');
+eq(routesJ1[0].budynekOdblokowany, false, 'J1: budynekOdblokowany=false -- zero slotow po obu stronach');
+assert(TR.tradeRouteDistanceIncome(routesJ1[0].dystans, 'lad', TR.DEFAULT_TRADE_ROUTE_INCOME_PARAMS) > 0,
+  'J1: dochod dystansowy > 0 mimo budynekOdblokowany=false (T3 -- dostepny od poczatku)');
+
+// J2: MORZE -- Targowisko (budynek handlowy) w obu miastach, ale BRAK fizycznego
+// Portu -- polaczenie morskie NIE powstaje wcale (cityHasPort niezmieniony wymog),
+// niezaleznie od tego ze budynek handlowy formalnie jest.
+function buildIslandMap() {
+  const hexes = {};
+  for (let q = 0; q <= 30; q++) {
+    const isWater = q >= 10 && q <= 20;
+    hexes[`${q},200`] = { terenBazowy: isWater ? 'morze' : 'rownina' };
+  }
+  return { szerokoscQ: 31, wysokoscR: 201, hexes, seed: 1, riverPaths: [] };
+}
+const mapJ = buildIslandMap();
+const pJ2 = city('pJ2', 0, 9); pJ2.r = 200;  // ladowy heks tuz przy wodzie (q=10..20)
+const fJ2 = city('fJ2', 1, 21); fJ2.r = 200; // ladowy heks tuz przy wodzie z drugiej strony
+const builtJ2NoPort = new Map([
+  ['pJ2', ['targowisko']], // budynek handlowy JEST, ale...
+  ['fJ2', ['targowisko']], // ...brak fizycznego Portu w obu miastach
+]);
+const routesJ2NoPort = TR.refreshTradeRoutes([pJ2, fJ2], [], mapJ, builtJ2NoPort, NO_WAR, HAS_TREATY);
+eq(routesJ2NoPort.length, 0, 'J2: BRAK trasy -- brak lądu (wyspy) I brak fizycznego Portu, mimo Targowiska (budynku handlowego)');
+
+// J3: te same miasta, teraz Z fizycznym Portem (zamiast Targowiska) -> polaczenie
+// morskie powstaje; budynekOdblokowany=false, bo 'port' liczy sie tez jako budynek
+// handlowy (TRADE_BUILDING_IDS zawiera 'port') -- WIEC w tym wypadku faktycznie
+// budynekOdblokowany=true (Port jest jednoczesnie budynkiem fizycznym I handlowym).
+const builtJ3WithPort = new Map([
+  ['pJ2', ['port']],
+  ['fJ2', ['port']],
+]);
+const routesJ3 = TR.refreshTradeRoutes([pJ2, fJ2], [], mapJ, builtJ3WithPort, NO_WAR, HAS_TREATY);
+eq(routesJ3.length, 1, 'J3: Port w obu miastach -> polaczenie morskie powstaje');
+eq(routesJ3[0].medium, 'morze', 'J3: medium=morze (wyspy, brak ladu)');
+eq(routesJ3[0].budynekOdblokowany, true, 'J3: Port liczy sie TAKZE jako budynek handlowy (TRADE_BUILDING_IDS) -> budynekOdblokowany=true');
+
+// J4: kontrola rozroznienia -- Port_wielki (fizyczny port) ale przy limicie
+// slotow=0 po drugiej stronie -- druga strona ma TYLKO 'port' jeden budynek,
+// wiec slot jest, ale pokazuje ze to WCIAZ dwa niezalezne pojecia (limit i port
+// fizyczny), nie jeden mechanizm: usuniecie Portu (fizycznego) z jednej strony
+// zrywa polaczenie CALKOWICIE, mimo ze budynekOdblokowany nigdy nie byl liczony
+// (trasa nie istnieje -> nie ma budynekOdblokowany do sprawdzenia).
+const builtJ4OnlyOnePort = new Map([
+  ['pJ2', ['port']],       // fizyczny Port -- OK
+  ['fJ2', ['targowisko']], // budynek handlowy, ale BRAK fizycznego Portu
+]);
+const routesJ4 = TR.refreshTradeRoutes([pJ2, fJ2], [], mapJ, builtJ4OnlyOnePort, NO_WAR, HAS_TREATY);
+eq(routesJ4.length, 0, 'J4: fizyczny Port wymagany po OBU stronach dla morza -- jedna strona bez Portu -> brak trasy mimo budynku handlowego istniejacego formalnie u drugiej');
 
 // ---------------------------------------------------------------------------
 // F. Dochod dystansowy -- PRZEBUDOWA R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 (ECHO Q1 + p.3,
