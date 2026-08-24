@@ -13,7 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
-## ROBOCZA 79bae2c4 - 2026-08-22 18:10 UTC - FALA 319: 5 poprawek (slider budzetu automatu, przycisk auto-zywienie, REGRES3 pula Pracy, naglowek wydarzen, audyt przekierowan)
+## ROBOCZA 7464c061 - 2026-08-24 13:10 UTC - FALA 320: przebudowa szlaków handlowych T3+T4+T6 (dokończenie serii R-HANDEL-SZLAKI-PRZEBUDOWA-Q1)
+|- md5 (pełne): 7464c061f223b2001e146c5e2eb83f30 · stempel: ROBOCZA · label 7464c061 · źródłowy commit integracji: `6d61d6e9` (kod: T6 `2e6aac59`, T4 `fee7f455`, T3 `f552f8e3`)
+|- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T3`: gating budynkami handlowymi przestał ograniczać ISTNIENIE trasy — aktywna Umowa Handlowa + łączność + brak wojny (Port nadal wymagany dla morza) dają dochód dystansowy od razu, bez budynku. Nowe pole `TradeRoute.budynekOdblokowany: boolean` niesie osobno, czy dana trasa ma dziś pokrycie budynkowe.
+|- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T4`: stary globalny mnożnik „+5% Handlu za każdą połączoną trasę" zastąpiony sumą per-trasowych bonusów 5% naliczaną WYŁĄCZNIE dla tras z budynkiem — zamyka ryzyko, w którym miasto bez budynku handlowego dostawałoby bonus mimo braku pokrycia (znalezione przez Final Control T3, zamknięte przed jakimkolwiek deployem obejmującym T3).
+|- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T6`: tabela tras handlowych w panelu imperium (zakładki Handel i Miasto) pokazuje teraz osobno dochód dystansowy i składnik 5% za budynek per trasa/miasto, z jawnym „5% — brak budynku" (nie cichym zerem) gdy budynku brakuje. Integration micro-fix: 5 tekstów UI/docstring poprawionych z „budynek w Twoim mieście" na „budynek po obu stronach trasy" (Final Control T6 znalazł, że wymóg dotyczy też miasta-partnera, nie tylko gracza).
+|- Seria kończy przebudowę zleconą przez właściciela: „im dalej w grze, tym więcej tras handlowych, a nie mniej" — trasy istnieją od razu po umowie, budynek handlowy odblokowuje wyłącznie dodatkową premię 5%, nie samą trasę.
+|- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (workflow, wg `R-PROC-AUTOBOT.md`), wszystkie PASS/PASS-WITH-NOTES, zweryfikowane niezależnie przez orkiestratora po każdym scaleniu i ponownie po zbiorczym buildzie (tsc czyste, Vite 846 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem). Real render Playwright/Chromium obowiązkowy dla T6 (temat wizualny) — potwierdzony niezależnie przez Operatora i Evaluatora.
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md`, `dyspozycje/autobot/runs/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-{T3,T4,T6}/`.
+|- **AKTUALNA**
+
+## ROBOCZA 79bae2c4 - 2026-08-22 18:10 UTC - FALA 319: 5 poprawek (slider budzetu automatu, przycisk auto-zywienie, REGRES3 pula Pracy, naglowek wydarzen, audyt przekierowan) — **ZASTĄPIONA** (→ 7464c061)
 |- md5 (pełne): 79bae2c49a4119337ceaac98730522d8 · stempel: ROBOCZA · label 79bae2c4 · źródłowy commit integracji: `ab66195c`
 |- `P-PRACA-BUDMODE-SLIDER-MAX-50-NIESPOJNY-Q1`: suwaki „budżetu automatu" ulepszeń terenu (empire+city) w panelu budowy akceptują teraz pełny zakres 0–100% (były fizycznie ograniczone do 50% mimo naprawionego wcześniej backendu — druga część tego samego regresu).
 |- `P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1`: przycisk zbiorczego Auto-Żywienia pokazuje teraz krótką etykietę „Włącz Auto-Żywienie", pełne wyjaśnienie w tooltipie.
@@ -23,7 +34,6 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), zweryfikowane niezależnie przez orkiestratora po każdym scaleniu (tsc czyste, Vite 846 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem).
 |- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
 |- Szczegóły: `dyspozycje/PYTANIA-OTWARTE.md` (wpisy #11–#15). Dwa nowe tematy `P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1`/`P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1` czekają na decyzję właściciela.
-|- **AKTUALNA**
 
 ## ROBOCZA aab7e1e7 - 2026-08-22 16:20 UTC - FALA 318: emoji -> ikony marki w panelu Praca miasta — **ZASTĄPIONA** (→ 79bae2c4)
 |- md5 (pełne): aab7e1e7a7071ca1c1da62b5cd44be5a · stempel: ROBOCZA · label aab7e1e7 · źródłowy commit integracji: `3b1e70b6`
