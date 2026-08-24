@@ -1,9 +1,8 @@
 # R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 — przebudowa mechaniki szlaków handlowych
 
-**Status:** W TRAKCIE (2026-08-23) — T1+T2+T2b+T3+T4 ZINTEGROWANE do `main` (T4 commit
-`fee7f455`). Ryzyko sekwencjonowania z T3 (miasto bez budynku dostające stary bonus 5%)
-ZAMKNIĘTE. T6 dispatchowane natychmiast (ostatni temat tej serii). Zbiorczy deploy ROBOCZA
-nastąpi po zintegrowaniu T6.
+**Status:** T1+T2+T2b+T3+T4+T6 ZINTEGROWANE do `main` (T6 commit `2e6aac59`) — WSZYSTKIE
+tematy tej serii zamknięte. Ryzyko sekwencjonowania z T3 (miasto bez budynku dostające stary
+bonus 5%) ZAMKNIĘTE (T4). Zbiorczy deploy ROBOCZA następuje teraz.
 
 ## Zlecenie właściciela (werbatim, dyktowane — literówki oryginalne)
 
@@ -281,6 +280,50 @@ Kolejność bezpieczna: T1 → T2 → T2b → T3 → T4 → T6. Bez osobnego T5 
   `trade-routes-income-test.cjs`/H2 rozwiązane przez przepisanie testu, 5 pre-istniejących
   FAIL w `trade-ilosc-test.cjs` potwierdzone niezmienione), zmergowane do `main` (merge
   non-ff, commit `fee7f455`), wypchnięte.
-- **T6 — dispatchowane natychmiast po T4** (ostatni temat tej serii, `empireDetailPanel.ts`
-  + `main.ts::buildEmpireTradeSnap()` — dane per-trasowe z T4 już gotowe do wyświetlenia).
-  Zbiorczy deploy ROBOCZA nastąpi po zintegrowaniu T6.
+- **T6 — ZINTEGROWANE (2026-08-24, 1 runda + integration micro-fix).** Dispatch przez
+  Workflow (Operator→Evaluator→Final Control, Opus 5 High dla Operatora/Evaluatora —
+  temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a — Final Control Sonnet 5 High), zapis
+  dispatchu `dyspozycje/autobot/runs/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T6/00-dispatch.md`.
+  Tabela tras handlowych w panelu imperium (zakładki Handel i Miasto) pokazuje teraz per
+  trasa/miasto osobno dochód dystansowy i składnik 5% za budynek handlowy, z jawnym
+  „5% — brak budynku" (nie cichym zerem) gdy `budynekOdblokowany===false`. Nowa funkcja
+  `tradeRouteBuildingBonusForRoute()` w `trade-routes.ts` — ekstrakcja per-trasowa,
+  bit-identyczna z ciałem pętli w agregacie T4 `computeTradeRouteBuildingBonusByCity()`,
+  który teraz woła tę funkcję zamiast duplikować wzór (zapobiega czwartemu miejscu
+  liczenia, precedens `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`) — jedyne dotknięcie pliku poza
+  pierwotną allowlistą, jawnie zgłoszone przez Operatora i zaakceptowane przez
+  Evaluatora/Final Control. Zero zmian w `economy.ts`/`turn-economy.ts` (T3/T4
+  nietykalne, potwierdzone niezależnie przez obie role kontrolne).
+
+  Wszystkie trzy role: PASS-WITH-NOTES. Jedyna uwaga wymagająca działania przed
+  integracją (N1, Evaluator + potwierdzona i rozszerzona przez Final Control o trzecie
+  miejsce): nowe teksty UI/docstring mówiły „budynek handlowy w Twoim mieście", ale
+  `budynekOdblokowany` wymaga wolnego slotu handlowego PO OBU stronach trasy (gracz +
+  miasto-partner, zawsze AI) — gracz mógł dostać mylącą instrukcję co budować, gdy
+  blokerem był partner, nie jego własne miasto. Final Control autoryzował naprawę jako
+  integration micro-fix bez nowej rundy (`R-PROC-AUTOBOT.md` §3b — czysta zmiana treści
+  w już-allowlistowanych plikach, zero ryzyka logicznego). Orkiestrator poprawił 5
+  miejsc (4 znalezione przez Evaluator/Final Control + 1 dodatkowe tej samej kategorii
+  znalezione przy naprawie) w `empireDetailPanel.ts` (tooltip trasy, podpis zakładki
+  Miasto, tooltip wiersza SUMA) i `empireDetailTypes.ts` (docstring
+  `EmpireTradeRouteRow.budynekOdblokowany`), commit `8048460b` na gałęzi tematu, PRZED
+  mergem do `main` — zweryfikowane ponownie w pełni (tsc/build/testy tematu/5 bramek
+  referencyjnych) przed i po tej poprawce. Pozostałe uwagi (N2 przesadzone zdanie w
+  raporcie Operatora, N3 kosmetyczna dwuznaczność przy cudach handlowych, N4 świadome
+  odstępstwo od litery kryterium 2 — nie sumowanie dwóch strumieni bo idą różnymi
+  ścieżkami przez ekonomię, N5 jakość jednej asercji testowej) — informacyjne, bez
+  wymaganego działania.
+
+  Real render Playwright/Chromium: Operator 58/58 (mutacyjny — asercje czerwienieją na
+  kodzie sprzed T6), Evaluator niezależny render od zera 32/32 — rozkład potwierdzony
+  widoczny w DOM w obu wariantach (z budynkiem/bez) i obu tabelach. Spójność matematyczna
+  z T3/T4 potwierdzona ręcznie przez obie role kontrolne na poziomie kodu silnika
+  (`turn-economy.ts`/`economy.ts`) — dwa różne strumienie (dochód dystansowy wprost do
+  skarbca, 5% addytywnie do Handlu Brutto przed korupcją/Walutą/Mennicą/suwakami), UI
+  celowo NIE sumuje je w jedną liczbę. Zweryfikowane niezależnie przez orkiestratora po
+  merge (tsc/build/13 testów tematu-handlu-ekonomii/5 bramek referencyjnych zielone,
+  `trade-ilosc-test.cjs` 35/5 pre-istniejący i niezmieniony, potwierdzone porównaniem z
+  `main` sprzed merge), zmergowane do `main` (merge non-ff, commit `2e6aac59`), wypchnięte.
+
+  **Seria R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 (T1+T2+T2b+T3+T4+T6) w całości ZINTEGROWANA.**
+  Zbiorczy deploy ROBOCZA następuje teraz.
