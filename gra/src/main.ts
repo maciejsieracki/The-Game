@@ -512,6 +512,8 @@ import {
   refreshTradeRoutes,
   computeTradeRouteIncomeByCity,
   computeTradeRouteBuildingBonusByCity,
+  // T6: per-trasowa wersja tej samej premii 5% — do rozkładu dochodu w panelu imperium.
+  tradeRouteBuildingBonusForRoute,
   computeTradeRouteResourceGrants,
   hasTradeRouteResourceAccess,
   firstTradeRouteResourceGrant,
@@ -14053,6 +14055,17 @@ async function boot(): Promise<void> {
           const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
           const base = tradeRouteTotalDistanceIncome(r.dystans, r.medium, incomeParams);
           const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
+          // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): drugi składnik dochodu trasy — premia 5%
+          // za budynek handlowy (T4, ECHO Q3 Wariant C). Liczona WYŁĄCZNIE przez
+          // `tradeRouteBuildingBonusForRoute()` z trade-routes.ts, czyli tę SAMĄ funkcję,
+          // którą sumuje `computeTradeRouteBuildingBonusByCity()` zasilające silnik
+          // (economy.ts::premiaHandluTrasHandlowych) — panel nie ma tu własnej kopii wzoru
+          // (precedens P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1: trzy rozjechane kopie wzoru
+          // dystansowego, zamknięte przy T2 — czwartej nie zakładamy).
+          // CELOWO liczona od `base` (bez bonusu cudów), nie od `income` — dokładnie jak
+          // silnik; gdyby liczyć od `income`, panel pokazywałby premię wyższą niż realnie
+          // naliczona graczowi z cudami handlowymi.
+          const premiaBudynku = tradeRouteBuildingBonusForRoute(r, incomeParams);
           return {
             id: r.id,
             // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (Maciej 2026-08-16, ECHO A): id, nie
@@ -14066,6 +14079,10 @@ async function boot(): Promise<void> {
             medium: r.medium,
             dystans: r.dystans,
             income,
+            // T3 → T6: stan pokrycia budynkowego TEJ trasy przekazany WPROST z TradeRoute
+            // (bez przeliczania), żeby UI mogło powiedzieć DLACZEGO premia 5% wynosi 0.
+            budynekOdblokowany: r.budynekOdblokowany,
+            premiaBudynku,
           };
         })
         .sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));

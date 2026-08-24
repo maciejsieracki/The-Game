@@ -440,8 +440,39 @@ export interface EmpireTradeRouteRow {
   partnerOwnerLabel: string;
   medium: 'lad' | 'morze';
   dystans: number;
-  /** Dochód tej trasy/turę (tradeRouteDistanceIncome) — kredytowany OBU miastom w pełnej kwocie. */
+  /**
+   * Dochód DYSTANSOWY tej trasy/turę (`tradeRouteTotalDistanceIncome` × bonus cudów,
+   * CUDA-HANDEL-01) — kredytowany OBU miastom w pełnej kwocie i wchodzący do skarbca
+   * WPROST (`pieniadzZTras`, turn-economy.ts — z pominięciem Zamożności).
+   * T6: to NIE jest cały dochód trasy — drugi składnik to `premiaBudynku` niżej.
+   */
   income: number;
+  /**
+   * T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): czy ta konkretna trasa ma dziś pokrycie
+   * budynkiem handlowym w mieście gracza — `TradeRoute.budynekOdblokowany` z T3,
+   * przekazane WPROST, bez przeliczania. Od T3 budynek NIE warunkuje istnienia trasy
+   * (dochód dystansowy leci od zawarcia umowy) — odblokowuje wyłącznie premię 5%
+   * (`premiaBudynku`). `false` = 5% czeka na Targowisko/Port w tym mieście.
+   */
+  budynekOdblokowany: boolean;
+  /**
+   * T6: składnik 5% TEJ trasy — dokładnie `tradeRouteBuildingBonusForRoute()`
+   * (trade-routes.ts), czyli ta sama liczba, którą `computeTradeRouteBuildingBonusByCity()`
+   * (T4) wnosi do `CityYieldContext.premiaHandluTrasHandlowych` w economy.ts.
+   * `0` gdy `budynekOdblokowany === false` (dwa nośniki celowo: flaga mówi DLACZEGO,
+   * liczba mówi ILE — UI musi odróżnić „5% = 0, bo brak budynku" od zwykłego zera).
+   *
+   * UWAGA (spójność, nie mieszać strumieni): `income` wpływa do skarbca CZYSTO, a
+   * `premiaBudynku` jest addytywnym składnikiem `handelBrutto` miasta (economy.ts
+   * Step 4) — przechodzi jeszcze przez korupcję, mnożnik Waluty/Mennicy i podział
+   * suwakami Nauka/Skarb/Zamożność. Dlatego UI pokazuje je jako DWA osobne składniki
+   * dochodu trasy, a nie jako jedną liczbę „do skarbca" — inaczej byłaby to czwarta,
+   * nieprawdziwa wersja tej samej liczby (precedens P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1).
+   *
+   * Wartość jest UŁAMKOWA (0,05 × dochód dystansowy, bez zaokrąglenia) — dokładnie
+   * jak w silniku; zaokrągla dopiero warstwa wyświetlania.
+   */
+  premiaBudynku: number;
 }
 
 /**

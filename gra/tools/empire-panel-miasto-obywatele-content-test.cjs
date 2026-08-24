@@ -144,6 +144,13 @@ ok(typesSrc.includes('export interface EmpireHappinessSnap'),
   const tradeEnd = tradeIdx > -1 ? typesSrc.indexOf('\n}\n', tradeIdx) : -1;
   const tradeBody = tradeEnd > tradeIdx ? typesSrc.slice(tradeIdx, tradeEnd) : '';
   ok(tradeBody.includes('cityId: string;'), 'EmpireTradeRouteRow.cityId: string (join niezawodny, P-EMPIRE-MIASTA-JOIN-INDEX)');
+  // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): rozklad dochodu per trasa -- DWA nosniki celowo.
+  // Flaga mowi DLACZEGO (brak budynku), liczba mowi ILE; sama liczba 0 nie odroznilaby
+  // "5% = 0, bo nie ma Targowiska" od zwyklego zera i UI nie mialoby czego wyswietlic.
+  ok(tradeBody.includes('budynekOdblokowany: boolean;'),
+    'T6: EmpireTradeRouteRow.budynekOdblokowany: boolean (stan pokrycia budynkowego TEJ trasy, z TradeRoute/T3)');
+  ok(tradeBody.includes('premiaBudynku: number;'),
+    'T6: EmpireTradeRouteRow.premiaBudynku: number (skladnik 5% TEJ trasy, ta sama liczba co w economy.ts)');
 }
 
 ok(typesSrc.includes('happiness: EmpireHappinessSnap;'), 'EmpireDetailSnap.happiness: EmpireHappinessSnap');
@@ -215,6 +222,21 @@ ok(fnBody.includes('happiness,'),
 // Trade route cityId — poza buildEmpireDetailSnap() (osobna funkcja buildEmpireTradeSnap).
 ok(mainSrc.includes('cityId: r.fromCityId,') && mainSrc.includes('cityName: myCity?.name ?? r.fromCityId,'),
   'buildEmpireTradeSnap(): EmpireTradeRouteRow.cityId = r.fromCityId (TradeRoute), obok cityName istniejącego');
+
+// T6: rozkład dochodu per trasa liczony WYŁĄCZNIE funkcją silnika, nie własną kopią wzoru.
+// Gdyby ktoś wrócił do literału `0.05 *` w buildEmpireTradeSnap, panel stałby się CZWARTYM
+// miejscem liczącym tę samą premię — dokładnie precedens P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1.
+ok(mainSrc.includes('const premiaBudynku = tradeRouteBuildingBonusForRoute(r, incomeParams);'),
+  'T6: buildEmpireTradeSnap() liczy premię 5% przez tradeRouteBuildingBonusForRoute() (trade-routes.ts), nie własnym wzorem');
+ok(mainSrc.includes('budynekOdblokowany: r.budynekOdblokowany,') && mainSrc.includes('premiaBudynku,'),
+  'T6: buildEmpireTradeSnap() przekazuje do snapa oba pola rozkładu (flaga budynku + kwota 5%)');
+{
+  const snapIdx = mainSrc.indexOf('function buildEmpireTradeSnap()');
+  const snapBody = snapIdx > -1 ? mainSrc.slice(snapIdx, snapIdx + 4000) : '';
+  ok(snapIdx > -1, 'T6: buildEmpireTradeSnap() znaleziona w main.ts');
+  ok(!/0\.05\s*\*/.test(snapBody),
+    'T6: w ciele buildEmpireTradeSnap() NIE ma literału „0.05 *" (stawka 5% żyje wyłącznie w trade-routes.ts)');
+}
 
 // ===========================================================================
 // C. empireDetailPanel.ts — render + wiring
@@ -483,12 +505,16 @@ async function runSectionD4() {
   // Trasy: Roma 2 (10+5=15), Neapolis 1 (7), Ostia 0 -- plus jedna trasa „widmo" z cityId spoza
   // `cp`/`paired` (symuluje rozjazd danych) -- gdyby regresja N3 wróciła do trade.routes.length,
   // SZLAKI podsumowania pokazałoby 4 zamiast poprawnych 3 (2+1+0).
+  // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): fixture niesie teraz rozkład dochodu per trasa.
+  // Roma = przypadek MIESZANY (r1 z budynkiem +0,5; r2 BEZ budynku) — celowo najtrudniejszy:
+  // miasto ma jednocześnie naliczoną premię i trasę, która na budynek dopiero czeka.
+  // Neapolis = wyłącznie trasa Z budynkiem (+0,35). Ostia = brak tras (kolumna pusta).
   const trade = {
     routes: [
-      { id: 'r1', cityId: 'c1', cityName: 'Roma', partnerCityName: 'X', partnerOwnerLabel: 'Sumerowie', medium: 'lad', dystans: 2, income: 10 },
-      { id: 'r2', cityId: 'c1', cityName: 'Roma', partnerCityName: 'Y', partnerOwnerLabel: 'Rzymianie', medium: 'morze', dystans: 3, income: 5 },
-      { id: 'r3', cityId: 'c2', cityName: 'Neapolis', partnerCityName: 'Z', partnerOwnerLabel: 'Chińczycy', medium: 'lad', dystans: 1, income: 7 },
-      { id: 'r-widmo', cityId: 'c-ghost', cityName: '???', partnerCityName: 'W', partnerOwnerLabel: 'Harappa', medium: 'lad', dystans: 1, income: 999 },
+      { id: 'r1', cityId: 'c1', cityName: 'Roma', partnerCityName: 'X', partnerOwnerLabel: 'Sumerowie', medium: 'lad', dystans: 2, income: 10, budynekOdblokowany: true, premiaBudynku: 0.5 },
+      { id: 'r2', cityId: 'c1', cityName: 'Roma', partnerCityName: 'Y', partnerOwnerLabel: 'Rzymianie', medium: 'morze', dystans: 3, income: 5, budynekOdblokowany: false, premiaBudynku: 0 },
+      { id: 'r3', cityId: 'c2', cityName: 'Neapolis', partnerCityName: 'Z', partnerOwnerLabel: 'Chińczycy', medium: 'lad', dystans: 1, income: 7, budynekOdblokowany: true, premiaBudynku: 0.35 },
+      { id: 'r-widmo', cityId: 'c-ghost', cityName: '???', partnerCityName: 'W', partnerOwnerLabel: 'Harappa', medium: 'lad', dystans: 1, income: 999, budynekOdblokowany: true, premiaBudynku: 49.95 },
     ],
   };
   const e = { nauka: 0 };
@@ -534,6 +560,34 @@ async function runSectionD4() {
     'D4a (naprawa N3, mutacja „SZLAKI z trade.routes.length"): SZLAKI podsumowania = 3 (2+1+0 po paired), NIE 4 (trasa „widmo" spoza paired wykluczona)');
   ok(summaryRow && summaryRow.textContent.includes('+22'),
     'D4b-suma: DOCHÓD podsumowania = +22 (15+7+0), nie podwojone i nie licząc trasy „widmo" (+999)');
+
+  // -- T6: rozkład dochodu (składnik 5% + „bez budynku") w tej samej tabeli --
+  const romaSplit = handelRows[0] ? handelRows[0].querySelector('.civ-emp-route-split') : null;
+  ok(romaSplit !== null, 'T6-D4-split-istnieje: wiersz Romy ma drugą linię ze składnikiem 5% (.civ-emp-route-split)');
+  ok(romaSplit && romaSplit.textContent.includes('+0,5'),
+    'T6-D4-roma-kwota: Roma pokazuje zsumowaną premię 5% swoich tras = +0,5 (r1 z budynkiem), przecinek dziesiętny PL');
+  ok(romaSplit && romaSplit.textContent.includes('1 bez budynku'),
+    'T6-D4-roma-brak: Roma ma jawnie napisane, że 1 trasa (r2) czeka na budynek — gracz widzi DLACZEGO premia nie jest wyższa');
+  ok(romaSplit && romaSplit.className.includes('off'),
+    'T6-D4-roma-stan: przy trasie bez budynku linia dostaje wariant „off" (kolor ostrzegawczy), nie „on"');
+  ok(romaSplit && (romaSplit.getAttribute('title') || '').length > 0,
+    'T6-D4-roma-tooltip: linia niesie pełne wyjaśnienie w title (kolor nigdy nie niesie stanu sam)');
+
+  const neapolisSplit = handelRows[1] ? handelRows[1].querySelector('.civ-emp-route-split') : null;
+  ok(neapolisSplit && neapolisSplit.textContent.includes('+0,4') && neapolisSplit.className.includes('on'),
+    'T6-D4-neapolis: same trasy z budynkiem -> wariant „on" i kwota +0,4 (0,35 zaokrąglone do 1 miejsca)');
+  ok(neapolisSplit && !neapolisSplit.textContent.includes('bez budynku'),
+    'T6-D4-neapolis-brak-falszywki: miasto bez tras czekających na budynek NIE dostaje adnotacji „bez budynku"');
+
+  const ostiaSplit = handelRows[2] ? handelRows[2].querySelector('.civ-emp-route-split') : null;
+  ok(ostiaSplit === null,
+    'T6-D4-ostia: miasto BEZ tras nie dostaje linii rozkładu (nie ma czego rozkładać — pusty wiersz zamiast mylącego „+0 · 5%")');
+
+  const sumSplit = summaryRow ? summaryRow.querySelector('.civ-emp-route-split') : null;
+  ok(sumSplit && sumSplit.textContent.includes('+0,9'),
+    'T6-D4-suma-kwota: podsumowanie sumuje TE SAME premiaBudynku co wiersze (0,5+0,35+0 = 0,85 -> +0,9), bez trasy „widmo" (+49,95)');
+  ok(sumSplit && sumSplit.textContent.includes('1 bez budynku'),
+    'T6-D4-suma-brak: podsumowanie liczy trasy czekające na budynek w tym samym zakresie co DOCHÓD (1, nie 2 z widmem)');
 
   console.log(`D4: ${pass} passed so far, ${fail} failed so far`);
 }
