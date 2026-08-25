@@ -133,5 +133,22 @@ pod tym kątem** (nie ponowna praca nad 6 już ukończonymi w `R-ZELAZO-MODELE-B
   zarejestrowane osobno (brak nazwy jednostki dla machin oblężniczych w bitwie
   ręcznej — `manualBattle.ts:750`; aliasy onager/balista/trebuchet rozjeżdżające
   się między warstwami, dziś bez skutku).
-- T9–T10: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{9,10}/`
-  (w trakcie, uruchomione równolegle).
+- **T10 — ZINTEGROWANE (2026-08-25, 1 runda + integration micro-fix).**
+  Drużynnik (Słowianie), iButho z iklwa (Zulusi). Znalezione i naprawione
+  pomiarem: pas Drużynnika 0 pikseli (bryła zamknięta w kaftanie/rubasze),
+  głowica miecza 0 pikseli, iButho i Impi praktycznie jedną figurką
+  (odróżnialność 0.370 przy progu rodziny 0.558, iklwa kopią 1:1 włóczni
+  Impi — po naprawie 0.589), nazwa EN „Druzhinnik" wracająca do generyka.
+  Spójność kulturowa z T4 (Jeździec z oszczepami) sprawdzona i potwierdzona
+  bez potrzeby synchronizacji. Evaluator (własny niezależny harness) wydał
+  FAIL na 3 punktach — niepotrzebnie odpięty precyzyjny pin geometrii w
+  teście T8, zmyślona liczba w uzasadnieniu K3, nieścisłe „jedyna różnica"
+  w K1 pomijające `armor` — wszystkie potwierdzone i naprawione przez
+  Final Control jako integration micro-fix (ten sam precedens co T7/T8/
+  T11), bez zwrotu do rundy 2. Cztery znaleziska kosmetyczne zarejestrowane
+  osobno (deski tarczy Drużynnika promieniste — dotyczy też T4; para
+  Drużynnik/Miecznik galijski nadal poniżej progu, zależność od T9; próg
+  zerowy H12 przepuszcza bryły „prawie martwe"; rozjazd
+  `Atak dystansowy`/`missileAttack` i brak `armor` w `units.json`).
+- T9: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T9/` (w
+  toku).
