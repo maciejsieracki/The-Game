@@ -419,6 +419,16 @@ const SWEETENER_PN_PER_EASE_POINT = 25;
 /** PLACEHOLDER (strojenie w playteście): sufit ease — złoto/dobra nie zastępują relacji całkowicie. */
 const SWEETENER_EASE_MAX_POINTS = 20;
 
+/**
+ * R-DYPLO-PAKT-WETO-EKSPANSJA-Q1: narzut na próg Relacji dla Paktu o nieagresji, gdy
+ * aktywny jest czynnik „Ekspansja przy granicy" (`ctx.ekspansjaPrzyGranicy`).
+ * WYPROWADZONY, nie wymyślony: równy `SWEETENER_EASE_MAX_POINTS`, więc maksymalny słodzik
+ * dokładnie kasuje narzut i sprowadza próg z powrotem do `progNapRelacja`. Ta równość jest
+ * TREŚCIĄ decyzji — gwarantuje, że czynnik nigdy nie czyni paktu nieosiągalnym, tylko
+ * droższym. Zmiana jednej z tych dwóch stałych bez drugiej łamie tę gwarancję.
+ */
+export const NAP_EKSPANSJA_RELACJA_NARZUT = SWEETENER_EASE_MAX_POINTS;
+
 /** Wartość netto słodzika w PN (koszyk giveItems minus receiveItems, floor 0). */
 export function sweetenerNetPn(payload: ProposalPayload, pnOpts?: ResolveProposalPnOptions): number {
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
@@ -885,12 +895,30 @@ export function evaluateProposal(
       }
       // C-DYP-STOL-Q1=B: słodzik (giveItems/receiveItems w payload) obniża próg Relacji.
       const napEase = sweetenerEasePoints(payload, pnOpts);
-      const napThreshold = Math.max(0, p.progNapRelacja - napEase);
+      // R-DYPLO-PAKT-WETO-EKSPANSJA-Q1: „Ekspansja przy granicy" była TU binarnym wetem
+      // (`if (ctx.ekspansjaPrzyGranicy) return accepted:false`) tuż POD progiem, który dwie
+      // linijki wyżej jest jawnie kompensowalny słodzikiem. Pomiar: przy Relacji 200/200
+      // i słodziku 100 000 ¤ pakt nadal był odrzucany — żadna Relacja, żaden słodzik go nie
+      // przebijał. Flaga jest w main.ts czystą funkcją liczby miast („obie strony > 2 miasta"),
+      // liczoną co turę, więc od ~3. miasta obu stron trwa BEZ KOŃCA i gracz nie ma żadnej
+      // akcji, która ją zdejmuje — Pakt był strukturalnie nieosiągalny.
+      // Żadne źródło projektowe nie ustanawia tego weta: `Dyplomacja/Dyplomacja-zasady.md`
+      // §3.2, `Dyplomacja-DOKUMENTACJA-DEV.md:180` i `gra/data/diplomacy.json` modelują ten
+      // czynnik WYŁĄCZNIE jako ciągłe −2 Zaufania/turę, w żadnej tabeli progów/warunków.
+      // Dlatego weto zamienione na NARZUT na próg Relacji, kompensowalny tą samą drogą co
+      // reszta tej bramki. Narzut = SWEETENER_EASE_MAX_POINTS (sufit słodzika), więc
+      // MAKSYMALNY słodzik dokładnie go kasuje — to jest gwarancja, że warunek nigdy nie
+      // jest nieosiągalny. Wartość WYPROWADZONA z istniejącej stałej, nie nowy balans.
+      const napExpansionSurcharge = ctx.ekspansjaPrzyGranicy ? NAP_EKSPANSJA_RELACJA_NARZUT : 0;
+      const napThreshold = Math.max(0, p.progNapRelacja + napExpansionSurcharge - napEase);
       if (score < napThreshold) {
-        return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana ≥ ${napThreshold})` };
-      }
-      if (ctx.ekspansjaPrzyGranicy) {
-        return { accepted: false, reason: 'Ekspansja przy granicy — brak zaufania do paktu' };
+        return {
+          accepted: false,
+          reason: napExpansionSurcharge > 0
+            ? `Relacja zbyt niska na pakt (wymagana ≥ ${napThreshold}; +${napExpansionSurcharge}`
+              + ' za ekspansję przy granicy — dołóż do oferty lub podnieś Relację)'
+            : `Relacja zbyt niska na pakt (wymagana ≥ ${napThreshold})`,
+        };
       }
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, RodzajTraktatu.PaktNieagresji)) {
         return { accepted: false, reason: 'Pakt nieagresji już obowiązuje' };
@@ -1657,6 +1685,19 @@ export function resolvePlayerAcceptsAiPending(
   }
   switch (actionId) {
     case 'nap': {
+      // PARYTET (rule_108) — R-DYPLO-PAKT-WETO-EKSPANSJA-Q1, zapis JAWNY, żeby asymetria
+      // nie była przypadkowa. Ta ścieżka (AI zaproponowało pakt, GRACZ klika „Przyjmij")
+      // celowo NIE stosuje narzutu „Ekspansja przy granicy" ani progów Relacji/Wiarygodności
+      // — bo tu responderem jest CZŁOWIEK, a jego bramką jest własne kliknięcie
+      // (C-DYP-Q1=A: „bez progów — gracz już się zgodził ręcznie"). Odwrotna strona tej
+      // symetrii: gdy responderem jest AI, bramką jest evaluateProposal::case 'nap' wyżej.
+      // ZNANA, ZMIERZONA LUKA POZA ALLOWLISTĄ tego tematu: inicjatywa AI
+      // (`ai.ts` Priorytet 3b, ~4344) sprawdza wyłącznie `score >= progNapRelacja -
+      // napScoreEase` i nie zna flagi `ekspansjaPrzyGranicy` w ogóle (`AIDiplomacyInput`
+      // jej nie niesie), więc AI potrafi SAMO zaproponować pakt przy Relacji między
+      // `progNapRelacja` a `progNapRelacja + NAP_EKSPANSJA_RELACJA_NARZUT`, którego samo
+      // by nie przyjęło. Domknięcie wymaga `ai.ts` + `main.ts` (oba poza allowlistą) —
+      // zgłoszone jako osobny temat, nie poszerzane w biegu (R-PROC-AUTOBOT §14).
       const napExpiry = resolveNapDealExpiry(turn, payload);
       const deal = buildDeal(
         RodzajTraktatu.PaktNieagresji,

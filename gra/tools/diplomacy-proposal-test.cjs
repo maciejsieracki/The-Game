@@ -67,7 +67,7 @@ export {
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
-  evaluatePendingFromAI,
+  evaluatePendingFromAI, NAP_EKSPANSJA_RELACJA_NARZUT,
 } from '../src/game/diplomacy-proposals.ts';
 export { capAiGoldOffer, AI_TRADE_GOLD_MAX as ECO_GOLD_MAX } from '../src/game/diplomacy-economy.ts';
 export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
@@ -108,7 +108,7 @@ const {
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage, capAiGoldOffer,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
-  evaluatePendingFromAI, diplomacyFairGivePn,
+  evaluatePendingFromAI, diplomacyFairGivePn, NAP_EKSPANSJA_RELACJA_NARZUT,
   actionUsesTradeBasket, getTradeBasketMode, isTreatyOnlyFormAction, TRADE_BASKET_ACTION_IDS,
   showTradeBasketModal, hideTradeBasketModal,
 } = require(BUNDLE);
@@ -161,9 +161,36 @@ ok(r.accepted, 'NAP accept rel 100 (bez progu Zauf)');
 r = evaluateProposal(prop('nap'), ctx({ relation: rel(25, 24) }));
 ok(!r.accepted, 'NAP reject relacja 49 normal');
 
-// 3 NAP reject border expansion
-r = evaluateProposal(prop('nap'), ctx({ ekspansjaPrzyGranicy: true }));
-ok(!r.accepted, 'NAP reject ekspansja');
+// 3 NAP + "Ekspansja przy granicy" — NARZUT na próg Relacji, nie weto.
+// R-DYPLO-PAKT-WETO-EKSPANSJA-Q1: ta asercja brzmiała `ok(!r.accepted, 'NAP reject ekspansja')`
+// przy domyślnej Relacji 110 i sprawdzała BINARNE weto. Weto było niekompensowalne (pomiar:
+// Relacja 200/200 + słodzik 100 000 ¤ = nadal odrzucone) i BEZ ŹRÓDŁA — `Dyplomacja-zasady.md`
+// §3.2 i `gra/data/diplomacy.json` modelują ten czynnik wyłącznie jako −2 Zaufania/turę, w
+// żadnej tabeli progów. Ponieważ flaga to w main.ts trwała funkcja liczby miast („obie strony
+// > 2"), Pakt był z takim sąsiadem strukturalnie nieosiągalny. Zamienione na narzut równy
+// sufitowi słodzika, kompensowalny jak reszta tej bramki.
+// AKTUALIZACJA UZASADNIONA, NIE ROZLUŹNIONA: stary jednolinijkowy `!accepted` zastąpiony
+// PARĄ asercji po obu stronach progu wyprowadzonego z `NAP_EKSPANSJA_RELACJA_NARZUT`.
+// FC-R1 SPROSTOWANIE (N1, `02-evaluator.md`): ta para jest sparametryzowana SAMĄ stałą
+// `napNarzut`, więc wobec mutacji WARTOŚCI tej stałej (np. cichy `NARZUT=0`) jest
+// tautologiczna — zmierzone: `NARZUT=0` → ta para nadal PASS (próg po prostu przesuwa się
+// razem ze stałą do 0). Nie chroni przed wyzerowaniem narzutu. Sprawdza wyłącznie, że próg
+// realnie przesuwa się o `napNarzut`, cokolwiek ono akurat wynosi. Realną ochronę przed
+// cichym wyzerowaniem (asercje z progiem NIEZALEŻNYM od `napNarzut`) dają A2a/B2/B3 w
+// tools/dyplo-pakt-ekspansja-granica-test.cjs — tamte czerwienieją przy `NARZUT=0`
+// (zmierzone: 17/26, nie 15/26 jak w `01-operator.md` §6 — patrz `03-final-control.md`).
+{
+  const napNarzut = NAP_EKSPANSJA_RELACJA_NARZUT;
+  const napProg = dipNormal.progNapRelacja;
+  r = evaluateProposal(prop('nap'), ctx({
+    relation: rel(napProg + napNarzut - 1, 0), ekspansjaPrzyGranicy: true,
+  }));
+  ok(!r.accepted, `NAP reject ekspansja — Relacja ${napProg + napNarzut - 1} < próg+narzut`);
+  r = evaluateProposal(prop('nap'), ctx({
+    relation: rel(napProg + napNarzut, 0), ekspansjaPrzyGranicy: true,
+  }));
+  ok(r.accepted, `NAP accept ekspansja — Relacja ${napProg + napNarzut} = próg+narzut (kompensowalne)`);
+}
 
 // 3b WIAR-NAP-IMP: NAP bezterminowy (turns=0) vs terminowy (10–20)
 r = evaluateProposal(prop('nap', 0, 1, { turns: 0 }), ctx({ relation: rel(50, 50), turn: 10 }));
