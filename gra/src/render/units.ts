@@ -1117,55 +1117,90 @@ function addTorc(group: THREE.Group, mTorc: THREE.MeshStandardMaterial, perGeo: 
 }
 
 /**
- * A tall OVAL body shield (Celtic / Germanic style) on the left arm: a tall
- * squashed-cylinder face (planks colour) + a vertical spine + central boss.
+ * A tall OVAL body shield (Celtic / Germanic style, gr. *thureos*) on the left
+ * arm: a tall squashed-cylinder face + a vertical spine (*spina*) + central boss
+ * (*umbo*).
+ *
+ * NAPRAWA 2026-08-25 (R-ZELAZO-MODELE-BRAKUJACE-Q1-T2) — ORIENTACJA TARCZY.
+ * To jest DOKŁADNIE ten sam błąd, który naprawiono 2026-08-06 dla tarczy hide
+ * (patrz komentarz „NAPRAWA 2026-08-06 — ORIENTACJA TARCZY" niżej w tym pliku);
+ * poprawka nigdy nie została przeniesiona na TEN helper. `getGeoOvalShield()` to
+ * walec o osi wzdłuż lokalnego Y. Poprzednie `rotation.z = π/2` kładło tę oś na
+ * światowy X, więc LICO tarczy patrzyło w BOK (±X). Kamera gry ma stały azymut 0
+ * (`camera.ts:131` — „elewacja ~50°, azymut 0"), więc widziała tarczę DOKŁADNIE
+ * KRAWĘDZIĄ. Pomiar w żywym Three.js przed poprawką: rozmiar tarczy w świecie
+ * = [0.0166, 0.156, 0.296]×HEX_R, czyli 0.0166 SZEROKOŚCI i 0.296 GŁĘBOKOŚCI —
+ * z figurki wystawał tylko pionowy pasek grubości 0.0166 sterczący 0.296 w przód
+ * i w tył. Drugi, niezależny objaw tej samej pomyłki: pionowa *spina* ma 0.255
+ * wysokości, a tarcza miała w osi Y tylko 0.156 — spina wystawała 0.0495 nad i
+ * pod tarczę, wisząc w powietrzu.
+ *
+ * Poprawne jest `rotation.x = π/2` (oś walca → światowe +Z, lico do kamery).
+ * Dowód, że taka była PIERWOTNA intencja autora: wektor `scale (1.0, 0.92, 1.85)`
+ * ma sens WYŁĄCZNIE przy tej rotacji — mapuje się wtedy na X→szerokość 0.160,
+ * Y→grubość 0.0166, Z→wysokość 0.296, czyli wysoką owalną tarczę, w której
+ * spina 0.255 mieści się z zapasem. Przy `rotation.z` ten sam wektor dawał
+ * grubość 0.92, wysokość 1.0 i głębokość 1.85, co nie opisuje żadnej tarczy.
+ *
+ * Tarcza wędruje też z `z = 0.012` na `SH_Z = 0.046` — PRZED przedramię, zamiast
+ * przez nie (ta sama wartość co w naprawie z 2026-08-06), a spina i umbo lądują
+ * na LICU tarczy, nie okrakiem na jej płaszczyźnie.
  */
 function addTallOvalShield(group: THREE.Group, mFace: THREE.MeshStandardMaterial,
                            mSpine: THREE.MeshStandardMaterial, mBoss: THREE.MeshStandardMaterial,
-                           perGeo: THREE.BufferGeometry[], heightScale = 1.75): void {
+                           perGeo: THREE.BufferGeometry[], heightScale = 1.75,
+                           namePrefix = ''): void {
   const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+  const SH_Z = 0.046 * HEX_R;                      // przed przedramieniem
+  const FACE_HALF_T = 0.018 * HEX_R * 0.92 * 0.5;  // pół grubości lica po skali
   const mShield = new THREE.Mesh(getGeoOvalShield(), mFace);
-  mShield.rotation.z = Math.PI / 2;
-  mShield.scale.set(1.0, 0.92, heightScale);     // tall and narrow -> oval body shield
-  mShield.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  mShield.rotation.x = Math.PI / 2;
+  mShield.scale.set(1.0, 0.92, heightScale);     // X→szerokość, Y→grubość, Z→wysokość
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z);
+  if (namePrefix) mShield.name = namePrefix + '-shield-face';
   group.add(mShield);
-  // Vertical wooden spine down the centre.
+  // Vertical wooden spine down the centre, ON the face (not straddling it).
   const gSpine = new THREE.BoxGeometry(0.022 * HEX_R, 0.255 * HEX_R, 0.020 * HEX_R);
   perGeo.push(gSpine);
   const mSp = new THREE.Mesh(gSpine, mSpine);
-  mSp.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  mSp.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z + FACE_HALF_T + 0.008 * HEX_R);
+  if (namePrefix) mSp.name = namePrefix + '-shield-spine';
   group.add(mSp);
-  // Central boss.
+  // Central boss (umbo) bulging FORWARD out of the face.
   const mB = new THREE.Mesh(getGeoShieldBoss(), mBoss);
-  mB.rotation.z = Math.PI / 2;
-  mB.position.set(SH_X + 0.018 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  mB.rotation.x = Math.PI / 2;
+  mB.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z + FACE_HALF_T + 0.009 * HEX_R);
+  if (namePrefix) mB.name = namePrefix + '-shield-boss';
   group.add(mB);
 }
 
 /** A long sword (blade + crossguard + grip) raised in the right hand. */
 function addLongSwordRight(group: THREE.Group, mBlade: THREE.MeshStandardMaterial,
                            mHilt: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[],
-                           bladeLen = 0.30): void {
+                           bladeLen = 0.30, namePrefix = ''): void {
   const X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R;
   const gGrip = new THREE.BoxGeometry(0.022 * HEX_R, 0.060 * HEX_R, 0.022 * HEX_R);
   perGeo.push(gGrip);
   const mGrip = new THREE.Mesh(gGrip, mHilt);
   mGrip.position.set(X, AV_Y_TORSO_CTR - 0.01 * HEX_R, 0.02 * HEX_R);
+  if (namePrefix) mGrip.name = namePrefix + '-sword-grip';
   group.add(mGrip);
   const mCross = new THREE.Mesh(getGeoSwordCross(), mHilt);
   mCross.position.set(X, AV_Y_TORSO_CTR + 0.030 * HEX_R, 0.02 * HEX_R);
+  if (namePrefix) mCross.name = namePrefix + '-sword-cross';
   group.add(mCross);
   const gBlade = new THREE.BoxGeometry(0.026 * HEX_R, bladeLen * HEX_R, 0.012 * HEX_R);
   perGeo.push(gBlade);
   const mBl = new THREE.Mesh(gBlade, mBlade);
   mBl.position.set(X, AV_Y_TORSO_CTR + 0.030 * HEX_R + bladeLen * HEX_R * 0.5, 0.02 * HEX_R);
+  if (namePrefix) mBl.name = namePrefix + '-sword-blade';
   group.add(mBl);
 }
 
 /** A long thrusting/throwing spear in the right hand (shaft + leaf tip). */
 function addSpearRight(group: THREE.Group, mWood: THREE.MeshStandardMaterial,
                        mTip: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[],
-                       shaftLen = 0.48): void {
+                       shaftLen = 0.48, namePrefix = ''): void {
   const X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
   const BOT = AV_Y_LEG_BOT + 0.01 * HEX_R;
   const CTR = BOT + shaftLen * HEX_R * 0.5;
@@ -1174,9 +1209,11 @@ function addSpearRight(group: THREE.Group, mWood: THREE.MeshStandardMaterial,
   perGeo.push(gShaft);
   const mShaft = new THREE.Mesh(gShaft, mWood);
   mShaft.position.set(X, CTR, 0.01 * HEX_R);
+  if (namePrefix) mShaft.name = namePrefix + '-spear-shaft';
   group.add(mShaft);
   const mTipM = new THREE.Mesh(getGeoSpearTip(), mTip);
   mTipM.position.set(X, TOP + 0.028 * HEX_R, 0.01 * HEX_R);
+  if (namePrefix) mTipM.name = namePrefix + '-spear-tip';
   group.add(mTipM);
 }
 
@@ -1232,8 +1269,8 @@ function decorateChariot(group: THREE.Group, ownerColor_: number, accent: number
 
 function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // CELTS -----------------------------------------------------------------
-  if (n.includes('soldurii') || n.includes('soldur')) return buildCeltWarrior(ownerColor_);
-  if (n.includes('gaesatae')) return buildCeltWarrior(ownerColor_);
+  if (n.includes('soldurii') || n.includes('soldur')) return buildSoldurii(ownerColor_);
+  if (n.includes('gaesatae')) return buildGaesatae(ownerColor_);
   if (n.includes('wojownik celtycki') || (n.includes('celtyck') && n.includes('wojownik'))) return buildCeltWarrior(ownerColor_);
   if (n.includes('rydwan celtycki') || (n.includes('rydwan') && n.includes('celtyck'))) {
     return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
@@ -2410,46 +2447,269 @@ function buildCeltWarrior(ownerColor_: number): THREE.Group {
 }
 
 /**
- * Gaesatae — NAKED Celtic shock warrior: skin-tone body (no tunic), bronze torc,
- * tall oval shield + spear, bare head with mustache.  Reads as bare-skinned.
+ * Gaesatae — NADZY celtyccy najemnicy uderzeniowi (Żelazo, Celtowie).
+ *
+ * ===========================================================================
+ * ZGODNOŚĆ HISTORYCZNA — DECYZJE I UZASADNIENIA
+ * (styl serii Opus 5, wzorem `braz-konnica-opus5.ts`; rama czasowa: III w. p.n.e.,
+ *  szczyt zjawiska — bitwa pod TELAMON, 225 p.n.e.)
+ * ===========================================================================
+ *
+ * K1. NAGOŚĆ — to jest cecha definicyjna tej jednostki, nie ozdobnik. Polibiusz
+ *     (*Dzieje* II 28–30) opisuje pod Telamonem Gaesatów stojących w pierwszym
+ *     szeregu NADZY, którzy zrzucili odzienie, podczas gdy stojący za nimi
+ *     Insubrowie i Bojowie walczyli w spodniach i płaszczach. Dlatego korpus,
+ *     ramiona i nogi mają barwę SKÓRY (`COLOR_SKIN` podany jako `clothColor` do
+ *     `buildBaseAvatar`), a ciemne nogawki bazowego awatara są przykryte
+ *     nakładką w kolorze ciała. Decyzja właściciela (`docs/decyzje/
+ *     R-ZELAZO-MODELE-BRAKUJACE-Q1.md`) mówi wprost: „najemnicy słynący z walki
+ *     nago/półnago, uzbrojeni w gaesum".
+ *
+ * K2. PRZEPASKA BIODROWA — jedyne odstępstwo od K1 i świadoma decyzja
+ *     projektowa, nie przeoczenie. Źródła mówią o pełnej nagości; token gry
+ *     dostaje minimalną przepaskę (`getGeoLoincloth`, skala 0.8/0.55/0.95).
+ *     Przepaska niesie przy okazji BARWĘ WŁAŚCICIELA, czego naga sylwetka
+ *     sama z siebie by nie dała.
+ *
+ * K3. ZŁOTY NASZYJNIK (TORC) I NARAMIENNIKI — poświadczone wprost. Polibiusz w
+ *     tym samym ustępie podkreśla, że nadzy wojownicy byli ozdobieni ZŁOTYMI
+ *     naszyjnikami i naramiennikami, i że łupy z nich zasiliły rzymski triumf.
+ *     Stąd `COLOR_GOLD_BR` (nie brąz) na torc i na dwa naramienniki opinające
+ *     ramiona — element ODRÓŻNIAJĄCY od Soldurii, którzy noszą torc BRĄZOWY.
+ *     (Poprzednia wersja tej funkcji miała złoty torc opisany w komentarzu jako
+ *     „bronze torc" — komentarz był nieprawdziwy, geometria była dobra.)
+ *
+ * K4. GAESUM — ciężka włócznia/oszczep żelazny, od którego pochodzi sama nazwa
+ *     jednostki (gal. *gaisos*). Drzewce wydłużone z 0.50 na 0.62×HEX_R.
+ *     POWÓD: przy 0.50 czubek grotu sięgał y=0.5655, a czubek głowy wojownika
+ *     y=0.58 — broń NIE WYSTAWAŁA PONAD SYLWETKĘ i ginęła w obrysie tokena
+ *     (pomiar w żywym Three.js, nie szacunek). Włócznia krótsza od własnego
+ *     właściciela jest błędem proporcji: gaesum sięgał ok. 2 m. Po zmianie
+ *     czubek grotu jest na y≈0.686, tuż nad czubkiem miecza Soldurii (0.66) —
+ *     obie jednostki mają czytelną, ale RÓŻNĄ broń w sylwetce.
+ *
+ * K5. POZA: WŁÓCZNIA OPARTA O ZIEMIĘ, NIE ZAMACH DO RZUTU. To jest świadoma
+ *     decyzja projektowa wymuszona przez DANE, nie przez ikonografię.
+ *     `units.json` daje Gaesatae `Atak dystansowy = 0` / `missileAttack: 0` —
+ *     jednostka NIE MA ataku dystansowego. Poza „zamach do rzutu" obiecywałaby
+ *     graczowi zdolność, której jednostka nie posiada. Dlatego pięta drzewca
+ *     stoi na ziemi (`AV_Y_LEG_BOT + 0.01`), a włócznia czyta się jako broń
+ *     drzewcowa do PCHNIĘCIA — zgodnie z mechaniką („Rola (linia)": „Wręcz").
+ *
+ * K6. BRAK HEŁMU I BRAK BUTÓW — konsekwencja K1. Głowa naga, z opadającym
+ *     wąsem (poświadczonym u Celtów przez Diodora Sycylijskiego V 28) i długimi
+ *     włosami; stopy bose (`addBoots` w kolorze skóry). To drugi po nagości
+ *     korpusu nośnik odróżnienia od Soldurii, którzy mają hełm i buty.
+ *
+ * K7. TARCZA OWALNA, ALE UBOGA. Gaesatae dostają tę samą wysoką owalną tarczę
+ *     co reszta Celtów, lecz z licem z SUROWYCH DESEK (bez barwnego lica) i
+ *     ŻELAZNYM umbem — najemnik nie ma tarczy paradnej. Barwę właściciela niesie
+ *     pionowa spina. Polibiusz zresztą wprost krytykuje celtycką tarczę jako
+ *     zbyt wąską, by osłonić nagie ciało — ubogie lico jest tu zgodne ze źródłem.
+ *     (Poprzednia wersja dawała ZŁOTE umbo — anachroniczny zbytek u najemnika;
+ *     złoto zostaje tam, gdzie je poświadczono: na torcu i naramiennikach, K3.)
  */
 function buildGaesatae(ownerColor_: number): THREE.Group {
-  // cloth == skin tone so the torso/arms read as bare flesh.
-  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_SKIN, ownerColor_);
+  // cloth == skin tone so the torso/arms read as bare flesh (K1).
+  const { group, mats, headTopY, armLMesh } = buildBaseAvatar(COLOR_SKIN, COLOR_SKIN, ownerColor_);
+  armLMesh.name = 'gaesatae-arm-left';
   const mat = makeMatFactory(mats);
   const perGeo: THREE.BufferGeometry[] = [];
-  const mBronz = mat(COLOR_GOLD_BR, 0.50, 0.40);
+  const mGold  = mat(COLOR_GOLD_BR, 0.50, 0.40);   // torc + naramienniki (K3)
   const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
-  const mSteel = mat(COLOR_STEEL,   0.50, 0.42);
+  const mIron  = mat(COLOR_STEEL,   0.50, 0.42);
   const mOwner = mat(ownerColor_,   0.12, 0.66);
   const mHair  = mat(0xc98a2c,      0.04, 0.86);
   const mPlank = mat(0x6e4a26,      0.05, 0.85);
   const mSkinLeg = mat(COLOR_SKIN,  0.05, 0.80);
 
-  // Re-skin the dark trouser legs to bare flesh (overlay thin skin sleeves).
+  // K1: re-skin the dark trouser legs to bare flesh.  The overlay is 1.02× the
+  // leg in ALL THREE axes — the previous 0.98 in Y left a dark trouser rim
+  // showing at the ankle and at the hip.
   for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
-    const gLeg = new THREE.BoxGeometry(AV_LEG_W * 1.02, AV_LEG_H * 0.98, AV_LEG_W * 1.02);
+    const gLeg = new THREE.BoxGeometry(AV_LEG_W * 1.02, AV_LEG_H * 1.02, AV_LEG_W * 1.02);
     perGeo.push(gLeg);
     const mLeg = new THREE.Mesh(gLeg, mSkinLeg);
     mLeg.position.set(sx, AV_Y_LEG_CTR, 0);
+    mLeg.name = 'gaesatae-bare-leg';
     group.add(mLeg);
   }
-  // A small loincloth only (otherwise naked).
+  // K2: a small loincloth only (otherwise naked), carrying the owner colour.
   const mLoin = new THREE.Mesh(getGeoLoincloth(), mOwner);
   mLoin.scale.set(0.8, 0.55, 0.95);
   mLoin.position.set(0, AV_Y_TORSO_BOT - 0.01 * HEX_R, 0);
+  mLoin.name = 'gaesatae-loincloth';
   group.add(mLoin);
 
-  addTorc(group, mBronz, perGeo);
+  // K3: gold torc + gold armlets on both upper arms.
+  addTorc(group, mGold, perGeo);
+  const gArmlet = new THREE.TorusGeometry(0.037 * HEX_R, 0.009 * HEX_R, 6, 12);
+  perGeo.push(gArmlet);
+  for (const sx of [-AV_ARM_OFFSET_X, AV_ARM_OFFSET_X]) {
+    const mArmlet = new THREE.Mesh(gArmlet, mGold);
+    mArmlet.rotation.x = Math.PI / 2;
+    mArmlet.position.set(sx, AV_Y_TORSO_BOT + AV_TORSO_H * 0.86, 0);
+    mArmlet.name = 'gaesatae-armlet';
+    group.add(mArmlet);
+  }
+  // K6: bare head — mustache + long hair, no helmet.
   addMustache(group, mHair, perGeo);
   addLongHair(group, mHair, perGeo);
 
-  // Spear raised + tall oval shield.
-  addSpearRight(group, mWood, mSteel, perGeo, 0.50);
-  addTallOvalShield(group, mPlank, mWood, mBronz, perGeo, 1.85);
+  // K4/K5: long gaesum, butt planted on the ground (melee pose, missileAttack=0).
+  addSpearRight(group, mWood, mIron, perGeo, 0.62, 'gaesatae');
+  // K7: plain plank face, owner-colour spine, IRON boss.
+  addTallOvalShield(group, mPlank, mOwner, mIron, perGeo, 1.85, 'gaesatae');
 
-  addBoots(group, mat(COLOR_SKIN, 0.05, 0.82));   // bare feet (skin)
+  addBoots(group, mat(COLOR_SKIN, 0.05, 0.82));   // K6: bare feet (skin)
   addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  // Punkty odniesienia WYPROWADZONE Z MODELU (nie wpisane liczbowo) — test
+  // regresji mierzy nimi relacje geometryczne, więc nie rozjadą się przy
+  // zmianie proporcji awatara.
+  group.userData['anchors'] = {
+    headTopY,
+    eyeTopY: AV_Y_HEAD_CTR + 0.010 * HEX_R + getGeoAvEye().parameters.height * 0.5,
+    legTopY: AV_Y_LEG_TOP,
+    legBotY: AV_Y_LEG_BOT,
+  };
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Soldurii — elitarna, przysięgła gwardia celtyckiego/celtyberyjskiego wodza
+ * (Żelazo, Celtowie).
+ *
+ * ===========================================================================
+ * ZGODNOŚĆ HISTORYCZNA — DECYZJE I UZASADNIENIA
+ * (rama czasowa: III–I w. p.n.e.; źródło główne: Cezar, *De Bello Gallico* III 22)
+ * ===========================================================================
+ *
+ * S1. KIM BYLI — Cezar opisuje u Akwitanów instytucję *soldurii*: towarzyszy
+ *     związanych z wodzem przysięgą (*devotio*), dzielących z nim wszystkie
+ *     dobra za życia i zobowiązanych umrzeć razem z nim; Cezar zaznacza, że w
+ *     ludzkiej pamięci nikt nie odmówił spełnienia tej przysięgi. To jednostka
+ *     ZAMOŻNA i UPRZYWILEJOWANA — dzieliła majątek pana — więc jej wyposażenie
+ *     ma czytać się jako bogate, nie jako uzbrojenie pospolitego wojownika.
+ *
+ * S2. DLACZEGO WŁASNA GEOMETRIA, A NIE `buildCeltWarrior()`. Dispatch tematu
+ *     dopuszczał obie ścieżki. Wybrano własną funkcję, bo (a) decyzja
+ *     właściciela dla całej serii wymaga modelu BESPOKE, jawnie rozpoznawanego
+ *     po nazwie, a nie współdzielonego, (b) `buildCeltWarrior()` obsługuje nadal
+ *     „Wojownika celtyckiego" — gdyby Soldurii go modyfikowali, zmieniliby przy
+ *     okazji tamtą jednostkę, czego kryterium „zero regresji" zabrania.
+ *     `buildCeltWarrior()` zostaje więc NIETKNIĘTY.
+ *
+ * S3. KOLCZUGA (*lorica hamata*) — najmocniejszy znacznik elity i zarazem
+ *     najlepiej uzasadniony historycznie. Kolczuga jest wynalazkiem CELTYCKIM
+ *     (najstarsze znaleziska z III w. p.n.e., m.in. Ciumeşti w Rumunii);
+ *     Rzymianie przejęli ją od Galów. Była droga i dostępna wyłącznie warstwie
+ *     zamożnej — dokładnie takiej, jaką opisuje S1. Modelowana jako stalowa
+ *     nakładka na korpus, szersza od tuniki, z krótkim rękawem.
+ *
+ * S4. HEŁM TYPU MONTEFORTINO — brązowy dzwon z guzem na szczycie i karczkiem
+ *     (osłoną karku) z tyłu. Typ czysto celtycki (III–I w. p.n.e.), również
+ *     przejęty potem przez armię rzymską. Hełm jest DRUGIM nośnikiem różnicy
+ *     wobec Gaesatae, którzy z definicji walczą z gołą głową (K6 wyżej).
+ *
+ * S5. DŁUGI ŻELAZNY MIECZ SIECZNY — la Tène, ostrze ok. 0.75–0.90 m, noszony
+ *     do cięcia z góry, nie do pchnięcia. Zgodne z `units.json`
+ *     („Typ": „Swordsman", „Atak dystansowy": 0). Uniesiony w prawej dłoni,
+ *     czubek na y≈0.66.
+ *
+ * S6. BRĄZOWY TORC — oznaka statusu wolnego, zamożnego wojownika. Świadomie
+ *     BRĄZOWY, nie złoty: złoto zarezerwowano dla Gaesatae (K3), gdzie jest
+ *     poświadczone wprost przez Polibiusza. Dzięki temu dwie jednostki tej
+ *     samej kultury różnią się także metalem ozdób.
+ *
+ * S7. TARCZA OWALNA Z LICEM W BARWIE WŁAŚCICIELA — przeciwieństwo ubogiej
+ *     tarczy Gaesatae (K7). Gwardia wodza nosi tarczę malowaną/zdobioną, więc
+ *     to ona jest głównym nośnikiem barwy gracza na tokenie.
+ *
+ * S8. SPODNIE I BUTY — Celtowie nosili *bracae* (spodnie) i skórzane obuwie;
+ *     to rzymscy autorzy uznawali je za cechę „barbarzyńską". Kontrast z bosymi
+ *     stopami i nagimi nogami Gaesatae jest zamierzony i źródłowy.
+ */
+function buildSoldurii(ownerColor_: number): THREE.Group {
+  const { group, mats, headTopY, armLMesh } = buildBaseAvatar(COLOR_SKIN, COLOR_FOREST, ownerColor_);
+  armLMesh.name = 'soldurii-arm-left';
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mIron  = mat(COLOR_STEEL,   0.55, 0.40);
+  const mMail  = mat(0x8d97a3,      0.62, 0.55);   // kolczuga — matowa stal (S3)
+  const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+  const mBronz = mat(COLOR_BRONZE,  0.45, 0.42);   // torc + hełm (S4, S6)
+  const mOwner = mat(ownerColor_,   0.12, 0.66);
+  const mHair  = mat(0xb8702a,      0.04, 0.86);
+  const mPlank = mat(0x6e4a26,      0.05, 0.85);
+  const mLeath = mat(COLOR_LEATHER, 0.06, 0.82);
+
+  // S8: tunic hem + belt over trousers.
+  addTunicHem(group, mat(COLOR_FOREST, 0.05, 0.86));
+  addBelt(group, mLeath);
+
+  // S3: KOLCZUGA — a mail shirt over the torso, wider than the tunic, with
+  // short sleeves capping the top of both arms.
+  const gMail = new THREE.BoxGeometry(AV_TORSO_W * 1.10, AV_TORSO_H * 0.80, AV_TORSO_D * 1.14);
+  perGeo.push(gMail);
+  const mMailBody = new THREE.Mesh(gMail, mMail);
+  mMailBody.position.set(0, AV_Y_TORSO_BOT + AV_TORSO_H * 0.56, 0);
+  mMailBody.name = 'soldurii-mail';
+  group.add(mMailBody);
+  const gSleeve = new THREE.BoxGeometry(AV_ARM_W * 1.14, AV_ARM_H * 0.34, AV_ARM_W * 1.14);
+  perGeo.push(gSleeve);
+  for (const sx of [-AV_ARM_OFFSET_X, AV_ARM_OFFSET_X]) {
+    const mSleeve = new THREE.Mesh(gSleeve, mMail);
+    mSleeve.position.set(sx, AV_Y_ARM_CTR + AV_ARM_H * 0.30, 0);
+    mSleeve.name = 'soldurii-mail-sleeve';
+    group.add(mSleeve);
+  }
+
+  // S6: bronze torc at the throat.
+  addTorc(group, mBronz, perGeo);
+
+  // S4: HEŁM MONTEFORTINO — bronze dome + rear neck guard + top knob.
+  const gDome = new THREE.SphereGeometry(AV_HEAD_S * 0.58, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.5);
+  perGeo.push(gDome);
+  const mDome = new THREE.Mesh(gDome, mBronz);
+  // Rim at +0.020 (NOT +0.012): przy +0.012 dolna krawędź czaszy wypadała na
+  // y=0.527, a oczy sięgają y=0.5325 — hełm ścinał wtedy górę oczu.
+  mDome.position.set(0, AV_Y_HEAD_CTR + 0.020 * HEX_R, 0);
+  mDome.name = 'soldurii-helmet';
+  group.add(mDome);
+  const gNeck = new THREE.BoxGeometry(AV_HEAD_S * 0.86, 0.030 * HEX_R, 0.026 * HEX_R);
+  perGeo.push(gNeck);
+  const mNeckGuard = new THREE.Mesh(gNeck, mBronz);
+  mNeckGuard.rotation.x = -0.45;
+  mNeckGuard.position.set(0, AV_Y_HEAD_CTR + 0.004 * HEX_R, -AV_HEAD_S * 0.52);
+  mNeckGuard.name = 'soldurii-helmet-neckguard';
+  group.add(mNeckGuard);
+  const gKnob = new THREE.BoxGeometry(0.024 * HEX_R, 0.026 * HEX_R, 0.024 * HEX_R);
+  perGeo.push(gKnob);
+  const mKnob = new THREE.Mesh(gKnob, mBronz);
+  mKnob.position.set(0, AV_Y_HEAD_CTR + 0.020 * HEX_R + AV_HEAD_S * 0.58, 0);
+  mKnob.name = 'soldurii-helmet-knob';
+  group.add(mKnob);
+  // Mustache stays visible under the helmet rim; NO long hair (helmet covers it).
+  addMustache(group, mHair, perGeo);
+
+  // S5: long iron slashing sword, raised right hand.
+  addLongSwordRight(group, mIron, mWood, perGeo, 0.32, 'soldurii');
+  // S7: tall oval shield, owner-colour face + wooden spine + iron boss.
+  addTallOvalShield(group, mOwner, mPlank, mIron, perGeo, 1.85, 'soldurii');
+
+  addBoots(group, mLeath);                        // S8
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  // Punkty odniesienia WYPROWADZONE Z MODELU (nie wpisane liczbowo) — test
+  // regresji mierzy nimi relacje geometryczne, więc nie rozjadą się przy
+  // zmianie proporcji awatara.
+  group.userData['anchors'] = {
+    headTopY,
+    eyeTopY: AV_Y_HEAD_CTR + 0.010 * HEX_R + getGeoAvEye().parameters.height * 0.5,
+    legTopY: AV_Y_LEG_TOP,
+    legBotY: AV_Y_LEG_BOT,
+  };
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = perGeo;
   return group;
