@@ -31,7 +31,12 @@ import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
 import { HANDEL_PCT_STEP, MAX_PROCENT_NAUKA, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
-import type { CityPodzialHandlu, CityPodzialPracy, EmpirePracaSplit } from '../game/cities';
+import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
+import {
+  MAX_PROCENT_PULI_IMPERIUM,
+  procentPuliImperiumZBudynkow,
+  podzialPracyZProcentuPuli,
+} from '../game/cities';
 import {
   WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
   type PoziomRacji,
@@ -119,8 +124,9 @@ function wireDefaultHandelSplitInputs(
 export interface EmpireGlobalDefaultsUiConfig {
   getOwnerDefaultPodzialPracy?: (ownerId: number) => CityPodzialPracy | null;
   onOwnerDefaultPodzialPracyChange?: (ownerId: number, split: CityPodzialPracy) => void;
-  getOwnerDefaultPracaSplit?: (ownerId: number) => EmpirePracaSplit | null;
-  onOwnerDefaultPracaSplitChange?: (ownerId: number, split: EmpirePracaSplit) => void;
+  // R-PRACA-JEDEN-PODZIAL-Q1: `getOwnerDefaultPracaSplit`/`onOwnerDefaultPracaSplitChange`
+  // USUNIETE — byly DRUGIM, niezaleznym suwakiem tej samej Pracy. Globalny podzial
+  // czyta i zapisuje wylacznie `getOwnerDefaultPodzialPracy`/`onOwnerDefaultPodzialPracyChange`.
   getOwnerDefaultPoziomRacji?: (ownerId: number) => PoziomRacji | null;
   onOwnerDefaultPoziomRacjiChange?: (ownerId: number, poziom: PoziomRacji) => void;
   // P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: jednorazowa akcja "ustaw teraz" — dla
@@ -1287,11 +1293,14 @@ function renderPracaSection(
  * bierze koloru żadnego z nich.
  */
 function renderEmpirePracaBudgetSplitSection(): string {
-  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPracaSplit;
-  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPracaSplitChange;
+  // R-PRACA-JEDEN-PODZIAL-Q1: ten suwak steruje JEDYNYM podzialem Pracy — tym samym
+  // polem (`CityPodzialPracy.procentBudynki`), ktore ustawia suwak w miescie. Wczesniej
+  // czytal osobny `EmpirePracaSplit.procentUlepszenia`, wiec dwa suwaki dzielily te sama
+  // Prace dwa razy i mogly pokazac stan nie sumujacy sie do 100% („100 i 50").
+  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
+  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
   if (!getDef || !onChange) return '';
-  const split = getDef(0) ?? { procentUlepszenia: 33 };
-  const pctU = Math.max(0, Math.min(50, Math.round(split.procentUlepszenia)));
+  const pctU = procentPuliImperiumZBudynkow(getDef(0)?.procentBudynki);
   const pctB = 100 - pctU;
   const id = 'emp-praca-empire-budget-split';
   const tip = 'Nadrzędny podział całej puli Pracy imperium: Ulepszenia 0–50%, Budynki = reszta '
@@ -1307,7 +1316,7 @@ function renderEmpirePracaBudgetSplitSection(): string {
     + '<span class="civ-emp-slider-label gold">Budynki '
     + `<b data-praca-empire-split-buildings>${pctB}%</b></span>`
     + '</div>'
-    + `<input type="range" class="civ-emp-slider neutral" min="0" max="50" step="1" value="${pctU}" `
+    + `<input type="range" class="civ-emp-slider neutral" min="0" max="${MAX_PROCENT_PULI_IMPERIUM}" step="1" value="${pctU}" `
     + `style="width:100%;background:${laborSliderFillStyle(pctU * 2)}" `
     + `data-praca-empire-split title="${esc(tip)}" />`
     + '<div class="civ-emp-praca-split-ends">'
@@ -1323,8 +1332,8 @@ function renderEmpirePracaBudgetSplitSection(): string {
     const btnMin = host?.querySelector<HTMLButtonElement>('[data-praca-empire-split-min]');
     const btnMax = host?.querySelector<HTMLButtonElement>('[data-praca-empire-split-max]');
     input.addEventListener('input', () => {
-      const pctU = Math.max(0, Math.min(50, Math.round(Number(input.value))));
-      onChange(0, { procentUlepszenia: pctU });
+      const pctU = Math.max(0, Math.min(MAX_PROCENT_PULI_IMPERIUM, Math.round(Number(input.value))));
+      onChange(0, podzialPracyZProcentuPuli(pctU));
       input.style.background = laborSliderFillStyle(pctU * 2);
       const hero = host?.querySelector('[data-praca-empire-split-hero]');
       if (hero) hero.textContent = `Ulepszenia ${pctU}%`;

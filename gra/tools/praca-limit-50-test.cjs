@@ -35,8 +35,11 @@ const BUNDLE_FILE = path.resolve(__dirname, '.praca-limit-50-test-bundle.cjs');
 
 const ENTRY_TS = `
 export {
-  clampPracaWspolnyWorekPercent,
-  MAX_PRACA_WSPOLNY_WOREK_PROCENT,
+  clampPodzialPracyBudynkiPercent,
+  procentPuliImperiumZBudynkow,
+  podzialPracyZProcentuPuli,
+  MAX_PROCENT_PULI_IMPERIUM,
+  DEFAULT_PODZIAL_PRACY,
   clampUlepszeniaPracaPercent,
   MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
   DEFAULT_ULEPSZENIA_PRACA_PERCENT,
@@ -67,8 +70,11 @@ try {
 }
 
 const {
-  clampPracaWspolnyWorekPercent,
-  MAX_PRACA_WSPOLNY_WOREK_PROCENT,
+  clampPodzialPracyBudynkiPercent,
+  procentPuliImperiumZBudynkow,
+  podzialPracyZProcentuPuli,
+  MAX_PROCENT_PULI_IMPERIUM,
+  DEFAULT_PODZIAL_PRACY,
   clampUlepszeniaPracaPercent,
   MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
   DEFAULT_ULEPSZENIA_PRACA_PERCENT,
@@ -86,24 +92,50 @@ function assert(cond, msg) {
 }
 function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 
-// 1. MAX_PRACA_WSPOLNY_WOREK_PROCENT stała
-console.log('1. MAX_PRACA_WSPOLNY_WOREK_PROCENT = 50 (pin literalny)');
+// R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA SCENARIUSZY 1-2 (uzasadnienie w raporcie
+// Operatora 01-operator.md):
+//   CO PILNOWALY: „udzial ulepszen nigdy > 50%", wyrazone przez pole (a) starego,
+//     DRUGIEGO suwaka: `MAX_PRACA_WSPOLNY_WOREK_PROCENT` / `clampPracaWspolnyWorekPercent`.
+//   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: drugi suwak ZOSTAL USUNIETY — dzielil te
+//     sama Prace po raz drugi, przez co realny udzial ulepszen wynosil 0% na domyslnych
+//     ustawieniach i najwyzej ~20-25% na maksymalnych. Funkcja i stala juz nie istnieja.
+//   CO PILNUJE TERAZ: DOKLADNIE ta sama gwarancja (ulepszenia <= 50%, budynki >= 50%),
+//     wyrazona przez JEDYNY, ocalaly podzial: `MAX_PROCENT_PULI_IMPERIUM` = 50 oraz
+//     `clampPodzialPracyBudynkiPercent` (>= 50% dla budynkow). Zero rozluznienia —
+//     scenariusz 2 sprawdza dodatkowo, ze KAZDE zadanie > 50% dla ulepszen jest scinane.
+// UWAGA (zmiana wartosci domyslnej, jawnie): domyslny udzial ulepszen to teraz 30%
+//   (dopelnienie DEFAULT_PODZIAL_PRACY.procentBudynki = 70), a nie 33% — 33% bylo
+//   domyslna wartoscia USUNIETEGO drugiego suwaka. Realnie gracz dostaje wiecej niz
+//   przedtem, bo przedtem te 33% z drugiego podzialu dawalo 0 Pracy na ulepszenia.
+
+// 1. MAX_PROCENT_PULI_IMPERIUM stała (cap ulepszeń)
+console.log('1. MAX_PROCENT_PULI_IMPERIUM = 50 (pin literalny, jedyny cap ulepszeń)');
 {
-  eq(MAX_PRACA_WSPOLNY_WOREK_PROCENT, 50, 'MAX_PRACA_WSPOLNY_WOREK_PROCENT na 50');
+  eq(MAX_PROCENT_PULI_IMPERIUM, 50, 'MAX_PROCENT_PULI_IMPERIUM na 50');
 }
 
-// 2. clampPracaWspolnyWorekPercent — zakres 0-50
-console.log('2. clampPracaWspolnyWorekPercent — zakres 0-50');
+// 2. Jedyny podział — udział ulepszeń zawsze w 0-50, budynki zawsze w 50-100
+console.log('2. Jedyny podział Pracy — ulepszenia 0-50%, budynki 50-100%, suma zawsze 100%');
 {
-  eq(clampPracaWspolnyWorekPercent(undefined), DEFAULT_ULEPSZENIA_PRACA_PERCENT, 'undefined -> domyslny %');
-  eq(clampPracaWspolnyWorekPercent(null), DEFAULT_ULEPSZENIA_PRACA_PERCENT, 'null -> domyslny %');
-  eq(clampPracaWspolnyWorekPercent(NaN), DEFAULT_ULEPSZENIA_PRACA_PERCENT, 'NaN -> domyslny %');
-  eq(clampPracaWspolnyWorekPercent(-5), 0, '-5 -> 0 (dolny klamr)');
-  eq(clampPracaWspolnyWorekPercent(25), 25, '25 -> 25 (wewnątrz zakresu)');
-  eq(clampPracaWspolnyWorekPercent(50), 50, '50 -> 50 (górny limit)');
-  eq(clampPracaWspolnyWorekPercent(75), 50, '75 -> 50 (górny klamr — NOWY limit)');
-  eq(clampPracaWspolnyWorekPercent(100), 50, '100 -> 50 (górny klamr — NOWY limit)');
-  eq(clampPracaWspolnyWorekPercent(150), 50, '150 -> 50 (górny klamr — NOWY limit)');
+  eq(procentPuliImperiumZBudynkow(undefined), 100 - DEFAULT_PODZIAL_PRACY.procentBudynki, 'undefined -> domyslny % (30)');
+  eq(procentPuliImperiumZBudynkow(null), 100 - DEFAULT_PODZIAL_PRACY.procentBudynki, 'null -> domyslny %');
+  eq(procentPuliImperiumZBudynkow(NaN), 100 - DEFAULT_PODZIAL_PRACY.procentBudynki, 'NaN -> domyslny %');
+  eq(procentPuliImperiumZBudynkow(100), 0, 'budynki 100 -> ulepszenia 0 (dolny kraniec)');
+  eq(procentPuliImperiumZBudynkow(75), 25, 'budynki 75 -> ulepszenia 25 (wewnątrz zakresu)');
+  eq(procentPuliImperiumZBudynkow(50), 50, 'budynki 50 -> ulepszenia 50 (górny limit)');
+  // Zadanie > 50% dla ulepszen jest NIEOSIAGALNE — ani suwakiem, ani zapisem.
+  eq(procentPuliImperiumZBudynkow(25), 50, 'budynki 25 (nielegalne) -> ulepszenia scięte do 50');
+  eq(procentPuliImperiumZBudynkow(0), 50, 'budynki 0 (nielegalne) -> ulepszenia scięte do 50');
+  eq(procentPuliImperiumZBudynkow(-5), 50, 'budynki -5 (nielegalne) -> ulepszenia scięte do 50');
+  eq(podzialPracyZProcentuPuli(75).procentBudynki, 50, 'żądanie 75% ulepszeń -> budynki 50 (cap)');
+  eq(podzialPracyZProcentuPuli(100).procentBudynki, 50, 'żądanie 100% ulepszeń -> budynki 50 (cap)');
+  eq(podzialPracyZProcentuPuli(150).procentBudynki, 50, 'żądanie 150% ulepszeń -> budynki 50 (cap)');
+  eq(podzialPracyZProcentuPuli(-5).procentBudynki, 100, 'żądanie -5% ulepszeń -> budynki 100');
+  // Suma zawsze 100% — brak stanu „100 i 50".
+  for (const pctB of [50, 60, 70, 80, 90, 100]) {
+    eq(clampPodzialPracyBudynkiPercent(pctB) + procentPuliImperiumZBudynkow(pctB), 100,
+      `suma budynki+ulepszenia = 100% dla ${pctB}%`);
+  }
 }
 
 // 3. clampUlepszeniaPracaPercent (pole b) — NAPRAWIONE: własny cap 100%, niezależny od pola (a)
@@ -117,12 +149,14 @@ console.log('3. clampUlepszeniaPracaPercent (pole b) — własny cap 100% (P-PRA
 }
 
 // 4. Kontrast: pole (a) ogranicza do 50, pole (b) ma własny, niezależny zakres 0-100
-console.log('4. Kontrast: clampPracaWspolnyWorekPercent (a, 50) vs clampUlepszeniaPracaPercent (b, teraz 100)');
+//    (aktualizacja R-PRACA-JEDEN-PODZIAL-Q1: pole (a) to teraz jedyny podział Pracy;
+//     rozdzielność obu pól — sedno P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1 — bez zmian)
+console.log('4. Kontrast: jedyny podział Pracy (a, cap 50) vs clampUlepszeniaPracaPercent (b, 100)');
 {
   const testVal = 75;
-  const resultA = clampPracaWspolnyWorekPercent(testVal);
+  const resultA = procentPuliImperiumZBudynkow(100 - testVal);
   const resultB = clampUlepszeniaPracaPercent(testVal);
-  eq(resultA, 50, `pole (a) wspólny worek: ${testVal} -> 50 (bez zmian)`);
+  eq(resultA, 50, `pole (a) jedyny podział: żądanie ${testVal}% ulepszeń -> 50 (cap, bez zmian)`);
   eq(resultB, 75, `pole (b) historyczny automat: ${testVal} -> 75 (NAPRAWIONE: niezależny zakres 0-100, nie ścinane do 50)`);
 }
 

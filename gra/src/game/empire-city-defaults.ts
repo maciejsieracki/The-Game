@@ -83,6 +83,42 @@ export function resolveCityPodzialPracy(
   return normalizePodzialPracy(paramsFallback ?? DEFAULT_PODZIAL_PRACY);
 }
 
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 pkt 5 — ZASADA OVERRIDE MIASTA (czysta, testowalna).
+ *
+ * Suwak miasta NIE jest zablokowany. Ustawia LOKALNA wartosc podzialu; w chwili gdy ta
+ * wartosc rozni sie od globalnej domyslnej imperium, „Indywidualne" zapala sie SAMO —
+ * bez osobnego klikniecia. Powrot do wartosci globalnej gasi override i miasto znow
+ * sledzi globalna (pole `podzialPracy` jest usuwane, wiec pozniejsza zmiana globalna
+ * automatycznie obejmuje to miasto).
+ *
+ * PRZED tym tematem suwak miasta BEZ override zmienial wartosc GLOBALNA, wszystkim
+ * miastom naraz — gracz nie mial jak ustawic jednego miasta bez uprzedniego klikniecia
+ * „Indywidualne".
+ *
+ * Zwraca opis docelowego stanu miasta; nie mutuje wejscia.
+ */
+export interface PodzialPracyLocalChange {
+  /** Wartosc lokalna do zapisania; `undefined` = skasuj pole (miasto sledzi globalna). */
+  podzialPracy: CityPodzialPracy | undefined;
+  /** Docelowy stan pinu „Indywidualne". */
+  podzialPracyOverride: boolean;
+}
+
+export function applyPodzialPracyLocalChange(
+  procentBudynkiRaw: number | undefined | null,
+  ownerDefault: CityPodzialPracy | undefined,
+): PodzialPracyLocalChange {
+  const procentBudynki = clampPodzialPracyBudynkiPercent(procentBudynkiRaw);
+  const globalny = clampPodzialPracyBudynkiPercent(
+    ownerDefault?.procentBudynki ?? DEFAULT_PODZIAL_PRACY.procentBudynki,
+  );
+  if (procentBudynki === globalny) {
+    return { podzialPracy: undefined, podzialPracyOverride: false };
+  }
+  return { podzialPracy: { procentBudynki }, podzialPracyOverride: true };
+}
+
 /** Migracja starych zapisów (per-miasto bez globalnego) → global + flagi override. */
 export function migratePodzialPracyOnLoad(
   cities: ReadonlyArray<City>,

@@ -188,8 +188,9 @@ import {
   DEFAULT_ULEPSZENIA_FOCUS,
   clampUlepszeniaPracaPercent,
   clampPodzialPracyBudynkiPercent,
-  clampPracaWspolnyWorekPercent,
-  DEFAULT_EMPIRE_PRACA_SPLIT,
+  procentPuliImperiumZBudynkow,
+  podzialPracyZProcentuPuli,
+  MAX_PROCENT_PULI_IMPERIUM,
   resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
   resolveEffectiveUlepszenia,
@@ -205,7 +206,6 @@ import {
   type UlepszeniaFocus,
   type UlepszeniaTryb,
   type UlepszeniaPracaPercent,
-  type EmpirePracaSplit,
   type UlepszeniaEmpirePolicy,
   type EffectiveUlepszeniaSettings,
 } from './game/cities';
@@ -227,6 +227,7 @@ import {
   migratePodzialPracyOnLoad,
   freshOwnerDefaultPodzialPracy,
   resolveCityPodzialPracy,
+  applyPodzialPracyLocalChange,
   migrateOkolicaFocusOnLoad,
   freshOwnerDefaultOkolicaFocus,
   broadcastOkolicaFocusToOwnerCities,
@@ -791,7 +792,7 @@ import {
 import { civBonusyForCivKey, cityPopulationCap, loadEconParams, sumBuildingHappinessFromBuiltIds } from './game/economy';
 import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POPULATION_COST,
   enqueueRecruitment, advanceRecruitment, advanceRecruitmentGated, unitProductionItem,
-  enqueue, buildingProductionItem, splitPraca, splitEmpirePracaBudget, allocateEmpirePracaToBuildings, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
+  enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
@@ -4048,7 +4049,6 @@ async function boot(): Promise<void> {
      * Nadrzędny split całej puli Pracy: osobno od per-city `podzialPracy`
      * i osobno od historycznego budżetu automatu `pracaAutoPercent`.
      */
-    const ownerDefaultPracaSplit = new Map<number, EmpirePracaSplit>();
     const ownerDefaultOkolicaFocus = new Map<number, OkolicaFocus>();
     const ownerDefaultBudowaProfil = new Map<number, CityBudowaProfil>();
     /**
@@ -4607,8 +4607,6 @@ async function boot(): Promise<void> {
     function initOwnerDefaultCityFields(): void {
       ownerDefaultPodzialPracy.clear();
       ownerDefaultPodzialPracy.set(0, freshOwnerDefaultPodzialPracy());
-      ownerDefaultPracaSplit.clear();
-      ownerDefaultPracaSplit.set(0, { ...DEFAULT_EMPIRE_PRACA_SPLIT });
       ownerDefaultOkolicaFocus.clear();
       ownerDefaultOkolicaFocus.set(0, freshOwnerDefaultOkolicaFocus());
       ownerDefaultBudowaProfil.clear();
@@ -4618,9 +4616,6 @@ async function boot(): Promise<void> {
       for (const ai of aiStartHexes) {
         if (!ownerDefaultPodzialPracy.has(ai.ownerId)) {
           ownerDefaultPodzialPracy.set(ai.ownerId, freshOwnerDefaultPodzialPracy());
-        }
-        if (!ownerDefaultPracaSplit.has(ai.ownerId)) {
-          ownerDefaultPracaSplit.set(ai.ownerId, { ...DEFAULT_EMPIRE_PRACA_SPLIT });
         }
         if (!ownerDefaultOkolicaFocus.has(ai.ownerId)) {
           ownerDefaultOkolicaFocus.set(ai.ownerId, freshOwnerDefaultOkolicaFocus());
@@ -4651,9 +4646,6 @@ async function boot(): Promise<void> {
       }
       if (!ownerDefaultPodzialPracy.has(c.ownerId)) {
         ownerDefaultPodzialPracy.set(c.ownerId, freshOwnerDefaultPodzialPracy());
-      }
-      if (!ownerDefaultPracaSplit.has(c.ownerId)) {
-        ownerDefaultPracaSplit.set(c.ownerId, { ...DEFAULT_EMPIRE_PRACA_SPLIT });
       }
       if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
         ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());
@@ -4761,11 +4753,61 @@ async function boot(): Promise<void> {
       return resolveCityPodzialPracy(city, ownerDefaultPodzialPracy.get(city.ownerId));
     }
 
-    function effectivePracaSplitForOwner(ownerId: number): EmpirePracaSplit {
-      const split = ownerDefaultPracaSplit.get(ownerId);
-      return split
-        ? { procentUlepszenia: clampPracaWspolnyWorekPercent(split.procentUlepszenia) }
-        : { ...DEFAULT_EMPIRE_PRACA_SPLIT };
+    /**
+     * R-PRACA-JEDEN-PODZIAL-Q1: udzial Pracy trafiajacy do puli imperium (= budzet
+     * ulepszen terenu) dla CALEGO imperium. Nie jest osobnym suwakiem — jest
+     * dopelnieniem jedynego podzialu `ownerDefaultPodzialPracy` do 100%.
+     * `effectivePracaSplitForOwner` (drugi, niezalezny suwak) zostal USUNIETY.
+     */
+    function procentPuliImperiumForOwner(ownerId: number): number {
+      const def = ownerDefaultPodzialPracy.get(ownerId);
+      return procentPuliImperiumZBudynkow(def?.procentBudynki);
+    }
+
+    /**
+     * R-PRACA-JEDEN-PODZIAL-Q1 pkt 5 — zasada override miasta.
+     *
+     * Suwak miasta NIE jest zablokowany. Ustawia LOKALNA wartosc; w chwili gdy ta
+     * wartosc rozni sie od globalnej domyslnej imperium, „Indywidualne" zapala sie
+     * SAMO (bez osobnego klikniecia). Powrot do wartosci globalnej gasi override
+     * i miasto znow sledzi wartosc globalna.
+     *
+     * PRZED tym tematem suwak miasta BEZ override zmienial wartosc GLOBALNA
+     * (wszystkim miastom naraz) — gracz nie mial jak ustawic jednego miasta bez
+     * uprzedniego klikniecia „Indywidualne".
+     *
+     * Wspolna implementacja dla OBU wywolan konfiguracji cityPanel (glowna i
+     * zapasowa) — wczesniej ten sam kod byl zduplikowany w dwoch miejscach.
+     */
+    function applyCityPodzialPracyChange(cityId: string, procentBudynkiRaw: number): void {
+      const c = cities.find(ct => ct.id === cityId);
+      if (!c || c.ownerId !== 0) return;
+      const next = applyPodzialPracyLocalChange(
+        procentBudynkiRaw,
+        ownerDefaultPodzialPracy.get(c.ownerId),
+      );
+      if (next.podzialPracy) c.podzialPracy = next.podzialPracy;
+      else delete c.podzialPracy; // powrót do globalnej — miasto znów śledzi wartość imperium
+      c.podzialPracyOverride = next.podzialPracyOverride;
+      markCityStateDirty(); // D10: podział pracy → przelicz
+      updateHud();
+    }
+
+    /** Reczne przelaczenie „Indywidualne" (pin) — zostaje jako jawna kontrola gracza. */
+    function toggleCityPodzialPracyOverride(cityId: string): void {
+      const c = cities.find(ct => ct.id === cityId);
+      if (!c || c.ownerId !== 0) return;
+      const next = !c.podzialPracyOverride;
+      if (next) {
+        // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
+        c.podzialPracy = effectivePodzialPracy(c);
+      } else {
+        delete c.podzialPracy;
+      }
+      c.podzialPracyOverride = next;
+      markCityStateDirty();
+      updateHud();
+      refreshCityPanelIfOpen();
     }
 
     function effectiveOkolicaFocus(city: City): OkolicaFocus {
@@ -19261,11 +19303,11 @@ async function boot(): Promise<void> {
             const pol = ulepszeniaEmpireForOwner(0);
             return { ...pol };
           },
-          getEmpirePracaSplit: () => effectivePracaSplitForOwner(0).procentUlepszenia,
-          onEmpirePracaSplitChange: (procentUlepszenia: number) => {
-            ownerDefaultPracaSplit.set(0, {
-              procentUlepszenia: clampPracaWspolnyWorekPercent(procentUlepszenia),
-            });
+          // R-PRACA-JEDEN-PODZIAL-Q1: ten sam, JEDYNY podzial co suwak w miescie i
+          // w panelu imperium — wyrazony jako % puli imperium (= budzet ulepszen).
+          getEmpirePracaSplit: () => procentPuliImperiumForOwner(0),
+          onEmpirePracaSplitChange: (procentPuliImperium: number) => {
+            ownerDefaultPodzialPracy.set(0, podzialPracyZProcentuPuli(procentPuliImperium));
             markCityStateDirty();
             refreshD1bHud();
           },
@@ -19571,15 +19613,6 @@ async function boot(): Promise<void> {
           if (ownerId !== 0) return;
           ownerDefaultPodzialPracy.set(0, {
             procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
-          });
-          markCityStateDirty();
-          updateHud();
-        },
-        getOwnerDefaultPracaSplit: (ownerId) => effectivePracaSplitForOwner(ownerId),
-        onOwnerDefaultPracaSplitChange: (ownerId, split) => {
-          if (ownerId !== 0) return;
-          ownerDefaultPracaSplit.set(0, {
-            procentUlepszenia: clampPracaWspolnyWorekPercent(split.procentUlepszenia),
           });
           markCityStateDirty();
           updateHud();
@@ -19945,38 +19978,10 @@ async function boot(): Promise<void> {
         refreshCityPanelIfOpen();
       },
       onPodzialPracyChange: (cityId: string, split) => {
-        const c = cities.find(ct => ct.id === cityId);
-        if (c && c.ownerId === 0) {
-          // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: bez override — suwak zmienia
-          // wartość globalną imperium (wszystkie miasta bez override); z override —
-          // zmiana tylko tego miasta.
-          if (c.podzialPracyOverride) {
-            c.podzialPracy = {
-              procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
-            };
-          } else {
-            ownerDefaultPodzialPracy.set(0, {
-              procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
-            });
-          }
-          markCityStateDirty(); // D10: podział pracy → przelicz
-          updateHud();
-        }
+        applyCityPodzialPracyChange(cityId, split.procentBudynki);
       },
       onPodzialPracyOverrideToggle: (cityId: string) => {
-        const c = cities.find(ct => ct.id === cityId);
-        if (!c || c.ownerId !== 0) return;
-        const next = !c.podzialPracyOverride;
-        if (next) {
-          // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
-          c.podzialPracy = effectivePodzialPracy(c);
-        } else {
-          delete c.podzialPracy;
-        }
-        c.podzialPracyOverride = next;
-        markCityStateDirty();
-        updateHud();
-        refreshCityPanelIfOpen();
+        toggleCityPodzialPracyOverride(cityId);
       },
       onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
         purchaseRecruitmentUnit(cityId, itemId, koszt);
@@ -23291,34 +23296,12 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: wydaj remainder budynkowy z tej samej
-     * puli imperium. To jest drugi, realny odbiorca splitu obok auto-ulepszeń;
-     * nie zostawiamy `doBudynkow` jako niewykorzystanej wartości pomocniczej.
+     * R-PRACA-JEDEN-PODZIAL-Q1: `applyEmpireBuildingBudget()` USUNIETE razem z
+     * `splitEmpirePracaBudget()`/`allocateEmpirePracaToBuildings()`. Istnialo tylko po to,
+     * zeby wydac budynkowa polowe DRUGIEGO podzialu tej samej Pracy — czyli zabieralo
+     * z puli imperium Prace, ktora miasto juz raz przydzielilo poza kolejke budynkow.
+     * Kolejki budynkow finansuje wylacznie udzial `doBudynkow` z jedynego podzialu.
      */
-    function applyEmpireBuildingBudget(ownerId: number, buildingBudget: number): number {
-      const targets = cities
-        .filter(city => city.ownerId === ownerId)
-        .map(city => ({
-          cityId: city.id,
-          prod: cityProd.get(city.id) ?? { kolejka: [], postep: 0 },
-        }));
-      const allocation = allocateEmpirePracaToBuildings(buildingBudget, targets);
-      for (const item of allocation.allocations) {
-        const city = cities.find(candidate => candidate.id === item.cityId);
-        if (!city) continue;
-        let prodFinal = item.prod;
-        cityProd.set(item.cityId, prodFinal);
-        if (item.completed) {
-          const applied = applyProductionCompleted(city, item.cityId, item.completed, prodFinal);
-          prodFinal = applied.prod;
-          cityProd.set(item.cityId, prodFinal);
-          if (isAutoBudowaTryb(city.budowaTryb) && frontItem(prodFinal) === null) {
-            tryAutoEnqueueBuild(item.cityId);
-          }
-        }
-      }
-      return allocation.used;
-    }
 
     function ownerNaukaPool(ownerId: number): number {
       return ownerId === 0 ? player.nauka : (aiNaukaPoolByOwner.get(ownerId) ?? 0);
@@ -24764,7 +24747,6 @@ async function boot(): Promise<void> {
           ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries()),
           // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: nadrzędny split całej puli
           // jest osobny od per-city podziału Pracy i od pracaAutoPercent.
-          ownerDefaultPracaSplit: Array.from(ownerDefaultPracaSplit.entries()),
           ownerDefaultOkolicaFocus: Array.from(ownerDefaultOkolicaFocus.entries()),
           ownerDefaultBudowaProfil: Array.from(ownerDefaultBudowaProfil.entries()),
           // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): serializacja
@@ -26354,6 +26336,21 @@ async function boot(): Promise<void> {
               return v;
             };
 
+            /**
+             * R-PRACA-JEDEN-PODZIAL-Q1: Praca, ktora W TEJ TURZE realnie weszla do puli
+             * imperium danego wlasciciela (poolGain z jedynego podzialu + nadwyzka
+             * `overflowToPool` z ukonczonej kolejki). To jest budzet ulepszen terenu na
+             * te ture — jedyna warstwa, w ktorej Praca jest dzielona. PRZED tym tematem
+             * budzet ulepszen liczyl sie DRUGI RAZ, przez `splitEmpirePracaBudget()` na
+             * calym (skumulowanym!) saldzie puli, co przy domyslnych ustawieniach dawalo
+             * ulepszeniom 0 Pracy.
+             */
+            const pracaPoolInflowByOwner = new Map<number, number>();
+            const addPracaPoolInflow = (ownerId: number, amount: number): void => {
+              if (!(amount > 0)) return;
+              pracaPoolInflowByOwner.set(ownerId, (pracaPoolInflowByOwner.get(ownerId) ?? 0) + amount);
+            };
+
             for (const city of cities) {
               const cid = city.id;
 
@@ -26762,6 +26759,7 @@ async function boot(): Promise<void> {
                   queueEmpty,
                 );
                 if (poolGain > 0) {
+                  addPracaPoolInflow(city.ownerId, poolGain);
                   if (city.ownerId === 0) {
                     playerPracaPool += poolGain;
                     _lastPraca = playerPracaPool;
@@ -26782,6 +26780,7 @@ async function boot(): Promise<void> {
               cityProd.set(cid, prodPo);
               // Nadwyżka po ukończeniu budynku (reszta doBudynkow) — nie dotyczy pustej kolejki.
               if (overflowToPool && overflowToPool > 0) {
+                addPracaPoolInflow(city.ownerId, overflowToPool);
                 if (city.ownerId === 0) {
                   playerPracaPool += overflowToPool;
                   _lastPraca = playerPracaPool;
@@ -26975,40 +26974,26 @@ async function boot(): Promise<void> {
             } catch (errWonderMap) {
               console.error('[Cuda] Błąd postępu budowy na mapie:', errWonderMap);
             }
-            // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: obie części splitu są realnie
-            // konsumowane z tej samej puli. Najpierw legalne kolejki budynków
-            // dostają remainder; niewykorzystana część pozostaje w puli.
-            const playerPracaBudget = splitEmpirePracaBudget(
-              playerPracaPool,
-              effectivePracaSplitForOwner(0).procentUlepszenia,
-            );
-            const usedPlayerBuildingBudget = applyEmpireBuildingBudget(
-              0,
-              playerPracaBudget.doBudynkow,
-            );
-            if (usedPlayerBuildingBudget > 0) {
-              playerPracaPool = Math.max(0, playerPracaPool - usedPlayerBuildingBudget);
-              _lastPraca = playerPracaPool;
-              // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): budżet budynków
-              // nadrzędnego splitu (`splitEmpirePracaBudget`) realnie zabiera Pracę z
-              // puli TEJ SAMEJ tury, w której doliczono ją do `_lastPracaRate` powyżej
-              // (poolGain/overflowToPool) -- bez odjęcia tutaj wyświetlany "+N" nie
-              // odzwierciedlał tego zużycia i pula wizualnie "nie rosła" mimo dodatniej
-              // stawki.
-              _lastPracaRate -= usedPlayerBuildingBudget;
-            }
+            // R-PRACA-JEDEN-PODZIAL-Q1 — USUNIETY DRUGI PODZIAL.
+            //
+            // Bylo tu: `splitEmpirePracaBudget(playerPracaPool, procentUlepszenia)` +
+            // `applyEmpireBuildingBudget(...)`, czyli DRUGIE dzielenie tej samej Pracy —
+            // najpierw miasto dzielilo swoja Prace (budynki vs pula), a potem pula byla
+            // dzielona jeszcze raz (ulepszenia vs „budzet budynkow imperium"), przy czym
+            // drugi podzial szedl po CALYM, SKUMULOWANYM saldzie puli, nie po tegorocznym
+            // przyroscie. Zmierzony skutek przy domyslnych 70/33: do ulepszen trafialo 0
+            // Pracy; przy maksymalnych suwakach 20%, nie 50%.
+            //
+            // Po przebudowie budzet ulepszen terenu = Praca, ktora W TEJ TURZE weszla do
+            // puli z jedynego podzialu (`pracaPoolInflowByOwner`). Kolejki budynkow sa
+            // finansowane wylacznie swoim udzialem `doBudynkow` w miescie — pula nie
+            // zabiera juz Pracy z powrotem do budynkow, wiec pozostali konsumenci puli
+            // (cuda na mapie, zakladanie miast, wycinka, utrzymanie ulepszen) maja
+            // STRICTLY WIECEJ Pracy niz przed zmiana, nie mniej.
+            const playerImprovementBudget = pracaPoolInflowByOwner.get(0) ?? 0;
             aiImprovementBudgetByOwner.clear();
             for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
-              const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;
-              const aiBudget = splitEmpirePracaBudget(
-                aiPool,
-                effectivePracaSplitForOwner(ownerId).procentUlepszenia,
-              );
-              aiImprovementBudgetByOwner.set(ownerId, aiBudget.doUlepszen);
-              const usedAiBuildingBudget = applyEmpireBuildingBudget(ownerId, aiBudget.doBudynkow);
-              if (usedAiBuildingBudget > 0) {
-                aiPracaPoolByOwner.set(ownerId, Math.max(0, aiPool - usedAiBuildingBudget));
-              }
+              aiImprovementBudgetByOwner.set(ownerId, pracaPoolInflowByOwner.get(ownerId) ?? 0);
             }
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
             // Q4=A: commit od razu na EOT (bez pendingImprovementsTurn / cofnięcia).
@@ -27037,7 +27022,7 @@ async function boot(): Promise<void> {
                   // policzony raz poza pickerem. Picker dostaje absolutny budżet
                   // ulepszeń; jego stary procentowy cap nie może drugi raz
                   // dzielić tej wartości.
-                  improvementBudgetCap: playerPracaBudget.doUlepszen,
+                  improvementBudgetCap: playerImprovementBudget,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
                   skipWyrab: true,
@@ -30092,34 +30077,10 @@ async function boot(): Promise<void> {
           refreshCityPanelIfOpen();
         },
         onPodzialPracyChange: (cityId: string, split) => {
-          const c = cities.find(ct => ct.id === cityId);
-          if (c && c.ownerId === 0) {
-            if (c.podzialPracyOverride) {
-              c.podzialPracy = {
-                procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
-              };
-            } else {
-              ownerDefaultPodzialPracy.set(0, {
-                procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
-              });
-            }
-            markCityStateDirty(); // D10: podział pracy → przelicz
-            updateHud();
-          }
+          applyCityPodzialPracyChange(cityId, split.procentBudynki);
         },
         onPodzialPracyOverrideToggle: (cityId: string) => {
-          const c = cities.find(ct => ct.id === cityId);
-          if (!c || c.ownerId !== 0) return;
-          const next = !c.podzialPracyOverride;
-          if (next) {
-            c.podzialPracy = effectivePodzialPracy(c);
-          } else {
-            delete c.podzialPracy;
-          }
-          c.podzialPracyOverride = next;
-          markCityStateDirty();
-          updateHud();
-          refreshCityPanelIfOpen();
+          toggleCityPodzialPracyOverride(cityId);
         },
         onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
           purchaseRecruitmentUnit(cityId, itemId, koszt);
@@ -31982,19 +31943,20 @@ async function boot(): Promise<void> {
       ownerDefaultPodzialPracy.clear();
       const savedPodzialPracy = saved.meta?.ownerDefaultPodzialPracy as Array<[number, CityPodzialPracy]> | undefined;
       migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, savedPodzialPracy);
-      ownerDefaultPracaSplit.clear();
-      const savedPracaSplit = saved.meta?.ownerDefaultPracaSplit as
-        Array<[number, Partial<EmpirePracaSplit>]> | undefined;
-      if (savedPracaSplit?.length) {
-        for (const [oid, raw] of savedPracaSplit) {
-          ownerDefaultPracaSplit.set(oid, {
-            procentUlepszenia: clampPracaWspolnyWorekPercent(raw?.procentUlepszenia),
-          });
-        }
-      }
-      for (const city of cities) {
-        if (!ownerDefaultPracaSplit.has(city.ownerId)) {
-          ownerDefaultPracaSplit.set(city.ownerId, { ...DEFAULT_EMPIRE_PRACA_SPLIT });
+      // R-PRACA-JEDEN-PODZIAL-Q1 — MIGRACJA STARYCH ZAPISOW.
+      // Stary zapis niosl DWA niezalezne pola: `ownerDefaultPodzialPracy`
+      // (procentBudynki 50–100, kanoniczne — to je stosowal silnik JAKO PIERWSZE i to
+      // ono ma per-miastowy override) oraz `ownerDefaultPracaSplit` (procentUlepszenia
+      // 0–50, drugi podzial). Zostaje JEDNO pole: `ownerDefaultPodzialPracy`.
+      // Rozstrzygniecie kolizji (np. zapis 70 / 33): wygrywa `ownerDefaultPodzialPracy`,
+      // czyli ulepszenia dostaja 30%. Legacy `ownerDefaultPracaSplit` jest uzywany
+      // WYLACZNIE wtedy, gdy zapis w ogole nie mial nowszego pola — wtedy
+      // procentBudynki = 100 − procentUlepszenia (ten sam cap, ta sama jednostka).
+      const savedPracaSplitLegacy = saved.meta?.ownerDefaultPracaSplit as
+        Array<[number, { procentUlepszenia?: number }]> | undefined;
+      if (!savedPodzialPracy?.length && savedPracaSplitLegacy?.length) {
+        for (const [oid, raw] of savedPracaSplitLegacy) {
+          ownerDefaultPodzialPracy.set(oid, podzialPracyZProcentuPuli(raw?.procentUlepszenia));
         }
       }
       ownerDefaultOkolicaFocus.clear();

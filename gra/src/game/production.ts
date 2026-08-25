@@ -1862,107 +1862,72 @@ export function rushProduction(prod: CityProduction): AdvanceProductionResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Q4: podzial Pracy miasta na kolejke budynkow vs ulepszenia terenu (pula imperium).
- * udzialBudynki w [0,1].
+ * R-PRACA-JEDEN-PODZIAL-Q1 — JEDEN podzial Pracy, stosowany DOKLADNIE RAZ.
  *
- * BUGFIX 2026-07-10 (Praca ginie przy zaokragleniu): Praca miasta jest calkowita
- * (np. 6), ale `cityPraca * udzialBudynki` daje z reguly ulamek (np. 6*0.7=4.2).
- * Zaokraglanie OBU stron NIEZALEZNIE (floor/round kazdej z osobna) potrafi zgubic
- * lub zdublowac 1 jednostke Pracy (np. floor(4.2)=4 + floor(1.8)=1 => suma 5 != 6;
- * przy remisie .5/.5 round+round moze dac sume+1). Naprawa: zaokraglamy TYLKO
- * jedna strone (doBudynkow), druga to `total - doBudynkow` -- z definicji suma
- * zawsze rowna sie calkowitej Pracy miasta. Ten sam wynik zasila silnik
- * (turn-economy.ts, real stan gry) i UI (cityPanel.ts, empireDetailPanel.ts,
- * gorny pasek) -- jedno zrodlo prawdy, zero gubionych jednostek.
+ * Praca miasta dzieli sie na DWA strumienie, ktore ZAWSZE sumuja sie do 100%:
+ *   - `doBudynkow`     — kolejka produkcji TEGO miasta (procentBudynki, 50–100%);
+ *   - `doPuli` — pula Pracy imperium (100 − procentBudynki, 0–50%).
+ *
+ * Cap: pula (czyli budzet ulepszen terenu) dostaje NAJWYZEJ 50%, budynki NIGDY
+ * mniej niz 50% — wymusza to `clampPodzialPracyBudynkiPercent` w `cities.ts`
+ * (MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50). Nigdy odwrotnie.
+ *
+ * DLACZEGO `doPuli`, a nie `doUlepszen`: pula imperium jest wspolnym
+ * bankiem prac cywilizacyjnych. Ulepszenia terenu sa jej glownym odbiorca, ale
+ * z tej samej puli finansowane sa takze cuda na mapie (`wonder-map-build.ts`),
+ * zakladanie miast, wycinka lasu, utrzymanie ulepszen surowcowych oraz baza
+ * konwersji Targowiska (`economy.ts`). Nazwa `doUlepszen` dla tej liczby byla
+ * ZRODLEM osmiu nawrotow tego tematu (patrz `cityPanel.ts` przed tym tematem)
+ * — nie wolno jej przywracac.
+ *
+ * ZAOKRAGLENIE (regula jawna, bramka `praca-jeden-podzial-kontrakt-test.cjs`):
+ * zaokraglamy TYLKO jedna strone (`doBudynkow = Math.round(total * u)`), druga
+ * jest reszta `total - doBudynkow`. Dzieki temu suma jest z definicji rowna
+ * calkowitej Pracy miasta — zero gubionych i zero zdublowanych jednostek
+ * (niezalezne zaokraglanie obu stron dawalo floor(4.2)+floor(1.8)=5 != 6).
+ * Konsekwencja: pojedyncza jednostka Pracy trafia do puli dopiero, gdy
+ * `total * (100−procentBudynki)/100 >= 0.5`.
+ *
+ * USUNIETY DUPLIKAT: do 2026-08-25 ta sama Praca byla dzielona DRUGI RAZ przez
+ * `splitEmpirePracaBudget()` (pula → ulepszenia vs „budzet budynkow imperium"),
+ * a wynik drugiego podzialu wracal do kolejek budynkow przez
+ * `allocateEmpirePracaToBuildings()`/`applyEmpireBuildingBudget()`. Zmierzony
+ * skutek: przy domyslnych ustawieniach (70% budynki / 33% ulepszen) do ulepszen
+ * trafialo DOKLADNIE 0 Pracy (floor(3 × 0,33) = 0), a przy maksymalnych suwakach
+ * 20%, nie 50%. Obie funkcje zostaly USUNIETE — jest jeden podzial i jedno
+ * miejsce jego zastosowania.
  */
 /** Jedno zaokrąglenie Pracy miasta (po mnożnikach Porządku itd.) — silnik + UI. */
 export function cityPracaInteger(raw: number): number {
   return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 0;
 }
 
-export function splitPraca(cityPraca: number, udzialBudynki: number): { doBudynkow: number; doPuli: number } {
+export interface PodzialPracyMiasta {
+  /** Praca miasta po zaokrągleniu = doBudynkow + doPuli (zawsze). */
+  total: number;
+  /** Kolejka produkcji TEGO miasta. */
+  doBudynkow: number;
+  /** Pula Pracy imperium — budżet ulepszeń terenu i pozostałych prac cywilizacji. */
+  doPuli: number;
+}
+
+/**
+ * JEDYNY podział Pracy miasta. `udzialBudynki` w [0,1] (= procentBudynki/100).
+ * Nie wolno dodawać drugiego dzielenia tej samej Pracy w żadnej warstwie.
+ */
+export function splitPraca(cityPraca: number, udzialBudynki: number): PodzialPracyMiasta {
   const total = cityPracaInteger(cityPraca);
   const u = Math.min(1, Math.max(0, Number.isFinite(udzialBudynki) ? udzialBudynki : 1));
   const doBudynkow = Math.round(total * u);
-  return { doBudynkow, doPuli: total - doBudynkow };
-}
-
-/**
- * Nadrzędny podział całej puli Pracy imperium między budynki i ulepszenia terenu.
- *
- * Ulepszenia mogą dostać najwyżej 50% całej puli; reszta pozostaje dostępna dla
- * budynków (albo jako jawnie zachowany remainder, gdy nie ma legalnej kolejki).
- * To nie jest limit wewnątrz pickera ulepszeń — wynik tej funkcji jest realnym
- * budżetem przekazywanym dalej do produkcji gracza i AI.
- */
-export function splitEmpirePracaBudget(
-  pracaPool: number,
-  requestedImprovementPercent: number,
-): { total: number; doBudynkow: number; doUlepszen: number } {
-  const total = Number.isFinite(pracaPool) && pracaPool > 0 ? Math.floor(pracaPool) : 0;
-  const percent = Number.isFinite(requestedImprovementPercent)
-    ? Math.max(0, Math.min(50, Math.round(requestedImprovementPercent)))
-    : 0;
-  const doUlepszen = Math.floor(total * percent / 100);
-  return { total, doBudynkow: total - doUlepszen, doUlepszen };
-}
-
-export interface EmpirePracaBuildingTarget {
-  cityId: string;
-  prod: CityProduction;
-}
-
-export interface EmpirePracaBuildingAllocation {
-  cityId: string;
-  prod: CityProduction;
-  completed: ProductionItem | null;
-  used: number;
-  returnedToPool: number;
-}
-
-/**
- * Wydaje remainder budynkowy z tej samej puli imperium na legalne kolejki.
- * Miasta są obsługiwane deterministycznie po id; pusta/wstrzymana kolejka
- * nie konsumuje budżetu i zostawia go w puli dla drugiego strumienia.
- */
-export function allocateEmpirePracaToBuildings(
-  buildingBudget: number,
-  targets: readonly EmpirePracaBuildingTarget[],
-): { allocations: EmpirePracaBuildingAllocation[]; used: number; remainder: number } {
-  let remaining = Number.isFinite(buildingBudget) && buildingBudget > 0
-    ? buildingBudget
-    : 0;
-  const allocations: EmpirePracaBuildingAllocation[] = [];
-  const ordered = [...targets].sort((a, b) => a.cityId.localeCompare(b.cityId));
-
-  for (const target of ordered) {
-    if (remaining <= 0) break;
-    const front = frontItem(target.prod);
-    if (!front || front.kind !== 'budynek' || target.prod.wstrzymana) continue;
-    const before = remaining;
-    const advanced = advanceProduction(target.prod, remaining);
-    const returnedToPool = advanced.overflowToPool ?? 0;
-    const used = Math.max(0, before - returnedToPool);
-    remaining = Math.max(0, remaining - used);
-    allocations.push({
-      cityId: target.cityId,
-      prod: advanced.prod,
-      completed: advanced.completed,
-      used,
-      returnedToPool,
-    });
-  }
-
-  return {
-    allocations,
-    used: Math.max(0, (Number.isFinite(buildingBudget) ? buildingBudget : 0) - remaining),
-    remainder: remaining,
-  };
+  return { total, doBudynkow, doPuli: total - doBudynkow };
 }
 
 /**
  * Ile Pracy miasta trafia do puli imperium w tej turze.
- * Kolejka pusta → całość (doPuli + niewykorzystane doBudynkow); inaczej tylko doPuli.
+ *
+ * Kolejka pusta (albo wstrzymana) → CALOSC Pracy miasta, bo udzial budynkowy nie
+ * ma czego finansowac; inaczej dokladnie `doPuli` z jedynego podzialu.
+ * To NIE jest drugi podzial — to jawny, nazwany wyjatek „brak legalnej kolejki".
  */
 export function pracaImperialPoolGain(
   split: { doBudynkow: number; doPuli: number },

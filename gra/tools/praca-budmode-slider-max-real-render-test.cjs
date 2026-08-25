@@ -194,10 +194,21 @@ async function main() {
     check('(C) renderEmpirePracaSplit() nadal istnieje w źródle (funkcja nie usunięta/przemianowana)', !!splitFnMatch);
     if (splitFnMatch) {
       const body = splitFnMatch[0];
-      check('(C) renderEmpirePracaSplit() nadal ma suwak z max="50" na sztywno (inne, poprawne pole — NIETKNIĘTE)',
-        body.includes('max="50"'));
-      check('(C) renderEmpirePracaSplit() nadal ma Math.min(50, ...) w clampzie lokalnym (NIETKNIĘTE)',
-        body.includes('Math.min(50,'));
+      // R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA (uzasadnienie w 01-operator.md):
+      //   CO PILNOWALY: ze cap 50% DRUGIEGO pola (podzial calej Pracy) nie zostal
+      //     przypadkiem podniesiony razem z capem 100% budzetu automatu — rozdzielnosc
+      //     dwoch niezaleznych suwakow w jednym pliku.
+      //   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: literal `50` zostal zastapiony
+      //     stala `MAX_PROCENT_PULI_IMPERIUM` (jedno zrodlo capu dla globalu i miasta).
+      //   CO PILNUJE TERAZ: TA SAMA rozdzielnosc i TA SAMA wartosc 50 — sprawdzana u
+      //     zrodla w `cities.ts`, wiec podniesienie capu nadal zapala test na czerwono.
+      const citiesSrc = fs.readFileSync(path.resolve(GRA, 'src/game/cities.ts'), 'utf8');
+      check('(C) renderEmpirePracaSplit() nadal ma cap udziału puli (inne, poprawne pole — NIETKNIĘTE)',
+        body.includes('max="${MAX_PROCENT_PULI_IMPERIUM}"')
+          && /export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;/.test(citiesSrc)
+          && /export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;/.test(citiesSrc));
+      check('(C) renderEmpirePracaSplit() nadal klampuje do MAX_PROCENT_PULI_IMPERIUM (NIETKNIĘTE)',
+        body.includes('Math.min(MAX_PROCENT_PULI_IMPERIUM,'));
     }
 
     check('brak błędów konsoli/pageerror w trakcie renderu', consoleErrors.length === 0, consoleErrors);

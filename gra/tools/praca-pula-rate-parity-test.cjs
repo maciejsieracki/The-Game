@@ -88,14 +88,30 @@ check(
   ),
 );
 
-check(
-  'Budżet budynków (splitEmpirePracaBudget): usedPlayerBuildingBudget odjęte od _lastPracaRate (Wątek D)',
-  followsWithin(
-    'if (usedPlayerBuildingBudget > 0) {',
-    '_lastPracaRate -= usedPlayerBuildingBudget;',
-    700,
-  ),
-);
+// R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA (uzasadnienie w 01-operator.md):
+//   CO PILNOWAL: ze CZWARTY drenaz puli — budzet budynkow z DRUGIEGO podzialu — jest
+//     odjety od `_lastPracaRate`, zeby HUD „+N" pokazywal realny przyrost puli.
+//   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: ten drenaz zostal USUNIETY razem z drugim
+//     podzialem — pula nie oddaje juz Pracy kolejkom budynkow, wiec nie ma czego odejmowac.
+//   CO PILNUJE TERAZ: ze drenazu NIE MA w kodzie (asercja negatywna, zeby nie wrocil
+//     po cichu) — a sam niezmiennik „displayed == realny przyrost puli" jest nadal
+//     pinowany numerycznie w SEKCJI 3 na drenazu, ktory realnie istnieje (cuda na mapie).
+{
+  // Liczy sie KOD, nie komentarz-nagrobek opisujacy usunieta warstwe.
+  const sourceCode = source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n').filter(l => !/^\s*(\/\/|\*)/.test(l)).join('\n');
+  check(
+    'Drenaż z drugiego podziału (usedPlayerBuildingBudget) NIE istnieje już w main.ts',
+    !sourceCode.includes('usedPlayerBuildingBudget') && !sourceCode.includes('splitEmpirePracaBudget('),
+  );
+  // Dowod nietautologicznosci tej asercji negatywnej.
+  const mutant = sourceCode + '\nconst usedPlayerBuildingBudget = 1;\n';
+  check(
+    'Mutant przywracający drenaż drugiego podziału zostaje wykryty',
+    mutant.includes('usedPlayerBuildingBudget'),
+  );
+}
 
 check(
   'Auto-ulepszenia: pick.kosztPraca odjęte od _lastPracaRate (Wątek D)',
@@ -179,8 +195,6 @@ const ENTRY_TS = `
 export {
   previewPracaPoolBrutto,
   pracaImperialPoolGain,
-  splitEmpirePracaBudget,
-  allocateEmpirePracaToBuildings,
 } from ${JSON.stringify(SRC + '/game/production')};
 `;
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -204,8 +218,6 @@ try {
 
 const {
   previewPracaPoolBrutto,
-  splitEmpirePracaBudget,
-  allocateEmpirePracaToBuildings,
 } = require(BUNDLE_FILE);
 
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) { /* best effort cleanup */ }
@@ -221,7 +233,7 @@ try { fs.unlinkSync(BUNDLE_FILE); } catch (e) { /* best effort cleanup */ }
  *  - `useGuard=true` odtwarza NOWE zachowanie: flaga chroni poprawną wartość end-of-turn
  *    przed nadpisaniem przez ten jeden live-refresh.
  */
-function simulateTurn({ oldPool, cityDoBudynkow, cityDoPuli, queueEmpty, splitPercent, buildingTargets, useGuard }) {
+function simulateTurn({ oldPool, cityDoBudynkow, cityDoPuli, queueEmpty, poolDrain, useGuard }) {
   // --- end-of-turn: pętla per-miasto (poolGain/overflowToPool) ---
   let pool = oldPool;
   let lastPracaRate = 0;
@@ -236,19 +248,11 @@ function simulateTurn({ oldPool, cityDoBudynkow, cityDoPuli, queueEmpty, splitPe
   pool = Math.max(0, pool - upkeep);
   lastPracaRate -= upkeep;
 
-  // --- cuda mapy (zero w tym scenariuszu, ze zgłoszenia) ---
-  const usedWonder = 0;
-  pool -= usedWonder;
+  // --- cuda mapy (R-PRACA-JEDEN-PODZIAL-Q1: to jest teraz drenaz uzyty w scenariuszu B;
+  //     przedtem rolę tę pełnił usunięty budżet budynków z DRUGIEGO podziału) ---
+  const usedWonder = Number.isFinite(poolDrain) ? Math.max(0, poolDrain) : 0;
+  pool = Math.max(0, pool - usedWonder);
   lastPracaRate -= usedWonder;
-
-  // --- budżet budynków ze splitu imperium (main.ts: splitEmpirePracaBudget + applyEmpireBuildingBudget) ---
-  const budget = splitEmpirePracaBudget(pool, splitPercent);
-  const alloc = allocateEmpirePracaToBuildings(budget.doBudynkow, buildingTargets);
-  const usedBuildingBudget = alloc.used;
-  if (usedBuildingBudget > 0) {
-    pool = Math.max(0, pool - usedBuildingBudget);
-    lastPracaRate -= usedBuildingBudget;
-  }
 
   // --- auto-ulepszenia (zero w tym scenariuszu, ze zgłoszenia) ---
   const usedAutoImp = 0;
@@ -287,7 +291,7 @@ function numCheck(name, condition, detail) {
 {
   const resGuard = simulateTurn({
     oldPool: 1, cityDoBudynkow: 4, cityDoPuli: 3, queueEmpty: false,
-    splitPercent: 50, buildingTargets: [], useGuard: true,
+    poolDrain: 0, useGuard: true,
   });
   numCheck(
     'Scenariusz A (zero drenaży): stara_pula(1) + deklarowane(+3) = nowa_pula(4) -- realny przyrost = deklarowany',
@@ -300,20 +304,16 @@ function numCheck(name, condition, detail) {
 // poziomie imperium, która realnie konsumuje 2 Pracy z puli (usedBuildingBudget=2) -- dokładnie
 // czwarty znany drenaż z listy recon. Bez guardu live-refresh o tym nie wie i pokazuje brutto.
 {
-  const buildingTargets = [{
-    cityId: 'roma',
-    prod: { kolejka: [{ kind: 'budynek', id: 'test-building', nazwa: 'Test', koszt: 100, postep: 0 }], postep: 0 },
-  }];
   const resNoGuard = simulateTurn({
     oldPool: 1, cityDoBudynkow: 4, cityDoPuli: 3, queueEmpty: false,
-    splitPercent: 50, buildingTargets, useGuard: false,
+    poolDrain: 2, useGuard: false,
   });
   const resGuard = simulateTurn({
     oldPool: 1, cityDoBudynkow: 4, cityDoPuli: 3, queueEmpty: false,
-    splitPercent: 50, buildingTargets, useGuard: true,
+    poolDrain: 2, useGuard: true,
   });
   numCheck(
-    'Scenariusz B (drenaż budżetu budynków, 2 Pracy): end-of-turn poprawnie liczy realny przyrost (+1, nie +3)',
+    'Scenariusz B (drenaż puli 2 Pracy — cuda na mapie): end-of-turn poprawnie liczy realny przyrost (+1, nie +3)',
     resGuard.realDelta === 1 && resGuard.endOfTurnDeclaredRate === 1,
     `realDelta=${resGuard.realDelta} endOfTurnDeclaredRate=${resGuard.endOfTurnDeclaredRate}`,
   );

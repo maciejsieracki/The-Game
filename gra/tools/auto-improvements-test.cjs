@@ -516,26 +516,35 @@ console.log('-- 17. FALA 292: STRUKTURA (regex na main.ts) — split absolutny j
   const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
+  // R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA STRAZNIKOW 17a/17b/17e/17f (uzasadnienie
+  // w 01-operator.md):
+  //   CO PILNOWALY: ze budzet ulepszen jest policzony RAZ, przed pickerem, przez
+  //     `splitEmpirePracaBudget` (drugi podzial) i ze ten drugi suwak ma roundtrip zapisu.
+  //   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: drugi podzial byl wlasnie zrodlem
+  //     podwojnego liczenia (FALA 292 naprawiala objaw, nie przyczyne) i zostal usuniety.
+  //   CO PILNUJE TERAZ: TA SAMA wlasnosc — budzet ulepszen policzony RAZ przed pickerem —
+  //     ale ze zrodla, ktore realnie istnieje: tegoroczny wplyw do puli z JEDYNEGO podzialu.
+  //     17e/17f pilnuja teraz roundtripu jedynego podzialu + migracji legacy pola.
   const RE_SPLIT_CALL =
-    /const playerPracaBudget = splitEmpirePracaBudget\(\s*playerPracaPool,\s*effectivePracaSplitForOwner\(0\)\.procentUlepszenia,/;
-  const RE_ABSOLUTE_CAP = /improvementBudgetCap: playerPracaBudget\.doUlepszen,/;
+    /const playerImprovementBudget = pracaPoolInflowByOwner\.get\(0\)/;
+  const RE_ABSOLUTE_CAP = /improvementBudgetCap: playerImprovementBudget,/;
   const RE_NO_SECOND_PERCENT_CAP = /pracaBudgetPercent: 100,/;
   const RE_OWNER_SPLIT_SAVE =
-    /ownerDefaultPracaSplit:\s*Array\.from\(ownerDefaultPracaSplit\.entries\(\)\)/;
+    /ownerDefaultPodzialPracy:\s*Array\.from\(ownerDefaultPodzialPracy\.entries\(\)\)/;
   const RE_OWNER_SPLIT_LOAD =
-    /const savedPracaSplit = saved\.meta\?\.ownerDefaultPracaSplit/;
+    /const savedPodzialPracy = saved\.meta\?\.ownerDefaultPodzialPracy/;
   const RE_OWNER_SPLIT_MIGRATION =
-    /ownerDefaultPracaSplit\.set\(oid,\s*\{\s*procentUlepszenia:\s*clampPracaWspolnyWorekPercent\(raw\?\.procentUlepszenia\)/s;
+    /ownerDefaultPodzialPracy\.set\(oid,\s*podzialPracyZProcentuPuli\(raw\?\.procentUlepszenia\)\)/s;
   assert(RE_SPLIT_CALL.test(mainSrc),
-    '17a: main liczy split całej puli przed pickerem');
+    '17a: main liczy budżet ulepszeń RAZ, przed pickerem (jedyny podział)');
   assert(RE_ABSOLUTE_CAP.test(mainSrc),
     '17b: picker dostaje absolutny budżet ulepszeń');
   assert(RE_NO_SECOND_PERCENT_CAP.test(mainSrc),
     '17c: picker nie nakłada drugiego procentowego capu');
   assert(RE_OWNER_SPLIT_SAVE.test(mainSrc) && RE_OWNER_SPLIT_LOAD.test(mainSrc),
-    '17e: nadrzędny split ownera ma jawny roundtrip zapisu/odczytu');
+    '17e: jedyny podział ownera ma jawny roundtrip zapisu/odczytu');
   assert(RE_OWNER_SPLIT_MIGRATION.test(mainSrc),
-    '17f: odczyt starego/brakującego splitu zaciska tylko warstwę 0–50%');
+    '17f: migracja legacy drugiego suwaka → jedyny podział, z tym samym capem 0–50%');
 
   const CALL_COUNT = (mainSrc.match(/pickAutoImprovements\(/g) || []).length;
   eq(CALL_COUNT, 1, '17d: dokladnie JEDNO wywolanie pickAutoImprovements() w main.ts -- jesli ta liczba sie zmieni, straznik 17a nie pokrywa automatycznie nowego wywolania i wymaga rewizji');

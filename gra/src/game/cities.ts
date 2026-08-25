@@ -24,7 +24,19 @@ export interface CityPodzialHandlu {
   procentLuksus:   number;
 }
 
-/** Per-miasto suwak Pracy (Budynki vs teren/pula). */
+/**
+ * JEDYNY podzial Pracy (R-PRACA-JEDEN-PODZIAL-Q1). Trzymamy JEDNA liczbe —
+ * udzial budynkow — bo drugi udzial jest z definicji jej dopelnieniem do 100%.
+ * Dwa niezalezne pola pozwalaly wczesniej ustawic stany typu „100% i 50%",
+ * ktore nie sumowaly sie do 100%.
+ *
+ *   procentBudynki      ∈ [50,100]  → kolejka produkcji miasta
+ *   procentPuliImperium = 100 − procentBudynki ∈ [0,50] → pula Pracy imperium
+ *                                    (budzet ulepszen terenu i prac cywilizacji)
+ *
+ * To samo pole i ten sam cap obowiazuja globalnie (domyslna wartosc imperium)
+ * i lokalnie w miescie (override) — jeden mechanizm, jedna jednostka miary.
+ */
 export interface CityPodzialPracy {
   procentBudynki: number;
 }
@@ -196,8 +208,8 @@ export const DEFAULT_ULEPSZENIA_PRACA_PERCENT: UlepszeniaPracaPercent = 33;
 /**
  * Maksymalny udział budżetu Pracy (JUŻ przydzielonej polu ulepszeń) rozdysponowywany
  * automatycznie przez `pracaAutoPercent`/`ulepszeniaPracaPercent` — pole (b), niezależne
- * od nadrzędnego splitu całej puli Pracy `EmpirePracaSplit.procentUlepszenia` (pole (a),
- * patrz `MAX_PRACA_WSPOLNY_WOREK_PROCENT` niżej).
+ * od JEDYNEGO podziału Pracy `CityPodzialPracy.procentBudynki` (pole (a), patrz
+ * `MIN_PODZIAL_PRACY_BUDYNKI_PERCENT` / `MAX_PROCENT_PULI_IMPERIUM` niżej).
  */
 export const MAX_ULEPSZENIA_PRACA_AUTO_PERCENT: UlepszeniaPracaPercent = 100;
 
@@ -206,9 +218,9 @@ export const MAX_ULEPSZENIA_PRACA_AUTO_PERCENT: UlepszeniaPracaPercent = 100;
  * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C = A, ECHO właściciela 2026-08-21), która
  * OMYŁKOWO ograniczyła to pole (b) — „Automatyzacja ulepszeń → Ręczny", ile z już
  * przydzielonej puli Pracy na ulepszenia automat rozdysponowuje automatycznie — do
- * nadrzędnego capu cywilizacji `MAX_PRACA_WSPOLNY_WOREK_PROCENT` (50%), który dotyczy
- * WYŁĄCZNIE niezależnego pola (a) `EmpirePracaSplit.procentUlepszenia`
- * (`clampPracaWspolnyWorekPercent`, nietknięte przez ten temat). Pole (b) wraca do
+ * capu 50% jedynego podziału Pracy (`MAX_PROCENT_PULI_IMPERIUM`), który dotyczy
+ * WYŁĄCZNIE niezależnego pola (a) `CityPodzialPracy.procentBudynki`
+ * (`clampPodzialPracyBudynkiPercent`, nietknięte przez tamten temat). Pole (b) wraca do
  * własnego zakresu 0–100% (`MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`), zarówno globalnie
  * (empire), jak i w lokalnym override miasta w trybie „Indywidualne". Patrz
  * zaktualizowane `gra/tools/praca-miasto-limit-50-cap-test.cjs` i
@@ -222,28 +234,15 @@ export function clampUlepszeniaPracaPercent(n: number | undefined | null): Uleps
 }
 
 /**
- * Nadrzędny split całej puli Pracy imperium. To osobna warstwa od
- * `UlepszeniaEmpirePolicy.pracaAutoPercent`: tutaj wybieramy udział ulepszeń,
- * a budynki dostają pozostałą część 100% − ulepszenia.
+ * R-PRACA-JEDEN-PODZIAL-Q1: `EmpirePracaSplit` / `DEFAULT_EMPIRE_PRACA_SPLIT` /
+ * `MAX_PRACA_WSPOLNY_WOREK_PROCENT` / `clampPracaWspolnyWorekPercent` USUNIETE.
+ * Byly DRUGIM, niezaleznym suwakiem dzielacym te sama Prace jeszcze raz (pula →
+ * ulepszenia vs „budzet budynkow imperium"), co dawalo stany nie sumujace sie do
+ * 100% („100 i 50") i realny udzial ulepszen 0% przy domyslnych ustawieniach.
+ * Kanoniczny, jedyny podzial to `CityPodzialPracy.procentBudynki` (+ jego
+ * dopelnienie `procentPuliImperiumZBudynkow`) wyzej — ten sam globalnie i w miescie.
+ * Migracja starych zapisow: `main.ts` (blok wczytania `ownerDefaultPodzialPracy`).
  */
-export interface EmpirePracaSplit {
-  /** Udział całej puli Pracy na ulepszenia terenu (0–50%). */
-  procentUlepszenia: number;
-}
-
-export const DEFAULT_EMPIRE_PRACA_SPLIT: Readonly<EmpirePracaSplit> = {
-  procentUlepszenia: DEFAULT_ULEPSZENIA_PRACA_PERCENT,
-};
-
-/** Maksymalny udział całej puli Pracy przeznaczony na ulepszenia terenu. */
-export const MAX_PRACA_WSPOLNY_WOREK_PROCENT: UlepszeniaPracaPercent = 50;
-
-/** Ogranicza nadrzędny udział ulepszeń do zakresu 0–50%.
- * Nie wolno używać tej funkcji dla historycznego `pracaAutoPercent`. */
-export function clampPracaWspolnyWorekPercent(n: number | undefined | null): UlepszeniaPracaPercent {
-  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_EMPIRE_PRACA_SPLIT.procentUlepszenia;
-  return Math.max(0, Math.min(MAX_PRACA_WSPOLNY_WOREK_PROCENT, Math.round(n)));
-}
 
 /**
  * Migracja starego pola `perTurn`/`ulepszeniaPerTurn` (1|2|3 sztuk/miasto/turę) → nowy %.
@@ -378,12 +377,21 @@ export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
 };
 
 /**
- * Lokalny podział Pracy miasta: 50–100% trafia do budynków, a pozostałe
- * 0–50% trafia do puli Pracy. To pole jest niezależne od budżetu automatu
- * ulepszeń, który zachowuje osobny zakres 0–100%.
+ * Cap jedynego podzialu Pracy: budynki NIGDY ponizej 50%, a wiec pula imperium
+ * (budzet ulepszen terenu) NIGDY powyzej 50%. Dozwolone 50/50, 70/30, 100/0 —
+ * nigdy odwrotnie. To pole jest NIEZALEZNE od budzetu automatu ulepszen
+ * (`pracaAutoPercent`/`ulepszeniaPracaPercent`, wlasny zakres 0–100%, warstwa
+ * decydujaca ILE z juz przyznanego budzetu rozdysponuje automat — patrz
+ * `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT` wyzej i P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1,
+ * gdzie mylne zlaczenie tych dwoch pol bylo osobnym regresem).
  */
 export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;
 export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;
+
+/** Maksymalny udzial Pracy trafiajacy do puli imperium (= budzet ulepszen terenu). */
+export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;
+/** Minimalny udzial Pracy trafiajacy do puli imperium. */
+export const MIN_PROCENT_PULI_IMPERIUM = 100 - MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
 
 export function clampPodzialPracyBudynkiPercent(n: number | undefined | null): number {
   if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_PODZIAL_PRACY.procentBudynki;
@@ -391,6 +399,22 @@ export function clampPodzialPracyBudynkiPercent(n: number | undefined | null): n
     MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
     Math.min(MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, Math.round(n)),
   );
+}
+
+/**
+ * Drugi udzial JEDYNEGO podzialu — zawsze dopelnienie do 100%. Jedyne dozwolone
+ * zrodlo tej liczby; nie wolno trzymac jej jako osobnego, ustawialnego pola.
+ */
+export function procentPuliImperiumZBudynkow(procentBudynki: number | undefined | null): number {
+  return 100 - clampPodzialPracyBudynkiPercent(procentBudynki);
+}
+
+/** Odwrotnosc: suwak wyrazony w % puli imperium → kanoniczne % budynkow. */
+export function podzialPracyZProcentuPuli(procentPuli: number | undefined | null): CityPodzialPracy {
+  const p = typeof procentPuli === 'number' && Number.isFinite(procentPuli)
+    ? Math.max(MIN_PROCENT_PULI_IMPERIUM, Math.min(MAX_PROCENT_PULI_IMPERIUM, Math.round(procentPuli)))
+    : 100 - DEFAULT_PODZIAL_PRACY.procentBudynki;
+  return { procentBudynki: clampPodzialPracyBudynkiPercent(100 - p) };
 }
 
 /** Domyślny suwak żywność→wzrost (reszta idzie do zapasów armii). Zgodny z suwak_zywnosc_rozwoj_domyslnie normal=100. */

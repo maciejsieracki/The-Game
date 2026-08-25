@@ -23,7 +23,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City }       from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -55,7 +55,6 @@ import {
   AI_IMPROVEMENT_PRIORITY,
   pickAutoImprovements,
 } from './auto-improvements';
-import { splitEmpirePracaBudget } from './production';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
@@ -1974,9 +1973,12 @@ function planCityImprovements(
   // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: gdy silnik przekazał absolutny budżet
   // wydzielony z pierwotnej puli, użyj go wprost. Ponowne splitowanie
   // pozostałych 50 pkt po wydaniu budynków dawałoby błędne 25 pkt ulepszeń.
+  // R-PRACA-JEDEN-PODZIAL-Q1: silnik ZAWSZE podaje absolutny budzet ulepszen z
+  // jedynego podzialu (`improvementBudgetCap`). Fallback (test/AI bez silnika) to
+  // maksymalny dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM` — NIE drugi podzial.
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
-    : splitEmpirePracaBudget(pracaAvailable, 50).doUlepszen;
+    : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
   const picks = pickAutoImprovements({
     cities: myCities,
     ownerId,
@@ -2071,9 +2073,12 @@ export function planExpansionFortBuilding(
   if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
   // Ten sam absolutny budżet obowiązuje także posterunek, aby koszt
   // zaplanowanych ulepszeń i ekspansji dzielił jedną kopertę.
+  // R-PRACA-JEDEN-PODZIAL-Q1: silnik ZAWSZE podaje absolutny budzet ulepszen z
+  // jedynego podzialu (`improvementBudgetCap`). Fallback (test/AI bez silnika) to
+  // maksymalny dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM` — NIE drugi podzial.
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
-    : splitEmpirePracaBudget(pracaAvailable, 50).doUlepszen;
+    : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
   const plannedCost = Number.isFinite(opts.plannedImprovementCost)
     ? Math.max(0, opts.plannedImprovementCost as number)
     : 0;

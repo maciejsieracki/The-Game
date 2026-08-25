@@ -14,6 +14,12 @@ const citySource = fs.readFileSync(
   path.resolve(__dirname, '..', 'src/ui/cityPanel.ts'),
   'utf8',
 );
+// R-PRACA-JEDEN-PODZIAL-Q1: zakresy suwakow sa dzis stalymi w `cities.ts` (jeden cap
+// dla globalu i dla miasta), wiec pinujemy je u ZRODLA, nie przez literal w UI.
+const citiesSource = fs.readFileSync(
+  path.resolve(__dirname, '..', 'src/game/cities.ts'),
+  'utf8',
+);
 let pass = 0;
 let fail = 0;
 function check(name, condition) {
@@ -33,6 +39,18 @@ function check(name, condition) {
 // nad torem, dwukolorowy gradient `laborSliderFillStyle()` na torze, klikalne znaczniki MIN/MAX
 // pod krańcami. Asercje niżej przepisane pod nowy markup; intencja bez zmian (nazewnictwo +
 // jeden input + zakres 0–50% + brak drugiej ścieżki zapisu podziału).
+// R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA ASERCJI PINUJACYCH LITERALNE STRINGI UI
+// (uzasadnienie w 01-operator.md):
+//   CO PILNOWALY: jeden input, zakres 0–50%, jedna sciezka zapisu podzialu, jedna ikona
+//     `chip-crate` przy etykiecie drugiego strumienia, suwak miasta 50–100% budynkow.
+//   DLACZEGO STARE WARUNKI PRZESTALY BYC PRAWDA: WYLACZNIE dlatego, ze zmienily sie
+//     literalne stringi — etykieta „Ulepszenia" zostala ujednolicona do jednej rodziny
+//     nazw (`PULA_LBL`/`PULA_LBL_PELNA` = „Ulepszenia (pula)"/„Ulepszenia (pula imperium)"),
+//     zakresy przeszly na stale (`MAX_PROCENT_PULI_IMPERIUM`, `MIN_PODZIAL_PRACY_BUDYNKI_PERCENT`),
+//     a zapis podzialu idzie przez `podzialPracyZProcentuPuli()`. ZADNA z pinowanych
+//     wlasnosci nie zostala oslabiona.
+//   CO PILNUJE TERAZ: te same wlasnosci, wyrazone przez nowe stale i nazwy.
+
 check('sygnał "Ulepszenia" na samej górze sekcji (hero)', source.includes('data-praca-empire-split-hero>Ulepszenia ${pctU}%'));
 check(
   'etykieta "Ulepszenia" po lewej stronie suwaka (błękit, procent na żywo)',
@@ -54,12 +72,14 @@ check('klikalny znacznik MAX na krańcu suwaka', source.includes('data-praca-emp
 check(
   'MIN/MAX przechodzą przez TEN SAM handler co drag (input.value + dispatch "input"), bez drugiej ścieżki zapisu',
   source.includes("input.dispatchEvent(new Event('input', { bubbles: true }));")
-    && (source.match(/onChange\(0, \{ procentUlepszenia: pctU \}\)/g) || []).length === 1,
+    && (source.match(/onChange\(0, podzialPracyZProcentuPuli\(pctU\)\)/g) || []).length === 1,
 );
 check('jeden renderowany nadrzędny input', (source.match(/data-praca-empire-split title=/g) || []).length === 1);
 check('jeden listener input dla nadrzędnego suwaka', (source.match(/input\.addEventListener\('input'/g) || []).length === 1);
 check('brak usuniętego lokalnego renderu/wiringu', !source.includes('renderPracaSplitSection') && !source.includes('data-praca-key'));
-check('wartość suwaka ma zakres 0–50', source.includes('min="0" max="50" step="1"'));
+check('wartość suwaka ma zakres 0–50', source.includes('min="0" max="${MAX_PROCENT_PULI_IMPERIUM}" step="1"')
+  && /export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;/.test(citiesSource)
+  && /export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;/.test(citiesSource));
 check('Budynki wyliczane jako 100% minus Ulepszenia (kod, nie duplikowany tekst stopki)', source.includes('const pctB = 100 - pctU;'));
 // Wątek A: baner-duplikat (nieinteraktywny split2BarHtml + wiersz etykiet "Budynki X% / Pula
 // imperium Y%") usunięty z sekcji PRACA IMPERIUM -- nie mieszał się już wizualnie z prawdziwym
@@ -68,12 +88,15 @@ check(
   'baner-duplikat (split2BarHtml + etykiety Budynki/Pula imperium) usunięty z PRACA IMPERIUM',
   !/split2BarHtml\(pctBudynki/.test(source) && !source.includes('Pula imperium ${pctPula}%'),
 );
-check('lokalny suwak miasta zaczyna się od 50% budynków', citySource.includes("inp.min = '50';"));
-check('lokalny suwak miasta kończy się na 100% budynków', citySource.includes("inp.max = '100';"));
+check('lokalny suwak miasta zaczyna się od 50% budynków', citySource.includes("inp.min = String(MIN_PODZIAL_PRACY_BUDYNKI_PERCENT);")
+  && /export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;/.test(citiesSource));
+check('lokalny suwak miasta kończy się na 100% budynków', citySource.includes("inp.max = String(MAX_PODZIAL_PRACY_BUDYNKI_PERCENT);")
+  && /export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;/.test(citiesSource));
 // Wątek F: kontrolka #4 (cityPanel.ts renderPodzialPracy) przeprojektowana — sygnał "Ulepszenia"
 // na samej górze panelu, dwie kolumny Budynki (lewo, .left) / Ulepszenia (prawo, .right), zamiast
 // jednego zdania "Budynki 50–100% / Pula Pracy 0–50% (lokalnie)" (usunięta nazwa "Pula Pracy").
-check('sygnał "Ulepszenia" na samej górze panelu miasta', citySource.includes("summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} Ulepszenia <b>${pctU}%</b>`"));
+check('sygnał "Ulepszenia" na samej górze panelu miasta', citySource.includes("summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} ${PULA_LBL_PELNA} <b>${pctU}%</b>`")
+  && /const PULA_LBL_PELNA = 'Ulepszenia \(pula imperium\)';/.test(citySource));
 check('dwie kolumny Budynki/Ulepszenia w panelu miasta (Wątek F)', citySource.includes("el('div', 'praca-split-col left')") && citySource.includes("el('div', 'praca-split-col right')"));
 check('nazwa "Pula Pracy" usunięta z suwaka miasta (zastąpiona "Ulepszenia", Wątek F)', !citySource.includes('Pula Pracy 0–50% (lokalnie)'));
 
@@ -83,18 +106,19 @@ check('nazwa "Pula Pracy" usunięta z suwaka miasta (zastąpiona "Ulepszenia", W
 // wszędzie `chip-crate`, ikony zostają (bez przejścia na czysty tekst).
 check(
   'chip „Ulepszenia" w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)',
-  citySource.includes("statChipBrand('chip-crate', 'Ulepszenia'"),
+  citySource.includes("statChipBrand('chip-crate', PULA_LBL,")
+    && /const PULA_LBL = 'Ulepszenia \(pula\)';/.test(citySource),
 );
 check(
   'wiersz info „Ulepszenia" w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)',
-  citySource.includes("psiRowLabel('chip-crate', 'Ulepszenia'"),
+  citySource.includes("psiRowLabel('chip-crate', PULA_LBL_PELNA,"),
 );
 // Kontrakt anty-regresowy: ŻADNE wystąpienie etykiety „Ulepszenia" w cityPanel.ts nie może
 // wrócić do `tb-build` ani do jakiejkolwiek innej ikony niż `chip-crate`.
 {
-  const ulepszeniaIcons = [...citySource.matchAll(/'([a-z0-9-]+)',\s*(?:'Ulepszenia'|13\)\} Ulepszenia|16\)\} Ulepszenia)/g)]
+  const ulepszeniaIcons = [...citySource.matchAll(/'([a-z0-9-]+)',\s*PULA_LBL(?:_PELNA)?[,)]/g)]
     .map((m) => m[1]);
-  const wrapIcons = [...citySource.matchAll(/cityPanelChipIconWrap\('([a-z0-9-]+)',\s*\d+\)\}\s*Ulepszenia/g)]
+  const wrapIcons = [...citySource.matchAll(/cityPanelChipIconWrap\('([a-z0-9-]+)',\s*\d+\)\}\s*\$\{PULA_LBL(?:_PELNA)?\}/g)]
     .map((m) => m[1]);
   const all = [...ulepszeniaIcons, ...wrapIcons];
   check(
@@ -104,7 +128,7 @@ check(
 }
 check(
   'młotek tb-build nie jest już użyty przy „Ulepszenia" w cityPanel.ts',
-  !/tb-build'[^\n]*Ulepszenia/.test(citySource) && !/Ulepszenia[^\n]*'tb-build/.test(citySource),
+  !/tb-build'[^\n]*PULA_LBL/.test(citySource) && !/PULA_LBL[^\n]*'tb-build/.test(citySource),
 );
 
 // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1 (Maciej 2026-08-22): ten sam kontrakt „jedno pojęcie =

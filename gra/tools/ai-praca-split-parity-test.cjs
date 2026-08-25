@@ -29,7 +29,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-praca-split-parity-bundle.cjs')
 
 fs.writeFileSync(ENTRY_FILE, `
 export { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};
-export { splitEmpirePracaBudget } from ${JSON.stringify(SRC + '/game/production')};
+export { splitPraca } from ${JSON.stringify(SRC + '/game/production')};
 `, 'utf8');
 
 try {
@@ -48,7 +48,7 @@ try {
   process.exit(1);
 }
 
-const { decideAITurn, splitEmpirePracaBudget } = require(BUNDLE_FILE);
+const { decideAITurn, splitPraca } = require(BUNDLE_FILE);
 
 let passed = 0;
 let failed = 0;
@@ -125,12 +125,19 @@ function runPlanner({ ownerId, defensiveCopy, improvementBudgetCap }) {
   return commands.filter(c => c.type === 'buildImprovement');
 }
 
-console.log('1. Split pierwotnej puli: 100 Pracy → 50 budynki + 50 ulepszenia');
+// R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA (uzasadnienie w 01-operator.md):
+//   CO PILNOWALY bloki 1 i 6: ze DRUGI podzial puli (`splitEmpirePracaBudget`) daje AI
+//     ten sam absolutny budzet ulepszen co graczowi.
+//   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: drugi podzial usuniety — parytet ma byc
+//     na JEDYNYM podziale, inaczej AI i gracz znow liczyliby Prace dwa razy.
+//   CO PILNUJE TERAZ: ten sam parytet na `splitPraca` (jedyny podzial) — identyczna
+//     jednostka miary i identyczny cap dla gracza i dla AI.
+console.log('1. Jedyny podział: 100 Pracy przy 50% budynków → 50 budynki + 50 pula (ulepszenia)');
 {
-  const split = splitEmpirePracaBudget(100, 50);
+  const split = splitPraca(100, 0.5);
   eq(split.doBudynkow, 50, 'doBudynkow = 50');
-  eq(split.doUlepszen, 50, 'doUlepszen = 50');
-  eq(split.doBudynkow + split.doUlepszen, split.total, 'split zachowuje całą pulę');
+  eq(split.doPuli, 50, 'doPuli = 50');
+  eq(split.doBudynkow + split.doPuli, split.total, 'split zachowuje całą Pracę');
 }
 
 console.log('2. Major AI: po wydaniu 50 na budynki nadal ma cap ulepszeń 50');
@@ -164,10 +171,6 @@ console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
   const mainSource = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
   const aiSource = fs.readFileSync(path.resolve(SRC, 'game', 'ai.ts'), 'utf8');
   assert(
-    mainSource.includes('aiImprovementBudgetByOwner.set(ownerId, aiBudget.doUlepszen)'),
-    'main.ts zachowuje pierwotne doUlepszen per owner',
-  );
-  assert(
     mainSource.includes('improvementBudgetCap: aiImprovementBudgetByOwner.get(ownerId)'),
     'main.ts przekazuje absolutny cap do decideAITurn/defensiveCopy',
   );
@@ -176,27 +179,37 @@ console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
     'ai.ts respektuje jawny absolutny cap',
   );
   assert(
-    !aiSource.includes('const pracaBudget = splitEmpirePracaBudget(pracaAvailable, 50);'),
+    !aiSource.includes('splitEmpirePracaBudget'),
     'ai.ts nie wykonuje ponownego splitu na pozostałej puli',
   );
+  // AKTUALIZACJA: zrodlem capu jest teraz JEDYNY podzial (`ownerDefaultPodzialPracy`),
+  // wiec pinujemy jego wiring, nie wiring usunietego drugiego suwaka.
   assert(
-    mainSource.includes('effectivePracaSplitForOwner(0).procentUlepszenia')
-      && mainSource.includes('effectivePracaSplitForOwner(ownerId).procentUlepszenia'),
-    'gracz i AI pobierają nadrzędny split z osobnej polityki ownera',
+    mainSource.includes('aiImprovementBudgetByOwner.set(ownerId, pracaPoolInflowByOwner.get(ownerId)'),
+    'AI bierze budżet ulepszeń z tegorocznego wpływu do puli (jedyny podział)',
   );
   assert(
-    mainSource.includes('ownerDefaultPracaSplit: Array.from(ownerDefaultPracaSplit.entries())')
-      && mainSource.includes('const savedPracaSplit = saved.meta?.ownerDefaultPracaSplit'),
-    'MP/stary save mają serializację i migrację osobnego splitu ownera',
+    mainSource.includes('procentPuliImperiumForOwner(0)')
+      && mainSource.includes('function procentPuliImperiumForOwner('),
+    'gracz i AI czytają udział ulepszeń jako dopełnienie jedynego podziału',
+  );
+  assert(
+    mainSource.includes('ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries())')
+      && mainSource.includes('const savedPracaSplitLegacy = saved.meta?.ownerDefaultPracaSplit'),
+    'MP/stary save: serializacja jedynego podziału + migracja legacy drugiego suwaka',
+  );
+  assert(
+    !mainSource.includes('ownerDefaultPracaSplit.set('),
+    'drugi, niezależny suwak ownera nie jest już nigdzie zapisywany',
   );
 }
 
 console.log('6. Kontrakt 10% ulepszeń → 90% budynków działa identycznie dla ownera AI/MP');
 {
-  const split = splitEmpirePracaBudget(100, 10);
-  eq(split.doUlepszen, 10, 'AI/MP: 10% puli na ulepszenia');
-  eq(split.doBudynkow, 90, 'AI/MP: remainder 90% puli na budynki');
-  eq(split.total, split.doUlepszen + split.doBudynkow, 'AI/MP: split zachowuje sumę');
+  const split = splitPraca(100, 0.9);
+  eq(split.doPuli, 10, 'AI/MP: 10% Pracy na ulepszenia (pula)');
+  eq(split.doBudynkow, 90, 'AI/MP: 90% Pracy na budynki');
+  eq(split.total, split.doPuli + split.doBudynkow, 'AI/MP: split zachowuje sumę');
 }
 
 console.log(`\nai-praca-split-parity-test: ${passed} passed, ${failed} failed`);
