@@ -115,4 +115,23 @@ pod tym kątem** (nie ponowna praca nad 6 już ukończonymi w `R-ZELAZO-MODELE-B
   projekcji YZ→ekran maskowany przez miarę długości zamiast kierunku). Final
   Control naprawił 3 nieprecyzyjne komentarze, w tym własne odkrycie błędnej
   lokalizacji cytatu Tacyta. 4 znaleziska zarejestrowane osobno.
-- T9–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{9..11}/`.
+- **T11 — ZINTEGROWANE (2026-08-25, 1 runda + integration micro-fix).** Katapulta
+  (onager) — ostatni temat serii. 11 brył bez nazw/anchors, nigdy rygorystycznie
+  zmierzona. Znalezione i naprawione pomiarem: oś obrotu ramienia miotającego
+  przesunięta o 43,2% jego długości (błąd znaku sin/rotation.x — dwa przeciwne
+  zwroty tego samego kąta), kubeł z kamieniem wiszący w powietrzu, liny osi-skrzyni
+  niesięgające celu, koła odczepione od ramy, banderola oderwana od burty, brak
+  liny skrętnej/spustu/zderzaka. Typ machiny (onager, nie balista) ustalony z danych
+  projektu (tor paraboliczny pocisku w `battleScene.ts`), niezgodność chronologiczna
+  (onager poświadczony dopiero od IV w. n.e.) udokumentowana jawnie, nie zamieciona.
+  Operator złapał pomiarem trzy defekty własnej pracy przed oddaniem (lina
+  kołowrotu niewidoczna z kamery gry, koło pod terenem, sworzeń spustu na styk).
+  Evaluator (własny niezależny harness) potwierdził wszystkie kryteria i defekty,
+  znalazł 4 nieprecyzyjne/fałszywe zdania w nowych komentarzach — ten sam wzorzec
+  co T5-T10. Final Control zweryfikował od zera, naprawił 5 nieścisłych zdań jako
+  integration micro-fix (czysto tekstowe). Dwa znaleziska poza allowlistą
+  zarejestrowane osobno (brak nazwy jednostki dla machin oblężniczych w bitwie
+  ręcznej — `manualBattle.ts:750`; aliasy onager/balista/trebuchet rozjeżdżające
+  się między warstwami, dziś bez skutku).
+- T9–T10: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{9,10}/`
+  (w trakcie, uruchomione równolegle).
