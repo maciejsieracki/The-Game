@@ -1,6 +1,6 @@
 # R-ZELAZO-AUDYT-POZOSTALE-Q1 — audyt jakości pozostałych 19 modeli 3D epoki Żelazo
 
-**Status:** W TRAKCIE (2026-08-25)
+**Status:** ZAMKNIĘTA (2026-08-25) — T5-T11 wszystkie zintegrowane do `main`.
 
 ## Sytuacja
 
@@ -150,5 +150,24 @@ pod tym kątem** (nie ponowna praca nad 6 już ukończonymi w `R-ZELAZO-MODELE-B
   Drużynnik/Miecznik galijski nadal poniżej progu, zależność od T9; próg
   zerowy H12 przepuszcza bryły „prawie martwe"; rozjazd
   `Atak dystansowy`/`missileAttack` i brak `armor` w `units.json`).
-- T9: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T9/` (w
-  toku).
+- **T9 — ZINTEGROWANE (2026-08-25, 1 runda, po odzyskaniu po awarii infra).**
+  Miecznik galijski, Rydwan celtycki — ostatni temat serii. Operator's subagent
+  padł (exit 137, OOM) po ukończeniu pracy ale przed commitem; orkiestrator
+  odzyskał niescommitowany diff+raport z worktree, zweryfikował niezależnie
+  (tsc/vite build/5 bramek referencyjnych/regresja T6-T7 zielone) i skomitował
+  w jego imieniu, po czym dispatchował świeże Evaluator+Final Control przeciw
+  odzyskanej pracy. Rozstrzygnięcie kwestii z dispatchu: współdzielona bryła
+  rydwanu (mykeński/Shang/celtycki) to LUKA, nie świadomy wzorzec — cztery
+  niezależne przesłanki potwierdzone przez obie role kontrolne. Naprawa w
+  granicach allowlisty podniosła odróżnialność celtycki/mykeński z 0.0102 do
+  0.390 (pełny próg 0.558 wymaga bespoke bryły, zarejestrowane osobno).
+  Znalezione i naprawione pomiarem: krata na braccae 0px, torques w połowie
+  szyi, kita helmu wisząca nad miską, brak oczu, poza miecza sprzeczna z
+  Polibiuszem, tarcza rydwanu krawędzią do kamery, tarcza wisząca w powietrzu.
+  Final Control potwierdził u źródła (nie tylko testem), że `retint()` nie
+  wycieka między rydwanami i że dziś nie ma kolizji barw gracza z okuciami.
+  Jedyny konflikt scalenia (z T10, oba dotknęły ten sam wiersz sąsiada w teście
+  T8) rozstrzygnięty zgodnie z pre-weryfikowaną rekomendacją Final Control.
+  Pięć znalezisk kosmetycznych/danych zarejestrowane osobno.
+- **Seria R-ZELAZO-AUDYT-POZOSTALE-Q1 zamknięta — T5+T6+T7+T8+T9+T10+T11
+  wszystkie zintegrowane do `main`.**

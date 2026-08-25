@@ -92,3 +92,21 @@ tunika woźnicy poza czerwienią lakową; dwa wysokie kabłąki burtowe.
    (0x3366ee). Zmierzone: piksele w barwie gracza 1334 (celtycki) vs 1669
    (mykeński) = 80%, więc identyfikacja gracza pozostaje czytelna (H21), ale
    warto to zobaczyć na żywym ekranie przy tej jednej palecie.
+
+## Uzupełnienie pól raportu (§4 — dodane przy integracji, Evaluator/Final Control
+znaleźli oryginalny raport niekompletny w tym miejscu; Operator's proces padł
+przed uzupełnieniem, substancja dowodu odtworzona niezależnie przez obie role
+kontrolne i orkiestratora)
+
+ALLOWLISTA: `gra/src/render/jednostki-z3-plemiona.ts` (wyłącznie
+`buildMiecznikGalijski()`), `gra/src/render/units.ts` (`decorateChariot()` + 2
+linie dispatchu), `gra/tools/*` (nowy test + rozszerzenie testu T8) — wszystkie
+w zakresie, zero linii poza allowlistą.
+TESTY: `zelazo-celtowie-miecznik-rydwan-real-render-test.cjs` 82 pass/0 fail
+(macierz ablacyjna H1-H21, nietautologiczna). `tsc --noEmit` 0 błędów, `vite
+build` (C-001) czysty. Zero regresji: cała seria T1-T8 zielona, `unit-power-test`
+4/2 pre-istniejący.
+BLOKADY: brak.
+RUNDY: 1/5.
+NASTĘPNY KROK: Evaluator.
+DEPLOY/PUSH: NIE WYKONANO (push gałęzi roboczej ≠ deploy).
