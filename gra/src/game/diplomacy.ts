@@ -920,7 +920,20 @@ export function applyDiplomaticEvent(
       break;
 
     case 'tarcia_graniczne':
-      // "Ekspansja przy granicy" -- modelled as one-shot -2 Zaufanie
+      // R-DYPLO-PAKT-WETO-EKSPANSJA-Q1 — SPROSTOWANIE komentarza (bez zmiany zachowania).
+      // Poprzednie brzmienie ("Ekspansja przy granicy" -- modelled as one-shot -2 Zaufanie)
+      // sugerowało, że czynnik „Ekspansja przy granicy" jest karą JEDNORAZOWĄ, i przez to
+      // stało w sprzeczności z UI („−2/turę"). Pomiar rozstrzyga: to są DWA różne
+      // mechanizmy, nie jeden opisany dwa razy.
+      //   • TU: dyskretne ZDARZENIE `tarcia_graniczne` — jednorazowe, wołane przez
+      //     `applyDiplomaticEvent`; pożycza tylko WARTOŚĆ parametru per-turowego, żeby nie
+      //     mnożyć stałych. Dowód: `tools/diplomacy-test.cjs:158` (20 → 18, raz).
+      //   • STAN CIĄGŁY „Ekspansja przy granicy" żyje osobno, w
+      //     `computeTickZaufanieDelta` (`if (ctx.ekspansjaPrzyGranicy) dZ += ...`), i jest
+      //     naliczany KAŻDEJ tury. Pomiar: Zaufanie 50 → 48/46/44/42/40 w 5 turach.
+      // UI („−2/turę", `diplomacy-factors.ts` `perTurn: true`) opisuje ten drugi mechanizm
+      // i jest ZGODNE ze specyfikacją (`Dyplomacja/Dyplomacja-zasady.md` §3.2). Defektem
+      // był wyłącznie ten komentarz.
       dZ = p.ekspansjaGranica_zaufanie_perTura;
       break;
 
