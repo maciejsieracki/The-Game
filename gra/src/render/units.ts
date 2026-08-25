@@ -1484,8 +1484,39 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('garnizon harappy') || n.includes('harappan garrison')) return buildGarnizonHarappy(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Śródziemnomorze (jednostki-z2-srodziemne.ts) ------
   // (Triari NIE tutaj — to super-jednostka, dispatch przez buildSuperUnit poniżej.)
-  if (n.includes('tyrski miecznik')) return buildTyrskiMiecznik(ownerColor_);
-  if (n.includes('gwardia tyrensk')) return buildGwardiaTyrenska(ownerColor_);
+  //
+  // AUDYT R-ZELAZO-AUDYT-POZOSTALE-Q1-T6, ZMIERZONE w żywym Three.js (nie
+  // odczytane ze źródła): przed audytem nazwy angielskie z kolumny „Nazwa EN"
+  // w units.json dawały dla dwóch z tych czterech jednostek 28-meshowy generyk
+  // `miecznik` zamiast własnej figurki (30 i 33 mesh) — „Tyre Guard" i
+  // „Tyrian Swordsman" nie miały tu rdzenia EN w ogóle. Dopisane niżej.
+  // „Thorakites" ma tę samą nazwę PL i EN, więc działał i przed audytem.
+  //
+  // NIE NAPRAWIONE TUTAJ, bo poprawka leży POZA allowlistą tego tematu:
+  // „Iron Khopesh Warrior" (EN Wojownika z żelaznym khopesh) NIE dociera do
+  // linii `iron khopesh` niżej — łapie go WCZEŚNIEJSZA linia dispatchu
+  // egipskiego (`n.includes('khopesh warrior')`, w tym pliku, sekcja EGIPT)
+  // i zwraca model BRĄZOWEGO wojownika z khopesh. Zmierzone: sygnatura części
+  // dla „Iron Khopesh Warrior" jest identyczna z modelem `Wojownik z khopesh`,
+  // nie z modelem żelaznym. Przyczyna: rdzeń `khopesh warrior` NIE jest
+  // jednoznaczny w units.json — pasuje do DWÓCH wierszy („Khopesh Warrior"
+  // i „Iron Khopesh Warrior"). Poprawka wymaga tknięcia linii należącej do
+  // innej jednostki (brązowej), więc jest osobnym tematem, nie „przy okazji".
+  //
+  // Zakres skutku (zmierzony, nie założony — 8 żywych wywołań buildUnitModel
+  // sprawdzone po jednym): manualBattle.ts nie przekazuje nazwy w ogóle;
+  // unitMiniPreview.ts i units.ts (x2, przez typeId) przekazują nazwę POLSKĄ;
+  // battleScene.ts (x4) przekazuje `stats['Jednostka'] ?? bu.nazwa` — z
+  // UDOKUMENTOWANYM fallbackiem na `bu.nazwa`, która "now holds the ENGLISH
+  // display name" (patrz komentarz przy battleScene.ts:4986-4989). Ścieżka
+  // angielska NIE jest dziś nieosiągalna — jest osiągalna przez ten fallback,
+  // więc dopisanie aliasów EN jest naprawą ścieżki osiągalnej, nie
+  // utwardzeniem martwego kodu. [Final Control T6: poprzednia wersja tego
+  // zdania twierdziła "nieosiągalna" bez sprawdzenia fallbacku — poprawiono.]
+  // Rdzenie `tyre guard` i `tyrian swordsman` sprawdzone na jednoznaczność w
+  // całym units.json: dokładnie po jednym trafieniu każdy.
+  if (n.includes('tyrski miecznik') || n.includes('tyrian swordsman')) return buildTyrskiMiecznik(ownerColor_);
+  if (n.includes('gwardia tyrensk') || n.includes('tyre guard')) return buildGwardiaTyrenska(ownerColor_);
   if (n.includes('zelaznym khopesh') || n.includes('iron khopesh')) return buildZelaznyKhopesh(ownerColor_);
   if (n.includes('thorakites')) return buildThorakites(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Plemiona (jednostki-z3-plemiona.ts) --------------
