@@ -24,6 +24,24 @@
  * czyli żeby obie jednostki spadły z powrotem do identycznego, generycznego
  * modelu `case 'konnica'`, dokładnie jak przed tym dispatchem.
  *
+ * SEKCJA (H) — DODANA W RUNDZIE 2. Sekcje (A)-(E) świeciły w rundzie 1 na
+ * zielono 25/25, a model MIMO TO miał cztery twarde błędy geometryczne, bo
+ * (A)-(E) mierzą tylko NAZWY mesh i pudełko ZBIORCZE całej bryły — a broń
+ * przechodząca na wylot przez własnego konia nie zmienia ani jednego, ani
+ * drugiego. (H) mierzy RELACJE między częściami, z punktami odniesienia
+ * (brzuch/grzbiet/głowa) branymi z samego modelu, nie wpisanymi liczbowo.
+ *
+ * Dowód nietautologiczności (H) — wykonany przez Operatora rundy 2 przez
+ * cofnięcie SAMYCH STAŁYCH POZY do wartości rundy 1 (AC_LANCE_TILT 0.90→0.20,
+ * AC_LANCE_GRIP na oś uda, AC_BOW_CANT 0.75→0, AC_BOW_S 0.80→1.00, ramię
+ * naciągu na dwa odcinki o tym samym kierunku, obręcz tarczy na własny kąt
+ * Eulera). Wynik: 26 pass / 5 fail, każda asercja (H) na czerwono —
+ *   H1 lanceMinY 0.1572 < bellyY 0.2062   (pięta lancy 0.05×HEX_R POD brzuchem)
+ *   H2 bowMinY   0.3876 < backY  0.4516   (ramię łuku 0.06×HEX_R W grzbiecie)
+ *   H3 dłoń naciągu 0.1731 od głowy       (limit 0.13 — przestrzelony cel)
+ *   H4 kąt łokcia 0 rad                   (ramię proste jak kij)
+ *   H5 |oś tarczy · normalna obręczy| = 0 (obręcz PROSTOPADLE do tarczy)
+ *
  * Usage (z gra/): node tools/zelazo-konnica-asyryjska-real-render-test.cjs
  *   --shots <katalog>   zrzuca PRZED/PO do <katalog>/{przed,po}.png
  *   --dist <index.html> użyj gotowego artefaktu vite zamiast budować go w teście
@@ -145,6 +163,38 @@ async function measureAll(page) {
           if (r > maxR) maxR = r;
         }
       });
+      // --- (H) pomiary STRUKTURALNE: czy broń faktycznie mija wierzchowca ---
+      // Liczenie mesh i pudełko całej bryły NIE wykrywają broni przechodzącej
+      // NA WYLOT przez własnego konia — bryła zbiorcza wygląda wtedy tak samo.
+      // Stąd osobne pomiary po NAZWANYCH częściach.
+      const partMinY = {};      // nazwa -> najniższy punkt w świecie
+      const partAxis = {};      // nazwa -> lokalne +Y części w świecie
+      const partPos = {};       // nazwa -> pozycja w świecie
+      const qw = new THREE.Quaternion();
+      obj.traverse((o) => {
+        if (!o.isMesh || !o.name) return;
+        const geo = o.geometry;
+        if (!geo.boundingBox) geo.computeBoundingBox();
+        const bb = geo.boundingBox;
+        for (const c of [
+          [bb.min.x, bb.min.y, bb.min.z], [bb.max.x, bb.min.y, bb.min.z],
+          [bb.min.x, bb.max.y, bb.min.z], [bb.max.x, bb.max.y, bb.min.z],
+          [bb.min.x, bb.min.y, bb.max.z], [bb.max.x, bb.min.y, bb.max.z],
+          [bb.min.x, bb.max.y, bb.max.z], [bb.max.x, bb.max.y, bb.max.z],
+        ]) {
+          v.set(c[0], c[1], c[2]).applyMatrix4(o.matrixWorld);
+          if (partMinY[o.name] === undefined || v.y < partMinY[o.name]) partMinY[o.name] = v.y;
+        }
+        o.getWorldQuaternion(qw);
+        partAxis[o.name] = new THREE.Vector3(0, 1, 0).applyQuaternion(qw).toArray();
+        if (o.name === 'ac-lancowa-shield-rim') {
+          partAxis['rim-normal'] = new THREE.Vector3(0, 0, 1).applyQuaternion(qw).toArray();
+        }
+        const wp = new THREE.Vector3();
+        o.getWorldPosition(wp);
+        partPos[o.name] = wp.toArray();
+      });
+
       const matCount = Array.isArray(obj.userData['mats']) ? obj.userData['mats'].length : -1;
       const coatHexes = (obj.userData['mats'] || [])
         .filter((m) => m && m.color)
@@ -153,6 +203,7 @@ async function measureAll(page) {
         meshCount, matCount, names, minY, maxY, maxR,
         height: maxY - minY,
         hasAcCoat: coatHexes.includes(acCoat),
+        partMinY, partAxis, partPos,
       };
     }
 
@@ -221,6 +272,52 @@ function assertReport(m, soft) {
   console.log('  [wymiary] lancowa: wysokość=' + m.lancowa.height.toFixed(3) + '×HEX_R, promień=' + m.lancowa.maxR.toFixed(3) + '×HEX_R, minY=' + m.lancowa.minY.toFixed(4));
   console.log('  [wymiary] łucznicza: wysokość=' + m.lucznicza.height.toFixed(3) + '×HEX_R, promień=' + m.lucznicza.maxR.toFixed(3) + '×HEX_R, minY=' + m.lucznicza.minY.toFixed(4));
 
+  // --- (H) BROŃ NIE PRZECHODZI PRZEZ WŁASNEGO WIERZCHOWCA -----------------
+  // Runda 1 przechodziła (A)-(E) na zielono, a mimo to lanca zwisała PONIŻEJ
+  // brzucha konia (przebijając udo jeźdźca), dolne ramię łuku wchodziło
+  // w grzbiet konia, dłoń naciągu mijała swój cel o 0.17×HEX_R przy prostym
+  // (niezgiętym) ramieniu, a obręcz tarczy stała PROSTOPADLE do jej tarczy.
+  // Żadnej z tych czterech rzeczy nie widać w liczbie mesh ani w pudełku
+  // zbiorczym — dlatego poniższe asercje mierzą RELACJE między częściami.
+  // Punkty odniesienia (brzuch/grzbiet/głowa) są brane z SAMEGO MODELU, nie
+  // wpisane liczbowo, więc nie rozjadą się przy zmianie skali konia.
+  const hh = (v) => (v === undefined ? NaN : v);
+  const dot3 = (a, b) => (a && b ? a[0] * b[0] + a[1] * b[1] + a[2] * b[2] : NaN);
+  const dist3 = (a, b) => (a && b ? Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) : NaN);
+
+  const bellyY = hh(m.lancowa.partMinY['ac-horse-girth']);      // linia BRZUCHA
+  const lanceMinY = Math.min(
+    hh(m.lancowa.partMinY['ac-lancowa-lance-shaft']),
+    hh(m.lancowa.partMinY['ac-lancowa-lance-butt']),
+  );
+  check('(H1) lanca nie zwisa poniżej linii brzucha konia (pięta drzewca nad poprągiem)',
+    Number.isFinite(bellyY) && Number.isFinite(lanceMinY) && lanceMinY > bellyY,
+    { lanceMinY: +lanceMinY.toFixed(4), bellyY: +bellyY.toFixed(4) });
+
+  const backY = hh(m.lucznicza.partMinY['ac-horse-pad']);       // linia GRZBIETU
+  const bowMinY = hh(m.lucznicza.partMinY['ac-lucznicza-bow']);
+  check('(H2) dolne ramię łuku mija grzbiet konia (przechył Z10 — łuk nad linią czapraka)',
+    Number.isFinite(backY) && Number.isFinite(bowMinY) && bowMinY > backY,
+    { bowMinY: +bowMinY.toFixed(4), backY: +backY.toFixed(4) });
+
+  const headP = m.lucznicza.partPos['ac-rider-head'];
+  const fistP = m.lucznicza.partPos['ac-lucznicza-draw-fist'];
+  const dHead = dist3(headP, fistP);
+  check('(H3) dłoń naciągu jest PRZY POLICZKU (<0.13×HEX_R od środka głowy), nie przestrzeliwuje celu',
+    Number.isFinite(dHead) && dHead < 0.13, { dystansOdGlowy: +(+dHead).toFixed(4) });
+
+  const upA = m.lucznicza.partAxis['ac-lucznicza-draw-uparm'];
+  const foA = m.lucznicza.partAxis['ac-lucznicza-draw-forearm'];
+  const bend = Math.acos(Math.max(-1, Math.min(1, dot3(upA, foA))));
+  check('(H4) ramię naciągu jest ZGIĘTE w łokciu (>0.25 rad między ramieniem a przedramieniem)',
+    Number.isFinite(bend) && bend > 0.25, { katLokcia: +(+bend).toFixed(3) });
+
+  const shieldA = m.lancowa.partAxis['ac-lancowa-shield'];
+  const rimN = m.lancowa.partAxis['rim-normal'];
+  const coplanar = Math.abs(dot3(shieldA, rimN));
+  check('(H5) obręcz tarczy leży W PŁASZCZYŹNIE tarczy (|oś tarczy · normalna obręczy| > 0.99)',
+    Number.isFinite(coplanar) && coplanar > 0.99, { dot: +(+coplanar).toFixed(4) });
+
   return results;
 }
 
@@ -239,8 +336,12 @@ async function main() {
   check('(0c) dispatch nazwany stoi PRZED generycznym fallbackiem (kolejność w pliku)',
     idxLancowa > -1 && idxGenericKonnica > -1 && idxLancowa < idxGenericKonnica,
     { idxLancowa, idxGenericKonnica });
-  check('(0d) render zawiera sekcję ZGODNOŚĆ HISTORYCZNA z punktami Z1-Z9',
-    /Z1\./.test(renderSrc) && /Z9\./.test(renderSrc));
+  check('(0d) render zawiera sekcję ZGODNOŚĆ HISTORYCZNA z punktami Z1-Z11',
+    /Z1\./.test(renderSrc) && /Z9\./.test(renderSrc)
+    && /Z10\./.test(renderSrc) && /Z11\./.test(renderSrc));
+  check('(0i) Z10/Z11 uzasadniają przechył i krótkość łuku kawaleryjskiego (nie „bo tak ładniej")',
+    /PRZECHYLE|PRZECHYŁ/.test(renderSrc) && /AC_BOW_CANT/.test(renderSrc)
+    && /AC_BOW_S/.test(renderSrc) && /kompozyt/i.test(renderSrc));
   check('(0e) Z1 (brak strzemion) i Z2 (brak siodła z drzewem) są jawnie udokumentowane',
     /BRAK STRZEMION/.test(renderSrc) && /BRAK SIODŁA/.test(renderSrc));
 

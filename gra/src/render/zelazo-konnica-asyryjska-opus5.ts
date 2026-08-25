@@ -84,10 +84,10 @@
  *     szturmowa z długą lancą i okrągłą tarczą"` — DŁUGA lanca (dłuższa niż
  *     jednoręczna dzida Konnicy z Brązu — K4 tamtego pliku świadomie
  *     odrzucał łuk, bo Brąz to `Atak dystansowy: 0` BEZ tarczy; ta jednostka
- *     ma tarczę wprost w danych) trzymana w PRAWEJ dłoni „na gotowość"
- *     (drzewce nachylone, nie poziomo skierowane — dłuższe drzewce podnosi
- *     wysokość sylwetki, nie jej szerokość, więc mieści się w budżecie
- *     promienia poziomego heksu), OKRĄGŁA TARCZA przypięta do LEWEGO
+ *     ma tarczę wprost w danych) trzymana w PRAWEJ dłoni CHWYTEM NADGARSTKOWYM
+ *     NAD UDEM, grot skierowany W PRZÓD-W GÓRĘ (`AC_LANCE_TILT`), pięta
+ *     drzewca uniesiona ZA jeźdźcem — pozycja „gotowa do pchnięcia" z
+ *     płaskorzeźb niniwskich, OKRĄGŁA TARCZA przypięta do LEWEGO
  *     przedramienia (ta sama ręka co wodze — udokumentowana technika:
  *     tarcza na pasie naramiennym, wodze trzymane tą samą dłonią/nadgarstkiem
  *     poniżej tarczy). Grot lancy ŻELAZNY (liściasty, ten sam profil co grot
@@ -163,6 +163,33 @@
  *         (~linia 3202): tamten model to inny, uproszczony koń bez
  *         uzdy/wodzy/czapraka i bez nóg jeźdźca (dwa klocki-ramiona) — nasz
  *         ma pełne oporządzenie, nogi bez strzemion i bogaty pancerz.
+ * Z10. ŁUK NIESIONY W PRZECHYLE (CANT, `AC_BOW_CANT` ≈ 43°), dolne ramię łuku
+ *     odchylone NA ZEWNĄTRZ od boku konia. To NIE jest zabieg kompozycyjny,
+ *     tylko podstawowa technika łucznictwa konnego: łuk trzymany pionowo
+ *     zahacza dolnym ramieniem o kark/bok wierzchowca i o udo jeźdźca, więc
+ *     jeździec przechyla łuczysko, żeby dolne ramię pracowało w wolnej
+ *     przestrzeni obok konia. Przechył jest zarazem najmocniejszym sygnałem
+ *     sylwetkowym odróżniającym tę jednostkę od piechoty łuczniczej tej samej
+ *     kultury (`buildAssyrianArcher` strzela z łuku PIONOWEGO — piechur nie
+ *     ma czego omijać).
+ * Z11. ŁUK KRÓTKI, SKALOWANY DO JEŹDŹCA (`AC_BOW_S`). Proporcje łuczyska
+ *     przeniesiono z kanonu (`PD_BOWS.composite`), ale przeskalowano
+ *     współczynnikiem torsu jeźdźca konnego względem piechura — bo krótkość
+ *     jest DEFINICYJNĄ cechą kawaleryjskiego łuku kompozytowego: kompozyt
+ *     (drewno+róg+ścięgno) daje tę samą siłę przy istotnie krótszym
+ *     łuczysku, i dokładnie to pozwoliło przenieść łucznictwo na koński
+ *     grzbiet. Łuk „pieszej" długości na jeźdźcu byłby anachronizmem
+ *     technologicznym, a nie tylko problemem geometrycznym.
+ *
+ * KOREKTY RUNDY 2 (weryfikacja na Opus 5 — patrz `02`/`03` w runie): pozycje
+ * Z4a, Z10 i Z11 powstały w tej rundzie. Runda 1 trzymała lancę PIONOWO na
+ * osi uda jeźdźca (drzewce przechodziło NA WYLOT przez udo, a pięta zwisała
+ * pod brzuchem konia) i łuk pionowo w pełnej, „pieszej" skali (dolne ramię
+ * wchodziło w grzbiet konia). Ramiona łucznika były w rundzie 1 budowane
+ * dwoma odcinkami o TYM SAMYM kierunku — ręka naciągu wychodziła prosta jak
+ * kij i przestrzeliwała swój własny punkt docelowy `NOCK` czterokrotnie.
+ * Tu ramiona idą przez `acArmIK` (dwukostny IK z wektorem bieguna, technika
+ * `pdArmIK` z `jednostki-p3-dystans.ts`), więc łokieć realnie się zgina.
  *
  * BUDŻET: obie jednostki dzielą jeden moduł geometrii koń+korpus jeźdźca
  * (zero duplikacji), różni je wyłącznie kilkanaście meshy uzbrojenia ramion.
@@ -245,6 +272,24 @@ const AC_SHIN_L     = 0.130;
 
 /** Obrót 3/4 całej bryły — patrz nagłówek. */
 const AC_YAW = 1.02;
+
+// ── UZBROJENIE: stałe pozy (Z4a, Z10, Z11) ─────────────────────────────────
+/** Nachylenie lancy od pionu, rad — grot w PRZÓD-w górę, pięta za jeźdźcem. */
+const AC_LANCE_TILT = 0.90;
+/** Punkt chwytu lancy: NA ZEWNĄTRZ od uda jeźdźca (x < -AC_HIP_X - pół uda). */
+const AC_LANCE_GRIP = new THREE.Vector3(-0.150, 0.545, 0.120);
+/** Podział drzewca w chwycie: ile przed dłonią, ile za nią (×HEX_R). */
+const AC_LANCE_FRONT = 0.404;
+const AC_LANCE_BACK  = 0.216;
+/**
+ * Skala łuczyska względem kanonu piechoty (Z11). Kanon `PD_BOWS.composite`
+ * jest wymiarowany do torsu piechura `PD_TORSO_H = 0.205`; tors tego jeźdźca
+ * ma `AC_TORSO_H = 0.150`, więc 0.150/0.205 ≈ 0.73 — zaokrąglone w górę do
+ * 0.80, żeby łuk pozostał czytelny w miniaturze tokena.
+ */
+const AC_BOW_S = 0.80;
+/** Przechył łuczyska wokół osi strzału (Z10), rad. */
+const AC_BOW_CANT = 0.75;
 
 // ===========================================================================
 // GEOMETRIE — SINGLETONY MODUŁU (lazy). Zero alokacji per token.
@@ -384,9 +429,10 @@ function getACShield(): THREE.CylinderGeometry { return (gACShield ||= new THREE
 function getACBoss(): THREE.SphereGeometry { return (gACBoss ||= new THREE.SphereGeometry(0.020 * HEX_R, 8, 6)); }
 function getACRim(): THREE.TorusGeometry { return (gACRim ||= new THREE.TorusGeometry(0.100 * HEX_R, 0.007 * HEX_R, 4, 14)); }
 
-function getACBowMid(): THREE.BoxGeometry { return (gACBowMid ||= new THREE.BoxGeometry(0.021 * HEX_R, 0.150 * HEX_R, 0.024 * HEX_R)); }
-function getACBowLimb(): THREE.BoxGeometry { return (gACBowLimb ||= new THREE.BoxGeometry(0.019 * HEX_R, 0.125 * HEX_R, 0.021 * HEX_R)); }
-function getACBowSiyah(): THREE.BoxGeometry { return (gACBowSiyah ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.072 * HEX_R, 0.018 * HEX_R)); }
+// Łuczysko: proporcje `PD_BOWS.composite` × AC_BOW_S (Z11).
+function getACBowMid(): THREE.BoxGeometry { return (gACBowMid ||= new THREE.BoxGeometry(0.021 * HEX_R, 0.150 * AC_BOW_S * HEX_R, 0.024 * HEX_R)); }
+function getACBowLimb(): THREE.BoxGeometry { return (gACBowLimb ||= new THREE.BoxGeometry(0.019 * HEX_R, 0.125 * AC_BOW_S * HEX_R, 0.021 * HEX_R)); }
+function getACBowSiyah(): THREE.BoxGeometry { return (gACBowSiyah ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.072 * AC_BOW_S * HEX_R, 0.018 * HEX_R)); }
 function getACArrowTip(): THREE.ConeGeometry { return (gACArrowTip ||= new THREE.ConeGeometry(0.013 * HEX_R, 0.042 * HEX_R, 4)); }
 function getACFletch(): THREE.BoxGeometry { return (gACFletch ||= new THREE.BoxGeometry(0.007 * HEX_R, 0.052 * HEX_R, 0.024 * HEX_R)); }
 function getACQuiver(): THREE.BoxGeometry { return (gACQuiver ||= new THREE.BoxGeometry(0.046 * HEX_R, 0.150 * HEX_R, 0.046 * HEX_R)); }
@@ -477,6 +523,52 @@ function acAlong(
   if (name !== undefined) mesh.name = name;
   parent.add(mesh);
   return mesh;
+}
+
+/**
+ * RAMIĘ NA DWUKOSTNYM IK — przeniesiona technika `pdArmIK`
+ * (`jednostki-p3-dystans.ts`, ten sam kanon kulturowy).
+ *
+ * DLACZEGO IK, A NIE DWA ODCINKI O ZADANYM KĄCIE: przy zadanych kątach dłoń
+ * ląduje tam, gdzie wypadnie, a nie tam, gdzie ma trzymać broń — a gdy oba
+ * odcinki dostaną TEN SAM kierunek, ramię wychodzi proste jak kij i mija cel
+ * o dowolną odległość (dokładnie ten defekt miała runda 1 przy ręce naciągu).
+ * Tu `T` jest twardym celem dłoni: zasięg jest przycinany do `(L1+L2)*0.999`,
+ * a `pole` rozstrzyga, w którą stronę wypada łokieć.
+ *
+ * Zwraca faktyczną pozycję dłoni oraz oś przedramienia (do orientacji broni).
+ */
+function acArmIK(
+  parent: THREE.Object3D, S: THREE.Vector3, T: THREE.Vector3, pole: THREE.Vector3,
+  mArm: THREE.MeshStandardMaterial, mFist: THREE.MeshStandardMaterial | null,
+  namePrefix?: string,
+): { hand: THREE.Vector3; elbow: THREE.Vector3; axis: THREE.Vector3 } {
+  const L1 = AC_UPARM_L * HEX_R, L2 = AC_FOREARM_L * HEX_R;
+  const dv = T.clone().sub(S);
+  const dist = Math.min(dv.length(), (L1 + L2) * 0.999);
+  const dn = dv.clone().normalize();
+  const a = (dist * dist + L1 * L1 - L2 * L2) / (2 * dist);
+  const h = Math.sqrt(Math.max(L1 * L1 - a * a, 0));
+  const C = S.clone().addScaledVector(dn, a);
+  const pp = pole.clone().sub(dn.clone().multiplyScalar(pole.dot(dn)));
+  if (pp.lengthSq() < 1e-8) pp.set(0, -1, 0);
+  pp.normalize();
+  const elbow = C.clone().addScaledVector(pp, h);
+  const dU = elbow.clone().sub(S).normalize();
+  const up = acAlongLen(parent, getACUpArm(), mArm, S, dU, L1, namePrefix ? namePrefix + '-uparm' : undefined);
+  void up;
+  const E = S.clone().addScaledVector(dU, L1);
+  const axis = T.clone().sub(E).normalize();
+  const hand = acAlongLen(parent, getACForearm(), mArm, E, axis, L2, namePrefix ? namePrefix + '-forearm' : undefined);
+  if (mFist !== null) {
+    const fist = new THREE.Mesh(getACFist(), mFist);
+    if (axis.y < -0.9999) fist.rotation.x = Math.PI;
+    else fist.quaternion.setFromUnitVectors(AC_UP, axis);
+    fist.position.copy(hand.clone().addScaledVector(axis, 0.010 * HEX_R));
+    if (namePrefix !== undefined) fist.name = namePrefix + '-fist';
+    parent.add(fist);
+  }
+  return { hand, elbow: E, axis };
 }
 
 function acStrap(
@@ -664,6 +756,7 @@ function acBuildMount(root: THREE.Object3D, m: ACMats): {
   // ── DERKA (owner color) + fredzle (Z2) + poprąg/napierśnik/pośliśnik ─────
   const padTop = new THREE.Mesh(getACPadTop(), m.mOwner);
   padTop.position.set(0, 0.436 * S * HEX_R, (AC_SEAT_Z - 0.018) * S * HEX_R);
+  padTop.name = 'ac-horse-pad';    // linia GRZBIETU — odniesienie dla asercji (H)
   root.add(padTop);
   const ridgeF = new THREE.Mesh(getACPadRidge(), m.mLeathDk);
   ridgeF.position.set(0, 0.450 * S * HEX_R, 0.096 * S * HEX_R);
@@ -685,6 +778,7 @@ function acBuildMount(root: THREE.Object3D, m: ACMats): {
   girth.rotation.y = Math.PI / 7;
   girth.scale.set(0.72, 1, 1);
   girth.position.set(0, AC_BODY_CTR * S * HEX_R, (AC_SEAT_Z + 0.006) * S * HEX_R);
+  girth.name = 'ac-horse-girth';   // linia BRZUCHA — odniesienie dla asercji (H)
   root.add(girth);
   const breast = new THREE.Mesh(getACBreast(), m.mLeather);
   breast.position.set(0, 0.358 * S * HEX_R, 0.208 * S * HEX_R);
@@ -734,9 +828,14 @@ function acBuildMount(root: THREE.Object3D, m: ACMats): {
 }
 
 interface ACRiderAnchors {
-  wristL: THREE.Vector3; wristR: THREE.Vector3;
-  shldL: THREE.Vector3; shldR: THREE.Vector3;
+  /** Bark LEWY (+X) — ręka wodzy / ręka łuku. */
+  shldL: THREE.Vector3;
+  /** Bark PRAWY (-X) — ręka broni głównej / ręka naciągu. */
+  shldR: THREE.Vector3;
+  /** Środek torsu — zaczep kołczanu. */
   torsoCtr: THREE.Vector3;
+  /** Środek głowy — zaczep policzka (kotwica naciągu łuku). */
+  headCtr: THREE.Vector3;
 }
 
 /**
@@ -772,6 +871,7 @@ function acBuildRiderCore(root: THREE.Object3D, m: ACMats): ACRiderAnchors {
   root.add(neckR);
   const head = new THREE.Mesh(getACHead(), m.mSkin);
   head.position.set(0, AC_HEAD_CTR * HEX_R, SZ * HEX_R);
+  head.name = 'ac-rider-head';     // kotwica POLICZKA — odniesienie dla asercji (H)
   root.add(head);
   const jaw = new THREE.Mesh(getACJaw(), m.mSkinDk);
   jaw.position.set(0, (AC_HEAD_CTR - AC_HEAD_S * 0.38) * HEX_R, (SZ + 0.010) * HEX_R);
@@ -811,8 +911,9 @@ function acBuildRiderCore(root: THREE.Object3D, m: ACMats): ACRiderAnchors {
   const shldL = new THREE.Vector3(AC_SHLD_X * HEX_R, AC_SHLD_Y * HEX_R, SZ * HEX_R);
   const shldR = new THREE.Vector3(-AC_SHLD_X * HEX_R, AC_SHLD_Y * HEX_R, SZ * HEX_R);
   return {
-    wristL: shldL.clone(), wristR: shldR.clone(), shldL, shldR,
+    shldL, shldR,
     torsoCtr: new THREE.Vector3(0, (backY + AC_TORSO_H * 0.5) * HEX_R, SZ * HEX_R),
+    headCtr: new THREE.Vector3(0, AC_HEAD_CTR * HEX_R, SZ * HEX_R),
   };
 }
 
@@ -828,7 +929,7 @@ export function buildZelazoKonnicaLancowaAsyryjska(ownerColor_: number): THREE.G
   group.add(root);
 
   const m = acMakeMaterials(mat, ownerColor_);
-  acBuildMount(root, m);
+  const mount = acBuildMount(root, m);
   const anc = acBuildRiderCore(root, m);
 
   // ── LEWE (+X) RAMIĘ: wodze + TARCZA OKRĄGŁA na przedramieniu (Z4a, Z9a) ─
@@ -848,45 +949,51 @@ export function buildZelazoKonnicaLancowaAsyryjska(ownerColor_: number): THREE.G
   shield.rotation.y = 0.30;
   shield.position.copy(wristL.clone().add(new THREE.Vector3(0.028 * HEX_R, 0.006 * HEX_R, -0.010 * HEX_R)));
   root.add(shield);
+  // Obręcz i umbo MUSZĄ dziedziczyć orientację tarczy, nie własne kąty Eulera:
+  // `getACShield` to walec (oś = lokalne +Y), a `getACRim` to torus (normalna =
+  // lokalne +Z), więc te same liczby w `rotation` dają dwie RÓŻNE płaszczyzny.
+  // Runda 1 nadała obręczy samo `rotation.y = 0.30` — torus stawał prostopadle
+  // do tarczy i opasywał jeźdźca jak hula-hoop zamiast obrysować tarczę.
+  const shieldAxis = new THREE.Vector3(0, 1, 0).applyQuaternion(shield.quaternion);
   const rim = new THREE.Mesh(getACRim(), mat(AC_SHIELD_RIM, 0.5, 0.4));
-  rim.rotation.y = 0.30;
+  rim.quaternion.copy(shield.quaternion);
+  rim.rotateX(Math.PI / 2);            // torus +Z → oś tarczy (torus jest symetryczny)
   rim.position.copy(shield.position);
+  rim.name = 'ac-lancowa-shield-rim';
   root.add(rim);
   const boss = new THREE.Mesh(getACBoss(), m.mBronze);
-  boss.position.copy(shield.position.clone().add(new THREE.Vector3(0.008 * HEX_R, 0, 0)));
+  boss.position.copy(shield.position.clone().addScaledVector(shieldAxis, 0.008 * HEX_R));
   root.add(boss);
 
-  // ── PRAWE (-X) RAMIĘ: DŁUGA LANCA „na gotowość" (Z4a) ───────────────────
-  let RA = anc.shldR.clone();
-  RA = acSegDown(root, getACUpArm(), m.mSkin, RA, 0.20, AC_UPARM_L * HEX_R);
-  RA.y += 0.007 * HEX_R;
-  const wristR = acSegDown(root, getACForearm(), m.mSkin, RA, 0.62, AC_FOREARM_L * HEX_R);
-  const fistR = new THREE.Mesh(getACFist(), m.mSkin);
-  fistR.rotation.x = Math.PI - 0.62;
-  fistR.position.copy(wristR.clone().addScaledVector(acDown(0.62), 0.010 * HEX_R));
-  root.add(fistR);
+  // ── PRAWE (-X) RAMIĘ: DŁUGA LANCA gotowa do pchnięcia (Z4a) ─────────────
+  // Chwyt jest NA ZEWNĄTRZ od uda (AC_LANCE_GRIP.x < -(AC_HIP_X + pół uda)),
+  // a drzewce nachylone grotem w PRZÓD: w rundzie 1 lanca stała niemal pionowo
+  // na osi uda, więc przechodziła na wylot przez nogę jeźdźca, a jej pięta
+  // zwisała PONIŻEJ brzucha konia. Ręka idzie na IK, żeby dłoń faktycznie
+  // trafiła w drzewce, a nie skończyła tam, gdzie wypadną zadane kąty.
+  const grip = AC_LANCE_GRIP.clone().multiplyScalar(HEX_R);
+  acArmIK(root, anc.shldR, grip, new THREE.Vector3(-0.60, -0.75, 0.10), m.mSkin, m.mSkin);
 
-  const LANCE_TILT = 0.20;
-  const dLance = acUpDir(LANCE_TILT);
-  const grip = new THREE.Vector3(
-    wristR.x - 0.020 * HEX_R, wristR.y + 0.002 * HEX_R, wristR.z + 0.010 * HEX_R,
-  );
+  const dLance = acUpDir(AC_LANCE_TILT);
   const atS = (t: number): THREE.Vector3 => grip.clone().addScaledVector(dLance, t * HEX_R);
-  acAlong(root, getACShaft(), m.mWood, atS(0), dLance, 'ac-lancowa-lance-shaft');
+  // Drzewce jest NIESYMETRYCZNE względem chwytu (więcej przed dłonią niż za
+  // nią) — stąd przesunięty środek walca zamiast atS(0).
+  const shaftMid = (AC_LANCE_FRONT - AC_LANCE_BACK) * 0.5;
+  acAlong(root, getACShaft(), m.mWood, atS(shaftMid), dLance, 'ac-lancowa-lance-shaft');
   acAlong(root, getACGrip(), m.mLeathDk, atS(0), dLance);
-  acAlong(root, getACSocket(), m.mIron, atS(0.294), dLance);
-  acAlong(root, getACBind(), m.mLeathDk, atS(0.276), dLance);
-  acAlong(root, getACBind(), m.mLeathDk, atS(0.312), dLance);
-  acAlong(root, getACLanceHd(), m.mIronLt, atS(0.304), dLance, 'ac-lancowa-lance-head');
-  const buttMesh = acAlong(root, getACButt(), m.mIron, atS(-0.298), dLance);
+  acAlong(root, getACSocket(), m.mIron, atS(AC_LANCE_FRONT - 0.010), dLance);
+  acAlong(root, getACBind(), m.mLeathDk, atS(AC_LANCE_FRONT - 0.028), dLance);
+  acAlong(root, getACBind(), m.mLeathDk, atS(AC_LANCE_FRONT + 0.008), dLance);
+  acAlong(root, getACLanceHd(), m.mIronLt, atS(AC_LANCE_FRONT), dLance, 'ac-lancowa-lance-head');
+  const buttMesh = acAlong(root, getACButt(), m.mIron, atS(-AC_LANCE_BACK), dLance, 'ac-lancowa-lance-butt');
   buttMesh.rotateX(Math.PI);
 
-  // wodze: od wędzidła do lewego nadgarstka (osadzone po zbudowaniu konia —
-  // bitY/bitZ znane z acBuildMount, ale nie propagowane poza funkcję celowo:
-  // przybliżenie do pozycji pyska konia na osi Z jest wystarczające dla
-  // czytelnego paska w tej skali).
+  // WODZE: od PRAWDZIWEGO pierścienia wędzidła (bitY/bitZ zwrócone przez
+  // acBuildMount) do lewego nadgarstka. Runda 1 wpisywała tu przybliżenie
+  // „na oko", mijające faktyczne wędzidło o ok. 0.08×HEX_R — wodze zaczynały
+  // się w powietrzu pod pyskiem konia zamiast na uzdzie.
   acStrap(root, m.mLeathDk,
-    new THREE.Vector3(0.026 * AC_S * HEX_R, (0.386 + 0.10) * AC_S * HEX_R, 0.30 * AC_S * HEX_R),
+    new THREE.Vector3(0.026 * AC_S * HEX_R, mount.bitY, mount.bitZ),
     new THREE.Vector3(wristL.x - 0.006 * HEX_R, wristL.y + 0.006 * HEX_R, wristL.z),
     0.007 * HEX_R, 0.007 * HEX_R);
 
@@ -907,59 +1014,63 @@ export function buildZelazoKonnicaLuczniczaAsyryjska(ownerColor_: number): THREE
   group.add(root);
 
   const m = acMakeMaterials(mat, ownerColor_);
-  acBuildMount(root, m);
+  const mount = acBuildMount(root, m);
   const anc = acBuildRiderCore(root, m);
 
   // ── ŁUK KOMPOZYTOWY W PEŁNYM NACIĄGU (Z4b) — adaptacja pdAddDrawnBow
-  //    (jednostki-p3-dystans.ts) na jeźdźca: GRIP w lewej dłoni wyciągniętej
-  //    do przodu-w-bok, NOCK w prawej dłoni cofniętej do policzka. Obie
-  //    dłonie zajęte łukiem — wodze LUŹNO zapętlone na lewym przedramieniu
-  //    (Z4b: udokumentowana technika samodzielnego jeźdźca-łucznika).
-  const GRIP = anc.shldL.clone().add(new THREE.Vector3(0.058 * HEX_R, -0.010 * HEX_R, 0.150 * HEX_R));
-  const NOCK = anc.shldR.clone().add(new THREE.Vector3(-0.010 * HEX_R, 0.020 * HEX_R, -0.030 * HEX_R));
+  //    (jednostki-p3-dystans.ts) na jeźdźca. GRIP: lewa dłoń wyprostowana
+  //    w przód-w bok. NOCK: prawa dłoń przy POLICZKU — kotwica naciągu jest
+  //    liczona od GŁOWY (anc.headCtr), nie od barku, bo to głowa wyznacza
+  //    policzek. Runda 1 celowała NOCK-iem 0.037×HEX_R od barku, przy zasięgu
+  //    ramienia 0.150 — ramię przestrzeliwało własny cel czterokrotnie i,
+  //    zbudowane dwoma odcinkami o tym samym kierunku, wychodziło zupełnie
+  //    proste (brak łokcia). Oba ramiona idą teraz przez acArmIK.
+  const GRIP = anc.shldL.clone().add(new THREE.Vector3(0.060 * HEX_R, 0.058 * HEX_R, 0.150 * HEX_R));
+  const NOCK = anc.headCtr.clone().add(
+    new THREE.Vector3(-(AC_HEAD_S * 0.5 + 0.028) * HEX_R, -0.018 * HEX_R, -0.012 * HEX_R),
+  );
 
-  let LA = anc.shldL.clone();
-  const dirLU = GRIP.clone().sub(LA).normalize();
-  LA = acAlongLen(root, getACUpArm(), m.mSkin, LA, dirLU, AC_UPARM_L * HEX_R);
-  const wristL = acAlongLen(root, getACForearm(), m.mSkin, LA, dirLU, AC_FOREARM_L * HEX_R);
-  const fistL = new THREE.Mesh(getACFist(), m.mSkin);
-  fistL.quaternion.setFromUnitVectors(AC_UP, dirLU);
-  fistL.position.copy(wristL);
-  root.add(fistL);
+  // Ramię łuku: proste i zablokowane (cel poza zasięgiem → IK przycina do
+  // wyprostu). Ramię naciągu: łokieć WYSOKO w tył-zewnątrz — te same wektory
+  // bieguna co `pdArcherBody` w kanonie kulturowym.
+  const armL = acArmIK(root, anc.shldL, GRIP, new THREE.Vector3(0.55, -0.70, 0.20), m.mSkin, m.mSkin, 'ac-lucznicza-bowarm');
+  const armR = acArmIK(root, anc.shldR, NOCK, new THREE.Vector3(-0.55, 0.85, -0.25), m.mSkin, m.mSkin, 'ac-lucznicza-draw');
 
-  let RA = anc.shldR.clone();
-  const dirRU = NOCK.clone().sub(RA).normalize();
-  RA = acAlongLen(root, getACUpArm(), m.mSkin, RA, dirRU, AC_UPARM_L * HEX_R);
-  const wristR = acAlongLen(root, getACForearm(), m.mSkin, RA, dirRU, AC_FOREARM_L * HEX_R);
-  const fistR = new THREE.Mesh(getACFist(), m.mSkin);
-  fistR.quaternion.setFromUnitVectors(AC_UP, dirRU);
-  fistR.position.copy(wristR);
-  root.add(fistR);
-
-  const G = wristL.clone(), N = wristR.clone();
+  const G = armL.hand.clone(), N = armR.hand.clone();
   const dirA = G.clone().sub(N).normalize();
   const yaw = Math.atan2(dirA.x, dirA.z);
+  // PRZECHYŁ (Z10): po ustawieniu yaw łuczysko jest rolowane wokół WŁASNEJ osi
+  // strzału (lokalne +Z), więc dolne ramię odchyla się na zewnątrz od konia,
+  // a górne kładzie nad głową jeźdźca. Bez tego (runda 1) dolne ramię łuku
+  // wchodziło w grzbiet konia i w udo jeźdźca.
   const bow = new THREE.Group();
   bow.name = 'ac-lucznicza-bow';
   bow.position.copy(G);
   bow.rotation.y = yaw;
+  bow.rotateZ(AC_BOW_CANT);
   const mid = new THREE.Mesh(getACBowMid(), m.mWoodBow);
   mid.name = 'ac-lucznicza-bow';
   bow.add(mid);
   for (const sg of [1, -1] as const) {
     const limb = new THREE.Mesh(getACBowLimb(), m.mWoodBow);
     limb.rotation.x = -sg * 0.52;
-    limb.position.set(0, sg * 0.128 * HEX_R, -0.016 * HEX_R);
+    limb.name = 'ac-lucznicza-bow';
+    limb.position.set(0, sg * 0.128 * AC_BOW_S * HEX_R, -0.016 * AC_BOW_S * HEX_R);
     bow.add(limb);
     const siyah = new THREE.Mesh(getACBowSiyah(), m.mBronzeLt);
     siyah.rotation.x = -sg * 1.12;
-    siyah.position.set(0, sg * 0.236 * HEX_R, -0.084 * HEX_R);
+    siyah.name = 'ac-lucznicza-bow';
+    siyah.position.set(0, sg * 0.236 * AC_BOW_S * HEX_R, -0.084 * AC_BOW_S * HEX_R);
     bow.add(siyah);
   }
   root.add(bow);
-  const rotY = new THREE.Matrix4().makeRotationY(yaw);
-  const tipTop = new THREE.Vector3(0, 0.270 * HEX_R, -0.100 * HEX_R).applyMatrix4(rotY).add(G);
-  const tipBot = new THREE.Vector3(0, -0.270 * HEX_R, -0.100 * HEX_R).applyMatrix4(rotY).add(G);
+  // Końce łuczyska w świecie: przez PEŁNĄ macierz łuku (yaw + przechył), a nie
+  // przez samo makeRotationY — inaczej cięciwa rozjeżdża się z ramionami łuku.
+  bow.updateMatrix();
+  const tipLocal = (0.236 + 0.034) * AC_BOW_S * HEX_R;
+  const tipLocalZ = -0.100 * AC_BOW_S * HEX_R;
+  const tipTop = new THREE.Vector3(0, tipLocal, tipLocalZ).applyMatrix4(bow.matrix);
+  const tipBot = new THREE.Vector3(0, -tipLocal, tipLocalZ).applyMatrix4(bow.matrix);
   acStrap(root, m.mString, tipTop, N, 0.008 * HEX_R, 0.008 * HEX_R);
   acStrap(root, m.mString, tipBot, N, 0.008 * HEX_R, 0.008 * HEX_R);
   const tipP = G.clone().addScaledVector(dirA, 0.065 * HEX_R);
@@ -974,10 +1085,18 @@ export function buildZelazoKonnicaLuczniczaAsyryjska(ownerColor_: number): THREE
   fl.position.copy(N.clone().addScaledVector(dirA, 0.030 * HEX_R));
   root.add(fl);
 
-  // wodze luźno zapętlone na lewym przedramieniu (Z4b)
+  // WODZE (Z4b): faktycznie BIEGNĄ od wędzidła i dopiero na lewym przedramieniu
+  // są luźno zapętlone — obie dłonie zostają zajęte łukiem. Runda 1 rysowała
+  // samą pętelkę przy nadgarstku, nie połączoną z niczym, przez co uzda konia
+  // kończyła się na wędzidle i wodzy w modelu w ogóle nie było.
+  const reinEnd = armL.elbow.clone().lerp(armL.hand, 0.45);
   acStrap(root, m.mLeathDk,
-    new THREE.Vector3(wristL.x + 0.012 * HEX_R, wristL.y - 0.014 * HEX_R, wristL.z),
-    new THREE.Vector3(wristL.x - 0.010 * HEX_R, wristL.y + 0.010 * HEX_R, wristL.z - 0.008 * HEX_R),
+    new THREE.Vector3(0.026 * AC_S * HEX_R, mount.bitY, mount.bitZ),
+    reinEnd,
+    0.006 * HEX_R, 0.006 * HEX_R);
+  acStrap(root, m.mLeathDk,
+    reinEnd.clone().add(new THREE.Vector3(0.010 * HEX_R, 0.010 * HEX_R, 0)),
+    reinEnd.clone().add(new THREE.Vector3(-0.008 * HEX_R, -0.014 * HEX_R, -0.008 * HEX_R)),
     0.006 * HEX_R, 0.006 * HEX_R);
 
   // ── KOŁCZAN NA PLECACH — groty widoczne, lotki KOLORU GRACZA (slot 3) ───
@@ -1007,12 +1126,13 @@ export function buildZelazoKonnicaLuczniczaAsyryjska(ownerColor_: number): THREE
 /** Segment stałej długości od A wzdłuż jednostkowego kierunku D. */
 function acAlongLen(
   parent: THREE.Object3D, geo: THREE.BufferGeometry, mtl: THREE.MeshStandardMaterial,
-  A: THREE.Vector3, D: THREE.Vector3, len: number,
+  A: THREE.Vector3, D: THREE.Vector3, len: number, name?: string,
 ): THREE.Vector3 {
   const mesh = new THREE.Mesh(geo, mtl);
   if (D.y < -0.9999) mesh.rotation.x = Math.PI;
   else mesh.quaternion.setFromUnitVectors(AC_UP, D);
   mesh.position.copy(A.clone().addScaledVector(D, len * 0.5));
+  if (name !== undefined) mesh.name = name;
   parent.add(mesh);
   return A.clone().addScaledVector(D, len);
 }
