@@ -152,7 +152,7 @@ const S6_WOOD_DK   = 0x5f4020;   // ciemne drewno (drzewce choragwi)
 const S6_LEATHER   = 0x6b4a28;   // skora rzemienie
 const S6_ROMAN_RED = 0xa42a22;   // tunika rzymska
 const S6_MAIL      = 0x8e99a6;   // lorica hamata Evocatiego (kolczuga, matowa stal)
-const S6_CRIMSON   = 0xa01f2e;   // karmazyn (grzebien liniowego hoplity — patrz K4)
+const S6_CRIMSON   = 0xa01f2e;   // karmazyn (grzebien liniowego hoplity — patrz K5)
 const S6_PURPLE    = 0x7a2c96;   // purpura (plaszcz i grzebien Hieros Lochos, piora Evocati)
 const S6_EYE       = 0x1a1008;   // oczy
 const S6_DARK      = 0x20180f;   // szczelina helmu
@@ -517,7 +517,6 @@ export function buildSuperGreece(ownerColor_: number): THREE.Group {
   const mBronzL = mat(S6_BRONZE_LT, 0.55, 0.35);
   const mGold   = mat(S6_GOLD,      0.58, 0.32);
   const mSteel  = mat(S6_STEEL,     0.50, 0.40);
-  const mCrest  = mat(S6_CRIMSON,   0.08, 0.74);
   const mPurple = mat(S6_PURPLE,    0.06, 0.78);
   const mOwner  = mat(ownerColor_,  0.16, 0.62);
   const mWood   = mat(S6_WOOD,      0.05, 0.85);
@@ -569,7 +568,7 @@ export function buildSuperGreece(ownerColor_: number): THREE.Group {
   group.add(grB);
 
   // HELM KORYNCKI ZSUNIETY NA CIEMIE + WYSOKI grzebien (baza + wlosie + lok).
-  // NAPRAWA T7 (A7): dzwon siedzial DOKLADNIE tam, gdzie u liniowego Falangity
+  // NAPRAWA T7 (A4): dzwon siedzial DOKLADNIE tam, gdzie u liniowego Falangity
   // (HEAD_CTR + 0.014, ta sama geometria, ten sam braz, ta sama szczelina), bo
   // ten builder jest kopia tamtego. Z kamery gry obie jednostki czytaly sie
   // jako jedna figurka — zmierzone 0.371 udzialu roznych pikseli przy 0.558
@@ -613,7 +612,7 @@ export function buildSuperGreece(ownerColor_: number): THREE.Group {
   // dotarla. Zmierzone PRZED (SAT dwoch prostopadloscianow, wynik dokladny):
   // drzewce zanurzone w RAMIENIU na 0.0253 przy wartosci 0.0000 dla Falangity
   // po naprawie T3 i 0.0000 dla Thorakitesa (T6). PO: 0.0000. Chwyt (piesc
-  // 0.0335, przedramie 0.0298) zostaje — to jest chwyt, nie kolizja.
+  // 0.0335, przedramie 0.0218) zostaje — to jest chwyt, nie kolizja.
   const armR = s6BuildArm(group, -S6_SHLD_X, -2.55, 1.85, mBronze, mSkin, mLeath, 'hl', 'right');
   const spearTh = Math.PI * 0.5 + 0.20;
   const spearAxis = new THREE.Vector3(0, -Math.sin(0.20), Math.cos(0.20));
@@ -700,8 +699,8 @@ export function buildSuperGreece(ownerColor_: number): THREE.Group {
     weaponAxis: spearAxis.toArray(),
     weaponKind: 'spear-dory',
     shieldKind: 'round-aspis',
-    helmetKind: 'corinthian-closed',
-    faceOpen: false,
+    helmetKind: 'corinthian-tipped-back',
+    faceOpen: true,
     bannerSide: +1,
   };
   return group;
@@ -782,7 +781,7 @@ export function buildSuperRome(ownerColor_: number): THREE.Group {
 
   const HIP_Y = S6_HIP_Y - 0.012 * HEX_R;   // gleboki wypad jak Hastati
 
-  // korpus: LORICA HAMATA (kolczuga) na czerwonej tunice — patrz K7. Rekawy
+  // korpus: LORICA HAMATA (kolczuga) na czerwonej tunice — patrz K3. Rekawy
   // i rabek tuniki zostaja czerwone, wiec sylwetka nadal czyta sie „rzymsko",
   // ale tors NIE jest juz tym samym czerwonym blokiem co u Hastatiego.
   const mSkin = s6Core(group, mat, mMail, S6_SKIN, true, 'ev');
@@ -798,7 +797,7 @@ export function buildSuperRome(ownerColor_: number): THREE.Group {
   belt.position.set(0, 0.252 * HEX_R, 0);
   belt.name = 'ev-belt';
   group.add(belt);
-  // FALERY: trzy krazki odznaczen (zloto/srebro/zloto) na piersi — patrz K8
+  // FALERY: trzy krazki odznaczen (zloto/srebro/zloto) na piersi — patrz K4
   let fi = 0;
   for (const dx of [-0.052, 0.0, 0.052]) {
     const ph = new THREE.Mesh(getGS6Phalera(), (fi % 2 === 0) ? mGold : mSilver);

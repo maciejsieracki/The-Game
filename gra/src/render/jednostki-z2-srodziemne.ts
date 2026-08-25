@@ -1346,11 +1346,14 @@ export function buildThorakites(ownerColor_: number): THREE.Group {
 //     fixas, haud secus quam vallo saepta inhorreret acies, tenentes" — triarii
 //     przyklekali pod znakami z WYSUNIETA LEWA NOGA, tarcze oparte o ramie,
 //     wlocznie GROTEM SKOSNIE W GORE, tak ze szyk jezyl sie jak ostrokol.
-//     Model odwzorowuje to punkt po punkcie: lewa (+X) noga wykroczna, prawe
-//     kolano na ziemi, scutum oparte nisko przed korpusem, hasta wystawiona
-//     w przod-GORE (elewacja 0.30 rad). Stad tez slynne „res ad triarios
-//     rediit" — „doszlo do triariow", czyli sytuacja jest krytyczna
-//     (Liwiusz VIII.8.11).
+//     Model odwzorowuje CZESC tego doslownie: lewa (+X) noga wykroczna, prawe
+//     kolano na ziemi, hasta wystawiona w przod-GORE (elewacja 0.30 rad) —
+//     ale NIE „punkt po punkcie": „scuta innixa umeris" to tarcze OPARTE
+//     O RAMIE, a model trzyma scutum nisko przed korpusem (czytelnosc figurki
+//     z kamery gry przy elewacji 52 stopni), nie na barku. Drugi rozjazd
+//     (hasta w dloni, nie wbita w ziemie) jest nazwany dalej, w K6. Stad tez
+//     slynne „res ad triarios rediit" — „doszlo do triariow", czyli sytuacja
+//     jest krytyczna (Liwiusz VIII.8.11).
 // K2. HASTA, NIE PILUM. Polibiusz VI.23.16: triarii zamiast pilum nosza
 //     wlocznie. Polibiusz VI.21.7-9: podzial idzie po WIEKU — najmlodsi i
 //     najubozsi na welitow, nastepni na hastatow, dojrzali na principes,
