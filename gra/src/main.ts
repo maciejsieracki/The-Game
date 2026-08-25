@@ -3617,6 +3617,11 @@ async function boot(): Promise<void> {
      * wlasciciela: ten sam kontrakt zwrotu co migracja save/capture/surrender
      * (`sanitizeBuildQueue`). Owner-agnostyczne: parytet gracz/AI/MP.
      *
+     * Sciezka wczytania zapisu jest juz sanityzowana (`setCityProduction` -> `sanitizeProductionQueue`
+     * wyzej w tym samym pliku), wiec "stary zapis" nie jest jedynym realnym zrodlem legacy
+     * jednostki w tym miejscu -- ta funkcja jest obrona w glab dla kazdego z wielu miejsc w
+     * main.ts, ktore pisza `cityProd.set(...)` bez przejscia przez sanityzacje.
+     *
      * Gdy nie ma czego czyscic, zwraca TEN SAM obiekt (brak alokacji na sciezce goracej) --
      * wywolujacy porownuje referencje i tylko wtedy nadpisuje `cityProd`.
      *
