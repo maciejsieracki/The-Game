@@ -99,13 +99,28 @@ const REF = [
   { key: 'triari',     pl: 'Triari',            cat: 'super',     pf: 'tr' },
   { key: 'hastati',    pl: 'Hastati',           cat: 'miecznik',  pf: 'ha' },
 ];
-// SASIEDZI Z TEGO SAMEGO PLIKU — poza zakresem T8 (tematy T9/T10). Musza wyjsc
-// z T8 BEZ ZMIAN: helpery trCore/trBuildArm/trBuildLeg/trSeg dostaly parametr
-// nazwy z DOMYSLNA WARTOSCIA PUSTA, wiec ci trzej maja nadal 0 nazwanych mesh.
+// SASIEDZI Z TEGO SAMEGO PLIKU — poza zakresem T8 (tematy T9/T10). To, czego
+// ta asercja pilnowala i pilnuje nadal, to JEDNO: nazewnictwo wprowadzone
+// w T8 NIE WYLALO SIE na sasiadow — zaden z nich nie ma mesh o prefiksie
+// `bs-` ani `gw-`.
+//
+// `own` = prefiks WLASNYCH nazw sasiada, albo null, gdy sasiad nie zostal
+// jeszcze zaudytowany i ma miec 0 nazwanych mesh. T10 zaudytowal Druzynnika
+// (`dr-`) i iButho (`ib-`), wiec oni maja juz komplet wlasnych nazw i wlasne
+// `anchors`; Miecznik galijski czeka na swoj temat. Liczby `mesh`/`maxY` sa
+// domyslnie null dla sasiadow po audycie, bo audyt MOZE zmienic ich bryle —
+// ale gdy da sie DOWIESC, ze konkretna liczba przetrwala audyt bez zmiany
+// (zmierzone niezaleznie w Final Control T10: Druzynnik mial mesh=32,
+// maxY=0.6540 zarowno przed, jak i po T10 — D1-D4 tylko przeskalowaly/
+// przesunely istniejace bryly, zadnej nie dodaly ani nie usunely), pin
+// zostaje przywrocony zamiast skasowany: to jedyne dokladne przypiecie
+// geometrii tej jednostki w calej bramce T8. iButho zmienil sie realnie
+// (odroznialnosc od Impi 0.370→0.589, sylwetka 3.5%→18.8%), wiec dla niego
+// `null` jest uzasadnione i zostaje.
 const SIBLINGS = [
-  { key: 'druz',   pl: 'Drużynnik',        cat: 'miecznik', mesh: 32, maxY: 0.6540 },
-  { key: 'ibutho', pl: 'iButho z Iklwa',   cat: 'wlocznik', mesh: null, maxY: null },
-  { key: 'galij',  pl: 'Miecznik galijski', cat: 'miecznik', mesh: 35, maxY: 0.7230 },
+  { key: 'druz',   pl: 'Drużynnik',        cat: 'miecznik', own: 'dr-', mesh: 32, maxY: 0.6540 },
+  { key: 'ibutho', pl: 'iButho z iklwa',   cat: 'wlocznik', own: 'ib-', mesh: null, maxY: null },
+  { key: 'galij',  pl: 'Miecznik galijski', cat: 'miecznik', own: null, mesh: 35, maxY: 0.7230 },
 ];
 
 /**
@@ -762,12 +777,18 @@ function assertRest(m, pix, dist, src, unitRows) {
   // faktycznie NIC nie zmienil trzem jednostkom poza zakresem T8.
   for (const s of SIBLINGS) {
     const mm = m[s.key];
-    check('(R:' + s.key + ') „' + s.pl + '" (temat T9/T10, poza zakresem T8) BEZ ZMIAN: 0 nazwanych mesh, brak anchors',
-      mm.names.length === 0 && mm.anchors === null
+    const wlasne = s.own === null
+      ? (mm.names.length === 0 && mm.anchors === null)
+      : (mm.names.length === mm.meshCount && mm.meshCount > 0
+         && mm.names.every((n) => n.startsWith(s.own)) && mm.anchors !== null);
+    check('(R:' + s.key + ') „' + s.pl + '" (poza zakresem T8) nie dostal ANI JEDNEJ nazwy `bs-`/`gw-`'
+      + (s.own === null ? ' i nadal nie jest nazwany' : ' i nosi wylacznie wlasne nazwy `' + s.own + '`'),
+      wlasne
       && !mm.names.some((n) => /^(bs|gw)-/.test(n))
       && (s.mesh === null || mm.meshCount === s.mesh)
       && (s.maxY === null || Math.abs(mm.maxY - s.maxY) < 0.0006),
       { mesh: mm.meshCount, oczekiwane: s.mesh, nazwane: mm.names.length,
+        wlasny_prefiks: s.own, anchors: mm.anchors !== null,
         maxY: +mm.maxY.toFixed(4), oczekiwane_maxY: s.maxY });
   }
   for (const r of REF) {
@@ -825,8 +846,12 @@ function assertRest(m, pix, dist, src, unitRows) {
 
   // --- (K) SEKCJE HISTORYCZNE — obecnosc i KONKRET, nie sam naglowek --------
   const naglowki = (src.z3.match(/ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA \(/g) || []).length;
+  // `>= 2`, nie `=== 2`: plik trzyma pieciu builderow i kolejne tematy serii
+  // dopisuja WLASNE sekcje historyczne (T10 dolozyl dwie — Druzynnik i iButho).
+  // Rozstrzyga tu obecnosc DWOCH IMIENNYCH naglowkow T8, a nie licznik
+  // wszystkich naglowkow w pliku, ktory rosnie z kazdym kolejnym audytem.
   check('(K0) plik ma sekcje ZGODNOSC HISTORYCZNA dla OBU jednostek T8',
-    naglowki === 2
+    naglowki >= 2
     && /ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA \(Berserker germanski\)/.test(src.z3)
     && /ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA \(Wojownik germanski\)/.test(src.z3),
     { naglowkow: naglowki });
