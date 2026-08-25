@@ -561,8 +561,13 @@ function trSuperBanner(
 //     promien 0.0761 — oczy wypadlyby DOKLADNIE na wysokosci okucia i wewnatrz
 //     obu bryl, czyli powtorzylyby blad B2 Berserkera z T8 (oczy z 0 px). Rozwazona i odrzucona
 //     alternatywa: zsunac okucie pod podstawe dzwonu (y 0.5240), tam gdzie
-//     zrodlo umieszcza opaske — zmierzone, zostawia miedzy okuciem a broda
-//     pasek twarzy 0.0114 zamiast 0.0610, wiec kosztowalaby wiecej, niz daje.
+//     zrodlo umieszcza opaske — zmierzone: dol okucia minus dol glowy daje
+//     pasek twarzy 0.0420, NIE 0.0114 jak twierdzila poprzednia wersja tego
+//     zdania (liczba nie odtwarzala sie — poprawiona tu przez Final Control,
+//     przeliczona niezaleznie z tych samych stalych geometrii). Wobec
+//     dzisiejszych 0.0610 alternatywa daje pasek WEZSZY, nie szerszy — a wiec
+//     nie poprawia sytuacji, tylko ja pogarsza, i status quo zostaje z tym
+//     poprawionym uzasadnieniem.
 // K4. MIECZ I GLOWICA. `Typ „Swordsman"` plus `Atak dystansowy 0` znaczy bron
 //     wylacznie do zwarcia. Poza to PCHNIECIE na osi przedramienia, a nie
 //     zamach — i przy tym ukladzie cala bron jest z kamery gry widoczna na
@@ -668,8 +673,10 @@ export function buildDruzynnik(ownerColor_: number): THREE.Group {
   // Geometria i polozenie BEZ ZMIAN wobec stanu sprzed T10 — sprawdzone
   // i swiadomie zostawione, patrz K3: proba zsuniecia okucia pod podstawe
   // dzwonu (y 0.5240), tam gdzie zrodlo umieszcza opaske wzmacniajaca dol,
-  // zostawia miedzy okuciem a broda pasek twarzy 0.0114 zamiast dzisiejszych
-  // 0.0610 — audyt nie wymienia jednego defektu na drugi.
+  // zostawia miedzy okuciem a broda pasek twarzy 0.0420, WEZSZY niz
+  // dzisiejsze 0.0610, nie 0.0114 (poprawione przez Final Control — liczba
+  // sprzed poprawki nie odtwarzala sie) — audyt nie wymienia jednego defektu
+  // na drugi.
   const helm = new THREE.Mesh(getGTRConeHelm(), mSteel);
   helm.position.set(0, TR_HEAD_CTR + 0.052 * HEX_R, 0);
   helm.name = PF + '-helmet-cone';
@@ -827,8 +834,13 @@ export function buildDruzynnik(ownerColor_: number): THREE.Group {
 //     iklwa + tarcza; szybsza piechota liniowa". Rozstrzyga to trzy rzeczy:
 //     bron jest WYLACZNIE do zwarcia, tarcza jest obowiazkowa, a jednostka
 //     ma byc od Impi ODROZNIALNA, bo jest jego zamiennikiem w tym samym
-//     drzewie. `Obrona 7` wobec `Obrona 6` Impi to jedyna roznica statystyk
-//     obronnych — w modelu odpowiada jej wieksza tarcza (K9).
+//     drzewie. `Obrona 7` wobec `Obrona 6` Impi to GLOWNA roznica w
+//     nazwanych statystykach obronnych (`Pancerz 4` maja OBIE jednostki
+//     identycznie) — w modelu odpowiada jej wieksza tarcza (K9). Nie jest to
+//     jedyna roznica danych w ogole: warstwa runtime `units.json` niesie
+//     dodatkowo Impi `health: 36`/`armor: 3` wobec iButho `health: 29` i
+//     brakiem klucza `armor` w ogole — rozjazd zastany, spoza zakresu T10,
+//     zgloszony do rejestru (patrz raport Final Control tego audytu).
 // K2. NAJTRUDNIEJSZY PUNKT: CHRONOLOGIA. Iklwa i system pulkow (amabutho)
 //     w formie, ktora znamy, to reforma Szaki — panowal ok. 1816-1828, wiec
 //     POCZATEK XIX w., a nie „epoka zelaza" w europejskim sensie. To jest
@@ -838,10 +850,12 @@ export function buildDruzynnik(ownerColor_: number): THREE.Group {
 //     (`Tech „Hutnictwo zelaza"`), nie data — ta sama epoka trzyma razem
 //     Rzym, Celtow, Germanow i Slowian, ktorych dzieli po kilkaset lat;
 //     (ii) samo ZELAZO u ludow Nguni nie jest tu anachronizmem: rolnicy
-//     wczesnej epoki zelaza sa w KwaZulu-Natal poswiadczeni radiowegielowo
-//     juz w III-IV w. n.e. (Mzonjani ok. 280 n.e., Enkwazini ok. 300 i 410
-//     n.e.; ceramika Silver Leaves/Matola ok. 250-430 n.e.), wiec zelazny
-//     grot na wojowniku Nguni jest z ta rama zgodny; (iii) anachroniczna
+//     wczesnej epoki zelaza sa w samym KwaZulu-Natal poswiadczeni
+//     radiowegielowo juz w III-IV w. n.e. (Mzonjani ok. 280 n.e., Enkwazini
+//     ok. 300 i 410 n.e.), a szerzej w regionie (Limpopo, Mozambik) ceramika
+//     tradycji Silver Leaves/Matola ok. 250-430 n.e. daje to samo tlo
+//     chronologiczne, wiec zelazny grot na wojowniku Nguni jest z ta rama
+//     zgodny; (iii) anachroniczna
 //     jest WYLACZNIE konkretna FORMA — iklwa i regiment — i to jest swiadome
 //     uogolnienie warstwy DANYCH gry, nie blad modelu. Model odwzorowuje
 //     panoplie poswiadczona etnograficznie, bo tylko ona jest opisana;
@@ -909,7 +923,8 @@ export function buildDruzynnik(ownerColor_: number): THREE.Group {
 // o assegai/iklwie i o tarczy nguni — stad wymiary iklwy, nazwy i wymiary
 // obu tarcz, data kampanii 1856 r. i zasada barwy tarcz wedle starszenstwa;
 // osobno datowania radiowegielowe wczesnej epoki zelaza w KwaZulu-Natal
-// (Mzonjani, Enkwazini, Silver Leaves/Matola) dla K2. Zadnego z tych
+// (Mzonjani, Enkwazini) oraz ceramike tradycji Silver Leaves/Matola z
+// szerszego regionu (Limpopo, Mozambik) dla K2. Zadnego z tych
 // opracowan nie udalo sie odczytac w oryginale z tej sesji, wiec numery stron
 // i sygnatury NIE sa podawane — swiadomie, zeby nie powtorzyc bledu blednej
 // lokalizacji cytatu z T8.

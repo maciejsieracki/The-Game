@@ -108,10 +108,17 @@ const REF = [
 // jeszcze zaudytowany i ma miec 0 nazwanych mesh. T10 zaudytowal Druzynnika
 // (`dr-`) i iButho (`ib-`), wiec oni maja juz komplet wlasnych nazw i wlasne
 // `anchors`; Miecznik galijski czeka na swoj temat. Liczby `mesh`/`maxY` sa
-// przypinane WYLACZNIE dla sasiadow niezaudytowanych — jednostka po audycie
-// ma prawo miec inna bryle, a jej wlasne liczby pilnuje jej wlasny test.
+// domyslnie null dla sasiadow po audycie, bo audyt MOZE zmienic ich bryle —
+// ale gdy da sie DOWIESC, ze konkretna liczba przetrwala audyt bez zmiany
+// (zmierzone niezaleznie w Final Control T10: Druzynnik mial mesh=32,
+// maxY=0.6540 zarowno przed, jak i po T10 — D1-D4 tylko przeskalowaly/
+// przesunely istniejace bryly, zadnej nie dodaly ani nie usunely), pin
+// zostaje przywrocony zamiast skasowany: to jedyne dokladne przypiecie
+// geometrii tej jednostki w calej bramce T8. iButho zmienil sie realnie
+// (odroznialnosc od Impi 0.370→0.589, sylwetka 3.5%→18.8%), wiec dla niego
+// `null` jest uzasadnione i zostaje.
 const SIBLINGS = [
-  { key: 'druz',   pl: 'Drużynnik',        cat: 'miecznik', own: 'dr-', mesh: null, maxY: null },
+  { key: 'druz',   pl: 'Drużynnik',        cat: 'miecznik', own: 'dr-', mesh: 32, maxY: 0.6540 },
   { key: 'ibutho', pl: 'iButho z iklwa',   cat: 'wlocznik', own: 'ib-', mesh: null, maxY: null },
   { key: 'galij',  pl: 'Miecznik galijski', cat: 'miecznik', own: null, mesh: 35, maxY: 0.7230 },
 ];
