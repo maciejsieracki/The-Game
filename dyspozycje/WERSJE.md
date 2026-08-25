@@ -13,7 +13,19 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
-## ROBOCZA 7464c061 - 2026-08-24 13:10 UTC - FALA 320: przebudowa szlaków handlowych T3+T4+T6 (dokończenie serii R-HANDEL-SZLAKI-PRZEBUDOWA-Q1)
+## ROBOCZA 2206b5da - 2026-08-25 04:00 UTC - FALA 321: dedykowane modele 3D 6 jednostek epoki Żelazo (seria R-ZELAZO-MODELE-BRAKUJACE-Q1)
+|- md5 (pełne): 2206b5da34914987a4ae4bcfa35ee8d2 · stempel: ROBOCZA · label 2206b5da · źródłowy commit integracji: `db529ea4` (kod: T4 `03ae1197`, T3 `5aaddf38`, T2 `1af2a413`, T1 `0b2b091f`)
+|- Audyt (2026-08-24) znalazł 6 jednostek epoki Żelazo bez procesu naprawy modeli „Opus 5" (precedens `R-BRAZ-SUPER-DISPATCH-Q1`, zamknięty dla Brązu): 4 bez dedykowanego modelu, 2 dzielące identyczny model. Właściciel zlecił naprawę wszystkich w pełnej autonomii.
+|- `R-ZELAZO-MODELE-BRAKUJACE-Q1-T1`: Konnica lancowa i łucznicza asyryjska — dziś dzieliły model z kopią; łucznik dostał realny łuk kompozytowy w naciągu z kołczanem, lancer lancę z żelaznym grotem i tarczę. Runda 2 naprawiła 4 twarde błędy geometrii rundy 1 (broń przebijająca ciało jeźdźca/konia) niewykrywalne przez testy mierzące tylko nazwy mesh.
+|- `R-ZELAZO-MODELE-BRAKUJACE-Q1-T2`: Soldurii i Gaesatae (Celtowie) — dziś identyczne, teraz wyraźnie różne. Gaesatae wywołuje wcześniej martwy, gotowy kod `buildGaesatae()` (naga skóra, gaesum — Polibiusz II.28-30); Soldurii dostał nową `buildSoldurii()` (kolczuga, hełm Montefortino — Cezar III.22). Naprawiono błąd orientacji tarczy niewidocznej dla kamery gry u obu jednostek.
+|- `R-ZELAZO-MODELE-BRAKUJACE-Q1-T3`: Falanga dostała jawny dispatch po nazwie (był tylko po kategorii) + naprawę drzewca włóczni przenikającego ramię hoplity. Blazon Lambda (Λ, atrybucja spartańska) zastąpiony neutralną episemą — Falanga to jednostka liniowa całej cywilizacji greckiej, nie tylko Sparty.
+|- `R-ZELAZO-MODELE-BRAKUJACE-Q1-T4`: Jeździec z oszczepami (Słowianie) — nowy model od zera, oszczep w chwycie gotowym do rzutu (5 drzewc = `Ilość pocisków`) zamiast dzielonej kopii nadręcznej. Sekcja historyczna świadomie odwraca regułę „brak strzemion" z T1/Brązu dla późniejszej warstwy IX-X w. (ta sama rama co istniejący Drużynnik).
+|- Każdy temat: Operator→Evaluator→Final Control przez Workflow (Opus 5 High dla ról wizualnych, `R-PROC-AUTOBOT.md` §5a), real render Playwright/Chromium bezwarunkowy, zweryfikowane niezależnie przez orkiestratora po każdym scaleniu i ponownie po zbiorczym buildzie (tsc czyste, Vite 848 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem, zero regresji na odcisku palca całego rostera 75 jednostek).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `docs/decyzje/R-ZELAZO-MODELE-BRAKUJACE-Q1.md`, `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T{1..4}/`. Kilka drobnych, poza-zakresowych znalezisk (dane `units.json` Gaesatae nieaktualne, `manualBattle.ts` gubi nazwę jednostki, luki pokrycia testów) zarejestrowane osobno w `REJESTR-PROSB-I-ZADAN.md`, nieblokujące.
+|- **AKTUALNA**
+
+## ROBOCZA 7464c061 - 2026-08-24 13:10 UTC - FALA 320: przebudowa szlaków handlowych T3+T4+T6 (dokończenie serii R-HANDEL-SZLAKI-PRZEBUDOWA-Q1) — **ZASTĄPIONA** (→ 2206b5da)
 |- md5 (pełne): 7464c061f223b2001e146c5e2eb83f30 · stempel: ROBOCZA · label 7464c061 · źródłowy commit integracji: `6d61d6e9` (kod: T6 `2e6aac59`, T4 `fee7f455`, T3 `f552f8e3`)
 |- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T3`: gating budynkami handlowymi przestał ograniczać ISTNIENIE trasy — aktywna Umowa Handlowa + łączność + brak wojny (Port nadal wymagany dla morza) dają dochód dystansowy od razu, bez budynku. Nowe pole `TradeRoute.budynekOdblokowany: boolean` niesie osobno, czy dana trasa ma dziś pokrycie budynkowe.
 |- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T4`: stary globalny mnożnik „+5% Handlu za każdą połączoną trasę" zastąpiony sumą per-trasowych bonusów 5% naliczaną WYŁĄCZNIE dla tras z budynkiem — zamyka ryzyko, w którym miasto bez budynku handlowego dostawałoby bonus mimo braku pokrycia (znalezione przez Final Control T3, zamknięte przed jakimkolwiek deployem obejmującym T3).
@@ -22,7 +34,6 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (workflow, wg `R-PROC-AUTOBOT.md`), wszystkie PASS/PASS-WITH-NOTES, zweryfikowane niezależnie przez orkiestratora po każdym scaleniu i ponownie po zbiorczym buildzie (tsc czyste, Vite 846 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem). Real render Playwright/Chromium obowiązkowy dla T6 (temat wizualny) — potwierdzony niezależnie przez Operatora i Evaluatora.
 |- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
 |- Szczegóły: `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md`, `dyspozycje/autobot/runs/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-{T3,T4,T6}/`.
-|- **AKTUALNA**
 
 ## ROBOCZA 79bae2c4 - 2026-08-22 18:10 UTC - FALA 319: 5 poprawek (slider budzetu automatu, przycisk auto-zywienie, REGRES3 pula Pracy, naglowek wydarzen, audyt przekierowan) — **ZASTĄPIONA** (→ 7464c061)
 |- md5 (pełne): 79bae2c49a4119337ceaac98730522d8 · stempel: ROBOCZA · label 79bae2c4 · źródłowy commit integracji: `ab66195c`
