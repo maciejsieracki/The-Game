@@ -1,6 +1,7 @@
 # R-ZELAZO-MODELE-BRAKUJACE-Q1 — brakujące/zdublowane modele 3D jednostek epoki Żelazo
 
-**Status:** W TRAKCIE (2026-08-24)
+**Status:** T1+T2+T3+T4 ZINTEGROWANE do `main` — WSZYSTKIE tematy tej serii zamknięte
+(2026-08-25). Zbiorczy deploy ROBOCZA następuje teraz.
 
 ## Sytuacja
 
@@ -120,4 +121,20 @@ plikach (`R-PROC-AUTOBOT.md` §2b), jeden temat na raz, merge przed startem nast
   kultura/jednostka), potwierdzone w danych (`civs.json`) przez wszystkie trzy role.
   Zmergowane do `main`. 2 znaleziska kosmetyczne (nieaktualny komentarz wysokości,
   luka pokrycia testu ciągłości włóczni) zarejestrowane osobno.
-- T4: patrz `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T4/`.
+- **T4 — ZINTEGROWANE (2026-08-25, 1 runda, ostatni temat serii).** Jeździec z
+  oszczepami (Słowianie) dostał nowy, dedykowany model — prawdziwe „zbuduj od zera"
+  (brak istniejącego kodu, w odróżnieniu od T2/T3). Oszczep w chwycie gotowym do
+  rzutu + pęk 4 zapasowych = dokładnie `Ilość pocisków: 5`. Sekcja historyczna K1-K13
+  świadomie odwraca regułę „brak strzemion" z T1/Brązu (strzemiona/siodło z
+  terlicą/ostrogi haczykowate uzasadnione dla warstwy IX-X w., ta sama rama co
+  istniejący `Drużynnik`), z jawnie nazwaną rozbieżnością wobec źródeł dla wcześniejszej
+  warstwy VI-VII w. Evaluator zweryfikował własną macierzą ablacyjną nośność każdej z
+  6 asercji geometrycznych z osobna oraz odciskiem palca całego rostera (75 jednostek)
+  zero regresji. Final Control potwierdził jedyny wymóg przed zamknięciem: znalezisko
+  poza zakresem (`manualBattle.ts` gubi nazwę jednostki dla WSZYSTKICH modeli rodziny
+  Opus 5, pre-istniejące) zarejestrowane osobno. Zmergowane do `main`.
+
+**Seria R-ZELAZO-MODELE-BRAKUJACE-Q1 (T1+T2+T3+T4) w całości ZINTEGROWANA.** Wszystkie
+6 jednostek epoki Żelazo znalezionych w audycie (Konnica lancowa/łucznicza asyryjska,
+Soldurii, Gaesatae, Falanga, Jeździec z oszczepami) mają teraz dedykowane, historycznie
+uzasadnione modele 3D w stylu serii Opus 5. Zbiorczy deploy ROBOCZA następuje teraz.

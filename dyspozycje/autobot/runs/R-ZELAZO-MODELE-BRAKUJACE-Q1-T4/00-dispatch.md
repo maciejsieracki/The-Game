@@ -90,11 +90,42 @@ Operator → Evaluator → Final Control → integracja orkiestratora, jedno ID,
 gałąź. Limit 5 rund. Model/effort: **Opus 5 High dla Operatora i Evaluatora**
 (temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a), Final Control Sonnet 5 High.
 
+## Runda 1 — PASS-WITH-NOTES (zamknięte, ostatni temat serii)
+
+Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS-WITH-NOTES. Prawdziwe
+„zbuduj od zera" (brak istniejącego kodu do audytu, w odróżnieniu od T2/T3) — jeździec
+dzierży oszczep w chwycie gotowym do rzutu (dłoń nad barkiem, grot w przód-w górę) +
+pęk 4 zapasowych = dokładnie `Ilość pocisków: 5` z `units.json`, zamiast dzisiejszej
+kopii nadręcznej generycznego `case 'konnica'`. Świadome, udokumentowane odwrócenie
+reguły „brak strzemion" z T1/Brązu — strzemiona, siodło z terlicą i ostrogi haczykowate
+są historycznie uzasadnione dla warstwy IX-X w. (konny orszak książęcy, ta sama rama co
+istniejący `Drużynnik`), przy jawnie nazwanej rozbieżności: sama słowiańska jazda
+oszczepnicza VI-VII w. nie jest poświadczona źródłowo (Strategikon opisuje tę warstwę
+jako piechotę leśną) — sekcja K1-K13 nazywa to wprost, nie zamiata.
+
+Evaluator poszedł dalej niż wymagane: własna macierz ablacyjna (5 mutacji pojedynczo,
+nie zbiorczo) dowodzi, że każda z 6 asercji testu (H1-H6) jest realnie nośna z osobna,
+nie tylko w połączeniu. Odcisk palca CAŁEGO rostera (75 jednostek main vs gałąź)
+potwierdza zero regresji poza jedną zmienioną jednostką.
+
+Final Control potwierdził jeden wymagany krok przed formalnym zamknięciem (§3b):
+znalezisko Evaluatora — `gra/src/battle/manualBattle.ts:750` woła `buildUnitModel()`
+BEZ nazwy jednostki, więc scena manualnej bitwy gubi WSZYSTKIE modele rodziny Opus 5
+(nie tylko T4) — pre-istniejący (commit `546f6a51`, 2026-08-17), przekrojowy, poza
+allowlistą T4. Zarejestrowane jako `P-BITWA-MANUALNA-MODEL-BEZ-NAZWY-Q1`. Pozostałe
+uwagi (liczba mesh w raporcie czatowym 115→117, sporne pochodzenie konika polskiego,
+literówka komunikatu testu, konwencja nieużywanej funkcji dispose) — czysto redakcyjne.
+
+Zmergowane do `main`, zweryfikowane niezależnie przez orkiestratora (tsc/vite build/
+testy tematu+T1+T2+T3/5 bramek referencyjnych zielone).
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: jeszcze brak — dispatch.
-TESTY: kryteria sukcesu 1–9 wyżej.
-BLOKADY: brak.
-RUNDY: 0/5 (dispatch).
-NASTĘPNY KROK: Operator, runda 1 (po zamknięciu T1/T2/T3).
-DEPLOY/PUSH: NIE WYKONANO.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-T4-Q1`, commit `03ae1197`, zmergowane do `main`.
+TESTY: kryteria sukcesu 1–9 spełnione, potwierdzone niezależnie 3-krotnie + orkiestrator
+po merge (odcisk całego rostera 75 jednostek — zero regresji poza tematem).
+BLOKADY: brak (1 znalezisko preegzystujące, przekrojowe, zarejestrowane osobno).
+RUNDY: 1/5 (zamknięte pozytywnie).
+NASTĘPNY KROK: seria R-ZELAZO-MODELE-BRAKUJACE-Q1 (T1-T4) w całości zintegrowana —
+zbiorczy deploy ROBOCZA.
+DEPLOY/PUSH: git push (main) WYKONANO; deploy ROBOCZA następuje teraz.
