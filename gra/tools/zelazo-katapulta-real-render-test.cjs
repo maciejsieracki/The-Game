@@ -448,8 +448,15 @@ function assertGeometry(m, pix, sil, src, unitRows, soft) {
     { liny: ropeOk, ucho_na_osi_ramienia: +eyeOnArm.toFixed(4) });
 
   // H5 — NIC NIE WISI W POWIETRZU. Dla maszyny to asercja NACZELNA: kazda
-  // bryla musi dotykac jakiejkolwiek innej. PRZED T11 unosily sie: kubel
-  // z kamieniem, obie „liny", oba kola (0.005 od ramy) i banderola (0.010).
+  // bryla musi dotykac jakiejkolwiek innej. Poprawka Final Control: pod TYM
+  // SAMYM testem (kazda bryla vs NAJBLIZSZA INNA, przeliczone niezaleznie na
+  // starym modelu) PRZED T11 realnie lapane byly DWIE bryly, nie szesc: ramie
+  // (nie dotykalo skretu/stojaka) i lewe kolo (0.005 od ramy). Kubel z
+  // kamieniem i obie „liny" dotykaly SIEBIE NAWZAJEM (szczelina zero
+  // wewnatrz pary), wiec algorytm liczacy jedynie najblizsza INNA bryle ich
+  // nie lapal — caly ten sklejony ze soba zestaw byl mimo to oderwany od
+  // reszty maszyny, co widac dopiero na pelnym obrazie (zrzut ekranu), nie
+  // w tej pojedynczej asercji.
   const FLOAT_EPS = 0.004;
   const floating = [];
   for (const p of K.parts) {

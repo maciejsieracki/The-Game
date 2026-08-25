@@ -3065,9 +3065,12 @@ function buildBatteringRam(ownerColor_: number): THREE.Group {
  *     podaje tabelę: kamień 2-funtowy → otwór 5 palców, 10-funtowy → 8 palców,
  *     100-funtowy → stopa i 1½ palca, aż po 360-funtowy → stopa i 10 palców.
  *     Model idzie za ZASADĄ, nie za liczbami: `MOD` niżej jest jedynym modułem,
- *     a średnica skrętu, grubość ramienia, przekrój belek i kamień są jego
- *     wielokrotnościami. Same wielokrotności dobrano pod budżet tokena
- *     (HEX_R = 1.0), nie przepisano z Witruwiusza — i tak to tu jest napisane.
+ *     a średnica skrętu, grubość ramienia, półszerokość podłużnic ramy i kamień
+ *     są jego wielokrotnościami (poprawka Final Control: pozostałe belki —
+ *     wysokość podłużnic, obie poprzeczki, słupy skrętu i zderzaka — liczą się
+ *     z `U`, nie z `MOD`; „przekrój belek" w liczbie mnogiej było przesadzone).
+ *     Same wielokrotności dobrano pod budżet tokena (HEX_R = 1.0), nie
+ *     przepisano z Witruwiusza — i tak to tu jest napisane.
  *
  * K5. RAMA I SKRĘT — Ammianus XXIII.4.4: dwie belki z dębu albo ostrolistu,
  *     lekko wygięte, spięte „jak w pile ramowej", z dużymi otworami po bokach;
@@ -3101,9 +3104,12 @@ function buildBatteringRam(ownerColor_: number): THREE.Group {
  *     Wtedy dopiero celowniczy, stojąc powyżej, mocnym młotem wybija sworzeń
  *     trzymający całą konstrukcję". Model pokazuje dokładnie ten stan: ramię
  *     ściągnięte KU TYŁOWI (−Z) pod kątem `ARM_DEG` nad poziom, lina kołowrotu
- *     napięta między bębnem a hakiem na ramieniu, zapadka na zębatce założona,
- *     kamień w procy leżący na tylnej poprzeczce. Kąt jest KOMPROMISEM
- *     czytelności: pełne napięcie to „niemal płasko", co przy skali tokena
+ *     napięta między bębnem a UCHEM na ramieniu (poprawka Final Control: nie
+ *     hakiem — hak jest na szczycie ramienia i trzyma procę, ucho leży niżej,
+ *     `WINCH_T` od osi), sworzeń trzymający tarczę kołowrotu założony (nie
+ *     „zapadka na zębatce" — model nie ma zapadki, patrz uzasadnienie przy
+ *     `kt-windlass-ratchet` niżej), kamień w procy leżący na tylnej poprzeczce.
+ *     Kąt jest KOMPROMISEM czytelności: pełne napięcie to „niemal płasko", co przy skali tokena
  *     znika z sylwetki — zapisane jako świadome odstępstwo, nie jako źródło.
  *     Wszystkie części ruchome mają sensowną geometrię spoczynkową: ramię
  *     dotyka skrętu, proca zwisa pionowo pod hakiem, lina łączy dwa istniejące
@@ -3172,12 +3178,15 @@ function buildCatapult(ownerColor_: number): THREE.Group {
   // Wszystkie wymiary niżej są wielokrotnościami U, nie HEX_R. U = 1.06 × HEX_R
   // i ten współczynnik jest WYNIKIEM POMIARU, nie gustem: sylwetka machiny
   // rzutowana z kamery gry (azymut 0, elewacja 52°) miała przy U = HEX_R
-  // 17 315 pikseli przy 215 px wysokości, podczas gdy rodzina oblężnicza
-  // mierzona w TYM SAMYM renderze ma 20 396–21 841 px i 217–257 px
-  // (Wieża oblężnicza, Taran, Taran okuty). Katapulta czytała się jako mniejsza
-  // od własnej rodziny, bliżej piechoty (Hastati 15 952). Pole rzutu rośnie
-  // z kwadratem skali, więc 1.06 wprowadza ją w dolny kraniec pasma rodziny
-  // BEZ przekroczenia promienia heksa (maxR 0.310 → 0.328; Taran okuty 0.372).
+  // 17 480 pikseli (poprawka Final Control: 17 315 było przejęzyczeniem,
+  // przeliczone niezależnie na żywym renderze) przy 215 px wysokości, podczas
+  // gdy rodzina oblężnicza mierzona w TYM SAMYM renderze ma 20 396–21 841 px
+  // i 217–257 px (Wieża oblężnicza, Taran, Taran okuty). Katapulta czytała się
+  // jako mniejsza od własnej rodziny, bliżej piechoty (Hastati 15 952). Pole
+  // rzutu rośnie z kwadratem skali, więc 1.06 wprowadza ją w dolny kraniec
+  // pasma rodziny BEZ przekroczenia promienia heksa (maxR 0.310 → 0.328;
+  // rodzina: Taran okuty 0.331, Taran — max rodziny — 0.340; poprawka Final
+  // Control: „Taran okuty 0.372" było błędne, przeliczone niezależnie).
   const U = 1.06 * HEX_R;
 
   // === MODUŁ (K4) ===========================================================
@@ -3218,8 +3227,11 @@ function buildCatapult(ownerColor_: number): THREE.Group {
     add('kt-wheel-' + side, gRim, mWood, s * WHEEL_X, AXLE_Y, AXLE_Z, 0, 0, Math.PI / 2);
     // Żelazny bandaż na obwodzie — TO ON stoi na ziemi. Liczba segmentów
     // podzielna przez 4 daje wierzchołek dokładnie w najniższym punkcie, więc
-    // spód koła wypada na y=0 co do zera, a nie 0.002 pod terenem (klasa błędu
-    // „stopy pod terenem" z T7/T8, tu w wydaniu kołowym).
+    // spód koła wypada na y=0 co do zera (poprawka Final Control: wielokąt
+    // wpisany w okrąg nie może wystawać POZA okrąg, więc przy niewłaściwej
+    // liczbie segmentów koło wisiałoby ok. 0.002 NAD terenem — widoczna
+    // szczelina — a nie zapadało się POD teren; to odwrotny kierunek niż
+    // klasa błędu „stopy pod terenem" z T7/T8, tu w wydaniu kołowym).
     const gTyre = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.032 * U, 16, 1);
     add('kt-wheel-tyre-' + side, gTyre, mDkIron, s * WHEEL_X, AXLE_Y, AXLE_Z, 0, 0, Math.PI / 2);
     // piasta — przesunięta NA ZEWNĄTRZ, żeby nie wchodziła w podłużnicę
