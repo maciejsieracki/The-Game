@@ -102,10 +102,20 @@ const REF = [
 // SASIEDZI Z TEGO SAMEGO PLIKU — poza zakresem T8 (tematy T9/T10). Musza wyjsc
 // z T8 BEZ ZMIAN: helpery trCore/trBuildArm/trBuildLeg/trSeg dostaly parametr
 // nazwy z DOMYSLNA WARTOSCIA PUSTA, wiec ci trzej maja nadal 0 nazwanych mesh.
+// AKTUALIZACJA T9 (2026-08-25). Miecznik galijski byl tu do T8 pilnowany jako
+// „temat T9/T10, ma wyjsc z T8 BEZ ZMIAN: 0 nazwanych mesh, 35 mesh,
+// maxY 0.7230". T9 go WLASNIE zaudytowal: nazwal wszystkie mesh prefiksem
+// `mg-`, dodal `userData.anchors`, przeniosl krate braccae na golenie, dolozyl
+// guz i policzki helmu oraz zmienil poze na ciecie z gory. Dlatego jego wpis
+// przechodzi z kolumny „ma byc nietkniety" do kolumny „ma byc w calosci
+// nazwany" — pin liczbowy zostaje, tylko z nowymi wartosciami zmierzonymi po
+// T9. To nie jest rozluznienie asercji: warunek nadal jest twardy i nadal
+// pilnuje, ze T8 (ani nic pozniejszego) nie miesza w tym modelu przypadkiem.
+// `nazwane` = 'zero' -> mesh maja byc bezimienne; 'wszystkie' -> kazdy nazwany.
 const SIBLINGS = [
-  { key: 'druz',   pl: 'Drużynnik',        cat: 'miecznik', mesh: 32, maxY: 0.6540 },
-  { key: 'ibutho', pl: 'iButho z Iklwa',   cat: 'wlocznik', mesh: null, maxY: null },
-  { key: 'galij',  pl: 'Miecznik galijski', cat: 'miecznik', mesh: 35, maxY: 0.7230 },
+  { key: 'druz',   pl: 'Drużynnik',        cat: 'miecznik', mesh: 32, maxY: 0.6540, nazwane: 'zero' },
+  { key: 'ibutho', pl: 'iButho z Iklwa',   cat: 'wlocznik', mesh: null, maxY: null, nazwane: 'zero' },
+  { key: 'galij',  pl: 'Miecznik galijski', cat: 'miecznik', mesh: 44, maxY: 0.7410, nazwane: 'wszystkie', pf: 'mg' },
 ];
 
 /**
@@ -322,10 +332,10 @@ const KOLIZJA_PROG = 0.006;
 // Prog odroznialnosci: 0.558 to WYNIK naprawy T6 dla pary elita/liniowa
 // i tak uzyl go T7 — liczba z rodziny, nie z sufitu. Obowiazuje BEZ WYJATKU
 // dla kazdej pary z udzialem jednostki T8. Uwaga na kontekst przy czytaniu
-// wypisu [odroznialnosc]: pary NIEZWIAZANE z T8, w ktorych wystepuje
-// nieaudytowany jeszcze Miecznik galijski (temat T10), sa na dzisiejszym
-// `main` ponizej tego progu (galij/Druzynnik 0.509, galij/Hastati 0.526) —
-// to stan zastany, ktorego T8 nie dotyka i nie pogarsza.
+// wypisu [odroznialnosc]: pary z Miecznikiem galijskim byly na `main` w chwili
+// T8 PONIZEJ tego progu (galij/Druzynnik 0.509, galij/Hastati 0.526) — byl to
+// stan zastany, ktorego T8 nie dotykal. Zaudytowal go i podniosl dopiero T9
+// (galij/Druzynnik 0.608, galij/Hastati 0.640, mierzone tam).
 const PROG_PARA = 0.558;
 
 /** Pomiar w zywym Three.js: OBB + osie + kotwice dla kazdej nazwanej czesci. */
@@ -645,7 +655,8 @@ function assertGeometry(m, pix, dist, soft) {
 
   // H12 — GROT „ANGUSTO ET BREVI FERRO" (Tacyt, Germania 6): WASKI i KROTKI.
   // Odniesienie bierze sie z TEGO SAMEGO PLIKU — dluga klinga celtycka
-  // (getGTRLongBlade) uzywana przez Miecznika galijskiego.
+  // (getGTRLongBlade) uzywana przez Miecznika galijskiego; T9 zmienil jego poze,
+  // ale NIE dlugosc klingi, wiec liczba 0.210 nadal jest wlasciwa.
   const grot = sizeOf(ng['gw-framea-head']);
   t('H12', '(H12) grot framei jest WASKI I KROTKI — krotszy niz 1/2 dlugiej klingi z tego samego pliku (0.210)',
     grot !== null && grot[1] < 0.105 && grot[0] < 0.030 && grot[2] < 0.020
@@ -762,8 +773,12 @@ function assertRest(m, pix, dist, src, unitRows) {
   // faktycznie NIC nie zmienil trzem jednostkom poza zakresem T8.
   for (const s of SIBLINGS) {
     const mm = m[s.key];
-    check('(R:' + s.key + ') „' + s.pl + '" (temat T9/T10, poza zakresem T8) BEZ ZMIAN: 0 nazwanych mesh, brak anchors',
-      mm.names.length === 0 && mm.anchors === null
+    const nazwyOk = s.nazwane === 'wszystkie'
+      ? (mm.names.length === mm.meshCount && mm.names.every((n) => n.startsWith(s.pf + '-')) && mm.anchors !== null)
+      : (mm.names.length === 0 && mm.anchors === null);
+    check('(R:' + s.key + ') „' + s.pl + '" — pin sasiada: mesh, maxY, nazwy ('
+      + s.nazwane + ') i ZERO nazw T8',
+      nazwyOk
       && !mm.names.some((n) => /^(bs|gw)-/.test(n))
       && (s.mesh === null || mm.meshCount === s.mesh)
       && (s.maxY === null || Math.abs(mm.maxY - s.maxY) < 0.0006),
@@ -824,9 +839,13 @@ function assertRest(m, pix, dist, src, unitRows) {
   }
 
   // --- (K) SEKCJE HISTORYCZNE — obecnosc i KONKRET, nie sam naglowek --------
+  // AKTUALIZACJA T9: warunek brzmi „OBIE jednostki T8 maja swoja sekcje", a nie
+  // „w pliku sa DOKLADNIE dwie sekcje". Do T9 obie postacie dawaly ten sam
+  // wynik, bo sekcje mial tylko T8; T9 dopisal trzecia (Miecznik galijski)
+  // i doslowna liczba przestala opisywac to, o co ta asercja pyta.
   const naglowki = (src.z3.match(/ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA \(/g) || []).length;
   check('(K0) plik ma sekcje ZGODNOSC HISTORYCZNA dla OBU jednostek T8',
-    naglowki === 2
+    naglowki >= 2
     && /ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA \(Berserker germanski\)/.test(src.z3)
     && /ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA \(Wojownik germanski\)/.test(src.z3),
     { naglowkow: naglowki });
