@@ -106,21 +106,21 @@ const REF = [
 //
 // `own` = prefiks WLASNYCH nazw sasiada, albo null, gdy sasiad nie zostal
 // jeszcze zaudytowany i ma miec 0 nazwanych mesh. T10 zaudytowal Druzynnika
-// (`dr-`) i iButho (`ib-`), wiec oni maja juz komplet wlasnych nazw i wlasne
-// `anchors`; Miecznik galijski czeka na swoj temat. Liczby `mesh`/`maxY` sa
-// domyslnie null dla sasiadow po audycie, bo audyt MOZE zmienic ich bryle —
-// ale gdy da sie DOWIESC, ze konkretna liczba przetrwala audyt bez zmiany
-// (zmierzone niezaleznie w Final Control T10: Druzynnik mial mesh=32,
-// maxY=0.6540 zarowno przed, jak i po T10 — D1-D4 tylko przeskalowaly/
-// przesunely istniejace bryly, zadnej nie dodaly ani nie usunely), pin
-// zostaje przywrocony zamiast skasowany: to jedyne dokladne przypiecie
-// geometrii tej jednostki w calej bramce T8. iButho zmienil sie realnie
-// (odroznialnosc od Impi 0.370→0.589, sylwetka 3.5%→18.8%), wiec dla niego
-// `null` jest uzasadnione i zostaje.
+// (`dr-`) i iButho (`ib-`); T9 zaudytowal Miecznika galijskiego (`mg-`) —
+// wszyscy troje maja juz komplet wlasnych nazw i wlasne `anchors`. Liczby
+// `mesh`/`maxY` sa domyslnie null dla sasiadow po audycie, bo audyt MOZE
+// zmienic ich bryle — ale gdy da sie DOWIESC, ze konkretna liczba przetrwala
+// audyt bez zmiany (zmierzone niezaleznie w Final Control T10: Druzynnik
+// mial mesh=32, maxY=0.6540 zarowno przed, jak i po T10), pin zostaje
+// przywrocony zamiast skasowany: to jedyne dokladne przypiecie geometrii tej
+// jednostki w calej bramce T8. iButho zmienil sie realnie (odroznialnosc od
+// Impi 0.370→0.589, sylwetka 3.5%→18.8%), wiec dla niego `null` jest
+// uzasadnione i zostaje. Miecznik galijski po T9: mesh=44, maxY=0.7410
+// (przed T9: 35/0.7230, zmierzone bez nazw).
 const SIBLINGS = [
   { key: 'druz',   pl: 'Drużynnik',        cat: 'miecznik', own: 'dr-', mesh: 32, maxY: 0.6540 },
   { key: 'ibutho', pl: 'iButho z iklwa',   cat: 'wlocznik', own: 'ib-', mesh: null, maxY: null },
-  { key: 'galij',  pl: 'Miecznik galijski', cat: 'miecznik', own: null, mesh: 35, maxY: 0.7230 },
+  { key: 'galij',  pl: 'Miecznik galijski', cat: 'miecznik', own: 'mg-', mesh: 44, maxY: 0.7410 },
 ];
 
 /**
@@ -337,10 +337,10 @@ const KOLIZJA_PROG = 0.006;
 // Prog odroznialnosci: 0.558 to WYNIK naprawy T6 dla pary elita/liniowa
 // i tak uzyl go T7 — liczba z rodziny, nie z sufitu. Obowiazuje BEZ WYJATKU
 // dla kazdej pary z udzialem jednostki T8. Uwaga na kontekst przy czytaniu
-// wypisu [odroznialnosc]: pary NIEZWIAZANE z T8, w ktorych wystepuje
-// nieaudytowany jeszcze Miecznik galijski (temat T10), sa na dzisiejszym
-// `main` ponizej tego progu (galij/Druzynnik 0.509, galij/Hastati 0.526) —
-// to stan zastany, ktorego T8 nie dotyka i nie pogarsza.
+// wypisu [odroznialnosc]: pary z Miecznikiem galijskim byly na `main` w chwili
+// T8 PONIZEJ tego progu (galij/Druzynnik 0.509, galij/Hastati 0.526) — byl to
+// stan zastany, ktorego T8 nie dotykal. Zaudytowal go i podniosl dopiero T9
+// (galij/Druzynnik 0.608, galij/Hastati 0.640, mierzone tam).
 const PROG_PARA = 0.558;
 
 /** Pomiar w zywym Three.js: OBB + osie + kotwice dla kazdej nazwanej czesci. */
@@ -660,7 +660,8 @@ function assertGeometry(m, pix, dist, soft) {
 
   // H12 — GROT „ANGUSTO ET BREVI FERRO" (Tacyt, Germania 6): WASKI i KROTKI.
   // Odniesienie bierze sie z TEGO SAMEGO PLIKU — dluga klinga celtycka
-  // (getGTRLongBlade) uzywana przez Miecznika galijskiego.
+  // (getGTRLongBlade) uzywana przez Miecznika galijskiego; T9 zmienil jego poze,
+  // ale NIE dlugosc klingi, wiec liczba 0.210 nadal jest wlasciwa.
   const grot = sizeOf(ng['gw-framea-head']);
   t('H12', '(H12) grot framei jest WASKI I KROTKI — krotszy niz 1/2 dlugiej klingi z tego samego pliku (0.210)',
     grot !== null && grot[1] < 0.105 && grot[0] < 0.030 && grot[2] < 0.020
@@ -845,6 +846,10 @@ function assertRest(m, pix, dist, src, unitRows) {
   }
 
   // --- (K) SEKCJE HISTORYCZNE — obecnosc i KONKRET, nie sam naglowek --------
+  // AKTUALIZACJA T9: warunek brzmi „OBIE jednostki T8 maja swoja sekcje", a nie
+  // „w pliku sa DOKLADNIE dwie sekcje". Do T9 obie postacie dawaly ten sam
+  // wynik, bo sekcje mial tylko T8; T9 dopisal trzecia (Miecznik galijski)
+  // i doslowna liczba przestala opisywac to, o co ta asercja pyta.
   const naglowki = (src.z3.match(/ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA \(/g) || []).length;
   // `>= 2`, nie `=== 2`: plik trzyma pieciu builderow i kolejne tematy serii
   // dopisuja WLASNE sekcje historyczne (T10 dolozyl dwie — Druzynnik i iButho).

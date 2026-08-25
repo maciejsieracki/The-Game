@@ -1690,16 +1690,89 @@ export function buildGermanSuper(ownerColor_: number): THREE.Group {
 //     to konwencja GRY (P6), wspolna wszystkim superom, czytelna z kamery.
 // ===========================================================================
 
+// ===========================================================================
+// ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (Miecznik galijski)
+// Kultura LATENSKA (od stanowiska La Tene nad jeziorem Neuchatel, Szwajcaria),
+// ok. 450 p.n.e. - I w. p.n.e. `units.json`: Epoka=Zelazo, Kultura=Celtowie,
+// Typ=Swordsman, Atak 9 / Obrona 5 / Pancerz 3, Uwagi: „Ofensywna piechota
+// galijska; dlugi miecz + szarza".
+//
+// G1. DLUGI MIECZ SIECZNY — NOSNIK „Atak 9 / dlugi miecz + szarza" Z KARTY.
+//     Polibiusz II.33.3 o mieczach galijskich pod Telamonem/Clastidium: sluza
+//     WYLACZNIE do CIECIA, i to pierwszym uderzeniem z odleglosci — stad
+//     klinga DLUGA (getGTRLongBlade: 0.210 x HEX_R, najdluzsza w tym pliku)
+//     i waski jelec-poprzeczka. Diodor V.30.3 dodaje, ze Galowie nosza
+//     „wielkie miecze" (spathai) zawieszone na PRAWYM boku na lancuchu
+//     zelaznym albo brazowym. Model pokazuje miecz DOBYTY i WZNIESIONY DO
+//     CIECIA — pochwy przy boku NIE ma i to jest swiadome uproszczenie
+//     (poza budzetem mesh), nie przeoczenie. Poza sprzed T9 byla PCHNIECIEM,
+//     czyli sprzeczna z tym wlasnie zdaniem Polibiusza; T9 ja poprawil.
+// G2. TARCZA OWALNA, nie okragla. Dluga owalna tarcza z drewnianym zebrem
+//     (spina) i umbem to typ celtycki poswiadczony materialnie: tarcza z
+//     CHERTSEY (Surrey, ok. 400-250 p.n.e., kompletna, owalna) oraz drewniane
+//     tarcze z samego stanowiska LA TENE. Diodor V.30.2 opisuje u Galow
+//     tarcze WZROSTU CZLOWIEKA (thyreoi andromekeis) zdobione „na wlasny
+//     sposob" — stad zarowno owal, jak i to, ze pole tarczy niesie KOLOR
+//     GRACZA (konwencja gry, ale z oparciem w zrodle).
+// G3. TRISKELION — MOTYW LATENSKI, NIE KONKRETNE ZNALEZISKO. Triskelion jest
+//     poswiadczonym motywem sztuki latenskiej (m.in. plakietka z LLYN CERRIG
+//     BACH, Anglesey, i monety celtyckie). Uczciwie: model NIE odwzorowuje
+//     zadnej konkretnej tarczy z triskelionem — to STYLIZACJA rodziny
+//     (buildCeltWarrior/Gaesatae uzywaja tej samej palety), a nie kopia
+//     zabytku. Nazwane, nie przemilczane.
+// G4. TORQUES. Zloty naszyjnik jest znakiem rozpoznawczym Gala u zrodel:
+//     Polibiusz II.29.8 opisuje Gaesatow pod Telamonem (225 p.n.e.) ozdobionych
+//     ZLOTYMI NASZYJNIKAMI I NARAMIENNIKAMI. Do T9 torques byl w modelu, ale
+//     ZMIERZONO dla niego 4 piksele z kamery gry (siedzial w polowie szyi,
+//     pod broda, zaslaniany przez glowe) — czyli cecha istniala w geometrii
+//     i nie istniala na ekranie. T9 opuscil go na linie OBOJCZYKA i wysunal
+//     do przodu, co jest ZARAZEM poprawka widocznosci I poprawka realizmu:
+//     torques nosi sie na podstawie szyi, nie w jej polowie.
+// G5. BRACCAE W KRATE — Diodor V.30.1: Galowie nosza tuniki barwione w wiele
+//     kolorow ORAZ spodnie, „ktore nazywaja BRACAE", a na to sagi w gesta,
+//     wielobarwna KRATE (plinthia). Do T9 kratka byla zbudowana na UDACH i
+//     przesuwana o staly wektor w osi swiata Z zamiast wzdluz wlasnej
+//     normalnej nogi; ZMIERZONO dla obu barw kraty 0 (SLOWNIE: ZERO) pikseli
+//     z kamery gry — uda kryje dol tuniki i golenie. T9 przeniosl krate na
+//     GOLENIE i na DOLNA czesc ud, i odsuwa ja wzdluz normalnej WLASNEJ
+//     konczyny, a nie po stalej osi swiata.
+// G6. WASY BEZ BRODY. Diodor V.28.3: szlachetnie urodzeni GOLA POLICZKI, ale
+//     zapuszczaja WASY tak dlugie, ze zakrywaja usta. Model ma wasy i nie ma
+//     brody — zgodnie z tym zdaniem, i w odroznieniu od germanskiego brata
+//     z tego samego pliku (T8), ktory brode ma.
+// G7. HELM — CO JEST ZRODLEM, A CO STYLIZACJA. Typ MONTEFORTINO bierze nazwe
+//     od cmentarzyska w Montefortino di Arcevia (Ankona, Senonowie, IV-III w.
+//     p.n.e.): polkolista miska, GUZ na szczycie pod kite, waski naklonek
+//     i policzki na zawiasach. Uczciwie: kanoniczne Montefortino sa z BRAZU,
+//     a miska w tym modelu ma barwe ZELAZA — to wybor stylizacyjny spinajacy
+//     jednostke z technologia „Hutnictwo zelaza" z karty. Zelazne helmy
+//     celtyckie istnieja (typ Port, Novo mesto), ale sa INNYM typem niz
+//     Montefortino i model ich nie odwzorowuje. GUZ dodano w T9: naglowek
+//     funkcji wymienial go od poczatku („miska + guz + kita"), ale mesh guza
+//     w kodzie NIE ISTNIAL, a kita wisiala 0.018 x HEX_R NAD miska, nie
+//     dotykajac jej (zmierzone SAT = 0).
+// G8. CZEGO MODEL NIE ODWZOROWUJE. (a) WAPNOWANYCH, ZJEZONYCH WLOSOW z
+//     Diodora V.28.2 nie widac, bo kryje je helm — to konsekwencja wyboru
+//     „piechur w helmie", nie pominiecie zrodla. (b) Pochwy na lancuchu
+//     (Diodor V.30.3) nie ma — patrz G1. (c) `Pancerz = 3` w units.json
+//     niesie u Celtow HELM I TARCZE, nie kolczuge: model swiadomie nie ma
+//     zbroi tulowia, tak samo jak bratnie Gaesatae i Soldurii o tym samym
+//     Pancerzu.
+// ===========================================================================
+
 // ---------------------------------------------------------------------------
-// MIECZNIK GALIJSKI (Celtowie, ZELAZO) — POZA: pchniecie dlugim mieczem
+// MIECZNIK GALIJSKI (Celtowie, ZELAZO) — POZA: CIECIE Z GORY dlugim mieczem
 // Rodzina CeltWarrior/Gaesatae: rude dlugie wlosy + WASY, TORQUES (zloty,
-// otwarty) na szyi, helm MONTEFORTINO-celtycki (zelazny, guz + kita), tunika
-// burgundowa, BRACCAE W KRATE (rdzawe nogawice + poziome pasy ochry i pionowe
-// urzetu — klockowa krata), tarcza OWALNA celtycka (pole = KOLOR GRACZA,
-// stalowa spina + umbo, TRISKELION z brazu) na LEWYM (+X) przedramieniu,
-// DLUGI miecz celtycki w PRAWEJ (-X) na osi przedramienia. Stopy na y = 0.
+// otwarty) na obojczyku, helm MONTEFORTINO-celtycki (miska + GUZ + kita +
+// POLICZKI), tunika burgundowa, BRACCAE W KRATE (rdzawe nogawice + poprzeczne
+// pasy ochry i pionowe urzetu na GOLENIACH i dolnych udach — klockowa krata),
+// tarcza OWALNA celtycka (pole = KOLOR GRACZA, umbo, TRISKELION) na LEWYM
+// (+X) przedramieniu, DLUGI miecz celtycki w PRAWEJ (-X) WZNIESIONY nad bark
+// (klinga pod wlasnym katem, NIE na przedluzeniu przedramienia). Stopy na y = 0. Wszystkie mesh maja nazwe z prefiksem `mg-` (warunek
+// mozliwosci audytu — patrz test tematu).
 // ---------------------------------------------------------------------------
 export function buildMiecznikGalijski(ownerColor_: number): THREE.Group {
+  const PF = 'mg';
   const group = new THREE.Group();
   const { mats, mat } = makeMats();
 
@@ -1717,70 +1790,156 @@ export function buildMiecznikGalijski(ownerColor_: number): THREE.Group {
   const mBlack = mat(TR_BLACK,    0.05, 0.85);
 
   const HIP_Y = TR_HIP_Y - 0.012 * HEX_R;
+  /** Normalna PRZEDNIEJ sciany konczyny o osi opadania trDirDown(th). */
+  const trFront = (th: number): THREE.Vector3 =>
+    new THREE.Vector3(0, Math.sin(th), Math.cos(th));
 
   // korpus: tunika burgundowa + dol tuniki + pas
-  trCore(group, mat, mTunic);
+  trCore(group, mat, mTunic, TR_SKIN, true, PF);
   const skirt = new THREE.Mesh(getGTRSkirt(), mTunic);
   skirt.position.set(0, TR_TORSO_BOT - 0.018 * HEX_R, 0);
+  skirt.name = PF + '-skirt';
   group.add(skirt);
   const belt = new THREE.Mesh(getGTRBelt(), mLeath);
   belt.position.set(0, 0.252 * HEX_R, 0);
+  belt.name = PF + '-belt';
   group.add(belt);
 
-  // TORQUES: zloty otwarty piercien na szyi
+  // TORQUES (G4): zloty otwarty piercien na OBOJCZYKU, wysuniety przed
+  // plaszczyzne piersi, zeby z kamery gry (elewacja 52 st.) nie chowal sie
+  // pod glowa. Skala 1.15 zamiast nowej geometrii — singleton zostaje wspolny.
   const torc = new THREE.Mesh(getGTRTorc(), mGold);
-  torc.position.set(0, TR_TORSO_TOP + TR_NECK_H * 0.5, 0.004 * HEX_R);
+  torc.scale.set(1.15, 1.0, 1.15);
+  torc.position.set(0, TR_TORSO_TOP + 0.002 * HEX_R, 0.012 * HEX_R);
+  torc.name = PF + '-torc';
   group.add(torc);
 
-  // nogi: BRACCAE W KRATE — rdzawe nogawice; na kazdym udzie poziomy pas
-  // ochry + pionowy pas urzetu (klockowa krata)
-  const legL = trBuildLeg(group,  TR_HIP_X,  0.58,  0.34, mBrac, mBrac, mLeath, HIP_Y);
-  const legR = trBuildLeg(group, -TR_HIP_X, -0.52, -0.20, mBrac, mBrac, mLeath, HIP_Y);
-  for (const [leg, thU, sx] of [[legL, 0.58, TR_HIP_X], [legR, -0.52, -TR_HIP_X]] as
-       [ { thighCtr: THREE.Vector3 }, number, number ][]) {
-    const band = new THREE.Mesh(getGTRBand(), mOchre);    // poziomy pas kraty
-    band.rotation.x = Math.PI - thU;
-    band.position.copy(leg.thighCtr);
-    group.add(band);
-    const pion = new THREE.Mesh(getGTRPion(), mWoad);     // pionowy pas kraty
-    pion.rotation.x = Math.PI - thU;
-    pion.position.copy(leg.thighCtr.clone().add(new THREE.Vector3(0, 0, 0.033 * HEX_R)));
-    group.add(pion);
+  // nogi: BRACCAE W KRATE (G5) — rdzawe nogawice; kratka siedzi na GOLENIACH
+  // i na DOLNEJ czesci ud (czesci odslonietych z kamery gry), a nie na udach
+  // pod dolem tuniki, i jest odsunieta wzdluz normalnej WLASNEJ konczyny.
+  const legL = trBuildLeg(group,  TR_HIP_X,  0.58,  0.34, mBrac, mBrac, mLeath, HIP_Y, PF, 'left');
+  const legR = trBuildLeg(group, -TR_HIP_X, -0.52, -0.20, mBrac, mBrac, mLeath, HIP_Y, PF, 'right');
+  const NOGI: [ { knee: THREE.Vector3; thighCtr: THREE.Vector3 }, number, number, string ][] = [
+    [legL,  0.58,  0.34, 'left'],
+    [legR, -0.52, -0.20, 'right'],
+  ];
+  for (const [leg, thU, thL, side] of NOGI) {
+    const dU = trDirDown(thU), nU = trFront(thU);
+    const dL = trDirDown(thL), nL = trFront(thL);
+    // srodek goleni liczony DOKLADNIE tak, jak sklada ja trBuildLeg
+    const shinTop = leg.knee.clone().add(new THREE.Vector3(0, 0.008 * HEX_R, -0.004 * HEX_R));
+    const shinCtr = shinTop.clone().addScaledVector(dL, TR_SHIN_L * 0.5);
+
+    // poprzeczny pas OCHRY: opaska na goleni (obejmuje ja dookola)
+    const bandL = new THREE.Mesh(getGTRBand(), mOchre);
+    bandL.rotation.x = Math.PI - thL;
+    bandL.scale.set(0.78, 0.90, 0.78);
+    bandL.position.copy(shinTop.clone().addScaledVector(dL, TR_SHIN_L * 0.45));
+    bandL.name = PF + '-braccae-band-shin-' + side;
+    group.add(bandL);
+    // poprzeczny pas OCHRY na DOLNEJ czesci uda (0.74 dlugosci, pod dolem tuniki)
+    const bandU = new THREE.Mesh(getGTRBand(), mOchre);
+    bandU.rotation.x = Math.PI - thU;
+    bandU.position.copy(new THREE.Vector3(leg.thighCtr.x, HIP_Y, 0)
+      .addScaledVector(dU, TR_THIGH_L * 0.74));
+    bandU.name = PF + '-braccae-band-thigh-' + side;
+    group.add(bandU);
+
+    // pionowy pas URZETU na PRZEDNIEJ scianie goleni i uda
+    const pionL = new THREE.Mesh(getGTRPion(), mWoad);
+    pionL.rotation.x = Math.PI - thL;
+    pionL.scale.set(1.0, 0.86, 1.0);
+    pionL.position.copy(shinCtr.clone().addScaledVector(nL, 0.024 * HEX_R));
+    pionL.name = PF + '-braccae-stripe-shin-' + side;
+    group.add(pionL);
+    const pionU = new THREE.Mesh(getGTRPion(), mWoad);
+    pionU.rotation.x = Math.PI - thU;
+    pionU.scale.set(1.0, 0.60, 1.0);
+    pionU.position.copy(new THREE.Vector3(leg.thighCtr.x, HIP_Y, 0)
+      .addScaledVector(dU, TR_THIGH_L * 0.70)
+      .addScaledVector(nU, 0.033 * HEX_R));
+    pionU.name = PF + '-braccae-stripe-thigh-' + side;
+    group.add(pionU);
   }
 
-  // rude DLUGIE wlosy + WASY
+  // rude DLUGIE wlosy + WASY (G6)
   const hair = new THREE.Mesh(getGTRHairBk(), mHair);
   hair.position.set(0, TR_HEAD_CTR - 0.010 * HEX_R, -(TR_HEAD_S * 0.5 + 0.010 * HEX_R));
+  hair.name = PF + '-hair';
   group.add(hair);
+  // trWasy() nie nazywa swoich mesh (wspolny helper serii, uzywany takze przez
+  // Druzynnika — poza zakresem T9). Nazwy nadajemy TU, po fakcie, dokladnie tym
+  // mesh, ktore helper dopisal, zeby nie ruszac samego helpera. Kolejnosc jest
+  // jego petla `for (const s of [-1, 1])`, a -X = PRAWA w tej serii.
+  const nWasyPrzed = group.children.length;
   trWasy(group, mHair);
+  group.children.slice(nWasyPrzed).forEach((o, i) => {
+    o.name = PF + '-moustache-' + (i === 0 ? 'right' : 'left');
+  });
 
-  // HELM MONTEFORTINO-CELTYCKI: zelazna miska + guz + czarna kita
+  // HELM MONTEFORTINO-CELTYCKI (G7): miska + GUZ + czarna kita + POLICZKI.
+  // Miska przeskalowana do 0.78 w osiach XZ: w wersji sprzed T9 jej dolny
+  // promien 0.093 byl SZERSZY niz sama glowa (polowa boku 0.064) i pochlanial
+  // twarz. Po zwezeniu miska przylega do czaszki, a oczy zostaja na zewnatrz.
   const bowl = new THREE.Mesh(getGTRMontBowl(), mIron);
+  bowl.scale.set(0.78, 1.0, 0.78);
   bowl.position.set(0, TR_HEAD_CTR + 0.030 * HEX_R, 0);
+  bowl.name = PF + '-helmet-bowl';
   group.add(bowl);
+  const BOWL_TOP = TR_HEAD_CTR + 0.030 * HEX_R + 0.046 * HEX_R;   // 0.092/2
+  const knob = new THREE.Mesh(getGTRUmbo(), mIron);               // GUZ pod kite
+  knob.scale.set(0.42, 0.72, 0.42);
+  knob.position.set(0, BOWL_TOP + 0.010 * HEX_R, 0);
+  knob.name = PF + '-helmet-knob';
+  group.add(knob);
   const kita = new THREE.Mesh(getGTRKita(), mBlack);
-  kita.position.set(0, TR_HEAD_TOP + 0.076 * HEX_R, 0);
+  kita.position.set(0, BOWL_TOP + 0.020 * HEX_R + 0.046 * HEX_R, 0);
+  kita.name = PF + '-helmet-crest';
   group.add(kita);
+  for (const s of [-1, 1]) {
+    const cheek = new THREE.Mesh(getGTRWasy(), mIron);            // POLICZEK
+    cheek.scale.set(0.72, 1.30, 2.70);
+    cheek.rotation.z = s * 0.10;
+    cheek.position.set(s * 0.070 * HEX_R, TR_HEAD_CTR - 0.014 * HEX_R, 0.006 * HEX_R);
+    cheek.name = PF + '-helmet-cheek-' + (s < 0 ? 'right' : 'left');
+    group.add(cheek);
+  }
 
-  // PRAWE (-X) RAMIE + DLUGI MIECZ CELTYCKI: pchniecie na osi przedramienia
-  const armR = trBuildArm(group, -TR_SHLD_X, 0.92, 1.46, mTunic, mSkin, mLeath);
+  // PRAWE (-X) RAMIE + DLUGI MIECZ CELTYCKI (G1): CIECIE Z GORY — ramie
+  // odwiedzione w tyl i w gore, klinga wzniesiona nad bark.
+  // DLACZEGO NIE PCHNIECIE: do T9 poza byla „pchniecie na osi przedramienia"
+  // przy katach ramienia (0.92, 1.46), czyli — z dokladnoscia do 0.03-0.04 rad
+  // — poza Druzynnika z tego samego pliku (0.95, 1.50); katy NOG obu jednostek
+  // byly wrecz IDENTYCZNE (0.58/0.34 i -0.52/-0.20). Zostawalo im wiec na
+  // rozroznienie glownie ubranie i ksztalt tarczy, i to nie wystarczalo:
+  // zmierzona odroznialnosc pikselowa z kamery gry wynosila 0.509 przy progu
+  // rodziny 0.558. Ciecie z gory rozdziela sylwetki I zgadza sie ze zrodlem:
+  // Polibiusz II.33.3 mowi, ze miecz galijski sluzy WYLACZNIE do ciecia (G1).
+  // CALA poza mieczowa w JEDNEJ linii (kat RAMIENIA, kat KLINGI). Trzymane
+  // razem swiadomie: dowod nietautologicznosci testu tematu musi umiec cofnac
+  // poze do pozy Druzynnika JEDNYM podmienieniem, a nie dwoma.
+  const TH_ARM = -1.85, TH_SWORD = -2.35;
+  const armR = trBuildArm(group, -TR_SHLD_X, TH_ARM, TH_SWORD, mTunic, mSkin, mLeath, PF, 'right');
   const ax = armR.axis;
   const guard = new THREE.Mesh(getGTRGuard(), mBronz);
-  guard.rotation.x = Math.PI - 1.46;
+  guard.rotation.x = Math.PI - TH_SWORD;
   guard.position.copy(armR.wrist.clone().addScaledVector(ax, 0.030 * HEX_R));
+  guard.name = PF + '-sword-guard';
   group.add(guard);
   const blade = new THREE.Mesh(getGTRLongBlade(), mIron);
-  blade.rotation.x = Math.PI - 1.46;
+  blade.rotation.x = Math.PI - TH_SWORD;
   blade.position.copy(armR.wrist.clone().addScaledVector(ax, 0.140 * HEX_R));
+  blade.name = PF + '-sword-blade';
   group.add(blade);
   const tip = new THREE.Mesh(getGTRBladeTip(), mIron);
-  tip.rotation.x = Math.PI - 1.46;
+  tip.rotation.x = Math.PI - TH_SWORD;
   tip.rotation.y = Math.PI / 4;
   tip.position.copy(armR.wrist.clone().addScaledVector(ax, 0.266 * HEX_R));
+  tip.name = PF + '-sword-tip';
   group.add(tip);
 
-  // LEWE (+X) RAMIE + TARCZA OWALNA Z TRISKELIONEM przed korpusem
-  const armL = trBuildArm(group, TR_SHLD_X, 0.50, 1.10, mTunic, mSkin, null);
+  // LEWE (+X) RAMIE + TARCZA OWALNA Z TRISKELIONEM przed korpusem (G2, G3)
+  const armL = trBuildArm(group, TR_SHLD_X, 0.50, 1.10, mTunic, mSkin, null, PF, 'left');
   const sh = new THREE.Group();
   sh.position.set(
     armL.wrist.x - 0.025 * HEX_R,
@@ -1789,26 +1948,47 @@ export function buildMiecznikGalijski(ownerColor_: number): THREE.Group {
   );
   sh.rotation.y = -0.22;
   const shell = new THREE.Mesh(getGTROvalShell(), mLeath);  // rant + plecy
+  shell.name = PF + '-shield-shell';
   sh.add(shell);
   const face = new THREE.Mesh(getGTROvalFace(), mOwner);    // POLE = KOLOR GRACZA
   face.position.set(0, 0, 0.014 * HEX_R);
+  face.name = PF + '-shield-face';
   sh.add(face);
-  // TRISKELION: 3 brazowe ramiona co 120 stopni, kazde skrecone (wir)
+  // TRISKELION: 3 zlote ramiona co 120 stopni, kazde skrecone (wir)
   for (let k = 0; k < 3; k++) {
     const a = k * (Math.PI * 2 / 3) + Math.PI / 2;
     const armT = new THREE.Mesh(getGTRTriArm(), mGold);
     armT.rotation.z = a + 0.85;
     armT.position.set(Math.cos(a) * 0.040 * HEX_R, Math.sin(a) * 0.040 * HEX_R, 0.026 * HEX_R);
+    armT.name = PF + '-shield-triskelion-' + k;
     sh.add(armT);
   }
   const umbo = new THREE.Mesh(getGTRUmbo(), mIron);
   umbo.rotation.x = Math.PI / 2;
   umbo.scale.set(0.7, 0.8, 0.7);
   umbo.position.set(0, 0, 0.030 * HEX_R);
+  umbo.name = PF + '-shield-umbo';
   sh.add(umbo);
   group.add(sh);
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];
+  group.userData['anchors'] = {
+    hexR: HEX_R,
+    headTopY: TR_HEAD_TOP, headCtrY: TR_HEAD_CTR,
+    torsoTopY: TR_TORSO_TOP, torsoBotY: TR_TORSO_BOT,
+    torsoHalfW: TR_TORSO_W * 0.5, torsoHalfD: TR_TORSO_D * 0.5,
+    hipY: HIP_Y, shoulderY: TR_SHLD_Y, shoulderX: TR_SHLD_X,
+    grip: armR.wrist.toArray(),
+    weaponAxis: ax.toArray(),
+    weaponKind: 'sword-long-latene',
+    missileKind: 'none',
+    shieldKind: 'oval-celtic',
+    shieldDevice: 'triskelion',
+    helmetKind: 'montefortino-celtic',
+    armorKind: 'none',
+    faceOpen: true,
+    ownerColorOn: 'shield-face',
+  };
   return group;
 }

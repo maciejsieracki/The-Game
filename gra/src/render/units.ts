@@ -1245,23 +1245,202 @@ function addLongHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial, perG
   group.add(m);
 }
 
+// ===========================================================================
+// ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (Rydwan celtycki)
+// `units.json`: Epoka=Zelazo, Kultura=Celtowie, Tech="Hutnictwo zelaza",
+// Pancerz 1, Atak 7, Uwagi: „NOWA; lekki celtycki rydwan bojowy na 2 konie;
+// woznica + wojownik z oszczepami/mieczem; szybka harcownicza flanka".
+//
+// C1. RYDWAN CELTYCKI JEST JEDNOSTKA EPOKI ZELAZA — ZERO ANACHRONIZMU.
+//     Gdy rydwan bojowy znika z Bliskiego Wschodu i z Grecji, u Celtow trwa
+//     do I w. p.n.e. Cezar, „De bello Gallico" IV.33, opisuje BRYTYJSKICH
+//     essedarii: najpierw objezdzaja pole i MIOTAJA POCISKI („per omnes partes
+//     perequitant et tela coniciunt"), samym pedem koni i loskotem kol lamiac
+//     szyki, potem ZESKAKUJA z wozow i bija sie PIESZO, a woznice odjezdzaja
+//     na bok, zeby zapewnic odwrot. Tamze: wojownicy potrafia BIEC PO DYSZLU
+//     i stanac na jarzmie. BG V.19.1: Kasywelaun po rozpuszczeniu wojsk
+//     zatrzymuje przy sobie okolo CZTERECH TYSIECY essedarii.
+// C2. DLA GALII — DIODOR, NIE CEZAR. W Galii czasow Cezara rydwan bojowy jest
+//     juz przezytkiem, wiec swiadectwem dla GALOW jest Diodor Sycylijski V.29.1
+//     (za Posejdoniuszem, ok. 100 p.n.e.): Galowie uzywaja w podrozy i w bitwie
+//     wozow o DWOCH KONIACH, wiozacych WOZNICE I WOJOWNIKA; ci najpierw ciskaja
+//     w przeciwnika oszczepy, a potem schodza z wozu i walcza mieczami. To
+//     dokladnie zaloga i sposob walki z karty jednostki („woznica + wojownik
+//     z oszczepami/mieczem"). UCZCIWIE: dispatch tematu wskazywal jako przyklad
+//     BELLOWAKOW; nie uzyto tego jako zrodla, bo wzmianki o `esseda` w ksiedze
+//     VIII BG (autorstwa Hirtiusa, kampania przeciw Bellowakom) nie
+//     zweryfikowano — nie cytujemy tego, czego nie sprawdzilismy.
+// C3. WYSOKIE BOCZNE KABLAKI — STYLIZACJA NAZWANA WPROST. Archeologia daje
+//     z pochowkow rydwanowych kultury arraskiej (WETWANG SLACK i GARTON SLACK
+//     we wschodnim Yorkshire; NEWBRIDGE pod Edynburgiem, ok. 475 p.n.e.) oraz
+//     z depozytu LLYN CERRIG BACH na Anglesey przede wszystkim OKUCIA: zelazne
+//     obrecze kol nabijane na drewniane dzwona, piasty, terrety, lony. SAMEJ
+//     nadbudowy kosza znaleziska nie zachowuja — jest ona REKONSTRUKCJA
+//     (najbardziej znana: pelnowymiarowa rekonstrukcja rydwanu z Wetwang
+//     z poczatku XXI w., eksponowana w British Museum). Dwa wysokie
+//     kablaki nad burtami sa wiec STYLIZACJA oparta na tej rekonstrukcji,
+//     a nie odwzorowaniem zabytku, i tak sa tu nazwane. Niosa natomiast
+//     poprawna tresc: kosz celtycki byl LEKKI i AZUROWY — karta daje mu
+//     `Pancerz` 1 przy 2 u mykenskiego i u Shang, a Uwagi rydwanu Shang mowia
+//     wprost o „ciezkim" wozie i o zalodze TRZECH ludzi (woznica + halabardnik
+//     ge + lucznik) wobec DWOJGA u celtyckiego.
+// C4. TARCZA OWALNA NA PRZEDNIEJ BURCIE. Dluga owalna tarcza to typ celtycki
+//     (tarcza z CHERTSEY, drewniane tarcze z LA TENE) — patrz tez sekcja
+//     ZGODNOSC HISTORYCZNA Miecznika galijskiego w
+//     `jednostki-z3-plemiona.ts`. Do T9 „znacznik kultury" byl OKRAGLYM
+//     krazkiem (getGeoOvalShield to mimo nazwy CYLINDER, nie owal), jego
+//     plaszczyzna byla ustawiona normalna wzdluz osi X — czyli DOKLADNIE
+//     prostopadle do kierunku patrzenia jedynej kamery gry (iloczyn skalarny
+//     0.000) — a jej SRODEK lezal 0.065 x HEX_R przed najdalej wysunieta ku
+//     widzowi powierzchnia skrzyni (listwa nad sciana przednia, z = 0.055);
+//     z pojazdem stykala sie jedynie rogiem tej listwy (SAT 0.0090), reszta
+//     wisiala w powietrzu. Zmierzono dla niej 198 pikseli z kamery gry wobec
+//     1070 pikseli wszystkich czesci w barwie gracza u Gaesatow w tym samym
+//     renderze.
+// C5. CZEGO MODEL NIE ODWZOROWUJE — OGRANICZENIA BRYLY WSPOLNEJ. Kosz, kola,
+//     dyszel, jarzmo, konie i woznica pochodza ze WSPOLNEJ bryly kategorii
+//     `rydwan` (buildCategoryModel), ktorej GEOMETRII T9 nie ruszal — allowlista
+//     tematu obejmuje `decorateChariot()`, a nie samo `buildCategoryModel()`.
+//     Zostaje w niej nieceltycki FUTERAL NA LUK ze strzalami: u Celtow
+//     lucznictwo rydwanowe nie jest poswiadczone, zrodla mowia o oszczepach
+//     i mieczach (Cezar BG IV.33, Diodor V.29.1). Zostaje tez SKRZYNKOWY ksztalt
+//     helmu woznicy (barwe poprawia C6, ale bryla jest ta sama co u rydwanu
+//     chinsko-egipskiego) oraz caly ksztalt kosza i kol — lekki, wiklinowy kosz
+//     celtycki rozni sie od ciezkiej skrzyni Shang KSZTALTEM, nie tylko paleta.
+//     Domkniecie tego wymaga bespoke bryly celtyckiej w osobnym pliku (tak samo
+//     jak dostaly ja Rydwan Kapadokijski i Rydwan konny) — poza allowlista T9,
+//     zgloszone jako osobny temat. STAN PO T9 JEST WIEC POPRAWA CZASTKOWA,
+//     nie domknieciem luki: zmierzona odroznialnosc pikselowa rydwanu
+//     celtyckiego od mykenskiego wzrosla, ale progu rodziny 0.558 nie osiaga —
+//     dokladne liczby sa w raporcie i w tescie tematu.
+// C6. ZELAZNE OKUCIA ZAMIAST BRAZOWYCH — najlepiej poswiadczony fakt o tym
+//     pojezdzie. Z pochowkow rydwanowych (Wetwang, Garton, Newbridge) i z
+//     Llyn Cerrig Bach pochodza ZELAZNE obrecze nabijane na skurcz na drewniane
+//     dzwona kol, zelazne obejmy piast, lony i terrety. Bryla wspolna dawala
+//     wszystkim trzem rydwanom okucia w barwie BRAZU — poprawne dla mykenskiego
+//     i Shang (epoka BRAZU), bledne dla celtyckiego z epoki ZELAZA. T9
+//     przebarwia je (i tylko dla wariantu celtyckiego) na zelazo. Przy okazji
+//     tunika woznicy schodzi z czerwieni lakowej na blekit urzetu — Diodor
+//     V.30.1 mowi o galijskich tunikach „barwionych w rozmaite kolory";
+//     sam barwnik (urzet, lac. vitrum) jest u Cezara BG V.14, ale jako
+//     malowidlo NA CIELE Brytow, nie jako barwnik tkaniny — i tak jest tu
+//     nazwane, zeby nie przypisywac zrodlu wiecej, niz mowi.
+// C7. ROZJAZD W SAMYCH DANYCH (nie w modelu). Uwagi karty mowia „wojownik
+//     z oszczepami", ale `Atak dystansowy` = 0 i `Ilosc pociskow` = „—".
+//     Model NIE dostal wiec widocznych oszczepow: nosnik ataku dystansowego
+//     bylby sprzeczny z liczbami karty. Rozstrzygniecie rozjazdu w danych jest
+//     poza zakresem tematu (`gra/data/**` nie jest w allowliscie) i zostalo
+//     zgloszone w raporcie.
+// ===========================================================================
+
 /**
- * Mounts a culture-marker (small round shield + standard flag) on the side of a
- * pre-built chariot group, and re-tints its car front-panel / driver tunic so
- * the three chariot variants read distinctly.  Operates on the group returned
- * by buildCategoryModel('rydwan', ...).
+ * Mounts a per-culture marker on a pre-built chariot group returned by
+ * buildCategoryModel('rydwan', ...).
+ *
+ * Two paths, on purpose:
+ *  - `celtic = false` (Mycenaean, Shang): the historical path, UNCHANGED since
+ *    before T9 — one round disc shield + one boss, nothing else.  Keeping the
+ *    default value keeps those two units byte-identical (asserted by the T9
+ *    test), because auditing them is a separate topic.
+ *  - `celtic = true` (Celtic chariot, T9): an oval La Tene shield lashed FLAT
+ *    to the front breastwork so its face turns toward the game camera, plus the
+ *    two high side hoops that give the Celtic car its own silhouette.
+ *
+ * NOTE (T9, corrected): the pre-T9 doc comment claimed this function "re-tints
+ * its car front-panel / driver tunic so the three chariot variants read
+ * distinctly".  It never did — it only ever added two meshes, and the three
+ * variants measured 0.010-0.014 pixel distinctness from the game camera
+ * (family threshold 0.558; the same-model control is 0.000).  That sentence was
+ * a description of an intent that was never implemented, not of the code.
  */
 function decorateChariot(group: THREE.Group, ownerColor_: number, accent: number,
-                         shieldColor: number): THREE.Group {
+                         shieldColor: number, celtic: boolean = false): THREE.Group {
   const mats = group.userData['mats'] as THREE.Material[];
   const perGeo = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
   const mat = makeMatFactory(mats);
-  // A round culture shield hung on the +X car side (in the chariot's local frame
-  // the car sits behind the team; group is spun 180deg, so we add into a small
-  // pre-spun sub-group to keep the shield on the visible flank).
+  // The car sits behind the team in the chariot's local frame and the whole
+  // group is spun 180deg about Y at the end of buildCategoryModel; a sub-group
+  // pre-spun by the same 180deg therefore has WORLD-ALIGNED axes, so every
+  // number below is a world coordinate and can be compared with a measurement.
   const sub = new THREE.Group();
   sub.rotation.y = Math.PI;
   group.add(sub);
+
+  if (celtic) {
+    // --- PRZEBARWIENIE BRYLY WSPOLNEJ (C6) ---------------------------------
+    // Materialy sa tworzone PER TOKEN (makeMatFactory w buildCategoryModel),
+    // wiec zmiana barwy nie wycieka na inne jednostki ani na inne rydwany.
+    // Robimy to PRZED utworzeniem wlasnych materialow T9, zeby retint nie mogl
+    // trafic w nie same. Liczba trafien jest zwracana i pilnowana asercja
+    // testu tematu — gdy bryla wspolna sie zmieni, test czerwienieje zamiast
+    // po cichu nic nie przebarwic.
+    const retint = (from: number, to: number): number => {
+      let n = 0;
+      for (const m of mats) {
+        const mm = m as THREE.MeshStandardMaterial;
+        if (mm.color !== undefined && mm.color.getHex() === from) { mm.color.setHex(to); n++; }
+      }
+      return n;
+    };
+    const retinted = {
+      iron:  retint(COLOR_BRONZE,  COLOR_MAIL),       // obrecze, os, jarzmo, listwa, helm woznicy
+      tunic: retint(COLOR_LACQUER, COLOR_WOAD),       // tunika woznicy
+      crest: retint(COLOR_RED_VIV, COLOR_TROUSERS),   // kita woznicy
+    };
+    group.userData['celticRetint'] = retinted;
+
+    const mFace  = mat(shieldColor,   0.10, 0.72);
+    const mRim   = mat(COLOR_LEATHER, 0.06, 0.84);
+    const mWoodC = mat(COLOR_CHARIOT, 0.05, 0.82);
+    const mBossC = mat(accent,        0.30, 0.50);
+    // --- oval La Tene shield, FLAT on the front breastwork (C4) -------------
+    // Pion tego ustawienia: przednia sciana skrzyni konczy sie na z = 0.054,
+    // ale NOGI WOZNICY wystaja przez nia do z = 0.059 (cecha bryly wspolnej,
+    // nie T9). Tarcza siada wiec tuz PRZED nimi (tyl pola na z = 0.0605), czyli
+    // przylega do pojazdu bez przenikania czegokolwiek — obie te wlasnosci
+    // (przyleganie i brak kolizji) sa zmierzone i egzekwowane w tescie tematu.
+    const SH_X = 0.078 * HEX_R, SH_Y = 0.185 * HEX_R, SH_Z = 0.0695 * HEX_R;
+    const rim = new THREE.Mesh(getGeoOvalShield(), mRim);
+    rim.rotation.x = Math.PI / 2;                  // disc normal -> world +Z
+    rim.scale.set(0.80, 0.80, 1.20);
+    rim.position.set(SH_X, SH_Y, SH_Z - 0.002 * HEX_R);
+    rim.name = 'rc-shield-rim';
+    sub.add(rim);
+    const face = new THREE.Mesh(getGeoOvalShield(), mFace);
+    face.rotation.x = Math.PI / 2;
+    face.scale.set(0.72, 1.0, 1.10);
+    face.position.set(SH_X, SH_Y, SH_Z);
+    face.name = 'rc-shield-face';
+    sub.add(face);
+    const gSpina = new THREE.BoxGeometry(0.016 * HEX_R, 0.170 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gSpina);
+    const spina = new THREE.Mesh(gSpina, mWoodC);
+    spina.position.set(SH_X, SH_Y, SH_Z + 0.012 * HEX_R);
+    spina.name = 'rc-shield-spina';
+    sub.add(spina);
+    const boss = new THREE.Mesh(getGeoShieldBoss(), mBossC);
+    boss.rotation.x = Math.PI / 2;                 // boss axis -> world +Z
+    boss.position.set(SH_X, SH_Y, SH_Z + 0.016 * HEX_R);
+    boss.name = 'rc-shield-boss';
+    sub.add(boss);
+    // --- two high side hoops over the car rails (C3) ------------------------
+    // Rails run world z -0.17..0.05 at x = +-0.135, top at y = 0.1905.  Radius
+    // 0.090 with centre z = -0.035 lands BOTH feet on the rail and clears the
+    // rear standard pole at z = -0.15.
+    const gHoop = new THREE.TorusGeometry(0.090 * HEX_R, 0.008 * HEX_R, 4, 10, Math.PI);
+    perGeo.push(gHoop);
+    for (const s of [1, -1]) {
+      const hoop = new THREE.Mesh(gHoop, mWoodC);
+      hoop.rotation.y = Math.PI / 2;               // torus plane XY -> world ZY
+      hoop.position.set(s * 0.135 * HEX_R, 0.1905 * HEX_R, -0.035 * HEX_R);
+      hoop.name = 'rc-hoop-' + (s > 0 ? 'left' : 'right');
+      sub.add(hoop);
+    }
+    group.userData['perTokenGeos'] = perGeo;
+    return group;
+  }
+
+  // A round culture shield hung on the +X car side.
   const mShield = new THREE.Mesh(getGeoOvalShield(), mat(shieldColor, 0.10, 0.72));
   mShield.rotation.z = Math.PI / 2;
   mShield.scale.set(1.0, 0.6, 1.0);
@@ -1282,8 +1461,11 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('soldurii') || n.includes('soldur')) return buildSoldurii(ownerColor_);
   if (n.includes('gaesatae')) return buildGaesatae(ownerColor_);
   if (n.includes('wojownik celtycki') || (n.includes('celtyck') && n.includes('wojownik'))) return buildCeltWarrior(ownerColor_);
+  // T9: jedyne dwa wywolania z `celtic = true` (nazwa PL nizej i EN dalej).
+  // Mykenski i Shang zostaja na domyslnej sciezce, wiec ich geometria jest
+  // identyczna jak przed T9 — pilnuje tego asercja regresji w tescie tematu.
   if (n.includes('rydwan celtycki') || (n.includes('rydwan') && n.includes('celtyck'))) {
-    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST, true);
   }
   // GERMANS ---------------------------------------------------------------
   // T8 (R-ZELAZO-AUDYT-POZOSTALE-Q1-T8): Berserker dispatchowany do bespoke
@@ -1331,7 +1513,7 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // unit resolves the same bespoke model whether the EN or PL name is given.
   if (n.includes('celtic warrior')) return buildCeltWarrior(ownerColor_);
   if (n.includes('celtic chariot')) {
-    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST, true);
   }
   if (n.includes('germanic berserker')) return buildBerserkerZ3(ownerColor_);   // T8, jak wyzej
   if (n.includes('germanic warrior')) return buildGermanWarrior(ownerColor_);
