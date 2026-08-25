@@ -1468,10 +1468,19 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // INKA — KRÓLEWSKA GWARDIA (Royal Guard) — po sumer żeby nie łapał sumeryjskiego -----
   if ((n.includes('krolewska gwardia') || n.includes('royal guard')) && !n.includes('sumer')) return buildInkaRoyalGuard(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Mezopotamia/Indus (jednostki-z1-mezopotamia.ts) --
-  if (n.includes('gwardia hetycka')) return buildGwardiaHetycka(ownerColor_);
-  if (n.includes('piechota neobabilonska')) return buildPiechotaNeobabilonska(ownerColor_);
-  if (n.includes('mur tarcz')) return buildMurTarcz(ownerColor_);
-  if (n.includes('garnizon harappy')) return buildGarnizonHarappy(ownerColor_);
+  // AUDYT R-ZELAZO-AUDYT-POZOSTALE-Q1-T5: te cztery linie miały WYŁĄCZNIE rdzeń
+  // polski — jako jedyne w całej rodzinie modeli nazwanych. ZMIERZONE w żywym
+  // Three.js: „Hittite Guard", „Neo-Babylonian Infantry", „Shield Wall
+  // (Sargonid)" i „Harappan Garrison" (kolumna „Nazwa EN" z units.json) dawały
+  // 28-mesh generyk `miecznik` zamiast własnej figurki (34–37 mesh). Ścieżka
+  // angielska jest realna, nie teoretyczna: `battleScene.ts` bierze
+  // `modelName = stats['Jednostka'] ?? bu.nazwa`, a `bu.nazwa` to właśnie
+  // „Nazwa EN" (testBattle.ts:358). Rdzenie sprawdzone na JEDNOZNACZNOŚĆ
+  // w całym units.json — dokładnie po jednym trafieniu każdy.
+  if (n.includes('gwardia hetycka') || n.includes('hittite guard')) return buildGwardiaHetycka(ownerColor_);
+  if (n.includes('piechota neobabilonska') || n.includes('neo-babylonian infantry')) return buildPiechotaNeobabilonska(ownerColor_);
+  if (n.includes('mur tarcz') || n.includes('shield wall')) return buildMurTarcz(ownerColor_);
+  if (n.includes('garnizon harappy') || n.includes('harappan garrison')) return buildGarnizonHarappy(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Śródziemnomorze (jednostki-z2-srodziemne.ts) ------
   // (Triari NIE tutaj — to super-jednostka, dispatch przez buildSuperUnit poniżej.)
   if (n.includes('tyrski miecznik')) return buildTyrskiMiecznik(ownerColor_);
