@@ -10,10 +10,12 @@
  *
  * CO TEN TEST MIERZY — i dlaczego NIE wystarczy sprawdzić obecności w DOM.
  * Zasłonięta pozycja listy JEST w DOM i ma niezerowy prostokąt, a mimo to gracz jej nie
- * kliknie. Dlatego kryterium końcowym jest `document.elementFromPoint()` w ŚRODKU ostatniej
- * pozycji: musi trafić w ten wiersz (albo jego potomka), nie w przycisk dolnego paska i nie
- * w nic. jsdom nie nadaje się do tego w ogóle (`getBoundingClientRect()` zwraca zera,
- * `elementFromPoint` nie istnieje) — stąd realny Chromium (§9 poz. 6a).
+ * kliknie. Dlatego kryteria końcowe są dwa: `document.elementFromPoint()` w ŚRODKU ostatniej
+ * pozycji ORAZ realne `page.mouse.click()` w tym samym punkcie, potwierdzone wywołaniem
+ * `onSelectType` z kluczem tej pozycji. Samo `elementFromPoint` nie wystarcza: pozycja
+ * zasłonięta półprzezroczystym elementem albo leżąca poza kadrem potrafi je przejść, a i tak
+ * nie da się jej kliknąć. jsdom nie nadaje się do tego w ogóle (`getBoundingClientRect()`
+ * zwraca zera, `elementFromPoint` nie istnieje) — stąd realny Chromium (§9 poz. 6a).
  *
  * DWA NIEZALEŻNE ZNACZENIA SŁOWA „POWIĘKSZENIE" — oba mierzone osobno:
  *
@@ -24,6 +26,13 @@
  *      bo te zmieniają układ wewnątrz niezmienionego viewportu i nie odtwarzają skurczu
  *      `100vh`, który jest sednem tego błędu. Siatka: 100/125/150/175/200% × okno o
  *      wysokości fizycznej 1080/900/768/640.
+ *
+ *  SIATKA JEST ŁĄCZONA — ILOCZYN OBU OSI, nie suma. Runda 1 tego tematu mierzyła każdą oś
+ *      osobno (przeglądarka przy UI 100%, UI gry przy przeglądarce 100%) i przepuściła
+ *      regresję, która pojawia się DOPIERO w iloczynie (przeglądarka 200% × UI 125% × okno
+ *      640 → blok zawierający 256px < rezerwa 264px → `calc()` ujemny → panel zapada się
+ *      do ~0). Dlatego dziś: 5 powiększeń przeglądarki × 3 powiększenia UI × 4 wysokości
+ *      okna = 60 punktów, każdy mierzony osobno.
  *
  *  (2) POWIĘKSZENIE UI GRY (przyciski −/+ „Powiększenie całej gry", `hud.ts::applyUiZoom`).
  *      Implementacja: `body{width:100/z vw;height:100/z vh;transform:scale(z);
@@ -37,9 +46,13 @@
  *  (A) kontrakt źródła — `.civ-build-panel` rezerwuje miejsce na stos WYKONAJ/ZAKOŃCZ TURĘ
  *      z JEDNEGO źródła prawdy (`hudLayout.ts::turnStackBottomPx`), nie ze sztywnej liczby,
  *      i nie ogranicza wysokości jednostką `vh` (patrz wyżej — `vh` ignoruje transform UI).
- *  (B) siatka powiększenia przeglądarki — dla KAŻDEGO punktu: ostatnia pozycja listy
- *      (a) wyrenderowana, (b) osiągalna scrollem, (c) KLIKALNA (elementFromPoint).
- *  (C) siatka powiększenia UI gry (1.25/1.5) — to samo kryterium.
+ *  (B) podsiatka bez powiększenia UI gry (20 punktów) — dla KAŻDEGO punktu: ostatnia pozycja
+ *      listy (a) wyrenderowana, (b) osiągalna scrollem, (c) KLIKALNA (elementFromPoint),
+ *      (d) KLIKNIĘTA realnym `page.mouse.click` z potwierdzeniem przez `onSelectType`.
+ *  (C) podsiatka z powiększeniem UI gry 1.25/1.5 (40 punktów) — te same cztery kryteria.
+ *  (F) podłoga wysokości panelu — w KAŻDYM z 60 punktów panel jest wyższy niż jeden pełny
+ *      wiersz listy (wysokość wiersza mierzona, nie przepisana), więc nigdy nie zapada się
+ *      do zera przy ujemnym `calc()`; jednocześnie panel mieści się w kadrze.
  *  (D) hipoteza „kółko myszy zoomuje mapę zamiast przewijać listę" — realne `mouse.wheel`
  *      nad listą przewija listę i NIE dociera do kanwy mapy.
  *  (E) brak regresji: sekcje MIASTO / CUDA ŚWIATA / AUTOMATYZACJA / ULEPSZENIA TERENU
@@ -78,8 +91,9 @@ const BROWSER_ZOOMS = [1, 1.25, 1.5, 1.75, 2];
 const WINDOW_HEIGHTS = [1080, 900, 768, 640];
 /** Szerokość okna (px fizyczne) — stała, błąd jest pionowy. */
 const WINDOW_WIDTH = 1920;
-/** Powiększenia UI gry (hud.ts: UI_ZOOM_MIN 0.85 … UI_ZOOM_MAX 1.5). */
-const UI_ZOOMS = [1.25, 1.5];
+/** Powiększenia UI gry (hud.ts: UI_ZOOM_MIN 0.85 … UI_ZOOM_MAX 1.5); 1 = brak powiększenia.
+ *  Mierzone jako ILOCZYN z osią przeglądarki — patrz nagłówek. */
+const UI_ZOOMS = [1, 1.25, 1.5];
 
 let pass = 0;
 let fail = 0;
@@ -243,10 +257,12 @@ async function mountScene(page, improvements) {
       lockHint: 'Technologia: «Obróbka kamienia» · Koszt: 40 Pracy',
     }));
     window.__types = types;
+    window.__selected = [];
     window.__hud = window.__createBuildModeHud({
       listTypes: () => types,
       getActiveKey: () => null,
-      onSelectType: () => {},
+      // Kryterium (d): realne kliknięcie musi dojść do callbacku wyboru ulepszenia.
+      onSelectType: (k) => { window.__selected.push(k); },
       onExit: () => {},
       isOpen: () => true,
       getPracaPool: () => 999,
@@ -316,9 +332,18 @@ async function measureLastItem(page) {
     const bar = document.querySelector('.civ-bottom-bar');
     const br = bar.getBoundingClientRect();
     const pr = panel.getBoundingClientRect();
+    window.__selected = [];
     return {
       itemCount: items.length,
+      lastKey: last.getAttribute('data-key'),
+      lastDisabled: last.classList.contains('disabled'),
       lastLabel: last.textContent.replace(/\s+/g, ' ').trim().slice(0, 40),
+      // Wysokość wiersza MIERZONA w tym samym renderze — podłoga panelu jest z nią porównywana.
+      itemH: Math.round(r.height * 100) / 100,
+      panelH: Math.round(pr.height * 100) / 100,
+      panelChromePx: Math.round((parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)
+        + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth)) * 100) / 100,
+      uiZoom: Number(document.documentElement.style.getPropertyValue('--civ-ui-zoom') || 1),
       rendered: r.width > 1 && r.height > 1,
       scrollable: panel.scrollHeight - panel.clientHeight > 1,
       scrollHeight: Math.round(panel.scrollHeight),
@@ -334,9 +359,25 @@ async function measureLastItem(page) {
       reachable: r.top >= -0.5 && r.bottom <= vh + 0.5 && r.left >= -0.5 && r.right <= vw + 0.5,
       // (c): środek wiersza faktycznie trafia w ten wiersz
       clickable: hitIsLast,
+      // (d): punkt do realnego page.mouse.click — tylko jeśli leży w kadrze
+      clickPoint: inViewport ? { x: cx, y: cy } : null,
       hitTag: hit ? (hit.className && typeof hit.className === 'string' ? hit.className : hit.tagName) : null,
     };
   });
+}
+
+/** (d) REALNE kliknięcie w środek ostatniej pozycji listy — myszą przeglądarki, nie skryptem.
+ *  Kryterium: `onSelectType` dostał klucz tej pozycji. Zasłonięta albo wypchnięta poza kadr
+ *  pozycja tego nie zaliczy, nawet gdy przejdzie `elementFromPoint`. */
+async function clickLastItem(page, m) {
+  if (!m.clickPoint) return false;
+  try {
+    await page.mouse.click(m.clickPoint.x, m.clickPoint.y);
+    await page.waitForTimeout(10);
+    return await page.evaluate((k) => Array.isArray(window.__selected) && window.__selected.includes(k), m.lastKey);
+  } catch (_e) {
+    return false;
+  }
 }
 
 /** Klikalność przycisków dolnego paska — panel nie może ich zasłonić (z-index 311 > 310). */
@@ -422,45 +463,40 @@ async function main() {
     await page.setContent(PAGE_CSS);
     await page.addScriptTag({ content: bundleJs });
 
-    for (const winH of WINDOW_HEIGHTS) {
-      await page.setViewportSize({
-        width: Math.round(WINDOW_WIDTH / browserZoom),
-        height: Math.round(winH / browserZoom),
-      });
-      await mountScene(page, improvements);
-      await page.waitForTimeout(20);
-      const m = await measureLastItem(page);
-      const btns = await measureBottomButtons(page);
-      rows.push({ kind: 'browser', zoom: browserZoom, winH, m, btns });
-
-      if (!shotDone && SHOT_PATH && browserZoom === 1.5 && winH === 900) {
-        fs.mkdirSync(path.dirname(SHOT_PATH), { recursive: true });
-        await page.screenshot({ path: SHOT_PATH });
-        console.log('[build-panel-ulepszenia-scroll-real-render-test] zrzut: ' + SHOT_PATH);
-        shotDone = true;
-      }
-    }
-
-    // Powiększenie UI gry mierzymy przy 100% przeglądarki (osobny mechanizm).
-    if (browserZoom === 1) {
-      for (const uz of UI_ZOOMS) {
-        for (const winH of WINDOW_HEIGHTS) {
-          await page.setViewportSize({ width: WINDOW_WIDTH, height: winH });
-          await mountScene(page, improvements);
-          await setUiZoom(page, uz);
-          await page.evaluate(() => window.__hud.update());
-          await page.waitForTimeout(20);
-          const m = await measureLastItem(page);
-          const btns = await measureBottomButtons(page);
-          rows.push({ kind: 'ui', zoom: uz, winH, m, btns });
-        }
+    // SIATKA ŁĄCZONA: powiększenie przeglądarki × powiększenie UI gry × wysokość okna.
+    // Iloczyn, nie suma — regresja rundy 1 pojawiała się wyłącznie w komórkach mieszanych.
+    for (const uiZoom of UI_ZOOMS) {
+      for (const winH of WINDOW_HEIGHTS) {
         await setUiZoom(page, 1);
+        await page.setViewportSize({
+          width: Math.round(WINDOW_WIDTH / browserZoom),
+          height: Math.round(winH / browserZoom),
+        });
+        await mountScene(page, improvements);
+        if (uiZoom !== 1) {
+          await setUiZoom(page, uiZoom);
+          await page.evaluate(() => window.__hud.update());
+        }
+        await page.waitForTimeout(20);
+        const m = await measureLastItem(page);
+        const btns = await measureBottomButtons(page);
+        const realClick = await clickLastItem(page, m);
+        rows.push({ kind: uiZoom === 1 ? 'browser' : 'ui', zoom: browserZoom, uiZoom, winH, m, btns, realClick });
+
+        if (!shotDone && SHOT_PATH && browserZoom === 1.5 && uiZoom === 1 && winH === 900) {
+          fs.mkdirSync(path.dirname(SHOT_PATH), { recursive: true });
+          await page.screenshot({ path: SHOT_PATH });
+          console.log('[build-panel-ulepszenia-scroll-real-render-test] zrzut: ' + SHOT_PATH);
+          shotDone = true;
+        }
       }
     }
+    await setUiZoom(page, 1);
 
     // (D) kółko myszy nad listą — tylko raz, przy 100%.
     let wheel = null;
     if (browserZoom === 1) {
+      await setUiZoom(page, 1);
       await page.setViewportSize({ width: WINDOW_WIDTH, height: 900 });
       await mountScene(page, improvements);
       await page.waitForTimeout(20);
@@ -511,16 +547,16 @@ async function main() {
   // -------------------------------------------------------------------------
   // Werdykty.
   // -------------------------------------------------------------------------
-  const fmt = (r) => `${r.kind === 'ui' ? 'UI' : 'BR'} ${Math.round(r.zoom * 100)}% × ${r.winH}px`;
+  const fmt = (r) => `BR ${Math.round(r.zoom * 100)}% × UI ${Math.round(r.uiZoom * 100)}% × ${r.winH}px`;
   if (VERBOSE) {
     console.log('');
     console.log('--- SIATKA POMIAROWA (a=wyrenderowana, b=osiągalna scrollem, c=klikalna) ---');
     for (const r of rows) {
       console.log(
-        `${fmt(r).padEnd(18)} a=${r.m.rendered ? 1 : 0} b=${r.m.reachable ? 1 : 0} c=${r.m.clickable ? 1 : 0}`
+        `${fmt(r).padEnd(30)} a=${r.m.rendered ? 1 : 0} b=${r.m.reachable ? 1 : 0} c=${r.m.clickable ? 1 : 0} d=${r.realClick ? 1 : 0}`
         + ` | panel ${r.m.panel.top}..${r.m.panel.bottom} bar ${r.m.bar.top}..${r.m.bar.bottom}`
         + ` overlap=${Math.max(0, r.m.overlapPx)} | scroll ${r.m.scrolledTo}/${r.m.scrollHeight - r.m.clientHeight}`
-        + ` maxH=${r.m.maxHeightCss} | last ${r.m.last.top}..${r.m.last.bottom} vh=${r.m.vh} hit=${r.m.hitTag}`,
+        + ` maxH=${r.m.maxHeightCss} panelH=${r.m.panelH} | last ${r.m.last.top}..${r.m.last.bottom} vh=${r.m.vh} hit=${r.m.hitTag}`,
       );
     }
     console.log('');
@@ -541,6 +577,10 @@ async function main() {
   check(`B(c) ostatnia pozycja KLIKALNA (elementFromPoint) w każdym z ${browserRows.length} punktów siatki powiększenia przeglądarki`,
     badC.length === 0, badC);
 
+  const badD = browserRows.filter((r) => !r.realClick).map((r) => ({ cell: fmt(r), panelH: r.m.panelH, last: r.m.last, hit: r.m.hitTag }));
+  check(`B(d) ostatnia pozycja faktycznie KLIKNIĘTA myszą (page.mouse.click → onSelectType) w każdym z ${browserRows.length} punktów siatki powiększenia przeglądarki`,
+    badD.length === 0, badD);
+
   const badUiB = uiRows.filter((r) => !r.m.reachable).map((r) => ({ cell: fmt(r), last: r.m.last, vh: r.m.vh, maxH: r.m.maxHeightCss }));
   check(`C(b) ostatnia pozycja OSIĄGALNA scrollem w każdym z ${uiRows.length} punktów siatki powiększenia UI gry`,
     badUiB.length === 0, badUiB);
@@ -549,9 +589,47 @@ async function main() {
   check(`C(c) ostatnia pozycja KLIKALNA w każdym z ${uiRows.length} punktów siatki powiększenia UI gry`,
     badUiC.length === 0, badUiC);
 
+  const badUiD = uiRows.filter((r) => !r.realClick).map((r) => ({ cell: fmt(r), panelH: r.m.panelH, last: r.m.last, hit: r.m.hitTag }));
+  check(`C(d) ostatnia pozycja faktycznie KLIKNIĘTA myszą (page.mouse.click → onSelectType) w każdym z ${uiRows.length} punktów siatki powiększenia UI gry`,
+    badUiD.length === 0, badUiD);
+
   const overlapping = rows.filter((r) => r.m.overlapPx > 0.5).map((r) => ({ cell: fmt(r), overlapPx: r.m.overlapPx }));
   check('B/C prostokąt panelu budowy NIE nachodzi na stos WYKONAJ/ZAKOŃCZ TURĘ w żadnym punkcie siatki',
     overlapping.length === 0, overlapping);
+
+  // -------------------------------------------------------------------------
+  // (F) Podłoga wysokości panelu — rezerwa 90+184px (174px w trybie powiększenia UI) bywa
+  // WYŻSZA niż cały blok zawierający (przeglądarka 200% × okno 640 → 320px CSS, a przy UI
+  // 125% body ma 256px). `calc(100% - rezerwa)` jest wtedy ujemny; bez podłogi max-height
+  // zapada się do zera i panel znika. Wysokość wiersza jest MIERZONA w tym samym renderze,
+  // nie przepisana ze stałej — jeśli wiersz urośnie, a podłoga nie, ta asercja czerwieni.
+  // -------------------------------------------------------------------------
+  // Prostokąty z `getBoundingClientRect()` są w px viewportu, więc przy powiększeniu UI gry
+  // są przeskalowane transformem body; `getComputedStyle` zwraca px CSS. Sprowadzamy jedno
+  // i drugie do px CSS, dzieląc pomiary prostokątów przez aktywne powiększenie UI.
+  const cssPx = (v, r) => v / (r.m.uiZoom || 1);
+  const tooShort = rows
+    .map((r) => ({ r, panelHcss: cssPx(r.m.panelH, r), minNeeded: cssPx(r.m.itemH, r) + r.m.panelChromePx }))
+    .filter(({ panelHcss, minNeeded }) => panelHcss + 0.5 < minNeeded)
+    .map(({ r, panelHcss, minNeeded }) => ({
+      cell: fmt(r),
+      panelHcss: Math.round(panelHcss * 100) / 100,
+      minNeeded: Math.round(minNeeded * 100) / 100,
+      maxH: r.m.maxHeightCss,
+    }));
+  const rowHcss = Math.max(...rows.map((r) => cssPx(r.m.itemH, r)));
+  check(`F panel budowy NIGDY nie jest niższy niż jeden pełny wiersz listy + chrom panelu (podłoga max-height) — ${rows.length} punktów siatki łączonej`,
+    tooShort.length === 0, { rowHcss: Math.round(rowHcss * 100) / 100, tooShort });
+
+  const outOfFrame = rows.filter((r) => r.m.panel.top < -0.5 || r.m.panel.bottom > r.m.vh + 0.5)
+    .map((r) => ({ cell: fmt(r), panel: r.m.panel, vh: r.m.vh }));
+  check('F panel budowy mieści się w kadrze (górna i dolna krawędź w viewporcie) w każdym punkcie siatki łączonej',
+    outOfFrame.length === 0, outOfFrame);
+
+  const badLast = rows.filter((r) => r.m.lastDisabled || r.m.lastKey !== 'fort')
+    .map((r) => ({ cell: fmt(r), lastKey: r.m.lastKey, disabled: r.m.lastDisabled }));
+  check('F mierzona ostatnia pozycja to odblokowany „Fort" (kliknięcie ma prawo dojść do callbacku)',
+    badLast.length === 0, badLast.slice(0, 3));
 
   // (D) kółko myszy.
   check('D kółko myszy nad listą przewija LISTĘ (scrollTop rośnie)',

@@ -111,7 +111,7 @@ export interface BuildModeHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve';
+const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve-floor';
 
 /**
  * P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1 — pion panelu budowy.
@@ -135,11 +135,33 @@ const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve';
  * niż `vh` — liczy się od bloku zawierającego, więc jest poprawny w OBU układach współrzędnych
  * (viewport bez powiększenia UI, przeskalowane <body> z powiększeniem UI). Ten sam wzorzec co
  * `.civ-side-panel` (`sidePanelHud.ts`), łącznie z osobną regułą `html.civ-ui-zoom-active`.
+ *
+ * RUNDA 2 — PODŁOGA. Sama rezerwa nie wystarczy: rezerwa całkowita to `90 + 184` (`174` przy
+ * powiększeniu UI) = 274/264px, więc gdy blok zawierający jest NIŻSZY niż ta rezerwa
+ * (przeglądarka 200% × okno 640 → viewport 320px CSS → body przy UI 125% = 256px),
+ * `calc(100% - 274px)` schodzi poniżej zera, `max-height` zapada się do ~0 i panel kurczy się
+ * do 23–31px — dla gracza praktycznie znika (zmierzone: 5/60 punktów siatki łączonej
+ * przeglądarka × UI × wysokość, w tym 2 punkty, w których PRZED naprawą klikało się dobrze).
+ *
+ * Dlatego DWIE sprzężone deklaracje, obie liczone z tych samych stałych:
+ *  - `max-height: max(52px, calc(...))` — panel nigdy nie jest niższy niż JEDEN pełny wiersz
+ *    listy z chromem panelu, więc zawsze zostaje przewijalny i klikalny;
+ *  - `top: min(90px, max(0px, calc(100% - rezerwa_dolna - 52px)))` — gdy 52px nie mieszczą się
+ *    już pod `top:90px`, panel przesuwa się W GÓRĘ, zamiast wchodzić na stos WYKONAJ/ZAKOŃCZ
+ *    TURĘ. Bez tego członu podłoga naprawiałaby klikalność listy kosztem klikalności WYKONAJ
+ *    w 3 punktach siatki (zmierzone). Przy `top:0` i tak nic więcej nie da się zrobić — wtedy
+ *    lepiej, żeby panel nachodził, niż żeby zniknął.
  */
 const BUILD_PANEL_TOP_PX = 90;
 /** Rezerwa od dołu: cały stos WYKONAJ/ZAKOŃCZ TURĘ + ten sam odstęp co panel wydarzeń. */
 const BUILD_PANEL_BOTTOM_PX = turnStackBottomPx() + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
 const BUILD_PANEL_BOTTOM_ZOOM_PX = turnStackBottomPx(true) + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
+/** Wysokość jednego wiersza listy `.civ-build-item`: padding 7+7 + ikona 18 + ramka 1+1
+ *  (zmierzone w Chromium: `getBoundingClientRect().height` = 34px dla każdej pozycji). */
+const BUILD_ITEM_ROW_H_PX = 7 + 7 + 18 + 1 + 1;
+/** Podłoga wysokości panelu = jeden PEŁNY wiersz + padding panelu 8+8 + ramka 1+1 (52px).
+ *  Mniej znaczy wiersz przycięty w połowie; więcej niepotrzebnie zjada pas przewijania. */
+const BUILD_PANEL_MIN_H_PX = BUILD_ITEM_ROW_H_PX + 8 + 8 + 1 + 1;
 
 const ULEPSZENIA_FOCUS_LABELS: Record<UlepszeniaFocus, string> = {
   zywnosc: 'Żywność',
@@ -177,13 +199,15 @@ function ensureStyles(): void {
 .civ-build-banner.open{display:flex;}
 .civ-build-banner button{background:rgba(255,255,255,.08);border:1px solid rgba(232,176,74,.4);
   color:#ffe8c0;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;}
-.civ-build-panel{position:fixed;top:${BUILD_PANEL_TOP_PX}px;right:${HUD_EDGE_PX}px;z-index:311;width:270px;
-  max-height:calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_PX}px);
+.civ-build-panel{position:fixed;z-index:311;width:270px;right:${HUD_EDGE_PX}px;
+  top:min(${BUILD_PANEL_TOP_PX}px,max(0px,calc(100% - ${BUILD_PANEL_BOTTOM_PX + BUILD_PANEL_MIN_H_PX}px)));
+  max-height:max(${BUILD_PANEL_MIN_H_PX}px,calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_PX}px));
   overflow-y:auto;display:none;flex-direction:column;gap:4px;padding:8px;
   background:rgba(12,18,35,.94);border:1px solid rgba(232,216,138,.28);border-radius:8px;
   font:12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.55);}
 html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
-  max-height:calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_ZOOM_PX}px);}
+  top:min(${BUILD_PANEL_TOP_PX}px,max(0px,calc(100% - ${BUILD_PANEL_BOTTOM_ZOOM_PX + BUILD_PANEL_MIN_H_PX}px)));
+  max-height:max(${BUILD_PANEL_MIN_H_PX}px,calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_ZOOM_PX}px));}
 .civ-build-panel.open{display:flex;}
 .civ-build-panel .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#7a7055;margin-bottom:4px;}
 .civ-build-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;
