@@ -210,10 +210,8 @@ console.log('\n--- C. bariery w kodzie (kotwice zrodlowe) ---');
   const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
   const panelSrc = fs.readFileSync(path.join(GRA, 'src', 'ui', 'cityPanel.ts'), 'utf8');
 
-  assert(/prod0\.kolejka\.some\(\s*it\s*=>\s*it\.kind === 'jednostka'\s*\)/.test(mainSrc),
-    'C2: tick per-miasto czysci legacy jednostke z kolejki Pracy PRZED naliczeniem Pracy');
-  assert(/sanitizeBuildQueue\(prod0\)/.test(mainSrc),
-    'C3: czyszczenie idzie przez kanoniczna migracje sanitizeBuildQueue (zwrot Pracy)');
+  // C2/C3 (kotwice po tekscie wlasnego hunku) usuniete w RUNDZIE 2 — zastapione
+  // sekcja D, ktora wykonuje prawdziwy kod main.ts zamiast dopasowywac go regexem.
   assert(/item\.kind === 'jednostka'[\s\S]{0,900}?shouldAIPurchaseUnit/.test(mainSrc),
     'C4: egzekutor build AI kieruje jednostke do bramki zakupu za Skarbiec');
   assert(/shouldAIPurchaseUnit[\s\S]{0,700}?purchaseRecruitmentUnit\(/.test(mainSrc),
@@ -222,6 +220,175 @@ console.log('\n--- C. bariery w kodzie (kotwice zrodlowe) ---');
   assert(/item\.kind === 'jednostka'[\s\S]{0,400}?return;/.test(panelSrc),
     'C6: PARYTET — panel miasta gracza nadal odrzuca jednostke w kolejce Pracy (bez zmian)');
 }
+
+
+// ---------------------------------------------------------------------------
+// D. DOWOD BEHAWIORALNY zmienionej linii — prawdziwy kod main.ts, wykonany naprawde
+//
+// RUNDA 2, uwaga N1. Poprzednia wersja bramki sprawdzala zmieniony hunk regexem po
+// jego wlasnym tekscie (C2/C3) — to jest tautologia, nie dowod. Tutaj wycinamy z
+// biezacego main.ts PRAWDZIWA tresc `stripLegacyUnitsFromPracaQueue` (nie kopie,
+// nie reimplementacje), wykonujemy ja przez `new Function` na PRAWDZIWEJ
+// `sanitizeBuildQueue` i puszczamy przez PRAWDZIWY `advanceProduction`.
+// Wzorzec kanoniczny w repo: `road-hook-mainguard-test.cjs` §2/§3.
+//
+// Scenariusz = dokladnie to, co niesie STARY ZAPIS: jednostka stoi na froncie kolejki
+// Pracy i ma juz zebrany postep. Sprawdzamy trzy rzeczy z kryterium rundy 2:
+//   (a) jednostka znika z kolejki,
+//   (b) zebrany postep wraca do puli Pracy wlasciciela,
+//   (c) Praca NIE jest w nia dalej lana (nie konczy sie jako jednostka za Prace).
+// Plus §D-MUT: mutacje zrodla musza zaczerwienic DOKLADNIE te asercje.
+// ---------------------------------------------------------------------------
+console.log('\n--- D. dowod behawioralny guardu z main.ts (kod wycinany i wykonywany) ---');
+
+const MAIN_TS = path.join(GRA, 'src', 'main.ts');
+const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
+const PROD_TS = path.join(GRA, 'src', 'game', 'production.ts');
+const prodTsSrc = fs.readFileSync(PROD_TS, 'utf8');
+
+/** Wycina cialo funkcji po SYGNATURZE (nigdy po numerze linii — te sie przesuwaja). */
+function extractFunction(source, signature) {
+  const start = source.indexOf(signature);
+  if (start < 0) return null;
+  const bodyStart = source.indexOf('{', start);
+  if (bodyStart < 0) return null;
+  let depth = 0;
+  for (let i = bodyStart; i < source.length; i++) {
+    if (source[i] === '{') depth++;
+    else if (source[i] === '}' && --depth === 0) return source.slice(start, i + 1);
+  }
+  return null;
+}
+
+const SYG_GUARD = 'function stripLegacyUnitsFromPracaQueue(';
+const guardSrcTs = extractFunction(mainTsSrc, SYG_GUARD);
+assert(!!guardSrcTs, 'D0: guard `stripLegacyUnitsFromPracaQueue` jest obecny w main.ts');
+
+/** Kompiluje wyciety TypeScript i zwraca ZYWA funkcje + podgladana pule Pracy. */
+function instantiateGuard(tsText) {
+  const js = esbuild.transformSync(tsText, { loader: 'ts', target: 'node18' }).code;
+  const pool = new Map();
+  const warns = [];
+  const factory = new Function(
+    'sanitizeBuildQueue', 'ownerPracaPool', 'setOwnerPracaPool', 'console',
+    `${js}\nreturn stripLegacyUnitsFromPracaQueue;`,
+  );
+  const guard = factory(
+    M.sanitizeBuildQueue,
+    (id) => pool.get(id) ?? 0,
+    (id, v) => pool.set(id, v),
+    { warn: (m) => warns.push(String(m)) },
+  );
+  return { guard, pool, warns };
+}
+
+const UNIT = { kind: 'jednostka', id: 'Wojownik',  nazwa: 'Wojownik',  koszt: 40 };
+const BUD  = { kind: 'budynek',   id: 'spichlerz', nazwa: 'Spichlerz', koszt: 20 };
+/** Stan ze starego zapisu: Wojownik na froncie kolejki Pracy z 7 zebranej Pracy. */
+const legacySave = () => ({
+  kolejka: [{ ...UNIT }, { ...BUD }],
+  postep: 7,
+  rekrutacja: [{ ...UNIT }],
+});
+
+/** N tur REALNEGO ticku Pracy — `advanceProduction` z production.ts, bez atrapy. */
+function pracaTicks(prod, turns, pracaPerTurn) {
+  const done = [];
+  let p = prod;
+  for (let i = 0; i < turns; i++) {
+    const r = M.advanceProduction(p, pracaPerTurn);
+    p = r.prod;
+    if (r.completed) done.push(r.completed);
+  }
+  return { prod: p, done };
+}
+
+/** Uruchamia scenariusz legacy na podanym wariancie zrodla guardu; zwraca same fakty. */
+function behavior(tsText, ownerId) {
+  const { guard, pool, warns } = instantiateGuard(tsText);
+  const after = guard(ownerId, legacySave(), 'Miasto');
+  const run = pracaTicks(after, 3, 12);
+  return {
+    unitGone:            after.kolejka.every(i => i.kind !== 'jednostka'),
+    frontIsBuilding:     !!after.kolejka[0] && after.kolejka[0].id === 'spichlerz',
+    refundedToOwner:     (pool.get(ownerId) ?? 0) === 7,
+    recruitmentUntouched: Array.isArray(after.rekrutacja) && after.rekrutacja.length === 1,
+    noUnitPaidByPraca:   run.done.every(i => i.kind !== 'jednostka'),
+    buildingStillBuilt:  run.done.some(i => i.id === 'spichlerz'),
+    warned:              warns.length === 1,
+  };
+}
+
+if (guardSrcTs) {
+  // --- D1-D5: zachowanie prawdziwego kodu ------------------------------------
+  const b = behavior(guardSrcTs, 7);
+  console.log('    PO guardzie (owner 7):', JSON.stringify(b));
+  assert(b.unitGone,             'D1a: (a) jednostka znika z kolejki Pracy');
+  assert(b.frontIsBuilding,      'D1b: na froncie zostaje budynek, kolejka dziala dalej');
+  assert(b.refundedToOwner,      'D2: (b) zebrane 7 Pracy wraca do puli WLASCICIELA');
+  assert(b.recruitmentUntouched, 'D3: oplacona ze Skarbca kolejka rekrutacji NIE jest ruszana');
+  assert(b.noUnitPaidByPraca,    'D4: (c) po guardzie ZADNA jednostka nie konczy sie za Prace');
+  assert(b.buildingStillBuilt,   'D5: budynek nadal powstaje za Prace (guard nie zabija produkcji)');
+  assert(b.warned,               'D6: usuniecie legacy zostawia slad w logu (nie cicha korekta)');
+
+  // --- D7: gdyby guardu nie bylo, wyciek jest REALNY (asercja D4 cos mierzy) --
+  const leak = pracaTicks(legacySave(), 3, 12);
+  assert(leak.done.some(i => i.kind === 'jednostka'),
+    'D7: BEZ guardu ten sam stan konczy Wojownika ZA PRACE — wyciek istnieje naprawde');
+
+  // --- D8: parytet gracz / AI / miasto-panstwo (rule_108) --------------------
+  const bGracz = behavior(guardSrcTs, 0);
+  const bMP    = behavior(guardSrcTs, 9);
+  assert(JSON.stringify(bGracz) === JSON.stringify(b) && JSON.stringify(bMP) === JSON.stringify(b),
+    'D8: PARYTET — identyczne zachowanie dla gracza (0), AI (7) i miasta-panstwa (9)');
+
+  // --- D-MUT: mutacje zrodla musza zaczerwienic DOKLADNIE te asercje ---------
+  const mutNoSanitize = guardSrcTs.replace(
+    'const migrated = sanitizeBuildQueue(prod);', 'const migrated = { prod, refundedPraca: 0 };');
+  assert(mutNoSanitize !== guardSrcTs, 'D-MUT1a: mutacja "bez sanitizeBuildQueue" faktycznie podmienila zrodlo');
+  const m1 = behavior(mutNoSanitize, 7);
+  assert(!m1.unitGone && !m1.refundedToOwner && !m1.noUnitPaidByPraca,
+    'D-MUT1b: bez `sanitizeBuildQueue` czerwienieja (a), (b) i (c)');
+
+  const mutNoRefund = guardSrcTs.replace(
+    /if \(migrated\.refundedPraca > 0\) \{[\s\S]*?\n      \}/,
+    'if (false) { /* mutant: zwrot Pracy wyciety */ }');
+  assert(mutNoRefund !== guardSrcTs, 'D-MUT2a: mutacja "bez zwrotu Pracy" faktycznie podmienila zrodlo');
+  const m2 = behavior(mutNoRefund, 7);
+  assert(!m2.refundedToOwner && m2.unitGone && m2.noUnitPaidByPraca,
+    'D-MUT2b: wyciecie zwrotu czerwieni DOKLADNIE (b), (a) i (c) zostaja zielone');
+
+  const mutAlwaysSkip = guardSrcTs.replace(
+    "if (!prod.kolejka.some(it => it.kind === 'jednostka')) return prod;", 'return prod;');
+  assert(mutAlwaysSkip !== guardSrcTs, 'D-MUT3a: mutacja "guard nic nie robi" faktycznie podmienila zrodlo');
+  const m3 = behavior(mutAlwaysSkip, 7);
+  assert(!m3.unitGone && !m3.refundedToOwner && !m3.noUnitPaidByPraca,
+    'D-MUT3b: guard-no-op czerwieni (a), (b) i (c)');
+
+  // --- D9: no-op na czystej kolejce (brak kosztu na sciezce goracej) ---------
+  const { guard: g4, pool: p4 } = instantiateGuard(guardSrcTs);
+  const clean = { kolejka: [{ ...BUD }], postep: 3 };
+  assert(g4(7, clean, 'Miasto') === clean && p4.size === 0,
+    'D9: czysta kolejka wraca TYM SAMYM obiektem, pula Pracy nietknieta');
+
+} else {
+  // Guard usuniety ze zrodla — trzy kryteria rundy 2 sa wtedy niespelnione WPROST,
+  // zeby czerwien byla proporcjonalna do szkody, nie sprowadzona do jednej kotwicy.
+  assert(false, 'D1a: (a) jednostka znika z kolejki Pracy — brak guardu w main.ts');
+  assert(false, 'D2: (b) zebrany postep wraca do puli Pracy — brak guardu w main.ts');
+  assert(false, 'D4: (c) Praca nie jest dalej lana w jednostke — brak guardu w main.ts');
+}
+
+// --- D10-D12: wpiecie guardu w tick — relacja, nie tekst hunku --------------
+const idxCall = mainTsSrc.indexOf('stripLegacyUnitsFromPracaQueue(city.ownerId, prod0');
+const idxAdvance = mainTsSrc.indexOf('advanceProduction(prod0, pracaBudynki)');
+assert(idxCall > 0 && idxAdvance > 0 && idxCall < idxAdvance,
+  'D10: guard jest wolany PRZED `advanceProduction` w ticku per-miasto');
+assert((mainTsSrc.match(/advanceProduction\(/g) || []).length === 1,
+  'D11: main.ts ma DOKLADNIE JEDEN punkt zuzycia Pracy — nowy, niebroniony by tu uciekl');
+const idxAlloc = prodTsSrc.indexOf('export function allocateEmpirePracaToBuildings(');
+assert(idxAlloc > 0 && /front\.kind !== 'budynek'/.test(prodTsSrc.slice(idxAlloc, idxAlloc + 1200)),
+  'D12: drugi odbiorca Pracy (`allocateEmpirePracaToBuildings`) NADAL ma wlasna bramke `kind`');
 
 console.log(`\nai-jednostki-tylko-zakup-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(entry); fs.unlinkSync(bundle); } catch { /* ignore */ }

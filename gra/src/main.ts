@@ -3599,6 +3599,47 @@ async function boot(): Promise<void> {
       return sanitized;
     }
 
+    /**
+     * R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1 (kontrakt `P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1`=B,
+     * ECHO Maciej 2026-08-17 + doprecyzowanie 2026-08-19): jednostka NIGDY nie pobiera Pracy
+     * z kolejki budynkow -- ani u gracza, ani u AI, ani w miescie-panstwie.
+     *
+     * Wejscia do kolejki sa bronione (`enqueue`/`insertAtFront` w production.ts odrzucaja
+     * `kind !== 'budynek'`, panel miasta gracza tak samo), ale kolejka moze zawierac jednostke
+     * ze stanu LEGACY -- z zapisu/bundla sprzed tych bramek. PUNKT ZUZYCIA Pracy ma dzis dwoch
+     * odbiorcow: `allocateEmpirePracaToBuildings` (production.ts) juz sprawdza rodzaj frontu
+     * (`front.kind !== 'budynek'` -> pomin), a `advanceProduction` NIE sprawdza go w ogole --
+     * leje Prace we front bez patrzenia na `kind`. Taka pozycja realnie zbierala Prace
+     * ("Zebrana Praca X/Y" w panelu PRODUKCJA) i konczyla sie jako jednostka oplacona Praca.
+     *
+     * Ta funkcja jest wolana w petli tury per-miasto tuz przed `advanceProduction` -- jedynym
+     * niebronionym odbiorca Pracy w grze. Postep usunietej jednostki wraca do puli Pracy
+     * wlasciciela: ten sam kontrakt zwrotu co migracja save/capture/surrender
+     * (`sanitizeBuildQueue`). Owner-agnostyczne: parytet gracz/AI/MP.
+     *
+     * Gdy nie ma czego czyscic, zwraca TEN SAM obiekt (brak alokacji na sciezce goracej) --
+     * wywolujacy porownuje referencje i tylko wtedy nadpisuje `cityProd`.
+     *
+     * Dowod behawioralny: `gra/tools/ai-jednostki-tylko-zakup-test.cjs` sekcja D wycina tresc
+     * TEJ funkcji z main.ts i wykonuje ja naprawde (wzorzec `road-hook-mainguard-test.cjs`).
+     */
+    function stripLegacyUnitsFromPracaQueue(
+      ownerId: number,
+      prod: CityProduction,
+      cityLabel: string = '',
+    ): CityProduction {
+      if (!prod.kolejka.some(it => it.kind === 'jednostka')) return prod;
+      const migrated = sanitizeBuildQueue(prod);
+      if (migrated.refundedPraca > 0) {
+        setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + migrated.refundedPraca);
+      }
+      console.warn(
+        `[Produkcja] ${cityLabel} (owner ${ownerId}): usunieto jednostke z kolejki Pracy `
+        + `(legacy) -- zwrot ${migrated.refundedPraca} Pracy do puli`,
+      );
+      return migrated.prod;
+    }
+
     function setCityProduction(cityId: string, prod: CityProduction): void {
       const city = cities.find(c => c.id === cityId);
       const ownerId = city?.ownerId ?? 0;
@@ -26674,28 +26715,11 @@ async function boot(): Promise<void> {
               // AI-MANAGE-Q1=A: major AI zawsze auto-zarzadza; gracz przez UI; MP/defensiveCopy NIE.
               const praca = pracaRaw;
               let prod0 = cityProd.get(cid) ?? { kolejka: [], postep: 0 };
-              // R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1 (kontrakt P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B,
-              // ECHO Maciej 2026-08-17 + doprecyzowanie 2026-08-19): jednostka NIGDY nie pobiera
-              // Pracy z kolejki miasta -- ani u gracza, ani u AI, ani w miescie-panstwie.
-              // `enqueue()` (production.ts) jej tam nie wpusci, ale kolejka moze ja zawierac ze
-              // stanu legacy (zapis/bundel sprzed migracji), a `advanceProduction` NIZEJ leje
-              // `pracaBudynki` we FRONT bez sprawdzania `kind` -- czyli taka pozycja realnie
-              // zbierala Praca ("Zebrana Praca X/Y" w panelu PRODUKCJA) i konczyla sie jako
-              // jednostka oplacona Praca. Czyscimy PRZED tickiem Pracy; postep wraca do puli
-              // Pracy wlasciciela -- ten sam kontrakt zwrotu co migracja save/capture/surrender
-              // (sanitizeBuildQueue, production.ts). Owner-agnostyczne: parytet gracz/AI/MP.
-              if (prod0.kolejka.some(it => it.kind === 'jednostka')) {
-                const legacyUnitFix = sanitizeBuildQueue(prod0);
-                if (legacyUnitFix.refundedPraca > 0) {
-                  setOwnerPracaPool(city.ownerId, ownerPracaPool(city.ownerId) + legacyUnitFix.refundedPraca);
-                }
-                prod0 = legacyUnitFix.prod;
-                cityProd.set(cid, prod0);
-                console.warn(
-                  `[Produkcja] ${city.name} (owner ${city.ownerId}): usunieto jednostke z kolejki Pracy `
-                  + `(legacy) -- zwrot ${legacyUnitFix.refundedPraca} Pracy do puli`,
-                );
-              }
+              // R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1: `advanceProduction` NIZEJ (ten sam tick) jest
+              // JEDYNYM odbiorca Pracy bez bramki `kind` -- czysci legacy jednostke ZANIM
+              // cokolwiek naleje. Cala logika i uzasadnienie: docstring helpera.
+              const prod0BezLegacy = stripLegacyUnitsFromPracaQueue(city.ownerId, prod0, city.name);
+              if (prod0BezLegacy !== prod0) { prod0 = prod0BezLegacy; cityProd.set(cid, prod0); }
               if (autoManageCities.has(cid) || isMajorAiOwner(city.ownerId, isCityStateOwner)) {
                 try {
                   const unlockedTechs = city.ownerId === 0
