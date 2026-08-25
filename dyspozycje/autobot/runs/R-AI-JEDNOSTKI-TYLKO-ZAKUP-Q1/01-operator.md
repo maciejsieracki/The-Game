@@ -44,8 +44,8 @@ naliczana: legacy jednostka znika z kolejki przed tickiem, postęp wraca do puli
 kanoniczną `sanitizeBuildQueue`. Owner-agnostyczne — parytet gracz/AI/MP.
 
 ZMIANY/COMMIT: `gra/src/main.ts` (+22, jeden hunk, tick per-miasto),
-`gra/tools/ai-jednostki-tylko-zakup-test.cjs` (nowy). SHA w gałęzi
-`autobot/R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1`. Zero zmian w `gra/data/**`, `WERSJE.md`, ścieżce gracza.
+`gra/tools/ai-jednostki-tylko-zakup-test.cjs` (nowy). Commit `38afe453`, gałąź
+`autobot/R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1` (od `origin/main` `7e53fdb5`). Zero zmian w `gra/data/**`, `WERSJE.md`, ścieżce gracza.
 **Żadna istniejąca asercja nie została zmieniona ani rozluźniona** (`promote-to-front-test`
 wraca do wartości bazowej 121/4).
 
