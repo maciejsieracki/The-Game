@@ -76,11 +76,42 @@ Operator → Evaluator → Final Control → integracja orkiestratora, jedno ID,
 gałąź. Limit 5 rund. Model/effort: **Opus 5 High dla Operatora i Evaluatora**
 (temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a), Final Control Sonnet 5 High.
 
+## Runda 1 — PASS-WITH-NOTES (zamknięte, po integration micro-fixie Final Control)
+
+Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS-WITH-NOTES. Operator
+obalił dwa błędne założenia z samego dispatchu: Hastati NIE był lekką weryfikacją —
+miał dwa realne defekty (hełm zasłaniał oczy/szczękę mimo że nagłówek pliku reklamował
+odsłoniętą twarz); `hastati-opus5.ts` od 2026-07-26 jest JEDYNYM modelem widzianym
+przez gracza (dispatch w `units.ts`), nie „niepodpiętym wariantem porównawczym" jak
+twierdził jego własny nagłówek. Znalezione i naprawione pomiarem: drzewce dory Hieros
+Lochos w ramieniu (poprawka T3 dla tej samej broni nigdy nie dotarła do kopii buildera
+w innym pliku), drzewce przebijające własną chorągiew, hełm Evocatiego bez oczu,
+zarost Triariego niewidoczny (0 pikseli, dwie niezależne przyczyny), stopa Triariego
+pod terenem. Pytanie o pozę Hastatiego rozstrzygnięte: NIE poza rzutu — model pokazuje
+moment PO salwie pilum (Polibiusz VI.23).
+
+Evaluator znalazł 7 nieprawdziwych/nieaktualnych zdań w NOWYCH komentarzach dodanych
+przez Operatora (m.in. wartość pomiaru sprzed naprawy przeżywająca poprawkę, kotwica
+opisująca stan sprzed zmiany, błędne odsyłacze między sekcjami, martwy kod, niespójna
+numeracja, nieprecyzyjne „punkt po punkcie" przy cytacie łacińskim) i zarekomendował
+rundę 2. Final Control, korzystając z jawnej autoryzacji w dispatchu tej roli (naprawić
+samemu jako integration micro-fix, chyba że wymaga zmiany logiki — żaden z 7 punktów
+nie wymagał), zweryfikował każdy punkt niezależnie, naprawił wszystkie siedem (czysto
+tekstowe/martwy-kod, zero zmian geometrii), ponownie uruchomił pełny zestaw testów
+(identyczne wyniki przed/po) i jawnie zamknął temat bez zużywania rundy 2 — micro-fix
+Final Control nie jest dispatchem Operatora. Dodatkowo uzupełnił brakujący
+`02-evaluator.md` w śladzie obiegu (luka procesowa znaleziona przy okazji).
+
+Zmergowane do `main`, zweryfikowane niezależnie przez orkiestratora (tsc/vite build/
+testy tematu+T1-T6/5 bramek referencyjnych zielone).
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: jeszcze brak — dispatch.
-TESTY: kryteria sukcesu 1–7 wyżej.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-AUDYT-T7-Q1`, commity `54d5cd37`→`6c9fe7cc`→
+`d8982342`, zmergowane do `main`.
+TESTY: kryteria sukcesu 1–7 spełnione, potwierdzone niezależnie 3-krotnie + orkiestrator
+po merge.
 BLOKADY: brak.
-RUNDY: 0/5 (dispatch).
-NASTĘPNY KROK: Operator, runda 1 (po zamknięciu T5/T6).
-DEPLOY/PUSH: NIE WYKONANO.
+RUNDY: 1/5 (zamknięte pozytywnie).
+NASTĘPNY KROK: T8 (Germanie).
+DEPLOY/PUSH: git push (main) WYKONANO; deploy ROBOCZA po zamknięciu T8-T11.

@@ -98,4 +98,12 @@ pod tym kątem** (nie ponowna praca nad 6 już ukończonymi w `R-ZELAZO-MODELE-B
   hełm zasłaniający oczy Thorakitesa. Final Control naprawił 3 błędne komentarze na
   branchu; orkiestrator naprawił dodatkowo identyczny, przeoczony błąd komentarza z T5.
   3 znaleziska danych/projektowe zarejestrowane osobno.
-- T7–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{7..11}/`.
+- **T7 — ZINTEGROWANE (2026-08-25, 1 runda + integration micro-fix).** Evocati,
+  Triari, Hieros Lochos, Hastati. Operator obalił dwa błędne założenia dispatchu:
+  Hastati miał realne defekty mimo statusu „już Opus 5", `hastati-opus5.ts` jest
+  jedynym modelem gracza, nie wariantem porównawczym. Znaleziono i naprawiono:
+  drzewce dory w ramieniu Hieros Lochos, drzewce w chorągwi, hełm Evocatiego bez
+  oczu, niewidoczny zarost Triariego, stopa pod terenem. Final Control naprawił
+  7 nieprawdziwych komentarzy Operatora bez zużywania rundy 2 (autoryzacja w
+  dispatchu tej roli, wszystkie fixy czysto tekstowe/martwy kod).
+- T8–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{8..11}/`.
