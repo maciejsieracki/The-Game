@@ -1923,10 +1923,13 @@ export function splitPraca(cityPraca: number, udzialBudynki: number): PodzialPra
 }
 
 /**
- * Ile Pracy miasta trafia do puli imperium w tej turze.
+ * Ile Pracy miasta trafia do puli imperium w tej turze, GDY kolejka nie jest
+ * wstrzymana (wolajacy w main.ts pomija to wywolanie calkowicie pod warunkiem
+ * `!prodPaused` — wstrzymana kolejka nie dostaje Pracy ANI do budynkow, ANI do
+ * puli w tej turze, `pracaImperialPoolGain` nie jest wtedy w ogole wolane).
  *
- * Kolejka pusta (albo wstrzymana) → CALOSC Pracy miasta, bo udzial budynkowy nie
- * ma czego finansowac; inaczej dokladnie `doPuli` z jedynego podzialu.
+ * Kolejka pusta (i NIE wstrzymana) → CALOSC Pracy miasta, bo udzial budynkowy
+ * nie ma czego finansowac; inaczej dokladnie `doPuli` z jedynego podzialu.
  * To NIE jest drugi podzial — to jawny, nazwany wyjatek „brak legalnej kolejki".
  */
 export function pracaImperialPoolGain(
