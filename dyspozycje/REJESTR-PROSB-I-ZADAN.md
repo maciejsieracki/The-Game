@@ -3044,3 +3044,45 @@ zamknięty jako recon bez bugu, drugiego zaktualizowany do READY_FOR_DEPLOY rund
 | P-ZELAZO-GETGEOOVALSHIELD-MYLNA-NAZWA-Q1 | 2026-08-25 | `getGeoOvalShield()` w `units.ts` zwraca `CylinderGeometry` (krążek), nie owal — nazwa myli co do faktycznego kształtu. Używane też przez inne jednostki poza zakresem T9, więc porządkowanie nazwy (i ew. sprawdzenie czy gdziekolwiek oczekiwano faktycznego owalu) jest osobnym tematem. | **OTWARTE — porządkowe, nieblokujące** | Znalezisko Operatora T9, potwierdzone przez Evaluatora i Final Control. |
 | P-ZELAZO-T9-WOZNICA-TUNIKA-KOLOR-GRACZA-NIEBIESKI-Q1 | 2026-08-25 | Tunika woźnicy rydwanu celtyckiego (urzet 0x2f5aa0) leży blisko koloru gracza NIEBIESKIEGO (0x3366ee). Zmierzone: piksele w barwie gracza 1334 (celtycki) vs 1669 (mykeński) = 80%, więc identyfikacja gracza pozostaje czytelna dziś (H21), ale warto zobaczyć na żywym ekranie przy tej jednej palecie. | **OTWARTE — kosmetyczne, nieblokujące, do sprawdzenia przy okazji balansu barw** | Znalezisko Operatora T9, potwierdzone przez Evaluatora i Final Control. |
 
+
+## ZNALEZISKO ROOT-CAUSE 2026-08-25 — podział Pracy: nazwa `doUlepszen` opisuje `doPuli` (P-PRACA-WARSTWY-NAZWY-ROZJAZD-Q1)
+
+**Zgłoszenie właściciela (główny czat orkiestratora):** „to co miało być 0-100% jest do 50%,
+a to co miało być do 50% jest 0-100%, więc chyba mylicie pojęcia i to co ma być zrobione jest
+robione ciągle na odwrót" oraz „cap jest dla złej warstwy [...] prawdopodobnie cały czas mylisz
+te pozycje, dlatego wszystkie kolejne zmiany cały czas robiły złe poprawki".
+
+**POTWIERDZONE POMIAREM W KODZIE — właściciel ma rację.** `gra/src/ui/cityPanel.ts:1314-1319`:
+`const { doBudynkow, doPuli } = splitPraca(total, pctB / 100); return { ..., doUlepszen: Math.round(doPuli) }`.
+Zmienna nazywa się `doUlepszen`, ale niesie `doPuli` — czyli udział trafiający do OGÓLNEJ puli
+Pracy imperium, nie budżet ulepszeń. Ta sama liczba jest w jednym pliku opisana czterema
+różnymi nazwami: „Ulepszenia" (`cityPanel.ts:4783`), „→ Pula Pracy imperium" (`:4723`),
+„→ Pula imperium — zapas cywilizacji (załóż miasto, projekty mapy)" (`:5539`) oraz w komentarzu
+„`doUlepszen` (pula imperium)" (`:9948`). Pula imperium finansuje też cuda
+(`wonder-map-build.ts`), zakładanie miast, budżet budynków imperium (`applyEmpireBuildingBudget`)
+i leczenie HP jednostek (`manpower.ts`) — więc to NIE są ulepszenia.
+
+**TRZY WARSTWY, mylone ze sobą od FALI 292:**
+| # | Pole | Zakres | Co realnie dzieli |
+|---|---|---|---|
+| 1 | `podzialPracy.procentBudynki` | 50–100% budynków | lokalna kolejka budynków miasta **vs ogólna pula imperium** |
+| 2 | `EmpirePracaSplit.procentUlepszenia` | 0–50% | pulę imperium **vs** budżet budynków imperium (`splitEmpirePracaBudget`) |
+| 3 | `pracaAutoPercent` / `ulepszeniaPracaPercent` | 0–100% | ile z tego automat ulepszeń faktycznie wydaje (tryb budowy) |
+
+**KONSEKWENCJA:** cap „ulepszenia ≤ 50%" siedzi dziś na warstwie 1, która nie jest podziałem
+budynki/ulepszenia. Realny udział ulepszeń jest ILOCZYNEM warstw 1 i 2 (przy 70/30 w mieście
+i 33% w imperium na ulepszenia idzie ~10%). To wyjaśnia całą serię nawrotów: fale 292, 293,
+301, 302, 310, 317, 318, 319 naprawiały cap/etykietę na warstwie, na którą akurat trafiły —
+każda „PASS", każda mijająca się z celem.
+
+**STATUS:** **OTWARTE — czeka na decyzję właściciela (A/B).** (A) przemianować warstwę 1 na
+uczciwe „Do puli imperium", cap zostaje gdzie jest, zero zmian w balansie; (B) rozdzielić pulę
+na osobne strumienie i przenieść cap 50% na prawdziwy strumień ulepszeń — realna przebudowa
+ekonomii Pracy, ale dopiero ona daje literalnie to, o co prosi właściciel.
+
+**Wykonane dotąd (NIE jest to fix powyższego):** `P-PRACA-CAP-MIGRACJA-LUKA-Q1` — zamknięte
+dwie luki w `migratePodzialPracyOnLoad()` (gałąź `savedDefaults` nie normalizowała miast wcale;
+`podzialPracyOverride !== undefined` pomijało normalizację), dotąd maskowane wyłącznie kolejnością
+wywołań na ścieżce load. Test `gra/tools/praca-cap-migracja-luka-test.cjs` (11/11, z dowodem
+nietautologiczności przez wycięcie poprawki ze źródła). Dotyczy warstwy 1 — utwardzenie
+istniejącego kontraktu, nie rozstrzygnięcie rozjazdu nazw.

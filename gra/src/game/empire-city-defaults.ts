@@ -116,6 +116,26 @@ export function migratePodzialPracyOnLoad(
       }
     }
   }
+  // P-PRACA-CAP-MIGRACJA-LUKA-Q1: cap „ulepszenia ≤ 50%" (czyli budynki ≥ 50%,
+  // MIN_PODZIAL_PRACY_BUDYNKI_PERCENT) MUSI obowiązywać po KAŻDEJ ścieżce wczytania,
+  // bez wyjątku. Do tej pory ta funkcja zostawiała `city.podzialPracy` nieprzyciętym
+  // w DWÓCH przypadkach:
+  //   (1) gałąź `savedDefaults?.length` (nowoczesny zapis niosący własne domyślne
+  //       imperium) normalizowała WYŁĄCZNIE `ownerDefaults` — pętla po miastach niżej
+  //       żyje w gałęzi `else`, więc dla takiego zapisu nie wykonywała się wcale;
+  //   (2) `if (city.podzialPracyOverride !== undefined) continue;` — miasto z już
+  //       ustawioną flagą override było pomijane razem z normalizacją.
+  // Dziś nie powodowało to błędu widocznego dla gracza tylko dlatego, że na ścieżce
+  // load `ensureCitySaveDefaults()` (main.ts) biegnie WCZEŚNIEJ i przycina te same
+  // pola, a `resolveCityPodzialPracy()` normalizuje jeszcze raz przy każdym odczycie.
+  // To jest maskowanie przez kolejność wywołań, nie gwarancja — dokładnie ta klasa
+  // kruchości, która w tym obszarze wracała już jako REGRES2/REGRES3. Jedna
+  // bezwarunkowa pętla zamyka obie luki niezależnie od kolejności i od gałęzi.
+  for (const city of cities) {
+    if (city.podzialPracy) {
+      city.podzialPracy = normalizePodzialPracy(city.podzialPracy);
+    }
+  }
   for (const city of cities) {
     if (!ownerDefaults.has(city.ownerId)) {
       ownerDefaults.set(city.ownerId, normalizePodzialPracy(DEFAULT_PODZIAL_PRACY));

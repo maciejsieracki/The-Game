@@ -13,3 +13,10 @@ gra/tools/.zloze-zloto-render-entry.ts
 # / EN: relative pattern — this file lives in gra/, so the `gra/` prefix above never matches.
 tools/.kopalnia-cyny-render-bundle.cjs
 tools/.kopalnia-cyny-render-entry.ts
+
+# Artefakty bramki praca-cap-migracja-luka-test.cjs (esbuild + kopia src dla mutacji).
+tools/.praca-cap-migracja-luka-test-entry.ts
+tools/.praca-cap-migracja-luka-test-bundle.cjs
+tools/.praca-cap-migracja-luka-test-MUT-entry.ts
+tools/.praca-cap-migracja-luka-test-MUT-bundle.cjs
+.praca-cap-migracja-luka-test-MUT-src/
