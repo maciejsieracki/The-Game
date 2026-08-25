@@ -145,6 +145,51 @@
  * Wspolne funkcje pomocnicze (z2Seg/z2BuildArm/z2Core/...) dostaly parametry
  * nazwy z DOMYSLNA wartoscia pusta, wiec buildTriari — ktory z nich korzysta,
  * a jest poza zakresem — nie zmienil sie ani o jeden bajt wyjscia.
+ *
+ * ===========================================================================
+ * AUDYT R-ZELAZO-AUDYT-POZOSTALE-Q1-T7 (Opus 5) — WYLACZNIE buildTriari
+ * ===========================================================================
+ * T7 audytuje w TYM pliku TYLKO buildTriari (pozostale cztery jednostki byly
+ * zakresem T6 i NIE sa dotykane). buildTriari dostal `name` na kazdym mesh
+ * (prefiks `tr-`) i `userData['anchors']` — przed T7 mial 0/37 nazwanych
+ * i zadnych kotwic, wiec zadna asercja nie mogla zaadresowac jego czesci.
+ *
+ * KONSEKWENCJA DLA TESTU T6. Asercja (R1) w
+ * `tools/zelazo-srodziemnomorze-real-render-test.cjs` pilnowala, ze Triari
+ * „NIE dostal ani jednej nazwy mesh" — bo to byl dowod, ze parametry nazw
+ * dodane przez T6 do wspolnych helperow faktycznie go omijaja. Po T7 to juz
+ * nie jest prawda i asercja zostala PRZEPISANA na to, co ma byc prawda teraz
+ * (mesh nazwane prefiksem `tr-`, ZADNEJ nazwy z prefiksow T6). Zmiana jest
+ * opisana w tamtym pliku przy samej asercji — nie wolno jej „cofnac".
+ *
+ * ZNALEZIONE POMIAREM I NAPRAWIONE (pomiar w zywym Three.js/Chromium):
+ *   A4. SIWY ZAROST NIEWIDOCZNY Z KAMERY GRY — dwie przyczyny naraz. (i) Dzwon
+ *       montefortino siedzial na HEAD_CTR + 0.030, wiec jego dolny rant
+ *       (promien 0.093) wisial nad twarza i zaslanial ja z kamery gry
+ *       (azymut 0, elewacja 52 stopnie). (ii) Sam zarost siedzial na z = 0.056,
+ *       a glowa Triariego jest przesunieta w przod o 0.012, wiec jej lico stoi
+ *       na z = 0.076 — CALA bryla zarostu (0.045..0.067) tkwila WEWNATRZ glowy.
+ *       Zmierzone pikselami z kamery gry (test glebi GPU): PRZED 0 pikseli
+ *       zarostu, PO 336. Punkt odniesienia: Thorakites po naprawie T6 ma
+ *       14 pikseli oczu. To ta sama klasa bledu co T6/A3, tyle ze zlozona
+ *       z dwoch niezaleznych przyczyn — kazda z osobna wystarczyla, zeby
+ *       cecha charakteru opisana w naglowku nie istniala na ekranie.
+ *   A5. STOPA PONIZEJ TERENU. Obrocona o -PI/2 stopa kleczacej nogi siedziala
+ *       na y = 0.036, a polowa jej wysokosci po obrocie to 0.039 — zmierzone
+ *       minY = -0.0030 przy 0.0000 dla KAZDEGO innego modelu serii (Falangita,
+ *       Thorakites, Gwardia, Evocati, Hastati). Poprawione na 0.039; po
+ *       zmianie minY = 0.0000.
+ *
+ * ZMIERZONE I POTWIERDZONE JAKO POPRAWNE (bez zmian geometrii):
+ *   B4. ZERO przenikania hasty przez cialo i przez wlasna choragiew (pelny SAT
+ *       na wszystkich parach nazwanych mesh). Chwyt: piesc/drzewce 0.0335,
+ *       przedramie/drzewce 0.0175, RAMIE 0.0000 — wzorzec rodziny.
+ *   B5. Tarcza zwrocona DO kamery: -0.606. Lokiec zgiety 0.600 rad. Dlon
+ *       dokladnie na osi drzewca (0.0000).
+ *   B6. Proporcje po naprawie: h=0.6910 maxR=0.8022 minY=0.0000 mesh=37.
+ *       maxR jest NAJWIEKSZE z calej rodziny (Falangita 0.6122, Thorakites
+ *       0.4757, Hastati 0.4201) — bierze sie z hasty 0.92*HEX_R wystawionej
+ *       w przod — ale nadal z zapasem pod twardym limitem heksu 0.866.
  */
 
 import * as THREE from 'three';
@@ -512,18 +557,22 @@ function z2MountShield(group: THREE.Group, sh: THREE.Group, wrist: THREE.Vector3
 function z2Banner(
   group: THREE.Group, mPole: THREE.MeshStandardMaterial,
   mFlag: THREE.MeshStandardMaterial, mGold: THREE.MeshStandardMaterial,
-  dy: number = 0,
+  dy: number = 0, pf: string = '',
 ): void {
+  const nm = (part: string): string => (pf === '' ? '' : pf + '-banner-' + part);
   const pole = new THREE.Mesh(getGZ2Pole(), mPole);
   pole.rotation.x = -0.14;
   pole.position.set(-0.052 * HEX_R, 0.340 * HEX_R + dy, -0.086 * HEX_R);
+  if (pf !== '') pole.name = nm('pole');
   group.add(pole);
   const flag = new THREE.Mesh(getGZ2Flag(), mFlag);
   flag.rotation.x = -0.14;
   flag.position.set(-0.100 * HEX_R, 0.548 * HEX_R + dy, -0.115 * HEX_R);
+  if (pf !== '') flag.name = nm('flag');
   group.add(flag);
   const fin = new THREE.Mesh(getGZ2Finial(), mGold);
   fin.position.set(-0.052 * HEX_R, 0.600 * HEX_R + dy, -0.122 * HEX_R);
+  if (pf !== '') fin.name = nm('finial');
   group.add(fin);
 }
 
@@ -1282,6 +1331,60 @@ export function buildThorakites(ownerColor_: number): THREE.Group {
   return group;
 }
 
+// ===========================================================================
+// ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (Triari)
+// ===========================================================================
+// units.json: Epoka=Zelazo, Kultura/Nacja=Rzym, Tech=Hutnictwo zelaza,
+// Typ=SPEARMAN, Klasa=Specjalna, Super-jednostka=TAK, Atak 8 / Uderzenie 10 /
+// Obrona 8 / Pancerz 6, chargeBonus 10, Bonus vs Mount +50%, Atak dystansowy 0,
+// „W zamian za: Wlocznik". Typ „Spearman" i zerowy atak dystansowy przesadzaja
+// bron: HASTA, nie pilum i nie gladius — i tak jest w modelu.
+//
+// K1. POZA WPROST ZE ZRODLA. Liwiusz VIII.8.10 opisuje trzecia linie legionu
+//     manipularnego doslownie tak: „triarii sub vexillis considebant sinistro
+//     crure porrecto, scuta innixa umeris, hastas subrecta cuspide in terra
+//     fixas, haud secus quam vallo saepta inhorreret acies, tenentes" — triarii
+//     przyklekali pod znakami z WYSUNIETA LEWA NOGA, tarcze oparte o ramie,
+//     wlocznie GROTEM SKOSNIE W GORE, tak ze szyk jezyl sie jak ostrokol.
+//     Model odwzorowuje to punkt po punkcie: lewa (+X) noga wykroczna, prawe
+//     kolano na ziemi, scutum oparte nisko przed korpusem, hasta wystawiona
+//     w przod-GORE (elewacja 0.30 rad). Stad tez slynne „res ad triarios
+//     rediit" — „doszlo do triariow", czyli sytuacja jest krytyczna
+//     (Liwiusz VIII.8.11).
+// K2. HASTA, NIE PILUM. Polibiusz VI.23.16: triarii zamiast pilum nosza
+//     wlocznie. Polibiusz VI.21.7-9: podzial idzie po WIEKU — najmlodsi i
+//     najubozsi na welitow, nastepni na hastatow, dojrzali na principes,
+//     NAJSTARSI na triariow; jest ich 600 na legion niezaleznie od jego
+//     wielkosci. Stad siwy zarost i potrojny pioropusz weterana.
+// K3. ZAROST — POPRAWNY CO DO WIEKU, RYZYKOWNY CO DO MODY, NAZWANY WPROST.
+//     Wiek triariusa uzasadnia SIWIZNE. Ale Rzymianie golili sie od okolo
+//     300 p.n.e.: Pliniusz „Historia naturalna" VII.211 podaje, ze golibrody
+//     przyszly do Italii z Sycylii w 454 roku od zalozenia miasta, sprowadzone
+//     przez P. Ticiniusa Mene, a pierwszym golacym sie CODZIENNIE byl drugi
+//     Afrykanczyk (Scypion Emilianus). Dlatego bryla jest krotkim, przycietym
+//     ZAROSTEM POLOWYM (0.086 x 0.040 x 0.022), a nie broda — kampania to nie
+//     Forum. Kolor siwy niesie wiek, ktory jest tu cecha zrodlowa.
+// K4. FALERY — TEN SAM ANACHRONIZM CO U EVOCATIEGO, TYLKO WIEKSZY. Rzad
+//     krazkow na uprzezy piersiowej to praktyka PRYNCYPATU (I wiek n.e.),
+//     a legion manipularny Liwiusza to IV-II wiek p.n.e. — rozjazd rzedu
+//     dwustu-trzystu lat, wiekszy niz u Evocatiego. Zostawione swiadomie
+//     jako czytelny z kamery gry znak „to jest SUPER, nie liniowy wlocznik",
+//     ale nazwane, a nie przemilczane.
+// K5. BIALY PIOROPUSZ ZAMIAST PURPUROWEGO/CZARNEGO. Polibiusz VI.23.12 daje
+//     trzy piora purpurowe albo czarne. Triari ma trzy BIALE. To jest
+//     odstepstwo wprowadzone dla odroznialnosci od Hastatiego i Evocatiego
+//     (obaj maja purpure) — zmierzona odroznialnosc pary Triari/Hastati
+//     wynosi 0.701, pary Triari/Evocati 0.779.
+// K6. CZEGO MODEL NIE ODWZOROWUJE. Liwiusz mowi, ze drzewce byly WBITE
+//     W ZIEMIE przed szykiem („in terra fixas"). Model trzyma haste w dloni
+//     ponad tarcza. Powod jest mierzalny, nie estetyczny: przy drzewcu wbitym
+//     w ziemie przed figurka bron chowa sie za tarcza i wlasnym korpusem
+//     z kamery gry, a widocznosc broni jest w tej serii twardym kryterium
+//     (T6/A1). Tak trzymana hasta ma widocznosc 0.571 rzutu do dlugosci
+//     wlasnej — najnizsza z czworki T7, ale powyzej progu rodziny (0.60 x
+//     0.895 widocznosci dory Falangity z T3 = 0.537) i o dlugosci ekranowej
+//     0.3585, czyli 2,5 raza dluzszej niz gladius Hastatiego (0.1452).
+// ===========================================================================
 // ---------------------------------------------------------------------------
 // TRIARI (Rzym, SUPER Zelazo) — WETERAN-WLOCZNIK, POZA KLECZACA trzeciej linii
 // "Ad triarios redisse": prawe kolano na ziemi, golen plasko w tyl, lewa noga
@@ -1318,48 +1421,66 @@ export function buildTriari(ownerColor_: number): THREE.Group {
   const torso = new THREE.Mesh(getGZ2Torso(), mRed);
   torso.rotation.x = 0.08;                         // lekkie pochylenie w przod
   torso.position.set(0, Z2_TORSO_CTR - DY, 0.004 * HEX_R);
+  torso.name = 'tr-torso';
   group.add(torso);
   const neck = new THREE.Mesh(getGZ2Neck(), mSkin);
   neck.position.set(0, Z2_TORSO_TOP + Z2_NECK_H * 0.5 - DY, 0.010 * HEX_R);
+  neck.name = 'tr-neck';
   group.add(neck);
   const head = new THREE.Mesh(getGZ2Head(), mSkin);
   head.position.set(0, HEAD_CTR, 0.012 * HEX_R);
+  head.name = 'tr-head';
   group.add(head);
   const skirt = new THREE.Mesh(getGZ2Skirt(), mRed);
   skirt.position.set(0, Z2_TORSO_BOT - 0.018 * HEX_R - DY, 0);
+  skirt.name = 'tr-tunic-hem';
   group.add(skirt);
   const belt = new THREE.Mesh(getGZ2Belt(), mLeath);
   belt.position.set(0, 0.252 * HEX_R - DY, 0);
+  belt.name = 'tr-belt';
   group.add(belt);
 
-  // SIWY ZAROST weterana (pod krawedzia helmu)
+  // SIWY ZAROST weterana (pod krawedzia helmu).
+  // NAPRAWA T7 (A4, czesc druga): zarost siedzial na z = 0.056, a glowa Triariego
+  // jest przesunieta w przod o 0.012, wiec jej lico stoi na z = 0.076 — CALA
+  // bryla zarostu (0.045..0.067) tkwila WEWNATRZ glowy. Razem z rantem helmu
+  // wiszacym nad twarza dawalo to 0 (ZERO) widocznych pikseli zarostu z kamery
+  // gry, mimo ze naglowek pliku wymienia „SIWY zarost" jako ceche charakteru.
+  // Przeniesiony na lico glowy (0.012 + 0.064 + 0.006).
   const beard = new THREE.Mesh(getGZ2Beard(), mGrey);
-  beard.position.set(0, HEAD_CTR - 0.052 * HEX_R, 0.056 * HEX_R);
+  beard.position.set(0, HEAD_CTR - 0.052 * HEX_R, 0.082 * HEX_R);
+  beard.name = 'tr-beard';
   group.add(beard);
 
-  // FALERY: pas piersiowy + 3 krazki odznaczen (zloto/srebro/zloto)
+  // FALERY: pas piersiowy + 3 krazki odznaczen (zloto/srebro/zloto) — patrz K4
   const harness = new THREE.Mesh(getGZ2Harness(), mLeath);
   harness.position.set(0, Z2_TORSO_CTR + 0.034 * HEX_R - DY, Z2_TORSO_D * 0.5 + 0.008 * HEX_R);
+  harness.name = 'tr-harness';
   group.add(harness);
   let fi = 0;
   for (const dx of [-0.052, 0.0, 0.052]) {
-    const ph = new THREE.Mesh(getGZ2Phalera(), (fi++ % 2 === 0) ? mGold : mSilver);
+    const ph = new THREE.Mesh(getGZ2Phalera(), (fi % 2 === 0) ? mGold : mSilver);
     ph.rotation.z = Math.PI / 4;
     ph.position.set(dx * HEX_R, Z2_TORSO_CTR + 0.034 * HEX_R - DY, Z2_TORSO_D * 0.5 + 0.014 * HEX_R);
+    ph.name = 'tr-phalera-' + fi;
+    fi++;
     group.add(ph);
   }
 
-  // NOGA LEWA (+X) — wykroczna, mocno zgieta (stopa na ziemi z przodu)
+  // NOGA LEWA (+X) — wykroczna, mocno zgieta (stopa na ziemi z przodu).
+  // Livy 8.8.10: „sinistro crure porrecto" — LEWA noga wysunieta. Patrz K1.
   let P = new THREE.Vector3(Z2_HIP_X, HIP_Y, 0);
-  P = z2Seg(group, getGZ2Thigh(), mRed, P, 1.05, Z2_THIGH_L);
+  P = z2Seg(group, getGZ2Thigh(), mRed, P, 1.05, Z2_THIGH_L, 'tr-leg-left-thigh');
   P.z -= 0.004 * HEX_R;  P.y += 0.008 * HEX_R;
-  P = z2Seg(group, getGZ2Shin(), mSkin, P, 0.10, Z2_SHIN_L);
+  P = z2Seg(group, getGZ2Shin(), mSkin, P, 0.10, Z2_SHIN_L, 'tr-leg-left-shin');
   const footL = new THREE.Mesh(getGZ2Foot(), mLeath);
   footL.position.set(Z2_HIP_X, 0.013 * HEX_R, P.z + 0.016 * HEX_R);
+  footL.name = 'tr-leg-left-foot';
   group.add(footL);
   const greave = new THREE.Mesh(getGZ2Greave(), mGold);  // nagolennica wykrocznej
   greave.rotation.x = Math.PI - 0.10;
   greave.position.set(Z2_HIP_X, 0.058 * HEX_R, P.z - 0.006 * HEX_R);
+  greave.name = 'tr-greave-left';
   group.add(greave);
 
   // NOGA PRAWA (-X) — KLECZACA: udo w dol-tyl, golen PLASKO na ziemi w tyl,
@@ -1372,50 +1493,66 @@ export function buildTriari(ownerColor_: number): THREE.Group {
   const thighR = new THREE.Mesh(getGZ2Thigh(), mRed);
   thighR.rotation.x = Math.PI + 0.30;
   thighR.position.set(-Z2_HIP_X, (HIP_Y + knee.y) * 0.5, knee.z * 0.5);
+  thighR.name = 'tr-leg-right-thigh';
   group.add(thighR);
   const shinR = new THREE.Mesh(getGZ2Shin(), mSkin);
   shinR.rotation.x = -Math.PI / 2;                 // golen lezy poziomo (w tyl)
   shinR.position.set(-Z2_HIP_X, 0.030 * HEX_R, knee.z - 0.048 * HEX_R);
+  shinR.name = 'tr-leg-right-shin';
   group.add(shinR);
   const footR = new THREE.Mesh(getGZ2Foot(), mLeath);
   footR.rotation.x = -Math.PI / 2;                 // palce w dol za golenia
-  footR.position.set(-Z2_HIP_X, 0.036 * HEX_R, knee.z - 0.118 * HEX_R);
+  // NAPRAWA T7 (A5): przy y = 0.036 obrocona stopa schodzila 0.0030*HEX_R PONIZEJ
+  // plaszczyzny terenu (zmierzone minY = -0.0030 przy 0.0000 dla kazdego innego
+  // modelu serii). Polowa wysokosci obroconej stopy to 0.078/2 = 0.039.
+  footR.position.set(-Z2_HIP_X, 0.039 * HEX_R, knee.z - 0.118 * HEX_R);
+  footR.name = 'tr-leg-right-foot';
   group.add(footR);
 
-  // MONTEFORTINO BRAZOWY: miska + zlote policzki + POTROJNY BIALY pioropusz
+  // MONTEFORTINO BRAZOWY: miska + zlote policzki + POTROJNY BIALY pioropusz.
+  // NAPRAWA T7 (A4): dzwon siedzial na HEAD_CTR + 0.030, wiec jego dolny rant
+  // (promien 0.093) wisial nad twarza i z kamery gry (elewacja 52°) POCHLANIAL
+  // siwy zarost — jedyna ceche charakteru weterana w tym modelu. Zmierzone
+  // pikselami z kamery gry: PRZED 0 pikseli zarostu. Rant przeniesiony na
+  // HEAD_CTR + 0.022 (dzwon na + 0.068) — relacja z naprawy T6 Thorakitesa.
   const bowl = new THREE.Mesh(getGZ2MontBowl(), mBronzD);
-  bowl.position.set(0, HEAD_CTR + 0.030 * HEX_R, 0.012 * HEX_R);
+  bowl.position.set(0, HEAD_CTR + 0.068 * HEX_R, 0.012 * HEX_R);
+  bowl.name = 'tr-helmet-bowl';
   group.add(bowl);
   for (const sx of [-1, 1]) {
     const ck = new THREE.Mesh(getGZ2Cheek(), mGold);
-    ck.position.set(sx * (Z2_HEAD_S * 0.5 + 0.004 * HEX_R), HEAD_CTR - 0.014 * HEX_R, 0.030 * HEX_R);
+    ck.position.set(sx * (Z2_HEAD_S * 0.5 + 0.004 * HEX_R), HEAD_CTR + 0.000 * HEX_R, 0.030 * HEX_R);
+    ck.name = 'tr-helmet-cheek-' + (sx < 0 ? 'right' : 'left');
     group.add(ck);
   }
   for (const sx of [-1, 0, 1]) {                    // potrojny pioropusz weterana
     const f = new THREE.Mesh(getGZ2Feather(), mWhite);
     f.rotation.z = -sx * 0.16;
     f.position.set(sx * 0.034 * HEX_R, HEAD_TOP + (sx === 0 ? 0.096 : 0.086) * HEX_R, 0.012 * HEX_R);
+    f.name = 'tr-plume-' + (sx + 1);
     group.add(f);
   }
 
   // PRAWE (-X) RAMIE + DLUGA HASTA wystawiona w przod-GORE ponad tarcza:
   // dlon nisko-przod, wlocznia NA OSI chwytu, grot ~0.38 wysoko przed figura
-  const armR = z2BuildArm(group, -Z2_SHLD_X, 0.60, 1.20, mRed, mSkin, mLeath, SHLD_Y);
+  const armR = z2BuildArm(group, -Z2_SHLD_X, 0.60, 1.20, mRed, mSkin, mLeath, SHLD_Y, 'tr', 'right');
   const EL = 0.30;                                 // elewacja hasty (w gore)
   const hastaAxis = new THREE.Vector3(0, Math.sin(EL), Math.cos(EL));
   const grip = armR.wrist.clone().addScaledVector(armR.axis, 0.014 * HEX_R);
   const shaft = new THREE.Mesh(getGZ2Hasta(), mWood);
   shaft.rotation.x = Math.PI / 2 - EL;
   shaft.position.copy(grip.clone().addScaledVector(hastaAxis, 0.140 * HEX_R));
+  shaft.name = 'tr-hasta-shaft';
   group.add(shaft);
   const htip = new THREE.Mesh(getGZ2HastaTip(), mSilver);
   htip.rotation.x = Math.PI / 2 - EL;
   htip.rotation.y = Math.PI / 4;
   htip.position.copy(grip.clone().addScaledVector(hastaAxis, (0.140 + 0.460 + 0.028) * HEX_R));
+  htip.name = 'tr-hasta-tip';
   group.add(htip);
 
   // LEWE (+X) RAMIE + SCUTUM OPARTE NISKO (dolna krawedz tuz nad ziemia)
-  const armL = z2BuildArm(group, Z2_SHLD_X, 0.55, 1.05, mRed, mSkin, null, SHLD_Y);
+  const armL = z2BuildArm(group, Z2_SHLD_X, 0.55, 1.05, mRed, mSkin, null, SHLD_Y, 'tr', 'left');
   const sh = new THREE.Group();
   sh.position.set(
     armL.wrist.x - 0.025 * HEX_R,
@@ -1424,22 +1561,41 @@ export function buildTriari(ownerColor_: number): THREE.Group {
   );
   sh.rotation.y = -0.18;
   const shell = new THREE.Mesh(getGZ2ScutShell(), mLeath);
+  shell.name = 'tr-shield-shell';
   sh.add(shell);
   const face = new THREE.Mesh(getGZ2ScutFace(), mOwner);   // pole = KOLOR GRACZA
   face.position.set(0, 0, 0.016 * HEX_R);
+  face.name = 'tr-shield-face';
   sh.add(face);
   const spina = new THREE.Mesh(getGZ2Spina(), mBronzL);
   spina.position.set(0, 0, 0.024 * HEX_R);
+  spina.name = 'tr-shield-spina';
   sh.add(spina);
   const umbo = new THREE.Mesh(getGZ2Umbo(), mGold);
   umbo.position.set(0, 0, 0.034 * HEX_R);
+  umbo.name = 'tr-shield-umbo';
   sh.add(umbo);
   group.add(sh);
 
   // CHORAGIEW SUPER na plecach (obnizona razem z sylwetka)
-  z2Banner(group, mWoodD, mOwner, mGold, -DY);
+  z2Banner(group, mWoodD, mOwner, mGold, -DY, 'tr');
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];
+  group.userData['anchors'] = {
+    hexR: HEX_R,
+    headTopY: HEAD_TOP, headCtrY: HEAD_CTR,
+    torsoTopY: Z2_TORSO_TOP - DY, torsoBotY: Z2_TORSO_BOT - DY,
+    torsoHalfW: Z2_TORSO_W * 0.5, torsoHalfD: Z2_TORSO_D * 0.5,
+    hipY: HIP_Y, shoulderY: SHLD_Y, shoulderX: Z2_SHLD_X,
+    kneelDrop: DY,
+    grip: grip.toArray(),
+    weaponAxis: hastaAxis.toArray(),
+    weaponKind: 'spear-hasta',
+    shieldKind: 'oval-scutum',
+    helmetKind: 'montefortino-open',
+    faceOpen: true,
+    bannerSide: -1,
+  };
   return group;
 }
