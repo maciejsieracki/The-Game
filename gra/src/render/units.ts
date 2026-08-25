@@ -1278,6 +1278,23 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // GERMANS ---------------------------------------------------------------
   if (n.includes('berserker germansk') || n.includes('berserk')) return buildBerserker(ownerColor_);
   if (n.includes('wojownik germansk') || (n.includes('germansk') && n.includes('wojownik'))) return buildGermanWarrior(ownerColor_);
+  // GRECJA ----------------------------------------------------------------
+  // „Falanga" (units.json: Epoka=Żelazo, Kultura=Grecka, Typ=Falangite) miała
+  // dotąd bespoke model buildFalangita(), ale docierała do niego WYŁĄCZNIE
+  // przez `case 'falanga'` w buildCategoryModel() — czyli była wizualnie
+  // unikalna „z przypadku" (jest dziś jedyną jednostką tej kategorii), nie
+  // z projektu. Reszta rodziny Opus 5 dispatchuje PO NAZWIE, bo nazwa jest
+  // stabilną tożsamością jednostki: model zostaje przy niej nawet gdy człowiek
+  // przesunie ją w Excelu między epokami albo zmieni jej `Typ`/kategorię.
+  // `case 'falanga'` ZOSTAJE jako fallback dla ewentualnych przyszłych
+  // jednostek tej kategorii — obie ścieżki wołają tę samą funkcję.
+  // Bez ryzyka regresji wyglądu: applyCultureOverrides() i tak zwraca od razu
+  // dla kategorii 'falanga' (NEW_BESPOKE_CATEGORIES), więc ścieżka po nazwie
+  // i ścieżka po kategorii dają IDENTYCZNĄ bryłę.
+  // Rdzenie „falanga"/„hoplit"/„phalanx" są w całym units.json jednoznaczne —
+  // nie ma innej jednostki, która by je zawierała (sprawdzone), w szczególności
+  // NIE łapią „Hieros Lochos (Święty Zastęp)" ani „Thorakites".
+  if (n.includes('falanga') || n.includes('hoplit') || n.includes('phalanx')) return newBuildFalangita(ownerColor_);
   // BRONZE SPECIALS -------------------------------------------------------
   if (n.includes('wojownik mykensk') || (n.includes('mykensk') && n.includes('wojownik'))) return buildMycenaeanWarrior(ownerColor_);
   if (n.includes('rydwan mykensk') || (n.includes('rydwan') && n.includes('mykensk'))) {
