@@ -29,12 +29,16 @@ Mutacje **rzeczywistego `main.ts`** (nie kopii), wyniki surowe:
 
 | Mutacja | Czerwienieje |
 |---|---|
-| M1: guard zachowuje CAŁY tekst kotwic rundy 1, ale zwraca `prod` zamiast `migrated.prod` | **D1a, D1b, D4, D5** — 36/5 |
+| M1: guard zachowuje CAŁY tekst kotwic rundy 1, ale zwraca `prod` zamiast `migrated.prod` | **D1a, D1b, D4, D5, D13b** — 38/6 |
 | M2: guard usunięty z `main.ts` | D0, D1a, D2, D4 — 24/4 |
-| M3: guard istnieje, ale nie jest wołany w ticku | D10 — 40/1 |
+| M3: guard istnieje, ale nie jest wołany w ticku | D10 — 43/1 |
 
 M1 jest rozstrzygające: kotwice rundy 1 (`prod0.kolejka.some(...)`, `sanitizeBuildQueue(prod0)`)
 zostają w źródle i **przeszłyby na zielono**, a zachowanie jest zepsute. Stare C2/C3 usunięte.
+
+**D13 = dokładny zrzut właściciela** („Wojownik · Koszt: 40 · Zebrana Praca: 2/40"), z liczbami
+wskazanymi przez Final Control (§3/§5 raportu 03): bez guardu `unitsCompletedFromPraca` **1**,
+`refunded` **0**; z guardem **0** i **2**. Zacommitowane jako asercja, nie jako zdanie w raporcie.
 
 ## N2 — zakres rozstrzygnięty: świadome, opisane odstępstwo (nie milczenie)
 
@@ -59,7 +63,7 @@ ZMIANY/COMMIT: `gra/src/main.ts` (helper + wywołanie), `gra/tools/ai-jednostki-
 (sekcja D, usunięte C2/C3). Zero zmian w `gra/data/**`, `WERSJE.md`, ścieżce gracza, `production.ts`.
 `git diff --check` czysty; `merge-base` z `origin/main` = `7e53fdb5`.
 
-TESTY: `ai-jednostki-tylko-zakup-test` **41/41** · `tsc --noEmit` **0 błędów** ·
+TESTY: `ai-jednostki-tylko-zakup-test` **44/44** · `tsc --noEmit` **0 błędów** ·
 `vite build` (C-001, `--outDir` poza repo) **✓ 23,40 s** · bramki referencyjne §6:
 **213/213, 19/19, 33/33, 13/13, 6/6** · 31 bramek `ai-*` + `rekrutacja-skarbiec-only` **13/13**,
 `surrender-rekrutacja-build-gate` **11/11**, `promote-to-front` **121/4**. Czerwone
@@ -72,8 +76,8 @@ w ticku). Do właściciela: pytanie ABC z §7 raportu Evaluatora — nadal otwar
 POZA ZAKRESEM RUNDY 2 (świadomie nietknięte, zgodnie z dyspozycją): uwagi (a)/(b)/(c),
 cztery pre-istniejące czerwone bramki, N3 (duplikat wobec `sanitizeProductionQueue` — jednolinijkowe
 uproszczenie, ale nie jest ani N1, ani N2), N7 (scenariusz „ubogie AI" do bramki albo poza tabelę).
-Obserwacja procesowa: na gałęzi **nie ma `03-final-control.md`** z rundy 1 — werdykt FAIL znam
-wyłącznie z dyspozycji, artefaktu w runie brak (§1b: raport bez artefaktu nie jest dowodem).
+Raport `03-final-control.md` (rundy 1) był w chwili startu tylko na `origin` — dociągnąłem go
+i przerebasowałem tę rundę na `6c339fee`, żeby ślad runu był kompletny i liniowy.
 
 RUNDY: 2/5.
 NASTĘPNY KROK: Evaluator (runda 2), następnie Final Control.

@@ -379,6 +379,22 @@ if (guardSrcTs) {
   assert(false, 'D4: (c) Praca nie jest dalej lana w jednostke — brak guardu w main.ts');
 }
 
+// --- D13: DOKLADNY zrzut wlasciciela — „Wojownik · Koszt: 40 · Zebrana Praca: 2/40" ---
+// Liczby wskazane przez Final Control rundy 1 (§3/§5 raportu 03): PRZED guardem
+// `unitsCompletedFromPraca: 1, refunded: 0`; PO guardzie `0` i `refunded: 2`.
+if (guardSrcTs) {
+  const zrzut = () => ({ kolejka: [{ ...UNIT, postep: undefined }], postep: 2, rekrutacja: [] });
+  const bezGuardu = pracaTicks(zrzut(), 4, 12);
+  assert(bezGuardu.done.filter(i => i.kind === 'jednostka').length === 1,
+    'D13a: BEZ guardu zrzut wlasciciela konczy 1 jednostke ZA PRACE (unitsCompletedFromPraca: 1)');
+  const { guard: g13, pool: p13 } = instantiateGuard(guardSrcTs);
+  const zGuardem = pracaTicks(g13(0, zrzut(), 'Miasto gracza'), 4, 12);
+  assert(zGuardem.done.filter(i => i.kind === 'jednostka').length === 0,
+    'D13b: PO guardzie zrzut wlasciciela konczy 0 jednostek za Prace (unitsCompletedFromPraca: 0)');
+  assert((p13.get(0) ?? 0) === 2,
+    'D13c: zebrane 2 Pracy wracaja do puli wlasciciela (refunded: 0 -> 2)');
+}
+
 // --- D10-D12: wpiecie guardu w tick — relacja, nie tekst hunku --------------
 const idxCall = mainTsSrc.indexOf('stripLegacyUnitsFromPracaQueue(city.ownerId, prod0');
 const idxAdvance = mainTsSrc.indexOf('advanceProduction(prod0, pracaBudynki)');
