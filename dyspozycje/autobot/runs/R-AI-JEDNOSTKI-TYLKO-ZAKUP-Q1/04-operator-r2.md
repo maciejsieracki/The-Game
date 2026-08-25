@@ -60,7 +60,7 @@ Dlaczego to miejsce, z pomiarem zamiast opinii:
 Do decyzji orkiestratora: przyjąć te 2 linie w ticku, albo poszerzyć allowlistę wprost.
 
 ZMIANY/COMMIT: `gra/src/main.ts` (helper + wywołanie), `gra/tools/ai-jednostki-tylko-zakup-test.cjs`
-(sekcja D, usunięte C2/C3). Zero zmian w `gra/data/**`, `WERSJE.md`, ścieżce gracza, `production.ts`.
+(sekcja D, usunięte C2/C3). Commity rundy 2: `f5a1a67f` + `ea8857f2` (D13), na `6c339fee`. Zero zmian w `gra/data/**`, `WERSJE.md`, ścieżce gracza, `production.ts`.
 `git diff --check` czysty; `merge-base` z `origin/main` = `7e53fdb5`.
 
 TESTY: `ai-jednostki-tylko-zakup-test` **44/44** · `tsc --noEmit` **0 błędów** ·
