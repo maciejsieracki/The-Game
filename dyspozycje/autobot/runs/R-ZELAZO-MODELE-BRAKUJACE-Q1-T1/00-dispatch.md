@@ -140,14 +140,34 @@ istniejący `zelazo-konnica-asyryjska-opus5.ts` na Opus 5 zamiast zaczynać od z
 (precyzyjna poprawka, nie zlecenie od nowa) — pod warunkiem że raport jawnie
 potwierdzi rzeczywisty model wykonawczy tym razem.
 
+## Runda 2 — PASS-WITH-NOTES (zamknięte)
+
+Operator (Opus 5 High, potwierdzone środowiskiem wykonawczym) NIE potwierdził ślepo
+pracy rundy 1 — znalazł i naprawił 4 twarde błędy geometrii niewykrywalne przez
+testy mierzące wyłącznie nazwy mesh: (1) lanca przebijająca udo jeźdźca, (2) łuk
+w skali pieszej wchodzący w grzbiet konia, (3) ramię naciągu bez zgięcia łokcia
+(prostą linią przez własny cel), (4) obręcz tarczy prostopadła do tarczy. Dodał
+nową sekcję testów (H, 5 asercji) mierzącą relacje geometryczne, z dowodem
+nietautologiczności. Evaluator i Final Control potwierdzili niezależnie (własne
+worktree, własne mutacje, własny test penetracji broń↔koń — zero przecięć).
+
+Wszystkie trzy role: PASS-WITH-NOTES. Final Control jawnie potwierdził: żadna
+uwaga nie dotyka GOAL/dowodu/zakresu/§9/gotowości integracyjnej — wyłącznie
+kosmetyczne. Zarejestrowane jako osobne wpisy w `REJESTR-PROSB-I-ZADAN.md`
+(`P-ZELAZO-T1-NPX-VITE-TWARDA-FORMA-Q1`, `P-ZELAZO-T1-LANCA-UDO-BRAK-ASERCJI-Q1`,
+`P-ZELAZO-T1-Z3-WEDZIDLO-HEDGING-Q1`), spełniając wymóg §3b.
+
+Zmergowane do `main` (merge non-ff od merge-base `da776f8d`), zweryfikowane
+niezależnie przez orkiestratora (tsc/vite build/31 testów tematu/5 bramek
+referencyjnych zielone).
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: branch `autobot/ZELAZO-T1-Q1`, commit `c41acac7` (runda 1, kod
-gotowy, treściowo niekwestionowany) — czeka na potwierdzenie rundy 2 na
-właściwym modelu.
-TESTY: kryteria sukcesu 1–9 wyżej — wszystkie spełnione treściowo w rundzie 1,
-do potwierdzenia na Opus 5 w rundzie 2.
-BLOKADY: patrz „Runda 1 — FAIL" wyżej.
-RUNDY: 1/5 (zużyta rundą 1).
-NASTĘPNY KROK: Operator, runda 2, jawnie na Opus 5 High.
-DEPLOY/PUSH: NIE WYKONANO.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-T1-Q1`, commit `0b2b091f` (runda 2),
+zmergowane do `main`.
+TESTY: kryteria sukcesu 1–9 spełnione, potwierdzone niezależnie 4-krotnie
+(Operator/Evaluator/Final Control/orkiestrator po merge).
+BLOKADY: brak (3 kosmetyczne uwagi zarejestrowane osobno, nie blokują).
+RUNDY: 2/5 (zamknięte pozytywnie).
+NASTĘPNY KROK: T2 (Soldurii/Gaesatae).
+DEPLOY/PUSH: git push (main) WYKONANO; deploy ROBOCZA po zamknięciu T2-T4.

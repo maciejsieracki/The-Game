@@ -88,4 +88,14 @@ plikach (`R-PROC-AUTOBOT.md` §2b), jeden temat na raz, merge przed startem nast
 
 ## Postęp implementacji
 
-- T1–T4: patrz `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T{1..4}/`.
+- **T1 — ZINTEGROWANE (2026-08-25, 2 rundy).** Konnica lancowa i łucznicza asyryjska
+  dostały dedykowane modele 3D (`zelazo-konnica-asyryjska-opus5.ts`) — łucznik
+  dzierży realny łuk kompozytowy w naciągu z kołczanem, lancer lancę z żelaznym
+  grotem i tarczę. Runda 1 FAIL z powodu błędu orkiestratora (dispatch modelu w
+  skrypcie Workflow — patrz `R-PROC-AUTOBOT.md` C-062), nie treści pracy. Runda 2
+  (Opus 5 High potwierdzony) znalazła i naprawiła 4 twarde błędy geometrii rundy 1
+  (lanca w udzie, łuk w grzbiecie konia, ramię naciągu bez zgięcia, obręcz tarczy
+  źle zorientowana) niewykrywalne przez testy mierzące same nazwy mesh — nowa
+  sekcja testów (H) mierzy relacje geometryczne. Zmergowane do `main`, commit
+  `0b2b091f`. 3 kosmetyczne uwagi zarejestrowane osobno w rejestrze (§3b).
+- T2–T4: patrz `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T{2..4}/`.
