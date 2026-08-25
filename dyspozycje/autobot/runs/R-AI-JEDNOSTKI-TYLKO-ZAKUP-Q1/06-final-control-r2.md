@@ -97,7 +97,8 @@ wywołania + nazwana funkcja w tym samym bloku co już-dozwolone funkcje. **N2 z
 
 ZMIANY/COMMIT: `gra/src/main.ts` (wyłącznie docstring, +5 linii komentarza, zero zmiany
 zachowania) — mój micro-fix N-B na tym runie. Reszta bez zmian względem `918caa22`
-(Operator+Evaluator runda 2). Commit tego raportu + micro-fixu: patrz SHA po pushu.
+(Operator+Evaluator runda 2). Commit tego raportu + micro-fixu: `81a89e3e`, na `918caa22`,
+wypushowany na `autobot/R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1`.
 TESTY: opisane wyżej, wszystkie uruchomione niezależnie w `/home/user/wt-FC-R-AI-JEDN-r2`
 (świeży worktree od `918caa22`, nie od raportu Operatora ani Evaluatora).
 BLOKADY: brak. Do orkiestratora: decyzja N2 (rekomendacja: przyjąć 2 linie jako odstępstwo,
