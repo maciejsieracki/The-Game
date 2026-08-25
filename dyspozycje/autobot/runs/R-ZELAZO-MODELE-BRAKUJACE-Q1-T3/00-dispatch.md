@@ -80,11 +80,37 @@ Operator → Evaluator → Final Control → integracja orkiestratora, jedno ID,
 gałąź. Limit 5 rund. Model/effort: **Opus 5 High dla Operatora i Evaluatora**
 (temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a), Final Control Sonnet 5 High.
 
+## Runda 1 — PASS-WITH-NOTES (zamknięte, po 3 krokach porządkowych orkiestratora)
+
+Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS-WITH-NOTES. Wszystkie
+trzy role potwierdziły niezależnie: Falanga dostała jawny dispatch po nazwie (fallback
+po kategorii zostawiony nietknięty), zmierzony i naprawiony błąd geometrii (drzewce
+dory przenikające ramię hoplity — luz SAT `-0.02529` na `main` → `+0.02896` po
+naprawie), oraz rozstrzygniętą kwestię blazonu: lambda (Λ, atrybucja spartańska)
+zastąpiona neutralną, historycznie poświadczoną episemą — Falanga jest jednostką
+liniową CAŁEJ cywilizacji greckiej (1 kultura, 10 równorzędnych miast w tym Sparta,
+nie osobna kultura/jednostka), więc godło Lakedaimonu przeczyłoby własnemu rosterowi.
+
+Final Control zażądał (nie jako nowa runda kodu, tylko porządek orkiestratora):
+1. Zapis `01-operator.md`/`02-evaluator.md`/`03-final-control.md` w tym katalogu —
+   wykonane.
+2. Rejestracja uwagi kosmetycznej (nagłówek pliku `~0.55×HEX_R` vs zmierzone
+   `0.7269×HEX_R`, wspólny komentarz z `buildHastati()`, poza allowlistą T3) —
+   `P-ZELAZO-T3-FALANGITA-WYSOKOSC-KOMENTARZ-NIEAKTUALNY-Q1`. Dodatkowo zarejestrowana
+   luka pokrycia testowego znaleziona przez Evaluatora (brak asercji ciągłości
+   trójczęściowej dory) — `P-ZELAZO-T3-DORY-CIAGLOSC-BRAK-ASERCJI-Q1`.
+3. Aktualizacja statusu wiersza-rodzica w `REJESTR-PROSB-I-ZADAN.md` (T1/T2
+   zintegrowane, T3 integrowany, T4 w kolejce) — wykonane.
+
+Zmergowane do `main`, zweryfikowane niezależnie przez orkiestratora (tsc/vite build/
+testy tematu+T1+T2/5 bramek referencyjnych zielone).
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: jeszcze brak — dispatch.
-TESTY: kryteria sukcesu 1–7 wyżej.
-BLOKADY: brak.
-RUNDY: 0/5 (dispatch).
-NASTĘPNY KROK: Operator, runda 1 (po zamknięciu T1/T2).
-DEPLOY/PUSH: NIE WYKONANO.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-T3-Q1`, commit `5aaddf38`, zmergowane do `main`.
+TESTY: kryteria sukcesu 1–7 spełnione, potwierdzone niezależnie 3-krotnie + orkiestrator
+po merge.
+BLOKADY: brak (2 znaleziska kosmetyczne zarejestrowane osobno, nie blokują).
+RUNDY: 1/5 (zamknięte pozytywnie).
+NASTĘPNY KROK: T4 (Jeździec z oszczepami).
+DEPLOY/PUSH: git push (main) WYKONANO; deploy ROBOCZA po zamknięciu T4.

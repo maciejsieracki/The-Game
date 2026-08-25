@@ -109,4 +109,15 @@ plikach (`R-PROC-AUTOBOT.md` §2b), jeden temat na raz, merge przed startem nast
   zmierzone przez Final Control). Zmergowane do `main`. 2 znaleziska danych
   (`units.json` Gaesatae `Uwagi`/`Typ` nieaktualne po wcześniejszym rename)
   zarejestrowane osobno.
-- T3–T4: patrz `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T{3..4}/`.
+- **T3 — ZINTEGROWANE (2026-08-25, 1 runda).** Falanga dostała jawny dispatch po
+  nazwie w `units.ts` (fallback po kategorii zostawiony dla ewentualnych przyszłych
+  jednostek tej kategorii). Operator zmierzył istniejący `buildFalangita()` zamiast
+  ufać kodowi na słowo i naprawił realny błąd geometrii — drzewce dory przenikało
+  ramię hoplity (luz SAT ujemny na `main`, dodatni po naprawie kąta przedramienia).
+  Rozstrzygnięta kwestia historyczna: blazon Lambda (Λ, atrybucja spartańska)
+  zastąpiony neutralną episemą — Falanga to jednostka liniowa CAŁEJ cywilizacji
+  greckiej (1 kultura w grze, Sparta to jedno z 10 równorzędnych miast, nie osobna
+  kultura/jednostka), potwierdzone w danych (`civs.json`) przez wszystkie trzy role.
+  Zmergowane do `main`. 2 znaleziska kosmetyczne (nieaktualny komentarz wysokości,
+  luka pokrycia testu ciągłości włóczni) zarejestrowane osobno.
+- T4: patrz `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T4/`.
