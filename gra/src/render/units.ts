@@ -1529,7 +1529,13 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('thorakites')) return buildThorakites(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Plemiona (jednostki-z3-plemiona.ts) --------------
   // (Wojownik germański SUPER NIE tutaj — dispatch przez buildSuperUnit/cultureFromName.)
-  if (n.includes('druzynnik')) return buildDruzynnik(ownerColor_);
+  // T10: alias EN `druzhinnik`. Przed T10 rdzeń był tylko polski, więc nazwa
+  // angielska z `units.json` („Druzhinnik") NIE trafiała w ten model i wracała
+  // fallbackiem do generyka kategorii `miecznik` (zmierzone: 28 mesh generyka
+  // zamiast 32 mesh Drużynnika). iButho tego problemu nie miał — jego nazwa EN
+  // („iButho with iklwa") zawiera rdzeń `ibutho`. Rdzeń `druzhinnik` sprawdzony
+  // na jednoznaczność w całym units.json: dokładnie jedno trafienie.
+  if (n.includes('druzynnik') || n.includes('druzhinnik')) return buildDruzynnik(ownerColor_);
   if (n.includes('ibutho') || n.includes('butho')) return buildIButho(ownerColor_);
   if (n.includes('miecznik galijski') || n.includes('gallic swordsman')) return buildMiecznikGalijski(ownerColor_);
   return null;

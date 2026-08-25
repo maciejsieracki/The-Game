@@ -5,10 +5,13 @@
  *  konwencja SUPERA: jednostki-p6-super.ts — choragiew-znacznik NA PLECACH)
  * ---------------------------------------------------------------------------
  * Zamienniki dla tokenow z gra/src/render/units.ts:
- *   buildDruzynnik(ownerColor)        -> NOWY case w buildNamedUnit ('druzynnik');
- *                                        dzis: kategoria 'miecznik' (GENERYK kamienny)
- *   buildIButho(ownerColor)           -> NOWY case w buildNamedUnit ('ibutho' / 'butho');
- *                                        dzis: kategoria 'wlocznik' (GENERYK kamienny)
+ *   buildDruzynnik(ownerColor)        -> case w buildNamedUnit: 'druzynnik' ORAZ
+ *                                        'druzhinnik' (alias EN dodany w T10 —
+ *                                        przed nim nazwa angielska z units.json
+ *                                        wracala do GENERYKA 'miecznik')
+ *   buildIButho(ownerColor)           -> case w buildNamedUnit ('ibutho' / 'butho');
+ *                                        nazwa EN „iButho with iklwa" trafia
+ *                                        w ten sam rdzen, wiec aliasu nie ma
  *   buildMiecznikGalijski(ownerColor) -> NOWY case w buildNamedUnit ('miecznik galijski'
  *                                        / 'gallic swordsman'); dzis: GENERYK miecznika
  *   buildBerserker(ownerColor)        -> T8: przejmuje linie dispatchu
@@ -40,13 +43,19 @@
  *
  * CHARAKTERY (rodziny plemienne — spojnosc z bespoke krewnymi z units.ts):
  *   DRUZYNNIK (Slowianie): wczesnoslowianski wojownik druzyny ksiazecej —
- *     helm STOZKOWY z NOSALEM (typ czarnomogilski, stal + brazowe okucie),
- *     lniana rubacha + skorzany kaftan, WASY (bez brody), okragla tarcza
- *     z UMBEM i deskami PROMIENISTYMI (pole = kolor gracza), miecz w pchnieciu.
- *   iBUTHO Z IKLWA (Zulusi): ZELAZNY BRAT Impi (P57) — ta sama anatomia
- *     i rynsztunek, ale wieksza dyscyplina: tarcza nguni CIEMNA
- *     (brazowo-czarna laciata), WYZSZY pioropusz (3 piora + czub),
- *     NASZYJNIK KLOW na rzemieniu, amashoba tylko na ramionach.
+ *     helm STOZKOWY (dzwon stalowy + okucie ze ZLOCONEJ MIEDZI + nosal;
+ *     T10 poprawil tu zdanie „typ czarnomogilski Z NOSALEM" — nosal NIE jest
+ *     cecha tego typu, patrz K3 przy builderze), lniana rubacha + skorzany
+ *     kaftan + PAS Z OKUCIAMI, WASY (bez brody), okragla tarcza z UMBEM
+ *     i deskami PROMIENISTYMI (pole = kolor gracza), miecz w pchnieciu.
+ *   iBUTHO Z IKLWA (Zulusi): ZELAZNY KREWNY Impi (P57) — ta sama anatomia
+ *     bazowa, ale INNA sylwetka (T10: przed audytem obie figurki roznily sie
+ *     na ekranie w 0.370 przy progu rodziny 0.558): tarcza PELNEJ DLUGOSCI
+ *     (isihlangu) niesiona wysoko i CIEMNA (brazowo-czarna laciata) — barwa
+ *     czyta sie jako pulk MLODY, nie starszy, patrz K10 przy builderze —
+ *     WYZSZY pioropusz (3 piora), wieksze isicoco, KROTSZA iklwa
+ *     o proporcjach broni klujacej, NASZYJNIK KLOW na rzemieniu,
+ *     amashoba tylko na ramionach, gleboki wypad.
  *   WOJOWNIK GERMANSKI (SUPER, Germanie): potezny wodz — GOLY TORS z pasem
  *     skory na krzyz, FUTRO na ramionach (rodzina Berserkera: ta sama paleta
  *     skor), helm ZELAZNY prosty z FUTRZANYM OTOKIEM (bez rogow!), RUDA
@@ -470,15 +479,137 @@ function trSuperBanner(
 
 // ---------------------------------------------------------------------------
 // DRUZYNNIK (Slowianie, ZELAZO) — POZA: pchniecie mieczem w wykroku
-// Helm stozkowy z NOSALEM (czarnomogilski: stalowy stozek + brazowe okucie),
-// lniana rubacha + skorzany KAFTAN + pas, WASY ciemnoblond, welniane nogawice,
+// Helm stozkowy (dzwon + okucie ze ZLOCONEJ MIEDZI + nosal), lniana rubacha
+// + skorzany KAFTAN + PAS z okuciami, WASY ciemnoblond, welniane nogawice,
 // okragla tarcza: pole = KOLOR GRACZA, 3 deski PROMIENISTE, stalowe UMBO,
 // skorzany rant — na LEWYM (+X) przedramieniu; miecz w PRAWEJ (-X) na osi
-// przedramienia. Stopy na y = 0.
+// przedramienia. Stopy na y = 0. Prefiks mesh: `dr-`.
+//
+// T10 — CO ZMIENIONO I DLACZEGO (pomiar w zywym Chromium, kamera gry:
+// azymut 0, elewacja 52 stopnie; „px" = piksele wlasne czesci przy renderze
+// z testem glebi, metoda z T8):
+//   D1. PAS NIE ISTNIAL NA EKRANIE. Bryla 0.190 x 0.034 x 0.112 lezala na
+//       y 0.2350-0.2690, czyli w calosci wewnatrz suma zakresow KAFTANA
+//       (0.2515-0.4015, 0.192 x 0.114) i DOLU RUBACHY (0.1870-0.2570,
+//       0.196 x 0.118), a przy tym byla od obu WEZSZA i PLYTSZA. Nie byla
+//       wiec zaslonieta „pod pewnym katem" — byla ZAMKNIETA w sasiadach
+//       i dawala 0 px z kazdego kierunku (zmierzone: 0 px przy 2449 px
+//       kaftana). Naprawa: 1.10 x 1.16 w poziomie (0.209 x 0.130 — szerzej
+//       i glebiej od OBU sasiadow) i przesuniecie na ich styk (y 0.2540).
+//       Po naprawie 280 px. Klasa bledu T8/B2 („element istnieje w 3D
+//       i ma ZERO pikseli"), tyle ze na ubiorze, nie na twarzy.
+//   D1b. Material pasa: TR_BRONZE zamiast TR_WOOD. Sam TR_LEATHER nie
+//       rozwiazuje D1, bo kaftan NAD pasem ma dokladnie te sama wartosc
+//       0x6b4a28 — pas bylby widoczny geometrycznie i niewidoczny dla oka.
+//       Metal na pasie jest w tej ramie uzasadniony tym samym, czym poszycie
+//       helmu (K2): to oporzadzenie czlowieka z druzyny, nie z pospolitego
+//       ruszenia. TR_WOOD (0x7a5c3a) zostaje przy deskach tarczy, gdzie
+//       nazwa stalej odpowiada rzeczy.
+//   D2. GLOWICA MIECZA MIALA 0 px. 0.030 x 0.024 x 0.024 przy piesci
+//       0.046 x 0.046 x 0.048 — mniejsza od dloni w KAZDYM wymiarze
+//       poprzecznym, wiec dlon zakrywala ja w calosci. Naprawa: 2.10 x 2.40
+//       poprzecznie (0.063 x 0.058) i cofniecie z -0.016 na -0.020 po osi
+//       broni. Po naprawie 334 px. Uzasadnienie ksztaltu w K4.
+//   D3. NAZWY I KOTWICE. Przed T10 model mial 0/32 nazwanych mesh i brak
+//       `userData.anchors` — czyli byl NIESPRAWDZALNY: zadna asercja nie
+//       mogla zaadresowac czesci. Teraz 32/32 z prefiksem `dr-` plus
+//       `anchors`, dokladnie jak Berserker i Wojownik germanski po T8.
+//   CZEGO T10 NIE ZMIENIL, CHOC SPRAWDZIL: polozenia okucia helmu (K3)
+//       i ukladu desek tarczy (K6). Oba maja w tej sekcji jawne wyjasnienie
+//       — jedno oparte na pomiarze wariantu alternatywnego, drugie na
+//       zakresie tematu.
+//
+// ===========================================================================
+// ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (Druzynnik)
+// ===========================================================================
+// RAMA CZASOWA jest ta sama, dwuwarstwowa rama, ktora opisuje juz w tym repo
+// `zelazo-jezdziec-oszczepami-opus5.ts` (K1-K3 tamze) — a wiec: (a) opis
+// bizantyjski z zewnatrz dla VI-VII w. i (b) material archeologiczny z ziem
+// slowianskich dla IX-X w. Druzynnik siedzi w warstwie (b): `units.json`
+// nazywa go wprost „elitarny wojownik druzyny ksiecia".
+//
+// K1. DANE ROZSTRZYGAJA O UZBROJENIU. `units.json` dla „Druzynnik":
+//     `Atak 8`, `Obrona 6`, `Pancerz 3`, `Atak dystansowy 0`,
+//     `Zasieg ataku (hex) „—"`, `Ilosc pociskow „—"`, `Typ „Swordsman"`,
+//     `Kultura „Slowianie"`, `Nazwa EN „Druzhinnik"`, `Uwagi`: „Jednostka
+//     specjalna Slowian; elitarny wojownik druzyny ksiecia; piechota lesna".
+//     Stad: MIECZ (a nie wlocznia ani oszczep), ZERO broni miotanej w modelu,
+//     pancerz LEKKI (kaftan skorzany, bez kolczugi) przy `Pancerz 3`.
+// K2. HELM — TYP OD KURHANU CZARNA MOGILA. Kurhan Czarna Mogila w Czernihowie
+//     przekopal w latach 1872-73 D. Samokwasow; pochowek datuje sie na
+//     schylek X w. Od tego znaleziska bierze nazwe typ helmu w typologii
+//     A. Kirpicznikowa, w polskiej literaturze nazywany szyszakiem
+//     WIELKOPOLSKIM albo piastowskim; polskie egzemplarze to Giecz, okolice
+//     Gniezna, Gorzuchy i Olszowka, X-XI w. Opis konstrukcji: dzwon
+//     kulisto-stozkowy z CZTERECH nitowanych blach zelaznych, poszytych
+//     blacha ze ZLOCONEJ MIEDZI, u dolu wzmocniony OPASKA („diadem"/„korona"),
+//     do ktorej z bokow i z tylu mocowano oslone karku; na szczycie TULEJA na
+//     pioropusz; z przodu ornament z trzech lancetowatych lisci, na bocznych
+//     segmentach czteroplatkowe rozetki. Wysoki poziom zdobienia wskazuje na
+//     wojownikow druzyny ksiazecej. Model niesie z tego: stalowy dzwon
+//     stozkowy + okucie w barwie ZLOCONEJ MIEDZI (`TR_BRONZE`), nie „braz"
+//     jako stop.
+// K3. NOSAL — SWIADOME ODSTEPSTWO, NAZWANE WPROST. Opisy tego typu wymieniaja
+//     cztery blachy, poszycie ze zloconej miedzi, dolna opaske i tuleje na
+//     pioropusz; NOSALA wsrod cech typu NIE MA (naglowek sprzed T10 twierdzil
+//     „helm stozkowy z NOSALEM (czarnomogilski)" — to zdanie bylo nieprawdziwe
+//     i zostalo tu poprawione, a nie po cichu przepisane). Bryla nosala
+//     zostaje w modelu, bo z kamery gry jest JEDYNYM pionowym punktem
+//     odniesienia twarzy: Druzynnik nie ma oczu, poniewaz `trCore(..., eyes)`
+//     stawia je na y 0.5450 i z = 0.0680, a okucie helmu zajmuje pas
+//     y 0.5340-0.5520 o polszerokosci 0.0750 i dzwon ma w tej wysokosci
+//     promien 0.0761 — oczy wypadlyby DOKLADNIE na wysokosci okucia i wewnatrz
+//     obu bryl, czyli powtorzylyby blad B2 Berserkera z T8 (oczy z 0 px). Rozwazona i odrzucona
+//     alternatywa: zsunac okucie pod podstawe dzwonu (y 0.5240), tam gdzie
+//     zrodlo umieszcza opaske — zmierzone, zostawia miedzy okuciem a broda
+//     pasek twarzy 0.0114 zamiast 0.0610, wiec kosztowalaby wiecej, niz daje.
+// K4. MIECZ I GLOWICA. `Typ „Swordsman"` plus `Atak dystansowy 0` znaczy bron
+//     wylacznie do zwarcia. Poza to PCHNIECIE na osi przedramienia, a nie
+//     zamach — i przy tym ukladzie cala bron jest z kamery gry widoczna na
+//     0.830 swojej dlugosci (zmierzone na lamanej piesc-jelec-klinga-czubek;
+//     prog rodziny to 0.60 widocznosci dory Falangity, czyli 0.537). Szeroka glowica (D2) jest
+//     cecha rozpoznawcza mieczy tej ramy — glowica rownowazy klinge i jest
+//     wyraznie szersza od rekojesci — i po poszerzeniu jest tez jedynym
+//     brazowym punktem przy dloni, ktory z kamery gry w ogole widac.
+// K5. PAS Z OKUCIAMI (D1b). Metalowe okucia pasa sa w tej ramie elementem
+//     oporzadzenia wojownika wyzszej rangi; w modelu decyduje o tym jednak
+//     takze POMIAR, nie sama przeslanka historyczna — przy barwie skory pas
+//     mial te sama wartosc co kaftan i po naprawie geometrii nadal bylby dla
+//     oka niewidoczny. Ta przeslanka jest zapisana WPROST, bo wspoldecydowala.
+// K6. DESKI TARCZY — ZNANY MANKAMENT, SWIADOMIE POZA ZAKRESEM T10. Tarcza ma
+//     3 deski ulozone PROMIENISCIE (0, +-60 stopni), co z kamery gry czyta sie
+//     jako szesciopromienna gwiazda. Wczesnosredniowieczne tarcze okragle
+//     skladano — wedle powszechnego opisu — z desek ROWNOLEGLYCH, nie
+//     promienistych; to twierdzenie jest tu rzedem 4 (§13a) i NIE zostalo
+//     w tej sesji potwierdzone w zrodle wyzszego rzedu, wiec idzie do rejestru
+//     jako zgloszenie do sprawdzenia, a nie od razu do kodu. Poprawka NIE wchodzi
+//     w T10, bo `zelazo-jezdziec-oszczepami-opus5.ts` powtarza dokladnie ten
+//     sam uklad (`for (const a of [0, Math.PI / 3, -Math.PI / 3])`, tamze
+//     ok. linii 1190) i powoluje sie na Druzynnika jako na kanon kulturowy
+//     (K8/K12 tamze). Zmiana tylko tutaj ROZJECHALABY oba modele, a plik T4
+//     jest w allowliscie T10 wylacznie na wypadek synchronizacji stalych
+//     koloru. To jest zgloszenie do osobnego tematu, nie przeoczenie.
+// K7. CZEGO SWIADOMIE NIE MA: kolczugi i naramiennikow (`Pancerz 3`), brody
+//     (kanon repo dla Slowianina to WASY bez brody), tulei z pioropuszem na
+//     szczycie helmu (jest w opisie typu, ale na tokenie tej wielkosci
+//     dodalaby pionowa bryle myloco podobna do pioropusza iButho i Impi),
+//     broni miotanej (`Atak dystansowy 0`).
+//
+// ZRODLA. Rzad 1-2 wg `R-PROC-AUTOBOT.md` §13a: `gra/data/units.json`
+// (dane jednostki) oraz `gra/src/render/zelazo-jezdziec-oszczepami-opus5.ts`
+// (kanon kulturowy Slowian w tym repo). Rzad 3-4, i tak sa tu OZNACZONE:
+// opracowania muzealne i encyklopedyczne o szyszakach wielkopolskich
+// (Giecz, Gniezno, Gorzuchy, Olszowka) oraz o kurhanie Czarna Mogila —
+// zgodne co do konstrukcji (cztery blachy, zlocona miedz, dolna opaska,
+// tuleja na pioropusz) i milczace co do nosala. Zadnej z tych pozycji nie
+// udalo sie odczytac w oryginale z tej sesji, wiec numery stron i sygnatury
+// NIE sa tu podawane — swiadomie, zeby nie powtorzyc bledu blednej lokalizacji
+// cytatu z T8.
 // ---------------------------------------------------------------------------
 export function buildDruzynnik(ownerColor_: number): THREE.Group {
   const group = new THREE.Group();
   const { mats, mat } = makeMats();
+  const PF = 'dr';
 
   const mLinen = mat(TR_LINEN,    0.05, 0.84);
   const mLeath = mat(TR_LEATHER,  0.06, 0.82);
@@ -493,58 +624,98 @@ export function buildDruzynnik(ownerColor_: number): THREE.Group {
   const HIP_Y = TR_HIP_Y - 0.012 * HEX_R;   // wykrok — biodra obnizone
 
   // korpus: rubacha lniana; na niej skorzany kaftan + pas
-  trCore(group, mat, mLinen);
+  trCore(group, mat, mLinen, TR_SKIN, false, PF);
   const kaftan = new THREE.Mesh(getGTRKaftan(), mLeath);
   kaftan.position.set(0, TR_TORSO_CTR - 0.016 * HEX_R, 0);
+  kaftan.name = PF + '-kaftan';
   group.add(kaftan);
   const skirt = new THREE.Mesh(getGTRSkirt(), mLinen);   // dol rubachy
   skirt.position.set(0, TR_TORSO_BOT - 0.018 * HEX_R, 0);
+  skirt.name = PF + '-skirt';
   group.add(skirt);
-  const belt = new THREE.Mesh(getGTRBelt(), mWood);
-  belt.position.set(0, 0.252 * HEX_R, 0);
+  // PAS. Do T10 lezal na y = 0.252 w NIEZMIENIONEJ skali (0.190 x 0.034 x 0.112),
+  // czyli byl WEZSZY i PLYTSZY od kaftana (0.192 x 0.114) nad nim i od dolu
+  // rubachy (0.196 x 0.118) pod nim, a jego zakres Y (0.2350-0.2690) miescil
+  // sie w calosci w sumie ich zakresow (0.1870-0.4015). Bryla byla wiec
+  // ZAMKNIETA w sasiadach z KAZDEGO kierunku i dawala 0 PIKSELI z kamery gry
+  // (pomiar T10: `pas` 0 px przy 2449 px kaftana i 423 px dolu rubachy).
+  // Teraz pas jest SZERSZY i GLEBSZY od obu sasiadow i siedzi na ich styku.
+  // Material BRAZOWY, nie skorzany: pas druzynnika to rzemien gesto obity
+  // metalowymi okuciami (K5), a przy TR_LEATHER pas mialby DOKLADNIE ten sam
+  // kolor co kaftan nad nim — bylby wtedy widoczny geometrycznie i niewidoczny
+  // dla oka, czyli defekt tylko przesuniety, nie naprawiony.
+  const belt = new THREE.Mesh(getGTRBelt(), mBronz);
+  belt.scale.set(1.10, 1.0, 1.16);                       // 0.209 x 0.034 x 0.130
+  belt.position.set(0, 0.2540 * HEX_R, 0);
+  belt.name = PF + '-belt';
   group.add(belt);
 
   // nogi: welniane nogawice, skorzane buty; LEWA (+X) wykroczna
-  trBuildLeg(group,  TR_HIP_X,  0.58,  0.34, mWool, mWool, mLeath, HIP_Y);
-  trBuildLeg(group, -TR_HIP_X, -0.52, -0.20, mWool, mWool, mLeath, HIP_Y);
+  trBuildLeg(group,  TR_HIP_X,  0.58,  0.34, mWool, mWool, mLeath, HIP_Y, PF, 'left');
+  trBuildLeg(group, -TR_HIP_X, -0.52, -0.20, mWool, mWool, mLeath, HIP_Y, PF, 'right');
 
-  // WASY (obowiazkowe!) — ciemnoblond, opadajace
+  // WASY (obowiazkowe!) — ciemnoblond, opadajace.
+  // `trWasy` jest WSPOLNE z Miecznikiem galijskim (osobny temat serii), wiec
+  // T10 NIE dokleja mu parametru nazwy — nazwy nadajemy po fakcie tym mesh,
+  // ktore helper wlasnie dolozyl. Geometria i pozycje bez zmiany.
+  const nBefore = group.children.length;
   trWasy(group, mHair);
+  for (let i = nBefore; i < group.children.length; i++) {
+    group.children[i]!.name = PF + '-moustache-' + (i - nBefore);
+  }
 
-  // HELM CZARNOMOGILSKI: stalowy stozek + brazowe okucie dolu + NOSAL
+  // HELM: stalowy dzwon stozkowy + okucie ze ZLOCONEJ MIEDZI + nosal.
+  // Geometria i polozenie BEZ ZMIAN wobec stanu sprzed T10 — sprawdzone
+  // i swiadomie zostawione, patrz K3: proba zsuniecia okucia pod podstawe
+  // dzwonu (y 0.5240), tam gdzie zrodlo umieszcza opaske wzmacniajaca dol,
+  // zostawia miedzy okuciem a broda pasek twarzy 0.0114 zamiast dzisiejszych
+  // 0.0610 — audyt nie wymienia jednego defektu na drugi.
   const helm = new THREE.Mesh(getGTRConeHelm(), mSteel);
   helm.position.set(0, TR_HEAD_CTR + 0.052 * HEX_R, 0);
+  helm.name = PF + '-helmet-cone';
   group.add(helm);
   const rim = new THREE.Mesh(getGTRHelmRim(), mBronz);
   rim.position.set(0, TR_HEAD_CTR + 0.006 * HEX_R, 0);
+  rim.name = PF + '-helmet-band';
   group.add(rim);
   const nosal = new THREE.Mesh(getGTRNosal(), mSteel);
   nosal.position.set(0, TR_HEAD_CTR - 0.006 * HEX_R, TR_HEAD_S * 0.5 + 0.008 * HEX_R);
+  nosal.name = PF + '-helmet-nasal';
   group.add(nosal);
 
   // PRAWE (-X) RAMIE + MIECZ: pchniecie w przod na osi przedramienia
-  const armR = trBuildArm(group, -TR_SHLD_X, 0.95, 1.50, mLinen, mSkin, mLeath);
+  const armR = trBuildArm(group, -TR_SHLD_X, 0.95, 1.50, mLinen, mSkin, mLeath, PF, 'right');
   const ax = armR.axis;
   const guard = new THREE.Mesh(getGTRGuard(), mBronz);
   guard.rotation.x = Math.PI - 1.50;
   guard.position.copy(armR.wrist.clone().addScaledVector(ax, 0.030 * HEX_R));
+  guard.name = PF + '-sword-guard';
   group.add(guard);
   const blade = new THREE.Mesh(getGTRBlade(), mSteel);
   blade.rotation.x = Math.PI - 1.50;
   blade.position.copy(armR.wrist.clone().addScaledVector(ax, 0.108 * HEX_R));
+  blade.name = PF + '-sword-blade';
   group.add(blade);
   const tip = new THREE.Mesh(getGTRBladeTip(), mSteel);
   tip.rotation.x = Math.PI - 1.50;
   tip.rotation.y = Math.PI / 4;
   tip.position.copy(armR.wrist.clone().addScaledVector(ax, 0.204 * HEX_R));
+  tip.name = PF + '-sword-tip';
   group.add(tip);
+  // GLOWICA. Do T10 miala 0.030 x 0.024 x 0.024 przy piesci 0.046 x 0.046 x 0.048,
+  // czyli byla MNIEJSZA od dloni w KAZDYM wymiarze poprzecznym i dawala
+  // 0 PIKSELI z kamery gry. Szeroka glowica typu X/S jest w tej rodzinie mieczy
+  // cecha rozpoznawcza (K4), wiec zamiast usuwac bryle — poszerzamy ja tak, by
+  // wystawala poza obrys piesci.
   const pommel = new THREE.Mesh(getGTRPommel(), mBronz);
   pommel.rotation.x = Math.PI - 1.50;
-  pommel.position.copy(armR.wrist.clone().addScaledVector(ax, -0.016 * HEX_R));
+  pommel.scale.set(2.10, 1.0, 2.40);                     // 0.063 x 0.024 x 0.058
+  pommel.position.copy(armR.wrist.clone().addScaledVector(ax, -0.020 * HEX_R));
+  pommel.name = PF + '-sword-pommel';
   group.add(pommel);
 
   // LEWE (+X) RAMIE + OKRAGLA TARCZA przed korpusem
-  const armL = trBuildArm(group, TR_SHLD_X, 0.50, 1.10, mLinen, mSkin, null);
+  const armL = trBuildArm(group, TR_SHLD_X, 0.50, 1.10, mLinen, mSkin, null, PF, 'left');
   const sh = new THREE.Group();
   sh.position.set(
     armL.wrist.x - 0.025 * HEX_R,
@@ -554,38 +725,201 @@ export function buildDruzynnik(ownerColor_: number): THREE.Group {
   sh.rotation.y = -0.22;
   const face = new THREE.Mesh(getGTRRndFace(), mOwner);   // POLE = KOLOR GRACZA
   face.rotation.x = Math.PI / 2;
+  face.name = PF + '-shield-face';
   sh.add(face);
   const rimS = new THREE.Mesh(getGTRRndRim(), mLeath);    // skorzany rant
   rimS.rotation.x = Math.PI / 2;
   rimS.position.set(0, 0, -0.006 * HEX_R);
+  rimS.name = PF + '-shield-rim';
   sh.add(rimS);
+  let pi = 0;
   for (const a of [0, Math.PI / 3, -Math.PI / 3]) {       // 3 deski PROMIENISTE
     const pl = new THREE.Mesh(getGTRPlank(), mWood);
     pl.rotation.z = a;
     pl.position.set(0, 0, 0.016 * HEX_R);
+    pl.name = PF + '-shield-plank-' + pi++;
     sh.add(pl);
   }
   const umbo = new THREE.Mesh(getGTRUmbo(), mSteel);      // stalowe UMBO
   umbo.rotation.x = Math.PI / 2;
   umbo.position.set(0, 0, 0.028 * HEX_R);
+  umbo.name = PF + '-shield-umbo';
   sh.add(umbo);
   group.add(sh);
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];
+  group.userData['anchors'] = {
+    hexR: HEX_R,
+    headTopY: TR_HEAD_TOP, headCtrY: TR_HEAD_CTR,
+    torsoTopY: TR_TORSO_TOP, torsoBotY: TR_TORSO_BOT,
+    torsoHalfW: TR_TORSO_W * 0.5, torsoHalfD: TR_TORSO_D * 0.5,
+    hipY: HIP_Y, shoulderY: TR_SHLD_Y, shoulderX: TR_SHLD_X,
+    grip: armR.wrist.toArray(),
+    weaponAxis: ax.toArray(),
+    weaponKind: 'sword-thrust',
+    missileKind: 'none',
+    shieldKind: 'round-slavic',
+    helmetKind: 'conical-banded',
+    armorKind: 'leather-kaftan',
+    faceOpen: false,
+    ownerColorOn: 'shield-face',
+  };
   return group;
 }
 
 // ---------------------------------------------------------------------------
-// iBUTHO Z IKLWA (Zulusi, ZELAZO) — POZA: zdyscyplinowane pchniecie iklwa
-// ZELAZNY BRAT Impi (P57): ta sama anatomia; roznice starszego regimentu —
-// tarcza nguni CIEMNA (brazowo-czarna laciata), WYZSZY pioropusz (3 piora
-// + czub), NASZYJNIK KLOW, amashoba tylko na ramionach (dyscyplina), klapa
-// spodnicy = KOLOR GRACZA + romb gracza na tarczy. Stopy na y = 0.
+// iBUTHO Z IKLWA (Zulusi, ZELAZO) — POZA: gleboki wypad, pchniecie iklwa
+// ZELAZNY KREWNY Impi (P57): ta sama anatomia bazowa, ale INNA SYLWETKA —
+// tarcza pelnej dlugosci (isihlangu) niesiona wysoko i CIEMNA (brazowo-czarna
+// laciata), WYZSZY i szerszy pioropusz (3 piora), wieksze isicoco, KROTSZA
+// iklwa o proporcjach broni klujacej, NASZYJNIK KLOW przesuniety na strone
+// bronna, amashoba tylko na ramionach, klapa spodnicy = KOLOR GRACZA + romb
+// gracza na tarczy. Stopy na y = 0. Prefiks mesh: `ib-`.
+//
+// T10 — CO ZMIENIONO I DLACZEGO (pomiar w zywym Chromium, kamera gry:
+// azymut 0, elewacja 52 stopnie):
+//   I1. DWIE JEDNOSTKI, JEDNA FIGURKA. Odroznialnosc pikselowa iButho/Impi
+//       (metoda T5-T8: udzial pikseli rozniacych sie pokryciem albo barwa
+//       o >= 40/255 w sumie obrysow pary) wynosila 0.370 przy progu rodziny
+//       0.558 — progu, ktory jest WYNIKIEM naprawy pary elita/liniowa w T6
+//       i ktorego trzymaly sie T7 i T8. Sama SYLWETKA (bez koloru) roznila
+//       sie w 3.5%: 96.5% obrysu obu jednostek bylo wspolne. Przyczyna jest
+//       policzalna: cztery katy nog i cztery katy rak byly co do cyfry te
+//       same co u Impi, tarcza miala te sama bryle i to samo polozenie,
+//       a bron — te sama geometrie (patrz I2). Po T10: 0.589 przy progu
+//       0.558, sylwetka 18.8%. Nosniki roznicy sa nazwane w K9-K11.
+//   I2. „IKLWA" BYLA KOPIA 1:1 WLOCZNI IMPI. Te same trzy bryly, te same trzy
+//       odsuniecia po osi przedramienia (0.055 / 0.225 / 0.295); roznil je
+//       WYLACZNIE material grotu (zelazo zamiast brazu). Dlugosc calkowita
+//       0.3820 przy wysokosci figury do ciemienia 0.6010, czyli 0.64 wzrostu.
+//       Zrodlowe proporcje iklwy (K7) daja ok. 0.52 wzrostu. Po skroceniu
+//       drzewca (0.240 -> 0.2088) i przesunieciu zeleza: 0.3324, czyli 0.55.
+//       Chwyt zostal przy pietce: 0.0784 drzewca ZA dlonia wobec 0.2540 calej
+//       broni PRZED nia — czyli tam, gdzie trzyma sie bron do PCHNIECIA,
+//       a nie w punkcie rownowagi, jak bron do rzutu
+//       (`Atak dystansowy 0`, `Ilosc pociskow „—"` w `units.json`).
+//   I3. TWARZ BEZ OCZU przy braku czegokolwiek, co by ja zaslanialo. Plik ma
+//       na to jawna konwencje — `trCore(..., eyes = true)` — wprowadzona w T8
+//       wlasnie dlatego, ze oczy Berserkera mialy 0 px. iButho jej nie
+//       uzywal, choc isicoco to obrecz NAD glowa, nie helm. Teraz 48 px
+//       na oko.
+//   I4. NAZWY I KOTWICE: przed T10 0/37 nazwanych mesh i brak
+//       `userData.anchors`, czyli model byl niesprawdzalny — zadna asercja
+//       nie mogla zaadresowac czesci. Teraz 39/39 z prefiksem `ib-` plus
+//       `anchors` (39, bo doszly dwa OCZY z I3).
+//   I5. SKUTEK UBOCZNY NAPRAWY, ZLAPANY POMIAREM: tarcza pelnej dlugosci
+//       niesiona wysoko zakryla naszyjnik klow (2 z 3 klow spadly na 0 i 13
+//       px) oraz amashoba lewego ramienia (8 px). Kly przesunieto na strone
+//       bronna (-X), amashoba wyzej i na zewnatrz. Po poprawce 63 / 64 / 8 px
+//       na kly i 362 px na amashoba. Zero pikseli maja u iButho wylacznie te
+//       czesci, ktore maja zero takze u Impi (szyja, oba uda, lewe
+//       przedramie) — audyt nie zostawil po sobie NOWEJ martwej bryly.
+//
+// ===========================================================================
+// ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (iButho z iklwa)
+// ===========================================================================
+// K1. DANE. `units.json` dla „iButho z iklwa": `Atak 5`, `Obrona 7`,
+//     `Pancerz 4`, `Atak dystansowy 0`, `Zasieg ataku (hex) „—"`,
+//     `Ilosc pociskow „—"`, `Typ „Spearman"`, `Ruch 4`,
+//     `Bonus vs Mount 50%`, `W zamian za „Impi"`, `Kultura „Zulusi"`,
+//     `Nazwa EN „iButho with iklwa"`, `Uwagi`: „Zelazna ewolucja Impi;
+//     iklwa + tarcza; szybsza piechota liniowa". Rozstrzyga to trzy rzeczy:
+//     bron jest WYLACZNIE do zwarcia, tarcza jest obowiazkowa, a jednostka
+//     ma byc od Impi ODROZNIALNA, bo jest jego zamiennikiem w tym samym
+//     drzewie. `Obrona 7` wobec `Obrona 6` Impi to jedyna roznica statystyk
+//     obronnych — w modelu odpowiada jej wieksza tarcza (K9).
+// K2. NAJTRUDNIEJSZY PUNKT: CHRONOLOGIA. Iklwa i system pulkow (amabutho)
+//     w formie, ktora znamy, to reforma Szaki — panowal ok. 1816-1828, wiec
+//     POCZATEK XIX w., a nie „epoka zelaza" w europejskim sensie. To jest
+//     rozjazd i nie wolno go zamiatac pod dywan. Rozstrzygniecie (Operator,
+//     §10 kanonu — watpliwosc historyczna, nie decyzja wlasciciela) jest
+//     trojczlonowe: (i) „Zelazo" jest w tej grze POZIOMEM TECHNOLOGICZNYM
+//     (`Tech „Hutnictwo zelaza"`), nie data — ta sama epoka trzyma razem
+//     Rzym, Celtow, Germanow i Slowian, ktorych dzieli po kilkaset lat;
+//     (ii) samo ZELAZO u ludow Nguni nie jest tu anachronizmem: rolnicy
+//     wczesnej epoki zelaza sa w KwaZulu-Natal poswiadczeni radiowegielowo
+//     juz w III-IV w. n.e. (Mzonjani ok. 280 n.e., Enkwazini ok. 300 i 410
+//     n.e.; ceramika Silver Leaves/Matola ok. 250-430 n.e.), wiec zelazny
+//     grot na wojowniku Nguni jest z ta rama zgodny; (iii) anachroniczna
+//     jest WYLACZNIE konkretna FORMA — iklwa i regiment — i to jest swiadome
+//     uogolnienie warstwy DANYCH gry, nie blad modelu. Model odwzorowuje
+//     panoplie poswiadczona etnograficznie, bo tylko ona jest opisana;
+//     alternatywa („zmyslic wczesniejsza, bezpieczna wlocznie") zostala
+//     rozwazona i ODRZUCONA jako gorsza: wymyslona bron nie jest bardziej
+//     prawdziwa niz udokumentowana bron o zlej dacie.
+// K7. IKLWA — PROPORCJE Z OPISU, NIE Z OKA. Opracowania zgodnie opisuja
+//     krotka bron do pchniecia rozpowszechniona za Szaki: drzewce rzedu
+//     610 mm (24 cale) i SZEROKI grot rzedu 300 mm (12 cali). Warianty opisu
+//     roznia sie w szczegolach — inne podaja grot ok. 8 cali o szerokosci
+//     ponad 1,5 cala na drzewcu 30 cali, albo drzewce 2 stop i grot 1 stopy —
+//     i ta rozbieznosc jest tu zapisana zamiast wybrania jednej liczby jako
+//     „tej prawdziwej". Wspolne dla wszystkich wariantow, i to niesie model,
+//     jest jedno: KROTKIE drzewce oraz grot SZEROKI i DLUGI wobec drzewca,
+//     czyli przeciwienstwo dlugiego oszczepu do rzutu. Nazwa jest
+//     onomatopeja — od dzwieku wyciagania zeleza z rany. W modelu: drzewce
+//     0.2088, zelazo (grot + czubek) od 0.138 do 0.268 po osi broni, czyli
+//     0.130 dlugosci — 0.62 dlugosci drzewca przy zrodlowych ok. 0.49.
+// K8. DLACZEGO NIE ZWEZONO GROTU. Stosunek szerokosci grotu do drzewca
+//     wynosi w modelu 0.036/0.018 = 2.0, a w opisie zrodlowym ok. 1,5.
+//     Model jest SZERSZY swiadomie: „szeroki grot" jest cecha DEFINIUJACA te
+//     bron, a przy tokenie tej wielkosci proporcja 1,5 sprowadza grot do
+//     paru pikseli i przestaje go odrozniac od drzewca. Przesada w te strone
+//     jest mniejszym bledem niz utrata cechy — i jest tu nazwana, nie ukryta.
+// K9. TARCZA — ISIHLANGU, NIE MNIEJSZA. Tarcze wojenne Zulusow wystepuja
+//     w dwoch rozmiarach: duza `isihlangu` (ok. 5 stop, ok. 1,5 m), opisana
+//     jako tarcza z wyboru Szaki i uzywana takze zaczepnie, do zahaczania
+//     tarczy przeciwnika, oraz mniejsza i solidniejsza `umbumbuluzo`
+//     (ok. 3,5 stopy, ok. 1,1 m), poswiadczona w uzyciu w 1856 r. w kampanii
+//     Cetshwayo przeciw Mbulaziemu. Skala w modelu jest PRZELICZONA, nie
+//     dobrana na oko: figura ma do ciemienia 0.6010 przy wojowniku ok. 1,75 m,
+//     wiec 1,5 m to ok. 0.515 — a tarcza odziedziczona po Impi miala 0.410.
+//     Stad `ISI = 1.25` (0.512). Tarcza jest tez niesiona WYZEJ, bo tarcza
+//     pelnej dlugosci kryje od podbrodka po golen, a nie sam bok korpusu.
+// K10. BARWA TARCZY — ODSTEPSTWO NAZWANE WPROST. U Zulusow barwa tarczy
+//     niosla informacje o starszenstwie pulku: pulki starsze (zonate) mialy
+//     tarcze biale, mlodsze — czarne, przy czym w latach 70. XIX w. zasada
+//     byla przestrzegana juz luzniej. Naglowek sprzed T10 twierdzil, ze
+//     CIEMNA tarcza oznacza „starszy regiment" i „wieksza dyscypline" — to
+//     jest ODWROCENIE tej zasady i zdanie zostalo usuniete jako nieprawdziwe.
+//     Ciemna tarcza ZOSTAJE, ale z poprawnym odczytem: iButho czyta sie
+//     wtedy jako pulk MLODY, a `units.json` nigdzie nie twierdzi, ze jest
+//     starszy — „Zelazna ewolucja Impi" mowi o miejscu w drzewie technologii,
+//     nie o wieku wojownikow. Drugi powod, tez jawny, jest techniczny: jasna
+//     tarcza jest juz zajeta przez Impi (P57), a dwie jasne tarcze cofnelyby
+//     odroznialnosc pary ponizej progu (I1).
+// K11. POZOSTALE NOSNIKI ODROZNIALNOSCI, wszystkie z tego samego, opisanego
+//     stroju: WYZSZY i szerszy pioropusz (piora 0.221 wobec 0.130 u Impi),
+//     WIEKSZE isicoco — obrecz na glowie noszona przez mezczyzn zonatych,
+//     a wiec nosnik rangi, nie ozdoba — oraz GLEBSZY wypad. Zaden nie jest
+//     cecha wymyslona „dla roznicy": kazdy jest elementem tej samej panoplii,
+//     dobranym tak, zeby para tokenow rozjezdzala sie na ekranie.
+// K12. CZEGO SWIADOMIE NIE MA: amashoba na lydkach (ma je Impi — zostawienie
+//     ich obu jednostkom kosztowaloby odroznialnosc), zadnej broni miotanej
+//     (`Atak dystansowy 0` — mimo ze historycznie ten sam wojownik nosil tez
+//     lekkie oszczepy do rzutu; przy konflikcie zrodla z danymi jednostki
+//     wiazace sa DANE), zadnego helmu ani pancerza (`Pancerz 4` pochodzi
+//     w tej jednostce z TARCZY, nie ze zbroi — Zulusi zbroi nie nosili).
+//
+// ZRODLA. Rzad 1-2 wg `R-PROC-AUTOBOT.md` §13a: `gra/data/units.json` (dane
+// obu jednostek) i `gra/src/render/jednostki-p57-wlocznie-machiny.ts` (bratni
+// model Impi — punkt odniesienia kazdego pomiaru w I1-I5). Rzad 3-4, i tak sa
+// tu OZNACZONE: opracowania o uzbrojeniu i organizacji wojska Zulusow (m.in.
+// prace Iana Knighta o armii zuluskiej 1879 r.) oraz hasla encyklopedyczne
+// o assegai/iklwie i o tarczy nguni — stad wymiary iklwy, nazwy i wymiary
+// obu tarcz, data kampanii 1856 r. i zasada barwy tarcz wedle starszenstwa;
+// osobno datowania radiowegielowe wczesnej epoki zelaza w KwaZulu-Natal
+// (Mzonjani, Enkwazini, Silver Leaves/Matola) dla K2. Zadnego z tych
+// opracowan nie udalo sie odczytac w oryginale z tej sesji, wiec numery stron
+// i sygnatury NIE sa podawane — swiadomie, zeby nie powtorzyc bledu blednej
+// lokalizacji cytatu z T8.
 // ---------------------------------------------------------------------------
 export function buildIButho(ownerColor_: number): THREE.Group {
   const group = new THREE.Group();
   const { mats, mat } = makeMats();
+  const PF = 'ib';
+  // ISIHLANGU — skala tarczy wobec bryly odziedziczonej po Impi (K9).
+  const ISI = 1.25;
 
   const mSkin  = mat(TR_SKIN_ZULU, 0.05, 0.80);
   const mFur   = mat(TR_FUR,       0.04, 0.92);
@@ -601,111 +935,182 @@ export function buildIButho(ownerColor_: number): THREE.Group {
 
   const HIP_Y = TR_HIP_Y - 0.014 * HEX_R;   // gleboki, kontrolowany wypad
 
-  // korpus: NAGI tors (ciemna skora jak Impi)
-  trCore(group, mat, mSkin, TR_SKIN_ZULU);
+  // korpus: NAGI tors (ciemna skora jak Impi) + OCZY.
+  // Twarz iButho jest ODKRYTA — isicoco to obrecz NAD glowa, nie helm — a plik
+  // ma na taki przypadek jawna konwencje (`trCore(..., eyes = true)`, wprowadzona
+  // przy Berserkerze, gdzie brak oczu dawal 0 pikseli twarzy z kamery gry).
+  // iButho jej nie uzywal, choc nie ma nic, co by twarz zaslanialo.
+  trCore(group, mat, mSkin, TR_SKIN_ZULU, true, PF);
 
   // spodnica futrzana + przednia klapa KOLORU GRACZA (konwencja Impi)
   const skirt = new THREE.Mesh(getGTRSkirt(), mFur);
   skirt.position.set(0, TR_TORSO_BOT - 0.018 * HEX_R, 0);
+  skirt.name = PF + '-skirt';
   group.add(skirt);
   const flap = new THREE.Mesh(getGTRFringe(), mOwner);
   flap.scale.set(1.30, 1.35, 1.0);
   flap.position.set(0, TR_TORSO_BOT - 0.046 * HEX_R, 0.062 * HEX_R);
+  flap.name = PF + '-skirt-flap';
   group.add(flap);
 
   // NASZYJNIK KLOW: rzemien + 3 kly (ostrzem w dol) na piersi
   const band = new THREE.Mesh(getGTRNeckBand(), mLeath);
   band.position.set(0, TR_TORSO_TOP - 0.006 * HEX_R, 0.014 * HEX_R);
+  band.name = PF + '-necklace-band';
   group.add(band);
   for (const s of [-1, 0, 1]) {
     const t = new THREE.Mesh(getGTRTooth(), mIvory);
     t.rotation.x = Math.PI;                       // ostrzem w dol
     t.rotation.y = Math.PI / 4;
-    t.position.set(s * 0.036 * HEX_R, TR_TORSO_TOP - 0.036 * HEX_R, TR_TORSO_D * 0.5 + 0.012 * HEX_R);
+    // Kly przesuniete na strone BRONNA (-X). Tarcza pelnej dlugosci (K9) kryje
+    // z kamery gry lewa polowe piersi: przy ukladzie symetrycznym (-0.036, 0,
+    // +0.036) dwa z trzech klow renderowaly sie na 0 i 13 pikseli.
+    t.position.set((s * 0.032 - 0.034) * HEX_R, TR_TORSO_TOP - 0.036 * HEX_R, TR_TORSO_D * 0.5 + 0.012 * HEX_R);
+    t.name = PF + '-necklace-tooth-' + (s + 1);
     group.add(t);
   }
 
-  // nogi (nagie, BEZ amashoba lydek — dyscyplina zelaznego regimentu)
-  trBuildLeg(group,  TR_HIP_X,  0.66,  0.40, mSkin, mSkin, mSkin, HIP_Y);
-  trBuildLeg(group, -TR_HIP_X, -0.58, -0.24, mSkin, mSkin, mSkin, HIP_Y);
+  // nogi (nagie, BEZ amashoba lydek — dyscyplina zelaznego regimentu).
+  // POZA. Do T10 CZTERY katy nog i CZTERY katy rak byly co do cyfry te same co
+  // u Impi z serii P57 — dwie jednostki tej samej kultury stały w identycznym
+  // rozkroku, z rekami w identycznym ustawieniu. Wypad iButho jest GLEBSZY
+  // i DLUZSZY: to jednostka o `Obrona 7` (Impi 6), ktora wchodzi w zwarcie
+  // tarcza naprzod, a iklwa dziala z bliska (K7), nie z wyciagnietego ramienia.
+  trBuildLeg(group,  TR_HIP_X,  0.88,  0.54, mSkin, mSkin, mSkin, HIP_Y, PF, 'left');
+  trBuildLeg(group, -TR_HIP_X, -0.58, -0.24, mSkin, mSkin, mSkin, HIP_Y, PF, 'right');
 
   // isicoco + WYZSZY pioropusz: 3 piora (czarne skrzydla + biel zurawia) + czub
   const coco = new THREE.Mesh(getGTRIsicoco(), mBlack);
-  coco.position.set(0, TR_HEAD_TOP + 0.008 * HEX_R, 0);
+  coco.scale.set(1.22, 1.35, 1.22);
+  coco.position.set(0, TR_HEAD_TOP + 0.012 * HEX_R, 0);
+  coco.name = PF + '-isicoco';
   group.add(coco);
   for (const s of [-1, 0, 1]) {
     const f = new THREE.Mesh(getGTRFeather(), s === 0 ? mCrane : mBlack);
-    f.rotation.z = s * 0.16;
+    f.rotation.z = s * 0.26;
     f.rotation.x = -0.10;
-    f.position.set(s * 0.026 * HEX_R, TR_HEAD_TOP + (s === 0 ? 0.100 : 0.090) * HEX_R, -0.024 * HEX_R);
+    f.scale.set(1.0, 1.30, 1.0);
+    f.position.set(s * 0.040 * HEX_R, TR_HEAD_TOP + (s === 0 ? 0.118 : 0.104) * HEX_R, -0.024 * HEX_R);
+    f.name = PF + '-plume-' + (s + 1);
     group.add(f);
   }
 
-  // PRAWE (-X) RAMIE + IKLWA (grot ZELAZNY) + amashoba ramienia
-  const armR = trBuildArm(group, -TR_SHLD_X, 1.00, 1.52, mSkin, mSkin, mSkin);
+  // PRAWE (-X) RAMIE + IKLWA (grot ZELAZNY) + amashoba ramienia.
+  //
+  // IKLWA, NIE OSZCZEP DO RZUTU (K7). Do T10 ta bron byla kopia 1:1 geometrii
+  // wlocni Impi z serii P57 — te same trzy bryly, te same trzy odsuniecia po osi
+  // przedramienia (0.055 / 0.225 / 0.295), roznil je WYLACZNIE material grotu.
+  // Zmierzona dlugosc calkowita (od pietki drzewca do czubka) wynosila 0.3820
+  // przy wysokosci figury do ciemienia 0.6010, czyli 0.64 wzrostu; iklwa ma
+  // proporcje 610 mm drzewca + ok. 300 mm zeleza na wojownika ok. 1,75 m,
+  // czyli ok. 0,52 wzrostu (K7). Drzewce jest wiec KROTSZE, a chwyt zostaje
+  // przy pietce — tak trzyma sie bron do PCHNIECIA, nie do rzutu.
+  const armR = trBuildArm(group, -TR_SHLD_X, 1.22, 1.62, mSkin, mSkin, mSkin, PF, 'right');
   const shR = new THREE.Mesh(getGTRShoba(), mFurLt);
-  shR.rotation.x = Math.PI - 1.00;
+  shR.rotation.x = Math.PI - 1.22;
   shR.position.set(-TR_SHLD_X, TR_SHLD_Y - 0.030 * HEX_R, 0.030 * HEX_R);
+  shR.name = PF + '-amashoba-right';
   group.add(shR);
   const ax = armR.axis;
   const shaft = new THREE.Mesh(getGTRIklwaShaft(), mWood);
-  shaft.rotation.x = Math.PI - 1.52;
-  shaft.position.copy(armR.wrist.clone().addScaledVector(ax, 0.055 * HEX_R));
+  shaft.rotation.x = Math.PI - 1.62;
+  shaft.scale.set(1.0, 0.87, 1.0);                        // 0.2088 zamiast 0.240
+  shaft.position.copy(armR.wrist.clone().addScaledVector(ax, 0.040 * HEX_R));
+  shaft.name = PF + '-iklwa-shaft';
   group.add(shaft);
   const blade = new THREE.Mesh(getGTRIklwaBlade(), mIron);
-  blade.rotation.x = Math.PI - 1.52;
-  blade.position.copy(armR.wrist.clone().addScaledVector(ax, 0.225 * HEX_R));
+  blade.rotation.x = Math.PI - 1.62;
+  blade.position.copy(armR.wrist.clone().addScaledVector(ax, 0.183 * HEX_R));
+  blade.name = PF + '-iklwa-blade';
   group.add(blade);
   const tipI = new THREE.Mesh(getGTRIklwaTip(), mIron);
-  tipI.rotation.x = Math.PI - 1.52;
+  tipI.rotation.x = Math.PI - 1.62;
   tipI.rotation.y = Math.PI / 4;
-  tipI.position.copy(armR.wrist.clone().addScaledVector(ax, 0.295 * HEX_R));
+  tipI.position.copy(armR.wrist.clone().addScaledVector(ax, 0.246 * HEX_R));
+  tipI.name = PF + '-iklwa-tip';
   group.add(tipI);
 
   // LEWE (+X) RAMIE + CIEMNA TARCZA NGUNI + amashoba ramienia
-  const armL = trBuildArm(group, TR_SHLD_X, 0.50, 1.05, mSkin, mSkin, null);
+  const armL = trBuildArm(group, TR_SHLD_X, 0.72, 1.28, mSkin, mSkin, null, PF, 'left');
   const shL = new THREE.Mesh(getGTRShoba(), mFurLt);
-  shL.rotation.x = Math.PI - 0.50;
-  shL.position.set(TR_SHLD_X, TR_SHLD_Y - 0.036 * HEX_R, 0.018 * HEX_R);
+  shL.rotation.x = Math.PI - 0.72;
+  shL.position.set(TR_SHLD_X + 0.020 * HEX_R, TR_SHLD_Y - 0.014 * HEX_R, 0.010 * HEX_R);
+  shL.name = PF + '-amashoba-left';
   group.add(shL);
+  // Tarcza PELNEJ DLUGOSCI niesiona wyzej i blizej osi figury: isihlangu kryje
+  // wojownika od podbrodka po golen (K9), a nie tylko bok korpusu, jak mniejsza
+  // tarcza Impi. To takze glowny nosnik ODROZNIALNOSCI obu jednostek z kamery
+  // gry (K10) — przed T10 obie tarcze mialy te sama bryle i te sama pozycje.
   const sh = new THREE.Group();
   sh.position.set(
-    armL.wrist.x - 0.022 * HEX_R,
-    armL.wrist.y + 0.030 * HEX_R,
+    armL.wrist.x - 0.040 * HEX_R,
+    armL.wrist.y + 0.100 * HEX_R,
     armL.wrist.z + 0.042 * HEX_R,
   );
   sh.rotation.y = -0.18;
   const shell = new THREE.Mesh(getGTRNguniShell(), mLeath);
+  shell.scale.set(ISI, ISI, 1.0);
+  shell.name = PF + '-shield-shell';
   sh.add(shell);
   const face = new THREE.Mesh(getGTRNguniFace(), mHide);   // CIEMNY braz
+  face.scale.set(ISI, ISI, 1.0);
   face.position.set(0, 0, 0.010 * HEX_R);
+  face.name = PF + '-shield-face';
   sh.add(face);
   const p1 = new THREE.Mesh(getGTRPatchBig(), mBlack);     // CZARNE laty
   p1.rotation.z = 0.30;
-  p1.position.set(-0.030 * HEX_R, 0.088 * HEX_R, 0.016 * HEX_R);
+  p1.scale.set(ISI, ISI, 1.0);
+  p1.position.set(-0.030 * ISI * HEX_R, 0.088 * ISI * HEX_R, 0.016 * HEX_R);
+  p1.name = PF + '-shield-patch-0';
   sh.add(p1);
   const p2 = new THREE.Mesh(getGTRPatchBig(), mBlack);
   p2.rotation.z = -0.42;
-  p2.position.set(0.026 * HEX_R, -0.086 * HEX_R, 0.016 * HEX_R);
+  p2.scale.set(ISI, ISI, 1.0);
+  p2.position.set(0.026 * ISI * HEX_R, -0.086 * ISI * HEX_R, 0.016 * HEX_R);
+  p2.name = PF + '-shield-patch-1';
   sh.add(p2);
   const p3 = new THREE.Mesh(getGTRPatchSm(), mBlack);
   p3.rotation.z = 0.55;
-  p3.position.set(0.040 * HEX_R, 0.020 * HEX_R, 0.016 * HEX_R);
+  p3.scale.set(ISI, ISI, 1.0);
+  p3.position.set(0.040 * ISI * HEX_R, 0.020 * ISI * HEX_R, 0.016 * HEX_R);
+  p3.name = PF + '-shield-patch-2';
   sh.add(p3);
   const dia = new THREE.Mesh(getGTRDiamond(), mOwner);     // romb gracza
   dia.rotation.z = Math.PI / 4;
-  dia.position.set(0, 0, 0.020 * HEX_R);
+  dia.scale.set(1.25, 1.25, 1.0);
+  dia.position.set(0, 0, 0.022 * HEX_R);
+  dia.name = PF + '-shield-diamond';
   sh.add(dia);
   const mgobo = new THREE.Mesh(getGTRMgobo(), mWood);
-  mgobo.position.set(0, 0.010 * HEX_R, -0.014 * HEX_R);
+  mgobo.scale.set(1.0, ISI, 1.0);
+  mgobo.position.set(0, 0.010 * ISI * HEX_R, -0.014 * HEX_R);
+  mgobo.name = PF + '-shield-mgobo';
   sh.add(mgobo);
   const tuft = new THREE.Mesh(getGTRMgoboTuft(), mFurLt);
-  tuft.position.set(0, 0.278 * HEX_R, -0.014 * HEX_R);
+  tuft.scale.set(1.45, 1.45, 1.45);
+  tuft.position.set(0, 0.278 * ISI * HEX_R, -0.014 * HEX_R);
+  tuft.name = PF + '-shield-mgobo-tuft';
   sh.add(tuft);
   group.add(sh);
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];
+  group.userData['anchors'] = {
+    hexR: HEX_R,
+    headTopY: TR_HEAD_TOP, headCtrY: TR_HEAD_CTR,
+    torsoTopY: TR_TORSO_TOP, torsoBotY: TR_TORSO_BOT,
+    torsoHalfW: TR_TORSO_W * 0.5, torsoHalfD: TR_TORSO_D * 0.5,
+    hipY: HIP_Y, shoulderY: TR_SHLD_Y, shoulderX: TR_SHLD_X,
+    grip: armR.wrist.toArray(),
+    weaponAxis: ax.toArray(),
+    weaponKind: 'iklwa-thrust',
+    missileKind: 'none',
+    shieldKind: 'nguni-isihlangu',
+    helmetKind: 'none',
+    armorKind: 'none',
+    faceOpen: true,
+    ownerColorOn: 'shield-diamond+skirt-flap',
+  };
   return group;
 }
 
