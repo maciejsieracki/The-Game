@@ -170,8 +170,15 @@ ok(!r.accepted, 'NAP reject relacja 49 normal');
 // > 2"), Pakt był z takim sąsiadem strukturalnie nieosiągalny. Zamienione na narzut równy
 // sufitowi słodzika, kompensowalny jak reszta tej bramki.
 // AKTUALIZACJA UZASADNIONA, NIE ROZLUŹNIONA: stary jednolinijkowy `!accepted` zastąpiony
-// PARĄ asercji po obu stronach progu, więc czynnik nadal musi coś kosztować, żeby test przeszedł.
-// Pełne kryteria: tools/dyplo-pakt-ekspansja-granica-test.cjs.
+// PARĄ asercji po obu stronach progu wyprowadzonego z `NAP_EKSPANSJA_RELACJA_NARZUT`.
+// FC-R1 SPROSTOWANIE (N1, `02-evaluator.md`): ta para jest sparametryzowana SAMĄ stałą
+// `napNarzut`, więc wobec mutacji WARTOŚCI tej stałej (np. cichy `NARZUT=0`) jest
+// tautologiczna — zmierzone: `NARZUT=0` → ta para nadal PASS (próg po prostu przesuwa się
+// razem ze stałą do 0). Nie chroni przed wyzerowaniem narzutu. Sprawdza wyłącznie, że próg
+// realnie przesuwa się o `napNarzut`, cokolwiek ono akurat wynosi. Realną ochronę przed
+// cichym wyzerowaniem (asercje z progiem NIEZALEŻNYM od `napNarzut`) dają A2a/B2/B3 w
+// tools/dyplo-pakt-ekspansja-granica-test.cjs — tamte czerwienieją przy `NARZUT=0`
+// (zmierzone: 17/26, nie 15/26 jak w `01-operator.md` §6 — patrz `03-final-control.md`).
 {
   const napNarzut = NAP_EKSPANSJA_RELACJA_NARZUT;
   const napProg = dipNormal.progNapRelacja;
