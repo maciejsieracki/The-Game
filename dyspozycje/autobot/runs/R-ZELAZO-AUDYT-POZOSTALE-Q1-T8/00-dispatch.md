@@ -62,11 +62,43 @@ Operator → Evaluator → Final Control → integracja orkiestratora, jedno ID,
 gałąź. Limit 5 rund. Model/effort: **Opus 5 High dla Operatora i Evaluatora**
 (temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a), Final Control Sonnet 5 High.
 
+## Runda 1 — PASS-WITH-NOTES (zamknięte, po integration micro-fixie Final Control)
+
+Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS-WITH-NOTES. Dispatch był
+niewykonalny dosłownie: `buildBerserker()` fizycznie nie istniał w
+`jednostki-z3-plemiona.ts` (żył w `units.ts` na generyku `buildBaseAvatar()`).
+Operator zgłosił to jawnie z góry i napisał funkcję dokładnie tam, gdzie allowlista
+ją nazywała — zero ingerencji w sąsiednie funkcje (Drużynnik/Miecznik galijski/
+iButho), potwierdzone przez obie role kontrolne hunk po hunku.
+
+Znalezione i naprawione pomiarem: topór Berserkera nie był trzymany (pięść mijała
+broń — zero styku SAT), kaptur wilczej głowy połykał oba oczy, stopy pod terenem,
+brak pozy ramion; Wojownik germański niósł długi miecz zamiast framei mimo
+`Atak dystansowy=4`/`Ilość pocisków=4`/Uwag „z frameą" (sprzeczne też z Tacytem,
+Germania 6). Trzy defekty złapane dopiero WZROKIEM na zrzucie, po tym jak wszystkie
+16 asercji były już zielone: żeleziec czytał się jako młot, łeb wilka jako pudełko,
+framea celowała w ziemię — błąd projekcji YZ→ekran przy stałej kamerze gry (każdy
+kierunek w tej płaszczyźnie daje na ekranie pionową linię; miara długości rzutu nie
+łapie złego zwrotu, tylko miara kierunku).
+
+Final Control naprawił (integration micro-fix na branchu, nie na main) trzy
+nieprecyzyjne/błędne zdania w komentarzach — w tym własne odkrycie: cytat Tacyta
+błędnie przypisany do Germania 13 (faktycznie Germania 6, zweryfikowane źródłowo).
+Świadomie NIE poszedł z micro-fixem na main (rozróżnił dokumentację runu od kodu —
+oba wymagają integracji przez orkiestratora). 4 znaleziska (lekcja procesowa o
+weryfikacji dispatchu, skrócona tylna noga całej rodziny Z3, rozjazd Epoka/Dostępna
+w epokach, cytaty bez elipsy) zarejestrowane osobno.
+
+Zmergowane do `main`, zweryfikowane niezależnie przez orkiestratora (tsc/vite build/
+testy tematu+T1-T7/5 bramek referencyjnych zielone).
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: jeszcze brak — dispatch.
-TESTY: kryteria sukcesu 1–7 wyżej.
-BLOKADY: brak.
-RUNDY: 0/5 (dispatch).
-NASTĘPNY KROK: Operator, runda 1 (po zamknięciu T5/T6/T7).
-DEPLOY/PUSH: NIE WYKONANO.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-AUDYT-T8-Q1`, commity `82bdb907`→`04cc4acc`,
+zmergowane do `main`.
+TESTY: kryteria sukcesu 1–7 spełnione, potwierdzone niezależnie 3-krotnie + orkiestrator
+po merge.
+BLOKADY: brak (4 znaleziska zarejestrowane osobno, nie blokują).
+RUNDY: 1/5 (zamknięte pozytywnie).
+NASTĘPNY KROK: T9 (Celtowie pozostali).
+DEPLOY/PUSH: git push (main) WYKONANO; deploy ROBOCZA po zamknięciu T9-T11.

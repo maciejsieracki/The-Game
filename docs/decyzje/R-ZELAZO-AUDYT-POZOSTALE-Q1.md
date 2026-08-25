@@ -106,4 +106,13 @@ pod tym kątem** (nie ponowna praca nad 6 już ukończonymi w `R-ZELAZO-MODELE-B
   oczu, niewidoczny zarost Triariego, stopa pod terenem. Final Control naprawił
   7 nieprawdziwych komentarzy Operatora bez zużywania rundy 2 (autoryzacja w
   dispatchu tej roli, wszystkie fixy czysto tekstowe/martwy kod).
-- T8–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{8..11}/`.
+- **T8 — ZINTEGROWANE (2026-08-25, 1 runda + integration micro-fix).** Berserker
+  germański, Wojownik germański. Dispatch był niewykonalny dosłownie (funkcja nie
+  istniała w nazwanym pliku) — Operator zgłosił to jawnie i napisał ją tam, gdzie
+  allowlista wskazywała, zero wpływu na sąsiadów. Znaleziono i naprawiono: topór
+  nie trzymany, oczy zasłonięte kapturem, stopy pod terenem, miecz zamiast framei
+  u jednostki dystansowej. Trzy defekty złapane dopiero wzrokiem na zrzucie (błąd
+  projekcji YZ→ekran maskowany przez miarę długości zamiast kierunku). Final
+  Control naprawił 3 nieprecyzyjne komentarze, w tym własne odkrycie błędnej
+  lokalizacji cytatu Tacyta. 4 znaleziska zarejestrowane osobno.
+- T9–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{9..11}/`.
