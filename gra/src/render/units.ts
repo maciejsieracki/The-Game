@@ -183,6 +183,8 @@ import {
   buildIButho,
   buildGermanSuper,
   buildMiecznikGalijski,
+  // T8: bespoke Berserker przeniesiony do serii Z3 (patrz linia dispatchu nizej).
+  buildBerserker as buildBerserkerZ3,
 } from './jednostki-z3-plemiona';
 import { buildGalera as newBuildGalera } from './galera-model';
 
@@ -1284,7 +1286,11 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
     return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
   }
   // GERMANS ---------------------------------------------------------------
-  if (n.includes('berserker germansk') || n.includes('berserk')) return buildBerserker(ownerColor_);
+  // T8 (R-ZELAZO-AUDYT-POZOSTALE-Q1-T8): Berserker dispatchowany do bespoke
+  // modelu z serii Z3. Lokalny `buildBerserker()` nizej w tym pliku zostaje
+  // jako martwy — dokladnie jak `buildGermanWarrior()` — bo porzadkowanie
+  // martwego kodu w units.ts jest osobnym tematem, nie luka wizualna.
+  if (n.includes('berserker germansk') || n.includes('berserk')) return buildBerserkerZ3(ownerColor_);
   if (n.includes('wojownik germansk') || (n.includes('germansk') && n.includes('wojownik'))) return buildGermanWarrior(ownerColor_);
   // GRECJA ----------------------------------------------------------------
   // „Falanga" (units.json: Epoka=Żelazo, Kultura=Grecka, Typ=Falangite) miała
@@ -1327,7 +1333,7 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('celtic chariot')) {
     return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
   }
-  if (n.includes('germanic berserker')) return buildBerserker(ownerColor_);
+  if (n.includes('germanic berserker')) return buildBerserkerZ3(ownerColor_);   // T8, jak wyzej
   if (n.includes('germanic warrior')) return buildGermanWarrior(ownerColor_);
   if (n.includes('mycenaean warrior')) return buildMycenaeanWarrior(ownerColor_);
   if (n.includes('mycenaean chariot')) {
