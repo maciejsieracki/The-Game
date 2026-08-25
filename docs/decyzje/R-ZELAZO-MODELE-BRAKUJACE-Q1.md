@@ -98,4 +98,15 @@ plikach (`R-PROC-AUTOBOT.md` §2b), jeden temat na raz, merge przed startem nast
   źle zorientowana) niewykrywalne przez testy mierzące same nazwy mesh — nowa
   sekcja testów (H) mierzy relacje geometryczne. Zmergowane do `main`, commit
   `0b2b091f`. 3 kosmetyczne uwagi zarejestrowane osobno w rejestrze (§3b).
-- T2–T4: patrz `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T{2..4}/`.
+- **T2 — ZINTEGROWANE (2026-08-25, 1 runda).** Soldurii i Gaesatae, dotąd
+  identyczne (`buildCeltWarrior()`), są teraz wizualnie wyraźnie różne. Gaesatae
+  wywołuje wcześniej martwy `buildGaesatae()` (naga skóra, gaesum, torc złoty —
+  Polibiusz II.28-30). Soldurii dostał nową `buildSoldurii()` (kolczuga, hełm
+  Montefortino, brązowy torc, długi miecz — Cezar III.22). Operator naprawił 4
+  zmierzone błędy geometrii, w tym orientację tarczy niewidocznej dla kamery gry
+  u obu jednostek. Naprawa objęła współdzielone helpery poza literalną allowlistą
+  — ratyfikowane przez orkiestratora (§10, zero promienia rażenia poza tematem,
+  zmierzone przez Final Control). Zmergowane do `main`. 2 znaleziska danych
+  (`units.json` Gaesatae `Uwagi`/`Typ` nieaktualne po wcześniejszym rename)
+  zarejestrowane osobno.
+- T3–T4: patrz `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T{3..4}/`.

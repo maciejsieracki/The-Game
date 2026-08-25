@@ -99,11 +99,50 @@ Operator → Evaluator → Final Control → integracja orkiestratora, jedno ID,
 gałąź. Limit 5 rund. Model/effort: **Opus 5 High dla Operatora i Evaluatora**
 (temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a), Final Control Sonnet 5 High.
 
+## Runda 1 — PASS-WITH-NOTES (zamknięte, po 2 krokach orkiestratora)
+
+Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS-WITH-NOTES. Wszystkie
+trzy role potwierdziły niezależnie: Gaesatae wywołuje istniejący, ale wcześniej
+martwy `buildGaesatae()`; Soldurii dostał NOWĄ, dedykowaną funkcję `buildSoldurii()`
+(kolczuga, hełm Montefortino, brązowy torc — Cezar III.22); obie jednostki wizualnie
+nie do pomylenia (real render, 42/42 testu tematu + 31/31 testu T1 bez regresji).
+
+Operator znalazł i naprawił, bez zaufania istniejącemu kodowi, 4 zmierzone (nie
+opisane) błędy geometrii — kluczowy: orientacja tarczy `addTallOvalShield()`
+(`rotation.z` zamiast `rotation.x`) sprawiała, że lico tarczy było niewidoczne dla
+kamery gry (stały azymut 0) u OBU jednostek — dokładnie ten sam błąd, wcześniej
+naprawiony 2026-08-06 dla innego helpera tarczy w tym samym pliku, nigdy nie
+przeniesiony na ten.
+
+**Ratyfikacja poszerzonej allowlisty (orkiestrator, §10 — technika bez konsekwencji
+dla balansu/gry, bez pytania właściciela):** naprawa objęła też współdzielone helpery
+`addTallOvalShield()`, `addLongSwordRight()`, `addSpearRight()` — spoza literalnej
+allowlisty (`buildGaesatae()`/opcjonalnie `buildCeltWarrior()`). Final Control
+zmierzył niezależnie promień rażenia: `addTallOvalShield` ma dokładnie 3 wywołujących
+(`buildCeltWarrior` — jednostka „Wojownik celtycki" nieosiągalna z `units.json`,
+Gaesatae, Soldurii), `addSpearRight` ma 3. wywołującego poza tematem (jednostka
+germańska) zweryfikowanego jako geometrycznie NIETKNIĘTY (identyczne parametry,
+`namePrefix` domyślne). Zero jednostek z `units.json` dotkniętych poza Soldurii/
+Gaesatae — potwierdzone sweepem 73/75 bajtowo identycznych rekordów (różnią się
+wyłącznie te dwa). Cofnięcie poprawki byłoby realną regresją (tarcza ponownie
+niewidoczna) — akceptuję rozszerzenie jako uzasadnione i bez ryzyka.
+
+**N2 (Evaluator/Final Control) — dane `units.json` dla Gaesatae nieaktualne**
+(`Uwagi` opisuje stan sprzed rename, `Typ: "Swordsman"` niezgodny z bronią) —
+zarejestrowane osobno w `REJESTR-PROSB-I-ZADAN.md` jako
+`P-ZELAZO-T2-GAESATAE-UWAGI-NIEAKTUALNE-Q1` i `P-ZELAZO-T2-GAESATAE-TYP-SWORDSMAN-Q1`,
+poza allowlistą tego tematu (dane/balans, nie render), spełniając wymóg §3b przed
+zamknięciem.
+
+Zmergowane do `main`, zweryfikowane niezależnie przez orkiestratora (tsc/vite build/
+testy tematu+T1/5 bramek referencyjnych zielone).
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: jeszcze brak — dispatch.
-TESTY: kryteria sukcesu 1–6 wyżej.
-BLOKADY: brak.
-RUNDY: 0/5 (dispatch).
-NASTĘPNY KROK: Operator, runda 1 (po zamknięciu T1).
-DEPLOY/PUSH: NIE WYKONANO.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-T2-Q1`, commit `1af2a413`, zmergowane do `main`.
+TESTY: kryteria sukcesu 1–6 spełnione, potwierdzone niezależnie 3-krotnie + orkiestrator
+po merge.
+BLOKADY: brak (2 znaleziska danych zarejestrowane osobno, nie blokują).
+RUNDY: 1/5 (zamknięte pozytywnie).
+NASTĘPNY KROK: T3 (Falanga).
+DEPLOY/PUSH: git push (main) WYKONANO; deploy ROBOCZA po zamknięciu T3-T4.
