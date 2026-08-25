@@ -60,11 +60,42 @@ Operator → Evaluator → Final Control → integracja orkiestratora, jedno ID,
 gałąź. Limit 5 rund. Model/effort: **Opus 5 High dla Operatora i Evaluatora**
 (temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a), Final Control Sonnet 5 High.
 
+## Runda 1 — PASS-WITH-NOTES (zamknięte, po 2 integration micro-fixach)
+
+Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS-WITH-NOTES. Kluczowe
+znalezisko: `jednostki-z2-srodziemne.ts` miał ten sam problem co T5 — zero nazwanych
+mesh, brak `userData.anchors`, nigdy niemierzalny. Po dodaniu anchors Operator znalazł
+NOWĄ klasę błędu w tej serii — nie broń w ciele (T1/T3/T5), tylko element FIZYCZNIE
+NIEWIDOCZNY z jedynej kamery gry (azymut 0, elewacja 52°): miecz Gwardii Tyreńskiej
+niesiony niemal dokładnie wzdłuż osi patrzenia, zakrzywienie khopesza w płaszczyźnie
+niewidocznej dla tej kamery, dzwon hełmu Thorakitesa zasłaniający oczy. Wszystkie
+naprawione minimalną zmianą stałych, potwierdzone macierzą ablacyjną 11×11.
+
+Final Control sam naprawił (integration micro-fix na branchu, commit `e6729c49`) trzy
+nieprawdziwe/nieprecyzyjne zdania znalezione przez Evaluatora: błędną wartość normalnej
+tarczy do kamery (skopiowana stała kierunku patrzenia), fałszywe „ścieżka angielska
+dziś nieosiągalna" (battleScene.ts ma faktycznie osiągalny fallback), czas dokonany
+„zapisano" dla wpisu rejestru który jeszcze nie istniał.
+
+**Drugi integration micro-fix (orkiestrator, przy mergu):** Final Control T6 znalazł,
+że IDENTYCZNY błąd „ścieżka angielska dziś nieosiągalna" nadal stał w komentarzu T5
+(`units.ts:1476-1478`, dotyczy Mezopotamii — poza zakresem T6, mój wcześniejszy fix
+w T5 poprawił tylko `jednostki-z1-mezopotamia.ts`, nie zmieniony wtedy fragment
+`units.ts`). Poprawione przy tej integracji.
+
+3 znaleziska (nazwa EN khopesza vs materiał, khepresz na szeregowcu, brak sylwetki
+pancerza Tyrskiego miecznika) zarejestrowane osobno.
+
+Zmergowane do `main`, zweryfikowane niezależnie przez orkiestratora (tsc/vite build/
+testy tematu+T1-T5/5 bramek referencyjnych zielone).
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: jeszcze brak — dispatch.
-TESTY: kryteria sukcesu 1–7 wyżej.
-BLOKADY: brak.
-RUNDY: 0/5 (dispatch).
-NASTĘPNY KROK: Operator, runda 1 (po zamknięciu T5).
-DEPLOY/PUSH: NIE WYKONANO.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-AUDYT-T6-Q1`, commit `e6729c49`, zmergowane do
+`main`.
+TESTY: kryteria sukcesu 1–7 spełnione, potwierdzone niezależnie 3-krotnie + orkiestrator
+po merge.
+BLOKADY: brak (3 znaleziska zarejestrowane osobno, nie blokują).
+RUNDY: 1/5 (zamknięte pozytywnie).
+NASTĘPNY KROK: T7 (super-jednostki Rzym/Grecja + Hastati).
+DEPLOY/PUSH: git push (main) WYKONANO; deploy ROBOCZA po zamknięciu T7-T11.

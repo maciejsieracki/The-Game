@@ -90,4 +90,12 @@ pod tym kątem** (nie ponowna praca nad 6 już ukończonymi w `R-ZELAZO-MODELE-B
   micro-fix: fałszywe zapewnienie w komentarzach dispatchu EN poprawione przed mergem
   (ryzyko dla T6). Jedno znalezisko danych (`Mur tarcz (Sargonid)` — Kultura vs nazwa)
   zarejestrowane osobno, wymaga decyzji właściciela.
-- T6–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{6..11}/`.
+- **T6 — ZINTEGROWANE (2026-08-25, 1 runda).** Gwardia Tyreńska, Tyrski miecznik,
+  Wojownik z żelaznym khopesh, Thorakites. Ten sam plik-nigdy-niemierzalny problem
+  co T5, ta sama naprawa (nazwy mesh + anchors). Znaleziono NOWĄ klasę błędu:
+  element fizycznie niewidoczny z jedynej kamery gry (nie broń w ciele jak wcześniej)
+  — miecz niesiony wzdłuż osi patrzenia, krzywizna khopesza w niewidocznej płaszczyźnie,
+  hełm zasłaniający oczy Thorakitesa. Final Control naprawił 3 błędne komentarze na
+  branchu; orkiestrator naprawił dodatkowo identyczny, przeoczony błąd komentarza z T5.
+  3 znaleziska danych/projektowe zarejestrowane osobno.
+- T7–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{7..11}/`.
