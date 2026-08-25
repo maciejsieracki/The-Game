@@ -36,9 +36,14 @@
  *
  * DOWOD NIETAUTOLOGICZNOSCI — MACIERZ ABLACYJNA, POJEDYNCZA MUTACJA NA ASERCJE
  * (standard serii ustalony przez Evaluatora T4, utrzymany w T5, T6 i T7): kazdy
- * bundel M* rozni sie od zrodla DOKLADNIE JEDNYM podmienionym miejscem i musi
- * zaczerwienic DOKLADNIE swoja asercje. Wiekszosc mutacji odtwarza doslowny
- * stan sprzed audytu T8.
+ * bundel M* rozni sie od zrodla DOKLADNIE JEDNYM podmienionym miejscem (M0
+ * pilnuje tego mechanicznie). Egzekwowana asercja jest w kierunku PER-H, nie
+ * PER-M: KAZDA z H1-H16 ma co najmniej JEDNA mutacje, ktora ja SAMA czerwieni
+ * (patrz (M1) nizej) — nie znaczy to, ze kazda mutacja czerwieni WYLACZNIE
+ * jedna asercje; kilka (np. M1, M10, M16) w praktyce czerwieni kilka H naraz,
+ * bo dotyka geometrii, od ktorej zalezy wiecej niz jedna asercja (pelna
+ * macierz jest drukowana ponizej, nic nie jest ukryte). Wiekszosc mutacji
+ * odtwarza doslowny stan sprzed audytu T8.
  *
  * Usage (z gra/): node tools/zelazo-germanie-real-render-test.cjs
  *   --shots <katalog>   zrzuty z kamery gry do <katalog>/*.png

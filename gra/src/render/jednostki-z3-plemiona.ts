@@ -897,10 +897,12 @@ export function buildBerserker(ownerColor_: number): THREE.Group {
 //       rzutu, nie do ciecia).
 //   G2. NIEPRAWDZIWY WLASNY KOMENTARZ. Poprzedni naglowek glosil „POZA:
 //       ciecie znad glowy" i „miecz znad glowy". Zmierzone na zywym modelu
-//       PRZED zmiana: najwyzszy punkt klingi y = 0.4800, srodek glowy
-//       y = 0.5370, czubek helmu y = 0.6290 — klinga NIGDY nie byla nad glowa,
-//       lezala w calosci ponizej srodka glowy. Opis poprawiony na zgodny
-//       z geometria (poza rzutu, przedramie nad barkiem).
+//       PRZED zmiana: koniec klingi WZDLUZ JEJ WLASNEJ OSI y = 0.4800 (OBB
+//       calej bryly siega nieco wyzej, do 0.4862 — rozjazd z rotacji klingi,
+//       nie blad pomiaru); srodek glowy y = 0.5370, czubek helmu y = 0.6290 —
+//       obiema miarami klinga NIGDY nie byla nad glowa, lezala w calosci
+//       ponizej srodka glowy. Opis poprawiony na zgodny z geometria (poza
+//       rzutu, przedramie nad barkiem).
 //   G3. ZERO NAZWANYCH MESH i brak `userData.anchors` (0/37) — bez tego zadna
 //       asercja nie moze zaadresowac czesci, a punkty odniesienia trzeba by
 //       wpisac liczbowo w test, czyli test mierzylby sam siebie.
@@ -1143,7 +1145,8 @@ export function buildGermanSuper(ownerColor_: number): THREE.Group {
 //     ledwie jeden czy drugi helm). Model ma ZERO zbroi, ZERO helmu i ZERO
 //     tarczy, co odpowiada `Pancerz = 0` i `Obrona 2`. Uwaga na kierunek
 //     wnioskowania: u Tacyta brak tarczy nie jest brawura, tylko bieda — a
-//     „scutum reliquisse praecipuum flagitium" (Germania 13), porzucenie
+//     „scutum reliquisse praecipuum flagitium" (Germania 6, nie 13 — Final
+//     Control zweryfikowal lokalizacje cytatu wprost w tekscie), porzucenie
 //     tarczy to najwieksza hanba. Berserker bez tarczy jest wiec figura
 //     LITERACKA (K1), nie typowym Germaninem — i tak ma zostac, bo tego
 //     wymaga karta jednostki.
