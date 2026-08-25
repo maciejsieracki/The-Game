@@ -1,5 +1,5 @@
 /**
- * jednostki-z3-plemiona.ts — SERIA Z3: PLEMIONA (4 jednostki, ZELAZO)
+ * jednostki-z3-plemiona.ts — SERIA Z3: PLEMIONA (5 jednostek, ZELAZO)
  * (seria render-jednostki; wzorzec anatomii: hastati-falangita.ts KOREKTA v2,
  *  bratni wzorzec Impi: jednostki-p57-wlocznie-machiny.ts,
  *  konwencja SUPERA: jednostki-p6-super.ts — choragiew-znacznik NA PLECACH)
@@ -11,6 +11,15 @@
  *                                        dzis: kategoria 'wlocznik' (GENERYK kamienny)
  *   buildMiecznikGalijski(ownerColor) -> NOWY case w buildNamedUnit ('miecznik galijski'
  *                                        / 'gallic swordsman'); dzis: GENERYK miecznika
+ *   buildBerserker(ownerColor)        -> T8: przejmuje linie dispatchu
+ *                                        'berserker germansk'/'berserk' oraz
+ *                                        'germanic berserker' w units.ts (import
+ *                                        pod aliasem `buildBerserkerZ3`). Do T8
+ *                                        Berserkera budowal lokalny
+ *                                        `buildBerserker()` w units.ts, oparty na
+ *                                        generycznym `buildBaseAvatar()`; ta stara
+ *                                        funkcja zostaje w units.ts jako MARTWA,
+ *                                        dokladnie jak `buildGermanWarrior()`.
  *   buildGermanSuper(ownerColor)      -> NOWY case w buildSuperUnit: kultura 'germanie'
  *                                        (do dodania w cultureFromName: 'germansk'/
  *                                        'germanie'/'germanic'); dzis: cultureFromName
@@ -41,8 +50,13 @@
  *   WOJOWNIK GERMANSKI (SUPER, Germanie): potezny wodz — GOLY TORS z pasem
  *     skory na krzyz, FUTRO na ramionach (rodzina Berserkera: ta sama paleta
  *     skor), helm ZELAZNY prosty z FUTRZANYM OTOKIEM (bez rogow!), RUDA
- *     PLECIONA BRODA, dlugi ZELAZNY miecz w ciosie znad glowy, tarcza okragla
- *     ze SPIRALA, choragiew supera na plecach.
+ *     PLECIONA BRODA, FRAMEA (krotka wlocznia, waski i krotki grot) uniesiona
+ *     do rzutu, tarcza okragla ze SPIRALA, choragiew supera na plecach.
+ *   BERSERKER GERMANSKI (Germanie): brat Wojownika germanskiego w tej samej
+ *     palecie skor — GOLY TORS z BARWNIKIEM w kolorze gracza, LEB WILKA na
+ *     ciemieniu, JASNE rozwiane wlosy (ruda barwa zarezerwowana dla brata),
+ *     skora na plecach, BOSE nogi, szeroki TOPOR odwiedziony za bark.
+ *     ZERO zbroi, ZERO helmu, ZERO tarczy — `Pancerz = 0` w units.json.
  *   MIECZNIK GALIJSKI (Celtowie): rodzina buildCeltWarrior/Gaesatae — rude
  *     dlugie wlosy + WASY, TORQUES na szyi, helm montefortino-celtycki z kita,
  *     tarcza OWALNA z motywem TRISKELION, dlugi miecz celtycki, BRACCAE
@@ -92,6 +106,8 @@ const TR_HIDE_DK    = 0x3a2a1e;   // ciemna siersc nguni iButho
 const TR_BLACK      = 0x171310;
 const TR_IVORY      = 0xe8ddc4;   // kly naszyjnika
 const TR_CRANE_WHT  = 0xf0ece0;
+const TR_EYE        = 0x1a1008;   // oko (paleta COLOR_DARK_EYE z units.ts)
+const TR_HAIR_BLOND = 0xd8b25a;   // jasne wlosy Berserkera (paleta units.ts)
 
 // ── wymiary sylwetki (rodzina NI_*/WM_* z hastati-falangita.ts) ─────────────
 const TR_HIP_Y     = 0.208 * HEX_R;
@@ -170,6 +186,21 @@ let gTRSpiralArm:THREE.BoxGeometry | null = null;      // ramie spirali (x3)
 let gTRPole:     THREE.BoxGeometry | null = null;      // choragiew supera (P6)
 let gTRFlag:     THREE.BoxGeometry | null = null;
 let gTRFinial:   THREE.BoxGeometry | null = null;
+// Berserker germanski (T8) + framea Wojownika germanskiego (T8)
+let gTREye:      THREE.BoxGeometry | null = null;      // oko (odkryta twarz)
+let gTRWolfHood: THREE.BoxGeometry | null = null;      // leb wilka NA CIEMIENIU
+let gTRWolfSnout:THREE.BoxGeometry | null = null;      // kufa wilka (do przodu)
+let gTRWolfEar:  THREE.BoxGeometry | null = null;      // ucho wilka (x2)
+let gTRPeltCape: THREE.BoxGeometry | null = null;      // skora na plecach
+let gTRLoin:     THREE.BoxGeometry | null = null;      // przepaska biodrowa
+let gTRHairLoose:THREE.BoxGeometry | null = null;      // rozwiane wlosy z tylu
+let gTRAxeHaft:  THREE.BoxGeometry | null = null;      // toporzysko
+let gTRAxeHead:  THREE.BoxGeometry | null = null;      // zeleziec topora (plaski)
+let gTRAxePoll:  THREE.BoxGeometry | null = null;      // obuch po drugiej stronie
+let gTRWarPaint: THREE.BoxGeometry | null = null;      // pas barwnika na piersi
+let gTRFrameaShaft: THREE.BoxGeometry | null = null;   // drzewce framei
+let gTRFrameaSock:  THREE.BoxGeometry | null = null;   // tulejka grotu
+let gTRFrameaHead:  THREE.BoxGeometry | null = null;   // grot: WASKI i KROTKI
 // Miecznik galijski
 let gTRMontBowl: THREE.CylinderGeometry | null = null; // montefortino (8-kat)
 let gTRKita:     THREE.BoxGeometry | null = null;
@@ -231,6 +262,28 @@ function getGTRSpiralArm():THREE.BoxGeometry { return (gTRSpiralArm||= new THREE
 function getGTRPole():     THREE.BoxGeometry { return (gTRPole    ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.500 * HEX_R, 0.016 * HEX_R)); }
 function getGTRFlag():     THREE.BoxGeometry { return (gTRFlag    ||= new THREE.BoxGeometry(0.085 * HEX_R, 0.062 * HEX_R, 0.008 * HEX_R)); }
 function getGTRFinial():   THREE.BoxGeometry { return (gTRFinial  ||= new THREE.BoxGeometry(0.024 * HEX_R, 0.024 * HEX_R, 0.024 * HEX_R)); }
+function getGTREye():      THREE.BoxGeometry { return (gTREye      ||= new THREE.BoxGeometry(0.020 * HEX_R, 0.014 * HEX_R, 0.008 * HEX_R)); }
+// Kaptur PLYTKI w osi Z (0.115), zeby kufa miala z czego wystawac — przy
+// glebokosci 0.150 kufa tonela w kapturze i leb wilka byl na ekranie zwyklym
+// brazowym pudelkiem (zlapane zrzutem, nie liczba: sam pomiar pikseli calego
+// zespolu `bs-wolf-*` byl wysoki, bo liczyl kaptur).
+function getGTRWolfHood(): THREE.BoxGeometry { return (gTRWolfHood ||= new THREE.BoxGeometry(0.150 * HEX_R, 0.075 * HEX_R, 0.115 * HEX_R)); }
+function getGTRWolfSnout():THREE.BoxGeometry { return (gTRWolfSnout||= new THREE.BoxGeometry(0.052 * HEX_R, 0.044 * HEX_R, 0.075 * HEX_R)); }
+function getGTRWolfEar():  THREE.BoxGeometry { return (gTRWolfEar  ||= new THREE.BoxGeometry(0.034 * HEX_R, 0.058 * HEX_R, 0.026 * HEX_R)); }
+function getGTRPeltCape(): THREE.BoxGeometry { return (gTRPeltCape ||= new THREE.BoxGeometry(0.176 * HEX_R, 0.250 * HEX_R, 0.014 * HEX_R)); }
+function getGTRLoin():     THREE.BoxGeometry { return (gTRLoin     ||= new THREE.BoxGeometry(0.152 * HEX_R, 0.078 * HEX_R, 0.112 * HEX_R)); }
+function getGTRHairLoose():THREE.BoxGeometry { return (gTRHairLoose||= new THREE.BoxGeometry(0.126 * HEX_R, 0.108 * HEX_R, 0.032 * HEX_R)); }
+function getGTRAxeHaft():  THREE.BoxGeometry { return (gTRAxeHaft  ||= new THREE.BoxGeometry(0.018 * HEX_R, 0.280 * HEX_R, 0.018 * HEX_R)); }
+// Zeleziec WYZSZY NIZ SZERSZY (0.070 w bok, 0.120 wzdluz toporzyska). Przy
+// proporcjach 0.095 x 0.080 (prawie kwadrat, osadzony symetrycznie) bryla
+// czytala sie z kamery gry jako MLOT, nie topor — zlapane zrzutem ekranu,
+// nie pomiarem: kazda asercja liczbowa przechodzila.
+function getGTRAxeHead():  THREE.BoxGeometry { return (gTRAxeHead  ||= new THREE.BoxGeometry(0.070 * HEX_R, 0.120 * HEX_R, 0.018 * HEX_R)); }
+function getGTRAxePoll():  THREE.BoxGeometry { return (gTRAxePoll  ||= new THREE.BoxGeometry(0.030 * HEX_R, 0.048 * HEX_R, 0.024 * HEX_R)); }
+function getGTRWarPaint(): THREE.BoxGeometry { return (gTRWarPaint ||= new THREE.BoxGeometry(0.100 * HEX_R, 0.022 * HEX_R, 0.010 * HEX_R)); }
+function getGTRFrameaShaft(): THREE.BoxGeometry { return (gTRFrameaShaft ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.340 * HEX_R, 0.016 * HEX_R)); }
+function getGTRFrameaSock():  THREE.BoxGeometry { return (gTRFrameaSock  ||= new THREE.BoxGeometry(0.024 * HEX_R, 0.028 * HEX_R, 0.024 * HEX_R)); }
+function getGTRFrameaHead():  THREE.BoxGeometry { return (gTRFrameaHead  ||= new THREE.BoxGeometry(0.024 * HEX_R, 0.072 * HEX_R, 0.011 * HEX_R)); }
 function getGTRMontBowl(): THREE.CylinderGeometry { return (gTRMontBowl ||= new THREE.CylinderGeometry(0.050 * HEX_R, 0.093 * HEX_R, 0.092 * HEX_R, 8, 1)); }
 function getGTRKita():     THREE.BoxGeometry { return (gTRKita    ||= new THREE.BoxGeometry(0.030 * HEX_R, 0.092 * HEX_R, 0.026 * HEX_R)); }
 function getGTRTorc():     THREE.CylinderGeometry { return (gTRTorc ||= new THREE.CylinderGeometry(0.046 * HEX_R, 0.046 * HEX_R, 0.018 * HEX_R, 6, 1, true)); }
@@ -287,14 +340,20 @@ function getGTROvalFace():   THREE.BufferGeometry { return (gTROvalFace   ||= tr
 function trDirDown(theta: number): THREE.Vector3 {
   return new THREE.Vector3(0, -Math.cos(theta), Math.sin(theta));
 }
+// NAZWY MESH — parametr `pf`/`nm` z DOMYSLNA WARTOSCIA PUSTA (wzorzec T6/T7:
+// `z2Seg`/`z2BuildArm` w jednostki-z2-srodziemne.ts). Wywolania bez tego
+// parametru — Druzynnik, iButho, Miecznik galijski — buduja DOKLADNIE to samo
+// co przed T8: zaden mesh nie dostaje nazwy, geometria i pozycje sa nietkniete.
+// Sprawdza to asercja regresji (R1-R3) w tescie tematu.
 function trSeg(
   group: THREE.Group, geo: THREE.BufferGeometry, mtl: THREE.MeshStandardMaterial,
-  P: THREE.Vector3, theta: number, len: number,
+  P: THREE.Vector3, theta: number, len: number, nm: string = '',
 ): THREE.Vector3 {
   const dir = trDirDown(theta);
   const mesh = new THREE.Mesh(geo, mtl);
   mesh.rotation.x = Math.PI - theta;
   mesh.position.copy(P.clone().addScaledVector(dir, len * 0.5));
+  if (nm !== '') mesh.name = nm;
   group.add(mesh);
   return P.clone().addScaledVector(dir, len);
 }
@@ -302,15 +361,18 @@ function trBuildLeg(
   group: THREE.Group, sx: number, thU: number, thL: number,
   mThigh: THREE.MeshStandardMaterial, mShin: THREE.MeshStandardMaterial,
   mFoot: THREE.MeshStandardMaterial, hipY: number = TR_HIP_Y,
+  pf: string = '', side: string = '',
 ): { knee: THREE.Vector3; thighCtr: THREE.Vector3 } {
+  const nm = (part: string): string => (pf === '' ? '' : pf + '-leg-' + side + '-' + part);
   let P = new THREE.Vector3(sx, hipY, 0);
   const thighCtr = P.clone().addScaledVector(trDirDown(thU), TR_THIGH_L * 0.5);
-  P = trSeg(group, getGTRThigh(), mThigh, P, thU, TR_THIGH_L);
+  P = trSeg(group, getGTRThigh(), mThigh, P, thU, TR_THIGH_L, nm('thigh'));
   const knee = P.clone();
   P.z -= 0.004 * HEX_R;  P.y += 0.008 * HEX_R;
-  P = trSeg(group, getGTRShin(), mShin, P, thL, TR_SHIN_L);
+  P = trSeg(group, getGTRShin(), mShin, P, thL, TR_SHIN_L, nm('shin'));
   const foot = new THREE.Mesh(getGTRFoot(), mFoot);
   foot.position.set(sx, 0.013 * HEX_R, P.z + 0.016 * HEX_R);
+  if (pf !== '') foot.name = nm('foot');
   group.add(foot);
   return { knee, thighCtr };
 }
@@ -318,33 +380,50 @@ function trBuildArm(
   group: THREE.Group, sx: number, thU: number, thF: number,
   mUp: THREE.MeshStandardMaterial, mFore: THREE.MeshStandardMaterial,
   mFist: THREE.MeshStandardMaterial | null,
+  pf: string = '', side: string = '',
 ): { wrist: THREE.Vector3; axis: THREE.Vector3 } {
+  const nm = (part: string): string => (pf === '' ? '' : pf + '-arm-' + side + '-' + part);
   let P = new THREE.Vector3(sx, TR_SHLD_Y, 0);
-  P = trSeg(group, getGTRUpArm(), mUp, P, thU, TR_UPARM_L);
+  P = trSeg(group, getGTRUpArm(), mUp, P, thU, TR_UPARM_L, nm('upper'));
   P.y += 0.010 * HEX_R;
-  const wrist = trSeg(group, getGTRForearm(), mFore, P, thF, TR_FOREARM_L);
+  const wrist = trSeg(group, getGTRForearm(), mFore, P, thF, TR_FOREARM_L, nm('fore'));
   if (mFist !== null) {
     const fist = new THREE.Mesh(getGTRFist(), mFist);
     fist.rotation.x = Math.PI - thF;
     fist.position.copy(wrist.clone().addScaledVector(trDirDown(thF), 0.014 * HEX_R));
+    if (pf !== '') fist.name = nm('fist');
     group.add(fist);
   }
   return { wrist, axis: trDirDown(thF) };
 }
+/** Korpus: tors + szyja + glowa (+ opcjonalne OCZY przy odkrytej twarzy). */
 function trCore(
   group: THREE.Group, mat: MatFactory, mTorso: THREE.MeshStandardMaterial,
-  skinColor: number = TR_SKIN,
+  skinColor: number = TR_SKIN, eyes: boolean = false, pf: string = '',
 ): THREE.MeshStandardMaterial {
+  const nm = (part: string): string => (pf === '' ? '' : pf + '-' + part);
   const torso = new THREE.Mesh(getGTRTorso(), mTorso);
   torso.position.set(0, TR_TORSO_CTR, 0);
+  if (pf !== '') torso.name = nm('torso');
   group.add(torso);
   const mSkin = mat(skinColor, 0.05, 0.80);
   const neck = new THREE.Mesh(getGTRNeck(), mSkin);
   neck.position.set(0, TR_TORSO_TOP + TR_NECK_H * 0.5, 0);
+  if (pf !== '') neck.name = nm('neck');
   group.add(neck);
   const head = new THREE.Mesh(getGTRHead(), mSkin);
   head.position.set(0, TR_HEAD_CTR, 0);
+  if (pf !== '') head.name = nm('head');
   group.add(head);
+  if (eyes) {
+    const mEye = mat(TR_EYE, 0.02, 0.95);
+    for (const sx of [-1, 1]) {
+      const eye = new THREE.Mesh(getGTREye(), mEye);
+      eye.position.set(sx * 0.028 * HEX_R, TR_HEAD_CTR + 0.008 * HEX_R, TR_HEAD_S * 0.5 + 0.004 * HEX_R);
+      if (pf !== '') eye.name = nm('eye-' + (sx < 0 ? 'right' : 'left'));
+      group.add(eye);
+    }
+  }
   return mSkin;
 }
 /** Wasy: 2 klocki pod nosem, opadajace na boki (Slowianin / Gal). */
@@ -356,21 +435,36 @@ function trWasy(group: THREE.Group, mHair: THREE.MeshStandardMaterial): void {
     group.add(w);
   }
 }
-/** Choragiew supera NA PLECACH (konwencja P6/P2-Inka): drzewce -0.14, zloty finial. */
+/**
+ * Choragiew supera NA PLECACH (konwencja P6/P2-Inka): drzewce -0.14, zloty finial.
+ * `side` = +1 stawia drzewce po stronie TARCZOWEJ (+X), -1 po stronie BRONNEJ.
+ * Parametr pochodzi z T7: `s6Banner` w jednostki-p6-super.ts dostal go, bo
+ * choragiew stojaca po stronie bronnej kolidowala z dory Hieros Lochos. Kopia
+ * w tym pliku parametru NIE dostala (klasa bledu „poprawka nie dotarla do
+ * kopii", T3->T7). Domyslna wartosc -1 zachowuje historyczne zachowanie dla
+ * ewentualnych przyszlych wywolan; jedyny dzisiejszy wolajacy (Wojownik
+ * germanski) podaje +1 jawnie.
+ */
 function trSuperBanner(
   group: THREE.Group, mPole: THREE.MeshStandardMaterial,
   mFlag: THREE.MeshStandardMaterial, mGold: THREE.MeshStandardMaterial,
+  pf: string = '', side: number = -1,
 ): void {
+  const nm = (part: string): string => (pf === '' ? '' : pf + '-banner-' + part);
+  const s = side < 0 ? -1 : 1;
   const pole = new THREE.Mesh(getGTRPole(), mPole);
   pole.rotation.x = -0.14;
-  pole.position.set(-0.052 * HEX_R, 0.340 * HEX_R, -0.086 * HEX_R);
+  pole.position.set(s * 0.052 * HEX_R, 0.340 * HEX_R, -0.086 * HEX_R);
+  if (pf !== '') pole.name = nm('pole');
   group.add(pole);
   const flag = new THREE.Mesh(getGTRFlag(), mFlag);
   flag.rotation.x = -0.14;
-  flag.position.set(-0.100 * HEX_R, 0.548 * HEX_R, -0.115 * HEX_R);
+  flag.position.set(s * 0.100 * HEX_R, 0.548 * HEX_R, -0.115 * HEX_R);
+  if (pf !== '') flag.name = nm('flag');
   group.add(flag);
   const fin = new THREE.Mesh(getGTRFinial(), mGold);
-  fin.position.set(-0.052 * HEX_R, 0.600 * HEX_R, -0.122 * HEX_R);
+  fin.position.set(s * 0.052 * HEX_R, 0.600 * HEX_R, -0.122 * HEX_R);
+  if (pf !== '') fin.name = nm('finial');
   group.add(fin);
 }
 
@@ -616,16 +710,207 @@ export function buildIButho(ownerColor_: number): THREE.Group {
 }
 
 // ---------------------------------------------------------------------------
-// WOJOWNIK GERMANSKI (Germanie, SUPER, ZELAZO) — POZA: ciecie znad glowy
+// BERSERKER GERMANSKI (Germanie, ZELAZO) — POZA: topor odwiedziony za bark
+// `units.json`: Atak 10 / Obrona 2 / PANCERZ 0 / Atak dystansowy 0, Uwagi:
+// „obnażona pierś, skóra wilka/niedźwiedzia (łeb zwierzęcia na głowie), topór
+// lub miecz, BEZ TARCZY; szał bojowy". Model niesie DOKLADNIE to: goly tors,
+// BARWNIK w kolorze gracza na piersi (jedyny nosnik koloru gracza — jednostka
+// nie ma tarczy, na ktorej normalnie siedzi to pole), skora zwierzeca na
+// plecach, LEB WILKA na ciemieniu (kaptur + kufa + uszy), rozwiane wlosy,
+// przepaska biodrowa, BOSE nogi w skorzanych butach, szeroki TOPOR w PRAWEJ
+// (-X) dloni, LEWA (+X) reka PUSTA. ZERO zbroi, ZERO helmu, ZERO tarczy.
+// Prefiks mesh: `bs-`.
+//
+// T8 — SKAD SIE WZIAL TEN BUILDER. Do T8 „Berserker germanski" byl budowany
+// przez `buildBerserker()` w `units.ts` na wspolnym, generycznym szkielecie
+// `buildBaseAvatar()`. Zmierzone na zywym modelu PRZED zmiana (Chromium,
+// kamera gry: azymut 0, elewacja 52 stopnie):
+//   B1. TOPOR NIE BYL TRZYMANY. Srodek piesci lezal 0.0487 od osi toporzyska
+//       (prog rodziny po T7: < 0.030), szczelina w X miedzy piescia
+//       a toporzyskiem 0.0055, SAT piesc x toporzysko = 0.0000 — czyli brak
+//       JAKIEGOKOLWIEK styku. Bron wisiala obok reki. Klasa bledu T1.
+//   B2. KAPTUR POLYKAL OBIE ZRENICE. Oczy istnialy (2 mesh), ale mialy
+//       0 PIKSELI z kamery gry; SAT kaptur x oko = 0.0095, dol kaptura
+//       y = 0.4900 lezal PONIZEJ gornej krawedzi oka y = 0.5325. Odniesienie
+//       zmierzone w tym samym renderze: Thorakites 14 pikseli, Falangita
+//       6 pikseli. Klasa bledu T7 (montefortino Evocatiego).
+//   B3. STOPY POD TERENEM. minY = -0.0005 przy 0.0000 dla kazdego modelu
+//       rodziny zmierzonego w tym samym renderze (Falangita, Thorakites,
+//       Hastati, Triari, Miecznik galijski, Druzynnik).
+//   B4. BRAK POZY. Obie osie ramion = (0, 1, 0) — rece zwisaly pionowo jak
+//       u generyka, wiec nawet poprawnie umieszczony topor nie mialby
+//       nosiciela. Klasa bledu T1 („reka prosta jak kij").
+//   B5. 0/23 nazwanych mesh i brak `userData.anchors`.
+// Naprawa B1-B5 przez podmiane szkieletu na rodzine tego pliku (trCore /
+// trBuildArm / trBuildLeg — te same, ktorych uzywa brat Wojownik germanski),
+// a nie przez latanie generyka `buildBaseAvatar()`, ktory obsluguje kilkadziesiat
+// innych jednostek `units.ts` i jest poza zakresem tego tematu.
+// ---------------------------------------------------------------------------
+export function buildBerserker(ownerColor_: number): THREE.Group {
+  const group = new THREE.Group();
+  const { mats, mat } = makeMats();
+  const PF = 'bs';
+
+  const mSkin  = mat(TR_SKIN,       0.05, 0.80);
+  const mPelt  = mat(TR_PELT,       0.04, 0.94);   // ciemne futro (rodzina Germanow)
+  const mPeltL = mat(TR_FUR_LT,     0.04, 0.92);
+  const mLeath = mat(TR_LEATHER,    0.06, 0.82);
+  const mHair  = mat(TR_HAIR_BLOND, 0.04, 0.86);
+  const mWood  = mat(TR_WOOD,       0.05, 0.85);
+  const mIron  = mat(TR_STEEL,      0.55, 0.38);
+  const mOwner = mat(ownerColor_,   0.12, 0.66);
+
+  const HIP_Y = TR_HIP_Y - 0.016 * HEX_R;   // gleboki wypad w szale
+
+  // KORPUS: goly tors (skora) + OCZY (twarz odkryta — brak helmu, PANCERZ 0)
+  trCore(group, mat, mSkin, TR_SKIN, true, PF);
+
+  // BARWNIK W KOLORZE GRACZA na golej piersi — dwa pasy w daszek. To jedyne
+  // miejsce koloru gracza na tej figurce: reszta rodziny nosi go na polu
+  // tarczy, a Berserker tarczy NIE MA (Pancerz = 0), wiec bez tego jednostka
+  // nie mialaby na sobie ani jednego piksela barwy wlasciciela.
+  for (const s of [-1, 1]) {
+    const paint = new THREE.Mesh(getGTRWarPaint(), mOwner);
+    paint.rotation.z = s * 0.42;
+    paint.position.set(s * 0.024 * HEX_R, TR_TORSO_CTR + 0.018 * HEX_R, TR_TORSO_D * 0.5 + 0.005 * HEX_R);
+    paint.name = PF + '-warpaint-' + (s < 0 ? 'right' : 'left');
+    group.add(paint);
+  }
+
+  // SKORA ZWIERZECA na plecach + przepaska biodrowa + rzemien
+  const cape = new THREE.Mesh(getGTRPeltCape(), mPelt);
+  cape.rotation.x = 0.14;
+  cape.position.set(0, TR_TORSO_CTR - 0.010 * HEX_R, -(TR_TORSO_D * 0.5 + 0.010 * HEX_R));
+  cape.name = PF + '-pelt-cape';
+  group.add(cape);
+  const loin = new THREE.Mesh(getGTRLoin(), mLeath);
+  loin.position.set(0, TR_TORSO_BOT - 0.020 * HEX_R, 0);
+  loin.name = PF + '-loincloth';
+  group.add(loin);
+  const belt = new THREE.Mesh(getGTRBelt(), mLeath);
+  belt.position.set(0, 0.248 * HEX_R, 0);
+  belt.name = PF + '-belt';
+  group.add(belt);
+
+  // NOGI BOSE (skora tylko na stopach) — wypad do przodu na LEWEJ (+X)
+  trBuildLeg(group,  TR_HIP_X,  0.80,  0.44, mSkin, mSkin, mLeath, HIP_Y, PF, 'left');
+  trBuildLeg(group, -TR_HIP_X, -0.72, -0.30, mSkin, mSkin, mLeath, HIP_Y, PF, 'right');
+
+  // ROZWIANE WLOSY z tylu glowy
+  const hair = new THREE.Mesh(getGTRHairLoose(), mHair);
+  hair.position.set(0, TR_HEAD_CTR - 0.017 * HEX_R, -(TR_HEAD_S * 0.5 + 0.016 * HEX_R));
+  hair.name = PF + '-hair';
+  group.add(hair);
+
+  // LEB WILKA NA CIEMIENIU (nie na twarzy!). Dolna krawedz kaptura leży
+  // POWYZEJ gornej krawedzi oka, a kufa jest cofnieta tak, by nie wchodzic
+  // w linie widzenia oczu z kamery gry — dokladnie ta relacja, ktorej brak
+  // dawal 0 pikseli twarzy przed T8 (B2 w naglowku wyzej).
+  const hood = new THREE.Mesh(getGTRWolfHood(), mPelt);
+  hood.position.set(0, TR_HEAD_TOP, 0);
+  hood.name = PF + '-wolf-hood';
+  group.add(hood);
+  // Kufa MUSI wystawac przed lico kaptura, inaczej caly leb czyta sie jako
+  // pudelko: kaptur siega z = +0.0575, kufa z = +0.0995, czyli 0.042 dalej.
+  const snout = new THREE.Mesh(getGTRWolfSnout(), mPeltL);
+  snout.position.set(0, TR_HEAD_TOP + 0.017 * HEX_R, 0.062 * HEX_R);
+  snout.name = PF + '-wolf-snout';
+  group.add(snout);
+  for (const s of [-1, 1]) {
+    const ear = new THREE.Mesh(getGTRWolfEar(), mPeltL);
+    ear.position.set(s * 0.052 * HEX_R, TR_HEAD_TOP + 0.066 * HEX_R, -0.012 * HEX_R);
+    ear.name = PF + '-wolf-ear-' + (s < 0 ? 'right' : 'left');
+    group.add(ear);
+  }
+
+  // PRAWE (-X) RAMIE + TOPOR odwiedziony za bark, na osi przedramienia.
+  // Toporzysko zaczyna sie 0.045 ZA dlonia (chwyt przy koncu drzewca — tak
+  // trzyma sie topor), zeleziec siedzi pod czubkiem. Kat TH_R dobrany tak, by
+  // bron byla prostopadla do osi patrzenia kamery gry — patrz akapit
+  // o widocznosci w sekcji ZGODNOSC HISTORYCZNA.
+  const TH_R = -2.58;
+  const armR = trBuildArm(group, -TR_SHLD_X, -2.05, TH_R, mSkin, mSkin, mSkin, PF, 'right');
+  const ax = armR.axis;
+  const haft = new THREE.Mesh(getGTRAxeHaft(), mWood);
+  haft.rotation.x = Math.PI - TH_R;
+  haft.position.copy(armR.wrist.clone().addScaledVector(ax, 0.095 * HEX_R));
+  haft.name = PF + '-axe-haft';
+  group.add(haft);
+  // Zeleziec: plaski klin ODSADZONY W BOK od drzewca (ostrze rownolegle do
+  // toporzyska, plaszczyzna klina zwrocona ku kamerze), plus OBUCH po drugiej
+  // stronie — bez obucha bryla siada na drzewcu symetrycznie i czyta sie
+  // jako mlot.
+  const bit = new THREE.Mesh(getGTRAxeHead(), mIron);
+  bit.rotation.x = Math.PI - TH_R;
+  bit.position.copy(armR.wrist.clone().addScaledVector(ax, 0.170 * HEX_R));
+  bit.position.x -= 0.030 * HEX_R;
+  bit.name = PF + '-axe-head';
+  group.add(bit);
+  const poll = new THREE.Mesh(getGTRAxePoll(), mIron);
+  poll.rotation.x = Math.PI - TH_R;
+  poll.position.copy(armR.wrist.clone().addScaledVector(ax, 0.170 * HEX_R));
+  poll.position.x += 0.018 * HEX_R;
+  poll.name = PF + '-axe-poll';
+  group.add(poll);
+
+  // LEWE (+X) RAMIE — PUSTE. Bez tarczy: `units.json` Pancerz = 0.
+  trBuildArm(group, TR_SHLD_X, 1.05, 0.55, mSkin, mSkin, mSkin, PF, 'left');
+
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = [];
+  group.userData['anchors'] = {
+    hexR: HEX_R,
+    headTopY: TR_HEAD_TOP, headCtrY: TR_HEAD_CTR,
+    torsoTopY: TR_TORSO_TOP, torsoBotY: TR_TORSO_BOT,
+    torsoHalfW: TR_TORSO_W * 0.5, torsoHalfD: TR_TORSO_D * 0.5,
+    hipY: HIP_Y, shoulderY: TR_SHLD_Y, shoulderX: TR_SHLD_X,
+    grip: armR.wrist.toArray(),
+    weaponAxis: ax.toArray(),
+    weaponKind: 'axe-broad',
+    missileKind: 'none',
+    shieldKind: 'none',
+    helmetKind: 'none',
+    armorKind: 'none',
+    faceOpen: true,
+    ownerColorOn: 'warpaint',
+  };
+  return group;
+}
+
+// ---------------------------------------------------------------------------
+// WOJOWNIK GERMANSKI (Germanie, SUPER, ZELAZO) — POZA: rzut/pchniecie FRAMEA
 // Potezny wodz: GOLY TORS + skorzany pas na krzyz, FUTRO na obu ramionach
 // (paleta skor Berserkera), helm ZELAZNY prosty z FUTRZANYM OTOKIEM (bez
-// rogow), RUDA PLECIONA BRODA (2 warkocze), dlugi ZELAZNY miecz w PRAWEJ
-// (-X) znad glowy na osi przedramienia, tarcza okragla ze SPIRALA na LEWYM
-// (+X) przedramieniu, welniane spodnie, CHORAGIEW SUPERA na plecach (P6).
+// rogow), RUDA PLECIONA BRODA (2 warkocze), FRAMEA (krotka wlocznia o waskim
+// i krotkim grocie) uniesiona w PRAWEJ (-X) dloni na osi przedramienia,
+// tarcza okragla ze SPIRALA na LEWYM (+X) przedramieniu, welniane spodnie,
+// CHORAGIEW SUPERA na plecach (P6). Prefiks mesh: `gw-`.
+//
+// T8 — CO ZMIENIONO I DLACZEGO (pomiar, nie opinia):
+//   G1. BRAK BRONI DYSTANSOWEJ. `units.json` dla „Wojownik germanski":
+//       `Atak dystansowy = 4`, `Zasieg ataku (hex) = 2`, `Ilosc pociskow = 4`,
+//       a pole `Uwagi` mowi wprost „germanski wojownik z frameą (krótka
+//       włócznia do pchnięcia i rzutu)". Model do T8 miał DLUGI ZELAZNY MIECZ
+//       i ZADNEJ broni miotanej — sylwetka nie niosla najwazniejszej cechy
+//       jednostki. Miecz zastapiony framea (drzewce + tulejka + waski grot),
+//       chwyt w punkcie rownowagi, drzewce wystaje TAKZE za dlon (chwyt do
+//       rzutu, nie do ciecia).
+//   G2. NIEPRAWDZIWY WLASNY KOMENTARZ. Poprzedni naglowek glosil „POZA:
+//       ciecie znad glowy" i „miecz znad glowy". Zmierzone na zywym modelu
+//       PRZED zmiana: koniec klingi WZDLUZ JEJ WLASNEJ OSI y = 0.4800 (OBB
+//       calej bryly siega nieco wyzej, do 0.4862 — rozjazd z rotacji klingi,
+//       nie blad pomiaru); srodek glowy y = 0.5370, czubek helmu y = 0.6290 —
+//       obiema miarami klinga NIGDY nie byla nad glowa, lezala w calosci
+//       ponizej srodka glowy. Opis poprawiony na zgodny z geometria (poza
+//       rzutu, przedramie nad barkiem).
+//   G3. ZERO NAZWANYCH MESH i brak `userData.anchors` (0/37) — bez tego zadna
+//       asercja nie moze zaadresowac czesci, a punkty odniesienia trzeba by
+//       wpisac liczbowo w test, czyli test mierzylby sam siebie.
 // ---------------------------------------------------------------------------
 export function buildGermanSuper(ownerColor_: number): THREE.Group {
   const group = new THREE.Group();
   const { mats, mat } = makeMats();
+  const PF = 'gw';
 
   const mSkin  = mat(TR_SKIN,     0.05, 0.80);
   const mFur   = mat(TR_PELT,     0.04, 0.94);   // ciemne futro (rodzina Berserkera)
@@ -643,68 +928,115 @@ export function buildGermanSuper(ownerColor_: number): THREE.Group {
   const HIP_Y = TR_HIP_Y - 0.014 * HEX_R;   // potezny wykrok
 
   // korpus: GOLY TORS (skora) + skorzany pas przez piers (na krzyz z pasem)
-  trCore(group, mat, mSkin);
+  trCore(group, mat, mSkin, TR_SKIN, false, PF);
   const strap = new THREE.Mesh(getGTRStrap(), mLeath);
   strap.rotation.set(-0.35, 0, 0.66);
   strap.position.set(-0.012 * HEX_R, TR_TORSO_CTR + 0.020 * HEX_R, TR_TORSO_D * 0.5 - 0.014 * HEX_R);
+  strap.name = PF + '-strap';
   group.add(strap);
   const skirt = new THREE.Mesh(getGTRSkirt(), mWool);   // pas/dol spodni
   skirt.position.set(0, TR_TORSO_BOT - 0.018 * HEX_R, 0);
+  skirt.name = PF + '-skirt';
   group.add(skirt);
   const belt = new THREE.Mesh(getGTRBelt(), mLeath);
   belt.position.set(0, 0.252 * HEX_R, 0);
+  belt.name = PF + '-belt';
   group.add(belt);
 
   // FUTRO na obu ramionach (mantle nad stawem barkowym)
   for (const s of [-1, 1]) {
     const pad = new THREE.Mesh(getGTRFurPad(), mFur);
     pad.position.set(s * (TR_SHLD_X - 0.004 * HEX_R), TR_TORSO_TOP + 0.008 * HEX_R, 0);
+    pad.name = PF + '-fur-pad-' + (s < 0 ? 'right' : 'left');
     group.add(pad);
   }
+  // FUTRZANY PLASZCZ NA PLECACH — ROZWAZONY I ODRZUCONY, ZMIERZONY.
+  // `units.json` -> Uwagi mowi „futrzany płaszcz, mało/brak pancerza", wiec
+  // plaszcz byl kandydatem na brakujaca ceche. Dodany na probe (plyta futra
+  // za torsem, jak `bs-pelt-cape` u Berserkera) dal **0 pikseli** z jedynej
+  // kamery gry: tors ma 0.180 szerokosci, ramiona siegaja +-0.147, a kamera
+  // patrzy z przodu i z gory (elewacja 52 stopnie), wiec plyta za plecami
+  // niczego nie zaslania i sama nie jest widziana. Byloby to dodanie czesci,
+  // ktorej NIE MA na ekranie — dokladnie klasa bledu, ktora T6 znalazl przy
+  // broni. „Futrzany plaszcz" niesie w tym modelu FUTRO NA OBU BARKACH wyzej.
 
   // nogi: welniane spodnie, skorzane buty; wykrok
-  trBuildLeg(group,  TR_HIP_X,  0.62,  0.36, mWool, mWool, mLeath, HIP_Y);
-  trBuildLeg(group, -TR_HIP_X, -0.56, -0.22, mWool, mWool, mLeath, HIP_Y);
+  trBuildLeg(group,  TR_HIP_X,  0.62,  0.36, mWool, mWool, mLeath, HIP_Y, PF, 'left');
+  trBuildLeg(group, -TR_HIP_X, -0.56, -0.22, mWool, mWool, mLeath, HIP_Y, PF, 'right');
 
-  // RUDA PLECIONA BRODA: blok brody + 2 warkocze + wasy w kolorze brody
+  // RUDA PLECIONA BRODA: blok brody + 2 warkocze
   const beard = new THREE.Mesh(getGTRBeard(), mBeard);
   beard.position.set(0, TR_HEAD_CTR - 0.052 * HEX_R, TR_HEAD_S * 0.5 - 0.004 * HEX_R);
+  beard.name = PF + '-beard';
   group.add(beard);
   for (const s of [-1, 1]) {
     const braid = new THREE.Mesh(getGTRBraid(), mBeard);
     braid.rotation.z = s * 0.10;
     braid.position.set(s * 0.026 * HEX_R, TR_HEAD_CTR - 0.112 * HEX_R, TR_HEAD_S * 0.5 + 0.002 * HEX_R);
+    braid.name = PF + '-beard-braid-' + (s < 0 ? 'right' : 'left');
     group.add(braid);
   }
 
   // HELM ZELAZNY PROSTY z FUTRZANYM OTOKIEM (zadnych rogow!)
   const dome = new THREE.Mesh(getGTRDomeHelm(), mIron);
   dome.position.set(0, TR_HEAD_CTR + 0.044 * HEX_R, 0);
+  dome.name = PF + '-helmet-dome';
   group.add(dome);
   const otok = new THREE.Mesh(getGTRFurBand(), mFurLt);
   otok.position.set(0, TR_HEAD_CTR + 0.012 * HEX_R, 0);
+  otok.name = PF + '-helmet-furband';
   group.add(otok);
 
-  // PRAWE (-X) RAMIE + DLUGI MIECZ znad glowy (lokiec nad barkiem, klinga
-  // na osi przedramienia — cios opada ku wrogowi)
-  const armR = trBuildArm(group, -TR_SHLD_X, -2.55, 1.30, mSkin, mSkin, mLeath);
-  const ax = armR.axis;
-  const guard = new THREE.Mesh(getGTRGuard(), mIronD);
-  guard.rotation.x = Math.PI - 1.30;
-  guard.position.copy(armR.wrist.clone().addScaledVector(ax, 0.030 * HEX_R));
-  group.add(guard);
-  const blade = new THREE.Mesh(getGTRLongBlade(), mIron);
-  blade.rotation.x = Math.PI - 1.30;
-  blade.position.copy(armR.wrist.clone().addScaledVector(ax, 0.140 * HEX_R));
-  group.add(blade);
-  const tip = new THREE.Mesh(getGTRBladeTip(), mIron);
-  tip.rotation.x = Math.PI - 1.30;
-  tip.rotation.y = Math.PI / 4;
-  tip.position.copy(armR.wrist.clone().addScaledVector(ax, 0.266 * HEX_R));
-  group.add(tip);
+  // PRAWE (-X) RAMIE + FRAMEA. Lokiec nad barkiem, przedramie do przodu:
+  // reka uniesiona do RZUTU.
+  const TH_ARM = 1.42;
+  const armR = trBuildArm(group, -TR_SHLD_X, -2.55, TH_ARM, mSkin, mSkin, mLeath, PF, 'right');
+
+  // FRAMEA MA WLASNA OS, POD KATEM DO PRZEDRAMIENIA — i to jest cala rzecz.
+  // Drzewce trzymane w punkcie rownowagi wystaje TAKZE ZA dlon (tak trzyma sie
+  // wlocznie do rzutu, inaczej niz miecz). Gdy pietka biegnie DOKLADNIE po osi
+  // przedramienia, wchodzi w RAMIE — zmierzone przy probie TH = TH_ARM: SAT
+  // drzewce x ramie-gorne = 0.0164, przy 0.0000 dla Falangity (T3) i Thorakitesa
+  // (T6). To ten sam blad, ktory T7 znalazl u Hieros Lochos (dory po osi
+  // przedramienia wchodzilo w lokiec i ramie). Wlasna os framei — nachylona
+  // wzgledem przedramienia, przechodzaca przez PIESC — zdejmuje kolizje do
+  // 0.0000 i przy okazji podnosi widocznosc z kamery gry.
+  // KIERUNEK FRAMEI — DLACZEGO W GORE I W TYL, A NIE W PRZOD I W DOL.
+  // Cala rodzina buduje konczyny w plaszczyznie YZ, a kamera gry patrzy
+  // z azymutu 0. Rzut na ekran to (x ; y*cos52 - z*sin52), wiec KAZDY kierunek
+  // lezacy w YZ daje na ekranie linie PIONOWA — o zwrocie zaleznym od znaku
+  // (y*cos52 - z*sin52). Skierowanie framei „do przodu" (+Z) daje wiec na
+  // ekranie wlocznie CELUJACA W ZIEMIE i drugi, rownolegly slup obok drzewca
+  // choragwi — zlapane zrzutem ekranu, nie liczba: widocznosc wynosila wtedy
+  // 0.9575 (najwyzsza z prob), bo miara nagradza dlugosc rzutu, a nie zwrot.
+  // Kierunek W GORE I W TYL daje ten sam poziom widocznosci (0.86) i czyta sie
+  // jako bron gotowa do rzutu — zgodnie z konwencja rodziny, w ktorej wlocznie
+  // Falangity, Thorakitesa i Triariego stoja pionowo GROTEM DO GORY.
+  const TH_W = -2.763;
+  const wx = trDirDown(TH_W);
+  const grip = armR.wrist.clone().addScaledVector(armR.axis, 0.014 * HEX_R);   // srodek piesci
+  const shaft = new THREE.Mesh(getGTRFrameaShaft(), mWood);
+  shaft.rotation.x = Math.PI - TH_W;
+  shaft.position.copy(grip.clone().addScaledVector(wx, 0.055 * HEX_R));
+  shaft.name = PF + '-framea-shaft';
+  group.add(shaft);
+  const sock = new THREE.Mesh(getGTRFrameaSock(), mIronD);
+  sock.rotation.x = Math.PI - TH_W;
+  sock.position.copy(grip.clone().addScaledVector(wx, 0.239 * HEX_R));
+  sock.name = PF + '-framea-socket';
+  group.add(sock);
+  // Grot: „angusto et brevi ferro" (Tacyt, Germania 6) — WASKI i KROTKI,
+  // 0.024 x 0.072 x 0.011; dla porownania klinga dlugiego miecza uzywana
+  // w tym samym pliku przez Miecznika galijskiego (getGTRLongBlade) ma
+  // 0.026 x 0.210 x 0.013 — grot framei jest od niej blisko 3x krotszy.
+  const head = new THREE.Mesh(getGTRFrameaHead(), mIron);
+  head.rotation.x = Math.PI - TH_W;
+  head.position.copy(grip.clone().addScaledVector(wx, 0.289 * HEX_R));
+  head.name = PF + '-framea-head';
+  group.add(head);
 
   // LEWE (+X) RAMIE + TARCZA OKRAGLA ZE SPIRALA przed korpusem
-  const armL = trBuildArm(group, TR_SHLD_X, 0.52, 1.08, mSkin, mSkin, null);
+  const armL = trBuildArm(group, TR_SHLD_X, 0.52, 1.08, mSkin, mSkin, null, PF, 'left');
   const sh = new THREE.Group();
   sh.position.set(
     armL.wrist.x - 0.028 * HEX_R,
@@ -714,10 +1046,12 @@ export function buildGermanSuper(ownerColor_: number): THREE.Group {
   sh.rotation.y = -0.20;
   const face = new THREE.Mesh(getGTRRndFace(), mOwner);   // pole = KOLOR GRACZA
   face.rotation.x = Math.PI / 2;
+  face.name = PF + '-shield-face';
   sh.add(face);
   const rimS = new THREE.Mesh(getGTRRndRim(), mWood);     // drewniany rant
   rimS.rotation.x = Math.PI / 2;
   rimS.position.set(0, 0, -0.006 * HEX_R);
+  rimS.name = PF + '-shield-rim';
   sh.add(rimS);
   // SPIRALA: 4 klocki styczne do krzywej — zawijaja sie wokol umba
   for (let k = 0; k < 4; k++) {
@@ -726,21 +1060,215 @@ export function buildGermanSuper(ownerColor_: number): THREE.Group {
     const armS = new THREE.Mesh(getGTRSpiralArm(), mIronD);
     armS.rotation.z = a + Math.PI / 2;         // stycznie do okregu
     armS.position.set(Math.cos(a) * r * HEX_R, Math.sin(a) * r * HEX_R, 0.018 * HEX_R);
+    armS.name = PF + '-shield-spiral-' + k;
     sh.add(armS);
   }
   const umbo = new THREE.Mesh(getGTRUmbo(), mIron);
   umbo.rotation.x = Math.PI / 2;
   umbo.position.set(0, 0, 0.028 * HEX_R);
+  umbo.name = PF + '-shield-boss';
   sh.add(umbo);
   group.add(sh);
 
-  // CHORAGIEW SUPERA na plecach (kolor gracza + zloty finial)
-  trSuperBanner(group, mPole, mOwner, mGold);
+  // CHORAGIEW SUPERA na plecach, po stronie TARCZOWEJ (+X).
+  // T7 przeniosl analogiczna choragiew Hieros Lochos ze strony bronnej na
+  // tarczowa, bo drzewce dory ja przebijalo; kopia w tym pliku parametru
+  // `side` nie miala. Tutaj KOLIZJI 3D nie ma i nie bylo (SAT bron x kazda
+  // z trzech czesci choragwi = 0.0000 rowniez przy `side = -1`), ale jest
+  // przyczyna EKRANOWA: framea i drzewce choragwi leza w tej samej
+  // plaszczyznie YZ, wiec obie rzutuja sie na pionowe linie — stojac po tej
+  // samej stronie (-X) daja dwa rownolegle slupy nakladajace sie na siebie,
+  // przy czym drzewce framei przechodzi PRZED plachta choragwi. Rozdzielenie
+  // stron zdejmuje to nalozenie: framea zostaje na -X, choragiew idzie na +X.
+  trSuperBanner(group, mPole, mOwner, mGold, PF, +1);
 
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = [];
+  // Kotwice do asercji geometrycznych — punkty odniesienia BIORA SIE Z MODELU,
+  // nie sa wpisane liczbowo w tescie (lekcja T1/T2/T5 serii).
+  group.userData['anchors'] = {
+    hexR: HEX_R,
+    headTopY: TR_HEAD_TOP, headCtrY: TR_HEAD_CTR,
+    torsoTopY: TR_TORSO_TOP, torsoBotY: TR_TORSO_BOT,
+    torsoHalfW: TR_TORSO_W * 0.5, torsoHalfD: TR_TORSO_D * 0.5,
+    hipY: HIP_Y, shoulderY: TR_SHLD_Y, shoulderX: TR_SHLD_X,
+    grip: grip.toArray(),
+    forearmAxis: armR.axis.toArray(),
+    weaponAxis: wx.toArray(),
+    weaponKind: 'spear-framea',
+    missileKind: 'framea',
+    shieldKind: 'round-germanic',
+    shieldFaceR: 0.148 * HEX_R,
+    shieldDevice: 'spiral-4',
+    helmetKind: 'iron-dome-furband',
+    faceOpen: false,
+    bannerSide: 1,
+  };
   return group;
 }
+
+// ===========================================================================
+// ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (Berserker germanski)
+// ===========================================================================
+// units.json: Epoka=Zelazo, Kultura/Nacja=Germanie, Tech=Obrobka zelaza,
+// Typ=Swordsman, Klasa=Specjalna, Super-jednostka=NIE, Atak 10 / Uderzenie 8 /
+// Obrona 2 / PANCERZ 0 / Przebicie 4, Morale bazowe 120 (najwyzsze w rodzinie),
+// Morale ucieczki 5, Prog dezercji 10%, Atak dystansowy 0. Uwagi: „obnażona
+// pierś, skóra wilka/niedźwiedzia (łeb zwierzęcia na głowie), topór lub miecz,
+// bez tarczy; szał bojowy (+Atak, −Obrona)".
+//
+// K1. NAZWA JEST ANACHRONIZMEM I TO TRZEBA POWIEDZIEC WPROST. „Berserkr" to
+//     slowo STARONORDYCKIE, nie germanskie z epoki zelaza. Najwczesniejsze
+//     poswiadczenie to „Haraldskvaedi" (Hrafnsmal) Thorbjorna hornklofiego,
+//     ok. 900 n.e.; klasyczny opis daje dopiero Snorri Sturluson w „Ynglinga
+//     saga" rozdz. 6 (XIII w.): ludzie Odyna szli BEZ KOLCZUG, wsciekli jak
+//     psy albo wilki, gryzli krawedzie tarcz, byli silni jak niedzwiedzie.
+//     Miedzy kultura jastorfska (ok. 600 p.n.e. - poczatek n.e.) a saga Snorriego
+//     lezy tysiac do tysiaca kilkuset lat. Jednostka nazywa sie tak, bo tak
+//     nazywa ja `units.json` — model NIE udaje, ze to postac udokumentowana
+//     dla epoki zelaza.
+// K2. CO JEST UDOKUMENTOWANE DLA EPOKI — I TO MODEL ODWZOROWUJE. Tacyt,
+//     „Germania" 43, o Hariach: „nigra scuta, TINCTA CORPORA; atras ad proelia
+//     noctes legunt ipsaque formidine atque umbra FERALIS EXERCITUS terrorem
+//     inferunt" — czarne tarcze, CIALA POMALOWANE/UBARWIONE, wybieraja na
+//     bitwe najciemniejsze noce i sama groza upiornego wojska sieja przerazenie.
+//     To jest zrodlowa podstawa BARWNIKA NA GOLEJ PIERSI (`bs-warpaint-*`),
+//     ktory w tym modelu niesie zarazem kolor gracza. Tacyt „Germania" 17:
+//     „gerunt et ferarum pelles" — nosza tez skory dzikich zwierzat; stad
+//     `bs-pelt-cape` i leb zwierzecia. Tacyt „Germania" 31 o Chattach: slub
+//     nieobcinania wlosow ani brody, dopoki nie zabije sie wroga — stad
+//     rozwiane, niestrzyzone wlosy zamiast uczesania.
+// K3. GOLY TORS I BRAK TARCZY SA ZRODLOWE, NIE TYLKO MECHANICZNE. Tacyt,
+//     „Germania" 6: wojownicy ida do walki „aut NUDI aut sagulo leves" —
+//     nadzy albo lekko odziani w krotki plaszcz — a „paucissimis loricae,
+//     vix uni alterive cassis aut galea" (bardzo nieliczni maja pancerz,
+//     ledwie jeden czy drugi helm). Model ma ZERO zbroi, ZERO helmu i ZERO
+//     tarczy, co odpowiada `Pancerz = 0` i `Obrona 2`. Uwaga na kierunek
+//     wnioskowania: u Tacyta brak tarczy nie jest brawura, tylko bieda — a
+//     „scutum reliquisse praecipuum flagitium" (Germania 6, nie 13 — Final
+//     Control zweryfikowal lokalizacje cytatu wprost w tekscie), porzucenie
+//     tarczy to najwieksza hanba. Berserker bez tarczy jest wiec figura
+//     LITERACKA (K1), nie typowym Germaninem — i tak ma zostac, bo tego
+//     wymaga karta jednostki.
+// K4. LEB WILKA — IKONOGRAFIA JEST, ALE POZNIEJSZA NIZ EPOKA. Wojownik
+//     w skorze wilka wystepuje na matrycach z TORSLUNDA (Oland, Szwecja,
+//     okres vendelski, VI-VII w. n.e.) — wilczy wojownik z wlocznia obok
+//     jednookiego tancerza. Rzymskie signiferi w skorach wilka/niedzwiedzia
+//     widac na Kolumnie Trajana (pocz. II w. n.e.), ale to praktyka RZYMSKA
+//     i nie jest dowodem na uzycie germanskie. Model swiadomie siega po ten
+//     kanon wizualny, bo `units.json` zada „łeb zwierzęcia na głowie";
+//     datowanie jest tu pozniejsze niz epoka jednostki i to jest nazwane,
+//     a nie przemilczane.
+// K5. TOPOR — ZGODNY Z KARTA, RZADKI W ZNALEZISKACH, NIE FRANCISCA. Karta
+//     mowi „topór lub miecz", wiec topor jest wyborem dozwolonym. Ale skala:
+//     w depozycie z HJORTSPRING (Als, Dania, ok. 350 p.n.e., przedrzymska
+//     epoka zelaza) na okolo 130-140 grotow wloczni przypada okolo 11 mieczy;
+//     w NYDAM (Szlezwik, ok. 200-400 n.e.) na okolo 500 grotow drzewcowych
+//     okolo 100 mieczy. Bron drzewcowa dominuje, topor jest w tych zespolach
+//     marginalny. Zeleziec w modelu jest SZEROKIM toporem bojowym na dlugim
+//     toporzysku — NIE jest to francisca, frankijski topor do rzutu z V-VIII
+//     w. n.e., ktory bylby anachronizmem jeszcze wiekszym niz sama nazwa
+//     jednostki. Berserker ma `Atak dystansowy = 0`, wiec bron do rzutu
+//     bylaby tez sprzeczna z danymi.
+// K6. WLOSY: JASNE, NIE RUDE — I DLACZEGO TO NIE JEST DROBIAZG. Tacyt
+//     „Germania" 4 daje Germanom „rutilae comae" (rude/rudawe wlosy) i to
+//     jest zrodlo literackie. Ale czesty argument „przeciez ciala bagienne
+//     maja rude wlosy" jest BLEDNY: rudy odcien wlosow mumii bagiennych
+//     (m.in. czlowiek z Osterby, Szlezwik, ok. 70-220 n.e.) to efekt kwasow
+//     torfowiska, a nie kolor za zycia. Berserker dostal wlosy JASNE
+//     (`TR_HAIR_BLOND`), a ruda barwa (`TR_HAIR_GER`) zostala zarezerwowana
+//     dla brata — Wojownika germanskiego — zeby dwie jednostki tej samej
+//     kultury dalo sie odroznic z kamery gry; zmierzona odroznialnosc pary
+//     Berserker/Wojownik germanski wynosi 0.817 przy progu rodziny 0.558.
+// K7. CZEGO MODEL NIE ODWZOROWUJE. Sagi opisuja berserkow GRYZACYCH KRAWEDZIE
+//     TARCZ (Ynglinga saga 6) — model tarczy nie ma wcale, wiec ten motyw
+//     odpada z definicji. Nie ma tez zelaznego pierscienia Chattow (Germania
+//     31: „ferreum insuper anulum... veluti vinculum"), bo przy elewacji
+//     kamery 52 stopnie obreczka na przedramieniu ma na ekranie pojedyncze
+//     piksele i nie niesie informacji.
+// ===========================================================================
+
+// ===========================================================================
+// ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (Wojownik germanski)
+// ===========================================================================
+// units.json: Epoka=Zelazo, Kultura/Nacja=Germanie, Tech=Obrobka zelaza,
+// Typ=Swordsman, Klasa=Super, Super-jednostka=TAK, Atak 6 / Uderzenie 7 /
+// Obrona 6 / Pancerz 2 / Przebicie 2, ATAK DYSTANSOWY 4, Zasieg 2 heksy,
+// Ilosc pociskow 4, Bonus vs Mount +50%, Bonus vs Spearman +15%. Uwagi:
+// „germański wojownik z frameą (krótka włócznia do pchnięcia i rzutu)
+// + okrągła/heksagonalna tarcza drewniano-skórzana; futrzany płaszcz,
+// mało/brak pancerza; walka w lesie i zasadzki | Super Brązu (framea);
+// max 1; stolica; Koszt=0".
+//
+// K1. FRAMEA — ZRODLO OPISUJE DOKLADNIE TE STATYSTYKE. Tacyt, „Germania" 6:
+//     „rari gladiis aut maioribus lanceis utuntur: HASTAS vel ipsorum vocabulo
+//     FRAMEAS gerunt, ANGUSTO ET BREVI FERRO, sed ita acri et ad usum habili,
+//     ut eodem telo, prout ratio poscit, VEL COMMINUS VEL EMINUS pugnent" —
+//     rzadko uzywaja mieczy albo wiekszych lanc: nosza wlocznie, w swoim jezyku
+//     FRAMEAS, o WASKIM I KROTKIM ZELEZCU, tak ostrym i porecznym, ze tym samym
+//     orezem walcza wedle potrzeby Z BLISKA ALBO Z DALEKA. „Vel comminus vel
+//     eminus" to jest, slowo w slowo, jednostka o `Atak 6` W ZWARCIU i
+//     `Atak dystansowy 4` na `Zasieg 2` — jedna bron, dwa tryby. Dlatego grot
+//     w modelu ma 0.024 x 0.072 x 0.011 („waski i krotki"), a nie proporcje
+//     klingi miecza (getGTRLongBlade w tym pliku: 0.026 x 0.210 x 0.013).
+// K2. DLUGI MIECZ BYL PODWOJNIE BLEDNY. Model do T8 nosil DLUGI ZELAZNY MIECZ
+//     i zadnej broni miotanej. To bylo sprzeczne (a) z karta jednostki
+//     — `Atak dystansowy 4`, `Ilosc pociskow 4`, Uwagi wprost mowiace o framei
+//     — i (b) z tym samym zdaniem Tacyta: „RARI GLADIIS... utuntur", mieczy
+//     uzywaja RZADKO, bo „ne ferrum quidem superest" (nawet zelaza nie maja
+//     w nadmiarze). Potwierdza to skala znalezisk: HJORTSPRING (Als, Dania,
+//     ok. 350 p.n.e.) — okolo 130-140 grotow drzewcowych na okolo 11 mieczy;
+//     NYDAM (Szlezwik, ok. 200-400 n.e.) — okolo 500 grotow na okolo 100
+//     mieczy, przy czym znaczna czesc tych mieczy to IMPORTY rzymskie
+//     (spathy ze stemplami wytworcow). ILLERUP ADAL (Jutlandia, glowny
+//     depozyt ok. 200 n.e.) daje ten sam obraz: setki grotow, kilkaset tarcz,
+//     miecze jako mniejszosc wyposazenia.
+// K3. HELM NA SUPERZE — WYJATEK, KTORY ZRODLO PRZEWIDUJE. Tacyt, „Germania"
+//     6: „paucissimis loricae, VIX UNI ALTERIVE cassis aut galea" — bardzo
+//     nieliczni maja pancerz, ledwie JEDEN CZY DRUGI helm. Jednostka jest
+//     SUPEREM z limitem „max 1; stolica" i ma `Pancerz = 2` (nisko, ale nie
+//     zero) — czyli jest doslownie tym „jednym czy drugim". Zelazny dzwon
+//     bez rogow jest wiec uzasadniony; FUTRZANY OTOK pod nim to stylizacja
+//     spinajaca go z futrem na barkach, bez konkretnego znaleziska za soba,
+//     i tak jest tu nazwana. ROGATYCH HELMOW NIE MA I NIE BEDZIE: to wynalazek
+//     ikonografii XIX-wiecznej, nie epoki zelaza.
+// K4. TARCZA. Karta mowi „okrągła/heksagonalna tarcza drewniano-skórzana" —
+//     model ma OKRAGLA, deskowa, z drewnianym rantem i zelaznym umbem, co
+//     zgadza sie ze znaleziskami: Hjortspring ma tarcze deskowe z osobnym
+//     DREWNIANYM umbem, Illerup i Thorsberg — setki umb ZELAZNYCH. Tacyt
+//     „Germania" 6: „scuta lectissimis coloribus distinguunt" (tarcze zdobia
+//     najdobitniejszymi barwami), co uzasadnia pole tarczy w kolorze gracza.
+//     SPIRALA na tarczy jest natomiast motywem latenskim: uczciwie mowiac,
+//     to STYLIZACJA pasujaca do horyzontu przeworskiego (silnie latenizowanego),
+//     a nie odwzorowanie konkretnego znaleziska.
+// K5. RUDA PLECIONA BRODA — POL ZRODLA, POL STYLIZACJI. Rudawe wlosy Germanow
+//     sa u Tacyta („Germania" 4: „rutilae comae"). Ale PLECIONA broda to juz
+//     stylizacja: poswiadczony germanski wezel wlosow to WEZEL SWEBSKI —
+//     „Germania" 38: „insigne gentis obliquare crinem nodoque substringere",
+//     znakiem ludu jest zaczesywac wlosy na bok i wiazac je w wezel; zachowal
+//     sie na glowie czlowieka z OSTERBY (Szlezwik, ok. 70-220 n.e.). Wezel
+//     jest we WLOSACH, nie w brodzie, a tu wlosy kryje helm — wiec warkocze
+//     poszly w brode. Nazwane, nie przemilczane. (Rudy kolor wlosow mumii
+//     bagiennych sam w sobie NIE jest dowodem — to efekt kwasow torfowiska;
+//     dowodem jest zdanie Tacyta.)
+// K6. „FUTRZANY PLASZCZ" Z KARTY NIESIE FUTRO NA BARKACH. Tacyt „Germania"
+//     17: „tegumen omnibus SAGUM fibula aut, si desit, spina consertum" —
+//     okryciem wszystkich jest plaszcz spiety zapinka albo, gdy jej brak,
+//     cierniem. Osobna plyta futra ZA PLECAMI zostala rozwazona i ODRZUCONA
+//     po pomiarze: przy jedynej kamerze gry (azymut 0, elewacja 52 stopnie)
+//     dawala ZERO pikseli, bo tors ma 0.180 szerokosci, a ramiona siegaja
+//     +-0.147 i calkowicie ja zaslaniaja. Ceche niesie futro na obu barkach,
+//     ktore z tej kamery widac.
+// K7. CZEGO MODEL NIE ODWZOROWUJE I CO ZOSTAJE OTWARTE. (a) Uwagi karty mowia
+//     „walka w lesie i zasadzki" — tego sylwetka pojedynczej figurki nie niesie
+//     w ogole i niesc nie moze. (b) Karta ma wewnetrzny rozjazd: `Epoka` =
+//     „Zelazo", ale `Dostepna w epokach` = „Braz" i Uwagi mowia „Super Brazu
+//     (framea)". Model idzie za `Epoka` i za frameą; rozstrzygniecie samego
+//     rozjazdu w danych jest poza zakresem tego tematu (`gra/data/**` nie
+//     jest w allowliscie) i zostalo zgloszone w raporcie. (c) Choragiew-znacznik
+//     SUPERA nie ma zadnej podstawy zrodlowej dla Germanow epoki zelaza —
+//     to konwencja GRY (P6), wspolna wszystkim superom, czytelna z kamery.
+// ===========================================================================
 
 // ---------------------------------------------------------------------------
 // MIECZNIK GALIJSKI (Celtowie, ZELAZO) — POZA: pchniecie dlugim mieczem
