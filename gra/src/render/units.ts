@@ -1469,14 +1469,15 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if ((n.includes('krolewska gwardia') || n.includes('royal guard')) && !n.includes('sumer')) return buildInkaRoyalGuard(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Mezopotamia/Indus (jednostki-z1-mezopotamia.ts) --
   // AUDYT R-ZELAZO-AUDYT-POZOSTALE-Q1-T5: te cztery linie miały WYŁĄCZNIE rdzeń
-  // polski — jako jedyne w całej rodzinie modeli nazwanych. ZMIERZONE w żywym
-  // Three.js: „Hittite Guard", „Neo-Babylonian Infantry", „Shield Wall
-  // (Sargonid)" i „Harappan Garrison" (kolumna „Nazwa EN" z units.json) dawały
-  // 28-mesh generyk `miecznik` zamiast własnej figurki (34–37 mesh). Ścieżka
-  // angielska jest realna, nie teoretyczna: `battleScene.ts` bierze
-  // `modelName = stats['Jednostka'] ?? bu.nazwa`, a `bu.nazwa` to właśnie
-  // „Nazwa EN" (testBattle.ts:358). Rdzenie sprawdzone na JEDNOZNACZNOŚĆ
-  // w całym units.json — dokładnie po jednym trafieniu każdy.
+  // polski. ZMIERZONE w żywym Three.js: „Hittite Guard", „Neo-Babylonian
+  // Infantry", „Shield Wall (Sargonid)" i „Harappan Garrison" (kolumna
+  // „Nazwa EN" z units.json) dawały 28-mesh generyk `miecznik` zamiast
+  // własnej figurki (34–37 mesh). Dodany rdzeń EN jest utwardzeniem ścieżki
+  // dziś nieosiągalnej w żywych wywołaniach buildUnitModel (wszystkie
+  // przekazują `stats['Jednostka']`, PL — zweryfikowane w testBattle.ts,
+  // main.ts, unitMiniPreview.ts, units.ts), nie naprawą aktywnego błędu.
+  // Rdzenie sprawdzone na JEDNOZNACZNOŚĆ w całym units.json — dokładnie po
+  // jednym trafieniu każdy.
   if (n.includes('gwardia hetycka') || n.includes('hittite guard')) return buildGwardiaHetycka(ownerColor_);
   if (n.includes('piechota neobabilonska') || n.includes('neo-babylonian infantry')) return buildPiechotaNeobabilonska(ownerColor_);
   if (n.includes('mur tarcz') || n.includes('shield wall')) return buildMurTarcz(ownerColor_);

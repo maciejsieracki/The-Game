@@ -109,11 +109,11 @@
  *       (Sargonid)` i `Harappan Garrison` (kolumna „Nazwa EN" z units.json)
  *       NIE trafialy w te modele — zmierzone: kazda z tych czterech nazw
  *       dawala 28-mesh generyk `miecznik` zamiast wlasnej figurki, podczas gdy
- *       nazwa polska dawala 34-37 mesh. `battleScene.ts` bierze `modelName =
- *       stats['Jednostka'] ?? bu.nazwa`, a `bu.nazwa` to wlasnie „Nazwa EN"
- *       (testBattle.ts:358) — sciezka angielska jest wiec realna, nie
- *       teoretyczna. Cala reszta rodziny (asyryjska konnica, jezdziec z
- *       oszczepami, piechota hetycka, wojownik babilonski…) ma oba rdzenie.
+ *       nazwa polska dawala 34-37 mesh. Dodany rdzen EN jest utwardzeniem
+ *       sciezki dzis nieosiagalnej w zywych wywolaniach `buildUnitModel` —
+ *       wszystkie przekazuja `stats['Jednostka']` (PL), zweryfikowane w
+ *       testBattle.ts/main.ts/unitMiniPreview.ts/units.ts — nie naprawa
+ *       aktywnego bledu.
  *
  * ZMIERZONE PROPORCJE PO NAPRAWIE (harness real-render, nie z pamieci):
  *   Gwardia hetycka        h=0,7403  maxR=0,4243  minY=0,0000  mesh=34
