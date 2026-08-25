@@ -121,8 +121,12 @@
  *       0,0335 przy RAMIENIU 0,0000; Thorakites ma 0,0093 / 0,0335 / 0,0000.
  *   B2. Zaden z czterech modeli NIE ma bledu z T2 (tarcza obrocona tylem do
  *       kamery). Iloczyn skalarny normalnej pola gracza z kierunkiem patrzenia:
- *       Gwardia -0,603, Tyrski miecznik -0,603, Khopesz -0,788, Thorakites
- *       -0,788 — kazda zwrocona DO kamery.
+ *       Gwardia -0,603, Tyrski miecznik -0,603, Khopesz -0,603, Thorakites
+ *       -0,603 — kazda zwrocona DO kamery. [Final Control T6: poprawiono z
+ *       falszywego -0,788 dla Khopesza/Thorakitesa — to byla skladowa Y
+ *       kierunku patrzenia kamery (linia 72 tego naglowka), nie normalna
+ *       tarczy; wlasny test drukuje "normale do kamery"=-0,603 dla wszystkich
+ *       czterech, zmierzone niezaleznie.]
  *   B3. Thorakites JEST odrozniany od Falangi (pytanie dispatchu): 0,576 przed
  *       naprawami i 0,578 po nich, przy innym ksztalcie tarczy (thureos owalny
  *       vs aspis okragly), innym helmie (attycki otwarty vs koryncki zamkniety)
@@ -914,8 +918,11 @@ export function buildGwardiaTyrenska(ownerColor_: number): THREE.Group {
 //     i naprawiloby historie w jednej jednostce, psujac spojnosc dwoch —
 //     a brazowy model lezy poza allowlista tego tematu. Zamiast tego korona
 //     jest tu CIEMNIEJSZA (Z2_KHEP_DK) niz u przodka, co niesie roznice
-//     epokowa. Rzecz zapisano jako osobny temat do rejestru, nie jako uwage
-//     w raporcie (§3b).
+//     epokowa. Rzecz DO ZAPISANIA przez orkiestratora jako osobny temat w
+//     rejestrze przy integracji (dyspozycje/REJESTR-PROSB-I-ZADAN.md), nie
+//     jako uwage w raporcie (§3b) — Operator nie ma dostepu do tego pliku,
+//     jest poza allowlista tego tematu. [Final Control T6: poprawiono czas
+//     "zapisano" na "do zapisania" — wpis w rejestrze jeszcze nie istnieje.]
 // K4. ZBROJA LUSKOWA — pozycja, ktora jest tu ZGODNA ZE ZRODLAMI i tlumaczy
 //     Pancerz 6. Zbroja luskowa (rzedy malych plytek naszytych na podklad z
 //     lnu albo skory) jest w Egipcie poswiadczona od Nowego Panstwa —

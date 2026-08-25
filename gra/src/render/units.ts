@@ -1503,12 +1503,18 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // i „Iron Khopesh Warrior"). Poprawka wymaga tknięcia linii należącej do
   // innej jednostki (brązowej), więc jest osobnym tematem, nie „przy okazji".
   //
-  // Zakres skutku (zmierzony, nie założony): wszystkie żywe wywołania
-  // buildUnitModel w tym repo przekazują `stats['Jednostka']`, czyli nazwę
-  // POLSKĄ — ścieżka angielska jest dziś nieosiągalna w grze. To utwardzenie
-  // ścieżki defensywnej, nie naprawa aktywnego błędu. Rdzenie `tyre guard`
-  // i `tyrian swordsman` sprawdzone na jednoznaczność w całym units.json:
-  // dokładnie po jednym trafieniu każdy.
+  // Zakres skutku (zmierzony, nie założony — 8 żywych wywołań buildUnitModel
+  // sprawdzone po jednym): manualBattle.ts nie przekazuje nazwy w ogóle;
+  // unitMiniPreview.ts i units.ts (x2, przez typeId) przekazują nazwę POLSKĄ;
+  // battleScene.ts (x4) przekazuje `stats['Jednostka'] ?? bu.nazwa` — z
+  // UDOKUMENTOWANYM fallbackiem na `bu.nazwa`, która "now holds the ENGLISH
+  // display name" (patrz komentarz przy battleScene.ts:4986-4989). Ścieżka
+  // angielska NIE jest dziś nieosiągalna — jest osiągalna przez ten fallback,
+  // więc dopisanie aliasów EN jest naprawą ścieżki osiągalnej, nie
+  // utwardzeniem martwego kodu. [Final Control T6: poprzednia wersja tego
+  // zdania twierdziła "nieosiągalna" bez sprawdzenia fallbacku — poprawiono.]
+  // Rdzenie `tyre guard` i `tyrian swordsman` sprawdzone na jednoznaczność w
+  // całym units.json: dokładnie po jednym trafieniu każdy.
   if (n.includes('tyrski miecznik') || n.includes('tyrian swordsman')) return buildTyrskiMiecznik(ownerColor_);
   if (n.includes('gwardia tyrensk') || n.includes('tyre guard')) return buildGwardiaTyrenska(ownerColor_);
   if (n.includes('zelaznym khopesh') || n.includes('iron khopesh')) return buildZelaznyKhopesh(ownerColor_);
