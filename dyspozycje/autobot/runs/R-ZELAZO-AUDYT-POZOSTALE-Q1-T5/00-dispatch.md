@@ -86,11 +86,44 @@ Operator → Evaluator → Final Control → integracja orkiestratora, jedno ID,
 gałąź. Limit 5 rund. Model/effort: **Opus 5 High dla Operatora i Evaluatora**
 (temat czysto wizualny, `R-PROC-AUTOBOT.md` §5a), Final Control Sonnet 5 High.
 
+## Runda 1 — PASS-WITH-NOTES (zamknięte, po integration micro-fix)
+
+Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS-WITH-NOTES. Kluczowe
+znalezisko: plik `jednostki-z1-mezopotamia.ts` nie nazywał ani jednego mesh i nie miał
+`userData.anchors` — dlatego przez cztery poprzednie tematy serii nikt go nie sprawdził
+(punkty odniesienia musiałyby być wpisane liczbowo w test, czyli test mierzyłby sam
+siebie). Operator dodał nazwy/anchors wszystkim 143 mesh, zmierzył geometrię w żywym
+Three.js i znalazł dwa realne błędy w Murze tarcz: włócznia przechodząca przez własne
+ramię (ta sama klasa błędu co T1/T3) i przedramię przechodzące na wylot przez pole
+tarczy w kolorze gracza. Oba naprawione. Pozostałe trzy jednostki (Gwardia hetycka,
+Piechota neobabilońska, Garnizon Harappy) potwierdzone jako geometrycznie poprawne —
+zero przenikania, zero błędu orientacji tarczy z T2 — z dowodem pomiaru, nie na słowo.
+
+Trzy anachronizmy historyczne (upadek imperium hetyckiego, rozjazd Sumerowie/Sargonid
+~1300 lat, Harappa epoki brązu vs epoka żelaza gry) nazwane wprost w sekcji K, nie
+zamiecione — `units.json` poza allowlistą, nietknięty, decyzja badawcza per §10.
+
+**Integration micro-fix (orkiestrator, przed mergem):** Evaluator i Final Control
+znaleźli fałszywe zapewnienie w komentarzach przy dispatchu EN — twierdzenie, że te 4
+linie są „jedyne w całej rodzinie" z rdzeniem EN i że „ścieżka angielska jest realna,
+nie teoretyczna" — nieprawda w obu przypadkach (min. 3 kontrprzykłady w tym samym
+pliku 3-6 linii niżej; wszystkie żywe wywołania `buildUnitModel` przekazują PL, nie
+EN — dodany rdzeń EN jest utwardzeniem defensywnym, nie naprawą aktywnego błędu).
+Final Control: realne ryzyko dla T6, który audytuje sąsiednie jednostki w tym samym
+pliku. Poprawiono oba miejsca (linia dispatchu w `units.ts` + nagłówek pliku) przed
+mergem, zweryfikowane ponownie w pełni (tsc/build/72 testów tematu/5 bramek
+referencyjnych zielone).
+
+Zmergowane do `main`, zweryfikowane niezależnie przez orkiestratora (tsc/vite build/
+testy tematu+T1-T4/5 bramek referencyjnych zielone).
+
 ## Raport terminalny dispatchu
 
-ZMIANY/COMMIT: jeszcze brak — dispatch.
-TESTY: kryteria sukcesu 1–8 wyżej.
-BLOKADY: brak.
-RUNDY: 0/5 (dispatch).
-NASTĘPNY KROK: Operator, runda 1.
-DEPLOY/PUSH: NIE WYKONANO.
+ZMIANY/COMMIT: branch `autobot/ZELAZO-AUDYT-T5-Q1`, commit `dc7f7bb4`, zmergowane do
+`main`.
+TESTY: kryteria sukcesu 1–8 spełnione, potwierdzone niezależnie 3-krotnie + orkiestrator
+po merge.
+BLOKADY: brak (poprawki komentarzy wykonane jako integration micro-fix, nie blokujące).
+RUNDY: 1/5 (zamknięte pozytywnie).
+NASTĘPNY KROK: T6 (Fenicja/Egipt/Grecja piechota).
+DEPLOY/PUSH: git push (main) WYKONANO; deploy ROBOCZA po zamknięciu T6-T11.

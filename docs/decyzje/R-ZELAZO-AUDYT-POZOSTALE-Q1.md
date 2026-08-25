@@ -82,4 +82,12 @@ pod tym kątem** (nie ponowna praca nad 6 już ukończonymi w `R-ZELAZO-MODELE-B
 
 ## Postęp implementacji
 
-- T5–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{5..11}/`.
+- **T5 — ZINTEGROWANE (2026-08-25, 1 runda).** Garnizon Harappy, Gwardia hetycka,
+  Mur tarcz (Sargonid), Piechota neobabilońska. Plik nie nazywał ani jednego mesh —
+  dodane nazwy/anchors umożliwiły pierwszy w historii pomiar. Znalezione i naprawione:
+  włócznia Muru tarcz przechodząca przez własne ramię, przedramię przechodzące przez
+  pole tarczy. Pozostałe trzy potwierdzone jako poprawne z dowodem pomiaru. Integration
+  micro-fix: fałszywe zapewnienie w komentarzach dispatchu EN poprawione przed mergem
+  (ryzyko dla T6). Jedno znalezisko danych (`Mur tarcz (Sargonid)` — Kultura vs nazwa)
+  zarejestrowane osobno, wymaga decyzji właściciela.
+- T6–T11: patrz `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{6..11}/`.

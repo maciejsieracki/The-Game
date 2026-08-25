@@ -2994,3 +2994,9 @@ zamknięty jako recon bez bugu, drugiego zaktualizowany do READY_FOR_DEPLOY rund
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | R-ZELAZO-AUDYT-POZOSTALE-Q1 | 2026-08-25 | Właściciel skorygował zakres `R-ZELAZO-MODELE-BRAKUJACE-Q1`: „mieć dedykowany model" ≠ „przeszedł proces Opus 5". Pozostałe 19 jednostek epoki Żelaza mają dedykowany dispatch, ale żyją w starszych plikach generacji, nigdy nie przeszły rygorystycznego audytu (zmierzona geometria, sekcja historyczna, real-render dowód). ECHO: audytować i przebudować wszystkie 19 (nie 6 już ukończonych). | **W TRAKCIE — dispatch T5 wystartowany** | Pełny opis, tabela 19 jednostek i podział na 7 sekwencyjnych tematów (T5 Mezopotamia, T6 Fenicja/Egipt/Grecja piechota, T7 super-jednostki Rzym/Grecja+Hastati, T8 Germanie, T9 Celtowie, T10 Słowianie+Zulusi, T11 Katapulta): `docs/decyzje/R-ZELAZO-AUDYT-POZOSTALE-Q1.md`. Ślad: `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{5..11}/`. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-25 (znaleziska T5, R-ZELAZO-AUDYT-POZOSTALE-Q1-T5, related_to: R-ZELAZO-AUDYT-POZOSTALE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T5-MUR-TARCZ-KULTURA-ROZJAZD-Q1 | 2026-08-25 | Jednostka „Mur tarcz (Sargonid)" w `gra/data/units.json` ma pole `Kultura: Sumerowie`, ale nazwa „Sargonid" wskazuje na dynastię neoasyryjską (Sargonidzi, 722-609 p.n.e.) — rozjazd ~1300 lat między nazwą a przypisaną kulturą. Opisane w kodzie (`jednostki-z1-mezopotamia.ts`, sekcja K) jako świadomy anachronizm z uzasadnieniem (dziedzictwo wizualne sumeryjskie np. kaunakes), ale to jest rozjazd DANYCH, nie tylko interpretacji wizualnej. | **OTWARTE — dane, wymaga decyzji właściciela** | Znalezisko Operatora T5, potwierdzone przez Evaluatora i Final Control. Poza allowlistą tego tematu (`units.json`). Decyzja: poprawić `Kultura` na Asyria/Sargonidzi, czy zostawić jako świadome uogólnienie „mezopotamskie" — to decyzja właściciela, nie techniczna. |
