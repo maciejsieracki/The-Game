@@ -26674,6 +26674,28 @@ async function boot(): Promise<void> {
               // AI-MANAGE-Q1=A: major AI zawsze auto-zarzadza; gracz przez UI; MP/defensiveCopy NIE.
               const praca = pracaRaw;
               let prod0 = cityProd.get(cid) ?? { kolejka: [], postep: 0 };
+              // R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1 (kontrakt P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B,
+              // ECHO Maciej 2026-08-17 + doprecyzowanie 2026-08-19): jednostka NIGDY nie pobiera
+              // Pracy z kolejki miasta -- ani u gracza, ani u AI, ani w miescie-panstwie.
+              // `enqueue()` (production.ts) jej tam nie wpusci, ale kolejka moze ja zawierac ze
+              // stanu legacy (zapis/bundel sprzed migracji), a `advanceProduction` NIZEJ leje
+              // `pracaBudynki` we FRONT bez sprawdzania `kind` -- czyli taka pozycja realnie
+              // zbierala Praca ("Zebrana Praca X/Y" w panelu PRODUKCJA) i konczyla sie jako
+              // jednostka oplacona Praca. Czyscimy PRZED tickiem Pracy; postep wraca do puli
+              // Pracy wlasciciela -- ten sam kontrakt zwrotu co migracja save/capture/surrender
+              // (sanitizeBuildQueue, production.ts). Owner-agnostyczne: parytet gracz/AI/MP.
+              if (prod0.kolejka.some(it => it.kind === 'jednostka')) {
+                const legacyUnitFix = sanitizeBuildQueue(prod0);
+                if (legacyUnitFix.refundedPraca > 0) {
+                  setOwnerPracaPool(city.ownerId, ownerPracaPool(city.ownerId) + legacyUnitFix.refundedPraca);
+                }
+                prod0 = legacyUnitFix.prod;
+                cityProd.set(cid, prod0);
+                console.warn(
+                  `[Produkcja] ${city.name} (owner ${city.ownerId}): usunieto jednostke z kolejki Pracy `
+                  + `(legacy) -- zwrot ${legacyUnitFix.refundedPraca} Pracy do puli`,
+                );
+              }
               if (autoManageCities.has(cid) || isMajorAiOwner(city.ownerId, isCityStateOwner)) {
                 try {
                   const unlockedTechs = city.ownerId === 0
