@@ -535,10 +535,21 @@ function assertRest(m, z2Src, unitsSrc, unitRows) {
     new Set(sig).size === 4, UNITS.map((u, i) => u.pf + ':' + m[u.pf].meshCount + '/' + sig[i].length));
 
   // --- (R) brak regresji sąsiadów Z TEGO SAMEGO PLIKU i z T3 -----------------
-  // buildTriari korzysta z TYCH SAMYCH funkcji pomocniczych, którym T6 dodał
-  // parametry nazw — dowód, że domyślne wartości puste faktycznie go omijają.
-  check('(R1) Triari (ten sam plik, poza zakresem T6) nadal się buduje i NIE dostał ani jednej nazwy mesh',
-    m.triari.meshCount > 30 && m.triari.names.length === 0,
+  // (R1) — PRZEPISANA W T7, NIE „ZEPSUTA". Do T6 ta asercja brzmiała „Triari
+  // NIE dostał ani jednej nazwy mesh" i była dowodem, że domyślne, puste
+  // parametry nazw dodane przez T6 do wspólnych helperów faktycznie omijają
+  // buildTriari. Temat R-ZELAZO-AUDYT-POZOSTALE-Q1-T7 audytował buildTriari
+  // i nadał mu WŁASNE nazwy (prefiks `tr-`) oraz `userData.anchors` — więc
+  // stara treść przestała być prawdziwa i musiała zostać zastąpiona tym, co
+  // ma być prawdą teraz. Sens pozostaje ten sam: helpery T6 nie wsączają do
+  // Triariego ŻADNEJ nazwy z prefiksów czwórki T6 (`gt-`/`tm-`/`kh-`/`th-`).
+  // NIE cofać do wersji sprzed T7 — patrz nagłówek jednostki-z2-srodziemne.ts,
+  // sekcja „AUDYT R-ZELAZO-AUDYT-POZOSTALE-Q1-T7".
+  check('(R1) Triari (ten sam plik, poza zakresem T6) buduje się, ma WŁASNE nazwy `tr-` z T7 i ŻADNEJ z prefiksów T6',
+    m.triari.meshCount > 30
+    && m.triari.names.length === m.triari.meshCount
+    && m.triari.names.every((n) => n.startsWith('tr-'))
+    && !m.triari.names.some((n) => /^(gt|tm|kh|th)-/.test(n)),
     { mesh: m.triari.meshCount, nazwane: m.triari.names.length });
   check('(R2) Falanga (T3, inny plik) nadal się buduje i NIE dostała mesh tej czwórki',
     m.falanga.meshCount > 20 && !m.falanga.names.some((n) => /^(gt|tm|kh|th)-/.test(n)),
@@ -587,8 +598,17 @@ function assertRest(m, z2Src, unitsSrc, unitRows) {
   }
 
   // --- (K) sekcje historyczne — obecność i konkret, nie sam nagłówek --------
-  check('(K0) plik ma sekcję ZGODNOSC HISTORYCZNA dla KAŻDEJ z czterech jednostek',
-    (z2Src.match(/ZGODNOSC HISTORYCZNA/g) || []).length === 4);
+  // (K0) — DOPRECYZOWANA W T7. Liczyła wystąpienia frazy i wymagała DOKŁADNIE
+  // czterech. Temat T7 dopisał do tego samego pliku piątą sekcję (Triari, jego
+  // zakres), więc zliczanie po całym pliku przestało mierzyć to, co miało:
+  // „czy KAŻDA z czterech jednostek T6 ma własną sekcję". Teraz sprawdzane jest
+  // to wprost, po nagłówkach z nazwą jednostki — odporne na kolejne tematy
+  // dopisujące sekcje dla SWOICH jednostek do tego pliku.
+  const SEK_T6 = ['Tyrski miecznik', 'Gwardia Tyrenska', 'Wojownik z zelaznym khopesh', 'Thorakites'];
+  const brakSekcji = SEK_T6.filter((n) =>
+    !z2Src.includes('ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (' + n + ')'));
+  check('(K0) plik ma sekcję ZGODNOSC HISTORYCZNA dla KAŻDEJ z czterech jednostek T6',
+    brakSekcji.length === 0, { brak: brakSekcji });
   const K = [
     ['K:fenicja-brak-zrodel', /NAJMNIEJ\s*\n?\s*\/\/\s*WLASNYCH PRZEDSTAWIEN WOJSKA|WLASNYCH PRZEDSTAWIEN WOJSKA/],
     ['K:fenicja-balawat', /Balawat/],
