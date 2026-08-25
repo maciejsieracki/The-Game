@@ -105,6 +105,14 @@ import {
   buildZelazoKonnicaLancowaAsyryjska,
   buildZelazoKonnicaLuczniczaAsyryjska,
 } from './zelazo-konnica-asyryjska-opus5';
+// SŁOWIANIE ŻELAZO OPUS 5 — „Jeździec z oszczepami"/„Slavic Javelin Cavalry"
+// (R-ZELAZO-MODELE-BRAKUJACE-Q1-T4). Do dziś BEZ własnej grafiki: `categoryOf()`
+// łapie ją słowem `jezdz` i odsyła do generycznego `case 'konnica'` z KOPIĄ
+// trzymaną nadręcznie — a jednostka ma w units.json `Atak dystansowy: 2`,
+// `Zasięg ataku (hex): 2` i `Ilość pocisków: 5`. Nowy model: lekki oszczepnik
+// konny w pozycji rzutu, 5 drzewc (1 w dłoni + 4 w pęku), strzemiona i siodło
+// z terlicą (inna rama czasowa niż Brąz/Asyria), tarcza okrągła na plecach.
+import { buildZelazoJezdziecOszczepami } from './zelazo-jezdziec-oszczepami-opus5';
 // BRĄZ OPUS 5 — „Rydwan konny"/„War Chariot" (Kultura=null, Tech=Jeździectwo).
 // Do 2026-08-06 jedyna uniwersalna jednostka Brązu BEZ własnej grafiki: leciała
 // na wspólny model kategorii 'rydwan' bez żadnej dekoracji (warianty kulturowe
@@ -1390,6 +1398,17 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // Archer" (Atak dystansowy=6 — MUSI dzierżyć łuk, nie broń drzewcową).
   if (n.includes('konnica lancowa asyryjsk') || n.includes('assyrian lancer')) return buildZelazoKonnicaLancowaAsyryjska(ownerColor_);
   if (n.includes('konnica lucznicza asyryjsk') || n.includes('assyrian horse archer')) return buildZelazoKonnicaLuczniczaAsyryjska(ownerColor_);
+  // SŁOWIANIE ŻELAZO — „Jeździec z oszczepami" (R-ZELAZO-MODELE-BRAKUJACE-Q1-T4).
+  // MUSI stać PRZED generycznym dopasowaniem konnicy niżej, tak samo jak para
+  // asyryjska wyżej. Rdzenie „jezdziec z oszczepami"/„slavic javelin cavalry"
+  // są w całym units.json jednoznaczne (sprawdzone): „Oszczepnik", „Oszczepnik
+  // Zulu (Izijula)" i „Oszczepnik (Estólica)" mają rdzeń „oszczepnik", nie
+  // „oszczepami", a jedyny inny „Jeździec" to „Jeździec chiński" z własnym
+  // wpisem. Dispatch po NAZWIE (nie po kulturze) jest tu konieczny podwójnie:
+  // typ `Culture` w tym pliku NIE ZNA wartości „Słowianie", więc ścieżka
+  // kulturowa nie istnieje — dokładnie tak samo rozwiązano to dla „Drużynnika"
+  // (ta sama kultura, jednostki-z3-plemiona.ts).
+  if (n.includes('jezdziec z oszczepami') || n.includes('slavic javelin cavalry')) return buildZelazoJezdziecOszczepami(ownerColor_);
   // KONNICA (Brąz, Kultura=null): dopasowanie po PEŁNEJ nazwie, żeby warianty
   // kulturowe („Konnica lancowa asyryjska", „Konnica łucznicza asyryjska",
   // „Jeździec chiński"…) zachowały swoje modele — mają własne wpisy wyżej
