@@ -174,6 +174,7 @@ nie jest potrzebny — źródła (w tym D3-PROG-DIFF, dotąd pominięty) jednozn
 
 ---
 
-Commit: będzie wypushowany jako `03-final-control.md` (+ micro-fix `diplomacy-proposal-
-test.cjs`) na `origin/autobot/R-DYPLO-PAKT-WETO-EKSPANSJA-Q1`. Mój worktree:
-`/home/user/wt-FC-R-DYPLO-PAKT` (zostawiony, czysty poza tym commitem).
+Commit: `fa8591c1` — `03-final-control.md` (+ micro-fix `diplomacy-proposal-test.cjs`),
+wypushowany na `origin/autobot/R-DYPLO-PAKT-WETO-EKSPANSJA-Q1` (`4dbb564c..fa8591c1`).
+`origin/main` nadal `a79614db`. Mój worktree: `/home/user/wt-FC-R-DYPLO-PAKT` (zostawiony,
+czysty).
