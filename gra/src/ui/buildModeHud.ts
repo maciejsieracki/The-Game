@@ -5,7 +5,12 @@
  */
 
 import type { ImprovementKey } from '../render/improvements';
-import { HUD_EDGE_PX } from './hudLayout';
+import {
+  EVENTS_PANEL_ABOVE_TURN_GAP_PX,
+  HUD_EDGE_PX,
+  HUD_ZOOM_EDGE_PX,
+  turnStackBottomPx,
+} from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
@@ -106,7 +111,35 @@ export interface BuildModeHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-build-mode-hud-css';
+const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve';
+
+/**
+ * P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1 — pion panelu budowy.
+ *
+ * Było: `top:90px; max-height:calc(100vh - 180px)`. Dwie zmierzone wady tej pary:
+ *
+ * 1. `180px` to sztywna liczba mniejsza niż realna wysokość stosu WYKONAJ + ZAKOŃCZ TURĘ
+ *    (`turnStackBottomPx()` = 172px od dołu). Dolna krawędź panelu wypadała 90px nad dołem
+ *    okna, czyli 75px WEWNĄTRZ prostokąta dolnego paska — w każdym powiększeniu i przy każdej
+ *    wysokości okna. Panel ma z-index 311, pasek 310, więc to lista połykała kliknięcie
+ *    w przycisk WYKONAJ (pomiar: `elementFromPoint` na środku WYKONAJ trafiał w
+ *    `.civ-build-item`).
+ * 2. `vh` liczy się ZAWSZE od viewportu, a powiększenie UI gry (`hud.ts::applyUiZoom`) skaluje
+ *    <body> transformem — przez co body staje się blokiem zawierającym dla `position:fixed`,
+ *    a jego wysokość to `100/z vh`. `calc(100vh - 180px)` dawało więc przy z=1.5 limit 1.5×
+ *    większy niż cała dostępna wysokość: pasek przewijania dojeżdżał do końca, a ostatnie
+ *    pozycje listy nadal leżały POD dolną krawędzią ekranu (zgłoszenie właściciela: „menu się
+ *    nie przesuwa, nie można otworzyć ulepszeń na samym dole").
+ *
+ * Jest: rezerwa liczona z jednego źródła prawdy (`hudLayout.ts`) i limit w `%`, który — inaczej
+ * niż `vh` — liczy się od bloku zawierającego, więc jest poprawny w OBU układach współrzędnych
+ * (viewport bez powiększenia UI, przeskalowane <body> z powiększeniem UI). Ten sam wzorzec co
+ * `.civ-side-panel` (`sidePanelHud.ts`), łącznie z osobną regułą `html.civ-ui-zoom-active`.
+ */
+const BUILD_PANEL_TOP_PX = 90;
+/** Rezerwa od dołu: cały stos WYKONAJ/ZAKOŃCZ TURĘ + ten sam odstęp co panel wydarzeń. */
+const BUILD_PANEL_BOTTOM_PX = turnStackBottomPx() + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
+const BUILD_PANEL_BOTTOM_ZOOM_PX = turnStackBottomPx(true) + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
 
 const ULEPSZENIA_FOCUS_LABELS: Record<UlepszeniaFocus, string> = {
   zywnosc: 'Żywność',
@@ -132,6 +165,9 @@ function impIconHtml(key: ImprovementKey | string): string {
 }
 
 function ensureStyles(): void {
+  // Wzorzec z `bottomBarHud.ts`/`sidePanelHud.ts`: przy zmianie CSS zmienia się STYLE_ID,
+  // a poprzedni znacznik jest jawnie usuwany, żeby stary arkusz nie przeżył w dokumencie.
+  document.getElementById('civ-build-mode-hud-css')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-build-banner{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:312;
@@ -141,10 +177,13 @@ function ensureStyles(): void {
 .civ-build-banner.open{display:flex;}
 .civ-build-banner button{background:rgba(255,255,255,.08);border:1px solid rgba(232,176,74,.4);
   color:#ffe8c0;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;}
-.civ-build-panel{position:fixed;top:90px;right:${HUD_EDGE_PX}px;z-index:311;width:270px;max-height:calc(100vh - 180px);
+.civ-build-panel{position:fixed;top:${BUILD_PANEL_TOP_PX}px;right:${HUD_EDGE_PX}px;z-index:311;width:270px;
+  max-height:calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_PX}px);
   overflow-y:auto;display:none;flex-direction:column;gap:4px;padding:8px;
   background:rgba(12,18,35,.94);border:1px solid rgba(232,216,138,.28);border-radius:8px;
   font:12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.55);}
+html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
+  max-height:calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_ZOOM_PX}px);}
 .civ-build-panel.open{display:flex;}
 .civ-build-panel .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#7a7055;margin-bottom:4px;}
 .civ-build-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;
