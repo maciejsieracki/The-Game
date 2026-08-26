@@ -1,0 +1,245 @@
+{
+ "unitsJson": {
+  "stock": {
+   "drewno": 50
+  },
+  "upkeep": {
+   "drewno": 10
+  }
+ },
+ "owners": {
+  "0": {
+   "recruitAllowed": false,
+   "turns": [
+    {
+     "t": 1,
+     "before": 7,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 3
+     },
+     "after": 0
+    },
+    {
+     "t": 2,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 3,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 4,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 5,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    }
+   ],
+   "poolAfterRecruit": 7
+  },
+  "3": {
+   "recruitAllowed": false,
+   "turns": [
+    {
+     "t": 1,
+     "before": 7,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 3
+     },
+     "after": 0
+    },
+    {
+     "t": 2,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 3,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 4,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 5,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    }
+   ],
+   "poolAfterRecruit": 7
+  },
+  "7": {
+   "recruitAllowed": false,
+   "turns": [
+    {
+     "t": 1,
+     "before": 7,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 3
+     },
+     "after": 0
+    },
+    {
+     "t": 2,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 3,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 4,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    },
+    {
+     "t": 5,
+     "before": 0,
+     "naliczoneJednostki": {
+      "drewno": 10
+     },
+     "naliczoneRazem": {
+      "drewno": 10
+     },
+     "niedobor": {
+      "drewno": 10
+     },
+     "after": 0
+    }
+   ],
+   "poolAfterRecruit": 7
+  }
+ },
+ "gate57": false,
+ "gate49": false,
+ "gate50": false,
+ "hint57": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+ "kontrolaBezJednostki": {}
+}

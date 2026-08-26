@@ -1,0 +1,355 @@
+{
+  "jednostka": {
+    "koszt": {
+      "drewno": 50
+    },
+    "utrzymanie": {
+      "drewno": 10
+    }
+  },
+  "bramkaArnosc": 2,
+  "bramka": {
+    "owner0": {
+      "49": {
+        "gate": false,
+        "hint": "Za mało surowca w magazynie państwa",
+        "chipCzerwony": true
+      },
+      "50": {
+        "gate": false,
+        "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+        "chipCzerwony": true
+      },
+      "57": {
+        "gate": false,
+        "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+        "chipCzerwony": true
+      },
+      "60": {
+        "gate": true,
+        "hint": null,
+        "chipCzerwony": false
+      }
+    },
+    "owner4": {
+      "49": {
+        "gate": false,
+        "hint": "Za mało surowca w magazynie państwa",
+        "chipCzerwony": true
+      },
+      "50": {
+        "gate": false,
+        "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+        "chipCzerwony": true
+      },
+      "57": {
+        "gate": false,
+        "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+        "chipCzerwony": true
+      },
+      "60": {
+        "gate": true,
+        "hint": null,
+        "chipCzerwony": false
+      }
+    },
+    "owner31": {
+      "49": {
+        "gate": false,
+        "hint": "Za mało surowca w magazynie państwa",
+        "chipCzerwony": true
+      },
+      "50": {
+        "gate": false,
+        "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+        "chipCzerwony": true
+      },
+      "57": {
+        "gate": false,
+        "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+        "chipCzerwony": true
+      },
+      "60": {
+        "gate": true,
+        "hint": null,
+        "chipCzerwony": false
+      }
+    }
+  },
+  "tury": {
+    "owner0": [
+      {
+        "krok": "po rekrutacji",
+        "dozwolona": false,
+        "pula": 7
+      },
+      {
+        "tura": 1,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 7,
+        "niedobor": {
+          "drewno": 3
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 2,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 3,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 4,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 5,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 6,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      }
+    ],
+    "owner4": [
+      {
+        "krok": "po rekrutacji",
+        "dozwolona": false,
+        "pula": 7
+      },
+      {
+        "tura": 1,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 7,
+        "niedobor": {
+          "drewno": 3
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 2,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 3,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 4,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 5,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 6,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      }
+    ],
+    "owner31": [
+      {
+        "krok": "po rekrutacji",
+        "dozwolona": false,
+        "pula": 7
+      },
+      {
+        "tura": 1,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 7,
+        "niedobor": {
+          "drewno": 3
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 2,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 3,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 4,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 5,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      },
+      {
+        "tura": 6,
+        "naliczoneJednostki": {
+          "drewno": 10
+        },
+        "naliczoneRazem": {
+          "drewno": 10
+        },
+        "pulaPrzed": 0,
+        "niedobor": {
+          "drewno": 10
+        },
+        "pulaPo": 0
+      }
+    ]
+  },
+  "kontrolaBezJednostki": {}
+}

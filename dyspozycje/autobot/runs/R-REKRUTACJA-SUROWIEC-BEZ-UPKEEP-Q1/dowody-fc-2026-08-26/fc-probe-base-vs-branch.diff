@@ -1,0 +1,60 @@
+19,21c19,21
+<         "gate": false,
+<         "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+<         "chipCzerwony": true
+---
+>         "gate": true,
+>         "hint": null,
+>         "chipCzerwony": false
+24,26c24,26
+<         "gate": false,
+<         "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+<         "chipCzerwony": true
+---
+>         "gate": true,
+>         "hint": null,
+>         "chipCzerwony": false
+41,43c41,43
+<         "gate": false,
+<         "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+<         "chipCzerwony": true
+---
+>         "gate": true,
+>         "hint": null,
+>         "chipCzerwony": false
+46,48c46,48
+<         "gate": false,
+<         "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+<         "chipCzerwony": true
+---
+>         "gate": true,
+>         "hint": null,
+>         "chipCzerwony": false
+63,65c63,65
+<         "gate": false,
+<         "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+<         "chipCzerwony": true
+---
+>         "gate": true,
+>         "hint": null,
+>         "chipCzerwony": false
+68,70c68,70
+<         "gate": false,
+<         "hint": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+<         "chipCzerwony": true
+---
+>         "gate": true,
+>         "hint": null,
+>         "chipCzerwony": false
+83c83
+<         "dozwolona": false,
+---
+>         "dozwolona": true,
+174c174
+<         "dozwolona": false,
+---
+>         "dozwolona": true,
+265c265
+<         "dozwolona": false,
+---
+>         "dozwolona": true,
