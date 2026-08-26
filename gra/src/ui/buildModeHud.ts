@@ -111,7 +111,7 @@ export interface BuildModeHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve-floor';
+const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve-floor-fixedtop';
 
 /**
  * P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1 — pion panelu budowy.
@@ -143,14 +143,27 @@ const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve-floor';
  * do 23–31px — dla gracza praktycznie znika (zmierzone: 5/60 punktów siatki łączonej
  * przeglądarka × UI × wysokość, w tym 2 punkty, w których PRZED naprawą klikało się dobrze).
  *
- * Dlatego DWIE sprzężone deklaracje, obie liczone z tych samych stałych:
- *  - `max-height: max(52px, calc(...))` — panel nigdy nie jest niższy niż JEDEN pełny wiersz
- *    listy z chromem panelu, więc zawsze zostaje przewijalny i klikalny;
- *  - `top: min(90px, max(0px, calc(100% - rezerwa_dolna - 52px)))` — gdy 52px nie mieszczą się
- *    już pod `top:90px`, panel przesuwa się W GÓRĘ, zamiast wchodzić na stos WYKONAJ/ZAKOŃCZ
- *    TURĘ. Bez tego członu podłoga naprawiałaby klikalność listy kosztem klikalności WYKONAJ
- *    w 3 punktach siatki (zmierzone). Przy `top:0` i tak nic więcej nie da się zrobić — wtedy
- *    lepiej, żeby panel nachodził, niż żeby zniknął.
+ * Dlatego podłoga: `max-height: max(52px, calc(...))` — panel nigdy nie jest niższy niż JEDEN
+ * pełny wiersz listy z chromem panelu, więc zawsze zostaje przewijalny i klikalny.
+ *
+ * RUNDA 3 — `top` WRACA DO STAŁEJ WARTOŚCI. Runda 2 sprzęgła podłogę z ruchomym
+ * `top: min(90px, max(0px, calc(100% - rezerwa_dolna - 52px)))`: gdy pełny wiersz nie mieścił
+ * się pod `top:90px`, panel jechał W GÓRĘ, zamiast wchodzić na stos WYKONAJ/ZAKOŃCZ TURĘ.
+ * Cena okazała się wyższa niż zysk: górna granica ruchu schodziła do `0px`, czyli W PAS
+ * ZAREZERWOWANY DLA GÓRNEGO PRAWEGO HUD-u. Ten pas ma w kodzie jedno źródło prawdy —
+ * `hudLayout.ts::hudRightRailBottomPx()` (= HUD_TOP_PX + max(wiersz chipów, wiersz Civpedia/Menu)
+ * = 68px), z którego korzysta też `eventsPanelTopPx()` dla panelu wydarzeń. Zmierzone na siatce
+ * 60 punktów Z ZAMONTOWANYM `.hud-right-cluster`: w 8 komórkach panel wchodził w ten pas
+ * (górna krawędź 18–66px CSS), a w 13 zasłaniał sobą przyciski Civpedia i Menu — panel budowy
+ * ma `z-index:311`, a cały `.civ-hud` (wraz z klastrem) `z-index:310`, więc to PANEL zakrywa
+ * HUD, nie odwrotnie. Stałe `top:90px` respektuje ten pas w każdej komórce siatki.
+ *
+ * ŚWIADOMY KOMPROMIS. W najciaśniejszych kombinacjach (np. przeglądarka 200% × UI 150% × okno
+ * 640px → blok zawierający 213px CSS) pas górnego HUD-u + jeden pełny wiersz listy + rezerwa
+ * stosu tury po prostu się nie mieszczą naraz. Wybór jest wtedy między „panel nachodzi na stos
+ * WYKONAJ/ZAKOŃCZ TURĘ" (jak w stanie zastanym, gdzie było to 60/60) a „lista ulepszeń znika
+ * albo zakrywa górny HUD". Wybrane jest nachodzenie: przycisk pod panelem da się odsłonić
+ * zamknięciem trybu budowy, listy schowanej pod HUD-em nie da się odzyskać niczym.
  */
 const BUILD_PANEL_TOP_PX = 90;
 /** Rezerwa od dołu: cały stos WYKONAJ/ZAKOŃCZ TURĘ + ten sam odstęp co panel wydarzeń. */
@@ -200,13 +213,12 @@ function ensureStyles(): void {
 .civ-build-banner button{background:rgba(255,255,255,.08);border:1px solid rgba(232,176,74,.4);
   color:#ffe8c0;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;}
 .civ-build-panel{position:fixed;z-index:311;width:270px;right:${HUD_EDGE_PX}px;
-  top:min(${BUILD_PANEL_TOP_PX}px,max(0px,calc(100% - ${BUILD_PANEL_BOTTOM_PX + BUILD_PANEL_MIN_H_PX}px)));
+  top:${BUILD_PANEL_TOP_PX}px;
   max-height:max(${BUILD_PANEL_MIN_H_PX}px,calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_PX}px));
   overflow-y:auto;display:none;flex-direction:column;gap:4px;padding:8px;
   background:rgba(12,18,35,.94);border:1px solid rgba(232,216,138,.28);border-radius:8px;
   font:12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.55);}
 html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
-  top:min(${BUILD_PANEL_TOP_PX}px,max(0px,calc(100% - ${BUILD_PANEL_BOTTOM_ZOOM_PX + BUILD_PANEL_MIN_H_PX}px)));
   max-height:max(${BUILD_PANEL_MIN_H_PX}px,calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_ZOOM_PX}px));}
 .civ-build-panel.open{display:flex;}
 .civ-build-panel .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#7a7055;margin-bottom:4px;}

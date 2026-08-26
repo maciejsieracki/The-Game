@@ -703,6 +703,16 @@ async function main() {
   check('G6 żaden NIEPRZEJRZANY element position:fixed o z-index > panelu budowy nie stoi w prawym pasie ekranu (nowy = scena testu może być znów niepełna)',
     unreviewed.length === 0, { unreviewed, przejrzane: foundRightHighZ.map((x) => x.sel + ' z=' + x.z) });
 
+  // G7 — założenie, na którym stoi cała scena: `.civ-hud` (z własnym `z-index:310`) i panel
+  // budowy (`z-index:311`) są RODZEŃSTWEM, oba doklejane wprost do <body>. Dlatego `z-index:320`
+  // klastra jest domknięty w kontekście układania `.civ-hud` i porównuje się 310 vs 311, a nie
+  // 320 vs 311 — panel maluje się NAD górnym HUD-em, nie pod nim. Gdyby któryś z tych elementów
+  // przeniósł się w inne miejsce drzewa, kolejność malowania odwróciłaby się i scena testu
+  // przestałaby odpowiadać grze; ta asercja ma o tym powiedzieć od razu.
+  check('G7 .civ-hud i .civ-build-panel są rodzeństwem doklejanym wprost do <body> (kontekst układania odtworzony w scenie zgodnie z grą)',
+    /barEl\.className = 'civ-hud';\s*\n\s*document\.body\.appendChild\(barEl\);/.test(hudTsSrc)
+      && /document\.body\.appendChild\(bannerEl\);\s*\n\s*document\.body\.appendChild\(el\);/.test(hudSrc));
+
   const buildTopPx = buildPanelTopPx(hudSrc);
   check('G2f pas zarezerwowany dla prawego klastra policzony z hudLayout.ts (hudRightRailBottomPx)',
     HL.rightRailBottom > 0 && buildTopPx !== null,
