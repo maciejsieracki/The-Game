@@ -482,48 +482,92 @@ console.log('\n-- 8. NAZWY W UI (pkt 6): jedna nazwa strumienia we WSZYSTKICH pa
   ok(/>Ulepszenia\s+\d+%</.test(empMut),
     'kontrola negatywna: przywrócenie gołej etykiety „Ulepszenia" zapala asercję hero (test nie jest tautologią)');
 
-  // (b) HUD TRYBU BUDOWY — buildModeHud.ts, ten sam strumień.
-  const hudBody = wytnij(
-    path.resolve(SRC, 'ui', 'buildModeHud.ts'),
-    'function renderEmpirePracaSplit(pct: number): string {',
-    '\n}\n',
-  );
-  ok(hudBody !== null, 'buildModeHud.ts: sekcja podziału Pracy znaleziona i wycięta ze źródła');
-  function renderHud(lbl, lblPelna) {
-    const fn = new Function(
-      'pct', 'MAX_PROCENT_PULI_IMPERIUM', 'PODZIAL_PRACY_PULA_LBL', 'PODZIAL_PRACY_PULA_LBL_PELNA',
-      'PODZIAL_PRACY_PULA_TIP', 'ulepszeniaPercentSliderFillStyle',
-      hudBody,
-    );
-    return fn(30, 50, lbl, lblPelna, M.PODZIAL_PRACY_PULA_TIP, () => 'background:x');
-  }
-  const hudHtml = renderHud(LBL, LBL_PELNA);
-  ok(typeof hudHtml === 'string' && hudHtml.includes(LBL_PELNA),
-    `HUD budowy: strumień nazwany „${LBL_PELNA}" — identycznie jak w panelu miasta`);
-  ok(!/Ulepszenia — pula imperium/.test(hudHtml),
-    'HUD budowy: znikła czwarta wersja tej samej nazwy („Ulepszenia — pula imperium")');
-  ok(hudHtml.includes('cuda na mapie'), 'HUD budowy: tooltip nazywa pozostałych konsumentów puli');
-  const hudMut = renderHud('Ulepszenia', 'Ulepszenia');
-  ok(!hudMut.includes(LBL_PELNA),
-    'kontrola negatywna: podmiana etykiety na gołe „Ulepszenia" gasi asercję nazwy w HUD');
+  // (b) HUD TRYBU BUDOWY — buildModeHud.ts.
+  // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 — AKTUALIZACJA ASERCJI (uzasadnienie w 01-operator.md):
+  //   CO PILNOWALY (do tej zmiany): ze TRZECI egzemplarz suwaka warstwy (a)
+  //     (`CityPodzialPracy.procentBudynki` — podzial Pracy miasta: budynki vs pula imperium,
+  //     0–50%), renderowany w panelu trybu budowy przez `renderEmpirePracaSplit()`, nazywa
+  //     ten strumien TA SAMA nazwa co panel imperium i panel miasta.
+  //   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: ECHO wlasciciela — „w tym miejscu podzial
+  //     pracy nie jest potrzebny, bo jest dublowany juz w pool imperium". Trzeci egzemplarz
+  //     warstwy (a) zostal z panelu trybu budowy USUNIETY w calosci (funkcja, wstawienie,
+  //     handler, CSS, pozycje kontraktu, podpiecie w main.ts). Asercja o jego nazwie nie ma
+  //     juz czego pilnowac — nie zostala rozluzniona, tylko jej przedmiot przestal istniec.
+  //   CO PILNUJE TERAZ (warunek MOCNIEJSZY, nie slabszy): ze warstwa (a) NIE WROCI do tego
+  //     panelu — ani jako funkcja renderujaca, ani jako markup, ani jako pozycja kontraktu,
+  //     ani jako import nazw warstwy (a). Kazda z czterech wlasnosci ma wlasna kontrole
+  //     negatywna: syntetyczny mutant zrodla (ponownie wstawiony blok) MUSI zapalic asercje.
+  {
+    const HUD = path.resolve(SRC, 'ui', 'buildModeHud.ts');
+    const hudSrc = fs.readFileSync(HUD, 'utf8');
 
-  // (c) Trzy panele mówią JEDNYM głosem, bo czytają JEDNO źródło nazwy.
+    /** Cztery niezalezne sygnatury TRZECIEGO egzemplarza warstwy (a) w panelu trybu budowy. */
+    function sygnaturyWarstwyA(src) {
+      return {
+        funkcja: /function\s+renderEmpirePracaSplit\s*\(/.test(src),
+        markup: /civ-build-global-split|data-praca-empire-split|data-praca-split-scope/.test(src),
+        kontrakt: /^\s*(getEmpirePracaSplit|onEmpirePracaSplitChange)\??\s*:/m.test(src),
+        importNazwWarstwyA: /^\s*PODZIAL_PRACY_PULA_(LBL|LBL_PELNA|TIP),\s*$/m.test(src),
+      };
+    }
+
+    const teraz = sygnaturyWarstwyA(hudSrc);
+    ok(teraz.funkcja === false,
+      'HUD budowy: renderEmpirePracaSplit() (warstwa (a) — CityPodzialPracy.procentBudynki) usunieta');
+    ok(teraz.markup === false,
+      'HUD budowy: markup suwaka warstwy (a) (civ-build-global-split / data-praca-empire-split) nie wystepuje');
+    ok(teraz.kontrakt === false,
+      'HUD budowy: getEmpirePracaSplit/onEmpirePracaSplitChange nie sa juz pozycjami BuildModeHudConfig');
+    ok(teraz.importNazwWarstwyA === false,
+      'HUD budowy: nazwy warstwy (a) (PODZIAL_PRACY_PULA_LBL*/TIP) nie sa juz importowane do tego panelu');
+
+    // Kontrola negatywna: mutant = zrodlo z PONOWNIE wstawionym blokiem warstwy (a).
+    // Kazda z czterech asercji wyzej MUSI na nim zapalic sie na czerwono.
+    const mutant = hudSrc
+      .replace("import {\n  MAX_PROCENT_PULI_IMPERIUM,",
+        "import {\n  PODZIAL_PRACY_PULA_LBL,\n  PODZIAL_PRACY_PULA_LBL_PELNA,\n  PODZIAL_PRACY_PULA_TIP,\n  MAX_PROCENT_PULI_IMPERIUM,")
+      .replace('export interface BuildModeHudConfig {',
+        'export interface BuildModeHudConfig {\n  getEmpirePracaSplit?: () => number | null;\n  onEmpirePracaSplitChange?: (procentPuliImperium: number) => void;')
+      .replace('/** Montuje banner',
+        'function renderEmpirePracaSplit(pct: number): string {\n'
+        + '  return \'<div class="civ-build-global-split" data-praca-split-scope="empire">\'\n'
+        + '    + `<input data-praca-empire-split value="${pct}" />` + \'</div>\';\n}\n\n/** Montuje banner');
+    const poMutacji = sygnaturyWarstwyA(mutant);
+    ok(poMutacji.funkcja === true,
+      'kontrola negatywna: po ponownym wstawieniu renderEmpirePracaSplit() asercja o funkcji PADA (nie tautologia)');
+    ok(poMutacji.markup === true,
+      'kontrola negatywna: po ponownym wstawieniu markupu asercja o markupie PADA (nie tautologia)');
+    ok(poMutacji.kontrakt === true,
+      'kontrola negatywna: po przywroceniu pozycji kontraktu asercja o kontrakcie PADA (nie tautologia)');
+    ok(poMutacji.importNazwWarstwyA === true,
+      'kontrola negatywna: po przywroceniu importu nazw warstwy (a) asercja o imporcie PADA (nie tautologia)');
+
+    // Warstwa (a) ma ZOSTAC w swoich dwoch prawowitych miejscach — tu tylko kotwica zrodlowa,
+    // pomiar zachowania jest w praca-panel-budowy-warstwa-real-render-test.cjs.
+    ok(/function renderEmpirePracaBudgetSplitSection\(\): string \{/.test(
+      fs.readFileSync(path.resolve(SRC, 'ui', 'empireDetailPanel.ts'), 'utf8')),
+      'panel imperium NADAL renderuje warstwe (a) (renderEmpirePracaBudgetSplitSection nietkniete)');
+    ok(/PODZIAL_PRACY_PULA_LBL/.test(fs.readFileSync(path.resolve(SRC, 'ui', 'cityPanel.ts'), 'utf8')),
+      'panel miasta NADAL uzywa wspolnej nazwy warstwy (a) (cityPanel.ts nietkniete)');
+
+    // Panel trybu budowy zachowuje WARSTWE (c) — `UlepszeniaEmpirePolicy.pracaAutoPercent`
+    // i `City.ulepszeniaPracaPercent` (0–100%). To ona jest wlasciwa warstwa tego panelu.
+    ok(/data-ulepszenia-\$\{scope\}-percent/.test(hudSrc),
+      'HUD budowy: suwak warstwy (c) (pracaAutoPercent) nadal jest renderowany');
+  }
+
+  // (c) Panele mowiace o warstwie (a) czytaja JEDNO zrodlo nazwy.
+  // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 — z listy wypadl `buildModeHud.ts`, bo od tej
+  // zmiany NIE renderuje warstwy (a) w ogole (wyzej: cztery asercje + cztery kontrole
+  // negatywne). Wlasnosc „jedna nazwa dla warstwy (a)" pilnowana jest dalej, dla obu
+  // panelow, ktore ta warstwe renderuja.
   for (const [nazwa, plik] of [
     ['cityPanel.ts', path.resolve(SRC, 'ui', 'cityPanel.ts')],
     ['empireDetailPanel.ts', path.resolve(SRC, 'ui', 'empireDetailPanel.ts')],
-    ['buildModeHud.ts', path.resolve(SRC, 'ui', 'buildModeHud.ts')],
   ]) {
     const src = fs.readFileSync(plik, 'utf8');
     ok(/PODZIAL_PRACY_PULA_LBL/.test(src),
-      `${nazwa}: nazwa strumienia pochodzi ze WSPÓLNEJ stałej, nie z własnego literału`);
-  }
-  // Parametr niosący % puli nie nazywa się już „ulepszenia" (wzorzec doUlepszen = doPuli).
-  {
-    const hudSrc = fs.readFileSync(path.resolve(SRC, 'ui', 'buildModeHud.ts'), 'utf8');
-    ok(!/onEmpirePracaSplitChange\?:\s*\(procentUlepszenia/.test(hudSrc),
-      'buildModeHud.ts: parametr niosący % puli imperium nie nazywa się już „procentUlepszenia"');
-    ok(/onEmpirePracaSplitChange\?:\s*\(procentPuliImperium/.test(hudSrc),
-      'buildModeHud.ts: parametr nazywa się tym, co niesie (procentPuliImperium)');
+      `${nazwa}: nazwa strumienia warstwy (a) pochodzi ze WSPOLNEJ stalej, nie z wlasnego literalu`);
   }
 }
 
