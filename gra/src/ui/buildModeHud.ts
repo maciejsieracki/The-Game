@@ -5,7 +5,12 @@
  */
 
 import type { ImprovementKey } from '../render/improvements';
-import { HUD_EDGE_PX } from './hudLayout';
+import {
+  EVENTS_PANEL_ABOVE_TURN_GAP_PX,
+  HUD_EDGE_PX,
+  HUD_ZOOM_EDGE_PX,
+  turnStackBottomPx,
+} from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
@@ -119,7 +124,70 @@ export interface BuildModeHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-build-mode-hud-css';
+const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve-floor-fixedtop';
+
+/**
+ * P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1 — pion panelu budowy.
+ *
+ * Było: `top:90px; max-height:calc(100vh - 180px)`. Dwie zmierzone wady tej pary:
+ *
+ * 1. `180px` to sztywna liczba mniejsza niż realna wysokość stosu WYKONAJ + ZAKOŃCZ TURĘ
+ *    (`turnStackBottomPx()` = 172px od dołu). Dolna krawędź panelu wypadała 90px nad dołem
+ *    okna, czyli 75px WEWNĄTRZ prostokąta dolnego paska — w każdym powiększeniu i przy każdej
+ *    wysokości okna. Panel ma z-index 311, pasek 310, więc to lista połykała kliknięcie
+ *    w przycisk WYKONAJ (pomiar: `elementFromPoint` na środku WYKONAJ trafiał w
+ *    `.civ-build-item`).
+ * 2. `vh` liczy się ZAWSZE od viewportu, a powiększenie UI gry (`hud.ts::applyUiZoom`) skaluje
+ *    <body> transformem — przez co body staje się blokiem zawierającym dla `position:fixed`,
+ *    a jego wysokość to `100/z vh`. `calc(100vh - 180px)` dawało więc przy z=1.5 limit 1.5×
+ *    większy niż cała dostępna wysokość: pasek przewijania dojeżdżał do końca, a ostatnie
+ *    pozycje listy nadal leżały POD dolną krawędzią ekranu (zgłoszenie właściciela: „menu się
+ *    nie przesuwa, nie można otworzyć ulepszeń na samym dole").
+ *
+ * Jest: rezerwa liczona z jednego źródła prawdy (`hudLayout.ts`) i limit w `%`, który — inaczej
+ * niż `vh` — liczy się od bloku zawierającego, więc jest poprawny w OBU układach współrzędnych
+ * (viewport bez powiększenia UI, przeskalowane <body> z powiększeniem UI). Ten sam wzorzec co
+ * `.civ-side-panel` (`sidePanelHud.ts`), łącznie z osobną regułą `html.civ-ui-zoom-active`.
+ *
+ * RUNDA 2 — PODŁOGA. Sama rezerwa nie wystarczy: rezerwa całkowita to `90 + 184` (`174` przy
+ * powiększeniu UI) = 274/264px, więc gdy blok zawierający jest NIŻSZY niż ta rezerwa
+ * (przeglądarka 200% × okno 640 → viewport 320px CSS → body przy UI 125% = 256px),
+ * `calc(100% - 274px)` schodzi poniżej zera, `max-height` zapada się do ~0 i panel kurczy się
+ * do 23–31px — dla gracza praktycznie znika (zmierzone: 5/60 punktów siatki łączonej
+ * przeglądarka × UI × wysokość, w tym 2 punkty, w których PRZED naprawą klikało się dobrze).
+ *
+ * Dlatego podłoga: `max-height: max(52px, calc(...))` — panel nigdy nie jest niższy niż JEDEN
+ * pełny wiersz listy z chromem panelu, więc zawsze zostaje przewijalny i klikalny.
+ *
+ * RUNDA 3 — `top` WRACA DO STAŁEJ WARTOŚCI. Runda 2 sprzęgła podłogę z ruchomym
+ * `top: min(90px, max(0px, calc(100% - rezerwa_dolna - 52px)))`: gdy pełny wiersz nie mieścił
+ * się pod `top:90px`, panel jechał W GÓRĘ, zamiast wchodzić na stos WYKONAJ/ZAKOŃCZ TURĘ.
+ * Cena okazała się wyższa niż zysk: górna granica ruchu schodziła do `0px`, czyli W PAS
+ * ZAREZERWOWANY DLA GÓRNEGO PRAWEGO HUD-u. Ten pas ma w kodzie jedno źródło prawdy —
+ * `hudLayout.ts::hudRightRailBottomPx()` (= HUD_TOP_PX + max(wiersz chipów, wiersz Civpedia/Menu)
+ * = 68px), z którego korzysta też `eventsPanelTopPx()` dla panelu wydarzeń. Zmierzone na siatce
+ * 60 punktów Z ZAMONTOWANYM `.hud-right-cluster`: w 8 komórkach panel wchodził w ten pas
+ * (górna krawędź 18–66px CSS), a w 13 zasłaniał sobą przyciski Civpedia i Menu — panel budowy
+ * ma `z-index:311`, a cały `.civ-hud` (wraz z klastrem) `z-index:310`, więc to PANEL zakrywa
+ * HUD, nie odwrotnie. Stałe `top:90px` respektuje ten pas w każdej komórce siatki.
+ *
+ * ŚWIADOMY KOMPROMIS. W najciaśniejszych kombinacjach (np. przeglądarka 200% × UI 150% × okno
+ * 640px → blok zawierający 213px CSS) pas górnego HUD-u + jeden pełny wiersz listy + rezerwa
+ * stosu tury po prostu się nie mieszczą naraz. Wybór jest wtedy między „panel nachodzi na stos
+ * WYKONAJ/ZAKOŃCZ TURĘ" (jak w stanie zastanym, gdzie było to 60/60) a „lista ulepszeń znika
+ * albo zakrywa górny HUD". Wybrane jest nachodzenie: przycisk pod panelem da się odsłonić
+ * zamknięciem trybu budowy, listy schowanej pod HUD-em nie da się odzyskać niczym.
+ */
+const BUILD_PANEL_TOP_PX = 90;
+/** Rezerwa od dołu: cały stos WYKONAJ/ZAKOŃCZ TURĘ + ten sam odstęp co panel wydarzeń. */
+const BUILD_PANEL_BOTTOM_PX = turnStackBottomPx() + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
+const BUILD_PANEL_BOTTOM_ZOOM_PX = turnStackBottomPx(true) + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
+/** Wysokość jednego wiersza listy `.civ-build-item`: padding 7+7 + ikona 18 + ramka 1+1
+ *  (zmierzone w Chromium: `getBoundingClientRect().height` = 34px dla każdej pozycji). */
+const BUILD_ITEM_ROW_H_PX = 7 + 7 + 18 + 1 + 1;
+/** Podłoga wysokości panelu = jeden PEŁNY wiersz + padding panelu 8+8 + ramka 1+1 (52px).
+ *  Mniej znaczy wiersz przycięty w połowie; więcej niepotrzebnie zjada pas przewijania. */
+const BUILD_PANEL_MIN_H_PX = BUILD_ITEM_ROW_H_PX + 8 + 8 + 1 + 1;
 
 const ULEPSZENIA_FOCUS_LABELS: Record<UlepszeniaFocus, string> = {
   zywnosc: 'Żywność',
@@ -145,6 +213,9 @@ function impIconHtml(key: ImprovementKey | string): string {
 }
 
 function ensureStyles(): void {
+  // Wzorzec z `bottomBarHud.ts`/`sidePanelHud.ts`: przy zmianie CSS zmienia się STYLE_ID,
+  // a poprzedni znacznik jest jawnie usuwany, żeby stary arkusz nie przeżył w dokumencie.
+  document.getElementById('civ-build-mode-hud-css')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-build-banner{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:312;
@@ -154,10 +225,14 @@ function ensureStyles(): void {
 .civ-build-banner.open{display:flex;}
 .civ-build-banner button{background:rgba(255,255,255,.08);border:1px solid rgba(232,176,74,.4);
   color:#ffe8c0;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;}
-.civ-build-panel{position:fixed;top:90px;right:${HUD_EDGE_PX}px;z-index:311;width:270px;max-height:calc(100vh - 180px);
+.civ-build-panel{position:fixed;z-index:311;width:270px;right:${HUD_EDGE_PX}px;
+  top:${BUILD_PANEL_TOP_PX}px;
+  max-height:max(${BUILD_PANEL_MIN_H_PX}px,calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_PX}px));
   overflow-y:auto;display:none;flex-direction:column;gap:4px;padding:8px;
   background:rgba(12,18,35,.94);border:1px solid rgba(232,216,138,.28);border-radius:8px;
   font:12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.55);}
+html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
+  max-height:max(${BUILD_PANEL_MIN_H_PX}px,calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_ZOOM_PX}px));}
 .civ-build-panel.open{display:flex;}
 .civ-build-panel .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#7a7055;margin-bottom:4px;}
 .civ-build-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;
