@@ -64,6 +64,13 @@ import {
   adjustHandelSplit,
   MAX_PROCENT_NAUKA,
   clampPodzialPracyBudynkiPercent,
+  procentPuliImperiumZBudynkow,
+  MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
+  MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
+  MAX_PROCENT_PULI_IMPERIUM,
+  PODZIAL_PRACY_PULA_LBL,
+  PODZIAL_PRACY_PULA_LBL_PELNA,
+  PODZIAL_PRACY_PULA_TIP,
 } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
@@ -1303,22 +1310,43 @@ function daninaLabelForCity(_city: City): DaninaLabel {
   return daninaLabel();
 }
 
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 — JEDNA nazwa drugiego strumienia w calym UI.
+ *
+ * Przed tym tematem ta sama liczba nazywala sie w tym pliku „Ulepszenia",
+ * „→ Pula Pracy imperium", „→ Pula imperium — zapas cywilizacji" i `doUlepszen`.
+ * RUNDA 2 (F2): definicje przeniesione do `game/cities.ts`, bo runda 1 ujednolicila
+ * TYLKO ten plik — `empireDetailPanel.ts` zostal z trzecia nazwa. Tu zostaja juz
+ * wylacznie lokalne aliasy na to JEDNO zrodlo (krotsze w gestych szablonach).
+ */
+const PULA_LBL = PODZIAL_PRACY_PULA_LBL;
+const PULA_LBL_PELNA = PODZIAL_PRACY_PULA_LBL_PELNA;
+const PULA_TIP = PODZIAL_PRACY_PULA_TIP;
+
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 — ROOT CAUSE osmiu nawrotow tego tematu byl TUTAJ:
+ * pole nazywalo sie `doUlepszen`, a nioslo `doPuli` (cala pula imperium, ktora
+ * finansuje TAKZE cuda na mapie, zakladanie miast i wycinke). Ta sama liczba
+ * miala w tym pliku cztery rozne nazwy. Pole `doUlepszen` zostalo USUNIETE;
+ * jedyna nazwa tej liczby to `doPuli` — identyczna jak w silniku
+ * (`production.ts::splitPraca`). Nie wolno przywracac nazwy `doUlepszen` dla
+ * czegokolwiek, co nie jest wprost budzetem ulepszen terenu.
+ */
 function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   total: number;
   doBudynkow: number;
-  doUlepszen: number;
+  doPuli: number;
   pctBudynki: number;
-  pctUlepszenia: number;
+  pctPuli: number;
 } {
-  const total = Math.round(view.praca);
-  const pctB = readPodzialPracy(city, data).procentBudynki;
-  const { doBudynkow, doPuli } = splitPraca(total, pctB / 100);
+  const pctB = clampPodzialPracyBudynkiPercent(readPodzialPracy(city, data).procentBudynki);
+  const split = splitPraca(view.praca, pctB / 100);
   return {
-    total,
-    doBudynkow: Math.round(doBudynkow),
-    doUlepszen: Math.round(doPuli),
+    total: split.total,
+    doBudynkow: split.doBudynkow,
+    doPuli: split.doPuli,
     pctBudynki: pctB,
-    pctUlepszenia: 100 - pctB,
+    pctPuli: procentPuliImperiumZBudynkow(pctB),
   };
 }
 
@@ -1669,13 +1697,13 @@ function resGlobalLocal(
 function resPracaSplitBar(
   mainVal: string,
   doBudynkow: number,
-  doUlepszen: number,
+  doPuli: number,
   hint: string,
   statId?: string,
   rail = false,
 ): string {
   const b = fmtResDelta(doBudynkow);
-  const u = fmtResDelta(doUlepszen);
+  const u = fmtResDelta(doPuli);
   const ia = statId ? resInteractiveAttrs(statId, hint, rail) : { cls: rail ? 'civ-v-res-item civ-v-res-rail-item' : 'civ-v-res-item', attrs: '' };
   const deltaWrap = rail ? 'civ-v-res-rail-deltas' : 'civ-v-res-inline-deltas';
   return `<span class="${ia.cls}"${ia.attrs} title="${hint.replace(/"/g, '&quot;')}">` +
@@ -1683,7 +1711,7 @@ function resPracaSplitBar(
     `<span class="civ-v-res-val gold">${mainVal}</span>` +
     `<span class="${deltaWrap}">` +
     `<span class="civ-v-res-delta ${b.cls}" title="Budynki">${b.html}</span>` +
-    `<span class="civ-v-res-delta blue" title="Pula imperium">${u.html}</span>` +
+    `<span class="civ-v-res-delta blue" title="${PULA_LBL_PELNA}">${u.html}</span>` +
     `</span></span>`;
 }
 
@@ -4695,7 +4723,7 @@ function buildPracaDetailCard(
   card.appendChild(head);
 
   const pctB = praca?.pctBudynki ?? pctCfg.procentBudynki;
-  const pctU = praca?.pctUlepszenia ?? (100 - pctB);
+  const pctU = praca?.pctPuli ?? procentPuliImperiumZBudynkow(pctB);
   const summary = el('div', 'dc-summary muted');
   summary.style.cssText = 'font-size:0.88em;margin-bottom:0.35em;';
   summary.innerHTML = praca
@@ -4720,7 +4748,7 @@ function buildPracaDetailCard(
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Praca', praca ? `${signed(praca.total)} 🔨` : '—');
   gridDetailRow(g1, '→ Budynki', praca ? `${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—');
-  gridDetailRow(g1, '→ Pula Pracy imperium', praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—');
+  gridDetailRow(g1, `→ ${PULA_LBL_PELNA}`, praca ? `${signed(praca.doPuli)} (${praca.pctPuli}%)` : '—');
 
   appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
   appendDetailFormula(card, 'doPuli = praca − doBudynkow  (nigdy nie gubi reszty)');
@@ -4780,7 +4808,7 @@ function appendPodzialPracyInfo(
   chips.innerHTML =
     statChipBrand('res-work', 'Miasto', praca ? signed(praca.total) : '—', 'gold') +
     statChipBrand('cp-buildings', 'Budynki', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
-    statChipBrand('chip-crate', 'Ulepszenia', praca ? `+${praca.doUlepszen}` : '—', 'blue');
+    statChipBrand('chip-crate', PULA_LBL, praca ? `+${praca.doPuli}` : '—', 'blue');
   mount.appendChild(chips);
 
   const info = el('div', 'praca-split-info');
@@ -4812,10 +4840,10 @@ function appendPodzialPracyInfo(
   info.appendChild(rowBud);
 
   const rowPool = el('div', 'psi-row');
-  const poolTip = `Zapas całej cywilizacji: ${pool} Pracy · załóż miasto, ulepszenia / projekty mapy`;
+  const poolTip = `${PULA_TIP} Zapas całej cywilizacji: ${pool} Pracy.`;
   rowPool.innerHTML =
-    `<span class="psi-lbl">${psiRowLabel('chip-crate', 'Ulepszenia', poolTip)}</span>` +
-    `<span class="psi-val blue">${praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
+    `<span class="psi-lbl">${psiRowLabel('chip-crate', PULA_LBL_PELNA, poolTip)}</span>` +
+    `<span class="psi-val blue">${praca ? `${signed(praca.doPuli)} (${praca.pctPuli}%)` : '—'}` +
     `<div class="psi-sub">Zapas Pracy na ulepszenia pól: ${pool}${cityPanelChipIconWrap('res-work', 14)} · farma, kamieniołom, projekty mapy</div></span>`;
   info.appendChild(rowPool);
 
@@ -4857,18 +4885,23 @@ function renderPodzialPracy(
   const pctCfg = readPodzialPracy(city, data);
   const praca = view ? cityPracaSplit(city, view, data) : null;
   const pctB = praca?.pctBudynki ?? pctCfg.procentBudynki;
-  const pctU = praca?.pctUlepszenia ?? (100 - pctB);
+  const pctU = praca?.pctPuli ?? procentPuliImperiumZBudynkow(pctB);
   const player = city.ownerId === 0;
-  const podzialTip = 'Lokalny podział przyrostu Pracy tego miasta między Budynki i Ulepszenia. Kroki co 10%.';
+  // R-PRACA-JEDEN-PODZIAL-Q1 pkt 5: suwak NIE jest zablokowany. Ustawia lokalna
+  // wartosc; gdy rozni sie od globalnej, „Indywidualne" zapala sie SAMO, a powrot do
+  // wartosci globalnej je gasi (logika: `applyCityPodzialPracyChange` w main.ts).
+  const podzialTip = `Podział przyrostu Pracy tego miasta: Budynki ${MIN_PODZIAL_PRACY_BUDYNKI_PERCENT}–100%, `
+    + `${PULA_LBL_PELNA} 0–${MAX_PROCENT_PULI_IMPERIUM}% — zawsze razem 100%. Kroki co ${HANDEL_PCT_STEP}%. `
+    + 'Ustawienie inne niż globalne włącza „Indywidualne" samo; powrót do globalnego je gasi.';
 
   // Sygnał na samej górze: ile z tegorocznego przyrostu Pracy trafia do Ulepszeń.
   const summary = el('div', 'praca-split-summary');
-  summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} Ulepszenia <b>${pctU}%</b>`
+  summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} ${PULA_LBL_PELNA} <b>${pctU}%</b>`
     // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1: ten string jest sklejany wprost do `innerHTML`,
     // z pominięciem `cpInlineIcons()` — literalny 🔨 docierał do gracza jako goły glif.
     // Ikona wstawiana tak samo jak w sąsiednich liniach tej samej funkcji (kolumny
     // Budynki/Ulepszenia niżej), żeby nie wprowadzać trzeciego wzorca.
-    + (praca ? ` <span class="muted" style="font-weight:400">(+${praca.doUlepszen} ${cityPanelChipIconWrap('res-work', 13)}/turę)</span>` : '');
+    + (praca ? ` <span class="muted" style="font-weight:400">(+${praca.doPuli} ${cityPanelChipIconWrap('res-work', 13)}/turę)</span>` : '');
   mount.appendChild(summary);
 
   const sliderWrap = el('div', 'praca-w4-sliders');
@@ -4878,8 +4911,8 @@ function renderPodzialPracy(
   colBud.innerHTML = `<div class="praca-split-col-lbl">${cityPanelChipIconWrap('cp-buildings', 13)} Budynki</div>`
     + `<b>${pctB}%${praca ? ` · +${praca.doBudynkow}` : ''}</b>`;
   const colUle = el('div', 'praca-split-col right');
-  colUle.innerHTML = `<div class="praca-split-col-lbl">${cityPanelChipIconWrap('chip-crate', 13)} Ulepszenia</div>`
-    + `<b>${pctU}%${praca ? ` · +${praca.doUlepszen}` : ''}</b>`;
+  colUle.innerHTML = `<div class="praca-split-col-lbl">${cityPanelChipIconWrap('chip-crate', 13)} ${PULA_LBL}</div>`
+    + `<b>${pctU}%${praca ? ` · +${praca.doPuli}` : ''}</b>`;
   cols.appendChild(colBud);
   cols.appendChild(colUle);
   sliderWrap.appendChild(cols);
@@ -4887,11 +4920,11 @@ function renderPodzialPracy(
   if (player) {
     const inp = document.createElement('input');
     inp.type = 'range';
-    inp.min = '50';
-    inp.max = '100';
+    inp.min = String(MIN_PODZIAL_PRACY_BUDYNKI_PERCENT);
+    inp.max = String(MAX_PODZIAL_PRACY_BUDYNKI_PERCENT);
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
-    inp.setAttribute('aria-label', 'Lokalny podział przyrostu Pracy tego miasta: budynki versus ulepszenia');
+    inp.setAttribute('aria-label', 'Podział przyrostu Pracy tego miasta: budynki versus ulepszenia (pula imperium)');
     inp.title = podzialTip;
     inp.addEventListener('input', () => {
       const v = clampPodzialPracyBudynkiPercent(Number(inp.value));
@@ -5504,7 +5537,7 @@ function buildTopBarPracaDetailCard(
   const pracaSplit = cityPracaSplit(city, view, data);
   const pctCfg = readPodzialPracy(city, data);
   const pctB = pracaSplit.pctBudynki;
-  const pctU = pracaSplit.pctUlepszenia;
+  const pctU = pracaSplit.pctPuli;
   const pool = Math.round(empire.pracaPool ?? empire.pracaRate ?? 0);
   let empireSum = 0;
   if (map && data) {
@@ -5529,14 +5562,14 @@ function buildTopBarPracaDetailCard(
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 🔨', `${pool} — pula Pracy imperium (zapas / suma tur)`);
   gridDetailRow(g0, 'Złoty dopisek', `${signed(pracaSplit.doBudynkow)} — ten gród → kolejka budowy (${pctB}%)`);
-  gridDetailRow(g0, 'Niebieski dopisek', `${signed(pracaSplit.doUlepszen)} — ten gród → pula imperium (${pctU}%)`);
+  gridDetailRow(g0, 'Niebieski dopisek', `${signed(pracaSplit.doPuli)} — ten gród → pula imperium (${pctU}%)`);
   gridDetailRow(g0, 'Suma miast', empireSum > 0 ? `${signed(empireSum)} łącznie z wszystkich grodów` : '—');
 
   appendDetailSection(card, 'Skąd bierze się praca (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Praca brutto', `${signed(pracaSplit.total)} 🔨`);
   gridDetailRow(g1, '→ Budynki', `${signed(pracaSplit.doBudynkow)} — postęp w kolejce produkcji`);
-  gridDetailRow(g1, '→ Pula imperium', `${signed(pracaSplit.doUlepszen)} — zapas cywilizacji (załóż miasto, projekty mapy)`);
+  gridDetailRow(g1, `→ ${PULA_LBL_PELNA}`, `${signed(pracaSplit.doPuli)} — ${PULA_TIP}`);
 
   appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
   appendDetailFormula(card, 'doPuli = praca − doBudynkow  (nigdy nie gubi reszty)');
@@ -9945,7 +9978,7 @@ function buildCityOnlyW3FlankChips(
    * ⚠ Zastrzeżenie (N3 z R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO, przeniesione 1:1):
    * dla Pracy i Żywności `big` (tempo tego miasta) NIE jest w całości tym, co
    * dolicza się do `stock` — Praca dzieli się na `doBudynkow` (kolejka budowy
-   * tego miasta) i `doUlepszen` (pula imperium); `doBudynkow` NIE trafia do puli,
+   * tego miasta) i `doPuli` (pula imperium); `doBudynkow` NIE trafia do puli,
    * DOPÓKI kolejka budowy nie jest pusta (`game/production.ts`, przelew reszty
    * do puli przy pustej kolejce). Analogicznie Żywność: `big` to netto miasta,
    * `stock` to zapasy państwa. Obie liczby są uczciwie nazwane w podpowiedzi.
@@ -9973,7 +10006,7 @@ function buildCityOnlyW3FlankChips(
       pracaCls,
       'praca',
       `Praca TEGO miasta ${signed(chip.praca.big)} ` +
-        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)}) · ` +
+        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doPuli)}) · ` +
         `cała cywilizacja ${signed(chip.praca.small)} / turę netto` +
         (empire.pracaUpkeep != null
           ? ` (wpływ do puli ${signed((chip.praca.small ?? 0) + empire.pracaUpkeep)} ` +
@@ -10095,7 +10128,7 @@ function buildCityResourceStatItems(
     items += resPracaSplitBar(
       String(Math.round(pracaPool)),
       pracaSplit.doBudynkow,
-      pracaSplit.doUlepszen,
+      pracaSplit.doPuli,
       `Pula Pracy imperium · to miasto ${signed(pracaSplit.total)} · kliknij po szczegóły`,
       'praca',
     );

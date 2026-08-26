@@ -42,8 +42,8 @@ const ENTRY_TS = `
 export {
   clampUlepszeniaPracaPercent,
   MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
-  MAX_PRACA_WSPOLNY_WOREK_PROCENT,
-  clampPracaWspolnyWorekPercent,
+  MAX_PROCENT_PULI_IMPERIUM,
+  procentPuliImperiumZBudynkow,
   resolveEffectiveUlepszenia,
   resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
@@ -73,8 +73,8 @@ try {
 const {
   clampUlepszeniaPracaPercent,
   MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
-  MAX_PRACA_WSPOLNY_WOREK_PROCENT,
-  clampPracaWspolnyWorekPercent,
+  MAX_PROCENT_PULI_IMPERIUM,
+  procentPuliImperiumZBudynkow,
   resolveEffectiveUlepszenia,
   resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
@@ -101,11 +101,19 @@ function freshCity(overrides) {
   };
 }
 
+// R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA SCENARIUSZA 1 (uzasadnienie w 01-operator.md):
+//   CO PILNOWAL: rozdzielnosc dwoch pol — cap 50% pola (a) NIE moze zarazic pola (b),
+//     ktore ma wlasny zakres 0-100% (sedno P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1).
+//   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: pole (a) bylo wyrazone przez
+//     `MAX_PRACA_WSPOLNY_WOREK_PROCENT`/`clampPracaWspolnyWorekPercent` — DRUGI suwak,
+//     usuniety w tym temacie. Sam cap 50% NIE zniknal, tylko zyje teraz w jedynym podziale.
+//   CO PILNUJE TERAZ: dokladnie ta sama rozdzielnosc — cap 50% jedynego podzialu
+//     (`MAX_PROCENT_PULI_IMPERIUM`) obok niezaleznego zakresu 0-100% pola (b).
 console.log('1. Cap NIEwspółdzielony: pole (b) ma własny zakres 0-100%, pole (a) zostaje przy 50%');
 {
-  eq(MAX_PRACA_WSPOLNY_WOREK_PROCENT, 50, 'stała capu pola (a) = 50 — bez zmian');
+  eq(MAX_PROCENT_PULI_IMPERIUM, 50, 'stała capu pola (a) = 50 — bez zmian');
   eq(MAX_ULEPSZENIA_PRACA_AUTO_PERCENT, 100, 'stała capu pola (b) = 100 (naprawiona regresja)');
-  eq(clampPracaWspolnyWorekPercent(80), MAX_PRACA_WSPOLNY_WOREK_PROCENT, 'suwak #1/#2 (a) nadal ścina 80 do 50');
+  eq(procentPuliImperiumZBudynkow(100 - 80), MAX_PROCENT_PULI_IMPERIUM, 'jedyny podział (a) nadal ścina 80 do 50');
   eq(clampUlepszeniaPracaPercent(80), 80, 'automat (b, kontrolka #3) NIE ścina 80 — wewnątrz 0-100%');
 }
 
