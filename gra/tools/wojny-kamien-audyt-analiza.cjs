@@ -85,12 +85,13 @@ for (const file of files) {
   L('');
   L('| owner | miast | epoka | wojen | pending? | cycle? | miasto-państwo? |');
   L('|---|---|---|---|---|---|---|');
-  for (const [oid, o] of [...lastByOwner.entries()].sort((a, b) => a[0] - b[0])) {
+  for (const [oid, o] of [...lastByOwner.entries()].filter(e => !e[1].isCityState).sort((a, b) => a[0] - b[0])) {
     L('| ' + oid + ' | ' + o.cityCount + ' | ' + o.epoch + ' | ' + o.wars + ' | '
       + (o.pending.includes(oid) ? 'TAK' : 'nie') + ' | ' + (o.cycle.includes(oid) ? 'TAK' : 'nie')
       + ' | ' + (o.isCityState ? 'TAK' : 'nie') + ' |');
   }
-  S.ownersEnd = [...lastByOwner.values()];
+  S.ownersEnd = [...lastByOwner.values()].filter(o => !o.isCityState);
+  S.ownersEndCityStateCount = [...lastByOwner.values()].filter(o => o.isCityState).length;
   L('');
 
   // --- Wszystkie wojny (dowolny mechanizm) z migawek relacji ---
@@ -108,9 +109,8 @@ for (const file of files) {
   L('');
 
   // --- P2/e: bramy wojny AI → GRACZ ---
-  const gates = d.gates || [];
-  const vsPlayer = gates.filter(g => g.partner === '0');
-  S.gateRecordsTotal = gates.length;
+  const vsPlayer = d.gatesVsPlayer || [];
+  S.gateRecordsTotal = d.gatesTotal || 0;
   S.gateRecordsVsPlayer = vsPlayer.length;
   const aiIds = [...new Set(vsPlayer.map(g => g.me))].sort((a, b) => Number(a) - Number(b));
   L('### P2 — bramy `wypowiedz_wojne` AI → GRACZ (owner 0), per AI');
@@ -166,6 +166,34 @@ for (const file of files) {
     if (!(g.score < g.progRel)) blockCount.scoreZaWysoki++;
   }
   S.blockCountVsPlayer = blockCount;
+  // Sprzecznosc konstrukcyjna: relacja z GRACZEM ma respekt = round(100*rw), wiec
+  // score = zaufanie + respekt >= 100*rw. Brama wymaga jednoczesnie rw>=progSila i score<progRel.
+  const bothOk = vsPlayer.filter(g => g.rw >= g.progSila && g.score < g.progRel).length;
+  const diffs = vsPlayer.map(g => g.score - 100 * g.rw);
+  S.kontradykcja = {
+    ocen: vsPlayer.length,
+    rwNadProgiem: vsPlayer.filter(g => g.rw >= g.progSila).length,
+    scorePodProgiem: vsPlayer.filter(g => g.score < g.progRel).length,
+    obaJednoczesnie: bothOk,
+    minScoreMinus100Rw: diffs.length ? Math.min(...diffs) : null,
+    maxScoreMinus100Rw: diffs.length ? Math.max(...diffs) : null,
+    progSilaMin: vsPlayer.length ? Math.min(...vsPlayer.map(g => g.progSila)) : null,
+    progRelMax: vsPlayer.length ? Math.max(...vsPlayer.map(g => g.progRel)) : null,
+  };
+  L('**Test sprzeczności konstrukcyjnej (AI → gracz):** `respekt` w relacji z graczem jest ustawiany jako '
+    + '`computeRespekt(potAI, potPlr) = round(100·rw)` (main.ts), a `score = zaufanie + respekt`, '
+    + 'więc `score >= 100·rw`. Brama wymaga JEDNOCZEŚNIE `rw >= progSila` i `score < progRel`.');
+  L('');
+  L('| miara | wartość |');
+  L('|---|---|');
+  L('| ocen AI→gracz | ' + S.kontradykcja.ocen + ' |');
+  L('| z tego `rw >= progSila` | ' + S.kontradykcja.rwNadProgiem + ' |');
+  L('| z tego `score < progRel` | ' + S.kontradykcja.scorePodProgiem + ' |');
+  L('| **oba warunki naraz** | **' + S.kontradykcja.obaJednoczesnie + '** |');
+  L('| min(`score` − 100·`rw`) | ' + f3(S.kontradykcja.minScoreMinus100Rw) + ' |');
+  L('| max(`score` − 100·`rw`) | ' + f3(S.kontradykcja.maxScoreMinus100Rw) + ' |');
+  L('| min `progSila` | ' + f3(S.kontradykcja.progSilaMin) + ' · max `progRel` | ' + S.kontradykcja.progRelMax + ' |');
+  L('');
   L('**Rozbicie na powód — ile z ' + vsPlayer.length + ' ocen (AI × tura) miało dany warunek NIESPEŁNIONY:**');
   L('');
   L('| warunek niespełniony | liczba ocen | % |');
@@ -175,15 +203,42 @@ for (const file of files) {
   }
   L('');
 
-  // AI vs AI dla porównania
-  const vsAi = gates.filter(g => g.partner !== '0');
-  if (vsAi.length > 0) {
-    const rws = vsAi.map(g => g.rw);
-    S.rwVsAi = { n: rws.length, min: Math.min(...rws), median: med(rws), max: Math.max(...rws),
-      overThreshold: vsAi.filter(g => g.rw >= g.progSila).length };
-    L('Dla porównania — `respektWzgledny` AI-vs-AI: n=' + rws.length + ' · min=' + f3(Math.min(...rws))
-      + ' · mediana=' + f3(med(rws)) + ' · max=' + f3(Math.max(...rws)) + ' · >= progu: ' + S.rwVsAi.overThreshold);
+  // AI vs AI dla porównania (agregat per tura + rekordy przechodzące CAŁĄ bramę)
+  const agg = d.gatesVsAiAggByTurn || [];
+  const passing = d.gatesVsAiPassing || [];
+  if (agg.length > 0) {
+    const n = agg.reduce((a, x) => a + x.n, 0);
+    const rwMin = Math.min(...agg.map(x => x.rwMin));
+    const rwMax = Math.max(...agg.map(x => x.rwMax));
+    const rwAvg = agg.reduce((a, x) => a + x.rwSum, 0) / n;
+    const over = agg.reduce((a, x) => a + x.rwOverProg, 0);
+    const allOk = agg.reduce((a, x) => a + x.allOk, 0);
+    S.vsAiAggregate = { n, rwMin, rwMax, rwAvg, rwOverProg: over, allOk,
+      blkScore: agg.reduce((a, x) => a + x.blkScore, 0),
+      blkAgresja: agg.reduce((a, x) => a + x.blkAgresja, 0),
+      blkRw: agg.reduce((a, x) => a + x.blkRw, 0),
+      blkWillWar0: agg.reduce((a, x) => a + x.blkWillWar0, 0),
+      blkNap: agg.reduce((a, x) => a + x.blkNap, 0),
+      blkStanWojny: agg.reduce((a, x) => a + x.blkStanWojny, 0),
+      blkPeaceLocked: agg.reduce((a, x) => a + x.blkPeaceLocked, 0) };
+    L('**Dla porównania — brama wojny AI-vs-AI (ten sam priorytet 4):** n=' + n + ' ocen · rw min='
+      + f3(rwMin) + ' · średnia=' + f3(rwAvg) + ' · max=' + f3(rwMax) + ' · rw>=progu: ' + over
+      + ' · **ocen z WSZYSTKIMI warunkami spełnionymi: ' + allOk + '**');
     L('');
+    L('| warunek niespełniony (AI-vs-AI) | liczba ocen | % |');
+    L('|---|---|---|');
+    for (const [k, v] of Object.entries({ stanWojny: S.vsAiAggregate.blkStanWojny,
+      peaceLocked: S.vsAiAggregate.blkPeaceLocked, nap: S.vsAiAggregate.blkNap,
+      willWar0: S.vsAiAggregate.blkWillWar0, rwPonizejProgu: S.vsAiAggregate.blkRw,
+      agresjaPonizejProgu: S.vsAiAggregate.blkAgresja, scoreZaWysoki: S.vsAiAggregate.blkScore })) {
+      L('| ' + k + ' | ' + v + ' | ' + (100 * v / n).toFixed(1) + '% |');
+    }
+    L('');
+    S.vsAiPassingSample = passing.slice(0, 20);
+    if (passing.length > 0) {
+      L('Rekordy AI-vs-AI przechodzące CAŁĄ bramę (pierwsze 20): ' + JSON.stringify(passing.slice(0, 20)));
+      L('');
+    }
   }
 
   // --- P3: przejmowanie miast-państw vs pierwsza wojna ---
@@ -216,6 +271,12 @@ for (const file of files) {
   L('| par AI×AI w stanie wojny (z relacji) | ' + [...warFirst.keys()].filter(p => !p.startsWith('0x')).length + ' |');
   L('');
 
+  if (d.turnTimings && d.turnTimings.length) {
+    const ms = d.turnTimings.map(t => t.ms);
+    S.turnMs = { min: Math.min(...ms), median: med(ms), max: Math.max(...ms) };
+    L('Czas jednej tury [ms]: min=' + S.turnMs.min + ' · mediana=' + S.turnMs.median + ' · max=' + S.turnMs.max);
+    L('');
+  }
   summary.seeds.push(S);
 }
 

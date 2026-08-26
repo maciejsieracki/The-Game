@@ -106,11 +106,13 @@ async function runSeed(browser, seed) {
 
   const snapshots = [];
   const turnLog = [];
+  const turnTimings = [];
   let stuck = 0;
   for (let i = 0; i < TURNS; i++) {
     const before = await page.evaluate(() => window.__warAudit.state());
     snapshots.push(before);
     if (before.gameOver) { turnLog.push({ turn: before.turn, note: 'gameOver' }); break; }
+    const tTurn = Date.now();
     const blockers = await page.evaluate(() => window.__warAudit.blockers());
     if (blockers.preBattleOpen || blockers.pendingAutoPreBattle) {
       await page.evaluate(() => window.__warAudit.clearPreBattle());
@@ -134,6 +136,7 @@ async function runSeed(browser, seed) {
       if (stuck >= 3) { turnLog.push({ note: 'ABORT po 3 zwisach' }); break; }
     }
     if (advanced) stuck = 0;
+    turnTimings.push({ turn: before.turn, ms: Date.now() - tTurn, advanced });
     if ((i + 1) % 10 === 0) {
       const st = await page.evaluate(() => window.__warAudit.state());
       console.log('[audyt] seed=' + seed + ' tura=' + st.turn + ' wojny=' + JSON.stringify(st.wars)
@@ -143,17 +146,54 @@ async function runSeed(browser, seed) {
     }
   }
 
-  const final = await page.evaluate(() => ({
-    state: window.__warAudit.state(),
-    warLog: window.__warAudit.warLog(),
-    audit: window.__WAR_AUDIT__,
-  }));
+  // Redukcja W PRZEGLADARCE: pelne rekordy AI->GRACZ (to jest pytanie wlasciciela) +
+  // pelne rekordy AI->AI, ktore przeszly WSZYSTKIE warunki bramy wojny (kandydaci na wojne) +
+  // agregat per tura dla reszty AI->AI. Bez tego surowy zrzut to setki tysiecy rekordow.
+  const final = await page.evaluate(() => {
+    const A = window.__WAR_AUDIT__;
+    const allOk = (g) => !g.stanWojny && !g.peaceLocked && !g.nap && g.willWar > 0
+      && g.rw >= g.progSila && g.effAgresja >= g.progAgresja && g.score < g.progRel;
+    const vsPlayer = A.gates.filter(g => g.partner === '0');
+    const vsAi = A.gates.filter(g => g.partner !== '0');
+    const vsAiPassing = vsAi.filter(allOk);
+    const agg = {};
+    for (const g of vsAi) {
+      const k = String(g.turn);
+      if (!agg[k]) agg[k] = { turn: g.turn, n: 0, rwSum: 0, rwMin: 9, rwMax: -9, rwOverProg: 0,
+        blkStanWojny: 0, blkPeaceLocked: 0, blkNap: 0, blkWillWar0: 0, blkRw: 0, blkAgresja: 0, blkScore: 0, allOk: 0 };
+      const a = agg[k];
+      a.n++; a.rwSum += g.rw; if (g.rw < a.rwMin) a.rwMin = g.rw; if (g.rw > a.rwMax) a.rwMax = g.rw;
+      if (g.rw >= g.progSila) a.rwOverProg++;
+      if (g.stanWojny) a.blkStanWojny++;
+      if (g.peaceLocked) a.blkPeaceLocked++;
+      if (g.nap) a.blkNap++;
+      if (!(g.willWar > 0)) a.blkWillWar0++;
+      if (!(g.rw >= g.progSila)) a.blkRw++;
+      if (!(g.effAgresja >= g.progAgresja)) a.blkAgresja++;
+      if (!(g.score < g.progRel)) a.blkScore++;
+      if (allOk(g)) a.allOk++;
+    }
+    return {
+      state: window.__warAudit.state(),
+      warLog: window.__warAudit.warLog(),
+      gatesVsPlayer: vsPlayer,
+      gatesVsAiPassing: vsAiPassing,
+      gatesVsAiAggByTurn: Object.keys(agg).map(k => agg[k]).sort((x, y) => x.turn - y.turn),
+      gatesTotal: A.gates.length,
+      owners: A.owners,
+      stoneCand: A.stoneCand,
+    };
+  });
   await page.close();
   return {
     seed, params, turns: TURNS, elapsedS: Math.round((Date.now() - t0) / 1000),
-    foundedFirstCity: founded, snapshots, turnLog, consoleLines,
+    foundedFirstCity: founded, snapshots, turnLog, consoleLines, turnTimings,
     finalState: final.state, warLog: final.warLog,
-    gates: final.audit.gates, owners: final.audit.owners, stoneCand: final.audit.stoneCand,
+    gatesTotal: final.gatesTotal,
+    gatesVsPlayer: final.gatesVsPlayer,
+    gatesVsAiPassing: final.gatesVsAiPassing,
+    gatesVsAiAggByTurn: final.gatesVsAiAggByTurn,
+    owners: final.owners, stoneCand: final.stoneCand,
   };
 }
 
