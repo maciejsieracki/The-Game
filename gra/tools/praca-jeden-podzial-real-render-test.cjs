@@ -152,9 +152,28 @@ async function main() {
       && /export const PODZIAL_PRACY_PULA_LBL_PELNA = 'Ulepszenia \(pula imperium\)';/.test(citiesSrc)
       && /const PULA_LBL = PODZIAL_PRACY_PULA_LBL;/.test(citySrc)
       && /const PULA_LBL_PELNA = PODZIAL_PRACY_PULA_LBL_PELNA;/.test(citySrc));
-  check('(0) panel imperium i HUD budowy czytają TĘ SAMĄ stałą (koniec trzeciej nazwy)',
-    ['empireDetailPanel.ts', 'buildModeHud.ts'].every(f =>
-      /PODZIAL_PRACY_PULA_LBL/.test(fs.readFileSync(path.resolve(GRA, 'src', 'ui', f), 'utf8'))));
+  // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 — AKTUALIZACJA TEJ ASERCJI (uzasadnienie w 01-operator.md):
+  //   CO PILNOWALA: ze panel imperium i HUD trybu budowy czytaja TE SAMA stala nazwy warstwy (a)
+  //     (`CityPodzialPracy.procentBudynki`) — koniec trzeciej, rozjechanej nazwy tej samej liczby.
+  //   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: HUD trybu budowy NIE RENDERUJE juz warstwy (a)
+  //     w ogole — trzeci egzemplarz suwaka zostal usuniety (ECHO wlasciciela: „w tym miejscu
+  //     podzial pracy nie jest potrzebny, bo jest dublowany juz w pool imperium"). Plik nie
+  //     importuje juz `PODZIAL_PRACY_PULA_LBL*`. UWAGA: stary warunek nadal przechodzil BLADEM —
+  //     regex trafial w KOMENTARZ objasniajacy usuniecie, nie w zywy import. Zielone z komentarza
+  //     nie jest dowodem, wiec asercja zostaje rozdzielona na dwie, obie odporne na komentarze.
+  //   CO PILNUJE TERAZ (warunek mocniejszy): (1) panel imperium NADAL ma zywy import wspolnej
+  //     stalej; (2) HUD budowy NIE ma zywego importu nazw warstwy (a) — sprawdzane na zrodle
+  //     ze zdjetymi komentarzami, wiec nie da sie tego zazielenic komentarzem.
+  const bezKomentarzy = (src) => src
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n').filter((l) => !/^\s*(\/\/|\*)/.test(l)).join('\n');
+  const empSrcNoCom = bezKomentarzy(fs.readFileSync(path.resolve(GRA, 'src', 'ui', 'empireDetailPanel.ts'), 'utf8'));
+  const hudSrcNoCom = bezKomentarzy(fs.readFileSync(path.resolve(GRA, 'src', 'ui', 'buildModeHud.ts'), 'utf8'));
+  check('(0) panel imperium czyta WSPOLNA stala nazwy warstwy (a) (zywy kod, nie komentarz)',
+    /PODZIAL_PRACY_PULA_LBL/.test(empSrcNoCom));
+  check('(0) HUD trybu budowy NIE renderuje juz warstwy (a): zero nazw i zero markupu tego suwaka',
+    !/PODZIAL_PRACY_PULA_LBL/.test(hudSrcNoCom)
+      && !/renderEmpirePracaSplit|civ-build-global-split|data-praca-empire-split/.test(hudSrcNoCom));
   check('(0) pole `doUlepszen` niosące pulę imperium zniknęło z cityPanel.ts',
     !/\bdoUlepszen\b\s*[:,)]/.test(citySrc.split('\n').filter((l) => !/^\s*(\*|\/\/)/.test(l)).join('\n')));
 

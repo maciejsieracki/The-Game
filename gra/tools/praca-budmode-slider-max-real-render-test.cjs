@@ -106,8 +106,8 @@ function __buildFixtureConfig() {
     getUlepszeniaEmpireState: () => ({
       focus: 'zrownowazone', tryb: 'auto', onlyWorked: false, pracaAutoPercent: 77,
     }),
-    getEmpirePracaSplit: () => null,
-    onEmpirePracaSplitChange: () => {},
+    // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: pozycje warstwy (a) usuniete z kontraktu
+    // BuildModeHudConfig — fixture ich nie podaje.
     onUlepszeniaEmpireFocusChange: () => {},
     onUlepszeniaEmpireTrybChange: () => {},
     onUlepszeniaEmpireOnlyWorkedChange: () => {},
@@ -185,31 +185,35 @@ async function main() {
     check('(B) suwak city przyjmuje wartość 88% (>50)',
       !measured.cityBudget.missing && measured.cityBudget.value === '88', measured.cityBudget);
 
-    // --- (C) Kontrola: renderEmpirePracaSplit() (INNE pole) NIE dotknięte, max=50 zostaje --
-    // Ten test NIE renderuje splitu (getEmpirePracaSplit zwraca null celowo — pole poza
-    // zakresem tematu). Kontrolę „max=50 nietknięte" robimy statycznie na źródle, właśnie
-    // po to, by nie mylić dwóch niezależnych suwaków w jednym pliku.
-    const src = fs.readFileSync(path.resolve(GRA, 'src/ui/buildModeHud.ts'), 'utf8');
-    const splitFnMatch = src.match(/function renderEmpirePracaSplit\(pct: number\): string \{[\s\S]*?\n\}/);
-    check('(C) renderEmpirePracaSplit() nadal istnieje w źródle (funkcja nie usunięta/przemianowana)', !!splitFnMatch);
-    if (splitFnMatch) {
-      const body = splitFnMatch[0];
-      // R-PRACA-JEDEN-PODZIAL-Q1 — AKTUALIZACJA (uzasadnienie w 01-operator.md):
-      //   CO PILNOWALY: ze cap 50% DRUGIEGO pola (podzial calej Pracy) nie zostal
-      //     przypadkiem podniesiony razem z capem 100% budzetu automatu — rozdzielnosc
-      //     dwoch niezaleznych suwakow w jednym pliku.
-      //   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: literal `50` zostal zastapiony
-      //     stala `MAX_PROCENT_PULI_IMPERIUM` (jedno zrodlo capu dla globalu i miasta).
-      //   CO PILNUJE TERAZ: TA SAMA rozdzielnosc i TA SAMA wartosc 50 — sprawdzana u
-      //     zrodla w `cities.ts`, wiec podniesienie capu nadal zapala test na czerwono.
-      const citiesSrc = fs.readFileSync(path.resolve(GRA, 'src/game/cities.ts'), 'utf8');
-      check('(C) renderEmpirePracaSplit() nadal ma cap udziału puli (inne, poprawne pole — NIETKNIĘTE)',
-        body.includes('max="${MAX_PROCENT_PULI_IMPERIUM}"')
-          && /export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;/.test(citiesSrc)
-          && /export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;/.test(citiesSrc));
-      check('(C) renderEmpirePracaSplit() nadal klampuje do MAX_PROCENT_PULI_IMPERIUM (NIETKNIĘTE)',
-        body.includes('Math.min(MAX_PROCENT_PULI_IMPERIUM,'));
-    }
+    // --- (C) Kontrola rozdzielnosci dwoch warstw ------------------------------------------
+    // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 — AKTUALIZACJA SCENARIUSZA (C) (uzasadnienie
+    // w 01-operator.md):
+    //   CO PILNOWAL: ze podniesienie capu warstwy (c) (`pracaAutoPercent`, budzet automatu,
+    //     0–100%) do 100 NIE podniosło przy okazji capu warstwy (a)
+    //     (`CityPodzialPracy.procentBudynki`, podzial Pracy: budynki vs pula imperium, 0–50%) —
+    //     rozdzielnosc dwoch niezaleznych suwakow, ktore wtedy staly obok siebie w TYM SAMYM
+    //     panelu trybu budowy. Kotwica: `renderEmpirePracaSplit()` w `buildModeHud.ts`.
+    //   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: trzeci egzemplarz warstwy (a) zostal
+    //     z panelu trybu budowy USUNIETY w calosci (ECHO wlasciciela: „w tym miejscu podzial
+    //     pracy nie jest potrzebny, bo jest dublowany juz w pool imperium"), wiec funkcja
+    //     `renderEmpirePracaSplit()` nie istnieje. To NIE jest zluzowanie asercji — znika sam
+    //     obiekt, ktorego dotyczyla.
+    //   CO PILNUJE TERAZ (ta sama wlasnosc, mocniejsza forma): (C1) cap warstwy (a) = 50 nadal
+    //     stoi u ZRODLA (`cities.ts`), wiec jego podniesienie zapala test; (C2) warstwa (a)
+    //     jest klampowana w panelu imperium, ktory ja renderuje — czyli cap faktycznie zyje
+    //     w kodzie, nie tylko w stalej; (C3) panel trybu budowy nie ma juz ZADNEGO suwaka
+    //     warstwy (a), wiec dwie warstwy nie moga sie tu wzajemnie skazic.
+    const citiesSrc = fs.readFileSync(path.resolve(GRA, 'src/game/cities.ts'), 'utf8');
+    const hudSrcC = fs.readFileSync(path.resolve(GRA, 'src/ui/buildModeHud.ts'), 'utf8');
+    const empSrcC = fs.readFileSync(path.resolve(GRA, 'src/ui/empireDetailPanel.ts'), 'utf8');
+    check('(C1) cap warstwy (a) (podzial Pracy budynki/pula imperium) nadal = 50 u zrodla w cities.ts',
+      /export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;/.test(citiesSrc)
+        && /export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;/.test(citiesSrc));
+    check('(C2) panel imperium (jedyne globalne miejsce warstwy (a)) nadal klampuje do MAX_PROCENT_PULI_IMPERIUM',
+      /MAX_PROCENT_PULI_IMPERIUM/.test(empSrcC)
+        && /function renderEmpirePracaBudgetSplitSection\(\): string \{/.test(empSrcC));
+    check('(C3) panel trybu budowy nie ma juz ZADNEGO suwaka warstwy (a) — dwie warstwy nie stoja tu obok siebie',
+      !/renderEmpirePracaSplit|data-praca-empire-split|civ-build-global-split/.test(hudSrcC));
 
     check('brak błędów konsoli/pageerror w trakcie renderu', consoleErrors.length === 0, consoleErrors);
 

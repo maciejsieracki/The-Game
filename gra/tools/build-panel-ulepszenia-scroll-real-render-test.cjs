@@ -414,7 +414,6 @@ async function mountScene(page, improvements, hudCss) {
       getUlepszeniaEmpireState: () => ({ focus: 'zywnosc', tryb: 'auto', pracaAutoPercent: 30, onlyWorked: false }),
       getUlepszeniaEffectiveState: () => ({ focus: 'zywnosc', tryb: 'auto', pracaAutoPercent: 30, onlyWorked: false, override: false }),
       getUlepszeniaCityOverride: () => false,
-      getEmpirePracaSplit: () => 25,
     });
     window.__hud.update();
 
@@ -1022,7 +1021,7 @@ async function main() {
         foundCity: clickableOf('[data-found-city]'),
         wonder: clickableOf('[data-wonder-id]'),
         autoBtn: clickableOf('.civ-build-auto-btn'),
-        slider: clickableOf('input[data-praca-empire-split]'),
+        slider: clickableOf('input[data-ulepszenia-empire-percent]'),
       };
     });
     await ctx.close();
@@ -1035,7 +1034,21 @@ async function main() {
   check('E pozycja „Załóż miasto" nadal klikalna', sections.foundCity === true, sections);
   check('E pozycja cudu świata nadal klikalna', sections.wonder === true, sections);
   check('E przycisk profilu automatu nadal klikalny', sections.autoBtn === true, sections);
-  check('E suwak podziału Pracy nadal klikalny (warstwa suwaków budżetu nietknięta)', sections.slider === true, sections);
+  // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 — AKTUALIZACJA CELU TEJ ASERCJI (uzasadnienie
+  // w 01-operator.md):
+  //   CO PILNOWALA: ze przebudowa scrolla panelu budowy nie zaslania suwaka w tym panelu —
+  //     mierzone przez `elementFromPoint` na `input[data-praca-empire-split]`, czyli na suwaku
+  //     WARSTWY (a) (`CityPodzialPracy.procentBudynki`, podzial Pracy: budynki vs pula imperium).
+  //   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: ten suwak zostal z panelu trybu budowy
+  //     usuniety jako TRZECI, zdublowany egzemplarz warstwy (a) (ECHO wlasciciela), wiec
+  //     selektor nie ma juz czego znalezc. Wlasnosc „suwak w panelu nie jest zaslaniany" nie
+  //     zostala oslabiona — zmienil sie tylko jej nosnik.
+  //   CO PILNUJE TERAZ: DOKLADNIE ta sama wlasnosc, zmierzona na suwaku WARSTWY (c)
+  //     (`UlepszeniaEmpirePolicy.pracaAutoPercent`, `input[data-ulepszenia-empire-percent]`) —
+  //     jedynym suwaku, ktory w tym panelu zostaje. Fixture ma `tryb: 'auto'`, wiec suwak jest
+  //     aktywny; test dalej mierzy realny hit-test w Chromium, nie obecnosc w zrodle.
+  check('E suwak warstwy (c) (budzet automatu) nadal klikalny — nie zaslaniany przez przebudowany panel',
+    sections.slider === true, sections);
 
   // Rozróżnienie kluczowe dla uczciwości pomiaru: przycisk zasłonięty PRZEZ PANEL BUDOWY to
   // wina tego tematu, przycisk zasłonięty przez górny klaster HUD to skutek okna tak niskiego,

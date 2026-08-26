@@ -19349,14 +19349,11 @@ async function boot(): Promise<void> {
             const pol = ulepszeniaEmpireForOwner(0);
             return { ...pol };
           },
-          // R-PRACA-JEDEN-PODZIAL-Q1: ten sam, JEDYNY podzial co suwak w miescie i
-          // w panelu imperium — wyrazony jako % puli imperium (= budzet ulepszen).
-          getEmpirePracaSplit: () => procentPuliImperiumForOwner(0),
-          onEmpirePracaSplitChange: (procentPuliImperium: number) => {
-            ownerDefaultPodzialPracy.set(0, podzialPracyZProcentuPuli(procentPuliImperium));
-            markCityStateDirty();
-            refreshD1bHud();
-          },
+          // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: podpiecie warstwy (a)
+          // (`CityPodzialPracy.procentBudynki` przez `ownerDefaultPodzialPracy`) USUNIETE —
+          // panel trybu budowy byl TRZECIM egzemplarzem tego samego suwaka. Warstwa (a)
+          // zostaje w swoich dwoch prawowitych miejscach: panel imperium
+          // (`empireDetailPanel.ts`) i panel miasta (`cityPanel.ts`) — oba nietkniete.
           onUlepszeniaEmpireFocusChange: (focus: UlepszeniaFocus) => {
             const pol = ulepszeniaEmpireForOwner(0);
             pol.focus = focus;
