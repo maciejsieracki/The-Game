@@ -62,6 +62,7 @@ catch (e) {
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.resolve(__dirname, '.zelazo-zrzuty-25-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.zelazo-zrzuty-25-bundle.js');
+const BUNDLE_MUT = path.resolve(__dirname, '.zelazo-zrzuty-25-bundle-mut.js');
 const UNITS_TS = path.resolve(GRA, 'src', 'render', 'units.ts');
 const UNITS_JSON = path.resolve(GRA, 'data', 'units.json');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
@@ -136,17 +137,52 @@ const exposePlugin = {
   },
 };
 
-async function buildBundle() {
+/**
+ * DOWÓD NIETAUTOLOGICZNOŚCI (R-PROC-AUTOBOT §9 poz. 6a). Drugi bundle, w którym
+ * OBA dedykowane dispatche są wyłączone: `buildNamedUnit` zwraca zawsze `null`,
+ * a `buildSuperUnit` zawsze generyk kategorii. To jest dokładnie ten stan, przed
+ * którym ostrzega dispatch tematu — 25 audytowanych nazw renderowanych na
+ * generykach. Sekcja (D) wymaga, żeby dla KAŻDEJ z 25 jednostek co najmniej
+ * jedna asercja (A) zapaliła się wtedy na czerwono. Mutacja jest wyłącznie
+ * w pamięci — plik `units.ts` w repo NIE jest zmieniany.
+ */
+const SYG_NAMED = 'function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {';
+const SYG_SUPER = 'function buildSuperUnit(culture: Culture, ownerColor_: number, _name: string): THREE.Group {';
+const mutacja = { named: 0, super: 0 };
+const mutatePlugin = {
+  name: 'wylacz-dedykowany-dispatch',
+  setup(build) {
+    build.onLoad({ filter: /units\.ts$/ }, (args) => {
+      if (path.resolve(args.path) !== UNITS_TS) return null;
+      let out = fs.readFileSync(args.path, 'utf8');
+      if (out.includes(SYG_NAMED)) { out = out.replace(SYG_NAMED, SYG_NAMED + ' if (true) return null;'); mutacja.named++; }
+      if (out.includes(SYG_SUPER)) { out = out.replace(SYG_SUPER, SYG_SUPER + " if (true) return buildCategoryModel('super', ownerColor_);"); mutacja.super++; }
+      out += [
+        '',
+        '(globalThis as any).__normName = normName;',
+        '(globalThis as any).__buildNamedUnit = buildNamedUnit;',
+        '(globalThis as any).__buildSuperUnit = buildSuperUnit;',
+        '(globalThis as any).__buildCategoryModel = buildCategoryModel;',
+        '(globalThis as any).__cultureFromName = cultureFromName;',
+        '(globalThis as any).__SUPER_NAZWANY = SUPER_Z_MODELEM_NAZWANYM;',
+        '',
+      ].join('\n');
+      return { contents: out, loader: 'ts', resolveDir: path.dirname(args.path) };
+    });
+  },
+};
+
+async function buildBundle(outfile, mutate) {
   await esbuild.build({
     entryPoints: [ENTRY],
     bundle: true,
     platform: 'browser',
     format: 'iife',
     target: 'es2020',
-    outfile: BUNDLE,
+    outfile,
     absWorkingDir: GRA,
     loader: { '.ts': 'ts', '.json': 'json' },
-    plugins: [exposePlugin],
+    plugins: [mutate ? mutatePlugin : exposePlugin],
     logLevel: 'silent',
   });
 }
@@ -158,6 +194,105 @@ async function launchBrowser() {
     return await chromium.launch({ headless: true, executablePath: FALLBACK_CHROME, args: ['--no-sandbox', '--use-gl=swiftshader', '--enable-unsafe-swiftshader'] });
   }
 }
+
+/** Pomiar (A) — ten sam kod uruchamiany na bundlu ZWYKŁYM i na bundlu ZMUTOWANYM. */
+const MIERZ = ({ plan, color, wszystkie }) => {
+      const THREE = window.__THREE;
+      const opis = (obj) => {
+        obj.updateMatrixWorld(true);
+        let minY = Infinity, maxY = -Infinity, maxR = 0, meshCount = 0;
+        // Wielkości EKRANOWE, osobno dla obu kamer — potrzebne, żeby jeden wspólny
+        // kadr obejmował KAŻDĄ jednostkę i nic nie przycinał. `maxR` (promień w XZ)
+        // do tego nie wystarcza: mieszałby szerokość ekranu z GŁĘBOKOŚCIĄ (włócznia
+        // wzdłuż osi patrzenia daje duże maxR, a na ekranie zero szerokości).
+        let maxAbsX = 0, maxAbsZ = 0;
+        const EL = Math.PI * 52 / 180, cEL = Math.cos(EL), sEL = Math.sin(EL);
+        let maxQ = -Infinity, minQ = Infinity;   // q = y*cos52 - z*sin52 (oś „góra" kamery gry)
+        const names = [];
+        const v = new THREE.Vector3();
+        obj.traverse((o) => {
+          if (!o.isMesh) return;
+          meshCount++;
+          if (o.name) names.push(o.name);
+          const geo = o.geometry;
+          if (!geo.boundingBox) geo.computeBoundingBox();
+          const bb = geo.boundingBox;
+          for (const c of [
+            [bb.min.x, bb.min.y, bb.min.z], [bb.max.x, bb.min.y, bb.min.z],
+            [bb.min.x, bb.max.y, bb.min.z], [bb.max.x, bb.max.y, bb.min.z],
+            [bb.min.x, bb.min.y, bb.max.z], [bb.max.x, bb.min.y, bb.max.z],
+            [bb.min.x, bb.max.y, bb.max.z], [bb.max.x, bb.max.y, bb.max.z],
+          ]) {
+            v.set(c[0], c[1], c[2]).applyMatrix4(o.matrixWorld);
+            if (v.y < minY) minY = v.y;
+            if (v.y > maxY) maxY = v.y;
+            const r = Math.hypot(v.x, v.z);
+            if (r > maxR) maxR = r;
+            if (Math.abs(v.x) > maxAbsX) maxAbsX = Math.abs(v.x);
+            if (Math.abs(v.z) > maxAbsZ) maxAbsZ = Math.abs(v.z);
+            const q = v.y * cEL - v.z * sEL;
+            if (q > maxQ) maxQ = q;
+            if (q < minQ) minQ = q;
+          }
+        });
+        return {
+          meshCount,
+          nazwyMesh: Array.from(new Set(names)).sort(),
+          anchors: obj.userData && obj.userData['anchors'] ? Object.keys(obj.userData['anchors']).sort() : null,
+          minY: +minY.toFixed(4), maxY: +maxY.toFixed(4), maxR: +maxR.toFixed(4),
+          maxAbsX: +maxAbsX.toFixed(4), maxAbsZ: +maxAbsZ.toFixed(4),
+          maxQ: +maxQ.toFixed(4), minQ: +minQ.toFixed(4),
+        };
+      };
+      // Obsada kategorii w CAŁYM units.json — potrzebna, gdy model jednostki
+      // wychodzi identyczny jak `buildCategoryModel(kat)`. To NIE musi znaczyć
+      // „generyk": gdy jednostka jest JEDYNYM lokatorem swojej kategorii, model
+      // kategorii JEST jej własnym, dedykowanym modelem (nic go z nikim nie dzieli).
+      const obsada = {};
+      for (const u of wszystkie) {
+        const k = window.__categoryOf(u.nazwa || '', u.rola || '', u.isSuper, u.typ || null);
+        (obsada[k] = obsada[k] || []).push(u.nazwa);
+      }
+
+      const out = [];
+      for (const p of plan) {
+        const kat = window.__categoryOf(p.nazwa, p.rola || '', p.isSuper, p.typ || null);
+        const n = window.__normName(p.nazwa);
+
+        // dispatch dedykowany — mierzony bezpośrednio, nie wnioskowany
+        let dispatchTyp, dispatchOk;
+        if (kat === 'super') {
+          const kult = window.__cultureFromName(p.nazwa);
+          const przezNazwe = window.__SUPER_NAZWANY.test(n) && window.__buildNamedUnit(n, color) !== null;
+          // MIERZONE, nie wnioskowane: `buildSuperUnit` dla tej kultury/nazwy musi
+          // dać coś INNEGO niż gałąź `default`, którą jest generyk kategorii.
+          const sygn = (g) => { const d = opis(g); return d.meshCount + '|' + d.nazwyMesh.join(','); };
+          const bespokeSuper = sygn(window.__buildSuperUnit(kult, color, p.nazwa))
+            !== sygn(window.__buildCategoryModel('super', color));
+          dispatchOk = przezNazwe || bespokeSuper;
+          dispatchTyp = przezNazwe ? 'buildNamedUnit (SUPER_Z_MODELEM_NAZWANYM)'
+            : (bespokeSuper ? 'buildSuperUnit → gałąź kultury `' + kult + '` (≠ default)' : 'buildSuperUnit → default (GENERYK!)');
+        } else {
+          const named = window.__buildNamedUnit(n, color);
+          dispatchOk = named !== null;
+          dispatchTyp = dispatchOk ? 'buildNamedUnit (dopasowanie po nazwie)' : 'BRAK — spada do buildCategoryModel (GENERYK!)';
+        }
+
+        const wGrze = window.__buildUnitModel(kat, color, p.nazwa);   // pełna ścieżka gry
+        const generyk = window.__buildCategoryModel(kat, color);      // czysty generyk kategorii
+        const mG = opis(wGrze), mR = opis(generyk);
+        const rozniSie = mG.meshCount !== mR.meshCount
+          || JSON.stringify(mG.nazwyMesh) !== JSON.stringify(mR.nazwyMesh);
+
+        out.push({
+          nazwa: p.nazwa, kategoria: kat, isSuper: p.isSuper, kultura: p.kultura,
+          dispatchOk, dispatchTyp, rozniSie,
+          lokatorzyKategorii: obsada[kat] || [],
+          model: mG, generyk: { meshCount: mR.meshCount, liczbaNazw: mR.nazwyMesh.length },
+        });
+      }
+      return out;
+};
 
 /* ------------------------------------------------------------------ */
 /* (2) MAIN                                                            */
@@ -217,7 +352,7 @@ async function launchBrowser() {
     'window.__categoryOf = categoryOf;',
     '',
   ].join('\n'), 'utf8');
-  await buildBundle();
+  await buildBundle(BUNDLE, false);
   check('(1a) wtyczka esbuild odsłoniła wewnętrzne symbole units.ts (dokładnie raz)',
     exposed.applied === 1, exposed.applied);
 
@@ -238,85 +373,7 @@ async function launchBrowser() {
 
     /* --- (A) POMIAR: dedykowany model, nie generyk --- */
     console.log('\n--- (A) dowód modelu DEDYKOWANEGO dla każdej z 25 jednostek ---');
-    const measured = await page.evaluate(({ plan, color, wszystkie }) => {
-      const THREE = window.__THREE;
-      const opis = (obj) => {
-        obj.updateMatrixWorld(true);
-        let minY = Infinity, maxY = -Infinity, maxR = 0, meshCount = 0;
-        const names = [];
-        const v = new THREE.Vector3();
-        obj.traverse((o) => {
-          if (!o.isMesh) return;
-          meshCount++;
-          if (o.name) names.push(o.name);
-          const geo = o.geometry;
-          if (!geo.boundingBox) geo.computeBoundingBox();
-          const bb = geo.boundingBox;
-          for (const c of [
-            [bb.min.x, bb.min.y, bb.min.z], [bb.max.x, bb.min.y, bb.min.z],
-            [bb.min.x, bb.max.y, bb.min.z], [bb.max.x, bb.max.y, bb.min.z],
-            [bb.min.x, bb.min.y, bb.max.z], [bb.max.x, bb.min.y, bb.max.z],
-            [bb.min.x, bb.max.y, bb.max.z], [bb.max.x, bb.max.y, bb.max.z],
-          ]) {
-            v.set(c[0], c[1], c[2]).applyMatrix4(o.matrixWorld);
-            if (v.y < minY) minY = v.y;
-            if (v.y > maxY) maxY = v.y;
-            const r = Math.hypot(v.x, v.z);
-            if (r > maxR) maxR = r;
-          }
-        });
-        return {
-          meshCount,
-          nazwyMesh: Array.from(new Set(names)).sort(),
-          anchors: obj.userData && obj.userData['anchors'] ? Object.keys(obj.userData['anchors']).sort() : null,
-          minY: +minY.toFixed(4), maxY: +maxY.toFixed(4), maxR: +maxR.toFixed(4),
-        };
-      };
-      // Obsada kategorii w CAŁYM units.json — potrzebna, gdy model jednostki
-      // wychodzi identyczny jak `buildCategoryModel(kat)`. To NIE musi znaczyć
-      // „generyk": gdy jednostka jest JEDYNYM lokatorem swojej kategorii, model
-      // kategorii JEST jej własnym, dedykowanym modelem (nic go z nikim nie dzieli).
-      const obsada = {};
-      for (const u of wszystkie) {
-        const k = window.__categoryOf(u.nazwa || '', u.rola || '', u.isSuper, u.typ || null);
-        (obsada[k] = obsada[k] || []).push(u.nazwa);
-      }
-
-      const out = [];
-      for (const p of plan) {
-        const kat = window.__categoryOf(p.nazwa, p.rola || '', p.isSuper, p.typ || null);
-        const n = window.__normName(p.nazwa);
-
-        // dispatch dedykowany — mierzony bezpośrednio, nie wnioskowany
-        let dispatchTyp, dispatchOk;
-        if (kat === 'super') {
-          const kult = window.__cultureFromName(p.nazwa);
-          const przezNazwe = window.__SUPER_NAZWANY.test(n) && window.__buildNamedUnit(n, color) !== null;
-          const bespokeSuper = ['rzym', 'grecja', 'germanie'].includes(kult);
-          dispatchOk = przezNazwe || bespokeSuper;
-          dispatchTyp = przezNazwe ? 'buildNamedUnit (SUPER_Z_MODELEM_NAZWANYM)'
-            : (bespokeSuper ? 'buildSuperUnit → kultura ' + kult : 'buildSuperUnit → default (GENERYK!)');
-        } else {
-          const named = window.__buildNamedUnit(n, color);
-          dispatchOk = named !== null;
-          dispatchTyp = dispatchOk ? 'buildNamedUnit (dopasowanie po nazwie)' : 'BRAK — spada do buildCategoryModel (GENERYK!)';
-        }
-
-        const wGrze = window.__buildUnitModel(kat, color, p.nazwa);   // pełna ścieżka gry
-        const generyk = window.__buildCategoryModel(kat, color);      // czysty generyk kategorii
-        const mG = opis(wGrze), mR = opis(generyk);
-        const rozniSie = mG.meshCount !== mR.meshCount
-          || JSON.stringify(mG.nazwyMesh) !== JSON.stringify(mR.nazwyMesh);
-
-        out.push({
-          nazwa: p.nazwa, kategoria: kat, isSuper: p.isSuper, kultura: p.kultura,
-          dispatchOk, dispatchTyp, rozniSie,
-          lokatorzyKategorii: obsada[kat] || [],
-          model: mG, generyk: { meshCount: mR.meshCount, liczbaNazw: mR.nazwyMesh.length },
-        });
-      }
-      return out;
-    }, {
+    const measured = await page.evaluate(MIERZ, {
       plan, color: OWNER_BLUE,
       wszystkie: allUnits.map((u) => ({
         nazwa: u['Jednostka'], rola: u['Rola (linia)'], typ: u['Typ'],
@@ -361,203 +418,260 @@ async function launchBrowser() {
     console.log('  promienie maxR (×HEX_R): min ' + Math.min(...measured.map((m) => m.model.maxR)).toFixed(3)
       + ', max ' + Math.max(...measured.map((m) => m.model.maxR)).toFixed(3));
 
+    /* --- (D) DOWÓD NIETAUTOLOGICZNOŚCI — §9 poz. 6a --- */
+    console.log('\n--- (D) mutacja: dedykowany dispatch WYŁĄCZONY (bundle w pamięci) ---');
+    await buildBundle(BUNDLE_MUT, true);
+    check('(D0) mutacja faktycznie wyłączyła OBA dispatche (test nie jest pusty)',
+      mutacja.named === 1 && mutacja.super === 1, mutacja);
+    if (mutacja.named !== 1 || mutacja.super !== 1) {
+      console.log('PRZERWANE: sygnatury buildNamedUnit/buildSuperUnit się przesunęły — popraw SYG_NAMED/SYG_SUPER.');
+    } else {
+      const pageMut = await browser.newPage({ viewport: { width: 400, height: 300 } });
+      try {
+        await pageMut.setContent('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body></body></html>');
+        await pageMut.addScriptTag({ path: BUNDLE_MUT });
+        const mut = await pageMut.evaluate(MIERZ, {
+          plan, color: OWNER_BLUE,
+          wszystkie: allUnits.map((u) => ({
+            nazwa: u['Jednostka'], rola: u['Rola (linia)'], typ: u['Typ'],
+            isSuper: u['Super-jednostka'] === 'TAK',
+          })),
+        });
+        // Dla KAŻDEJ jednostki co najmniej jedna asercja (A) musi zapalić się na
+        // czerwono. Inaczej (A) nie mierzy tego, co deklaruje.
+        const nadalZielone = mut.filter((m) => {
+          const dispatchCzerwony = !m.dispatchOk;
+          const roznicaCzerwona = m.rozniSie ? false : (m.lokatorzyKategorii.length !== 1);
+          return !(dispatchCzerwony || roznicaCzerwona);
+        }).map((m) => m.nazwa);
+        check('(D1) po wyłączeniu dispatchu KAŻDA z ' + plan.length + ' jednostek pada na co najmniej jednej asercji (A)',
+          nadalZielone.length === 0, { nadal_zielone: nadalZielone });
+        const spadloDoGeneryka = mut.filter((m) => !m.rozniSie).length;
+        console.log('  po mutacji: ' + mut.filter((m) => !m.dispatchOk).length + '/' + plan.length
+          + ' jednostek bez dedykowanego dispatchu, ' + spadloDoGeneryka + '/' + plan.length
+          + ' identycznych z generykiem kategorii');
+      } finally { await pageMut.close(); }
+    }
+
     /* --- (B) RENDER --- */
     if (!NO_SHOTS) {
       fs.mkdirSync(OUT, { recursive: true });
-      const globalMaxY = Math.max(...measured.map((m) => m.model.maxY));
-      const globalMaxR = Math.max(...measured.map((m) => m.model.maxR));
-      console.log('\n--- (B) render: PRZÓD + KAMERA GRY (azymut 0, elewacja 52°), kadr wspólny dla wszystkich ---');
 
-      await page.evaluate(({ maxY, maxR, color }) => {
+      // --- KADR: liczony RAZ, z faktycznych wielkości EKRANOWYCH, osobno dla
+      // każdego z dwóch trybów kamery. Wewnątrz trybu skala i kadr są IDENTYCZNE
+      // dla wszystkich 25 jednostek — to jest wymagana porównywalność MIĘDZY
+      // jednostkami. Tryby mają własny kadr, bo rzut kamery gry (elewacja 52°)
+      // rozciąga bryłę zupełnie inaczej niż rzut frontalny: wspólny kadr dla obu
+      // zmusiłby panel PRZÓD do skali najgorszego przypadku kamery gry i wszystkie
+      // jednostki byłyby na nim niepotrzebnie małe.
+      const sEL = Math.sin(Math.PI * 52 / 180);
+      const gMaxAbsZ = Math.max(...measured.map((m) => m.model.maxAbsZ));
+      const halfW = Math.max(...measured.map((m) => m.model.maxAbsX));
+      // PRZÓD: oś pionowa ekranu = Y świata.
+      const yMax = Math.max(...measured.map((m) => m.model.maxY));
+      const yMin = Math.min(...measured.map((m) => m.model.minY));
+      const przod = { c: (yMax + yMin) / 2, h: (yMax - yMin) / 2 };
+      // KAMERA GRY: oś pionowa ekranu = q = y·cos52 − z·sin52 (wektor „góra" kamery).
+      const qMax = Math.max(...measured.map((m) => m.model.maxQ));
+      const qMin = Math.min(...measured.map((m) => m.model.minQ));
+      const gra = { c: (qMax + qMin) / 2, h: (qMax - qMin) / 2 };
+      const MARG = 1.10;
+      const PANEL_H = 470;
+      const halfHmax = Math.max(przod.h, gra.h);
+      const PANEL_W = Math.round(PANEL_H * Math.max(1.0, (halfW / halfHmax) * 1.06));
+      console.log('\n--- (B) render: PRZÓD + KAMERA GRY (azymut 0°, elewacja 52°) ---');
+      console.log('  kadr PRZÓD: środek ' + przod.c.toFixed(3) + ', półwysokość ' + przod.h.toFixed(3)
+        + ' | kadr KAMERA GRY: środek ' + gra.c.toFixed(3) + ', półwysokość ' + gra.h.toFixed(3)
+        + ' | półszerokość ' + halfW.toFixed(3) + ' ×HEX_R; panel ' + PANEL_W + '×' + PANEL_H + ' px, margines ' + MARG);
+
+      await page.evaluate(({ przod, gra, gMaxAbsZ, marg, panelW, panelH, color, sEL }) => {
         const THREE = window.__THREE;
-        window.__ZR = {};
-        const Z = window.__ZR;
-        Z.PANEL = 520;
-        Z.FOV = 24;
-        // Jedna odległość dla WSZYSTKICH jednostek — spójna skala i brak przycięcia.
-        const half = Math.max(maxY * 0.5, maxR) * 1.16;
-        Z.DIST = half / Math.tan(THREE.MathUtils.degToRad(Z.FOV / 2) ) + maxR;
-        Z.TARGET = new THREE.Vector3(0, maxY * 0.5, 0);
+        const Z = {}; window.__ZR = Z;
+        Z.W = panelW; Z.H = panelH; Z.FOV = 24;
+        const tg = Math.tan(THREE.MathUtils.degToRad(Z.FOV / 2));
+        // Osobna odległość per tryb; wewnątrz trybu STAŁA dla wszystkich jednostek.
+        Z.DIST = {
+          front: (przod.h * marg) / tg + gMaxAbsZ,
+          game:  (gra.h  * marg) / tg + gMaxAbsZ,
+        };
+        // Cel kamery ustawiony tak, żeby środek zmierzonej bryły trafiał w środek kadru.
+        const cEL = Math.cos(THREE.MathUtils.degToRad(52));
+        Z.TGT = {
+          front: new THREE.Vector3(0, przod.c, 0),
+          game:  new THREE.Vector3(0, gra.c * cEL, -gra.c * sEL),
+        };
         Z.color = color;
 
         Z.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
         Z.renderer.setPixelRatio(2);
-        Z.renderer.setSize(Z.PANEL, Z.PANEL);
-        Z.renderer.setClearColor(0xdfe7f0, 1);
+        Z.renderer.setSize(Z.W, Z.H);
+        Z.renderer.setClearColor(0xe3eaf2, 1);
         Z.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         Z.renderer.toneMappingExposure = 1.06;
         document.body.appendChild(Z.renderer.domElement);
 
         Z.scene = new THREE.Scene();
-        Z.scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa7b4, 0.85));
-        Z.scene.add(new THREE.AmbientLight(0xffffff, 0.42));
+        Z.scene.add(new THREE.HemisphereLight(0xffffff, 0x93a1b0, 0.9));
+        Z.scene.add(new THREE.AmbientLight(0xffffff, 0.40));
         const key = new THREE.DirectionalLight(0xfff4e2, 1.15); key.position.set(1.6, 2.6, 2.4); Z.scene.add(key);
         const fill = new THREE.DirectionalLight(0xdce8ff, 0.55); fill.position.set(-2.2, 1.4, 1.2); Z.scene.add(fill);
-        const rim = new THREE.DirectionalLight(0xffffff, 0.45); rim.position.set(0, 1.2, -2.6); Z.scene.add(rim);
+        const rim = new THREE.DirectionalLight(0xffffff, 0.50); rim.position.set(0, 1.3, -2.6); Z.scene.add(rim);
 
-        // Wspólna podstawka odniesienia (ta sama dla każdej jednostki).
+        // Wspólna podstawka odniesienia — ta sama dla każdej jednostki, więc
+        // działa jak skala porównawcza między obrazkami.
         const pad = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.52, 0.52, 0.012, 48),
-          new THREE.MeshStandardMaterial({ color: 0xb9c4d0, roughness: 0.95, metalness: 0.0 }),
+          new THREE.CylinderGeometry(0.44, 0.44, 0.012, 48),
+          new THREE.MeshStandardMaterial({ color: 0xb4c0cd, roughness: 0.95, metalness: 0.0 }),
         );
         pad.position.y = -0.006;
         Z.scene.add(pad);
 
-        Z.camera = new THREE.PerspectiveCamera(Z.FOV, 1, 0.05, 60);
-
-        // Kamera gry: azymut 0, elewacja 52° — te same wzory co render/camera.ts.
-        Z.setGameCam = () => {
-          const el = THREE.MathUtils.degToRad(52), az = 0;
+        Z.camera = new THREE.PerspectiveCamera(Z.FOV, Z.W / Z.H, 0.05, 60);
+        // Kamera gry — te same wzory co render/camera.ts (azymut 0, elewacja 52°).
+        Z.setCam = (mode) => {
+          const el = THREE.MathUtils.degToRad(mode === 'front' ? 0 : 52);
+          const az = 0, D = Z.DIST[mode], T = Z.TGT[mode];
           Z.camera.position.set(
-            Z.TARGET.x + Z.DIST * Math.cos(el) * Math.sin(az),
-            Z.TARGET.y + Z.DIST * Math.sin(el),
-            Z.TARGET.z + Z.DIST * Math.cos(el) * Math.cos(az),
+            T.x + D * Math.cos(el) * Math.sin(az),
+            T.y + D * Math.sin(el),
+            T.z + D * Math.cos(el) * Math.cos(az),
           );
-          Z.camera.lookAt(Z.TARGET);
+          Z.camera.lookAt(T);
         };
-        // Przód: ten sam azymut 0, elewacja 0° — czysty widok frontalny.
-        Z.setFrontCam = () => {
-          Z.camera.position.set(Z.TARGET.x, Z.TARGET.y, Z.TARGET.z + Z.DIST);
-          Z.camera.lookAt(Z.TARGET);
-        };
-
         Z.current = null;
         Z.setUnit = (kat, nazwa) => {
           if (Z.current) { Z.scene.remove(Z.current); Z.current = null; }
           const g = window.__buildUnitModel(kat, Z.color, nazwa);
-          Z.scene.add(g);
-          Z.current = g;
+          Z.scene.add(g); Z.current = g;
         };
-        Z.shot = (mode) => {
-          if (mode === 'front') Z.setFrontCam(); else Z.setGameCam();
-          Z.renderer.render(Z.scene, Z.camera);
-          return Z.renderer.domElement;
+        Z.shot = (mode) => { Z.setCam(mode); Z.renderer.render(Z.scene, Z.camera); return Z.renderer.domElement; };
+        Z.FONT = '"DejaVu Sans","Liberation Sans",Arial,sans-serif';
+        Z.fit = (g, txt, weight, basePx, maxW) => {
+          let px = basePx;
+          g.font = weight + ' ' + px + 'px ' + Z.FONT;
+          while (g.measureText(txt).width > maxW && px > 9) { px -= 1; g.font = weight + ' ' + px + 'px ' + Z.FONT; }
+          return px;
         };
-      }, { maxY: globalMaxY, maxR: globalMaxR, color: OWNER_BLUE });
+      }, { przod, gra, gMaxAbsZ, marg: MARG, panelW: PANEL_W, panelH: PANEL_H, color: OWNER_BLUE, sEL });
 
       const thumbs = [];
       for (let i = 0; i < plan.length; i++) {
         const p = plan[i];
         const m = measured.find((x) => x.nazwa === p.nazwa);
-        const dataUrl = await page.evaluate(({ nazwa, kat, podpis, meta }) => {
+        const shot = await page.evaluate(({ nazwa, kat, podpis, meta, stopka }) => {
           const Z = window.__ZR;
           Z.setUnit(kat, nazwa);
-          const P = Z.PANEL;
-          const W = P * 2, HDR = 92, FTR = 54, H = HDR + P + FTR;
+          const P = Z.W, PH = Z.H;
+          const W = P * 2, HDR = 96, FTR = 50, H = HDR + PH + FTR;
           const c = document.createElement('canvas');
           c.width = W; c.height = H;
           const g = c.getContext('2d');
+          g.textBaseline = 'middle';
           g.fillStyle = '#f4f7fb'; g.fillRect(0, 0, W, H);
 
           const front = Z.shot('front');
-          g.drawImage(front, 0, HDR, P, P);
+          g.drawImage(front, 0, HDR, P, PH);
+          // czysta miniatura PRZODU (bez etykiet) — na arkusz zbiorczy
+          const mc = document.createElement('canvas');
+          mc.width = P; mc.height = PH;
+          mc.getContext('2d').drawImage(front, 0, 0, P, PH);
+          const mini = mc.toDataURL('image/png');
+
           const game = Z.shot('game');
-          g.drawImage(game, P, HDR, P, P);
-
+          g.drawImage(game, P, HDR, P, PH);
           g.strokeStyle = '#8d9aa8'; g.lineWidth = 2;
-          g.strokeRect(1, HDR, P - 1, P); g.strokeRect(P + 1, HDR, P - 1, P);
+          g.strokeRect(1, HDR, P - 1, PH); g.strokeRect(P + 1, HDR, P - 1, PH);
 
-          const FONT = '"DejaVu Sans","Liberation Sans",Arial,sans-serif';
           // PODPIS NAZWĄ — wypalony na obrazku
-          g.fillStyle = '#12212f';
-          g.font = '700 46px ' + FONT;
-          g.textBaseline = 'middle';
-          g.fillText(podpis, 22, 40);
-          g.fillStyle = '#5c6b7a';
-          g.font = '400 22px ' + FONT;
-          g.fillText(meta, 22, 74);
+          g.fillStyle = '#12212f'; Z.fit(g, podpis, '700', 46, W - 44);
+          g.fillText(podpis, 22, 42);
+          g.fillStyle = '#5c6b7a'; Z.fit(g, meta, '400', 22, W - 44);
+          g.fillText(meta, 22, 76);
 
-          // etykiety kadrów
-          g.font = '700 24px ' + FONT;
           const label = (txt, x) => {
+            Z.fit(g, txt, '700', 22, P - 52);
             const w = g.measureText(txt).width + 24;
-            g.fillStyle = 'rgba(18,33,47,0.82)';
-            g.fillRect(x + 12, HDR + 12, w, 38);
+            g.fillStyle = 'rgba(18,33,47,0.84)';
+            g.fillRect(x + 12, HDR + 12, w, 36);
             g.fillStyle = '#ffffff';
-            g.fillText(txt, x + 24, HDR + 32);
+            g.fillText(txt, x + 24, HDR + 31);
           };
-          label('PRZÓD', 0);
-          label('KAMERA GRY — azymut 0°, elewacja 52°', P);
+          label('PRZÓD (azymut 0°, elewacja 0°)', 0);
+          label('KAMERA GRY (azymut 0°, elewacja 52°)', P);
 
-          g.fillStyle = '#2c4a66';
-          g.font = '400 21px ' + FONT;
-          g.fillText(stopka, 22, HDR + P + 28);
-          return c.toDataURL('image/png');
+          g.fillStyle = '#2c4a66'; Z.fit(g, stopka, '400', 20, W - 44);
+          g.fillText(stopka, 22, HDR + PH + 25);
+          return { pelny: c.toDataURL('image/png'), mini };
         }, {
-          nazwa: p.nazwa, kat: m.kategoria,
-          podpis: p.nazwa,
-          stopka: 'MODEL DEDYKOWANY: TAK — ' + m.dispatchTyp + '; ' + m.dowodRoznicy,
+          nazwa: p.nazwa, kat: m.kategoria, podpis: p.nazwa,
           meta: [
             'epoka Żelaza',
-            p.kultura ? 'kultura: ' + p.kultura : 'kultura: —',
+            'kultura: ' + (p.kultura || '—'),
             'kategoria modelu: ' + m.kategoria + (m.isSuper ? ' (super-jednostka)' : ''),
             'mesh: ' + m.model.meshCount,
-            'wys.: ' + m.model.maxY.toFixed(2) + '×HEX_R',
+            'wysokość ' + m.model.maxY.toFixed(2) + ' ×HEX_R',
           ].join('  •  '),
+          stopka: 'MODEL DEDYKOWANY: TAK — ' + m.dispatchTyp + '; ' + m.dowodRoznicy,
         });
 
         const idx = String(i + 1).padStart(2, '0');
         const safe = p.nazwa.replace(/[\/\\:*?"<>|]/g, '-').replace(/\s+/g, '-');
         const file = path.join(OUT, idx + '-' + safe + '.png');
-        fs.writeFileSync(file, Buffer.from(dataUrl.split(',')[1], 'base64'));
-        thumbs.push({ nazwa: p.nazwa, dataUrl });
+        fs.writeFileSync(file, Buffer.from(shot.pelny.split(',')[1], 'base64'));
+        thumbs.push({ nazwa: p.nazwa, dataUrl: shot.mini });
         console.log('  [' + idx + '/' + plan.length + '] ' + p.nazwa + ' → ' + path.basename(file));
       }
 
       /* --- (C) arkusz zbiorczy 5x5 --- */
-      const sheet = await page.evaluate((items) => {
-        const CELL = 380, PAD = 10, CAP = 46;
-        const COLS = 5, ROWS = Math.ceil(items.length / COLS);
-        const HDR = 86;
-        const W = COLS * (CELL + PAD) + PAD;
-        const H = HDR + ROWS * (CELL + CAP + PAD) + PAD;
+      const sheet = await page.evaluate(({ items, panelW, panelH }) => {
+        const Z = window.__ZR;
+        const CW = 360, CH = Math.round(360 * panelH / panelW);
+        const PAD = 12, CAP = 40, COLS = 5;
+        const ROWS = Math.ceil(items.length / COLS), HDR = 92;
+        const W = COLS * (CW + PAD) + PAD;
+        const H = HDR + ROWS * (CH + CAP + PAD) + PAD;
         const c = document.createElement('canvas');
         c.width = W; c.height = H;
         const g = c.getContext('2d');
+        g.textBaseline = 'middle';
         g.fillStyle = '#f4f7fb'; g.fillRect(0, 0, W, H);
-        const FONT = '"DejaVu Sans","Liberation Sans",Arial,sans-serif';
-        g.fillStyle = '#12212f'; g.font = '700 40px ' + FONT; g.textBaseline = 'middle';
-        g.fillText('Epoka Żelaza — wszystkie 25 jednostek (widok od przodu)', PAD + 8, 40);
-        g.fillStyle = '#5c6b7a'; g.font = '400 20px ' + FONT;
-        g.fillText('kolor gracza: niebieski • pełne kadry (przód + kamera gry) w plikach jednostkowych', PAD + 8, 68);
+        g.fillStyle = '#12212f'; Z.fit(g, 'Epoka Żelaza — wszystkie 25 jednostek, widok od przodu', '700', 40, W - 2 * PAD);
+        g.fillText('Epoka Żelaza — wszystkie 25 jednostek, widok od przodu', PAD + 6, 40);
+        const sub = 'kolor gracza: niebieski  •  wspólna skala i kadr dla wszystkich  •  pełne kadry (przód + kamera gry) w plikach jednostkowych';
+        g.fillStyle = '#5c6b7a'; Z.fit(g, sub, '400', 20, W - 2 * PAD);
+        g.fillText(sub, PAD + 6, 70);
 
         return Promise.all(items.map((it) => new Promise((res) => {
-          const img = new Image();
-          img.onload = () => res(img);
-          img.src = it.dataUrl;
+          const img = new Image(); img.onload = () => res(img); img.src = it.dataUrl;
         }))).then((imgs) => {
           imgs.forEach((img, i) => {
             const col = i % COLS, row = Math.floor(i / COLS);
-            const x = PAD + col * (CELL + PAD);
-            const y = HDR + row * (CELL + CAP + PAD);
-            g.fillStyle = '#ffffff'; g.fillRect(x, y, CELL, CELL);
-            // lewy panel (PRZÓD) źródłowego obrazka: 520x520 z offsetem 92 px
-            g.drawImage(img, 0, 92, 520, 520, x, y, CELL, CELL);
-            g.strokeStyle = '#8d9aa8'; g.lineWidth = 1.5; g.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
-            g.fillStyle = '#12212f'; g.font = '700 22px ' + FONT;
-            let t = items[i].nazwa;
-            while (g.measureText(t).width > CELL - 8 && t.length > 4) t = t.slice(0, -2);
-            g.fillText(t, x + 4, y + CELL + 24);
+            const x = PAD + col * (CW + PAD);
+            const y = HDR + row * (CH + CAP + PAD);
+            g.drawImage(img, x, y, CW, CH);
+            g.strokeStyle = '#8d9aa8'; g.lineWidth = 1.5; g.strokeRect(x + 0.5, y + 0.5, CW - 1, CH - 1);
+            g.fillStyle = '#12212f';
+            Z.fit(g, items[i].nazwa, '700', 22, CW - 8);
+            g.fillText(items[i].nazwa, x + 4, y + CH + 22);
           });
           return c.toDataURL('image/png');
         });
-      }, thumbs);
+      }, { items: thumbs, panelW: PANEL_W, panelH: PANEL_H });
       const sheetFile = path.join(OUT, '00-ARKUSZ-ZBIORCZY-5x5.png');
       fs.writeFileSync(sheetFile, Buffer.from(sheet.split(',')[1], 'base64'));
       console.log('  arkusz zbiorczy → ' + path.basename(sheetFile));
 
       check('(B1) powstało ' + plan.length + ' plików PNG per jednostka',
-        fs.readdirSync(OUT).filter((f) => /^\d\d-/.test(f) && f.endsWith('.png')).length === plan.length);
+        fs.readdirSync(OUT).filter((f) => /^\d\d-/.test(f) && !f.startsWith('00-') && f.endsWith('.png')).length === plan.length);
       check('(C1) arkusz zbiorczy 5x5 zapisany', fs.existsSync(sheetFile) && fs.statSync(sheetFile).size > 10000);
 
-      // raport maszynowy obok obrazków
       fs.writeFileSync(path.join(OUT, 'DOWODY-modeli.json'), JSON.stringify(measured, null, 2), 'utf8');
     }
 
     check('(Z) zero błędów konsoli/strony w renderze', pageErrors.length === 0, pageErrors.slice(0, 5));
   } finally {
     await browser.close();
-    try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
+    try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); fs.unlinkSync(BUNDLE_MUT); } catch (_) {}
   }
 
   console.log('\n=== WYNIK: ' + pass + ' pass / ' + fail + ' fail ===');
