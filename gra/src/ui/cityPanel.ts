@@ -205,8 +205,7 @@ import {
   buildingResourceUpkeep,
   addResourceCosts,
   unitResourceUpkeep,
-  canAffordUnitRecruitFull,
-  unitRecruitFullStockCost,
+  canAffordUnitRecruitStock,
   isUnitRecruitStockChipMissing,
 } from '../game/economy-upkeep';
 import {
@@ -7742,8 +7741,10 @@ function empireRekruciAffordable(city: City, mpCost: number): boolean {
 /**
  * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): chip(y) kosztu surowcowego jednostki
  * (units.json Surowiec/Surowiec (ilość)) na karcie rekrutacji — czerwony gdy pula
- * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza na łączny
- * koszt rekrutacji (unitRecruitFullStockCost = stock + rezerwa utrzymania 1 tura).
+ * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza na SAM
+ * jednorazowy koszt zakupu (unitStockCost). R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1
+ * (2026-08-26): brak zapasu na utrzymanie NIE czerwieni chipa i nie blokuje przycisku
+ * — utrzymanie jest pobierane dopiero w następnej turze.
  * Pusty string gdy jednostka nie ma kosztu surowcowego.
  * Wzorzec: buildingStockCostChipsHtml; bramka: isUnitRecruitStockChipMissing.
  */
@@ -7782,10 +7783,11 @@ function appendUnitRecruitCompactRow(
   if (!udef) return;
   const mpCost = recruitManpowerCost(city, item.id);
   const canMp = empireRekruciAffordable(city, mpCost);
-  // JEDNOSTKI-SUROWIEC-01 + R-AI-RECRUIT-UPKEEP-GATE: łączna bramka na puli państwa.
-  const fullCost = unitRecruitFullStockCost(udef);
-  const fullMissing = missingStockFor(ownerSurowcePoolFor(city), fullCost);
-  const recruitOk = Object.keys(fullMissing).length === 0;
+  // JEDNOSTKI-SUROWIEC-01 + R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1: bramka na puli
+  // państwa liczy WYŁĄCZNIE jednorazowy koszt zakupu; utrzymanie idzie w następnej turze.
+  const stockCost = unitStockCost(udef);
+  const stockMissing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
+  const recruitOk = Object.keys(stockMissing).length === 0;
   const row = buildUnitRecruitCard({
     udef,
     item,
@@ -7798,7 +7800,7 @@ function appendUnitRecruitCompactRow(
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
     resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(udef),
     stockMissingLabel: !recruitOk
-      ? 'Brakuje w magazynie: ' + Object.entries(fullMissing)
+      ? 'Brakuje w magazynie: ' + Object.entries(stockMissing)
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
       : undefined,
@@ -7816,7 +7818,7 @@ function recruitUnit(city: City, item: ProductionItem): void {
   const data = gameData();
   const udef = data ? findUnitDef(data, item.id) : undefined;
   const pool = ownerSurowcePoolFor(city);
-  if (!canAffordUnitRecruitFull(pool, udef)) return;
+  if (!canAffordUnitRecruitStock(pool, udef)) return;
   if (cfg.onPurchaseUnit) {
     cfg.onPurchaseUnit(city.id, item.id, item.koszt);
   }
