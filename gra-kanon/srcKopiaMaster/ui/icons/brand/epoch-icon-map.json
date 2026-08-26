@@ -1,9 +1,0 @@
-{
-  "note": "id epoki startowej z gry → epoch-* (eksport/icons/epochs/*.svg, 3C line @24). Osobny rejestr (jak civ-icon-map).",
-  "map": {
-    "kamien": "epoch-kamien",
-    "braz": "epoch-braz",
-    "zelazo": "epoch-zelazo",
-    "_default": "epoch-kamien"
-  }
-}
