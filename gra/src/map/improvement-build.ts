@@ -339,6 +339,13 @@ export function computeImprovementBuildImpact(
   if (key === 'owce' && !isOwceBaseTerrain(hex.terenBazowy, hex.nakladka)) {
     return null;
   }
+  // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: twarda blokada commitu (drugi, niezależny gate
+  // za `qualifies()`/`canBuild` — ta sama rola co gałąź `owce` wyżej). `applyBuildRequest`
+  // (main.ts) nie powtarza `qualifies()`, więc bez tego warunku obóz poza lasem dałoby się
+  // zacommitować ścieżką pomijającą panel budowy. Dokładne porównanie enumu, nie podciąg.
+  if (key === 'oboz_lowiecki' && hex.nakladka !== Nakladka.Las) {
+    return null;
+  }
 
   const removedImprovements = improvementsReplacedByBuild(key, existing);
   const after = existingAfterSimulatedRemoval(existing, removedImprovements);
@@ -496,8 +503,10 @@ export function depositAllowsPlayerImprovement(
       return nakladka === Nakladka.ZlozeLamy;
     case 'stadnina':
       return hex.nakladka === Nakladka.ZlozeKonia;
+    // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: obóz przestaje być wyjątkiem rezerwy złoża
+    // na złożu zwierzęcym BEZ lasu — wyjątkiem jest wyłącznie las (dowolny teren pod nim).
     case 'oboz_lowiecki':
-      return nakladka === Nakladka.Las || hasAnimalDeposit(nakladka);
+      return nakladka === Nakladka.Las;
     default:
       return false;
   }
@@ -789,9 +798,14 @@ function createQualifier(state: ImprovementBuildState) {
           && nakladka === Nakladka.Las
           && TARTAK_TERENY.has(teren);
         break;
+      // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (Maciej): obóz łowiecki WYŁĄCZNIE na
+      // nakładce Las — dowolny teren POD lasem (łąka, równina, WZGÓRZE), nigdy poza lasem.
+      // Było: `Las LUB złoże zwierzęce` — stąd obozy poza lasem (złoże koni na równinie).
+      // Dokładne porównanie enumu `Nakladka.Las`, NIGDY dopasowanie po podciągu nazwy terenu:
+      // `normTerrain('Plaskie (rownina/laka)')` zawiera podciąg „las" (udowodniony błąd,
+      // combat.ts:638-646). Bramka tematu: tools/oboz-lowiecki-las-test.cjs.
       case 'oboz_lowiecki':
-        terrainOk = inPlayerTerritory(q, r)
-          && (nakladka === Nakladka.Las || hasAnimalDeposit(nakladka));
+        terrainOk = inPlayerTerritory(q, r) && nakladka === Nakladka.Las;
         break;
       case 'warzelnia_soli':
         terrainOk = inPlayerTerritory(q, r)
@@ -891,8 +905,15 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
         || teren === TerenBazowy.Wzgorza;
     case 'glinianka':
       return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina;
+    // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: jedynym warunkiem obozu jest nakładka Las —
+    // teren POD lasem jest bez znaczenia (Maciej: „niezależnie, czy to jest las na wzgórzu,
+    // czy na innym terenie"). Poprzednie `Łąka|Równina` gubiło LAS NA WZGÓRZU: ta funkcja
+    // jest pierwszym filtrem listy w tooltipie heksu (hexContextTooltip), więc obóz nie
+    // pojawiał się na zalesionym wzgórzu mimo że budowa była dozwolona — asymetria
+    // tooltip↔`qualifies()`. Ta funkcja nie widzi nakładki; warunek lasu egzekwuje
+    // wywołujący (tooltip) i `createQualifier`. Wykluczamy tylko wodę.
     case 'oboz_lowiecki':
-      return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina;
+      return teren !== TerenBazowy.Morze && teren !== TerenBazowy.Wybrzeze;
     case 'warzelnia_soli':
       return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Rownina;
     case 'droga':
