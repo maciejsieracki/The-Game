@@ -915,9 +915,13 @@ async function main() {
   // może zasłonić Civpedię/Menu. Kryterium liczone tylko tam, gdzie klaster mieści się we
   // własnym pasie (`hudRightRailBottomPx`). Przy powiększeniu UI wiersz chipów zawija się
   // (`.civ-hud-banner-right{max-width:min(calc(50vw - 340px),780px)}` schodzi przy BR175/200
-  // do ~140px) i klaster rozlewa się na 190–230px CSS — wtedy zasłania go cokolwiek, co stoi
-  // niżej, także w stanie zastanym. To defekt warstwy HUD-u, nie panelu budowy: raportowany
-  // liczbą i do rejestru, poza zakresem tego tematu.
+  // do ~140px) i klaster rozlewa się na 190–230px CSS — wtedy realnym elementem, który w
+  // teście przechwytuje klik (`hit`), jest PANEL BUDOWY (stoi nad `.civ-hud` w każdej
+  // komórce), nie sam klaster. Korzeń usterki geometrycznej mieszka jednak w warstwie
+  // HUD-u — `hudRightRailBottomPx()` zaniża realną wysokość klastra — i istnieje tak samo
+  // w stanie zastanym (poprawienie tej stałej usunęłoby też ten skutek uboczny). Raportowane
+  // liczbą i do rejestru, poza zakresem tego tematu; poprawka Final Control r3 — patrz
+  // 09-final-control-r3.md.
   const clusterFits = (r) => !!r.m.cluster && (r.m.cluster.bottom / (r.m.uiZoom || 1)) <= HL.rightRailBottom + 0.5;
   const btnsBlocked = (r) => !r.m.clusterBtns || !r.m.clusterBtns.wiki || !r.m.clusterBtns.wiki.clickable
     || !r.m.clusterBtns.menu || !r.m.clusterBtns.menu.clickable;
@@ -928,7 +932,7 @@ async function main() {
   const spill = rows.filter((r) => !clusterFits(r));
   const spillBlocked = spill.filter(btnsBlocked);
   console.log(`[info] klaster HUD wylewa się poza własny pas (zawijanie wiersza chipów przy powiększeniu UI): ${spill.length}/${rows.length};`
-    + ` z tego Civpedia/Menu zasłonięte: ${spillBlocked.length} — defekt warstwy HUD, poza zakresem tematu`);
+    + ` z tego Civpedia/Menu zasłonięte PRZEZ PANEL BUDOWY: ${spillBlocked.length} — korzeń w warstwie HUD (hudRightRailBottomPx zaniżony), poza zakresem tematu`);
 
   // -------------------------------------------------------------------------
   // Nachodzenie na stos tury — asercja WARUNKOWA (jawny kompromis geometryczny).
