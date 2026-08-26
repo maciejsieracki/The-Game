@@ -402,9 +402,37 @@ assert(idxCall > 0 && idxAdvance > 0 && idxCall < idxAdvance,
   'D10: guard jest wolany PRZED `advanceProduction` w ticku per-miasto');
 assert((mainTsSrc.match(/advanceProduction\(/g) || []).length === 1,
   'D11: main.ts ma DOKLADNIE JEDEN punkt zuzycia Pracy — nowy, niebroniony by tu uciekl');
+// D12 — ZAKTUALIZOWANE przy integracji R-PRACA-JEDEN-PODZIAL-Q1 (orkiestrator,
+// integration micro-fix; zmiana WYLACZNIE w tescie, zero zmian w kodzie gry).
+//
+// CO PILNOWALA: „drugi odbiorca Pracy (allocateEmpirePracaToBuildings) NADAL ma
+// wlasna bramke kind". W chwili pisania advanceProduction() mial DWOCH odbiorcow:
+// tick per-miasto (bez bramki — stad guard tego tematu) oraz
+// allocateEmpirePracaToBuildings() w production.ts (z wlasna bramka kind). D12
+// pilnowala, zeby ta druga bramka nie zniknela po cichu.
+//
+// DLACZEGO PRZESTALO BYC PRAWDA: R-PRACA-JEDEN-PODZIAL-Q1 usunal CALY drugi,
+// zdublowany podzial puli — razem z nim znikly splitEmpirePracaBudget(),
+// applyEmpireBuildingBudget() ORAZ allocateEmpirePracaToBuildings(). Funkcja,
+// ktora D12 przypinala, po prostu nie istnieje (w zrodle zostaly tylko wzmianki
+// w komentarzach historycznych). Asercja czerwieniala nie dlatego, ze ochrona
+// oslabla, tylko dlatego, ze pinowala nieistniejacy juz byt.
+//
+// CO PILNUJE TERAZ: niezmiennik jest MOCNIEJSZY niz przed usunieciem — zamiast
+// „dwoch odbiorcow, obaj bronieni" mamy „dokladnie jeden odbiorca i jest broniony"
+// (D11 pilnuje liczby, D10 kolejnosci guard->advanceProduction). D12 pilnuje
+// teraz, ze usunieta funkcja NIE WRACA bez bramki: jesli ktos ja kiedys
+// przywroci, musi jej dac wlasna bramke kind, inaczej powstanie drugi,
+// niebroniony punkt zuzycia Pracy — dokladnie ta klasa bledu, dla ktorej ten
+// temat istnieje.
+// Zweryfikowane przez orkiestratora przed zmiana: grep potwierdzil brak definicji
+// funkcji w gra/src, advanceProduction( ma 1 wywolanie (main.ts:26813), a guard
+// stoi przed nim (main.ts:26708).
 const idxAlloc = prodTsSrc.indexOf('export function allocateEmpirePracaToBuildings(');
-assert(idxAlloc > 0 && /front\.kind !== 'budynek'/.test(prodTsSrc.slice(idxAlloc, idxAlloc + 1200)),
-  'D12: drugi odbiorca Pracy (`allocateEmpirePracaToBuildings`) NADAL ma wlasna bramke `kind`');
+assert(
+  idxAlloc < 0 || /front\.kind !== 'budynek'/.test(prodTsSrc.slice(idxAlloc, idxAlloc + 1200)),
+  'D12: `allocateEmpirePracaToBuildings` albo NIE ISTNIEJE (usuniete przez '
+  + 'R-PRACA-JEDEN-PODZIAL-Q1 wraz z drugim podzialem), albo — jesli wrocilo — ma wlasna bramke `kind`');
 
 console.log(`\nai-jednostki-tylko-zakup-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(entry); fs.unlinkSync(bundle); } catch { /* ignore */ }
