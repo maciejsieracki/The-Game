@@ -38,31 +38,45 @@ export {
   depositAllowsPlayerImprovement,
 } from ${JSON.stringify(SRC + '/map/improvement-build')};
 export { pickAutoImprovements } from ${JSON.stringify(SRC + '/game/auto-improvements')};
+export { buildHexContextTooltipHtml } from ${JSON.stringify(SRC + '/ui/hexContextTooltip')};
 export { TerenBazowy, Nakladka } from ${JSON.stringify(SRC + '/types/hex')};
 `, 'utf8');
 
-esbuild.buildSync({
-  entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs',
-  outfile: BUNDLE, loader: { '.json': 'json' }, logLevel: 'warning',
-});
+// `hexContextTooltip.ts` ciągnie `icons/brandAssets`, który na poziomie modułu woła
+// `import.meta.glob(...)` — w bundlu cjs to natychmiastowy TypeError. Podmieniamy WYŁĄCZNIE
+// ten moduł na istniejący, commitowany stub (ten sam patent i ta sama fixture co
+// tools/hex-tooltip-mozliwe-ulepszenia-zloze-test.cjs); cała reszta tooltipa jest prawdziwa.
+const BRAND_STUB = path.resolve(__dirname, '.stubs', 'hex-tooltip-zloze-brandAssets-stub.ts');
+if (!fs.existsSync(BRAND_STUB)) {
+  console.error('[oboz-lowiecki-las-test] brak stuba brandAssets: ' + BRAND_STUB);
+  process.exit(1);
+}
+const stubBrandAssetsPlugin = {
+  name: 'stub-brand-assets',
+  setup(build) {
+    build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_STUB }));
+  },
+};
 
-const M = require(BUNDLE);
-const { TerenBazowy, Nakladka } = M;
+// esbuild odrzuca pluginy w API synchronicznym — stąd async build i async main().
+let M, TerenBazowy, Nakladka;
+async function buildBundle() {
+  await esbuild.build({
+    entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
+    outfile: BUNDLE, loader: { '.ts': 'ts', '.json': 'json' },
+    absWorkingDir: path.resolve(__dirname, '..'),
+    plugins: [stubBrandAssetsPlugin], logLevel: 'warning',
+  });
+  delete require.cache[require.resolve(BUNDLE)];
+  M = require(BUNDLE);
+  ({ TerenBazowy, Nakladka } = M);
+}
 
 let pass = 0, fail = 0;
 const ok = (cond, name, extra) => {
   if (cond) { pass++; console.log(`  [OK] ${name}`); }
   else { fail++; console.log(`  [FAIL] ${name}${extra ? ' :: ' + extra : ''}`); }
 };
-
-const TEREN_NAZWA = {
-  [TerenBazowy.Laka]: 'Łąka', [TerenBazowy.Rownina]: 'Równina',
-  [TerenBazowy.Wzgorza]: 'Wzgórza', [TerenBazowy.Gory]: 'Góry',
-  [TerenBazowy.Pustynia]: 'Pustynia', [TerenBazowy.Wybrzeze]: 'Wybrzeże',
-  [TerenBazowy.Morze]: 'Morze',
-};
-const LAD = [TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Wzgorza,
-  TerenBazowy.Pustynia, TerenBazowy.Gory];
 
 // --- stan kwalifikatora obejmujący CAŁĄ mapę (terytorium = każdy heks lądu) --------
 function stateForWholeMap(map, extra) {
@@ -135,7 +149,8 @@ function synthMap(cells) {
 }
 
 // =============================================================================
-function main() {
+async function main() {
+  await buildBundle();
   const seeds = [42, 1337, 2026, 7, 99];
   const rows = measureVariants(seeds);
 
@@ -232,12 +247,19 @@ function main() {
   ok(pickFor(6) === false, 'automat+AI: gołe wzgórze -> picker NIE stawia obozu');
 
   // --- (3) TOOLTIP heksu --------------------------------------------------
-  // hexContextTooltip: najpierw galleryTerrainEligible(teren), potem reguła nakładki.
+  // POMIAR ZACHOWANIA, nie powtórzenie logiki: wołamy PRAWDZIWY, eksportowany
+  // `buildHexContextTooltipHtml` i sprawdzamy, czy „Obóz łowiecki" pada w sekcji
+  // „Możliwe ulepszenia (teren)". Wcześniejsza wersja tego testu odtwarzała pipeline
+  // tooltipa u siebie — była TAUTOLOGIĄ (zielona niezależnie od treści źródła).
   const tooltipAllows = (idx) => {
-    const c = cells[idx];
-    if (!M.galleryTerrainEligible('oboz_lowiecki', c.teren)) return false;
-    if (M.isImprovementBlockedOnForest('oboz_lowiecki', c.nakladka ?? Nakladka.Brak)) return false;
-    return (c.nakladka ?? Nakladka.Brak) === Nakladka.Las;
+    const hex = smap.hexes[`${idx},0`];
+    const html = M.buildHexContextTooltipHtml({
+      q: idx, r: 0, hex, esc: (x) => String(x), currentEra: 99, map: smap,
+    });
+    const head = 'Możliwe ulepszenia (teren)';
+    const at = html.indexOf(head);
+    if (at < 0) return false;
+    return html.slice(at).includes('Obóz łowiecki');
   };
   ok(tooltipAllows(0) === false, 'K1 tooltip: wzgórze bez lasu ze złożem -> obozu NIE ma na liście');
   ok(tooltipAllows(1) === true,  'K2 tooltip: LAS NA WZGÓRZU -> obóz JEST na liście');
@@ -279,4 +301,4 @@ function main() {
   if (fail > 0) process.exit(1);
 }
 
-main();
+main().catch((e) => { console.error(e); process.exit(1); });
