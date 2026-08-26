@@ -127,3 +127,72 @@ BLOKADY: brak.
 RUNDY: 0/5 (dispatch).
 NASTĘPNY KROK: Operator, runda 1.
 DEPLOY/PUSH: NIE WYKONANO.
+
+---
+
+# ROZSZERZENIE DISPATCHU — DEFEKT (B), ten sam plik, ta sama ścieżka użytkownika
+
+Zgłoszone przez właściciela chwilę po (A). **Nie jest to osobny temat** — to ta sama ścieżka
+„zdarzenie → karta technologii → karta szczegółu" i te same pliki. Dwa osobne tematy na
+`techDiscoveryNotice.ts` gwarantowałyby konflikt (§2b), więc idą razem.
+
+## ECHO właściciela
+
+> „po zakończeniu tury pojawia się informacja o nowych odkryciach, na przykład o technologii,
+> i naciskam na szczegóły, na przykład o obozie łowieckim, ekran się wytwarza, ale nie pojawia
+> się obok, tylko pod spodem. Powinno się pojawić obok. Karta obozu łowieckiego."
+
+> „Pojawia się pod spodem i gracz może nie wiedzieć, co się stało, że to widocznie nie
+> włączyło albo nie będzie widoczne."
+
+## Co pokazują zrzuty
+
+Zrzut 1: karta „Łowiectwo — Ukończono badania", sekcja „Ulepszenia terenu" → wiersz
+„Obóz łowiecki" z linkiem **„Szczegóły →"**.
+Zrzut 2: po kliknięciu — karta „Obóz łowiecki" jest widoczna **sama, na mapie**;
+karty „Łowiectwo" już nie ma.
+
+## Punkt zaczepienia
+
+`gra/src/ui/techDiscoveryNotice.ts:226` —
+`#HOST_ID{position:fixed;inset:0;z-index:940;display:flex;align-items:center;justify-content:center}`
+— host karty technologii to wyśrodkowana nakładka pełnoekranowa; `:228` `.tdn-back` to jej tło.
+Link „Szczegóły →": `techDiscoveryNotice.ts:660` oraz `entityCards/renderer.ts:468`.
+
+Operator MA ustalić **pomiarem**, czy karta ulepszenia ląduje w innym hoście o niższym
+`z-index`, czy karta technologii jest zamykana przed jej otwarciem — **to dwie różne
+przyczyny i dwie różne naprawy**. Odpowiedź podać jawnie, ze ścieżką i numerem linii.
+
+## Czego oczekuje właściciel
+
+Obie karty widoczne **jednocześnie, obok siebie**, żeby było widać związek: z tej technologii
+wynika to ulepszenie. Nie stos, nie podmiana, nie karta pod spodem.
+
+Układ ma działać przy różnych szerokościach okna. Przy wąskim oknie dwie karty obok siebie
+mogą się nie zmieścić — wtedy Operator wybiera rozwiązanie zastępcze (np. układ pionowy,
+ale **obie widoczne**) i **nazywa ten próg jawnie**, zamiast po cichu wrócić do podmiany.
+
+## Dodatkowe zadania (numeracja ciągła z częścią A)
+
+6. Karta ulepszenia otwarta z „Szczegóły →" pojawia się **obok** karty technologii,
+   **obie widoczne naraz**. Karta technologii NIE znika.
+7. Zamknięcie karty ulepszenia wraca do samej karty technologii (nadal otwartej).
+   Zamknięcie karty technologii zamyka obie.
+8. Zachowanie przy wąskim oknie nazwane jawnie i uzasadnione.
+
+## Dodatkowe kryteria sukcesu
+
+7. **(B)** Po kliknięciu „Szczegóły →" **obie karty są jednocześnie widoczne** — dowód:
+   pomiar `getBoundingClientRect()` obu kart w żywym Chromium. Żadna nie ma zerowej
+   powierzchni, żadna nie jest zasłonięta przez drugą, **żadna nie leży poza viewportem**.
+   Zrzut ekranu jako materiał uzupełniający, NIE zamiast pomiaru.
+8. **(B)** Zamknięcie karty ulepszenia zostawia kartę technologii otwartą — pomiar.
+9. Nowa bramka tematu pokrywa (A) i (B), obie z dowodem nietautologiczności.
+
+## Rozszerzenie allowlisty
+
+Dodatkowo: `gra/src/ui/entityCards/renderer.ts` · `gra/src/ui/entityCards/buildingAdapter.ts`.
+
+**Uwaga:** `renderer.ts` to WSPÓLNY renderer kart encji (migracja CivPedia) — zmiana w nim
+dotyka też karty jednostek i budynków. Każda zmiana tam MA być udowodniona jako niepsująca
+pozostałych kart; jeśli da się rozwiązać (B) bez dotykania `renderer.ts`, to jest lepsze.
