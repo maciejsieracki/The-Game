@@ -1,5 +1,7 @@
 /**
  * leaderPortraits.ts — portrety władców w medalionach dowódców (bitwa/preBattle/dyplomacja).
+ * UWAGA: katalog docs/ux/ zostal usuniety z repo (R-REPO-SPRZATANIE-SREDNIE-Q1,
+ * 2026-08-26). Sciezka nizej jest HISTORYCZNA — tresc: git show 39ae5d17:<sciezka>.
  * Wdrożenie wg docs/ux/claude-design/_dist/PORTRETY-WLADCOW-2026-07-23/DYSPOZYCJA-WDROZENIE.md (KROK 2).
  *
  * Assety: gra/src/assets/portrety/portrait-{civId}-{epoka}.jpg (256×256, 15 cywilizacji ×

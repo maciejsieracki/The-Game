@@ -1,6 +1,8 @@
 /**
  * preBattle.ts
  * Pre-battle overlay -- kompaktowa nakladka nad mapa swiata (KANON v1.1, 2026-07-23).
+ * UWAGA: katalog docs/ux/ zostal usuniety z repo (R-REPO-SPRZATANIE-SREDNIE-Q1,
+ * 2026-08-26). Sciezka nizej jest HISTORYCZNA — tresc: git show 39ae5d17:<sciezka>.
  * Zrodlo wizualne: docs/ux/claude-design/01-propozycje-z-design/brand-book/KANON/mockupy/
  *   "The Game - PreBattle nakladka v1.1 (1E).dc.html" + DYSPOZYCJA-WDROZENIE.md (KROK 3).
  * Kontrakt danych (PreBattleInfo / PreBattleSide / PreBattleUnit / callbacks) NIEZMIENIONY --

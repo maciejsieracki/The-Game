@@ -1,5 +1,7 @@
 /**
  * Ikony 32 technologii Antyku (Claude Design, Zlecenie 7 — TECH-IKONY-32).
+ * UWAGA: katalog docs/ux/ zostal usuniety z repo (R-REPO-SPRZATANIE-SREDNIE-Q1,
+ * 2026-08-26). Sciezka nizej jest HISTORYCZNA — tresc: git show 39ae5d17:<sciezka>.
  * Zrodlo: docs/ux/claude-design/01-propozycje-z-design/brand-book/KANON/eksport/
  *   icons/tech/tech-<slug>.svg + tech-icon-map.json (klucz=slug -> name PL).
  * Line-art, stroke="currentColor" (dziedziczy kolor z CSS — zloto w drzewku),
