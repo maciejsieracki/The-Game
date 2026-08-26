@@ -1973,9 +1973,11 @@ function planCityImprovements(
   // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: gdy silnik przekazał absolutny budżet
   // wydzielony z pierwotnej puli, użyj go wprost. Ponowne splitowanie
   // pozostałych 50 pkt po wydaniu budynków dawałoby błędne 25 pkt ulepszeń.
-  // R-PRACA-JEDEN-PODZIAL-Q1: silnik ZAWSZE podaje absolutny budzet ulepszen z
-  // jedynego podzialu (`improvementBudgetCap`). Fallback (test/AI bez silnika) to
-  // maksymalny dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM` — NIE drugi podzial.
+  // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2): silnik podaje absolutna koperte automatu
+  // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
+  // (main.ts, `aiImprovementBudgetByOwner`) — NIE z tegorocznego przyrostu puli i NIE
+  // z drugiego podzialu tej samej Pracy. Fallback (test/AI bez silnika) to maksymalny
+  // dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM`.
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
     : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
@@ -2073,9 +2075,11 @@ export function planExpansionFortBuilding(
   if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
   // Ten sam absolutny budżet obowiązuje także posterunek, aby koszt
   // zaplanowanych ulepszeń i ekspansji dzielił jedną kopertę.
-  // R-PRACA-JEDEN-PODZIAL-Q1: silnik ZAWSZE podaje absolutny budzet ulepszen z
-  // jedynego podzialu (`improvementBudgetCap`). Fallback (test/AI bez silnika) to
-  // maksymalny dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM` — NIE drugi podzial.
+  // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2): silnik podaje absolutna koperte automatu
+  // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
+  // (main.ts, `aiImprovementBudgetByOwner`) — NIE z tegorocznego przyrostu puli i NIE
+  // z drugiego podzialu tej samej Pracy. Fallback (test/AI bez silnika) to maksymalny
+  // dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM`.
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
     : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);

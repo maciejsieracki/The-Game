@@ -68,6 +68,9 @@ import {
   MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
   MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
   MAX_PROCENT_PULI_IMPERIUM,
+  PODZIAL_PRACY_PULA_LBL,
+  PODZIAL_PRACY_PULA_LBL_PELNA,
+  PODZIAL_PRACY_PULA_TIP,
 } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
@@ -1312,15 +1315,13 @@ function daninaLabelForCity(_city: City): DaninaLabel {
  *
  * Przed tym tematem ta sama liczba nazywala sie w tym pliku „Ulepszenia",
  * „→ Pula Pracy imperium", „→ Pula imperium — zapas cywilizacji" i `doUlepszen`.
- * Etykieta laczy slowo wlasciciela („ulepszenia") z prawdziwym adresatem
- * („pula imperium"), bo z tej samej puli finansowane sa takze cuda na mapie,
- * zakladanie miast, wycinka lasu i utrzymanie ulepszen surowcowych.
+ * RUNDA 2 (F2): definicje przeniesione do `game/cities.ts`, bo runda 1 ujednolicila
+ * TYLKO ten plik — `empireDetailPanel.ts` zostal z trzecia nazwa. Tu zostaja juz
+ * wylacznie lokalne aliasy na to JEDNO zrodlo (krotsze w gestych szablonach).
  */
-const PULA_LBL = 'Ulepszenia (pula)';
-const PULA_LBL_PELNA = 'Ulepszenia (pula imperium)';
-const PULA_TIP = 'Pula Pracy imperium — budżet ulepszeń terenu; z tej samej puli '
-  + 'finansowane są też cuda na mapie, zakładanie miast, wycinka lasu i utrzymanie '
-  + 'ulepszeń surowcowych.';
+const PULA_LBL = PODZIAL_PRACY_PULA_LBL;
+const PULA_LBL_PELNA = PODZIAL_PRACY_PULA_LBL_PELNA;
+const PULA_TIP = PODZIAL_PRACY_PULA_TIP;
 
 /**
  * R-PRACA-JEDEN-PODZIAL-Q1 — ROOT CAUSE osmiu nawrotow tego tematu byl TUTAJ:

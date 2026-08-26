@@ -388,8 +388,40 @@ export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
 export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;
 export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;
 
-/** Maksymalny udzial Pracy trafiajacy do puli imperium (= budzet ulepszen terenu). */
+/**
+ * Maksymalny udzial Pracy miasta trafiajacy do puli imperium. Z tej puli finansowane
+ * sa ulepszenia terenu (przez automat, w granicach `pracaAutoPercent`), a takze cuda
+ * na mapie, zakladanie miast, wycinka lasu i utrzymanie ulepszen surowcowych — pula
+ * NIE JEST wiec „budzetem ulepszen" i tak tez musi byc nazywana w UI
+ * (`PODZIAL_PRACY_PULA_LBL*` nizej).
+ */
 export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;
+
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6 dispatchu, runda 2/F2) — JEDNO zrodlo nazwy drugiego
+ * strumienia jedynego podzialu Pracy dla CALEGO UI.
+ *
+ * Root cause osmiu nawrotow tego tematu byl nazewniczy: ta sama liczba nazywala sie
+ * `doUlepszen` w `cityPanel.ts` (a niosla `doPuli`), „Ulepszenia" w
+ * `empireDetailPanel.ts`, „Ulepszenia — pula imperium" w `buildModeHud.ts` i
+ * „→ Pula imperium — zapas cywilizacji" w widoku szczegolow. Runda 1 ujednolicila
+ * `cityPanel.ts` LOKALNYMI stalymi, wiec panel imperium zostal z trzecia nazwa.
+ * Stale mieszkaja tutaj, przy modelu podzialu (ten sam plik co
+ * `MAX_PROCENT_PULI_IMPERIUM`, importowany przez wszystkie trzy pliki UI) —
+ * precedens dla etykiety domenowej w module `game/`: `stockResourceLabel`
+ * (`building-stock-cost.ts`), `formatObywateleLabel` (`manpower.ts`).
+ *
+ * Etykieta laczy slowo wlasciciela („Ulepszenia") z PRAWDZIWYM adresatem („pula
+ * imperium"), bo z tej samej puli placa takze cuda na mapie, zakladanie miast,
+ * wycinka lasu i utrzymanie ulepszen surowcowych. Samo „Ulepszenia" bylo root-cause'em.
+ */
+export const PODZIAL_PRACY_PULA_LBL = 'Ulepszenia (pula)';
+/** Pelna forma tej samej nazwy — do etykiet, ktore maja miejsce na kwalifikator. */
+export const PODZIAL_PRACY_PULA_LBL_PELNA = 'Ulepszenia (pula imperium)';
+/** Jedno zdanie opisujace, czym ta pula NAPRAWDE jest — do tooltipow w calym UI. */
+export const PODZIAL_PRACY_PULA_TIP = 'Pula Pracy imperium — budżet ulepszeń terenu; z tej samej puli '
+  + 'finansowane są też cuda na mapie, zakładanie miast, wycinka lasu i utrzymanie '
+  + 'ulepszeń surowcowych.';
 /** Minimalny udzial Pracy trafiajacy do puli imperium. */
 export const MIN_PROCENT_PULI_IMPERIUM = 100 - MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
 

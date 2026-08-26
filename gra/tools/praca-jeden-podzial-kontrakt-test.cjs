@@ -47,6 +47,17 @@ export {
   resolveCityPodzialPracy,
   migratePodzialPracyOnLoad,
 } from ${JSON.stringify(SRC + '/game/empire-city-defaults')};
+export { pickAutoImprovements, AUTO_ULEPSZENIA_PRACA_RESERVE } from ${JSON.stringify(SRC + '/game/auto-improvements')};
+export { advanceWonderMapBuilds } from ${JSON.stringify(SRC + '/game/wonder-map-build')};
+export { evaluateFoundCityAffordance } from ${JSON.stringify(SRC + '/game/city-founding')};
+export { countResourceUpkeepImprovementsByOwner } from ${JSON.stringify(SRC + '/game/turn-economy')};
+export { getImprovementMeta } from ${JSON.stringify(SRC + '/game/improvement-tech')};
+export {
+  DEFAULT_ULEPSZENIA_PRACA_PERCENT,
+  PODZIAL_PRACY_PULA_LBL,
+  PODZIAL_PRACY_PULA_LBL_PELNA,
+  PODZIAL_PRACY_PULA_TIP,
+} from ${JSON.stringify(SRC + '/game/cities')};
 `, 'utf8');
 try {
   esbuild.buildSync({
@@ -212,8 +223,10 @@ console.log('\n-- 5. OVERRIDE MIASTA (pkt 5): zapala się SAM przy różnicy, ga
 
 console.log('\n-- 6. ZERO PODWÓJNEGO LICZENIA: drugi podział nie istnieje --');
 {
+  // Te trzy asercje są BEHAWIORALNE: pytają ZBUNDLOWANY moduł, nie tekst pliku.
   eq(typeof M.production.splitEmpirePracaBudget, 'undefined', 'splitEmpirePracaBudget nie istnieje');
   eq(typeof M.production.allocateEmpirePracaToBuildings, 'undefined', 'allocateEmpirePracaToBuildings nie istnieje');
+  eq(typeof M.production.splitPraca, 'function', 'jedyny podział (splitPraca) istnieje i jest funkcją');
   const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
   const mainCode = mainSrc
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -225,32 +238,293 @@ console.log('\n-- 6. ZERO PODWÓJNEGO LICZENIA: drugi podział nie istnieje --')
   const turnSrc = fs.readFileSync(path.resolve(SRC, 'game', 'turn-economy.ts'), 'utf8');
   eq((turnSrc.match(/=\s*splitPraca\(/g) || []).length, 2,
     'turn-economy.ts: dokładnie 2 wywołania splitPraca (previewCityEconomy + advanceCityEconomy)');
-  // Dowód nietautologiczności obu asercji negatywnych.
-  ok(/\bsplitEmpirePracaBudget\s*\(/.test(mainCode + '\nsplitEmpirePracaBudget(1, 2);'),
-    'mutant przywracający drugi podział zostaje wykryty');
-  ok(!/ownerDefaultPracaSplit\.set\(/.test('') === true, 'asercja negatywna działa na pustym wejściu');
+  // RUNDA 2 (F3): USUNIĘTE dwa „dowody nietautologiczności" tej sekcji — `ok(!/…/.test('') === true)`
+  // (regex przeciw pustemu stringowi) oraz test regexa na stringu, do którego dopisano szukany
+  // wzorzec. Oba były samospełniające się: świeciły niezależnie od stanu kodu. Nietautologiczność
+  // asercji negatywnych wyżej dowodzi się URUCHOMIENIEM tej bramki na zmutowanej KOPII źródła
+  // (`UPP_SRC_DIR=/ścieżka/do/kopii node tools/praca-jeden-podzial-kontrakt-test.cjs`) — wynik
+  // takiego przebiegu jest raportowany przez Operatora, a nie udawany wewnątrz pliku.
 }
 
-console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8) — każdy nadal bierze Pracę z puli --');
+console.log('\n-- 7. KONSUMENCI PULI IMPERIUM (pkt 8 / kryterium 5) — DOWÓD BEHAWIORALNY --');
 {
-  const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
-  const konsumenci = [
-    ['utrzymanie ulepszeń surowcowych', /playerPracaPool = Math\.max\(0, playerPracaPool - playerUpkeep\)/],
-    ['cuda na mapie (wonder-map-build)', /const usedPlayer = advanceOwnerWonderMapBuilds\(0, playerPracaPool\)/],
-    ['zakładanie miasta', /playerPracaPool -= aff\.kosztPraca/],
-    ['wycinka lasu', /playerPracaPool -= startCost/],
-    ['ręczne ulepszenie terenu', /playerPracaPool -= req\.kosztPraca/],
-    ['auto-ulepszenia terenu', /playerPracaPool -= pick\.kosztPraca/],
-  ];
-  for (const [nazwa, re] of konsumenci) {
-    ok(re.test(mainSrc), `konsument puli działa dalej: ${nazwa}`);
+  // RUNDA 2 (F3): poprzednia wersja tej sekcji dowodziła „konsumenci działają dalej"
+  // WYŁĄCZNIE regexami po tekście main.ts — asercja świeciła, choć zmierzone zachowanie
+  // auto-ulepszeń to było 0 wywołań (bloker F1). Teraz przepuszczamy PRAWDZIWE tury przez
+  // PRAWDZIWE funkcje każdego konsumenta i mierzymy, ile Pracy KAŻDY z nich faktycznie
+  // zabrał z puli. Księga musi się domykać: wpływ = suma wydatków + saldo końcowe.
+  const RES = M.AUTO_ULEPSZENIA_PRACA_RESERVE;
+  const PCT_AUTO = M.DEFAULT_ULEPSZENIA_PRACA_PERCENT;
+
+  function makeFlatMap(w, h) {
+    const hexes = {};
+    for (let q = 0; q < w; q++) for (let r = 0; r < h; r++) {
+      hexes[`${q},${r}`] = {
+        coords: { q, r }, terenBazowy: 'rownina', nakladka: 'brak', ulepszenie: 'brak',
+        wlasciciel: null, wioska: { istnieje: false, ludnosc: 0 }, widocznosc: {},
+        rzeka: { obecna: false, krawedzie: [] },
+      };
+    }
+    return { szerokoscQ: w, wysokoscR: h, hexes, seed: 42, riverPaths: [] };
   }
-  // Budżet ulepszeń pochodzi z TEGOROCZNEGO wpływu do puli, nie z całego salda —
-  // dzięki temu zapas odłożony na cud/miasto nie jest co turę przemielany.
-  ok(/const playerImprovementBudget = pracaPoolInflowByOwner\.get\(0\)/.test(mainSrc),
-    'budżet ulepszeń = tegoroczny wpływ do puli (nie całe skumulowane saldo)');
-  ok(/improvementBudgetCap: playerImprovementBudget/.test(mainSrc),
-    'picker auto-ulepszeń dostaje absolutny budżet z jedynego podziału');
+
+  /**
+   * Jedna symulacja: T tur, jedno miasto, wspólna pula imperium. Kolejność drenaży
+   * odwzorowuje main.ts (utrzymanie → cuda na mapie → automat ulepszeń → akcje gracza).
+   * `wiring` decyduje, JAK silnik podaje pickerowi budżet:
+   *   'saldo'    — tak jak po naprawie F1: picker liczy pułap sam, % SKUMULOWANEJ puli;
+   *   'przyrost' — tak jak w rundzie 1: absolutny cap = tegoroczny wpływ do puli.
+   */
+  function przepuscTury({ tur, pracaMiasta, procentBudynki, wiring }) {
+    const map = makeFlatMap(34, 34);
+    const city = { id: 'c1', ownerId: 0, q: 15, r: 15, name: 'Test', population: 6 };
+    const territoryNodes = [{ q: 15, r: 15, pop: 6, level: 1, ownerId: 0 }];
+    const placed = new Map();
+    // Dwa ulepszenia surowcowe postawione „ręcznie" — realne wejście dla licznika utrzymania.
+    map.hexes['14,15'].ulepszenie = 'kopalnia_zelaza';
+    map.hexes['16,15'].ulepszenie = 'tartak';
+    const wonderSites = [{ wonderId: 'test-cud', q: 15, r: 16, ownerId: 0, postep: 0 }];
+    const kosztCudu = () => 120;
+    const wyrabKoszt = (M.getImprovementMeta('wyrab') || {}).kosztPraca ?? 0;
+
+    let pula = 0;
+    let sites = wonderSites;
+    const wydatki = { utrzymanie: 0, cuda: 0, ulepszeniaAuto: 0, zalozenieMiasta: 0, wycinka: 0 };
+    let wplywRazem = 0;
+    let pierwszeUlepszenieWTurze = null;
+    let ujemnaPula = false;
+
+    for (let t = 1; t <= tur; t++) {
+      // (1) WPŁYW — jedyny podział Pracy miasta, prawdziwy splitPraca.
+      const split = M.splitPraca(pracaMiasta, procentBudynki / 100);
+      pula += split.doPuli;
+      wplywRazem += split.doPuli;
+      const wplywTejTury = split.doPuli;
+
+      // (2) UTRZYMANIE ulepszeń surowcowych — prawdziwy licznik z turn-economy.
+      const liczbaPlatnych = M.countResourceUpkeepImprovementsByOwner(map, territoryNodes).get(0) ?? 0;
+      const upkeep = Math.min(pula, liczbaPlatnych * 1); // koszt/ulepszenie z econ-params (placeholder 1)
+      pula -= upkeep;
+      wydatki.utrzymanie += upkeep;
+
+      // (3) CUDA NA MAPIE — prawdziwe advanceWonderMapBuilds, płacone z tej samej puli.
+      const cud = M.advanceWonderMapBuilds(sites, 0, pula, kosztCudu);
+      sites = cud.sites;
+      pula -= cud.pracaUsed;
+      wydatki.cuda += cud.pracaUsed;
+
+      // (4) AUTOMAT ULEPSZEŃ TERENU — prawdziwy pickAutoImprovements, tak jak woła go silnik.
+      const opts = {
+        cities: [city], ownerId: 0, map, territoryNodes, placedImprovements: placed,
+        pracaAvailable: pula,
+        unlockedTechs: new Set(['Rolnictwo', 'Kamieniarstwo']),
+        pracaSurplusThreshold: RES,
+        skipWyrab: true, civArchetype: 'grecy',
+        getFocus: () => 'zywnosc',
+        pracaBudgetPercent: wiring === 'przyrost' ? 100 : PCT_AUTO,
+      };
+      if (wiring === 'przyrost') opts.improvementBudgetCap = wplywTejTury;
+      for (const pick of M.pickAutoImprovements(opts)) {
+        if (pula < pick.kosztPraca) continue;
+        if (pula - pick.kosztPraca < RES) continue;
+        pula -= pick.kosztPraca;
+        wydatki.ulepszeniaAuto += pick.kosztPraca;
+        const hk = `${pick.q},${pick.r}`;
+        placed.set(hk, [...(placed.get(hk) ?? []), pick.key]);
+        if (pierwszeUlepszenieWTurze === null) pierwszeUlepszenieWTurze = t;
+      }
+
+      // (5) ZAŁOŻENIE MIASTA — prawdziwe evaluateFoundCityAffordance (koszt kolejnego miasta).
+      if (t === Math.floor(tur / 2)) {
+        const aff = M.evaluateFoundCityAffordance(pula, [city], 0);
+        if (aff.ok && aff.kosztPraca > 0) {
+          pula -= aff.kosztPraca;
+          wydatki.zalozenieMiasta += aff.kosztPraca;
+        }
+      }
+
+      // (6) WYCINKA LASU — koszt startu z prawdziwej metadanej ulepszenia „wyrab".
+      if (t === tur && wyrabKoszt > 0 && pula >= wyrabKoszt) {
+        pula -= wyrabKoszt;
+        wydatki.wycinka += wyrabKoszt;
+      }
+
+      if (pula < 0) ujemnaPula = true;
+    }
+    const wydane = Object.values(wydatki).reduce((a, b) => a + b, 0);
+    return { pula, wplywRazem, wydatki, wydane, pierwszeUlepszenieWTurze, ujemnaPula };
+  }
+
+  // --- 7a. Wszyscy konsumenci realnie dostają Pracę z puli (nie regex — pomiar). ---
+  const sym = przepuscTury({ tur: 40, pracaMiasta: 40, procentBudynki: 70, wiring: 'saldo' });
+  ok(sym.wydatki.utrzymanie > 0,
+    `konsument puli DOSTAŁ Pracę: utrzymanie ulepszeń surowcowych (${sym.wydatki.utrzymanie} Pracy w 40 turach)`);
+  ok(sym.wydatki.cuda > 0,
+    `konsument puli DOSTAŁ Pracę: cuda na mapie (${sym.wydatki.cuda} Pracy)`);
+  ok(sym.wydatki.ulepszeniaAuto > 0,
+    `konsument puli DOSTAŁ Pracę: automat ulepszeń terenu (${sym.wydatki.ulepszeniaAuto} Pracy)`);
+  ok(sym.wydatki.zalozenieMiasta > 0,
+    `konsument puli DOSTAŁ Pracę: założenie kolejnego miasta (${sym.wydatki.zalozenieMiasta} Pracy)`);
+  ok(sym.wydatki.wycinka > 0,
+    `konsument puli DOSTAŁ Pracę: wycinka lasu (${sym.wydatki.wycinka} Pracy)`);
+  ok(!sym.ujemnaPula, 'pula NIGDY nie schodzi poniżej zera mimo pięciu równoległych konsumentów');
+  eq(sym.wplywRazem, sym.wydane + sym.pula,
+    'księga puli domyka się: wpływ = suma wydatków wszystkich konsumentów + saldo końcowe');
+
+  // --- 7b. F1: budżet automatu liczony od SKUMULOWANEJ puli, nie od przyrostu tury. ---
+  // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (decyzja właściciela): „% budżetu Pracy liczonym od
+  // SKUMULOWANEJ puli Pracy na WEJŚCIU do wywołania (nie od przyrostu)". Runda 1 podała
+  // pickerowi absolutny cap = tegoroczny wpływ; ponieważ picker kupuje ulepszenie tylko gdy
+  // CAŁY koszt mieści się w capie, a najtańsze kosztuje 30+ Pracy, poniżej ~40 Pracy przyrostu
+  // NA TURĘ powstawało ZERO ulepszeń — niezależnie od wielkości puli. Ta para asercji jest
+  // wbudowaną kontrolą negatywną: to samo wejście, jedyna różnica to sposób podania budżetu.
+  for (const pracaMiasta of [20, 30, 40, 60, 80, 120]) {
+    // 80 tur: przy najmniejszym wpływie (6/turę) pula musi się najpierw uzbierać — o to
+    // dokładnie chodzi w semantyce „% skumulowanej puli". Kontrola negatywna (budżet z
+    // przyrostu) nie zbuduje NIC nawet przy 80 turach, bo cap nigdy nie sięga kosztu.
+    const saldo = przepuscTury({ tur: 80, pracaMiasta, procentBudynki: 70, wiring: 'saldo' });
+    const przyrost = przepuscTury({ tur: 80, pracaMiasta, procentBudynki: 70, wiring: 'przyrost' });
+    const wplyw = M.splitPraca(pracaMiasta, 0.70).doPuli;
+    ok(saldo.wydatki.ulepszeniaAuto > 0,
+      `wpływ ${wplyw} Pracy/turę: automat ulepszeń DZIAŁA (wydał ${saldo.wydatki.ulepszeniaAuto} Pracy, `
+      + `pierwsze ulepszenie w turze ${saldo.pierwszeUlepszenieWTurze})`);
+    if (wplyw < 40) {
+      eq(przyrost.wydatki.ulepszeniaAuto, 0,
+        `kontrola negatywna: przy budżecie z PRZYROSTU (runda 1) ten sam wpływ ${wplyw}/turę daje 0 Pracy na ulepszenia`);
+    }
+  }
+  // Skumulowana pula nie jest „martwym zapasem": im większa, tym większy pułap jednej tury.
+  {
+    const maly = przepuscTury({ tur: 12, pracaMiasta: 40, procentBudynki: 70, wiring: 'saldo' });
+    const duzy = przepuscTury({ tur: 40, pracaMiasta: 40, procentBudynki: 70, wiring: 'saldo' });
+    ok(duzy.wydatki.ulepszeniaAuto > maly.wydatki.ulepszeniaAuto,
+      'dłuższa akumulacja puli → automat wydaje na ulepszenia WIĘCEJ (pułap rośnie z saldem, nie z przyrostem)');
+  }
+  // --- 7c. WIRING SILNIKA: `main.ts` faktycznie woła picker w semantyce z 7b. ---
+  // `main.ts` (30 tys. linii, wejście Vite z SVG/audio) nie daje się zbundlować w bramce —
+  // ten sam udokumentowany limit, co w `empire-praca-panel-coverage-test.cjs`. Dlatego
+  // semantyka jest dowiedziona BEHAWIORALNIE w 7b (na prawdziwym pickerze), a tutaj pinujemy
+  // WYCIĘTY, prawdziwy blok wywołania — trzy asercje, które razem wykluczają powrót progu.
+  {
+    const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+    const mainCode = mainSrc.replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('\n').filter(l => !/^\s*(\/\/|\*)/.test(l)).join('\n');
+    ok(!/pracaPoolInflowByOwner/.test(mainCode),
+      'main.ts nie liczy już budżetu ulepszeń z tegorocznego wpływu do puli');
+    const i = mainCode.indexOf('const picks = pickAutoImprovements({');
+    ok(i > -1, 'main.ts: znaleziono wywołanie pickera auto-ulepszeń gracza');
+    const blok = i > -1 ? mainCode.slice(i, mainCode.indexOf('\n                });', i)) : '';
+    ok(/pracaAvailable:\s*playerPracaPool/.test(blok),
+      'wywołanie pickera: bazą % jest SKUMULOWANA pula gracza (playerPracaPool), nie przyrost tury');
+    ok(/pracaBudgetPercent:\s*playerUlepszeniaPolicy\.pracaAutoPercent/.test(blok),
+      'wywołanie pickera: % pochodzi z polityki imperium (pracaAutoPercent), nie z twardego 100');
+    ok(!/improvementBudgetCap/.test(blok),
+      'wywołanie pickera: silnik NIE podaje absolutnego capu — pułap liczy picker od skumulowanej puli');
+  }
+}
+
+console.log('\n-- 8. NAZWY W UI (pkt 6): jedna nazwa strumienia we WSZYSTKICH panelach --');
+{
+  // RUNDA 2 (F2): runda 1 ujednoliciła tylko `cityPanel.ts` (pokryty bramką real-render),
+  // więc `empireDetailPanel.ts` został z TRZECIĄ nazwą tej samej liczby („Ulepszenia" bez
+  // kwalifikatora) i tooltipem opisującym USUNIĘTY drugi podział. Dowód nie jest tu regexem
+  // po źródle: WYCINAMY prawdziwy kod obu funkcji renderujących i URUCHAMIAMY go
+  // (`new Function`) na podstawionych zależnościach — asercje patrzą na FAKTYCZNIE
+  // wyprodukowany HTML. Ten sam wzorzec, co `empire-praca-panel-coverage-test.cjs`
+  // (render() `empireDetailPanel.ts` nie daje się zbundlować esbuildem — SVG/audio loadery).
+  const LBL = M.PODZIAL_PRACY_PULA_LBL;
+  const LBL_PELNA = M.PODZIAL_PRACY_PULA_LBL_PELNA;
+
+  function wytnij(plik, naglowek, koniec) {
+    const src = fs.readFileSync(plik, 'utf8');
+    const i = src.indexOf(naglowek);
+    if (i < 0) return null;
+    const j = src.indexOf(koniec, i);
+    if (j < 0) return null;
+    return src.slice(i + naglowek.length, j);
+  }
+
+  // (a) PANEL IMPERIUM — empireDetailPanel.ts, sekcja podziału Pracy.
+  const empBody = wytnij(
+    path.resolve(SRC, 'ui', 'empireDetailPanel.ts'),
+    'function renderEmpirePracaBudgetSplitSection(): string {',
+    '  queueMicrotask(() => {',
+  );
+  ok(empBody !== null, 'empireDetailPanel.ts: sekcja podziału Pracy znaleziona i wycięta ze źródła');
+  function renderEmp(lbl, lblPelna) {
+    const fn = new Function(
+      'empireGlobalDefaultsUi', 'procentPuliImperiumZBudynkow', 'MAX_PROCENT_PULI_IMPERIUM',
+      'PODZIAL_PRACY_PULA_LBL', 'PODZIAL_PRACY_PULA_LBL_PELNA', 'PODZIAL_PRACY_PULA_TIP',
+      'esc', 'laborSliderFillStyle',
+      empBody + '\n  return h;\n',
+    );
+    return fn(
+      { getOwnerDefaultPodzialPracy: () => ({ procentBudynki: 70 }), onOwnerDefaultPodzialPracyChange: () => {} },
+      (pb) => 100 - pb,
+      50, lbl, lblPelna, M.PODZIAL_PRACY_PULA_TIP,
+      (x) => String(x).replace(/"/g, '&quot;'),
+      () => 'linear-gradient(x)',
+    );
+  }
+  const empHtml = renderEmp(LBL, LBL_PELNA);
+  ok(typeof empHtml === 'string' && empHtml.length > 0, 'panel imperium: sekcja realnie wyprodukowała HTML');
+  ok(empHtml.includes(LBL), `panel imperium: strumień nazwany „${LBL}" (był samym „Ulepszenia")`);
+  ok(!/>Ulepszenia\s+\d+%</.test(empHtml),
+    'panel imperium: hero NIE mówi już samego „Ulepszenia N%" (root cause ośmiu nawrotów)');
+  ok(!/Nadrzędny podział całej puli/.test(empHtml),
+    'panel imperium: tooltip NIE opisuje już usuniętego drugiego podziału');
+  ok(empHtml.includes('Ten sam suwak działa globalnie i w mieście'),
+    'panel imperium: tooltip mówi, czym ten suwak NAPRAWDĘ jest (jeden podział Pracy miasta)');
+  ok(empHtml.includes('cuda na mapie'),
+    'panel imperium: tooltip nazywa pozostałych konsumentów puli (cuda, miasta, wycinka, utrzymanie)');
+  // Kontrola negatywna (mutacja JEDNEJ zmiennej wejściowej, nie zmiana asercji):
+  const empMut = renderEmp('Ulepszenia', 'Ulepszenia');
+  ok(/>Ulepszenia\s+\d+%</.test(empMut),
+    'kontrola negatywna: przywrócenie gołej etykiety „Ulepszenia" zapala asercję hero (test nie jest tautologią)');
+
+  // (b) HUD TRYBU BUDOWY — buildModeHud.ts, ten sam strumień.
+  const hudBody = wytnij(
+    path.resolve(SRC, 'ui', 'buildModeHud.ts'),
+    'function renderEmpirePracaSplit(pct: number): string {',
+    '\n}\n',
+  );
+  ok(hudBody !== null, 'buildModeHud.ts: sekcja podziału Pracy znaleziona i wycięta ze źródła');
+  function renderHud(lbl, lblPelna) {
+    const fn = new Function(
+      'pct', 'MAX_PROCENT_PULI_IMPERIUM', 'PODZIAL_PRACY_PULA_LBL', 'PODZIAL_PRACY_PULA_LBL_PELNA',
+      'PODZIAL_PRACY_PULA_TIP', 'ulepszeniaPercentSliderFillStyle',
+      hudBody,
+    );
+    return fn(30, 50, lbl, lblPelna, M.PODZIAL_PRACY_PULA_TIP, () => 'background:x');
+  }
+  const hudHtml = renderHud(LBL, LBL_PELNA);
+  ok(typeof hudHtml === 'string' && hudHtml.includes(LBL_PELNA),
+    `HUD budowy: strumień nazwany „${LBL_PELNA}" — identycznie jak w panelu miasta`);
+  ok(!/Ulepszenia — pula imperium/.test(hudHtml),
+    'HUD budowy: znikła czwarta wersja tej samej nazwy („Ulepszenia — pula imperium")');
+  ok(hudHtml.includes('cuda na mapie'), 'HUD budowy: tooltip nazywa pozostałych konsumentów puli');
+  const hudMut = renderHud('Ulepszenia', 'Ulepszenia');
+  ok(!hudMut.includes(LBL_PELNA),
+    'kontrola negatywna: podmiana etykiety na gołe „Ulepszenia" gasi asercję nazwy w HUD');
+
+  // (c) Trzy panele mówią JEDNYM głosem, bo czytają JEDNO źródło nazwy.
+  for (const [nazwa, plik] of [
+    ['cityPanel.ts', path.resolve(SRC, 'ui', 'cityPanel.ts')],
+    ['empireDetailPanel.ts', path.resolve(SRC, 'ui', 'empireDetailPanel.ts')],
+    ['buildModeHud.ts', path.resolve(SRC, 'ui', 'buildModeHud.ts')],
+  ]) {
+    const src = fs.readFileSync(plik, 'utf8');
+    ok(/PODZIAL_PRACY_PULA_LBL/.test(src),
+      `${nazwa}: nazwa strumienia pochodzi ze WSPÓLNEJ stałej, nie z własnego literału`);
+  }
+  // Parametr niosący % puli nie nazywa się już „ulepszenia" (wzorzec doUlepszen = doPuli).
+  {
+    const hudSrc = fs.readFileSync(path.resolve(SRC, 'ui', 'buildModeHud.ts'), 'utf8');
+    ok(!/onEmpirePracaSplitChange\?:\s*\(procentUlepszenia/.test(hudSrc),
+      'buildModeHud.ts: parametr niosący % puli imperium nie nazywa się już „procentUlepszenia"');
+    ok(/onEmpirePracaSplitChange\?:\s*\(procentPuliImperium/.test(hudSrc),
+      'buildModeHud.ts: parametr nazywa się tym, co niesie (procentPuliImperium)');
+  }
 }
 
 console.log(`\n--- praca-jeden-podzial-kontrakt-test: ${passed} OK, ${failed} FAIL ---`);

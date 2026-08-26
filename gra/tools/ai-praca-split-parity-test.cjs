@@ -182,11 +182,29 @@ console.log('5. Strażnik routingu main.ts i brak drugiego splitu w planie AI');
     !aiSource.includes('splitEmpirePracaBudget'),
     'ai.ts nie wykonuje ponownego splitu na pozostałej puli',
   );
-  // AKTUALIZACJA: zrodlem capu jest teraz JEDYNY podzial (`ownerDefaultPodzialPracy`),
-  // wiec pinujemy jego wiring, nie wiring usunietego drugiego suwaka.
+  // R-PRACA-JEDEN-PODZIAL-Q1 RUNDA 2 (F1) — AKTUALIZACJA JEDNEJ ASERCJI, jawnie uzasadniona:
+  //   CO PILNOWAŁA: skąd `main.ts` bierze absolutną kopertę ulepszeń dla AI (parytet z graczem
+  //     — obaj z tego samego, JEDNEGO źródła, bez drugiego splitu na resztkowej puli).
+  //   DLACZEGO STARY WARUNEK PRZESTAŁ BYĆ PRAWDĄ: runda 1 wpisała tam TEGOROCZNY wpływ do puli
+  //     (`pracaPoolInflowByOwner`), co złamało udokumentowaną decyzję właściciela
+  //     R-AUTO-PRACA-BUDZET-PROCENT-Q1=B („% od SKUMULOWANEJ puli, NIE od przyrostu") i dało
+  //     próg ~40 Pracy przyrostu na turę, poniżej którego powstawało ZERO ulepszeń — u gracza
+  //     I u AI, bo to ta sama ścieżka. Runda 2 wycofała ten wiring; mapa `pracaPoolInflowByOwner`
+  //     już nie istnieje, więc stara asercja pinowała nieistniejący kod.
+  //   CO PILNUJE TERAZ: ta sama własność — parytet i JEDNO źródło koperty — wyrażona przez
+  //     obowiązującą formułę: `pracaAutoPercent% × SKUMULOWANA pula AI`. Warunek jest WĘŻSZY
+  //     niż stary (pinuje i bazę, i procent), nie luźniejszy.
   assert(
-    mainSource.includes('aiImprovementBudgetByOwner.set(ownerId, pracaPoolInflowByOwner.get(ownerId)'),
-    'AI bierze budżet ulepszeń z tegorocznego wpływu do puli (jedyny podział)',
+    mainSource.includes('aiImprovementBudgetByOwner.set(ownerId, Math.floor(aiPool * aiPct / 100))'),
+    'AI: koperta ulepszeń = pracaAutoPercent% skumulowanej puli AI (parytet z pickerem gracza)',
+  );
+  assert(
+    mainSource.includes('const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;'),
+    'AI: bazą procentu jest SKUMULOWANA pula AI, nie tegoroczny wpływ do puli',
+  );
+  assert(
+    !mainSource.includes('pracaPoolInflowByOwner'),
+    'main.ts nie liczy już żadnego budżetu ulepszeń z tegorocznego przyrostu puli',
   );
   assert(
     mainSource.includes('procentPuliImperiumForOwner(0)')

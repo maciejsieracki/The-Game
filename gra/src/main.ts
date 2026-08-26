@@ -26336,21 +26336,6 @@ async function boot(): Promise<void> {
               return v;
             };
 
-            /**
-             * R-PRACA-JEDEN-PODZIAL-Q1: Praca, ktora W TEJ TURZE realnie weszla do puli
-             * imperium danego wlasciciela (poolGain z jedynego podzialu + nadwyzka
-             * `overflowToPool` z ukonczonej kolejki). To jest budzet ulepszen terenu na
-             * te ture — jedyna warstwa, w ktorej Praca jest dzielona. PRZED tym tematem
-             * budzet ulepszen liczyl sie DRUGI RAZ, przez `splitEmpirePracaBudget()` na
-             * calym (skumulowanym!) saldzie puli, co przy domyslnych ustawieniach dawalo
-             * ulepszeniom 0 Pracy.
-             */
-            const pracaPoolInflowByOwner = new Map<number, number>();
-            const addPracaPoolInflow = (ownerId: number, amount: number): void => {
-              if (!(amount > 0)) return;
-              pracaPoolInflowByOwner.set(ownerId, (pracaPoolInflowByOwner.get(ownerId) ?? 0) + amount);
-            };
-
             for (const city of cities) {
               const cid = city.id;
 
@@ -26759,7 +26744,6 @@ async function boot(): Promise<void> {
                   queueEmpty,
                 );
                 if (poolGain > 0) {
-                  addPracaPoolInflow(city.ownerId, poolGain);
                   if (city.ownerId === 0) {
                     playerPracaPool += poolGain;
                     _lastPraca = playerPracaPool;
@@ -26780,7 +26764,6 @@ async function boot(): Promise<void> {
               cityProd.set(cid, prodPo);
               // Nadwyżka po ukończeniu budynku (reszta doBudynkow) — nie dotyczy pustej kolejki.
               if (overflowToPool && overflowToPool > 0) {
-                addPracaPoolInflow(city.ownerId, overflowToPool);
                 if (city.ownerId === 0) {
                   playerPracaPool += overflowToPool;
                   _lastPraca = playerPracaPool;
@@ -26984,16 +26967,38 @@ async function boot(): Promise<void> {
             // przyroscie. Zmierzony skutek przy domyslnych 70/33: do ulepszen trafialo 0
             // Pracy; przy maksymalnych suwakach 20%, nie 50%.
             //
-            // Po przebudowie budzet ulepszen terenu = Praca, ktora W TEJ TURZE weszla do
-            // puli z jedynego podzialu (`pracaPoolInflowByOwner`). Kolejki budynkow sa
-            // finansowane wylacznie swoim udzialem `doBudynkow` w miescie — pula nie
-            // zabiera juz Pracy z powrotem do budynkow, wiec pozostali konsumenci puli
-            // (cuda na mapie, zakladanie miast, wycinka, utrzymanie ulepszen) maja
-            // STRICTLY WIECEJ Pracy niz przed zmiana, nie mniej.
-            const playerImprovementBudget = pracaPoolInflowByOwner.get(0) ?? 0;
+            // Po przebudowie kolejki budynkow sa finansowane wylacznie swoim udzialem
+            // `doBudynkow` w miescie — pula nie zabiera juz Pracy z powrotem do budynkow,
+            // wiec pozostali konsumenci puli (cuda na mapie, zakladanie miast, wycinka,
+            // utrzymanie ulepszen) maja STRICTLY WIECEJ Pracy niz przed zmiana, nie mniej.
+            //
+            // RUNDA 2, F1 — DWIE ROZNE WARSTWY, NIE JEDNA:
+            //   warstwa 1 (TEN temat): podzial Pracy MIASTA na budynki vs pula imperium
+            //     (`splitPraca`, cap 50%) — stosowany dokladnie RAZ, przy naliczaniu tury;
+            //   warstwa 3 (ODREBNE pole `pracaAutoPercent`, 0-100%, poza zakresem tematu):
+            //     ile ze SKUMULOWANEJ puli wolno wydac automatowi ulepszen w jednej turze.
+            // Runda 1 podstawila pod warstwe 3 TEGOROCZNY wplyw do puli (mapa tworzona od
+            // nowa co ture, bez przeniesienia reszty). Poniewaz picker kupuje ulepszenie
+            // tylko wtedy, gdy CALY jego koszt miesci sie w capie, a najtansze ulepszenie
+            // po `scaleImprovementWorkCost` kosztuje 30-60 Pracy, powstal prog ~40 Pracy
+            // PRZYROSTU w JEDNEJ turze: ponizej niego auto-ulepszenia budowaly ZERO,
+            // niezaleznie od tego, jak wielka byla pula (zmierzone: wplyw 12/ture przy puli
+            // 1 000 000 -> 0 ulepszen). To wprost lamie udokumentowana decyzje wlasciciela
+            // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: budzet automatu liczy sie od SKUMULOWANEJ
+            // puli, NIE od przyrostu (komentarze w `auto-improvements.ts` caly czas ja
+            // opisuja). Dlatego silnik NIE podaje juz absolutnego `improvementBudgetCap` —
+            // picker liczy pulap sam, natywnie: `pracaAutoPercent% x pula na wejsciu`.
+            // Niewykorzystana reszta ZOSTAJE w puli i narasta, wiec prog znika.
+            const playerUlepszeniaPolicy = ulepszeniaEmpireForOwner(0);
             aiImprovementBudgetByOwner.clear();
             for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
-              aiImprovementBudgetByOwner.set(ownerId, pracaPoolInflowByOwner.get(ownerId) ?? 0);
+              // Parytet gracz/AI: AI nie przechodzi przez picker bezposrednio (robi to
+              // `planCityImprovements` w ai.ts, ktore dostaje absolutna koperte), wiec ten
+              // sam pulap liczymy tu jawnie — `pracaAutoPercent% x SKUMULOWANA pula AI`,
+              // dokladnie ta sama formula, ktora picker stosuje graczowi wewnetrznie.
+              const aiPct = Math.max(0, Math.min(100, ulepszeniaEmpireForOwner(ownerId).pracaAutoPercent));
+              const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;
+              aiImprovementBudgetByOwner.set(ownerId, Math.floor(aiPool * aiPct / 100));
             }
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
             // Q4=A: commit od razu na EOT (bez pendingImprovementsTurn / cofnięcia).
@@ -27010,7 +27015,6 @@ async function boot(): Promise<void> {
                 const lostToSiblingByCityAuto = computeLostToNearerSiblingByCity(cities, map);
                 const playerCivArch = civTypeForOwner(0);
                 const workingPlaced = new Map(placedImprovements);
-                const empirePol = ulepszeniaEmpireForOwner(0);
                 const picks = pickAutoImprovements({
                   cities: autoImpCities,
                   ownerId: 0,
@@ -27018,11 +27022,6 @@ async function boot(): Promise<void> {
                   territoryNodes: territoryNodesAuto,
                   placedImprovements: workingPlaced,
                   pracaAvailable: playerPracaPool,
-                  // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: split całej puli jest
-                  // policzony raz poza pickerem. Picker dostaje absolutny budżet
-                  // ulepszeń; jego stary procentowy cap nie może drugi raz
-                  // dzielić tej wartości.
-                  improvementBudgetCap: playerImprovementBudget,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
                   skipWyrab: true,
@@ -27030,9 +27029,14 @@ async function boot(): Promise<void> {
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
-                  // Absolutny split powyżej jest jedynym źródłem limitu. 100%
-                  // oznacza tu „nie stosuj drugiego procentowego capu pickera”.
-                  pracaBudgetPercent: 100,
+                  // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2, F1): silnik NIE podaje juz
+                  // `improvementBudgetCap`. Picker liczy pulap sam — `pracaBudgetPercent`
+                  // (polityka imperium) x SKUMULOWANA pula na wejsciu (`pracaAvailable`
+                  // wyzej), zgodnie z decyzja wlasciciela R-AUTO-PRACA-BUDZET-PROCENT-Q1=B
+                  // i Q3=B (nadrzedny `imperiumBudgetCap`, ktorego override miasta nie
+                  // przebija w gore). Podanie tu 100% + absolutnego capu z przyrostu tury
+                  // bylo zrodlem progu opisanego przy `playerUlepszeniaPolicy` wyzej.
+                  pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent,
                   getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(
@@ -27380,8 +27384,11 @@ async function boot(): Promise<void> {
               placedImprovements,
               improvementTechs: aiResearchDone.get(ownerId) ?? new Set<string>(),
               pracaAvailable: aiPracaPoolByOwner.get(ownerId) ?? 0,
-              // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: przekazujemy budżet
-              // ulepszeń z pierwotnego splitu, nie drugą połowę pozostałej puli.
+              // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2, F1): koperta automatu ulepszen AI =
+              // `pracaAutoPercent% x SKUMULOWANA pula AI` (policzona przy
+              // `aiImprovementBudgetByOwner` w bloku ekonomii wyzej) — ta sama formula,
+              // ktora picker stosuje graczowi natywnie. NIE jest to tegoroczny przyrost
+              // puli ani drugi podzial tej samej Pracy.
               improvementBudgetCap: aiImprovementBudgetByOwner.get(ownerId),
               resourceDeficitKeys: resourceDeficitKeysForOwner(ownerId),
               civEra: empireEpochForOwner(ownerId),

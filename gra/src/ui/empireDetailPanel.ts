@@ -36,6 +36,9 @@ import {
   MAX_PROCENT_PULI_IMPERIUM,
   procentPuliImperiumZBudynkow,
   podzialPracyZProcentuPuli,
+  PODZIAL_PRACY_PULA_LBL,
+  PODZIAL_PRACY_PULA_LBL_PELNA,
+  PODZIAL_PRACY_PULA_TIP,
 } from '../game/cities';
 import {
   WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
@@ -1265,9 +1268,15 @@ function renderPracaSection(
 }
 
 /**
- * Nadrzędny split całej puli Pracy. Jedynym suwakiem jest Ulepszenia
- * (0–50%); Budynki są wyliczanym remainder 100% − Ulepszenia. Nie mieszać
- * tego z budżetem automatu.
+ * R-PRACA-JEDEN-PODZIAL-Q1 (runda 2/F2): JEDYNY podzial Pracy MIASTA — nie „nadrzedny
+ * split calej puli" (tak brzmial ten naglowek, gdy istnial drugi podzial, dzielacy sama
+ * pule po raz drugi; ten drugi podzial zostal USUNIETY). Suwakiem jest udzial trafiajacy
+ * do puli imperium („Ulepszenia (pula)", 0–50%); Budynki sa dopelnieniem 100% − ten udzial.
+ * Ten sam kontrakt i ten sam cap obowiazuja globalnie i w miescie. Nie mieszac z budzetem
+ * automatu ulepszen (`pracaAutoPercent`, 0–100%, osobne pole).
+ *
+ * Historyczne akapity nizej opisuja UX tej sekcji i zostaja bez zmian; wystepujace w nich
+ * slowo „Ulepszenia" oznacza ten sam strumien, dzis nazwany w UI `PODZIAL_PRACY_PULA_LBL`.
  *
  * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek B, 2026-08-21): nazewnictwo Budynki/Ulepszenia
  * (zamiast dawnej „Pula Pracy", mylącej z realną PULA IMPERIUM) — patrz `docs/decyzje/...md`.
@@ -1303,15 +1312,25 @@ function renderEmpirePracaBudgetSplitSection(): string {
   const pctU = procentPuliImperiumZBudynkow(getDef(0)?.procentBudynki);
   const pctB = 100 - pctU;
   const id = 'emp-praca-empire-budget-split';
-  const tip = 'Nadrzędny podział całej puli Pracy imperium: Ulepszenia 0–50%, Budynki = reszta '
-    + '(100% − Ulepszenia). To nie jest budżet automatu ulepszeń.';
-  const tipMin = 'Kliknij, aby ustawić minimum: Ulepszenia 0% — cała Praca do Budynków.';
-  const tipMax = 'Kliknij, aby ustawić maksimum: Ulepszenia 50% — połowa Pracy do Ulepszeń.';
+  // R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6, runda 2/F2): tooltip mowil „Nadrzedny podzial CALEJ
+  // PULI Pracy imperium" — opisywal USUNIETY drugi podzial (`splitEmpirePracaBudget`),
+  // ktory dzielil sama pule jeszcze raz. Ten suwak dzieli Prace MIASTA na budynki i pule,
+  // dokladnie raz, tak samo globalnie i w miescie. Nazwa strumienia jest jedna dla calego
+  // UI (`PODZIAL_PRACY_PULA_LBL*` z `game/cities.ts`) — wczesniej ten panel byl trzecia,
+  // rozjechana nazwa tej samej liczby („Ulepszenia" bez kwalifikatora).
+  const tip = `Jeden podział Pracy miasta: ${PODZIAL_PRACY_PULA_LBL_PELNA} `
+    + `0–${MAX_PROCENT_PULI_IMPERIUM}%, Budynki = reszta do 100%. `
+    + 'Ten sam suwak działa globalnie i w mieście. '
+    + PODZIAL_PRACY_PULA_TIP
+    + ' To nie jest budżet automatu ulepszeń (osobne pole, 0–100%).';
+  const tipMin = `Kliknij, aby ustawić minimum: ${PODZIAL_PRACY_PULA_LBL} 0% — cała Praca do Budynków.`;
+  const tipMax = `Kliknij, aby ustawić maksimum: ${PODZIAL_PRACY_PULA_LBL} ${MAX_PROCENT_PULI_IMPERIUM}%`
+    + ' — połowa Pracy miasta do puli imperium.';
   let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
     + `<div class="civ-emp-eyebrow" title="${esc(tip)}">PODZIAŁ PRACY</div>`
-    + `<div class="civ-emp-hero" style="margin:2px 0 10px;font-size:20px" data-praca-empire-split-hero>Ulepszenia ${pctU}%</div>`
+    + `<div class="civ-emp-hero" style="margin:2px 0 10px;font-size:20px" data-praca-empire-split-hero>${PODZIAL_PRACY_PULA_LBL} ${pctU}%</div>`
     + '<div class="civ-emp-praca-split-head">'
-    + '<span class="civ-emp-slider-label blue">Ulepszenia '
+    + `<span class="civ-emp-slider-label blue">${PODZIAL_PRACY_PULA_LBL} `
     + `<b data-praca-empire-split-upgrades>${pctU}%</b></span>`
     + '<span class="civ-emp-slider-label gold">Budynki '
     + `<b data-praca-empire-split-buildings>${pctB}%</b></span>`
@@ -1322,8 +1341,8 @@ function renderEmpirePracaBudgetSplitSection(): string {
     + '<div class="civ-emp-praca-split-ends">'
     + `<button type="button" class="civ-emp-praca-split-end${pctU === 0 ? ' on' : ''}" `
     + `data-praca-empire-split-min title="${esc(tipMin)}">MIN 0%</button>`
-    + `<button type="button" class="civ-emp-praca-split-end${pctU === 50 ? ' on' : ''}" `
-    + `data-praca-empire-split-max title="${esc(tipMax)}">MAX 50%</button>`
+    + `<button type="button" class="civ-emp-praca-split-end${pctU === MAX_PROCENT_PULI_IMPERIUM ? ' on' : ''}" `
+    + `data-praca-empire-split-max title="${esc(tipMax)}">MAX ${MAX_PROCENT_PULI_IMPERIUM}%</button>`
     + '</div></div>';
   queueMicrotask(() => {
     const host = document.getElementById(id);
@@ -1336,13 +1355,13 @@ function renderEmpirePracaBudgetSplitSection(): string {
       onChange(0, podzialPracyZProcentuPuli(pctU));
       input.style.background = laborSliderFillStyle(pctU * 2);
       const hero = host?.querySelector('[data-praca-empire-split-hero]');
-      if (hero) hero.textContent = `Ulepszenia ${pctU}%`;
+      if (hero) hero.textContent = `${PODZIAL_PRACY_PULA_LBL} ${pctU}%`;
       const upgrades = host?.querySelector('[data-praca-empire-split-upgrades]');
       if (upgrades) upgrades.textContent = `${pctU}%`;
       const buildings = host?.querySelector('[data-praca-empire-split-buildings]');
       if (buildings) buildings.textContent = `${100 - pctU}%`;
       btnMin?.classList.toggle('on', pctU === 0);
-      btnMax?.classList.toggle('on', pctU === 50);
+      btnMax?.classList.toggle('on', pctU === MAX_PROCENT_PULI_IMPERIUM);
     });
     // Klik w znacznik krańca = dokładnie to samo, co przeciągnięcie uchwytu do końca toru:
     // ustawiamy `value` i odpalamy TEN SAM event `input`, żeby zapis podziału i odświeżenie
@@ -1352,7 +1371,7 @@ function renderEmpirePracaBudgetSplitSection(): string {
       input.dispatchEvent(new Event('input', { bubbles: true }));
     };
     btnMin?.addEventListener('click', () => jumpTo(0));
-    btnMax?.addEventListener('click', () => jumpTo(50));
+    btnMax?.addEventListener('click', () => jumpTo(MAX_PROCENT_PULI_IMPERIUM));
   });
   return h;
 }

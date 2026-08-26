@@ -138,9 +138,23 @@ async function main() {
   const citySrc = fs.readFileSync(CITY_PANEL, 'utf8');
 
   // --- (0) Kotwice w źródle: jedna rodzina nazw zamiast czterech różnych ---------------
-  check('(0) etykieta drugiego strumienia to JEDNA stała, nie cztery różne stringi',
-    /const PULA_LBL = 'Ulepszenia \(pula\)';/.test(citySrc)
-      && /const PULA_LBL_PELNA = 'Ulepszenia \(pula imperium\)';/.test(citySrc));
+  // R-PRACA-JEDEN-PODZIAL-Q1 RUNDA 2 (F2) — AKTUALIZACJA TEJ ASERCJI, jawnie uzasadniona:
+  //   CO PILNOWAŁA: że nazwa drugiego strumienia jest JEDNĄ stałą, nie czterema literałami.
+  //   DLACZEGO STARY WARUNEK PRZESTAŁ BYĆ PRAWDĄ: stałe były LOKALNE dla `cityPanel.ts`, więc
+  //     `empireDetailPanel.ts` i `buildModeHud.ts` miały własne, rozjechane literały (bloker F2).
+  //     Definicje przeniesiono do JEDNEGO źródła `game/cities.ts`; w `cityPanel.ts` zostały już
+  //     tylko aliasy.
+  //   CO PILNUJE TERAZ: ta sama własność, ale dla WSZYSTKICH TRZECH paneli naraz — warunek jest
+  //     mocniejszy: literał nie może mieszkać w pliku UI, a każdy panel musi czytać wspólną stałą.
+  const citiesSrc = fs.readFileSync(path.resolve(GRA, 'src', 'game', 'cities.ts'), 'utf8');
+  check('(0) etykieta drugiego strumienia to JEDNA stała w game/cities.ts, nie literał w UI',
+    /export const PODZIAL_PRACY_PULA_LBL = 'Ulepszenia \(pula\)';/.test(citiesSrc)
+      && /export const PODZIAL_PRACY_PULA_LBL_PELNA = 'Ulepszenia \(pula imperium\)';/.test(citiesSrc)
+      && /const PULA_LBL = PODZIAL_PRACY_PULA_LBL;/.test(citySrc)
+      && /const PULA_LBL_PELNA = PODZIAL_PRACY_PULA_LBL_PELNA;/.test(citySrc));
+  check('(0) panel imperium i HUD budowy czytają TĘ SAMĄ stałą (koniec trzeciej nazwy)',
+    ['empireDetailPanel.ts', 'buildModeHud.ts'].every(f =>
+      /PODZIAL_PRACY_PULA_LBL/.test(fs.readFileSync(path.resolve(GRA, 'src', 'ui', f), 'utf8'))));
   check('(0) pole `doUlepszen` niosące pulę imperium zniknęło z cityPanel.ts',
     !/\bdoUlepszen\b\s*[:,)]/.test(citySrc.split('\n').filter((l) => !/^\s*(\*|\/\/)/.test(l)).join('\n')));
 

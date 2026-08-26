@@ -51,10 +51,25 @@ function check(name, condition) {
 //     wlasnosci nie zostala oslabiona.
 //   CO PILNUJE TERAZ: te same wlasnosci, wyrazone przez nowe stale i nazwy.
 
-check('sygnał "Ulepszenia" na samej górze sekcji (hero)', source.includes('data-praca-empire-split-hero>Ulepszenia ${pctU}%'));
+// R-PRACA-JEDEN-PODZIAL-Q1 RUNDA 2 (F2) — AKTUALIZACJA PIĘCIU ASERCJI, jawnie uzasadniona:
+//   CO PILNOWAŁY: (1) hero sekcji imperium niesie nazwę strumienia + %, (2) błękitna etykieta
+//     przy suwaku niesie tę samą nazwę, (3) klikalny znacznik MAX istnieje i pokazuje kraniec
+//     zakresu, (4) panel miasta ma sygnał z nazwą strumienia na górze, (5) chip tej nazwy używa
+//     ikony `chip-crate`.
+//   DLACZEGO STARE WARUNKI PRZESTAŁY BYĆ PRAWDĄ: runda 1 ujednoliciła nazwę TYLKO w
+//     `cityPanel.ts` (lokalne stałe), więc `empireDetailPanel.ts` został z gołym „Ulepszenia" —
+//     TRZECIĄ nazwą tej samej liczby (bloker F2 Evaluatora i Final Control). Runda 2 przeniosła
+//     definicje do JEDNEGO źródła `PODZIAL_PRACY_PULA_LBL*` w `game/cities.ts` i podłączyła do
+//     niego wszystkie trzy panele; kraniec MAX liczy się teraz ze stałej
+//     `MAX_PROCENT_PULI_IMPERIUM`, nie z zapisanej na sztywno „50".
+//   CO PILNUJĄ TERAZ: DOKŁADNIE te same pięć własności, wyrażone przez wspólną stałą zamiast
+//     przez literał — plus mocniejszy warunek: literał nie może już mieszkać w pliku UI.
+//     Asercje nie zostały rozluźnione (żadna nie zamieniła się w „zawiera cokolwiek").
+check('sygnał nazwy strumienia na samej górze sekcji (hero)',
+  source.includes('data-praca-empire-split-hero>${PODZIAL_PRACY_PULA_LBL} ${pctU}%'));
 check(
-  'etykieta "Ulepszenia" po lewej stronie suwaka (błękit, procent na żywo)',
-  source.includes('<span class="civ-emp-slider-label blue">Ulepszenia ')
+  'etykieta strumienia po lewej stronie suwaka (błękit, procent na żywo)',
+  source.includes('<span class="civ-emp-slider-label blue">${PODZIAL_PRACY_PULA_LBL} ')
     && source.includes('data-praca-empire-split-upgrades'),
 );
 check(
@@ -68,7 +83,9 @@ check('suwak pełnej szerokości z dwukolorowym torem laborSliderFillStyle()', s
 // leży dokładnie pod uchwytem. Dwa wystąpienia = render początkowy + przeliczenie na żywo.
 check('laborSliderFillStyle NIE jest już martwym kodem (render początkowy + odświeżenie na żywo)', (source.match(/laborSliderFillStyle\(pctU \* 2\)/g) || []).length === 2);
 check('klikalny znacznik MIN na krańcu suwaka', source.includes('data-praca-empire-split-min title=') && source.includes('>MIN 0%</button>'));
-check('klikalny znacznik MAX na krańcu suwaka', source.includes('data-praca-empire-split-max title=') && source.includes('>MAX 50%</button>'));
+check('klikalny znacznik MAX na krańcu suwaka', source.includes('data-praca-empire-split-max title=')
+  && source.includes('>MAX ${MAX_PROCENT_PULI_IMPERIUM}%</button>')
+  && /export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;/.test(citiesSource));
 check(
   'MIN/MAX przechodzą przez TEN SAM handler co drag (input.value + dispatch "input"), bez drugiej ścieżki zapisu',
   source.includes("input.dispatchEvent(new Event('input', { bubbles: true }));")
@@ -95,8 +112,9 @@ check('lokalny suwak miasta kończy się na 100% budynków', citySource.includes
 // Wątek F: kontrolka #4 (cityPanel.ts renderPodzialPracy) przeprojektowana — sygnał "Ulepszenia"
 // na samej górze panelu, dwie kolumny Budynki (lewo, .left) / Ulepszenia (prawo, .right), zamiast
 // jednego zdania "Budynki 50–100% / Pula Pracy 0–50% (lokalnie)" (usunięta nazwa "Pula Pracy").
-check('sygnał "Ulepszenia" na samej górze panelu miasta', citySource.includes("summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} ${PULA_LBL_PELNA} <b>${pctU}%</b>`")
-  && /const PULA_LBL_PELNA = 'Ulepszenia \(pula imperium\)';/.test(citySource));
+check('sygnał nazwy strumienia na samej górze panelu miasta', citySource.includes("summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} ${PULA_LBL_PELNA} <b>${pctU}%</b>`")
+  && /const PULA_LBL_PELNA = PODZIAL_PRACY_PULA_LBL_PELNA;/.test(citySource)
+  && /export const PODZIAL_PRACY_PULA_LBL_PELNA = 'Ulepszenia \(pula imperium\)';/.test(citiesSource));
 check('dwie kolumny Budynki/Ulepszenia w panelu miasta (Wątek F)', citySource.includes("el('div', 'praca-split-col left')") && citySource.includes("el('div', 'praca-split-col right')"));
 check('nazwa "Pula Pracy" usunięta z suwaka miasta (zastąpiona "Ulepszenia", Wątek F)', !citySource.includes('Pula Pracy 0–50% (lokalnie)'));
 
@@ -105,9 +123,10 @@ check('nazwa "Pula Pracy" usunięta z suwaka miasta (zastąpiona "Ulepszenia", W
 // appendPodzialPracyInfo) i `chip-crate` (skrzynka, renderPodzialPracy). ECHO właściciela:
 // wszędzie `chip-crate`, ikony zostają (bez przejścia na czysty tekst).
 check(
-  'chip „Ulepszenia" w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)',
+  'chip nazwy strumienia w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)',
   citySource.includes("statChipBrand('chip-crate', PULA_LBL,")
-    && /const PULA_LBL = 'Ulepszenia \(pula\)';/.test(citySource),
+    && /const PULA_LBL = PODZIAL_PRACY_PULA_LBL;/.test(citySource)
+    && /export const PODZIAL_PRACY_PULA_LBL = 'Ulepszenia \(pula\)';/.test(citiesSource),
 );
 check(
   'wiersz info „Ulepszenia" w panelu miasta używa skrzynki chip-crate (nie młotka tb-build)',

@@ -522,13 +522,28 @@ console.log('-- 17. FALA 292: STRUKTURA (regex na main.ts) — split absolutny j
   //     `splitEmpirePracaBudget` (drugi podzial) i ze ten drugi suwak ma roundtrip zapisu.
   //   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: drugi podzial byl wlasnie zrodlem
   //     podwojnego liczenia (FALA 292 naprawiala objaw, nie przyczyne) i zostal usuniety.
-  //   CO PILNUJE TERAZ: TA SAMA wlasnosc — budzet ulepszen policzony RAZ przed pickerem —
-  //     ale ze zrodla, ktore realnie istnieje: tegoroczny wplyw do puli z JEDYNEGO podzialu.
-  //     17e/17f pilnuja teraz roundtripu jedynego podzialu + migracji legacy pola.
+  //   CO PILNUJE TERAZ: 17e/17f pilnuja roundtripu jedynego podzialu + migracji legacy pola.
+  //
+  // R-PRACA-JEDEN-PODZIAL-Q1 RUNDA 2 (F1) — AKTUALIZACJA STRAZNIKOW 17a/17b/17c:
+  //   CO PILNOWALY (po rundzie 1): ze silnik liczy ABSOLUTNY budzet ulepszen z tegorocznego
+  //     wplywu do puli i podaje go pickerowi, wylaczajac jego wlasny cap procentowy (100%).
+  //   DLACZEGO STARE WARUNKI PRZESTALY BYC PRAWDA: ten wiring lamal udokumentowana decyzje
+  //     wlasciciela R-AUTO-PRACA-BUDZET-PROCENT-Q1=B, ktora TEN PLIK cytuje w naglowku
+  //     („% budzetu Pracy liczonym od SKUMULOWANEJ puli Pracy na WEJSCIU do wywolania (nie od
+  //     przyrostu)"). Picker kupuje ulepszenie tylko wtedy, gdy CALY koszt miesci sie w capie,
+  //     wiec cap rowny przyrostowi jednej tury dawal prog ~40 Pracy/ture, ponizej ktorego
+  //     powstawalo ZERO ulepszen — niezaleznie od wielkosci skumulowanej puli. Straznik 17c
+  //     pinowal wrecz „nie stosuj procentowego capu pickera", czyli dokladnie wylaczenie
+  //     mechanizmu, ktorego decyzja Q1=B wymaga.
+  //   CO PILNUJA TERAZ: ta sama wlasnosc — budzet ulepszen jest jednoznacznie okreslony przed
+  //     pickerem i NIE jest dzielony drugi raz — ale w semantyce Q1=B: silnik podaje POLITYKE
+  //     (`pracaAutoPercent`) i SKUMULOWANA pule, a pulap liczy picker. 17b jest teraz asercja
+  //     NEGATYWNA (zaden absolutny cap nie wchodzi do wywolania gracza), wiec pokrycie sie
+  //     zaciesnilo, nie rozluznilo.
   const RE_SPLIT_CALL =
-    /const playerImprovementBudget = pracaPoolInflowByOwner\.get\(0\)/;
-  const RE_ABSOLUTE_CAP = /improvementBudgetCap: playerImprovementBudget,/;
-  const RE_NO_SECOND_PERCENT_CAP = /pracaBudgetPercent: 100,/;
+    /const playerUlepszeniaPolicy = ulepszeniaEmpireForOwner\(0\);/;
+  const RE_ABSOLUTE_CAP = /pracaAvailable: playerPracaPool,/;
+  const RE_NO_SECOND_PERCENT_CAP = /pracaBudgetPercent: playerUlepszeniaPolicy\.pracaAutoPercent,/;
   const RE_OWNER_SPLIT_SAVE =
     /ownerDefaultPodzialPracy:\s*Array\.from\(ownerDefaultPodzialPracy\.entries\(\)\)/;
   const RE_OWNER_SPLIT_LOAD =
@@ -536,11 +551,24 @@ console.log('-- 17. FALA 292: STRUKTURA (regex na main.ts) — split absolutny j
   const RE_OWNER_SPLIT_MIGRATION =
     /ownerDefaultPodzialPracy\.set\(oid,\s*podzialPracyZProcentuPuli\(raw\?\.procentUlepszenia\)\)/s;
   assert(RE_SPLIT_CALL.test(mainSrc),
-    '17a: main liczy budżet ulepszeń RAZ, przed pickerem (jedyny podział)');
+    '17a: main czyta politykę automatu ulepszeń RAZ, przed pickerem');
   assert(RE_ABSOLUTE_CAP.test(mainSrc),
-    '17b: picker dostaje absolutny budżet ulepszeń');
+    '17b: picker dostaje SKUMULOWANĄ pulę jako bazę procentu (Q1=B)');
   assert(RE_NO_SECOND_PERCENT_CAP.test(mainSrc),
-    '17c: picker nie nakłada drugiego procentowego capu');
+    '17c: pułap liczy picker z polityki imperium, nie silnik z przyrostu tury');
+  {
+    // Komentarze usuniete PRZED szukaniem: blok wywolania zawiera akapit wyjasniajacy,
+    // dlaczego `improvementBudgetCap` juz sie tam NIE pojawia — sama nazwa w komentarzu
+    // nie moze zapalac asercji o kodzie.
+    const mainCode = mainSrc.replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('\n').filter(l => !/^\s*(\/\/|\*)/.test(l)).join('\n');
+    const i = mainCode.indexOf('const picks = pickAutoImprovements({');
+    const blok = i > -1 ? mainCode.slice(i, mainCode.indexOf('\n                });', i)) : '';
+    assert(i > -1 && !/improvementBudgetCap/.test(blok),
+      '17b\': wywołanie pickera gracza NIE podaje absolutnego capu (powrót = powrót progu „zero ulepszeń")');
+    assert(!/pracaPoolInflowByOwner/.test(mainCode),
+      '17c\': main.ts nie liczy już żadnego budżetu z tegorocznego przyrostu puli');
+  }
   assert(RE_OWNER_SPLIT_SAVE.test(mainSrc) && RE_OWNER_SPLIT_LOAD.test(mainSrc),
     '17e: jedyny podział ownera ma jawny roundtrip zapisu/odczytu');
   assert(RE_OWNER_SPLIT_MIGRATION.test(mainSrc),

@@ -10,7 +10,13 @@ import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
-import { MAX_PROCENT_PULI_IMPERIUM, MAX_ULEPSZENIA_PRACA_AUTO_PERCENT } from '../game/cities';
+import {
+  MAX_PROCENT_PULI_IMPERIUM,
+  MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
+  PODZIAL_PRACY_PULA_LBL,
+  PODZIAL_PRACY_PULA_LBL_PELNA,
+  PODZIAL_PRACY_PULA_TIP,
+} from '../game/cities';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -75,9 +81,16 @@ export interface BuildModeHudConfig {
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
-  /** Nadrzędny split całej puli: osobny od `pracaAutoPercent`. */
+  /**
+   * R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6, runda 2/F2): JEDYNY podzial Pracy miasta —
+   * udzial trafiajacy do PULI IMPERIUM (0–50%), budynki dostaja dopelnienie do 100%.
+   * Parametr nazywal sie `procentUlepszenia`, a niosl % puli — dokladnie wzorzec
+   * `doUlepszen` = `doPuli`, dla ktorego ten temat powstal. Pula finansuje takze cuda
+   * na mapie, zakladanie miast i wycinke, wiec jej nazwa nie moze brzmiec „ulepszenia".
+   * To NIE jest budzet automatu ulepszen (`pracaAutoPercent`, 0–100%, osobne pole).
+   */
   getEmpirePracaSplit?: () => number | null;
-  onEmpirePracaSplitChange?: (procentUlepszenia: number) => void;
+  onEmpirePracaSplitChange?: (procentPuliImperium: number) => void;
   onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
   onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
   onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
@@ -285,17 +298,17 @@ function renderEmpirePracaSplit(pct: number): string {
     : 0;
   const buildingPct = 100 - safePct;
   const globalTip =
-    `Jeden podział całej Pracy: ulepszenia (pula imperium) 0–${MAX_PROCENT_PULI_IMPERIUM}%, `
+    `Jeden podział całej Pracy: ${PODZIAL_PRACY_PULA_LBL_PELNA} 0–${MAX_PROCENT_PULI_IMPERIUM}%, `
     + 'budynki = reszta do 100%. Ten sam suwak działa globalnie i w mieście. '
-    + 'Z puli imperium finansowane są też cuda na mapie, zakładanie miast i wycinka. '
-    + 'To nie jest globalny budżet automatu ulepszeń.';
+    + PODZIAL_PRACY_PULA_TIP
+    + ' To nie jest globalny budżet automatu ulepszeń.';
   return '<div class="civ-build-global-split" data-praca-split-scope="empire">'
-    + '<div class="civ-build-global-split-title">Podział Pracy: budynki / ulepszenia (pula)</div>'
-    + `<div class="civ-build-global-split-value" aria-label="Podział Pracy: ulepszenia i budynki">`
-    + `${safePct}% ulepszenia / ${buildingPct}% budynki</div>`
+    + `<div class="civ-build-global-split-title">Podział Pracy: Budynki / ${PODZIAL_PRACY_PULA_LBL}</div>`
+    + `<div class="civ-build-global-split-value" aria-label="Podział Pracy: ${PODZIAL_PRACY_PULA_LBL} i Budynki">`
+    + `${safePct}% ${PODZIAL_PRACY_PULA_LBL} / ${buildingPct}% Budynki</div>`
     + `<div class="civ-build-global-split-note">${globalTip}</div>`
     + '<div class="civ-build-percent-row">'
-    + `<div class="civ-build-percent-head"><span>Ulepszenia — pula imperium (0–${MAX_PROCENT_PULI_IMPERIUM}%)</span>`
+    + `<div class="civ-build-percent-head"><span>${PODZIAL_PRACY_PULA_LBL_PELNA} (0–${MAX_PROCENT_PULI_IMPERIUM}%)</span>`
     + `<b data-praca-empire-split-label>${safePct}%</b></div>`
     + `<input type="range" class="civ-build-percent-slider" min="0" max="${MAX_PROCENT_PULI_IMPERIUM}" step="1" value="${safePct}" `
     + `style="${ulepszeniaPercentSliderFillStyle(safePct)}" data-praca-empire-split `

@@ -185,39 +185,54 @@ console.log('\n11. Pula imperium NIE oddaje Pracy z powrotem do kolejek budynkó
     .split('\n').filter(l => !/^\s*(\/\/|\*)/.test(l)).join('\n');
   ok(!/\bapplyEmpireBuildingBudget\s*\(/.test(mainCode), 'brak wywołania applyEmpireBuildingBudget');
   ok(!/\bsplitEmpirePracaBudget\s*\(/.test(mainCode), 'brak wywołania splitEmpirePracaBudget');
-  // Dowod nietautologicznosci: wstrzykniete wywolanie MUSI zaczerwienic te asercje.
-  const mutant = mainCode + '\napplyEmpireBuildingBudget(0, 5);\n';
-  ok(/\bapplyEmpireBuildingBudget\s*\(/.test(mutant), 'mutant przywracający drugi podział zostaje wykryty');
+  // RUNDA 2 (F3): USUNIETY „dowod nietautologicznosci" polegajacy na dopisaniu szukanego
+  // wzorca do badanego stringu — swiecil niezaleznie od stanu kodu. Nietautologicznosc obu
+  // asercji negatywnych wyzej dowodzi sie uruchomieniem bramki na zmutowanej KOPII zrodla
+  // (raportowanym przez Operatora), nie udawana mutacja wewnatrz pliku.
 }
 
-console.log('\n12. Budżet ulepszeń = tegoroczny wpływ do puli z JEDYNEGO podziału (main.ts)');
+console.log('\n12. Budżet automatu ulepszeń = % SKUMULOWANEJ puli, nie przyrostu tury (main.ts)');
 {
+  // R-PRACA-JEDEN-PODZIAL-Q1 RUNDA 2 (F1) — AKTUALIZACJA SEKCJI 12 i USUNIĘCIE SEKCJI 13,
+  // jawnie uzasadnione:
+  //   CO PILNOWAŁY (po rundzie 1): (12) że gracz i AI biorą budżet ulepszeń z mapy
+  //     `pracaPoolInflowByOwner` (tegoroczny wpływ do puli); (13) że do tej mapy trafiają OBA
+  //     strumienie wpływu (poolGain + overflowToPool).
+  //   DLACZEGO STARE WARUNKI PRZESTAŁY BYĆ PRAWDĄ: budżet liczony z przyrostu jednej tury dawał
+  //     próg ~40 Pracy/turę, poniżej którego automat ulepszeń budował ZERO — niezależnie od
+  //     wielkości skumulowanej puli — wbrew udokumentowanej decyzji właściciela
+  //     R-AUTO-PRACA-BUDZET-PROCENT-Q1=B („od SKUMULOWANEJ puli, NIE od przyrostu"). Mapa
+  //     `pracaPoolInflowByOwner` istniała WYŁĄCZNIE po to i została usunięta razem z tym
+  //     wiringiem, więc sekcja 13 pinowała już nieistniejący kod (pomocnicza księgowość, nie
+  //     zachowanie gry: sam wpływ do puli nadal idzie tymi samymi dwoma strumieniami i jest
+  //     pilnowany przez sekcje 1-10 tego pliku, na PRAWDZIWYCH funkcjach).
+  //   CO PILNUJE TERAZ: ta sama własność w obowiązującej semantyce — silnik nie podaje żadnego
+  //     absolutnego capu z przyrostu, bazą procentu jest skumulowana pula, a AI dostaje kopertę
+  //     z tej samej formuły co gracz (parytet). Trzy asercje negatywne + trzy pozytywne zamiast
+  //     jednej koniunkcji: pokrycie się zacieśniło, nie rozluźniło.
   const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  const hasWiring = src =>
-    /improvementBudgetCap:\s*playerImprovementBudget/.test(src)
-      && /const playerImprovementBudget = pracaPoolInflowByOwner\.get\(0\)/.test(src)
-      && /aiImprovementBudgetByOwner\.set\(ownerId, pracaPoolInflowByOwner\.get\(ownerId\)/.test(src);
-  ok(hasWiring(mainSrc), 'gracz i AI biorą budżet ulepszeń z pracaPoolInflowByOwner');
+  const mainCode = mainSrc
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n').filter(l => !/^\s*(\/\/|\*)/.test(l)).join('\n');
+  const hasWiring = code =>
+    /pracaBudgetPercent:\s*playerUlepszeniaPolicy\.pracaAutoPercent/.test(code)
+      && /pracaAvailable:\s*playerPracaPool/.test(code)
+      && /aiImprovementBudgetByOwner\.set\(ownerId, Math\.floor\(aiPool \* aiPct \/ 100\)\)/.test(code)
+      && !/pracaPoolInflowByOwner/.test(code);
+  ok(hasWiring(mainCode), 'gracz i AI liczą budżet ulepszeń z % SKUMULOWANEJ puli (Q1=B)');
   // Dowod nietautologicznosci — JEDNA mutacja na asercje.
-  const mutA = mainSrc.replace('improvementBudgetCap: playerImprovementBudget', 'improvementBudgetCap: undefined');
-  ok(!hasWiring(mutA), 'mutant odpinający budżet ulepszeń gracza zostaje wykryty');
-  const mutB = mainSrc.replace('const playerImprovementBudget = pracaPoolInflowByOwner.get(0)', 'const playerImprovementBudget = playerPracaPool && (0');
-  ok(!hasWiring(mutB), 'mutant liczący budżet z całego salda puli zostaje wykryty');
-  const mutC = mainSrc.replace(/aiImprovementBudgetByOwner\.set\(ownerId, pracaPoolInflowByOwner\.get\(ownerId\)/, 'aiImprovementBudgetByOwner.set(ownerId, (aiPracaPoolByOwner.get(ownerId)');
-  ok(!hasWiring(mutC), 'mutant liczący budżet AI z całego salda puli zostaje wykryty');
+  const mutA = mainCode.replace('pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent', 'pracaBudgetPercent: 100');
+  ok(!hasWiring(mutA), 'mutant wyłączający procentowy pułap pickera zostaje wykryty');
+  const mutB = mainCode.replace('pracaAvailable: playerPracaPool', 'pracaAvailable: pracaPoolInflowThisTurn');
+  ok(!hasWiring(mutB), 'mutant podmieniający bazę procentu na przyrost tury zostaje wykryty');
+  const mutC = mainCode.replace('aiImprovementBudgetByOwner.set(ownerId, Math.floor(aiPool * aiPct / 100))', 'aiImprovementBudgetByOwner.set(ownerId, aiInflow)');
+  ok(!hasWiring(mutC), 'mutant zrywający parytet koperty AI zostaje wykryty');
+  // Wywolanie pickera gracza NIE MOZE podawac absolutnego capu — powrot capu = powrot progu.
+  const i = mainCode.indexOf('const picks = pickAutoImprovements({');
+  const blok = i > -1 ? mainCode.slice(i, mainCode.indexOf('\n                });', i)) : '';
+  ok(i > -1 && !/improvementBudgetCap/.test(blok),
+    'wywołanie pickera gracza nie podaje absolutnego capu (pułap liczy picker od salda)');
 }
-
-console.log('\n13. Wpływ do puli jest naliczany raz — poolGain + overflowToPool (main.ts)');
-{
-  const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
-  const hasInflow = src =>
-    /addPracaPoolInflow\(city\.ownerId, poolGain\)/.test(src)
-      && /addPracaPoolInflow\(city\.ownerId, overflowToPool\)/.test(src);
-  ok(hasInflow(mainSrc), 'oba strumienie wpływu do puli są zliczone');
-  const mut = mainSrc.replace('addPracaPoolInflow(city.ownerId, poolGain);', '');
-  ok(!hasInflow(mut), 'mutant gubiący poolGain w budżecie ulepszeń zostaje wykryty');
-}
-
 
 console.log('\n--- production-overflow-test: ' + passed + ' OK, ' + failed + ' FAIL ---');
 process.exit(failed > 0 ? 1 : 0);
