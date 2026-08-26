@@ -350,10 +350,20 @@ async function main() {
       inp.value = '64';
       inp.dispatchEvent(new Event('input', { bubbles: true }));
       inp.dispatchEvent(new Event('change', { bubbles: true }));
-      return { zapisy: window.__zapisy.slice() };
+      const row = inp.closest('.civ-build-percent-row');
+      const lbl = row ? row.querySelector('[data-ulepszenia-empire-percent-label]') : null;
+      return { zapisy: window.__zapisy.slice(), etykietaPoDragu: lbl ? lbl.textContent.trim() : null };
     });
     check('(B) tryb "auto": realny ruch suwakiem zapisuje warstwe (c) przez onUlepszeniaEmpirePracaPercentChange(64)',
       zapis.zapisy.length > 0 && zapis.zapisy[zapis.zapisy.length - 1] === 64, zapis);
+    // ZNALEZISKO UBOCZNE z dispatchu: usuniety handler warstwy (a) nadpisywal podsumowanie
+    // innym formatem niz render poczatkowy („50% ulepszenia / 50% budynki" malymi literami
+    // vs „50% Ulepszenia (pula) / 50% Budynki"), wiec napis zmienial sie po pierwszym ruchu
+    // suwakiem. Zniknal razem z blokiem warstwy (a) — tu SPRAWDZAMY POMIAREM, ze ten sam
+    // wzorzec nie powtarza sie w suwaku warstwy (c), ktory w tym panelu zostaje.
+    check('(B) znalezisko uboczne: etykieta warstwy (c) po ruchu suwakiem ma TEN SAM format co render poczatkowy',
+      zapis.etykietaPoDragu === '64%', zapis);
+
     if (!NO_SHOTS) {
       await page.evaluate(() => window.__mountHud('auto'));
       await page.locator('.civ-build-panel').screenshot({ path: path.join(SHOTS_DIR, 'B-tryb-auto.png') });
