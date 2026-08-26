@@ -15,12 +15,13 @@ import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
 import { openEntityCard } from './entityCards/renderer';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
+// R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: `PODZIAL_PRACY_PULA_LBL*` / `PODZIAL_PRACY_PULA_TIP`
+// (nazwy warstwy (a) — `CityPodzialPracy.procentBudynki`) juz tu NIE sa importowane: ten panel
+// nie renderuje warstwy (a). `MAX_PROCENT_PULI_IMPERIUM` zostaje wylacznie jako liczba w tooltipie
+// warstwy (c), zeby jawnie powiedziec, ze warstwa (c) tego capu NIE dziedziczy.
 import {
   MAX_PROCENT_PULI_IMPERIUM,
   MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
-  PODZIAL_PRACY_PULA_LBL,
-  PODZIAL_PRACY_PULA_LBL_PELNA,
-  PODZIAL_PRACY_PULA_TIP,
 } from '../game/cities';
 
 export interface BuildTypeInfo {
@@ -87,15 +88,16 @@ export interface BuildModeHudConfig {
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
   /**
-   * R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6, runda 2/F2): JEDYNY podzial Pracy miasta —
-   * udzial trafiajacy do PULI IMPERIUM (0–50%), budynki dostaja dopelnienie do 100%.
-   * Parametr nazywal sie `procentUlepszenia`, a niosl % puli — dokladnie wzorzec
-   * `doUlepszen` = `doPuli`, dla ktorego ten temat powstal. Pula finansuje takze cuda
-   * na mapie, zakladanie miast i wycinke, wiec jej nazwa nie moze brzmiec „ulepszenia".
-   * To NIE jest budzet automatu ulepszen (`pracaAutoPercent`, 0–100%, osobne pole).
+   * R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: pozycje `getEmpirePracaSplit` /
+   * `onEmpirePracaSplitChange` USUNIETE. Sterowaly warstwa (a) — polem
+   * `CityPodzialPracy.procentBudynki` (podzial Pracy miasta: budynki vs pula
+   * imperium, 0–50%) — mimo ze nazwa mowila o nieistniejacej warstwie (b).
+   * Warstwa (a) ma dokladnie dwa prawowite miejsca w UI: `empireDetailPanel.ts`
+   * (globalnie) i `cityPanel.ts` (per miasto); trzeci egzemplarz w panelu trybu
+   * budowy byl duplikatem tego samego pola i tego samego suwaka. W tym panelu
+   * zostaje WYLACZNIE warstwa (c) — `UlepszeniaEmpirePolicy.pracaAutoPercent`
+   * i `City.ulepszeniaPracaPercent` (0–100%), nizej.
    */
-  getEmpirePracaSplit?: () => number | null;
-  onEmpirePracaSplitChange?: (procentPuliImperium: number) => void;
   onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
   onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
   onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
@@ -291,12 +293,12 @@ html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
 .civ-build-percent-row{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
 .civ-build-percent-head{display:flex;align-items:baseline;gap:6px;font-size:10px;color:#9a9070;}
 .civ-build-percent-head b{font-size:11px;color:#f0e8b8;}
-.civ-build-global-split{margin:2px 0 8px;padding:7px 8px;border:1px solid rgba(232,216,138,.22);
-  border-radius:5px;background:rgba(232,216,138,.045);}
-.civ-build-global-split-title{font-size:10px;font-weight:600;color:#f0e8b8;}
-.civ-build-global-split-value{margin-top:3px;font-size:12px;color:#e8d88a;}
-.civ-build-global-split-note,.civ-build-city-split-note{font-size:9px;color:#9a9070;line-height:1.35;margin-top:3px;}
-.civ-build-city-split-note{margin:4px 0 2px;}
+.civ-build-city-split-note{font-size:9px;color:#9a9070;line-height:1.35;margin:4px 0 2px;}
+/* R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: suwak warstwy (c) jest renderowany takze
+   przy trybie recznym — wtedy nieaktywny, z krotkim wyjasnieniem pod spodem. */
+.civ-build-percent-row.off .civ-build-percent-head{opacity:.55;}
+.civ-build-percent-slider:disabled{cursor:not-allowed;opacity:.45;}
+.civ-build-percent-note{font-size:9px;color:#9a9070;line-height:1.35;margin-top:2px;}
 .civ-build-percent-slider{-webkit-appearance:none;-moz-appearance:none;appearance:none;
   width:100%;height:6px;border-radius:999px;cursor:pointer;margin:0;background:rgba(0,0,0,.35);
   display:block;}
@@ -350,44 +352,19 @@ function renderUlepszeniaPercentRow(
   label: string,
   sliderTitle: string,
   max = 100,
+  opts?: { disabled?: boolean; note?: string },
 ): string {
   const safePct = Math.max(0, Math.min(max, Math.round(pct)));
-  return '<div class="civ-build-percent-row">'
+  const disabled = opts?.disabled === true;
+  const note = opts?.note ?? '';
+  return `<div class="civ-build-percent-row${disabled ? ' off' : ''}">`
     + '<div class="civ-build-percent-head"><span title="' + sliderTitle.replace(/"/g, '&quot;') + '">'
     + label + '</span><b data-ulepszenia-' + scope + '-percent-label>' + safePct + '%</b></div>'
     + `<input type="range" class="civ-build-percent-slider" min="0" max="${max}" step="1" value="${safePct}" `
     + `style="${ulepszeniaPercentSliderFillStyle(pct)}" data-ulepszenia-${scope}-percent `
+    + (disabled ? 'disabled aria-disabled="true" ' : '')
     + `title="${sliderTitle.replace(/"/g, '&quot;')}" />`
-    + '</div>';
-}
-
-/**
- * R-PRACA-JEDEN-PODZIAL-Q1: JEDYNY podzial Pracy, ten sam co suwak w miescie i w
- * panelu imperium. `pct` = udzial puli imperium (budzet ulepszen terenu), 0–50%;
- * budynki dostaja dopelnienie do 100%. To NIE jest budzet automatu ulepszen
- * (`pracaAutoPercent`, wlasny zakres 0–100%, sekcja nizej).
- */
-function renderEmpirePracaSplit(pct: number): string {
-  const safePct = Number.isFinite(pct)
-    ? Math.max(0, Math.min(MAX_PROCENT_PULI_IMPERIUM, Math.round(pct)))
-    : 0;
-  const buildingPct = 100 - safePct;
-  const globalTip =
-    `Jeden podział całej Pracy: ${PODZIAL_PRACY_PULA_LBL_PELNA} 0–${MAX_PROCENT_PULI_IMPERIUM}%, `
-    + 'budynki = reszta do 100%. Ten sam suwak działa globalnie i w mieście. '
-    + PODZIAL_PRACY_PULA_TIP
-    + ' To nie jest globalny budżet automatu ulepszeń.';
-  return '<div class="civ-build-global-split" data-praca-split-scope="empire">'
-    + `<div class="civ-build-global-split-title">Podział Pracy: Budynki / ${PODZIAL_PRACY_PULA_LBL}</div>`
-    + `<div class="civ-build-global-split-value" aria-label="Podział Pracy: ${PODZIAL_PRACY_PULA_LBL} i Budynki">`
-    + `${safePct}% ${PODZIAL_PRACY_PULA_LBL} / ${buildingPct}% Budynki</div>`
-    + `<div class="civ-build-global-split-note">${globalTip}</div>`
-    + '<div class="civ-build-percent-row">'
-    + `<div class="civ-build-percent-head"><span>${PODZIAL_PRACY_PULA_LBL_PELNA} (0–${MAX_PROCENT_PULI_IMPERIUM}%)</span>`
-    + `<b data-praca-empire-split-label>${safePct}%</b></div>`
-    + `<input type="range" class="civ-build-percent-slider" min="0" max="${MAX_PROCENT_PULI_IMPERIUM}" step="1" value="${safePct}" `
-    + `style="${ulepszeniaPercentSliderFillStyle(safePct)}" data-praca-empire-split `
-    + `title="${globalTip.replace(/"/g, '&quot;')}" /></div>`
+    + (note ? `<div class="civ-build-percent-note" data-ulepszenia-${scope}-percent-note>${note}</div>` : '')
     + '</div>';
 }
 
@@ -559,8 +536,6 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const cityOverride = uCityId ? (config.getUlepszeniaCityOverride?.(uCityId) ?? false) : false;
       if (playerCities.length > 0 && empireState) {
         html += '<div class="civ-build-auto">';
-        const empirePracaSplit = config.getEmpirePracaSplit?.();
-        if (empirePracaSplit != null) html += renderEmpirePracaSplit(empirePracaSplit);
         html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
         html += renderUlepszeniaProfileRow(
           empireState.focus,
@@ -574,15 +549,31 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             + ` aria-pressed="${empireState.onlyWorked ? 'true' : 'false'}"`
             + ` title="Buduj tylko na polach z obywatelami (👤)">Tylko pola z obywatelami</button>`;
           html += '</div>';
+        }
+        // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): suwak warstwy (c)
+        // (`UlepszeniaEmpirePolicy.pracaAutoPercent`) renderuje sie TAKZE przy
+        // `tryb === 'reczny'` — wtedy `disabled`, z wyjasnieniem. Wczesniej byl schowany
+        // pod `tryb === 'auto'`, a domyslnym trybem nowej gry jest 'reczny', wiec gracz
+        // w tym panelu nie widzial wlasciwej warstwy wcale.
+        {
+          const trybAuto = empireState.tryb === 'auto';
           html += renderUlepszeniaPercentRow(
             empireState.pracaAutoPercent,
             'empire',
-            'Globalny budżet automatu:',
-            `Historyczny globalny budżet automatu ulepszeń terenu; zakres 0–${MAX_ULEPSZENIA_PRACA_AUTO_PERCENT}% ` +
-              '(P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: własny, niezależny zakres tego pola — NIE respektuje ' +
-              `nadrzędnego capu ${MAX_PROCENT_PULI_IMPERIUM}% podziału całej puli Pracy powyżej). ` +
-              'Nie zmienia nadrzędnego splitu Praca.',
+            'Z puli imperium na pracę automatyczną:',
+            `Ile ze skumulowanej puli Pracy imperium może w jednej turze wydać automat ulepszeń terenu; `
+              + `reszta puli zostaje na prace ręczne (ulepszenia stawiane 🔨, cuda na mapie, zakładanie miast). `
+              + `Zakres 0–${MAX_ULEPSZENIA_PRACA_AUTO_PERCENT}% (P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: własny, `
+              + `niezależny zakres tego pola — NIE respektuje capu ${MAX_PROCENT_PULI_IMPERIUM}% podziału Pracy `
+              + `między budynki a pulę imperium, który ustawia się w panelu imperium i w panelu miasta). `
+              + `To NIE jest ten podział — to tempo wydawania samego automatu.`,
             MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
+            {
+              disabled: !trybAuto,
+              note: trybAuto
+                ? ''
+                : 'Tryb ręczny — cała pula zostaje na pracę ręczną. Suwak zadziała po włączeniu automatyzacji (profil powyżej).',
+            },
           );
         }
         if (playerCities.length > 1) {
@@ -626,14 +617,26 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             html += `<button type="button" class="civ-build-hbtn${onC}" data-ulepszenia-city-only-worked`
               + ` aria-pressed="${effState.onlyWorked ? 'true' : 'false'}">Tylko pola z obywatelami</button>`;
             html += '</div>';
+          }
+          // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): ten sam wzorzec co wyzej,
+          // dla lokalnego pola warstwy (c) `City.ulepszeniaPracaPercent`.
+          {
+            const trybAutoC = effState.tryb === 'auto';
             html += renderUlepszeniaPercentRow(
               effState.pracaAutoPercent,
               'city',
-              'Lokalny budżet automatu:',
-              `Lokalny override historycznego budżetu automatu tego miasta; zakres 0–${MAX_ULEPSZENIA_PRACA_AUTO_PERCENT}% ` +
-                '(P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: własny, niezależny zakres tego pola, także w trybie ' +
-                '„Indywidualne"). Nie zmienia nadrzędnego splitu Praca.',
+              'Z puli imperium na automat tego miasta:',
+              `Lokalny limit tego miasta na wydatek automatu ulepszeń terenu ze skumulowanej puli Pracy `
+                + `imperium; reszta zostaje na prace ręczne. Zakres 0–${MAX_ULEPSZENIA_PRACA_AUTO_PERCENT}% `
+                + `(P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: własny, niezależny zakres tego pola, także w trybie `
+                + `„Indywidualne"). To NIE jest podział Pracy między budynki a pulę imperium.`,
               MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
+              {
+                disabled: !trybAutoC,
+                note: trybAutoC
+                  ? ''
+                  : 'Ręczny w tym mieście — suwak zadziała po wybraniu profilu automatu powyżej.',
+              },
             );
           }
         }
@@ -678,18 +681,6 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     }
 
     el.innerHTML = html;
-
-    const empireSplitInput = el.querySelector<HTMLInputElement>('input[data-praca-empire-split]');
-    empireSplitInput?.addEventListener('input', () => {
-      const pct = Math.max(0, Math.min(MAX_PROCENT_PULI_IMPERIUM, Math.round(Number(empireSplitInput.value))));
-      config.onEmpirePracaSplitChange?.(pct);
-      empireSplitInput.value = String(pct);
-      empireSplitInput.style.background = ulepszeniaPercentSliderFillStyle(pct);
-      const label = el.querySelector('[data-praca-empire-split-label]');
-      if (label) label.textContent = `${pct}%`;
-      const summary = el.querySelector('[data-praca-split-scope="empire"] .civ-build-global-split-value');
-      if (summary) summary.textContent = `${pct}% ulepszenia / ${100 - pct}% budynki`;
-    });
 
     el.querySelector('[data-found-city]')?.addEventListener('click', () => {
       const fcHint = config.getFoundCityLockHint?.() ?? null;
