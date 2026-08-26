@@ -1,7 +1,7 @@
 # R-AI-RECRUIT-UPKEEP-GATE — bramka rekrutacji: rezerwa utrzymania surowcowego
 
-**Status:** 🟢 WDROŻONA (kod)  
-**Data:** 2026-08-06  
+**Status:** ⛔ **WYCOFANA 2026-08-26 przez [`R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1`](../../dyspozycje/autobot/runs/R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1/)** — poprzednio 🟢 WDROŻONA (kod)  
+**Data:** 2026-08-06 (wycofanie: 2026-08-26)  
 **Grupa:** D (Cywilizacje / AI) + Integrator (parytet gracza)
 
 ---
@@ -13,6 +13,20 @@
 | **R-AI-RECRUIT-UPKEEP-GATE** | **działaj** (domyślny próg) | **Nie rekrutuj** jednostki, jeśli pula państwa nie pokrywa **1 tury** utrzymania surowcowego tej jednostki (`unitResourceUpkeep` z `economy-upkeep.ts` / pola `Utrzymanie surowiec` + ilość), **oprócz** zwykłego kosztu rekrutacji `unitStockCost`. Próg = **1× utrzymanie/turę** (nie 5 tur). |
 
 **Parytet:** ta sama bramka dla **AI**, **miast-państw (MP)** i **gracza** — ownerId-agnostyczna, bez specjalnych ścieżek.
+
+---
+
+## ⛔ WYCOFANIE — 2026-08-26
+
+**Ta decyzja NIE OBOWIĄZUJE.** Właściciel wycofał ją decyzją z 2026-08-20, powtórzoną
+2026-08-26: do rekrutacji liczy się **wyłącznie jednorazowy koszt zakupu**
+(`unitStockCost`), a utrzymanie jest rozliczane **dopiero w następnej turze** wraz
+z istniejącymi konsekwencjami niedoboru — doliczanie 1 tury utrzymania do bramki zakupu
+blokowało rekrutacje, na które gracza stać (Wojownik 50 Drewna przy puli 57 Drewna).
+
+Obowiązujący kontrakt i dowody: [`R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1`](../../dyspozycje/autobot/runs/R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1/).
+Treść historyczna poniżej zostaje nienaruszona jako zapis pierwotnego ustalenia —
+**nie jest opisem dzisiejszego kodu**.
 
 ---
 
