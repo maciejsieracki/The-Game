@@ -1,0 +1,208 @@
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=18 landSea=159 relief=136 coast=31 riversMain=638 riversFill=163 forest=7 deposits=19 starts=101 total=1276
+=== KRONIKA JEDNEJ GRY — ziarno 1337, 40 tur, 3 miasta, maxItemsPerCity=1 ===
+Miasta: c0@(4,5)  c1@(4,19)  c2@(8,11)
+Heksow w terytorium: 157, z tego z rzeka: 20
+
+--- A) TURA PO TURZE ---
+t 0:
+   c0 (4,5) farma  [RZEKA]  [LAS]
+   c1 (4,19) farma  [LAS]
+   c0 (5,7) farma  [LAS]
+t 1:
+   c0 (4,6) farma  [LAS]
+   c1 (4,20) farma  [LAS]
+   c1 (5,18) farma  [LAS]
+t 2:
+   c0 (5,4) farma  [RZEKA]  [LAS]
+   c1 (4,21) farma  [LAS]
+   c0 (6,6) farma  [LAS]
+t 3:
+   c0 (5,5) farma  [RZEKA]  [LAS]
+   c1 (4,22) farma
+   c0 (6,7) farma  [LAS]
+t 4:
+   c0 (5,6) farma  [LAS]
+   c1 (4,23) farma
+   c1 (6,18) farma  [LAS]
+t 5:
+   c0 (6,4) farma  [RZEKA]  [LAS]
+   c1 (5,19) farma  [LAS]
+   c0 (7,5) farma  [RZEKA]  [LAS]
+t 6:
+   c0 (6,5) farma  [RZEKA]  [LAS]
+   c1 (5,20) farma  [LAS]
+   c0 (7,6) farma  [RZEKA]  [LAS]
+t 7:
+   c0 (7,4) farma  [RZEKA]  [LAS]
+   c1 (5,21) farma  [LAS]
+   c2 (7,8) farma  [LAS]
+t 8:
+   c0 (8,4) farma  [RZEKA]  [LAS]
+   c1 (6,19) farma  [LAS]
+   c1 (7,17) farma  [RZEKA]  [LAS]
+t 9:
+   c0 (8,5) farma  [LAS]
+   c1 (6,20) farma  [LAS]
+   c1 (7,18) farma  [RZEKA]
+t10:
+   c2 (8,7) farma
+   c1 (6,21) farma  [LAS]
+   c2 (8,8) farma
+t11:
+   c2 (9,7) farma  [RZEKA]  [LAS]
+   c1 (7,19) farma  [RZEKA]
+   c2 (8,11) farma
+t12:
+   c2 (8,7) bydlo
+   c1 (7,20) farma  [RZEKA]  [LAS]
+   c2 (8,12) farma
+t13:
+   c2 (8,8) bydlo
+   c1 (8,15) farma
+   c1 (8,17) farma  [LAS]
+t14:
+   c0 (4,5) oboz_lowiecki  [RZEKA]  [LAS]
+   c1 (8,19) farma  [LAS]
+   c2 (9,8) farma
+t15:
+   c0 (4,6) oboz_lowiecki  [LAS]
+   c2 (9,13) farma
+   c2 (9,9) farma
+t16:
+   c0 (5,4) oboz_lowiecki  [RZEKA]  [LAS]
+   c2 (9,14) farma
+   c2 (9,10) farma  [LAS]
+t17:
+   c0 (5,5) oboz_lowiecki  [RZEKA]  [LAS]
+   c2 (10,12) farma
+   c2 (9,11) farma
+t18:
+   c0 (5,6) oboz_lowiecki  [LAS]
+   c2 (10,13) farma
+   c2 (10,7) farma  [LAS]
+t19:
+   c0 (5,7) oboz_lowiecki  [LAS]
+   c1 (4,22) bydlo
+   c2 (10,8) farma  [LAS]
+t20:
+   c0 (6,4) oboz_lowiecki  [RZEKA]  [LAS]
+   c1 (4,23) bydlo
+   c2 (10,9) farma  [LAS]
+t21:
+   c0 (6,5) oboz_lowiecki  [RZEKA]  [LAS]
+   c1 (7,18) bydlo  [RZEKA]
+   c2 (10,10) farma
+t22:
+   c0 (6,6) oboz_lowiecki  [LAS]
+   c1 (7,19) bydlo  [RZEKA]
+   c2 (11,8) farma
+t23:
+   c0 (6,7) oboz_lowiecki  [LAS]
+   c2 (8,12) bydlo
+   c2 (11,9) farma  [LAS]
+t24:
+   c0 (7,4) oboz_lowiecki  [RZEKA]  [LAS]
+   c1 (8,15) bydlo
+   c2 (12,7) farma  [RZEKA]  [LAS]
+t25:
+   c0 (7,5) oboz_lowiecki  [RZEKA]  [LAS]
+   c2 (9,13) bydlo
+   c2 (12,8) farma  [RZEKA]  [LAS]
+t26:
+   c0 (7,6) oboz_lowiecki  [RZEKA]  [LAS]
+   c2 (9,14) bydlo
+   c2 (12,9) farma  [RZEKA]
+t27:
+   c2 (7,8) oboz_lowiecki  [LAS]
+   c2 (10,12) bydlo
+   c2 (8,11) bydlo
+t28:
+   c0 (8,4) oboz_lowiecki  [RZEKA]  [LAS]
+   c2 (10,13) bydlo
+   c2 (9,8) bydlo
+t29:
+   c0 (8,5) oboz_lowiecki  [LAS]
+   c1 (5,22) owce
+   c2 (9,9) bydlo
+t30:
+   c2 (9,7) oboz_lowiecki  [RZEKA]  [LAS]
+   c1 (4,19) oboz_lowiecki  [LAS]
+   c2 (9,11) bydlo
+t31:
+   c0 (1,5) lodzie_rybackie
+   c1 (4,20) oboz_lowiecki  [LAS]
+   c2 (10,10) bydlo
+t32:
+   c0 (1,6) lodzie_rybackie
+   c1 (4,21) oboz_lowiecki  [LAS]
+   c2 (11,8) bydlo
+t33:
+   c0 (1,7) lodzie_rybackie
+   c1 (5,18) oboz_lowiecki  [LAS]
+   c2 (12,9) bydlo  [RZEKA]
+t34:
+   c0 (1,8) lodzie_rybackie
+   c1 (5,19) oboz_lowiecki  [LAS]
+   c1 (6,18) oboz_lowiecki  [LAS]
+t35:
+   c0 (1,9) lodzie_rybackie
+   c1 (5,20) oboz_lowiecki  [LAS]
+   c1 (7,17) oboz_lowiecki  [RZEKA]  [LAS]
+t36:
+   c0 (2,4) lodzie_rybackie
+   c1 (5,21) oboz_lowiecki  [LAS]
+   c1 (8,17) oboz_lowiecki  [LAS]
+t37:
+   c0 (2,5) lodzie_rybackie
+   c1 (6,19) oboz_lowiecki  [LAS]
+   c2 (9,10) oboz_lowiecki  [LAS]
+t38:
+   c0 (2,6) lodzie_rybackie
+   c1 (6,20) oboz_lowiecki  [LAS]
+   c2 (10,7) oboz_lowiecki  [LAS]
+t39:
+   c0 (2,7) lodzie_rybackie
+   c1 (6,21) oboz_lowiecki  [LAS]
+   c2 (10,8) oboz_lowiecki  [LAS]
+
+--- B) ZYCIORYS HEKSA (>=2 ulepszenia) ---
+  (5,18)       farma@t1 -> oboz_lowiecki@t33 | rozpietosc 32 tur, obcych heksow w przerwie: 60
+  (4,19)       farma@t0 -> oboz_lowiecki@t30 | rozpietosc 30 tur, obcych heksow w przerwie: 58
+  (4,20)       farma@t1 -> oboz_lowiecki@t31 | rozpietosc 30 tur, obcych heksow w przerwie: 57
+  (4,21)       farma@t2 -> oboz_lowiecki@t32 | rozpietosc 30 tur, obcych heksow w przerwie: 58
+  (6,18)       farma@t4 -> oboz_lowiecki@t34 | rozpietosc 30 tur, obcych heksow w przerwie: 61
+  (5,19)       farma@t5 -> oboz_lowiecki@t34 | rozpietosc 29 tur, obcych heksow w przerwie: 60
+  (5,20)       farma@t6 -> oboz_lowiecki@t35 | rozpietosc 29 tur, obcych heksow w przerwie: 62
+  (5,21)       farma@t7 -> oboz_lowiecki@t36 | rozpietosc 29 tur, obcych heksow w przerwie: 63
+  (6,19)       farma@t8 -> oboz_lowiecki@t37 | rozpietosc 29 tur, obcych heksow w przerwie: 64
+  (6,20)       farma@t9 -> oboz_lowiecki@t38 | rozpietosc 29 tur, obcych heksow w przerwie: 65
+  (6,21)       farma@t10 -> oboz_lowiecki@t39 | rozpietosc 29 tur, obcych heksow w przerwie: 66
+  (7,17) RZEKA farma@t8 -> oboz_lowiecki@t35 | rozpietosc 27 tur, obcych heksow w przerwie: 59
+  (8,17)       farma@t13 -> oboz_lowiecki@t36 | rozpietosc 23 tur, obcych heksow w przerwie: 56
+  (9,10)       farma@t16 -> oboz_lowiecki@t37 | rozpietosc 21 tur, obcych heksow w przerwie: 54
+  (6,6)       farma@t2 -> oboz_lowiecki@t22 | rozpietosc 20 tur, obcych heksow w przerwie: 48
+  (6,7)       farma@t3 -> oboz_lowiecki@t23 | rozpietosc 20 tur, obcych heksow w przerwie: 49
+  (7,5) RZEKA farma@t5 -> oboz_lowiecki@t25 | rozpietosc 20 tur, obcych heksow w przerwie: 49
+  (7,6) RZEKA farma@t6 -> oboz_lowiecki@t26 | rozpietosc 20 tur, obcych heksow w przerwie: 49
+  (7,8)       farma@t7 -> oboz_lowiecki@t27 | rozpietosc 20 tur, obcych heksow w przerwie: 49
+  (8,4) RZEKA farma@t8 -> oboz_lowiecki@t28 | rozpietosc 20 tur, obcych heksow w przerwie: 47
+  (8,5)       farma@t9 -> oboz_lowiecki@t29 | rozpietosc 20 tur, obcych heksow w przerwie: 46
+  (10,7)       farma@t18 -> oboz_lowiecki@t38 | rozpietosc 20 tur, obcych heksow w przerwie: 54
+  (10,8)       farma@t19 -> oboz_lowiecki@t39 | rozpietosc 20 tur, obcych heksow w przerwie: 54
+  (5,7)       farma@t0 -> oboz_lowiecki@t19 | rozpietosc 19 tur, obcych heksow w przerwie: 48
+  (9,7) RZEKA farma@t11 -> oboz_lowiecki@t30 | rozpietosc 19 tur, obcych heksow w przerwie: 46
+  (7,4) RZEKA farma@t7 -> oboz_lowiecki@t24 | rozpietosc 17 tur, obcych heksow w przerwie: 43
+  (4,22)       farma@t3 -> bydlo@t19 | rozpietosc 16 tur, obcych heksow w przerwie: 42
+  (4,23)       farma@t4 -> bydlo@t20 | rozpietosc 16 tur, obcych heksow w przerwie: 43
+  (8,11)       farma@t11 -> bydlo@t27 | rozpietosc 16 tur, obcych heksow w przerwie: 41
+  (6,4) RZEKA farma@t5 -> oboz_lowiecki@t20 | rozpietosc 15 tur, obcych heksow w przerwie: 40
+  ... heksow z >=2 ulepszeniami: 52, srednia rozpietosc 18.0 tur, srednio obcych heksow w przerwie 42.9
+
+--- C) PRIORYTET RZEK ---
+  Heksow z rzeka w terytorium: 20; tknietych przez AI: 17
+  Heksow BEZ rzeki tknietych: 51
+  Pierwsze ulepszenie POZA rzeka: tura 0; heksow z rzeka jeszcze nietknietych w tym momencie: 19
+  Ostatni heks z rzeka tkniety po raz pierwszy: tura 26
+  wyrab: 0 · tartak: 0 · farma: 58 · oboz_lowiecki: 33 · pastwiska: 20
+  RAZEM ulepszen: 120, tknietych heksow: 68
