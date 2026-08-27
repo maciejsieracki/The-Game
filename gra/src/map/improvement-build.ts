@@ -161,9 +161,33 @@ const TARTAK_TERENY = new Set<TerenBazowy>([
   TerenBazowy.Pustynia,
 ]);
 
+/**
+ * Ulepszenia, dla których nakładka Las jest warunkiem KONIECZNYM istnienia — po wyrębie
+ * tracą podstawę i znikają z heksa.
+ *
+ * R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1, runda 2, ECHO właściciela 2026-08-27 (wariant A):
+ * „obóz znika przy wyrębie" — skoro obóz może istnieć wyłącznie w lesie, zniknięcie lasu
+ * znosi warunek jego istnienia. Praca NIE jest zwracana (świadoma decyzja właściciela).
+ * Bez tego wyrąb spod obozu zostawiał `["oboz_lowiecki"]` przy `nakladka = Brak`, czyli
+ * obóz poza lasem powstający normalną rozgrywką (gracz i AI) — dziura P7 znaleziona przez
+ * Evaluatora i Final Control rundy 1.
+ *
+ * Świadomie POZA tym zbiorem (nie dopisywać bez decyzji właściciela):
+ *  • `tartak`   — kanon wprost: las zostaje przy tartaku (asercja
+ *                 tools/map-improvement-qualify-test.cjs: „tartak stays when forest removed").
+ *  • `farma`    — Las jest jej warunkiem tylko na Wzgórzach (isFarmBaseTerrain); na Łące/
+ *                 Równinie stoi bez lasu. Ta sama asercja kanonu trzyma farmę na heksie po
+ *                 wyrębie. Kasowanie cudzej farmy to osobna decyzja właściciela, nie ten temat.
+ *  • `glinianka`— warunkiem jest złoże gliny (hexHasClayDeposit), nie las.
+ *  • `wyrab`    — akcja, nigdy trwała warstwa heksa.
+ */
+const FOREST_DEPENDENT_IMPROVEMENT_KEYS = new Set<string>([
+  'oboz_lowiecki',
+]);
+
 /** Po usunięciu lasu z heksa — odfiltruj ulepszenia zależne od nakładki Las (tartak NIE — kanon: las zostaje przy tartaku). */
 export function stripImprovementsWhenForestRemoved(layers: readonly string[]): string[] {
-  return [...layers];
+  return layers.filter(key => !FOREST_DEPENDENT_IMPROVEMENT_KEYS.has(key));
 }
 
 const FLAT_FARM = new Set<TerenBazowy>([TerenBazowy.Laka, TerenBazowy.Rownina]);
