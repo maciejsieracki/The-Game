@@ -86,7 +86,15 @@ function mkHex(q, r, teren, nakladka = N.Brak, zloze) {
   };
 }
 
-/** Terytorium gracza = CAŁA mapa (izolujemy regułę terenu od reguły zasięgu miasta). */
+/**
+ * Terytorium gracza = CAŁA mapa (izolujemy regułę terenu od reguły zasięgu miasta).
+ *
+ * `tradeRouteKonUnlocked: true` daje imperialne odblokowanie Konia — BEZ niego stadnina nie
+ * kwalifikuje się NIGDZIE poza heksem ze złożem konia, więc każda asercja „stadnina NIE na
+ * lesie" byłaby TAUTOLOGICZNA (przechodziłaby z powodu braku odblokowania, nie z powodu lasu).
+ * Z odblokowaniem stadnina kwalifikuje się na każdej Łące/Równinie i jedynym powodem jej
+ * nieobecności na zalesionym heksie jest zakaz lasu — dokładnie to, co ta bramka ma pilnować.
+ */
 function stateForWholeMap(map, civ, era, placed) {
   const nodes = [];
   for (const k of Object.keys(map.hexes)) {
@@ -103,6 +111,7 @@ function stateForWholeMap(map, civ, era, placed) {
     researchedTechs: TECHS,
     playerCivArchetype: civ,
     playerEra: era,
+    tradeRouteKonUnlocked: true,
   };
 }
 
@@ -170,7 +179,9 @@ ok(qInka('lama', 2, 0) === false, 'GRACZ: lama NIE na Lace z lasem');
 ok(qRzym('bydlo', 5, 0) === false, 'GRACZ: bydlo NIE na Pustyni z lasem');
 ok(qRzym('owce', 5, 0) === false, 'GRACZ: owce NIE na Pustyni z lasem');
 ok(qRzym('lama', 1, 0) === false, 'GRACZ: lama NIE dla Rzymu (bramka cywilizacji bez zmian)');
+ok(qRzym('stadnina', 7, 0) === true, 'KONTROLA GRACZ: stadnina NA golej Lace (warunek istotnosci)');
 ok(qRzym('stadnina', 2, 0) === false, 'KONTROLA GRACZ: stadnina NIE na Lace z lasem');
+ok(qRzym('farma', 7, 0) === true, 'KONTROLA GRACZ: farma NA golej Lace (warunek istotnosci)');
 ok(qRzym('farma', 2, 0) === false, 'KONTROLA GRACZ: farma NIE na Lace z lasem');
 
 // Kontrola „bez lasu bez zmian" — te same heksy bez nakładki.
@@ -216,14 +227,27 @@ ok(poWyrebie.includes('tartak'), 'KONTROLA WYRAB: tartak nadal zostaje po wyrebi
 // (4) AUTOMAT MIASTA I AI CYWILIZACJI — pickAutoImprovements (jedna funkcja dla obu)
 // =====================================================================================
 console.log('\n--- (4) automat miasta + AI CYWILIZACJI: pickAutoImprovements ---');
+// `pickAutoImprovements` nie zna pola `tradeRouteKonUnlocked`, ale liczy empireUnlocks z
+// `placedImprovements` (computeEmpireLivestockUnlocks). Dokładamy więc do KAŻDEJ mapy heks ze
+// złożem konia z już postawioną stadniną — imperium ma odblokowanego Konia, więc asercje
+// „automat NIE stawia stadniny na lesie" przestają być tautologiczne (bez tego stadnina nie
+// kwalifikowałaby się nigdzie poza złożem, niezależnie od lasu).
+const KON_Q = 99, KON_R = 99;
 function pickOn(hex, key, civ, era) {
-  const one = { hexes: { [`${hex.coords.q},${hex.coords.r}`]: hex }, riverPaths: [], startPositions: [] };
+  const konHex = mkHex(KON_Q, KON_R, T.Laka, N.ZlozeKonia);
+  const one = {
+    hexes: { [`${hex.coords.q},${hex.coords.r}`]: hex, [`${KON_Q},${KON_R}`]: konHex },
+    riverPaths: [], startPositions: [],
+  };
   const picks = M.pickAutoImprovements({
     cities: [{ id: 'c0', ownerId: 0, q: hex.coords.q, r: hex.coords.r, population: 1 }],
     ownerId: 0,
     map: one,
-    territoryNodes: [{ q: hex.coords.q, r: hex.coords.r, ownerId: 0, cityId: 'c0' }],
-    placedImprovements: new Map(),
+    territoryNodes: [
+      { q: hex.coords.q, r: hex.coords.r, ownerId: 0, cityId: 'c0' },
+      { q: KON_Q, r: KON_R, ownerId: 0, cityId: 'c0' },
+    ],
+    placedImprovements: new Map([[`${KON_Q},${KON_R}`, ['stadnina']]]),
     pracaAvailable: 100000,
     unlockedTechs: TECHS,
     pracaSurplusThreshold: 0,
@@ -244,8 +268,12 @@ ok(pickOn(mkHex(0, 0, T.Gory, N.Las), 'lama', 'inkowie', 5) === true,
   'AUTOMAT/AI CYW: stawia lame w Gorach Z LASEM');
 ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'owce', 'rzym', 5) === false,
   'AUTOMAT/AI CYW: NIE stawia owiec na Lace z lasem (teren bazowy rzadzi)');
+ok(pickOn(mkHex(0, 0, T.Laka), 'stadnina', 'rzym', 5) === true,
+  'KONTROLA AUTOMAT/AI CYW: stawia stadnine na golej Lace (warunek istotnosci)');
 ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'stadnina', 'rzym', 5) === false,
   'KONTROLA AUTOMAT/AI CYW: NIE stawia stadniny na lesie');
+ok(pickOn(mkHex(0, 0, T.Laka), 'farma', 'rzym', 5) === true,
+  'KONTROLA AUTOMAT/AI CYW: stawia farme na golej Lace (warunek istotnosci)');
 ok(pickOn(mkHex(0, 0, T.Laka, N.Las), 'farma', 'rzym', 5) === false,
   'KONTROLA AUTOMAT/AI CYW: NIE stawia farmy na lesie');
 ok(pickOn(mkHex(0, 0, T.Wzgorza), 'owce', 'rzym', 5) === true,
@@ -270,19 +298,29 @@ for (const seed of [90210, 777, 31415]) {
   const gmap = M.generateMap(36, 28, seed, 'kontynenty');
   const gq = M.buildImprovementQualifier(stateForWholeMap(gmap, 'inkowie', 5));
   let owceLas = 0, bydloLas = 0, lamaLas = 0, stadninaLas = 0, farmaLas = 0, lasHex = 0;
+  let stadninaBezLasu = 0, farmaBezLasu = 0;
   for (const k of Object.keys(gmap.hexes)) {
     const h = gmap.hexes[k];
-    if (!h || h.nakladka !== N.Las) continue;
-    lasHex++;
+    if (!h) continue;
     const { q, r } = h.coords;
+    if (h.nakladka !== N.Las) {
+      if (gq('stadnina', q, r)) stadninaBezLasu++;
+      if (gq('farma', q, r)) farmaBezLasu++;
+      continue;
+    }
+    lasHex++;
     if (gq('owce', q, r)) owceLas++;
     if (gq('bydlo', q, r)) bydloLas++;
     if (gq('lama', q, r)) lamaLas++;
     if (gq('stadnina', q, r)) stadninaLas++;
     if (gq('farma', q, r)) farmaLas++;
   }
-  console.log(`  seed ${seed}: lasHex=${lasHex} owce=${owceLas} bydlo=${bydloLas} lama=${lamaLas} stadnina=${stadninaLas} farma=${farmaLas}`);
+  console.log(`  seed ${seed}: lasHex=${lasHex} owce=${owceLas} bydlo=${bydloLas} lama=${lamaLas} stadnina=${stadninaLas} farma=${farmaLas} | bez lasu: stadnina=${stadninaBezLasu} farma=${farmaBezLasu}`);
   ok(lasHex > 0, `mapa ${seed}: sa heksy z lasem (warunek istotnosci)`);
+  // Warunki istotnosci dla asercji kontrolnych nizej — inaczej „0 na lesie" bylo by prawda
+  // z powodu braku odblokowania/terenu, a nie z powodu zakazu lasu.
+  ok(stadninaBezLasu > 0, `mapa ${seed}: stadnina kwalifikuje sie POZA lasem (warunek istotnosci)`);
+  ok(farmaBezLasu > 0, `mapa ${seed}: farma kwalifikuje sie POZA lasem (warunek istotnosci)`);
   ok(owceLas > 0, `mapa ${seed}: owce kwalifikuja sie na >0 heksach z lasem`);
   ok(bydloLas > 0, `mapa ${seed}: bydlo kwalifikuje sie na >0 heksach z lasem`);
   ok(lamaLas > 0, `mapa ${seed}: lama kwalifikuje sie na >0 heksach z lasem`);
