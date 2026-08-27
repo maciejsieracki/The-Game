@@ -28,9 +28,12 @@
  * zawiera podciag 'las'. Sekcja (6) pilnuje, ze rownina BEZ lasu przechodzi (farma DOSTEPNA)
  * i ze zadna sciezka farmy nie kwalifikuje lasu przez .includes('las').
  *
- * ZAKRES NIEROZSTRZYGNIETY (dispatch): farmy JUZ STOJACE na lesie — osobne pytanie ABC
- * P-ULEPSZENIA-FARMY-JUZ-STOJACE-W-LESIE-Q1. Sekcja (7) asercjami PILNUJE, ze ten temat ich
- * NIE rusza w zadna strone (ani kasowania, ani nowej ochrony).
+ * ZAKRES TEGO TEMATU: farmy JUZ STOJACE na lesie byly tu pytaniem ABC
+ * P-ULEPSZENIA-FARMY-JUZ-STOJACE-W-LESIE-Q1. Rozstrzygniete 2026-08-27 jako wariant C
+ * (znikaja) i zrealizowane OSOBNYM tematem R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1
+ * z wlasna bramka `tools/farma-lesie-usun-istniejace-test.cjs`. TEN temat i ta bramka
+ * nadal dotycza WYLACZNIE kwalifikacji; sekcja (7) pilnuje, ze sprzatanie nie zostalo
+ * wlozone do funkcji sprawdzanych tutaj (patrz komentarz przy sekcji (7)).
  *
  * Uruchamiaj z gra/:  node tools/farma-nie-w-lesie-test.cjs
  * Tryb pomiaru (bez asercji, liczby do raportu):  MEASURE=1 node tools/farma-nie-w-lesie-test.cjs
@@ -394,17 +397,28 @@ async function main() {
       `pulapka: ${rel} nie kwalifikuje lasu przez .includes('las')`);
   }
 
-  // --- (7) ZAKRES NIEROZSTRZYGNIETY: farmy JUZ STOJACE na lesie ------------
-  // Dispatch: „Istniejacych farm nie ruszamy w zadna strone". Te asercje sa STRAZNIKIEM
-  // przed cichym poszerzeniem zakresu w OBIE strony.
+  // --- (7) ZAKRES TEGO TEMATU: farmy JUZ STOJACE na lesie ------------------
+  // Dispatch tego tematu: „Istniejacych farm nie ruszamy w zadna strone" — TEN temat
+  // zmienia wylacznie KWALIFIKACJE (czy wolno zbudowac), nigdy istniejacy stan.
+  //
+  // AKTUALIZACJA 2026-08-27 (R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1, wariant C):
+  // pytanie P-ULEPSZENIA-FARMY-JUZ-STOJACE-W-LESIE-Q1 zostalo rozstrzygniete —
+  // istniejace farmy w lesie ZNIKAJA. Robi to OSOBNA, niezalezna warstwa
+  // (map/improvement-build.ts::removeLegacyFarmsOnForest + game/save.ts::
+  // migrateLegacyFarmsOnForestInSave), a NIE funkcje sprawdzane nizej. Asercje zostaja
+  // bez zmian i nadal sa STRAZNIKIEM: pilnuja, ze sprzatanie nie zostalo wlozone do
+  // `migrateImprovementLayers` (migracja KLUCZY legacy) ani do
+  // `stripImprovementsWhenForestRemoved` (wyrab lasu) — zlanie tych warstw kasowaloby
+  // farme przy wyrebie, czyli dokladnie odwrotnie niz kanon. Zmieniono TYLKO opisy
+  // asercji, ktore twierdzily, ze farma w lesie „przezywa"; nic w logice testu.
   console.log('\n--- (7) STRAZNIK ZAKRESU: farmy juz stojace na lesie ---');
   const migLas = M.migrateImprovementLayers(['farma'], { nakladka: Nakladka.Las });
   ok(migLas.length === 1 && migLas.includes('farma'),
-    'zakres: realna sciezka wczytania zapisu (migrateImprovementLayers) NIE kasuje farmy na lesie',
+    'zakres: migracja KLUCZY legacy (migrateImprovementLayers) nie jest miejscem kasowania farmy w lesie',
     JSON.stringify(migLas));
   const migLasMix = M.migrateImprovementLayers(['farma', 'tartak'], { nakladka: Nakladka.Las });
   ok(migLasMix.length === 2 && migLasMix.includes('farma'),
-    'zakres: farma na lesie przezywa migracje razem z sasiednimi warstwami',
+    'zakres: migracja kluczy nie rusza zadnej warstwy heksa lesnego (kasowanie = osobna warstwa)',
     JSON.stringify(migLasMix));
   ok(M.stripImprovementsWhenForestRemoved(['farma']).includes('farma'),
     'zakres: wyrab lasu spod farmy NIE kasuje farmy (farma nie jest ulepszeniem zaleznym od lasu)');

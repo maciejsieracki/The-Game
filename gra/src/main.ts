@@ -712,6 +712,8 @@ import {
   getImprovementForestBlockHint,
   isImprovementBlockedOnForest,
   isMineImprovementKey,
+  // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1: sprzątanie farm-reliktów stojących w lesie.
+  removeLegacyFarmsOnForest,
   type ImprovementBuildImpact,
   type ImprovementBuildRequest,
   type ImprovementBuildCallbacks,
@@ -12015,8 +12017,55 @@ async function boot(): Promise<void> {
           syncHexUlepszenieFields(hexKey, layers);
         }
       }
+      // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 — WCZYTANIE ZAPISU (stan a).
+      // Tu, a nie wcześniej: `map` jest już zbudowana (ze snapshotu ALBO
+      // zregenerowana z `seed`), a `placedImprovements` odtworzone — czyli
+      // pierwszy moment, w którym znany jest komplet „nakładka heksa + warstwy".
+      // Dzięki temu sprzątanie działa też dla zapisów SPRZED mapSnapshotu,
+      // których migracja ładunku w save.ts::migrateLegacyFarmsOnForestInSave
+      // z założenia nie może dosięgnąć (nie zna lasu).
+      sweepLegacyFarmsOnForest('wczytanie zapisu');
       syncLivestockAndPlacedMeshes();
       rebuildResourceOverlays();
+    }
+
+    /**
+     * R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 (ECHO właściciela 2026-08-27,
+     * wariant C): usuwa z ŻYWEGO stanu gry każdą farmę stojącą na heksie z
+     * nakładką Las — relikt uchylonej reguły z 2026-07-21. Las zostaje, praca
+     * NIE wraca, heks wraca do stanu „las, bez ulepszenia".
+     *
+     * Cała decyzja „co usunąć" żyje w map/improvement-build.ts
+     * (removeLegacyFarmsOnForest — czysta, testowalna w Node). Tutaj zostaje
+     * WYŁĄCZNIE to, czego nie da się wyjąć z main.ts: synchronizacja pól heksa
+     * (`syncHexUlepszenieFields`) i odbudowa mesha.
+     *
+     * `hex.ulepszenie` czyścimy jawnie PRZED synchronizacją, bo
+     * `syncHexUlepszenieFields` ustawia to legacy pole tylko wtedy, gdy
+     * pozostała warstwa ma odpowiednik w enumie `Ulepszenie` — dla warstw bez
+     * odpowiednika (np. sam `tartak`) zostawiłoby na heksie martwe
+     * `Ulepszenie.Farma`, które wróciłoby do zapisu przez mapSnapshot.
+     *
+     * Idempotentne: drugi przebieg nie znajduje już farmy na lesie i nie robi nic.
+     */
+    function sweepLegacyFarmsOnForest(reason: string): number {
+      const report = removeLegacyFarmsOnForest(
+        map.hexes as Record<string, { nakladka: Nakladka; ulepszenie?: unknown; ulepszenia?: readonly string[] | null }>,
+        placedImprovements,
+        (hexKey, layers) => {
+          const hex = map.hexes[hexKey];
+          if (hex && hex.ulepszenie === Ulepszenie.Farma) hex.ulepszenie = Ulepszenie.Brak;
+          syncHexUlepszenieFields(hexKey, layers as PlacedLayers);
+          spawnImprovementMesh(hexKey);
+        },
+      );
+      if (report.removed > 0) {
+        diagInfo(
+          'migracja',
+          `farmy w lesie usuniete (${reason}): ${report.removed} heks(ow); las zostaje, praca nie wraca`,
+        );
+      }
+      return report.removed;
     }
 
     // === TRYB POKAZOWY ULEPSZEŃ (Maciej 2026-07-09) ==========================
@@ -25585,6 +25634,20 @@ async function boot(): Promise<void> {
         setTurnTransition(6, 'Zakończenie ruchów gracza…', 'Gracz', nextTurnNum);
         await yieldTurnTransitionUi();
         turn++;
+
+        // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 — TRWAJĄCA PARTIA (stan b) oraz
+        // NOWA PARTIA (stan c). Granica tury jest wybrana świadomie, z trzech powodów:
+        //  1. To JEDYNY punkt, przez który przechodzi KAŻDA partia niezależnie od tego,
+        //     jak powstała (nowa gra, wczytany zapis, partia trwająca od przed tą zmianą)
+        //     — bez wymogu przeładowania strony i bez zgadywania, gdzie „zaczyna się" gra.
+        //  2. Stoi PRZED rotacyjnym autozapisem kilka linii niżej, więc pierwszy zapis po
+        //     wejściu zmiany w życie utrwala już posprzątany stan.
+        //  3. Trafia dokładnie w kryterium skutku: „miasto traci żywność z tej farmy od
+        //     KOLEJNEJ tury" — ekonomia nowej tury liczy się niżej w tej samej sekwencji
+        //     EOT, już z czystego heksa.
+        // Idempotentne, więc w ustabilizowanej partii to przebieg bez żadnej zmiany
+        // (pętla po heksach z natychmiastowym odrzuceniem wszystkiego, co nie jest lasem).
+        sweepLegacyFarmsOnForest('granica tury');
 
         // Chatki: nagroda już przyznana — wpis w WYDARZENIACH tylko do końca tury bieżącej.
         villageEventLog.length = 0;
