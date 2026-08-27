@@ -1,0 +1,3330 @@
+{
+ "seeds": [
+  {
+   "seed": 111,
+   "params": {
+    "difficulty": "Normalny",
+    "mapSize": "Standardowy",
+    "worldType": "Kontynenty",
+    "epochId": "kamien",
+    "speed": "Standardowa",
+    "civTypesCount": 7,
+    "cityStatesCount": 6,
+    "civId": "rzymianie",
+    "landFractionPercent": 30,
+    "barbariansLevel": "normalny",
+    "battleAlwaysManual": false,
+    "seedRequested": 111
+   },
+   "turnsRun": 60,
+   "elapsedS": 1885,
+   "stoneCandRecords": 0,
+   "zeroInAiOwnerList": 0,
+   "zeroInStoneCandidates": 0,
+   "forcedStoneWars": [],
+   "forcedStoneConsoleLines": 0,
+   "sciezkaMechanizmu": [
+    {
+     "ownerId": 1,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 7,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 8,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 10,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 11,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 14,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 15,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 16,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 17,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 19,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 21,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 22,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 29,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 34,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 36,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 42,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    }
+   ],
+   "ownersEnd": [
+    {
+     "turn": 22,
+     "ownerId": 7,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "13",
+      "11",
+      "19",
+      "43",
+      "12",
+      "14",
+      "45",
+      "20",
+      "21",
+      "44",
+      "48",
+      "46",
+      "47",
+      "10",
+      "16",
+      "17",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 10,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "19",
+      "43",
+      "45",
+      "20",
+      "21",
+      "44",
+      "48",
+      "46",
+      "47",
+      "16",
+      "17",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 11,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "19",
+      "43",
+      "45",
+      "20",
+      "21",
+      "44",
+      "48",
+      "46",
+      "47",
+      "16",
+      "17",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 14,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "19",
+      "43",
+      "45",
+      "20",
+      "21",
+      "44",
+      "48",
+      "46",
+      "47",
+      "16",
+      "17",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 16,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "43",
+      "45",
+      "44",
+      "48",
+      "46",
+      "47",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 17,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "43",
+      "45",
+      "44",
+      "48",
+      "46",
+      "47",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 19,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "43",
+      "45",
+      "44",
+      "48",
+      "46",
+      "47",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 21,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "43",
+      "45",
+      "44",
+      "48",
+      "46",
+      "47",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 34,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "13",
+      "7",
+      "11",
+      "19",
+      "43",
+      "5",
+      "12",
+      "14",
+      "45",
+      "20",
+      "21",
+      "44",
+      "48",
+      "46",
+      "3",
+      "47",
+      "6",
+      "10",
+      "16",
+      "17",
+      "33",
+      "38",
+      "39",
+      "40",
+      "41",
+      "42"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 42,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "13",
+      "7",
+      "11",
+      "19",
+      "43",
+      "5",
+      "12",
+      "14",
+      "45",
+      "20",
+      "21",
+      "44",
+      "48",
+      "46",
+      "47",
+      "3",
+      "6",
+      "10",
+      "16",
+      "17",
+      "33",
+      "39"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    }
+   ],
+   "ownersEndCityStateCount": 38,
+   "allWarPairsFirstTurn": [],
+   "gateRecordsTotal": 36736,
+   "gateRecordsVsPlayer": 174,
+   "perAiVsPlayer": [
+    {
+     "ai": "43",
+     "n": 58,
+     "rwMin": 0.5,
+     "rwMed": 0.7622633763980544,
+     "rwMax": 0.7990697674418604,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 149.64316566406248,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    },
+    {
+     "ai": "44",
+     "n": 58,
+     "rwMin": 0.5,
+     "rwMed": 0.7592331251501321,
+     "rwMax": 0.7909571344685848,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 158.48195596484368,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    },
+    {
+     "ai": "45",
+     "n": 58,
+     "rwMin": 0.4861878453038674,
+     "rwMed": 0.6350966400319047,
+     "rwMax": 0.705718270571827,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 152.14316566406242,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    }
+   ],
+   "rwVsPlayer": {
+    "n": 174,
+    "min": 0.4861878453038674,
+    "median": 0.7304459572103362,
+    "max": 0.7990697674418604,
+    "overThreshold": 174
+   },
+   "blockCountVsPlayer": {
+    "stanWojny": 0,
+    "peaceLocked": 0,
+    "nap": 0,
+    "willWar0": 0,
+    "rwPonizejProgu": 0,
+    "agresjaPonizejProgu": 0,
+    "scoreZaWysoki": 174
+   },
+   "kontradykcja": {
+    "ocen": 174,
+    "rwNadProgiem": 174,
+    "scorePodProgiem": 0,
+    "obaJednoczesnie": 0,
+    "minScoreMinus100Rw": 48.21000000000001,
+    "maxScoreMinus100Rw": 100.47949831162566,
+    "progSilaMin": 0.38,
+    "progRelMax": 30
+   },
+   "vsAiAggregate": {
+    "n": 36562,
+    "rwMin": 0.06903210234129857,
+    "rwMax": 0.9309678976587015,
+    "rwAvg": 0.5041416443525327,
+    "rwOverProg": 13002,
+    "allOk": 0,
+    "blkScore": 36562,
+    "blkAgresja": 24816,
+    "blkRw": 23560,
+    "blkWillWar0": 0,
+    "blkNap": 0,
+    "blkStanWojny": 0,
+    "blkPeaceLocked": 0
+   },
+   "vsAiPassingSample": [],
+   "p3": [
+    {
+     "turn": 1,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 2,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 3,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 4,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 5,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 6,
+     "cs": 42,
+     "aiC": 3,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 7,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 8,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 9,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 10,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 11,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 12,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 13,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 14,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 15,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 16,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 17,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 18,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 19,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 20,
+     "cs": 41,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 21,
+     "cs": 41,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 22,
+     "cs": 32,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 23,
+     "cs": 14,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 24,
+     "cs": 13,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 25,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 26,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 27,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 28,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 29,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 30,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 31,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 32,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 33,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 34,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 35,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 36,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 37,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 38,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 39,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 40,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 41,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 42,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 43,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 44,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 45,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 46,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 47,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 48,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 49,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 50,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 51,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 52,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 53,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 54,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 55,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 56,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 57,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 58,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 59,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 60,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    }
+   ],
+   "clusterGuardFlip": [
+    {
+     "ownerId": 1,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 8,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 15,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 22,
+     "atTurn1": false,
+     "flipTurn": 7,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 29,
+     "atTurn1": false,
+     "flipTurn": 7,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 36,
+     "atTurn1": false,
+     "flipTurn": 7,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    }
+   ],
+   "warLogEntries": 8,
+   "warLogWarEntries": 0,
+   "warLogWarSample": [],
+   "turnMs": {
+    "min": 6585,
+    "median": 19551.5,
+    "max": 88713
+   }
+  },
+  {
+   "seed": 222,
+   "params": {
+    "difficulty": "Normalny",
+    "mapSize": "Standardowy",
+    "worldType": "Kontynenty",
+    "epochId": "kamien",
+    "speed": "Standardowa",
+    "civTypesCount": 7,
+    "cityStatesCount": 6,
+    "civId": "rzymianie",
+    "landFractionPercent": 30,
+    "barbariansLevel": "normalny",
+    "battleAlwaysManual": false,
+    "seedRequested": 222
+   },
+   "turnsRun": 60,
+   "elapsedS": 1811,
+   "stoneCandRecords": 0,
+   "zeroInAiOwnerList": 0,
+   "zeroInStoneCandidates": 0,
+   "forcedStoneWars": [],
+   "forcedStoneConsoleLines": 0,
+   "sciezkaMechanizmu": [
+    {
+     "ownerId": 1,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": 60
+    },
+    {
+     "ownerId": 4,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 8,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 14,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 15,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 21,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 22,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 28,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 29,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 31,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 36,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 38,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 41,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    }
+   ],
+   "ownersEnd": [
+    {
+     "turn": 22,
+     "ownerId": 4,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "18",
+      "27",
+      "32",
+      "35",
+      "39",
+      "10",
+      "11",
+      "12",
+      "13",
+      "17",
+      "19",
+      "20",
+      "21",
+      "28",
+      "31",
+      "33",
+      "34",
+      "41",
+      "42",
+      "43",
+      "45",
+      "46",
+      "44",
+      "14",
+      "25",
+      "47",
+      "48",
+      "24",
+      "26",
+      "38",
+      "40"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 14,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "18",
+      "27",
+      "32",
+      "35",
+      "39",
+      "17",
+      "19",
+      "20",
+      "21",
+      "28",
+      "31",
+      "33",
+      "34",
+      "41",
+      "42",
+      "43",
+      "45",
+      "46",
+      "44",
+      "25",
+      "47",
+      "48",
+      "24",
+      "26",
+      "38",
+      "40"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 21,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "27",
+      "32",
+      "35",
+      "39",
+      "28",
+      "31",
+      "33",
+      "34",
+      "41",
+      "42",
+      "43",
+      "45",
+      "46",
+      "44",
+      "25",
+      "47",
+      "48",
+      "24",
+      "26",
+      "38",
+      "40"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 28,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "32",
+      "35",
+      "39",
+      "31",
+      "33",
+      "34",
+      "41",
+      "42",
+      "43",
+      "45",
+      "46",
+      "44",
+      "25",
+      "47",
+      "48",
+      "38",
+      "40"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 31,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "39",
+      "41",
+      "42",
+      "43",
+      "45",
+      "46",
+      "44",
+      "25",
+      "47",
+      "48",
+      "38",
+      "40"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 38,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "43",
+      "45",
+      "46",
+      "44",
+      "25",
+      "47",
+      "48"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 41,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "43",
+      "45",
+      "46",
+      "44",
+      "25",
+      "47",
+      "48"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    }
+   ],
+   "ownersEndCityStateCount": 41,
+   "allWarPairsFirstTurn": [],
+   "gateRecordsTotal": 38621,
+   "gateRecordsVsPlayer": 211,
+   "perAiVsPlayer": [
+    {
+     "ai": "8",
+     "n": 37,
+     "rwMin": 0.9265402843601895,
+     "rwMed": 0.9691985645933014,
+     "rwMax": 0.9761838310540515,
+     "progSila": 0.6,
+     "okSila": 37,
+     "effAgresja": 0.4,
+     "progAgresja": 0.5,
+     "okAgr": 0,
+     "scoreMed": 127.848231,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 37,
+     "okAll": 0
+    },
+    {
+     "ai": "43",
+     "n": 58,
+     "rwMin": 0.5,
+     "rwMed": 0.7332397031141802,
+     "rwMax": 0.8494117647058823,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 155.9841706328124,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    },
+    {
+     "ai": "44",
+     "n": 58,
+     "rwMin": 0.5,
+     "rwMed": 0.7858333945943297,
+     "rwMax": 0.8714213962832748,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 151.98047825390623,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    },
+    {
+     "ai": "45",
+     "n": 58,
+     "rwMin": 0.5,
+     "rwMed": 0.7929877369007804,
+     "rwMax": 0.872063968015992,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 161.98343241015618,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    }
+   ],
+   "rwVsPlayer": {
+    "n": 211,
+    "min": 0.5,
+    "median": 0.7933333333333333,
+    "max": 0.9761838310540515,
+    "overThreshold": 211
+   },
+   "blockCountVsPlayer": {
+    "stanWojny": 0,
+    "peaceLocked": 0,
+    "nap": 0,
+    "willWar0": 0,
+    "rwPonizejProgu": 0,
+    "agresjaPonizejProgu": 37,
+    "scoreZaWysoki": 211
+   },
+   "kontradykcja": {
+    "ocen": 211,
+    "rwNadProgiem": 211,
+    "scorePodProgiem": 0,
+    "obaJednoczesnie": 0,
+    "minScoreMinus100Rw": 18.00597156398105,
+    "maxScoreMinus100Rw": 100.47874720357942,
+    "progSilaMin": 0.38,
+    "progRelMax": 30
+   },
+   "vsAiAggregate": {
+    "n": 38410,
+    "rwMin": 0.09560789306174411,
+    "rwMax": 0.9046242774566474,
+    "rwAvg": 0.5030863773118391,
+    "rwOverProg": 12839,
+    "allOk": 0,
+    "blkScore": 38410,
+    "blkAgresja": 26296,
+    "blkRw": 25571,
+    "blkWillWar0": 0,
+    "blkNap": 0,
+    "blkStanWojny": 0,
+    "blkPeaceLocked": 0
+   },
+   "vsAiPassingSample": [],
+   "p3": [
+    {
+     "turn": 1,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 2,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 3,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 4,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 5,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 6,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 7,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 8,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 9,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 10,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 11,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 12,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 13,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 14,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 15,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 16,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 17,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 18,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 19,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 20,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 21,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 22,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 23,
+     "cs": 23,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 24,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 25,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 26,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 27,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 28,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 29,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 30,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 31,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 32,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 33,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 34,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 35,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 36,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 37,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 38,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 39,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 40,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 41,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 42,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 43,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 44,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 45,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 46,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 47,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 48,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 49,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 50,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 51,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 52,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 53,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 54,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 55,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 56,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 57,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 58,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 59,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 60,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    }
+   ],
+   "clusterGuardFlip": [
+    {
+     "ownerId": 1,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 8,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 15,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 22,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 29,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 36,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    }
+   ],
+   "warLogEntries": 8,
+   "warLogWarEntries": 0,
+   "warLogWarSample": [],
+   "turnMs": {
+    "min": 8035,
+    "median": 18453,
+    "max": 79432
+   }
+  },
+  {
+   "seed": 333,
+   "params": {
+    "difficulty": "Normalny",
+    "mapSize": "Standardowy",
+    "worldType": "Kontynenty",
+    "epochId": "kamien",
+    "speed": "Standardowa",
+    "civTypesCount": 7,
+    "cityStatesCount": 6,
+    "civId": "rzymianie",
+    "landFractionPercent": 30,
+    "barbariansLevel": "normalny",
+    "battleAlwaysManual": false,
+    "seedRequested": 333
+   },
+   "turnsRun": 60,
+   "elapsedS": 2031,
+   "stoneCandRecords": 0,
+   "zeroInAiOwnerList": 0,
+   "zeroInStoneCandidates": 0,
+   "forcedStoneWars": [],
+   "forcedStoneConsoleLines": 0,
+   "sciezkaMechanizmu": [
+    {
+     "ownerId": 1,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 2,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 7,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 8,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 9,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 12,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 15,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 19,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 22,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 24,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 27,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 29,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 34,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 35,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 36,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 39,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    },
+    {
+     "ownerId": 41,
+     "firstPending": null,
+     "firstTarget": null,
+     "firstCycle": null,
+     "turnsTargetNoWar": 0,
+     "firstNonStoneTurn": null
+    }
+   ],
+   "ownersEnd": [
+    {
+     "turn": 22,
+     "ownerId": 2,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "20",
+      "44",
+      "46",
+      "48",
+      "18",
+      "19",
+      "21",
+      "45",
+      "47",
+      "25",
+      "39",
+      "43",
+      "9",
+      "11",
+      "12",
+      "13",
+      "14"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 7,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "20",
+      "44",
+      "46",
+      "48",
+      "18",
+      "19",
+      "21",
+      "45",
+      "47",
+      "25",
+      "39",
+      "43",
+      "9",
+      "11",
+      "12",
+      "13",
+      "14"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 9,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "20",
+      "44",
+      "46",
+      "48",
+      "18",
+      "19",
+      "21",
+      "45",
+      "47",
+      "25",
+      "39",
+      "43"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 12,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "20",
+      "44",
+      "46",
+      "48",
+      "18",
+      "19",
+      "21",
+      "45",
+      "47",
+      "25",
+      "39",
+      "43"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 19,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "20",
+      "44",
+      "46",
+      "48",
+      "45",
+      "47",
+      "25",
+      "39",
+      "43"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 24,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "7",
+      "20",
+      "42",
+      "44",
+      "46",
+      "33",
+      "48",
+      "18",
+      "19",
+      "31",
+      "21",
+      "35",
+      "41",
+      "45",
+      "47",
+      "25",
+      "32",
+      "34",
+      "39",
+      "40",
+      "43",
+      "2",
+      "4",
+      "5",
+      "6",
+      "9",
+      "11",
+      "12",
+      "13",
+      "14",
+      "38"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 27,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "7",
+      "20",
+      "42",
+      "44",
+      "46",
+      "33",
+      "48",
+      "18",
+      "19",
+      "31",
+      "21",
+      "35",
+      "41",
+      "45",
+      "47",
+      "25",
+      "32",
+      "34",
+      "39",
+      "40",
+      "43",
+      "2",
+      "4",
+      "5",
+      "6",
+      "9",
+      "11",
+      "12",
+      "13",
+      "14",
+      "38"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 34,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "7",
+      "20",
+      "42",
+      "44",
+      "46",
+      "48",
+      "18",
+      "19",
+      "21",
+      "41",
+      "45",
+      "47",
+      "25",
+      "39",
+      "40",
+      "43",
+      "2",
+      "4",
+      "5",
+      "6",
+      "9",
+      "11",
+      "12",
+      "13",
+      "14",
+      "38"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 35,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "7",
+      "20",
+      "42",
+      "44",
+      "46",
+      "48",
+      "18",
+      "19",
+      "21",
+      "41",
+      "45",
+      "47",
+      "25",
+      "39",
+      "40",
+      "43",
+      "2",
+      "4",
+      "5",
+      "6",
+      "9",
+      "11",
+      "12",
+      "13",
+      "14",
+      "38"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 23,
+     "ownerId": 39,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "20",
+      "44",
+      "46",
+      "48",
+      "45",
+      "47",
+      "43"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    },
+    {
+     "turn": 22,
+     "ownerId": 41,
+     "epoch": 1,
+     "wars": 0,
+     "stoneTarget": null,
+     "bronzeTarget": null,
+     "pending": [],
+     "cycle": [],
+     "restUntil": null,
+     "activePairs": [],
+     "relPartners": [
+      "1",
+      "8",
+      "15",
+      "22",
+      "29",
+      "36",
+      "17",
+      "7",
+      "20",
+      "44",
+      "46",
+      "48",
+      "18",
+      "19",
+      "21",
+      "45",
+      "47",
+      "25",
+      "39",
+      "43",
+      "2",
+      "4",
+      "5",
+      "6",
+      "9",
+      "11",
+      "12",
+      "13",
+      "14"
+     ],
+     "agresja": 0.4,
+     "cityCount": 0,
+     "isCityState": false
+    }
+   ],
+   "ownersEndCityStateCount": 37,
+   "allWarPairsFirstTurn": [],
+   "gateRecordsTotal": 36828,
+   "gateRecordsVsPlayer": 206,
+   "perAiVsPlayer": [
+    {
+     "ai": "15",
+     "n": 32,
+     "rwMin": 0.8858800773694391,
+     "rwMed": 0.9229522093013687,
+     "rwMax": 0.935200386286818,
+     "progSila": 0.6,
+     "okSila": 32,
+     "effAgresja": 0.4,
+     "progAgresja": 0.5,
+     "okAgr": 0,
+     "scoreMed": 121.9136184375,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 32,
+     "okAll": 0
+    },
+    {
+     "ai": "43",
+     "n": 58,
+     "rwMin": 0.5,
+     "rwMed": 0.6026431718061674,
+     "rwMax": 0.7262341901264789,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 143.09732825390617,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    },
+    {
+     "ai": "44",
+     "n": 58,
+     "rwMin": 0.5,
+     "rwMed": 0.6245989304812835,
+     "rwMax": 0.7251126587464154,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 143.9841706328124,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    },
+    {
+     "ai": "45",
+     "n": 58,
+     "rwMin": 0.5,
+     "rwMed": 0.6096425840343119,
+     "rwMax": 0.7058307759754494,
+     "progSila": 0.38,
+     "okSila": 58,
+     "effAgresja": 0.8,
+     "progAgresja": 0.33999999999999997,
+     "okAgr": 58,
+     "scoreMed": 141.48047825390617,
+     "progRel": 30,
+     "okRel": 0,
+     "okWill": 58,
+     "okAll": 0
+    }
+   ],
+   "rwVsPlayer": {
+    "n": 206,
+    "min": 0.5,
+    "median": 0.6245989304812835,
+    "max": 0.935200386286818,
+    "overThreshold": 206
+   },
+   "blockCountVsPlayer": {
+    "stanWojny": 0,
+    "peaceLocked": 0,
+    "nap": 0,
+    "willWar0": 0,
+    "rwPonizejProgu": 0,
+    "agresjaPonizejProgu": 32,
+    "scoreZaWysoki": 206
+   },
+   "kontradykcja": {
+    "ocen": 206,
+    "rwNadProgiem": 206,
+    "scorePodProgiem": 0,
+    "obaJednoczesnie": 0,
+    "minScoreMinus100Rw": 18.07199226305609,
+    "maxScoreMinus100Rw": 100.48873412535846,
+    "progSilaMin": 0.38,
+    "progRelMax": 30
+   },
+   "vsAiAggregate": {
+    "n": 36622,
+    "rwMin": 0.11612720045428733,
+    "rwMax": 0.8838727995457126,
+    "rwAvg": 0.5036271232325014,
+    "rwOverProg": 13307,
+    "allOk": 0,
+    "blkScore": 36622,
+    "blkAgresja": 24476,
+    "blkRw": 23315,
+    "blkWillWar0": 0,
+    "blkNap": 0,
+    "blkStanWojny": 0,
+    "blkPeaceLocked": 0
+   },
+   "vsAiPassingSample": [],
+   "p3": [
+    {
+     "turn": 1,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 2,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 3,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 4,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 5,
+     "cs": 42,
+     "aiC": 6,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 6,
+     "cs": 42,
+     "aiC": 4,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 7,
+     "cs": 42,
+     "aiC": 1,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 8,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 9,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 10,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 11,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 12,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 13,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 14,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 15,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 16,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 17,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 18,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 19,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 20,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 21,
+     "cs": 42,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 22,
+     "cs": 33,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 23,
+     "cs": 14,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 24,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 25,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 26,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 27,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 28,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 29,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 30,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 31,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 32,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 33,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 34,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 35,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 36,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 37,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 38,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 39,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 40,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 41,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 42,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 43,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 44,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 45,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 46,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 47,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 48,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 49,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 50,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 51,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 52,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 53,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 54,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 55,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 56,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 57,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 58,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 59,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    },
+    {
+     "turn": 60,
+     "cs": 12,
+     "aiC": 0,
+     "plC": 1,
+     "wars": 0
+    }
+   ],
+   "clusterGuardFlip": [
+    {
+     "ownerId": 1,
+     "atTurn1": false,
+     "flipTurn": 7,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 8,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 15,
+     "atTurn1": false,
+     "flipTurn": 6,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 22,
+     "atTurn1": false,
+     "flipTurn": 7,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 29,
+     "atTurn1": false,
+     "flipTurn": 8,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    },
+    {
+     "ownerId": 36,
+     "atTurn1": false,
+     "flipTurn": 7,
+     "citiesAtFlip": 2,
+     "atTurn20": true
+    }
+   ],
+   "warLogEntries": 8,
+   "warLogWarEntries": 0,
+   "warLogWarSample": [],
+   "turnMs": {
+    "min": 7166,
+    "median": 21323,
+    "max": 93501
+   }
+  }
+ ]
+}

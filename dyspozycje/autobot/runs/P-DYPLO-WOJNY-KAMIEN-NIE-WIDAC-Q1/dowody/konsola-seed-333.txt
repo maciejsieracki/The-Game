@@ -1,0 +1,746 @@
+[Dyplomacja] AI43 zaproponuj_handel_surowiec: Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 9 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Chińczycy — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Inkowie — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Egipt — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Zulusi — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Grecy — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Sumerowie — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Kapua · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Pompeje · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Tarent · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Mediolan · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Akwileja · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Qi · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Chu · Chińczycy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Jin · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Yan · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Zhao · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Wei · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Machu Picchu · Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Ollantaytambo · Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Pisac · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Sacsayhuamán · Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Vilcabamba · Inkowie · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Cajamarca · Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Teby · Egipt · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Heliopolis · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Abydos · Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Nekhen · Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Elefantyna · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Sais · Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Ondini · Zulusi · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Ulundi · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ kwaBulawayo · Zulusi · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ eMakhosini · Zulusi · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Nobamba · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Nodwengu · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Sparta · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Korynt · Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Teby · Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Argos · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 25 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Mykeny · Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Milet · Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Ur · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Lagasz · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Kisz · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Nippur · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Eridu · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Umma · Sumerowie · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI44 zaproponuj_handel_surowiec: Kupię od ciebie Drewno: 10 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Inkowie — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Pompeje · Rzymianie · miasto-państwo — Kupię od ciebie Drewno: 10 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Qi · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Jin · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Yan · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Zhao · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Wei · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Pisac · Inkowie · miasto-państwo — Kupię od ciebie Drewno: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Vilcabamba · Inkowie · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Teby · Egipt · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Heliopolis · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Elefantyna · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Ondini · Zulusi · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Ulundi · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Nobamba · Zulusi · miasto-państwo — Kupię od ciebie Drewno: 10 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Nodwengu · Zulusi · miasto-państwo — Kupię od ciebie Drewno: 10 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Sparta · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Argos · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 20 szt./turę za 4 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Kapua · Rzymianie · miasto-państwo ↔ Umma · Sumerowie · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI45 zaproponuj_handel_surowiec: Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 5 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Chińczycy — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Inkowie — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Egipt — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Zulusi — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Grecy — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Sumerowie — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Tarent · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Mediolan · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Akwileja · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Qi · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Chu · Chińczycy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Jin · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Yan · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Zhao · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Wei · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Machu Picchu · Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Ollantaytambo · Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Pisac · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Sacsayhuamán · Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Vilcabamba · Inkowie · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Cajamarca · Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Teby · Egipt · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Heliopolis · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Abydos · Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Nekhen · Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Elefantyna · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Sais · Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Ondini · Zulusi · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Ulundi · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ kwaBulawayo · Zulusi · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ eMakhosini · Zulusi · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Nobamba · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Nodwengu · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Sparta · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Korynt · Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Teby · Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Argos · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Mykeny · Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Milet · Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Ur · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Lagasz · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Kisz · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Nippur · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Eridu · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 10 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Umma · Sumerowie · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem: Chińczycy → Qi · Chińczycy · miasto-państwo: Glina ×20 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(1)-Qi · Chińczycy · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Chińczycy → Chu · Chińczycy · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(1)-Chu · Chińczycy · miasto-państwo(3) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Jin · Chińczycy · miasto-państwo → Chińczycy: Kamien ×5 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Chińczycy(1)-Jin · Chińczycy · miasto-państwo(4) (Relacja=190 >= 0, połączenie tras możliwe)
+[Eliminacja] Cywilizacja ownerId=10 skasowana (utrata ostatniego miasta).
+[Eliminacja] Cywilizacja ownerId=16 skasowana (utrata ostatniego miasta).
+[Eliminacja] Cywilizacja ownerId=23 skasowana (utrata ostatniego miasta).
+[Eliminacja] Cywilizacja ownerId=37 skasowana (utrata ostatniego miasta).
+[Eliminacja] Cywilizacja ownerId=3 skasowana (utrata ostatniego miasta).
+[Eliminacja] Cywilizacja ownerId=30 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI↔AI handel surowcem: Chińczycy · miasto-państwo → Yan · Chińczycy · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Chińczycy · miasto-państwo(1)-Yan · Chińczycy · miasto-państwo(5) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI43 zaproponuj_handel_surowiec: Kupię od ciebie Drewno: 30 szt./turę za 6 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Lagasz · Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI45 zaproponuj_handel_surowiec: Nadwyżka Drewno — oferujemy sprzedaż: 15 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Chińczycy · miasto-państwo → Zhao · Chińczycy · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Chińczycy · miasto-państwo(1)-Zhao · Chińczycy · miasto-państwo(6) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI22 → MP24: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI22 → MP26: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI22 → MP27: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI22 → MP28: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] Trybut 5 ¤: 24 → 22
+[Dyplomacja] Trybut 5 ¤: 26 → 22
+[Dyplomacja] Trybut 5 ¤: 27 → 22
+[Dyplomacja] Trybut 5 ¤: 28 → 22
+[Dyplomacja] AI29 → MP31: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI29 → MP32: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI29 → MP33: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI29 → MP34: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI29 → MP35: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI36 → MP38: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI36 → MP40: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI36 → MP41: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI36 → MP42: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI1 → MP2: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI1 → MP4: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI1 → MP5: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI1 → MP6: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI1 → MP7: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI8 → MP9: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI8 → MP11: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI8 → MP12: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI8 → MP13: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI8 → MP14: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI15 → MP17: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI15 → MP18: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI15 → MP19: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI15 → MP20: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI15 → MP21: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] Trybut 5 ¤: 24 → 22
+[Dyplomacja] Trybut 5 ¤: 26 → 22
+[Dyplomacja] Trybut 5 ¤: 27 → 22
+[Dyplomacja] Trybut 5 ¤: 28 → 22
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 33 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut 5 ¤: 35 → 29
+[Dyplomacja] Trybut 5 ¤: 38 → 36
+[Dyplomacja] Trybut 5 ¤: 40 → 36
+[Dyplomacja] Trybut 5 ¤: 41 → 36
+[Dyplomacja] Trybut 5 ¤: 42 → 36
+[Dyplomacja] Trybut 5 ¤: 2 → 1
+[Dyplomacja] Trybut 5 ¤: 4 → 1
+[Dyplomacja] Trybut 5 ¤: 5 → 1
+[Dyplomacja] Trybut 5 ¤: 6 → 1
+[Dyplomacja] Trybut 5 ¤: 7 → 1
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut 5 ¤: 12 → 8
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut 5 ¤: 18 → 15
+[Dyplomacja] Trybut 5 ¤: 19 → 15
+[Dyplomacja] Trybut 5 ¤: 20 → 15
+[Dyplomacja] Trybut 5 ¤: 21 → 15
+[Dyplomacja] AI22 → MP25: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] AI↔AI handel surowcem: Chińczycy · miasto-państwo → Wei · Chińczycy · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Chińczycy · miasto-państwo(1)-Wei · Chińczycy · miasto-państwo(7) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI36 → MP39: trybut 5 ¤/turę (pierwszy_krok)
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_22_24_12): brak 5 ¤ u gracza 24
+[Dyplomacja] Trybut 5 ¤: 26 → 22
+[Dyplomacja] Trybut 5 ¤: 27 → 22
+[Dyplomacja] Trybut 5 ¤: 28 → 22
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 33 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut 5 ¤: 35 → 29
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_36_38_12): brak 5 ¤ u gracza 38
+[Dyplomacja] Trybut 5 ¤: 40 → 36
+[Dyplomacja] Trybut 5 ¤: 41 → 36
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_36_42_12): brak 5 ¤ u gracza 42
+[Dyplomacja] Trybut 5 ¤: 2 → 1
+[Dyplomacja] Trybut 5 ¤: 4 → 1
+[Dyplomacja] Trybut 5 ¤: 5 → 1
+[Dyplomacja] Trybut 5 ¤: 6 → 1
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_1_7_12): brak 5 ¤ u gracza 7
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut 5 ¤: 12 → 8
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut 5 ¤: 18 → 15
+[Dyplomacja] Trybut 5 ¤: 19 → 15
+[Dyplomacja] Trybut 5 ¤: 20 → 15
+[Dyplomacja] Trybut 5 ¤: 21 → 15
+[Dyplomacja] Trybut 5 ¤: 25 → 22
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] AI↔AI handel surowcem: Qi · Chińczycy · miasto-państwo → Jin · Chińczycy · miasto-państwo: Kamien ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Qi · Chińczycy · miasto-państwo(2)-Jin · Chińczycy · miasto-państwo(4) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] Trybut 5 ¤: 26 → 22
+[Dyplomacja] Trybut 5 ¤: 27 → 22
+[Dyplomacja] Trybut 5 ¤: 28 → 22
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 33 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut 5 ¤: 35 → 29
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_36_40_12): brak 5 ¤ u gracza 40
+[Dyplomacja] Trybut 5 ¤: 41 → 36
+[Dyplomacja] Trybut 5 ¤: 2 → 1
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_1_4_12): brak 5 ¤ u gracza 4
+[Dyplomacja] Trybut 5 ¤: 5 → 1
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_1_6_12): brak 5 ¤ u gracza 6
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut 5 ¤: 12 → 8
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut 5 ¤: 18 → 15
+[Dyplomacja] Trybut 5 ¤: 19 → 15
+[Dyplomacja] Trybut 5 ¤: 20 → 15
+[Dyplomacja] Trybut 5 ¤: 21 → 15
+[Dyplomacja] Trybut 5 ¤: 25 → 22
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] AI↔AI handel surowcem: Yan · Chińczycy · miasto-państwo → Qi · Chińczycy · miasto-państwo: Kamien ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Qi · Chińczycy · miasto-państwo(2)-Yan · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_22_26_12): brak 5 ¤ u gracza 26
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_22_27_12): brak 5 ¤ u gracza 27
+[Dyplomacja] Trybut 5 ¤: 28 → 22
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 33 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut 5 ¤: 35 → 29
+[Dyplomacja] Trybut 5 ¤: 41 → 36
+[Dyplomacja] Trybut 5 ¤: 2 → 1
+[Dyplomacja] Trybut 5 ¤: 5 → 1
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut 5 ¤: 12 → 8
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut 5 ¤: 18 → 15
+[Dyplomacja] Trybut 5 ¤: 19 → 15
+[Dyplomacja] Trybut 5 ¤: 20 → 15
+[Dyplomacja] Trybut 5 ¤: 21 → 15
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_22_25_13): brak 5 ¤ u gracza 25
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] Trybut 5 ¤: 28 → 22
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 33 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut 5 ¤: 35 → 29
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_36_41_12): brak 5 ¤ u gracza 41
+[Dyplomacja] Trybut 5 ¤: 2 → 1
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_1_5_12): brak 5 ¤ u gracza 5
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut 5 ¤: 12 → 8
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut 5 ¤: 18 → 15
+[Dyplomacja] Trybut 5 ¤: 19 → 15
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_15_20_13): brak 5 ¤ u gracza 20
+[Dyplomacja] Trybut 5 ¤: 21 → 15
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] AI22 → MP24: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI22 → MP26: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI22 → MP27: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI22 → MP28: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI↔AI handel surowcem: Chińczycy · miasto-państwo → Qi · Chińczycy · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Chińczycy · miasto-państwo(1)-Qi · Chińczycy · miasto-państwo(2) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI29 → MP31: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI29 → MP32: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI29 → MP33: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI29 → MP34: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI29 → MP35: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI36 → MP38: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI36 → MP40: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI36 → MP41: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI36 → MP42: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI1 → MP2: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI1 → MP4: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI1 → MP5: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI1 → MP6: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI1 → MP7: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI8 → MP9: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI8 → MP11: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI8 → MP12: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI8 → MP13: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI8 → MP14: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI15 → MP17: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI15 → MP18: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI15 → MP19: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI15 → MP21: wasalizacja (trybut_elapsed)
+[Dyplomacja] Trybut 5 ¤: 28 → 22
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_29_33_12): brak 5 ¤ u gracza 33
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut 5 ¤: 35 → 29
+[Dyplomacja] Trybut 5 ¤: 2 → 1
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut 5 ¤: 12 → 8
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_15_18_13): brak 5 ¤ u gracza 18
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_15_19_13): brak 5 ¤ u gracza 19
+[Dyplomacja] Trybut 5 ¤: 21 → 15
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_22_24_17): brak 5 ¤ u gracza 24
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_22_26_17): brak 5 ¤ u gracza 26
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_22_27_17): brak 5 ¤ u gracza 27
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_36_38_17): brak 5 ¤ u gracza 38
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_36_40_17): brak 5 ¤ u gracza 40
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_36_41_17): brak 5 ¤ u gracza 41
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_36_42_17): brak 5 ¤ u gracza 42
+[Dyplomacja] Trybut 5 ¤: 4 → 1
+[Dyplomacja] Trybut 5 ¤: 5 → 1
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_1_6_17): brak 5 ¤ u gracza 6
+[Dyplomacja] Trybut 5 ¤: 7 → 1
+[Dyplomacja] AI22 → MP25: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI↔AI handel surowcem: Qi · Chińczycy · miasto-państwo → Zhao · Chińczycy · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Qi · Chińczycy · miasto-państwo(2)-Zhao · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI36 → MP39: wasalizacja (trybut_elapsed)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Heliopolis · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Wei · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Elefantyna · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Ulundi · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Umma · Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Argos · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Nodwengu · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Korynt · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Ostia · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Qi · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Jin · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Yan · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Zhao · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Pisac · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Vilcabamba · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI15 → MP20: wasalizacja (trybut_elapsed)
+[Dyplomacja] Trybut 5 ¤: 28 → 22
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_29_35_12): brak 5 ¤ u gracza 35
+[Dyplomacja] Trybut 5 ¤: 2 → 1
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut 5 ¤: 12 → 8
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut 5 ¤: 21 → 15
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] Trybut 5 ¤: 4 → 1
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_1_5_17): brak 5 ¤ u gracza 5
+[Dyplomacja] Trybut 5 ¤: 7 → 1
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_22_25_18): brak 5 ¤ u gracza 25
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_15_20_19): brak 5 ¤ u gracza 20
+[Dyplomacja] AI↔AI handel surowcem: Qi · Chińczycy · miasto-państwo → Wei · Chińczycy · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Qi · Chińczycy · miasto-państwo(2)-Wei · Chińczycy · miasto-państwo(7) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI45 zaproponuj_handel_surowiec: Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 12 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Egipt · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Umma · Sumerowie · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Tarent · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Akwileja · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Abydos · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Nekhen · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Nodwengu · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Sais · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ eMakhosini · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Nobamba · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Milet · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Eridu · Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Mediolan · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ kwaBulawayo · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Teby · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Mykeny · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Kisz · Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Nippur · Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Qi · Chińczycy · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Jin · Chińczycy · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Yan · Chińczycy · miasto-państwo — Kupię od ciebie Kamien: 5 szt./turę za 1 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Machu Picchu · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Sacsayhuamán · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Vilcabamba · Inkowie · miasto-państwo — Kupię od ciebie Kamien: 10 szt./turę za 3 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Cajamarca · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Lagasz · Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Heliopolis · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Wei · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Elefantyna · Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Ulundi · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Umma · Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Argos · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Nodwengu · Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Korynt · Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Qi · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Jin · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Yan · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Zhao · Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Pisac · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Vilcabamba · Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_22_28_12): brak 5 ¤ u gracza 28
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_1_2_12): brak 5 ¤ u gracza 2
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut 5 ¤: 12 → 8
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_15_21_13): brak 5 ¤ u gracza 21
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] Trybut 5 ¤: 4 → 1
+[Dyplomacja] Trybut zerwany (ai_cs_wasal_1_7_17): brak 5 ¤ u gracza 7
+[Dyplomacja] AI↔AI handel surowcem: Chińczycy · miasto-państwo → Jin · Chińczycy · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Chińczycy · miasto-państwo(1)-Jin · Chińczycy · miasto-państwo(4) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] Trybut 5 ¤: 31 → 29
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_8_12_12): brak 5 ¤ u gracza 12
+[Dyplomacja] Trybut 5 ¤: 13 → 8
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] Trybut 5 ¤: 4 → 1
+[Dyplomacja] AI↔AI handel surowcem: Jin · Chińczycy · miasto-państwo → Yan · Chińczycy · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Jin · Chińczycy · miasto-państwo(4)-Yan · Chińczycy · miasto-państwo(5) (Relacja=52 >= 0, połączenie tras możliwe)
+[Eliminacja] Usunięto 1 jednostek ownerId=24.
+[Eliminacja] Cywilizacja ownerId=24 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI22 wchłania miasto-państwo ownerId=24 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=26.
+[Eliminacja] Cywilizacja ownerId=26 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI22 wchłania miasto-państwo ownerId=26 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=27.
+[Eliminacja] Cywilizacja ownerId=27 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI22 wchłania miasto-państwo ownerId=27 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=28.
+[Eliminacja] Cywilizacja ownerId=28 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI22 wchłania miasto-państwo ownerId=28 (dyplomatyczne)
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_29_31_12): brak 5 ¤ u gracza 31
+[Dyplomacja] Trybut 5 ¤: 32 → 29
+[Dyplomacja] Trybut 5 ¤: 34 → 29
+[Dyplomacja] Trybut 5 ¤: 9 → 8
+[Dyplomacja] Trybut 5 ¤: 11 → 8
+[Dyplomacja] Trybut zerwany (ai_cs_trybut_8_13_12): brak 5 ¤ u gracza 13
+[Dyplomacja] Trybut 5 ¤: 14 → 8
+[Dyplomacja] Trybut 5 ¤: 17 → 15
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Dyplomacja] Trybut 5 ¤: 4 → 1
+[Eliminacja] Usunięto 1 jednostek ownerId=31.
+[Eliminacja] Cywilizacja ownerId=31 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI29 wchłania miasto-państwo ownerId=31 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=32.
+[Eliminacja] Cywilizacja ownerId=32 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI29 wchłania miasto-państwo ownerId=32 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=33.
+[Eliminacja] Cywilizacja ownerId=33 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI29 wchłania miasto-państwo ownerId=33 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=34.
+[Eliminacja] Cywilizacja ownerId=34 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI29 wchłania miasto-państwo ownerId=34 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=35.
+[Eliminacja] Cywilizacja ownerId=35 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI29 wchłania miasto-państwo ownerId=35 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=38 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI36 wchłania miasto-państwo ownerId=38 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=40.
+[Eliminacja] Cywilizacja ownerId=40 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI36 wchłania miasto-państwo ownerId=40 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=41.
+[Eliminacja] Cywilizacja ownerId=41 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI36 wchłania miasto-państwo ownerId=41 (dyplomatyczne)
+[Eliminacja] Usunięto 2 jednostek ownerId=42.
+[Eliminacja] Cywilizacja ownerId=42 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI36 wchłania miasto-państwo ownerId=42 (dyplomatyczne)
+[Dyplomacja] AI↔AI handel surowcem: Jin · Chińczycy · miasto-państwo → Zhao · Chińczycy · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Jin · Chińczycy · miasto-państwo(4)-Zhao · Chińczycy · miasto-państwo(6) (Relacja=52 >= 0, połączenie tras możliwe)
+[Eliminacja] Cywilizacja ownerId=2 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI1 wchłania miasto-państwo ownerId=2 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=4 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI1 wchłania miasto-państwo ownerId=4 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=5 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI1 wchłania miasto-państwo ownerId=5 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=6 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI1 wchłania miasto-państwo ownerId=6 (dyplomatyczne)
+[Eliminacja] Usunięto 2 jednostek ownerId=7.
+[Eliminacja] Cywilizacja ownerId=7 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI1 wchłania miasto-państwo ownerId=7 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=9 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI8 wchłania miasto-państwo ownerId=9 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=11 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI8 wchłania miasto-państwo ownerId=11 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=12 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI8 wchłania miasto-państwo ownerId=12 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=13 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI8 wchłania miasto-państwo ownerId=13 (dyplomatyczne)
+[Eliminacja] Cywilizacja ownerId=14 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI8 wchłania miasto-państwo ownerId=14 (dyplomatyczne)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Heliopolis · Egipt · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Heliopolis · Egipt · miasto-państwo(17) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Abydos · Egipt · miasto-państwo: Kamien ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Abydos · Egipt · miasto-państwo(18) (Relacja=190 >= 0, połączenie tras możliwe)
+[Eliminacja] Usunięto 1 jednostek ownerId=17.
+[Eliminacja] Cywilizacja ownerId=17 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI15 wchłania miasto-państwo ownerId=17 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=18.
+[Eliminacja] Cywilizacja ownerId=18 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI15 wchłania miasto-państwo ownerId=18 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=19.
+[Eliminacja] Cywilizacja ownerId=19 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI15 wchłania miasto-państwo ownerId=19 (dyplomatyczne)
+[Eliminacja] Usunięto 1 jednostek ownerId=21.
+[Eliminacja] Cywilizacja ownerId=21 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI15 wchłania miasto-państwo ownerId=21 (dyplomatyczne)
+[Dyplomacja] Trybut 5 ¤: 39 → 36
+[Eliminacja] Usunięto 1 jednostek ownerId=25.
+[Eliminacja] Cywilizacja ownerId=25 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI22 wchłania miasto-państwo ownerId=25 (dyplomatyczne)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Elefantyna · Egipt · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Elefantyna · Egipt · miasto-państwo(20) (Relacja=190 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Ostia · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Ostia · Rzymianie · miasto-państwo(43) (Relacja=52 >= 0, połączenie tras możliwe)
+[Eliminacja] Usunięto 1 jednostek ownerId=39.
+[Eliminacja] Cywilizacja ownerId=39 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI36 wchłania miasto-państwo ownerId=39 (dyplomatyczne)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Tarent · Rzymianie · miasto-państwo: Kamien ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Tarent · Rzymianie · miasto-państwo(46) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Kamien ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Eliminacja] Usunięto 1 jednostek ownerId=20.
+[Eliminacja] Cywilizacja ownerId=20 skasowana (utrata ostatniego miasta).
+[Dyplomacja] AI15 wchłania miasto-państwo ownerId=20 (dyplomatyczne)
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Kapua · Rzymianie · miasto-państwo: Kamien ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Kapua · Rzymianie · miasto-państwo(44) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Pompeje · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=30 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Tarent · Rzymianie · miasto-państwo: Kamien ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Tarent · Rzymianie · miasto-państwo(46) (Relacja=30 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Tarent · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Pompeje · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Mediolan · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Pompeje · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Mediolan · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Kupię od ciebie Ceramika: 30 szt./turę za 15 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Tarent · Rzymianie · miasto-państwo — Kupię od ciebie Ceramika: 30 szt./turę za 15 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Mediolan · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Kapua · Rzymianie · miasto-państwo → Pompeje · Rzymianie · miasto-państwo: Ceramika ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Kapua · Rzymianie · miasto-państwo(44)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Akwileja · Rzymianie · miasto-państwo — Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Mediolan · Rzymianie · miasto-państwo → Kapua · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Kapua · Rzymianie · miasto-państwo(44)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_umowe_handlowa: Relacja=107.4279664609375 >= prog=0, polaczenie tras mozliwe, brak aktywnej umowy: proponujemy stala Umowe Handlowa
+[Dyplomacja] AI↔AI handel surowcem: Kapua · Rzymianie · miasto-państwo → Akwileja · Rzymianie · miasto-państwo: Kamien ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Kapua · Rzymianie · miasto-państwo(44)-Akwileja · Rzymianie · miasto-państwo(48) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Pompeje · Rzymianie · miasto-państwo → Tarent · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Pompeje · Rzymianie · miasto-państwo(45)-Tarent · Rzymianie · miasto-państwo(46) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Pompeje · Rzymianie · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Ceramika ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Pompeje · Rzymianie · miasto-państwo(45)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Pompeje · Rzymianie · miasto-państwo → Akwileja · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Pompeje · Rzymianie · miasto-państwo(45)-Akwileja · Rzymianie · miasto-państwo(48) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Tarent · Rzymianie · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Tarent · Rzymianie · miasto-państwo(46)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_umowe_handlowa: Relacja=113.2498258359375 >= prog=0, polaczenie tras mozliwe, brak aktywnej umowy: proponujemy stala Umowe Handlowa
+[Dyplomacja] AI15 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Kapua · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI45 zaproponuj_handel_surowiec: Kupię od ciebie Drewno: 30 szt./turę za 6 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Pompeje · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Kupię od ciebie Drewno: 30 szt./turę za 3 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI43 zaproponuj_handel_surowiec: Kupię od ciebie Drewno: 30 szt./turę za 6 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Kupię od ciebie Drewno: 30 szt./turę za 3 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Kupię od ciebie Drewno: 30 szt./turę za 3 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Kupię od ciebie Drewno: 30 szt./turę za 3 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Ostia · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Kupię od ciebie Drewno: 30 szt./turę za 3 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Akwileja · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 5 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Ostia · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Ostia · Rzymianie · miasto-państwo(43) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Tarent · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Tarent · Rzymianie · miasto-państwo(46) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_umowe_handlowa: Relacja=117.0357752109375 >= prog=0, polaczenie tras mozliwe, brak aktywnej umowy: proponujemy stala Umowe Handlowa
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Kapua · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Kapua · Rzymianie · miasto-państwo(44) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Pompeje · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI44 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Tarent · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Pompeje · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=30 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Tarent · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Tarent · Rzymianie · miasto-państwo(46) (Relacja=30 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Egipt · miasto-państwo ↔ Akwileja · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI45 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Kapua · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI43 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 30 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Mediolan · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 30 szt./turę za 1 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=30 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_umowe_handlowa: Relacja=122.7872504375 >= prog=0, polaczenie tras mozliwe, brak aktywnej umowy: proponujemy stala Umowe Handlowa
+[Dyplomacja] AI↔AI handel surowcem: Kapua · Rzymianie · miasto-państwo → Pompeje · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Kapua · Rzymianie · miasto-państwo(44)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Kapua · Rzymianie · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Kapua · Rzymianie · miasto-państwo(44)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Kapua · Rzymianie · miasto-państwo → Akwileja · Rzymianie · miasto-państwo: Drewno ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Kapua · Rzymianie · miasto-państwo(44)-Akwileja · Rzymianie · miasto-państwo(48) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Pompeje · Rzymianie · miasto-państwo → Tarent · Rzymianie · miasto-państwo: Ceramika ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Pompeje · Rzymianie · miasto-państwo(45)-Tarent · Rzymianie · miasto-państwo(46) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Pompeje · Rzymianie · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Ceramika ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Pompeje · Rzymianie · miasto-państwo(45)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI44 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 30 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Egipt · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 30 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI15 zaproponuj_umowe_handlowa: Relacja=126.50430340625 >= prog=0, polaczenie tras mozliwe, brak aktywnej umowy: proponujemy stala Umowe Handlowa
+[Dyplomacja] AI↔AI handel surowcem: Pompeje · Rzymianie · miasto-państwo → Akwileja · Rzymianie · miasto-państwo: Ceramika ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Pompeje · Rzymianie · miasto-państwo(45)-Akwileja · Rzymianie · miasto-państwo(48) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Tarent · Rzymianie · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Tarent · Rzymianie · miasto-państwo(46)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI45 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Pompeje · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 30 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI43 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Inkowie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Egipt · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Akwileja · Rzymianie · miasto-państwo — Nadwyżka Glina — oferujemy sprzedaż: 30 szt./turę za 6 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Ostia · Rzymianie · miasto-państwo: Glina ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Ostia · Rzymianie · miasto-państwo(43) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Tarent · Rzymianie · miasto-państwo → Egipt · miasto-państwo: Ruda ×20 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Tarent · Rzymianie · miasto-państwo(46) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Ruda ×20 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_umowe_handlowa: Relacja=130.1869876953125 >= prog=0, polaczenie tras mozliwe, brak aktywnej umowy: proponujemy stala Umowe Handlowa
+[Dyplomacja] AI↔AI handel surowcem: Kapua · Rzymianie · miasto-państwo → Ostia · Rzymianie · miasto-państwo: Ruda ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Kapua · Rzymianie · miasto-państwo(44) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Egipt · miasto-państwo → Pompeje · Rzymianie · miasto-państwo: Ruda ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Egipt · miasto-państwo(15)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=52 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Pompeje · Rzymianie · miasto-państwo: Ruda_cyny ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=30 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI44 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Chińczycy · miasto-państwo — Nadwyżka Cegła — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Zulusi · miasto-państwo — Nadwyżka Cegła — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Grecy · miasto-państwo — Nadwyżka Cegła — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Cegła — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Kapua · Rzymianie · miasto-państwo ↔ Tarent · Rzymianie · miasto-państwo — Nadwyżka Drewno — oferujemy sprzedaż: 30 szt./turę za 3 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Tarent · Rzymianie · miasto-państwo → Ostia · Rzymianie · miasto-państwo: Kamień ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Tarent · Rzymianie · miasto-państwo(46) (Relacja=30 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI↔AI handel surowcem: Ostia · Rzymianie · miasto-państwo → Mediolan · Rzymianie · miasto-państwo: Ruda ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Ostia · Rzymianie · miasto-państwo(43)-Mediolan · Rzymianie · miasto-państwo(47) (Relacja=30 >= 0, połączenie tras możliwe)
+[Dyplomacja] AI15 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (zakup): Egipt · miasto-państwo ↔ Kapua · Rzymianie · miasto-państwo — Kupię od ciebie Cegła: 30 szt./turę za 15 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI↔AI handel surowcem (zakup): Egipt · miasto-państwo ↔ Akwileja · Rzymianie · miasto-państwo — Kupię od ciebie Ruda_cyny: 20 szt./turę za 20 ¤/turę przez 10 tur (deficyt surowca)
+[Dyplomacja] AI45 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI43 zaproponuj_handel_surowiec: Nadwyżka Ceramika — oferujemy sprzedaż: 30 szt./turę za 30 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem (sprzedaz): Ostia · Rzymianie · miasto-państwo ↔ Sumerowie · miasto-państwo — Nadwyżka Cegła — oferujemy sprzedaż: 30 szt./turę za 15 ¤/turę przez 10 tur
+[Dyplomacja] AI↔AI handel surowcem: Pompeje · Rzymianie · miasto-państwo → Kapua · Rzymianie · miasto-państwo: Ruda_cyny ×30 szt./turę
+[Dyplomacja] AI↔AI Umowa Handlowa Kapua · Rzymianie · miasto-państwo(44)-Pompeje · Rzymianie · miasto-państwo(45) (Relacja=52 >= 0, połączenie tras możliwe)

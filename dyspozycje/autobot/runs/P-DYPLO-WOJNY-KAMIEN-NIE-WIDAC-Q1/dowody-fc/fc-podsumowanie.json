@@ -1,0 +1,178 @@
+[
+  {
+    "seed": 111,
+    "mode": "aktywny",
+    "difficulty": "domyslna",
+    "turnsReached": 61,
+    "snaps": 61,
+    "founded": "ok:80,55",
+    "exploreEnabled": 2,
+    "unblockCount": 0,
+    "prodLog": [
+      {
+        "t": 0,
+        "q": "failed:skarbiec=0,koszt=16"
+      },
+      {
+        "t": 2,
+        "q": "failed:skarbiec=2,koszt=16",
+        "enabled": 0,
+        "prod": {
+          "skarbiec": 2,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      },
+      {
+        "t": 3,
+        "q": "failed:skarbiec=4,koszt=16",
+        "enabled": 0,
+        "prod": {
+          "skarbiec": 4,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      },
+      {
+        "t": 4,
+        "q": "failed:skarbiec=6,koszt=16",
+        "enabled": 0,
+        "prod": {
+          "skarbiec": 6,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      },
+      {
+        "t": 5,
+        "q": "failed:skarbiec=8,koszt=16",
+        "enabled": 0,
+        "prod": {
+          "skarbiec": 8,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      },
+      {
+        "t": 6,
+        "q": "failed:skarbiec=10,koszt=16",
+        "enabled": 0,
+        "prod": {
+          "skarbiec": 10,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      },
+      {
+        "t": 7,
+        "q": "failed:skarbiec=12,koszt=16",
+        "enabled": 0,
+        "prod": {
+          "skarbiec": 12,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      },
+      {
+        "t": 8,
+        "q": "failed:skarbiec=14,koszt=16",
+        "enabled": 0,
+        "prod": {
+          "skarbiec": 14,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      },
+      {
+        "t": 9,
+        "q": "bought:16",
+        "enabled": 0,
+        "prod": {
+          "skarbiec": 0,
+          "kolejka": [],
+          "rekrutacja": [
+            "Zwiadowca"
+          ]
+        }
+      },
+      {
+        "t": 10,
+        "q": "have-scout",
+        "enabled": 1,
+        "prod": {
+          "skarbiec": 2,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      },
+      {
+        "t": 27,
+        "q": "have-scout",
+        "enabled": 1,
+        "prod": {
+          "skarbiec": 139,
+          "kolejka": [],
+          "rekrutacja": []
+        }
+      }
+    ],
+    "plrUnitsFinal": 2,
+    "scoutsFinal": 2,
+    "declarations": [],
+    "declCount": 0,
+    "declWithPlayer": 0,
+    "mainAiCount": 6,
+    "contactsFinal": [
+      43,
+      44,
+      45,
+      46,
+      47,
+      48
+    ],
+    "contactsMainAiFinal": [],
+    "layerCensus": {
+      "full": 0,
+      "simplified": 219,
+      "pre_contact": 1192
+    },
+    "csFlip": {
+      "1": {
+        "turn": 6,
+        "cities": 2,
+        "csCities": 1
+      },
+      "8": {
+        "turn": 6,
+        "cities": 2,
+        "csCities": 1
+      },
+      "15": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      },
+      "22": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      },
+      "29": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      },
+      "36": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      }
+    },
+    "stonePendingMax": 0,
+    "warEventsFinal": 8,
+    "panelPlayerFinal": 0,
+    "panelOthersFinal": 0,
+    "errors": [],
+    "ms": 1943705
+  }
+]
