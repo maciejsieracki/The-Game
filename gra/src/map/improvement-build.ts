@@ -161,9 +161,33 @@ const TARTAK_TERENY = new Set<TerenBazowy>([
   TerenBazowy.Pustynia,
 ]);
 
+/**
+ * Ulepszenia, dla których nakładka Las jest warunkiem KONIECZNYM istnienia — po wyrębie
+ * tracą podstawę i znikają z heksa.
+ *
+ * R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1, runda 2, ECHO właściciela 2026-08-27 (wariant A):
+ * „obóz znika przy wyrębie" — skoro obóz może istnieć wyłącznie w lesie, zniknięcie lasu
+ * znosi warunek jego istnienia. Praca NIE jest zwracana (świadoma decyzja właściciela).
+ * Bez tego wyrąb spod obozu zostawiał `["oboz_lowiecki"]` przy `nakladka = Brak`, czyli
+ * obóz poza lasem powstający normalną rozgrywką (gracz i AI) — dziura P7 znaleziona przez
+ * Evaluatora i Final Control rundy 1.
+ *
+ * Świadomie POZA tym zbiorem (nie dopisywać bez decyzji właściciela):
+ *  • `tartak`   — kanon wprost: las zostaje przy tartaku (asercja
+ *                 tools/map-improvement-qualify-test.cjs: „tartak stays when forest removed").
+ *  • `farma`    — Las jest jej warunkiem tylko na Wzgórzach (isFarmBaseTerrain); na Łące/
+ *                 Równinie stoi bez lasu. Ta sama asercja kanonu trzyma farmę na heksie po
+ *                 wyrębie. Kasowanie cudzej farmy to osobna decyzja właściciela, nie ten temat.
+ *  • `glinianka`— warunkiem jest złoże gliny (hexHasClayDeposit), nie las.
+ *  • `wyrab`    — akcja, nigdy trwała warstwa heksa.
+ */
+const FOREST_DEPENDENT_IMPROVEMENT_KEYS = new Set<string>([
+  'oboz_lowiecki',
+]);
+
 /** Po usunięciu lasu z heksa — odfiltruj ulepszenia zależne od nakładki Las (tartak NIE — kanon: las zostaje przy tartaku). */
 export function stripImprovementsWhenForestRemoved(layers: readonly string[]): string[] {
-  return [...layers];
+  return layers.filter(key => !FOREST_DEPENDENT_IMPROVEMENT_KEYS.has(key));
 }
 
 const FLAT_FARM = new Set<TerenBazowy>([TerenBazowy.Laka, TerenBazowy.Rownina]);
@@ -339,6 +363,13 @@ export function computeImprovementBuildImpact(
   if (key === 'owce' && !isOwceBaseTerrain(hex.terenBazowy, hex.nakladka)) {
     return null;
   }
+  // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: twarda blokada commitu (drugi, niezależny gate
+  // za `qualifies()`/`canBuild` — ta sama rola co gałąź `owce` wyżej). `applyBuildRequest`
+  // (main.ts) nie powtarza `qualifies()`, więc bez tego warunku obóz poza lasem dałoby się
+  // zacommitować ścieżką pomijającą panel budowy. Dokładne porównanie enumu, nie podciąg.
+  if (key === 'oboz_lowiecki' && hex.nakladka !== Nakladka.Las) {
+    return null;
+  }
 
   const removedImprovements = improvementsReplacedByBuild(key, existing);
   const after = existingAfterSimulatedRemoval(existing, removedImprovements);
@@ -496,8 +527,10 @@ export function depositAllowsPlayerImprovement(
       return nakladka === Nakladka.ZlozeLamy;
     case 'stadnina':
       return hex.nakladka === Nakladka.ZlozeKonia;
+    // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: obóz przestaje być wyjątkiem rezerwy złoża
+    // na złożu zwierzęcym BEZ lasu — wyjątkiem jest wyłącznie las (dowolny teren pod nim).
     case 'oboz_lowiecki':
-      return nakladka === Nakladka.Las || hasAnimalDeposit(nakladka);
+      return nakladka === Nakladka.Las;
     default:
       return false;
   }
@@ -789,9 +822,14 @@ function createQualifier(state: ImprovementBuildState) {
           && nakladka === Nakladka.Las
           && TARTAK_TERENY.has(teren);
         break;
+      // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (Maciej): obóz łowiecki WYŁĄCZNIE na
+      // nakładce Las — dowolny teren POD lasem (łąka, równina, WZGÓRZE), nigdy poza lasem.
+      // Było: `Las LUB złoże zwierzęce` — stąd obozy poza lasem (złoże koni na równinie).
+      // Dokładne porównanie enumu `Nakladka.Las`, NIGDY dopasowanie po podciągu nazwy terenu:
+      // `normTerrain('Plaskie (rownina/laka)')` zawiera podciąg „las" (udowodniony błąd,
+      // combat.ts:638-646). Bramka tematu: tools/oboz-lowiecki-las-test.cjs.
       case 'oboz_lowiecki':
-        terrainOk = inPlayerTerritory(q, r)
-          && (nakladka === Nakladka.Las || hasAnimalDeposit(nakladka));
+        terrainOk = inPlayerTerritory(q, r) && nakladka === Nakladka.Las;
         break;
       case 'warzelnia_soli':
         terrainOk = inPlayerTerritory(q, r)
@@ -891,8 +929,15 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
         || teren === TerenBazowy.Wzgorza;
     case 'glinianka':
       return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina;
+    // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: jedynym warunkiem obozu jest nakładka Las —
+    // teren POD lasem jest bez znaczenia (Maciej: „niezależnie, czy to jest las na wzgórzu,
+    // czy na innym terenie"). Poprzednie `Łąka|Równina` gubiło LAS NA WZGÓRZU: ta funkcja
+    // jest pierwszym filtrem listy w tooltipie heksu (hexContextTooltip), więc obóz nie
+    // pojawiał się na zalesionym wzgórzu mimo że budowa była dozwolona — asymetria
+    // tooltip↔`qualifies()`. Ta funkcja nie widzi nakładki; warunek lasu egzekwuje
+    // wywołujący (tooltip) i `createQualifier`. Wykluczamy tylko wodę.
     case 'oboz_lowiecki':
-      return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina;
+      return teren !== TerenBazowy.Morze && teren !== TerenBazowy.Wybrzeze;
     case 'warzelnia_soli':
       return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Rownina;
     case 'droga':
