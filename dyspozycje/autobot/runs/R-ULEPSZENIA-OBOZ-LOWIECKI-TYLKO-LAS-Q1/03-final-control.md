@@ -148,3 +148,98 @@ To nie jest nota — to niespełnione kryterium celu.
 
 Naprawa mieści się w allowliście (`improvement-build.ts`), więc temat nie wymaga
 poszerzenia zakresu, a jedynie rundy 2.
+
+## 7. Mutacje — czy bramka tematu w ogóle czerwienieje (moja ręka)
+
+Mutowałem KOPIĘ źródeł (`/tmp/fc-gra/src`, wstrzykiwaną przez `OBOZ_SRC_DIR`),
+worktree nietknięty.
+
+| mutacja | co cofnięto | bramka tematu |
+|---|---|---|
+| **M1** | TYLKO `createQualifier` → stara forma `Las ∨ złoże` | **71/71 zielona — 0 FAIL** |
+| **M2** | TYLKO twarda blokada w `computeImprovementBuildImpact` | **63/8 — 8 FAIL** |
+
+M2 dowodzi, że bramka **nie jest tautologiczna** — ma realną czułość.
+
+M1 potwierdza „BRAK DOWODU" zgłoszony przez Evaluatora, ale **doprecyzowuję jego
+przyczynę, bo zmienia to wagę zgłoszenia**. Sprawdziłem, czy to nie jest dziura
+behawioralna: `canBuild` i `getQualifyingHexes` (podświetlenie trybu budowy,
+`canPlaceAny` w panelu) wołają **wyłącznie** `qualifies` — bez własnego gate'u
+commitu. Gdyby na tym kończył się łańcuch, regresja `createQualifier` podświetlałaby
+gołe wzgórza jako budowalne. Ale `qualifies()` kończy się linią
+
+```ts
+// improvement-build.ts:848
+if (!terrainOk) return false;
+return computeImprovementBuildImpact(key, hex, existing) !== null;
+```
+
+— czyli panel i podświetlenie niosą twardy gate **tranzytywnie**. Oba gate'y stoją
+SZEREGOWO w tej samej funkcji, więc każdy z osobna wystarcza.
+**Wniosek: to luka w DOWODZIE, nie w zachowaniu.** Bramka nie potrafi zaświecić na
+czerwono regresji samej linii `createQualifier` i tego się nie da naprawić inaczej
+niż asercją na `terrainOk` przed gate'em commitu. Nota do rundy 2, nie blokada.
+
+## 8. Trzeci, niezależny pomiar AI (ziarna FC, 40 tur)
+
+| ziarno | PRZED (`0ad2c20a`) obóz/pastw. | PO (`902ae764`) obóz/pastw. |
+|---|---|---|
+| 777 | 32/18 | 32/18 |
+| 90210 | 27/24 | 27/24 |
+| **RAZEM** | **59/42** | **59/42** |
+
+Trzecia niezależna reprodukcja, na ziarnach, których nie użyli ani Operator, ani
+Evaluator: **PRZED = PO co do jednego pola**. Zawężenie terenu nie zmienia zachowania
+AI. Skarga właściciela „zamiast owcy buduje obóz łowiecki" **pozostaje nierozwiązana**
+(AI dalej stawia 59 obozów wobec 42 pastwisk) — i słusznie trafia do rejestru jako
+osobny temat, bo `ai.ts` jest poza allowlistą.
+
+Uboczny, ale istotny dowód balansu: AI stawia po zmianie **32 i 27 obozów na mapę**
+przez 40 tur. Ulepszenie żyje.
+
+## 9. Build
+
+`node ./node_modules/vite/bin/vite.js build --outDir /tmp/civ-dist-fc --emptyOutDir`
+→ exit 0, `✓ built in 31,15 s`. C-001 dotrzymane (bez `npm run build`/`dev`).
+
+## 10. Higiena
+
+`git status` czysty. Artefakty esbuilda (`gra/tools/.oboz-*`) objęte `.gitignore`;
+własne śmieci diagnostyczne usunięte. `main.ts` i `ai.ts` NIE dotknięte przez FC
+(potwierdzone `git status` + `git diff --stat`). Nie zbliżałem się do plików tematów
+równoległych. `map-gen-regression-test` NIE uruchamiany. Zakaz `npx`, `git add -A`
+i pushu do `main` dotrzymany — push wyłącznie na gałąź tematu.
+
+## RAPORT TERMINALNY
+
+STATUS: FAIL
+DOMAIN: GAME
+TEMAT: R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1
+GOAL: Obóz łowiecki wyłącznie na nakładce Las (dowolny teren pod lasem, także wzgórze),
+nigdy poza lasem — gracz, automat, AI jednakowo.
+MODEL+EFFORT: Opus 5, effort high.
+ZMIANY/COMMIT: gałąź `autobot/R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1`. FC dodał
+`114370b7` (szkielet), `e70c378c` (raport + `gra/tools/oboz-lowiecki-fc-balans.cjs`)
+i ten commit. `gra/src`, `gra/data` NIETKNIĘTE przeze mnie. Merge do `origin/main`
+(8d0eafac) bezkonfliktowy (`merge-tree` → `1c03e1d0`, exit 0).
+TESTY: tsc 0 · logic 213/213 · tech-tree 19/0 · research 33/33 · unit-replace 13/13 ·
+combat 6/6 · auto-improvements 45/0 (bez pogorszenia) · bramka tematu 71/71 ·
+sonda Evaluatora 87/1 · sonda FC 4/1 · vite build exit 0.
+Mutacje FC: M1 0 FAIL (luka w dowodzie, wyjaśniona), M2 8 FAIL (bramka czuła).
+BLOKADY:
+1. **P7 — obóz zostaje po wyrębie lasu pod nim.** Reprodukcja własna,
+   **200/200 heksów, deterministycznie**, ścieżka gracza i AI. Łamie GOAL
+   („nigdy poza lasem") w zwykłej rozgrywce. `stripImprovementsWhenForestRemoved`
+   (`improvement-build.ts:165`) to pusty przelot. Plik JEST w allowliście.
+   Wybór naprawy = pytanie ABC (A: obóz znika przy wyrębie / B: wyrąb zablokowany
+   pod obozem / C: zostaje, GOAL do przeformułowania).
+2. Skarga „zamiast owcy buduje obóz" nierozwiązana — do rejestru, `ai.ts` poza allowlistą.
+BALANS: **NIE jest blokadą.** 768 pól kwalifikujących się na 5 mapach (50,7 % lądu),
+zawężenie kosztuje 1 pole z 769 (0,13 %). `DECISION_REQUIRED` Operatora na wariancie
+**odpada**: `Las I złoże` = 0 to niemożliwość strukturalna (`Nakladka` = jedno pole
+enuma), a nie ciasny wybór — `tylko Las` jest jedynym wykonalnym odczytaniem.
+RUNDY: 1/5
+NASTĘPNY KROK: Operator runda 2 — JEDNA poprawka merytoryczna (P7) + pytanie ABC
+o wariant naprawy; dodatkowo asercja na `terrainOk` w `createQualifier` przed gate'em
+commitu (domknięcie luki dowodowej M1). Reszta zweryfikowana trzykrotnie — nie przerabiać.
+DEPLOY/PUSH: NIE WYKONANO
