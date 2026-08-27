@@ -523,4 +523,5 @@ to lista „Wojny znane (wywiad)" w panelu dyplomacji, którą trzeba samemu otw
 Nic tu nie naprawiałem — to był audyt; każda naprawa wymaga Pana decyzji i osobnego
 zadania.
 
-**PRACA ZACOMMITOWANA NA GAŁĄŹ: TAK, SHA: (uzupełnione poniżej po commicie)**
+**PRACA ZACOMMITOWANA NA GAŁĄŹ: TAK, SHA: `2acbf3e2` (treść raportu); ten wiersz
+uzupełniony commitem następującym, HEAD gałęzi podany w raporcie terminalnym sesji.**
