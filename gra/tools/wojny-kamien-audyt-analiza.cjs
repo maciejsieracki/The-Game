@@ -78,6 +78,32 @@ for (const file of files) {
     for (const w of S.forcedStoneWars) L('| ' + w.pair + ' | ' + w.firstTurn + ' | ' + w.lastTurn + ' | ' + w.durationTurns + ' |');
   }
   L('');
+  // Sciezka mechanizmu Kamienia per glowna cywilizacja AI: pending -> cel -> cycle
+  const mainAi = [...new Set(owners.filter(o => !o.isCityState).map(o => o.ownerId))].sort((a, b) => a - b);
+  L('Ścieżka mechanizmu Kamienia per główna cywilizacja AI (pierwsza tura, w której…):');
+  L('');
+  L('| AI | pierwszy raz `pending` | pierwszy raz wybrany cel (`stoneTarget`) | pierwszy raz `cycle` | tur z celem, bez wojny | pierwsza tura poza Kamieniem |');
+  L('|---|---|---|---|---|---|');
+  const sciezka = [];
+  for (const oid of mainAi) {
+    const recs = owners.filter(o => o.ownerId === oid).sort((a, b) => a.turn - b.turn);
+    const fPending = recs.find(r => r.pending.includes(oid));
+    const fTarget = recs.find(r => r.stoneTarget != null);
+    const fCycle = recs.find(r => r.cycle.includes(oid));
+    const targetNoWar = recs.filter(r => r.stoneTarget != null && r.wars === 0).length;
+    const fNotStone = recs.find(r => r.epoch !== 1);
+    const row = { ownerId: oid, firstPending: fPending ? fPending.turn : null,
+      firstTarget: fTarget ? fTarget.turn : null, firstCycle: fCycle ? fCycle.turn : null,
+      turnsTargetNoWar: targetNoWar, firstNonStoneTurn: fNotStone ? fNotStone.turn : null };
+    sciezka.push(row);
+    L('| ' + oid + ' | ' + (row.firstPending == null ? '**nigdy**' : row.firstPending)
+      + ' | ' + (row.firstTarget == null ? '**nigdy**' : row.firstTarget)
+      + ' | ' + (row.firstCycle == null ? '**nigdy**' : row.firstCycle)
+      + ' | ' + row.turnsTargetNoWar
+      + ' | ' + (row.firstNonStoneTurn == null ? 'zostaje w Kamieniu' : row.firstNonStoneTurn) + ' |');
+  }
+  S.sciezkaMechanizmu = sciezka;
+  L('');
   // stan mechanizmu: pending / cycle / epoka
   const lastByOwner = new Map();
   for (const o of owners) lastByOwner.set(o.ownerId, o);
@@ -255,6 +281,31 @@ for (const file of files) {
   }
   for (const r of p3) if (r.turn % 5 === 0 || r.turn <= 2) L('| ' + r.turn + ' | ' + r.cs + ' | ' + r.aiC + ' | ' + r.plC + ' | ' + r.wars + ' |');
   S.p3 = p3;
+  L('');
+
+  // --- Brama isOwnerClusterCityState: kiedy glowna cywilizacja AI przestaje sie kwalifikowac ---
+  L('### Brama `!isOwnerClusterCityState(ownerId, ...)` w wyzwalaczu wojny Kamienia (main.ts:28025)');
+  L('');
+  L('| główna cywilizacja AI | `isOwnerClusterCityState` w turze 1 | pierwsza tura, w której staje się `true` | miast w tej turze | wartość w turze 20 (start mechanizmu) |');
+  L('|---|---|---|---|---|');
+  const flip = [];
+  const mainIds = [...new Set(d.snapshots.flatMap(sn => sn.owners
+    .filter(o => o.ownerId > 0 && !o.cityStateCopy && !o.barbarian).map(o => o.ownerId)))].sort((a, b) => a - b);
+  for (const oid of mainIds) {
+    const series = d.snapshots.map(sn => ({ turn: sn.turn, o: sn.owners.find(x => x.ownerId === oid) }))
+      .filter(x => x.o);
+    if (series.length === 0) continue;
+    const t1 = series[0];
+    const fl = series.find(x => x.o.clusterCityState);
+    const t20 = series.find(x => x.turn === 20);
+    const row = { ownerId: oid, atTurn1: t1.o.clusterCityState, flipTurn: fl ? fl.turn : null,
+      citiesAtFlip: fl ? fl.o.cityCount : null, atTurn20: t20 ? t20.o.clusterCityState : null };
+    flip.push(row);
+    L('| ' + oid + ' | ' + (row.atTurn1 ? 'true' : 'false') + ' | ' + (row.flipTurn == null ? 'nigdy' : '**' + row.flipTurn + '**')
+      + ' | ' + (row.citiesAtFlip == null ? '—' : row.citiesAtFlip) + ' | '
+      + (row.atTurn20 == null ? '—' : (row.atTurn20 ? '**true → wykluczony**' : 'false')) + ' |');
+  }
+  S.clusterGuardFlip = flip;
   L('');
 
   // --- P5: widoczność dla gracza ---

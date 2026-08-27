@@ -214,7 +214,7 @@ async function main() {
       const res = await runSeed(browser, seed);
       fs.writeFileSync(path.join(OUT_DIR, 'seed-' + seed + '.json'), JSON.stringify(res), 'utf8');
       console.log('[audyt] seed=' + seed + ' ZAPISANY (' + res.elapsedS + 's, gates='
-        + res.gates.length + ', owners=' + res.owners.length + ')');
+        + res.gatesTotal + ', vsGracz=' + res.gatesVsPlayer.length + ', owners=' + res.owners.length + ')');
     }
   } finally {
     await browser.close();
