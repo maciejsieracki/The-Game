@@ -282,3 +282,63 @@ Evaluatora 3 wojny zaczęte w turach 20–21 **wciąż trwały w turze 46**
 („automatyczny pokój po zdobyciu lub utracie 2 miast, 20 tur odpoczynku")
 jest więc dziś **nieosiągalny w praktyce dla par AI↔AI**.
 
+---
+
+## 8. Wyniki mojego pomiaru
+
+Każda liczba: **ziarno · liczba tur · liczba powtórzeń**. Powtórzenie = jeden pełny
+przebieg gry od `doStartGame` do tury końcowej.
+
+### 8.1 Tabela główna
+
+| przebieg | ziarno | tur | powt. | **wypowiedzeń wojny** | z graczem | `pending` Kamienia (max) | `stoneActive` (max) |
+|---|---|---|---|---|---|---|---|
+| pasywny (nowe ziarno) | **505** | 61 | 1 | **0** | **0** | **0** | **0** |
+| „aktywny" (patrz 8.4) | **111** | 61 | 1 | **0** | **0** | **0** | **0** |
+
+**`pending` nigdy nie był niepusty ani przez jedną turę w żadnym z 61 zrzutów ×
+2 przebiegi.** Mechanizm nie jest „rzadko odpalany" — on nie startuje w ogóle.
+
+### 8.2 Bramka `isOwnerClusterCityState` — moment przeskoku (potwierdzenie Z1)
+
+Główne cywilizacje AI to zawsze **6 ownerów: 1, 8, 15, 22, 29, 36**.
+
+| ziarno | AI 1 | AI 8 | AI 15 | AI 22 | AI 29 | AI 36 | miast przy przeskoku |
+|---|---|---|---|---|---|---|---|
+| 505 (61 tur) | t.**6** | t.**6** | t.**6** | t.**7** | t.**7** | t.**8** | **2** (każde) |
+| 111 (61 tur) | t.**7** | t.**7** | t.**7** | t.**7** | t.**7** | t.**7** | **2** (każde) |
+
+**12/12 przypadków: przeskok następuje w turze 6–8, przy 2 miastach, po zdobyciu
+1 miasta z flagą `startCityState`.** Wojna wymuszona Kamienia startuje dopiero
+w turze 20 — czyli **12–14 tur po tym, jak wszyscy kandydaci zostali już trwale
+wykluczeni**. Zgodne co do cyfry z Operatorem (18/18) i Evaluatorem (t.6–7).
+
+### 8.3 Brama AI→gracz mierzona ze STANU (potwierdzenie Z2/Z6 pomiarem)
+
+Mierzę inaczej niż obie role: nie instrumentuję decyzji ani nie liczę komend —
+czytam `zaufanie` i `respekt` prosto z relacji i liczę `score = zaufanie + respekt`.
+
+| ziarno | tur | obserwacji (AI odkryte) | `score < 30` | **min `score`** | min `zaufanie` | próg |
+|---|---|---|---|---|---|---|
+| 505 | 61 | 183 | **0** | **77** | 47 | 30 |
+| 111 | 61 | 183 | **0** | **77** | 47 | 30 |
+
+**Zapas do progu wynosi 47 punktów w najgorszym zmierzonym przypadku** — a `zaufanie`
+samo w sobie nigdy nie spadło poniżej 47, przy czym `zaufanie` ma podłogę 0 i już
+sam `respekt` przekracza próg. To jest empiryczne potwierdzenie dowodu z §3.2.
+
+### 8.4 UCZCIWA KOREKTA — scenariusz aktywny w pierwszym podejściu NIE ZADZIAŁAŁ
+
+**To jest brak dowodu, nie wynik (§13a), i zgłaszam go jako brak dowodu.**
+
+Pierwsza wersja mojego sterownika kolejkowała zwiadowcę w **kolejce Pracy**
+(`setCityProduction`). Pomiar pokazał, że to nie działa: `prodLog` = `queued:Zwiadowca`
+w turze 0, a **`plrUnits = 0` we wszystkich 61 zrzutach** i 1 miasto przez cały przebieg.
+Jednostki w tej grze nie powstają z Pracy — kanoniczna ścieżka to
+`purchaseRecruitmentUnit` (`main.ts:3462`, opłata ze skarbca + Manpower + surowce;
+komentarz w kodzie: gracz i AI idą „tę samą ścieżkę"). **Przebieg oznaczony „aktywny
+seed 111" jest więc de facto drugim przebiegiem PASYWNYM** i tak go liczę — daje
+drugie ziarno kontrolne, nie test scenariusza aktywnego.
+
+Zrzut tego nieudanego przebiegu zostaje w `dowody-fc/` jako dowód korekty (§13b).
+
