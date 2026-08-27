@@ -56,7 +56,7 @@ async function runSeed(browser, seed) {
   let exploreEnabled = 0;
   const prodLog = [];
   if (MODE === 'aktywny') {
-    prodLog.push({ t: 0, q: await page.evaluate(() => (window).__fc.queueScout()) });
+    prodLog.push({ t: 0, q: await page.evaluate(() => (window).__fc.recruitScout()) });
     exploreEnabled += await page.evaluate(() => (window).__fc.enableExplore());
   }
 
@@ -67,11 +67,12 @@ async function runSeed(browser, seed) {
   for (let i = 0; i < TURNS; i++) {
     // Gracz aktywny wlacza "Zwiedzaj" takze na zwiadowcach zbudowanych pozniej.
     if (MODE === 'aktywny') {
-      const q = await page.evaluate(() => (window).__fc.queueScout());
+      const q = await page.evaluate(() => (window).__fc.recruitScout());
       const n = await page.evaluate(() => (window).__fc.enableExplore());
       exploreEnabled += n;
-      if (n > 0 || (q !== 'already' && q !== prodLog[prodLog.length - 1].q)) {
-        prodLog.push({ t: snaps[snaps.length - 1].t, q, enabled: n });
+      if (n > 0 || q !== prodLog[prodLog.length - 1].q) {
+        const ps = await page.evaluate(() => (window).__fc.prodState());
+        prodLog.push({ t: snaps[snaps.length - 1].t, q, enabled: n, prod: ps });
       }
     }
     const b = await page.evaluate(() => (window).__fc.blockers());

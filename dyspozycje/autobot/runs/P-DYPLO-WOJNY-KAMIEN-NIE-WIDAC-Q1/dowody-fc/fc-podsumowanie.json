@@ -1,0 +1,73 @@
+[
+  {
+    "seed": 111,
+    "mode": "aktywny",
+    "difficulty": "domyslna",
+    "turnsReached": 61,
+    "snaps": 61,
+    "founded": "ok:80,55",
+    "exploreEnabled": 0,
+    "unblockCount": 0,
+    "prodLog": [
+      {
+        "t": 0,
+        "q": "queued:Zwiadowca"
+      }
+    ],
+    "plrUnitsFinal": 0,
+    "scoutsFinal": 0,
+    "declarations": [],
+    "declCount": 0,
+    "declWithPlayer": 0,
+    "mainAiCount": 6,
+    "contactsFinal": [
+      43,
+      44,
+      45
+    ],
+    "contactsMainAiFinal": [],
+    "layerCensus": {
+      "full": 0,
+      "simplified": 183,
+      "pre_contact": 1233
+    },
+    "csFlip": {
+      "1": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      },
+      "8": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      },
+      "15": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      },
+      "22": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      },
+      "29": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      },
+      "36": {
+        "turn": 7,
+        "cities": 2,
+        "csCities": 1
+      }
+    },
+    "stonePendingMax": 0,
+    "warEventsFinal": 7,
+    "panelPlayerFinal": 0,
+    "panelOthersFinal": 0,
+    "errors": [],
+    "ms": 2287724
+  }
+]

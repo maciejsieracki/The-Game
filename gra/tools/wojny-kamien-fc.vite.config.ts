@@ -87,50 +87,35 @@ const PROBE = `
       },
 
       /**
-       * Odpowiednik klikniecia jednostki w panelu budowy miasta (main.ts:30057,
-       * setProduction) - gracz zaczyna z ZEREM jednostek, wiec bez tego nie ma
-       * czym zwiedzac. Kolejkuje zwiadowce w stolicy, jesli jest dostepny.
+       * KOREKTA FC (runda 1): pierwsza wersja kolejkowala zwiadowce w kolejce PRACY
+       * (setCityProduction). Zmierzone: po 61 turach gracz mial 0 jednostek - jednostki
+       * NIE powstaja z Pracy. Kanoniczna sciezka rekrutacji to purchaseRecruitmentUnit
+       * (main.ts:3462) - oplata ze skarbca + Manpower + surowce; komentarz w kodzie mowi
+       * wprost, ze gracz i AI ida "ta sama sciezka". Tego uzywam.
        */
-      queueScout: function () {
+      recruitScout: function () {
         const cap = cities.find(function (c) { return c.ownerId === 0; });
         if (!cap) return 'no-city';
-        const prod0 = cityProd.get(cap.id) ?? { kolejka: [], postep: 0 };
-        if (prod0.kolejka.some(function (it: any) { return it.kind === 'jednostka'; })) return 'already';
-        const ownImprovements = placedImprovementsForOwner(0);
-        const allowed = availableProduction(
-          cap,
-          data,
-          Array.from(unlockedTechSetForOwner(0)),
-          {
-            epoch: empireEpochForOwner(0),
-            builtBuildingIds: cityBuilt.get(cap.id) ?? [],
-            productionQueue: prod0.kolejka,
-            civBonusy: civBonusyForOwnerId(0),
-            civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
-            placedImprovements: placedImprovementsWithTradeGrants(0, ownImprovements),
-            hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(0, ownImprovements),
-            aliveUnitTypeNames: new Set(
-              units.filter(function (x) { return x.ownerId === 0; }).map(function (x) { return x.typeId; }),
-            ),
-            buildingCostPace: player.buildingCostPace ?? 'niski',
-            ownerId: 0,
-            difficulty: effectiveGameDifficultyForOwner(0),
-          },
+        const prod = cityProd.get(cap.id);
+        if (((prod as any)?.rekrutacja?.length ?? 0) > 0) return 'already';
+        if (units.some(function (u) { return u.ownerId === 0 && isScoutUnit(u); })) return 'have-scout';
+        const item = unitProductionItem(
+          'Zwiadowca', data, civBonusyForOwnerId(0),
+          player.kosztJednostekPace ?? 'niski', 0, _menuDifficulty,
         );
-        const unitsAvail = allowed.filter(function (it: any) { return it.kind === 'jednostka'; });
-        if (unitsAvail.length === 0) return 'none-available';
-        const scout = unitsAvail.find(function (it: any) { return it.id === 'Zwiadowca'; })
-          ?? unitsAvail.slice().sort(function (a: any, b: any) { return a.koszt - b.koszt; })[0];
-        setCityProduction(cap.id, { ...prod0, kolejka: [scout as any, ...prod0.kolejka] });
-        return 'queued:' + (scout as any).id;
+        if (!item) return 'no-item';
+        const ok = purchaseRecruitmentUnit(cap.id, 'Zwiadowca', item.koszt, 0);
+        return ok ? ('bought:' + item.koszt)
+          : ('failed:skarbiec=' + Math.round(player.skarbiec) + ',koszt=' + item.koszt);
       },
       prodState: function () {
         const cap = cities.find(function (c) { return c.ownerId === 0; });
         if (!cap) return null;
         const p = cityProd.get(cap.id);
         return {
+          skarbiec: Math.round(player.skarbiec),
           kolejka: (p?.kolejka ?? []).map(function (i: any) { return i.kind + ':' + i.id; }),
-          postep: p?.postep ?? 0,
+          rekrutacja: ((p as any)?.rekrutacja ?? []).map(function (i: any) { return i.id; }),
         };
       },
       blockers: function () {
