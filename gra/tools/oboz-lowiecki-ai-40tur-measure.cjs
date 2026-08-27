@@ -19,8 +19,10 @@ const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild')
 
 const SRC = process.env.OBOZ_SRC_DIR || path.resolve(__dirname, '..', 'src');
 const TAG = process.env.OBOZ_TAG || 'now';
-const ENTRY = path.resolve(__dirname, `.oboz-40tur-entry-${TAG}.ts`);
-const BUNDLE = path.resolve(__dirname, `.oboz-40tur-bundle-${TAG}.cjs`);
+// Nazwy dopasowane do wzorcow .gitignore (`gra/tools/.*-entry.ts`, `.*-bundle.cjs`) — inaczej
+// artefakty esbuilda zostaja w `git status` jako smieci po kazdym pomiarze.
+const ENTRY = path.resolve(__dirname, `.oboz-40tur-${TAG}-entry.ts`);
+const BUNDLE = path.resolve(__dirname, `.oboz-40tur-${TAG}-bundle.cjs`);
 
 fs.writeFileSync(ENTRY, `
 export { generateMap } from ${JSON.stringify(SRC + '/map/generator')};
