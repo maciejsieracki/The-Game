@@ -1,0 +1,225 @@
+# POMIAR ROZDZIELONY — AI GRACZA vs AI CYWILIZACJI
+# ziarna: 7, 99, 512, 4242, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=45 landSea=146 relief=121 coast=23 riversMain=800 riversFill=258 forest=7 deposits=19 starts=85 total=1508
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=9 landSea=105 relief=138 coast=20 riversMain=105 riversFill=73 forest=5 deposits=13 starts=58 total=526
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=89 relief=110 coast=21 riversMain=132 riversFill=79 forest=5 deposits=15 starts=83 total=541
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=102 relief=110 coast=20 riversMain=92 riversFill=69 forest=5 deposits=13 starts=61 total=480
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=88 relief=104 coast=20 riversMain=229 riversFill=91 forest=5 deposits=12 starts=67 total=622
+
+### AI CYWILIZACJI — prawdziwe wejscie decideAITurn (ai.ts:~1984, maxItemsPerCity=1)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |      120 |     21 |   14.1 |   21 |          26.9 |      73.9 |    99 |          43 |     0 |      0 | 120/0/0
+        SLAD 4,22: farma@t2 -> bydlo@t37  (rozpietosc 35 tur, obcych 92)
+        SLAD 5,20: farma@t3 -> bydlo@t38  (rozpietosc 35 tur, obcych 93)
+        SLAD 5,22: farma@t5 -> bydlo@t39  (rozpietosc 34 tur, obcych 93)
+        SLAD 5,7: farma@t0 -> oboz_lowiecki@t30  (rozpietosc 30 tur, obcych 80)
+        SLAD 5,8: farma@t1 -> oboz_lowiecki@t31  (rozpietosc 30 tur, obcych 81)
+        SLAD 6,6 [RZEKA]: farma@t3 -> oboz_lowiecki@t33  (rozpietosc 30 tur, obcych 82)
+    99 |      120 |     31 |   19.1 |   33 |          23.2 |      61.2 |    87 |          26 |     0 |      0 | 120/0/0
+        SLAD 5,20: farma@t0 -> bydlo@t38  (rozpietosc 38 tur, obcych 86)
+        SLAD 5,21: farma@t1 -> bydlo@t39  (rozpietosc 38 tur, obcych 86)
+        SLAD 7,7 [RZEKA]: farma@t8 -> oboz_lowiecki@t38  (rozpietosc 30 tur, obcych 77)
+        SLAD 7,8 [RZEKA]: farma@t9 -> oboz_lowiecki@t39  (rozpietosc 30 tur, obcych 76)
+        SLAD 6,7: farma@t5 -> oboz_lowiecki@t34  (rozpietosc 29 tur, obcych 76)
+        SLAD 6,8: farma@t6 -> oboz_lowiecki@t35  (rozpietosc 29 tur, obcych 76)
+   512 |      120 |     31 |   20.7 |   42 |          19.7 |      51.4 |    77 |           0 |     0 |      0 | 120/0/0
+        SLAD 7,7: farma@t8 -> oboz_lowiecki@t36  (rozpietosc 28 tur, obcych 68)
+        SLAD 8,4: farma@t9 -> oboz_lowiecki@t37  (rozpietosc 28 tur, obcych 69)
+        SLAD 8,6: farma@t10 -> oboz_lowiecki@t38  (rozpietosc 28 tur, obcych 69)
+        SLAD 5,19: farma@t4 -> bydlo@t31  (rozpietosc 27 tur, obcych 72)
+        SLAD 6,6: farma@t5 -> oboz_lowiecki@t32  (rozpietosc 27 tur, obcych 71)
+        SLAD 7,5: farma@t7 -> oboz_lowiecki@t34  (rozpietosc 27 tur, obcych 69)
+  4242 |      120 |     28 |   16.0 |   28 |          22.8 |      59.6 |    92 |          48 |     0 |      0 | 120/0/0
+        SLAD 5,7 [RZEKA]: farma@t0 -> oboz_lowiecki@t33  (rozpietosc 33 tur, obcych 82)
+        SLAD 5,8: farma@t1 -> oboz_lowiecki@t34  (rozpietosc 33 tur, obcych 83)
+        SLAD 6,6 [RZEKA]: farma@t3 -> oboz_lowiecki@t36  (rozpietosc 33 tur, obcych 82)
+        SLAD 6,7 [RZEKA]: farma@t4 -> oboz_lowiecki@t37  (rozpietosc 33 tur, obcych 82)
+        SLAD 6,8: farma@t5 -> oboz_lowiecki@t38  (rozpietosc 33 tur, obcych 82)
+        SLAD 7,6 [RZEKA]: farma@t8 -> oboz_lowiecki@t39  (rozpietosc 31 tur, obcych 80)
+  1337 |      120 |     27 |   16.3 |   27 |          24.1 |      64.7 |    93 |          40 |     0 |      0 | 120/0/0
+        SLAD 6,6 [RZEKA]: farma@t2 -> oboz_lowiecki@t33  (rozpietosc 31 tur, obcych 81)
+        SLAD 4,22: farma@t3 -> bydlo@t34  (rozpietosc 31 tur, obcych 82)
+        SLAD 6,7: farma@t3 -> oboz_lowiecki@t34  (rozpietosc 31 tur, obcych 82)
+        SLAD 4,23: farma@t4 -> bydlo@t35  (rozpietosc 31 tur, obcych 83)
+        SLAD 6,8: farma@t4 -> oboz_lowiecki@t35  (rozpietosc 31 tur, obcych 83)
+        SLAD 7,5 [RZEKA]: farma@t6 -> oboz_lowiecki@t37  (rozpietosc 31 tur, obcych 83)
+RAZEM  |      600 |     31 |   17.2 |      |          23.3 |      62.1 |   448 |         157 |     0 |      0 | 600/0/0
+  udzial farm przy rzece: 35.0%  ·  rozklad kategorii zyw/sur/infra/wyrab: 600/0/0/0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=85 relief=99 coast=18 riversMain=226 riversFill=116 forest=6 deposits=12 starts=60 total=627
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=82 relief=127 coast=20 riversMain=102 riversFill=80 forest=5 deposits=12 starts=54 total=487
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=83 relief=96 coast=17 riversMain=104 riversFill=69 forest=5 deposits=12 starts=67 total=458
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=95 relief=97 coast=18 riversMain=64 riversFill=56 forest=5 deposits=10 starts=56 total=406
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=81 relief=102 coast=20 riversMain=168 riversFill=78 forest=5 deposits=10 starts=60 total=528
+
+### AI GRACZA — profil „zywnosc" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |       63 |     29 |   13.4 |   30 |          17.9 |      25.1 |    30 |          14 |     0 |      0 | 63/0/0
+        SLAD 4,6: farma@t0 -> oboz_lowiecki@t23  (rozpietosc 23 tur, obcych 29)
+        SLAD 5,5 [RZEKA]: farma@t1 -> oboz_lowiecki@t23  (rozpietosc 22 tur, obcych 27)
+        SLAD 5,6 [RZEKA]: farma@t2 -> oboz_lowiecki@t24  (rozpietosc 22 tur, obcych 28)
+        SLAD 5,8: farma@t3 -> oboz_lowiecki@t25  (rozpietosc 22 tur, obcych 28)
+        SLAD 5,7: farma@t3 -> oboz_lowiecki@t24  (rozpietosc 21 tur, obcych 26)
+        SLAD 6,6 [RZEKA]: farma@t5 -> oboz_lowiecki@t26  (rozpietosc 21 tur, obcych 28)
+    99 |       63 |     27 |   12.7 |   29 |          17.4 |      22.8 |    29 |          12 |     0 |      0 | 63/0/0
+        SLAD 4,6 [RZEKA]: farma@t0 -> oboz_lowiecki@t23  (rozpietosc 23 tur, obcych 28)
+        SLAD 4,7: farma@t1 -> oboz_lowiecki@t24  (rozpietosc 23 tur, obcych 27)
+        SLAD 5,6 [RZEKA]: farma@t3 -> oboz_lowiecki@t25  (rozpietosc 22 tur, obcych 27)
+        SLAD 5,7: farma@t4 -> oboz_lowiecki@t26  (rozpietosc 22 tur, obcych 27)
+        SLAD 5,5 [RZEKA]: farma@t3 -> oboz_lowiecki@t24  (rozpietosc 21 tur, obcych 25)
+        SLAD 5,8: farma@t5 -> oboz_lowiecki@t26  (rozpietosc 21 tur, obcych 26)
+   512 |       63 |     27 |   11.8 |   28 |          16.9 |      21.6 |    28 |           0 |     0 |      0 | 63/0/0
+        SLAD 4,5: farma@t0 -> oboz_lowiecki@t23  (rozpietosc 23 tur, obcych 27)
+        SLAD 4,6: farma@t1 -> oboz_lowiecki@t24  (rozpietosc 23 tur, obcych 26)
+        SLAD 5,5: farma@t3 -> oboz_lowiecki@t26  (rozpietosc 23 tur, obcych 26)
+        SLAD 4,7: farma@t2 -> oboz_lowiecki@t24  (rozpietosc 22 tur, obcych 25)
+        SLAD 5,4: farma@t3 -> oboz_lowiecki@t25  (rozpietosc 22 tur, obcych 25)
+        SLAD 5,6: farma@t4 -> oboz_lowiecki@t26  (rozpietosc 22 tur, obcych 25)
+  4242 |       63 |     27 |   11.8 |   28 |          16.9 |      20.5 |    28 |          21 |     0 |      0 | 63/0/0
+        SLAD 4,5 [RZEKA]: farma@t0 -> oboz_lowiecki@t24  (rozpietosc 24 tur, obcych 27)
+        SLAD 4,6 [RZEKA]: farma@t1 -> oboz_lowiecki@t24  (rozpietosc 23 tur, obcych 25)
+        SLAD 4,7: farma@t2 -> oboz_lowiecki@t25  (rozpietosc 23 tur, obcych 26)
+        SLAD 5,4 [RZEKA]: farma@t3 -> oboz_lowiecki@t26  (rozpietosc 23 tur, obcych 25)
+        SLAD 5,5 [RZEKA]: farma@t3 -> oboz_lowiecki@t26  (rozpietosc 23 tur, obcych 25)
+        SLAD 5,6 [RZEKA]: farma@t4 -> oboz_lowiecki@t27  (rozpietosc 23 tur, obcych 26)
+  1337 |       63 |     27 |   11.7 |   28 |          16.7 |      21.0 |    28 |          20 |     0 |      0 | 63/0/0
+        SLAD 4,6 [RZEKA]: farma@t0 -> oboz_lowiecki@t22  (rozpietosc 22 tur, obcych 27)
+        SLAD 5,4 [RZEKA]: farma@t1 -> oboz_lowiecki@t22  (rozpietosc 21 tur, obcych 25)
+        SLAD 5,5 [RZEKA]: farma@t2 -> oboz_lowiecki@t23  (rozpietosc 21 tur, obcych 26)
+        SLAD 5,6 [RZEKA]: farma@t3 -> oboz_lowiecki@t24  (rozpietosc 21 tur, obcych 25)
+        SLAD 5,7: farma@t3 -> oboz_lowiecki@t24  (rozpietosc 21 tur, obcych 25)
+        SLAD 6,4 [RZEKA]: farma@t4 -> oboz_lowiecki@t25  (rozpietosc 21 tur, obcych 26)
+RAZEM  |      315 |     29 |   12.3 |      |          17.2 |      22.2 |   143 |          67 |     0 |      0 | 315/0/0
+  udzial farm przy rzece: 46.9%  ·  rozklad kategorii zyw/sur/infra/wyrab: 315/0/0/0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=90 relief=100 coast=20 riversMain=215 riversFill=132 forest=4 deposits=11 starts=56 total=635
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=87 relief=135 coast=17 riversMain=85 riversFill=69 forest=5 deposits=10 starts=57 total=469
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=99 relief=96 coast=18 riversMain=103 riversFill=64 forest=7 deposits=12 starts=58 total=462
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=88 relief=95 coast=18 riversMain=71 riversFill=66 forest=5 deposits=12 starts=73 total=435
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=89 relief=103 coast=19 riversMain=171 riversFill=83 forest=5 deposits=12 starts=68 total=555
+
+### AI GRACZA — profil „surowce" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |       54 |      2 |    0.5 |    3 |           6.7 |       7.3 |     0 |           0 |     0 |     26 | 0/54/0
+        SLAD 9,7 [RZEKA]: glinianka@t10 -> tartak@t21  (rozpietosc 11 tur, obcych 12)
+        SLAD 8,5 [RZEKA]: glinianka@t6 -> tartak@t15  (rozpietosc 9 tur, obcych 10)
+        SLAD 5,5 [RZEKA]: tartak@t2 -> glinianka@t2  (rozpietosc 0 tur, obcych 0)
+    99 |       55 |      3 |    1.5 |    3 |          20.3 |      25.0 |     0 |           0 |     0 |     23 | 0/55/0
+        SLAD 4,7: tartak@t2 -> warzelnia_soli@t38  (rozpietosc 36 tur, obcych 47)
+        SLAD 8,8 [RZEKA]: glinianka@t6 -> tartak@t19  (rozpietosc 13 tur, obcych 15)
+        SLAD 7,8 [RZEKA]: glinianka@t2 -> tartak@t14  (rozpietosc 12 tur, obcych 13)
+   512 |       55 |      1 |    0.8 |    1 |          34.0 |      45.0 |     0 |           0 |     0 |     21 | 0/55/0
+        SLAD 4,6: tartak@t2 -> warzelnia_soli@t36  (rozpietosc 34 tur, obcych 45)
+  4242 |       55 |      3 |    1.0 |    5 |           7.8 |       7.2 |     0 |           0 |     0 |     20 | 0/55/0
+        SLAD 4,7: tartak@t3 -> kamieniolom@t20 -> kopalnia_cyny@t22  (rozpietosc 19 tur, obcych 18)
+        SLAD 5,7 [RZEKA]: tartak@t7 -> glinianka@t10 -> kamieniolom@t21  (rozpietosc 14 tur, obcych 15)
+        SLAD 6,7 [RZEKA]: tartak@t11 -> glinianka@t14  (rozpietosc 3 tur, obcych 2)
+        SLAD 5,4 [RZEKA]: glinianka@t2 -> tartak@t4  (rozpietosc 2 tur, obcych 1)
+        SLAD 5,5 [RZEKA]: tartak@t5 -> glinianka@t6  (rozpietosc 1 tur, obcych 0)
+  1337 |       55 |      3 |    1.6 |    4 |          15.5 |      18.3 |     0 |           0 |     0 |     23 | 0/55/0
+        SLAD 4,6 [RZEKA]: tartak@t1 -> warzelnia_soli@t37  (rozpietosc 36 tur, obcych 45)
+        SLAD 8,6 [RZEKA]: glinianka@t6 -> tartak@t18  (rozpietosc 12 tur, obcych 13)
+        SLAD 9,4 [RZEKA]: glinianka@t10 -> tartak@t19  (rozpietosc 9 tur, obcych 10)
+        SLAD 6,5 [RZEKA]: glinianka@t2 -> tartak@t7  (rozpietosc 5 tur, obcych 5)
+RAZEM  |      274 |      3 |    1.1 |      |          16.9 |      20.6 |     0 |           0 |     0 |    113 | 0/274/0
+  udzial farm przy rzece: 0.0%  ·  rozklad kategorii zyw/sur/infra/wyrab: 0/274/0/0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=90 relief=108 coast=20 riversMain=209 riversFill=99 forest=4 deposits=10 starts=56 total=602
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=102 relief=132 coast=17 riversMain=81 riversFill=69 forest=5 deposits=11 starts=56 total=479
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=84 relief=100 coast=18 riversMain=102 riversFill=68 forest=5 deposits=11 starts=58 total=452
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=81 relief=102 coast=18 riversMain=69 riversFill=64 forest=5 deposits=11 starts=56 total=411
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=85 relief=99 coast=18 riversMain=160 riversFill=78 forest=5 deposits=10 starts=61 total=520
+
+### AI GRACZA — profil „infrastruktura" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |       31 |      1 |    0.7 |    1 |          29.0 |      28.0 |     0 |           0 |     0 |      0 | 0/0/31
+        SLAD 4,6: posterunek@t1 -> droga@t30  (rozpietosc 29 tur, obcych 28)
+    99 |       30 |      1 |    0.7 |    1 |          28.0 |      27.0 |     0 |           0 |     0 |      0 | 0/0/30
+        SLAD 4,6 [RZEKA]: posterunek@t1 -> droga@t29  (rozpietosc 28 tur, obcych 27)
+   512 |       29 |      1 |    0.7 |    1 |          27.0 |      26.0 |     0 |           0 |     0 |      0 | 0/0/29
+        SLAD 4,5: posterunek@t1 -> droga@t28  (rozpietosc 27 tur, obcych 26)
+  4242 |       29 |      1 |    0.7 |    1 |          27.0 |      26.0 |     0 |           0 |     0 |      0 | 0/0/29
+        SLAD 4,5 [RZEKA]: posterunek@t1 -> droga@t28  (rozpietosc 27 tur, obcych 26)
+  1337 |       29 |      1 |    0.7 |    1 |          27.0 |      26.0 |     0 |           0 |     0 |      0 | 0/0/29
+        SLAD 4,6 [RZEKA]: posterunek@t1 -> droga@t28  (rozpietosc 27 tur, obcych 26)
+RAZEM  |      148 |      1 |    0.7 |      |          27.6 |      26.6 |     0 |           0 |     0 |      0 | 0/0/148
+  udzial farm przy rzece: 0.0%  ·  rozklad kategorii zyw/sur/infra/wyrab: 0/0/148/0
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=84 relief=95 coast=17 riversMain=210 riversFill=106 forest=5 deposits=10 starts=56 total=588
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=87 relief=132 coast=22 riversMain=81 riversFill=70 forest=6 deposits=10 starts=57 total=470
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=86 relief=97 coast=22 riversMain=104 riversFill=66 forest=5 deposits=12 starts=57 total=456
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=90 relief=104 coast=23 riversMain=65 riversFill=62 forest=5 deposits=10 starts=56 total=421
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=83 relief=101 coast=17 riversMain=167 riversFill=81 forest=5 deposits=10 starts=65 total=533
+
+### AI GRACZA — profil „zrownowazone" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |       63 |     25 |   11.3 |   30 |          15.1 |      20.8 |    30 |          14 |     0 |      0 | 62/0/1
+        SLAD 5,7: farma@t3 -> oboz_lowiecki@t25  (rozpietosc 22 tur, obcych 28)
+        SLAD 5,8: farma@t4 -> oboz_lowiecki@t25  (rozpietosc 21 tur, obcych 26)
+        SLAD 6,5 [RZEKA]: farma@t6 -> oboz_lowiecki@t26  (rozpietosc 20 tur, obcych 26)
+        SLAD 6,6 [RZEKA]: farma@t7 -> oboz_lowiecki@t27  (rozpietosc 20 tur, obcych 26)
+        SLAD 6,7: farma@t8 -> oboz_lowiecki@t27  (rozpietosc 19 tur, obcych 24)
+        SLAD 6,8: farma@t9 -> oboz_lowiecki@t28  (rozpietosc 19 tur, obcych 25)
+    99 |       63 |     25 |   10.6 |   29 |          14.6 |      18.9 |    29 |          12 |     0 |      0 | 62/0/1
+        SLAD 5,6 [RZEKA]: farma@t4 -> oboz_lowiecki@t26  (rozpietosc 22 tur, obcych 26)
+        SLAD 5,7: farma@t5 -> oboz_lowiecki@t26  (rozpietosc 21 tur, obcych 25)
+        SLAD 5,8: farma@t6 -> oboz_lowiecki@t27  (rozpietosc 21 tur, obcych 25)
+        SLAD 5,4: farma@t2 -> bydlo@t22  (rozpietosc 20 tur, obcych 27)
+        SLAD 6,5 [RZEKA]: farma@t8 -> oboz_lowiecki@t27  (rozpietosc 19 tur, obcych 23)
+        SLAD 6,6 [RZEKA]: farma@t9 -> oboz_lowiecki@t28  (rozpietosc 19 tur, obcych 24)
+   512 |       63 |     24 |    9.8 |   28 |          14.1 |      17.9 |    28 |           0 |     0 |      0 | 62/0/1
+        SLAD 5,4: farma@t3 -> oboz_lowiecki@t26  (rozpietosc 23 tur, obcych 26)
+        SLAD 5,5: farma@t4 -> oboz_lowiecki@t26  (rozpietosc 22 tur, obcych 24)
+        SLAD 5,6: farma@t5 -> oboz_lowiecki@t27  (rozpietosc 22 tur, obcych 25)
+        SLAD 6,4: farma@t8 -> oboz_lowiecki@t27  (rozpietosc 19 tur, obcych 22)
+        SLAD 6,5: farma@t9 -> oboz_lowiecki@t28  (rozpietosc 19 tur, obcych 23)
+        SLAD 6,6: farma@t10 -> oboz_lowiecki@t28  (rozpietosc 18 tur, obcych 22)
+  4242 |       63 |     24 |    9.9 |   28 |          14.2 |      17.0 |    28 |          21 |     0 |      0 | 62/0/1
+        SLAD 5,4 [RZEKA]: farma@t3 -> oboz_lowiecki@t26  (rozpietosc 23 tur, obcych 26)
+        SLAD 5,5 [RZEKA]: farma@t4 -> oboz_lowiecki@t27  (rozpietosc 23 tur, obcych 25)
+        SLAD 5,6 [RZEKA]: farma@t5 -> oboz_lowiecki@t27  (rozpietosc 22 tur, obcych 24)
+        SLAD 5,7 [RZEKA]: farma@t6 -> oboz_lowiecki@t28  (rozpietosc 22 tur, obcych 24)
+        SLAD 5,8: farma@t7 -> oboz_lowiecki@t29  (rozpietosc 22 tur, obcych 24)
+        SLAD 6,5 [RZEKA]: farma@t9 -> oboz_lowiecki@t29  (rozpietosc 20 tur, obcych 22)
+  1337 |       63 |     24 |    9.8 |   28 |          14.0 |      17.3 |    28 |          20 |     0 |      0 | 62/0/1
+        SLAD 5,6 [RZEKA]: farma@t3 -> oboz_lowiecki@t24  (rozpietosc 21 tur, obcych 26)
+        SLAD 5,7: farma@t4 -> oboz_lowiecki@t25  (rozpietosc 21 tur, obcych 25)
+        SLAD 6,4 [RZEKA]: farma@t5 -> oboz_lowiecki@t25  (rozpietosc 20 tur, obcych 24)
+        SLAD 6,5 [RZEKA]: farma@t6 -> oboz_lowiecki@t26  (rozpietosc 20 tur, obcych 24)
+        SLAD 6,6 [RZEKA]: farma@t7 -> oboz_lowiecki@t27  (rozpietosc 20 tur, obcych 24)
+        SLAD 6,7: farma@t8 -> oboz_lowiecki@t27  (rozpietosc 19 tur, obcych 22)
+RAZEM  |      315 |     25 |   10.3 |      |          14.4 |      18.4 |   143 |          67 |     0 |      0 | 310/0/5
+  udzial farm przy rzece: 46.9%  ·  rozklad kategorii zyw/sur/infra/wyrab: 310/0/5/0
+
+### CZY PROFILE GRACZA SIE ROZNIA (rozklad kategorii, suma po ziarnach)
+profil          | razem | zywnosc | surowce | infra | tartak | farmy | farmy@rzeka
+zywnosc         |   315 |     315 |       0 |     0 |      0 |   143 |          67
+surowce         |   274 |       0 |     274 |     0 |    113 |     0 |           0
+infrastruktura  |   148 |       0 |       0 |   148 |      0 |     0 |           0
+zrownowazone    |   315 |     310 |       0 |     5 |      0 |   143 |          67
+AI CYWILIZACJI  |   600 |     600 |       0 |     0 |      0 |   448 |         157
+
+podobienstwo rozkladow „Zrownowazona" gracza vs AI cywilizacji (cosinus): 0.9999
+  wektor gracza [zyw,sur,infra,wyrab] = [0.984, 0.000, 0.016, 0.000]
+  wektor AI cyw. [zyw,sur,infra,wyrab] = [1.000, 0.000, 0.000, 0.000]
