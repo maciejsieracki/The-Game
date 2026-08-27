@@ -76,6 +76,7 @@ import type { RuntimeUnit } from '../units/setup';
 import type { City } from './cities';
 import type { TradeRoute } from './trade-routes';
 import { isValidMapSnapshot, type SerializedMapData } from '../map/mapSnapshot';
+import { Nakladka, Ulepszenie } from '../types/hex';
 import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys, idbIsAvailable } from './idb-storage';
 
 /**
@@ -446,6 +447,128 @@ export function serializeGame(s: SaveGame): string {
 }
 
 // ---------------------------------------------------------------------------
+// R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 — migracja ŁADUNKU ZAPISU
+// ---------------------------------------------------------------------------
+/**
+ * Usuwa z WCZYTYWANEGO ładunku zapisu każdą farmę stojącą na heksie z
+ * nakładką Las (relikt uchylonej reguły z 2026-07-21). ECHO właściciela
+ * 2026-08-27, wariant C: farma znika, las zostaje, praca NIE wraca.
+ *
+ * Czyści OBA nośniki farmy w zapisie, bo są niezależne:
+ *  1. `mapSnapshot` — pola heksa `ulepszenie` (kolumna gęsta `ulepszenieIdx`),
+ *     `ulepszenia` i `improvementKey` (kolumny rzadkie). To one, przez
+ *     `improvementKeysForHex`, są źródłem PLONÓW w turn-economy.ts.
+ *  2. `meta.placedImprovements` — rejestr warstw gracza odtwarzany przez
+ *     main.ts::restorePlacedImprovementsFromSave.
+ *
+ * OGRANICZENIE (świadome, nie do nadrobienia w tym pliku): nakładkę heksa
+ * znamy WYŁĄCZNIE z `mapSnapshot`. Zapis SPRZED wprowadzenia mapSnapshotu
+ * (mapa regenerowana z `seed`) nie daje tu żadnej wiedzy o lesie, więc ta
+ * funkcja go nie rusza — i nie udaje, że rusza. Taki zapis sprząta dopiero
+ * przebieg po ŻYWYM stanie w main.ts (`sweepLegacyFarmsOnForest`, wołany
+ * m.in. w `restorePlacedImprovementsFromSave` — czyli PO zbudowaniu mapy z
+ * seeda). Te dwie warstwy są celowo niezależne, wzorem drugiego, niezależnego
+ * gate'a `FOREST_BLOCKED_IMPROVEMENT_KEYS` w map/improvement-build.ts.
+ *
+ * DLACZEGO reguła („farma + las") jest tu wyrażona jeszcze raz, zamiast
+ * importu z `map/improvement-build.ts`, gdzie żyje jej wersja dla ŻYWEGO
+ * stanu (`isLegacyFarmOnForestLayer`): `improvement-build.ts` ciągnie
+ * `render/improvements` → `three`. Import stamtąd wciągnąłby cały render 3D
+ * do `game/save.ts` — modułu bez zależności renderowych, bundlowanego
+ * samodzielnie przez narzędzia w `gra/tools/`. Ta cena jest wyższa niż koszt
+ * dwóch linijek reguły trzymanych we wzajemnych odsyłaczach.
+ *
+ * Idempotentna: drugie wywołanie na tym samym ładunku zwraca 0 i nic nie
+ * zmienia (po pierwszym przebiegu nie ma już czego znaleźć).
+ *
+ * @returns liczba heksów, z których usunięto farmę (0 = nic nie zmieniono).
+ */
+export function migrateLegacyFarmsOnForestInSave(g: SaveGame): number {
+  const FARMA = 'farma';
+  const touched = new Set<string>();
+  const snap = g.mapSnapshot;
+  /** Klucze "q,r" heksów z nakładką Las — jedyne źródło wiedzy o lesie w zapisie. */
+  const forestHexKeys = new Set<string>();
+
+  if (snap && Array.isArray(snap.dict)) {
+    const dict = snap.dict;
+    const lasIdx = dict.indexOf(Nakladka.Las);
+    const farmaIdx = dict.indexOf(FARMA);
+    const forestRows = new Set<number>();
+    if (lasIdx >= 0) {
+      for (let i = 0; i < snap.n; i++) {
+        if (snap.nakladkaIdx[i] === lasIdx) {
+          forestRows.add(i);
+          forestHexKeys.add(`${snap.q[i]},${snap.r[i]}`);
+        }
+      }
+    }
+    if (farmaIdx >= 0 && forestRows.size > 0) {
+      let brakIdx = dict.indexOf(Ulepszenie.Brak);
+      if (brakIdx < 0) { brakIdx = dict.length; dict.push(Ulepszenie.Brak); }
+      const markTouched = (row: number): void => {
+        touched.add(`${snap.q[row]},${snap.r[row]}`);
+      };
+
+      // (1a) kolumna gęsta `ulepszenieIdx` — legacy pojedyncze pole heksa.
+      for (const row of forestRows) {
+        if (snap.ulepszenieIdx[row] === farmaIdx) {
+          snap.ulepszenieIdx[row] = brakIdx;
+          markTouched(row);
+        }
+      }
+      // (1b) kolumna rzadka `ulepszenia` — lista warstw; pusta lista znika z kolumny.
+      const keepHexIdx: number[] = [];
+      const keepVal: number[][] = [];
+      for (let k = 0; k < snap.ulepszenia.hexIdx.length; k++) {
+        const row = snap.ulepszenia.hexIdx[k]!;
+        let val = snap.ulepszenia.val[k]!;
+        if (forestRows.has(row) && val.includes(farmaIdx)) {
+          val = val.filter(d => d !== farmaIdx);
+          markTouched(row);
+        }
+        if (val.length > 0) { keepHexIdx.push(row); keepVal.push(val); }
+      }
+      snap.ulepszenia.hexIdx = keepHexIdx;
+      snap.ulepszenia.val = keepVal;
+      // (1c) kolumna rzadka `improvementKey` — „ostatnia warstwa" heksa.
+      const keepKeyIdx: number[] = [];
+      const keepKeyVal: number[] = [];
+      for (let k = 0; k < snap.improvementKey.hexIdx.length; k++) {
+        const row = snap.improvementKey.hexIdx[k]!;
+        const val = snap.improvementKey.val[k]!;
+        if (forestRows.has(row) && val === farmaIdx) { markTouched(row); continue; }
+        keepKeyIdx.push(row);
+        keepKeyVal.push(val);
+      }
+      snap.improvementKey.hexIdx = keepKeyIdx;
+      snap.improvementKey.val = keepKeyVal;
+    }
+  }
+
+  // (2) rejestr warstw gracza w `meta.placedImprovements`.
+  const meta = g.meta as { placedImprovements?: unknown } | undefined;
+  const entries = meta?.placedImprovements;
+  if (forestHexKeys.size > 0 && Array.isArray(entries)) {
+    const out: unknown[] = [];
+    for (const entry of entries) {
+      if (!Array.isArray(entry) || entry.length < 2) { out.push(entry); continue; }
+      const hexKey = String(entry[0]);
+      if (!forestHexKeys.has(hexKey)) { out.push(entry); continue; }
+      const raw = entry[1];
+      const layers = (Array.isArray(raw) ? raw : [raw]).map(v => String(v));
+      const kept = layers.filter(k => k !== FARMA);
+      if (kept.length === layers.length) { out.push(entry); continue; }
+      touched.add(hexKey);
+      if (kept.length > 0) out.push([hexKey, kept]);
+    }
+    (meta as { placedImprovements?: unknown }).placedImprovements = out;
+  }
+
+  return touched.size;
+}
+
+// ---------------------------------------------------------------------------
 // deserializeGame
 // ---------------------------------------------------------------------------
 
@@ -517,6 +640,13 @@ export function deserializeGame(json: string): SaveGame {
     // na czytaniu np. hexes.
     mapSnapshot: isValidMapSnapshot(obj2.mapSnapshot) ? obj2.mapSnapshot : undefined,
   };
+  // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1: migracja stanu przy WCZYTANIU —
+  // farmy postawione wg uchylonej reguły z 2026-07-21 znikają z heksów z lasem,
+  // zanim ładunek zapisu dotrze do silnika. Normalizacja ładunku, jak defensywne
+  // porządkowanie pól wyżej — nadal bez I/O i bez efektów poza `save`.
+  // Jedyne wejście na WSZYSTKICH ścieżkach wczytania (localStorage/IndexedDB przez
+  // loadFromLocal, plik autozapisu przez fsa-autosave.ts::loadFsaAutosaveFile).
+  migrateLegacyFarmsOnForestInSave(save);
   return save;
 }
 

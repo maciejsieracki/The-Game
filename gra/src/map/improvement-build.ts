@@ -193,6 +193,153 @@ export function stripImprovementsWhenForestRemoved(layers: readonly string[]): s
   return layers.filter(key => !FOREST_DEPENDENT_IMPROVEMENT_KEYS.has(key));
 }
 
+// ---------------------------------------------------------------------------
+// R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 (ECHO właściciela 2026-08-27,
+// wariant C turnieju): SPRZĄTANIE ISTNIEJĄCEGO STANU — farmy postawione
+// legalnie wg uchylonej reguły z 2026-07-21 („farma MOŻE na lesie") znikają
+// z każdego heksa z nakładką Las. Cytat właściciela: „W ogóle nie powinno być
+// farm w lesie; farm nie wolno stawiać w lesie (...) w lesie nie powinno być
+// farm." Reguła jest NIEWARUNKOWA — dotyczy STANU, nie tylko czynności
+// budowania, więc nie wystarczy zablokowanie kwalifikacji
+// (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1, ten sam dzień).
+//
+// Skutek zdefiniowany jawnie (wzorzec z decyzji o obozie łowieckim, ten sam
+// dzień): praca włożona w farmę NIE wraca, heks wraca do stanu „las, bez
+// ulepszenia", las ZOSTAJE nietknięty. Miasto traci żywność z tej farmy od
+// kolejnej tury (przeliczenie ekonomii następnej tury czyta już czysty heks).
+// Dotyczy też farm na Wzgórzach — te są farmami leśnymi z definicji starej
+// reguły (jedyna droga na Wzgórza wiodła przez `nakladka === Las`), więc
+// znikają identycznie, bez wyjątku terenowego.
+//
+// DLACZEGO OSOBNO OD `stripImprovementsWhenForestRemoved` (wyżej), a nie
+// przez dopisanie 'farma' do FOREST_DEPENDENT_IMPROVEMENT_KEYS: tamten zbiór
+// odpowiada na PRZECIWNE pytanie — „co znika, gdy znika LAS" (las jest
+// warunkiem koniecznym istnienia obozu łowieckiego). Tu las jest PRZESZKODĄ,
+// nie warunkiem: znika farma, a las zostaje. Zlanie tych dwóch reguł w jedną
+// listę kasowałoby farmę przy wyrębie — dokładnie odwrotnie niż kanon
+// („wyrąb zostaje jedyną drogą do farmy na zalesionym heksie").
+//
+// ZAKRES (§14 — nie poszerzać): WYŁĄCZNIE `farma` na `Nakladka.Las`. Tartak i
+// obóz łowiecki mają własne, odrębne zasady; irygacja/tarasy na lesie to
+// osobny, nieotwarty temat.
+// ---------------------------------------------------------------------------
+
+/**
+ * Czy warstwa `key` na heksie o nakładce `nakladka` to farma-relikt starej
+ * reguły (farma stojąca w lesie). Jedyne miejsce, w którym ta reguła jest
+ * wyrażona dla ŻYWEGO stanu gry.
+ *
+ * `normalizeImprovementKey` — bo w zapisach żyją aliasy legacy; farma nie ma
+ * dziś aliasu, ale przejście przez normalizację jest odporne na przyszły.
+ */
+export function isLegacyFarmOnForestLayer(key: string, nakladka: Nakladka): boolean {
+  if (nakladka !== Nakladka.Las) return false;
+  return normalizeImprovementKey(key) === 'farma';
+}
+
+/** Warstwy heksa BEZ farmy-reliktu (gdy heks nie jest lasem — kopia bez zmian). */
+export function stripLegacyFarmOnForest(
+  layers: readonly string[],
+  nakladka: Nakladka,
+): string[] {
+  if (nakladka !== Nakladka.Las) return [...layers];
+  return layers.filter(key => !isLegacyFarmOnForestLayer(key, nakladka));
+}
+
+/**
+ * Minimalny widok heksa wymagany przez sprzątanie — celowo NIE `Hex`, żeby
+ * bramka tematu mogła podać syntetyk bez budowania pełnej mapy.
+ * `ulepszenie`/`ulepszenia` to pola czytane przez `improvementKeysForHex`
+ * (game/terrain-improvements.ts) — TO one, a nie `placedImprovements`, są
+ * źródłem plonów w turn-economy.ts, więc sprzątanie musi je widzieć.
+ */
+export interface LegacyFarmHexView {
+  nakladka: Nakladka;
+  ulepszenie?: unknown;
+  ulepszenia?: readonly string[] | null;
+}
+
+/** Jeden heks do posprzątania: warstwy przed i po usunięciu farmy. */
+export interface LegacyFarmOnForestChange {
+  hexKey: string;
+  before: string[];
+  after: string[];
+  /**
+   * true = warstwy pochodziły z rejestru `placedImprovements` (wtedy wołający
+   * ma go zaktualizować). false = heks miał farmę WYŁĄCZNIE w polach
+   * `hex.ulepszenie`/`hex.ulepszenia` (np. z mapSnapshotu zapisu, bez wpisu w
+   * `meta.placedImprovements`) — wtedy rejestru NIE dopisujemy, żeby
+   * sprzątanie nie tworzyło wpisów, których wcześniej nie było.
+   */
+  fromPlaced: boolean;
+}
+
+export interface LegacyFarmOnForestReport {
+  changes: LegacyFarmOnForestChange[];
+  /** Ile heksów straciło farmę (= changes.length). */
+  removed: number;
+  /** Ile heksów przejrzano — kontrola istotności pomiaru (0 = nic nie badano). */
+  scanned: number;
+  /** Ile farm stoi na heksach BEZ lasu (Łąka/Równina) — dowód, że naprawa nie jest za szeroka. */
+  farmsOnOpenTerrain: number;
+}
+
+/**
+ * PLAN sprzątania — czysta funkcja, ZERO mutacji. Zwraca listę heksów, na
+ * których stoi farma-relikt, oraz licznik farm na otwartym terenie (te MUSZĄ
+ * przetrwać — kontrola „naprawa nie jest za szeroka").
+ */
+export function planLegacyFarmOnForestRemoval(
+  hexes: Readonly<Record<string, LegacyFarmHexView | undefined>>,
+  placed?: ReadonlyMap<string, readonly string[]>,
+): LegacyFarmOnForestReport {
+  const changes: LegacyFarmOnForestChange[] = [];
+  let scanned = 0;
+  let farmsOnOpenTerrain = 0;
+  for (const hexKey of Object.keys(hexes)) {
+    const hex = hexes[hexKey];
+    if (!hex) continue;
+    scanned++;
+    const fromPlacedLayers = placed?.get(hexKey);
+    const before = fromPlacedLayers ? [...fromPlacedLayers] : improvementKeysForHex(hex);
+    if (before.length === 0) continue;
+    if (hex.nakladka !== Nakladka.Las) {
+      if (before.some(k => normalizeImprovementKey(k) === 'farma')) farmsOnOpenTerrain++;
+      continue;
+    }
+    const after = stripLegacyFarmOnForest(before, hex.nakladka);
+    if (after.length === before.length) continue;
+    changes.push({ hexKey, before, after, fromPlaced: fromPlacedLayers !== undefined });
+  }
+  return { changes, removed: changes.length, scanned, farmsOnOpenTerrain };
+}
+
+/**
+ * Wykonuje sprzątanie: aktualizuje rejestr `placed` i zgłasza każdy zmieniony
+ * heks przez `onHexChanged`, żeby wołający zsynchronizował pola heksa
+ * (main.ts::syncHexUlepszenieFields) i render. Sam NIE dotyka obiektów heksów
+ * — mapowanie warstwa→`Ulepszenie` żyje w main.ts i nie jest tu powielane.
+ *
+ * IDEMPOTENTNA z konstrukcji: drugie wywołanie na tym samym stanie nie
+ * znajduje już żadnej farmy na lesie, więc zwraca `removed: 0`, nie mutuje
+ * niczego i nie woła `onHexChanged` ani razu.
+ */
+export function removeLegacyFarmsOnForest(
+  hexes: Readonly<Record<string, LegacyFarmHexView | undefined>>,
+  placed: Map<string, string[]>,
+  onHexChanged?: (hexKey: string, layers: string[]) => void,
+): LegacyFarmOnForestReport {
+  const report = planLegacyFarmOnForestRemoval(hexes, placed);
+  for (const ch of report.changes) {
+    if (ch.fromPlaced) {
+      if (ch.after.length > 0) placed.set(ch.hexKey, ch.after);
+      else placed.delete(ch.hexKey);
+    }
+    onHexChanged?.(ch.hexKey, ch.after);
+  }
+  return report;
+}
+
 const FLAT_FARM = new Set<TerenBazowy>([TerenBazowy.Laka, TerenBazowy.Rownina]);
 const FLAT_IRR = new Set<TerenBazowy>([
   TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Pustynia,
