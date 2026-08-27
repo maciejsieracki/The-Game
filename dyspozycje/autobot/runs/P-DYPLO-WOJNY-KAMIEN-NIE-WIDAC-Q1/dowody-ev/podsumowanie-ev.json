@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-27T01:59:49.594Z",
+ "generated": "2026-08-27T02:36:03.922Z",
  "seeds": [
   {
    "file": "base-seed-111.json",
@@ -409,6 +409,756 @@
      43,
      44,
      45
+    ],
+    "ownersTotal": 13
+   }
+  },
+  {
+   "file": "base-seed-777.json",
+   "seed": 777,
+   "tag": "base",
+   "params": {
+    "difficulty": "Normalny",
+    "mapSize": "Standardowy",
+    "worldType": "Kontynenty",
+    "epochId": "kamien",
+    "speed": "Standardowa",
+    "civTypesCount": 7,
+    "cityStatesCount": 6,
+    "civId": "rzymianie",
+    "landFractionPercent": 30,
+    "barbariansLevel": "normalny",
+    "battleAlwaysManual": false
+   },
+   "turnsRun": 61,
+   "elapsedS": 2177,
+   "notes": [],
+   "warDeclarations": [],
+   "warEndings": [],
+   "warsAtEnd": [],
+   "warsWithPlayer": 0,
+   "warsAiAi": 0,
+   "forcedStoneWars": 0,
+   "stone": {
+    "firstPending": {},
+    "firstCycle": {},
+    "anyPendingTurn": null,
+    "anyStoneActiveTurn": null,
+    "pendingAtEnd": [],
+    "stoneActiveAtEnd": []
+   },
+   "mainAi": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+   ],
+   "mainAiCsFlipTurn": {
+    "1": 6,
+    "8": 7,
+    "15": 6,
+    "22": 6,
+    "29": 7,
+    "36": 7
+   },
+   "mainAiCitiesAtFlip": {
+    "1": 2,
+    "8": 2,
+    "15": 2,
+    "22": 2,
+    "29": 2,
+    "36": 2
+   },
+   "mainAiStillNotCsAtEnd": [],
+   "konsolidacja": {
+    "seria": [
+     {
+      "t": 1,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 2,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 3,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 4,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 5,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 6,
+      "csOwners": 42,
+      "origCsOwners": 39
+     },
+     {
+      "t": 7,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 8,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 9,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 10,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 11,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 12,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 13,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 14,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 15,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 16,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 17,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 18,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 19,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 20,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 21,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 22,
+      "csOwners": 35,
+      "origCsOwners": 29
+     },
+     {
+      "t": 23,
+      "csOwners": 17,
+      "origCsOwners": 11
+     },
+     {
+      "t": 24,
+      "csOwners": 14,
+      "origCsOwners": 8
+     },
+     {
+      "t": 25,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 26,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 27,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 28,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 29,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 30,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 31,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 32,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 33,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 34,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 35,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 36,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 37,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 38,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 39,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 40,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 41,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 42,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 43,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 44,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 45,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 46,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 47,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 48,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 49,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 50,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 51,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 52,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 53,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 54,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 55,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 56,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 57,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 58,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 59,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 60,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 61,
+      "csOwners": 12,
+      "origCsOwners": 6
+     }
+    ],
+    "stabilizacjaOdTury": 25,
+    "origCsStart": 42,
+    "origCsKoniec": 6
+   },
+   "maxActiveWarsAnyOwner": 0,
+   "playerGate": {
+    "obs": 183,
+    "pominietoNieodkrytych": 2709,
+    "rwMin": 0.3,
+    "rwMed": 0.62,
+    "rwMax": 0.74,
+    "rwOverProg": 116,
+    "scoreUnder30": 0,
+    "bothConditions": 0,
+    "minZaufanie": 47
+   },
+   "layers": {
+    "records": 1237,
+    "full": 0,
+    "simplified": 172,
+    "pre_contact": 1065,
+    "rawWarCmds": 0,
+    "keptWarCmds": 0,
+    "rawWarVsPlayer": 0,
+    "keptWarVsPlayer": 0,
+    "warRecords": []
+   },
+   "playerVisible": {
+    "warEventCards": [],
+    "allEventCards": 9,
+    "panelWarsWithPlayerAtEnd": [],
+    "panelWarsBetweenOthersEver": [],
+    "discoveredFirst": [
+     43,
+     44,
+     45
+    ],
+    "discoveredLast": [
+     43,
+     44,
+     45
+    ],
+    "ownersTotal": 13
+   }
+  },
+  {
+   "file": "base-seed-888.json",
+   "seed": 888,
+   "tag": "base",
+   "params": {
+    "difficulty": "Normalny",
+    "mapSize": "Standardowy",
+    "worldType": "Kontynenty",
+    "epochId": "kamien",
+    "speed": "Standardowa",
+    "civTypesCount": 7,
+    "cityStatesCount": 6,
+    "civId": "rzymianie",
+    "landFractionPercent": 30,
+    "barbariansLevel": "normalny",
+    "battleAlwaysManual": false
+   },
+   "turnsRun": 46,
+   "elapsedS": 1842,
+   "notes": [],
+   "warDeclarations": [],
+   "warEndings": [],
+   "warsAtEnd": [],
+   "warsWithPlayer": 0,
+   "warsAiAi": 0,
+   "forcedStoneWars": 0,
+   "stone": {
+    "firstPending": {},
+    "firstCycle": {},
+    "anyPendingTurn": null,
+    "anyStoneActiveTurn": null,
+    "pendingAtEnd": [],
+    "stoneActiveAtEnd": []
+   },
+   "mainAi": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+   ],
+   "mainAiCsFlipTurn": {
+    "1": 6,
+    "8": 6,
+    "15": 6,
+    "22": 7,
+    "29": 7,
+    "36": 7
+   },
+   "mainAiCitiesAtFlip": {
+    "1": 2,
+    "8": 2,
+    "15": 2,
+    "22": 2,
+    "29": 2,
+    "36": 2
+   },
+   "mainAiStillNotCsAtEnd": [],
+   "konsolidacja": {
+    "seria": [
+     {
+      "t": 1,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 2,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 3,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 4,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 5,
+      "csOwners": 42,
+      "origCsOwners": 42
+     },
+     {
+      "t": 6,
+      "csOwners": 42,
+      "origCsOwners": 39
+     },
+     {
+      "t": 7,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 8,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 9,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 10,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 11,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 12,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 13,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 14,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 15,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 16,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 17,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 18,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 19,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 20,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 21,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 22,
+      "csOwners": 42,
+      "origCsOwners": 36
+     },
+     {
+      "t": 23,
+      "csOwners": 13,
+      "origCsOwners": 7
+     },
+     {
+      "t": 24,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 25,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 26,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 27,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 28,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 29,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 30,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 31,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 32,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 33,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 34,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 35,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 36,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 37,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 38,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 39,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 40,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 41,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 42,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 43,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 44,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 45,
+      "csOwners": 12,
+      "origCsOwners": 6
+     },
+     {
+      "t": 46,
+      "csOwners": 12,
+      "origCsOwners": 6
+     }
+    ],
+    "stabilizacjaOdTury": 24,
+    "origCsStart": 42,
+    "origCsKoniec": 6
+   },
+   "maxActiveWarsAnyOwner": 0,
+   "playerGate": {
+    "obs": 167,
+    "pominietoNieodkrytych": 2005,
+    "rwMin": 0.3,
+    "rwMed": 0.63,
+    "rwMax": 0.73,
+    "rwOverProg": 120,
+    "scoreUnder30": 0,
+    "bothConditions": 0,
+    "minZaufanie": 47
+   },
+   "layers": {
+    "records": 1039,
+    "full": 0,
+    "simplified": 159,
+    "pre_contact": 880,
+    "rawWarCmds": 0,
+    "keptWarCmds": 0,
+    "rawWarVsPlayer": 0,
+    "keptWarVsPlayer": 0,
+    "warRecords": []
+   },
+   "playerVisible": {
+    "warEventCards": [],
+    "allEventCards": 11,
+    "panelWarsWithPlayerAtEnd": [],
+    "panelWarsBetweenOthersEver": [],
+    "discoveredFirst": [
+     43,
+     44,
+     45
+    ],
+    "discoveredLast": [
+     43,
+     44,
+     45,
+     47
     ],
     "ownersTotal": 13
    }
