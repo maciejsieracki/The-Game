@@ -38,6 +38,7 @@ export {
   depositAllowsPlayerImprovement,
 } from ${JSON.stringify(SRC + '/map/improvement-build')};
 export { pickAutoImprovements } from ${JSON.stringify(SRC + '/game/auto-improvements')};
+export { migrateImprovementLayers } from ${JSON.stringify(SRC + '/game/terrain-improvements')};
 export { buildHexContextTooltipHtml } from ${JSON.stringify(SRC + '/ui/hexContextTooltip')};
 export { TerenBazowy, Nakladka } from ${JSON.stringify(SRC + '/types/hex')};
 `, 'utf8');
@@ -285,17 +286,121 @@ async function main() {
 
   // --- (5) STARE ZAPISY ---------------------------------------------------
   // Obóz już postawiony poza lasem ZOSTAJE (brak cichej migracji kasującej cudze ulepszenia).
-  const sHex = smap.hexes['0,0'];
+  // POPRAWKA rundy 1 (wznowienie): poprzednia asercja czytala Mape, ktora sama przed chwila
+  // zbudowala („czy Map, do ktorej wlozylem X, zawiera X") — TAUTOLOGIA, zielona niezaleznie
+  // od zrodla. Realna sciezka wczytania zapisu to `migrateImprovementLayers`
+  // (game/terrain-improvements.ts), wolana z main.ts `restorePlacedImprovementsFromSave`
+  // (~:12009) dla KAZDEGO heksa zapisu. To ona — i tylko ona — moglaby skasowac stare obozy.
+  const migHill = M.migrateImprovementLayers(['oboz_lowiecki'],
+    { nakladka: Nakladka.ZlozeKonia, zloze: 'konie' });
+  ok(migHill.includes('oboz_lowiecki'),
+    'K6 stare zapisy: realna sciezka wczytania (migrateImprovementLayers) NIE kasuje obozu na zlozu bez lasu',
+    JSON.stringify(migHill));
+  const migBare = M.migrateImprovementLayers(['oboz_lowiecki'], { nakladka: Nakladka.Brak });
+  ok(migBare.includes('oboz_lowiecki'),
+    'K6 stare zapisy: realna sciezka wczytania NIE kasuje obozu na golym terenie bez lasu',
+    JSON.stringify(migBare));
+  const migMixed = M.migrateImprovementLayers(['farma', 'oboz_lowiecki'], { nakladka: Nakladka.Brak });
+  ok(migMixed.length === 2 && migMixed.includes('oboz_lowiecki') && migMixed.includes('farma'),
+    'K6 stare zapisy: warstwa obozu przezywa migracje razem z sasiednimi warstwami',
+    JSON.stringify(migMixed));
+
   const stWith = stateForWholeMap(smap, {
     placedImprovements: new Map([['0,0', ['oboz_lowiecki']]]),
   });
   const apiWith = M.createImprovementBuildApi(stWith, { activeKey: 'oboz_lowiecki' });
-  ok(Array.isArray(stWith.placedImprovements.get('0,0'))
-    && stWith.placedImprovements.get('0,0').includes('oboz_lowiecki'),
-    'K6 stare zapisy: istniejący obóz poza lasem NIE jest usuwany przez zawężenie (zostaje)');
   ok(apiWith.canBuild('oboz_lowiecki', 0, 0) === false,
-    'K6 stare zapisy: nie da się postawić NOWEGO obozu na tym samym polu poza lasem');
-  void sHex; void at;
+    'K6 stare zapisy: nie da sie postawic NOWEGO obozu na tym samym polu poza lasem');
+  void at;
+
+  // --- (6) WZGORZE BEZ LASU, KAZDY TYP ZLOZA ZWIERZECEGO -------------------
+  // Dispatch kryterium 1 mowi „zloze zwierzece", nie „zloze koni". Sprawdzamy wszystkie
+  // cztery nakladki z NAKLADKI_ZWIERZECZE, na wzgorzu, osobno dla gracza, commitu i tooltipa.
+  const ANIMAL_NAK = [
+    ['ZlozeKonia', Nakladka.ZlozeKonia], ['ZlozeOwiec', Nakladka.ZlozeOwiec],
+    ['ZlozeBydla', Nakladka.ZlozeBydla], ['ZlozeLamy', Nakladka.ZlozeLamy],
+  ];
+  for (const [nazwa, nak] of ANIMAL_NAK) {
+    const one = synthMap([{ teren: TerenBazowy.Wzgorza, nakladka: nak }]);
+    const q1 = M.buildImprovementQualifier(stateForWholeMap(one));
+    ok(q1('oboz_lowiecki', 0, 0) === false,
+      `K1 gracz: wzgorze bez lasu + ${nazwa} -> obóz NIEDOSTĘPNY`);
+    ok(M.computeImprovementBuildImpact('oboz_lowiecki', one.hexes['0,0'], []) === null,
+      `K1 commit: wzgorze bez lasu + ${nazwa} -> impact=null`);
+    const html1 = M.buildHexContextTooltipHtml({
+      q: 0, r: 0, hex: one.hexes['0,0'], esc: (x) => String(x), currentEra: 99, map: one,
+    });
+    const h1 = html1.indexOf('Możliwe ulepszenia (teren)');
+    ok(h1 < 0 || !html1.slice(h1).includes('Obóz łowiecki'),
+      `K1 tooltip: wzgorze bez lasu + ${nazwa} -> obozu NIE ma na liscie`);
+    const picks1 = M.pickAutoImprovements({
+      cities: [{ id: 'c0', ownerId: 0, q: 0, r: 0, population: 1 }],
+      ownerId: 0, map: one,
+      territoryNodes: [{ q: 0, r: 0, ownerId: 0, cityId: 'c0' }],
+      placedImprovements: new Map(), pracaAvailable: 100000,
+      unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
+      pracaSurplusThreshold: 0, pracaBudgetPercent: 100, maxItemsPerCity: 5,
+      skipWyrab: true, playerEra: 1, priorityOverride: ['oboz_lowiecki'],
+    });
+    ok(picks1.every(p => p.key !== 'oboz_lowiecki'),
+      `K1 automat+AI: wzgorze bez lasu + ${nazwa} -> picker NIE stawia obozu`);
+  }
+
+  // --- (7) MAPA FAKTYCZNIE WYGENEROWANA (nie syntetyk) --------------------
+  // Dispatch: „wygeneruj mape, wez pole ... i pokaz, ze oboz jest tam niedostepny — dla
+  // gracza, dla automatu i dla AI OSOBNO". Ponizej te same asercje na heksach pochodzacych
+  // z `generateMap`, nie z reki. UWAGA (znalezisko pomiarowe, patrz tabela wyzej): na 5
+  // wygenerowanych mapach jest 0 pol „wzgorze bez lasu ze zlozem zwierzecym" i lacznie 1
+  // pole ze zlozem zwierzecym jako NAKLADKA — dlatego ten przypadek MUSI byc syntetyczny
+  // (sekcja 6 wyzej), a tu sprawdzamy przypadki, ktore na mapie faktycznie wystepuja.
+  const gmap = M.generateMap(36, 28, 42, 'kontynenty');
+  const gKeys = Object.keys(gmap.hexes).sort();
+  const findG = (pred) => {
+    for (const k of gKeys) { const h = gmap.hexes[k]; if (h && pred(h)) return h; }
+    return null;
+  };
+  const gState = stateForWholeMap(gmap);
+  const gQual = M.buildImprovementQualifier(gState);
+  const gPick = (hex) => {
+    const picks = M.pickAutoImprovements({
+      cities: [{ id: 'c0', ownerId: 0, q: hex.coords.q, r: hex.coords.r, population: 1 }],
+      ownerId: 0, map: gmap,
+      territoryNodes: [{ q: hex.coords.q, r: hex.coords.r, ownerId: 0, cityId: 'c0' }],
+      placedImprovements: new Map(), pracaAvailable: 100000,
+      unlockedTechs: new Set(['lowiectwo', 'Łowiectwo']),
+      pracaSurplusThreshold: 0, pracaBudgetPercent: 100, maxItemsPerCity: 5,
+      skipWyrab: true, playerEra: 1, priorityOverride: ['oboz_lowiecki'],
+    });
+    return picks.some(p => p.key === 'oboz_lowiecki'
+      && p.q === hex.coords.q && p.r === hex.coords.r);
+  };
+  const gTooltip = (hex) => {
+    const html = M.buildHexContextTooltipHtml({
+      q: hex.coords.q, r: hex.coords.r, hex, esc: (x) => String(x), currentEra: 99, map: gmap,
+    });
+    const i = html.indexOf('Możliwe ulepszenia (teren)');
+    return i >= 0 && html.slice(i).includes('Obóz łowiecki');
+  };
+  const gCases = [
+    ['LAS NA WZGORZU', h => h.nakladka === Nakladka.Las && h.terenBazowy === TerenBazowy.Wzgorza, true],
+    ['las na rowninie', h => h.nakladka === Nakladka.Las && h.terenBazowy === TerenBazowy.Rownina, true],
+    ['ROWNINA bez lasu', h => h.nakladka === Nakladka.Brak && h.terenBazowy === TerenBazowy.Rownina, false],
+    ['gole wzgorze', h => h.nakladka === Nakladka.Brak && h.terenBazowy === TerenBazowy.Wzgorza, false],
+  ];
+  for (const [nazwa, pred, oczek] of gCases) {
+    const h = findG(pred);
+    ok(h !== null, `mapa 42: istnieje heks „${nazwa}" (warunek istotnosci)`);
+    if (!h) continue;
+    const co = `(${h.coords.q},${h.coords.r})`;
+    ok(gQual('oboz_lowiecki', h.coords.q, h.coords.r) === oczek,
+      `mapa 42 ${co} „${nazwa}" GRACZ: oboz ${oczek ? 'DOSTEPNY' : 'NIEDOSTEPNY'}`);
+    ok(gPick(h) === oczek,
+      `mapa 42 ${co} „${nazwa}" AUTOMAT+AI: picker ${oczek ? 'stawia' : 'NIE stawia'} obozu`);
+    ok(gTooltip(h) === oczek,
+      `mapa 42 ${co} „${nazwa}" TOOLTIP: oboz ${oczek ? 'JEST' : 'NIE ma go'} na liscie`);
+    ok((M.computeImprovementBuildImpact('oboz_lowiecki', h, []) !== null) === oczek,
+      `mapa 42 ${co} „${nazwa}" COMMIT: impact ${oczek ? '!=' : '=='} null`);
+  }
 
   console.log(`\noboz-lowiecki-las-test: ${pass} passed, ${fail} failed`);
   if (fail > 0) process.exit(1);
