@@ -114,8 +114,16 @@ const qRzym = qual({ civ: 'rzym' });
 const qChiny = qual({ civ: 'chinczycy' });
 
 ok(qInka('farma', 1, 0), 'farma on laka');
-ok(qInka('farma', 3, 1), 'BUG-2026-07-21: farma on laka+las');
-ok(qInka('farma', 10, 0), 'BUG-2026-07-21: farma on wzgorza+las');
+// R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 (ECHO wlasciciela 2026-08-27) UCHYLA regule
+// z 2026-07-21 („farma MOZE na lesie — bez wyrebu"). Trzy asercje nizej odwrocone
+// razem z regula; poprzednie brzmienie zostawione w komentarzu, bo historia decyzji
+// jest tu czescia kanonu:
+//   ok(qInka('farma', 3, 1),  'BUG-2026-07-21: farma on laka+las');      // bylo: dozwolone
+//   ok(qInka('farma', 10, 0), 'BUG-2026-07-21: farma on wzgorza+las');   // bylo: dozwolone
+ok(!qInka('farma', 3, 1), '2026-08-27: farma NOT on laka+las');
+ok(!qInka('farma', 10, 0), '2026-08-27: farma NOT on wzgorza+las');
+// Wzgorza bez lasu byly zabronione juz wczesniej; po uchyleniu reguly lesnej farma na
+// Wzgorzach jest niemozliwa CALKOWICIE (swiadoma konsekwencja dyspozycji, nie przeoczenie).
 ok(!qInka('farma', 0, 1), 'farma NOT on wzgorza without las');
 ok(qInka('farma', 7, 0), 'WOLNE-WSPOL: farma on mineral zloze hex');
 ok(!qInka('farma', 5, 0), 'farma NOT on wybrzeze');
@@ -182,9 +190,13 @@ ok(qRzymUnlock('bydlo', 1, 0), 'bydlo after empire unlock from pastwisko on zloz
 const qInkaE3 = qual({ civ: 'inkowie', era: 3, placed: new Map([['2,0', ['bydlo']]]) });
 ok(qInkaE3('bydlo', 1, 0), 'inkowie ep3: bydlo on plain after unlock+era');
 
-ok(M.isFarmBaseTerrain(TB.Laka, NK.Las), 'isFarmBaseTerrain laka+las');
-ok(M.isFarmBaseTerrain(TB.Wzgorza, NK.Las), 'isFarmBaseTerrain wzgorza+las');
+// R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 (2026-08-27): odwrocone razem z regula.
+ok(!M.isFarmBaseTerrain(TB.Laka, NK.Las), 'isFarmBaseTerrain laka+las -> false');
+ok(!M.isFarmBaseTerrain(TB.Rownina, NK.Las), 'isFarmBaseTerrain rownina+las -> false');
+ok(!M.isFarmBaseTerrain(TB.Wzgorza, NK.Las), 'isFarmBaseTerrain wzgorza+las -> false');
 ok(!M.isFarmBaseTerrain(TB.Wzgorza, NK.Brak), 'isFarmBaseTerrain wzgorza bez lasu');
+ok(M.isFarmBaseTerrain(TB.Laka, NK.Brak), 'isFarmBaseTerrain laka bez lasu -> true');
+ok(M.isFarmBaseTerrain(TB.Rownina, NK.Brak), 'isFarmBaseTerrain rownina bez lasu -> true');
 
 ok(!M.hasBlockingDepositForFarm(hexes['7,0']), 'hasBlockingDeposit zloze string — no block');
 ok(M.hexHasDepositReserve(hexes['2,0']), 'hexHasDepositReserve nakladka bydlo');
@@ -295,7 +307,10 @@ ok(!qInka('irygacja', 1, 2), 'irygacja NOT on laka+las przy rzece');
 ok(!qInka('tarasy', 10, 0), 'tarasy NOT on wzgorza+las');
 ok(qInka('fort', 3, 1), 'fort OK on laka+las (las zostaje)');
 ok(M.isImprovementBlockedOnForest('irygacja', NK.Las), 'forest block: irygacja');
-ok(!M.isImprovementBlockedOnForest('farma', NK.Las), 'forest coexist: farma');
+// R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 (2026-08-27): farma przeszla z „coexist" do „block".
+ok(M.isImprovementBlockedOnForest('farma', NK.Las), 'forest block: farma');
+ok(!M.isImprovementBlockedOnForest('farma', NK.Brak), 'farma poza lasem nie blokowana');
+ok(!M.computeImprovementBuildImpact('farma', hexes['3,1'], []), 'impact null: farma on las');
 ok(!M.isImprovementBlockedOnForest('tartak', NK.Las), 'forest coexist: tartak');
 ok(!M.isImprovementBlockedOnForest('droga', NK.Las), 'droga allowed on las (las zostaje)');
 ok(!M.computeImprovementBuildImpact('irygacja', hexes['3,1'], []), 'impact null: irygacja on las');

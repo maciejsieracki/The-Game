@@ -175,9 +175,12 @@ const TARTAK_TERENY = new Set<TerenBazowy>([
  * Świadomie POZA tym zbiorem (nie dopisywać bez decyzji właściciela):
  *  • `tartak`   — kanon wprost: las zostaje przy tartaku (asercja
  *                 tools/map-improvement-qualify-test.cjs: „tartak stays when forest removed").
- *  • `farma`    — Las jest jej warunkiem tylko na Wzgórzach (isFarmBaseTerrain); na Łące/
- *                 Równinie stoi bez lasu. Ta sama asercja kanonu trzyma farmę na heksie po
- *                 wyrębie. Kasowanie cudzej farmy to osobna decyzja właściciela, nie ten temat.
+ *  • `farma`    — od 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1) farma w ogóle nie
+ *                 kwalifikuje się na heksie z lasem, więc Las nie jest jej warunkiem —
+ *                 jest jej przeszkodą. Farma JUŻ STOJĄCA na lesie (postawiona legalnie wg
+ *                 reguły z 2026-07-21) zostaje na heksie po wyrębie; jej ewentualne
+ *                 usunięcie to otwarte pytanie właściciela
+ *                 (P-ULEPSZENIA-FARMY-JUZ-STOJACE-W-LESIE-Q1), nie ten temat.
  *  • `glinianka`— warunkiem jest złoże gliny (hexHasClayDeposit), nie las.
  *  • `wyrab`    — akcja, nigdy trwała warstwa heksa.
  */
@@ -195,10 +198,28 @@ const FLAT_IRR = new Set<TerenBazowy>([
   TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Pustynia,
 ]);
 
-/** Maciej 2026-07-21: farma bez wycinki lasu — Łąka/Równina zawsze; Wzgórza gdy nakładka Las. */
+/**
+ * Farma — WYŁĄCZNIE Łąka/Równina BEZ nakładki Las.
+ *
+ * R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1, ECHO właściciela 2026-08-27: „w lesie nie powinno być
+ * możliwości budowania farm zarówno na wzgórzach, jak i na innych terenach, bo to się wyklucza.
+ * W lesie można wybudować tylko tartak i ewentualnie obozowisko, i tego się trzymajmy."
+ *
+ * Ta decyzja UCHYLA regułę z 2026-07-21 („farma MOŻE na lesie — bez wyrębu; Łąka/Równina
+ * zawsze, Wzgórza gdy nakładka Las"). Ślad uchylonej reguły zostaje tu świadomie — historia
+ * decyzji nie jest wymazywana, tylko zastępowana.
+ *
+ * Skutek uboczny wprost nazwany w dyspozycji: farma na Wzgórzach staje się niemożliwa
+ * CAŁKOWICIE, bo Wzgórza nigdy nie należały do `FLAT_FARM`, a jedyna droga na Wzgórza wiodła
+ * przez `nakladka === Las`. Dopisanie Wzgórz do terenów farmowych byłoby poszerzeniem zakresu
+ * (§14) i wymaga osobnego ECHO właściciela — NIE robić tego „przy okazji".
+ *
+ * Wyrąb zostaje jedyną drogą do farmy na zalesionym heksie (skutek odnotowany jako
+ * P-ULEPSZENIA-FARMA-W-LESIE-WPLYW-NA-TEMAT-AI-Q1).
+ */
 export function isFarmBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boolean {
-  if (FLAT_FARM.has(teren)) return true;
-  return nakladka === Nakladka.Las && teren === TerenBazowy.Wzgorza;
+  if (nakladka === Nakladka.Las) return false;
+  return FLAT_FARM.has(teren);
 }
 
 /** Hodowla zwierzęca z terrain-improvements.json — zakaz na Nakladka.Las (Maciej 2026-07-29). */
@@ -208,12 +229,15 @@ export function isLivestockImprovementBlockedOnForest(key: string, nakladka: Nak
 
 /**
  * Ulepszenia które MOGĄ stać na nakładce Las bez wyrębu (kanon).
- * farma — Maciej 2026-07-21: Łąka/Równina; Wzgórza z lasem (kępa schowana wizualnie).
  * tartak / obóz łowiecki — ulepszenia leśne (tartak: las zostaje przy tartaku).
  * glinianka — złoże gliny pod lasem (placeDeposits: nakladka=Las, zloze='glina').
+ *
+ * `farma` USUNIĘTA stąd 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1, ECHO właściciela:
+ * „w lesie można wybudować tylko tartak i ewentualnie obozowisko") — była tu od 2026-07-21
+ * i przeszła do `FOREST_BLOCKED_IMPROVEMENT_KEYS` niżej.
  */
 const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
-  'farma', 'tartak', 'oboz_lowiecki', 'glinianka',
+  'tartak', 'oboz_lowiecki', 'glinianka',
 ]);
 
 /**
@@ -223,6 +247,12 @@ const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
 const FOREST_BLOCKED_IMPROVEMENT_KEYS = new Set<string>([
   'irygacja',
   'tarasy',
+  // R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 (ECHO właściciela 2026-08-27, uchyla 2026-07-21):
+  // farma nie stoi w lesie na żadnym terenie bazowym. To DRUGI, niezależny gate za
+  // `qualifies()` — `applyBuildRequest` (main.ts) nie powtarza `qualifies()`, więc bez
+  // tego wpisu farmę dałoby się zacommitować ścieżką pomijającą panel budowy (dokładnie
+  // ta dziura, którą temat obozu łowieckiego znalazł jako P7).
+  'farma',
 ]);
 
 /** Budowa na Nakladka.Las zabroniona — bez automatycznego usuwania lasu. */
@@ -891,7 +921,12 @@ export function buildImprovementQualifier(state: ImprovementBuildState): (
 export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy): boolean {
   switch (key) {
     case 'farma':
-      return FLAT_FARM.has(teren) || teren === TerenBazowy.Wzgorza;
+      // R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 (2026-08-27): `|| teren === Wzgorza` USUNIĘTE.
+      // Wzgórza były tu wpuszczane WYŁĄCZNIE po to, by „Wzgórza z lasem" (reguła 2026-07-21)
+      // przeszły przez tę wstępną bramkę do warstwy `isFarmBaseTerrain`. Po uchyleniu tamtej
+      // reguły Wzgórza nie mają już ŻADNEJ drogi do farmy, więc galeria 3D i tooltip nie mogą
+      // obiecywać więcej niż silnik.
+      return FLAT_FARM.has(teren);
     case 'bydlo':
       return FLAT_FARM.has(teren);
     // N5 (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA, Maciej 2026-08-14): stadnina i
