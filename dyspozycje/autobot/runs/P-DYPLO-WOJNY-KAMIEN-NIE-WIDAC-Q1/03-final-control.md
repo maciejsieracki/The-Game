@@ -167,3 +167,90 @@ a `main.ts:29919-29922` ustawia tę zmienną **wprost z trudności gry** (`diff`
 `'normal'`, `main.ts:29902`). Ta ścieżka **wywołuje** `recordWarDeclarationEvent` i toast
 (`main.ts:27239-27245`), więc na „Trudnym" właściciel faktycznie zobaczyłby wypowiedzenie.
 
+---
+
+## 4. Mój własny pomiar — scenariusz, którego nie zrobił nikt
+
+**Metoda.** Ten sam kanon co u obu ról (build `vite` z instrumentacją wstrzykiwaną
+**w pamięci**, żywe Chromium, prawdziwa pętla `doStartGame` + `triggerPlayerEndTurn`),
+ale **dwa scenariusze zamiast jednego**:
+
+| scenariusz | co robi gracz | po co |
+|---|---|---|
+| **pasywny** | zakłada miasto, przez 60 tur tylko kończy turę | replikacja sterownika obu ról na **nowym ziarnie** — kontrola zgodności |
+| **aktywny** | dodatkowo **kolejkuje zwiadowcę w stolicy** i **włącza mu „Zwiedzaj"** | łamie wspólny stub **prawdziwą akcją gracza**, nie mutantem |
+
+Scenariusz aktywny nie jest mutantem i niczego nie obchodzi — to dokładne
+odwzorowanie dwóch kliknięć z UI:
+* kolejkowanie jednostki = `setCityProduction` z pozycją z `availableProduction`
+  (dokładnie to, co robi panel miasta, `main.ts:30057`);
+* „Zwiedzaj" = gałąź `scout-explore` (`main.ts:18717-18742`): `clearPlannedMarch(u.id, true)`,
+  `exitFieldFortify` jeśli trzeba, `u.autoExplore = true`. Ruch wykonuje **gra**
+  własnym `runScoutsAutoExplore` (`main.ts:25459`), nie mój kod.
+
+**Odkrycie uboczne, istotne dla oceny obu poprzednich raportów:**
+**gracz startuje z ZERO jednostek** (zmierzone: `plrUnits = 0` w każdej turze obu
+przebiegów bazowych). Żeby cokolwiek odkryć, musi najpierw **wyprodukować** jednostkę.
+To wyjaśnia, dlaczego pasywny sterownik obu ról kończył zawsze na `contacts = [43,44,45]`
+(trzy miasta-państwa w promieniu startowym) i **nigdy nie odkrywał głównego AI**.
+
+---
+
+## 5. Granice §9 i dowód czystości
+
+**Uruchomione przeze mnie, w moim worktree `/home/user/wt-fc-wojny` (detached na `3d1758f0`):**
+
+| bramka | komenda | wynik |
+|---|---|---|
+| TypeScript | `node ./node_modules/typescript/bin/tsc --noEmit` | **0 błędów** |
+| Logika | `node tools/logic-test.cjs` | **213/213** |
+| Drzewo technologii | `node tools/tech-tree-test.cjs` | **19 pass / 0 fail** |
+| Badania | `node tools/research-test.cjs` | **33/33** |
+| Wymiana jednostek | `node tools/unit-replace-test.cjs` | **13/13** |
+| Walka | `node tools/combat-test.cjs` | **6/6** |
+| Wojna wymuszona Kamienia | `node tools/forced-war-stone-test.cjs` | **32/0** |
+| Guard w `main.ts` | `node tools/forced-war-stone-main-guard-test.cjs` | **18/0** |
+| Brama wojny AI | `node tools/ai-war-gate-test.cjs` | **24/0** |
+| Bramy wojny dyplomacji | `node tools/diplomacy-war-gates-test.cjs` | **19/0** |
+| Zobowiązanie sojusznicze | `node tools/alliance-war-obligation-test.cjs` | **14/0** |
+
+Wszystkie zgodne z punktem odniesienia §6. **`map-gen-regression-test` nieuruchamiany**
+(zakaz z dispatchu) — mapa generowana wyłącznie własnym, wąskim harnessem.
+C-001 respektowane: build **wyłącznie** przez
+`node ./node_modules/vite/bin/vite.js build --config … --outDir /tmp/civ-fc-wojny --emptyOutDir`,
+zero `npm run build`/`dev`, zero `npx`, zero `git add -A`.
+
+**Dowód, że audyt niczego nie zmienił w grze:**
+
+```text
+$ git status --porcelain                       # w /home/user/wt-fc-wojny
+(pusto)
+$ git diff --stat origin/main HEAD -- gra/src gra/data
+(pusto)
+```
+
+`gra/node_modules` to dowiązanie do checkoutu głównego (wymóg C-029 — worktree bez
+`node_modules` daje mylący wynik `tsc`); objęte `gra/.gitignore:2`, więc `git status`
+pozostaje czysty. Allowlista dotrzymana: **wyłącznie `gra/tools/*` (3 nowe pliki) +
+raport i dowody runu**. Dwa równoległe tematy (§2b) nietknięte — nie dotykam `gra/src`.
+
+---
+
+## 6. Kontrola rejestru (§16b pkt 6) — ZNALEZISKO PROCESOWE
+
+| co | stan faktyczny |
+|---|---|
+| `P-DYPLO-WOJNY-KAMIEN-NIE-WIDAC-Q1` w `REJESTR-PROSB-I-ZADAN.md` | **BRAK WPISU** |
+| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` w rejestrze (l. 38) | `ZDEPLOYOWANE`, komentarz: **„Nic do dispatchu"** |
+
+Uzasadnienie tego wpisu brzmi dosłownie: *„Zweryfikowane ponownie 2026-08-21:
+`forced-war-stone-test` + `forced-war-stone-main-guard-test` nadal zielone. Nic do
+dispatchu."* **To jest dokładnie ten sposób rozumowania, który dispatch tego tematu
+zakazuje** („ZAKAZ odpowiadania »bramki są zielone, więc działa«"). Audyt pokazał,
+że mechanizm jest zaimplementowany i ma zielone bramki jednostkowe, a mimo to
+**w rozgrywce nie odpala ani razu**. Wpis rejestru jest więc formalnie prawdziwy
+i merytorycznie mylący.
+
+**Nie poprawiam go** — rejestr jest poza moją allowlistą i należy do orkiestratora.
+Zgłaszam jako pozycję do domknięcia razem z decyzją właściciela.
+
