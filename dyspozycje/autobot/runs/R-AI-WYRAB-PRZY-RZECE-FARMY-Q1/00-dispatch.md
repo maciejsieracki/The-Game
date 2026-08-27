@@ -359,3 +359,131 @@ podaj obie liczby, **nie pogorsz**. Naprawa to osobny temat.
 **Uwaga na allowlistę rundy 1:** wskazywała `gra/data/ai-params.json` jako miejsce wag
 wyboru ulepszeń. **Takich wag tam NIE MA** — wybór robi stała lista `AI_IMPROVEMENT_PRIORITY`
 w kodzie. Nie szukaj ich w JSON-ie.
+
+---
+
+# KOREKTA ZAKRESU RUNDY 2 — rozróżnienie dwóch AI (właściciel, 2026-08-27)
+
+**Ta sekcja koryguje sekcję „RUNDA 2" powyżej.** Właściciel wprowadził rozróżnienie, którego
+poprzednie sekcje NIE robiły — a które zmienia treść zadania. Poprzednia sekcja mówiła
+po prostu „AI"; to było niejednoznaczne i jest źródłem tej korekty.
+
+## ECHO właściciela — reguła stała, obowiązuje we WSZYSTKICH przyszłych tematach
+
+> „Bardzo ważne jest, żeby rozróżniać AI, czyli sztuczną inteligencję, która wspiera gracza,
+> od AI innych cywilizacji, bo to są dwie różne kwestie i dwa różne postępowania. Jeśli
+> będziesz pytał, pytaj konkretnie, czy to ma być AI gracza, czy AI innych cywilizacji."
+
+**Obowiązuje od teraz w każdym raporcie i każdym pytaniu ABC.** Zdanie o „AI" bez kwalifikacji
+„gracza" albo „cywilizacji" jest raportem do poprawy.
+
+## Fakt techniczny, który to rozróżnienie czyni istotnym
+
+Obie ścieżki wołają **ten sam silnik** `pickAutoImprovements`, ale z **różną konfiguracją**:
+
+| | AI gracza (`main.ts:27086`) | AI cywilizacji (`ai.ts:1984`) |
+|---|---|---|
+| budżet Pracy | `playerUlepszeniaPolicy.pracaAutoPercent` (suwak gracza) | `100` |
+| **ulepszeń na miasto/turę** | wg polityki gracza | **`maxItemsPerCity: 1`** |
+| wyrąb | wg trybu | `skipWyrab: false` |
+| archetyp | — | `civArchetype` |
+
+**Wszystkie trzy harnessy rundy 1 wołały `pickAutoImprovements` bezpośrednio**, więc
+nie wiadomo, którą konfigurację faktycznie zmierzyły. Operator rundy 2 MA to ustalić
+i **podać osobno liczby dla obu ścieżek**.
+
+## ECHO — druga wiadomość właściciela, doprecyzowanie modelu docelowego
+
+> „zasady co do budowania mogą być podobne jak i dla AI gracza, ale AI musi równomiernie
+> budować też inne ulepszenia poza ulepszeniami pod żywność. W wypadku gracza, gracz może
+> wybrać na przykład opcję »żywność« lub »surowce«, a także »zrównoważoną«. Wtedy istnieją
+> różne strategie dla każdego z tych ustawień. Jeśli gracz wybierze produkcję zrównoważoną,
+> powinna ona być bardzo zbliżona do tej, którą stosuje AI. Dlatego warto ustalić najlepsze
+> strategie: co najpierw, co później, jakie zasady obowiązują. Trzeba to kompleksowo
+> przemyśleć, aby rozwój był możliwie najkorzystniejszy zarówno dla AI cywilizacji,
+> jak i AI gracza."
+
+### Kontrakt docelowy wynikający z obu wiadomości
+
+1. **Kompleksowość (heks po heksie) dotyczy OBU** ścieżek — to jest wspólna mechanika.
+2. **AI cywilizacji ≈ profil „Zrównoważona" gracza.** Mają być bardzo zbliżone.
+3. **AI cywilizacji MUSI budować równomiernie**, nie tylko pod żywność. Dziś buduje
+   **zero** tartaków, dróg, posterunków, fortów, kopalni i irygacji — to jest wprost
+   sprzeczne z tym wymaganiem.
+4. **Profile gracza `Żywność` / `Surowce` / `Zrównoważona` mają być RÓŻNYMI strategiami.**
+   Dziś `ULEPSZENIA_FOCUS_LABELS` istnieją w UI — Operator MA zmierzyć, **czy i o ile**
+   faktycznie różnią się wynikiem. Jeśli dają ten sam rezultat, to jest osobne znalezisko.
+5. **Limit `maxItemsPerCity: 1` dla AI cywilizacji ZOSTAJE** — ECHO właściciela:
+   > „Zostaw limit, zmień kolejność."
+   Czyli AI cywilizacji ma robić jedno ulepszenie na miasto na turę, ale **na tym samym
+   heksie aż do końca**, zamiast skakać po mapie. Kompleksowość bez zmiany tempa rozwoju.
+
+## ZADANIE RUNDY 2 — trzy części, w tej kolejności
+
+### A. POMIAR ROZDZIELONY (przed jakąkolwiek zmianą)
+
+Powtórz kluczowe pomiary rundy 1 **osobno dla AI gracza i osobno dla AI cywilizacji**,
+przez ich **prawdziwe ścieżki wejścia** (`main.ts:27086` i `ai.ts:1984`), nie przez
+bezpośrednie wołanie pickera. Metryki E1/E2 Evaluatora. Podaj tabelę: metryka × ścieżka.
+Dodatkowo: dla AI gracza zmierz **osobno każdy profil** (`Żywność`, `Surowce`, `Infra`,
+`Zrównoważona`) — czy w ogóle się różnią.
+
+### B. PROJEKT STRATEGII — produkt do akceptacji właściciela, nie do cichego wdrożenia
+
+Właściciel prosi: „warto ustalić najlepsze strategie: co najpierw, co później, jakie zasady
+obowiązują". To jest **zadanie projektowe**. Przedstaw dla każdego profilu (`Żywność`,
+`Surowce`, `Infra`, `Zrównoważona` = AI cywilizacji) **uporządkowaną listę priorytetów**
+z **uzasadnieniem liczbowym z `tileYield`**, nie z intuicji.
+
+Uwzględnij ustalenia rundy 1: wyrąb pod farmę przy rzece daje żywność +1, ale praca −3,
+handel −2, drewno −15/turę — właściciel **świadomie wybrał wycinać mimo to** dla ścieżki
+rzecznej, ale to nie znaczy, że wyrąb ma być domyślny wszędzie.
+
+**Ten projekt idzie do właściciela jako `DECISION_REQUIRED` PRZED implementacją C**,
+chyba że Evaluator i Final Control uznają go za oczywisty. Nie zgaduj priorytetów.
+
+### C. IMPLEMENTACJA — tylko mechanika, nie strategia
+
+Niezależnie od B, zaimplementuj **to, co jest bezsporne**:
+- **odwrócenie pętli** `pickAutoImprovements` (`auto-improvements.ts:402`) z „po typach"
+  na „po heksach" — wspólne dla obu ścieżek, to jest strukturalna przyczyna skargi;
+- **AI cywilizacji zaczyna budować tartaki** (dziś 0 na 183 kwalifikujących się heksach)
+  oraz pozostałe pominięte kategorie — wymóg „równomiernie" z ECHO;
+- priorytet heksów z rzeką przy wyborze następnego heksu.
+
+## Kryteria sukcesu rundy 2 (zastępują poprzednie)
+
+1. **Tabela E1/E2 PRZED/PO, ROZDZIELONA na AI gracza i AI cywilizacji.** Obie mają spaść.
+   Wartości PRZED z rundy 1 (nierozdzielone): E1 max 35–50, E1 śr. 19,1–27,5,
+   E2 rozpiętość 16,0–19,6 tur, obcych heksów 37,6–49,2.
+2. **Ślad czasowy** dla obu ścieżek osobno.
+3. **AI cywilizacji buduje tartaki** — liczba per ziarno, zero = FAIL.
+4. **AI cywilizacji buduje równomiernie**: podaj rozkład kategorii (żywność / surowce /
+   infra) PRZED i PO. Dziś infra = 0.
+5. **Profile gracza faktycznie się różnią** — rozkład kategorii per profil.
+6. **`Zrównoważona` gracza ≈ AI cywilizacji** — pokaż, jak blisko (metryka podobieństwa
+   rozkładów).
+7. `maxItemsPerCity: 1` dla AI cywilizacji **niezmieniony** — asercja.
+8. `tsc` 0; 5 bramek referencyjnych; bramki obozu **91/0, 88/0, 5/0, 22/0**; bramka wydarzeń
+   **77/0**; `auto-improvements-test` 45/0; `map-improvement-qualify-test` 112/0 — bez pogorszenia.
+9. `ai-praca-split-parity-test` **21/1 zastane na `main`** — zmierz na bazie i po zmianie,
+   podaj obie liczby, nie pogorsz.
+10. Nowa bramka tematu z dowodem nietautologiczności.
+
+## ALLOWLISTA RUNDY 2
+
+`gra/src/game/auto-improvements.ts` · `gra/src/game/ai.ts` · `gra/src/main.ts`
+(**wyłącznie** konfiguracja wywołania `pickAutoImprovements` ~`:27086-27094`, jeśli
+rozdzielenie profili tego wymaga) · `gra/tools/*` · raporty runu.
+
+**NIE ruszać:** `gra/data/**` (reguły terenów i hodowla = runda 3),
+`gra/src/map/improvement-build.ts`, `gra/src/ui/**`, `dyspozycje/WERSJE.md`, `gra-robocza/**`.
+
+## REGUŁA PRZECIW SAMOOSZUKIWANIU — uzupełnienie
+
+- **ZAKAZ zdania o „AI" bez kwalifikacji „gracza" albo „cywilizacji".** To jest wprost
+  zlecenie właściciela i dotyczy każdego zdania raportu.
+- **ZAKAZ mierzenia przez bezpośrednie wołanie `pickAutoImprovements`** — to był błąd
+  rundy 1. Mierz przez prawdziwe ścieżki wejścia obu AI.
+- **ZAKAZ cichego ustalenia strategii z części B.** To projekt do akceptacji właściciela.
+- Każda nowa asercja MUSI czerwienieć po jednej celowanej mutacji.
