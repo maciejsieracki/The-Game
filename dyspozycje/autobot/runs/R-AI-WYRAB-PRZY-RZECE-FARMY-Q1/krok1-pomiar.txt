@@ -33,3 +33,11 @@ seed 42: heksow z rzeka=47 | rzeka+Las = 22 {"Laka":21,"Wzgorza":1} · rzeka bez
 seed 1337: heksow z rzeka=90 | rzeka+Las = 44 {"Laka":44} · rzeka bez lasu = 46
 seed 2026: heksow z rzeka=68 | rzeka+Las = 46 {"Laka":46} · rzeka bez lasu = 22
 RAZEM rzeka+Las na 3 ziarnach: 112
+
+--- C. Sprzecznosc: wyrab usuwa Las, a nowa trzoda Lasu wymaga ---
+W1 = wyrab -> farma -> trzoda (kontrakt pkt 1 + nowa regula hodowli)
+W2 = BEZ wyrebu: tartak (las zostaje) -> farma na lesie -> trzoda na lesie
+W3 = wyrab -> farma, trzoda na SASIEDNIM heksie z Lasem + tartakiem
+seed 42: heksy rzeka+Las=22 | W1=0 | W2=22 | W3=22
+seed 1337: heksy rzeka+Las=44 | W1=0 | W2=44 | W3=43
+seed 2026: heksy rzeka+Las=46 | W1=0 | W2=46 | W3=46

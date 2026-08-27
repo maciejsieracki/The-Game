@@ -1,0 +1,19 @@
+
+=== now · 40 tur · src=/home/user/wt-op-airzeki/gra/src ===
+seed 42: oboz=31 pastwiska=19 farmy_przy_rzece=15
+          ROZGRZEBANE koniec=70/70 tknietych (domkniete=0) · max w przebiegu=70 · srednia=48.2
+          KWALIFIKACJA tura0: oboz=50 pol · hodowla=20 pol · oba na tym samym polu=0
+seed 1337: oboz=33 pastwiska=20 farmy_przy_rzece=17
+          ROZGRZEBANE koniec=68/68 tknietych (domkniete=0) · max w przebiegu=68 · srednia=44.7
+          KWALIFIKACJA tura0: oboz=39 pol · hodowla=21 pol · oba na tym samym polu=0
+seed 2026: oboz=35 pastwiska=17 farmy_przy_rzece=9
+          ROZGRZEBANE koniec=70/70 tknietych (domkniete=0) · max w przebiegu=70 · srednia=43.0
+          KWALIFIKACJA tura0: oboz=35 pol · hodowla=18 pol · oba na tym samym polu=0
+seed 5150: oboz=24 pastwiska=21 farmy_przy_rzece=2
+          ROZGRZEBANE koniec=77/77 tknietych (domkniete=0) · max w przebiegu=77 · srednia=44.6
+          KWALIFIKACJA tura0: oboz=27 pol · hodowla=21 pol · oba na tym samym polu=0
+seed 31337: oboz=28 pastwiska=22 farmy_przy_rzece=0
+          ROZGRZEBANE koniec=72/72 tknietych (domkniete=0) · max w przebiegu=72 · srednia=43.1
+          KWALIFIKACJA tura0: oboz=31 pol · hodowla=22 pol · oba na tym samym polu=0
+
+RAZEM(now): oboz=151 pastwiska=99 farmy_przy_rzece=43 rozgrzebane_na_koniec=357/357

@@ -126,3 +126,32 @@ for (const s of seeds) {
 console.log(`RAZEM rzeka+Las na ${seeds.length} ziarnach: ${tot}`);
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
+
+// --- C. SPRZECZNOSC „wyrab -> farma -> trzoda" vs nowa regula hodowli (Las + tartak) ---
+// Nowa regula (ECHO 2026-08-27): owce/bydlo/lama TYLKO na nakladce Las i TYLKO gdy stoi tartak.
+// Punkt 1 kontraktu: na heksie z rzeka wykarczuj las -> farma -> potem trzoda.
+// Ponizej: ile heksow „rzeka + Las" moze obsluzyc ktory wariant.
+console.log('\n--- C. Sprzecznosc: wyrab usuwa Las, a nowa trzoda Lasu wymaga ---');
+console.log('W1 = wyrab -> farma -> trzoda (kontrakt pkt 1 + nowa regula hodowli)');
+console.log('W2 = BEZ wyrebu: tartak (las zostaje) -> farma na lesie -> trzoda na lesie');
+console.log('W3 = wyrab -> farma, trzoda na SASIEDNIM heksie z Lasem + tartakiem');
+for (const s of seeds) {
+  const map = M.generateMap(36, 28, s, 'kontynenty');
+  const riverSet = riverHexKeys(map);
+  let rzekaLas = 0, w1 = 0, w2 = 0, w3 = 0;
+  for (const hk of riverSet) {
+    const h = map.hexes[hk];
+    if (!h || h.nakladka !== Nakladka.Las) continue;
+    rzekaLas++;
+    // W1: po wyrebie nakladka = Brak -> nowa regula hodowli (Las+tartak) NIE moze byc spelniona.
+    // (formalnie: 0 z definicji — trzymamy jawnie, zeby liczba byla w tabeli)
+    w1 += 0;
+    // W2: farma musi byc legalna NA LESIE na tym terenie bazowym; tartak moze stac na lesie (kanon).
+    if (M.isFarmBaseTerrain(h.terenBazowy, Nakladka.Las)) w2++;
+    // W3: istnieje sasiad z nakladka Las (kandydat pod tartak+trzode)
+    const [q, r] = hk.split(',').map(Number);
+    const nbs = [[q+1,r],[q-1,r],[q,r+1],[q,r-1],[q+1,r-1],[q-1,r+1]];
+    if (nbs.some(([nq, nr]) => map.hexes[`${nq},${nr}`]?.nakladka === Nakladka.Las)) w3++;
+  }
+  console.log(`seed ${s}: heksy rzeka+Las=${rzekaLas} | W1=${w1} | W2=${w2} | W3=${w3}`);
+}
