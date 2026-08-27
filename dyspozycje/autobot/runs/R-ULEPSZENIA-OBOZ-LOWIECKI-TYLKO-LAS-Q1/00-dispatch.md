@@ -142,3 +142,83 @@ BLOKADY: brak.
 RUNDY: 0/5 (dispatch).
 NASTĘPNY KROK: Operator, runda 1.
 DEPLOY/PUSH: NIE WYKONANO.
+
+---
+
+# RUNDA 2 — decyzje właściciela po FAIL Evaluatora i Final Control (2026-08-27)
+
+Runda 1 zakończyła się **FAIL** u Evaluatora i Final Control. Powód nie był błędem
+implementacji tego, co zrobiono — było nim **znalezienie dziury, której Operator nie objął**.
+
+## Rozstrzygnięcie 1 — wariant reguły: **`tylko Las`** (nie „Las I złoże")
+
+`DECISION_REQUIRED` Operatora **odpada bez pytania właściciela**, bo alternatywa jest
+strukturalnie niemożliwa, nie tylko niekorzystna: `Nakladka` to JEDNO pole heksa,
+a `Las` nie należy do `NAKLADKI_ZWIERZECZE`. Wariant „Las I złoże" daje **0 pól na 5 mapach**
+— zmierzone dwoma niezależnymi odczytami (nakładka oraz `hex.zloze`) przez Operatora
+i odtworzone przez Evaluatora. Ulepszenie byłoby martwe.
+
+Obowiązuje więc **`tylko Las`**: nakładka `Las` jest warunkiem koniecznym i wystarczającym
+co do terenu. Pole `warunek: "dzika zwierzyna"` w `terrain-improvements.json` przestaje być
+bramką terenu — Operator ma je opisać zgodnie z tym, co robi, albo usunąć, z uzasadnieniem.
+
+## Rozstrzygnięcie 2 — **ECHO właściciela: wariant A** dla dziury P7
+
+Pytanie zadane właścicielowi: co ma się stać przy wycince lasu pod istniejącym obozem.
+
+> **Odpowiedź: A — obóz znika przy wyrębie.**
+
+Uzasadnienie właściciela zgodne z regułą tematu: skoro obóz może istnieć wyłącznie w lesie,
+to zniknięcie lasu znosi warunek jego istnienia. Praca **nie jest zwracana**.
+
+## ZADANIE RUNDY 2 — dokładnie jedna poprawka, nic więcej
+
+**P7 — `stripImprovementsWhenForestRemoved` (`gra/src/map/improvement-build.ts:165`)
+jest pustym przelotem** (`return [...layers]`), mimo że jej docstring obiecuje filtrowanie
+ulepszeń zależnych od nakładki Las. Skutek zmierzony przez Evaluatora: po wyrębie warstwy
+heksa to `["oboz_lowiecki"]` przy `nakladka='brak'` — **obóz poza lasem powstający w normalnej
+rozgrywce**, u gracza (`main.ts:11908`→`:11912`) i u AI (`:28903`).
+
+Zaimplementuj wariant A: funkcja ma usuwać `oboz_lowiecki` z warstw.
+**Tartak NIE — kanon mówi wprost, że las zostaje przy tartaku** (patrz docstring).
+Sprawdź, czy inne ulepszenia też zależą od nakładki Las i czy powinny zniknąć — jeśli tak,
+wypisz je i uzasadnij; jeśli nie, powiedz to wprost.
+
+Final Control policzył domknięcie: las znika w rozgrywce w **trzech** miejscach —
+`main.ts:11753` (**ścieżka martwa**: `removesForest` na sztywno `false`, `improvement-build.ts:365`),
+`:11910` wyrąb gracza, `:28905` wyrąb AI. Dwa ostatnie wołają pusty strip.
+**Zbiór dziur jest domknięty i wynosi dokładnie P7** — nie szukaj dalej, napraw to jedno.
+
+## Czego NIE ruszać w rundzie 2
+
+P1–P6 zostały **zweryfikowane przez Evaluatora ścieżkami wykonania** (nie grepem) i są
+zielone. Bramka tematu ma 71/71. **Nie przerabiaj ich.** Runda 2 to jedna poprawka
+plus asercje na nią.
+
+## Znane, świadomie NIEnaprawiane w tym temacie
+
+- **Skarga „zamiast owcy buduje obóz łowiecki" NIE jest rozwiązana tym tematem.**
+  Pomiar PRZED/PO, 3 ziarna × 40 tur, Operator: **99/56 przed i 99/56 po** — identycznie
+  co do jednego pola. Evaluator na innych ziarnach: **83/62 przed i po**. Zawężenie terenu
+  nie zmieniło zachowania AI, bo obozów poza lasem prawie nie było (791→790 pól na 5 mapach).
+  To, co właściciel widział na wzgórzach, to **lasy na wzgórzach** — czyli przypadek, który
+  ma działać i działa. Przyczyną skargi są **wagi AI**, poza allowlistą → osobny temat.
+- **`createQualifier` w izolacji: BRAK DOWODU** (mutacja M-B / M1 = 0 FAIL). Gate commitu
+  `computeImprovementBuildImpact` maskuje gate panelu — obrona w głąb, nie luka.
+  Zgłoszone jawnie przez Operatora, potwierdzone przez Evaluatora i Final Control.
+
+## Kryteria sukcesu rundy 2
+
+1. Wyrąb lasu pod obozem → **obóz znika z warstw heksa**. Pomiar, nie odczyt kodu:
+   postaw obóz na lesie, wytnij las, odczytaj warstwy.
+2. To samo dla ścieżki AI (`main.ts:28903`) — osobna asercja.
+3. **Tartak NIE znika** przy wyrębie — kanon. Osobna asercja.
+4. Nowa asercja czerwienieje po cofnięciu poprawki (mutacja pokazana z wynikiem).
+5. Bramka tematu ≥ 71 pass, 0 fail. Sonda Evaluatora 88/0 (dziś 87/1). Sonda FC 5/0 (dziś 4/1).
+6. `tsc --noEmit` 0; 5 bramek referencyjnych zielonych; `auto-improvements-test` 45/0.
+
+## Allowlista rundy 2
+
+Bez zmian, plus jawnie: `gra/src/map/improvement-build.ts` (funkcja `stripImprovementsWhenForestRemoved`).
+**NIE ruszać `gra/src/main.ts`** — hooki `:11912` i `:28903` już wołają tę funkcję, wystarczy
+naprawić ją samą.
