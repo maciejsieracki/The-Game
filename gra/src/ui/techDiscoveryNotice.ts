@@ -93,6 +93,9 @@ type UnitRow = {
 const HOST_ID = 'civ-tech-discovery-notice-host';
 const STYLE_ID = 'civ-tech-discovery-notice-css-v3';
 const OVERLAY_ID = 'tech-discovery-notice';
+/** P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (B): osobny wpis stosu Esc dla karty
+ * SZCZEGÓŁU otwartej OBOK karty technologii — Esc zamyka najpierw ją, potem całość. */
+const SIDE_OVERLAY_ID = 'tech-discovery-notice-side';
 
 /** Etykieta epoki po numerze — ten sam wzorzec co EPOCH_LABEL w cityPanel.ts / EPOCH_ORDER w techTreeView.ts. */
 const EPOCH_LABEL: Record<number, string> = { 1: 'Kamień', 2: 'Brąz', 3: 'Żelazo' };
@@ -561,7 +564,10 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
 
   const host = document.createElement('div');
   host.id = HOST_ID;
-  const close = () => { popOverlay(OVERLAY_ID); host.remove(); };
+  // Zamknięcie karty technologii zamyka OBIE karty (wymóg 7 dyspozycji): satelita żyje
+  // wewnątrz tego hosta, więc `host.remove()` usuwa ją razem z nim — zostaje tylko zdjęcie
+  // jej wpisu ze stosu Esc, żeby stos nie trzymał martwego domknięcia.
+  const close = () => { popOverlay(SIDE_OVERLAY_ID); popOverlay(OVERLAY_ID); host.remove(); };
 
   const actions: EntityCardAction[] = [];
   if (opts.onStartResearch) {
@@ -587,36 +593,103 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
 
   const card = renderEntityCard(finalData);
   card.classList.add('tdn-entity-card-v2');
-  // Delegowany listener dla wierszy „Ulepszenia terenu" (linkTo powyżej) — `renderer.ts`
-  // (poza allowlistą T7b) rysuje `data-entity-kind`/`data-entity-id` na przycisku wiersza,
-  // ale nie dopina żadnego kliku do nich (to zakres T10, nie tego tematu) — więc wpinamy
-  // go tu, lokalnie, wyłącznie dla `kind==='improvement'`, wzorem `wireInteractions()`.
-  card.addEventListener('click', (event) => {
-    const target = event.target as HTMLElement | null;
-    const linkEl = target?.closest<HTMLElement>('[data-entity-kind="improvement"][data-entity-id]');
-    if (!linkEl) return;
-    const impId = linkEl.getAttribute('data-entity-id');
-    if (impId) openEntityCard('improvement', impId, { mode: 'dialog' });
-  });
-  // Przycisk zamknięcia (✕) — `renderEntityCard`/`renderer.ts` (poza allowlistą T3) nie
-  // rysuje żadnego, więc dodajemy go tu, po zbudowaniu karty, zamiast edytować renderer.
-  const headerEl = card.querySelector('.entity-card-header');
-  if (headerEl) {
-    const closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.className = 'tdn-entity-close';
-    closeBtn.title = 'Zamknij (Esc)';
-    closeBtn.setAttribute('aria-label', 'Zamknij kartę technologii');
-    closeBtn.textContent = '✕';
-    closeBtn.addEventListener('click', close);
-    headerEl.appendChild(closeBtn);
-  }
+  addTdnCloseButton(card, 'Zamknij kartę technologii', close);
 
-  host.innerHTML = `<div class="tdn-back"></div>`;
+  host.innerHTML = `<div class="tdn-back"></div><div class="tdn-stage"></div>`;
   host.querySelector('.tdn-back')?.addEventListener('click', close);
-  host.appendChild(card);
+  const stage = host.querySelector('.tdn-stage') as HTMLElement;
+  stage.appendChild(card);
+  wireSideCardLinks(card, host, stage);
   document.body.appendChild(host);
   pushOverlay(OVERLAY_ID, close);
+}
+
+/** ✕ karty — `renderEntityCard` (`renderer.ts`) żadnego nie rysuje, więc dopinamy go po
+ * zbudowaniu karty, zamiast zmieniać WSPÓLNY renderer (dotyka też kart jednostek/budynków). */
+function addTdnCloseButton(card: HTMLElement, ariaLabel: string, onClose: () => void): void {
+  const headerEl = card.querySelector('.entity-card-header');
+  if (!headerEl) return;
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'tdn-entity-close';
+  closeBtn.title = 'Zamknij (Esc)';
+  closeBtn.setAttribute('aria-label', ariaLabel);
+  closeBtn.textContent = '✕';
+  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); onClose(); });
+  headerEl.appendChild(closeBtn);
+}
+
+/**
+ * P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (B) — link krzyżowy z karty technologii
+ * („Ulepszenia terenu → Szczegóły →", ale też budynki/jednostki/kolejne technologie)
+ * otwiera kartę docelową **OBOK**, w tym samym hoście, zamiast pod spodem.
+ *
+ * DIAGNOZA POMIAROWA (żywe Chromium, przed naprawą): karta technologii NIE była zamykana —
+ * host `#civ-tech-discovery-notice-host` zostawał w DOM, widoczny, `z-index:940`. Karta
+ * ulepszenia szła przez `openEntityCard(..., {mode:'dialog'})` → `openDialog()` w
+ * `entityCards/renderer.ts`, który montuje WŁASNY `.entity-card-backdrop` prosto w
+ * `document.body` z `z-index:520` (`ENTITY_CARD_CSS`). 520 < 940, więc nowa karta lądowała
+ * pod pełnoekranową nakładką karty technologii: `getBoundingClientRect()` obu kart było
+ * niezerowe i w viewporcie, ale `document.elementFromPoint()` w ŚRODKU karty „Obóz łowiecki"
+ * zwracał element karty „Łowiectwo". To jest dosłownie „pojawia się pod spodem" ze zgłoszenia.
+ *
+ * NAPRAWA BEZ DOTYKANIA `renderer.ts` (dyspozycja: „jeśli da się rozwiązać (B) bez
+ * `renderer.ts`, to jest lepsze" — renderer jest WSPÓLNY dla kart jednostek i budynków):
+ * listener w fazie PRZECHWYTYWANIA na karcie. `renderEntityCard` rejestruje swój własny,
+ * delegowany listener bąbelkowy na tej samej karcie i kończy go `stopImmediatePropagation()`,
+ * więc każdy listener dopięty PO nim jest martwy (dokładnie to spotkało dawny lokalny
+ * listener T7b — nigdy się nie wykonywał). Listener `capture` na karcie-PRZODKU klikniętego
+ * przycisku biegnie natomiast PRZED fazą bąbelkową na tej samej karcie, więc `stopPropagation()`
+ * tutaj skutecznie odbiera klik rendererowi, zanim ten otworzy osobny `dialog`.
+ *
+ * Karta satelita montowana jest do `.tdn-stage` — wspólnego, wyśrodkowanego kontenera flex
+ * wewnątrz tego samego hosta. Skutki: (1) obie karty są w JEDNYM kontekście stackowania,
+ * więc żadna nie może przykryć drugiej; (2) zamknięcie karty technologii (`close`) usuwa host,
+ * czyli i satelitę; (3) satelita ma własny wpis stosu Esc, więc Esc zamyka najpierw ją.
+ */
+function wireSideCardLinks(card: HTMLElement, host: HTMLElement, stage: HTMLElement): void {
+  card.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest<HTMLElement>('button[data-entity-kind][data-entity-id]');
+    if (btn === null || btn === undefined || !card.contains(btn)) return;
+    const kind = btn.getAttribute('data-entity-kind');
+    const id = btn.getAttribute('data-entity-id');
+    if (kind === null || id === null) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openEntityCardBeside(kind as Parameters<typeof openEntityCard>[0], id, host, stage);
+  }, true);
+}
+
+function openEntityCardBeside(
+  kind: Parameters<typeof openEntityCard>[0],
+  id: string,
+  host: HTMLElement,
+  stage: HTMLElement,
+): void {
+  const data = buildEntityCardData(kind, id, {});
+  if (data == null) {
+    // Encja nie istnieje — zachowaj dotychczasowe zachowanie renderera (log + no-op),
+    // nie udawaj, że karta się otworzyła.
+    openEntityCard(kind, id, { mode: 'dialog' });
+    return;
+  }
+  closeTdnSideCard(host);
+  const sideCard = renderEntityCard(data);
+  sideCard.classList.add('tdn-side-card');
+  const closeSide = (): void => { popOverlay(SIDE_OVERLAY_ID); closeTdnSideCard(host); };
+  addTdnCloseButton(sideCard, 'Zamknij kartę: ' + data.title, closeSide);
+  stage.appendChild(sideCard);
+  host.classList.add('tdn-has-side');
+  // Link krzyżowy Z KARTY SATELITY podmienia satelitę (nadal DWIE karty widoczne),
+  // zamiast budować stos nakładek pod hostem — ten sam mechanizm, jeden poziom głębiej.
+  wireSideCardLinks(sideCard, host, stage);
+  pushOverlay(SIDE_OVERLAY_ID, closeSide);
+}
+
+function closeTdnSideCard(host: HTMLElement): void {
+  host.querySelector('.tdn-side-card')?.remove();
+  host.classList.remove('tdn-has-side');
 }
 
 let entityCardOverrideStylesInjected = false;
@@ -649,6 +722,26 @@ function ensureEntityCardOverrideStyles(): void {
 #${HOST_ID} .entity-card{position:relative;pointer-events:auto;width:min(660px,96vw);max-height:calc(100vh - 36px);
   overflow:auto;border-color:var(--tg-gold-primary,#e8d88a);
   box-shadow:var(--tg-glow-gold,0 0 24px rgba(232,216,138,.28)),0 12px 40px rgba(0,0,0,.6);}
+/* P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (B) — scena obu kart. Host jest wyśrodkowanym
+   flexem na całą stronę; .tdn-stage jest JEDYNYM elementem układającym karty, więc karta
+   technologii i karta szczegółu stoją OBOK SIEBIE w tym samym kontekście stackowania
+   (żadna nie może przykryć drugiej, w przeciwieństwie do dawnego .entity-card-backdrop
+   z z-index 520 pod hostem 940). Para pointer-events none (scena) / auto (karty) sprawia,
+   że klik w wolne pole między kartami trafia w .tdn-back i zamyka całość, tak jak dotąd. */
+#${HOST_ID} .tdn-stage{position:relative;display:flex;align-items:center;justify-content:center;
+  gap:14px;max-width:100%;max-height:100%;pointer-events:none;}
+#${HOST_ID} .tdn-stage > *{pointer-events:auto;}
+#${HOST_ID} .tdn-side-card{width:min(434px,96vw);animation:civ-tdn-in .18s ease-out;}
+/* PRÓG WĄSKIEGO OKNA — jawnie 1160 px szerokości viewportu. Rachunek: karta technologii
+   660 + karta szczegółu 434 + odstęp 14 + padding hosta 2x18 = 1144 px; 1160 daje 16 px
+   zapasu. PONIŻEJ progu obie karty ZOSTAJĄ WIDOCZNE, tylko układ zmienia się na pionowy
+   (jedna pod drugą, każda z połową dostępnej wysokości i własnym scrollem) — świadomie NIE
+   wracamy do podmiany ani do stosu, bo cały sens zmiany to widoczny związek „z tej
+   technologii wynika to ulepszenie". */
+@media (max-width:1160px){
+  #${HOST_ID}.tdn-has-side .tdn-stage{flex-direction:column;gap:10px;overflow:auto;}
+  #${HOST_ID}.tdn-has-side .entity-card{max-height:calc((100vh - 56px) / 2);}
+}
 #${HOST_ID} .entity-card-header{position:relative;padding-right:44px;}
 .tdn-entity-close{position:absolute;top:10px;right:10px;width:28px;height:28px;
   border-radius:var(--tg-radius-btn,8px);border:2px solid rgba(232,216,138,.4);
@@ -730,6 +823,7 @@ function _legacyShowTechDiscoveryNotice(tech: TechRow, opts: ShowTechDiscoveryNo
 }
 
 export function hideTechDiscoveryNotice(): void {
+  popOverlay(SIDE_OVERLAY_ID);
   popOverlay(OVERLAY_ID);
   document.getElementById(HOST_ID)?.remove();
 }
