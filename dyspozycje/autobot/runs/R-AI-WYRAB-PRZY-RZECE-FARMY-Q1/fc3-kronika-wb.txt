@@ -1,0 +1,196 @@
+# KRONIKA FINAL CONTROL runda 3 — TRZY STANY, dwie sciezki AI osobno
+# STAN: W-B-runda3 · zrodlo: /home/user/wt-fc-ai3/gra/.fc3src-wb/src
+# ziarna: 1337, 2026, 5150, 7, 99 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6
+
+### AI CYWILIZACJI — PRAWDZIWE wejscie decideAITurn (maxItemsPerCity=1)   [STAN: W-B-runda3]
+ziarno | rozk | heks | K1 ciagl | K1 % | K2 ciagl | K2 % | K2 przerwa | glebok. | wyrab | farma@PO | poster. | fort | tartak | zyw/sur/infra | farmy@rzeka/farmy | plon zywnosci
+  1337 |  120 |   45 |    38/40 |   95 |    38/40 |   95 |       0.07 |    2.39 |    18 |       17 |       2 |    2 |      4 |       68/25/9 |             25/27 |           654
+  2026 |  120 |   48 |    40/43 |   93 |    40/43 |   93 |       0.12 |    2.39 |    10 |        9 |       2 |    3 |      2 |      64/31/15 |             15/20 |           612
+  5150 |  120 |   48 |    43/44 |   98 |    43/44 |   98 |       0.05 |    2.43 |     9 |        8 |       2 |    2 |      3 |      58/37/16 |              7/16 |           583
+     7 |  120 |   42 |    36/40 |   90 |    38/40 |   95 |       0.07 |    2.48 |    17 |       17 |       2 |    2 |      5 |       71/25/7 |             26/31 |           625
+    99 |  120 |   41 |    34/36 |   94 |    34/36 |   94 |       0.11 |    2.71 |    13 |       13 |       2 |    2 |      5 |      63/22/22 |             18/27 |           665
+ RAZEM |  600 |  224 |  191/203 |   94 |  193/203 |   95 |       0.08 |    2.47 |    67 |       64 |      10 |   11 |     19 |    324/140/69 |            91/121 |          3139
+  udzial farm przy rzece: 75.2% · rozkazow na heksach z rzeka: 56.3%
+  PLON TERYTORIUM/ture (suma po ziarnach): zywnosc 3139 · praca 2854 · handel 3353 · drewno 1925
+  ulepszenia ZEROPLONOWE (posterunek+fort): 21/600 = 3.5%
+  model silnika: rozkazow wyrebu odrzuconych (heks juz bez lasu) 0 · warstw skasowanych przez strip lasu 0
+  klucze (16): farma=121 · bydlo=98 · warzelnia_soli=81 · lodzie_rybackie=79 · wyrab=67 · glinianka=29 · droga=25 · droga_brukowana=23 · oboz_lowiecki=20 · tartak=19 · fort=11 · posterunek=10 · kamieniolom=8 · owce=6 · kopalnia_miedzi=2 · kopalnia_zelaza=1
+
+### AI GRACZA — konfiguracja main.ts ODTWORZONA (BRAK DOWODU), profil „zrownowazone"   [STAN: W-B-runda3]
+ziarno | rozk | heks | K1 ciagl | K1 % | K2 ciagl | K2 % | K2 przerwa | glebok. | wyrab | farma@PO | poster. | fort | tartak | zyw/sur/infra | farmy@rzeka/farmy | plon zywnosci
+  1337 |   60 |   23 |     8/15 |   53 |     9/15 |   60 |       2.33 |    2.64 |     0 |        0 |       1 |    1 |     13 |      30/17/13 |             14/14 |           570
+  2026 |   60 |   23 |    10/16 |   63 |    10/16 |   63 |       0.56 |    2.76 |     0 |        0 |       1 |    1 |     10 |      32/18/10 |             15/15 |           511
+  5150 |   60 |   28 |    10/17 |   59 |    10/17 |   59 |       2.24 |    2.23 |     0 |        0 |       1 |    1 |      6 |      29/21/10 |               6/8 |           491
+     7 |   60 |   26 |    12/17 |   71 |    12/17 |   71 |       1.71 |    2.32 |     0 |        0 |       1 |    1 |     10 |      31/19/10 |              8/10 |           545
+    99 |   61 |   28 |    11/17 |   65 |    12/17 |   71 |       3.12 |    2.19 |     0 |        0 |       1 |    1 |      8 |      29/16/16 |              8/10 |           587
+ RAZEM |  301 |  128 |    51/82 |   62 |    53/82 |   65 |       2.00 |    2.40 |     0 |        0 |       5 |    5 |     47 |     151/91/59 |             51/57 |          2704
+  udzial farm przy rzece: 89.5% · rozkazow na heksach z rzeka: 63.1%
+  PLON TERYTORIUM/ture (suma po ziarnach): zywnosc 2704 · praca 2452 · handel 2843 · drewno 2570
+  ulepszenia ZEROPLONOWE (posterunek+fort): 10/301 = 3.3%
+  model silnika: rozkazow wyrebu odrzuconych (heks juz bez lasu) 0 · warstw skasowanych przez strip lasu 0
+  klucze (13): oboz_lowiecki=61 · farma=57 · tartak=47 · droga=38 · warzelnia_soli=24 · lodzie_rybackie=23 · glinianka=17 · droga_brukowana=11 · bydlo=9 · posterunek=5 · fort=5 · kamieniolom=3 · owce=1
+
+================ KRONIKA [W-B-runda3] — AI CYWILIZACJI (decideAITurn) · ziarno 1337 ================
+miasta: c0(4,5) · c1(4,19) · c2(8,11) · heksow z rzeka na mapie: 90
+tura  0 | (4,5    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (7,17   ) [RZEKA][LAS] farma            NOWY HEKS
+       | (11,11  ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+tura  1 | (4,5    ) [RZEKA][LAS] oboz_lowiecki    KONTYNUACJA
+       | (7,17   ) [RZEKA][LAS] oboz_lowiecki    KONTYNUACJA
+       | (11,11  ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+tura  2 | (4,5    ) [RZEKA][LAS] tartak           KONTYNUACJA
+       | (7,17   ) [RZEKA][LAS] warzelnia_soli   KONTYNUACJA
+       | (9,7    ) [RZEKA][LAS] farma            NOWY HEKS
+tura  3 | (5,4    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (7,17   ) [RZEKA][LAS] tartak           KONTYNUACJA
+       | (5,7    ) [  -  ][LAS][OBRONA] posterunek       NOWY HEKS
+tura  4 | (5,4    ) [RZEKA][    ] farma            KONTYNUACJA
+       | (7,18   ) [RZEKA][    ] farma            NOWY HEKS
+       | (5,18   ) [  -  ][LAS][OBRONA] fort             NOWY HEKS
+tura  5 | (5,4    ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (7,18   ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (9,7    ) [RZEKA][LAS] wyrab            POWROT PO PRZERWIE
+tura  6 | (8,8    ) [  -  ][    ][OBRONA] fort             NOWY HEKS
+       | (7,23   ) [  -  ][LAS][OBRONA] posterunek       NOWY HEKS
+       | (9,7    ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura  7 | (5,4    ) [RZEKA][    ] droga            POWROT PO PRZERWIE
+       | (7,19   ) [RZEKA][    ] farma            NOWY HEKS
+       | (11,12  ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+tura  8 | (5,4    ) [RZEKA][    ] droga_brukowana  KONTYNUACJA
+       | (7,19   ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (11,12  ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+tura  9 | (5,5    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (7,20   ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (12,7   ) [RZEKA][LAS] wyrab            NOWY HEKS
+tura 10 | (5,5    ) [RZEKA][    ] farma            KONTYNUACJA
+       | (7,20   ) [RZEKA][    ] farma            KONTYNUACJA
+       | (12,7   ) [RZEKA][    ] farma            KONTYNUACJA
+tura 11 | (5,5    ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (7,20   ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (12,7   ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura 12 | (5,5    ) [RZEKA][    ] droga            KONTYNUACJA
+       | (7,20   ) [RZEKA][    ] glinianka        KONTYNUACJA
+       | (12,8   ) [RZEKA][LAS] wyrab            NOWY HEKS
+tura 13 | (5,5    ) [RZEKA][    ] droga_brukowana  KONTYNUACJA
+       | (7,21   ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (12,8   ) [RZEKA][    ] farma            KONTYNUACJA
+tura 14 | (6,4    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (7,21   ) [RZEKA][    ] farma            KONTYNUACJA
+       | (12,8   ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura 15 | (6,4    ) [RZEKA][    ] farma            KONTYNUACJA
+       | (7,21   ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (12,9   ) [RZEKA][    ] farma            NOWY HEKS
+tura 16 | (6,4    ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (8,21   ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (12,9   ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura 17 | (6,5    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (8,21   ) [RZEKA][    ] farma            KONTYNUACJA
+       | (12,10  ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+tura 18 | (6,5    ) [RZEKA][    ] farma            KONTYNUACJA
+       | (8,21   ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (12,10  ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+tura 19 | (6,5    ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (8,21   ) [RZEKA][    ] glinianka        KONTYNUACJA
+       | (8,6    ) [RZEKA][LAS] wyrab            NOWY HEKS
+tura 20 | (6,5    ) [RZEKA][    ] glinianka        KONTYNUACJA
+       | (9,21   ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (8,6    ) [RZEKA][    ] farma            KONTYNUACJA
+tura 21 | (7,4    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (9,21   ) [RZEKA][    ] farma            KONTYNUACJA
+       | (8,6    ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura 22 | (7,4    ) [RZEKA][    ] farma            KONTYNUACJA
+       | (9,21   ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (8,6    ) [RZEKA][    ] glinianka        KONTYNUACJA
+tura 23 | (7,4    ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (11,13  ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+       | (9,6    ) [RZEKA][    ] farma            NOWY HEKS
+tura 24 | (7,5    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (11,13  ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+       | (9,6    ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura 25 | (7,5    ) [RZEKA][    ] farma            KONTYNUACJA
+       | (11,14  ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+       | (12,6   ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+tura 26 | (7,5    ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (11,14  ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+       | (12,6   ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+tura 27 | (7,6    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (4,19   ) [  -  ][LAS] farma            NOWY HEKS
+       | (7,6    ) [RZEKA][    ] farma            POWROT PO PRZERWIE
+tura 28 | (7,6    ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (4,19   ) [  -  ][LAS] oboz_lowiecki    KONTYNUACJA
+       | (12,5   ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+tura 29 | (8,4    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (4,19   ) [  -  ][LAS] tartak           KONTYNUACJA
+       | (12,5   ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+tura 30 | (8,4    ) [RZEKA][    ] farma            KONTYNUACJA
+       | (3,19   ) [  -  ][    ] lodzie_rybackie  NOWY HEKS
+       | (14,11  ) [RZEKA][    ] farma            NOWY HEKS
+tura 31 | (8,4    ) [RZEKA][    ] bydlo            KONTYNUACJA
+       | (3,19   ) [  -  ][    ] warzelnia_soli   KONTYNUACJA
+       | (14,11  ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura 32 | (9,4    ) [RZEKA][LAS] wyrab            NOWY HEKS
+       | (3,20   ) [  -  ][    ] lodzie_rybackie  NOWY HEKS
+       | (14,11  ) [RZEKA][    ] glinianka        KONTYNUACJA
+tura 33 | (9,4    ) [RZEKA][    ] farma            KONTYNUACJA
+       | (3,20   ) [  -  ][    ] warzelnia_soli   KONTYNUACJA
+       | (9,4    ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura 34 | (9,4    ) [RZEKA][    ] glinianka        KONTYNUACJA
+       | (4,18   ) [  -  ][    ] lodzie_rybackie  NOWY HEKS
+       | (10,4   ) [RZEKA][LAS] wyrab            NOWY HEKS
+tura 35 | (10,4   ) [RZEKA][    ] farma            KONTYNUACJA
+       | (4,18   ) [  -  ][    ] warzelnia_soli   KONTYNUACJA
+       | (10,4   ) [RZEKA][    ] bydlo            KONTYNUACJA
+tura 36 | (10,4   ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+       | (4,20   ) [  -  ][LAS] farma            NOWY HEKS
+       | (11,4   ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+tura 37 | (11,4   ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+       | (4,20   ) [  -  ][LAS] oboz_lowiecki    KONTYNUACJA
+       | (12,4   ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+tura 38 | (3,5    ) [  -  ][    ] lodzie_rybackie  NOWY HEKS
+       | (4,20   ) [  -  ][LAS] tartak           KONTYNUACJA
+       | (12,4   ) [RZEKA][    ] warzelnia_soli   KONTYNUACJA
+tura 39 | (3,5    ) [  -  ][    ] warzelnia_soli   KONTYNUACJA
+       | (4,20   ) [  -  ][LAS] droga            KONTYNUACJA
+       | (12,14  ) [RZEKA][    ] lodzie_rybackie  NOWY HEKS
+--- PARY wyrab -> farma na TYM SAMYM heksie (ziarno 1337): 17/18, srednie opoznienie 0.9 tury
+    5,4 wyrab@t3 -> farma@t4 (+1)
+    5,5 wyrab@t9 -> farma@t10 (+1)
+    7,20 wyrab@t9 -> farma@t10 (+1)
+    12,7 wyrab@t9 -> farma@t10 (+1)
+    12,8 wyrab@t12 -> farma@t13 (+1)
+    7,21 wyrab@t13 -> farma@t14 (+1)
+    6,4 wyrab@t14 -> farma@t15 (+1)
+    8,21 wyrab@t16 -> farma@t17 (+1)
+    6,5 wyrab@t17 -> farma@t18 (+1)
+    8,6 wyrab@t19 -> farma@t20 (+1)
+    9,21 wyrab@t20 -> farma@t21 (+1)
+    7,4 wyrab@t21 -> farma@t22 (+1)
+    PRZERWANY(plonowe) 9,7: przerwa 2 tur, span 5 — farma@t2 -> wyrab@t5 -> bydlo@t6
+    PRZERWANY(plonowe) 5,4: przerwa 1 tur, span 6 — wyrab@t3 -> farma@t4 -> bydlo@t5 -> droga@t7 -> droga_brukowana@t8
+
+================ KRONIKA [W-B-runda3] — AI GRACZA (main.ts odtworzone, profil zrownowazone) · ziarno 1337 ================
+miasta: c0(4,5) · c1(4,19) · c2(8,11) · heksow z rzeka na mapie: 90
+tura  0 | (4,5    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (4,5    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+tura  1 | (4,5    ) [RZEKA][LAS] tartak           KONTYNUACJA
+       | (5,4    ) [RZEKA][LAS] droga            NOWY HEKS
+tura  2 | (5,4    ) [RZEKA][LAS] farma            KONTYNUACJA
+       | (5,5    ) [RZEKA][LAS] droga            NOWY HEKS
+tura  3 | (8,8    ) [  -  ][    ][OBRONA] posterunek       NOWY HEKS
+tura  4 | (9,7    ) [RZEKA][LAS][OBRONA] fort             NOWY HEKS
+tura  5 | (5,4    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (5,5    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+tura  6 | (5,4    ) [RZEKA][LAS] tartak           KONTYNUACJA
+tura  7 | (5,4    ) [RZEKA][LAS] droga_brukowana  KONTYNUACJA
+tura  8 | (5,5    ) [RZEKA][LAS] farma            POWROT PO PRZERWIE
+       | (6,4    ) [RZEKA][LAS] oboz_lowiecki    NOWY HEKS
+tura  9 | (5,5    ) [RZEKA][LAS] tartak           KONTYNUACJA
+tura 10 | (5,5    ) [RZEKA][LAS] droga_brukowana  KONTYNUACJA
+tura 11 | (6,4    ) [RZEKA][LAS] farma            POWROT PO PRZERWIE
+       | (6,5    ) [RZEKA][LAS] oboz_lowiecki    NOWY HEKS
+--- PARY wyrab -> farma na TYM SAMYM heksie (ziarno 1337): 0/0, srednie opoznienie 0.0 tury
+    PRZERWANY(plonowe) 4,6: przerwa 25 tur, span 27 — droga@t13 -> oboz_lowiecki@t39
+    PRZERWANY(plonowe) 5,5: przerwa 4 tur, span 9 — droga@t2 -> oboz_lowiecki@t5 -> farma@t8 -> tartak@t9 -> droga_brukowana@t10
+    PRZERWANY(plonowe) 5,4: przerwa 2 tur, span 7 — droga@t1 -> farma@t2 -> oboz_lowiecki@t5 -> tartak@t6 -> droga_brukowana@t7
+    PRZERWANY(plonowe) 6,4: przerwa 2 tur, span 5 — oboz_lowiecki@t8 -> farma@t11 -> tartak@t12
+    PRZERWANY(plonowe) 6,5: przerwa 1 tur, span 5 — oboz_lowiecki@t11 -> farma@t13 -> glinianka@t14 -> tartak@t15

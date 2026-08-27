@@ -1,0 +1,188 @@
+# KRONIKA FINAL CONTROL runda 3 — TRZY STANY, dwie sciezki AI osobno
+# STAN: PRZED-runda1 · zrodlo: /home/user/wt-fc-ai3/gra/.fc3src-przed/src
+# ziarna: 1337, 2026, 5150, 7, 99 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6
+
+### AI CYWILIZACJI — PRAWDZIWE wejscie decideAITurn (maxItemsPerCity=1)   [STAN: PRZED-runda1]
+ziarno | rozk | heks | K1 ciagl | K1 % | K2 ciagl | K2 % | K2 przerwa | glebok. | wyrab | farma@PO | poster. | fort | tartak | zyw/sur/infra | farmy@rzeka/farmy | plon zywnosci
+  1337 |  120 |   93 |     0/27 |    0 |     0/27 |    0 |      23.15 |    1.29 |     0 |        0 |       0 |    0 |      0 |       120/0/0 |             25/93 |           732
+  2026 |  120 |   89 |     0/31 |    0 |     0/31 |    0 |      23.84 |    1.35 |     0 |        0 |       0 |    0 |      0 |       120/0/0 |             18/89 |           658
+  5150 |  120 |   89 |     0/31 |    0 |     0/31 |    0 |      20.23 |    1.35 |     0 |        0 |       0 |    0 |      0 |       120/0/0 |              7/88 |           606
+     7 |  120 |   99 |     0/21 |    0 |     0/21 |    0 |      25.86 |    1.21 |     0 |        0 |       0 |    0 |      0 |       120/0/0 |             26/99 |           678
+    99 |  120 |   87 |     0/33 |    0 |     0/33 |    0 |      22.18 |    1.38 |     0 |        0 |       0 |    0 |      0 |       120/0/0 |             18/87 |           755
+ RAZEM |  600 |  457 |    0/143 |    0 |    0/143 |    0 |      22.84 |    1.31 |     0 |        0 |       0 |    0 |      0 |       600/0/0 |            94/456 |          3429
+  udzial farm przy rzece: 20.6% · rozkazow na heksach z rzeka: 20.8%
+  PLON TERYTORIUM/ture (suma po ziarnach): zywnosc 3429 · praca 3136 · handel 3318 · drewno 2570
+  ulepszenia ZEROPLONOWE (posterunek+fort): 0/600 = 0.0%
+  model silnika: rozkazow wyrebu odrzuconych (heks juz bez lasu) 0 · warstw skasowanych przez strip lasu 0
+  klucze (4): farma=456 · oboz_lowiecki=75 · bydlo=68 · owce=1
+
+### AI GRACZA — konfiguracja main.ts ODTWORZONA (BRAK DOWODU), profil „zrownowazone"   [STAN: PRZED-runda1]
+ziarno | rozk | heks | K1 ciagl | K1 % | K2 ciagl | K2 % | K2 przerwa | glebok. | wyrab | farma@PO | poster. | fort | tartak | zyw/sur/infra | farmy@rzeka/farmy | plon zywnosci
+  1337 |   63 |   34 |     1/28 |    4 |     1/28 |    4 |      13.00 |    1.85 |     0 |        0 |       0 |    0 |      0 |        62/0/1 |             14/28 |           607
+  2026 |   61 |   50 |     1/10 |   10 |     1/10 |   10 |      16.60 |    1.22 |     0 |        0 |       0 |    0 |      0 |        60/0/1 |             18/50 |           552
+  5150 |   63 |   39 |     1/23 |    4 |     1/23 |    4 |      10.43 |    1.62 |     0 |        0 |       0 |    0 |      0 |        62/0/1 |              6/23 |           487
+     7 |   63 |   32 |     1/30 |    3 |     1/30 |    3 |      14.07 |    1.97 |     0 |        0 |       0 |    0 |      0 |        62/0/1 |              8/30 |           563
+    99 |   63 |   33 |     1/29 |    3 |     1/29 |    3 |      13.59 |    1.91 |     0 |        0 |       0 |    0 |      0 |        62/0/1 |              8/29 |           623
+ RAZEM |  313 |  188 |    5/120 |    4 |    5/120 |    4 |      13.22 |    1.66 |     0 |        0 |       0 |    0 |      0 |       308/0/5 |            54/160 |          2832
+  udzial farm przy rzece: 33.8% · rozkazow na heksach z rzeka: 29.7%
+  PLON TERYTORIUM/ture (suma po ziarnach): zywnosc 2832 · praca 2469 · handel 2704 · drewno 2570
+  ulepszenia ZEROPLONOWE (posterunek+fort): 0/313 = 0.0%
+  model silnika: rozkazow wyrebu odrzuconych (heks juz bez lasu) 0 · warstw skasowanych przez strip lasu 0
+  klucze (6): farma=160 · oboz_lowiecki=96 · lodzie_rybackie=27 · bydlo=24 · droga=5 · owce=1
+
+================ KRONIKA [PRZED-runda1] — AI CYWILIZACJI (decideAITurn) · ziarno 1337 ================
+miasta: c0(4,5) · c1(4,19) · c2(8,11) · heksow z rzeka na mapie: 90
+tura  0 | (4,5    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (4,19   ) [  -  ][LAS] farma            NOWY HEKS
+       | (5,7    ) [  -  ][LAS] farma            NOWY HEKS
+tura  1 | (4,6    ) [  -  ][LAS] farma            NOWY HEKS
+       | (4,20   ) [  -  ][LAS] farma            NOWY HEKS
+       | (5,18   ) [  -  ][LAS] farma            NOWY HEKS
+tura  2 | (5,4    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (4,21   ) [  -  ][LAS] farma            NOWY HEKS
+       | (6,6    ) [  -  ][LAS] farma            NOWY HEKS
+tura  3 | (5,5    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (4,22   ) [  -  ][    ] farma            NOWY HEKS
+       | (6,7    ) [  -  ][LAS] farma            NOWY HEKS
+tura  4 | (5,6    ) [  -  ][LAS] farma            NOWY HEKS
+       | (4,23   ) [  -  ][    ] farma            NOWY HEKS
+       | (6,8    ) [  -  ][LAS] farma            NOWY HEKS
+tura  5 | (6,4    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (5,19   ) [  -  ][LAS] farma            NOWY HEKS
+       | (6,18   ) [  -  ][LAS] farma            NOWY HEKS
+tura  6 | (6,5    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (5,20   ) [  -  ][LAS] farma            NOWY HEKS
+       | (7,5    ) [RZEKA][LAS] farma            NOWY HEKS
+tura  7 | (7,4    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (5,21   ) [  -  ][LAS] farma            NOWY HEKS
+       | (7,6    ) [RZEKA][LAS] farma            NOWY HEKS
+tura  8 | (7,7    ) [  -  ][LAS] farma            NOWY HEKS
+       | (6,19   ) [  -  ][LAS] farma            NOWY HEKS
+       | (7,8    ) [  -  ][LAS] farma            NOWY HEKS
+tura  9 | (8,4    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (6,20   ) [  -  ][LAS] farma            NOWY HEKS
+       | (7,17   ) [RZEKA][LAS] farma            NOWY HEKS
+tura 10 | (8,5    ) [  -  ][LAS] farma            NOWY HEKS
+       | (6,21   ) [  -  ][LAS] farma            NOWY HEKS
+       | (7,18   ) [RZEKA][    ] farma            NOWY HEKS
+tura 11 | (8,6    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (6,22   ) [  -  ][LAS] farma            NOWY HEKS
+       | (8,7    ) [  -  ][    ] farma            NOWY HEKS
+tura 12 | (8,8    ) [  -  ][    ] farma            NOWY HEKS
+       | (6,23   ) [  -  ][    ] farma            NOWY HEKS
+       | (8,11   ) [  -  ][    ] farma            NOWY HEKS
+tura 13 | (9,4    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (7,19   ) [RZEKA][    ] farma            NOWY HEKS
+       | (8,12   ) [  -  ][    ] farma            NOWY HEKS
+tura 14 | (9,5    ) [  -  ][    ] farma            NOWY HEKS
+       | (7,20   ) [RZEKA][LAS] farma            NOWY HEKS
+       | (8,15   ) [  -  ][    ] farma            NOWY HEKS
+tura 15 | (9,6    ) [RZEKA][    ] farma            NOWY HEKS
+       | (7,21   ) [RZEKA][LAS] farma            NOWY HEKS
+       | (8,17   ) [  -  ][LAS] farma            NOWY HEKS
+tura 16 | (9,7    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (7,22   ) [  -  ][LAS] farma            NOWY HEKS
+       | (9,8    ) [  -  ][    ] farma            NOWY HEKS
+tura 17 | (10,4   ) [RZEKA][LAS] farma            NOWY HEKS
+       | (7,23   ) [  -  ][LAS] farma            NOWY HEKS
+       | (9,9    ) [  -  ][    ] farma            NOWY HEKS
+tura 18 | (10,5   ) [  -  ][LAS] farma            NOWY HEKS
+       | (8,19   ) [  -  ][LAS] farma            NOWY HEKS
+       | (9,10   ) [  -  ][LAS] farma            NOWY HEKS
+tura 19 | (10,6   ) [  -  ][    ] farma            NOWY HEKS
+       | (8,20   ) [  -  ][LAS] farma            NOWY HEKS
+       | (9,11   ) [  -  ][    ] farma            NOWY HEKS
+tura 20 | (8,7    ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+       | (8,21   ) [RZEKA][LAS] farma            NOWY HEKS
+       | (9,13   ) [  -  ][    ] farma            NOWY HEKS
+tura 21 | (8,8    ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+       | (8,22   ) [  -  ][LAS] farma            NOWY HEKS
+       | (9,14   ) [  -  ][    ] farma            NOWY HEKS
+tura 22 | (9,5    ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+       | (9,17   ) [  -  ][    ] farma            NOWY HEKS
+       | (10,7   ) [  -  ][LAS] farma            NOWY HEKS
+tura 23 | (9,6    ) [RZEKA][    ] bydlo            POWROT PO PRZERWIE
+       | (9,18   ) [  -  ][    ] farma            NOWY HEKS
+       | (10,8   ) [  -  ][LAS] farma            NOWY HEKS
+tura 24 | (10,6   ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+       | (9,19   ) [  -  ][    ] farma            NOWY HEKS
+       | (10,9   ) [  -  ][LAS] farma            NOWY HEKS
+tura 25 | (4,5    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (9,20   ) [  -  ][LAS] farma            NOWY HEKS
+       | (10,10  ) [  -  ][    ] farma            NOWY HEKS
+tura 26 | (4,6    ) [  -  ][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (9,21   ) [RZEKA][LAS] farma            NOWY HEKS
+       | (10,12  ) [  -  ][    ] farma            NOWY HEKS
+tura 27 | (5,4    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (10,13  ) [  -  ][    ] farma            NOWY HEKS
+       | (10,14  ) [  -  ][    ] farma            NOWY HEKS
+tura 28 | (5,5    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (10,17  ) [  -  ][LAS] farma            NOWY HEKS
+       | (11,8   ) [  -  ][    ] farma            NOWY HEKS
+tura 29 | (5,6    ) [  -  ][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (10,18  ) [  -  ][    ] farma            NOWY HEKS
+       | (11,9   ) [  -  ][LAS] farma            NOWY HEKS
+tura 30 | (5,7    ) [  -  ][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (10,19  ) [  -  ][LAS] farma            NOWY HEKS
+       | (12,7   ) [RZEKA][LAS] farma            NOWY HEKS
+tura 31 | (6,4    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (10,20  ) [  -  ][    ] farma            NOWY HEKS
+       | (12,8   ) [RZEKA][LAS] farma            NOWY HEKS
+tura 32 | (6,5    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (11,18  ) [  -  ][    ] farma            NOWY HEKS
+       | (12,9   ) [RZEKA][    ] farma            NOWY HEKS
+tura 33 | (6,6    ) [  -  ][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (11,19  ) [  -  ][LAS] farma            NOWY HEKS
+       | (13,7   ) [  -  ][LAS] farma            NOWY HEKS
+tura 34 | (6,7    ) [  -  ][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (4,22   ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+       | (13,8   ) [  -  ][    ] farma            NOWY HEKS
+tura 35 | (6,8    ) [  -  ][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (4,23   ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+       | (14,6   ) [  -  ][LAS] farma            NOWY HEKS
+tura 36 | (7,4    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (6,23   ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+       | (14,7   ) [  -  ][LAS] farma            NOWY HEKS
+tura 37 | (7,5    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (7,18   ) [RZEKA][    ] bydlo            POWROT PO PRZERWIE
+       | (14,11  ) [RZEKA][    ] farma            NOWY HEKS
+tura 38 | (7,6    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (7,19   ) [RZEKA][    ] bydlo            POWROT PO PRZERWIE
+       | (15,6   ) [  -  ][LAS] farma            NOWY HEKS
+tura 39 | (7,7    ) [  -  ][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+       | (8,12   ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+       | (8,11   ) [  -  ][    ] bydlo            POWROT PO PRZERWIE
+--- PARY wyrab -> farma na TYM SAMYM heksie (ziarno 1337): 0/0, srednie opoznienie 0.0 tury
+    PRZERWANY(plonowe) 6,6: przerwa 30 tur, span 32 — farma@t2 -> oboz_lowiecki@t33
+    PRZERWANY(plonowe) 4,22: przerwa 30 tur, span 32 — farma@t3 -> bydlo@t34
+    PRZERWANY(plonowe) 6,7: przerwa 30 tur, span 32 — farma@t3 -> oboz_lowiecki@t34
+    PRZERWANY(plonowe) 4,23: przerwa 30 tur, span 32 — farma@t4 -> bydlo@t35
+    PRZERWANY(plonowe) 6,8: przerwa 30 tur, span 32 — farma@t4 -> oboz_lowiecki@t35
+
+================ KRONIKA [PRZED-runda1] — AI GRACZA (main.ts odtworzone, profil zrownowazone) · ziarno 1337 ================
+miasta: c0(4,5) · c1(4,19) · c2(8,11) · heksow z rzeka na mapie: 90
+tura  0 | (4,5    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (4,6    ) [  -  ][LAS] farma            NOWY HEKS
+tura  1 | (5,4    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (4,5    ) [RZEKA][LAS] oboz_lowiecki    KONTYNUACJA
+tura  2 | (5,5    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (4,6    ) [  -  ][LAS] droga            POWROT PO PRZERWIE
+tura  3 | (5,6    ) [  -  ][LAS] farma            NOWY HEKS
+tura  4 | (5,7    ) [  -  ][LAS] farma            NOWY HEKS
+       | (4,6    ) [  -  ][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+tura  5 | (6,4    ) [RZEKA][LAS] farma            NOWY HEKS
+tura  6 | (6,5    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (5,4    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+tura  7 | (6,6    ) [  -  ][LAS] farma            NOWY HEKS
+tura  8 | (6,7    ) [  -  ][LAS] farma            NOWY HEKS
+       | (5,5    ) [RZEKA][LAS] oboz_lowiecki    POWROT PO PRZERWIE
+tura  9 | (6,8    ) [  -  ][LAS] farma            NOWY HEKS
+tura 10 | (7,4    ) [RZEKA][LAS] farma            NOWY HEKS
+       | (7,5    ) [RZEKA][LAS] farma            NOWY HEKS
+tura 11 | (7,6    ) [RZEKA][LAS] farma            NOWY HEKS
+--- PARY wyrab -> farma na TYM SAMYM heksie (ziarno 1337): 0/0, srednie opoznienie 0.0 tury
+    PRZERWANY(plonowe) 5,6: przerwa 20 tur, span 22 — farma@t3 -> oboz_lowiecki@t24
+    PRZERWANY(plonowe) 5,7: przerwa 20 tur, span 22 — farma@t4 -> oboz_lowiecki@t25
+    PRZERWANY(plonowe) 6,4: przerwa 19 tur, span 21 — farma@t5 -> oboz_lowiecki@t25
+    PRZERWANY(plonowe) 6,5: przerwa 19 tur, span 21 — farma@t6 -> oboz_lowiecki@t26
+    PRZERWANY(plonowe) 6,6: przerwa 19 tur, span 21 — farma@t7 -> oboz_lowiecki@t27
