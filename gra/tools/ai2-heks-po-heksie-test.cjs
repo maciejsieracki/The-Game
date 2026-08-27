@@ -63,14 +63,25 @@ function makeMap(w, h, { nakladka = 'brak', riverAt = [] } = {}) {
   for (const [q, r] of riverAt) if (hexes[`${q},${r}`]) hexes[`${q},${r}`].rzeka = { obecna: true, krawedzie: [] };
   return { szerokoscQ: w, wysokoscR: h, hexes, seed: 1, riverPaths };
 }
-function territory(cx, cy, rad, ownerId, cityId, map) {
-  const out = [];
-  for (let dq = -rad; dq <= rad; dq++) for (let dr = -rad; dr <= rad; dr++) {
-    if (Math.abs(dq + dr) > rad) continue;
-    if (!map.hexes[`${cx + dq},${cy + dr}`]) continue;
-    out.push({ q: cx + dq, r: cy + dr, ownerId, cityId, pop: 6, level: 1 });
-  }
-  return out;
+/**
+ * RUNDA 4 — KOREKTA KSZTALTU WEZLOW TERYTORIUM (znalezisko Operatora rundy 4).
+ *
+ * Ten helper zwracal WEZEL NA KAZDY HEKS promienia. Silnik NIGDY takiej listy nie
+ * produkuje: `main.ts::buildAllTerritoryNodes` -> `buildTerritoryNodesFromCities`
+ * (`map/territory-work.ts`) zwraca DOKLADNIE JEDEN wezel na miasto. Roznica byla
+ * nieszkodliwa dopoki jedynym konsumentem byl `territoryOwnerAt`, ale
+ * `okolica.ts::cityCenterKeysFromTerritoryNodes` traktuje KAZDY wezel jako CENTRUM
+ * MIASTA i bezwarunkowo wyklucza je z pol obrabianych. Przy wezle-na-heks CALY promien
+ * miasta wypadal z pol obrabianych, wiec ZASADA 2 rundy 4 (budowa tylko przy obywatelach)
+ * byla mierzona na sztucznie pustym zbiorze.
+ *
+ * Sygnatura zostaje bez zmian (wolania w tym pliku sie nie zmieniaja), `rad` jest teraz
+ * ignorowany — realny promien terytorium liczy silnik z populacji wezla
+ * (`cityTerritoryRadius` -> `cityRangeForPopulation`), tak jak w grze.
+ */
+function territory(cx, cy, _rad, ownerId, cityId, map, pop = 6) {
+  if (!map.hexes[`${cx},${cy}`]) return [];
+  return [{ q: cx, r: cy, ownerId, cityId, pop, level: 1 }];
 }
 const TECHS = new Set(['Łowiectwo', 'Rolnictwo', 'Oswojenie zwierząt', 'Obróbka drewna',
   'Garncarstwo', 'Murarstwo', 'Brązownictwo', 'Hutnictwo żelaza', 'Jeździectwo', 'Koło',
@@ -147,7 +158,11 @@ console.log('D. AI CYWILIZACJI — limit maxItemsPerCity: 1 NIETKNIETY (ECHO: �
 {
   const aiSrc = fs.readFileSync(path.resolve(SRC, 'game', 'ai.ts'), 'utf8');
   const i = aiSrc.indexOf('function planCityImprovements');
-  const blok = i >= 0 ? aiSrc.slice(i, i + 4000) : '';
+  // RUNDA 4: okno poszerzone 4000 -> 8000 znakow. Runda 4 dopisala w tej funkcji blok
+  // `workedHexKeysForAiCity` (ZASADA 2) wraz z komentarzem, przez co `maxItemsPerCity: 1`
+  // wypadlo poza stare okno — straznik czerwienil sie MIMO ze pilnowany kod jest na miejscu.
+  // To jest zmiana SZEROKOSCI OKNA straznika, nie zmiana asercji.
+  const blok = i >= 0 ? aiSrc.slice(i, i + 8000) : '';
   ok(/maxItemsPerCity:\s*1\b/.test(blok),
     'ai.ts / planCityImprovements nadal przekazuje `maxItemsPerCity: 1` do pickera');
   ok(/pracaBudgetPercent:\s*100\b/.test(blok),
@@ -170,25 +185,39 @@ console.log('D. AI CYWILIZACJI — limit maxItemsPerCity: 1 NIETKNIETY (ECHO: �
 
 console.log('E. AI CYWILIZACJI buduje TARTAK (przed runda 2: 0 na wszystkich ziarnach)');
 {
-  const map = makeMap(14, 14, { nakladka: 'las' });
-  const cities = [{ id: 'c0', ownerId: 3, q: 6, r: 6, name: 'A', population: 6 }];
-  const tn = territory(6, 6, 3, 3, 'c0', map);
-  const placed = new Map();
-  let tartaki = 0;
-  for (let t = 0; t < 12; t++) {
-    const cmds = M.decideAITurn(3, [], cities, map, { units: [], buildings: [], aiParams: {}, terrainYields: { terrain_types: [] } }, {
-      civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {},
-      territoryNodes: tn, placedImprovements: placed, improvementTechs: TECHS,
-      pracaAvailable: 100000, civEra: 3,
-    }).filter(c => c.type === 'buildImprovement');
-    for (const c of cmds) {
-      if (c.key === 'tartak') tartaki++;
-      if (c.key === 'wyrab') { map.hexes[`${c.q},${c.r}`].nakladka = 'brak'; continue; }
-      const hk = `${c.q},${c.r}`;
-      placed.set(hk, [...(placed.get(hk) ?? []), c.key]);
+  // RUNDA 4, ZASADA 1: `tartak` to ulepszenie SUROWCOWE, wiec od tej rundy powstaje
+  // WYLACZNIE przy niedoborze surowca (ECHO wlasciciela 2026-08-27: „Brakuje drewna —
+  // trzeba wybudowac surowiec drewna […]. W innych wypadkach powinna byc tylko i wylacznie
+  // inwestycja w zywnosc"). Scenariusz dostaje wiec `resourceDeficitKeys: ['drewno']` —
+  // czyli warunek, w ktorym reguła rundy 3 nadal obowiazuje. Druga asercja (nizej) pinuje
+  // DRUGA polowe tej samej reguly: BEZ niedoboru tartaku ma NIE byc wcale.
+  const przebieg = (deficit) => {
+    const map = makeMap(14, 14, { nakladka: 'las' });
+    const cities = [{ id: 'c0', ownerId: 3, q: 6, r: 6, name: 'A', population: 6 }];
+    const tn = territory(6, 6, 3, 3, 'c0', map);
+    const placed = new Map();
+    let tartaki = 0;
+    for (let t = 0; t < 12; t++) {
+      const cmds = M.decideAITurn(3, [], cities, map, { units: [], buildings: [], aiParams: {}, terrainYields: { terrain_types: [] } }, {
+        civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {},
+        territoryNodes: tn, placedImprovements: placed, improvementTechs: TECHS,
+        pracaAvailable: 100000, civEra: 3, resourceDeficitKeys: deficit,
+      }).filter(c => c.type === 'buildImprovement');
+      for (const c of cmds) {
+        if (c.key === 'tartak') tartaki++;
+        if (c.key === 'wyrab') { map.hexes[`${c.q},${c.r}`].nakladka = 'brak'; continue; }
+        const hk = `${c.q},${c.r}`;
+        placed.set(hk, [...(placed.get(hk) ?? []), c.key]);
+      }
     }
-  }
-  ok(tartaki > 0, `AI cywilizacji postawilo tartak w 12 turach na mapie lesnej (${tartaki} szt.)`);
+    return tartaki;
+  };
+  const zNiedoborem = przebieg(['drewno']);
+  const bezNiedoboru = przebieg([]);
+  ok(zNiedoborem > 0,
+    `PRZY NIEDOBORZE drewna AI cywilizacji stawia tartak w 12 turach na mapie lesnej (${zNiedoborem} szt.)`);
+  ok(bezNiedoboru === 0,
+    `RUNDA 4 / ZASADA 1: BEZ niedoboru tartak nie powstaje ani razu (${bezNiedoboru} szt.)`);
 }
 
 console.log('F. straznik tekstowy main.ts — konfiguracja wywolania pickera na sciezce AI GRACZA');
@@ -293,7 +322,20 @@ console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10
 console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (GOAL tematu)');
 {
   const map = makeMap(16, 16, { nakladka: 'las', riverAt: [[7, 5], [7, 6], [7, 7], [7, 8]] });
-  const cities = [{ id: 'c0', ownerId: 3, q: 7, r: 7, name: 'A', population: 6 }];
+  // RUNDA 4, ZASADA 2: automat buduje wylacznie na heksach OBRABIANYCH przez obywateli
+  // (poza zlozami). Zeby ten scenariusz nadal testowal to, co testowal w rundzie 3
+  // („pierwszy wyrab trafia na heks Z RZEKA"), obywatele musza te heksy z rzeka realnie
+  // obrabiac. Ustawiamy wiec okolice RECZNIE (`okolicaTryb: 'reczny'` + `okolicaReczne`) —
+  // to jest istniejacy, kanoniczny mechanizm gry (`resolveWorkedTiles` w okolica.ts), nie
+  // obejscie testowe. Bez tego heksy z rzeka wypadaly z puli kandydatow i pierwszy wyrab
+  // ladowal na obrabianym heksie bez rzeki — poprawnie wg reguly rundy 4, ale scenariusz
+  // przestawal mierzyc priorytet rzeki.
+  const RZEKI = ['7,5', '7,6', '7,8'];
+  const RECZNE = { '7,5': 1, '7,6': 1, '7,8': 1, '6,7': 1, '8,7': 1, '6,8': 1 };
+  const cities = [{
+    id: 'c0', ownerId: 3, q: 7, r: 7, name: 'A', population: 6,
+    okolicaTryb: 'reczny', okolicaReczne: RECZNE,
+  }];
   const tn = territory(7, 7, 3, 3, 'c0', map);
   const placed = new Map();
   const rzeki = new Set(['7,5', '7,6', '7,7', '7,8']);
@@ -303,6 +345,10 @@ console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (G
       civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {},
       territoryNodes: tn, placedImprovements: placed, improvementTechs: TECHS,
       pracaAvailable: 100000, civEra: 3,
+      // RUNDA 4, ZASADA 1: tartak/posterunek/fort z asercji rundy 3 sa ulepszeniami
+      // NIEZYWNOSCIOWYMI — od tej rundy powstaja tylko przy niedoborze. Scenariusz
+      // odtwarza wiec warunek, w ktorym reguła rundy 3 obowiazuje.
+      resourceDeficitKeys: ['drewno'],
     }).filter(c => c.type === 'buildImprovement');
     for (const c of cmds) {
       const hk = `${c.q},${c.r}`;

@@ -1,0 +1,45 @@
+# POMIAR RUNDY 4 (PRZED) — zasady 1/2/3
+# zrodlo: /tmp/ai4-src-przed/src
+# ziarna: 7, 99, 512, 4242, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ A: BEZ NIEDOBORU przez cale 40 tur
+  rozkazow razem: 600
+  kategorie zyw/sur/infra/wyrab/inne: 311/137/82/70/0
+  udzial: zywnosc 51.8% · surowce 22.8% · infra 13.7% · wyrab 11.7%
+  BEZ NIEDOBORU (600 rozkazow): zyw/sur/infra/wyrab = 311/137/82/70
+  PRZY NIEDOBORZE (0 rozkazow): zyw/sur/infra/wyrab = 0/0/0/0
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 379 (63.2%), w tym ZLOZOWE (wyjatek): 15 · NIE-zlozowe: 364 (60.7%)
+  PER KLUCZ: farma=104 · bydlo=104 · warzelnia_soli=73 · lodzie_rybackie=72 · wyrab=70 · droga=31 · droga_brukowana=31 · oboz_lowiecki=29 · tartak=26 · glinianka=25 · posterunek=10 · fort=10 · kamieniolom=7 · kopalnia_zelaza=4 · owce=2 · kopalnia_miedzi=2
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ B: NIEDOBOR DREWNA przez cale 40 tur
+  rozkazow razem: 600
+  kategorie zyw/sur/infra/wyrab/inne: 308/140/82/70/0
+  udzial: zywnosc 51.3% · surowce 23.3% · infra 13.7% · wyrab 11.7%
+  BEZ NIEDOBORU (0 rozkazow): zyw/sur/infra/wyrab = 0/0/0/0
+  PRZY NIEDOBORZE (600 rozkazow): zyw/sur/infra/wyrab = 308/140/82/70
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 379 (63.2%), w tym ZLOZOWE (wyjatek): 15 · NIE-zlozowe: 364 (60.7%)
+  PER KLUCZ: farma=104 · bydlo=104 · warzelnia_soli=73 · lodzie_rybackie=72 · wyrab=70 · droga=31 · droga_brukowana=31 · tartak=29 · oboz_lowiecki=26 · glinianka=25 · posterunek=10 · fort=10 · kamieniolom=7 · kopalnia_zelaza=4 · owce=2 · kopalnia_miedzi=2
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ C: NIEDOBOR DREWNA tylko w turach 10-19
+  rozkazow razem: 600
+  kategorie zyw/sur/infra/wyrab/inne: 310/138/82/70/0
+  udzial: zywnosc 51.7% · surowce 23.0% · infra 13.7% · wyrab 11.7%
+  BEZ NIEDOBORU (450 rozkazow): zyw/sur/infra/wyrab = 226/114/68/42
+  PRZY NIEDOBORZE (150 rozkazow): zyw/sur/infra/wyrab = 84/24/14/28
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 379 (63.2%), w tym ZLOZOWE (wyjatek): 15 · NIE-zlozowe: 364 (60.7%)
+  PER KLUCZ: farma=104 · bydlo=104 · warzelnia_soli=73 · lodzie_rybackie=72 · wyrab=70 · droga=31 · droga_brukowana=31 · oboz_lowiecki=28 · tartak=27 · glinianka=25 · posterunek=10 · fort=10 · kamieniolom=7 · kopalnia_zelaza=4 · owce=2 · kopalnia_miedzi=2
+  SLAD CZASOWY (tura: zywnosc/nie-zywnosc; * = niedobor drewna aktywny)
+    t0 :14/1  t1 :3/12  t2 :4/11  t3 :8/7  t4 :9/6  t5 :4/11  t6 :5/10  t7 :6/9  t8 :7/8  t9 :3/12
+    t10*:12/3  t11*:9/6  t12*:5/10  t13*:7/8  t14*:12/3  t15*:9/6  t16*:8/7  t17*:10/5  t18*:7/8  t19*:5/10
+    t20 :9/6  t21 :13/2  t22 :4/11  t23 :8/7  t24 :10/5  t25 :10/5  t26 :8/7  t27 :9/6  t28 :7/8  t29 :9/6
+    t30 :8/7  t31 :9/6  t32 :8/7  t33 :5/10  t34 :7/8  t35 :8/7  t36 :8/7  t37 :9/6  t38 :7/8  t39 :7/8
+
+### ZASADA 3 — raport nadwyzki pickera (AI CYWILIZACJI, scenariusz A: zero niedoboru)
+  BRAK DANYCH — to drzewo zrodlowe nie zna `freshSurplusReport` (stan PRZED).
+
+### AI GRACZA — cztery profile, onlyWorked=FALSE (stale po obu stronach), skipWyrab=true
+profil          | razem | zywnosc | surowce | infra | wyrab | odcisk (klucz=liczba)
+zywnosc         |   311 |     311 |       0 |     0 |     0 | bydlo=14,farma=14,lodzie_rybackie=205,oboz_lowiecki=78
+surowce         |   283 |       0 |     283 |     0 |     0 | glinianka=11,kamieniolom=2,kopalnia_cyny=1,tartak=77,warzelnia_soli=192
+infrastruktura  |    98 |       0 |       0 |    98 |     0 | droga=41,droga_brukowana=41,fort=8,posterunek=8
+zrownowazone    |   301 |     124 |     114 |    63 |     0 | bydlo=9,droga=41,droga_brukowana=12,farma=9,fort=5,glinianka=10,lodzie_rybackie=53,oboz_lowiecki=53,posterunek=5,tartak=48,warzelnia_soli=56

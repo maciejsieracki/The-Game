@@ -54,7 +54,13 @@ import { hexKeysWithinRadius } from './okolica';
 import {
   AI_IMPROVEMENT_PRIORITY,
   pickAutoImprovements,
+  type AutoImprovementSurplusReport,
 } from './auto-improvements';
+// R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2): AI CYWILIZACJI liczy swoje heksy
+// „przy obywatelach" TĄ SAMĄ funkcją co gracz (`turn-economy.ts`), a nie własną kopią —
+// mechanizm istniał wcześniej tylko po stronie gracza (main.ts `getWorkedHexKeys`), więc
+// tutaj jest WPINANY, nie tworzony od nowa.
+import { workedHexCoordsForCity } from './turn-economy';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
 import type { AiTargetMemoryEntry } from './ai-fog';
@@ -393,6 +399,14 @@ export interface AITurnOpts {
    * Silnik nie ustawia — chooseCityProduction dopisuje, decideAITurn scala do resourceDeficitKeys.
    */
   recruitStockDeficitScratch?: Set<string>;
+  /**
+   * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): obiekt diagnostyczny nadwyżki
+   * budżetu ulepszeń, wypełniany W MIEJSCU przez `pickAutoImprovements`. Silnik (main.ts)
+   * tworzy go przed `decideAITurn` i po powrocie czyta `surplus` — na tej podstawie
+   * przesuwa środki AI CYWILIZACJI na budynki (podział Pracy miasta). Nie podany =
+   * picker nie liczy niczego dodatkowego.
+   */
+  improvementSurplusReport?: AutoImprovementSurplusReport;
   /**
    * D-IMPROVEMENTS: epoka TEGO AI (main.ts `empireEpochForOwner(ownerId)`) --
    * wymagane przez qualifier dla hodowli Inków (bydło/owce poza lamą dopiero
@@ -1981,6 +1995,25 @@ function planCityImprovements(
   const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
     ? Math.max(0, opts.improvementBudgetCap as number)
     : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
+  // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2): heksy obrabiane przez obywateli
+  // TEGO miasta, liczone raz na wywołanie i cache'owane po `city.id` (picker pyta o nie
+  // raz na miasto, ale `planCityImprovements` bywa wołane dwiema ścieżkami —
+  // `decideAITurn` i `decideDefensiveCopyTurn`).
+  // BRAK ODPOWIEDNIKA `lostToSiblingByCity` z main.ts (P-HEKS-SPOR-SASIAD): ścieżka
+  // gracza odejmuje heksy sporne z bliższym miastem-rodzeństwem. Dla AI ten wyjątek nie
+  // jest tu przekazywany — skutek jest wyłącznie w kierunku „AI uzna za swoje o kilka
+  // heksów spornych za dużo", nigdy w kierunku budowy poza obywatelami cudzego miasta.
+  const workedKeysCache = new Map<string, ReadonlySet<string>>();
+  const workedHexKeysForAiCity = (city: AICity): ReadonlySet<string> => {
+    const hit = workedKeysCache.get(city.id);
+    if (hit) return hit;
+    const set = new Set<string>(
+      workedHexCoordsForCity(city, map, territoryNodes).map(({ q, r }) => `${q},${r}`),
+    );
+    workedKeysCache.set(city.id, set);
+    return set;
+  };
+
   const picks = pickAutoImprovements({
     cities: myCities,
     ownerId,
@@ -1990,6 +2023,18 @@ function planCityImprovements(
     pracaAvailable,
     unlockedTechs: opts.improvementTechs ?? new Set<string>(),
     pracaSurplusThreshold: 0,
+    // ZASADA 1 (runda 4): AI CYWILIZACJI buduje domyślnie samą żywność; pełna lista
+    // otwiera się dopiero na czas niedoboru surowca (`resourceDeficitKeys`).
+    demandDriven: true,
+    resourceDeficitKeys: opts.resourceDeficitKeys,
+    // ZASADA 2 (runda 4): domyślnie WŁĄCZONE dla AI CYWILIZACJI (wyjątek złożowy
+    // egzekwuje sam picker — patrz `hexAllowsKey` w auto-improvements.ts).
+    getOnlyWorked: () => true,
+    // Rzutowanie na AICity (= City) jest bezpieczne: `myCities` to pełne obiekty miast
+    // tego AI; `AutoImprovementCity` jest tylko WĘŻSZYM widokiem tego samego obiektu.
+    getWorkedHexKeys: city => workedHexKeysForAiCity(city as AICity),
+    // ZASADA 3 (runda 4): diagnostyka nadwyżki dla silnika (main.ts).
+    surplusReport: opts.improvementSurplusReport,
     // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: AI podlega temu samemu
     // absolutnemu splitowi całej puli co gracz. Picker nie może wykonać
     // drugiego, procentowego podziału na już wydzielonym budżecie.

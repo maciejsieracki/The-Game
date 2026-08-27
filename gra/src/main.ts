@@ -186,6 +186,9 @@ import {
   loadBudowaListaBiblioteka,
   DEFAULT_ULEPSZENIA_TRYB,
   DEFAULT_ULEPSZENIA_FOCUS,
+  DEFAULT_ULEPSZENIA_ONLY_WORKED,
+  DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
+  MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
   clampUlepszeniaPracaPercent,
   clampPodzialPracyBudynkiPercent,
   procentPuliImperiumZBudynkow,
@@ -1112,7 +1115,12 @@ import {
   qualifiesForMajorAiDifficultyBonus,
 } from './game/ai-difficulty-bonus';
 import { isMajorAiOwner } from './game/owner-utils';
-import { pickAutoImprovements, AUTO_ULEPSZENIA_PRACA_RESERVE } from './game/auto-improvements';
+import {
+  pickAutoImprovements,
+  AUTO_ULEPSZENIA_PRACA_RESERVE,
+  freshSurplusReport,
+  type AutoImprovementSurplusReport,
+} from './game/auto-improvements';
 import { preservesHillRelief } from './game/relief-preserving-improvements';
 import { showMainMenu, hideMainMenu, isMainMenuOpen, getMenuAudioVolumes } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
@@ -7473,6 +7481,18 @@ async function boot(): Promise<void> {
      * byłaby drugi raz dzielona przez planCityImprovements().
      */
     const aiImprovementBudgetByOwner = new Map<number, number>();
+    /**
+     * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): raport nadwyżki budżetu ulepszeń
+     * per AI, wypełniany W MIEJSCU przez `pickAutoImprovements` w trakcie `decideAITurn`
+     * i odczytywany zaraz po nim (`applyAiImprovementSurplusRedirect`).
+     */
+    const aiSurplusReportByOwner = new Map<number, AutoImprovementSurplusReport>();
+    /**
+     * ZASADA 3: właściciele AI, u których nadwyżka JEST DZIŚ przekierowana na budynki.
+     * Po ustaniu nadwyżki podział Pracy wraca do wartości wybranej przez samo AI
+     * (`aiSliderStateByOwner`, `decideAIEconomySliders`) — nie do sztywnej stałej.
+     */
+    const aiSurplusRedirectedOwners = new Set<number>();
     /** Pula Nauki AI (symetryczna do player.nauka) — bankowana z aiEcon.nauka co turę. */
     const aiNaukaPoolByOwner = new Map<number, number>();
     /** Bieżąca tech badana przez AI (symetryczna do player.badana). */
@@ -19454,6 +19474,21 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
+          // R4-Q2=C (R-AI-WYRAB-PRZY-RZECE-FARMY-Q1, runda 4): przełącznik „wolno wycinać
+          // las" dla automatu GRACZA, zakres PAŃSTWO. Domyślnie wyłączony (§14 — bez zmiany
+          // zachowania, dopóki gracz sam go nie włączy). AI CYWILIZACJI go NIE czyta.
+          onUlepszeniaEmpireWyrabChange: (wolnoWycinacLas: boolean) => {
+            const pol = ulepszeniaEmpireForOwner(0);
+            pol.wolnoWycinacLas = wolnoWycinacLas;
+            ulepszeniaEmpireByOwner.set(0, pol);
+            showHintMessage(
+              wolnoWycinacLas
+                ? 'Państwo: automat MOŻE wycinać las (wyrąb pod farmę przy rzece)'
+                : 'Państwo: automat NIE wycina lasu',
+              2800,
+            );
+            refreshD1bHud();
+          },
           onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
             const pol = ulepszeniaEmpireForOwner(0);
             // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: historyczny suwak automatu (pole (b))
@@ -19478,6 +19513,7 @@ async function boot(): Promise<void> {
               city.ulepszeniaFocus = city.ulepszeniaFocus ?? pol.focus;
               city.ulepszeniaTryb = city.ulepszeniaTryb ?? pol.tryb;
               city.ulepszeniaOnlyWorked = city.ulepszeniaOnlyWorked ?? pol.onlyWorked;
+              city.ulepszeniaWolnoWycinacLas = city.ulepszeniaWolnoWycinacLas ?? pol.wolnoWycinacLas;
               city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
                 city.ulepszeniaPracaPercent ?? pol.pracaAutoPercent,
               );
@@ -19527,6 +19563,22 @@ async function boot(): Promise<void> {
               onlyWorked
                 ? `${city.name}: auto ulepszenia tylko na polach z 👤`
                 : `${city.name}: auto ulepszenia w całym terytorium`,
+              2800,
+            );
+            refreshD1bHud();
+          },
+          // R4-Q2=C: ten sam przełącznik w zakresie MIASTA (włącza override lokalny —
+          // wzorem `onUlepszeniaCityOnlyWorkedChange` wyżej).
+          onUlepszeniaCityWyrabChange: (cityId: string, wolnoWycinacLas: boolean) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return;
+            city.ulepszeniaOverride = true;
+            city.ulepszeniaWolnoWycinacLas = wolnoWycinacLas;
+            city.ulepszeniaTryb = 'auto';
+            showHintMessage(
+              wolnoWycinacLas
+                ? `${city.name}: automat MOŻE wycinać las`
+                : `${city.name}: automat NIE wycina lasu`,
               2800,
             );
             refreshD1bHud();
@@ -27180,6 +27232,11 @@ async function boot(): Promise<void> {
                 const lostToSiblingByCityAuto = computeLostToNearerSiblingByCity(cities, map);
                 const playerCivArch = civTypeForOwner(0);
                 const workingPlaced = new Map(placedImprovements);
+                // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): raport nadwyżki dla
+                // AI GRACZA. Automat gracza SYGNALIZUJE nadwyżkę i NIC nie przesuwa —
+                // `pracaAutoPercent` zmienia wyłącznie gracz (regula stala właściciela:
+                // automat gracza doradza, nie decyduje za niego).
+                const playerSurplusReport = freshSurplusReport();
                 const picks = pickAutoImprovements({
                   cities: autoImpCities,
                   ownerId: 0,
@@ -27189,7 +27246,17 @@ async function boot(): Promise<void> {
                   pracaAvailable: playerPracaPool,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
+                  // R4-Q2=C: `skipWyrab` przestaje być stałą `true` — decyduje przełącznik
+                  // „wolno wycinać las" (państwo albo override miasta), domyślnie WYŁĄCZONY,
+                  // więc bez zmiany ustawień zachowanie jest identyczne jak przed rundą 4.
                   skipWyrab: true,
+                  getSkipWyrab: c => !effectiveUlepszeniaForCity(c as City).wolnoWycinacLas,
+                  // ZASADA 1: automat gracza na profilu „zrównoważone" buduje domyślnie
+                  // samą żywność; niedobór surowca otwiera resztę listy (picker sam pilnuje,
+                  // że trzech pozostałych profili to NIE dotyczy).
+                  demandDriven: true,
+                  resourceDeficitKeys: resourceDeficitKeysForOwner(0),
+                  surplusReport: playerSurplusReport,
                   civArchetype: playerCivArch,
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
@@ -27223,6 +27290,28 @@ async function boot(): Promise<void> {
                   if (!isTerritoryHexOwnedBy(pick.q, pick.r, 0, territoryNodesAuto)) continue;
                   const prevLayers = workingPlaced.get(hexKey) ?? placedImprovements.get(hexKey) ?? [];
                   if (prevLayers.includes(pick.key)) continue;
+                  // R4-Q2=C: `wyrab` to typ `wycinka`, NIE stała warstwa `placedImprovements`
+                  // (patrz applyBuildRequest, sekcja `req.action === 'wycinka'`, i komentarz
+                  // TEMAT #8 przy ścieżce AI CYWILIZACJI). Automat gracza wchodzi tu w
+                  // DOKŁADNIE tę samą, wieloturową ścieżkę wycinki, którą uruchamia ręczny
+                  // klik gracza (`hexClearingStates` + `tickHexClearing`) — bez
+                  // `pendingImprovementsTurn`, bo auto-ulepszenia commitują od razu
+                  // (R-AUTO-ULEPSZENIA-Q4=A). Ścieżka DECYZJI jest ta sama co dla AI
+                  // CYWILIZACJI (`skipWyrab: false` w tym samym pickerze); ścieżka EGZEKUCJI
+                  // jest ścieżką GRACZA, bo gracz ma wieloturową wycinkę, a AI jej nie ma.
+                  if (getImprovementMeta(pick.key)?.typ === 'wycinka') {
+                    if (hexForImprovement.nakladka !== Nakladka.Las) continue;
+                    if (hexClearingStates.has(hexKey)) continue;
+                    playerPracaPool -= pick.kosztPraca;
+                    _lastPraca = playerPracaPool;
+                    _lastPracaRate -= pick.kosztPraca;
+                    const clrAuto = freshClearingState(pick.key, 0);
+                    if (clrAuto) hexClearingStates.set(hexKey, clrAuto);
+                    spawnClearingMesh(hexKey);
+                    const metaWyrab = getImprovementMeta(pick.key);
+                    toastLines.push(`${metaWyrab?.nazwa ?? pick.key} @ (${pick.q},${pick.r})`);
+                    continue;
+                  }
                   playerPracaPool -= pick.kosztPraca;
                   _lastPraca = playerPracaPool;
                   // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): jak wyżej --
@@ -27243,6 +27332,19 @@ async function boot(): Promise<void> {
                   showHintMessage(`Auto ulepszenie: ${toastLines[0]}`, 3200);
                 } else if (toastLines.length > 1) {
                   showHintMessage(`Auto ulepszenia: ${toastLines.length}× (−Praca)`, 3200);
+                }
+                // ZASADA 3 dla AI GRACZA: WYŁĄCZNIE sygnał. Automat gracza NIE dotyka
+                // `pracaAutoPercent` ani żadnego innego suwaka — decyzja o przesunięciu
+                // środków na budynki należy do gracza (ECHO właściciela: „gracz sam zauważy,
+                // że ma za dużo zapasów na ulepszenia, może odpowiednio przesunąć suwak na
+                // rzecz budynków"). Sygnał pokazuje się tylko wtedy, gdy automat NIC nie
+                // postawił — inaczej zjadałby toast z listą ulepszeń.
+                if (playerSurplusReport.surplus && toastLines.length === 0) {
+                  showHintMessage(
+                    'Automat ulepszeń: nadwyżka budżetu Pracy — brak niedoboru surowców i brak pól '
+                    + 'z obywatelami do ulepszenia. Rozważ przesunięcie suwaka na rzecz budynków.',
+                    4200,
+                  );
                 }
               }
             } catch (errAutoImp) {
@@ -27556,6 +27658,16 @@ async function boot(): Promise<void> {
               // puli ani drugi podzial tej samej Pracy.
               improvementBudgetCap: aiImprovementBudgetByOwner.get(ownerId),
               resourceDeficitKeys: resourceDeficitKeysForOwner(ownerId),
+              // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): picker wypełni ten
+              // obiekt W MIEJSCU; odczyt zaraz po `decideAITurn` (patrz
+              // `applyAiImprovementSurplusRedirect` niżej).
+              improvementSurplusReport: (() => {
+                // ŚWIEŻY obiekt na KAŻDĄ turę — raport z poprzedniej tury nie może
+                // „przykleić" `anyCandidate: true` do tury, w której kandydatów już nie ma.
+                const rep = freshSurplusReport();
+                aiSurplusReportByOwner.set(ownerId, rep);
+                return rep;
+              })(),
               civEra: empireEpochForOwner(ownerId),
               vassalizedCityStateOwnerIds: vassalizedCsOwnerIds,
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
@@ -28368,6 +28480,52 @@ async function boot(): Promise<void> {
             } catch (eAI) {
               console.error(`[AI] decideAITurn owner=${ownerId} error:`, eAI);
               continue;
+            }
+
+            // -----------------------------------------------------------------
+            // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3) — PRZEKIEROWANIE
+            // NADWYŻKI, AI CYWILIZACJI.
+            // ECHO właściciela 2026-08-27: „jeżeli AI widzi, że nie ma zapotrzebowania
+            // na surowce, bo są w nadmiarze, i nie ma potrzeby ulepszać terenu w
+            // miejscach, gdzie pracują obywatele, powinna przestać budować dla sztuki
+            // i przesunąć środki. Jeśli w przypadku cywilizacji AI środki przeznaczone
+            // są bardziej na budynki […]".
+            // Realizacja: podział Pracy miasta (`CityPodzialPracy.procentBudynki`) —
+            // JEDYNY mechanizm w grze, który realnie przesuwa Pracę z puli imperium
+            // (skąd finansowane są ulepszenia terenu) do KOLEJKI PRODUKCJI MIASTA.
+            // Na czas nadwyżki idzie na maksimum; po jej ustaniu wraca do wartości,
+            // którą wybrało samo AI w `decideAIEconomySliders` (wyżej w tej pętli).
+            // To jest ŚWIADOMA różnica wobec AI GRACZA, która nadwyżkę wyłącznie
+            // SYGNALIZUJE (patrz `playerSurplusReport` w bloku ekonomii) — automat
+            // gracza doradza, nie decyduje za gracza.
+            // -----------------------------------------------------------------
+            try {
+              const surplusRep = aiSurplusReportByOwner.get(ownerId);
+              const redirected = aiSurplusRedirectedOwners.has(ownerId);
+              if (surplusRep?.surplus) {
+                if (!redirected) aiSurplusRedirectedOwners.add(ownerId);
+                const pct = MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
+                ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
+                for (const c of cities) {
+                  if (c.ownerId !== ownerId) continue;
+                  c.podzialPracy = { procentBudynki: pct };
+                  c.podzialPracyOverride = false;
+                }
+              } else if (redirected) {
+                aiSurplusRedirectedOwners.delete(ownerId);
+                const pct = clampPodzialPracyBudynkiPercent(
+                  aiSliderStateByOwner.get(ownerId)?.procentBudynki
+                  ?? DEFAULT_PODZIAL_PRACY.procentBudynki,
+                );
+                ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
+                for (const c of cities) {
+                  if (c.ownerId !== ownerId) continue;
+                  c.podzialPracy = { procentBudynki: pct };
+                  c.podzialPracyOverride = false;
+                }
+              }
+            } catch (eSurplus) {
+              console.error(`[AI] Zasada 3 (nadwyzka ulepszen) owner=${ownerId} error:`, eSurplus);
             }
 
             // CUDA-AI (Maciej C-CUDA-AI=A, 2026-07-23): AI pełnych cywilizacji rozważa
@@ -32153,7 +32311,11 @@ async function boot(): Promise<void> {
           ulepszeniaEmpireByOwner.set(oid, {
             focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
-            onlyWorked: (pol.onlyWorked as boolean) ?? false,
+            // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, Zasada 2): brak pola w zapisie =
+            // nowa wartość domyślna (`true`); jawne `false` ze starego save'a zostaje `false`.
+            onlyWorked: (pol.onlyWorked as boolean) ?? DEFAULT_ULEPSZENIA_ONLY_WORKED,
+            // R4-Q2=C: brak pola = przełącznik wyrębu WYŁĄCZONY.
+            wolnoWycinacLas: (pol.wolnoWycinacLas as boolean) ?? DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
             // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: clampUlepszeniaPracaPercent egzekwuje
             // własny zakres 0–100% (MAX_ULEPSZENIA_PRACA_AUTO_PERCENT) dla tego historycznego
             // pola (b) — stary save (np. legacy perTurn=3 → 100%) nie jest tu ścinany do 50%.

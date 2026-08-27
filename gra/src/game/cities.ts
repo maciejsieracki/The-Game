@@ -201,6 +201,29 @@ export type UlepszeniaPracaPercent = number;
 
 export const DEFAULT_ULEPSZENIA_FOCUS: UlepszeniaFocus = 'zrownowazone';
 export const DEFAULT_ULEPSZENIA_TRYB: UlepszeniaTryb = 'reczny';
+
+/**
+ * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2 — ECHO właściciela 2026-08-27:
+ * „AI, zarówno w cywilizacji, jak i w ludzkich domach, powinno domyślnie budować
+ * ulepszenia tam, gdzie są obywatele […] z wyłączeniem surowców, które mogą znajdować
+ * się w różnych miejscach według potrzeby").
+ *
+ * Mechanizm `onlyWorked` istniał już wcześniej w całości (filtr heksów w
+ * `pickAutoImprovements`, przełącznik w panelu trybu budowy, pole `City.ulepszeniaOnlyWorked`)
+ * — ta runda zmienia WYŁĄCZNIE jego wartość DOMYŚLNĄ z `false` na `true` i dopisuje
+ * wyjątek złożowy w samym pickerze. Jawne `false` zapisane w save'ie jest respektowane
+ * (`?? DEFAULT_ULEPSZENIA_ONLY_WORKED` czyta tylko brak pola).
+ */
+export const DEFAULT_ULEPSZENIA_ONLY_WORKED = true;
+
+/**
+ * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, R4-Q2 = wariant C, ECHO właściciela 2026-08-27):
+ * przełącznik „wolno wycinać las" dla automatu GRACZA (per państwo i per miasto).
+ * Wartość domyślna `false` = zachowanie identyczne z dzisiejszym (`skipWyrab: true`
+ * w wywołaniu pickera z main.ts), dopóki właściciel nie powie inaczej (§14).
+ * AI CYWILIZACJI wycina od rundy 3 i ta flaga jej NIE dotyczy.
+ */
+export const DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS = false;
 /** Domyślny % dla świeżej polityki (nowa gra) — odpowiednik dawnego DEFAULT_ULEPSZENIA_PER_TURN=1
  *  po migracji 1→33% (patrz migrateUlepszeniaPerTurnToPercent). */
 export const DEFAULT_ULEPSZENIA_PRACA_PERCENT: UlepszeniaPracaPercent = 33;
@@ -279,14 +302,17 @@ export interface UlepszeniaEmpirePolicy {
   tryb: UlepszeniaTryb;
   onlyWorked: boolean;
   pracaAutoPercent: UlepszeniaPracaPercent;
+  /** R4-Q2=C: czy automat GRACZA wolno wycinać las (domyślnie false). */
+  wolnoWycinacLas: boolean;
 }
 
 export function freshUlepszeniaEmpirePolicy(): UlepszeniaEmpirePolicy {
   return {
     focus: DEFAULT_ULEPSZENIA_FOCUS,
     tryb: DEFAULT_ULEPSZENIA_TRYB,
-    onlyWorked: false,
+    onlyWorked: DEFAULT_ULEPSZENIA_ONLY_WORKED,
     pracaAutoPercent: DEFAULT_ULEPSZENIA_PRACA_PERCENT,
+    wolnoWycinacLas: DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
   };
 }
 
@@ -296,6 +322,8 @@ export interface EffectiveUlepszeniaSettings {
   tryb: UlepszeniaTryb;
   onlyWorked: boolean;
   pracaAutoPercent: UlepszeniaPracaPercent;
+  /** R4-Q2=C: czy automat GRACZA wolno wycinać las w tym mieście. */
+  wolnoWycinacLas: boolean;
   override: boolean;
 }
 
@@ -307,11 +335,12 @@ export function resolveEffectiveUlepszenia(
     return {
       focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
       tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
-      onlyWorked: city.ulepszeniaOnlyWorked ?? false,
+      onlyWorked: city.ulepszeniaOnlyWorked ?? DEFAULT_ULEPSZENIA_ONLY_WORKED,
       // Historyczny budżet automatu (pole (b)) — od P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1
       // ma znów własny zakres 0–100% (`clampUlepszeniaPracaPercent` /
       // `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`), niezależny od nadrzędnego capu pola (a).
       pracaAutoPercent: clampUlepszeniaPracaPercent(city.ulepszeniaPracaPercent),
+      wolnoWycinacLas: city.ulepszeniaWolnoWycinacLas ?? DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
       override: true,
     };
   }
@@ -320,6 +349,7 @@ export function resolveEffectiveUlepszenia(
     tryb: empire.tryb,
     onlyWorked: empire.onlyWorked,
     pracaAutoPercent: empire.pracaAutoPercent,
+    wolnoWycinacLas: empire.wolnoWycinacLas ?? DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
     override: false,
   };
 }
@@ -652,7 +682,15 @@ export function ensureCitySaveDefaults(city: City): void {
   if (city.ulepszeniaOverride === true) {
     if (!city.ulepszeniaFocus) city.ulepszeniaFocus = DEFAULT_ULEPSZENIA_FOCUS;
     if (!city.ulepszeniaTryb) city.ulepszeniaTryb = DEFAULT_ULEPSZENIA_TRYB;
-    if (city.ulepszeniaOnlyWorked == null) city.ulepszeniaOnlyWorked = false;
+    // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, Zasada 2): brak pola w zapisie = nowa
+    // domyślna „tylko przy obywatelach"; jawne `false` ze starego zapisu zostaje `false`.
+    if (city.ulepszeniaOnlyWorked == null) {
+      city.ulepszeniaOnlyWorked = DEFAULT_ULEPSZENIA_ONLY_WORKED;
+    }
+    // R4-Q2=C: brak pola = przełącznik wyrębu WYŁĄCZONY (zachowanie sprzed rundy 4).
+    if (city.ulepszeniaWolnoWycinacLas == null) {
+      city.ulepszeniaWolnoWycinacLas = DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS;
+    }
     // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: migracja starego `ulepszeniaPerTurn` (1|2|3 sztuk) →
     // nowy `ulepszeniaPracaPercent` (0-100%). Stary zapis ma tylko `ulepszeniaPerTurn` (bez
     // typu w City — czytany surowo), nowy tylko `ulepszeniaPracaPercent`; nowe pole ma
@@ -829,8 +867,15 @@ export interface City {
   ulepszeniaFocus?: UlepszeniaFocus;
   /** auto | reczny — auto na końcu tury z puli Pracy państwa — gdy override. */
   ulepszeniaTryb?: UlepszeniaTryb;
-  /** Gdy true — auto tylko na heksach z 👤 (workedTiles) — gdy override. */
+  /** Gdy true — auto tylko na heksach z 👤 (workedTiles) — gdy override.
+   *  R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, Zasada 2): wartość DOMYŚLNA tego pola to od
+   *  tej rundy `true` (`DEFAULT_ULEPSZENIA_ONLY_WORKED`) — brak pola w zapisie czyta się
+   *  jako „tylko przy obywatelach". Jawne `false` w zapisie jest respektowane. */
   ulepszeniaOnlyWorked?: boolean;
+  /** R4-Q2=C (runda 4): czy automat GRACZA wolno wycinać las — gdy override.
+   *  Domyślnie `false`. Dotyczy WYŁĄCZNIE automatu gracza; AI CYWILIZACJI wycina
+   *  od rundy 3 niezależnie od tej flagi. */
+  ulepszeniaWolnoWycinacLas?: boolean;
   /** R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: % (0–100) budżetu Pracy dla auto-ulepszeń — gdy override.
    *  Stary `ulepszeniaPerTurn` (1|2|3 sztuk) NIE jest już typowany tu — migrowany surowo w
    *  ensureCitySaveDefaults (resolveUlepszeniaPracaPercentFromRaw), zapisy sprzed migracji nadal
