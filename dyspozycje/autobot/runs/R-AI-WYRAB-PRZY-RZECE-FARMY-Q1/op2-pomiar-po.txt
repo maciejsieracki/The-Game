@@ -1,0 +1,260 @@
+# POMIAR ROZDZIELONY — AI GRACZA vs AI CYWILIZACJI
+# ziarna: 7, 99, 512, 4242, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=3 terrain=17 landSea=144 relief=127 coast=25 riversMain=782 riversFill=259 forest=7 deposits=19 starts=88 total=1470
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=106 relief=141 coast=23 riversMain=109 riversFill=75 forest=5 deposits=12 starts=60 total=541
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=88 relief=105 coast=20 riversMain=130 riversFill=73 forest=5 deposits=15 starts=76 total=520
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=100 relief=124 coast=25 riversMain=79 riversFill=64 forest=6 deposits=13 starts=59 total=477
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=87 relief=104 coast=21 riversMain=197 riversFill=82 forest=5 deposits=11 starts=64 total=577
+
+### AI CYWILIZACJI — prawdziwe wejscie decideAITurn (ai.ts:~1984, maxItemsPerCity=1)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |      120 |      3 |    2.4 |   23 |           4.2 |       2.9 |    23 |          23 |     0 |     17 | 46/28/46
+        SLAD 5,5 [RZEKA]: farma@t0 -> oboz_lowiecki@t1 -> glinianka@t2 -> tartak@t3 -> posterunek@t4 -> droga@t5 -> droga_brukowana@t6 -> fort@t7  (rozpietosc 7 tur, obcych 4)
+        SLAD 6,22 [RZEKA]: farma@t15 -> oboz_lowiecki@t16 -> glinianka@t17 -> tartak@t18 -> posterunek@t19 -> fort@t20  (rozpietosc 5 tur, obcych 4)
+        SLAD 8,5 [RZEKA]: farma@t18 -> oboz_lowiecki@t19 -> glinianka@t20 -> tartak@t21 -> posterunek@t22 -> fort@t23  (rozpietosc 5 tur, obcych 3)
+        SLAD 6,23 [RZEKA]: farma@t21 -> oboz_lowiecki@t22 -> warzelnia_soli@t23 -> tartak@t24 -> posterunek@t25 -> fort@t26  (rozpietosc 5 tur, obcych 4)
+        SLAD 10,9 [RZEKA]: farma@t24 -> oboz_lowiecki@t25 -> glinianka@t26 -> tartak@t27 -> posterunek@t28 -> fort@t29  (rozpietosc 5 tur, obcych 3)
+        SLAD 6,19 [RZEKA]: farma@t0 -> oboz_lowiecki@t1 -> tartak@t2 -> posterunek@t3 -> fort@t4  (rozpietosc 4 tur, obcych 2)
+    99 |      120 |      3 |    2.3 |   26 |           3.5 |       1.9 |    20 |          16 |     0 |     14 | 45/25/50
+        SLAD 5,5 [RZEKA]: farma@t5 -> oboz_lowiecki@t6 -> tartak@t7 -> posterunek@t8 -> droga@t9 -> droga_brukowana@t10 -> fort@t11  (rozpietosc 6 tur, obcych 2)
+        SLAD 4,6 [RZEKA]: farma@t30 -> oboz_lowiecki@t31 -> tartak@t32 -> posterunek@t33 -> droga@t34 -> droga_brukowana@t35 -> fort@t36  (rozpietosc 6 tur, obcych 5)
+        SLAD 6,20 [RZEKA]: farma@t0 -> bydlo@t1 -> posterunek@t2 -> droga@t3 -> droga_brukowana@t4 -> fort@t5  (rozpietosc 5 tur, obcych 2)
+        SLAD 8,8 [RZEKA]: farma@t5 -> oboz_lowiecki@t6 -> glinianka@t7 -> tartak@t8 -> posterunek@t9 -> fort@t10  (rozpietosc 5 tur, obcych 2)
+        SLAD 7,20 [RZEKA]: farma@t6 -> oboz_lowiecki@t7 -> glinianka@t8 -> tartak@t9 -> posterunek@t10 -> fort@t11  (rozpietosc 5 tur, obcych 2)
+        SLAD 6,23 [RZEKA]: farma@t22 -> oboz_lowiecki@t23 -> glinianka@t24 -> tartak@t25 -> posterunek@t26 -> fort@t27  (rozpietosc 5 tur, obcych 4)
+   512 |      120 |      3 |    2.1 |   34 |           2.5 |       1.2 |    11 |           0 |     0 |      7 | 43/33/44
+        SLAD 4,5: farma@t11 -> oboz_lowiecki@t12 -> tartak@t13 -> posterunek@t14 -> droga@t15 -> droga_brukowana@t16 -> fort@t17  (rozpietosc 6 tur, obcych 2)
+        SLAD 4,21: farma@t11 -> oboz_lowiecki@t12 -> tartak@t13 -> posterunek@t14 -> droga@t15 -> droga_brukowana@t16 -> fort@t17  (rozpietosc 6 tur, obcych 2)
+        SLAD 9,7: farma@t11 -> oboz_lowiecki@t12 -> tartak@t13 -> posterunek@t14 -> droga@t15 -> droga_brukowana@t16 -> fort@t17  (rozpietosc 6 tur, obcych 2)
+        SLAD 5,4: farma@t20 -> oboz_lowiecki@t21 -> tartak@t22 -> posterunek@t23 -> droga@t24 -> droga_brukowana@t25 -> fort@t26  (rozpietosc 6 tur, obcych 3)
+        SLAD 5,20: farma@t24 -> oboz_lowiecki@t25 -> tartak@t26 -> posterunek@t27 -> droga@t28 -> droga_brukowana@t29 -> fort@t30  (rozpietosc 6 tur, obcych 5)
+        SLAD 8,8: farma@t3 -> bydlo@t4 -> posterunek@t5 -> droga@t6 -> droga_brukowana@t7 -> fort@t8  (rozpietosc 5 tur, obcych 6)
+  4242 |      120 |      3 |    2.4 |   25 |           3.8 |       2.4 |    23 |          23 |     0 |     15 | 47/26/47
+        SLAD 5,4 [RZEKA]: farma@t0 -> oboz_lowiecki@t1 -> glinianka@t2 -> tartak@t3 -> posterunek@t4 -> droga@t5 -> droga_brukowana@t6 -> fort@t7  (rozpietosc 7 tur, obcych 4)
+        SLAD 5,19 [RZEKA]: farma@t5 -> oboz_lowiecki@t6 -> tartak@t7 -> posterunek@t8 -> droga@t9 -> droga_brukowana@t10 -> fort@t11  (rozpietosc 6 tur, obcych 4)
+        SLAD 5,5 [RZEKA]: farma@t8 -> oboz_lowiecki@t9 -> glinianka@t10 -> tartak@t11 -> posterunek@t12 -> fort@t13  (rozpietosc 5 tur, obcych 5)
+        SLAD 6,21 [RZEKA]: farma@t22 -> oboz_lowiecki@t23 -> glinianka@t24 -> tartak@t25 -> posterunek@t26 -> fort@t27  (rozpietosc 5 tur, obcych 2)
+        SLAD 6,22 [RZEKA]: farma@t28 -> oboz_lowiecki@t29 -> glinianka@t30 -> tartak@t31 -> posterunek@t32 -> fort@t33  (rozpietosc 5 tur, obcych 3)
+        SLAD 4,19 [RZEKA]: farma@t0 -> oboz_lowiecki@t1 -> tartak@t2 -> posterunek@t3 -> fort@t4  (rozpietosc 4 tur, obcych 2)
+  1337 |      120 |      3 |    2.3 |   27 |           3.4 |       2.0 |    22 |          21 |     0 |     16 | 49/27/44
+        SLAD 5,4 [RZEKA]: farma@t5 -> oboz_lowiecki@t6 -> tartak@t7 -> posterunek@t8 -> droga@t9 -> droga_brukowana@t10 -> fort@t11  (rozpietosc 6 tur, obcych 5)
+        SLAD 5,5 [RZEKA]: farma@t12 -> oboz_lowiecki@t13 -> tartak@t14 -> posterunek@t15 -> droga@t16 -> droga_brukowana@t17 -> fort@t18  (rozpietosc 6 tur, obcych 4)
+        SLAD 7,17 [RZEKA]: farma@t0 -> oboz_lowiecki@t1 -> warzelnia_soli@t2 -> tartak@t3 -> posterunek@t4 -> fort@t5  (rozpietosc 5 tur, obcych 3)
+        SLAD 7,20 [RZEKA]: farma@t14 -> oboz_lowiecki@t15 -> glinianka@t16 -> tartak@t17 -> posterunek@t18 -> fort@t19  (rozpietosc 5 tur, obcych 2)
+        SLAD 6,5 [RZEKA]: farma@t24 -> oboz_lowiecki@t25 -> glinianka@t26 -> tartak@t27 -> posterunek@t28 -> fort@t29  (rozpietosc 5 tur, obcych 2)
+        SLAD 8,21 [RZEKA]: farma@t25 -> oboz_lowiecki@t26 -> glinianka@t27 -> tartak@t28 -> posterunek@t29 -> fort@t30  (rozpietosc 5 tur, obcych 2)
+RAZEM  |      600 |      3 |    2.3 |      |           3.5 |       2.1 |    99 |          83 |     0 |     69 | 230/139/231
+  udzial farm przy rzece: 83.8%  ·  rozklad kategorii zyw/sur/infra/wyrab: 230/139/231/0
+  ROZBICIE PER KLUCZ: farma=99 · posterunek=98 · fort=95 · oboz_lowiecki=71 · tartak=69 · warzelnia_soli=35 · lodzie_rybackie=34 · bydlo=24 · glinianka=23 · droga=19 · droga_brukowana=19 · kamieniolom=6 · kopalnia_zelaza=4 · owce=2 · kopalnia_miedzi=2
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 2929 · praca 2825 · handel 3288 · drewno 2785
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=90 relief=103 coast=21 riversMain=220 riversFill=107 forest=5 deposits=13 starts=61 total=627
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=90 relief=138 coast=19 riversMain=104 riversFill=73 forest=4 deposits=11 starts=57 total=502
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=119 relief=103 coast=22 riversMain=104 riversFill=65 forest=5 deposits=13 starts=59 total=495
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=85 relief=96 coast=20 riversMain=63 riversFill=57 forest=5 deposits=10 starts=60 total=402
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=84 relief=103 coast=20 riversMain=164 riversFill=78 forest=4 deposits=10 starts=60 total=527
+
+### AI GRACZA — profil „zywnosc" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |       62 |      2 |    0.5 |   15 |           1.3 |       0.9 |    15 |          10 |     0 |      0 | 62/0/0
+        SLAD 5,6 [RZEKA]: oboz_lowiecki@t13 -> farma@t21  (rozpietosc 8 tur, obcych 10)
+        SLAD 4,6: oboz_lowiecki@t11 -> farma@t14  (rozpietosc 3 tur, obcych 3)
+        SLAD 7,5 [RZEKA]: farma@t2 -> oboz_lowiecki@t3  (rozpietosc 1 tur, obcych 0)
+        SLAD 8,5 [RZEKA]: farma@t3 -> oboz_lowiecki@t4  (rozpietosc 1 tur, obcych 0)
+        SLAD 9,5 [RZEKA]: farma@t4 -> oboz_lowiecki@t5  (rozpietosc 1 tur, obcych 0)
+        SLAD 8,8 [RZEKA]: farma@t7 -> oboz_lowiecki@t8  (rozpietosc 1 tur, obcych 0)
+    99 |       62 |      3 |    1.2 |   15 |           3.1 |       3.2 |    15 |          10 |     0 |      0 | 62/0/0
+        SLAD 5,7: oboz_lowiecki@t15 -> farma@t31  (rozpietosc 16 tur, obcych 21)
+        SLAD 6,5 [RZEKA]: oboz_lowiecki@t13 -> farma@t23  (rozpietosc 10 tur, obcych 12)
+        SLAD 4,7: oboz_lowiecki@t11 -> farma@t20  (rozpietosc 9 tur, obcych 11)
+        SLAD 4,6 [RZEKA]: oboz_lowiecki@t9 -> farma@t13  (rozpietosc 4 tur, obcych 4)
+        SLAD 5,6 [RZEKA]: farma@t2 -> oboz_lowiecki@t3  (rozpietosc 1 tur, obcych 0)
+        SLAD 6,6 [RZEKA]: farma@t3 -> oboz_lowiecki@t4  (rozpietosc 1 tur, obcych 0)
+   512 |       62 |      3 |    0.5 |   10 |           2.0 |       2.2 |    10 |           0 |     0 |      0 | 62/0/0
+        SLAD 4,6: oboz_lowiecki@t6 -> farma@t12  (rozpietosc 6 tur, obcych 7)
+        SLAD 5,5: oboz_lowiecki@t8 -> farma@t13  (rozpietosc 5 tur, obcych 6)
+        SLAD 6,4: oboz_lowiecki@t10 -> farma@t15  (rozpietosc 5 tur, obcych 6)
+        SLAD 7,4: oboz_lowiecki@t27 -> farma@t30  (rozpietosc 3 tur, obcych 3)
+        SLAD 6,5: oboz_lowiecki@t25 -> farma@t26  (rozpietosc 1 tur, obcych 0)
+        SLAD 4,4: farma@t0 -> oboz_lowiecki@t0  (rozpietosc 0 tur, obcych 0)
+  4242 |       62 |      3 |    1.4 |   18 |           3.2 |       2.9 |    18 |          16 |     0 |      0 | 62/0/0
+        SLAD 4,7: oboz_lowiecki@t19 -> farma@t35  (rozpietosc 16 tur, obcych 22)
+        SLAD 4,6 [RZEKA]: oboz_lowiecki@t17 -> farma@t27  (rozpietosc 10 tur, obcych 13)
+        SLAD 4,5 [RZEKA]: oboz_lowiecki@t15 -> farma@t21  (rozpietosc 6 tur, obcych 6)
+        SLAD 4,4: oboz_lowiecki@t13 -> farma@t18  (rozpietosc 5 tur, obcych 4)
+        SLAD 7,6 [RZEKA]: oboz_lowiecki@t6 -> farma@t10  (rozpietosc 4 tur, obcych 3)
+        SLAD 7,7 [RZEKA]: oboz_lowiecki@t8 -> farma@t12  (rozpietosc 4 tur, obcych 3)
+  1337 |       62 |      2 |    0.8 |   18 |           1.9 |       1.8 |    18 |          17 |     0 |      0 | 62/0/0
+        SLAD 5,7: oboz_lowiecki@t22 -> farma@t36  (rozpietosc 14 tur, obcych 19)
+        SLAD 5,6 [RZEKA]: oboz_lowiecki@t20 -> farma@t28  (rozpietosc 8 tur, obcych 10)
+        SLAD 4,6 [RZEKA]: oboz_lowiecki@t18 -> farma@t21  (rozpietosc 3 tur, obcych 3)
+        SLAD 5,5 [RZEKA]: farma@t2 -> oboz_lowiecki@t3  (rozpietosc 1 tur, obcych 0)
+        SLAD 6,4 [RZEKA]: farma@t3 -> oboz_lowiecki@t4  (rozpietosc 1 tur, obcych 0)
+        SLAD 6,5 [RZEKA]: farma@t4 -> oboz_lowiecki@t5  (rozpietosc 1 tur, obcych 0)
+RAZEM  |      310 |      3 |    0.9 |      |           2.3 |       2.2 |    76 |          53 |     0 |      0 | 310/0/0
+  udzial farm przy rzece: 69.7%  ·  rozklad kategorii zyw/sur/infra/wyrab: 310/0/0/0
+  ROZBICIE PER KLUCZ: lodzie_rybackie=153 · farma=76 · oboz_lowiecki=68 · bydlo=13
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 3030 · praca 2808 · handel 3064 · drewno 2785
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=85 relief=95 coast=17 riversMain=189 riversFill=93 forest=4 deposits=10 starts=55 total=555
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=81 relief=126 coast=19 riversMain=75 riversFill=68 forest=5 deposits=11 starts=57 total=447
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=114 relief=108 coast=21 riversMain=103 riversFill=64 forest=4 deposits=12 starts=85 total=516
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=83 relief=98 coast=18 riversMain=59 riversFill=59 forest=5 deposits=13 starts=73 total=413
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=89 relief=100 coast=18 riversMain=165 riversFill=74 forest=4 deposits=9 starts=60 total=526
+
+### AI GRACZA — profil „surowce" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |       56 |      1 |    0.1 |    3 |           1.7 |       0.7 |     0 |           0 |     0 |     16 | 0/56/0
+        SLAD 8,5 [RZEKA]: glinianka@t1 -> tartak@t4  (rozpietosc 3 tur, obcych 2)
+        SLAD 5,5 [RZEKA]: tartak@t0 -> glinianka@t1  (rozpietosc 1 tur, obcych 0)
+        SLAD 5,6 [RZEKA]: warzelnia_soli@t17 -> tartak@t18  (rozpietosc 1 tur, obcych 0)
+    99 |       56 |      1 |    0.1 |    2 |           2.5 |       1.5 |     0 |           0 |     0 |     16 | 0/56/0
+        SLAD 8,8 [RZEKA]: glinianka@t2 -> tartak@t6  (rozpietosc 4 tur, obcych 3)
+        SLAD 4,7: tartak@t13 -> warzelnia_soli@t14  (rozpietosc 1 tur, obcych 0)
+   512 |       57 |      1 |    0.1 |    2 |           1.0 |       0.0 |     0 |           0 |     0 |     15 | 0/57/0
+        SLAD 4,6: tartak@t9 -> warzelnia_soli@t10  (rozpietosc 1 tur, obcych 0)
+        SLAD 8,4: tartak@t33 -> warzelnia_soli@t34  (rozpietosc 1 tur, obcych 0)
+  4242 |       57 |      1 |    0.1 |    4 |           1.5 |       0.0 |     0 |           0 |     0 |     13 | 0/57/0
+        SLAD 4,7: tartak@t26 -> kamieniolom@t27 -> kopalnia_cyny@t28  (rozpietosc 2 tur, obcych 0)
+        SLAD 5,7 [RZEKA]: tartak@t35 -> kamieniolom@t36 -> glinianka@t37  (rozpietosc 2 tur, obcych 0)
+        SLAD 5,4 [RZEKA]: tartak@t0 -> glinianka@t1  (rozpietosc 1 tur, obcych 0)
+        SLAD 5,5 [RZEKA]: glinianka@t1 -> tartak@t2  (rozpietosc 1 tur, obcych 0)
+  1337 |       56 |      1 |    0.2 |    5 |           1.4 |       0.6 |     0 |           0 |     0 |     17 | 0/56/0
+        SLAD 8,6 [RZEKA]: glinianka@t6 -> tartak@t9  (rozpietosc 3 tur, obcych 2)
+        SLAD 6,5 [RZEKA]: glinianka@t2 -> tartak@t4  (rozpietosc 2 tur, obcych 1)
+        SLAD 10,4 [RZEKA]: tartak@t11 -> warzelnia_soli@t12  (rozpietosc 1 tur, obcych 0)
+        SLAD 4,6 [RZEKA]: tartak@t16 -> warzelnia_soli@t17  (rozpietosc 1 tur, obcych 0)
+        SLAD 9,4 [RZEKA]: tartak@t10 -> glinianka@t10  (rozpietosc 0 tur, obcych 0)
+RAZEM  |      282 |      1 |    0.1 |      |           1.6 |       0.6 |     0 |           0 |     0 |     77 | 0/282/0
+  udzial farm przy rzece: 0.0%  ·  rozklad kategorii zyw/sur/infra/wyrab: 0/282/0/0
+  ROZBICIE PER KLUCZ: warzelnia_soli=191 · tartak=77 · glinianka=11 · kamieniolom=2 · kopalnia_cyny=1
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 2673 · praca 2511 · handel 3209 · drewno 2785
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=6 landSea=86 relief=101 coast=19 riversMain=194 riversFill=96 forest=4 deposits=10 starts=54 total=572
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=5 landSea=81 relief=129 coast=17 riversMain=84 riversFill=69 forest=4 deposits=11 starts=55 total=456
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=97 relief=97 coast=18 riversMain=101 riversFill=77 forest=5 deposits=11 starts=60 total=474
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=84 relief=99 coast=19 riversMain=60 riversFill=57 forest=5 deposits=10 starts=57 total=396
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=89 relief=107 coast=18 riversMain=159 riversFill=77 forest=4 deposits=10 starts=57 total=529
+
+### AI GRACZA — profil „infrastruktura" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |       46 |      2 |    0.9 |   19 |           1.9 |       0.5 |     0 |           0 |     0 |      0 | 0/0/46
+        SLAD 4,6: droga@t4 -> posterunek@t19 -> droga_brukowana@t20 -> fort@t21  (rozpietosc 17 tur, obcych 9)
+        SLAD 5,5 [RZEKA]: posterunek@t0 -> droga@t1 -> droga_brukowana@t1 -> fort@t2  (rozpietosc 2 tur, obcych 0)
+        SLAD 6,5 [RZEKA]: posterunek@t3 -> fort@t4  (rozpietosc 1 tur, obcych 0)
+        SLAD 7,5 [RZEKA]: posterunek@t5 -> fort@t6  (rozpietosc 1 tur, obcych 0)
+        SLAD 8,5 [RZEKA]: posterunek@t7 -> fort@t8  (rozpietosc 1 tur, obcych 0)
+        SLAD 9,5 [RZEKA]: posterunek@t9 -> fort@t10  (rozpietosc 1 tur, obcych 0)
+    99 |       48 |      3 |    1.1 |   18 |           2.5 |       0.8 |     0 |           0 |     0 |      0 | 0/0/48
+        SLAD 4,6 [RZEKA]: droga@t4 -> posterunek@t17 -> droga_brukowana@t18 -> fort@t19  (rozpietosc 15 tur, obcych 8)
+        SLAD 5,4: droga@t10 -> posterunek@t20 -> droga_brukowana@t21 -> fort@t22  (rozpietosc 12 tur, obcych 6)
+        SLAD 5,5 [RZEKA]: droga@t1 -> posterunek@t2 -> droga_brukowana@t3 -> fort@t4  (rozpietosc 3 tur, obcych 0)
+        SLAD 4,5 [RZEKA]: posterunek@t0 -> fort@t1  (rozpietosc 1 tur, obcych 0)
+        SLAD 5,6 [RZEKA]: posterunek@t5 -> fort@t6  (rozpietosc 1 tur, obcych 0)
+        SLAD 6,6 [RZEKA]: posterunek@t7 -> fort@t8  (rozpietosc 1 tur, obcych 0)
+   512 |       48 |      1 |    0.6 |   19 |           1.2 |       0.0 |     0 |           0 |     0 |      0 | 0/0/48
+        SLAD 4,5: droga@t1 -> posterunek@t2 -> droga_brukowana@t3 -> fort@t4  (rozpietosc 3 tur, obcych 0)
+        SLAD 5,4: droga@t4 -> posterunek@t5 -> droga_brukowana@t6 -> fort@t7  (rozpietosc 3 tur, obcych 0)
+        SLAD 4,4: posterunek@t0 -> fort@t1  (rozpietosc 1 tur, obcych 0)
+        SLAD 4,6: posterunek@t8 -> fort@t9  (rozpietosc 1 tur, obcych 0)
+        SLAD 5,5: posterunek@t10 -> fort@t11  (rozpietosc 1 tur, obcych 0)
+        SLAD 6,4: posterunek@t12 -> fort@t13  (rozpietosc 1 tur, obcych 0)
+  4242 |       46 |      2 |    1.1 |   19 |           2.4 |       0.8 |     0 |           0 |     0 |      0 | 0/0/46
+        SLAD 4,5 [RZEKA]: droga@t4 -> posterunek@t29 -> droga_brukowana@t30 -> fort@t31  (rozpietosc 27 tur, obcych 16)
+        SLAD 5,4 [RZEKA]: posterunek@t0 -> droga@t1 -> droga_brukowana@t1 -> fort@t2  (rozpietosc 2 tur, obcych 0)
+        SLAD 5,5 [RZEKA]: posterunek@t3 -> fort@t4  (rozpietosc 1 tur, obcych 0)
+        SLAD 6,4 [RZEKA]: posterunek@t5 -> fort@t6  (rozpietosc 1 tur, obcych 0)
+        SLAD 5,6 [RZEKA]: posterunek@t7 -> fort@t8  (rozpietosc 1 tur, obcych 0)
+        SLAD 7,4 [RZEKA]: posterunek@t9 -> fort@t10  (rozpietosc 1 tur, obcych 0)
+  1337 |       48 |      2 |    1.1 |   18 |           2.4 |       0.7 |     0 |           0 |     0 |      0 | 0/0/48
+        SLAD 4,6 [RZEKA]: droga@t9 -> posterunek@t30 -> droga_brukowana@t31 -> fort@t32  (rozpietosc 23 tur, obcych 13)
+        SLAD 5,4 [RZEKA]: droga@t1 -> posterunek@t2 -> droga_brukowana@t3 -> fort@t4  (rozpietosc 3 tur, obcych 0)
+        SLAD 5,5 [RZEKA]: droga@t4 -> posterunek@t5 -> droga_brukowana@t6 -> fort@t7  (rozpietosc 3 tur, obcych 0)
+        SLAD 4,5 [RZEKA]: posterunek@t0 -> fort@t1  (rozpietosc 1 tur, obcych 0)
+        SLAD 6,4 [RZEKA]: posterunek@t8 -> fort@t9  (rozpietosc 1 tur, obcych 0)
+        SLAD 6,5 [RZEKA]: posterunek@t10 -> fort@t11  (rozpietosc 1 tur, obcych 0)
+RAZEM  |      236 |      3 |    1.0 |      |           2.1 |       0.6 |     0 |           0 |     0 |      0 | 0/0/236
+  udzial farm przy rzece: 0.0%  ·  rozklad kategorii zyw/sur/infra/wyrab: 0/0/236/0
+  ROZBICIE PER KLUCZ: posterunek=95 · fort=93 · droga=36 · droga_brukowana=12
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 2495 · praca 2119 · handel 2377 · drewno 2785
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=89 relief=100 coast=18 riversMain=196 riversFill=96 forest=4 deposits=10 starts=55 total=573
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=83 relief=132 coast=18 riversMain=82 riversFill=68 forest=5 deposits=12 starts=54 total=459
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=5 landSea=87 relief=99 coast=17 riversMain=100 riversFill=65 forest=4 deposits=11 starts=58 total=449
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=4 landSea=85 relief=96 coast=19 riversMain=62 riversFill=57 forest=4 deposits=10 starts=56 total=395
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=0 terrain=4 landSea=84 relief=100 coast=18 riversMain=158 riversFill=75 forest=4 deposits=9 starts=62 total=514
+
+### AI GRACZA — profil „zrownowazone" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra
+     7 |       54 |      1 |    0.8 |    9 |           3.3 |       0.2 |     9 |           8 |     0 |      9 | 19/11/24
+        SLAD 5,5 [RZEKA]: farma@t0 -> oboz_lowiecki@t0 -> glinianka@t1 -> droga@t1 -> tartak@t2 -> posterunek@t3 -> droga_brukowana@t4 -> fort@t5  (rozpietosc 5 tur, obcych 1)
+        SLAD 8,5 [RZEKA]: farma@t14 -> oboz_lowiecki@t14 -> glinianka@t15 -> tartak@t16 -> posterunek@t17 -> fort@t18  (rozpietosc 4 tur, obcych 1)
+        SLAD 6,5 [RZEKA]: farma@t6 -> oboz_lowiecki@t6 -> tartak@t7 -> posterunek@t8 -> fort@t9  (rozpietosc 3 tur, obcych 0)
+        SLAD 7,5 [RZEKA]: farma@t10 -> oboz_lowiecki@t10 -> tartak@t11 -> posterunek@t12 -> fort@t13  (rozpietosc 3 tur, obcych 0)
+        SLAD 9,5 [RZEKA]: farma@t19 -> oboz_lowiecki@t19 -> tartak@t20 -> posterunek@t21 -> fort@t22  (rozpietosc 3 tur, obcych 0)
+        SLAD 9,6 [RZEKA]: farma@t23 -> oboz_lowiecki@t23 -> tartak@t24 -> posterunek@t25 -> fort@t26  (rozpietosc 3 tur, obcych 0)
+    99 |       56 |      2 |    1.0 |   10 |           4.0 |       1.0 |     8 |           8 |     0 |      7 | 19/10/27
+        SLAD 8,8 [RZEKA]: oboz_lowiecki@t23 -> farma@t31 -> glinianka@t32 -> tartak@t33 -> posterunek@t34 -> fort@t35  (rozpietosc 12 tur, obcych 5)
+        SLAD 5,5 [RZEKA]: droga@t1 -> farma@t4 -> oboz_lowiecki@t4 -> tartak@t5 -> posterunek@t6 -> droga_brukowana@t7 -> fort@t8  (rozpietosc 7 tur, obcych 1)
+        SLAD 7,5 [RZEKA]: farma@t17 -> oboz_lowiecki@t18 -> tartak@t19 -> posterunek@t20 -> fort@t21  (rozpietosc 4 tur, obcych 1)
+        SLAD 7,7 [RZEKA]: farma@t22 -> oboz_lowiecki@t23 -> tartak@t24 -> posterunek@t25 -> fort@t26  (rozpietosc 4 tur, obcych 1)
+        SLAD 4,5 [RZEKA]: farma@t0 -> oboz_lowiecki@t0 -> tartak@t1 -> posterunek@t2 -> fort@t3  (rozpietosc 3 tur, obcych 1)
+        SLAD 5,6 [RZEKA]: farma@t9 -> oboz_lowiecki@t9 -> tartak@t10 -> posterunek@t11 -> fort@t12  (rozpietosc 3 tur, obcych 0)
+   512 |       58 |      3 |    1.4 |   16 |           3.4 |       1.6 |     5 |           0 |     0 |      5 | 21/17/20
+        SLAD 5,4: droga@t5 -> farma@t16 -> oboz_lowiecki@t17 -> tartak@t18 -> posterunek@t19 -> droga_brukowana@t20 -> fort@t21  (rozpietosc 16 tur, obcych 9)
+        SLAD 4,5: droga@t1 -> oboz_lowiecki@t4 -> farma@t10 -> tartak@t11 -> posterunek@t12 -> droga_brukowana@t13 -> fort@t14  (rozpietosc 13 tur, obcych 8)
+        SLAD 4,6: oboz_lowiecki@t22 -> farma@t31 -> warzelnia_soli@t32 -> tartak@t33 -> posterunek@t34 -> fort@t35  (rozpietosc 13 tur, obcych 8)
+        SLAD 4,4: farma@t0 -> oboz_lowiecki@t0 -> tartak@t1 -> posterunek@t2 -> fort@t3  (rozpietosc 3 tur, obcych 1)
+        SLAD 5,5: farma@t37 -> oboz_lowiecki@t37 -> tartak@t38 -> posterunek@t39  (rozpietosc 2 tur, obcych 0)
+        SLAD 3,4: lodzie_rybackie@t4 -> warzelnia_soli@t5  (rozpietosc 1 tur, obcych 0)
+  4242 |       55 |      2 |    1.1 |   10 |           4.3 |       1.1 |    10 |          10 |     0 |      5 | 21/9/25
+        SLAD 6,6 [RZEKA]: oboz_lowiecki@t21 -> farma@t24 -> tartak@t25 -> posterunek@t26 -> fort@t27  (rozpietosc 6 tur, obcych 1)
+        SLAD 7,6 [RZEKA]: farma@t29 -> oboz_lowiecki@t32 -> tartak@t33 -> posterunek@t34 -> fort@t35  (rozpietosc 6 tur, obcych 2)
+        SLAD 9,4 [RZEKA]: farma@t32 -> bydlo@t36 -> posterunek@t37 -> fort@t38  (rozpietosc 6 tur, obcych 2)
+        SLAD 5,4 [RZEKA]: farma@t0 -> oboz_lowiecki@t0 -> glinianka@t1 -> droga@t1 -> tartak@t2 -> posterunek@t3 -> droga_brukowana@t4 -> fort@t5  (rozpietosc 5 tur, obcych 1)
+        SLAD 5,5 [RZEKA]: farma@t6 -> oboz_lowiecki@t6 -> glinianka@t7 -> tartak@t8 -> posterunek@t9 -> fort@t10  (rozpietosc 4 tur, obcych 1)
+        SLAD 5,6 [RZEKA]: farma@t15 -> oboz_lowiecki@t16 -> tartak@t17 -> posterunek@t18 -> fort@t19  (rozpietosc 4 tur, obcych 0)
+  1337 |       53 |      2 |    1.1 |    9 |           5.1 |       1.3 |     9 |           9 |     0 |      9 | 18/10/25
+        SLAD 6,5 [RZEKA]: farma@t15 -> oboz_lowiecki@t19 -> glinianka@t20 -> tartak@t21 -> posterunek@t22 -> fort@t23  (rozpietosc 8 tur, obcych 4)
+        SLAD 7,4 [RZEKA]: oboz_lowiecki@t19 -> farma@t24 -> tartak@t25 -> posterunek@t26 -> fort@t27  (rozpietosc 8 tur, obcych 3)
+        SLAD 5,4 [RZEKA]: droga@t1 -> farma@t4 -> oboz_lowiecki@t4 -> tartak@t5 -> posterunek@t6 -> droga_brukowana@t7 -> fort@t8  (rozpietosc 7 tur, obcych 1)
+        SLAD 6,4 [RZEKA]: farma@t12 -> oboz_lowiecki@t15 -> tartak@t16 -> posterunek@t17 -> fort@t18  (rozpietosc 6 tur, obcych 2)
+        SLAD 5,5 [RZEKA]: farma@t9 -> oboz_lowiecki@t9 -> tartak@t10 -> posterunek@t11 -> droga@t12 -> droga_brukowana@t13 -> fort@t14  (rozpietosc 5 tur, obcych 1)
+        SLAD 4,5 [RZEKA]: farma@t0 -> oboz_lowiecki@t0 -> tartak@t1 -> posterunek@t2 -> fort@t3  (rozpietosc 3 tur, obcych 1)
+RAZEM  |      276 |      3 |    1.1 |      |           4.0 |       1.1 |    41 |          35 |     0 |     35 | 98/57/121
+  udzial farm przy rzece: 85.4%  ·  rozklad kategorii zyw/sur/infra/wyrab: 98/57/121/0
+  ROZBICIE PER KLUCZ: farma=41 · posterunek=40 · fort=39 · oboz_lowiecki=37 · droga=35 · tartak=35 · lodzie_rybackie=15 · warzelnia_soli=14 · glinianka=8 · droga_brukowana=7 · bydlo=5
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 2679 · praca 2424 · handel 2771 · drewno 2785
+
+### CZY PROFILE GRACZA SIE ROZNIA (rozklad kategorii, suma po ziarnach)
+profil          | razem | zywnosc | surowce | infra | tartak | farmy | farmy@rzeka
+zywnosc         |   310 |     310 |       0 |     0 |      0 |    76 |          53
+surowce         |   282 |       0 |     282 |     0 |     77 |     0 |           0
+infrastruktura  |   236 |       0 |       0 |   236 |      0 |     0 |           0
+zrownowazone    |   276 |      98 |      57 |   121 |     35 |    41 |          35
+AI CYWILIZACJI  |   600 |     230 |     139 |   231 |     69 |    99 |          83
+
+podobienstwo rozkladow „Zrownowazona" gracza vs AI cywilizacji (cosinus): 0.9941
+  wektor gracza [zyw,sur,infra,wyrab] = [0.355, 0.207, 0.438, 0.000]
+  wektor AI cyw. [zyw,sur,infra,wyrab] = [0.383, 0.232, 0.385, 0.000]

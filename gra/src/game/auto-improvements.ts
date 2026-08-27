@@ -347,6 +347,16 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   };
   const qualifies = buildImprovementQualifier(state);
 
+  // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2): heksy z rzeką NA heksie — priorytet przy
+  // wyborze NASTĘPNEGO heksu w pętli „heks po heksie" niżej. Ta sama definicja co
+  // `buildRiverHexSet` w map/improvement-build.ts (tam nieeksportowana, a tego pliku
+  // allowlista rundy 2 nie obejmuje): heks należy do rzeki, jeśli leży na którejś ze
+  // ścieżek rzek wygenerowanej mapy. Liczone RAZ na wywołanie, nie per miasto.
+  const riverHexKeys = new Set<string>();
+  for (const path of map.riverPaths ?? []) {
+    for (const p of path) riverHexKeys.add(`${p.q},${p.r}`);
+  }
+
   const orderedCities = [...cities].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const picks: AutoImprovementPick[] = [];
   const scheduledWyrabHexes = new Set<string>();
@@ -399,63 +409,123 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
 
     let placedThisCity = 0;
 
-    for (const key of basePriority) {
-      if (globalSpent >= effectiveCityCap || placedThisCity >= maxItemsPerCity) break;
-      const meta = getImprovementMeta(key);
-      if (!meta) continue;
-      if (meta.kosztPraca > pracaLeft) continue;
-      if (pracaLeft - meta.kosztPraca < reserve) continue;
-      if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
-      if (!civGate(key, civArchetype)) continue;
+    // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2) — ODWRÓCENIE PĘTLI: HEKS-PO-HEKSIE.
+    // PRZED: pętla zewnętrzna szła po TYPACH ulepszeń, wewnętrzna po heksach — więc
+    // automat stawiał `farma` na wszystkich kwalifikujących się heksach terytorium,
+    // potem wracał od początku po `bydlo`, potem po `oboz_lowiecki`… Skutkiem była
+    // dosłowna skarga właściciela („robi 15 heksów naraz w sposób niekompleksowo"):
+    // zmierzone PRZED przez `decideAITurn` (AI CYWILIZACJI, 5 ziaren × 40 tur):
+    // do 31 heksów otwartych równolegle, średnia rozpiętość heksa 23,3 tury,
+    // 62,1 obcych heksów tkniętych między pierwszym a ostatnim ulepszeniem heksa.
+    // PO: pętla zewnętrzna idzie po HEKSACH — automat bierze jeden heks i stawia na nim
+    // wszystko, co się kwalifikuje (w kolejności profilu), dopiero potem przechodzi do
+    // następnego. Ta zmiana jest WSPÓLNA dla obu ścieżek wołających ten picker:
+    // AI GRACZA (auto-ulepszenia EOT, main.ts) i AI CYWILIZACJI (`planCityImprovements`
+    // w ai.ts). Limit `maxItemsPerCity` (AI CYWILIZACJI: 1) jest NIETKNIĘTY — ECHO
+    // właściciela: „Zostaw limit, zmień kolejność"; przy limicie 1 AI cywilizacji nadal
+    // stawia jedno ulepszenie na miasto na turę, ale kolejne tury trafiają na TEN SAM
+    // heks aż do jego domknięcia, zamiast skakać po mapie.
+    //
+    // KOLEJNOŚĆ HEKSÓW: najpierw heksy z rzeką NA heksie (największy plon żywności —
+    // ECHO właściciela „Priorytetem są heksy z rzekami"), potem reszta; w obu grupach
+    // deterministycznie po (q,r) — bez `Math.random()`.
+    // Tie-break WEWNATRZ obu grup: odleglosc heksowa od centrum miasta (najblizsze
+    // najpierw), dopiero potem (q,r) — bez tego kolejnosc byla artefaktem sortowania
+    // po wspolrzednych i automat wchodzil w „lewy gorny rog" promienia zamiast w
+    // otoczenie miasta. `(q,r)` zostaje jako ostateczny, deterministyczny rozstrzygnik.
+    const hexDist = (q: number, r: number) =>
+      (Math.abs(q - city.q) + Math.abs(r - city.r) + Math.abs((q - city.q) + (r - city.r))) / 2;
+    const orderedHexes = [...candidateHexes].sort((a, b) => {
+      const ar = riverHexKeys.has(`${a.q},${a.r}`) ? 0 : 1;
+      const br = riverHexKeys.has(`${b.q},${b.r}`) ? 0 : 1;
+      return (ar - br) || (hexDist(a.q, a.r) - hexDist(b.q, b.r)) || (a.q - b.q) || (a.r - b.r);
+    });
 
-      if (key === 'wyrab' && !skipWyrab) {
+    // `wyrab` NIE wchodzi do sekwencji domykania heksa: wycinka USUWA nakładkę Las, a więc
+    // skasowałaby ulepszenia leśne (tartak/obóz łowiecki) postawione na tym samym heksie
+    // krok wcześniej. Zostaje więc na starej ścieżce „po typie" (FAZA 2 niżej), z tą samą
+    // semantyką i tym samym progiem `WYRAB_MIN_FOREST_IN_RADIUS` co przed tą zmianą.
+    const hexPhasePriority = basePriority.filter(k => k !== 'wyrab');
+
+    let cityBudgetExhausted = false;
+
+    // FAZA 1 — heks po heksie.
+    for (const { q, r } of orderedHexes) {
+      if (globalSpent >= effectiveCityCap || placedThisCity >= maxItemsPerCity || pracaLeft <= reserve) {
+        cityBudgetExhausted = true;
+        break;
+      }
+      const hexKey = `${q},${r}`;
+      for (const key of hexPhasePriority) {
+        if (globalSpent >= effectiveCityCap || placedThisCity >= maxItemsPerCity) {
+          cityBudgetExhausted = true;
+          break;
+        }
+        const meta = getImprovementMeta(key);
+        if (!meta) continue;
+        if (meta.kosztPraca > pracaLeft) continue;
+        if (pracaLeft - meta.kosztPraca < reserve) continue;
+        if (globalSpent + meta.kosztPraca > effectiveCityCap) continue;
+        if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
+        if (!civGate(key, civArchetype)) continue;
+        // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2): straznik duplikatu warstwy NA TYM heksie.
+        // Bez niego `droga` (i kazde inne ulepszenie, ktorego `buildImprovementQualifier` nie
+        // czyta z `placedImprovements`, tylko z danych heksa/`roadKeys` — patrz `isRoadQualified`
+        // w map/improvement-build.ts i komentarz przy `planCityImprovements` w ai.ts) kwalifikuje
+        // sie na tym samym heksie w kolko: zmierzone przed tym straznikiem 37 drog na JEDNYM
+        // heksie w 40 turach. Stara petla „po typach" tego nie ujawniala tylko dlatego, ze
+        // nigdy nie dochodzila do pozycji `droga` na liscie priorytetow. Ten sam warunek stosuje
+        // juz post-factum wolajacy gracz (`prevLayers.includes(pick.key)` w main.ts) — tu jest
+        // egzekwowany w samym pickerze, wiec obie sciezki dostaja go tak samo.
+        if ((workingPlaced.get(hexKey) ?? []).includes(key)) continue;
+        if (!qualifies(key, q, r)) continue;
+
+        picks.push({ ownerId, cityId: city.id, q, r, key, kosztPraca: meta.kosztPraca });
+        pracaLeft -= meta.kosztPraca;
+        globalSpent += meta.kosztPraca;
+        placedThisCity++;
+        const cur = workingPlaced.get(hexKey) ?? [];
+        workingPlaced.set(hexKey, [...cur, key]);
+      }
+      if (pracaLeft <= reserve) {
+        cityBudgetExhausted = true;
+        break;
+      }
+    }
+
+    // FAZA 2 — `wyrab` na starych zasadach (po typie, pierwszy kwalifikujący się heks).
+    // Zachowana 1:1 semantyka sprzed odwrócenia pętli, łącznie z progiem zachowania lasu.
+    if (!cityBudgetExhausted && !skipWyrab && basePriority.includes('wyrab')) {
+      const key: ImprovementKey = 'wyrab';
+      const meta = getImprovementMeta(key);
+      const techOk = isImprovementTechUnlocked(key, unlockedTechs) && civGate(key, civArchetype);
+      if (meta && techOk && meta.kosztPraca <= pracaLeft && pracaLeft - meta.kosztPraca >= reserve) {
         const forestCount = candidateHexes.reduce((n, { q, r }) => {
           const hk = `${q},${r}`;
           if (scheduledWyrabHexes.has(hk)) return n;
           return map.hexes[hk]?.nakladka === Nakladka.Las ? n + 1 : n;
         }, 0);
-        if (forestCount < WYRAB_MIN_FOREST_IN_RADIUS) continue;
-      }
-
-      // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2): ten sam typ (np. farma) wielokrotnie na
-      // różnych heksach, dopóki starcza WSPÓLNEGO budżetu całego wywołania (globalSpent
-      // sprawdzany przeciw pułapowi TEGO miasta effectiveCityCap = min(cityBudgetCap,
-      // imperiumBudgetCap) — patrz komentarze wyżej), limitu sztuk (maxItemsPerCity — niezależny,
-      // np. throttle AI) i globalnej puli (pracaLeft, z flat-rezerwą jako dolnym progiem
-      // bezpieczeństwa).
-      while (globalSpent < effectiveCityCap && placedThisCity < maxItemsPerCity && meta.kosztPraca <= pracaLeft) {
-        if (pracaLeft - meta.kosztPraca < reserve) break;
-        if (globalSpent + meta.kosztPraca > effectiveCityCap) break;
-        let placedOne = false;
-        for (const { q, r } of candidateHexes) {
-          const hexKey = `${q},${r}`;
-          if (key === 'wyrab' && scheduledWyrabHexes.has(hexKey)) continue;
-          if (!qualifies(key, q, r)) continue;
-
-          picks.push({
-            ownerId,
-            cityId: city.id,
-            q,
-            r,
-            key,
-            kosztPraca: meta.kosztPraca,
-          });
-          pracaLeft -= meta.kosztPraca;
-          globalSpent += meta.kosztPraca;
-          placedThisCity++;
-
-          if (key === 'wyrab') {
-            scheduledWyrabHexes.add(hexKey);
-          } else {
-            const cur = workingPlaced.get(hexKey) ?? [];
-            workingPlaced.set(hexKey, [...cur, key]);
+        if (forestCount >= WYRAB_MIN_FOREST_IN_RADIUS) {
+          while (globalSpent < effectiveCityCap && placedThisCity < maxItemsPerCity && meta.kosztPraca <= pracaLeft) {
+            if (pracaLeft - meta.kosztPraca < reserve) break;
+            if (globalSpent + meta.kosztPraca > effectiveCityCap) break;
+            let placedOne = false;
+            for (const { q, r } of orderedHexes) {
+              const hexKey = `${q},${r}`;
+              if (scheduledWyrabHexes.has(hexKey)) continue;
+              if (!qualifies(key, q, r)) continue;
+              picks.push({ ownerId, cityId: city.id, q, r, key, kosztPraca: meta.kosztPraca });
+              pracaLeft -= meta.kosztPraca;
+              globalSpent += meta.kosztPraca;
+              placedThisCity++;
+              scheduledWyrabHexes.add(hexKey);
+              placedOne = true;
+              break;
+            }
+            if (!placedOne) break;
           }
-          placedOne = true;
-          break;
         }
-        if (!placedOne) break;
       }
-      if (pracaLeft <= reserve) break;
     }
   }
 

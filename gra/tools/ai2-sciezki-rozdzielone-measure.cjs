@@ -48,6 +48,7 @@ export { pickAutoImprovements, AI_IMPROVEMENT_PRIORITY, AUTO_ULEPSZENIA_PRACA_RE
 export { getImprovementMeta, isImprovementTechUnlocked } from ${JSON.stringify(SRC + '/game/improvement-tech')};
 export { isImprovementAllowedForCiv } from ${JSON.stringify(SRC + '/game/terrain-improvements')};
 export { TerenBazowy, Nakladka } from ${JSON.stringify(SRC + '/types/hex')};
+export { tileYield } from ${JSON.stringify(SRC + '/game/economy')};
 `, 'utf8');
 
 esbuild.buildSync({
@@ -183,6 +184,31 @@ function podsumuj(events, rivers) {
   return { counts, kat, farmy, farmyRzeka, wyrebow, farmyPoWyrebie, razem: events.length };
 }
 
+/** Sumaryczny plon NA TURE ze wszystkich heksow terytorium na koniec przebiegu.
+ *  To jest miara „tempa rozwoju" — liczba ulepszen sama w sobie jej nie oddaje. */
+function plonTerytorium(map, territoryNodes, placed, rivers) {
+  const out = { zywnosc: 0, praca: 0, handel: 0, drewno: 0 };
+  const seen = new Set();
+  for (const n of territoryNodes) {
+    const hk = `${n.q},${n.r}`;
+    if (seen.has(hk)) continue;
+    seen.add(hk);
+    const h = map.hexes[hk];
+    if (!h) continue;
+    const layers = placed.get(hk);
+    const y = M.tileYield({
+      terenBazowy: h.terenBazowy,
+      nakladka: h.nakladka,
+      maRzeke: rivers.has(hk) || !!h.rzeka?.obecna,
+      zloze: h.zloze,
+      ulepszeniaKeys: Array.isArray(layers) ? layers : (layers ? [layers] : []),
+    });
+    out.zywnosc += y.zywnosc || 0; out.praca += y.praca || 0;
+    out.handel += y.handel || 0; out.drewno += y.drewno || 0;
+  }
+  return out;
+}
+
 // ===========================================================================
 // SCIEZKA 1 — AI CYWILIZACJI, PRAWDZIWE WEJSCIE `decideAITurn`
 // ===========================================================================
@@ -228,7 +254,7 @@ function runCiv(seed) {
       }
     }
   }
-  return { events, rivers, map, cities, territoryNodes };
+  return { events, rivers, plon: plonTerytorium(map, territoryNodes, placed, rivers) };
 }
 
 // ===========================================================================
@@ -281,7 +307,7 @@ function runPlayer(seed, focus) {
       events.push({ t, hk, key: pick.key });
     }
   }
-  return { events, rivers };
+  return { events, rivers, plon: plonTerytorium(map, territoryNodes, placed, rivers) };
 }
 
 // ===========================================================================
@@ -296,6 +322,8 @@ function raportSciezki(nazwa, wyniki) {
     agg.e1avg.push(m.e1avg); agg.e2span.push(m.e2span); agg.e2f.push(m.e2foreign);
     for (const k of Object.keys(agg.kat)) agg.kat[k] += s.kat[k];
     agg.tartak += (s.counts.tartak || 0); agg.wyrab += s.wyrebow;
+    agg.counts = agg.counts || {};
+    for (const [k, v] of Object.entries(s.counts)) agg.counts[k] = (agg.counts[k] || 0) + v;
     agg.farmy += s.farmy; agg.farmyRzeka += s.farmyRzeka; agg.razem += s.razem;
     console.log(
       `${String(w.seed).padStart(6)} | ${String(s.razem).padStart(8)} | ${String(m.e1max).padStart(6)} | ${m.e1avg.toFixed(1).padStart(6)} | ${String(m.e2count).padStart(4)} | ${m.e2span.toFixed(1).padStart(13)} | ${m.e2foreign.toFixed(1).padStart(9)} | ${String(s.farmy).padStart(5)} | ${String(s.farmyRzeka).padStart(11)} | ${String(s.wyrebow).padStart(5)} | ${String(s.counts.tartak || 0).padStart(6)} | ${s.kat.zywnosc}/${s.kat.surowce}/${s.kat.infra}`,
@@ -304,10 +332,17 @@ function raportSciezki(nazwa, wyniki) {
       for (const wo of m.worst) console.log(`        SLAD ${wo.hk}${w.rivers.has(wo.hk) ? ' [RZEKA]' : ''}: ${wo.slad}  (rozpietosc ${wo.span} tur, obcych ${wo.foreign})`);
     }
   }
+  const plonSum = wyniki.reduce((acc, w) => {
+    for (const k of ['zywnosc', 'praca', 'handel', 'drewno']) acc[k] += w.plon[k];
+    return acc;
+  }, { zywnosc: 0, praca: 0, handel: 0, drewno: 0 });
   const avg = a => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
   console.log(`RAZEM  | ${String(agg.razem).padStart(8)} | ${String(agg.e1max).padStart(6)} | ${avg(agg.e1avg).toFixed(1).padStart(6)} |      | ${avg(agg.e2span).toFixed(1).padStart(13)} | ${avg(agg.e2f).toFixed(1).padStart(9)} | ${String(agg.farmy).padStart(5)} | ${String(agg.farmyRzeka).padStart(11)} | ${String(agg.wyrab).padStart(5)} | ${String(agg.tartak).padStart(6)} | ${agg.kat.zywnosc}/${agg.kat.surowce}/${agg.kat.infra}`);
   const udzialRzek = agg.farmy ? (100 * agg.farmyRzeka / agg.farmy) : 0;
   console.log(`  udzial farm przy rzece: ${udzialRzek.toFixed(1)}%  ·  rozklad kategorii zyw/sur/infra/wyrab: ${agg.kat.zywnosc}/${agg.kat.surowce}/${agg.kat.infra}/${agg.kat.wyrab}`);
+  console.log(`  ROZBICIE PER KLUCZ: ${Object.entries(agg.counts || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
+  console.log(`  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc ${plonSum.zywnosc} · praca ${plonSum.praca} · handel ${plonSum.handel} · drewno ${plonSum.drewno}`);
+  agg.plon = plonSum;
   return agg;
 }
 
