@@ -19029,6 +19029,19 @@ async function boot(): Promise<void> {
       }
       // N1 fix — logika w game/eot-event-defer.ts (dismissEotOrEraWarLogEntry), testowana
       // niezależnie od main.ts w tools/sidepanel-events-toolbar-test.cjs.
+      if (id.startsWith(TECH_DONE_EVENT_PREFIX)) {
+        // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (wymóg 5 dyspozycji): ✕ musi TRWALE usunąć
+        // wpis z `warEventLog` — ten log NIE jest czyszczony co turę, a miękkie ukrycie
+        // (`dismissedSidePanelEventIds`) JEST czyszczone na końcu każdej tury, więc skasowana
+        // karta wracałaby w następnej. Ta sama gałąź obsługuje „Usuń wszystkie"
+        // (`clearAllSidePanelEvents` woła tę funkcję per id).
+        const idx = warEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          warEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        return;
+      }
       if (dismissEotOrEraWarLogEntry(warEventLog, id)) {
         refreshD1bHud();
         return;
@@ -19075,6 +19088,62 @@ async function boot(): Promise<void> {
       for (const ev of collectTurnEvents()) {
         handleSidePanelEventDismiss(ev.id);
       }
+    }
+
+    /**
+     * P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 — rodzina zdarzeń „Zbadano: <technologia>".
+     *
+     * Id karty (`tech-done-<tura>-<slug>`, emiter w bloku auto-research, ~`:26196`) jest
+     * JEDYNYM nośnikiem tożsamości — nie ma żadnej mapy pomocniczej. Dzięki temu karta
+     * zostaje klikalna po odświeżeniu panelu i po zmianie tury, dopóki widnieje w
+     * `warEventLog` (wymóg 4 dyspozycji), a klik zawsze otwiera kartę TEJ technologii,
+     * nie ostatniej zbadanej (wymóg 2 — przy dwóch technologiach w jednej turze powstają
+     * DWIE karty z DWOMA różnymi slugami).
+     *
+     * Warstwa runtime jest realna, nie tautologiczna: sam prefiks NIE wystarcza — slug musi
+     * dać się rozwinąć z powrotem w nazwę (`techNameFromSlug`) i ta nazwa musi istnieć w
+     * `data.tech`. Karta z nieznanym slugiem nie dostaje afordancji i klik w nią jest no-opem,
+     * dokładnie jak karta bez celu w audycie przekierowań.
+     *
+     * DLACZEGO NIE w `game/side-panel-event-link.ts` (gdzie mieszka reszta rodzin): ten plik
+     * jest poza allowlistą tematu. Zachowana jest natomiast jego zasada naczelna — jedno
+     * źródło prawdy dla afordancji i dla akcji: `techDoneEventLinkFor` karmi renderer
+     * (`getEventLink`), `openTechDoneEventLink` wykonuje skok, obie stoją na tym samym
+     * `techDoneEventTechName`, więc skrót nie może obiecać przejścia, którego handler nie zrobi.
+     */
+    const TECH_DONE_EVENT_PREFIX = 'tech-done-';
+
+    function techDoneEventTechName(id: string): string | null {
+      if (!id.startsWith(TECH_DONE_EVENT_PREFIX)) return null;
+      const rest = id.slice(TECH_DONE_EVENT_PREFIX.length);
+      const dash = rest.indexOf('-'); // `<tura>-<slug>`; slug sam może zawierać `_`, nigdy `-`
+      if (dash <= 0) return null;
+      const slug = rest.slice(dash + 1);
+      if (slug === '') return null;
+      const name = techNameFromSlug(slug);
+      if (name === null) return null;
+      return data.tech.some(t => t.Technologia === name) ? name : null;
+    }
+
+    /** Skrót karty „Zbadano" — etykieta mówi DOKĄD, spójnie z konwencją audytu przekierowań
+     * („Panel miasta →", „Spichlerz →", „Drzewo technologii →"), renderer dokleja strzałkę. */
+    function techDoneEventLinkFor(id: string): { label: string } | null {
+      return techDoneEventTechName(id) === null ? null : { label: 'Karta technologii' };
+    }
+
+    /** `true` = zdarzenie należało do tej rodziny i zostało obsłużone (wołający kończy). */
+    function openTechDoneEventLink(id: string): boolean {
+      const techName = techDoneEventTechName(id);
+      if (techName === null) return false;
+      // Ta sama funkcja i ten sam `kind`, którym gra pokazuje kartę tuż po ukończeniu badania
+      // (blok auto-research niżej) — temat nie tworzy nowego ekranu.
+      showTechDiscoveryNotice({
+        techName,
+        eraIndex: player.era,
+        kind: 'completion',
+        onOpenTree: () => showTechTreeView(0),
+      });
+      return true;
     }
 
     function mountD1bHud(): void {
@@ -19590,7 +19659,11 @@ async function boot(): Promise<void> {
         getContextPanelMessage: () => buildContextPanelMessage(),
         // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: renderer pyta o skrót dla karty
         // NIE-blokującej — TA SAMA funkcja, której używa `onEventClick` niżej.
-        getEventLink: (ev) => (ev.blocking === true ? null : sidePanelEventLinkFor(ev.id)),
+        // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1: rodzina `tech-done-*` idzie przez własny
+        // resolver (`techDoneEventLinkFor`, tuż nad tym blokiem) — z TĄ SAMĄ zasadą „jedno
+        // źródło dla afordancji i dla akcji", tylko trzymane w `main.ts`, bo pure-moduł
+        // `game/side-panel-event-link.ts` jest poza allowlistą tego tematu.
+        getEventLink: (ev) => (ev.blocking === true ? null : sidePanelEventLinkFor(ev.id)) ?? techDoneEventLinkFor(ev.id),
         onEventClick: (id) => {
           // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skróty kart NIE-blokujących idą przez jedno
           // wspólne rozstrzygnięcie (`sidePanelEventLinkFor`), to samo, które steruje widoczną
@@ -19601,6 +19674,11 @@ async function boot(): Promise<void> {
           // EN: non-blocking shortcuts all go through the one resolver that also drives the
           // visible affordance; `false` falls through to the blocking-card branches below.
           if (openSidePanelEventLink(id)) return;
+          // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1: karta „Zbadano: <tech>". Kolejność LUSTRZANA
+          // wobec `getEventLink` wyżej (najpierw rodziny audytu, potem `tech-done-*`) — obie
+          // rodziny mają rozłączne prefiksy, więc kolejność nie zmienia wyniku, ale jej
+          // zgodność jest tym, co gwarantuje, że skrót i klik nie mogą się rozjechać.
+          if (openTechDoneEventLink(id)) return;
           if (id.startsWith('diplo-pend-')) {
             openDiplomacyPendingById(id);
             return;
@@ -26190,7 +26268,46 @@ async function boot(): Promise<void> {
               let msg = doneIconHtml + 'Zbadano: ' + done.id + ' (-' + done.koszt + ' nauki)';
               if (done.pieniadz)   msg += ' \xb7 Pieni\u0105dz \xd710';
               console.log('[Nauka] Tura ' + turn + ': ' + msg);
-              if (!eraAdvanced) showHintMessage(msg, 3500);
+              if (!eraAdvanced) {
+                // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (A). DIAGNOZA: do tej pory ten komunikat
+                // szedł WYŁĄCZNIE przez `showHintMessage()`, a ta — w fazie `endTurnInProgress`
+                // (czyli ZAWSZE tutaj, bo cały blok auto-research żyje wewnątrz `triggerPlayerEndTurn`)
+                // — nie pokazuje toastu, tylko wrzuca goły string do generycznej kolejki
+                // `deferredEotHints` (`showHintMessage`, main.ts ~:12118 → `DeferredEotHint {msg,
+                // durationMs}`). Ta kolejka Z DEFINICJI gubi kontekst: `deferredHintsToSidePanelEvents`
+                // (game/eot-event-defer.ts) produkuje kartę `eot-hint-<tura>-<i>`, czyli id BEZ
+                // ŻADNEGO identyfikatora technologii — dlatego kliknięcie „Zbadano: Rolnictwo"
+                // nie miało jak dokądkolwiek prowadzić (audyt P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1
+                // świadomie zostawił `eot-hint-*` poza tablicą skrótów: „jeden wpis nie niesie
+                // ŻADNEGO id bytu"). Naprawa nie polega na podpięciu handlera do `eot-hint-*` (po id
+                // hintu technologii NIE DA SIĘ odzyskać), tylko na nadaniu temu zdarzeniu WŁASNEJ
+                // TOŻSAMOŚCI: dedykowana karta `tech-done-<tura>-<slug technologii>` w `warEventLog`,
+                // dokładnie tym samym wzorcem, co sąsiedni wpis `era-<tura>-<epoka>`
+                // (`notifyPlayerEraChangeIfAdvanced`, ~:12171). Slug jest jedynym nośnikiem — brak
+                // mapy pomocniczej, więc karta pozostaje klikalna także po odświeżeniu panelu
+                // i po zmianie tury, dopóki widnieje w `warEventLog` (wymóg 4 dyspozycji).
+                // Generyczny hint NIE jest już emitowany w tej ścieżce — inaczej gracz dostałby
+                // DWIE karty „Zbadano" na jedną technologię (regres w stylu
+                // P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1). Poza fazą EOT (dziś nieosiągalne z tego
+                // miejsca, ale kontrakt `showHintMessage` tego nie gwarantuje) toast zostaje.
+                // EN: this message used to reach the side panel only as a generic `eot-hint-*`
+                // card whose id carries no entity identity, so the click had nowhere to go. It now
+                // gets its own `tech-done-<turn>-<techSlug>` card (same pattern as the neighbouring
+                // `era-*` entry), which is what `onEventClick` resolves back into a tech card.
+                const techEvId = 'tech-done-' + turn + '-' + techToSlug(done.id);
+                if (!warEventLog.some(e => e.id === techEvId)) {
+                  warEventLog.unshift({
+                    id: techEvId,
+                    icon: '\u{1F52C}',
+                    title: 'Zbadano: ' + done.id,
+                    subtitle: '\u2212' + done.koszt + ' nauki'
+                      + (done.pieniadz ? ' \xb7 Pieni\u0105dz \xd710' : ''),
+                    kind: 'science',
+                  });
+                  if (warEventLog.length > 8) warEventLog.length = 8;
+                }
+                if (!shouldDeferEotEvents(endTurnInProgress)) showHintMessage(msg, 3500);
+              }
             }
             if (step.completed.length > 0) {
               if (eraAdvanced) {
