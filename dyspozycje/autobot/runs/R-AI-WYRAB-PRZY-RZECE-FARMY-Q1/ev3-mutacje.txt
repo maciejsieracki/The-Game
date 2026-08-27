@@ -1,0 +1,57 @@
+# EVALUATOR runda 3 — MUTACJE POWTORZONE WLASNA REKA (bramka tematu ai2-heks-po-heksie-test)
+# Kopie zrodla: git archive <commit> gra/src  ->  gra/.ev3-src-r2 (3e84fbc8 = runda 2), .ev3-src-base (56af44de)
+# Mutacje M5..M9: kopia gra/src -> gra/.ev3-mut/<M>, jedna podmiana w game/auto-improvements.ts:
+#   M5  hexPhasePriority: usuniety filtr !ZERO_YIELD_IMPROVEMENTS.has(k)
+#   M6  ZERO_YIELD_IMPROVEMENTS += 'droga'
+#   M7  const wyrabWlaczony = false
+#   M8  warunek FAZY 0 -> if (false && ...)
+#   M9  const lesneMinSpelnione = true || ...
+
+CZYSTO
+ai2-heks-po-heksie-test: 34 passed, 0 failed
+
+M0  (/home/user/wt-ev-ai3/gra/.ev3-src-r2/src)
+  [FAIL] zrodlo eksportuje ZERO_YIELD_IMPROVEMENTS (kontrakt W-B rundy 3): BRAK
+  [FAIL] zrodlo eksportuje JEDEN_NA_ILU_OBYWATELI (undefined)
+  [FAIL] ZERO_YIELD_IMPROVEMENTS = zbior policzony z tileYield (stala: [] vs dane: [fort,posterunek])
+  [FAIL] ulepszen zeroplonowych 1..2 na miasto (jest 0: )
+  [FAIL] obrona stoi na GRANICY zasiegu miasta — dalej (brak) niz najdalsza praca na plon (1)
+  [FAIL] decideAITurn wydal rozkaz `wyrab` w 30 turach (0 szt.)
+  [FAIL] PIERWSZY wyrab trafia na heks Z RZEKA (brak)
+  [FAIL] farma powstaje PO wyrebie na tym samym heksie (0 szt., np. -)
+  [FAIL] ... i nie przekraczaja pulapu 1 na miasto
+  [FAIL] ten sam picker przy skipWyrab: false -> wyrab jest (0 szt.)
+  ai2-heks-po-heksie-test: 22 passed, 10 failed
+
+M5  (/home/user/wt-ev-ai3/gra/.ev3-mut/M5)
+  [FAIL] ulepszen zeroplonowych 1..2 na miasto (jest 7: posterunek,fort,posterunek,fort,posterunek,fort,posterunek)
+  [FAIL] pulap ceil(pop/10)=1 dotrzymany dla posterunek (jest 4)
+  [FAIL] pulap ceil(pop/10)=1 dotrzymany dla fort (jest 3)
+  [FAIL] heks domykany plonowo (6,6) nie dostal posterunku ani fortu
+  [FAIL] obrona stoi na GRANICY zasiegu miasta — dalej (7,7,0,0,1,1,1) niz najdalsza praca na plon (1)
+  [FAIL] ... i nie przekraczaja pulapu 1 na miasto
+  ai2-heks-po-heksie-test: 28 passed, 6 failed
+
+M6  (/home/user/wt-ev-ai3/gra/.ev3-mut/M6)
+  [FAIL] ZERO_YIELD_IMPROVEMENTS = zbior policzony z tileYield (stala: [droga,fort,posterunek] vs dane: [fort,posterunek])
+  [FAIL] ulepszen zeroplonowych 1..2 na miasto (jest 3: posterunek,droga,fort)
+  [FAIL] obrona stoi na GRANICY zasiegu miasta — dalej (7,1,7) niz najdalsza praca na plon (2)
+  ai2-heks-po-heksie-test: 32 passed, 3 failed
+
+M7  (/home/user/wt-ev-ai3/gra/.ev3-mut/M7)
+  [FAIL] decideAITurn wydal rozkaz `wyrab` w 30 turach (0 szt.)
+  [FAIL] PIERWSZY wyrab trafia na heks Z RZEKA (brak)
+  [FAIL] farma powstaje PO wyrebie na tym samym heksie (0 szt., np. -)
+  [FAIL] ten sam picker przy skipWyrab: false -> wyrab jest (0 szt.)
+  ai2-heks-po-heksie-test: 30 passed, 4 failed
+
+M8  (/home/user/wt-ev-ai3/gra/.ev3-mut/M8)
+  [FAIL] ulepszen zeroplonowych 1..2 na miasto (jest 0: )
+  [FAIL] obrona stoi na GRANICY zasiegu miasta — dalej (brak) niz najdalsza praca na plon (1)
+  [FAIL] posterunek i fort NADAL powstaja poza sekwencja domykania (posterunek 0, fort 0)
+  ai2-heks-po-heksie-test: 31 passed, 3 failed
+
+M9  (/home/user/wt-ev-ai3/gra/.ev3-mut/M9)
+  [FAIL] AI cywilizacji postawilo tartak w 12 turach na mapie lesnej (0 szt.)
+  [FAIL] minimum lesne miasta dotrzymane mimo wycinki: tartak 0, oboz 0
+  ai2-heks-po-heksie-test: 32 passed, 2 failed

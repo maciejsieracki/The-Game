@@ -1,0 +1,127 @@
+# EVALUATOR runda 3 — MODEL WIERNY TERYTORIUM
+# territoryNodes = JEDEN WEZEL NA MIASTO (buildAllTerritoryNodes, main.ts:4141), promien max(5,pop)=6
+# + bramka terytorium silnika (main.ts:28840-28860). Ziarna 11/77/314/2718/1337 x 40 tur.
+
+--- BAZA ---
+# EVALUATOR runda 3 — POMIAR ZE STANU MAPY (snapshot warstw + nakladki po kazdej turze)
+# src: /home/user/wt-ev-ai3/gra/.ev3-src-base/src
+# ziarna: 11, 77, 314, 2718, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, pop 6 · strip lasu: true
+# MODEL TERYTORIUM: WIERNY (jeden wezel na miasto, promien max(5,pop)=6 — jak buildAllTerritoryNodes) · BRAMKA SILNIKA: WLACZONA
+
+### AI CYWILIZACJI — decideAITurn (prawdziwe wejscie, maxItemsPerCity=1)
+ziarno | warstw | heks.tk | E1max | E1sr | E2 n | E2rozp | E2obcy | farmy | f@rzeka | WYRAB(stan) | farmy@POwyrab | post | fort | tartak | oboz | zyw/sur/infra | plon ZYW | drewno
+    11 |    120 |      93 |    27 | 16.4 |   27 |   24.9 |   68.7 |    93 |       0 |           0 |             0 |    0 |    0 |      0 |   12 | 120/0/0 |      953 |    925
+    77 |    120 |      83 |    30 | 19.1 |   37 |   21.1 |   54.1 |    83 |      10 |           0 |             0 |    0 |    0 |      0 |   14 | 120/0/0 |     1011 |    900
+   314 |    120 |      89 |    27 | 17.6 |   31 |   23.3 |   61.8 |    89 |       0 |           0 |             0 |    0 |    0 |      0 |   17 | 120/0/0 |      955 |    925
+  2718 |    120 |      74 |    42 | 25.3 |   46 |   22.6 |   56.0 |    69 |      24 |           0 |             0 |    0 |    0 |      0 |   24 | 120/0/0 |      987 |    735
+  1337 |    120 |      86 |    32 | 18.6 |   34 |   22.4 |   59.4 |    86 |      24 |           0 |             0 |    0 |    0 |      0 |   15 | 120/0/0 |     1092 |    865
+RAZEM  |    600 |     425 |    42 | 19.4 |      |   22.9 |   60.0 |   420 |      58 |           0 |             0 |    0 |    0 |      0 |      | 600/0/0 |     4998 |   4350
+  udzial farm przy rzece: PATH 13.8%  ·  SZEROKA 22.4%
+  KLUCZE (ze strumienia rozkazow, kontrola): farma=420 · bydlo=93 · oboz_lowiecki=82 · owce=5
+  PLON TERYTORIUM/ture (suma po ziarnach): zywnosc 4998 · praca 4783 · handel 4979 · drewno 4350
+  ASERCJA maxItemsPerCity=1 (behawioralna): max rozkazow na miasto na ture = 1
+  ROZKAZY vs STAN: rozkazow 600 · odrzuconych przez silnik 0 · obozow skasowanych przez wyrab 0
+  WYRAB: ze STANU 0 · z ROZKAZOW 0
+  WYRAB per ziarno (stan|rozkazy): 11: 0|0 · 77: 0|0 · 314: 0|0 · 2718: 0|0 · 1337: 0|0
+  BRAMKA TERYTORIUM SILNIKA (promien miasta max(5,pop)=6; harness daje pickerowi wezel-na-heks → promien ~10):
+    rozkazy POZA realnym terytorium miasta: 0 z 600 — per klucz: brak
+    EV3_REALGATE=1 (bramka WLACZONA — powyzsze rozkazy odrzucone) · odrzuconych przez bramke 0
+  PULAP OBRONNY ceil(pop/10)=1:
+    (a) atrybucja do NAJBLIZSZEGO miasta: max 0 · naruszen 0
+    (b) po promieniu miasta (promienie sie NAKLADAJA, jak candidateHexes w kodzie): max 0 · naruszen 0
+  PER ZIARNO wyrab(stan)/farmy@PO/posterunek/fort: 11: 0/0/0/0 · 77: 0/0/0/0 · 314: 0/0/0/0 · 2718: 0/0/0/0 · 1337: 0/0/0/0
+
+(EV3_ONLY=civ — sciezka AI GRACZA pominieta)
+
+--- W-A ---
+# EVALUATOR runda 3 — POMIAR ZE STANU MAPY (snapshot warstw + nakladki po kazdej turze)
+# src: /home/user/wt-ev-ai3/gra/.ev3-src-r2/src
+# ziarna: 11, 77, 314, 2718, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, pop 6 · strip lasu: true
+# MODEL TERYTORIUM: WIERNY (jeden wezel na miasto, promien max(5,pop)=6 — jak buildAllTerritoryNodes) · BRAMKA SILNIKA: WLACZONA
+
+### AI CYWILIZACJI — decideAITurn (prawdziwe wejscie, maxItemsPerCity=1)
+ziarno | warstw | heks.tk | E1max | E1sr | E2 n | E2rozp | E2obcy | farmy | f@rzeka | WYRAB(stan) | farmy@POwyrab | post | fort | tartak | oboz | zyw/sur/infra | plon ZYW | drewno
+    11 |    120 |      36 |     3 |  2.0 |   36 |    2.3 |    1.4 |    14 |       0 |           0 |             0 |   12 |   12 |      7 |    8 | 50/30/40 |      761 |    925
+    77 |    120 |      32 |     3 |  2.1 |   30 |    2.9 |    1.6 |    17 |      10 |           0 |             0 |   16 |   16 |     16 |   17 | 49/33/38 |      813 |    900
+   314 |    120 |      34 |     3 |  2.1 |   32 |    2.7 |    1.3 |    13 |       0 |           0 |             0 |   13 |   12 |      7 |    7 | 47/30/43 |      766 |    925
+  2718 |    120 |      26 |     3 |  2.3 |   25 |    3.7 |    2.3 |    24 |      24 |           0 |             0 |   23 |   22 |     17 |   18 | 48/25/47 |      810 |    735
+  1337 |    120 |      27 |     3 |  2.3 |   27 |    3.4 |    2.1 |    21 |      20 |           0 |             0 |   20 |   20 |     17 |   17 | 48/28/44 |      888 |    865
+RAZEM  |    600 |     155 |     3 |  2.2 |      |    3.0 |    1.7 |    89 |      54 |           0 |             0 |   84 |   82 |     64 |      | 242/146/212 |     4038 |   4350
+  udzial farm przy rzece: PATH 60.7%  ·  SZEROKA 60.7%
+  KLUCZE (ze strumienia rozkazow, kontrola): farma=89 · posterunek=84 · fort=82 · oboz_lowiecki=67 · warzelnia_soli=67 · lodzie_rybackie=65 · tartak=64 · droga=23 · droga_brukowana=23 · bydlo=21 · glinianka=13 · kopalnia_zelaza=1 · kamieniolom=1
+  PLON TERYTORIUM/ture (suma po ziarnach): zywnosc 4038 · praca 3947 · handel 4518 · drewno 4350
+  ASERCJA maxItemsPerCity=1 (behawioralna): max rozkazow na miasto na ture = 1
+  ROZKAZY vs STAN: rozkazow 600 · odrzuconych przez silnik 0 · obozow skasowanych przez wyrab 0
+  WYRAB: ze STANU 0 · z ROZKAZOW 0
+  WYRAB per ziarno (stan|rozkazy): 11: 0|0 · 77: 0|0 · 314: 0|0 · 2718: 0|0 · 1337: 0|0
+  BRAMKA TERYTORIUM SILNIKA (promien miasta max(5,pop)=6; harness daje pickerowi wezel-na-heks → promien ~10):
+    rozkazy POZA realnym terytorium miasta: 0 z 600 — per klucz: brak
+    EV3_REALGATE=1 (bramka WLACZONA — powyzsze rozkazy odrzucone) · odrzuconych przez bramke 0
+  PULAP OBRONNY ceil(pop/10)=1:
+    (a) atrybucja do NAJBLIZSZEGO miasta: max 10 · naruszen 30 11/c0:posterunek=4 11/c0:fort=4 11/c1:posterunek=3 11/c1:fort=3 11/c2:posterunek=5 11/c2:fort=5 77/c0:posterunek=4 77/c0:fort=4 77/c1:posterunek=3 77/c1:fort=3 77/c2:posterunek=9 77/c2:fort=9 314/c0:posterunek=3 314/c0:fort=3 314/c1:posterunek=4 314/c1:fort=4 314/c2:posterunek=6 314/c2:fort=5 2718/c0:posterunek=7 2718/c0:fort=7 2718/c1:posterunek=10 2718/c1:fort=10 2718/c2:posterunek=6 2718/c2:fort=5 1337/c0:posterunek=8 1337/c0:fort=8 1337/c1:posterunek=7 1337/c1:fort=7 1337/c2:posterunek=5 1337/c2:fort=5
+    (b) po promieniu miasta (promienie sie NAKLADAJA, jak candidateHexes w kodzie): max 9 · naruszen 30
+  PER ZIARNO wyrab(stan)/farmy@PO/posterunek/fort: 11: 0/0/12/12 · 77: 0/0/16/16 · 314: 0/0/13/12 · 2718: 0/0/23/22 · 1337: 0/0/20/20
+
+(EV3_ONLY=civ — sciezka AI GRACZA pominieta)
+
+--- W-B ---
+# EVALUATOR runda 3 — POMIAR ZE STANU MAPY (snapshot warstw + nakladki po kazdej turze)
+# src: /home/user/wt-ev-ai3/gra/src
+# ziarna: 11, 77, 314, 2718, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, pop 6 · strip lasu: true
+# MODEL TERYTORIUM: WIERNY (jeden wezel na miasto, promien max(5,pop)=6 — jak buildAllTerritoryNodes) · BRAMKA SILNIKA: WLACZONA
+
+### AI CYWILIZACJI — decideAITurn (prawdziwe wejscie, maxItemsPerCity=1)
+ziarno | warstw | heks.tk | E1max | E1sr | E2 n | E2rozp | E2obcy | farmy | f@rzeka | WYRAB(stan) | farmy@POwyrab | post | fort | tartak | oboz | zyw/sur/infra | plon ZYW | drewno
+    11 |    111 |      46 |     5 |  2.8 |   44 |    2.6 |    2.0 |    16 |       0 |           9 |             7 |    2 |    2 |      2 |    2 | 60/31/20 |      804 |    790
+    77 |    109 |      43 |     3 |  1.7 |   38 |    1.8 |    1.2 |    21 |      10 |          11 |            10 |    2 |    2 |     10 |   11 | 60/31/18 |      860 |    735
+   314 |    113 |      45 |     5 |  3.0 |   40 |    3.0 |    2.4 |    17 |       0 |           7 |             7 |    2 |    2 |      3 |    3 | 59/32/22 |      811 |    820
+  2718 |    104 |      45 |     3 |  1.9 |   41 |    1.9 |    1.2 |    29 |      24 |          16 |            16 |    2 |    2 |      4 |    4 | 70/23/11 |      898 |    495
+  1337 |    103 |      44 |     4 |  2.3 |   40 |    2.4 |    1.7 |    28 |      24 |          17 |            15 |    2 |    2 |      4 |    5 | 69/24/10 |      973 |    610
+RAZEM  |    540 |     223 |     5 |  2.3 |      |    2.3 |    1.7 |   111 |      58 |          60 |            55 |   10 |   10 |     23 |      | 318/141/81 |     4346 |   3450
+  udzial farm przy rzece: PATH 52.3%  ·  SZEROKA 54.1%
+  KLUCZE (ze strumienia rozkazow, kontrola): farma=111 · warzelnia_soli=100 · lodzie_rybackie=96 · bydlo=85 · wyrab=60 · droga=31 · droga_brukowana=30 · oboz_lowiecki=25 · tartak=23 · glinianka=16 · posterunek=10 · fort=10 · kopalnia_zelaza=1 · kamieniolom=1 · owce=1
+  PLON TERYTORIUM/ture (suma po ziarnach): zywnosc 4346 · praca 4055 · handel 4677 · drewno 3450
+  ASERCJA maxItemsPerCity=1 (behawioralna): max rozkazow na miasto na ture = 1
+  ROZKAZY vs STAN: rozkazow 600 · odrzuconych przez silnik 0 · obozow skasowanych przez wyrab 0
+  WYRAB: ze STANU 60 · z ROZKAZOW 60
+  WYRAB per ziarno (stan|rozkazy): 11: 9|9 · 77: 11|11 · 314: 7|7 · 2718: 16|16 · 1337: 17|17
+  BRAMKA TERYTORIUM SILNIKA (promien miasta max(5,pop)=6; harness daje pickerowi wezel-na-heks → promien ~10):
+    rozkazy POZA realnym terytorium miasta: 0 z 600 — per klucz: brak
+    EV3_REALGATE=1 (bramka WLACZONA — powyzsze rozkazy odrzucone) · odrzuconych przez bramke 0
+  PULAP OBRONNY ceil(pop/10)=1:
+    (a) atrybucja do NAJBLIZSZEGO miasta: max 2 · naruszen 3 11/c2:posterunek=2 11/c2:fort=2 314/c2:posterunek=2
+    (b) po promieniu miasta (promienie sie NAKLADAJA, jak candidateHexes w kodzie): max 2 · naruszen 1
+  PER ZIARNO wyrab(stan)/farmy@PO/posterunek/fort: 11: 9/7/2/2 · 77: 11/10/2/2 · 314: 7/7/2/2 · 2718: 16/16/2/2 · 1337: 17/15/2/2
+
+(EV3_ONLY=civ — sciezka AI GRACZA pominieta)
+
+--- W-B-bez-wyrebu ---
+# EVALUATOR runda 3 — POMIAR ZE STANU MAPY (snapshot warstw + nakladki po kazdej turze)
+# src: /home/user/wt-ev-ai3/gra/.ev3-mut/M7
+# ziarna: 11, 77, 314, 2718, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, pop 6 · strip lasu: true
+# MODEL TERYTORIUM: WIERNY (jeden wezel na miasto, promien max(5,pop)=6 — jak buildAllTerritoryNodes) · BRAMKA SILNIKA: WLACZONA
+
+### AI CYWILIZACJI — decideAITurn (prawdziwe wejscie, maxItemsPerCity=1)
+ziarno | warstw | heks.tk | E1max | E1sr | E2 n | E2rozp | E2obcy | farmy | f@rzeka | WYRAB(stan) | farmy@POwyrab | post | fort | tartak | oboz | zyw/sur/infra | plon ZYW | drewno
+    11 |    120 |      48 |     5 |  2.9 |   44 |    2.7 |    2.2 |    17 |       0 |           0 |             0 |    2 |    2 |      9 |    9 | 62/38/20 |      793 |    925
+    77 |    120 |      44 |     3 |  1.9 |   38 |    2.1 |    1.5 |    22 |      10 |           0 |             0 |    2 |    2 |     20 |   21 | 61/41/18 |      842 |    900
+   314 |    120 |      45 |     5 |  3.1 |   41 |    3.1 |    2.4 |    17 |       0 |           0 |             0 |    2 |    2 |      9 |   10 | 60/38/22 |      799 |    925
+  2718 |    120 |      45 |     4 |  2.2 |   41 |    2.2 |    1.9 |    29 |      24 |           0 |             0 |    2 |    2 |     20 |   20 | 70/39/11 |      866 |    735
+  1337 |    120 |      44 |     4 |  2.7 |   40 |    2.7 |    2.3 |    28 |      24 |           0 |             0 |    2 |    2 |     21 |   22 | 69/41/10 |      939 |    865
+RAZEM  |    600 |     226 |     5 |  2.6 |      |    2.6 |    2.1 |   113 |      58 |           0 |             0 |   10 |   10 |     79 |      | 322/197/81 |     4239 |   4350
+  udzial farm przy rzece: PATH 51.3%  ·  SZEROKA 53.1%
+  KLUCZE (ze strumienia rozkazow, kontrola): farma=113 · warzelnia_soli=100 · lodzie_rybackie=97 · oboz_lowiecki=82 · tartak=79 · droga=31 · droga_brukowana=30 · bydlo=29 · glinianka=16 · posterunek=10 · fort=10 · kopalnia_zelaza=1 · kamieniolom=1 · owce=1
+  PLON TERYTORIUM/ture (suma po ziarnach): zywnosc 4239 · praca 4245 · handel 4977 · drewno 4350
+  ASERCJA maxItemsPerCity=1 (behawioralna): max rozkazow na miasto na ture = 1
+  ROZKAZY vs STAN: rozkazow 600 · odrzuconych przez silnik 0 · obozow skasowanych przez wyrab 0
+  WYRAB: ze STANU 0 · z ROZKAZOW 0
+  WYRAB per ziarno (stan|rozkazy): 11: 0|0 · 77: 0|0 · 314: 0|0 · 2718: 0|0 · 1337: 0|0
+  BRAMKA TERYTORIUM SILNIKA (promien miasta max(5,pop)=6; harness daje pickerowi wezel-na-heks → promien ~10):
+    rozkazy POZA realnym terytorium miasta: 0 z 600 — per klucz: brak
+    EV3_REALGATE=1 (bramka WLACZONA — powyzsze rozkazy odrzucone) · odrzuconych przez bramke 0
+  PULAP OBRONNY ceil(pop/10)=1:
+    (a) atrybucja do NAJBLIZSZEGO miasta: max 2 · naruszen 2 11/c2:posterunek=2 314/c2:posterunek=2
+    (b) po promieniu miasta (promienie sie NAKLADAJA, jak candidateHexes w kodzie): max 2 · naruszen 1
+  PER ZIARNO wyrab(stan)/farmy@PO/posterunek/fort: 11: 0/0/2/2 · 77: 0/0/2/2 · 314: 0/0/2/2 · 2718: 0/0/2/2 · 1337: 0/0/2/2
+
+(EV3_ONLY=civ — sciezka AI GRACZA pominieta)
