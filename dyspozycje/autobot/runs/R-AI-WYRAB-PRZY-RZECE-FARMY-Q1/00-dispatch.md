@@ -249,3 +249,113 @@ Jeśli mimo to zobaczysz konflikt: zgłoś `BLOCK`, nie rozwiązuj go samodzieln
 - **ZAKAZ zmiany terenów hodowli bez oznaczenia decyzji z 2026-07-29 jako wycofanej.**
   Dokładnie ten błąd (cicha zmiana wbrew zapisanej decyzji) spowodował, że temat rekrutacji
   wracał przez trzy tygodnie.
+
+---
+
+# RUNDA 2 — ECHO właściciela po pomiarze rundy 1 (2026-08-27)
+
+Runda 1 wykonała **wyłącznie KROK 1** i obaliła przesłankę zlecenia liczbami. Właściciel
+zobaczył te liczby i podjął dwie decyzje.
+
+## Q1 — wyrąb: **WYCINAĆ MIMO TO**
+
+Właścicielowi przedstawiono pomiar: delta (wyrąb+farma) − (las+farma) na **każdym** terenie
+to żywność **+1**, praca **−3**, handel **−2**, drewno **−15/turę**, koszt Pracy **+2,5**.
+
+> **Decyzja: „Wycinać mimo to."** Właściciel świadomie akceptuje gorszy bilans z każdego
+> takiego heksu.
+
+To jest **wiążące** — Operator NIE wraca do tej dyskusji i NIE optymalizuje jej z powrotem
+„bo liczby". Liczby zostały pokazane, decyzja zapadła. Odnotuj w raporcie, że bilans jest
+świadomie ujemny, i tyle.
+
+## Q2 — priorytet rundy 2: **KOMPLEKSOWOŚĆ + TARTAKI**
+
+> **Decyzja: „Kompleksowość + tartaki."**
+
+Runda 2 robi **dokładnie te dwie rzeczy**, nic więcej. Hodowla w lesie, limity „1 na 10
+obywateli" i pełny model priorytetów czekają na rundę 3 — nie wciągaj ich tutaj (§14).
+
+## KONSEKWENCJA, KTÓRĄ MUSISZ OBSŁUŻYĆ JAWNIE
+
+Wybór „wycinać" **zamyka** ciąg `wyrąb → farma → trzoda` na tym samym heksie: po wyrębie
+nie ma Lasu, a hodowla go wymaga. Zmierzone: wykonalne na **0 heksów**.
+
+Dlatego na heksie z rzeką ciąg kończy się na **farmie**. Trzoda ma trafiać na **heksy leśne
+z tartakiem** — a te zaczną istnieć dopiero wtedy, gdy AI zacznie budować tartaki, co jest
+drugą połową tej rundy. **Nie pomijaj kroku „potem trzodę" po cichu** — zaimplementuj go
+jako osobny heks i **udowodnij pomiarem, że trzoda faktycznie powstaje**.
+
+## ZADANIE RUNDY 2 — dwie rzeczy
+
+### A. Odwrócenie pętli: po HEKSACH, nie po TYPACH
+
+`pickAutoImprovements` (`auto-improvements.ts:402`) iteruje po **typach ulepszeń**.
+To jest **strukturalna przyczyna** skargi właściciela („15 heksów naraz niekompleksowo")
+— ustalona przez wszystkie trzy role rundy 1. Odwróć ją: AI bierze **heks** i doprowadza
+go do końca, dopiero potem następny.
+
+Kolejność wyboru heksa: **najpierw heksy z rzeką NA heksie** (najwyższy plon żywności),
+potem reszta.
+
+Na wybranym heksie, po kolei: wyrąb (jeśli las) → farma → kolejne ulepszenia, jakie się
+kwalifikują.
+
+### B. AI ma budować tartaki
+
+**AI nie zbudowało ANI JEDNEGO tartaku** na żadnym z 5 ziaren rundy 1, mimo że tartak
+kwalifikuje się na **183 heksach**. Znajdź przyczynę i napraw. Bez tego cała reszta
+specyfikacji właściciela jest martwa — kontrpomiar Evaluatora pokazał, że reguła hodowli
+„Las + tartak" przy zerze tartaków dałaby pastwiska **103 → 0**.
+
+Sprawdź przy okazji, dlaczego AI buduje **zero** dróg, posterunków, fortów, kopalni
+i irygacji. Jeśli to ta sama przyczyna co tartaki — napraw razem i powiedz to wprost.
+Jeśli inna — **zgłoś do rejestru**, nie naprawiaj tutaj (§14).
+
+## METRYKA — obowiązkowo E1/E2 Evaluatora, NIE metryka Operatora z rundy 1
+
+Metryka Operatora („heks tknięty, ale kwalifikuje kolejne ulepszenie") była
+**zdegenerowana** — przypięta do 100% z konstrukcji, nie mogła zejść do zera ani rozróżnić
+ziaren. Evaluator to wykrył i zastąpił:
+
+- **E1** — liczba heksów „w toku" równolegle (max i średnia na przebieg)
+- **E2** — rozpiętość: ile tur mija między pierwszym a ostatnim ulepszeniem na heksie,
+  i ile **obcych** heksów AI tknęło w międzyczasie
+
+Wartości PRZED (runda 1, ziarna 7/99/512/4242/1337): E1 max **35–50**, E1 średnia
+**19,1–27,5**, E2 rozpiętość **16,0–19,6 tur**, obcych heksów w międzyczasie **37,6–49,2**.
+
+**Te liczby mają wyraźnie spaść.** To jest główne kryterium tej rundy.
+
+## Kryteria sukcesu rundy 2
+
+1. **E1 i E2 wyraźnie w dół** wobec wartości PRZED wyżej, min. 5 ziaren × 40 tur.
+   Podaj tabelę PRZED/PO dla obu metryk.
+2. **Ślad czasowy**: dla próbki heksów pokaż, że AI kończy heks przed przejściem do
+   następnego (dziś: farma w turze 0, obóz w turze 14, ~44 obce heksy w międzyczasie).
+3. **Tartaki > 0** — podaj liczbę per ziarno. Zero = FAIL tej rundy.
+4. **Wyrąb faktycznie się dzieje** przy rzece — dziś `wyrab` wywołany **0 razy**
+   na 5 ziarnach. Podaj liczbę wyrębów i farm powstałych po wyrębie.
+5. **Trzoda powstaje** na heksach leśnych z tartakiem — liczba per ziarno, nie zero.
+6. **Priorytet rzek widoczny**: udział farm przy rzece w ogóle farm, PRZED/PO.
+7. `tsc --noEmit` 0; 5 bramek referencyjnych zielonych; **bramki obozu łowieckiego
+   91/0, 88/0, 5/0, 22/0 bez pogorszenia**; `auto-improvements-test` 45/0;
+   `map-improvement-qualify-test` 112/0.
+8. Nowa bramka tematu z dowodem nietautologiczności (mutacja + wynik).
+
+## ZASTANY REGRES — nie Twój, nie naprawiaj
+
+`ai-praca-split-parity-test` **21/1** jest czerwony **na czystym `origin/main`** —
+zweryfikowane przez Evaluatora na `d0de8164`. Zmierz go na bazie i po zmianie,
+podaj obie liczby, **nie pogorsz**. Naprawa to osobny temat.
+
+## ALLOWLISTA RUNDY 2 — zawężona
+
+`gra/src/game/auto-improvements.ts` · `gra/src/game/ai.ts` · `gra/tools/*` · raporty runu.
+
+**NIE ruszać:** `gra/data/**` (reguły terenów to runda 3), `gra/src/map/improvement-build.ts`,
+`gra/src/main.ts`, `gra/src/ui/**`, `dyspozycje/WERSJE.md`, `gra-robocza/**`.
+
+**Uwaga na allowlistę rundy 1:** wskazywała `gra/data/ai-params.json` jako miejsce wag
+wyboru ulepszeń. **Takich wag tam NIE MA** — wybór robi stała lista `AI_IMPROVEMENT_PRIORITY`
+w kodzie. Nie szukaj ich w JSON-ie.
