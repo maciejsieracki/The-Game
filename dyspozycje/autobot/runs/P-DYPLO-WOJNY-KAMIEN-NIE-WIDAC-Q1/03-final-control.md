@@ -254,3 +254,31 @@ i merytorycznie mylący.
 **Nie poprawiam go** — rejestr jest poza moją allowlistą i należy do orkiestratora.
 Zgłaszam jako pozycję do domknięcia razem z decyzją właściciela.
 
+---
+
+## 7. Werdykt wobec znalezisk Z1–Z8
+
+Każde sprawdzone przeze mnie **niezależnie, w źródle**, nie przez przepisanie raportów.
+
+| id | zgłosił | mój werdykt | podstawa |
+|---|---|---|---|
+| **Z1** | Operator | **POTWIERDZAM — dowód źródłowy, nie statystyka** | wyczerpujące przeszukanie `gra/src` po `startCityState`: kasowanie flagi w DOKŁADNIE jednym miejscu (`main.ts:23625`, wchłonięcie dyplomatyczne); obie ścieżki podboju militarnego jej nie zerują |
+| **Z2** | Operator | **POTWIERDZAM, ale przekwalifikowuję** — to nie „rzadko spełniona brama", tylko **tożsamość arytmetyczna**; scala się z Z6 | `main.ts:27615`/`:27647`, `diplomacy.ts:1590-1592`, `:1739`, `:1032`, `:791-798`, `ai.ts:4219-4222`, `:4377-4384` |
+| **Z3** | Operator | **POTWIERDZAM jako wynik POMIAROWY** (nie dowód) — relacja AI↔AI startuje na `20+30 = 50` (`diplomacy.ts:179-180`) przy progu 30; w 111 594 ocenach Operatora nie spadła ani razu. To liczba z przebiegów, więc obowiązuje tylko dla zmierzonych 60 tur | pomiar Operatora + moja weryfikacja stałych |
+| **Z4** | Operator | **POTWIERDZAM — dowód źródłowy** | `main.ts:7753` (`if (declarerId !== 0 && targetId !== 0) return;`); jedyny kanał to sekcja „Wojny znane (wywiad)" w `ui/diplomacyPanel.ts:282-289` |
+| **Z5** | Operator | **POTWIERDZAM CO DO MECHANIZMU, OSŁABIAM CO DO SKALI** — patrz §8 | `main.ts:27746` (`contactedOwners = getDiplomaticContacts()` = zbiór odkryty przez **gracza**), `diplomacy-layers.ts:252-253`, `:265` |
+| **Z6** | Evaluator | **POTWIERDZAM** — odtworzyłem ten dowód niezależnie i wychodzi identycznie, łącznie z minimum `effProgWojnaSila = 0,38` (`warSilaBonus` min `-(0,06+0,04) = -0,10`, `ai.ts:4044-4048`) | jw. |
+| **Z7** | Evaluator | **POTWIERDZAM** | `main.ts:27193` (`_menuCityStateDifficultyVsPlayer === 'hard'`), `:29919-29922` (wprost z trudności gry), `:29902` (domyślnie `'normal'`) |
+| **Z8** | Evaluator | **POTWIERDZAM** | `diplomacy-layers.ts:265` vs komentarz przy `filterDiplomacyCommandsForEstablishedContact` |
+
+**Dokładam własną obserwację Z9 (nowa, nie zgłoszona przez żadną z ról):**
+nawet gdy wojna wymuszona AI↔AI już wybuchnie, **nie ma czym się skończyć**.
+Automatyczny pokój po 2 miastach jest wpięty wyłącznie w przejęcie miasta
+(`main.ts:12473`, `:24039`), a negocjacje pokojowe obsługują tylko `targetId === 0`
+(`main.ts:28195-28206`) — co potwierdza komentarz w samym kodzie (`main.ts:12464-12471`:
+*„dla par AI↔AI to dziś JEDYNA droga zakończenia wojny"*). W przebiegu mutanta
+Evaluatora 3 wojny zaczęte w turach 20–21 **wciąż trwały w turze 46**
+(`warEndings: []`, `warsAtEnd: ["1_15","22_29","8_36"]`). Kontrakt Q3=A
+(„automatyczny pokój po zdobyciu lub utracie 2 miast, 20 tur odpoczynku")
+jest więc dziś **nieosiągalny w praktyce dla par AI↔AI**.
+
