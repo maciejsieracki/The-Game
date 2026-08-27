@@ -1078,6 +1078,18 @@ import {
   restoreStoneForcedWarState,
   type StoneForcedWarPairState,
 } from './game/forced-war-stone';
+import {
+  WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
+  WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  isEligibleForIronForcedWar,
+  isIronEraEntry,
+  pickIronForcedWarTargetId,
+  shouldEndIronForcedWarByCityCount,
+  isRestingFromIronForcedWar,
+  serializeIronForcedWarState,
+  restoreIronForcedWarState,
+  type IronForcedWarPairState,
+} from './game/forced-war-iron';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
@@ -1637,6 +1649,22 @@ async function boot(): Promise<void> {
     const stoneForceWarCycleOwners = new Set<number>();
     const stoneForceWarRestUntilByOwner = new Map<number, number>();
     const stoneForceWarActiveByPairKey = new Map<string, StoneForcedWarPairState>();
+    /**
+     * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: osobny rejestr od Kamienia i Brązu (żadne pole nie
+     * jest współdzielone — mechanizmy trzech epok nie mieszają stanu). Wyzwalacz to AWANS
+     * do epoki Żelaza (wykryty w `syncOwnerEraFromResearch`, `isIronEraEntry`), nie próg
+     * tury: do Żelaza cywilizacje docierają w bardzo różnych turach. Dalej cykl działa
+     * według tych samych reguł odpoczynku, cooldownu pary i progu miast co Brąz.
+     * `pending` NIE jest kasowany przy samej próbie — konsumowany WYŁĄCZNIE przy faktycznym
+     * udanym wypowiedzeniu wojny (poprawka B4 przeniesiona z Brązu), więc owner chwilowo
+     * w innej wojnie / z wszystkimi celami zablokowanymi ponawia próbę w kolejnej turze.
+     * EN: Iron-era forced war registers — separate from Stone and Bronze, triggered by the
+     * era advance into Iron; pending is consumed only on an actual successful declaration.
+     */
+    const ironForceWarPendingOwners = new Set<number>();
+    const ironForceWarCycleOwners = new Set<number>();
+    const ironForceWarRestUntilByOwner = new Map<number, number>();
+    const ironForceWarActiveByPairKey = new Map<string, IronForcedWarPairState>();
 
     const ERA_ID_TO_NUM: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
 
@@ -1701,6 +1729,19 @@ async function boot(): Promise<void> {
         && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
       ) {
         bronzeForceWarPendingOwners.add(ownerId);
+      }
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: awans do epoki Żelaza (3) — TYLKO główne
+      // cywilizacje (miasta-państwa/kopie wykluczone tym samym isOwnerClusterCityState co
+      // w Brązie) — jednorazowy wpis konsumowany w pętli dyplomacji AI. `isIronEraEntry`
+      // (prev < 3 && next >= 3) zamiast sztywnego 2→3: computeMainCivEraFromResearch
+      // awansuje pętlą while, więc jedna synchronizacja może przeskoczyć więcej niż jedną
+      // epokę. EN: Iron(3) era entry, MAJOR civs only — one-shot flag consumed in the AI
+      // diplomacy loop, next to the Bronze/Stone ones.
+      if (
+        isIronEraEntry(prev, next)
+        && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+      ) {
+        ironForceWarPendingOwners.add(ownerId);
       }
       return prev !== next;
     }
@@ -8238,6 +8279,24 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: pokój między tą parą (auto-pokój po progu miast
+     * LUB zwykła negocjacja) kończy ewentualną aktywną wojnę wymuszoną Żelaza — sprząta
+     * stan pary i uzbraja odpoczynek napastnika PRZED szukaniem kolejnego celu. Pary bez
+     * wojny wymuszonej Żelaza: no-op (zero zmiany istniejącego zachowania Kamienia/Brązu).
+     * EN: Iron-era counterpart of the Stone/Bronze peace cleanup; no-op for other pairs.
+     */
+    function cleanupIronForcedWarOnPeace(proposerId: number, responderId: number): void {
+      const ironPairKey = diploPairKey(proposerId, responderId);
+      const ironSt = ironForceWarActiveByPairKey.get(ironPairKey);
+      if (!ironSt) return;
+      ironForceWarActiveByPairKey.delete(ironPairKey);
+      ironForceWarRestUntilByOwner.set(
+        ironSt.attackerId,
+        turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
+      );
+    }
+
+    /**
      * Zawarcie pokoju + blokada DOW na PEACE_TREATY_LOCK_TURNS tur (lub `lockTurnsOverride`,
      * jeśli podane).
      * `lockTurnsOverride` — R-EPOKA-BRAZU-WYMUSZONA-WOJNA: auto-pokój wojny wymuszonej
@@ -8272,6 +8331,8 @@ async function boot(): Promise<void> {
       // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: pokój czyści osobny rejestr Kamienia
       // przed zachowaniem istniejącego cleanupu Brązu.
       cleanupStoneForcedWarOnPeace(proposerId, responderId);
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: osobny rejestr Żelaza, ta sama zasada.
+      cleanupIronForcedWarOnPeace(proposerId, responderId);
       // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: pokój między tą parą (jakkolwiek zawarty — auto-pokój
       // po progu miast LUB zwykła negocjacja AI/gracza) kończy ewentualną aktywną wojnę
       // wymuszoną — sprzątamy stan i uzbrajamy odpoczynek napastnika PRZED szukaniem
@@ -12471,6 +12532,7 @@ async function boot(): Promise<void> {
         // targetId===0), so skipping this hook here means an AI↔AI forced war that never ends.
         maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner);
         maybeResolveStoneForcedWarOnCityCapture(oldOwner, newOwner);
+        maybeResolveIronForcedWarOnCityCapture(oldOwner, newOwner);
         // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: kapitulacja głodowa
         // jest drugim (obok podboju bojowego) wejściem przejęcia miasta. Legacy
         // jednostki z kolejki Pracy nie mogą przejść do nowego właściciela;
@@ -23816,6 +23878,15 @@ async function boot(): Promise<void> {
           stoneForceWarActiveByPairKey.delete(key);
         }
       }
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam sprzątacz dla rejestrów Żelaza.
+      ironForceWarPendingOwners.delete(ownerId);
+      ironForceWarCycleOwners.delete(ownerId);
+      ironForceWarRestUntilByOwner.delete(ownerId);
+      for (const [key, st] of Array.from(ironForceWarActiveByPairKey.entries())) {
+        if (st.attackerId === ownerId || st.targetId === ownerId) {
+          ironForceWarActiveByPairKey.delete(key);
+        }
+      }
 
       for (const key of Array.from(diplomacyRelations.keys())) {
         if (diploPairKeyHasOwner(key, ownerId)) diplomacyRelations.delete(key);
@@ -24078,6 +24149,43 @@ async function boot(): Promise<void> {
       );
     }
 
+    /**
+     * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wspólny punkt rozliczenia przejęcia/utraty miasta
+     * dla wojny wymuszonej Żelaza. Wywoływany z OBU funnel-i zmiany `city.ownerId` w wyniku
+     * wojny (`applyCityCaptureToMap` I `resolveSiegeSurrender`), tak jak mechanizmy Kamienia
+     * i Brązu — bez haka w kapitulacji głodowej wojna wymuszona AI↔AI nigdy by się nie
+     * kończyła (negocjacje pokojowe obsługują wyłącznie targetId===0).
+     * EN: single shared capture/loss counter for the Iron forced-war pair, called from both
+     * places that mutate city.ownerId because of war.
+     */
+    function maybeResolveIronForcedWarOnCityCapture(oldOwner: number, newOwner: number): void {
+      if (oldOwner === newOwner) return;
+      const pairKey = diploPairKey(oldOwner, newOwner);
+      const st = ironForceWarActiveByPairKey.get(pairKey);
+      if (!st) return;
+      if (newOwner === st.attackerId) st.capturedByAttacker++;
+      else if (newOwner === st.targetId) st.capturedByDefender++;
+      else return;
+      if (!shouldEndIronForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
+      if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
+        ironForceWarActiveByPairKey.delete(pairKey);
+        ironForceWarRestUntilByOwner.set(
+          st.attackerId,
+          turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
+        );
+        return;
+      }
+      console.log(
+        `[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: auto-pokój AI${st.attackerId}`
+        + `↔AI${st.targetId} (zdobyte ${st.capturedByAttacker}/stracone ${st.capturedByDefender})`,
+      );
+      finalizePeaceTreatyBetween(
+        st.attackerId,
+        st.targetId,
+        WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+      );
+    }
+
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
     /** `eliminatedCivLabel`/`eliminatedDetails` — patrz komentarz `runCapitalCapturePlunder`:
      * niepuste WYŁĄCZNIE gdy to przejęcie eliminuje ostatnie miasto danej cywilizacji I
@@ -24115,6 +24223,7 @@ async function boot(): Promise<void> {
       );
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
       maybeResolveStoneForcedWarOnCityCapture(oldOwner, atkOwner);
+      maybeResolveIronForcedWarOnCityCapture(oldOwner, atkOwner);
       // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
       // tickBarbarianCityGarrisons niżej w ticku barbarzyńców): capture NIE czyścił
       // odziedziczonej kolejki budowy ofiary -- budynek W TOKU (front kolejki, np.
@@ -24822,6 +24931,14 @@ async function boot(): Promise<void> {
         stoneForceWarRestUntilByOwner,
         stoneForceWarActiveByPairKey,
       );
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: bez tych 4 pól licznik miast, cykl i odpoczynek
+      // Żelaza zerowałyby się po każdym save/load (patrz restoreGameFromSave niżej).
+      const ironForceWarSave = serializeIronForcedWarState(
+        ironForceWarPendingOwners,
+        ironForceWarCycleOwners,
+        ironForceWarRestUntilByOwner,
+        ironForceWarActiveByPairKey,
+      );
       return {
         wersja: 2,
         tura: turn,
@@ -24939,6 +25056,10 @@ async function boot(): Promise<void> {
           stoneForceWarCycleOwners: stoneForceWarSave.cycleOwners,
           stoneForceWarRestUntilByOwner: stoneForceWarSave.restUntilByOwner,
           stoneForceWarActiveByPairKey: stoneForceWarSave.activeByPairKey,
+          ironForceWarPendingOwners: ironForceWarSave.pendingOwners,
+          ironForceWarCycleOwners: ironForceWarSave.cycleOwners,
+          ironForceWarRestUntilByOwner: ironForceWarSave.restUntilByOwner,
+          ironForceWarActiveByPairKey: ironForceWarSave.activeByPairKey,
           lootedVillageHexKeys: Array.from(lootedVillageHexKeys),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
@@ -28072,6 +28193,7 @@ async function boot(): Promise<void> {
                 // instead of permanently losing its one shot.
                 let bronzeForceWarTargetId: number | undefined;
                 let stoneForceWarTargetId: number | undefined;
+                let ironForceWarTargetId: number | undefined;
                 if (
                   ownerId > 0
                   && !typCityCopyOwners.has(ownerId)
@@ -28208,6 +28330,77 @@ async function boot(): Promise<void> {
                     if (stonePicked != null) stoneForceWarTargetId = stonePicked;
                   }
                 }
+                // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wymuszona wojna głównej cywilizacji
+                // z sąsiadem terytorialnym — (a) jednorazowo przy AWANSIE do Żelaza
+                // (ironForceWarPendingOwners, ustawione w syncOwnerEraFromResearch przez
+                // isIronEraEntry), (b) cyklicznie po odpoczynku od poprzedniej wojny
+                // wymuszonej Żelaza. Struktura 1:1 jak Brąz. Gracz (ownerId 0) i
+                // miasta-państwa/kopie/barbarzyńcy są wykluczeni PO OBU STRONACH: napastnik
+                // przez `ownerId > 0` + `isOwnerClusterCityState(ownerId, …)` tutaj, cel
+                // przez `oid > 0` + `isOwnerClusterCityState(oid, …)` w puli kandydatów.
+                // `wasPending` jest TYLKO ODCZYTEM — pending konsumuje dopiero faktyczny
+                // sukces w bloku wypowiedz_wojne niżej.
+                // EN: Iron-era forced war — one-shot on the Iron advance, then cyclic after
+                // rest. Player and city-states excluded on BOTH sides.
+                if (
+                  ownerId > 0
+                  && !typCityCopyOwners.has(ownerId)
+                  && !isBarbarian(ownerId)
+                  && !eliminatedOwners.has(ownerId)
+                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+                ) {
+                  const wasPending = ironForceWarPendingOwners.has(ownerId);
+                  const alreadyAtWarAnyRole = countActiveWarsForOwner(ownerId) > 0;
+                  const hasActiveForcedWarAsAttacker = [...ironForceWarActiveByPairKey.values()]
+                    .some(st => st.attackerId === ownerId);
+                  const searchingAfterRest = !wasPending
+                    && ironForceWarCycleOwners.has(ownerId)
+                    && !hasActiveForcedWarAsAttacker
+                    && !alreadyAtWarAnyRole
+                    && !isRestingFromIronForcedWar(
+                      turn,
+                      ironForceWarRestUntilByOwner.get(ownerId),
+                    );
+                  const shouldSearch = wasPending
+                    ? isEligibleForIronForcedWar({
+                      isMainAiCiv: true,
+                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                    })
+                    : searchingAfterRest;
+                  if (shouldSearch) {
+                    const refCity = cities.find(c => c.ownerId === ownerId);
+                    const ironCandidates = aiOwnerList
+                      .filter(oid =>
+                        oid !== ownerId
+                        && oid > 0
+                        && !typCityCopyOwners.has(oid)
+                        && !isBarbarian(oid)
+                        && !eliminatedOwners.has(oid)
+                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
+                      )
+                      .map(oid => {
+                        const c = cities.find(cc => cc.ownerId === oid);
+                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
+                      })
+                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
+                    const ironBlockedOwnerIds = new Set(
+                      ironCandidates
+                        .filter(c =>
+                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
+                          || isPeaceLockedBetween(ownerId, c.ownerId)
+                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
+                        )
+                        .map(c => c.ownerId),
+                    );
+                    const ironPicked = pickIronForcedWarTargetId(
+                      ironCandidates,
+                      refCity ? { q: refCity.q, r: refCity.r } : undefined,
+                      hexDistance,
+                      { blockedOwnerIds: ironBlockedOwnerIds },
+                    );
+                    if (ironPicked != null) ironForceWarTargetId = ironPicked;
+                  }
+                }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
                   relacje: relacjeDip,
@@ -28226,6 +28419,7 @@ async function boot(): Promise<void> {
                   bronzeForceWarTargetId,
                 };
                 diploInp.stoneForceWarTargetId = stoneForceWarTargetId;
+                diploInp.ironForceWarTargetId = ironForceWarTargetId;
                 const dipCmdsRaw = decideAIDiplomacy(
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
                   effectiveGameDifficultyForOwner(ownerId),
@@ -28268,6 +28462,15 @@ async function boot(): Promise<void> {
                       ) {
                         continue;
                       }
+                      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam ostatni guard sojuszu
+                      // co dla Kamienia — wymuszona wojna Żelaza nie zrywa własnego sojuszu.
+                      if (
+                        ironForceWarTargetId != null
+                        && targetId === ironForceWarTargetId
+                        && allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null
+                      ) {
+                        continue;
+                      }
                       chargeWarDeclarationCredibility(ownerId, targetId);
                       breakTreatiesOnWar(ownerId, targetId, false);
                       applyAllianceObligationsOnWar(ownerId, targetId);
@@ -28306,6 +28509,19 @@ async function boot(): Promise<void> {
                         stoneForceWarPendingOwners.delete(ownerId);
                         console.log(
                           `[Dyplomacja] R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: AI${ownerId} `
+                          + `wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
+                        );
+                      }
+                      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: analogiczny wpis wyłącznie dla
+                      // komendy wybranego celu Żelaza. Nie dotyka stanu Kamienia ani Brązu.
+                      if (ironForceWarTargetId != null && targetId === ironForceWarTargetId) {
+                        ironForceWarActiveByPairKey.set(diploPairKey(ownerId, targetId), {
+                          attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+                        });
+                        ironForceWarCycleOwners.add(ownerId);
+                        ironForceWarPendingOwners.delete(ownerId);
+                        console.log(
+                          `[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI${ownerId} `
                           + `wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
                         );
                       }
@@ -30679,6 +30895,12 @@ async function boot(): Promise<void> {
       stoneForceWarCycleOwners.clear();
       stoneForceWarRestUntilByOwner.clear();
       stoneForceWarActiveByPairKey.clear();
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: nowa gra bez przeładowania strony nie może
+      // dziedziczyć rejestrów Żelaza z poprzedniej rozgrywki (ownerId są reużywane).
+      ironForceWarPendingOwners.clear();
+      ironForceWarCycleOwners.clear();
+      ironForceWarRestUntilByOwner.clear();
+      ironForceWarActiveByPairKey.clear();
       barbCamps = [];
       clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
@@ -31968,6 +32190,28 @@ async function boot(): Promise<void> {
       stoneForceWarActiveByPairKey.clear();
       for (const [key, st] of stoneForceWarRestored.activeByPairKey) {
         stoneForceWarActiveByPairKey.set(key, st);
+      }
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: odtworzenie CZYSTĄ funkcją (forced-war-iron.ts).
+      // Brak `saved.meta?.ironForceWar*` (zapis sprzed tego mechanizmu) daje bezpieczny
+      // pusty stan — mechanizm po prostu nieaktywny dla tej gry, nie wyjątek.
+      const ironForceWarRestored = restoreIronForcedWarState({
+        pendingOwners: saved.meta?.ironForceWarPendingOwners as number[] | undefined,
+        cycleOwners: saved.meta?.ironForceWarCycleOwners as number[] | undefined,
+        restUntilByOwner: saved.meta?.ironForceWarRestUntilByOwner as Array<[number, number]> | undefined,
+        activeByPairKey: saved.meta?.ironForceWarActiveByPairKey as
+          Array<[string, IronForcedWarPairState]> | undefined,
+      });
+      ironForceWarPendingOwners.clear();
+      for (const oid of ironForceWarRestored.pendingOwners) ironForceWarPendingOwners.add(oid);
+      ironForceWarCycleOwners.clear();
+      for (const oid of ironForceWarRestored.cycleOwners) ironForceWarCycleOwners.add(oid);
+      ironForceWarRestUntilByOwner.clear();
+      for (const [oid, t] of ironForceWarRestored.restUntilByOwner) {
+        ironForceWarRestUntilByOwner.set(oid, t);
+      }
+      ironForceWarActiveByPairKey.clear();
+      for (const [key, st] of ironForceWarRestored.activeByPairKey) {
+        ironForceWarActiveByPairKey.set(key, st);
       }
       // Audyt #13: reaplikuj zlupienie wiosek na (ewentualnie świeżo zregenerowanej
       // z seeda) mapie -- generator/placeVillages zawsze stawia je jako istnieje=true.
