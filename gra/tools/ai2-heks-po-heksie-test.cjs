@@ -35,8 +35,9 @@ const ENTRY = path.resolve(__dirname, '.ai2-heks-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.ai2-heks-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
-export { pickAutoImprovements, AI_IMPROVEMENT_PRIORITY } from ${JSON.stringify(SRC + '/game/auto-improvements')};
+export { pickAutoImprovements, AI_IMPROVEMENT_PRIORITY, ZERO_YIELD_IMPROVEMENTS, JEDEN_NA_ILU_OBYWATELI } from ${JSON.stringify(SRC + '/game/auto-improvements')};
 export { decideAITurn } from ${JSON.stringify(SRC + '/game/ai')};
+export { tileYield } from ${JSON.stringify(SRC + '/game/economy')};
 `, 'utf8');
 esbuild.buildSync({
   entryPoints: [ENTRY], bundle: true, platform: 'node', format: 'cjs', target: 'node18',
@@ -203,6 +204,150 @@ console.log('F. straznik tekstowy main.ts — konfiguracja wywolania pickera na 
     'main.ts (AI GRACZA): profil (`getFocus`) i filtr obrabianych heksow (`getOnlyWorked`) nadal przekazywane');
   ok(!/maxItemsPerCity/.test(blok),
     'main.ts (AI GRACZA): brak `maxItemsPerCity` — throttle 1/ture jest WYLACZNIE mechanizmem AI cywilizacji');
+}
+
+// ===========================================================================
+// RUNDA 3 — wariant W-B (decyzja wlasciciela „domykaj tylko to, co daje plon")
+//           oraz wyrab na heksach rzeka+las (GOAL tematu).
+// ===========================================================================
+
+console.log('G. W-B: zbior ulepszen ZEROPLONOWYCH policzony Z DANYCH, nie z listy w kodzie');
+{
+  // Nietautologicznosc: test NIE czyta stalej i nie porownuje jej z ta sama stala —
+  // liczy delte tileYield dla KAZDEGO klucza z AI_IMPROVEMENT_PRIORITY na czterech
+  // roznych heksach (laka/rownina, z rzeka i bez, pod lasem i bez) i buduje zbior kluczy
+  // o delcie 0/0/0/0 WSZEDZIE. Ten zbior musi byc DOKLADNIE rowny ZERO_YIELD_IMPROVEMENTS.
+  const bazy = [
+    { terenBazowy: 'laka', nakladka: 'brak', maRzeke: false },
+    { terenBazowy: 'laka', nakladka: 'brak', maRzeke: true },
+    { terenBazowy: 'rownina', nakladka: 'las', maRzeke: false },
+    { terenBazowy: 'wzgorza', nakladka: 'brak', maRzeke: true },
+  ];
+  const zeroweZDanych = new Set();
+  for (const key of M.AI_IMPROVEMENT_PRIORITY) {
+    if (key === 'wyrab') continue; // wyrab to akcja (usuwa las), nie warstwa plonowa heksa
+    let wszedzieZero = true;
+    for (const b of bazy) {
+      const bez = M.tileYield({ ...b, zloze: null, ulepszeniaKeys: [] });
+      const z = M.tileYield({ ...b, zloze: null, ulepszeniaKeys: [key] });
+      const d = ['zywnosc', 'praca', 'handel', 'drewno']
+        .reduce((n, k) => n + Math.abs((z[k] || 0) - (bez[k] || 0)), 0);
+      if (d !== 0) { wszedzieZero = false; break; }
+    }
+    if (wszedzieZero) zeroweZDanych.add(key);
+  }
+  const wStalej = [...M.ZERO_YIELD_IMPROVEMENTS].sort().join(',');
+  const wDanych = [...zeroweZDanych].sort().join(',');
+  ok(wDanych.length > 0, `dane plonow daja niepusty zbior kluczy zeroplonowych (${wDanych || 'PUSTY'})`);
+  ok(wStalej === wDanych,
+    `ZERO_YIELD_IMPROVEMENTS = zbior policzony z tileYield (stala: [${wStalej}] vs dane: [${wDanych}])`);
+}
+
+console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10) na miasto');
+{
+  const map = makeMap(14, 14);
+  const city = { id: 'c0', ownerId: 0, q: 6, r: 6, population: 6 };
+  // obrona rusza dopiero po `population` ulepszeniach PLONOWYCH miasta (patrz
+  // `plonoweWPromieniu` w pickerze) — odtwarzamy ten stan wprost, zamiast przebiegac
+  // 6 tur: to samo wejscie, ktore dostalby picker w turze 7.
+  const placedH = new Map([
+    ['5,6', ['farma']], ['6,5', ['farma']], ['7,6', ['farma']],
+    ['6,7', ['farma']], ['5,7', ['farma']], ['7,5', ['farma']],
+  ]);
+  const picks = M.pickAutoImprovements({
+    cities: [city], ownerId: 0, map,
+    territoryNodes: territory(6, 6, 3, 0, 'c0', map),
+    placedImprovements: placedH,
+    pracaAvailable: 100000, unlockedTechs: TECHS,
+    pracaBudgetPercent: 100, maxItemsPerCity: 14, skipWyrab: true, playerEra: 3,
+    priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
+  });
+  const cap = Math.max(1, Math.ceil(city.population / M.JEDEN_NA_ILU_OBYWATELI));
+  const zerowe = picks.filter(p => M.ZERO_YIELD_IMPROVEMENTS.has(p.key));
+  const plonowe = picks.filter(p => !M.ZERO_YIELD_IMPROVEMENTS.has(p.key));
+  ok(zerowe.length > 0 && zerowe.length <= 2 * cap,
+    `ulepszen zeroplonowych 1..${2 * cap} na miasto (jest ${zerowe.length}: ${zerowe.map(p => p.key).join(',')})`);
+  for (const k of M.ZERO_YIELD_IMPROVEMENTS) {
+    ok(picks.filter(p => p.key === k).length <= cap,
+      `pulap ceil(pop/${M.JEDEN_NA_ILU_OBYWATELI})=${cap} dotrzymany dla ${k} (jest ${picks.filter(p => p.key === k).length})`);
+  }
+  // heks, ktory automat DOMYKA plonowo, nie dostaje ulepszenia zeroplonowego
+  const hexOf = p => `${p.q},${p.r}`;
+  const heksDomykany = plonowe.length ? hexOf(plonowe[0]) : null;
+  ok(heksDomykany !== null && !zerowe.some(p => hexOf(p) === heksDomykany),
+    `heks domykany plonowo (${heksDomykany}) nie dostal posterunku ani fortu`);
+  // obrona stoi na GRANICY zasiegu miasta, nie w srodku
+  const dist = p => (Math.abs(p.q - city.q) + Math.abs(p.r - city.r) + Math.abs((p.q - city.q) + (p.r - city.r))) / 2;
+  const najdalszyPlonowy = plonowe.length ? Math.max(...plonowe.map(dist)) : 0;
+  ok(zerowe.length > 0 && zerowe.every(p => dist(p) >= najdalszyPlonowy),
+    `obrona stoi na GRANICY zasiegu miasta — dalej (${zerowe.map(dist).join(',') || 'brak'}) niz najdalsza praca na plon (${najdalszyPlonowy})`);
+}
+
+console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (GOAL tematu)');
+{
+  const map = makeMap(16, 16, { nakladka: 'las', riverAt: [[7, 5], [7, 6], [7, 7], [7, 8]] });
+  const cities = [{ id: 'c0', ownerId: 3, q: 7, r: 7, name: 'A', population: 6 }];
+  const tn = territory(7, 7, 3, 3, 'c0', map);
+  const placed = new Map();
+  const rzeki = new Set(['7,5', '7,6', '7,7', '7,8']);
+  const slad = [];
+  for (let t = 0; t < 30; t++) {
+    const cmds = M.decideAITurn(3, [], cities, map, { units: [], buildings: [], aiParams: {}, terrainYields: { terrain_types: [] } }, {
+      civType: 'grecy', poziomTrudnosci: 2, defensiveCopy: false, cityBuildings: {},
+      territoryNodes: tn, placedImprovements: placed, improvementTechs: TECHS,
+      pracaAvailable: 100000, civEra: 3,
+    }).filter(c => c.type === 'buildImprovement');
+    for (const c of cmds) {
+      const hk = `${c.q},${c.r}`;
+      slad.push({ t, hk, key: c.key });
+      if (c.key === 'wyrab') { map.hexes[hk].nakladka = 'brak'; continue; }
+      placed.set(hk, [...(placed.get(hk) ?? []), c.key]);
+    }
+  }
+  const wyreby = slad.filter(e => e.key === 'wyrab');
+  ok(wyreby.length > 0, `decideAITurn wydal rozkaz \`wyrab\` w 30 turach (${wyreby.length} szt.)`);
+  ok(wyreby.length > 0 && rzeki.has(wyreby[0].hk),
+    `PIERWSZY wyrab trafia na heks Z RZEKA (${wyreby.length ? wyreby[0].hk : 'brak'})`);
+  // J — farma PO wyrebie na tym samym heksie
+  const wyrabTura = new Map();
+  for (const e of wyreby) if (!wyrabTura.has(e.hk)) wyrabTura.set(e.hk, e.t);
+  const farmyPo = slad.filter(e => e.key === 'farma' && wyrabTura.has(e.hk) && e.t > wyrabTura.get(e.hk));
+  ok(farmyPo.length > 0,
+    `farma powstaje PO wyrebie na tym samym heksie (${farmyPo.length} szt., np. ${farmyPo.length ? farmyPo[0].hk + ' @t' + farmyPo[0].t : '-'})`);
+  // minimum lesne miasta: tartak i oboz nadal powstaja mimo wycinki
+  const tartaki = slad.filter(e => e.key === 'tartak').length;
+  const obozy = slad.filter(e => e.key === 'oboz_lowiecki').length;
+  ok(tartaki > 0 && obozy > 0,
+    `minimum lesne miasta dotrzymane mimo wycinki: tartak ${tartaki}, oboz ${obozy}`);
+  // heks z tartakiem/obozem nigdy nie idzie pod topor
+  const zTartakiem = new Set(slad.filter(e => e.key === 'tartak' || e.key === 'oboz_lowiecki').map(e => e.hk));
+  ok(!wyreby.some(e => zTartakiem.has(e.hk)),
+    'zaden heks z tartakiem albo obozem nie zostal wyciety');
+  // K — obrona nadal powstaje przez decideAITurn, w granicach pulapu
+  const post = slad.filter(e => e.key === 'posterunek').length;
+  const fort = slad.filter(e => e.key === 'fort').length;
+  const cap = Math.max(1, Math.ceil(6 / M.JEDEN_NA_ILU_OBYWATELI));
+  ok(post > 0 && fort > 0, `posterunek i fort NADAL powstaja poza sekwencja domykania (posterunek ${post}, fort ${fort})`);
+  ok(post <= cap && fort <= cap, `... i nie przekraczaja pulapu ${cap} na miasto`);
+}
+
+console.log('L. sciezka AI GRACZA: silnik wycinki jest WSPOLNY — blokuje ja wylacznie `skipWyrab` z main.ts');
+{
+  const map = makeMap(14, 14, { nakladka: 'las', riverAt: [[6, 5], [6, 6], [6, 7]] });
+  const city = { id: 'c0', ownerId: 0, q: 6, r: 6, population: 6, ulepszeniaFocus: 'zrownowazone' };
+  const wspolne = {
+    cities: [city], ownerId: 0, map,
+    territoryNodes: territory(6, 6, 3, 0, 'c0', map),
+    pracaAvailable: 100000, unlockedTechs: TECHS,
+    pracaBudgetPercent: 100, maxItemsPerCity: 40, playerEra: 3,
+  };
+  const placed = new Map([['6,6', ['tartak']], ['6,5', ['oboz_lowiecki']]]);
+  const zSkip = M.pickAutoImprovements({ ...wspolne, placedImprovements: new Map(placed), skipWyrab: true });
+  const bezSkip = M.pickAutoImprovements({ ...wspolne, placedImprovements: new Map(placed), skipWyrab: false });
+  ok(zSkip.every(p => p.key !== 'wyrab'),
+    `skipWyrab: true (konfiguracja main.ts) -> zero wyrebow (${zSkip.filter(p => p.key === 'wyrab').length})`);
+  ok(bezSkip.some(p => p.key === 'wyrab'),
+    `ten sam picker przy skipWyrab: false -> wyrab jest (${bezSkip.filter(p => p.key === 'wyrab').length} szt.)`);
 }
 
 console.log(`\nai2-heks-po-heksie-test: ${passed} passed, ${failed} failed`);

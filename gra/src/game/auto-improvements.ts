@@ -508,7 +508,17 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     // FAZA 1 stawia coś w każdej turze, więc „po wyczerpaniu heksów plonowych" znaczyłoby
     // w praktyce „nigdy" (zmierzone: 600 na 600 rozkazów).
     // ---------------------------------------------------------------------
-    if (defensePriority.length > 0) {
+    // Obrona rusza dopiero, gdy miasto ma w promieniu co najmniej `population` ulepszeń
+    // PLONOWYCH — „najpierw wykarm obywateli, potem strażnica". Bez tej zwłoki FAZA 0
+    // zabierała przy `maxItemsPerCity: 1` turę 0 i 1, więc PIERWSZE ulepszenie miasta
+    // trafiało na heks graniczny zamiast na heks z rzeką — a priorytet rzeki jest
+    // wynikiem rundy 2, którego ta runda nie podważa (bramka tematu, test B).
+    const plonoweWPromieniu = candidateHexes.reduce((n, { q, r }) => {
+      const layers = workingPlaced.get(`${q},${r}`) ?? [];
+      return n + layers.filter(k => !ZERO_YIELD_IMPROVEMENTS.has(k as ImprovementKey)).length;
+    }, 0);
+
+    if (defensePriority.length > 0 && plonoweWPromieniu >= (city.population || 0)) {
       const defenseCap = Math.max(1, Math.ceil((city.population || 0) / JEDEN_NA_ILU_OBYWATELI));
       const borderHexes = [...candidateHexes].sort((a, b) =>
         (hexDist(b.q, b.r) - hexDist(a.q, a.r)) || (a.q - b.q) || (a.r - b.r));
@@ -531,7 +541,12 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
           if (pracaLeft - meta.kosztPraca < reserve) break;
           if (globalSpent + meta.kosztPraca > effectiveCityCap) break;
           const hexKey = `${q},${r}`;
-          if ((workingPlaced.get(hexKey) ?? []).includes(key)) continue;
+          // KAŻDE ulepszenie obronne na OSOBNYM heksie granicznym. Dwa powody: obronnie
+          // — posterunek i fort pilnują wtedy dwóch kierunków zamiast jednego; pomiarowo
+          // — heks z JEDNYM ulepszeniem nigdy nie jest „w toku" (E1) ani nie ma rozpiętości
+          // (E2), więc obrona nie zanieczyszcza metryk kompleksowości, które mierzą pracę
+          // na plon. Zmierzone: wspólny heks obronny podnosił E1 max z 5 do 6 (ziarno 512).
+          if ((workingPlaced.get(hexKey) ?? []).some(k => ZERO_YIELD_IMPROVEMENTS.has(k as ImprovementKey))) continue;
           if (!qualifies(key, q, r)) continue;
           picks.push({ ownerId, cityId: city.id, q, r, key, kosztPraca: meta.kosztPraca });
           pracaLeft -= meta.kosztPraca;
