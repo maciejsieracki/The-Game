@@ -197,6 +197,27 @@ const PARAMS_HOOK = `
 (globalThis as any).__warAuditBuildParams = function () { return buildParams(); };
 `;
 
+/**
+ * MUTANT M1 (diagnostyka przyczynowa, WOJNY_AUDYT_MUTANT=1) — dowód NIETAUTOLOGICZNOŚCI.
+ * Usuwa TRZECIĄ gałąź klasyfikatora `isOwnerClusterCityState` (`cities.some(c => c.ownerId
+ * === ownerId && c.startCityState)`), czyli dokładnie tę, która po przejęciu miasta byłego
+ * miasta-państwa trwale klasyfikuje główną cywilizację AI jako miasto-państwo. Jeśli
+ * hipoteza Z1 jest prawdziwa, przebieg mutanta MUSI wyprodukować wojny wymuszone Kamienia
+ * tam, gdzie przebieg bazowy dał zero. Jeśli mutant też da zero — mój pomiar mierzy własny
+ * harness, nie grę, i wniosek Z1 jest nieuprawniony.
+ * Mutacja żyje WYŁĄCZNIE w pamięci buildu. Plik `src/game/display-names.ts` jest nietknięty.
+ */
+const MUTANT_M1: Injection = {
+  id: 'mutant-m1-startCityState-branch',
+  file: 'src/game/display-names.ts',
+  anchor: `  if (opts?.cities?.some(c => c.ownerId === ownerId && c.startCityState)) return true;`,
+  after: false,
+  // Gałąź startCityState jest OSTATNIA przed `return false`, więc wstawiony przed nią
+  // `return false` jest dokładnym równoważnikiem jej usunięcia.
+  code: `  // [MUTANT M1] gałąź startCityState wyłączona — patrz wojny-kamien-audyt.vite.config.ts
+  return false;`,
+};
+
 const INJECTIONS: Injection[] = [
   {
     id: 'ai-gate-recorder',
@@ -229,6 +250,7 @@ const INJECTIONS: Injection[] = [
     after: true,
     code: DRIVER_HOOK,
   },
+  ...(process.env.WOJNY_AUDYT_MUTANT === '1' ? [MUTANT_M1] : []),
   {
     id: 'newgameflow-params',
     file: 'src/ui/newGameFlow.ts',
