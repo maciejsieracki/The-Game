@@ -79,12 +79,12 @@ PRZED, 5 ziaren x 40 tur, 120 ulepszen na ziarno:
 
 | ziarno | E1 max | E1 srednia | E2 heksow ≥2 ulepszen | E2 srednia rozpietosc | E2 srednio obcych heksow w miedzyczasie | metryka Operatora |
 |---|---|---|---|---|---|---|
-| 7 | 42 | 22,3 | 51 | 17,6 tur | 41,5 | 68/68 |
+| 7 | 40 | 22,4 | 52 | 17,3 tur | 42,4 | 68/68 |
 | 99 | 47 | 27,5 | 56 | 19,6 tur | 49,2 | 64/64 |
 | 512 | **50** | 25,7 | 54 | 19,0 tur | 46,7 | 66/66 |
 | 4242 | 35 | 19,1 | 48 | 16,0 tur | 37,6 | 72/72 |
 | 1337 | 41 | 23,4 | 52 | 18,0 tur | 42,9 | 68/68 |
-| **RAZEM** | **max 50** | — | 261 | ~18 tur | ~44 | **338/338** |
+| **RAZEM** | **max 50** | — | 262 | ~18,0 tur | ~43,8 | **338/338** |
 
 **Skarga wlasciciela potwierdzona liczbowo i BEZ degeneracji: AI trzyma otwartych srednio
 19–27 heksow naraz, szczytowo 50 — nie 15. Heks z dwoma ulepszeniami czeka srednio 18 tur,
@@ -152,7 +152,7 @@ Miasta pop 6 → limit `ceil(6/10) = 1` tartaku i 1 obozu na miasto.
 
 | ziarno | c0 (tartak/oboz) | c1 | c2 | limit |
 |---|---|---|---|---|
-| 7 | 0 / 12 | 0 / 12 | 0 / 8 | 1 / 1 |
+| 7 | 0 / 13 | 0 / 12 | 0 / 5 | 1 / 1 |
 | 99 | 0 / **18** | 0 / 9 | 0 / 3 | 1 / 1 |
 | 512 | 0 / 13 | 0 / 14 | 0 / 12 | 1 / 1 |
 | 4242 | 0 / 11 | 0 / 11 | 0 / 9 | 1 / 1 |
@@ -197,6 +197,7 @@ Moje ziarna, 40 tur: oboz **163** / pastwiska **103** (7: 30/23 · 99: 30/26 · 
 **Kontrola krzyzowa na wspolnym ziarnie 1337:** ja `oboz=33 pastwiska=20 farmy_przy_rzece=17`
 — **identycznie** jak Operator (33 / 20 / 17). Harness i liczby Operatora sa reprodukowalne.
 
+Heksy z rzeka w terytorium / tkniete przez AI / z farma: 7: 16/16/15 · 99: 14/14/14 · 512: 0/0/0 · 4242: 21/18/18 · 1337: 20/17/17.
 Ziarno 512 ma **0 heksow z rzeka w terytorium** — temat jest silnie zalezny od ziarna;
 kryterium 2 („farmy przy rzece maja wzrosnac") wymaga ziaren z rzekami w zasiegu miast.
 
