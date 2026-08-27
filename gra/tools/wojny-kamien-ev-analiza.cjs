@@ -85,6 +85,24 @@ for (const f of list) {
   S.mainAiCitiesAtFlip = cityCountAtFlip;
   S.mainAiStillNotCsAtEnd = last.owners.filter(o => mainAi.includes(o.o) && !o.isCS && !o.elim).map(o => o.o);
 
+  // --- 3b. KONSOLIDACJA KLASTROW (hipoteza wlasciciela: "najpierw przejmuja swoje MP") ---
+  // Liczba wlascicieli posiadajacych choc jedno miasto ze znacznikiem startCityState.
+  const csOwnersSeries = snaps.map(s2 => ({
+    t: s2.t,
+    csOwners: s2.owners.filter(o => o.csCities > 0).length,
+    origCsOwners: s2.owners.filter(o => o.csCities > 0 && !mainAi.includes(o.o)).length,
+  }));
+  let stabilizedAt = null;
+  for (let i = 0; i < csOwnersSeries.length; i++) {
+    const v = csOwnersSeries[i].origCsOwners;
+    if (csOwnersSeries.slice(i).every(x => x.origCsOwners === v)) { stabilizedAt = csOwnersSeries[i].t; break; }
+  }
+  S.konsolidacja = { seria: csOwnersSeries, stabilizacjaOdTury: stabilizedAt,
+    origCsStart: csOwnersSeries[0].origCsOwners, origCsKoniec: csOwnersSeries[csOwnersSeries.length - 1].origCsOwners };
+
+  // --- 3c. WOJNY WG `countActiveWarsForOwner` (druga, niezalezna miara od macierzy) ---
+  S.maxActiveWarsAnyOwner = Math.max(...snaps.map(s2 => Math.max(0, ...s2.owners.map(o => o.wars))));
+
   // --- 4. BRAMA AI -> GRACZ (od strony STANU: respekt = round(100*rw), score = zaufanie+respekt) ---
   const rws = []; let nObs = 0, nRwOverProg = 0, nScoreUnder30 = 0, nBoth = 0;
   let minScoreMinusRespekt = Infinity;
@@ -157,6 +175,10 @@ for (const f of list) {
     + `Nadal NIE-miasto-panstwo na koniec: ${S.mainAiStillNotCsAtEnd.length} (${S.mainAiStillNotCsAtEnd.join(', ') || 'brak'}).`);
   out.push('\n| owner | tura przeskoku na "miasto-panstwo" | miast w tej turze |\n|---|---|---|');
   for (const o of mainAi) out.push(`| ${o} | ${csFlip[o] == null ? 'nigdy' : csFlip[o]} | ${cityCountAtFlip[o] == null ? '-' : cityCountAtFlip[o]} |`);
+  out.push(`\n**Konsolidacja klastrow:** wlascicieli z miastem \`startCityState\` (bez glownych AI): `
+    + `${S.konsolidacja.origCsStart} → ${S.konsolidacja.origCsKoniec}; stabilizacja od tury `
+    + `${S.konsolidacja.stabilizacjaOdTury == null ? '—' : S.konsolidacja.stabilizacjaOdTury}. `
+    + `Max \`countActiveWarsForOwner\` u dowolnego ownera w calym przebiegu: **${S.maxActiveWarsAnyOwner}**.`);
   out.push(`\n**Brama AI→gracz (ze stanu, tylko AI ODKRYTE przez gracza):** obserwacji ${S.playerGate.obs} `
     + `(pominieto ${S.playerGate.pominietoNieodkrytych} odczytow par z AI nieodkrytym — dla nich silnik nie przelicza respektu); `
     + `rw min/mediana/max = ${S.playerGate.rwMin} / ${S.playerGate.rwMed} / ${S.playerGate.rwMax}; `
