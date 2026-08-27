@@ -18,8 +18,8 @@
       "handel": 3
     },
     "surowiecOdblokowany": null,
-    "teren": "Łąka, Równina; Wzgórza z lasem",
-    "warunek": "ziemia uprawna; DZIAŁA BEZ rzeki (podstawowy); MOŻE na lesie (Las) — bez wyrębu (Maciej 2026-07-21)",
+    "teren": "Łąka, Równina (bez lasu)",
+    "warunek": "ziemia uprawna; DZIAŁA BEZ rzeki (podstawowy); NIE na lesie (Las) na ŻADNYM terenie bazowym — najpierw wyrąb (Maciej 2026-08-27, ECHO: \u201ew lesie można wybudować tylko tartak i ewentualnie obozowisko\u201d); UCHYLA poprzedni zapis \u201eMOŻE na lesie (Las) — bez wyrębu (Maciej 2026-07-21)\u201d, który dopuszczał też Wzgórza z lasem — po tej zmianie farma na Wzgórzach jest niemożliwa całkowicie (świadoma konsekwencja, nie przeoczenie)",
     "koszt_praca": 20,
     "tech": "Rolnictwo",
     "odblokowuje": ""

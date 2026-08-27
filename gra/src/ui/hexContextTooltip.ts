@@ -451,8 +451,11 @@ function listTerrainPossibleImprovements(
     if (active.has(key)) continue;
     if (!isImprovementAllowedForCiv(key, playerCivType)) continue;
     if (!galleryTerrainEligible(key as ImprovementKey, teren)) continue;
-    // Ulepszenia zablokowane pod lasem (irygacja/tarasy — trzeba najpierw wyrąbać);
-    // tartak/wyrąb/glinianka/obóz łowiecki/farma MOGĄ stać na Lesie — wyjątki żyją w tej funkcji.
+    // Ulepszenia zablokowane pod lasem (irygacja/tarasy/farma — trzeba najpierw wyrąbać);
+    // tartak/wyrąb/glinianka/obóz łowiecki MOGĄ stać na Lesie — wyjątki żyją w tej funkcji.
+    // `farma` dołączyła do zablokowanych 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1,
+    // ECHO właściciela uchylające regułę z 2026-07-21) — warunek terenu farmy egzekwuje
+    // niżej `isFarmBaseTerrain`, ta linia jest drugą, niezależną bramką.
     if (isImprovementBlockedOnForest(key, nakladka)) continue;
     if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
     if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
