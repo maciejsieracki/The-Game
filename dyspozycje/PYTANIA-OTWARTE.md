@@ -32031,3 +32031,57 @@ sąsiad terytorialny, bez aktywnej wojny, NAP, blokady pokoju ani sojuszu z
 celem. **Q3 = A:** automatyczny pokój po 2 zdobytych/utraconych miastach,
 20 tur odpoczynku i 20 tur cooldownu na tę samą cywilizację. Kontrakt
 kompletny — gotowy do dispatchu Operatora Luna Medium.
+
+## R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 — ABC po rundzie 1 (2026-08-27)
+
+STATUS: **OTWARTE** — czeka na decyzję właściciela. Runda 2 NIE startuje przed odpowiedzią.
+
+Runda 1 wykonała wyłącznie KROK 1 (pomiar) i **obaliła przesłankę zlecenia liczbami**
+zamiast implementować ją „bo tak kazano". Trzy role zgodne: Operator `DECISION_REQUIRED`,
+Evaluator `PASS-WITH-NOTES`, Final Control `DECISION_REQUIRED` (`GOTOWOŚĆ: NIE`).
+
+### Q1 — wyrąb lasu pod farmę przy rzece jest GORSZY od stanu dzisiejszego
+
+Pomiar `tileYield` na realnym kodzie, delta (wyrąb+farma) − (las+farma), **identyczna
+na każdym terenie**: żywność **+1**, praca **−3**, handel **−2**, drewno **−15/turę**,
+koszt Pracy **+2,5**. Wariant z Drewnem z wyrębu (+25 jednorazowo) zwraca się w mniej
+niż 2 turach straty −15/turę. Odtworzone niezależnie przez Evaluatora co do jednostki.
+Heksów rzeka+Las: 22/44/46 (ziarna 42/1337/2026) — sprawa realna, nie marginalna.
+
+**Pytanie: czy mimo to wycinać?**
+
+### Q2 — sprzeczność „wykarczuj las → farma → potem trzoda"
+
+Ciąg z wyrębem wykonalny na **0 heksów** (po wyrębie nie ma Lasu, a nowa reguła hodowli
+wymaga Lasu + tartaku). **Bez wyrębu** ciąg `tartak → farma → trzoda` działa na
+**100% heksów rzeka+Las** (22/44/46) — tartak nie usuwa lasu, kanon.
+
+**Pytanie: który wariant (W2–W5 w raporcie Operatora)?**
+
+### Q3 — `tartak = 0` wywraca Q2 przed wyborem
+
+**AI nie buduje ANI JEDNEGO tartaku** na żadnym z 5 zmierzonych ziaren, mimo że tartak
+kwalifikuje się na 183 heksach. Każdy wariant Q2 wymaga, żeby AI zaczęło je budować.
+Kontrpomiar Evaluatora: nowa reguła hodowli (Las + tartak) przy zerze tartaków dałaby
+pastwiska **103 → 0**, obozy bez zmian. **Skutek odwrotny do zamierzonego.**
+
+### USTALENIA, KTÓRE NIE WYMAGAJĄ DECYZJI
+
+- **„farmy plus przodek" = `bydlo` („Trzoda")** — potwierdzone, brak lepszego kandydata
+  wśród kluczy; `warunek` wpisu mówi wprost „+ farma lub solo".
+- **Wagi wyboru ulepszeń NIE ISTNIEJĄ w `ai-params.json`.** Wybór robi stała lista
+  `AI_IMPROVEMENT_PRIORITY`, w której hodowla (poz. 1–3) **już bije** obóz (poz. 5).
+  Proporcja 99/56 to **dostępność terenu** (182 pola obozowe vs 102 hodowlane), nie preferencja.
+  Pól pod oba naraz: **0** (obóz wymaga Lasu, hodowla jego braku).
+- **Kompleksowość PRZED: 357/357 heksów tkniętych, 0 domkniętych.** Skarga potwierdzona
+  w skrajnej postaci. **Przyczyna strukturalna: `pickAutoImprovements` (`auto-improvements.ts:402`)
+  iteruje po TYPACH ulepszeń, nie po HEKSACH.** To jedyne, co naprawia skargę — wagi
+  i tereny są wtórne.
+- Ślad czasowy: AI stawia farmę, potem robi ~44 obce heksy, wraca po 14–20 turach.
+  `wyrab` wywołany **0 razy** na 5 ziarnach.
+- **AI buduje ZERO:** tartaków, dróg, posterunków, fortów, wszystkich kopalni, irygacji.
+- Limit „1 obóz na 10 obywateli" przekroczony **3–18×** (miasto pop 6 → limit 1, ma 5–18).
+- Metryka kompleksowości Operatora była **zdegenerowana** (przypięta do 100% z konstrukcji,
+  nie mogła zejść do zera) — Evaluator zastąpił ją E1/E2, korekta obowiązkowa.
+- `ai-praca-split-parity-test` **21/1 — regres ZASTANY na `main`**, zweryfikowany przez
+  Evaluatora na czystym `origin/main` `d0de8164`. Osobny temat.
