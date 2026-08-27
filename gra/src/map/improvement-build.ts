@@ -29,7 +29,6 @@ import {
 import {
   improvementDisplayName,
   improvementKeysForHex,
-  isLivestockImprovementKey,
   normalizeImprovementKey,
 } from '../game/terrain-improvements';
 import { hexHasRoad, isRoadImprovementKey } from './road-movement';
@@ -369,9 +368,28 @@ export function isFarmBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boole
   return FLAT_FARM.has(teren);
 }
 
-/** Hodowla zwierzęca z terrain-improvements.json — zakaz na Nakladka.Las (Maciej 2026-07-29). */
-export function isLivestockImprovementBlockedOnForest(key: string, nakladka: Nakladka): boolean {
-  return nakladka === Nakladka.Las && isLivestockImprovementKey(key);
+/**
+ * Stadnina na nakładce Las — JEDYNA pozostałość zakazu „hodowla nie w lesie"
+ * (Maciej 2026-07-29).
+ *
+ * R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (ECHO właściciela 2026-08-27: „Tak, odwracamy —
+ * wszystkie trzy"): zakaz z 2026-07-29 zostaje COFNIĘTY dla `owce`, `bydlo` i `lama` —
+ * kwalifikują się na heksie z Lasem dokładnie wg własnej reguły terenu bazowego
+ * (Wzgórza dla owiec, Łąka/Równina dla bydła, Wzgórza/Góry dla lamy).
+ *
+ * Dlaczego funkcja nie znika całkowicie, tylko zwęża się do `stadnina`: poprzedni predykat
+ * pytał `isLivestockImprovementKey()`, a ten zwraca `true` także dla `stadnina`
+ * (`terrain-improvements.json`: `stadnina.surowiecOdblokowany === 'kon'`, a `kon` należy do
+ * `LIVESTOCK_SUROWIEC_KEYS`). Stadnina zagarnęła się do zakazu POCHODNĄ definicji, nie
+ * decyzją — i NIE ma jej w ECHO właściciela („wszystkie trzy" = owce, bydło, lama).
+ * Zdjęcie zakazu także ze stadniny byłoby czwartą, niezamówioną zmianą reguły terenu (§14),
+ * i byłoby realnie obserwowalne w rozgrywce: stadnina po imperialnym odblokowaniu `kon`
+ * (`isLivestockUnlockedForPlacement`) nie wymaga już złoża konia na heksie, więc zacząłby ją
+ * przepuszczać każdy zalesiony heks Łąki/Równiny. Zostaje jak było; pytanie „czy stadnina
+ * też ma wejść do lasu" jest zgłoszone właścicielowi osobno.
+ */
+export function isStadninaBlockedOnForest(key: string, nakladka: Nakladka): boolean {
+  return nakladka === Nakladka.Las && key === 'stadnina';
 }
 
 /**
@@ -382,9 +400,17 @@ export function isLivestockImprovementBlockedOnForest(key: string, nakladka: Nak
  * `farma` USUNIĘTA stąd 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1, ECHO właściciela:
  * „w lesie można wybudować tylko tartak i ewentualnie obozowisko") — była tu od 2026-07-21
  * i przeszła do `FOREST_BLOCKED_IMPROVEMENT_KEYS` niżej.
+ *
+ * `owce`/`bydlo`/`lama` DOPISANE 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO
+ * właściciela „Tak, odwracamy — wszystkie trzy", uchyla zakaz z 2026-07-29). Wpis jest tu
+ * jawny, a nie „przez brak w zbiorze zakazanych", żeby ten zbiór pozostał czytelnym kanonem
+ * tego, co wolno postawić w lesie. Zachowanie `isImprovementBlockedOnForest` jest dla tych
+ * trzech kluczy identyczne w obu wariantach (przed dopisaniem wpadały w końcowe
+ * `FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key) === false`).
  */
 const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
   'tartak', 'oboz_lowiecki', 'glinianka',
+  'owce', 'bydlo', 'lama',
 ]);
 
 /**
@@ -407,30 +433,42 @@ export function isImprovementBlockedOnForest(key: string, nakladka: Nakladka): b
   if (nakladka !== Nakladka.Las) return false;
   if (FOREST_COEXIST_IMPROVEMENT_KEYS.has(key)) return false;
   if (key === 'wyrab') return false;
-  if (isLivestockImprovementBlockedOnForest(key, nakladka)) return true;
+  if (isStadninaBlockedOnForest(key, nakladka)) return true;
   return FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key);
 }
 
-/** Podpowiedź przy próbie budowy na lesie (styl istniejących hintów w main.ts). */
+/**
+ * Podpowiedź przy próbie budowy na lesie (styl istniejących hintów w main.ts).
+ *
+ * R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): gałąź „hodowla → postaw obóz
+ * łowiecki" USUNIĘTA. Po cofnięciu zakazu owce/bydło/lama nigdy już nie trafiają do tej
+ * funkcji (`isImprovementBlockedOnForest` zwraca dla nich `false`), więc tekst byłby martwy
+ * i — gorzej — kłamałby, gdyby ktoś zawołał go wprost. Jedyna hodowlana pozostałość to
+ * `stadnina`, dla której wyrąb JEST poprawną radą (po wyrębie kwalifikuje się na
+ * Łące/Równinie), czyli obsługuje ją zdanie ogólne niżej.
+ */
 export function getImprovementForestBlockHint(key: string): string {
   const name = improvementDisplayName(key);
-  if (isLivestockImprovementKey(key)) {
-    return `${name} na lesie zabroniona — postaw ${improvementDisplayName('oboz_lowiecki')}, albo wybierz otwarte pole`;
-  }
   return `${name} na lesie zabroniona — najpierw wyrąb las (Wyrąb w panelu ulepszeń).`;
 }
 
-/** @deprecated alias testów — używaj isLivestockImprovementBlockedOnForest */
-export const isAnimalFarmBlockedOnForest = isLivestockImprovementBlockedOnForest;
-
 /**
- * Owce — solo na otwartym Wzgórzu (bez Las) lub pierwsze pastwisko na złożu owiec (nakładka, nie las).
- * Kanon: nie na lesie (hodowla zwierzęca zablokowana — obóz łowiecki / tartak OK).
+ * Owce — solo na Wzgórzu (otwartym LUB zalesionym) albo pierwsze pastwisko na złożu owiec.
+ *
+ * R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (ECHO właściciela 2026-08-27 „Tak, odwracamy —
+ * wszystkie trzy"): linia `if (nakladka === Nakladka.Las) return false;` USUNIĘTA, a Las
+ * dopisany jawnie jako dozwolona nakładka — sam brak tej linii NIE wystarczał, bo funkcja
+ * kończy się `return nakladka === Nakladka.Brak`, więc Las i tak wypadłby przez ostatni
+ * warunek. Ślad uchylonej reguły z 2026-07-29 („nie na lesie — obóz łowiecki / tartak OK")
+ * zostaje tu świadomie; historia decyzji nie jest wymazywana, tylko zastępowana.
+ *
+ * Reszta reguły BEZ ZMIAN: teren bazowy musi być Wzgórzami, a nakładki inne niż
+ * Brak/Las/ZłożeOwiec (np. złoże gliny, rudy, konia) nadal wykluczają owce.
  */
 export function isOwceBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boolean {
   if (teren !== TerenBazowy.Wzgorza) return false;
   if (nakladka === Nakladka.ZlozeOwiec) return true;
-  if (nakladka === Nakladka.Las) return false;
+  if (nakladka === Nakladka.Las) return true;
   return nakladka === Nakladka.Brak;
 }
 
@@ -528,7 +566,8 @@ function existingAfterSimulatedRemoval(
 }
 
 /**
- * Skutek budowy na heksie z istniejącymi warstwami — null = twarda blokada (np. owce na lesie).
+ * Skutek budowy na heksie z istniejącymi warstwami — null = twarda blokada (np. irygacja na
+ * lesie, obóz łowiecki poza lasem).
  * Nie usuwa farma+irygacja (kanon) — wtedy qualifies() zwraca false bez impactu.
  */
 export function computeImprovementBuildImpact(
@@ -916,9 +955,11 @@ function createQualifier(state: ImprovementBuildState) {
           && inPlayerTerritory(q, r)
           && isRiverAdjacent(q, r);
         break;
+      // R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): `!isLivestockImprovementBlocked
+      // OnForest(key, nakladka)` USUNIĘTE — bydło kwalifikuje się na Łące/Równinie niezależnie
+      // od nakładki Las (ECHO właściciela „Tak, odwracamy — wszystkie trzy").
       case 'bydlo':
         terrainOk = FLAT_FARM.has(teren)
-          && !isLivestockImprovementBlockedOnForest(key, nakladka)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
@@ -929,17 +970,20 @@ function createQualifier(state: ImprovementBuildState) {
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
         break;
+      // R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): jw. — lama kwalifikuje się na
+      // Wzgórzach/Górach niezależnie od nakładki Las (bramka cywilizacji Inków bez zmian).
       case 'lama':
         terrainOk = teren !== TerenBazowy.Pustynia
-          && !isLivestockImprovementBlockedOnForest(key, nakladka)
           && (TERRAIN_ALLOW.lama?.has(teren) ?? false)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
         break;
+      // Stadnina ZOSTAJE zabroniona na lesie — patrz `isStadninaBlockedOnForest`
+      // (poza ECHO właściciela z 2026-08-27, które objęło wyłącznie owce/bydło/lamę).
       case 'stadnina':
         terrainOk = inPlayerTerritory(q, r)
-          && !isLivestockImprovementBlockedOnForest(key, nakladka)
+          && !isStadninaBlockedOnForest(key, nakladka)
           && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && (hex.nakladka === Nakladka.ZlozeKonia
