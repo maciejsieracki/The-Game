@@ -487,3 +487,120 @@ rozdzielenie profili tego wymaga) · `gra/tools/*` · raporty runu.
   rundy 1. Mierz przez prawdziwe ścieżki wejścia obu AI.
 - **ZAKAZ cichego ustalenia strategii z części B.** To projekt do akceptacji właściciela.
 - Każda nowa asercja MUSI czerwienieć po jednej celowanej mutacji.
+
+---
+
+# RUNDA 3 — ECHO właściciela po pomiarze rundy 2 (2026-08-27)
+
+Runda 2 dostarczyła mechanikę i zmierzyła wszystko trzema niezależnymi narzędziami.
+Final Control: `GOTOWOŚĆ DO INTEGRACJI: NIE` — **nie z powodu wady wykonania**, tylko
+dlatego, że gałąź w obecnej postaci JEST wariantem W-A, a wybór wariantu należał do właściciela.
+
+## Wynik rundy 2 — AI CYWILIZACJI, PRZED → PO
+
+| metryka | PRZED | PO |
+|---|---|---|
+| E1 max / średnia | 31 / 17,2 | **3 / 2,3** |
+| E2 rozpiętość / obcych heksów | 23,3 tur / 62,1 | **3,5 tur / 2,1** |
+| tartak | **0** | **69** |
+| kategorie żywność/surowce/infra | 600 / 0 / 0 | **230 / 139 / 231** |
+| farmy przy rzece | 35,0 % | **83,8 %** |
+| plon żywności/turę | 3522 | 2929 (**−16,8 %**) |
+
+Evaluator odtworzył to **inną metodą** (stan mapy vs strumień rozkazów) i **co do sztuki**;
+na własnych ziarnach efekt trzyma. Skarga „15 heksów naraz" jest naprawiona: AI cywilizacji
+trzyma teraz **3 heksy w toku zamiast 31** i wraca do heksa po **3,5 tury zamiast 23,3**.
+
+## ECHO — decyzja właściciela
+
+Przedstawiono trzy warianty. Odpowiedź:
+
+> **W-B: domykaj tylko to, co daje plon.**
+
+Heks uznaje się za domknięty, gdy stoją na nim wszystkie ulepszenia **plonowe**.
+`posterunek` i `fort` **wychodzą z sekwencji domykania** i mają być budowane osobno,
+według potrzeb obronnych.
+
+Uzasadnienie liczbowe: `posterunek` i `fort` mają deltę plonu **0/0/0/0** — zmierzone
+niezależnie przez Operatora i Evaluatora — a zjadają **193/600** (Operator) i **166/600**
+(Evaluator) wszystkich ulepszeń AI cywilizacji. To jest źródło spadku żywności o 16,8 %.
+
+## ZADANIE RUNDY 3
+
+### A. Wdrożyć W-B
+
+Sekwencja domykania heksa obejmuje **wyłącznie ulepszenia o niezerowej delcie plonu**.
+`posterunek` i `fort` budowane osobno, poza domykaniem. **Nie usuwaj ich z gry** — mają
+dalej powstawać tam, gdzie mają sens obronny; zmienia się tylko to, że nie blokują
+domknięcia heksa.
+
+**Kryterium liczbowe:** plon żywności AI cywilizacji ma **odzyskać większość z −16,8 %**,
+przy zachowaniu E1 ≤ 5 i E2 ≤ 6 tur. Podaj obie liczby PRZED (runda 2 = W-A) i PO (W-B).
+Jeśli odzysk jest mniejszy niż połowa — powiedz to wprost, nie naciągaj.
+
+### B. `wyrab` — GOAL tematu WCIĄŻ NIESPEŁNIONY
+
+Final Control zgłosił to jawnie i ma rację: **ID tematu brzmi `WYRAB`, a `wyrab` = 0
+na obu ścieżkach.** Co gorsza, po zmianie rundy 2 stał się **strukturalnie nieosiągalny**
+dla AI cywilizacji: FAZA 2 (`wyrab`) rusza tylko wtedy, gdy FAZA 1 nic nie postawiła,
+a przy `maxItemsPerCity: 1` FAZA 1 stawia coś w **600 na 600** rozkazów.
+
+Decyzja właściciela z Q1 jest wiążąca: **„wycinać mimo to"** — świadomie akceptuje
+gorszy bilans (żywność +1, praca −3, handel −2, drewno −15/turę) na heksach z rzeką.
+
+Zaimplementuj to tak, żeby wyrąb faktycznie się działał na heksach rzeka+las.
+**Kryterium: `wyrab` > 0 na każdym ziarnie, i farmy powstające PO wyrębie > 0.**
+Zero = ten temat nadal nie spełnił własnego GOAL-a.
+
+### C. Do rejestru, NIE naprawiać tutaj (§14)
+
+- **`kopalnia_zlota`** ma najwyższą deltę plonu (+2 praca, +10 handel) i jest
+  **nieobecna** w 21-pozycyjnym `AI_IMPROVEMENT_PRIORITY`. Potwierdzone przez wszystkie
+  trzy role. Osobny temat.
+- **`ULEPSZENIA_FOCUS_ZROWNOWAZONE` to TA SAMA STAŁA** co `AI_IMPROVEMENT_PRIORITY`
+  (`auto-improvements.ts:61`). ECHO właściciela „Zrównoważona ≈ AI cywilizacji" jest więc
+  spełnione **z konstrukcji, nie z wyniku** — podobieństwo rozkładów jest tego skutkiem,
+  nie dowodem. Stan zastany. Do świadomej decyzji: czy tak ma zostać.
+- Zastany regres `ai-praca-split-parity-test` **21/1 na `main`**. Osobny temat.
+
+## USTALENIA RUNDY 2, KTÓRYCH NIE PODWAŻAMY
+
+- **`Zrównoważona` PRZED była kopią profilu `Żywność`** (310/0/5, identyczne 315 ulepszeń
+  i 143 farmy). Odległość TV od AI cywilizacji: PRZED `Żywność` **0,0000**, `Zrównoważona`
+  0,0159 — czyli ECHO właściciela było spełnione **przypadkiem, przez degenerację**.
+  PO: `Zrównoważona` **0,034**, pozostałe profile 0,595–0,758. Profile są teraz realnie rozłączne.
+- **Defekt dróg**, odsłonięty odwróceniem pętli: bez strażnika duplikatu `droga`
+  kwalifikowała się w kółko — **37 sztuk na jednym heksie w 40 tur** (Operator),
+  31 (Evaluator, ziarno 1337). Strażnik jest w kodzie, ma zostać.
+- **BRAK DOWODU** na prawdziwe wejście AI GRACZA (`main.ts` closure `boot()` niebundlowalna) —
+  konfiguracja odtworzona 1:1, drift pinuje strażnik tekstowy. Zgłoszone uczciwie przez
+  Operatora, potwierdzone przez Evaluatora. Zostaje jako dług dowodowy.
+- `maxItemsPerCity: 1` dla AI cywilizacji **nietknięty** — asercja utrzymana.
+
+## Kryteria sukcesu rundy 3
+
+1. **W-B wdrożone**: plon żywności AI cywilizacji odzyskuje większość z −16,8 %,
+   przy E1 ≤ 5 i E2 ≤ 6 tur. Tabela W-A → W-B, min. 5 ziaren × 40 tur.
+2. `posterunek` i `fort` **nadal powstają**, tylko poza sekwencją domykania — liczba per ziarno.
+3. **`wyrab` > 0** na każdym ziarnie; farmy po wyrębie > 0. Rozdzielone: AI gracza / AI cywilizacji.
+4. Rozkład kategorii nadal **niezdegenerowany** (infra ≠ 0).
+5. Bramka tematu ≥ 16 pass, 0 fail; nowe asercje na W-B i na `wyrab`, każda z mutacją.
+6. `tsc` 0; 5 bramek referencyjnych; `auto-improvements` 45/0; `map-improvement-qualify` 112/0;
+   bramki obozu **91/0, 88/0, 5/0, 22/0**; `ai-improvements` 52/0; `ai-jednostki-tylko-zakup` 44/0.
+7. `ai-praca-split-parity-test` **21/1 zastane** — zmierz na bazie i po zmianie, nie pogorsz.
+
+## ALLOWLISTA RUNDY 3
+
+`gra/src/game/auto-improvements.ts` · `gra/tools/*` · raporty runu.
+
+**NIE ruszać:** `gra/src/game/ai.ts`, `gra/src/main.ts`, `gra/data/**`,
+`gra/src/map/improvement-build.ts`, `gra/src/ui/**`, `dyspozycje/WERSJE.md`, `gra-robocza/**`.
+
+## REGUŁA PRZECIW SAMOOSZUKIWANIU
+
+- **ZAKAZ zdania o „AI" bez kwalifikacji „gracza" albo „cywilizacji"** — reguła stała właściciela.
+- **ZAKAZ raportowania odzysku żywności bez liczby.** „Poprawiło się" nie jest wynikiem.
+- **ZAKAZ uznania `wyrab` za zrobiony bez liczby > 0 na każdym ziarnie.** Trzy role rundy 2
+  zgodnie stwierdziły, że jest strukturalnie nieosiągalny — samo „powinno działać" nie wystarczy.
+- Każda nowa asercja MUSI czerwienieć po jednej celowanej mutacji.
+- **outDir unikalny per temat**: `/tmp/civ-dist-airzeki-r3-<rola>`.
