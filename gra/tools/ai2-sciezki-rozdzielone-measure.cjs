@@ -313,8 +313,8 @@ function runPlayer(seed, focus) {
 // ===========================================================================
 function raportSciezki(nazwa, wyniki) {
   console.log(`\n### ${nazwa}`);
-  console.log('ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | tartak | zyw/sur/infra');
-  const agg = { e1max: 0, e1avg: [], e2span: [], e2f: [], kat: { zywnosc: 0, surowce: 0, infra: 0, wyrab: 0, inne: 0 }, tartak: 0, wyrab: 0, farmy: 0, farmyRzeka: 0, razem: 0 };
+  console.log('ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | farmy@POwyrab | posterunek | fort | tartak | zyw/sur/infra | plon zywnosci');
+  const agg = { e1max: 0, e1avg: [], e2span: [], e2f: [], kat: { zywnosc: 0, surowce: 0, infra: 0, wyrab: 0, inne: 0 }, tartak: 0, wyrab: 0, farmy: 0, farmyRzeka: 0, farmyPoWyrebie: 0, razem: 0 };
   for (const w of wyniki) {
     const m = metryki(w.events, TURNS);
     const s = podsumuj(w.events, w.rivers);
@@ -324,9 +324,9 @@ function raportSciezki(nazwa, wyniki) {
     agg.tartak += (s.counts.tartak || 0); agg.wyrab += s.wyrebow;
     agg.counts = agg.counts || {};
     for (const [k, v] of Object.entries(s.counts)) agg.counts[k] = (agg.counts[k] || 0) + v;
-    agg.farmy += s.farmy; agg.farmyRzeka += s.farmyRzeka; agg.razem += s.razem;
+    agg.farmy += s.farmy; agg.farmyRzeka += s.farmyRzeka; agg.farmyPoWyrebie += s.farmyPoWyrebie; agg.razem += s.razem;
     console.log(
-      `${String(w.seed).padStart(6)} | ${String(s.razem).padStart(8)} | ${String(m.e1max).padStart(6)} | ${m.e1avg.toFixed(1).padStart(6)} | ${String(m.e2count).padStart(4)} | ${m.e2span.toFixed(1).padStart(13)} | ${m.e2foreign.toFixed(1).padStart(9)} | ${String(s.farmy).padStart(5)} | ${String(s.farmyRzeka).padStart(11)} | ${String(s.wyrebow).padStart(5)} | ${String(s.counts.tartak || 0).padStart(6)} | ${s.kat.zywnosc}/${s.kat.surowce}/${s.kat.infra}`,
+      `${String(w.seed).padStart(6)} | ${String(s.razem).padStart(8)} | ${String(m.e1max).padStart(6)} | ${m.e1avg.toFixed(1).padStart(6)} | ${String(m.e2count).padStart(4)} | ${m.e2span.toFixed(1).padStart(13)} | ${m.e2foreign.toFixed(1).padStart(9)} | ${String(s.farmy).padStart(5)} | ${String(s.farmyRzeka).padStart(11)} | ${String(s.wyrebow).padStart(5)} | ${String(s.farmyPoWyrebie).padStart(13)} | ${String(s.counts.posterunek || 0).padStart(10)} | ${String(s.counts.fort || 0).padStart(4)} | ${String(s.counts.tartak || 0).padStart(6)} | ${s.kat.zywnosc}/${s.kat.surowce}/${s.kat.infra} | ${String(w.plon.zywnosc).padStart(13)}`,
     );
     if (process.env.AI2_TRACE) {
       for (const wo of m.worst) console.log(`        SLAD ${wo.hk}${w.rivers.has(wo.hk) ? ' [RZEKA]' : ''}: ${wo.slad}  (rozpietosc ${wo.span} tur, obcych ${wo.foreign})`);
@@ -337,7 +337,7 @@ function raportSciezki(nazwa, wyniki) {
     return acc;
   }, { zywnosc: 0, praca: 0, handel: 0, drewno: 0 });
   const avg = a => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
-  console.log(`RAZEM  | ${String(agg.razem).padStart(8)} | ${String(agg.e1max).padStart(6)} | ${avg(agg.e1avg).toFixed(1).padStart(6)} |      | ${avg(agg.e2span).toFixed(1).padStart(13)} | ${avg(agg.e2f).toFixed(1).padStart(9)} | ${String(agg.farmy).padStart(5)} | ${String(agg.farmyRzeka).padStart(11)} | ${String(agg.wyrab).padStart(5)} | ${String(agg.tartak).padStart(6)} | ${agg.kat.zywnosc}/${agg.kat.surowce}/${agg.kat.infra}`);
+  console.log(`RAZEM  | ${String(agg.razem).padStart(8)} | ${String(agg.e1max).padStart(6)} | ${avg(agg.e1avg).toFixed(1).padStart(6)} |      | ${avg(agg.e2span).toFixed(1).padStart(13)} | ${avg(agg.e2f).toFixed(1).padStart(9)} | ${String(agg.farmy).padStart(5)} | ${String(agg.farmyRzeka).padStart(11)} | ${String(agg.wyrab).padStart(5)} | ${String(agg.farmyPoWyrebie).padStart(13)} | ${String((agg.counts||{}).posterunek || 0).padStart(10)} | ${String((agg.counts||{}).fort || 0).padStart(4)} | ${String(agg.tartak).padStart(6)} | ${agg.kat.zywnosc}/${agg.kat.surowce}/${agg.kat.infra} | ${String(plonSum.zywnosc).padStart(13)}`);
   const udzialRzek = agg.farmy ? (100 * agg.farmyRzeka / agg.farmy) : 0;
   console.log(`  udzial farm przy rzece: ${udzialRzek.toFixed(1)}%  ·  rozklad kategorii zyw/sur/infra/wyrab: ${agg.kat.zywnosc}/${agg.kat.surowce}/${agg.kat.infra}/${agg.kat.wyrab}`);
   console.log(`  ROZBICIE PER KLUCZ: ${Object.entries(agg.counts || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
