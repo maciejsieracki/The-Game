@@ -204,9 +204,11 @@ async function main() {
   assert('(0b) afordancja i akcja stoja na TYM SAMYM resolverze (techDoneEventTechName)',
     /function techDoneEventLinkFor[\s\S]{0,200}techDoneEventTechName/.test(mainSrc)
     && /function openTechDoneEventLink[\s\S]{0,200}techDoneEventTechName/.test(mainSrc));
-  assert('(0c) onEventClick pyta rodzine tech-done PRZED rodzinami audytu przekierowan',
-    mainSrc.indexOf('if (openTechDoneEventLink(id)) return;') > 0
-    && mainSrc.indexOf('if (openTechDoneEventLink(id)) return;') < mainSrc.indexOf('if (openSidePanelEventLink(id)) return;'));
+  // Kolejnosc rozstrzygania MUSI byc lustrzana miedzy afordancja a klikiem — inaczej karta
+  // moglaby pokazac skrot jednej rodziny, a klik wykonac akcje drugiej.
+  assert('(0c) kolejnosc rodzin w getEventLink i w onEventClick jest LUSTRZANA (audyt -> tech-done)',
+    /getEventLink: \(ev\) => \(ev\.blocking === true \? null : sidePanelEventLinkFor\(ev\.id\)\) \?\? techDoneEventLinkFor\(ev\.id\),/.test(mainSrc)
+    && mainSrc.indexOf('if (openSidePanelEventLink(id)) return;') < mainSrc.indexOf('if (openTechDoneEventLink(id)) return;'));
   assert('(0d) klik w link krzyzowy karty technologii jest przechwytywany w fazie CAPTURE',
     /wireSideCardLinks[\s\S]{0,1400}\}, true\);/.test(tdnSrc));
   assert('(0e) karta szczegolu montuje sie do wspolnej sceny hosta, nie przez openEntityCard(dialog)',

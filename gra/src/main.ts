@@ -19666,14 +19666,8 @@ async function boot(): Promise<void> {
         // resolver (`techDoneEventLinkFor`, tuż nad tym blokiem) — z TĄ SAMĄ zasadą „jedno
         // źródło dla afordancji i dla akcji", tylko trzymane w `main.ts`, bo pure-moduł
         // `game/side-panel-event-link.ts` jest poza allowlistą tego tematu.
-        getEventLink: (ev) => (ev.blocking === true
-          ? null
-          : (techDoneEventLinkFor(ev.id) ?? sidePanelEventLinkFor(ev.id))),
+        getEventLink: (ev) => (ev.blocking === true ? null : sidePanelEventLinkFor(ev.id)) ?? techDoneEventLinkFor(ev.id),
         onEventClick: (id) => {
-          // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1: karta „Zbadano: <tech>" — TEN SAM resolver,
-          // który wyżej zdecydował o widocznym skrócie „Karta technologii →". Musi iść PRZED
-          // `openSidePanelEventLink`, bo tamten zna wyłącznie rodziny z audytu przekierowań.
-          if (openTechDoneEventLink(id)) return;
           // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skróty kart NIE-blokujących idą przez jedno
           // wspólne rozstrzygnięcie (`sidePanelEventLinkFor`), to samo, które steruje widoczną
           // afordancją na karcie. Obejmuje dawne, rozsypane tu gałęzie `border-march-`,
@@ -19683,6 +19677,11 @@ async function boot(): Promise<void> {
           // EN: non-blocking shortcuts all go through the one resolver that also drives the
           // visible affordance; `false` falls through to the blocking-card branches below.
           if (openSidePanelEventLink(id)) return;
+          // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1: karta „Zbadano: <tech>". Kolejność LUSTRZANA
+          // wobec `getEventLink` wyżej (najpierw rodziny audytu, potem `tech-done-*`) — obie
+          // rodziny mają rozłączne prefiksy, więc kolejność nie zmienia wyniku, ale jej
+          // zgodność jest tym, co gwarantuje, że skrót i klik nie mogą się rozjechać.
+          if (openTechDoneEventLink(id)) return;
           if (id.startsWith('diplo-pend-')) {
             openDiplomacyPendingById(id);
             return;
