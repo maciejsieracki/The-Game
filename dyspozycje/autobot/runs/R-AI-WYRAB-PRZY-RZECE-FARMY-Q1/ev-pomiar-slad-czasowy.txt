@@ -1,0 +1,105 @@
+
+=== EVALUATOR ev · 40 tur · ziarna 7,99,512,4242,1337 · src=/home/user/wt-ev-airzeki/gra/src ===
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=5 terrain=26 landSea=242 relief=246 coast=36 riversMain=814 riversFill=270 forest=7 deposits=19 starts=102 total=1766
+
+--- seed 7 (40 tur, 120 ulepszen) ---
+E1 heksy W TOKU rownolegle: max=40 · srednia=22.4 · na koniec=0
+E2 heksy z >=2 ulepszeniami: 52 · srednia rozpietosc=17.3 tur · srednio obcych heksow w miedzyczasie=42.4
+E3 metryka Operatora: rozgrzebane=68/68 tknietych · bez infrastruktury(droga/fort/posterunek)=55/68
+   trzyma-otwarte (klucz: ile heksow): posterunek:54 fort:54 tartak:31 warzelnia_soli:19 glinianka:11 droga:6 kamieniolom:2 oboz_lowiecki:1 tarasy:1 kopalnia_miedzi:1
+E4 rzeka: heksow z rzeka w terytorium=16 · tknietych przez AI=16 · z farma=15
+   oboz=30 pastwiska=23
+   per miasto (limit ceil(pop6/10)=1): c0[tartak=0 oboz=13 razem=40] c1[tartak=0 oboz=12 razem=40] c2[tartak=0 oboz=5 razem=40]
+   kontrola odwrotna: droga=0 droga_brukowana=0 posterunek=0 fort=0 lodzie_rybackie=14 kopalnia_miedzi=0 kopalnia_zelaza=0 kopalnia_cyny=0 kamieniolom=0 glinianka=0 tartak=0 irygacja=0 tarasy=0 stadnina=0 warzelnia_soli=0 wyrab=0
+   SLAD CZASOWY (pierwsze 8 heksow z rzeka tknietych przez AI):
+     10,10       : farma@t20 -> bydlo@t30
+     10,12       : farma@t22 -> bydlo@t32
+     10,9 [Las] : farma@t19 -> oboz_lowiecki@t38
+     5,5 [Las] : farma@t2 -> oboz_lowiecki@t16
+     6,19 [Las] : farma@t7 -> oboz_lowiecki@t33
+     6,20 [Las] : farma@t7 -> oboz_lowiecki@t34
+     6,21 [Las] : farma@t8 -> oboz_lowiecki@t35
+     6,22 [Las] : farma@t9 -> oboz_lowiecki@t36
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=6 landSea=135 relief=167 coast=21 riversMain=109 riversFill=78 forest=5 deposits=13 starts=60 total=594
+
+--- seed 99 (40 tur, 120 ulepszen) ---
+E1 heksy W TOKU rownolegle: max=47 · srednia=27.5 · na koniec=0
+E2 heksy z >=2 ulepszeniami: 56 · srednia rozpietosc=19.6 tur · srednio obcych heksow w miedzyczasie=49.2
+E3 metryka Operatora: rozgrzebane=64/64 tknietych · bez infrastruktury(droga/fort/posterunek)=38/64
+   trzyma-otwarte (klucz: ile heksow): posterunek:62 fort:62 tartak:36 droga:11 oboz_lowiecki:6 glinianka:5 warzelnia_soli:4
+E4 rzeka: heksow z rzeka w terytorium=14 · tknietych przez AI=14 · z farma=14
+   oboz=30 pastwiska=26
+   per miasto (limit ceil(pop6/10)=1): c0[tartak=0 oboz=18 razem=40] c1[tartak=0 oboz=9 razem=40] c2[tartak=0 oboz=3 razem=40]
+   kontrola odwrotna: droga=0 droga_brukowana=0 posterunek=0 fort=0 lodzie_rybackie=2 kopalnia_miedzi=0 kopalnia_zelaza=0 kopalnia_cyny=0 kamieniolom=0 glinianka=0 tartak=0 irygacja=0 tarasy=0 stadnina=0 warzelnia_soli=0 wyrab=0
+   SLAD CZASOWY (pierwsze 8 heksow z rzeka tknietych przez AI):
+     4,5 [Las] : farma@t0 -> oboz_lowiecki@t20
+     5,5 [Las] : farma@t3 -> oboz_lowiecki@t23
+     5,6 [Las] : farma@t1 -> oboz_lowiecki@t24
+     6,20       : farma@t5 -> bydlo@t26
+     6,22 [Las] : farma@t7 -> oboz_lowiecki@t33
+     6,23 [Las] : farma@t8 -> oboz_lowiecki@t34
+     6,6 [Las] : farma@t5 -> oboz_lowiecki@t28
+     7,20 [Las] : farma@t10 -> oboz_lowiecki@t36
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=7 landSea=103 relief=110 coast=21 riversMain=148 riversFill=85 forest=6 deposits=15 starts=86 total=581
+
+--- seed 512 (40 tur, 120 ulepszen) ---
+E1 heksy W TOKU rownolegle: max=50 · srednia=25.7 · na koniec=0
+E2 heksy z >=2 ulepszeniami: 54 · srednia rozpietosc=19.0 tur · srednio obcych heksow w miedzyczasie=46.7
+E3 metryka Operatora: rozgrzebane=66/66 tknietych · bez infrastruktury(droga/fort/posterunek)=51/66
+   trzyma-otwarte (klucz: ile heksow): posterunek:58 fort:58 tartak:43 warzelnia_soli:12 droga:7 oboz_lowiecki:4 kamieniolom:1
+E4 rzeka: heksow z rzeka w terytorium=0 · tknietych przez AI=0 · z farma=0
+   oboz=39 pastwiska=15
+   per miasto (limit ceil(pop6/10)=1): c0[tartak=0 oboz=13 razem=40] c1[tartak=0 oboz=14 razem=40] c2[tartak=0 oboz=12 razem=40]
+   kontrola odwrotna: droga=0 droga_brukowana=0 posterunek=0 fort=0 lodzie_rybackie=8 kopalnia_miedzi=0 kopalnia_zelaza=0 kopalnia_cyny=0 kamieniolom=0 glinianka=0 tartak=0 irygacja=0 tarasy=0 stadnina=0 warzelnia_soli=0 wyrab=0
+   SLAD CZASOWY (pierwsze 8 heksow z rzeka tknietych przez AI):
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=1 terrain=9 landSea=125 relief=128 coast=19 riversMain=84 riversFill=68 forest=5 deposits=16 starts=63 total=520
+
+--- seed 4242 (40 tur, 120 ulepszen) ---
+E1 heksy W TOKU rownolegle: max=35 · srednia=19.1 · na koniec=0
+E2 heksy z >=2 ulepszeniami: 48 · srednia rozpietosc=16.0 tur · srednio obcych heksow w miedzyczasie=37.6
+E3 metryka Operatora: rozgrzebane=72/72 tknietych · bez infrastruktury(droga/fort/posterunek)=60/72
+   trzyma-otwarte (klucz: ile heksow): posterunek:53 fort:53 tartak:34 warzelnia_soli:20 glinianka:11 droga:6 kamieniolom:4 oboz_lowiecki:3 tarasy:2 kopalnia_cyny:1 kopalnia_miedzi:1
+E4 rzeka: heksow z rzeka w terytorium=21 · tknietych przez AI=18 · z farma=18
+   oboz=31 pastwiska=19
+   per miasto (limit ceil(pop6/10)=1): c0[tartak=0 oboz=11 razem=40] c1[tartak=0 oboz=11 razem=40] c2[tartak=0 oboz=9 razem=40]
+   kontrola odwrotna: droga=0 droga_brukowana=0 posterunek=0 fort=0 lodzie_rybackie=19 kopalnia_miedzi=0 kopalnia_zelaza=0 kopalnia_cyny=0 kamieniolom=0 glinianka=0 tartak=0 irygacja=0 tarasy=0 stadnina=0 warzelnia_soli=0 wyrab=0
+   SLAD CZASOWY (pierwsze 8 heksow z rzeka tknietych przez AI):
+     10,10       : farma@t18 -> bydlo@t27
+     10,7 [Las] : farma@t16 -> oboz_lowiecki@t36
+     10,9 [Las] : farma@t17 -> oboz_lowiecki@t37
+     11,12       : farma@t14 -> bydlo@t22
+     4,19 [Las] : farma@t0 -> oboz_lowiecki@t24
+     5,19 [Las] : farma@t5 -> oboz_lowiecki@t30
+     5,20 [Las] : farma@t6 -> oboz_lowiecki@t31
+     5,21 [Las] : farma@t7 -> oboz_lowiecki@t32
+[civ] riverGenPhase: main+medium (główne+średnie; pełny tor: ?riverGenPhase=all)
+[civ] mapGen ms | prep=2 terrain=9 landSea=103 relief=109 coast=20 riversMain=226 riversFill=90 forest=5 deposits=14 starts=64 total=642
+
+--- seed 1337 (40 tur, 120 ulepszen) ---
+E1 heksy W TOKU rownolegle: max=41 · srednia=23.4 · na koniec=0
+E2 heksy z >=2 ulepszeniami: 52 · srednia rozpietosc=18.0 tur · srednio obcych heksow w miedzyczasie=42.9
+E3 metryka Operatora: rozgrzebane=68/68 tknietych · bez infrastruktury(droga/fort/posterunek)=50/68
+   trzyma-otwarte (klucz: ile heksow): posterunek:59 fort:59 tartak:39 warzelnia_soli:13 droga:9 oboz_lowiecki:6 glinianka:2 tarasy:1 kopalnia_miedzi:1 kamieniolom:1
+E4 rzeka: heksow z rzeka w terytorium=20 · tknietych przez AI=17 · z farma=17
+   oboz=33 pastwiska=20
+   per miasto (limit ceil(pop6/10)=1): c0[tartak=0 oboz=17 razem=40] c1[tartak=0 oboz=10 razem=40] c2[tartak=0 oboz=6 razem=40]
+   kontrola odwrotna: droga=0 droga_brukowana=0 posterunek=0 fort=0 lodzie_rybackie=9 kopalnia_miedzi=0 kopalnia_zelaza=0 kopalnia_cyny=0 kamieniolom=0 glinianka=0 tartak=0 irygacja=0 tarasy=0 stadnina=0 warzelnia_soli=0 wyrab=0
+   SLAD CZASOWY (pierwsze 8 heksow z rzeka tknietych przez AI):
+     12,7 [Las] : farma@t24
+     12,8 [Las] : farma@t25
+     12,9       : farma@t26 -> bydlo@t33
+     4,5 [Las] : farma@t0 -> oboz_lowiecki@t14
+     5,4 [Las] : farma@t2 -> oboz_lowiecki@t16
+     5,5 [Las] : farma@t3 -> oboz_lowiecki@t17
+     6,4 [Las] : farma@t5 -> oboz_lowiecki@t20
+     6,5 [Las] : farma@t6 -> oboz_lowiecki@t21
+
+=== RAZEM (5 ziaren x 40 tur) ===
+E1 max heksow w toku rownolegle (najgorsze ziarno): 50
+E3 metryka Operatora: 338/338 · po wyjeciu infrastruktury: 254/338
+oboz=163 pastwiska=103 farmy_przy_rzece=64
+trzyma-otwarte globalnie: posterunek:286 fort:286 tartak:183 warzelnia_soli:68 droga:39 glinianka:29 oboz_lowiecki:20 kamieniolom:8 tarasy:4 kopalnia_miedzi:3 kopalnia_cyny:1

@@ -1,0 +1,43 @@
+
+=== KROK 1 — plon heksa PRZY RZECE Z LASEM, trzy warianty ===
+koszt Pracy: farma=20 · wyrab=2.5 · Drewno z wyrebu (jednorazowo)=25
+
+--- A. Plon/ture wg terenu bazowego (rzeka NA heksie) ---
+
+Laka  (farma na lesie dozwolona: true · farma bez lasu dozwolona: true)
+  las+rzeka, bez ulepszen : zyw=5 pieniadz=0 praca=6 handel=7 drewno=15
+  (a) las + farma         : zyw=8 pieniadz=0 praca=9 handel=10 drewno=15   koszt Pracy 20   Drewno 0
+  (b) wyrab + farma       : zyw=9 pieniadz=0 praca=6 handel=8 drewno=0   koszt Pracy 22.5   Drewno 0
+  (c) wyrab + farma +DR   : zyw=9 pieniadz=0 praca=6 handel=8 drewno=0   koszt Pracy 22.5   Drewno +25 jednorazowo
+  DELTA (b)-(a)/ture      : zyw=1 praca=-3 handel=-2 drewno=-15
+  zwrot kosztu wyrebu     : NIGDY (delta <= 0) tur (suma plonow/ture)
+
+Rownina  (farma na lesie dozwolona: true · farma bez lasu dozwolona: true)
+  las+rzeka, bez ulepszen : zyw=4 pieniadz=0 praca=7 handel=6 drewno=20
+  (a) las + farma         : zyw=7 pieniadz=0 praca=10 handel=9 drewno=20   koszt Pracy 20   Drewno 0
+  (b) wyrab + farma       : zyw=8 pieniadz=0 praca=7 handel=7 drewno=5   koszt Pracy 22.5   Drewno 0
+  (c) wyrab + farma +DR   : zyw=8 pieniadz=0 praca=7 handel=7 drewno=5   koszt Pracy 22.5   Drewno +25 jednorazowo
+  DELTA (b)-(a)/ture      : zyw=1 praca=-3 handel=-2 drewno=-15
+  zwrot kosztu wyrebu     : NIGDY (delta <= 0) tur (suma plonow/ture)
+
+Wzgorza  (farma na lesie dozwolona: true · farma bez lasu dozwolona: false)
+  las+rzeka, bez ulepszen : zyw=3 pieniadz=0 praca=8 handel=5 drewno=20
+  (a) las + farma         : zyw=6 pieniadz=0 praca=11 handel=8 drewno=20   koszt Pracy 20   Drewno 0
+  (b) wyrab + farma       : zyw=7 pieniadz=0 praca=8 handel=6 drewno=5   koszt Pracy 22.5   Drewno 0
+  (c) wyrab + farma +DR   : zyw=7 pieniadz=0 praca=8 handel=6 drewno=5   koszt Pracy 22.5   Drewno +25 jednorazowo
+  DELTA (b)-(a)/ture      : zyw=1 praca=-3 handel=-2 drewno=-15
+  zwrot kosztu wyrebu     : NIGDY (delta <= 0) tur (suma plonow/ture)
+
+--- B. Ile heksow „rzeka NA heksie + Las" wystepuje realnie (mapa 36x28 kontynenty) ---
+seed 42: heksow z rzeka=47 | rzeka+Las = 22 {"Laka":21,"Wzgorza":1} · rzeka bez lasu = 25
+seed 1337: heksow z rzeka=90 | rzeka+Las = 44 {"Laka":44} · rzeka bez lasu = 46
+seed 2026: heksow z rzeka=68 | rzeka+Las = 46 {"Laka":46} · rzeka bez lasu = 22
+RAZEM rzeka+Las na 3 ziarnach: 112
+
+--- C. Sprzecznosc: wyrab usuwa Las, a nowa trzoda Lasu wymaga ---
+W1 = wyrab -> farma -> trzoda (kontrakt pkt 1 + nowa regula hodowli)
+W2 = BEZ wyrebu: tartak (las zostaje) -> farma na lesie -> trzoda na lesie
+W3 = wyrab -> farma, trzoda na SASIEDNIM heksie z Lasem + tartakiem
+seed 42: heksy rzeka+Las=22 | W1=0 | W2=22 | W3=22
+seed 1337: heksy rzeka+Las=44 | W1=0 | W2=44 | W3=43
+seed 2026: heksy rzeka+Las=46 | W1=0 | W2=46 | W3=46
