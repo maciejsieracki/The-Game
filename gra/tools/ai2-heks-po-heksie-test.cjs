@@ -206,6 +206,13 @@ console.log('F. straznik tekstowy main.ts — konfiguracja wywolania pickera na 
     'main.ts (AI GRACZA): brak `maxItemsPerCity` — throttle 1/ture jest WYLACZNIE mechanizmem AI cywilizacji');
 }
 
+// Odporne odczytanie kontraktu rundy 3: gdy zrodlo pod testem go NIE MA (mutacja
+// „cale zrodlo sprzed rundy 3"), test ma CZERWIENIEC, a nie wywalac sie wyjatkiem.
+const ZY = (M.ZERO_YIELD_IMPROVEMENTS instanceof Set) ? M.ZERO_YIELD_IMPROVEMENTS : new Set();
+const CAPDIV = Number(M.JEDEN_NA_ILU_OBYWATELI) || 10;
+ok(ZY.size > 0, `zrodlo eksportuje ZERO_YIELD_IMPROVEMENTS (kontrakt W-B rundy 3): ${[...ZY].join(',') || 'BRAK'}`);
+ok(Number.isFinite(M.JEDEN_NA_ILU_OBYWATELI), `zrodlo eksportuje JEDEN_NA_ILU_OBYWATELI (${M.JEDEN_NA_ILU_OBYWATELI})`);
+
 // ===========================================================================
 // RUNDA 3 — wariant W-B (decyzja wlasciciela „domykaj tylko to, co daje plon")
 //           oraz wyrab na heksach rzeka+las (GOAL tematu).
@@ -236,7 +243,7 @@ console.log('G. W-B: zbior ulepszen ZEROPLONOWYCH policzony Z DANYCH, nie z list
     }
     if (wszedzieZero) zeroweZDanych.add(key);
   }
-  const wStalej = [...M.ZERO_YIELD_IMPROVEMENTS].sort().join(',');
+  const wStalej = [...ZY].sort().join(',');
   const wDanych = [...zeroweZDanych].sort().join(',');
   ok(wDanych.length > 0, `dane plonow daja niepusty zbior kluczy zeroplonowych (${wDanych || 'PUSTY'})`);
   ok(wStalej === wDanych,
@@ -262,14 +269,14 @@ console.log('H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10
     pracaBudgetPercent: 100, maxItemsPerCity: 14, skipWyrab: true, playerEra: 3,
     priorityOverride: M.AI_IMPROVEMENT_PRIORITY.filter(k => k !== 'wyrab'),
   });
-  const cap = Math.max(1, Math.ceil(city.population / M.JEDEN_NA_ILU_OBYWATELI));
-  const zerowe = picks.filter(p => M.ZERO_YIELD_IMPROVEMENTS.has(p.key));
-  const plonowe = picks.filter(p => !M.ZERO_YIELD_IMPROVEMENTS.has(p.key));
+  const cap = Math.max(1, Math.ceil(city.population / CAPDIV));
+  const zerowe = picks.filter(p => ZY.has(p.key));
+  const plonowe = picks.filter(p => !ZY.has(p.key));
   ok(zerowe.length > 0 && zerowe.length <= 2 * cap,
     `ulepszen zeroplonowych 1..${2 * cap} na miasto (jest ${zerowe.length}: ${zerowe.map(p => p.key).join(',')})`);
-  for (const k of M.ZERO_YIELD_IMPROVEMENTS) {
+  for (const k of ZY) {
     ok(picks.filter(p => p.key === k).length <= cap,
-      `pulap ceil(pop/${M.JEDEN_NA_ILU_OBYWATELI})=${cap} dotrzymany dla ${k} (jest ${picks.filter(p => p.key === k).length})`);
+      `pulap ceil(pop/${CAPDIV})=${cap} dotrzymany dla ${k} (jest ${picks.filter(p => p.key === k).length})`);
   }
   // heks, ktory automat DOMYKA plonowo, nie dostaje ulepszenia zeroplonowego
   const hexOf = p => `${p.q},${p.r}`;
@@ -326,7 +333,7 @@ console.log('I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (G
   // K — obrona nadal powstaje przez decideAITurn, w granicach pulapu
   const post = slad.filter(e => e.key === 'posterunek').length;
   const fort = slad.filter(e => e.key === 'fort').length;
-  const cap = Math.max(1, Math.ceil(6 / M.JEDEN_NA_ILU_OBYWATELI));
+  const cap = Math.max(1, Math.ceil(6 / CAPDIV));
   ok(post > 0 && fort > 0, `posterunek i fort NADAL powstaja poza sekwencja domykania (posterunek ${post}, fort ${fort})`);
   ok(post <= cap && fort <= cap, `... i nie przekraczaja pulapu ${cap} na miasto`);
 }

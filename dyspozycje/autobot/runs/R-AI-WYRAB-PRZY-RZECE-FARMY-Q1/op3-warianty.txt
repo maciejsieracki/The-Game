@@ -1,0 +1,19 @@
+# RUNDA 3 — ROZKLAD ODZYSKU PLONU, AI CYWILIZACJI
+# decideAITurn (ai.ts:~1984, maxItemsPerCity=1), ziarna 7/99/512/4242/1337 x 40 tur,
+# mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6. Narzedzie:
+# tools/ai2-sciezki-rozdzielone-measure.cjs. Warianty posrednie mierzone MUTACJA
+# jednej linii na TYM SAMYM, koncowym zrodle (AI2_SRC_DIR) — nie na starszych wersjach.
+
+wariant                                          plon zyw.  odzysk  tartak  oboz  wyrab  post.  fort  E1max  E1sr  E2rozp
+runda 1 PRZED (petla po typach)                       3522       —       0     ?      0      0     0     31   17,2    23,3
+W-A = runda 2 (domykanie wszystkiego)                 2929   0,0 %      69    71      0     98    95      3    2,3     3,5
+W-B bez wyrebu (mutacja wyrabWlaczony=false)          3083  26,0 %      94    95      0     10    10      5    2,4     2,4
+W-B + wyrab = WDROZONE                                3179  42,2 %      22    23     72     10    10      5    2,4     2,4
+
+# odzysk = (plon - 2929) / (3522 - 2929);  3522-2929 = 593 = pelny spadek -16,8 % z rundy 2
+
+# WARIANTY WYREBU sprawdzone i ODRZUCONE (mierzone przed doszlifowaniem FAZY 0,
+# wiec porownywalne miedzy soba, nie 1:1 z wierszem WDROZONE):
+#   wyrab tylko na heksach z rzeka          plon 3181, tartak 21, wyrab 73, ale ziarno 512 = 0 wyrebow
+#   wyrab bez minimum lesnego miasta        plon 3223, tartak  0, wyrab 95  -> cofa wynik rundy 2 „tartak 0->69"
+#   wyrab z minimum lesnym tylko poza rzeka plon 3203, tartak 10, wyrab 85
