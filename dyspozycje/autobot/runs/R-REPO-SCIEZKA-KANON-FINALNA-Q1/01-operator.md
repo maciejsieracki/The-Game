@@ -119,7 +119,21 @@ odtworzony jako katalog z zawartością — 107 MB zostaje usunięte.
 
 ## 5. Bramki — uruchomione moją ręką, z `gra/`, każda w `timeout`
 
-WYNIKI: patrz §6 (uzupełnione po uruchomieniu).
+`node ./node_modules/typescript/bin/tsc --noEmit` → **0 błędów** (exit 0) ·
+`logic-test` **213/213** · `tech-tree-test` **19 pass / 0 fail** ·
+`research-test` **33/33** · `unit-replace-test` **13/13** · `combat-test` **6/6**.
+Wszystkie exit 0. `map-gen-regression-test` — **nie uruchamiany** (zakaz dispatchu).
+`node_modules` wpięte do worktree dowiązaniem na czas bramek i **usunięte po nich**;
+`git status` po sprzątnięciu **pusty**.
+
+## 5a. Kryterium 5 — zero wycieku poza allowlistę
+
+`git status --porcelain` → **pusto**. `git diff origin/main..HEAD --stat` → **4 pliki,
+376 insercji, 0 delecji**: raport + trzy `.ps1` o **99 / 36 / 106** liniach — co do sztuki
+zgodne z tabelą dispatchu. Filtr odwrotny `git diff --name-only origin/main..HEAD --
+gra/src gra/data gra-robocza gra-kanon dyspozycje/abc-turniej dyspozycje/WERSJE.md`
+→ **zbiór pusty**. `git diff --cached --check` czysty. Zero `npm run build/dev`,
+zero `npx`, zero `git add -A`, zero pushu do `main`.
 
 ## 6. Raport terminalny
 
@@ -127,9 +141,9 @@ STATUS: PASS
 DOMAIN: INFRA
 TEMAT: R-REPO-SCIEZKA-KANON-FINALNA-Q1
 GOAL: odtworzyć oprzyrządowanie KANON/FINALNA i uzgodnić dokumentację ze stanem faktycznym
-ZMIANY/COMMIT: (uzupełnione po commicie)
-TESTY: (uzupełnione)
-BLOKADY: brak
+ZMIANY/COMMIT: `67d22bb4` (raport) + `72704328` (3 skrypty). Allowlista: `gra/tools/publish-kanon-snapshot.ps1`, `gra/tools/publish-finalna-snapshot.ps1`, `gra/tools/cleanup-retention.ps1` — wszystkie **bajtowo identyczne z `39ae5d17`** (zgodność blob-SHA). `dyspozycje/WERSJE.md` **nietknięty** (uzasadnienie §3). `sync-kanon-to-robocza.ps1` **nie odtworzony** (§1a)
+TESTY: tsc **0** · logic **213/213** · tech-tree **19/0** · research **33/33** · unit-replace **13/13** · combat **6/6**. Skrypty PowerShell: **weryfikacja wyłącznie statyczna, brak interpretera na maszynie — patrz §4**
+BLOKADY: brak. Do rozstrzygnięcia przez Evaluatora: nota o utajonej kruchości `cleanup-retention.ps1:57/63` (§2c) — nie jest blokadą, jest jawnie zgłoszonym ryzykiem niemożliwym do potwierdzenia na tej maszynie
 RUNDY: 1/5
 NASTĘPNY KROK: Evaluator, runda 1
 DEPLOY/PUSH: NIE WYKONANO
