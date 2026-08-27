@@ -36,11 +36,12 @@ export {
   isImprovementBlockedOnForest,
   computeImprovementBuildImpact,
   depositAllowsPlayerImprovement,
+  stripImprovementsWhenForestRemoved,
 } from ${JSON.stringify(SRC + '/map/improvement-build')};
 export { pickAutoImprovements } from ${JSON.stringify(SRC + '/game/auto-improvements')};
 export { migrateImprovementLayers } from ${JSON.stringify(SRC + '/game/terrain-improvements')};
 export { buildHexContextTooltipHtml } from ${JSON.stringify(SRC + '/ui/hexContextTooltip')};
-export { TerenBazowy, Nakladka } from ${JSON.stringify(SRC + '/types/hex')};
+export { TerenBazowy, Nakladka, Ulepszenie } from ${JSON.stringify(SRC + '/types/hex')};
 `, 'utf8');
 
 // `hexContextTooltip.ts` ciągnie `icons/brandAssets`, który na poziomie modułu woła
@@ -400,6 +401,200 @@ async function main() {
       `mapa 42 ${co} „${nazwa}" TOOLTIP: oboz ${oczek ? 'JEST' : 'NIE ma go'} na liscie`);
     ok((M.computeImprovementBuildImpact('oboz_lowiecki', h, []) !== null) === oczek,
       `mapa 42 ${co} „${nazwa}" COMMIT: impact ${oczek ? '!=' : '=='} null`);
+  }
+
+
+  // =========================================================================
+  // (8) P7 — WYRĄB LASU SPOD ULEPSZENIA (runda 2; ECHO właściciela 2026-08-27, wariant A)
+  // =========================================================================
+  // Dowodem NIE jest odczyt kodu `stripImprovementsWhenForestRemoved`. Dowodem jest POMIAR:
+  // postaw obóz na heksie z lasem POCHODZĄCYM Z generateMap, wykonaj sekwencję wyrębu
+  // przepisaną z main.ts, ODCZYTAJ warstwy heksa (mapa `placedImprovements` ORAZ pola
+  // `hex.ulepszenia`/`hex.ulepszenie`, bo to one jadą do zapisu i do renderu).
+  //
+  // Ścieżka GRACZA i ścieżka AI mają OSOBNE, niezależne transkrypcje i osobne asercje —
+  // wnioskowanie „skoro gracz działa, to AI też" jest tu zabronione (reguła b dispatchu).
+  console.log('\n=== (8) P7 — WYRĄB LASU SPOD OBOZU (wariant A: obóz znika) ===');
+
+  // main.ts:11307 improvementKeyToUlepszenie — przepisane 1:1 (mapa kluczy).
+  const KEY_TO_ULEPSZENIE = {
+    farma: M.Ulepszenie.Farma, irygacja: M.Ulepszenie.Irygacja,
+    kopalnia_zelaza: M.Ulepszenie.Kopalnia, droga: M.Ulepszenie.Droga,
+    pastwisko: M.Ulepszenie.Pastwisko, bydlo: M.Ulepszenie.Pastwisko,
+    owce: M.Ulepszenie.Pastwisko, lama: M.Ulepszenie.Pastwisko,
+  };
+
+  // ---- ŚCIEŻKA GRACZA: main.ts:11321 + :11892 + :11906 (finalizeHexClearing) ----------
+  function wyrabGracza(map, placedImprovements, hexKey) {
+    // main.ts:11321 syncHexUlepszenieFields
+    const syncHexUlepszenieFields = (hk, playerLayers) => {
+      const hex = map.hexes[hk];
+      if (!hex) return;
+      if (playerLayers.length) {
+        hex.ulepszenia = [...playerLayers];
+        hex.improvementKey = playerLayers[playerLayers.length - 1];
+        const ul = KEY_TO_ULEPSZENIE[playerLayers[playerLayers.length - 1]] ?? M.Ulepszenie.Brak;
+        if (ul !== M.Ulepszenie.Brak) hex.ulepszenie = ul;
+      } else {
+        delete hex.ulepszenia;
+        delete hex.improvementKey;
+        hex.ulepszenie = M.Ulepszenie.Brak;
+      }
+    };
+    // main.ts:11892 stripForestDependentImprovements
+    const stripForestDependentImprovements = (hk) => {
+      const prev = placedImprovements.get(hk) ?? [];
+      const next = M.stripImprovementsWhenForestRemoved(prev);
+      if (next.length === prev.length) return;
+      if (next.length) {
+        placedImprovements.set(hk, next);
+        syncHexUlepszenieFields(hk, next);
+      } else {
+        placedImprovements.delete(hk);
+        syncHexUlepszenieFields(hk, []);
+      }
+    };
+    // main.ts:11906 finalizeHexClearing
+    const hex = map.hexes[hexKey];
+    if (hex?.nakladka === Nakladka.Las) hex.nakladka = Nakladka.Brak;
+    stripForestDependentImprovements(hexKey);
+  }
+
+  // ---- ŚCIEŻKA AI: main.ts:28880 + :28903-28906 — OSOBNA transkrypcja ------------------
+  // Celowo NIE wywołuje wyrabGracza(): asercja AI ma być niezależna, nie wnioskiem z gracza.
+  function wyrabAI(map, placedImprovements, hexKey) {
+    const hexForImprovement = map.hexes[hexKey];
+    // main.ts:28880 — bezpiecznik wyścigu miast: bez lasu AI w ogóle nie wycina
+    if (hexForImprovement.nakladka !== Nakladka.Las) return 'pominiete-brak-lasu';
+    hexForImprovement.nakladka = Nakladka.Brak;            // main.ts:28903
+    // main.ts:28904 stripForestDependentImprovements(hexKey) — ta sama funkcja co u gracza,
+    // przepisana tu ponownie, żeby ścieżka AI nie zależała od transkrypcji gracza.
+    const prev = placedImprovements.get(hexKey) ?? [];
+    const next = M.stripImprovementsWhenForestRemoved(prev);
+    if (next.length !== prev.length) {
+      if (next.length) {
+        placedImprovements.set(hexKey, next);
+        hexForImprovement.ulepszenia = [...next];
+        hexForImprovement.improvementKey = next[next.length - 1];
+      } else {
+        placedImprovements.delete(hexKey);
+        delete hexForImprovement.ulepszenia;
+        delete hexForImprovement.improvementKey;
+        hexForImprovement.ulepszenie = M.Ulepszenie.Brak;
+      }
+    }
+    return 'wyciete';
+  }
+
+  // Świeże mapy z generateMap — osobna dla gracza, osobna dla AI (żaden stan nie przecieka).
+  const mkLasHex = (seed, pred) => {
+    const mp = M.generateMap(36, 28, seed, 'kontynenty');
+    const key = Object.keys(mp.hexes).sort().find(k => pred(mp.hexes[k]));
+    return { mp, key };
+  };
+  const predLasWzg = h => h && h.nakladka === Nakladka.Las && h.terenBazowy === TerenBazowy.Wzgorza;
+  const predLas = h => h && h.nakladka === Nakladka.Las;
+
+  // --- P7-A: GRACZ ---------------------------------------------------------
+  {
+    const { mp, key } = mkLasHex(42, predLasWzg);
+    ok(!!key, 'P7-A0 warunek istotności: mapa 42 ma LAS NA WZGÓRZU (heks z generateMap)');
+    const hex = mp.hexes[key];
+    const stA = stateForWholeMap(mp);
+    const qA = M.buildImprovementQualifier(stA);
+    ok(qA('oboz_lowiecki', hex.coords.q, hex.coords.r) === true,
+      `P7-A1 warunek istotności: obóz JEST tu legalny przed wyrębem ${key}`);
+    // Postawienie obozu ścieżką gracza (te same struktury co main.ts applyBuildRequest).
+    const placed = new Map([[key, ['oboz_lowiecki']]]);
+    hex.ulepszenia = ['oboz_lowiecki'];
+    hex.improvementKey = 'oboz_lowiecki';
+    ok(qA('wyrab', hex.coords.q, hex.coords.r) === true,
+      'P7-A2 warunek istotności: wyrąb JEST dostępny na heksie z obozem (ścieżka realna)');
+    wyrabGracza(mp, placed, key);
+    console.log(`     [gracz] po wyrębie ${key}: nakladka=${hex.nakladka} placed=${JSON.stringify(placed.get(key) ?? null)} hex.ulepszenia=${JSON.stringify(hex.ulepszenia ?? null)}`);
+    ok(hex.nakladka === Nakladka.Brak, 'P7-A3 wyrąb faktycznie zdjął las z heksa');
+    ok(!(placed.get(key) ?? []).includes('oboz_lowiecki'),
+      'P7-A4 GRACZ: po wyrębie lasu obóz ZNIKA z warstw heksa (placedImprovements)',
+      JSON.stringify(placed.get(key) ?? null));
+    ok(!(hex.ulepszenia ?? []).includes('oboz_lowiecki'),
+      'P7-A5 GRACZ: po wyrębie obóz ZNIKA także z pól heksa idących do zapisu (hex.ulepszenia)',
+      JSON.stringify(hex.ulepszenia ?? null));
+    ok(M.computeImprovementBuildImpact('oboz_lowiecki', hex, []) === null,
+      'P7-A6 GRACZ: na heksie po wyrębie NOWEGO obozu nie postawisz (gate commitu spójny)');
+  }
+
+  // --- P7-B: AI (OSOBNA asercja, osobna mapa, osobna transkrypcja) ---------
+  {
+    const { mp, key } = mkLasHex(1337, predLas);
+    ok(!!key, 'P7-B0 warunek istotności: mapa 1337 ma heks z lasem');
+    const hex = mp.hexes[key];
+    const stB = stateForWholeMap(mp);
+    ok(M.buildImprovementQualifier(stB)('oboz_lowiecki', hex.coords.q, hex.coords.r) === true,
+      'P7-B1 warunek istotności: obóz legalny na tym heksie przed wyrębem AI');
+    const placedAi = new Map([[key, ['oboz_lowiecki']]]);
+    hex.ulepszenia = ['oboz_lowiecki'];
+    const wynik = wyrabAI(mp, placedAi, key);
+    console.log(`     [AI] po wyrębie ${key}: ${wynik} nakladka=${hex.nakladka} placed=${JSON.stringify(placedAi.get(key) ?? null)}`);
+    ok(wynik === 'wyciete' && hex.nakladka === Nakladka.Brak,
+      'P7-B2 warunek istotności: AI faktycznie wycięło las (nie weszło w continue)');
+    ok(!(placedAi.get(key) ?? []).includes('oboz_lowiecki'),
+      'P7-B3 AI: po wyrębie lasu obóz ZNIKA z warstw heksa (main.ts:28903-28904)',
+      JSON.stringify(placedAi.get(key) ?? null));
+    ok(!(hex.ulepszenia ?? []).includes('oboz_lowiecki'),
+      'P7-B4 AI: obóz ZNIKA także z pól heksa (hex.ulepszenia)',
+      JSON.stringify(hex.ulepszenia ?? null));
+  }
+
+  // --- P7-C: TARTAK NIE ZNIKA (kanon) — OSOBNA asercja ---------------------
+  // Łatwo go zgubić pisząc filtr zbyt szeroko: tartak też wymaga Nakladka.Las przy budowie.
+  {
+    const { mp, key } = mkLasHex(2026, predLas);
+    ok(!!key, 'P7-C0 warunek istotności: mapa 2026 ma heks z lasem');
+    const hex = mp.hexes[key];
+    const placedT = new Map([[key, ['tartak']]]);
+    hex.ulepszenia = ['tartak'];
+    hex.improvementKey = 'tartak';
+    wyrabGracza(mp, placedT, key);
+    console.log(`     [tartak] po wyrębie ${key}: nakladka=${hex.nakladka} placed=${JSON.stringify(placedT.get(key) ?? null)} hex.ulepszenia=${JSON.stringify(hex.ulepszenia ?? null)}`);
+    ok(hex.nakladka === Nakladka.Brak, 'P7-C1 warunek istotności: las zdjęty także w tym przebiegu');
+    ok((placedT.get(key) ?? []).includes('tartak'),
+      'P7-C2 TARTAK NIE ZNIKA przy wyrębie (kanon: las zostaje przy tartaku)',
+      JSON.stringify(placedT.get(key) ?? null));
+    ok((hex.ulepszenia ?? []).includes('tartak'),
+      'P7-C3 tartak zostaje także w polach heksa (nie skasowany po cichu)',
+      JSON.stringify(hex.ulepszenia ?? null));
+  }
+
+  // --- P7-D: heks mieszany — znika WYŁĄCZNIE obóz, reszta bez zmian --------
+  {
+    const { mp, key } = mkLasHex(7, predLas);
+    const hex = mp.hexes[key];
+    const placedMix = new Map([[key, ['tartak', 'oboz_lowiecki', 'droga']]]);
+    hex.ulepszenia = ['tartak', 'oboz_lowiecki', 'droga'];
+    wyrabGracza(mp, placedMix, key);
+    const po = placedMix.get(key) ?? [];
+    console.log(`     [mix] po wyrębie ${key}: ${JSON.stringify(po)}`);
+    ok(po.join(',') === 'tartak,droga',
+      'P7-D1 heks mieszany: po wyrębie zostaje dokładnie [tartak, droga] — znika tylko obóz',
+      JSON.stringify(po));
+  }
+
+  // --- P7-E: świadomie NIEUSUWANE, choć Las bywa ich warunkiem -------------
+  // farma: Las jest warunkiem tylko na Wzgórzach (isFarmBaseTerrain); kasowanie cudzej farmy
+  // to osobna decyzja właściciela (kryt. 6 rundy 1), a kanon trzyma ją w
+  // tools/map-improvement-qualify-test.cjs („tartak stays…" — ta sama asercja obejmuje farmę).
+  // glinianka: warunkiem jest złoże gliny, nie las.
+  {
+    const zostaja = M.stripImprovementsWhenForestRemoved(
+      ['farma', 'glinianka', 'droga', 'fort', 'kamieniolom', 'irygacja']);
+    ok(zostaja.join(',') === 'farma,glinianka,droga,fort,kamieniolom,irygacja',
+      'P7-E1 filtr nie jest za szeroki: farma/glinianka/droga/fort/kamieniolom/irygacja ZOSTAJĄ',
+      JSON.stringify(zostaja));
+    const farmaWzg = M.stripImprovementsWhenForestRemoved(['farma']);
+    ok(farmaWzg.join(',') === 'farma',
+      'P7-E2 farma na Wzgórzu+Las ZOSTAJE po wyrębie (świadoma decyzja, nie przeoczenie)');
+    ok(M.stripImprovementsWhenForestRemoved([]).length === 0,
+      'P7-E3 pusta lista warstw nie wybucha i zostaje pusta');
   }
 
   console.log(`\noboz-lowiecki-las-test: ${pass} passed, ${fail} failed`);
