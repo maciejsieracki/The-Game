@@ -113,6 +113,9 @@ async function runSeed(browser, seed) {
   const snaps = [];
   const notes = [];
   let stuck = 0;
+  // Ile razy harness musial odblokowac koniec tury (`resetEndTurnBlockers` kasuje m.in.
+  // `aiCmdResume`, wiec to INGERENCJA — musi byc policzona i zaraportowana, nie przemilczana).
+  let unblockCount = 0;
   for (let i = 0; i <= TURNS; i++) {
     const s = compact(await page.evaluate(() => window.__ev.snap()));
     snaps.push(s);
@@ -120,6 +123,8 @@ async function runSeed(browser, seed) {
     if (i === TURNS) break;
     const b = await page.evaluate(() => window.__ev.blockers());
     if (b.preBattleOpen || b.pendingAutoPreBattle) {
+      unblockCount++;
+      notes.push({ t: s.t, note: 'unblock', b });
       await page.evaluate(() => window.__ev.unblock());
       await wait(250);
     }
@@ -142,7 +147,7 @@ async function runSeed(browser, seed) {
       console.log('[ev] seed=' + seed + ' tura=' + s.t + ' wojny=' + JSON.stringify(s.warPairs)
         + ' pending=' + JSON.stringify(s.stonePending)
         + ' t=' + Math.round((Date.now() - t0) / 1000) + 's');
-      dump(seed, { partial: true, seed, tag: TAG, params, snaps, notes, consoleLines });
+      dump(seed, { partial: true, seed, tag: TAG, params, snaps, notes, consoleLines, unblockCount });
     }
   }
 
@@ -175,7 +180,7 @@ async function runSeed(browser, seed) {
 
   await page.close();
   return { seed, tag: TAG, params, turnsRequested: TURNS, elapsedS: Math.round((Date.now() - t0) / 1000),
-    founded, snaps, notes, consoleLines, cmd };
+    founded, snaps, notes, consoleLines, cmd, unblockCount };
 }
 
 function dump(seed, obj) {
