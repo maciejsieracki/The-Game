@@ -342,3 +342,185 @@ drugie ziarno kontrolne, nie test scenariusza aktywnego.
 
 Zrzut tego nieudanego przebiegu zostaje w `dowody-fc/` jako dowód korekty (§13b).
 
+### 8.5 SCENARIUSZ AKTYWNY — powtórzony poprawną ścieżką. **To jest rozstrzygnięcie**
+
+Po korekcie sterownika (`purchaseRecruitmentUnit` zamiast kolejki Pracy) scenariusz
+aktywny **zadziałał naprawdę**. Przebieg: ziarno **111**, **61 tur**, **1 powtórzenie**.
+
+Przebieg gracza, tura po turze (z `prodLog`, liczby ze skarbca):
+
+| tura | co się stało |
+|---|---|
+| 0–8 | skarbiec rośnie 0 → 14 (+2/turę); zwiadowca kosztuje **16** — nie stać |
+| **9** | `bought:16` — zwiadowca opłacony, skarbiec 16 → 0 |
+| **10** | zwiadowca w polu, **„Zwiedzaj" włączone** (1. rozkaz) |
+| **26** | drugi zwiadowca (skarbiec 139) |
+| **27** | **„Zwiedzaj" włączone** (2. rozkaz) |
+| 47, 49, 51 | **nowe kontakty dyplomatyczne** — 46, 47, 48 |
+
+**Eksploracja faktycznie zadziałała** — to nie jest kolejny przebieg pasywny:
+
+| miara | pasywny (505) | pasywny (111) | **aktywny (111)** |
+|---|---|---|---|
+| zwiadowcy gracza na koniec | 0 | 0 | **2** |
+| rozkazów „Zwiedzaj" | 0 | 0 | **2** |
+| odkrytych cywilizacji na koniec | 3 | 3 | **6** (43,44,45,**46,47,48**) |
+| rekordów warstwy `simplified` | 183 | 183 | **219** |
+| rekordów warstwy `pre_contact` | 1236 | 1233 | **1192** |
+
+**A mimo to:**
+
+| miara | wynik |
+|---|---|
+| **wypowiedzeń wojny (61 tur)** | **0** |
+| z graczem | **0** |
+| `pending` wojny Kamienia (max) | **0** |
+| odkrytych **głównych** AI (1, 8, 15, 22, 29, 36) | **0 z 6** |
+| rekordów warstwy `full` | **0** |
+| `score < 30` na 219 obserwacji | **0** (min `score` = **77**) |
+| kart „Wydarzenia" o wojnie | **0** |
+| wierszy „Wojny znane (wywiad)" | **0** |
+| `unblock()` / błędy strony | **0** / **0** |
+
+**Wniosek metodologiczny — i to jest odpowiedź na regułę przeciw samooszukiwaniu:**
+wspólny stub obu ról **istnieje i jest realny**, ale **nie jest przyczyną wyniku**.
+Złamałem go prawdziwą akcją gracza, eksploracja się odbyła, liczba kontaktów wzrosła
+z 3 do 6, warstwy się przesunęły — **a odpowiedź nie drgnęła: nadal zero wojen.**
+Dwa niezależne pomiary tej samej wady nie byłyby dowodem; **trzeci pomiar, który
+celowo usunął wspólny błąd i dał ten sam wynik — jest.**
+
+**Dodatkowa liczba o realnym znaczeniu dla właściciela:** dwaj zwiadowcy zwiedzający
+mapę przez 51 tur odkryli **wyłącznie miasta-państwa**. Żadna z 6 głównych cywilizacji
+AI nie została odkryta przez **61 tur**. Główne AI są po prostu za daleko.
+
+---
+
+## 9. Odpowiedzi na 5 punktów dispatchu
+
+| # | pytanie | odpowiedź |
+|---|---|---|
+| **1** | Czy wojna wymuszona Kamienia wybucha? | **NIE. 0 razy.** Mój pomiar: 3 przebiegi × 61 tur (ziarna 505, 111, 111-aktywny) = **183 tury**. Razem z Operatorem (180) i Evaluatorem (167): **530 tur rozgrywki, 0 wypowiedzeń wojny.** „Ile trwała / jak się skończyła" — **BRAK DOWODU**, bo żadna nie wybuchła (§13a) |
+| **2** | Czy AI wypowiada wojnę graczowi? | **NIE, i nie może.** Nie „rzadko" — **arytmetycznie niemożliwe** przy trudności Łatwy i Normalny (dowód §3.2). Rozkład kluczowej liczby: `score` min **77** przy progu **30**, w 585 obserwacjach (183+183+219), `score < 30` w **0** |
+| **3** | Hipoteza właściciela o miastach-państwach | **Fakt potwierdzony, skutek odwrócony** — patrz §10 |
+| **4** | Czy gracz jest wykluczony filtrem `oid > 0`? | **TAK, podwójnie** (§3.3). Zgodne z decyzją Q2 — **nie defekt** |
+| **5** | Czy gracz widzi wojny AI↔AI? | **NIE.** `recordWarDeclarationEvent` odrzuca pary AI↔AI (`main.ts:7753`). Jedyny ślad to sekcja „Wojny znane (wywiad)" w panelu dyplomacji (`ui/diplomacyPanel.ts:282-289`) — i tylko dla odkrytych stron. Zmierzone: **0 kart, 0 wierszy** w 3 przebiegach |
+
+---
+
+## 10. Hipoteza właściciela — rozstrzygnięcie
+
+> „Możliwe, że chodzi o to, że dłużej zajmuje im przejęcie własnych państw i miast,
+> i dopiero po przejęciu mogą to robić, **bo tak w sumie powinno być**."
+
+**Właściciel trafnie wskazał WŁAŚCIWY MECHANIZM — i to jest realne osiągnięcie
+diagnostyczne.** Przejmowanie miast-państw jest faktycznie przyczyną. Zmierzone:
+konsolidacja trwa i kończy się w okolicach tury 20–25, więc również intuicja
+czasowa („dłużej im to zajmuje") jest trafna.
+
+**Ale skutek jest dokładnie odwrotny do oczekiwanego, i dlatego to NIE jest
+potwierdzenie projektu.** Nie ma żadnego „dopiero po przejęciu mogą to robić".
+**Pierwsze** przejęcie — tura **6–8**, przy 2 miastach, **12/12 przypadków w moich
+przebiegach** — wyłącza cywilizację z mechanizmu **na stałe**. Nie na 20 tur.
+Na zawsze. Do tury 20, kiedy wojna wymuszona ma prawo wystartować, **wszyscy
+sześciu kandydatów są już trwale wykluczeni**, a `pending` pozostaje pusty przez
+całą grę (max **0** w 183 turach).
+
+**Odpowiadam wprost, tak jak wymaga zadanie: hipoteza się NIE potwierdza.**
+Właściciel wskazał właściwą przyczynę, ale „tak w sumie powinno być" nie ma tu
+zastosowania — to nie jest zaprojektowane opóźnienie, tylko **defekt**: flaga
+`startCityState` jest kasowana wyłącznie przy wchłonięciu dyplomatycznym
+(`main.ts:23625`) i nigdy przy podboju militarnym.
+
+---
+
+## 11. Raport terminalny
+
+STATUS: **PASS-WITH-NOTES**
+DOMAIN: GAME
+TEMAT: `P-DYPLO-WOJNY-KAMIEN-NIE-WIDAC-Q1`
+GOAL: trzecia niezależna reprodukcja + odpowiedź dla właściciela — **wykonane**.
+MODEL+EFFORT: **Opus 5, effort high**
+
+ZMIANY-COMMIT: gałąź `autobot/P-DYPLO-WOJNY-KAMIEN-NIE-WIDAC-Q1`.
+Pliki: `gra/tools/wojny-kamien-fc.vite.config.ts`, `gra/tools/wojny-kamien-fc.cjs`,
+`gra/tools/wojny-kamien-fc-analiza.cjs`, ten raport, `dowody-fc/` (3 zrzuty JSON).
+**`gra/src/**` i `gra/data/**`: ZERO ZMIAN** — `git status --porcelain` pusty,
+`git diff origin/main HEAD -- gra/src gra/data` pusty.
+
+TESTY: tsc **0** · logic **213/213** · tech-tree **19/0** · research **33/33** ·
+unit-replace **13/13** · combat **6/6** · forced-war-stone **32/0** ·
+forced-war-stone-main-guard **18/0** · ai-war-gate **24/0** ·
+diplomacy-war-gates **19/0** · alliance-war-obligation **14/0**.
+Wszystkie uruchomione przeze mnie w moim worktree. `map-gen-regression-test`
+nieuruchamiany (zakaz dispatchu).
+
+BLOKADY: brak.
+
+**NOTY (dlaczego `PASS-WITH-NOTES`, a nie `PASS`):**
+1. **N1** — pierwsze podejście do scenariusza aktywnego użyło złej ścieżki (kolejka
+   Pracy zamiast rekrutacji); wykryte pomiarem, poprawione, powtórzone, obie wersje
+   w historii Git (`36fb72a8`). Zgłaszam jawnie zgodnie z §13b.
+2. **N2** — `Z3` (relacja AI↔AI nigdy nie spada poniżej 30) opiera się na pomiarze
+   Operatora, nie na dowodzie źródłowym: obowiązuje dla zmierzonych 60 tur, **nie**
+   jako twierdzenie ogólne. Zgłaszam jako ograniczenie zasięgu, nie jako zielone.
+3. **N3** — scenariusz aktywny wykonany na **jednym** ziarnie (111). Wystarcza do
+   obalenia zarzutu o wspólny stub (bo wynik się nie zmienił mimo realnej zmiany
+   warunków), ale **nie** jest podstawą do twierdzeń statystycznych o eksploracji.
+4. **N4 (procesowe)** — `REJESTR-PROSB-I-ZADAN.md` nie zawiera tego tematu, a wpis
+   `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` (l. 38) mówi „Nic do dispatchu", uzasadniając
+   to zielonymi bramkami. Poza moją allowlistą — do domknięcia przez orkiestratora.
+5. **N5** — nowe znalezisko **Z9** (§7): wojna wymuszona AI↔AI nie ma dziś jak się
+   zakończyć, więc kontrakt Q3=A jest w tej części nieosiągalny.
+
+RUNDY: 1/5
+GOTOWOŚĆ DO INTEGRACJI: **NIE DOTYCZY** — dispatch: „ten temat nie kończy się
+integracją kodu". Kończy się decyzją właściciela w sprawie Z1, Z2/Z6, Z4, Z5, Z7, Z9.
+NASTĘPNY KROK: **decyzja właściciela (ABC)**, jakie znaleziska naprawiać i w jakiej
+kolejności; każda naprawa = osobny temat z własnym ID.
+DEPLOY-PUSH: **NIE WYKONANO** (wypchnięta wyłącznie gałąź tematu).
+
+---
+
+## ODPOWIEDŹ DLA WŁAŚCICIELA
+
+**Nie, w epoce Kamienia wojny nie wybuchają — ani jedna.** Sprawdziliśmy to trzema
+niezależnymi narzędziami, na pięciu różnych mapach, przez ponad 500 tur prawdziwej
+rozgrywki: zero wypowiedzeń wojny, między kimkolwiek. Mechanizm, który Pan zamówił,
+jest napisany dokładnie tak, jak Pan zdecydował — start po 20 turach, koniec po
+dwóch miastach, 20 tur odpoczynku — i ma zielone testy, ale **ani razu się nie
+uruchamia**, więc zielone testy nic tu nie znaczyły.
+
+**Przyczyna jest jedna i da się ją wskazać palcem.** Gdy cywilizacja AI zdobędzie
+swoje pierwsze miasto należące wcześniej do miasta-państwa — a dzieje się to
+w turze 6, 7 albo 8, u wszystkich sześciu cywilizacji, w każdej sprawdzonej grze —
+gra od tego momentu traktuje **ją samą** jak miasto-państwo. Na stałe. A wyzwalacz
+wojny miasta-państwa pomija. Zanim więc wybije tura 20, wszyscy kandydaci do wojny
+są już z niej trwale wykreśleni.
+
+**To, że nikt nie wypowiada wojny akurat Panu, to osobna sprawa i nie jest to pech.**
+Po pierwsze, wojna wymuszona z założenia celuje wyłącznie w inne AI, nigdy w gracza —
+i to akurat jest zgodne z Pana własną decyzją, więc nie jest błędem. Po drugie,
+zwykła ścieżka wypowiedzenia wojny graczowi jest **arytmetycznie niemożliwa**: ta sama
+liczba opisuje jednocześnie „jak silne jest AI wobec Pana" i „jak dobre są z Panem
+stosunki", więc im AI silniejsze, tym **dalej** mu do wojny z Panem. W 585 pomiarach
+najgorszy wynik relacji to 77 punktów, a wojna wymaga zejścia poniżej 30 — nigdy się
+to nie zdarzy przy ustawieniach domyślnych.
+
+**Pana hipoteza: trafił Pan w przyczynę, ale skutek jest odwrotny — i muszę
+powiedzieć wprost, że się nie potwierdza.** Owszem, AI zajmują się przejmowaniem
+miast-państw i kończą to mniej więcej w turach 20–25, więc Pana wyczucie było dobre.
+Ale to nie jest opóźnienie, po którym wojna w końcu przyjdzie — pierwsze przejęcie
+wyłącza cywilizację z mechanizmu **na zawsze**. Więc „tak w sumie powinno być"
+niestety nie ma tu zastosowania: to nie jest zaprojektowane zachowanie, tylko błąd
+(flaga „to było miasto-państwo" jest kasowana tylko przy pokojowym wchłonięciu,
+a nigdy przy zdobyciu siłą).
+
+**Dwie rzeczy praktyczne na koniec.** Jedyna droga, którą dziś ktokolwiek może Panu
+wypowiedzieć wojnę w Kamieniu, otwiera się dopiero na poziomie trudności „Trudny" —
+na „Normalnym" nie może tego zrobić nikt. I nawet gdyby wojny między AI zaczęły
+wybuchać, **nie zobaczyłby Pan o nich żadnej karty w Wydarzeniach** — jedyny ślad
+to lista „Wojny znane (wywiad)" w panelu dyplomacji, którą trzeba samemu otworzyć.
+Nic tu nie naprawiałem — to był audyt; każda naprawa wymaga Pana decyzji i osobnego
+zadania.
+
+**PRACA ZACOMMITOWANA NA GAŁĄŹ: TAK, SHA: (uzupełnione poniżej po commicie)**
