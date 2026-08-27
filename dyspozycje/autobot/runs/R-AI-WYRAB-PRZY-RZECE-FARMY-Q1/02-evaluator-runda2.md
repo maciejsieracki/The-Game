@@ -164,7 +164,11 @@ Drzewo główne `/home/user/The-Game` czyste (C-019).
 3. **BRAK DOWODU** — bramka wydarzeń nie istnieje na gałęzi.
 4. Zastany regres `ai-praca-split-parity-test` 21/1 — zmierzony przeze mnie na bazie i na gałęzi,
    nie pogorszony.
-5. Brak wpisu ABC w `dyspozycje/PYTANIA-OTWARTE.md` (0 trafień, sprawdzone) — zadanie orkiestratora.
+5. **Korekta blokady 5 Operatora.** Wpis ABC **rundy 1** JUŻ ISTNIEJE w `main`
+   (`dyspozycje/PYTANIA-OTWARTE.md:32035`, `STATUS: **OTWARTE`) — Operator go nie widział, bo na
+   gałęzi tematu tego pliku nie ma (0 trafień na `849bb951`, 1 trafienie w `main`). Otwarte pozostaje
+   co innego: **wpisu ABC dla części B rundy 2 (W-A/W-B/W-C) nie ma nigdzie** (0 trafień) —
+   to zadanie orkiestratora.
 6. Do rejestru (§14): `kopalnia_zlota` (najwyższa delta) nieobecna w `AI_IMPROVEMENT_PRIORITY`;
    `wyrab` strukturalnie nieosiągalny dla AI CYWILIZACJI (nota 3) — obie do rundy 3, nie tutaj.
 
