@@ -3852,6 +3852,19 @@ export interface DiplomacjaInputs {
    * co dla Brązu, ale z osobnym priorytetem/staniem w main.ts.
    */
   stoneForceWarTargetId?: number;
+  /**
+   * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wymuszona wojna głównej cywilizacji AI z sąsiadem
+   * terytorialnym po awansie do epoki Żelaza (lub po odpoczynku po poprzedniej wojnie
+   * wymuszonej Żelaza) — priorytet przed OGÓLNYMI regułami wojny, dokładnie jak
+   * `bronzeForceWarTargetId`/`stoneForceWarTargetId` (ECHO właściciela: wymuszona wojna ma
+   * być POZA ogólnymi regułami prowadzenia wojny). Silnik (main.ts) już wyklucza przy
+   * wyborze cele NAP/peaceLocked/w-wojnie/sojusz — tu tylko finalne domknięcie tego samego
+   * guarda. Patrz `game/forced-war-iron.ts`.
+   * EN: Iron-era forced war against a territorial neighbor after advancing into the Iron
+   * age (or after resting from a previous Iron forced war) — takes priority over normal
+   * diplomacy, same pattern as the Bronze/Stone fields.
+   */
+  ironForceWarTargetId?: number;
 }
 
 /**
@@ -4169,6 +4182,31 @@ export function decideAIDiplomacy(
         type:     'wypowiedz_wojne',
         targetId: forcedId,
         powod:    `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: wymuszona wojna po ochronie startowej (tura ${inp.currentTurn ?? 0})`,
+      }];
+    }
+  }
+
+  // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: trzecia i ostatnia epoka gry. Cel został wybrany
+  // przez main.ts według identycznych filtrów terytorialnych jak w mechanizmie Brązu
+  // (wyzwalacz = awans do Żelaza). Ten wczesny `return` stoi POZA ogólnymi regułami wojny
+  // (ECHO właściciela 2026-08-27) — tak samo jak Kamień i Brąz wyżej. Nie omijamy tu
+  // aktywnej wojny, NAP, blokady pokoju ani sojuszu z samym celem.
+  // EN: Iron-era forced war — same early return, outside the general war rules, as Stone
+  // and Bronze above; the target-side guards (at war / peace lock / NAP / alliance) stay.
+  if (inp.ironForceWarTargetId != null) {
+    const forcedId = String(inp.ironForceWarTargetId);
+    const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
+    if (
+      forcedRel
+      && !forcedRel.stanWojny
+      && !forcedRel.peaceLocked
+      && !forcedRel.hasNapTreaty
+      && !forcedRel.hasAllianceTreaty
+    ) {
+      return [{
+        type:     'wypowiedz_wojne',
+        targetId: forcedId,
+        powod:    `R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura ${inp.currentTurn ?? 0})`,
       }];
     }
   }

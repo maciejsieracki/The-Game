@@ -1,0 +1,224 @@
+=== BAZA (bez mutacji) ===
+  asercje kontraktu czystego: 46
+  asercje bramki main.ts/ai.ts: 29
+
+M01-epoka-numer (iron) — Żelazo przestaje być epoką 3
+  RED: [czysty] Żelazo to epoka numer 3 (KOLEJNOSC_EPOK = Kamien/Braz/Zelazo)
+  RED: [czysty] awans Brąz(2) → Żelazo(3) wyzwala mechanizm
+  RED: [czysty] awans Kamień → Brąz NIE wyzwala Żelaza
+
+M02-prog-miast (iron) — próg 2 miast → 3
+  RED: [czysty] pokój po 2 miastach
+  RED: [czysty] 2 zdobyte kończą wojnę pokojem
+  RED: [czysty] 2 utracone kończą wojnę pokojem
+
+M03-odpoczynek (iron) — odpoczynek 20 → 10 tur
+  RED: [czysty] odpoczynek 20 tur
+
+M04-cooldown (iron) — cooldown pary 20 → 10 tur
+  RED: [czysty] cooldown tej samej cywilizacji 20 tur
+
+M05-entry-sztywne-2-3 (iron) — wyzwalacz tylko dla dokładnie 2→3 (gubi skok 1→3)
+  RED: [czysty] skok Kamień(1) → Żelazo(3) w jednej synchronizacji też wyzwala
+
+M06-entry-bez-prev (iron) — wyzwalacz ignoruje poprzednią epokę (odpala ponownie w Żelazie)
+  RED: [czysty] brak zmiany epoki (już w Żelazie) NIE wyzwala ponownie
+  RED: [czysty] awans z Żelaza dalej NIE wyzwala ponownie
+
+M07-entry-bez-next (iron) — wyzwalacz ignoruje docelową epokę (odpala przy 1→2)
+  RED: [czysty] awans Kamień → Brąz NIE wyzwala Żelaza
+  RED: [czysty] brak zmiany epoki w Brązie nie wyzwala
+
+M08-entry-nigdy (iron) — wyzwalacz nie odpala nigdy
+  RED: [czysty] awans Brąz(2) → Żelazo(3) wyzwala mechanizm
+  RED: [czysty] skok Kamień(1) → Żelazo(3) w jednej synchronizacji też wyzwala
+
+M09-eligible-zawsze (iron) — kwalifikacja zawsze true (gracz/CS i owner w wojnie przechodzą)
+  RED: [czysty] brak dla gracza/miasta-państwa/barbarzyńcy
+  RED: [czysty] brak dla ownera już w wojnie (dowolna rola)
+
+M10-eligible-nigdy (iron) — kwalifikacja zawsze false
+  RED: [czysty] główna cywilizacja AI poza wojną jest kwalifikowana
+
+M11-pick-bez-blokad (iron) — blockedOwnerIds ignorowane przy wyborze celu
+  RED: [czysty] NAP/blokada pokoju/sojusz z celem wyklucza najbliższego
+  RED: [czysty] wszyscy kandydaci zablokowani → brak celu (null), nie wyjątek
+
+M12-pick-pierwszy (iron) — cel = pierwszy z listy zamiast najbliższego
+  RED: [czysty] wybiera najbliższego sąsiada terytorialnego
+  RED: [czysty] NAP/blokada pokoju/sojusz z celem wyklucza najbliższego
+  RED: [czysty] remis dystansu rozstrzyga niższy ownerId (determinizm)
+  RED: [czysty] wszyscy kandydaci zablokowani → brak celu (null), nie wyjątek
+  RED: [czysty] pusta pula kandydatów → null
+
+M13-pick-null (iron) — wybór celu zawsze null
+  RED: [czysty] wybiera najbliższego sąsiada terytorialnego
+  RED: [czysty] NAP/blokada pokoju/sojusz z celem wyklucza najbliższego
+  RED: [czysty] remis dystansu rozstrzyga niższy ownerId (determinizm)
+  RED: [czysty] zwraca wyłącznie ownerId z podanej puli (nigdy 0/gracza ani miasta-państwa spoza puli)
+
+M14-prog-1 (iron) — próg twardo 1 miasto
+  RED: [czysty] 1 zdobyte i 1 utracone nie kończy wojny
+
+M15-prog-gubi-atakujacego (iron) — miasta zdobyte przez napastnika nie liczą się
+  RED: [czysty] 2 zdobyte kończą wojnę pokojem
+
+M16-prog-gubi-obronce (iron) — miasta stracone na rzecz obrońcy nie liczą się
+  RED: [czysty] 2 utracone kończą wojnę pokojem
+
+M17-rest-nigdy (iron) — odpoczynek nigdy nie obowiązuje
+  RED: [czysty] odpoczynek działa przed restUntil
+
+M18-rest-o-1-za-dlugi (iron) — odpoczynek trwa o turę za długo (granica <=)
+  RED: [czysty] odpoczynek kończy się na restUntil
+
+M19-rest-bez-wpisu (iron) — brak wpisu restUntil traktowany jak wieczny odpoczynek
+  RED: [czysty] brak wpisu restUntil = brak odpoczynku
+
+M20-save-gubi-pending (iron) — serializacja gubi pendingOwners
+  RED: [czysty] pending przetrwał save/load
+
+M21-load-gubi-cycle (iron) — odczyt gubi cycleOwners
+  RED: [czysty] cycle przetrwał save/load
+  RED: [czysty] częściowy zapis: obecne pole wczytane
+
+M22-load-gubi-rest (iron) — odczyt gubi restUntilByOwner
+  RED: [czysty] restUntil przetrwał save/load
+
+M23-load-zeruje-licznik (iron) — odczyt zeruje licznik zdobytych miast
+  RED: [czysty] licznik aktywnej wojny przetrwał save/load (niezerowy)
+  RED: [czysty] mutacja licznika działa
+
+M24-load-stary-zapis-smieci (iron) — brak zapisu daje NIEpusty stan zamiast pustego
+  RED: [czysty] stary save bez pól Żelaza jest bezpieczny (pusty stan)
+  RED: [czysty] stary save: brak aktywnych par Żelaza
+
+M25-load-czesciowy (iron) — częściowy zapis gubi obecne pole
+  RED: [czysty] cycle przetrwał save/load
+  RED: [czysty] częściowy zapis: obecne pole wczytane
+
+M25b-load-domyslne-pending (iron) — brakujące pole w częściowym zapisie dostaje śmieci zamiast pustego stanu
+  RED: [czysty] częściowy zapis: brakujące pole → pusty stan, nie wyjątek
+
+M25c-load-pending-niemutowalny (iron) — odtworzony pendingOwners nie przyjmuje mutacji (main.ts nie mógłby skonsumować pending)
+  RED: [czysty] mutacja pending działa
+
+M25d-load-rest-niemutowalny (iron) — odtworzony restUntilByOwner nie przyjmuje mutacji (nie dałoby się uzbroić odpoczynku)
+  RED: [czysty] mutacja odpoczynku działa
+
+M26-ai-brak-guarda-zelaza (ai) — cały wczesny return Żelaza usunięty z decideAIDiplomacy
+  RED: [czysty] cel Żelaza generuje DOW mimo agresji 0.1
+  RED: [czysty] powód DOW identyfikuje mechanizm Żelaza
+  RED: [bramka] ai.ts: guard Żelaza to wczesny return z wypowiedz_wojne i pełnym zestawem blokad
+  RED: [bramka] ai.ts: guard Żelaza stoi PRZED ogólnymi regułami wojny (przed budową DiplomacjaParams `const p:`)
+
+M27-ai-pole-inputu (ai) — pole wejścia przemianowane (wiązanie main.ts→ai.ts zerwane)
+  RED: [bramka] ai.ts: DiplomacjaInputs ma pole ironForceWarTargetId
+
+M28-ai-bez-guarda-wojny (ai) — guard „cel już w wojnie" usunięty
+  RED: [czysty] target już w wojnie blokuje DOW
+
+M29-ai-bez-peacelock (ai) — guard blokady pokoju/cooldownu pary usunięty
+  RED: [czysty] peace lock (w tym cooldown pary) blokuje DOW
+
+M30-ai-bez-nap (ai) — guard NAP usunięty
+  RED: [czysty] NAP blokuje DOW
+
+M31-ai-bez-sojuszu (ai) — guard sojuszu z celem usunięty
+  RED: [czysty] sojusz z celem blokuje DOW
+  RED: [bramka] ai.ts: guard Żelaza to wczesny return z wypowiedz_wojne i pełnym zestawem blokad
+
+M32-ai-powod-bez-epoki (ai) — powód DOW nie identyfikuje już mechanizmu Żelaza
+  RED: [czysty] powód DOW identyfikuje mechanizm Żelaza
+
+M33-ai-odpala-bez-celu (ai) — mechanizm odpala nawet BEZ wskazanego celu (bierze pierwszą relację)
+  RED: [czysty] BEZ ironForceWarTargetId ta sama relacja NIE daje DOW (dowód, że to mechanizm, nie ogólna reguła)
+
+M34-ai-fallback-relacji (ai) — brak relacji z celem podmieniany na pierwszą relację (cel 0 = gracz przechodzi)
+  RED: [czysty] ironForceWarTargetId=0 nie produkuje DOW wobec gracza
+
+M35-ai-regresja-brazu (ai) — REGRESJA: guard Brązu wyłączony
+  RED: [czysty] pole Brązu nadal działa niezależnie (bez regresji)
+  RED: [bramka] ai.ts: guardy Kamienia i Brązu nietknięte (zero regresji dwóch istniejących epok)
+
+M36-ai-regresja-kamienia (ai) — REGRESJA: guard Kamienia wyłączony
+  RED: [czysty] pole Kamienia nadal działa niezależnie (bez regresji)
+  RED: [bramka] ai.ts: guardy Kamienia i Brązu nietknięte (zero regresji dwóch istniejących epok)
+
+M37-main-import (main) — import modułu Żelaza zerwany
+  RED: [bramka] main.ts importuje osobny moduł forced-war-iron
+
+M38-main-wyzwalacz-prog-tury (main) — wyzwalacz awansu podmieniony na próg tury (dokładnie to, czego dispatch zakazuje)
+  RED: [bramka] wyzwalacz siedzi w syncOwnerEraFromResearch i używa isIronEraEntry(prev, next)
+  RED: [bramka] wyzwalacz Żelaza NIE jest progiem tury (żadnego turn >= … obok ironForceWarPendingOwners.add)
+  RED: [bramka] wyzwalacz wyklucza miasta-państwa/kopie (isOwnerClusterCityState przy awansie)
+
+M39-main-napastnik-barbarzynca (main) — barbarzyńca dopuszczony jako napastnik wymuszonej wojny Żelaza
+  RED: [bramka] guard napastnika wyklucza gracza (ownerId > 0), kopie typu, barbarzyńców, wyeliminowanych i miasta-państwa
+
+M40-main-bez-eligible (main) — kwalifikacja napastnika omija isEligibleForIronForcedWar
+  RED: [bramka] kwalifikacja napastnika przechodzi przez isEligibleForIronForcedWar (isMainAiCiv + brak wojny w dowolnej roli)
+
+M41-main-cykl-bez-wojny (main) — cykl po odpoczynku nie sprawdza już trwającej wojny
+  RED: [bramka] cykl po odpoczynku: wymaga cycleOwners, braku wojny i wygaśnięcia isRestingFromIronForcedWar
+
+M42-main-gracz-w-puli (main) — GRACZ (ownerId 0) dopuszczony do puli celów
+  RED: [bramka] pula kandydatów Żelaza wyklucza gracza (oid > 0), kopie, barbarzyńców, wyeliminowanych i miasta-państwa
+
+M43-main-bez-peacelock-w-puli (main) — blokada pokoju (cooldown pary) nie wyklucza już celu
+  RED: [bramka] Iron target filtruje NAP, blokadę pokoju i sojusz z celem
+
+M44-main-pick-bez-blokad (main) — wybór celu bez przekazania blockedOwnerIds
+  RED: [bramka] wybór celu przechodzi przez pickIronForcedWarTargetId z blockedOwnerIds
+
+M45-main-bez-przekazania-celu (main) — cel Żelaza nie trafia do decideAIDiplomacy (mechanizm martwy)
+  RED: [bramka] Iron target jest przekazywany do decideAIDiplomacy
+
+M46-main-bez-cyklu (main) — udany DOW nie zapisuje ownera do cyklu (wojna raz i koniec)
+  RED: [bramka] udany DOW mutuje active/cycle i konsumuje pending Żelaza
+
+M47-main-pending-bez-eliminacji (main) — pending Żelaza nie jest kasowany przy eliminacji cywilizacji
+  RED: [bramka] pending Żelaza jest kasowany DOKŁADNIE w jednym miejscu (blok sukcesu), nie przy samej próbie
+
+M48-main-bez-guarda-sojuszu-w-komendzie (main) — finalny guard sojuszu w komendzie DOW usunięty
+  RED: [bramka] komenda DOW ma finalny guard sojuszu dla celu Żelaza
+
+M49-main-hak-licznika-nazwa (main) — funkcja licznika miast Żelaza przemianowana (definicja i cooldown)
+  RED: [bramka] maybeResolveIronForcedWarOnCityCapture() zdefiniowana w main.ts
+  RED: [bramka] zwykła wojna bez zmian: licznik Żelaza działa tylko dla aktywnej pary wymuszonej
+
+M49b-main-cooldown-pokoju (main) — auto-pokój Żelaza używa długości odpoczynku zamiast cooldownu pary
+  RED: [bramka] automatyczny pokój po 2 miastach używa cooldownu Żelaza
+
+M50-main-hak-bitwa (main) — hak licznika usunięty z funnela podboju bojowego
+  RED: [bramka] capture battle funnel rozlicza Żelazo
+
+M51-main-hak-kapitulacja (main) — hak licznika usunięty z kapitulacji głodowej (wojna AI↔AI nigdy się nie kończy)
+  RED: [bramka] siege surrender funnel rozlicza Żelazo PO zmianie city.ownerId
+
+M52-main-licznik-bez-pary (main) — licznik przestaje być ograniczony do aktywnej pary wymuszonej (dotyka zwykłych wojen)
+  RED: [bramka] zwykła wojna bez zmian: licznik Żelaza działa tylko dla aktywnej pary wymuszonej
+
+M53-main-bez-cleanup-pokoj (main) — pokój nie uzbraja odpoczynku Żelaza
+  RED: [bramka] finalizePeaceTreatyBetween uzbraja odpoczynek Żelaza (cleanupIronForcedWarOnPeace)
+
+M54-main-save-bez-cycle (main) — zapis gry gubi cycleOwners Żelaza
+  RED: [bramka] save snapshot zawiera komplet 4 pól Żelaza
+
+M55-main-bez-restore (main) — odczyt zapisu nie odtwarza stanu Żelaza
+  RED: [bramka] restoreGameFromSave odtwarza komplet 4 struktur Żelaza
+
+M56-main-bez-resetu-nowej-gry (main) — nowa gra dziedziczy rejestry Żelaza z poprzedniej rozgrywki
+  RED: [bramka] eliminacja i nowa gra czyszczą stan Żelaza
+
+M57-main-regresja-kamienia (main) — REGRESJA: import modułu Kamienia zerwany
+  RED: [bramka] Kamień i Brąz zachowują własne moduły, rejestry i haki
+
+M58-main-rejestr-cycle (main) — rejestr cycleOwners Żelaza przemianowany (deklaracja)
+  RED: [bramka] rejestry Żelaza są ROZŁĄCZNE z Kamieniem i Brązem (żadne pole nie jest współdzielone)
+
+=== POKRYCIE ===
+kontrakt czysty: 46/46 asercji zaczerwienionych
+bramka main/ai: 29/29 asercji zaczerwienionych
+
+Źródła przywrócone bajt w bajt.
