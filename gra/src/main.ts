@@ -313,6 +313,7 @@ import {
 import { clusterCityStateRadius, clusterHubChainReachHex, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
+  clearCityStateFlagOnCapture,
   formatOwnerDiploLabel,
   isOwnerClusterCityState,
   isTechnicalOwnerLabel,
@@ -12567,6 +12568,10 @@ async function boot(): Promise<void> {
         const oldOwner = city.ownerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
+        // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): kapitulacja
+        // głodowa to DRUGA ścieżka przejęcia miasta — oznaczenie miasta-państwa gasi się
+        // tak samo jak przy podboju bojowym, inaczej flaga wędruje do zdobywcy.
+        if (clearCityStateFlagOnCapture(city)) markCityStateDirty();
         // R-MIASTA-LIMIT-PODBÓJ-Q1=A: kapitulacja wojenna przejmuje miasto
         // bez zużywania puli miast zakładanych przez nowego właściciela.
         city.foundedByOwner = false;
@@ -23811,7 +23816,10 @@ async function boot(): Promise<void> {
 
       for (const city of csCities) {
         city.ownerId = annexerId;
-        city.startCityState = false;
+        // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1: to samo gaszenie oznaczenia co na
+        // ścieżkach zbrojnych — jedna funkcja, żeby ścieżki nie rozłączyły się przy kolejnej
+        // zmianie (przed tym tematem TYLKO ta ścieżka w ogóle gasiła flagę).
+        clearCityStateFlagOnCapture(city);
         // B2 (Evaluator RUNDA 1: FAIL): dyplomatyczne wchłonięcie musi zresetować
         // override i zsynchronizować pola z globalnym defaultem NOWEGO właściciela.
         seedCityOwnerDefaults(city);
@@ -24267,6 +24275,14 @@ async function boot(): Promise<void> {
           onOwnerChanged: (c: City): void => {
             seedCityOwnerDefaults(c);
             applyLiveSafeRationForCity(c.id);
+            // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): jedyny hak
+            // wołany przez applyCityCaptureAfterBattle PO ustawieniu nowego właściciela,
+            // wspólny dla WSZYSTKICH trzech wejść zbrojnych (bitwa polowa o miasto, szturm
+            // oblężniczy, wejście do pustego miasta — każde kończy się na
+            // applyCityCaptureToMap). Bez tego zdobyte miasto miasta-państwa wnosi
+            // `startCityState` do zdobywcy i cała cywilizacja jest dalej traktowana jak
+            // miasto-państwo (lista potęg, portret władcy, wojna wymuszona Kamienia).
+            if (clearCityStateFlagOnCapture(c)) markCityStateDirty();
           },
         },
       );

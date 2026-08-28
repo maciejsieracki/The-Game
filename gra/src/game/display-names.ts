@@ -58,6 +58,41 @@ export function isOwnerClusterCityState(
   return false;
 }
 
+/**
+ * R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 — ECHO właściciela = wariant A:
+ * „oznaczenie miasta-państwa znika przy KAŻDYM przejęciu miasta-państwa, także zbrojnym".
+ *
+ * DLACZEGO TO ISTNIEJE: `isOwnerClusterCityState` (wyżej) uznaje ownera za miasto-państwo
+ * także wtedy, gdy KTÓREKOLWIEK z jego miast ma `startCityState`. Zdobyte miasto
+ * miasta-państwa wnosiło więc tę flagę do zdobywcy — pełna cywilizacja po podboju była
+ * traktowana jak miasto-państwo (wypadała z listy potęg `power-ranking.ts`, traciła portret
+ * władcy w dyplomacji i była wykluczana z wojny wymuszonej epoki Kamienia przez guard
+ * `!typCityCopyOwners.has(...)`/`isOwnerClusterCityState`). Przed tym tematem flaga gasła
+ * WYŁĄCZNIE przy pokojowym wchłonięciu (`annexCityStateToOwner` w `main.ts`).
+ *
+ * Gasimy oznaczenie na MIEŚCIE, nie na właścicielu — zbiory spawnowe
+ * (`simplifiedOwners` / `typCopyOwners`) zostają nietknięte, więc PRAWDZIWE miasta-państwa
+ * dalej są miastami-państwami, także po utracie części swoich miast. Mechanizm nie jest
+ * wyłączany; przestaje tylko zarażać zdobywcę.
+ *
+ * Wołający: `main.ts`, na KAŻDEJ ścieżce zmiany właściciela miasta przez przejęcie
+ * (podbój bojowy/szturm/wejście do pustego miasta, kapitulacja głodowa oblężenia,
+ * pokojowe wchłonięcie). Rebelia (`REBEL_FACTION_OWNER_ID = -99`) celowo NIE jest tu
+ * wołana: `isOwnerClusterCityState` zwraca `false` dla `ownerId <= 0`, więc frakcja
+ * rebeliantów nie może się zarazić, a miasto po odbiciu wraca do właściciela ścieżką
+ * podboju bojowego, która flagę i tak gasi.
+ *
+ * @returns `true`, gdy flaga faktycznie zgasła — wołający wie wtedy, że musi odświeżyć
+ *          cache etykiet (`markCityStateDirty`). `false` = nic się nie zmieniło.
+ */
+export function clearCityStateFlagOnCapture(
+  city: { startCityState?: boolean },
+): boolean {
+  if (city.startCityState !== true) return false;
+  city.startCityState = false;
+  return true;
+}
+
 export interface ForceCultureIconOpts extends OwnerCityStateOpts {
   /** Stolice klastrów obcych typów — pełne imperia, portret władcy OK. */
   clusterCapitalOwnerIds?: ReadonlySet<number>;
