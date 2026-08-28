@@ -1,0 +1,49 @@
+# EV4 — NIEZALEZNA KONTROLA KRYTERIOW (Evaluator, runda 4)
+# PRZED=/tmp/ev4-przed-r3/gra/src  PO=/home/user/wt-ev-ai-r4/gra/src  ziarna=1,2,3,11,77  tur=30
+
+## KRYTERIUM 5a — trzy profile automatu GRACZA, onlyWorked=FALSE (test Operatora)
+  [ZGODNE]  profil "zywnosc" onlyWorked=false skipWyrab=true — 315 pozycji odcisku identycznych
+  [ZGODNE]  profil "surowce" onlyWorked=false skipWyrab=true — 291 pozycji odcisku identycznych
+  [ZGODNE]  profil "infrastruktura" onlyWorked=false skipWyrab=true — 94 pozycji odcisku identycznych
+
+## KRYTERIUM 5b — TE SAME trzy profile, ale onlyWorked=TRUE
+   (gracz, ktory mial ten przelacznik WLACZONY juz przed runda 4 — wyjatek zlozowy)
+  [ROZNE]   profil "zywnosc" onlyWorked=TRUE skipWyrab=true — 184/206 pozycji rozne
+              seed=1 #4: PRZED='t1|c0|4,7|farma' PO='t1|c0|8,7|oboz_lowiecki'
+              seed=1 #5: PRZED='t1|c0|4,7|bydlo' PO='t1|c0|10,5|oboz_lowiecki'
+              seed=1 #6: PRZED='t2|c0|5,7|oboz_lowiecki' PO='t2|c0|9,7|oboz_lowiecki'
+  [ROZNE]   profil "surowce" onlyWorked=TRUE skipWyrab=true — 140/162 pozycji rozne
+              seed=1 #4: PRZED='t2|c0|5,7|tartak' PO='t2|c0|8,7|glinianka'
+              seed=1 #5: PRZED='t2|c0|7,6|tartak' PO='t2|c0|10,5|glinianka'
+              seed=1 #6: PRZED='t3|c1|7,25|glinianka' PO='t3|c0|9,7|glinianka'
+  [ROZNE]   profil "infrastruktura" onlyWorked=TRUE skipWyrab=true — 4/22 pozycji rozne
+              seed=11 #8: PRZED='t3|c2|9,9|droga' PO='t3|c0|5,7|posterunek'
+              seed=11 #9: PRZED='t3|c2|9,9|droga_brukowana' PO='t3|c2|9,9|droga'
+              seed=11 #10: PRZED='-' PO='t4|c0|6,6|fort'
+
+## KONTROLA: profil "zrownowazone" BEZ demandDriven (wolajacy nieswiadomy Zasady 1)
+  [ZGODNE]  profil "zrownowazone" onlyWorked=false demandDriven=NIE — 306 pozycji odcisku identycznych
+
+## KRYTERIUM 6 — przelacznik „wolno wycinac las" (automat GRACZA, profil zrownowazone)
+  wolnoWycinacLas=false -> pickow 206, wyrab 0, farma 50
+  wolnoWycinacLas=true  -> pickow 226, wyrab 10, farma 60
+  KONTROLA ZAKRESU MIASTA: getSkipWyrab rozny dla dwoch miast w jednym wywolaniu
+  wyrab per miasto (wolno TYLKO c0): {"c0":1}
+
+## KRYTERIUM 2 — okno niedoboru: pojawia sie i znika w TEJ SAMEJ turze
+  (tura: zywnosc+wyrab / NIE-zywnosciowe; * = niedobor kamienia aktywny)
+    t0 :15/0  t1 :14/0  t2 :11/0  t3 :10/0  t4 :13/0  t5 :10/0  t6 :10/0  t7 :11/0  t8 :11/0  t9 :10/0
+    t10*:0/10  t11*:0/10  t12*:0/10  t13*:0/10  t14*:2/8  t15*:3/6  t16*:4/6  t17*:4/5  t18*:2/7  t19*:2/6
+    t20 :10/0  t21 :10/0  t22 :10/0  t23 :10/0  t24 :10/0  t25 :10/0  t26 :8/0  t27 :6/0  t28 :4/0  t29 :3/0
+
+## KRYTERIUM 4 / ZASADA 3 — spojnosc raportu nadwyzki (automat GRACZA)
+  tur razem 150 · surplus=true 48
+  SPRZECZNE (surplus=true ORAZ picks>0 w tej samej turze): 0
+
+## DEFAULTY (kryterium 6 + Zasada 2)
+  PO:    DEFAULT_ULEPSZENIA_ONLY_WORKED = true
+  PO:    DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS = false
+  PO:    freshUlepszeniaEmpirePolicy() = {"focus":"zrownowazone","tryb":"reczny","onlyWorked":true,"pracaAutoPercent":33,"wolnoWycinacLas":false}
+  PRZED: freshUlepszeniaEmpirePolicy() = {"focus":"zrownowazone","tryb":"reczny","onlyWorked":false,"pracaAutoPercent":33}
+
+# WYNIK POROWNAN ODCISKOW: zgodnych 4, roznych 3

@@ -1,0 +1,25 @@
+# POMIAR EVALUATORA (PRZEDR3) — snapshot stanu mapy
+# zrodlo: /tmp/ev4-przed-r3/gra/src
+# mapa 44x32 „pangea", 4 miasta, pop 8, ziarna 1,2,3,4,5, tur 40
+
+### A: AI CYWILIZACJI, BEZ NIEDOBORU (40 tur)
+  WARSTW NA MAPIE (snapshot): 800
+  zyw/sur/infra/wyrab: 511/111/59/119  ->  zywnosc 63.9% · surowce 13.9% · infra 7.4% · wyrab 14.9%
+  ZASADA 2: warstwy na heksach BEZ obywateli 459 (57.4%); z tego ZLOZOWE (wyjatek) 46 · NIE-ZLOZOWE 413 (51.6%)
+  PER KLUCZ: farma=213 · bydlo=210 · wyrab=119 · glinianka=66 · warzelnia_soli=25 · oboz_lowiecki=22 · lodzie_rybackie=22 · droga=20 · kamieniolom=19 · droga_brukowana=18 · tartak=16 · posterunek=11 · irygacja=11 · fort=10 · owce=8 · kopalnia_miedzi=5 · kopalnia_cyny=3 · kopalnia_zelaza=2
+
+### B: AI CYWILIZACJI, STALY NIEDOBOR DREWNA
+  WARSTW NA MAPIE (snapshot): 800
+  zyw/sur/infra/wyrab: 505/117/59/119  ->  zywnosc 63.1% · surowce 14.6% · infra 7.4% · wyrab 14.9%
+  ZASADA 2: warstwy na heksach BEZ obywateli 458 (57.3%); z tego ZLOZOWE (wyjatek) 46 · NIE-ZLOZOWE 412 (51.5%)
+  PER KLUCZ: farma=212 · bydlo=210 · wyrab=119 · glinianka=66 · warzelnia_soli=25 · tartak=22 · lodzie_rybackie=22 · droga=20 · kamieniolom=19 · droga_brukowana=18 · oboz_lowiecki=17 · posterunek=11 · irygacja=11 · fort=10 · owce=8 · kopalnia_miedzi=5 · kopalnia_cyny=3 · kopalnia_zelaza=2
+
+### C: AI CYWILIZACJI, NIEDOBOR KAMIENIA tylko t15-t24
+  WARSTW NA MAPIE (snapshot): 800
+  zyw/sur/infra/wyrab: 511/111/59/119  ->  zywnosc 63.9% · surowce 13.9% · infra 7.4% · wyrab 14.9%
+  ZASADA 2: warstwy na heksach BEZ obywateli 459 (57.4%); z tego ZLOZOWE (wyjatek) 46 · NIE-ZLOZOWE 413 (51.6%)
+  PER KLUCZ: farma=213 · bydlo=210 · wyrab=119 · glinianka=66 · warzelnia_soli=25 · oboz_lowiecki=22 · lodzie_rybackie=22 · droga=20 · kamieniolom=19 · droga_brukowana=18 · tartak=16 · posterunek=11 · irygacja=11 · fort=10 · owce=8 · kopalnia_miedzi=5 · kopalnia_cyny=3 · kopalnia_zelaza=2
+
+### ZASADA 3 — BRAK DANYCH (drzewo PRZED nie zna freshSurplusReport)
+
+### LAS (scenariusz A): heksow lasu przed 1396 -> po 1277 (ubytek 119)

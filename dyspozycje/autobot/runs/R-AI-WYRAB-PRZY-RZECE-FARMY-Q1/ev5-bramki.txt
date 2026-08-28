@@ -1,0 +1,47 @@
+=== EVALUATOR runda 5 — bramki, wlasna reka, worktree /home/user/wt-ev-ai-r5 @ a46dfc7a ===
+--- logic-test ---
+exit=0
+
+LOGIC OK (213/213)
+--- tech-tree-test ---
+exit=0
+tech-tree-test: 19 pass, 0 fail
+--- research-test ---
+exit=0
+PASSED: 33 / FAILED: 0 / TOTAL: 33
+ALL GREEN
+--- unit-replace-test ---
+exit=0
+
+[unit-replace-test] WSZYSTKIE TESTY ZIELONE (13/13)
+--- combat-test ---
+exit=0
+COMBAT TEST: 6/6 pass
+All sanity checks passed.
+--- ai4-popyt-obywatele-test ---
+exit=0
+
+ai4-popyt-obywatele-test: 50 passed, 0 failed
+--- ai2-heks-po-heksie-test ---
+exit=0
+
+ai2-heks-po-heksie-test: 35 passed, 0 failed
+--- ai-praca-split-parity-test ---
+exit=1
+
+ai-praca-split-parity-test: 21 passed, 1 failed
+--- fort-nodes-save-load-test ---
+exit=0
+fort-nodes-save-load-test: 18 passed, 0 failed
+--- map-snapshot-load-test ---
+exit=0
+
+=== map-snapshot-load-test: 58 pass, 0 fail, 1 known-fail (nie liczy sie do exit code) ===
+--- autosave-quota-fail-test ---
+exit=0
+
+=== autosave-quota-fail-test: 20 pass, 0 fail ===
+--- okolica-load-reconcile-test ---
+exit=0
+
+OKOLICA-LOAD-RECONCILE OK (23/23)

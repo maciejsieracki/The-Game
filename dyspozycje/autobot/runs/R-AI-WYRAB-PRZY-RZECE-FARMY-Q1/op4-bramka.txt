@@ -1,0 +1,104 @@
+Z1. BUDOWANIE NAPEDZANE POPYTEM — AI CYWILIZACJI (decideAITurn)
+  [OK] Z1a: BEZ niedoboru ZERO rozkazow poza zywnoscia (poza wyrebem = krok 0 farmy): 0 (-)
+  [OK] Z1b: BEZ niedoboru automat i tak buduje (zywnosc): 14 rozkazow
+  [OK] Z1c: PRZY niedoborze rozkazy niezywnosciowe SA: 10 (tartak,droga,droga_brukowana,posterunek,fort)
+  [OK] Z1d: niedobor SAMEJ zywnosci NIE otwiera budowy surowcow/infrastruktury (0)
+  [OK] Z1e: `hasNonFoodResourceDeficit` — zywnosc nie liczy sie jako niedobor, drewno tak
+  [OK] Z1f: rozkaz niezywnosciowy pojawia sie W TEJ SAMEJ turze co niedobor (t5: tartak)
+  [OK] Z1g: ... i znika, gdy niedobor ustaje (poza t5: 0)
+Z1h. TRZY POZOSTALE PROFILE AUTOMATU GRACZA — bez zmiany zachowania
+  [OK] Z1h/zywnosc: identyczny wynik pickera z demandDriven i bez (40 pickow)
+  [OK] Z1h/surowce: identyczny wynik pickera z demandDriven i bez (5 pickow)
+  [OK] Z1h/infrastruktura: identyczny wynik pickera z demandDriven i bez (12 pickow)
+  [OK] Z1i: profil „zrownowazone" JEST objety Zasada 1 (wynik sie rozni)
+Z2. BUDOWA TYLKO PRZY OBYWATELACH — z wyjatkiem zloz
+  [OK] Z2a: fikstura — obrabiane sa 3 heksy i NIE nalezy do nich zloze 12,7 (7,5 7,6 6,7)
+  [OK] Z2b: picker cos zbudowal (11)
+  [OK] Z2c: ZERO ulepszen NIE-zlozowych poza polami z obywatelami (0: )
+  [OK] Z2d: WYJATEK ZLOZOWY dziala — warzelnia soli powstaje na zlozu 12,7 mimo braku obywateli
+  [OK] Z2e: DEFAULT_ULEPSZENIA_ONLY_WORKED === true (nowa wartosc domyslna rundy 4)
+  [OK] Z2f: swieza polityka imperium ma onlyWorked === true
+  [OK] Z2g: override miasta BEZ pola `ulepszeniaOnlyWorked` czyta sie jako true
+  [OK] Z2h: JAWNE `false` w zapisie miasta jest respektowane (nie nadpisujemy wyboru gracza)
+Z2i. AI CYWILIZACJI faktycznie ma wpiety filtr obywateli (decideAITurn)
+  [OK] Z2i: AI cywilizacji cos zbudowala (6 rozkazow)
+  [OK] Z2j: AI CYWILIZACJI nie postawila nic poza polami z obywatelami (0: )
+Z3. NADWYZKA — raport pickera i przekierowanie na budynki
+  [OK] Z3a: w turze 0 sa kandydaci — nadwyzki NIE ma ({"demandActive":true,"deficitActive":false,"anyCandidate":true,"surplus":false,"n":1})
+  [OK] Z3b: po domknieciu pol z obywatelami raport melduje NADWYZKE ({"demandActive":true,"deficitActive":false,"anyCandidate":false,"surplus":true,"n":0})
+  [OK] Z3c: przy niedoborze nadwyzki nie ma, nawet gdy zywnosc jest domknieta ({"demandActive":true,"deficitActive":true,"anyCandidate":true,"surplus":false})
+  [OK] Z3d: przesuniecie podzialu Pracy na maksimum realnie zwieksza Prace kolejki budynkow (70 -> 100 przy 100 Pracy miasta)
+Z3e. STRAZNIK TEKSTOWY main.ts — Zasada 3 po stronie silnika
+  [OK] Z3e: main.ts zawiera blok przekierowania nadwyzki AI CYWILIZACJI
+  [OK] Z3f: przekierowanie jest BRAMKOWANE raportem nadwyzki (`surplusRep?.surplus`)
+  [OK] Z3g: przy nadwyzce podzial Pracy AI idzie na budynki (do MAX_PODZIAL_PRACY_BUDYNKI_PERCENT)
+  [OK] Z3h: po ustaniu nadwyzki podzial WRACA (nie zostaje na maksimum na zawsze)
+  [OK] Z3i: main.ts sygnalizuje nadwyzke automatu GRACZA
+  [OK] Z3j: sygnal dla gracza to WYLACZNIE komunikat — zaden zapis do `pracaAutoPercent`
+  [OK] Z3k: jedyne miejsce zapisujace polityke `pracaAutoPercent` panstwa to handler suwaka gracza (1)
+Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA
+  [OK] Q2a: wartosc domyslna przelacznika = WYLACZONY (§14 — bez zmiany zachowania)
+  [OK] Q2b: swieza polityka panstwa ma wolnoWycinacLas === false
+  [OK] Q2c: miasto bez override dziedziczy wartosc panstwa
+  [OK] Q2d: ZAKRES PANSTWO — wlaczenie w polityce panstwa dociera do miasta bez override
+  [OK] Q2e: ZAKRES MIASTO — override miasta przebija wylaczona polityke panstwa
+  [OK] Q2f: ... i w druga strone — override miasta bez pola wraca do wartosci domyslnej OFF
+  [OK] Q2g: SAVE/LOAD — stary zapis bez pola dostaje przelacznik WYLACZONY
+  [OK] Q2h: SAVE/LOAD — jawne `true` przezywa `ensureCitySaveDefaults`
+  [OK] Q2i: SAVE/LOAD — main.ts odtwarza `wolnoWycinacLas` polityki panstwa z zapisu
+  [OK] Q2j: SAVE/LOAD — polityka panstwa (z nowym polem) trafia do zapisu w calosci
+  [OK] Q2k: miasto z WLACZONYM przelacznikiem wycina las (1 wyrebow)
+  [OK] Q2l: miasto z WYLACZONYM przelacznikiem w TYM SAMYM wywolaniu nie wycina (0)
+  [OK] Q2m: wyrab automatu GRACZA idzie ta sama sciezka pickera co AI CYWILIZACJI (skipWyrab=false; farm w miescie cA: 1)
+  [OK] Q2n: main.ts (AI GRACZA) podaje `getSkipWyrab` z przelacznika, nie stala
+  [OK] Q2o: main.ts (AI GRACZA) podaje Zasade 1 i realne niedobory panstwa
+  [OK] Q2p: main.ts (AI GRACZA) obsluguje `wyrab` sciezka wycinki, nie jako warstwe ulepszenia
+
+ai4-popyt-obywatele-test: 48 passed, 0 failed
+A. petla po HEKSACH, nie po TYPACH
+  [OK] picker zwrocil >= 4 ulepszenia (jest 6)
+  [OK] zaden heks nie wraca po przerwie (sekwencja: 5,5 5,5 4,5 4,5 4,5 4,5)
+  [OK] pierwsze DWA ulepszenia trafiaja na TEN SAM heks (5,5 vs 5,5)
+  [OK] ... i sa to ROZNE typy (farma / bydlo) — czyli domykanie heksa, nie ten sam typ na dwoch heksach
+B. heks z rzeka ma priorytet przed heksem bez rzeki
+  [OK] maxItemsPerCity=1 -> dokladnie 1 pick (jest 1)
+  [OK] pierwszy pick trafia na heks Z RZEKA (8,5), nie na blizszy heks bez rzeki (jest 8,5)
+C. brak duplikatu tego samego ulepszenia na tym samym heksie
+  [OK] 20 tur x maxItemsPerCity=1: zero duplikatow warstwy
+D. AI CYWILIZACJI — limit maxItemsPerCity: 1 NIETKNIETY (ECHO: „Zostaw limit, zmien kolejnosc")
+  [OK] ai.ts / planCityImprovements nadal przekazuje `maxItemsPerCity: 1` do pickera
+  [OK] ai.ts / planCityImprovements nadal przekazuje `pracaBudgetPercent: 100`
+  [OK] decideAITurn: dokladnie 1 ulepszenie na miasto na ture (2 rozkazow przy 2 miastach)
+E. AI CYWILIZACJI buduje TARTAK (przed runda 2: 0 na wszystkich ziarnach)
+  [OK] PRZY NIEDOBORZE drewna AI cywilizacji stawia tartak w 12 turach na mapie lesnej (1 szt.)
+  [OK] RUNDA 4 / ZASADA 1: BEZ niedoboru tartak nie powstaje ani razu (0 szt.)
+F. straznik tekstowy main.ts — konfiguracja wywolania pickera na sciezce AI GRACZA
+  [OK] main.ts zawiera wywolanie `pickAutoImprovements` auto-ulepszen gracza
+  [OK] main.ts (AI GRACZA): `skipWyrab: true` — gracz nie karczuje automatem
+  [OK] main.ts (AI GRACZA): budzet z polityki gracza (`pracaAutoPercent`), nie 100%
+  [OK] main.ts (AI GRACZA): profil (`getFocus`) i filtr obrabianych heksow (`getOnlyWorked`) nadal przekazywane
+  [OK] main.ts (AI GRACZA): brak `maxItemsPerCity` — throttle 1/ture jest WYLACZNIE mechanizmem AI cywilizacji
+  [OK] zrodlo eksportuje ZERO_YIELD_IMPROVEMENTS (kontrakt W-B rundy 3): posterunek,fort
+  [OK] zrodlo eksportuje JEDEN_NA_ILU_OBYWATELI (10)
+G. W-B: zbior ulepszen ZEROPLONOWYCH policzony Z DANYCH, nie z listy w kodzie
+  [OK] dane plonow daja niepusty zbior kluczy zeroplonowych (fort,posterunek)
+  [OK] ZERO_YIELD_IMPROVEMENTS = zbior policzony z tileYield (stala: [fort,posterunek] vs dane: [fort,posterunek])
+H. W-B: posterunek/fort NIE domykaja heksa i maja pulap ceil(pop/10) na miasto
+  [OK] ulepszen zeroplonowych 1..2 na miasto (jest 2: posterunek,fort)
+  [OK] pulap ceil(pop/10)=1 dotrzymany dla posterunek (jest 1)
+  [OK] pulap ceil(pop/10)=1 dotrzymany dla fort (jest 1)
+  [OK] heks domykany plonowo (6,6) nie dostal posterunku ani fortu
+  [OK] obrona stoi na GRANICY zasiegu miasta — dalej (6,6) niz najdalsza praca na plon (1)
+I. WYRAB: AI CYWILIZACJI faktycznie wycina las na heksie z rzeka (GOAL tematu)
+  [OK] decideAITurn wydal rozkaz `wyrab` w 30 turach (2 szt.)
+  [OK] PIERWSZY wyrab trafia na heks Z RZEKA (7,8)
+  [OK] farma powstaje PO wyrebie na tym samym heksie (2 szt., np. 7,8 @t5)
+  [OK] minimum lesne miasta dotrzymane mimo wycinki: tartak 4, oboz 4
+  [OK] zaden heks z tartakiem albo obozem nie zostal wyciety
+  [OK] posterunek i fort NADAL powstaja poza sekwencja domykania (posterunek 1, fort 1)
+  [OK] ... i nie przekraczaja pulapu 1 na miasto
+L. sciezka AI GRACZA: silnik wycinki jest WSPOLNY — blokuje ja wylacznie `skipWyrab` z main.ts
+  [OK] skipWyrab: true (konfiguracja main.ts) -> zero wyrebow (0)
+  [OK] ten sam picker przy skipWyrab: false -> wyrab jest (1 szt.)
+
+ai2-heks-po-heksie-test: 35 passed, 0 failed

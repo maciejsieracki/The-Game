@@ -10,7 +10,12 @@ import { Nakladka } from '../types/hex';
 import type { ImprovementKey } from '../render/improvements';
 import type { TerritoryNode } from '../map/territory';
 import { cityTerritoryRadius } from '../map/territory';
-import { buildImprovementQualifier, type ImprovementBuildState } from '../map/improvement-build';
+import {
+  buildImprovementQualifier,
+  depositAllowsPlayerImprovement,
+  hexHasDepositReserve,
+  type ImprovementBuildState,
+} from '../map/improvement-build';
 import { hexKeysWithinRadius } from './okolica';
 import { getImprovementMeta, isImprovementTechUnlocked } from './improvement-tech';
 import { isImprovementAllowedForCiv } from './terrain-improvements';
@@ -45,9 +50,13 @@ export const AI_IMPROVEMENT_PRIORITY: readonly ImprovementKey[] = [
   'wyrab',
 ];
 
-const ULEPSZENIA_FOCUS_ZYWNOSC: readonly ImprovementKey[] = [
+export const ULEPSZENIA_FOCUS_ZYWNOSC: readonly ImprovementKey[] = [
   'farma', 'bydlo', 'owce', 'lama', 'tarasy', 'oboz_lowiecki', 'lodzie_rybackie', 'irygacja',
 ];
+
+/** Ten sam zbiór co `ULEPSZENIA_FOCUS_ZYWNOSC`, w formie `Set` — Zasada 1 (runda 4). */
+export const ULEPSZENIA_ZYWNOSCIOWE: ReadonlySet<ImprovementKey> =
+  new Set<ImprovementKey>(ULEPSZENIA_FOCUS_ZYWNOSC);
 
 const ULEPSZENIA_FOCUS_SUROWCE: readonly ImprovementKey[] = [
   'tartak', 'kamieniolom', 'glinianka', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_cyny',
@@ -60,11 +69,99 @@ const ULEPSZENIA_FOCUS_INFRASTRUKTURA: readonly ImprovementKey[] = [
 
 const ULEPSZENIA_FOCUS_ZROWNOWAZONE: readonly ImprovementKey[] = AI_IMPROVEMENT_PRIORITY;
 
+/**
+ * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 3, WARIANT W-B — decyzja właściciela 2026-08-27:
+ * „domykaj tylko to, co daje plon"): ulepszenia o ZEROWEJ delcie `tileYield`
+ * (żywność 0 / praca 0 / handel 0 / drewno 0 na KAŻDYM terenie, z rzeką i bez, pod lasem
+ * i bez — zmierzone niezależnie przez Operatora i Evaluatora rundy 2,
+ * `tools/ai2-strategia-plony-measure.cjs`).
+ *
+ * Te ulepszenia WYCHODZĄ z sekwencji domykania heksa (FAZA 1 w `pickAutoImprovements`) —
+ * nie blokują uznania heksa za domknięty. NIE znikają z gry: budowane są osobno,
+ * według potrzeb OBRONNYCH (FAZA 0 niżej — heksy na granicy zasięgu miasta), a dla
+ * AI CYWILIZACJI dodatkowo przez niezależną od tego pickera ścieżkę ekspansyjną
+ * `planExpansionFortBuilding` w `game/ai.ts` (posterunek przy własnej jednostce poza
+ * zasięgiem zakładania).
+ *
+ * POWÓD: w wariancie W-A (runda 2) `posterunek` + `fort` zjadały 193 z 600 rozkazów
+ * AI CYWILIZACJI (5 ziaren × 40 tur) i były bezpośrednią przyczyną spadku plonu
+ * żywności o 16,8 % (3522 → 2929/turę).
+ *
+ * Zbiór jest pinowany bramką tematu (`tools/ai2-heks-po-heksie-test.cjs`, test H):
+ * test liczy deltę `tileYield` dla KAŻDEGO klucza z `AI_IMPROVEMENT_PRIORITY` i wymaga,
+ * żeby ten zbiór był DOKŁADNIE zbiorem kluczy o zerowej delcie — więc zmiana danych
+ * plonów bez aktualizacji tej stałej czerwieni bramkę.
+ */
+export const ZERO_YIELD_IMPROVEMENTS: ReadonlySet<ImprovementKey> = new Set<ImprovementKey>([
+  'posterunek', 'fort',
+]);
+
+/**
+ * Reguła właściciela (ECHO 2026-08-27): „jeden tartak i obóz; ale tylko jeden na każde
+ * dziesięć obywateli wystarcza". Ten sam dzielnik obsługuje w rundzie 3 dwie rzeczy:
+ *  • pułap ulepszeń ZEROPLONOWYCH (obronnych) na miasto i na klucz — `ceil(pop / 10)`,
+ *    minimum 1. Bez pułapu FAZA 0 zjadałaby przy `maxItemsPerCity: 1` tyle samo tur co
+ *    wariant W-A (193 z 600 rozkazów); z pułapem AI CYWILIZACJI stawia posterunek i fort
+ *    na granicy zasięgu miasta i wraca do plonu.
+ *  • minimum LEŚNE miasta przed wyrębem POZA heksami z rzeką — dopóki miasto nie ma
+ *    `ceil(pop / 10)` tartaków i tyluż obozów łowieckich, wyrąb poza rzeką jest zamknięty.
+ *    Bez tego warunku zmierzono `tartak` 69 → **0**: wyrąb wchodził na heks przed tartakiem
+ *    i kasował las, na którym tartak stoi (regres wyniku rundy 2).
+ * To jest jedyna liczba w tej rundzie dobrana przez Operatora — zgłoszona w raporcie
+ * jako punkt decyzyjny właściciela.
+ */
+export const JEDEN_NA_ILU_OBYWATELI = 10;
+
 /** TEMAT #8: próg zachowania lasu przy wyrębie (>= N heksów lasu w promieniu miasta). */
 export const WYRAB_MIN_FOREST_IN_RADIUS = 3;
 
 /** R-AUTO-V2-Q4=B: minimalna rezerwa Pracy państwa po auto-ulepszeniu (placeholder do strojenia). */
 export const AUTO_ULEPSZENIA_PRACA_RESERVE = 30;
+
+/**
+ * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 1 — budowanie napędzane popytem).
+ *
+ * ECHO właściciela 2026-08-27: „AI powinno budować mniej więcej wszystkie ulepszenia poza
+ * żywnością, tylko w miarę potrzeby, czyli surowcowe, wtedy kiedy brakuje surowców, a nie
+ * budować na zapas […]. W innych wypadkach powinna być tylko i wyłącznie inwestycja
+ * w żywność."
+ *
+ * `deficitKeys` to `resourceDeficitKeys` silnika (`detectOwnerResourceNeeds` →
+ * `main.ts::resourceDeficitKeysForOwner`). Klucz `zywnosc` jest z tego testu WYŁĄCZONY
+ * ŚWIADOMIE: niedobór żywności nie jest „sygnałem do wybudowania pozostałych ulepszeń" —
+ * w domyślnym trybie i tak buduje się wyłącznie żywność, więc brak żywności nie może
+ * otwierać budowy surowców i infrastruktury (byłoby to odwrócenie reguły właściciela).
+ * `detectOwnerResourceNeeds` dopisuje `zywnosc` do `deficitKeys`, gdy zapas żywności
+ * państwa spada poniżej progu — bez tego filtru każde głodujące państwo budowałoby
+ * „na zapas" wszystko.
+ */
+export function hasNonFoodResourceDeficit(deficitKeys?: readonly string[]): boolean {
+  if (!deficitKeys?.length) return false;
+  return deficitKeys.some(k => k !== 'zywnosc');
+}
+
+/**
+ * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3 — przekierowanie nadwyżki).
+ * Diagnostyka jednego wywołania pickera, wypełniana W MIEJSCU, gdy wołający poda obiekt
+ * w `PickAutoImprovementsOpts.surplusReport`. Nie zmienia ani jednego picku — służy
+ * wyłącznie temu, żeby wołający (AI CYWILIZACJI: `main.ts`, AI GRACZA: `main.ts`) wiedział,
+ * że budżet ulepszeń nie ma dziś czego kupić.
+ */
+export interface AutoImprovementSurplusReport {
+  /** Czy w tym wywołaniu Zasada 1 była w ogóle aktywna (demandDriven + profil zrównoważony). */
+  demandActive: boolean;
+  /** Czy trwa niedobór surowca innego niż żywność (`hasNonFoodResourceDeficit`). */
+  deficitActive: boolean;
+  /** Czy jakikolwiek heks dopuszczony przez Zasadę 2 kwalifikował JAKIEKOLWIEK ulepszenie. */
+  anyCandidate: boolean;
+  /** ZASADA 3: brak niedoboru ORAZ brak kandydatów „przy obywatelach" = nadwyżka budżetu. */
+  surplus: boolean;
+}
+
+/** Świeży, pusty raport nadwyżki (wołający przekazuje go do pickera i czyta po powrocie). */
+export function freshSurplusReport(): AutoImprovementSurplusReport {
+  return { demandActive: false, deficitActive: false, anyCandidate: false, surplus: false };
+}
 
 /** Zwraca listę typów ulepszeń wg profilu focus. */
 export function prioritiesForUlepszeniaFocus(
@@ -210,6 +307,25 @@ export interface PickAutoImprovementsOpts {
   maxItemsPerCity?: number;
   pracaSurplusThreshold?: number;
   skipWyrab?: boolean;
+  /**
+   * R4-Q2=C: `skipWyrab` PER MIASTO — nadpisuje wspólne `skipWyrab` dla tego miasta.
+   * Istnieje, bo przełącznik „wolno wycinać las" właściciel chciał mieć w DWÓCH zakresach
+   * (państwo i miasto), a `skipWyrab` jest jeden na całe wywołanie. Gdy nie podane,
+   * obowiązuje `skipWyrab` (czyli dla wołających nieświadomych tej opcji — bez zmian).
+   */
+  getSkipWyrab?: (city: AutoImprovementCity) => boolean;
+  /**
+   * ZASADA 1 (runda 4): włącza budowanie napędzane popytem. Domyślnie `false`, żeby
+   * wołający nieświadomi tej reguły (narzędzia, testy legacy) zachowali dzisiejsze
+   * zachowanie. Działa TYLKO na profilu `zrownowazone` — trzy pozostałe profile automatu
+   * gracza („żywność", „surowce", „infrastruktura") są jawnym wyborem gracza wbrew
+   * domyślnemu zachowaniu i NIE są ruszane (granica §14 dispatchu rundy 4).
+   */
+  demandDriven?: boolean;
+  /** ZASADA 1: `resourceDeficitKeys` właściciela na tę turę (patrz `hasNonFoodResourceDeficit`). */
+  resourceDeficitKeys?: readonly string[];
+  /** ZASADA 3: obiekt diagnostyczny wypełniany w miejscu; `undefined` = nie licz nic ekstra. */
+  surplusReport?: AutoImprovementSurplusReport;
   civArchetype?: string;
   playerEra?: number;
   isImprovementAllowedForCiv?: (key: ImprovementKey, civArchetype?: string) => boolean;
@@ -263,6 +379,10 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     maxItemsPerCity = Infinity,
     pracaSurplusThreshold = 0,
     skipWyrab = false,
+    getSkipWyrab,
+    demandDriven = false,
+    resourceDeficitKeys,
+    surplusReport,
     civArchetype,
     playerEra,
     isImprovementAllowedForCiv: civGate = isImprovementAllowedForCiv,
@@ -270,6 +390,11 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   } = opts;
 
   if (cities.length === 0 || !territoryNodes) return [];
+
+  // ZASADA 1 (runda 4): stan niedoboru jest WSPÓLNY dla całego wywołania — `resourceDeficitKeys`
+  // jest polityką PAŃSTWA (magazyn surowców jest państwowy), nie miasta.
+  const deficitActive = hasNonFoodResourceDeficit(resourceDeficitKeys);
+  if (surplusReport) surplusReport.deficitActive = deficitActive;
 
   let pracaLeft = opts.pracaAvailable;
   const reserve = opts.pracaSurplusThreshold ?? 0;
@@ -347,6 +472,16 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
   };
   const qualifies = buildImprovementQualifier(state);
 
+  // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2): heksy z rzeką NA heksie — priorytet przy
+  // wyborze NASTĘPNEGO heksu w pętli „heks po heksie" niżej. Ta sama definicja co
+  // `buildRiverHexSet` w map/improvement-build.ts (tam nieeksportowana, a tego pliku
+  // allowlista rundy 2 nie obejmuje): heks należy do rzeki, jeśli leży na którejś ze
+  // ścieżek rzek wygenerowanej mapy. Liczone RAZ na wywołanie, nie per miasto.
+  const riverHexKeys = new Set<string>();
+  for (const path of map.riverPaths ?? []) {
+    for (const p of path) riverHexKeys.add(`${p.q},${p.r}`);
+  }
+
   const orderedCities = [...cities].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const picks: AutoImprovementPick[] = [];
   const scheduledWyrabHexes = new Set<string>();
@@ -355,9 +490,27 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
     if (pracaLeft <= reserve) break;
 
     const focus = getFocus(city);
-    const basePriority = priorityOverride ?? prioritiesForUlepszeniaFocus(focus, skipWyrab);
+    // R4-Q2=C: przełącznik „wolno wycinać las" ma dwa zakresy (państwo i miasto), więc
+    // `skipWyrab` musi być rozstrzygany PER MIASTO. Bez `getSkipWyrab` — wartość wspólna.
+    const citySkipWyrab = getSkipWyrab ? getSkipWyrab(city) : skipWyrab;
+    const basePriority = priorityOverride ?? prioritiesForUlepszeniaFocus(focus, citySkipWyrab);
     const onlyWorked = getOnlyWorked(city);
     const workedKeys = onlyWorked && getWorkedHexKeys ? getWorkedHexKeys(city) : null;
+
+    // ---------------------------------------------------------------------
+    // ZASADA 1 (runda 4) — BUDOWANIE NAPĘDZANE POPYTEM.
+    // Domyślnie (brak niedoboru) lista typów zawęża się do `ULEPSZENIA_FOCUS_ZYWNOSC`;
+    // przy niedoborze wraca pełna lista profilu (a `improvementPriorityForDeficits`
+    // w ai.ts przestawia w niej niedobór na przód — te dwa mechanizmy są rozłączne:
+    // TAMTEN zmienia KOLEJNOŚĆ, TEN zmienia ZAKRES).
+    // Dotyczy WYŁĄCZNIE profilu `zrownowazone` (AI CYWILIZACJI nie ustawia
+    // `ulepszeniaFocus`, więc `getFocus` zwraca dla niej DEFAULT_ULEPSZENIA_FOCUS =
+    // `zrownowazone`); trzy pozostałe profile automatu gracza są jawnym wyborem gracza
+    // i zostają nietknięte (kryterium 5 dispatchu rundy 4).
+    // ---------------------------------------------------------------------
+    const demandActive = demandDriven && focus === 'zrownowazone';
+    const foodOnly = demandActive && !deficitActive;
+    if (surplusReport && demandActive) surplusReport.demandActive = true;
     // cityBudgetCap = pułap TEGO miasta na WSPÓLNY, dzielony licznik globalSpent (nie osobna
     // koperta — patrz komentarz przy globalSpent wyżej). Przy jednakowym % dla wszystkich miast
     // (typowy przypadek) to i tak daje dokładnie jeden wspólny budżet pct%×pula.
@@ -393,70 +546,427 @@ export function pickAutoImprovements(opts: PickAutoImprovementsOpts): AutoImprov
       })
       .sort((a, b) => (a.q - b.q) || (a.r - b.r));
 
+    // ---------------------------------------------------------------------
+    // ZASADA 2 (runda 4) — BUDOWA TYLKO PRZY OBYWATELACH, Z WYJĄTKIEM ZŁÓŻ.
+    // ECHO właściciela: „powinno domyślnie budować ulepszenia tam, gdzie są obywatele
+    // […] z wyłączeniem surowców, które mogą znajdować się w różnych miejscach według
+    // potrzeby". Filtr `onlyWorked` istniał wcześniej i wycinał heks bez 👤 CAŁKOWICIE —
+    // razem ze złożem, na którym stoi jedyna kopalnia miedzi w promieniu. Tu heks
+    // złożowy WRACA do puli kandydatów, ale wyłącznie dla ulepszenia, które to konkretne
+    // złoże konsumuje (`depositAllowsPlayerImprovement`) — patrz `hexAllowsKey` niżej.
+    // `hexHasDepositReserve` jest tu właściwym testem „to jest złoże": nakładka Las daje
+    // `false` (jedyne dwie nie-złożowe nakładki to `Brak` i `Las`), więc `oboz_lowiecki`
+    // na lesie NIE dostaje zwolnienia — obóz to ulepszenie przy obywatelach jak każde inne.
+    // ---------------------------------------------------------------------
+    const isDepositHexForKey = (q: number, r: number, key: ImprovementKey): boolean => {
+      const hex = map.hexes[`${q},${r}`];
+      if (!hex) return false;
+      return hexHasDepositReserve(hex) && depositAllowsPlayerImprovement(key, hex);
+    };
+    /** Czy na tym heksie wolno postawić TEN klucz, biorąc pod uwagę Zasadę 2. */
+    const hexAllowsKey = (q: number, r: number, key: ImprovementKey): boolean => {
+      if (!workedKeys) return true;
+      if (workedKeys.has(`${q},${r}`)) return true;
+      return isDepositHexForKey(q, r, key);
+    };
+
+    // Pełny promień miasta PRZED filtrem Zasady 2. Zasada 2 ogranicza, GDZIE wolno
+    // budować — NIE zmienia tego, co miasto ma i czym dysponuje w swoim promieniu.
+    // Wszystkie LICZNIKI STANU (zapas lasu przed wyrębem, minimum leśne, pułap ulepszeń
+    // obronnych, licznik ulepszeń plonowych) muszą liczyć po tej liście, nie po
+    // zawężonej: zliczanie zapasu lasu po samych polach z obywatelami dawało przy małym
+    // mieście (pop 2 → 2 pola) „mniej niż 3 heksy lasu", więc próg zachowania lasu
+    // zamykał wyrąb na mapie zbudowanej z samego lasu (regres złapany przez
+    // `tools/ai-improvements-test.cjs`, test 7).
+    const radiusHexes = candidateHexes;
     if (workedKeys) {
-      candidateHexes = candidateHexes.filter(({ q, r }) => workedKeys.has(`${q},${r}`));
+      candidateHexes = candidateHexes.filter(({ q, r }) => {
+        if (workedKeys.has(`${q},${r}`)) return true;
+        const hex = map.hexes[`${q},${r}`];
+        return !!hex && hexHasDepositReserve(hex);
+      });
     }
 
     let placedThisCity = 0;
 
-    for (const key of basePriority) {
-      if (globalSpent >= effectiveCityCap || placedThisCity >= maxItemsPerCity) break;
-      const meta = getImprovementMeta(key);
-      if (!meta) continue;
-      if (meta.kosztPraca > pracaLeft) continue;
-      if (pracaLeft - meta.kosztPraca < reserve) continue;
-      if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
-      if (!civGate(key, civArchetype)) continue;
+    // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2) — ODWRÓCENIE PĘTLI: HEKS-PO-HEKSIE.
+    // PRZED: pętla zewnętrzna szła po TYPACH ulepszeń, wewnętrzna po heksach — więc
+    // automat stawiał `farma` na wszystkich kwalifikujących się heksach terytorium,
+    // potem wracał od początku po `bydlo`, potem po `oboz_lowiecki`… Skutkiem była
+    // dosłowna skarga właściciela („robi 15 heksów naraz w sposób niekompleksowo"):
+    // zmierzone PRZED przez `decideAITurn` (AI CYWILIZACJI, 5 ziaren × 40 tur):
+    // do 31 heksów otwartych równolegle, średnia rozpiętość heksa 23,3 tury,
+    // 62,1 obcych heksów tkniętych między pierwszym a ostatnim ulepszeniem heksa.
+    // PO: pętla zewnętrzna idzie po HEKSACH — automat bierze jeden heks i stawia na nim
+    // wszystko, co się kwalifikuje (w kolejności profilu), dopiero potem przechodzi do
+    // następnego. Ta zmiana jest WSPÓLNA dla obu ścieżek wołających ten picker:
+    // AI GRACZA (auto-ulepszenia EOT, main.ts) i AI CYWILIZACJI (`planCityImprovements`
+    // w ai.ts). Limit `maxItemsPerCity` (AI CYWILIZACJI: 1) jest NIETKNIĘTY — ECHO
+    // właściciela: „Zostaw limit, zmień kolejność"; przy limicie 1 AI cywilizacji nadal
+    // stawia jedno ulepszenie na miasto na turę, ale kolejne tury trafiają na TEN SAM
+    // heks aż do jego domknięcia, zamiast skakać po mapie.
+    //
+    // KOLEJNOŚĆ HEKSÓW: najpierw heksy z rzeką NA heksie (największy plon żywności —
+    // ECHO właściciela „Priorytetem są heksy z rzekami"), potem reszta; w obu grupach
+    // deterministycznie po (q,r) — bez `Math.random()`.
+    // Tie-break WEWNATRZ obu grup: odleglosc heksowa od centrum miasta (najblizsze
+    // najpierw), dopiero potem (q,r) — bez tego kolejnosc byla artefaktem sortowania
+    // po wspolrzednych i automat wchodzil w „lewy gorny rog" promienia zamiast w
+    // otoczenie miasta. `(q,r)` zostaje jako ostateczny, deterministyczny rozstrzygnik.
+    const hexDist = (q: number, r: number) =>
+      (Math.abs(q - city.q) + Math.abs(r - city.r) + Math.abs((q - city.q) + (r - city.r))) / 2;
+    const orderedHexes = [...candidateHexes].sort((a, b) => {
+      const ar = riverHexKeys.has(`${a.q},${a.r}`) ? 0 : 1;
+      const br = riverHexKeys.has(`${b.q},${b.r}`) ? 0 : 1;
+      return (ar - br) || (hexDist(a.q, a.r) - hexDist(b.q, b.r)) || (a.q - b.q) || (a.r - b.r);
+    });
 
-      if (key === 'wyrab' && !skipWyrab) {
-        const forestCount = candidateHexes.reduce((n, { q, r }) => {
+    // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 3, W-B): sekwencja DOMYKANIA heksa obejmuje
+    // WYŁĄCZNIE ulepszenia o niezerowej delcie plonu. `wyrab` ma własny, wcześniejszy krok
+    // na heksach rzeka+las (niżej w tej samej pętli), a `posterunek`/`fort` (delta 0/0/0/0)
+    // wychodzą do osobnej FAZY 0 „obrona" — patrz `ZERO_YIELD_IMPROVEMENTS`.
+    //
+    // ZASADA 1 (runda 4) nakłada się TU: przy braku niedoboru lista domykania heksa
+    // zawęża się do ulepszeń ŻYWNOŚCIOWYCH, a FAZA 0 (obrona: posterunek/fort —
+    // infrastruktura) w ogóle nie rusza. To jest różnica między „mniej" a ZERO rozkazów
+    // poza żywnością, której wymaga kryterium 2 dispatchu.
+    const hexPhasePriority = basePriority.filter(
+      k => k !== 'wyrab'
+        && !ZERO_YIELD_IMPROVEMENTS.has(k)
+        && (!foodOnly || ULEPSZENIA_ZYWNOSCIOWE.has(k)),
+    );
+    const defensePriority = foodOnly
+      ? []
+      : basePriority.filter(k => ZERO_YIELD_IMPROVEMENTS.has(k));
+
+    let cityBudgetExhausted = false;
+
+    // ---------------------------------------------------------------------
+    // FAZA 0 — OBRONA (R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 runda 3, W-B).
+    // `posterunek` i `fort` NIE domykają heksa (delta plonu 0/0/0/0), ale nadal mają
+    // powstawać „tam, gdzie mają sens obronny" (ECHO właściciela 2026-08-27). Sens obronny
+    // = GRANICA zasięgu miasta, więc kandydatami są heksy NAJDALSZE od centrum miasta
+    // (odwrotna kolejność niż w FAZIE 1, która idzie od centrum na zewnątrz — dzięki temu
+    // obrona i praca na plon nie biją się o te same heksy).
+    // Pułap `ceil(pop / JEDEN_NA_ILU_OBYWATELI)` na klucz i na miasto trzyma wydatek na
+    // poziomie kilku procent rozkazów zamiast 32 % (W-A). Faza idzie PRZED FAZĄ 1, bo przy
+    // `maxItemsPerCity: 1` (AI CYWILIZACJI) faza ustawiona PO niej nigdy by nie ruszyła —
+    // FAZA 1 stawia coś w każdej turze, więc „po wyczerpaniu heksów plonowych" znaczyłoby
+    // w praktyce „nigdy" (zmierzone: 600 na 600 rozkazów).
+    // ---------------------------------------------------------------------
+    // Obrona rusza dopiero, gdy miasto ma w promieniu co najmniej `population` ulepszeń
+    // PLONOWYCH — „najpierw wykarm obywateli, potem strażnica". Bez tej zwłoki FAZA 0
+    // zabierała przy `maxItemsPerCity: 1` turę 0 i 1, więc PIERWSZE ulepszenie miasta
+    // trafiało na heks graniczny zamiast na heks z rzeką — a priorytet rzeki jest
+    // wynikiem rundy 2, którego ta runda nie podważa (bramka tematu, test B).
+    const plonoweWPromieniu = radiusHexes.reduce((n, { q, r }) => {
+      const layers = workingPlaced.get(`${q},${r}`) ?? [];
+      return n + layers.filter(k => !ZERO_YIELD_IMPROVEMENTS.has(k as ImprovementKey)).length;
+    }, 0);
+
+    if (defensePriority.length > 0 && plonoweWPromieniu >= (city.population || 0)) {
+      const defenseCap = Math.max(1, Math.ceil((city.population || 0) / JEDEN_NA_ILU_OBYWATELI));
+      const borderHexes = [...candidateHexes].sort((a, b) =>
+        (hexDist(b.q, b.r) - hexDist(a.q, a.r)) || (a.q - b.q) || (a.r - b.r));
+      for (const key of defensePriority) {
+        if (globalSpent >= effectiveCityCap || placedThisCity >= maxItemsPerCity) break;
+        if (pracaLeft <= reserve) break;
+        const meta = getImprovementMeta(key);
+        if (!meta) continue;
+        if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
+        if (!civGate(key, civArchetype)) continue;
+        // ile sztuk tego klucza miasto już ma w swoim promieniu (stan trwały, między turami)
+        let have = 0;
+        for (const { q, r } of radiusHexes) {
+          if ((workingPlaced.get(`${q},${r}`) ?? []).includes(key)) have++;
+        }
+        if (have >= defenseCap) continue;
+        for (const { q, r } of borderHexes) {
+          if (placedThisCity >= maxItemsPerCity) break;
+          if (meta.kosztPraca > pracaLeft) break;
+          if (pracaLeft - meta.kosztPraca < reserve) break;
+          if (globalSpent + meta.kosztPraca > effectiveCityCap) break;
+          const hexKey = `${q},${r}`;
+          // KAŻDE ulepszenie obronne na OSOBNYM heksie granicznym. Dwa powody: obronnie
+          // — posterunek i fort pilnują wtedy dwóch kierunków zamiast jednego; pomiarowo
+          // — heks z JEDNYM ulepszeniem nigdy nie jest „w toku" (E1) ani nie ma rozpiętości
+          // (E2), więc obrona nie zanieczyszcza metryk kompleksowości, które mierzą pracę
+          // na plon. Zmierzone: wspólny heks obronny podnosił E1 max z 5 do 6 (ziarno 512).
+          if ((workingPlaced.get(hexKey) ?? []).some(k => ZERO_YIELD_IMPROVEMENTS.has(k as ImprovementKey))) continue;
+          // ZASADA 2: posterunek/fort to nie ulepszenia złożowe — na heksie bez 👤 nie stają.
+          if (!hexAllowsKey(q, r, key)) continue;
+          if (!qualifies(key, q, r)) continue;
+          if (surplusReport) surplusReport.anyCandidate = true;
+          picks.push({ ownerId, cityId: city.id, q, r, key, kosztPraca: meta.kosztPraca });
+          pracaLeft -= meta.kosztPraca;
+          globalSpent += meta.kosztPraca;
+          placedThisCity++;
+          workingPlaced.set(hexKey, [...(workingPlaced.get(hexKey) ?? []), key]);
+          have++;
+          break;
+        }
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 3, część B) — WYRĄB NA HEKSACH RZEKA+LAS.
+    // GOAL tematu („AI ma samo wycinać lasy przy rzekach i stawiać tam farmy") był po
+    // rundzie 2 STRUKTURALNIE nieosiągalny: `wyrab` żył wyłącznie w FAZIE 2, która rusza
+    // tylko gdy FAZA 1 nic nie postawiła — a przy `maxItemsPerCity: 1` FAZA 1 stawiała coś
+    // w 600 na 600 rozkazów AI CYWILIZACJI (zmierzone, runda 2, 5 ziaren × 40 tur).
+    // Dlatego wyrąb dostaje własny krok NA POCZĄTKU sekwencji heksa — ale WYŁĄCZNIE na
+    // heksie, który ma rzekę I nakładkę Las.
+    //
+    // Bilans jest ŚWIADOMIE ujemny i to jest wiążąca decyzja właściciela (ECHO Q1,
+    // 2026-08-27, „wycinać mimo to"): (wyrąb+farma) − (las+farma) = żywność +1, praca −3,
+    // handel −2, drewno −15/turę, koszt Pracy +2,5. Liczby pokazano właścicielowi w rundzie 1.
+    //
+    // KOLEJNOŚĆ „wyrąb PIERWSZY na heksie" jest istotna: wycinka USUWA nakładkę Las, więc
+    // gdyby szła po tartaku/obozie łowieckim, skasowałaby je krok po postawieniu
+    // (`stripImprovementsWhenForestRemoved`). Po zaplanowaniu wyrębu przechodzimy od razu do
+    // NASTĘPNEGO heksa — resztę tego heksa (farma…) domknie kolejne wywołanie, już na mapie
+    // bez lasu. Na ścieżce AI CYWILIZACJI silnik commituje wycinkę od razu (main.ts,
+    // `cmd.type === 'buildImprovement'`, TEMAT #8), więc następna tura widzi heks bez lasu.
+    //
+    // Próg zachowania lasu `WYRAB_MIN_FOREST_IN_RADIUS` obowiązuje tak samo jak w FAZIE 2
+    // — sprawdzany PRZED każdą wycinką, na bieżącej liczbie lasu w promieniu miasta.
+    // ---------------------------------------------------------------------
+    //
+    // ZASADA 1 (runda 4) a WYRĄB — świadome rozstrzygnięcie Operatora, zgłoszone wprost
+    // w raporcie: KROK 0 (wyrąb na heksie rzeka+las) ZOSTAJE także przy braku niedoboru.
+    // Po zamknięciu `R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1` (w `main` od 2026-08-27) farma na
+    // zalesionym heksie wymaga wyrębu ZAWSZE — więc ten konkretny wyrąb NIE jest budową
+    // „na zapas": jest pierwszym krokiem sekwencji ŻYWNOŚCIOWEJ (wyrąb → farma), którą
+    // właściciel zlecił w rundzie 3 i której dispatch rundy 4 wprost nie cofa („Zasada 1
+    // zmienia PROGI budowy, nie usuwa mechanizmu wyrębu przy rzece z rundy 3").
+    // Wyłączany jest natomiast wyrąb z FAZY 2 (niżej) — tam wyrąb NIE prowadzi do farmy,
+    // jest zbieraniem drewna „bo nic pilniejszego", czyli dokładnie budową na zapas.
+    const wyrabWlaczony = !citySkipWyrab && basePriority.includes('wyrab');
+    let forestLeftInRadius = radiusHexes.reduce((n, { q, r }) => {
+      const hk = `${q},${r}`;
+      if (scheduledWyrabHexes.has(hk)) return n;
+      return map.hexes[hk]?.nakladka === Nakladka.Las ? n + 1 : n;
+    }, 0);
+
+    // „Jeżeli zagospodaruje wszystkie rzeki, to dopiero wtedy zabiera się za inne tereny
+    // i wykarczowuje las, i stawia kolejne farmy" (ECHO właściciela 2026-08-27). Dopóki
+    // w promieniu miasta został NIEZAGOSPODAROWANY heks z rzeką, wyrąb dotyczy WYŁĄCZNIE
+    // heksów z rzeką. Gdy rzek już nie ma czym zagospodarować — a są mapy, gdzie miasta
+    // nie mają w promieniu ANI JEDNEGO heksa z rzeką (zmierzone: ziarno 512, wyrąb 0 na
+    // 40 tur, bo warunek „rzeka" nie miał gdzie zajść) — wyrąb schodzi na pozostałe lasy.
+    // Heks z rzeką liczy się jako niezagospodarowany, gdy ma jeszcze las (jest co wyciąć)
+    // albo jest pusty i kwalifikuje jakiekolwiek ulepszenie plonowe.
+    const rzekiDoZagospodarowania = wyrabWlaczony && candidateHexes.some(({ q, r }) => {
+      const hk = `${q},${r}`;
+      if (!riverHexKeys.has(hk)) return false;
+      if (scheduledWyrabHexes.has(hk)) return false;
+      if (map.hexes[hk]?.nakladka === Nakladka.Las) return true;
+      if ((workingPlaced.get(hk) ?? []).length > 0) return false;
+      // ZASADA 1/2: „czym zagospodarować" liczy się na TEJ SAMEJ, zawężonej liście
+      // i z tym samym filtrem heksów, którymi rządzi się FAZA 1 — inaczej wyrąb schodziłby
+      // poza rzekę na podstawie kandydatów, których automat i tak nie postawi.
+      return hexPhasePriority.some(k => hexAllowsKey(q, r, k) && qualifies(k, q, r));
+    });
+
+    // MINIMUM LEŚNE MIASTA (ECHO właściciela: „Każde miasto powinno mieć las wokół siebie,
+    // jeden tartak i obóz; ale tylko jeden na każde dziesięć obywateli wystarcza").
+    // Wyrąb POZA heksem z rzeką jest zamknięty, dopóki miasto nie ma swojego tartaku
+    // i obozu — inaczej wycinka wchodzi na heks przed tartakiem i kasuje las, na którym
+    // tartak stoi. Zmierzone bez tego warunku: `tartak` 69 → 0 (regres wyniku rundy 2).
+    const lesneMin = Math.max(1, Math.ceil((city.population || 0) / JEDEN_NA_ILU_OBYWATELI));
+    // ZASADA 1 (runda 4) — KOREKTA ZAKRESU TEJ BRAMKI, zmierzona: minimum leśne wolno
+    // wymagać WYŁĄCZNIE z tych kluczy, które automat W TEJ KONFIGURACJI w ogóle może
+    // postawić (`hexPhasePriority`, nie pełna `basePriority`). Przy `foodOnly` `tartak`
+    // jest poza listą — wymaganie go dawało DEADLOCK: tartak nigdy nie powstaje, więc
+    // `lesneMinSpelnione` nigdy nie jest spełnione, więc wyrąb rundy 3 znika całkowicie
+    // (zmierzone: wyrąb 72 → 0 na wszystkich pięciu ziarnach, także przy jawnie włączonym
+    // przełączniku R4-Q2 — czyli cichy regres mechanizmu, którego dispatch rundy 4 wprost
+    // zabrania: „Zasada 1 zmienia PROGI budowy, nie usuwa mechanizmu wyrębu przy rzece").
+    // Gdy `tartak` jest na liście (niedobór / profile nieobjęte Zasadą 1), bramka działa
+    // dokładnie jak w rundzie 3.
+    const lesneWymagane: ImprovementKey[] = (['tartak', 'oboz_lowiecki'] as ImprovementKey[])
+      .filter(k => hexPhasePriority.includes(k))
+      // ... i tak samo: wymagac wolno tylko tego, co jest ODBLOKOWANE. Bez tego warunku
+      // AI bez technologii (`improvementTechs` puste — jedyny bezwarunkowo dostepny typ to
+      // `wyrab`) czekaloby w nieskonczonosc na tartak/oboz, ktorych nie wolno mu zbudowac
+      // (regres zlapany przez `tools/ai-improvements-test.cjs`, test 7).
+      .filter(k => isImprovementTechUnlocked(k, unlockedTechs) && civGate(k, civArchetype));
+    // `lesneMinSpelnione` bramkuje KAŻDY wyrąb, także ten na heksie z rzeką: dopóki miasto
+    // nie ma swojego tartaku i obozu, topór stoi. Zmierzone (5 ziaren × 40 tur, AI CYWILIZACJI):
+    // bez tej bramki tartak 10 i obóz 10, z bramką tartak 23 i obóz 24, kosztem 26 punktów
+    // plonu żywności (3203 → 3177) i 14 wyrębów (85 → 71). Wybrano wariant z bramką, żeby nie
+    // cofać wyniku rundy 2 („tartak 0 → 69") bardziej, niż wymaga tego decyzja „wycinać mimo to".
+    const lesneMinSpelnione = lesneWymagane.every(k => {
+      let have = 0;
+      for (const { q, r } of radiusHexes) {
+        if ((workingPlaced.get(`${q},${r}`) ?? []).includes(k)) have++;
+        if (have >= lesneMin) return true;
+      }
+      return false;
+    });
+    const wolnoKarczowacPozaRzeka = !rzekiDoZagospodarowania && lesneMinSpelnione;
+
+    // FAZA 1 — heks po heksie.
+    for (const { q, r } of orderedHexes) {
+      if (globalSpent >= effectiveCityCap || placedThisCity >= maxItemsPerCity || pracaLeft <= reserve) {
+        cityBudgetExhausted = true;
+        break;
+      }
+      const hexKey = `${q},${r}`;
+
+      // KROK 0 heksa: wyrąb, gdy heks ma rzekę I las.
+      if (
+        wyrabWlaczony
+        && lesneMinSpelnione
+        && (riverHexKeys.has(hexKey) || wolnoKarczowacPozaRzeka)
+        && !scheduledWyrabHexes.has(hexKey)
+        && map.hexes[hexKey]?.nakladka === Nakladka.Las
+        && forestLeftInRadius >= WYRAB_MIN_FOREST_IN_RADIUS
+        && !(workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')
+        // ZASADA 2: wyrąb NIE jest ulepszeniem złożowym — poza heksami z obywatelami stoi.
+        && hexAllowsKey(q, r, 'wyrab')
+      ) {
+        const wyrabMeta = getImprovementMeta('wyrab');
+        if (
+          wyrabMeta
+          && isImprovementTechUnlocked('wyrab', unlockedTechs)
+          && civGate('wyrab', civArchetype)
+          && wyrabMeta.kosztPraca <= pracaLeft
+          && pracaLeft - wyrabMeta.kosztPraca >= reserve
+          && globalSpent + wyrabMeta.kosztPraca <= effectiveCityCap
+          && qualifies('wyrab', q, r)
+        ) {
+          picks.push({ ownerId, cityId: city.id, q, r, key: 'wyrab', kosztPraca: wyrabMeta.kosztPraca });
+          pracaLeft -= wyrabMeta.kosztPraca;
+          globalSpent += wyrabMeta.kosztPraca;
+          placedThisCity++;
+          scheduledWyrabHexes.add(hexKey);
+          forestLeftInRadius--;
+          continue; // reszta tego heksa dopiero po faktycznym zniknięciu lasu
+        }
+      }
+
+      for (const key of hexPhasePriority) {
+        if (globalSpent >= effectiveCityCap || placedThisCity >= maxItemsPerCity) {
+          cityBudgetExhausted = true;
+          break;
+        }
+        const meta = getImprovementMeta(key);
+        if (!meta) continue;
+        if (meta.kosztPraca > pracaLeft) continue;
+        if (pracaLeft - meta.kosztPraca < reserve) continue;
+        if (globalSpent + meta.kosztPraca > effectiveCityCap) continue;
+        if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
+        if (!civGate(key, civArchetype)) continue;
+        // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 2): straznik duplikatu warstwy NA TYM heksie.
+        // Bez niego `droga` (i kazde inne ulepszenie, ktorego `buildImprovementQualifier` nie
+        // czyta z `placedImprovements`, tylko z danych heksa/`roadKeys` — patrz `isRoadQualified`
+        // w map/improvement-build.ts i komentarz przy `planCityImprovements` w ai.ts) kwalifikuje
+        // sie na tym samym heksie w kolko: zmierzone przed tym straznikiem 37 drog na JEDNYM
+        // heksie w 40 turach. Stara petla „po typach" tego nie ujawniala tylko dlatego, ze
+        // nigdy nie dochodzila do pozycji `droga` na liscie priorytetow. Ten sam warunek stosuje
+        // juz post-factum wolajacy gracz (`prevLayers.includes(pick.key)` w main.ts) — tu jest
+        // egzekwowany w samym pickerze, wiec obie sciezki dostaja go tak samo.
+        if ((workingPlaced.get(hexKey) ?? []).includes(key)) continue;
+        // ZASADA 2: heks bez obywateli przechodzi tylko jako ZŁOŻE i tylko dla ulepszenia,
+        // które to złoże konsumuje.
+        if (!hexAllowsKey(q, r, key)) continue;
+        if (!qualifies(key, q, r)) continue;
+
+        if (surplusReport) surplusReport.anyCandidate = true;
+        picks.push({ ownerId, cityId: city.id, q, r, key, kosztPraca: meta.kosztPraca });
+        pracaLeft -= meta.kosztPraca;
+        globalSpent += meta.kosztPraca;
+        placedThisCity++;
+        const cur = workingPlaced.get(hexKey) ?? [];
+        workingPlaced.set(hexKey, [...cur, key]);
+      }
+      if (pracaLeft <= reserve) {
+        cityBudgetExhausted = true;
+        break;
+      }
+    }
+
+    // FAZA 2 — `wyrab` na starych zasadach (po typie, pierwszy kwalifikujący się heks).
+    // Zachowana 1:1 semantyka sprzed odwrócenia pętli, łącznie z progiem zachowania lasu.
+    //
+    // ZASADA 1 (runda 4): przy braku niedoboru ta faza NIE rusza. Wyrąb tutaj nie prowadzi
+    // do żadnej farmy — to zbieranie Drewna „bo nic pilniejszego się nie kwalifikuje",
+    // czyli budowa na zapas, której ECHO właściciela zabrania wprost. Wyrąb pod farmę przy
+    // rzece żyje w KROKU 0 wyżej i tam zostaje niezależnie od niedoboru.
+    if (!cityBudgetExhausted && !foodOnly && !citySkipWyrab && basePriority.includes('wyrab')) {
+      const key: ImprovementKey = 'wyrab';
+      const meta = getImprovementMeta(key);
+      const techOk = isImprovementTechUnlocked(key, unlockedTechs) && civGate(key, civArchetype);
+      if (meta && techOk && meta.kosztPraca <= pracaLeft && pracaLeft - meta.kosztPraca >= reserve) {
+        const forestCount = radiusHexes.reduce((n, { q, r }) => {
           const hk = `${q},${r}`;
           if (scheduledWyrabHexes.has(hk)) return n;
           return map.hexes[hk]?.nakladka === Nakladka.Las ? n + 1 : n;
         }, 0);
-        if (forestCount < WYRAB_MIN_FOREST_IN_RADIUS) continue;
-      }
-
-      // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2): ten sam typ (np. farma) wielokrotnie na
-      // różnych heksach, dopóki starcza WSPÓLNEGO budżetu całego wywołania (globalSpent
-      // sprawdzany przeciw pułapowi TEGO miasta effectiveCityCap = min(cityBudgetCap,
-      // imperiumBudgetCap) — patrz komentarze wyżej), limitu sztuk (maxItemsPerCity — niezależny,
-      // np. throttle AI) i globalnej puli (pracaLeft, z flat-rezerwą jako dolnym progiem
-      // bezpieczeństwa).
-      while (globalSpent < effectiveCityCap && placedThisCity < maxItemsPerCity && meta.kosztPraca <= pracaLeft) {
-        if (pracaLeft - meta.kosztPraca < reserve) break;
-        if (globalSpent + meta.kosztPraca > effectiveCityCap) break;
-        let placedOne = false;
-        for (const { q, r } of candidateHexes) {
-          const hexKey = `${q},${r}`;
-          if (key === 'wyrab' && scheduledWyrabHexes.has(hexKey)) continue;
-          if (!qualifies(key, q, r)) continue;
-
-          picks.push({
-            ownerId,
-            cityId: city.id,
-            q,
-            r,
-            key,
-            kosztPraca: meta.kosztPraca,
-          });
-          pracaLeft -= meta.kosztPraca;
-          globalSpent += meta.kosztPraca;
-          placedThisCity++;
-
-          if (key === 'wyrab') {
-            scheduledWyrabHexes.add(hexKey);
-          } else {
-            const cur = workingPlaced.get(hexKey) ?? [];
-            workingPlaced.set(hexKey, [...cur, key]);
+        if (forestCount >= WYRAB_MIN_FOREST_IN_RADIUS) {
+          while (globalSpent < effectiveCityCap && placedThisCity < maxItemsPerCity && meta.kosztPraca <= pracaLeft) {
+            if (pracaLeft - meta.kosztPraca < reserve) break;
+            if (globalSpent + meta.kosztPraca > effectiveCityCap) break;
+            let placedOne = false;
+            for (const { q, r } of orderedHexes) {
+              const hexKey = `${q},${r}`;
+              if (scheduledWyrabHexes.has(hexKey)) continue;
+              if (!hexAllowsKey(q, r, key)) continue;
+              // RUNDA 4: ten sam straznik co w KROKU 0 — heks z tartakiem albo obozem
+              // NIE idzie pod topor (wycinka skasowalaby ulepszenie stojace na lesie,
+              // `stripImprovementsWhenForestRemoved`). W rundzie 3 FAZA 2 tego warunku
+              // nie miala; przy `maxItemsPerCity: 1` prawie nigdy nie ruszala, wiec luka
+              // nie ujawniala sie w pomiarze. Bramka tematu (test I) lapie ja teraz wprost.
+              if ((workingPlaced.get(hexKey) ?? []).some(k => k === 'tartak' || k === 'oboz_lowiecki')) continue;
+              if (!qualifies(key, q, r)) continue;
+              picks.push({ ownerId, cityId: city.id, q, r, key, kosztPraca: meta.kosztPraca });
+              pracaLeft -= meta.kosztPraca;
+              globalSpent += meta.kosztPraca;
+              placedThisCity++;
+              scheduledWyrabHexes.add(hexKey);
+              placedOne = true;
+              break;
+            }
+            if (!placedOne) break;
           }
-          placedOne = true;
+        }
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // ZASADA 3 (runda 4) — SONDA KANDYDATÓW. Rusza WYŁĄCZNIE, gdy wołający poprosił
+    // o raport nadwyżki I nic jeszcze nie znaleziono. „Nic nie postawiono" nie znaczy
+    // jeszcze „nie ma czego stawiać" (mógł skończyć się budżet), więc pytanie o istnienie
+    // kandydata zadajemy osobno, BEZ testów kosztu — dokładnie tymi samymi bramkami
+    // (tech / cywilizacja / Zasada 2 / duplikat warstwy / `qualifies`), którymi rządzi się
+    // FAZA 1. Sonda nie dodaje ani jednego picku.
+    // ---------------------------------------------------------------------
+    if (surplusReport && !surplusReport.anyCandidate) {
+      for (const { q, r } of orderedHexes) {
+        if (surplusReport.anyCandidate) break;
+        const hexKey = `${q},${r}`;
+        for (const key of hexPhasePriority) {
+          if (!getImprovementMeta(key)) continue;
+          if (!isImprovementTechUnlocked(key, unlockedTechs)) continue;
+          if (!civGate(key, civArchetype)) continue;
+          if ((workingPlaced.get(hexKey) ?? []).includes(key)) continue;
+          if (!hexAllowsKey(q, r, key)) continue;
+          if (!qualifies(key, q, r)) continue;
+          surplusReport.anyCandidate = true;
           break;
         }
-        if (!placedOne) break;
       }
-      if (pracaLeft <= reserve) break;
     }
+  }
+
+  // ZASADA 3: nadwyżka = Zasada 1 aktywna, ZERO niedoboru surowca i ZERO kandydatów
+  // „przy obywatelach". Wtedy budżet ulepszeń nie ma dziś czego kupić i wołający ma
+  // podstawę, żeby przesunąć środki (AI CYWILIZACJI) albo powiadomić gracza (AI GRACZA).
+  if (surplusReport) {
+    surplusReport.surplus = surplusReport.demandActive
+      && !surplusReport.deficitActive
+      && !surplusReport.anyCandidate;
   }
 
   return picks;

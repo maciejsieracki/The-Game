@@ -1,0 +1,28 @@
+=== SONDA ai5-z3-fc2-probe — R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 runda 5 ===
+main.ts: /home/user/wt-op-ai-r5/gra/src/main.ts
+
+mutacja Z-3 (usun zapis+odczyt) zmienila tekst zrodla: true
+mutacja FC-2 (zdejmij straznik)  zmienila tekst zrodla: true
+
+--- Z-3: save w turze z NADWYZKA -> load w swiezej sesji -> tura BEZ nadwyzki ---
+  PRZED | zapis w meta: BRAK                                   | odczyt: BRAK | znacznik po load: false | procentBudynki 100 -> 100 | pula imperium 0% | miasta [100,100]
+  PO    | zapis w meta: Array.from(aiSurplusRedirectedOwners)  | odczyt: JEST | znacznik po load: true  | procentBudynki 100 -> 70 | pula imperium 30% | miasta [70,70]
+
+  PRZED: procentBudynki zostaje na 100, pula imperium 0% — ZERO Pracy do puli imperium = ZERO ulepszen terenu, TRWALE
+  PO:    procentBudynki wraca do 70, pula imperium 30% — Praca znowu plynie do puli imperium
+  NOTA (§13a): po wczytaniu podzial wraca do DEFAULT_PODZIAL_PRACY (70), NIE do wartosci wybranej wczesniej przez AI (85), bo `aiSliderStateByOwner` tez nie jest persistowany. To OSOBNA sprawa, poza zakresem dispatchu rundy 5 — nie blokuje, bo nie jest trwalym zablokowaniem: decideAIEconomySliders przelicza suwaki dalej. Zgloszone, nie naprawione.
+
+--- FC-2: miasta-panstwa (defensiveCopy) w stanie nadwyzki, 3 ziarna ---
+  straznik bloku ZASADY 3 — PO:    if (!opts.defensiveCopy) {
+  straznik bloku ZASADY 3 — PRZED: if (true) {
+  ziarno 1337   PM=[3,4,5,6] CIV=[1,2,7,8]
+    PRZED: PM przekierowanych 4/4 | miast PM na 100% budynkow 4 | AI CYWILIZACJI przekierowanych 4/4 | znaczniki PM w Set: 4
+    PO:    PM przekierowanych 0/4 | miast PM na 100% budynkow 0 | AI CYWILIZACJI przekierowanych 4/4 | znaczniki PM w Set: 0
+  ziarno 4242   PM=[2,3,6] CIV=[1,4,5,7,8]
+    PRZED: PM przekierowanych 3/3 | miast PM na 100% budynkow 3 | AI CYWILIZACJI przekierowanych 5/5 | znaczniki PM w Set: 3
+    PO:    PM przekierowanych 0/3 | miast PM na 100% budynkow 0 | AI CYWILIZACJI przekierowanych 5/5 | znaczniki PM w Set: 0
+  ziarno 90210  PM=[1,3,5,7] CIV=[2,4,6,8]
+    PRZED: PM przekierowanych 4/4 | miast PM na 100% budynkow 4 | AI CYWILIZACJI przekierowanych 4/4 | znaczniki PM w Set: 4
+    PO:    PM przekierowanych 0/4 | miast PM na 100% budynkow 0 | AI CYWILIZACJI przekierowanych 4/4 | znaczniki PM w Set: 0
+
+=== KONIEC SONDY ===

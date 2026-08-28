@@ -1,0 +1,39 @@
+=== ev5-z3-fc2-kontrola (Evaluator, wlasna metoda) ===
+main.ts: /home/user/wt-ev-ai-r5/gra/src/main.ts
+stale z cities.ts: MAX=100 DEFAULT=70 pula(MAX)=0%
+  OK   mutacja FC-2 (zdjecie straznika) zmienila tekst zrodla
+
+--- Z-3: save w turze z nadwyzka -> load -> tura bez nadwyzki ---
+  PRZED  | zapis: Array.from(aiSurplusRedirectedOwners) | znaczniki po load: []
+        CIV-w-nadwyzce 100 -> 100 (pula 0%) | CIV-bez-nadwyzki 60 -> 60 | PM 60 -> 60
+  PO     | zapis: Array.from(aiSurplusRedirectedOwners) | znaczniki po load: [11]
+        CIV-w-nadwyzce 100 -> 70 (pula 30%) | CIV-bez-nadwyzki 60 -> 60 | PM 60 -> 60
+  LEGACY | zapis: Array.from(aiSurplusRedirectedOwners) | znaczniki po load: []
+        CIV-w-nadwyzce 100 -> 100 (pula 0%) | CIV-bez-nadwyzki 60 -> 60 | PM 60 -> 60
+  OK   PRZED: AI CYWILIZACJI zostaje na 100% budynkow (blad Z-3 odtworzony)
+  OK   PRZED: pula imperium 0% — zero Pracy na ulepszenia terenu, trwale
+  OK   PO: AI CYWILIZACJI wraca z 100% (jest 70%)
+  OK   PO: pula imperium 30% > 0 — Praca znowu plynie na ulepszenia
+  OK   PO: po load znacznik ma dokladnie [11], jest [11]
+  OK   PO: owner NIGDY nieprzekierowany nietkniety (60 -> 60)
+  OK   PO: miasta ownera zgodne z podzialem imperium
+  OK   LEGACY (sejw bez pola): zbior pusty -> zachowanie jak PRZED (zgodnosc wsteczna, nie crash)
+
+--- FC-2: miasta-panstwa vs AI CYWILIZACJI, jawne rostery ---
+  R1 3PM/3CIV  PRZED: PM 3/3, znaczniki 3, miasta PM na MAX 3 | CIV 3/3
+               PO:    PM 0/3, znaczniki 0, miasta PM na MAX 0 | CIV 3/3
+  OK   R1 3PM/3CIV PRZED: wszystkie miasta-panstwa przekierowane (blad FC-2 odtworzony)
+  OK   R1 3PM/3CIV PO: zadne miasto-panstwo nieprzekierowane
+  OK   R1 3PM/3CIV PO: AI CYWILIZACJI nadal przekierowane 3/3 (naprawa nie oslabia Zasady 3)
+  R2 1PM/5CIV  PRZED: PM 1/1, znaczniki 1, miasta PM na MAX 1 | CIV 5/5
+               PO:    PM 0/1, znaczniki 0, miasta PM na MAX 0 | CIV 5/5
+  OK   R2 1PM/5CIV PRZED: wszystkie miasta-panstwa przekierowane (blad FC-2 odtworzony)
+  OK   R2 1PM/5CIV PO: zadne miasto-panstwo nieprzekierowane
+  OK   R2 1PM/5CIV PO: AI CYWILIZACJI nadal przekierowane 5/5 (naprawa nie oslabia Zasady 3)
+  R3 5PM/1CIV  PRZED: PM 5/5, znaczniki 5, miasta PM na MAX 5 | CIV 1/1
+               PO:    PM 0/5, znaczniki 0, miasta PM na MAX 0 | CIV 1/1
+  OK   R3 5PM/1CIV PRZED: wszystkie miasta-panstwa przekierowane (blad FC-2 odtworzony)
+  OK   R3 5PM/1CIV PO: zadne miasto-panstwo nieprzekierowane
+  OK   R3 5PM/1CIV PO: AI CYWILIZACJI nadal przekierowane 1/1 (naprawa nie oslabia Zasady 3)
+
+=== WSZYSTKO OK ===

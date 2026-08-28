@@ -1,0 +1,156 @@
+# DELTA PLONU NA TURE per ulepszenie (tileYield), zywnosc/praca/handel/drewno + koszt Pracy
+
+## Laka  bez rzeki  (baza: zyw 3 · praca 1 · handel 2 · drewno 0)
+  kopalnia_zlota       zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12 | koszt Pracy 44
+  farma                zyw   3 · praca   3 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  irygacja             zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9 | koszt Pracy 60
+  bydlo                zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  lodzie_rybackie      zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8 | koszt Pracy 40
+  lama                 zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7 | koszt Pracy 40
+  tarasy               zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7 | koszt Pracy 50
+  kopalnia_miedzi      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_zelaza      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_cyny        zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  tartak               zyw   0 · praca   3 · handel   3 · drewno   0 | suma z+p+h   6 | koszt Pracy 50
+  warzelnia_soli       zyw   1 · praca   1 · handel   4 · drewno   0 | suma z+p+h   6 | koszt Pracy 40
+  owce                 zyw   1 · praca   2 · handel   2 · drewno   0 | suma z+p+h   5 | koszt Pracy 40
+  oboz_lowiecki        zyw   1 · praca   1 · handel   3 · drewno   0 | suma z+p+h   5 | koszt Pracy 36
+  stadnina             zyw   0 · praca   2 · handel   2 · drewno   0 | suma z+p+h   4 | koszt Pracy 56
+  glinianka            zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 40
+  kamieniolom          zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 44
+  droga_brukowana      zyw   0 · praca   0 · handel   3 · drewno   0 | suma z+p+h   3 | koszt Pracy 50
+  droga                zyw   0 · praca   0 · handel   2 · drewno   0 | suma z+p+h   2 | koszt Pracy 30
+  wyrab                zyw   0 · praca   0 · handel   1 · drewno   0 | suma z+p+h   1 | koszt Pracy 5
+  -- warstwa DRUGA na farmie (baza farma: zyw 6 · praca 4 · handel 5) --
+  +kopalnia_zlota      zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12
+  +irygacja            zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9
+  +bydlo               zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9
+  +lodzie_rybackie     zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8
+  +lama                zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7
+  +tarasy              zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7
+  +kopalnia_miedzi     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+  +kopalnia_zelaza     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+
+## Laka  Z RZEKA    (baza: zyw 6 · praca 3 · handel 5 · drewno 0)
+  kopalnia_zlota       zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12 | koszt Pracy 44
+  farma                zyw   3 · praca   3 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  irygacja             zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9 | koszt Pracy 60
+  bydlo                zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  lodzie_rybackie      zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8 | koszt Pracy 40
+  lama                 zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7 | koszt Pracy 40
+  tarasy               zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7 | koszt Pracy 50
+  kopalnia_miedzi      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_zelaza      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_cyny        zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  tartak               zyw   0 · praca   3 · handel   3 · drewno   0 | suma z+p+h   6 | koszt Pracy 50
+  warzelnia_soli       zyw   1 · praca   1 · handel   4 · drewno   0 | suma z+p+h   6 | koszt Pracy 40
+  owce                 zyw   1 · praca   2 · handel   2 · drewno   0 | suma z+p+h   5 | koszt Pracy 40
+  oboz_lowiecki        zyw   1 · praca   1 · handel   3 · drewno   0 | suma z+p+h   5 | koszt Pracy 36
+  stadnina             zyw   0 · praca   2 · handel   2 · drewno   0 | suma z+p+h   4 | koszt Pracy 56
+  glinianka            zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 40
+  kamieniolom          zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 44
+  droga_brukowana      zyw   0 · praca   0 · handel   3 · drewno   0 | suma z+p+h   3 | koszt Pracy 50
+  droga                zyw   0 · praca   0 · handel   2 · drewno   0 | suma z+p+h   2 | koszt Pracy 30
+  wyrab                zyw   0 · praca   0 · handel   1 · drewno   0 | suma z+p+h   1 | koszt Pracy 5
+  -- warstwa DRUGA na farmie (baza farma: zyw 9 · praca 6 · handel 8) --
+  +kopalnia_zlota      zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12
+  +irygacja            zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9
+  +bydlo               zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9
+  +lodzie_rybackie     zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8
+  +lama                zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7
+  +tarasy              zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7
+  +kopalnia_miedzi     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+  +kopalnia_zelaza     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+
+## Laka  las+rzeka  (baza: zyw 5 · praca 6 · handel 7 · drewno 15)
+  kopalnia_zlota       zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12 | koszt Pracy 44
+  farma                zyw   3 · praca   3 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  irygacja             zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9 | koszt Pracy 60
+  bydlo                zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  lodzie_rybackie      zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8 | koszt Pracy 40
+  lama                 zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7 | koszt Pracy 40
+  tarasy               zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7 | koszt Pracy 50
+  kopalnia_miedzi      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_zelaza      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_cyny        zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  tartak               zyw   0 · praca   3 · handel   3 · drewno   0 | suma z+p+h   6 | koszt Pracy 50
+  warzelnia_soli       zyw   1 · praca   1 · handel   4 · drewno   0 | suma z+p+h   6 | koszt Pracy 40
+  owce                 zyw   1 · praca   2 · handel   2 · drewno   0 | suma z+p+h   5 | koszt Pracy 40
+  oboz_lowiecki        zyw   1 · praca   1 · handel   3 · drewno   0 | suma z+p+h   5 | koszt Pracy 36
+  stadnina             zyw   0 · praca   2 · handel   2 · drewno   0 | suma z+p+h   4 | koszt Pracy 56
+  glinianka            zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 40
+  kamieniolom          zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 44
+  droga_brukowana      zyw   0 · praca   0 · handel   3 · drewno   0 | suma z+p+h   3 | koszt Pracy 50
+  droga                zyw   0 · praca   0 · handel   2 · drewno   0 | suma z+p+h   2 | koszt Pracy 30
+  wyrab                zyw   0 · praca   0 · handel   1 · drewno   0 | suma z+p+h   1 | koszt Pracy 5
+  -- warstwa DRUGA na farmie (baza farma: zyw 8 · praca 9 · handel 10) --
+  +kopalnia_zlota      zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12
+  +irygacja            zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9
+  +bydlo               zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9
+  +lodzie_rybackie     zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8
+  +lama                zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7
+  +tarasy              zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7
+  +kopalnia_miedzi     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+  +kopalnia_zelaza     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+
+## Rownina Z RZEKA  (baza: zyw 5 · praca 4 · handel 4 · drewno 5)
+  kopalnia_zlota       zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12 | koszt Pracy 44
+  farma                zyw   3 · praca   3 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  irygacja             zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9 | koszt Pracy 60
+  bydlo                zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  lodzie_rybackie      zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8 | koszt Pracy 40
+  lama                 zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7 | koszt Pracy 40
+  tarasy               zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7 | koszt Pracy 50
+  kopalnia_miedzi      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_zelaza      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_cyny        zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  tartak               zyw   0 · praca   3 · handel   3 · drewno   0 | suma z+p+h   6 | koszt Pracy 50
+  warzelnia_soli       zyw   1 · praca   1 · handel   4 · drewno   0 | suma z+p+h   6 | koszt Pracy 40
+  owce                 zyw   1 · praca   2 · handel   2 · drewno   0 | suma z+p+h   5 | koszt Pracy 40
+  oboz_lowiecki        zyw   1 · praca   1 · handel   3 · drewno   0 | suma z+p+h   5 | koszt Pracy 36
+  stadnina             zyw   0 · praca   2 · handel   2 · drewno   0 | suma z+p+h   4 | koszt Pracy 56
+  glinianka            zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 40
+  kamieniolom          zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 44
+  droga_brukowana      zyw   0 · praca   0 · handel   3 · drewno   0 | suma z+p+h   3 | koszt Pracy 50
+  droga                zyw   0 · praca   0 · handel   2 · drewno   0 | suma z+p+h   2 | koszt Pracy 30
+  wyrab                zyw   0 · praca   0 · handel   1 · drewno   0 | suma z+p+h   1 | koszt Pracy 5
+  -- warstwa DRUGA na farmie (baza farma: zyw 8 · praca 7 · handel 7) --
+  +kopalnia_zlota      zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12
+  +irygacja            zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9
+  +bydlo               zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9
+  +lodzie_rybackie     zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8
+  +lama                zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7
+  +tarasy              zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7
+  +kopalnia_miedzi     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+  +kopalnia_zelaza     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+
+## Wzgorza bez rz.   (baza: zyw 1 · praca 3 · handel 0 · drewno 5)
+  kopalnia_zlota       zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12 | koszt Pracy 44
+  farma                zyw   3 · praca   3 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  irygacja             zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9 | koszt Pracy 60
+  bydlo                zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9 | koszt Pracy 40
+  lodzie_rybackie      zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8 | koszt Pracy 40
+  lama                 zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7 | koszt Pracy 40
+  tarasy               zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7 | koszt Pracy 50
+  kopalnia_miedzi      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_zelaza      zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  kopalnia_cyny        zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7 | koszt Pracy 44
+  tartak               zyw   0 · praca   3 · handel   3 · drewno   0 | suma z+p+h   6 | koszt Pracy 50
+  warzelnia_soli       zyw   1 · praca   1 · handel   4 · drewno   0 | suma z+p+h   6 | koszt Pracy 40
+  owce                 zyw   1 · praca   2 · handel   2 · drewno   0 | suma z+p+h   5 | koszt Pracy 40
+  oboz_lowiecki        zyw   1 · praca   1 · handel   3 · drewno   0 | suma z+p+h   5 | koszt Pracy 36
+  stadnina             zyw   0 · praca   2 · handel   2 · drewno   0 | suma z+p+h   4 | koszt Pracy 56
+  glinianka            zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 40
+  kamieniolom          zyw   0 · praca   1 · handel   2 · drewno   0 | suma z+p+h   3 | koszt Pracy 44
+  droga_brukowana      zyw   0 · praca   0 · handel   3 · drewno   0 | suma z+p+h   3 | koszt Pracy 50
+  droga                zyw   0 · praca   0 · handel   2 · drewno   0 | suma z+p+h   2 | koszt Pracy 30
+  wyrab                zyw   0 · praca   0 · handel   1 · drewno   0 | suma z+p+h   1 | koszt Pracy 5
+  -- warstwa DRUGA na farmie (baza farma: zyw 4 · praca 6 · handel 3) --
+  +kopalnia_zlota      zyw   0 · praca   2 · handel  10 · drewno   0 | suma z+p+h  12
+  +irygacja            zyw   5 · praca   2 · handel   2 · drewno   0 | suma z+p+h   9
+  +bydlo               zyw   2 · praca   4 · handel   3 · drewno   0 | suma z+p+h   9
+  +lodzie_rybackie     zyw   2 · praca   3 · handel   3 · drewno   0 | suma z+p+h   8
+  +lama                zyw   1 · praca   3 · handel   3 · drewno   0 | suma z+p+h   7
+  +tarasy              zyw   3 · praca   2 · handel   2 · drewno   0 | suma z+p+h   7
+  +kopalnia_miedzi     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7
+  +kopalnia_zelaza     zyw   0 · praca   2 · handel   5 · drewno   0 | suma z+p+h   7

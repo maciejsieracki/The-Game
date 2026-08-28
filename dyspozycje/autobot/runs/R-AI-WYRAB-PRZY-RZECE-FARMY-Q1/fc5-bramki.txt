@@ -1,0 +1,29 @@
+=== FC5 — BRAMKI WLASNA REKA, galaz 8ed9c4f8 ===
+2026-08-28T01:04:21Z
+
+-- piec bramek referencyjnych --
+logic-test                 LOGIC OK (213/213)
+tech-tree-test             tech-tree-test: 19 pass, 0 fail
+research-test              PASSED: 33 / FAILED: 0 / TOTAL: 33
+unit-replace-test          [unit-replace-test] WSZYSTKIE TESTY ZIELONE (13/13)
+combat-test                COMBAT TEST: 6/6 pass
+
+-- bramki tematu --
+ai4-popyt-obywatele-test   ai4-popyt-obywatele-test: 50 passed, 0 failed
+ai2-heks-po-heksie-test    ai2-heks-po-heksie-test: 35 passed, 0 failed
+ai4-mutacje                ai4-mutacje: 18 dowodow, 0 podejrzanych (z 18)
+
+-- zastany regres (NIE naprawiany) --
+ai-praca-split-parity-test ai-praca-split-parity-test: 21 passed, 1 failed
+
+-- save/load --
+fort-nodes-save-load-test      fort-nodes-save-load-test: 18 passed, 0 failed
+map-snapshot-load-test         === map-snapshot-load-test: 58 pass, 0 fail, 1 known-fail (nie liczy sie do exit code) ===
+autosave-quota-fail-test       === autosave-quota-fail-test: 20 pass, 0 fail ===
+okolica-load-reconcile-test    OKOLICA-LOAD-RECONCILE OK (23/23)
+save-load-sort-test            save-load-sort-test: OK (4/4)
+fsa-autosave-test              === fsa-autosave-test: 55 pass, 0 fail ===
+load-fail-toast-zindex-test    15 passed, 0 failed
+
+-- ZASTANE INFRA (identyczne na czystym origin/main 755e5141) --
+pre-battle-save-test        esbuild: No loader configured for .svg — NIE z tej galezi

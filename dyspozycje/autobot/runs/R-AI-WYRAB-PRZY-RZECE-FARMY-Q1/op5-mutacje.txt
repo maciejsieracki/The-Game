@@ -1,0 +1,76 @@
+# MUTACJE — dowod nie-tautologicznosci bramki rundy 4
+# baza (zrodlo nietkniete) musi byc ZIELONA
+
+baza: 50 passed, 0 failed
+  [FAIL] Z1a: BEZ niedoboru ZERO rozkazow poza zywnoscia (poza wyrebem = krok 0 farmy): 9 (tartak,droga,droga_brukowana)
+  [FAIL] Z1d: niedobor SAMEJ zywnosci NIE otwiera budowy surowcow/infrastruktury (9)
+  [FAIL] Z1f: rozkaz niezywnosciowy pojawia sie W TEJ SAMEJ turze co niedobor (t5: brak)
+  [FAIL] Z1g: ... i znika, gdy niedobor ustaje (poza t5: 5)
+  [FAIL] Z1i: profil „zrownowazone" JEST objety Zasada 1 (wynik sie rozni)
+  [DOWOD] M1 ZASADA 1 — zdejmij zawezenie listy do zywnosci przy braku niedoboru
+          czerwone: Z1a, Z1d, Z1f, Z1g, Z1i
+  [FAIL] Z1a: BEZ niedoboru ZERO rozkazow poza zywnoscia (poza wyrebem = krok 0 farmy): 2 (posterunek,fort)
+  [FAIL] Z1d: niedobor SAMEJ zywnosci NIE otwiera budowy surowcow/infrastruktury (2)
+  [FAIL] Z1g: ... i znika, gdy niedobor ustaje (poza t5: 2)
+  [DOWOD] M2 ZASADA 1 — pozwol FAZIE 0 (posterunek/fort) dzialac mimo braku niedoboru
+          czerwone: Z1a, Z1d, Z1g
+  [FAIL] Z1d: niedobor SAMEJ zywnosci NIE otwiera budowy surowcow/infrastruktury (10)
+  [FAIL] Z1e: `hasNonFoodResourceDeficit` — zywnosc nie liczy sie jako niedobor, drewno tak
+  [DOWOD] M3 ZASADA 1 — niech niedobor ZYWNOSCI tez otwiera budowe surowcow
+          czerwone: Z1d, Z1e
+  [FAIL] Z2c: ZERO ulepszen NIE-zlozowych poza polami z obywatelami (2: farma@12,7 bydlo@12,7)
+  [DOWOD] M4 ZASADA 2 — zdejmij filtr „przy obywatelach" z FAZY 1
+          czerwone: Z2c
+  [FAIL] Z2d: WYJATEK ZLOZOWY dziala — warzelnia soli powstaje na zlozu 12,7 mimo braku obywateli
+  [DOWOD] M5 ZASADA 2 — zabierz wyjatek zlozowy (zloza przestaja byc wyjatkiem)
+          czerwone: Z2d
+  [FAIL] Z2e: DEFAULT_ULEPSZENIA_ONLY_WORKED === true (nowa wartosc domyslna rundy 4)
+  [FAIL] Z2f: swieza polityka imperium ma onlyWorked === true
+  [FAIL] Z2g: override miasta BEZ pola `ulepszeniaOnlyWorked` czyta sie jako true
+  [DOWOD] M6 ZASADA 2 — cofnij wartosc domyslna onlyWorked na false
+          czerwone: Z2e, Z2f, Z2g
+  [FAIL] Z2j: AI CYWILIZACJI nie postawila nic poza polami z obywatelami (20: farma@7,7 bydlo@7,7 farma@6,8 bydlo@6,8)
+  [FAIL] Z3b: po domknieciu pol z obywatelami raport melduje NADWYZKE ({"demandActive":true,"deficitActive":false,"anyCandidate":true,"surplus":false,"n":1})
+  [DOWOD] M7 ZASADA 2 — odepnij filtr obywateli od AI CYWILIZACJI (ai.ts)
+          czerwone: Z2j, Z3b
+  [FAIL] Z3b: po domknieciu pol z obywatelami raport melduje NADWYZKE ({"demandActive":true,"deficitActive":false,"anyCandidate":false,"surplus":false,"n":0})
+  [DOWOD] M8 ZASADA 3 — niech raport nigdy nie melduje nadwyzki
+          czerwone: Z3b
+  [FAIL] Z3f: przekierowanie jest BRAMKOWANE raportem nadwyzki (`surplusRep?.surplus`)
+  [FAIL] Z3l: SAVE/LOAD ZASADY 3 — po zapisie w turze z nadwyzka i wczytaniu w swiezej sesji podzial Pracy AI CYWILIZACJI WRACA (nie zostaje na 100% budynkow = 0% puli imperium). zapis=Array.from(aiSurplusRedirectedOwners) odczyt=true znacznik po load=true procentBudynki 100->100 pula imperium 0% miasta [100,100]
+  [DOWOD] M9 ZASADA 3 — rozbramkuj przekierowanie w silniku (main.ts)
+          czerwone: Z3f, Z3l
+  [FAIL] Z3j: sygnal dla gracza to WYLACZNIE komunikat — zaden zapis do `pracaAutoPercent`
+  [DOWOD] M10 ZASADA 3 — niech automat GRACZA sam rusza suwakiem `pracaAutoPercent`
+          czerwone: Z3j
+  [FAIL] Q2a: wartosc domyslna przelacznika = WYLACZONY (§14 — bez zmiany zachowania)
+  [FAIL] Q2b: swieza polityka panstwa ma wolnoWycinacLas === false
+  [FAIL] Q2c: miasto bez override dziedziczy wartosc panstwa
+  [FAIL] Q2f: ... i w druga strone — override miasta bez pola wraca do wartosci domyslnej OFF
+  [FAIL] Q2g: SAVE/LOAD — stary zapis bez pola dostaje przelacznik WYLACZONY
+  [DOWOD] M11 R4-Q2 — zmien wartosc domyslna przelacznika wyrebu na WLACZONY
+          czerwone: Q2a, Q2b, Q2c, Q2f, Q2g
+  [FAIL] Q2k: miasto z WLACZONYM przelacznikiem wycina las (0 wyrebow)
+  [FAIL] Q2m: wyrab automatu GRACZA idzie ta sama sciezka pickera co AI CYWILIZACJI (skipWyrab=false; farm w miescie cA: 0)
+  [DOWOD] M12 R4-Q2 — zignoruj `getSkipWyrab` (przelacznik przestaje dzialac per miasto)
+          czerwone: Q2k, Q2m
+  [FAIL] Q2n: main.ts (AI GRACZA) podaje `getSkipWyrab` z przelacznika, nie stala
+  [DOWOD] M13 R4-Q2 — odepnij przelacznik od wywolania pickera w main.ts
+          czerwone: Q2n
+  [FAIL] Q2i: SAVE/LOAD — main.ts odtwarza `wolnoWycinacLas` polityki panstwa z zapisu
+  [DOWOD] M14 R4-Q2 — przestan odtwarzac przelacznik z zapisu (main.ts / load)
+          czerwone: Q2i
+  [FAIL] Q2g: SAVE/LOAD — stary zapis bez pola dostaje przelacznik WYLACZONY
+  [DOWOD] M15 R4-Q2 — zdejmij domyslke pola miasta w `ensureCitySaveDefaults`
+          czerwone: Q2g
+  [FAIL] Z3l: SAVE/LOAD ZASADY 3 — po zapisie w turze z nadwyzka i wczytaniu w swiezej sesji podzial Pracy AI CYWILIZACJI WRACA (nie zostaje na 100% budynkow = 0% puli imperium). zapis=null odczyt=true znacznik po load=false procentBudynki 100->100 pula imperium 0% miasta [100,100]
+  [DOWOD] M16 Z-3 — usun ZAPIS znacznika ZASADY 3 do sejwu (main.ts / buildSaveGameSnapshot)
+          czerwone: Z3l
+  [FAIL] Z3l: SAVE/LOAD ZASADY 3 — po zapisie w turze z nadwyzka i wczytaniu w swiezej sesji podzial Pracy AI CYWILIZACJI WRACA (nie zostaje na 100% budynkow = 0% puli imperium). zapis=Array.from(aiSurplusRedirectedOwners) odczyt=false znacznik po load=false procentBudynki 100->100 pula imperium 0% miasta [100,100]
+  [DOWOD] M17 Z-3 — usun ODCZYT znacznika ZASADY 3 z sejwu (main.ts / restoreGameFromSave)
+          czerwone: Z3l
+  [FAIL] Z3m: ZASADA 3 pomija MIASTA-PANSTWA (opts.defensiveCopy) i obejmuje AI CYWILIZACJI — 3 ziarna, wszyscy ownerzy w stanie nadwyzki. s1337: PM 4/4 (miast na max 4), CIV 4/4 | s4242: PM 3/3 (miast na max 3), CIV 5/5 | s90210: PM 4/4 (miast na max 4), CIV 4/4
+  [DOWOD] M18 FC-2 — zdejmij wykluczenie miast-panstw z bloku ZASADY 3 (main.ts)
+          czerwone: Z3m
+
+ai4-mutacje: 18 dowodow, 0 podejrzanych (z 18)
