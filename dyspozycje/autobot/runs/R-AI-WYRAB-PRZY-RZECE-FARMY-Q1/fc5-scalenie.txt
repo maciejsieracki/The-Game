@@ -1,0 +1,26 @@
+=== FC5 — PROBNE SCALENIE origin/main (755e5141) <- galaz (8ed9c4f8) ===
+merge --no-commit --no-ff: Automatic merge went well, ZERO konfliktow
+auto-merge: gra/src/game/ai.ts, gra/src/main.ts
+diff --name-only --diff-filter=U: PUSTE
+
+-- obie naprawy przezywaja scalenie --
+7950:      // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): odkad znacznik ZASADY 3
+25169:          // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): znacznik AI CYWILIZACJI,
+28811:            // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa FC-2): miasta-państwa/kopie
+32397:      // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): odtworz znacznik ZASADY 3.
+
+-- bramki NA SCALENIU --
+tsc --noEmit: exit 0
+logic-test                   LOGIC OK (213/213)
+tech-tree-test               tech-tree-test: 19 pass, 0 fail
+research-test                PASSED: 33 / FAILED: 0 / TOTAL: 33
+unit-replace-test            [unit-replace-test] WSZYSTKIE TESTY ZIELONE (13/13)
+combat-test                  COMBAT TEST: 6/6 pass
+ai4-popyt-obywatele-test     ai4-popyt-obywatele-test: 50 passed, 0 failed
+ai2-heks-po-heksie-test      ai2-heks-po-heksie-test: 35 passed, 0 failed
+ai4-mutacje                  ai4-mutacje: 18 dowodow, 0 podejrzanych (z 18)
+ai-praca-split-parity-test   ai-praca-split-parity-test: 21 passed, 1 failed
+
+-- sonda strukturalna FC NA SCALENIU --
+
+WYNIK: 16/16 OK, 0 BLAD
