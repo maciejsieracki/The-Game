@@ -1,0 +1,17 @@
+# EV4 MUTACJE (Evaluator) — bramka: ai4-popyt-obywatele-test.cjs
+# kontrola bazy (bez mutacji): ZIELONA
+
+  [DOWOD]     M1 ZASADA 1 wycieta: foodOnly zawsze false (pelna lista mimo braku niedoboru) -> bramka CZERWONA (43 passed, 5 failed)
+  [DOWOD]     M2 ZASADA 2 wycieta: hexAllowsKey zawsze true (buduj gdziekolwiek) -> bramka CZERWONA (47 passed, 1 failed)
+  [DOWOD]     M3 ZASADA 3 wycieta: surplus zawsze false -> bramka CZERWONA (47 passed, 1 failed)
+  [DOWOD]     M4 domyslna Zasada 2 cofnieta: DEFAULT_ULEPSZENIA_ONLY_WORKED = false -> bramka CZERWONA (45 passed, 3 failed)
+  [DOWOD]     M5 R4-Q2 domyslna odwrocona: DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS = true -> bramka CZERWONA (43 passed, 5 failed)
+  [DOWOD]     M6 test niedoboru odwrocony: hasNonFoodResourceDeficit zawsze true -> bramka CZERWONA (41 passed, 7 failed)
+  [DOWOD]     M7 zywnosc liczy sie jako niedobor (kasuje swiadomy wyjatek `zywnosc`) -> bramka CZERWONA (46 passed, 2 failed)
+  [DOWOD]     M8 R4-Q2 per miasto wyciete: getSkipWyrab ignorowany -> bramka CZERWONA (46 passed, 2 failed)
+  [DOWOD]     M9 wyjatek zlozowy rozlany: kazdy klucz wolno na kazdym zlozu -> bramka CZERWONA (47 passed, 1 failed)
+  [DOWOD]     M10 ZASADA 1 przeciekla na trzy pozostale profile (znika warunek `zrownowazone`) -> bramka CZERWONA (46 passed, 2 failed)
+  [DOWOD]     M11 AI CYWILIZACJI przestaje byc demandDriven (ai.ts) -> bramka CZERWONA (42 passed, 6 failed)
+  [DOWOD]     M12 AI CYWILIZACJI przestaje liczyc pola z obywatelami (ai.ts) -> bramka CZERWONA (46 passed, 2 failed)
+
+# WYNIK: dowodow 12 · podejrzanych 0 · nieudanych podmian 0
