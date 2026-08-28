@@ -1,8 +1,8 @@
 {
-  "publishedAt": "2026-08-26T10:20:00",
-  "sourceBuild": "/tmp/claude-0/-home-user-The-Game/cbf4a126-dca3-5f50-bfb0-2a747b18a590/scratchpad/deploy-fala323",
+  "publishedAt": "2026-08-28T04:56:03",
+  "sourceBuild": "/tmp/civ-dist-deploy-fala",
   "note": "Grywalna ROBOCZA. Plik: gra-robocza/Gra-ROBOCZA.html",
   "publisher": "Orkiestrator (Claude Code)",
   "bundle": "Gra-ROBOCZA.html",
-  "md5": "04a7adcba9c0d6df1490c6842ba46f96"
+  "md5": "e4e69366930995d24816449452a4592e"
 }
