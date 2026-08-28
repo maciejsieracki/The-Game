@@ -7903,6 +7903,11 @@ async function boot(): Promise<void> {
       aiWonderStuckTurnsByOwner.clear();
       aiResearchDone.clear();
       eliminatedOwners.clear();
+      // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): odkad znacznik ZASADY 3
+      // jest TRWALY (zapisywany w sejwie), musi tez byc zerowany na starcie nowej gry —
+      // inaczej rozgrywka zaczeta po wczytaniu sejwu w tej samej sesji przegladarki
+      // dziedziczylaby „przekierowanych" ownerow z poprzedniej partii.
+      aiSurplusRedirectedOwners.clear();
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       for (const [oid, civ] of plan.aiOwnerCivMap) {
@@ -24979,6 +24984,15 @@ async function boot(): Promise<void> {
           aiPracaPoolByOwner: Array.from(aiPracaPoolByOwner.entries()),
           aiNaukaPoolByOwner: Array.from(aiNaukaPoolByOwner.entries()),
           aiBadanaByOwner: Array.from(aiBadanaByOwner.entries()),
+          // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): znacznik AI CYWILIZACJI,
+          // ktorym ZASADA 3 przekierowala Prace na budynki. Stan, ktory blok ZAPISUJE
+          // (`ownerDefaultPodzialPracy` + `city.podzialPracy`), byl trwaly, a znacznik
+          // sterujacy POWROTEM — nie. Zapis w turze z nadwyzka gubil go, wiec galaz
+          // `else if (redirected)` nie wykonywala sie juz nigdy i AI zostawalo na
+          // `procentBudynki = MAX` (procentPuliImperiumZBudynkow(100) = 0 -> zero Pracy
+          // do puli imperium -> zero ulepszen terenu) NA STALE. Format jak
+          // `eliminatedOwners`/`typCityCopyOwners` nizej: plaska tablica ownerId.
+          aiSurplusRedirectedOwners: Array.from(aiSurplusRedirectedOwners),
           zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
           // B5 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): 4 struktury stanu
           // wojny wymuszonej Brązu — bez tego wpisu/odtworzenia licznik miast, cykl i
@@ -28498,34 +28512,44 @@ async function boot(): Promise<void> {
             // To jest ŚWIADOMA różnica wobec AI GRACZA, która nadwyżkę wyłącznie
             // SYGNALIZUJE (patrz `playerSurplusReport` w bloku ekonomii) — automat
             // gracza doradza, nie decyduje za gracza.
+            //
+            // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa FC-2): miasta-państwa/kopie
+            // (`opts.defensiveCopy`) WYKLUCZONE — dokładnie tym samym warunkiem, co sąsiedni
+            // blok CUDA-AI niżej. GOAL mówi o AI CYWILIZACJI (główni rywale); miasto-państwo
+            // nie jest cywilizacją i ma własną, obronną ekonomię (decideDefensiveCopyTurn).
+            // Raport nadwyżki JEST dla nich wypełniany (`decideDefensiveCopyTurn` woła ten sam
+            // `planCityImprovements`), więc bez tego warunku kopie obronne dostawały
+            // przekierowanie budżetu na budynki — poszerzenie zakresu wobec §14.
             // -----------------------------------------------------------------
-            try {
-              const surplusRep = aiSurplusReportByOwner.get(ownerId);
-              const redirected = aiSurplusRedirectedOwners.has(ownerId);
-              if (surplusRep?.surplus) {
-                if (!redirected) aiSurplusRedirectedOwners.add(ownerId);
-                const pct = MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
-                ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
-                for (const c of cities) {
-                  if (c.ownerId !== ownerId) continue;
-                  c.podzialPracy = { procentBudynki: pct };
-                  c.podzialPracyOverride = false;
+            if (!opts.defensiveCopy) {
+              try {
+                const surplusRep = aiSurplusReportByOwner.get(ownerId);
+                const redirected = aiSurplusRedirectedOwners.has(ownerId);
+                if (surplusRep?.surplus) {
+                  if (!redirected) aiSurplusRedirectedOwners.add(ownerId);
+                  const pct = MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
+                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
+                  for (const c of cities) {
+                    if (c.ownerId !== ownerId) continue;
+                    c.podzialPracy = { procentBudynki: pct };
+                    c.podzialPracyOverride = false;
+                  }
+                } else if (redirected) {
+                  aiSurplusRedirectedOwners.delete(ownerId);
+                  const pct = clampPodzialPracyBudynkiPercent(
+                    aiSliderStateByOwner.get(ownerId)?.procentBudynki
+                    ?? DEFAULT_PODZIAL_PRACY.procentBudynki,
+                  );
+                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
+                  for (const c of cities) {
+                    if (c.ownerId !== ownerId) continue;
+                    c.podzialPracy = { procentBudynki: pct };
+                    c.podzialPracyOverride = false;
+                  }
                 }
-              } else if (redirected) {
-                aiSurplusRedirectedOwners.delete(ownerId);
-                const pct = clampPodzialPracyBudynkiPercent(
-                  aiSliderStateByOwner.get(ownerId)?.procentBudynki
-                  ?? DEFAULT_PODZIAL_PRACY.procentBudynki,
-                );
-                ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
-                for (const c of cities) {
-                  if (c.ownerId !== ownerId) continue;
-                  c.podzialPracy = { procentBudynki: pct };
-                  c.podzialPracyOverride = false;
-                }
+              } catch (eSurplus) {
+                console.error(`[AI] Zasada 3 (nadwyzka ulepszen) owner=${ownerId} error:`, eSurplus);
               }
-            } catch (eSurplus) {
-              console.error(`[AI] Zasada 3 (nadwyzka ulepszen) owner=${ownerId} error:`, eSurplus);
             }
 
             // CUDA-AI (Maciej C-CUDA-AI=A, 2026-07-23): AI pełnych cywilizacji rozważa
@@ -32068,6 +32092,16 @@ async function boot(): Promise<void> {
       const savedAiPracaPool = saved.meta?.aiPracaPoolByOwner as Array<[number, number]> | undefined;
       if (savedAiPracaPool?.length) {
         for (const [oid, v] of savedAiPracaPool) aiPracaPoolByOwner.set(oid, v);
+      }
+      // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): odtworz znacznik ZASADY 3.
+      // `clear()` bezwarunkowo (stary zapis sprzed tej naprawy nie ma pola -> pusty zbior,
+      // czyli dokladnie zachowanie sprzed rundy 4: zaden owner nie jest „przekierowany",
+      // a `decideAIEconomySliders` ustawia podzial po swojemu) — i zeby nie przeciekal
+      // stan poprzedniej rozgrywki wczytanej w tej samej sesji przegladarki.
+      aiSurplusRedirectedOwners.clear();
+      const savedSurplusRedirected = saved.meta?.aiSurplusRedirectedOwners as number[] | undefined;
+      if (savedSurplusRedirected?.length) {
+        for (const oid of savedSurplusRedirected) aiSurplusRedirectedOwners.add(oid);
       }
       aiTargetMemoryByOwner.clear();
       const restoredAiTargetMemory = restoreAiTargetMemory(saved.meta?.aiTargetMemoryByOwner ?? []);

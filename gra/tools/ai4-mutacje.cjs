@@ -146,6 +146,39 @@ const MUTACJE = [
     to: '',
     oczekiwane: ['Q2g'],
   },
+  // --- RUNDA 5 -------------------------------------------------------------
+  {
+    id: 'M16',
+    opis: 'Z-3 — usun ZAPIS znacznika ZASADY 3 do sejwu (main.ts / buildSaveGameSnapshot)',
+    plik: 'main.ts',
+    from: '          aiSurplusRedirectedOwners: Array.from(aiSurplusRedirectedOwners),\n',
+    to: '',
+    oczekiwane: ['Z3l'],
+  },
+  {
+    id: 'M17',
+    opis: 'Z-3 — usun ODCZYT znacznika ZASADY 3 z sejwu (main.ts / restoreGameFromSave)',
+    plik: 'main.ts',
+    from: '      aiSurplusRedirectedOwners.clear();\n'
+      + '      const savedSurplusRedirected = saved.meta?.aiSurplusRedirectedOwners as number[] | undefined;\n'
+      + '      if (savedSurplusRedirected?.length) {\n'
+      + '        for (const oid of savedSurplusRedirected) aiSurplusRedirectedOwners.add(oid);\n'
+      + '      }\n',
+    to: '',
+    oczekiwane: ['Z3l'],
+  },
+  {
+    id: 'M18',
+    opis: 'FC-2 — zdejmij wykluczenie miast-panstw z bloku ZASADY 3 (main.ts)',
+    plik: 'main.ts',
+    from: '            if (!opts.defensiveCopy) {\n'
+      + '              try {\n'
+      + '                const surplusRep = aiSurplusReportByOwner.get(ownerId);',
+    to: '            if (true) {\n'
+      + '              try {\n'
+      + '                const surplusRep = aiSurplusReportByOwner.get(ownerId);',
+    oczekiwane: ['Z3m'],
+  },
 ];
 
 function bazowa() {

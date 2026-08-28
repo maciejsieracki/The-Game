@@ -338,6 +338,50 @@ console.log('Z3e. STRAZNIK TEKSTOWY main.ts — Zasada 3 po stronie silnika');
     + `\`pracaAutoPercent\` panstwa to handler suwaka gracza (${handlery.length})`);
 }
 
+// ===========================================================================
+console.log('RUNDA 5 — naprawy Z-3 (persist znacznika) i FC-2 (miasta-panstwa)');
+// Obie asercje WYKONUJA prawdziwy kod z `main.ts` (blok ZASADY 3, linia zapisu w
+// `buildSaveGameSnapshot`, blok odczytu w `restoreGameFromSave`) przez wspolny harness
+// `tools/ai5-zasada3-harness.cjs` — nie sa straznikami tekstowymi. Dlaczego ekstrakcja,
+// a nie import: main.ts to jedno domkniecie nie do zbundlowania w izolacji (ta sama
+// metoda i to samo uzasadnienie co `tools/fort-nodes-save-load-test.cjs`).
+// Mutacje celujace w te dwie asercje: M16/M17/M18 w `tools/ai4-mutacje.cjs`.
+{
+  const H = require(path.resolve(__dirname, 'ai5-zasada3-harness.cjs'));
+  const mainSrc = fs.readFileSync(path.resolve(SRC, 'main.ts'), 'utf8');
+
+  // --- Z3l (naprawa Z-3): save w turze z nadwyzka -> load -> tura bez nadwyzki ---
+  let z3 = null, z3err = null;
+  try { z3 = H.scenariuszZ3(mainSrc, CITIES); } catch (e) { z3err = String(e && e.message || e); }
+  ok(z3 !== null
+    && z3.saveRhs !== null && !z3.loadErr
+    && z3.procentWNadwyzce === CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT
+    && z3.redirectedPoLoad === true
+    && z3.procentPo !== CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT
+    && z3.pulaImperiumPo > 0
+    && z3.miastaPo.every(p => p !== CITIES.MAX_PODZIAL_PRACY_BUDYNKI_PERCENT),
+    `Z3l: SAVE/LOAD ZASADY 3 — po zapisie w turze z nadwyzka i wczytaniu w swiezej sesji `
+    + `podzial Pracy AI CYWILIZACJI WRACA (nie zostaje na 100% budynkow = 0% puli imperium). `
+    + (z3err ? `BLAD: ${z3err}` : `zapis=${z3 && z3.saveRhs} odczyt=${z3 && !z3.loadErr} `
+      + `znacznik po load=${z3 && z3.redirectedPoLoad} `
+      + `procentBudynki ${z3 && z3.procentWNadwyzce}->${z3 && z3.procentPo} `
+      + `pula imperium ${z3 && z3.pulaImperiumPo}% miasta [${z3 && z3.miastaPo.join(',')}]`));
+
+  // --- Z3m (naprawa FC-2): miasta-panstwa poza ZASADA 3, >= 2 ziarna ---
+  const ziarna = [1337, 4242, 90210];
+  let fc = null, fcerr = null;
+  try { fc = ziarna.map(s => H.scenariuszFC2(mainSrc, s, CITIES)); } catch (e) { fcerr = String(e && e.message || e); }
+  ok(fc !== null
+    && fc.every(r => r.pmWszystkich > 0 && r.civWszystkich > 0)
+    && fc.every(r => r.pmPrzekierowane === 0 && r.pmZnaczniki === 0 && r.pmMiastaNaMax === 0)
+    && fc.every(r => r.civPrzekierowane === r.civWszystkich),
+    `Z3m: ZASADA 3 pomija MIASTA-PANSTWA (opts.defensiveCopy) i obejmuje AI CYWILIZACJI — `
+    + `${ziarna.length} ziarna, wszyscy ownerzy w stanie nadwyzki. `
+    + (fcerr ? `BLAD: ${fcerr}` : (fc || []).map(r =>
+      `s${r.seed}: PM ${r.pmPrzekierowane}/${r.pmWszystkich} (miast na max ${r.pmMiastaNaMax}), `
+      + `CIV ${r.civPrzekierowane}/${r.civWszystkich}`).join(' | ')));
+}
+
 console.log('Q2. R4-Q2 — przelacznik „wolno wycinac las" automatu GRACZA');
 {
   ok(CITIES.DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS === false,
