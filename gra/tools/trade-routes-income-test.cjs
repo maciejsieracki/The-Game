@@ -357,10 +357,15 @@ const inc10 = TR.tradeRouteDistanceIncome(10, 'morze', incP);
 // R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 T2 (ECHO Q2): computeTradeRouteIncomeByCity liczy teraz
 // dochod FINALNY przez tradeRouteTotalDistanceIncome -- trasa morska dostaje bonus x2
 // wobec czystej krzywej dystansowej (tradeRouteDistanceIncome, NIEZMIENIONA), lad bez zmian.
-const inc10Total = inc10 * 2;
-eq(incomeByCity.get('A'), inc5 + inc10Total, 'F: miasto A uczestniczy w 2 trasach (lad+morze x2) -> suma obu dochodow finalnych');
-eq(incomeByCity.get('B'), inc5, 'F: miasto B (druga strona trasy 1, lad) dostaje PELNA kwote (Q8=B, nie polowe)');
-eq(incomeByCity.get('C'), inc10Total, 'F: miasto C (druga strona trasy 2, morze) dostaje PELNA kwote FINALNA (x2 morza)');
+// R-HANDEL-SZLAKI-DOCHOD-PODZIEL5-Q1: tradeRouteTotalDistanceIncome dzieli teraz
+// dawny wynik finalny (juz PO x2 dla morza) przez 5, round, min 1 -- inc5Total/inc10Total
+// licza sie WPROST przez funkcje (nie recznym /5), zeby test sledzil regule zamiast
+// duplikowac ja jako osobna stala.
+const inc5Total  = TR.tradeRouteTotalDistanceIncome(5, 'lad', incP);
+const inc10Total = TR.tradeRouteTotalDistanceIncome(10, 'morze', incP);
+eq(incomeByCity.get('A'), inc5Total + inc10Total, 'F: miasto A uczestniczy w 2 trasach (lad+morze x2, po /5) -> suma obu dochodow finalnych');
+eq(incomeByCity.get('B'), inc5Total, 'F: miasto B (druga strona trasy 1, lad) dostaje PELNA kwote finalna (po /5)');
+eq(incomeByCity.get('C'), inc10Total, 'F: miasto C (druga strona trasy 2, morze) dostaje PELNA kwote FINALNA (x2 morza, po /5)');
 eq(incomeByCity.has('D'), false, 'F: trasa ze statusem brak_polaczenia NIE liczy sie do dochodu');
 
 // ---------------------------------------------------------------------------
@@ -369,24 +374,30 @@ eq(incomeByCity.has('D'), false, 'F: trasa ze statusem brak_polaczenia NIE liczy
 //     osobnym, niezmienionym PORT_SEA_TRADE_BONUS_PIENIADZ -- nietestowanym tu,
 //     patrz trade-routes-test.cjs sekcja l4-l6).
 // ---------------------------------------------------------------------------
-console.log('\n-- F2. tradeRouteTotalDistanceIncome: lad bez zmian, morze x2 --');
+console.log('\n-- F2. tradeRouteTotalDistanceIncome: lad bez zmian, morze x2, oba /5 (min 1) --');
+// R-HANDEL-SZLAKI-DOCHOD-PODZIEL5-Q1: regula = Math.max(1, Math.round(dawny_wynik/5)),
+// dawny_wynik = tradeRouteDistanceIncome(...) dla ladu, *2 dla morza (JUZ finalny, przed /5).
 for (const d of [0, 6, 12, 1000]) {
   eq(
     TR.tradeRouteTotalDistanceIncome(d, 'lad', incP),
-    TR.tradeRouteDistanceIncome(d, 'lad', incP),
-    `F2: LAD dystans=${d} -> tradeRouteTotalDistanceIncome === tradeRouteDistanceIncome (bez mnoznika)`,
+    Math.max(1, Math.round(TR.tradeRouteDistanceIncome(d, 'lad', incP) / 5)),
+    `F2: LAD dystans=${d} -> tradeRouteTotalDistanceIncome === max(1, round(tradeRouteDistanceIncome/5))`,
   );
 }
 for (const d of [0, 10, 20, 1000]) {
   eq(
     TR.tradeRouteTotalDistanceIncome(d, 'morze', incP),
-    TR.tradeRouteDistanceIncome(d, 'morze', incP) * 2,
-    `F2: MORZE dystans=${d} -> tradeRouteTotalDistanceIncome === tradeRouteDistanceIncome x2`,
+    Math.max(1, Math.round((TR.tradeRouteDistanceIncome(d, 'morze', incP) * 2) / 5)),
+    `F2: MORZE dystans=${d} -> tradeRouteTotalDistanceIncome === max(1, round(tradeRouteDistanceIncome*2/5))`,
   );
 }
-eq(TR.tradeRouteTotalDistanceIncome(0, 'morze', incP), 10, 'F2: MORZE dystans=0 -> podloga=5 x2 = 10');
-eq(TR.tradeRouteTotalDistanceIncome(20, 'morze', incP), 80, 'F2: MORZE dystans=20 (=morzeMaxDist) -> szczyt=40 x2 = 80');
-eq(TR.tradeRouteTotalDistanceIncome(12, 'lad', incP), 40, 'F2: LAD dystans=12 (=ladMaxDist) -> szczyt=40, BEZ mnoznika (tylko morze dostaje x2)');
+// PRZED/PO (dawny_wynik -> dawny_wynik/5 -> round -> max(.,1) = nowa):
+// MORZE dystans=0:   10 -> 2.0   -> 2   -> max(2,1)   = 2
+eq(TR.tradeRouteTotalDistanceIncome(0, 'morze', incP), 2, 'F2: MORZE dystans=0 -> dawny=podloga=5 x2=10 -> 10/5=2 -> round=2 -> max(2,1)=2');
+// MORZE dystans=20:  80 -> 16.0  -> 16  -> max(16,1)  = 16
+eq(TR.tradeRouteTotalDistanceIncome(20, 'morze', incP), 16, 'F2: MORZE dystans=20 (=morzeMaxDist) -> dawny=szczyt=40 x2=80 -> 80/5=16 -> round=16 -> max(16,1)=16');
+// LAD dystans=12:    40 -> 8.0   -> 8   -> max(8,1)   = 8
+eq(TR.tradeRouteTotalDistanceIncome(12, 'lad', incP), 8, 'F2: LAD dystans=12 (=ladMaxDist) -> dawny=szczyt=40, BEZ mnoznika morza -> 40/5=8 -> round=8 -> max(8,1)=8');
 
 // T4 (runda 2): computeTradeRouteBuildingBonusByCity zastepuje stary
 // computeTradeRouteCountByCity -- suma 0.05*wlasny dochod dystansowy WYLACZNIE
@@ -395,11 +406,11 @@ eq(TR.tradeRouteTotalDistanceIncome(12, 'lad', incP), 40, 'F2: LAD dystans=12 (=
 const routeF4mixed = { id: 'r4', fromCityId: 'A', toCityId: 'E', ownerId: 0, toOwnerId: 4, medium: 'lad', dystans: 8, status: 'polaczony', budynekOdblokowany: true };
 const bonusByCity = TR.computeTradeRouteBuildingBonusByCity([routeF1, routeF2, routeF3suspended, routeF4mixed], incP);
 const inc8Lad = TR.tradeRouteTotalDistanceIncome(8, 'lad', incP);
-eq(bonusByCity.get('B'), 0.05 * inc5, 'T4(b): miasto B (trasa Z budynkiem) dostaje dokladnie 0.05*wlasny dochod dystansowy trasy');
+eq(bonusByCity.get('B'), 0.05 * inc5Total, 'T4(b): miasto B (trasa Z budynkiem) dostaje dokladnie 0.05*wlasny dochod dystansowy FINALNY (po /5) trasy');
 eq(bonusByCity.has('C'), false, 'T4(a): miasto C -- jedyna jego trasa (routeF2) jest BEZ budynku -> ZERO bonusu');
 eq(bonusByCity.has('D'), false, 'T4: trasa nieaktywna (status brak_polaczenia) nie liczy sie mimo budynekOdblokowany=true');
-eq(bonusByCity.get('E'), 0.05 * inc8Lad, 'T4(b): miasto E (routeF4mixed, budynek) dostaje 0.05*wlasny dochod dystansowy tej trasy');
-eq(bonusByCity.get('A'), 0.05 * inc5 + 0.05 * inc8Lad,
+eq(bonusByCity.get('E'), 0.05 * inc8Lad, 'T4(b): miasto E (routeF4mixed, budynek) dostaje 0.05*wlasny dochod dystansowy FINALNY (po /5) tej trasy');
+eq(bonusByCity.get('A'), 0.05 * inc5Total + 0.05 * inc8Lad,
   'T4(c): miasto A -- MIESZANY przypadek: sumuje TYLKO trasy z budynkiem (r1+r4), routeF2 (bez budynku) i routeF3 (nieaktywna) pomijane -- brak podwojnego liczenia (d)');
 
 // ---------------------------------------------------------------------------
@@ -583,8 +594,9 @@ eq(TR.tradeRouteBuildingBonusForRoute(routeF1, incP), 0.05 * TR.tradeRouteTotalD
 eq(TR.tradeRouteBuildingBonusForRoute(routeF4mixed, incP), 0.05 * TR.tradeRouteTotalDistanceIncome(8, 'lad', incP),
   'K(a): trasa Z budynkiem (routeF4mixed, lad d=8) -> 0.05 * wlasny dochod dystansowy');
 const routeJsea = { id: 'rJs', fromCityId: 'A', toCityId: 'S', ownerId: 0, toOwnerId: 5, medium: 'morze', dystans: 20, status: 'polaczony', budynekOdblokowany: true };
-eq(TR.tradeRouteBuildingBonusForRoute(routeJsea, incP), 0.05 * 80,
-  'K(a): trasa MORSKA Z budynkiem liczy premie od dochodu PO bonusie morskim x2 (T2), czyli 0.05*80 = 4');
+// PRZED/PO: dystans=20 morze -> dawny=szczyt=40 x2=80 -> 80/5=16 -> round=16 -> max(16,1)=16 -> 0.05*16=0.8
+eq(TR.tradeRouteBuildingBonusForRoute(routeJsea, incP), 0.05 * 16,
+  'K(a): trasa MORSKA Z budynkiem liczy premie od dochodu PO bonusie morskim x2 (T2) i PO /5 (T-PODZIEL5), czyli 0.05*16 = 0.8');
 
 // (b) trasa BEZ budynku oraz trasa nieaktywna -- twarde 0.
 eq(TR.tradeRouteBuildingBonusForRoute(routeF2, incP), 0,
