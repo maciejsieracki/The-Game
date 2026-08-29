@@ -140,9 +140,46 @@ function newBestUp(proposal, ctx) {
   // koszyka = brak numerycznej różnicy do zaobserwowania na TYM konkretnym polu) — udokumentowane
   // wprost, nie ukryte: naprawa dotyczy ról w formule surplus, nie samego pola techPrice, które
   // nigdy nie wchodzi do tej formuły. Realną, WIDOCZNĄ różnicę liczb pokazuje sekcja 4 (koszyk
-  // gotówkowy bez baseny towarowej, 'handel'+goldOnce, gdzie legacy-gold TRAFIA do givePn).
-  ok(true, 'sekcja3: udokumentowany brak różnicy PRZED/PO dla techPrice (poza formułą PN) — nie ukryty milczeniem');
+  // gotówkowy bez baseny towarowej, 'handel'+goldOnce, gdzie legacy-gold TRAFIA do givePn) oraz
+  // sekcja 5 ('ultimatum'+goldOnce, gracz-proponent — patrz DECISION_REQUIRED w raporcie).
+  //
+  // Poprawka po zarzucie Evaluatora #2 (Obrona runda 1): asercja PONIŻEJ musi realnie
+  // porównywać PRZED z PO (zamiast `ok(true, ...)`, które przechodziłoby nawet przy realnej
+  // regresji) — sprawdza faktyczną, oczekiwaną tu równość (oba `null`, albo ta sama wartość).
+  ok(
+    (przed == null) === (po == null) && (przed == null || przed.value === po.payload.techPrice),
+    `sekcja3: PO (${po ? po.payload.techPrice : null}) === PRZED (${przed ? przed.value : null}) dla techPrice — brak różnicy poza formułą PN, zweryfikowane asercją, nie tylko zalogowane`,
+  );
 }
+
+// ---------------------------------------------------------------------------
+// SEKCJA 5 — 'ultimatum' z gracz-proponentem (proposerOwnerId=0), zweryfikowany samodzielnie
+// przez Evaluatora (zarzut #1, Obrona runda 1): drugi realny, odtwarzalny przypadek zmiany
+// liczb kontroferty AI obok 'handel'+goldOnce (sekcja 4) — pominięty w oryginalnym
+// DECISION_REQUIRED raportu Operatora. Ultimatum z proposerOwnerId=0 jest realnie osiągalne
+// z UI (action '9' w NEGOTIATION_IDS — gracz wystawia ultimatum). PRZED naprawą kod (zawsze
+// `aiProposalPlayerBenefitSurplus`, bez rozróżnienia roli) NIGDY nie generował podbitej
+// kontroferty dla tej ścieżki (surplus liczony w złej roli zawsze > tolerancji). PO naprawie
+// (`playerBenefitSurplusByRole` z `proposerIsPlayer=true`) generuje eskalującą kontrofertę dla
+// każdej sprawdzonej wartości bazowej: 20->36, 40->72, 60->108, 80->144, 100->180, 150->270
+// (dokładnie ten sam mnożnik x1.8 — MAX_STEPS=4, STEP_PCT=0.2 — dla każdej bazy, bo tolerancja
+// PW na Normal (5) jest luźna względem tej konkretnej matematyki ultimatum/goldOnce niezależnie
+// od wielkości bazy w tym zakresie). Ta zmiana dotyczy mechaniki ultimatum/groźby wojny i JEST
+// tu jawnie zgłoszona jako DECISION_REQUIRED (patrz raport Operatora, sekcja DECISION_REQUIRED).
+[20, 40, 60, 80, 100, 150].forEach((base) => {
+  const relTotal = 90;
+  const proposal = {
+    actionId: 'ultimatum', proposerOwnerId: 0, responderOwnerId: 1,
+    payload: { goldOnce: base },
+  };
+  const ctx = ctxOf(relTotal, { militaryRatio: 5 });
+  const przed = oldBestUp(proposal, ctx, 'goldOnce', relTotal);
+  const po = newBestUp(proposal, ctx);
+  const expectedPo = Math.round(base * 1.8 * 100) / 100;
+  ok(przed == null, `sekcja5 (ultimatum base=${base}): PRZED (dawny kod) NIE generuje kontroferty "up" — surplus liczony w złej roli zawsze > tolerancji`);
+  ok(po != null && po.payload.goldOnce === expectedPo, `sekcja5 (ultimatum base=${base}): PO GENERUJE kontrofertę "up" = ${expectedPo} (rzeczywiste: ${po ? po.payload.goldOnce : null})`);
+  console.error(`[INFO] sekcja5 (ultimatum, gracz proponent, rel=${relTotal}, base=${base}): PRZED=${przed ? przed.value : 'brak kontroferty (BUG sprzed naprawy)'} PO=${po ? po.payload.goldOnce + ' (' + po.note + ')' : 'brak kontroferty'}`);
+});
 
 {
   // 'handel' z samym goldOnce (bez koszyka) — legacy-gold WCHODZI do givePn (resolveProposalPn),
