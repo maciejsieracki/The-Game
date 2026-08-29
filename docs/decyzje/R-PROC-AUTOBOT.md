@@ -100,6 +100,16 @@ prawdopodobnie nie powinien jeszcze startować.
 **Dispatch bez tego pliku jest naruszeniem procesu** — bez niego nie da się
 później sprawdzić, czy `GOAL` nie przesunął się w trakcie (kanon C-044, C-051).
 
+**Wzorzec zapisu jest plikiem, nie pamięcią.** `00-dispatch.md` powstaje przez
+skopiowanie `dyspozycje/autobot/SZABLON-00-DISPATCH.md` i wypełnienie każdego
+pola — dispatch pisany od zera za każdym razem gubi pole, które okazuje się
+rozstrzygające dopiero po rundzie. Pomiar na dzień wprowadzenia tej reguły
+(2026-08-28): na 67 istniejących plików `00-dispatch*.md` wyzwalacz miało 29,
+jawny model+effort 44, regułę przeciw samooszukiwaniu 7, a procedurę naprawczą
+**zero** — mimo że ten paragraf, §1a/§5a i §15 wymagają wszystkich czterech
+bezwarunkowo. Pole puste albo pominięte oznacza dispatch niekompletny: uzupełnij
+przed uruchomieniem Operatora, nie po jego raporcie.
+
 ### 2b. Sekwencjonowanie i izolacja worktree
 
 Jeden temat = jeden worktree = jeden aktywny przebieg Operatora. Baza worktree
@@ -303,8 +313,12 @@ playbook C-059; nie jest to `BLOCK`.
 
 ## 5. ABC, integracja i deploy
 
-Pełne ABC zawiera ID, sytuację, cel, powód, A/B/C, za/przeciw i rekomendację. Właściciel
-odpowiada w głównym czacie; orkiestrator zapisuje ECHO i decyzję plikowo. Subagenci nie
+Pełne ABC zawiera ID, sytuację, cel, powód, A/B/C, za/przeciw, rekomendację **oraz —
+per wariant — konsekwencje implementacyjne (co trzeba napisać albo przepisać) i
+testowe (które bramki oraz testy tematu się zmieniają lub dochodzą)**. Oba pola
+konsekwencji są obowiązkowe: bez nich właściciel wybiera literę, nie znając kosztu
+wyboru, a Operator odkrywa ten koszt dopiero w rundzie. Właściciel odpowiada w
+głównym czacie; orkiestrator zapisuje ECHO i decyzję plikowo. Subagenci nie
 prowadzą równoległego kanału decyzji.
 
 **Nie zamieniaj odpowiedzi „chyba", luźnej rozmowy ani rekomendacji agenta w formalną
@@ -572,7 +586,7 @@ Przed dispatchem odpowiedz na dwa pytania:
 | Pytanie | Próg dla tego projektu |
 |---|---|
 | Czy temat ma co najmniej dwa niezależne obszary allowlisty, więcej niż 3 nazwane bramki/testy **specyficzne dla tego tematu** w kryteriach końca, albo więcej niż 6 plików w allowliście? | dowolny z trzech |
-| Czy przetworzenie w jednym ciągu grozi przepełnieniem kontekstu jednego Operatora (audyt wielu plików, migracja przekrojowa, przegląd rejestru)? | tak/nie |
+| Czy przetworzenie w jednym ciągu grozi przepełnieniem kontekstu jednego Operatora (audyt wielu plików, migracja przekrojowa, przegląd rejestru)? | **ponad ok. 8 plików merytorycznych do przeczytania w całości albo pojedynczy plik powyżej ok. 3000 linii do przejrzenia liniowo** (`gra/src/main.ts` przekracza ten próg samodzielnie — audyt na nim jest domyślnie kandydatem do podziału, wykonanie punktowej zmiany w nim nie jest) |
 
 **Choć jedno „tak" i kroki nie są sekwencyjnie zależne** → podziel na węzły.
 Kroki zależne (krok 2 potrzebuje wyniku kroku 1) **nie dzielą się**, niezależnie
@@ -601,6 +615,15 @@ z §6. Kryterium rozróżnienia: czy to sprawdzenie **istniałoby bez tego temat
 Jeśli tak (uruchamiamy je tylko po to, żeby potwierdzić, że nic nie zepsuliśmy) —
 nie liczy się do progu. Jeśli nie (powstaje razem z tematem i opisuje, co ma być
 prawdą po zmianie) — liczy się.
+
+**Gdzie mieszka „nowe sprawdzenie", zanim ruszy Operator.** Rejestrem scenariuszy
+tego projektu jest zbiór plików `gra/tools/*-test.cjs` — każde NOWE sprawdzenie
+wprowadzane przez temat musi być w `00-dispatch.md` nazwane **plikiem docelowym i
+nazwą asercji**, nie opisem („test sprawdzi, że X"). Jeśli plik docelowy jeszcze
+nie istnieje, dispatch podaje jego przyszłą nazwę. Bez tego nie da się później
+rozstrzygnąć, czy sprawdzenie liczyło się do progu podziału, ani czy powstało w
+ogóle — a Evaluator porównuje kryteria z raportu z kryteriami z dispatchu (§16a
+pkt 9) na opisach zamiast na artefaktach.
 
 Kontrola na faktycznym przykładzie z tego repo
 (`dyspozycje/autobot/runs/P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1/00-dispatch.md`,
@@ -797,6 +820,35 @@ zmienia się tylko obecność rundy zarzut/obrona do przejrzenia w pkt 3 niżej:
 
 Final Control pracuje **na wytworze w worktree, sprawdzonym bezpośrednio** — nie
 na samych raportach Operatora i Evaluatora, które są deklaracją, nie dowodem.
+
+## 17. Kopia, której nie odtworzono, nie jest kopią
+
+**Zabezpieczenie liczy się dopiero po przećwiczonym odtworzeniu, nie po samym
+utworzeniu.** Deklaracja „praca jest zapasowana" bez udokumentowanego, faktycznie
+wykonanego odtworzenia jest `FAIL` w tym samym sensie co raport `PASS` bez
+artefaktu (§1b) — opisuje czynność, nie jej skutek.
+
+Dotyczy trzech miejsc w tym projekcie:
+
+| Zabezpieczenie | Co jest kopią | Czym jest dowód odtworzenia |
+|---|---|---|
+| Praca w worktree przed sprzątaniem | gałąź `zapas/<nazwa>` wypchnięta na `origin` | faktyczny `git checkout zapas/<nazwa>` na jednej, losowo wybranej gałęzi z partii + potwierdzenie, że drzewo zawiera oczekiwaną pracę — nie sama liczba z `git ls-remote` |
+| Opublikowany bundle (ROBOCZA/KANON/FINALNA) | poprzednia wersja z `WERSJE.md` z jej md5 | przywrócenie poprzedniego bundla i przeliczenie md5 ze stanu po przywróceniu; zgodność z wpisem w `WERSJE.md` |
+| Stan przed nieodwracalną zmianą danych gry | commit/gałąź sprzed zmiany | odtworzenie i zielone `tsc --noEmit` + 5 bramek referencyjnych na odtworzonym stanie |
+
+**Kiedy obowiązuje.** Odtworzenie ćwiczy się przed usunięciem oryginału
+(sprzątanie worktree, §2b) oraz raz na falę deployową — przy pierwszym wpisie do
+`WERSJE.md` w danej fali. Wynik ćwiczenia zapisuje orkiestrator jednym zdaniem
+tam, gdzie mieszka samo zabezpieczenie: przy wpisie fali w `WERSJE.md` albo w
+raporcie integracji tematu, który sprzątał worktree. Nieprzećwiczone odtworzenie
+nie blokuje pracy bieżącej — blokuje uznanie za zamknięty tematu, którego `GOAL`
+opierał się na istnieniu tego zabezpieczenia.
+
+**Wypadki, które tę regułę wywołały:** 2026-08-07 — 22 gałęzie `zapas/*`
+zweryfikowane wyłącznie liczbą, w tym samym dniu praca w toku przepadła dwa razy
+(`REJESTR-PROSB-I-ZADAN.md`, R-DYSK-WORKTREE-Q1); 2026-08-21 — awaryjny rollback
+FALA 307 → 306 wykonany improwizacją pod presją, bez wcześniej przećwiczonej
+ścieżki (`WERSJE.md`, „AWARIA — ROLLBACK FALA 307 → 306").
 
 Historyczne routingi, dawne modele i snapshoty zachowano w
 [`docs/archiwum-procesu/`](../archiwum-procesu/); nie są aktywną instrukcją.

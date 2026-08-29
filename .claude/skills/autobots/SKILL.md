@@ -988,6 +988,18 @@ kosztować najwięcej. Nazwy i lokalizacje są parametrem projektu.
 Kolejność zakładania: 1 → 2 → 3 → 6 → 7 → szablon 8 → 5 → 4. Plik pojedynczego
 zlecenia powstaje **wyłącznie w chwili konkretnego dispatchu**, nigdy na zapas.
 
+Każdy z ośmiu dokumentów ma jedno z trzech oznaczeń, rozstrzygające, kiedy ma
+powstać: **OBOWIĄZKOWY** — istnieje z realną treścią od pierwszego dnia, bo bez
+niego nic innego nie da się ani znaleźć, ani zlecić (funkcje 1, 2 oraz szablon
+z funkcji 8); **ROSNĄCY** — zakładany na starcie jako pusty szkielet z nagłówkami,
+wypełniany w miarę pracy (funkcje 3–7); **HISTORYCZNY** — powstaje wyłącznie jako
+skutek konkretnej pracy, nigdy na zapas (pojedynczy zapis zlecenia z funkcji 8).
+
+Pusty plik założony na zapas szkodzi z jednego powodu: tworzy złudzenie, że
+struktura jest kompletna, podczas gdy nikt jej nie wypełnił treścią. Różnica między
+„plik istnieje" a „informacja jest znana" znika z pola widzenia — a to właśnie ta
+różnica ma być widoczna przez cały czas trwania projektu.
+
 ### Czego nie zakładać na starcie
 
 - Plików zleceń na zapas — sugerują, że zadanie zamówiono, zanim je zamówiono.

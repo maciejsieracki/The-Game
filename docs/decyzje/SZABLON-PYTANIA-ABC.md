@@ -13,10 +13,17 @@
 3. DLACZEGO TERAZ → czemu akurat w tym momencie
 4. OPCJE A/B/C   → opis decyzji + Za (≥2) + Przeciw (≥2) — każda osobno
 4b. REKOMENDACJA → zawsze A, B albo C + jedno zdanie
+4c. KONSEKWENCJE → dla KAŻDEGO wariantu, nie tylko rekomendowanego:
+      IMPLEMENTACYJNE — co trzeba napisać albo przepisać (pliki/obszary, nie linie)
+      TESTOWE        — które bramki i testy tematu się zmieniają, a które dochodzą
 5. ASK           → dopiero potem: krótki formularz (etykiety A/B/C)
 ```
 
 **Podział:** pełny opis w **czacie** · w `AskQuestion` **tylko krótkie etykiety** · **ZAKAZ** samego formularza bez tekstu.
+
+**Checklista przed wysłaniem — konsekwencje implementacyjne i testowe:** wypisane
+per wariant. Wariant, przy którym nie umiesz nazwać ani jednej zmiany w kodzie i
+ani jednej bramki, albo jest pozorny, albo nie został przemyślany do końca.
 
 ---
 
