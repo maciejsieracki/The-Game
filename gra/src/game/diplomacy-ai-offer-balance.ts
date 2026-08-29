@@ -20,6 +20,51 @@ import {
   resolveProposalPn,
   type ResolveProposalPnOptions,
 } from './diplomacy-pn-engine';
+// R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1: `handelRequiredPn`/`treatyBaseFairnessGap` importowane
+// z diplomacy-proposals.ts (nie reimplementowane) — JEDYNE źródło tej matematyki, żeby
+// generator startowej oferty AI celował w DOKŁADNIE tę samą liczbę, której użyje
+// evaluateProposal. Import zwrotny (diplomacy-proposals.ts już importuje z tego pliku —
+// trimProposalForZeroBalance/aiOfferTargetsZeroBalance/aiProposalPlayerBenefitSurplus)
+// tworzy cykl modułów — TEN SAM, już tolerowany wzorzec co diplomacy-pn-engine.ts ↔
+// diplomacy-ai-offer-balance.ts (patrz import trimQuickDealGiveToTolerance tamże): bezpieczne
+// dla czystych funkcji wołanych w runtime, nigdy skonsumowanych na poziomie inicjalizacji modułu.
+import { handelRequiredPn, treatyBaseFairnessGap } from './diplomacy-proposals';
+
+/**
+ * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1: dodatkowe składniki formuły bilansu, dotąd pomijane
+ * przez generator startowej oferty AI (GOAL b) — mnożnik chęci partnera do handlu
+ * (`handelWillingnessMultiplier` w diplomacy-proposals.ts, tu jako gotowa liczba: wołający,
+ * który ZNA kontekst stanceForEval/getEffectiveDiplomacyParams, liczy go i przekazuje) oraz
+ * baza traktatu (`treatyBaseAcceptancePn`/`treatyBaseFairnessGap`, dla umowa_handlowa/
+ * umowa_szlakow). Oba pola opcjonalne i domyślnie neutralne (multiplier=1, treatyBasePn=0)
+ * — bez nich zachowanie jest BIT-IDENTYCZNE ze stanem sprzed tej zmiany (patrz
+ * gra/tools/diplomacy-bilans-unifikacja-test.cjs, sekcja „no-op dla realnego wywołania”).
+ *
+ * Dla dzisiejszego jedynego realnego wywołania (`main.ts:enqueueNegotiationFromAiCmd`,
+ * proposerOwnerId=AI, responderOwnerId=gracz) OBA składniki są matematycznie no-op:
+ * `handelWillingnessMultiplier` zwraca zawsze 1, gdy `responderIsPlayer` (gracz jest
+ * respondentem) — a `treatyBaseFairnessGap` w evaluateProposal jest bramkowana wyłącznie
+ * `if (proposerIsTreatyPlayer)` (proponent=gracz), nigdy prawda gdy proponentem jest AI.
+ * Parametry istnieją dla PRZYSZŁYCH wywołań tego generatora z odwrotnej strony (np.
+ * kontroferta AI na propozycję gracza, `generateCounterOffer`, gdzie oba składniki SĄ
+ * realnie nietrywialne) — testowane syntetycznie w nowym pliku testu (kryterium 3).
+ */
+export interface AiOfferFairnessOpts {
+  /** `handelWillingnessMultiplier(...)` już policzony przez wołającego — domyślnie 1 (no-op). */
+  multiplier?: number;
+  /** Baza traktatu (dla umowa_handlowa/umowa_szlakow) po stronie proponenta — domyślnie 0 (no-op). */
+  treatyBasePn?: number;
+}
+
+function resolvedMultiplier(fairness?: AiOfferFairnessOpts): number {
+  const m = fairness?.multiplier;
+  return typeof m === 'number' && Number.isFinite(m) && m > 0 ? m : 1;
+}
+
+function resolvedTreatyBasePn(fairness?: AiOfferFairnessOpts): number {
+  const b = fairness?.treatyBasePn;
+  return typeof b === 'number' && Number.isFinite(b) && b > 0 ? b : 0;
+}
 
 /**
  * Maks. nadwyżka PW dla strony odbierającej ofertę AI (gracz), przy której AI
@@ -64,17 +109,36 @@ export function aiAllowsTradeAgreementSweetener(difficulty: GameDifficulty = 'no
 /**
  * Nadwyżka PW po stronie RESPONDENTA (odbiorcy propozycji AI).
  * Dodatnia = respondent oddaje więcej niż fair min względem tego co dostaje.
+ *
+ * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b): próg fair-min liczony TERAZ przez
+ * `handelRequiredPn` (diplomacy-proposals.ts) zamiast gołego `diplomacyFairGivePn` —
+ * ta sama funkcja, którą evaluateProposal/handelFairnessGate realnie stosuje (mnożnik
+ * chęci + podłoga parytetu `Math.max(receivePn,...)`), więc gdy wołający przekaże
+ * realny `fairness.multiplier`, cel generatora i próg bramki są DOKŁADNIE tą samą liczbą.
+ * `treatyBasePn` (opcjonalny) dolicza się do strony "demand" — mirror `treatyBaseFairnessGap`
+ * dla umowa_handlowa/umowa_szlakow, gdzie próg dotyczy. Oba pola domyślnie neutralne.
  */
 export function responderPwSurplus(
   proposerGivePn: number,
   proposerReceivePn: number,
   relTotal: number,
+  fairness?: AiOfferFairnessOpts,
 ): number {
-  const rel = Math.min(100, Math.max(1, relTotal));
-  const responderOfferPn = proposerReceivePn;
   const responderDemandPn = proposerGivePn;
-  const fairMinPn = diplomacyFairGivePn(responderDemandPn, rel);
-  return responderOfferPn - fairMinPn;
+  const treatyBasePn = resolvedTreatyBasePn(fairness);
+  if (treatyBasePn > 0) {
+    // Traktat handlowy (umowa_handlowa/umowa_szlakow): evaluateProposal ocenia bazę
+    // traktatu NIEZALEŻNIE od koszyka, przez `treatyBaseFairnessGap` — nie przez
+    // `handelRequiredPn`/mnożnik chęci (ten dotyczy wyłącznie case'u 'handel' w silniku;
+    // wzajemnie wykluczające się gałęzie, jak w evaluateProposal). Dodatni gap = proponentowi
+    // brakuje do parytetu bazy → ujemny surplus respondenta (dokładnie ta sama liczba, ze
+    // znakiem odwróconym, co evaluateProposal zwraca jako `pwBalance = -gap`).
+    const gap = treatyBaseFairnessGap(treatyBasePn, proposerGivePn, proposerReceivePn, relTotal);
+    return -gap;
+  }
+  const multiplier = resolvedMultiplier(fairness);
+  const fairMinPn = handelRequiredPn(responderDemandPn, relTotal, multiplier);
+  return proposerReceivePn - fairMinPn;
 }
 
 /**
@@ -85,6 +149,7 @@ export function aiProposalPlayerBenefitSurplus(
   payload: ProposalPayload,
   relTotal: number,
   pnOpts?: ResolveProposalPnOptions,
+  fairness?: AiOfferFairnessOpts,
 ): number {
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   const isOneSidedGift =
@@ -92,7 +157,7 @@ export function aiProposalPlayerBenefitSurplus(
     && receivePn <= 0
     && !(payload.receiveItems?.length);
   if (isOneSidedGift) return givePn;
-  return -responderPwSurplus(givePn, receivePn, relTotal);
+  return -responderPwSurplus(givePn, receivePn, relTotal, fairness);
 }
 
 function pnToPaymentAmount(paymentTyp: 'zloto' | 'praca', targetPn: number): number {
@@ -144,10 +209,11 @@ export function trimProposalGoldForZeroBalance(
   relTotal: number,
   difficulty: GameDifficulty = 'normal',
   pnOpts?: ResolveProposalPnOptions,
+  fairness?: AiOfferFairnessOpts,
 ): ProposalPayload {
   if (!aiOfferTargetsZeroBalance(difficulty)) return payload;
   const tolerance = aiOfferPwSurplusTolerance(difficulty);
-  const surplus = aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts);
+  const surplus = aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts, fairness);
   if (surplus <= tolerance) return payload;
 
   const items = [...(payload.giveItems ?? [])];
@@ -174,7 +240,7 @@ export function trimProposalGoldForZeroBalance(
       giveItems: trialItems.length ? trialItems : undefined,
       goldOnce: mid > 0 ? mid : undefined,
     };
-    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts);
+    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts, fairness);
     if (trialSurplus <= tolerance) {
       best = mid;
       lo = mid + 1;
@@ -222,6 +288,7 @@ export function trimResourcePaymentTradeForZeroBalance(
   relTotal: number,
   difficulty: GameDifficulty = 'normal',
   pnOpts?: ResolveProposalPnOptions,
+  fairness?: AiOfferFairnessOpts,
 ): ProposalPayload {
   if (!aiOfferTargetsZeroBalance(difficulty) || !hasResourcePaymentTrade(payload)) {
     return payload;
@@ -258,7 +325,7 @@ export function trimResourcePaymentTradeForZeroBalance(
   const normalizedPayload: ProposalPayload = { ...payload, giveItems, receiveItems };
 
   const tolerance = aiOfferPwSurplusTolerance(difficulty);
-  if (aiProposalPlayerBenefitSurplus(normalizedPayload, relTotal, pnOpts) <= tolerance) {
+  if (aiProposalPlayerBenefitSurplus(normalizedPayload, relTotal, pnOpts, fairness) <= tolerance) {
     return normalizedPayload;
   }
 
@@ -297,7 +364,7 @@ export function trimResourcePaymentTradeForZeroBalance(
       giveItems: resSide === 'give' ? trialResArr : giveItems,
       receiveItems: resSide === 'receive' ? trialResArr : receiveItems,
     };
-    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts);
+    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts, fairness);
     if (trialSurplus <= tolerance) {
       best = mid;
       lo = midSteps + 1;
@@ -337,10 +404,11 @@ export function trimProposalForZeroBalance(
   relTotal: number,
   difficulty: GameDifficulty = 'normal',
   pnOpts?: ResolveProposalPnOptions,
+  fairness?: AiOfferFairnessOpts,
 ): ProposalPayload {
   if (!aiOfferTargetsZeroBalance(difficulty)) return payload;
-  let p = trimProposalGoldForZeroBalance(payload, relTotal, difficulty, pnOpts);
-  p = trimResourcePaymentTradeForZeroBalance(p, relTotal, difficulty, pnOpts);
+  let p = trimProposalGoldForZeroBalance(payload, relTotal, difficulty, pnOpts, fairness);
+  p = trimResourcePaymentTradeForZeroBalance(p, relTotal, difficulty, pnOpts, fairness);
   return p;
 }
 

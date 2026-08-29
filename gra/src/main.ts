@@ -14559,6 +14559,20 @@ async function boot(): Promise<void> {
         proposerOwnerId: ownerId,
         playerOwnerId: 0,
       };
+      // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b, recon jawny w raporcie Operatora):
+      // generator dostał opcjonalny 5. param `fairness` (multiplier/treatyBasePn) — patrz
+      // diplomacy-ai-offer-balance.ts. CELOWO NIE przekazany tutaj: w tym jedynym realnym
+      // wywołaniu proposerOwnerId=AI, responderOwnerId=gracz ZAWSZE — a) evaluateProposal's
+      // `handelWillingnessMultiplier` zwraca 1 zawsze gdy `responderIsPlayer` (ten układ),
+      // b) `treatyBaseFairnessGap` w evaluateProposal jest bramkowana WYŁĄCZNIE
+      // `if (proposerIsTreatyPlayer)` (proponent=gracz) — nigdy prawda gdy proponentem
+      // jest AI. Przekazanie tu np. treatyBasePn>0 zmieniłoby formułę trymowania na gałąź
+      // bazy traktatu, której evaluateProposal W OGÓLE NIE STOSUJE dla tego kierunku —
+      // to byłoby DODANIE nieistniejącej bramki, nie unifikacja z istniejącą (zakaz z
+      // reguły przeciw samooszukiwaniu tego dispatchu). Realny punkt integracji obu
+      // składników jest `generateCounterOffer` (diplomacy-proposals.ts) — kontroferta AI
+      // na propozycję GRACZA, gdzie proposerOwnerId=gracz/responderOwnerId=AI odwraca oba
+      // warunki na "aktywne"; poza allowlistą tego main.ts (WYŁĄCZNIE ten jeden call site).
       const balancedPayload = trimProposalForZeroBalance(
         clampedPayload,
         relationTotal(relForBalance),
