@@ -1217,6 +1217,11 @@ function renderPracaSection(
   const upkeep = Math.round(economy.pracaUpkeep ?? 0);
   const stock = Math.round(economy.praca ?? 0);
   const rate = Math.round(economy.pracaRate ?? 0);
+  // P-PRACA-IMPERIUM-AI-ULEPSZENIA-MIESZANE-Q1 (Maciej 2026-08-29): koszt
+  // auto-postawionych ulepszeń AI gracza w ostatniej turze — OSOBNY box, wzorem
+  // UTRZYMANIE ULEPSZEŃ, żeby nie mieszał się z saldem netto na głównym żetonie
+  // (zgłoszenie właściciela: "Praca 39 -10" mylące, powinno być w podsumowaniu).
+  const autoUlepszeniaKoszt = Math.round(economy.pracaAutoUlepszeniaKoszt ?? 0);
 
   h += `<div class="civ-emp-hero pos">${total} Pracy / turę</div>`
     + `<div class="civ-emp-hero-sub"><b>${sumBudynki}</b> do budynków · <b>${sumPula}</b> do puli imperium · `
@@ -1242,6 +1247,13 @@ function renderPracaSection(
     + `<div class="v"${upkeep > 0 ? ' style="color:#e07a7a"' : ''}>−${upkeep} `
     + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>'
     + '</div>';
+  if (autoUlepszeniaKoszt > 0) {
+    h += '<div class="civ-emp-two">'
+      + `<div class="civ-emp-box"><div class="k">AUTO-ULEPSZENIA (AI)</div>`
+      + `<div class="v" style="color:#e07a7a">−${autoUlepszeniaKoszt} `
+      + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>'
+      + '</div>';
+  }
 
   const grid = '1fr 1fr 1fr';
   let tblSumPula = 0;
@@ -1260,6 +1272,9 @@ function renderPracaSection(
   h += '<div class="civ-emp-foot">„Do puli" trafia do globalnej puli Pracy (górny pasek). „Do budynków" zasila kolejkę w mieście.</div>';
   if (upkeep > 0) {
     h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${upkeep} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
+  }
+  if (autoUlepszeniaKoszt > 0) {
+    h += `<div class="civ-emp-foot">Auto-ulepszenia AI (gracz): −${autoUlepszeniaKoszt} Praca z puli w tej turze — koszt terenu postawionego automatycznie (tryb: auto).</div>`;
   }
 
   h += renderEmpirePracaBudgetSplitSection();
