@@ -376,9 +376,22 @@ export function isIncomingBasketTradePanel(data: PnBalancePanelData): boolean {
   return mode === 'basket' || mode === 'mixed';
 }
 
-/** Netto PW: dodatnie = gracz oddaje więcej (przewaga partnera). */
+/**
+ * Netto PW: dodatnie = gracz oddaje więcej (przewaga partnera).
+ *
+ * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL a): czyta `data.theirBalance.balancePn` — TĘ SAMĄ
+ * liczbę, którą `balancePanelDataFromRows` już zapisuje jako `unifiedPwBalance` (min po
+ * `responderPreview.pwBalance` z evaluateProposal, gdy dostępny; surowe myOfferPn−theirOfferPn
+ * TYLKO gdy żadna aktywna pozycja nie niesie numerycznego pwBalance) — zamiast osobno liczonej
+ * różnicy myOfferPn−theirOfferPn, która dla pakietu wielopozycyjnego mogła się rozjechać z
+ * bramką akceptacji (ta sama wartość, ten sam WZÓR co `canAccept` — patrz komentarz w
+ * `balancePanelDataFromRows`). Dla pojedynczej pozycji liczby są bit-identyczne (fallback
+ * `myOfferPn−theirOfferPn` uruchamia się w obu miejscach tym samym warunkiem), więc to nie
+ * zmienia dziś wyświetlanej liczby w prostym przypadku — hartuje przeciw rozjazdowi w
+ * pakiecie/koszyku wielopozycyjnym (kryterium 1 dispatchu).
+ */
 export function incomingTradeNetBalancePw(data: PnBalancePanelData): number {
-  return data.myOfferPn - data.theirOfferPn;
+  return data.theirBalance.balancePn;
 }
 
 function incomingTradeBalanceHint(netPw: number): string {

@@ -500,7 +500,13 @@ export function marchTreatyLabel(borderMilitary?: boolean): string {
   return borderMilitary ? 'Traktat przemarszu (wojskowy)' : 'Traktat przemarszu (cywilny)';
 }
 
-function treatyBasePnFromConfig(actionId: string): number {
+/**
+ * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1: eksportowana (była lokalna) — jedyne miejsce czytające
+ * bazę traktatu z konfiguracji (`diplomacy-acceptance-points.json` „traktaty"), żeby
+ * `enqueueNegotiationFromAiCmd` (main.ts) mogło przekazać ją do generatora oferty AI
+ * zamiast duplikować odczyt configu.
+ */
+export function treatyBasePnFromConfig(actionId: string): number {
   const t = (acceptancePointsJson.traktaty as Record<string, { punkty?: number } | undefined>);
   return t[actionId]?.punkty ?? 0;
 }
@@ -666,8 +672,12 @@ const PROPOSER_PW_FAIRNESS_ACTIONS: ReadonlySet<string> = new Set<string>([]);
  * patrz komentarz przy PROPOSER_PW_FAIRNESS_ACTIONS). Dodatnia wartość = ile PW
  * proponentowi brakuje do parytetu (0 lub ujemna = oferta uczciwa lub proponent
  * daje więcej).
+ *
+ * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1: eksportowana (była lokalna) — patrz komentarz
+ * przy `handelRequiredPn` powyżej, ten sam powód (reużycie w diplomacy-ai-offer-balance.ts
+ * zamiast duplikowania matematyki bazy traktatu).
  */
-function treatyBaseFairnessGap(
+export function treatyBaseFairnessGap(
   basePn: number,
   givePn: number,
   receivePn: number,
@@ -776,7 +786,14 @@ const HANDEL_WILLINGNESS_PENALTY_MAX_PCT = 0.20;
  * na progu, bez „martwej strefy" płaskiej wokół niego — obie gałęzie dochodzą do 1
  * z przeciwnych stron tym samym tempem względem odległości do progu).
  */
-function handelWillingnessMultiplier(
+/**
+ * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1: eksportowana (była lokalna) — patrz komentarz przy
+ * `handelRequiredPn` powyżej. `responderIsPlayer=true` (AI proponuje graczowi, dzisiejsza
+ * jedyna ścieżka `enqueueNegotiationFromAiCmd`) zawsze zwraca 1 — no-op dla tej ścieżki;
+ * realnie nietrywialna dopiero gdy responderem jest AI (np. kontroferta AI na propozycję
+ * gracza, `generateCounterOffer`).
+ */
+export function handelWillingnessMultiplier(
   stance: ReturnType<typeof aiDiplomacyStance>,
   params: ReturnType<typeof getEffectiveDiplomacyParams>,
   responderIsPlayer: boolean,
@@ -819,8 +836,12 @@ function handelFairnessReject(
  * Wymagany próg PW handlu @ Relacji × mnożnik chęci — JEDYNE miejsce, które to liczy
  * (handelFairnessGate i pwBalance przy sukcesie muszą użyć TEJ SAMEJ liczby, inaczej
  * wraca P-DYPLO-BILANS-GATE-NIESPOJNY). PODŁOGA PARYTETU (runda 4): nigdy poniżej receivePn.
+ *
+ * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1: eksportowana (była lokalna) — jedyne miejsce, które
+ * liczy ten próg, żeby generator startowej oferty AI (diplomacy-ai-offer-balance.ts) mógł
+ * celować w DOKŁADNIE tę samą liczbę zamiast reimplementować/pomijać mnożnik chęci.
  */
-function handelRequiredPn(receivePn: number, relTotal: number, multiplier: number): number {
+export function handelRequiredPn(receivePn: number, relTotal: number, multiplier: number): number {
   const relForFair = Math.min(100, Math.max(1, relTotal));
   return Math.max(receivePn, Math.ceil(diplomacyFairGivePn(receivePn, relForFair) * multiplier));
 }
@@ -2225,6 +2246,18 @@ export function generateCounterOffer(
   const tryPayload = (p: ProposalPayload): boolean =>
     evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
 
+  // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b, recon jawny w raporcie Operatora): generator
+  // (diplomacy-ai-offer-balance.ts) dostał opcjonalny `fairness` (multiplier/treatyBasePn),
+  // ta sama matematyka co handelRequiredPn/treatyBaseFairnessGap. CELOWO NIE wpięty tutaj:
+  // `aiProposalPlayerBenefitSurplus`/`responderPwSurplus` zakładają STRUKTURALNIE
+  // proposerOwnerId=AI (patrz ich własny docstring — "Nadwyżka korzyści dla RESPONDENTA
+  // (gracz)"), a `generateCounterOffer` jest wołana z FIKSOWANYMI proposerOwnerId/
+  // responderOwnerId propozycji, które gdy inicjatorem był gracz, są ODWROTNE — podanie tu
+  // realnego mnożnika/bazy zmieniłoby próg przycinania w kierunku, którego NIE zweryfikowałem
+  // (rozjazd ról proponent/respondent w tej funkcji jest osobnym, głębszym, przedistniejącym
+  // problemem, poza zakresem tego dispatchu — zgłoszony w BLOKADY raportu, nie ukryty). Zamiast
+  // ryzykować niezweryfikowaną zmianę zachowania realnej kontroferty AI, `finalizePayload`
+  // zostaje BEZ zmian (fairness pominięty = zachowanie bit-identyczne).
   const finalizePayload = (p: ProposalPayload): ProposalPayload =>
     aiOfferTargetsZeroBalance(difficulty)
       ? trimProposalForZeroBalance(p, relTotal, difficulty, pnOpts)
