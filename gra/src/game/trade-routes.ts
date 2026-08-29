@@ -888,7 +888,8 @@ export function tradeRouteTotalDistanceIncome(
   params: TradeRouteIncomeParams = DEFAULT_TRADE_ROUTE_INCOME_PARAMS,
 ): number {
   const base = tradeRouteDistanceIncome(dystans, medium, params);
-  return medium === 'morze' ? base * 2 : base;
+  const dawnyWynik = medium === 'morze' ? base * 2 : base;
+  return Math.max(1, Math.round(dawnyWynik / 5));
 }
 
 interface RawEconParamsJsonTradeIncome {
