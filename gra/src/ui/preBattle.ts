@@ -1,6 +1,8 @@
 /**
  * preBattle.ts
  * Pre-battle overlay -- kompaktowa nakladka nad mapa swiata (KANON v1.1, 2026-07-23).
+ * UWAGA: katalog docs/ux/ zostal usuniety z repo (R-REPO-SPRZATANIE-SREDNIE-Q1,
+ * 2026-08-26). Sciezka nizej jest HISTORYCZNA — tresc: git show 39ae5d17:<sciezka>.
  * Zrodlo wizualne: docs/ux/claude-design/01-propozycje-z-design/brand-book/KANON/mockupy/
  *   "The Game - PreBattle nakladka v1.1 (1E).dc.html" + DYSPOZYCJA-WDROZENIE.md (KROK 3).
  * Kontrakt danych (PreBattleInfo / PreBattleSide / PreBattleUnit / callbacks) NIEZMIENIONY --
@@ -678,7 +680,7 @@ function rosterHtml(side: PreBattleSide, role: 'atk' | 'def', isYou: boolean): s
   const rows = shown.map(u => unitRowHtml(u)).join('');
   const more = hidden > 0 ? '<div class="pb-more">+' + String(hidden) + ' więcej…</div>' : '';
   const sideCls = isYou ? 'pb-you' : 'pb-foe';
-  const posCls = role === 'atk' ? 'pb-l' : 'pb-r';
+  const posCls = isYou ? 'pb-l' : 'pb-r';
   return (
     '<div class="pb-roster ' + sideCls + ' ' + posCls + '">' +
     '<div class="pb-rlbl">' + esc(label) + ' · ' + String(total) + '</div>' +
@@ -699,7 +701,7 @@ function commanderHtml(
   const civ = esc(side.cywilizacja ?? side.nazwa);
   const who = esc(side.wodz ?? side.nazwa);
   const sideCls = isYou ? 'pb-you' : 'pb-foe';
-  const posCls = role === 'atk' ? 'pb-l' : 'pb-r';
+  const posCls = isYou ? 'pb-l' : 'pb-r';
   const bonusy = resolveSideBonusy(side, explicit, getBonusy);
   const chipTexts = bonusChipTexts(bonusy);
   const chipsHtml = chipTexts.length

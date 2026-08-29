@@ -103,10 +103,12 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
   const w = worked.get(city.id);
-  ok(w && w.drewno === 10 && w.kamien === 5, 'Równina centrum: worked drewno=10 kamien=5');
+  ok(w && w.drewno === 5 && w.kamien === 2 && w.glina === 0,
+    'Równina centrum: worked drewno=5 kamien=2 glina=0');
   const stock = runTick(city, [], map);
-  eq(stock.drewno, 10, 'magazyn: Równina bez Tartaku → 10 drewna');
-  eq(stock.kamien, 5, 'magazyn: Równina bez Kamieniołomu → 5 kamień');
+  eq(stock.drewno, 5, 'magazyn: Równina bez Tartaku → 5 drewna');
+  eq(stock.kamien, 2, 'magazyn: Równina bez Kamieniołomu → 2 kamień');
+  eq(stock.glina ?? 0, 0, 'magazyn: Równina bez rzeki → 0 gliny');
 }
 
 // Tartak + las na obrabianym heksie — drewno > sam Tartak
@@ -153,9 +155,10 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
   const w = worked.get(city.id);
-  ok(w && w.glina === 10, 'Rzeka na centrum: worked glina=10');
+  ok(w && w.drewno === 0 && w.kamien === 0 && w.glina === 15,
+    'Rzeka na centrum Łąki: worked drewno=0 kamien=0 glina=15 (5 baza + 10 rzeka)');
   const stock = runTick(city, [], map);
-  eq(stock.glina, 10, 'magazyn: heks przy rzece → +10 glina/t');
+  eq(stock.glina, 15, 'magazyn: heks przy rzece → 15 glin/t (5 baza + 10 rzeka)');
 }
 
 // Sąsiad z 👤 (tryb ręczny) — Łąka +1 drewno, nie tylko centrum miasta
@@ -184,9 +187,12 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
   const w = worked.get(city.id);
-  ok(w && w.drewno === 15, 'centrum+👤 Łąka: drewno 10+5=15');
+  ok(w && w.drewno === 5 && w.kamien === 2 && w.glina === 5,
+    'centrum Równina + 👤 Łąka: drewno 5+0=5, kamien 2+0=2, glina 0+5=5');
   const stock = runTick(city, [], map);
-  eq(stock.drewno, 15, 'magazyn: plony z obrabianego sąsiada addytywnie');
+  eq(stock.drewno, 5, 'magazyn: plony z obrabianego sąsiada — Drewno addytywnie');
+  eq(stock.kamien, 2, 'magazyn: plony z obrabianego sąsiada — Kamień addytywnie');
+  eq(stock.glina, 5, 'magazyn: plony z obrabianego sąsiada — Glina addytywnie');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

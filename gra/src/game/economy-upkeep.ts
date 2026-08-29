@@ -791,21 +791,37 @@ export function unitResourceUpkeep(
 }
 
 /**
- * R-AI-RECRUIT-UPKEEP-GATE (Maciej 2026-08-06): przy rekrutacji jednostki pula
- * państwa musi pokryć N tur surowcowego utrzymania tej jednostki (oprócz kosztu
- * rekrutacji unitStockCost). Domyślnie N=1 (1× utrzymanie/turę, nie 5 tur).
- * OWNERID-AGNOSTIC — identycznie gracz / AI / miasto-państwo.
+ * R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1 (Maciej 2026-08-26) — KONTRAKT OBOWIĄZUJĄCY:
+ * bramka rekrutacji sprawdza WYŁĄCZNIE jednorazowy koszt zakupu (`unitStockCost`).
+ * Przyszłe utrzymanie NIE blokuje zakupu — jest pobierane dopiero w NASTĘPNEJ turze
+ * przez tick ekonomii (`totalUnitResourceUpkeep` → `deductBuildingStockCostAcrossCities`),
+ * razem z istniejącymi konsekwencjami niedoboru. WYCOFUJE R-AI-RECRUIT-UPKEEP-GATE
+ * (2026-08-06), które żądało pokrycia 1 tury utrzymania obok kosztu rekrutacji.
+ * OWNERID-AGNOSTIC — identycznie gracz / AI / MP / miasto-państwo.
+ *
+ * Historia: ta bramka „doliczała utrzymanie" (Wojownik 50 Drewna + 10 utrzymania = 60),
+ * przez co gracz z 57 Drewna nie mógł zrekrutować jednostki za 50. To był zgłaszany błąd.
+ */
+
+/**
+ * Horyzont rezerwy utrzymania w turach. NIE JEST JUŻ BRAMKĄ REKRUTACJI —
+ * po R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1 służy wyłącznie jako parametr heurystyki
+ * `unitRecruitUpkeepReserve` (ai.ts: które surowce AI ma priorytetowo poprawiać).
  */
 export const UNIT_RECRUIT_UPKEEP_RESERVE_TURNS = 1;
 
-/** Hint gracza gdy pula pokrywa koszt rekrutacji, ale nie łączny koszt rekrut+rezerwa. */
-export const UNIT_RECRUIT_FULL_HINT =
-  'Za mało surowca (rekrutacja + utrzymanie 1 tura)';
-
-/** Hint gracza gdy pula nie pokrywa samego kosztu rekrutacji surowcowego. */
+/**
+ * Jedyny hint odmowy rekrutacji surowcowej: pula państwa nie pokrywa
+ * jednorazowego kosztu zakupu. Utrzymanie nigdy nie generuje odmowy.
+ */
 export const UNIT_RECRUIT_STOCK_ONLY_HINT = 'Za mało surowca w magazynie państwa';
 
-/** Wymagana rezerwa surowców w puli państwa przed rekrutacją (N × utrzymanie/turę). */
+/**
+ * Prognoza utrzymania surowcowego jednostki na N tur — HEURYSTYKA, NIE BRAMKA.
+ * Jedyny konsument produkcyjny: `ai.ts:collectMilitaryRecruitStockDeficits`
+ * (zbiera klucze surowców, które AI ma nadrabiać ulepszeniami). Nie wolno użyć
+ * tego w żadnym warunku dopuszczającym/blokującym rekrutację.
+ */
 export function unitRecruitUpkeepReserve(
   unitDef: UnitResourceUpkeepSource | null | undefined,
   turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
@@ -819,67 +835,54 @@ export function unitRecruitUpkeepReserve(
   return out;
 }
 
-/** Czy pula państwa pokrywa rezerwę utrzymania surowcowego na rekrutację. */
-export function canAffordUnitRecruitUpkeepReserve(
-  pool: Record<string, number> | undefined,
-  unitDef: UnitResourceUpkeepSource | null | undefined,
-  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
-): boolean {
-  return canAffordBuildingStock(pool, unitRecruitUpkeepReserve(unitDef, turns));
-}
-
-/** Łączny koszt surowcowy rekrutacji: unitStockCost + rezerwa utrzymania (merge per klucz). */
-export function unitRecruitFullStockCost(
-  unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
-  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
-): Record<string, number> {
-  const out: Record<string, number> = { ...unitStockCost(unitDef) };
-  addResourceCosts(out, unitRecruitUpkeepReserve(unitDef, turns));
-  return out;
-}
-
 /**
- * Bramka łączna: pula państwa musi pokryć koszt rekrutacji + rezerwę utrzymania
- * (nie osobno — np. Włócznik 10+2 brązu wymaga 12 w puli, nie 10 ani 11).
+ * BRAMKA REKRUTACJI — jedyna. Pula państwa musi pokryć WYŁĄCZNIE jednorazowy
+ * koszt zakupu (`unitStockCost`). Utrzymanie tej jednostki NIE jest tu liczone:
+ * zostanie pobrane w następnej turze przez tick ekonomii.
+ * Scenariusz właściciela: Wojownik (50 Drewna, utrzymanie 10/t), pula 57 Drewna
+ * → `true`. Pula 49 Drewna → `false` (bramka kosztu się nie rozbraja).
+ * OWNERID-AGNOSTIC: gracz, AI i MP wołają dokładnie tę funkcję.
  */
-export function canAffordUnitRecruitFull(
+export function canAffordUnitRecruitStock(
   pool: Record<string, number> | undefined,
   unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
-  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 ): boolean {
-  return canAffordBuildingStock(pool, unitRecruitFullStockCost(unitDef, turns));
+  return canAffordBuildingStock(pool, unitStockCost(unitDef));
 }
 
 /**
- * Czy chip surowca rekrutacji (klucz z unitStockCost) ma klasę stock-missing.
- * Uwzględnia łączny koszt unitRecruitFullStockCost (rekrutacja + rezerwa utrzymania),
- * nie tylko sam koszt rekrutacji — spójnie z canAffordUnitRecruitFull / tooltipem.
+ * @deprecated Nazwa historyczna z wycofanej decyzji R-AI-RECRUIT-UPKEEP-GATE —
+ * „Full" NIE oznacza już „rekrutacja + utrzymanie". Alias istnieje wyłącznie po to,
+ * by nie ruszać ~5 wywołań w `main.ts` (poza allowlistą tego tematu); semantyka jest
+ * identyczna z `canAffordUnitRecruitStock`. Do usunięcia w osobnym temacie,
+ * którego allowlista obejmie `main.ts`.
+ */
+export const canAffordUnitRecruitFull = canAffordUnitRecruitStock;
+
+/**
+ * Czy chip surowca rekrutacji (klucz z `unitStockCost`) ma klasę `stock-missing`.
+ * WYŁĄCZNIE jednorazowy koszt zakupu — brak zapasu na utrzymanie nie czerwieni chipa
+ * (R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1).
  */
 export function isUnitRecruitStockChipMissing(
   pool: Record<string, number> | undefined,
   unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
   resourceKey: string,
-  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 ): boolean {
-  const fullMissing = missingStockFor(pool, unitRecruitFullStockCost(unitDef, turns));
-  return (fullMissing[resourceKey] ?? 0) > 0;
+  const missing = missingStockFor(pool, unitStockCost(unitDef));
+  return (missing[resourceKey] ?? 0) > 0;
 }
 
 /**
- * Hint UI przy odmowie rekrutacji surowcowej: null gdy full gate OK;
- * STOCK_ONLY gdy brak kosztu rekrutacji; FULL gdy stock OK ale brak rezerwy utrzymania.
+ * Hint UI przy odmowie rekrutacji surowcowej: `null` gdy pula pokrywa jednorazowy
+ * koszt zakupu, w przeciwnym razie `UNIT_RECRUIT_STOCK_ONLY_HINT`. Nie istnieje już
+ * wariant „za mało na utrzymanie" — utrzymanie nie jest powodem odmowy.
  */
 export function pickUnitRecruitHint(
   pool: Record<string, number> | undefined,
   unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
-  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 ): string | null {
-  if (canAffordUnitRecruitFull(pool, unitDef, turns)) return null;
-  const stockCost = unitStockCost(unitDef);
-  if (Object.keys(stockCost).length > 0 && !canAffordBuildingStock(pool, stockCost)) {
-    return UNIT_RECRUIT_STOCK_ONLY_HINT;
-  }
-  return UNIT_RECRUIT_FULL_HINT;
+  return canAffordUnitRecruitStock(pool, unitDef) ? null : UNIT_RECRUIT_STOCK_ONLY_HINT;
 }
 
 /** Suma utrzymania surowcowego po żywych jednostkach (typeId → resolveDef). */

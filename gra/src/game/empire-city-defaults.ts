@@ -45,6 +45,7 @@
 import type { City, CityPodzialPracy, OkolicaFocus, BudowaFocus, BudowaTryb } from './cities';
 import {
   DEFAULT_PODZIAL_PRACY,
+  clampPodzialPracyBudynkiPercent,
   DEFAULT_OKOLICA_FOCUS,
   DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
@@ -56,7 +57,12 @@ import { DEFAULT_POZIOM_RACJI, type PoziomRacji } from './population-growth-v85'
 // ---------------------------------------------------------------------------
 
 export function podzialPracyEqual(a: CityPodzialPracy, b: CityPodzialPracy): boolean {
-  return a.procentBudynki === b.procentBudynki;
+  return clampPodzialPracyBudynkiPercent(a.procentBudynki)
+    === clampPodzialPracyBudynkiPercent(b.procentBudynki);
+}
+
+function normalizePodzialPracy(split: CityPodzialPracy): CityPodzialPracy {
+  return { procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki) };
 }
 
 /** Efektywny podział Pracy dla miasta: override lokalny lub domyślny imperium. */
@@ -66,15 +72,51 @@ export function resolveCityPodzialPracy(
   paramsFallback?: CityPodzialPracy,
 ): CityPodzialPracy {
   if (city.podzialPracyOverride && city.podzialPracy) {
-    return city.podzialPracy;
+    return normalizePodzialPracy(city.podzialPracy);
   }
   if (ownerDefault) {
-    return ownerDefault;
+    return normalizePodzialPracy(ownerDefault);
   }
   if (city.podzialPracy) {
-    return city.podzialPracy;
+    return normalizePodzialPracy(city.podzialPracy);
   }
-  return paramsFallback ?? DEFAULT_PODZIAL_PRACY;
+  return normalizePodzialPracy(paramsFallback ?? DEFAULT_PODZIAL_PRACY);
+}
+
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 pkt 5 — ZASADA OVERRIDE MIASTA (czysta, testowalna).
+ *
+ * Suwak miasta NIE jest zablokowany. Ustawia LOKALNA wartosc podzialu; w chwili gdy ta
+ * wartosc rozni sie od globalnej domyslnej imperium, „Indywidualne" zapala sie SAMO —
+ * bez osobnego klikniecia. Powrot do wartosci globalnej gasi override i miasto znow
+ * sledzi globalna (pole `podzialPracy` jest usuwane, wiec pozniejsza zmiana globalna
+ * automatycznie obejmuje to miasto).
+ *
+ * PRZED tym tematem suwak miasta BEZ override zmienial wartosc GLOBALNA, wszystkim
+ * miastom naraz — gracz nie mial jak ustawic jednego miasta bez uprzedniego klikniecia
+ * „Indywidualne".
+ *
+ * Zwraca opis docelowego stanu miasta; nie mutuje wejscia.
+ */
+export interface PodzialPracyLocalChange {
+  /** Wartosc lokalna do zapisania; `undefined` = skasuj pole (miasto sledzi globalna). */
+  podzialPracy: CityPodzialPracy | undefined;
+  /** Docelowy stan pinu „Indywidualne". */
+  podzialPracyOverride: boolean;
+}
+
+export function applyPodzialPracyLocalChange(
+  procentBudynkiRaw: number | undefined | null,
+  ownerDefault: CityPodzialPracy | undefined,
+): PodzialPracyLocalChange {
+  const procentBudynki = clampPodzialPracyBudynkiPercent(procentBudynkiRaw);
+  const globalny = clampPodzialPracyBudynkiPercent(
+    ownerDefault?.procentBudynki ?? DEFAULT_PODZIAL_PRACY.procentBudynki,
+  );
+  if (procentBudynki === globalny) {
+    return { podzialPracy: undefined, podzialPracyOverride: false };
+  }
+  return { podzialPracy: { procentBudynki }, podzialPracyOverride: true };
 }
 
 /** Migracja starych zapisów (per-miasto bez globalnego) → global + flagi override. */
@@ -85,12 +127,14 @@ export function migratePodzialPracyOnLoad(
 ): void {
   if (savedDefaults?.length) {
     for (const [oid, split] of savedDefaults) {
-      ownerDefaults.set(oid, { ...split });
+      ownerDefaults.set(oid, normalizePodzialPracy(split));
     }
   } else {
     for (const city of cities) {
       if (!ownerDefaults.has(city.ownerId)) {
-        ownerDefaults.set(city.ownerId, { ...(city.podzialPracy ?? DEFAULT_PODZIAL_PRACY) });
+        ownerDefaults.set(city.ownerId, normalizePodzialPracy(
+          city.podzialPracy ?? DEFAULT_PODZIAL_PRACY,
+        ));
       }
     }
     for (const city of cities) {
@@ -100,6 +144,7 @@ export function migratePodzialPracyOnLoad(
         city.podzialPracyOverride = false;
         continue;
       }
+      city.podzialPracy = normalizePodzialPracy(city.podzialPracy);
       const differs = !podzialPracyEqual(city.podzialPracy, def);
       city.podzialPracyOverride = differs;
       if (!differs) {
@@ -107,9 +152,29 @@ export function migratePodzialPracyOnLoad(
       }
     }
   }
+  // P-PRACA-CAP-MIGRACJA-LUKA-Q1: cap „ulepszenia ≤ 50%" (czyli budynki ≥ 50%,
+  // MIN_PODZIAL_PRACY_BUDYNKI_PERCENT) MUSI obowiązywać po KAŻDEJ ścieżce wczytania,
+  // bez wyjątku. Do tej pory ta funkcja zostawiała `city.podzialPracy` nieprzyciętym
+  // w DWÓCH przypadkach:
+  //   (1) gałąź `savedDefaults?.length` (nowoczesny zapis niosący własne domyślne
+  //       imperium) normalizowała WYŁĄCZNIE `ownerDefaults` — pętla po miastach niżej
+  //       żyje w gałęzi `else`, więc dla takiego zapisu nie wykonywała się wcale;
+  //   (2) `if (city.podzialPracyOverride !== undefined) continue;` — miasto z już
+  //       ustawioną flagą override było pomijane razem z normalizacją.
+  // Dziś nie powodowało to błędu widocznego dla gracza tylko dlatego, że na ścieżce
+  // load `ensureCitySaveDefaults()` (main.ts) biegnie WCZEŚNIEJ i przycina te same
+  // pola, a `resolveCityPodzialPracy()` normalizuje jeszcze raz przy każdym odczycie.
+  // To jest maskowanie przez kolejność wywołań, nie gwarancja — dokładnie ta klasa
+  // kruchości, która w tym obszarze wracała już jako REGRES2/REGRES3. Jedna
+  // bezwarunkowa pętla zamyka obie luki niezależnie od kolejności i od gałęzi.
+  for (const city of cities) {
+    if (city.podzialPracy) {
+      city.podzialPracy = normalizePodzialPracy(city.podzialPracy);
+    }
+  }
   for (const city of cities) {
     if (!ownerDefaults.has(city.ownerId)) {
-      ownerDefaults.set(city.ownerId, { ...DEFAULT_PODZIAL_PRACY });
+      ownerDefaults.set(city.ownerId, normalizePodzialPracy(DEFAULT_PODZIAL_PRACY));
     }
   }
 }
@@ -312,6 +377,22 @@ export function broadcastPoziomRacjiToOwnerCities(
   for (const c of cities) {
     if (c.ownerId !== ownerId || c.poziomRacjiOverride) continue;
     c.poziomRacji = poziom;
+  }
+}
+
+/**
+ * P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: jednorazowa akcja "ustaw teraz" (nie stan
+ * trwały/toggle) — dla WSZYSTKICH miast ownera BEZ poziomRacjiOverride ustawia
+ * `autoWyzywienie = true`. Miasta z poziomRacjiOverride===true SĄ POMIJANE (pin 📌),
+ * dokładnie ten sam wzorzec filtra co `broadcastPoziomRacjiToOwnerCities` wyżej.
+ */
+export function broadcastAutoWyzywienieToOwnerCities(
+  cities: ReadonlyArray<City>,
+  ownerId: number,
+): void {
+  for (const c of cities) {
+    if (c.ownerId !== ownerId || c.poziomRacjiOverride) continue;
+    c.autoWyzywienie = true;
   }
 }
 

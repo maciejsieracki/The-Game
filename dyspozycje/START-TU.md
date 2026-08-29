@@ -9,11 +9,12 @@ Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje 
 1. Case / bug / poprawka / innowacja → **nadaj ID** + zapisz w `REJESTR-PROSB-I-ZADAN.md`.
 2. **Nie koduj od razu** — przedstaw rozwiązanie (± ABC) i czekaj.
 3. Maciej: **`numer + A|B|C`** → dopiero wtedy implementacja + **commit**.
-4. **Deploy** do ROBOCZA **tylko** na hasło **`deploy`** (nie przy samym commicie).
+4. **READY_FOR_DEPLOY** po finalnej kontroli i integracji; dopiero osobna bramka **`deploy`/`push`** publikuje ROBOCZĄ (nie przy samym commicie).
 
 ## Przeczytaj w tej kolejności
 1. TEN plik (30 sekund) + procedura NUMER→ABC wyżej.
-2. **[`AUTOBOT-SCHEMAT-DZIALANIA.md`](AUTOBOT-SCHEMAT-DZIALANIA.md)** — kto za co (Operator / Evaluator / Grok / Maciej) + reguły.
+2. **[`AUTOBOT-SCHEMAT-DZIALANIA.md`](AUTOBOT-SCHEMAT-DZIALANIA.md)** — kto za co
+   (Operator / Evaluator / finalna kontrola / integracja / Maciej) + reguły.
 3. `SCHEMAT-PRACY-COWORK-2026-07-05.md` — role (MASTER / INTEGRATOR / UX / Maciej),
    łańcuch wersji robocza→kanon→finalna, pętla robocza.
 4. `_handoff/KANAL-PRACA.md` — protokół komunikacji + bieżące zadania (ostatnie wpisy!).
@@ -32,9 +33,19 @@ Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje 
 7. Aktualne numery wersji: TYLKO w `WERSJE.md` (nigdzie indziej nie kopiować).
 8. Testuje wyłącznie Maciej (gra); agenci — tylko testy konsolowe i kompilację.
 9. Zero sterowania ekranem Macieja bez jego wyraźnej prośby.
-10. NUMER → ABC → COMMIT → DEPLOY — patrz procedura na górze (2026-08-03).
+10. NUMER → ABC → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH — patrz procedura na górze (2026-08-03).
 11. Przed commit/deploy: **nie uwsteczniaj** wcześniejszych fixów — przegląd `git diff` (zmiany **i** usunięcia) · `R-PROC-NO-REGRESS` / procedura §4a.
-12. **AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05):** **KAŻDA praca** agenta wyłącznie w systemie AutoBot (Operator → Evaluator → Grok final). **ZAKAZ** omijania pętli. Kanon: [`autobot/README.md`](autobot/README.md) · `.cursor/rules/autobot-evaluator-operator.mdc` · `docs/decyzje/R-PROC-AUTOBOT.md`.
+12. **AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-18):** **KAŻDA praca**
+    agenta wyłącznie w systemie AutoBot:
+    Operator (**GPT-5.6 Luna High**) → Evaluator (**GPT-5.6 Luna High**) →
+    finalna kontrola/integracja orkiestratora (**GPT-5.6 Luna Medium**) → READY_FOR_DEPLOY.
+    Deploy/push jest osobną bramką po autoryzacji właściciela.
+    **ZAKAZ** omijania pętli. Kanon: [`autobot/README.md`](autobot/README.md) ·
+    `.cursor/rules/autobot-evaluator-operator.mdc` ·
+    `docs/decyzje/R-PROC-AUTOBOT.md`.
+
+    **C-043:** właściciel komunikuje się wyłącznie w głównym czacie orkiestratora;
+    subagenci są kanałami technicznymi.
 
 ## HISTORIA = OBOWIĄZKOWY KONTEKST (korekta Macieja 2026-07-06)
 Bannery „NIEAKTUALNE" na starych plikach dotyczą WYŁĄCZNIE procesu (role, publish,

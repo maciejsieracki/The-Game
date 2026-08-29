@@ -10,6 +10,7 @@
 | **poradnik_ref** | `docs/PORADNIK-GRACZA/28-katalog-ulepszen.md` |
 | **json_ref** | `terrain-improvements.json` |
 | **status_v1** | ✅ |
+| gra-id | kopalnia_miedzi, kopalnia_zelaza, kopalnia_cyny, kopalnia_zlota |
 
 ---
 

@@ -26,7 +26,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.barb-bundle.cjs');
 
 const ENTRY_TS = `
 export {
-  BARBARIAN_OWNER_ID, isBarbarian,
+  BARBARIAN_OWNER_ID, isBarbarian, planBarbarianRally,
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
@@ -34,7 +34,7 @@ export {
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
-  scaleBarbParamsForLevel, barbariansEnabledForLevel, migrateBarbariansLevel,
+  scaleBarbParamsForLevel, barbarianUnitsPerCampForDifficulty, barbariansEnabledForLevel, migrateBarbariansLevel,
 } from '../src/game/barbarians';
 export {
   hexDistance, computePath, computeReachable, keyOf,
@@ -65,12 +65,12 @@ try {
 
 const B = require(BUNDLE_FILE);
 const {
-  BARBARIAN_OWNER_ID, isBarbarian,
+  BARBARIAN_OWNER_ID, isBarbarian, planBarbarianRally,
   FALLBACK_BARB_PARAMS, loadBarbParams, barbariansActive,
   EPOKA_SREDNIOWIECZE_BARBARZY,
   spawnCamps, tickCamps, decideBarbarianMoves, isCampRaidReady,
   LUDY_MORZA_BARB_UNIT_IDS, pickBronzeBarbUnit,
-  scaleBarbParamsForLevel, barbariansEnabledForLevel, migrateBarbariansLevel,
+  scaleBarbParamsForLevel, barbarianUnitsPerCampForDifficulty, barbariansEnabledForLevel, migrateBarbariansLevel,
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
@@ -250,6 +250,43 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
   eq(r3.spawns.length, 0, 'no spawn when per-camp cap reached');
   eq(r3.camps[0].spawnCooldown, 0, 'cooldown stays 0 while capped');
 
+  // R-BARB-CHATKA-LIMIT-POZIOMY-Q1: difficulty controls the exact living
+  // contingent, and campId keeps a slot occupied after the unit marches away.
+  eq(barbarianUnitsPerCampForDifficulty('easy'), 1, 'Łatwy -> 1 żywa jednostka/chatkę');
+  eq(barbarianUnitsPerCampForDifficulty('normal'), 2, 'Standard -> 2 żywe jednostki/chatkę');
+  eq(barbarianUnitsPerCampForDifficulty('hard'), 3, 'Trudny -> 3 żywe jednostki/chatkę');
+  eq(scaleBarbParamsForLevel(P, 'latwy', 'easy').unitsPerCamp, 1,
+    'Łatwy: limit chatki wynosi 1');
+  eq(scaleBarbParamsForLevel(P, 'normalny', 'normal').unitsPerCamp, 2,
+    'Standard: limit chatki wynosi 2');
+  eq(scaleBarbParamsForLevel(P, 'trudny', 'hard').unitsPerCamp, 3,
+    'Trudny: limit chatki wynosi 3');
+
+  const hard = scaleBarbParamsForLevel(P, 'normalny', 'hard');
+  const farAlive = [
+    barb('far1', 0, 0, { campId: 'away' }),
+    barb('far2', 1, 0, { campId: 'away' }),
+    barb('far3', 2, 0, { campId: 'away' }),
+  ];
+  const cappedAway = tickCamps(
+    [{ id: 'away', q: 5, r: 5, spawnCooldown: 0 }],
+    farAlive,
+    farAlive,
+    map,
+    hard,
+  );
+  eq(cappedAway.spawns.length, 0,
+    'Trudny: 3 żywe jednostki blokują spawn po odejściu od chatki');
+  const afterDeath = tickCamps(
+    cappedAway.camps,
+    farAlive.slice(0, 2),
+    farAlive.slice(0, 2),
+    map,
+    hard,
+  );
+  eq(afterDeath.spawns.length, 1,
+    'po śmierci jednej jednostki chatka uzupełnia brakujący slot');
+
   // 5e. Spawn never lands on an occupied hex (ring-1 fully blocked -> ring-2).
   const occupants = [
     player('o1', 6, 5), player('o2', 4, 5), player('o3', 5, 6),
@@ -373,8 +410,9 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     assert(dNew < 3, 'step gets closer to the city');
   }
 
-  // 6i. BUG-BARB-GLOD (Maciej 2026-08-02): pełny obóz (>= unitsPerCamp) maszeruje
-  // ku najbliższej cywilizacji BEZ limitu aggroRadius.
+  // 6i. BUG-BARB-GLOD (Maciej 2026-08-02) + R-ARMIA-KONCENTRACJA-AI-BARB-Q1=A:
+  // pełny obóz najpierw zbiera rozproszony kontyngent przy obozie; dopiero
+  // następna decyzja po faktycznym zgrupowaniu idzie ku cywilizacji.
   {
     const raidCamp = [{ id: 'rc', q: 0, r: 0, spawnCooldown: 0 }];
     const b1 = barb('b1', 3, 0, { campId: 'rc' });
@@ -387,13 +425,13 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     eq(cmdsIdle.length, 1, 'under cap: drifts toward camp, not far city');
     eq(cmdsIdle[0].type, 'move', 'under cap drift is a move');
     const cmdsRaid = decideBarbarianMoves([b1, b2], [], [farCity], raidCamp, map, noAggro);
-    eq(cmdsRaid.length, 2, 'full camp issues march commands for both units');
+    eq(cmdsRaid.length, 1, 'full camp rallies the unit outside camp radius');
     for (const cmd of cmdsRaid) {
       eq(cmd.type, 'move', 'raid-ready units march (not idle)');
       const fromQ = cmd.unitId === 'b1' ? 3 : 0;
       const fromR = cmd.unitId === 'b1' ? 0 : 1;
-      assert(hexDistance(cmd.toQ, cmd.toR, 11, 0) < hexDistance(fromQ, fromR, 11, 0),
-        'raid march step reduces distance to civilization');
+      assert(hexDistance(cmd.toQ, cmd.toR, 0, 0) < hexDistance(fromQ, fromR, 0, 0),
+        'rally step reduces distance to active camp');
     }
   }
 }
@@ -740,10 +778,10 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
 //     gry, + migracja starej skali 'wielu'/'nieliczni'/'wylaczeni'.
 // ===========================================================================
 {
-  // 11a. Sygnatury funkcji NIE przyjmują trudności gry -- dowód strukturalny
-  // niezależności od _menuDifficulty/cityStateDifficultyOverride: jedyny
-  // parametr obok `params` to poziom barbarzyńców, nic więcej.
-  eq(scaleBarbParamsForLevel.length, 2, 'scaleBarbParamsForLevel(params, level) -- brak parametru trudności');
+  // 11a. Sygnatura skali przyjmuje opcjonalną trudność gry wyłącznie po to,
+  // aby wyznaczyć limit żywego kontyngentu chatki; pozostałe funkcje pozostają
+  // niezależne od _menuDifficulty/cityStateDifficultyOverride.
+  eq(scaleBarbParamsForLevel.length, 3, 'scaleBarbParamsForLevel(params, level, difficulty)');
   eq(barbariansEnabledForLevel.length, 1, 'barbariansEnabledForLevel(level) -- brak parametru trudności');
   eq(migrateBarbariansLevel.length, 1, 'migrateBarbariansLevel(level) -- brak parametru trudności');
 
@@ -809,6 +847,31 @@ eq(migrateBarbariansLevel(undefined), 'normalny', 'migracja: brak wartosci -> no
 eq(migrateBarbariansLevel(null), 'normalny', 'migracja: null -> normalny');
 eq(migrateBarbariansLevel('nieznany-string-ze-starego-save'), 'normalny', 'migracja: nieznany string -> normalny, bez crasha');
 eq(migrateBarbariansLevel(42), 'normalny', 'migracja: zly typ (number) -> normalny, bez crasha');
+
+// 11k. R-ARMIA-KONCENTRACJA-AI-BARB-Q1=A — lokalny rally jest rzeczywisty:
+// tylko lądowy kontyngent tego samego obozu dostaje ruch do obozu; morze,
+// cywil i garnizon pozostają poza planerem, a po zebraniu nie ma dodatkowego
+// rozkazu rally.
+{
+  const rallyMap = makeMap(8, 8);
+  const rallyCamp = { id: 'camp-rally', q: 4, r: 4, spawnCooldown: 0 };
+  const landA = { id: 'barb-rally-a', ownerId: -1, typeId: 'Wojownik', category: 'wojownik', q: 1, r: 1, ruch: 2, ruchLeft: 2, campId: 'camp-rally' };
+  const landB = { id: 'barb-rally-b', ownerId: -1, typeId: 'Wojownik', category: 'wojownik', q: 1, r: 2, ruch: 2, ruchLeft: 2, campId: 'camp-rally' };
+  const sea = { id: 'barb-rally-sea', ownerId: -1, typeId: 'Rajder', category: 'wojownik', q: 2, r: 1, ruch: 2, ruchLeft: 2, campId: 'camp-rally', embarked: true, seaRaider: true };
+  const scout = { id: 'barb-rally-scout', ownerId: -1, typeId: 'Zwiadowca', category: 'zwiadowca', q: 1, r: 3, ruch: 2, ruchLeft: 2, campId: 'camp-rally' };
+  const garrison = { id: 'barb-rally-garrison', ownerId: -1, typeId: 'Wojownik', category: 'wojownik', q: 2, r: 3, ruch: 2, ruchLeft: 2, campId: 'camp-rally', inGarnizon: true };
+  const rallyUnits = [landA, landB, sea, scout, garrison];
+  const rally = planBarbarianRally(rallyUnits, [rallyCamp], rallyMap, rallyUnits, []);
+  assert(rally.some(c => c.unitId === landA.id), 'rally: lądowy A dostaje ruch do obozu');
+  assert(rally.some(c => c.unitId === landB.id), 'rally: lądowy B dostaje ruch do obozu');
+  assert(!rally.some(c => c.unitId === sea.id), 'rally: Ludy Morza wyłączone');
+  assert(!rally.some(c => c.unitId === scout.id), 'rally: zwiadowca/cywil wyłączony');
+  assert(!rally.some(c => c.unitId === garrison.id), 'rally: garnizon wyłączony');
+  const gatheredA = { ...landA, q: 4, r: 4 };
+  const gatheredB = { ...landB, q: 4, r: 5 };
+  eq(planBarbarianRally([gatheredA, gatheredB], [rallyCamp], rallyMap, [gatheredA, gatheredB], []).length, 0,
+    'rally: po fizycznym zgrupowaniu brak dodatkowego rozkazu');
+}
 
 // 11j. Zmigrowana wartosc dziala od razu w scaleBarbParamsForLevel/
 // barbariansEnabledForLevel -- pelny lancuch save-legacy -> gra bez crasha.

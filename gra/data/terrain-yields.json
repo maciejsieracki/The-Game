@@ -5,40 +5,44 @@
       "Żywność": 3,
       "Praca": 1,
       "Podatek": 2,
-      "Drewno": 5,
+      "Drewno": 0,
       "Kamień": 0,
+      "Glina": 5,
       "Suma": 11,
-      "Uwagi": "R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13): Drewno x5 (bylo 1) -- B1, plony terenowe pominiete w Rundzie 1."
+      "Uwagi": "P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1=A (Maciej 2026-08-17): baza bez lasu, ulepszenia i rzeki."
     },
     {
       "Teren": "Równina",
       "Żywność": 2,
       "Praca": 2,
       "Podatek": 1,
-      "Drewno": 10,
-      "Kamień": 5,
-      "Suma": 20,
-      "Uwagi": "R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13): Drewno x5 (bylo 2), Kamień x5 (bylo 1) -- B1, plony terenowe pominiete w Rundzie 1."
+      "Drewno": 5,
+      "Kamień": 2,
+      "Glina": 0,
+      "Suma": 12,
+      "Uwagi": "P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1=A (Maciej 2026-08-17): baza bez lasu, ulepszenia i rzeki."
     },
     {
       "Teren": "Wzgórza",
       "Żywność": 1,
       "Praca": 3,
       "Podatek": 0,
-      "Drewno": 10,
-      "Kamień": 10,
-      "Suma": 24,
-      "Uwagi": "Kamień/Ruda po zbudowaniu Kopalni; +obrona. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13): Drewno x5 (bylo 2), Kamień x5 (bylo 2) -- B1."
+      "Drewno": 5,
+      "Kamień": 5,
+      "Glina": 5,
+      "Suma": 19,
+      "Uwagi": "Kamień/Ruda po zbudowaniu Kopalni; +obrona. P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1=A (Maciej 2026-08-17): baza bez lasu, ulepszenia i rzeki."
     },
     {
       "Teren": "Góry",
       "Żywność": 0,
       "Praca": 4,
       "Podatek": 0,
-      "Drewno": 10,
-      "Kamień": 25,
-      "Suma": 39,
-      "Uwagi": "Nieprzechodnie dla jednostek lądowych; Kamień/Ruda po Kopalni. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13): Drewno x5 (bylo 2), Kamień x5 (bylo 5) -- B1."
+      "Drewno": 0,
+      "Kamień": 10,
+      "Glina": 0,
+      "Suma": 14,
+      "Uwagi": "Nieprzechodnie dla jednostek lądowych; Kamień/Ruda po Kopalni. P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1=A (Maciej 2026-08-17): baza bez lasu, ulepszenia i rzeki."
     },
     {
       "Teren": "Wybrzeże",
@@ -47,6 +51,7 @@
       "Podatek": 2,
       "Drewno": 0,
       "Kamień": 0,
+      "Glina": 0,
       "Suma": 7,
       "Uwagi": "Teren morski przy lądzie (osobny od rzeki); pod port"
     },
@@ -57,6 +62,7 @@
       "Podatek": 2,
       "Drewno": 0,
       "Kamień": 0,
+      "Glina": 0,
       "Suma": 4,
       "Uwagi": "Otwarta woda; rybołówstwo"
     },
@@ -67,6 +73,7 @@
       "Podatek": 1,
       "Drewno": 0,
       "Kamień": 0,
+      "Glina": 0,
       "Suma": 1,
       "Uwagi": null
     },
@@ -77,6 +84,7 @@
       "Podatek": 0,
       "Drewno": 0,
       "Kamień": 0,
+      "Glina": 0,
       "Suma": 0,
       "Uwagi": "Strefa polarna (śnieg) — niezamieszkana, C-MAP-Q3b"
     }

@@ -1,0 +1,74 @@
+# POMIAR ROZDZIELONY — AI GRACZA vs AI CYWILIZACJI
+# ziarna: 7, 99, 512, 4242, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6
+
+### AI CYWILIZACJI — prawdziwe wejscie decideAITurn (ai.ts:~1984, maxItemsPerCity=1)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | farmy@POwyrab | posterunek | fort | tartak | zyw/sur/infra | plon zywnosci
+     7 |      120 |      5 |    3.2 |   40 |           3.2 |       2.9 |    31 |          26 |    17 |            17 |          2 |    2 |      5 | 71/25/7 |           625
+    99 |      120 |      3 |    2.0 |   36 |           2.3 |       1.7 |    27 |          19 |    13 |            13 |          2 |    2 |      5 | 63/22/22 |           665
+   512 |      120 |      5 |    3.0 |   42 |           2.9 |       2.5 |    15 |           0 |     9 |             9 |          2 |    2 |      3 | 55/34/22 |           583
+  4242 |      120 |      3 |    1.9 |   41 |           1.9 |       1.6 |    31 |          29 |    15 |            15 |          2 |    2 |      5 | 71/25/9 |           652
+  1337 |      120 |      3 |    1.9 |   40 |           1.9 |       1.4 |    27 |          25 |    18 |            17 |          2 |    2 |      4 | 68/25/9 |           654
+RAZEM  |      600 |      5 |    2.4 |      |           2.4 |       2.0 |   131 |          99 |    72 |            71 |         10 |   10 |     22 | 328/131/69 |          3179
+  udzial farm przy rzece: 75.6%  ·  rozklad kategorii zyw/sur/infra/wyrab: 328/131/69/72
+  ROZBICIE PER KLUCZ: farma=131 · bydlo=107 · wyrab=72 · warzelnia_soli=69 · lodzie_rybackie=65 · glinianka=27 · droga=26 · oboz_lowiecki=23 · droga_brukowana=23 · tartak=22 · posterunek=10 · fort=10 · kamieniolom=7 · kopalnia_zelaza=4 · owce=2 · kopalnia_miedzi=2
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 3179 · praca 2913 · handel 3413 · drewno 2065
+
+### AI GRACZA — profil „zywnosc" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | farmy@POwyrab | posterunek | fort | tartak | zyw/sur/infra | plon zywnosci
+     7 |       62 |      2 |    0.5 |   15 |           1.3 |       0.9 |    15 |          10 |     0 |             0 |          0 |    0 |      0 | 62/0/0 |           599
+    99 |       62 |      3 |    1.2 |   15 |           3.1 |       3.2 |    15 |          10 |     0 |             0 |          0 |    0 |      0 | 62/0/0 |           638
+   512 |       62 |      3 |    0.5 |   10 |           2.0 |       2.2 |    10 |           0 |     0 |             0 |          0 |    0 |      0 | 62/0/0 |           529
+  4242 |       62 |      3 |    1.4 |   18 |           3.2 |       2.9 |    18 |          16 |     0 |             0 |          0 |    0 |      0 | 62/0/0 |           629
+  1337 |       62 |      2 |    0.8 |   18 |           1.9 |       1.8 |    18 |          17 |     0 |             0 |          0 |    0 |      0 | 62/0/0 |           635
+RAZEM  |      310 |      3 |    0.9 |      |           2.3 |       2.2 |    76 |          53 |     0 |             0 |          0 |    0 |      0 | 310/0/0 |          3030
+  udzial farm przy rzece: 69.7%  ·  rozklad kategorii zyw/sur/infra/wyrab: 310/0/0/0
+  ROZBICIE PER KLUCZ: lodzie_rybackie=153 · farma=76 · oboz_lowiecki=68 · bydlo=13
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 3030 · praca 2808 · handel 3064 · drewno 2785
+
+### AI GRACZA — profil „surowce" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | farmy@POwyrab | posterunek | fort | tartak | zyw/sur/infra | plon zywnosci
+     7 |       56 |      1 |    0.1 |    3 |           1.7 |       0.7 |     0 |           0 |     0 |             0 |          0 |    0 |     16 | 0/56/0 |           534
+    99 |       56 |      1 |    0.1 |    2 |           2.5 |       1.5 |     0 |           0 |     0 |             0 |          0 |    0 |     16 | 0/56/0 |           558
+   512 |       57 |      1 |    0.1 |    2 |           1.0 |       0.0 |     0 |           0 |     0 |             0 |          0 |    0 |     15 | 0/57/0 |           462
+  4242 |       57 |      1 |    0.1 |    4 |           1.5 |       0.0 |     0 |           0 |     0 |             0 |          0 |    0 |     13 | 0/57/0 |           556
+  1337 |       56 |      1 |    0.2 |    5 |           1.4 |       0.6 |     0 |           0 |     0 |             0 |          0 |    0 |     17 | 0/56/0 |           563
+RAZEM  |      282 |      1 |    0.1 |      |           1.6 |       0.6 |     0 |           0 |     0 |             0 |          0 |    0 |     77 | 0/282/0 |          2673
+  udzial farm przy rzece: 0.0%  ·  rozklad kategorii zyw/sur/infra/wyrab: 0/282/0/0
+  ROZBICIE PER KLUCZ: warzelnia_soli=191 · tartak=77 · glinianka=11 · kamieniolom=2 · kopalnia_cyny=1
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 2673 · praca 2511 · handel 3209 · drewno 2785
+
+### AI GRACZA — profil „infrastruktura" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | farmy@POwyrab | posterunek | fort | tartak | zyw/sur/infra | plon zywnosci
+     7 |       14 |      2 |    0.2 |    6 |           1.5 |       0.7 |     0 |           0 |     0 |             0 |          1 |    1 |      0 | 0/0/14 |           496
+    99 |       26 |      2 |    0.4 |   11 |           1.5 |       0.6 |     0 |           0 |     0 |             0 |          2 |    2 |      0 | 0/0/26 |           522
+   512 |       22 |      2 |    0.3 |    9 |           1.3 |       0.7 |     0 |           0 |     0 |             0 |          2 |    2 |      0 | 0/0/22 |           426
+  4242 |       14 |      2 |    0.2 |    6 |           1.5 |       0.7 |     0 |           0 |     0 |             0 |          1 |    1 |      0 | 0/0/14 |           522
+  1337 |       22 |      2 |    0.4 |    9 |           1.7 |       0.8 |     0 |           0 |     0 |             0 |          2 |    2 |      0 | 0/0/22 |           529
+RAZEM  |       98 |      2 |    0.3 |      |           1.5 |       0.7 |     0 |           0 |     0 |             0 |          8 |    8 |      0 | 0/0/98 |          2495
+  udzial farm przy rzece: 0.0%  ·  rozklad kategorii zyw/sur/infra/wyrab: 0/0/98/0
+  ROZBICIE PER KLUCZ: droga=41 · droga_brukowana=41 · posterunek=8 · fort=8
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 2495 · praca 2119 · handel 2474 · drewno 2785
+
+### AI GRACZA — profil „zrownowazone" (konfiguracja main.ts ~:27066-27094, skipWyrab=true, budzet 33%)
+ziarno | ulepszen | E1 max | E1 sr. | E2 n | E2 rozpietosc | E2 obcych | farmy | farmy@rzeka | wyrab | farmy@POwyrab | posterunek | fort | tartak | zyw/sur/infra | plon zywnosci
+     7 |       60 |      3 |    1.7 |   17 |           4.1 |       2.1 |    10 |           8 |     0 |             0 |          1 |    1 |     10 | 31/19/10 |           545
+    99 |       61 |      4 |    2.4 |   17 |           5.7 |       3.8 |    10 |           9 |     0 |             0 |          1 |    1 |      8 | 29/16/16 |           587
+   512 |       61 |      3 |    1.7 |   19 |           3.5 |       2.3 |     6 |           0 |     0 |             0 |          1 |    1 |      6 | 28/20/13 |           493
+  4242 |       60 |      5 |    2.6 |   18 |           5.7 |       3.4 |    15 |          14 |     0 |             0 |          1 |    1 |      8 | 35/16/9 |           577
+  1337 |       60 |      4 |    2.5 |   15 |           6.5 |       3.5 |    14 |          14 |     0 |             0 |          1 |    1 |     13 | 30/17/13 |           570
+RAZEM  |      302 |      5 |    2.2 |      |           5.1 |       3.0 |    55 |          45 |     0 |             0 |          5 |    5 |     45 | 153/88/61 |          2772
+  udzial farm przy rzece: 81.8%  ·  rozklad kategorii zyw/sur/infra/wyrab: 153/88/61/0
+  ROZBICIE PER KLUCZ: oboz_lowiecki=58 · farma=55 · tartak=45 · droga=41 · warzelnia_soli=33 · lodzie_rybackie=31 · glinianka=10 · droga_brukowana=10 · bydlo=9 · posterunek=5 · fort=5
+  PLON TERYTORIUM na ture (suma po ziarnach): zywnosc 2772 · praca 2551 · handel 3004 · drewno 2785
+
+### CZY PROFILE GRACZA SIE ROZNIA (rozklad kategorii, suma po ziarnach)
+profil          | razem | zywnosc | surowce | infra | tartak | farmy | farmy@rzeka
+zywnosc         |   310 |     310 |       0 |     0 |      0 |    76 |          53
+surowce         |   282 |       0 |     282 |     0 |     77 |     0 |           0
+infrastruktura  |    98 |       0 |       0 |    98 |      0 |     0 |           0
+zrownowazone    |   302 |     153 |      88 |    61 |     45 |    55 |          45
+AI CYWILIZACJI  |   600 |     328 |     131 |    69 |     22 |   131 |          99
+
+podobienstwo rozkladow „Zrownowazona" gracza vs AI cywilizacji (cosinus): 0.9618
+  wektor gracza [zyw,sur,infra,wyrab] = [0.507, 0.291, 0.202, 0.000]
+  wektor AI cyw. [zyw,sur,infra,wyrab] = [0.547, 0.218, 0.115, 0.120]

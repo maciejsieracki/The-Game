@@ -29,7 +29,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.triumph-city-state-notice-bundle.c
 
 fs.writeFileSync(
   ENTRY_FILE,
-  "export { showTriumphCityStateNotice, hideTriumphCityStateNotice } from '../src/ui/triumphCityStateNotice.ts';\n",
+  "export { showTriumphCityStateNotice, hideTriumphCityStateNotice, buildTriumphCityStateNoticeMarkup } from '../src/ui/triumphCityStateNotice.ts';\n",
   'utf8',
 );
 
@@ -50,7 +50,11 @@ async function main() {
     process.exit(1);
   }
 
-  const { showTriumphCityStateNotice, hideTriumphCityStateNotice } = require(BUNDLE_FILE);
+  const {
+    showTriumphCityStateNotice,
+    hideTriumphCityStateNotice,
+    buildTriumphCityStateNoticeMarkup,
+  } = require(BUNDLE_FILE);
 
   const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
   global.document = dom.window.document;
@@ -90,10 +94,13 @@ async function main() {
   // faktycznie przekazano jako cityName — patrz asercja 10 niżej, gdzie
   // 'miasto' jest zawsze prawdziwe nawet dla PUSTEGO cityName).
   ok(text.includes('Testopolis'), '4) treść karty zawiera konkretną wartość cityName ("Testopolis")');
+  ok(host?.querySelector('[role="dialog"]') !== null, '5) karta ma semantykę dialogu');
+  ok(host?.querySelector('[aria-modal="true"]') !== null, '6) karta jest modalna dla czytnika ekranu');
+  ok(host?.querySelector('.tn-body')?.textContent.includes('Zjednoczyłeś całą kulturę Grecy.'), '7) karta ma kanoniczny komunikat kultury');
 
   const buttons = host ? host.querySelectorAll('button') : [];
-  ok(buttons.length === 1, '5) dokładnie jeden przycisk w karcie (wymóg potwierdzenia)');
-  ok(buttons.length === 1 && buttons[0].textContent.trim() === 'Rozumiem', '6) przycisk podpisany "Rozumiem"');
+  ok(buttons.length === 1, '8) dokładnie jeden przycisk w karcie (wymóg potwierdzenia)');
+  ok(buttons.length === 1 && buttons[0].textContent.trim() === 'Rozumiem', '9) przycisk podpisany "Rozumiem"');
 
   // -------------------------------------------------------------------------
   // SCENARIUSZ 2: klik przycisku zamyka modal i woła onClose.
@@ -101,8 +108,8 @@ async function main() {
   if (buttons.length === 1) {
     buttons[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
   }
-  ok(document.getElementById('civ-triumph-cs-notice-host') === null, '7) klik "Rozumiem" usuwa host z DOM');
-  ok(closed === true, '8) klik "Rozumiem" woła onClose');
+  ok(document.getElementById('civ-triumph-cs-notice-host') === null, '10) klik "Rozumiem" usuwa host z DOM');
+  ok(closed === true, '11) klik "Rozumiem" woła onClose');
 
   // -------------------------------------------------------------------------
   // SCENARIUSZ 3: fallbacki na puste civLabel/cityName (spójne z
@@ -111,25 +118,36 @@ async function main() {
   showTriumphCityStateNotice({ civLabel: '', cityName: '' });
   const host2 = document.getElementById('civ-triumph-cs-notice-host');
   const text2 = host2 ? host2.textContent : '';
-  ok(text2.includes('Twoja cywilizacja'), '9) civLabel pusty -> fallback "Twoja cywilizacja"');
-  ok(text2.includes('miasto'), '10) cityName pusty -> fallback "miasto"');
+  ok(text2.includes('Twoja cywilizacja'), '12) civLabel pusty -> fallback "Twoja cywilizacja"');
+  ok(text2.includes('miasto'), '13) cityName pusty -> fallback "miasto"');
+
+  hideTriumphCityStateNotice();
+  showTriumphCityStateNotice({ civLabel: 'Sparta', cityName: 'Korzynt' });
+  const backdrop = document.querySelector('#civ-triumph-cs-notice-host .tn-backdrop');
+  backdrop?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+  ok(document.getElementById('civ-triumph-cs-notice-host') === null, '14) kliknięcie tła zamyka kartę');
 
   // -------------------------------------------------------------------------
   // SCENARIUSZ 4: hideTriumphCityStateNotice() usuwa host bez kliknięcia.
   // -------------------------------------------------------------------------
   hideTriumphCityStateNotice();
-  ok(document.getElementById('civ-triumph-cs-notice-host') === null, '11) hideTriumphCityStateNotice() usuwa host');
+  ok(document.getElementById('civ-triumph-cs-notice-host') === null, '15) hideTriumphCityStateNotice() usuwa host');
 
   // -------------------------------------------------------------------------
-  // SCENARIUSZ 5: drugie wywołanie show zastępuje poprzedni host (nie duplikuje).
+  // SCENARIUSZ 5: ponowne wywołanie tego samego zdarzenia nie duplikuje
+  // ani nie podmienia oczekującego na potwierdzenie modala.
   // -------------------------------------------------------------------------
   showTriumphCityStateNotice({ civLabel: 'Rzymianie', cityName: 'Kartagina' });
   showTriumphCityStateNotice({ civLabel: 'Egipcjanie', cityName: 'Teby' });
-  ok(document.querySelectorAll('#civ-triumph-cs-notice-host').length === 1, '12) drugi show nie duplikuje hosta');
+  ok(document.querySelectorAll('#civ-triumph-cs-notice-host').length === 1, '16) drugi show nie duplikuje hosta');
   ok(
-    (document.getElementById('civ-triumph-cs-notice-host').textContent || '').includes('Egipcjanie'),
-    '13) drugi show pokazuje najnowszą treść',
+    (document.getElementById('civ-triumph-cs-notice-host').textContent || '').includes('Rzymianie'),
+    '17) drugie wywołanie nie zmienia treści oczekującego modala',
   );
+
+  const escaped = buildTriumphCityStateNoticeMarkup('<Grecy>', 'A&B');
+  ok(!escaped.includes('<Grecy>'), '18) nazwa kultury nie może wstrzyknąć HTML');
+  ok(escaped.includes('&lt;Grecy&gt;') && escaped.includes('A&amp;B'), '19) nazwy są escapowane w kontrakcie karty');
 
   // -------------------------------------------------------------------------
   // SCENARIUSZ 6 (Warunek 1 Evaluatora — M1): modal MUSI wymagać kliknięcia,
@@ -140,7 +158,7 @@ async function main() {
   // -------------------------------------------------------------------------
   const noticeSrc = fs.readFileSync(NOTICE_SRC, 'utf8');
   ok(!/setTimeout/.test(noticeSrc),
-    '14) [ŹRÓDŁO] triumphCityStateNotice.ts NIE zawiera setTimeout (modal nie znika sam, wymaga kliknięcia)');
+    '20) [ŹRÓDŁO] triumphCityStateNotice.ts NIE zawiera setTimeout (modal nie znika sam, wymaga kliknięcia)');
 
   // -------------------------------------------------------------------------
   // SCENARIUSZ 7 (Warunek 3 Evaluatora — M3): wiring w main.ts nie może zostać
@@ -151,12 +169,12 @@ async function main() {
   // -------------------------------------------------------------------------
   const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
   const guardIdx = mainSrc.indexOf('shouldShowPlayerTriumphCityStateUnification(');
-  ok(guardIdx >= 0, '15) [ŹRÓDŁO main.ts] znaleziono wywołanie shouldShowPlayerTriumphCityStateUnification(');
+  ok(guardIdx >= 0, '21) [ŹRÓDŁO main.ts] znaleziono wywołanie shouldShowPlayerTriumphCityStateUnification(');
   // Ciało if-a jest krótkie (kilkanaście linii) — okno 800 znaków po guardzie
   // z zapasem obejmuje całą gałąź do zamykającego `}`.
   const guardWindow = guardIdx >= 0 ? mainSrc.slice(guardIdx, guardIdx + 800) : '';
   ok(/showTriumphCityStateNotice\(/.test(guardWindow),
-    '16) [ŹRÓDŁO main.ts] gałąź po shouldShowPlayerTriumphCityStateUnification(...) woła showTriumphCityStateNotice(...) (wiring nieodcięty)');
+    '22) [ŹRÓDŁO main.ts] gałąź po shouldShowPlayerTriumphCityStateUnification(...) woła showTriumphCityStateNotice(...) (wiring nieodcięty)');
 
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail > 0 ? 1 : 0);

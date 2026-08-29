@@ -3,12 +3,65 @@
 
 const fs = require('fs');
 const path = require('path');
-const esbuild = require('esbuild');
 
 /** R-MAPGEN-KOLEJNOSC-Q3=A (2026-07-27): jakość reliefu > czas; wieloetapowy floor zostaje. */
 const STANDARD_GEN_MS_LIMIT = 7000;
 const DUZY_GEN_MS_LIMIT = 15000;
 
+function assessMapgenRun({ standardMs, duzyMs, hardFailures }) {
+  const timeChecks = [
+    {
+      label: 'standard',
+      elapsedMs: standardMs,
+      limitMs: STANDARD_GEN_MS_LIMIT,
+    },
+    {
+      label: 'duża',
+      elapsedMs: duzyMs,
+      limitMs: DUZY_GEN_MS_LIMIT,
+    },
+  ].map((check) => ({
+    ...check,
+    withinLimit: check.elapsedMs < check.limitMs,
+    status: check.elapsedMs < check.limitMs ? 'PASS' : 'WARN',
+  }));
+  return {
+    timeChecks,
+    warningCount: timeChecks.filter((check) => !check.withinLimit).length,
+    hardFailures,
+    exitCode: hardFailures === 0 ? 0 : 1,
+  };
+}
+
+function runThresholdContractTest() {
+  const timingOnly = assessMapgenRun({
+    standardMs: STANDARD_GEN_MS_LIMIT + 1,
+    duzyMs: DUZY_GEN_MS_LIMIT + 1,
+    hardFailures: 0,
+  });
+  if (timingOnly.exitCode !== 0 || timingOnly.warningCount !== 2
+    || timingOnly.timeChecks.some((check) => check.status !== 'WARN')) {
+    throw new Error('FAIL: przekroczenie czasu nie może zmieniać exit code na 1');
+  }
+  console.log('PASS: mutacja czasu ponad próg → WARN, exit 0');
+
+  const correctnessMutation = assessMapgenRun({
+    standardMs: 0,
+    duzyMs: 0,
+    hardFailures: 1,
+  });
+  if (correctnessMutation.exitCode !== 1) {
+    throw new Error('FAIL: mutacja poprawności musi kończyć się exit 1');
+  }
+  console.log('PASS: mutacja poprawności → FAIL, exit 1');
+}
+
+if (process.argv.includes('--contract-test')) {
+  runThresholdContractTest();
+  process.exit(0);
+}
+
+const esbuild = require('esbuild');
 const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.join(__dirname, '.map-gen-regression-entry.ts');
 const BUNDLE = path.join(__dirname, '.map-gen-regression-bundle.cjs');
@@ -163,11 +216,15 @@ const detOk = ha === hb;
 console.log(`  hash A=${ha} B=${hb} → ${detOk ? 'IDENTYCZNY' : 'RÓŻNY'}`);
 if (!detOk) fail++;
 
-const stdOk = tStd < STANDARD_GEN_MS_LIMIT;
-const duzyOk = tDuzy < DUZY_GEN_MS_LIMIT;
+const timing = assessMapgenRun({
+  standardMs: tStd,
+  duzyMs: tDuzy,
+  hardFailures: 0,
+});
+const [standardTimeCheck, duzyTimeCheck] = timing.timeChecks;
 console.log(`\n=== AC ===`);
-console.log(`  standard <${STANDARD_GEN_MS_LIMIT / 1000}s: ${stdOk ? 'PASS' : 'FAIL'} (${(tStd / 1000).toFixed(2)}s)`);
-console.log(`  duża <${DUZY_GEN_MS_LIMIT / 1000}s: ${duzyOk ? 'PASS' : 'FAIL'} (${(tDuzy / 1000).toFixed(2)}s)`);
+console.log(`  standard <${STANDARD_GEN_MS_LIMIT / 1000}s: ${standardTimeCheck.status} (${(tStd / 1000).toFixed(2)}s)`);
+console.log(`  duża <${DUZY_GEN_MS_LIMIT / 1000}s: ${duzyTimeCheck.status} (${(tDuzy / 1000).toFixed(2)}s)`);
 console.log(`  0 tras bez ujścia: ${totalBad === 0 ? 'PASS' : 'FAIL'} (${totalBad} złych)`);
 console.log(`  0 main bez REALNEGO morza: ${totalBadReal === 0 ? 'PASS' : 'FAIL'} (${totalBadReal} złych)`);
 console.log(`  0 sierot sieci rzecznej: ${netOrphans === 0 ? 'PASS' : 'FAIL'} (${netOrphans})`);
@@ -271,6 +328,11 @@ const villageOk = placed >= minPlaced && placed <= stdTargetNormal;
 console.log(`  spawn chat (${minPlaced}..${stdTargetNormal}): ${villageOk ? 'PASS' : 'FAIL'}`);
 if (!villageOk) fail++;
 
-const allOk = stdOk && duzyOk && totalBad === 0 && totalBadReal === 0 && netOrphans === 0
-  && tribJunctionFails === 0 && detOk && fail === 0 && villageOk;
-process.exit(allOk ? 0 : 1);
+const verdict = assessMapgenRun({
+  standardMs: tStd,
+  duzyMs: tDuzy,
+  hardFailures: fail,
+});
+console.log(`  poprawność generatora: ${verdict.exitCode === 0 ? 'PASS' : 'FAIL'} (${verdict.hardFailures} twardych naruszeń)`);
+console.log(`  ostrzeżenia wydajności: ${verdict.warningCount}`);
+process.exit(verdict.exitCode);

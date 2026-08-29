@@ -82,6 +82,13 @@ const archer = {
   ruchLeft: 2,
   ruch: 2,
 };
+const mixedStackArcher = {
+  ...archer,
+  id: 'u3',
+  q: 4,
+  r: 0,
+  stackGroupId: 'mixed-stack',
+};
 const garrison = {
   id: 'u1',
   ownerId: 1,
@@ -108,12 +115,38 @@ const walledChoice = resolveEnemyCityClick({
 });
 assert(walledChoice.kind === 'attack_choice', 'walled + adjacent sel → attack_choice');
 
+const hiddenCity = resolveEnemyCityClick({
+  city: walledEnemy,
+  selectedUnit: hastati,
+  units: [hastati, garrison],
+  isCityVisible: () => false,
+});
+assert(
+  hiddenCity.kind === 'hint_city_not_visible',
+  'hidden enemy city + adjacent sel → no attack/siege action',
+);
+
 const walledAuto = resolveEnemyCityClick({
   city: walledEnemy,
   selectedUnit: null,
   units: [hastati, garrison],
 });
 assert(walledAuto.kind === 'attack_choice', 'walled + single adjacent → attack_choice');
+
+const mixedStackChoice = resolveEnemyCityClick({
+  city: walledEnemy,
+  selectedUnit: { ...hastati, q: 3, stackGroupId: 'mixed-stack' },
+  units: [
+    { ...hastati, q: 3, stackGroupId: 'mixed-stack' },
+    mixedStackArcher,
+    garrison,
+  ],
+});
+assert(
+  mixedStackChoice.kind === 'attack_choice' &&
+    mixedStackChoice.attacker.id === 'u3',
+  'mixed stack + off-city representative → attack_choice uses adjacent stack member',
+);
 
 const walledHint = resolveEnemyCityClick({
   city: walledEnemy,
@@ -122,12 +155,38 @@ const walledHint = resolveEnemyCityClick({
 });
 assert(walledHint.kind === 'hint_pick_attacker', 'walled + 2 adjacent → hint_pick_attacker');
 
+const mixedStackTwoAdjacent = resolveEnemyCityClick({
+  city: walledEnemy,
+  selectedUnit: { ...hastati, q: 3, stackGroupId: 'mixed-stack' },
+  units: [
+    { ...hastati, q: 3, stackGroupId: 'mixed-stack' },
+    { ...mixedStackArcher, q: 4, r: 0 },
+    { ...mixedStackArcher, id: 'u4', q: 4, r: 1 },
+    garrison,
+  ],
+});
+assert(
+  mixedStackTwoAdjacent.kind === 'hint_pick_attacker' &&
+    mixedStackTwoAdjacent.adjacentCount === 2,
+  'mixed stack + 2 adjacent members → hint_pick_attacker',
+);
+
 const noAdj = resolveEnemyCityClick({
   city: walledEnemy,
   selectedUnit: null,
   units: [{ ...hastati, q: 2, r: 0 }],
 });
 assert(noAdj.kind === 'hint_no_adjacent', 'no adjacent → hint_no_adjacent');
+
+const mixedStackNoAdjacent = resolveEnemyCityClick({
+  city: walledEnemy,
+  selectedUnit: { ...hastati, q: 3, stackGroupId: 'mixed-stack' },
+  units: [{ ...hastati, q: 3, stackGroupId: 'mixed-stack' }],
+});
+assert(
+  mixedStackNoAdjacent.kind === 'hint_no_adjacent',
+  'mixed stack without adjacent member → hint_no_adjacent',
+);
 
 const openEmpty = resolveEnemyCityClick({
   city: { ...openEnemy, q: 7, r: 0 },
@@ -152,6 +211,21 @@ const siegePanel = resolveEnemyCityClick({
   units: [hastati, garrison],
 });
 assert(siegePanel.kind === 'siege_panel', 'oblegane → siege_panel');
+
+const mixedSiegePanel = resolveEnemyCityClick({
+  city: { ...walledEnemy, oblegane: true },
+  selectedUnit: { ...hastati, q: 3, stackGroupId: 'mixed-stack' },
+  units: [
+    { ...hastati, q: 3, stackGroupId: 'mixed-stack' },
+    mixedStackArcher,
+    garrison,
+  ],
+});
+assert(
+  mixedSiegePanel.kind === 'siege_panel' &&
+    mixedSiegePanel.attacker.id === 'u3',
+  'oblegane mixed stack → siege_panel uses adjacent member',
+);
 
 console.log('---', ok, 'ok,', fail, 'fail');
 process.exit(fail > 0 ? 1 : 0);

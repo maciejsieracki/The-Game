@@ -1,11 +1,11 @@
 {
-  "version": 32,
-  "updatedAtIso": "2026-08-10T13:11:19.865Z",
+  "version": 39,
+  "updatedAtIso": "2026-08-19T21:40:14.157Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
     "deprecateBelowWinRate": 0.3,
-    "minRunsForSignificance": 5,
+    "minRunsForSignificance": 10,
     "thresholdAdjustDelayHours": 24,
     "minEventsForWinner": 1000,
     "evaluationDelayHours": 48
@@ -352,7 +352,7 @@
     },
     {
       "id": "rule_135",
-      "rule_text": "KAŻDE zgłoszenie właściciela (błąd/prośba/pomysł) przechodzi natychmiast, w tej samej turze, przez trzy kroki bez przerwy: (1) rejestracja w PYTANIA-OTWARTE.md+REJESTR-PROSB-I-ZADAN.md; (2) jeśli rozwiązanie wymaga wyboru z realnym kompromisem (balans/gameplay/UX z alternatywami) → pytanie ABC od razu, nie odkładane; (3) jeśli NIE wymaga ABC (błąd do naprawienia, prośba z jednoznacznie opisanym oczekiwanym zachowaniem) → **odpalenie subagenta Sonnet 5 od razu**, w tej samej turze, w pętli AutoBot (Operator → Evaluator), nie „zarejestrowane, zajmę się później\". Rejestr to punkt startowy pracy, nie miejsce składowania. Zasada Macieja 2026-08-08 po serii skarg na temat gubienia zgłoszeń: „a myślisz, że po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?\" i „tak właśnie gubią się tematy, które ci zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie robicie z tym nic\" — dopisz: „jeżeli coś jest zgłoszone rejestrujesz dane zadanie, jeżeli trzeba zadać pytanie ABC to zadajesz, jeżeli nie to odpalasz subagenta Sonet od razu do rozwiązania tego problemu zgodnie z zasadą autobot — to jest najważniejsze, żeby sprawy szły do przodu i nic nie zostało zapomniane\" [C-027]",
+      "rule_text": "KAŻDE zgłoszenie właściciela (błąd/prośba/pomysł) przechodzi natychmiast, w tej samej turze, przez trzy kroki bez przerwy: (1) rejestracja w PYTANIA-OTWARTE.md+REJESTR-PROSB-I-ZADAN.md; (2) jeśli rozwiązanie wymaga wyboru z realnym kompromisem (balans/gameplay/UX z alternatywami) → pytanie ABC od razu, nie odkładane; (3) jeśli NIE wymaga ABC (błąd do naprawienia, prośba z jednoznacznie opisanym oczekiwanym zachowaniem) → **odpalenie Operatora zgodnie z aktywnym routingiem AutoBot od razu**, w tej samej turze, w pętli AutoBot (Operator → Evaluator), nie „zarejestrowane, zajmę się później\". Aktywny routing modeli jest źródłem prawdy w .cursor/rules/autobot-evaluator-operator.mdc; historyczne nazwy modeli z wcześniejszych sesji nie są instrukcją. Rejestr to punkt startowy pracy, nie miejsce składowania. Zasada Macieja 2026-08-08 po serii skarg na temat gubienia zgłoszeń: „a myślisz, że po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?\" i „tak właśnie gubią się tematy, które ci zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie robicie z tym nic\" — dopisz: „jeżeli coś jest zgłoszone rejestrujesz dane zadanie, jeżeli trzeba zadać pytanie ABC to zadajesz, jeżeli nie to odpalasz Operatora od razu do rozwiązania tego problemu zgodnie z zasadą AutoBot — to jest najważniejsze, żeby sprawy szły do przodu i nic nie zostało zapomniane\" [C-027]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
@@ -422,7 +422,7 @@
     },
     {
       "id": "rule_142",
-      "rule_text": "Scalenie (merge) pracy Operatora z worktree do drzewa głównego jest OSOBNYM zleceniem, wykonanym NATYCHMIAST po werdykcie PASS/PASS-WITH-NOTES Evaluatora — nigdy nie łącz go z merytoryczną pracą tego samego Operatora w jednym dispatchu, i nigdy nie zostawiaj „do zrobienia później\" (dokładnie ta zwłoka jest przyczyną źródłową incydentu R-BUDYNEK-PORTOWY z C-033 — praca leżała scalona-ocenioną, ale niedospatchowaną do scalenia, gdy sprzątanie dysku ją skasowało). Incydent (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, 2026-08-10): agent dostał zlecenie „dopisz test B-R5-1 I scal do głównego drzewa\"; po dopisaniu testu jego wywołanie EnterWorktree (przełączenie na drzewo główne) zostało odrzucone/przerwane, sesja agenta zakończyła się bez wysłania JAKIEJKOLWIEK notyfikacji — orkiestrator nie dostał ani raportu sukcesu, ani błędu. Temat (6 rund pracy) cicho utknął, wyglądając z zewnątrz jak nigdy niezaczęty, dopóki kolejny Operator — przy okazji innego zlecenia (BB2/stackGroupId), nie w wyniku celowego audytu tego tematu — nie zauważył braku śladu w git log --all. Praca ocalała wyłącznie dlatego, że oba źródłowe worktree pozostały fizycznie nietknięte na dysku (nie zdążyły zostać posprzątane przez C-032) — gdyby audyt dysku zdążył je usunąć najpierw, byłaby to trwała utrata. **Poprawka mechaniczna:** zlecenie Operatora kończy się na „gotowe do scalenia, worktree nietknięty\" — scalenie zawsze dostaje własny, dedykowany dispatch, ODPALONY OD RAZU po PASS/PASS-WITH-NOTES, z TWARDYM dowodem sukcesu jako ostatnim krokiem: git log --all --oneline [C-034]",
+      "rule_text": "Scalenie pracy Operatora z worktree do drzewa głównego jest osobnym zleceniem dopiero po pozytywnej finalnej kontroli i akceptacji integracji — nigdy bezpośrednio po samym werdykcie Operatora ani Evaluatora. PASS-WITH-NOTES wymaga najpierw potwierdzenia, że uwagi są nieblokujące; przed scaleniem trzeba potwierdzić allowlistę, diff, testy i brak cudzych zmian. Scalenie ma własny twardy dowód w historii gita i w drzewie głównym; awaria tego kroku wraca do orkiestratora bez zamykania tematu. [C-034]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
@@ -499,6 +499,46 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-10T13:00:29.129Z"
+    },
+    {
+      "id": "rule_150",
+      "rule_text": "Narzędzie Workflow (Ultracode, Claude Agent SDK) automatyzuje aktualny obieg AutoBot, ale go nie zastępuje: phase('Operator') działa na GPT-5.6 Luna High, phase('Evaluator') na GPT-5.6 Luna High, a finalna kontrola/integracja należy do orkiestratora na GPT-5.6 Luna Medium. Fazy są sekwencyjne dla każdego ID, Evaluator startuje po raporcie Operatora bez ponownego sygnału właściciela, a FAIL/techniczny BLOCK/TIMEOUT/INFRA/ZWIS wraca do tej samej pętli. Workflow nie wystawia READY_FOR_DEPLOY, nie integruje poza zatwierdzonym zakresem, nie commituje, nie pushuje i nie deployuje samodzielnie; READY_FOR_DEPLOY może wystawić tylko orkiestrator po finalnej kontroli i integracji. isolation:'worktree' wymaga sprawdzenia bazy przed pracą, a zmiany wysokiego ryzyka podlegają zasadom niezależnej ewaluacji z kanonu. [C-042]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-18T10:25:32.300Z"
+    },
+    {
+      "id": "rule_151",
+      "rule_text": "**JEDEN KANAŁ DLA WŁAŚCICIELA:** właściciel kontynuuje rozmowę wyłącznie w głównym czacie orkiestratora. Poboczne czaty utworzone przez Operatora/Evaluatora są kanałami technicznymi: nie kieruj do nich właściciela, nie oczekuj odpowiedzi w nich i nie traktuj ich jako równoległego źródła decyzji. Orkiestrator przekazuje do głównego czatu status, raport i wynik kontroli; decyzje ABC właściciel podejmuje wyłącznie tutaj. Po zakończeniu pracy zamknij pomocnicze czaty/worktree, o ile nie są potrzebne do zachowania artefaktu. Jeśli narzędzie nie pozwala ukryć subagenta i pokazuje go jako osobny czat, wyjaśnij to raz i nadal utrzymuj główny czat jako jedyne miejsce komunikacji [C-043]",
+      "status": "ACTIVE",
+      "protected": true,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-19T19:29:17.826Z"
+    },
+    {
+      "id": "rule_152",
+      "rule_text": "**KANON ROUTINGU AUTOBOT:** każdy temat ma jeden pełny ID i przechodzi bez zatrzymania Operator (GPT-5.6 Luna High) → Evaluator (GPT-5.6 Luna High) → finalna kontrola/integracja (orkiestrator GPT-5.6 Luna Medium) → READY_FOR_DEPLOY. Raport terminalny każdego subagenta musi zawierać STATUS (PASS, PASS-WITH-NOTES, FAIL, BLOCK, TIMEOUT, INFRA), ID, zmiany/commity, testy, blokady, następny krok i DEPLOY/PUSH. READY_FOR_DEPLOY może wystawić wyłącznie orkiestrator po pozytywnej finalnej kontroli i integracji; deploy/push jest osobną bramką na wyraźne polecenie właściciela. FAIL, techniczny BLOCK, TIMEOUT, INFRA i ZWIS wracają natychmiast do Operatora, a następnie Evaluatora z tym samym ID; BLOCK wymagający decyzji uruchamia ABC i pauzuje tylko ten temat. PASS-WITH-NOTES nie kończy procesu bez akceptacji finalnej kontroli. Limit wynosi 6 otwartych subagentów: po terminalnym raporcie zamknij zakończonego i natychmiast obsadź slot następnym wymaganym etapem albo innym niezablokowanym tematem; przy dostępnej pracy wszystkie 6 slotów mają być wykorzystane. Komenda sprawdź oznacza audyt całej bieżącej puli i historycznych not_found, lekturę raportów, klasyfikację statusów, zamknięcie zakończonych i uruchomienie następnych etapów; not_found bez raportu nie jest dowodem zakończenia. [C-044]",
+      "status": "ACTIVE",
+      "protected": true,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-19T20:45:40.695Z"
+    },
+    {
+      "id": "rule_153",
+      "rule_text": "**EKSPERYMENT MODELOWY (Maciej, 2026-08-19):** od tej decyzji zarówno Operator, jak i Evaluator są uruchamiani na GPT-5.6 Luna High; orkiestrator/final pozostaje na GPT-5.6 Luna Medium. Każdy raport zapisuje liczbę rund Operator → Evaluator oraz liczbę poprawek po werdykcie, aby porównać tempo i jakość z wcześniejszym routingiem Operator Medium. Nie zmieniaj retroaktywnie już uruchomionych faz. [C-045]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-19T21:26:27.521Z"
     }
   ],
   "quarantine_rules": []

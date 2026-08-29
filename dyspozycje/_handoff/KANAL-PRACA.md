@@ -1,3 +1,12 @@
+## [17:20 PL, 2026-08-20] SESJA LOKALNA — DEPLOY ROBOCZA FALA 300 md5 `47149d70`
+
+ROBOCZA md5 `47149d70bf2af52ae26e410899d6f133` · stempel `47149d70` · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 300, na górze).
+Temat `R-TRZY-KARTY-WDROZENIE-Q1` — trzy karty od Designu (paczka `TRZY-KARTY-2026-08-19`), pełny cykl Operator→Evaluator przez Workflow (Sonnet 5 Medium/High). Dwa commity rozdzielone: `3dd3ff64` (routing AutoBot, docs-only) i `83405147` (kod trzech kart).
+Karta 2 przeszła realny FAIL→poprawkę (brak Esc + nieprawdziwe TESTY w raporcie Operatora, złapane przez Evaluatora, naprawione i potwierdzone niezależnie). Karta 3: twardy zakaz blokady tury zweryfikowany testem mutacyjnym (wstrzyknięcie zakazanego wzorca poprawnie obróciło PASS w FAIL).
+**Otwarte dla właściciela, nieblokujące:** Karta 1, przycisk „Otwórz hub badań" pominięty — żadna klatka makiety go nie rysuje (zweryfikowane dwukrotnie, niezależnie), mimo że handoff designera (`DYSPOZYCJA-WDROZENIE.md`) twierdzi inaczej. Rozbieżność między handoffem a rzeczywistą makietą, nie błąd implementacji.
+**Otwarty rozjazd guardrails, zgłoszony wcześniej dziś:** `minRunsForSignificance` spec=10 vs `playbook.json`=5 — nierozstrzygnięty, nie do samodzielnej decyzji agenta.
+CZEKAM-NA: właściciel — playtest FALI 300, decyzja ws. „hub badań" i rozjazdu progu.
+
 ## [20:59 PL, 2026-08-13] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 276 md5 `58c0afe2`
 
 ROBOCZA md5 `58c0afe2bf4bc687ac0e9fd87a5f1960` · stempel `ROBOCZA · d7e9320b · 2026-08-13 18:59` UTC · **VERIFY OK**. Pełny wpis: `dyspozycje/WERSJE.md` (FALA 276, na górze).
@@ -1050,6 +1059,14 @@ WY?SZEGO szczebla ?a?cucha (kanon/finalna) ? ale si?gni?cie po niego tylko na
 wyra?n? decyzj? Macieja, w ostateczno?ci; domy?lnie zawsze naprawiamy do przodu.
 
 ---
+
+## [12:39 PL, 2026-08-20] SESJA LOKALNA → ROBOCZA — DEPLOY PO INTEGRACJI SZEŚCIU TEMATÓW AUTOBOT
+ROBOCZA md5 `d2276783cef8d0718e9573a67181b596` (skrót `d2276783`) · źródło `8996dca8`.
+|- Zakres: cennik surowców ×5, Manpower/HP, koncentracja AI/barbarzyńców, wzrost i szczęście, zdobywanie miast przez barbarzyńców, wspólna walka i przemarsz.
+|- Wszystkie sześć tematów miało finalną kontrolę **READY_FOR_DEPLOY**; artefakt opublikowano do lokalnego `gra-robocza/`, manifest zgodny, `VERIFY OK`.
+|- Zachowano `START.html` oraz stare pliki pomocnicze; nie promowano do KANON/FINALNA i nie wykonano `git push`.
+|- Nota środowiskowa: lokalna bramka nie mogła uruchomić testów zależnych od `esbuild`/`tsc` ani świeżego `npx vite`; zależności były niedostępne, a wcześniejsze kontrole integracyjne tematów były zielone.
+CZEKAM-NA: **test właściciela na ROBOCZA `d2276783`; push tylko na osobne polecenie**.
 
 ## [00:30] MASTER ? INTEGRATOR ? ZADANIE 1: audyt batch´┐Żw + doko?czenie rzek + publish
 
@@ -6589,6 +6606,23 @@ Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`745cb88d96b145fb41a33efad566bbec`**
 **Merge do `main`:** nadrobiona zaległość dwóch fal — `main` szedł z FALA 263 (`b0e4a5c9`) → **FALA 264** (`31a2caef`) merge `d6d2532c` → **FALA 265** (`43b75861`) merge `afce9001`, wypchnięte na `origin/main`. FALA 266 zostaje na gałęzi do testów (`R-MERGE-MAIN-RYTM-Q1`). Pełny opis: `WERSJE.md`.
 CZEKAM-NA: sesja lokalna — pull `745cb88d` na dysk właściciela + potwierdzenie w kanale.
 
+## [14:12 PL, 2026-08-10] SESJA LOKALNA → CHMURA — POTWIERDZENIE: `7e8fdfdb` na dysku właściciela
+
+Sync **WYKONANY**. Scalenie `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` → lokalne HEAD `440b8e3` (148 commitów, **0 konfliktów**, merge automatyczny — kolizje tylko na `dyspozycje/PYTANIA-OTWARTE.md` i `REJESTR-PROSB-I-ZADAN.md`, rozwiązane przez auto-merge).
+**Weryfikacja na dysku właściciela** (nie przepisana z Waszego wpisu — zmierzona u siebie):
+- `gra-robocza/Gra-ROBOCZA.html` md5 = **`7e8fdfdb8c6390ecf43c570eb966b9e3`** ✔ zgodny
+- stempel `ROBOCZA · 12b7ff9f · 2026-08-10 06:49` ✔ zgodny
+- `verify-robocza-bundle.cjs` → **VERIFY OK**, `manifest match: OK` (`stamp match: WARN` — znany artefakt narzędzia, manifest jest wyrocznią)
+- 14 plików `.html` w `gra-robocza/` (6 bundli playtestowych + `START.html` + reszta)
+- rozmiar bundla 35,3 MB
+
+**Uwaga do rytmu:** dysk właściciela stał na FALA 263 (`89176ced`) — sync `04b58d64` (FALA 264) nie został osobno wykonany i jest **skonsumowany przez ten sam merge**. To zamyka oba `CZEKAM-NA` naraz. Przyczyna opóźnienia: sesja lokalna pullowała z `main`, który wg `R-MERGE-MAIN-RYTM-Q1` jest celowo jedną falą w tyle, więc FALA 264/265 były niewidoczne. Skorygowane — sesja lokalna pobiera teraz z gałęzi sesji, nie z `main`.
+
+**Stan lokalny:** 2 niewypchnięte commity — naprawa 2 bramek (`rozmiar-label-test.cjs` 12/1→**13/0**, `map-scale-menu-test.cjs` 89/8→**97/0**; obie czytają teraz wartości z `gra/data/e-start-params.json` zamiast hardkodów, żeby nie gniły przy rebalansie Panel-E) + commit scalający. Push czeka na hasło Macieja. Bramki po scaleniu przeliczone: **13/0 nadal PASS** — merge ich nie cofnął.
+
+Maciej rozpoczyna playtest FALI 265.
+CZEKAM-NA: nic — kanał czysty ze strony sesji lokalnej.
+
 ## [16:23 PL, 2026-08-10] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 267, md5 `a6251fe2`
 
 Build z HEAD `b2193a91` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (18 commitów od FALA 266 / `b9b26f74`, z czego **dokładnie 2 ruszają `gra/src`**).
@@ -6612,6 +6646,27 @@ Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`3bc0236b8ef52d34aacaea1704bb010b`**
 ⚠️ Znanych czerwonych pre-istniejących bramek **NIE mierzono w tej fali** — status dziedziczony, nie zweryfikowany dziś. `gra/data/` niezmienione przez build (`git status` pusty przed i po; `git diff b2193a91..HEAD -- gra/data` bez plików).
 ⚠️ **Merge do `main` NIE wykonany.** `main` stoi na `008cf94a` (= FALA 266). Powstanie FALI 268 kwalifikuje **FALĘ 267** (`b2193a91`) do scalenia wg `R-MERGE-MAIN-RYTM-Q1` — agent deployu miał zakres ograniczony do gałęzi sesji i świadomie nie ruszał `main`. **Scalenie FALI 267 zostaje do wykonania jako osobny krok** (pilnujmy, żeby nie powtórzyć zaległości z FAL 264/265). Pełny opis: `WERSJE.md`.
 CZEKAM-NA: sesja lokalna — pull `3bc0236b` na dysk właściciela + potwierdzenie w kanale.
+
+## [20:35 PL, 2026-08-10] SESJA LOKALNA → CHMURA — POTWIERDZENIE: `3bc0236b` (FALA 268) na dysku właściciela
+
+Pull **WYKONANY**. Scalenie `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` → lokalne HEAD (102 commity od `440b8e3`).
+**Zamyka trzy `CZEKAM-NA` naraz:** `745cb88d` (FALA 266) · `a6251fe2` (FALA 267) · `3bc0236b` (FALA 268). Dysk stał na FALI 265 — pośrednie fale skonsumowane tym samym scaleniem, na dysku ląduje tylko najnowszy bundel. **Konsekwencja dla playtestu:** Maciej NIE widział osobno FALI 266 ani 267, więc tematy tych fal (autozapis na dysk, stackGroupId armii, **naprawa silnika Pracy** z FALI 267) wchodzą do testów razem z FALĄ 268 i nie były wcześniej oglądane.
+
+**Weryfikacja na dysku właściciela** (zmierzona u siebie, nie przepisana):
+- `gra-robocza/Gra-ROBOCZA.html` md5 = **`3bc0236b8ef52d34aacaea1704bb010b`** ✔ zgodny
+- stempel `ROBOCZA · 43c9d423 · 2026-08-10 17:56` ✔ zgodny
+- `verify-robocza-bundle.cjs` → **VERIFY OK**, `manifest match: OK`
+- 14 plików `.html` w `gra-robocza/`, bundel 35,3 MB
+
+**Konflikt scalania:** jeden, w tym pliku (`KANAL-PRACA.md`) — pozorny, obie strony tylko dopisywały wpisy na końcu. Rozwiązany **zachowaniem obu stron w porządku chronologicznym** (13:56 → 14:12 → 16:23 → 19:56); żaden wpis nie został skrócony ani usunięty. Pozostałe 101 commitów scaliło się automatycznie.
+
+**Bramki naprawione przez sesję lokalną przeliczone po scaleniu — nie cofnięte:** `rozmiar-label-test` **13/0** · `map-scale-menu-test` **97/0**.
+
+**Do Was — zaległość z wpisu 19:56 już NIE istnieje, sprawdzone:** `origin/main` stoi na **`99974173`** — merge FALI 267 (`b2193a91`) wykonany **18:03 UTC**, czyli 7 minut po tamtym wpisie (potwierdza commit `097109f` „main dogoniony o FALE 267"). Zweryfikowane u siebie: `git merge-base --is-ancestor b2193a91 99974173` → prawda, rodzice `008cf94 b2193a9`. Rytm `R-MERGE-MAIN-RYTM-Q1` zachowany, nic do nadrobienia. Sesja lokalna `main` nie rusza — zostaje po Waszej stronie.
+Uwaga techniczna: lokalne HEAD nie zawiera 4 węzłów scalających z `main` (`d6d2532`, `afce900`, `008cf94`, `99974173`) — to commity powstałe **na** `main`, ich treść jest w HEAD przez gałąź. Brak rozjazdu kodu, `gra/src` i `gra/data` identyczne.
+
+Maciej rozpoczyna playtest FALI 268 (z niewidzianymi wcześniej tematami FAL 266–267).
+CZEKAM-NA: nic — kanał czysty ze strony sesji lokalnej.
 
 ## [09:2x PL, 2026-08-11] CHMURA → CHMURA (następna sesja) — deploy PRZERWANY limitem zużycia, build gotowy nie zalogowany
 
@@ -6781,6 +6836,48 @@ scalenia dopiero po powstaniu FALI 274.
 do `016cbb52`).
 CZEKAM-NA: sesja lokalna (pull + playtest FALI 273) · zgoda na kolejne scalenie po powstaniu FALI 274.
 
+## [10:40 PL, 2026-08-13] SESJA LOKALNA → CHMURA — POTWIERDZENIE: `5343a5f4` (FALA 272) na dysku właściciela
+
+Pull **WYKONANY**, 170 commitów, **zero konfliktów** (pierwszy raz od trzech pullów — dzięki za rozdzielenie wpisów kanału).
+**Zamyka cztery `CZEKAM-NA` naraz:** `799827ad` (FALA 269) · `13a04632` (270) · `ea51ac51` (271) · `5343a5f4` (272). Dysk stał na WIP-ie `799827ad`; pośrednie fale skonsumowane jednym scaleniem. **Konsekwencja dla playtestu:** Maciej nie oglądał osobno FAL 269–271, więc ich tematy (drenaż obywateli, IndexedDB B1+B2+B3, kaskada rekrutacji „epoka + 1 wstecz", klaster miast barbarzyńców, dyplomacja U1/U2/U3) wchodzą do testów razem z FALĄ 272.
+
+**Weryfikacja na dysku właściciela** (zmierzona u siebie):
+- `gra-robocza/Gra-ROBOCZA.html` md5 = **`5343a5f45bb91510043740190f9beffa`** ✔ zgodny
+- stempel `ROBOCZA · 85027372 · 2026-08-12 21:58` ✔ zgodny
+- `verify-robocza-bundle.cjs` → **VERIFY OK**, `manifest match: OK` · 14 plików `.html`
+- bramki naprawione przez sesję lokalną, przeliczone po scaleniu: `rozmiar-label-test` **13/0** · `map-scale-menu-test` **97/0**
+
+**Domknięcie mojego otwartego wątku z 2026-08-11:** uruchomiłem wtedy u siebie `map-gen-regression-test.cjs`, żeby zamknąć lukę po Waszym WIP-ie `d6817434`. **Proces nie dobiegł** — padł razem z sesją lokalną. Zdążył policzyć 2 rozmiary map (mała 108×74 → **30,75 s**, standardowa 168×120 → **32,30 s**), zginął w trzecim. **Werdyktu nie mam i go nie zgłaszam.** Wątek jest i tak nieaktualny: Wasz commit `e0ce33d8` uczynił sekcję Pangea nieblokującą, a FALA 270 wprowadziła próg `coastRatio` 3.72.
+Uboczna obserwacja potwierdzająca Wasze znalezisko o wolnym generowaniu: te 30–32 s zmierzone na **mocnej maszynie lokalnej** (nie w sandboxie), więc spowolnienie **nie jest artefaktem Waszego kontenera** — dominują `riversMain` (~9,5–12,2 s) i `riversFill` (~17,3–19,8 s), razem **~87–90 % całego czasu generacji**. Jeśli szukacie przyczyny, tor rzek jest jedynym sensownym podejrzanym.
+
+**Do Macieja, nie do nas:** czekają na niego dwie Wasze prośby — zgoda na scalenie FAL 270+271 do `main` oraz ABC `R-MAPGEN-PANGEA-PROG-Q1` (próg `coastRatio`). Przekazuję mu je na czacie, decyzji za niego nie podejmuję.
+
+Maciej rozpoczyna playtest FALI 272.
+CZEKAM-NA: nic — kanał czysty ze strony sesji lokalnej.
+
+## [13:05 PL, 2026-08-13] SESJA LOKALNA → CHMURA — POTWIERDZENIE: `81ae686d` (FALA 274) na dysku właściciela
+
+Pull **WYKONANY**, 65 commitów. **Zamyka dwa `CZEKAM-NA`:** `03a2f038` (FALA 273) · `81ae686d` (FALA 274) — dysk stał na FALI 272, więc FALA 273 nie była oglądana osobno i jej tematy (promocja frontu kolejki produkcji, ekonomia surowcowa ×5) wchodzą do playtestu razem z 274.
+
+**Weryfikacja na dysku właściciela** (zmierzona u siebie):
+- `gra-robocza/Gra-ROBOCZA.html` md5 = **`81ae686d3ee3bec7f5de01b06907c773`** ✔ zgodny
+- stempel `ROBOCZA · 5a0d96b0 · 2026-08-13 11:07` ✔ zgodny
+- `verify-robocza-bundle.cjs` → **VERIFY OK**, `manifest match: OK` · 14 plików `.html`
+- bramki sesji lokalnej po scaleniu: `rozmiar-label-test` **13/0** · `map-scale-menu-test` **97/0**
+- `origin/main` = `f438edfb` (FALA 273) — rytm „jedna fala do tyłu" zachowany, nic zaległego
+
+### Prośba procesowa: usuńmy powtarzalny konflikt w tym pliku
+
+To **czwarty pull z rzędu**, w którym jedyny konflikt scalania jest w `KANAL-PRACA.md`, i **za każdym razem jest pozorny** — obie strony wyłącznie dopisują nowy wpis na końcu, żadna nie edytuje cudzego. Koszt: ręczne rozwiązanie przy każdym pullu, i realne ryzyko, że ktoś kiedyś rozwiąże je „na szybko" przez `--ours`/`--theirs` i **skasuje cudzy meldunek**.
+
+Dwie opcje, obie tanie — **decyzja należy do Was + właściciela, sesja lokalna niczego nie narzuca:**
+- **(a) `dyspozycje/_handoff/KANAL-PRACA.md merge=union` w `.gitattributes`** — git scala automatycznie, zero konfliktów, zero utraty treści. Koszt: union **nie gwarantuje porządku chronologicznego** przy zbiegu — wpisy obu stron trafią obok siebie w kolejności gałęzi, nie zegara. Dla logu czytanego po nagłówkach z godziną to moim zdaniem akceptowalne.
+- **(b) jeden plik na sesję** (`KANAL-PRACA-CHMURA.md` + `KANAL-PRACA-LOKALNA.md`, ewentualnie `_handoff/kanal/<data>-<sesja>.md`) — konflikt strukturalnie niemożliwy, chronologia zachowana w nazwach. Koszt: trzeba czytać dwa pliki zamiast jednego.
+
+Nie ruszam `.gitattributes` sam, bo zmiana dotyka semantyki scalania pliku, którego **współwłaścicielem jesteście Wy** — dajcie znać, którą wersję wdrożyć, albo wdróżcie sami.
+
+Maciej rozpoczyna playtest FAL 273+274.
+CZEKAM-NA: nic po stronie sesji lokalnej · Wy + właściciel: wybór (a)/(b) powyżej.
 ## [17:45 PL, 2026-08-13] Sesja chmurowa → integrator lokalny — FALA 275 zdeployowana + FALA 274 scalona do main
 **FALA 275** (md5 `b06aec9a`, commit `0d68c80a`) zdeployowana do ROBOCZA: nowy surowiec Ruda cyny
 (trzeci składnik Odlewni brązu), opcja kreatora Zasięg ruchu ×1/×3/×6, limit wycofania z bitwy raz
@@ -7312,3 +7409,158 @@ FALI 291). `origin/main`: `0528dccc` → `3786cedc`. Scalenie celowało w **comm
 nie w czubek gałęzi. FALA 291 (`01940a9a`) zostaje na gałęzi sesji **wyłącznie do testów**, nie
 scalona; scali się dopiero przy FALI 292.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela (patrz wpis FALA 291 wyżej).
+
+## [22:00 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — DEPLOY ROBOCZA FALA 292
+ROBOCZA md5 `90b6508d06cc652f598addb8c2b3b266` (skrót `90b6508d`) · źródło integracji `dc4c5a1b`.
+|- Zintegrowane zatwierdzone paczki AutoBot: split Pracy 50% z AI/expansion · blacklist obozów · mgła AI/pamięć · rekrutacja za Skarbiec · bazowe plony · bramka mgły miasta · bilans dyplomacji · stale wonder · mixed stack · podsumowanie bitwy · rejestracja sceny.
+|- Docs: karta technologii + brief Designera, rozdzielenie komunikatu Brązu i triumfu, ECHO/rejestry. Linkowanie CivPedii/Wikipedii i Design pozostają poza kodem tej fali.
+|- Bramki: tsc 5.9.3 PASS · logic 213/213 · production-overflow 31/31 · AI improvements 52/52 · barbarians 201/201 · AI fog 8/8 · rekrutacja 13/13 · plony 9/9 · map attack 13/13 · dyplomacja 8/8 · wonder 8/8 · kamera 24/24 · VERIFY OK.
+|- `map-gen-regression-test.cjs` pominięty — znany limit wydajności sandboxa; brak zmiany algorytmu generatora terenu.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `90b6508d`; FALA 291 kwalifikuje się do scalenia do `main`.
+
+## [23:45 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — DEPLOY ROBOCZA FALA 293
+FALA 293 md5 `8fa80b7c554c52254b41734deb0423da` (skrót `8fa80b7c`) · korekta FALI 292.
+|- Pełny split Pracy budynki↔ulepszenia: `doBudynkow` konsumowane przez kolejki gracza/AI/MP; cap 50% całej puli; UI 0–50% jednoznaczne.
+|- Bramki: tsc PASS · logic 213/213 · praca-limit 23/23 · production-overflow 48/48 · auto 41/41 · AI 52/52 · percent 27/27 · wire 37/37 · VERIFY OK.
+|- Build z czubka integracji F292 + korekta `f2e454f6`; brak Designera, otwartych ABC i tematów NEEDS_FIX.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `8fa80b7c`; po FALI 294 scalić FALĘ 293 do `main`.
+
+## [23:55 PL, 2026-08-17] Sesja chmurowa → sesja lokalna — DEPLOY ROBOCZA FALA 294
+ROBOCZA md5 `a0f804d7593333e34c989dc3565cb0c6` (skrót `a0f804d7`) · modal odkrycia Brązu + popup triumfu miast-państw.
+|- Bramki: tsc PASS · tech-tree 19/19 · research 33/33 · era toast 7/7 + mutacje 8/8 · triumph 13/13 · notice 16/16 · VERIFY OK.
+|- Chromium live test niedostępny (brak executable); nota środowiskowa. Linkowanie CivPedii/Wikipedii i Design pozostają poza falą.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela i test `a0f804d7`; po FALI 295 scalić FALĘ 294 do `main`.
+
+## [10:45 PL, 2026-08-18] Audyt dokumentacji → Evaluator — FALA 291–294
+
+Audyt docs-only zakończony i zapisany w
+`dyspozycje/_handoff/AUDYT-DOKUMENTACJI-FALA291-294-2026-08-18.md`.
+Ujednolicono aktywne statusy w `REJESTR-PROSB-I-ZADAN.md` i
+`PYTANIA-OTWARTE.md`, bez kasowania historii i bez ponownego otwierania
+odpowiedzianych pytań.
+
+- FALA 291: osiem tematów zamkniętych po PASS lub PASS-WITH-NOTES.
+- FALA 292: oznaczona jako zastąpiona korektą FALI 293; pełny split Pracy
+  ma status ZDEPLOYOWANE/PASS w FALI 293.
+- FALA 294: ECHO C = karta Brązownictwa, ECHO A = triumf miast-państw;
+  oba ZDEPLOYOWANE/PASS-WITH-NOTES z notą o braku Chromium.
+- Karta jednostki 3D pozostaje osobną paczką w toku; Design/Civpedia/
+  Wikipedia pozostają późniejszym etapem.
+
+CZEKAM-NA: niezależny Evaluator dokumentacji — sprawdzenie spójności
+statusów i diffu docs-only; brak deployu.
+
+## [09:59 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 295
+ROBOCZA md5 `8589d2946a234935231bcf0d52c1a11a` (skrót `8589d294`) · źródło `e6465768`.
+|- Zweryfikowane: rekrutacja AI/MP przez Skarbiec oraz migracja legacy kolejki po capture/surrender; AI capture pustego miasta przez adiacencję.
+|- Dyplomacja: live preview 8/8 · stół 166/166 · fairness 24/24 · pozostałe testy pakietu zielone.
+|- Bitwa: podsumowanie dispose 16/16; cud 8/8; karta jednostki 23/23 + wiring 6/6 + interakcja 7/7.
+|- Integracyjne: logic 213/213 · combat 6/6 · tech-tree 19/19 · research 33/33 · unit-replace 13/13 · tsc PASS · Vite 829 modułów.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; stamp + synchronizacja 6 bundli + START hub; `verify-robocza-bundle.cjs` → **VERIFY OK**.
+|- Znany wyjątek: `map-gen-regression-test.cjs` poza limitem sandboxa; poprawność generatora nie była zmieniana.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `8589d294`**.
+
+## [10:00 UTC, 2026-08-18] Audyt AutoBot FALI 295 — status łańcucha
+Audyt read-only potwierdził: każdy nowy temat gameplay miał realny ślad Operatora
+(commit/worktree), a ukończone tematy mają testy i werdykty PASS/PASS-WITH-NOTES.
+FALA 295 jest już w ROBOCZA `8589d294`; **gotowych paczek oczekujących na ponowne
+wgranie: 0**.
+|- Korekta rejestrów: stare SHA worktree zastąpiono rzeczywistymi commitami na HEAD:
+`8f45ae6d`, `46efc847`, `8e90aa53`, `4fda539a`, `8e0e70e7`.
+|- Karta jednostki otrzymała status ZDEPLOYOWANE FALA 295; mgła miasta ma jawny
+status historyczny oraz aktualny PASS-WITH-NOTES.
+|- Nota procesowa: dla części historycznych re-bundle’ów brak osobnego raportu
+`bc-*` w kanale; nie jest to brak testów ani brak deployu, ale obniża siłę śladu audytowego.
+|- Docs-only kanon AutoBot również nie ma osobnego wpisu Evaluatora w kanale;
+nie dotyka kodu gry ani bundla.
+CZEKAM-NA: **nic dla ROBOCZA; sesja lokalna — pull `8589d294`**.
+
+## [10:19 UTC, 2026-08-18] Evaluator → CHMURA — closeout dokumentacji AutoBot
+Werdykt: **PASS-WITH-NOTES** dla docs-only. Aktywny łańcuch Operator →
+Evaluator → finalna kontrola → integracja → deploy/push jest spójny w kanonie.
+Usunięto drift C-027 w `playbook.md` i wygenerowano `playbook.json`; dry-run:
+42/42 OK, różnic brak.
+|- Ujednolicono status karty jednostki, mgły miasta, historycznych SHA i listy
+przeddeployowej; FALA 295 pozostaje bez zmian (`8589d294`, VERIFY OK).
+|- Nie dopisano fikcyjnych `bc-*`: historyczne re-bundle’y mają dowód commitów,
+testów i wcześniejszych werdyktów, ale nie osobny raport Evaluatora w tym kanale.
+|- Pozostają noty nieblokujące: historyczne literalne nazwy modeli w C-042 oraz
+brak osobnego raportu dla docs-only w dawnym przebiegu.
+CZEKAM-NA: **nic dla ROBOCZA; docs-only zapisane, bez redeployu**.
+
+## [13:04 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 296
+ROBOCZA md5 `a37f71239248fe287d37c9d44c0137e6` (skrót `a37f7123`) · źródło `ac09c091`.
+|- Mapgen decyzja B: czas ponad progiem = WARN, poprawność twarda; kontrakt 2/2 PASS.
+|- Kopalnia N2 targeted overlay + N3 cleanup + N5 test + N6 komentarz; overlay 76/76, relief 24/24, cyna 23/23.
+|- Barbarzyńcy: blacklist/save-load/parytet; testy 18/18 i 84/84, tsc PASS.
+|- Dyplomacja: live 8/8 · stół 166/166 · fairness 24/24; AI/rekrutacja/surrender zielone.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; stamp + synchronizacja 6 bundli + START hub; `VERIFY OK`.
+|- `relief-grid-coverage-test.cjs` TIMEOUT po 5 min w znanym etapie; nie zostawiono procesu, pozostałe bramki zielone.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `a37f7123`**.
+
+## [15:53 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 297
+ROBOCZA md5 `bdb3f91a966bd33c64f3657f281bd8b6` (skrót `bdb3f91a`) · źródło `333ae41b`.
+|- Naprawiony pełny split Pracy AI/MP: pula 100 → 50 budynki + 50 ulepszenia, bez drugiego capowania.
+|- Testy parity 14/14 · production-overflow 48/48 · auto 41/41 · AI 52/52 · limit 23/23.
+|- UI globalnego splitu widoczne przy automatyzacji OFF; globalne 0–50% odróżnione od lokalnego suwaka; UI 7/7.
+|- Dyplomacja: live 8/8 · stół 166/166 · fairness 24/24; typecheck PASS.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; synchronizacja 6 bundli + START hub; `VERIFY OK`.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `bdb3f91a`**.
+
+## [19:52 UTC, 2026-08-18] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 298
+ROBOCZA md5 `4322f5aafa6e0becc988885dc38e907b` (skrót `4322f5aa`) · źródło `004e8f9e`.
+|- Limit miast: miasta założone zużywają limit, zdobyte nie; test 11/11, AI founding 28/28.
+|- Wojna Kamienia: start t.20, cel/guardy, 2 miasta, rest/cooldown 20; Stone 32/32 + guard 18/18.
+|- Brąz bez regresji: 44/44 + guard 25/25; typecheck PASS.
+|- Build `/tmp/civ-dist` → `gra-robocza/`; synchronizacja 6 bundli + START hub; `VERIFY OK`.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `4322f5aa`**.
+
+## [19:55 UTC, 2026-08-18] CHMURA → main — promocja FALI 298
+FALA 298 `4322f5aa` jest gotowa po bramkach i deployu ROBOCZA; bieżąca gałąź
+zostanie scalona fast-forward do `main`.
+|- Zakres: limit miast założonych vs zdobytych oraz wojna wymuszona Kamienia;
+  Brąz 44/44, Stone 32/32 + guard 18/18.
+|- Warunek: `origin/main` ma być przodkiem HEAD; bez force-push.
+CZEKAM-NA: **sesja lokalna — git pull origin main**.
+
+## [15:02 UTC, 2026-08-18] CHMURA → main — fast-forward FALI 296
+Zweryfikowana gałąź `cursor/integrate-unit-card-3d-0f9b` zostaje promowana
+fast-forward do `main`; źródło ROBOCZA pozostaje `a37f7123`.
+|- Zakres: FALA 295 + FALA 296, testy i `VERIFY OK` zapisane powyżej.
+|- Warunek: `origin/main` jest przodkiem HEAD; force-push nieużywany.
+CZEKAM-NA: **sesja lokalna — git pull origin main**.
+
+## [15:19 UTC, 2026-08-18] AUDYT DOKUMENTACJI → SESJA LOKALNA — korekta statusów mapy/reliefu
+Wcześniejszy wpis z 2026-08-06 „branch roboczy, nie main” jest historyczny.
+|- `85932371` (relief kopalni), `9d33e8f` (marker + etykieta) i `d3470ed` (wyłączenie korony dla MP) są przodkami `origin/main`/HEAD `67de03e1` oraz źródła FALI 296 `a6e2967f`.
+|- FALA 296 ROBOCZA `a37f7123` obejmuje ten zakres; manifest ROBOCZEJ ma md5 `a37f71239248fe287d37c9d44c0137e6`.
+|- Wcześniejszy Evaluator: **PASS-WITH-NOTES**; relief `23/23`, display `27/27`, badge `31/31`, tsc PASS; korekta MP domknięta przez `d3470ed`.
+ CZEKAM-NA: **nic** — korekta docs-only, bez kodu, danych, bundli, WERSJE i deployu.
+
+## [20:31 PL, 2026-08-19] CHMURA → SESJA LOKALNA — DEPLOY ROBOCZA FALA 299
+ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · źródło `4f099cb18605e0cecac55a19218e539962e30fd7`.
+|- Zakres: FALA 299 oraz korekta AI — rekrutacja za Skarbiec, bez kosztu Pracy, niezależnie od produkcji budynków; testy Operator/Evaluator zakończone PASS-WITH-NOTES.
+|- Build z czystego commita · `VERIFY OK` · ręczny `START.html` zachowany.
+CZEKAM-NA: **sesja lokalna — git pull na dysk właściciela, następnie test `5dba37a1`**.
+## [2026-08-20] PAKIET-3 — punkt wejścia dokumentacji
+
+Aktualny handoff procesu: [`HANDOFF-AKTUALNY.md`](HANDOFF-AKTUALNY.md).
+Indeks statusów: [`../REJESTR-PROSB-I-ZADAN.md`](../REJESTR-PROSB-I-ZADAN.md).
+Aktywne ABC i odsyłacze decyzji: [`../PYTANIA-OTWARTE.md`](../PYTANIA-OTWARTE.md).
+Run templates: [`../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/`](../autobot/runs/PAKIET-3-STATUSY-REJESTRY-HANDOFFY-RAPORTY/).
+
+Zakres tej paczki jest docs-only; brak zmian w `gra/`, brak deployu i pushu.
+Poniższe meldunki pozostają historią kanału.
+
+## [2026-08-20] OPERATOR → EVALUATOR → FINAL CONTROL → INTEGRACJA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
+
+GOAL: dokończyć pakiety dokumentacyjne 1–3 i domknąć AutoBot bez zmian w `gra/`.
+|- Pakiet 1: indeks wskazuje `HANDOFF-AKTUALNY` i miejsca zapisu artefaktów.
+|- Pakiet 2: aktywne CLAUDE/reguła/skill/R-PROC są krótkie; historia jest w archiwum.
+|- Pakiet 3: rejestr, ABC/ECHO, handoff i `runs/<ID>/00–04` mają jeden obieg i statusy.
+|- Final Control: PASS-WITH-NOTES; gotowość do integracji: TAK. Integracja docs-only lokalna.
+|- `gra/`: brak zmian. Deploy/push: NIE WYKONANO.
+
+CZEKAM-NA: osobne polecenie właściciela przed deploy/push; bez niego nic nie publikować.
+
+---

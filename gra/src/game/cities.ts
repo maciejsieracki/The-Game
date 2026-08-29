@@ -24,7 +24,19 @@ export interface CityPodzialHandlu {
   procentLuksus:   number;
 }
 
-/** Per-miasto suwak Pracy (Budynki vs teren/pula). */
+/**
+ * JEDYNY podzial Pracy (R-PRACA-JEDEN-PODZIAL-Q1). Trzymamy JEDNA liczbe —
+ * udzial budynkow — bo drugi udzial jest z definicji jej dopelnieniem do 100%.
+ * Dwa niezalezne pola pozwalaly wczesniej ustawic stany typu „100% i 50%",
+ * ktore nie sumowaly sie do 100%.
+ *
+ *   procentBudynki      ∈ [50,100]  → kolejka produkcji miasta
+ *   procentPuliImperium = 100 − procentBudynki ∈ [0,50] → pula Pracy imperium
+ *                                    (budzet ulepszen terenu i prac cywilizacji)
+ *
+ * To samo pole i ten sam cap obowiazuja globalnie (domyslna wartosc imperium)
+ * i lokalnie w miescie (override) — jeden mechanizm, jedna jednostka miary.
+ */
 export interface CityPodzialPracy {
   procentBudynki: number;
 }
@@ -189,27 +201,71 @@ export type UlepszeniaPracaPercent = number;
 
 export const DEFAULT_ULEPSZENIA_FOCUS: UlepszeniaFocus = 'zrownowazone';
 export const DEFAULT_ULEPSZENIA_TRYB: UlepszeniaTryb = 'reczny';
+
+/**
+ * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2 — ECHO właściciela 2026-08-27:
+ * „AI, zarówno w cywilizacji, jak i w ludzkich domach, powinno domyślnie budować
+ * ulepszenia tam, gdzie są obywatele […] z wyłączeniem surowców, które mogą znajdować
+ * się w różnych miejscach według potrzeby").
+ *
+ * Mechanizm `onlyWorked` istniał już wcześniej w całości (filtr heksów w
+ * `pickAutoImprovements`, przełącznik w panelu trybu budowy, pole `City.ulepszeniaOnlyWorked`)
+ * — ta runda zmienia WYŁĄCZNIE jego wartość DOMYŚLNĄ z `false` na `true` i dopisuje
+ * wyjątek złożowy w samym pickerze. Jawne `false` zapisane w save'ie jest respektowane
+ * (`?? DEFAULT_ULEPSZENIA_ONLY_WORKED` czyta tylko brak pola).
+ */
+export const DEFAULT_ULEPSZENIA_ONLY_WORKED = true;
+
+/**
+ * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, R4-Q2 = wariant C, ECHO właściciela 2026-08-27):
+ * przełącznik „wolno wycinać las" dla automatu GRACZA (per państwo i per miasto).
+ * Wartość domyślna `false` = zachowanie identyczne z dzisiejszym (`skipWyrab: true`
+ * w wywołaniu pickera z main.ts), dopóki właściciel nie powie inaczej (§14).
+ * AI CYWILIZACJI wycina od rundy 3 i ta flaga jej NIE dotyczy.
+ */
+export const DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS = false;
 /** Domyślny % dla świeżej polityki (nowa gra) — odpowiednik dawnego DEFAULT_ULEPSZENIA_PER_TURN=1
  *  po migracji 1→33% (patrz migrateUlepszeniaPerTurnToPercent). */
 export const DEFAULT_ULEPSZENIA_PRACA_PERCENT: UlepszeniaPracaPercent = 33;
 
+/**
+ * Maksymalny udział budżetu Pracy (JUŻ przydzielonej polu ulepszeń) rozdysponowywany
+ * automatycznie przez `pracaAutoPercent`/`ulepszeniaPracaPercent` — pole (b), niezależne
+ * od JEDYNEGO podziału Pracy `CityPodzialPracy.procentBudynki` (pole (a), patrz
+ * `MIN_PODZIAL_PRACY_BUDYNKI_PERCENT` / `MAX_PROCENT_PULI_IMPERIUM` niżej).
+ */
+export const MAX_ULEPSZENIA_PRACA_AUTO_PERCENT: UlepszeniaPracaPercent = 100;
+
+/**
+ * P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: naprawia regresję z
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek C = A, ECHO właściciela 2026-08-21), która
+ * OMYŁKOWO ograniczyła to pole (b) — „Automatyzacja ulepszeń → Ręczny", ile z już
+ * przydzielonej puli Pracy na ulepszenia automat rozdysponowuje automatycznie — do
+ * capu 50% jedynego podziału Pracy (`MAX_PROCENT_PULI_IMPERIUM`), który dotyczy
+ * WYŁĄCZNIE niezależnego pola (a) `CityPodzialPracy.procentBudynki`
+ * (`clampPodzialPracyBudynkiPercent`, nietknięte przez tamten temat). Pole (b) wraca do
+ * własnego zakresu 0–100% (`MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`), zarówno globalnie
+ * (empire), jak i w lokalnym override miasta w trybie „Indywidualne". Patrz
+ * zaktualizowane `gra/tools/praca-miasto-limit-50-cap-test.cjs` i
+ * `gra/tools/praca-limit-50-test.cjs` (scenariusze 3–9). Wpływa też na migrację starych
+ * zapisów (`ensureCitySaveDefaults` niżej) — zapis z override >50% (np. z legacy
+ * `ulepszeniaPerTurn=3` → 100%) NIE jest już ścinany do 50% przy wczytaniu.
+ */
 export function clampUlepszeniaPracaPercent(n: number | undefined | null): UlepszeniaPracaPercent {
   if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
-  return Math.max(0, Math.min(100, Math.round(n)));
+  return Math.max(0, Math.min(MAX_ULEPSZENIA_PRACA_AUTO_PERCENT, Math.round(n)));
 }
 
-/** Maksymalny % budżetu Pracy przeznaczony do wspólnego worka (ulepszenia terenu).
- * Pozostałe minimum 50% rezerwowane dla budynków/bezpośrednie kierowanie.
- * R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 = A (2026-08-17). */
-export const MAX_PRACA_WSPOLNY_WOREK_PROCENT: UlepszeniaPracaPercent = 50;
-
-/** Ogranicza wartość % budżetu Pracy do wspólnego worka (ulepszenia) na maksimum 50%.
- * Używane w UI (buildModeHud) i przy przyjmowaniu wartości ze zdarzenia zmiany.
- * R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1 = A (2026-08-17). */
-export function clampPracaWspolnyWorekPercent(n: number | undefined | null): UlepszeniaPracaPercent {
-  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_ULEPSZENIA_PRACA_PERCENT;
-  return Math.max(0, Math.min(MAX_PRACA_WSPOLNY_WOREK_PROCENT, Math.round(n)));
-}
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1: `EmpirePracaSplit` / `DEFAULT_EMPIRE_PRACA_SPLIT` /
+ * `MAX_PRACA_WSPOLNY_WOREK_PROCENT` / `clampPracaWspolnyWorekPercent` USUNIETE.
+ * Byly DRUGIM, niezaleznym suwakiem dzielacym te sama Prace jeszcze raz (pula →
+ * ulepszenia vs „budzet budynkow imperium"), co dawalo stany nie sumujace sie do
+ * 100% („100 i 50") i realny udzial ulepszen 0% przy domyslnych ustawieniach.
+ * Kanoniczny, jedyny podzial to `CityPodzialPracy.procentBudynki` (+ jego
+ * dopelnienie `procentPuliImperiumZBudynkow`) wyzej — ten sam globalnie i w miescie.
+ * Migracja starych zapisow: `main.ts` (blok wczytania `ownerDefaultPodzialPracy`).
+ */
 
 /**
  * Migracja starego pola `perTurn`/`ulepszeniaPerTurn` (1|2|3 sztuk/miasto/turę) → nowy %.
@@ -246,14 +302,17 @@ export interface UlepszeniaEmpirePolicy {
   tryb: UlepszeniaTryb;
   onlyWorked: boolean;
   pracaAutoPercent: UlepszeniaPracaPercent;
+  /** R4-Q2=C: czy automat GRACZA wolno wycinać las (domyślnie false). */
+  wolnoWycinacLas: boolean;
 }
 
 export function freshUlepszeniaEmpirePolicy(): UlepszeniaEmpirePolicy {
   return {
     focus: DEFAULT_ULEPSZENIA_FOCUS,
     tryb: DEFAULT_ULEPSZENIA_TRYB,
-    onlyWorked: false,
+    onlyWorked: DEFAULT_ULEPSZENIA_ONLY_WORKED,
     pracaAutoPercent: DEFAULT_ULEPSZENIA_PRACA_PERCENT,
+    wolnoWycinacLas: DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
   };
 }
 
@@ -263,6 +322,8 @@ export interface EffectiveUlepszeniaSettings {
   tryb: UlepszeniaTryb;
   onlyWorked: boolean;
   pracaAutoPercent: UlepszeniaPracaPercent;
+  /** R4-Q2=C: czy automat GRACZA wolno wycinać las w tym mieście. */
+  wolnoWycinacLas: boolean;
   override: boolean;
 }
 
@@ -274,8 +335,12 @@ export function resolveEffectiveUlepszenia(
     return {
       focus: city.ulepszeniaFocus ?? DEFAULT_ULEPSZENIA_FOCUS,
       tryb: city.ulepszeniaTryb ?? DEFAULT_ULEPSZENIA_TRYB,
-      onlyWorked: city.ulepszeniaOnlyWorked ?? false,
-      pracaAutoPercent: clampPracaWspolnyWorekPercent(city.ulepszeniaPracaPercent),
+      onlyWorked: city.ulepszeniaOnlyWorked ?? DEFAULT_ULEPSZENIA_ONLY_WORKED,
+      // Historyczny budżet automatu (pole (b)) — od P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1
+      // ma znów własny zakres 0–100% (`clampUlepszeniaPracaPercent` /
+      // `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`), niezależny od nadrzędnego capu pola (a).
+      pracaAutoPercent: clampUlepszeniaPracaPercent(city.ulepszeniaPracaPercent),
+      wolnoWycinacLas: city.ulepszeniaWolnoWycinacLas ?? DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
       override: true,
     };
   }
@@ -284,6 +349,7 @@ export function resolveEffectiveUlepszenia(
     tryb: empire.tryb,
     onlyWorked: empire.onlyWorked,
     pracaAutoPercent: empire.pracaAutoPercent,
+    wolnoWycinacLas: empire.wolnoWycinacLas ?? DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
     override: false,
   };
 }
@@ -339,6 +405,79 @@ export const DEFAULT_PODZIAL_HANDLU: Readonly<CityPodzialHandlu> = {
 export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
   procentBudynki: 70,
 };
+
+/**
+ * Cap jedynego podzialu Pracy: budynki NIGDY ponizej 50%, a wiec pula imperium
+ * (budzet ulepszen terenu) NIGDY powyzej 50%. Dozwolone 50/50, 70/30, 100/0 —
+ * nigdy odwrotnie. To pole jest NIEZALEZNE od budzetu automatu ulepszen
+ * (`pracaAutoPercent`/`ulepszeniaPracaPercent`, wlasny zakres 0–100%, warstwa
+ * decydujaca ILE z juz przyznanego budzetu rozdysponuje automat — patrz
+ * `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT` wyzej i P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1,
+ * gdzie mylne zlaczenie tych dwoch pol bylo osobnym regresem).
+ */
+export const MIN_PODZIAL_PRACY_BUDYNKI_PERCENT = 50;
+export const MAX_PODZIAL_PRACY_BUDYNKI_PERCENT = 100;
+
+/**
+ * Maksymalny udzial Pracy miasta trafiajacy do puli imperium. Z tej puli finansowane
+ * sa ulepszenia terenu (przez automat, w granicach `pracaAutoPercent`), a takze cuda
+ * na mapie, zakladanie miast, wycinka lasu i utrzymanie ulepszen surowcowych — pula
+ * NIE JEST wiec „budzetem ulepszen" i tak tez musi byc nazywana w UI
+ * (`PODZIAL_PRACY_PULA_LBL*` nizej).
+ */
+export const MAX_PROCENT_PULI_IMPERIUM = 100 - MIN_PODZIAL_PRACY_BUDYNKI_PERCENT;
+
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6 dispatchu, runda 2/F2) — JEDNO zrodlo nazwy drugiego
+ * strumienia jedynego podzialu Pracy dla CALEGO UI.
+ *
+ * Root cause osmiu nawrotow tego tematu byl nazewniczy: ta sama liczba nazywala sie
+ * `doUlepszen` w `cityPanel.ts` (a niosla `doPuli`), „Ulepszenia" w
+ * `empireDetailPanel.ts`, „Ulepszenia — pula imperium" w `buildModeHud.ts` i
+ * „→ Pula imperium — zapas cywilizacji" w widoku szczegolow. Runda 1 ujednolicila
+ * `cityPanel.ts` LOKALNYMI stalymi, wiec panel imperium zostal z trzecia nazwa.
+ * Stale mieszkaja tutaj, przy modelu podzialu (ten sam plik co
+ * `MAX_PROCENT_PULI_IMPERIUM`, importowany przez wszystkie trzy pliki UI) —
+ * precedens dla etykiety domenowej w module `game/`: `stockResourceLabel`
+ * (`building-stock-cost.ts`), `formatObywateleLabel` (`manpower.ts`).
+ *
+ * Etykieta laczy slowo wlasciciela („Ulepszenia") z PRAWDZIWYM adresatem („pula
+ * imperium"), bo z tej samej puli placa takze cuda na mapie, zakladanie miast,
+ * wycinka lasu i utrzymanie ulepszen surowcowych. Samo „Ulepszenia" bylo root-cause'em.
+ */
+export const PODZIAL_PRACY_PULA_LBL = 'Ulepszenia (pula)';
+/** Pelna forma tej samej nazwy — do etykiet, ktore maja miejsce na kwalifikator. */
+export const PODZIAL_PRACY_PULA_LBL_PELNA = 'Ulepszenia (pula imperium)';
+/** Jedno zdanie opisujace, czym ta pula NAPRAWDE jest — do tooltipow w calym UI. */
+export const PODZIAL_PRACY_PULA_TIP = 'Pula Pracy imperium — budżet ulepszeń terenu; z tej samej puli '
+  + 'finansowane są też cuda na mapie, zakładanie miast, wycinka lasu i utrzymanie '
+  + 'ulepszeń surowcowych.';
+/** Minimalny udzial Pracy trafiajacy do puli imperium. */
+export const MIN_PROCENT_PULI_IMPERIUM = 100 - MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
+
+export function clampPodzialPracyBudynkiPercent(n: number | undefined | null): number {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return DEFAULT_PODZIAL_PRACY.procentBudynki;
+  return Math.max(
+    MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
+    Math.min(MAX_PODZIAL_PRACY_BUDYNKI_PERCENT, Math.round(n)),
+  );
+}
+
+/**
+ * Drugi udzial JEDYNEGO podzialu — zawsze dopelnienie do 100%. Jedyne dozwolone
+ * zrodlo tej liczby; nie wolno trzymac jej jako osobnego, ustawialnego pola.
+ */
+export function procentPuliImperiumZBudynkow(procentBudynki: number | undefined | null): number {
+  return 100 - clampPodzialPracyBudynkiPercent(procentBudynki);
+}
+
+/** Odwrotnosc: suwak wyrazony w % puli imperium → kanoniczne % budynkow. */
+export function podzialPracyZProcentuPuli(procentPuli: number | undefined | null): CityPodzialPracy {
+  const p = typeof procentPuli === 'number' && Number.isFinite(procentPuli)
+    ? Math.max(MIN_PROCENT_PULI_IMPERIUM, Math.min(MAX_PROCENT_PULI_IMPERIUM, Math.round(procentPuli)))
+    : 100 - DEFAULT_PODZIAL_PRACY.procentBudynki;
+  return { procentBudynki: clampPodzialPracyBudynkiPercent(100 - p) };
+}
 
 /** Domyślny suwak żywność→wzrost (reszta idzie do zapasów armii). Zgodny z suwak_zywnosc_rozwoj_domyslnie normal=100. */
 export const DEFAULT_PROCENT_ROZWOJ = 100;
@@ -487,7 +626,13 @@ export function ensureCityPodzialDefaults(city: City): void {
   } else if (city.podzialHandluOverride && !city.podzialHandlu) {
     city.podzialHandlu = { ...DEFAULT_PODZIAL_HANDLU };
   }
-  if (!city.podzialPracy) city.podzialPracy = { ...DEFAULT_PODZIAL_PRACY };
+  if (!city.podzialPracy) {
+    city.podzialPracy = { ...DEFAULT_PODZIAL_PRACY };
+  } else {
+    city.podzialPracy = {
+      procentBudynki: clampPodzialPracyBudynkiPercent(city.podzialPracy.procentBudynki),
+    };
+  }
 }
 
 /** Migracja zapisu v0.1 — podział Handlu/Pracy + Wealth po load. */
@@ -537,7 +682,15 @@ export function ensureCitySaveDefaults(city: City): void {
   if (city.ulepszeniaOverride === true) {
     if (!city.ulepszeniaFocus) city.ulepszeniaFocus = DEFAULT_ULEPSZENIA_FOCUS;
     if (!city.ulepszeniaTryb) city.ulepszeniaTryb = DEFAULT_ULEPSZENIA_TRYB;
-    if (city.ulepszeniaOnlyWorked == null) city.ulepszeniaOnlyWorked = false;
+    // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, Zasada 2): brak pola w zapisie = nowa
+    // domyślna „tylko przy obywatelach"; jawne `false` ze starego zapisu zostaje `false`.
+    if (city.ulepszeniaOnlyWorked == null) {
+      city.ulepszeniaOnlyWorked = DEFAULT_ULEPSZENIA_ONLY_WORKED;
+    }
+    // R4-Q2=C: brak pola = przełącznik wyrębu WYŁĄCZONY (zachowanie sprzed rundy 4).
+    if (city.ulepszeniaWolnoWycinacLas == null) {
+      city.ulepszeniaWolnoWycinacLas = DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS;
+    }
     // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: migracja starego `ulepszeniaPerTurn` (1|2|3 sztuk) →
     // nowy `ulepszeniaPracaPercent` (0-100%). Stary zapis ma tylko `ulepszeniaPerTurn` (bez
     // typu w City — czytany surowo), nowy tylko `ulepszeniaPracaPercent`; nowe pole ma
@@ -547,7 +700,11 @@ export function ensureCitySaveDefaults(city: City): void {
     // new one only `ulepszeniaPracaPercent`; the new field wins, so re-running this migration on
     // the same city is idempotent.
     const rawCity = city as unknown as { ulepszeniaPracaPercent?: unknown; ulepszeniaPerTurn?: unknown };
-    city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(
+    // `ulepszeniaPracaPercent` jest lokalnym ustawieniem historycznego automatu (pole (b)).
+    // Od P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1 `clampUlepszeniaPracaPercent` znów egzekwuje
+    // własny zakres 0–100% (`MAX_ULEPSZENIA_PRACA_AUTO_PERCENT`) — stary zapis (np. legacy
+    // `ulepszeniaPerTurn=3` → 100%) NIE jest tu ścinany do 50%.
+    city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
       resolveUlepszeniaPracaPercentFromRaw(
         rawCity.ulepszeniaPracaPercent,
         rawCity.ulepszeniaPerTurn,
@@ -710,8 +867,15 @@ export interface City {
   ulepszeniaFocus?: UlepszeniaFocus;
   /** auto | reczny — auto na końcu tury z puli Pracy państwa — gdy override. */
   ulepszeniaTryb?: UlepszeniaTryb;
-  /** Gdy true — auto tylko na heksach z 👤 (workedTiles) — gdy override. */
+  /** Gdy true — auto tylko na heksach z 👤 (workedTiles) — gdy override.
+   *  R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, Zasada 2): wartość DOMYŚLNA tego pola to od
+   *  tej rundy `true` (`DEFAULT_ULEPSZENIA_ONLY_WORKED`) — brak pola w zapisie czyta się
+   *  jako „tylko przy obywatelach". Jawne `false` w zapisie jest respektowane. */
   ulepszeniaOnlyWorked?: boolean;
+  /** R4-Q2=C (runda 4): czy automat GRACZA wolno wycinać las — gdy override.
+   *  Domyślnie `false`. Dotyczy WYŁĄCZNIE automatu gracza; AI CYWILIZACJI wycina
+   *  od rundy 3 niezależnie od tej flagi. */
+  ulepszeniaWolnoWycinacLas?: boolean;
   /** R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: % (0–100) budżetu Pracy dla auto-ulepszeń — gdy override.
    *  Stary `ulepszeniaPerTurn` (1|2|3 sztuk) NIE jest już typowany tu — migrowany surowo w
    *  ensureCitySaveDefaults (resolveUlepszeniaPracaPercentFromRaw), zapisy sprzed migracji nadal
@@ -737,6 +901,12 @@ export interface City {
   wealthImmunityRemaining?: number;
   /** Tura założenia miasta (opcjonalnie; immunitet W liczy też wealthImmunityRemaining). */
   foundedTurn?: number;
+  /**
+   * Czy miasto powstało przez założenie, a więc zużywa pulę zakładania miast.
+   * `false` oznacza miasto przejęte; brak pola w starym zapisie zachowuje
+   * dotychczasową interpretację jako miasto założone.
+   */
+  foundedByOwner?: boolean;
   /**
    * Pula Manpower (siła rekrutacyjna miasta). Brak = przy pierwszym odczycie równa manpowerMax.
    * Koszt jednostki: manpowerNaJednostke[epoka] — patrz gra/src/game/manpower.ts.
@@ -790,6 +960,11 @@ export interface City {
 export const MIN_CITY_DISTANCE = (miastoParams.min_dystans_miast?.wartosc as number) ?? 5;
 /** Min dystans od startowych miast-państw przy zakładaniu nowych miast (Maciej 2026-07-04). */
 export const MIN_CITY_DISTANCE_START_CITY_STATE = 3;
+
+/** Tylko miasta założone przez cywilizację zużywają limit zakładania. */
+export function countsTowardCityFoundingLimit(city: Pick<City, 'foundedByOwner'>): boolean {
+  return city.foundedByOwner !== false;
+}
 
 export function canFoundCity(
   q: number,
@@ -853,7 +1028,9 @@ export function canFoundCity(
     const era = Math.max(1, opts.ownerEra);
     // Limit: baza + (era-1)*5 (E0=baza, E1=baza+5, E2=baza+10, itd.)
     const limit = base + (era - 1) * 5;
-    const ownersCities = cities.filter(c => c.ownerId === opts.ownerId).length;
+    const ownersCities = cities.filter(
+      c => c.ownerId === opts.ownerId && countsTowardCityFoundingLimit(c),
+    ).length;
     if (ownersCities >= limit) {
       return { ok: false, reason: 'limit miast na tej epoce' };
     }
@@ -892,6 +1069,7 @@ export function foundCity(
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
     poziomRacjiOverride: false,
+    foundedByOwner: true,
   };
 }
 
@@ -930,6 +1108,7 @@ export function foundCityAt(
     poziomRacjiOverride: false,
     autoWyzywienie: true, // Włączone automatyczne wyżywienie dla nowo założonych miast / EN: enable auto-feeding for newly founded cities
     budowaTryb: 'zrownowazone', // Domyślna zrównoważona budowa dla nowych miast / EN: default balanced build mode for new cities
+    foundedByOwner: true,
     ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }

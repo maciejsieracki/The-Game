@@ -1481,9 +1481,9 @@ function actionIconId(id: string): string {
     case '9': return 'chip-warning';
     case '10': return 'dip-peace';
     case '11': return 'dip-war';
-    case '12': return 'tb-army';
-    case '15': return 'tb-army';
-    case '13': return 'res-culture';
+    case '12': return 'dip-vassal';
+    case '15': return 'dip-vassal';
+    case '13': return 'dip-gift';
     default: return 'tb-diplomacy';
   }
 }
@@ -1502,10 +1502,9 @@ function treatyIconId(label: string): string {
 }
 
 /**
- * FAZA 3 pkt 8 — pasek szybkich akcji: inline SVG 1:1 z Makieta DYPLOMACJA v1.1
- * (KROK 3 pkt 8, linie 483-490 + 369 dla „Zerwij"). Brand-icon-manifest nie ma
- * odpowiedników (dar/rozerwane ogniwo), więc — jak w makiecie — SVG jest wpisane
- * wprost, nie przez dipBrandIconHtml/manifest.
+ * FAZA 3 pkt 8 — pasek szybkich akcji. Ikony akcji są pobierane z tego samego
+ * mapowania co kafelki „Możliwe umowy”; inline SVG pozostaje tylko dla CTA
+ * „Szybka wymiana” i „Zerwij”, które nie są akcjami z katalogu.
  */
 const ACTION_BAR_SVG: Record<string, string> = {
   war: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 5l-7 7 7 7M20 5l-7 7 7 7"/></svg>',
@@ -1541,7 +1540,7 @@ const ACTION_BAR_SPECS: ReadonlyArray<{ svg: keyof typeof ACTION_BAR_SVG; aid: s
  * `.da-quickdeal`) który woła openQuickDealBasket (zaległość #1: realna auto-uczciwa
  * oferta, nie zaślepka) zamiast generycznego handlera po data-aid.
  */
-function actionBarHtml(st: DiplomacyAudienceState): string {
+export function actionBarHtml(st: DiplomacyAudienceState): string {
   const byId = new Map(st.actions.map(a => [a.id, a] as const));
   const btns = ACTION_BAR_SPECS.map(spec => {
     const action = byId.get(spec.aid);
@@ -1550,10 +1549,12 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
     const tip = enabled ? spec.label : (action?.lockNote || (isLocked ? action?.tooltip : undefined) || spec.label);
     const lockNote = audienceActionBarLockNote(action);
     const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '');
+    const actionIcon = dipBrandIconHtml(actionIconId(spec.aid), 24, 'da-action-ic') || ACTION_BAR_SVG[spec.svg];
+    const visibleTip = enabled ? spec.label : (tip || spec.label);
     const btn =
-      '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(spec.label) + '</span>' +
+      '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(visibleTip) + '</span>' +
       '<button type="button" class="' + cls + '" data-aid="' + esc(spec.aid) + '"' +
-      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '">' + ACTION_BAR_SVG[spec.svg] + '</button>' +
+      (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '" aria-label="' + esc(visibleTip) + '">' + actionIcon + '</button>' +
       '</span>';
     return (
       '<span class="da-abtn-cell">' + btn +
@@ -1568,7 +1569,7 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
   const qdLockNote = handelEnabled ? '' : audienceActionBarLockNote(handel);
   const quickdealBtn =
     '<button type="button" class="da-quickdeal"' + (handelEnabled ? '' : ' disabled') +
-    ' title="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
+    ' title="' + esc(qdTitle) + '" aria-label="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
     '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span></button>';
   const quickdeal =
     '<span class="da-abtn-cell">' + quickdealBtn +
@@ -1663,9 +1664,12 @@ export function dealsColumnHtml(st: DiplomacyAudienceState): string {
 }
 
 /** FAZA 2 pkt 3 kol.4 (prawo) — „Aktywne traktaty" (od ilu tur + kara zerwania + „Zerwij" — zaległość #2). */
-function treatiesColumnHtml(st: DiplomacyAudienceState): string {
+export function treatiesColumnHtml(
+  st: DiplomacyAudienceState,
+  breakTreatyHandler: ((dealId: string) => void) | undefined = cfg?.onBreakTreaty,
+): string {
   const treaties = st.activeTreaties ?? [];
-  const canBreak = typeof cfg?.onBreakTreaty === 'function';
+  const canBreak = typeof breakTreatyHandler === 'function';
   const items = treaties.map(t => {
     const icon = dipBrandIconHtml(treatyIconId(t.label), 14, 'da-ti');
     const metaParts: string[] = [];
@@ -1684,7 +1688,7 @@ function treatiesColumnHtml(st: DiplomacyAudienceState): string {
         /* Zaległość #2 — ikona rozerwanego ogniwa + podpis „Zerwij traktat" TYLKO na hover. */
         '<span class="da-ttip"><span class="da-ttip-lbl" style="bottom:34px">Zerwij traktat</span>' +
         '<button type="button" class="da-brk" data-deal-id="' + esc(dealId ?? '') + '"' +
-        (enabled ? '' : ' disabled') + ' title="' + esc(brkTitle) + '">' + ACTION_BAR_SVG.brk + '</button></span>' +
+        (enabled ? '' : ' disabled') + ' title="' + esc(brkTitle) + '" aria-label="' + esc(brkTitle) + '">' + ACTION_BAR_SVG.brk + '</button></span>' +
       '</div>'
     );
   }).join('');

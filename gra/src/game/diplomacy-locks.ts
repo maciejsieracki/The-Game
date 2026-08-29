@@ -53,6 +53,15 @@ export interface DiplomacyActionLockContext {
   hasNap: boolean;
   /** Traktat szlaków (`umowa_szlakow`) — szlaki + +1 Zaufanie/turę. */
   hasHandel: boolean;
+  /**
+   * R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 T2b (ECHO Q5, finalne): czy między obiema
+   * cywilizacjami istnieje fizyczna możliwość połączenia handlowego —
+   * dostępność lądowa MIĘDZY nimi, LUB (brak lądu) obie strony mają Port w
+   * jakiejś parze miast w zasięgu morza. Bramuje samą PROPOZYCJĘ `UmowaSzlakow`
+   * (case '5'), zanim traktat zostanie zawarty — nie tylko późniejsze
+   * powstanie trasy w `refreshTradeRoutes`.
+   */
+  hasTradeConnection: boolean;
   /** Umowa wymiany surowców (`umowa_wymiany`). */
   hasWymiana?: boolean;
   hasSojusz: boolean;
@@ -189,6 +198,9 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     case '5': { // Traktat handlowy (HANDEL-SPLIT-Q1=B)
       if (ctx.atWar) return { locked: true, note: 'handel niedostępny w wojnie' };
       if (ctx.hasHandel) return { locked: false, active: true, note: ALREADY_NOTE['5']! };
+      if (!ctx.hasTradeConnection) {
+        return { locked: true, note: 'brak możliwego połączenia handlowego (ląd lub porty)' };
+      }
       const gate = relacjaGate(ctx.progHandelRelacja, ctx.relTotal);
       if (gate) return gate;
       return { locked: false, note: 'szlaki handlowe, +1 Zaufanie/turę' };

@@ -17,6 +17,7 @@
 
 import techData from '../../data/tech.json';
 import { techToSlug } from './sciencePicker';
+import { splitList, parseUnlockBuildings, unitsUnlockedByTech } from './techUnlockParse';
 import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
 import { TEMPO_GRY, type TempoGry } from '../game/tech-tempo';
 import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost';
@@ -24,6 +25,7 @@ import { epochIconSvg } from './icons/brandAssets';
 import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 import { techIconSvg } from './techIcons';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
+import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 
 // ---------------------------------------------------------------------------
 // Konfiguracja (haki wstrzykiwane przez silnik — main.ts)
@@ -54,6 +56,8 @@ export interface TechTreeViewConfig {
   onStartResearch?: (techSlug: string) => void;
   /** Plan badań (aktywny cel + kolejka): slug tech → pozycja 1..RESEARCH_QUEUE_MAX. */
   getPlan?: (ownerId: number) => { id: string; pos: number }[];
+  /** Otwórz pełną kartę odkrytej technologii (np. komunikat awansu epoki). */
+  onOpenTechDetails?: (techName: string) => void;
 }
 
 let cfg: TechTreeViewConfig = {};
@@ -148,22 +152,6 @@ function starLabel(r: RawTech): string | null {
   return null;
 }
 
-function splitList(raw: string | null | undefined, sep: RegExp): string[] {
-  return (raw ?? '').split(sep).map(s => s.trim()).filter(s => s !== '' && s !== '—' && s !== '-');
-}
-
-/** „Odblokowuje budynek" → budynki + jednostki (segment „Jednostki: A, B"). */
-function parseUnlockBuildings(raw: string | null): { budynki: string[]; jednostki: string[] } {
-  const budynki: string[] = [];
-  const jednostki: string[] = [];
-  for (const part of splitList(raw, /;/)) {
-    const m = /^Jednostki:\s*(.*)$/i.exec(part);
-    if (m) jednostki.push(...splitList(m[1] ?? '', /,/));
-    else budynki.push(part);
-  }
-  return { budynki, jednostki };
-}
-
 function buildTreeNodes(): Map<string, TreeNode> {
   const rawList = (techData as unknown as { technologie: RawTech[] }).technologie;
   const map = new Map<string, TreeNode>();
@@ -172,7 +160,10 @@ function buildTreeNodes(): Map<string, TreeNode> {
 
   for (const r of rawList) {
     const id = techToSlug(r['Technologia']);
-    const { budynki, jednostki } = parseUnlockBuildings(r['Odblokowuje budynek']);
+    const { budynki } = parseUnlockBuildings(r['Odblokowuje budynek']);
+    // Jednostki: NIE z osadzonego, przestarzałego tekstu tech.json (niekompletny —
+    // patrz 00-dispatch.md) — z units.json's pola `Tech`, wzorem technologyAdapter.ts:100.
+    const jednostki = unitsUnlockedByTech(r['Technologia']);
     const terenFromCode = terrainUnlockLabelsForTech(r['Technologia']);
     const teren = terenFromCode.length > 0
       ? terenFromCode
@@ -345,11 +336,16 @@ function ensureStyles(): void {
   display:flex;gap:8px;align-items:flex-start;
   background:linear-gradient(180deg,rgba(24,30,42,.96),rgba(10,13,20,.97));
   border:1.5px solid rgba(232,216,138,.28);box-shadow:0 3px 10px rgba(0,0,0,.45);}
-.civ-ttv-tn .ti{flex-shrink:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
+.civ-ttv-tn .ti{position:relative;flex-shrink:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;background:radial-gradient(circle at 38% 30%,rgba(232,216,138,.14),rgba(10,13,20,.4));
   border:1.5px solid rgba(232,216,138,.4);color:#e8d88a;}
 .civ-ttv-tn .ti svg{width:19px;height:19px;}
 .civ-ttv-tn .ti:empty{display:none;}
+.civ-ttv-tn .ttv-info-ic{position:absolute;right:-4px;bottom:-4px;width:13px;height:13px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;z-index:3;
+  background:#141a24;border:1px solid rgba(232,216,138,.65);color:#f4e6a8;
+  font-size:9px;font-weight:800;line-height:1;cursor:pointer;}
+.civ-ttv-tn .ttv-info-ic:hover,.civ-ttv-tn .ttv-info-ic:focus-visible{background:rgba(232,216,138,.28);outline:none;}
 .civ-ttv-tn .tx{flex:1;min-width:0;}
 .civ-ttv-tn .tx b{display:block;font-size:11.5px;color:#e8e0c8;line-height:1.2;}
 .civ-ttv-tn .tx i{display:block;font-style:normal;font-size:9px;color:#8a8070;margin-top:2px;
@@ -587,7 +583,7 @@ function updateMiniViewport(): void {
 function nodeInfoLine(node: TreeNode, st: TtvStatus, s: TtvState): string {
   const parts: string[] = [effectiveCost(node, s) + ' PN', 'Poziom ' + node.poziom];
   if (node.star !== null) parts.push(node.star);
-  if (st === 'av') parts.push('kliknij, by badać');
+  if (st === 'av') parts.push('kliknij, by podejrzeć kartę');
   return parts.join(' · ');
 }
 
@@ -608,7 +604,7 @@ function renderWorldHTML(s: TtvState): string {
   // Węzły
   for (const node of NODES.values()) {
     const st = statusOf(node, s);
-    let inner = `<span class="ti">${techIconSvg(node.nazwa, 19) ?? ''}</span>`;
+    let inner = `<span class="ti">${techIconSvg(node.nazwa, 19) ?? ''}<span class="ttv-info-ic" role="button" tabindex="0" title="Podgląd karty technologii" aria-label="Podgląd karty: ${esc(node.nazwa)}">ⓘ</span></span>`;
     inner += `<span class="tx"><b>${esc(node.nazwa)}</b>`;
     if (st === 'ip') {
       const pct = Math.max(0, Math.min(100, Math.round(s.postepFraction * 100)));
@@ -723,7 +719,7 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
   } else {
     h += `<div class="row"><span class="k">Koszt nauki</span><span class="v">`
       + `<b style="color:#e8d88a">${eff} PN</b> · baza ${node.koszt} PN · ${esc(tempoTxt)}</span></div>`;
-    if (st === 'av') {
+      if (st === 'av') {
       const remaining = Math.max(0, eff - s.pula);
       const czas = rate > 0
         ? `≈ ${Math.max(1, Math.ceil(remaining / rate))} tur przy ${rate} PN/turę`
@@ -763,7 +759,7 @@ function buildCardHTML(node: TreeNode, st: TtvStatus, s: TtvState): string {
   // Stopka wg stanu
   let ft: string;
   if (st === 'av') {
-    ft = 'Kliknij = rozpocznij badanie' + (deps.length > 0 ? ' · prereq dla: ' + esc(deps.join(' · ')) : '');
+    ft = 'Kliknij = podgląd karty · osobno: rozpocznij badanie' + (deps.length > 0 ? ' · prereq dla: ' + esc(deps.join(' · ')) : '');
   } else if (st === 'ip') {
     ft = 'W trakcie — pierścień postępu jak chip Nauki w HUD';
   } else if (st === 'od') {
@@ -923,15 +919,53 @@ function bindViewportInteractions(): void {
   vp.addEventListener('pointerup', endPan);
   vp.addEventListener('pointercancel', endPan);
 
+  const openTechPreview = (node: TreeNode, st: string | null): void => {
+    if (st === 'lk' || st === 'ip' || st === 'od' || st === 'av') {
+      showTechDiscoveryNotice({
+        techName: node.nazwa,
+        eraIndex: 1,
+        kind: 'preview',
+        onStartResearch: st === 'av' ? () => tryStartResearch(node) : undefined,
+        onOpenTree: () => showTechTreeView(activeOwner),
+      });
+    }
+  };
+
   vp.addEventListener('click', (e: MouseEvent) => {
     if (panMoved) { panMoved = false; return; }
-    const el = (e.target as Element | null)?.closest('.civ-ttv-tn');
+    const target = e.target as Element | null;
+    const el = target?.closest('.civ-ttv-tn');
     if (!(el instanceof HTMLElement)) return;
     const id = el.getAttribute('data-id');
     if (id === null) return;
     const node = NODES.get(id);
     if (node === undefined) return;
-    if (el.getAttribute('data-st') === 'av') tryStartResearch(node);
+    const st = el.getAttribute('data-st');
+    // Osobna, zawsze widoczna ikonka info wewnątrz węzła — niezależna strefa
+    // klikalna, ta sama akcja co klik całego węzła, ale z własnym stopPropagation
+    // (R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 faza 1). Klik reszty węzła bez zmian.
+    if (target?.closest('.ttv-info-ic')) {
+      e.stopPropagation();
+      openTechPreview(node, st);
+      return;
+    }
+    openTechPreview(node, st);
+  });
+
+  vp.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const target = e.target as Element | null;
+    const infoIc = target?.closest('.ttv-info-ic');
+    if (!infoIc) return;
+    const el = infoIc.closest('.civ-ttv-tn');
+    if (!(el instanceof HTMLElement)) return;
+    const id = el.getAttribute('data-id');
+    if (id === null) return;
+    const node = NODES.get(id);
+    if (node === undefined) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openTechPreview(node, el.getAttribute('data-st'));
   });
 
   vp.addEventListener('mouseover', (e: MouseEvent) => {

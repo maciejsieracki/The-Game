@@ -1,4 +1,9 @@
-# PROTOKÓŁ AUTOBOT v1.2 — instrukcja dla agenta
+# PROTOKÓŁ AUTOBOT v1.2 — dokument referencyjny
+
+> Ten plik jest historyczną/uniwersalną referencją. Aktywny routing Civ, statusy i
+> miejsca zapisu artefaktów są wyłącznie w [`docs/procesy/INDEX-PROCESU.md`](docs/procesy/INDEX-PROCESU.md)
+> i [`docs/decyzje/R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md). Nie traktuj tego
+> snapshotu jako konkurencyjnej instrukcji.
 
 > Wklej ten tekst agentowi na początku pracy (lub zapisz jako `AUTOBOT.md` w folderze
 > projektu i poleć: „Przeczytaj AUTOBOT.md i pracuj według niego”). Od tej chwili agent

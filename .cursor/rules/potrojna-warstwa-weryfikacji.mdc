@@ -1,53 +1,21 @@
 ---
-description: Potrójna warstwa — implementer + adwokat diabła + Grok final. Maciej 2026-08-05. NIENEGOCJOWALNE.
-globs:
-  - "**/*"
+description: Trzy warstwy AutoBot — Operator High, Evaluator High, Final Control High.
 alwaysApply: true
 ---
 
-# Potrójna warstwa weryfikacji kodu (NIENEGOCJOWALNE)
+# Potrójna warstwa
 
-**Decyzja Maciej 2026-08-05:** jeden agent przygotowuje kod; drugi **zawsze** sprawdza jako adwokat diabła; główny agent (Grok) **zawsze** robi finalną kontrolę. **Od tej pory tak działamy** (NIENEGOCJOWALNE). Koszt tokenów OK — oszczędza czas na regresjach („naprawiono A, popsuto B”).
+1. **Operator — GPT-5.6 Luna High:** wykonuje temat w izolacji i raportuje.
+2. **Evaluator — GPT-5.6 Luna High:** niezależnie sprawdza SCOPE, regresję, testy i dowody.
+3. **Final Control — GPT-5.6 Luna High, osobny subagent:** kontroluje kompletność i gotowość
+   do integracji.
 
-## Trzy warstwy (kolejność obowiązkowa)
+Po Final Control integruje główny orkiestrator GPT-5.6 Luna Medium i dopiero po faktycznej
+integracji może wystawić `READY_FOR_DEPLOY`. Deploy/push jest osobną bramką. Raport
+Operatora automatycznie uruchamia Evaluatora; `FAIL`, `BLOCK`, `TIMEOUT`,
+`INFRA` i `ZWIS` wracają do tej samej pętli tylko po wspólnym `authorizeDispatch`
+z licznikiem rund i `lastVerdict`. Próba 6 zatrzymuje się statusem
+`LIMIT-5-EXCEEDED`; manual resume wymaga jawnej decyzji i zachowuje `lastVerdict`.
+C-043/C-044/C-050 obowiązują.
 
-| # | Rola | Kto | Co robi |
-|---|------|-----|---------|
-| **1** | **Implementer** | subagent `composer-2.5` (Task) | Kod, testy lane, AC. Raport: pliki + PASS/FAIL. **Bez deployu.** |
-| **2** | **Adwokat diabła** | **osobny** subagent `composer-2.5` (Task) — **nigdy ten sam przebieg co #1** | Read-only (preferuj) lub tylko lista usterek. Szuka: regresji, usuniętych usprawnień, ubocznych zepsuć, luk względem AC/decyzji, fałszywych testów. |
-| **3** | **Final** | **Grok 4.5** (czat główny) | Czyta raport #1 + #2, sam sprawdza krytyczne miejsca (diff / kluczowe funkcje / testy). Dopiero potem: „gotowe” do Macieja / `deploy`. |
-
-**ZAKAZ:** raportować Maciejowi „gotowe w kodzie” / robić deploy po samym #1 — bez #2 i #3.
-
-## Checklista adwokata diabła (#2)
-
-Agent #2 **musi** odpowiedzieć na:
-
-1. **AC / decyzja** — czy każda litera Q/ABC jest spełniona w plikach (nie tylko w opisie)?
-2. **SCOPE** — czy diff dotyczy **ściśle** zgłoszonego problemu/błędu (nie „przy okazji” innych tematów)? → kanon `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105` · **STRICT** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · `rule_106`
-3. **Regresja** — czy coś wcześniej działającego zostało usunięte, wyłączone lub osłabione (np. SPICH-AUTO lower, Q1=B, karencja głodu wojska, parytet AI/MP)?
-4. **Skutki uboczne** — czy fix w module A psuje B (inne ownerId, save/load, UI, EOT order)?
-5. **Testy** — czy asercje naprawdę łapią bug, czy tylko happy-path? **Luka testów / czerwone testy tematu / tsc≠0 → FAIL** (nie NOTES) — `R-PROC-AUTOBOT-EVAL-STRICT`. **Tylko happy-path bez edge/negacji/repro → FAIL #7** — `R-PROC-AUTOBOT-EVAL-STRICT-EDGE` · `rule_107`. **Asymetria gracz/AI/MP bez decyzji lub test tylko ownerId=0 → FAIL #8** — `R-PROC-AUTOBOT-EVAL-STRICT-PARITY` · `rule_108`. **Luka save/load nowego pola → FAIL #9** — `R-PROC-AUTOBOT-EVAL-STRICT-SAVE` · `rule_109`.
-6. **Werdykt** — `PASS` / `FAIL` / `PASS-WITH-NOTES` + konkretne pliki:linie + co poprawić (bez wdrażania, chyba że Grok każe fix). **ZAKAZ** czystego PASS przy znanym naruszeniu SCOPE. **ZAKAZ** NOTES „brakuje testu, ale wygląda OK”.
-
-## Kiedy obowiązuje
-
-- Każda paczka kodu po `działaj` / implementacji z Task.
-- Bugfix, feature, refaktor > ~50 linii lub > 1 plik silnika/UI.
-- **Wyjątek wąski:** 1–3 linie czysto dokumentacyjne (bez `gra/src`) — wtedy #2 opcjonalne; #3 (Grok) nadal czyta.
-
-## Jak odpalać (#2)
-
-```
-Task · model composer-2.5 · prompt: „ADWOKAT DIABŁA — nie implementuj.
-Branch / commit / lista plików / AC decyzji.
-Przeczytaj diff i powiązany kod (przed/po zachowania).
-Szukaj regresji i luk. Raport: PASS|FAIL + lista usterek.”
-```
-
-Grok po #2: jeśli FAIL → fix (kolejne #1 lub sam drobny patch) → **ponów #2** na delcie fixu → #3.
-
-## Powiązane
-
-- Routing modeli: `.cursor/rules/model-routing.mdc`
-- Opis dla Macieja: `dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md`
+Pełny opis: [`docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md).

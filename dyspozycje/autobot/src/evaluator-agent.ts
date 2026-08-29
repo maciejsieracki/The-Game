@@ -2,11 +2,14 @@
  * EvaluatorAgent — Moduł 1: twarde metryki → performanceScore → postmortem → playbook.
  */
 import { randomUUID } from 'crypto';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   loadPlaybook,
   recordRuleOutcome,
   retireWeakRules,
   savePlaybook,
+  formatReviewFlagForOpenQuestions,
 } from './playbook-manager';
 import { pruneFeatureWeights, attributesToWeights } from './feature-pruning';
 import { appendPostmortemLog, appendRunHistory, readRunHistory } from './logging';
@@ -22,6 +25,24 @@ import type {
   HardMetrics,
   PlaybookUpdate,
 } from './types';
+
+/**
+ * `dyspozycje/PYTANIA-OTWARTE.md` — dwa poziomy w górę od src/ (i od dist/, ten
+ * sam katalog `autobot`), patrz DEFAULT_PLAYBOOK_PATH w playbook-manager.ts dla
+ * analogicznego wzorca (tam jeden poziom do `dyspozycje/autobot/playbook.json`).
+ */
+const OPEN_QUESTIONS_PATH = path.resolve(__dirname, '..', '..', 'PYTANIA-OTWARTE.md');
+
+/**
+ * Dopisuje flagę REVIEW do PYTANIA-OTWARTE.md. I/O na plikach żyje tutaj (nie w
+ * playbook-manager.ts, które dziś zapisuje wyłącznie playbook.json) — evaluator-agent.ts
+ * jest miejscem, gdzie retireWeakRules jest faktycznie wywoływane, i już ma wzorzec
+ * append-only I/O (appendPostmortemLog/appendRunHistory w logging.ts).
+ */
+function appendReviewFlagsToOpenQuestions(entries: string[]): void {
+  if (entries.length === 0) return;
+  fs.appendFileSync(OPEN_QUESTIONS_PATH, entries.join('\n') + '\n', 'utf8');
+}
 
 export interface EvaluateOpts {
   run: ExecutionRun;
@@ -123,7 +144,17 @@ export class EvaluatorAgent {
       }).ok;
 
     if (canMutatePlaybook) {
-      updates.push(...retireWeakRules(pb));
+      const reviewUpdates = retireWeakRules(pb);
+      updates.push(...reviewUpdates);
+
+      if (reviewUpdates.length > 0) {
+        const flagEntries = reviewUpdates
+          .filter(u => u.kind === 'review')
+          .map(u => pb.rules.find(r => r.id === u.ruleId))
+          .filter((r): r is NonNullable<typeof r> => r != null)
+          .map(r => formatReviewFlagForOpenQuestions(r, evaluatedAtIso));
+        appendReviewFlagsToOpenQuestions(flagEntries);
+      }
 
       const prune = pruneFeatureWeights({
         runs: runsForPrune,

@@ -15,9 +15,10 @@
  * (cityPanel.ts, effectivePodzialPracy -> ten sam resolveCityPodzialPracy) liczy poprawnie.
  *
  * Ten test odtwarza DOKŁADNIE zgłoszony scenariusz: 1 miasto BEZ lokalnego override,
- * globalny suwak Pracy zmieniony na "100% do puli" (procentBudynki=0) -> previewCityEconomy
- * (podgląd HUD/panel cywilizacji na żywo) ORAZ advanceCityEconomy (realny silnik końca tury)
- * MUSZĄ pokazać nowy split, nie statyczny domyślny.
+ * globalny lokalny default Pracy ustawiony na 50% budynków / 50% do puli
+ * (procentBudynki=50) -> previewCityEconomy (podgląd HUD/panel cywilizacji na żywo)
+ * ORAZ advanceCityEconomy (realny silnik końca tury) MUSZĄ pokazać nowy split,
+ * nie statyczny domyślny.
  *
  * Run from gra/: node tools/praca-global-default-live-test.cjs
  */
@@ -197,28 +198,29 @@ function advanceArgs(cities_, map_, data_, builtByCity_, ownerDefaultPodzialPrac
 }
 
 // ---------------------------------------------------------------------------
-// 2. SEDNO ZNALEZISKA B: globalny suwak Pracy (ownerDefaultPodzialPracyByOwner)
-//    ustawiony na "100% do puli" (procentBudynki=0) dla ownera 0. Miasto NIE ma
+// 2. SEDNO ZNALEZISKA B: globalny lokalny default Pracy
+//    ustawiony na "50% do puli" (procentBudynki=50) dla ownera 0. Miasto NIE ma
 //    lokalnego override -- MUSI dziedziczyć globalną wartość, nie statyczny default.
 // ---------------------------------------------------------------------------
-const ownerDefaultPodzialPracy100Puli = new Map([[0, { procentBudynki: 0 }]]);
+const ownerDefaultPodzialPracy50Puli = new Map([[0, { procentBudynki: 50 }]]);
 
 const previewGlobal = previewCityEconomy(...previewArgs(
-  cities, map, data, builtByCity, ownerDefaultPodzialPracy100Puli,
+  cities, map, data, builtByCity, ownerDefaultPodzialPracy50Puli,
 ));
 const tkGlobal = previewGlobal.perCity.find(t => t.cityId === city.id);
 assert(
-  'previewCityEconomy: miasto BEZ override dziedziczy globalny suwak 100% do puli (doPuli == cała Praca, doBudynkow == 0)',
-  !!tkGlobal && tkGlobal.doBudynkow === 0 && tkGlobal.doPuli > 0,
+  'previewCityEconomy: miasto BEZ override dziedziczy lokalny default 50% do puli',
+  !!tkGlobal && tkGlobal.doBudynkow > 0 && tkGlobal.doPuli > 0
+    && tkGlobal.doBudynkow === Math.round((tkGlobal.doBudynkow + tkGlobal.doPuli) * 0.5),
   tkGlobal ? `doBudynkow=${tkGlobal.doBudynkow} doPuli=${tkGlobal.doPuli}` : 'brak wpisu perCity',
 );
 
-// STARY BUG (regresja, gdyby ktoś cofnął naprawę): przy globalnym 100% do puli,
-// stary kod nadal pokazywałby doBudynkow > 0 (70% statycznego defaultu z JSON-a).
+// STARY BUG (regresja, gdyby ktoś cofnął naprawę): przy globalnym default 50/50,
+// stary kod nadal pokazywałby 70/30 statycznego defaultu z JSON-a.
 assert(
-  'STARY BUG (regresja, gdyby cofnięto naprawę): NIE wolno pokazać nadal 70/30 statycznego defaultu mimo globalnej zmiany na 100% do puli',
-  !(tkGlobal && tkGlobal.doBudynkow > 0),
-  tkGlobal ? `doBudynkow=${tkGlobal.doBudynkow} (chciano 0)` : 'brak wpisu perCity',
+  'STARY BUG (regresja, gdyby cofnięto naprawę): NIE wolno pokazać nadal statycznego 70/30 mimo globalnej zmiany na 50/50',
+  !(tkGlobal && tkGlobal.doBudynkow === Math.round((tkGlobal.doBudynkow + tkGlobal.doPuli) * 0.7)),
+  tkGlobal ? `doBudynkow=${tkGlobal.doBudynkow} doPuli=${tkGlobal.doPuli}` : 'brak wpisu perCity',
 );
 
 // ---------------------------------------------------------------------------
@@ -227,12 +229,13 @@ assert(
 //    naprawiono tylko previewCityEconomy, gra i tak liczyłaby błędnie po End Turn.
 // ---------------------------------------------------------------------------
 const econGlobal = advanceCityEconomy(...advanceArgs(
-  cities, map, data, builtByCity, ownerDefaultPodzialPracy100Puli,
+  cities, map, data, builtByCity, ownerDefaultPodzialPracy50Puli,
 ));
 const tkEcon = econGlobal.perCity.find(t => t.cityId === city.id);
 assert(
-  'advanceCityEconomy (silnik realnego końca tury): TAKŻE respektuje globalny suwak 100% do puli, nie tylko podgląd',
-  !!tkEcon && tkEcon.doBudynkow === 0 && tkEcon.doPuli > 0,
+  'advanceCityEconomy (silnik realnego końca tury): TAKŻE respektuje lokalny default 50/50, nie tylko podgląd',
+  !!tkEcon && tkEcon.doBudynkow > 0 && tkEcon.doPuli > 0
+    && tkEcon.doBudynkow === Math.round((tkEcon.doBudynkow + tkEcon.doPuli) * 0.5),
   tkEcon ? `doBudynkow=${tkEcon.doBudynkow} doPuli=${tkEcon.doPuli}` : 'brak wpisu perCity',
 );
 
@@ -252,17 +255,17 @@ assert(
 //    zmianę globalnego suwaka) -- fix nie może złamać istniejący mechanizm pinu.
 // ---------------------------------------------------------------------------
 city.podzialPracyOverride = true;
-city.podzialPracy = { procentBudynki: 40 };
+city.podzialPracy = { procentBudynki: 50 };
 
 // globalna nadal "100% do puli" -- override musi to zignorować
 const previewOverride = previewCityEconomy(...previewArgs(
-  cities, map, data, builtByCity, ownerDefaultPodzialPracy100Puli,
+  cities, map, data, builtByCity, ownerDefaultPodzialPracy50Puli,
 ));
 const tkOverride = previewOverride.perCity.find(t => t.cityId === city.id);
 const totalPraca = tkOverride ? tkOverride.doBudynkow + tkOverride.doPuli : 0;
-const expectedDoBudynkow = Math.round(totalPraca * 0.40);
+const expectedDoBudynkow = Math.round(totalPraca * 0.50);
 assert(
-  'override lokalny (40% do budynków) NIE dziedziczy globalnego 100% do puli -- pin działa mimo naprawy',
+  'override lokalny (50% do budynków) NIE dziedziczy globalnego 50% do puli -- pin działa mimo naprawy',
   !!tkOverride && tkOverride.doBudynkow === expectedDoBudynkow,
   tkOverride ? `doBudynkow=${tkOverride.doBudynkow} chciano round(${totalPraca}*0.40)=${expectedDoBudynkow}` : 'brak wpisu perCity',
 );

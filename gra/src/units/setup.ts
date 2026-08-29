@@ -56,6 +56,8 @@ export interface RuntimeUnit {
   fortifyRuchSnapshot?: number;
   /** HP po walce (undefined = pełne z definicji jednostki). */
   hp?: number;
+  /** Zapisany maksymalny HP runtime jednostki (uzupełniany przy pierwszym użyciu). */
+  hpMax?: number;
   /** Tura: liczba porażek obrony w tej turze (L2 — 2. = wipe). */
   defLossesThisTurn?: number;
   /** Miasto oblegane — jednostka trzyma oblężenie (ruch zablokowany do końca / szturmu). */
@@ -67,6 +69,8 @@ export interface RuntimeUnit {
    *  heksie wody (Morze/Wybrzeże). Ustawiane automatycznie po ruchu wg terenu
    *  docelowego (woda→true, ląd→false). Stare save'y bez pola = niezaokrętowana. */
   embarked?: boolean;
+  /** TEMAT #15 (Ludy Morza): rajder morski — wykluczany ze wspólnej walki także po zejściu na ląd. */
+  seaRaider?: boolean;
   /** C-SENTRY-Q1 wariant A (Maciej 2026-07-25): jednostka „czuwa" — pomija tury
    *  (jak Ufort./Pomiń) do RĘCZNEGO odwołania (ponowny klik akcji Sentry budzi ją)
    *  LUB do AUTOMATYCZNEGO obudzenia, gdy wróg wejdzie w jej pole widzenia

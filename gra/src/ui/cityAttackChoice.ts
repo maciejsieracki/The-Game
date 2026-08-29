@@ -2,6 +2,8 @@
  * cityAttackChoice.ts -- wybor akcji przy ataku miasta z murem (C3-Q1=A).
  * KANON v1.1 (2026-07-23): kompaktowa nakladka dol-srodek nad mapa swiata (KLATKA B),
  * spojna z preBattle.ts (te same tokeny -- panel gradient + blur, zloty primary/danger CTA).
+ * UWAGA: katalog docs/ux/ zostal usuniety z repo (R-REPO-SPRZATANIE-SREDNIE-Q1,
+ * 2026-08-26). Sciezka nizej jest HISTORYCZNA — tresc: git show 39ae5d17:<sciezka>.
  * Zrodlo wizualne: docs/ux/claude-design/01-propozycje-z-design/brand-book/KANON/mockupy/
  *   "The Game - PreBattle nakladka v1.1 (1E).dc.html" (KLATKA B) + DYSPOZYCJA-WDROZENIE.md.
  * Kontrakt danych (MapSiegeContext / CityAttackChoiceActions) NIEZMIENIONY -- restyling +

@@ -1,0 +1,61 @@
+# POMIAR RUNDY 4 (PO) — zasady 1/2/3
+# zrodlo: /home/user/wt-op-ai-r4/gra/src
+# ziarna: 7, 99, 512, 4242, 1337 · tur: 40 · mapa 36x28 „kontynenty", 3 miasta, promien 4, pop 6
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ A: BEZ NIEDOBORU przez cale 40 tur
+  rozkazow razem: 193
+  kategorie zyw/sur/infra/wyrab/inne: 181/0/0/12/0
+  udzial: zywnosc 93.8% · surowce 0.0% · infra 0.0% · wyrab 6.2%
+  BEZ NIEDOBORU (193 rozkazow): zyw/sur/infra/wyrab = 181/0/0/12
+  PRZY NIEDOBORZE (0 rozkazow): zyw/sur/infra/wyrab = 0/0/0/0
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 40 (20.7%), w tym ZLOZOWE (wyjatek): 40 · NIE-zlozowe: 0 (0.0%)
+  PER KLUCZ: oboz_lowiecki=60 · farma=56 · bydlo=56 · wyrab=12 · lodzie_rybackie=9
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ B: NIEDOBOR DREWNA przez cale 40 tur
+  rozkazow razem: 356
+  kategorie zyw/sur/infra/wyrab/inne: 181/124/39/12/0
+  udzial: zywnosc 50.8% · surowce 34.8% · infra 11.0% · wyrab 3.4%
+  BEZ NIEDOBORU (0 rozkazow): zyw/sur/infra/wyrab = 0/0/0/0
+  PRZY NIEDOBORZE (356 rozkazow): zyw/sur/infra/wyrab = 181/124/39/12
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 115 (32.3%), w tym ZLOZOWE (wyjatek): 115 · NIE-zlozowe: 0 (0.0%)
+  PER KLUCZ: oboz_lowiecki=60 · farma=56 · bydlo=56 · glinianka=42 · warzelnia_soli=38 · tartak=21 · wyrab=12 · fort=12 · posterunek=11 · kopalnia_zelaza=10 · lodzie_rybackie=9 · droga=8 · droga_brukowana=8 · kopalnia_miedzi=8 · kopalnia_cyny=5
+
+### AI CYWILIZACJI — decideAITurn, SCENARIUSZ C: NIEDOBOR DREWNA tylko w turach 10-19
+  rozkazow razem: 315
+  kategorie zyw/sur/infra/wyrab/inne: 181/84/38/12/0
+  udzial: zywnosc 57.5% · surowce 26.7% · infra 12.1% · wyrab 3.8%
+  BEZ NIEDOBORU (174 rozkazow): zyw/sur/infra/wyrab = 162/0/0/12
+  PRZY NIEDOBORZE (141 rozkazow): zyw/sur/infra/wyrab = 19/84/38/0
+  ZASADA 2: rozkazy na heksach BEZ obywateli: 87 (27.6%), w tym ZLOZOWE (wyjatek): 87 · NIE-zlozowe: 0 (0.0%)
+  PER KLUCZ: oboz_lowiecki=60 · farma=56 · bydlo=56 · warzelnia_soli=29 · glinianka=26 · tartak=17 · wyrab=12 · fort=12 · posterunek=10 · lodzie_rybackie=9 · droga=8 · droga_brukowana=8 · kopalnia_zelaza=5 · kopalnia_cyny=4 · kopalnia_miedzi=3
+  SLAD CZASOWY (tura: zywnosc/nie-zywnosc; * = niedobor drewna aktywny)
+    t0 :15/0  t1 :10/5  t2 :15/0  t3 :14/1  t4 :12/3  t5 :15/0  t6 :14/1  t7 :14/1  t8 :15/0  t9 :14/1
+    t10*:0/15  t11*:0/15  t12*:0/15  t13*:0/15  t14*:3/12  t15*:2/12  t16*:3/11  t17*:4/10  t18*:2/11  t19*:5/6
+    t20 :9/0  t21 :7/0  t22 :4/0  t23 :2/0  t24 :1/0  t25 :1/0  t26 :0/0  t27 :0/0  t28 :0/0  t29 :0/0
+    t30 :0/0  t31 :0/0  t32 :0/0  t33 :0/0  t34 :0/0  t35 :0/0  t36 :0/0  t37 :0/0  t38 :0/0  t39 :0/0
+
+### ZASADA 3 — raport nadwyzki pickera (AI CYWILIZACJI, scenariusz A: zero niedoboru)
+  ziarno: tur z nadwyzka 25/40 · pierwsza tura z nadwyzka: t15 · tur z niedoborem: 0 · tur z demandActive: 40
+  ziarno: tur z nadwyzka 21/40 · pierwsza tura z nadwyzka: t19 · tur z niedoborem: 0 · tur z demandActive: 40
+  ziarno: tur z nadwyzka 25/40 · pierwsza tura z nadwyzka: t15 · tur z niedoborem: 0 · tur z demandActive: 40
+  ziarno: tur z nadwyzka 25/40 · pierwsza tura z nadwyzka: t15 · tur z niedoborem: 0 · tur z demandActive: 40
+  ziarno: tur z nadwyzka 28/40 · pierwsza tura z nadwyzka: t12 · tur z niedoborem: 0 · tur z demandActive: 40
+
+### AI GRACZA — cztery profile, onlyWorked=FALSE (stale po obu stronach), skipWyrab=true
+profil          | razem | zywnosc | surowce | infra | wyrab | odcisk (klucz=liczba)
+zywnosc         |   311 |     311 |       0 |     0 |     0 | bydlo=14,farma=14,lodzie_rybackie=205,oboz_lowiecki=78
+surowce         |   283 |       0 |     283 |     0 |     0 | glinianka=11,kamieniolom=2,kopalnia_cyny=1,tartak=77,warzelnia_soli=192
+infrastruktura  |    98 |       0 |       0 |    98 |     0 | droga=41,droga_brukowana=41,fort=8,posterunek=8
+zrownowazone    |   301 |     124 |     114 |    63 |     0 | bydlo=9,droga=41,droga_brukowana=12,farma=9,fort=5,glinianka=10,lodzie_rybackie=53,oboz_lowiecki=53,posterunek=5,tartak=48,warzelnia_soli=56
+
+### AI GRACZA — profil „zrownowazone" Z ZASADA 1 (demandDriven), onlyWorked=FALSE
+  bez niedoboru    razem  311 · zyw/sur/infra/wyrab 311/0/0/0
+  niedobor drewna  razem  301 · zyw/sur/infra/wyrab 124/114/63/0
+
+### R4-Q2 — automat GRACZA a przelacznik „wolno wycinac las" (profil zrownowazone, demandDriven)
+  przelacznik WYLACZONY (skipWyrab=true)  · razem  169 · wyrab 0 · farmy 44
+  przelacznik WLACZONY  (skipWyrab=false) · razem  187 · wyrab 9 · farmy 53
+
+### ZASADA 2 — AI GRACZA, profil zrownowazone: onlyWorked FALSE vs TRUE (demandDriven)
+  onlyWorked=false · razem  311 · poza obywatelami NIE-zlozowe 264 (84.9%) · zlozowe poza obywatelami 14
+  onlyWorked=true  · razem  169 · poza obywatelami NIE-zlozowe 0 (0.0%) · zlozowe poza obywatelami 39

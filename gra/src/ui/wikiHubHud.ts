@@ -30,6 +30,15 @@ export interface WikiHubHudApi {
   show: (opts?: WikiHubShowOptions) => void;
   hide: () => void;
   destroy: () => void;
+  /**
+   * T9 (R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1): otwiera hasło CivPedii z zewnątrz
+   * (np. z przyszłej karty encji, T10) po parze (folder, id) zamiast `EncyEntry`.
+   * `id` to identyfikator gry (surowy klucz JSON albo pochodny slug — patrz
+   * EntityId, sekcja 2 planu) — najpierw sprawdzany przez `gameIds` (mostek dla
+   * niejednoznacznych wpisów), potem fallback na `slug === id`. Brak trafienia
+   * → no-op (panel się nie otwiera).
+   */
+  openEncyEntry: (folder: string, id: string) => void;
 }
 
 type Tab = 'poradnik' | 'encyklopedia';
@@ -48,6 +57,10 @@ interface EncyEntry {
   folder: string;
   category: string;
   title: string;
+  /** T9 (R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1): mostek gra-id — opcjonalne
+   * alternatywne identyfikatory z JSON-ów gry (`gra-id` we frontmatterze), dla
+   * haseł, gdzie prosty derywowany slug NIE wystarcza (np. warianty kopalni). */
+  gameIds: string[];
   wikiS: string;
   wikiM: string;
   full: string;
@@ -287,6 +300,22 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     renderDetail();
   }
 
+  /** T9: resolver gra-id → EncyEntry. `gameIds` (mostek) ma pierwszeństwo przed
+   * fallbackiem `slug === id`, żeby np. wpis kopalnia.md (gameIds zawiera
+   * kopalnia_miedzi/zelaza/cyny/zlota) nie kolidował z hipotetycznym hasłem
+   * o slugu dokładnie "kopalnia_miedzi", gdyby taki kiedyś powstał. */
+  function findEncyByGameId(folder: string, id: string): EncyEntry | undefined {
+    return ENCY.find(e => e.folder === folder && e.gameIds.includes(id))
+      ?? ENCY.find(e => e.folder === folder && e.slug === id);
+  }
+
+  function openEncyEntry(folder: string, id: string): void {
+    const entry = findEncyByGameId(folder, id);
+    if (!entry) return;
+    show({ tab: 'encyklopedia' });
+    openEncy(entry);
+  }
+
   function pickEncyContent(entry: EncyEntry, d: Depth): string {
     if (d === 's') return `## ${entry.title}\n\n${entry.wikiS}`;
     if (d === 'm') return `## ${entry.title}\n\n${entry.wikiM}`;
@@ -509,7 +538,7 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     configRef = null;
   }
 
-  api = { el, isOpen: () => open, toggle, show, hide, destroy };
+  api = { el, isOpen: () => open, toggle, show, hide, destroy, openEncyEntry };
   return api;
 }
 

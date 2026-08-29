@@ -1,38 +1,14 @@
 ---
-description: Po każdym zakończonym kroku — Playtesty osobno, Następny krok pełna lista kodu (Maciej 2026-08-01/06)
+description: Po zakończeniu kroku odpowiedź zawiera osobno playtesty i pełny następny krok.
 alwaysApply: true
 ---
 
-# Następny krok — obowiązek po każdej paczce (Maciej 2026-08-01 · split 2026-08-06 · pełna lista)
+# Następny krok
 
-**Problem:** Maciej musi dopytywać „nad czym pracujesz?” / „co dalej?” — albo playtest miesza się z kodem i zamydla obraz — albo agent ucina listę do 3 pozycji i chowa resztę kolejki.
+Po każdej paczce zakończ odpowiedź dwoma blokami:
 
-**Zasada:** po **każdym** zamknięciu sensownej jednostki pracy agent **sam** kończy wiadomość **dwoma blokami**.
+- `### Playtesty` — tylko wtedy, gdy istnieje artefakt do testowania;
+- `### Następny krok` — kolejna bramka procesu, w tym Evaluator, Final Control,
+  integracja, ABC lub osobna bramka deploy/push.
 
-## Format (zawsze na końcu odpowiedzi)
-
-```
-### Playtesty
-- **…** — co sprawdzić w grze (wejście / md5 / konkretny ekran)
-- (albo „— (brak)” jeśli nic do ogrania)
-
-### Następny krok
-1. **…** — rekomendacja (najpilniejsza)
-2. **…**
-…
-N. **…** — wszystkie widoczne dalsze prace (kod/dane/docs), bez limitu 3
-Napisz: działaj / 1 / 2 / … / N (albo inną dyspozycję).
-```
-
-Kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md` · pełna lista: `docs/decyzje/R-NASTEPNY-KROK-PELNA-LISTA.md` · zakaz ABC o playtestach: `R-ABC-BEZ-PLAYTEST.md`.
-
-## Reguły
-
-1. **Playtesty** ≠ **Następny krok** — nigdy w jednym numerowanym menu.
-2. **Następny krok** = tylko rzeczy do zrobienia przez agenta (kod/dane/docs/deploy na hasło).
-3. **Pełna lista** — wszystkie widoczne kolejne prace z rejestru / ewaluacji / handoffu; **ZAKAZ** ucinać do 3. (Limit „max 3” dotyczył tylko ABC i jest wycofany — `R-ABC-PELNA-LISTA`.)
-4. Pierwsza pozycja = rekomendacja.
-5. Propozycje **konkretne** — nie „mogę pomóc dalej”.
-6. **Nie czekaj** aż Maciej zapyta „co dalej?”.
-7. Wyjątek: Maciej kończy sesję („stop”, „na dziś”) — krótki status bez menu.
-8. Nie mylić z ABC gameplay — to kolejka operacyjna.
+Nie mieszaj playtestu z implementacją i nie skracaj kolejki do pozoru kompletności.

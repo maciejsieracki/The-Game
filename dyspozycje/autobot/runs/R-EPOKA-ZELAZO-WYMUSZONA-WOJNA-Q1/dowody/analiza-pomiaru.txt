@@ -1,0 +1,456 @@
+
+================ PO-seed-111.json ================
+{
+  "plik": "PO-seed-111.json",
+  "label": "PO",
+  "seed": 111,
+  "tury": 12,
+  "sekundy": 444,
+  "akceleratorTura": 8,
+  "akceleratorOwners": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ironPendingPoAkceleratorze": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ownerRekordow": 412,
+  "rekordowZEpokaZelaza": 24,
+  "warstwyDyplomacji": {
+    "full": 385,
+    "simplified": 27
+  },
+  "ownerzyZCelemZelaza": [
+    1,
+    8,
+    22
+  ],
+  "pendingKiedykolwiek": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "cycleKiedykolwiek": [
+    1,
+    8,
+    22
+  ],
+  "wypowiedzeniWojnyZelaza": [
+    {
+      "tura": 9,
+      "napastnik": 1,
+      "cel": 15,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 9,
+      "napastnik": 8,
+      "cel": 36,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 9,
+      "napastnik": 22,
+      "cel": 29,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    }
+  ],
+  "aktywneParyNaKoniec": [
+    "1_15",
+    "8_36",
+    "22_29"
+  ],
+  "konsolaWymuszonaZelazo": [
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI1 wypowiada wymuszoną wojnę sąsiadowi AI15",
+    "[Dyplomacja] AI1 wypowiada wojne AI15: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI8 wypowiada wymuszoną wojnę sąsiadowi AI36",
+    "[Dyplomacja] AI8 wypowiada wojne AI36: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI22 wypowiada wymuszoną wojnę sąsiadowi AI29",
+    "[Dyplomacja] AI22 wypowiada wojne AI29: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)"
+  ],
+  "konsolaWymuszonaKamienBraz": [],
+  "wojnyNaKoniec": [
+    "1x15",
+    "8x36",
+    "22x29"
+  ],
+  "naruszeniaKryterium5": []
+}
+
+================ PO-seed-222.json ================
+{
+  "plik": "PO-seed-222.json",
+  "label": "PO",
+  "seed": 222,
+  "tury": 12,
+  "sekundy": 461,
+  "akceleratorTura": 8,
+  "akceleratorOwners": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ironPendingPoAkceleratorze": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ownerRekordow": 444,
+  "rekordowZEpokaZelaza": 24,
+  "warstwyDyplomacji": {
+    "full": 414,
+    "simplified": 30
+  },
+  "ownerzyZCelemZelaza": [
+    1,
+    15,
+    22,
+    29
+  ],
+  "pendingKiedykolwiek": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "cycleKiedykolwiek": [
+    1,
+    15,
+    22,
+    29
+  ],
+  "wypowiedzeniWojnyZelaza": [
+    {
+      "tura": 9,
+      "napastnik": 1,
+      "cel": 8,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 9,
+      "napastnik": 15,
+      "cel": 36,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 9,
+      "napastnik": 22,
+      "cel": 8,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 9,
+      "napastnik": 29,
+      "cel": 15,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    }
+  ],
+  "aktywneParyNaKoniec": [
+    "1_8",
+    "15_36",
+    "8_22",
+    "15_29"
+  ],
+  "konsolaWymuszonaZelazo": [
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI1 wypowiada wymuszoną wojnę sąsiadowi AI8",
+    "[Dyplomacja] AI1 wypowiada wojne AI8: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI15 wypowiada wymuszoną wojnę sąsiadowi AI36",
+    "[Dyplomacja] AI15 wypowiada wojne AI36: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI22 wypowiada wymuszoną wojnę sąsiadowi AI8",
+    "[Dyplomacja] AI22 wypowiada wojne AI8: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI29 wypowiada wymuszoną wojnę sąsiadowi AI15",
+    "[Dyplomacja] AI29 wypowiada wojne AI15: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)"
+  ],
+  "konsolaWymuszonaKamienBraz": [],
+  "wojnyNaKoniec": [
+    "1x8",
+    "8x22",
+    "15x29",
+    "15x36"
+  ],
+  "naruszeniaKryterium5": []
+}
+
+================ PO-seed-333.json ================
+{
+  "plik": "PO-seed-333.json",
+  "label": "PO",
+  "seed": 333,
+  "tury": 12,
+  "sekundy": 476,
+  "akceleratorTura": 8,
+  "akceleratorOwners": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ironPendingPoAkceleratorze": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ownerRekordow": 393,
+  "rekordowZEpokaZelaza": 24,
+  "warstwyDyplomacji": {
+    "full": 366,
+    "simplified": 27
+  },
+  "ownerzyZCelemZelaza": [
+    1,
+    15,
+    22,
+    29,
+    36
+  ],
+  "pendingKiedykolwiek": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "cycleKiedykolwiek": [
+    1,
+    15,
+    22,
+    29,
+    36
+  ],
+  "wypowiedzeniWojnyZelaza": [
+    {
+      "tura": 9,
+      "napastnik": 1,
+      "cel": 8,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 9,
+      "napastnik": 15,
+      "cel": 1,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 9,
+      "napastnik": 22,
+      "cel": 8,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 9,
+      "napastnik": 29,
+      "cel": 8,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    },
+    {
+      "tura": 10,
+      "napastnik": 36,
+      "cel": 15,
+      "epokaNapastnika": 3,
+      "epokaCelu": 3
+    }
+  ],
+  "aktywneParyNaKoniec": [
+    "1_8",
+    "1_15",
+    "8_22",
+    "8_29",
+    "15_36"
+  ],
+  "konsolaWymuszonaZelazo": [
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI1 wypowiada wymuszoną wojnę sąsiadowi AI8",
+    "[Dyplomacja] AI1 wypowiada wojne AI8: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI15 wypowiada wymuszoną wojnę sąsiadowi AI1",
+    "[Dyplomacja] AI15 wypowiada wojne AI1: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI22 wypowiada wymuszoną wojnę sąsiadowi AI8",
+    "[Dyplomacja] AI22 wypowiada wojne AI8: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI29 wypowiada wymuszoną wojnę sąsiadowi AI8",
+    "[Dyplomacja] AI29 wypowiada wojne AI8: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 9)",
+    "[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI36 wypowiada wymuszoną wojnę sąsiadowi AI15",
+    "[Dyplomacja] AI36 wypowiada wojne AI15: R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura 10)"
+  ],
+  "konsolaWymuszonaKamienBraz": [],
+  "wojnyNaKoniec": [
+    "1x8",
+    "1x15",
+    "8x22",
+    "8x29",
+    "15x36"
+  ],
+  "naruszeniaKryterium5": []
+}
+
+================ PRZED-seed-111.json ================
+{
+  "plik": "PRZED-seed-111.json",
+  "label": "PRZED",
+  "seed": 111,
+  "tury": 12,
+  "sekundy": 416,
+  "akceleratorTura": 8,
+  "akceleratorOwners": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ironPendingPoAkceleratorze": [],
+  "ownerRekordow": 400,
+  "rekordowZEpokaZelaza": 22,
+  "warstwyDyplomacji": {
+    "full": 373,
+    "simplified": 27
+  },
+  "ownerzyZCelemZelaza": [],
+  "pendingKiedykolwiek": [],
+  "cycleKiedykolwiek": [],
+  "wypowiedzeniWojnyZelaza": [],
+  "aktywneParyNaKoniec": [],
+  "konsolaWymuszonaZelazo": [],
+  "konsolaWymuszonaKamienBraz": [],
+  "wojnyNaKoniec": [],
+  "naruszeniaKryterium5": []
+}
+
+================ PRZED-seed-222.json ================
+{
+  "plik": "PRZED-seed-222.json",
+  "label": "PRZED",
+  "seed": 222,
+  "tury": 12,
+  "sekundy": 460,
+  "akceleratorTura": 8,
+  "akceleratorOwners": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ironPendingPoAkceleratorze": [],
+  "ownerRekordow": 425,
+  "rekordowZEpokaZelaza": 24,
+  "warstwyDyplomacji": {
+    "full": 398,
+    "simplified": 27
+  },
+  "ownerzyZCelemZelaza": [],
+  "pendingKiedykolwiek": [],
+  "cycleKiedykolwiek": [],
+  "wypowiedzeniWojnyZelaza": [],
+  "aktywneParyNaKoniec": [],
+  "konsolaWymuszonaZelazo": [],
+  "konsolaWymuszonaKamienBraz": [],
+  "wojnyNaKoniec": [],
+  "naruszeniaKryterium5": []
+}
+
+================ PRZED-seed-333.json ================
+{
+  "plik": "PRZED-seed-333.json",
+  "label": "PRZED",
+  "seed": 333,
+  "tury": 12,
+  "sekundy": 487,
+  "akceleratorTura": 8,
+  "akceleratorOwners": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ironPendingPoAkceleratorze": [],
+  "ownerRekordow": 393,
+  "rekordowZEpokaZelaza": 28,
+  "warstwyDyplomacji": {
+    "full": 364,
+    "simplified": 29
+  },
+  "ownerzyZCelemZelaza": [],
+  "pendingKiedykolwiek": [],
+  "cycleKiedykolwiek": [],
+  "wypowiedzeniWojnyZelaza": [],
+  "aktywneParyNaKoniec": [],
+  "konsolaWymuszonaZelazo": [],
+  "konsolaWymuszonaKamienBraz": [],
+  "wojnyNaKoniec": [],
+  "naruszeniaKryterium5": []
+}
+
+================ STOCK-seed-111.json ================
+{
+  "plik": "STOCK-seed-111.json",
+  "label": "STOCK",
+  "seed": 111,
+  "tury": 12,
+  "sekundy": 426,
+  "akceleratorTura": 8,
+  "akceleratorOwners": [
+    1,
+    8,
+    15,
+    22,
+    29,
+    36
+  ],
+  "ironPendingPoAkceleratorze": [],
+  "ownerRekordow": 414,
+  "rekordowZEpokaZelaza": 24,
+  "warstwyDyplomacji": {
+    "pre_contact": 387,
+    "simplified": 27
+  },
+  "ownerzyZCelemZelaza": [],
+  "pendingKiedykolwiek": [],
+  "cycleKiedykolwiek": [],
+  "wypowiedzeniWojnyZelaza": [],
+  "aktywneParyNaKoniec": [],
+  "konsolaWymuszonaZelazo": [],
+  "konsolaWymuszonaKamienBraz": [],
+  "wojnyNaKoniec": [],
+  "naruszeniaKryterium5": []
+}
+
+Zapisano /tmp/zelazo-out/summary.json

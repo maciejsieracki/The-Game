@@ -94,10 +94,15 @@ eq(hamongaBonus.cel, 'handel_morski', 'sanity: Hamonga cel=handel_morski');
 // 1. Wlasciciel BEZ cudu -> dochod bez zmian (resolver zero-value domyslny).
 // ---------------------------------------------------------------------------
 console.log('\n-- 1. bez cudu: dochod z tras bez zmian --');
+// PRZEBUDOWA R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 (ECHO Q1+p.3, 2026-08-21, T1): wzor
+// dystansowy teraz rosnie z dystansem (podloga=5 @ d=0, szczyt=40 @ d=maxDist).
+// dystans=6 (nie 0) -- daje niebanalny dochod bazowy, zeby +15%/+30% bonusu cudu
+// bylo widoczne we floor() (przy podlodze=5 floor(5*1.15)=5, brak roznicy).
 const incP = M.DEFAULT_TRADE_ROUTE_INCOME_PARAMS;
-const routeNoWonder = { id: 'r1', fromCityId: 'A', toCityId: 'B', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 0, status: 'polaczony' };
-const baseIncome = M.tradeRouteDistanceIncome(0, incP);
-eq(baseIncome, incP.dochodBazowy, '(setup) dystans=0 -> dochod bazowy pelny');
+const routeNoWonder = { id: 'r1', fromCityId: 'A', toCityId: 'B', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 6, status: 'polaczony' };
+const baseIncome = M.tradeRouteDistanceIncome(6, 'lad', incP);
+eq(baseIncome, Math.floor(incP.dochodPodloga + 6 * (incP.dochodSzczyt - incP.dochodPodloga) / incP.ladMaxDist),
+  '(setup) dystans=6 (lad) -> wzor liniowy podloga+dystans*stawkaWzrostu');
 
 const incomeNoWonder = M.computeTradeRouteIncomeByCity([routeNoWonder], incP);
 eq(incomeNoWonder.get('A'), baseIncome, '1: brak cudu -> miasto A dostaje dokladnie dochod bazowy');
@@ -117,8 +122,7 @@ function resolverFor(ownerWondersByOwner, era) {
 const resolverOwner0Petra = resolverFor(new Map([[0, ['petra']]]), 1);
 const income2 = M.computeTradeRouteIncomeByCity([routeNoWonder], incP, resolverOwner0Petra);
 const expected2A = Math.floor(baseIncome * 1.15);
-eq(baseIncome, 8, '(setup) dochod bazowy domyslny = 8 (dystans 0)');
-eq(expected2A, 9, '(setup) floor(8*1.15) = 9 -- widoczna roznica vs baza 8');
+assert(expected2A > baseIncome, `(setup) floor(baseIncome*1.15)=${expected2A} -- widoczna roznica vs baza ${baseIncome}`);
 eq(income2.get('A'), expected2A, `2: miasto A (owner 0, wlasciciel Petry) -> ${expected2A} (bylo ${baseIncome}, +15%)`);
 eq(income2.get('B'), baseIncome, '2: miasto B (owner 1, obca cyw BEZ cudu) -> bez zmian, cud nie jest jej');
 
@@ -134,7 +138,7 @@ assert(Math.abs(sumTwoWonders - (1.15 * 1.15 - 1)) > 1e-6, '3: (kontrola) suma N
 const resolverOwner0TwoWonders = resolverFor(new Map([[0, ['petra', 'palac_weiyang']]]), 1);
 const income3 = M.computeTradeRouteIncomeByCity([routeNoWonder], incP, resolverOwner0TwoWonders);
 const expected3A = Math.floor(baseIncome * 1.30);
-eq(expected3A, 10, '(setup) floor(8*1.30) = 10');
+assert(expected3A > expected2A, `(setup) floor(baseIncome*1.30)=${expected3A} > floor(baseIncome*1.15)=${expected2A}`);
 eq(income3.get('A'), expected3A, `3: dwa cuda -> mnoznik 1.30 (addytywnie) -> ${expected3A}`);
 
 // Kontrola gatowania medium: Hamonga (cel=handel_morski) NIE dziala na trase LADOWA.
@@ -207,7 +211,7 @@ eq(bonusPlayer0, bonusAiOwner5, '5: sumWonderTradeRouteBonusForOwner ownerId-agn
 
 // Test integracyjny: trasa gracz(0)<->AI(1), ale tym razem AI (toOwnerId=1) jest wlascicielem
 // Petry, gracz (ownerId=0) nie ma zadnego cudu -- AI powinno dostac +15%, gracz bez zmian.
-const routeAiOwnsWonder = { id: 'r2', fromCityId: 'P', toCityId: 'AI', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 0, status: 'polaczony' };
+const routeAiOwnsWonder = { id: 'r2', fromCityId: 'P', toCityId: 'AI', ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 6, status: 'polaczony' };
 const resolverAiHasPetra = resolverFor(new Map([[1, ['petra']]]), 1); // TYLKO owner 1 (AI) ma cud
 const income5 = M.computeTradeRouteIncomeByCity([routeAiOwnsWonder], incP, resolverAiHasPetra);
 eq(income5.get('P'), baseIncome, '5: gracz (bez cudu) -> dochod bazowy bez zmian');

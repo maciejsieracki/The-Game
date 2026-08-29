@@ -4,13 +4,21 @@
  */
 
 /**
- * Kanoniczne statusy reguł (spec v1 + v2 Protokół AutoBot, Maciej 2026-08-07).
+ * Kanoniczne statusy reguł (spec v1 + v2 Protokół AutoBot, Maciej 2026-08-07;
+ * REVIEW dodane 2026-08-20 — decyzja właściciela: reguła o niskiej skuteczności
+ * nie ma być cicho wycofywana, ma wracać "na tapetę" właściciela).
  * PROTECTED (alias PL: CHRONIONA) — bariery bezpieczeństwa i reguły zatwierdzone
  * wprost przez człowieka; nie podlegają licznikom win/fail ani automatycznemu
  * RETIRED (retireWeakRules pomija wszystko poza ACTIVE — działa "za darmo").
  * Status PROTECTED nadaje WYŁĄCZNIE człowiek, nigdy agent samodzielnie.
+ * REVIEW — reguła przekroczyła próg istotności (minRunsForSignificance) z win_rate
+ * poniżej deprecateBelowWinRate. NIE jest cicho wycofywana ani przenoszona do
+ * quarantine_rules: zostaje w `rules[]`, ale getOperatorSystemRules ją pomija
+ * (filtr status !== 'ACTIVE'), więc Operator przestaje ją dostawać. Flaga trafia
+ * jawnie do `dyspozycje/PYTANIA-OTWARTE.md` — decyzję (zostaw / popraw warunek
+ * stosowania / świadomie wycofaj) podejmuje wyłącznie właściciel.
  */
-export type RuleStatusCanonical = 'ACTIVE' | 'RETIRED' | 'QUARANTINE' | 'PROTECTED';
+export type RuleStatusCanonical = 'ACTIVE' | 'RETIRED' | 'QUARANTINE' | 'PROTECTED' | 'REVIEW';
 
 /** Aliasy historyczne — normalizowane przy loadPlaybook */
 export type RuleStatusLegacy = 'active' | 'deprecated' | 'candidate';
@@ -56,6 +64,12 @@ export interface PlaybookRule {
   retiredReason?: string;
   /** Alias historyczny */
   deprecatedReason?: string;
+  /**
+   * Powód wejścia w status REVIEW (win_rate < próg po N próbach) — patrz
+   * RuleStatusCanonical. Ustawiane przez retireWeakRules, czytane przy budowie
+   * wpisu do PYTANIA-OTWARTE.md (formatReviewFlagForOpenQuestions).
+   */
+  reviewReason?: string;
   /**
    * Bariera bezpieczeństwa zatwierdzona wprost przez człowieka (status CHRONIONA
    * w playbook.md, AUTOBOT.md §5). Reguła chroniona nie podlega licznikom ani
@@ -214,7 +228,14 @@ export interface EvaluationResult {
 
 export interface PlaybookUpdate {
   ruleId: string;
-  kind: 'win' | 'loss' | 'retire' | 'deprecate' | 'quarantine' | 'threshold_adjust' | 'reactivate';
+  /**
+   * 'review' — win_rate poniżej progu po minRunsForSignificance próbach: reguła
+   * NIE jest wycofywana, zostaje w rules[] ze statusem REVIEW i trafia jawnie
+   * do PYTANIA-OTWARTE.md (decyzja właściciela). Zastąpiło dawne ciche 'retire'
+   * dla tej ścieżki (2026-08-20); 'retire'/'quarantine' zostają jako oznaczenia
+   * dla świadomego, ręcznego wycofania.
+   */
+  kind: 'win' | 'loss' | 'retire' | 'deprecate' | 'quarantine' | 'threshold_adjust' | 'reactivate' | 'review';
   detail: string;
 }
 

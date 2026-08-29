@@ -12,6 +12,7 @@ import { techIconSvg } from './techIcons';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 import { RESEARCH_QUEUE_MAX } from '../game/playerState';
 import type { EraGateInfo } from '../game/era-gate-ui';
+import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 
 export interface ScienceHubProgress {
   targetName: string | null;
@@ -126,6 +127,8 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-prog{margin-bottom:0.35em;}
 .civ-science-hub-hud .sh-prog-target{font-family:Georgia,'Times New Roman',serif;font-size:1em;font-weight:600;
   color:var(--gold);line-height:1.25;display:flex;align-items:center;gap:0.4em;}
+.civ-science-hub-hud .sh-prog-target.sh-clickable{cursor:pointer;border-radius:4px;padding:2px 3px;margin:-2px -3px;}
+.civ-science-hub-hud .sh-prog-target.sh-clickable:hover{background:rgba(232,216,138,.08);}
 .civ-science-hub-hud .sh-prog-target .sh-owl{display:inline-flex;align-items:center;}
 .civ-science-hub-hud .sh-prog-meta{font-size:0.72em;color:var(--muted);margin-top:0.2em;line-height:1.4;font-variant-numeric:tabular-nums;}
 .civ-science-hub-hud .sh-prog-meta b{color:var(--sci-light);font-weight:600;}
@@ -148,9 +151,16 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-item.locked:hover{background:rgba(232,216,138,.05);border-color:rgba(232,216,138,.22);}
 .civ-science-hub-hud .sh-item:focus-visible,.civ-science-hub-hud .sh-plan-item:focus-visible{
   outline:2px solid #f4e6a8;outline-offset:2px;}
-.civ-science-hub-hud .sh-ico{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.5em;height:1.5em;
+.civ-science-hub-hud .sh-ico{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:1.5em;height:1.5em;
   border-radius:50%;border:1px solid rgba(232,216,138,.35);background:radial-gradient(circle at 38% 30%,#1c2432,#0a0d14);}
 .civ-science-hub-hud .sh-ico svg{width:72%;height:72%;display:block;}
+.civ-science-hub-hud .sh-item-side{display:flex;flex-direction:column;align-items:flex-end;gap:0.3em;
+  flex-shrink:0;margin-top:0.1em;}
+.civ-science-hub-hud .sh-card-btn{font-size:0.62em;font-weight:700;letter-spacing:.06em;
+  color:var(--gold-bright);background:rgba(232,216,138,.12);border:1px solid rgba(232,216,138,.5);
+  border-radius:4px;padding:2px 7px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+.civ-science-hub-hud .sh-card-btn:hover,.civ-science-hub-hud .sh-card-btn:focus-visible{
+  background:rgba(232,216,138,.28);outline:none;}
 .civ-science-hub-hud .sh-close-ic{display:inline-flex;align-items:center;justify-content:center;width:1.1em;height:1.1em;}
 .civ-science-hub-hud .sh-close-ic svg{width:100%;height:100%;display:block;}
 .civ-science-hub-hud .sh-tree-btn .sh-tree-ic{display:inline-flex;align-items:center;margin-right:0.35em;vertical-align:middle;}
@@ -172,7 +182,7 @@ function ensureStyles(): void {
   font-size:0.72em;font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-family:inherit;
   transition:filter .15s,box-shadow .15s;display:inline-flex;align-items:center;justify-content:center;gap:0.35em;}
 .civ-science-hub-hud .sh-tree-btn:hover{filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 10px rgba(232,216,138,.25);}
-.civ-science-hub-hud .sh-hint{font-size:9.5px;color:#6f6a5e;line-height:1.5;margin-top:0.55em;padding-top:0.5em;
+.civ-science-hub-hud .sh-hint{font-size:9.5px;color:#b7c9df;line-height:1.5;margin-top:0.55em;padding-top:0.5em;
   border-top:1px solid rgba(232,216,138,.12);font-style:normal;}
 .civ-science-hub-hud .sh-plan-empty-wrap{display:flex;align-items:flex-start;gap:0.45em;padding:0.55em 0.65em;
   border-radius:7px;border:1px dashed rgba(232,216,138,.28);background:rgba(232,216,138,.03);}
@@ -277,6 +287,11 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       + '<div class="sh-prog-meta">Pula ' + Math.round(prog.pula) + ' / ' + Math.round(prog.kosztCelu) + ' PN'
       + ' · <b>' + pct + '%</b> · ETA ' + esc(eta) + rate + '</div>'
       + '<div class="sh-bar"><div class="sh-bar-fill" style="width:' + pct + '%"></div></div>';
+    box.querySelector('.sh-prog-target')?.addEventListener('click', () => showTechDiscoveryNotice({
+      techName: prog.targetName!, eraIndex: 1, kind: 'preview', onOpenTree: config.onOpenTreeView,
+    }));
+    (box.querySelector('.sh-prog-target') as HTMLElement | null)?.setAttribute('title', 'Kliknij, aby otworzyć kartę technologii');
+    (box.querySelector('.sh-prog-target') as HTMLElement | null)?.classList.add('sh-clickable');
     return box;
   }
 
@@ -441,6 +456,13 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
         });
       }
 
+      row.addEventListener('click', (ev) => {
+        if ((ev.target as Element | null)?.closest('.sh-plan-del')) return;
+        showTechDiscoveryNotice({
+          techName: entry.name, eraIndex: 1, kind: 'preview', onOpenTree: config.onOpenTreeView,
+        });
+      });
+
       box.appendChild(row);
     });
 
@@ -548,9 +570,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
 
     const hint = document.createElement('div');
     hint.className = 'sh-hint';
-    hint.textContent = config.getPlan
-      ? 'Klik technologii = dodaj do planu (do ' + PLAN_MAX + '). Przeciągnij pozycję w planie, by zmienić kolejność. Esc zamyka hub.'
-      : 'Klik technologii = ustaw cel. Esc zamyka hub.';
+    hint.textContent = 'Klik odblokowanej technologii = dodaj do planu badań. Przycisk „Karta" = podgląd karty technologii. Esc zamyka kartę/hub.';
 
     listPanel.appendChild(hint);
     scroll.appendChild(listPanel);
@@ -593,34 +613,66 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       row.appendChild(ico);
       row.appendChild(body);
 
+      const side = document.createElement('div');
+      side.className = 'sh-item-side';
+
       const planPos = planPosById.get(e.id);
       if (planPos !== undefined) {
         const badge = document.createElement('span');
         badge.className = 'sh-num-badge';
         badge.title = 'Pozycja ' + planPos + ' w planie badań';
         badge.textContent = String(planPos);
-        row.appendChild(badge);
+        side.appendChild(badge);
       } else if (!lockedRow && canEnqueue) {
         const planAct = document.createElement('span');
         planAct.className = 'sh-plan-act';
         planAct.textContent = '+ PLAN';
         planAct.setAttribute('aria-hidden', 'true');
-        row.appendChild(planAct);
+        side.appendChild(planAct);
       }
 
+      // act() otwiera kartę podglądu — dawna funkcja klikniętego wiersza (przed T-KLIK-
+      // WIERSZA), teraz wołana WYŁĄCZNIE przez przycisk „Karta" (poniżej) oraz — dla
+      // wierszy zablokowanych — przez klik samego wiersza (nie da się dodać zablokowanej
+      // technologii do planu, więc podgląd wymagań zostaje domyślną akcją kliknięcia).
       const act = () => {
-        if (lockedRow) {
-          // C-DESIGN-BADANIA-Q2: siatka v1.1 zamiast legacy sciencePicker gdy dostępna.
-          if (config.onOpenTreeView) config.onOpenTreeView();
-          else config.onShowInTree(e.id);
-        } else {
-          config.onSelectTech(e.id);
-        }
+        showTechDiscoveryNotice({
+          techName: e.name,
+          eraIndex: 1,
+          kind: 'preview',
+          onStartResearch: lockedRow ? undefined : () => config.onSelectTech(e.id),
+          onOpenTree: config.onOpenTreeView ?? (() => config.onShowInTree(e.id)),
+        });
       };
-      row.addEventListener('click', act);
+
+      // Klik CAŁEGO WIERSZA odblokowanej technologii = dodaj bezpośrednio do planu badań
+      // (przywrócone zachowanie sprzed „trybu podglądu"; zgłoszenie właściciela 2026-08-21).
+      // Wiersz zablokowany zachowuje dawne zachowanie: klik = podgląd karty/wymagań.
+      const rowActivate = () => {
+        if (!lockedRow && canEnqueue) { config.onSelectTech(e.id); return; }
+        act();
+      };
+      row.addEventListener('click', rowActivate);
       row.addEventListener('keydown', (ev: KeyboardEvent) => {
-        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); act(); }
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); rowActivate(); }
       });
+
+      // Przycisk „Karta" — wyraźny baner z tekstem (nie kryptyczna ikonka), niezależny od
+      // kliknięcia wiersza (stopPropagation), wołający dawną funkcję podglądu karty (act()).
+      const cardBtn = document.createElement('button');
+      cardBtn.type = 'button';
+      cardBtn.className = 'sh-card-btn';
+      cardBtn.textContent = 'Karta';
+      cardBtn.title = 'Otwórz kartę technologii';
+      cardBtn.setAttribute('aria-label', 'Otwórz kartę: ' + e.name);
+      cardBtn.addEventListener('click', (ev: MouseEvent) => { ev.stopPropagation(); act(); });
+      cardBtn.addEventListener('keydown', (ev: KeyboardEvent) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); act(); }
+      });
+      side.appendChild(cardBtn);
+
+      row.appendChild(side);
+
       return row;
     }
   }

@@ -1,10 +1,256 @@
-# PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-09 (FALA 263 — maraton AutoBot: isWorkable 4 rundy + akcja-6 handel tech 3 rundy + regresja tooltip naprawiona; szczegóły `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+# PYTANIA OTWARTE — aktywne ABC + odsyłacze decyzji
+Aktualizacja: 2026-08-20 (migracja indeksu; zapis ECHO `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 = 1A + 2A + 3A`; pełne A/B/C zachowane poniżej). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
-## ⛔ Obieg (Maciej 2026-08-03)
-Nowy case → **ID w REJESTR-PROSB** + wpis tu (jeśli ABC) → agent **proponuje, nie koduje** → Maciej: **`ID + A|B|C`** → commit → **`deploy`** osobno.
-Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
+## PACZKA PROCESOWA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
+
+Zakres tej paczki został jednoznacznie określony przez właściciela; nowe ABC nie było
+wymagane. Nie dodawaj tu raportów Operatora/Evaluatora ani statusów pakietów — ich
+miejsce jest w `dyspozycje/autobot/runs/<ID>/` i w rejestrze. Jeśli później pojawi się
+decyzja produktowa, otwórz osobne pełne ABC i zachowaj jej ECHO.
+
+## INDEKS OPERACYJNY — MIGRACJA 2026-08-20 (Pakiet 3)
+
+To jest aktualny punkt nawigacji. Pełne opisy, odpowiedzi, werdykty i pomyłki
+pozostają poniżej jako historia; nie usuwamy ich i nie przepisujemy ich treści.
+Bieżący status procesu używa zamkniętej listy z rejestru:
+`NOWE`, `ABC-OCZEKUJE`, `OPERATOR`, `EVALUATOR`, `FINALNA-KONTROLA`,
+`DO-INTEGRACJI`, `ZINTEGROWANE`, `DEPLOY-ROBOCZA`, `ZAMKNIĘTE`, `BLOCK`,
+`ODŁOŻONE`, `ODRZUCONE`, `DUPLIKAT`.
+
+### Aktywne ABC / wejścia do dalszej pracy
+
+| ID | STATUS KANONICZNY | Następny dowód / miejsce |
+|---|---|---|
+| `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1` | `ZDEPLOYOWANE` | KOREKTA 2026-08-21: status byl nieaktualny. Zaimplementowane zgodnie z najnowszym ECHO (1B/2A/3B/8B/9A/10B, nie historycznym 1A/2A/3A) — `RodzajTraktatu.WspolnaWalkaBarbarzyncy`, `diplomacy-border-march.ts` i in. `diplomacy-barbarian-cooperation-test.cjs` 10/10 PASS, zweryfikowane ponownie. |
+| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `ZDEPLOYOWANE` | KOREKTA 2026-08-21: status byl nieaktualny. Zaimplementowane w `forced-war-stone.ts` (stale 20/2/20/20 tur 1:1 z ECHO), zdeployowane FALA 298 (`4322f5aa`). `forced-war-stone-test.cjs`+`-main-guard-test.cjs` zweryfikowane ponownie, zielone. |
+| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `RECON ZAMKNIĘTY` | ECHO `A` zapisane (2026-08-21); recon zamknięty, naprawa 2 znalezionych bugów wydzielona do `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1` (READY_FOR_DEPLOY). Recon runda 2 (2026-08-21, po T3): 3/4 pytania §4 potwierdzone zamknięte; Evaluator znalazł nowy realny bug (12 vs 20 jednostek w `techTreeView.ts`/`sciencePicker.ts`) — wydzielony jako `R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1`. |
+| `R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1` | `ZINTEGROWANE` | Operator→Evaluator→Final Control PASS, zweryfikowane na żywym DOM (nie tylko czytaniem kodu) — 20 jednostek zamiast 12 dla Brązownictwa, `sciencePicker.ts`'s "Odblokowuje budynki:" już nie miesza jednostek z budynkami. Zintegrowane do `main`. Bez osobnej FALI — czeka na połączenie z krytyczną naprawą `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1` w jednym deployu. |
+| `P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1` | `ZINTEGROWANE` | Zdiagnozowane jako przyczyna (a): stary, nietrafiony próg `>=5` w samym teście od początku — era Kamień ma stabilnie 4 technologie Poziom=1 bez prereq, nie 5. Naprawiony próg (`>=4`) + komentarz wyjaśniający. Zero zmian w `gra/src/`/`gra/data/`. Operator→Evaluator→Final Control PASS niezależnie. Zintegrowane do `main`. |
+| `R-EPOKA-KAMIEN-PALEOLIT-NEOLIT` | `ODŁOŻONE` | Nowa funkcja pozostaje odłożona; wznowić dopiero po decyzji właściciela. |
+| `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` | `NIEAKTUALNE — mechanika, ktorej dotyczylo, zostala calkowicie cofnieta` | KOREKTA 2026-08-21: pytanie dotyczylo `rangedCityAttackEntry` (jednostka dystansowa "teleportuje sie" na pelny zasieg przy wejsciu na heks miasta) z sagi `P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE`. Ta cala mechanika zostala JUZ cofnieta osobnym ECHO (`P-BITWA-ATAK-DYSTANSOWY-COFNIECIE-Q1=A`, commit `2acf7c08`, patrz sekcja nizej w tym pliku) - zweryfikowane dzis w kodzie: `rangedCityAttackEntry` zero wystapien w `gra/src/`, `isWithinCityAttackRange` (`game/ai.ts:772`) dzis to `hexDistance(...)===1`, czyli wymaga adiacencji jak przed cala saga. Pytanie o teleport nie ma juz przedmiotu - nie ma czego pytac wlasciciela, temat zamykam bez ABC. |
+| `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `DUPLIKAT/ZASTĄPIONY` | KOREKTA 2026-08-21: status byl z 2026-08-17, nieaktualny. Ten sam kontrakt zaimplementowany i redeployowany dwukrotnie pod innymi ID (FALA 293, FALA 302), obecnie dalej dopracowywany w `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`. Nie prowadzic osobnego dispatchu pod tym ID. |
+| `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Wznowić wyłącznie w osobnej sesji o systemie ustrojów. |
+| `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` | `ZDEPLOYOWANE, FALA 310` | ECHO Wątek C = `A` (wymuś cap 50% też w mieście), Wątek E potwierdzony, Wątek F (przeprojektowanie panelu). Runda 3 (naprawa merge po FAIL proceduralnym r2): branch zmergowany z aktualnym `main` (zero konfliktów w `gra/`, diff ograniczony do 10 plików allowlisty — `cities.ts`, `main.ts`, `buildModeHud.ts`, `cityPanel.ts`, `empireDetailPanel.ts` + 5 `praca-*-test.cjs`). Evaluator PASS + Final Control PASS-WITH-NOTES (jedyna uwaga: brak realnego Playwright-renderu układu kolumn Wątku F z powodu udokumentowanego ograniczenia bundlowania `empireDetailPanel.ts`, weryfikacja przez przegląd kodu + test kontraktowy zamiast — ryzyko niskie, czysty flexbox). 362 zielone testy (149 tematu + 213 `logic-test` regresja), `tsc` 0. Scalone do `main` i zdeployowane FALA 310. Nic do dispatchu. |
+| `T7a-RECON-LISTA-ULEPSZEN-PANEL-MIASTA` | `ZINTEGROWANE (jako T7b)` | Część `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`. ECHO właściciela (opcja 2, nowa sekcja w karcie hexa) zrealizowane w T7b — patrz wpis T7b w tym indeksie. |
+| `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ZINTEGROWANE (N5/N9/N11/N12)` | Naprawione zgodnie z ECHO właściciela: N5 (box „DOCHÓD SZLAKÓW" pokazuje teraz odrębną liczbę bazy zamiast duplikatu hero — **znana, udokumentowana usterka kosmetyczna: rekonstrukcja bazy przez `Math.round` daje błąd ±1 złota w ~10-20% realnych kombinacji baza/bonus, bo forward-obliczenie w `main.ts` używa `Math.floor` i traci informację; nie dotyka skarbca/bilansu, potwierdzone niezależnie przez Evaluatora i Final Control własnymi skryptami**), N9 (zerowy koszt żywności armii nie pokazuje już czerwonej plakietki „-0/turę"), N11 (poprawiony nieścisły komentarz), N12 (ikona eyebrow dodana do Handlu/Armii/Kultury). N1 zamknięte bez akcji. Operator→Evaluator→Final Control PASS/PASS-WITH-NOTES niezależnie. Zintegrowane do `main`. **Recon 2026-08-21 (dodatkowy, na żądanie właściciela) w pełni wyjaśnił mechanikę i dokładną przyczynę N5** — patrz osobny wpis `P-HANDEL-SZLAKI-MECHANIKA-RECON-Q1` niżej w tym indeksie (formuła forward/reverse, przykłady liczbowe, plus nowe znalezisko: zduplikowany wzór w `main.ts`). |
+| `P-HANDEL-SZLAKI-MECHANIKA-RECON-Q1` | `RECON ZAMKNIĘTY — mechanika w pełni udokumentowana; 1 nowe znalezisko zarejestrowane osobno` | **Pełny recon mechaniki szlaków handlowych (2026-08-21, na żądanie właściciela, wyjaśnienie kontekstu przed ew. dalszą naprawą N5).** Rdzeń: `gra/src/game/trade-routes.ts`, wpięcie: `turn-economy.ts`/`economy.ts`, bonusy cudów: `wonders-data.ts`+`wonders.json`, UI: `empireDetailPanel.ts`, dane: `main.ts`. **Aktywacja szlaku** (`refreshTradeRoutes()`, `trade-routes.ts:656-745`) wymaga WSZYSTKICH: (a) gracz↔obca cywilizacja (nigdy własne miasto↔miasto), (b) brak wojny, (c) aktywna Umowa Handlowa/traktat (sam pokój nie wystarczy, decyzja C-HANDEL-UMOWA=B z 2026-07-23), (d) fizyczna łączność — ląd ≤12 heksów (teren przechodni, BFS bez uwzględniania dróg) albo morze ≤20 heksów (wymaga Portu w OBU miastach), (e) wolny slot = liczba budynków handlowych w mieście (Targowisko/Port), miasto bez żadnego ma limit 0. **Dochód** to dwa niezależne składniki: (1) złoto zależne od dystansu wprost do skarbca poza mnożnikiem Wealth, wzór `max(1, floor(8 − 0.4×dystans))` (`tradeRouteDistanceIncome`, `trade-routes.ts:773-780`, stałe `DEFAULT_TRADE_ROUTE_INCOME_PARAMS` linia 767-771, nadpisywalne w `econ-params.json`); (2) +5% Handlu za każdą aktywną trasę, kumulatywnie, celowo nie łączone z Targowiskiem (`economy.ts:949-957`). Osobno: +1 Pieniądza/turę za trasę morską ponad pierwszą (`PORT_SEA_TRADE_BONUS_PIENIADZ`), plus możliwy "przeciek" dostępu do surowców partnera (Brąz/Żelazo/Koń/Cegła/Złoto). Przykłady (bez cudów): dystans 0→8 złota, 6→5 złota, 12 (max ląd)→3 złota, 20 (max morze)→1 złoto (podłoga). Z Petrą (+15% ląd) przy dystansie 0: 9 złota — bonus liczony osobno per strona wg WŁASNYCH cudów każdej strony. **Dokładna przyczyna N5**: `main.ts:buildEmpireTradeSnap()` (linia 13868-13901) liczy forward `income = floor(base × (1+bonus))` (linia 13882-13884), ale nie przekazuje `base` dalej w snapshocie; `empireDetailPanel.ts:2985` odtwarza je wstecz jako `round(income / (1+bonus))` — te dwie operacje matematycznie się nie odwracają dokładnie przy niecałkowitych wynikach pośrednich (np. base=6, bonus=15% → income=floor(6.9)=6, ale reverse daje round(6/1.15)=round(5.217)=5, różnica −1). Błąd dotyczy WYŁĄCZNIE etykiety w boxie „BAZA" — `income`/`totalIncome`/realny wpływ do skarbca (`computeTradeRouteIncomeByCity`, `trade-routes.ts:826-843`, użyte jako `pieniadzZTras` w `turn-economy.ts:2071`) jest inny, niezależny kod i jest poprawny. **Nowe znalezisko wydzielone jako osobny temat**: `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` (patrz niżej). |
+| `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` | `ROZWIĄZANE (2026-08-22, przy okazji T2 z R-HANDEL-SZLAKI-PRZEBUDOWA-Q1)` | Znalezisko z reconu `P-HANDEL-SZLAKI-MECHANIKA-RECON-Q1`: ten sam wzór forward (`base`, `bonus`, `Math.floor(base*(1+bonus))`) był zduplikowany w DWÓCH miejscach `main.ts` — panel Handlu (`buildEmpireTradeSnap()`) i chip HUD „Handel" — zamiast jednej współdzielonej funkcji. **Rozwiązane przy T2**: wprowadzono `tradeRouteTotalDistanceIncome()` w `trade-routes.ts`, używaną teraz przez WSZYSTKIE 3 miejsca liczące finalny dochód trasy (`computeTradeRouteIncomeByCity` + oba miejsca w `main.ts`) — jedno źródło prawdy, brak ryzyka rozjazdu panelu/HUD/skarbca. Zmergowane do `main` commit `a3276dda`. |
+| `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` | `W TRAKCIE — T1+T2+T2b ZDEPLOYOWANE (ROBOCZA FALA 316, main 9aa8959d), T3/T4/T6 w kolejce` | **Zlecenie właściciela (2026-08-21):** przebudowa mechaniki szlaków handlowych — odwrócić zależność od dystansu (dalej=więcej), ×2 morze, ×5 stawki, przypisać 5% do trasy, dwuetapowa aktywacja (umowa+łączność=dochód od razu; budynki=+5%), UI per-droga. Pełny recon rozbił to na 7 punktów. **ECHO (2026-08-21, pełna treść w `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md`):** Q1=osobny zakres per medium (ląd max=12, morze max=20, oba osiągają identyczny szczyt); Q2=bonus morski ×2 SUMUJE się z istniejącym `PORT_SEA_TRADE_BONUS_PIENIADZ` (nie zastępuje); Q3=Wariant C — każda trasa dostaje stały 5% WŁASNEGO dochodu dystansowego, sumowane globalnie, **zastępuje** stary globalny mnożnik `economy.ts:954-957` (realny transfer budżetu Podatek→Handel, nie kosmetyka); Q4=limit „jedna umowa" BEZ ZMIAN (już istniejące 1-per-para, temat wypada z zakresu); Q5=Port ZOSTAJE wymogiem istnienia trasy morskiej. **Finalne doprecyzowanie (właściciel poprawił dwukrotnie):** opcja zawarcia `UmowaSzlakow` w panelu dyplomacji dostępna WYŁĄCZNIE gdy (a) dostępność lądowa między cywilizacjami ISTNIEJE (umowa zawsze możliwa, port niepotrzebny), LUB (b) dostępności lądowej BRAK ale OBIE strony mają port — inaczej opcja zawarcia umowy jest NIEDOSTĘPNA w panelu/opcjach handlowych (nowy gate na poziomie PROPOZYCJI traktatu, nie tylko późniejszego powstania trasy jak dziś). Gdy dostępność lądowa istnieje, trasa MA BYĆ lądowa — morze nigdy nie jest alternatywą nawet przy wyższym dochodzie (koryguje wcześniejsze błędne założenie „wybór po końcowym dochodzie"). Stawki ×5 dotyczą wyłącznie stałych formuły dystansowej. Nazwa mechanizmu zostaje „Handel"/„Handel ze szlaków" (pomylone z osobnym, już przemianowanym strumieniem Handel→Podatek). Podział na T1/T2/T2b(nowy, gate propozycji traktatu)/T3/T4/T6 (bez T5 — limit wypadł) w pełni w decyzji. **T1 (odwrócenie wzoru dystansowego + stawki ×5, `dochodPodloga=5`/`dochodSzczyt=40`, osobna stawka per medium) ZINTEGROWANE Operator→Evaluator→Final Control, wszystkie PASS, zmergowane do `main` commit `65315319` (2026-08-22).** **T2 (bonus morski ×2 przez nową `tradeRouteTotalDistanceIncome()`, sumuje się z `PORT_SEA_TRADE_BONUS_PIENIADZ`; priorytet lądu bezwarunkowy w `detectBestConnection`; skonsolidowano duplikat formuły w `main.ts` — rozwiązuje też `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`) ZINTEGROWANE, wszystkie PASS (Final Control: PASS-WITH-NOTES, uwaga niewiążąca — patrz `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md` §Postęp), zmergowane do `main` commit `a3276dda` (2026-08-22).** **T2b (gate propozycji `UmowaSzlakow` w panelu dyplomacji — reużyto istniejącej `citiesHaveTradeConnection`, nowe pole `hasTradeConnection` na `DiplomacyActionLockContext`, priorytet gate'ów `atWar>hasHandel>hasTradeConnection>relacjaGate`, UI bez zmian) ZINTEGROWANE, wszystkie PASS, zmergowane do `main` commit `f303760a` (2026-08-22).** **Zbiorczy deploy ROBOCZA wykonany (2026-08-22): FALA 316, md5 `5bcde74d`, VERIFY OK, commit `9aa8959d`, wypchnięte do `origin/main`.** T3/T4/T6 w kolejce, nie dispatchowane jeszcze. |
+| `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1` | `ZINTEGROWANE (main a1951c1c)` | **Zgłoszenie właściciela (2026-08-22, ze zrzutu ekranu panelu miasta):** suwak „Automatyzacja ulepszeń terenu → Ręczny" (`UlepszeniaEmpirePolicy.pracaAutoPercent`/`city.ulepszeniaPracaPercent`, ile z JUŻ przydzielonej puli Pracy na ulepszenia AI rozdysponowuje automatycznie vs. ręcznie) jest błędnie ograniczony do zakresu 0–50%, a powinien iść 0–100% — to INNE, niezależne pole od „Podział Praca: budynki/ulepszenia" (`EmpirePracaSplit.procentUlepszenia`, ma zostać 0–50%, działa poprawnie). **Recon (subagent, 2026-08-22) potwierdził dokładną przyczynę**: decyzja `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` (ECHO Wątek C=A, 2026-08-21) świadomie wymusiła cap `MAX_PRACA_WSPOLNY_WOREK_PROCENT=50` na polu (a), ale OMYŁKOWO ta sama stała/funkcja `clampUlepszeniaPracaPercent()` (`gra/src/game/cities.ts:208-211`) jest dziś współdzielona też przez niezależne pole (b) — dokładnie tak jak twierdzi właściciel. Naprawa: rozdzielić clamp (b) z powrotem na zakres 0–100% (własna stała, np. `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT=100`), NIE dotykając clampu (a)/`clampPracaWspolnyWorekPercent()`/`MAX_PRACA_WSPOLNY_WOREK_PROCENT=50`. Dwa wywołania w `main.ts` (linie ok. 19080, 19156) + `cities.ts` (setter, migracja save/load, `resolveEffectiveUlepszenia`). Testy do aktualizacji: `gra/tools/praca-miasto-limit-50-cap-test.cjs` (cały plik testuje dziś cap 50% dla pola b — do przepisania), `gra/tools/praca-limit-50-test.cjs` (scenariusze 3–9), `gra/tools/ulepszenia-praca-percent-test.cjs` (sprawdzić założenia). Pole (a) i jego testy (`praca-split-ui-test.cjs`, testy budynków w `praca-miasto-limit-50-test.cjs`) NIE powinny się zmieniać. Jednoznaczne, nie wymaga ABC. **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Sonnet 5 — temat logika/dane (clamp), nie wizualny.** **ZAKOŃCZONE (2026-08-22, 2 rundy): Runda 1 Operator/Evaluator PASS, Final Control FAIL — znalazł pominięty trzeci plik testowy (`praca-miasto-limit-50-test.cjs`, poza pierwotną listą) wciąż z starym kontraktem 100%→50%. Runda 2: Operator naprawił dokładnie ten plik, Evaluator+Final Control PASS. Zweryfikowane niezależnie przez orkiestratora (tsc/build/6 testów tematu/5 bramek zielone), zmergowane do `main` (merge non-ff, commit `a1951c1c` — `main` przesunął się o 2 commity między dispatchem a mergem, zero konfliktu), wypchnięte.** |
+| `P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1` | `ZINTEGROWANE (main 4b458f82)` | **Zgłoszenie właściciela (2026-08-22, UX, WYŁĄCZNIE layout, bez zmiany parametrów/zakresu 0–50%):** panel „PODZIAŁ PRACY" (budynki/ulepszenia, `renderEmpirePracaBudgetSplitSection()`, `gra/src/ui/empireDetailPanel.ts:1120-1154`) pokazuje dziś DWA osobne boksy obok siebie (`.civ-emp-two`, grid `1fr 1fr`) — lewy „BUDYNKI" to sam tekst/odczyt bez inputa, prawy „ULEPSZENIA" zawiera jedyny faktyczny `<input type="range" min="0" max="50">`. Właściciel chce JEDEN suwak pełnej szerokości z etykietą „Ulepszenia" po jednej stronie i „Budynki" po drugiej, wynik przeliczany na żywo, plus klikalne oznaczenia MIN/MAX na krańcach suwaka które PO KLIKNIĘCIU od razu ustawiają wartość skrajną (bez przeciągania). **Recon (subagent, 2026-08-22) potwierdził**: gotowy dwukolorowy gradient CSS do dokładnie takiego jednosuwakowego layoutu już istnieje w kodzie jako martwa funkcja `laborSliderFillStyle()` (linie 1019-1026, złoto→błękit, komentarz wprost opisuje ten przypadek) — historia komentarzy (linie 1060-1073, temat „R-PRACA-JEDEN-SUWAK-UI-Q1" vs „Wątek F") pokazuje, że wcześniej istniał JEDEN suwak, świadomie zastąpiony obecnym układem dwóch boxów w innym temacie; żądana zmiana to częściowy, świadomy powrót do wcześniejszego wzorca na wyraźne żądanie właściciela TERAZ (nie do renegocjacji tamtej decyzji — po prostu właściciel zmienia zdanie ponownie, jego prerogatywa). Handler wejścia to pojedynczy `input.addEventListener('input', ...)` (linia 1144) — dodanie klikalnych MIN/MAX to mały `onClick` ustawiający `value` i wywołujący ten sam event, bez przebudowy logiki. Gotowego wzorca klikalnych MIN/MAX nigdzie w `gra/src` NIE MA — to nowy, ale mały element. Testy do aktualizacji: `gra/tools/praca-split-ui-test.cjs` (linie 32-46, asertuje dziś dokładnie obecny dwuboksowy markup — złamie się wprost przy zmianie layoutu, do przepisania na nowy markup). Analogiczna sekcja `renderPodzialPracy()` w `cityPanel.ts` (linie 4833-4900, panel POJEDYNCZEGO miasta, testowana w tym samym pliku liniami 47-54) ma ten sam dwuboksowy wzorzec — **POZA ZAKRESEM tego zgłoszenia** (właściciel mówił wyłącznie o panelu globalnym Praca Imperium), NIE dotykać bez osobnego potwierdzenia. Jednoznaczne, nie wymaga ABC. **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Opus 5 dla Operatora I Evaluatora — temat czysto wizualny (layout suwaka).** **ZAKOŃCZONE (2026-08-22): Operator/Evaluator PASS-WITH-NOTES/PASS, Final Control PASS (workflow `wf_54e98171-afc`), zweryfikowane REALNYM renderem Playwright/Chromium przez wszystkie 3 role (zrzuty domyślny/MIN/MAX/drag), `laborSliderFillStyle()` przestał być martwym kodem. Zweryfikowane niezależnie przez orkiestratora (tsc/build/testy tematu+2 bramki dodatkowe/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `4b458f82`), wypchnięte.** |
+| `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1` | `ZINTEGROWANE (main f115a79a)` | **Zgłoszenie właściciela (2026-08-22, nowa funkcja, ze zrzutu ekranu panelu „SPICHLERZ CENTRALNY"):** dodać przycisk w panelu Spichlerza centralnego (widok globalny na mapie świata, sekcja „DOMYŚLNE WYŻYWIENIE" — `renderDefaultPoziomRacjiSection()`, `gra/src/ui/empireDetailPanel.ts:134-161`), który dla WSZYSTKICH miast BEZ włączonego indywidualnego ustawienia wyżywienia przełącza je w tryb „auto-żywienie". **Recon (subagent, 2026-08-22) potwierdził, że to prosta zmiana** — oba potrzebne mechanizmy JUŻ ISTNIEJĄ: (1) tryb auto per-miasto to pole `city.autoWyzywienie?: boolean` (`gra/src/game/cities.ts:715`, domyślnie `true` dla nowych miast), z logiką silnika w `gra/src/game/empire-food.ts` (`isCityAutoWyzywienieEnabled()`, `autoBalanceRationsToSolvency()`, `autoRaiseRationsForGrowth()`) i istniejącym UI-przełącznikiem PER MIASTO w `cityPanel.ts:5090-5127` (`onCityAutoWyzywienieChange`) — dziś włączanym tylko pojedynczo, miasto po mieście, bez masowego przełącznika; (2) „indywidualne ustawienie" to NIEZALEŻNE pole `city.poziomRacjiOverride?: boolean` (`cities.ts:713`, domyślnie `false`) z gotowym wzorcem masowej propagacji „pomiń miasta z override" w `broadcastPoziomRacjiToOwnerCities()` (`gra/src/game/empire-city-defaults.ts:316-325`, filtr `if (c.ownerId !== ownerId \|\| c.poziomRacjiOverride) continue;`) — dziś używanym dla wartości liczbowej poziomu Racji, do skopiowania jako gotowy szablon pętli dla nowego przycisku boolean. Potrzebna implementacja: nowy przycisk w `renderDefaultPoziomRacjiSection()` + handler analogiczny do `broadcastPoziomRacjiToOwnerCities()` iterujący miasta ownera z `!city.poziomRacjiOverride` i ustawiający `city.autoWyzywienie = true`, plus wiring w `main.ts` (wzorem `onPoziomRacjiOverrideToggle`, ok. linii 6342-6347). Nie wymaga projektowania nowego mechanizmu ekonomii od zera. Drobna otwarta kwestia (nieblokująca dispatchu, do doprecyzowania przy review): czy przycisk to jednorazowa akcja "ustaw teraz" czy toggle stanu globalnego — rekomendacja reconu: jednorazowa akcja (spójne z `broadcastPoziomRacjiToOwnerCities`, które też jest jednorazowym „zastosuj teraz", nie stanem trwałym). Jednoznaczne, nie wymaga ABC. **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Sonnet 5 — temat głównie logika/wiring (reużycie istniejących mechanizmów), nie osąd wizualny.** **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS (workflow, wznowiony po INFRA disk-space na Final Control). Nowa funkcja `broadcastAutoWyzywienieToOwnerCities(cities, ownerId)` (`gra/src/game/empire-city-defaults.ts`, ten sam wzorzec filtra `ownerId`/`poziomRacjiOverride` co `broadcastPoziomRacjiToOwnerCities`) ustawia `city.autoWyzywienie=true` dla wszystkich miast ownera bez indywidualnego override; nowy przycisk `.civ-emp-autofeed-btn` w `renderDefaultPoziomRacjiSection()` (`empireDetailPanel.ts`); wiring `onOwnerSetAutoWyzywienieForAll` w `main.ts` (guard `ownerId!==0`). Jednorazowa akcja „zastosuj teraz" (zgodnie z rekomendacją reconu), nie stan trwały/toggle. Zweryfikowane niezależnie przez orkiestratora (tsc/build/53 testy tematu/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `f115a79a`), wypchnięte.** |
+| `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1` | `ZINTEGROWANE (main cff12e17)` | **Zgłoszenie właściciela (2026-08-22, DRUGIE zgłoszenie tego samego obszaru — pierwsze: `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` Wątek D, FALA 310):** „Nadal praca źle się zlicza, tak jakby coś się traciło. Teoretycznie powinno być plus trzy według podziału pracy, a w samej pracy odnotowano tylko jeden, chociaż po turze powinno być cztery. To jest drugi raz zgłoszony temat, który nie został naprawiony." Potwierdzone TWARDYM dowodem liczbowym z dwóch kolejnych tur: „PULA IMPERIUM: 1 +3" → tura później „PULA IMPERIUM: 2 +3" — deklarowany przyrost +3/turę, realny przyrost turę-po-turze tylko +1. **Recon (subagent, 2026-08-22) PRZERWANY w trakcie** (nie z powodu bloku, lecz przerwania sesji) — zdążył potwierdzić: (a) istnieje `gra/tools/praca-pula-rate-parity-test.cjs`, statyczny kontrakt źródła pilnujący że TRZY znane drenaże puli (`advanceOwnerWonderMapBuilds`/cuda mapy, `applyEmpireBuildingBudget`/budżet budynków ze splitu, auto-ulepszenia terenu) mają odpowiadające odjęcie od `_lastPracaRate` w `main.ts` — wszystkie trzy WYGLĄDAJĄ na poprawnie podłączone w kodzie (grep potwierdza obecność `_lastPracaRate -= X` przy każdym z trzech); (b) obok `_lastPracaRate` (historyczna, end-of-turn wartość) istnieje ZUPEŁNIE OSOBNA, żywa projekcja HUD `refreshLiveEmpireRatesUnsafe()` (`main.ts:15447+`) wywołująca `previewCityEconomy(...)` — DRUGA, niezależna ścieżka liczenia „ile Pracy/turę", analogiczna do już znanego w tym repo wzorca duplikacji formuły (display vs. real credit, patrz `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`/N5). Recon NIE zdążył ustalić, która z tych dwóch ścieżek (`_lastPracaRate` czy `refreshLiveEmpireRatesUnsafe`/`previewCityEconomy`) faktycznie zasila wyświetlane „+3" w `empireDetailPanel.ts`/HUD, ani czy obie powinny się zgadzać a nie zgadzają się (rozjazd = bug), czy któraś z nich ma osobny, nieodkryty jeszcze błąd. **Recon DOKOŃCZONY (2026-08-22, drugi subagent) — pełna, jednoznaczna przyczyna znaleziona**: `empireDetailPanel.ts:1054/1075` czyta `economy.pracaRate` = `Math.round(_lastPracaRate)` (`main.ts:15670`, `buildHudState()`). `_lastPracaRate` jest poprawnie liczone w bloku end-of-turn (reset na `main.ts:25608`, wszystkie 4 znane drenaże — upkeep/cuda mapy/budżet budynków/auto-ulepszenia — poprawnie odejmowane, potwierdzone pełnym grepem `playerPracaPool`). **PROBLEM: `triggerPlayerEndTurn()` na samym końcu (`main.ts:29020-29021`) woła `markCityStateDirty()` + `updateHud()`, co odpala `refreshLiveEmpireRatesUnsafe()` (`main.ts:15447+`, bo `empireEconDirty=true`) — TA funkcja NA NOWO przypisuje `_lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview` (`main.ts:15537`, przypisanie `=`, NIE modyfikacja przyrostowa) — NADPISUJE poprawnie policzoną wartość z ticku formułą która zna TYLKO upkeep, nie zna nic o zużyciu przez cuda mapy/budżet budynków/auto-ulepszenia (`previewPracaPoolBrutto`, `production.ts:1984`, liczy wyłącznie surowy `pracaImperialPoolGain` per miasto).** Dzieje się to na KAŻDYM końcu tury, natychmiast — poprawny wynik z ticku jest efektywnie martwym zapisem, gracz nigdy go nie widzi. To NIE świadome uproszczenie UX — komentarz w kodzie (linie 15510-15515, „NAPRAWA HUD-PRACA") pokazuje że autor świadomie dodał TYLKO upkeep do tej drugiej formuły, prawdopodobnie nie zauważając że 3 pozostałe drenaże (dodane PÓŹNIEJ, w tym w FALI 310) nigdy do niej nie trafiły — dwie niespójne definicje tej samej zmiennej, druga nadpisuje pierwszą. **Rekomendacja (jednoznaczna)**: w `refreshLiveEmpireRatesUnsafe()` (`main.ts` ok. 15510-15537) formuła musi też odejmować przewidywane zużycie przez wonder-map-builds/building-budget/auto-ulepszenia (analogicznie do end-of-turn), ALBO (prościej i bezpieczniej) zagwarantować że live-refresh NIE nadpisuje `_lastPracaRate` świeżo policzonego w tym samym end-of-turn ticku (guard/flaga). Rozszerzyć `praca-pula-rate-parity-test.cjs` o sprawdzenie TEJ DRUGIEJ ścieżki (`refreshLiveEmpireRatesUnsafe`) — dzisiejszy test pilnuje tylko bloku end-of-turn i NIE wykrywa nadpisania przez live-refresh, to realna luka testu do zamknięcia równolegle z fixem. Gotowe do dispatchu — czeka na zmergowanie #1 (ten sam plik main.ts, różne linie, sekwencyjnie dla bezpieczeństwa). **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Sonnet 5 — temat czysto ekonomia/logika (matematyka puli), nie wizualny.** **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS (workflow, wznowiony po INFRA disk-space na Final Control). Fix (wariant b, wybrany zamiast duplikowania logiki podglądu): nowa flaga `_pracaRateFreshFromEndTurn: boolean` (`main.ts`, obok `_lastPracaRate`) — ustawiana `true` w `triggerPlayerEndTurn()` zaraz po ostatnim odjęciu drenażu i przed jedynym końcowym `updateHud()`, konsumowana (sprawdzana+czyszczona) w `refreshLiveEmpireRatesUnsafe()`, żeby dokładnie RAZ pominąć nadpisanie `_lastPracaRate` niepełną formułą `pracaPoolBrutto - pracaUpkeepPreview`. Rozszerzono `praca-pula-rate-parity-test.cjs` o Sekcję 2 (statyczny kontrakt guardu) i Sekcję 3 (dowód numeryczny na realnych eksportach `previewPracaPoolBrutto`/`splitEmpirePracaBudget`/`allocateEmpirePracaToBuildings` z `production.ts`, reprodukujący dokładnie scenariusz ze zgłoszenia — bez guardu +3 zamiast realnego +1, z guardem poprawnie +1). Final Control odnotował niewiążącą uwagę: wczesny `return` w `refreshLiveEmpireRatesUnsafe()` przy `playerCities.length===0` pomija konsumpcję flagi w tym rzadkim przypadku brzegowym — nie blokuje PASS, do świadomości. Zweryfikowane niezależnie przez orkiestratora (tsc/build/13 testów tematu (9+4)/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `cff12e17`), wypchnięte.** |
+| `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1` | `ZINTEGROWANE (main 141eab19)` | **Zgłoszenie właściciela (2026-08-22, regres, ze zrzutu ekranu panelu miasta „PODZIAŁ PRACY"):** „Tutaj jest jakiś regres. W panelu podziału pracy w mieście pojawiły się nieautoryzowane infografiki, a powinny być zastosowane inne, właściwe. To wymaga analizy. Na przykład młotek, praca na turę – trzeba to uporządkować." **Recon (subagent, 2026-08-22) potwierdził realny regres**: `gra/src/ui/cityPanel.ts` ma DWIE RÓŻNE ikony dla tego samego pojęcia „Ulepszenia" — `tb-build` (młotek, w `appendPodzialPracyInfo()`, L4768/4802, obecne od co najmniej 2026-08-11) i `chip-crate` (skrzynka, w `renderPodzialPracy()`, L4851/4862, DODANE commitem `bd03ed3e` z 2026-08-21, `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` Wątek F). Ikona `cp-order` (⚖ waga) którą wspomniał właściciel dla „Kolejka budowy" **nie występuje w kodzie tego panelu** — L4789 używa tej samej ikony co „Budynki" (`cp-buildings`), spójnie logicznie; rozbieżność może być błędem w assetcie SVG albo przybliżeniem opisowym właściciela — **wymaga weryfikacji wizualnej w przeglądarce, nie tylko czytania kodu**. Wzorzec porównawczy: `empireDetailPanel.ts::renderEmpirePracaBudgetSplitSection()` (panel globalny „PRACA IMPERIUM", TEN SAM commit/dzień co regres) celowo NIE UŻYWA żadnych ikon — same etykiety tekstowe. Brak jednoznacznego „poprawnego" wzorca w kodzie do naśladowania — dwa panele z tego samego dnia rozjechały się stylistycznie. Skala zmiany mała (≈8 linii, 1 plik, brak współdzielonego komponentu). **WYMAGA ABC właściciela przed dispatchem**: (a) którą ikonę zachować dla „Ulepszenia" — `tb-build` czy `chip-crate`; (b) czy panel miasta ma mieć ikony w ogóle, czy ujednolicić do stylu czysto tekstowego jak panel globalny; (c) potwierdzić wizualnie w przeglądarce czy `cp-order`/waga faktycznie gdzieś się pojawia (możliwy osobny, nieznaleziony jeszcze problem z assetem SVG). **ECHO właściciela (2026-08-22): (a) = Skrzynka (`chip-crate`) — ujednolicić WSZYSTKIE wystąpienia „Ulepszenia" w `cityPanel.ts` (L4768, L4802) do `chip-crate`, zamiast `tb-build`; (b) = zachować ikony (nie przechodzić na czysty tekst); (c) = TAK, Operator ma dodatkowo zweryfikować wizualnie żywym Playwright/Chromium czy ikona wagi (⚖/`cp-order`) faktycznie gdzieś się pojawia w tym panelu (skoro w kodzie jej nie znaleziono przy „Kolejka budowy") — jeśli tak, to osobny, nieznaleziony jeszcze problem do opisania w raporcie Operatora (nie zakładać z góry że to pomyłka właściciela).** Gotowe do dispatchu. **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Opus 5 dla Operatora I Evaluatora — temat wizualny (ikony); Evaluator dodatkowo weryfikuje zrzutem ekranu z żywej przeglądarki.** **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS. Obie ikony `tb-build` przy „Ulepszenia" w `appendPodzialPracyInfo()` (`cityPanel.ts` L4768/L4802) zmienione na `chip-crate` — wszystkie 6 wystąpień „Ulepszenia" w panelu teraz spójne. Punkt (c) ECHO rozstrzygnięty realnym zrzutem Playwright/Chromium: ikona wagi (⚖ `cp-order`) NIE występuje w panelu „PODZIAŁ PRACY" ani przy „Kolejka budowy" (ta ma poprawnie `cp-buildings`/świątynię) — to sąsiedztwo z osobnym przyciskiem pionowego railu ikon miasta („Społeczeństwo i porządek", 60px na lewo, w tym samym paśmie pionowym co wiersz „Kolejka budowy") tworzące złudzenie wizualne, nie błąd assetu ani osobny defekt. `praca-split-ui-test.cjs` rozszerzony o 4 asercje anty-regresowe (24/24, w tym kontrola negatywna na kodzie sprzed poprawki). **NOWE ZNALEZISKO Operatora (nienaprawione, poza zakresem ECHO, zarejestrowane jako `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1` poniżej)**: w tym samym panelu wciąż występują surowe emoji (🔨/🏛/📦) w tekstach pomocniczych zamiast ikon marki. Zweryfikowane niezależnie przez orkiestratora (tsc/build/test tematu/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `141eab19`), wypchnięte. **To był OSTATNI z 9 tematów tej serii — wszystkie zintegrowane do `main`.** |
+| `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1` | `ZINTEGROWANE (main 3b1e70b6)` | **Znalezisko Operatora (2026-08-22, NIE zgłoszenie właściciela wprost) przy pracy nad `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1`:** w panelu miasta „PODZIAŁ PRACY", obok świeżo ujednoliconej ikony `chip-crate`, wciąż występują surowe emoji zamiast ikon marki — hero pokazuje „(+13 🔨/turę)" (`cityPanel.ts` L4852, literalny emoji młotka nieprzepuszczony przez `cpInlineIcons()`), a karta „ściąga" (`buildPracaDetailCard`, L4708/L4723-4726) używa emoji 🏛/📦 w opisach. Brand-book 1E deklaruje „bez emoji". Widoczne na zrzutach Operatora z tego samego reconu. Świadomie NIE naprawione — poza allowlistą tematu (ECHO obejmowało wyłącznie ikonę „Ulepszenia"). Wymaga własnego dispatchu/reconu (skala nieustalona — nie sprawdzono jeszcze czy to jedyne miejsce w kodzie z tym wzorcem). Nie wymaga ABC — czysto techniczne uporządkowanie zgodne z już ustaloną zasadą brand-booka. **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS/PASS-WITH-NOTES (workflow AutoBot, Opus 5 High dla Operatora+Evaluatora, Sonnet 5 High dla Final Control, zgodnie z instrukcją właściciela „popraw zgodnie z projektami designera" — wykorzystano WYŁĄCZNIE istniejący, już zaakceptowany system `CP_INLINE_EMOJI_BRAND`/`cpInlineIcons()`/`cityPanelChipIconWrap()`, zero nowego języka wizualnego). Recon obalił część założeń briefu: 🔨/🏛 BYŁY już zmapowane, ale 2 konkretne miejsca omijały helper — hero w `renderPodzialPracy` (ręcznie sklejany string, naprawione przez `cityPanelChipIconWrap('res-work', 13)`) i intro w `buildTopBarPracaDetailCard` (`.textContent=` zamiast `setNoteHtml()`, naprawione — rozszerzenie zakresu o kartę „Praca — co to znaczy" zaakceptowane przez Evaluatora i Final Control jako konieczne, bo bez tego ta sama karta pokazywałaby gołego 👤 tuż obok naprawionego młotka). Brakujące mapowanie `'📦' → 'chip-crate'` dodane do `CP_INLINE_EMOJI_BRAND` (ta sama ikona zatwierdzona w `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1`). Emoji jako notacja wejściowa ŚWIADOMIE pozostają w źródle (to fundament całego systemu reskinu) — do gracza w DOM nigdy nie trafiają, potwierdzone realnym renderem Playwright/Chromium przez wszystkie 3 role z dwustopniową kontrolą negatywną (mutacja w teście + `git stash` całej poprawki źródłowej). Nowy test `praca-panel-emoji-brand-icons-real-render-test.cjs` (26/26). Zweryfikowane niezależnie przez orkiestratora (tsc/build/2 testy tematu/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `3b1e70b6`), wypchnięte. **Nowe znaleziska, świadomie POZA zakresem tego tematu, zarejestrowane do przyszłego reconu**: (a) analogiczny wzorzec „surowy emoji ominięty przez helper" potwierdzony w innych miejscach `cityPanel.ts` (linie ok. 4080/4083/4087 danina, 5416 ludność, 5675 kultura, 6740, 10749) i w innych plikach UI (`buildModeHud.ts`, `main.ts` — hinty/ghost chipy mapy, `sciencePicker.ts`, `cityListHud.ts`) — zarejestrowane jako `P-EMOJI-SUROWE-INNE-PANELE-Q1` poniżej; (b) 4 pre-existing FAIL (`administracja-stolica-test`, `okolica-ownership-change-reconcile-test`, `promote-to-front-test`, `unit-stock-cost-test`, łącznie 24 asercje) potwierdzone identyczne na czystym `main` przed tym tematem — niezwiązane, kandydaci na osobne tematy, nie dotykane.** |
+| `P-EMOJI-SUROWE-INNE-PANELE-Q1` | `NOWE — recon częściowy (znalezisko Evaluatora/Final Control przy `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`), nie dispatchowane` | **Znalezisko Evaluatora i Final Control (2026-08-22) przy weryfikacji `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`:** ten sam wzorzec usterki (surowy emoji wstawiany przez `.textContent=` lub ręcznie sklejany string, z pominięciem `cpInlineIcons()`/`CP_INLINE_EMOJI_BRAND`) występuje też POZA panelem „PODZIAŁ PRACY", w kartach/miejscach nieobjętych zakresem tego tematu: `gra/src/ui/cityPanel.ts` (linie ok. 4080/4083/4087 — danina, 5416 — ludność, 5675 — kultura, 6740, 10749) oraz w zupełnie innych plikach UI: `gra/src/ui/buildModeHud.ts` (linie ok. 306/417-424/434/456), `gra/src/main.ts` (komunikaty podpowiedzi, ghost-chipy mapy), `gra/src/ui/sciencePicker.ts` (linia ok. 905), `gra/src/ui/cityListHud.ts` (linia ok. 239). Skala NIE ustalona — powyższe to lista kandydatów z reconu przy okazji innego tematu, nie pełny, dedykowany audyt. Naprawa analogiczna do już zaakceptowanego wzorca (`cityPanelChipIconWrap()`/`setNoteHtml()`/`cpInlineIcons()`), zero nowego projektu. Nie wymaga ABC — czysto techniczne uporządkowanie zgodne z już ustaloną zasadą brand-booka „bez emoji". Wymaga własnego dedykowanego reconu przed dispatchem (potwierdzić dokładny zakres i czy dotyczy też innych plików poza wymienionymi). |
+| `P-PRACA-BUDMODE-SLIDER-MAX-50-NIESPOJNY-Q1` | `ZINTEGROWANE (main 85ea0292)` | **Zgłoszenie właściciela (2026-08-22, TRZECI raz ten sam obszar — pierwsze: FALA 310 Wątek D; drugie: `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1`, ZINTEGROWANE main `a1951c1c`), ze zrzutu ekranu panelu „AUTOMATYZACJA ULEPSZEŃ TERENU" w trybie budowy):** „Miała być możliwość zmiany budżetu na automatyczne wydawanie na ulepszenia od zera do stu, a cały czas jest pięćdziesiąt. Nie wiem, czemu tego nie potraficie zmienić." **Recon (2026-08-22) — PRZYCZYNA POTWIERDZONA BEZPOŚREDNIO W KODZIE, nie jest to nieporozumienie ani duplikat zamkniętego tematu:** zrzut ekranu pokazuje tryb „Ręczny" (`empireState.tryb !== 'auto'`), więc widoczny jest tylko `renderEmpirePracaSplit()` (`gra/src/ui/buildModeHud.ts:280-298`) — to pole (a), nadrzędny podział całej puli Pracy budynki/ulepszenia, POPRAWNIE 0–50% z założenia (potwierdzone własnym tooltipem w grze: „To nie jest globalny budżet automatu"), NIE dotyczy tego zgłoszenia i nie ma w nim błędu. Prawdziwy problem jest o poziom głębiej i ujawnia się dopiero przy przełączeniu na tryb „auto": suwaki „Globalny budżet automatu"/„Lokalny budżet automatu" (`renderUlepszeniaPercentRow()`, wywołania w `buildModeHud.ts:483-491` i `:534-542`) wciąż importują i przekazują jako `max` stałą `MAX_PRACA_WSPOLNY_WOREK_PROCENT` (=50, `gra/src/ui/buildModeHud.ts:13`, import z `cities.ts`) — czyli natywny `<input type="range" max="50">` fizycznie uniemożliwia przeciągnięcie powyżej 50%, mimo że backend (`clampUlepszeniaPracaPercent()` w `cities.ts`, naprawiony w `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1`) już akceptuje pełny zakres 0–100% przez własną, dedykowaną stałą `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT=100` (`cities.ts:202`, exportowana, gotowa do importu). **To jest DOKŁADNIE ten sam bug co poprzednio zgłoszony i „naprawiony" — ale naprawa dotknęła tylko warstwy danych (`cities.ts`/`main.ts`), nie tego konkretnego komponentu UI (`buildModeHud.ts`), który ma WŁASNY, niezależny, wciąż-błędny import stałej.** Tekst tooltipów przy tych suwakach (L487/538, „zakres 0–${MAX_PRACA_WSPOLNY_WOREK_PROCENT}%") też trzeba zaktualizować — obecnie jawnie (błędnie) deklaruje 50% jako zamierzony zakres, z odniesieniem do już nieaktualnej decyzji sprzed poprawki. Naprawa: zaimportować `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT` obok istniejącego `MAX_PRACA_WSPOLNY_WOREK_PROCENT`, użyć go jako `max` w OBU wywołaniach `renderUlepszeniaPercentRow()` dla „budżetu automatu" (empire L483-491, city L534-542), zaktualizować tekst tooltipów. Pole (a) (`renderEmpirePracaSplit`, L280-298, max=50 na sztywno) NIE dotknięte — to osobna, poprawna funkcja. Jednoznaczne, potwierdzone w kodzie — nie wymaga ABC (mechaniczne dokończenie już zatwierdzonej decyzji z `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1`), **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS. Zaimportowano `MAX_ULEPSZENIA_PRACA_AUTO_PERCENT` obok `MAX_PRACA_WSPOLNY_WOREK_PROCENT`, oba suwaki „budżetu automatu" (empire+city) w `buildModeHud.ts` teraz przekazują `max: MAX_ULEPSZENIA_PRACA_AUTO_PERCENT` zamiast starej stałej; tooltipy zaktualizowane. `renderEmpirePracaSplit()` (pole a, max=50) potwierdzona nietknięta. Nowy test `praca-budmode-slider-max-real-render-test.cjs` (13/13, realny render Playwright/Chromium, dwustopniowa kontrola negatywna). Zweryfikowane niezależnie przez orkiestratora (tsc/build/6 testów tematu/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `85ea0292`), wypchnięte.** |
+| `P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1` | `ZINTEGROWANE (main c3bd483b)` | **Zgłoszenie właściciela (2026-08-22, ze zrzutu ekranu panelu Spichlerza centralnego, przycisk z `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1`):** „Tutaj powinna być tylko na przycisku nazwa auto-wyżywienie, a wszystkie pozostałe informacje w tooltipie." Przycisk (`gra/src/ui/empireDetailPanel.ts:165-166`, klasa `.civ-emp-autofeed-btn`) dziś pokazuje pełny, długi tekst wprost na przycisku: „Włącz Auto-Żywienie we wszystkich miastach bez indywidualnego ustawienia". Naprawa: skrócić widoczny tekst przycisku do samej nazwy funkcji (np. „Auto-Żywienie" lub „Włącz Auto-Żywienie"), a pełne wyjaśnienie („we wszystkich miastach bez indywidualnego ustawienia") przenieść do atrybutu `title`/tooltipa. Mała, jednoznaczna zmiana UX w jednym pliku, jeden przycisk. Nie wymaga ABC. **ZAKOŃCZONE (2026-08-22): Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS. Etykieta przycisku skrócona do „Włącz Auto-Żywienie" (bez zakresu — implikowany kontekstem panelu i sąsiednią notą), pełne wyjaśnienie w natywnym `title=""` (spójne z sąsiednimi przyciskami tej sekcji, które już używają tego wzorca). Drobna korekta CSS (font-size/line-height/min-height) dopasowana do jednowierszowego tekstu, wysokość/szerokość przycisku niezmienione. Nowy test `empire-autofeed-btn-label-real-render-test.cjs` (25/25, realny render, dwustopniowa kontrola negatywna). Zweryfikowane niezależnie przez orkiestratora (tsc/build/2 testy tematu/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `c3bd483b`), wypchnięte.** |
+| `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1` | `ZINTEGROWANE (main b5a245e4)` | **Zgłoszenie właściciela (2026-08-22, TRZECI raz — pierwsze: FALA 310 Wątek D; drugie: `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1`, ZINTEGROWANE main `cff12e17`, guard `_pracaRateFreshFromEndTurn` — TERAZ Z NOWYMI, KONKRETNYMI DOWODAMI LICZBOWYMI z 3 zrzutów ekranu jednocześnie):** „Praca nadal nie nalicza się prawidłowo. Trzeba przeprowadzić dokładny audyt, aby ustalić, co jest nie tak. W poprzedniej turze było plus pięć, więc powinno być odłożonych pięć jednostek, a jest tylko jedna. Dodatkowo nie wiadomo, dlaczego jest plus jeden. Coś tu jest nie tak, jest jakiś bajzel. Są rozbieżne informacje pomiędzy tym, co pokazuje baner, a tym, co faktycznie się odkłada, oraz informacjami szczegółowymi. Problem w tym, że po zakończeniu tury zakładana ilość pracy na ulepszenia nie odkłada się." **Dowody liczbowe z 3 jednoczesnych zrzutów (ta sama tura/stan gry):** (1) górny pasek HUD: chip „Praca 1 +1"; (2) karta miasta „PODZIAŁ PRACY": nagłówek „Ulepszenia 50% (+2 Praca/turę)", „BUDYNKI 50% -3", „ULEPSZENIA 50% -2", szczegóły „Praca w mieście +5" / „Kolejka budowy +3 (50%) Pałac 4/80 ~26 tur" / „Ulepszenia +2 (50%) Zapas Pracy na ulepszenia pól: 1 Praca — farma, kamieniołom, projekty mapy" / „Skarbiec 6 (+6)"; (3) popup empire „Grecy": „PRACA IMPERIUM 5 Pracy/turę — 3 do budynków, 2 do puli imperium, 1 miasto", tabela Ateny: do puli +2, do budynków +3, SUMA zgodna, „PULA IMPERIUM 1 +1", suwak „Ulepszenia 50%" MIN 0%/MAX 50%. **Rozbieżność zgłoszona przez właściciela**: deklarowany przyrost puli imperium to +2 (z popupu „Grecy") lub nawet +5 z poprzedniej tury wg właściciela, a faktyczny widoczny przyrost w tym samym momencie to tylko +1 (górny pasek HUD „Praca 1 +1" i popup „PULA IMPERIUM 1 +1" — te dwa są ZGODNE ze sobą, ale NIEZGODNE z deklarowanym „+2 do puli imperium" z tabeli tego samego popupu, linijkę wyżej). To zupełnie NOWY wzorzec rozjazdu niż `REGRES2` (tam problem był 100% w warstwie WYŚWIETLANIA — `refreshLiveEmpireRatesUnsafe()` nadpisywała poprawnie policzoną wartość niepełną formułą po końcu tury; TERAZ nawet WEWNĄTRZ jednego, tego samego popupu w tym samym momencie dwie sąsiadujące liczby („do puli imperium: +2" w tabeli vs „PULA IMPERIUM ... +1" dwie linie niżej w tym samym komponencie) się nie zgadzają — sugeruje że to może być inny, nieprzeanalizowany jeszcze punkt rozjazdu, ALBO nawrót/niepełne pokrycie tego samego mechanizmu przez guard z REGRES2, ALBO zupełnie inna przyczyna (np. w samym mechanizmie faktycznego zapisu do `playerPracaPool` na końcu tury, nie tylko w warstwie odczytu HUD — `playerPracaPool +=` w `main.ts` ma kilka miejsc modyfikujących, l. ok. 26529/26549 dodają do puli, wymaga realnego prześledzenia krok-po-kroku którędy faktycznie płynie ta konkretna tura). **BEZ WŁASNEGO USTALENIA PRZYCZYNY — właściciel jawnie zażądał „dokładnego audytu", nie od razu fixu.** WYMAGA: dedykowanego reconu/audytu (analogicznego do tego jaki ustalił przyczynę REGRES2) PRZED jakimkolwiek dispatchem naprawy — nie zakładać z góry że to ten sam mechanizm co REGRES2 (guard mógł nie objąć tej ścieżki, albo to inny bug w tym samym obszarze). WYSOKI PRIORYTET — trzeci raz zgłaszany, dotyczy rdzenia ekonomii. **Dispatch autoryzowany (2026-08-22) jawnym poleceniem właściciela w kolejnej wiadomości: „Odpalaj wszystkie tematy zgodnie z zasadami workflow oraz autobot i spróbuj to wszystko naprawić" — to znosi wcześniejsze WSTRZYMANE z tego wpisu (Final Control słusznie zwrócił uwagę na wewnętrzną sprzeczność statusu vs. tej narracji w międzyczasie; potwierdzam tu jawnie, że sygnał był realny i pochodził wprost od właściciela, nie z domysłu).** **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS/PASS-WITH-NOTES. AUDYT (wymóg właściciela) w pełni wykonany i udokumentowany krok po kroku — ustalił, że guard `_pracaRateFreshFromEndTurn` z REGRES2 chronił WYŁĄCZNIE przypisanie `_lastPracaRate` w `refreshLiveEmpireRatesUnsafe()`, ale bliźniacze, sąsiadujące wywołanie w TEJ SAMEJ funkcji — `refreshPlayerCityEcon(preview.perCity)` — pozostało bez ochrony i nadpisywało `_lastPlayerCityEcon` (źródło tabeli „do puli"/„do budynków" w popupie imperium) PROJEKCJĄ na następną turę zamiast realnym tickiem tury, która właśnie się zakończyła. To NIE był problem etykietowania (gross-vs-net rozróżnienie w UI jest świadome i poprawne) — to prawdziwy, drugi bug tej samej klasy co REGRES2, w tej samej funkcji. Naprawa: guard rozszerzony na obie ścieżki. `playerPracaPool` samo w sobie nigdy nie było zagrożone (operuje wyłącznie na realnym ticku) — problem był ograniczony do warstwy wyświetlania, jak poprzednio. Rozszerzony `praca-pula-rate-parity-test.cjs` o Sekcję 4 (statyczny kontrakt) i Sekcję 5 (dowód numeryczny na scenariuszu ze zgłoszenia, 19/19 łącznie). Zweryfikowane niezależnie przez orkiestratora (tsc/build/test tematu/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `b5a245e4`), wypchnięte. **Final Control niezależnie potwierdził (dwiema metodami) NOWY, osobny finding: żywa karta miasta (`computeView`, dane na bieżąco) i tabela popupu imperium (`_lastPlayerCityEcon`, zamrożona po końcu tury) mogą się rozjeżdżać dla TEGO SAMEGO miasta/tury z zupełnie innego powodu niż REGRES2/REGRES3 — zarejestrowane osobno jako `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1` poniżej, żeby zapobiec czwartemu zgłoszeniu tego obszaru.** |
+| `P-PRACA-KARTA-MIASTA-VS-POPUP-IMPERIUM-ROZJAZD-Q1` | `NOWE — znalezisko Final Control przy `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1`, potwierdzone dwiema niezależnymi metodami, nie dispatchowane` | **Znalezisko Final Control (2026-08-22), NIE zgłoszenie właściciela wprost, przy weryfikacji REGRES3:** karta miasta w panelu miejskim (`cityPanel.ts`, czyta `computeView()` na bieżąco, bez opóźnienia) i tabela w popupie imperium (`empireDetailPanel.ts`, czyta zamrożone `_lastPlayerCityEcon`, odświeżane tylko na końcu tury/przy dirty-markerze) mogą pokazywać RÓŻNE liczby dla TEGO SAMEGO miasta w TEJ SAMEJ turze — potwierdzone przez Final Control dwiema niezależnymi metodami (grep źródła + własny live-Chromium test z innym zestawem liczb niż użył Evaluator, ten sam wzorzec strukturalny). To INNY mechanizm rozjazdu niż REGRES2 (nadpisanie `_lastPracaRate`) i REGRES3 (nadpisanie `_lastPlayerCityEcon` projekcją) — tu problem to fundamentalnie różne źródła danych (żywe vs. zamrożone) dla dwóch różnych widoków tego samego miasta, nie nadpisanie jednej zmiennej przez drugą. Wymaga własnego reconu — czy to zamierzony projekt (podgląd na żywo w mieście vs. raport z końca tury w podsumowaniu imperium, jak brutto/netto z REGRES3) czy prawdziwy bug wymagający synchronizacji. WYSOKI PRIORYTET PREWENCYJNY — bez zarejestrowania i rozwiązania czwarte zgłoszenie tego obszaru ekonomii jest wysoce prawdopodobne (cytat Final Control). |
+| `P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1` | `ZINTEGROWANE (main 7d1fee7d)` | **Zgłoszenie właściciela (2026-08-22, ze zrzutu ekranu panelu bocznego zdarzeń, seria kart eliminacji miast-państw):** „Informacja «koniec tury» jest niepotrzebna. Wystarczy «wydarzenie». Wiadomo, że ono następuje pod koniec tury, to tylko zamydla. Dużą czcionką powinno być «wydarzenie», a nie «koniec tury». «Koniec tury» jest niepotrzebny." **Recon (2026-08-22) — przyczyna zlokalizowana:** karta zdarzenia w panelu bocznym (`gra/src/ui/sidePanelHud.ts:640-645`) renderuje DWA poziomy tekstu: mały overline `<span class="sp-kicker">Wydarzenie</span>` (l. 642) i duży, wytłuszczony `<div class="sp-title">${ev.title}</div>` (l. 643) — to właśnie ten drugi pokazuje „Koniec tury" na zrzucie. Źródło wartości `ev.title`: `gra/src/game/eot-event-defer.ts:167`, funkcja `deferredHintsToSidePanelEvents()` — generyczny fallback `title: isDiplomacy ? 'Dyplomacja' : 'Koniec tury'` nadawany WSZYSTKIM końcowo-turowym podpowiedziom bez własnego, specyficznego tytułu (w tym zdarzeniom eliminacji miast-państw z zrzutu, które MAJĄ w pełni konkretną treść w `subtitle` — np. „Sumerowie · miasto-państwo — ELIMINACJA! ..." — ale i tak dostają ten sam generyczny duży nagłówek „Koniec tury"). Plik ma już PRECEDENS analogicznej naprawy dla innej kategorii: komentarz l. 61-68/109-131 opisuje wcześniejszą poprawkę, która dała zdarzeniom dyplomatycznym własny, specyficzny tytuł „Dyplomacja" zamiast mylącego „Koniec tury" — to zgłoszenie to naturalne rozszerzenie tego samego kierunku, tym razem dotyczące samego domyślnego fallbacku, nie jednej kategorii. Kierunek naprawy (do potwierdzenia przez Operatora, prosta decyzja UX): zamienić który tekst dostaje duży/wytłuszczony styl — `sp-kicker`/„Wydarzenie" ma zostać wizualnie dominujący, a redundantny fallback „Koniec tury" jako osobny wiersz tekstu ma zniknąć (specyficzna treść zdarzenia i tak jest w `subtitle`, więc nic się nie traci). Małe ryzyko regresji: sprawdzić czy usunięcie/zmiana `ev.title` nie psuje card-key używanego do deduplikacji (`P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1`, l. 118-131, klucz = `title + subtitle`) — jeśli title zniknie/ujednolici się dla wszystkich kart, trzeba dobrać nowy klucz dedup (np. sam `subtitle`), żeby nie zepsuć istniejącej deduplikacji identycznych zdarzeń w tej samej turze. Jednoznaczne UX, nie wymaga ABC produktowego — ale wymaga uwagi na ten jeden techniczny efekt uboczny (dedup key). **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS. Generyczny fallback `title: 'Koniec tury'` (`eot-event-defer.ts:167`) zmieniony na `''`; w `sidePanelHud.ts` gdy `title===''` słowo „Wydarzenie" awansuje z małego overline do dużego, tytułowego slotu (klasa `.sp-title-generic`) — dla kart ze specyficznym tytułem (np. „Dyplomacja") bez zmian. Klucz deduplikacji (`P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1`) zmieniony z `title+subtitle` na sam `subtitle` — uzasadnione i przetestowane (nowy test 2c dowodzi że różne zdarzenia z pustym title nadal dają różne karty, nie scalają się błędnie). Zdarzenia blokujące (inny blok renderujący) świadomie nietknięte — poza zakresem zgłoszenia. Nowy test `sidepanel-event-header-wydarzenie-real-render-test.cjs` (23/23, realny render + dowód nietautologiczności na zmutowanym bundlu). Zweryfikowane niezależnie przez orkiestratora (tsc/build/6 testów tematu+regresji/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `7d1fee7d`), wypchnięte. **Wszystkie 3 role niezależnie potwierdziły pre-existing czerwony test `era-change-toast-live-test.cjs` (2 FAIL, modal odkrycia technologii) — niepowiązany z tym tematem, zarejestrowany osobno jako `P-ERA-TOAST-KARTA-TECHNOLOGII-SEKCJE-ZERO-Q1` poniżej.** |
+| `P-ERA-TOAST-KARTA-TECHNOLOGII-SEKCJE-ZERO-Q1` | `NOWE — znalezisko potwierdzone niezależnie 3x (Operator/Evaluator/Final Control przy `P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1`), nie dispatchowane` | **Znalezisko wszystkich 3 ról AutoBot (2026-08-22), NIE zgłoszenie właściciela wprost:** `gra/tools/era-change-toast-live-test.cjs` jest czerwony na czystym `main` (2 FAIL: „karta ma sekcje z danych tech tree" — `sections:0` w modalu odkrycia technologii, oraz `TimeoutError` na `[data-act="tree"]"`). Potwierdzone TRZYKROTNIE, niezależnie, przez Operatora, Evaluatora i Final Control tematu nagłówka wydarzeń — za każdym razem identyczny wynik na nietkniętym `origin/main`, bez związku z ich zmianami. Dotyczy modala odkrycia technologii (karta pokazuje 0 sekcji zamiast oczekiwanych danych z drzewka technologii) — osobny obszar, wymaga własnego reconu przed dispatchem. Nie wymaga ABC do samego reconu, ale przyczyna nieustalona. |
+| `P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1` | `ZINTEGROWANE (main d146c0c6) — 2 DECISION_REQUIRED czekają na właściciela` | **Zgłoszenie właściciela (2026-08-22, przy okazji tego samego zrzutu ekranu panelu zdarzeń):** „Poza tym każde wydarzenie powinno być zweryfikowane, czy nie prowadzi do jakiegoś większego opisu lub miejsca. To jest audyt do zrobienia. Część rzeczy jest ogólna i informacyjna, ale część wydarzeń powinna być przekierowana do innych miejsc." Prośba o PEŁNY AUDYT wszystkich typów kart w panelu bocznym zdarzeń (`sidePanelHud.ts`) — dla każdego typu ustalić, czy powinien pozostać czysto informacyjny (tekst, bez akcji) czy powinien być klikalny i przekierowywać do odpowiedniego, bardziej szczegółowego miejsca w grze (np. karta cywilizacji/miasta-państwa, raport bitwy, panel dyplomacji, konkretne miasto na mapie). **Punkt startowy dla przyszłego reconu (NIE pełny audyt, tylko orientacyjne miejsca w kodzie do przejrzenia):** typ `SidePanelEventKind` (`sidePanelHud.ts:29`) ma warianty `'science'|'culture'|'city'|'unit'|'enemy'|'info'|'diplo'`; źródła zdarzeń rozproszone po wielu tablicach w `main.ts` — `warEventLog`, `villageEventLog`, `tradeRouteEventLog`, `rationAutoEventLog`, `borderMarchEventLog` (l. ok. 7601-12770) — plus generyczne końcowo-turowe podpowiedzi z `deferredHintsToSidePanelEvents()` (`eot-event-defer.ts`). Zdarzenia BLOKUJĄCE (`ev.blocking===true`, np. bunty) już MAJĄ mechanizm klikalnego przejścia — przycisk „Otwórz →" (`sidePanelHud.ts:621`, `data-sp-open`); zdarzenia zwykłe/informacyjne (nie-blokujące, w tym te z zrzutu — eliminacje miast-państw) NIE MAJĄ dziś żadnej akcji klik = tylko wyświetlają tekst i przycisk zamknięcia „✕" (l. 646-648) — więc mechanizm nawigacji trzeba by rozszerzyć na tę kategorię, nie tylko dodać linki. Skala NIE ustalona — wymaga przejrzenia WSZYSTKICH typów zdarzeń generowanych w grze (może być kilkanaście-kilkadziesiąt różnych źródeł/wariantów treści), decyzji per-typ czy/dokąd ma prowadzić link, i zaprojektowania spójnego wzorca UI dla „klikalnej karty zdarzenia" (analogicznego do już istniejącego „Otwórz →" dla blokujących, ale dla nie-blokujących). To jest zadanie na DEDYKOWANY, osobny recon/audyt (nie mały fix) — może wymagać ABC właściciela po reconie (np. lista kandydatów „to zdarzenie powinno prowadzić do X" do zatwierdzenia, bo część decyzji „dokąd" jest produktowa, nie techniczna). **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS/PASS-WITH-NOTES. Kluczowe ustalenie audytu: karty nie-blokujące BYŁY już w pełni klikalne w kodzie (3 rodziny miały gotowy handler — eliminacje, wojny, naruszenia granic), brakowało WYŁĄCZNIE afordancji wizualnej — karta prowadząca do panelu wyglądała identycznie jak martwa. Pełny audyt 11 rodzin nie-blokujących + 5 blokujących (lista zamknięta): 8 rodzin zakwalifikowanych jako (ii) jednoznaczni kandydaci z gotowym miejscem docelowym — zaimplementowane (eliminacje, wojny, naruszenia granic, chatki, nowe/zerwane szlaki handlowe, auto-obniżenie racji, nowa epoka); 3 rodziny (i) czysto informacyjne bez zmian; 4 rodziny (iii) wymagające decyzji produktowej — NIE ruszone, w tym KARTA ZE ZRZUTU WŁAŚCICIELA (eliminacja przez podbój) — bo silnik gubi kontekst (ownerId/civLabel) w generycznej kolejce end-of-turn, inaczej niż eliminacja przez wchłonięcie dyplomatyczne, która ma już pełny modal. Zasada naczelna implementacji: jedno źródło prawdy dla afordancji i akcji (karta nie może obiecać przejścia, którego handler nie wykona) — karty bez potwierdzonego celu w runtime dostają jawnie `sp-no-link`/`cursor:default`, zero pozorowanej klikalności. Nowe testy `side-panel-event-link-test.cjs` (34/34) i `sidepanel-event-przekierowania-real-render-test.cjs` (51/51, realny render, karty blokujące potwierdzone nietknięte). Final Control odnotował lukę procesową (brak śladu w `KANAL-PRACA.md` dla zdjęcia wcześniejszego WSTRZYMANE) — nieblokująca jakości kodu, do uzupełnienia. Zweryfikowane niezależnie przez orkiestratora (tsc/build/4 testy tematu+regresji/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff z auto-mergem w `main.ts`, commit `d146c0c6`), wypchnięte. **DWA DECISION_REQUIRED od Operatora, potwierdzone przez Evaluator/Final Control jako gotowe do przedstawienia właścicielowi bez dalszej redakcji — patrz `P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1` i `P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1` poniżej.** Dodatkowo zarejestrowano drobne znaleziska N1 (rozjazd blocking/resolvera) i N2 (brak czyszczenia `tradeRouteEventPlayerCityIds`) jako `P-WYDARZENIA-PORZADKI-DROBNE-Q1`.** |
+| `P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1` | `DECISION_REQUIRED — czeka na odpowiedź właściciela (A/B)` | **DECISION_REQUIRED #1 od Operatora (2026-08-22), potwierdzone gotowe do przedstawienia przez Evaluatora i Final Control:** karta eliminacji cywilizacji/miasta-państwa PRZEZ PODBÓJ (dokładnie ta, którą właściciel pokazał na zrzucie ekranu wywołującym `P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1`) jest dziś bierną kartą „Wydarzenie" bez przejścia — `runCapitalCapturePlunder` (main.ts) wysyła zwykły toast do generycznej kolejki końca tury, gubiąc `ownerId`/`civLabel`/`details` po drodze. Modal `showCivElimNotice` już istnieje i w pełni obsługuje DRUGĄ ścieżkę eliminacji (wchłonięcie dyplomatyczne) ze skrótem „Szczegóły →". **WARIANT A: zrównać obie ścieżki** — eliminacja przez podbój też zacznie emitować dedykowaną kartę „ELIMINACJA: <cywilizacja>" ze skrótem „Szczegóły →" do tego samego modalu (zmiana treści i kategorii karty w emiterze, nie tylko podpięcie gotowego handlera). **WARIANT B: zostawić jako czysto informacyjną** notę końca tury, bez przejścia. Rekomendacja Operatora: żaden wariant nie narzucony — decyzja produktowa. |
+| `P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1` | `DECISION_REQUIRED — czeka na odpowiedź właściciela` | **DECISION_REQUIRED #2 od Operatora (2026-08-22):** systemowy dług architektoniczny — kolejka `deferredEotHints` (`game/eot-event-defer.ts`, plik współdzielony z kilkoma innymi tematami tej sesji) przenosi dziś WYŁĄCZNIE `{msg, durationMs}`, gubiąc kontekst bytu (heks/miasto/właściciel) dla wielu zdarzeń końca tury, które mają realny cel docelowy (kapitulacja z głodu, dyplomacja AI→gracz, rajd Ludów Morza niszczący ulepszenie) ale nie mogą dziś dostać skrótu z powodu tej utraty. Pytanie: **rozszerzyć `DeferredEotHint` o opcjonalny kontekst** (`{hex?, cityId?, ownerId?}`), żeby te i przyszłe zdarzenia końca tury mogły dostać skrót tym samym mechanizmem — czy uznać karty końca tury za z definicji bierne/informacyjne? Decyzja architektoniczna dotykająca pliku współdzielonego, celowo poza zakresem tej rundy. |
+| `P-WYDARZENIA-PORZADKI-DROBNE-Q1` | `NOWE — znalezisko Evaluatora (N1/N2) przy P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1, nie dispatchowane, niska priorytet` | **Znalezisko Evaluatora (2026-08-22), NIE zgłoszenie właściciela:** dwie drobne, nieblokujące usterki porządkowe znalezione przy weryfikacji audytu przekierowań: N1 — rozjazd między polem `blocking` a logiką resolvera (dokładny opis w raporcie Evaluatora rundy, do doprecyzowania przy dispatchu); N2 — brak czyszczenia mapy `tradeRouteEventPlayerCityIds` (potencjalny, powolny wyciek pamięci przy bardzo długich rozgrywkach, nie wpływa na dzisiejszą rozgrywkę). Final Control potwierdził: dług inżynierski bez wpływu na bieżącą rozgrywkę, wystarczy rejestracja jako drobny temat porządkowy, nie wymaga DECISION_REQUIRED. Niska priorytet, do sprzątnięcia przy okazji kolejnej pracy w tym obszarze. |
+| `R-PROC-AUTOBOT-PRZEBUDOWA-SZKIELET-Q1` | `ZINTEGROWANE (main 1c6f6200) — pytanie -Q2 OTWARTE, czeka na odpowiedź właściciela` | **Zlecenie właściciela (2026-08-22):** „Uzupełnij sobie zasady autobota o nowe, całkowicie przebudowane i zastosuj je u siebie. Zrób to poprzez workflow Autobot, który masz obecnie." — dostarczony nowy, w pełni przebudowany uniwersalny szkielet procesu AutoBot (worked example dla referencyjnego projektu „nAgents"). **ZAKOŃCZONE po 3 rundach (2026-08-22), DOMAIN: PROCES:** Runda 1 PASS-WITH-NOTES (nie-końcowy — uwagi dotyczyły granic i gotowości do integracji, 8 znalezisk). Runda 2 FAIL na obu bramkach — naprawa rundy 1 wprowadziła prawdziwą regresję operacyjną: literalny cytat C-001 (`--outDir dist`) zamieniony w operacyjny nakaz, sprzeczny z udokumentowanym, wymuszonym w tym repo zwyczajem budowania POZA drzewem repo (OneDrive blokuje `unlink` w `gra/dist/`, błąd EPERM — `SILNIK/SILNIK-ARCHITEKTURA-DEWELOPER.md:265`). Runda 3 naprawiła wszystkie 5 znalezisk (D-1..D-5): przywrócony poprawny rozdział między dosłownym cytatem C-001 (niezmieniony) a operacyjnym zakazem `npm run build`/`npm run dev` (istota bariery) — `--outDir` jest tylko parametrem, musi wskazywać katalog poza repo; doprecyzowany próg dekompozycji na węzły (§12) tak, żeby nie odpalał się fałszywie na zwykłych, jednorundowych tematach; ujednolicony kontrakt raportu w 3 nośnikach (`CLAUDE.md`, `R-PROC-AUTOBOT.md` §4, `docs/procesy/INDEX-PROCESU.md`); założony retroaktywnie brakujący katalog `dyspozycje/autobot/runs/R-PROC-AUTOBOT-PRZEBUDOWA-SZKIELET-Q1/`. Operator/Evaluator/Final Control rundy 3: PASS/PASS-WITH-NOTES/PASS-WITH-NOTES, **gotowość do integracji: TAK** (Final Control). Zachowane w pełni: łańcuch Operator→Evaluator→Final Control→integracja→READY_FOR_DEPLOY, §5a wyjątek graficzny, C-001, 5 bramek referencyjnych, wzorzec merge-base-aware integracji, sprzątanie worktree przy INFRA, sekwencjonowanie tematów na wspólnych plikach, allowlist-only integracja. Dodane nowe elementy: „co NIE jest dowodem zakończenia", „kto rozstrzyga — właściciel czy orkiestrator" + test zrozumiałości pytania ABC, granice nienaruszalne domeny gry jako jedna tabela ze źródłem, próg podziału na węzły, zasada czystości raportu. Zero wartości z przykładu nAgents. Zweryfikowane niezależnie przez orkiestratora (docs-only, zero zmian w `gra/`, zero konfliktów), zmergowane do `main` (merge non-ff, commit `1c6f6200`), wypchnięte. **PYTANIE ABC `R-PROC-AUTOBOT-PRZEBUDOWA-SZKIELET-Q1-Q2` (OTWARTE, patrz pełna treść w odpowiedzi orkiestratora w czacie z tej daty)**: czy reguła „lista »czego ta gra świadomie nie robi« rośnie wyłącznie z pomysłów faktycznie odrzuconych" (dziś działająca w `civ-autobot/SKILL.md` bez wyraźnego potwierdzenia właściciela) ma zostać potwierdzona tak jak jest (wariant C, rekomendowany), zastąpiona jawnie podanymi teraz granicami (wariant B), czy skasowana (wariant A). Drobne, nieblokujące uwagi z rundy 3 do ewentualnego doszlifowania później: jedna bramka referencyjna w przykładzie woła `npx vite` zamiast bezpośredniej binarki (kosmetyczne, bariera i tak zachowana), doprecyzowanie jednostki liczenia w progu §12 (plik bramki, nie pojedyncza asercja). |
+| `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1` | `ZINTEGROWANE (main 11c71851)` | **Zgłoszenie właściciela (2026-08-22, ze zrzutów ekranu popupu odkrycia „Obróbka drewna" i karty ulepszenia „Tartak"):** „Nie wiem, kto pracował nad tymi kartami, ale niestety wygląda to źle. [...] nie ma żadnych odnośników. Są tylko jakieś linki [...] Jest dużo dziwnych napisów na białym tle – masakra, totalna lipa. [...] Musi wyglądać dokładnie tak, jak stworzył designer." **Recon (subagent, 2026-08-22) potwierdził dokładną, jednoznaczną przyczynę**: system kart `entityCards` (4 adaptery: building/unit/technology/improvement, `gra/src/ui/entityCards/renderer.ts`) renderuje linkowalne wartości (`linkTo`) jako gołe `<button class="entity-card-row-value">` — ale `ENTITY_CARD_CSS` (linie 438-496 tego pliku) **nigdy nie definiował żadnych reguł CSS dla `.entity-card-row-key`/`.entity-card-row-value`** (potwierdzone grepem — jedyny wyjątek to lokalny, jednorazowy styl dla linku ulepszenia „Szczegóły →" dopisany w T7b w `techDiscoveryNotice.ts:662-664`, poza wspólnym rendererem). **To REGRES z T10** („LINKOWANIE-KRZYZOWE", commit `f17e257e`, FALA 315): przed T10 te same wartości renderowały się jako zwykłe `<span>` (bez linku, więc bez natywnego stylu przycisku przeglądarki — wyglądały neutralnie, dziedzicząc kolor otoczenia); T10 zamienił je na `<button>`, ujawniając odwieczny brak stylu (nigdy niedodanego od T1, `c1365bfa`) jako widoczny, jasny/biały, wypukły przycisk przeglądarki z czarnym tekstem — dokładnie to, co właściciel opisał jako „dziwne napisy na białym tle". Naprawa to JEDNO miejsce: dopisanie brakującego bloku reguł CSS w `ENTITY_CARD_CSS`, używanego centralnie przez `buildGridRowEl()` — nie trzeba nic zmieniać per adapter/sekcję. **Brak wzorca designera do odtworzenia** dla samego stylu linku: `dyspozycje/DO-DESIGN-KARTA-TECHNOLOGII-2026-08-17.md` §6 wprost odracza linkowanie/cross-linking jako „ETAP PÓŹNIEJSZY", wyłączone z zakresu makiety/briefu — żadna klatka `.dc.html` nie pokazuje tego elementu, więc nie da się dosłownie „odtworzyć oryginału" (oryginał nigdy nie powstał). **Rekomendacja Operatora (do potwierdzenia, rozstrzygnięcie bez ABC jeśli właściciel się zgodzi)**: ostylować WSZYSTKIE linki krzyżowe (budynki/jednostki/technologie/wymagania) SPÓJNIE z już istniejącym, zaakceptowanym stylem linku ulepszenia „Szczegóły →" (złoty, podkreślony) z T7b — rozszerzenie już zaakceptowanego wzorca zamiast wymyślania nowego projektu od zera. **DODATKOWY ZAKRES (właściciel, 2026-08-22, trzeci zrzut ekranu):** ten sam rodzaj usterki (brak formatowania, tekst „zlany" bez odstępów) występuje TRZECI raz w jeszcze innym komponencie — mniejszej karcie podglądu budynku WEWNĄTRZ panelu budowy miasta (`cityPanel.ts`, z linkiem „Więcej informacji (Civpedia)" wychodzącym do pełnej karty) — sekcja „Technologie" renderuje się jako jeden nieprzerwany blok tekstu bez separacji etykieta/wartość. Operator MUSI zweryfikować i naprawić też TO miejsce, nie tylko popup odkrycia — może być inny, dotąd niezbadany kod (osobny renderer niż `entityCards`, biorąc pod uwagę że to inny plik/komponent), wymaga własnego reconu w ramach dispatchu tego tematu. Powiązane z `P-CIVPEDIA-KARTY-NOTATKI-DEWELOPERSKIE-Q1` (osobny temat, treść pól z wewnętrznymi notatkami — inny root cause, ale ten sam trzeci zrzut ekranu pokazuje OBA problemy naraz w sekcji „Uwagi"). **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Opus 5 dla Operatora I Evaluatora — temat czysto wizualny (CSS/regres T10); Evaluator dodatkowo weryfikuje zrzutem ekranu z żywej przeglądarki (Playwright/Chromium) wszystkie 3 lokalizacje (popup odkrycia, pełna karta CivPedia, podgląd w panelu budowy).** **ZAKOŃCZONE (2026-08-22): Operator PASS, Evaluator/Final Control PASS-WITH-NOTES (workflow `wf_9bf9b39e-f37`), wszystkie 3 lokalizacje naprawione i zweryfikowane REALNYM Playwright/Chromium przez wszystkie 3 role (pary zrzutów przed/po). Dodatkowo naprawiono przyczynę trzeciej lokalizacji: utracona klasa `detail-card` przy migracji T5/T6 (CSS `.dc-grid` był zakotwiczony pod `.detail-card`, migrowana karta ma tylko `.entity-card`) — reguły odtworzone pod `.entity-card.bld-detail-card`. **Final Control znalazł NIEZALEŻNIE nowy, żywy, pre-istniejący bug tej samej klasy POZA zakresem tego diffu**: `.entity-card-action`/`-primary`/`-secondary` (przyciski „Rozpocznij badanie"/„Otwórz drzewo" z `data.actions`, ścieżka `techDiscoveryNotice.ts` inna niż `linkTo`) też nie mają ŻADNEGO CSS od T1 (`c1365bfa`) — potwierdzone realną sondą Chromium (`rgb(239,239,239)` tło, czarny tekst, identyczny brzydki wygląd). Evaluator błędnie ocenił tę ścieżkę jako martwą — FC obalił to bezpośrednim dowodem (`techDiscoveryNotice.ts:566-583`, żywe wywołania w `main.ts`/`scienceHubHud.ts`/`techTreeView.ts`). Nie blokuje tego PASS (poza allowlistą, pre-existing, nie pogłębione przez ten diff) — **wydzielone jako nowy temat `P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1` (patrz niżej)**. Zweryfikowane niezależnie przez orkiestratora (tsc/build/9 testów tematu+regresji/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `11c71851`), wypchnięte.** |
+| `P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1` | `ZINTEGROWANE (main 519a56c7)` | **Znalezisko Final Control przy weryfikacji `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1` (2026-08-22, NIE zgłoszenie właściciela wprost, ale ten sam rodzaj usterki i prawdopodobnie ta sama przyczyna wizualna którą właściciel opisał):** klasy `.entity-card-action`, `.entity-card-action-primary`, `.entity-card-action-secondary` (przyciski akcji karty — np. „Rozpocznij badanie"/„Otwórz drzewo" w popupie odkrycia technologii, renderowane przez `gra/src/ui/entityCards/renderer.ts:291-293` z `data.actions`, ustawianego przez `techDiscoveryNotice.ts:566-583` gdy `opts.onStartResearch`/`opts.onOpenTree` są podane — ŻYWA, częsta ścieżka: `main.ts` linie ok. 19433/19439/19507/19515/20454/25894, `scienceHubHud.ts:643-644`, `techTreeView.ts:928-929`) **NIE MAJĄ ŻADNEGO CSS w całym repo** (potwierdzone grepem przez Final Control; tylko kontener-liczba-mnoga `.entity-card-actions` ma styl, nie same przyciski). Potwierdzone realną sondą Chromium (`getComputedStyle` na przycisku „Rozpocznij badanie"): `background-color: rgb(239,239,239)`, `color: rgb(0,0,0)`, `border-top-width: 2px`, `cursor: default` — identyczny, natywny, brzydki wygląd przeglądarki co pierwotne zgłoszenie właściciela dla `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1`, tylko inna ścieżka kodu (`data.actions` zamiast `row.linkTo`). **To NIE regres** — klasa istnieje bez CSS od T1 (`c1365bfa`), dużo wcześniej niż T10; po prostu nigdy nie została ostylowana, a istniejący test tematu (19/19) nie renderuje karty z `actions` ustawionym, więc nie łapie tego. **Rekomendacja Final Control**: to prawdziwe przyciski AKCJI (nie nawigacja do innej karty jak `linkTo`), więc styl powinien być wypełnionym przyciskiem w języku wizualnym karty (analogicznie do istniejącego, już ostylowanego `.entity-card-more`), NIE linkiem (złoty/podkreślony jak `.entity-card-row-value`) — to inny komponent UI z innym znaczeniem. Naprawa: dopisać CSS dla `.entity-card-action`/`-primary`/`-secondary` w `ENTITY_CARD_CSS` (`entityCards/renderer.ts`), plus nowy test faktycznie renderujący kartę z `data.actions` ustawionym (obecny test tematu tego nie robi). Jednoznaczny bug, nie decyzja produktowa — nie wymaga ABC. **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Opus 5 dla Operatora I Evaluatora — temat czysto wizualny (CSS przycisków akcji).** **ZAKOŃCZONE (2026-08-22): Operator PASS, Evaluator PASS-WITH-NOTES, Final Control PASS — wszystkie 3 role zweryfikowały REALNYM Playwright/Chromium (zrzuty przed/po popupu odkrycia „Obróbka drewna"). Język wizualny odtworzony z przedmigracyjnego `.tdn-tree-btn` i kanonu design systemu (`--tg-btn-primary`/`--tg-btn-primary-ink`/`--tg-gold-primary`/`--tg-radius-btn`), hierarchia primary (złoty gradient, waga 700) vs secondary (ciemne tło, złoty tekst, waga 600) zgodna z `action.kind` z `techDiscoveryNotice.ts`. Nowy test `entity-card-action-buttons-real-render-test.cjs` (31/31, z mutacją dowodzącą że test faktycznie łapie regresję — zarówno wbudowaną, jak i ręczną mutację źródła 11 pass/20 fail przed przywróceniem). Zero zmian poza allowlistą (tylko dopisany blok CSS + nowy plik testu, 0 usunięć w istniejącym kodzie). Zweryfikowane niezależnie przez orkiestratora (tsc/build/3 testy tematu+regresji entityCards/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `519a56c7`), wypchnięte.** |
+| `P-CIVPEDIA-KARTY-NOTATKI-DEWELOPERSKIE-Q1` | `ZINTEGROWANE (main be039b4a)` | **Zgłoszenie właściciela (2026-08-22):** karty budynków/ulepszeń pokazują graczowi surowy tekst wewnętrznego dziennika zmian/balansu zamiast opisu gry — potwierdzone DWA razy: (1) karta „Tartak", pole „Odblokowuje surowiec"; (2) karta „Palisada drewniana" (panel budowy miasta), sekcja „Uwagi" — oba pokazują historię „korekta balansu Maciej [data]"/nazwy tematów R-/P-/PYTANIE- wprost graczowi. **Recon (subagent, 2026-08-22) w pełni zamknięty**: źródło to pole `surowiecOdblokowany_uwaga` w `gra/data/terrain-improvements.json` (np. klucz „tartak", linie 177-193), czytane WYŁĄCZNIE przez `gra/src/ui/entityCards/improvementAdapter.ts:143-148` i wstrzykiwane do wiersza „Odblokowuje surowiec" jako `wartość (uwaga)`. **To pole jest CZYSTO OPISOWE, nie source-of-truth** — realna, aktualna liczba (`50/turę`) pochodzi z ZUPEŁNIE OSOBNEGO, czystego pola `surowiec_ilosc_tura` (linia 187), renderowanego osobno jako „Produkcja surowca: N/turę" (linie 150-151) i to ono jest używane przez silnik gry (`turn-economy.ts`/`economy.ts`/`terrain-improvements.ts`) — `surowiecOdblokowany_uwaga` nigdzie nie jest parsowane numerycznie. **To NIE regres** — git blame na pełnej historii repo pokazuje że pole od zawsze pełniło funkcję wewnętrznego dziennika balansu, narastającego przy każdej korekcie (2026-07-23→07-27→07-29→08-09→08-12→08-13), zespół/agenci dopisywali kolejne wpisy zamiast nadpisywać. **Skala: problem systemowy** — pole występuje w 14 kluczach `terrain-improvements.json`, z czego **9 ma pełny wzorzec „dziennika balansu"** (stadnina, glinianka, kamieniołom, tartak, warzelnia_soli, kopalnia_miedzi, kopalnia_zelaza, kopalnia_cyny, kopalnia_zlota) — pozostałe 5 to krótkie, właściwie opisowe notatki (pastwisko/owce/lama/ryby/dzika zwierzyna), NIE do ruszania. **Rekomendacja (jednoznaczna, nie wymaga ABC)**: `improvementAdapter.ts` przestaje renderować `surowiecOdblokowany_uwaga` graczowi (usunąć z wiersza karty) — „Produkcja surowca: N/turę" już w pełni pokrywa tę informację czysto. Same pola JSON (`surowiecOdblokowany_uwaga`) ZOSTAJĄ nietknięte w danych — to wciąż legalna wewnętrzna dokumentacja balansu dla zespołu/agentów, tylko przestaje trafiać do UI gracza. Powiązane z `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1` (ten sam trzeci zrzut ekranu, „Palisada drewniana", pokazuje OBA problemy naraz — Operator dispatchowany do tamtego tematu powinien też sprawdzić czy analogiczne pole istnieje dla `buildings.json`/kart budynków, nie tylko ulepszeń terenu). **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Sonnet 5 — temat treści/danych (przestać renderować pole), nie osąd wizualny.** **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS (workflow `wf_a16d7a0f-272`). `improvementAdapter.ts` przestał renderować `surowiecOdblokowany_uwaga`; `buildings.json`/`buildingAdapter.ts` sprawdzone — analogiczne pole `uwagi` ISTNIEJE (ten sam wzorzec dziennika, np. „palisada"), ale renderowane jest przez `cityPanel.ts::playerFacingNote()` — POZA zakresem tego tematu, świadomie nietknięte, właściwe miejsce naprawy to `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1` (już ma `cityPanel.ts` w swoim zakresie). Zweryfikowane niezależnie przez orkiestratora (tsc/build/testy tematu+regresja entityCards/5 bramek zielone), zmergowane do `main` (merge non-ff, commit `be039b4a` — `main` przesunął się o 1 commit dokumentacyjny między dispatchem a mergem, zero konfliktu plików), wypchnięte.** |
+| `P-BUILDMODE-LOCKTIP-ZASLANIA-LISTE-Q1` | `ZINTEGROWANE (main 9d3724b7)` | **Zgłoszenie właściciela (2026-08-22, ze zrzutu panelu „ULEPSZENIA TERENU"):** „Gdy wejdzie się w budowanie ulepszeń, tooltip, który informuje, że coś jest zablokowane przez technologię, zasłania całe ulepszenie. Powinien znajdować się w innym miejscu, a nie jestem pewien, czy jest taki, jak zaprojektował designer." **Recon (subagent, 2026-08-22) zamknięty**: `gra/src/ui/buildModeHud.ts`, jeden współdzielony element `<div class="civ-build-lock-tip">` (utworzony raz, linia 308-310) pokazywany funkcją `showLockTip(text, anchor)` (linie 334-340) na `mouseenter` wiersza zablokowanej pozycji. Pozycjonowanie: sztywny offset względem `getBoundingClientRect()` triggera (`left = r.left - 250px`, `top = r.top`, linie 337-339) — **bez żadnego sprawdzenia wysokości tooltipa, granic viewportu ani granic przewijanej listy** `.civ-build-panel`. CSS (linie 165-168): `position:fixed`, `max-width:480px`, czcionka `22px` (duża), brak `max-height` — tooltip rośnie w dół od wiersza-triggera wraz z długością tekstu (np. dwie wymagane technologie naraz), zasłaniając wiersze POD triggerem w tej samej liście — dokładnie jak na zrzucie. **Nie natywny `title`** (jest ustawiony tylko jako fallback a11y, linia 521) — to w pełni customowy div, więc naprawa jest w naszych rękach. **Gotowy wzorzec poprawnego pozycjonowania JUŻ ISTNIEJE w repo, trzykrotnie**: `techTreeView.ts::showCardFor()` (linie 774-791, liczy `offsetWidth/offsetHeight` i flipuje/clampuje względem `window.innerWidth/innerHeight`), `hoverDetailDock.ts::positionFloat()` (linie 100-112) i `hudTitleTooltip.ts::positionTip()` (linie 173-184) — obie też sprawdzają przepełnienie i flipują. Dla porównania: `cityPanel.ts` (linie 6781-6784) i `scienceHubHud.ts` (linie 607-612) w ogóle nie floatują — hint renderowany inline w wierszu/karcie (`.bld-infocard-lock`/`.sh-lock`), więc fizycznie nie może nic zasłonić — alternatywny wzorzec do rozważenia, jeśli floating+clamp okaże się niewystarczający. **Brak makiety designera** dla tego konkretnego tooltipa (`dyspozycje/_handoff/UI-do-MASTER_hud-D1B-mockupy.md` opisuje panel budowy ogólnie, bez specyfikacji tego elementu). **Skala: mała, jednomiejscowa** — jedna funkcja `showLockTip()` w jednym pliku, nie inline per wiersz; naprawa (flip/clamp jak w `techTreeView.ts`) naprawi całą listę naraz. Nie wymaga ABC — jednoznaczny bug pozycjonowania z gotowym wzorcem naprawy już w kodzie. **MODEL (2026-08-22, R-PROC-AUTOBOT.md §5a wyjątek graficzny): Opus 5 dla Operatora I Evaluatora — temat wizualny (pozycjonowanie/CSS); Evaluator dodatkowo weryfikuje zrzutem ekranu z żywej przeglądarki że tooltip faktycznie nie zasłania listy.** **ZAKOŃCZONE (2026-08-22): Operator/Evaluator/Final Control wszystkie PASS (workflow `wf_5b25b2a7-8a2`), zweryfikowane REALNYM renderem Playwright/Chromium przez wszystkie 3 role (zrzuty przed/po, 21/21 nowy test geometryczny łapiący defekt na kodzie sprzed naprawy 10/21). Wybrano wzorzec `techTreeView.ts::showCardFor()`, kotwica pozioma o cały panel (nie wiersz) bo anchor leży wewnątrz przewijanej listy. Zweryfikowane niezależnie przez orkiestratora (tsc/build/test tematu+2 bramki dodatkowe/5 bramek referencyjnych zielone), zmergowane do `main` (merge non-ff, commit `9d3724b7`), wypchnięte.** |
+| `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` | `**CAŁA MIGRACJA (T1-T10) ZDEPLOYOWANA, FALA 315**` | ECHO 1-5 zapisane. T1+T1b+T3 FALA 307, T4 FALA 309, T8 FALA 311, T5 FALA 312, T7b FALA 313, T6+T9 FALA 314, T10 FALA 315. **T10 (linkowanie krzyżowe 4×4, ostatni krok) ZDEPLOYOWANE** — jeden delegowany listener w `renderer.ts` honoruje `linkTo` jednolicie we wszystkich 3 layoutach wiersza (grid/grid+badge/pills), z `stopImmediatePropagation()` zapobiegającym podwójnemu dispatchowi tam gdzie T7b ma własny tymczasowy listener. Nowe linki w unitAdapter (Technologia, Zastępuje), technologyAdapter (Budynki, Jednostki, Ulepszenia terenu, Kolejne technologie, Zmiany ekonomiczne, Wymagania), improvementAdapter (Technologia z guardem — „Irygacja" świadomie pominięta, nie istnieje w `tech.json`; Ulepszenie bazowe). `buildingAdapter.ts` bez zmian (recon potwierdził brak jednoznacznych id). Stos Esc/overlay przy 2+ zagnieżdżonych kartach zweryfikowany TRZEMA niezależnymi testami real-Chromium (Operator, Evaluator, Final Control — każdy inny scenariusz). System `entityCards` T1-T10 kompletny: 4 kinds, 4 adaptery, zero TODO/FIXME. **Cała migracja `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` jest ZAKOŃCZONA i ZDEPLOYOWANA.** Nic do dispatchu. |
+
+### Zamknięte — odsyłacze do decyzji i dowodów
+
+Poniższe odsyłacze są indeksem, nie nowymi werdyktami. Szczegóły i historyczne
+stemple pozostają w sekcjach niżej oraz w dokumentach decyzji.
+
+| ID | STATUS KANONICZNY | Decyzja / dowód |
+|---|---|---|
+| `R-MIASTA-LIMIT-PODBÓJ-Q1` | `ZAMKNIĘTE` | [`docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md`](../docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md) |
+| `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md`](../docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md), FALA 294 |
+| `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md`](../docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md), FALA 294 |
+| `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md`](../docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md), FALA 293 |
+| `P-JEDNOSTKI-KARTA-3D-INFO-Q1` | `DEPLOY-ROBOCZA` | [`docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md`](../docs/decyzje/P-JEDNOSTKI-KARTA-3D-INFO-Q1.md), FALA 295 |
+
+### Retencja historii
+
+Sekcje od `## Obieg` w dół są dotychczasowym rejestrem append-only. Historyczne
+statusy nie są automatycznie przepisywane na kanoniczne: korektę można dodać tylko
+z datą, dowodem i odsyłaczem do decyzji/raportu. To zabezpiecza przed fałszywym
+zamykaniem tematów podczas migracji.
+
+## ⛔ Obieg
+Nowy temat → **pełne ID w REJESTR-PROSB** → ABC tylko jeśli wymagana decyzja →
+Operator → Evaluator → Final Control → integracja → `READY_FOR_DEPLOY` → deploy/push
+osobno. Pętla `FAIL`/`BLOCK`/`TIMEOUT`/`INFRA`/`ZWIS` wraca do tego samego ID.
+Kanon: [`docs/procesy/INDEX-PROCESU.md`](../docs/procesy/INDEX-PROCESU.md).
+
+---
+
+## R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 — ECHO właściciela: **1A + 2A + 3A** · STATUS: **DECYZJA ZAPISANA, IMPLEMENTACJA NIEZLECONA**
+
+**Decyzja właściciela otrzymana w głównym czacie:** `1A, 2A, 3A`. To jest
+decyzja właściciela, nie rekomendacja.
+
+### Sytuacja i zakres
+
+Temat dotyczy terminowej umowy na wspólną walkę z barbarzyńcami oraz wojskowe
+prawo przemarszu. Umowa jest obustronna, nie jest automatycznym ogólnym
+sojuszem przeciw wszystkim cywilizacjom, a zasady zerwania muszą określać
+karę Zaufania, moment wygaśnięcia autoryzacji i zachowanie jednostek.
+
+### 1. Czas i zakres umowy
+
+**A — umowa terminowa obejmująca wspólną walkę i przemarsz — WYBRANE (1A).**
+
+- **Za:** jeden ograniczony kontrakt obejmuje oba uzgodnione uprawnienia.
+- **Za:** terminowość ogranicza ryzyko pozostawienia otwartego dostępu po ustaniu celu.
+- **Przeciw:** wymaga określenia czasu trwania w mechanice.
+- **Przeciw:** po wygaśnięciu trzeba obsłużyć jednostki pozostające na terytorium partnera.
+
+**B — umowa trwa do zniszczenia zagrożenia barbarzyńskiego.**
+
+- **Za:** czas wynika bezpośrednio z celu umowy.
+- **Za:** umowa może zakończyć się naturalnie po usunięciu zagrożenia.
+- **Przeciw:** „zniszczenie zagrożenia” może być niejednoznaczne przy wielu obozach i jednostkach.
+- **Przeciw:** kontrakt może trwać dłużej, jeśli warunek końcowy nie zostanie wykryty.
+
+**C — umowa bezterminowa, do odwołania przez strony.**
+
+- **Za:** strony nie muszą ustalać czasu przy zawarciu.
+- **Za:** zakończenie następuje wtedy, gdy współpraca nie jest już potrzebna.
+- **Przeciw:** rośnie ryzyko zapomnianego, stale aktywnego prawa przemarszu.
+- **Przeciw:** potrzebna byłaby silniejsza kontrola aktywnych umów.
+
+### 2. Obustronność przemarszu i udziału w walce
+
+**A — pełna obustronność — WYBRANE (2A).** Obie strony mogą przechodzić przez
+swoje terytoria, a oddziały obu stron mogą wejść do wspólnej walki.
+
+- **Za:** obie strony mają identyczne prawa i obowiązki.
+- **Za:** udział w walce nie zależy od tego, kto zawarł umowę.
+- **Przeciw:** trzeba sprawdzać uprawnienia dla obu kierunków ruchu.
+- **Przeciw:** partner uzyskuje dostęp do większej liczby sytuacji bojowych na terytorium drugiej strony.
+
+**B — przemarsz i udział w walce tylko po stronie wskazanej w umowie.**
+
+- **Za:** ogranicza dostęp do jasno wskazanej strony.
+- **Za:** zmniejsza ryzyko niezamierzonego wejścia drugiej strony.
+- **Przeciw:** prawa stron nie są symetryczne.
+- **Przeciw:** wymaga rozróżnienia strony uprawnionej i udostępniającej terytorium.
+
+**C — przemarsz obustronny, ale do wspólnej walki może wejść tylko wskazana strona.**
+
+- **Za:** zachowuje swobodę przejścia przy ograniczeniu udziału bojowego.
+- **Za:** może pasować do umowy, w której jedna strona zaprasza drugą do pomocy.
+- **Przeciw:** miesza dwa różne poziomy uprawnienia.
+- **Przeciw:** wymaga osobnej obsługi wejścia do walki dla każdej strony.
+
+### 3. Zerwanie umowy i jednostki pozostające na terytorium partnera
+
+**A — natychmiastowe zerwanie przez każdą stronę z karą Zaufania — WYBRANE (3A).**
+Autoryzacja wygasa od następnej kontroli ruchu, a jednostki pozostają na miejscu
+bez teleportowania.
+
+- **Za:** każda strona może natychmiast zakończyć zobowiązanie.
+- **Za:** kara Zaufania zachowuje koszt dyplomatyczny zerwania.
+- **Przeciw:** jednostka może chwilowo pozostać na nieautoryzowanym terytorium.
+- **Przeciw:** brak teleportowania wymaga dalszej obsługi legalnego ruchu jednostki.
+
+**B — zerwanie na koniec bieżącej tury, bez natychmiastowego wygaszenia autoryzacji.**
+
+- **Za:** daje przewidywalne zamknięcie bieżącej tury.
+- **Za:** ogranicza przerwanie aktywnej akcji ruchu.
+- **Przeciw:** strona nie może odebrać dostępu natychmiast.
+- **Przeciw:** autoryzacja musi trwać po decyzji o zerwaniu.
+
+**C — natychmiastowe zerwanie bez kary, z karencją na wyjście jednostek.**
+
+- **Za:** pozwala zakończyć umowę bez sankcji i dać jednostkom czas na wyjście.
+- **Za:** zmniejsza ryzyko utknięcia jednostek po odebraniu dostępu.
+- **Przeciw:** brak kary osłabia koszt zerwania zobowiązania.
+- **Przeciw:** karencja oznacza częściowo aktywny dostęp po zerwaniu.
+
+**Kontrakt wybrany:** `1A + 2A + 3A`. Szczegółowy dokument decyzji:
+[`docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md`](../docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md).
+Ten zapis nie zleca implementacji i nie zmienia plików `gra/`.
+
+---
+
+## R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1 — KANON RAPORTU, NIE OTWARTE ABC
+
+Decyzja procesowa z 2026-08-18: raport właściciela ma **dziesięć** kategorii
+(osobne stany przejściowe Operator/Evaluator, „czeka na Operatora” vs
+„zapomniane”, świadomie odłożone, otwarte ABC, playtesty). Pełna definicja,
+źródła, reguły klasyfikacji i snapshot referencyjny:
+[`docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`](../docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md).
+
+Poprzedni układ siedmiu kategorii (`R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1`) —
+plik kompatybilności historycznej, **SUPERSEDED**; treść w historii gita.
+
+Ten wpis nie jest pytaniem do właściciela i nie trafia do aktywnej listy ABC.
+Odpowiedzi A/B/C pozostają w historii, ale przed pokazaniem ich jako otwarte ABC
+trzeba zweryfikować ECHO/status w `docs/decyzje/<ID>.md`. Kategoria playtestów
+czyta wyłącznie najnowszy wpis `Playtest — na co patrzeć` z ROBOCZEJ w
+`dyspozycje/WERSJE.md`; nie przenosi historycznej kolejki PT.
+
+---
+
+## P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 — prototyp karty odkrycia technologii · STATUS: **RECON ZAMKNIĘTY**
+
+**ECHO (Maciej, 2026-08-21):** `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1=A`. Pełna treść ECHO
+i ostrzeżenie o `techDiscoveryNotice.ts` (FALA 300) wdrożonym PRZED zamknięciem tego recon —
+w `docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`. Recon zamknięty: naprawa dwóch
+znalezionych bugów (widmowe/nieaktualne nazwy ulepszeń terenu + zły dobór ikony) wydzielona
+i zakończona pod `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1` (READY_FOR_DEPLOY).
+
+**Sytuacja:** Po odkryciu technologii istnieją dziś skrócone informacje w hubie badań oraz tooltip/karta węzła drzewa. Nie ma jednej rozbudowanej karty pokazującej pełny efekt odkrycia. Prototyp opisano na przykładzie Brązownictwa w [`docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`](../docs/decyzje/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md).
+
+**Cel pytania:** Ustalić, czy zaakceptować układ i zakres jednej karty jako wzorzec przed przygotowaniem kontraktu danych oraz wdrożeniem dla wszystkich technologii.
+
+**Dlaczego teraz:** W repo są już trzy częściowe wzorce informacji (`techTreeView.ts`, `sciencePicker.ts`, `scienceHubHud.ts`), ale dane mają wykryte rozbieżności: `tech.json` deklaruje 12 jednostek i Popalnię brązu, a `units.json` ma 20 jednostek z `Tech: "Brązownictwo"`, zaś `terrain-improvements.json` ma Kopalnię miedzi i Kopalnię cyny. Nie należy implementować karty, dopóki ta granica źródeł nie jest jawna.
+
+### Opcje
+
+**A — zaakceptować prototyp jako wzorzec (rekomendacja).** Najpierw uznać układ karty i UX: popup po faktycznym odkryciu, zamknięcie przez przycisk/Esc, brak blokowania tury, ponowne otwarcie z drzewa; przed kodem rozstrzygnąć rozbieżności danych.
+
+- **Za:** ogranicza ryzyko wdrożenia niepełnej listy odblokowań; daje jeden konkretny wzorzec do powielenia.
+- **Za:** zachowuje istniejące informacje z tooltipów i huba, zamiast tworzyć drugi niezależny opis.
+- **Przeciw:** wymaga jeszcze decyzji, czy kanonem listy jednostek jest `tech.json`, czy `units.json`.
+- **Przeciw:** wdrożenie wszystkich technologii nastąpi dopiero po domknięciu kontraktu danych.
+
+**B — zaakceptować wdrożenie kart dla wszystkich technologii od razu.**
+
+- **Za:** szybciej pojawi się kompletna funkcja w całym drzewie.
+- **Za:** niespójności można próbować obsłużyć wyjątkami w trakcie implementacji.
+- **Przeciw:** karta może pokazywać różną liczbę jednostek zależnie od źródła i nieistniejącą Popalnię brązu.
+- **Przeciw:** utrudni to późniejsze poprawienie danych i zwiększy ryzyko fałszywych obietnic dla gracza.
+
+**C — odłożyć popup i pozostać przy istniejących tooltipach.**
+
+- **Za:** brak nowych zależności UI i brak ryzyka wynikającego z niespójności danych.
+- **Za:** obecne drzewo już pokazuje podstawowe wymagania i odblokowania.
+- **Przeciw:** gracz nadal nie dostanie jednego podsumowania „co mogę teraz zrobić”.
+- **Przeciw:** informacje pozostaną rozproszone między kartą węzła, hubem i katalogami budowy/jednostek.
+
+**Rekomendacja:** **A** — zaakceptować prototyp dokumentacyjny, ale przed implementacją rozstrzygnąć wskazane rozbieżności źródeł.
+
+**Decyzja właściciela:** `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 = A`.
+
+**ECHO (Maciej, 2026-08-21):** `A` — zaakceptować układ/UX prototypu jako wzorzec; przed
+dispatchem implementacji dla wszystkich technologii Operator musi rozstrzygnąć rozbieżność
+źródeł danych (`tech.json` vs `units.json` vs `terrain-improvements.json`) opisaną wyżej.
+Kontekst zgłoszenia: właściciel zgłosił „regres wyglądu na niektórych badaniach, dziwne
+infografiki niezgodne ze stylem gry" — to jest dokładnie efekt braku tego wzorca dla
+technologii innych niż Brązownictwo; ECHO A odblokowuje ujednolicenie.
+
+**KOREKTA AUDYTU 2026-08-18:** ten wpis dotyczy ogólnego wzorca i nadal
+czeka na akceptację prototypu oraz rozstrzygnięcie rozbieżności źródeł.
+Konkretna karta Brązownictwa została zatwierdzona i wdrożona osobno jako
+`P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 = C` w FALI 294. Nie otwierać ponownie
+tego pytania z powodu wdrożenia konkretnego wycinka.
 
 ---
 
@@ -68,9 +314,9 @@ nieaktualnych pytań jako żywych.
 | # | ID | Litera | Status |
 |---|-----|--------|--------|
 | 1 | **AI-BALANS-STEP6-Q1** | **A** | 🟡 ZAPISANA — czeka `działaj` |
-| 2 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | **A** + reguła | 🟡 ZAPISANA — czeka `działaj` |
-| 3 | **MAP-UX-CLUSTER-LABEL-Q1** | **B+C** | 🟡 ZAPISANA — czeka `działaj` |
-| 4 | **R-WIARYGODNOSC-S9-Q1** | **A** | 🟡 ZAPISANA — czeka `działaj` |
+| 2 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | **A** + reguła | ✅ ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES · test prefiksu 23/23 |
+| 3 | **MAP-UX-CLUSTER-LABEL-Q1** | **B+C** | ✅ ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES · display 27/27 · badge 31/31 |
+| 4 | **R-WIARYGODNOSC-S9-Q1** | **A** | 🟢 ZDEPLOYOWANE FALA 259 `e028045c` — `wiarygodnosc-test` 270/270 |
 | 5 | **R-DESIGN-PANEL-MIASTA-V2-Q1** | **C** | 🟡 ZAPISANA — czeka `działaj` |
 | 6 | **R-OBRONA-MIASTA-MP-Q1** | **A** | 🟡 ZAPISANA — czeka `działaj` |
 
@@ -117,7 +363,7 @@ Szczegóły: [`docs/decyzje/R-BUDOWA-ZROWNOWAZONE-TRYB.md`](../docs/decyzje/R-BU
 
 ## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **ZDEPLOYOWANE FALA 215** `2a5a66d1` (2026-08-04)
 
-Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
+Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](../docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
 
 ---
 
@@ -125,12 +371,12 @@ Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły
 
 | ID | Decyzja | Status | Docs |
 |----|---------|--------|------|
-| **MP-ARMY-Q1** | **A** — cap = łącznie żywe jednostki bojowe (garnizon wliczony); odbudowa do limitu | **WDROŻONE FALA 220** | [`MP-ARMY-Q1.md`](docs/decyzje/MP-ARMY-Q1.md) |
-| **MP-GARRISON-Q1** | **A** — Hard: istniejące garnizony zostają, zakaz nowej produkcji wojskowej | **WDROŻONE FALA 220** | [`MP-GARRISON-Q1.md`](docs/decyzje/MP-GARRISON-Q1.md) |
-| **MP-DIPLO-Q1** | **A** — ułatwienie tylko AI major→MP; same-civ Zaufanie max ~100; priorytet absorpcji klastra | **WDROŻONE FALA 220** | [`MP-DIPLO-Q1.md`](docs/decyzje/MP-DIPLO-Q1.md) |
-| **AI-FOUND-Q1** | **A** — founding AI major pop ≥ 2 (jak gracz) | **WDROŻONE FALA 220** | [`AI-FOUND-Q1.md`](docs/decyzje/AI-FOUND-Q1.md) |
-| **AI-LOCAL-Q1** | **A** — faza lokalna ~tura 20 LUB 1 zwiadowca; wioski nie blokują | **WDROŻONE FALA 220** | [`AI-LOCAL-Q1.md`](docs/decyzje/AI-LOCAL-Q1.md) |
-| **AI-MANAGE-Q1** | **A** — auto-zarządca dla major AI (nie MP) | **WDROŻONE FALA 220** | [`AI-MANAGE-Q1.md`](docs/decyzje/AI-MANAGE-Q1.md) |
+| **MP-ARMY-Q1** | **A** — cap = łącznie żywe jednostki bojowe (garnizon wliczony); odbudowa do limitu | **WDROŻONE FALA 220** | [`MP-ARMY-Q1.md`](../docs/decyzje/MP-ARMY-Q1.md) |
+| **MP-GARRISON-Q1** | **A** — Hard: istniejące garnizony zostają, zakaz nowej produkcji wojskowej | **WDROŻONE FALA 220** | [`MP-GARRISON-Q1.md`](../docs/decyzje/MP-GARRISON-Q1.md) |
+| **MP-DIPLO-Q1** | **A** — ułatwienie tylko AI major→MP; same-civ Zaufanie max ~100; priorytet absorpcji klastra | **WDROŻONE FALA 220** | [`MP-DIPLO-Q1.md`](../docs/decyzje/MP-DIPLO-Q1.md) |
+| **AI-FOUND-Q1** | **A** — founding AI major pop ≥ 2 (jak gracz) | **WDROŻONE FALA 220** | [`AI-FOUND-Q1.md`](../docs/decyzje/AI-FOUND-Q1.md) |
+| **AI-LOCAL-Q1** | **A** — faza lokalna ~tura 20 LUB 1 zwiadowca; wioski nie blokują | **WDROŻONE FALA 220** | [`AI-LOCAL-Q1.md`](../docs/decyzje/AI-LOCAL-Q1.md) |
+| **AI-MANAGE-Q1** | **A** — auto-zarządca dla major AI (nie MP) | **WDROŻONE FALA 220** | [`AI-MANAGE-Q1.md`](../docs/decyzje/AI-MANAGE-Q1.md) |
 
 **Ustalenia produktowe (nie ABC):** wzmacniać tylko **AI major** (nie MP); major AI = te same reguły gospodarcie co gracz. Trudność: Easy ≈ dziś MP wojsko/diplo · Normal max1 wojsko + mid absorb · Hard 0 wojska MP + prawie zawsze accept AI→MP.
 
@@ -13348,6 +13594,21 @@ jako niewłaściwy mechanizm, zastąpione nowym hookiem ruchu.
 
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree ręczny) — implementacja od nowa wg
 doprecyzowanej mechaniki, z pełnym pokryciem testowym (w tym że stare jednostki NIE znikają).**
+
+### Follow-up ECHO A — 2026-08-17
+
+Właściciel doprecyzował trwałość efektu wejścia:
+
+> „po wejściu jednostki cywilizacji na heks obozu barbarzyńskiego heks ma być
+> trwale wykluczony z przyszłego tworzenia obozów w tej rozgrywce. Istniejące
+> jednostki barbarzyńskie pozostają; zatrzymuje się tylko spawner.”
+
+To jest decyzja **A** dla osobnego follow-upu `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1`.
+Pełny ECHO zapisano w `docs/decyzje/P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1.md`.
+Implementacja obejmuje blacklistę heksów per gra, save/load z defaultem dla
+starych zapisów oraz wszystkie losowe ścieżki spawnowania. Status: **GOTOWE
+LOKALNIE, bez deployu** — ECHO `e6c2ea2b`, implementacja `85f70a91`,
+testfix `0e720a70`; `barb-camp-blacklist-test.cjs` 18/18, typecheck 0.
 
 ## P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej, temat deweloperski, worktree eval-pool-4)
 
@@ -28578,8 +28839,13 @@ naprawiła (klik gracza na wrogą JEDNOSTKĘ), zarejestrowane osobno zgodnie z C
    widoczności: 0 trafień. Może to być świadomy projekt (AI ma pełną informację, gra "uczciwie"
    inaczej) albo przeoczenie — do rozstrzygnięcia, nie zakładać z góry.
 
-**STATUS: OTWARTE — ZAPOMNIANE, do dispatchu** (Operator Haiku 4.5, worktree). Audyt 2026-08-17
-potwierdził: zarejestrowany 2026-08-14, NIGDY nie dispatchowany, asymetria mgły (gracz ograniczony na atakach na jednostki ale nie na miasta) i brak mgły w AI wciąż nierozstrzygnięte — zero dalszych wzmianek/dispatchu w pliku od tego czasu.
+**Statusy rozdzielone po wykonaniu:**
+- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA`: **STATUS HISTORYCZNY** —
+  commit `9044e39d` był gotowy, ale w tamtym momencie niezależny werdykt nie
+  był jeszcze zapisany. Aktualnie: **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**, dowód `8e90aa53` i bramki klik miasta 13/13 + siege 6/6.
+- `P-AI-BRAK-POJECIA-MGLY`: **GOTOWE — Evaluator PASS-WITH-NOTES** —
+  własna widoczność per owner, pamięć celu i ponowne wykrycie; wcześniejsza decyzja A+C pozostaje dowodem.
 
 ---
 
@@ -31522,7 +31788,12 @@ ich nie rozszerzy się na inne części mapy.
 
 **Decyzja implementacyjna:** opcja **(a)** — gdy ustawienie WYŁ., liczba chatek → 0 (żadne nie są generowane na mapie). Brak wizualnych artefaktów, proste UX, niezakłócona mechanika generacji (chatki mają osobny seed i Fisher-Yates shuffle, nie integrują się z resztą terenu).
 
-STATUS: **GOTOWE DO EVALUATORA — commit `f7be3d95` (Operator Haiku 4.5). Czeka na werdykt (Evaluator Sonnet 5).**
+STATUS HISTORYCZNY: **GOTOWE DO EVALUATORA — commit `f7be3d95`**.
+
+**KOREKTA AUDYTU 2026-08-18:** status bieżący =
+**ZAMKNIĘTE / ZDEPLOYOWANE FALA 291 `13b771f4` — PASS**. WERSJE FALI 291
+potwierdzają toggle, domyślne zachowanie oraz VERIFY OK; nie tworzyć nowego
+dispatchu ani pytania o ten sam temat.
 
 ---
 
@@ -31553,8 +31824,12 @@ można przeznaczyć do 60% budżetu, ale można przeznaczyć mniej."
 **Status rekonu:** CZEKA NA DISPATCHER — orkiestrator nie zleciał jeszcze, bo to polecenie ma
 być najpierw tutaj zarejestrowane (procedura NUMER→ABC→COMMIT→DEPLOY).
 
-STATUS: **OTWARTE — czeka na dispatch** (mogą pojawić się pytania ABC jeśli recon ujawni
-niejednoznaczności lub opcje projektowe).
+STATUS HISTORYCZNY: **OTWARTE — czekało na dispatch**.
+
+**KOREKTA AUDYTU 2026-08-18:** status bieżący =
+**ZAMKNIĘTE / ZDEPLOYOWANE FALA 291 `13b771f4` — PASS**. Wdrożono limit
+60% budżetu Nauki dla gracza i AI; poprawiono sumę 100% oraz przypadek
+ujemnej wartości przy Nauka=60%. Nie tworzyć nowego pytania ABC.
 
 ---
 
@@ -31582,7 +31857,7 @@ ustrojów (nie razem z bieżącą implementacją limitu 60%).**
 
 **Stan pracy:** Recon — zbieranie informacji o systemie i punktach implementacji (gdzie gracz ustawia %, gdzie logika to stosuje, czy AI ma osobną ścieżkę, czy limit dotyczy override per-miasto).
 
-STATUS: **OTWARTE — rekon w toku, czeka na implementację po uzupełnieniu zrozumienia architektury.**
+STATUS HISTORYCZNY: **OTWARTE — rekon w toku**.
 
 ---
 
@@ -31599,7 +31874,214 @@ STATUS: **OTWARTE — rekon w toku, czeka na implementację po uzupełnieniu zro
   przyznał w raporcie. Twierdzenie o tsc do potwierdzenia niezależnie przez orkiestratora po
   scaleniu, zanim uzna się temat za faktycznie zamknięty.
 
-STATUS: **SCALONE DO GŁÓWNEGO DRZEWA, CZEKA NA NIEZALEŻNĄ WERYFIKACJĘ ORKIESTRATORA (tsc/testy)
-i Evaluatora — NIE `WDROŻONE`, korekta wcześniejszego zbyt optymistycznego wpisu Operatora.**
+STATUS HISTORYCZNY: **SCALONE DO GŁÓWNEGO DRZEWA, CZEKAŁO NA WERYFIKACJĘ**.
+
+**KOREKTA AUDYTU 2026-08-18:** status bieżący =
+**ZAMKNIĘTE / ZDEPLOYOWANE FALA 291 `13b771f4` — PASS**. Pełny routing
+budynki↔ulepszenia został następnie domknięty korektą
+`P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` w FALI 293.
 
 ---
+
+## P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1 (2026-08-17, korekta zakresu po FALI 291)
+
+**Korekta właściciela:** poprzednie `R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1` ograniczało
+tylko parametr automatycznych ulepszeń. Właściwy kontrakt jest nadrzędnym podziałem całej
+puli Pracy imperium: budynki + ulepszenia terenu = 100%; ulepszenia najwyżej 50%; minimum
+50% pozostaje dostępne dla budynków. Dotyczy gracza i AI, także przy override per-miasto.
+
+**Zakres implementacji:** nowy produkcyjny `splitEmpirePracaBudget()` wylicza absolutny
+budżet obu strumieni, a picker dostaje ten budżet jako nadrzędny cap. Przy braku legalnej
+kolejki budynków zachowuje się istniejąca reguła overflow: niewykorzystany remainder zostaje
+w puli, nie jest spalany. Migracja starych zapisów pozostaje bez zmiany; clamp nadal działa
+przy odczycie pól legacy i nowych.
+
+STATUS: **W TRAKCIE — osobna gałąź/worktree, bez merge/push/deploy.**
+
+## KOREKTA ID P-EPOKA-BRAZU-KOMUNIKAT-PODBOJ-MIAST-Q1 — ZASTĄPIONY / UNIEWAŻNIONY (2026-08-17)
+
+Poprzedni temat łączył dwa niezależne zdarzenia: (1) odblokowanie/przejście do epoki Brązu
+po odkryciu odpowiednich badań/technologii oraz (2) triumf po zajęciu wszystkich miast-państw
+danej kultury. Właściciel sprostował, że jedno zdarzenie nie jest warunkiem drugiego.
+
+**Status:** **ZASTĄPIONY / UNIEWAŻNIONY przez sprostowanie**. Historia poprzedniego ID
+pozostaje zachowana w rejestrze; dalsze pytania prowadzone są wyłącznie jako dwa osobne ID:
+`P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` oraz
+`P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1`.
+
+---
+
+## P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 — komunikat odblokowania/przejścia do Brązu · STATUS: **ZDEPLOYOWANE FALA 294 — PASS-WITH-NOTES** (2026-08-18)
+
+**Zakres:** osobny komunikat informujący, że po odkryciu/odblokowaniu odpowiednich
+badań/technologii gracz może wejść do epoki Brązu oraz jakie nowe możliwości się otwierają.
+Treść, forma i szczegółowy zakres komunikatu pozostają do ustalenia w późniejszym pytaniu.
+
+**Warunek:** odkrycie/odblokowanie odpowiednich badań/technologii prowadzących do epoki Brązu.
+Zajęcie wszystkich miast-państw danej kultury **nie jest warunkiem** tego komunikatu.
+Ten komunikat **nie jest warunkiem** triumfu po podboju miast-państw.
+
+**KOREKTA AUDYTU 2026-08-18:** ECHO **C** zapisane w
+`docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md`; implementacja
+`1383c31e`/`b047ff73` weszła do FALI 294 `a0f804d7`. Bramki logiczne są
+zielone; live Chromium był niedostępny w środowisku, więc pozostaje
+PASS-WITH-NOTES środowiskowe. Nie łączyć z triumfem miast-państw.
+
+---
+
+## P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 — popup po zajęciu wszystkich miast-państw kultury · STATUS: **GOTOWE / ZAMKNIĘTE — ZDEPLOYOWANE FALA 294 — PASS-WITH-NOTES** (2026-08-18)
+
+**Zakres:** osobny, potencjalnie bardziej rozbudowany popup triumfu/podboju po zajęciu
+wszystkich miast-państw należących do danej kultury. Dokładny warunek grupy kultury,
+treść, forma i zakres informacji pozostają do ustalenia w późniejszym pytaniu.
+
+**Warunek:** zajęcie wszystkich miast-państw danej kultury. Przejście do epoki Brązu ani
+odkrycie konkretnej technologii **nie jest warunkiem** tego popupu.
+Ten popup **nie jest warunkiem** odblokowania ani przejścia do epoki Brązu.
+
+**KOREKTA AUDYTU 2026-08-18:** ECHO **A** zapisane w
+`docs/decyzje/P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1.md`; implementacja
+`ae5ef14b` weszła do FALI 294 `a0f804d7`. Testy triumfu 13/13 i 16/16,
+tsc PASS. Live Chromium był niedostępny w środowisku, więc status pozostaje
+PASS-WITH-NOTES środowiskowe.
+
+---
+
+## P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 — niepełny routing podziału Pracy · STATUS: **ZDEPLOYOWANE FALA 293 — PASS** (2026-08-18)
+
+**Zgłoszenie właściciela po FALI 292:** „Podział Pracy nadal działa nieprawidłowo. Nie dzieli się maksymalnie 50% całej puli Pracy na ulepszenia, a jednocześnie został stary mechanizm, że tylko 50% budżetu można ustawić na automatyczną budowę ulepszeń. Wygląda, jakby nowej zmiany nie było.”
+
+**Repro na branchu `cursor/deploy-fala-292-63a1` (`90b6508d`):**
+`splitEmpirePracaBudget()` ogranicza cap pickera ulepszeń, ale produkcja budynków nadal
+działa przez niezależny per-miasto `splitPraca()`. F292 zawiera więc tylko częściową
+naprawę routingu, nie pełny podział jednej puli imperium.
+
+**Kontrakt:** pula imperium = 100%; udział ulepszeń wybierany przez użytkownika, maks.
+50%; reszta dostępna budynkom; wspólna reguła dla gracza i AI; kolejka, overflow,
+wiele miast, override per miasto i stare save nie mogą łamać sumy ani capu.
+ECHO/kontrakt: [`docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md`](../docs/decyzje/P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1.md).
+
+**KOREKTA AUDYTU 2026-08-18:** opis powyżej zachowuje stan sprzed korekty.
+FALA 293 `8fa80b7c` domknęła routing `doBudynkow` dla gracza/AI/MP,
+kolejki, overflow, wiele miast, override i UI; bramki split/overflow/auto/AI/
+percent/wiring są zielone, VERIFY OK. Nie traktować tego wpisu jako otwartego.
+
+---
+
+## KOREKTA STATUSÓW — kolejka AutoBot 2026-08-18
+
+Poniższe statusy wynikają z niezależnych Evaluatorów i zostały następnie
+opublikowane w ROBOCZA FALI 295 (`8589d294`):
+
+- `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; fix `8f45ae6d`, test repro/negacji, 16/16.
+- `P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; `46efc847`, test kamery 24/24, tsc PASS.
+- `P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; `8e90aa53`, klik gracza, map attack 13/13, siege 6/6.
+- `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; capture 14/14, movement 13/13, tsc PASS.
+- `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI` — **ZDEPLOYOWANE FALA 295,
+  PASS**; aktywny zakup AI/MP idzie przez Skarbiec, a capture i surrender
+  czyszczą legacy kolejkę; testy 20/20, 11/11, 13/13.
+- `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; live preview 8/8 i pakiet dyplomacji zielony.
+- `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT` — **ZDEPLOYOWANE FALA 295,
+  PASS**; test 8/8, rodzic wykazuje regresję 6/8.
+- `P-JEDNOSTKI-KARTA-3D-INFO-Q1` — **ZDEPLOYOWANE FALA 295,
+  PASS-WITH-NOTES**; karta 23/23, wiring 6/6, interakcja 7/7, build PASS;
+  nota: brak live Chromium/WebGL.
+
+Osobne braki pozostają poza tym batch’em: pełne E2E pathfindingu AI,
+live Chromium/WebGL oraz test live edycji koszyka dyplomacji. Nie blokują
+obecnych kontraktów, ale są zapisane jako noty Evaluatorów.
+
+## ECHO — decyzje ABC 2026-08-18
+
+- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY` — **B**: przekroczenie czasu jest
+  ostrzeżeniem, a determinizm, ujścia rzek i poprawność mapy pozostają
+  twardymi kryteriami. Kontrakt: `docs/decyzje/P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.md`.
+- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2` — **C**: targeted overlay bez
+  globalnego przebijania przez teren i jednostki. Kontrakt:
+  `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md`.
+
+Oba tematy: **ZDEPLOYOWANE FALA 296 `a37f7123`** po osobnych parach
+Operator Luna → Evaluator Luna High. Nie uruchamiać ponownego dispatchu.
+
+Wyniki FALI 296:
+- mapgen B: kontrakt 2/2 PASS; czas ponad progiem jest WARN;
+- N2 targeted overlay: 76/76, relief 24/24, render cyny 23/23;
+- N3 reset cleanupu: 72/72;
+- N5 asercja testu: 71/71 + mutacja wykryta;
+- N6 komentarz: diff-check PASS;
+- barbarzyńcy: 18/18 i 84/84, typecheck PASS.
+
+## ECHO — R-MIASTA-LIMIT-PODBÓJ-Q1
+
+**Decyzja właściciela: A.** Limit dotyczy wyłącznie miast założonych; miasta
+zdobyte nie zużywają tej puli i nie są przez nią blokowane. Status:
+**ZAMKNIĘTE bez zmiany kodu**. Szczegóły:
+`docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md`.
+
+## ECHO częściowe — R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1
+
+**Q1 = A:** wojna wymuszona w Kamieniu może uruchomić się po **20 turach od
+rozpoczęcia gry**. **Q2:** wybór celu identyczny jak przy Brązie — najbliższy
+sąsiad terytorialny, bez aktywnej wojny, NAP, blokady pokoju ani sojuszu z
+celem. **Q3 = A:** automatyczny pokój po 2 zdobytych/utraconych miastach,
+20 tur odpoczynku i 20 tur cooldownu na tę samą cywilizację. Kontrakt
+kompletny — gotowy do dispatchu Operatora Luna Medium.
+
+## R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 — ABC po rundzie 1 (2026-08-27)
+
+STATUS: **OTWARTE** — czeka na decyzję właściciela. Runda 2 NIE startuje przed odpowiedzią.
+
+Runda 1 wykonała wyłącznie KROK 1 (pomiar) i **obaliła przesłankę zlecenia liczbami**
+zamiast implementować ją „bo tak kazano". Trzy role zgodne: Operator `DECISION_REQUIRED`,
+Evaluator `PASS-WITH-NOTES`, Final Control `DECISION_REQUIRED` (`GOTOWOŚĆ: NIE`).
+
+### Q1 — wyrąb lasu pod farmę przy rzece jest GORSZY od stanu dzisiejszego
+
+Pomiar `tileYield` na realnym kodzie, delta (wyrąb+farma) − (las+farma), **identyczna
+na każdym terenie**: żywność **+1**, praca **−3**, handel **−2**, drewno **−15/turę**,
+koszt Pracy **+2,5**. Wariant z Drewnem z wyrębu (+25 jednorazowo) zwraca się w mniej
+niż 2 turach straty −15/turę. Odtworzone niezależnie przez Evaluatora co do jednostki.
+Heksów rzeka+Las: 22/44/46 (ziarna 42/1337/2026) — sprawa realna, nie marginalna.
+
+**Pytanie: czy mimo to wycinać?**
+
+### Q2 — sprzeczność „wykarczuj las → farma → potem trzoda"
+
+Ciąg z wyrębem wykonalny na **0 heksów** (po wyrębie nie ma Lasu, a nowa reguła hodowli
+wymaga Lasu + tartaku). **Bez wyrębu** ciąg `tartak → farma → trzoda` działa na
+**100% heksów rzeka+Las** (22/44/46) — tartak nie usuwa lasu, kanon.
+
+**Pytanie: który wariant (W2–W5 w raporcie Operatora)?**
+
+### Q3 — `tartak = 0` wywraca Q2 przed wyborem
+
+**AI nie buduje ANI JEDNEGO tartaku** na żadnym z 5 zmierzonych ziaren, mimo że tartak
+kwalifikuje się na 183 heksach. Każdy wariant Q2 wymaga, żeby AI zaczęło je budować.
+Kontrpomiar Evaluatora: nowa reguła hodowli (Las + tartak) przy zerze tartaków dałaby
+pastwiska **103 → 0**, obozy bez zmian. **Skutek odwrotny do zamierzonego.**
+
+### USTALENIA, KTÓRE NIE WYMAGAJĄ DECYZJI
+
+- **„farmy plus przodek" = `bydlo` („Trzoda")** — potwierdzone, brak lepszego kandydata
+  wśród kluczy; `warunek` wpisu mówi wprost „+ farma lub solo".
+- **Wagi wyboru ulepszeń NIE ISTNIEJĄ w `ai-params.json`.** Wybór robi stała lista
+  `AI_IMPROVEMENT_PRIORITY`, w której hodowla (poz. 1–3) **już bije** obóz (poz. 5).
+  Proporcja 99/56 to **dostępność terenu** (182 pola obozowe vs 102 hodowlane), nie preferencja.
+  Pól pod oba naraz: **0** (obóz wymaga Lasu, hodowla jego braku).
+- **Kompleksowość PRZED: 357/357 heksów tkniętych, 0 domkniętych.** Skarga potwierdzona
+  w skrajnej postaci. **Przyczyna strukturalna: `pickAutoImprovements` (`auto-improvements.ts:402`)
+  iteruje po TYPACH ulepszeń, nie po HEKSACH.** To jedyne, co naprawia skargę — wagi
+  i tereny są wtórne.
+- Ślad czasowy: AI stawia farmę, potem robi ~44 obce heksy, wraca po 14–20 turach.
+  `wyrab` wywołany **0 razy** na 5 ziarnach.
+- **AI buduje ZERO:** tartaków, dróg, posterunków, fortów, wszystkich kopalni, irygacji.
+- Limit „1 obóz na 10 obywateli" przekroczony **3–18×** (miasto pop 6 → limit 1, ma 5–18).
+- Metryka kompleksowości Operatora była **zdegenerowana** (przypięta do 100% z konstrukcji,
+  nie mogła zejść do zera) — Evaluator zastąpił ją E1/E2, korekta obowiązkowa.
+- `ai-praca-split-parity-test` **21/1 — regres ZASTANY na `main`**, zweryfikowany przez
+  Evaluatora na czystym `origin/main` `d0de8164`. Osobny temat.

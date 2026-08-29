@@ -81,9 +81,11 @@ Styl: **1E (Painted Imperial)**, tokeny wyłącznie z `eksport/tokens.css` / `br
 
 ---
 
-## 5. Marker stolicy — status realny: KOD GOTOWY, ale NIE na `main` dziś (ważna korekta)
+## 5. Marker stolicy — status realny: WDROŻONE W ROBOCZEJ (korekta 2026-08-18)
 
-Poprzednia wersja tej instrukcji twierdziła, że korona + pogrubiona obwódka stolicy są już wdrożone w grze. **Po weryfikacji `git log`/`git branch --contains` to nieprawda dla `main`:** funkcja istnieje w pełni dopracowanym stanie (korona 17×13px, obwódka 3,5px, wykluczenie miast-państw z markera) na osobnym, **niescalonym** branchu (`claude/sprawdzenie-funkcjonalnosci-ek4ra0`, tip commit `d3470ed5`), ale **nie jest ancestorem `main`** (`git merge-base --is-ancestor d3470ed main` → NIE). Rejestr zadań to potwierdza — `MAP-UX-CLUSTER-LABEL-Q1` w `dyspozycje/REJESTR-PROSB-I-ZADAN.md` ma status **„ECHO ZAPISANA · czeka Autobot wdrożenia"**, czyli decyzja jest podjęta, ale kod czeka na scalenie do `main` i deploy do ROBOCZA.
+Poprzednia wersja tej instrukcji zawierała historyczny status „branch roboczy, nie main". **Aktualna weryfikacja `git log`/`git branch --contains` potwierdza, że** funkcja istnieje w pełni dopracowanym stanie (korona 17×13px, obwódka 3,5px, wykluczenie miast-państw z markera), a commit `d3470ed5` jest przodkiem aktualnego `main`. Kod został ujęty w FALI 296 i ROBOCZEJ `a37f7123` (źródło integracji `a6e2967f`).
+
+Wcześniejszy AutoBot Operator → Evaluator miał werdykt **PASS-WITH-NOTES**; Evaluator wykrył potrzebę wyłączenia miast-państw z markera, co domknięto w `d3470ed5`. Bramki paczki: `tsc --noEmit` 0, `display-names-test` 27/27, `city-map-badge-test` 31/31, Vite 792 moduły. Wpis rejestru z 2026-08-06 pozostaje historią stanu sprzed scalenia.
 
 **Dlatego marker stolicy NIE wchodzi do żadnej z 3 obowiązkowych klatek w sekcji 4.** Poniżej specyfikacja tego kandydata — do wglądu, żeby Design mógł ją zwalidować równolegle (nieblokująco), skoro kod jest gotowy i czeka tylko na scalenie:
 
@@ -95,7 +97,7 @@ Poprzednia wersja tej instrukcji twierdziła, że korona + pogrubiona obwódka s
 | Korona | 17px szer. × 13px wys., gradient złota `#fff6d2 → #f2df9a → #d8c069`, 3 szpice + 2 wcięcia + 3 „klejnoty"-kropki, w slocie 19px między medalionem cywu a nazwą |
 | Zakres (kto dostaje marker) | **Wyłącznie stolice pełnoprawnych cywilizacji** (gracz + AI major) — `capitalCityIdForOwner(ownerId) === city.id`. **Miasta-państwa (MP) są wyłączone** nawet jeśli formalnie „stolica" wskazuje na ich jedyne miasto (`options.isCityStateOwner` gatekeeper w `_isCapitalCity`) — decyzja `MAP-UX-CAPITAL-MP-SCOPE-Q1=B`, bo inaczej KAŻDE miasto-państwo (ma zawsze dokładnie jedno miasto) dostałoby koronę, co myli „stolica imperium" z technicznym faktem „jedyne miasto tego właściciela". |
 
-Jeśli Design chce dostarczyć wariant walidujący ten marker (np. jako 4. opcjonalną klatkę), mile widziane — ale integrator scala go do `main` osobno, po decyzji właściciela o wdrożeniu brancha `d3470ed5`. Nie traktuj tego jako część zamkniętego zakresu 3 klatek z sekcji 4.
+Jeśli Design chce dostarczyć wariant walidujący ten marker (np. jako 4. opcjonalną klatkę), mile widziane — jest to walidacja istniejącej implementacji w ROBOCZEJ, nie zlecenie scalenia brancha. Nie traktuj tego jako część zamkniętego zakresu 3 klatek z sekcji 4.
 
 ---
 

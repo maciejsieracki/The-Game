@@ -1,3 +1,13 @@
+import {
+  isRestingFromForcedWar,
+  pickForcedWarTargetId,
+  restoreForcedWarState,
+  serializeForcedWarState,
+  shouldEndForcedWarByCityCount,
+  type ForcedWarPairState,
+  type ForcedWarSaveState,
+} from './forced-war-common';
+
 /**
  * forced-war-bronze.ts — R-EPOKA-BRAZU-WYMUSZONA-WOJNA (Maciej 2026-08-09, decyzja ECHO A
  * + doprecyzowanie, `dyspozycje/PYTANIA-OTWARTE.md`). RUNDA 2 (Evaluator FAIL runda 1,
@@ -115,24 +125,12 @@ export function pickBronzeForcedWarTargetId(
   hexDistanceFn: (aq: number, ar: number, bq: number, br: number) => number,
   opts?: PickBronzeForcedWarTargetOpts,
 ): number | null {
-  const blocked = opts?.blockedOwnerIds ?? new Set<number>();
-  const eligible = candidates.filter(c => !blocked.has(c.ownerId));
-  if (eligible.length === 0) return null;
-  if (!referenceHex) {
-    return eligible.reduce((a, b) => (b.ownerId < a.ownerId ? b : a)).ownerId;
-  }
-
-  let best = eligible[0]!;
-  let bestDist = hexDistanceFn(best.q, best.r, referenceHex.q, referenceHex.r);
-  for (let i = 1; i < eligible.length; i++) {
-    const c = eligible[i]!;
-    const d = hexDistanceFn(c.q, c.r, referenceHex.q, referenceHex.r);
-    if (d < bestDist || (d === bestDist && c.ownerId < best.ownerId)) {
-      best = c;
-      bestDist = d;
-    }
-  }
-  return best.ownerId;
+  return pickForcedWarTargetId(
+    candidates,
+    referenceHex,
+    hexDistanceFn,
+    opts?.blockedOwnerIds ?? new Set<number>(),
+  );
 }
 
 /**
@@ -146,7 +144,11 @@ export function shouldEndBronzeForcedWarByCityCount(
   citiesCapturedByDefender: number,
   threshold: number = WOJNA_WYMUSZONA_MAX_MIASTA_ZDOBYTE_LUB_STRACONE,
 ): boolean {
-  return citiesCapturedByAttacker >= threshold || citiesCapturedByDefender >= threshold;
+  return shouldEndForcedWarByCityCount(
+    citiesCapturedByAttacker,
+    citiesCapturedByDefender,
+    threshold,
+  );
 }
 
 /**
@@ -158,8 +160,7 @@ export function isRestingFromBronzeForcedWar(
   currentTurn: number,
   restUntilTurn: number | undefined,
 ): boolean {
-  if (restUntilTurn == null) return false;
-  return currentTurn < restUntilTurn;
+  return isRestingFromForcedWar(currentTurn, restUntilTurn);
 }
 
 // ---------------------------------------------------------------------------
@@ -173,20 +174,10 @@ export function isRestingFromBronzeForcedWar(
 // stores/reads the result under `meta.bronzeForceWar*` fields).
 // ---------------------------------------------------------------------------
 
-export interface BronzeForcedWarPairState {
-  attackerId: number;
-  targetId: number;
-  capturedByAttacker: number;
-  capturedByDefender: number;
-}
+export type BronzeForcedWarPairState = ForcedWarPairState;
 
 /** Kształt 4 pól stanu wojny wymuszonej Brązu tak, jak trafiają do `SaveGame.meta`. */
-export interface BronzeForcedWarSaveState {
-  pendingOwners: number[];
-  cycleOwners: number[];
-  restUntilByOwner: Array<[number, number]>;
-  activeByPairKey: Array<[string, BronzeForcedWarPairState]>;
-}
+export type BronzeForcedWarSaveState = ForcedWarSaveState;
 
 /**
  * Zrzuca 4 struktury stanu (Set/Set/Map/Map) do zwykłych tablic gotowych pod JSON —
@@ -198,12 +189,12 @@ export function serializeBronzeForcedWarState(
   restUntilByOwner: ReadonlyMap<number, number>,
   activeByPairKey: ReadonlyMap<string, BronzeForcedWarPairState>,
 ): BronzeForcedWarSaveState {
-  return {
-    pendingOwners: Array.from(pendingOwners),
-    cycleOwners: Array.from(cycleOwners),
-    restUntilByOwner: Array.from(restUntilByOwner.entries()),
-    activeByPairKey: Array.from(activeByPairKey.entries()),
-  };
+  return serializeForcedWarState(
+    pendingOwners,
+    cycleOwners,
+    restUntilByOwner,
+    activeByPairKey,
+  );
 }
 
 /**
@@ -221,10 +212,5 @@ export function restoreBronzeForcedWarState(
   restUntilByOwner: Map<number, number>;
   activeByPairKey: Map<string, BronzeForcedWarPairState>;
 } {
-  return {
-    pendingOwners: new Set(saved?.pendingOwners ?? []),
-    cycleOwners: new Set(saved?.cycleOwners ?? []),
-    restUntilByOwner: new Map(saved?.restUntilByOwner ?? []),
-    activeByPairKey: new Map(saved?.activeByPairKey ?? []),
-  };
+  return restoreForcedWarState(saved);
 }

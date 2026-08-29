@@ -248,7 +248,7 @@ export interface TileYield {
   handel:  number;
   drewno:  number;
   kamien:  number;
-  /** GLINA-Q1=A (2026-07-20): stala ilosc z bonusu ulepszenia (glinianka); baza terenu zawsze 0. */
+  /** P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1=A: baza terenu może dawać glinę; bonusy nakładek są addytywne. */
   glina:   number;
   /** Ruda miedzi (kopalnia_miedzi / kopalnia na złożu miedzi) — stock do Odlewni brązu. */
   ruda:          number;
@@ -644,13 +644,18 @@ export interface CityYieldContext {
   /** RDY-01: mnoznik na Nauke z bonusu cyw (np. Inkowie +15%). Domyslnie 1. */
   civNaukaMult?: number;
   /**
-   * Handel E3: liczba AKTYWNYCH tras handlowych dotykających tego miasta
-   * (obie role -- zrodlo i cel; patrz trade-routes.ts computeTradeRouteCountByCity).
-   * Kazda trasa dodaje +5% do Handlu, kumulatywnie: (1 + 0.05*n). Osobny, jawny
-   * czynnik -- NIE laczony z Targowiskiem/civHandelMult, zeby uniknac podwojnego
-   * liczenia (STAN-PRACY-HANDOFF.md, epik Handel E3). Domyslnie 0 (brak tras).
+   * T4 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1, ECHO Q3 Wariant C, runda 2): suma
+   * per-trasowych bonusow Handlu tego miasta -- dla kazdej trasy tego miasta z
+   * `budynekOdblokowany===true`, `0.05 * wlasny dochod dystansowy tej strony
+   * trasy` (patrz trade-routes.ts computeTradeRouteBuildingBonusByCity, BEZ
+   * mnoznika bonusu cudow CUDA-HANDEL-01). ZASTEPUJE stary
+   * `liczbaAktywnychTrasHandlowych`/mnoznik (1+0.05*n), ktory liczyl WSZYSTKIE
+   * polaczone trasy niezaleznie od budynku (bug znaleziony przez Final Control
+   * T3). Addytywny skladnik do handelBrutto -- NIE laczony mnoznikowo z
+   * Targowiskiem/civHandelMult, zeby uniknac podwojnego liczenia. Domyslnie 0
+   * (brak tras z budynkiem).
    */
-  liczbaAktywnychTrasHandlowych?: number;
+  premiaHandluTrasHandlowych?: number;
   /**
    * Zadanie 2 (2026-07-23): liczba Garncarni ZBUDOWANYCH W TYM MIESCIE (nie civ-wide).
    * Kazda dodaje +budynekGarncarniaBonusZywnosci (domyslnie 10%) do lokalnej Zywnosci
@@ -949,11 +954,13 @@ export function cityYieldPerTurn(
   if (civHandelMult !== 1) {
     handelBrutto *= civHandelMult;
   }
-  // Handel E3: +5% Handlu za kazda AKTYWNA trase handlowa miasta, kumulatywnie
-  // (1 + 0.05*n). Osobny, jawny czynnik -- patrz CityYieldContext.liczbaAktywnychTrasHandlowych.
-  const liczbaTrasHandlowych = ctx.liczbaAktywnychTrasHandlowych ?? 0;
-  if (liczbaTrasHandlowych > 0) {
-    handelBrutto *= (1 + 0.05 * liczbaTrasHandlowych);
+  // T4 (runda 2): premia za trasy handlowe Z BUDYNKIEM, addytywna suma
+  // per-trasowych bonusow 0.05*wlasny dochod dystansowy -- patrz
+  // CityYieldContext.premiaHandluTrasHandlowych. ZASTEPUJE stary mnoznik
+  // (1+0.05*n) liczony ze WSZYSTKICH polaczonych tras niezaleznie od budynku.
+  const premiaTrasHandlowych = ctx.premiaHandluTrasHandlowych ?? 0;
+  if (premiaTrasHandlowych > 0) {
+    handelBrutto += premiaTrasHandlowych;
   }
 
   // --- Step 5 (renumbered from 6): Apply corruption/waste -- dotyczy WYLACZNIE

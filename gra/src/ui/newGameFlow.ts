@@ -1316,8 +1316,8 @@ function advancedSettingRows(): AdvSettingRow[] {
     },
     {
       key: 'cityLimitBase',
-      lbl: 'Limit miast (baza)',
-      hint: 'Bazowa liczba miast na cywilizację — rzeczywisty limit per epoka = baza + (epoka−1)×5. Domyślnie = 10. / EN: base city limit per civilization — actual limit per era = base + (era−1)×5.',
+      lbl: 'Limit miast zakładanych (baza)',
+      hint: 'Bazowa liczba samodzielnie zakładanych miast — rzeczywisty limit per epoka = baza + (epoka−1)×5. Miasta zdobyte nie zużywają limitu. Domyślnie = 10. / EN: base limit for founded cities — actual limit per era = base + (era−1)×5. Captured cities do not use the limit.',
       opts: ['10 miast', '15 miast', '20 miast'],
       getIdx: () => {
         const limits = [10, 15, 20];
@@ -1684,7 +1684,7 @@ function renderGenStep(host: HTMLElement): void {
       ['Wzrost ludnosci', growthPaceLabel],
       ['Zasieg ruchu', ruchSwiataLabel],
       ['Trudnosc miast-panstw', csLabel],
-      ['Limit miast (baza)', cityLimitLabel],
+      ['Limit miast zakładanych (baza)', cityLimitLabel],
     );
   }
   if (p.startPreview) {

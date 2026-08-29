@@ -610,11 +610,6 @@ const HUD_GOLD_DIM   = BATTLE_GOLD_DIM;
 const HUD_TEXT       = BATTLE_TEXT;
 const HUD_TEXT_DIM   = BATTLE_TEXT_DIM;
 const HUD_FONT       = BATTLE_FONT;
-/** Gracz (Ty) atakuje w typowym flow — kolory z DECYZJA-C-kolory-stron-bitwa.md */
-const FACTION_ATK    = BATTLE_PLAYER;
-const FACTION_DEF    = BATTLE_ENEMY;
-const FACTION_ATK_TEXT = BATTLE_PLAYER_TEXT;
-const FACTION_DEF_TEXT = BATTLE_ENEMY_TEXT;
 const HOVER_TOOLTIP_MS = 300;
 
 /** C2-Q7 TW: kontekstowe kursory (luk / miecz) — SVG data-URL. */
@@ -973,16 +968,9 @@ const AMMOBAR_COLOR = 0x2f7adf;         // BLUE ammo bar
 // billboards to the camera and follows the unit's Y (terrain/hill) for free --
 // exactly like the bars.
 //
-// SIDE_COLOR is a small lookup keyed by side so MORE ally colours can be added
-// later (today there are only two sides -- attacker = RED, defender = BLUE).
-// Extend by adding keys here; nothing else needs to change.
-const SIDE_COLOR: Record<'atk' | 'def', number> = {
-  atk: 0xe53935, // ATTACKER -> red
-  def: 0x1e88e5, // DEFENDER -> blue
-};
-/** Side -> faction outline colour, with a neutral grey fallback. */
-function sideColor(side: 'atk' | 'def'): number {
-  return SIDE_COLOR[side] ?? 0x9e9e9e;
+// Stała semantyka UI: kolor opisuje właściciela, nie rolę w walce.
+function sideColor(side: 'atk' | 'def', playerSide: 'atk' | 'def'): number {
+  return side === playerSide ? 0x3a6ad0 : 0xc84040;
 }
 // The coloured frame extends this far (world units) beyond the bar cluster on
 // every edge, so only a thin rim of colour is visible around the slim bars.
@@ -2647,13 +2635,6 @@ export class BattleScene {
       justifyContent: 'flex-start',
     });
     document.body.appendChild(this.overlay);
-    // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: od tej chwili nakładka bitwy przykrywa mapę
-    // świata — main.ts czyta ten stan, żeby wstrzymać WŁASNĄ kamerę mapy (WASD/edge-pan
-    // lecą na window i inaczej przesuwałyby mapę pod spodem przez całą bitwę).
-    // / EN: from here the battle overlay covers the world map; main.ts uses this to
-    // freeze the world-map camera (WASD/edge-pan are window-level listeners).
-    markBattleSceneOpen(this);
-
     const titleBar = document.createElement('div');
     Object.assign(titleBar.style, {
       color:         '#f0d080',
@@ -2894,15 +2875,18 @@ export class BattleScene {
     this.overlay.appendChild(commanderPanel);
     this._commanderPanel = commanderPanel;
 
+    const playerSide = this._playerControlSide();
+    const enemySide = playerSide === 'atk' ? 'def' : 'atk';
     const mkCommanderCard = (side: 'atk' | 'def'): void => {
       const isAtk = side === 'atk';
+      const isPlayer = this._isPlayerSide(side);
       const civLabel = isAtk ? this._attackerCivLabel : this._defenderCivLabel;
       const roleLabel = isAtk ? 'atakujacy' : 'obronca';
-      const sideColor = isAtk ? FACTION_ATK : FACTION_DEF;
+      const sideColor = isPlayer ? BATTLE_PLAYER : BATTLE_ENEMY;
       const card = document.createElement('div');
       Object.assign(card.style, {
         display: 'flex', alignItems: 'center', gap: '11px', padding: '10px 16px',
-        flexDirection: isAtk ? 'row' : 'row-reverse',
+        flexDirection: isPlayer ? 'row' : 'row-reverse',
       });
       const portraitWrap = document.createElement('div');
       Object.assign(portraitWrap.style, { position: 'relative', width: '52px', height: '52px', flexShrink: '0' });
@@ -2913,12 +2897,12 @@ export class BattleScene {
       const medallion = document.createElement('span');
       Object.assign(medallion.style, {
         position: 'absolute', inset: '5px', borderRadius: '50%',
-        background: isAtk
+        background: isPlayer
           ? 'radial-gradient(circle at 38% 30%,#22314c,#0c1626)'
           : 'radial-gradient(circle at 38% 30%,#3a1c1c,#160a0a)',
         border: `2px solid ${sideColor}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: isAtk ? FACTION_ATK_TEXT : FACTION_DEF_TEXT, lineHeight: '0',
+        color: isPlayer ? BATTLE_PLAYER_TEXT : BATTLE_ENEMY_TEXT, lineHeight: '0',
       });
       const civIconId = isAtk ? this._attackerCivIconId : this._defenderCivIconId;
       const era = isAtk ? this._attackerEra : this._defenderEra;
@@ -2960,11 +2944,11 @@ export class BattleScene {
       card.appendChild(portraitWrap);
 
       const textCol = document.createElement('div');
-      Object.assign(textCol.style, { textAlign: isAtk ? 'left' : 'right', minWidth: '0' });
+      Object.assign(textCol.style, { textAlign: isPlayer ? 'left' : 'right', minWidth: '0' });
       const nameLbl = document.createElement('div');
       Object.assign(nameLbl.style, {
         fontFamily: BATTLE_FONT_TITLE, fontSize: '14px',
-        color: isAtk ? '#cfe0f4' : '#f0c8c8', lineHeight: '1.15', whiteSpace: 'nowrap',
+        color: isPlayer ? '#cfe0f4' : '#f0c8c8', lineHeight: '1.15', whiteSpace: 'nowrap',
       });
       nameLbl.textContent = civLabel;
       textCol.appendChild(nameLbl);
@@ -2996,7 +2980,7 @@ export class BattleScene {
         this._topCasDTxt = countsEl as unknown as HTMLSpanElement;
       }
     };
-    mkCommanderCard('atk');
+    mkCommanderCard(playerSide);
 
     // Centrum: zegar bitwy + pasek przewagi (SS2 - podlaczony do istniejacego
     // zrodla paska mocy, TYLKO nowy widok; stary pelnoszerokosciowy pasek
@@ -3056,12 +3040,12 @@ export class BattleScene {
       fontSize: '10px', color: '#c8b898', marginTop: '6px', letterSpacing: '0.02em',
       whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums',
     });
-    momentumCaption.innerHTML = 'Szacunkowa przewaga: <b style="color:' + FACTION_ATK_TEXT + '">50% Ty</b> \u00B7 <b style="color:' + FACTION_DEF_TEXT + '">50% wr\u00F3g</b>';
+    momentumCaption.innerHTML = 'Szacunkowa przewaga: <b style="color:' + BATTLE_PLAYER_TEXT + '">50% Ty</b> \u00B7 <b style="color:' + BATTLE_ENEMY_TEXT + '">50% wr\u00F3g</b>';
     clockCell.appendChild(momentumCaption);
     this._momentumCaptionEl = momentumCaption;
 
     commanderPanel.appendChild(clockCell);
-    mkCommanderCard('def');
+    mkCommanderCard(enemySide);
 
     // Prawa czesc gornego paska (TW v5 \u00a72 \u2014 rail 56px zlikwidowany, wszystko tu):
     // zebatka ustawien (popup Muzyka/Efekty/Paski/Statystyki/Pomoc) + Pomin + Wycofaj sie.
@@ -3355,6 +3339,12 @@ export class BattleScene {
     this.canvas.addEventListener('pointermove', this._onCanvasHoverMove);
     this.canvas.addEventListener('pointerleave', this._onCanvasHoverLeave);
     this._startLoop();
+    // P-BITWA-MAPA-BLACKOUT-PO-WYGRANEJ: rejestruj scenę dopiero po pełnym
+    // skonstruowaniu. Jeśli inicjalizacja WebGL/UI rzuci wyjątek, niedokończona
+    // scena nie może zostawić mapy świata zablokowanej na zawsze.
+    // / EN: register only after construction succeeds; a constructor failure
+    // must not leave the world map blocked by a stale registry entry.
+    markBattleSceneOpen(this);
   }
 
   // -------------------------------------------------------------------------
@@ -4125,7 +4115,7 @@ export class BattleScene {
 
       const ammo0 = ammoCount(bu);
       const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-      const bars = makeUnitBars(sideColor(side), ammoShown);
+      const bars = makeUnitBars(sideColor(side, this._playerControlSide()), ammoShown);
       bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
       this.scene.add(bars.hpBarGroup);
       bars.hpBarGroup.traverse(obj => {
@@ -4292,7 +4282,7 @@ export class BattleScene {
       const perTokenGeos: THREE.BufferGeometry[] = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
       const ammo0 = ammoCount(bu);
       const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-      const bars = makeUnitBars(sideColor('def'), ammoShown);
+      const bars = makeUnitBars(sideColor('def', this._playerControlSide()), ammoShown);
       bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
       this.scene.add(bars.hpBarGroup);
       bars.hpBarGroup.traverse(obj => {
@@ -5018,7 +5008,7 @@ export class BattleScene {
         // AMMO bar (+ 3-ci slot/ramka) tylko dla jednostek z amunicja > 0; czysto
         // wrecz / nieskonczone strzaly -> tylko 2 paski (HP+morale) i ramka na dwa (Naster).
         const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-        const bars = makeUnitBars(sideColor(side), ammoShown);
+        const bars = makeUnitBars(sideColor(side, this._playerControlSide()), ammoShown);
         bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
         this.scene.add(bars.hpBarGroup);
         // Register the six bar meshes' geometries + materials for disposal
@@ -8693,10 +8683,10 @@ export class BattleScene {
    * w kartach dowodcow. Wywolywane co klatke (tanie).
    */
   private _updateArmyMoraleBars(): void {
-    const ratioA = this._armyMoraleRatio('atk');
-    const ratioD = this._armyMoraleRatio('def');
-    const rA = Math.max(0, Math.min(1, ratioA));
-    const rD = Math.max(0, Math.min(1, ratioD));
+    const playerSide = this._playerControlSide();
+    const enemySide = playerSide === 'atk' ? 'def' : 'atk';
+    const rPlayer = Math.max(0, Math.min(1, this._armyMoraleRatio(playerSide)));
+    const rEnemy = Math.max(0, Math.min(1, this._armyMoraleRatio(enemySide)));
 
     // Pierscienie HP na medalionach dowodcow.
     if (this._cmdRingA) this._cmdRingA.innerHTML = commanderPortraitRingSvg(this._armyHpRatio('atk'));
@@ -8717,16 +8707,16 @@ export class BattleScene {
     // Pasek przewagi: udzial sily Ty/wrog znormalizowany do 100% (ta sama
     // zrodlowa dana co stary pasek mocy — army-morale ratio), zloty znacznik
     // na styku (mockup TW v5 SS2).
-    const sum = rA + rD;
-    const tyShare = sum > 0 ? rA / sum : 0.5;
+    const sum = rPlayer + rEnemy;
+    const tyShare = sum > 0 ? rPlayer / sum : 0.5;
     const tyPct = Math.round(tyShare * 100);
     const foePct = 100 - tyPct;
     if (this._momentumFillA) this._momentumFillA.style.width = tyPct + '%';
     if (this._momentumMarker) this._momentumMarker.style.left = tyPct + '%';
     if (this._momentumCaptionEl) {
       const label = this.started ? 'Przewaga na polu' : 'Szacunkowa przewaga';
-      this._momentumCaptionEl.innerHTML = label + ': <b style="color:' + FACTION_ATK_TEXT + '">'
-        + tyPct + '% Ty</b> · <b style="color:' + FACTION_DEF_TEXT + '">' + foePct + '% wróg</b>';
+      this._momentumCaptionEl.innerHTML = label + ': <b style="color:' + BATTLE_PLAYER_TEXT + '">'
+        + tyPct + '% Ty</b> · <b style="color:' + BATTLE_ENEMY_TEXT + '">' + foePct + '% wróg</b>';
     }
 
     // Gorny pasek: sklad armii (przed walka = startowy; w walce = pozostali)
@@ -8890,6 +8880,7 @@ export class BattleScene {
       defLabel: this._sideDisplayLabel('def'),
       atkCivLabel: this._attackerCivLabel,
       defCivLabel: this._defenderCivLabel,
+      playerSide: this._playerControlSide(),
       teren: this.terrain,
       mode: 'manual',
       atkBefore: this._startAtkSnaps,
@@ -9003,7 +8994,11 @@ export class BattleScene {
   }
 
   private _hideEndDetails(): void {
-    if (this._battleStatsOpen || isPostBattleSummaryOpen()) {
+    // `_battleStatsOpen` identifies the summary overlay owned by this scene's
+    // "Szczegóły bitwy" view. The map-level post-battle summary is created by
+    // `onFinishCb` immediately before `dispose()` runs; hiding every open
+    // post-battle summary here used to remove that new screen in the same tick.
+    if (this._battleStatsOpen) {
       hidePostBattleSummary();
     }
     if (this._endDetailsEl?.parentNode) {
@@ -10453,7 +10448,7 @@ export class BattleScene {
       units.push({
         q: ru.q,
         r: ru.r,
-        color: ru.side === 'atk' ? FACTION_ATK : FACTION_DEF,
+        color: this._isPlayerSide(ru.side) ? BATTLE_PLAYER : BATTLE_ENEMY,
       });
     }
     return {
@@ -15667,7 +15662,7 @@ export class BattleScene {
 
       const ammo0 = ammoCount(bu);
       const ammoShown = Number.isFinite(ammo0) && ammo0 > 0;
-      const bars = makeUnitBars(sideColor(side), ammoShown);
+      const bars = makeUnitBars(sideColor(side, this._playerControlSide()), ammoShown);
       bars.hpBarGroup.position.set(x, topY + HPBAR_Y, z);
       this.scene.add(bars.hpBarGroup);
       bars.hpBarGroup.traverse(obj => {

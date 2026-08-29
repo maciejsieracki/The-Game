@@ -1,6 +1,8 @@
 /**
- * Assety brand-book PACZKA FINAL — sync z
- * docs/ux/claude-design/.../brand-book/eksport/ → gra/src/ui/icons/brand/
+ * Assety brand-book PACZKA FINAL — REALNA KOPIA W REPO: gra/src/ui/icons/brand/ (71 plikow).
+ * UWAGA: katalog docs/ux/ zostal usuniety z repo (R-REPO-SPRZATANIE-SREDNIE-Q1,
+ * 2026-08-26). Sciezka nizej jest HISTORYCZNA — tresc: git show 39ae5d17:<sciezka>.
+ * Zrodlo syncu: docs/ux/claude-design/.../brand-book/eksport/ → gra/src/ui/icons/brand/
  */
 
 import type { BuildingDef, UnitDef } from '../../data/loader';

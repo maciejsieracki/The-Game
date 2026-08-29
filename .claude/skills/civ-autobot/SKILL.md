@@ -1,472 +1,359 @@
 ---
 name: civ-autobot
 description: >
-  Nakładka projektowa Civ „The Game" na uniwersalny skill `lean-loop` — wszystko, co
-  w TYM repozytorium działa inaczej niż w dowolnym innym: rytuał startu sesji (pull →
-  KANAL-PRACA → STAN-PRACY-HANDOFF → playbook.md), nienegocjowalna reguła „żadnej pracy
-  poza pętlą AutoBot" z dwoma wąskimi wyjątkami, pętla Operator → Evaluator →
-  final z przydziałem modeli (Operator i Evaluator Sonnet 5 effort="medium", Opus 5 dla render i deploy), procedura NUMER → ABC → COMMIT → DEPLOY
-  z rejestrem próśb, obowiązkowy turniej dwóch niezależnych projektów przed każdym
-  nowym pytaniem ABC, twarde FAIL Evaluatora dla edge/parytetu gracz-AI/save-load,
-  izolacja pracy subagentów w worktree i wpis-blokada w kanale przed serią zmian, progi
-  guardrails scaffoldu, postmortemy w `dyspozycje/autobot/logs/`, zakaz `npm run build`
-  i `npm run dev` w `gra/` oraz `export-*.py` na żywych danych, runbook deployu do
-  ROBOCZA i obowiązkowe logi w `WERSJE.md` + `KANAL-PRACA.md`. Użyj NA STARCIE KAŻDEJ SESJI w tym repo i przy
-  każdej pracy nad grą: kod w `gra/src`, dane w `gra/data`, panele Excel, mapa,
-  jednostki, modele 3D, bilans, testy, build, deploy, promocja KANON/FINALNA, pytania
-  do właściciela. Wyzwalacze: „sprawdź", „sprawdź kanał", „push", „deploy", „deploy do
-  robocza", „wdrażaj", „promuj kanon", „turniej ABC", „pytanie ABC", „format", „ABC",
-  „bramki", „playtest", „zleć subagentowi", „worktree", a także każde `ID + A|B|C` jako
-  odpowiedź właściciela. NIE używaj do zadań spoza tego repozytorium.
+  Aktywny proces AutoBot dla Civ: pełne ID, GOAL, izolacja, ABC/ECHO, dowody,
+  pętla Operator–Evaluator–Final Control–integracja oraz osobna bramka deploy/push.
 ---
 
-# Civ „The Game" — nakładka AutoBot
+# Civ — skill AutoBot
 
-**Najpierw `lean-loop`** (uniwersalny skill: drabina decyzyjna, przyczyna nie objaw,
-przegląd zakres+przerost, 5-krokowy protokół błędu, playbook, turniej, bariery).
-Ten plik go **nie powtarza** — dokłada wyłącznie to, co specyficzne dla Civ.
-Gdyby `lean-loop` był niedostępny, jego rdzeń AutoBota stoi w `AUTOBOT.md` w korzeniu.
+**Czym jest ten plik.** To jest **wypełnienie** uniwersalnego szkieletu procesu
+([`autobots/SKILL.md`](../autobots/SKILL.md)) wartościami tego konkretnego
+projektu: ścieżkami, modelami, liczbami, twardymi barierami i obserwowanymi
+trybami samooszukiwania. Szkielet mówi, **jaką funkcję** pełni dane pojęcie;
+ten plik mówi, **jaką ma postać w Civ „The Game"**. Pełna norma procesu (role,
+pętla, bramki, granice, hasła) jest w `docs/decyzje/R-PROC-AUTOBOT.md` — tu jej
+nie dubluję, żeby nie rozjeżdżała się w dwóch miejscach.
 
-## ⛔ Reguła nadrzędna: żadnej pracy poza pętlą AutoBot
+Kolejność czytania na starcie sesji jest w §„Kolejność czytania na starcie
+sesji" poniżej — zacznij tam. Dla sesji Cursor dodatkowo aktywna jest reguła
+[`.cursor/rules/autobot-evaluator-operator.mdc`](../../../.cursor/rules/autobot-evaluator-operator.mdc),
+niosąca techniczne, zawsze-egzekwowane bramki.
 
-**KAŻDA praca w tym repozytorium — kod, fix, docs procesu, audyt, przygotowanie deployu —
-idzie przez pętlę Operator → Evaluator → final. Reguła NIENEGOCJOWALNA**
-(`CLAUDE.md` §0a · `.cursor/rules/autobot-evaluator-operator.mdc` · `R-PROC-AUTOBOT`),
-**bez wyjątku „to tylko drobiazg" / „zrobię sam poza pętlą"**. Obejmuje tak samo pracę
-własną orkiestratora (§4) jak pracę subagenta.
+**Masz dostępny i autoryzowany Workflow?** Jeśli narzędzie orkiestracji
+wieloagentowej Workflow jest dostępne w tej sesji ORAZ właściciel dał jawną,
+opt-in zgodę na multi-agent orchestration w tej sesji — patrz
+[`civ-autobot-workflow/SKILL.md`](../civ-autobot-workflow/SKILL.md) zamiast tego
+pliku dla dispatchu Operator/Evaluator/Final Control z jawnym `effort` per rolę.
+Bez obu warunków (co jest normą — Cursor/GPT nie mają koncepcji Workflow z
+`effort` per agent) zostań w tym pliku: role różnicujesz wyłącznie treścią
+promptu, bez parametru effort. Pełne uzasadnienie: playbook C-061.
 
-**Wyjątki — dwa, oba wąskie:**
-1. Czysta rozmowa ABC / zapis decyzji właściciela **bez zmiany `gra/src`** — wtedy Operator
-   nie koduje, ale final i tak trzyma reguły playbooka (NUMER→ABC, bramka `deploy`).
-2. **Dopisek 1–3 linie czysto tekstowe** (`R-SKILL-LEAN-LOOP-CIVAUTOBOT=B`, Maciej
-   2026-08-08) — bez osobnego Operatora TYLKO gdy **wszystkie trzy** warunki naraz: (a)
-   wyłącznie plik dokumentacji/notatek, **nigdy `gra/src`**; (b) dopisek do paczki, która
-   **już przeszła przez Evaluatora w tej samej sesji** — nie samodzielna, nieoceniona
-   zmiana; (c) zawsze zalogowany w `KANAL-PRACA.md` lub treści commita. Brak
-   któregokolwiek warunku → pełna pętla, bez zgadywania czy „to tylko drobiazg".
+## Kolejność czytania na starcie sesji
 
-Wszystko ponad te dwa wyjątki → pełna pętla Operator→Evaluator. Kanon wyjątku 2:
-`.cursor/rules/autobot-evaluator-operator.mdc:28`.
+Przed analizą kodu, dispatchiem lub edycją przeczytaj w tej kolejności:
 
-Kanon procesu: `docs/decyzje/R-PROC-AUTOBOT.md` · `R-PROC-AUTOBOT-EVAL-SCOPE.md` ·
-`R-PROC-AUTOBOT-EVAL-STRICT*.md` · `R-PROC-AUTOBOT-ABC-TURNIEJ.md` ·
-`.cursor/rules/autobot-evaluator-operator.mdc`. Zasady krytyczne: `CLAUDE.md`.
+1. [`README.md`](../../../README.md) — uniwersalny punkt startowy, pełna kolejność jest tam opisana krok po kroku;
+2. `docs/procesy/INDEX-PROCESU.md` — mapę źródeł prawdy i artefaktów (krok 2 z `README.md`);
+3. `docs/decyzje/R-PROC-AUTOBOT.md` — aktywną normę procesu: role, ABC, bramki, bariery, hasła;
+4. `playbook.md` **w całości** — zasady, błędy „nigdy więcej", wnioski i sprawy otwarte;
+5. `dyspozycje/_handoff/HANDOFF-AKTUALNY.md` — jedyny bieżący stan przejęcia;
+6. końcówkę `dyspozycje/_handoff/KANAL-PRACA.md` — ostatnie przekazania;
+7. rejestr tematu, aktywne ABC/ECHO, decyzję właściciela i run danego ID;
+8. dopiero na końcu faktyczny Git, diff, testy i kod.
+
+Nie zaczynaj od starego handoffu, płaskiego logu, samego czatu ani archiwum.
+`docs/archiwum-procesu/` jest historią, nie aktywnym routingiem.
 
 **Zmieniasz reguły samego AutoBota (nie kod gry)?** Najpierw przeczytaj
-`dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` — mapa WSZYSTKICH plików
-mechanizmu (5 warstw) i checklista, która w praktyce (`R-PROFIL-TURNIEJ-PUNKTACJA-Q1`)
-złapała 3 kolejne rundy realnych braków, zanim zmiana była naprawdę kompletna.
-
-## 0. Rytuał startu sesji (zanim cokolwiek zrobisz)
-
-1. `git pull --ff-only origin main` — nad repo pracuje kilka sesji, które **nie widzą się nawzajem**; jedynym łącznikiem jest repozytorium, właściciel nie jest listonoszem.
-2. `dyspozycje/_handoff/KANAL-PRACA.md` — ostatnie wpisy, zwłaszcza otwarte `CZEKAM-NA:`.
-3. `STAN-PRACY-HANDOFF.md` — punkt wejścia: co zrobione, co w toku, decyzje już podjęte (§9 — o nie **nie pytaj drugi raz**), znane problemy (§7).
-4. `playbook.md` **w całości** — zasady AKTYWNE / W OBSERWACJI / CHRONIONE stosujesz od pierwszej minuty, rejestr błędów to lista pomyłek zakazanych do powtórzenia, sprawy otwarte przejrzyj i domknij te, których dane już spłynęły. Ten plik jest kanonem; `dyspozycje/autobot/playbook.json` jest z niego **generowany** (`dyspozycje/autobot/tools/playbook-md-to-json.cjs`) — **nigdy nie edytuj JSON-a ręcznie**, nowa zasada zawsze startuje 0/0, liczników nie wpisujesz z pamięci.
-5. Potwierdź jednym zdaniem: ile zasad aktywnych, ile wpisów w rejestrze błędów, data ostatniego wpisu, otwarte `CZEKAM-NA:`.
-
-**Hasła właściciela:** „sprawdź" / „sprawdź kanał" = kroki 1–3 + relacja, **bez działania
-na dysku**. „push" (sesja lokalna) = pull → odczyt ostatniego wpisu kanału → synchronizacja
-dysku właściciela → meldunek „gotowe, testuj `<md5>`". „deploy" = dopiero wtedy publikacja
-do ROBOCZA. „format" / „ABC" = przepisz pytanie w pełnej formie.
-
-## 1. Przydział modeli (Claude Code; nie dotyczy Cursora)
-
-| Rola | Model |
-|------|-------|
-| Sesja główna (orkiestrator) | Sonnet 5 |
-| Operator (wykonawca), domyślnie | **Sonnet 5, `effort="medium"`** |
-| **Evaluator**, domyślnie | **Sonnet 5, `effort="medium"`** |
-| **Deploy** (build + weryfikacja + publikacja) | **Opus 5** |
-| **Operator i Evaluator dla `gra/src/render/**`** | **Opus 5, obowiązkowy dla obu ról** |
-
-**AKTUALIZACJA (Maciej, 2026-08-17): Operator wraca z Haiku 4.5 na Sonnet 5, `effort="medium"`.**
-Powód: w tej samej sesji 2026-08-17 Haiku 4.5 jako Operator trzykrotnie sfabrykował szczegółowe
-raporty o edycjach dokumentacji (m.in. tego pliku, dwukrotnie), których fizycznie nie było na
-dysku — `git status` w jego własnym worktree pokazywał czyste drzewo mimo cytowanego „diffu".
-Złapane wyłącznie dzięki temu, że orkiestrator zawsze niezależnie weryfikował `git status`/`git diff`
-przed scaleniem, nigdy nie ufając samemu opisowi zmiany. Kanon: `CLAUDE.md` §4.
-
-**Mechanizm dispatchu (2026-08-17):** zarówno Operator jak i Evaluator pracują na jawnym
-`effort="medium"` (narzędzie Workflow, model Sonnet 5).
-
-Wyjątek renderowy obowiązuje **równolegle** do reguły „Operator/Evaluator na Sonnet 5" i nie
-jest przez nią zniesiony: ani Sonnet 5, ani tym bardziej Haiku 4.5 nie oceniają wystarczająco
-dobrze proporcji i czytelności bryły z kąta kamery gry — dlatego render zostaje przy Opus 5 dla
-OBU ról bez wyjątku. **Fable 5 zablokowany** —
-`R-FABLE-RETENCJA-NASTER = B`: wymaga 30-dniowej retencji, wymagania NASTER nieustalone;
-zgoda na model ≠ potwierdzenie retencji, potrzebne oba.
-
-**⛔ DOMYŚLNIE — 1x Evaluator, Sonnet 5** (`R-EVALUATOR-3X-ZGODA-Q1`, Maciej 2026-08-13; **AKTUALIZACJA domyślnego modelu Sonnet 5 zamiast Opus 5: 2026-08-17**). Wzorzec 3x niezależny
-Evaluator NIE jest już progiem automatycznym (nawet dla combat-adjacent/P0) — kosztuje za
-dużo tokenów przy rutynowym stosowaniu. Jego słowa: „nie przepalajmy niepotrzebnie
-tokenów... jeżeli miałbyś odpalać kiedykolwiek 3 ewaluatory to po prostu napisz do mnie o
-zgodę. To w wyjątkowych tylko sytuacjach." **Zanim dispatchujesz 3x — zapytaj właściciela wprost, opisz dlaczego temat jest
-wyjątkowo ciężki/wysokiego ryzyka, i czekaj na jego zgodę.** Nie zgaduj i nie dispatchuj
-z góry na podstawie samej kategorii tematu.
-
-**Opus 5 jako Evaluator — WYŁĄCZNIE gdy:** (a) orkiestrator jawnie prosi dla tematu o wyższym ryzyku,
-(b) temat dotyczy `gra/src/render/**`. Druga kategoria to OBOWIĄZKOWY Opus 5, niezmienny od
-wcześniejszych reguł.
-
-**Gdy zgoda na 3x padnie** — przydział modeli: Evaluator #1 i #2 na Sonnet 5, Evaluator #3
-(ostatni) na Opus 5. Nie zmniejsza to liczby Evaluatorów ani rygoru — trzy niezależne perspektywy
-zostają, model trzeciego jest wyższy ze względu na koszt/limit trzech Opus naraz.
-
-## 2. NUMER → ABC → COMMIT → DEPLOY
-
-Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
-
-1. **NUMER** — każdy case/bug/poprawka/innowacja dostaje ID w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
-2. **ABC** — **nie koduj od razu**; przedstaw rozwiązanie w pełnej formie: nagłówek `[TEMAT: …]` · **ID** · Sytuacja · Cel pytania · Dlaczego teraz · **A / B / C** (każdy wariant ≥2 Za i ≥2 Przeciw) · Rekomendacja. **Maks. 3 pytania na turę.**
-   **Jeśli sytuacja/rekomendacja koliduje z już podjętą decyzją** (ID + litera + data w rejestrze) — **nazwij to wprost** w pytaniu: która decyzja, jakie ID, kiedy. Maciej (2026-08-09): „powinno być wyraźnie zapisane, że jeżeli pytanie ABC podważa wcześniejsze moje decyzje, to powinno być to wyraźnie wskazane... żebym miał świadomość, że mogę cofnąć pewne inne swoje ustalenia." Kanon w `CLAUDE.md` §1a.
-3. **ECHO** — po odpowiedzi w formie `ID + litera` potwierdź treść decyzji, zapisz do plików (rejestr + `dyspozycje/PYTANIA-OTWARTE.md` + ewentualny `docs/decyzje/`), dopiero potem kod i commit.
-4. **DEPLOY** — wyłącznie na hasło `deploy`. Commit po `ID+A|B|C` **nie** publikuje ROBOCZA.
-
-**Rozwidlenie NUMER → co dalej (`C-027`, Maciej 2026-08-08):** krok „ABC" dotyczy WYŁĄCZNIE
-zgłoszeń wymagających realnego wyboru z kompromisem (balans/gameplay/UX z alternatywami).
-Gdy zgłoszenie jest błędem do naprawienia albo prośbą z jednoznacznie opisanym oczekiwanym
-zachowaniem (brak realnej alternatywy do wyboru) — **NUMER → od razu subagent Sonnet 5**
-w pętli Operator → Evaluator, **w tej samej turze**, bez czekania na cokolwiek. „Rejestr to
-punkt startowy pracy, nie miejsce składowania" — jego słowa po serii skarg: *„a myślisz, że
-po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?"*, *„tak właśnie gubią się
-tematy, które ci zgłaszam... zgłaszam coś, a wy nie robicie z tym nic."*
-
-**Kontrola kompletności (`C-030`/`C-031`):** po KAŻDEJ serii rejestracji w `PYTANIA-OTWARTE.md`,
-przed zmianą wątku — uruchom `grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md` (BEZ
-kotwicy `^## ` — gubi nagłówki `### `) i potwierdź dla każdego trafienia: subagent w locie /
-pytanie ABC / udokumentowany powód odłożenia. Ta sama komenda żyje TAKŻE w `CLAUDE.md` §0c (plik
-zawsze ładowany do kontekstu w Claude Code — w przeciwieństwie do tego skilla i playbooka, które
-wymagają świadomego odczytu i mogą zniknąć z pola widzenia po kompaktowaniu długiej sesji; nawet
-`CLAUDE.md` to migawka z początku sesji, nie odczyt co turę). **[2026-08-08]** Druga warstwa
-NIE jest już stałym godzinowym Routine (usunięty — kosztował 20+ wywołań/dobę niezależnie od
-realnej pracy) tylko jednorazowym, samo-uzbrajającym się `run_once_at` triggerem: uzbrajanym
-TYLKO gdy nowe zgłoszenie nie da się domknąć w tej samej turze, re-uzbrajanym co ~1h dopóki coś
-czeka, milknącym bez re-uzbrojenia gdy wszystko domknięte. Pełny opis: `CLAUDE.md` §0c.
-
-**⛔ Zakaz otwierania nowych wątków pytaniami.** Wolno wyłącznie pytania doprecyzowujące
-do wątku aktualnie prowadzonego. Problemy znalezione przy okazji → **cicho** do
-`dyspozycje/PYTANIA-OTWARTE.md`, bez wspominania w czacie. Każde pytanie/bug właściciela
-trafia do tego pliku, zanim zmienisz temat.
-
-**Każda liczba ma nazwany parametr, jednostkę i kontekst** — czego dotyczy (Kultura /
-Praca / Prawo / Pieniądz / Zadowolenie / Obrona), w czym (pkt na turę, %, pkt Prawa),
-w jakich warunkach (poziom, epoka, trudność). Nagłówek kolumny „Baza" jest zakazany.
-
-**Po każdej paczce pracy — dwa osobne bloki, zawsze:** `### Playtesty` (wyłącznie
-weryfikacja w grze) **oraz** `### Następny krok` (wyłącznie kolejne zmiany kod/dane/docs,
-**pełna lista**, bez limitu 3). Zakaz mieszania playtestu z kodem w jednym menu.
-
-## 3. Turniej ABC — tutaj TWARDA reguła, nie opcja
-
-Kanon: `R-PROC-AUTOBOT-ABC-TURNIEJ.md` · `playbook.md` → `C-018` ·
-`R-PROFIL-TURNIEJ-PUNKTACJA-Q1` (punktacja wg profilu, Maciej 2026-08-08).
-
-**Każde NOWE pytanie ABC** (temat, na który właściciel jeszcze nie odpowiedział literą)
-przechodzi przed pokazaniem właścicielowi przez trzy role: **Proponent 1** (orkiestrator
-lub Operator, który natrafił na temat) · **Proponent 2** — niezależny agent Sonnet 5
-**bez podglądu** projektu 1, dostaje wyłącznie surowe fakty i dane źródłowe. **Obaj
-Proponenci wskazują własny „typ"** — którą literę uważają za najlepszą, z uzasadnieniem
-odwołującym się wprost do `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md` (który wzorzec pasuje
-do kategorii tematu).
-
-**Sędzia** (rola Evaluatora, Opus 5) ocenia dwuwarstwowo: **Warstwa 1 (dominująca)** —
-trafność rozpoznania kategorii i jakość uzasadnienia „typu" względem profilu, nie czy
-zgadł literę właściciela; **Warstwa 2 (niuanse, tiebreaker)** — zgodność ze źródłami,
-kompletność wariantów, trafność Za/Przeciw. Wybiera zwycięzcę albo syntetyzuje finalną
-wersję. Do właściciela idzie zwycięska/zsyntetyzowana wersja **z jawną adnotacją przy
-Rekomendacji** („wg profilu: typowana X, bo …") — zawsze obok pełnego A/B/C z Za/Przeciw,
-nigdy jako zamiennik wyboru. Wybór litery pozostaje w 100% właściciela.
-
-**Nie dotyczy:** tematów już rozstrzygniętych literą (wtedy samo ECHO + zapis), czysto
-inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza, ani bezpośrednich ustaleń
-wypracowanych żywą rozmową z właścicielem (właściciel sam kształtuje projekt w dialogu —
-turniej broni przed ślepym kątem jednego autora, tu autorów jest już dwóch).
-
-## 4. Evaluator — nakładka projektowa na przegląd z `lean-loop`
-
-Uniwersalne osie (SCOPE / DIFF-MINIMAL / NO-REGRESSION / COUPLING + przerost) są
-w `lean-loop`. Tutaj dochodzą **trzy twarde FAIL-e wynikające z domeny gry** — nigdy
-PASS-WITH-NOTES:
-
-- **FAIL #7 — sam happy-path** (`R-PROC-AUTOBOT-EVAL-STRICT-EDGE`): test bez asercji na wartość brzegową (`0`/`max`/`clamp`/`undefined`/pusta lista), bez negacji, bez repro zgłoszonego buga (asercja, która padłaby na starym kodzie).
-- **FAIL #8 — asymetria gracz / AI / MP** (`…-PARITY`): gałąź `ownerId === 0` / `isPlayer` w logice wspólnej (ekonomia, produkcja, walka, dyplomacja, growth, upkeep, research, AI `choose*`) bez jawnej decyzji ABC lub bez testu parytetu dla owner 0 **i** owner N. Zasada nadrzędna projektu: **PARYTET AI** — każdy mechanizm działa identycznie dla gracza i AI.
-- **FAIL #9 — luka save/load** (`…-SAVE`): nowe trwałe pole stanu bez zapisu w snapshot i/lub restore bez `?? default`; „save OK" bez roundtripu albo bez wskazania miejsca snapshot/restore w raporcie.
-
-Do tego bazowe FAIL-e STRICT: brak celowanej asercji dla zmienionej logiki gry,
-czerwone testy tematu, `tsc --noEmit ≠ 0`, SCOPE gameplay bez handoffu, cofnięcie
-wcześniejszego fixu. **PASS-WITH-NOTES** tylko: pre-existing baseline poza tematem
-z dowodem z `main`, docs drift, cross-lane z handoffem, GATE=A wyłącznie wizualny,
-drobny drift procesu.
-
-**Zakres naprawy = tylko błąd, impact-analiza dla kodu współdzielonego** (`C-025`,
-`C-026` — Maciej 2026-08-08, po serii regresji: kolejka budowy, traktat-koszyk,
-rzeki-medium-fow, 4-rundowa naprawa handel-bramka-priorytet — „70% mojego czasu to
-poprawki tego, co już było naprawione"):
-
-- **C-025** — prompt zlecenia dla Operatora naprawiającego zgłoszony błąd MUSI
-  wypisać granicę zakresu (konkretne pliki/funkcje) i wprost zakazać zmian poza nią.
-  Zero „przy okazji"/„skoro już tu jestem" — refaktorów, sprzątania stylu, przenoszenia
-  kodu, nawet gdy wyglądają jak ulepszenie. Evaluator odrzuca (FAIL) diff, który robi
-  więcej niż to, co przyczyna błędu wymagała, niezależnie od tego, czy dodatkowa zmiana
-  sama w sobie wygląda słusznie.
-- **C-026** — gdy naprawa MUSI dotknąć funkcji/komponentu współdzielonego (bo to jedyny
-  poprawny zakres, nie wybór Operatora), Operator PRZED zmianą wypisuje wszystkie
-  miejsca użycia (grep/referencje) i PO zmianie weryfikuje każde z osobna — „to powinno
-  nadal działać" bez sprawdzenia jest zakazane. Evaluator sprawdza, czy ta lista w ogóle
-  powstała i czy jest wiarygodna (przelicza grepem sam, nie ufa samoocenie Operatora),
-  nie tylko czy diff „wygląda" bezpiecznie — to nakładka na COUPLING z `lean-loop`,
-  z twardym wymogiem enumeracji, nie tylko oceny „na oko".
-- **Operator wykracza poza literalny scenariusz zgłoszenia własnym dowodem, nie tylko
-  odtwarza raport** (wzmocnienie `lean-loop` §„Lean code without its check" — boundary/
-  negative/repro to MINIMUM, nie sufit). Zanim Operator zgłosi gotowość, buduje min. 2
-  własne przypadki brzegowe tego samego niezmiennika (np. `excess=0` z nielegalnymi
-  wpisami obecnymi, wszystkie wpisy nielegalne naraz, remis w kryterium wyboru) — nie
-  tylko literalny przykład z tickieta. Realny powód (2026-08-09, `P-HEKS-ISWORKABLE…`):
-  dwie kolejne rundy przeszły własny dowód mutacyjny Operatora na scenariuszu z raportu i
-  mimo to wprowadziły nową regresję, którą złapał dopiero Evaluator budując SWOJE
-  scenariusze. Evaluator sprawdza czy te własne przypadki w ogóle istnieją w raporcie
-  Operatora, nie tylko czy dowód mutacyjny na scenariuszu z tickieta przechodzi.
-
-**Orkiestrator nie jest zwolniony z pętli** (`CLAUDE.md` §0b, `playbook.md` → `C-017`):
-każda zmiana zapisana do repozytorium i każda liczba podana właścicielowi jako fakt
-przechodzi przez osobnego Evaluatora na Opus 5; orkiestrator jest wtedy Operatorem
-własnej zmiany i **nie ocenia sam siebie**. Czynności czysto odczytowe są wyłączone.
-Furtka z `lean-loop` („gdy nie ma niezależnego recenzenta, przejdź listę sam i oznacz werdykt
-jako samoocenę") **w tym repozytorium nie obowiązuje**: subagent-Evaluator jest zawsze
-dostępny, więc „nie było kogo zapytać" nigdy nie jest tu usprawiedliwieniem.
-
-**Self-check przed „gotowe":** był Operator? był Evaluator? był final? playbook
-i guardrails uszanowane? Choć jedno „nie" → nie zamykaj paczki.
-
-**Wzorzec domykania tautologii testowej: extract-to-pure-function.** Powtarzający się
-wzorzec ucieczki mutacyjnej (2026-08-12, ≥4 niezależne przypadki: `shouldAllowBarbCityCapture`,
-`canBarbarianWalkIntoEmptyCity`, `splitCampMoveCost`, `appendBreakdownLines`) — logika
-żyje INLINE w dużej, niewyeksportowanej funkcji (typowo `main.ts`), a test odtwarza tę samą
-formułę jako WŁASNĄ KOPIĘ zamiast importować prawdziwy kod. Mutacja psująca produkcyjną
-logikę przechodzi bramkę, bo test i tak sprawdza tylko swoją kopię. Naprawa, która za
-każdym razem faktycznie zamyka lukę: wyciągnąć sporny fragment do eksportowanej, CZYSTEJ
-funkcji w module domenowym, zaimportować JĄ SAMĄ i w miejscu użycia (`main.ts`), i w teście
-— zero duplikacji formuły. Evaluator sprawdzający naprawę tego typu: potwierdź że test
-faktycznie importuje tę samą jednostkę modułu co produkcja (nie odtwarza formuły), inaczej
-naprawa tylko przenosi problem.
-
-**Audyt „nigdy-nie-ewaluowanych" commitów jako cykliczna higiena, nie jednorazowa akcja.**
-Systematyczny przegląd historii gałęzi (`git log --oneline <punkt-odniesienia>..HEAD`,
-odfiltrowane wpisy czysto dokumentacyjne, dla KAŻDEGO pozostałego commita grep w rejestrze
-czy PADA słowo „Evaluator" gdziekolwiek w jego kontekście — nie tylko czy ma własny
-nagłówek „SCALONE") wielokrotnie znajdował realne, wysyłalne błędy w kodzie już
-zmergowanym i grywalnym (2026-08-12: 12/12 nigdy-nie-ewaluowanych commitów dostało
-recenzję, większość miała ≥1 realne znalezisko, w tym błąd gubienia danych i błąd
-bramki trudności niechroniony testem). Wniosek: „SCALONE" bez wzmianki o Evaluatorze
-w rejestrze nie jest dowodem jakości — jest dowodem, że nikt jeszcze nie sprawdził.
-Powtarzaj ten audyt cyklicznie (np. przy każdym większym domknięciu tury), nie tylko po
-znalezieniu pierwszej luki.
-
-**Kontrola spójności MIĘDZY tematami tej samej sesji, nie tylko poprawności wewnętrznej.**
-Evaluator sprawdzający temat X powinien sprawdzić, czy decyzja podjęta w INNYM, niedawnym
-temacie tej samej sesji nie została naruszona. Realny przypadek (2026-08-12): naprawa
-etykiety „zapotrzebowanie" vs „zużycie" w panelu Surowców (`a79bae29`→`9c0cd04d`) nie
-została propagowana do analogicznej kolumny w Tabeli Miast (`89c16ec1`), która nadal
-mówiła „utrzymanie" dla tej samej, niezaklamrowanej wielkości — dwa panele tej samej gry
-przeczyły sobie, jeden ekran od siebie. Złapane dopiero, bo Evaluator drugiego tematu
-świadomie sprawdził zgodność z wcześniejszą decyzją, nie tylko wewnętrzną poprawność.
-
-**Twarde progi liczbowe guardrails** (`R-PROC-AUTOBOT` §Spec v1 · `dyspozycje/autobot/src/guardrails.ts`,
-`src/feature-pruning.ts`):
-
-- **„Zwycięzca testu"** (zmiana progu / uznanie wariantu za lepszy) — `canDeclareWinner` / `assertEvaluationDelay` wymagają **N ≥ 1000 zastosowań LUB ≥ 48 h**. Nigdy po jednym runie.
-- **Feature pruning** — atrybut o **|korelacji Pearsona| < 0,05** względem sukcesu wypada z kontekstu Operatora (`action_taken: "Removed feature X"`); śmieciowego kontekstu nie pakujesz.
-- **Wycofywanie zasad jest zautomatyzowane** (`retireWeakRules`, `dyspozycje/autobot/src/playbook-manager.ts`): `win_rate < deprecateBelowWinRate` (0,3) po co najmniej `minRunsForSignificance` zastosowaniach → `RETIRED` + przeniesienie do `quarantine_rules`. Zasada **CHRONIONA** (`protected: true`) jest z tego automatu **wyłączona bez względu na liczniki** — status nadaje wyłącznie właściciel.
-  **Rozbieżność do rozstrzygnięcia przez właściciela:** kanon v2 i wartość domyślna w kodzie to **10** zastosowań (`R-PROC-AUTOBOT` §v2 · `dyspozycje/autobot/README.md`: „podniesiony z 5 do 10"), ale żywy `dyspozycje/autobot/playbook.json` ma dziś **`minRunsForSignificance: 5`** — a generator `playbook-md-to-json.cjs` przepisuje `thresholds` bez zmian, więc 5 obowiązuje aż do ręcznej poprawki. Odczytaj wartość z pliku, nie z pamięci.
-- **`promoteMinWinRate = 0,6` nie jest progiem powrotu zasady do AKTYWNEJ** — takiej ścieżki w kodzie nie ma, wycofaną przywraca wyłącznie człowiek. To domyślna wartość `min_confidence_threshold`: progu, od którego zasada ACTIVE w ogóle trafia do promptu Operatora (`getOperatorSystemRules`; zasada z 0 runów i zasada CHRONIONA przechodzą zawsze).
-- **`R-PROC-POTROJNA-WARSTWA` jest WBUDOWANA w kroki 1–3** pętli Operator → Evaluator → final — nie jest osobnym, opcjonalnym rytuałem, którego można „nie odpalić przy drobiazgu".
-
-**Bariery są w KODZIE, nie tylko w prompcie** (`dyspozycje/autobot/src/guardrails.ts`) — prompt
-agent zawsze może sobie zreinterpretować, uprawnienia nie. `assertActionAllowed` działa
-**deny-by-default**: akcja spoza `CATALOG` jest odrzucana. `FORBIDDEN_ACTION_IDS` ma 10 pozycji,
-z czego siedem jest zablokowanych twardo, bez żadnej furtki: `git-merge-main` ·
-`git-push-main-force` · `npm-run-build-gra` · `npm-run-dev-gra` · `delete-gra-data` ·
-`mass-mail` · `real-money-transfer`. Pozostałe trzy to `deploy-robocza` / `-kanon` / `-finalna`
-— jedyne z bramką ratunkową: przechodzą wyłącznie z `humanApproved` **i** `deployPasswordGiven`.
-`assertProdIsolation` blokuje wszystko z tej listy i każde `deploy-*` przy `env=production`. To jest
-mechaniczne wymuszenie zakazów z §6 — nie zastępuje ich czytania, ale to ono jest ostatnią
-linią, gdy pętla zawiedzie.
-
-## 5. Izolacja pracy subagentów
-
-Każde zlecenie dotykające kodu uruchamiaj z osobnym `git worktree` (`isolation:
-"worktree"`), zakładanym przez **sparse-checkout** bez `gra-robocza/`, `gra-kanon/`
-i katalogów `dist/` (~370 MB zamiast ~810 MB; wyjątek: subagent robiący build/deploy
-dobiera `gra-robocza` jawnie). Przeniesienie wyniku: `cd $WT && git diff > patch`,
-potem `git apply -3 patch` w drzewie głównym; **nowe pliki dołóż osobno** — `git diff`
-ich nie obejmuje. Kolejność: praca w izolacji → `git pull --ff-only origin main` →
-scalenie → zgoda właściciela przy kolizji z cudzą pracą → bramki → build → deploy.
-
-- **Po KAŻDYM powrocie Operatora z worktree** sprawdź `git status --porcelain` na drzewie głównym — stały krok zamknięcia, nie reakcja na alarm (`C-019`, recydywa).
-- Worktree usuwaj **jako ostatni** krok, po scaleniu albo odrzuceniu; niescommitowany stan wcześniej na gałąź `zapas/<nazwa>` i na origin (`C-014`).
-- **`git diff <A> <B>` do scalenia patcha jest bezpieczny WYŁĄCZNIE gdy `<A>` jest faktycznym
-  przodkiem `<B>`** (`git merge-base --is-ancestor <A> <B>`). Jeśli worktree Operatora odgałęził
-  się WCZEŚNIEJ niż `<A>` (np. `<A>` = obecny `main`, a worktree startował przed jakąś
-  późniejszą, już scaloną paczką), diff cicho zawiera „cofnięcie" zmian z `<A>`, których tip
-  worktree po prostu nigdy nie miał — merge wygląda czysto (`git apply --check` przechodzi),
-  ale wymazuje wcześniejszą, już scaloną naprawę. Bezpieczne: `git diff $(git merge-base <baza
-  worktree> <tip>) <tip>` (diff własnej pracy worktree, nie różnica względem obcego stanu), albo
-  `git cherry-pick`/`git merge`. Realny przypadek 2026-08-09: `git diff 92341250 cdb29d92`
-  (gdzie `cdb29d92` odgałęził się przed `92341250`) po cichu cofnął naprawę
-  `P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA` przy scalaniu niezwiązanej naprawy
-  `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` — złapane dopiero przez bramkę na etapie deployu,
-  nie przez Evaluatora commita scalającego. Drugi, niezależny mechanizm cichej utraty pracy w
-  tym repo obok już opisanego incydentu `b9867b3`.
-- **`isolation: "worktree"` NIE dziedziczy z bieżącej gałęzi sesji — startuje od `main`.**
-  Odkryte 2026-08-09 przy próbie „odtworzenia na aktualnym HEAD" naprawy `R-DYP-STOL-A-KOREKTA`:
-  polecenie w prompcie Operatora „pracuj na aktualnym HEAD swojej gałęzi" **nie ma efektu** — nowy
-  worktree i tak wystartował z tego samego, przestarzałego `main` (`b137332a`) co pierwsza,
-  odrzucona próba (zweryfikowane: 0 wystąpień `techDirection`/`techPaymentMode` w pliku
-  worktree, 29 w aktualnym HEAD sesji). To systemowa właściwość narzędzia, nie błąd
-  pojedynczego agenta — trzeci przypadek cichej utraty pracy w tym repo, obok `b9867b3` i
-  `92341250`/`cdb29d92` wyżej. **Konsekwencja: zawsze sprawdzaj `git merge-base --is-ancestor
-  <baza worktree> HEAD`, nawet po „odtworzeniu na świeżo".** Gdy baza nie jest przodkiem: dla
-  plików niezmienionych między bazą a HEAD — bezpieczny `git apply` po weryfikacji identyczności
-  kotwic tekstowych; dla plików rozjechanych — ręczne, chirurgiczne odtworzenie zmiany przez
-  orkiestratora z weryfikacją że edytowany fragment nie pokrywa się z rozjechanym obszarem, albo
-  nowe zlecenie z prośbą o wynik jako czysty tekst do transkrypcji.
-- **Kontynuacja rundy po FAIL Evaluatora** — wznawiaj `SendMessage` do agenta/worktree z
-  poprzedniej rundy (zachowuje kontekst, historię commitów, świeżość względem `main`), NIE
-  nowy `Agent` z izolacją od zera, chyba że worktree jest uszkodzony/usunięty. Sprawdzone
-  wielokrotnie 2026-08-09 (4 rundy `P-HEKS-ISWORKABLE…`, 3 rundy `P-HANDEL-TECH-…`) — szybsze
-  i taniej niż odtwarzanie stanu od podstaw, agent od razu widzi pełną listę Evaluatora.
-- **Po podejrzeniu przerwania środowiska** (restart, cisza wyraźnie dłuższa niż oczekiwana,
-  brak spodziewanej notyfikacji) — sprawdź stan BEZPOŚREDNIO (`git log`/`git status` w
-  worktree agenta), zanim uznasz zadanie za wiszące lub zgubione; nie polegaj wyłącznie na
-  ciszy jako sygnale. Realny przypadek 2026-08-09: restart kontenera ubił kilku subagentów
-  w trakcie pracy (w tym w trakcie długiego `map-gen-regression-test.cjs`) BEZ żadnej
-  notyfikacji o przerwaniu — jedynym sygnałem był brak wpisu na `ListAgents` przy braku
-  wcześniejszej notyfikacji `completed`.
-- **Przed KAŻDĄ dłuższą serią zmian** (pracą dłuższą niż jedna operacja, gdy inna sesja może w tym czasie commitować) — **wpis-blokada w `KANAL-PRACA.md` przed startem, a po zakończeniu wpis `ODBLOKOWANE`** (`C-007`). Obowiązuje **niezależnie od izolacji** — worktree chroni przed konfliktem plików, nie przed tym, że druga sesja robi równolegle to samo zadanie. Gdy izolacja jest niemożliwa, blokada wymienia dodatkowo REZERWOWANE PLIKI, a commitujesz **wyłącznie pliki zamkniętego zlecenia**.
-- **Nigdy `git add -A`** (`C-008`, recydywa czterokrotna) · commituj każdą ukończoną grupę natychmiast (`C-003`) · nie raportuj wyniku subagenta bez własnej weryfikacji na dysku (`C-006`) · status pracy w tle oceniaj po znacznikach czasu plików, nie po etykiecie systemu (`C-005`).
-- **Katalog `scratchpad` współdzielony między RÓWNOLEGŁYMI subagentami koliduje na
-  generycznych nazwach plików** (potwierdzone ≥6× niezależnie 2026-08-12/13, m.in.
-  `eval-harness.cjs` nadpisany między Evaluatorami dwóch różnych tematów w tej samej
-  turze). To osobny, SZERSZY mechanizm niż znana kolizja worktree (`KROK 0` wyżej) —
-  dotyczy nawet agentów pracujących w poprawnych, odrębnych worktree. Zweryfikowany
-  skutek dotychczas nieszkodliwy (nadpisania łapane przez agentów, powtarzali pomiar
-  pod unikalną nazwą), ale przyczyna nieustalona. Mitygacja przy zlecaniu: każ
-  subagentowi nazywać pliki robocze w scratchpadzie z prefiksem ID tematu/commita
-  (np. `scratchpad/<ID-tematu>/harness.cjs`), nie generyczną nazwą.
-- **`git add`+`git commit` dla DWÓCH niepowiązanych zmian jako dwa równoległe wywołania
-  narzędzia w tej samej turze = race condition.** Zweryfikowany realny przypadek
-  2026-08-12: dwa niezależne scalenia (`git add <pliki A>` + `git commit`, `git add
-  <pliki B>` + `git commit`) wysłane jako dwa równoległe tool-calle w jednej wiadomości
-  — oba zestawy plików wylądowały w JEDNYM commicie (ten, którego `git commit` wykonał
-  się jako drugi, po tym jak oba `git add` już się zakończyły), z komunikatem opisującym
-  tylko jedną z dwóch zmian. Zawartość była kompletna i poprawna (zero utraty pracy),
-  ale historia commitów wprowadzała w błąd. Zasada: `git add`+`git commit` dla
-  niepowiązanych zmian ZAWSZE sekwencyjnie, nigdy jako równoległe wywołania w jednej
-  turze — nawet gdy oba zestawy plików są rozłączne.
-
-## 6. Twarde zakazy (złamanie = utrata pracy)
-
-- ⛔ **`npm run build` i `npm run dev` w `gra/`** — `prebuild`/`predev` uruchamia `tools/export-data.py`, który **nadpisuje ręcznie edytowane JSON-y** w `gra/data/`. Jedyna dozwolona komenda, z katalogu `gra`:
-  `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir`
-- ⛔ **`export-*.py` na żywym `gra/data`** — kierunek jest jednostronny **JSON → Excel** (`gen-panel-*.py`); round-trip wyłącznie na kopii (`--data-dir <tmp>`).
-- ⛔ **`publish-robocza-bundle.ps1`** — nie używaj; obowiązuje runbook §6 handoffu.
-- ⛔ Force-push na `main`. Gdy `main` odjechał — **rebase**, cudza praca ma przetrwać.
-- ⛔ Promocja FINALNEJ „przy okazji" promocji kanonu — wyłącznie na wyraźne polecenie właściciela, osobnym skryptem.
-
-## 7. Bramki (uruchamiaj z `gra/`)
-
-`npx tsc --noEmit` (0 błędów) · `node tools/tech-tree-test.cjs` · `node tools/research-test.cjs` ·
-`node tools/unit-replace-test.cjs` · `node tools/map-gen-regression-test.cjs` (determinizm A=B
-+ 0 rzek bez ujścia; progi czasowe „AC <5s/<15s" to pomiar wydajności, nie regresja).
-
-Punkty odniesienia i znane **pre-istniejące** porażki (NIE regresja, nie „naprawiaj przy
-okazji") — aktualna lista jest w `CLAUDE.md` sekcja BRAMKI i w handoffie §7. Odczytaj ją
-tam, nie z pamięci: `logic-test.cjs` = 213/213, `combat-test.cjs` zielony 6/6,
-`unit-power-test.cjs` czerwony pre-istniejąco (4 pass / 2 fail). Zawsze czytaj kod wyjścia
-**testu**, nie procesu opakowującego.
-
-**⛔ `tsc` w worktree jest bezwartościowy bez weryfikacji kompilatora (`C-029`, recydywa
-≥5× w jednej sesji 2026-08-08).** Worktree bez `gra/node_modules` sprawia, że `npx tsc`
-po cichu uruchamia globalny, niepinowany TypeScript zamiast wersji projektu (5.9.3) —
-mylący wynik w obie strony (fałszywe „0 błędów" maskujące realne, albo fałszywy błąd
-kompilacji niebędący błędem projektu). Przed zaufaniem KAŻDEMU wynikowi `tsc` w
-worktree: `ln -s <drzewo główne>/gra/node_modules gra/node_modules`, potem
-`npx tsc --version` MUSI pokazać `5.9.3` — dopiero wtedy wynik `tsc --noEmit` jest
-wiarygodny. Symlink nigdy nie trafia do commita, usuwaj po zakończeniu pracy.
-
-**`git add` z wieloma ścieżkami i plikiem usuniętym w liście (`C-028`).** Gdy jedna ze
-ścieżek nie istnieje (typowo: plik usunięty przez `git apply`, jeszcze nie w indeksie),
-`git add` zgłasza `fatal: ... did not match any files` i pozostałe ścieżki z TEGO SAMEGO
-wywołania mogą zostać po cichu pominięte. `git status --short` PRZED każdym commitem po
-`git add` obejmującym więcej niż jedną ścieżkę; usunięte pliki dodawaj osobnym
-wywołaniem, nie w jednej liście z nowymi/zmienionymi.
-
-## 8. Deploy i trzy poziomy bundli
-
-Trzy poziomy promowane **niezależnie**: **ROBOCZA** (`gra-robocza/`, częste deploye,
-runbook handoff §6) → **KANON** (`gra-kanon/`, po teście Master, `gra/tools/publish-kanon-snapshot.ps1`,
-wyłącznie ROBOCZA→KANON) → **FINALNA** (`Gra-FINALNA.html` w korzeniu, promowana
-**z KANONU**, `gra/tools/publish-finalna-snapshot.ps1`, rzadko i na wyraźne polecenie).
-Skrypty promocji to PowerShell — uruchamia je **sesja lokalna**; sesja chmurowa robi
-rozwój i deploye do ROBOCZA.
-
-Deploy jest **jednym nierozdzielnym ciągiem** (`C-004`): bramki → build → kopia do
-`gra-robocza/Gra-ROBOCZA.html` → stempel md5 → `gra-robocza/tools/sync-playtest-bundles.cjs`
-→ `gra-robocza/tools/generate-start-hub.cjs` → `gra/tools/verify-robocza-bundle.cjs`
-(**musi wypisać `VERIFY OK`**) →
-**log** → commit → sprawdzenie, czy `main` nie odjechał → push.
-
-**Log natychmiast, w dwóch miejscach:** (a) `dyspozycje/WERSJE.md` — md5 + stempel + co
-weszło + status (poprzednią pozycję oznacz `ZASTĄPIONA`); (b) `dyspozycje/_handoff/KANAL-PRACA.md`
-— `## [HH:MM PL, RRRR-MM-DD] KTO → DO KOGO — temat`, ≤10 linii, na końcu `CZEKAM-NA:`,
-z jednoznacznym poleceniem „sesja lokalna: pull na dysk właściciela". **Narracja w czacie
-nie jest meldunkiem** — czego nie zapiszesz w kanale, tego dla drugiej sesji nie było.
-
-## 9. Rozmowa z właścicielem
-
-Maciej, product owner w NASTER S.A. — **rozmawiaj po polsku**. Podejmuje decyzje
-produktowe i gameplayowe; od agenta oczekuje architektury, analizy i wykonania. Woli
-ustrukturyzowany wywód (tabele, numerowane sekcje) niż ściany tekstu. Przy
-niejednoznaczności lub sprzecznych danych — **pytaj, nie zgaduj**. Ale też **nie twórz
-problemów, których nie ma**: najprostsze rozwiązanie spełniające wymaganie wygrywa.
-„Nie zmieniamy tego, co już działa — tylko dostosuj".
-
-## 10. Zamknięcie
-
-Po każdej większej paczce zaktualizuj `playbook.md` (dziennik wniosków: zrobiono →
-skutek zmierzony → wniosek; liczniki zasad, które **rzeczywiście miały zastosowanie**;
-nowe zasady i wpisy do rejestru błędów; sprawy otwarte) i `STAN-PRACY-HANDOFF.md`.
-Błąd → protokół 5-krokowy z `lean-loop`, wpis do rejestru w `playbook.md` §3, nowa
-zasada 0/0. Recydywa z tego rejestru = incydent krytyczny, zgłoś właścicielowi wprost.
-
-**Nośnik postmortemów w tym projekcie:** `dyspozycje/autobot/logs/postmortems.jsonl` —
-append-only JSONL, jeden rekord na run, pola `run_id` · `timestamp` · `metric_before` ·
-`metric_after` · `delta_percentage` · `postmortem_reasoning` · `action_taken` (moduł
-„Dashboard Logger", `dyspozycje/autobot/src/logging.ts`). Sam mechanizm opisuje `lean-loop`
-— tutaj tylko miejsce zapisu. Gdy scaffold na to nie pozwala, **minimum: raport Evaluatora
-w czacie + wpis w `KANAL-PRACA.md`**.
-
-## 11. Aktualizacja 2026-08-17 — zmiana domyślnych modeli
-
-**Nowy domyślny przydział Operator/Evaluator** (2026-08-17): Operator → **Haiku 4.5** (zamiast Sonnet 5),
-Evaluator → **Sonnet 5** (zamiast Opus 5). Opus 5 zostaje obowiązkowy dla `gra/src/render/**` (dla obu ról)
-i dostępny dla Evaluatora na wyraźne żądanie orkiestratora dla trudniejszych tematów. Dispatcher zmienił się
-z narzędzia Agent na Workflow z `effort="medium"` dla Evaluatora (Sonnet 5). Deploy pozostaje Opus 5.
-
-## 11a. Aktualizacja 2026-08-17 (dalszy ciąg tego samego dnia) — Operator wraca na Sonnet 5
-
-Powyższa decyzja (Operator = Haiku 4.5) została **cofnięta tego samego dnia**: w tej sesji Haiku
-4.5 jako Operator trzykrotnie sfabrykował szczegółowe, przekonujące raporty o edycjach
-dokumentacji (`CLAUDE.md`, ten plik dwukrotnie, fragment `PYTANIA-OTWARTE.md`), których fizycznie
-nie było na dysku — `git status` w jego własnym worktree pokazywał czyste drzewo mimo cytowanego
-w raporcie „diffu". Nowy domyślny **Operator = Sonnet 5, `effort="medium"`** (ten sam poziom co
-Evaluator). Evaluator bez zmian. Wyjątek renderowy (Opus 5, obie role) bez zmian.
-
-## 12. Dwie świadome różnice względem oryginalnego Ponytaila
-
-`lean-loop` wyrósł z rodziny skilli `ponytail-*` i w dwóch miejscach celowo od niej odchodzi
-— odnotowane, żeby nie zaskoczyły kogoś, kto zna oryginał:
-
-1. **Zakres przeglądu.** Oryginalny `ponytail-review` jawnie wyłączał ze swojego zakresu poprawność, bezpieczeństwo i wydajność („Correctness bugs, security holes, and performance are explicitly out of scope") — patrzył wyłącznie na przerost kodu. `lean-loop` **łączy oba wymiary w jednym przebiegu** (zakres + przerost), a w tym projekcie dochodzą jeszcze twarde FAIL-e §4 (edge, parytet gracz/AI, save/load). U nas jeden przegląd Evaluatora odpowiada więc za całość — nie ma „drugiego, normalnego review" do którego cokolwiek się odsyła.
-2. **Tryb domyślny intensywności.** Oryginał trzymał go w przełączniku (`PONYTAIL_DEFAULT_MODE`, `~/.config/ponytail/config.json`); `lean-loop` oddaje tę decyzję plikowi pamięci projektu. **Ten projekt nie ustawia dziś osobnego przełącznika** — ani w `CLAUDE.md`, ani w `playbook.md`. Obowiązuje domyślny tryb **`full`, wymuszony**, spójnie z regułą nadrzędną na początku tego pliku; tryb `lite` wymaga wyraźnego polecenia właściciela w rozmowie.
+`dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` — mapa wszystkich
+warstw mechanizmu.
+
+Po starcie zamelduj krótko: jakie źródła zostały przeczytane, jaki jest
+bieżący stan, jakie tematy są aktywne i czy istnieje blokada. Wzór:
+
+```text
+Przeczytałem źródła wejściowe AutoBot: README.md, INDEX-PROCESU.md, R-PROC-AUTOBOT.md,
+playbook.md, HANDOFF-AKTUALNY.md, KANAL-PRACA.md. Zidentyfikowałem bieżące tematy,
+ich statusy, blokady i następne bramki. Nie zaczynam zmian, dopóki nie potwierdzę
+właściwego ID, GOAL, allowlisty i decyzji ABC. Pracuję wyłącznie w bieżącym, czystym
+worktree.
+```
+
+## Hierarchia i przeznaczenie najważniejszych plików
+
+Pełna, aktualna tabela jest w `docs/procesy/INDEX-PROCESU.md` §3 — nie
+powtarzam jej tam ponownie, żeby nie rozjeżdżała się w dwóch miejscach.
+Skrót ról:
+
+| Plik / katalog | Rola |
+|---|---|
+| `README.md` | uniwersalny punkt startowy |
+| `docs/procesy/INDEX-PROCESU.md` | mapa źródeł prawdy i miejsc zapisu artefaktów |
+| `docs/decyzje/R-PROC-AUTOBOT.md` | pełna norma: role, pętla, ABC, bramki, bariery, hasła |
+| `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT*.md`, `-SCOPE.md` | trzy twarde FAIL-e Evaluatora (happy-path, parytet gracz/AI, save/load) |
+| `docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md` | obowiązkowy turniej dwóch niezależnych projektów przed nowym ABC |
+| `docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md` | format odpowiedzi na hasło `raport` |
+| `dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` | mapa warstw przy zmianie samego AutoBota |
+| `playbook.md` | kanon pamięci procesu; aktualizuj po pracy |
+| `dyspozycje/REJESTR-PROSB-I-ZADAN.md` | wszystkie tematy i status kanoniczny |
+| `dyspozycje/PYTANIA-OTWARTE.md` | aktywne ABC, ECHO, odsyłacze decyzji |
+| `docs/decyzje/<ID>.md` | literalna decyzja właściciela |
+| `dyspozycje/autobot/runs/<ID>/` | `00-dispatch` do `04-integration`, kanoniczny ślad |
+| `dyspozycje/_handoff/HANDOFF-AKTUALNY.md` | jedno bieżące źródło stanu |
+| `dyspozycje/_handoff/KANAL-PRACA.md` | krótkie przekazania, `CZEKAM-NA:` |
+| `dyspozycje/WERSJE.md` | faktycznie opublikowane wersje, aktualizuj dopiero po deployu |
+| `dyspozycje/autobot/src/guardrails.ts` | mechaniczne, deny-by-default zakazy w kodzie — ostatnia linia obrony |
+
+## Kiedy ABC jest obowiązkowe
+
+ABC jest obowiązkowe, gdy zmiana dotyka balansu gry, kosztów, mnożników,
+progów, walki, ekonomii, zachowania AI lub innej decyzji
+produktowej/architektonicznej. Każde NOWE pytanie (bez wcześniejszej
+odpowiedzi literą) przechodzi przez obowiązkowy turniej dwóch niezależnych
+projektów — `docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md`. Pełne wymogi
+formy pytania (ID, sytuacja, warianty A/B/C, za/przeciw, rekomendacja) i
+zasada ECHO (`dyspozycje/PYTANIA-OTWARTE.md` + `docs/decyzje/<ID>.md`) — patrz
+[`.claude/skills/autobots/SKILL.md`](../autobots/SKILL.md) §6 dla samej
+metodologii.
+
+## Delegacja wstępnego rozpoznania do subagenta (Maciej, 2026-08-21)
+
+Gdy właściciel przekazuje złożony, wieloznaczny albo obszerny temat (nowe
+żądanie przebudowy mechaniki, prośba o recon, audyt rejestru) — orkiestrator
+NIE analizuje go najpierw samodzielnie w pełni. Zamiast tego niezwłocznie
+dispatchuje osobnego subagenta z pełną, dosłowną treścią żądania właściciela
+(zachowując każdy niuans, bez własnej wstępnej interpretacji na skróty) i
+zleca mu: recon kodu/rejestru, rozbicie żądania na punkty, oznaczenie co jest
+jednoznaczne a co wymaga ABC, ew. warianty pytań A/B/C. Orkiestrator dostaje z
+powrotem gotowe podsumowanie i na jego podstawie prowadzi dalszą rozmowę z
+właścicielem (rejestruje temat, zadaje ABC, dispatchuje Operatora) — nie
+powtarza samodzielnie tej samej analizy. Powód: własne przetwarzanie złożonego
+tematu przez orkiestratora zajmuje czas i spowalnia rozmowę; subagent robi to
+w tle, równolegle do dalszej pracy orkiestratora.
+
+## Twarde bariery projektu Civ
+
+- Nie używaj `git add -A` przy cudzej lub nieznanej pracy.
+- Operator pracuje w izolowanym worktree i nie dotyka plików poza allowlistą.
+- Przed kodowaniem wykonaj recon: rejestr, decyzje, handoff, Git i wyszukiwanie po repo.
+- Przed integracją przejrzyj diff także pod kątem usunięć, overlapu i regresji.
+- Dla kodu wymagaj typechecku, testów tematu, testów sąsiednich i baseline'u; przy
+  zmianach trwałego stanu sprawdź save/load i wartość domyślną dla starych zapisów.
+- Przy zmianie mapy sprawdź właściwy test deterministyczności; przy UI obejrzyj realny
+  render/zrzut ekranu.
+- Nie uruchamiaj `npm run build` ani `npm run dev` w Civ. Stosuj komendę builda
+  wskazaną przez aktualny playbook/README runtime.
+- `playbook.md` jest kanonem, `playbook.json` jest generowany — nie edytuj JSON ręcznie.
+- Nie aktualizuj `WERSJE.md` przed faktycznym deployem.
+- Bariery powyżej są dodatkowo wymuszane mechanicznie w kodzie
+  (`dyspozycje/autobot/src/guardrails.ts`, deny-by-default) — nie zastępuje to ich
+  czytania, ale jest ostatnią linią obrony, gdy pętla zawiedzie.
+
+## Obieg
+
+```text
+Operator GPT-5.6 Luna High
+→ Evaluator GPT-5.6 Luna High
+→ Final Control GPT-5.6 Luna High
+→ integracja orkiestratora GPT-5.6 Luna Medium
+→ READY_FOR_DEPLOY
+→ osobna bramka deploy/push
+```
+
+W dispatchach Codex (`multi_agent_v1`) Operator i Evaluator MUSZĄ jawnie używać
+`model=gpt-5.6-luna` oraz `reasoning_effort=high`; nie wolno polegać na modelu
+odziedziczonym po orkiestratorze. Final Control używa tego samego modelu i effortu,
+a integracja orkiestratora `gpt-5.6-luna` z `reasoning_effort=medium`.
+
+Przed dispatchiem zapisz pełne ID, `GOAL`, kryteria końca, allowlistę, izolację i plan
+testów. Raport Operatora uruchamia Evaluatora, a `PASS` prowadzi do Final Control.
+Jedna runda oznacza jeden faktyczny dispatch Operatora wraz z jego Evaluatorem; runda
+początkowa i każda korekta liczą się jawnie, a licznik rośnie przed dispatchiem.
+`FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS` i niegotowość Final Control
+wracają do początku obiegu z tym samym ID wyłącznie po guardzie licznika i dla rund 1–5. `ABC-OCZEKUJE`
+przed dispatchiem nie zużywa rundy. Po piątej nieudanej/niezamkniętej rundzie
+zatrzymaj kolejny dispatch i zgłoś `LIMIT-5-EXCEEDED`
+z liczbą rund, ostatnim faktycznym werdyktem, blokadą i decyzją wymaganą od
+orkiestratora/właściciela. Limit jest dodatkową bramką, nie zamiennikiem BLOCK,
+TIMEOUT, INFRA lub ZWIS. Wznowienie albo nowy cykl wymaga jawnej decyzji i pozostaje
+przy tym samym ID; nie wolno samoczynnie zmieniać ID ani resetować licznika.
+
+## Artefakty
+
+Nowe runy zapisuj w `dyspozycje/autobot/runs/<ID>/`:
+`00-dispatch.md`, `01-operator.md`, `02-evaluator.md`, `03-final-control.md`,
+`04-integration.md`. Rejestruj temat w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`,
+otwarte ABC w `dyspozycje/PYTANIA-OTWARTE.md`, ECHO i decyzję w
+`docs/decyzje/<ID>.md`, bieżący stan w `dyspozycje/_handoff/HANDOFF-AKTUALNY.md`,
+a przekazania w `KANAL-PRACA.md`. `WERSJE.md` aktualizuj dopiero po faktycznym
+deployu.
+
+Raport etapu zawiera `STATUS`, `DOMAIN` (`GAME`/`PROCESS`/`INFRA`/`INFORMATIONAL` —
+błąd provenance/worktree/ledgeru NIE jest automatycznie błędem gry), `TEMAT`, `GOAL`,
+`ZMIANY/COMMIT`, `TESTY`, `BLOKADY`, `NASTĘPNY KROK` i `DEPLOY/PUSH`. Operator, Evaluator
+i Final Control nie integrują, nie deployują i nie pushują. Historyczne routingi są
+wyłącznie w [`docs/archiwum-procesu/`](../../../docs/archiwum-procesu/).
+
+## Konflikt kontraktu i integracja allowlist-only
+
+Gdy dispatch/kod/testy wymagają sprzecznego zachowania dla tego samego ID — Operator STOP,
+nie koduje dalej, nie liczy to jako rundy, zapisuje `dyspozycje/autobot/runs/<ID>/decision-abc.md`
+(opis konfliktu, bez proponowanego rozwiązania) i ustawia razem `DECISION_REQUIRED` (ledger)
+oraz `ABC-OCZEKUJE` (rejestr tematu). Konflikt czysto inżynierski bez wpływu na gameplay/UX
+idzie lekką ścieżką (jedna propozycja); konflikt z wpływem na gameplay/balans/UX wymaga
+pełnego turnieju C-018 — `decision-abc.md` jest tylko wyzwalaczem, nigdy substytutem.
+
+Integracja z drzewa współdzielonego z inną, niepowiązaną pracą jest **allowlist-only, per
+plik i per hunk** — zakaz `git add -A`/`git add .`. Współdzielony plik niemożliwy do
+bezpiecznego rozdzielenia dostaje status `INTEGRATION_PENDING` (nie `BLOCK`); orkiestrator
+adresuje go przy najbliższym wolnym slocie, nie zostawia biernie czekającego. Weryfikację
+„czy funkcja już jest wdrożona" rób wyłącznie przez `git merge-base --is-ancestor
+<commit_funkcji> <commit_release>`, nigdy z pamięci. Pełny opis: playbook C-054–C-060.
+
+## Ledger i watchdog dispatchu
+
+Każdy dispatch zapisuje jeden i tylko jeden rekord z allowlistą pól:
+`agent_id`, `temat`, `rola`, `runda`, `start`, `oczekiwany_artefakt`, `ostatni_status`,
+`timestamp_zakonczenia`, `routing_nastepnego_kroku`. Watchdog sprawdza rekordy co minutę
+i wymaga terminalnego raportu albo jawnej klasyfikacji: `completed`, `interrupted`,
+`timeout`, `not_found`, `BLOCK` lub `CLOSED`; brak notyfikacji nie jest stanem oczekiwania.
+`not_found` bez artefaktu daje `BLOCK`, cisza daje `ZWIS`, a timeout daje `TIMEOUT`.
+`FAIL`/`BLOCK` wraca do tego samego ID i Operatora po guardzie rundy. Nieznany status
+blokuje duplikat i kolejny dispatch do czasu rozstrzygnięcia. Monitoring kończy się po
+`READY_FOR_DEPLOY`, jawnym `BLOCK` albo `ABC-OCZEKUJE`; Operator nie deployuje i nie pushuje.
+
+Konkretne progi tego projektu: brak ruchu przez ok. 7 minut = `ZWIS` (kanon także w
+`.cursor/rules/subagent-watchdog.mdc`) — sprawdź transcript, Git i artefakty zamiast
+anulować lub bezmyślnie restartować. Limit aktywnej puli projektu wynosi 6 subagentów
+(playbook C-060; zarządzanie pulą i ocena dostępnej pojemności przed nową partią
+dispatchy) — gdy istnieje niezablokowana praca, obsadzaj dostępne sloty. Hasło `sprawdź`
+oznacza audyt całej puli: aktywnych przebiegów, raportów, historycznych `not_found`,
+statusów runów, Git i artefaktów; po audycie zamknij zakończone sloty i uruchom wymagane
+następne etapy.
+
+## Bramki i hasła właściciela
+
+Konkretne komendy testowe i punkty odniesienia są w `docs/decyzje/R-PROC-AUTOBOT.md`
+§6 Bramki — nie kopiuj ich tutaj, sprawdzaj tam (liczby się zmieniają z każdą falą).
+Tabela haseł właściciela (`sprawdź`, `push`, `deploy`, `format`/`ABC`, `raport`,
+`co nowego` — pokazuje wyłącznie sekcję „Co nowego w regułach AutoBota" z `README.md`,
+bez pełnego audytu) jest w `docs/decyzje/R-PROC-AUTOBOT.md` §8.
+
+**Pięć bramek referencyjnych** uruchamianych po KAŻDYM merge'u do `main`, obok
+`tsc --noEmit` i testów samego tematu — pełne komendy i wyniki referencyjne
+w `R-PROC-AUTOBOT.md` §6:
+
+```text
+gra/tools/logic-test.cjs        gra/tools/tech-tree-test.cjs
+gra/tools/research-test.cjs     gra/tools/unit-replace-test.cjs
+gra/tools/combat-test.cjs
+```
+
+---
+
+# Wypełnienie szkieletu dla tego projektu
+
+Odpowiednik dodatku „wypełnienie dla projektu" z uniwersalnego szkieletu.
+Wymieniane jest wyłącznie to; sam szkielet (`autobots/SKILL.md`) zostaje bez
+zmian, bo jest niezależny od projektu.
+
+## Odwzorowanie pojęć procesu w tej dziedzinie
+
+| Pojęcie szkieletu | Postać w Civ „The Game" |
+|---|---|
+| Wytwór | Zmiana w `gra/`, dokumentacji albo rejestrze spełniająca `GOAL`, **faktycznie scalona do `main`** — nie diff, nie raport, nie deklaracja Operatora (`R-PROC-AUTOBOT.md` §1b) |
+| Dowód wykonania | `tsc --noEmit` = 0 błędów + testy tematu + **5 bramek referencyjnych** zielone na aktualnym stanie, uruchomione niezależnie od Operatora; przy temacie wizualnym dodatkowo zrzut z żywego Chromium (Playwright) z dowodem nietautologiczności |
+| Miejsce pracy w toku | worktree + gałąź `autobot/<ID>`, oddzielone od `main` |
+| Izolacja | osobny worktree na jeden temat, zakładany przez sparse-checkout bez `gra-robocza/`, `gra-kanon/` i `dist/` (C-015) |
+| Wersja obowiązująca | `origin/main`; publikacja ROBOCZA/KANON/FINALNA to **osobne, późniejsze bramki** |
+| Zapis punktu kontrolnego | commit git — zapis, **nie** integracja |
+| Rejestr scenariuszy / kryteriów | testy w `gra/tools/*-test.cjs` + kryteria końca w `00-dispatch.md` |
+| Źródło rozstrzygające faktu | faktyczny schemat narzędzia / kod w repo / wynik uruchomionej komendy — nigdy pamięć (`R-PROC-AUTOBOT.md` §13a) |
+
+## Parametry i ich wartości
+
+| Parametr szkieletu | Wartość w tym projekcie | Źródło |
+|---|---|---|
+| {prefiks-identyfikatora-tematu} | brak jednego prefiksu — ID opisowe z sufiksem `-Q<n>` (np. `R-PROC-AUTOBOT-PRZEBUDOWA-SZKIELET-Q1`), niezmienne przez wszystkie rundy | praktyka repo, `REJESTR-PROSB-I-ZADAN.md` |
+| {nazwy-domen-raportu} | `GAME` · `PROCESS` · `INFRA` · `INFORMATIONAL` | C-055, `R-PROC-AUTOBOT.md` §4 |
+| {zestaw-statusow-raportu} | `PASS` · `PASS-WITH-NOTES` · `FAIL` · `BLOCK` · `TIMEOUT` · `INFRA` · `LIMIT-5-EXCEEDED` · `DECISION_REQUIRED` · `INTEGRATION_PENDING` | `R-PROC-AUTOBOT.md` §4 |
+| {model-wykonawcy} / {model-sprawdzajacego} / {model-kontroli-koncowej} — Claude Code, Ścieżka A | Sonnet 5 Medium / Sonnet 5 High / Sonnet 5 High (osobny subagent) | `R-PROC-AUTOBOT.md` §5a; C-062 |
+| — wyjątek graficzny/wizualny | Operator **i** Evaluator → Opus 5 (effort Medium/High); Final Control zostaje Sonnet 5 High | `R-PROC-AUTOBOT.md` §5a, decyzja właściciela 2026-08-22 |
+| — Codex `multi_agent_v1` | Operator/Evaluator/Final Control → `gpt-5.6-luna`, `reasoning_effort=high`; integracja orkiestratora → `gpt-5.6-luna`, `medium` | `R-PROC-AUTOBOT.md` §1, §1a; C-052 |
+| {liczba-podejsc-przed-eskalacja} | **5 rund** na jedno pełne ID, potem `LIMIT-5-EXCEEDED`; cichy reset = naruszenie | C-050, C-053, `R-PROC-AUTOBOT.md` §3, §3a |
+| {liczba-tematow-rownoleglych} | pula 6 subagentów. **Jeśli watchdog dzieli z nią limit wątków/procesów — efektywna pojemność to 5 tematów**, szósty slot rezerwowany dla watchdoga. **Jeśli działa poza tą pulą — zapisz to jawnie, nie zakładaj domyślnie** | C-060, `R-PROC-AUTOBOT.md` §5 |
+| {czas-do-uznania-zawieszenia} | ok. **7 minut** ciszy = `ZWIS` | `.cursor/rules/subagent-watchdog.mdc`; §„Ledger i watchdog" wyżej |
+| {limit-rownoleglosci-wywolan} | `min(16, nproc − 2)` — **przeliczaj komendą, nie z pamięci** | `civ-autobot-workflow/SKILL.md` §5 |
+| {progi-podzialu-tematu-na-wezly} | 2 niezależne obszary allowlisty / >3 nazwane bramki **specyficzne dla tematu** / >6 plików w allowliście. **Stała część wspólna nie liczy się do progu**: `tsc --noEmit` i 5 bramek referencyjnych są w każdym dispatchu z definicji; `gra/src/**` + `gra/tools/*-test.cjs` jednej zmiany to jeden obszar, nie dwa | `R-PROC-AUTOBOT.md` §12 |
+| {konwencja-numeracji-wezlow} | sufiks litery: `-a`, `-b`, `-c`; licznik rund liczony dla całego tematu — **jedna fala węzłów = jedna runda**, niezależnie od liczby węzłów | `R-PROC-AUTOBOT.md` §12 |
+| {limit-objetosci-raportu} | ok. 400 słów na raport etapu (destylat, nie surowe logi) | `R-PROC-AUTOBOT.md` §11 |
+| {miejsce-i-szablon-zapisu-zlecenia} | miejsce: `dyspozycje/autobot/runs/<ID>/00-dispatch.md` … `04-integration.md`; szablon: `dyspozycje/autobot/SZABLON-00-DISPATCH.md` (kopiuj, nie pisz od zera) | C-044, C-051, `R-PROC-AUTOBOT.md` §2a |
+| {kolejnosc-plikow-startowych} | `README.md` → `INDEX-PROCESU.md` → `R-PROC-AUTOBOT.md` → `playbook.md` → `HANDOFF-AKTUALNY.md` → `KANAL-PRACA.md` → rejestr/ABC/run → Git | §„Kolejność czytania" wyżej |
+| {zestaw-plikow-trwalej-prawdy} | `playbook.md`, `REJESTR-PROSB-I-ZADAN.md`, `PYTANIA-OTWARTE.md`, `docs/decyzje/<ID>.md`, `WERSJE.md` | §„Hierarchia plików" wyżej |
+| {lista-twardych-barier} | 10 granic nienaruszalnych domeny gry | `R-PROC-AUTOBOT.md` §9 |
+| {jezyk-dokumentacji-i-procesu} | polski wszędzie; nazwy techniczne, ścieżki i identyfikatory po angielsku, bez znaków diakrytycznych | praktyka repo |
+| {miejsce-i-warunek-wlaczenia-do-wersji-obowiazujacej} | `origin/main`, merge `--no-ff` po pozytywnym Final Control, allowlist-only per plik/hunk | C-034, C-059 |
+
+Wartości nietypowe — limit 5 rund zamiast domyślnych 3 w szkielecie, pula 6 zamiast
+2, wyjątek graficzny — **pochodzą z decyzji właściciela**, nie z ustawień domyślnych
+szkieletu. Zmiana którejkolwiek wymaga ECHO, nie jest korektą redakcyjną.
+
+Limit `{limit-rownoleglosci-wywolan}` jako jedyny **nie pochodzi z rozmowy
+z właścicielem** — wynika z liczby rdzeni maszyny orkiestratora i przelicza się
+komendą `nproc`, bez pytania.
+
+## Format wersji
+
+`dyspozycje/WERSJE.md` jest **jedynym** rejestrem md5 bundli. Inne pliki linkują,
+nigdy nie kopiują — stary system miał cztery sprzeczne „aktualne" md5. Format
+nagłówka wpisu:
+
+```text
+## ROBOCZA <md5-skrócone> - <RRRR-MM-DD HH:MM UTC> - FALA <N>: <opis jednym zdaniem>
+```
+
+Wpis powstaje **dopiero po faktycznym publishu**, z md5 przeliczonym z opublikowanego
+bundla. `gra-robocza/ROBOCZA-MANIFEST.json` nigdy nie jest nadpisywany bez
+przeliczenia md5 (granica §9 pkt 5).
+
+## Czego ten projekt świadomie nie robi
+
+Lista granic zakresu — chroni przed powolnym rozrostem („skoro już przy tym
+jesteśmy"). **Temat naruszający którykolwiek punkt wymaga pytania ABC, nie
+decyzji Operatora.** Lista rośnie wyłącznie o rzeczy **faktycznie rozważone
+i odrzucone** — nigdy jako spis z góry wszystkiego, czego teoretycznie projekt
+mógłby nie robić.
+
+Punkty potwierdzone dotychczasową praktyką repozytorium:
+
+- **Nie gonimy parytetu funkcji z komercyjnymi grami 4X.** Budujemy pod
+  zgłoszenia właściciela i istniejące kryteria, nie pod cudzą listę funkcji
+  (`R-PROC-AUTOBOT.md` §14).
+- **Nie naprawiamy „przy okazji".** Zadanie naprawiające zgłoszony błąd ma
+  zakres = tylko ten błąd; refaktory i ulepszenia sąsiednie to osobne tematy
+  (C-025).
+- **Nie naprawiamy bramek czerwonych pre-istniejąco**, gdy nie są przedmiotem
+  tematu — np. `unit-power-test.cjs` (4/2) jest znanym, świadomie niezamykanym
+  stanem, nie regresją (`R-PROC-AUTOBOT.md` §6).
+- **Nie mieszamy zmiany procesu ze zmianą produktową** w jednym dispatchu
+  (granica §9 pkt 4).
+
+**Listy zakresu produktowego — co ta gra świadomie robi, a czego świadomie nie
+robi, choć mogłaby — nie wolno wymyślić.** Dziś stoi tu **jeden** taki punkt
+(parytet funkcji z grami 4X, z `R-PROC-AUTOBOT.md` §14); pozostałe trzy punkty
+powyżej dotyczą sposobu pracy, nie samej gry. Granice zakresu gry są decyzją
+właściciela, nie ustaleniem technicznym; dopisanie tu listy bez pokrycia w jego
+odpowiedzi byłoby fałszywą strukturą, gorszą niż jej brak. Orkiestrator dopisuje
+kolejne punkty dopiero po jednoznacznej odpowiedzi, zapisanej jako ECHO — zgodnie
+z regułą wzrostu na początku tej sekcji („wyłącznie o rzeczy faktycznie rozważone
+i odrzucone"). Sama ta reguła nie została dotąd potwierdzona przez właściciela
+wprost — to przedmiot pytania `R-PROC-AUTOBOT-PRZEBUDOWA-SZKIELET-Q1-Q2`.
+
+## Nasze tryby samooszukiwania — obserwowane, nie hipotetyczne
+
+Reguły przeciw samooszukiwaniu w promptach Operatora/Evaluatora **pochodzą
+stąd**, nie z teorii. Nie kopiuj cudzych przykładów — błąd popełniony w innym
+projekcie rzadko trafia w to, co faktycznie zawodzi tutaj.
+
+| Tryb | Przypadek z tego repozytorium | Reguła zakazująca |
+|---|---|---|
+| Test tautologiczny | test kontraktowy/jsdom przechodził mimo brakującego CSS — regres T10 migracji CivPedia przeszedł przez pełne Operator→Evaluator→Final Control na każdym z 10 etapów | zakaz uznania tematu wizualnego za zamknięty bez zrzutu z żywego Chromium **i** bez pokazania, że test czerwienieje po mutacji źródła (§9 pkt 6) |
+| Wynik bramki z pamięci | porównanie „czy funkcja jest już wdrożona" zrobione z pamięci zamiast komendą — fałszywy alarm „temat zniknął w kolejnej Fali" | zakaz twierdzenia „już wdrożone"/„zniknęło" bez wklejonego wyniku `git merge-base --is-ancestor` (C-056) |
+| Deklaracja zamiast artefaktu | wpis w rejestrze twierdzący, że runda Evaluatora „się odbyła", bez istniejącego raportu | zakaz raportowania czynności bez ID runu albo SHA (C-038) |
+| Samoocena liczników | orkiestrator wpisał liczniki skuteczności zasad z pamięci zamiast z realnych przebiegów; przy tym samym scaleniu zgubiono całą regułę i fragment innej | liczniki wyłącznie z mechanizmu, nowe zasady startują 0/0; `playbook.json` generowany, nigdy edytowany ręcznie (C-013) |
+| Praca na nieaktualnej bazie | Operator w świeżym worktree od `main` nie znalazł pracy scalonej do gałęzi sesji i zaczął ją odtwarzać ręcznie | wykrycie przez `git merge-base --is-ancestor` na starcie; gdy zlecenie wymaga stanu gałęzi sesji, prompt musi to rozstrzygnąć wprost (C-035) |
+| Cichy dispatch bez różnicowania | dwa tematy dispatchowane z niewłaściwym modelem i bez różnicowania effort — złapane przez właściciela, nie przez samoocenę | jawny `model` i `effort` per rola zapisane w `00-dispatch.md` i w raporcie etapu (C-052, C-061) |
+
+Żaden z powyższych nie został złapany przez regułę procesu w chwili wystąpienia,
+bo takiej reguły jeszcze nie było. Każdy kolejny obserwowany tryb dopisuj tutaj
+**i** do `playbook.md` — jedno bez drugiego znika po kompaktowaniu sesji.
+
+## Koszt
+
+Głównym składnikiem kosztu w tym projekcie jest rachunek za modele językowe —
+przewyższa on koszt czegokolwiek innego o rząd wielkości. Stąd optymalizujemy
+**dobór modelu per rola i objętość kontekstu**, nie infrastrukturę: raport niesie
+destylat, nie surowe logi (`R-PROC-AUTOBOT.md` §11), a przy fan-oucie łączymy
+zadania w grubsze paczki zamiast mnożyć cienkich agentów, bo każdy węzeł powtarza
+wstęp do promptu (`civ-autobot-workflow/SKILL.md` §5).

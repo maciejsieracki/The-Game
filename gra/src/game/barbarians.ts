@@ -35,7 +35,7 @@ import { addForeignCityBlocks } from './city-hex-movement';
 import { canCaptureCityWithoutBattle } from './siegeDefenders';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost } from '../units/setup';
+import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost, isCivilianUnit } from '../units/setup';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -79,6 +79,17 @@ export interface BarbCamp {
    * Pole opcjonalne — stare save'y bez pola = obóz lądowy (kompatybilne).
    */
   naval?: boolean;
+}
+
+/** Trwała identyfikacja heksu, na którym spawner został wyczyszczony. */
+export type ClearedBarbCampHexes = ReadonlySet<string>;
+
+function campHexIsCleared(
+  clearedHexes: ClearedBarbCampHexes | undefined,
+  q: number,
+  r: number,
+): boolean {
+  return clearedHexes?.has(keyOf(q, r)) === true;
 }
 
 /**
@@ -519,6 +530,18 @@ export function loadSeaBarbParams(
  */
 export type BarbariansLevel = 'latwy' | 'normalny' | 'trudny' | 'brak';
 
+/** Trudność gry sterująca limitem żywych jednostek jednej chatki. */
+export type BarbDifficulty = 'easy' | 'normal' | 'hard';
+
+/** R-BARB-CHATKA-LIMIT-POZIOMY-Q1: Easy=1, Standard=2, Hard=3. */
+export function barbarianUnitsPerCampForDifficulty(
+  difficulty: BarbDifficulty | undefined,
+): number {
+  if (difficulty === 'easy') return 1;
+  if (difficulty === 'hard') return 3;
+  return 2;
+}
+
 /** Stara skala (przed 2026-08-13) — WYŁĄCZNIE do migracji starych zapisów/configów. */
 export type LegacyBarbariansLevel = 'wielu' | 'nieliczni' | 'wylaczeni';
 
@@ -573,31 +596,41 @@ export function barbariansEnabledForLevel(level: BarbariansLevel | undefined): b
 export function scaleBarbParamsForLevel(
   params: BarbParams,
   level: BarbariansLevel | undefined,
+  difficulty?: BarbDifficulty,
 ): BarbParams {
+  const withDifficulty = difficulty === undefined
+    ? params
+    : { ...params, unitsPerCamp: barbarianUnitsPerCampForDifficulty(difficulty) };
   switch (level) {
     case 'brak':
-      return { ...params, maxCamps: 0 };
+      return { ...withDifficulty, maxCamps: 0 };
     case 'latwy':
       return {
-        ...params,
-        maxCamps: Math.max(1, Math.round(params.maxCamps * 0.2)),
-        spawnInterval: Math.max(1, Math.round(params.spawnInterval * 2)),
-        unitsPerCamp: Math.max(1, params.unitsPerCamp - 1),
+        ...withDifficulty,
+        maxCamps: Math.max(1, Math.round(withDifficulty.maxCamps * 0.2)),
+        spawnInterval: Math.max(1, Math.round(withDifficulty.spawnInterval * 2)),
+        unitsPerCamp: difficulty === undefined
+          ? Math.max(1, withDifficulty.unitsPerCamp - 1)
+          : barbarianUnitsPerCampForDifficulty(difficulty),
       };
     case 'trudny':
       return {
-        ...params,
-        maxCamps: Math.max(1, Math.round(params.maxCamps * 2)),
-        spawnInterval: Math.max(1, Math.round(params.spawnInterval / 2)),
-        unitsPerCamp: params.unitsPerCamp + 1,
+        ...withDifficulty,
+        maxCamps: Math.max(1, Math.round(withDifficulty.maxCamps * 2)),
+        spawnInterval: Math.max(1, Math.round(withDifficulty.spawnInterval / 2)),
+        unitsPerCamp: difficulty === undefined
+          ? withDifficulty.unitsPerCamp + 1
+          : barbarianUnitsPerCampForDifficulty(difficulty),
       };
     case 'normalny':
     default:
       return {
-        ...params,
-        maxCamps: Math.max(1, Math.round(params.maxCamps / 4)),
-        spawnInterval: Math.max(1, Math.round(params.spawnInterval * 1.5)),
-        unitsPerCamp: Math.max(1, params.unitsPerCamp - 1),
+        ...withDifficulty,
+        maxCamps: Math.max(1, Math.round(withDifficulty.maxCamps / 4)),
+        spawnInterval: Math.max(1, Math.round(withDifficulty.spawnInterval * 1.5)),
+        unitsPerCamp: difficulty === undefined
+          ? Math.max(1, withDifficulty.unitsPerCamp - 1)
+          : barbarianUnitsPerCampForDifficulty(difficulty),
       };
   }
 }
@@ -697,6 +730,66 @@ function firstStep(
   const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return null;
   return path[0] ?? null;
+}
+
+/**
+ * R-ARMIA-KONCENTRACJA-AI-BARB-Q1=A: plan lokalnego rally barbarzyńców.
+ *
+ * To jest faza przygotowania, nie bonus do Mocy: jednostki lądowe tej samej
+ * frakcji przypisane do tego samego żywego obozu idą do jego heksu, dopóki
+ * kontyngent nie znajdzie się w promieniu 1. Nie ma teleportu ani łączenia z
+ * Ludami Morza; obóz jest już kanonicznym punktem odwrotu/regeneracji.
+ */
+export function planBarbarianRally(
+  barbUnits: readonly BarbUnit[],
+  camps: readonly BarbCamp[],
+  map: GameMap,
+  allUnits: readonly RuntimeUnit[],
+  cities: readonly CityLike[],
+): BarbCommand[] {
+  const landCamps = camps.filter(c => c.naval !== true);
+  if (landCamps.length === 0) return [];
+
+  const eligible = barbUnits.filter(u =>
+    u.ruchLeft > 0
+    && u.embarked !== true
+    && u.seaRaider !== true
+    && u.inGarnizon !== true
+    && u.oblegaCityId === undefined
+    && !isCivilianUnit(u),
+  );
+  const byCamp = new Map<string, BarbUnit[]>();
+  for (const unit of eligible) {
+    const camp = unit.campId !== undefined
+      ? landCamps.find(c => c.id === unit.campId)
+      : nearest(unit.q, unit.r, landCamps);
+    if (camp === undefined) continue;
+    const group = byCamp.get(camp.id) ?? [];
+    group.push(unit);
+    byCamp.set(camp.id, group);
+  }
+
+  const commands: BarbCommand[] = [];
+  for (const group of byCamp.values()) {
+    if (group.length < 2) continue;
+    const camp = landCamps.find(c => c.id === (group[0]?.campId ?? ''))
+      ?? nearest(group[0]!.q, group[0]!.r, landCamps);
+    if (camp === undefined) continue;
+    const gathered = group.every(u => hexDistance(u.q, u.r, camp.q, camp.r) <= 1);
+    if (gathered) continue;
+
+    for (const unit of group) {
+      if (hexDistance(unit.q, unit.r, camp.q, camp.r) <= 1) continue;
+      const occupied = addForeignCityBlocks(
+        occupiedExcluding([...allUnits], unit.id),
+        unit.ownerId,
+        cities as readonly Pick<City, 'q' | 'r' | 'ownerId'>[],
+      );
+      const step = firstStep(unit, map, camp.q, camp.r, occupied);
+      if (step !== null) commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+    }
+  }
+  return commands;
 }
 
 // ---------------------------------------------------------------------------
@@ -852,6 +945,7 @@ export function spawnCamps(
   cities: CityLike[],
   params: BarbParams,
   seed: number,
+  clearedHexes?: ClearedBarbCampHexes,
 ): BarbCamp[] {
   const slotsLeft = params.maxCamps - existing.length;
   if (slotsLeft <= 0) return [];
@@ -865,6 +959,10 @@ export function spawnCamps(
     if (isImpassableTerrain(hex.terenBazowy)) continue;
 
     const { q, r } = hex.coords;
+    // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: wejście cywilizacji czyści
+    // spawner bezpowrotnie w tej rozgrywce; kolejny losowy spawn nie może
+    // ponownie wybrać tego samego heksu.
+    if (campHexIsCleared(clearedHexes, q, r)) continue;
     const tooCloseToCity = cities.some(c => hexDistance(q, r, c.q, c.r) < params.minDistFromCity);
     if (tooCloseToCity) continue;
 
@@ -926,6 +1024,7 @@ export function spawnSeaCamps(
   params: BarbParams,
   seaParams: SeaBarbParams,
   seed: number,
+  clearedHexes?: ClearedBarbCampHexes,
 ): BarbCamp[] {
   const existingSea = existing.filter(c => c.naval === true).length;
   const slotsLeft = seaParams.maxSeaCamps - existingSea;
@@ -938,6 +1037,7 @@ export function spawnSeaCamps(
     if (hex.wlasciciel !== null) continue;
 
     const { q, r } = hex.coords;
+    if (campHexIsCleared(clearedHexes, q, r)) continue;
     let ok = false;
     if (hex.terenBazowy === TerenBazowy.Wybrzeze) {
       ok = true; // (a) obóz plażowy na płytkiej wodzie
@@ -1146,10 +1246,9 @@ export function tickCamps(
       continue;
     }
 
-    // Cooldown ready: check the per-camp cap.
-    const owned = barbUnits.filter(
-      u => hexDistance(u.q, u.r, camp.q, camp.r) <= params.campControlRadius,
-    ).length;
+    // Cooldown ready: a living unit keeps its camp slot after marching away.
+    // Legacy units without campId retain the former proximity fallback.
+    const owned = countCampLivingUnits(camp, barbUnits, params.campControlRadius);
 
     if (owned >= params.unitsPerCamp) {
       // At cap -- hold at 0 so it spawns as soon as a slot frees up.
@@ -1366,6 +1465,18 @@ function countCampGarrison(
 ): number {
   return barbUnits.filter(
     u => hexDistance(u.q, u.r, camp.q, camp.r) <= campControlRadius,
+  ).length;
+}
+
+function countCampLivingUnits(
+  camp: BarbCamp,
+  barbUnits: BarbUnit[],
+  campControlRadius: number,
+): number {
+  return barbUnits.filter(
+    u => u.campId === camp.id
+      || (u.campId === undefined
+        && hexDistance(u.q, u.r, camp.q, camp.r) <= campControlRadius),
   ).length;
 }
 
@@ -1639,6 +1750,18 @@ export function decideBarbarianMoves(
   // All units occupy hexes for pathing (barbs + players).
   const allUnits: RuntimeUnit[] = [...barbUnits, ...enemies];
 
+  // R-ARMIA-KONCENTRACJA-AI-BARB-Q1=A: rally precedes chase/attack. A unit
+  // receives at most one command below; once the group is physically gathered
+  // at the camp, the existing tactical planner resumes unchanged.
+  const rallyCommands = planBarbarianRally(barbUnits, camps, map, allUnits, cities);
+  const ralliedUnitIds = new Set(rallyCommands.map(c => c.unitId));
+  const rallyCampIds = new Set(
+    rallyCommands
+      .map(c => barbUnits.find(u => u.id === c.unitId)?.campId)
+      .filter((id): id is string => id !== undefined),
+  );
+  commands.push(...rallyCommands);
+
   // F2-PERF (RUNDA 6, Evaluator B): etykietowanie spójnych składowych lądu
   // liczone LENIWIE, co najwyżej RAZ na to wywołanie (czyli raz na turę),
   // WSPÓLNE dla wszystkich jednostek barbarzyńskich w tej turze -- nie raz na
@@ -1660,6 +1783,7 @@ export function decideBarbarianMoves(
 
   for (const unit of barbUnits) {
     if (unit.ruchLeft <= 0) continue;
+    if (ralliedUnitIds.has(unit.id) || (unit.campId !== undefined && rallyCampIds.has(unit.campId))) continue;
     // TEMAT #15: jednostki Ludów Morza (rajderzy / zaokrętowane) prowadzi
     // decideSeaPeoplesRaids — logika lądowa ich nie rusza.
     if (unit.embarked === true || unit.seaRaider === true) continue;

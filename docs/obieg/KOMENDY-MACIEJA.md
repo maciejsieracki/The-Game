@@ -41,8 +41,8 @@
 | **`reguły`** | **Start dnia** — pełny checklist obiegu (Slack MCP, archiwum sync, ABC, handoff) · [`AUDYT-OBIEG-PAMIEC-SLACK-2026-07-04.md`](AUDYT-OBIEG-PAMIEC-SLACK-2026-07-04.md) |
 | **`ścieżka`** | Broadcast: kod tylko `gra/src/` · [`OBOWIAZ-SCIEZKA-KODU.md`](OBOWIAZ-SCIEZKA-KODU.md) · [`KOMUNIKAT-MACIEJ-SCIEZKA.md`](KOMUNIKAT-MACIEJ-SCIEZKA.md) |
 | **`reguły mapa`** | Kanon gameplay MAPA · [`MAPA-KANON-GENERATOR.md`](MAPA-KANON-GENERATOR.md) · **≠ `reguły`** |
-| **`raport`** | **Status 4 sekcje:** **A** Grupy · **B** Integrator F · **C** Master · **4** playtesty (tylko info) |
-| **`master`** | Skan + wykonanie; na końcu ten sam układ co **`raport`** |
+| **`raport`** | **Status 10 kategorii** + „Brak dowodu / nie zgaduję" — kanon [`R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1`](../decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md) (§4 procedura). Playtesty: tylko wpis z najnowszej ROBOCZEJ |
+| **`master`** | Skan + wykonanie; pełny status stanu → ten sam układ co **`raport`** (10 kategorii) |
 | **`start`** | Krótki skan (backup/audyt); pełny status → **`raport`** |
 | **`pytania`** | **Otwarte ABC** — ID + jedno zdanie · tylko realnie czekające (weryfikacja plików decyzji) |
 | **`playtest OK`** / **`BUG: …`** | Wynik testu (**tylko po otwarciu §0 rejestru**) |
@@ -80,6 +80,8 @@
 - **Grupa znowu raportuje całą grę?** → wpisz **`zakres`** w czacie grupy (raz)
 - **Playtest / zaległe testy?** → **tylko Master** mówi · lane'y **milczą** · Ty testujesz przy ~100% gry
 - **Lista testów (gdy poprosisz):** **`playtest lista`** — odpowiada Master z rejestru §1
-- **Chcę wiedzieć gdzie stoi projekt (hub Master)** → **`raport`** (4 sekcje A·B·C·4)
+- **Chcę wiedzieć gdzie stoi projekt (hub Master)** → **`raport`** (10 kategorii + „Brak dowodu / nie zgaduję"; kanon `R-RAPORT-10`)
+
+> **ARCHIWUM — SUPERSEDED:** dawny **`raport`** w 4 sekcjach A·B·C·4 (2026-07-02) — zastąpiony układem 10 kategorii od 2026-08-18. Stary opis w historii gita / `.cursor/rules/komendy-raport.mdc` §ARCHIWUM.
 
 *Słowa można zmienić — powiedz, jeśli wolisz inne.*

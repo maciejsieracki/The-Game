@@ -1,8 +1,0 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{margin:0;background:#080a12;font-family:'Segoe UI',sans-serif}.g{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;padding:30px;max-width:900px;margin:0 auto}.c{border:1px solid rgba(232,216,138,.16);border-radius:10px;background:rgba(255,255,255,.015);padding:16px;text-align:center;color:#c8b898}.m{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 38% 30%,#1a2230,#0a0d14);border:2px solid #a08030;display:inline-flex;align-items:center;justify-content:center;color:#e8d88a;margin-bottom:10px}.l{font-size:11px}</style></head><body><div class="g" id="g"></div>
-<script>
-const ids=['menu-play','menu-campaign','menu-multiplayer','menu-settings','menu-more','menu-exit','menu-emblem-mini','menu-load','menu-save','menu-credits','menu-language','menu-audio','menu-controls','menu-achievements','menu-info'];
-const g=document.getElementById('g');
-Promise.all(ids.map(id=>fetch('icons/menu/'+id+'-40.svg').then(r=>r.text()).then(s=>({id,s})))).then(list=>{
- list.forEach(({id,s})=>{const d=document.createElement('div');d.className='c';d.innerHTML='<div class="m">'+s+'</div><div class="l">'+id+'</div>';g.appendChild(d);});
-});
-</script></body></html>

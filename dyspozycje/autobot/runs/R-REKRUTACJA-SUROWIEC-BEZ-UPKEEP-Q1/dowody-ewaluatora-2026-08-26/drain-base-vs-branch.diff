@@ -1,0 +1,22 @@
+12c12
+<    "recruitAllowed": false,
+---
+>    "recruitAllowed": true,
+88c88
+<    "recruitAllowed": false,
+---
+>    "recruitAllowed": true,
+164c164
+<    "recruitAllowed": false,
+---
+>    "recruitAllowed": true,
+240c240
+<  "gate57": false,
+---
+>  "gate57": true,
+242,243c242,243
+<  "gate50": false,
+<  "hint57": "Za mało surowca (rekrutacja + utrzymanie 1 tura)",
+---
+>  "gate50": true,
+>  "hint57": null,

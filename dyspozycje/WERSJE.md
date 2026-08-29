@@ -9,6 +9,182 @@ UWAGA: KANON i FINALNA promujÄ… siÄ™ teraz OSOBNYMI skryptami (`gra/tools/
 wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZALEĹ»NIE, kaĹĽdy w swojej sekcji, ze
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
+> Punkt wejścia bieżącego handoffu procesu: [`_handoff/HANDOFF-AKTUALNY.md`](_handoff/HANDOFF-AKTUALNY.md).
+> Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
+> ten plik pozostaje wyłącznie rejestrem publikacji bundli.
+
+## ROBOCZA e4e69366 - 2026-08-28 04:56 UTC - FALA 324: czternaście tematów po FALI 323 — reguły ulepszeń w lesie (farma / obóz / hodowla), wojna wymuszona Żelaza, flaga miasta-państwa, AI heks-po-heksie, rekrutacja, panel budowy, wydarzenia, sprzątanie repo (−592 MB)
+|- md5 (pełne): e4e69366930995d24816449452a4592e · stempel: ROBOCZA · label e4e69366 · źródłowy commit integracji: `60dc58d6`
+|- `R-ZELAZO-ZRZUTY-25-JEDNOSTEK-Q1` (`974ff108`) — harness renderujący 25 jednostek Żelaza w dwóch kadrach obok siebie (PRZÓD 0°/0° i KAMERA GRY 0°/52°), z nazwą **wypaloną na obrazku**, bo widok frontalny to nie jest to, co gracz widzi w rozgrywce. Dowód modelu dedykowanego (nie generycznego fallbacku) trzema niezależnymi metodami; **cztery niezależne uruchomienia dały 26/26 PNG bajtowo identycznych**. Zero zmian w `gra/src` i `gra/data`, zero PNG w repo. Ujawnił pięć defektów modeli zarejestrowanych osobno (m.in. szpara dłoń–drzewce u Gaesatae, dwie sprzeczne konwencje orientacji w rodzinie konnej).
+|- `R-REPO-SPRZATANIE-SREDNIE-Q1` (`d692d371`) — wariant **średni** wybrany przez właściciela: pliki śledzone **816,6 MB → 224,0 MB** (8557 → 4445 plików). Usunięte 8 bundli PLAYTEST, `gra-kanon/`, `docs/ux/`, archiwa i 10 martwych narzędzi. `Gra-ROBOCZA.html` bez zmian (md5 `04a7adcb` przed i po), `gra/src` tknięte wyłącznie w sześciu komentarzach JSDoc, `gra/data` bez zmian. Filtr odwrotny pusty w trzech niezależnych pomiarach. **Historia Gita NIE przepisywana** — to osobna bramka wymagająca zgody właściciela.
+|- `R-REPO-SCIEZKA-KANON-FINALNA-Q1` (`f274df70`) — odtworzenie oprzyrządowania ścieżki KANON/FINALNA, które padło ofiarą sprzątania: 3 skrypty odtworzone **bajtowo** z `39ae5d17` (zgodność blob-SHA), `sync-kanon-to-robocza.ps1` świadomie NIE odtworzony. Zero zmian w `gra/src`, `gra/data`, `gra-robocza`.
+|- `R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1` (`68b1e77c`) — rekrutacja sprawdza wyłącznie koszt zakupu, bez doliczania utrzymania z następnej tury. Scenariusz właściciela (57 Drewna, koszt 50, utrzymanie 10/t) **przechodzi**, kontrola odwrotna (49 Drewna, koszt 50) nadal blokuje; pobór utrzymania w następnej turze udowodniony niezależnie jako bajt w bajt identyczny z bazą. **To nie był regres, tylko utrata:** temat przeszedł trzy role 2026-08-21 i nigdy nie został zintegrowany, a praca żyła w katalogu, którego już nie ma. Decyzja `R-AI-RECRUIT-UPKEEP-GATE` jawnie WYCOFANA, żeby nikt jej z powrotem nie „naprawił".
+|- `R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1` (`75370e6e`) — duplikat potwierdzony co do znaku: panel budowy i panel imperium czytały i pisały **dokładnie to samo pole**, ten sam zakres, ten sam tekst. Przyczyna wrażenia „system źle identyfikuje parametr": właściwe sterowanie (`pracaAutoPercent`) renderowało się wyłącznie przy `tryb === 'auto'`, a domyślnym trybem nowej gry jest `'reczny'` — na starcie widoczna była tylko zdublowana warstwa, a właściwa wcale. Blok zdublowany usunięty, suwak widoczny w OBU trybach. Pomiar (pula 5 000): **10% → 12 ulepszeń, 50% → 62 ulepszenia**.
+|- `P-DYPLO-WOJNY-KAMIEN-NIE-WIDAC-Q1` (`2b27db08`) — **audyt, zero zmian w mechanice.** Trzy niezależne narzędzia, 5 map, ponad 500 tur rozgrywki: **ZERO wypowiedzeń wojny między kimkolwiek**, mimo że `forced-war-stone.ts` jest napisany zgodnie z decyzją i ma zielone bramki 32/0 i 18/0 — ani razu się nie uruchamia. Wzorcowy dowód §13a, że zielona bramka nie jest dowodem zachowania w rozgrywce. Ten audyt wskazał przyczyny ciszy wojen rozpisane niżej.
+|- `R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1` (`9027ddf0`) — obóz łowiecki wyłącznie w lesie, reguła zawężona z `Las LUB złoże` do **tylko Las** w 7 punktach egzekwowania. **2 rundy — Evaluator i Final Control dały rundzie 1 FAIL**, znajdując że `stripImprovementsWhenForestRemoved` była pustym przelotem mimo docstringu: wyrąb lasu zostawiał obóz na polu bez lasu (**200/200 przed naprawą → 0/200 po**, ECHO wariant A: obóz znika, tartak zostaje). Wariant „Las I złoże" odrzucony pomiarem — **0 pól na 5 mapach**, ulepszenie byłoby martwe. Bramka tematu 71/0 → 91/0.
+|- `P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1` (`f331d7cd`) — (A) komunikat „Zbadano X" nie był zdarzeniem z tożsamością, tylko **generycznym hintem gubiącym kontekst technologii**; teraz emiter tworzy `tech-done-<tura>-<slug>` z pigułką „Karta technologii →", a **dwie technologie w jednej turze otwierają każda SWOJĄ kartę**. (B) karta ulepszenia lądowała w hoście o niższym z-index (520 vs 940) — karta technologii **nie była zamykana, tylko przykrywana**; teraz obie w jednym hoście obok siebie, poniżej 1160 px układ pionowy. Dowód: `getBoundingClientRect` + `elementFromPoint` i realny klik w **7 rozmiarach okna**.
+|- `R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1` (`1e34a667`) — farma nie kwalifikuje się na heksie z lasem („w lesie można wybudować tylko tartak i ewentualnie obozowisko"). Uchyla decyzję z 2026-07-21. Skutek uboczny odnotowany jawnie: Wzgórza bez lasu przestają być terenem farmowym całkowicie. Punkt egzekwowania w `main.ts` domknięty **sterowaniem danymi** (`FOREST_BLOCKED_IMPROVEMENT_KEYS`), bez tknięcia zakazanego pliku. Bramka tematu 136/0.
+|- `R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1` (`2626df1f`) — wariant **C**: farmy już stojące w lesie znikają, las zostaje. Właściciel odrzucił samą formę pytania ABC („pytanie jest bezzasadne, bo w lesie nie powinno być farm") — jego reguła dotyczy **stanu, nie tylko czynności budowania**. Dowód na żywym Chromium na realnym bundlu: 5301 heksów zasianych, granica tury usuwa **1372 farmy** z lasu, zero błędów konsoli, powtórzone 3×. Praca NIE wraca (wzorzec obozu łowieckiego).
+|- `R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1` (`19a112d3`) — cofnięcie zakazu z 2026-07-29: owce, bydło i lama znów mogą stanąć na nakładce Las (ECHO właściciela „Tak, odwracamy — wszystkie trzy"). **Decyzja padła wcześniej i nigdy nie została zdispatchowana ani zaimplementowana** — błąd orkiestratora wyłapany dopiero przy przeglądzie tematów z wyraźną odpowiedzią, które nie zostały odpalone. Pomiar 5 ziaren (777 heksów z lasem): owce 0→52, bydło 0→725, lama 0→52; z 44 pól kontrolnych zmieniło się dokładnie 5. Stadnina świadomie zostawiona zabroniona zamiast zgadywania — ECHO wymieniało tylko trzy hodowle.
+|- `R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1` (`3348ebf3`) — trzecia epoka dostaje mechanizm wojny wymuszonej wzorem Brązu: wyzwalacz to awans do epoki, progi 2 miasta / 20 tur odpoczynku / 20 tur cooldownu identyczne. Final Control zrobił próbne scalenie z `main` PRZED integracją — zero konfliktów. Bramki: stone 32/32, bronze 44/44, iron 46/46 + trzy main-guard (18/0, 25/0, 29/0). Miasta-państwa i gracz wyłączeni identycznie jak w Kamieniu i Brązie.
+|- `R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1` (`3ff440e3`) — **przyczyna główna ciszy wojen Kamienia.** Gdy AI zdobyła siłą pierwsze miasto należące wcześniej do miasta-państwa (tura **6–8**, u **wszystkich sześciu** cywilizacji, w każdej sprawdzonej grze), gra traktowała **ją samą** jak miasto-państwo **na stałe** i pomijała ją w wyzwalaczu wojny — do tury 20 wszyscy kandydaci byli już trwale wykreśleni. Flaga była kasowana tylko przy pokojowym wchłonięciu. Po zmianie gaśnie przy **każdym** przejęciu, także siłą (ECHO = A). Właściciel trafił w przyczynę, ale skutek był odwrotny niż przypuszczał: nie opóźnienie, tylko trwałe wykluczenie. Bramka tematu 31/0.
+|- `R-AI-WYRAB-PRZY-RZECE-FARMY-Q1` (`3a14f1b0` runda 1 — artefakty pomiarowe, `1e0cf7f8` rundy 2-5) — AI ulepsza heks-po-heksie, wyrąb lasu przy rzece, budowanie napędzane popytem (Zasada 1), tylko przy obywatelach (Zasada 2), przekierowanie nadwyżki (Zasada 3), R4-Q2=C. Runda 5 naprawiła własne blokady rundy 4: `aiSurplusRedirectedOwners` nie był zapisywany w sejwie (groził po save/load trwałym `procentBudynki=100` → zero ulepszeń terenu NA STAŁE), a blok Zasady 3 przesuwał Pracę także miastom-państwom. Bramki: ai4-popyt-obywatele 50/0, ai2-heks-po-heksie 35/0, bez pogorszenia auto-improvements 45/0, map-improvement-qualify 126/0, hodowla-las 100/0. **Limit 5 rund WYCZERPANY — kod zintegrowany, ale TEMAT NIE JEST ZAMKNIĘTY:** Final Control wystawił „gotowość do integracji TAK dla zakresu rundy 5, zamknięcie tematu NIE"; czeka na odpowiedzi właściciela na Pytania 3 i 4.
+|- Fala zebrała w jednym miejscu **cztery zidentyfikowane przyczyny ciszy w wojnach**: flaga miasta-państwa (naprawiona w tej fali), arytmetyczna niemożliwość wojny przeciw graczowi na Normalnym (świadomie zostawiona jako C), bramka „już w wojnie" licząca wojnę z barbarzyńcami (otwarte, dotyczy wszystkich trzech epok naraz), warstwa mgły `pre_contact` kasująca wypowiedzenia między dwiema AI (otwarte, priorytet wysoki).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`, md5 `a05d3fe4`) + manifest. `VERIFY OK`, manifest match OK; wszystkie 7 bundli mają **ten sam** stempel `e4e69366` (w FALI 323 rozeszły się na dwie grupy).
+|- **Odstępstwo świadome:** 6 bundli playtestowych wygenerowano na dysku (hub `START.html` ich potrzebuje), ale **NIE dodano ich do Gita** — `R-REPO-SPRZATANIE-SREDNIE-Q1` z 2026-08-26 usunął je z repozytorium jako pochodne (280,3 MB) na wyraźną decyzję właściciela. Ponowne dodanie cofnęłoby tę decyzję i dołożyło ~225 MB, więc wymaga osobnej zgody właściciela.
+|- **Odstępstwo techniczne:** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku; `publish-robocza-snapshot.ps1` i `inject-build-stamp.ps1` przeczytane w całości i odwzorowane krok po kroku. Uwaga: `title="md5=..."` osadzony w bundlu (`18dcde28`) z definicji **nie może** równać się md5 pliku — osadzenie hasha zmienia sam plik, więc pętla pieczętowania nie ma punktu stałego. Identycznie w opublikowanej FALI 323 (`04a7adcb` w pliku vs `b895fc4e` w `title`). Wiążący jest md5 pliku = manifest = label.
+|- Szczegóły: `dyspozycje/autobot/runs/<ID>/` dla każdego tematu. Kilkadziesiąt znalezisk poza zakresem zarejestrowanych osobno w `REJESTR-PROSB-I-ZADAN.md`, w tym cztery wymagające decyzji właściciela (stadnina w lesie, migracja starych sejwów dla flagi miasta-państwa, bramka „już w wojnie" z barbarzyńcami, warstwa `pre_contact`).
+|- **AKTUALNA**
+
+## ROBOCZA 04a7adcb - 2026-08-26 10:20 UTC - FALA 323: T9 Żelazo (domknięcie serii) + cztery tematy naprawcze (Praca / AI / dyplomacja / menu ulepszeń) — **ZASTĄPIONA** (→ e4e69366)
+|- md5 (pełne): 04a7adcba9c0d6df1490c6842ba46f96 · stempel: ROBOCZA · label 04a7adcb · źródłowy commit integracji: `53800d1f`
+|- `R-ZELAZO-AUDYT-POZOSTALE-Q1-T9` (Miecznik galijski, Rydwan celtycki) — domyka serię T5-T11, wszystkie 19 jednostek epoki Żelaza zaudytowane. Operator padł na OOM po ukończeniu pracy; praca odzyskana i zweryfikowana przed commitem. Współdzielona bryła rydwanu rozstrzygnięta jako LUKA (nie wzorzec), odróżnialność celtycki/mykeński 0.0102 → 0.390.
+|- `R-PRACA-JEDEN-PODZIAL-Q1` — **temat, który wracał przez osiem fal (292, 293, 301, 302, 310, 317, 318, 319)**. Ta sama Praca była dzielona DWA RAZY (`splitPraca` na poziomie miasta + `splitEmpirePracaBudget` na poziomie puli). Zmierzone: na DOMYŚLNYCH ustawieniach gry do ulepszeń trafiało **0,0%**, przy maksymalnych suwakach 20% zamiast 50%. Po zmianie: 30% ustawione → 30,0%, 50% → 50,0%, suma zawsze = Praca miasta, cap ulepszeń ≤50% egzekwowany raz. Drugi podział usunięty w całości. Root cause nazw zlikwidowany: `cityPanel.ts` zwracał `doUlepszen: doPuli` — zmienna „ulepszenia" niosła ogólną pulę imperium (finansującą też cuda, zakładanie miast, budżet budynków); trzy panele czytają teraz jedną stałą. Nowa zasada właściciela: „Indywidualne" w mieście zapala się SAMO przy różnicy wobec globalnej i gaśnie przy powrocie. Runda 2 naprawiła własny błąd rundy 1 — budżet automatu wrócił do liczenia od SKUMULOWANEJ puli (pula 5 000 → 41 ulepszeń; w rundzie 1 było 0 niezależnie od wielkości puli).
+|- `R-DYPLO-PAKT-WETO-EKSPANSJA-Q1` — Pakt o nieagresji był **strukturalnie nieosiągalny**: flaga „Ekspansja przy granicy" to czysta funkcja liczby miast (`cities(A)>2 && cities(B)>2`), więc od 3. miasta obu stron trwała do końca partii, a weto było binarne — przy Relacji 200/200 i słodziku 100 000 pakt nadal odrzucany. Żadne źródło projektowe tego weta nie ustanawiało (specyfikacja modeluje ten czynnik wyłącznie jako −2 Zaufania/turę). Zamienione na narzut na próg Relacji równy sufitowi słodzika, więc maksymalna dopłata zawsze go kasuje. Zamyka zgłoszenie właściciela z 2026-08-10, które leżało w kolejce 15 dni.
+|- `R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1` — premisa („AI znowu buduje jednostki za Pracę") **nie potwierdziła się pomiarem** (40 tur × 3 scenariusze: do kolejki Pracy trafia ZERO jednostek), ale znaleziono realną lukę: bronione były wejścia do kolejki, nie PUNKT ZUŻYCIA. Stare zapisy mogły nieść jednostkę w kolejce z poprzedniej wersji — teraz jest usuwana, a zebrana Praca wraca do puli. Owner-agnostyczne, parytet gracz/AI/miasta-państwa.
+|- `P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1` — lista „ULEPSZENIA TERENU" była nieosiągalna przy powiększeniu. Siatka 60 punktów (powiększenie przeglądarki × powiększenie UI gry × wysokość okna, realny klik): **29/60 → 0/60**, zero regresji na każdej osi. Hipoteza „kółko myszy zoomuje mapę" obalona pomiarem. 3 rundy; runda 3 obaliła opis mechanizmu z rundy 2 — `.civ-hud` jest kontekstem układania, więc panel nigdy nie chował się pod klastrem HUD.
+|- Każdy temat: Operator→Evaluator→Final Control przez Workflow, pomiar stanu ZASTANEGO przed dotknięciem kodu (nowy wymóg dispatchy tej fali), real render z dowodem nietautologiczności. Trzy tematy wymagały rundy 2, jeden rundy 3 — wszystkie FAIL-e pochodziły od ról kontrolnych, żaden nie przeszedł do `main`. Dwie awarie infra (OOM + zawieszenie na 9 h) obsłużone odzyskaniem niescommitowanej pracy; po drugiej ustawiony watchdog godzinowy.
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` + manifest. `VERIFY OK`, manifest match OK. Uwaga kosmetyczna: stemple bundli rozeszły się na dwie grupy (`04a7adcb` / `28d236f5`) — treść identyczna, znacznik czasu przeskoczył w trakcie pieczętowania.
+|- Szczegóły: `dyspozycje/autobot/runs/{R-PRACA-JEDEN-PODZIAL-Q1,R-DYPLO-PAKT-WETO-EKSPANSJA-Q1,R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1,P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1}/`. Kilkanaście znalezisk poza zakresem zarejestrowanych osobno w `REJESTR-PROSB-I-ZADAN.md`, w tym lekcja procesowa `P-PROC-HARNESS-NIEPELNA-SCENA-Q1`.
+
+## ROBOCZA ab887731 - 2026-08-25 19:41 UTC - FALA 322: audyt jakości 17 pozostałych jednostek epoki Żelazo (seria R-ZELAZO-AUDYT-POZOSTALE-Q1, T5+T6+T7+T8+T10+T11 — T9 w toku, dołączy osobną falą) — **ZASTĄPIONA** (→ 04a7adcb)
+|- md5 (pełne): ab887731351c3faa69d788264ce3623c · stempel: ROBOCZA · label ab887731 · źródłowy commit integracji: `2465e5cc` (main po T5,T6,T7,T8,T10,T11)
+|- Kontynuacja `R-ZELAZO-MODELE-BRAKUJACE-Q1` (FALA 321). Właściciel trafnie skorygował zakres: „mieć dedykowany model" ≠ „przeszedł proces Opus 5". 19 pozostałych jednostek epoki Żelaza żyło w starszych plikach generacji, żadna nigdy nie przeszła rygorystycznego audytu (zmierzonej geometrii, sekcji historycznej ze źródłami, real-render dowodu). Ta fala zawiera 17 z 19 (T9 — Miecznik galijski + Rydwan celtycki — w toku, dołączy osobną falą po zamknięciu).
+|- `T5` (Mezopotamia — Garnizon Harappy, Gwardia hetycka, Mur tarcz, Piechota neobabilońska): plik nigdy nie nazywał ani jednego mesh — dodane nazwy/anchors umożliwiły pierwszy w historii pomiar. Naprawiono włócznię Muru tarcz przechodzącą przez własne ramię, przedramię przechodzące przez pole tarczy.
+|- `T6` (Fenicja/Egipt/Grecja — Gwardia Tyreńska, Tyrski miecznik, Wojownik z żelaznym khopesh, Thorakites): nowa klasa błędu — element fizycznie niewidoczny z jedynej kamery gry (miecz wzdłuż osi patrzenia, krzywizna khopesza w niewidocznej płaszczyźnie, hełm zasłaniający oczy Thorakitesa).
+|- `T7` (super-jednostki Rzym/Grecja + Hastati — Evocati, Triari, Hieros Lochos, Hastati): Hastati miał realne defekty mimo statusu „już Opus 5"; naprawiono drzewce dory w ramieniu Hieros Lochos, drzewce w chorągwi, hełm Evocatiego bez oczu, niewidoczny zarost i stopę pod terenem Triariego.
+|- `T8` (Germanie — Berserker germański, Wojownik germański): funkcja Berserkera nie istniała w nazwanym pliku, napisana tam gdzie allowlista wskazywała. Naprawiono topór nie trzymany w dłoni, oczy zasłonięte kapturem, stopy pod terenem, miecz zamiast framei u jednostki dystansowej — trzy z tych defektów złapane dopiero wzrokiem na zrzucie, po tym jak wszystkie asercje geometrii były już zielone (błąd projekcji YZ→ekran maskowany przez miarę długości zamiast kierunku).
+|- `T10` (Słowianie/Zulusi — Drużynnik, iButho z iklwa): pas i głowica miecza Drużynnika 0 pikseli (bryły w całości zamknięte w sąsiedniej geometrii); iButho i Impi były praktycznie jedną figurką (odróżnialność 0.370→0.589), iklwa była kopią 1:1 włóczni Impi.
+|- `T11` (Katapulta, bez kultury — ostatni temat serii): 11 brył bez nazw/anchors. Oś obrotu ramienia miotającego przesunięta o 43% jego długości (błąd znaku sin/rotation.x), kubeł z kamieniem wiszący w powietrzu, koła odczepione od ramy, brak liny skrętnej/spustu. Typ machiny (onager, nie balista) ustalony z danych projektu (tor paraboliczny pocisku).
+|- Każdy temat: Operator→Evaluator→Final Control przez Workflow (Opus 5 High dla ról wizualnych, `R-PROC-AUTOBOT.md` §5a), real render Playwright/Chromium bezwarunkowy z dowodem nietautologiczności (macierz ablacyjna), zweryfikowane niezależnie przez orkiestratora po każdym scaleniu i ponownie po zbiorczym buildzie (tsc czyste, Vite 848 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem). T9 (Operator) przeszedł przez awarię infra (proces OOM-killed po ~1h pracy, praca odzyskana i zweryfikowana niezależnie przez orkiestratora przed commitem) — Evaluator/Final Control tego tematu w toku, poza zakresem tej fali.
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `docs/decyzje/R-ZELAZO-AUDYT-POZOSTALE-Q1.md`, `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{5,6,7,8,10,11}/`. Kilkanaście drobnych, poza-zakresowych znalezisk (dane `units.json`, próg odróżnialności testów, `manualBattle.ts` gubi nazwę jednostki dla machin oblężniczych) zarejestrowane osobno w `REJESTR-PROSB-I-ZADAN.md`, nieblokujące.
+
+## ROBOCZA 2206b5da - 2026-08-25 04:00 UTC - FALA 321: dedykowane modele 3D 6 jednostek epoki Żelazo (seria R-ZELAZO-MODELE-BRAKUJACE-Q1) — **ZASTĄPIONA** (→ ab887731)
+|- md5 (pełne): 2206b5da34914987a4ae4bcfa35ee8d2 · stempel: ROBOCZA · label 2206b5da · źródłowy commit integracji: `db529ea4` (kod: T4 `03ae1197`, T3 `5aaddf38`, T2 `1af2a413`, T1 `0b2b091f`)
+|- Audyt (2026-08-24) znalazł 6 jednostek epoki Żelazo bez procesu naprawy modeli „Opus 5" (precedens `R-BRAZ-SUPER-DISPATCH-Q1`, zamknięty dla Brązu): 4 bez dedykowanego modelu, 2 dzielące identyczny model. Właściciel zlecił naprawę wszystkich w pełnej autonomii.
+|- `R-ZELAZO-MODELE-BRAKUJACE-Q1-T1`: Konnica lancowa i łucznicza asyryjska — dziś dzieliły model z kopią; łucznik dostał realny łuk kompozytowy w naciągu z kołczanem, lancer lancę z żelaznym grotem i tarczę. Runda 2 naprawiła 4 twarde błędy geometrii rundy 1 (broń przebijająca ciało jeźdźca/konia) niewykrywalne przez testy mierzące tylko nazwy mesh.
+|- `R-ZELAZO-MODELE-BRAKUJACE-Q1-T2`: Soldurii i Gaesatae (Celtowie) — dziś identyczne, teraz wyraźnie różne. Gaesatae wywołuje wcześniej martwy, gotowy kod `buildGaesatae()` (naga skóra, gaesum — Polibiusz II.28-30); Soldurii dostał nową `buildSoldurii()` (kolczuga, hełm Montefortino — Cezar III.22). Naprawiono błąd orientacji tarczy niewidocznej dla kamery gry u obu jednostek.
+|- `R-ZELAZO-MODELE-BRAKUJACE-Q1-T3`: Falanga dostała jawny dispatch po nazwie (był tylko po kategorii) + naprawę drzewca włóczni przenikającego ramię hoplity. Blazon Lambda (Λ, atrybucja spartańska) zastąpiony neutralną episemą — Falanga to jednostka liniowa całej cywilizacji greckiej, nie tylko Sparty.
+|- `R-ZELAZO-MODELE-BRAKUJACE-Q1-T4`: Jeździec z oszczepami (Słowianie) — nowy model od zera, oszczep w chwycie gotowym do rzutu (5 drzewc = `Ilość pocisków`) zamiast dzielonej kopii nadręcznej. Sekcja historyczna świadomie odwraca regułę „brak strzemion" z T1/Brązu dla późniejszej warstwy IX-X w. (ta sama rama co istniejący Drużynnik).
+|- Każdy temat: Operator→Evaluator→Final Control przez Workflow (Opus 5 High dla ról wizualnych, `R-PROC-AUTOBOT.md` §5a), real render Playwright/Chromium bezwarunkowy, zweryfikowane niezależnie przez orkiestratora po każdym scaleniu i ponownie po zbiorczym buildzie (tsc czyste, Vite 848 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem, zero regresji na odcisku palca całego rostera 75 jednostek).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `docs/decyzje/R-ZELAZO-MODELE-BRAKUJACE-Q1.md`, `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T{1..4}/`. Kilka drobnych, poza-zakresowych znalezisk (dane `units.json` Gaesatae nieaktualne, `manualBattle.ts` gubi nazwę jednostki, luki pokrycia testów) zarejestrowane osobno w `REJESTR-PROSB-I-ZADAN.md`, nieblokujące.
+
+## ROBOCZA 7464c061 - 2026-08-24 13:10 UTC - FALA 320: przebudowa szlaków handlowych T3+T4+T6 (dokończenie serii R-HANDEL-SZLAKI-PRZEBUDOWA-Q1) — **ZASTĄPIONA** (→ 2206b5da)
+|- md5 (pełne): 7464c061f223b2001e146c5e2eb83f30 · stempel: ROBOCZA · label 7464c061 · źródłowy commit integracji: `6d61d6e9` (kod: T6 `2e6aac59`, T4 `fee7f455`, T3 `f552f8e3`)
+|- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T3`: gating budynkami handlowymi przestał ograniczać ISTNIENIE trasy — aktywna Umowa Handlowa + łączność + brak wojny (Port nadal wymagany dla morza) dają dochód dystansowy od razu, bez budynku. Nowe pole `TradeRoute.budynekOdblokowany: boolean` niesie osobno, czy dana trasa ma dziś pokrycie budynkowe.
+|- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T4`: stary globalny mnożnik „+5% Handlu za każdą połączoną trasę" zastąpiony sumą per-trasowych bonusów 5% naliczaną WYŁĄCZNIE dla tras z budynkiem — zamyka ryzyko, w którym miasto bez budynku handlowego dostawałoby bonus mimo braku pokrycia (znalezione przez Final Control T3, zamknięte przed jakimkolwiek deployem obejmującym T3).
+|- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-T6`: tabela tras handlowych w panelu imperium (zakładki Handel i Miasto) pokazuje teraz osobno dochód dystansowy i składnik 5% za budynek per trasa/miasto, z jawnym „5% — brak budynku" (nie cichym zerem) gdy budynku brakuje. Integration micro-fix: 5 tekstów UI/docstring poprawionych z „budynek w Twoim mieście" na „budynek po obu stronach trasy" (Final Control T6 znalazł, że wymóg dotyczy też miasta-partnera, nie tylko gracza).
+|- Seria kończy przebudowę zleconą przez właściciela: „im dalej w grze, tym więcej tras handlowych, a nie mniej" — trasy istnieją od razu po umowie, budynek handlowy odblokowuje wyłącznie dodatkową premię 5%, nie samą trasę.
+|- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (workflow, wg `R-PROC-AUTOBOT.md`), wszystkie PASS/PASS-WITH-NOTES, zweryfikowane niezależnie przez orkiestratora po każdym scaleniu i ponownie po zbiorczym buildzie (tsc czyste, Vite 846 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem). Real render Playwright/Chromium obowiązkowy dla T6 (temat wizualny) — potwierdzony niezależnie przez Operatora i Evaluatora.
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md`, `dyspozycje/autobot/runs/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1-{T3,T4,T6}/`.
+
+## ROBOCZA 79bae2c4 - 2026-08-22 18:10 UTC - FALA 319: 5 poprawek (slider budzetu automatu, przycisk auto-zywienie, REGRES3 pula Pracy, naglowek wydarzen, audyt przekierowan) — **ZASTĄPIONA** (→ 7464c061)
+|- md5 (pełne): 79bae2c49a4119337ceaac98730522d8 · stempel: ROBOCZA · label 79bae2c4 · źródłowy commit integracji: `ab66195c`
+|- `P-PRACA-BUDMODE-SLIDER-MAX-50-NIESPOJNY-Q1`: suwaki „budżetu automatu" ulepszeń terenu (empire+city) w panelu budowy akceptują teraz pełny zakres 0–100% (były fizycznie ograniczone do 50% mimo naprawionego wcześniej backendu — druga część tego samego regresu).
+|- `P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1`: przycisk zbiorczego Auto-Żywienia pokazuje teraz krótką etykietę „Włącz Auto-Żywienie", pełne wyjaśnienie w tooltipie.
+|- `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1`: naprawiono drugi, bliźniaczy bug tej samej klasy co poprzedni regres — guard end-of-turn chronił tylko `_lastPracaRate`, nie chronił równoległego nadpisania `_lastPlayerCityEcon` (tabela popupu imperium) projekcją zamiast realnym tickiem tury.
+|- `P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1`: karty zdarzeń w panelu bocznym pokazują teraz „Wydarzenie" jako dominujący nagłówek zamiast redundantnego „Koniec tury"; zdarzenia ze specyficznym tytułem (np. „Dyplomacja") bez zmian.
+|- `P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1`: pełny audyt 16 rodzin zdarzeń panelu bocznego; 8 rodzin dostało klikalny skrót do już istniejącego miejsca docelowego (eliminacje, wojny, naruszenia granic, chatki, szlaki handlowe, auto-racje, nowa epoka) — karty bez potwierdzonego celu jawnie NIE udają klikalnych. Dwa DECISION_REQUIRED czekają na właściciela (karta eliminacji przez podbój, dług architektoniczny kolejki end-of-turn).
+|- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), zweryfikowane niezależnie przez orkiestratora po każdym scaleniu (tsc czyste, Vite 846 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `dyspozycje/PYTANIA-OTWARTE.md` (wpisy #11–#15). Dwa nowe tematy `P-WYDARZENIA-ELIMINACJA-PODBOJ-KARTA-Q1`/`P-WYDARZENIA-EOT-KONTEKST-DLUG-Q1` czekają na decyzję właściciela.
+
+## ROBOCZA aab7e1e7 - 2026-08-22 16:20 UTC - FALA 318: emoji -> ikony marki w panelu Praca miasta — **ZASTĄPIONA** (→ 79bae2c4)
+|- md5 (pełne): aab7e1e7a7071ca1c1da62b5cd44be5a · stempel: ROBOCZA · label aab7e1e7 · źródłowy commit integracji: `3b1e70b6`
+|- `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`: surowe emoji (🔨/🏛/📦/👤) w panelu miasta „PODZIAŁ PRACY" zastąpione ikonami marki przez istniejący system `CP_INLINE_EMOJI_BRAND`/`cpInlineIcons()`/`cityPanelChipIconWrap()` — bez projektowania nowego języka wizualnego (dodane brakujące mapowanie `📦`→`chip-crate`, naprawione 2 miejsca omijające helper: hero i intro karty „Praca — co to znaczy").
+|- Operator→Evaluator→Final Control (Opus 5 High dla Operatora/Evaluatora, temat wizualny wg `R-PROC-AUTOBOT.md` §5a; Sonnet 5 High Final Control) — wszystkie PASS/PASS-WITH-NOTES, zweryfikowane realnym renderem Playwright/Chromium z dwustopniową kontrolą negatywną. Zmergowane non-ff do `main`, niezależnie zweryfikowane przez orkiestratora (tsc/build/testy tematu/5 bramek referencyjnych zielone).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły: `dyspozycje/PYTANIA-OTWARTE.md` wpis `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`. Analogiczny wzorzec znaleziony w innych panelach/plikach (poza zakresem, nie naprawiony) zarejestrowany jako `P-EMOJI-SUROWE-INNE-PANELE-Q1`.
+
+## ROBOCZA 0df8953e - 2026-08-22 15:58 UTC - FALA 317: masowa paczka 9 poprawek UI/UX/ekonomii (zgłoszenia właściciela z gry) — **ZASTĄPIONA** (→ aab7e1e7)
+|- md5 (pełne): 0df8953e5760af21d2b22a505b42f2ab · stempel: ROBOCZA · label 0df8953e · źródłowy commit integracji: `36dff8e9`
+|- #1 `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1`: cap automatycznej budowy ulepszeń przywrócony do 0–100% (był omyłkowo 0–50%, dzielił stałą z niezależnego pola podziału Praca budynki/ulepszenia).
+|- #2 `P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1`: panel „PRACA IMPERIUM" — jeden suwak pełnej szerokości (Ulepszenia/Budynki) zamiast dwóch boksów, klikalne oznaczenia MIN/MAX.
+|- #3 `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1`: nowy przycisk w Spichlerzu centralnym — jednorazowo włącza auto-żywienie wszystkim miastom bez indywidualnego override.
+|- #4 `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1`: ujednolicono ikonę „Ulepszenia" w panelu podziału pracy miasta do `chip-crate` (był regres — dwie różne ikony dla tego samego pojęcia); potwierdzono wizualnie, że ikona wagi nie wycieka do tego panelu (złudzenie sąsiedztwa z pionowym railem ikon).
+|- #5 `P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1`: naprawiono poważny regres ekonomii — live-refresh HUD nadpisywał poprawnie policzony `_lastPracaRate` z końca tury niepełną formułą (znała tylko upkeep, nie 3 pozostałe drenaże), przez co gracz nigdy nie widział realnego przyrostu puli Pracy; nowa flaga-guard `_pracaRateFreshFromEndTurn`.
+|- #6 `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1`: naprawiono brakujący CSS linków krzyżowych w kartach encji (regres T10) w 3 lokalizacjach (popup odkrycia, pełna karta CivPedia, podgląd w panelu budowy miasta).
+|- #7 `P-CIVPEDIA-KARTY-NOTATKI-DEWELOPERSKIE-Q1`: usunięto wyciek wewnętrznego dziennika balansu („uwaga") z pola „Odblokowuje surowiec" w kartach ulepszeń.
+|- #8 `P-BUILDMODE-LOCKTIP-ZASLANIA-LISTE-Q1`: tooltip blokady technologii w panelu budowania ulepszeń — flip/clamp pozycjonowanie zamiast sztywnego offsetu, przestał zasłaniać listę.
+|- #9 `P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1`: dodano brakujący CSS przycisków akcji karty encji (`.entity-card-action`/`-primary`/`-secondary`, np. „Rozpocznij badanie"/„Otwórz drzewo") — bez stylu od T1, znalezisko Final Control przy #6.
+|- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), tematy graficzne/wizualne (#2,#4,#6,#8,#9) dispatchowane do Opus 5 High zgodnie z nowym wyjątkiem `R-PROC-AUTOBOT.md` §5a, zweryfikowane realnym renderem Playwright/Chromium; tematy logika/dane (#1,#3,#5,#7) do Sonnet 5. Każdy zmergowany non-ff do `main`, niezależnie zweryfikowany przez orkiestratora po każdym scaleniu (tsc czyste, Vite 845 modułów, testy tematyczne + 5 bramek referencyjnych zielone za każdym razem).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest.
+|- Szczegóły zgłoszeń, recon i pełna treść ECHO: `dyspozycje/PYTANIA-OTWARTE.md` (wpisy #1–#9 powyżej, ZINTEGROWANE). Jeden dodatkowy temat znaleziony przy #4 (emoji zamiast ikon marki w panelu pracy) zarejestrowany jako `P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1`, NIE dispatchowany.
+|- **AKTUALNA**
+
+## ROBOCZA 5bcde74d - 2026-08-22 12:26 UTC - FALA 316: przebudowa szlaków handlowych T1+T2+T2b — **ZASTĄPIONA** (→ 0df8953e)
+|- md5 (pełne): 5bcde74dd67ad516b10900ece1a15e8f · stempel: ROBOCZA · label 5bcde74d · źródłowy commit integracji: `33cd3248`
+|- `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` T1: wzór dystansowy odwrócony (dalej=więcej), stawki ×5 (`dochodPodloga=5`/`dochodSzczyt=40`), osobny zakres per medium (ląd max=12, morze max=20, identyczny szczyt); `econ-params.json` zaktualizowany (bez cichego nadpisania).
+|- T2: bonus morski ×2 (`tradeRouteTotalDistanceIncome`, sumuje się z istniejącym `PORT_SEA_TRADE_BONUS_PIENIADZ`); priorytet lądu bezwarunkowy w `detectBestConnection`; skonsolidowano duplikat formuły dochodu w `main.ts` (panel Handlu + chip HUD, było `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`).
+|- T2b: nowy gate na poziomie propozycji traktatu `UmowaSzlakow` w panelu dyplomacji — opcja dostępna wyłącznie gdy istnieje dostępność lądowa LUB oba porty (reużyto istniejącej `citiesHaveTradeConnection`); UI bez zmian.
+|- Każdy temat przeszedł pełny łańcuch Operator→Evaluator→Final Control (wszystkie PASS/PASS-WITH-NOTES), zmergowany fast-forward do `main`, niezależnie zweryfikowany przez orkiestratora po każdym scaleniu (tsc czyste, Vite 845 modułów, testy handel/econ/diplomacy zgodne z raportami — te same pre-istniejące, niezwiązane FAIL w `trade-routes-income-test.cjs`/H2 i `trade-ilosc-test.cjs`, 5 bramek referencyjnych zielone za każdym razem).
+|- Publikacja: `gra-robocza/` + 6 bundli playtestowych + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`, node_modules/vite dostępny) + manifest.
+|- Szczegóły decyzji, ECHO właściciela i pełny podział na tematy: `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md` (T3/T4/T6 pozostają w kolejce, nie dispatchowane).
+
+## ROBOCZA d2276783 - 2026-08-20 10:39 UTC - deploy po integracji sześciu tematów AutoBot — **ZASTĄPIONA** (→ 5bcde74d)
+|- md5 (pełne): d2276783cef8d0718e9573a67181b596 · stempel: ROBOCZA · label d2276783 · źródłowy commit integracji: `8996dca8`
+|- Zakres: cennik surowców ×5, proporcjonalne uzupełnianie HP Manpower, koncentracja armii AI/barbarzyńców, korekta wzrostu/szczęścia Ceramiki/Spichlerza/Wealth, zdobywanie miast przez barbarzyńców oraz wspólna walka i przemarsz.
+|- Finalna kontrola wszystkich sześciu tematów: **READY_FOR_DEPLOY**; testy tematyczne i TypeScript PASS w zatwierdzonych raportach, Vite PASS w kontroli integracyjnej.
+|- Publikacja: `gra-robocza/` + 7 bundli playtestowych + manifest; `Gra-ROBOCZA-POLE-BITWY.html` pozostawiony bez zmian, bo lokalny build sceny pola bitwy był niedostępny bez `node_modules/vite`.
+|- Bieżąca bramka lokalna nie uruchomiła testów wymagających `esbuild`/`tsc` ani świeżego `npx vite` z powodu braku zależności i blokady EPERM; artefakt zweryfikowany przez manifest: **VERIFY OK**.
+
+## ROBOCZA 4322f5aa - 2026-08-18 19:52 UTC - FALA 298: limit miast zdobytych i wojna wymuszona Kamienia
+|- md5 (pełne): 4322f5aafa6e0becc988885dc38e907b · stempel: ROBOCZA · label 4322f5aa · źródłowy commit integracji: `004e8f9e`
+|- `R-MIASTA-LIMIT-PODBÓJ-Q1=A`: limit dotyczy wyłącznie miast założonych; podbój bitewny, bez bitwy i kapitulacja nie zużywają puli; test 11/11, AI founding 28/28.
+|- `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1`: start po 20 turach, najbliższy sąsiad, pokój po 2 miastach, odpoczynek 20 tur, cooldown pary 20 tur; Stone 32/32 + guard 18/18.
+|- Brąz zachowany bez regresji: Bronze 44/44 + guard 25/25; typecheck PASS · Vite 831 modułów · VERIFY OK.
+|- **AKTUALNA**
+
+## ROBOCZA bdb3f91a - 2026-08-18 15:53 UTC - FALA 297: pełny split Pracy AI/MP + czytelność UI — **ZASTĄPIONA** (→ 4322f5aa)
+|- md5 (pełne): bdb3f91a966bd33c64f3657f281bd8b6 · stempel: ROBOCZA · label bdb3f91a · źródłowy commit integracji: `333ae41b`
+|- `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1`: AI major i miasta-państwa zachowują pierwotny `doUlepszen`; brak drugiego capowania 50%; parity test 14/14.
+|- Wspólny split: production-overflow 48/48 · auto-improvements 41/41 · ai-improvements 52/52 · praca-limit-50 23/23.
+|- UI: globalny split widoczny przy automatyzacji OFF, `X% ulepszenia / Y% budynki`, lokalny suwak miasta rozdzielony; `praca-split-ui` 7/7.
+|- Dyplomacja: live 8/8 · stół 166/166 · fairness 24/24; typecheck PASS · Vite 829 modułów · VERIFY OK. **AKTUALNA**
+
+## ROBOCZA a37f7123 - 2026-08-18 13:04 UTC - FALA 296: mapgen B, overlay kopalni N2/N3/N5/N6 i barbarzyńcy — **ZASTĄPIONA** (→ bdb3f91a)
+|- md5 (pełne): a37f71239248fe287d37c9d44c0137e6 · stempel: ROBOCZA · label a37f7123 · źródłowy commit integracji: `ac09c091`
+|- `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY=B`: przekroczenie progu czasu raportowane jako WARN; poprawność generatora pozostaje twardą bramką; kontrakt 2/2 PASS.
+|- `P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2=C`: targeted overlay z `depthTest:true` i reliefem; N3 reset cleanupu, N5 asercja testu, N6 komentarz; test overlay 76/76, relief 24/24, cyna 23/23.
+|- `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1`: blacklist dokładnych heksów obozów, save/load, parytet; testy 18/18 i 84/84, tsc PASS.
+|- Dyplomacja/regresja: live preview 8/8 · stół 166/166 · fairness 24/24; AI capture 14/14 · AI/MP 20/20 · surrender 11/11.
+|- Bramki: tsc 5.9.3 PASS · Vite 829 modułów · VERIFY OK.
+|- `relief-grid-coverage-test.cjs` TIMEOUT po 5 min w znanym długim etapie; pozostałe bramki tematyczne zielone. **AKTUALNA**
+
+## ROBOCZA 8589d294 - 2026-08-18 09:59 UTC - FALA 295: kolejka AI/MP, capture/surrender, dyplomacja i karta jednostki — **ZASTĄPIONA** (→ a37f7123)
+|- md5 (pełne): 8589d2946a234935231bcf0d52c1a11a · stempel: ROBOCZA · label 8589d294 · źródłowy commit integracji: `e6465768`
+|- `P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI`: aktywny zakup AI/MP przez Skarbiec; migracja legacy kolejki po capture i surrender; testy 20/20, 11/11, 13/13.
+|- `P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA`: puste miasto AI wyłącznie przez adiacencję; testy capture 14/14 i movement 13/13.
+|- `P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA`: live preview 8/8, stół 166/166, fairness 24/24; pełny pakiet dyplomacji zielony.
+|- `P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE`: fix dispose + test repro/negacji 16/16; rejestracja sceny i mgła miasta zachowane z FALI 294.
+|- `P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT`: test 8/8; karta jednostki 3D: kontrakt 23/23, wiring 6/6, interakcja 7/7.
+|- Bramki integracyjne: logic 213/213 · combat 6/6 · tech-tree 19/19 · research 33/33 · unit-replace 13/13 · typecheck PASS · Vite 829 modułów · VERIFY OK.
+|- `map-gen-regression-test.cjs` pominięty — znany limit wydajności sandboxa; brak zmian algorytmu generatora terenu. **AKTUALNA**
+
+## ROBOCZA a0f804d7 - 2026-08-17 23:55 UTC - FALA 294: modal odkrycia Brązu + popup triumfu miast-państw — **ZASTĄPIONA** (→ 8589d294)
+|- md5 (pełne): a0f804d7593333e34c989dc3565cb0c6 · stempel: ROBOCZA · label a0f804d7 · źródłowy commit integracji: `546f6a51`
+|- `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1=C`: pełna karta Brązownictwa po odkryciu, realne dane tech tree, Escape/zamknięcie, bez anulowania badań/tury.
+|- `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1=A`: ceremonialny popup po ostatnim aktywnym mieście-państwie właściwej kultury, z blokadą duplikacji.
+|- Bramki: tsc 5.9.3 PASS · tech-tree 19/19 · research 33/33 · era toast 7/7 + mutacje 8/8 · triumph 13/13 · triumph notice 16/16 · VERIFY OK.
+|- Chromium live test niedostępny w środowisku (brak executable); nie blokuje bramek logicznych, ale pozostaje notą.
+|- Linkowanie Civpedii/Wikipedii i wzór Designera pozostają poza implementacją tej fali. **AKTUALNA**
+
+## ROBOCZA 8fa80b7c - 2026-08-17 23:45 UTC - FALA 293: pełny split Pracy budynki ↔ ulepszenia
+|- md5 (pełne): 8fa80b7c554c52254b41734deb0423da · stempel: ROBOCZA · label 8fa80b7c · źródłowy commit integracji: `f2e454f6`
+|- FALA 293 jest korektą FALI 292: `doBudynkow` jest faktycznie konsumowane przez produkcję gracza/AI/MP; 50% dotyczy całej puli Pracy, a nie tylko pickera ulepszeń.
+|- Bramki: tsc 5.9.3 PASS · logic 213/213 · praca-limit-50 23/23 · production-overflow 48/48 · auto-improvements 41/41 · ai-improvements 52/52 · ulepszenia-praca-percent 27/27 · wire-ekonomia 37/37 · VERIFY OK.
+|- `map-gen-regression-test.cjs` nie uruchomiony — znany limit wydajności sandboxa. Pozostałe zatwierdzone paczki pozostają w bundlu FALI 292.
+
+## ROBOCZA 90b6508d - 2026-08-17 22:00 UTC - FALA 292: integracja zatwierdzonych paczek AutoBot — **ZASTĄPIONA** (→ 8fa80b7c)
+|- md5 (peĹ‚ne): 90b6508d06cc652f598addb8c2b3b266 · stempel: ROBOCZA · label 90b6508d · źródłowy commit integracji: `dc4c5a1b`
+|- Kod: limit wspólnej Pracy 50% z parytetem AI; blacklist obozów; mgła AI + pamięć celów; rekrutacja wyłącznie za Skarbiec; bazowe plony Drewna/Kamienia/Gliny; bramka widoczności miasta; bilans dyplomacji; stale highlight cudu; mixed stack miasta; podsumowanie bitwy; rejestracja sceny.
+|- Docs: ECHO/registry rekrutacji i barbarzyńców; karta technologii + brief Designera; rozdzielenie komunikatu Brązu i popupu triumfu. Design i linkowanie Civpedii/Wikipedii pozostają poza implementacją.
+|- Bramki: tsc 5.9.3 PASS · logic 213/213 · production-overflow 31/31 · AI improvements 52/52 · barbarzyńcy 201/201 · AI fog 8/8 · rekrutacja 13/13 · plony bazowe 9/9 · map attack 13/13 · dyplomacja 8/8 · wonder 8/8 · kamera bitwy 24/24 · VERIFY OK.
+|- `map-gen-regression-test.cjs` nie uruchomiony — znany limit wydajności sandboxa; zmiany nie dotykają algorytmu generatora terenu. **AKTUALNA**
+
 
 
 
@@ -3481,3 +3657,452 @@ worktree, nie sa regresja tej fali.
 - 2026-07-08 21:02 Â· **605761807eb0b79f43c047c4e70916f7** Â· stempel FINALNA Â· zsynchronizowana z kanonem 51c2eb24 (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 676809f2, 2026-07-09)
 - 2026-07-06 20:17 Â· **7856d3451a0cb3963bd3c50c032f5ad5** Â· zsynchronizowana z kanonem
   (Gra-FINALNA.html) Â· **ZASTÄ„PIONA** (â†’ 60576180)
+
+## ROBOCZA — FALA 315 (2026-08-21) — CivPedia T10: linkowanie krzyżowe — CAŁA MIGRACJA (T1-T10) ZAKOŃCZONA
+
+- **AKTUALNA** · ROBOCZA md5 `f66e7242a8b8f0ab0e7f42f6e5463d69` · stempel `f66e7242` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T10 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`) — OSTATNI krok całej migracji.**
+  Pełne linkowanie krzyżowe 4×4 między wszystkimi 4 kartami encji: klik na dowolną nazwaną encję
+  w którejkolwiek karcie (jednostka/budynek/technologia/ulepszenie terenu) otwiera właściwą kartę
+  docelową jako nowy, zagnieżdżony overlay. Jeden delegowany listener w `entityCards/renderer.ts`
+  honoruje pole `linkTo` jednolicie we wszystkich 3 layoutach wiersza (zwykły `grid`, `grid` z
+  odznaką, `pills`) — wcześniej `linkTo` był tylko rysowany, nigdy klikalny. `stopImmediatePropagation()`
+  zapobiega podwójnemu otwarciu nakładki w miejscu, gdzie T7b ma własny, tymczasowy listener na
+  tym samym elemencie (sekcja „Ulepszenia terenu" w popupie odkrycia).
+
+  Nowe linki: `unitAdapter.ts` (Technologia→technologia, Zastępuje→jednostka), `technologyAdapter.ts`
+  (Budynki, Jednostki, Ulepszenia terenu, Kolejne technologie, Zmiany ekonomiczne, Wymagania),
+  `improvementAdapter.ts` (Technologia — z guardem: „Irygacja" świadomie pominięta, pole `tech`
+  wskazuje na wpis nieistniejący w `tech.json`, zweryfikowane; Ulepszenie bazowe). `buildingAdapter.ts`
+  bez zmian — recon na realnych danych potwierdził brak jednoznacznych id do linkowania. Jeden
+  nowy link w `cityPanel.ts::appendTechDetailBlock` do pełnej karty technologii.
+
+  **Stos Esc/overlay przy 2+ zagnieżdżonych kartach** — kryterium ukończenia najwyższego ryzyka —
+  zweryfikowany TRZEMA niezależnymi testami w realnej przeglądarce (Playwright/Chromium), każdy
+  z innym scenariuszem (Operator: jednostka→technologia; Evaluator: popup odkrycia→ulepszenie,
+  double-listener; Final Control: ulepszenie→ulepszenie→technologia, plus negatywna weryfikacja
+  że „Irygacja" poprawnie NIE renderuje linku). Operator→Evaluator→Final Control PASS niezależnie,
+  trywialny fast-forward z aktualnego `main`.
+
+  **System `entityCards` (T1-T10) jest teraz kompletny**: 4 rodzaje encji, 4 w pełni wypełnione
+  adaptery, wspólny renderer z trybami `dialog`/`inline`/`hover`, pełne linkowanie krzyżowe,
+  zero TODO/FIXME w całym katalogu. Bramki zbiorcze na scalonym `main` (16 testów CivPedia +
+  5 referencyjnych, wszystkie zielone): `tsc` 0; `entity-card-cross-links-nested-overlay-test`
+  24/24 (nowy); `entity-card-contract-test` 75/75; `civpedia-gra-id-mostek-test`; `improvement-
+  card-callsites-test` 36/36; `tech-discovery-card-click-test` 13/13; `tech-discovery-card-real-
+  click-test` 12/12; `technology-discovery-card-visual-test` 48/48; `unit-detail-card-entitycard-
+  migration-test` 39/39; `unit-info-card-entitycard-migration-test` 26/26; `unit-info-card-
+  contract-test` 23/23; `unit-info-card-wiring-test` 6/6; `building-detail-card-entitycard-
+  migration-test` 52/52; `building-detail-card-hover-layout-real-render-test` 11/11; `unit-
+  detail-card-hover-layout-real-render-test` 11/11; `unit-info-card-army-interaction-test` 7/7;
+  `unit-info-card-badges-real-render-test` 19/19; `logic-test` 213/213; `tech-tree-test` 19/19;
+  `research-test` 33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 314 (2026-08-21) — CivPedia T6: karta jednostki w panelu miasta/rekrutacji + T9: mostek gra-id — **ZASTĄPIONA** (→ f66e7242, FALA 315)
+
+- ROBOCZA md5 `1bf1976bcfdbc63e8f799d8a921980f0` · stempel `1bf1976b` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T6 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: karta jednostki w panelu miasta/
+  rekrutacji (`cityPanel.ts::buildUnitDetailCard`/`attachUnitRowThumb`) migruje do TEGO SAMEGO
+  `unitAdapter.ts` co karta jednostki na mapie (T4) — jeden wspólny renderer zamiast dwóch
+  rozbieżnych implementacji. Publiczna sygnatura bez zmian, stara implementacja jako
+  `_legacyBuildUnitDetailCard` fallback. Jawna tabela porównawcza karta-mapa/karta-rekrutacja
+  sporządzona przez Operatora i zweryfikowana niezależnie, wiersz-po-wierszu, przez Evaluatora
+  i Final Control. Dwie decyzje podjęte bez ABC (ocenione jako czysto addytywne, zgodne z celem
+  zadania „gracz w obu miejscach patrzy na tę samą jednostkę"): **„Kontry" widoczne teraz też w
+  karcie rekrutacji** (wcześniej tylko na mapie); **~10 pól bojowo-moralowych z karty rekrutacji
+  dopisanych do wspólnego adaptera** (Obrażenia broni, Bonus szarży, Ruch w bitwie, Pociski,
+  Widok pola, Kara flanki/tyłu, Próg dezercji, Morale bazowe/ucieczki, Linia, Klasa) — karta mapy
+  też zaczyna je pokazywać. Medalion 3D pozostaje wyłącznie na mapie i w thumbnailu wiersza listy
+  rekrutacji (niezmienione) — karta rekrutacji nadal statyczna ikona SVG. Sekcje Technologie/
+  Uwagi pozostają wyłącznie w karcie rekrutacji (wzorzec z T5).
+
+  **CivPedia T9**: mostek gra-id między kartami encji a CivPedią dla przypadków gdzie prosty
+  derywowany slug nie wystarcza. Nowe opcjonalne pole frontmatter `gra-id` → `EncyEntry.gameIds`,
+  publiczna `WikiHubHudApi.openEncyEntry(folder, id)` z resolverem gameIds-first + fallback
+  `slug===id`. Zakres okazał się mały: tylko **4 warianty kopalni** (`kopalnia_miedzi`/`_zelaza`/
+  `_cyny`/`_zlota` → jeden wspólny `kopalnia.md`) i **1 jednostka** (`Wojownik celtycki`→
+  `soldurii`) wymagały mostka — programowo potwierdzone (nie zgadywane), że wszystkie 32
+  technologie i pozostałe budynki/ulepszenia działają 1:1 przez `slugify()`. `openEncyEntry` nie
+  ma jeszcze wołających (świadomie — użyje go dopiero T10).
+
+  Oba tematy: Operator→Evaluator→Final Control PASS niezależnie, oba trywialne fast-forward z
+  aktualnego `main` (zero konfliktów integracyjnych). Bramki zbiorcze na scalonym `main`: `tsc` 0;
+  `unit-detail-card-entitycard-migration-test` 39/39 (nowy); `unit-detail-card-hover-layout-real-
+  render-test` 11/11 (nowy, real Chromium); `civpedia-gra-id-mostek-test` 20/20 (nowy, bundler
+  idempotentny); `entity-card-contract-test` 75/75; `unit-info-card-*` (army-interaction 7/7,
+  badges-real-render 19/19, contract 23/23, entitycard-migration 26/26 — karta mapy T4 nadal
+  zielona mimo rozszerzonego wspólnego adaptera, wiring 6/6); `building-detail-card-*` (52/52 +
+  11/11); `tech-discovery-card-*`/`technology-discovery-card-visual-test` (13/13, 12/12, 48/48);
+  `improvement-card-callsites-test` 36/36; `logic-test` 213/213; `tech-tree-test` 19/19;
+  `research-test` 33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 313 (2026-08-21) — CivPedia T7b: karta ulepszenia terenu + drobiazgi panelu imperium — **ZASTĄPIONA** (→ 1bf1976b, FALA 314)
+
+- ROBOCZA md5 `518b0f48bb0a07c05ad5835df9d8d76f` · stempel `518b0f48` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T7b (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: karta ulepszenia terenu, wszystkie
+  3 miejsca wywołania otwierają teraz tę samą kartę (`openEntityCard('improvement', key,
+  {mode:'dialog'})`): (1) popup odkrycia technologii — wiersze „Ulepszenia terenu" klikalne;
+  (2) tryb budowy — osobna, zawsze widoczna ikonka info (klik + klawiatura Enter/Space),
+  niezależna od wyboru typu budowy; (3) panel miasta — nowa sekcja „Ulepszenia w zasięgu" w
+  karcie hexa (zgodnie z ECHO T7a=opcja 2, po recon potwierdzającym brak takiej listy wcześniej).
+  Nowy `improvementAdapter.ts` w pełni wypełniony (24/24 pól z `terrain-improvements.json`).
+
+  **`P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI`**: naprawione 4 z 5 zarejestrowanych
+  drobnych uwag Evaluatora w panelu imperium — N5 (box „DOCHÓD SZLAKÓW" pokazuje teraz odrębną
+  liczbę bazy zamiast duplikatu głównej liczby karty), N9 (zerowy koszt żywności armii nie
+  pokazuje już czerwonej plakietki „-0/turę"), N11 (poprawiony nieścisły komentarz w kodzie),
+  N12 (ikona eyebrow dodana do zakładek Handel/Armia/Kultura, wzorem Surowców). N1 pozostaje
+  zamknięte bez akcji (korekta historii commita). **Znana, udokumentowana usterka kosmetyczna
+  N5**: rekonstrukcja bazy przez `Math.round` daje błąd ±1 złota w ~10-20% realnych kombinacji
+  baza/bonus (forward-obliczenie w `main.ts` używa `Math.floor` i traci informację) — nie dotyka
+  skarbca/bilansu, potwierdzone niezależnie własnymi skryptami przez Evaluatora i Final Control.
+
+  Oba tematy: Operator→Evaluator→Final Control PASS/PASS-WITH-NOTES niezależnie, zero konfliktów
+  mimo równoległej integracji z T5/T8/R-PRACA-SUWAKI. Bramki zbiorcze na scalonym `main`: `tsc` 0;
+  `improvement-card-callsites-test` 36/36 (nowy); `entity-card-contract-test` 75/75; `tech-
+  discovery-card-click-test` 13/13; `tech-discovery-card-real-click-test` 12/12; `technology-
+  discovery-card-visual-test` 48/48; `build-mode-hud-affordability-test` 7/7; `okolica-test`
+  72/72; `citypanel-uwagi-abc-filter-test` 35/35; `empire-panel-drobiazgi-runda2-test` 33/33
+  (nowy) + 12 bramek panelu imperium bez regresji; `logic-test` 213/213; `tech-tree-test` 19/19;
+  `research-test` 33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 312 (2026-08-21) — CivPedia T5: karta budynku w panelu miasta — **ZASTĄPIONA** (→ 518b0f48, FALA 313)
+
+- ROBOCZA md5 `ddf499fb8ae299e9aabcbd4bb4813d09` · stempel `ddf499fb` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T5 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: migracja karty budynku w panelu
+  miasta (`cityPanel.ts::buildBuildingDetailCard`/`buildBuildingBuildTabDetailCard`) do wspólnego
+  systemu `entityCards` — publiczna sygnatura bez zmian, stara implementacja zachowana jako
+  `_legacyBuildBuildingDetailCard` (fallback w try/catch). Nowy `buildingAdapter.ts` w pełni
+  wypełniony treścią (Charakterystyka/Plony i efekty/Koszty budowy i utrzymania/Poziomy/Wymagania),
+  czysto-danowy (bez I/O), zachowuje wydajność hover-preview. Nowy, czysto addytywny tryb render
+  `hover` w `entityCards/renderer.ts` (infrastruktura pod przyszłe wywołania T6/T7b, jeszcze nie
+  podpięty do UI — dzisiejsze hover-preview budynku nadal korzysta z tego samego mechanizmu co
+  wcześniej, tylko wewnętrzna treść karty idzie teraz przez wspólny adapter+renderer).
+
+  Operator→Evaluator→Final Control PASS niezależnie. Nowy test w realnej przeglądarce
+  (Playwright/Chromium) zweryfikował geometrię i timing hover-preview i **złapał realny bug**:
+  karta 434px nie mieściła się w 400px hover-docku (2px overflow) — naprawione dodaniem
+  `box-sizing:border-box`, ponownie zweryfikowane zielono. Zero zmian w `entityCards/types.ts`/
+  `registry.ts`/`unitAdapter.ts`/`technologyAdapter.ts`/`improvementAdapter.ts`/`unitInfoCard.ts`/
+  `techDiscoveryNotice.ts`/`main.ts`.
+
+  Bramki zbiorcze na scalonym `main`: `tsc` 0; `entity-card-contract-test` 75/75; `unit-info-card-
+  contract-test` 23/23; `unit-info-card-wiring-test` 6/6; `unit-info-card-army-interaction-test`
+  7/7; `unit-info-card-entitycard-migration-test` 26/26; `unit-info-card-badges-real-render-test`
+  19/19; `technology-discovery-card-visual-test` 48/48; `tech-discovery-card-click-test` 13/13;
+  `building-detail-card-entitycard-migration-test` 52/52 (nowy); `building-detail-card-hover-
+  layout-real-render-test` 11/11 (nowy, real Chromium); `logic-test` 213/213; `tech-tree-test`
+  19/19; `research-test` 33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 311 (2026-08-21) — CivPedia T8: kategoria Technologie (32/32) — **ZASTĄPIONA** (→ ddf499fb, FALA 312)
+
+- ROBOCZA md5 `b596af6baa912f13f2855970f256ec4c` · stempel `b596af6b` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T8 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: nowa kategoria „Technologie" w
+  CivPedii — pełne pokrycie, wszystkie 32/32 technologie z `tech.json`, nie próbka. Format
+  treści (Metadane/Wiki-S/Wiki-M/Poradnik-L/Historia) spójny z istniejącą kategorią budynków.
+  `CAT_LABELS.technologie='Technologie'` w `bundle-wiki-for-game.cjs`, `wikiBundle.json`
+  zregenerowany komendą (nigdy ręcznie edytowany — potwierdzone bitowo identyczne przy
+  ponownej regeneracji). `wikiHubHud.ts` w pełni dynamiczny (kategoria zadziałała bez zmian
+  kodu tam). Operator→Evaluator→Final Control PASS-WITH-NOTES niezależnie (32/32 zgodność
+  slugify() z plikami .md, 32/32 spójność folder/category w `wikiBundle.json`, zero literówek
+  w slugach; jedyna uwaga Final Control — proceduralna, branch był 17 commitów za `main` w
+  chwili weryfikacji, rozwiązana przy integracji zwykłym mergem, zero konfliktów).
+
+  **`P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1`** (bez wpływu na grę, tylko test): 2 pre-istniejące
+  faile w `science-hub-test.cjs` ("engine available=4 (>=5)", "hub unlocked=4 (>=5)")
+  zdiagnozowane jako błąd konstrukcyjny progu w samym teście od początku — era Kamień ma
+  stabilnie 4 technologie Poziom=1 bez prerekwizytów, nie 5. Próg poprawiony na `>=4` z
+  komentarzem wyjaśniającym. Zero zmian w `gra/src/`/`gra/data/`.
+
+  Bramki zbiorcze na scalonym `main`: `tsc` 0; `science-hub-test` 7/7; `tech-tree-test` 19/19;
+  `research-test` 33/33; `tech-unlock-units-test` 41/41; `entity-card-contract-test` 75/75;
+  `logic-test` 213/213; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 310 (2026-08-21) — R-PRACA-SUWAKI: cap 50% ujednolicony, naprawa puli, przeprojektowanie panelu — **ZASTĄPIONA** (→ b596af6b, FALA 311)
+
+- ROBOCZA md5 `90ec5e7cf7b92217e7553d32478fde92` · stempel `90ec5e7c` · manifest/bundle `VERIFY OK`.
+
+  **`R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` (Wątki A-F)**: (A) usunięty zdublowany, nie-
+  interaktywny suwak w panelu „PRACA IMPERIUM" (miał zniknąć po `R-PRACA-JEDEN-SUWAK-UI-Q1`,
+  FALA 301, ale pozostał). (C, ECHO=A) cap nadrzędny cywilizacji (`MAX_PRACA_WSPOLNY_WOREK_
+  PROCENT`, 50%) egzekwowany TERAZ TAKŻE na historycznym budżecie automatu ulepszeń miasta
+  (`clampUlepszeniaPracaPercent`) — miasto w trybie „Indywidualne" nie może już obejść
+  nadrzędnego capu; migracja starych zapisów >50% ścina wartość przy wczytaniu. (D) naprawiona
+  „+N" niezgodność w puli PRACA IMPERIUM — `_lastPracaRate` w `main.ts` nie odejmował trzech
+  drenaży puli (budowa cudów, empire building-budget, auto-ulepszenia); teraz odjęte w tej samej
+  turze co zużycie. (F) przeprojektowana prezentacja panelu „Podział pracy" w `cityPanel.ts`/
+  `empireDetailPanel.ts` — czytelny rozdział dwóch kolumn Budynki/Ulepszenia (lewo/prawo),
+  sygnał „Ulepszenia N%" widoczny na górze, nazwy „Budowa"→„Budynki", „Pula Pracy"→„Ulepszenia".
+
+  Runda 3 (naprawa proceduralna): branch odgałęził się przed 3 commitami już wdrożonymi na
+  `main` (FALA 304), Final Control rundy 2 słusznie odrzucił scalenie (cofnęłoby te zmiany) —
+  naprawione mergem aktualnego `main` do brancha, zero konfliktów w kodzie gry. Operator→
+  Evaluator→Final Control PASS niezależnie (Final Control: PASS-WITH-NOTES, jedyna uwaga —
+  układ kolumn Wątku F zweryfikowany przeglądem kodu + testem kontraktowym, nie realnym
+  Playwright-renderem, z powodu udokumentowanego ograniczenia bundlowania `empireDetailPanel.ts`;
+  ryzyko niskie, czysty flexbox). Bramki: `tsc` 0; `praca-limit-50-test` 23/23; `praca-miasto-
+  limit-50-cap-test` 46/46 (nowy); `praca-miasto-limit-50-test` 33/33; `praca-split-ui-test`
+  14/14; `praca-pula-rate-parity-test` 3/3 (nowy); `praca-na-pieniadz-test` 23/23; `praca-
+  global-default-live-test` 7/7; `logic-test` 213/213; `tech-tree-test` 19/19; `research-test`
+  33/33; `unit-replace-test` 13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 309 (2026-08-21) — CivPedia T4: karta jednostki na mapie, odznaki statusu — **ZASTĄPIONA** (→ 90ec5e7c, FALA 310)
+
+- ROBOCZA md5 `809a36e9c554fd0bfa58d63a4b155e8f` · stempel `809a36e9` · manifest/bundle `VERIFY OK`.
+
+  **CivPedia T4 (`R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1`)**: migracja karty jednostki na mapie
+  (`unitInfoCard.ts`) do wspólnego systemu `entityCards` — publiczna sygnatura bez zmian, stara
+  implementacja jako fallback w try/catch, 3D-podgląd jednostki zachowany. Runda 2: Evaluator
+  T4 znalazł w żywej przeglądarce, że sekcja „Statusy" (odznaki garnizon/ufortyfikowanie/
+  sentry/auto-eksploracja z `main.ts`) renderuje wiele odznak, ale klasy `.entity-card-badges`/
+  `.entity-card-badge` nie miały ŻADNEJ reguły CSS w repo od T1 — luka niewidoczna, dopóki
+  żadna karta nie renderowała ≥2 odznak naraz (karta technologii T3 zawsze renderowała
+  dokładnie jedną). Odznaki sklejały się w jeden nieczytelny ciąg tekstu bez odstępu/tła.
+  Naprawa: brakujące reguły `.entity-card-badges{display:flex;flex-wrap:wrap;gap:6px}` +
+  `.entity-card-badge{...pigułka...}` w `entityCards/renderer.ts`. Nowy trwały test
+  `unit-info-card-badges-real-render-test.cjs` (Playwright/real Chromium, mierzy prawdziwą
+  geometrię DOM przez `getBoundingClientRect`/`getComputedStyle`, nie tylko markup) — 19/19.
+  Operator→Evaluator→Final Control PASS niezależnie (dwóch osobnych agentów, każdy z własnym
+  izolowanym worktree i własnym mutation-testem: usunięcie CSS → 13/19 FAIL, przywrócenie →
+  19/19 PASS). Bramki zbiorcze na scalonym `main`: `tsc` 0; `entity-card-contract-test` 75/75;
+  `unit-info-card-entitycard-migration-test` 26/26; `unit-info-card-contract-test` 23/23;
+  `unit-info-card-wiring-test` 6/6; `technology-discovery-card-visual-test` 48/48;
+  `logic-test` 213/213; `tech-tree-test` 19/19; `research-test` 33/33; `unit-replace-test`
+  13/13; `combat-test` 6/6. Vite 845 modułów.
+
+## ROBOCZA — FALA 308 (2026-08-21) — naprawa awarii FALI 307 + 3 dodatkowe poprawki — **ZASTĄPIONA** (→ 809a36e9, FALA 309)
+- ROBOCZA md5 `e4317354b95f8ab3966ac7bb56bea1d2` · stempel `e4317354` · manifest/bundle `VERIFY OK`.
+
+  **Naprawa krytycznego regresu FALI 307** (`R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1`):
+  przyciski „Rozpocznij badanie"/„Otwórz drzewo" w karcie odkrycia technologii nie
+  reagowały na klik. Przyczyna: `.entity-card` nie miało własnego `position`, więc malowało
+  się we WCZEŚNIEJSZYM kroku CSS stacking-context niż `.tdn-back` (tło modala,
+  `position:fixed`) — tło przechwytywało kliknięcia mimo poprawnej kolejności DOM i
+  poprawnie podpiętych event listenerów. Naprawa: jedna linia CSS (`position:relative` na
+  `.entity-card` w lokalnym override `techDiscoveryNotice.ts`). Znaleziona i zweryfikowana
+  PRZEZ REALNĄ PRZEGLĄDARKĘ (Playwright/Chromium, `elementFromPoint()` + `page.mouse.click()`
+  na rzeczywistych współrzędnych) — jsdom (używany we wcześniejszych testach tej sesji) NIE
+  robi hit-testingu i dawał fałszywie zielony wynik dla tej klasy buga. Operator, Evaluator
+  i Final Control NIEZALEŻNIE odtworzyli regres na kodzie sprzed naprawy (test mutacyjny:
+  usunięcie linii → 6/12 FAIL, przywrócenie → 12/12 PASS) i potwierdzili naprawę. Dwa nowe
+  trwałe testy: `tech-discovery-card-click-test.cjs` (jsdom, 13/13) i
+  `tech-discovery-card-real-click-test.cjs` (Playwright/Chromium, prawdziwy hit-test, 12/12)
+  — ten drugi zamyka `P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1`.
+
+  **`R-SCIENCEHUB-KLIK-WIERSZA-ENQUEUE-Q1`**: klik odblokowanej technologii w panelu
+  „Badania" znów dodaje bezpośrednio do planu badań (przywrócone stare zachowanie);
+  podgląd karty dostępny przez wyraźny przycisk tekstowy „Karta" (zastąpił małą ikonkę „ⓘ"
+  z fazy 1). Zweryfikowane realnym renderem+klikiem (jsdom+esbuild, prawdziwe dane), 13/13.
+
+  **`R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1`**: hover-karta drzewka technologii i
+  tooltip `sciencePicker.ts` pokazują teraz kompletną, poprawną listę odblokowywanych
+  jednostek z `units.json` (np. 20 zamiast 12 dla Brązownictwa) zamiast przestarzałego,
+  osadzonego tekstu w `tech.json`; `sciencePicker.ts` już nie miesza nazw jednostek z
+  budynkami pod „Odblokowuje budynki:". Nowy wspólny moduł `techUnlockParse.ts`.
+
+  **`R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1`**: pasek „N karta wymaga decyzji" i przycisk
+  „Wykonaj" w dolnym pasku UI już się nie nakładają po rozwiązaniu blokującej decyzji —
+  przyczyna: zły kontekst pozycjonowania (`.et-hint` był dzieckiem `.et-wrap`, nie całego
+  `.civ-bottom-bar`). Zweryfikowane realną przeglądarką — zrzuty ekranu przed/po pixel-for-pixel.
+
+  Wszystkie 4 tematy: pełny cykl Operator→Evaluator→Final Control (Sonnet 5 Medium/High,
+  Workflow, osobne subagenty), zweryfikowane niezależnie przez orkiestratora po scaleniu.
+  Bramki zbiorcze: `tsc` 0; `entity-card-contract-test` 75/75; `technology-discovery-card-
+  visual-test` 48/48; `tech-tree-test` 19/19; `bottom-bar-hud-wykonaj-overlap-test` 33/33;
+  `important-event-cards-test` 10/10; `tech-unlock-units-test` 41/41; `building-tech-gate-
+  test` 89/89; `citypanel-uwagi-abc-filter-test` 35/35; Vite 845 modułów. `science-hub-test`
+  5/7 — 2 faile pre-istniejące, niezwiązane (`P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1`). Deploy
+  wykonany do `gra-robocza/`; push osobno.
+
+## AWARIA — ROLLBACK FALA 307 → 306 (2026-08-21, pilne)
+
+**Zgłoszenie właściciela (na żywo, stempel `6c1433ef` = FALA 307):** kliknięcie technologii na
+liście „Badania" otwiera kartę podglądu zamiast dodać do kolejki (regres UX), oraz **przyciski
+„Rozpocznij badanie" i „Otwórz drzewo" w karcie NIE DZIAŁAJĄ w ogóle — nigdzie nie da się
+rozpocząć badania.** Krytyczne, blokuje rozgrywkę.
+
+**Natychmiastowe działanie:** przywrócono bundle FALA 306 (`gra-robocza/Gra-ROBOCZA.html` +
+7 kopii playtest, md5 `5900b3fb603fbec52edd97fc95966fdb`) jako AKTUALNY — T3 (migracja karty
+technologii na `entityCards`, FALA 307) podejrzewana o wprowadzenie regresu w podpięciu
+przycisków akcji (`renderer.ts`'s `entity-card-actions`). Kod źródłowy T1b/T3 NIE został
+cofnięty na `main` — tylko WDROŻONY bundle w `gra-robocza/` wraca do stanu sprzed FALI 307,
+do czasu znalezienia i zweryfikowania naprawy. Ślad znanej luki w pokryciu testowym:
+`P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1` (zarejestrowane wcześniej tego samego dnia)
+— żaden test nie sprawdzał realnego kliknięcia przycisków akcji na żywym DOM, dlatego ten
+regres przeszedł przez Operator→Evaluator→Final Control niezauważony.
+
+## ROBOCZA — FALA 307 (2026-08-21) — **WYCOFANA (rollback, regres krytyczny — patrz wyżej)**
+- ROBOCZA md5 `bec9797ed7eea4a94115ad21d71ef1cd` · stempel `bec9797e` · manifest/bundle `VERIFY OK` (w chwili publikacji).
+  Zakres: `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` T1b + T3 (retry) — fundament karty encji
+  rozszerzony o akordeon, ikony/trailing/kolorowane odznaki per wiersz, paginację „Pokaż
+  pozostałe N" (sprzężoną z kompaktowym nagłówkiem), layout pigułek-z-checkmarkiem (T1b,
+  wyłącznie nowe pola opcjonalne w `entityCards/types.ts`/`renderer.ts`, 75/75 testów).
+  Karta odkrycia technologii (`techDiscoveryNotice.ts`) **migrowana** na wspólny kontrakt
+  (`technologyAdapter.ts` + `renderEntityCard`) — pierwsza faktycznie migrowana karta w tym
+  systemie, publiczna sygnatura `showTechDiscoveryNotice()` bez zmian, wszystkie 5 świadomych
+  odstępstw produktowych zachowanych (bez paska „Efekt", logika „Możesz badać", tryb
+  podglądu, brak przycisku „Otwórz hub badań"), stara implementacja zostaje jako fallback
+  (`_legacyShowTechDiscoveryNotice`). Final Control napisał własny, jednorazowy harness DOM
+  (esbuild+jsdom) żeby dowodowo potwierdzić że AKTYWNA ścieżka (nie fallback) faktycznie
+  renderuje wszystkie nowe mechanizmy — 23/23 asercji. Operator→Evaluator→Final Control PASS
+  na obu podtematach (T1b, T3), zweryfikowane niezależnie przez orkiestratora po scaleniu.
+  Bramki: `tsc` 0; `technology-discovery-card-visual-test.cjs` 48/48;
+  `entity-card-contract-test.cjs` 75/75; Vite 844 modułów. Znalezisko Evaluatora (nie
+  blokujące): istniejący test karty odkrycia sprawdza tylko surowy tekst źródła (trafia w
+  martwy fallback, nie w aktywną ścieżkę) — zarejestrowane osobno jako
+  `P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1`. Deploy wykonany do `gra-robocza/`;
+  push osobno.
+
+## ROBOCZA — FALA 306 (2026-08-21) — **ZASTĄPIONA** (→ `e4317354`, FALA 308 — po tymczasowym rollbacku z 307)
+- ROBOCZA md5 `5900b3fb603fbec52edd97fc95966fdb` · stempel `5900b3fb` · manifest/bundle `VERIFY OK`.
+  Zakres: `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` — filtr `playerFacingNote()`/
+  `isDevOnlyPlayerText()`/`stripInlineDevAnnotations()` w `cityPanel.ts` teraz poprawnie
+  usuwa notatki deweloperskie ze wzorcem „ABC-<numer>:" z pola `tech.Uwagi` wyświetlanego
+  w karcie budynku/jednostki (`appendTechDetailBlock`), zachowując resztę legalnej treści
+  (np. „kończy Epokę 1" zostaje, „ABC-7: Popalnia brązu na mapie" znika). Runda 1 błędnie
+  usuwała CAŁĄ notatkę (whole-string reject) — regresja złapana przez Evaluatora, naprawiona
+  w rundzie 2 (partial strip, wzorem istniejącego traktowania „PYTANIE=..."). Operator→
+  Evaluator (PASS-WITH-NOTES, złapał regres rundy 1 + zgłosił analogiczny, nieblokujący,
+  poza zakresem tego tematu problem w `buildings.json`) → Final Control PASS. Bramki: `tsc`
+  0; `citypanel-uwagi-abc-filter-test.cjs` 35/35 (rozszerzony o przypadek mieszany). Deploy
+  wykonany do `gra-robocza/`; push do `origin/main` osobno.
+
+## ROBOCZA — FALA 305 (2026-08-21) — **ZASTĄPIONA** (→ `5900b3fb`, FALA 306)
+- ROBOCZA md5 `0b83f269e30a9136107d3d069626c377` · stempel `0b83f269` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` faza 1/6 (z 6 zaplanowanych — patrz
+  `docs/decyzje/R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1.md`) — osobna, zawsze widoczna
+  ikonka informacyjna „ⓘ" na węzłach technologii w `scienceHubHud.ts` i `techTreeView.ts`
+  (własny `stopPropagation`, woła te same funkcje co dotychczasowe kliknięcie całego
+  wiersza/węzła — zero zmian w tym zachowaniu), oraz zamiana martwej ikony
+  `techIconHintSpan()` w `cityPanel.ts` na klikalny link do karty podglądu technologii
+  (`showTechDiscoveryNotice(..., kind:'preview')`). `techDiscoveryNotice.ts` nietknięty.
+  Pozostałe 5 faz tego tematu (wspólny kontrakt karty encji — ECHO właściciela: pełny
+  refaktor, plan architektury gotowy w `05-architektura-plan.md`; karta ulepszeń terenu;
+  kategoria technologii w CivPedii; migracja 3 istniejących kart; linkowanie 4×4) — jeszcze
+  nie zaczęte, duży wieloetapowy projekt.
+  Pełny cykl Operator (Sonnet 5 Medium) → Evaluator (Sonnet 5 High, PASS-WITH-NOTES — 2
+  drobne, nieblokujące uwagi stylu: efekt uboczny na poziomie modułu w `cityPanel.ts`,
+  brak escapowania cudzysłowu w nowym atrybucie) → Final Control (Sonnet 5 High, osobny
+  subagent, PASS/READY_FOR_DEPLOY), zweryfikowany niezależnie przez orkiestratora po
+  scaleniu. Bramki: `tsc` 0; `tech-tree-test` 19/19; `building-tech-gate-test` 89/89;
+  `technology-discovery-card-visual-test` 48/48; `research-test` 33/33;
+  `science-hub-test` 5/7 — 2 faile pre-istniejące, potwierdzone identyczne na czystym
+  `main` przez Evaluator i Final Control niezależnie. Deploy wykonany do `gra-robocza/`;
+  push nie wykonywano jeszcze do `origin/main` (osobny krok).
+
+## ROBOCZA — FALA 304 (2026-08-21) — **ZASTĄPIONA** (→ `0b83f269`, FALA 305)
+- ROBOCZA md5 `cab0f532d7285e13488cc4acc642cdea` · stempel `cab0f532` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` (runda 3, zastępuje w całości rundę 2) —
+  5 podmian CSS designera (`podmien.zip`, ECHO: świeża makieta wygrywa): karta blokująca
+  wraca do samej obramówki `3px solid #e8d88a` (usunięty blok chip-warning z rundy 2 razem
+  z paskiem diagonalnym), 4 poprawki cieni/border/focus-visible na przycisku „Zakończ
+  turę" i kartach wydarzeń w `sidePanelHud.ts`/`bottomBarHud.ts`. Efekt uboczny świadomy
+  i objęty ECHO: zniknięcie przerywanej obwódki `.et-signal` z `R-TRZY-KARTY-WDROZENIE-Q1`
+  (zastąpiona nowym stylem focus-visible). `R-UI-POPUP-ODKRYCIE-OVERFLOW-Q1` — twardy
+  margines viewportowy w karcie odkrycia technologii już istniał; dodano złoty pasek
+  przewijania (`techDiscoveryNotice.ts`, wzorzec 1:1 z `preBattle.ts`/`postBattleSummary.ts`),
+  `STYLE_ID` v2→v3. `R-UI-PASKI-DIAGONALNE-PRODUKCJA-Q1` — recon zamknięty, brak aktywnego
+  bugu w kodzie (docs-only, bez zmian w `gra/`).
+  Oba tematy kodowe przeszły pełny cykl Operator (Sonnet 5 Medium) → Evaluator (Sonnet 5
+  High) → Final Control (Sonnet 5 High, osobny subagent) → `READY_FOR_DEPLOY`, każdy
+  niezależnie zweryfikowany przez orkiestratora po scaleniu (diff ograniczony do allowlisty,
+  zero konfliktów przy merge). Build: `node ./node_modules/vite/bin/vite.js build --outDir
+  /tmp/civ-dist --emptyOutDir` (kanon C-001), 837 modułów; oblężenie-bitwa build osobno,
+  bez nadpisania `outDir` (plugin `copyHtmlToRoot`). Bramki: `tsc` 0; `sidepanel-events-
+  toolbar-test` 19/19; `sidepanel-hud-deadzone-test` 43/43; `technology-discovery-card-
+  visual-test` 48/48; `side-list-hud-panel-coverage-test` 74/74; `heal-stale-blockers-
+  pending-battle-test` 23/23; `diplomacy-audience-close-flush-test` 37/37; `barbarzyncy-
+  podwojny-atak-prebattle-test` 18/18; `important-event-cards-test` 10/10 +
+  `important-event-cards-regression-test` PASS. 2 faile pre-istniejące w `main.ts`
+  (`end-turn-modal-sequencing-test`, `koniec-tury-f1-f4-runda3-test`) potwierdzone
+  niezwiązane z tym diffem (Final Control zweryfikował identyczne faile na czystym `main`
+  sprzed zmian). Deploy wykonany do `gra-robocza/`; push nie wykonywano.
+  Poza zakresem tej fali (jeszcze nie READY_FOR_DEPLOY): `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-
+  MIASTO-Q1` (runda 1: Wątki A/B/D naprawione przez Operatora, czeka na Evaluator+Final
+  Control zanim wejdzie do `main`) i `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` (recon-only).
+
+## ROBOCZA — FALA 303 (2026-08-21) — **ZASTĄPIONA** (→ `cab0f532`, FALA 304)
+- ROBOCZA md5 `26e45d4ee692f7c725fb35a1d6128e36` · stempel `26e45d4e` · manifest/bundle `VERIFY OK`.
+  Zakres: konsolidacja sześciu tematów z sesji orkiestratora, zintegrowanych na
+  `integration/2026-08-21-consolidacja` (baza `origin/work/clean-main-2026-08-21`, po
+  FALI 302). `P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1` — scalanie identycznych kart „Koniec
+  tury" w panelu wydarzeń (`eot-event-defer.ts`). `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1` —
+  synchronizacja 4 pól ulepszeń terenu w `tech.json` (Brązownictwo, Murarstwo, Oswojenie
+  zwierząt, Wojskowość) z `terrain-improvements.json` + poprawka doboru ikony w karcie
+  odkrycia technologii (`techDiscoveryNotice.ts`, mapa `IMPROVEMENT_NAME_TO_KEY`).
+  `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` (runda 2, zastępuje rundę 1 innej gałęzi tej
+  samej sesji) — diagonalny pasek `.sp-blk-stripe` zastąpiony blokiem `chip-warning` +
+  paletą `.civ-emp-alert` skopiowaną 1:1 z `empireDetailPanel.ts`, zgodnie z bardziej
+  szczegółowym ECHO właściciela z równoległej sesji (nie usuwać całkowicie).
+  `R-AUTOBOT-FINALCONTROL-SUBAGENT-RESTORE-Q1`, `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`
+  (recon zamknięty) i `R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1` (recon zamknięty, brak
+  bugu) — docs-only, bez zmian w `gra/`. Pełny cykl Operator→Evaluator→Final Control
+  (Sonnet 5 Medium/High, Workflow, osobne subagenty) dla wszystkich sześciu tematów,
+  zweryfikowany niezależnie przez orkiestratora na każdym etapie integracji.
+  Konflikty scalania (dokumentacja procesu, tylko pliki `.md` — `R-PROC-AUTOBOT.md`,
+  `REJESTR-PROSB-I-ZADAN.md`, `PYTANIA-OTWARTE.md`,
+  `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1.md`) rozwiązane ręcznie przez orkiestratora,
+  zachowując treść obu stron. Kod (`eot-event-defer.ts`, `tech.json`,
+  `techDiscoveryNotice.ts`, `sidePanelHud.ts`) scalił się bez konfliktów (3-way merge,
+  różne funkcje/pola tego samego pliku w przypadku `techDiscoveryNotice.ts` — zweryfikowano
+  po scaleniu, że obie zmiany, moja i równoległej sesji [tryb podglądu], są obecne).
+  Build: `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir` (kanon
+  C-001, NIE `npm run build` — nadpisałoby `tech.json` przez `export-data.py`), `837`
+  modułów, zero zmian w `gra/data/tech.json` po buildzie. Bramki: `tsc` 0; `eot-event-
+  defer-test` 19/19; `era-change-toast-defer-test` 7/7 + 8/8 mutacji; `dyplo-karta-
+  duplikat-komunikat-test` 15/15; `eot-diplomacy-header-test` 18/18; `sidepanel-events-
+  toolbar-test` 19/19; `technology-discovery-card-visual-test` 48/48; `sidepanel-hud-
+  deadzone-test` 43/43 (build+Playwright). Deploy wykonany do `gra-robocza/`; push nie
+  wykonywano — integracja z `origin/main`/`origin/work/clean-main-2026-08-21` pozostaje
+  osobną bramką po autoryzacji właściciela.
+
+## ROBOCZA — FALA 302 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `426fb8ef1a15ce765fc68a4906c8d56c` · stempel `426fb8ef` · manifest/bundle `VERIFY OK`.
+  Zakres: `R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1` — lokalny podział Pracy miasta
+  ograniczony do **Budynki 50–100% / Pula Pracy 0–50%**, z normalizacją zapisu,
+  dziedziczenia imperium, override miasta oraz parytetem AI. `R-PRACA-PULA-NIEAKUMULUJE-Q1`
+  zamknięty decyzją B: globalny floor 50% pozostaje nadrzędny; budżet automatu ulepszeń
+  zachowuje niezależny zakres 0–100%.
+  Build selektywny na bazie FALI 301, bez obcych zmian; źródłowy build md5
+  `2c1290fcf75e3de3cb9b1c66bf82b28f`, Vite `837` modułów. Bramki: `tsc` 0,
+  podział miasta 32/32, globalny live 7/7, UI 10/10, defaulty miasta 49/49,
+  panel imperium 15/15, AI parity 19/19. Deploy wykonany do `gra-robocza/`;
+  push nie wykonywano. Temat rekrutacji pozostaje poza tą falą — jego gate
+  upkeepowy nadal wymaga osobnej korekty.
+
+## ROBOCZA — FALA 301 (2026-08-21)
+- **AKTUALNA** · ROBOCZA md5 `45ad3443b8ae560f0986d1ef80aa6963` · stempel `45ad3443` · manifest/bundle `VERIFY OK`.
+  Zakres: trzy wcześniej potwierdzone tematy `R-PRACA-JEDEN-SUWAK-UI-Q1`,
+  `R-TECHNOLOGIA-KARTY-PODGLAD-KLIK-Q1` oraz `R-BITWA-KOLORY-GRACZ-PRZECIWNIK-Q1` (selektywnie).
+  Build izolowany z bazy `47cdca15`, bez obcych zmian; źródłowy build md5
+  `cb27ee8644bf80b9a27c61c4add25b96`, Vite `837` modułów. Opcjonalny bundle pola bitwy
+  pominięty — checkout nie zawierał lokalnego Vite. Deploy wykonany do `gra-robocza/`;
+  push nie wykonywano. Nowe trzy karty po Final Control pozostają poza tą falą.
+  Legacy `verify-publish-markers.ps1` zgłosił fałszywy alarm dla tekstowej stałej
+  `CIV-BUILD-STAMP-PENDING` w runtime; aktywny znacznik ROBOCZA i MD5 manifestu są prawidłowe.
+
+## ROBOCZA — FALA 300 (2026-08-20)
+- **AKTUALNA** · ROBOCZA md5 `47149d70bf2af52ae26e410899d6f133` · stempel `47149d70` · `VERIFY OK`.
+  Zakres: `R-TRZY-KARTY-WDROZENIE-Q1` — trzy karty od Designu (paczka `TRZY-KARTY-2026-08-19`)
+  wdrożone do realnego kodu, pełny cykl Operator→Evaluator (Sonnet 5 Medium/High, przez
+  Workflow). Karta 1 — odkrycie technologii (`techDiscoveryNotice.ts`, redesign, Esc zamyka,
+  przycisk „Otwórz hub badań" świadomie pominięty — brak w żadnej klatce makiety, zweryfikowane
+  dwukrotnie, sprzeczne z handoffem designera, otwarte dla właściciela, nieblokujące). Karta 2 —
+  jednostka (`unitInfoCard.ts`, puste sekcje znikają, kontry jako plakietki, stały rozmiar slotu
+  3D, Esc naprawiony po FAIL pierwszej rundy Evaluatora, rant złoto kanonu). Karta 3 — wydarzenia
+  (`sidePanelHud.ts`+`bottomBarHud.ts`, kolejka nie stos, 9-poziomowa różnica blokująca/
+  informacyjna, 3 warstwy czysto wizualnej sygnalizacji na „Zakończ turę", przycisk „Zignoruj"
+  przy buncie; **twardy zakaz blokady tury zweryfikowany testem mutacyjnym** — wstrzyknięcie
+  zakazanego `getBlockingCount()` w handler end-turn poprawnie obróciło PASS w FAIL). 5 nowych
+  tokenów w `tokens.css`. Bramki na całości: `tsc` 0, 13 zestawów testów zielonych, 2 znane
+  przedistniejące awarie niezwiązane z diffem (`unit-info-card-army-interaction-test` 5/2).
+  Deploy wykonany z czystego commita `83405147`.
+
+## ROBOCZA — FALA 299 (2026-08-19)
+- źródło `4f099cb18605e0cecac55a19218e539962e30fd7` · ROBOCZA md5 `5dba37a12900d8f9a03a2da592d2cd8c` · `VERIFY OK`.
+  Zakres: zweryfikowane integracje FALI 299 oraz korekta parytetu rekrutacji AI — AI kupuje jednostki za Skarbiec, wspólną ścieżką z graczem, bez kosztu Pracy i niezależnie od produkcji budynków. Deploy wykonany z czystego commita; ręczny `START.html` zachowany.

@@ -1,5 +1,5 @@
 /**
- * triumph-city-state.ts — triumf po zjednoczeniu miast-państw tej samej cywilizacji (P-TRIUMPH-CS-Q1=B).
+ * triumph-city-state.ts — triumf po zjednoczeniu miast-państw tej samej kultury (P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1=A).
  *
  * Gdy gracz przejmuje ostatnie żyjące miasto rywala będącego miastem-państwem (typCityCopyOwners)
  * tego samego typu co gracz — dodatkowy, dłuższy komunikat triumfu.
@@ -32,8 +32,9 @@ export function countCitiesForOwner(
 }
 
 /**
- * Czy po eliminacji oldOwner gracz jest jedynym władcą miast-państw swojej cywilizacji.
- * Wołane PRZED eliminateOwner — oldOwner nadal w typCityCopyOwners / aiOwnerCivMap.
+ * Czy po przejęciu city gracz jest jedynym władcą aktywnych miast-państw swojej kultury.
+ * `cities` jest tablicą po przejęciu, ale przed `eliminateOwner` — oldOwner nadal
+ * pozostaje w typCityCopyOwners / aiOwnerCivMap.
  */
 export function shouldShowPlayerTriumphCityStateUnification(
   input: TriumphCityStateInput,
@@ -49,6 +50,10 @@ export function shouldShowPlayerTriumphCityStateUnification(
 
   if (newOwner !== 0) return false;
   if (!typCityCopyOwners.has(oldOwner)) return false;
+  // Popup dotyczy wyłącznie ostatniego aktywnego miasta oldOwner. W momencie
+  // wywołania tablica cities jest już po przejęciu, więc oldOwner nie może mieć
+  // żadnego pozostałego miasta.
+  if (countCitiesForOwner(oldOwner, cities) !== 0) return false;
 
   const oldCiv = aiOwnerCivMap.get(oldOwner);
   if (!oldCiv || oldCiv !== playerCivKey) return false;
@@ -62,7 +67,7 @@ export function shouldShowPlayerTriumphCityStateUnification(
   return true;
 }
 
-/** Treść komunikatu triumfu (P-TRIUMPH-CS-Q1=B). */
+/** Treść ceremonialnego komunikatu triumfu (P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1=A). */
 export function buildTriumphCityStateUnificationMessage(
   civLabel: string,
   cityName: string,
@@ -70,6 +75,6 @@ export function buildTriumphCityStateUnificationMessage(
   const civ = (civLabel ?? '').trim() || 'Twoja cywilizacja';
   const city = (cityName ?? '').trim() || 'miasto';
   return (
-    `TRIUMF — ${civ} zjednoczeni! Ostatnie miasto-państwo Twojej cywilizacji (${city}) padło. Jesteś jedynym władcą.`
+    `TRIUMF! Zjednoczyłeś całą kulturę ${civ}. Ostatnie miasto-państwo — ${city} — znalazło się pod Twoją władzą.`
   );
 }

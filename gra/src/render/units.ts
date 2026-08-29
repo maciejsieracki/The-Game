@@ -98,6 +98,21 @@ import { buildRydwanKapadokijskiOpus5 } from './braz-rydwan-kapadokijski-opus5';
 // wczesnym jeźdźcem epoki Brązu: BEZ strzemion, BEZ siodła z łękami, czaprak
 // na poprągu/napierśniku/pośliśniku, uzda z brązowym wędzidłem.
 import { buildKonnicaBrazOpus5 } from './braz-konnica-opus5';
+// ASYRIA ŻELAZO OPUS 5 — dwa dedykowane modele kawalerii (Konnica lancowa i
+// Konnica łucznicza asyryjska), zastępujące dotychczasowy wspólny fallback
+// `case 'konnica'` dla tej pary jednostek kulturowych (R-ZELAZO-MODELE-BRAKUJACE-Q1-T1).
+import {
+  buildZelazoKonnicaLancowaAsyryjska,
+  buildZelazoKonnicaLuczniczaAsyryjska,
+} from './zelazo-konnica-asyryjska-opus5';
+// SŁOWIANIE ŻELAZO OPUS 5 — „Jeździec z oszczepami"/„Slavic Javelin Cavalry"
+// (R-ZELAZO-MODELE-BRAKUJACE-Q1-T4). Do dziś BEZ własnej grafiki: `categoryOf()`
+// łapie ją słowem `jezdz` i odsyła do generycznego `case 'konnica'` z KOPIĄ
+// trzymaną nadręcznie — a jednostka ma w units.json `Atak dystansowy: 2`,
+// `Zasięg ataku (hex): 2` i `Ilość pocisków: 5`. Nowy model: lekki oszczepnik
+// konny w pozycji rzutu, 5 drzewc (1 w dłoni + 4 w pęku), strzemiona i siodło
+// z terlicą (inna rama czasowa niż Brąz/Asyria), tarcza okrągła na plecach.
+import { buildZelazoJezdziecOszczepami } from './zelazo-jezdziec-oszczepami-opus5';
 // BRĄZ OPUS 5 — „Rydwan konny"/„War Chariot" (Kultura=null, Tech=Jeździectwo).
 // Do 2026-08-06 jedyna uniwersalna jednostka Brązu BEZ własnej grafiki: leciała
 // na wspólny model kategorii 'rydwan' bez żadnej dekoracji (warianty kulturowe
@@ -168,6 +183,8 @@ import {
   buildIButho,
   buildGermanSuper,
   buildMiecznikGalijski,
+  // T8: bespoke Berserker przeniesiony do serii Z3 (patrz linia dispatchu nizej).
+  buildBerserker as buildBerserkerZ3,
 } from './jednostki-z3-plemiona';
 import { buildGalera as newBuildGalera } from './galera-model';
 
@@ -1110,55 +1127,90 @@ function addTorc(group: THREE.Group, mTorc: THREE.MeshStandardMaterial, perGeo: 
 }
 
 /**
- * A tall OVAL body shield (Celtic / Germanic style) on the left arm: a tall
- * squashed-cylinder face (planks colour) + a vertical spine + central boss.
+ * A tall OVAL body shield (Celtic / Germanic style, gr. *thureos*) on the left
+ * arm: a tall squashed-cylinder face + a vertical spine (*spina*) + central boss
+ * (*umbo*).
+ *
+ * NAPRAWA 2026-08-25 (R-ZELAZO-MODELE-BRAKUJACE-Q1-T2) — ORIENTACJA TARCZY.
+ * To jest DOKŁADNIE ten sam błąd, który naprawiono 2026-08-06 dla tarczy hide
+ * (patrz komentarz „NAPRAWA 2026-08-06 — ORIENTACJA TARCZY" niżej w tym pliku);
+ * poprawka nigdy nie została przeniesiona na TEN helper. `getGeoOvalShield()` to
+ * walec o osi wzdłuż lokalnego Y. Poprzednie `rotation.z = π/2` kładło tę oś na
+ * światowy X, więc LICO tarczy patrzyło w BOK (±X). Kamera gry ma stały azymut 0
+ * (`camera.ts:131` — „elewacja ~50°, azymut 0"), więc widziała tarczę DOKŁADNIE
+ * KRAWĘDZIĄ. Pomiar w żywym Three.js przed poprawką: rozmiar tarczy w świecie
+ * = [0.0166, 0.156, 0.296]×HEX_R, czyli 0.0166 SZEROKOŚCI i 0.296 GŁĘBOKOŚCI —
+ * z figurki wystawał tylko pionowy pasek grubości 0.0166 sterczący 0.296 w przód
+ * i w tył. Drugi, niezależny objaw tej samej pomyłki: pionowa *spina* ma 0.255
+ * wysokości, a tarcza miała w osi Y tylko 0.156 — spina wystawała 0.0495 nad i
+ * pod tarczę, wisząc w powietrzu.
+ *
+ * Poprawne jest `rotation.x = π/2` (oś walca → światowe +Z, lico do kamery).
+ * Dowód, że taka była PIERWOTNA intencja autora: wektor `scale (1.0, 0.92, 1.85)`
+ * ma sens WYŁĄCZNIE przy tej rotacji — mapuje się wtedy na X→szerokość 0.160,
+ * Y→grubość 0.0166, Z→wysokość 0.296, czyli wysoką owalną tarczę, w której
+ * spina 0.255 mieści się z zapasem. Przy `rotation.z` ten sam wektor dawał
+ * grubość 0.92, wysokość 1.0 i głębokość 1.85, co nie opisuje żadnej tarczy.
+ *
+ * Tarcza wędruje też z `z = 0.012` na `SH_Z = 0.046` — PRZED przedramię, zamiast
+ * przez nie (ta sama wartość co w naprawie z 2026-08-06), a spina i umbo lądują
+ * na LICU tarczy, nie okrakiem na jej płaszczyźnie.
  */
 function addTallOvalShield(group: THREE.Group, mFace: THREE.MeshStandardMaterial,
                            mSpine: THREE.MeshStandardMaterial, mBoss: THREE.MeshStandardMaterial,
-                           perGeo: THREE.BufferGeometry[], heightScale = 1.75): void {
+                           perGeo: THREE.BufferGeometry[], heightScale = 1.75,
+                           namePrefix = ''): void {
   const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R);
+  const SH_Z = 0.046 * HEX_R;                      // przed przedramieniem
+  const FACE_HALF_T = 0.018 * HEX_R * 0.92 * 0.5;  // pół grubości lica po skali
   const mShield = new THREE.Mesh(getGeoOvalShield(), mFace);
-  mShield.rotation.z = Math.PI / 2;
-  mShield.scale.set(1.0, 0.92, heightScale);     // tall and narrow -> oval body shield
-  mShield.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  mShield.rotation.x = Math.PI / 2;
+  mShield.scale.set(1.0, 0.92, heightScale);     // X→szerokość, Y→grubość, Z→wysokość
+  mShield.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z);
+  if (namePrefix) mShield.name = namePrefix + '-shield-face';
   group.add(mShield);
-  // Vertical wooden spine down the centre.
+  // Vertical wooden spine down the centre, ON the face (not straddling it).
   const gSpine = new THREE.BoxGeometry(0.022 * HEX_R, 0.255 * HEX_R, 0.020 * HEX_R);
   perGeo.push(gSpine);
   const mSp = new THREE.Mesh(gSpine, mSpine);
-  mSp.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  mSp.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z + FACE_HALF_T + 0.008 * HEX_R);
+  if (namePrefix) mSp.name = namePrefix + '-shield-spine';
   group.add(mSp);
-  // Central boss.
+  // Central boss (umbo) bulging FORWARD out of the face.
   const mB = new THREE.Mesh(getGeoShieldBoss(), mBoss);
-  mB.rotation.z = Math.PI / 2;
-  mB.position.set(SH_X + 0.018 * HEX_R, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  mB.rotation.x = Math.PI / 2;
+  mB.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z + FACE_HALF_T + 0.009 * HEX_R);
+  if (namePrefix) mB.name = namePrefix + '-shield-boss';
   group.add(mB);
 }
 
 /** A long sword (blade + crossguard + grip) raised in the right hand. */
 function addLongSwordRight(group: THREE.Group, mBlade: THREE.MeshStandardMaterial,
                            mHilt: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[],
-                           bladeLen = 0.30): void {
+                           bladeLen = 0.30, namePrefix = ''): void {
   const X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R;
   const gGrip = new THREE.BoxGeometry(0.022 * HEX_R, 0.060 * HEX_R, 0.022 * HEX_R);
   perGeo.push(gGrip);
   const mGrip = new THREE.Mesh(gGrip, mHilt);
   mGrip.position.set(X, AV_Y_TORSO_CTR - 0.01 * HEX_R, 0.02 * HEX_R);
+  if (namePrefix) mGrip.name = namePrefix + '-sword-grip';
   group.add(mGrip);
   const mCross = new THREE.Mesh(getGeoSwordCross(), mHilt);
   mCross.position.set(X, AV_Y_TORSO_CTR + 0.030 * HEX_R, 0.02 * HEX_R);
+  if (namePrefix) mCross.name = namePrefix + '-sword-cross';
   group.add(mCross);
   const gBlade = new THREE.BoxGeometry(0.026 * HEX_R, bladeLen * HEX_R, 0.012 * HEX_R);
   perGeo.push(gBlade);
   const mBl = new THREE.Mesh(gBlade, mBlade);
   mBl.position.set(X, AV_Y_TORSO_CTR + 0.030 * HEX_R + bladeLen * HEX_R * 0.5, 0.02 * HEX_R);
+  if (namePrefix) mBl.name = namePrefix + '-sword-blade';
   group.add(mBl);
 }
 
 /** A long thrusting/throwing spear in the right hand (shaft + leaf tip). */
 function addSpearRight(group: THREE.Group, mWood: THREE.MeshStandardMaterial,
                        mTip: THREE.MeshStandardMaterial, perGeo: THREE.BufferGeometry[],
-                       shaftLen = 0.48): void {
+                       shaftLen = 0.48, namePrefix = ''): void {
   const X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
   const BOT = AV_Y_LEG_BOT + 0.01 * HEX_R;
   const CTR = BOT + shaftLen * HEX_R * 0.5;
@@ -1167,9 +1219,11 @@ function addSpearRight(group: THREE.Group, mWood: THREE.MeshStandardMaterial,
   perGeo.push(gShaft);
   const mShaft = new THREE.Mesh(gShaft, mWood);
   mShaft.position.set(X, CTR, 0.01 * HEX_R);
+  if (namePrefix) mShaft.name = namePrefix + '-spear-shaft';
   group.add(mShaft);
   const mTipM = new THREE.Mesh(getGeoSpearTip(), mTip);
   mTipM.position.set(X, TOP + 0.028 * HEX_R, 0.01 * HEX_R);
+  if (namePrefix) mTipM.name = namePrefix + '-spear-tip';
   group.add(mTipM);
 }
 
@@ -1191,23 +1245,202 @@ function addLongHair(group: THREE.Group, mHair: THREE.MeshStandardMaterial, perG
   group.add(m);
 }
 
+// ===========================================================================
+// ZGODNOSC HISTORYCZNA — DECYZJE I UZASADNIENIA (Rydwan celtycki)
+// `units.json`: Epoka=Zelazo, Kultura=Celtowie, Tech="Hutnictwo zelaza",
+// Pancerz 1, Atak 7, Uwagi: „NOWA; lekki celtycki rydwan bojowy na 2 konie;
+// woznica + wojownik z oszczepami/mieczem; szybka harcownicza flanka".
+//
+// C1. RYDWAN CELTYCKI JEST JEDNOSTKA EPOKI ZELAZA — ZERO ANACHRONIZMU.
+//     Gdy rydwan bojowy znika z Bliskiego Wschodu i z Grecji, u Celtow trwa
+//     do I w. p.n.e. Cezar, „De bello Gallico" IV.33, opisuje BRYTYJSKICH
+//     essedarii: najpierw objezdzaja pole i MIOTAJA POCISKI („per omnes partes
+//     perequitant et tela coniciunt"), samym pedem koni i loskotem kol lamiac
+//     szyki, potem ZESKAKUJA z wozow i bija sie PIESZO, a woznice odjezdzaja
+//     na bok, zeby zapewnic odwrot. Tamze: wojownicy potrafia BIEC PO DYSZLU
+//     i stanac na jarzmie. BG V.19.1: Kasywelaun po rozpuszczeniu wojsk
+//     zatrzymuje przy sobie okolo CZTERECH TYSIECY essedarii.
+// C2. DLA GALII — DIODOR, NIE CEZAR. W Galii czasow Cezara rydwan bojowy jest
+//     juz przezytkiem, wiec swiadectwem dla GALOW jest Diodor Sycylijski V.29.1
+//     (za Posejdoniuszem, ok. 100 p.n.e.): Galowie uzywaja w podrozy i w bitwie
+//     wozow o DWOCH KONIACH, wiozacych WOZNICE I WOJOWNIKA; ci najpierw ciskaja
+//     w przeciwnika oszczepy, a potem schodza z wozu i walcza mieczami. To
+//     dokladnie zaloga i sposob walki z karty jednostki („woznica + wojownik
+//     z oszczepami/mieczem"). UCZCIWIE: dispatch tematu wskazywal jako przyklad
+//     BELLOWAKOW; nie uzyto tego jako zrodla, bo wzmianki o `esseda` w ksiedze
+//     VIII BG (autorstwa Hirtiusa, kampania przeciw Bellowakom) nie
+//     zweryfikowano — nie cytujemy tego, czego nie sprawdzilismy.
+// C3. WYSOKIE BOCZNE KABLAKI — STYLIZACJA NAZWANA WPROST. Archeologia daje
+//     z pochowkow rydwanowych kultury arraskiej (WETWANG SLACK i GARTON SLACK
+//     we wschodnim Yorkshire; NEWBRIDGE pod Edynburgiem, ok. 475 p.n.e.) oraz
+//     z depozytu LLYN CERRIG BACH na Anglesey przede wszystkim OKUCIA: zelazne
+//     obrecze kol nabijane na drewniane dzwona, piasty, terrety, lony. SAMEJ
+//     nadbudowy kosza znaleziska nie zachowuja — jest ona REKONSTRUKCJA
+//     (najbardziej znana: pelnowymiarowa rekonstrukcja rydwanu z Wetwang
+//     z poczatku XXI w., eksponowana w British Museum). Dwa wysokie
+//     kablaki nad burtami sa wiec STYLIZACJA oparta na tej rekonstrukcji,
+//     a nie odwzorowaniem zabytku, i tak sa tu nazwane. Niosa natomiast
+//     poprawna tresc: kosz celtycki byl LEKKI i AZUROWY — karta daje mu
+//     `Pancerz` 1 przy 2 u mykenskiego i u Shang, a Uwagi rydwanu Shang mowia
+//     wprost o „ciezkim" wozie i o zalodze TRZECH ludzi (woznica + halabardnik
+//     ge + lucznik) wobec DWOJGA u celtyckiego.
+// C4. TARCZA OWALNA NA PRZEDNIEJ BURCIE. Dluga owalna tarcza to typ celtycki
+//     (tarcza z CHERTSEY, drewniane tarcze z LA TENE) — patrz tez sekcja
+//     ZGODNOSC HISTORYCZNA Miecznika galijskiego w
+//     `jednostki-z3-plemiona.ts`. Do T9 „znacznik kultury" byl OKRAGLYM
+//     krazkiem (getGeoOvalShield to mimo nazwy CYLINDER, nie owal), jego
+//     plaszczyzna byla ustawiona normalna wzdluz osi X — czyli DOKLADNIE
+//     prostopadle do kierunku patrzenia jedynej kamery gry (iloczyn skalarny
+//     0.000) — a jej SRODEK lezal 0.065 x HEX_R przed najdalej wysunieta ku
+//     widzowi powierzchnia skrzyni (listwa nad sciana przednia, z = 0.055);
+//     z pojazdem stykala sie jedynie rogiem tej listwy (SAT 0.0090), reszta
+//     wisiala w powietrzu. Zmierzono dla niej 198 pikseli z kamery gry wobec
+//     1070 pikseli wszystkich czesci w barwie gracza u Gaesatow w tym samym
+//     renderze.
+// C5. CZEGO MODEL NIE ODWZOROWUJE — OGRANICZENIA BRYLY WSPOLNEJ. Kosz, kola,
+//     dyszel, jarzmo, konie i woznica pochodza ze WSPOLNEJ bryly kategorii
+//     `rydwan` (buildCategoryModel), ktorej GEOMETRII T9 nie ruszal — allowlista
+//     tematu obejmuje `decorateChariot()`, a nie samo `buildCategoryModel()`.
+//     Zostaje w niej nieceltycki FUTERAL NA LUK ze strzalami: u Celtow
+//     lucznictwo rydwanowe nie jest poswiadczone, zrodla mowia o oszczepach
+//     i mieczach (Cezar BG IV.33, Diodor V.29.1). Zostaje tez SKRZYNKOWY ksztalt
+//     helmu woznicy (barwe poprawia C6, ale bryla jest ta sama co u rydwanu
+//     chinsko-egipskiego) oraz caly ksztalt kosza i kol — lekki, wiklinowy kosz
+//     celtycki rozni sie od ciezkiej skrzyni Shang KSZTALTEM, nie tylko paleta.
+//     Domkniecie tego wymaga bespoke bryly celtyckiej w osobnym pliku (tak samo
+//     jak dostaly ja Rydwan Kapadokijski i Rydwan konny) — poza allowlista T9,
+//     zgloszone jako osobny temat. STAN PO T9 JEST WIEC POPRAWA CZASTKOWA,
+//     nie domknieciem luki: zmierzona odroznialnosc pikselowa rydwanu
+//     celtyckiego od mykenskiego wzrosla, ale progu rodziny 0.558 nie osiaga —
+//     dokladne liczby sa w raporcie i w tescie tematu.
+// C6. ZELAZNE OKUCIA ZAMIAST BRAZOWYCH — najlepiej poswiadczony fakt o tym
+//     pojezdzie. Z pochowkow rydwanowych (Wetwang, Garton, Newbridge) i z
+//     Llyn Cerrig Bach pochodza ZELAZNE obrecze nabijane na skurcz na drewniane
+//     dzwona kol, zelazne obejmy piast, lony i terrety. Bryla wspolna dawala
+//     wszystkim trzem rydwanom okucia w barwie BRAZU — poprawne dla mykenskiego
+//     i Shang (epoka BRAZU), bledne dla celtyckiego z epoki ZELAZA. T9
+//     przebarwia je (i tylko dla wariantu celtyckiego) na zelazo. Przy okazji
+//     tunika woznicy schodzi z czerwieni lakowej na blekit urzetu — Diodor
+//     V.30.1 mowi o galijskich tunikach „barwionych w rozmaite kolory";
+//     sam barwnik (urzet, lac. vitrum) jest u Cezara BG V.14, ale jako
+//     malowidlo NA CIELE Brytow, nie jako barwnik tkaniny — i tak jest tu
+//     nazwane, zeby nie przypisywac zrodlu wiecej, niz mowi.
+// C7. ROZJAZD W SAMYCH DANYCH (nie w modelu). Uwagi karty mowia „wojownik
+//     z oszczepami", ale `Atak dystansowy` = 0 i `Ilosc pociskow` = „—".
+//     Model NIE dostal wiec widocznych oszczepow: nosnik ataku dystansowego
+//     bylby sprzeczny z liczbami karty. Rozstrzygniecie rozjazdu w danych jest
+//     poza zakresem tematu (`gra/data/**` nie jest w allowliscie) i zostalo
+//     zgloszone w raporcie.
+// ===========================================================================
+
 /**
- * Mounts a culture-marker (small round shield + standard flag) on the side of a
- * pre-built chariot group, and re-tints its car front-panel / driver tunic so
- * the three chariot variants read distinctly.  Operates on the group returned
- * by buildCategoryModel('rydwan', ...).
+ * Mounts a per-culture marker on a pre-built chariot group returned by
+ * buildCategoryModel('rydwan', ...).
+ *
+ * Two paths, on purpose:
+ *  - `celtic = false` (Mycenaean, Shang): the historical path, UNCHANGED since
+ *    before T9 — one round disc shield + one boss, nothing else.  Keeping the
+ *    default value keeps those two units byte-identical (asserted by the T9
+ *    test), because auditing them is a separate topic.
+ *  - `celtic = true` (Celtic chariot, T9): an oval La Tene shield lashed FLAT
+ *    to the front breastwork so its face turns toward the game camera, plus the
+ *    two high side hoops that give the Celtic car its own silhouette.
+ *
+ * NOTE (T9, corrected): the pre-T9 doc comment claimed this function "re-tints
+ * its car front-panel / driver tunic so the three chariot variants read
+ * distinctly".  It never did — it only ever added two meshes, and the three
+ * variants measured 0.010-0.014 pixel distinctness from the game camera
+ * (family threshold 0.558; the same-model control is 0.000).  That sentence was
+ * a description of an intent that was never implemented, not of the code.
  */
 function decorateChariot(group: THREE.Group, ownerColor_: number, accent: number,
-                         shieldColor: number): THREE.Group {
+                         shieldColor: number, celtic: boolean = false): THREE.Group {
   const mats = group.userData['mats'] as THREE.Material[];
   const perGeo = (group.userData['perTokenGeos'] as THREE.BufferGeometry[]) ?? [];
   const mat = makeMatFactory(mats);
-  // A round culture shield hung on the +X car side (in the chariot's local frame
-  // the car sits behind the team; group is spun 180deg, so we add into a small
-  // pre-spun sub-group to keep the shield on the visible flank).
+  // The car sits behind the team in the chariot's local frame and the whole
+  // group is spun 180deg about Y at the end of buildCategoryModel; a sub-group
+  // pre-spun by the same 180deg therefore has WORLD-ALIGNED axes, so every
+  // number below is a world coordinate and can be compared with a measurement.
   const sub = new THREE.Group();
   sub.rotation.y = Math.PI;
   group.add(sub);
+
+  if (celtic) {
+    // --- PRZEBARWIENIE BRYLY WSPOLNEJ (C6) ---------------------------------
+    // Materialy sa tworzone PER TOKEN (makeMatFactory w buildCategoryModel),
+    // wiec zmiana barwy nie wycieka na inne jednostki ani na inne rydwany.
+    // Robimy to PRZED utworzeniem wlasnych materialow T9, zeby retint nie mogl
+    // trafic w nie same. Liczba trafien jest zwracana i pilnowana asercja
+    // testu tematu — gdy bryla wspolna sie zmieni, test czerwienieje zamiast
+    // po cichu nic nie przebarwic.
+    const retint = (from: number, to: number): number => {
+      let n = 0;
+      for (const m of mats) {
+        const mm = m as THREE.MeshStandardMaterial;
+        if (mm.color !== undefined && mm.color.getHex() === from) { mm.color.setHex(to); n++; }
+      }
+      return n;
+    };
+    const retinted = {
+      iron:  retint(COLOR_BRONZE,  COLOR_MAIL),       // obrecze, os, jarzmo, listwa, helm woznicy
+      tunic: retint(COLOR_LACQUER, COLOR_WOAD),       // tunika woznicy
+      crest: retint(COLOR_RED_VIV, COLOR_TROUSERS),   // kita woznicy
+    };
+    group.userData['celticRetint'] = retinted;
+
+    const mFace  = mat(shieldColor,   0.10, 0.72);
+    const mRim   = mat(COLOR_LEATHER, 0.06, 0.84);
+    const mWoodC = mat(COLOR_CHARIOT, 0.05, 0.82);
+    const mBossC = mat(accent,        0.30, 0.50);
+    // --- oval La Tene shield, FLAT on the front breastwork (C4) -------------
+    // Pion tego ustawienia: przednia sciana skrzyni konczy sie na z = 0.054,
+    // ale NOGI WOZNICY wystaja przez nia do z = 0.059 (cecha bryly wspolnej,
+    // nie T9). Tarcza siada wiec tuz PRZED nimi (tyl pola na z = 0.0605), czyli
+    // przylega do pojazdu bez przenikania czegokolwiek — obie te wlasnosci
+    // (przyleganie i brak kolizji) sa zmierzone i egzekwowane w tescie tematu.
+    const SH_X = 0.078 * HEX_R, SH_Y = 0.185 * HEX_R, SH_Z = 0.0695 * HEX_R;
+    const rim = new THREE.Mesh(getGeoOvalShield(), mRim);
+    rim.rotation.x = Math.PI / 2;                  // disc normal -> world +Z
+    rim.scale.set(0.80, 0.80, 1.20);
+    rim.position.set(SH_X, SH_Y, SH_Z - 0.002 * HEX_R);
+    rim.name = 'rc-shield-rim';
+    sub.add(rim);
+    const face = new THREE.Mesh(getGeoOvalShield(), mFace);
+    face.rotation.x = Math.PI / 2;
+    face.scale.set(0.72, 1.0, 1.10);
+    face.position.set(SH_X, SH_Y, SH_Z);
+    face.name = 'rc-shield-face';
+    sub.add(face);
+    const gSpina = new THREE.BoxGeometry(0.016 * HEX_R, 0.170 * HEX_R, 0.010 * HEX_R);
+    perGeo.push(gSpina);
+    const spina = new THREE.Mesh(gSpina, mWoodC);
+    spina.position.set(SH_X, SH_Y, SH_Z + 0.012 * HEX_R);
+    spina.name = 'rc-shield-spina';
+    sub.add(spina);
+    const boss = new THREE.Mesh(getGeoShieldBoss(), mBossC);
+    boss.rotation.x = Math.PI / 2;                 // boss axis -> world +Z
+    boss.position.set(SH_X, SH_Y, SH_Z + 0.016 * HEX_R);
+    boss.name = 'rc-shield-boss';
+    sub.add(boss);
+    // --- two high side hoops over the car rails (C3) ------------------------
+    // Rails run world z -0.17..0.05 at x = +-0.135, top at y = 0.1905.  Radius
+    // 0.090 with centre z = -0.035 lands BOTH feet on the rail and clears the
+    // rear standard pole at z = -0.15.
+    const gHoop = new THREE.TorusGeometry(0.090 * HEX_R, 0.008 * HEX_R, 4, 10, Math.PI);
+    perGeo.push(gHoop);
+    for (const s of [1, -1]) {
+      const hoop = new THREE.Mesh(gHoop, mWoodC);
+      hoop.rotation.y = Math.PI / 2;               // torus plane XY -> world ZY
+      hoop.position.set(s * 0.135 * HEX_R, 0.1905 * HEX_R, -0.035 * HEX_R);
+      hoop.name = 'rc-hoop-' + (s > 0 ? 'left' : 'right');
+      sub.add(hoop);
+    }
+    group.userData['perTokenGeos'] = perGeo;
+    return group;
+  }
+
+  // A round culture shield hung on the +X car side.
   const mShield = new THREE.Mesh(getGeoOvalShield(), mat(shieldColor, 0.10, 0.72));
   mShield.rotation.z = Math.PI / 2;
   mShield.scale.set(1.0, 0.6, 1.0);
@@ -1225,15 +1458,39 @@ function decorateChariot(group: THREE.Group, ownerColor_: number, accent: number
 
 function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // CELTS -----------------------------------------------------------------
-  if (n.includes('soldurii') || n.includes('soldur')) return buildCeltWarrior(ownerColor_);
-  if (n.includes('gaesatae')) return buildCeltWarrior(ownerColor_);
+  if (n.includes('soldurii') || n.includes('soldur')) return buildSoldurii(ownerColor_);
+  if (n.includes('gaesatae')) return buildGaesatae(ownerColor_);
   if (n.includes('wojownik celtycki') || (n.includes('celtyck') && n.includes('wojownik'))) return buildCeltWarrior(ownerColor_);
+  // T9: jedyne dwa wywolania z `celtic = true` (nazwa PL nizej i EN dalej).
+  // Mykenski i Shang zostaja na domyslnej sciezce, wiec ich geometria jest
+  // identyczna jak przed T9 — pilnuje tego asercja regresji w tescie tematu.
   if (n.includes('rydwan celtycki') || (n.includes('rydwan') && n.includes('celtyck'))) {
-    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST, true);
   }
   // GERMANS ---------------------------------------------------------------
-  if (n.includes('berserker germansk') || n.includes('berserk')) return buildBerserker(ownerColor_);
+  // T8 (R-ZELAZO-AUDYT-POZOSTALE-Q1-T8): Berserker dispatchowany do bespoke
+  // modelu z serii Z3. Lokalny `buildBerserker()` nizej w tym pliku zostaje
+  // jako martwy — dokladnie jak `buildGermanWarrior()` — bo porzadkowanie
+  // martwego kodu w units.ts jest osobnym tematem, nie luka wizualna.
+  if (n.includes('berserker germansk') || n.includes('berserk')) return buildBerserkerZ3(ownerColor_);
   if (n.includes('wojownik germansk') || (n.includes('germansk') && n.includes('wojownik'))) return buildGermanWarrior(ownerColor_);
+  // GRECJA ----------------------------------------------------------------
+  // „Falanga" (units.json: Epoka=Żelazo, Kultura=Grecka, Typ=Falangite) miała
+  // dotąd bespoke model buildFalangita(), ale docierała do niego WYŁĄCZNIE
+  // przez `case 'falanga'` w buildCategoryModel() — czyli była wizualnie
+  // unikalna „z przypadku" (jest dziś jedyną jednostką tej kategorii), nie
+  // z projektu. Reszta rodziny Opus 5 dispatchuje PO NAZWIE, bo nazwa jest
+  // stabilną tożsamością jednostki: model zostaje przy niej nawet gdy człowiek
+  // przesunie ją w Excelu między epokami albo zmieni jej `Typ`/kategorię.
+  // `case 'falanga'` ZOSTAJE jako fallback dla ewentualnych przyszłych
+  // jednostek tej kategorii — obie ścieżki wołają tę samą funkcję.
+  // Bez ryzyka regresji wyglądu: applyCultureOverrides() i tak zwraca od razu
+  // dla kategorii 'falanga' (NEW_BESPOKE_CATEGORIES), więc ścieżka po nazwie
+  // i ścieżka po kategorii dają IDENTYCZNĄ bryłę.
+  // Rdzenie „falanga"/„hoplit"/„phalanx" są w całym units.json jednoznaczne —
+  // nie ma innej jednostki, która by je zawierała (sprawdzone), w szczególności
+  // NIE łapią „Hieros Lochos (Święty Zastęp)" ani „Thorakites".
+  if (n.includes('falanga') || n.includes('hoplit') || n.includes('phalanx')) return newBuildFalangita(ownerColor_);
   // BRONZE SPECIALS -------------------------------------------------------
   if (n.includes('wojownik mykensk') || (n.includes('mykensk') && n.includes('wojownik'))) return buildMycenaeanWarrior(ownerColor_);
   if (n.includes('rydwan mykensk') || (n.includes('rydwan') && n.includes('mykensk'))) {
@@ -1256,9 +1513,9 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // unit resolves the same bespoke model whether the EN or PL name is given.
   if (n.includes('celtic warrior')) return buildCeltWarrior(ownerColor_);
   if (n.includes('celtic chariot')) {
-    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST);
+    return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_GOLD_BR, COLOR_FOREST, true);
   }
-  if (n.includes('germanic berserker')) return buildBerserker(ownerColor_);
+  if (n.includes('germanic berserker')) return buildBerserkerZ3(ownerColor_);   // T8, jak wyzej
   if (n.includes('germanic warrior')) return buildGermanWarrior(ownerColor_);
   if (n.includes('mycenaean warrior')) return buildMycenaeanWarrior(ownerColor_);
   if (n.includes('mycenaean chariot')) {
@@ -1321,6 +1578,25 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n === 'wojownik z mieczem i tarcza' || n === 'swordsman') return buildMiecznikBrazOpus5(ownerColor_);
   if (n === 'procarz' || n === 'slinger') return buildProcarzBrazOpus5(ownerColor_);
   if (n === 'rydwan (woly)' || n === 'rydwan woly' || n === 'ox chariot') return buildRydwanWolyBrazOpus5(ownerColor_);
+  // ASYRIA ŻELAZO — Konnica lancowa / łucznicza (R-ZELAZO-MODELE-BRAKUJACE-Q1-T1):
+  // dedykowane modele, MUSZĄ stać PRZED generycznym dopasowaniem 'konnica' niżej,
+  // inaczej obie warianty kulturowe wpadałyby w ten sam, wspólny model Brązu.
+  // units.json: „Konnica lancowa asyryjska"/„Assyrian Lancer" (Atak dystansowy=0,
+  // długa lanca + okrągła tarcza) i „Konnica łucznicza asyryjska"/„Assyrian Horse
+  // Archer" (Atak dystansowy=6 — MUSI dzierżyć łuk, nie broń drzewcową).
+  if (n.includes('konnica lancowa asyryjsk') || n.includes('assyrian lancer')) return buildZelazoKonnicaLancowaAsyryjska(ownerColor_);
+  if (n.includes('konnica lucznicza asyryjsk') || n.includes('assyrian horse archer')) return buildZelazoKonnicaLuczniczaAsyryjska(ownerColor_);
+  // SŁOWIANIE ŻELAZO — „Jeździec z oszczepami" (R-ZELAZO-MODELE-BRAKUJACE-Q1-T4).
+  // MUSI stać PRZED generycznym dopasowaniem konnicy niżej, tak samo jak para
+  // asyryjska wyżej. Rdzenie „jezdziec z oszczepami"/„slavic javelin cavalry"
+  // są w całym units.json jednoznaczne (sprawdzone): „Oszczepnik", „Oszczepnik
+  // Zulu (Izijula)" i „Oszczepnik (Estólica)" mają rdzeń „oszczepnik", nie
+  // „oszczepami", a jedyny inny „Jeździec" to „Jeździec chiński" z własnym
+  // wpisem. Dispatch po NAZWIE (nie po kulturze) jest tu konieczny podwójnie:
+  // typ `Culture` w tym pliku NIE ZNA wartości „Słowianie", więc ścieżka
+  // kulturowa nie istnieje — dokładnie tak samo rozwiązano to dla „Drużynnika"
+  // (ta sama kultura, jednostki-z3-plemiona.ts).
+  if (n.includes('jezdziec z oszczepami') || n.includes('slavic javelin cavalry')) return buildZelazoJezdziecOszczepami(ownerColor_);
   // KONNICA (Brąz, Kultura=null): dopasowanie po PEŁNEJ nazwie, żeby warianty
   // kulturowe („Konnica lancowa asyryjska", „Konnica łucznicza asyryjska",
   // „Jeździec chiński"…) zachowały swoje modele — mają własne wpisy wyżej
@@ -1338,6 +1614,13 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // 'taran', inaczej przechwyci go płozowy taran epoki Kamienia.
   if (n.includes('taran okuty') || n.includes('bronze-shod ram') || n.includes('bronze shod ram')) return buildTaranOkutyOpus5(ownerColor_);
   if (n.includes('taran') || n.includes('battering ram')) return buildBatteringRam(ownerColor_);
+  // KATAPULTA (Żelazo, Kultura=null) — jedyna machina SKRĘTOWA w grze.
+  // Rdzenie „katapulta"/„catapult" SPRAWDZONE w `units.json`, nie założone:
+  // pasuje do nich DOKŁADNIE JEDEN wiersz („Katapulta"/„Catapult"), więc
+  // dopasowanie po podciągu jest tu bezpieczne i nie może przechwycić sąsiada.
+  // Kolejność względem taranów wyżej też jest sprawdzona: żadna z tych nazw
+  // nie zawiera rdzenia „taran" ani „battering ram" i odwrotnie.
+  // Model to ONAGER — uzasadnienie typu w sekcji K1 przy buildCatapult().
   if (n.includes('katapulta') || n.includes('catapult')) return buildCatapult(ownerColor_);
   if ((n.includes('wieza') && n.includes('oblezn')) || n.includes('siege tower')) return buildSiegeTower(ownerColor_);
   // RZYM LUDY MORZA ------------------------------------------------------------
@@ -1380,19 +1663,68 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   // INKA — KRÓLEWSKA GWARDIA (Royal Guard) — po sumer żeby nie łapał sumeryjskiego -----
   if ((n.includes('krolewska gwardia') || n.includes('royal guard')) && !n.includes('sumer')) return buildInkaRoyalGuard(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Mezopotamia/Indus (jednostki-z1-mezopotamia.ts) --
-  if (n.includes('gwardia hetycka')) return buildGwardiaHetycka(ownerColor_);
-  if (n.includes('piechota neobabilonska')) return buildPiechotaNeobabilonska(ownerColor_);
-  if (n.includes('mur tarcz')) return buildMurTarcz(ownerColor_);
-  if (n.includes('garnizon harappy')) return buildGarnizonHarappy(ownerColor_);
+  // AUDYT R-ZELAZO-AUDYT-POZOSTALE-Q1-T5: te cztery linie miały WYŁĄCZNIE rdzeń
+  // polski. ZMIERZONE w żywym Three.js: „Hittite Guard", „Neo-Babylonian
+  // Infantry", „Shield Wall (Sargonid)" i „Harappan Garrison" (kolumna
+  // „Nazwa EN" z units.json) dawały 28-mesh generyk `miecznik` zamiast
+  // własnej figurki (34–37 mesh). Dodany rdzeń EN. [Final Control T6:
+  // poprawiono twierdzenie „ścieżka angielska dziś nieosiągalna" — battleScene.ts
+  // (x4) ma udokumentowany fallback `stats['Jednostka'] ?? bu.nazwa`, gdzie
+  // `bu.nazwa` „now holds the ENGLISH display name" (komentarz przy
+  // battleScene.ts:4986-4989) — ścieżka EN JEST osiągalna przez ten fallback,
+  // gdy `stats['Jednostka']` jest niezdefiniowane. Ten sam błąd co przy tej
+  // czwórce, teraz naprawiony tam gdzie znaleziony przy T6.] Rdzenie sprawdzone
+  // na JEDNOZNACZNOŚĆ w całym units.json — dokładnie po jednym trafieniu każdy.
+  if (n.includes('gwardia hetycka') || n.includes('hittite guard')) return buildGwardiaHetycka(ownerColor_);
+  if (n.includes('piechota neobabilonska') || n.includes('neo-babylonian infantry')) return buildPiechotaNeobabilonska(ownerColor_);
+  if (n.includes('mur tarcz') || n.includes('shield wall')) return buildMurTarcz(ownerColor_);
+  if (n.includes('garnizon harappy') || n.includes('harappan garrison')) return buildGarnizonHarappy(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Śródziemnomorze (jednostki-z2-srodziemne.ts) ------
   // (Triari NIE tutaj — to super-jednostka, dispatch przez buildSuperUnit poniżej.)
-  if (n.includes('tyrski miecznik')) return buildTyrskiMiecznik(ownerColor_);
-  if (n.includes('gwardia tyrensk')) return buildGwardiaTyrenska(ownerColor_);
+  //
+  // AUDYT R-ZELAZO-AUDYT-POZOSTALE-Q1-T6, ZMIERZONE w żywym Three.js (nie
+  // odczytane ze źródła): przed audytem nazwy angielskie z kolumny „Nazwa EN"
+  // w units.json dawały dla dwóch z tych czterech jednostek 28-meshowy generyk
+  // `miecznik` zamiast własnej figurki (30 i 33 mesh) — „Tyre Guard" i
+  // „Tyrian Swordsman" nie miały tu rdzenia EN w ogóle. Dopisane niżej.
+  // „Thorakites" ma tę samą nazwę PL i EN, więc działał i przed audytem.
+  //
+  // NIE NAPRAWIONE TUTAJ, bo poprawka leży POZA allowlistą tego tematu:
+  // „Iron Khopesh Warrior" (EN Wojownika z żelaznym khopesh) NIE dociera do
+  // linii `iron khopesh` niżej — łapie go WCZEŚNIEJSZA linia dispatchu
+  // egipskiego (`n.includes('khopesh warrior')`, w tym pliku, sekcja EGIPT)
+  // i zwraca model BRĄZOWEGO wojownika z khopesh. Zmierzone: sygnatura części
+  // dla „Iron Khopesh Warrior" jest identyczna z modelem `Wojownik z khopesh`,
+  // nie z modelem żelaznym. Przyczyna: rdzeń `khopesh warrior` NIE jest
+  // jednoznaczny w units.json — pasuje do DWÓCH wierszy („Khopesh Warrior"
+  // i „Iron Khopesh Warrior"). Poprawka wymaga tknięcia linii należącej do
+  // innej jednostki (brązowej), więc jest osobnym tematem, nie „przy okazji".
+  //
+  // Zakres skutku (zmierzony, nie założony — 8 żywych wywołań buildUnitModel
+  // sprawdzone po jednym): manualBattle.ts nie przekazuje nazwy w ogóle;
+  // unitMiniPreview.ts i units.ts (x2, przez typeId) przekazują nazwę POLSKĄ;
+  // battleScene.ts (x4) przekazuje `stats['Jednostka'] ?? bu.nazwa` — z
+  // UDOKUMENTOWANYM fallbackiem na `bu.nazwa`, która "now holds the ENGLISH
+  // display name" (patrz komentarz przy battleScene.ts:4986-4989). Ścieżka
+  // angielska NIE jest dziś nieosiągalna — jest osiągalna przez ten fallback,
+  // więc dopisanie aliasów EN jest naprawą ścieżki osiągalnej, nie
+  // utwardzeniem martwego kodu. [Final Control T6: poprzednia wersja tego
+  // zdania twierdziła "nieosiągalna" bez sprawdzenia fallbacku — poprawiono.]
+  // Rdzenie `tyre guard` i `tyrian swordsman` sprawdzone na jednoznaczność w
+  // całym units.json: dokładnie po jednym trafieniu każdy.
+  if (n.includes('tyrski miecznik') || n.includes('tyrian swordsman')) return buildTyrskiMiecznik(ownerColor_);
+  if (n.includes('gwardia tyrensk') || n.includes('tyre guard')) return buildGwardiaTyrenska(ownerColor_);
   if (n.includes('zelaznym khopesh') || n.includes('iron khopesh')) return buildZelaznyKhopesh(ownerColor_);
   if (n.includes('thorakites')) return buildThorakites(ownerColor_);
   // GRAFIKA-JEDNOSTKI 2b (ŻELAZO): Plemiona (jednostki-z3-plemiona.ts) --------------
   // (Wojownik germański SUPER NIE tutaj — dispatch przez buildSuperUnit/cultureFromName.)
-  if (n.includes('druzynnik')) return buildDruzynnik(ownerColor_);
+  // T10: alias EN `druzhinnik`. Przed T10 rdzeń był tylko polski, więc nazwa
+  // angielska z `units.json` („Druzhinnik") NIE trafiała w ten model i wracała
+  // fallbackiem do generyka kategorii `miecznik` (zmierzone: 28 mesh generyka
+  // zamiast 32 mesh Drużynnika). iButho tego problemu nie miał — jego nazwa EN
+  // („iButho with iklwa") zawiera rdzeń `ibutho`. Rdzeń `druzhinnik` sprawdzony
+  // na jednoznaczność w całym units.json: dokładnie jedno trafienie.
+  if (n.includes('druzynnik') || n.includes('druzhinnik')) return buildDruzynnik(ownerColor_);
   if (n.includes('ibutho') || n.includes('butho')) return buildIButho(ownerColor_);
   if (n.includes('miecznik galijski') || n.includes('gallic swordsman')) return buildMiecznikGalijski(ownerColor_);
   return null;
@@ -2395,46 +2727,269 @@ function buildCeltWarrior(ownerColor_: number): THREE.Group {
 }
 
 /**
- * Gaesatae — NAKED Celtic shock warrior: skin-tone body (no tunic), bronze torc,
- * tall oval shield + spear, bare head with mustache.  Reads as bare-skinned.
+ * Gaesatae — NADZY celtyccy najemnicy uderzeniowi (Żelazo, Celtowie).
+ *
+ * ===========================================================================
+ * ZGODNOŚĆ HISTORYCZNA — DECYZJE I UZASADNIENIA
+ * (styl serii Opus 5, wzorem `braz-konnica-opus5.ts`; rama czasowa: III w. p.n.e.,
+ *  szczyt zjawiska — bitwa pod TELAMON, 225 p.n.e.)
+ * ===========================================================================
+ *
+ * K1. NAGOŚĆ — to jest cecha definicyjna tej jednostki, nie ozdobnik. Polibiusz
+ *     (*Dzieje* II 28–30) opisuje pod Telamonem Gaesatów stojących w pierwszym
+ *     szeregu NADZY, którzy zrzucili odzienie, podczas gdy stojący za nimi
+ *     Insubrowie i Bojowie walczyli w spodniach i płaszczach. Dlatego korpus,
+ *     ramiona i nogi mają barwę SKÓRY (`COLOR_SKIN` podany jako `clothColor` do
+ *     `buildBaseAvatar`), a ciemne nogawki bazowego awatara są przykryte
+ *     nakładką w kolorze ciała. Decyzja właściciela (`docs/decyzje/
+ *     R-ZELAZO-MODELE-BRAKUJACE-Q1.md`) mówi wprost: „najemnicy słynący z walki
+ *     nago/półnago, uzbrojeni w gaesum".
+ *
+ * K2. PRZEPASKA BIODROWA — jedyne odstępstwo od K1 i świadoma decyzja
+ *     projektowa, nie przeoczenie. Źródła mówią o pełnej nagości; token gry
+ *     dostaje minimalną przepaskę (`getGeoLoincloth`, skala 0.8/0.55/0.95).
+ *     Przepaska niesie przy okazji BARWĘ WŁAŚCICIELA, czego naga sylwetka
+ *     sama z siebie by nie dała.
+ *
+ * K3. ZŁOTY NASZYJNIK (TORC) I NARAMIENNIKI — poświadczone wprost. Polibiusz w
+ *     tym samym ustępie podkreśla, że nadzy wojownicy byli ozdobieni ZŁOTYMI
+ *     naszyjnikami i naramiennikami, i że łupy z nich zasiliły rzymski triumf.
+ *     Stąd `COLOR_GOLD_BR` (nie brąz) na torc i na dwa naramienniki opinające
+ *     ramiona — element ODRÓŻNIAJĄCY od Soldurii, którzy noszą torc BRĄZOWY.
+ *     (Poprzednia wersja tej funkcji miała złoty torc opisany w komentarzu jako
+ *     „bronze torc" — komentarz był nieprawdziwy, geometria była dobra.)
+ *
+ * K4. GAESUM — ciężka włócznia/oszczep żelazny, od którego pochodzi sama nazwa
+ *     jednostki (gal. *gaisos*). Drzewce wydłużone z 0.50 na 0.62×HEX_R.
+ *     POWÓD: przy 0.50 czubek grotu sięgał y=0.5655, a czubek głowy wojownika
+ *     y=0.58 — broń NIE WYSTAWAŁA PONAD SYLWETKĘ i ginęła w obrysie tokena
+ *     (pomiar w żywym Three.js, nie szacunek). Włócznia krótsza od własnego
+ *     właściciela jest błędem proporcji: gaesum sięgał ok. 2 m. Po zmianie
+ *     czubek grotu jest na y≈0.686, tuż nad czubkiem miecza Soldurii (0.66) —
+ *     obie jednostki mają czytelną, ale RÓŻNĄ broń w sylwetce.
+ *
+ * K5. POZA: WŁÓCZNIA OPARTA O ZIEMIĘ, NIE ZAMACH DO RZUTU. To jest świadoma
+ *     decyzja projektowa wymuszona przez DANE, nie przez ikonografię.
+ *     `units.json` daje Gaesatae `Atak dystansowy = 0` / `missileAttack: 0` —
+ *     jednostka NIE MA ataku dystansowego. Poza „zamach do rzutu" obiecywałaby
+ *     graczowi zdolność, której jednostka nie posiada. Dlatego pięta drzewca
+ *     stoi na ziemi (`AV_Y_LEG_BOT + 0.01`), a włócznia czyta się jako broń
+ *     drzewcowa do PCHNIĘCIA — zgodnie z mechaniką („Rola (linia)": „Wręcz").
+ *
+ * K6. BRAK HEŁMU I BRAK BUTÓW — konsekwencja K1. Głowa naga, z opadającym
+ *     wąsem (poświadczonym u Celtów przez Diodora Sycylijskiego V 28) i długimi
+ *     włosami; stopy bose (`addBoots` w kolorze skóry). To drugi po nagości
+ *     korpusu nośnik odróżnienia od Soldurii, którzy mają hełm i buty.
+ *
+ * K7. TARCZA OWALNA, ALE UBOGA. Gaesatae dostają tę samą wysoką owalną tarczę
+ *     co reszta Celtów, lecz z licem z SUROWYCH DESEK (bez barwnego lica) i
+ *     ŻELAZNYM umbem — najemnik nie ma tarczy paradnej. Barwę właściciela niesie
+ *     pionowa spina. Polibiusz zresztą wprost krytykuje celtycką tarczę jako
+ *     zbyt wąską, by osłonić nagie ciało — ubogie lico jest tu zgodne ze źródłem.
+ *     (Poprzednia wersja dawała ZŁOTE umbo — anachroniczny zbytek u najemnika;
+ *     złoto zostaje tam, gdzie je poświadczono: na torcu i naramiennikach, K3.)
  */
 function buildGaesatae(ownerColor_: number): THREE.Group {
-  // cloth == skin tone so the torso/arms read as bare flesh.
-  const { group, mats } = buildBaseAvatar(COLOR_SKIN, COLOR_SKIN, ownerColor_);
+  // cloth == skin tone so the torso/arms read as bare flesh (K1).
+  const { group, mats, headTopY, armLMesh } = buildBaseAvatar(COLOR_SKIN, COLOR_SKIN, ownerColor_);
+  armLMesh.name = 'gaesatae-arm-left';
   const mat = makeMatFactory(mats);
   const perGeo: THREE.BufferGeometry[] = [];
-  const mBronz = mat(COLOR_GOLD_BR, 0.50, 0.40);
+  const mGold  = mat(COLOR_GOLD_BR, 0.50, 0.40);   // torc + naramienniki (K3)
   const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
-  const mSteel = mat(COLOR_STEEL,   0.50, 0.42);
+  const mIron  = mat(COLOR_STEEL,   0.50, 0.42);
   const mOwner = mat(ownerColor_,   0.12, 0.66);
   const mHair  = mat(0xc98a2c,      0.04, 0.86);
   const mPlank = mat(0x6e4a26,      0.05, 0.85);
   const mSkinLeg = mat(COLOR_SKIN,  0.05, 0.80);
 
-  // Re-skin the dark trouser legs to bare flesh (overlay thin skin sleeves).
+  // K1: re-skin the dark trouser legs to bare flesh.  The overlay is 1.02× the
+  // leg in ALL THREE axes — the previous 0.98 in Y left a dark trouser rim
+  // showing at the ankle and at the hip.
   for (const sx of [-(AV_LEG_SEP + AV_LEG_W * 0.5), (AV_LEG_SEP + AV_LEG_W * 0.5)]) {
-    const gLeg = new THREE.BoxGeometry(AV_LEG_W * 1.02, AV_LEG_H * 0.98, AV_LEG_W * 1.02);
+    const gLeg = new THREE.BoxGeometry(AV_LEG_W * 1.02, AV_LEG_H * 1.02, AV_LEG_W * 1.02);
     perGeo.push(gLeg);
     const mLeg = new THREE.Mesh(gLeg, mSkinLeg);
     mLeg.position.set(sx, AV_Y_LEG_CTR, 0);
+    mLeg.name = 'gaesatae-bare-leg';
     group.add(mLeg);
   }
-  // A small loincloth only (otherwise naked).
+  // K2: a small loincloth only (otherwise naked), carrying the owner colour.
   const mLoin = new THREE.Mesh(getGeoLoincloth(), mOwner);
   mLoin.scale.set(0.8, 0.55, 0.95);
   mLoin.position.set(0, AV_Y_TORSO_BOT - 0.01 * HEX_R, 0);
+  mLoin.name = 'gaesatae-loincloth';
   group.add(mLoin);
 
-  addTorc(group, mBronz, perGeo);
+  // K3: gold torc + gold armlets on both upper arms.
+  addTorc(group, mGold, perGeo);
+  const gArmlet = new THREE.TorusGeometry(0.037 * HEX_R, 0.009 * HEX_R, 6, 12);
+  perGeo.push(gArmlet);
+  for (const sx of [-AV_ARM_OFFSET_X, AV_ARM_OFFSET_X]) {
+    const mArmlet = new THREE.Mesh(gArmlet, mGold);
+    mArmlet.rotation.x = Math.PI / 2;
+    mArmlet.position.set(sx, AV_Y_TORSO_BOT + AV_TORSO_H * 0.86, 0);
+    mArmlet.name = 'gaesatae-armlet';
+    group.add(mArmlet);
+  }
+  // K6: bare head — mustache + long hair, no helmet.
   addMustache(group, mHair, perGeo);
   addLongHair(group, mHair, perGeo);
 
-  // Spear raised + tall oval shield.
-  addSpearRight(group, mWood, mSteel, perGeo, 0.50);
-  addTallOvalShield(group, mPlank, mWood, mBronz, perGeo, 1.85);
+  // K4/K5: long gaesum, butt planted on the ground (melee pose, missileAttack=0).
+  addSpearRight(group, mWood, mIron, perGeo, 0.62, 'gaesatae');
+  // K7: plain plank face, owner-colour spine, IRON boss.
+  addTallOvalShield(group, mPlank, mOwner, mIron, perGeo, 1.85, 'gaesatae');
 
-  addBoots(group, mat(COLOR_SKIN, 0.05, 0.82));   // bare feet (skin)
+  addBoots(group, mat(COLOR_SKIN, 0.05, 0.82));   // K6: bare feet (skin)
   addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  // Punkty odniesienia WYPROWADZONE Z MODELU (nie wpisane liczbowo) — test
+  // regresji mierzy nimi relacje geometryczne, więc nie rozjadą się przy
+  // zmianie proporcji awatara.
+  group.userData['anchors'] = {
+    headTopY,
+    eyeTopY: AV_Y_HEAD_CTR + 0.010 * HEX_R + getGeoAvEye().parameters.height * 0.5,
+    legTopY: AV_Y_LEG_TOP,
+    legBotY: AV_Y_LEG_BOT,
+  };
+  group.userData['mats'] = mats;
+  group.userData['perTokenGeos'] = perGeo;
+  return group;
+}
+
+/**
+ * Soldurii — elitarna, przysięgła gwardia celtyckiego/celtyberyjskiego wodza
+ * (Żelazo, Celtowie).
+ *
+ * ===========================================================================
+ * ZGODNOŚĆ HISTORYCZNA — DECYZJE I UZASADNIENIA
+ * (rama czasowa: III–I w. p.n.e.; źródło główne: Cezar, *De Bello Gallico* III 22)
+ * ===========================================================================
+ *
+ * S1. KIM BYLI — Cezar opisuje u Akwitanów instytucję *soldurii*: towarzyszy
+ *     związanych z wodzem przysięgą (*devotio*), dzielących z nim wszystkie
+ *     dobra za życia i zobowiązanych umrzeć razem z nim; Cezar zaznacza, że w
+ *     ludzkiej pamięci nikt nie odmówił spełnienia tej przysięgi. To jednostka
+ *     ZAMOŻNA i UPRZYWILEJOWANA — dzieliła majątek pana — więc jej wyposażenie
+ *     ma czytać się jako bogate, nie jako uzbrojenie pospolitego wojownika.
+ *
+ * S2. DLACZEGO WŁASNA GEOMETRIA, A NIE `buildCeltWarrior()`. Dispatch tematu
+ *     dopuszczał obie ścieżki. Wybrano własną funkcję, bo (a) decyzja
+ *     właściciela dla całej serii wymaga modelu BESPOKE, jawnie rozpoznawanego
+ *     po nazwie, a nie współdzielonego, (b) `buildCeltWarrior()` obsługuje nadal
+ *     „Wojownika celtyckiego" — gdyby Soldurii go modyfikowali, zmieniliby przy
+ *     okazji tamtą jednostkę, czego kryterium „zero regresji" zabrania.
+ *     `buildCeltWarrior()` zostaje więc NIETKNIĘTY.
+ *
+ * S3. KOLCZUGA (*lorica hamata*) — najmocniejszy znacznik elity i zarazem
+ *     najlepiej uzasadniony historycznie. Kolczuga jest wynalazkiem CELTYCKIM
+ *     (najstarsze znaleziska z III w. p.n.e., m.in. Ciumeşti w Rumunii);
+ *     Rzymianie przejęli ją od Galów. Była droga i dostępna wyłącznie warstwie
+ *     zamożnej — dokładnie takiej, jaką opisuje S1. Modelowana jako stalowa
+ *     nakładka na korpus, szersza od tuniki, z krótkim rękawem.
+ *
+ * S4. HEŁM TYPU MONTEFORTINO — brązowy dzwon z guzem na szczycie i karczkiem
+ *     (osłoną karku) z tyłu. Typ czysto celtycki (III–I w. p.n.e.), również
+ *     przejęty potem przez armię rzymską. Hełm jest DRUGIM nośnikiem różnicy
+ *     wobec Gaesatae, którzy z definicji walczą z gołą głową (K6 wyżej).
+ *
+ * S5. DŁUGI ŻELAZNY MIECZ SIECZNY — la Tène, ostrze ok. 0.75–0.90 m, noszony
+ *     do cięcia z góry, nie do pchnięcia. Zgodne z `units.json`
+ *     („Typ": „Swordsman", „Atak dystansowy": 0). Uniesiony w prawej dłoni,
+ *     czubek na y≈0.66.
+ *
+ * S6. BRĄZOWY TORC — oznaka statusu wolnego, zamożnego wojownika. Świadomie
+ *     BRĄZOWY, nie złoty: złoto zarezerwowano dla Gaesatae (K3), gdzie jest
+ *     poświadczone wprost przez Polibiusza. Dzięki temu dwie jednostki tej
+ *     samej kultury różnią się także metalem ozdób.
+ *
+ * S7. TARCZA OWALNA Z LICEM W BARWIE WŁAŚCICIELA — przeciwieństwo ubogiej
+ *     tarczy Gaesatae (K7). Gwardia wodza nosi tarczę malowaną/zdobioną, więc
+ *     to ona jest głównym nośnikiem barwy gracza na tokenie.
+ *
+ * S8. SPODNIE I BUTY — Celtowie nosili *bracae* (spodnie) i skórzane obuwie;
+ *     to rzymscy autorzy uznawali je za cechę „barbarzyńską". Kontrast z bosymi
+ *     stopami i nagimi nogami Gaesatae jest zamierzony i źródłowy.
+ */
+function buildSoldurii(ownerColor_: number): THREE.Group {
+  const { group, mats, headTopY, armLMesh } = buildBaseAvatar(COLOR_SKIN, COLOR_FOREST, ownerColor_);
+  armLMesh.name = 'soldurii-arm-left';
+  const mat = makeMatFactory(mats);
+  const perGeo: THREE.BufferGeometry[] = [];
+  const mIron  = mat(COLOR_STEEL,   0.55, 0.40);
+  const mMail  = mat(0x8d97a3,      0.62, 0.55);   // kolczuga — matowa stal (S3)
+  const mWood  = mat(COLOR_WOOD,    0.05, 0.85);
+  const mBronz = mat(COLOR_BRONZE,  0.45, 0.42);   // torc + hełm (S4, S6)
+  const mOwner = mat(ownerColor_,   0.12, 0.66);
+  const mHair  = mat(0xb8702a,      0.04, 0.86);
+  const mPlank = mat(0x6e4a26,      0.05, 0.85);
+  const mLeath = mat(COLOR_LEATHER, 0.06, 0.82);
+
+  // S8: tunic hem + belt over trousers.
+  addTunicHem(group, mat(COLOR_FOREST, 0.05, 0.86));
+  addBelt(group, mLeath);
+
+  // S3: KOLCZUGA — a mail shirt over the torso, wider than the tunic, with
+  // short sleeves capping the top of both arms.
+  const gMail = new THREE.BoxGeometry(AV_TORSO_W * 1.10, AV_TORSO_H * 0.80, AV_TORSO_D * 1.14);
+  perGeo.push(gMail);
+  const mMailBody = new THREE.Mesh(gMail, mMail);
+  mMailBody.position.set(0, AV_Y_TORSO_BOT + AV_TORSO_H * 0.56, 0);
+  mMailBody.name = 'soldurii-mail';
+  group.add(mMailBody);
+  const gSleeve = new THREE.BoxGeometry(AV_ARM_W * 1.14, AV_ARM_H * 0.34, AV_ARM_W * 1.14);
+  perGeo.push(gSleeve);
+  for (const sx of [-AV_ARM_OFFSET_X, AV_ARM_OFFSET_X]) {
+    const mSleeve = new THREE.Mesh(gSleeve, mMail);
+    mSleeve.position.set(sx, AV_Y_ARM_CTR + AV_ARM_H * 0.30, 0);
+    mSleeve.name = 'soldurii-mail-sleeve';
+    group.add(mSleeve);
+  }
+
+  // S6: bronze torc at the throat.
+  addTorc(group, mBronz, perGeo);
+
+  // S4: HEŁM MONTEFORTINO — bronze dome + rear neck guard + top knob.
+  const gDome = new THREE.SphereGeometry(AV_HEAD_S * 0.58, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.5);
+  perGeo.push(gDome);
+  const mDome = new THREE.Mesh(gDome, mBronz);
+  // Rim at +0.020 (NOT +0.012): przy +0.012 dolna krawędź czaszy wypadała na
+  // y=0.527, a oczy sięgają y=0.5325 — hełm ścinał wtedy górę oczu.
+  mDome.position.set(0, AV_Y_HEAD_CTR + 0.020 * HEX_R, 0);
+  mDome.name = 'soldurii-helmet';
+  group.add(mDome);
+  const gNeck = new THREE.BoxGeometry(AV_HEAD_S * 0.86, 0.030 * HEX_R, 0.026 * HEX_R);
+  perGeo.push(gNeck);
+  const mNeckGuard = new THREE.Mesh(gNeck, mBronz);
+  mNeckGuard.rotation.x = -0.45;
+  mNeckGuard.position.set(0, AV_Y_HEAD_CTR + 0.004 * HEX_R, -AV_HEAD_S * 0.52);
+  mNeckGuard.name = 'soldurii-helmet-neckguard';
+  group.add(mNeckGuard);
+  const gKnob = new THREE.BoxGeometry(0.024 * HEX_R, 0.026 * HEX_R, 0.024 * HEX_R);
+  perGeo.push(gKnob);
+  const mKnob = new THREE.Mesh(gKnob, mBronz);
+  mKnob.position.set(0, AV_Y_HEAD_CTR + 0.020 * HEX_R + AV_HEAD_S * 0.58, 0);
+  mKnob.name = 'soldurii-helmet-knob';
+  group.add(mKnob);
+  // Mustache stays visible under the helmet rim; NO long hair (helmet covers it).
+  addMustache(group, mHair, perGeo);
+
+  // S5: long iron slashing sword, raised right hand.
+  addLongSwordRight(group, mIron, mWood, perGeo, 0.32, 'soldurii');
+  // S7: tall oval shield, owner-colour face + wooden spine + iron boss.
+  addTallOvalShield(group, mOwner, mPlank, mIron, perGeo, 1.85, 'soldurii');
+
+  addBoots(group, mLeath);                        // S8
+  addHands(group, mat(COLOR_SKIN, 0.05, 0.80));
+  // Punkty odniesienia WYPROWADZONE Z MODELU (nie wpisane liczbowo) — test
+  // regresji mierzy nimi relacje geometryczne, więc nie rozjadą się przy
+  // zmianie proporcji awatara.
+  group.userData['anchors'] = {
+    headTopY,
+    eyeTopY: AV_Y_HEAD_CTR + 0.010 * HEX_R + getGeoAvEye().parameters.height * 0.5,
+    legTopY: AV_Y_LEG_TOP,
+    legBotY: AV_Y_LEG_BOT,
+  };
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = perGeo;
   return group;
@@ -2652,8 +3207,110 @@ function buildBatteringRam(ownerColor_: number): THREE.Group {
 }
 
 /**
- * Katapulta (Catapult) — drewniana podstawa-rama na kołach, pionowy stojak,
- * ukośne ramię miotające z procą/kubłem i kamieniem na końcu.  Front +Z.
+ * Katapulta (Catapult) — jednoramienna MACHINA SKRĘTOWA (onager), gotowa do
+ * strzału: ramię napięte kołowrotem ku tyłowi, kamień w zwisającej procy,
+ * zaczep spustu założony.  Front +Z (jak reszta jednostek).
+ *
+ * ===========================================================================
+ * ZGODNOŚĆ HISTORYCZNA — DECYZJE I UZASADNIENIA
+ * (rama czasowa: IV w. p.n.e. – IV w. n.e.; źródła główne: Witruwiusz,
+ *  *De architectura* X.10–X.11; Ammianus Marcellinus, *Res gestae* XXIII.4.4–7)
+ * ===========================================================================
+ *
+ * K1. TYP MACHINY USTALONY Z DANYCH GRY, NIE Z UPODOBANIA. `units.json` mówi
+ *     o Katapulcie: „burzy mur/bramę zza linii (**lob nad murem**)", „Atak
+ *     dystansowy": 8, „Zasięg ataku (hex)": 6. Animacja pocisku w silniku
+ *     (`battle/battleScene.ts` — „Animacja pocisku kamiennego katapulty: sfera
+ *     szara lecąca **parabolą**") potwierdza to niezależnie: pocisk to KULISTY
+ *     KAMIEŃ lecący torem stromym. Dwuramienny miotacz kamieni (gr. λιθοβόλος,
+ *     rzym. *ballista*) strzela torem PŁASKIM — kruszy mur wprost, nie przerzuca
+ *     nad nim. Jedyna machina starożytna, która lobuje kamień nad murem, to
+ *     JEDNORAMIENNA machina skrętowa — *onager*. Stąd cała geometria niżej.
+ *     Model NIE jest balistą i celowo nie ma dwóch ramion ani łoża na bełt.
+ *
+ * K2. CHRONOLOGIA — MÓWIONA WPROST, NIE ZAMIATANA. Onager jest machiną PÓŹNĄ:
+ *     pierwszy pełny opis daje dopiero Ammianus Marcellinus w 2. poł. IV w. n.e.
+ *     (używa go m.in. przy oblężeniu Amidy, 359 r.), a samo słowo *onager*
+ *     nazywa on nowinką językową swoich czasów (XXIII.4.7). Wcześniejszą część
+ *     epoki Żelaza obsługiwał DWURAMIENNY miotacz kamieni, znany od armii
+ *     Filipa II i Aleksandra (IV w. p.n.e.). Onager mieści się więc w oknie
+ *     „Żelazo (~500 p.n.e. – 500 n.e.)", ale przy jego PÓŹNYM krańcu, nie
+ *     w środku. Wybrano go mimo to, bo K1 nie zostawia wyboru: dane jednostki
+ *     wymagają lobu nad murem. Zapisane jawnie, żeby nikt później nie czytał
+ *     tego modelu jako „typowej machiny V w. p.n.e.".
+ *
+ * K3. NAZWA „KATAPULTA" NIE WYMUSZA MIOTACZA BEŁTÓW. U Witruwiusza (I w. p.n.e.)
+ *     *catapulta* / *scorpio* to machina STRZAŁOWA (X.10), a *ballista* to
+ *     KAMIENNA (X.11) — czyli odwrotnie niż w polszczyźnie potocznej. W późnym
+ *     antyku nazewnictwo się rozjeżdża i mianem *ballista* obejmuje się machiny
+ *     bełtowe. Polska „Katapulta" jest terminem POTOCZNYM, dziś oznaczającym
+ *     właśnie machinę jednoramienną — i tak jest tu odwzorowana.
+ *
+ * K4. KANON PROPORCJI — JEDEN MODUŁ. Artyleria antyczna była wymiarowana
+ *     z jednej miary. Witruwiusz X.10.1: proporcje machin strzałowych liczy się
+ *     z długości strzały, a otwór w kapitelu, przez który przechodzą skręcone
+ *     ścięgna, to JEDNA DZIEWIĄTA tej długości. Dla machin kamiennych X.11.2
+ *     podaje tabelę: kamień 2-funtowy → otwór 5 palców, 10-funtowy → 8 palców,
+ *     100-funtowy → stopa i 1½ palca, aż po 360-funtowy → stopa i 10 palców.
+ *     Model idzie za ZASADĄ, nie za liczbami: `MOD` niżej jest jedynym modułem,
+ *     a średnica skrętu, grubość ramienia, półszerokość podłużnic ramy i kamień
+ *     są jego wielokrotnościami (poprawka Final Control: pozostałe belki —
+ *     wysokość podłużnic, obie poprzeczki, słupy skrętu i zderzaka — liczą się
+ *     z `U`, nie z `MOD`; „przekrój belek" w liczbie mnogiej było przesadzone).
+ *     Same wielokrotności dobrano pod budżet tokena (HEX_R = 1.0), nie
+ *     przepisano z Witruwiusza — i tak to tu jest napisane.
+ *
+ * K5. RAMA I SKRĘT — Ammianus XXIII.4.4: dwie belki z dębu albo ostrolistu,
+ *     lekko wygięte, spięte „jak w pile ramowej", z dużymi otworami po bokach;
+ *     między nimi, przez te otwory, przeciągnięte MOCNE LINY, które trzymają
+ *     konstrukcję. Stąd `kt-frame-beam-left/right` (dwie podłużnice) i
+ *     `kt-skein-bundle` — poziomy pęk liny skrętnej przechodzący POPRZECZNIE
+ *     przez oba stojaki, nie ozdobny sznurek. `kt-skein-washer-*` i
+ *     `kt-skein-lever-*` to żelazne tarcze i drążki, którymi skręt napinano.
+ *
+ * K6. RAMIĘ I PROCA — Ammianus XXIII.4.4–5: z tych lin wyrasta drewniany
+ *     trzon „UKOŚNIE, jak dyszel wozu", umocowany sznurami tak, by dało się go
+ *     podnosić i opuszczać; „na jego szczycie umocowane są ŻELAZNE HAKI,
+ *     z których zwisa PROCA, ze sznura albo z żelaza". Dwa wnioski wprost
+ *     przeciwne staremu modelowi: (a) ramię jest UKOŚNE, nie pionowe;
+ *     (b) pocisk leży w ZWISAJĄCEJ PROCY zawieszonej na haku, a nie w sztywnym
+ *     kubełku przyklejonym do ramienia. Stąd `kt-arm-hook`, `kt-sling-cord-*`
+ *     i `kt-sling-pouch`.
+ *
+ * K7. PODUSZKA UDERZENIOWA — Ammianus XXIII.4.5: pod trzonem leży „wielki wór
+ *     wypełniony strzępami", mocno przewiązany; XXIII.4.6: zwolniony trzon,
+ *     „trafiwszy na miękkie włosie, miota kamień". Zderzak jest więc WYPCHANYM
+ *     WOREM, nie gołą belką — `kt-stop-pad` + `kt-stop-strap-*`. Ammianus każe
+ *     mu spoczywać na usypanej darni albo stosie cegieł; tu machina stoi na
+ *     kołach, więc wór siedzi na belce poprzecznej (`kt-stop-beam`) wspartej
+ *     na dwóch słupach. To ŚWIADOMA REKONSTRUKCJA wymuszona podwoziem, nie
+ *     twierdzenie źródła — dlatego jest tu nazwana po imieniu.
+ *
+ * K8. POZA SPOCZYNKOWA = NAPIĘTA I ZAŁADOWANA. Ammianus XXIII.4.6: „kładzie
+ *     się okrągły kamień w procę, a czterej młodzieńcy z każdej strony
+ *     odkręcają drąg, którym połączone są liny, i zginają trzon niemal płasko.
+ *     Wtedy dopiero celowniczy, stojąc powyżej, mocnym młotem wybija sworzeń
+ *     trzymający całą konstrukcję". Model pokazuje dokładnie ten stan: ramię
+ *     ściągnięte KU TYŁOWI (−Z) pod kątem `ARM_DEG` nad poziom, lina kołowrotu
+ *     napięta między bębnem a UCHEM na ramieniu (poprawka Final Control: nie
+ *     hakiem — hak jest na szczycie ramienia i trzyma procę, ucho leży niżej,
+ *     `WINCH_T` od osi), sworzeń trzymający tarczę kołowrotu założony (nie
+ *     „zapadka na zębatce" — model nie ma zapadki, patrz uzasadnienie przy
+ *     `kt-windlass-ratchet` niżej), kamień w procy leżący na tylnej poprzeczce.
+ *     Kąt jest KOMPROMISEM czytelności: pełne napięcie to „niemal płasko", co przy skali tokena
+ *     znika z sylwetki — zapisane jako świadome odstępstwo, nie jako źródło.
+ *     Wszystkie części ruchome mają sensowną geometrię spoczynkową: ramię
+ *     dotyka skrętu, proca zwisa pionowo pod hakiem, lina łączy dwa istniejące
+ *     punkty, a swobodny tor ramienia kończy się NA poduszce (sprawdzone
+ *     liczbowo: `dist(pivot, kt-stop-pad) < ARM_LEN`).
+ *
+ * K9. NEUTRALNOŚĆ KULTUROWA. `units.json`: „Kultura": null, „Nacja": "" —
+ *     machina jest wspólna dla wszystkich cywilizacji. Model nie niesie ANI
+ *     JEDNEGO znacznika kulturowego: brak grzebienia, godła, zwierzęcych głów,
+ *     ornamentu i barwy narodowej. Materiały to drewno, ciemne drewno, żelazo,
+ *     lina, kamień. Jedyny akcent barwny to kolor WŁAŚCICIELA (gracza), nałożony
+ *     SYMETRYCZNIE na obie burty i oba końce belki zderzakowej — nigdy po jednej
+ *     stronie, żeby token nie sugerował „strony" ani stylu.
  */
 function buildCatapult(ownerColor_: number): THREE.Group {
   const group = new THREE.Group();
@@ -2664,97 +3321,330 @@ function buildCatapult(ownerColor_: number): THREE.Group {
   const mWood    = mat(COLOR_WOOD,       0.06, 0.82);
   const mDkWood  = mat(0x4a3018,         0.04, 0.88);
   const mIron    = mat(COLOR_STEEL,      0.55, 0.40);
+  const mDkIron  = mat(COLOR_DARK_STEEL, 0.45, 0.55);
   const mRope    = mat(0x9a8060,         0.04, 0.90);
+  const mSack    = mat(0xbdae8c,         0.03, 0.94);
   const mStone   = mat(0x707878,         0.08, 0.85);
   const mOwner   = mat(ownerColor_,      0.12, 0.70);
 
-  // === KOŁA (2 duże po bokach, tylne) ===
-  const WHEEL_R  = 0.070 * HEX_R;
-  const WHEEL_Y  = WHEEL_R;
-  for (const wx of [0.180 * HEX_R, -0.180 * HEX_R]) {
-    const gW = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.030 * HEX_R, 12, 1);
-    perGeo.push(gW);
-    const mW = new THREE.Mesh(gW, mWood);
-    mW.rotation.z = Math.PI / 2;
-    mW.position.set(wx, WHEEL_Y, -0.080 * HEX_R);  // z tyłu (-Z)
-    group.add(mW);
+  /** Dodaje NAZWANY mesh. Nazwa jest warunkiem mierzalności modelu przez
+   *  test regresji — przed T11 ta funkcja nazywała 0 z 11 brył. */
+  const add = (name: string, geo: THREE.BufferGeometry, m: THREE.Material,
+               x: number, y: number, z: number,
+               rx = 0, ry = 0, rz = 0): THREE.Mesh => {
+    perGeo.push(geo);
+    const mesh = new THREE.Mesh(geo, m);
+    mesh.name = name;
+    mesh.position.set(x, y, z);
+    mesh.rotation.set(rx, ry, rz);
+    group.add(mesh);
+    return mesh;
+  };
+
+  /**
+   * Element rozpięty MIĘDZY DWOMA PUNKTAMI: długość, środek i zwrot liczone
+   * z końców, nie wpisywane z ręki. To jest strukturalna odpowiedź na defekt
+   * starego modelu, w którym „liny" miały wpisaną długość i kąt i nie sięgały
+   * ani osi, ani skrzyni.
+   */
+  const span = (name: string, m: THREE.Material, r: number,
+                a: [number, number, number], b: [number, number, number]): THREE.Mesh => {
+    const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+    const len = Math.hypot(dx, dy, dz);
+    const geo = new THREE.CylinderGeometry(r, r, len, 6, 1);
+    perGeo.push(geo);
+    const mesh = new THREE.Mesh(geo, m);
+    mesh.name = name;
+    mesh.position.set((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
+    mesh.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / len, dy / len, dz / len));
+    group.add(mesh);
+    return mesh;
+  };
+
+  // === SKALA TOKENA ========================================================
+  // Wszystkie wymiary niżej są wielokrotnościami U, nie HEX_R. U = 1.06 × HEX_R
+  // i ten współczynnik jest WYNIKIEM POMIARU, nie gustem: sylwetka machiny
+  // rzutowana z kamery gry (azymut 0, elewacja 52°) miała przy U = HEX_R
+  // 17 480 pikseli (poprawka Final Control: 17 315 było przejęzyczeniem,
+  // przeliczone niezależnie na żywym renderze) przy 215 px wysokości, podczas
+  // gdy rodzina oblężnicza mierzona w TYM SAMYM renderze ma 20 396–21 841 px
+  // i 217–257 px (Wieża oblężnicza, Taran, Taran okuty). Katapulta czytała się
+  // jako mniejsza od własnej rodziny, bliżej piechoty (Hastati 15 952). Pole
+  // rzutu rośnie z kwadratem skali, więc 1.06 wprowadza ją w dolny kraniec
+  // pasma rodziny BEZ przekroczenia promienia heksa (maxR 0.310 → 0.328;
+  // rodzina: Taran okuty 0.331, Taran — max rodziny — 0.340; poprawka Final
+  // Control: „Taran okuty 0.372" było błędne, przeliczone niezależnie).
+  const U = 1.06 * HEX_R;
+
+  // === MODUŁ (K4) ===========================================================
+  // Jedyna miara, z której wyprowadzone są PRZEKROJE części pracujących.
+  // Odpowiednik witruwiańskiej średnicy otworu w kapitelu; tu = średnica pęku
+  // liny skrętnej. Wielokrotności niżej są DOSŁOWNE, nie deklaratywne —
+  // średnica skrętu, oba przekroje ramienia, promień kamienia i przekrój
+  // podłużnicy liczą się z MOD, a nie z U.
+  const MOD = 0.068 * U;
+  const ARM_R_ROOT = MOD * 0.382;   // komel ramienia przy skręcie
+  const ARM_R_TIP  = MOD * 0.235;   // szczyt ramienia, pod hakiem procy
+  const STONE_R    = MOD * 0.618;   // pocisk kulisty (units.json: „sfera szara")
+
+  // === PODWOZIE: OŚ I KOŁA ==================================================
+  // Koło o promieniu WHEEL_R stojące na y=0 daje oś na wysokości WHEEL_R —
+  // z tego (a nie odwrotnie) wynika spód ramy: rama siada NA osi.
+  const WHEEL_R  = 0.067 * U;
+  const AXLE_R   = 0.017 * U;
+  const AXLE_Y   = WHEEL_R;
+  const AXLE_Z   = -0.060 * U;
+  const FRAME_BOT = AXLE_Y + AXLE_R;              // 0.084 U — spód podłużnic
+  const FRAME_H   = 0.048 * U;
+  const FRAME_TOP = FRAME_BOT + FRAME_H;          // 0.132 U — pokład ramy
+  const FRAME_X   = 0.112 * U;                // oś podłużnicy
+  const FRAME_HW  = MOD * 0.382;              // półszerokość podłużnicy
+  const FRAME_Z0  = -0.276 * U;
+  const FRAME_Z1  =  0.250 * U;
+  const WHEEL_X   = FRAME_X + FRAME_HW + 0.017 * U;  // 0.155 — koło OBOK ramy
+
+  const gAxle = new THREE.CylinderGeometry(AXLE_R, AXLE_R, 0.350 * U, 10, 1);
+  add('kt-axle', gAxle, mDkIron, 0, AXLE_Y, AXLE_Z, 0, 0, Math.PI / 2);
+
+  for (const s of [-1, 1]) {
+    const side = s < 0 ? 'left' : 'right';
+    // tarcza koła (pełna, klepkowa) — oś przechodzi przez piastę na wylot.
+    // Promień MNIEJSZY od obręczy: powierzchnią styku z ziemią jest bandaż.
+    const gRim = new THREE.CylinderGeometry(WHEEL_R - 0.004 * U, WHEEL_R - 0.004 * U, 0.030 * U, 16, 1);
+    add('kt-wheel-' + side, gRim, mWood, s * WHEEL_X, AXLE_Y, AXLE_Z, 0, 0, Math.PI / 2);
+    // Żelazny bandaż na obwodzie — TO ON stoi na ziemi. Liczba segmentów
+    // podzielna przez 4 daje wierzchołek dokładnie w najniższym punkcie, więc
+    // spód koła wypada na y=0 co do zera (poprawka Final Control: wielokąt
+    // wpisany w okrąg nie może wystawać POZA okrąg, więc przy niewłaściwej
+    // liczbie segmentów koło wisiałoby ok. 0.002 NAD terenem — widoczna
+    // szczelina — a nie zapadało się POD teren; to odwrotny kierunek niż
+    // klasa błędu „stopy pod terenem" z T7/T8, tu w wydaniu kołowym).
+    const gTyre = new THREE.CylinderGeometry(WHEEL_R, WHEEL_R, 0.032 * U, 16, 1);
+    add('kt-wheel-tyre-' + side, gTyre, mDkIron, s * WHEEL_X, AXLE_Y, AXLE_Z, 0, 0, Math.PI / 2);
+    // piasta — przesunięta NA ZEWNĄTRZ, żeby nie wchodziła w podłużnicę
+    const gHub = new THREE.CylinderGeometry(0.024 * U, 0.024 * U, 0.030 * U, 10, 1);
+    add('kt-wheel-hub-' + side, gHub, mDkWood, s * (WHEEL_X + 0.002 * U), AXLE_Y, AXLE_Z, 0, 0, Math.PI / 2);
   }
 
-  // === PODSTAWA RAMY (poziomy prostokąt) ===
-  const BASE_Y   = WHEEL_Y + WHEEL_R * 0.20;
-  const gBase = new THREE.BoxGeometry(0.320 * HEX_R, 0.040 * HEX_R, 0.420 * HEX_R);
-  perGeo.push(gBase);
-  const mBaseM = new THREE.Mesh(gBase, mWood);
-  mBaseM.position.set(0, BASE_Y, 0.020 * HEX_R);
-  group.add(mBaseM);
+  // === RAMA (K5): dwie podłużnice + poprzeczki ==============================
+  const FRAME_LEN = FRAME_Z1 - FRAME_Z0;
+  const FRAME_CZ  = (FRAME_Z0 + FRAME_Z1) / 2;
+  for (const s of [-1, 1]) {
+    const gBeam = new THREE.BoxGeometry(FRAME_HW * 2, FRAME_H, FRAME_LEN);
+    add('kt-frame-beam-' + (s < 0 ? 'left' : 'right'), gBeam, mWood,
+        s * FRAME_X, FRAME_BOT + FRAME_H / 2, FRAME_CZ);
+  }
+  const CROSS_W = (FRAME_X + FRAME_HW) * 2;       // poprzeczka spina obie burty
+  // Tylna poprzeczka = ŁOŻE, na którym leży proca z kamieniem (K8).
+  const BED_Z = -0.182 * U;
+  const gCrossRear = new THREE.BoxGeometry(CROSS_W, FRAME_H, 0.090 * U);
+  add('kt-frame-cross-rear', gCrossRear, mWood, 0, FRAME_BOT + FRAME_H / 2, BED_Z);
+  // Poprzeczka pod skrętem — przejmuje odrzut pęku liny.
+  const PIVOT_Z = 0.110 * U;
+  const gCrossSkein = new THREE.BoxGeometry(CROSS_W, FRAME_H, 0.060 * U);
+  add('kt-frame-cross-skein', gCrossSkein, mWood, 0, FRAME_BOT + FRAME_H / 2, PIVOT_Z);
+  // Przednia stopa OPARTA O ZIEMIĘ: dwa koła to linia podparcia, nie płaszczyzna —
+  // bez tego machina z ramieniem i kamieniem wywracałaby się na nos.
+  const SILL_Z = 0.222 * U;
+  const gSill = new THREE.BoxGeometry(0.250 * U, FRAME_BOT, 0.050 * U);
+  add('kt-frame-sill-front', gSill, mDkWood, 0, FRAME_BOT / 2, SILL_Z);
 
-  // === PIONOWY STOJAK (z tyłu) ===
-  const STOJAK_Y  = BASE_Y + 0.040 * HEX_R;
-  const STOJAK_H  = 0.230 * HEX_R;
-  const gStojak = new THREE.BoxGeometry(0.200 * HEX_R, STOJAK_H, 0.040 * HEX_R);
-  perGeo.push(gStojak);
-  const mStojakM = new THREE.Mesh(gStojak, mDkWood);
-  mStojakM.position.set(0, STOJAK_Y + STOJAK_H * 0.5, -0.120 * HEX_R);
-  group.add(mStojakM);
-
-  // Poprzeczka osi ramienia (na górze stojaka)
-  const gAxle = new THREE.BoxGeometry(0.220 * HEX_R, 0.028 * HEX_R, 0.028 * HEX_R);
-  perGeo.push(gAxle);
-  const mAxle = new THREE.Mesh(gAxle, mIron);
-  mAxle.position.set(0, STOJAK_Y + STOJAK_H, -0.120 * HEX_R);
-  group.add(mAxle);
-
-  // === RAMIĘ MIOTAJĄCE (ukośny cylinder, obrócony ~-50° od pionu ku +Z) ===
-  const ARM_LEN  = 0.460 * HEX_R;
-  const ARM_ANGLE = -1.05;   // radiany: ~-60° od poziomej (załadowana pozycja)
-  const ARM_PIVOT_Y = STOJAK_Y + STOJAK_H;
-  const ARM_PIVOT_Z = -0.120 * HEX_R;
-  const gArm = new THREE.CylinderGeometry(0.022 * HEX_R, 0.018 * HEX_R, ARM_LEN, 8, 1);
-  perGeo.push(gArm);
-  const mArmM = new THREE.Mesh(gArm, mDkWood);
-  // Obrót wokół X: pozycja "załadowana" (ramię skierowane ku +Z i do góry)
-  mArmM.rotation.x = ARM_ANGLE;
-  // Środek ramienia = oś + połowa długości wzdłuż kierunku ramienia
-  mArmM.position.set(
-    0,
-    ARM_PIVOT_Y + Math.cos(ARM_ANGLE) * ARM_LEN * 0.5,
-    ARM_PIVOT_Z + Math.sin(-ARM_ANGLE) * ARM_LEN * 0.5,
-  );
-  group.add(mArmM);
-
-  // === PROCA / KUBEŁ na końcu ramienia ===
-  const BUCKET_Y = ARM_PIVOT_Y + Math.cos(ARM_ANGLE) * ARM_LEN + 0.010 * HEX_R;
-  const BUCKET_Z = ARM_PIVOT_Z + Math.sin(-ARM_ANGLE) * ARM_LEN;
-  const gBucket = new THREE.BoxGeometry(0.060 * HEX_R, 0.045 * HEX_R, 0.060 * HEX_R);
-  perGeo.push(gBucket);
-  const mBucket = new THREE.Mesh(gBucket, mWood);
-  mBucket.position.set(0, BUCKET_Y, BUCKET_Z);
-  group.add(mBucket);
-
-  // Kamień w kubłe (sphere = SphereGeometry)
-  const gStone = new THREE.SphereGeometry(0.042 * HEX_R, 8, 6);
-  perGeo.push(gStone);
-  const mStoneM = new THREE.Mesh(gStone, mStone);
-  mStoneM.position.set(0, BUCKET_Y + 0.042 * HEX_R, BUCKET_Z);
-  group.add(mStoneM);
-
-  // Liny / zawiesia (thin boxes łączące oś ze skrzynią)
-  for (const sx of [-0.060 * HEX_R, 0.060 * HEX_R]) {
-    const gRopeM = new THREE.BoxGeometry(0.010 * HEX_R, 0.160 * HEX_R, 0.010 * HEX_R);
-    perGeo.push(gRopeM);
-    const mRopeM = new THREE.Mesh(gRopeM, mRope);
-    mRopeM.rotation.x = 0.3;
-    mRopeM.position.set(sx, BASE_Y + 0.080 * HEX_R, -0.040 * HEX_R);
-    group.add(mRopeM);
+  // === GŁOWICA SKRĘTU (K5) ==================================================
+  const POST_HW    = 0.024 * U;
+  const POST_HD    = 0.034 * U;
+  const POST_TOP   = 0.360 * U;
+  const PIVOT_Y    = 0.312 * U;               // oś obrotu ramienia = środek skrętu
+  const SKEIN_R    = MOD / 2;
+  const POST_X     = 0.106 * U;
+  for (const s of [-1, 1]) {
+    const gPost = new THREE.BoxGeometry(POST_HW * 2, POST_TOP - FRAME_TOP, POST_HD * 2);
+    add('kt-skein-post-' + (s < 0 ? 'left' : 'right'), gPost, mDkWood,
+        s * POST_X, (FRAME_TOP + POST_TOP) / 2, PIVOT_Z);
+  }
+  // Pęk liny skrętnej — przechodzi przez OBA stojaki na wylot (K5).
+  const gSkein = new THREE.CylinderGeometry(SKEIN_R, SKEIN_R, (POST_X + POST_HW) * 2, 12, 1);
+  add('kt-skein-bundle', gSkein, mRope, 0, PIVOT_Y, PIVOT_Z, 0, 0, Math.PI / 2);
+  for (const s of [-1, 1]) {
+    const side = s < 0 ? 'left' : 'right';
+    const gWash = new THREE.CylinderGeometry(0.036 * U, 0.036 * U, 0.014 * U, 12, 1);
+    add('kt-skein-washer-' + side, gWash, mIron,
+        s * (POST_X + POST_HW + 0.006 * U), PIVOT_Y, PIVOT_Z, 0, 0, Math.PI / 2);
+    const gLever = new THREE.BoxGeometry(0.008 * U, 0.064 * U, 0.012 * U);
+    add('kt-skein-lever-' + side, gLever, mDkIron,
+        s * (POST_X + POST_HW + 0.014 * U), PIVOT_Y, PIVOT_Z, 0, 0, s * 0.5);
   }
 
-  // === OZDOBA WŁAŚCICIELA ===
-  const gOwnerBanner = new THREE.BoxGeometry(0.010 * HEX_R, 0.065 * HEX_R, 0.075 * HEX_R);
-  perGeo.push(gOwnerBanner);
-  const mOwnerBM = new THREE.Mesh(gOwnerBanner, mOwner);
-  mOwnerBM.position.set(0.175 * HEX_R, BASE_Y + 0.090 * HEX_R, 0.020 * HEX_R);
-  group.add(mOwnerBM);
+  // === RAMIĘ MIOTAJĄCE (K6, K8) =============================================
+  // ARM_DEG liczony OD POZIOMU, ku TYŁOWI (−Z): to poza NAPIĘTA (K8).
+  // Kierunek osi ramienia i jego POŁOŻENIE liczone są z JEDNEGO kąta ARM_RX —
+  // to jest miejsce, w którym stary model miał odwrócony znak Z i przez to
+  // ramię mijało własną oś obrotu o 0.199 HEX_R.
+  const ARM_DEG  = 24;
+  const ARM_LEN  = 0.320 * U;
+  const ARM_RX   = -(Math.PI / 2 - ARM_DEG * Math.PI / 180);
+  const ARM_DY   = Math.cos(ARM_RX);              // składowa Y osi ramienia
+  const ARM_DZ   = Math.sin(ARM_RX);              // składowa Z osi ramienia (ujemna = ku tyłowi)
+  /** Punkt na osi ramienia w odległości t od osi obrotu. */
+  const onArm = (t: number): [number, number, number] =>
+    [0, PIVOT_Y + ARM_DY * t, PIVOT_Z + ARM_DZ * t];
 
+  const gArm = new THREE.CylinderGeometry(ARM_R_TIP, ARM_R_ROOT, ARM_LEN, 8, 1);
+  {
+    const [ax, ay, az] = onArm(ARM_LEN / 2);
+    add('kt-arm', gArm, mDkWood, ax, ay, az, ARM_RX);
+  }
+  // Stopka ramienia zaciśnięta W pęku liny — ramię MUSI dotykać skrętu.
+  const gHeel = new THREE.CylinderGeometry(0.030 * U, 0.030 * U, 0.070 * U, 8, 1);
+  {
+    const [hx, hy, hz] = onArm(0.014 * U);
+    add('kt-arm-heel', gHeel, mDkIron, hx, hy, hz, ARM_RX);
+  }
+  // Żelazny hak na szczycie ramienia — z niego ZWISA proca (K6).
+  const HOOK_T = ARM_LEN - 0.010 * U;
+  const [hookX, hookY, hookZ] = onArm(HOOK_T);
+  const gHook = new THREE.TorusGeometry(0.017 * U, 0.006 * U, 6, 10);
+  add('kt-arm-hook', gHook, mIron, hookX, hookY - 0.016 * U, hookZ, 0, Math.PI / 2, 0);
+  // Ucho, w które wpięta jest lina kołowrotu (K8).
+  const WINCH_T = 0.240 * U;
+  const [wx, wy, wz] = onArm(WINCH_T);
+  const gWEye = new THREE.TorusGeometry(0.013 * U, 0.005 * U, 6, 10);
+  add('kt-arm-winch-eye', gWEye, mIron, wx, wy, wz, Math.PI / 2, 0, 0);
+
+  // === PROCA I KAMIEŃ (K6) ==================================================
+  // Proca ZWISA PIONOWO pod hakiem, a kamień w niej LEŻY na tylnej poprzeczce —
+  // dwa warunki, których stary „kubeł" nie spełniał (unosił się w powietrzu).
+  const POUCH_H = 0.034 * U;
+  const POUCH_Y = FRAME_TOP + POUCH_H / 2;
+  const gPouch = new THREE.BoxGeometry(0.090 * U, POUCH_H, 0.086 * U);
+  add('kt-sling-pouch', gPouch, mRope, 0, POUCH_Y, hookZ);
+  const gStone = new THREE.SphereGeometry(STONE_R, 10, 8);
+  add('kt-stone', gStone, mStone, 0, POUCH_Y + POUCH_H / 2 + STONE_R - 0.020 * U, hookZ);
+  // Dwa sznury procy: od haka w dół do krawędzi kieszeni — oba końce to
+  // PUNKTY NA ISTNIEJĄCYCH CZĘŚCIACH, więc proca faktycznie na czymś wisi.
+  const CORD_TOP_Y = hookY - 0.016 * U;
+  const CORD_BOT_Y = POUCH_Y + POUCH_H / 2;
+  for (const s of [-1, 1]) {
+    span('kt-sling-cord-' + (s < 0 ? 'left' : 'right'), mRope, 0.005 * U,
+         [0, CORD_TOP_Y, hookZ], [s * 0.040 * U, CORD_BOT_Y, hookZ]);
+  }
+
+  // === ZDERZAK Z PODUSZKĄ (K7) ==============================================
+  // Wysokość dobrana tak, żeby swobodny tor ramienia KOŃCZYŁ SIĘ NA poduszce:
+  // dist(oś obrotu, środek poduszki) musi być MNIEJSZA niż ARM_LEN.
+  const STOP_Z    = 0.222 * U;
+  const STOP_TOP  = 0.506 * U;                // góra słupów = spód belki
+  const BEAM_H    = 0.050 * U;
+  const PAD_H     = 0.056 * U;
+  const BEAM_Y    = STOP_TOP + BEAM_H / 2;
+  const PAD_Y     = STOP_TOP + BEAM_H + PAD_H / 2;
+  for (const s of [-1, 1]) {
+    const gSPost = new THREE.BoxGeometry(0.052 * U, STOP_TOP - FRAME_TOP, 0.050 * U);
+    add('kt-stop-post-' + (s < 0 ? 'left' : 'right'), gSPost, mDkWood,
+        s * FRAME_X, (FRAME_TOP + STOP_TOP) / 2, STOP_Z);
+  }
+  const gStopBeam = new THREE.BoxGeometry(0.260 * U, BEAM_H, 0.048 * U);
+  add('kt-stop-beam', gStopBeam, mWood, 0, BEAM_Y, STOP_Z);
+  const gPad = new THREE.BoxGeometry(0.176 * U, PAD_H, 0.072 * U);
+  add('kt-stop-pad', gPad, mSack, 0, PAD_Y, STOP_Z);
+  for (const s of [-1, 1]) {
+    const gStrap = new THREE.BoxGeometry(0.010 * U, PAD_H + 0.014 * U, 0.080 * U);
+    add('kt-stop-strap-' + (s < 0 ? 'left' : 'right'), gStrap, mRope,
+        s * 0.070 * U, PAD_Y, STOP_Z);
+  }
+  // ŚCIĄGU GŁOWICY CELOWO NIE MA — usunięty po pomiarze, nie z niedbalstwa.
+  // Ściąg łączący stojak skrętu ze słupem zderzaka leżał w tym samym paśmie X
+  // co oba słupy (0.088–0.136), a słup zderzaka stoi PRZED nim, więc z jedynej
+  // kamery gry (azymut 0) miał ZERO PIKSELI — zmierzone, tak samo jak zerowa
+  // lina kołowrotu wyżej. Dwie niewidoczne bryły to martwa geometria: koszt
+  // draw calla bez wkładu w obraz. Zamiast tego słupy zderzaka są GRUBSZE
+  // (0.052 × 0.050 zamiast 0.048 × 0.044) i stoją na pokładzie ramy dokładnie
+  // nad przednią stopą, więc nie potrzebują ściągu, żeby się trzymać.
+
+  // === KOŁOWRÓT I SPUST (K8) ================================================
+  const WIN_Z   = -0.248 * U;
+  const WIN_Y   =  0.180 * U;
+  const WIN_R   =  0.024 * U;
+  const WIN_TOP =  WIN_Y + 0.024 * U;              // szczyt BĘBNA = odejście liny
+  // Kozioł sięga WYŻEJ niż bęben, bo to w nim ma tkwić sworzeń spustu.
+  // Przy koźle równym bębnowi sworzeń muskał tylko jego górną krawędź
+  // (zmierzone SAT 0.0011) — czyli trzymał się na styk, nie w gnieździe.
+  const BLOCK_TOP = WIN_Y + 0.046 * U;
+  for (const s of [-1, 1]) {
+    const gBlock = new THREE.BoxGeometry(0.048 * U, BLOCK_TOP - FRAME_TOP, 0.048 * U);
+    add('kt-windlass-block-' + (s < 0 ? 'left' : 'right'), gBlock, mDkWood,
+        s * POST_X, (FRAME_TOP + BLOCK_TOP) / 2, WIN_Z);
+  }
+  // Wał przechodzi przez OBA kozły na wylot — dopiero na jego wystającym
+  // końcu może usiąść korba. Bez wału korba tkwiłaby w kozle.
+  const SHAFT_X = 0.160 * U;
+  const gShaft = new THREE.CylinderGeometry(0.012 * U, 0.012 * U, SHAFT_X * 2, 8, 1);
+  add('kt-windlass-shaft', gShaft, mDkIron, 0, WIN_Y, WIN_Z, 0, 0, Math.PI / 2);
+  const gDrum = new THREE.CylinderGeometry(WIN_R, WIN_R, 0.190 * U, 12, 1);
+  add('kt-windlass-drum', gDrum, mWood, 0, WIN_Y, WIN_Z, 0, 0, Math.PI / 2);
+  // SPUST. Ammianus XXIII.4.6 mówi o SWORZNIU „trzymającym umocowania całej
+  // konstrukcji", który celowniczy WYBIJA MŁOTEM — nie o zapadce. Modelowany
+  // dosłownie: tarcza na wale + żelazny sworzeń przechodzący przez jej wieniec
+  // i wchodzący w lewy kozioł. Dopóki sworzeń tkwi, wał nie może się obrócić,
+  // więc lina trzyma napięte ramię (K8).
+  const RATCHET_X = -0.070 * U, RATCHET_R = 0.034 * U;
+  const gRatchet = new THREE.CylinderGeometry(RATCHET_R, RATCHET_R, 0.010 * U, 12, 1);
+  add('kt-windlass-ratchet', gRatchet, mDkIron, RATCHET_X, WIN_Y, WIN_Z, 0, 0, Math.PI / 2);
+  const gBolt = new THREE.CylinderGeometry(0.007 * U, 0.007 * U, 0.070 * U, 8, 1);
+  add('kt-trigger-bolt', gBolt, mIron, -0.104 * U, WIN_Y + 0.030 * U, WIN_Z, 0, 0, Math.PI / 2);
+  const gBoltHead = new THREE.CylinderGeometry(0.013 * U, 0.013 * U, 0.012 * U, 8, 1);
+  add('kt-trigger-head', gBoltHead, mIron, -0.143 * U, WIN_Y + 0.030 * U, WIN_Z, 0, 0, Math.PI / 2);
+  // Korba na wystającym końcu wału, PO ZEWNĘTRZNEJ stronie prawej burty.
+  const gCrank = new THREE.BoxGeometry(0.012 * U, 0.062 * U, 0.012 * U);
+  add('kt-windlass-crank', gCrank, mDkIron, 0.150 * U, WIN_Y + 0.031 * U, WIN_Z);
+  const gGrip = new THREE.CylinderGeometry(0.008 * U, 0.008 * U, 0.034 * U, 8, 1);
+  add('kt-windlass-grip', gGrip, mWood, 0.157 * U, WIN_Y + 0.062 * U, WIN_Z, 0, 0, Math.PI / 2);
+
+  // Lina kołowrotu — NAPIĘTA między bębnem a uchem na ramieniu. Liczona
+  // z DWÓCH ISTNIEJĄCYCH PUNKTÓW: to naprawa starych „lin", które nie dotykały
+  // ani osi, ani skrzyni.
+  //
+  // ROZDZIELONA NA PARĘ (bydło/rozkrok liny) NIE dla ozdoby: pojedyncza lina
+  // poprowadzona w osi x=0 miała z kamery gry ZERO PIKSELI — zasłaniało ją
+  // własne ramię, które leży dokładnie nad nią i jest grubsze. Ta sama klasa
+  // błędu co „element istnieje w 3D, a nie widać go na ekranie" z T6/T8.
+  // Para lin schodzi na burty bębna i jest widoczna po obu stronach ramienia.
+  for (const s of [-1, 1]) {
+    span('kt-winch-rope-' + (s < 0 ? 'left' : 'right'), mRope, 0.008 * U,
+         [s * 0.032 * U, WIN_TOP, WIN_Z], [0, wy, wz]);
+  }
+
+  // === BARWA WŁAŚCICIELA — SYMETRYCZNA, BEZ ZNACZNIKA KULTURY (K9) ==========
+  for (const s of [-1, 1]) {
+    const side = s < 0 ? 'left' : 'right';
+    const gPanel = new THREE.BoxGeometry(0.006 * U, 0.036 * U, 0.190 * U);
+    add('kt-owner-panel-' + side, gPanel, mOwner,
+        s * (FRAME_X + FRAME_HW - 0.001 * U), FRAME_BOT + FRAME_H / 2, 0.125 * U);
+    const gCap = new THREE.BoxGeometry(0.012 * U, BEAM_H + 0.008 * U, 0.056 * U);
+    add('kt-owner-cap-' + side, gCap, mOwner, s * 0.134 * U, BEAM_Y, STOP_Z);
+  }
+
+  // Punkty odniesienia WYPROWADZONE Z MODELU (nie wpisane liczbowo w test) —
+  // test regresji mierzy nimi relacje, więc nie rozjadą się przy zmianie skali.
+  group.userData['anchors'] = {
+    hexR: HEX_R,
+    machineType: 'onager',
+    mod: MOD,
+    pivot: [0, PIVOT_Y, PIVOT_Z],
+    armDir: [0, ARM_DY, ARM_DZ],
+    armLen: ARM_LEN,
+    armDeg: ARM_DEG,
+    armTip: onArm(ARM_LEN),
+    hook: [hookX, hookY - 0.016 * U, hookZ],
+    winchEye: [wx, wy, wz],
+    stopPad: [0, PAD_Y, STOP_Z],
+    frameTopY: FRAME_TOP,
+    frameBotY: FRAME_BOT,
+    wheelR: WHEEL_R,
+    axleY: AXLE_Y,
+    stoneR: STONE_R,
+    skeinR: SKEIN_R,
+  };
   group.userData['mats'] = mats;
   group.userData['perTokenGeos'] = perGeo;
   return group;

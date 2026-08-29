@@ -1,0 +1,24 @@
+A. STAN DOMYSLNY (oba przelaczniki WYLACZONE) — realny render Chromium
+  [OK] A1: panel wyrenderowany, HTML niepusty
+  [OK] A2: przycisk PANSTWO „Wolno wycinac las" jest w DOM
+  [OK] A3: przycisk PANSTWO ma niezerowy prostokat
+  [OK] A4: przycisk PANSTWO jest KLIKALNY (elementFromPoint trafia w niego)
+  [OK] A5: przycisk PANSTWO w stanie OFF: aria-pressed="false" i BEZ klasy active
+  [OK] A6: przycisk PANSTWO ma etykiete „Wolno wycinac las"
+  [OK] A7: przycisk MIASTO jest w DOM, niezerowy i KLIKALNY
+  [OK] A8: przycisk MIASTO w stanie OFF: aria-pressed="false", bez klasy active
+
+B. REALNY KLIK MYSZA — czy wola wlasciwy callback z wlasciwym argumentem
+  [OK] B1: klik w przycisk PANSTWO wywolal onUlepszeniaEmpireWyrabChange(true)
+  [OK] B2: klik w przycisk MIASTO wywolal onUlepszeniaCityWyrabChange("miasto-1", true)
+
+C. STAN WLACZONY — czy gracz WIDZI, ze przelacznik jest wlaczony
+  [OK] C1: PANSTWO ON -> aria-pressed="true" ORAZ klasa active
+  [OK] C2: MIASTO ON -> aria-pressed="true" ORAZ klasa active
+  [OK] C3: ZAKRESY NIEZALEZNE — panstwo OFF, miasto ON w jednym renderze
+
+D. KONTROLA NEGATYWNA (nie-tautologicznosc): usun przycisk z DOM
+  [OK] D1: po usunieciu przycisku ta sama asercja PADA (test nie jest tautologia)
+  [OK] E1: brak bledow konsoli / pageerror podczas renderu i klikow
+
+ev4-r4q2-przycisk-real-render-test: 15 passed, 0 failed

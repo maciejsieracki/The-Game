@@ -201,8 +201,9 @@ export function computeGrowthPercentV85(input: GrowthPercentInput): GrowthPercen
   const maleMiasto = Math.max(0, 6 - input.population);
   const spichlerz = spichlerzGrowthBonusPercent(input.spichlerzState);
   const zdrowie = Math.floor(Math.max(0, input.zdrowie) / 10);
-  const happinessPool = input.szczescieNetto + Math.floor(Math.max(0, input.wealthPoziom) / 10);
-  const szczescie = Math.floor(happinessPool / 10);
+  // szczescieNetto (ordPct.sz.netto / happinessByCityId) already includes Wealth via haWealth
+  // (wealthZadowolenie). wealthPoziom stays in GrowthPercentInput for API/save compatibility only.
+  const szczescie = Math.floor(Math.max(0, input.szczescieNetto) / 10);
   const civRaw = input.civKey ? civMatrixParam(input.civKey, 'lud_wzrost_proc') : 0;
   const cywilizacja = Math.round(civRaw * 100);
   const zaopatrzenie = input.citizenResourceGrowthPct ?? 0;

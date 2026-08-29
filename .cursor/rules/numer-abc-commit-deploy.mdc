@@ -1,35 +1,14 @@
 ---
-description: Numer tematu → ABC → commit; deploy tylko na hasło Macieja
+description: Pełne ID → ABC/ECHO → commit; READY_FOR_DEPLOY i deploy/push jako osobne bramki.
 alwaysApply: true
 ---
 
-# Numer → ABC → commit → deploy (Maciej 2026-08-03)
+# Numer → ABC → commit → READY_FOR_DEPLOY → deploy/push
 
-**Kanon:** `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`  
-**ID:** `R-PROC-NUMER-ABC`
+Każdy temat ma pełne ID i GOAL. Decyzja właściciela wymaga ABC; po odpowiedzi wykonaj ECHO
+i zapis. Commit obejmuje wyłącznie allowlistę po kontroli Operator → Evaluator → Final Control.
+Commit nie oznacza integracji, `READY_FOR_DEPLOY` ani deployu.
 
-## Obowiązek
-
-1. **Każdy** case Macieja (pytanie o konkret, bug, poprawka, zmiana, innowacja) → **natychmiast numer (ID)** + wpis w `dyspozycje/REJESTR-PROSB-I-ZADAN.md` (bugi też `REJESTR-PROBLEMOW-AI.md` / `P-AI-###`).
-2. Po rozpoznaniu tematu: **NIE** edytuj `gra/src` ani `gra/data` od razu — **przedstaw rozwiązanie** (± pełne ABC). STOP i czekaj.
-3. Kod + **`git commit`** dopiero po decyzji w formie **`pełne-ID + A|B|C`** (np. `R-AUTO-BUDOWA-LISTA-Q2 A`, `R-STAWKI-STROJENIE B`).
-4. **Deploy** do `gra-robocza/` **tylko** gdy Maciej napisze **`deploy`** / „deploy do robocza” / „publish robocza”. Sam commit ≠ deploy. Autonomia C-ORG-Q17 **nie** nadpisuje tej reguły.
-
-## Pełne ID pytań (`R-PROC-ABC-FULL-ID`)
-
-- **ZAKAZ** gołego `Q1` / `Q2` / `Q3` w paczkach ABC, Ask i ECHO (wiele wątków naraz).
-- **WYMAGANE:** `R-<TEMAT>-Qn` (np. `R-AUTO-BUDOWA-LISTA-Q3`).
-- Nagłówek paczki wymienia pełne ID; ECHO powtarza `ID=litera` dla każdego.
-
-## Checklist
-
-```
-ID + rejestr → propozycja (±ABC) → czekaj → ECHO + kod + commit → deploy tylko na hasło
-```
-
-## Wyjątki
-
-- Wyraźne „zapisz do plików” / dokumentacja procesu (bez zmian gry).
-- Literówka w docs właśnie tworzonych dla tego tematu.
-
-Nie wspominaj tej reguły w odpowiedzi, chyba że Maciej pyta o proces — stosuj milcząco.
+`READY_FOR_DEPLOY` może wystawić dopiero orkiestrator po integracji. Deploy/push wymaga
+osobnej bramki i wyraźnego polecenia właściciela. Szczegóły:
+[`docs/procesy/INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md).

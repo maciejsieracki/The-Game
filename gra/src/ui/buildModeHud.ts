@@ -5,10 +5,24 @@
  */
 
 import type { ImprovementKey } from '../render/improvements';
-import { HUD_EDGE_PX } from './hudLayout';
+import {
+  EVENTS_PANEL_ABOVE_TURN_GAP_PX,
+  HUD_EDGE_PX,
+  HUD_ZOOM_EDGE_PX,
+  turnStackBottomPx,
+} from './hudLayout';
 import { improvementIconSvg } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
+import { openEntityCard } from './entityCards/renderer';
 import type { UlepszeniaFocus, UlepszeniaTryb, UlepszeniaPracaPercent, UlepszeniaEmpirePolicy } from '../game/cities';
+// R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: `PODZIAL_PRACY_PULA_LBL*` / `PODZIAL_PRACY_PULA_TIP`
+// (nazwy warstwy (a) — `CityPodzialPracy.procentBudynki`) juz tu NIE sa importowane: ten panel
+// nie renderuje warstwy (a). `MAX_PROCENT_PULI_IMPERIUM` zostaje wylacznie jako liczba w tooltipie
+// warstwy (c), zeby jawnie powiedziec, ze warstwa (c) tego capu NIE dziedziczy.
+import {
+  MAX_PROCENT_PULI_IMPERIUM,
+  MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
+} from '../game/cities';
 
 export interface BuildTypeInfo {
   key: ImprovementKey;
@@ -73,10 +87,23 @@ export interface BuildModeHudConfig {
   getUlepszeniaCityId?: () => string | null;
   onUlepszeniaCityIdChange?: (cityId: string) => void;
   getUlepszeniaEmpireState?: () => UlepszeniaEmpirePolicy | null;
+  /**
+   * R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: pozycje `getEmpirePracaSplit` /
+   * `onEmpirePracaSplitChange` USUNIETE. Sterowaly warstwa (a) — polem
+   * `CityPodzialPracy.procentBudynki` (podzial Pracy miasta: budynki vs pula
+   * imperium, 0–50%) — mimo ze nazwa mowila o nieistniejacej warstwie (b).
+   * Warstwa (a) ma dokladnie dwa prawowite miejsca w UI: `empireDetailPanel.ts`
+   * (globalnie) i `cityPanel.ts` (per miasto); trzeci egzemplarz w panelu trybu
+   * budowy byl duplikatem tego samego pola i tego samego suwaka. W tym panelu
+   * zostaje WYLACZNIE warstwa (c) — `UlepszeniaEmpirePolicy.pracaAutoPercent`
+   * i `City.ulepszeniaPracaPercent` (0–100%), nizej.
+   */
   onUlepszeniaEmpireFocusChange?: (focus: UlepszeniaFocus) => void;
   onUlepszeniaEmpireTrybChange?: (tryb: UlepszeniaTryb) => void;
   onUlepszeniaEmpireOnlyWorkedChange?: (onlyWorked: boolean) => void;
-  /** R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: suwak 0-100% budżetu Pracy (zastępuje dawne przyciski 1/2/3). */
+  /** R4-Q2=C: „wolno wycinać las" dla automatu GRACZA — zakres PAŃSTWO. */
+  onUlepszeniaEmpireWyrabChange?: (wolnoWycinacLas: boolean) => void;
+  /** Historyczny budżet automatu ulepszeń; zakres 0–100%, osobny od nadrzędnego splitu Pracy. */
   onUlepszeniaEmpirePracaPercentChange?: (pracaAutoPercent: UlepszeniaPracaPercent) => void;
   getUlepszeniaCityOverride?: (cityId: string) => boolean;
   onUlepszeniaCityOverrideChange?: (cityId: string, override: boolean) => void;
@@ -86,11 +113,15 @@ export interface BuildModeHudConfig {
     tryb: UlepszeniaTryb;
     onlyWorked: boolean;
     pracaAutoPercent: UlepszeniaPracaPercent;
+    /** R4-Q2=C: „wolno wycinać las" — efektywna wartość dla tego miasta. */
+    wolnoWycinacLas: boolean;
     override: boolean;
   } | null;
   onUlepszeniaCityFocusChange?: (cityId: string, focus: UlepszeniaFocus) => void;
   onUlepszeniaCityTrybChange?: (cityId: string, tryb: UlepszeniaTryb) => void;
   onUlepszeniaCityOnlyWorkedChange?: (cityId: string, onlyWorked: boolean) => void;
+  /** R4-Q2=C: „wolno wycinać las" dla automatu GRACZA — zakres MIASTO. */
+  onUlepszeniaCityWyrabChange?: (cityId: string, wolnoWycinacLas: boolean) => void;
   onUlepszeniaCityPracaPercentChange?: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => void;
 }
 
@@ -101,7 +132,70 @@ export interface BuildModeHudApi {
   destroy: () => void;
 }
 
-const STYLE_ID = 'civ-build-mode-hud-css';
+const STYLE_ID = 'civ-build-mode-hud-css-w2-scroll-reserve-floor-fixedtop';
+
+/**
+ * P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1 — pion panelu budowy.
+ *
+ * Było: `top:90px; max-height:calc(100vh - 180px)`. Dwie zmierzone wady tej pary:
+ *
+ * 1. `180px` to sztywna liczba mniejsza niż realna wysokość stosu WYKONAJ + ZAKOŃCZ TURĘ
+ *    (`turnStackBottomPx()` = 172px od dołu). Dolna krawędź panelu wypadała 90px nad dołem
+ *    okna, czyli 75px WEWNĄTRZ prostokąta dolnego paska — w każdym powiększeniu i przy każdej
+ *    wysokości okna. Panel ma z-index 311, pasek 310, więc to lista połykała kliknięcie
+ *    w przycisk WYKONAJ (pomiar: `elementFromPoint` na środku WYKONAJ trafiał w
+ *    `.civ-build-item`).
+ * 2. `vh` liczy się ZAWSZE od viewportu, a powiększenie UI gry (`hud.ts::applyUiZoom`) skaluje
+ *    <body> transformem — przez co body staje się blokiem zawierającym dla `position:fixed`,
+ *    a jego wysokość to `100/z vh`. `calc(100vh - 180px)` dawało więc przy z=1.5 limit 1.5×
+ *    większy niż cała dostępna wysokość: pasek przewijania dojeżdżał do końca, a ostatnie
+ *    pozycje listy nadal leżały POD dolną krawędzią ekranu (zgłoszenie właściciela: „menu się
+ *    nie przesuwa, nie można otworzyć ulepszeń na samym dole").
+ *
+ * Jest: rezerwa liczona z jednego źródła prawdy (`hudLayout.ts`) i limit w `%`, który — inaczej
+ * niż `vh` — liczy się od bloku zawierającego, więc jest poprawny w OBU układach współrzędnych
+ * (viewport bez powiększenia UI, przeskalowane <body> z powiększeniem UI). Ten sam wzorzec co
+ * `.civ-side-panel` (`sidePanelHud.ts`), łącznie z osobną regułą `html.civ-ui-zoom-active`.
+ *
+ * RUNDA 2 — PODŁOGA. Sama rezerwa nie wystarczy: rezerwa całkowita to `90 + 184` (`174` przy
+ * powiększeniu UI) = 274/264px, więc gdy blok zawierający jest NIŻSZY niż ta rezerwa
+ * (przeglądarka 200% × okno 640 → viewport 320px CSS → body przy UI 125% = 256px),
+ * `calc(100% - 274px)` schodzi poniżej zera, `max-height` zapada się do ~0 i panel kurczy się
+ * do 23–31px — dla gracza praktycznie znika (zmierzone: 5/60 punktów siatki łączonej
+ * przeglądarka × UI × wysokość, w tym 2 punkty, w których PRZED naprawą klikało się dobrze).
+ *
+ * Dlatego podłoga: `max-height: max(52px, calc(...))` — panel nigdy nie jest niższy niż JEDEN
+ * pełny wiersz listy z chromem panelu, więc zawsze zostaje przewijalny i klikalny.
+ *
+ * RUNDA 3 — `top` WRACA DO STAŁEJ WARTOŚCI. Runda 2 sprzęgła podłogę z ruchomym
+ * `top: min(90px, max(0px, calc(100% - rezerwa_dolna - 52px)))`: gdy pełny wiersz nie mieścił
+ * się pod `top:90px`, panel jechał W GÓRĘ, zamiast wchodzić na stos WYKONAJ/ZAKOŃCZ TURĘ.
+ * Cena okazała się wyższa niż zysk: górna granica ruchu schodziła do `0px`, czyli W PAS
+ * ZAREZERWOWANY DLA GÓRNEGO PRAWEGO HUD-u. Ten pas ma w kodzie jedno źródło prawdy —
+ * `hudLayout.ts::hudRightRailBottomPx()` (= HUD_TOP_PX + max(wiersz chipów, wiersz Civpedia/Menu)
+ * = 68px), z którego korzysta też `eventsPanelTopPx()` dla panelu wydarzeń. Zmierzone na siatce
+ * 60 punktów Z ZAMONTOWANYM `.hud-right-cluster`: w 8 komórkach panel wchodził w ten pas
+ * (górna krawędź 18–66px CSS), a w 13 zasłaniał sobą przyciski Civpedia i Menu — panel budowy
+ * ma `z-index:311`, a cały `.civ-hud` (wraz z klastrem) `z-index:310`, więc to PANEL zakrywa
+ * HUD, nie odwrotnie. Stałe `top:90px` respektuje ten pas w każdej komórce siatki.
+ *
+ * ŚWIADOMY KOMPROMIS. W najciaśniejszych kombinacjach (np. przeglądarka 200% × UI 150% × okno
+ * 640px → blok zawierający 213px CSS) pas górnego HUD-u + jeden pełny wiersz listy + rezerwa
+ * stosu tury po prostu się nie mieszczą naraz. Wybór jest wtedy między „panel nachodzi na stos
+ * WYKONAJ/ZAKOŃCZ TURĘ" (jak w stanie zastanym, gdzie było to 60/60) a „lista ulepszeń znika
+ * albo zakrywa górny HUD". Wybrane jest nachodzenie: przycisk pod panelem da się odsłonić
+ * zamknięciem trybu budowy, listy schowanej pod HUD-em nie da się odzyskać niczym.
+ */
+const BUILD_PANEL_TOP_PX = 90;
+/** Rezerwa od dołu: cały stos WYKONAJ/ZAKOŃCZ TURĘ + ten sam odstęp co panel wydarzeń. */
+const BUILD_PANEL_BOTTOM_PX = turnStackBottomPx() + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
+const BUILD_PANEL_BOTTOM_ZOOM_PX = turnStackBottomPx(true) + EVENTS_PANEL_ABOVE_TURN_GAP_PX;
+/** Wysokość jednego wiersza listy `.civ-build-item`: padding 7+7 + ikona 18 + ramka 1+1
+ *  (zmierzone w Chromium: `getBoundingClientRect().height` = 34px dla każdej pozycji). */
+const BUILD_ITEM_ROW_H_PX = 7 + 7 + 18 + 1 + 1;
+/** Podłoga wysokości panelu = jeden PEŁNY wiersz + padding panelu 8+8 + ramka 1+1 (52px).
+ *  Mniej znaczy wiersz przycięty w połowie; więcej niepotrzebnie zjada pas przewijania. */
+const BUILD_PANEL_MIN_H_PX = BUILD_ITEM_ROW_H_PX + 8 + 8 + 1 + 1;
 
 const ULEPSZENIA_FOCUS_LABELS: Record<UlepszeniaFocus, string> = {
   zywnosc: 'Żywność',
@@ -127,6 +221,9 @@ function impIconHtml(key: ImprovementKey | string): string {
 }
 
 function ensureStyles(): void {
+  // Wzorzec z `bottomBarHud.ts`/`sidePanelHud.ts`: przy zmianie CSS zmienia się STYLE_ID,
+  // a poprzedni znacznik jest jawnie usuwany, żeby stary arkusz nie przeżył w dokumencie.
+  document.getElementById('civ-build-mode-hud-css')?.remove();
   if (document.getElementById(STYLE_ID)) return;
   const css = `
 .civ-build-banner{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:312;
@@ -136,10 +233,14 @@ function ensureStyles(): void {
 .civ-build-banner.open{display:flex;}
 .civ-build-banner button{background:rgba(255,255,255,.08);border:1px solid rgba(232,176,74,.4);
   color:#ffe8c0;border-radius:4px;padding:4px 10px;cursor:pointer;font-size:11px;}
-.civ-build-panel{position:fixed;top:90px;right:${HUD_EDGE_PX}px;z-index:311;width:270px;max-height:calc(100vh - 180px);
+.civ-build-panel{position:fixed;z-index:311;width:270px;right:${HUD_EDGE_PX}px;
+  top:${BUILD_PANEL_TOP_PX}px;
+  max-height:max(${BUILD_PANEL_MIN_H_PX}px,calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_PX}px));
   overflow-y:auto;display:none;flex-direction:column;gap:4px;padding:8px;
   background:rgba(12,18,35,.94);border:1px solid rgba(232,216,138,.28);border-radius:8px;
   font:12px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.55);}
+html.civ-ui-zoom-active .civ-build-panel{right:${HUD_ZOOM_EDGE_PX}px;
+  max-height:max(${BUILD_PANEL_MIN_H_PX}px,calc(100% - ${BUILD_PANEL_TOP_PX + BUILD_PANEL_BOTTOM_ZOOM_PX}px));}
 .civ-build-panel.open{display:flex;}
 .civ-build-panel .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#7a7055;margin-bottom:4px;}
 .civ-build-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:5px;cursor:pointer;
@@ -148,12 +249,21 @@ function ensureStyles(): void {
 .civ-build-item.sel{background:rgba(232,216,138,.12);border-color:rgba(232,216,138,.5);color:#f0e8b8;}
 .civ-build-item .ic{display:flex;align-items:center;justify-content:center;width:22px;height:18px;flex-shrink:0;color:#e8d88a;}
 .civ-build-item .ic svg{display:block;}
+.civ-build-info-ic{flex-shrink:0;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:9px;font-weight:800;line-height:1;cursor:pointer;
+  background:#141a24;border:1px solid rgba(232,216,138,.55);color:#e8d88a;}
+.civ-build-info-ic:hover,.civ-build-info-ic:focus-visible{background:rgba(232,216,138,.24);outline:none;}
 .civ-build-item .meta{font-size:9px;color:#7a7055;margin-left:auto;}
 .civ-build-item.disabled{opacity:.38;pointer-events:none;filter:grayscale(.85);}
 .civ-build-item.locked{opacity:.48;cursor:help;}
 .civ-build-item.locked:hover{background:rgba(232,176,74,.08);border-color:rgba(232,176,74,.35);}
 .civ-build-item.locked .meta{color:#c9a060;font-size:8px;max-width:95px;text-align:right;line-height:1.2;}
-.civ-build-lock-tip{position:fixed;z-index:320;max-width:480px;padding:16px 20px;
+/* box-sizing jawnie w regule (nie tylko z globalnego gwiazdkowego resetu w index.html) —
+   showLockTip() liczy pozycję z offsetWidth, więc padding MUSI mieścić się w max-width,
+   inaczej tooltip wychodzi 42px szerszy niż wolny pas obok listy i znów ją zasłania.
+   max-height + overflow:hidden — twardy limit dla skrajnie długiego lockHintu. */
+.civ-build-lock-tip{position:fixed;z-index:320;box-sizing:border-box;max-width:480px;
+  max-height:calc(100vh - 16px);overflow:hidden;padding:16px 20px;
   background:rgba(24,16,8,.96);border:1px solid rgba(232,176,74,.5);border-radius:12px;
   font:22px/1.35 'Segoe UI',Tahoma,sans-serif;color:#ffe8c0;pointer-events:none;
   box-shadow:0 8px 32px rgba(0,0,0,.55);display:none;}
@@ -184,10 +294,17 @@ function ensureStyles(): void {
 .civ-build-hbtn:hover{background:rgba(232,216,138,.16);border-color:rgba(232,216,138,.45);}
 .civ-build-hbtn.active{background:linear-gradient(180deg,#2a5a28,#1e4020);border-color:#6bbf59;color:#dff5d8;
   box-shadow:0 0 8px rgba(107,191,89,.45);}
-/* R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: suwak 0-100% budżetu Pracy, zastępuje przyciski 1/2/3. */
+/* R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: historyczny suwak 0-100% globalnego
+   budżetu automatu, osobny od nadrzędnego splitu puli Pracy. */
 .civ-build-percent-row{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
 .civ-build-percent-head{display:flex;align-items:baseline;gap:6px;font-size:10px;color:#9a9070;}
 .civ-build-percent-head b{font-size:11px;color:#f0e8b8;}
+.civ-build-city-split-note{font-size:9px;color:#9a9070;line-height:1.35;margin:4px 0 2px;}
+/* R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: suwak warstwy (c) jest renderowany takze
+   przy trybie recznym — wtedy nieaktywny, z krotkim wyjasnieniem pod spodem. */
+.civ-build-percent-row.off .civ-build-percent-head{opacity:.55;}
+.civ-build-percent-slider:disabled{cursor:not-allowed;opacity:.45;}
+.civ-build-percent-note{font-size:9px;color:#9a9070;line-height:1.35;margin-top:2px;}
 .civ-build-percent-slider{-webkit-appearance:none;-moz-appearance:none;appearance:none;
   width:100%;height:6px;border-radius:999px;cursor:pointer;margin:0;background:rgba(0,0,0,.35);
   display:block;}
@@ -230,22 +347,30 @@ function ulepszeniaPercentSliderFillStyle(pct: number): string {
 }
 
 /**
- * R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: suwak 0-100% budżetu Pracy dla auto-managera ulepszeń —
- * zastępuje dawne przyciski „Na turę: 1 2 3" (limit sztuk). 0% = auto-ulepszenia terenu
- * wyłączone (cała Praca zostaje dla gracza), 100% = auto-manager może wydać całą dostępną pulę
- * (do flat-rezerwy AUTO_ULEPSZENIA_PRACA_RESERVE w silniku — patrz auto-improvements.ts).
- * / EN: 0-100% slider for the auto-manager's Work budget — replaces the old "Per turn: 1 2 3"
- * buttons (item-count cap). 0% = terrain auto-improvements disabled (all Work stays with the
- * player), 100% = the auto-manager may spend the whole available pool (down to the flat reserve
- * floor AUTO_ULEPSZENIA_PRACA_RESERVE in the engine — see auto-improvements.ts).
+ * P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: udział ulepszeń terenu w całej puli Pracy
+ * imperium. 0% = całość budżetu pozostaje dostępna dla budynków, 50% = maksymalnie
+ * połowa puli może trafić na ulepszenia. To nie jest drugi limit wewnętrznego
+ * automatu.
  */
-function renderUlepszeniaPercentRow(pct: number, scope: 'empire' | 'city'): string {
-  return '<div class="civ-build-percent-row">'
-    + '<div class="civ-build-percent-head"><span title="Jaki % budżetu Pracy imperium dostaje auto-manager tej tury">'
-    + 'Budżet Pracy dla automatu:</span><b data-ulepszenia-' + scope + '-percent-label>' + pct + '%</b></div>'
-    + `<input type="range" class="civ-build-percent-slider" min="0" max="50" step="1" value="${pct}" `
+function renderUlepszeniaPercentRow(
+  pct: number,
+  scope: 'empire' | 'city',
+  label: string,
+  sliderTitle: string,
+  max = 100,
+  opts?: { disabled?: boolean; note?: string },
+): string {
+  const safePct = Math.max(0, Math.min(max, Math.round(pct)));
+  const disabled = opts?.disabled === true;
+  const note = opts?.note ?? '';
+  return `<div class="civ-build-percent-row${disabled ? ' off' : ''}">`
+    + '<div class="civ-build-percent-head"><span title="' + sliderTitle.replace(/"/g, '&quot;') + '">'
+    + label + '</span><b data-ulepszenia-' + scope + '-percent-label>' + safePct + '%</b></div>'
+    + `<input type="range" class="civ-build-percent-slider" min="0" max="${max}" step="1" value="${safePct}" `
     + `style="${ulepszeniaPercentSliderFillStyle(pct)}" data-ulepszenia-${scope}-percent `
-    + `title="0% = cała Praca dla gracza · 50% = maksimum dla wspólnego worka (ulepszenia terenu)" />`
+    + (disabled ? 'disabled aria-disabled="true" ' : '')
+    + `title="${sliderTitle.replace(/"/g, '&quot;')}" />`
+    + (note ? `<div class="civ-build-percent-note" data-ulepszenia-${scope}-percent-note>${note}</div>` : '')
     + '</div>';
 }
 
@@ -288,12 +413,59 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
     unbindOutside = () => document.removeEventListener('pointerdown', onPointer, true);
   }
 
+  /**
+   * Pozycjonowanie tooltipa blokady — flip/clamp wzorem `techTreeView.ts::showCardFor()`
+   * (pomiar `offsetWidth/offsetHeight`, flip przy braku miejsca, clamp do viewportu),
+   * rozszerzony o JEDEN dodatkowy warunek wymuszony przez kontekst tego HUD-a:
+   * anchorem jest wiersz PRZEWIJANEJ listy `.civ-build-panel`, więc sam clamp do
+   * viewportu nie wystarcza — tooltip musi wylądować poza prostokątem CAŁEJ listy,
+   * inaczej (stary sztywny `left = r.left - 250`, przy `max-width:480px`) rozlewa się
+   * z powrotem na panel i zasłania wiersze pod/nad triggerem.
+   * Dlatego kotwicą poziomą jest rect PANELU, nie rect wiersza.
+   */
   function showLockTip(text: string, anchor: HTMLElement): void {
     lockTip.textContent = '🔒 ' + text;
     lockTip.style.display = 'block';
+    // Reset PRZED pomiarem: dla elementu `position:fixed` szerokość shrink-to-fit jest
+    // ograniczona przez `viewport - left`, więc pozostałość po poprzednim hoverze (albo
+    // po zmianie rozmiaru okna) zaniża `offsetWidth` i cała arytmetyka niżej liczy się
+    // ze złej szerokości — tooltip ląduje wtedy z powrotem na liście.
+    lockTip.style.left = '0px';
+    lockTip.style.top = '0px';
+
+    const pad = 8;   // margines od krawędzi viewportu
+    const gap = 12;  // odstęp tooltip ↔ panel (jak `+12` w techTreeView.ts)
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
     const r = anchor.getBoundingClientRect();
-    lockTip.style.left = Math.max(8, r.left - 250) + 'px';
-    lockTip.style.top = r.top + 'px';
+    const panel = el.getBoundingClientRect();
+    // Panel może być jeszcze niezmierzony (width 0) — wtedy fallback na rect wiersza.
+    const listLeft = panel.width > 0 ? panel.left : r.left;
+    const listRight = panel.width > 0 ? panel.right : r.right;
+
+    // Szerokość ograniczona do wolnego pasa NA LEWO od listy — gwarantuje, że tooltip
+    // fizycznie nie ma jak nachodzić na wiersze (bazowe 480px z CSS jako górny limit).
+    const spaceLeft = listLeft - gap - pad;
+    const spaceRight = vw - listRight - gap - pad;
+    const useLeftSide = spaceLeft >= spaceRight;
+    const avail = Math.max(160, Math.floor(useLeftSide ? spaceLeft : spaceRight));
+    lockTip.style.maxWidth = Math.min(480, avail) + 'px';
+
+    const tw = lockTip.offsetWidth;
+    const th = lockTip.offsetHeight;
+
+    // Poziomo: domyślnie na lewo od całej listy, flip na prawo gdy tam ciasno.
+    let x = useLeftSide ? listLeft - tw - gap : listRight + gap;
+    if (x + tw > vw - pad) x = vw - tw - pad;
+    if (x < pad) x = pad;
+
+    // Pionowo: start przy wierszu-triggerze, clamp do dołu i góry viewportu.
+    let y = r.top;
+    if (y + th > vh - pad) y = vh - th - pad;
+    if (y < pad) y = pad;
+
+    lockTip.style.left = x + 'px';
+    lockTip.style.top = y + 'px';
   }
   function hideLockTip(): void {
     lockTip.style.display = 'none';
@@ -370,7 +542,7 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       const cityOverride = uCityId ? (config.getUlepszeniaCityOverride?.(uCityId) ?? false) : false;
       if (playerCities.length > 0 && empireState) {
         html += '<div class="civ-build-auto">';
-        html += '<div class="lbl">Polityka państwa — auto ulepszenia</div>';
+        html += '<div class="lbl">Automatyzacja ulepszeń terenu</div>';
         html += renderUlepszeniaProfileRow(
           empireState.focus,
           empireState.tryb,
@@ -381,9 +553,43 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           html += '<div class="civ-build-auto-row">';
           html += `<button type="button" class="civ-build-hbtn${onE}" data-ulepszenia-empire-only-worked`
             + ` aria-pressed="${empireState.onlyWorked ? 'true' : 'false'}"`
-            + ` title="Buduj tylko na polach z obywatelami (👤)">Tylko pola z obywatelami</button>`;
+            + ` title="Buduj tylko na polach z obywatelami (👤); złoża surowców są wyjątkiem">Tylko pola z obywatelami</button>`;
           html += '</div>';
-          html += renderUlepszeniaPercentRow(empireState.pracaAutoPercent, 'empire');
+          // R4-Q2=C (R-AI-WYRAB-PRZY-RZECE-FARMY-Q1, runda 4): przełącznik wyrębu dla
+          // automatu GRACZA, zakres PAŃSTWO. Domyślnie WYŁĄCZONY.
+          const onW = empireState.wolnoWycinacLas ? ' active' : '';
+          html += '<div class="civ-build-auto-row">';
+          html += `<button type="button" class="civ-build-hbtn${onW}" data-ulepszenia-empire-wyrab`
+            + ` aria-pressed="${empireState.wolnoWycinacLas ? 'true' : 'false'}"`
+            + ` title="Pozwól automatowi wycinać las (wyrąb pod farmę przy rzece). Domyślnie wyłączone.">`
+            + `Wolno wycinać las</button>`;
+          html += '</div>';
+        }
+        // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): suwak warstwy (c)
+        // (`UlepszeniaEmpirePolicy.pracaAutoPercent`) renderuje sie TAKZE przy
+        // `tryb === 'reczny'` — wtedy `disabled`, z wyjasnieniem. Wczesniej byl schowany
+        // pod `tryb === 'auto'`, a domyslnym trybem nowej gry jest 'reczny', wiec gracz
+        // w tym panelu nie widzial wlasciwej warstwy wcale.
+        {
+          const trybAuto = empireState.tryb === 'auto';
+          html += renderUlepszeniaPercentRow(
+            empireState.pracaAutoPercent,
+            'empire',
+            'Z puli imperium na pracę automatyczną:',
+            `Ile ze skumulowanej puli Pracy imperium może w jednej turze wydać automat ulepszeń terenu; `
+              + `reszta puli zostaje na prace ręczne (ulepszenia stawiane 🔨, cuda na mapie, zakładanie miast). `
+              + `Zakres 0–${MAX_ULEPSZENIA_PRACA_AUTO_PERCENT}% (P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: własny, `
+              + `niezależny zakres tego pola — NIE respektuje capu ${MAX_PROCENT_PULI_IMPERIUM}% podziału Pracy `
+              + `między budynki a pulę imperium, który ustawia się w panelu imperium i w panelu miasta). `
+              + `To NIE jest ten podział — to tempo wydawania samego automatu.`,
+            MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
+            {
+              disabled: !trybAuto,
+              note: trybAuto
+                ? ''
+                : 'Tryb ręczny — cała pula zostaje na pracę ręczną. Suwak zadziała po włączeniu automatyzacji (profil powyżej).',
+            },
+          );
         }
         if (playerCities.length > 1) {
           html += '<div class="civ-build-auto-city-wrap">';
@@ -411,7 +617,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           + ` aria-pressed="${cityOverride ? 'true' : 'false'}">Własne ustawienia tego miasta</button>`
           + '</div>';
         if (cityOverride && uCityId && effState) {
-          html += '<div class="lbl">Ustawienia miasta</div>';
+          html += '<div class="lbl">Ustawienia miasta — lokalny split</div>';
+          html += '<div class="civ-build-city-split-note">'
+            + 'Lokalny suwak dotyczy tylko wybranego miasta i nie zmienia globalnego podziału całej puli Pracy imperium.'
+            + '</div>';
           html += renderUlepszeniaProfileRow(
             effState.focus,
             effState.tryb,
@@ -423,7 +632,33 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             html += `<button type="button" class="civ-build-hbtn${onC}" data-ulepszenia-city-only-worked`
               + ` aria-pressed="${effState.onlyWorked ? 'true' : 'false'}">Tylko pola z obywatelami</button>`;
             html += '</div>';
-            html += renderUlepszeniaPercentRow(effState.pracaAutoPercent, 'city');
+            // R4-Q2=C: ten sam przełącznik w zakresie MIASTA (override lokalny).
+            const onWC = effState.wolnoWycinacLas ? ' active' : '';
+            html += '<div class="civ-build-auto-row">';
+            html += `<button type="button" class="civ-build-hbtn${onWC}" data-ulepszenia-city-wyrab`
+              + ` aria-pressed="${effState.wolnoWycinacLas ? 'true' : 'false'}">Wolno wycinać las</button>`;
+            html += '</div>';
+          }
+          // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (pkt 2): ten sam wzorzec co wyzej,
+          // dla lokalnego pola warstwy (c) `City.ulepszeniaPracaPercent`.
+          {
+            const trybAutoC = effState.tryb === 'auto';
+            html += renderUlepszeniaPercentRow(
+              effState.pracaAutoPercent,
+              'city',
+              'Z puli imperium na automat tego miasta:',
+              `Lokalny limit tego miasta na wydatek automatu ulepszeń terenu ze skumulowanej puli Pracy `
+                + `imperium; reszta zostaje na prace ręczne. Zakres 0–${MAX_ULEPSZENIA_PRACA_AUTO_PERCENT}% `
+                + `(P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: własny, niezależny zakres tego pola, także w trybie `
+                + `„Indywidualne"). To NIE jest podział Pracy między budynki a pulę imperium.`,
+              MAX_ULEPSZENIA_PRACA_AUTO_PERCENT,
+              {
+                disabled: !trybAutoC,
+                note: trybAutoC
+                  ? ''
+                  : 'Ręczny w tym mieście — suwak zadziała po wybraniu profilu automatu powyżej.',
+              },
+            );
           }
         }
         html += '</div>';
@@ -457,6 +692,12 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         + ' title="' + (locked && hint ? hint : t.label) + '">'
         + '<span class="ic">' + ic + '</span>'
         + '<span>' + t.label + '</span>'
+        // Osobna, zawsze widoczna ikonka info — niezależna strefa klikalna od wyboru typu
+        // budowy (T7b KARTA-ULEPSZENIA-TERENU): klik reszty wiersza (wybór typu) bez zmian,
+        // klik TEJ ikonki otwiera kartę encji ulepszenia, z własnym stopPropagation (wzorem
+        // `.ttv-info-ic` w techTreeView.ts, R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 faza 1).
+        + '<span class="civ-build-info-ic" role="button" tabindex="0" title="Podgląd karty ulepszenia"'
+        + ' aria-label="Podgląd karty: ' + t.label + '">ⓘ</span>'
         + '<span class="meta">' + (locked && hint ? (hintTechIcWrap + hint) : ('E' + t.epoka + ' · ' + costLabel + techHint)) + '</span></div>';
     }
 
@@ -487,6 +728,24 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         }
         config.onSelectType(key === active ? null : key);
         render();
+      });
+      // Ikonka info: strefa klikalna NIEZALEŻNA od wyboru typu budowy — `stopPropagation`
+      // uniemożliwia dotarciu kliku do listenera wiersza wyżej (wybór typu bez zmian,
+      // T7b KARTA-ULEPSZENIA-TERENU). Działa nawet gdy wiersz jest `locked` — podgląd karty
+      // encji nie jest akcją budowy, więc nie podlega blokadzie technologii/Pracy.
+      const infoIc = elItem.querySelector<HTMLElement>('.civ-build-info-ic');
+      infoIc?.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const key = elItem.getAttribute('data-key') as ImprovementKey | null;
+        if (key) openEntityCard('improvement', key, { mode: 'dialog' });
+      });
+      infoIc?.addEventListener('keydown', (ev) => {
+        const key = (ev as KeyboardEvent).key;
+        if (key !== 'Enter' && key !== ' ') return;
+        ev.stopPropagation();
+        ev.preventDefault();
+        const impKey = elItem.getAttribute('data-key') as ImprovementKey | null;
+        if (impKey) openEntityCard('improvement', impKey, { mode: 'dialog' });
       });
     });
 
@@ -539,19 +798,27 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       render();
     });
 
+    // R4-Q2=C: przełącznik wyrębu automatu GRACZA — zakres PAŃSTWO.
+    const empireWyrabBtn = el.querySelector('[data-ulepszenia-empire-wyrab]') as HTMLButtonElement | null;
+    empireWyrabBtn?.addEventListener('click', () => {
+      const current = config.getUlepszeniaEmpireState?.()?.wolnoWycinacLas ?? false;
+      config.onUlepszeniaEmpireWyrabChange?.(!current);
+      render();
+    });
+
     // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: `input` = tylko lokalny podgląd (etykieta + wypełnienie
     // toru) BEZ pełnego render() -- wzorzec `wireSkarbiecTaxSplitInputs` w empireDetailPanel.ts,
     // żeby przebudowa innerHTML w trakcie przeciągania nie przerywała gestu. `change` (puszczenie
     // suwaka) commituje wartość do stanu gry i dopiero wtedy robi pełny render().
     const empirePercentInput = el.querySelector('[data-ulepszenia-empire-percent]') as HTMLInputElement | null;
     empirePercentInput?.addEventListener('input', () => {
-      const pct = Math.max(0, Math.min(50, Math.round(Number(empirePercentInput.value))));
+      const pct = Math.max(0, Math.min(100, Math.round(Number(empirePercentInput.value))));
       empirePercentInput.style.background = ulepszeniaPercentSliderFillStyle(pct);
       const label = el.querySelector('[data-ulepszenia-empire-percent-label]');
       if (label) label.textContent = `${pct}%`;
     });
     empirePercentInput?.addEventListener('change', () => {
-      const pct = Math.max(0, Math.min(50, Math.round(Number(empirePercentInput.value))));
+      const pct = Math.max(0, Math.min(100, Math.round(Number(empirePercentInput.value))));
       config.onUlepszeniaEmpirePracaPercentChange?.(pct);
       render();
     });
@@ -581,16 +848,27 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       render();
     });
 
+    // R4-Q2=C: przełącznik wyrębu automatu GRACZA — zakres MIASTO.
+    const cityWyrabBtn = el.querySelector('[data-ulepszenia-city-wyrab]') as HTMLButtonElement | null;
+    cityWyrabBtn?.addEventListener('click', () => {
+      const cityId = config.getUlepszeniaCityId?.();
+      if (cityId) {
+        const current = config.getUlepszeniaEffectiveState?.(cityId)?.wolnoWycinacLas ?? false;
+        config.onUlepszeniaCityWyrabChange?.(cityId, !current);
+      }
+      render();
+    });
+
     const cityPercentInput = el.querySelector('[data-ulepszenia-city-percent]') as HTMLInputElement | null;
     cityPercentInput?.addEventListener('input', () => {
-      const pct = Math.max(0, Math.min(50, Math.round(Number(cityPercentInput.value))));
+      const pct = Math.max(0, Math.min(100, Math.round(Number(cityPercentInput.value))));
       cityPercentInput.style.background = ulepszeniaPercentSliderFillStyle(pct);
       const label = el.querySelector('[data-ulepszenia-city-percent-label]');
       if (label) label.textContent = `${pct}%`;
     });
     cityPercentInput?.addEventListener('change', () => {
       const cityId = config.getUlepszeniaCityId?.();
-      const pct = Math.max(0, Math.min(50, Math.round(Number(cityPercentInput.value))));
+      const pct = Math.max(0, Math.min(100, Math.round(Number(cityPercentInput.value))));
       if (cityId) config.onUlepszeniaCityPracaPercentChange?.(cityId, pct);
       render();
     });

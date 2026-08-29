@@ -18,8 +18,8 @@
       "handel": 3
     },
     "surowiecOdblokowany": null,
-    "teren": "Łąka, Równina; Wzgórza z lasem",
-    "warunek": "ziemia uprawna; DZIAŁA BEZ rzeki (podstawowy); MOŻE na lesie (Las) — bez wyrębu (Maciej 2026-07-21)",
+    "teren": "Łąka, Równina (bez lasu)",
+    "warunek": "ziemia uprawna; DZIAŁA BEZ rzeki (podstawowy); NIE na lesie (Las) na ŻADNYM terenie bazowym — najpierw wyrąb (Maciej 2026-08-27, ECHO: \u201ew lesie można wybudować tylko tartak i ewentualnie obozowisko\u201d); UCHYLA poprzedni zapis \u201eMOŻE na lesie (Las) — bez wyrębu (Maciej 2026-07-21)\u201d, który dopuszczał też Wzgórza z lasem — po tej zmianie farma na Wzgórzach jest niemożliwa całkowicie (świadoma konsekwencja, nie przeoczenie)",
     "koszt_praca": 20,
     "tech": "Rolnictwo",
     "odblokowuje": ""
@@ -49,8 +49,8 @@
     },
     "surowiecOdblokowany": "bydlo",
     "surowiecOdblokowany_uwaga": "ABC-18: dostęp dopiero po postawieniu na złożu trzody",
-    "teren": "Łąka, Równina",
-    "warunek": "plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni",
+    "teren": "Łąka, Równina (także z nakładką Las)",
+    "warunek": "plaski ląd; pierwsze: złoże bydła; potem po odblokowaniu — bez złoża; + farma lub solo; NIE na Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”)",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Trzoda (Rydwan po odblokowaniu)"
@@ -65,8 +65,8 @@
     },
     "surowiecOdblokowany": "owce",
     "surowiecOdblokowany_uwaga": "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    "teren": "Wzgórza (bez lasu)",
-    "warunek": "solo otwarte wzgórze (nakładka Las zabroniona); pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu",
+    "teren": "Wzgórza (także z nakładką Las)",
+    "warunek": "solo wzgórze — otwarte LUB z nakładką Las; pierwsze: złoże owiec; potem wzgórze bez złoża po odblokowaniu; zakaz „nakładka Las zabroniona” (Maciej 2026-07-29) COFNIĘTY 2026-08-27 — R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy” (owce, bydło, lama); historia decyzji zostaje, nie jest wymazywana",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Owce (wełna / jedzenie)"
@@ -82,8 +82,8 @@
     },
     "surowiecOdblokowany": "lama",
     "surowiecOdblokowany_uwaga": "TYLKO Inkowie; solo — bez innych ulepszen na heksie; pierwsze na zlozu lamy",
-    "teren": "Wzgórza, Góry",
-    "warunek": "solo; tylko cyw. Inkowie; wzgórza/góry; pierwsze: złoże lamy; NIE na Łące/Równinie/Pustyni",
+    "teren": "Wzgórza, Góry (także z nakładką Las)",
+    "warunek": "solo; tylko cyw. Inkowie; wzgórza/góry; pierwsze: złoże lamy; NIE na Łące/Równinie/Pustyni; nakładka Las NIE przeszkadza — zakaz z 2026-07-29 COFNIĘTY 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO właściciela: „Tak, odwracamy — wszystkie trzy”)",
     "koszt_praca": 20,
     "tech": "Oswojenie zwierząt",
     "odblokowuje": "Lama (transport / żywność)"
@@ -98,8 +98,8 @@
     "surowiecOdblokowany": "kon",
     "surowiecOdblokowany_uwaga": "ABC-18: tylko na złożu konia + tech Jeździectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Koń do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 5/turę (było 1/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 25/turę (było 5/turę).",
     "surowiec_ilosc_tura": 25,
-    "teren": "Łąka, Równina",
-    "warunek": "solo; tylko heks ze złożem konia w terytorium",
+    "teren": "Łąka, Równina (bez lasu)",
+    "warunek": "solo; tylko heks ze złożem konia w terytorium (albo po imperialnym odblokowaniu Konia — wtedy bez złoża); nakładka Las NADAL zabroniona — cofnięcie zakazu z 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1) objęło WYŁĄCZNIE owce/bydło/lamę, stadnina wpadła w tamten zakaz pochodną definicji (surowiecOdblokowany = „kon”), nie decyzją właściciela; zmiana wymaga osobnego ECHO",
     "koszt_praca": 28,
     "tech": "Jeździectwo",
     "odblokowuje": "Koń (jednostki konne)"
@@ -149,8 +149,8 @@
     },
     "surowiecOdblokowany": null,
     "surowiecOdblokowany_uwaga": "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 — brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
-    "teren": "Las / dzika zwierzyna",
-    "warunek": "dzika zwierzyna",
+    "teren": "Las (dowolny teren pod lasem — łąka, równina, wzgórze)",
+    "warunek": "R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (Maciej): WYLACZNIE nakladka Las; teren pod lasem bez znaczenia (takze las na wzgorzu). Bylo `Las LUB zloze zwierzece` — stad obozy poza lasem. Wariant `Las I zloze` zmierzony i ODRZUCONY: 0 kwalifikujacych pol na 5 mapach (nakladka to JEDNO pole, Las i Zloze* wykluczaja sie; Model B 2026-07-09 usunal zloza owiec/bydla/lamy z generatora) — ulepszenie byloby martwe. RUNDA 2 (ECHO Maciej 2026-08-27, wariant A): wyrab lasu spod obozu USUWA oboz z heksa (stripImprovementsWhenForestRemoved) — praca NIE jest zwracana; tartak przy wyrebie zostaje (kanon).",
     "koszt_praca": 18,
     "tech": "Łowiectwo",
     "odblokowuje": ""

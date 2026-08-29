@@ -57,7 +57,21 @@ import {
   BUDOWA_TYP_FOCUS,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
 } from '../game/cities';
-import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit, MAX_PROCENT_NAUKA } from '../game/cities';
+import {
+  HANDEL_PCT_STEP,
+  normalizePodzialHandlu,
+  snapHandelPct,
+  adjustHandelSplit,
+  MAX_PROCENT_NAUKA,
+  clampPodzialPracyBudynkiPercent,
+  procentPuliImperiumZBudynkow,
+  MIN_PODZIAL_PRACY_BUDYNKI_PERCENT,
+  MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
+  MAX_PROCENT_PULI_IMPERIUM,
+  PODZIAL_PRACY_PULA_LBL,
+  PODZIAL_PRACY_PULA_LBL_PELNA,
+  PODZIAL_PRACY_PULA_TIP,
+} from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
@@ -84,9 +98,7 @@ import {
   cityPracaInteger,
   buildingGoldPurchaseCost,
   buildingTypeQueued,
-  enqueueRecruitment,
   dequeueRecruitment,
-  unitProductionItem,
   unitNacjaForCivKey,
   etaTurns,
   type CityProduction,
@@ -157,8 +169,12 @@ import {
   UNIT_INFOGRAPHIC_CSS,
 } from './unitInfographic';
 import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
+import { renderEntityCard, ENTITY_CARD_CSS } from './entityCards/renderer';
+import { buildingAdapter, type BuildingCardCityState } from './entityCards/buildingAdapter';
+import { unitAdapter } from './entityCards/unitAdapter';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
 import { techIconSvg } from './techIcons';
+import { showTechDiscoveryNotice } from './techDiscoveryNotice';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import {
   freshWealthState,
@@ -189,15 +205,18 @@ import {
   buildingResourceUpkeep,
   addResourceCosts,
   unitResourceUpkeep,
-  canAffordUnitRecruitFull,
-  unitRecruitFullStockCost,
+  canAffordUnitRecruitStock,
   isUnitRecruitStockChipMissing,
 } from '../game/economy-upkeep';
 import {
   type TradeRoute,
+  computeTradeRouteBuildingBonusByCity,
 } from '../game/trade-routes';
 import { improvementKeysForHex } from '../game/terrain-improvements';
 import type { Hex } from '../types/hex';
+import terrainImprovementsData from '../../data/terrain-improvements.json';
+import { openEntityCard } from './entityCards/renderer';
+import { resolveTechnologyRow, technologyIdFromName } from './entityCards/registry';
 import { loadOrderParams, type OrderYieldMults } from '../game/order';
 import {
   evaluateOrderFromBreakdown,
@@ -976,15 +995,15 @@ function readOwnerDefaultPodzialHandlu(city: City, data: GameData | null): Podzi
 
 function readPodzialPracy(city: City, data: GameData | null): PodzialPracySplit {
   const fromHook = cfg.getPodzialPracy?.(city.id);
-  if (fromHook) return { procentBudynki: snapHandelPct(fromHook.procentBudynki) };
+  if (fromHook) return { procentBudynki: clampPodzialPracyBudynkiPercent(fromHook.procentBudynki) };
   const ext = city as CityWithSliders;
   const stored = ext.podzialPracy ?? ext.podziałPracy;
-  if (stored) return { procentBudynki: snapHandelPct(stored.procentBudynki) };
+  if (stored) return { procentBudynki: clampPodzialPracyBudynkiPercent(stored.procentBudynki) };
   if (data) {
     const params = buildEconParams(data, cfg.difficulty ?? 'normal');
-    return { procentBudynki: snapHandelPct(params.suwaakPracaBudynki) };
+    return { procentBudynki: clampPodzialPracyBudynkiPercent(params.suwaakPracaBudynki) };
   }
-  return { procentBudynki: snapHandelPct(DEFAULT_PODZIAL_PRACY.procentBudynki) };
+  return { procentBudynki: clampPodzialPracyBudynkiPercent(DEFAULT_PODZIAL_PRACY.procentBudynki) };
 }
 
 // ---------------------------------------------------------------------------
@@ -1290,22 +1309,43 @@ function daninaLabelForCity(_city: City): DaninaLabel {
   return daninaLabel();
 }
 
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 — JEDNA nazwa drugiego strumienia w calym UI.
+ *
+ * Przed tym tematem ta sama liczba nazywala sie w tym pliku „Ulepszenia",
+ * „→ Pula Pracy imperium", „→ Pula imperium — zapas cywilizacji" i `doUlepszen`.
+ * RUNDA 2 (F2): definicje przeniesione do `game/cities.ts`, bo runda 1 ujednolicila
+ * TYLKO ten plik — `empireDetailPanel.ts` zostal z trzecia nazwa. Tu zostaja juz
+ * wylacznie lokalne aliasy na to JEDNO zrodlo (krotsze w gestych szablonach).
+ */
+const PULA_LBL = PODZIAL_PRACY_PULA_LBL;
+const PULA_LBL_PELNA = PODZIAL_PRACY_PULA_LBL_PELNA;
+const PULA_TIP = PODZIAL_PRACY_PULA_TIP;
+
+/**
+ * R-PRACA-JEDEN-PODZIAL-Q1 — ROOT CAUSE osmiu nawrotow tego tematu byl TUTAJ:
+ * pole nazywalo sie `doUlepszen`, a nioslo `doPuli` (cala pula imperium, ktora
+ * finansuje TAKZE cuda na mapie, zakladanie miast i wycinke). Ta sama liczba
+ * miala w tym pliku cztery rozne nazwy. Pole `doUlepszen` zostalo USUNIETE;
+ * jedyna nazwa tej liczby to `doPuli` — identyczna jak w silniku
+ * (`production.ts::splitPraca`). Nie wolno przywracac nazwy `doUlepszen` dla
+ * czegokolwiek, co nie jest wprost budzetem ulepszen terenu.
+ */
 function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   total: number;
   doBudynkow: number;
-  doUlepszen: number;
+  doPuli: number;
   pctBudynki: number;
-  pctUlepszenia: number;
+  pctPuli: number;
 } {
-  const total = Math.round(view.praca);
-  const pctB = readPodzialPracy(city, data).procentBudynki;
-  const { doBudynkow, doPuli } = splitPraca(total, pctB / 100);
+  const pctB = clampPodzialPracyBudynkiPercent(readPodzialPracy(city, data).procentBudynki);
+  const split = splitPraca(view.praca, pctB / 100);
   return {
-    total,
-    doBudynkow: Math.round(doBudynkow),
-    doUlepszen: Math.round(doPuli),
+    total: split.total,
+    doBudynkow: split.doBudynkow,
+    doPuli: split.doPuli,
     pctBudynki: pctB,
-    pctUlepszenia: 100 - pctB,
+    pctPuli: procentPuliImperiumZBudynkow(pctB),
   };
 }
 
@@ -1656,13 +1696,13 @@ function resGlobalLocal(
 function resPracaSplitBar(
   mainVal: string,
   doBudynkow: number,
-  doUlepszen: number,
+  doPuli: number,
   hint: string,
   statId?: string,
   rail = false,
 ): string {
   const b = fmtResDelta(doBudynkow);
-  const u = fmtResDelta(doUlepszen);
+  const u = fmtResDelta(doPuli);
   const ia = statId ? resInteractiveAttrs(statId, hint, rail) : { cls: rail ? 'civ-v-res-item civ-v-res-rail-item' : 'civ-v-res-item', attrs: '' };
   const deltaWrap = rail ? 'civ-v-res-rail-deltas' : 'civ-v-res-inline-deltas';
   return `<span class="${ia.cls}"${ia.attrs} title="${hint.replace(/"/g, '&quot;')}">` +
@@ -1670,7 +1710,7 @@ function resPracaSplitBar(
     `<span class="civ-v-res-val gold">${mainVal}</span>` +
     `<span class="${deltaWrap}">` +
     `<span class="civ-v-res-delta ${b.cls}" title="Budynki">${b.html}</span>` +
-    `<span class="civ-v-res-delta blue" title="Pula imperium">${u.html}</span>` +
+    `<span class="civ-v-res-delta blue" title="${PULA_LBL_PELNA}">${u.html}</span>` +
     `</span></span>`;
 }
 
@@ -1749,6 +1789,12 @@ const CP_INLINE_EMOJI_BRAND: Record<string, string> = {
   '👤': 'chip-manpower',
   '⚔': 'tb-army',
   '🏛': 'cp-buildings',
+  // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1: skrzynka „Ulepszenia" — TA SAMA ikona `chip-crate`,
+  // która została zatwierdzona dla tego pojęcia w P-PRACA-PANEL-IKONY-NIESPOJNE-Q1 (żadnego
+  // nowego assetu). Bez tego wpisu `cpInlineIcons()` przepuszczało 📦 nietknięte przez CAŁĄ
+  // ścieżkę helperów (`gridDetailRow`, `appendDetailAlgo`, `el()`), więc „ściąga" panelu
+  // Pracy i karta paska górnego pokazywały goły glif mimo poprawnie działającego reskinu.
+  '📦': 'chip-crate',
   '🛠': 'tb-build',
   '📈': 'cp-trade',
   '😊': 'chip-happiness',
@@ -1795,15 +1841,6 @@ function plonyChipRowHtml(view: CityView): string {
     statChipBrand('res-treasury', 'Pieniądz', signed(view.pieniadz), 'blue') +
     statChipBrand('res-science', 'Nauka', signed(view.nauka), 'blue') +
     statChipBrand('res-culture', 'Kult.', signed(view.kultura), 'gold')
-  );
-}
-
-function pracaSplitBarLabelHtml(pctB: number, pctU: number, budAmt?: number, uleAmt?: number): string {
-  const bPart = budAmt != null ? ` +${budAmt}` : '';
-  const uPart = uleAmt != null ? ` +${uleAmt}` : '';
-  return (
-    `${pctB}% ${cityPanelChipIconWrap('cp-buildings', 14)}${bPart}` +
-    ` · ${pctU}% ${cityPanelChipIconWrap('chip-crate', 14)}${uPart}`
   );
 }
 
@@ -2084,6 +2121,18 @@ function ensureStyles(): void {
 .civ-cs .praca-w4-sliders input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:5px;background:rgba(255,255,255,0.08);outline:none;}
 .civ-cs .praca-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
 .civ-cs .praca-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4e6a8,#a9861f);border:1px solid #6a5212;cursor:pointer;}
+/* R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F) — sygnał Ulepszeń na samej górze panelu
+   „Podział pracy" + dwie wyraźnie oddzielone kolumny Budynki/Ulepszenia nad suwakiem. */
+.civ-cs .praca-split-summary{display:flex;align-items:baseline;gap:0.3em;font-size:0.86em;font-weight:700;
+  color:#8ec5ff;margin:0.1em 0 0.3em;}
+.civ-cs .praca-split-summary b{font-size:1.1em;}
+.civ-cs .praca-split-cols{display:flex;gap:0.5em;margin-bottom:0.32em;}
+.civ-cs .praca-split-col{flex:1 1 50%;padding:0.3em 0.42em;border-radius:6px;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);}
+.civ-cs .praca-split-col.right{border-left:2px solid rgba(142,197,255,0.35);}
+.civ-cs .praca-split-col-lbl{display:flex;align-items:center;gap:0.16em;font-size:0.7em;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.14em;}
+.civ-cs .praca-split-col b{font-size:0.92em;}
 .civ-cs .civ-w4-order-banner{display:flex;align-items:center;justify-content:center;gap:0.55em;margin-top:0.42em;padding:0.68em 0.75em;border-radius:9px;font-size:0.82em;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;}
 .civ-cs .civ-w4-order-banner.ok{color:#7ad0a0;border:1px solid rgba(74,158,106,0.45);background:rgba(74,158,106,0.08);}
 .civ-cs .civ-w4-order-banner.warn{color:#e0a860;border:1px solid rgba(224,168,96,0.4);background:rgba(224,168,96,0.08);}
@@ -2514,6 +2563,9 @@ function ensureStyles(): void {
 .civ-detail-scope .detail-card .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.12em 0.5em;margin-top:0.15em;}
 .civ-detail-scope .detail-card .dc-l{color:var(--muted);}
 .civ-detail-scope .detail-card .dc-v{word-break:break-word;}
+.civ-detail-scope .detail-card .dc-v-btn{background:none;border:0;padding:0;margin:0;font:inherit;color:var(--gold);
+  text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.civ-detail-scope .detail-card .dc-v-btn:hover{color:#f4e6a8;}
 .civ-detail-scope .detail-card .dc-section{font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
   color:#d4af5a;margin:0.55em 0 0.2em;padding-bottom:0.12em;border-bottom:1px solid rgba(212,175,90,0.18);}
 .civ-detail-scope .detail-card .dc-section:first-of-type{margin-top:0.15em;}
@@ -2569,6 +2621,8 @@ function ensureStyles(): void {
 .civ-cs .bld-req-chip.met,.civ-detail-scope .bld-req-chip.met{color:#6eb5ff;border-color:rgba(90,155,212,.55);background:rgba(90,155,212,.12);}
 .civ-cs .bld-req-chip.unmet,.civ-detail-scope .bld-req-chip.unmet{color:#ff6b6b;border-color:rgba(232,110,90,.5);background:rgba(232,90,70,.1);}
 .civ-cs .bld-req-chip .bld-req-tech-ic,.civ-detail-scope .bld-req-chip .bld-req-tech-ic{color:currentColor;opacity:0.92;}
+.cp-tech-hint-link{border-radius:50%;transition:box-shadow .15s,opacity .15s;}
+.cp-tech-hint-link:hover,.cp-tech-hint-link:focus-visible{box-shadow:0 0 0 2px rgba(232,216,138,.55);outline:none;}
 .civ-cs .bld-infocard-chips,.civ-detail-scope .bld-infocard-chips{display:flex;flex-wrap:wrap;gap:0.35em;}
 .civ-cs .bld-infocard-eyebrow,.civ-detail-scope .bld-infocard-eyebrow{font-size:0.54em;letter-spacing:.14em;text-transform:uppercase;color:#8a8478;margin-top:0.15em;}
 .civ-cs .bld-infocard-eyebrow.req,.civ-detail-scope .bld-infocard-eyebrow.req{color:#c9a35a;}
@@ -2597,6 +2651,9 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-cs .detail-card .dc-h .mini-thumb{width:1.85em;height:1.85em;font-size:0.95em;border-width:1px;}
 .civ-cs .detail-card .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.12em 0.5em;margin-top:0.15em;}
 .civ-cs .detail-card .dc-l{color:var(--muted);}
+.civ-cs .detail-card .dc-v-btn{background:none;border:0;padding:0;margin:0;font:inherit;color:var(--gold);
+  text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.civ-cs .detail-card .dc-v-btn:hover{color:#f4e6a8;}
 .civ-cs .detail-card .dc-note{margin-top:0.25em;color:var(--muted);font-size:0.92em;font-style:italic;}
 .civ-cs .detail-card.bld-detail-card{padding:0.32em 0.38em;}
 .civ-cs .detail-card.bld-detail-card .dc-h{margin-bottom:0.3em;padding-bottom:0.24em;border-bottom:1px solid rgba(212,175,90,0.24);}
@@ -4661,11 +4718,11 @@ function buildPracaDetailCard(
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
-  head.innerHTML = '<span>Podział pracy — ściąga</span>';
+  head.innerHTML = '<span>Lokalny przyrost Pracy — ściąga</span>';
   card.appendChild(head);
 
   const pctB = praca?.pctBudynki ?? pctCfg.procentBudynki;
-  const pctU = praca?.pctUlepszenia ?? (100 - pctB);
+  const pctU = praca?.pctPuli ?? procentPuliImperiumZBudynkow(pctB);
   const summary = el('div', 'dc-summary muted');
   summary.style.cssText = 'font-size:0.88em;margin-bottom:0.35em;';
   summary.innerHTML = praca
@@ -4675,8 +4732,8 @@ function buildPracaDetailCard(
 
   const intro = el('div', 'dc-note');
   setNoteHtml(intro,
-    'Praca 🔨 to surowiec z pól okolicy (👤 na heksach). Nie idzie wszystko w jedno miejsce — suwak dzieli ją między ' +
-    'kolejkę budowy/rekrutacji a pulę imperium (załóż miasto, ulepszenia / projekty mapy). Razem zawsze 100%.',
+    'Praca 🔨 to surowiec z pól okolicy (👤 na heksach). Lokalny suwak dzieli przyrost między ' +
+    'kolejkę budowy/rekrutacji a pulę imperium. Nadrzędny podział puli na budynki i ulepszenia jest ustawiany osobno.',
   );
   card.appendChild(intro);
 
@@ -4690,7 +4747,7 @@ function buildPracaDetailCard(
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Praca', praca ? `${signed(praca.total)} 🔨` : '—');
   gridDetailRow(g1, '→ Budynki', praca ? `${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—');
-  gridDetailRow(g1, '→ Pula imperium', praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—');
+  gridDetailRow(g1, `→ ${PULA_LBL_PELNA}`, praca ? `${signed(praca.doPuli)} (${praca.pctPuli}%)` : '—');
 
   appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
   appendDetailFormula(card, 'doPuli = praca − doBudynkow  (nigdy nie gubi reszty)');
@@ -4698,14 +4755,14 @@ function buildPracaDetailCard(
   appendDetailSection(card, 'Trade-off (po co ten wybór)');
   const gt = appendDetailGrid(card);
   gridDetailRow(gt, 'Więcej 🏛', 'Szybciej kończysz budynki i rekrutację w kolejce — miasto rośnie „w pionie”.');
-  gridDetailRow(gt, 'Więcej 📦', 'Szybciej kumulujesz pulę imperium — załóż miasto, ulepszenia terenu na mapie, projekty.');
-  gridDetailRow(gt, 'Skrajności', '100% 🏛 = zero wpływu do puli. 100% 📦 = kolejka stoi w miejscu (chyba że pusta — wtedy całość i tak idzie do puli).');
+  gridDetailRow(gt, 'Więcej 📦', 'Szybciej kumulujesz pulę Pracy imperium — załóż miasto i finansuj nadrzędnie limitowane ulepszenia terenu.');
+  gridDetailRow(gt, 'Skrajności', '100% 🏛 = zero wpływu do puli. 100% 📦 = kolejka stoi w miejscu; to lokalny podział przyrostu, nie limit automatu.');
   gridDetailRow(gt, 'Brak pracy', 'Gdy 🔨 = 0, suwak nic nie da — przypisz 👤 w okolicy (prawa kolumna).');
 
   appendDetailAlgo(card, 'Algorytm (splitPraca + productionProgress)', [
     'Praca netto = suma z obrabianych pól + budynki − strata (korupcja).',
     'doBudynkow idzie do kolejki produkcji (budynki, jednostki) co turę.',
-    'doPuli trafia do zapasu Pracy imperium (nie do ulepszeń pól — te kosztują pulę przy akcji na mapie).',
+    'doPuli trafia do zapasu Pracy imperium (nie oznacza automatycznie wydatku na ulepszenia pól).',
     'Kolejka pusta: cała Praca miasta (doBudynkow + doPuli) idzie do puli imperium.',
     'Kolejka zajęta: postęp += doBudynkow; gdy postęp ≥ koszt → budynek gotowy; reszta → doPuli.',
     maTargowisko
@@ -4715,7 +4772,7 @@ function buildPracaDetailCard(
   ]);
 
   appendDetailAlgo(card, 'Suwak UI', [
-    'Kroki co 10%. Zmiana %Budynki automatycznie ustawia resztę na pulę imperium.',
+    'Kroki co 10%. Zmiana %Budynki automatycznie ustawia resztę na pulę Pracy imperium.',
     'Per miasto — każde miasto może mieć inny podział.',
     'Brak pracy w turze — przypisz 👤 na mapie okolicy. Miasto rywala: tylko podgląd.',
   ]);
@@ -4723,6 +4780,14 @@ function buildPracaDetailCard(
   return card;
 }
 
+/**
+ * P-PRACA-PANEL-IKONY-NIESPOJNE-Q1 (Maciej 2026-08-22, ECHO (a)+(b)): pojęcie „Ulepszenia" miało
+ * w tym panelu DWIE różne ikony — `tb-build` (młotek) tutaj i `chip-crate` (skrzynka) w
+ * `renderPodzialPracy()` niżej (dodane `bd03ed3e`). Ujednolicone do `chip-crate` we WSZYSTKICH
+ * wystąpieniach; ikony zostają (właściciel odrzucił wariant czysto tekstowy).
+ * Uwaga przy edycji: „Ulepszenia" = pula Pracy imperium (skrzynka/zapas), a nie akt budowania —
+ * młotek `tb-build`/`res-work` jest zarezerwowany dla samego surowca Praca.
+ */
 function appendPodzialPracyInfo(
   mount: HTMLElement,
   city: City,
@@ -4741,8 +4806,8 @@ function appendPodzialPracyInfo(
   const chips = el('div', 'chip-row praca-split-chips');
   chips.innerHTML =
     statChipBrand('res-work', 'Miasto', praca ? signed(praca.total) : '—', 'gold') +
-    statChipBrand('cp-buildings', 'Budowa', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
-    statChipBrand('tb-build', 'Ulepszenia', praca ? `+${praca.doUlepszen}` : '—', 'blue');
+    statChipBrand('cp-buildings', 'Budynki', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
+    statChipBrand('chip-crate', PULA_LBL, praca ? `+${praca.doPuli}` : '—', 'blue');
   mount.appendChild(chips);
 
   const info = el('div', 'praca-split-info');
@@ -4774,10 +4839,10 @@ function appendPodzialPracyInfo(
   info.appendChild(rowBud);
 
   const rowPool = el('div', 'psi-row');
-  const poolTip = `Zapas całej cywilizacji: ${pool} Pracy · załóż miasto, ulepszenia / projekty mapy`;
+  const poolTip = `${PULA_TIP} Zapas całej cywilizacji: ${pool} Pracy.`;
   rowPool.innerHTML =
-    `<span class="psi-lbl">${psiRowLabel('tb-build', 'Ulepszenia', poolTip)}</span>` +
-    `<span class="psi-val blue">${praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
+    `<span class="psi-lbl">${psiRowLabel('chip-crate', PULA_LBL_PELNA, poolTip)}</span>` +
+    `<span class="psi-val blue">${praca ? `${signed(praca.doPuli)} (${praca.pctPuli}%)` : '—'}` +
     `<div class="psi-sub">Zapas Pracy na ulepszenia pól: ${pool}${cityPanelChipIconWrap('res-work', 14)} · farma, kamieniołom, projekty mapy</div></span>`;
   info.appendChild(rowPool);
 
@@ -4795,6 +4860,18 @@ function appendPodzialPracyInfo(
   mount.appendChild(info);
 }
 
+/**
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F, przeprojektowanie prezentacji — Maciej
+ * 2026-08-21): czysto wizualna zmiana, ŻADNEJ zmiany logiki procentów poza tym, co wymusza
+ * Wątek C gdzie indziej (ten konkretny suwak, kontrolka #4, MIN=50/MAX=100 na Budynki, JUŻ miał
+ * cap 50% na Ulepszenia — nietknięty tu).
+ * - Sygnał „Ulepszenia" na samej górze panelu (przed suwakiem), zamiast dopiero w wierszu info.
+ * - Budynki po lewej / Ulepszenia po prawej, w dwóch wyraźnie oddzielonych kolumnach (ikona +
+ *   etykieta + wartość), zamiast jednego zdania tekstowego powtarzającego to, co mówi ikona.
+ * - Nazewnictwo: „Pula Pracy" (myliło z realną, akumulowaną PULA IMPERIUM) → „Ulepszenia",
+ *   zgodnie z tym, co Wątek B ustalił już dla suwaka #1/#2 w `empireDetailPanel.ts` — tu ta sama
+ *   zmiana zastosowana w kontrolce #4 (nie była dotąd zrobiona, sprawdzone przed zmianą).
+ */
 function renderPodzialPracy(
   mount: HTMLElement,
   city: City,
@@ -4807,40 +4884,59 @@ function renderPodzialPracy(
   const pctCfg = readPodzialPracy(city, data);
   const praca = view ? cityPracaSplit(city, view, data) : null;
   const pctB = praca?.pctBudynki ?? pctCfg.procentBudynki;
-  const pctU = praca?.pctUlepszenia ?? (100 - pctB);
+  const pctU = praca?.pctPuli ?? procentPuliImperiumZBudynkow(pctB);
   const player = city.ownerId === 0;
+  // R-PRACA-JEDEN-PODZIAL-Q1 pkt 5: suwak NIE jest zablokowany. Ustawia lokalna
+  // wartosc; gdy rozni sie od globalnej, „Indywidualne" zapala sie SAMO, a powrot do
+  // wartosci globalnej je gasi (logika: `applyCityPodzialPracyChange` w main.ts).
+  const podzialTip = `Podział przyrostu Pracy tego miasta: Budynki ${MIN_PODZIAL_PRACY_BUDYNKI_PERCENT}–100%, `
+    + `${PULA_LBL_PELNA} 0–${MAX_PROCENT_PULI_IMPERIUM}% — zawsze razem 100%. Kroki co ${HANDEL_PCT_STEP}%. `
+    + 'Ustawienie inne niż globalne włącza „Indywidualne" samo; powrót do globalnego je gasi.';
+
+  // Sygnał na samej górze: ile z tegorocznego przyrostu Pracy trafia do Ulepszeń.
+  const summary = el('div', 'praca-split-summary');
+  summary.innerHTML = `${cityPanelChipIconWrap('chip-crate', 16)} ${PULA_LBL_PELNA} <b>${pctU}%</b>`
+    // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1: ten string jest sklejany wprost do `innerHTML`,
+    // z pominięciem `cpInlineIcons()` — literalny 🔨 docierał do gracza jako goły glif.
+    // Ikona wstawiana tak samo jak w sąsiednich liniach tej samej funkcji (kolumny
+    // Budynki/Ulepszenia niżej), żeby nie wprowadzać trzeciego wzorca.
+    + (praca ? ` <span class="muted" style="font-weight:400">(+${praca.doPuli} ${cityPanelChipIconWrap('res-work', 13)}/turę)</span>` : '');
+  mount.appendChild(summary);
 
   const sliderWrap = el('div', 'praca-w4-sliders');
-  const sliderRow = el('div', 'slider-row');
-  const sliderLabel = el('label');
-  const podzialTip = 'Kroki co 10%. W lewo → więcej do ulepszeń · w prawo → szybsza kolejka budowy.';
-  sliderLabel.innerHTML =
-    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki / Ulepszenia</span>` +
-    `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
-  sliderRow.appendChild(sliderLabel);
+
+  const cols = el('div', 'praca-split-cols');
+  const colBud = el('div', 'praca-split-col left');
+  colBud.innerHTML = `<div class="praca-split-col-lbl">${cityPanelChipIconWrap('cp-buildings', 13)} Budynki</div>`
+    + `<b>${pctB}%${praca ? ` · +${praca.doBudynkow}` : ''}</b>`;
+  const colUle = el('div', 'praca-split-col right');
+  colUle.innerHTML = `<div class="praca-split-col-lbl">${cityPanelChipIconWrap('chip-crate', 13)} ${PULA_LBL}</div>`
+    + `<b>${pctU}%${praca ? ` · +${praca.doPuli}` : ''}</b>`;
+  cols.appendChild(colBud);
+  cols.appendChild(colUle);
+  sliderWrap.appendChild(cols);
 
   if (player) {
     const inp = document.createElement('input');
     inp.type = 'range';
-    inp.min = '0';
-    inp.max = '100';
+    inp.min = String(MIN_PODZIAL_PRACY_BUDYNKI_PERCENT);
+    inp.max = String(MAX_PODZIAL_PRACY_BUDYNKI_PERCENT);
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
-    inp.setAttribute('aria-label', 'Podział pracy: budynki versus ulepszenia');
+    inp.setAttribute('aria-label', 'Podział przyrostu Pracy tego miasta: budynki versus ulepszenia (pula imperium)');
     inp.title = podzialTip;
     inp.addEventListener('input', () => {
-      const v = snapHandelPct(Number(inp.value));
+      const v = clampPodzialPracyBudynkiPercent(Number(inp.value));
       cfg.onPodzialPracyChange?.(city.id, { procentBudynki: v });
       rerender();
     });
-    sliderRow.appendChild(inp);
+    sliderWrap.appendChild(inp);
   } else {
     const ro = el('div', 'muted');
     ro.style.cssText = 'font-size:0.68em;margin-top:0.06em;';
     ro.textContent = 'Tylko podgląd (miasto rywala).';
-    sliderRow.appendChild(ro);
+    sliderWrap.appendChild(ro);
   }
-  sliderWrap.appendChild(sliderRow);
   if (player && cfg.onPodzialPracyOverrideToggle) {
     appendIndywidualneToggle(
       sliderWrap,
@@ -5440,7 +5536,7 @@ function buildTopBarPracaDetailCard(
   const pracaSplit = cityPracaSplit(city, view, data);
   const pctCfg = readPodzialPracy(city, data);
   const pctB = pracaSplit.pctBudynki;
-  const pctU = pracaSplit.pctUlepszenia;
+  const pctU = pracaSplit.pctPuli;
   const pool = Math.round(empire.pracaPool ?? empire.pracaRate ?? 0);
   let empireSum = 0;
   if (map && data) {
@@ -5453,23 +5549,26 @@ function buildTopBarPracaDetailCard(
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>🔨 Praca — co to znaczy</span>'));
   const intro = el('div', 'dc-note');
-  intro.style.fontStyle = 'normal';
-  intro.textContent =
-    'Praca to surowiec z pól okolicy (👤). Duża liczba to pula imperium; złoty i niebieski dopisek to podział pracy tylko tego miasta.';
+  // P-PRACA-PANEL-EMOJI-ZAMIAST-IKON-Q1: było `.textContent =`, które z definicji NIE renderuje
+  // HTML — nawet zmapowany 👤 lądował u gracza jako goły glif. `setNoteHtml` to ten sam helper
+  // (`fontStyle:'normal'` + `innerHTML = cpInlineIcons(...)`), którym intro karty „Podział pracy"
+  // już jest ustawiane w `buildPracaDetailCard`.
+  setNoteHtml(intro,
+    'Praca to surowiec z pól okolicy (👤). Duża liczba to pula imperium; złoty i niebieski dopisek to podział pracy tylko tego miasta.');
   card.appendChild(intro);
 
   appendDetailSection(card, 'Co widzisz na pasku');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 🔨', `${pool} — pula Pracy imperium (zapas / suma tur)`);
   gridDetailRow(g0, 'Złoty dopisek', `${signed(pracaSplit.doBudynkow)} — ten gród → kolejka budowy (${pctB}%)`);
-  gridDetailRow(g0, 'Niebieski dopisek', `${signed(pracaSplit.doUlepszen)} — ten gród → pula imperium (${pctU}%)`);
+  gridDetailRow(g0, 'Niebieski dopisek', `${signed(pracaSplit.doPuli)} — ten gród → pula imperium (${pctU}%)`);
   gridDetailRow(g0, 'Suma miast', empireSum > 0 ? `${signed(empireSum)} łącznie z wszystkich grodów` : '—');
 
   appendDetailSection(card, 'Skąd bierze się praca (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Praca brutto', `${signed(pracaSplit.total)} 🔨`);
   gridDetailRow(g1, '→ Budynki', `${signed(pracaSplit.doBudynkow)} — postęp w kolejce produkcji`);
-  gridDetailRow(g1, '→ Pula imperium', `${signed(pracaSplit.doUlepszen)} — zapas cywilizacji (załóż miasto, projekty mapy)`);
+  gridDetailRow(g1, `→ ${PULA_LBL_PELNA}`, `${signed(pracaSplit.doPuli)} — ${PULA_TIP}`);
 
   appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
   appendDetailFormula(card, 'doPuli = praca − doBudynkow  (nigdy nie gubi reszty)');
@@ -5887,14 +5986,9 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
       deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
     }
   } else if (item.kind === 'jednostka') {
-    // JEDNOSTKI-SUROWIEC-01 + R-AI-RECRUIT-UPKEEP-GATE: łączna bramka PRZED poborem.
-    const cost = unitStockCostForItem(item);
-    const pool = ownerSurowcePoolFor(city);
-    const def = gameData()?.units.find(u => u.Jednostka === item.id);
-    if (!canAffordUnitRecruitFull(pool, def)) return;
-    if (Object.keys(cost).length > 0) {
-      deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
-    }
+    // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostki nie są
+    // budowane za Pracę. Rekrutacja ma własną ścieżkę zakupu poniżej.
+    return;
   }
   setProd(city.id, enqueue(getProd(city.id), item));
   rerender();
@@ -6759,7 +6853,13 @@ function isEmptyDataVal(v: unknown): boolean {
   return v == null || v === '' || v === '—' || v === '-';
 }
 
-/** Ukrywa wewnętrzne notatki decyzyjne (PYTANIE/DECYZJA) przed graczem. */
+/**
+ * Ukrywa wewnętrzne notatki decyzyjne (PYTANIE/DECYZJA/DEC-...) przed graczem, gdy CAŁA
+ * notatka jest wewnętrzna (nic legalnego do pokazania). Odniesienia „ABC-<numer>:"
+ * współistniejące z legalnym tekstem w tej samej notatce (np. „kończy Epokę 1; ABC-7:
+ * Popalnia brązu na mapie") NIE mają trafiać tutaj — patrz `stripInlineDevAnnotations()`
+ * niżej i P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1 runda 2.
+ */
 function isDevOnlyPlayerText(text: string): boolean {
   const t = text.trim();
   return /^PYTANIE\s+\d+/i.test(t)
@@ -6768,12 +6868,23 @@ function isDevOnlyPlayerText(text: string): boolean {
     || /\bpatrz\s+unit-building-bonuses/i.test(t);
 }
 
+/**
+ * NAPRAWA (P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1, runda 2): runda 1 dodała rozpoznawanie
+ * wzorca „ABC-<numer>" do `isDevOnlyPlayerText()` (funkcja odrzucająca CAŁĄ notatkę),
+ * co spowodowało REGRES — dla `tech.json` Brązownictwo, Uwagi = „kończy Epokę 1; ABC-7:
+ * Popalnia brązu na mapie", cała notatka znikała graczowi, w tym legalna część „kończy
+ * Epokę 1", nie tylko dev-adnotacja „ABC-7: ...". Naprawa: wzorzec „ABC-<numer>:" (wraz z
+ * otaczającą interpunkcją, np. „; ABC-7: ...", aż do końca zdania/stringa) jest tu
+ * WYCINANY, a reszta notatki (legalny tekst) zostaje — analogicznie do już istniejącego
+ * wzorca „PYTANIE ...=.../(Maciej daty)" niżej.
+ */
 function stripInlineDevAnnotations(text: string): string {
   return text
     .replace(/^PYTANIE\s+\d+\s*=\s*[ABC]\s*\([^)]*\)\s*:?\s*/i, '')
     .replace(/\bPYTANIE\s+\d+\s*=\s*[ABC]\s*\([^)]*\)/gi, '')
     .replace(/\(Maciej\s+\d{4}-\d{2}-\d{2}\)/g, '')
     .replace(/\bdecyzj[aą]\s+Maciej\s+\d{4}-\d{2}-\d{2}/gi, '')
+    .replace(/[\s;,.]*\bABC-\d+(?:\s?[A-Za-z])?\s*:\s*[^.]*\.?/gi, ' ')
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
@@ -6786,7 +6897,14 @@ function playerFacingNote(text: string | null | undefined): string | null {
   return cleaned || null;
 }
 
-/** Mały medalion ikony technologii (14px) do wklejenia w tekst-podpowiedzi (innerHTML). */
+/**
+ * Mały medalion ikony technologii (14px) do wklejenia w tekst-podpowiedzi (innerHTML).
+ * Klikalny link do karty podglądu technologii (`showTechDiscoveryNotice(..., kind:'preview')`)
+ * — ta sama karta co w hubie badań / drzewku tech (R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1
+ * faza 1). Klik obsłużony przez delegację na `document` (`bindTechHintLinkDelegation`
+ * niżej), bo ten span jest wklejany jako string przez `innerHTML` w wielu miejscach karty
+ * miasta — nie ma tu bezpośredniego uchwytu DOM w momencie tworzenia.
+ */
 function techIconHintSpan(
   techName: string | null | undefined,
   sizePx = 14,
@@ -6795,10 +6913,46 @@ function techIconHintSpan(
   if (!techName) return '';
   const svg = techIconSvg(techName, sizePx);
   if (!svg) return '';
-  const icCls = opts?.inheritColor ? 'bld-req-tech-ic' : '';
+  const icCls = 'cp-tech-hint-link' + (opts?.inheritColor ? ' bld-req-tech-ic' : '');
   const color = opts?.inheritColor ? 'currentColor' : 'var(--gold)';
-  return `<span class="${icCls}" style="display:inline-flex;width:${sizePx}px;height:${sizePx}px;vertical-align:-3px;margin-right:4px;color:${color};">${svg}</span>`;
+  return `<span class="${icCls}" data-tech-hint-name="${techName}" role="button" tabindex="0" `
+    + `title="Podgląd karty technologii" aria-label="Podgląd karty: ${techName}" `
+    + `style="display:inline-flex;width:${sizePx}px;height:${sizePx}px;vertical-align:-3px;margin-right:4px;color:${color};cursor:pointer;">${svg}</span>`;
 }
+
+let techHintLinkDelegationBound = false;
+
+/**
+ * Jednorazowa delegacja kliknięcia/klawiatury na `document` dla ikon-linków z
+ * `techIconHintSpan()` — otwiera tę samą kartę podglądu co hub badań i drzewko tech.
+ * Bezpieczne wołanie wielokrotne (flaga chroni przed podwójnym bindowaniem).
+ */
+function bindTechHintLinkDelegation(): void {
+  if (techHintLinkDelegationBound) return;
+  techHintLinkDelegationBound = true;
+  const openPreview = (techName: string): void => {
+    showTechDiscoveryNotice({ techName, eraIndex: 1, kind: 'preview' });
+  };
+  document.addEventListener('click', (e: MouseEvent) => {
+    const link = (e.target as Element | null)?.closest('.cp-tech-hint-link');
+    if (!link) return;
+    const name = link.getAttribute('data-tech-hint-name');
+    if (!name) return;
+    e.stopPropagation();
+    openPreview(name);
+  });
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const link = (e.target as Element | null)?.closest('.cp-tech-hint-link');
+    if (!link) return;
+    const name = link.getAttribute('data-tech-hint-name');
+    if (!name) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openPreview(name);
+  });
+}
+bindTechHintLinkDelegation();
 
 function unitExtraField(u: UnitDef, key: string): string | number | null {
   const v = (u as unknown as Record<string, unknown>)[key];
@@ -6945,9 +7099,144 @@ function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: st
   }
   const techNote = playerFacingNote(t.Uwagi);
   if (techNote) gridDetailRow(grid, 'Uwagi tech', techNote);
+
+  // T10 LINKOWANIE-KRZYZOWE: JEDEN nowy link wyjścia z tego wbudowanego bloku (celowo
+  // NIE migrowanego do entityCards, patrz nagłówek funkcji) do PEŁNEJ karty technologii
+  // (T3, `technologyAdapter.ts` + `renderEntityCard`) jako OSOBNY, zagnieżdżony overlay
+  // — `openEntityCard('technology', slug, {mode:'dialog'})` korzysta z tego samego
+  // `pushOverlay`/`popOverlay` (`escapeOverlayStack.ts`) co reszta kart, więc Esc na
+  // wierzchu zamyka TYLKO tę nową kartę, karta budynku/jednostki pod spodem zostaje.
+  // Wzorem `improvementRangeRow()` wyżej (`.dc-v.dc-v-btn`, T7b) — przycisk jako
+  // WŁASNA wartość wiersza (`.dc-v`), nie jako `techIconHintSpan()` wstrzykiwany przez
+  // `.innerHTML` (ikonka pozostaje jak dziś, osobno, w wierszu „Odblokowuje tech" wyżej).
+  const techSlug = technologyIdFromName(techName);
+  if (resolveTechnologyRow(techSlug) != null) {
+    const lEl = el('span', 'dc-l');
+    lEl.textContent = 'Pełna karta';
+    grid.appendChild(lEl);
+    const vBtn = el('button', 'dc-v dc-v-btn');
+    vBtn.type = 'button';
+    vBtn.textContent = 'Zobacz pełną kartę technologii →';
+    vBtn.setAttribute('data-entity-kind', 'technology');
+    vBtn.setAttribute('data-entity-id', techSlug);
+    vBtn.addEventListener('click', () => openEntityCard('technology', techSlug, { mode: 'dialog' }));
+    grid.appendChild(vBtn);
+  }
 }
 
+const ENTITY_CARD_BUILDING_STYLE_ID = 'civ-city-panel-entity-card-css-v1';
+
+/** Wstrzykuje `ENTITY_CARD_CSS` (bazowe style `.entity-card*` z `entityCards/renderer.ts`)
+ * raz do dokumentu, plus lokalne dopasowanie szerokości karty (434px domyślnie) do
+ * hover-docku panelu miasta (`HOVER_DETAIL_DOCK_W`=400px, `hoverDetailDock.ts`) i
+ * pływającego tooltipu poza dockiem — bez tego karta (dziś renderowana przez wspólny
+ * `renderEntityCard`) przycinałaby się w docku. Zaimplementowane TUTAJ (wewnątrz
+ * `buildBuildingDetailCard`, jedynej funkcji z allowlisty T5 dotykającej stylów) zamiast
+ * w głównym `ensureStyles()`/`css` template (poza allowlistą T5) — wzorem
+ * `ensureUnitInfoCardStyles()` z T4 (`unitInfoCard.ts`), tylko wołane lazily przy
+ * pierwszym zbudowaniu karty budynku zamiast osobnej eksportowanej funkcji. */
+function ensureEntityCardBuildingStyles(): void {
+  if (document.getElementById(ENTITY_CARD_BUILDING_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = ENTITY_CARD_BUILDING_STYLE_ID;
+  style.textContent = `${ENTITY_CARD_CSS}
+.civ-hover-detail-content .entity-card,
+.civ-hover-detail-float .entity-card{width:100%;max-width:100%;box-sizing:border-box;}
+/* P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1 (trzeci komponent ze zgloszenia).
+   Sekcje "Technologie"/"Uwagi" tej karty buduje beginBuildingDetailTile() +
+   appendTechDetailBlock() (.bld-detail-tile*, .dc-grid, .dc-l, .dc-v, .dc-note) — czyli
+   STARY, wbudowany renderer panelu miasta, swiadomie NIE migrowany do entityCards.
+   Caly jego CSS jest jednak zapisany WYLACZNIE pod selektorami zakotwiczonymi w klasie
+   detail-card (.civ-detail-scope .detail-card .dc-grid, .civ-cs .detail-card .dc-grid,
+   linie ~2529 i ~2618) — a karta z T5/T6 dostaje tylko bld-detail-card/unit-detail-card
+   dopiete do .entity-card (stary _legacyBuildBuildingDetailCard tworzyl div o klasach
+   "detail-card bld-detail-card", migracja te klase zgubila). Efekt: .dc-grid zostawal
+   zwyklym blokiem, a .dc-l/.dc-v inline'owymi spanami bez odstepu — pola zlewaly sie
+   w jeden ciag ("Odblokowuje techObrobka drewnaEpoka techKamienPoziom drzewka...").
+   Nie dopinamy klasy detail-card (nalozylaby drugie tlo/ramke/padding na i tak juz
+   oprawiona .entity-card — podwojna ramka), tylko odtwarzamy TE SAME reguly siatki i
+   kafla pod selektorem .entity-card.bld-detail-card, w jednostkach px pasujacych do
+   typografii karty encji (13px) zamiast em-ow starej karty (0.78em). */
+.entity-card.bld-detail-card .bld-detail-tile{margin:0 14px 10px;padding:6px 9px 7px;
+  background:rgba(0,0,0,.24);border:1px solid rgba(212,175,90,.18);border-radius:6px;
+  box-shadow:inset 0 1px 0 rgba(232,216,138,.04);}
+.entity-card.bld-detail-card .bld-detail-tile-hd{font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.08em;color:#d4af5a;margin:0 0 4px;
+  padding-bottom:3px;border-bottom:1px solid rgba(212,175,90,.2);}
+.entity-card.bld-detail-card .dc-grid{display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2px 8px;margin-top:2px;
+  font-size:13px;line-height:1.35;align-items:baseline;}
+.entity-card.bld-detail-card .dc-l{min-width:0;word-break:break-word;
+  color:var(--tg-text-muted,#9aa6b6);}
+.entity-card.bld-detail-card .dc-v{min-width:0;word-break:break-word;}
+.entity-card.bld-detail-card .dc-v .civ-cs-chip-ic-wrap,
+.entity-card.bld-detail-card .dc-note .civ-cs-chip-ic-wrap{display:inline-flex;
+  align-items:center;vertical-align:middle;margin-right:.08em;}
+/* Link "Zobacz pelna karte technologii ->" (T10) — ten sam zloty, podkreslony jezyk
+   wizualny co linki krzyzowe w ENTITY_CARD_CSS, zamiast natywnego przycisku. */
+.entity-card.bld-detail-card .dc-v-btn{-webkit-appearance:none;appearance:none;background:none;
+  border:0;margin:0;padding:0;font:inherit;line-height:inherit;text-align:left;cursor:pointer;
+  color:var(--tg-gold-primary,#e8d88a);text-decoration:underline;text-underline-offset:2px;}
+.entity-card.bld-detail-card .dc-v-btn:hover{color:#f4e6a8;}
+.entity-card.bld-detail-card .dc-v-btn:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary,#e8d88a));
+  outline-offset:2px;border-radius:3px;}
+.entity-card.bld-detail-card .dc-note{margin-top:4px;font-size:12px;line-height:1.35;
+  color:var(--tg-text-muted,#9aa6b6);}`;
+  document.head.appendChild(style);
+}
+
+/** Buduje kartę budynku przez `buildingAdapter` + wspólny `renderEntityCard`
+ * (T5 MIGRACJA-KARTA-BUDYNKU-PANEL-MIASTA), zamiast własnego DOM-buildera — wzorem T3/T4.
+ * Sekcje „Technologie"/„Uwagi" dopełnione TU (host), bo zależą od `data: GameData`/
+ * `appendTechDetailBlock` — funkcji świadomie NIE migrowanej w tym kroku (plan
+ * architektury §3 krok 2: `appendTechDetailBlock` zostaje nietknięta do T10, współdzielona
+ * też z kartą jednostki). Adapter dostarcza WSZYSTKO, co da się policzyć z samego
+ * `BuildingDef` + czystych funkcji `game/*` (patrz `buildingAdapter.ts` nagłówek). */
+function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
+  ensureEntityCardBuildingStyles();
+  const displayLevel = buildingUiDisplayLevel(def, city);
+  const cityState: BuildingCardCityState = {
+    hasCity: city !== undefined,
+    displayLevel,
+    buildCostPace: cfg.getBuildingCostPace?.() ?? 'niski',
+    difficulty: cfg.getDifficulty?.() ?? 'normal',
+    ownerId: 0, // 1:1 ze świadomym hardcode'em dawnego `buildBuildingDetailCard`
+  };
+  const built = buildingAdapter(def, { city: cityState });
+  const card = renderEntityCard(built) as HTMLDivElement;
+  card.classList.add('bld-detail-card');
+
+  // --- Technologie / Uwagi — dopełnione TU (host), NIE w adapterze; patrz komentarz wyżej ---
+  const techBody = beginBuildingDetailTile(card, 'Technologie');
+  appendTechDetailBlock(techBody, data, def.techUnlock);
+
+  const playerNote = playerFacingNote(def.uwagi);
+  if (playerNote) {
+    const noteBody = beginBuildingDetailTile(card, 'Uwagi');
+    const note = el('div', 'dc-note');
+    note.style.fontStyle = 'normal';
+    note.textContent = playerNote;
+    noteBody.appendChild(note);
+  }
+  return card;
+}
+
+/** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T5), fallback do starej
+ * implementacji (`_legacyBuildBuildingDetailCard`) w razie wyjątku — wzorem T3/T4, dopóki
+ * Final Control nie potwierdzi parytetu. */
 function buildBuildingDetailCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
+  try {
+    return buildBuildingDetailCardViaEntityCard(def, data, city);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[cityPanel] buildBuildingDetailCard: błąd ścieżki entityCards, fallback do starej implementacji:', err);
+    return _legacyBuildBuildingDetailCard(def, data, city);
+  }
+}
+
+/** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
+ * (wzorem `_legacyBuildUnitInfoCard`/`_legacyShowTechDiscoveryNotice`). ZERO zmian treści. */
+function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
   const card = el('div', 'detail-card bld-detail-card');
   const head = el('div', 'dc-h');
   head.appendChild(makeBuildingThumb(def));
@@ -7220,7 +7509,63 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
   return card;
 }
 
+/**
+ * Karta szczegółów jednostki w panelu miasta/rekrutacji (T6 MIGRACJA-KARTA-JEDNOSTKI-
+ * PANEL-MIASTA). Buduje treść przez WSPÓLNY `unitAdapter` (`entityCards/unitAdapter.ts`)
+ * — TEN SAM adapter co karta jednostki na mapie (`unitInfoCard.ts`, T4) — i renderuje
+ * przez wspólny `renderEntityCard`, zamiast własnego DOM-buildera — wzorem T3/T4/T5.
+ * Stara implementacja zostaje pod prywatną nazwą (`_legacyBuildUnitDetailCard`) jako
+ * fallback, dopóki Final Control nie potwierdzi parytetu (wzorem T5).
+ *
+ * Sekcje „Technologie"/„Uwagi" dopełnione TU (host), NIE w adapterze — 1:1 z tym, jak
+ * `buildBuildingDetailCardViaEntityCard` dopełnia te same dwie sekcje dla budynków
+ * (`appendTechDetailBlock` świadomie NIE migrowane w tym kroku, plan architektury §3
+ * krok 2/§7 pkt 2) — więc pozostają WYŁĄCZNIE w karcie rekrutacji, karta mapy
+ * (`unitInfoCard.ts`, poza allowlistą T6) ich nie dostaje; udokumentowane w tabeli
+ * porównawczej raportu T6 jako świadoma, uzasadniona różnica (dziedziczona z T5, nie
+ * nowa w T6).
+ *
+ * Pola „Charakterystyka"/dodatkowe wiersze „Statystyki bojowe" (Obrażenia broni, Bonus
+ * szarży, Ruch w bitwie, Pociski, Widok pola, Kara flanki, Kara od tyłu, Próg dezercji,
+ * Morale bazowe/ucieczki, Linia, Klasa) — dotąd TYLKO w tej karcie — zostały w T6
+ * DOPISANE do wspólnego `unitAdapter.ts` (patrz nagłówek tego pliku), więc karta mapy
+ * zaczyna je też pokazywać. To świadoma decyzja Operatora T6 (bez ABC): czysto
+ * addytywne wzbogacenie, zero utraconej treści po żadnej stronie.
+ */
+function buildUnitDetailCardViaEntityCard(u: UnitDef, data: GameData): HTMLDivElement {
+  ensureEntityCardBuildingStyles();
+  const built = unitAdapter(u, {});
+  const card = renderEntityCard(built) as HTMLDivElement;
+  card.classList.add('unit-detail-card', 'bld-detail-card');
+
+  const techBody = beginBuildingDetailTile(card, 'Technologie');
+  appendTechDetailBlock(techBody, data, u.Tech);
+
+  if (u.Uwagi && !isEmptyDataVal(u.Uwagi)) {
+    const noteBody = beginBuildingDetailTile(card, 'Uwagi');
+    const note = el('div', 'dc-note');
+    note.style.fontStyle = 'normal';
+    note.textContent = u.Uwagi;
+    noteBody.appendChild(note);
+  }
+  return card;
+}
+
+/** Publiczna sygnatura BEZ ZMIAN. Próbuje ścieżkę entityCards (T6), fallback do starej
+ * implementacji (`_legacyBuildUnitDetailCard`) w razie wyjątku — wzorem T3/T4/T5. */
 function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
+  try {
+    return buildUnitDetailCardViaEntityCard(u, data);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[cityPanel] buildUnitDetailCard: błąd ścieżki entityCards, fallback do starej implementacji:', err);
+    return _legacyBuildUnitDetailCard(u, data);
+  }
+}
+
+/** Stara implementacja (DOM-builder własny) — zachowana pod prywatną nazwą jako fallback
+ * (wzorem `_legacyBuildBuildingDetailCard`/`_legacyBuildUnitInfoCard`). ZERO zmian treści. */
+function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
   const thumb = el('span');
@@ -7396,8 +7741,10 @@ function empireRekruciAffordable(city: City, mpCost: number): boolean {
 /**
  * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): chip(y) kosztu surowcowego jednostki
  * (units.json Surowiec/Surowiec (ilość)) na karcie rekrutacji — czerwony gdy pula
- * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza na łączny
- * koszt rekrutacji (unitRecruitFullStockCost = stock + rezerwa utrzymania 1 tura).
+ * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza na SAM
+ * jednorazowy koszt zakupu (unitStockCost). R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1
+ * (2026-08-26): brak zapasu na utrzymanie NIE czerwieni chipa i nie blokuje przycisku
+ * — utrzymanie jest pobierane dopiero w następnej turze.
  * Pusty string gdy jednostka nie ma kosztu surowcowego.
  * Wzorzec: buildingStockCostChipsHtml; bramka: isUnitRecruitStockChipMissing.
  */
@@ -7436,10 +7783,11 @@ function appendUnitRecruitCompactRow(
   if (!udef) return;
   const mpCost = recruitManpowerCost(city, item.id);
   const canMp = empireRekruciAffordable(city, mpCost);
-  // JEDNOSTKI-SUROWIEC-01 + R-AI-RECRUIT-UPKEEP-GATE: łączna bramka na puli państwa.
-  const fullCost = unitRecruitFullStockCost(udef);
-  const fullMissing = missingStockFor(ownerSurowcePoolFor(city), fullCost);
-  const recruitOk = Object.keys(fullMissing).length === 0;
+  // JEDNOSTKI-SUROWIEC-01 + R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1: bramka na puli
+  // państwa liczy WYŁĄCZNIE jednorazowy koszt zakupu; utrzymanie idzie w następnej turze.
+  const stockCost = unitStockCost(udef);
+  const stockMissing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
+  const recruitOk = Object.keys(stockMissing).length === 0;
   const row = buildUnitRecruitCard({
     udef,
     item,
@@ -7452,7 +7800,7 @@ function appendUnitRecruitCompactRow(
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
     resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(udef),
     stockMissingLabel: !recruitOk
-      ? 'Brakuje w magazynie: ' + Object.entries(fullMissing)
+      ? 'Brakuje w magazynie: ' + Object.entries(stockMissing)
         .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
         .join(', ')
       : undefined,
@@ -7470,14 +7818,9 @@ function recruitUnit(city: City, item: ProductionItem): void {
   const data = gameData();
   const udef = data ? findUnitDef(data, item.id) : undefined;
   const pool = ownerSurowcePoolFor(city);
-  if (!canAffordUnitRecruitFull(pool, udef)) return;
+  if (!canAffordUnitRecruitStock(pool, udef)) return;
   if (cfg.onPurchaseUnit) {
     cfg.onPurchaseUnit(city.id, item.id, item.koszt);
-  } else {
-    const data = gameData();
-    const prodItem = data ? unitProductionItem(item.id, data) : item;
-    if (!prodItem) return;
-    setProd(city.id, enqueueRecruitment(getProd(city.id), prodItem));
   }
   rerender();
 }
@@ -8761,6 +9104,67 @@ function okStat(key: string, val: string, sub: string): string {
   return `<div class="okstat"><span class="ks">${key}</span><b>${val}</b> <span class="muted">${sub}</span></div>`;
 }
 
+/** Mapa `ImprovementKey` (klucz obiektu w `terrain-improvements.json`) → nazwa gracza
+ * (`row.nazwa`) — T7b (KARTA-ULEPSZENIA-TERENU), call-site 3/3, sekcja „Ulepszenia
+ * w zasięgu". Ten sam wzorzec odwrotny co `IMPROVEMENT_NAME_TO_KEY` w
+ * `techDiscoveryNotice.ts`/`technologyAdapter.ts` (Bug B, R-TECH-ULEPSZENIA-TERENU-SYNC-Q1),
+ * tylko w drugą stronę (tu KLUCZ jest już znany — z `improvementKeysForHex` — brakuje
+ * tylko etykiety do wyświetlenia w wierszu). */
+const IMPROVEMENT_KEY_TO_NAME: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {
+    if (key.startsWith('_')) continue;
+    if (typeof row?.nazwa === 'string' && row.nazwa) map[key] = row.nazwa;
+  }
+  return map;
+})();
+
+/**
+ * Zbiera unikalne typy ulepszeń terenu (i liczbę heksów każdego typu) w zasięgu
+ * roboczym miasta (`Rwork`) — T7b, call-site 3/3. Recon (T7a) potwierdził: dziś w
+ * `cityPanel.ts` nie istnieje żadna lista ulepszeń terenu z nazwami w zakładce
+ * „Okolica" (tylko zagregowane plony per-hex) — to jest pierwsza taka lista.
+ * Czyta WSZYSTKIE warstwy ulepszeń przez `improvementKeysForHex` (nie legacy
+ * `hex.ulepszenie`), tak jak `tileYieldLabel`/`appendOkolicaYieldLabel` niżej w pliku.
+ */
+function improvementsInCityRange(
+  city: City,
+  map: GameMap | undefined,
+  Rwork: number | undefined,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  if (!map || Rwork === undefined) return counts;
+  for (let dq = -Rwork; dq <= Rwork; dq++) {
+    for (let dr = -Rwork; dr <= Rwork; dr++) {
+      const q = city.q + dq;
+      const r = city.r + dr;
+      if (hexDist(city.q, city.r, q, r) > Rwork) continue;
+      const hex = map.hexes[`${q},${r}`];
+      if (!hex) continue;
+      for (const key of improvementKeysForHex(hex)) {
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    }
+  }
+  return counts;
+}
+
+/** Jeden wiersz klikalny w gridzie „Ulepszenia w zasięgu" — cała wartość (`.dc-v`) jest
+ * przyciskiem otwierającym tę samą kartę encji co pozostałe 2 miejsca wywołania T7b
+ * (`openEntityCard('improvement', key, {mode:'dialog'})`). */
+function improvementRangeRow(grid: HTMLElement, key: string, nazwa: string, count: number): void {
+  const lEl = el('span', 'dc-l');
+  lEl.textContent = nazwa;
+  grid.appendChild(lEl);
+  const vBtn = el('button', 'dc-v dc-v-btn');
+  vBtn.type = 'button';
+  vBtn.textContent = `${count}× — szczegóły →`;
+  vBtn.setAttribute('data-entity-kind', 'improvement');
+  vBtn.setAttribute('data-entity-id', key);
+  vBtn.addEventListener('click', () => openEntityCard('improvement', key, { mode: 'dialog' }));
+  grid.appendChild(vBtn);
+}
+
 function buildOkolicaDetailCard(
   city: City,
   opts: {
@@ -8771,9 +9175,11 @@ function buildOkolicaDetailCard(
     focus: OkolicaFocus;
     tryb: OkolicaTryb;
     clickHint: string;
+    /** T7b: potrzebna do zebrania ulepszeń w zasięgu (sekcja „Ulepszenia w zasięgu"). */
+    map?: GameMap;
   },
 ): HTMLDivElement {
-  const { Rwork, workedCount, tilesInRange, borderR, focus, tryb, clickHint } = opts;
+  const { Rwork, workedCount, tilesInRange, borderR, focus, tryb, clickHint, map } = opts;
   const card = el('div', 'detail-card okolica-detail-card');
   const head = el('div', 'dc-h');
   head.innerHTML = '<span>Okolica — ściąga</span>';
@@ -8849,6 +9255,20 @@ function buildOkolicaDetailCard(
     'Stan',
     `${tryb === 'reczny' ? 'Ręczny' : 'Auto'} · ${focusLbl[focus] ?? focus} · ${wN}/${city.population} 👤`,
   );
+
+  // T7b (KARTA-ULEPSZENIA-TERENU), call-site 3/3 — recon T7a potwierdził brak dziś
+  // jakiejkolwiek listy ulepszeń terenu z nazwami w tej zakładce (tylko zagregowane
+  // plony per-hex). Unikalne typy w zasięgu roboczym miasta + licznik heksów, każdy
+  // wiersz klikalny → ta sama karta co pozostałe 2 miejsca wywołania.
+  const improvementCounts = improvementsInCityRange(city, map, Rwork);
+  if (improvementCounts.size > 0) {
+    appendDetailSection(card, 'Ulepszenia w zasięgu');
+    const gImp = appendDetailGrid(card);
+    const sortedImprovements = [...improvementCounts.entries()].sort((a, b) => b[1] - a[1]);
+    for (const [key, count] of sortedImprovements) {
+      improvementRangeRow(gImp, key, IMPROVEMENT_KEY_TO_NAME[key] ?? key, count);
+    }
+  }
 
   const note = el('div', 'dc-note');
   setNoteHtml(note, clickHint.trim()
@@ -9185,6 +9605,7 @@ function renderOkolica(root: HTMLElement, city: City, map: GameMap): void {
     clickHint: Rwork !== undefined
       ? `Pełny zasięg (~${1 + 3 * Rwork * (Rwork + 1) + (borderR > 0 ? ringsTiles(Rwork, borderR) : 0)} pól) na mapie świata.${clickHint ? ' ' + clickHint : ''}`
       : clickHint,
+    map,
   });
 
   if (headEl) {
@@ -9559,7 +9980,7 @@ function buildCityOnlyW3FlankChips(
    * ⚠ Zastrzeżenie (N3 z R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO, przeniesione 1:1):
    * dla Pracy i Żywności `big` (tempo tego miasta) NIE jest w całości tym, co
    * dolicza się do `stock` — Praca dzieli się na `doBudynkow` (kolejka budowy
-   * tego miasta) i `doUlepszen` (pula imperium); `doBudynkow` NIE trafia do puli,
+   * tego miasta) i `doPuli` (pula imperium); `doBudynkow` NIE trafia do puli,
    * DOPÓKI kolejka budowy nie jest pusta (`game/production.ts`, przelew reszty
    * do puli przy pustej kolejce). Analogicznie Żywność: `big` to netto miasta,
    * `stock` to zapasy państwa. Obie liczby są uczciwie nazwane w podpowiedzi.
@@ -9587,7 +10008,7 @@ function buildCityOnlyW3FlankChips(
       pracaCls,
       'praca',
       `Praca TEGO miasta ${signed(chip.praca.big)} ` +
-        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)}) · ` +
+        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doPuli)}) · ` +
         `cała cywilizacja ${signed(chip.praca.small)} / turę netto` +
         (empire.pracaUpkeep != null
           ? ` (wpływ do puli ${signed((chip.praca.small ?? 0) + empire.pracaUpkeep)} ` +
@@ -9709,7 +10130,7 @@ function buildCityResourceStatItems(
     items += resPracaSplitBar(
       String(Math.round(pracaPool)),
       pracaSplit.doBudynkow,
-      pracaSplit.doUlepszen,
+      pracaSplit.doPuli,
       `Pula Pracy imperium · to miasto ${signed(pracaSplit.total)} · kliknij po szczegóły`,
       'praca',
     );
@@ -9971,13 +10392,15 @@ function buildHandelDetailCard(
   const daninaLbl = daninaLabelForCity(city);
   const daninaLblGen = daninaLabelGenitive(daninaLbl);
   const daninaLblAcc = daninaLabelAccusative(daninaLbl);
-  // DYSPOZYCJA 85 (Maciej 2026-07-26): premia za trasy handlowe realnie mnoży
-  // handelBrutto w silniku (economy.ts, ctx.liczbaAktywnychTrasHandlowych, +5%/trasa
-  // -- NIE ruszane tutaj). W UI zostaje WYŁĄCZNIE ta jedna zbiorcza linia (bez listy
-  // szlaków, bez nazw partnerów, bez dochodu ze szlaków — to przeniesione do panelu
-  // Handel, empireDetailPanel.ts, zgodnie z zasadą rozdziału z dyspozycji).
+  // DYSPOZYCJA 85 (Maciej 2026-07-26) + T4 (runda 2, naprawa napisu po przebudowie
+  // mnoznika): premia za trasy handlowe realnie DOLICZA SIE (addytywnie) do
+  // handelBrutto w silniku (economy.ts, ctx.premiaHandluTrasHandlowych -- NIE
+  // ruszane tutaj), TYLKO dla tras Z BUDYNKIEM (budynekOdblokowany===true). W UI
+  // zostaje WYŁĄCZNIE ta jedna zbiorcza linia (bez listy szlaków, bez nazw
+  // partnerów, bez dochodu ze szlaków — to przeniesione do panelu Handel,
+  // empireDetailPanel.ts, zgodnie z zasadą rozdziału z dyspozycji).
   const aktywneTrasyCount = activeTradeRouteCountForCity(city);
-  const premiaTrasPct = aktywneTrasyCount * TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE;
+  const premiaTrasHandlowych = computeTradeRouteBuildingBonusByCity(cfg.getTradeRoutes?.() ?? []).get(city.id) ?? 0;
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
@@ -10021,8 +10444,8 @@ function buildHandelDetailCard(
     g0,
     'Premia za trasy handlowe',
     aktywneTrasyCount > 0
-      ? `+${premiaTrasPct}% (${aktywneTrasyCount} aktywnych) — już w brutto powyżej`
-      : 'brak aktywnych tras',
+      ? `+${Math.round(premiaTrasHandlowych)} Handlu (${aktywneTrasyCount} z budynkiem) — już w brutto powyżej`
+      : 'brak tras z budynkiem handlowym',
   );
 
   appendDetailSection(card, 'Aktualny podział');
@@ -10036,7 +10459,7 @@ function buildHandelDetailCard(
 
   appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
     + (maTargowisko ? ' × (1 + bonus Targowiska)' : '')
-    + (aktywneTrasyCount > 0 ? ' × (1 + premia tras handlowych)' : ''));
+    + (aktywneTrasyCount > 0 ? ' + premia tras handlowych (z budynkiem)' : ''));
   appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
   appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
     mennicaAktywna
@@ -10053,8 +10476,8 @@ function buildHandelDetailCard(
     `Zbierz ${daninaLblAcc} ze wszystkich obrabianych pól + centrum miasta.`,
     maTargowisko ? 'Targowisko zwiększa handelBrutto o bonus procentowy.' : 'Bez Targowiska — tylko plony z terenu.',
     aktywneTrasyCount > 0
-      ? `Trasy handlowe: +${premiaTrasPct}% do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
-      : 'Bez aktywnych tras handlowych — brak premii do handelBrutto.',
+      ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
+      : 'Bez aktywnych tras handlowych z budynkiem — brak premii do handelBrutto.',
     `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
     'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
@@ -10115,22 +10538,22 @@ function renderHandelSlidersPanel(mount: HTMLElement, city: City, view: CityView
   appendPodzialHandlu(mount, city, view, data, { skipSubhd: true });
 }
 
-/** E7 — bonus Handlu na trasę (musi zgadzać się z hardcoded 0.05 w game/economy.ts cityYieldPerTurn). */
-const TRADE_ROUTE_HANDEL_BONUS_PCT_PER_ROUTE = 5;
-
 /**
- * DYSPOZYCJA 85 (Maciej 2026-07-26): panel miasta NIE pokazuje już listy szlaków/
- * partnerów/dochodu z tras (to poszło do panelu Handel — imperium, empireDetailPanel.ts).
- * Tu zostaje WYŁĄCZNIE liczba aktywnych tras tego miasta — potrzebna do JEDNEJ linii
- * "premia za trasy handlowe: +X%" w rozbiciu Podatku/Daniny (ta premia realnie mnoży
- * handelBrutto w silniku, patrz economy.ts ctx.liczbaAktywnychTrasHandlowych — silnik
- * NIE jest tu ruszany, tylko odczytany ten sam fakt co silnik już liczy).
+ * DYSPOZYCJA 85 (Maciej 2026-07-26) + T4 (runda 2): panel miasta NIE pokazuje już
+ * listy szlaków/partnerów/dochodu z tras (to poszło do panelu Handel — imperium,
+ * empireDetailPanel.ts). Tu zostaje WYŁĄCZNIE liczba tras tego miasta Z BUDYNKIEM
+ * (budynekOdblokowany===true) — potrzebna do JEDNEJ linii "premia za trasy
+ * handlowe: +X Handlu" w rozbiciu Podatku/Daniny (ta premia realnie dolicza się
+ * do handelBrutto w silniku, patrz economy.ts ctx.premiaHandluTrasHandlowych —
+ * silnik NIE jest tu ruszany, tylko odczytany ten sam fakt co silnik już liczy).
+ * Trasa BEZ budynku nie liczy się tutaj (dokładnie jak w silniku, T4 kryterium 2).
  */
 function activeTradeRouteCountForCity(city: City): number {
   const all = cfg.getTradeRoutes?.() ?? [];
   let n = 0;
   for (const route of all) {
     if (route.status !== 'polaczony') continue;
+    if (!route.budynekOdblokowany) continue;
     if (route.fromCityId === city.id || route.toCityId === city.id) n++;
   }
   return n;

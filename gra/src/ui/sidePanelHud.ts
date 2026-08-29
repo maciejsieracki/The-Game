@@ -31,6 +31,14 @@ export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enem
 export interface SidePanelEvent {
   id: string;
   icon: string;
+  /** Własny, konkretny tytuł karty („Dyplomacja”, „Produkcja: Rzym”). PUSTY łańcuch `''`
+   * znaczy „to zdarzenie nie ma własnego tytułu” — karta informacyjna renderuje wtedy samo
+   * słowo „Wydarzenie” w slocie tytułu, zamiast doklejać generyczny placeholder nad
+   * `subtitle` (P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1). Karty blokujące
+   * (`blocking:true`) ZAWSZE mają własny tytuł — nie przechodzą tą ścieżką.
+   * EN: the card's own concrete title. An EMPTY string `''` means "this event has no title of
+   * its own" — an info card then renders just the word "Wydarzenie" in the title slot instead
+   * of a generic placeholder above `subtitle`. Blocking cards always carry a real title. */
   title: string;
   subtitle?: string;
   kind: SidePanelEventKind;
@@ -73,6 +81,17 @@ export interface SidePanelHudConfig {
   /** Czy jest >1 armia gracza do cyklowania (steruje disabled strzałek). */
   canContextCycleUnit?: () => boolean;
   onEventClick?: (id: string) => void;
+  /** P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skrót karty NIE-blokującej do istniejącego miejsca
+   * w grze — `{ label }` rysuje widoczną afordancję („Pokaż na mapie →"), `null` zostawia
+   * kartę czysto informacyjną (bez skrótu, bez `cursor:pointer`). Silnik (main.ts) zwraca
+   * `null` także wtedy, gdy rodzina zdarzenia MA miejsce docelowe, ale ten konkretny cel już
+   * nie istnieje (miasto utracone, brak zapamiętanego heksu) — dzięki temu afordancja i
+   * handler `onEventClick` nie mogą się rozjechać. Brak konfiguracji = zero skrótów
+   * (zachowanie sprzed tematu, m.in. dla renderu zastępczego i testów).
+   * EN: a non-blocking card's shortcut to an existing place in the game; `null` keeps the card
+   * purely informational. The engine also returns `null` when the family has a destination but
+   * this particular target no longer exists, so affordance and handler cannot drift apart. */
+  getEventLink?: (ev: SidePanelEvent) => { label: string } | null;
   onEventDismiss?: (id: string) => void;
   /** R-WYDARZENIA-FILTR-KATEGORII: „Usuń wszystkie" — silnik decyduje co to znaczy
    * (patrz main.ts clearAllSidePanelEvents: iteruje NIEfiltrowaną listę, więc kasuje
@@ -225,20 +244,112 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   color:var(--civ-text-muted);background:transparent;border:1px solid rgba(232,216,138,.22);
   border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
 .civ-side-panel .sp-toolbar-dismiss-all:hover{border-color:var(--tg-red);color:var(--tg-red);}
-.civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;
-  cursor:pointer;transition:border-color .15s,box-shadow .15s;pointer-events:auto;
-  background:linear-gradient(90deg,rgba(200,64,64,.12),rgba(20,26,38,.92));
-  border:1px solid rgba(232,216,138,.25);border-left:3px solid var(--tg-red);
-  box-shadow:0 6px 16px rgba(0,0,0,.5);}
-.civ-side-panel .sp-event:hover{border-color:rgba(232,216,138,.4);}
-.civ-side-panel .sp-event.sp-science{border-left-color:#60a8e8;background:linear-gradient(90deg,rgba(96,168,232,.1),rgba(20,26,38,.92));}
-.civ-side-panel .sp-event.sp-culture{border-left-color:#c080e0;}
-.civ-side-panel .sp-event.sp-city{border-left-color:var(--tg-green);}
-.civ-side-panel .sp-event.sp-unit{border-left-color:var(--civ-gold-primary);}
-.civ-side-panel .sp-event.sp-enemy,.civ-side-panel .sp-event.sp-blocking{border-left-color:var(--tg-red);}
-.civ-side-panel .sp-event.sp-diplo{border-left-color:#6a9fd4;background:linear-gradient(90deg,rgba(106,159,212,.10),rgba(20,26,38,.92));}
-.civ-side-panel .sp-event.sp-info{border-left-color:#c9a84c;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(20,26,38,.92));}
-.civ-side-panel .sp-event.sp-blocking{cursor:default;}
+/* R-TRZY-KARTY-WDROZENIE-Q1 runda 2, Karta 3 (2026-08-20): blokująca vs informacyjna —
+   różnica jest w KSZTAŁCIE i GRUBOŚCI rantu (--tg-border-blocking), nie w kolorystyce.
+   Jedyny dopuszczony drugi kolor to lewa krawędź karty informacyjnej: złoto (neutralna/
+   korzystna) albo --tg-orange (niekorzystna: wojna, utrata szlaku, eliminacja) — patrz
+   isAdverseInfoEvent() niżej. Kanon złota zostaje jedynym akcentem wszędzie indziej. */
+.civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s;pointer-events:auto;
+  background:linear-gradient(180deg,rgba(20,26,34,.96),rgba(10,13,19,.96));
+  border:1px solid rgba(232,216,138,.28);border-left:3px solid var(--tg-gold-primary);}
+.civ-side-panel .sp-event:hover{border-color:rgba(232,216,138,.45);}
+/* R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 runda 3, podmiana 5 (EventCardInfo): bez outline —
+   zaznaczenie = obramówka elementu + poświata na zewnątrz, nigdy drugi kontur obok. */
+.civ-side-panel .sp-event:focus-visible{border-color:#e8d88a;
+  box-shadow:inset 0 0 0 1px rgba(232,216,138,.35),0 0 16px rgba(232,216,138,.45);}
+.civ-side-panel .sp-event.sp-info-adverse{border-left-color:var(--tg-orange);}
+.civ-side-panel .sp-kicker{display:block;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--civ-text-muted);font-weight:700;}
+
+/* Blokująca — rozwinięta: dokładnie jedna, zawsze pierwsza w kolejce (kolejka, nie stos). */
+.civ-side-panel .sp-event.sp-blocking.sp-expanded{cursor:default;flex-direction:column;align-items:stretch;
+  padding:0;gap:0;overflow:hidden;
+  border:var(--tg-border-blocking,3px) solid var(--tg-gold-primary);border-radius:12px;
+  background:linear-gradient(180deg,rgba(30,24,20,.99),rgba(10,10,14,.99));
+  box-shadow:0 12px 32px rgba(0,0,0,.65),var(--tg-glow-gold);}
+/* R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 runda 3: świeża makieta Designera (podmien.zip,
+   2026-08-21) zastępuje w całości rundę 2 — usunięto pasek diagonalny sp-blk-stripe
+   (runda 1) ORAZ zamiennik sp-blk-alert/-ic/-txt (runda 2, ikona chip-warning + paleta
+   civ-emp-alert). Karta blokująca zostaje z samą obramówką 3px solid #e8d88a (patrz
+   .sp-event.sp-blocking.sp-expanded wyżej) — bez paska, bez bloku ostrzegawczego. */
+.civ-side-panel .sp-blk-body{display:flex;align-items:flex-start;gap:11px;padding:13px 14px 11px;}
+.civ-side-panel .sp-blk-kicker-row{display:flex;align-items:center;gap:8px;}
+.civ-side-panel .sp-badge-decision{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#0c1018;
+  background:linear-gradient(180deg,#ffe08a,#e0b24a);border-radius:4px;padding:2px 7px;font-weight:700;
+  white-space:nowrap;}
+.civ-side-panel .sp-blk-hint{font-size:10.5px;color:#a89a80;}
+.civ-side-panel .sp-event.sp-expanded .sp-ico{width:42px;height:42px;border-radius:10px;
+  border:2px solid var(--tg-gold-primary);background:var(--tg-medallion-bg);}
+.civ-side-panel .sp-event.sp-expanded .sp-ico .sp-ic-svg{width:22px;height:22px;}
+.civ-side-panel .sp-event.sp-expanded .sp-title{font-family:var(--tg-font-title);font-size:16px;color:#f4e6a8;
+  line-height:1.24;}
+.civ-side-panel .sp-event.sp-expanded .sp-sub{font-size:12px;color:#e0d4b8;margin-top:5px;}
+.civ-side-panel .sp-action-bar{display:flex;flex-direction:column;gap:7px;padding:11px 14px 13px;
+  border-top:2px solid rgba(232,216,138,.32);background:rgba(232,216,138,.07);}
+.civ-side-panel .sp-action-row{display:flex;gap:8px;flex-wrap:wrap;}
+.civ-side-panel .sp-action-btn{flex:1;min-width:110px;padding:9px 12px;font-size:12px;text-align:center;
+  font-family:var(--civ-font-ui);}
+/* runda 3, podmiana 5 (EventCardAction): bez outline — wypukłość insetami + poświata. */
+.civ-side-panel .sp-action-btn:focus-visible{border-color:#fff2c8;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.6),inset 0 -1.5px 0 rgba(70,52,8,.35),
+    0 0 16px rgba(232,216,138,.5);}
+.civ-side-panel .sp-action-ignore{align-self:flex-start;padding:4px 2px;border:0;background:transparent;
+  color:var(--civ-text-muted);font-size:11.5px;cursor:pointer;font-family:inherit;text-decoration:underline;
+  text-underline-offset:3px;}
+.civ-side-panel .sp-action-ignore:hover{color:#c8b898;}
+.civ-side-panel .sp-action-ignore:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
+
+/* Blokująca — zwinięta w kolejce (druga i kolejne): „Rozpatrz →", rant 2px. */
+.civ-side-panel .sp-event.sp-blocking.sp-collapsed{padding:10px 12px;border:2px solid rgba(232,216,138,.55);
+  border-left:2px solid rgba(232,216,138,.55);border-radius:10px;
+  background:linear-gradient(180deg,rgba(28,24,22,.9),rgba(12,12,16,.9));}
+.civ-side-panel .sp-event.sp-collapsed:hover{border-color:var(--tg-gold-primary);box-shadow:0 0 16px rgba(232,216,138,.28);}
+.civ-side-panel .sp-event.sp-collapsed .sp-ico{width:28px;height:28px;border-radius:8px;
+  border:1px solid rgba(232,216,138,.4);background:#26201a;}
+.civ-side-panel .sp-event.sp-collapsed .sp-ico .sp-ic-svg{width:15px;height:15px;}
+.civ-side-panel .sp-event.sp-collapsed .sp-title{font-family:var(--tg-font-title);font-size:14.5px;color:#f4e6a8;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-side-panel .sp-collapsed-cta{flex:none;font-size:11.5px;color:var(--tg-gold-primary);font-weight:700;
+  white-space:nowrap;margin-left:auto;}
+
+/* Informacyjna — pozioma i niska, rant 1px + akcent 3px na lewej krawędzi, zero poświaty. */
+.civ-side-panel .sp-event:not(.sp-blocking) .sp-ico{width:28px;height:28px;border-radius:8px;
+  border:1px solid rgba(232,216,138,.24);background:#1a2230;}
+.civ-side-panel .sp-event:not(.sp-blocking) .sp-ico .sp-ic-svg{width:15px;height:15px;opacity:.9;}
+.civ-side-panel .sp-event:not(.sp-blocking) .sp-title{font-family:var(--tg-font-title);font-size:13.5px;
+  color:#f4e6a8;margin-top:2px;}
+/* P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1: „Wydarzenie” awansowane do slotu tytułu
+   (karta bez własnego tytułu). Ta sama rodzina/rozmiar/kolor co każdy inny .sp-title
+   — dominacja wizualna 1:1 z dawnym wierszem „Koniec tury”, który tu stał. Zerowy
+   margin-top, bo to teraz PIERWSZY wiersz nagłówka: 2px odstępu miało sens tylko
+   pod overline .sp-kicker. UWAGA: ten blok CSS żyje w template literalu TS — bez
+   znaków wstecznych (backtick) w komentarzach. */
+.civ-side-panel .sp-event:not(.sp-blocking) .sp-title.sp-title-generic{margin-top:0;}
+.civ-side-panel .sp-event:not(.sp-blocking) .sp-sub{font-size:11px;color:#c8b898;margin-top:1px;}
+/* P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1 — skrót karty informacyjnej („Pokaż na mapie →").
+   CELOWO NIE jest to ani złocony badge „Wymaga decyzji", ani przycisk „Otwórz →" karty
+   blokującej: zdarzenie informacyjne niczego od gracza nie chce, tylko OFERUJE skrót, więc
+   dostaje najlżejszy z trzech wariantów — pigułkę z konturem, bez wypełnienia i poświaty.
+   Rant rozjaśnia się dopiero przy hover CAŁEJ karty (klikalna jest cała karta, nie sama
+   pigułka). margin-left:auto odpycha skrót na prawo; następujący po nim ✕ (.sp-close, też
+   z margin-left:auto) siada tuż za nim, bo auto-margines konsumuje pierwszy element.
+   UWAGA: ten blok CSS żyje w template literalu TS — bez znaków wstecznych w komentarzach.
+   EN: an info card's shortcut. Deliberately the lightest of the three CTA variants — an
+   outlined pill, no fill, no glow — because an info event demands nothing, it only offers a
+   shortcut. The border brightens on hovering the WHOLE card, since the whole card is the
+   click target, not the pill itself. */
+.civ-side-panel .sp-event:not(.sp-blocking) .sp-goto-cta{flex:none;margin-left:auto;
+  font-size:10.5px;letter-spacing:.04em;color:var(--tg-gold-primary);white-space:nowrap;
+  border:1px solid rgba(232,216,138,.3);border-radius:999px;padding:2px 8px;
+  transition:border-color .15s,color .15s;}
+.civ-side-panel .sp-event:not(.sp-blocking):hover .sp-goto-cta{border-color:rgba(232,216,138,.65);}
+/* Karta bez miejsca docelowego (kategoria „czysto informacyjna" z audytu): kursor przestaje
+   kłamać, że coś się stanie po kliknięciu. Klik i tak jest dziś no-opem — zmienia się sam
+   sygnał. Karty blokujące i te ze skrótem zachowują cursor:pointer z reguły bazowej.
+   EN: a card with no destination stops advertising a click that does nothing. */
+.civ-side-panel .sp-event.sp-no-link{cursor:default;}
+
 .civ-side-panel .sp-ico{width:32px;height:32px;flex:none;border-radius:50%;
   background:var(--tg-medallion-bg);border:1.5px solid var(--tg-gold-dim);
   display:flex;align-items:center;justify-content:center;color:var(--civ-gold-primary);}
@@ -246,8 +357,12 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-panel .sp-ico-emoji{font-size:16px;line-height:1;}
 .civ-side-panel .sp-title{font-size:13px;color:var(--civ-text-primary);}
 .civ-side-panel .sp-sub{font-size:11px;color:var(--civ-text-muted);margin-top:2px;}
-.civ-side-panel .sp-close{font-size:10px;color:var(--civ-text-muted);cursor:pointer;padding:2px 4px;margin-left:auto;}
+.civ-side-panel .sp-close{font-size:10px;color:var(--civ-text-muted);cursor:pointer;padding:2px 4px;margin-left:auto;
+  border-radius:6px;}
 .civ-side-panel .sp-close:hover{color:var(--civ-gold-primary);}
+.civ-side-panel .sp-close:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
+.civ-side-panel .sp-toolbar-chip:focus-visible,.civ-side-panel .sp-toolbar-dismiss-all:focus-visible{
+  outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary));outline-offset:2px;}
 .civ-side-panel .sp-placeholder{font-size:10px;color:#7a7055;text-align:right;padding:8px 4px;font-style:italic;line-height:1.4;}
 .civ-side-ctx-dock.open .sp-ctx-card{pointer-events:auto;}
 .civ-side-ctx-dock .sp-ctx-card,.civ-side-panel .sp-ctx-card{padding:14px 16px 16px;border-radius:10px;margin-bottom:0;
@@ -305,9 +420,23 @@ const PLACEHOLDER_EVENTS: SidePanelEvent[] = [
   },
 ];
 
-function kindClass(ev: SidePanelEvent): string {
-  if (ev.negative) return 'sp-enemy';
-  return 'sp-' + ev.kind;
+/** R-TRZY-KARTY-WDROZENIE-Q1 runda 2: jedyny drugi kolor karty informacyjnej — pomarańcz
+ * dla niekorzystnych (wojna, utrata szlaku, eliminacja), złoto (domyślne) dla reszty. */
+function isAdverseInfoEvent(ev: SidePanelEvent): boolean {
+  return ev.negative === true || ev.kind === 'enemy';
+}
+
+/** Karta buntu w toku (nie ostrzeżenie przed buntem) — jedyna z przyciskiem „Zignoruj".
+ * Dopasowanie po prefiksie id, bo dzisiejszy SidePanelEvent nie niesie osobnego pola —
+ * main.ts produkuje 'revolt-' + city.id dla buntu i 'revolt-warn-' + city.id dla
+ * ostrzeżenia (poza allowlistą tej rundy, patrz raport). */
+function isIgnorableRevoltEvent(ev: SidePanelEvent): boolean {
+  return ev.blocking === true && ev.id.startsWith('revolt-') && !ev.id.startsWith('revolt-warn-');
+}
+
+/** Prosta polska pluralizacja dla licznika kolejki („1 wymaga" / „2 wymagają"). */
+function pluralPl(n: number, one: string, many: string): string {
+  return n === 1 ? one : many;
 }
 
 function resolveContextPanel(config: SidePanelHudConfig): ContextPanelData | null {
@@ -390,6 +519,22 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   // przeżywa update()/tury (nie jest resetowana przy każdym render()).
   let showOtherCivsEvents = false;
 
+  // Wspólne dla trzech kart (DYSPOZYCJA-WDROZENIE.md §5): Esc zamyka karty niezobowiązujące.
+  // Tylko informacyjne (blokujące nie mają zamknięcia poza akcją/Zignoruj) — delegacja na
+  // el, żeby działać niezależnie od tego, który element w danym momencie ma fokus.
+  el.addEventListener("keydown", (e: Event) => {
+    const ke = e as KeyboardEvent;
+    if (ke.key !== "Escape") return;
+    const origin = ke.target as HTMLElement | null;
+    const card = origin?.closest(".sp-event:not(.sp-blocking)[data-id]");
+    if (!card) return;
+    const id = card.getAttribute("data-id");
+    if (id !== null) {
+      config.onEventDismiss?.(id);
+      render();
+    }
+  });
+
   function bindContextInteractions(root: HTMLElement, ctx: ContextPanelData): void {
     root.querySelector('[data-sp-expand]')?.addEventListener('click', () => {
       config.onContextExpand?.();
@@ -459,37 +604,137 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       html += buildContextCardHtml(hexCtx, expanded);
     }
 
-    html += '<div class="sp-header">Wydarzenia</div>';
-
     const visibleEvents = filterSidePanelEvents(events, showOtherCivsEvents);
+    // R-TRZY-KARTY-WDROZENIE-Q1 runda 2: kolejka, nie stos — blokujące ZAWSZE przed
+    // informacyjnymi, niezależnie od kolejności zgłoszenia (DYSPOZYCJA-WDROZENIE.md
+    // §4, założenie 1). Kolejność WEWNĄTRZ każdej z dwóch grup pozostaje bez zmian
+    // (kolejność zwrócona przez getEvents()/filterSidePanelEvents).
+    const blockingEvents = visibleEvents.filter(ev => ev.blocking === true);
+    const infoEvents = visibleEvents.filter(ev => ev.blocking !== true);
+    const orderedEvents = [...blockingEvents, ...infoEvents];
+
+    if (isPlaceholder) {
+      html += '<div class="sp-header">Wydarzenia</div>';
+    } else {
+      const counterParts: string[] = [];
+      if (blockingEvents.length > 0) {
+        counterParts.push(blockingEvents.length + ' ' + pluralPl(blockingEvents.length, 'wymaga decyzji', 'wymagają decyzji'));
+      }
+      if (infoEvents.length > 0) {
+        counterParts.push(infoEvents.length + ' ' + pluralPl(infoEvents.length, 'informacyjna', 'informacyjne'));
+      }
+      html += '<div class="sp-header">' + (counterParts.length > 0 ? counterParts.join(' · ') : 'Wydarzenia') + '</div>';
+    }
 
     if (!isPlaceholder) {
       html += '<div class="sp-toolbar">'
         + '<button type="button" class="sp-toolbar-chip'
         + (showOtherCivsEvents ? ' sp-toolbar-chip-active' : '')
         + '" data-sp-toggle-other-civs>\u{1F30D} Inne cyw.</button>'
-        + (config.onDismissAll !== undefined
-          ? '<button type="button" class="sp-toolbar-dismiss-all" data-sp-dismiss-all>Usuń wszystkie</button>'
+        // Hurtowe zamknięcie dotyczy TYLKO informacyjnych (§4) — dlatego etykieta i warunek
+        // widoczności patrzą na infoEvents, nie na wszystkie wydarzenia; patrz handler
+        // [data-sp-dismiss-all] niżej, który celowo NIE woła config.onDismissAll.
+        + (config.onEventDismiss !== undefined && infoEvents.length > 0
+          ? '<button type="button" class="sp-toolbar-dismiss-all" data-sp-dismiss-all>Zamknij wszystkie informacyjne</button>'
           : '')
         + '</div>';
     }
 
-    if (visibleEvents.length === 0) {
+    if (orderedEvents.length === 0) {
       html += '<div class="sp-placeholder">Brak wydarzeń w tej turze.</div>';
     } else {
-      for (const ev of visibleEvents) {
-        const blockCls = ev.blocking ? ' sp-blocking' : '';
+      let blockingSeen = 0;
+      for (const ev of orderedEvents) {
         const icInner = eventIconHtml(ev.kind, ev.icon);
         const icoContent = icInner.startsWith('<svg')
           ? icInner
           : `<span class="sp-ico-emoji">${ev.icon || '•'}</span>`;
-        html += '<div class="sp-event ' + kindClass(ev) + blockCls + '" data-id="' + ev.id + '">'
+
+        if (ev.blocking === true) {
+          blockingSeen += 1;
+          if (blockingSeen === 1) {
+            // Rozwinięta — zawsze dokładnie jedna, pierwsza blokująca w kolejce.
+            const ignorable = isIgnorableRevoltEvent(ev);
+            html += '<div class="sp-event sp-blocking sp-expanded" data-id="' + ev.id + '">'
+              + '<div class="sp-blk-body">'
+              + '<span class="sp-ico">' + icoContent + '</span>'
+              + '<div>'
+              + '<div class="sp-blk-kicker-row"><span class="sp-badge-decision">Wymaga decyzji</span>'
+              + (blockingEvents.length > 1 ? '<span class="sp-blk-hint">1 z ' + blockingEvents.length + '</span>' : '')
+              + '</div>'
+              + '<div class="sp-title">' + ev.title + '</div>'
+              + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')
+              + '</div></div>'
+              + '<div class="sp-action-bar"><div class="sp-action-row">'
+              + '<button type="button" class="sp-action-btn tg-btn-primary" data-sp-open="' + ev.id + '">Otwórz →</button>'
+              + '</div>'
+              + (ignorable
+                ? '<button type="button" class="sp-action-ignore" data-sp-ignore="' + ev.id + '">Zignoruj — bunt potrwa dalej</button>'
+                : '')
+              + '</div>'
+              + '</div>';
+          } else {
+            // Zwinięta w kolejce — „Rozpatrz →", rant 2px (patrz sp-blocking.sp-collapsed w CSS).
+            html += '<div class="sp-event sp-blocking sp-collapsed" data-id="' + ev.id + '">'
+              + '<span class="sp-ico">' + icoContent + '</span>'
+              + '<div class="sp-title">' + ev.title + '</div>'
+              + '<span class="sp-collapsed-cta">Rozpatrz →</span>'
+              + '</div>';
+          }
+          continue;
+        }
+
+        const adverseCls = isAdverseInfoEvent(ev) ? ' sp-info-adverse' : '';
+        // P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1 — nagłówek karty informacyjnej ma
+        // DOKŁADNIE JEDEN dominujący wiersz, nigdy dwa.
+        //  • zdarzenie z własnym, konkretnym tytułem („Dyplomacja”, „Produkcja: Rzym”,
+        //    „Wypowiedzieliśmy wojnę: Egipt”) — BEZ ZMIAN względem dotychczasowego wyglądu:
+        //    mały overline „Wydarzenie” + ten tytuł dużą czcionką (`.sp-title`).
+        //  • zdarzenie BEZ własnego tytułu (`title === ''` — generyczne zdarzenie końca tury
+        //    z `deferredHintsToSidePanelEvents`, dawniej placeholder „Koniec tury”) — słowo
+        //    „Wydarzenie” AWANSUJE z overline do slotu tytułu i jedzie tą samą dużą czcionką,
+        //    a redundantny wiersz znika. Nic się nie traci informacyjnie: konkretna treść
+        //    („Sumerowie · miasto-państwo — ELIMINACJA! …”) w całości siedzi w `subtitle`.
+        // Rozróżnienie idzie po PUSTYM `title`, a nie po porównaniu z literałem „Koniec tury” —
+        // literał nie istnieje już w kodzie, a warunek na treści łańcucha byłby kruchy
+        // (złapałby też przyszły, celowo nazwany tak tytuł).
+        // EN: an info card's header has EXACTLY ONE dominant line, never two. An event with its
+        // own concrete title renders unchanged (small "Wydarzenie" overline + big title); an
+        // event with `title === ''` (generic end-of-turn event, formerly the "Koniec tury"
+        // placeholder) promotes the word "Wydarzenie" into the title slot and drops the
+        // redundant row — the concrete text lives in `subtitle` anyway. The discriminator is the
+        // EMPTY `title`, not a comparison against the "Koniec tury" literal (which no longer
+        // exists in the code, and matching on string content would be brittle).
+        const hasOwnTitle = ev.title.trim() !== '';
+        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: karta informacyjna dostaje widoczny skrót
+        // TYLKO wtedy, gdy silnik potwierdzi gotowe miejsce docelowe dla TEGO zdarzenia
+        // (patrz `getEventLink` w konfiguracji i `sidePanelEventLinkFor` w main.ts). Cała
+        // karta była klikalna już wcześniej — brakowało wyłącznie sygnału, że klik gdzieś
+        // prowadzi (i sygnału, że NIE prowadzi: `sp-no-link` + `cursor:default`).
+        // `role="button"`/`tabindex` nadajemy również tylko kartom ze skrótem — karta bez
+        // celu nie ma po co siedzieć w kolejności Tab.
+        // EN: an info card gets the visible shortcut only when the engine confirms a ready
+        // destination for THIS event. The whole card was already clickable; what was missing
+        // was the signal that clicking leads somewhere (and that it does not).
+        // (dotarliśmy tu wyłącznie gałęzią NIE-blokującą — blokujące zrobiły `continue` wyżej)
+        const link = config.getEventLink?.(ev) ?? null;
+        const linkCls = link === null ? ' sp-no-link' : '';
+        const linkAttrs = link === null
+          ? ''
+          : ' role="button" tabindex="0" aria-label="' + ev.title + ' — ' + link.label + '"';
+        html += '<div class="sp-event' + adverseCls + linkCls + '" data-id="' + ev.id + '"' + linkAttrs + '>'
           + '<span class="sp-ico">' + icoContent + '</span>'
-          + '<div><div class="sp-title">' + ev.title + '</div>'
+          + '<div>'
+          + (hasOwnTitle
+            ? '<span class="sp-kicker">Wydarzenie</span><div class="sp-title">' + ev.title + '</div>'
+            : '<div class="sp-title sp-title-generic">Wydarzenie</div>')
           + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')
           + '</div>';
-        if (!isPlaceholder && !ev.blocking && config.onEventDismiss !== undefined) {
-          html += '<span class="sp-close" data-dismiss="' + ev.id + '" title="Zamknij">\u2715</span>';
+        if (link !== null) {
+          html += '<span class="sp-goto-cta" data-sp-goto="' + ev.id + '">' + link.label + ' →</span>';
+        }
+        if (!isPlaceholder && config.onEventDismiss !== undefined) {
+          html += '<span class="sp-close" data-dismiss="' + ev.id + '" title="Zamknij" aria-label="Zamknij powiadomienie">✕</span>';
         }
         html += '</div>';
       }
@@ -508,23 +753,71 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     });
 
     el.querySelector('[data-sp-dismiss-all]')?.addEventListener('click', () => {
-      config.onDismissAll?.();
+      // R-TRZY-KARTY-WDROZENIE-Q1: hurtowe zamknięcie dotyczy TYLKO informacyjnych — iterujemy
+      // per-id przez onEventDismiss (istniejący miękki dismiss), NIE wołamy config.onDismissAll,
+      // bo ten dziś czyści też blokujące (main.ts clearAllSidePanelEvents/
+      // handleSidePanelEventDismiss iterują collectTurnEvents() bez rozróżnienia blocking).
+      for (const ev of infoEvents) config.onEventDismiss?.(ev.id);
       render();
     });
 
-    el.querySelectorAll('.sp-event[data-id]').forEach(chip => {
+    // Klikalna cała karta: informacyjne (zawsze) i zwinięte blokujące w kolejce („Rozpatrz →").
+    // Rozwinięta karta blokująca (.sp-expanded) NIE jest klikalna jako całość — akcje żyją
+    // wyłącznie w pasie akcji (data-sp-open / data-sp-ignore niżej), zgodnie z makietą.
+    el.querySelectorAll('.sp-event[data-id]:not(.sp-expanded)').forEach(chip => {
       chip.addEventListener('click', (e: Event) => {
         const target = e.target as HTMLElement;
-        if (target.classList.contains('sp-close')) return;
+        if (target.closest('.sp-close')) return;
         const id = (chip as HTMLElement).getAttribute('data-id');
         if (id !== null) config.onEventClick?.(id);
       });
+      // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: klawiatura tylko dla kart, które FAKTYCZNIE
+      // gdzieś prowadzą (tylko one dostały `role="button"`/`tabindex` w renderze wyżej) —
+      // Enter/Spacja robią dokładnie to samo co klik. Karta bez skrótu nie jest fokusowalna,
+      // więc ten listener nigdy się dla niej nie odpali. Escape (delegacja na `el` przy
+      // montażu) zamyka kartę — bez zmian, teraz po prostu osiągalny z klawiatury.
+      // EN: keyboard activation only for cards that actually lead somewhere (only those got
+      // role/tabindex above); Enter/Space do exactly what a click does.
+      if (chip.querySelector('[data-sp-goto]') !== null) {
+        chip.addEventListener('keydown', (e: Event) => {
+          const ke = e as KeyboardEvent;
+          if (ke.key !== 'Enter' && ke.key !== ' ') return;
+          ke.preventDefault();
+          const id = (chip as HTMLElement).getAttribute('data-id');
+          if (id !== null) config.onEventClick?.(id);
+        });
+      }
     });
 
     el.querySelectorAll('.sp-close[data-dismiss]').forEach(btn => {
       btn.addEventListener('click', (e: Event) => {
         e.stopPropagation();
         const id = (btn as HTMLElement).getAttribute('data-dismiss');
+        if (id !== null) {
+          config.onEventDismiss?.(id);
+          render();
+        }
+      });
+    });
+
+    el.querySelectorAll('[data-sp-open]').forEach(btn => {
+      btn.addEventListener('click', (e: Event) => {
+        e.stopPropagation();
+        const id = (btn as HTMLElement).getAttribute('data-sp-open');
+        if (id !== null) config.onEventClick?.(id);
+      });
+    });
+
+    // „Zignoruj — bunt potrwa dalej" (ECHO właściciela 2026-08-20, punkt 2): trzecie, świadome
+    // wyjście z karty buntu. Woła DOKŁADNIE ten sam miękki dismiss co ✕ na karcie informacyjnej
+    // (config.onEventDismiss) — main.ts (handleSidePanelEventDismiss, gałąź domyślna) już dziś
+    // dla id 'revolt-*' robi dismissedSidePanelEventIds.add(id), czyszczone na końcu KAŻDEJ
+    // tury — czyli karta wraca w kolejnej turze, jeśli bunt nadal trwa: dokładnie „bunt potrwa
+    // dalej", zero zmian w main.ts potrzebnych.
+    el.querySelectorAll('[data-sp-ignore]').forEach(btn => {
+      btn.addEventListener('click', (e: Event) => {
+        e.stopPropagation();
+        const id = (btn as HTMLElement).getAttribute('data-sp-ignore');
         if (id !== null) {
           config.onEventDismiss?.(id);
           render();

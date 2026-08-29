@@ -104,6 +104,7 @@ function baseCtx(overrides = {}) {
     respekt: 0,
     hasNap: false,
     hasHandel: false,
+    hasTradeConnection: true,
     hasSojusz: false,
     breaksTreatyLabel: undefined,
     sellableTechCount: 1,
@@ -244,6 +245,36 @@ eq(
   // willingnessTrade w diplomacy-proposals.ts, poza zakresem resolveDiplomacyActionLock).
   const r = resolveDiplomacyActionLock(baseCtx({ actionId: '5', relTotal: 0 }));
   eq(r.locked, false, 'id5: NIE locked przy relTotal=0 -- prog Relacji handlu = 0, martwy prog usunięty (Maciej 2026-07-26 / R-PROGI-MARTWE-CLEANUP-2026-08-03)');
+}
+
+// ===========================================================================
+// 6b. R-HANDEL-SZLAKI-PRZEBUDOWA-Q1 T2b (ECHO Q5): gate hasTradeConnection na
+//     poziomie PROPOZYCJI traktatu UmowaSzlakow (case '5') -- priorytet
+//     hasHandel > hasTradeConnection > relacjaGate > atWar (kolejność gate'ów).
+// ===========================================================================
+{
+  // (a) hasTradeConnection=true, reszta OK -> unlocked
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '5', hasTradeConnection: true }));
+  eq(r.locked, false, 'id5 T2b: hasTradeConnection=true -> unlocked (reszta OK)');
+}
+{
+  // (b) hasTradeConnection=false -> locked z nowym note, NIEZALEŻNIE od relacji
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '5', hasTradeConnection: false, relTotal: 200 }));
+  eq(r.locked, true, 'id5 T2b: hasTradeConnection=false -> locked mimo wysokiej relacji');
+  eq(r.note, 'brak możliwego połączenia handlowego (ląd lub porty)', 'id5 T2b: note opisuje brak połączenia');
+}
+{
+  // (c) hasHandel=true (traktat już aktywny) -> active:true mimo hasTradeConnection=false
+  //     (regresja: już zawarty traktat NIE może zniknąć/zablokować się wstecznie)
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '5', hasHandel: true, hasTradeConnection: false }));
+  eq(r.locked, false, 'id5 T2b: hasHandel=true mimo hasTradeConnection=false -> nie locked (już zawarta umowa ma pierwszeństwo)');
+  eq(r.active, true, 'id5 T2b: active=true mimo hasTradeConnection=false');
+}
+{
+  // (d) atWar=true -> nadal locked niezależnie od hasTradeConnection (kolejność gate'ów zachowana)
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '5', atWar: true, hasTradeConnection: true }));
+  eq(r.locked, true, 'id5 T2b: atWar=true -> locked mimo hasTradeConnection=true (wojna ma pierwszeństwo)');
+  eq(r.note, 'handel niedostępny w wojnie', 'id5 T2b: note wojny niezmieniona');
 }
 
 // ===========================================================================

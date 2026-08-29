@@ -15,6 +15,7 @@ export function normalizeRuleStatus(status: string): RuleStatusCanonical {
   if (s === 'quarantine') return 'QUARANTINE';
   if (s === 'retired') return 'RETIRED';
   if (s === 'protected' || s === 'chroniona') return 'PROTECTED';
+  if (s === 'review') return 'REVIEW';
   return status as RuleStatusCanonical;
 }
 
@@ -42,6 +43,7 @@ export function normalizeRule(raw: Record<string, unknown>): PlaybookRule {
     lastUpdatedIso: (raw.lastUpdatedIso as string) ?? new Date().toISOString(),
     retiredReason: (raw.retiredReason as string) ?? (raw.deprecatedReason as string),
     deprecatedReason: raw.deprecatedReason as string | undefined,
+    reviewReason: raw.reviewReason as string | undefined,
     /** Wsteczna zgodność: brak pola w źródle -> false, nie undefined-crash. */
     protected: (raw.protected as boolean | undefined) ?? false,
   };
@@ -160,55 +162,47 @@ export function recordRuleOutcome(
 }
 
 /**
- * RETIRED rules below deprecateBelowWinRate when minRunsForSignificance reached.
- * Opcjonalnie przenosi do quarantine_rules.
+ * Reguły poniżej deprecateBelowWinRate po osiągnięciu minRunsForSignificance
+ * NIE są już cicho wycofywane (decyzja właściciela, 2026-08-20). Zamiast
+ * status='RETIRED' + przeniesienia do quarantine_rules, reguła dostaje
+ * status='REVIEW' i ZOSTAJE w pb.rules — nic nie znika z pliku ani z historii.
+ * getOperatorSystemRules filtruje po status==='ACTIVE', więc REVIEW przestaje
+ * być sugerowana Operatorowi (efekt zamierzony), ale jawny wpis trafia do
+ * PYTANIA-OTWARTE.md (patrz formatReviewFlagForOpenQuestions + evaluator-agent.ts)
+ * zamiast znikać bez śladu.
+ *
+ * `moveToQuarantine` zostaje w sygnaturze wyłącznie dla zgodności wstecznej
+ * wywołań/aliasu (deprecateWeakRules) — nie jest już używany w tej ścieżce,
+ * bo REVIEW nigdy nie trafia do quarantine_rules.
  */
 export function retireWeakRules(
   pb: Playbook,
   nowIso: string = new Date().toISOString(),
   moveToQuarantine = true,
 ): PlaybookUpdate[] {
+  void moveToQuarantine;
   const t = pb.thresholds;
   const updates: PlaybookUpdate[] = [];
-  const remaining: PlaybookRule[] = [];
 
   for (const rule of pb.rules) {
-    if (normalizeRuleStatus(rule.status) !== 'ACTIVE') {
-      remaining.push(rule);
-      continue;
-    }
+    if (normalizeRuleStatus(rule.status) !== 'ACTIVE') continue;
     // CHRONIONA (protected) — bariera bezpieczeństwa zatwierdzona przez człowieka;
-    // nie podlega wycofaniu bez względu na liczniki (Maciej 2026-08-07).
-    if (rule.protected) {
-      remaining.push(rule);
-      continue;
-    }
+    // nie podlega wycofaniu/przeglądowi bez względu na liczniki (Maciej 2026-08-07).
+    if (rule.protected) continue;
     const n = rule.win_count + rule.fail_count;
-    if (n < t.minRunsForSignificance) {
-      remaining.push(rule);
-      continue;
-    }
+    if (n < t.minRunsForSignificance) continue;
     if (rule.win_rate < t.deprecateBelowWinRate) {
-      rule.status = 'RETIRED';
-      rule.retiredReason = `win_rate ${rule.win_rate.toFixed(3)} < ${t.deprecateBelowWinRate} after ${n} runs`;
-      rule.deprecatedReason = rule.retiredReason;
+      rule.status = 'REVIEW';
+      rule.reviewReason = `win_rate ${rule.win_rate.toFixed(3)} < ${t.deprecateBelowWinRate} po ${n} próbach — do przeglądu właściciela`;
       rule.lastUpdatedIso = nowIso;
-      if (moveToQuarantine) {
-        pb.quarantine_rules.push(rule);
-      }
       updates.push({
         ruleId: rule.id,
-        kind: 'retire',
-        detail: moveToQuarantine
-          ? `Retired rule ${rule.id}: ${rule.retiredReason}; moved to quarantine_rules`
-          : `Retired rule ${rule.id}: ${rule.retiredReason}`,
+        kind: 'review',
+        detail: `Rule ${rule.id} flagged for owner review (status REVIEW): ${rule.reviewReason}; pozostaje w pb.rules`,
       });
-    } else {
-      remaining.push(rule);
     }
   }
 
-  pb.rules = remaining;
   return updates;
 }
 
@@ -217,10 +211,45 @@ export function deprecateWeakRules(
   pb: Playbook,
   nowIso: string = new Date().toISOString(),
 ): PlaybookUpdate[] {
-  return retireWeakRules(pb, nowIso, false).map(u => ({
-    ...u,
-    kind: u.kind === 'quarantine' ? 'deprecate' : u.kind,
-  }));
+  return retireWeakRules(pb, nowIso, false);
+}
+
+/**
+ * Buduje gotowy tekst wpisu do `dyspozycje/PYTANIA-OTWARTE.md` dla reguły,
+ * która właśnie przeszła w status REVIEW. Wyłącznie formatowanie (bez I/O na
+ * plikach — playbook-manager.ts dziś nie dotyka niczego poza playbook.json);
+ * faktyczny zapis (appendFileSync do PYTANIA-OTWARTE.md) robi evaluator-agent.ts,
+ * który już ma wzorzec I/O (appendPostmortemLog/appendRunHistory z logging.ts)
+ * i jest miejscem, gdzie retireWeakRules jest faktycznie wywoływane.
+ *
+ * Format celowo NIE jest pełnym ABC (opis + a/b/c) — to nie jest decyzja
+ * produktowa z alternatywami, tylko krótka flaga: "ta reguła przestała działać,
+ * zdecyduj co dalej". Nagłówek i styl (ID · STATUS: **...**, potem pogrubione
+ * "Ustalenie:") dopasowane do istniejącej konwencji krótkich wpisów w pliku
+ * (np. `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY`).
+ */
+export function formatReviewFlagForOpenQuestions(
+  rule: PlaybookRule,
+  nowIso: string = new Date().toISOString(),
+): string {
+  const date = nowIso.slice(0, 10);
+  const n = rule.win_count + rule.fail_count;
+  const reason = rule.reviewReason ?? `win_rate ${rule.win_rate.toFixed(3)} po ${n} próbach`;
+  return [
+    `## R-AUTOBOT-REGULA-REVIEW-${rule.id} (${date}, AutoBot retireWeakRules) · STATUS: **OTWARTE — DO PRZEGLĄDU WŁAŚCICIELA**`,
+    '',
+    `**Ustalenie:** reguła \`${rule.id}\` (\`${rule.rule_text}\`) osiągnęła ${reason}. ` +
+      'Automat NIE wycofuje jej cicho — status ustawiony na `REVIEW`, reguła zostaje w ' +
+      '`playbook.json` (`rules[]`), ale `getOperatorSystemRules` przestaje ją proponować Operatorowi.',
+    '',
+    '**Do decyzji właściciela:** zostawić bez zmian (wrócić do ACTIVE), poprawić warunek ' +
+      'stosowania reguły, albo świadomie wycofać (status RETIRED).',
+    '',
+    `**Liczniki:** ${rule.win_count}W/${rule.fail_count}L, win_rate=${rule.win_rate.toFixed(3)}.`,
+    '',
+    '---',
+    '',
+  ].join('\n');
 }
 
 /**

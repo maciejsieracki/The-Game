@@ -1,4 +1,9 @@
-# PROTOKÓŁ AUTOBOT — WERSJA UNIWERSALNA (v1.2)
+# PROTOKÓŁ AUTOBOT — WERSJA UNIWERSALNA (v1.2), REFERENCYJNY
+
+> Dokument uniwersalny/historyczny. Dla projektu Civ obowiązuje
+> [`docs/procesy/INDEX-PROCESU.md`](docs/procesy/INDEX-PROCESU.md) oraz
+> [`docs/decyzje/R-PROC-AUTOBOT.md`](docs/decyzje/R-PROC-AUTOBOT.md); poniższy tekst
+> nie ustanawia aktywnego routingu projektu.
 
 > **Nota wydawcy.** To jest wersja **uniwersalna**, wyekstrahowana z konkretnego,
 > działającego wdrożenia projektowego (repozytorium kodu z pracą wieloagentową,
@@ -154,7 +159,17 @@ stosowania.
 **Statusy i progi.** Skuteczność = sprawdziła się / (sprawdziła się + zawiodła).
 Status zmieniaj dopiero od min. 10 zastosowań danej zasady:
 
-- skuteczność poniżej 30% → **WYCOFANA** — znika z pracy, ale zostaje w pliku.
+- skuteczność poniżej 30% → **DO PRZEGLĄDU** (decyzja właściciela 2026-08-20;
+  zastępuje dawne ciche automatyczne WYCOFANA opisane niżej) — automat NIE
+  wycofuje zasady sam. Przestaje ją proponować w pracy (jak WYCOFANA), ale
+  zasada ZOSTAJE w pliku playbooka bez przenoszenia do kwarantanny, a agent
+  jawnie zgłasza fakt w rejestrze pytań otwartych (`PYTANIA-OTWARTE.md` w
+  Civ; odpowiednik dla innych projektów — miejsce decyzji produktowych).
+  Decyduje wyłącznie człowiek: zostawić, poprawić warunek stosowania, albo
+  świadomie przenieść w status WYCOFANA,
+- **WYCOFANA** — znika z pracy, ale zostaje w pliku. To status ręcznego,
+  ŚWIADOMEGO wycofania przez człowieka (np. z DO PRZEGLĄDU, albo wprost) —
+  nie jest już nadawany automatycznie przez samo przekroczenie progu 30%.
   Przywrócić może ją wyłącznie człowiek; przywrócenie zeruje liczniki i ustawia
   status W OBSERWACJI (albo CHRONIONA, jeśli człowiek tak zdecyduje),
 - skuteczność 30–60% → **W OBSERWACJI** — nadal stosowana! Zasada odstawiona
@@ -264,7 +279,7 @@ Ostatnia aktualizacja: RRRR-MM-DD · sesja nr N
 |---|---|---|
 
 ## 2. Zasady
-<!-- Statusy: AKTYWNA / W OBSERWACJI / WYCOFANA / CHRONIONA.
+<!-- Statusy: AKTYWNA / W OBSERWACJI / DO PRZEGLĄDU / WYCOFANA / CHRONIONA.
      Nowa zasada startuje jako AKTYWNA z licznikiem 0/0.
      Licznik aktualizuj tylko wtedy, gdy zasada miała zastosowanie.
      Przykład wiersza: | R-001 | treść | warunek stosowania | 0 | 0 | AKTYWNA | -->
@@ -335,6 +350,18 @@ orkiestratora prowadzi do chaosu i wyczerpania zasobów) **LUB** przyjęty tryb 
 tego wprost wymaga. Dla 1–2 tematów ręczny dispatch pojedynczego subagenta
 (izolowany, np. przez osobny worktree) pozostaje w pełni poprawny — narzędzie
 orkiestracji nie jest obowiązkowe dla każdej pojedynczej paczki.
+
+Ten próg (≥3 tematy / tryb pracy tego wymaga) decyduje WYŁĄCZNIE o tym, czy w ogóle
+orkiestrować wieloma tematami naraz. To osobna decyzja od użycia narzędzia orkiestracji
+konkretnie do dispatchu Operator/Evaluator z jawnym `model`/`effort` per rolę
+(sekcja „Mapowanie ról” niżej) — nawet gdy próg ≥3 tematy jest spełniony, TO drugie
+WCIĄŻ wymaga jawnej, opt-in zgody właściciela na multi-agent orchestration w danej
+sesji (nie jest automatyczne z samego spełnienia progu). Powód: narzędzie
+podstawowego, pojedynczego dispatchu subagenta (`Agent` w Claude Code) nie ma
+parametru `effort`/`reasoning_effort` w swoim schemacie — różnicowanie Operator/
+Evaluator przez effort jest fizycznie możliwe wyłącznie przez narzędzie Workflow,
+a to wymaga tej zgody. Pełny opis gapu i incydentu, który go ujawnił: playbook C-061
+i [`.claude/skills/civ-autobot-workflow/SKILL.md`](.claude/skills/civ-autobot-workflow/SKILL.md).
 
 ### Mapowanie ról AutoBot → narzędzie orkiestracji
 
@@ -481,6 +508,64 @@ etykietowa podjęta i wdrożona w jednym miejscu (np. „to jest zapotrzebowanie
 zużycie") nie została propagowana do analogicznego, równoległego miejsca w innej części
 systemu — dwa ekrany tej samej aplikacji zaczęły sobie przeczyć. Złapane dopiero, gdy
 recenzent świadomie porównał z wcześniejszą decyzją, nie tylko oceniał temat w izolacji.
+
+---
+
+## 13. Dodatkowe techniki (wnioski z drugiej rundy wdrożenia)
+
+Poniższe cztery wnioski pochodzą z audytu i naprawy WŁASNEGO routingu tego
+protokołu w realnym projekcie — czyli agent stosujący AutoBota sprawdzał sam
+siebie. Wszystkie cztery są ogólne, niezależne od konkretnego projektu.
+
+**Nie zamieniaj niepewnej wypowiedzi w formalną decyzję.** Rozszerzenie reguły 1
+(„Pytaj przed budowaniem"): odpowiedź w stylu „chyba tak", luźna dygresja w
+rozmowie albo Twoja własna rekomendacja **nie są decyzją człowieka**, nawet
+jeśli brzmią jak zgoda. Decyzję zapisujesz do playbooka wyłącznie po
+jednoznacznej odpowiedzi — jeśli nie jesteś pewien, czy odpowiedź była
+jednoznaczna, dopytaj wprost, zanim zapiszesz.
+
+**Krytyczna kontrola mechaniczna potrzebuje dwóch nośników: pliku ładowanego
+automatycznie i playbooka.** Jeśli Twoje środowisko ładuje jeden plik
+instrukcji automatycznie do każdej sesji (odpowiednik `CLAUDE.md`), a
+playbook wymaga świadomego odczytu — najważniejsza, jednorazowa komenda
+weryfikacyjna (np. „sprawdź, czy żadne zgłoszenie nie zostało zgubione")
+powinna być zapisana W OBU miejscach, nie tylko w playbooku. Playbook
+potrafi wypaść z pola widzenia po długiej sesji lub kompresji kontekstu;
+plik auto-ładowany — nie. To jedyny przypadek w tym protokole, gdzie
+świadomie duplikujesz treść zamiast trzymać jedno źródło prawdy — bo cel
+tej konkretnej reguły to właśnie odporność na zawodną indirekcję.
+
+**Skracanie dokumentacji gubi linki częściej niż treść.** Gdy porządkujesz
+rozrośnięte pliki procesu, największe ryzyko nie leży w tym, co usuwasz z
+głównego pliku — leży w tym, że plik SZCZEGÓŁOWY, do którego głównie
+odsyłałeś, zostaje na dysku, ale nic już do niego nie prowadzi. Po każdym
+skróceniu przejdź listę wszystkich plików pomocniczych, które istniały
+PRZED zmianą, i sprawdź jawnie: czy coś nadal do nich linkuje? Plik, który
+istnieje, ale jest nieosiągalny ze ścieżki czytania, jest dla praktycznych
+celów usunięty — tylko nikt tego nie zauważy, dopóki go nie zabraknie.
+
+**Bariery bezpieczeństwa z sekcji 7 są silniejsze, gdy część z nich wymuszasz
+mechanicznie, nie tylko opisowo.** Prompt/instrukcja tekstowa zawsze może
+zostać przez agenta zreinterpretowana pod presją zadania — kod, który
+odrzuca akcję spoza jawnej listy dozwolonych (deny-by-default), już nie.
+Jeśli Twoje środowisko na to pozwala (skrypt, hook, wrapper narzędzia),
+najcięższe zakazy z sekcji 7 (transakcje finansowe, kasowanie oryginałów,
+masowa korespondencja, publikacja bez zgody) warto zabezpieczyć dodatkowo
+w kodzie, nie tylko w tekście tego protokołu. To nie zastępuje czytania
+reguł — jest ostatnią linią obrony, gdy inne zabezpieczenia zawiodą.
+
+### Opcjonalna technika: turniej dwóch propozycji dla decyzji wysokiego ryzyka
+
+Gdy masz dostęp do więcej niż jednego agenta i decyzja dotyczy czegoś, czego
+nie da się łatwo cofnąć (architektura, ceny, nieodwracalny wybór produktowy)
+— zamiast przedstawiać człowiekowi jedną propozycję A/B/C, poproś DRUGIEGO,
+niezależnego agenta (bez podglądu pierwszej propozycji) o własną, osobną
+propozycję tego samego wyboru. Trzeci agent (albo Ty, jeśli nie masz
+trzeciego) porównuje obie pod kątem trafności rozpoznania problemu, nie
+tego, która „brzmi lepiej", i przedstawia człowiekowi zwycięską/zsyntetyzowaną
+wersję z jawną adnotacją, dlaczego. To kosztuje więcej niż pojedyncza
+propozycja — stosuj wybiórczo, dla decyzji, których cena błędu jest wysoka,
+nie rutynowo dla każdego wyboru.
 
 ---
 

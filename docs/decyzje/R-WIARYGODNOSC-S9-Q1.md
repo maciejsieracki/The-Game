@@ -1,6 +1,6 @@
 # R-WIARYGODNOSC-S9-Q1 — strojenie liczb wiarygodności (§9)
 
-**Status:** 🟡 **ZAPISANA** · **A** (2026-08-06)  
+**Status:** 🟢 **ZDEPLOYOWANE FALA 259 `e028045c` — Evaluator PASS-WITH-NOTES** · **A** (2026-08-06)
 **Cytat Macieja:** „Pełna paczka strojenia liczb §9 teraz (JSON + testy)"  
 **Źródło:** [`ABC-PACZKA-2026-08-06-KOLEJKA.md`](ABC-PACZKA-2026-08-06-KOLEJKA.md) · spec `WIARYGODNOSC-SPECYFIKACJA.md` §9
 
@@ -16,4 +16,5 @@ Placeholderowe wartości z fali wdrożeniowej (233–237) zostają zastąpione p
 
 ## Wdrożenie
 
-Czeka na hasło **`działaj`** → AutoBot Operator (🟢 izolowana warstwa danych + testy).
+Wdrożone w FALI 259: `2e67219` + korekta `68f06dc`.
+Dowód: `wiarygodnosc-test.cjs` 270/270, tsc PASS, VERIFY OK.

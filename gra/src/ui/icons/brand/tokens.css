@@ -30,7 +30,14 @@
   --tg-radius-panel: 12px;
   --tg-border-gold:  2px solid rgba(232,216,138,.45);
   --tg-rant:         2px solid var(--tg-gold-dim); /* rant medalionu domyślny */
-  --tg-rant-active:  2px solid var(--tg-gold-primary);
+  --tg-rant-active:  2px solid var(--tg-gold-primary); /* R-TRZY-KARTY-WDROZENIE-Q1: to jest też token dla rantu slotu 3D w Karcie 2 (unitInfoCard.ts) — właściciel wybrał złoto kanonu, NIE błękit rgba(130,200,224,.28) z makiety; nowy token nie jest potrzebny */
+
+  /* R-TRZY-KARTY-WDROZENIE-Q1 — runda 1 (2026-08-20): 5 tokenów zgłoszonych jako brakujące
+   * w DYSPOZYCJA-WDROZENIE.md §1 (paczka TRZY-KARTY-2026-08-19). */
+  --tg-focus-ring:        var(--tg-gold-primary); /* obwódka focus-visible, wszystkie karty; użycie: outline:2px solid var(--tg-focus-ring); outline-offset:2-3px */
+  --tg-btn-primary-ink:   #2e2708; /* atrament przycisku pierwszorzędnego — to samo #f0dc88→#b99a28/#2e2708 co .tg-btn-primary tu i w menu-components.css (menu pauzy); makieta podawała #ffe08a/#d9a83c/#22180a z pamięci, ale te dokładne wartości nie występują nigdzie w kodzie — kanon to istniejący --tg-btn-primary + ten ink */
+  --tg-border-blocking:   3px; /* grubość rantu karty blokującej (Karta 3) vs 1px informacyjnej; celowo tylko grubość — kolor bez zmian (decyzja: blokada jest grubsza, nie inna kolorystycznie) */
+  --tg-render-fallback:   #e0a06a; /* kolor fallbacku podglądu 3D (Karta 2, WebGL niedostępny), dziś na sztywno w unitInfoCard.ts; osobny token, bo wartość nie pasuje dość blisko do --tg-orange by być jego przemianowaniem */
 }
 
 /* Medalion ikony (1E): stroke-only line icon w środku */

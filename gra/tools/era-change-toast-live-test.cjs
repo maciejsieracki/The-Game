@@ -187,7 +187,56 @@ async function main() {
       assert('toast HTML zawiera "Brązu"', toast.html.includes('Brązu'), toast);
     }
 
-    console.log('\n-- F. Trwały wpis w dzienniku WYDARZEŃ obecny RÓWNOLEGLE z toastem --');
+    console.log('\n-- F. Modal pełnej karty technologii (dane produkcyjne + długie listy) --');
+    const discovery = await page.evaluate(() => ({
+      visible: document.querySelector('#civ-tech-discovery-notice-host')?.style.display !== 'none',
+      title: document.querySelector('#civ-tech-discovery-notice-host h2')?.textContent ?? '',
+      sections: document.querySelectorAll('#civ-tech-discovery-notice-host .tdn-sec').length,
+      hasUndefined: document.querySelector('#civ-tech-discovery-notice-host')?.textContent?.includes('undefined') ?? false,
+      scrollable: (() => {
+        const el = document.querySelector('#civ-tech-discovery-notice-host .tdn-scroll');
+        return !!el && el.scrollHeight >= el.clientHeight;
+      })(),
+    }));
+    assert('modal odkrycia jest widoczny', discovery.visible, discovery);
+    assert('modal pokazuje pełną kartę Brązownictwa', discovery.title === 'Brązownictwo', discovery);
+    assert('karta ma sekcje z danych tech tree', discovery.sections >= 3, discovery);
+    assert('karta nie renderuje brakujących pól jako undefined', !discovery.hasUndefined, discovery);
+    assert('długa karta ma własny przewijany obszar', discovery.scrollable, discovery);
+
+    console.log('\n-- G. Edge cases: Escape + ponowne otwarcie drzewa --');
+    await page.keyboard.press('Escape');
+    assert('Escape zamyka modal bez kończenia tury', await page.evaluate(() =>
+      !document.querySelector('#civ-tech-discovery-notice-host')), {});
+    await page.evaluate(() => window.__eraTestDebug.openTechDiscovery('Brązownictwo'));
+    await page.locator('#civ-tech-discovery-notice-host [data-act="tree"]').click();
+    assert('przycisk karty otwiera istniejące drzewo', await page.evaluate(() =>
+      !!document.querySelector('.civ-ttv-overlay')), {});
+    await page.keyboard.press('Escape');
+
+    console.log('\n-- G2. Zwykłe ukończenie technologii zachowuje tę samą kartę bez nagłówka awansu epoki --');
+    await page.evaluate(() => window.__eraTestDebug.openTechCompletion('Brązownictwo'));
+    const completionCard = await page.evaluate(() => ({
+      kick: document.querySelector('#civ-tech-discovery-notice-host .tdn-kick')?.textContent ?? '',
+      subtitle: document.querySelector('#civ-tech-discovery-notice-host .tdn-sub')?.textContent ?? '',
+      title: document.querySelector('#civ-tech-discovery-notice-host h2')?.textContent ?? '',
+    }));
+    assert('karta zwykłego ukończenia jest widoczna', completionCard.title === 'Brązownictwo', completionCard);
+    assert('zwykła karta nie udaje awansu epoki', completionCard.kick === 'Ukończono badania', completionCard);
+    assert('zwykła karta ma opis ukończenia badań', completionCard.subtitle.includes('Technologia zbadana'), completionCard);
+    await page.keyboard.press('Escape');
+
+    console.log('\n-- H. Stary save / brak sekcji: karta nadal ma bezpieczny fallback --');
+    await page.evaluate(() => window.__eraTestDebug.openTechDiscovery('Brązownictwo'));
+    const fallback = await page.evaluate(() => ({
+      card: !!document.querySelector('#civ-tech-discovery-notice-host .tdn-card'),
+      noLiteralUndefined: !document.querySelector('#civ-tech-discovery-notice-host')?.innerHTML.includes('undefined'),
+    }));
+    assert('stary stan bez dodatkowych pól nie blokuje renderu karty', fallback.card, fallback);
+    assert('brak sekcji nie daje literalnego undefined', fallback.noLiteralUndefined, fallback);
+    await page.keyboard.press('Escape');
+
+    console.log('\n-- I. Trwały wpis w dzienniku WYDARZEŃ obecny RÓWNOLEGLE z toastem --');
     const warLog = await page.evaluate(() => window.__eraTestDebug.getWarEventLogHead());
     const eraEntry = warLog.find((e) => typeof e.id === 'string' && e.id.startsWith('era-'));
     assert('warEventLog zawiera wpis "era-*" (Nowa epoka: Brązu)', !!eraEntry, warLog);
@@ -195,7 +244,7 @@ async function main() {
       assert('wpis dziennika: title zawiera "Nowa epoka"', String(eraEntry.title).includes('Nowa epoka'), eraEntry);
     }
 
-    console.log('\n-- G. Konsola czysta --');
+    console.log('\n-- J. Konsola czysta --');
     assert('zero console.error / pageerror w całym scenariuszu', consoleErrors.length === 0, consoleErrors);
     if (consoleErrors.length) console.error('   konsola:', consoleErrors.join(' | '));
 

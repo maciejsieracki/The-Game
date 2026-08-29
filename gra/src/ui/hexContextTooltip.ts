@@ -21,7 +21,6 @@ import {
   hexHasClayDeposit,
   isFarmBaseTerrain,
   isImprovementBlockedOnForest,
-  hasAnimalDeposit,
 } from '../map/improvement-build';
 import type { ImprovementKey } from '../render/improvements';
 // R-ZETON-PASKI (Maciej 2026-07-29): kolory pasków Zdrowia i Ruchu były tu
@@ -366,7 +365,7 @@ function collectResourceLabels(hex: Hex, era: number, playerCivType?: string | n
  * terytorium/tech/stanu gracza) `createQualifier()`/`qualifies()` w `map/improvement-build.ts`
  * — jedynego autorytatywnego źródła tej logiki. Nie duplikuj warunków ręcznie tam, gdzie
  * istnieje eksportowana funkcja (hexHasClayDeposit, isFarmBaseTerrain,
- * isImprovementBlockedOnForest, hasAnimalDeposit) — reużyj.
+ * isImprovementBlockedOnForest) — reużyj.
  * EN: base terrain alone is not enough — many improvements also require a specific
  * overlay/deposit ON THIS hex (forest/clay/ore/salt/iron/copper/gold/tin/animal), not just a
  * matching terrain type. The checks below mirror (hex-property parts only, no
@@ -452,8 +451,11 @@ function listTerrainPossibleImprovements(
     if (active.has(key)) continue;
     if (!isImprovementAllowedForCiv(key, playerCivType)) continue;
     if (!galleryTerrainEligible(key as ImprovementKey, teren)) continue;
-    // Ulepszenia zablokowane pod lasem (irygacja/tarasy — trzeba najpierw wyrąbać);
-    // tartak/wyrąb/glinianka/obóz łowiecki/farma MOGĄ stać na Lesie — wyjątki żyją w tej funkcji.
+    // Ulepszenia zablokowane pod lasem (irygacja/tarasy/farma — trzeba najpierw wyrąbać);
+    // tartak/wyrąb/glinianka/obóz łowiecki MOGĄ stać na Lesie — wyjątki żyją w tej funkcji.
+    // `farma` dołączyła do zablokowanych 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1,
+    // ECHO właściciela uchylające regułę z 2026-07-21) — warunek terenu farmy egzekwuje
+    // niżej `isFarmBaseTerrain`, ta linia jest drugą, niezależną bramką.
     if (isImprovementBlockedOnForest(key, nakladka)) continue;
     if (key === 'bydlo' && nakladka !== Nakladka.ZlozeBydla) continue;
     if (key === 'owce' && nakladka !== Nakladka.ZlozeOwiec) continue;
@@ -473,7 +475,11 @@ function listTerrainPossibleImprovements(
     if (key === 'tartak' && nakladka !== Nakladka.Las) continue;
     if (key === 'wyrab' && nakladka !== Nakladka.Las) continue;
     if (key === 'glinianka' && !hexHasClayDeposit(hex)) continue;
-    if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las && !hasAnimalDeposit(nakladka)) continue;
+    // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (Maciej): obóz łowiecki WYŁĄCZNIE na nakładce
+    // Las, na dowolnym terenie pod lasem (także wzgórze). Było `Las LUB złoże zwierzęce`.
+    // Ta sama reguła co `createQualifier` (map/improvement-build.ts) — tooltip nie może
+    // obiecywać więcej niż silnik. Porównanie enumu, nie podciągu nazwy terenu.
+    if (key === 'oboz_lowiecki' && nakladka !== Nakladka.Las) continue;
     if (key === 'warzelnia_soli' && teren !== TerenBazowy.Wybrzeze && zloze !== 'sol') continue;
     if (key === 'kopalnia_zelaza' && zloze !== 'zelazo') continue;
     if (key === 'kopalnia_miedzi'

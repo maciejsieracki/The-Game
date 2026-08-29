@@ -10,7 +10,7 @@ const BUNDLE = path.resolve(__dirname, '.city-hex-bundle.cjs');
 
 fs.writeFileSync(
   ENTRY,
-  `export { canUnitOccupyCityHex, foreignCityHexKeys, addForeignCityBlocks } from '../src/game/city-hex-movement';`,
+  `export { canUnitOccupyCityHex, foreignCityHexKeys, addForeignCityBlocks, canAiEnterEmptyEnemyCity } from '../src/game/city-hex-movement';`,
   'utf8',
 );
 
@@ -24,7 +24,12 @@ esbuild.buildSync({
   logLevel: 'silent',
 });
 
-const { canUnitOccupyCityHex, foreignCityHexKeys, addForeignCityBlocks } = require(BUNDLE);
+const {
+  canUnitOccupyCityHex,
+  foreignCityHexKeys,
+  addForeignCityBlocks,
+  canAiEnterEmptyEnemyCity,
+} = require(BUNDLE);
 
 let ok = 0;
 let fail = 0;
@@ -46,6 +51,38 @@ eq(canUnitOccupyCityHex(-1, 0, 0, cities), false, 'barbarzyńca nie wchodzi na m
 eq(foreignCityHexKeys(0, cities).has('0,0'), false, 'własne miasto nie jest foreign dla gracza');
 eq(foreignCityHexKeys(0, cities).has('5,0'), true, 'obce miasto jest foreign dla gracza');
 eq(addForeignCityBlocks(new Set(['1,1']), 0, cities).has('5,0'), true, 'addForeignCityBlocks dodaje obce');
+
+const emptyCity = { id: 'empty', ownerId: 2, q: 1, r: 0, name: 'Pusta', population: 2 };
+eq(
+  canAiEnterEmptyEnemyCity(1, 0, 0, emptyCity, [], false),
+  true,
+  'AI major może wejść z adiacencji na puste miasto',
+);
+eq(
+  canAiEnterEmptyEnemyCity(1, 0, 0, emptyCity, [], true),
+  false,
+  'mutacja: obrońca blokuje przejęcie',
+);
+eq(
+  canAiEnterEmptyEnemyCity(1, 0, 0, emptyCity, ['mury'], false),
+  false,
+  'edge case: mury blokują przejęcie pustego miasta',
+);
+eq(
+  canAiEnterEmptyEnemyCity(1, 0, 0, { ...emptyCity, maMur: true }, [], false),
+  false,
+  'edge case: flaga maMur blokuje przejęcie',
+);
+eq(
+  canAiEnterEmptyEnemyCity(1, 0, 2, emptyCity, [], false),
+  false,
+  'mutacja: brak adiacencji nie daje wejścia ani teleportu',
+);
+eq(
+  canAiEnterEmptyEnemyCity(3, 0, 0, emptyCity, [], false),
+  true,
+  'parytet ownerów: miasto-państwo i major używają tej samej bramki',
+);
 
 try { fs.unlinkSync(ENTRY); } catch (_) {}
 try { fs.unlinkSync(BUNDLE); } catch (_) {}

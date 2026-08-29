@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import type { GameMap } from '../types/map';
 import { TerenBazowy } from '../types/hex';
 import { axialToWorld, HEX_R } from './hexutil';
-import { GAME_MAP_RENDER_STYLE, terrainSurfaceTopY } from './mapRenderStyle';
+import { GAME_MAP_RENDER_STYLE, reliefSurfaceSampler, terrainSurfaceTopY } from './mapRenderStyle';
 import {
   computeTerritoryBorderLoops,
   type BorderLoopPoint,
@@ -87,6 +87,13 @@ function buildBorderLine(
   opacity: number,
   yOffset: number,
   flatY?: number,
+  /**
+   * Wysokość obwódki liczona PER HEKS (wierzch pryzmu tego heksa), nie jedna płaska dla
+   * całego zbioru. Wzgórza stoją 0,18 j, a Góry 0,32 j wyżej niż Łąka (TERRAIN_SURFACE_Y),
+   * więc płaska obwódka na poziomie Łąki wpadałaby pod ich pryzm i z włączonym testem
+   * głębi byłaby niewidoczna — a to jedyne dwa terenu, na których stoją kopalnie.
+   */
+  perHexY = false,
 ): THREE.LineSegments | null {
   const positions: number[] = [];
   const borderY = flatY ?? terrainSurfaceTopY(TerenBazowy.Laka, GAME_MAP_RENDER_STYLE, yOffset);
@@ -96,7 +103,7 @@ function buildBorderLine(
     if (!hex) continue;
     const { q, r } = hex.coords;
     const { x: cx, z: cz } = axialToWorld(q, r, HEX_R);
-    const verts = hexVertices(cx, borderY, cz, HEX_R);
+    const verts = hexVertices(cx, perHexY ? hexTopY(map, key, yOffset) : borderY, cz, HEX_R);
 
     for (let i = 0; i < 6; i++) {
       const dir = HEX_DIRS[i]!;
@@ -224,34 +231,208 @@ export interface RangeOverlayStyle {
   borderBandWidth?: number;
   yOffset?: number;
   /**
-   * Rysuj z `depthTest: false` — warstwa jest widoczna także tam, gdzie bryła terenu
-   * wystaje ponad wierzch pryzmu heksa (Wzgórza, Góry). Domyślnie `false`, więc kultura
-   * i religia zachowują dotychczasowe zachowanie co do piksela.
-   * / EN: draw with `depthTest: false` so the layer stays visible where the terrain body
-   * rises above the hex prism top (Hills, Mountains). Defaults to false, so the culture and
-   * religion overlays keep their current behaviour pixel for pixel.
+   * P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2 = C (właściciel, 2026-08-18): warstwa nie jest
+   * płaskim krążkiem na wierzchu pryzmu, tylko OBLEKA bryłę reliefu tego heksa (Wzgórze /
+   * Góra) — dzięki temu jest widoczna na terenie, który wyrasta ponad pryzm, przy WŁĄCZONYM
+   * teście głębi. Domyślnie `false`, więc kultura, religia i okolica miasta zachowują
+   * dotychczasowe zachowanie co do piksela.
    */
-  alwaysOnTop?: boolean;
+  hugTerrainRelief?: boolean;
 }
 
 /**
- * Kolejność rysowania warstwy `alwaysOnTop`: PONAD terenem i warstwami zasięgu (renderOrder
- * 3/5/6) oraz łukami tras handlowych (7), ale PONIŻEJ żetonów jednostek (10/12) i etykiet
- * miast (18/20) — inaczej półprzezroczysta płachta przymgliłaby czytelność liczb na plakietkach.
- * / EN: draw order for the `alwaysOnTop` layer: above terrain, range overlays (3/5/6) and trade
- * arcs (7), but below unit tokens (10/12) and city labels (18/20), which must stay crisp.
+ * Kolejność rysowania warstwy oblekającej relief: PONAD terenem i warstwami zasięgu
+ * (renderOrder 3/5/6) oraz łukami tras handlowych (7), ale PONIŻEJ żetonów jednostek (10/12)
+ * i etykiet miast (18/20) — inaczej półprzezroczysta płachta przymgliłaby czytelność liczb
+ * na plakietkach. Sama kolejność NIE przebija geometrii: test głębi zostaje włączony, więc
+ * o przesłanianiu decyduje bryła, a `renderOrder` tylko porządkuje przezroczystości leżące
+ * na tej samej powierzchni.
  */
-const ALWAYS_ON_TOP_TINT_ORDER = 8;
-const ALWAYS_ON_TOP_BORDER_ORDER = 9;
+const HUG_RELIEF_TINT_ORDER = 8;
+const HUG_RELIEF_BORDER_ORDER = 9;
 
-/** Wyłącza test głębi i przypina kolejność rysowania dla jednego obiektu warstwy. */
-function applyAlwaysOnTop(obj: THREE.Object3D, renderOrder: number): void {
-  const mesh = obj as THREE.Mesh;
-  const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-  for (const m of mats) {
-    if (m) (m as THREE.Material).depthTest = false;
+/**
+ * Podział jednego sektora heksa (środek + dwa sąsiednie rogi) przy oblekaniu reliefu.
+ * 4 → 16 trójkątów na sektor, 96 na heks: dość gęsto, by płachta trzymała się fasetowanych
+ * stopni kopca (najkrótsza ścianka wariantu ma ~0,14 j, krok siatki to ~0,24 j), i na tyle
+ * tanio, że przy kilkudziesięciu heksach kwalifikujących się pod kopalnię przeliczenie jest
+ * niezauważalne.
+ */
+const HUG_RELIEF_SUBDIVISIONS = 4;
+
+/**
+ * Odsunięcie płachty od powierzchni bryły WZDŁUŻ NORMALNEJ trójkąta (world units).
+ * Wzdłuż normalnej, a nie w pionie, bo na niemal pionowej ściance stopnia podniesienie w osi Y
+ * przesuwa punkt PO tej ściance i nie daje żadnego rozsunięcia w głąb kadru — czyli dokładnie
+ * ten wariant, w którym wraca migotanie (z-fighting). `polygonOffset` materiału dokłada drugą,
+ * niezależną warstwę zabezpieczenia w przestrzeni głębi.
+ */
+const HUG_RELIEF_SURFACE_LIFT = 0.012;
+
+/** Promień płachty w ułamku HEX_R — ten sam co płaski tint, więc obrys pokrywa się z obwódką. */
+const HUG_RELIEF_RADIUS_FRAC = 0.97;
+
+/**
+ * Wysokość bryły reliefu w punkcie (x,z) heksa z pamięcią wyników. Sampler pod spodem strzela
+ * promieniem w geometrię wariantu, a siatka sektorów odwiedza wspólne wierzchołki po sześć
+ * razy (rogi) — cache ścina liczbę raycastów na heks z 288 do ~61.
+ */
+function makeReliefHeightFn(
+  sampler: ((x: number, z: number) => number) | null,
+): (x: number, z: number) => number {
+  if (!sampler) return () => 0;
+  const cache = new Map<string, number>();
+  return (x, z) => {
+    const key = `${x.toFixed(4)},${z.toFixed(4)}`;
+    const hit = cache.get(key);
+    if (hit !== undefined) return hit;
+    const y = sampler(x, z);
+    cache.set(key, y);
+    return y;
+  };
+}
+
+/** Trójkąt płachty odsunięty o `lift` wzdłuż własnej normalnej (zwróconej ku górze). */
+function pushDrapeTriangle(
+  positions: number[],
+  p0: readonly [number, number, number],
+  p1: readonly [number, number, number],
+  p2: readonly [number, number, number],
+  lift: number,
+): void {
+  const ux = p1[0] - p0[0];
+  const uy = p1[1] - p0[1];
+  const uz = p1[2] - p0[2];
+  const vx = p2[0] - p0[0];
+  const vy = p2[1] - p0[1];
+  const vz = p2[2] - p0[2];
+  let nx = uy * vz - uz * vy;
+  let ny = uz * vx - ux * vz;
+  let nz = ux * vy - uy * vx;
+  const len = Math.hypot(nx, ny, nz);
+  if (len > 1e-9) {
+    nx /= len;
+    ny /= len;
+    nz /= len;
+    // Normalna zawsze ku górze — o kierunek odsunięcia nie może decydować kolejność
+    // wierzchołków w siatce.
+    if (ny < 0) {
+      nx = -nx;
+      ny = -ny;
+      nz = -nz;
+    }
+  } else {
+    nx = 0;
+    ny = 1;
+    nz = 0;
   }
-  obj.renderOrder = renderOrder;
+  const dx = nx * lift;
+  const dy = ny * lift;
+  const dz = nz * lift;
+  positions.push(
+    p0[0] + dx, p0[1] + dy, p0[2] + dz,
+    p1[0] + dx, p1[1] + dy, p1[2] + dz,
+    p2[0] + dx, p2[1] + dy, p2[2] + dz,
+  );
+}
+
+/**
+ * Siatka jednego sektora heksa (środek → rogi `a` i `b`) rozpięta na powierzchni bryły.
+ * Punkt (i,j) siatki barycentrycznej leży w (i·a + j·b) / N od środka heksa, a jego wysokość
+ * bierze się z `height` — więc wierzchołki na wspólnych krawędziach sektorów wypadają w tych
+ * samych miejscach i płachta jest ciągła, bez szwów.
+ */
+function appendSectorDrape(
+  positions: number[],
+  cx: number,
+  baseY: number,
+  cz: number,
+  a: { x: number; z: number },
+  b: { x: number; z: number },
+  height: (x: number, z: number) => number,
+): void {
+  const N = HUG_RELIEF_SUBDIVISIONS;
+  const at = (i: number, j: number): [number, number, number] => {
+    const lx = (a.x * i + b.x * j) / N;
+    const lz = (a.z * i + b.z * j) / N;
+    return [cx + lx, baseY + height(lx, lz), cz + lz];
+  };
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; i + j < N; j++) {
+      pushDrapeTriangle(positions, at(i, j), at(i + 1, j), at(i, j + 1), HUG_RELIEF_SURFACE_LIFT);
+      if (i + j < N - 1) {
+        pushDrapeTriangle(positions, at(i + 1, j), at(i + 1, j + 1), at(i, j + 1), HUG_RELIEF_SURFACE_LIFT);
+      }
+    }
+  }
+}
+
+/**
+ * P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2 = C: płachta podświetlenia OBLEKAJĄCA bryłę reliefu
+ * zamiast płaskiego krążka wypuszczonego z testu głębi.
+ *
+ * Dlaczego to rozwiązuje temat: krążek na wierzchu pryzmu tonął w bryle Wzgórza (0,392 j nad
+ * pryzmem) i Góry (1,10–1,25 j), a jedyną znaną obejściem był `depthTest: false` — który
+ * usuwał WSZYSTKIE przesłonięcia, więc niebieska warstwa przebijała przez grzbiety sąsiednich
+ * heksów i przez modele jednostek stojących przed nią. Tutaj każdy wierzchołek dostaje wysokość
+ * z `reliefSurfaceSampler`, czyli z TEJ SAMEJ geometrii wariantu, którą scena instancjonuje na
+ * mapie (`teren-gory-wzgorza.ts`, wariant i obrót z `map.seed`), i płachta leży o
+ * `HUG_RELIEF_SURFACE_LIFT` nad nią. Test głębi zostaje więc WŁĄCZONY: to bryła, a nie flaga
+ * materiału, decyduje o przesłanianiu.
+ */
+function buildReliefDrapeMesh(
+  map: GameMap,
+  hexKeys: Set<string>,
+  color: number,
+  opacity: number,
+  yOffset: number,
+): THREE.Mesh | null {
+  const positions: number[] = [];
+  const drapedKeys: string[] = [];
+  const cornersLocal = hexVertices(0, 0, 0, HEX_R * HUG_RELIEF_RADIUS_FRAC)
+    .map((v) => ({ x: v.x, z: v.z }));
+
+  for (const key of hexKeys) {
+    const hex = map.hexes[key];
+    if (!hex) continue;
+    const { q, r } = hex.coords;
+    const teren = hex.terenBazowy ?? TerenBazowy.Laka;
+    const baseY = hexTopY(map, key, yOffset);
+    const { x: cx, z: cz } = axialToWorld(q, r, HEX_R);
+    const height = makeReliefHeightFn(
+      reliefSurfaceSampler(teren, q, r, map.seed ?? 0, HEX_R),
+    );
+    for (let i = 0; i < 6; i++) {
+      appendSectorDrape(positions, cx, baseY, cz, cornersLocal[i]!, cornersLocal[(i + 1) % 6]!, height);
+    }
+    drapedKeys.push(key);
+  }
+
+  if (positions.length === 0) return null;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.computeVertexNormals();
+  const mat = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    // Druga warstwa zabezpieczenia przed migotaniem na powierzchniach niemal współpłaszczyznowych
+    // z bryłą terenu; `depthTest` NIE jest tu ruszany (zostaje domyślne `true`).
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+    polygonOffsetUnits: -2,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.name = 'range-overlay-relief-drape';
+  mesh.renderOrder = HUG_RELIEF_TINT_ORDER;
+  mesh.userData = {
+    hexKeys: drapedKeys,
+    triangles: positions.length / 9,
+    subdivisions: HUG_RELIEF_SUBDIVISIONS,
+  };
+  return mesh;
 }
 
 export const CULTURE_RANGE_STYLE: RangeOverlayStyle = {
@@ -275,19 +456,15 @@ export const RELIGION_RANGE_STYLE: RangeOverlayStyle = {
  * KOPALNI (miedzi / żelaza / cyny / złota) wszystkie heksy terytorium, na których TĘ kopalnię
  * da się postawić, świecą na jasnoniebiesko z przezroczystością 30 %.
  *
- * `alwaysOnTop` NIE jest ozdobnikiem, tylko warunkiem widoczności tej konkretnej warstwy:
- * wszystkie cztery kopalnie kwalifikują się WYŁĄCZNIE na Wzgórzach i Górach (TERRAIN_ALLOW
- * w map/improvement-build.ts), a bryła wzgórza wyrasta 0,392 j nad wierzch pryzmu heksa przy
- * podstawie do 0,92·HEX_R, góra zaś 1,10–1,25 j przy podstawie 0,87·HEX_R (stałe
- * WZGORZE_SZCZYT_Y / GORA_APEX_Y / *_FOOTPRINT_R w render/teren-gory-wzgorza.ts). Płaski krążek
- * o promieniu 0,97·HEX_R położony na wierzchu pryzmu zniknąłby więc w całości WEWNĄTRZ tej bryły
- * — dokładnie to spotyka istniejące, ogólne podświetlenie `UnitRenderer.setHighlight`
- * (krążek 0,88·HEX_R, 0,005·HEX_R nad pryzmem), przez co dla kopalń nie widać dziś niczego.
- * / EN: the `alwaysOnTop` flag is a visibility requirement, not decoration: all four mines
- * qualify on Hills and Mountains only, whose bodies rise 0.392 / 1.10–1.25 world units above the
- * hex prism top over a footprint of 0.92 / 0.87·HEX_R. A flat disc laid on the prism top is
- * swallowed whole by that body — which is exactly what happens to the existing generic
- * `UnitRenderer.setHighlight` disc, so mines show no highlight at all today.
+ * Widoczność tej warstwy jest wymaganiem, nie ozdobnikiem: wszystkie cztery kopalnie
+ * kwalifikują się wyłącznie na Wzgórzach i Górach. Płaski krążek o promieniu
+ * 0,97·HEX_R byłby w większości zasłonięty przez bryłę reliefu, pozostawiając
+ * jedynie wąski pierścień — dlatego ogólne podświetlenie kopalni było niewidoczne.
+ *
+ * P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2 = C (właściciel, 2026-08-18):
+ * widoczność jest rozwiązana geometrią `hugTerrainRelief`, a nie globalnym
+ * wyłączeniem testu głębi. Poprzednie `depthTest:false` pokazywało warstwę,
+ * ale pozwalało jej przebijać przez sąsiedni teren i modele jednostek.
  */
 export const MINE_ELIGIBLE_TINT_COLOR = 0x66ccff;
 /** Przezroczystość 30 % — dokładnie wartość podana przez właściciela, bez zaokrąglania. */
@@ -298,7 +475,7 @@ export const MINE_ELIGIBLE_STYLE: RangeOverlayStyle = {
   borderColor: 0x99ddff,
   borderOpacity: 0.9,
   yOffset: 0.06,
-  alwaysOnTop: true,
+  hugTerrainRelief: true,
 };
 
 /**
@@ -684,23 +861,28 @@ export function buildRangeOverlayGroup(
   group.name = 'range-overlay';
   const yOff = style.yOffset ?? 0.05;
   const flatBorderY = terrainSurfaceTopY(TerenBazowy.Laka, GAME_MAP_RENDER_STYLE, yOff + 0.008);
-  const onTop = style.alwaysOnTop === true;
-  const tint = buildTintMesh(map, hexKeys, style.tintColor, style.tintOpacity, yOff);
-  if (tint) {
-    if (onTop) applyAlwaysOnTop(tint, ALWAYS_ON_TOP_TINT_ORDER);
-    group.add(tint);
-  }
+  const hug = style.hugTerrainRelief === true;
+  const tint = hug
+    ? buildReliefDrapeMesh(map, hexKeys, style.tintColor, style.tintOpacity, yOff)
+    : buildTintMesh(map, hexKeys, style.tintColor, style.tintOpacity, yOff);
+  if (tint) group.add(tint);
   const bandW = style.borderBandWidth ?? 0;
   if (bandW > 0) {
     const band = buildBorderBandMesh(map, hexKeys, style.borderColor, style.borderOpacity, yOff + 0.006, bandW);
     if (band) {
-      if (onTop) applyAlwaysOnTop(band, ALWAYS_ON_TOP_BORDER_ORDER);
+      if (hug) band.renderOrder = HUG_RELIEF_BORDER_ORDER;
       group.add(band);
     }
   } else {
-    const border = buildBorderLine(map, hexKeys, style.borderColor, style.borderOpacity, yOff + 0.008, flatBorderY);
+    // W trybie oblekania obwódka idzie po wierzchu pryzmu TEGO heksa (pas 0,97–1,0·HEX_R leży
+    // poza obrysem bryły kopca, więc zostaje odsłonięty i czytelny nawet wtedy, gdy model
+    // złoża albo kopalni zasłania środek heksa).
+    const border = buildBorderLine(
+      map, hexKeys, style.borderColor, style.borderOpacity, yOff + 0.008,
+      hug ? undefined : flatBorderY, hug,
+    );
     if (border) {
-      if (onTop) applyAlwaysOnTop(border, ALWAYS_ON_TOP_BORDER_ORDER);
+      if (hug) border.renderOrder = HUG_RELIEF_BORDER_ORDER;
       group.add(border);
     }
   }

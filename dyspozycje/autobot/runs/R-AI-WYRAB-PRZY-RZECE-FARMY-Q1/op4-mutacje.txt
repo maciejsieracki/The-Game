@@ -1,0 +1,32 @@
+baza: 48 passed, 0 failed
+  [DOWOD] M1 ZASADA 1 — zdejmij zawezenie listy do zywnosci przy braku niedoboru
+          czerwone: Z1a, Z1d, Z1f, Z1g, Z1i
+  [DOWOD] M2 ZASADA 1 — pozwol FAZIE 0 (posterunek/fort) dzialac mimo braku niedoboru
+          czerwone: Z1a, Z1d, Z1g
+  [DOWOD] M3 ZASADA 1 — niech niedobor ZYWNOSCI tez otwiera budowe surowcow
+          czerwone: Z1d, Z1e
+  [DOWOD] M4 ZASADA 2 — zdejmij filtr „przy obywatelach" z FAZY 1
+          czerwone: Z2c
+  [DOWOD] M5 ZASADA 2 — zabierz wyjatek zlozowy (zloza przestaja byc wyjatkiem)
+          czerwone: Z2d
+  [DOWOD] M6 ZASADA 2 — cofnij wartosc domyslna onlyWorked na false
+          czerwone: Z2e, Z2f, Z2g
+  [DOWOD] M7 ZASADA 2 — odepnij filtr obywateli od AI CYWILIZACJI (ai.ts)
+          czerwone: Z2j, Z3b
+  [DOWOD] M8 ZASADA 3 — niech raport nigdy nie melduje nadwyzki
+          czerwone: Z3b
+  [DOWOD] M9 ZASADA 3 — rozbramkuj przekierowanie w silniku (main.ts)
+          czerwone: Z3f
+  [DOWOD] M10 ZASADA 3 — niech automat GRACZA sam rusza suwakiem `pracaAutoPercent`
+          czerwone: Z3j
+  [DOWOD] M11 R4-Q2 — zmien wartosc domyslna przelacznika wyrebu na WLACZONY
+          czerwone: Q2a, Q2b, Q2c, Q2f, Q2g
+  [DOWOD] M12 R4-Q2 — zignoruj `getSkipWyrab` (przelacznik przestaje dzialac per miasto)
+          czerwone: Q2k, Q2m
+  [DOWOD] M13 R4-Q2 — odepnij przelacznik od wywolania pickera w main.ts
+          czerwone: Q2n
+  [DOWOD] M14 R4-Q2 — przestan odtwarzac przelacznik z zapisu (main.ts / load)
+          czerwone: Q2i
+  [DOWOD] M15 R4-Q2 — zdejmij domyslke pola miasta w `ensureCitySaveDefaults`
+          czerwone: Q2g
+ai4-mutacje: 15 dowodow, 0 podejrzanych (z 15)

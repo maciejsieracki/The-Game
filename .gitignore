@@ -123,3 +123,15 @@ gra/tools/.stubs/hsb-pending-battle-audio-stub.ts
 gra/tools/.stubs/hsb-pending-battle-brandAssets-stub.ts
 gra/tools/.stubs/hsb-pending-battle-hud-stub.ts
 gra/tools/.stubs/hsb-pending-battle-leaderPortraits-stub.ts
+
+# Stuby bramki bottom-bar-hud-wykonaj-overlap-test.cjs (R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1,
+# 2026-08-21), wlasna nazwa z tego samego powodu co wyzej.
+gra/tools/.stubs/bottom-bar-hud-overlap-brandAssets-stub.ts
+gra/tools/.stubs/bottom-bar-hud-overlap-brandTokenVars-stub.ts
+
+# Bundle playtestowe gra-robocza/ (regenerowane lokalnie przez publish-robocza-snapshot.ps1
+# / deploy manualny) - usuniete z gita przez R-REPO-SPRZATANIE-SREDNIE-Q1 (2026-08-27,
+# decyzja wlasciciela, 280 MB). Zostaja na dysku dla lokalnego playtestu (START.html
+# do nich linkuje), ale NIE wracaja do gita - stad ignorowane, zeby nie generowaly
+# szumu w git status/hookach po kazdym deployu.
+gra-robocza/Gra-ROBOCZA-PLAYTEST-*.html

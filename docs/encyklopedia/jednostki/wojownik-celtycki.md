@@ -12,6 +12,7 @@
 | **poradnik_ref** | `docs/PORADNIK-GRACZA/57-katalog-jednostek.md` |
 | **json_ref** | `units.json` |
 | **status_v1** | ✅ |
+| gra-id | soldurii |
 
 ---
 

@@ -23,7 +23,7 @@ import {
   type DifficultyLevel,
 } from './city-state-difficulty';
 import type { City }       from './cities';
-import { canFoundCity, MAX_PROCENT_NAUKA }    from './cities';
+import { canFoundCity, MAX_PROCENT_NAUKA, MAX_PROCENT_PULI_IMPERIUM }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
 import {
   aiBypassClusterConsolidation,
@@ -54,9 +54,17 @@ import { hexKeysWithinRadius } from './okolica';
 import {
   AI_IMPROVEMENT_PRIORITY,
   pickAutoImprovements,
+  type AutoImprovementSurplusReport,
 } from './auto-improvements';
+// R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2): AI CYWILIZACJI liczy swoje heksy
+// „przy obywatelach" TĄ SAMĄ funkcją co gracz (`turn-economy.ts`), a nie własną kopią —
+// mechanizm istniał wcześniej tylko po stronie gracza (main.ts `getWorkedHexKeys`), więc
+// tutaj jest WPINANY, nie tworzony od nowa.
+import { workedHexCoordsForCity } from './turn-economy';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
 import { unitRecruitUpkeepReserve } from './economy-upkeep';
+import type { AiTargetMemoryEntry } from './ai-fog';
+import { planArmyConcentration } from './army-concentration';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -68,6 +76,8 @@ export interface AICmdMove {
   unitId: string;
   toQ: number;
   toR: number;
+  /** Cel miasta, który musi zostać ponownie wykryty przed przejęciem. */
+  targetCityId?: string;
 }
 
 /** Found a city at (q, r) via panel budowy (foundCityAt — bez osadnika). */
@@ -205,6 +215,16 @@ function getAiParam(data: GameData, key: string, fallback: number): number {
 
 /** Optional configuration for decideAITurn. */
 export interface AITurnOpts {
+  /**
+   * Migła AI liczona przez silnik dla konkretnego ownera. Gdy podana, cele
+   * poza widocznością nie trafiają do listy celów bojowych.
+   */
+  visibleHexes?: ReadonlySet<string>;
+  /**
+   * Ostatnio znane pozycje celów. Służą wyłącznie do planowania ruchu;
+   * egzekutor ataku musi dostać cel z aktualnej widoczności.
+   */
+  rememberedTargets?: readonly AiTargetMemoryEntry[];
   /** Civilization type string (TypCywilizacji value) for archetype modifiers. */
   civType?: string;
   /**
@@ -356,6 +376,20 @@ export interface AITurnOpts {
    */
   pracaAvailable?: number;
   /**
+   * Absolutny budżet ulepszeń wydzielony wcześniej z pierwotnej puli Pracy.
+   * Silnik ustawia go po podziale `aiBudget` (np. 100 → 50 budynki + 50
+   * ulepszenia). Nie wolno dzielić tej wartości procentowo ponownie po
+   * wydaniu `aiBudget.doBudynkow`; brak pola zachowuje stary kontrakt
+   * bezpośrednich wywołań testowych.
+   */
+  improvementBudgetCap?: number;
+  /**
+   * Wspólny koszt ulepszeń już zaplanowany wcześniej w tej samej turze.
+   * Ustawia go decideAITurn przed planExpansionFortBuilding, aby posterunek
+   * nie dołożył drugiego wydatku ponad absolutny budżet ulepszeń.
+   */
+  plannedImprovementCost?: number;
+  /**
    * P-AI-011 (Maciej 2026-07-26): surowce ilościowe z zapasem < 1 pakietu handlowego.
    * Silnik (main.ts) — priorytet: (1) handel, (2) budowa/ulepszenie pod brak.
    */
@@ -365,6 +399,14 @@ export interface AITurnOpts {
    * Silnik nie ustawia — chooseCityProduction dopisuje, decideAITurn scala do resourceDeficitKeys.
    */
   recruitStockDeficitScratch?: Set<string>;
+  /**
+   * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): obiekt diagnostyczny nadwyżki
+   * budżetu ulepszeń, wypełniany W MIEJSCU przez `pickAutoImprovements`. Silnik (main.ts)
+   * tworzy go przed `decideAITurn` i po powrocie czyta `surplus` — na tej podstawie
+   * przesuwa środki AI CYWILIZACJI na budynki (podział Pracy miasta). Nie podany =
+   * picker nie liczy niczego dodatkowego.
+   */
+  improvementSurplusReport?: AutoImprovementSurplusReport;
   /**
    * D-IMPROVEMENTS: epoka TEGO AI (main.ts `empireEpochForOwner(ownerId)`) --
    * wymagane przez qualifier dla hodowli Inków (bydło/owce poza lamą dopiero
@@ -1942,6 +1984,36 @@ function planCityImprovements(
   // schodził z puli poniżej 30 po budowie farmy (koszt 20 przy puli 35) — regres MP.
   if (pracaAvailable <= pracaSurplusGate) return [];
 
+  // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: gdy silnik przekazał absolutny budżet
+  // wydzielony z pierwotnej puli, użyj go wprost. Ponowne splitowanie
+  // pozostałych 50 pkt po wydaniu budynków dawałoby błędne 25 pkt ulepszeń.
+  // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2): silnik podaje absolutna koperte automatu
+  // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
+  // (main.ts, `aiImprovementBudgetByOwner`) — NIE z tegorocznego przyrostu puli i NIE
+  // z drugiego podzialu tej samej Pracy. Fallback (test/AI bez silnika) to maksymalny
+  // dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM`.
+  const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
+    ? Math.max(0, opts.improvementBudgetCap as number)
+    : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
+  // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 2): heksy obrabiane przez obywateli
+  // TEGO miasta, liczone raz na wywołanie i cache'owane po `city.id` (picker pyta o nie
+  // raz na miasto, ale `planCityImprovements` bywa wołane dwiema ścieżkami —
+  // `decideAITurn` i `decideDefensiveCopyTurn`).
+  // BRAK ODPOWIEDNIKA `lostToSiblingByCity` z main.ts (P-HEKS-SPOR-SASIAD): ścieżka
+  // gracza odejmuje heksy sporne z bliższym miastem-rodzeństwem. Dla AI ten wyjątek nie
+  // jest tu przekazywany — skutek jest wyłącznie w kierunku „AI uzna za swoje o kilka
+  // heksów spornych za dużo", nigdy w kierunku budowy poza obywatelami cudzego miasta.
+  const workedKeysCache = new Map<string, ReadonlySet<string>>();
+  const workedHexKeysForAiCity = (city: AICity): ReadonlySet<string> => {
+    const hit = workedKeysCache.get(city.id);
+    if (hit) return hit;
+    const set = new Set<string>(
+      workedHexCoordsForCity(city, map, territoryNodes).map(({ q, r }) => `${q},${r}`),
+    );
+    workedKeysCache.set(city.id, set);
+    return set;
+  };
+
   const picks = pickAutoImprovements({
     cities: myCities,
     ownerId,
@@ -1951,20 +2023,23 @@ function planCityImprovements(
     pracaAvailable,
     unlockedTechs: opts.improvementTechs ?? new Set<string>(),
     pracaSurplusThreshold: 0,
-    // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (2026-08-14): AI NIE korzysta z %-budżetu Pracy — ten
-    // mechanizm to wybór GRACZA ("zostaw mi część Pracy"), AI nie ma gracza dla którego miałaby
-    // cokolwiek zostawiać. pracaBudgetPercent=100 = jawny brak ograniczenia % (bez tego pola
-    // funkcja i tak domyślnie nie ogranicza % — ustawione jawnie dla czytelności/odporności na
-    // przyszłą zmianę domyślnej wartości). Throttle AI to WYŁĄCZNIE maxItemsPerCity=1 niżej —
-    // dawniej niejawny efekt uboczny usuniętego domyślnego `maxPerCity=1`, teraz jawny (patrz
-    // testy 4-6/9/10 w ai-improvements-test.cjs, które ten dokładny throttle asercjonują).
-    // / EN: AI does NOT use the %-budget — that mechanism is the PLAYER'S choice ("leave me some
-    // Work"), AI has no player to leave anything for. pracaBudgetPercent=100 = explicit no-%-cap
-    // (the function already defaults to no cap without this, set explicitly for
-    // clarity/future-proofing). AI's throttle is ONLY maxItemsPerCity=1 below — previously an
-    // implicit side effect of the removed default `maxPerCity=1`, now explicit (see tests
-    // 4-6/9/10 in ai-improvements-test.cjs, which assert this exact throttle).
+    // ZASADA 1 (runda 4): AI CYWILIZACJI buduje domyślnie samą żywność; pełna lista
+    // otwiera się dopiero na czas niedoboru surowca (`resourceDeficitKeys`).
+    demandDriven: true,
+    resourceDeficitKeys: opts.resourceDeficitKeys,
+    // ZASADA 2 (runda 4): domyślnie WŁĄCZONE dla AI CYWILIZACJI (wyjątek złożowy
+    // egzekwuje sam picker — patrz `hexAllowsKey` w auto-improvements.ts).
+    getOnlyWorked: () => true,
+    // Rzutowanie na AICity (= City) jest bezpieczne: `myCities` to pełne obiekty miast
+    // tego AI; `AutoImprovementCity` jest tylko WĘŻSZYM widokiem tego samego obiektu.
+    getWorkedHexKeys: city => workedHexKeysForAiCity(city as AICity),
+    // ZASADA 3 (runda 4): diagnostyka nadwyżki dla silnika (main.ts).
+    surplusReport: opts.improvementSurplusReport,
+    // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: AI podlega temu samemu
+    // absolutnemu splitowi całej puli co gracz. Picker nie może wykonać
+    // drugiego, procentowego podziału na już wydzielonym budżecie.
     pracaBudgetPercent: 100,
+    improvementBudgetCap: improvementBudget,
     maxItemsPerCity: 1,
     skipWyrab: false,
     civArchetype: opts.civType,
@@ -2043,6 +2118,20 @@ export function planExpansionFortBuilding(
   const meta = getImprovementMeta('posterunek');
   if (!meta) return null;
   if (pracaAvailable < meta.kosztPraca + AI_IMPROVEMENT_PRACA_SURPLUS) return null;
+  // Ten sam absolutny budżet obowiązuje także posterunek, aby koszt
+  // zaplanowanych ulepszeń i ekspansji dzielił jedną kopertę.
+  // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2): silnik podaje absolutna koperte automatu
+  // ulepszen policzona z `pracaAutoPercent% x SKUMULOWANA pula` tego ownera
+  // (main.ts, `aiImprovementBudgetByOwner`) — NIE z tegorocznego przyrostu puli i NIE
+  // z drugiego podzialu tej samej Pracy. Fallback (test/AI bez silnika) to maksymalny
+  // dozwolony udzial puli, `MAX_PROCENT_PULI_IMPERIUM`.
+  const improvementBudget = Number.isFinite(opts.improvementBudgetCap)
+    ? Math.max(0, opts.improvementBudgetCap as number)
+    : Math.floor(pracaAvailable * MAX_PROCENT_PULI_IMPERIUM / 100);
+  const plannedCost = Number.isFinite(opts.plannedImprovementCost)
+    ? Math.max(0, opts.plannedImprovementCost as number)
+    : 0;
+  if (plannedCost + meta.kosztPraca > improvementBudget) return null;
   if (!isImprovementTechUnlocked('posterunek', opts.improvementTechs ?? new Set())) return null;
 
   const territoryNodes = opts.territoryNodes ?? [];
@@ -2362,8 +2451,14 @@ export function decideAITurn(
 
   const myUnits      = units.filter(u => u.ownerId === playerId);
   const myCities     = cities.filter(c => c.ownerId === playerId);
-  const enemyUnits   = units.filter(u => u.ownerId !== playerId);
-  const enemyCities  = cities.filter(c => c.ownerId !== playerId);
+  const enemyUnits   = units.filter(
+    u => u.ownerId !== playerId
+      && (opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(u.q, u.r))),
+  );
+  const enemyCities  = cities.filter(
+    c => c.ownerId !== playerId
+      && (opts.visibleHexes === undefined || opts.visibleHexes.has(keyOf(c.q, c.r))),
+  );
   const engageableEnemyUnits = enemyUnits.filter(u => aiCanEngageOwner(opts, u.ownerId));
   const engageableEnemyCities = enemyCities.filter(c => aiCanEngageOwner(opts, c.ownerId));
 
@@ -2424,11 +2519,20 @@ export function decideAITurn(
     for (const k of opts.recruitStockDeficitScratch) merged.add(k);
     opts.resourceDeficitKeys = [...merged];
   }
-  for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
-    commands.push(cmd);
-  }
+  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts);
+  for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
-  const expansionFortCmd = planExpansionFortBuilding(playerId, myCities, myUnits, map, opts);
+  const plannedImprovementCost = cityImprovementCommands.reduce(
+    (sum, cmd) => sum + (getImprovementMeta(cmd.key)?.kosztPraca ?? 0),
+    0,
+  );
+  const expansionFortCmd = planExpansionFortBuilding(
+    playerId,
+    myCities,
+    myUnits,
+    map,
+    { ...opts, plannedImprovementCost },
+  );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
   // -------------------------------------------------------------------------
@@ -2485,10 +2589,39 @@ export function decideAITurn(
   // maszerować do celu, który ktoś inny właśnie obsługuje/zabija.
   const handledThreatIds = new Set<string>();
 
+  // R-ARMIA-KONCENTRACJA-AI-BARB-Q1 (4A/5A/7A): major AI gathers a real
+  // field roster before issuing ordinary march/attack decisions. The planner
+  // is owner-agnostic; this call only gates the main-civilization path and
+  // leaves the existing barbarian local rally untouched. Home defenders keep
+  // their higher-priority assignment and are not pulled into the rally.
+  const concentration = isMajorAiOwner(opts)
+    ? planArmyConcentration(playerId, myUnits, {
+      excludedUnitIds: new Set(homeDefenderAssignments.keys()),
+    })
+    : null;
+  const concentrationDeferred = new Set(concentration?.deferredUnitIds ?? []);
+  if (concentration !== null) {
+    for (const unitId of concentration.moveUnitIds) {
+      const unit = myUnits.find(u => u.id === unitId);
+      if (unit === undefined) continue;
+      const step = firstStep(
+        unit,
+        map,
+        concentration.rallyPoint.q,
+        concentration.rallyPoint.r,
+        units,
+      );
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+      }
+    }
+  }
+
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
 
     if (unit.ruchLeft <= 0) continue;
+    if (concentrationDeferred.has(unit.id)) continue;
 
     // Zwiadowcy: wyścig o wioski — poza logiką bojową (nie atakują, nie patrolują „do domu").
     if (isScoutUnit(unit)) {
@@ -2520,7 +2653,13 @@ export function decideAITurn(
       ec => isWithinCityAttackRange(unit, ec, data),
     );
     if (adjacentEnemyCity !== undefined) {
-      commands.push({ type: 'move', unitId: unit.id, toQ: adjacentEnemyCity.q, toR: adjacentEnemyCity.r });
+      commands.push({
+        type: 'move',
+        unitId: unit.id,
+        toQ: adjacentEnemyCity.q,
+        toR: adjacentEnemyCity.r,
+        targetCityId: adjacentEnemyCity.id,
+      });
       unitActed.add(unit.id);
       continue;
     }
@@ -2612,7 +2751,36 @@ export function decideAITurn(
 
       const step = firstStep(unit, map, targetCity.q, targetCity.r, units);
       if (step !== null) {
-        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        commands.push({
+          type: 'move',
+          unitId: unit.id,
+          toQ: step.q,
+          toR: step.r,
+          targetCityId: targetCity.id,
+        });
+        unitActed.add(unit.id);
+        continue;
+      }
+    }
+
+    // A+C: gdy nie ma aktualnie widocznego miasta do marszu, można planować
+    // do ostatniej znanej pozycji celu. To NIE tworzy celu ataku — przy braku
+    // ponownego wykrycia trafia tu wyłącznie komenda ruchu.
+    const rememberedTarget = (opts.rememberedTargets ?? [])
+      .filter(t => t.targetOwnerId !== playerId)
+      .sort((a, b) =>
+        hexDistance(unit.q, unit.r, a.q, a.r) - hexDistance(unit.q, unit.r, b.q, b.r)
+      )[0];
+    if (rememberedTarget !== undefined) {
+      const step = firstStep(unit, map, rememberedTarget.q, rememberedTarget.r, units);
+      if (step !== null) {
+        commands.push({
+          type: 'move',
+          unitId: unit.id,
+          toQ: step.q,
+          toR: step.r,
+          ...(rememberedTarget.kind === 'city' ? { targetCityId: rememberedTarget.targetId } : {}),
+        });
         unitActed.add(unit.id);
         continue;
       }
@@ -2895,11 +3063,20 @@ function decideDefensiveCopyTurn(
     for (const k of opts.recruitStockDeficitScratch) merged.add(k);
     opts.resourceDeficitKeys = [...merged];
   }
-  for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
-    commands.push(cmd);
-  }
+  const cityImprovementCommands = planCityImprovements(myCities, playerId, map, opts);
+  for (const cmd of cityImprovementCommands) commands.push(cmd);
   // Krok 2 (Maciej 2026-08-09): heurystyka minimalna, patrz planExpansionFortBuilding.
-  const expansionFortCmd = planExpansionFortBuilding(playerId, myCities, myUnits, map, opts);
+  const plannedImprovementCost = cityImprovementCommands.reduce(
+    (sum, cmd) => sum + (getImprovementMeta(cmd.key)?.kosztPraca ?? 0),
+    0,
+  );
+  const expansionFortCmd = planExpansionFortBuilding(
+    playerId,
+    myCities,
+    myUnits,
+    map,
+    { ...opts, plannedImprovementCost },
+  );
   if (expansionFortCmd !== null) commands.push(expansionFortCmd);
 
   // ---------------------------------------------------------------------------
@@ -3714,6 +3891,25 @@ export interface DiplomacjaInputs {
    * alliance (B3, round 2) targets when picking; this is just the same guard closed off here.
    */
   bronzeForceWarTargetId?: number;
+  /**
+   * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: wymuszona wojna głównej cywilizacji AI
+   * po 20 turach ochrony startowej w epoce Kamienia. To ten sam końcowy guard
+   * co dla Brązu, ale z osobnym priorytetem/staniem w main.ts.
+   */
+  stoneForceWarTargetId?: number;
+  /**
+   * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wymuszona wojna głównej cywilizacji AI z sąsiadem
+   * terytorialnym po awansie do epoki Żelaza (lub po odpoczynku po poprzedniej wojnie
+   * wymuszonej Żelaza) — priorytet przed OGÓLNYMI regułami wojny, dokładnie jak
+   * `bronzeForceWarTargetId`/`stoneForceWarTargetId` (ECHO właściciela: wymuszona wojna ma
+   * być POZA ogólnymi regułami prowadzenia wojny). Silnik (main.ts) już wyklucza przy
+   * wyborze cele NAP/peaceLocked/w-wojnie/sojusz — tu tylko finalne domknięcie tego samego
+   * guarda. Patrz `game/forced-war-iron.ts`.
+   * EN: Iron-era forced war against a territorial neighbor after advancing into the Iron
+   * age (or after resting from a previous Iron forced war) — takes priority over normal
+   * diplomacy, same pattern as the Bronze/Stone fields.
+   */
+  ironForceWarTargetId?: number;
 }
 
 /**
@@ -4010,6 +4206,52 @@ export function decideAIDiplomacy(
         type:     'wypowiedz_wojne',
         targetId: forcedId,
         powod:    `R-EPOKA-BRAZU-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura ${inp.currentTurn ?? 0})`,
+      }];
+    }
+  }
+
+  // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: cel został wybrany przez main.ts według
+  // identycznych filtrów terytorialnych jak w mechanizmie Brązu. Nie omijamy
+  // tu aktywnej wojny, NAP, blokady pokoju ani sojuszu z samym celem.
+  if (inp.stoneForceWarTargetId != null) {
+    const forcedId = String(inp.stoneForceWarTargetId);
+    const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
+    if (
+      forcedRel
+      && !forcedRel.stanWojny
+      && !forcedRel.peaceLocked
+      && !forcedRel.hasNapTreaty
+      && !forcedRel.hasAllianceTreaty
+    ) {
+      return [{
+        type:     'wypowiedz_wojne',
+        targetId: forcedId,
+        powod:    `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: wymuszona wojna po ochronie startowej (tura ${inp.currentTurn ?? 0})`,
+      }];
+    }
+  }
+
+  // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: trzecia i ostatnia epoka gry. Cel został wybrany
+  // przez main.ts według identycznych filtrów terytorialnych jak w mechanizmie Brązu
+  // (wyzwalacz = awans do Żelaza). Ten wczesny `return` stoi POZA ogólnymi regułami wojny
+  // (ECHO właściciela 2026-08-27) — tak samo jak Kamień i Brąz wyżej. Nie omijamy tu
+  // aktywnej wojny, NAP, blokady pokoju ani sojuszu z samym celem.
+  // EN: Iron-era forced war — same early return, outside the general war rules, as Stone
+  // and Bronze above; the target-side guards (at war / peace lock / NAP / alliance) stay.
+  if (inp.ironForceWarTargetId != null) {
+    const forcedId = String(inp.ironForceWarTargetId);
+    const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
+    if (
+      forcedRel
+      && !forcedRel.stanWojny
+      && !forcedRel.peaceLocked
+      && !forcedRel.hasNapTreaty
+      && !forcedRel.hasAllianceTreaty
+    ) {
+      return [{
+        type:     'wypowiedz_wojne',
+        targetId: forcedId,
+        powod:    `R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura ${inp.currentTurn ?? 0})`,
       }];
     }
   }
@@ -4438,71 +4680,29 @@ export function pickExecutableCandidate<TItem>(
 }
 
 /**
- * R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): decyzja CZY AI powinno kupić
- * właśnie kolejkowaną jednostkę za złoto (rush), zamiast czekać na dokończenie
- * Pracą. CELOWO zachowawcza -- AI nie roztrwania skarbca:
- *   - tylko gdy jest w stanie wojny z kimkolwiek (presja bojowa uzasadnia rush),
- *   - tylko gdy zostaje bufor >= reserve PO zapłaceniu koszt,
- *   - tylko gdy miasto ma pokrycie Manpower (inaczej zakup i tak by się nie udał),
- *   - tylko raz (maxPerTurn) na turę na ownera -- twardy cap, nie farma złota.
- * Funkcja jest CZYSTA (bez dostępu do main.ts/stanu gry) -- testowalna w izolacji,
- * patrz tools/ai-unit-rush-test.cjs. main.ts wywołuje ją zamiast duplikować logikę.
+ * R-AI-MP-REKRUTACJA-SKARBIEC-ZAMIAST-BUDOWY-Q1: czysta bramka decyzji AI
+ * dla zakupu jednostki. AI używa tej samej ekonomii zakupu co gracz: musi mieć
+ * złoto na cenę i Manpower; wojna, rezerwa skarbca i limit „rushów” nie są
+ * częścią kanonu zakupu gracza, więc nie mogą blokować rekrutacji AI.
+ * Walidacja zasobów rekrutacyjnych oraz pobranie kosztów pozostają atomowo w
+ * purchaseRecruitmentUnit (main.ts), wspólnej ścieżce gracza i AI.
  */
-export function shouldAIRushBuyUnit(inp: {
-  atWar: boolean;
+export function shouldAIPurchaseUnit(inp: {
   treasury: number;
-  reserve: number;
   goldCost: number;
   hasManpower: boolean;
-  boughtThisTurn: number;
-  maxPerTurn: number;
 }): boolean {
-  return (
-    inp.atWar
-    && inp.hasManpower
-    && inp.treasury >= inp.reserve + inp.goldCost
-    && inp.boughtThisTurn < inp.maxPerTurn
-  );
+  return inp.hasManpower && inp.treasury >= inp.goldCost;
 }
+
+/** Kompatybilny alias dla istniejących testów/narzędzi; parametry AI-only są ignorowane. */
+export const shouldAIRushBuyUnit = shouldAIPurchaseUnit;
 
 /** Difficulty key shared with economy.ts / economy-upkeep.ts (easy/normal/hard). */
 type EconDifficulty = 'easy' | 'normal' | 'hard';
 
 /** A raw econ-params.json row: difficulty values plus jednostka/opis metadata. */
 type RawAiRushRow = Record<string, number | string | undefined>;
-
-/**
- * Resolved rush-buy thresholds for shouldAIRushBuyUnit (reserve + per-turn cap).
- */
-export interface AiRushParams {
-  reserve: number;
-  maxPerTurn: number;
-}
-
-/**
- * R-STAWKI-STROJENIE (2026-07-24): loads the AI-rush thresholds from
- * econ-params.json (globalne.ai_rush_jednostka_rezerwa_zlota /
- * globalne.ai_rush_jednostka_max_na_ture) instead of main.ts constants, so
- * they become data-tunable like every other econ-params value. Robust by
- * design (same pattern as loadEconParams/loadUpkeepParams): any missing/
- * non-numeric row falls back to the previous hardcoded values (100 / 1) so a
- * malformed row can never break a turn.
- */
-export function loadAiRushParams(
-  raw: { globalne?: Record<string, RawAiRushRow> },
-  difficulty: EconDifficulty,
-): AiRushParams {
-  const g = raw.globalne ?? {};
-  const read = (key: string, fallback: number): number => {
-    const row = g[key];
-    const v   = row ? row[difficulty] : undefined;
-    return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
-  };
-  return {
-    reserve:    read('ai_rush_jednostka_rezerwa_zlota', 100),
-    maxPerTurn: read('ai_rush_jednostka_max_na_ture',   1),
-  };
-}
 
 // ---------------------------------------------------------------------------
 // R-AI-SUWAKI (decyzja Maciej 2026-07-26, C-AI-SUWAKI=A): dotąd AI siedziało na

@@ -295,6 +295,15 @@ export interface GarncarniaSurplusBonusResult {
   nadwyzkaSztuk: number;
 }
 
+/** R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1: binarny bonus per miasto. */
+export function ceramikaHappinessBonus(
+  ceramikaPoDrainSpichlerza: number,
+  maGarncarnie: boolean,
+): number {
+  return maGarncarnie && Number.isFinite(ceramikaPoDrainSpichlerza)
+    && ceramikaPoDrainSpichlerza > 0 ? 1 : 0;
+}
+
 /**
  * U-14bA: automatyczny bonus z nadwyżki Ceramiki w magazynie państwa
  * (po drain Spichlerza). Garncarnia produkuje Ceramikę; zużywa ją tylko Spichlerz.
@@ -315,7 +324,8 @@ export function computeGarncarniaSurplusBonus(input: GarncarniaSurplusBonusInput
   if (efekt === 'zadowolenie') {
     return {
       zdrowieBonus: 0,
-      zadowolenieBonus: nadwyzka * zadowolenieNaSztuke,
+      // Szczęście nie skaluje się ilością Ceramiki.
+      zadowolenieBonus: ceramikaHappinessBonus(nadwyzka, input.maGarncarnie),
       nadwyzkaSztuk: nadwyzka,
     };
   }

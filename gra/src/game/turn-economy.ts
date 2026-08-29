@@ -123,6 +123,7 @@ import {
   spichlerzArmyFoodCostMultiplier,
   spichlerzHealthBonus,
   SPICHLERZ_DRAIN_CERAMIKA_PER_TURN,
+  SPICHLERZ_DRAIN_SOL_PER_TURN,
   type BuildingRuntimeGateOptions,
   type SpichlerzCityBonusState,
 } from './building-resource-gate';
@@ -165,6 +166,7 @@ import {
   type RationParams,
 } from './population-growth-v85';
 import { pickOsiedlePopBonus, osiedlePopLabel } from './society-breakdown';
+import { computeGrowthHappinessNetto } from './growth-happiness';
 import { hexDistance } from '../units/setup';
 import { type WonderYieldBonus } from './wonders-data';
 
@@ -1394,7 +1396,180 @@ function simulateCeramikaAfterSpichlerzDrains(
   return ceramika;
 }
 
-/** U-14bA / R7-C: +Zadowolenie z nadwyżki Ceramiki po drain Spichlerza (per owner, miasto z Garncarnią). */
+/**
+ * Preview counterpart of the runtime resource pipeline.  Runtime runs
+ * converters before the Spichlerz drain, so a Garncarnia can create the
+ * Ceramika that keeps the Spichlerz active in the same turn.  The HUD preview
+ * must inspect that same post-production snapshot; looking only at the stock
+ * at function entry creates a one-turn preview/runtime split.
+ */
+function simulateResourcePipelineForPreview(
+  cities: ReadonlyArray<City>,
+  map: GameMap,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+  data: GameData,
+  difficulty: Difficulty,
+  playerEra: number,
+  territoryNodes: readonly TerritoryNode[],
+  resolveOwnerEra: OwnerEraResolver | undefined,
+  resolveOwnerActiveLabels: OwnerActiveLabelsResolver | undefined,
+  resolveOwnerEmpireStock: OwnerEmpireStockResolver | undefined,
+  resolveOwnerZlotoAccess: OwnerZlotoAccessResolver,
+): {
+  spichlerzByCity: Map<string, SpichlerzCityBonusState>;
+  ceramikaByOwner: Map<number, number>;
+} {
+  const raw = data.econParams as unknown as RawConverterParamsJson;
+  const ownerIds = new Set(cities.map(city => city.ownerId));
+  const storageParams = loadOwnerStorageParams(
+    raw as unknown as Parameters<typeof loadOwnerStorageParams>[0],
+    difficulty,
+  );
+  const magazynCountByOwner = new Map<number, number>();
+  for (const city of cities) {
+    for (const id of builtByCity.get(city.id) ?? []) {
+      if (id === 'magazyn') {
+        magazynCountByOwner.set(city.ownerId, (magazynCountByOwner.get(city.ownerId) ?? 0) + 1);
+      }
+    }
+  }
+  const eraForOwner = (ownerId: number): number => resolveOwnerEra
+    ? resolveOwnerEra(ownerId)
+    : (ownerId === 0 ? playerEra : 1);
+  const capForOwner = (ownerId: number): number => ownerResourceCapacityPerType(
+    magazynCountByOwner.get(ownerId) ?? 0,
+    storageParams,
+    eraForOwner(ownerId),
+  );
+  const throughputsForOwner = (ownerId: number): Record<string, number> => {
+    const out: Record<string, number> = {};
+    for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+      const base = loadThroughput(raw, recipe.throughputParamKey, difficulty, recipe.throughputFallback);
+      out[recipe.id] = converterThroughputForEra(recipe.id, base, eraForOwner(ownerId));
+    }
+    return out;
+  };
+
+  // Keep preview's pre-converter inflow identical to tickEmpireResourcePipeline:
+  // both territory improvements and the current worked tiles credit the shared
+  // owner pool before Garncarnia/Cegielnia run.  This is deliberately computed
+  // from snapshots so preview remains read-only.
+  const lostToSiblingByCity = computeLostToNearerSiblingByCity(cities, map);
+  const territoryResourceByCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(
+    cities, map, territoryNodes, lostToSiblingByCity,
+  );
+  const stolarniaCountByOwner = new Map<number, number>();
+  const kamieniarskiCountByOwner = new Map<number, number>();
+  for (const city of cities) {
+    const builtIds = builtByCity.get(city.id) ?? [];
+    const activeBuiltIds = runtimeActiveBuiltIdsForCity(
+      builtIds,
+      city.ownerId,
+      resolveOwnerActiveLabels,
+      resolveOwnerEmpireStock,
+      resolveOwnerZlotoAccess,
+    );
+    if (activeBuiltIds.includes('stolarnia')) {
+      stolarniaCountByOwner.set(city.ownerId, (stolarniaCountByOwner.get(city.ownerId) ?? 0) + 1);
+    }
+    if (activeBuiltIds.includes('kamieniarski')) {
+      kamieniarskiCountByOwner.set(city.ownerId, (kamieniarskiCountByOwner.get(city.ownerId) ?? 0) + 1);
+    }
+  }
+  const stolarniaBonusDrewnaCiv = loadThroughput(
+    raw, 'budynek_stolarnia_bonus_drewna_civ', difficulty, 0.10,
+  );
+  const kamieniarskiBonusKamieniaCiv = loadThroughput(
+    raw, 'budynek_kamieniarski_bonus_kamienia_civ', difficulty, 0.10,
+  );
+
+  // Match tickEmpireResourcePipeline's converter order and runtime gates, but
+  // keep the result local so preview remains read-only.
+  const spichlerzByCity = new Map<string, SpichlerzCityBonusState>();
+  const ceramikaByOwner = new Map<number, number>();
+  for (const ownerId of ownerIds) {
+    let pool = { ...ownerResourceStockAll(cities, ownerId) };
+    const cap = capForOwner(ownerId);
+    for (const city of cities) {
+      if (city.ownerId !== ownerId) continue;
+      const terrYield = territoryResourceByCity.get(city.id);
+      const worked = workedMagazynByCity.get(city.id) ?? ZERO_WORKED_MAGAZYN;
+      const kamienMult = 1 + kamieniarskiBonusKamieniaCiv
+        * (kamieniarskiCountByOwner.get(ownerId) ?? 0);
+      const credit = (key: TerritoryResourceKey, rawAmount: number | undefined, mult = 1): void => {
+        if (rawAmount == null || !(rawAmount > 0)) return;
+        const current = pool[key] ?? 0;
+        pool[key] = Math.min(cap, current + Math.floor(rawAmount * mult));
+      };
+      const drewnoMapBase = (terrYield?.drewno ?? 0) + worked.drewno;
+      const drewnoCredit = applyStolarniaDrewnoMapInflow(
+        drewnoMapBase,
+        stolarniaCountByOwner.get(ownerId) ?? 0,
+        stolarniaBonusDrewnaCiv,
+      );
+      if (drewnoCredit > 0) credit('drewno', drewnoCredit);
+      credit('kamien', (terrYield?.kamien ?? 0) + worked.kamien, kamienMult);
+      credit('glina', (terrYield?.glina ?? 0) + worked.glina);
+      // Keep every non-worked territory resource in preview, matching the
+      // runtime creditTerritory calls below. These resources feed the shared
+      // owner pool and, in particular, Sól gates Spichlerz II.
+      if (terrYield) {
+        credit('ruda', terrYield.ruda);
+        credit('ruda_zelaza', terrYield.ruda_zelaza);
+        credit('ruda_cyny', terrYield.ruda_cyny);
+        credit('sol', terrYield.sol);
+        credit('zloto', terrYield.zloto);
+        credit('kon', terrYield.kon);
+      }
+    }
+    for (const city of cities) {
+      if (city.ownerId !== ownerId) continue;
+      const builtIds = builtByCity.get(city.id) ?? [];
+      const activeBuiltIds = runtimeActiveBuiltIdsForCity(
+        builtIds,
+        ownerId,
+        resolveOwnerActiveLabels,
+        resolveOwnerEmpireStock,
+        resolveOwnerZlotoAccess,
+        pool,
+      );
+      const recipes = DEFAULT_CONVERTER_RECIPES.filter(recipe =>
+        activeBuiltIds.includes(converterBuildingIdForRecipe(recipe)),
+      );
+      if (recipes.length === 0) continue;
+      pool = runConverters(recipes, pool, throughputsForOwner(ownerId), () => capForOwner(ownerId)).stores;
+    }
+    // Runtime consumes the shared owner pool once per city, in city order.
+    // Keep the same order here so multiple Spichlerze do not all inspect the
+    // same pre-drain stock and incorrectly receive the same active state.
+    for (const city of cities) {
+      if (city.ownerId !== ownerId) continue;
+      const builtIds = builtByCity.get(city.id) ?? [];
+      const hasI = builtIds.includes('spichlerz');
+      const hasII = builtIds.includes('spichlerz_ii');
+      if (!hasI && !hasII) {
+        spichlerzByCity.set(city.id, resolveSpichlerzCityBonusState(builtIds, {
+          ceramikaPaid: false,
+          solPaid: false,
+        }));
+        continue;
+      }
+      const ceramikaPaid = (pool.ceramika ?? 0) >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
+      const solPaid = hasII && (pool.sol ?? 0) >= SPICHLERZ_DRAIN_SOL_PER_TURN;
+      if (ceramikaPaid) pool.ceramika = (pool.ceramika ?? 0) - SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
+      if (solPaid) pool.sol = (pool.sol ?? 0) - SPICHLERZ_DRAIN_SOL_PER_TURN;
+      spichlerzByCity.set(city.id, resolveSpichlerzCityBonusState(builtIds, {
+        ceramikaPaid,
+        solPaid,
+      }));
+    }
+    ceramikaByOwner.set(ownerId, pool.ceramika ?? 0);
+  }
+  return { spichlerzByCity, ceramikaByOwner };
+}
+
+/** R-GARNCARNIA-CERAMIKA-SZCZESCIE-111-Q1: +1 z dostępu do Ceramiki per miasto z Garncarnią. */
 export function computeGarncarniaSurplusZadowolenieByOwner(
   cities: ReadonlyArray<City>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
@@ -1674,7 +1849,8 @@ export function previewCityEconomy(
   orderMultByCity: ReadonlyMap<string, OrderYieldMults> = new Map(),
   resolveOwnerEra?: OwnerEraResolver,
   resolveOwnerTech?: OwnerTechResolver,
-  tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
+  /** T4 (runda 2): cityId -> suma premii Handlu z tras Z BUDYNKIEM (0.05*dochod dystansowy per trasa). */
+  tradeRouteBuildingBonusByCity: ReadonlyMap<string, number> = new Map(),
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
   territoryNodes?: readonly TerritoryNode[],
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
@@ -1722,9 +1898,30 @@ export function previewCityEconomy(
     cityCountByOwner.set(c.ownerId, (cityCountByOwner.get(c.ownerId) ?? 0) + 1);
   }
 
-  const garncarniaSurplusZadowolenieByOwner = computeGarncarniaSurplusZadowolenieByOwner(
-    cities, builtByCity, false,
+  const previewResourcePipeline = simulateResourcePipelineForPreview(
+    cities,
+    map,
+    builtByCity,
+    data,
+    difficulty,
+    playerEra,
+    territoryNodes ?? buildTerritoryNodesFromCities(cities),
+    resolveOwnerEra,
+    resolveOwnerActiveLabels,
+    resolveOwnerEmpireStock,
+    resolveOwnerZlotoAccess,
   );
+  const garncarniaSurplusZadowolenieByOwner = new Map<number, number>();
+  for (const ownerId of new Set(cities.map(city => city.ownerId))) {
+    const hasGarncarnia = cities.some(city => city.ownerId === ownerId
+      && (builtByCity.get(city.id) ?? []).includes('garncarnia'));
+    garncarniaSurplusZadowolenieByOwner.set(ownerId, computeGarncarniaSurplusBonus({
+      ceramikaPoDrainSpichlerza: previewResourcePipeline.ceramikaByOwner.get(ownerId) ?? 0,
+      maGarncarnie: hasGarncarnia,
+      efekt: 'zadowolenie',
+      zadowolenieNaSztuke: 1,
+    }).zadowolenieBonus);
+  }
 
   // P-HEKS-SPOR-SASIAD (Maciej 2026-08-13): rozstrzygnięcie sporu o zwykły heks między miastami
   // TEGO SAMEGO właściciela -- liczone RAZ dla całego podglądu (jak w advanceCityEconomy
@@ -1746,7 +1943,8 @@ export function previewCityEconomy(
       resolveOwnerEmpireStock,
       resolveOwnerZlotoAccess,
     );
-    const spichlerzState = resolveSpichlerzForCity(cities, city.ownerId, builtIds, true);
+    const spichlerzState = previewResourcePipeline.spichlerzByCity.get(city.id)
+      ?? resolveSpichlerzCityBonusState(builtIds, { ceramikaPaid: false, solPaid: false });
     const hasWater = cityHasWaterAccess(city, map);
     const garncarniaZadowolenie = runtimeBuiltIds.includes('garncarnia')
       ? (garncarniaSurplusZadowolenieByOwner.get(city.ownerId) ?? 0)
@@ -1800,7 +1998,7 @@ export function previewCityEconomy(
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
-    const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    const premiaTrasHandlowych = tradeRouteBuildingBonusByCity.get(city.id) ?? 0;
     // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
     // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
     // wlasciciel rejestruje swoje pierwsze miasto w pre-passie powyzej). D4: redukcja
@@ -1836,7 +2034,7 @@ export function previewCityEconomy(
       walutaMnoznikOverride,
       civHandelMult,
       civNaukaMult,
-      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych,
+      premiaHandluTrasHandlowych: premiaTrasHandlowych,
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni: runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -1937,7 +2135,11 @@ export function previewCityEconomy(
       population: city.population,
       poziomRacji: foodBal.poziomRacji,
       zdrowie,
-      szczescieNetto: 0,
+      szczescieNetto: computeGrowthHappinessNetto(
+        wt.zadowolenie,
+        garncarniaZadowolenie > 0,
+        maSpichlerz || maSpichlerzII,
+      ),
       wealthPoziom: wt.poziom,
       spichlerzState,
       civKey: ownerCivByOwnerId.get(city.ownerId) ?? null,
@@ -2065,8 +2267,8 @@ export function advanceCityEconomy(
   resolveOwnerEra?: OwnerEraResolver,
   resolveOwnerTech?: OwnerTechResolver,
   wzrostLudnosciPace: WzrostLudnosciPace = 'wysoki',
-  /** Handel E3: cityId -> liczba aktywnych tras handlowych (+5% Handlu/trasa). */
-  tradeRouteCountByCity: ReadonlyMap<string, number> = new Map(),
+  /** T4 (runda 2): cityId -> suma premii Handlu z tras Z BUDYNKIEM (0.05*dochod dystansowy per trasa). */
+  tradeRouteBuildingBonusByCity: ReadonlyMap<string, number> = new Map(),
   /** Handel E3: cityId -> dochod dystansowy z tras tej tury (czysto do skarbca). */
   tradeIncomeByCity: ReadonlyMap<string, number> = new Map(),
   cityReligionByCityId: ReadonlyMap<string, ReligionState> = new Map(),
@@ -2083,6 +2285,7 @@ export function advanceCityEconomy(
   manpowerHeal?: {
     units: ManpowerHealUnit[];
     getMaxHp: (typeId: string) => number;
+    onUnitHpChanged?: (unitId: string, hp: number, hpMax: number) => void;
   },
   /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: domyślny podział Pracy per owner. */
   ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
@@ -2357,7 +2560,7 @@ export function advanceCityEconomy(
       ? civBonusyForCivKey(ownerCivKey, data.civs)
       : [];
     const { handel: civHandelMult, nauka: civNaukaMult } = civEconomyYieldMultipliers(ownerBonusy);
-    const liczbaTrasHandlowych = tradeRouteCountByCity.get(city.id) ?? 0;
+    const premiaTrasHandlowych = tradeRouteBuildingBonusByCity.get(city.id) ?? 0;
     // D2 (Maciej 2026-07-25): korupcja wpięta -- dystansOdStolicy=0 dla stolicy (i gdy
     // brak zarejestrowanej stolicy tego ownera, co w praktyce nie wystepuje bo kazdy
     // wlasciciel rejestruje swoje pierwsze miasto w pre-passie powyzej). D4: redukcja
@@ -2393,7 +2596,7 @@ export function advanceCityEconomy(
       walutaMnoznikOverride, // per-cyw skalowany trudnoscia (lub override religii)
       civHandelMult,         // RDY-01: bonus_zloto handel (Grecy +15%)
       civNaukaMult,          // RDY-01: bonus_nauka (Inkowie +15%)
-      liczbaAktywnychTrasHandlowych: liczbaTrasHandlowych, // Handel E3: +5%/trasa
+      premiaHandluTrasHandlowych: premiaTrasHandlowych, // T4: suma 0.05*dochod per trasa Z BUDYNKIEM
       // Zadanie 2 (2026-07-23): Garncarnia +Zywnosc% LOKALNIE -- liczba sztuk w TYM miescie.
       liczbaGarncarni:       runtimeBuiltIds.filter(id => id === 'garncarnia').length,
     };
@@ -2537,7 +2740,11 @@ export function advanceCityEconomy(
       population: city.population,
       poziomRacji: foodBal.poziomRacji,
       zdrowie,
-      szczescieNetto: 0,
+      szczescieNetto: computeGrowthHappinessNetto(
+        wt.zadowolenie,
+        garncarniaZadowolenie > 0,
+        maSpichlerz || maSpichlerzII,
+      ),
       wealthPoziom: wt.poziom,
       spichlerzState,
       civKey: ownerCivKey ?? null,
@@ -2686,6 +2893,8 @@ export function advanceCityEconomy(
         return key ? civBonusyForCivKey(key, data.civs) : [];
       },
       manpowerHeal.getMaxHp,
+      undefined,
+      manpowerHeal.onUnitHpChanged,
     );
   }
 

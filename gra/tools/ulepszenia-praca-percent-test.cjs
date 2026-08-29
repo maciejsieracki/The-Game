@@ -115,12 +115,11 @@ console.log('3. resolveUlepszeniaPracaPercentFromRaw — nowy/stary zapis, prior
   eq(resolveUlepszeniaPracaPercentFromRaw(undefined, 5), DEFAULT_ULEPSZENIA_PRACA_PERCENT, 'nieprawidlowa stara wartosc (5, spoza 1-3) -> domyslny %, bez crasha');
 }
 
-// 4. (d) migracja starego zapisu miasta: ulepszeniaPerTurn:2 (bez ulepszeniaPracaPercent) -> 50%
-// (66% clamped do limitu wspólnego worka). Bez crasha. Symuluje JSON.parse starego save'u — pole ma inny
-// ksztalt niz typ City dzisiaj, dlatego rzutujemy przez podanie property wprost (JS nie sprawdza typow w runtime).
-// R-PRACA-LIMIT-50-PROC-WSPOLNY-WOREK-Q1=A (2026-08-17): migracja starego ulepszeniaPerTurn=2 (66%) jest teraz
-// clampowana do max 50% (limit wspólnego worka dla override=true).
-console.log('4. (d) migracja zapisu: ulepszeniaPerTurn=2 (stary) -> ulepszeniaPracaPercent=50 (66% clamped), bez crasha');
+// 4. (d) migracja starego zapisu miasta: ulepszeniaPerTurn:2 (bez ulepszeniaPracaPercent) -> 66%
+// Historyczny automat ma zakres 0–100%; limit 50% należy wyłącznie do nadrzędnego splitu puli Pracy.
+// Bez crasha. Symuluje JSON.parse starego save'u — pole ma inny kształt niż typ City dzisiaj,
+// dlatego rzutujemy przez podanie property wprost (JS nie sprawdza typów w runtime).
+console.log('4. (d) migracja zapisu: ulepszeniaPerTurn=2 (stary) -> ulepszeniaPracaPercent=66, bez crasha');
 {
   const oldSaveCity = makeRawCity({ ulepszeniaOverride: true, ulepszeniaPerTurn: 2 });
   let threw = false;
@@ -131,11 +130,11 @@ console.log('4. (d) migracja zapisu: ulepszeniaPerTurn=2 (stary) -> ulepszeniaPr
     console.error('  (wyjatek):', e && e.message);
   }
   assert(!threw, 'ensureCitySaveDefaults na starym zapisie NIE rzuca wyjatku');
-  eq(oldSaveCity.ulepszeniaPracaPercent, 50, 'stare ulepszeniaPerTurn=2 zmigrowane na 50% (limit wspólnego worka)');
+  eq(oldSaveCity.ulepszeniaPracaPercent, 66, 'stare ulepszeniaPerTurn=2 zmigrowane na 66% (historyczny automat 0–100%)');
 }
 
 // 5. (d, idempotencja) powtorne wywolanie migracji na JUZ zmigrowanym mieście nie cofa wartosci
-// do domyslnej ani nie odczytuje ponownie skasowanego pola perTurn. Wartość zostaje ograniczona do 50%.
+// do domyslnej ani nie odczytuje ponownie skasowanego pola perTurn. Wartość 80% pozostaje legalna.
 console.log('5. (d) migracja jest idempotentna — powtorne wywolanie nie psuje juz-zmigrowanej wartosci');
 {
   const alreadyMigrated = makeRawCity({
@@ -144,9 +143,9 @@ console.log('5. (d) migracja jest idempotentna — powtorne wywolanie nie psuje 
     ulepszeniaPerTurn: 2, // pole-widmo ze starego zapisu, NIE powinno juz byc czytane
   });
   ensureCitySaveDefaults(alreadyMigrated);
-  eq(alreadyMigrated.ulepszeniaPracaPercent, 50, '1. wywolanie: nowe pole (80) jest clampowane do 50% (limit wspólnego worka)');
+  eq(alreadyMigrated.ulepszeniaPracaPercent, 80, '1. wywolanie: nowe pole (80) zachowuje wartość w zakresie 0–100%');
   ensureCitySaveDefaults(alreadyMigrated);
-  eq(alreadyMigrated.ulepszeniaPracaPercent, 50, '2. wywolanie (idempotencja): wartosc nadal 50%, nie zmienila sie');
+  eq(alreadyMigrated.ulepszeniaPracaPercent, 80, '2. wywolanie (idempotencja): wartosc nadal 80%, nie zmienila sie');
 }
 
 // 6. (d) miasto BEZ override — ensureCitySaveDefaults nie dotyka pola % (jak przed migracja: tylko
@@ -174,6 +173,10 @@ console.log('7. resolveEffectiveUlepszenia — dziedziczenie panstwa vs override
   const effOverride = resolveEffectiveUlepszenia(overrideCity, empire);
   eq(effOverride.pracaAutoPercent, 12, 'miasto z override -> efektywny % = wlasny (12), NIE panstwa');
   eq(effOverride.override, true, 'override=true zgloszone poprawnie');
+
+  const highOverrideCity = makeRawCity({ ulepszeniaOverride: true, ulepszeniaPracaPercent: 80 });
+  const highEffOverride = resolveEffectiveUlepszenia(highOverrideCity, empire);
+  eq(highEffOverride.pracaAutoPercent, 80, 'override 80% pozostaje 80% (bez drugiego capu 50%)');
 }
 
 // 8. R-AUTO-PRACA-BUDZET-PROCENT-Q1=B (runda 2, naprawa FAIL Evaluatora) — DEFAULT_ULEPSZENIA_

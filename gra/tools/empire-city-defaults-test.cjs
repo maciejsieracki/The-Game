@@ -51,6 +51,7 @@ fs.writeFileSync(
   budowaProfilEqual,
   resolveCityPoziomRacji,
   broadcastPoziomRacjiToOwnerCities,
+  broadcastAutoWyzywienieToOwnerCities,
   migratePoziomRacjiOnLoad,
   freshOwnerDefaultPoziomRacji,
 } from '../src/game/empire-city-defaults';
@@ -106,10 +107,10 @@ function ok(cond, msg) {
   // (b) miasto z override dostaje wartość lokalną NIEZALEŻNIE od zmiany globalnej.
   const cityOverride = { ownerId: 0, podzialPracyOverride: true, podzialPracy: { procentBudynki: 30 } };
   const rB1 = M.resolveCityPodzialPracy(cityOverride, ownerDefault);
-  ok(rB1.procentBudynki === 30, `Podział Pracy (b) z override → lokalna 30 (got ${rB1.procentBudynki})`);
+  ok(rB1.procentBudynki === 50, `Podział Pracy (b) z override → lokalna 30 znormalizowana do minimum 50 (got ${rB1.procentBudynki})`);
   const ownerDefaultChanged = { procentBudynki: 90 };
   const rB2 = M.resolveCityPodzialPracy(cityOverride, ownerDefaultChanged);
-  ok(rB2.procentBudynki === 30, `Podział Pracy (b) override przeżywa zmianę globalnej (got ${rB2.procentBudynki}, globalna teraz 90)`);
+  ok(rB2.procentBudynki === 50, `Podział Pracy (b) override przeżywa zmianę globalnej i clamp 50 (got ${rB2.procentBudynki}, globalna teraz 90)`);
 
   // brak ownerDefault (np. świeży ownerId bez wpisu w Map) → fallback na city.podzialPracy, potem params.
   const cityNoOverrideNoDefault = { ownerId: 5, podzialPracyOverride: false, podzialPracy: { procentBudynki: 55 } };
@@ -117,7 +118,7 @@ function ok(cond, msg) {
   ok(rFallback.procentBudynki === 55, `Podział Pracy brak ownerDefault → fallback city.podzialPracy 55 (got ${rFallback.procentBudynki})`);
   const paramsFallback = { procentBudynki: 42 };
   const rParamsFallback = M.resolveCityPodzialPracy({ ownerId: 5, podzialPracyOverride: false }, undefined, paramsFallback);
-  ok(rParamsFallback.procentBudynki === 42, `Podział Pracy brak city.podzialPracy i ownerDefault → paramsFallback 42 (got ${rParamsFallback.procentBudynki})`);
+  ok(rParamsFallback.procentBudynki === 50, `Podział Pracy brak city.podzialPracy i ownerDefault → paramsFallback 42 znormalizowany do 50 (got ${rParamsFallback.procentBudynki})`);
 
   // (c) migracja starego zapisu (bez ownerDefault, bez flag override) — jedno miasto z
   // wartością różną od pierwszej (owner default), jedno takie samo.
@@ -342,6 +343,30 @@ function ok(cond, msg) {
     ok(effective === 'zywnosc',
       `świeżo założone miasto: efektywny okolicaFocus (jak w seedCityOwnerDefaults) = 'zywnosc' (got ${effective})`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// 8. P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: broadcastAutoWyzywienieToOwnerCities
+//    — jednorazowa akcja "ustaw teraz" (nie stan trwały/toggle). Miasta ownera BEZ
+//    poziomRacjiOverride dostają autoWyzywienie=true; miasto Z override (pin 📌) jest
+//    POMIJANE; inny owner nietknięty; działa dla wielu miast naraz.
+// ---------------------------------------------------------------------------
+{
+  const cities = [
+    { id: 'c1', ownerId: 0, poziomRacjiOverride: false, autoWyzywienie: false },
+    { id: 'c2', ownerId: 0, poziomRacjiOverride: false, autoWyzywienie: false },
+    { id: 'c3', ownerId: 0, poziomRacjiOverride: true, autoWyzywienie: false },
+    { id: 'c4', ownerId: 1, poziomRacjiOverride: false, autoWyzywienie: false },
+  ];
+  M.broadcastAutoWyzywienieToOwnerCities(cities, 0);
+  ok(cities[0].autoWyzywienie === true,
+    `broadcastAutoWyzywienie: c1 (owner 0, bez override) dostaje autoWyzywienie=true (got ${cities[0].autoWyzywienie})`);
+  ok(cities[1].autoWyzywienie === true,
+    `broadcastAutoWyzywienie: c2 (owner 0, bez override) dostaje autoWyzywienie=true — dwa miasta naraz (got ${cities[1].autoWyzywienie})`);
+  ok(cities[2].autoWyzywienie === false,
+    `broadcastAutoWyzywienie: c3 (owner 0, poziomRacjiOverride=true) NIE zmienia się, pin 📌 (got ${cities[2].autoWyzywienie})`);
+  ok(cities[3].autoWyzywienie === false,
+    `broadcastAutoWyzywienie: c4 (inny owner) nie dotknięte (got ${cities[3].autoWyzywienie})`);
 }
 
 console.log(`empire-city-defaults-test: ${pass} pass, ${fail} fail`);

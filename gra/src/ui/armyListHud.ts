@@ -24,6 +24,8 @@ import {
 export interface ArmyListEntry {
   /** Id reprezentatywnej jednostki (do zaznaczenia). */
   id: string;
+  /** Typ jednostki używany do otwarcia generycznej karty informacyjnej. */
+  unitTypeId?: string;
   /** Nazwa stosu / typu. */
   name: string;
   unitCount: number;
@@ -53,6 +55,8 @@ export interface ArmyListEntry {
 export interface ArmyListHudConfig {
   getArmies: () => ArmyListEntry[];
   onSelectArmy: (unitId: string) => void;
+  /** Otwiera kartę prawdziwych danych reprezentanta stosu, jeśli dostępna. */
+  onOpenUnitCard?: (unitId: string, unitTypeId: string) => void;
   onClose?: () => void;
 }
 
@@ -84,6 +88,10 @@ function ensureStyles(): void {
 .civ-army-list-hud .al-hex{font-size:11px;color:var(--muted);margin-top:.2em;}
 .civ-army-list-hud .al-detail{font-size:0.78em;color:#d4cba0;margin-top:0.18em;line-height:1.35;}
 .civ-army-list-hud .al-meta{font-size:0.72em;color:var(--muted);margin-top:0.1em;}
+.civ-army-list-hud .sl-unit-card-btn{margin-left:auto;flex:0 0 auto;border:1px solid rgba(232,216,138,.38);
+  border-radius:50%;width:1.65em;height:1.65em;padding:0;background:rgba(8,10,16,.45);
+  color:#e8d88a;cursor:pointer;font-size:.82em;line-height:1;}
+.civ-army-list-hud .sl-unit-card-btn:hover{border-color:#e8d88a;background:rgba(232,216,138,.14);}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -166,7 +174,10 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
                 ? 'Zaznacz ' + a.name + ' — w auto-eksploracji; pomijana przez Spację, rusza się sama na koniec tury'
                 : a.unitCount > 1
             ? formatZaznaczArmieLabel(a.unitCount)
-            : 'Zaznacz ' + a.name;
+                : 'Zaznacz ' + a.name;
+        if (a.unitTypeId && config.onOpenUnitCard) {
+          row.title += ' — przycisk ⓘ otwiera kartę jednostki';
+        }
 
         const ico = document.createElement('span');
         ico.className = 'sl-ico';
@@ -194,6 +205,19 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
           nameRow.appendChild(badgesWrap);
         }
         body.appendChild(nameRow);
+        if (a.unitTypeId && config.onOpenUnitCard) {
+          const cardBtn = document.createElement('button');
+          cardBtn.type = 'button';
+          cardBtn.className = 'sl-unit-card-btn';
+          cardBtn.title = 'Otwórz kartę jednostki';
+          cardBtn.setAttribute('aria-label', 'Otwórz kartę jednostki ' + a.unitTypeId);
+          cardBtn.textContent = 'ⓘ';
+          cardBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            config.onOpenUnitCard?.(a.id, a.unitTypeId!);
+          });
+          nameRow.appendChild(cardBtn);
+        }
 
         const hex = document.createElement('div');
         hex.className = 'al-hex';

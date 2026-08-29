@@ -31,7 +31,8 @@
  *  drewniana" / „Mury"; os 0.37 / 0.42 / 0.445 wg fazy):
  *  skarpa + zerdzie na skos + sciana z belkami + nierowna korona + brama,
  *  +1428 / +1608 / +1644 tri (119 / 134 / 137 klockow).
- *  Wyglad zatwierdzony 2026-07-29 — referencja
+ *  Wyglad zatwierdzony 2026-07-29 — referencja (docs/ux/ USUNIETE z repo
+ *  w R-REPO-SPRZATANIE-SREDNIE-Q1, 2026-08-26; tresc: git show 39ae5d17:<sciezka>):
  *  docs/ux/preview-palisada/ref-styl-biskupin-kamien.png.
  *
  * TRI budynkow (box=12, cone4=8, cone5=10, cone6=12, cyl6=24, cyl8=32,
@@ -348,7 +349,8 @@ function naZewnatrz(azDeg: number, lean: number): [number, number] {
 
 /**
  * WAL — PALISADA W STYLU BISKUPIN (wyglad zatwierdzony 2026-07-29;
- * referencja: docs/ux/preview-palisada/ref-styl-biskupin-kamien.png).
+ * referencja: docs/ux/preview-palisada/ref-styl-biskupin-kamien.png — katalog docs/ux/
+ * usuniety z repo, tresc: git show 39ae5d17:<sciezka>).
  * Cztery warstwy od zewnatrz do gory:
  *  1. SKARPA — pierscien plyt ziemi stycznie do obwodu (r*0.90) + zerdzie
  *     wbite na skos NA ZEWNATRZ (przeszkoda u stopy walu),

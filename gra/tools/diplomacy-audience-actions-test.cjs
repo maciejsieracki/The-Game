@@ -67,6 +67,7 @@ const lockCtxBase = {
   respekt: 10,
   hasNap: false,
   hasHandel: false,
+  hasTradeConnection: true,
   hasWymiana: false,
   hasSojusz: false,
   sellableTechCount: 1,

@@ -127,7 +127,7 @@ async function main() {
   // kanonicznego (ACTIVE/RETIRED/QUARANTINE) jest "zombie" — jednocześnie
   // niewidoczna w getOperatorSystemRules (bo filtr wymaga status === 'ACTIVE')
   // i niewycofana do quarantine_rules (bo retireWeakRules też wymaga 'ACTIVE').
-  const CANONICAL_STATUSES = ['ACTIVE', 'RETIRED', 'QUARANTINE'];
+  const CANONICAL_STATUSES = ['ACTIVE', 'RETIRED', 'QUARANTINE', 'REVIEW'];
   const zombieStatusRules = [...pb.rules, ...pb.quarantine_rules]
     .filter(r => !CANONICAL_STATUSES.includes(r.status))
     .map(r => `${r.id}:${r.status}`);
@@ -265,7 +265,8 @@ async function main() {
   console.log('6. guardrails deny-by-default + delay — PASS');
   passed++;
 
-  // 7. retireWeakRules → status RETIRED (nie QUARANTINE)
+  // 7. retireWeakRules → status REVIEW, reguła ZOSTAJE w pb.rules (nie cicho
+  //    RETIRED/quarantine — decyzja właściciela 2026-08-20: wraca "na tapetę").
   const retirePbPath = path.join(ROOT, 'logs', 'playbook-retire-smoke.json');
   const retirePb = mod.loadPlaybook(TMP_PB);
   retirePb.thresholds.minRunsForSignificance = 3;
@@ -285,12 +286,15 @@ async function main() {
   mod.savePlaybook(retirePb, retirePbPath);
   const loadedRetire = mod.loadPlaybook(retirePbPath);
   const retireUpdates = mod.retireWeakRules(loadedRetire, new Date().toISOString(), true);
-  assert.ok(retireUpdates.length === 1, 'one retire update');
-  assert.strictEqual(retireUpdates[0].kind, 'retire', 'kind retire');
-  const retiredInQuarantine = loadedRetire.quarantine_rules.find(r => r.id === 'rule_weak_smoke');
-  assert.ok(retiredInQuarantine, 'rule moved to quarantine_rules');
-  assert.strictEqual(retiredInQuarantine.status, 'RETIRED', 'status RETIRED not QUARANTINE');
-  console.log('7. retireWeakRules RETIRED — PASS');
+  assert.ok(retireUpdates.length === 1, 'one review update');
+  assert.strictEqual(retireUpdates[0].kind, 'review', 'kind review');
+  const notInQuarantine = loadedRetire.quarantine_rules.find(r => r.id === 'rule_weak_smoke');
+  assert.ok(!notInQuarantine, 'rule NOT moved to quarantine_rules');
+  const reviewedInRules = loadedRetire.rules.find(r => r.id === 'rule_weak_smoke');
+  assert.ok(reviewedInRules, 'rule stays in pb.rules');
+  assert.strictEqual(reviewedInRules.status, 'REVIEW', 'status REVIEW not RETIRED/QUARANTINE');
+  assert.ok(reviewedInRules.reviewReason, 'reviewReason set');
+  console.log('7. retireWeakRules REVIEW (stays in rules, not quarantine) — PASS');
   passed++;
 
   // 8. evaluate z historią + delay deferred (bez allowPlaybookMutation)
@@ -346,7 +350,10 @@ async function main() {
   console.log('8. evaluate history + delay deferred — PASS');
   passed++;
 
-  // 9. evaluate → retire przez ścieżkę evaluate (nie bezpośrednie retireWeakRules)
+  // 9. evaluate → review przez ścieżkę evaluate (nie bezpośrednie retireWeakRules).
+  //    Reguła NIE jest usuwana z pb.rules (dawne zachowanie); zostaje ze statusem
+  //    REVIEW, i wpis pojawia się w PYTANIA-OTWARTE.md (append-only, przywracane
+  //    do stanu sprzed testu po asercji, żeby nie zaśmiecać pliku na stałe).
   const evalRetirePbPath = path.join(ROOT, 'logs', 'playbook-eval-retire-smoke.json');
   const evalRetirePb = mod.loadPlaybook(TMP_PB);
   evalRetirePb.thresholds.minRunsForSignificance = 3;
@@ -356,7 +363,7 @@ async function main() {
   evalRetirePb.rules = [
     {
       id: 'rule_eval_retire_smoke',
-      rule_text: 'weak rule — evaluate retire path',
+      rule_text: 'weak rule — evaluate review path',
       status: 'ACTIVE',
       win_count: 0,
       fail_count: 5,
@@ -372,12 +379,20 @@ async function main() {
     startedAtIso: new Date().toISOString(),
     finishedAtIso: new Date().toISOString(),
     taskId: 'EVAL-RETIRE-001',
-    taskSummary: 'evaluate retire smoke',
+    taskSummary: 'evaluate review smoke',
     operatorRuleIds: ['rule_eval_retire_smoke'],
     contextPayload: {},
     actionId: 'run-lane-tests',
     success: true,
   };
+
+  const openQuestionsPath = path.resolve(ROOT, '..', 'PYTANIA-OTWARTE.md');
+  // Uwaga: porównujemy jako string (nie statSync().size w bajtach) — plik ma
+  // polskie znaki diakrytyczne (UTF-8 wielobajtowe), więc offset bajtowy nie
+  // pokrywałby się z indeksem znakowym stringa i psuł slice().
+  const openQuestionsTextBefore = fs.readFileSync(openQuestionsPath, 'utf8');
+  const openQuestionsByteLengthBefore = Buffer.byteLength(openQuestionsTextBefore, 'utf8');
+
   const evalRetireResult = ev.evaluate({
     run: evalRetireRun,
     metrics: {
@@ -393,20 +408,37 @@ async function main() {
     allowPlaybookMutation: true,
   });
   assert.ok(
-    evalRetireResult.playbookUpdates.some(u => u.kind === 'retire'),
-    'evaluate path emits retire update',
+    evalRetireResult.playbookUpdates.some(u => u.kind === 'review'),
+    'evaluate path emits review update',
   );
   const evalRetirePbAfter = mod.loadPlaybook(evalRetirePbPath);
-  const retiredViaEvaluate = evalRetirePbAfter.quarantine_rules.find(
+  const reviewedViaEvaluate = evalRetirePbAfter.rules.find(
     r => r.id === 'rule_eval_retire_smoke',
   );
-  assert.ok(retiredViaEvaluate, 'rule moved to quarantine_rules via evaluate');
-  assert.strictEqual(retiredViaEvaluate.status, 'RETIRED', 'status RETIRED via evaluate path');
+  assert.ok(reviewedViaEvaluate, 'rule stays in pb.rules via evaluate (not removed)');
+  assert.strictEqual(reviewedViaEvaluate.status, 'REVIEW', 'status REVIEW via evaluate path');
   assert.ok(
-    !evalRetirePbAfter.rules.some(r => r.id === 'rule_eval_retire_smoke'),
-    'rule removed from active rules',
+    !evalRetirePbAfter.quarantine_rules.some(r => r.id === 'rule_eval_retire_smoke'),
+    'rule NOT moved to quarantine_rules via evaluate',
   );
-  console.log('9. evaluate → retireWeakRules path — PASS');
+
+  const openQuestionsAppended = fs
+    .readFileSync(openQuestionsPath, 'utf8')
+    .slice(openQuestionsTextBefore.length);
+  assert.ok(
+    openQuestionsAppended.includes('rule_eval_retire_smoke'),
+    'REVIEW flag appended to PYTANIA-OTWARTE.md',
+  );
+  assert.ok(
+    openQuestionsAppended.includes('DO PRZEGLĄDU WŁAŚCICIELA'),
+    'REVIEW flag uses owner-review status text',
+  );
+  // Przywróć plik do stanu sprzed testu — smoke nie ma trwale zaśmiecać rejestru.
+  const fdTrunc = fs.openSync(openQuestionsPath, 'r+');
+  fs.ftruncateSync(fdTrunc, openQuestionsByteLengthBefore);
+  fs.closeSync(fdTrunc);
+
+  console.log('9. evaluate → retireWeakRules REVIEW path + PYTANIA-OTWARTE.md flag — PASS');
   passed++;
 
   // 10. dashboard log required fields

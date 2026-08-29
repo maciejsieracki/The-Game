@@ -155,7 +155,7 @@ import type { RuntimeUnit } from './units/setup';
 import { UnitRenderer, type UnitRingStance } from './render/units';
 // Import keyOf from picker only (avoids duplicate identifier with setup.ts keyOf)
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
-import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
+import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, computePlayerVisibility, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';
 import {
@@ -186,8 +186,14 @@ import {
   loadBudowaListaBiblioteka,
   DEFAULT_ULEPSZENIA_TRYB,
   DEFAULT_ULEPSZENIA_FOCUS,
+  DEFAULT_ULEPSZENIA_ONLY_WORKED,
+  DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
+  MAX_PODZIAL_PRACY_BUDYNKI_PERCENT,
   clampUlepszeniaPracaPercent,
-  clampPracaWspolnyWorekPercent,
+  clampPodzialPracyBudynkiPercent,
+  procentPuliImperiumZBudynkow,
+  podzialPracyZProcentuPuli,
+  MAX_PROCENT_PULI_IMPERIUM,
   resolveUlepszeniaPracaPercentFromRaw,
   freshUlepszeniaEmpirePolicy,
   resolveEffectiveUlepszenia,
@@ -224,6 +230,7 @@ import {
   migratePodzialPracyOnLoad,
   freshOwnerDefaultPodzialPracy,
   resolveCityPodzialPracy,
+  applyPodzialPracyLocalChange,
   migrateOkolicaFocusOnLoad,
   freshOwnerDefaultOkolicaFocus,
   broadcastOkolicaFocusToOwnerCities,
@@ -236,12 +243,14 @@ import {
   migratePoziomRacjiOnLoad,
   freshOwnerDefaultPoziomRacji,
   broadcastPoziomRacjiToOwnerCities,
+  broadcastAutoWyzywienieToOwnerCities,
   resolveCityPoziomRacji,
 } from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import {
   canUnitOccupyCityHex, addForeignCityBlocks,
 } from './game/city-hex-movement';
+import { executeAiCityMove } from './game/ai-city-capture-executor';
 import {
   evaluateFoundCityAffordance,
   foundCityCostLabel,
@@ -307,6 +316,7 @@ import {
 import { clusterCityStateRadius, clusterHubChainReachHex, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
+  clearCityStateFlagOnCapture,
   formatOwnerDiploLabel,
   isOwnerClusterCityState,
   isTechnicalOwnerLabel,
@@ -406,6 +416,10 @@ import {
 import { resolveEnemyCityClick, type MapEnemyCityClickAction } from './map/map-attack-city';
 import { launchFieldBattleFromMap } from './battle/mapFieldBattle';
 import { collectAtkRosterNearCity, collectBattleRoster as collectBattleRosterPure, collectDefRosterNearCity } from './units/battleRoster';
+import {
+  collectBarbarianCooperationUnits,
+  mergeBattleRosterWithBarbarianCooperation,
+} from './game/diplomacy-barbarian-cooperation';
 import { canCaptureCityWithoutBattle, hasCityDefenders, survivorsLiveSet } from './game/siegeDefenders';
 import { getCityFood } from './game/turn-economy';
 import { SiegeMarkerRenderer } from './render/siegeMarker';
@@ -502,7 +516,9 @@ import {
 import {
   refreshTradeRoutes,
   computeTradeRouteIncomeByCity,
-  computeTradeRouteCountByCity,
+  computeTradeRouteBuildingBonusByCity,
+  // T6: per-trasowa wersja tej samej premii 5% — do rozkładu dochodu w panelu imperium.
+  tradeRouteBuildingBonusForRoute,
   computeTradeRouteResourceGrants,
   hasTradeRouteResourceAccess,
   firstTradeRouteResourceGrant,
@@ -511,7 +527,7 @@ import {
   loadTradeRouteIncomeParams,
   diffTradeRoutes,
   findCityConnection,
-  tradeRouteDistanceIncome,
+  tradeRouteTotalDistanceIncome,
   citiesHaveTradeConnection,
   diagnoseMissingTradeRouteForPartner,
   computeTradeRouteResourceFlow,
@@ -630,6 +646,10 @@ import {
   type ArmyListEntry,
 } from './ui/armyListHud';
 import {
+  ensureUnitInfoCardStyles,
+  showUnitInfoCardDialog,
+} from './ui/unitInfoCard';
+import {
   createDiploListHud,
   hideDiploListHud,
   isDiploListHudOpen,
@@ -696,6 +716,8 @@ import {
   getImprovementForestBlockHint,
   isImprovementBlockedOnForest,
   isMineImprovementKey,
+  // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1: sprzątanie farm-reliktów stojących w lesie.
+  removeLegacyFarmsOnForest,
   type ImprovementBuildImpact,
   type ImprovementBuildRequest,
   type ImprovementBuildCallbacks,
@@ -779,7 +801,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, etaTurns, unitNacjaForCivKey, applyCompletedBuildingIds,
-  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue,
+  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront, filterQueue, sanitizeBuildQueue,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
@@ -839,7 +861,7 @@ import {
   tryDeductUnitSpawnCostsEmpire, empirePoborTotals, rekrutUnitEquivalents, formatManpower,
   cityManpowerSnapshot, civManpowerRegenMult, civManpowerMaxMult, civManpowerMults,
   cityManpowerMax, unitManpowerCost, unitManpowerCostForType,
-  canAffordUnitManpowerEmpire, refundManpowerToEmpire,
+  canAffordUnitManpowerEmpire, refundManpowerToEmpire, syncLiveUnitHp,
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
 import { filterOwnersForPowerRanking, computeAbsolutePowerRank } from './game/power-ranking';
@@ -887,6 +909,13 @@ import {
   DIPLOMACY_MSG_PREFIX,
   type DeferredEotHint,
 } from './game/eot-event-defer';
+import { isBlockingSidePanelEvent } from './game/side-panel-event-priority';
+import {
+  sidePanelEventLinkKind,
+  sidePanelEventLinkLabel,
+  villageEventHex,
+  type SidePanelEventLink,
+} from './game/side-panel-event-link';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex, computeLostToNearerSiblingByCity } from './game/okolica';
@@ -1019,8 +1048,10 @@ import {
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
+import { isTechDiscoveryNoticeOpen, showTechDiscoveryNotice } from './ui/techDiscoveryNotice';
 import { showCivElimNotice } from './ui/civElimNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIPurchaseUnit, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
+import { aiCityCaptureAllowed, aiTargetVisibleForAction, rememberVisibleAiTargets, rememberedAiTargets, restoreAiTargetMemory, snapshotAiTargetMemory, type AiTargetMemoryByOwner } from './game/ai-fog';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import {
   decideAiWonderBuild,
@@ -1041,6 +1072,30 @@ import {
   restoreBronzeForcedWarState,
   type BronzeForcedWarPairState,
 } from './game/forced-war-bronze';
+import {
+  WOJNA_KAMIEN_WYMUSZONA_START_TURY,
+  WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
+  WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  isEligibleForStoneForcedWar,
+  pickStoneForcedWarTargetId,
+  shouldEndStoneForcedWarByCityCount,
+  isRestingFromStoneForcedWar,
+  serializeStoneForcedWarState,
+  restoreStoneForcedWarState,
+  type StoneForcedWarPairState,
+} from './game/forced-war-stone';
+import {
+  WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
+  WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  isEligibleForIronForcedWar,
+  isIronEraEntry,
+  pickIronForcedWarTargetId,
+  shouldEndIronForcedWarByCityCount,
+  isRestingFromIronForcedWar,
+  serializeIronForcedWarState,
+  restoreIronForcedWarState,
+  type IronForcedWarPairState,
+} from './game/forced-war-iron';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
@@ -1075,7 +1130,12 @@ import {
   qualifiesForMajorAiDifficultyBonus,
 } from './game/ai-difficulty-bonus';
 import { isMajorAiOwner } from './game/owner-utils';
-import { pickAutoImprovements, AUTO_ULEPSZENIA_PRACA_RESERVE } from './game/auto-improvements';
+import {
+  pickAutoImprovements,
+  AUTO_ULEPSZENIA_PRACA_RESERVE,
+  freshSurplusReport,
+  type AutoImprovementSurplusReport,
+} from './game/auto-improvements';
 import { preservesHillRelief } from './game/relief-preserving-improvements';
 import { showMainMenu, hideMainMenu, isMainMenuOpen, getMenuAudioVolumes } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
@@ -1591,6 +1651,31 @@ async function boot(): Promise<void> {
     const bronzeForceWarRestUntilByOwner = new Map<number, number>();
     /** Aktywne wojny wymuszone Brązu, klucz = diploPairKey(attackerId, targetId) — liczniki miast do auto-pokoju. / EN: active Bronze forced wars, keyed by diploPairKey — city counters driving auto-peace. */
     const bronzeForceWarActiveByPairKey = new Map<string, BronzeForcedWarPairState>();
+    /**
+     * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: osobny rejestr od Brązu. Ochrona startowa
+     * kończy się po 20 turach gry; dalej cykl działa według tych samych reguł
+     * odpoczynku, cooldownu pary i progu miast, ale nie miesza się ze stanem Brązu.
+     */
+    const stoneForceWarPendingOwners = new Set<number>();
+    const stoneForceWarCycleOwners = new Set<number>();
+    const stoneForceWarRestUntilByOwner = new Map<number, number>();
+    const stoneForceWarActiveByPairKey = new Map<string, StoneForcedWarPairState>();
+    /**
+     * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: osobny rejestr od Kamienia i Brązu (żadne pole nie
+     * jest współdzielone — mechanizmy trzech epok nie mieszają stanu). Wyzwalacz to AWANS
+     * do epoki Żelaza (wykryty w `syncOwnerEraFromResearch`, `isIronEraEntry`), nie próg
+     * tury: do Żelaza cywilizacje docierają w bardzo różnych turach. Dalej cykl działa
+     * według tych samych reguł odpoczynku, cooldownu pary i progu miast co Brąz.
+     * `pending` NIE jest kasowany przy samej próbie — konsumowany WYŁĄCZNIE przy faktycznym
+     * udanym wypowiedzeniu wojny (poprawka B4 przeniesiona z Brązu), więc owner chwilowo
+     * w innej wojnie / z wszystkimi celami zablokowanymi ponawia próbę w kolejnej turze.
+     * EN: Iron-era forced war registers — separate from Stone and Bronze, triggered by the
+     * era advance into Iron; pending is consumed only on an actual successful declaration.
+     */
+    const ironForceWarPendingOwners = new Set<number>();
+    const ironForceWarCycleOwners = new Set<number>();
+    const ironForceWarRestUntilByOwner = new Map<number, number>();
+    const ironForceWarActiveByPairKey = new Map<string, IronForcedWarPairState>();
 
     const ERA_ID_TO_NUM: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
 
@@ -1655,6 +1740,19 @@ async function boot(): Promise<void> {
         && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
       ) {
         bronzeForceWarPendingOwners.add(ownerId);
+      }
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: awans do epoki Żelaza (3) — TYLKO główne
+      // cywilizacje (miasta-państwa/kopie wykluczone tym samym isOwnerClusterCityState co
+      // w Brązie) — jednorazowy wpis konsumowany w pętli dyplomacji AI. `isIronEraEntry`
+      // (prev < 3 && next >= 3) zamiast sztywnego 2→3: computeMainCivEraFromResearch
+      // awansuje pętlą while, więc jedna synchronizacja może przeskoczyć więcej niż jedną
+      // epokę. EN: Iron(3) era entry, MAJOR civs only — one-shot flag consumed in the AI
+      // diplomacy loop, next to the Bronze/Stone ones.
+      if (
+        isIronEraEntry(prev, next)
+        && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+      ) {
+        ironForceWarPendingOwners.add(ownerId);
       }
       return prev !== next;
     }
@@ -2533,9 +2631,10 @@ async function boot(): Promise<void> {
     const cityRelig = new Map<string, ReligionState>();
     /** Handel E3: aktywne trasy gracz<->obca cywilizacja (odswiezane co ture). */
     let tradeRoutes: TradeRoute[] = [];
-    /** Handel E3: liczba aktywnych tras per miasto (odswiezane razem z tradeRoutes) — wejście
-     *  do UI (panel miasta E7) i do mnożnika Handlu (getCityBuildingFlags, cityYieldPerTurn). */
-    let tradeRouteCountByCity: Map<string, number> = new Map();
+    /** T4 (runda 2): suma premii Handlu z tras Z BUDYNKIEM per miasto (odswiezane razem
+     *  z tradeRoutes) — wejście do UI (panel miasta E7) i do addytywnego skladnika Handlu
+     *  (getCityBuildingFlags, cityYieldPerTurn). Zastepuje stary tradeRouteCountByCity. */
+    let tradeRouteBuildingBonusByCity: Map<string, number> = new Map();
     /**
      * Temat #4 (Handel E3b): granty dostępu do surowca civ-wide (braz/zelazo/kon)
      * "z trasy handlowej" — CELOWO NIEZAPISYWANE w save (patrz trade-routes.ts,
@@ -3538,7 +3637,11 @@ async function boot(): Promise<void> {
      * unchanged behaviour, nothing to transfer.
      */
     function sanitizeProductionQueue(ownerId: number, prod: CityProduction): CityProduction {
-      const { prod: sanitized, forfeitedPostep } = filterQueue(prod, (item) => {
+      const migrated = sanitizeBuildQueue(prod);
+      if (migrated.refundedPraca > 0) {
+        setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + migrated.refundedPraca);
+      }
+      const { prod: sanitized, forfeitedPostep } = filterQueue(migrated.prod, (item) => {
         const wid = parseWonderProdId(item.id);
         if (!wid) return true;
         return wonderGateOk(ownerId, wid);
@@ -3547,6 +3650,52 @@ async function boot(): Promise<void> {
         setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + forfeitedPostep);
       }
       return sanitized;
+    }
+
+    /**
+     * R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1 (kontrakt `P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1`=B,
+     * ECHO Maciej 2026-08-17 + doprecyzowanie 2026-08-19): jednostka NIGDY nie pobiera Pracy
+     * z kolejki budynkow -- ani u gracza, ani u AI, ani w miescie-panstwie.
+     *
+     * Wejscia do kolejki sa bronione (`enqueue`/`insertAtFront` w production.ts odrzucaja
+     * `kind !== 'budynek'`, panel miasta gracza tak samo), ale kolejka moze zawierac jednostke
+     * ze stanu LEGACY -- z zapisu/bundla sprzed tych bramek. PUNKT ZUZYCIA Pracy ma dzis dwoch
+     * odbiorcow: `allocateEmpirePracaToBuildings` (production.ts) juz sprawdza rodzaj frontu
+     * (`front.kind !== 'budynek'` -> pomin), a `advanceProduction` NIE sprawdza go w ogole --
+     * leje Prace we front bez patrzenia na `kind`. Taka pozycja realnie zbierala Prace
+     * ("Zebrana Praca X/Y" w panelu PRODUKCJA) i konczyla sie jako jednostka oplacona Praca.
+     *
+     * Ta funkcja jest wolana w petli tury per-miasto tuz przed `advanceProduction` -- jedynym
+     * niebronionym odbiorca Pracy w grze. Postep usunietej jednostki wraca do puli Pracy
+     * wlasciciela: ten sam kontrakt zwrotu co migracja save/capture/surrender
+     * (`sanitizeBuildQueue`). Owner-agnostyczne: parytet gracz/AI/MP.
+     *
+     * Sciezka wczytania zapisu jest juz sanityzowana (`setCityProduction` -> `sanitizeProductionQueue`
+     * wyzej w tym samym pliku), wiec "stary zapis" nie jest jedynym realnym zrodlem legacy
+     * jednostki w tym miejscu -- ta funkcja jest obrona w glab dla kazdego z wielu miejsc w
+     * main.ts, ktore pisza `cityProd.set(...)` bez przejscia przez sanityzacje.
+     *
+     * Gdy nie ma czego czyscic, zwraca TEN SAM obiekt (brak alokacji na sciezce goracej) --
+     * wywolujacy porownuje referencje i tylko wtedy nadpisuje `cityProd`.
+     *
+     * Dowod behawioralny: `gra/tools/ai-jednostki-tylko-zakup-test.cjs` sekcja D wycina tresc
+     * TEJ funkcji z main.ts i wykonuje ja naprawde (wzorzec `road-hook-mainguard-test.cjs`).
+     */
+    function stripLegacyUnitsFromPracaQueue(
+      ownerId: number,
+      prod: CityProduction,
+      cityLabel: string = '',
+    ): CityProduction {
+      if (!prod.kolejka.some(it => it.kind === 'jednostka')) return prod;
+      const migrated = sanitizeBuildQueue(prod);
+      if (migrated.refundedPraca > 0) {
+        setOwnerPracaPool(ownerId, ownerPracaPool(ownerId) + migrated.refundedPraca);
+      }
+      console.warn(
+        `[Produkcja] ${cityLabel} (owner ${ownerId}): usunieto jednostke z kolejki Pracy `
+        + `(legacy) -- zwrot ${migrated.refundedPraca} Pracy do puli`,
+      );
+      return migrated.prod;
     }
 
     function setCityProduction(cityId: string, prod: CityProduction): void {
@@ -3994,6 +4143,10 @@ async function boot(): Promise<void> {
      * ownerDefaultPodzialHandlu wyżej. Miasto BEZ override dziedziczy z tej mapy.
      */
     const ownerDefaultPodzialPracy = new Map<number, CityPodzialPracy>();
+    /**
+     * Nadrzędny split całej puli Pracy: osobno od per-city `podzialPracy`
+     * i osobno od historycznego budżetu automatu `pracaAutoPercent`.
+     */
     const ownerDefaultOkolicaFocus = new Map<number, OkolicaFocus>();
     const ownerDefaultBudowaProfil = new Map<number, CityBudowaProfil>();
     /**
@@ -4696,6 +4849,63 @@ async function boot(): Promise<void> {
     /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: analogiczne readery dla trzy nowe pola. */
     function effectivePodzialPracy(city: City): CityPodzialPracy {
       return resolveCityPodzialPracy(city, ownerDefaultPodzialPracy.get(city.ownerId));
+    }
+
+    /**
+     * R-PRACA-JEDEN-PODZIAL-Q1: udzial Pracy trafiajacy do puli imperium (= budzet
+     * ulepszen terenu) dla CALEGO imperium. Nie jest osobnym suwakiem — jest
+     * dopelnieniem jedynego podzialu `ownerDefaultPodzialPracy` do 100%.
+     * `effectivePracaSplitForOwner` (drugi, niezalezny suwak) zostal USUNIETY.
+     */
+    function procentPuliImperiumForOwner(ownerId: number): number {
+      const def = ownerDefaultPodzialPracy.get(ownerId);
+      return procentPuliImperiumZBudynkow(def?.procentBudynki);
+    }
+
+    /**
+     * R-PRACA-JEDEN-PODZIAL-Q1 pkt 5 — zasada override miasta.
+     *
+     * Suwak miasta NIE jest zablokowany. Ustawia LOKALNA wartosc; w chwili gdy ta
+     * wartosc rozni sie od globalnej domyslnej imperium, „Indywidualne" zapala sie
+     * SAMO (bez osobnego klikniecia). Powrot do wartosci globalnej gasi override
+     * i miasto znow sledzi wartosc globalna.
+     *
+     * PRZED tym tematem suwak miasta BEZ override zmienial wartosc GLOBALNA
+     * (wszystkim miastom naraz) — gracz nie mial jak ustawic jednego miasta bez
+     * uprzedniego klikniecia „Indywidualne".
+     *
+     * Wspolna implementacja dla OBU wywolan konfiguracji cityPanel (glowna i
+     * zapasowa) — wczesniej ten sam kod byl zduplikowany w dwoch miejscach.
+     */
+    function applyCityPodzialPracyChange(cityId: string, procentBudynkiRaw: number): void {
+      const c = cities.find(ct => ct.id === cityId);
+      if (!c || c.ownerId !== 0) return;
+      const next = applyPodzialPracyLocalChange(
+        procentBudynkiRaw,
+        ownerDefaultPodzialPracy.get(c.ownerId),
+      );
+      if (next.podzialPracy) c.podzialPracy = next.podzialPracy;
+      else delete c.podzialPracy; // powrót do globalnej — miasto znów śledzi wartość imperium
+      c.podzialPracyOverride = next.podzialPracyOverride;
+      markCityStateDirty(); // D10: podział pracy → przelicz
+      updateHud();
+    }
+
+    /** Reczne przelaczenie „Indywidualne" (pin) — zostaje jako jawna kontrola gracza. */
+    function toggleCityPodzialPracyOverride(cityId: string): void {
+      const c = cities.find(ct => ct.id === cityId);
+      if (!c || c.ownerId !== 0) return;
+      const next = !c.podzialPracyOverride;
+      if (next) {
+        // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
+        c.podzialPracy = effectivePodzialPracy(c);
+      } else {
+        delete c.podzialPracy;
+      }
+      c.podzialPracyOverride = next;
+      markCityStateDirty();
+      updateHud();
+      refreshCityPanelIfOpen();
     }
 
     function effectiveOkolicaFocus(city: City): OkolicaFocus {
@@ -5781,6 +5991,7 @@ async function boot(): Promise<void> {
         if (ruchLeft === 0) detailParts.push('Ruch wykorzystany w tej turze');
         out.push({
           id: lead.id,
+          unitTypeId: lead.typeId,
           name,
           unitCount: group.length,
           hexLabel: `(${lead.q}, ${lead.r})`,
@@ -7269,6 +7480,8 @@ async function boot(): Promise<void> {
     let diplomaticContactTrackingReady = false;
     /** v1.1: aktywne traktaty dyplomatyczne (save/load meta.diplomacyDeals). */
     let activeDeals: ActiveDeal[] = [];
+    /** Jednostki z otwartej bitwy są niedostępne dla drugiej bitwy do jej zakończenia. */
+    const activeBattleUnitIds = new Set<string>();
     /**
      * C-DYP-Q1=A (2026-07-26, Maciej): STÓŁ NEGOCJACYJNY — stan „propozycja oczekuje"
      * per para właścicieli, PRZENOSZONY przez zapis/odczyt gry (save/load
@@ -7287,15 +7500,10 @@ async function boot(): Promise<void> {
     let rejectedOfferCooldowns: RejectedOfferCooldown[] = [];
     /** v1.1: skarbiec AI do ticka trybutu (T1A). */
     const aiSkarbiecByOwner = new Map<number, number>();
+    const aiTargetMemoryByOwner: AiTargetMemoryByOwner = new Map();
     /** R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): licznik zakupów jednostek za złoto
      *  (rush) TEGO ownera W TEJ turze -- zerowany na wejściu w sekcję ownera w runAiPhase
      *  (ownerLoop), zasilany w cmd.type==='build' po udanym purchaseRecruitmentUnit. */
-    const aiUnitGoldRushBoughtByOwner = new Map<number, number>();
-    /** R-STAWKI-STROJENIE (2026-07-24): progi rush-zakupu jednostek za zloto,
-     *  przeniesione z zakodowanych stalych do econ-params.json (globalne.
-     *  ai_rush_jednostka_rezerwa_zlota / ai_rush_jednostka_max_na_ture) --
-     *  patrz loadAiRushParams (game/ai.ts). Wartosci bez zmian (100 / 1). */
-    const aiRushParams = loadAiRushParams(data.econParams, _menuDifficulty);
     /** R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A, PARYTET AI): dotąd AI nigdy nie
      *  ruszało suwakami żywność/Praca/Handel -- siedziało na wartościach startowych całą
      *  partię. Stan suwaków AI PER OWNER (nie per-miasto -- AI ustawia jedną politykę dla
@@ -7310,6 +7518,25 @@ async function boot(): Promise<void> {
      *  ownerPracaPool/setOwnerPracaPool -- przy przejęciu stolicy AI ta pula PRZEPADA
      *  (jak playerPracaPool gracza), patrz capital-capture.ts. */
     const aiPracaPoolByOwner = new Map<number, number>();
+    /**
+     * P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: absolutny budżet ulepszeń z pierwotnej
+     * puli AI, zachowany po wydaniu części budynkowej. Odczytuje go później
+     * wspólna ścieżka decideAITurn/defensiveCopy; bez tej mapy pozostała pula
+     * byłaby drugi raz dzielona przez planCityImprovements().
+     */
+    const aiImprovementBudgetByOwner = new Map<number, number>();
+    /**
+     * R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): raport nadwyżki budżetu ulepszeń
+     * per AI, wypełniany W MIEJSCU przez `pickAutoImprovements` w trakcie `decideAITurn`
+     * i odczytywany zaraz po nim (`applyAiImprovementSurplusRedirect`).
+     */
+    const aiSurplusReportByOwner = new Map<number, AutoImprovementSurplusReport>();
+    /**
+     * ZASADA 3: właściciele AI, u których nadwyżka JEST DZIŚ przekierowana na budynki.
+     * Po ustaniu nadwyżki podział Pracy wraca do wartości wybranej przez samo AI
+     * (`aiSliderStateByOwner`, `decideAIEconomySliders`) — nie do sztywnej stałej.
+     */
+    const aiSurplusRedirectedOwners = new Set<number>();
     /** Pula Nauki AI (symetryczna do player.nauka) — bankowana z aiEcon.nauka co turę. */
     const aiNaukaPoolByOwner = new Map<number, number>();
     /** Bieżąca tech badana przez AI (symetryczna do player.badana). */
@@ -7720,6 +7947,11 @@ async function boot(): Promise<void> {
       aiWonderStuckTurnsByOwner.clear();
       aiResearchDone.clear();
       eliminatedOwners.clear();
+      // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): odkad znacznik ZASADY 3
+      // jest TRWALY (zapisywany w sejwie), musi tez byc zerowany na starcie nowej gry —
+      // inaczej rozgrywka zaczeta po wczytaniu sejwu w tej samej sesji przegladarki
+      // dziedziczylaby „przekierowanych" ownerow z poprzedniej partii.
+      aiSurplusRedirectedOwners.clear();
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       for (const [oid, civ] of plan.aiOwnerCivMap) {
@@ -8063,6 +8295,35 @@ async function boot(): Promise<void> {
       return isPeaceTreatyLocked(getDiploPairMeta(a, b), turn);
     }
 
+    function cleanupStoneForcedWarOnPeace(proposerId: number, responderId: number): void {
+      const stonePairKey = diploPairKey(proposerId, responderId);
+      const stoneSt = stoneForceWarActiveByPairKey.get(stonePairKey);
+      if (!stoneSt) return;
+      stoneForceWarActiveByPairKey.delete(stonePairKey);
+      stoneForceWarRestUntilByOwner.set(
+        stoneSt.attackerId,
+        turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
+      );
+    }
+
+    /**
+     * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: pokój między tą parą (auto-pokój po progu miast
+     * LUB zwykła negocjacja) kończy ewentualną aktywną wojnę wymuszoną Żelaza — sprząta
+     * stan pary i uzbraja odpoczynek napastnika PRZED szukaniem kolejnego celu. Pary bez
+     * wojny wymuszonej Żelaza: no-op (zero zmiany istniejącego zachowania Kamienia/Brązu).
+     * EN: Iron-era counterpart of the Stone/Bronze peace cleanup; no-op for other pairs.
+     */
+    function cleanupIronForcedWarOnPeace(proposerId: number, responderId: number): void {
+      const ironPairKey = diploPairKey(proposerId, responderId);
+      const ironSt = ironForceWarActiveByPairKey.get(ironPairKey);
+      if (!ironSt) return;
+      ironForceWarActiveByPairKey.delete(ironPairKey);
+      ironForceWarRestUntilByOwner.set(
+        ironSt.attackerId,
+        turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
+      );
+    }
+
     /**
      * Zawarcie pokoju + blokada DOW na PEACE_TREATY_LOCK_TURNS tur (lub `lockTurnsOverride`,
      * jeśli podane).
@@ -8095,6 +8356,11 @@ async function boot(): Promise<void> {
           lockTurnsOverride,
         ),
       );
+      // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: pokój czyści osobny rejestr Kamienia
+      // przed zachowaniem istniejącego cleanupu Brązu.
+      cleanupStoneForcedWarOnPeace(proposerId, responderId);
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: osobny rejestr Żelaza, ta sama zasada.
+      cleanupIronForcedWarOnPeace(proposerId, responderId);
       // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: pokój między tą parą (jakkolwiek zawarty — auto-pokój
       // po progu miast LUB zwykła negocjacja AI/gracza) kończy ewentualną aktywną wojnę
       // wymuszoną — sprzątamy stan i uzbrajamy odpoczynek napastnika PRZED szukaniem
@@ -8522,6 +8788,7 @@ async function boot(): Promise<void> {
             overlayDepositEra = player.era;
             rebuildResourceOverlays();
             setEra(player.era);
+            queueEraDiscoveryTech([techId]);
             notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
           }
         }
@@ -8730,6 +8997,13 @@ async function boot(): Promise<void> {
 
     /** Barbarian camps on the map. */
     let barbCamps: BarbCamp[] = [];
+    /**
+     * P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: heksy, na które cywilizacja
+     * weszła i tym samym trwale wyłączyła spawner obozu w tej rozgrywce.
+     * Osobny stan od `barbCamps`, bo sama lista aktywnych obozów nie pamięta
+     * wyczyszczonych miejsc po późniejszym losowaniu.
+     */
+    const clearedBarbCampHexes = new Set<string>();
     /** Barbarian params loaded from ai-params.json (with fallbacks). */
     const barbParams = loadBarbParams(data);
     /** Flag: game ended (victory or defeat). Prevents repeated end-game messages. */
@@ -8884,6 +9158,16 @@ async function boot(): Promise<void> {
         return computeVisibleAt(playerStartHex.q, playerStartHex.r, map, startRevealRadius);
       }
       return new Set<string>();
+    }
+
+    /** P-AI-BRAK-POJECIA-MGLY-Q1: widoczność konkretnego ownera AI, nie gracza. */
+    function currentVisibleForOwner(ownerId: number): Set<string> {
+      return computePlayerVisibility({
+        map,
+        playerUnits: units.filter(u => u.ownerId === ownerId),
+        playerCities: cities.filter(c => c.ownerId === ownerId),
+        unitSight,
+      });
     }
 
     /** Klucze oświetlonego kręgu startu — rzeki widoczne przed założeniem pierwszego miasta. */
@@ -9505,6 +9789,47 @@ async function boot(): Promise<void> {
     let _lastPracaUpkeep: number = 0;
     let _lastKultura: number = 0;
     let _lastPracaRate: number = 0;
+    /** P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1 (Maciej 2026-08-22): koniec tury
+     *  liczy `_lastPracaRate` POPRAWNIE (4 drenaże: upkeep/cuda mapy/budżet budynków/
+     *  auto-ulepszenia -- patrz blok "ZADANIE 1"/"CUDA-MAPA"/auto-ulepszenia w
+     *  triggerPlayerEndTurn niżej), ale zaraz potem `triggerPlayerEndTurn()` woła
+     *  `markCityStateDirty()` + `updateHud()` -> `refreshLiveEmpireRatesUnsafe()`
+     *  (bo empireEconDirty=true), która NA NOWO przypisywała `_lastPracaRate` z formuły
+     *  znającej TYLKO upkeep -- nadpisując poprawną wartość martwym zapisem na KAŻDYM
+     *  końcu tury (deklarowane "+3" realnie akumulowało tylko "+1"). Ta flaga to
+     *  jednorazowy guard: koniec tury ustawia ją `true` PO poprawnym policzeniu
+     *  `_lastPracaRate`; `refreshLiveEmpireRatesUnsafe()` przy `true` pomija
+     *  przypisanie do `_lastPracaRate` (reszta funkcji -- _lastPracaUpkeep, inne stawki --
+     *  liczy się jak dotychczas) i od razu konsumuje flagę (`= false`) -- więc dotyczy
+     *  TYLKO tego jednego, natychmiastowego wywołania po końcu tury. Każdy KOLEJNY,
+     *  realny trigger (`markCityStateDirty()` z innego miejsca -- suwak podziału Pracy,
+     *  nowe miasto, zmiana kolejki...) ustawia `empireEconDirty=true` i woła
+     *  `refreshLiveEmpireRatesUnsafe()` z flagą już `false` -- liczy się wtedy jak
+     *  wcześniej (live-preview, bez regresji dla przypadków poza końcem tury).
+     *  P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1 (Maciej 2026-08-22): ten sam
+     *  odczyt flagi TERAZ pomija RÓWNIEŻ `refreshPlayerCityEcon(preview.perCity)` w tym
+     *  samym wywołaniu -- inaczej `_lastPlayerCityEcon` (tabela per-miasto „DO PULI"/„DO
+     *  BUDYNKÓW" w popupie imperium, `empireDetailPanel.ts`) był nadpisywany LIVE
+     *  PODGLĄDEM z post-end-turn stanu mimo że `_lastPracaRate` (nagłówek „PULA
+     *  IMPERIUM" tego samego popupu) zostawał poprawny -- dwie sąsiadujące liczby w
+     *  jednym renderze z dwóch różnych momentów czasu.
+     *  / EN: end-of-turn correctly computes `_lastPracaRate` (all 4 known drains), but
+     *  `triggerPlayerEndTurn()` then calls `markCityStateDirty()` + `updateHud()`, which
+     *  fires `refreshLiveEmpireRatesUnsafe()` (empireEconDirty=true) -- and THAT function
+     *  used to reassign `_lastPracaRate` from a formula that only knows about upkeep,
+     *  clobbering the correct value on every single end of turn (declared "+3" only ever
+     *  accumulated "+1"). This flag is a one-shot guard: end-of-turn sets it `true` right
+     *  after correctly computing `_lastPracaRate`; `refreshLiveEmpireRatesUnsafe()` skips
+     *  the `_lastPracaRate` assignment while the flag is `true` (everything else in
+     *  the function still runs normally) and immediately consumes the flag (`= false`) --
+     *  so it only ever affects that one immediate post-end-of-turn call. Any subsequent
+     *  real trigger recomputes live as before (no regression outside end-of-turn).
+     *  REGRES3: the same flag read now ALSO skips `refreshPlayerCityEcon(preview.perCity)`
+     *  in that same call -- otherwise `_lastPlayerCityEcon` (the per-city „DO PULI"/„DO
+     *  BUDYNKÓW" table in the empire popup) got overwritten with a post-end-turn live
+     *  preview while `_lastPracaRate` (the same popup's „PULA IMPERIUM" header) stayed
+     *  correct -- two adjacent numbers in one render, from two different points in time. */
+    let _pracaRateFreshFromEndTurn: boolean = false;
     let _lastKulturaRate: number = 0;
     let _lastPieniadzRate: number = 0;
     let _lastWealthLevel: number = 1;
@@ -11779,8 +12104,55 @@ async function boot(): Promise<void> {
           syncHexUlepszenieFields(hexKey, layers);
         }
       }
+      // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 — WCZYTANIE ZAPISU (stan a).
+      // Tu, a nie wcześniej: `map` jest już zbudowana (ze snapshotu ALBO
+      // zregenerowana z `seed`), a `placedImprovements` odtworzone — czyli
+      // pierwszy moment, w którym znany jest komplet „nakładka heksa + warstwy".
+      // Dzięki temu sprzątanie działa też dla zapisów SPRZED mapSnapshotu,
+      // których migracja ładunku w save.ts::migrateLegacyFarmsOnForestInSave
+      // z założenia nie może dosięgnąć (nie zna lasu).
+      sweepLegacyFarmsOnForest('wczytanie zapisu');
       syncLivestockAndPlacedMeshes();
       rebuildResourceOverlays();
+    }
+
+    /**
+     * R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 (ECHO właściciela 2026-08-27,
+     * wariant C): usuwa z ŻYWEGO stanu gry każdą farmę stojącą na heksie z
+     * nakładką Las — relikt uchylonej reguły z 2026-07-21. Las zostaje, praca
+     * NIE wraca, heks wraca do stanu „las, bez ulepszenia".
+     *
+     * Cała decyzja „co usunąć" żyje w map/improvement-build.ts
+     * (removeLegacyFarmsOnForest — czysta, testowalna w Node). Tutaj zostaje
+     * WYŁĄCZNIE to, czego nie da się wyjąć z main.ts: synchronizacja pól heksa
+     * (`syncHexUlepszenieFields`) i odbudowa mesha.
+     *
+     * `hex.ulepszenie` czyścimy jawnie PRZED synchronizacją, bo
+     * `syncHexUlepszenieFields` ustawia to legacy pole tylko wtedy, gdy
+     * pozostała warstwa ma odpowiednik w enumie `Ulepszenie` — dla warstw bez
+     * odpowiednika (np. sam `tartak`) zostawiłoby na heksie martwe
+     * `Ulepszenie.Farma`, które wróciłoby do zapisu przez mapSnapshot.
+     *
+     * Idempotentne: drugi przebieg nie znajduje już farmy na lesie i nie robi nic.
+     */
+    function sweepLegacyFarmsOnForest(reason: string): number {
+      const report = removeLegacyFarmsOnForest(
+        map.hexes as Record<string, { nakladka: Nakladka; ulepszenie?: unknown; ulepszenia?: readonly string[] | null }>,
+        placedImprovements,
+        (hexKey, layers) => {
+          const hex = map.hexes[hexKey];
+          if (hex && hex.ulepszenie === Ulepszenie.Farma) hex.ulepszenie = Ulepszenie.Brak;
+          syncHexUlepszenieFields(hexKey, layers as PlacedLayers);
+          spawnImprovementMesh(hexKey);
+        },
+      );
+      if (report.removed > 0) {
+        diagInfo(
+          'migracja',
+          `farmy w lesie usuniete (${reason}): ${report.removed} heks(ow); las zostaje, praca nie wraca`,
+        );
+      }
+      return report.removed;
     }
 
     // === TRYB POKAZOWY ULEPSZEŃ (Maciej 2026-07-09) ==========================
@@ -11842,7 +12214,7 @@ async function boot(): Promise<void> {
 
     /** Wydarzenia wymagające akcji gracza (WYKONAJ). Nagrody z chatek są już rozliczone — tylko podgląd. */
     function isActionableEvent(ev: SidePanelEvent): boolean {
-      return !ev.id.startsWith('village-');
+      return isBlockingSidePanelEvent(ev);
     }
 
     function countBlockingEvents(): number {
@@ -11909,6 +12281,14 @@ async function boot(): Promise<void> {
     }
 
     /** Awans epoki gracza — toast + trwały wpis WYDARZENIA (raz na przejście). */
+    let pendingEraDiscoveryTech: string | null = null;
+
+    function queueEraDiscoveryTech(completedTechNames: readonly string[]): void {
+      const tech = data.tech.find(t => t.awansDoEpoki === player.era
+        && completedTechNames.includes(t.Technologia));
+      pendingEraDiscoveryTech = tech?.Technologia ?? null;
+    }
+
     function notifyPlayerEraChangeIfAdvanced(prevEra: number): void {
       if (!shouldNotifyPlayerEraChange(prevEra, player.era)) return;
       const toastHtml = eraChangeNotifyToastHtml(player.era);
@@ -11935,6 +12315,15 @@ async function boot(): Promise<void> {
         if (warEventLog.length > 8) warEventLog.length = 8;
       }
       refreshD1bHud();
+      const eraTechName = pendingEraDiscoveryTech;
+      pendingEraDiscoveryTech = null;
+      if (eraTechName !== null) {
+        showTechDiscoveryNotice({
+          techName: eraTechName,
+          eraIndex: player.era,
+          onOpenTree: () => showTechTreeView(0),
+        });
+      }
     }
 
     /**
@@ -12204,6 +12593,13 @@ async function boot(): Promise<void> {
         const oldOwner = city.ownerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
+        // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): kapitulacja
+        // głodowa to DRUGA ścieżka przejęcia miasta — oznaczenie miasta-państwa gasi się
+        // tak samo jak przy podboju bojowym, inaczej flaga wędruje do zdobywcy.
+        if (clearCityStateFlagOnCapture(city)) markCityStateDirty();
+        // R-MIASTA-LIMIT-PODBÓJ-Q1=A: kapitulacja wojenna przejmuje miasto
+        // bez zużywania puli miast zakładanych przez nowego właściciela.
+        city.foundedByOwner = false;
         // B1 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): kapitulacja głodowa
         // to DRUGIE (obok applyCityCaptureToMap) miejsce, gdzie city.ownerId się zmienia w
         // wyniku wojny — dla par AI↔AI to dziś JEDYNA droga zakończenia wojny poza tym
@@ -12214,6 +12610,21 @@ async function boot(): Promise<void> {
         // path to end a forced war outside this counter (peace negotiations only handle
         // targetId===0), so skipping this hook here means an AI↔AI forced war that never ends.
         maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner);
+        maybeResolveStoneForcedWarOnCityCapture(oldOwner, newOwner);
+        maybeResolveIronForcedWarOnCityCapture(oldOwner, newOwner);
+        // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: kapitulacja głodowa
+        // jest drugim (obok podboju bojowego) wejściem przejęcia miasta. Legacy
+        // jednostki z kolejki Pracy nie mogą przejść do nowego właściciela;
+        // zwrot Pracy należy do starego właściciela, a opłacona rekrutacja[]
+        // pozostaje nietknięta.
+        const prodSurrender = cityProd.get(city.id);
+        if (prodSurrender) {
+          const migrated = sanitizeBuildQueue(prodSurrender);
+          if (migrated.refundedPraca > 0) {
+            setOwnerPracaPool(oldOwner, ownerPracaPool(oldOwner) + migrated.refundedPraca);
+          }
+          cityProd.set(city.id, sanitizeProductionQueue(newOwner, migrated.prod));
+        }
         if (city.rebelState) city.rebelState = false;
         // B2 (Evaluator RUNDA 1: FAIL): zdobycie przez oblężenie na mapie musi
         // zresetować override i zsynchronizować pola z globalnym defaultem NOWEGO
@@ -12591,6 +13002,23 @@ async function boot(): Promise<void> {
     // wpis w WYDARZENIACH, symetrycznie do villageEventLog — czyszczony co turę
     // w tym samym miejscu, zob. `villageEventLog.length = 0;` przy turn++).
     const tradeRouteEventLog: SidePanelEvent[] = [];
+    /**
+     * P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: id wpisu `trade-new-*`/`trade-lost-*` → id miasta
+     * GRACZA będącego początkiem szlaku (klucz = SidePanelEvent.id, analogicznie do
+     * `borderMarchEventTargets`/`civElimEventDetails` wyżej). `route.fromCityId` jest zawsze
+     * miastem gracza — `refreshTradeRoutes` (trade-routes.ts) trzyma wyłącznie pary
+     * gracz→obcy (`from.ownerId !== 0 || to.ownerId === 0 → continue`), więc druga strona
+     * szlaku nigdy nie ma panelu miasta (panel jest gracz-only). Kliknięcie karty otwiera
+     * panel tego miasta — sekcję „Szlaki handlowe" (cityPanel.ts), czyli miejsce, w którym
+     * gracz widzi i zmienia stan szlaków. Wpis może się „zestarzeć" (miasto utracone /
+     * zniknęło — jeden z powodów zerwania szlaku), dlatego `sidePanelEventLinkFor` sprawdza
+     * istnienie miasta ZANIM pokaże skrót.
+     * EN: event id → the PLAYER city that anchors the route (routes are always player→foreign),
+     * so clicking opens that city's panel and its "Trade routes" section. The entry can go
+     * stale (city lost — one of the reasons a route breaks), so the link resolver re-checks
+     * that the city still exists before offering the shortcut.
+     */
+    const tradeRouteEventPlayerCityIds = new Map<string, string>();
     /** SPICH-AUTO-Q1: komunikat auto-obniżenia racji — widoczny przez turę gracza po EOT. */
     const rationAutoEventLog: SidePanelEvent[] = [];
     // R-PRZEMARSZ-WYGASANIE-Q1=A: log per-turowy naruszeń granic (przemarsz/wtargnięcie),
@@ -12852,7 +13280,7 @@ async function boot(): Promise<void> {
       } catch (eTrade) {
         console.error('[Handel] Blad odswiezania tras:', eTrade);
       }
-      tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+      tradeRouteBuildingBonusByCity = computeTradeRouteBuildingBonusByCity(tradeRoutes);
       try {
         recomputeTradeRouteResourceGrants();
       } catch (eTradeGrant) {
@@ -12902,9 +13330,11 @@ async function boot(): Promise<void> {
         const fromName = from?.name ?? route.fromCityId;
         const toName = to?.name ?? route.toCityId;
         const civLabel = ownerDiploLabel(route.toOwnerId);
-        const income = tradeRouteDistanceIncome(route.dystans, incomeParams);
+        const income = tradeRouteTotalDistanceIncome(route.dystans, route.medium, incomeParams);
         const summary = `${fromName} ↔ ${toName} (${civLabel}) \xb7 +${income} złota/turę`;
         showHintMessage('\u{1F9ED} Nowy szlak handlowy: ' + summary, 4500);
+        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: zapamiętaj miasto gracza pod tym samym id.
+        tradeRouteEventPlayerCityIds.set('trade-new-' + turn + '-' + route.id, route.fromCityId);
         pushOnce({
           id: 'trade-new-' + turn + '-' + route.id,
           icon: '\u{1F9ED}', // 🧭
@@ -12939,6 +13369,10 @@ async function boot(): Promise<void> {
 
         const summary = `${fromName} ↔ ${toName} (${civLabel})` + (reason ? ' — ' + reason : '');
         showHintMessage('⛓️ Szlak handlowy zerwany: ' + summary, 4500);
+        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: jw. — przy zerwaniu miasto gracza może już
+        // nie istnieć (powód „miasto zniknęło"/„zmiana właściciela"); zapis jest tani, a
+        // `sidePanelEventLinkFor` i tak weryfikuje istnienie miasta przed pokazaniem skrótu.
+        tradeRouteEventPlayerCityIds.set('trade-lost-' + turn + '-' + route.id, route.fromCityId);
         pushOnce({
           id: 'trade-lost-' + turn + '-' + route.id,
           icon: '⛓️', // ⛓️‍💥 (fallback bez kombinujacego znaku dla zgodnosci fontow)
@@ -12998,6 +13432,7 @@ async function boot(): Promise<void> {
             title: 'KRYTYCZNE: ' + city.name,
             subtitle: revoltWarningMessage(city.name, st.revoltGraceRemaining),
             kind: 'city',
+            blocking: true,
           });
         }
         if (st?.bunt) {
@@ -13007,6 +13442,7 @@ async function boot(): Promise<void> {
             title: 'Bunt: ' + city.name,
             subtitle: 'Migracja mieszkańców',
             kind: 'city',
+            blocking: true,
           });
         }
         const prod = cityProd.get(city.id);
@@ -13021,6 +13457,7 @@ async function boot(): Promise<void> {
               title: 'Produkcja: ' + city.name,
               subtitle: 'Kolejka pusta — wybierz budynek lub jednostkę',
               kind: 'city',
+              blocking: true,
             });
           }
         }
@@ -13032,6 +13469,7 @@ async function boot(): Promise<void> {
           title: 'Dyplomacja: ' + p.civName,
           subtitle: diploPendingTitle(p.cmdType) + (p.reason ? ' — ' + p.reason : ''),
           kind: 'diplo',
+          blocking: true,
         });
       }
       // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — wpisy czekające na GRACZA (własne
@@ -13046,9 +13484,109 @@ async function boot(): Promise<void> {
           title: 'Dyplomacja: ' + ownerDiploLabel(aiOwnerId),
           subtitle: negotiationSummary(n) + ` (runda ${n.round}/${NEGOTIATION_MAX_ROUNDS})`,
           kind: 'diplo',
+          blocking: true,
         });
       }
       return events.filter(e => !dismissedSidePanelEventIds.has(e.id));
+    }
+
+    /**
+     * P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1 — JEDNO miejsce rozstrzygające „czy ta karta panelu
+     * bocznego prowadzi gdzieś dalej". Woła je i renderer (`getEventLink` → rysuje skrót
+     * „Pokaż na mapie →"), i handler kliknięcia (`openSidePanelEventLink` niżej), więc
+     * afordancja i akcja nie mogą się rozjechać: skrót pojawia się DOKŁADNIE wtedy, gdy klik
+     * ma dokąd prowadzić.
+     *
+     * Dwie warstwy:
+     *  1. `sidePanelEventLinkKind` (side-panel-event-link.ts) — statyczny kontrakt po prefiksie
+     *     id: która RODZINA zdarzeń w ogóle ma miejsce docelowe;
+     *  2. `switch` niżej — czy cel istnieje TERAZ (heks pary zapamiętany, szczegóły eliminacji
+     *     w mapie, miasto gracza nadal stoi). Brak celu → `null`, czyli karta zostaje czysto
+     *     informacyjna zamiast obiecywać martwy skok.
+     *
+     * EN: the single decision point for "does this card lead somewhere" — used both by the
+     * renderer (to draw the shortcut) and by the click handler (to perform the jump), so the
+     * affordance can never promise a jump the handler will not make.
+     */
+    function sidePanelEventLinkFor(id: string): SidePanelEventLink | null {
+      const kind = sidePanelEventLinkKind(id);
+      if (kind === null) return null;
+      switch (kind) {
+        case 'map-focus': {
+          if (id.startsWith('village-')) return villageEventHex(id) !== null ? { kind, label: sidePanelEventLinkLabel(kind) } : null;
+          // `borderMarchEventTargets` trzyma `null`, gdy para nie niosła q/r — wtedy nie ma
+          // dokąd skakać i skrót się nie pokazuje (dotąd klik był po cichu no-opem).
+          return (borderMarchEventTargets.get(id) ?? null) !== null
+            ? { kind, label: sidePanelEventLinkLabel(kind) }
+            : null;
+        }
+        case 'civ-elim':
+          return civElimEventDetails.has(id) ? { kind, label: sidePanelEventLinkLabel(kind) } : null;
+        case 'city-panel': {
+          const cityId = tradeRouteEventPlayerCityIds.get(id);
+          if (cityId === undefined) return null;
+          // Miasto mogło zostać utracone/zniknąć (to jeden z powodów zerwania szlaku) —
+          // panel miasta jest gracz-only, więc bez tego sprawdzenia skrót prowadziłby donikąd.
+          const city = cities.find(c => c.id === cityId && c.ownerId === 0);
+          return city ? { kind, label: sidePanelEventLinkLabel(kind) } : null;
+        }
+        case 'diplo-wars':
+        case 'empire-spichlerz':
+        case 'tech-tree':
+          // Widoki globalne (panel dyplomacji / panel imperium — blok Spichlerz / drzewo
+          // technologii) istnieją zawsze, niezależnie od stanu partii — brak warunku runtime.
+          return { kind, label: sidePanelEventLinkLabel(kind) };
+      }
+    }
+
+    /**
+     * Wykonanie skrótu karty NIE-blokującej. `true` = zdarzenie miało gotowe miejsce docelowe
+     * i zostało obsłużone (wołający kończy), `false` = brak skrótu, wołający schodzi do swoich
+     * dalszych gałęzi (karty blokujące: `diplo-pend-`, `negot-`, `prod-empty-`, `revolt-`).
+     * Każda gałąź używa funkcji, która istniała w kodzie PRZED tym tematem — temat nie tworzy
+     * ani jednego nowego ekranu, tylko podpina istniejące (patrz audyt w raporcie).
+     */
+    function openSidePanelEventLink(id: string): boolean {
+      const link = sidePanelEventLinkFor(id);
+      if (link === null) return false;
+      switch (link.kind) {
+        case 'map-focus': {
+          const hex = id.startsWith('village-') ? villageEventHex(id) : (borderMarchEventTargets.get(id) ?? null);
+          if (hex === null) return false;
+          const pos = axialToWorld(hex.q, hex.r, HEX_R);
+          camCtrl.focusAt(pos.x, pos.z, 22);
+          return true;
+        }
+        case 'diplo-wars':
+          openDiploListWarEnemies();
+          return true;
+        case 'civ-elim': {
+          // Karta side-panelu niesie tylko treść skróconą (recordCivElimEvent) — pełna treść
+          // zapisana pod tym samym id trafia do modalu ELIMINACJA! (civElimNotice.ts).
+          const info = civElimEventDetails.get(id);
+          if (!info) return false;
+          showCivElimNotice({ civLabel: info.civLabel, details: info.details });
+          return true;
+        }
+        case 'city-panel': {
+          const cityId = tradeRouteEventPlayerCityIds.get(id);
+          const city = cityId === undefined ? undefined : cities.find(c => c.id === cityId && c.ownerId === 0);
+          if (!city) return false;
+          openCityPanelForPlayer(city);
+          return true;
+        }
+        case 'empire-spichlerz':
+          // Treść karty wprost mówi o Spichlerzu („Spichlerz nie pokrywa deficytu miast",
+          // spich-auto-ration-notify.ts) — otwieramy dokładnie ten blok panelu imperium.
+          showEmpireDetailPanel('spichlerz');
+          return true;
+        case 'tech-tree':
+          // Ten sam widok, który oferuje popup odkrycia epokowego tuż obok emitera karty
+          // (`showTechDiscoveryNotice({ onOpenTree: () => showTechTreeView(0) })`,
+          // notifyPlayerEraChangeIfAdvanced) — bez wymyślania nowego ekranu „historii epok".
+          showTechTreeView(0);
+          return true;
+      }
     }
 
     /** Kolejka otwartych propozycji dyplomatycznych (FIFO: inbox → stół negocjacji). */
@@ -13744,8 +14282,19 @@ async function boot(): Promise<void> {
           // (ta sama formuła co niżej przy `handelIncome`, patrz komentarz tam) —
           // inaczej trzy miejsca pokazywałyby trzy różne liczby dla tego samego dochodu.
           const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
-          const base = tradeRouteDistanceIncome(r.dystans, incomeParams);
+          const base = tradeRouteTotalDistanceIncome(r.dystans, r.medium, incomeParams);
           const income = bonus === 0 ? base : Math.floor(base * (1 + bonus));
+          // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): drugi składnik dochodu trasy — premia 5%
+          // za budynek handlowy (T4, ECHO Q3 Wariant C). Liczona WYŁĄCZNIE przez
+          // `tradeRouteBuildingBonusForRoute()` z trade-routes.ts, czyli tę SAMĄ funkcję,
+          // którą sumuje `computeTradeRouteBuildingBonusByCity()` zasilające silnik
+          // (economy.ts::premiaHandluTrasHandlowych) — panel nie ma tu własnej kopii wzoru
+          // (precedens P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1: trzy rozjechane kopie wzoru
+          // dystansowego, zamknięte przy T2 — czwartej nie zakładamy).
+          // CELOWO liczona od `base` (bez bonusu cudów), nie od `income` — dokładnie jak
+          // silnik; gdyby liczyć od `income`, panel pokazywałby premię wyższą niż realnie
+          // naliczona graczowi z cudami handlowymi.
+          const premiaBudynku = tradeRouteBuildingBonusForRoute(r, incomeParams);
           return {
             id: r.id,
             // P-PANEL-MIASTO-OBYWATELE-TRESC-NIEPELNA (Maciej 2026-08-16, ECHO A): id, nie
@@ -13759,6 +14308,10 @@ async function boot(): Promise<void> {
             medium: r.medium,
             dystans: r.dystans,
             income,
+            // T3 → T6: stan pokrycia budynkowego TEJ trasy przekazany WPROST z TradeRoute
+            // (bez przeliczania), żeby UI mogło powiedzieć DLACZEGO premia 5% wynosi 0.
+            budynekOdblokowany: r.budynekOdblokowany,
+            premiaBudynku,
           };
         })
         .sort((a, b) => a.dystans - b.dystans || a.id.localeCompare(b.id));
@@ -14567,7 +15120,9 @@ async function boot(): Promise<void> {
             : `Pakt nieagresji na ${p.turns ?? 15} tur`;
         case 'sojusz_defensywny': return 'Sojusz obronny';
         case 'sojusz_pelny': return 'Sojusz wojskowy';
-        case 'granice': return p.borderMilitary ? 'Traktat przemarszu (wojskowy)' : 'Traktat przemarszu (cywilny)';
+        case 'granice': return p.barbarianCooperation
+          ? 'Wspólna walka z barbarzyńcami i przemarsz — 3 tury'
+          : (p.borderMilitary ? 'Traktat przemarszu (wojskowy)' : 'Traktat przemarszu (cywilny)');
         case 'handel':
           return basketDetail || (p.goldOnce ? `jednorazowo ${p.goldOnce} ¤` : '');
         case 'umowa_handlowa':
@@ -14744,6 +15299,7 @@ async function boot(): Promise<void> {
                 turns: p.turns,
                 allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
                 borderMilitary: p.borderMilitary,
+                barbarianCooperation: p.barbarianCooperation,
                 goldPerTurn: p.goldPerTurn,
                 goldOnce: p.goldOnce,
                 tributeMode: entry.actionId === 'trybut_oferta' ? 'offer' : 'demand',
@@ -14772,6 +15328,7 @@ async function boot(): Promise<void> {
               turns: uiActionId === '2' ? p.turns : undefined,
               allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
               borderMilitary: p.borderMilitary,
+              barbarianCooperation: p.barbarianCooperation,
               goldPerTurn: p.goldPerTurn,
               goldOnce: p.goldOnce,
               tributeMode: entry.actionId === 'trybut_oferta' ? 'offer' : 'demand',
@@ -15394,7 +15951,45 @@ async function boot(): Promise<void> {
         queueEmpty: pracaQueueEmpty,
         paused: pracaPaused,
       });
-      _lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;
+      // P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1: `pracaPoolBrutto -
+      // pracaUpkeepPreview` zna TYLKO upkeep -- nie wonder-map-builds/building-budget/
+      // auto-ulepszenia. Zaraz po końcu tury `_lastPracaRate` jest już policzone
+      // POPRAWNIE (wszystkie 4 drenaże, patrz komentarz przy deklaracji flagi wyżej) --
+      // ten guard chroni tamtą wartość przed nadpisaniem martwym zapisem z niepełnej
+      // formuły na tym jednym, natychmiastowym wywołaniu. Konsumowane od razu (`= false`),
+      // więc każdy KOLEJNY realny trigger nadal liczy live-preview jak dotychczas.
+      // P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES3-Q1 (Maciej 2026-08-22, TRZECIE
+      // zgłoszenie): guard z REGRES2 chronił WYŁĄCZNIE przypisanie do `_lastPracaRate`
+      // (HUD chip „Praca N +M" i box „PULA IMPERIUM" w popupie imperium) -- ale
+      // `refreshPlayerCityEcon(preview.perCity)` kilka linii niżej NIE był objęty tym
+      // samym guardem i nadpisywał `_lastPlayerCityEcon` (skąd tabela per-miasto „DO
+      // PULI"/„DO BUDYNKÓW" w TYM SAMYM popupie czyta `doPuli`/`doBudynkow`, patrz
+      // `empireDetailPanel.ts` `renderPracaSection`) LIVE-PODGLĄDEM policzonym z
+      // POST-end-turn stanu (po wzroście populacji, po wszystkim), zamiast zostawić
+      // POPRAWNĄ wartość zapisaną chwilę wcześniej w tej samej `triggerPlayerEndTurn()`
+      // przez `refreshPlayerCityEcon(econ.perCity)` (main.ts, tuż po bloku P3a). Efekt:
+      // dwie sąsiadujące liczby w JEDNYM renderze popupu „Grecy" ("do puli imperium: +2"
+      // w tabeli vs „PULA IMPERIUM ... +1" dwie linie niżej) pochodziły z DWÓCH różnych
+      // momentów czasu -- tabela z przyszłej projekcji, nagłówek z realnie odnotowanego
+      // przyrostu -- mimo że oba renderują się z tego samego, jednego wywołania
+      // `buildEmpireDetailSnap()`. Naprawa: ten sam jednorazowy guard, który już chroni
+      // `_lastPracaRate`, chroni TERAZ RÓWNIEŻ ten wołanie -- odczytany PRZED
+      // konsumpcją flagi niżej, żeby jeden odczyt decydował o obu pominięciach.
+      // / EN: the REGRES2 guard protected ONLY the `_lastPracaRate` assignment (HUD
+      // chip + „PULA IMPERIUM" box) -- but `refreshPlayerCityEcon(preview.perCity)` a
+      // few lines below was NOT covered by the same guard and overwrote
+      // `_lastPlayerCityEcon` (which feeds the per-city „DO PULI"/„DO BUDYNKÓW" table in
+      // the SAME popup) with a live preview computed from POST-end-turn state, instead
+      // of keeping the correct value written moments earlier in the same
+      // `triggerPlayerEndTurn()` by `refreshPlayerCityEcon(econ.perCity)`. Fix: the same
+      // one-shot guard now also protects this call, read BEFORE the flag is consumed so
+      // one read drives both skips.
+      const skipCityEconOverwriteFreshFromEndTurn = _pracaRateFreshFromEndTurn;
+      if (_pracaRateFreshFromEndTurn) {
+        _pracaRateFreshFromEndTurn = false;
+      } else {
+        _lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview;
+      }
       let brutto = 0;
       for (const tk of preview.perCity) {
         if (tk.ownerId !== 0 || tk.oblegany) continue;
@@ -15404,7 +15999,9 @@ async function boot(): Promise<void> {
       for (const tk of preview.perCity) {
         if (tk.ownerId === 0) lastCityKulturaTick.set(tk.cityId, tk.kultura);
       }
-      refreshPlayerCityEcon(preview.perCity);
+      if (!skipCityEconOverwriteFreshFromEndTurn) {
+        refreshPlayerCityEcon(preview.perCity);
+      }
     }
 
     function buildHudState(): HudState {
@@ -15472,7 +16069,7 @@ async function boot(): Promise<void> {
         // CUDA-HANDEL-01: chip HUD musi odzwierciedlać ten sam bonus % cudów, co
         // realny wpis do skarbca (tradeIncomeByCity) — inaczej HUD i skarbiec by się rozjechały.
         const bonus = wonderTradeRouteBonusForOwner(r.ownerId, r.medium);
-        const base = tradeRouteDistanceIncome(r.dystans, handelIncomeParams);
+        const base = tradeRouteTotalDistanceIncome(r.dystans, r.medium, handelIncomeParams);
         handelIncome += bonus === 0 ? base : Math.floor(base * (1 + bonus));
         handelRouteCount++;
       }
@@ -16908,7 +17505,11 @@ async function boot(): Promise<void> {
           typ = 'strumien_sojusz';
         } else if (kind === RodzajTraktatu.PaktNieagresji) {
           typ = 'strumien_nap';
-        } else if (kind === RodzajTraktatu.OtwartGranice || kind === RodzajTraktatu.PrawoWojskowePrzemarszu) {
+        } else if (
+          kind === RodzajTraktatu.OtwartGranice
+          || kind === RodzajTraktatu.PrawoWojskowePrzemarszu
+          || kind === RodzajTraktatu.WspolnaWalkaBarbarzyncy
+        ) {
           typ = 'strumien_przemarsz';
         } else if (kind === RodzajTraktatu.UmowaSzlakow) {
           typ = 'strumien_handel';
@@ -17345,6 +17946,7 @@ async function boot(): Promise<void> {
         amount: payload.amount,
         targetOwnerId: payload.targetOwnerId,
         borderMilitary: payload.borderMilitary,
+        barbarianCooperation: payload.barbarianCooperation,
         techId: payload.techId,
         techDirection: payload.techDirection,
         // BLOKER 1 (Evaluator runda 3): techPaymentMode/techOfferId brakowały w tej białej
@@ -17491,6 +18093,12 @@ async function boot(): Promise<void> {
         respekt: rel.respekt ?? 0,
         hasNap: hasTreaty(activeDeals, 0, ownerId, RodzajTraktatu.PaktNieagresji),
         hasHandel: hasSzlakowTreaty(activeDeals, 0, ownerId),
+        hasTradeConnection: citiesHaveTradeConnection(
+          cities.filter(c => c.ownerId === 0),
+          cities.filter(c => c.ownerId === ownerId),
+          map,
+          cityBuilt,
+        ),
         hasWymiana: hasWymianaTreaty(activeDeals, 0, ownerId),
         hasSojusz,
         breaksTreatyLabel: breakingDeal ? treatyDisplayLabel(breakingDeal.rodzaj) : undefined,
@@ -17858,6 +18466,22 @@ async function boot(): Promise<void> {
             playerSkarbiec: Math.floor(player.skarbiec),
             tempoGry: player.tempoGry ?? 'standardowa',
             difficulty: _menuDifficulty,
+            // P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA: live podgląd
+            // „Wymiana" musi używać tej samej bramki co wysłana propozycja.
+            // Sam panel UI zna Relację i kwoty, ale nie zna nastawienia partnera;
+            // evaluator ma pełny kontekst AI i zwraca dokładny pwBalance.
+            tradeFairnessPreview: (givePn: number, receivePn: number) => {
+              const result = evaluateProposal(
+                {
+                  actionId: 'handel',
+                  proposerOwnerId: 0,
+                  responderOwnerId: ownerId,
+                  payload: { givePn, receivePn },
+                },
+                buildProposalEvalContext(0, ownerId),
+              );
+              return { accepted: result.accepted, pwBalance: result.pwBalance };
+            },
           };
         },
         onBreakTreaty: (dealId: string) => breakTreatyVoluntarily(dealId),
@@ -18159,6 +18783,7 @@ async function boot(): Promise<void> {
           const siegeStack = playerStackAt(u);
           if (u.ufortyfikowanyWPolu === true) {
             for (const su of siegeStack) exitFieldFortify(su);
+            syncUnitsRender();
             showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119 (obl\u0119\u017cenie trwa)', 2500);
             selectPlayerUnit(u.id, true);
           } else {
@@ -18171,6 +18796,7 @@ async function boot(): Promise<void> {
         if (u.ufortyfikowanyWPolu === true) {
           const fieldStack = playerStackAt(u);
           for (const su of fieldStack) exitFieldFortify(su);
+          syncUnitsRender();
           showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119', 2000);
           selectPlayerUnit(u.id, true);
           refreshD1bHud();
@@ -18544,6 +19170,19 @@ async function boot(): Promise<void> {
       }
       // N1 fix — logika w game/eot-event-defer.ts (dismissEotOrEraWarLogEntry), testowana
       // niezależnie od main.ts w tools/sidepanel-events-toolbar-test.cjs.
+      if (id.startsWith(TECH_DONE_EVENT_PREFIX)) {
+        // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (wymóg 5 dyspozycji): ✕ musi TRWALE usunąć
+        // wpis z `warEventLog` — ten log NIE jest czyszczony co turę, a miękkie ukrycie
+        // (`dismissedSidePanelEventIds`) JEST czyszczone na końcu każdej tury, więc skasowana
+        // karta wracałaby w następnej. Ta sama gałąź obsługuje „Usuń wszystkie"
+        // (`clearAllSidePanelEvents` woła tę funkcję per id).
+        const idx = warEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          warEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        return;
+      }
       if (dismissEotOrEraWarLogEntry(warEventLog, id)) {
         refreshD1bHud();
         return;
@@ -18592,6 +19231,62 @@ async function boot(): Promise<void> {
       }
     }
 
+    /**
+     * P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 — rodzina zdarzeń „Zbadano: <technologia>".
+     *
+     * Id karty (`tech-done-<tura>-<slug>`, emiter w bloku auto-research, ~`:26196`) jest
+     * JEDYNYM nośnikiem tożsamości — nie ma żadnej mapy pomocniczej. Dzięki temu karta
+     * zostaje klikalna po odświeżeniu panelu i po zmianie tury, dopóki widnieje w
+     * `warEventLog` (wymóg 4 dyspozycji), a klik zawsze otwiera kartę TEJ technologii,
+     * nie ostatniej zbadanej (wymóg 2 — przy dwóch technologiach w jednej turze powstają
+     * DWIE karty z DWOMA różnymi slugami).
+     *
+     * Warstwa runtime jest realna, nie tautologiczna: sam prefiks NIE wystarcza — slug musi
+     * dać się rozwinąć z powrotem w nazwę (`techNameFromSlug`) i ta nazwa musi istnieć w
+     * `data.tech`. Karta z nieznanym slugiem nie dostaje afordancji i klik w nią jest no-opem,
+     * dokładnie jak karta bez celu w audycie przekierowań.
+     *
+     * DLACZEGO NIE w `game/side-panel-event-link.ts` (gdzie mieszka reszta rodzin): ten plik
+     * jest poza allowlistą tematu. Zachowana jest natomiast jego zasada naczelna — jedno
+     * źródło prawdy dla afordancji i dla akcji: `techDoneEventLinkFor` karmi renderer
+     * (`getEventLink`), `openTechDoneEventLink` wykonuje skok, obie stoją na tym samym
+     * `techDoneEventTechName`, więc skrót nie może obiecać przejścia, którego handler nie zrobi.
+     */
+    const TECH_DONE_EVENT_PREFIX = 'tech-done-';
+
+    function techDoneEventTechName(id: string): string | null {
+      if (!id.startsWith(TECH_DONE_EVENT_PREFIX)) return null;
+      const rest = id.slice(TECH_DONE_EVENT_PREFIX.length);
+      const dash = rest.indexOf('-'); // `<tura>-<slug>`; slug sam może zawierać `_`, nigdy `-`
+      if (dash <= 0) return null;
+      const slug = rest.slice(dash + 1);
+      if (slug === '') return null;
+      const name = techNameFromSlug(slug);
+      if (name === null) return null;
+      return data.tech.some(t => t.Technologia === name) ? name : null;
+    }
+
+    /** Skrót karty „Zbadano" — etykieta mówi DOKĄD, spójnie z konwencją audytu przekierowań
+     * („Panel miasta →", „Spichlerz →", „Drzewo technologii →"), renderer dokleja strzałkę. */
+    function techDoneEventLinkFor(id: string): { label: string } | null {
+      return techDoneEventTechName(id) === null ? null : { label: 'Karta technologii' };
+    }
+
+    /** `true` = zdarzenie należało do tej rodziny i zostało obsłużone (wołający kończy). */
+    function openTechDoneEventLink(id: string): boolean {
+      const techName = techDoneEventTechName(id);
+      if (techName === null) return false;
+      // Ta sama funkcja i ten sam `kind`, którym gra pokazuje kartę tuż po ukończeniu badania
+      // (blok auto-research niżej) — temat nie tworzy nowego ekranu.
+      showTechDiscoveryNotice({
+        techName,
+        eraIndex: player.era,
+        kind: 'completion',
+        onOpenTree: () => showTechTreeView(0),
+      });
+      return true;
+    }
+
     function mountD1bHud(): void {
       d1bHudActive = true;
       createCityListHud({
@@ -18608,7 +19303,7 @@ async function boot(): Promise<void> {
       createArmyListHud({
         getArmies: buildPlayerArmyListEntries,
         onSelectArmy: (unitId) => {
-          selectPlayerUnit(unitId);
+          selectPlayerUnit(unitId, true);
           // K: po kliknięciu jednostki w panelu ARMIE wycentruj kamerę na jej heksie
           // (zachowując bieżący zoom).
           const su = units.find(x => x.id === unitId);
@@ -18618,6 +19313,25 @@ async function boot(): Promise<void> {
             camCtrl.focusAt(x, z, dist);
           }
           refreshD1bHud();
+        },
+        onOpenUnitCard: (unitId, unitTypeId) => {
+          const runtimeUnit = units.find(u => u.id === unitId && u.ownerId === 0);
+          const resolvedTypeId = runtimeUnit?.typeId ?? unitTypeId;
+          const unitDef = data.units.find(u => u.Jednostka === resolvedTypeId);
+          if (!unitDef) return;
+          const statusLines = runtimeUnit
+            ? [
+                runtimeUnit.inGarnizon ? 'W garnizonie' : '',
+                runtimeUnit.ufortyfikowanyWPolu ? 'Ufortyfikowana w polu' : '',
+                runtimeUnit.sentry ? 'Czuwa' : '',
+                runtimeUnit.autoExplore ? 'Auto-eksploracja' : '',
+              ].filter(Boolean)
+            : [];
+          ensureUnitInfoCardStyles();
+          showUnitInfoCardDialog(unitDef, data, {
+            statusLines,
+            ownerColor: 0x3b7dd8,
+          });
         },
         onClose: () => refreshD1bHud(),
       });
@@ -18816,14 +19530,17 @@ async function boot(): Promise<void> {
             } else {
               if (!wonderGateOk(0, wonderId)) {
                 showHintMessage('Ten cud nie jest teraz dostępny', 3000);
+                refreshBuildHighlight();
                 return;
               }
               if (ownerHasWonderBuildInProgress(wonderBuildSites, 0)) {
                 showHintMessage('Masz już cud w budowie na mapie', 3500);
+                refreshBuildHighlight();
                 return;
               }
               if (qualifyingWonderHexesForPlayer().length === 0) {
                 showHintMessage('Brak heksów w twoim terytorium na cud', 3500);
+                refreshBuildHighlight();
                 return;
               }
               activeWonderId = wonderId;
@@ -18842,6 +19559,11 @@ async function boot(): Promise<void> {
             const pol = ulepszeniaEmpireForOwner(0);
             return { ...pol };
           },
+          // R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1: podpiecie warstwy (a)
+          // (`CityPodzialPracy.procentBudynki` przez `ownerDefaultPodzialPracy`) USUNIETE —
+          // panel trybu budowy byl TRZECIM egzemplarzem tego samego suwaka. Warstwa (a)
+          // zostaje w swoich dwoch prawowitych miejscach: panel imperium
+          // (`empireDetailPanel.ts`) i panel miasta (`cityPanel.ts`) — oba nietkniete.
           onUlepszeniaEmpireFocusChange: (focus: UlepszeniaFocus) => {
             const pol = ulepszeniaEmpireForOwner(0);
             pol.focus = focus;
@@ -18873,9 +19595,27 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
+          // R4-Q2=C (R-AI-WYRAB-PRZY-RZECE-FARMY-Q1, runda 4): przełącznik „wolno wycinać
+          // las" dla automatu GRACZA, zakres PAŃSTWO. Domyślnie wyłączony (§14 — bez zmiany
+          // zachowania, dopóki gracz sam go nie włączy). AI CYWILIZACJI go NIE czyta.
+          onUlepszeniaEmpireWyrabChange: (wolnoWycinacLas: boolean) => {
+            const pol = ulepszeniaEmpireForOwner(0);
+            pol.wolnoWycinacLas = wolnoWycinacLas;
+            ulepszeniaEmpireByOwner.set(0, pol);
+            showHintMessage(
+              wolnoWycinacLas
+                ? 'Państwo: automat MOŻE wycinać las (wyrąb pod farmę przy rzece)'
+                : 'Państwo: automat NIE wycina lasu',
+              2800,
+            );
+            refreshD1bHud();
+          },
           onUlepszeniaEmpirePracaPercentChange: (pracaAutoPercent: UlepszeniaPracaPercent) => {
             const pol = ulepszeniaEmpireForOwner(0);
-            pol.pracaAutoPercent = clampPracaWspolnyWorekPercent(pracaAutoPercent);
+            // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: historyczny suwak automatu (pole (b))
+            // ma własny zakres 0–100% — clampUlepszeniaPracaPercent clampuje do
+            // MAX_ULEPSZENIA_PRACA_AUTO_PERCENT, niezależnie od ownerDefaultPracaSplit (a).
+            pol.pracaAutoPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             pol.tryb = 'auto';
             ulepszeniaEmpireByOwner.set(0, pol);
             showHintMessage(`Państwo: auto ulepszenia · ${pol.pracaAutoPercent}% budżetu Pracy`, 2800);
@@ -18894,7 +19634,8 @@ async function boot(): Promise<void> {
               city.ulepszeniaFocus = city.ulepszeniaFocus ?? pol.focus;
               city.ulepszeniaTryb = city.ulepszeniaTryb ?? pol.tryb;
               city.ulepszeniaOnlyWorked = city.ulepszeniaOnlyWorked ?? pol.onlyWorked;
-              city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(
+              city.ulepszeniaWolnoWycinacLas = city.ulepszeniaWolnoWycinacLas ?? pol.wolnoWycinacLas;
+              city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(
                 city.ulepszeniaPracaPercent ?? pol.pracaAutoPercent,
               );
             }
@@ -18947,11 +19688,27 @@ async function boot(): Promise<void> {
             );
             refreshD1bHud();
           },
+          // R4-Q2=C: ten sam przełącznik w zakresie MIASTA (włącza override lokalny —
+          // wzorem `onUlepszeniaCityOnlyWorkedChange` wyżej).
+          onUlepszeniaCityWyrabChange: (cityId: string, wolnoWycinacLas: boolean) => {
+            const city = cities.find(c => c.id === cityId);
+            if (!city) return;
+            city.ulepszeniaOverride = true;
+            city.ulepszeniaWolnoWycinacLas = wolnoWycinacLas;
+            city.ulepszeniaTryb = 'auto';
+            showHintMessage(
+              wolnoWycinacLas
+                ? `${city.name}: automat MOŻE wycinać las`
+                : `${city.name}: automat NIE wycina lasu`,
+              2800,
+            );
+            refreshD1bHud();
+          },
           onUlepszeniaCityPracaPercentChange: (cityId: string, pracaAutoPercent: UlepszeniaPracaPercent) => {
             const city = cities.find(c => c.id === cityId);
             if (!city) return;
             city.ulepszeniaOverride = true;
-            city.ulepszeniaPracaPercent = clampPracaWspolnyWorekPercent(pracaAutoPercent);
+            city.ulepszeniaPracaPercent = clampUlepszeniaPracaPercent(pracaAutoPercent);
             city.ulepszeniaTryb = 'auto';
             showHintMessage(
               `${city.name}: auto ulepszenia · ${city.ulepszeniaPracaPercent}% budżetu Pracy`,
@@ -19073,37 +19830,34 @@ async function boot(): Promise<void> {
         onContextCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta, { all: true }),
         canContextCycleUnit: () => cyclablePlayerArmyLeadsAll().length > 1,
         getContextPanelMessage: () => buildContextPanelMessage(),
+        // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: renderer pyta o skrót dla karty
+        // NIE-blokującej — TA SAMA funkcja, której używa `onEventClick` niżej.
+        // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1: rodzina `tech-done-*` idzie przez własny
+        // resolver (`techDoneEventLinkFor`, tuż nad tym blokiem) — z TĄ SAMĄ zasadą „jedno
+        // źródło dla afordancji i dla akcji", tylko trzymane w `main.ts`, bo pure-moduł
+        // `game/side-panel-event-link.ts` jest poza allowlistą tego tematu.
+        getEventLink: (ev) => (ev.blocking === true ? null : sidePanelEventLinkFor(ev.id)) ?? techDoneEventLinkFor(ev.id),
         onEventClick: (id) => {
-          if (id.startsWith('border-march-')) {
-            // R-PRZEMARSZ-ATRYBUCJA-Q1=B: skok kamery na heks pary, gdy znany (patrz
-            // borderMarchEventTargets / applyBorderMarchPenaltiesEndTurn). Wzorzec identyczny do
-            // 'revolt-' niżej (axialToWorld + camCtrl.focusAt) — bez otwierania dodatkowego panelu,
-            // bo naruszyciel nie ma jednego miasta/jednostki do pokazania w kontekście.
-            const target = borderMarchEventTargets.get(id);
-            if (target) {
-              const pos = axialToWorld(target.q, target.r, HEX_R);
-              camCtrl.focusAt(pos.x, pos.z, 22);
-            }
-            return;
-          }
-          if (id.startsWith('war-')) {
-            openDiploListWarEnemies();
-            return;
-          }
+          // P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1: skróty kart NIE-blokujących idą przez jedno
+          // wspólne rozstrzygnięcie (`sidePanelEventLinkFor`), to samo, które steruje widoczną
+          // afordancją na karcie. Obejmuje dawne, rozsypane tu gałęzie `border-march-`,
+          // `war-`, `elim-cs-` (zachowanie 1:1) oraz nowo podpięte `village-`, `trade-new-`/
+          // `trade-lost-`, `auto-ration-t`, `era-`. `false` = brak miejsca docelowego, więc
+          // schodzimy do gałęzi kart BLOKUJĄCYCH poniżej (te mają własny przycisk „Otwórz →").
+          // EN: non-blocking shortcuts all go through the one resolver that also drives the
+          // visible affordance; `false` falls through to the blocking-card branches below.
+          if (openSidePanelEventLink(id)) return;
+          // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1: karta „Zbadano: <tech>". Kolejność LUSTRZANA
+          // wobec `getEventLink` wyżej (najpierw rodziny audytu, potem `tech-done-*`) — obie
+          // rodziny mają rozłączne prefiksy, więc kolejność nie zmienia wyniku, ale jej
+          // zgodność jest tym, co gwarantuje, że skrót i klik nie mogą się rozjechać.
+          if (openTechDoneEventLink(id)) return;
           if (id.startsWith('diplo-pend-')) {
             openDiplomacyPendingById(id);
             return;
           }
           if (id.startsWith('negot-')) {
             openDiplomacyAudienceForNegotiation(id);
-            return;
-          }
-          if (id.startsWith('elim-cs-')) {
-            // RUNDA 5: karta side-panelu niesie tylko treść skróconą (recordCivElimEvent) —
-            // kliknięcie otwiera modal z pełną treścią zapisaną pod tym samym id
-            // (civElimEventDetails), zamiast dawnego, kolidującego toastu #hintToast.
-            const info = civElimEventDetails.get(id);
-            if (info) showCivElimNotice({ civLabel: info.civLabel, details: info.details });
             return;
           }
           const prodCityId = cityIdFromProdEmptyEventId(id);
@@ -19151,7 +19905,9 @@ async function boot(): Promise<void> {
         getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
         onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
           if (ownerId !== 0) return;
-          ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+          ownerDefaultPodzialPracy.set(0, {
+            procentBudynki: clampPodzialPracyBudynkiPercent(split.procentBudynki),
+          });
           markCityStateDirty();
           updateHud();
         },
@@ -19163,6 +19919,18 @@ async function boot(): Promise<void> {
           broadcastPoziomRacjiToOwnerCities(cities, 0, clamped);
           markCityStateDirty();
           updateHud();
+        },
+        // P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: jednorazowa akcja "ustaw teraz" —
+        // dla WSZYSTKICH miast ownera BEZ poziomRacjiOverride ustawia autoWyzywienie=true.
+        // Wzorem onOwnerDefaultPoziomRacjiChange/broadcastPoziomRacjiToOwnerCities wyżej, ale
+        // to NIE jest stan trwały ani toggle -- kliknięcie po prostu stosuje wartość teraz.
+        onOwnerSetAutoWyzywienieForAll: (ownerId) => {
+          if (ownerId !== 0) return;
+          broadcastAutoWyzywienieToOwnerCities(cities, 0);
+          showHintMessage('Auto-Żywienie włączone we wszystkich miastach bez indywidualnego ustawienia', 2800);
+          markCityStateDirty();
+          updateHud();
+          refreshCityPanelIfOpen();
         },
       });
     }
@@ -19214,8 +19982,81 @@ async function boot(): Promise<void> {
         return { display: el.style.display, html: el.innerHTML, zIndex: el.style.zIndex };
       },
       getWarEventLogHead: () => warEventLog.slice(0, 3),
+      openTechDiscovery: (techName: string) => showTechDiscoveryNotice({
+        techName,
+        eraIndex: player.era,
+        onOpenTree: () => showTechTreeView(0),
+      }),
+      openTechCompletion: (techName: string) => showTechDiscoveryNotice({
+        techName,
+        eraIndex: player.era,
+        kind: 'completion',
+        onOpenTree: () => showTechTreeView(0),
+      }),
       isEndTurnInProgress: () => endTurnInProgress,
       getWorldState: () => ({ citiesLen: cities.length, unitsLen: units.length, turn }),
+    };
+
+    // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug` wyżej /
+    // `__civEmbarkDebug` niżej) — wołany WYŁĄCZNIE z Playwright w
+    // `tools/sidepanel-event-przekierowania-real-render-test.cjs`
+    // (P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1). Pozwala zainscenizować w ŻYWEJ, zbudowanej grze
+    // konkretne karty panelu WYDARZENIA (eliminacja miasta-państwa, nowy/zerwany szlak,
+    // auto-racje, awans epoki, chatka, naruszenie granic) bez rozgrywania dziesiątek tur w
+    // headless Chromium — a potem kliknąć je PRAWDZIWĄ myszą i sprawdzić, czy otworzył się
+    // właściwy, istniejący widok. Hak WYŁĄCZNIE zapisuje dane wejściowe zdarzeń i czyta stan;
+    // nie omija ani nie duplikuje ścieżki klikalności — klik idzie normalnym `onEventClick`.
+    // EN: test hook (same pattern/rationale as `__eraTestDebug`) — called ONLY from Playwright.
+    // Stages concrete Events cards in the LIVE, built game so the test can click them with a
+    // real mouse and assert the correct existing view opened. The hook only seeds event inputs
+    // and reads state; the click itself goes through the normal `onEventClick` path.
+    (window as any).__sidePanelLinkTestDebug = {
+      seedEvents: (evs: SidePanelEvent[]): number => {
+        warEventLog.length = 0;
+        for (let i = evs.length - 1; i >= 0; i--) warEventLog.unshift(evs[i]!);
+        dismissedSidePanelEventIds.clear();
+        refreshD1bHud();
+        return warEventLog.length;
+      },
+      setBorderMarchTarget: (id: string, q: number, r: number): void => {
+        borderMarchEventTargets.set(id, { q, r });
+      },
+      setCivElimDetails: (id: string, civLabel: string, details: string): void => {
+        civElimEventDetails.set(id, { civLabel, details });
+      },
+      setTradeCity: (id: string, cityId: string): void => {
+        tradeRouteEventPlayerCityIds.set(id, cityId);
+      },
+      firstPlayerCity: (): { id: string; name: string } | null => {
+        const c = cities.find(x => x.ownerId === 0);
+        return c ? { id: c.id, name: c.name } : null;
+      },
+      linkFor: (id: string): SidePanelEventLink | null => sidePanelEventLinkFor(id),
+      cameraTarget: (): { x: number; z: number; dist: number } => camCtrl.getFocusState(),
+      /** Stan „który widok jest otwarty" czytany WŁASNYMI predykatami gry (nie zgadywaniem
+       * po klasach CSS) — to one decydują o widoczności panelu w reszcie kodu. */
+      openViews: (): Record<string, unknown> => ({
+        cityPanel: isCityPanelOpen(),
+        cityPanelCityId: getOpenCityPanelCityId(),
+        diploList: isDiploListHudOpen(),
+        diploListFilter: getDiploListFilter(),
+        empirePanel: isEmpireDetailPanelOpen(),
+        techTree: isTechTreeViewOpen(),
+        civElimModal: document.getElementById('civ-elim-notice-host') !== null,
+      }),
+      /** Heks → punkt świata, tą samą funkcją co skok kamery — do porównania w teście. */
+      hexToWorld: (q: number, r: number): { x: number; z: number } => {
+        const p = axialToWorld(q, r, HEX_R);
+        return { x: p.x, z: p.z };
+      },
+      closeAll: (): void => {
+        hideEmpireDetailPanel();
+        hideTechTreeView();
+        hideCityPanel();
+        if (isDiploListHudOpen()) hideDiploListHud();
+        document.getElementById('civ-elim-notice-host')?.remove();
+        refreshD1bHud();
+      },
     };
 
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---
@@ -19284,6 +20125,13 @@ async function boot(): Promise<void> {
         selectPlayerResearchSlug(techSlug);
         refreshTechTreeViewIfOpen();
       },
+      onOpenTechDetails: (techName: string) => {
+        showTechDiscoveryNotice({
+          techName,
+          eraIndex: player.era,
+          onOpenTree: () => showTechTreeView(0),
+        });
+      },
       getPlan: (_ownerId: number) =>
         buildResearchPlanSnapshot().map(({ id, pos }) => ({ id, pos })),
     });
@@ -19308,7 +20156,7 @@ async function boot(): Promise<void> {
       getCapitalCityId: (ownerId: number) => capitalCityIdForOwner(ownerId),
       onSetCapital: (cityId: string) => { trySetPlayerCapital(cityId); },
       getCityBuildingFlags: (cityId: string) => ({
-        liczbaAktywnychTrasHandlowych: tradeRouteCountByCity.get(cityId) ?? 0,
+        premiaHandluTrasHandlowych: tradeRouteBuildingBonusByCity.get(cityId) ?? 0,
       }),
       getEpoch: (ownerId: number) => empireEpochForOwner(ownerId),
       getManpowerSnapshot: (cityId: string) => {
@@ -19424,34 +20272,10 @@ async function boot(): Promise<void> {
         refreshCityPanelIfOpen();
       },
       onPodzialPracyChange: (cityId: string, split) => {
-        const c = cities.find(ct => ct.id === cityId);
-        if (c && c.ownerId === 0) {
-          // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: bez override — suwak zmienia
-          // wartość globalną imperium (wszystkie miasta bez override); z override —
-          // zmiana tylko tego miasta.
-          if (c.podzialPracyOverride) {
-            c.podzialPracy = { procentBudynki: split.procentBudynki };
-          } else {
-            ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
-          }
-          markCityStateDirty(); // D10: podział pracy → przelicz
-          updateHud();
-        }
+        applyCityPodzialPracyChange(cityId, split.procentBudynki);
       },
       onPodzialPracyOverrideToggle: (cityId: string) => {
-        const c = cities.find(ct => ct.id === cityId);
-        if (!c || c.ownerId !== 0) return;
-        const next = !c.podzialPracyOverride;
-        if (next) {
-          // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
-          c.podzialPracy = effectivePodzialPracy(c);
-        } else {
-          delete c.podzialPracy;
-        }
-        c.podzialPracyOverride = next;
-        markCityStateDirty();
-        updateHud();
-        refreshCityPanelIfOpen();
+        toggleCityPodzialPracyOverride(cityId);
       },
       onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
         purchaseRecruitmentUnit(cityId, itemId, koszt);
@@ -19487,9 +20311,11 @@ async function boot(): Promise<void> {
       getCivBonusy: civBonusyForOwnerId,
       // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
       // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
-      // scalenia armii, nie generyczny stos overlayów (ten obejmuje też m.in. panel miasta/
-      // drzewko tech, które NIE są modalami końca tury i nie powinny blokować preBattle).
-      isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen(),
+      // scalenia armii oraz karta ukończenia badań, nie generyczny stos overlayów (ten
+      // obejmuje też m.in. panel miasta/drzewko tech, które NIE są modalami końca tury).
+      isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen()
+        || isArmyMergePanelOpen()
+        || isTechDiscoveryNoticeOpen(),
     });
 
     // -----------------------------------------------------------------------
@@ -20205,7 +21031,17 @@ async function boot(): Promise<void> {
               setEra(player.era);
             }
             if (eraAdvanced) {
+              queueEraDiscoveryTech(step.completed.map(done => done.id));
               notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+            } else if (step.completed.length > 0) {
+              // Nagroda nauki może dokończyć technologię bez awansu epoki — pokaż tę
+              // samą pełną kartę co przy EOT, ale z komunikatem zwykłego ukończenia.
+              showTechDiscoveryNotice({
+                techName: step.completed[step.completed.length - 1]!.id,
+                eraIndex: player.era,
+                kind: 'completion',
+                onOpenTree: () => showTechTreeView(0),
+              });
             }
           } else {
             // AI/MP: dolicz do puli nauki ownera i odpal TEN SAM resolver co coroczne
@@ -20322,6 +21158,7 @@ async function boot(): Promise<void> {
       const result = destroyCampAt(barbCamps, q, r);
       if (result.destroyedCampId === null) return false;
       barbCamps = result.camps;
+      clearedBarbCampHexes.add(keyOf(q, r));
       console.log(`[Barbarzyncy] Obóz zniszczony (najechany): ${result.destroyedCampId}`);
       refreshFog();
       return true;
@@ -20828,6 +21665,9 @@ async function boot(): Promise<void> {
               collectAtkRosterNearCity(action.ctx.city, action.attacker, units),
             );
             return;
+          case 'hint_city_not_visible':
+            showHintMessage(action.cityName + ' — cel niewidoczny (mgła).', 3500);
+            return;
           case 'hint_no_adjacent':
             showHintMessage(
               action.cityName + ' — miasto wrogie. Ustaw jednostkę na sąsiednim heksie i kliknij miasto.',
@@ -20866,7 +21706,13 @@ async function boot(): Promise<void> {
             selectedUnit: playerSel,
             units,
             playerOwnerId: 0,
+            isCityVisible: city =>
+              !fogOn || currentVisible().has(keyOf(city.q, city.r)),
           });
+          if (enemyAction.kind === 'hint_city_not_visible') {
+            dispatchMapEnemyCityClick(enemyAction);
+            return;
+          }
           const isMilitaryAction =
             enemyAction.kind === 'siege_panel' ||
             enemyAction.kind === 'attack_choice' ||
@@ -20916,7 +21762,13 @@ async function boot(): Promise<void> {
           selectedUnit: sel ?? null,
           units,
           playerOwnerId: 0,
+          isCityVisible: city =>
+            !fogOn || currentVisible().has(keyOf(city.q, city.r)),
         });
+        if (enemyAction.kind === 'hint_city_not_visible') {
+          dispatchMapEnemyCityClick(enemyAction);
+          return;
+        }
         const isMilitaryAction =
           enemyAction.kind === 'siege_panel' ||
           enemyAction.kind === 'attack_choice' ||
@@ -21462,6 +22314,29 @@ async function boot(): Promise<void> {
       return collectBattleRosterPure(anchor, allUnits, side);
     }
 
+    /**
+     * R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1: przy starciu z barbarzyńcami
+     * automatycznie dołącz partnerów z aktywnego kontraktu w promieniu 2 heksów.
+     * Zwykłe bitwy cywilizacja↔cywilizacja zachowują dotychczasowy roster.
+     */
+    function collectBarbarianAwareBattleRoster(
+      anchor: RuntimeUnit,
+      opponent: RuntimeUnit,
+      side: 'attacker' | 'defender',
+    ): RuntimeUnit[] {
+      const base = collectBattleRoster(anchor, units, side);
+      if (!isBarbarian(anchor.ownerId) && !isBarbarian(opponent.ownerId)) return base;
+      const helpers = collectBarbarianCooperationUnits(
+        anchor.ownerId,
+        opponent.q,
+        opponent.r,
+        units,
+        activeDeals,
+        activeBattleUnitIds,
+      );
+      return mergeBattleRosterWithBarbarianCooperation(base, helpers);
+    }
+
     function preBattleUnitFromRuntime(u: RuntimeUnit): PreBattleUnit {
       const def = unitDefFor(u);
       const maxHp = unitHealth(def);
@@ -21579,8 +22454,8 @@ async function boot(): Promise<void> {
         showHintMessage('Jednostka zaokrętowana nie może atakować — zejdź na ląd.', 3800);
         return;
       }
-      const atkRoster = collectBattleRoster(atkUnit, units, 'attacker');
-      const defRoster = collectBattleRoster(defUnit, units, 'defender');
+      const atkRoster = collectBarbarianAwareBattleRoster(atkUnit, defUnit, 'attacker');
+      const defRoster = collectBarbarianAwareBattleRoster(defUnit, atkUnit, 'defender');
       const dHexKey4 = keyOf(defUnit.q, defUnit.r);
       const dHex4 = map.hexes[dHexKey4];
       const dTeren4: string = dHex4 ? (dHex4.terenBazowy as string) : 'Rownina';
@@ -21610,6 +22485,7 @@ async function boot(): Promise<void> {
 
       const atkRosterRef = atkRoster.slice();
       const defRosterRef = defRoster.slice();
+      for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.add(unit.id);
       const atkStartSnap = snapshotRosterPositions(atkRosterRef);
       const battleHex = { q: defUnit.q, r: defUnit.r };
 
@@ -21629,6 +22505,7 @@ async function boot(): Promise<void> {
 
       function finishMapBattleUi(): void {
         clearBattleUiState();
+        for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.delete(unit.id);
       }
 
       function mapBattleSummaryMeta(mode: 'auto' | 'manual') {
@@ -21817,6 +22694,9 @@ async function boot(): Promise<void> {
     ): void {
       const atkBefore = snapshotRosterForSummary(atkRoster);
       const defBefore = snapshotRosterForSummary(defRoster);
+      const playerSide: 'atk' | 'def' =
+        atkRoster[0]?.ownerId === 0 ? 'atk'
+          : defRoster[0]?.ownerId === 0 ? 'def' : 'atk';
       const playerWon =
         (winner === 'atakujacy' && atkRoster[0]?.ownerId === 0)
         || (winner === 'obronca' && defRoster[0]?.ownerId === 0);
@@ -21827,6 +22707,7 @@ async function boot(): Promise<void> {
         defLabel: summary.defLabel,
         atkCivLabel: summary.atkCivLabel,
         defCivLabel: summary.defCivLabel,
+        playerSide,
         teren: summary.teren,
         placeLabel: summary.placeLabel,
         mode: summary.mode,
@@ -22105,6 +22986,7 @@ async function boot(): Promise<void> {
         onResolved();
         return;
       }
+      for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.add(unit.id);
 
       const atkLead = atkRosterRef[0]!;
       const defLead = defRosterRef[0]!;
@@ -22216,6 +23098,7 @@ async function boot(): Promise<void> {
           onResolved();
         } finally {
           battleUiResolving = false;
+          for (const unit of [...atkRosterRef, ...defRosterRef]) activeBattleUnitIds.delete(unit.id);
         }
         // P-BARBARZYNCY-PODWOJNY-ATAK-PREBATTLE-NADPISANY (Maciej 2026-08-14): ta bitwa
         // przychodząca (AI/barbarzyńcy) właśnie się rozstrzygnęła (auto, pole bitwy albo
@@ -22705,6 +23588,15 @@ async function boot(): Promise<void> {
         aiPracaPoolByOwner.set(ownerId, v);
       }
     }
+
+    /**
+     * R-PRACA-JEDEN-PODZIAL-Q1: `applyEmpireBuildingBudget()` USUNIETE razem z
+     * `splitEmpirePracaBudget()`/`allocateEmpirePracaToBuildings()`. Istnialo tylko po to,
+     * zeby wydac budynkowa polowe DRUGIEGO podzialu tej samej Pracy — czyli zabieralo
+     * z puli imperium Prace, ktora miasto juz raz przydzielilo poza kolejke budynkow.
+     * Kolejki budynkow finansuje wylacznie udzial `doBudynkow` z jedynego podzialu.
+     */
+
     function ownerNaukaPool(ownerId: number): number {
       return ownerId === 0 ? player.nauka : (aiNaukaPoolByOwner.get(ownerId) ?? 0);
     }
@@ -22981,7 +23873,10 @@ async function boot(): Promise<void> {
 
       for (const city of csCities) {
         city.ownerId = annexerId;
-        city.startCityState = false;
+        // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1: to samo gaszenie oznaczenia co na
+        // ścieżkach zbrojnych — jedna funkcja, żeby ścieżki nie rozłączyły się przy kolejnej
+        // zmianie (przed tym tematem TYLKO ta ścieżka w ogóle gasiła flagę).
+        clearCityStateFlagOnCapture(city);
         // B2 (Evaluator RUNDA 1: FAIL): dyplomatyczne wchłonięcie musi zresetować
         // override i zsynchronizować pola z globalnym defaultem NOWEGO właściciela.
         seedCityOwnerDefaults(city);
@@ -23087,6 +23982,23 @@ async function boot(): Promise<void> {
       for (const [key, st] of Array.from(bronzeForceWarActiveByPairKey.entries())) {
         if (st.attackerId === ownerId || st.targetId === ownerId) {
           bronzeForceWarActiveByPairKey.delete(key);
+        }
+      }
+      stoneForceWarPendingOwners.delete(ownerId);
+      stoneForceWarCycleOwners.delete(ownerId);
+      stoneForceWarRestUntilByOwner.delete(ownerId);
+      for (const [key, st] of Array.from(stoneForceWarActiveByPairKey.entries())) {
+        if (st.attackerId === ownerId || st.targetId === ownerId) {
+          stoneForceWarActiveByPairKey.delete(key);
+        }
+      }
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam sprzątacz dla rejestrów Żelaza.
+      ironForceWarPendingOwners.delete(ownerId);
+      ironForceWarCycleOwners.delete(ownerId);
+      ironForceWarRestUntilByOwner.delete(ownerId);
+      for (const [key, st] of Array.from(ironForceWarActiveByPairKey.entries())) {
+        if (st.attackerId === ownerId || st.targetId === ownerId) {
+          ironForceWarActiveByPairKey.delete(key);
         }
       }
 
@@ -23318,6 +24230,76 @@ async function boot(): Promise<void> {
       );
     }
 
+    /**
+     * R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: wspólny punkt rozliczenia przejęcia/
+     * utraty miasta dla wojny wymuszonej Kamienia. Wywoływany z obu funnel-i
+     * zmiany city.ownerId, tak jak mechanizm Brązu.
+     */
+    function maybeResolveStoneForcedWarOnCityCapture(oldOwner: number, newOwner: number): void {
+      if (oldOwner === newOwner) return;
+      const pairKey = diploPairKey(oldOwner, newOwner);
+      const st = stoneForceWarActiveByPairKey.get(pairKey);
+      if (!st) return;
+      if (newOwner === st.attackerId) st.capturedByAttacker++;
+      else if (newOwner === st.targetId) st.capturedByDefender++;
+      else return;
+      if (!shouldEndStoneForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
+      if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
+        stoneForceWarActiveByPairKey.delete(pairKey);
+        stoneForceWarRestUntilByOwner.set(
+          st.attackerId,
+          turn + WOJNA_KAMIEN_WYMUSZONA_ODPOCZYNEK_TUR,
+        );
+        return;
+      }
+      console.log(
+        `[Dyplomacja] R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: auto-pokój AI${st.attackerId}`
+        + `↔AI${st.targetId} (zdobyte ${st.capturedByAttacker}/stracone ${st.capturedByDefender})`,
+      );
+      finalizePeaceTreatyBetween(
+        st.attackerId,
+        st.targetId,
+        WOJNA_KAMIEN_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+      );
+    }
+
+    /**
+     * R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wspólny punkt rozliczenia przejęcia/utraty miasta
+     * dla wojny wymuszonej Żelaza. Wywoływany z OBU funnel-i zmiany `city.ownerId` w wyniku
+     * wojny (`applyCityCaptureToMap` I `resolveSiegeSurrender`), tak jak mechanizmy Kamienia
+     * i Brązu — bez haka w kapitulacji głodowej wojna wymuszona AI↔AI nigdy by się nie
+     * kończyła (negocjacje pokojowe obsługują wyłącznie targetId===0).
+     * EN: single shared capture/loss counter for the Iron forced-war pair, called from both
+     * places that mutate city.ownerId because of war.
+     */
+    function maybeResolveIronForcedWarOnCityCapture(oldOwner: number, newOwner: number): void {
+      if (oldOwner === newOwner) return;
+      const pairKey = diploPairKey(oldOwner, newOwner);
+      const st = ironForceWarActiveByPairKey.get(pairKey);
+      if (!st) return;
+      if (newOwner === st.attackerId) st.capturedByAttacker++;
+      else if (newOwner === st.targetId) st.capturedByDefender++;
+      else return;
+      if (!shouldEndIronForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
+      if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
+        ironForceWarActiveByPairKey.delete(pairKey);
+        ironForceWarRestUntilByOwner.set(
+          st.attackerId,
+          turn + WOJNA_ZELAZO_WYMUSZONA_ODPOCZYNEK_TUR,
+        );
+        return;
+      }
+      console.log(
+        `[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: auto-pokój AI${st.attackerId}`
+        + `↔AI${st.targetId} (zdobyte ${st.capturedByAttacker}/stracone ${st.capturedByDefender})`,
+      );
+      finalizePeaceTreatyBetween(
+        st.attackerId,
+        st.targetId,
+        WOJNA_ZELAZO_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+      );
+    }
+
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
     /** `eliminatedCivLabel`/`eliminatedDetails` — patrz komentarz `runCapitalCapturePlunder`:
      * niepuste WYŁĄCZNIE gdy to przejęcie eliminuje ostatnie miasto danej cywilizacji I
@@ -23350,10 +24332,20 @@ async function boot(): Promise<void> {
           onOwnerChanged: (c: City): void => {
             seedCityOwnerDefaults(c);
             applyLiveSafeRationForCity(c.id);
+            // R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (ECHO = wariant A): jedyny hak
+            // wołany przez applyCityCaptureAfterBattle PO ustawieniu nowego właściciela,
+            // wspólny dla WSZYSTKICH trzech wejść zbrojnych (bitwa polowa o miasto, szturm
+            // oblężniczy, wejście do pustego miasta — każde kończy się na
+            // applyCityCaptureToMap). Bez tego zdobyte miasto miasta-państwa wnosi
+            // `startCityState` do zdobywcy i cała cywilizacja jest dalej traktowana jak
+            // miasto-państwo (lista potęg, portret władcy, wojna wymuszona Kamienia).
+            if (clearCityStateFlagOnCapture(c)) markCityStateDirty();
           },
         },
       );
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
+      maybeResolveStoneForcedWarOnCityCapture(oldOwner, atkOwner);
+      maybeResolveIronForcedWarOnCityCapture(oldOwner, atkOwner);
       // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
       // tickBarbarianCityGarrisons niżej w ticku barbarzyńców): capture NIE czyścił
       // odziedziczonej kolejki budowy ofiary -- budynek W TOKU (front kolejki, np.
@@ -23382,6 +24374,20 @@ async function boot(): Promise<void> {
       // closes ONLY the case of an INHERITED, already-started building of the victim.
       if (isBarbarian(atkOwner)) {
         cityProd.set(city.id, { kolejka: [], postep: 0 });
+      } else {
+        // P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI / P-REKRUTACJA-JEDNOSTEK-TYLKO-
+        // SKARBIEC-Q1=B: zdobyte miasto nie może odziedzczyć legacy jednostek w
+        // kolejce Pracy (stary save lub bundle sprzed migracji). Postęp zwracamy
+        // poprzedniemu właścicielowi; opłacona rekrutacja[] zostaje (zakup ze
+        // Skarbca, nie Praca).
+        const prodCapture = cityProd.get(city.id);
+        if (prodCapture) {
+          const migrated = sanitizeBuildQueue(prodCapture);
+          if (migrated.refundedPraca > 0) {
+            setOwnerPracaPool(oldOwner, ownerPracaPool(oldOwner) + migrated.refundedPraca);
+          }
+          cityProd.set(city.id, sanitizeProductionQueue(atkOwner, migrated.prod));
+        }
       }
       // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1 -- kontekst): barbarzyńcy nie
       // mają realnej kultury/religii -- civKeyForOwnerId(BARBARIAN_OWNER_ID) fałszuje ją
@@ -24041,6 +25047,20 @@ async function boot(): Promise<void> {
         bronzeForceWarRestUntilByOwner,
         bronzeForceWarActiveByPairKey,
       );
+      const stoneForceWarSave = serializeStoneForcedWarState(
+        stoneForceWarPendingOwners,
+        stoneForceWarCycleOwners,
+        stoneForceWarRestUntilByOwner,
+        stoneForceWarActiveByPairKey,
+      );
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: bez tych 4 pól licznik miast, cykl i odpoczynek
+      // Żelaza zerowałyby się po każdym save/load (patrz restoreGameFromSave niżej).
+      const ironForceWarSave = serializeIronForcedWarState(
+        ironForceWarPendingOwners,
+        ironForceWarCycleOwners,
+        ironForceWarRestUntilByOwner,
+        ironForceWarActiveByPairKey,
+      );
       return {
         wersja: 2,
         tura: turn,
@@ -24085,6 +25105,8 @@ async function boot(): Promise<void> {
           // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): serializacja
           // globalnych domyślnych dla trzy nowe pola, wzorem ownerDefaultPodzialHandlu wyżej.
           ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries()),
+          // P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1: nadrzędny split całej puli
+          // jest osobny od per-city podziału Pracy i od pracaAutoPercent.
           ownerDefaultOkolicaFocus: Array.from(ownerDefaultOkolicaFocus.entries()),
           ownerDefaultBudowaProfil: Array.from(ownerDefaultBudowaProfil.entries()),
           // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): serializacja
@@ -24140,9 +25162,19 @@ async function boot(): Promise<void> {
           // Audyt #44: aiSkarbiecByOwner nie bylo w snapshotcie -- czyszczone przy
           // load bez odtworzenia, wiec skarbiec AI zerowal sie po kazdym wczytaniu.
           aiSkarbiecByOwner: Array.from(aiSkarbiecByOwner.entries()),
+          aiTargetMemoryByOwner: snapshotAiTargetMemory(aiTargetMemoryByOwner),
           aiPracaPoolByOwner: Array.from(aiPracaPoolByOwner.entries()),
           aiNaukaPoolByOwner: Array.from(aiNaukaPoolByOwner.entries()),
           aiBadanaByOwner: Array.from(aiBadanaByOwner.entries()),
+          // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): znacznik AI CYWILIZACJI,
+          // ktorym ZASADA 3 przekierowala Prace na budynki. Stan, ktory blok ZAPISUJE
+          // (`ownerDefaultPodzialPracy` + `city.podzialPracy`), byl trwaly, a znacznik
+          // sterujacy POWROTEM — nie. Zapis w turze z nadwyzka gubil go, wiec galaz
+          // `else if (redirected)` nie wykonywala sie juz nigdy i AI zostawalo na
+          // `procentBudynki = MAX` (procentPuliImperiumZBudynkow(100) = 0 -> zero Pracy
+          // do puli imperium -> zero ulepszen terenu) NA STALE. Format jak
+          // `eliminatedOwners`/`typCityCopyOwners` nizej: plaska tablica ownerId.
+          aiSurplusRedirectedOwners: Array.from(aiSurplusRedirectedOwners),
           zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
           // B5 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): 4 struktury stanu
           // wojny wymuszonej Brązu — bez tego wpisu/odtworzenia licznik miast, cykl i
@@ -24151,6 +25183,14 @@ async function boot(): Promise<void> {
           bronzeForceWarCycleOwners: bronzeForceWarSave.cycleOwners,
           bronzeForceWarRestUntilByOwner: bronzeForceWarSave.restUntilByOwner,
           bronzeForceWarActiveByPairKey: bronzeForceWarSave.activeByPairKey,
+          stoneForceWarPendingOwners: stoneForceWarSave.pendingOwners,
+          stoneForceWarCycleOwners: stoneForceWarSave.cycleOwners,
+          stoneForceWarRestUntilByOwner: stoneForceWarSave.restUntilByOwner,
+          stoneForceWarActiveByPairKey: stoneForceWarSave.activeByPairKey,
+          ironForceWarPendingOwners: ironForceWarSave.pendingOwners,
+          ironForceWarCycleOwners: ironForceWarSave.cycleOwners,
+          ironForceWarRestUntilByOwner: ironForceWarSave.restUntilByOwner,
+          ironForceWarActiveByPairKey: ironForceWarSave.activeByPairKey,
           lootedVillageHexKeys: Array.from(lootedVillageHexKeys),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
@@ -24178,6 +25218,10 @@ async function boot(): Promise<void> {
           // Audyt #42: barbCamps nie bylo w snapshotcie -- obozy z zapisu
           // przepadaly (lub zostawaly z poprzedniej gry na innej mapie).
           barbCamps: barbCamps.slice(),
+          // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: sam brak obozu nie
+          // wystarcza, bo przyszły spawn mógłby losowo odtworzyć go na tym
+          // samym heksie. Zapisujemy trwałą blacklistę per rozgrywka.
+          clearedBarbCampHexes: Array.from(clearedBarbCampHexes),
           // Audyt #43: cityRelig/autoManageCities nie byly ani zapisywane, ani
           // czyszczone -- kolizja id 'cityN' po restarcie skutkowala zombie
           // stanem religii/auto-zarzadzania z poprzedniej gry.
@@ -24794,6 +25838,20 @@ async function boot(): Promise<void> {
         await yieldTurnTransitionUi();
         turn++;
 
+        // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 — TRWAJĄCA PARTIA (stan b) oraz
+        // NOWA PARTIA (stan c). Granica tury jest wybrana świadomie, z trzech powodów:
+        //  1. To JEDYNY punkt, przez który przechodzi KAŻDA partia niezależnie od tego,
+        //     jak powstała (nowa gra, wczytany zapis, partia trwająca od przed tą zmianą)
+        //     — bez wymogu przeładowania strony i bez zgadywania, gdzie „zaczyna się" gra.
+        //  2. Stoi PRZED rotacyjnym autozapisem kilka linii niżej, więc pierwszy zapis po
+        //     wejściu zmiany w życie utrwala już posprzątany stan.
+        //  3. Trafia dokładnie w kryterium skutku: „miasto traci żywność z tej farmy od
+        //     KOLEJNEJ tury" — ekonomia nowej tury liczy się niżej w tej samej sekwencji
+        //     EOT, już z czystego heksa.
+        // Idempotentne, więc w ustabilizowanej partii to przebieg bez żadnej zmiany
+        // (pętla po heksach z natychmiastowym odrzuceniem wszystkiego, co nie jest lasem).
+        sweepLegacyFarmsOnForest('granica tury');
+
         // Chatki: nagroda już przyznana — wpis w WYDARZENIACH tylko do końca tury bieżącej.
         villageEventLog.length = 0;
         // TEMAT #5: log tras handlowych — ta sama zasada (widoczny do końca tury bieżącej).
@@ -24941,7 +25999,7 @@ async function boot(): Promise<void> {
             player.era, player.zbadane, ownerCivMap, orderMultMap,
             empireEpochForOwner, unlockedTechSetForOwner,
             player.wzrostLudnosciPace ?? 'wysoki',
-            tradeRouteCountByCity, tradeIncomeByCity,
+            tradeRouteBuildingBonusByCity, tradeIncomeByCity,
             cityRelig,
             // CUDA-EKON-01: dotyczy gracza I AI (ownerId-agnostic) — patrz raport C-CUDA-BONUS=A.
             buildWonderCityYieldsByOwnerMap(cities.map(c => c.ownerId)),
@@ -24952,18 +26010,14 @@ async function boot(): Promise<void> {
             makeOwnerEmpireStockResolver(),
             ownerDefaultPodzialHandlu,
             {
-              units: units.map(u => ({
-                id: u.id,
-                ownerId: u.ownerId,
-                typeId: u.typeId,
-                category: u.category,
-                hp: u.hp,
-                hpMax: unitHealth(data.units.find(ud => ud.Jednostka === u.typeId) ?? {}),
-                q: u.q,
-                r: u.r,
-                inGarnizon: u.inGarnizon,
-              })),
+              // HP replenishment MUST receive the live RuntimeUnit objects.
+              // A mapped copy is mutated by tickManpowerUnitReplenishment(),
+              // but buildSaveGameSnapshot() serializes `units`, so the heal
+              // would disappear before the next save.
+              units,
               getMaxHp: (typeId: string) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
+              onUnitHpChanged: (unitId: string, hp: number, hpMax: number) =>
+                syncLiveUnitHp(units, unitId, hp, hpMax),
             },
             ownerDefaultPodzialPracy,
           );
@@ -25480,14 +26534,63 @@ async function boot(): Promise<void> {
               let msg = doneIconHtml + 'Zbadano: ' + done.id + ' (-' + done.koszt + ' nauki)';
               if (done.pieniadz)   msg += ' \xb7 Pieni\u0105dz \xd710';
               console.log('[Nauka] Tura ' + turn + ': ' + msg);
-              if (!eraAdvanced) showHintMessage(msg, 3500);
+              if (!eraAdvanced) {
+                // P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (A). DIAGNOZA: do tej pory ten komunikat
+                // szedł WYŁĄCZNIE przez `showHintMessage()`, a ta — w fazie `endTurnInProgress`
+                // (czyli ZAWSZE tutaj, bo cały blok auto-research żyje wewnątrz `triggerPlayerEndTurn`)
+                // — nie pokazuje toastu, tylko wrzuca goły string do generycznej kolejki
+                // `deferredEotHints` (`showHintMessage`, main.ts ~:12118 → `DeferredEotHint {msg,
+                // durationMs}`). Ta kolejka Z DEFINICJI gubi kontekst: `deferredHintsToSidePanelEvents`
+                // (game/eot-event-defer.ts) produkuje kartę `eot-hint-<tura>-<i>`, czyli id BEZ
+                // ŻADNEGO identyfikatora technologii — dlatego kliknięcie „Zbadano: Rolnictwo"
+                // nie miało jak dokądkolwiek prowadzić (audyt P-WYDARZENIA-AUDYT-PRZEKIEROWANIA-Q1
+                // świadomie zostawił `eot-hint-*` poza tablicą skrótów: „jeden wpis nie niesie
+                // ŻADNEGO id bytu"). Naprawa nie polega na podpięciu handlera do `eot-hint-*` (po id
+                // hintu technologii NIE DA SIĘ odzyskać), tylko na nadaniu temu zdarzeniu WŁASNEJ
+                // TOŻSAMOŚCI: dedykowana karta `tech-done-<tura>-<slug technologii>` w `warEventLog`,
+                // dokładnie tym samym wzorcem, co sąsiedni wpis `era-<tura>-<epoka>`
+                // (`notifyPlayerEraChangeIfAdvanced`, ~:12171). Slug jest jedynym nośnikiem — brak
+                // mapy pomocniczej, więc karta pozostaje klikalna także po odświeżeniu panelu
+                // i po zmianie tury, dopóki widnieje w `warEventLog` (wymóg 4 dyspozycji).
+                // Generyczny hint NIE jest już emitowany w tej ścieżce — inaczej gracz dostałby
+                // DWIE karty „Zbadano" na jedną technologię (regres w stylu
+                // P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1). Poza fazą EOT (dziś nieosiągalne z tego
+                // miejsca, ale kontrakt `showHintMessage` tego nie gwarantuje) toast zostaje.
+                // EN: this message used to reach the side panel only as a generic `eot-hint-*`
+                // card whose id carries no entity identity, so the click had nowhere to go. It now
+                // gets its own `tech-done-<turn>-<techSlug>` card (same pattern as the neighbouring
+                // `era-*` entry), which is what `onEventClick` resolves back into a tech card.
+                const techEvId = 'tech-done-' + turn + '-' + techToSlug(done.id);
+                if (!warEventLog.some(e => e.id === techEvId)) {
+                  warEventLog.unshift({
+                    id: techEvId,
+                    icon: '\u{1F52C}',
+                    title: 'Zbadano: ' + done.id,
+                    subtitle: '\u2212' + done.koszt + ' nauki'
+                      + (done.pieniadz ? ' \xb7 Pieni\u0105dz \xd710' : ''),
+                    kind: 'science',
+                  });
+                  if (warEventLog.length > 8) warEventLog.length = 8;
+                }
+                if (!shouldDeferEotEvents(endTurnInProgress)) showHintMessage(msg, 3500);
+              }
             }
             if (step.completed.length > 0) {
               if (eraAdvanced) {
                 overlayDepositEra = player.era;
                 rebuildResourceOverlays();
                 setEra(player.era); // DYSPOZYCJA-MUZYKA §2 pkt 3 — awans epoki gracza
+                queueEraDiscoveryTech(step.completed.map(done => done.id));
                 notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+              } else {
+                // Auto-research ukończył technologię bez przejścia epoki: karta jest
+                // komunikatem głównym, a dotychczasowy toast pozostaje krótkim śladem.
+                showTechDiscoveryNotice({
+                  techName: step.completed[step.completed.length - 1]!.id,
+                  eraIndex: player.era,
+                  kind: 'completion',
+                  onOpenTree: () => showTechTreeView(0),
+                });
               }
               console.log(
                 '[Nauka] Skarbiec=' + player.skarbiec +
@@ -25843,7 +26946,9 @@ async function boot(): Promise<void> {
                   difficulty,
                   era: ownerEraForUpkeep,
                   population: city.population,
-                  buildingZadowolenie: haBuildings + (econTick?.garncarniaSurplusZadowolenie ?? 0),
+                  buildingZadowolenie: haBuildings,
+                  ceramikaZadowolenie: econTick?.garncarniaSurplusZadowolenie ?? 0,
+                  spichlerzZadowolenie: (econTick?.maSpichlerz || econTick?.maSpichlerzII) ? 1 : 0,
                   haKult,
                   haRel,
                   haWealth,
@@ -25977,6 +27082,11 @@ async function boot(): Promise<void> {
               // AI-MANAGE-Q1=A: major AI zawsze auto-zarzadza; gracz przez UI; MP/defensiveCopy NIE.
               const praca = pracaRaw;
               let prod0 = cityProd.get(cid) ?? { kolejka: [], postep: 0 };
+              // R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1: `advanceProduction` NIZEJ (ten sam tick) jest
+              // JEDYNYM odbiorca Pracy bez bramki `kind` -- czysci legacy jednostke ZANIM
+              // cokolwiek naleje. Cala logika i uzasadnienie: docstring helpera.
+              const prod0BezLegacy = stripLegacyUnitsFromPracaQueue(city.ownerId, prod0, city.name);
+              if (prod0BezLegacy !== prod0) { prod0 = prod0BezLegacy; cityProd.set(cid, prod0); }
               if (autoManageCities.has(cid) || isMajorAiOwner(city.ownerId, isCityStateOwner)) {
                 try {
                   const unlockedTechs = city.ownerId === 0
@@ -26262,6 +27372,11 @@ async function boot(): Promise<void> {
               if (usedPlayer > 0) {
                 playerPracaPool -= usedPlayer;
                 _lastPraca = playerPracaPool;
+                // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): bez tej linii
+                // "+N" w PULA IMPERIUM pokazywał brutto przyrost sprzed tego zużycia
+                // (Cuda na mapie), więc stan wizualnie "nie akumulował się" mimo
+                // dodatniego wskaźnika -- patrz analogiczna naprawa upkeep Pracy wyżej.
+                _lastPracaRate -= usedPlayer;
               }
               for (const oid of new Set(wonderBuildSites.map(s => s.ownerId).filter(id => id > 0))) {
                 const pool = aiPracaPoolByOwner.get(oid) ?? 0;
@@ -26272,6 +27387,49 @@ async function boot(): Promise<void> {
               }
             } catch (errWonderMap) {
               console.error('[Cuda] Błąd postępu budowy na mapie:', errWonderMap);
+            }
+            // R-PRACA-JEDEN-PODZIAL-Q1 — USUNIETY DRUGI PODZIAL.
+            //
+            // Bylo tu: `splitEmpirePracaBudget(playerPracaPool, procentUlepszenia)` +
+            // `applyEmpireBuildingBudget(...)`, czyli DRUGIE dzielenie tej samej Pracy —
+            // najpierw miasto dzielilo swoja Prace (budynki vs pula), a potem pula byla
+            // dzielona jeszcze raz (ulepszenia vs „budzet budynkow imperium"), przy czym
+            // drugi podzial szedl po CALYM, SKUMULOWANYM saldzie puli, nie po tegorocznym
+            // przyroscie. Zmierzony skutek przy domyslnych 70/33: do ulepszen trafialo 0
+            // Pracy; przy maksymalnych suwakach 20%, nie 50%.
+            //
+            // Po przebudowie kolejki budynkow sa finansowane wylacznie swoim udzialem
+            // `doBudynkow` w miescie — pula nie zabiera juz Pracy z powrotem do budynkow,
+            // wiec pozostali konsumenci puli (cuda na mapie, zakladanie miast, wycinka,
+            // utrzymanie ulepszen) maja STRICTLY WIECEJ Pracy niz przed zmiana, nie mniej.
+            //
+            // RUNDA 2, F1 — DWIE ROZNE WARSTWY, NIE JEDNA:
+            //   warstwa 1 (TEN temat): podzial Pracy MIASTA na budynki vs pula imperium
+            //     (`splitPraca`, cap 50%) — stosowany dokladnie RAZ, przy naliczaniu tury;
+            //   warstwa 3 (ODREBNE pole `pracaAutoPercent`, 0-100%, poza zakresem tematu):
+            //     ile ze SKUMULOWANEJ puli wolno wydac automatowi ulepszen w jednej turze.
+            // Runda 1 podstawila pod warstwe 3 TEGOROCZNY wplyw do puli (mapa tworzona od
+            // nowa co ture, bez przeniesienia reszty). Poniewaz picker kupuje ulepszenie
+            // tylko wtedy, gdy CALY jego koszt miesci sie w capie, a najtansze ulepszenie
+            // po `scaleImprovementWorkCost` kosztuje 30-60 Pracy, powstal prog ~40 Pracy
+            // PRZYROSTU w JEDNEJ turze: ponizej niego auto-ulepszenia budowaly ZERO,
+            // niezaleznie od tego, jak wielka byla pula (zmierzone: wplyw 12/ture przy puli
+            // 1 000 000 -> 0 ulepszen). To wprost lamie udokumentowana decyzje wlasciciela
+            // R-AUTO-PRACA-BUDZET-PROCENT-Q1=B: budzet automatu liczy sie od SKUMULOWANEJ
+            // puli, NIE od przyrostu (komentarze w `auto-improvements.ts` caly czas ja
+            // opisuja). Dlatego silnik NIE podaje juz absolutnego `improvementBudgetCap` —
+            // picker liczy pulap sam, natywnie: `pracaAutoPercent% x pula na wejsciu`.
+            // Niewykorzystana reszta ZOSTAJE w puli i narasta, wiec prog znika.
+            const playerUlepszeniaPolicy = ulepszeniaEmpireForOwner(0);
+            aiImprovementBudgetByOwner.clear();
+            for (const ownerId of new Set(cities.map(city => city.ownerId).filter(id => id > 0))) {
+              // Parytet gracz/AI: AI nie przechodzi przez picker bezposrednio (robi to
+              // `planCityImprovements` w ai.ts, ktore dostaje absolutna koperte), wiec ten
+              // sam pulap liczymy tu jawnie — `pracaAutoPercent% x SKUMULOWANA pula AI`,
+              // dokladnie ta sama formula, ktora picker stosuje graczowi wewnetrznie.
+              const aiPct = Math.max(0, Math.min(100, ulepszeniaEmpireForOwner(ownerId).pracaAutoPercent));
+              const aiPool = aiPracaPoolByOwner.get(ownerId) ?? 0;
+              aiImprovementBudgetByOwner.set(ownerId, Math.floor(aiPool * aiPct / 100));
             }
             // R-AUTO-ULEPSZENIA-Q1=C: auto-ulepszenia terenu gracza — po ekonomii, przed AI.
             // Q4=A: commit od razu na EOT (bez pendingImprovementsTurn / cofnięcia).
@@ -26288,7 +27446,11 @@ async function boot(): Promise<void> {
                 const lostToSiblingByCityAuto = computeLostToNearerSiblingByCity(cities, map);
                 const playerCivArch = civTypeForOwner(0);
                 const workingPlaced = new Map(placedImprovements);
-                const empirePol = ulepszeniaEmpireForOwner(0);
+                // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): raport nadwyżki dla
+                // AI GRACZA. Automat gracza SYGNALIZUJE nadwyżkę i NIC nie przesuwa —
+                // `pracaAutoPercent` zmienia wyłącznie gracz (regula stala właściciela:
+                // automat gracza doradza, nie decyduje za niego).
+                const playerSurplusReport = freshSurplusReport();
                 const picks = pickAutoImprovements({
                   cities: autoImpCities,
                   ownerId: 0,
@@ -26298,20 +27460,29 @@ async function boot(): Promise<void> {
                   pracaAvailable: playerPracaPool,
                   unlockedTechs: unlockedTechSetForOwner(0),
                   pracaSurplusThreshold: AUTO_ULEPSZENIA_PRACA_RESERVE,
+                  // R4-Q2=C: `skipWyrab` przestaje być stałą `true` — decyduje przełącznik
+                  // „wolno wycinać las" (państwo albo override miasta), domyślnie WYŁĄCZONY,
+                  // więc bez zmiany ustawień zachowanie jest identyczne jak przed rundą 4.
                   skipWyrab: true,
+                  getSkipWyrab: c => !effectiveUlepszeniaForCity(c as City).wolnoWycinacLas,
+                  // ZASADA 1: automat gracza na profilu „zrównoważone" buduje domyślnie
+                  // samą żywność; niedobór surowca otwiera resztę listy (picker sam pilnuje,
+                  // że trzech pozostałych profili to NIE dotyczy).
+                  demandDriven: true,
+                  resourceDeficitKeys: resourceDeficitKeysForOwner(0),
+                  surplusReport: playerSurplusReport,
                   civArchetype: playerCivArch,
                   isImprovementAllowedForCiv: (key, civ) => isImprovementAllowedForCiv(key, civ),
                   getFocus: c => effectiveUlepszeniaForCity(c as City).focus,
                   getOnlyWorked: c => effectiveUlepszeniaForCity(c as City).onlyWorked,
-                  // R-AUTO-PRACA-BUDZET-PROCENT-Q3=B (2026-08-14): `pracaBudgetPercent`
-                  // MUSI być polityką IMPERIUM (empirePol), nie per-miasto — to jest źródło
-                  // nadrzędnego pułapu (`imperiumBudgetCap` w pickAutoImprovements), który
-                  // per-miasto override (`getPracaBudgetPercent` niżej) nie może przebić.
-                  // / EN: `pracaBudgetPercent` MUST be the EMPIRE policy (empirePol), not
-                  // per-city — it's the source of the overarching cap (`imperiumBudgetCap` in
-                  // pickAutoImprovements) that the per-city override (`getPracaBudgetPercent`
-                  // below) cannot exceed.
-                  pracaBudgetPercent: empirePol.pracaAutoPercent,
+                  // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2, F1): silnik NIE podaje juz
+                  // `improvementBudgetCap`. Picker liczy pulap sam — `pracaBudgetPercent`
+                  // (polityka imperium) x SKUMULOWANA pula na wejsciu (`pracaAvailable`
+                  // wyzej), zgodnie z decyzja wlasciciela R-AUTO-PRACA-BUDZET-PROCENT-Q1=B
+                  // i Q3=B (nadrzedny `imperiumBudgetCap`, ktorego override miasta nie
+                  // przebija w gore). Podanie tu 100% + absolutnego capu z przyrostu tury
+                  // bylo zrodlem progu opisanego przy `playerUlepszeniaPolicy` wyzej.
+                  pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent,
                   getPracaBudgetPercent: c => effectiveUlepszeniaForCity(c as City).pracaAutoPercent,
                   getWorkedHexKeys: city => {
                     const coords = workedHexCoordsForCity(
@@ -26333,8 +27504,34 @@ async function boot(): Promise<void> {
                   if (!isTerritoryHexOwnedBy(pick.q, pick.r, 0, territoryNodesAuto)) continue;
                   const prevLayers = workingPlaced.get(hexKey) ?? placedImprovements.get(hexKey) ?? [];
                   if (prevLayers.includes(pick.key)) continue;
+                  // R4-Q2=C: `wyrab` to typ `wycinka`, NIE stała warstwa `placedImprovements`
+                  // (patrz applyBuildRequest, sekcja `req.action === 'wycinka'`, i komentarz
+                  // TEMAT #8 przy ścieżce AI CYWILIZACJI). Automat gracza wchodzi tu w
+                  // DOKŁADNIE tę samą, wieloturową ścieżkę wycinki, którą uruchamia ręczny
+                  // klik gracza (`hexClearingStates` + `tickHexClearing`) — bez
+                  // `pendingImprovementsTurn`, bo auto-ulepszenia commitują od razu
+                  // (R-AUTO-ULEPSZENIA-Q4=A). Ścieżka DECYZJI jest ta sama co dla AI
+                  // CYWILIZACJI (`skipWyrab: false` w tym samym pickerze); ścieżka EGZEKUCJI
+                  // jest ścieżką GRACZA, bo gracz ma wieloturową wycinkę, a AI jej nie ma.
+                  if (getImprovementMeta(pick.key)?.typ === 'wycinka') {
+                    if (hexForImprovement.nakladka !== Nakladka.Las) continue;
+                    if (hexClearingStates.has(hexKey)) continue;
+                    playerPracaPool -= pick.kosztPraca;
+                    _lastPraca = playerPracaPool;
+                    _lastPracaRate -= pick.kosztPraca;
+                    const clrAuto = freshClearingState(pick.key, 0);
+                    if (clrAuto) hexClearingStates.set(hexKey, clrAuto);
+                    spawnClearingMesh(hexKey);
+                    const metaWyrab = getImprovementMeta(pick.key);
+                    toastLines.push(`${metaWyrab?.nazwa ?? pick.key} @ (${pick.q},${pick.r})`);
+                    continue;
+                  }
                   playerPracaPool -= pick.kosztPraca;
                   _lastPraca = playerPracaPool;
+                  // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek D): jak wyżej --
+                  // auto-ulepszenia zużywają pulę TEJ SAMEJ tury bez odjęcia od
+                  // wyświetlanej stawki.
+                  _lastPracaRate -= pick.kosztPraca;
                   const nextLayers: PlacedLayers = [...prevLayers, pick.key];
                   placedImprovements.set(hexKey, nextLayers);
                   workingPlaced.set(hexKey, nextLayers);
@@ -26350,10 +27547,30 @@ async function boot(): Promise<void> {
                 } else if (toastLines.length > 1) {
                   showHintMessage(`Auto ulepszenia: ${toastLines.length}× (−Praca)`, 3200);
                 }
+                // ZASADA 3 dla AI GRACZA: WYŁĄCZNIE sygnał. Automat gracza NIE dotyka
+                // `pracaAutoPercent` ani żadnego innego suwaka — decyzja o przesunięciu
+                // środków na budynki należy do gracza (ECHO właściciela: „gracz sam zauważy,
+                // że ma za dużo zapasów na ulepszenia, może odpowiednio przesunąć suwak na
+                // rzecz budynków"). Sygnał pokazuje się tylko wtedy, gdy automat NIC nie
+                // postawił — inaczej zjadałby toast z listą ulepszeń.
+                if (playerSurplusReport.surplus && toastLines.length === 0) {
+                  showHintMessage(
+                    'Automat ulepszeń: nadwyżka budżetu Pracy — brak niedoboru surowców i brak pól '
+                    + 'z obywatelami do ulepszenia. Rozważ przesunięcie suwaka na rzecz budynków.',
+                    4200,
+                  );
+                }
               }
             } catch (errAutoImp) {
               console.error('[Ulepszenia] Błąd auto-ulepszeń gracza:', errAutoImp);
             }
+            // P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1: `_lastPracaRate` jest tu
+            // JUŻ policzone poprawnie (wszystkie 4 drenaże powyżej -- upkeep/cuda mapy/
+            // budżet budynków/auto-ulepszenia). Flaga chroni tę wartość przed nadpisaniem
+            // przez `refreshLiveEmpireRatesUnsafe()`, którą zaraz odpali
+            // `markCityStateDirty()` + `updateHud()` na końcu tej funkcji (patrz komentarz
+            // przy deklaracji flagi i przy jej konsumpcji w refreshLiveEmpireRatesUnsafe).
+            _pracaRateFreshFromEndTurn = true;
             _lastKultura = cities
               .filter(c => c.ownerId === 0)
               .reduce((s, c) => s + ((c as { kultura?: number }).kultura ?? 0), 0);
@@ -26477,7 +27694,6 @@ async function boot(): Promise<void> {
               // tury -- NIE przy wznowieniu (isCommandResume) tej samej listy komend po
               // przerwie async (np. animacja bitwy), żeby nie odblokować drugiego zakupu
               // w tej samej turze.
-              if (!isCommandResume) aiUnitGoldRushBoughtByOwner.set(ownerId, 0);
               // R-AI-SUWAKI (Maciej 2026-07-26, C-AI-SUWAKI=A): raz na turę tego ownera
               // (NIE przy wznowieniu po przerwie async -- isCommandResume -- inaczej dwie
               // korekty tej samej tury by się zliczyły), czysta decyzja decideAIEconomySliders
@@ -26558,19 +27774,20 @@ async function boot(): Promise<void> {
                   // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: AI zmienia suwak Pracy
                   // dla CAŁEGO imperium (paritet z Daniną powyżej) — global default,
                   // nie tylko per-city broadcast.
-                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: sliderDecision.procentBudynki });
+                  const aiProcentBudynki = clampPodzialPracyBudynkiPercent(sliderDecision.procentBudynki);
+                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: aiProcentBudynki });
                   for (const c of cities) {
                     if (c.ownerId !== ownerId) continue;
                     c.poziomRacji = migrateProcentRozwojToPoziomRacji(sliderDecision.procentRozwoj);
                     c.procentRozwoj = sliderDecision.procentRozwoj;
-                    c.podzialPracy = { procentBudynki: sliderDecision.procentBudynki };
+                    c.podzialPracy = { procentBudynki: aiProcentBudynki };
                     c.podzialPracyOverride = false;
                     c.podzialHandluOverride = false;
                     delete c.podzialHandlu;
                   }
                   aiSliderStateByOwner.set(ownerId, {
                     procentRozwoj:  sliderDecision.procentRozwoj,
-                    procentBudynki: sliderDecision.procentBudynki,
+                    procentBudynki: aiProcentBudynki,
                     procentNauka:   sliderDecision.procentNauka,
                     lastChangeTurn: turn,
                   });
@@ -26583,6 +27800,17 @@ async function boot(): Promise<void> {
             // z głównej trudności (patrz aiDiffLevelForOwner). Zasila opts.poziomTrudnosci
             // (DifficultyParams: bonusProdukcja/bonusWalka/agresjaMnoznik/celObranie) niżej.
             const aiDiffLevel = aiDiffLevelForOwner(ownerId);
+            const aiVisibleHexes = fogOn ? currentVisibleForOwner(ownerId) : undefined;
+            if (aiVisibleHexes !== undefined) {
+              rememberVisibleAiTargets(
+                aiTargetMemoryByOwner,
+                ownerId,
+                aiVisibleHexes,
+                units,
+                cities,
+                keyOf,
+              );
+            }
             const contactedOwners = getDiplomaticContacts();
             const aiCivIdForOpts = aiOwnerCivMap.get(ownerId) ?? 'grecy';
             const aiTypForOpts = (aiCivIdForOpts as TypCywilizacji);
@@ -26594,6 +27822,9 @@ async function boot(): Promise<void> {
               { cityStateOpts: ownerCityStateOpts() },
             );
             const opts: AITurnOpts = {
+              // P-AI-BRAK-POJECIA-MGLY-Q1: AI widzi wyłącznie własny snapshot.
+              visibleHexes: aiVisibleHexes,
+              rememberedTargets: rememberedAiTargets(aiTargetMemoryByOwner, ownerId),
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
               poziomTrudnosci: aiDiffLevel,
               menuDifficulty: _menuDifficulty,
@@ -26634,7 +27865,23 @@ async function boot(): Promise<void> {
               placedImprovements,
               improvementTechs: aiResearchDone.get(ownerId) ?? new Set<string>(),
               pracaAvailable: aiPracaPoolByOwner.get(ownerId) ?? 0,
+              // R-PRACA-JEDEN-PODZIAL-Q1 (runda 2, F1): koperta automatu ulepszen AI =
+              // `pracaAutoPercent% x SKUMULOWANA pula AI` (policzona przy
+              // `aiImprovementBudgetByOwner` w bloku ekonomii wyzej) — ta sama formula,
+              // ktora picker stosuje graczowi natywnie. NIE jest to tegoroczny przyrost
+              // puli ani drugi podzial tej samej Pracy.
+              improvementBudgetCap: aiImprovementBudgetByOwner.get(ownerId),
               resourceDeficitKeys: resourceDeficitKeysForOwner(ownerId),
+              // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3): picker wypełni ten
+              // obiekt W MIEJSCU; odczyt zaraz po `decideAITurn` (patrz
+              // `applyAiImprovementSurplusRedirect` niżej).
+              improvementSurplusReport: (() => {
+                // ŚWIEŻY obiekt na KAŻDĄ turę — raport z poprzedniej tury nie może
+                // „przykleić" `anyCandidate: true` do tury, w której kandydatów już nie ma.
+                const rep = freshSurplusReport();
+                aiSurplusReportByOwner.set(ownerId, rep);
+                return rep;
+              })(),
               civEra: empireEpochForOwner(ownerId),
               vassalizedCityStateOwnerIds: vassalizedCsOwnerIds,
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
@@ -27150,6 +28397,8 @@ async function boot(): Promise<void> {
                 // already be at war (or has every candidate blocked) is retried next turn
                 // instead of permanently losing its one shot.
                 let bronzeForceWarTargetId: number | undefined;
+                let stoneForceWarTargetId: number | undefined;
+                let ironForceWarTargetId: number | undefined;
                 if (
                   ownerId > 0
                   && !typCityCopyOwners.has(ownerId)
@@ -27206,6 +28455,157 @@ async function boot(): Promise<void> {
                     if (bronzePicked != null) bronzeForceWarTargetId = bronzePicked;
                   }
                 }
+                // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA (Q1=A): po 20 turach od startu
+                // gry główna cywilizacja AI pozostająca w Kamieniu dostaje
+                // jednorazowy wpis pending. Wpis nie jest konsumowany przy samej
+                // próbie — dzięki temu wojna czeka, jeśli owner jest chwilowo w
+                // innej wojnie albo wszystkie cele są zablokowane.
+                if (
+                  turn >= WOJNA_KAMIEN_WYMUSZONA_START_TURY
+                  && ownerId > 0
+                  && !typCityCopyOwners.has(ownerId)
+                  && !isBarbarian(ownerId)
+                  && !eliminatedOwners.has(ownerId)
+                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+                  && empireEpochForOwner(ownerId) === 1
+                  && !stoneForceWarPendingOwners.has(ownerId)
+                  && !stoneForceWarCycleOwners.has(ownerId)
+                ) {
+                  stoneForceWarPendingOwners.add(ownerId);
+                }
+                if (
+                  ownerId > 0
+                  && !typCityCopyOwners.has(ownerId)
+                  && !isBarbarian(ownerId)
+                  && !eliminatedOwners.has(ownerId)
+                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+                ) {
+                  const wasPending = stoneForceWarPendingOwners.has(ownerId);
+                  const alreadyAtWarAnyRole = countActiveWarsForOwner(ownerId) > 0;
+                  const hasActiveForcedWarAsAttacker = [...stoneForceWarActiveByPairKey.values()]
+                    .some(st => st.attackerId === ownerId);
+                  const searchingAfterRest = !wasPending
+                    && stoneForceWarCycleOwners.has(ownerId)
+                    && empireEpochForOwner(ownerId) === 1
+                    && !hasActiveForcedWarAsAttacker
+                    && !alreadyAtWarAnyRole
+                    && !isRestingFromStoneForcedWar(
+                      turn,
+                      stoneForceWarRestUntilByOwner.get(ownerId),
+                    );
+                  const shouldSearch = wasPending
+                    ? isEligibleForStoneForcedWar({
+                      isMainAiCiv: true,
+                      isStoneEra: empireEpochForOwner(ownerId) === 1,
+                      currentTurn: turn,
+                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                    })
+                    : searchingAfterRest;
+                  if (shouldSearch) {
+                    const refCity = cities.find(c => c.ownerId === ownerId);
+                    const stoneCandidates = aiOwnerList
+                      .filter(oid =>
+                        oid !== ownerId
+                        && oid > 0
+                        && !typCityCopyOwners.has(oid)
+                        && !isBarbarian(oid)
+                        && !eliminatedOwners.has(oid)
+                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
+                      )
+                      .map(oid => {
+                        const c = cities.find(cc => cc.ownerId === oid);
+                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
+                      })
+                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
+                    const stoneBlockedOwnerIds = new Set(
+                      stoneCandidates
+                        .filter(c =>
+                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
+                          || isPeaceLockedBetween(ownerId, c.ownerId)
+                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
+                        )
+                        .map(c => c.ownerId),
+                    );
+                    const stonePicked = pickStoneForcedWarTargetId(
+                      stoneCandidates,
+                      refCity ? { q: refCity.q, r: refCity.r } : undefined,
+                      hexDistance,
+                      { blockedOwnerIds: stoneBlockedOwnerIds },
+                    );
+                    if (stonePicked != null) stoneForceWarTargetId = stonePicked;
+                  }
+                }
+                // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: wymuszona wojna głównej cywilizacji
+                // z sąsiadem terytorialnym — (a) jednorazowo przy AWANSIE do Żelaza
+                // (ironForceWarPendingOwners, ustawione w syncOwnerEraFromResearch przez
+                // isIronEraEntry), (b) cyklicznie po odpoczynku od poprzedniej wojny
+                // wymuszonej Żelaza. Struktura 1:1 jak Brąz. Gracz (ownerId 0) i
+                // miasta-państwa/kopie/barbarzyńcy są wykluczeni PO OBU STRONACH: napastnik
+                // przez `ownerId > 0` + `isOwnerClusterCityState(ownerId, …)` tutaj, cel
+                // przez `oid > 0` + `isOwnerClusterCityState(oid, …)` w puli kandydatów.
+                // `wasPending` jest TYLKO ODCZYTEM — pending konsumuje dopiero faktyczny
+                // sukces w bloku wypowiedz_wojne niżej.
+                // EN: Iron-era forced war — one-shot on the Iron advance, then cyclic after
+                // rest. Player and city-states excluded on BOTH sides.
+                if (
+                  ownerId > 0
+                  && !typCityCopyOwners.has(ownerId)
+                  && !isBarbarian(ownerId)
+                  && !eliminatedOwners.has(ownerId)
+                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+                ) {
+                  const wasPending = ironForceWarPendingOwners.has(ownerId);
+                  const alreadyAtWarAnyRole = countActiveWarsForOwner(ownerId) > 0;
+                  const hasActiveForcedWarAsAttacker = [...ironForceWarActiveByPairKey.values()]
+                    .some(st => st.attackerId === ownerId);
+                  const searchingAfterRest = !wasPending
+                    && ironForceWarCycleOwners.has(ownerId)
+                    && !hasActiveForcedWarAsAttacker
+                    && !alreadyAtWarAnyRole
+                    && !isRestingFromIronForcedWar(
+                      turn,
+                      ironForceWarRestUntilByOwner.get(ownerId),
+                    );
+                  const shouldSearch = wasPending
+                    ? isEligibleForIronForcedWar({
+                      isMainAiCiv: true,
+                      isAlreadyAtWarAnyRole: alreadyAtWarAnyRole,
+                    })
+                    : searchingAfterRest;
+                  if (shouldSearch) {
+                    const refCity = cities.find(c => c.ownerId === ownerId);
+                    const ironCandidates = aiOwnerList
+                      .filter(oid =>
+                        oid !== ownerId
+                        && oid > 0
+                        && !typCityCopyOwners.has(oid)
+                        && !isBarbarian(oid)
+                        && !eliminatedOwners.has(oid)
+                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
+                      )
+                      .map(oid => {
+                        const c = cities.find(cc => cc.ownerId === oid);
+                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
+                      })
+                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
+                    const ironBlockedOwnerIds = new Set(
+                      ironCandidates
+                        .filter(c =>
+                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
+                          || isPeaceLockedBetween(ownerId, c.ownerId)
+                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
+                        )
+                        .map(c => c.ownerId),
+                    );
+                    const ironPicked = pickIronForcedWarTargetId(
+                      ironCandidates,
+                      refCity ? { q: refCity.q, r: refCity.r } : undefined,
+                      hexDistance,
+                      { blockedOwnerIds: ironBlockedOwnerIds },
+                    );
+                    if (ironPicked != null) ironForceWarTargetId = ironPicked;
+                  }
+                }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
                   relacje: relacjeDip,
@@ -27223,6 +28623,8 @@ async function boot(): Promise<void> {
                   clusterForceWarTargetId,
                   bronzeForceWarTargetId,
                 };
+                diploInp.stoneForceWarTargetId = stoneForceWarTargetId;
+                diploInp.ironForceWarTargetId = ironForceWarTargetId;
                 const dipCmdsRaw = decideAIDiplomacy(
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
                   effectiveGameDifficultyForOwner(ownerId),
@@ -27258,6 +28660,22 @@ async function boot(): Promise<void> {
                       if (hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji)) {
                         continue;
                       }
+                      if (
+                        stoneForceWarTargetId != null
+                        && targetId === stoneForceWarTargetId
+                        && allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null
+                      ) {
+                        continue;
+                      }
+                      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: ten sam ostatni guard sojuszu
+                      // co dla Kamienia — wymuszona wojna Żelaza nie zrywa własnego sojuszu.
+                      if (
+                        ironForceWarTargetId != null
+                        && targetId === ironForceWarTargetId
+                        && allianceFormalKindBetween(activeDeals, ownerId, targetId) !== null
+                      ) {
+                        continue;
+                      }
                       chargeWarDeclarationCredibility(ownerId, targetId);
                       breakTreatiesOnWar(ownerId, targetId, false);
                       applyAllianceObligationsOnWar(ownerId, targetId);
@@ -27284,6 +28702,32 @@ async function boot(): Promise<void> {
                         bronzeForceWarPendingOwners.delete(ownerId);
                         console.log(
                           `[Dyplomacja] R-EPOKA-BRAZU-WYMUSZONA-WOJNA: AI${ownerId} wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
+                        );
+                      }
+                      // R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: analogiczny wpis tylko
+                      // dla komendy wybranego celu Kamienia. Nie dotyka stanu Brązu.
+                      if (stoneForceWarTargetId != null && targetId === stoneForceWarTargetId) {
+                        stoneForceWarActiveByPairKey.set(diploPairKey(ownerId, targetId), {
+                          attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+                        });
+                        stoneForceWarCycleOwners.add(ownerId);
+                        stoneForceWarPendingOwners.delete(ownerId);
+                        console.log(
+                          `[Dyplomacja] R-EPOKA-KAMIEN-WYMUSZONA-WOJNA: AI${ownerId} `
+                          + `wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
+                        );
+                      }
+                      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: analogiczny wpis wyłącznie dla
+                      // komendy wybranego celu Żelaza. Nie dotyka stanu Kamienia ani Brązu.
+                      if (ironForceWarTargetId != null && targetId === ironForceWarTargetId) {
+                        ironForceWarActiveByPairKey.set(diploPairKey(ownerId, targetId), {
+                          attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+                        });
+                        ironForceWarCycleOwners.add(ownerId);
+                        ironForceWarPendingOwners.delete(ownerId);
+                        console.log(
+                          `[Dyplomacja] R-EPOKA-ZELAZO-WYMUSZONA-WOJNA: AI${ownerId} `
+                          + `wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
                         );
                       }
                       if (targetId === 0 || ownerId === 0) {
@@ -27345,6 +28789,62 @@ async function boot(): Promise<void> {
             } catch (eAI) {
               console.error(`[AI] decideAITurn owner=${ownerId} error:`, eAI);
               continue;
+            }
+
+            // -----------------------------------------------------------------
+            // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, ZASADA 3) — PRZEKIEROWANIE
+            // NADWYŻKI, AI CYWILIZACJI.
+            // ECHO właściciela 2026-08-27: „jeżeli AI widzi, że nie ma zapotrzebowania
+            // na surowce, bo są w nadmiarze, i nie ma potrzeby ulepszać terenu w
+            // miejscach, gdzie pracują obywatele, powinna przestać budować dla sztuki
+            // i przesunąć środki. Jeśli w przypadku cywilizacji AI środki przeznaczone
+            // są bardziej na budynki […]".
+            // Realizacja: podział Pracy miasta (`CityPodzialPracy.procentBudynki`) —
+            // JEDYNY mechanizm w grze, który realnie przesuwa Pracę z puli imperium
+            // (skąd finansowane są ulepszenia terenu) do KOLEJKI PRODUKCJI MIASTA.
+            // Na czas nadwyżki idzie na maksimum; po jej ustaniu wraca do wartości,
+            // którą wybrało samo AI w `decideAIEconomySliders` (wyżej w tej pętli).
+            // To jest ŚWIADOMA różnica wobec AI GRACZA, która nadwyżkę wyłącznie
+            // SYGNALIZUJE (patrz `playerSurplusReport` w bloku ekonomii) — automat
+            // gracza doradza, nie decyduje za gracza.
+            //
+            // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa FC-2): miasta-państwa/kopie
+            // (`opts.defensiveCopy`) WYKLUCZONE — dokładnie tym samym warunkiem, co sąsiedni
+            // blok CUDA-AI niżej. GOAL mówi o AI CYWILIZACJI (główni rywale); miasto-państwo
+            // nie jest cywilizacją i ma własną, obronną ekonomię (decideDefensiveCopyTurn).
+            // Raport nadwyżki JEST dla nich wypełniany (`decideDefensiveCopyTurn` woła ten sam
+            // `planCityImprovements`), więc bez tego warunku kopie obronne dostawały
+            // przekierowanie budżetu na budynki — poszerzenie zakresu wobec §14.
+            // -----------------------------------------------------------------
+            if (!opts.defensiveCopy) {
+              try {
+                const surplusRep = aiSurplusReportByOwner.get(ownerId);
+                const redirected = aiSurplusRedirectedOwners.has(ownerId);
+                if (surplusRep?.surplus) {
+                  if (!redirected) aiSurplusRedirectedOwners.add(ownerId);
+                  const pct = MAX_PODZIAL_PRACY_BUDYNKI_PERCENT;
+                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
+                  for (const c of cities) {
+                    if (c.ownerId !== ownerId) continue;
+                    c.podzialPracy = { procentBudynki: pct };
+                    c.podzialPracyOverride = false;
+                  }
+                } else if (redirected) {
+                  aiSurplusRedirectedOwners.delete(ownerId);
+                  const pct = clampPodzialPracyBudynkiPercent(
+                    aiSliderStateByOwner.get(ownerId)?.procentBudynki
+                    ?? DEFAULT_PODZIAL_PRACY.procentBudynki,
+                  );
+                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: pct });
+                  for (const c of cities) {
+                    if (c.ownerId !== ownerId) continue;
+                    c.podzialPracy = { procentBudynki: pct };
+                    c.podzialPracyOverride = false;
+                  }
+                }
+              } catch (eSurplus) {
+                console.error(`[AI] Zasada 3 (nadwyzka ulepszen) owner=${ownerId} error:`, eSurplus);
+              }
             }
 
             // CUDA-AI (Maciej C-CUDA-AI=A, 2026-07-23): AI pełnych cywilizacji rozważa
@@ -27527,20 +29027,56 @@ async function boot(): Promise<void> {
                 if (cmd.type === 'move') {
                   const u = units.find(x => x.id === cmd.unitId);
                   if (!u || u.ownerId !== ownerId) continue;
-                  if (!canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities)) continue;
-                  const path = computePath(u, map, cmd.toQ, cmd.toR, (() => {
-                    const occ = addForeignCityBlocks(new Set<string>(), u.ownerId, cities);
-                    for (const ou of units) { if (ou.id !== u.id) occ.add(keyOf(ou.q, ou.r)); }
-                    return occ;
-                  })(), moveCostFnForUnit(u));
-                  if (path.length > 0) {
-                    const last = path[path.length - 1]!;
-                    if (!canUnitOccupyCityHex(u.ownerId, last.q, last.r, cities)) continue;
-                    u.q = last.q;
-                    u.r = last.r;
-                    u.ruchLeft = 0;
+                  const destinationCity = cities.find(
+                    c => c.q === cmd.toQ && c.r === cmd.toR && c.ownerId !== ownerId,
+                  );
+                  const targetVisible = destinationCity === undefined
+                    || aiCityCaptureAllowed(
+                      cmd.targetCityId,
+                      destinationCity,
+                      currentVisibleForOwner(ownerId),
+                      fogOn,
+                      keyOf,
+                    );
+                  if (!targetVisible) {
+                    // Pamięć pozycji służy do marszu, ale nie może zamienić się
+                    // w niewidoczny atak/przejęcie miasta.
+                    continue;
+                  }
+                  const blockedKeys = addForeignCityBlocks(
+                    new Set<string>(),
+                    u.ownerId,
+                    cities,
+                  );
+                  for (const ou of units) {
+                    if (ou.id !== u.id) blockedKeys.add(keyOf(ou.q, ou.r));
+                  }
+                  const moveResult = executeAiCityMove({
+                    command: cmd,
+                    unit: u,
+                    cities,
+                    cityBuiltIds: destinationCity
+                      ? cityBuilt.get(destinationCity.id) ?? []
+                      : [],
+                    hasCityDefenders: destinationCity !== undefined
+                      && hasCityDefenders(destinationCity, units),
+                    targetVisible,
+                    canOccupyCityHex: canUnitOccupyCityHex(u.ownerId, cmd.toQ, cmd.toR, cities),
+                    blockedKeys,
+                    destinationKey: keyOf(cmd.toQ, cmd.toR),
+                    computePath: (_moveUnit, toQ, toR, occupied) =>
+                      computePath(u, map, toQ, toR, occupied, moveCostFnForUnit(u)),
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
-                    applyEmbarkStateAfterMove([u], map);
+                    onMoved: () => applyEmbarkStateAfterMove([u], map),
+                    onCapture: (city) => tryAutoCaptureEmptyCityAt(
+                      city.q,
+                      city.r,
+                      [u],
+                    ),
+                  });
+                  if (moveResult.moved) {
+                    const path = moveResult.path;
+                    const last = path[path.length - 1]!;
                     // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: symetria z ruchem gracza --
                     // `ownerId` tu to zawsze prawdziwa cywilizacja AI (1..N), nigdy
                     // barbarzyńcy (ci mają własną pętlę ruchu niżej, poza AICommand).
@@ -27636,8 +29172,14 @@ async function boot(): Promise<void> {
                     console.warn(`[AI ${ownerId}] Atak na owner ${defender.ownerId} bez wojny — pominięto`);
                     continue;
                   }
-                  const atkRoster = collectBattleRoster(attacker, units, 'attacker');
-                  const defRoster = collectBattleRoster(defender, units, 'defender');
+                  if (!aiTargetVisibleForAction(
+                    currentVisibleForOwner(ownerId), fogOn, defender.q, defender.r, keyOf,
+                  )) {
+                    console.warn(`[AI ${ownerId}] Atak na niewidoczny cel — pominięto`);
+                    continue;
+                  }
+                  const atkRoster = collectBarbarianAwareBattleRoster(attacker, defender, 'attacker');
+                  const defRoster = collectBarbarianAwareBattleRoster(defender, attacker, 'defender');
                   const hexKey = keyOf(defender.q, defender.r);
                   const hexObj = map.hexes[hexKey];
                   const teren: string = hexObj ? (hexObj.terenBazowy as string) : 'Rownina';
@@ -27852,61 +29394,20 @@ async function boot(): Promise<void> {
                     }
                     cityProd.set(cmd.cityId, enqueue(prod0, item));
                   } else if (item.kind === 'jednostka') {
-                    // R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): przed zwykłym
-                    // kolejkowaniem Pracą, spróbuj ZACHOWAWCZEGO rush-zakupu za złoto --
-                    // sama decyzja to CZYSTY predykat shouldAIRushBuyUnit (game/ai.ts,
-                    // testy w tools/ai-unit-rush-test.cjs). AI kupuje tylko gdy jest w
-                    // stanie wojny z kimkolwiek, zostaje bufor >= reserve po zapłacie,
-                    // miasto ma pokrycie Manpower i owner nie kupił jeszcze w tej turze
-                    // (cap aiRushParams.maxPerTurn, R-STAWKI-STROJENIE: econ-params.json
-                    // globalne.ai_rush_jednostka_max_na_ture). purchaseRecruitmentUnit
-                    // (ownerId-agnostyczne, patrz definicja) sam pobiera złoto+surowiec+
-                    // Manpower i kolejkuje -- NIE pobieramy nic drugi raz tutaj.
-                    const atWarWithAnyone = getDiploRelation(ownerId, 0).status === 'wojna'
-                      || aiOwnerList.some(
-                        (other) => other !== ownerId && getDiploRelation(ownerId, other).status === 'wojna',
-                      );
-                    const boughtThisTurn = aiUnitGoldRushBoughtByOwner.get(ownerId) ?? 0;
-                    const wantsRush = shouldAIRushBuyUnit({
-                      atWar: atWarWithAnyone,
+                    // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: jednostka
+                    // nigdy nie wraca do kolejki Pracy. Zakup przechodzi przez
+                    // tę samą bramkę skarbca/Manpower co zakup gracza.
+                    const wantsPurchase = shouldAIPurchaseUnit({
                       treasury: ownerTreasury(ownerId),
-                      reserve: aiRushParams.reserve,
                       goldCost: item.koszt,
                       hasManpower: canAffordUnitManpowerEmpire(
                         cities, ownerId, city, empireEpochForOwner(ownerId),
                         UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, candId,
                       ),
-                      boughtThisTurn,
-                      maxPerTurn: aiRushParams.maxPerTurn,
                     });
-                    if (wantsRush && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
-                      aiUnitGoldRushBoughtByOwner.set(ownerId, boughtThisTurn + 1);
-                      console.log(`[AI ${ownerId}] Rush jednostki za zloto: ${candId}`);
-                      continue;
+                    if (wantsPurchase && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
+                      console.log(`[AI ${ownerId}] Zakup jednostki za Skarbiec: ${candId}`);
                     }
-                    const unitDef = data.units.find(u => u.Jednostka === item.id);
-                    const cost = unitStockCost(unitDef);
-                    const pool = ownerSurowcePoolFor(ownerId);
-                    if (!canAffordUnitRecruitFull(pool, unitDef)) {
-                      // P-AI-MOC-GAP-EVAL/R2 (Maciej 2026-08-08): checks.canAfford (wyżej) już
-                      // wymagał canAffordUnitRecruitFull===true dla TEGO kandydata przed jego
-                      // wyborem, a pula między selekcją a tym miejscem NIE mogła się zmienić --
-                      // rush powyżej (purchaseRecruitmentUnit) albo się udał (return true,
-                      // continue wcześniej), albo zawiódł PRZED jakąkolwiek mutacją PULI
-                      // SUROWCÓW (jego pickUnitRecruitHint-check jest przed deductem puli --
-                      // Manpower może zostać dotknięty osobno, patrz definicja funkcji).
-                      // Ta gałąź jest więc dziś realnie nieosiągalna -- zostaje jako siatka
-                      // bezpieczeństwa na wypadek przyszłej zmiany porządku operacji, tak samo
-                      // jak bliźniacza gałąź budynku wyżej (linia ~22845).
-                      console.warn(
-                        `[AI ${ownerId}] Build skipped (brak surowca / rezerwy utrzymania): ${candId}`,
-                      );
-                      continue;
-                    }
-                    if (Object.keys(cost).length > 0) {
-                      deductOwnerStockCost(ownerId, cost);
-                    }
-                    cityProd.set(cmd.cityId, enqueue(prod0, item));
                   }
                   continue;
                 }
@@ -28071,7 +29572,7 @@ async function boot(): Promise<void> {
           // 'normalny') and legacy strings that may still linger in an old
           // save's newGameParams after load, without crashing on an unknown string.
           const barbLevel = migrateBarbariansLevel(_menuAdvanced?.barbariansLevel);
-          const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel);
+          const barbLive = scaleBarbParamsForLevel(barbParams, barbLevel, _menuDifficulty);
           if (barbariansActive(turn, barbLive, player.era, barbLevel)) {
             const seaBarbParams = loadSeaBarbParams(data, _menuDifficulty);
 
@@ -28086,7 +29587,14 @@ async function boot(): Promise<void> {
 
             // Spawn new camps if needed (seed from turn to vary each game).
             // TEMAT #15: sloty lądowe liczone bez obozów nadmorskich (osobny limit).
-            const newCamps = spawnCamps(map, barbCamps.filter(c => c.naval !== true), cities, barbLive, turn * 31337);
+            const newCamps = spawnCamps(
+              map,
+              barbCamps.filter(c => c.naval !== true),
+              cities,
+              barbLive,
+              turn * 31337,
+              clearedBarbCampHexes,
+            );
             barbCamps = [...barbCamps, ...newCamps];
             if (newCamps.length > 0) {
               console.log(`[Barbarzyncy] Tura ${turn}: nowe obozy: ${newCamps.length}`);
@@ -28319,8 +29827,8 @@ async function boot(): Promise<void> {
                 } else if (bcmd.type === 'attack') {
                   const target = units.find(u => u.id === bcmd.targetUnitId);
                   if (!target) continue;
-                  const atkRoster = collectBattleRoster(bu, units, 'attacker');
-                  const defRoster = collectBattleRoster(target, units, 'defender');
+                  const atkRoster = collectBarbarianAwareBattleRoster(bu, target, 'attacker');
+                  const defRoster = collectBarbarianAwareBattleRoster(target, bu, 'defender');
                   const hexKey2 = keyOf(target.q, target.r);
                   const hexObj2 = map.hexes[hexKey2];
                   const teren2: string = hexObj2 ? (hexObj2.terenBazowy as string) : 'Rownina';
@@ -29113,7 +30621,7 @@ async function boot(): Promise<void> {
         getTradeRoutes: () => tradeRoutes,
         getOwnerLabel: (ownerId: number) => ownerDiploLabel(ownerId),
         getCityBuildingFlags: (cityId: string) => ({
-          liczbaAktywnychTrasHandlowych: tradeRouteCountByCity.get(cityId) ?? 0,
+          premiaHandluTrasHandlowych: tradeRouteBuildingBonusByCity.get(cityId) ?? 0,
         }),
         getEpoch: (ownerId: number) => empireEpochForOwner(ownerId),
       getManpowerSnapshot: (cityId: string) => {
@@ -29218,30 +30726,10 @@ async function boot(): Promise<void> {
           refreshCityPanelIfOpen();
         },
         onPodzialPracyChange: (cityId: string, split) => {
-          const c = cities.find(ct => ct.id === cityId);
-          if (c && c.ownerId === 0) {
-            if (c.podzialPracyOverride) {
-              c.podzialPracy = { procentBudynki: split.procentBudynki };
-            } else {
-              ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
-            }
-            markCityStateDirty(); // D10: podział pracy → przelicz
-            updateHud();
-          }
+          applyCityPodzialPracyChange(cityId, split.procentBudynki);
         },
         onPodzialPracyOverrideToggle: (cityId: string) => {
-          const c = cities.find(ct => ct.id === cityId);
-          if (!c || c.ownerId !== 0) return;
-          const next = !c.podzialPracyOverride;
-          if (next) {
-            c.podzialPracy = effectivePodzialPracy(c);
-          } else {
-            delete c.podzialPracy;
-          }
-          c.podzialPracyOverride = next;
-          markCityStateDirty();
-          updateHud();
-          refreshCityPanelIfOpen();
+          toggleCityPodzialPracyOverride(cityId);
         },
         onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
           purchaseRecruitmentUnit(cityId, itemId, koszt);
@@ -29273,9 +30761,11 @@ async function boot(): Promise<void> {
         getCivBonusy: civBonusyForOwnerId,
         // P-KONIEC-TURY-ZDARZENIA-NACHODZA-NA-SIEBIE: wpięcie hooka dla automatycznych
         // (opts.auto) wywołań showPreBattle -- guard sprawdza WYŁĄCZNIE audiencję i panel
-        // scalenia armii, nie generyczny stos overlayów (ten obejmuje też m.in. panel miasta/
-        // drzewko tech, które NIE są modalami końca tury i nie powinny blokować preBattle).
-        isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen() || isArmyMergePanelOpen(),
+        // scalenia armii oraz karta ukończenia badań, nie generyczny stos overlayów (ten
+        // obejmuje też m.in. panel miasta/drzewko tech, które NIE są modalami końca tury).
+        isOtherEndTurnModalOpen: () => isDiplomacyAudienceOpen()
+          || isArmyMergePanelOpen()
+          || isTechDiscoveryNoticeOpen(),
       });
       _lastNewGameParams = {
         ...params,
@@ -29360,6 +30850,7 @@ async function boot(): Promise<void> {
     }
 
     function applySceneResult(newSceneResult: SceneResult): void {
+      clearMineEligibleOverlay();
       scene = newSceneResult.scene;
       camera = newSceneResult.camera;
       renderer = newSceneResult.renderer;
@@ -29579,7 +31070,7 @@ async function boot(): Promise<void> {
       // Reset stanu przed klastrem
       cities.length = 0;
       tradeRoutes.length = 0;
-      tradeRouteCountByCity.clear();
+      tradeRouteBuildingBonusByCity.clear();
       tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       explored.clear();
@@ -29661,7 +31152,18 @@ async function boot(): Promise<void> {
       zdobyczePowerByOwner.clear();
       battlePowerPtsByOwner.clear();
       lootedVillageHexKeys.clear();
+      stoneForceWarPendingOwners.clear();
+      stoneForceWarCycleOwners.clear();
+      stoneForceWarRestUntilByOwner.clear();
+      stoneForceWarActiveByPairKey.clear();
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: nowa gra bez przeładowania strony nie może
+      // dziedziczyć rejestrów Żelaza z poprzedniej rozgrywki (ownerId są reużywane).
+      ironForceWarPendingOwners.clear();
+      ironForceWarCycleOwners.clear();
+      ironForceWarRestUntilByOwner.clear();
+      ironForceWarActiveByPairKey.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
       // koliduja miedzy rozgrywkami) -- nowe miasto dziedziczylo zombie stan
       // religii/auto-zarzadzania z poprzedniej gry bez przeladowania strony.
@@ -29901,7 +31403,7 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
-      tradeRouteCountByCity.clear();
+      tradeRouteBuildingBonusByCity.clear();
       tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
@@ -29930,6 +31432,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30145,7 +31648,7 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
-      tradeRouteCountByCity.clear();
+      tradeRouteBuildingBonusByCity.clear();
       tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
@@ -30180,6 +31683,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30370,7 +31874,7 @@ async function boot(): Promise<void> {
 
       cities.length = 0;
       tradeRoutes.length = 0;
-      tradeRouteCountByCity.clear();
+      tradeRouteBuildingBonusByCity.clear();
       tradeRouteResourceGrants.length = 0;
       clearTradeRoutesOverlay();
       for (const c of preset.cities) {
@@ -30407,6 +31911,7 @@ async function boot(): Promise<void> {
       capitalCityIdByOwner.clear();
       zdobyczePowerByOwner.clear();
       barbCamps = [];
+      clearedBarbCampHexes.clear();
       gameOver = false;
       selectedId = null;
       reachable = new Set<string>();
@@ -30625,7 +32130,7 @@ async function boot(): Promise<void> {
         syncLivestockAndPlacedMeshes();
         syncUnitsRender();
         cityRenderer.sync(cities, _cityRenderOpts());
-        tradeRouteCountByCity = computeTradeRouteCountByCity(tradeRoutes);
+        tradeRouteBuildingBonusByCity = computeTradeRouteBuildingBonusByCity(tradeRoutes);
         try {
           recomputeTradeRouteResourceGrants();
         } catch (eTradeGrantLoad) {
@@ -30812,7 +32317,11 @@ async function boot(): Promise<void> {
       overlayDepositEra = player.era;
       cityProd.clear();
       if (saved.cityProd) {
-        for (const [cid, prod] of Object.entries(saved.cityProd)) cityProd.set(cid, prod as any);
+        for (const [cid, prod] of Object.entries(saved.cityProd)) {
+          // Migrację wykonamy po odtworzeniu puli Pracy poniżej, aby ewentualny
+          // zwrot postępu ze starej jednostki nie został nadpisany stanem save'a.
+          cityProd.set(cid, prod as CityProduction);
+        }
       }
       cityBuilt.clear();
       if (saved.cityBuilt) {
@@ -30885,6 +32394,21 @@ async function boot(): Promise<void> {
       if (savedAiPracaPool?.length) {
         for (const [oid, v] of savedAiPracaPool) aiPracaPoolByOwner.set(oid, v);
       }
+      // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 5, naprawa Z-3): odtworz znacznik ZASADY 3.
+      // `clear()` bezwarunkowo (stary zapis sprzed tej naprawy nie ma pola -> pusty zbior,
+      // czyli dokladnie zachowanie sprzed rundy 4: zaden owner nie jest „przekierowany",
+      // a `decideAIEconomySliders` ustawia podzial po swojemu) — i zeby nie przeciekal
+      // stan poprzedniej rozgrywki wczytanej w tej samej sesji przegladarki.
+      aiSurplusRedirectedOwners.clear();
+      const savedSurplusRedirected = saved.meta?.aiSurplusRedirectedOwners as number[] | undefined;
+      if (savedSurplusRedirected?.length) {
+        for (const oid of savedSurplusRedirected) aiSurplusRedirectedOwners.add(oid);
+      }
+      aiTargetMemoryByOwner.clear();
+      const restoredAiTargetMemory = restoreAiTargetMemory(saved.meta?.aiTargetMemoryByOwner ?? []);
+      for (const [oid, entries] of restoredAiTargetMemory) {
+        aiTargetMemoryByOwner.set(oid, entries);
+      }
       aiNaukaPoolByOwner.clear();
       const savedAiNaukaPool = saved.meta?.aiNaukaPoolByOwner as Array<[number, number]> | undefined;
       if (savedAiNaukaPool?.length) {
@@ -30919,6 +32443,47 @@ async function boot(): Promise<void> {
       for (const [oid, t] of bronzeForceWarRestored.restUntilByOwner) bronzeForceWarRestUntilByOwner.set(oid, t);
       bronzeForceWarActiveByPairKey.clear();
       for (const [key, st] of bronzeForceWarRestored.activeByPairKey) bronzeForceWarActiveByPairKey.set(key, st);
+      const stoneForceWarRestored = restoreStoneForcedWarState({
+        pendingOwners: saved.meta?.stoneForceWarPendingOwners as number[] | undefined,
+        cycleOwners: saved.meta?.stoneForceWarCycleOwners as number[] | undefined,
+        restUntilByOwner: saved.meta?.stoneForceWarRestUntilByOwner as Array<[number, number]> | undefined,
+        activeByPairKey: saved.meta?.stoneForceWarActiveByPairKey as
+          Array<[string, StoneForcedWarPairState]> | undefined,
+      });
+      stoneForceWarPendingOwners.clear();
+      for (const oid of stoneForceWarRestored.pendingOwners) stoneForceWarPendingOwners.add(oid);
+      stoneForceWarCycleOwners.clear();
+      for (const oid of stoneForceWarRestored.cycleOwners) stoneForceWarCycleOwners.add(oid);
+      stoneForceWarRestUntilByOwner.clear();
+      for (const [oid, t] of stoneForceWarRestored.restUntilByOwner) {
+        stoneForceWarRestUntilByOwner.set(oid, t);
+      }
+      stoneForceWarActiveByPairKey.clear();
+      for (const [key, st] of stoneForceWarRestored.activeByPairKey) {
+        stoneForceWarActiveByPairKey.set(key, st);
+      }
+      // R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1: odtworzenie CZYSTĄ funkcją (forced-war-iron.ts).
+      // Brak `saved.meta?.ironForceWar*` (zapis sprzed tego mechanizmu) daje bezpieczny
+      // pusty stan — mechanizm po prostu nieaktywny dla tej gry, nie wyjątek.
+      const ironForceWarRestored = restoreIronForcedWarState({
+        pendingOwners: saved.meta?.ironForceWarPendingOwners as number[] | undefined,
+        cycleOwners: saved.meta?.ironForceWarCycleOwners as number[] | undefined,
+        restUntilByOwner: saved.meta?.ironForceWarRestUntilByOwner as Array<[number, number]> | undefined,
+        activeByPairKey: saved.meta?.ironForceWarActiveByPairKey as
+          Array<[string, IronForcedWarPairState]> | undefined,
+      });
+      ironForceWarPendingOwners.clear();
+      for (const oid of ironForceWarRestored.pendingOwners) ironForceWarPendingOwners.add(oid);
+      ironForceWarCycleOwners.clear();
+      for (const oid of ironForceWarRestored.cycleOwners) ironForceWarCycleOwners.add(oid);
+      ironForceWarRestUntilByOwner.clear();
+      for (const [oid, t] of ironForceWarRestored.restUntilByOwner) {
+        ironForceWarRestUntilByOwner.set(oid, t);
+      }
+      ironForceWarActiveByPairKey.clear();
+      for (const [key, st] of ironForceWarRestored.activeByPairKey) {
+        ironForceWarActiveByPairKey.set(key, st);
+      }
       // Audyt #13: reaplikuj zlupienie wiosek na (ewentualnie świeżo zregenerowanej
       // z seeda) mapie -- generator/placeVillages zawsze stawia je jako istnieje=true.
       lootedVillageHexKeys.clear();
@@ -30938,6 +32503,18 @@ async function boot(): Promise<void> {
       // Odtworz z zapisu; brak pola (stary zapis) = reset do pustej tablicy.
       const savedBarbCamps = saved.meta?.barbCamps as BarbCamp[] | undefined;
       barbCamps = Array.isArray(savedBarbCamps) ? savedBarbCamps.slice() : [];
+      // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1=A: stary save bez blacklisty
+      // dostaje pusty, bezpieczny default; błędne wpisy nie mogą zablokować
+      // losowych heksów przez przypadkowe wartości.
+      clearedBarbCampHexes.clear();
+      const savedClearedBarbCampHexes = saved.meta?.clearedBarbCampHexes;
+      if (Array.isArray(savedClearedBarbCampHexes)) {
+        for (const hexKey of savedClearedBarbCampHexes) {
+          if (typeof hexKey === 'string' && /^-?\d+,-?\d+$/.test(hexKey)) {
+            clearedBarbCampHexes.add(hexKey);
+          }
+        }
+      }
       // P-BARBARZYNCY-LOAD-REKONCYLIACJA-Q1: zapis mógł powstać PRZED hakiem
       // niszczącym obozy (stary zapis) albo przez lukę w onSplit sprzed jej
       // naprawy -- w obu przypadkach mógł legalnie zawierać jednostkę
@@ -31053,6 +32630,22 @@ async function boot(): Promise<void> {
       ownerDefaultPodzialPracy.clear();
       const savedPodzialPracy = saved.meta?.ownerDefaultPodzialPracy as Array<[number, CityPodzialPracy]> | undefined;
       migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, savedPodzialPracy);
+      // R-PRACA-JEDEN-PODZIAL-Q1 — MIGRACJA STARYCH ZAPISOW.
+      // Stary zapis niosl DWA niezalezne pola: `ownerDefaultPodzialPracy`
+      // (procentBudynki 50–100, kanoniczne — to je stosowal silnik JAKO PIERWSZE i to
+      // ono ma per-miastowy override) oraz `ownerDefaultPracaSplit` (procentUlepszenia
+      // 0–50, drugi podzial). Zostaje JEDNO pole: `ownerDefaultPodzialPracy`.
+      // Rozstrzygniecie kolizji (np. zapis 70 / 33): wygrywa `ownerDefaultPodzialPracy`,
+      // czyli ulepszenia dostaja 30%. Legacy `ownerDefaultPracaSplit` jest uzywany
+      // WYLACZNIE wtedy, gdy zapis w ogole nie mial nowszego pola — wtedy
+      // procentBudynki = 100 − procentUlepszenia (ten sam cap, ta sama jednostka).
+      const savedPracaSplitLegacy = saved.meta?.ownerDefaultPracaSplit as
+        Array<[number, { procentUlepszenia?: number }]> | undefined;
+      if (!savedPodzialPracy?.length && savedPracaSplitLegacy?.length) {
+        for (const [oid, raw] of savedPracaSplitLegacy) {
+          ownerDefaultPodzialPracy.set(oid, podzialPracyZProcentuPuli(raw?.procentUlepszenia));
+        }
+      }
       ownerDefaultOkolicaFocus.clear();
       const savedOkolicaFocus = saved.meta?.ownerDefaultOkolicaFocus as Array<[number, OkolicaFocus]> | undefined;
       migrateOkolicaFocusOnLoad(cities, ownerDefaultOkolicaFocus, savedOkolicaFocus);
@@ -31075,8 +32668,15 @@ async function boot(): Promise<void> {
           ulepszeniaEmpireByOwner.set(oid, {
             focus: (pol.focus as UlepszeniaFocus) ?? DEFAULT_ULEPSZENIA_FOCUS,
             tryb: (pol.tryb as UlepszeniaTryb) ?? DEFAULT_ULEPSZENIA_TRYB,
-            onlyWorked: (pol.onlyWorked as boolean) ?? false,
-            pracaAutoPercent: clampPracaWspolnyWorekPercent(
+            // R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (runda 4, Zasada 2): brak pola w zapisie =
+            // nowa wartość domyślna (`true`); jawne `false` ze starego save'a zostaje `false`.
+            onlyWorked: (pol.onlyWorked as boolean) ?? DEFAULT_ULEPSZENIA_ONLY_WORKED,
+            // R4-Q2=C: brak pola = przełącznik wyrębu WYŁĄCZONY.
+            wolnoWycinacLas: (pol.wolnoWycinacLas as boolean) ?? DEFAULT_ULEPSZENIA_WOLNO_WYCINAC_LAS,
+            // P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1: clampUlepszeniaPracaPercent egzekwuje
+            // własny zakres 0–100% (MAX_ULEPSZENIA_PRACA_AUTO_PERCENT) dla tego historycznego
+            // pola (b) — stary save (np. legacy perTurn=3 → 100%) nie jest tu ścinany do 50%.
+            pracaAutoPercent: clampUlepszeniaPracaPercent(
               resolveUlepszeniaPracaPercentFromRaw(pol.pracaAutoPercent, pol.perTurn),
             ),
           });
@@ -31100,6 +32700,14 @@ async function boot(): Promise<void> {
         playerPracaPool = 0;
       }
       _lastPraca = playerPracaPool;
+      if (saved.cityProd) {
+        // P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1=B: stare zapisy mogły
+        // mieć jednostkę w kolejce Pracy. Teraz pula właściciela jest już
+        // odtworzona, więc migracja może bezpiecznie oddać jej postęp.
+        for (const [cid, prod] of cityProd.entries()) {
+          setCityProduction(cid, prod);
+        }
+      }
       _lastPieniadzRate = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;

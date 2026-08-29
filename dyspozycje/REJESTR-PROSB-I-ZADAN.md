@@ -1,4 +1,78 @@
-# REJESTR PRÓŚB I ZADAŃ — jedyne miejsce śledzenia próśb Macieja
+# REJESTR PRÓŚB I ZADAŃ — kanoniczny indeks + historia
+
+## AKTYWNA PACZKA DOKUMENTACYJNA — `R-PROC-AUTOBOT-PAKIETY-1-3-Q1`
+
+GOAL: dokończyć pakiety dokumentacyjne 1–3 i wdrożyć jeden, zamknięty obieg AutoBot
+bez zmian w `gra/`. Dowód przebiegu: [`dyspozycje/autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/`](autobot/runs/R-PROC-AUTOBOT-PAKIETY-1-3-Q1/).
+
+| ID pakietu | STATUS KANONICZNY | Dowód |
+|---|---|---|
+| `R-PROC-AUTOBOT-PAKIET-1-INDEX-Q1` | `ZINTEGROWANE` | `docs/procesy/INDEX-PROCESU.md` wskazuje `HANDOFF-AKTUALNY` i miejsca zapisu artefaktów. |
+| `R-PROC-AUTOBOT-PAKIET-2-AKTYWNE-DOKUMENTY-Q1` | `ZINTEGROWANE` | `CLAUDE.md`, aktywna reguła, skill i `R-PROC-AUTOBOT`; historia w `docs/archiwum-procesu/`. |
+| `R-PROC-AUTOBOT-PAKIET-3-REJESTRY-RUNS-Q1` | `ZINTEGROWANE` | rejestr, `PYTANIA-OTWARTE.md`, `HANDOFF-AKTUALNY` i run `00–04`. |
+
+Statusy pakietów są aktualne w tym indeksie; historyczne wiersze poniżej pozostają
+append-only. `READY_FOR_DEPLOY` jest bramką po integracji, nie statusem publikacji;
+deploy/push pozostają osobno i w tej paczce nie zostały wykonane.
+
+## MIGRACJA STATUSÓW — 2026-08-20 (Pakiet 3)
+
+Od tej daty bieżący status tematu może przyjmować wyłącznie jedną z wartości:
+
+`NOWE` · `ABC-OCZEKUJE` · `OPERATOR` · `EVALUATOR` · `FINALNA-KONTROLA` ·
+`DO-INTEGRACJI` · `ZINTEGROWANE` · `DEPLOY-ROBOCZA` · `ZAMKNIĘTE` · `BLOCK` ·
+`ODŁOŻONE` · `ODRZUCONE` · `DUPLIKAT`
+
+Znaczenie statusu jest procesowe, a nie opisowe: dowód w raporcie/handoffie ma
+pierwszeństwo przed nazwą starej etykiety. `DEPLOY-ROBOCZA` oznacza potwierdzone
+opublikowanie w ROBOCZEJ; nie jest równoznaczne z `ZAMKNIĘTE`. `ZAMKNIĘTE`
+oznacza brak dalszej pracy w tym temacie albo jawne zamknięcie bez implementacji.
+
+### Indeks bieżący — tylko wpisy z jednoznacznym dowodem
+
+Poniższa tabela jest warstwą operacyjną migracji. Nie przepisuje ani nie kasuje
+historycznych wierszy poniżej; wpisy bez jednoznacznego dowodu nie są tu zgadywane.
+
+| ID | STATUS KANONICZNY | Dowód / punkt odniesienia |
+|---|---|---|
+| `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` | `ZDEPLOYOWANE (korekta statusu, 2026-08-21)` | Status `OPERATOR`/„gotowy do dispatchu” byl NIEAKTUALNY — mechanizm jest w pelni zaimplementowany w `gra/src/game/forced-war-stone.ts` (stale `WOJNA_KAMIEN_WYMUSZONA_START_TURY=20`, `_MAX_MIASTA_...=2`, `_ODPOCZYNEK_TUR=20`, `_COOLDOWN_...=20` — 1:1 z ECHO Q1=A/Q3=A) i wpiety w `main.ts`/`ai.ts` (`stoneForceWarTargetId`) analogicznie do mechanizmu Brązu. Zdeployowane FALA 298 (`4322f5aa`, potwierdzone w `WERSJE.md`: „Stone 32/32 + guard 18/18"). Zweryfikowane ponownie 2026-08-21: `node gra/tools/forced-war-stone-test.cjs` + `forced-war-stone-main-guard-test.cjs` nadal zielone. Nic do dispatchu. |
+| `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1` | `RECON ZAMKNIĘTY (3/4), 1 REALNY BUG WYDZIELONY` | Recon runda 2 (2026-08-21): pytania §4 2-4 (Popalnia brązu, koszty jednostek, kontrakt ogólny) potwierdzone jako zamknięte przez `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1`/T3. Pytanie 1 (12 vs 20 jednostek) — Operator błędnie uznał za martwy tekst bez konsumenta; **Evaluator (FAIL) znalazł 2 żywe konsumenty**: `techTreeView.ts::parseUnlockBuildings()` (hover-karta drzewka, pokazuje stare 12 zamiast 20) i `sciencePicker.ts` (tooltip badań, naiwny split po przecinku BEZ usunięcia prefiksu "Jednostki:" — myli fragmenty listy jednostek z budynkami). Realny, dziś działający bug — wydzielony jako `R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1`. |
+| `R-UI-WYKONAJ-DECYZJA-OVERLAP-Q1` | `ZINTEGROWANE` | Przyczyna znaleziona i naprawiona: `.et-hint`/`.et-tooltip` były dziećmi `.et-wrap` (owijał tylko przycisk końca tury), więc `position:absolute` liczyło się względem złego kontekstu i nakładało na zawsze-obecny (disabled gdy brak blokady) przycisk „Wykonaj" nad nim. Naprawa: oba elementy są teraz dziećmi `.civ-bottom-bar` bezpośrednio. **Zweryfikowane realną przeglądarką (Playwright/Chromium)** — zrzuty ekranu potwierdzają nakładanie na starym kodzie i czyste rozdzielenie po naprawie, pixel-for-pixel. Operator→Evaluator→Final Control PASS, 33/33 nowy test + zero regresji. Zintegrowane do `main`. |
+| `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1` | `ZDEPLOYOWANE, FALA 308` | Zgłoszenie właściciela na żywo (FALA 307, stempel `6c1433ef`): przyciski „Rozpocznij badanie"/„Otwórz drzewo" nie reagowały na klik. Przyczyna: `.entity-card` bez własnego `position` malowało się przed `.tdn-back` (tło, `position:fixed`) w kolejności CSS stacking-context — tło przechwytywało kliknięcia mimo poprawnego DOM/listenerów. Fix: `position:relative` na `.entity-card`. Znalezione i zweryfikowane realną przeglądarką (Playwright/Chromium, `elementFromPoint`+`page.mouse.click`) — jsdom dawał fałszywie zielony wynik. Test mutacyjny (usunięcie fixu → regres wraca, 6/12 FAIL) potwierdza że nowe testy faktycznie łapią ten bug. Operator→Evaluator→Final Control PASS, zdeployowane. |
+| `R-SCIENCEHUB-KLIK-WIERSZA-ENQUEUE-Q1` | `ZINTEGROWANE` | Naprawione dokładnie wg dyspozycji: klik odblokowanego wiersza woła teraz `config.onSelectTech(e.id)` bezpośrednio (dodaje do planu), klik zablokowanego nadal otwiera podgląd. Ikonka „ⓘ" zastąpiona wyraźnym przyciskiem tekstowym „Karta". `techTreeView.ts` świadomie NIE zmieniony (inny, uzasadniony model interakcji — klik węzła zawsze otwiera kartę, start badania z jej wnętrza). Zweryfikowane realnym DOM/klikiem (jsdom+esbuild, prawdziwe dane) — 13/13 asercji. Operator→Evaluator→Final Control PASS. Zintegrowane do `main`. |
+| `R-TECHTREE-SCIENCEPICKER-JEDNOSTKI-STALE-Q1` | `ZINTEGROWANE` | KOREKTA: poprzedni wiersz (2026-08-21, „OTWARTE — nie rozpoczęte") był nieaktualny i miał złamany format tabeli (5 komórek zamiast 3). Znalezisko Evaluatora przy recon `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`: `techTreeView.ts`/`sciencePicker.ts` czytały niekompletną, osadzoną listę jednostek zamiast strukturalnego źródła (`units.json` pole `Tech`) — naprawione, Operator→Evaluator→Final Control PASS, zweryfikowane na żywym DOM (20 jednostek zamiast 12 dla Brązownictwa). Zintegrowane do `main` (bez osobnej FALI — połączone z `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1` w FALI 308). Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-PRACA-BUDYNKI-ULEPSZENIA-SPLIT-50-Q1` | `DUPLIKAT/ZASTĄPIONY (korekta statusu, 2026-08-21)` | Status `OPERATOR`/„osobna gałąź, bez merge" byl NIEAKTUALNY/z 2026-08-17. Dokladnie ten kontrakt (`splitEmpirePracaBudget()`, pula imperium budynki+ulepszenia=100%, ulepszenia max 50%) zostal od tego czasu zaimplementowany i redeployowany DWUKROTNIE pod innymi ID: `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` (FALA 293, `8fa80b7c`) i `R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1` (FALA 302), a obecnie jest w dalszym ciagu dopracowywany w aktywnym temacie tej sesji `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` (Watki A/B/C/D/E/F). Zweryfikowane: `splitEmpirePracaBudget()` istnieje i dziala w `gra/src/game/production.ts:1898`. Brak osobnego dispatchu — dalsza praca nad tym mechanizmem idzie przez `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`, nie przez ten stary ID. |
+| `R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1` | `ZDEPLOYOWANE (korekta statusu, 2026-08-21)` | Status „implementacja w toku" byl NIEAKTUALNY — mechanizm jest w pelni zaimplementowany i przetestowany zgodnie z NAJNOWSZYM ECHO (1B=3 tury, 2A pelna obustronnosc, 3B autoryzacja konczy sie natychmiast/jednostki zostaja, 8B promien 2 heksow, 9A aktywne jednostki ladowe, 10B dolaczenie dopiero po koncu biezacej walki): `RodzajTraktatu.WspolnaWalkaBarbarzyncy` w `diplomacy.ts`, logika w `diplomacy-treaties.ts`/`diplomacy-proposals.ts`/`diplomacy-border-march.ts`/`diplomacy-display.ts`/`main.ts`. Zweryfikowane ponownie 2026-08-21: `node gra/tools/diplomacy-barbarian-cooperation-test.cjs` → 10/10 PASS (obustronnosc, wygasniecie na granicy tury 3, autoryzacja przemarszu, promien 2, wykluczenia zwiadowcy/garnizonu/rajdera morskiego, blokada dolaczenia w trakcie walki, brak duplikacji przy merge). Nic do dispatchu. |
+| `R-USTROJE-RODZAJE-PRZYSZLOSC` | `ODŁOŻONE` | Jawnie zarejestrowane na przyszłość, do osobnej sesji o ustrojach. |
+| `R-MIASTA-LIMIT-PODBÓJ-Q1` | `ZAMKNIĘTE` | ECHO A: limit dotyczy miast założonych; decyzja zamknięta bez zmiany kodu. |
+| `R-TRZY-KARTY-WDROZENIE-Q1` | `ZINTEGROWANE` | Trzy karty wdrożone: Karta 1 (tokeny + `techDiscoveryNotice.ts`) Operator PASS-WITH-NOTES + Evaluator WARUNKOWY PASS (kod OK, zastrzeżenie czysto procesowe o kolejności commitów, rozwiązane przez Final Control); Karta 2 (`unitInfoCard.ts`) Operator FAIL (brak Esc, nieprawdziwe TESTY) → poprawka → Operator PASS + Evaluator PASS; Karta 3 (`sidePanelHud.ts`+`bottomBarHud.ts`) Operator PASS + Evaluator PASS-WITH-NOTES (drobne nieścisłości statystyk w raporcie, niemerytoryczne), z wykonanym test mutacyjnym potwierdzającym twardy zakaz blokady tury. Final Control (orkiestrator): pełna regresja na całości pięciu plików razem — `tsc` 0, 13 zestawów testów zielonych, 2 znane przedistniejące awarie (`unit-info-card-army-interaction-test` 5/2, niezwiązane z tym diffem, potwierdzone przez oba Evaluatory). ECHO: blokada tury = NIE (potwierdzone 6 lipca, karty zostają sygnałem); przycisk „Zignoruj" przy buncie = TAK; rant slotu 3D = złoto kanonu. Otwarte dla właściciela (nierozstrzygnięte, nieblokujące): przycisk „Otwórz hub badań" pominięty (rozbieżność handoffu designera z realną makietą, zweryfikowana niezależnie dwa razy — Operator i Evaluator). Dispatch: `dyspozycje/autobot/runs/R-TRZY-KARTY-WDROZENIE-Q1/`. |
+| `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` | `DEPLOY-ROBOCZA` | Korekta potwierdzona w FALI 293 `8fa80b7c`; wpis nie jest już otwarty. |
+| `R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1` | `ZDEPLOYOWANE, FALA 310` | Watki A-F: (A) usunięty zdublowany suwak, (C ECHO=A) cap 50% wymuszony też na historycznym automacie ulepszeń miasta, (D) naprawa „+N" niezgodności puli PRACA IMPERIUM, (F) przeprojektowanie prezentacji panelu — dwie kolumny Budynki/Ulepszenia. Runda 2 Final Control dała FAIL proceduralny (branch odgałęziony przed FALA 304); naprawione mergem `main`→branch (zero konfliktów w `gra/`), runda 3 Operator→Evaluator→Final Control PASS (Final Control: PASS-WITH-NOTES, patrz `PYTANIA-OTWARTE.md`). Zmergowane do `main`, zdeployowane FALA 310. `tsc` 0; 149 testów tematu + `logic-test` 213/213 + `tech-tree-test` 19/19 + `research-test` 33/33 + `unit-replace-test` 13/13 + `combat-test` 6/6. |
+| `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` | `CAŁA MIGRACJA T1-T10 ZDEPLOYOWANA, FALA 315` | T1+T1b+T3 FALA 307, T4 FALA 309, T8 FALA 311, T5 FALA 312, T7b FALA 313, T6+T9 FALA 314, T10 FALA 315. Ostatni krok (linkowanie krzyżowe 4×4), system `entityCards` (4 kinds/4 adaptery) kompletny. Operator+Evaluator+Final Control PASS niezależnie, 3 niezależne testy real-Chromium stosu Esc/overlay przy zagnieżdżonych kartach. Trywialny fast-forward. Cała migracja zakończona i zdeployowana. Nic do dispatchu. |
+| `P-DESIGN-11-ZAKLADEK-DROBIAZGI-RUNDA-2-BEZ-AKCJI` | `ZDEPLOYOWANE, FALA 313` | N5/N9/N11/N12 naprawione w `empireDetailPanel.ts` zgodnie z ECHO. N5 ma znaną, udokumentowaną usterkę zaokrągleń (±1 złoto w ~10-20% kombinacji, kosmetyczna, nie dotyka skarbca) potwierdzoną niezależnie przez Evaluatora i Final Control. N1 zamknięte bez akcji. Operator→Evaluator→Final Control PASS/PASS-WITH-NOTES. Zdeployowane. Pełny recon mechaniki szlaków i dokładnej przyczyny N5: `P-HANDEL-SZLAKI-MECHANIKA-RECON-Q1` w `PYTANIA-OTWARTE.md`. |
+| `R-HANDEL-SZLAKI-PRZEBUDOWA-Q1` | `W TRAKCIE — T1+T2+T2b ZDEPLOYOWANE (ROBOCZA FALA 316, main 9aa8959d), T3/T4/T6 w kolejce` | Przebudowa mechaniki szlaków handlowych. ECHO (2026-08-21, pełna treść `docs/decyzje/R-HANDEL-SZLAKI-PRZEBUDOWA-Q1.md`): odwrócenie zależności od dystansu osobno per medium (ląd max=12/morze max=20, identyczny szczyt); bonus morski ×2 sumuje się z istniejącym `PORT_SEA_TRADE_BONUS_PIENIADZ`; 5% przypisane per trasa jako stały procent JEJ WŁASNEGO dochodu, zastępuje stary globalny mnożnik w `economy.ts` (realny transfer budżetu); limit „jedna umowa" bez zmian (już istnieje per-para, temat T5 wypada z zakresu); Port zostaje wymogiem istnienia trasy morskiej. Finalne doprecyzowanie: opcja zawarcia `UmowaSzlakow` w panelu dyplomacji dostępna WYŁĄCZNIE gdy (a) dostępność lądowa istnieje (port niepotrzebny), LUB (b) brak lądu ale OBIE strony mają port — inaczej opcja niedostępna w panelu (nowy gate na poziomie propozycji traktatu, nie tylko powstania trasy). Ląd ma bezwarunkowe pierwszeństwo, nie wybór po dochodzie. Stawki ×5 tylko na stałych dystansowych. Podział T1(wzór)→T2(morze×2+priorytet lądu)→T2b(nowy: gate propozycji traktatu w dyplomacji)→T3(rozdzielenie gatingu budynkami)→T4(atrybucja 5%)→T6(UI). **T1 zakończone: Operator→Evaluator→Final Control wszystkie PASS (workflow `wf_e9da30e1-0e2`), zweryfikowane niezależnie przez orkiestratora (tsc czyste, vite build OK, testy handel/econ zgodne z raportami, 5 bramek referencyjnych zielone), zmergowane fast-forward do `main` i wypchnięte jako commit `65315319` (2026-08-22).** **T2 zakończone: Operator/Evaluator PASS, Final Control PASS-WITH-NOTES (uwaga niewiążąca o `detectBestConnection` — patrz decyzja §Postęp; nie blokuje READY_FOR_DEPLOY), workflow `wf_5973ab38-00f` (wymagał 1 wznowienia po INFRA-blokerze braku miejsca na dysku przy tworzeniu worktree — orkiestrator posprzątał ~24GB starych, już zmergowanych worktree i wznowił). Zweryfikowane niezależnie (tsc/build/testy/5 bramek zielone), zmergowane fast-forward do `main` commit `a3276dda`, wypchnięte (2026-08-22). Rozwiązuje też `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`.** **T2b zakończone: Operator/Evaluator/Final Control wszystkie PASS (workflow `wf_39d8ddec-8ff`), reużyto istniejącej `citiesHaveTradeConnection` (funkcja E6) — zero nowej logiki połączeniowej, nowe pole `hasTradeConnection` na `DiplomacyActionLockContext`, gate w `resolveDiplomacyActionLock` case '5' z priorytetem `atWar>hasHandel>hasTradeConnection>relacjaGate`, UI bez zmian. Zweryfikowane niezależnie (tsc/build/testy diplomacy+handel/econ/5 bramek zielone), zmergowane fast-forward do `main` commit `f303760a`, wypchnięte (2026-08-22).** **Zbiorczy deploy ROBOCZA wykonany (2026-08-22): FALA 316, `gra-robocza/Gra-ROBOCZA.html` + 6 bundli playtestowych + świeży build `Gra-ROBOCZA-POLE-BITWY.html`, manifest md5 `5bcde74d`, `verify-robocza-bundle.cjs` -> VERIFY OK, commit `9aa8959d`, wypchnięte do `origin/main`.** T3/T4/T6 w kolejce, nie dispatchowane jeszcze. |
+| `P-PRACA-ULEPSZENIA-RECZNY-CAP-BUG-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu (wstrzymane na wyraźne polecenie właściciela)` | Zgłoszenie właściciela (2026-08-22): suwak „Automatyzacja ulepszeń terenu → Ręczny" (`UlepszeniaEmpirePolicy.pracaAutoPercent`) błędnie ograniczony do 0-50% zamiast 0-100% — pomyłkowe rozszerzenie stałej `MAX_PRACA_WSPOLNY_WOREK_PROCENT=50` z NIEZALEŻNEGO pola `EmpirePracaSplit.procentUlepszenia` (to drugie ma zostać 0-50%, poprawne). Recon potwierdził dokładną przyczynę w `clampUlepszeniaPracaPercent()` (`cities.ts:208-211`), 2 wywołania w `main.ts`, 3 pliki testowe do aktualizacji. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu (wstrzymane na wyraźne polecenie właściciela)` | Zgłoszenie właściciela (2026-08-22, czysty UX, bez zmiany parametrów): panel „PODZIAŁ PRACY" (`renderEmpirePracaBudgetSplitSection()`, `empireDetailPanel.ts:1120-1154`) ma dziś dwa osobne boksy Budynki/Ulepszenia zamiast jednego suwaka pełnej szerokości z etykietami po bokach + klikalne min/max na krańcach. Gotowy gradient CSS (`laborSliderFillStyle()`) już istnieje jako martwy kod z wcześniejszego, świadomie zastąpionego wzorca — częściowy powrót na żądanie właściciela. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu (wstrzymane na wyraźne polecenie właściciela)` | Zgłoszenie właściciela (2026-08-22): nowy przycisk w panelu „SPICHLERZ CENTRALNY" (`renderDefaultPoziomRacjiSection()`, `empireDetailPanel.ts:134-161`) ustawiający `autoWyzywienie=true` dla wszystkich miast bez `poziomRacjiOverride`. Oba mechanizmy (`city.autoWyzywienie`, `city.poziomRacjiOverride` + wzorzec masowej propagacji `broadcastPoziomRacjiToOwnerCities()`) już istnieją — prosta zmiana, nie wymaga nowego mechanizmu ekonomii. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-PRACA-PANEL-IKONY-NIESPOJNE-Q1` | `ECHO ZAPISANE — gotowe do dispatchu (wstrzymane na wyraźne polecenie właściciela)` | Zgłoszenie regresu (2026-08-22): panel miasta „PODZIAŁ PRACY" ma DWIE różne ikony dla „Ulepszenia" (`tb-build` młotek vs `chip-crate` skrzynka, ta druga dodana commitem `bd03ed3e`/Wątek F 2026-08-21). ECHO właściciela: ujednolicić do `chip-crate` (skrzynka), zachować ikony (nie przechodzić na tekst), Operator ma dodatkowo zweryfikować wizualnie (Playwright) czy ikona wagi realnie gdzieś występuje. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1` | `NOWE — recon zamknięty, WYMAGA jednej decyzji stylu` | Regres z T10 (FALA 315, commit `f17e257e`): brak CSS dla `.entity-card-row-key`/`.entity-card-row-value` w `entityCards/renderer.ts` — linkowalne wartości renderują się jako nieostylowane, białe `<button>`. Naprawa: 1 blok CSS w `ENTITY_CARD_CSS`, wspólny dla wszystkich 4 adapterów. Brak wzorca designera dla stylu linku (świadomie odroczone w brief). Dodatkowy zakres: ten sam typ usterki w karcie budynku wewnątrz panelu budowy miasta (`cityPanel.ts`, inny komponent). Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-CIVPEDIA-KARTY-NOTATKI-DEWELOPERSKIE-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu bez ABC` | Karty ulepszeń pokazują graczowi surowy wewnętrzny dziennik balansu (`surowiecOdblokowany_uwaga` w `terrain-improvements.json`, 9/14 kluczy dotkniętych). Czysto opisowe, nie source-of-truth (`surowiec_ilosc_tura` to prawdziwa liczba używana przez silnik). Nie regres — pole zawsze pełniło tę funkcję. Naprawa: `improvementAdapter.ts` przestaje renderować to pole graczowi; dane JSON zostają nietknięte. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-BUILDMODE-LOCKTIP-ZASLANIA-LISTE-Q1` | `NOWE — recon zamknięty, gotowe do dispatchu bez ABC` | Tooltip „zablokowane przez technologię" w panelu „ULEPSZENIA TERENU" (`buildModeHud.ts::showLockTip()`) pozycjonowany sztywnym offsetem bez sprawdzenia viewportu/listy — zasłania wiersze poniżej. Gotowy wzorzec flip/clamp już istnieje 3× w repo (`techTreeView.ts`, `hoverDetailDock.ts`, `hudTitleTooltip.ts`). Mała, jednomiejscowa naprawa. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1` | `NOWE — recon zamknięty (znalezisko Final Control), gotowe do dispatchu bez ABC` | Znalezisko Final Control przy weryfikacji `P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1`: `.entity-card-action`/`-primary`/`-secondary` (przyciski „Rozpocznij badanie"/„Otwórz drzewo", `data.actions`, żywa ścieżka) nie mają ŻADNEGO CSS od T1, identyczny brzydki natywny wygląd jak `row-value` przed naprawą. Nie regres, poza allowlistą poprzedniego tematu — wydzielone osobno. Naprawa: styl wypełnionego przycisku (nie link), analogicznie do `.entity-card-more`, plus nowy test renderujący kartę z `actions`. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-HANDEL-SZLAKI-MECHANIKA-RECON-Q1` | `RECON ZAMKNIĘTY` | Pełne wyjaśnienie mechaniki szlaków handlowych (aktywacja: pokój+traktat+łączność+sloty; dochód: `floor(8−0.4×dystans)` złota + 5%/trasa Handlu) i dokładnej przyczyny usterki N5 (mismatch `floor` forward vs `round` reverse w `main.ts`/`empireDetailPanel.ts` — kosmetyczny, nie dotyka skarbca). Pełny opis w `PYTANIA-OTWARTE.md`. Wydzielone nowe znalezisko: `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1`. |
+| `P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1` | `OTWARTE, niski priorytet` | Wzór dochodu z tras zduplikowany w 2 miejscach `main.ts` (panel Handlu + chip HUD) zamiast jednej wspólnej funkcji z `trade-routes.ts::computeTradeRouteIncomeByCity`. Ryzyko cichego rozjazdu przy przyszłej zmianie wzoru. Czysto techniczny refaktor, nie wymaga ABC. Pełny opis w `PYTANIA-OTWARTE.md`. |
+| `P-SCIENCE-HUB-TEST-BASELINE-2-4-Q1` | `ZINTEGROWANE` | Przyczyna: stary próg `>=5` w teście od początku (era Kamień ma stabilnie 4 technologie Poziom=1 bez prereq). Naprawiony na `>=4` + komentarz. Zero zmian w `gra/src/`/`gra/data/`. Operator→Evaluator→Final Control PASS. Zintegrowane do `main`. |
+
+### Zasada migracji i historii
+
+Wiersze oraz sekcje poniżej są append-only historią. Stare etykiety (`W TOKU`,
+`WDROŻONE`, `ZDEPLOYOWANE`, `SCALONE`, `CZEKA-NA-DECYZJĘ`, `SUPERSEDED` itd.)
+pozostają nietknięte jako zapis stanu z chwili powstania. Nie traktuj ich jako
+bieżącego statusu, dopóki nie ma wpisu w tym indeksie albo nowej, udokumentowanej
+korekty z dowodem. Migracja nie zmienia merytorycznego statusu żadnego tematu bez
+takiego dowodu.
+
+---
 
 ## ⛔ ZASADA PROCESU (Maciej 2026-07-24, obowiązkowa dla KAŻDEJ sesji)
 **KAŻDA prośba Macieja, która powinna skończyć się jakąkolwiek zmianą w grze/kodzie/danych,
@@ -7,28 +81,52 @@ od razu realizowana. Powód: prośby z samego czatu giną (potwierdzony przypade
 trudności per państwo/miasto" — poproszona dawno, nigdzie nie zapisana, nie wdrożona, nikt tego
 nie pilnował). Narracja w czacie NIE jest śledzeniem. Ten plik jest jedynym rejestrem statusu.
 
-**Format wiersza:** ID · data zgłoszenia · prośba (zwięźle) · STATUS (`NOWE` / `W TOKU` / `WDROŻONE` / `ZDEPLOYOWANE` / `ODRZUCONE` / `CZEKA-NA-DECYZJĘ`) · commit/deploy · uwagi.
+**Format bieżącego wiersza:** ID · data zgłoszenia · prośba (zwięźle) ·
+`STATUS-KANONICZNY` z listy powyżej · commit/deploy · uwagi. Historyczne wiersze
+zachowują swój pierwotny zapis i wymagają korekty dopiero po sprawdzeniu dowodu.
 Przy zamknięciu tematu: aktualizuj STATUS + wpisz commit/md5. Szczegóły decyzji ekonomicznych → `DECYZJE-SUROWCE-EKONOMIA-2026-07-23.md`.
 
 **Problemy/błędy z numeracją:** `dyspozycje/REJESTR-PROBLEMOW-AI.md` — format **`P-AI-###`** (Maciej 2026-07-26). Każdy nowy problem od razu dostaje numer; w czacie odwołujesz się po ID.
 
-## ⛔ NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03)
+## ⛔ NUMER → ABC/ECHO → COMMIT → READY_FOR_DEPLOY → DEPLOY/PUSH
 Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
-1. Case / bug / poprawka / innowacja → **ID tutaj od razu** (status zwykle `CZEKA-NA-DECYZJĘ`).
-2. Agent **nie koduje** — proponuje rozwiązanie ± ABC.
-3. Maciej: **`ID + A|B|C`** → dopiero commit.
-4. **`deploy`** (hasło) → dopiero ROBOCZA / `WERSJE.md`.
+1. Każdy temat → **pełne ID tutaj od razu**; status bieżący wybierz z zamkniętej listy.
+2. Jeśli potrzebna jest decyzja właściciela, zapisz pełne ABC w `PYTANIA-OTWARTE.md`.
+3. Po odpowiedzi zapisz ECHO i decyzję; temat kontynuuje ten sam ID przez run `00–04`.
+4. **`READY_FOR_DEPLOY`** → orkiestrator potwierdza Final Control i integrację; dopiero
+   osobne polecenie `deploy`/`push` publikuje i aktualizuje `WERSJE.md`.
 
 ## ⛔ AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — KAŻDA PRACA TYLKO TĘDY
-**KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot: Operator → Evaluator → Grok final. **ZAKAZ** omijania pętli.  
-Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) · `.cursor/rules/autobot-evaluator-operator.mdc`.
-1. **Operator** — `composer-2.5` + `playbook.json` + guardrails.
-2. **Evaluator** — adwokat diabła + twarde metryki → postmortem → playbook.
-3. **Grok** — final; dopiero potem „gotowe” / `deploy`.
+**KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot:
+Operator (**GPT-5.6 Luna High**) → Evaluator (**GPT-5.6 Luna High**) →
+finalna kontrola → integracja → `READY_FOR_DEPLOY`. Deploy/push jest osobną bramką
+po bramkach i autoryzacji. **ZAKAZ** omijania pętli.
+Kanon: [`autobot/README.md`](autobot/README.md) ·
+[`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) ·
+`.cursor/rules/autobot-evaluator-operator.mdc`.
+
+**ARCHIWUM:** wcześniejsze wpisy o modelach i routingach pozostają poniżej jako historia,
+ale nie są aktywnym routingiem.
 
 **Notatka 2026-08-05:** Cleanup przestarzałych „czeka deploy" / „bez deploy" dla pozycji już w `WERSJE.md`; źródło prawdy deployu w owym momencie = FALA 228 (`29bfdf00`).
 
 **Notatka 2026-08-09:** źródło prawdy deployu dziś = **FALA 263** (`89176ced318b7e7d03b2fd6b197df80d`), branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie `main`). Szczegóły sesji: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`.
+
+**AKTYWNY ROUTING:** Operator **GPT-5.6 Luna High** → Evaluator **GPT-5.6 Luna High** →
+Final Control **GPT-5.6 Luna High** → integracja orkiestratora **GPT-5.6 Luna Medium** →
+`READY_FOR_DEPLOY`; deploy/push dopiero po osobnej bramce i autoryzacji. Pełny ślad
+nowego przebiegu zapisuj w `dyspozycje/autobot/runs/<ID>/`.
+
+**C-043 (2026-08-19):** właściciel komunikuje się wyłącznie w głównym czacie
+orkiestratora; subagenci są kanałami technicznymi.
+
+| R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1 | 2026-08-19 | Umowa terminowa na wspólną walkę z barbarzyńcami i obustronny wojskowy przemarsz; zasady zerwania i jednostek pozostających na miejscu | **ECHO 1A + 2A + 3A — DECYZJA ZAPISANA; IMPLEMENTACJA NIEZLECONA** | `docs/decyzje/R-DYPLO-WSPOLNA-WALKA-BARB-PRZEMARSZ-Q1.md` · pełne A/B/C i ECHO w `PYTANIA-OTWARTE.md` · bez zmian `gra/`, bez deployu/pushu |
+| R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Kanon raportu właściciela: **dziesięć** kategorii (stany Operator/Evaluator, czeka na Operatora vs zapomniane), filtr ECHO, Playtest z ROBOCZEJ | **WDROŻONE (docs-only) — nie jest pytaniem ABC** | `docs/decyzje/R-RAPORT-10-KATEGORII-ABC-PLAYTESTY-Q1.md`; zasady: `CLAUDE.md`, `.claude/skills/civ-autobot/SKILL.md`, `.cursor/rules/komendy-raport.mdc`; snapshot FALA 295 `8589d294` |
+| R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1 | 2026-08-18 | Poprzedni kanon siedmiu kategorii (FALA 294) | **SUPERSEDED → R-RAPORT-10** | `docs/decyzje/R-RAPORT-7-KATEGORII-ABC-PLAYTESTY-Q1.md` — tylko kompatybilność linków; pełna treść w historii gita |
+
+| P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 | 2026-08-17 | Ogólny wzorzec rozbudowanej karty technologii; prototyp na Brązownictwie | **ECHO=A ZAPISANE (2026-08-21) — RECON W TOKU** | ECHO A: prototyp/UX zaakceptowany; recon rozbieżności źródeł (12 vs 20 jednostek, „Popalnia brązu") wymagany PRZED dalszym wdrożeniem. UWAGA: `techDiscoveryNotice.ts` (FALA 300, `R-TRZY-KARTY-WDROZENIE-Q1`) już wdrożył ogólną kartę dla wszystkich technologii PRZED zamknięciem tego recon — pierwszy krok recon to sprawdzenie, czy ten kod nadepnął na te same rozbieżności. Branch: `autobot/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`. Konkretna karta Brązownictwa (osobny, wcześniejszy temat) była wdrożona jako `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1=C` w FALI 294. |
+| P-JEDNOSTKI-KARTA-3D-INFO-Q1 | 2026-08-18 | Integracja tymczasowej, generycznej karty jednostki z istniejącym ekranem armii; Hastati jako wzorzec, prawdziwe dane i slot modelu 3D | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | Testy karty 23/23, wiring 6/6, interakcja armii 7/7, istniejący kontekst 29/29, side-list 74/74, tsc PASS, build PASS; nota: brak live 3D/WebGL; dowód bundla `WERSJE.md` FALA 295 |
+| P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1 | 2026-08-17 | Korekta niepełnego splitu FALI 292: cała pula Pracy, budynki + ulepszenia, cap 50% | **ZDEPLOYOWANE FALA 293 `8fa80b7c` — PASS** | FALA 292 była częściowa; FALA 293 domknęła `doBudynkow` dla gracza/AI/MP, kolejki, overflow i UI. Historia FALI 292 pozostaje w `WERSJE.md` i `PYTANIA-OTWARTE.md`. |
 
 | R-AI-TRUDNOSC-AUDYT | 2026-08-05 | Audyt + **P0** (Maciej „1"): realna Praca · Spichlerz id · L3 nauka=2 | **ZDEPLOYOWANE `efab84db`** (FALA 229) | `docs/decyzje/R-AI-TRUDNOSC-AUDYT.md` · PR #111 · AutoBot PASS |
 | R-AI-TRUDNOSC-P1 | 2026-08-05 | P1: majorEarly ×0.70 · scout −80 · L1 early turn 25 | **ZDEPLOYOWANE `7f8bdc74`** (FALA 230) | §F audytu · PR #112 |
@@ -48,16 +146,19 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | AI-BALANS-STEP5 | 2026-08-06 | bonus_produkcja → realna Praca major AI | **ZDEPLOYOWANE** FALA 253 `b8704216` | P0-1 formalizacja (wiring F229) · test 18/18 · `AI-BALANS-STEP5.md` |
 | AI-BALANS-STEP6-Q1 | 2026-08-06 | Kara score 2. zwiadowca −80 pkt w `chooseCityProduction` | **JUŻ WDROŻONE PRZED DECYZJĄ** — commit `dadcb48` (`AI_EARLY_SCOUT_REPEAT_PENALTY=80`, `ai.ts:730,836`), poprzedza ten wpis. Nie dublować. | `docs/decyzje/AI-BALANS-STEP6-Q1.md` · paczka ABC 2026-08-06 |
 | R-RELIEF-FAIRPLAY | 2026-08-06 | relief-grid/fair-play C-MAPA-Q1=B mop-up po złożach | **ZDEPLOYOWANE** FALA 256 `693a2c57` | tip `41eed4d6` · `R-RELIEF-FAIRPLAY-STATUS.md` · fair-play 8/8 · Ogromny wolniejszy OK |
-| R-KAMIEN-RELIEF-FOLLOWUP-Q1 | 2026-08-06 | Whitelist reliefu: legacy `kopalnia` + reguła wszystkich kopalń | **COMMIT+PUSH** `8593237` (branch roboczy, nie w main) | `docs/decyzje/R-KAMIEN-RELIEF-FOLLOWUP-Q1.md` · A + reguła „teraz i przyszłe" · `gra/src/game/relief-preserving-improvements.ts` |
-| MAP-UX-CLUSTER-LABEL-Q1 | 2026-08-06 | Etykiety stolica (civ + marker) vs MP (nazwa + dopisek) | **COMMIT+PUSH** `9d33e8f` + `d3470ed` (MAP-UX-CAPITAL-MP-SCOPE-Q1=B) — branch roboczy, nie w main | `docs/decyzje/MAP-UX-CLUSTER-LABEL-Q1.md` · B+C |
-| R-WIARYGODNOSC-S9-Q1 | 2026-08-06 | Pełna paczka strojenia liczb §9 (JSON + testy) | **TABELA GOTOWA** (Eval PASS-WITH-NOTES, 2 błędy poprawione), commit `22df1b1` | czeka OK Macieja przed kodem · `docs/decyzje/R-WIARYGODNOSC-S9-TABELA-LICZB.md` |
-| R-DESIGN-PANEL-MIASTA-V2-Q1 | 2026-08-06 | Pilne zlecenie Design klatek v2; kod nie zamrożony | **ECHO ZAPISANA** · brief do wklejenia GOTOWY (AutoBot retry PASS-WITH-NOTES, fakty przeliczone na `main`) · czeka wklejenia do Design | `docs/decyzje/R-DESIGN-PANEL-MIASTA-V2-Q1.md` · C · deliverable: `dyspozycje/DO-WKLEJENIA-DESIGN-V2-2026-08-06.md` (zastępuje sekcje 1/3/4/6 `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md`) · uwaga: marker stolicy (korona) opisany w briefie jako PENDING — gotowy kod na osobnym, niescalonym branchu, NIE na `main` |
+| R-KAMIEN-RELIEF-FOLLOWUP-Q1 | 2026-08-06 | Whitelist reliefu: legacy `kopalnia` + reguła wszystkich kopalń | **ZDEPLOYOWANE FALA 296 `a37f7123`** · commit `85932371` jest przodkiem `main`/źródła deployu | `docs/decyzje/R-KAMIEN-RELIEF-FOLLOWUP-Q1.md` · Evaluator PASS-WITH-NOTES · test prefiksu 23/23 |
+| MAP-UX-CLUSTER-LABEL-Q1 | 2026-08-06 | Etykiety stolica (civ + marker) vs MP (nazwa + dopisek) | **ZDEPLOYOWANE FALA 296 `a37f7123`** · commity `9d33e8f` + `d3470ed` są przodkami `main`/źródła deployu | `docs/decyzje/MAP-UX-CLUSTER-LABEL-Q1.md` · Evaluator PASS-WITH-NOTES · display 27/27 · badge 31/31 |
+| R-WIARYGODNOSC-S9-Q1 | 2026-08-06 | Pełna paczka strojenia liczb §9 (JSON + testy) | **ZDEPLOYOWANE FALA 259 `e028045c` — Evaluator PASS-WITH-NOTES** | implementacja `2e67219` + korekta `68f06dc` · `wiarygodnosc-test` 270/270 · `docs/decyzje/R-WIARYGODNOSC-S9-Q1.md` |
+| R-MIASTA-LIMIT-PODBÓJ-Q1 | 2026-08-18 | Limit miast założonych nie blokuje miast zdobytych | **ECHO A — ZAMKNIĘTE bez zmiany kodu** | `docs/decyzje/R-MIASTA-LIMIT-PODBÓJ-Q1.md`; rozpoznanie `canFoundCity()` vs ścieżki capture |
+| R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1 | 2026-08-18 | Wojna wymuszona AI w epoce Kamienia | **ECHO Q1=A + Q2 + Q3=A — kompletne, gotowe do dispatchu Operatora** | start po 20 turach; cel jak w Brązie; koniec po 2 miastach, 20 tur odpoczynku, 20 tur cooldownu; `docs/decyzje/R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1.md` |
+| R-DESIGN-PANEL-MIASTA-V2-Q1 | 2026-08-06 | Pilne zlecenie Design klatek v2; kod nie zamrożony | **ECHO ZAPISANA** · brief do wklejenia GOTOWY (AutoBot retry PASS-WITH-NOTES, fakty przeliczone na `main`) · czeka wklejenia do Design | `docs/decyzje/R-DESIGN-PANEL-MIASTA-V2-Q1.md` · C · deliverable: `dyspozycje/DO-WKLEJENIA-DESIGN-V2-2026-08-06.md` (zastępuje sekcje 1/3/4/6 `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md`) · uwaga: historyczna wersja briefu opisywała marker stolicy jako PENDING; marker jest teraz zdeployowany w FALI 296, a sekcja 5 briefu zawiera korektę statusu |
 | R-OBRONA-MIASTA-MP-Q1 | 2026-08-06 | Obrona bez murów: rozbicie bonusów w preBattle (mechanika bez zmian) | **SCALONE runda 3** (PASS-WITH-NOTES) — bramka `cel` z licznikiem N z M, `cityDefenseBreakdownFor` pokryte testem (35/35), martwy kod usunięty · doprecyzowanie R-OBRONA-MIASTA-MP-SCOPE-Q1=B (bonus murów/cytadeli/baszty w panelu) nadal otwarte, osobna dosyłka | `docs/decyzje/R-OBRONA-MIASTA-MP.md` §ECHO · A · `docs/decyzje/R-BRAZ-SUPER-DISPATCH-Q1.md`-owy wzór 3 rund |
 | R-DEFICYT-ZLOTA-KARA-Q1 | 2026-08-06 | Kara za deficyt Złota — analogia do głodu wojska (staty + atrycja HP) | **SCALONE+PUSH** `dd1f267` (prog=Skarbiec, AI floor zdjęty, UI fix) | `docs/decyzje/R-DEFICYT-ZLOTA-KARA-Q1.md` · A+B |
 | R-STATUS-PRZYCZYNA-CIERPIENIA-Q1 | 2026-08-06 | Ikona per przyczyna + opis na karcie jednostki | **SCALONE** (PASS-WITH-NOTES) — 2 ikony rozróżnialne na mapie (głód/deficyt złota, obie naraz widoczne), wiersze statusu na karcie jednostki z nazwanymi parametrami | `docs/decyzje/R-STATUS-PRZYCZYNA-CIERPIENIA-Q1.md` · C |
 | R-RABAT-SOL-GARNIZON-Q1 | 2026-08-06 | Podwójny rabat garnizonu przy Soli — sumują się czy nie | **ZAMKNIĘTA** — potwierdzenie status quo, zero zmian w kodzie | `docs/decyzje/R-RABAT-SOL-GARNIZON-Q1.md` · A |
 | R-FENICJA-SKARB-CAP-Q1 | 2026-08-06 | Mnożnik Skarbu Fenicjan ×11,4 — exploit czy zamierzone | **ZAMKNIĘTE — FAŁSZYWY ALARM**: ×11,4 to artefakt sprzed refaktoru 2026-07-25, dziś nieistniejący; realny szczyt ×5,79 (normal) | `docs/decyzje/R-FENICJA-SKARB-CAP-Q1.md` · A |
 | R-KONTRY-BITWA-SPOJNOSC-Q1 | 2026-08-06 | Ujednolicenie tabeli kontr bitwy do `counters.json` | **SCALONE+PUSH** `162b306` — zero utraconych bonusow (0/98) potwierdzone niezaleznie | `docs/decyzje/R-KONTRY-BITWA-SPOJNOSC-Q1.md` · A |
+| **P-AI-BRAK-POJECIA-MGLY-Q1** | 2026-08-17 | AI: własna mgła per owner, pamięć ostatniej pozycji celu, atak dopiero po ponownym wykryciu | **GOTOWE / ZAMKNIĘTE — Evaluator PASS-WITH-NOTES; ZDEPLOYOWANE FALA 292, zachowane w FALI 294** | `gra/src/game/ai-fog.ts` · `main.ts` per-owner/save-load wiring · `ai-fog-test.cjs` 8/8 · `bitwa-mapa-kamera-blokada-test.cjs` 24/24 · ROBOCZA md5 `a0f804d7` · `VERIFY OK` |
 | R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1 | 2026-08-06 | Priorytet bramek uczciwość vs chęć do handlu | **SCALONE** (runda 4, PASS-WITH-NOTES) — uczciwość PW pozostaje priorytetem, chęć respondenta-AI moduluje próg (−15%…+20%) WYŁĄCZNIE gdy respondentem jest AI (nie gracz), podłoga parytetu chroni przed przepłatą AI (R-PW-ACCEPT-OVERPAY-Q1), komunikat zawsze z realną przyczyną i liczbami PW. 4 rundy: r1 fałszywa przyczyna, r2 regresja AI→gracz, r3 regresja overpay (usunięcie z PROPOSER_PW_FAIRNESS_ACTIONS bez podłogi), r4 domknięcie podłogą parytetu | `docs/decyzje/R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1.md` · B+C połączone · efekt uboczny AI↔AI w `PYTANIA-OTWARTE.md` |
 | LOGIC-TEST-2BUGS-Q1 | 2026-08-06 | 2 nowe awarie logic-test.cjs: canFoundCity dist=4, city food store undefined | **SCALONE** (PASS-WITH-NOTES) — oba testowe: prog dystansu byl zgadywany (5 zamiast realnych 4 z JSON), magazynZywnosci jest CELOWO legacy/tylko-oblezenie od refaktoru population-growth-v85 (asercja poprawiona na `number>=0 LUB undefined`) | logic-test 207/208 |
 | UNIT-REPLACE-EVOCATI-Q1 | 2026-08-06 | unit-replace-test.cjs 2/10: Evocati znika z listy "Zastąp" | **SCALONE** (runda 2, PASS-WITH-NOTES) — realny bug produkcyjny naprawiony w `main.ts` (`replaceAvailabilityCtxForCity`/`replaceAvailabilityCtxEmpireWide` → `empireResourceStock: citySurowceSumForOwner(...)`, wzorem `productionCtxForCity`), od FALI 96 (`daacd43`) mechanizm "Zastąp" gubił wszystkie jednostki brązowe/żelazne. Brak pokrycia testowego naprawy w main.ts — nota w `PYTANIA-OTWARTE.md` | unit-replace-test 10/10, logic-test 207/208, tsc 0, build 797 modułów |
@@ -75,15 +176,16 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | P-AI-008 | 2026-08-05 | Zagrożenie: jednostki+rozwój zamiast murów (nie chmury) | **ZDEPLOYOWANE `3840f218`** (FALA 227←226) · playtest odłożony | custom Maciej · `docs/decyzje/P-AI-008.md` |
 | R-SCENA-PERF-FALA138 | 2026-08-05 | Budowanie sceny — pomiar→fix | **ZDEPLOYOWANE** FALA 248 `772bab7c` — offline diag + merge skip/cache; pomiar F12 nadal mile widziany | `docs/decyzje/R-SCENA-PERF.md` · handoff sesji 2026-08-05 |
 | R-GARNIZON-AKCJE | 2026-07-26 | Opuść garnizon z panelu miasta | **ZDEPLOYOWANE** FALA 212 `e38ad116` (onLeaveGarrison) | diagnoza historyczna — kod już w ROBOCZA |
-| R-KOPALNIA-RELIEF | 2026-07-25 | Kopalnie nie spłaszczają wzgórza | **ECHO follow-up** → `R-KAMIEN-RELIEF-FOLLOWUP-Q1` ZAPISANA | miedź/żelazo/złoto OK; legacy `kopalnia` + reguła w ECHO 2026-08-06 |
+| R-KOPALNIA-RELIEF | 2026-07-25 | Kopalnie nie spłaszczają wzgórza | **ZAMKNIĘTE / ZDEPLOYOWANE FALA 296 `a37f7123`** przez `R-KAMIEN-RELIEF-FOLLOWUP-Q1` | miedź/żelazo/złoto + legacy `kopalnia` oraz przyszłe `kopalnia_*` zachowują relief; test prefiksu 23/23 |
 | P-AI-006 | 2026-07-26 | ekspansywnosc=0 wszędzie | **ZAMKNIĘTE** — `civ-ai.json` 2–5; `ai-expansion.ts` czyta per nacja | REJESTR-DECYZJI 🟢 WDROŻONA FALA 36 |
 | P-AI-010 | 2026-07-26 | Poradnik „konkuruj osadnikiem” | **ZAMKNIĘTE** — poradnik rev.G bez osadnika | `14-ai-zagrozenia.md` |
-| R-PROC-AUTOBOT | 2026-08-05 | **KAŻDA praca** wyłącznie AutoBot (Operator→Evaluator→Grok) | **TWARDA REGUŁA OBOWIĄZUJE** · P0 zmergowane `#108`/`9068115` · Maciej przypomniał 13:41 | `docs/decyzje/R-PROC-AUTOBOT.md` · `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` |
+| R-PROC-AUTOBOT | 2026-08-05 | **KAŻDA praca** wyłącznie AutoBot (Operator→Evaluator→finalna kontrola→integracja→READY_FOR_DEPLOY; deploy/push osobną bramką) | **TWARDA REGUŁA OBOWIĄZUJE** · P0 zmergowane `#108`/`9068115` · Maciej przypomniał 13:41 | `docs/decyzje/R-PROC-AUTOBOT.md` · `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` |
 | R-PROC-AUTOBOT-EVAL-SCOPE | 2026-08-05 | Evaluator: scope=tylko temat + brak regresji/ubocznych zmian | **🟢 OBOWIĄZUJE** · tip `eb84533`+ · rule_105 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` |
 | R-PROC-AUTOBOT-EVAL-STRICT | 2026-08-05 | Evaluator STRICT: luki testów / brak asercji AC → FAIL (nie NOTES) | **🟢 OBOWIĄZUJE** · Maciej „2” · rule_106 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` |
 | R-PROC-AUTOBOT-EVAL-STRICT-EDGE | 2026-08-05 | Evaluator STRICT-EDGE: testy tematu tylko happy-path bez edge/negacji/repro → FAIL #7 | **🟢 OBOWIĄZUJE** · Maciej „2 Jeszcze twardszy” · rule_107 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` |
 | R-PROC-AUTOBOT-EVAL-STRICT-PARITY | 2026-08-05 | Evaluator STRICT-PARITY: asymetria gracz/AI/MP lub test tylko ownerId=0 bez decyzji → FAIL #8 | **🟢 OBOWIĄZUJE** · Maciej „2 = Tylko A (parytet)” · rule_108 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md` |
 | R-PROC-AUTOBOT-EVAL-STRICT-SAVE | 2026-08-05 | Evaluator STRICT-SAVE: luki save/load nowego pola lub restore bez ?? default → FAIL #9 | **🟢 OBOWIĄZUJE** · Maciej „1+2” oś B · rule_109 | `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md` |
+| P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 | 2026-08-17 | Po wejściu cywilizacji obóz znika, a heks dostaje trwałą blacklistę spawnera | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS** · ECHO `e6c2ea2b` · implementacja `85f70a91` · testy 18/18 i 84/84 | `docs/decyzje/P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1.md` · blacklist/save-load/parytet |
 | P-MP-SPAWN-WYZYWIENIE | 2026-08-05 | Spawn MP: suwak Wyżywienie start ~3 zamiast 4 | **ZDEPLOYOWANE `ea921d1e`** (FALA 238) | `foundCity*` → `poziomRacji:4` · tip `5fecbcf` · test 14/14 |
 | R-AUTO-RACJE-RAISE | 2026-08-05 | Auto Wyżywienie + Spichlerz ≥ 0 + przełącznik auto w każdym mieście | **ZDEPLOYOWANE** FALA 225→227 `3840f218` · fokus playtest **ODŁOŻONY** (R-AUTO-RACJE-RAISE-PT=B, 2026-08-06) | Q1=B · Q2–Q5=A · bez ABC o playtest (`R-ABC-BEZ-PLAYTEST`) · `docs/decyzje/R-AUTO-RACJE-RAISE-PT.md` |
 | R-REKRUT-LUDNOSC-UI | 2026-08-04 | Teksty rekrutacji: nie sugerować −1 obywatela; ludność miasta nie spada (tylko Manpower) | **ZDEPLOYOWANE `38df6ad7`** (FALA 224) | `docs/decyzje/R-REKRUT-LUDNOSC-UI.md` · cityPanel |
@@ -95,6 +197,7 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | R-TRZODA-SCALE-MAP | 2026-08-04 | Skala zwierząt pastwiska/trzody ×1,5 na mapie | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| Q1=**B** (krowa+świnia+owca+lama) · `docs/decyzje/R-TRZODA-SCALE-MAP.md` |
 | R-SCOUT-ZWIEDZAJ-HIGHLIGHT | 2026-08-04 | Zwiedzaj ma złoty stan WŁ jak Czuwaj/Fortyfikuj (select nie kasuje autoExplore) | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| korekta R-SCOUT-EXIT-AUTO · `docs/decyzje/R-SCOUT-ZWIEDZAJ-HIGHLIGHT.md` |
 | R-SCOUT-ZWIEDZAJ-PODSWIETLENIE | 2026-08-04 | Po kliknięciu Zwiedzaj brak złotej ramki (Uśpienie OK) | **ZDEPLOYOWANE `ee0e7e04`** (FALA 223) | Q1=A · zostań + złoto od razu · `docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md` |
+| P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 | 2026-08-17 | Ceremonialny popup po zajęciu ostatniego aktywnego miasta-państwa tego samego klucza kultury co gracz; bez zmiany mechaniki epoki Brązu ani innych podbojów | **GOTOWE / ZAMKNIĘTE — ZDEPLOYOWANE FALA 294 `a0f804d7` — PASS-WITH-NOTES** | ECHO `94a70850` · testy `13/13`, `16/16`, tsc PASS · ROBOCZA md5 `a0f804d7593333e34c989dc3565cb0c6`, VERIFY OK · live Chromium niedostępny w środowisku |
 | R-BATTLE-TEMPO-UI | 2026-08-04 | Panel Tempo bitwy: ± zamiast ×1/×2/×4; AUTO = komputer; prędkość w tooltipach | **ZDEPLOYOWANE `132401ef`** (FALA 222) | Q1=**A** · Q2=**B** · `docs/decyzje/R-BATTLE-TEMPO-UI.md` · branch `cursor/feat-battle-tempo-ui-63a1` |
 | R-DYPLO-STOL-PW-SUM | 2026-08-04 | Stół: bilans PW liczy tylko 1. umowę, nie sumuje wymiany surowców na stole | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| panel `negotiationBalanceBarHtml` · suma PW wszystkich pending · `docs/decyzje/R-DYPLO-STOL-PW-SUM.md` |
 | R-DYPLO-PRZYJMIJ-TRADE | 2026-08-04 | Stół negocjacji: Przyjmij na Traktat handlowy nic nie robi (umowa_handlowa vs umowa_szlakow w evaluateProposal) | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| branch `cursor/fix-dyplo-przyjmij-traktat-63a1` · `docs/decyzje/R-DYPLO-PRZYJMIJ-TRADE.md` |
@@ -147,7 +250,7 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | R-PILL-TARCZA-BEZ-MURU | 2026-08-04 | Pigułka: szara tarcza mimo braku palisady/muru na heksie (Sparta) | **ZDEPLOYOWANE `ee0e7e04`** (FALA 223) | Q1=A · wallKind · `docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md` |
 | R-UI-TRAKTAT-LANDSCAPE | **ZDEPLOYOWANE `6bf472e2`** (FALA 211) | Koszyk traktatu: landscape 2 kol. (PW+warunki lewo, wymiana prawo), modal ~1180px. |
 | R-PW-BILANS-ACCEPT | **ZDEPLOYOWANE `adefb5b8`** (FALA 214) | Bilans PW < 0 → brak akceptacji AI/Przyjmij; dopiero ≥0. PR #70 · `docs/decyzje/R-PW-BILANS-ACCEPT.md` |
-| R-WIARYGODNOSC | **R1/R1b/R3/R4 + UI rozbicie + badge/ranking DONE** (FALA 237 `5b0e1c19`) · **§9 ECHO A** → strojenie czeka `działaj` | Spec §7 badge+Potęga w ROBOCZA; `R-WIARYGODNOSC-S9-Q1.md` |
+| R-WIARYGODNOSC | **R1/R1b/R3/R4 + UI rozbicie + badge/ranking + §9 DONE** (FALA 259 `e028045c`) | `wiarygodnosc-test` 270/270; `R-WIARYGODNOSC-S9-Q1.md` |
 | R-RELACJA-PW-INVERT | **ZDEPLOYOWANE `6bf472e2`** (FALA 211) | Korekta FALA 210: niska Rel → niższe PW gracza (siła), partner baza; dopłać. Rel 52/baza 80 → **42 vs 80**. |
 | R-AI-KOLONIZACJA | **ZDEPLOYOWANE `47a2e73b`** (FALA 207) | Q1A Q2A Q3B · dystans 4 · pop≥5 · surge |
 
@@ -170,7 +273,7 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
-| R-AUDYT-STOLICE-VS-MP | 2026-08-02 | 4 bliskie etykiety miast — czy bypass sep stolic (min ~12 hex)? | **ECHO UX** → `MAP-UX-CLUSTER-LABEL-Q1` ZAPISANA B+C | Audyt DESIGN_KLASTRA; sep 14 twarde; wdrożenie etykiet czeka `działaj` |
+| R-AUDYT-STOLICE-VS-MP | 2026-08-02 | 4 bliskie etykiety miast — czy bypass sep stolic (min ~12 hex)? | **ZAMKNIĘTE / ZDEPLOYOWANE FALA 296 `a37f7123`** przez `MAP-UX-CLUSTER-LABEL-Q1=B+C` | Audyt DESIGN_KLASTRA; sep 14 twarde; etykiety + marker wdrożone, MP wyłączone z korony commitem `d3470ed` |
 | C-ARMY-HUNGER-Q1 | 2026-07-27 | ZNALEZISKO-88: parytet głodu armii AI vs gracz (suwak żywności + utrata HP) | **ZDEPLOYOWANE `a74c3797`** (FALA 36) | Decyzja **A** — pełny parytet · `docs/decyzje/C-ARMY-HUNGER-Q1.md` |
 | R-TRUDNOSC-1 | „jakiś czas temu" (odtworzone 2026-07-24) | **Osobny suwak „Trudność miast-państw" w kreatorze gry**, niezależny od głównej trudności. Steruje 3 mechanizmami miast-państw: (1) startowe zaufanie do gracza, (2) skala sojuszu sióstr, (3) posiłki obronne (RESUP). | **ZDEPLOYOWANE `ea75f5ba`** | Suwak w Zaawansowanych opcjach; domyślnie=główna trudność. Recon 2026-07-24: te 3 elementy są pochodną globalnej `_menuDifficulty` (trust easy+10/normal+5/hard0; sojusz sióstr ×0,6/0,3/0,15; RESUP low/normal/strong) **ORAZ przeciek: `bonusWalka` +5% siły walki AI na hard (`trudnosc_poziom3_bonus_walka`) — miasta-państwa też go dostają z globalnej trudności.** Nowa opcja setupu odpina WSZYSTKO (3 mechanizmy + siłę walki miast-państw) od globalnej. Domyślnie = główna trudność (zero regresji). Główna `_menuDifficulty` steruje resztą (ekonomia/AI/mapa). Musi respektować parytet AI. |
 | R-UNIT-KOSZT-ŁUCZ | 2026-07-24 | Łucznicy brązowi = 1 Brąz czy 0? | **ZDEPLOYOWANE** (redeploy 4.1) — dystansowe 0 surowców | Decyzja: **0** (jednolicie — wszystkie dystansowe darmowe surowcowo, jak Procarz). Łucznik akadyjski/asyryjski 1→0. Reguła kosztów: dystansowe = 0. |
@@ -2462,6 +2565,21 @@ oraz ruszenia przypiętej bramki `empire-miasta-table-test.cjs` (dziś 89/0, pin
 nominalną). Pełna treść pytania w `PYTANIA-OTWARTE.md`, sekcja
 `P-PANEL-MIASTA-VS-SPICHLERZ-WZROST-ROZJAZD`.
 
+## P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 — ECHO C (2026-08-17)
+Maciej: `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 = C`. Po odkryciu technologii
+umożliwiającej wejście do epoki Brązu ma pojawić się modal pełnej karty technologii
+(budynki, jednostki, ulepszenia, kolejne technologie, wymagania i efekty), oparty
+na prawdziwych danych tech tree. Modal nie anuluje tury ani badań, nie jest popupem
+podboju miast-państw. Zakres: istniejący toast/zdarzenie epoki, karta, Escape/
+zamknięcie, ponowne otwarcie z drzewa, długie listy/brak sekcji, test produkcyjnej
+ścieżki i starego save. Bez Designera i linkowania zewnętrznego.
+
+Kanon: `docs/decyzje/P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1.md`.
+Status: **ZDEPLOYOWANE FALA 294 `a0f804d7` — PASS-WITH-NOTES** —
+implementacja `1383c31e`/`b047ff73`; tsc PASS, tech-tree 19/19, research 33/33,
+defer 7/7 + mutacje 8/8. Live build PASS; egzekucja Chromium zablokowana
+brakiem executable w środowisku. To ograniczenie środowiskowe, nie funkcjonalny FAIL.
+
 ## P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 — ECHO (2026-08-16)
 Maciej: `P-BITWA-ATAK-DYSTANSOWY-WEJSCIE-Q1 = A`. Realne przejęcie miasta jak barbarzyńcy —
 wejście AI na pusty, niebroniony heks miasta w kontekście ataku dystansowego ma wołać tę samą
@@ -2474,3 +2592,723 @@ Pełna treść pytania w `PYTANIA-OTWARTE.md`, sekcja `P-BITWA-ATAK-DYSTANSOWY-B
 | R-NOWE-MIASTO-AUTOBUDOWA-ZROWNOWAZONA-DOMYSLNIE | 2026-08-16 | Nowo założone miasto ma zaczynać z trybem budowy „zrównoważone" zamiast „ręczny" | **ZAMKNIETE (2026-08-17)** | PASS Evaluatora, commit `eb03cb94`, wdrozone w FALI 291. `foundCityAt()` zwraca `budowaTryb: 'zrownowazone'` domyslnie. |
 | R-CYWILIZACJE-DOSTEPNE-PER-MAPA-PLUS-JEDEN | 2026-08-16 | +1 do liczby dostępnych cywilizacji dla każdego rozmiaru mapy | **ZAMKNIETE (2026-08-17)** | PASS Evaluatora, commit `48246469`, wdrozone w FALI 291. Niejednoznacznosc rozstrzygnieta ABC (`R-CYWILIZACJE-EPOKA-PULA-Q1 = A`) - mapy na suficie puli EPOCH_CIV_TYPE_POOL bez zmian, reszta +1; miasta_panstwa +1 wszedzie. |
 | P-BITWA-ATAK-DYSTANSOWY-BRAK-NA-MAPIE | 2026-08-14 | Atak dystansowy AI na miasta — 4 rundy | **ZAMKNIĘTE — Evaluator PASS-WITH-NOTES `6826b16c`** | ECHO `EGZEKUCJA-Q1=B`+`WEJSCIE-Q1=A`; N1 wydzielony do `P-BITWA-ATAK-DYSTANSOWY-TELEPORT-Q1` (osobne ABC, nie pilne) |
+
+## P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1 — ECHO B (2026-08-17)
+Maciej zdecydował: gracz, AI i miasta-państwa pozyskują jednostki wyłącznie przez zakup
+za Skarbiec/Pieniądze; jednostki nie trafiają do tej samej kolejki Pracy co budynki.
+Zakres obejmuje produkcję, zakup/rush, limity, środki, save/load i migrację starych kolejek.
+Status: **GOTOWE/ZAMKNIĘTE — obecne w ROBOCZEJ FALI 293 `8fa80b7c` i FALI 294
+`a0f804d7`; zaakceptowane przez Evaluatora, PASS-WITH-NOTES**.
+Dowód: ECHO `bc200aee`; implementacja `914ce8da`; testy kontraktów/migracji
+`f30e13d7`, `c2a72a98`; `rekrutacja-skarbiec-only-test.cjs` **13/13 PASS**.
+Pre-existing dług testowy, niezwiązany z tą zmianą: `unit-stock-cost-test.cjs`
+**41/58 PASS** oraz `ai-recruit-upkeep-gate-test.cjs` **18/27 PASS**.
+Kanon: `docs/decyzje/P-REKRUTACJA-JEDNOSTEK-TYLKO-SKARBIEC-Q1.md`.
+
+| P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1 | 2026-08-17 | Bazowa produkcja Drewna/Kamienia/Gliny z terenu; rzeka pozostaje osobnym modyfikatorem | **GOTOWE / ZAMKNIĘTE — ZDEPLOYOWANE ROBOCZA FALA 294 `a0f804d7` — Evaluator PASS-WITH-NOTES** | `gra/data/terrain-yields.json` · implementacja `4d40d0f8` · test korekty `3ee0c52f` · `terrain-base-resource-yields-test.cjs` 9/9 (rzeka osobno: +10 Glina, bez Drewna/Kamienia) · ROBOCZA md5 `a0f804d7593333e34c989dc3565cb0c6`, VERIFY OK · pozostałe testy: magazyn 14/14, konwertery 46/46, warstwy 24/24, parytet 101/101 |
+| P-EPOKA-BRAZU-KOMUNIKAT-PODBOJ-MIAST-Q1 | 2026-08-17 | **POPRZEDNI POŁĄCZONY TEMAT — ZASTĄPIONY / UNIEWAŻNIONY** | **ZASTĄPIONY / UNIEWAŻNIONY przez sprostowanie właściciela** | Łączył błędnie dwa niezależne zdarzenia: komunikat odblokowania/przejścia do Brązu po badaniach/technologiach oraz triumf po zajęciu wszystkich miast-państw kultury. Historia zachowana; nowe ID: `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1` i `P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1`. Żadne z tych zdarzeń nie jest wzajemnym warunkiem. |
+| P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1 | 2026-08-17 | Osobny komunikat o możliwości wejścia do epoki Brązu i nowych możliwościach po odkryciu/odblokowaniu odpowiednich badań/technologii | **ZDEPLOYOWANE FALA 294 `a0f804d7` — PASS-WITH-NOTES** | ECHO C; niezależne od zajęcia wszystkich miast-państw danej kultury; testy logiczne zielone, live Chromium niedostępny |
+| P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1 | 2026-08-17 | Osobny popup triumfu po zajęciu wszystkich miast-państw danej kultury | **GOTOWE / ZAMKNIĘTE — ZDEPLOYOWANE FALA 294 `a0f804d7` — PASS-WITH-NOTES** | ECHO A; niezależne od odkrycia technologii i przejścia do epoki Brązu; testy 13/13 i 16/16; ROBOCZA md5 `a0f804d7593333e34c989dc3565cb0c6`, VERIFY OK; live Chromium niedostępny |
+## KOREKTA STATUSÓW — FALA 291 (docs-only, 2026-08-17)
+
+Poniższe wpisy porządkują wyłącznie aktywny status rejestru. Historia i dowody pozostają
+w `PYTANIA-OTWARTE.md`; nie zmieniają decyzji właściciela ani `WERSJE.md`.
+
+| ID | Status bieżący | Dowód / uwaga |
+|---|---|---|
+| P-BITWA-PODSUMOWANIE-NIGDY-NIE-WIDOCZNE | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | fix `8f45ae6d` + test repro/negacji; test 16/16, battle summary PASS, overlay 84/84, tsc PASS |
+| P-BITWA-SCENA-REJESTRACJA-PRZED-WYJATKIEM | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | commit `46efc847`; test kamery 24/24, battle summary PASS, cleanup 23/0, tsc PASS |
+| P-BITWA-ATAK-MIASTO-MGLA-BRAK-SPRAWDZENIA | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | commit `8e90aa53`; map attack 13/13, siege 6/6, tsc PASS; zakres = klik gracza |
+| P-AI-BRAK-POJECIA-MGLY | **GOTOWE / ZAMKNIĘTE — Evaluator PASS-WITH-NOTES** | FALA 292, zachowane w ROBOCZA FALI 294 (`a0f804d7`, `VERIFY OK`); `ai-fog-test.cjs` 8/8; save/load W5 |
+| P-TOOLTIP-CIV-UNIT-PANEL-SCOPE-MARTWY-W-GRZE | **ZAMKNIĘTE — NO-ACTION** | panel tree-shaken |
+| P-AI-BRAK-SCIEZKI-ZDOBYCIA-MIASTA-ADIACJA | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | predykat + executor + wiring; test capture 14/14, movement 13/13, tsc PASS; brak pełnego E2E pathfindingu |
+| P-AI-PANSTWA-MIASTA-REKRUTACJA-JAKO-BUDYNKI | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS** | aktywny flow AI/MP Skarbiec→rekrutacja; capture i surrender sanitizują legacy kolejkę; testy 20/20, 11/11, 13/13, tsc PASS |
+| P-DYPLO-BILANS-GATE-NIESPOJNY-N-E1-REPRODUKCJA | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS-WITH-NOTES** | commit `4fda539a`; live preview 8/8, stół 166/166, proposal 187/187, negotiation 62/62, fairness 24/24, tsc PASS |
+| P-SUROWCE-KOLEJNOSC-KART | **ZAMKNIĘTE** | test `62/0` |
+| P-CUD-WONDER-EARLY-RETURN-STALE-HIGHLIGHT | **ZDEPLOYOWANE FALA 295 `8589d294` — Evaluator PASS** | commit `8e0e70e7`; test 8/8, rodzic 2/8, tsc PASS |
+| P-SIDEPANEL-CTX-DOCK-SCROLL-MARTWY | **ZDEPLOYOWANE** | FALA 286 |
+
+## ECHO — decyzje ABC 2026-08-18, gotowe do dispatchu Workflow
+
+| ID | Decyzja | Status | Kontrakt |
+|---|---|---|---|
+| P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY | **B** — czas ponad próg ostrzeżeniem, poprawność nadal twardą bramką | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.md` · kontrakt 2/2 |
+| P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2 | **C** — targeted overlay bez globalnego przebijania | **ZDEPLOYOWANE FALA 296 `a37f7123` — Evaluator PASS-WITH-NOTES** | `docs/decyzje/P-KOPALNIA-PODSWIETLENIE-KOSMETYKA-N2.md` · overlay 76/76 |
+
+## R-HANDEL-MIEDZYCYWILIZACYJNY-PRZYCHOD-BUDYNEK-Q1 — recon mechaniki handlu (2026-08-20)
+
+**Zgłoszenie właściciela:** ustalić przychody z handlu między cywilizacjami, moment wejścia
+mechaniki i wymagany budynek; nie dublować istniejącej mechaniki.
+
+**GOAL:** potwierdzić faktyczny przychód, bramki technologiczne/budynkowe, warunki umowy,
+parytet stron i save/load oraz wskazać, czy potrzebna jest zmiana kodu.
+
+**STATUS:** RECON PASS-WITH-NOTES — mechanika istnieje; brak zmiany kodu. Ewentualne
+rozszerzenie AI↔AI wymaga osobnej decyzji ABC.
+
+## R-PRACA-MIASTO-LIMIT-50-Q1 — lokalny limit ulepszeń względem budynków (2026-08-20)
+
+**Zgłoszenie właściciela:** „W oddziale pracy w miastach powinna być maksymalna możliwość
+przeznaczenia do 50% na ulepszenia, a reszta na budynki. Powinna obowiązywać miasta dokładnie
+ta sama zasada, która jest dla całej cywilizacji.”
+
+**GOAL:** lokalny podział Pracy w mieście respektuje ten sam kontrakt co nadrzędny podział
+cywilizacji: ulepszenia terenu maksymalnie 50% dostępnej puli, pozostała część trafia do
+budynków; UI, logika gracza/AI i wartości zapisywane nie mogą pozwolić na przekroczenie capu.
+
+**STATUS:** ZAREJESTROWANE — przed dispatchingiem wymaga reconu aktualnej implementacji,
+sprawdzenia relacji z `P-PRACA-SPLIT-FALA292-NIEPEŁNY-Q1` oraz pełnej bramki AutoBot.
+
+**Następny krok:** `00-dispatch.md`, następnie Operator Luna Medium.
+
+## R-AUTOBOT-LIMIT-5-RUND-Q1 — limit pętli Operator–Evaluator (2026-08-20)
+
+**Zgłoszenie właściciela:** pętla AutoBot nie może trwać bez końca; maksymalnie pięć prób
+tego samego tematu, po czym należy jawnie zgłosić przekroczenie limitu.
+
+**GOAL:** kanon procesu, skrót wejściowy, reguły egzekwujące i playbook definiują jednolity
+limit 5 rund Operator→Evaluator dla jednego ID oraz status/akcję po przekroczeniu; temat
+nie może być automatycznie ponawiany w nieskończoność.
+
+**STATUS:** ZAREJESTROWANE — zmiana samego AutoBota; wymaga dispatchu Operatora, niezależnego
+Evaluatora i aktualizacji wygenerowanego `playbook.json` wyłącznie przez generator.
+
+## R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1 — rekrutacja nie może blokować się kosztem utrzymania (2026-08-20)
+
+**Zgłoszenie właściciela:** przy rekrutacji system ma sprawdzać wyłącznie surowce wymagane
+do samego zakupu jednostki, a nie przyszły koszt jej utrzymania. Utrzymanie ma być pobierane
+w kolejnej turze; niedobór może wtedy powodować właściwe szkody/konsekwencje dla jednostki.
+
+**GOAL:** gracz z wystarczającymi zasobami rekrutacyjnymi może kupić jednostkę niezależnie
+od przyszłego utrzymania; kontrola kosztu rekrutacji i rozliczenie utrzymania są rozdzielone
+dla gracza, AI/MP, UI, logiki i starych zapisów.
+
+**STATUS:** ZAREJESTROWANE — wymaga reconu regresu, implementacji w aktualnej ścieżce
+rekrutacji i pełnego obiegu AutoBot. Decyzja właściciela jest literalna; nowe ABC nie jest
+potrzebne, o ile kod nie ujawni dodatkowej niejednoznaczności zakresu.
+
+## R-TECHNOLOGIA-KARTY-PODGLAD-KLIK-Q1 — podgląd kart w drzewku i panelu badań (2026-08-20)
+
+**Zgłoszenie właściciela:** gotowe karty technologii mają być klikalne w drzewku technologii
+oraz w menu Badań na mapie; kliknięcie ma otwierać podgląd karty i nie może przypadkowo
+rozpoczynać badania. Interfejs ma oznaczać możliwość podglądu.
+
+**GOAL:** jedna istniejąca karta technologii jest dostępna z obu ścieżek UI, dla wszystkich
+stanów technologii, z osobną akcją rozpoczęcia badania oraz poprawnym zamykaniem/focusem.
+
+**STATUS:** ZAREJESTROWANE — Operator i Evaluator wykonani; formalny dispatch/allowlista
+uzupełnione po kontroli Final Control, przed ponowną kontrolą gotowości.
+
+## R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1 — rozdzielenie budżetu od trybu automatyzacji (2026-08-20)
+
+**Zgłoszenie właściciela:** blok „Podział Praca: budynki / ulepszenia” dotyczy już zebranego
+budżetu i nie powinien sterować ani ograniczać automatycznego użycia ulepszeń; kontrolka jest
+źle opisana i ma zostać rozdzielona od trybu pracy ulepszeń. Recon ma rozstrzygnąć, czy blok
+budżetu usunąć, czy zastąpić właściwym sterowaniem 0–100% trybu automatyzacji.
+
+**GOAL:** UI i logika nie mylą nadrzędnego budżetu ulepszeń z automatyzacją kolejki ulepszeń;
+nie ma błędnej blokady 0–50% tam, gdzie właściciel oczekuje sterowania trybem pracy 0–100%.
+
+**STATUS:** ZAREJESTROWANE — recon Operatora ma rozdzielić dwie kontrolki; przy niejednoznaczności
+przygotować ABC zamiast wdrażać sprzeczną interpretację.
+
+## R-ZDOBYCZE-ELIMINACJA-POWER-Q1 — brak zdobyczy po eliminacji (2026-08-20)
+
+**Zgłoszenie właściciela:** popup eliminacji pokazuje `Skarbiec, nauka i 0 tech(y) przejęte`
+oraz `Zdobycze Power: +0`, co jest niewiarygodne; po zdobyciu państwa/miasta powinny zostać
+przejęte właściwe zasoby i power zgodnie z faktycznym stanem pokonanego.
+
+**GOAL:** eliminacja poprawnie wylicza i pokazuje zdobycze Skarbca, Nauki, technologii i Power;
+wartość nie może być zerowana przez błędny moment odczytu ani mylona z brakiem zdobyczy.
+
+**STATUS:** ZAREJESTROWANE — wymaga reconu źródła popupu, snapshotu pokonanego państwa i testu
+niezerowych oraz zerowych wartości; implementacja dopiero po potwierdzeniu kontraktu w kodzie.
+
+## R-BITWA-KOLORY-GRACZ-PRZECIWNIK-Q1 — stała tożsamość stron bitwy (2026-08-20)
+
+**Zgłoszenie właściciela:** gracz ma być zawsze niebieski, przeciwnik zawsze czerwony,
+niezależnie od tego, kto atakuje lub się broni; preferowany układ to gracz po lewej,
+przeciwnik po prawej, a rola atakujący/obrońca ma być tylko informacją.
+
+**GOAL:** ekran bitwy zachowuje stałą tożsamość kolorów i stron dla gracza/przeciwnika,
+bez regresji podpisów, wyniku i logiki ataku/obrony.
+
+**STATUS:** ZAREJESTROWANE — wymaga reconu renderowania stron i testów obu kierunków bitwy.
+
+## R-PRACA-JEDEN-SUWAK-UI-Q1 — usunięcie drugiego suwaka (2026-08-20)
+
+**Zgłoszenie właściciela:** usunąć dolny, niepotrzebny suwak; pozostawić jeden nadrzędny
+suwak z nazwami „Budynki (0–100%)” i „Pula Pracy (0–50%)”, bez rozjechanych stanów.
+
+**GOAL:** UI ma renderować jeden suwak i jeden stan podziału, z komplementarnymi wartościami
+budynków/puli pracy oraz bez drugiego niezależnego event handlera.
+
+**STATUS:** ZAREJESTROWANE — Operator zakończył zmianę i raport; brak jeszcze pełnej kontroli
+Evaluator/Final Control. Nie integrować bez weryfikacji z późniejszym rozdzieleniem budżetu
+i automatyzacji w `R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1`.
+
+## R-REPO-CHECKOUT-PULL-AUTH-Q1 — właściwy checkout i weryfikacja pull (2026-08-20)
+
+**Zgłoszenie właściciela:** pracować na świeżym checkoutcie, potwierdzić obecność README.md,
+Falę 300 i możliwość synchronizacji z `origin/main`; nie używać starego, zaśmieconego katalogu.
+
+**GOAL:** właściwy checkout `Civ-clean-main-2026-08-20` jest rozpoznany, ma HEAD `47cdca15`
+i upstream `origin/main`; pull nie może być wykonywany na nieprawidłowym/nieczystym katalogu
+ani omijać problemu poświadczeń.
+
+**STATUS:** ZWERYFIKOWANE — właściwy checkout i `origin/main` potwierdzone; README.md oraz
+Fala 300 są obecne. Pull nie został wykonany na obecnym nieczystym worktree, aby nie nadpisać
+równoległych zmian; wcześniejszy problem poświadczeń pozostaje warunkiem środowiskowym.
+
+## R-PRACA-PULA-NIEAKUMULUJE-Q1 — pula pracy nie odkłada przychodu (2026-08-20)
+
+**Zgłoszenie właściciela:** przy podziale 0% budynki / 100% pula pracy, a także przy 50/50,
+globalna pula pozostaje na poziomie `8` zamiast odkładać bieżący przyrost Pracy; UI pokazuje
+sprzeczność między `+9 do puli`, stanem `8 +9` i lokalnym `Praca w mieście +9`.
+
+**GOAL:** każda tura prawidłowo rozdziela bieżącą Pracę między budynki i pulę, odkłada część
+przeznaczoną do puli w trwałym stanie, nie zeruje jej po odświeżeniu oraz zachowuje zgodność
+panelu imperium, panelu miasta, utrzymania ulepszeń i starego save/load.
+
+**STATUS:** ZAREJESTROWANE — wymaga reconu źródła akumulacji i implementacji Operatora;
+nie zakładać, że problem wynika wyłącznie z suwaka. Trzeba sprawdzić kolejność naliczenia,
+cache/globalny stan puli, utrzymanie ulepszeń oraz ścieżkę tury.
+
+## R-PROC-NUMERACJA-FAL-DEPLOY-Q1 — numer fali po każdym deployu (2026-08-20)
+
+**Zgłoszenie właściciela:** przy każdym deployu numeracja fali ma być zwiększona i zapisana,
+żeby wdrożenia nie ginęły w historii.
+
+**GOAL:** każdy faktyczny deploy ma jeden jawny numer Fali, commit i wpis w `dyspozycje/WERSJE.md`;
+numer nie jest zwiększany przy samym commicie, integracji ani pracy roboczej.
+
+**STATUS:** ZAREJESTROWANE — kanon C-004 już wymaga logowania deployu; ten wpis doprecyzowuje
+obowiązek numeracji dla bieżącej serii. W tej Fali nie wykonano nowego deployu.
+
+## R-PROC-AGENT-CLEANUP-QUEUE-Q1 — zamykanie zakończonych subagentów (2026-08-20)
+
+**Zgłoszenie właściciela:** zakończonych lub niepracujących subagentów trzeba usuwać/zamykać,
+żeby nie blokowali kolejki.
+
+**GOAL:** po odebraniu końcowego raportu agent jest zamykany; aktywny pozostaje wyłącznie agent,
+który faktycznie pracuje lub oczekuje na wynik. Nie wolno zamykać agenta aktywnego bez sprawdzenia
+statusu i zabezpieczenia jego raportu.
+
+**STATUS:** ZAREJESTROWANE — bieżący audyt kolejki wykonany; zakończeni agenci tej serii zostali
+zamknięci, a aktywny Operator puli pracy pozostaje otwarty do czasu raportu.
+
+## R-AUTOBOT-ROUTING-STATUS-LEDGER-Q1 — brak pewnego statusu subagentów (2026-08-20)
+
+**Zgłoszenie właściciela:** routing nie przekazuje niezawodnie informacji o zakończeniu lub
+przerwaniu subagenta; powstają puste przebiegi, marnuje się czas i nie wiadomo, czy uruchamiać
+kolejną rolę.
+
+**GOAL:** każde dispatchowanie ma jawny rekord `agent_id`, temat, rolę, rundę, czas startu,
+oczekiwany artefakt i końcowy status (`PASS`, `FAIL`, `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS` albo
+`CLOSED`). Brak notyfikacji nie może być traktowany jako aktywna praca ani jako sukces.
+
+**STATUS:** ZAREJESTROWANE — wymaga audytu i wdrożenia mechanizmu ledger/watchdog w procesie
+AutoBot; nie zmienia mechaniki gry.
+
+## R-AUTOBOT-CAPACITY-LEDGER-VS-THREAD-LIMIT-Q1 — rozjazd wolnego slotu i limitu wątków (2026-08-20)
+
+**Zgłoszenie właściciela:** ledger może wskazywać wolny slot po zamknięciu agenta,
+podczas gdy silnik wykonawczy nadal zwraca `agent thread limit reached`; trzeba ustalić,
+czy zamknięcie jest asynchroniczne, czy Watchdog zajmuje ten sam limit.
+
+**GOAL:** zmierzyć rzeczywistą pojemność narzędzia względem liczby agentów raportowanych
+jako aktywni, rozdzielić status księgowy od statusu wykonawczego oraz ustalić, czy Watchdog
+liczy się do limitu. Wynik ma zawierać reprodukcję albo brak reprodukcji, czasy zwolnienia
+slotu i regułę bezpiecznej rezerwacji slotów.
+
+**STATUS:** ZAREJESTROWANE — diagnostyka procesu; bez zmian w `gra/**`, bez deployu i pushu.
+
+## R-AUTOBOT-MODEL-LUNA-HIGH-OPERATOR-EVALUATOR-Q1 — zmiana modelu ról jakościowych (2026-08-20)
+
+**Zgłoszenie właściciela:** zbyt wiele błędnych rund Operatora/Evaluatora przepala tokeny;
+Operator i Evaluator mają pracować na Luna High.
+
+**GOAL:** wymusić w dispatchach Codex `model=gpt-5.6-luna` oraz
+`reasoning_effort=high` dla Operatora i Evaluatora, bez dziedziczenia przypadkowego modelu
+rodzica. Każdy nowy raport ma podawać żądany model i effort; Final Control pozostaje Luna
+High, a integracja orkiestratora Luna Medium.
+
+**STATUS:** ZAREJESTROWANE — zmiana procesu; bez zmian w `gra/**`, bez deployu i pushu.
+
+## KOREKTA STATUSÓW 2026-08-21 — faktyczny stan po FALA 300–302
+
+Powyższe wpisy z 2026-08-20 leżały niescommitowane obok kodu gry i nigdy nie trafiły do
+`origin/main`; ich `STATUS` jest zamrożony na moment sprzed FALA 300–302 i dziś jest
+NIEAKTUALNY dla części tematów. Zgodnie z zasadą retencji tego pliku (nie przepisujemy
+historycznych statusów bez daty/dowodu) — korekta, nie edycja wpisów powyżej:
+
+- **`R-PRACA-JEDEN-SUWAK-UI-Q1`** → **ZDEPLOYOWANE, FALA 301** (potwierdzone przez
+  właściciela). Wpis wyżej mówiący „brak jeszcze pełnej kontroli Evaluator/Final Control"
+  jest nieaktualny.
+- **`R-BITWA-KOLORY-GRACZ-PRZECIWNIK-Q1`** → **ZDEPLOYOWANE, FALA 301** (potwierdzone
+  przez właściciela jako „Kolory bitwy: gracz niebieski, przeciwnik czerwony").
+- **`R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1`** → **ZDEPLOYOWANE, FALA 302** (potwierdzone
+  przez właściciela jako „Limit miasta: Budynki 50–100% / Pula Pracy 0–50%").
+- **`R-PRACA-MIASTO-LIMIT-50-Q1`** → **DUPLIKAT** tej samej funkcji co
+  `R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1` — zamknięty razem z nim, FALA 302; nie prowadzić
+  osobnego retry pod tym ID.
+- **`R-PRACA-PULA-NIEAKUMULUJE-Q1`** → **ZDEPLOYOWANE, FALA 302** (potwierdzone przez
+  właściciela jako „Akumulacja puli pracy zgodnie z decyzją B").
+- **`R-TECHNOLOGIA-KARTY-PODGLAD-KLIK-Q1`** → **NIEJEDNOZNACZNE, wymaga sprawdzenia
+  przed zamknięciem.** Run tego ID (`dyspozycje/autobot/runs/R-TECHNOLOGIA-KARTY-PODGLAD-KLIK-Q1/`)
+  ma werdykt `PASS-WITH-NOTES`, ale bez commita/integracji — jego zmiany nie są obecne ani w
+  `origin/main`, ani w migawce `becb91c1`. Właściciel zgłosił jako zrobione w FALA 301
+  „Podgląd technologii i badań" — może to być INNY, wcześniej zaimplementowany mechanizm
+  (np. karta odkrycia z `P-EPOKA-BRAZU-ODKRYCIE-KOMUNIKAT-Q1`/`P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`),
+  nie to konkretne zlecenie (klikalność kart w drzewku/hubie). Do potwierdzenia z właścicielem
+  przy najbliższym przeglądzie — nie zamykać cicho jako to samo.
+- **`R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1`** i **`R-ZDOBYCZE-ELIMINACJA-POWER-Q1`** →
+  potwierdzone przez właściciela jako **wciąż NIEWDROŻONE** (2026-08-21). Pozostają
+  `ZAREJESTROWANE`, WIP częściowy istnieje niescommitowany w migawce `becb91c1` na branchu
+  `work/clean-main-2026-08-20` — wymaga przeglądu przed kontynuacją, nie zakładać że jest
+  gotowy do integracji.
+- **`R-HANDEL-MIEDZYCYWILIZACYJNY-PRZYCHOD-BUDYNEK-Q1`** → potwierdzone przez właściciela:
+  to było pytanie o istniejące zasady, nie zaakceptowane zadanie zmiany — status
+  `RECON PASS-WITH-NOTES` powyżej jest ostateczny, nie traktować jako otwarty temat do zamknięcia.
+
+## R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1 — stary i nowy przycisk widoczne razem (2026-08-21)
+
+**Zgłoszenie właściciela (transkrypcja głosowa):** „Następują stare i nowe przyciski,
+zakończ turę i wykonaj" — stary i nowy przycisk dla akcji Zakończ turę/Wykonaj widoczne
+jednocześnie w UI, zamiast jednego aktualnego.
+
+**GOAL:** dokładnie jeden przycisk „Zakończ turę"/„Wykonaj" renderowany w danym stanie gry;
+zidentyfikować i usunąć martwy/stary element UI pozostawiony po wcześniejszej zmianie
+(prawdopodobnie regresja podobna do C-040/C-049 — nowy element wpięty bez usunięcia starego).
+
+**STATUS (zaktualizowane 2026-08-21 po recon równoległej sesji orkiestratora):**
+**RECON ZAMKNIĘTY — brak bugu w kodzie.** 3 hipotezy (podwójny montaż `bottomBarHud.ts`,
+osobny przycisk `preBattle.ts`, race condition `cfg`) wykluczone niezależnie zweryfikowanym
+recon (`dyspozycje/autobot/runs/R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1/01-operator.md`).
+Najbardziej prawdopodobna przyczyna: stary zbuforowany build przeglądarki (ten sam mechanizm
+co karta technologii z tej samej sesji). Rekomendacja: ABC do właściciela — czy duplikat
+utrzymuje się po twardym odświeżeniu (Ctrl+Shift+R) przed ostatecznym zamknięciem tematu.
+
+## R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 — pasek w stylu taśmy ostrzegawczej na kartach blokujących (2026-08-21)
+
+**Zgłoszenie właściciela (transkrypcja głosowa):** „W tych obramówkach są jakieś znaczki,
+jakby... taśmy ostrzegawcze na budowach. Nie jest zgodny ze stylem nowym, ale wiem, że
+designer przygotował takie głupie wyglądy; trzeba by mu chyba dać dyspozycję, żeby to zmienić."
+
+**Znalezisko (recon):** `gra/src/ui/sidePanelHud.ts`, klasa `.sp-blk-stripe` — diagonalny pasek
+(`repeating-linear-gradient` złoto/ciemniejsze złoto) na górze kart „blokujących" wydarzeń w
+panelu bocznym (`sp-event.sp-blocking.sp-expanded`). Wizualnie przypomina taśmę ostrzegawczą.
+Brak jakiegokolwiek wcześniejszego zlecenia dla designera ani zgłoszenia pod tym opisem w
+`REJESTR-PROSB-I-ZADAN.md` ani `PYTANIA-OTWARTE.md`.
+
+**GOAL:** zastąpić `.sp-blk-stripe` istniejącym językiem wizualnym paczki designu panelu
+imperium (`chip-warning.svg`/`.civ-emp-alert` z `Ulepszenie_infografik.zip`,
+`docs/ux/claude-design/_dist/11-ZAKLADEK-PANEL-IMPERIUM-2026-08-13/`) zamiast paska —
+spójne z resztą nowego stylu, bez czekania na nowy mockup designera.
+
+**ECHO (Maciej, 2026-08-21):** zastąp istniejącym językiem designu (nie usuwać całkowicie,
+nie zlecać nowego mockupu).
+
+**STATUS (zaktualizowane 2026-08-21 po dwóch rundach równoległej sesji orkiestratora):**
+**READY_FOR_DEPLOY (Final Control, runda 2).** Runda 1 (recon inny niż to ECHO) usunęła pasek
+całkowicie bez zamiennika — to było BŁĘDNE względem tego ECHO ("nie usuwać całkowicie").
+Runda 2 zastępuje ją: pasek zamieniony na blok z ikoną `chip-warning` i paletą `.civ-emp-alert`
+skopiowaną 1:1 z `empireDetailPanel.ts` (border `#4a2a2a`, tło `rgba(224,122,122,.07)`, tekst
+`#e6c4c4`), zweryfikowane niezależnie przez Evaluatora i Final Control. Testy 19/19 + 43/43,
+`tsc` czysty. Ślad: `dyspozycje/autobot/runs/R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1/`
+(`00-dispatch-r2.md`, `01-operator-r2.md`, `02-evaluator-r2.md`, `03-final-control-r2.md`).
+
+## NOWE ZGŁOSZENIA PROCESOWE 2026-08-20 (Maciej)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-AUTOBOT-LIMIT-5-RUND-Q1 | 2026-08-20 | Limit 5 rund pętli domknięcia Operator->Evaluator->Final Control na ten sam temat/ID; po przekroczeniu orkiestrator zgłasza właścicielowi zamiast kontynuować w nieskończoność | **WDROŻONE (docs-only) — nie jest pytaniem ABC** | Kanon: docs/decyzje/R-PROC-AUTOBOT.md §3 + .claude/skills/autobots/SKILL.md |
+| R-AUTOBOT-FINALCONTROL-SUBAGENT-Q1 | 2026-08-20 | Final Control zawsze wykonuje osobny subagent (nigdy glowny agent samodzielnie); dla Claude Code ten sam model/effort co Evaluator | **WDROZONE (docs-only) — nie jest pytaniem ABC** | Kanon: docs/decyzje/R-PROC-AUTOBOT.md §1 + §5a + .claude/skills/autobots/SKILL.md |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-20 (Maciej)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1 | 2026-08-20 | Panel boczny wydarzeń (`sidePanelHud.ts`) stackuje wiele identycznych kart informacyjnych „Koniec tury" (ta sama treść, np. „Wyrąb: +25 Drewna (pozostało 0 tury)" powtórzona per miasto) zamiast łączyć je w jeden wpis. Poza zakresem `DYSPOZYCJA-WDROZENIE.md` Karty 3 — brief pokrywał wyłącznie rozróżnienie blokująca/informacyjna i kolejkę dla blokujących, nie deduplikację treści informacyjnych. | **READY_FOR_DEPLOY (Final Control, izolowany branch) — czeka na integrację** | Operator PASS (19/19 nowych testów, 0 regresji) → Evaluator PASS (adwersaryjnie, bez zmian kodu) → Final Control PASS (osobny subagent, READY_FOR_DEPLOY). Ślad: `dyspozycje/autobot/runs/P-WYDARZENIA-DEDUP-KONIEC-TURY-Q1/`. |
+| P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1 | 2026-08-17 | Ogólny wzorzec karty odkrycia technologii. | **ECHO=A ZAPISANE, RECON ZAMKNIĘTY (2026-08-21)** | Recon wykazał 2 realne bugi w żywym kodzie FALI 300 (widmowe/nieaktualne nazwy ulepszeń terenu + systemowy zły dobór ikony) — naprawa wydzielona jako osobny temat `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1`. Ślad: `dyspozycje/autobot/runs/P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1/01-operator-recon.md`. |
+| R-TECH-ULEPSZENIA-TERENU-SYNC-Q1 | 2026-08-21 | Naprawa dwóch bugów znalezionych w recon `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`: widmowe/nieaktualne nazwy ulepszeń terenu w `tech.json` (Brązownictwo, Murarstwo, Oswojenie zwierząt, Wojskowość) + systemowy zły dobór ikony w `techDiscoveryNotice.ts` dla wszystkich technologii z tą sekcją. | **READY_FOR_DEPLOY (Final Control, PASS-WITH-NOTES) — czeka na integrację** | Operator PASS (48/48 testów, `tsc` czysty) → Evaluator PASS (adwersaryjnie, niezależny skrypt weryfikacyjny 0/18 rozbieżności) → Final Control PASS-WITH-NOTES: uwaga nieblokująca, poza zakresem — `tech.Uwagi` dla Brązownictwa ("ABC-7: Popalnia brązu na mapie") przecieka do gracza OSOBNYM kanałem (`cityPanel.ts::appendTechDetailBlock`, poza allowlistą tego tematu), zarejestrowane osobno niżej jako `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1`. `terrain-improvements.json` nietknięty. Ślad: `dyspozycje/autobot/runs/R-TECH-ULEPSZENIA-TERENU-SYNC-Q1/`. |
+| P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1 — **ZDEPLOYOWANE, FALA 306** | 2026-08-21 | Znalezisko Final Control przy okazji `R-TECH-ULEPSZENIA-TERENU-SYNC-Q1`: pole `tech.Uwagi` (notatki deweloperskie, np. "ABC-7: Popalnia brązu na mapie") przecieka do gracza w `cityPanel.ts::appendTechDetailBlock()` (wywoływane z paneli budynku/jednostki) — filtr `playerFacingNote()` rozpoznaje tylko wzorce `PYTANIE`/`DECYZJA`/`DEC-\d{8}`/"patrz unit-building-bonuses", NIE rozpoznaje "ABC-7:". `techDiscoveryNotice.ts` (ten sam problem, inne miejsce) już świadomie NIE renderuje `Uwagi` — `cityPanel.ts` to przeoczył. | **ZDEPLOYOWANE, FALA 306** | Runda 1: dodano wzorzec `ABC-\d+` do `isDevOnlyPlayerText()` (whole-string reject) — Evaluator złapał regres: cała notatka Brązownictwa znikała, w tym legalna treść "kończy Epokę 1". Runda 2: przeniesiono rozpoznawanie do `stripInlineDevAnnotations()` (partial strip) — `playerFacingNote("kończy Epokę 1; ABC-7: ...")` teraz zwraca "kończy Epokę 1", nie `null`. Operator→Evaluator (PASS-WITH-NOTES)→Final Control PASS. Testy: `citypanel-uwagi-abc-filter-test.cjs` 35/35, `tsc` czysty. Znalezisko poza zakresem (Evaluator): analogiczny, nieblokujący problem w `buildings.json`/`terrain-improvements.json` (notatki ABC bez dwukropka po numerze, lub z długim ciągiem dalszym, przeciekają częściowo) — zarejestrowane niżej jako `P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1`. Ślad: `dyspozycje/autobot/runs/P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1/`. |
+| P-TECH-CARD-TEST-NIE-TESTUJE-AKTYWNEJ-SCIEZKI-Q1 | 2026-08-21 | Znalezisko Evaluatora przy `R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1` T3: `gra/tools/technology-discovery-card-visual-test.cjs` sekcja [2] robi `fs.readFileSync`+regex na SUROWYM TEKŚCIE `techDiscoveryNotice.ts`, nie na wyrenderowanym DOM aktywnej ścieżki — ponieważ stara implementacja (`_legacyShowTechDiscoveryNotice`) zostaje w tym samym pliku jako fallback, wzorce testu (np. `UNIT_PREVIEW = 3`, `tdn-card--compact`) trafiają w martwy kod fallbacku, nie w nową ścieżkę `entityCards`. Test dałby ten sam wynik (48 PASS) nawet gdyby aktywna ścieżka była całkowicie zepsuta. Final Control napisał jednorazowy harness DOM (esbuild+jsdom, bunduje realny kod, faktycznie woła `showTechDiscoveryNotice()`) i potwierdził poprawność na żywo (23/23), ale ten harness NIE został zapisany jako trwały test w repo. | **ZAMKNIĘTE przy okazji `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1` (2026-08-21)** | Dokładnie ta luka materializowała się naprawdę: FALA 307 regres (przyciski „Rozpocznij badanie"/„Otwórz drzewo" nie reagujące na klik) przeszedł niezauważony przez zielony `technology-discovery-card-visual-test.cjs`, bo test nadal sprawdza tylko tekst źródła. Naprawiono dodając DWA trwałe testy: `gra/tools/tech-discovery-card-click-test.cjs` (esbuild+jsdom, realnie woła `showTechDiscoveryNotice()`, realny `button.click()`/`dispatchEvent(MouseEvent)` na przyciskach stopki) ORAZ `gra/tools/tech-discovery-card-real-click-test.cjs` (esbuild+Playwright/Chromium żywy, `elementFromPoint()`+`page.mouse.click()` — realny hit-test, bo jsdom NIE robi layoutu i `button.click()`/`dispatchEvent` w jsdom omija hit-testing, więc nie wykryłby faktycznej przyczyny tego konkretnego regresu, patrz `R-CIVPEDIA-KARTA-AKCJE-NIE-DZIALAJA-Q1`). Oba testy zweryfikowane przez `git stash` na PRZED-naprawą kodzie: jsdom PASS (fałszywie zielony, jak przewidziano), Playwright 6/12 FAIL (łapie regres). Ważne dla T4-T7b: ten sam wzorzec (realny hit-test przez żywy Chromium, nie tylko wywołanie handlera) warto powtórzyć dla kolejnych migracji kart. |
+| P-BUDYNKI-UWAGI-ABC-CZESCIOWY-WYCIEK-Q1 | 2026-08-21 | Znalezisko Evaluatora przy okazji `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` (runda 2): ten sam filtr (`isDevOnlyPlayerText`/`stripInlineDevAnnotations`/`playerFacingNote`) gate'uje też pole `uwagi` (małą literą) w `buildings.json`, renderowane graczowi w `cityPanel.ts:7138`. Część wpisów ABC w `buildings.json` przecieka częściowo: (a) regex wycina tylko do pierwszej kropki, więc dłuższe notatki dev (np. "ABC-20 B: suma bonusów Port... JSON. LANCUCH W GORE: ... martwe. Budowla portowa...") zostawiają wewnętrzny komentarz po pierwszym zdaniu; (b) wpisy bez dwukropka po numerze (np. "... merge bez zmian, ABC-21 B).") w ogóle nie pasują do regexa i przechodzą nietknięte. Potwierdzone: to NIE regresja tego tematu — te same wpisy przeciekały w całości już PRZED jakąkolwiek naprawą filtra (stan nie gorszy, częściowo lepszy). | **OTWARTE — nie rozpoczęte, tylko odnotowane** | Nie wymaga ABC (bug filtra/regexa, nie decyzja). Poza zakresem `P-TECH-UWAGI-WYCIEK-CITYPANEL-Q1` (ten dotyczył wyłącznie `tech.json`/`cityPanel.ts::appendTechDetailBlock`). Brak brancha/dispatchu — do zarejestrowania z pełnym GOAL/allowlistą przed startem. |
+
+Uwaga: `R-UI-PRZYCISK-ZAKONCZ-TURE-DUPLIKAT-Q1` i `R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1` — patrz sekcje narracyjne
+z 2026-08-21 wyżej w tym pliku (zarejestrowane równolegle przez inną sesję pod tym samym ID; status pierwszego
+zamknięty jako recon bez bugu, drugiego zaktualizowany do READY_FOR_DEPLOY runda 2 poniżej po integracji).
+
+## NOWE ZGŁOSZENIA GRA 2026-08-21 (Maciej, po FALI 303)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-UI-PASKI-DIAGONALNE-PRODUKCJA-Q1 | 2026-08-21 | Karta „Produkcja: Ateny" (panel boczny wydarzeń) pokazuje diagonalny złoto-czarny pasek na górnej krawędzi zamiast czystej złotej obramówki. | **RECON ZAMKNIĘTY — brak aktywnego bugu w kodzie (Operator PASS)** | Pełny przegląd `sidePanelHud.ts` (740 linii) + grep całego repo pod `repeating-linear-gradient`/`border-image`/SVG pattern/`conic-gradient`/`stripe`/`diagonal`: jedyne wystąpienie to komentarz historyczny o już usuniętej (FALA 303) regule; brak jakiegokolwiek aktywnego mechanizmu mogącego dziś wyprodukować pasek. Karta „Produkcja" ma dziś jednolitą obramówkę. Silny dowód: stary zbuforowany build przeglądarki (ten sam wzorzec co 2 wcześniejsze incydenty tej sesji). Rekomendacja: twarde odświeżenie (Ctrl+Shift+R) na FALA 303 (md5 `26e45d4e`); jeśli pasek się utrzyma, potrzebny realny zrzut DOM/computed style z żywej sesji. Branch: `autobot/R-UI-PASKI-DIAGONALNE-PRODUKCJA-Q1` (`00588ad0`, docs-only, nic do integracji w `gra/`). Dispatch: `dyspozycje/autobot/runs/R-UI-PASKI-DIAGONALNE-PRODUKCJA-Q1/00-dispatch.md`, raport: `01-operator.md`. |
+| R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 | 2026-08-21 | Klaster 5 powiązanych problemów w UI podziału Pracy: (A) zdublowany/sprzeczny suwak w panelu „Praca Imperium" (dolny suwak miał zniknąć po `R-PRACA-JEDEN-SUWAK-UI-Q1`, FALA 301); (B) złe nazewnictwo górnego suwaka; (C) miasto w trybie „Indywidualne" może przekroczyć empire-owy cap 50% na ulepszenia (70/30, 30/70) — **to świadoma, udokumentowana decyzja historyczna** (`praca-limit-50-test.cjs`), nie oczywisty bug — WYMAGA ABC przed zmianą; (D) pula pracy nie akumuluje mimo 100% alokacji — możliwy regres już zamkniętego `R-PRACA-PULA-NIEAKUMULUJE-Q1` (FALA 302); (E) suwak automatyzacji ulepszeń miasta ograniczony do 0–50% zamiast 0–100% — może być tym samym stanem co (A)/(C), do ustalenia w recon. | **RUNDA 1: Wątki A/B/D naprawione (Operator PASS, `tsc` czysty, 6/6 `praca-*.cjs` zielone), scalone na branch. Wątek D: prawdziwy root cause — `_lastPracaRate` w `main.ts` nie odejmował trzech drenaży puli (budowa cudów, empire building-budget, auto-ulepszenia); naprawione + nowy test `praca-pula-rate-parity-test.cjs`. Wątki C+E: recon zamknięty, ECHO zapisane (patrz niżej), implementacja RUNDA 2 w toku. NOWY Wątek F (2026-08-21, zlecenie właściciela): przeprojektować panel „Podział pracy" — czytelny rozdział budynki/ulepszenia, sygnał ulepszeń na górze, układ lewo=budynki/prawo=ulepszenia, zmiana nazw „Budowa"→„Budynki", „Pula Pracy"→„Ulepszenia".** | Potwierdzone: żaden wątek nie pochodzi z integracji FALI 303 (`empireDetailPanel.ts`/`cities.ts` nietknięte przez tę sesję) — stan odziedziczony z FALI 301/302. Branch: `autobot/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1`. Dispatch: `dyspozycje/autobot/runs/R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1/00-dispatch.md`, Operator runda 1: `01-operator.md`. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-21 (Maciej, po FALI 303 — druga fala zgłoszeń, screenshoty)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1 (RUNDA 3) — **ZDEPLOYOWANE, FALA 304** | 2026-08-21 | Designer przysłał `podmien.zip` — precyzyjną poprawkę CSS dla makiety kart wydarzeń („Karta 3"), sprzeczną z już wdrożoną rundą 2 (chip-warning). 5 podmian dosłownych: (1) usunąć skośny pasek na kartach blokujących całkowicie, zostaje sama obramówka `3px solid #e8d88a` (bez bloku chip-warning z rundy 2); (2)-(4) przycisk „Zakończ turę" (stany aktywny/disabled/zablokowany-z-poświatą) — zamiana `border-top-color` na inset box-shadow; (5) focus-visible bez `outline`/`outline-offset` — zamiana na `border-color`+`box-shadow` dla przycisku akcji i karty informacyjnej. Źródło: `dyspozycje/autobot/runs/R-UI-OBRAMOWKA-PASEK-OSTRZEGAWCZY-Q1/podmien-designer-2026-08-21/PODMIEN-TO.md` (skopiowane ze scratchpad). | **ECHO ZAPISANE — gotowe do dispatchu Operatora** | ECHO (Maciej, 2026-08-21, po powtórnym pytaniu — pierwsze odrzucenie było przypadkowym kliknięciem): (a) świeża makieta Designera wygrywa w całości nad rundą 2 (usunąć chip-warning blok, wrócić do samej obramówki); (b) wszystkie 5 punktów w jednym dispatchu Operatora. Zakres: `gra/src/ui/sidePanelHud.ts` (punkt 1), `gra/src/ui/bottomBarHud.ts` (punkty 2-5). |
+| R-UI-POPUP-ODKRYCIE-OVERFLOW-Q1 — **ZDEPLOYOWANE, FALA 304** | 2026-08-21 | Zgłoszenie właściciela (zrzut ekranu, karta odkrycia „Obróbka drewna"): komunikat o nowym odkryciu wychodzi poza obrys monitora — brak twardego marginesu od góry/dołu. Jeśli treść karty jest długa, potrzebny jest pasek do przewijania w stylu złotym (nie systemowy szary), a nie wylewanie się karty poza widoczny obszar. | **OTWARTE — recon niezaczęty** | Prawdopodobny zakres: `gra/src/ui/techDiscoveryNotice.ts` (ten sam moduł co `P-TECHNOLOGIA-POPUP-KARTA-ODKRYCIA-Q1`/`R-TECH-ULEPSZENIA-TERENU-SYNC-Q1`) — brak `max-height`/`overflow-y` z marginesem od viewport + custom scrollbar (wzór stylu złotego już używany gdzie indziej w UI, do znalezienia w recon). Nie mylić z zamkniętymi tematami karty odkrycia — to nowy, osobny problem (overflow/scroll), nie treść/ikony. |
+| R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 — **FAZA 1/6 ZDEPLOYOWANE, FALA 305** | 2026-08-21 | Duże zlecenie funkcjonalne właściciela (3 wiadomości uzupełniające się): (1) stworzyć pełne karty dla WSZYSTKICH budynków, jednostek, ulepszeń terenu i technologii; (2) w momencie odkrycia badania (popup odkrycia) — możliwość kliknięcia na dowolny wymieniony budynek/jednostkę/ulepszenie, by zobaczyć jego kartę; (3) karty mają być ze sobą POWIĄZANE (linkowanie krzyżowe); (4) część kart już istnieje (`unitInfoCard.ts`, `techDiscoveryNotice.ts`, karty budynku w `cityPanel.ts`) — **wymaga dokładnego sprawdzenia obecnego stanu i przeprojektowania od nowa dla spójności**, nie zakładać że wystarczy dokleić linki; (5) wszystkie karty (budynki/jednostki/ulepszenia/technologie) mają mieć swoje miejsce w CivPedii (`wikiHubHud.ts`/`wikiBundle.json` — istniejący hub wiki, patrz też `dyspozycje/AUDYT-CIVPEDIA-MARTWE-OBIETNICE.md` i `AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md` z poprzedniego audytu); (6) NOWY WĄTEK (dołączony przez właściciela 3-krotnie, także dla drzewa technologii/hubu badań `scienceHubHud.ts`/`techTreeView.ts`): mały przycisk/tooltip informacyjny na każdej ikonie technologii do wyboru, klikalny, otwierający kartę technologii — bez zakłócania głównego kliknięcia „wybierz do badania". | **OTWARTE — duży zakres, recon wymagany przed ABC/implementacją** | To przeprojektowanie systemowe, nie prosty bug. Istniejące elementy do zinwentaryzowania w recon: `gra/src/ui/unitInfoCard.ts`, `techDiscoveryNotice.ts`, `wikiHubHud.ts`, `wikiBundle.json`, `scienceHubHud.ts`, `techTreeView.ts`, karty w `cityPanel.ts`. Prawdopodobnie wymaga ABC po recon (zakres kart per typ, priorytet, czy CivPedia = pojedyncze źródło prawdy dla treści kart czy osobna kopia). Nie implementować na ślepo przed pełnym recon + planem. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-24 (Maciej)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-ZELAZO-MODELE-BRAKUJACE-Q1 | 2026-08-24 | Właściciel poprosił o listę jednostek epoki Żelazo, które nie przeszły procesu naprawy modeli 3D „Opus 5" (precedens: `R-BRAZ-SUPER-DISPATCH-Q1`, zamknięty dla epoki Brąz). Audyt (subagent Explore) znalazł 4 jednostki bez dedykowanego modelu (Falanga, Jeździec z oszczepami, Konnica lancowa asyryjska, Konnica łucznicza asyryjska — ta ostatnia dodatkowo dzierży kopię zamiast łuku) + 2 jednostki dzielące identyczny model (Soldurii/Gaesatae, Celtowie). ECHO właściciela: wszystkie 6 dostają nowe, dedykowane, historycznie uzasadnione modele w stylu serii Opus 5. Jawna zgoda na pełną autonomię (workflow, pętla, deploy+push bez check-inów). | **ZINTEGROWANE (T1+T2+T3+T4 wszystkie na main) — czeka na deploy ROBOCZA** | Pełny opis, tabele audytu i podział na 4 sekwencyjne tematy (T1 Asyria-konnica ×2, T2 Celtowie Soldurii/Gaesatae, T3 Falanga, T4 Jeździec z oszczepami/Słowianie): `docs/decyzje/R-ZELAZO-MODELE-BRAKUJACE-Q1.md`. Ślad: `dyspozycje/autobot/runs/R-ZELAZO-MODELE-BRAKUJACE-Q1-T{1..4}/`. |
+
+## NOWE ZGŁOSZENIA PROCESOWE/KOSMETYCZNE 2026-08-25 (znaleziska rundy 2, R-ZELAZO-MODELE-BRAKUJACE-Q1-T1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T1-NPX-VITE-TWARDA-FORMA-Q1 | 2026-08-25 | `gra/tools/zelazo-konnica-asyryjska-real-render-test.cjs` (ok. linii 477) woła `npx vite build`, nie kanoniczną formę C-001 (`node ./node_modules/vite/bin/vite.js build`). Istota C-001 nie jest naruszona (empirycznie potwierdzone: brak nadpisania `data/*.json`), ale `npx` przy braku lokalnej binarki pobrałby vite z rejestru — ryzyko czysto proceduralne. | **OTWARTE — kosmetyczne, nieblokujące** | Znalezisko Evaluatora T1 runda 2, potwierdzone przez Final Control jako niedotykające GOAL/dowodu/zakresu/§9/gotowości integracyjnej. Naprawa: zamienić wywołanie na formę binarną. |
+| P-ZELAZO-T1-LANCA-UDO-BRAK-ASERCJI-Q1 | 2026-08-25 | Regres rundy 1 T1 (lanca przebijająca udo jeźdźca, naprawiony w rundzie 2 przez `AC_LANCE_GRIP.x`) nie ma dedykowanej asercji regresyjnej w teście tematu poza pośrednim pokryciem (H1) i jednorazowym testem penetracji Evaluatora/Final Control (nie zapisanym jako trwały test). | **OTWARTE — kosmetyczne, nieblokujące** | Znalezisko Evaluatora T1 runda 2. Naprawa: dodać trwałą asercję geometryczną chroniącą tę konkretną oś, żeby regres nie mógł wrócić niezauważony. |
+| P-ZELAZO-T1-Z3-WEDZIDLO-HEDGING-Q1 | 2026-08-25 | Komentarz historyczny Z3 w `zelazo-konnica-asyryjska-opus5.ts` (decyzja o brązowych, nie żelaznych, okuciach końskich) lekko przecenia jednoznaczność źródeł — żelazne wędzidła są poświadczone w kontekstach nowoasyryjskich. Wybór jest jawnie udokumentowany jako decyzja projektowa (kontrast materiałowy broń/oporządzenie), nie twierdzenie faktograficzne bez zastrzeżeń. | **OTWARTE — kosmetyczne, nieblokujące** | Znalezisko Evaluatora T1 runda 2. Naprawa: złagodzić sformułowanie komentarza Z3, żeby jawnie nazwać to wyborem projektowym, nie ustalonym faktem. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-25 (znaleziska T2, R-ZELAZO-MODELE-BRAKUJACE-Q1-T2, related_to: R-ZELAZO-MODELE-BRAKUJACE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T2-GAESATAE-UWAGI-NIEAKTUALNE-Q1 | 2026-08-25 | Pole `Uwagi` jednostki Gaesatae w `gra/data/units.json` opisuje stan SPRZED tego tematu i sprzed wcześniejszego rename „Wojownik celtycki → Gaesatae": „(...) długi miecz sieczny + owalna tarcza; tunika + torc" — dosłownie przeczy decyzji właściciela o nagości Gaesatae (`docs/decyzje/R-ZELAZO-MODELE-BRAKUJACE-Q1.md`) i faktycznemu modelowi zintegrowanemu w T2 (naga skóra, gaesum, brak tuniki). | **OTWARTE — dane, nieblokujące** | Znalezisko Operatora/Evaluatora/Final Control T2, poza allowlistą tego tematu (dane `units.json`, nie render). Naprawa: zaktualizować `Uwagi` do stanu faktycznego. |
+| P-ZELAZO-T2-GAESATAE-TYP-SWORDSMAN-Q1 | 2026-08-25 | Pole `Typ` jednostki Gaesatae w `gra/data/units.json` = „Swordsman", mimo że jednostka faktycznie walczy włócznią/oszczepem (`Rola (linia)="Wręcz"`, model dzierży gaesum) — dziedzictwo tego samego rename co wyżej. Wpływa na tabele kontr (`Bonus vs Spearman: 15%` liczy się względem przeciwników, nie względem własnego typu, ale `Typ` samej jednostki też wchodzi w mechanikę kontr innych jednostek wobec niej). | **OTWARTE — dane/balans, nieblokujące, wymaga decyzji o typie broni** | Znalezisko Operatora/Evaluatora/Final Control T2, poza allowlistą tego tematu. Naprawa: ustalić właściwy `Typ` (Spearman?) i skutki dla tabel kontr — to jest decyzja balansu, może wymagać ABC. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-25 (znaleziska T3, R-ZELAZO-MODELE-BRAKUJACE-Q1-T3, related_to: R-ZELAZO-MODELE-BRAKUJACE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T3-FALANGITA-WYSOKOSC-KOMENTARZ-NIEAKTUALNY-Q1 | 2026-08-25 | Nagłówek pliku `gra/src/render/hastati-falangita.ts` deklaruje sylwetkę „~0.55×HEX_R", ale zmierzona (Operator, Evaluator i Final Control niezależnie, identyczny wynik) wysokość Falangity to `0.7269×HEX_R` (z grzebieniem). Komentarz jest wspólny z `buildHastati()` w tym samym pliku, więc poprawka wychodzi poza allowlistę T3. | **OTWARTE — kosmetyczne, nieblokujące** | Znalezisko Operatora T3, potwierdzone niezależnie przez Evaluatora i Final Control. Naprawa: zaktualizować komentarz do zmierzonej wartości. |
+| P-ZELAZO-T3-DORY-CIAGLOSC-BRAK-ASERCJI-Q1 | 2026-08-25 | Nowy test real-render T3 (`zelazo-falanga-real-render-test.cjs`) nie ma dedykowanej asercji chroniącej CIĄGŁOŚĆ trzech części włóczni dory (shaft/tip/sauroter) — mutacja przesuwająca drzewce wzdłuż własnej osi (grot odczepia się i wisi w powietrzu) przechodzi test bez wykrycia, bo istniejące asercje mierzą inne relacje. Niezmiennik dziś TRZYMA z zapasem (zmierzone przez Evaluatora), to luka pokrycia na przyszłość, nie dowód braku dla tego tematu. | **OTWARTE — kosmetyczne, nieblokujące** | Znalezisko Evaluatora T3. Naprawa: dodać asercję ciągłości shaft↔tip/shaft↔sauroter. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-25 (znaleziska T4, R-ZELAZO-MODELE-BRAKUJACE-Q1-T4, related_to: R-ZELAZO-MODELE-BRAKUJACE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-BITWA-MANUALNA-MODEL-BEZ-NAZWY-Q1 | 2026-08-25 | `gra/src/battle/manualBattle.ts:750` woła `buildUnitModel(bu.kategoria, bu.ownerColor)` BEZ trzeciego argumentu (nazwa jednostki) — w scenie manualnej bitwy KAŻDY dedykowany model rodziny Opus 5 (T1 konnica asyryjska, T2 Soldurii/Gaesatae, T3 Falanga, T4 Jeździec z oszczepami — i wszystkie wcześniejsze, np. Brąz) spada do generycznego modelu kategorii, bo dispatch po nazwie nigdy nie dostaje szansy się uruchomić. Pozostałe wywołania `buildUnitModel` w repo (`unitMiniPreview.ts:90`, `battleScene.ts` ×4) przekazują nazwę poprawnie — to jest jedno, pojedyncze przeoczone miejsce. | **OTWARTE — pre-istniejący (commit `546f6a51`, 2026-08-17), przekrojowy, nieblokujący** | Znalezisko Evaluatora T4, potwierdzone niezależnie przez Final Control (`git blame`). Poza allowlistą T4 (§14) — nie naprawiony w tym temacie. Naprawa: dodać brakujący argument nazwy jednostki do wywołania. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-25 (Maciej, korekta zakresu)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-ZELAZO-AUDYT-POZOSTALE-Q1 | 2026-08-25 | Właściciel skorygował zakres `R-ZELAZO-MODELE-BRAKUJACE-Q1`: „mieć dedykowany model" ≠ „przeszedł proces Opus 5". Pozostałe 19 jednostek epoki Żelaza mają dedykowany dispatch, ale żyją w starszych plikach generacji, nigdy nie przeszły rygorystycznego audytu (zmierzona geometria, sekcja historyczna, real-render dowód). ECHO: audytować i przebudować wszystkie 19 (nie 6 już ukończonych). | **W TRAKCIE — T5+T6+T7+T8 ZINTEGROWANE, T9 w kolejce** | Pełny opis, tabela 19 jednostek i podział na 7 sekwencyjnych tematów (T5 Mezopotamia, T6 Fenicja/Egipt/Grecja piechota, T7 super-jednostki Rzym/Grecja+Hastati, T8 Germanie, T9 Celtowie, T10 Słowianie+Zulusi, T11 Katapulta): `docs/decyzje/R-ZELAZO-AUDYT-POZOSTALE-Q1.md`. Ślad: `dyspozycje/autobot/runs/R-ZELAZO-AUDYT-POZOSTALE-Q1-T{5..11}/`. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-25 (znaleziska T5, R-ZELAZO-AUDYT-POZOSTALE-Q1-T5, related_to: R-ZELAZO-AUDYT-POZOSTALE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T5-MUR-TARCZ-KULTURA-ROZJAZD-Q1 | 2026-08-25 | Jednostka „Mur tarcz (Sargonid)" w `gra/data/units.json` ma pole `Kultura: Sumerowie`, ale nazwa „Sargonid" wskazuje na dynastię neoasyryjską (Sargonidzi, 722-609 p.n.e.) — rozjazd ~1300 lat między nazwą a przypisaną kulturą. Opisane w kodzie (`jednostki-z1-mezopotamia.ts`, sekcja K) jako świadomy anachronizm z uzasadnieniem (dziedzictwo wizualne sumeryjskie np. kaunakes), ale to jest rozjazd DANYCH, nie tylko interpretacji wizualnej. | **OTWARTE — dane, wymaga decyzji właściciela** | Znalezisko Operatora T5, potwierdzone przez Evaluatora i Final Control. Poza allowlistą tego tematu (`units.json`). Decyzja: poprawić `Kultura` na Asyria/Sargonidzi, czy zostawić jako świadome uogólnienie „mezopotamskie" — to decyzja właściciela, nie techniczna. |
+
+## NOWE ZGŁOSZENIA GRA 2026-08-25 (znaleziska T6, R-ZELAZO-AUDYT-POZOSTALE-Q1-T6, related_to: R-ZELAZO-AUDYT-POZOSTALE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T6-KHOPESH-EN-BRAZOWY-MODEL-Q1 | 2026-08-25 | Nazwa EN „Iron Khopesh Warrior" w `units.json` sugeruje broń żelazną, ale model buduje khopesz w kolorze/materiale brązowym — spójne historycznie (khopesz to broń epoki brązu, opisane w sekcji K tego pliku), ale niespójne z literalną nazwą EN jednostki. | **OTWARTE — dane/nazewnictwo, wymaga decyzji właściciela** | Znalezisko Operatora T6. Poza allowlistą tego tematu (`units.json`). Decyzja: zmienić nazwę EN, czy zaakceptować rozjazd nazwa/materiał jako świadomy (żelazo w innym elemencie uzbrojenia jednostki). |
+| P-ZELAZO-T6-KHEPRESZ-SZEREGOWIEC-Q1 | 2026-08-25 | Model „Wojownik z żelaznym khopesh" nosi khepresz (niebieską koronę wojenną) — historycznie zastrzeżony dla faraona i następcy tronu, nie dla szeregowego wojownika. Nazwane wprost w sekcji K, nie naprawione (poza allowlistą — to `units.json`/decyzja projektowa, nie błąd geometrii). | **OTWARTE — decyzja projektowa/historyczna, wymaga właściciela** | Znalezisko Operatora T6, potwierdzone przez Evaluatora/Final Control. |
+| P-ZELAZO-T6-TYRSKI-MIECZNIK-PANCERZ-Q1 | 2026-08-25 | Jednostka „Tyrski miecznik" ma w `units.json` Pancerz=4, ale model nie ma widocznej sylwetki pancerza (brak elementu ochronnego korpusu widocznego na figurze). | **OTWARTE — kosmetyczne, nieblokujące** | Znalezisko Operatora T6. Naprawa: dodać element pancerza do modelu lub potwierdzić że wartość liczbowa nie wymaga wizualnej reprezentacji (decyzja projektowa). |
+
+## NOWE ZGŁOSZENIA GRA/PROCESOWE 2026-08-25 (znaleziska T8, R-ZELAZO-AUDYT-POZOSTALE-Q1-T8, related_to: R-ZELAZO-AUDYT-POZOSTALE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T8-DISPATCH-FUNKCJA-NIEISTNIALA-Q1 | 2026-08-25 | Lekcja procesowa: dispatch T8 zakładał, że `buildBerserker()` istnieje w `jednostki-z3-plemiona.ts` — w rzeczywistości funkcja żyła w `units.ts` na generyku `buildBaseAvatar()`. Operator zgłosił to jawnie i napisał funkcję tam, gdzie allowlista ją nazywała (zero wpływu na sąsiadów, potwierdzone przez Evaluatora/Final Control). | **ZAMKNIĘTE — lekcja procesowa, bez akcji kodowej** | Rekomendacja Final Control T8: przyszłe dispatche (T9/T10/T11) powinny sprawdzać istnienie nazwanej funkcji w pliku PRZED napisaniem allowlisty, nie zakładać na podstawie wzorca innych jednostek tej samej rodziny. |
+| P-ZELAZO-Z3-TYLNA-NOGA-SKROCONA-Q1 | 2026-08-25 | Cała rodzina jednostek w `jednostki-z3-plemiona.ts` (Berserker, Wojownik germański, Drużynnik, Miecznik galijski, iButho) buduje kończyny w płaszczyźnie YZ — tylna (−X) noga rzutuje się na ekran gry w rozpiętości ~0.046 wobec ~0.159 przedniej, więc wygląda na skróconą. Szczególnie widoczne u Berserkera (bose stopy). Stan zastany całej rodziny, nie defekt żadnego pojedynczego tematu. | **OTWARTE — kandydat na osobny temat serii** | Znalezisko Evaluatora T8, potwierdzone przez Final Control. Wymaga zmiany wspólnego wzorca budowy nóg całej rodziny — większy zakres niż pojedynczy temat T-serii. |
+| P-ZELAZO-T8-WOJOWNIK-GERMANSKI-EPOKA-ROZJAZD-Q1 | 2026-08-25 | Jednostka „Wojownik germański" w `gra/data/units.json` ma `Epoka: Żelazo`, ale `Dostępna w epokach: Brąz` — rozjazd pól. | **OTWARTE — dane, wymaga decyzji właściciela** | Znalezisko Operatora T8, potwierdzone przez Evaluatora i Final Control. Poza allowlistą tego tematu (`units.json`). |
+| P-ZELAZO-T8-TACYT-CYTATY-ELIPSA-Q1 | 2026-08-25 | Dwa cytaty z Tacyta w sekcji historycznej `jednostki-z3-plemiona.ts` skrócone bez oznaczenia elipsy ("scuta lectissimis coloribus distinguunt" z "tantum" pominiętym, "aut nudi aut sagulo leves" z "et" pominiętym) — sens obu zachowany, ale brak formalnego oznaczenia skrótu. | **OTWARTE — kosmetyczne, nieblokujące** | Znalezisko Evaluatora T8. Naprawa: dodać wielokropek w miejscu pominięcia. |
+
+## NOWE ZGŁOSZENIA GRA/PROCESOWE 2026-08-25 (znaleziska T11, R-ZELAZO-AUDYT-POZOSTALE-Q1-T11, related_to: R-ZELAZO-AUDYT-POZOSTALE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-BITWA-MANUALNA-MASZYNY-OBLEZNICZE-BEZ-NAZWY-Q1 | 2026-08-25 | `manualBattle.ts:750` woła `buildUnitModel(bu.kategoria, bu.ownerColor)` bez nazwy jednostki — w bitwie ręcznej wszystkie trzy machiny oblężnicze (Katapulta, Taran okuty, Wieża oblężnicza) renderują ten sam generyczny model humanoidalny zamiast właściwej bryły (zmierzone: 87 mesh generyka dla każdej, wobec 48 dla prawdziwej Katapulty). Ten sam bug co `P-BITWA-MANUALNA-MODEL-BEZ-NAZWY-Q1` z T4 — dotyczy CAŁEJ rodziny `SUPER_Z_MODELEM_NAZWANYM`/dispatchu po nazwie, nie tylko super-jednostek. | **OTWARTE — wymaga decyzji właściciela/osobnego tematu** | Znalezisko Operatora T11, potwierdzone przez Evaluatora i Final Control. Poza allowlistą tego tematu (`manualBattle.ts`). Kandydat do połączenia z T4-owym znaleziskiem w jeden temat naprawczy obejmujący cały plik. |
+| P-ZELAZO-T11-ONAGER-ALIASY-ROZJAZD-Q1 | 2026-08-25 | Aliasy `onager`/`balista`/`trebuchet` rozjeżdżają się między warstwami kodu (nazewnictwo niespójne), dziś bez efektu widocznego dla gracza (potwierdzone: `units.json` nie ma żadnego wiersza pod tymi nazwami — martwe rozgałęzienie). Operator świadomie NIE dopisał kodu pod nieistniejące jednostki. | **OTWARTE — porządkowe, nieblokujące** | Znalezisko Operatora T11, potwierdzone przez Evaluatora i Final Control. Bez wpływu na graczy dopóki `units.json` nie doda takiej jednostki. |
+
+## NOWE ZGŁOSZENIA GRA/PROCESOWE 2026-08-25 (znaleziska T10, R-ZELAZO-AUDYT-POZOSTALE-Q1-T10, related_to: R-ZELAZO-AUDYT-POZOSTALE-Q1)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T10-TARCZA-DRUZYNNIKA-DESKI-PROMIENISTE-Q1 | 2026-08-25 | Deski tarczy Drużynnika są ułożone promieniście (0°, ±60°), co z kamery gry (azymut 0/elewacja 52°) czyta się jako sześciopromienna gwiazda — powszechny opis tarcz tego typu mówi o deskach równoległych. Ten sam układ powtarza `zelazo-jezdziec-oszczepami-opus5.ts` (T4), który powołuje się na Drużynnika jako kanon — naprawa wymaga OBU plików naraz, żeby nie rozjechać spójności kulturowej. | **OTWARTE — kandydat na osobny temat serii** | Znalezisko Operatora T10, potwierdzone przez Evaluatora i Final Control. Świadomie nienaprawione w T10 (poza jego allowlistą jednoplikową). |
+| P-ZELAZO-T10-DRUZYNNIK-GALIJSKI-PROG-Q1 | 2026-08-25 | Odróżnialność pary Drużynnik/Miecznik galijski = 0.521, nadal poniżej progu rodziny 0.558 (stan zastany 0.509 przed T10; T10 podniósł, nie pogorszył). Druga połowa pary (Miecznik galijski) jest przedmiotem T9. | **OTWARTE — zależność od T9, sprawdzić po jego zamknięciu** | Znalezisko Operatora T10, potwierdzone przez Evaluatora i Final Control. |
+| P-ZELAZO-SERIA-PROG-ZEROWY-H12-Q1 | 2026-08-25 | Testy serii (asercje typu H12 „zero pikseli") pilnują wyłącznie dokładnego zera, więc bryły „prawie martwe" (8–11 px zmierzone np. `ib-arm-left-upper`, `ib-necklace-tooth-2`) przechodzą bez ostrzeżenia. Dotyczy metodologii CAŁEJ serii testów real-render, nie tylko T10. | **OTWARTE — porządkowe, dla całej serii** | Znalezisko Evaluatora T10. Propozycja: próg minimalnej widoczności zamiast progu zerowego. |
+| P-ZELAZO-T10-DANE-ATAK-DYSTANSOWY-ARMOR-Q1 | 2026-08-25 | `units.json`: Drużynnik ma `Atak dystansowy: 0` w opisie, ale `missileAttack: 7` w bloku runtime (model słusznie idzie za polem opisowym, nie runtime); iButho nie ma w ogóle klucza `armor`, choć bratnia jednostka Impi ma `armor: 3`. Stan zastany, nie wprowadzony przez T10. | **OTWARTE — dane, wymaga decyzji właściciela** | Znalezisko Evaluatora T10, potwierdzone przez Final Control. Poza allowlistą tego tematu (`units.json`). |
+
+## NOWE ZGŁOSZENIA GRA/PROCESOWE 2026-08-25 (znaleziska T9, R-ZELAZO-AUDYT-POZOSTALE-Q1-T9, related_to: R-ZELAZO-AUDYT-POZOSTALE-Q1 — OSTATNI temat serii)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-ZELAZO-T9-RYDWAN-CELTYCKI-BESPOKE-BRYLA-Q1 | 2026-08-25 | Rydwan celtycki dzieli WSPÓLNĄ bryłę kategorii `rydwan` z mykeńskim i Shang (`buildCategoryModel('rydwan')` + `decorateChariot()`) — to potwierdzona LUKA, nie świadomy wzorzec (cztery niezależne przesłanki, patrz `docs/decyzje/R-ZELAZO-AUDYT-POZOSTALE-Q1.md`). T9 podniósł odróżnialność celtycki/mykeński z 0.0102 do 0.390 w granicach allowlisty (`decorateChariot()`), ale próg rodziny 0.558 wymaga bespoke bryły (wiklinowy kosz, koła, kształt skrzyni) w osobnym pliku, jak Kapadokijski/konny. | **OTWARTE — kandydat na osobny temat serii** | Znalezisko Operatora T9, potwierdzone niezależnie przez Evaluatora i Final Control (obaj zmierzyli 0.390, próg 0.558 nieosiągalny bez bespoke bryły). |
+| P-ZELAZO-T9-RYDWAN-MYKENSKI-SHANG-AUDYT-Q1 | 2026-08-25 | Rydwan mykeński i Shang mają ten sam defekt „znacznik kultury krawędzią do kamery" (198px) co miał celtycki przed T9; boss Shang ma barwę własnej tarczy (niewidoczny na tarczy), boss mykeński — barwę okuć wozu. Wzajemna odróżnialność mykeński/Shang 0.0139. Poza allowlistą T9 (dotyczy innych kultur). | **OTWARTE — kandydat na osobny temat** | Znalezisko Operatora T9, potwierdzone przez Evaluatora i Final Control. |
+| P-ZELAZO-T9-RYDWAN-CELTYCKI-OSZCZEPY-ROZJAZD-Q1 | 2026-08-25 | `units.json`: Rydwan celtycki ma Uwagi „wojownik z oszczepami", ale `Atak dystansowy` = 0 i `Ilość pocisków` = „—" — model świadomie nie dostał oszczepów (zgodnie z realnymi danymi ataku), rozjazd jest w opisie tekstowym. | **OTWARTE — dane, wymaga decyzji właściciela** | Znalezisko Operatora T9, potwierdzone przez Evaluatora i Final Control. Poza allowlistą (`gra/data/**`). |
+| P-ZELAZO-GETGEOOVALSHIELD-MYLNA-NAZWA-Q1 | 2026-08-25 | `getGeoOvalShield()` w `units.ts` zwraca `CylinderGeometry` (krążek), nie owal — nazwa myli co do faktycznego kształtu. Używane też przez inne jednostki poza zakresem T9, więc porządkowanie nazwy (i ew. sprawdzenie czy gdziekolwiek oczekiwano faktycznego owalu) jest osobnym tematem. | **OTWARTE — porządkowe, nieblokujące** | Znalezisko Operatora T9, potwierdzone przez Evaluatora i Final Control. |
+| P-ZELAZO-T9-WOZNICA-TUNIKA-KOLOR-GRACZA-NIEBIESKI-Q1 | 2026-08-25 | Tunika woźnicy rydwanu celtyckiego (urzet 0x2f5aa0) leży blisko koloru gracza NIEBIESKIEGO (0x3366ee). Zmierzone: piksele w barwie gracza 1334 (celtycki) vs 1669 (mykeński) = 80%, więc identyfikacja gracza pozostaje czytelna dziś (H21), ale warto zobaczyć na żywym ekranie przy tej jednej palecie. | **OTWARTE — kosmetyczne, nieblokujące, do sprawdzenia przy okazji balansu barw** | Znalezisko Operatora T9, potwierdzone przez Evaluatora i Final Control. |
+
+
+## ZNALEZISKO ROOT-CAUSE 2026-08-25 — podział Pracy: nazwa `doUlepszen` opisuje `doPuli` (P-PRACA-WARSTWY-NAZWY-ROZJAZD-Q1)
+
+**Zgłoszenie właściciela (główny czat orkiestratora):** „to co miało być 0-100% jest do 50%,
+a to co miało być do 50% jest 0-100%, więc chyba mylicie pojęcia i to co ma być zrobione jest
+robione ciągle na odwrót" oraz „cap jest dla złej warstwy [...] prawdopodobnie cały czas mylisz
+te pozycje, dlatego wszystkie kolejne zmiany cały czas robiły złe poprawki".
+
+**POTWIERDZONE POMIAREM W KODZIE — właściciel ma rację.** `gra/src/ui/cityPanel.ts:1314-1319`:
+`const { doBudynkow, doPuli } = splitPraca(total, pctB / 100); return { ..., doUlepszen: Math.round(doPuli) }`.
+Zmienna nazywa się `doUlepszen`, ale niesie `doPuli` — czyli udział trafiający do OGÓLNEJ puli
+Pracy imperium, nie budżet ulepszeń. Ta sama liczba jest w jednym pliku opisana czterema
+różnymi nazwami: „Ulepszenia" (`cityPanel.ts:4783`), „→ Pula Pracy imperium" (`:4723`),
+„→ Pula imperium — zapas cywilizacji (załóż miasto, projekty mapy)" (`:5539`) oraz w komentarzu
+„`doUlepszen` (pula imperium)" (`:9948`). Pula imperium finansuje też cuda
+(`wonder-map-build.ts`), zakładanie miast, budżet budynków imperium (`applyEmpireBuildingBudget`)
+i leczenie HP jednostek (`manpower.ts`) — więc to NIE są ulepszenia.
+
+**TRZY WARSTWY, mylone ze sobą od FALI 292:**
+| # | Pole | Zakres | Co realnie dzieli |
+|---|---|---|---|
+| 1 | `podzialPracy.procentBudynki` | 50–100% budynków | lokalna kolejka budynków miasta **vs ogólna pula imperium** |
+| 2 | `EmpirePracaSplit.procentUlepszenia` | 0–50% | pulę imperium **vs** budżet budynków imperium (`splitEmpirePracaBudget`) |
+| 3 | `pracaAutoPercent` / `ulepszeniaPracaPercent` | 0–100% | ile z tego automat ulepszeń faktycznie wydaje (tryb budowy) |
+
+**KONSEKWENCJA:** cap „ulepszenia ≤ 50%" siedzi dziś na warstwie 1, która nie jest podziałem
+budynki/ulepszenia. Realny udział ulepszeń jest ILOCZYNEM warstw 1 i 2 (przy 70/30 w mieście
+i 33% w imperium na ulepszenia idzie ~10%). To wyjaśnia całą serię nawrotów: fale 292, 293,
+301, 302, 310, 317, 318, 319 naprawiały cap/etykietę na warstwie, na którą akurat trafiły —
+każda „PASS", każda mijająca się z celem.
+
+**STATUS:** **OTWARTE — czeka na decyzję właściciela (A/B).** (A) przemianować warstwę 1 na
+uczciwe „Do puli imperium", cap zostaje gdzie jest, zero zmian w balansie; (B) rozdzielić pulę
+na osobne strumienie i przenieść cap 50% na prawdziwy strumień ulepszeń — realna przebudowa
+ekonomii Pracy, ale dopiero ona daje literalnie to, o co prosi właściciel.
+
+**Wykonane dotąd (NIE jest to fix powyższego):** `P-PRACA-CAP-MIGRACJA-LUKA-Q1` — zamknięte
+dwie luki w `migratePodzialPracyOnLoad()` (gałąź `savedDefaults` nie normalizowała miast wcale;
+`podzialPracyOverride !== undefined` pomijało normalizację), dotąd maskowane wyłącznie kolejnością
+wywołań na ścieżce load. Test `gra/tools/praca-cap-migracja-luka-test.cjs` (11/11, z dowodem
+nietautologiczności przez wycięcie poprawki ze źródła). Dotyczy warstwy 1 — utwardzenie
+istniejącego kontraktu, nie rozstrzygnięcie rozjazdu nazw.
+
+## ZAMKNIETE 2026-08-25 — R-DYPLO-PAKT-WETO-EKSPANSJA-Q1 (Pakt o nieagresji strukturalnie nieosiagalny)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-DYPLO-PAKT-WETO-EKSPANSJA-Q1 | 2026-08-25 | „kolejny problem w dyplomacji, nie można zawrzeć deala" — Stół negocjacji odrzucał Pakt o nieagresji komunikatem „Ekspansja przy granicy — brak zaufania do paktu" mimo bilansu PW na korzyść drugiej strony. | **ZINTEGROWANE do `main` (`6841fa0c`), czeka na deploy ROBOCZA** | Weto nie miało ŻADNEGO źródła projektowego — specyfikacja modeluje ten czynnik wyłącznie jako −2 Zaufania/turę, nigdy jako bramkę. Flaga = czysta funkcja liczby miast (`cities(A)>2 && cities(B)>2`), więc od 3. miasta obu stron trwała do końca partii i żadna akcja gracza jej nie zdejmowała; przy Relacji 200/200 i słodziku 100 000 pakt nadal odrzucany. Naprawa: weto → narzut na próg Relacji równy `SWEETENER_EASE_MAX_POINTS`, więc maksymalny słodzik dokładnie go kasuje (pakt droższy, nigdy nieosiągalny). 26/26 nowy test + 51 bramek dyplomacji + 5 referencyjnych zielonych. |
+| P-DYPLO-PAKT-NIEAGRESJI-ZAUFANIE-MIMO-PLUS-BILANS | 2026-08-10 | Wcześniejsze zgłoszenie właściciela TEGO SAMEGO defektu: „albo nie mam zaufania i nie ma tego w opcjach do wyboru, albo jest w opcjach do wyboru, kwestią jest tylko zbalansowanie innymi propozycjami". | **ZAMKNIĘTE przez R-DYPLO-PAKT-WETO-EKSPANSJA-Q1** | Leżało w `PYTANIA-OTWARTE.md` ze statusem „zarejestrowane, w kolejce" przez 15 dni. Rozwiązanie realizuje dokładnie drugi wariant wskazany przez właściciela. Lekcja procesowa: zgłoszenie było poprawnie zapisane, ale nigdy nie dostało dispatchu. |
+| P-DYPLO-AI-INICJATYWA-NIE-ZNA-EKSPANSJI-Q1 | 2026-08-25 | Inicjatywa AI (`ai.ts` Priorytet 3b) sprawdza tylko `score >= progNapRelacja - napScoreEase` i w ogóle nie zna flagi `ekspansjaPrzyGranicy` (`AIDiplomacyInput` jej nie niesie) — więc AI potrafi samo zaproponować pakt przy Relacji między progiem a progiem+narzut, którego samo by nie przyjęło. | **OTWARTE — wymaga `ai.ts` + `main.ts`, poza allowlistą tematu** | Znalezisko Operatora, potwierdzone przez Evaluatora i Final Control. Świadomie nieposzerzone w biegu (§14). |
+| P-DYPLO-LOCKS-PREVIEW-LUKA-Q1 | 2026-08-25 | Luka w podglądzie `diplomacy-locks.ts` — pre-istniejąca, nie regresja tego tematu. | **OTWARTE — porządkowe** | Znalezisko Evaluatora, potwierdzone przez Final Control jako pre-istniejące i słusznie poza allowlistą. |
+
+## ZAMKNIETE 2026-08-25 — R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1 (punkt zuzycia Pracy dla jednostek w kolejce)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-AI-JEDNOSTKI-TYLKO-ZAKUP-Q1 | 2026-08-25 | „miało już nie być budowania jednostek w miastach AI tylko zakup za pieniądze z podatków i co znowu to samo czyli regres" + zrzut panelu PRODUKCJA („Wojownik · Koszt: 40 · Zebrana Praca: 2/40"). | **ZINTEGROWANE do `main` (`24fe52fc`), czeka na deploy ROBOCZA** | Premisa „regres w kodzie" NIE potwierdziła się: pomiar 40 tur × 3 scenariusze na czystym `main` → do kolejki Pracy trafia ZERO jednostek, wszystkie 24 kupione za Skarbiec. Sześć bramek chroni WEJŚCIE do kolejki. Znaleziono jednak realną lukę: PUNKT ZUŻYCIA nie był broniony (`advanceProduction` lał Pracę we front bez sprawdzania rodzaju), co ma znaczenie dla STARYCH ZAPISÓW — najprawdopodobniejsze źródło zrzutu. Naprawione owner-agnostycznie (parytet gracz/AI/MP). Runda 2 zamieniła tautologiczny test (regex po własnym źródle) na behawioralny; asercja D13 odtwarza dokładny zrzut właściciela. 44/44 + 31 bramek AI zielonych. |
+| P-AI-CENA-JEDNOSTKI-SREDNI-NAN-Q1 | 2026-08-25 | Cena jednostki dla `kosztJednostekPace='sredni'` wychodzi `NaN`. | **OTWARTE — dane/logika, nieblokujące** | Znalezisko Operatora, poza allowlistą tematu. |
+| P-AI-RUSH-KOMUNIKAT-PRZED-FALA299-Q1 | 2026-08-25 | Komunikat `[Rush] … jednostka w kolejce` opisuje zachowanie sprzed FALI 299 (jednostki w kolejce Pracy), czyli kontrakt, którego już nie ma. | **OTWARTE — kosmetyczne** | Znalezisko Operatora. |
+| P-AI-PROMOTE-TO-FRONT-KONTRAKT-PRZED-FALA299-Q1 | 2026-08-25 | Trzy czerwone asercje `promote-to-front-test` (121/4) zakładają jednostkę w kolejce Pracy — kontrakt sprzed FALI 299. Czerwone PRE-ISTNIEJĄCO, potwierdzone identycznie na czystym `main`. | **OTWARTE — dług testowy** | Wymaga decyzji: zaktualizować asercje do kontraktu po FALI 299 albo usunąć jako nieaktualne. |
+| P-AI-INICJATYWA-BEZ-FLAGI-EKSPANSJI-Q1 | 2026-08-25 | (powiązane z tematem dyplomacji) inicjatywa AI nie zna flagi `ekspansjaPrzyGranicy`. | **OTWARTE** | Zarejestrowane wcześniej przy `R-DYPLO-PAKT-WETO-EKSPANSJA-Q1`. |
+
+## ZAMKNIETE 2026-08-26 — R-PRACA-JEDEN-PODZIAL-Q1 (jeden podzial Pracy, suma 100%, cap 50%, stosowany RAZ)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-PRACA-JEDEN-PODZIAL-Q1 | 2026-08-25 | „zawsze musi się sumować do 100% nie może być 100 i 50" + „nazwy określamy tak jak powinny wyglądać żeby nie były mylące na przyszłość oraz usuwamy duplikaty tego co się liczy niepotrzebnie dwa razy". Po ośmiu falach nawrotów (292, 293, 301, 302, 310, 317, 318, 319). | **ZINTEGROWANE do `main` (`3739a64f` + `f33794d2`), czeka na deploy ROBOCZA** | Ta sama Praca była dzielona DWA RAZY. Na DOMYŚLNYCH ustawieniach gry do ulepszeń trafiało **0,0%**; przy maksymalnych suwakach 20% zamiast 50%. Po zmianie: 30% ustawione → 30,0%, 50% → 50,0%, suma zawsze = Praca miasta. Drugi podział usunięty w całości. Root cause nazw (`doUlepszen` niosące `doPuli`) zlikwidowany — trzy panele czytają jedną stałą. Runda 2 zamknęła trzy blokery: budżet automatu wrócił do liczenia od skumulowanej puli (pula 300 → 2 ulepszenia, 5 000 → 41, 50 000 → 217; wcześniej 0 niezależnie od puli), nazwy domknięte, dowód kryterium 5 zamieniony z regexa na behawioralny. |
+| P-PRACA-BUDZET-AUTOMATU-33-SALDA-Q1 | 2026-08-26 | Efektywny budżet automatu ulepszeń to teraz 33% salda puli na turę (polityka imperium, `R-AUTO-PRACA-BUDZET-PROCENT-Q1=B`) — zmiana widoczna w rozgrywce wobec stanu sprzed tematu. | **OTWARTE — do świadomej akceptacji właściciela, nie defekt** | Znalezisko Evaluatora rundy 2. Nie jest błędem, ale jest odczuwalną zmianą tempa rozwoju — warto potwierdzić w playteście. |
+| P-PRACA-PRODUCTION-OVERFLOW-PIN-UTRACONY-Q1 | 2026-08-26 | `production-overflow-test` stracił pin „wpływ do puli = poolGain + overflowToPool" (sekcja padła razem z nieistniejącą już mapą `pracaPoolInflowByOwner`). Zachowanie w `main.ts` bez zmian, ale bez straży. | **OTWARTE — dług testowy** | Znalezisko Evaluatora rundy 2. Do odtworzenia pinu w nowej formie. |
+| P-PRACA-PUSTA-KOLEJKA-100-DO-PULI-Q1 | 2026-08-26 | Pusta kolejka budowy → 100% Pracy miasta idzie do puli, więc budżet ulepszeń może przekroczyć 50% Pracy TEGO miasta. Zachowanie sensowne, ale nienazwane w kontrakcie. | **OTWARTE — do nazwania w kontrakcie** | Znalezisko Evaluatora rund 1 i 2. Nie narusza capu na poziomie podziału. |
+| P-PRACA-OVERRIDE-NIE-GASNIE-Q1 | 2026-08-26 | `toggleCityPodzialPracyOverride` zostawia override włączony przy wartości równej globalnej. | **OTWARTE — kosmetyczne** | Znalezisko Evaluatora. Nowa funkcja `applyPodzialPracyLocalChange` realizuje regułę właściciela (override zapala się sam przy różnicy, gaśnie przy powrocie do globalnej); ten toggle to osobna, starsza ścieżka. |
+
+## ZAMKNIETE 2026-08-26 — P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1 (lista ulepszen nieosiagalna przy powiekszeniu)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-BUDOWA-MENU-ULEPSZEN-NIE-SCROLLUJE-Q1 | 2026-08-25 | „to menu budowania ulepszeń się nie przesuwa, przy dużym powiększeniu nie można otworzyć ulepszeń na samym dole". | **ZINTEGROWANE do `main`, czeka na deploy ROBOCZA** | 3 rundy. Siatka 60 punktów (powiększenie przeglądarki × powiększenie UI gry × wysokość okna), realny `page.mouse.click`: PRZED **29/60** ostatnia pozycja nieklikalna → PO **0/60**, zero regresji na każdej osi. Dwie przyczyny: sztywne `top:90px`+`vh` nie skalują się z powiększeniem UI gry, a rezerwa 180px była mniejsza niż realny `turnStackBottomPx()` (panel wchodził 75px w stos WYKONAJ). Hipoteza „kółko myszy zoomuje mapę" **obalona** pomiarem. |
+| P-BUDOWA-KOMPROMIS-CIASNE-GEOMETRIE-Q1 | 2026-08-26 | W 7/60 najciaśniejszych kombinacji panel nachodzi na stos tury, w 3/60 zasłania WYKONAJ — tam blok zawierający jest niższy niż `top panelu + jeden pełny wiersz + rezerwa stosu`. | **OTWARTE — świadomy, nazwany kompromis, nie defekt** | Nachodzenie uznane za mniej złe niż zniknięcie panelu. Zero regresji wobec stanu zastanego. Do rozważenia przy ewentualnej przebudowie layoutu HUD. |
+| P-BUDOWA-ET-HINT-POD-PANELEM-Q1 | 2026-08-25 | Pasek podpowiedzi blokad `.et-hint` dolnego paska wystaje ponad stos tury i potrafi wejść pod panel budowy; jego wysokość jest dynamiczna, więc nie da się jej objąć stałą rezerwą. | **OTWARTE — pre-istniejące, nieblokujące** | Znalezisko Operatora rundy 1, powtórzone w rundzie 2. |
+| P-PROC-HARNESS-NIEPELNA-SCENA-Q1 | 2026-08-26 | **Lekcja procesowa.** W rundzie 2 Evaluator i Final Control NIEZALEŻNIE zmontowali `.hud-right-cluster` bez rodzica `.civ-hud`, przez co `z-index:320` bił się bezpośrednio z `311` i obaj zaraportowali objaw („panel chowa się pod HUD"), którego w grze nie ma — `.civ-hud` jest kontekstem układania, więc realne porównanie to 310 vs 311. Obie role sprostowały to same w rundzie 3. | **OTWARTE — do wpisania do kanonu procesu** | Cytat Evaluatora: „Dwa niezależne pomiary tej samej wady nie są dowodem — są dwoma egzemplarzami tego samego błędu". Wniosek: harness real-render musi odtwarzać KONTEKST UKŁADANIA, nie tylko obecność elementów; zgodność liczb dwóch ról nie jest dowodem, jeśli obie użyły tego samego skrótu. |
+
+## ZAMKNIETE 2026-08-26 — R-ZELAZO-ZRZUTY-25-JEDNOSTEK-Q1 (zrzuty 25 jednostek Zelaza, przod + kamera gry, podpisane)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-ZELAZO-ZRZUTY-25-JEDNOSTEK-Q1 | 2026-08-26 | „Jak skończysz, zrób deploy do roboczej, git push i potem screenshoty wszystkich nowych jednostek od przodu, żebym widział, jak wyglądają. Użyj nazwy jednostki, żebym wiedział, która jest która." | **ZINTEGROWANE do `main` (`974ff108`)** | Ostatnia, niezrealizowana część zlecenia po FALI 323. Nowy harness `gra/tools/zelazo-zrzuty-25-jednostek-render.cjs` (681 linii, 61/61): 25 obrazków + arkusz 5×5, nazwa **wypalona na obrazku**, dwa kadry obok siebie — PRZÓD (azymut 0°, elewacja 0°) i KAMERA GRY (azymut 0°, elewacja 52°, wzory z `render/camera.ts`), bo widok frontalny to NIE jest to, co gracz widzi w rozgrywce. Kryterium nadrzędne — **dowód modelu dedykowanego, nie generycznego fallbacku** — spełnione trzema niezależnymi metodami (dispatch po nazwie/kulturze ≠ `null`; liczba mesh dedykowany > generyk; unikalny prefiks nazw mesh 25/25 + `userData.anchors` w 21/25). Nietautologiczność: drugi bundle w pamięci z wyłączonym `buildNamedUnit`/`buildSuperUnit` → 25/25 traci dispatch, `units.ts` w repo nietknięty. **Cztery niezależne uruchomienia (Operator, Evaluator, Final Control, integracja) dały 26/26 PNG bajtowo identycznych.** Final Control obejrzał wszystkie 26 obrazków osobno (nie tylko arkusz). Zero zmian w `gra/src` i `gra/data`, zero PNG w repo. Wyjątek udokumentowany: **Falanga** ma model identyczny z kategorią `falanga`, bo obie ścieżki wołają `newBuildFalangita` — dowód, że to nie model współdzielony: jest JEDYNYM lokatorem tej kategorii w `units.json`. |
+| P-ZELAZO-GAESATAE-SZPARA-DLON-DRZEWCE-Q1 | 2026-08-26 | Gaesatae: widoczna szpara między dłonią a drzewcem włóczni — włócznia wygląda na nieuchwyconą. Widoczne w OBU kadrach. | **OTWARTE — defekt modelu** | Ujawnione przez render, potwierdzone naocznie przez Evaluatora i Final Control. Świadomie nienaprawione: allowlista tematu (`gra/tools/*`) zabrania ruszania `gra/src`. Plik dowodowy: `04-Gaesatae.png`. |
+| P-ZELAZO-ORIENTACJA-RODZINY-KONNEJ-Q1 | 2026-08-26 | Niespójna orientacja rodziny konnej: trzy modele `konnica` patrzą w **+X** (kamera gry i panel PRZÓD widzą je z profilu), a `Rydwan celtycki` w **+Z** (przodem). Jedna rodzina, dwie konwencje. | **OTWARTE — defekt modelu, do decyzji właściciela** | To powód, dla którego 4 jednostki konne wyglądają w panelu PRZÓD na ustawione bokiem. Harness ten błąd **ujawnia zamiast ukrywać** — nie obraca modeli „żeby ładniej wyszło", bo pokazałby stan nieistniejący w grze. Naprawa = obrót modeli w `units.ts` do wspólnej konwencji +Z. |
+| P-ZELAZO-HARAPPA-TARCZA-ZASLANIA-Q1 | 2026-08-26 | Garnizon Harappy: tarcza trzcinowa zasłania od przodu praktycznie całą sylwetkę. | **OTWARTE — defekt modelu / kompozycja** | Potwierdzone naocznie przez Final Control. Do rozważenia: zwęzić tarczę albo odsunąć ją od korpusu. |
+| P-ZELAZO-TRIARI-HASTA-SKROCONA-Q1 | 2026-08-26 | Triari: hasta od przodu jest silnie skrócona perspektywicznie (prawie niewidoczna), czytelna dopiero z kamery gry. | **OTWARTE — defekt modelu** | Dokładnie ten tryb, przed którym ostrzegał dispatch: element poprawny geometrycznie może być z jednego kąta niewidoczny. Kamera gry (elewacja 52°) czyta hastę poprawnie, więc w rozgrywce defekt jest niewidoczny — priorytet niski. |
+| P-ZELAZO-STOPKA-DWUZNACZNA-MESH-Q1 | 2026-08-26 | Stopka obrazków Triari i Wojownika germańskiego („model 37 mesh vs generyk kategorii 37 mesh") czyta się jak zaprzeczenie własnego „MODEL DEDYKOWANY: TAK" — różnica jest w NAZWACH mesh, nie w ich liczbie. | **OTWARTE — kosmetyczne, w harnessie** | Uwaga Evaluatora #2. Final Control świadomie nie poprawiał: to tekst w PNG (artefakcie), poprawka wymaga ponownego renderu 25 obrazków — nieproporcjonalnie do wagi uwagi. |
+| P-ZELAZO-ETYKIETA-MARGINES-3PX-Q1 | 2026-08-26 | Etykieta panelu kończy się 3 px nad czubkiem Miecznika galijskiego — dziś bez zasłonięcia, ale jednostka wyższa od obecnie najwyższej zostanie zakryta. | **OTWARTE — kosmetyczne, dług na przyszłość** | Uwaga Evaluatora #3. Do podniesienia marginesu przy następnej edycji harnessu. |
+| P-ZELAZO-HIEROS-LOCHOS-NAZWA-Q1 | 2026-08-26 | Dispatch pisał „Hieros Lochos", kanoniczna nazwa w `units.json` to „Hieros Lochos (Święty Zastęp)". | **ZAMKNIETE — bez skutku** | Operator zgłosił rozbieżność jawnie zamiast renderować cichy fallback; dopasowanie po prefiksie jednoznaczne, renderowana jest jednostka z `units.json`. Odnotowane dla porządku. |
+
+## ZAMKNIETE 2026-08-26 — R-REPO-SPRZATANIE-SREDNIE-Q1 (usuniecie 591,8 MB niepotrzebnych obecnej grze)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-REPO-SPRZATANIE-SREDNIE-Q1 | 2026-08-26 | „wykasowałbym wszystko na dysku i na git co nie jest nam potrzebne w obecnej grze i wyczyścił git". Wariant **średni** wybrany przez właściciela (AskUserQuestion): pochodne + `docs/ux` + archiwa. | **ZINTEGROWANE do `main` (`d692d371`)** | Usunięte wg tabeli dispatchu: 8 bundli PLAYTEST (280,3 MB), `gra-kanon/` (606 plików, 107,0 MB), `docs/ux/` (2928 plików, 177,5 MB), `docs/archiwum-czatow/` (13,4 MB), `_archiwum/` (8,2 MB), `_backup/` (5,4 MB), dwa katalogi „tools — kopia" oraz **10 martwych narzędzi** (8 zależnych od `gra-kanon`, 2 od `docs/ux`). Pliki śledzone **816,6 MB → 224,0 MB** (ubyło 592,6 MB), 8557 → 4445 plików. `Gra-ROBOCZA.html` bez zmian (md5 `04a7adcb` przed i po). `gra/src` tknięte **wyłącznie w sześciu komentarzach JSDoc** wskazujących na usuniętą `docs/ux` — zweryfikowane maszynowo, każda zmieniona linia zaczyna się od ` *`. `gra/data` bez zmian. Filtr odwrotny (czy skasowano cokolwiek spoza tabeli) — **pusty** w trzech niezależnych pomiarach. Bramki po merge'u: tsc 0 · logic 213/213 · tech-tree 19/0 · research 33/33 · unit-replace 13/13 · combat 6/6 · kontrakt 634/0 · real-render 36/0 · ai-zakup 44/0 · scroll 43/0 · dyplo 26/26 · cap-migracja 11/0 · zrzuty 61/0. Build kanon C-001 do `/tmp` przechodzi (dowód, że skasowanie `docs/ux` niczego nie złamało). **Historia NIE przepisywana** — to osobna bramka wymagająca zgody właściciela. |
+| R-REPO-SCIEZKA-KANON-FINALNA-Q1 | 2026-08-26 | Po usunięciu `gra-kanon/` i narzędzi `publish-kanon-snapshot.ps1` + `publish-finalna-snapshot.ps1`: `dyspozycje/WERSJE.md:8` nadal je nazywa, a `Gra-FINALNA.html` **zostaje w repo bez żadnego narzędzia promocji**. Owner-fact z `playbook.md` §1 („trzy poziomy: ROBOCZA → KANON → FINALNA") traci oprzyrządowanie dwóch poziomów. | **OTWARTE — WYMAGA DECYZJI WŁAŚCICIELA** | Znalezisko F1 Final Control, oznaczone przez niego jako **najważniejsze**. Pytanie do właściciela: czy KANON i FINALNA są nadal żywymi poziomami wydań? Jeśli TAK — trzeba odtworzyć oprzyrządowanie. Jeśli NIE — zaktualizować `WERSJE.md` i `playbook.md`. |
+| R-REPO-HUB-START-MARTWE-KAFLE-Q1 | 2026-08-26 | `gra-robocza/START.html` **i** `gra-robocza/START-FALA201.html` mają po 16 odwołań do 8 usuniętych bundli PLAYTEST → **2×8 martwych kafli** w hubie, który otwiera właściciel. | **OTWARTE — wysoki priorytet (UX właściciela)** | Znalezisko F2. Evaluator zgłosił tylko `START.html`; **drugi hub to znalezisko Final Control**. Oba pliki chronione, więc żadna z trzech ról nie mogła tego naprawić w tym temacie. |
+| R-DOCS-MARTWE-ODWOLANIA-PO-SPRZATANIU-Q1 | 2026-08-26 | Martwe odwołania w dokumentach po sprzątaniu: F3 `bramka-test-publish.ps1` (`docs/decyzje/DYSPOZYCJA-STALA-SILNIK.md:20`, `docs/master/INDEX-PLIKOW.md:90`, `AUDYT-2026-06-27.md:82`, `protokoly/MASTER-SILNIK.md:84`); F4 `.cursor/rules/chat-export-auto.mdc:9` → usunięty `ARCHIWIZACJA-AUTO.md`; F6 `.gitattributes:17` reguła `gra-kanon/*.html`; F7 komentarze `docs/ux` w `gra-robocza/srcKopiaMaster/`. | **OTWARTE — porządkowe** | Znaleziska F3/F4/F6/F7. F3: Final Control potwierdził **niezależnie**, że tor „Grupa F" był wycofany PRZED tym tematem — jego cele `Gra-podglad*.html` nie istniały już w bazie `39ae5d17`. |
+| R-PROC-C015-PO-SPRZATANIU-Q1 | 2026-08-26 | Reguła C-015 (`playbook.md:64`, `playbook.json:235`, `.claude/skills/civ-autobot*/SKILL.md`) mówi o sparse-checkout „bez `gra-robocza/`, `gra-kanon/` … ~810 MB" — po sprzątaniu te liczby i nazwy są nieaktualne. | **OTWARTE — kosmetyczne, domena PROCESS** | Znalezisko F5. Operator **słusznie** tego nie tknął (`playbook.json` jest generowany, §9 gr. 7; zmiana procesu poza allowlistą tematu, §9 gr. 4). |
+| P-REPO-CHECK-POLE-BUNDLE-USUNIETY-Q1 | 2026-08-26 | Usunięto `gra/tools/check-pole-bundle.cjs`, które **działało** i diagnozowało ocalały `Gra-podglad-POLE-BITWY.html` (25 MB, w korzeniu repo). Podstawą usunięcia było zero wywołań, nie martwota narzędzia. | **OTWARTE — nota, do świadomej akceptacji** | Znalezisko F8. Operator odnotował to jawnie zamiast ukryć. Utrata sprawnej diagnostyki, której GOAL nie wymagał — mieści się w literze dispatchu, ale warto wiedzieć. Odtwarzalne z historii do czasu bramki `filter-repo`. |
+| P-REPO-2-BUNDLE-NIEODTWARZALNE-Q1 | 2026-08-26 | **Uzasadnienie wiersza 1 tabeli dispatchu było nieścisłe.** Tylko 2 z 8 usuniętych bundli PLAYTEST były kopią bieżącego `Gra-ROBOCZA.html`; pozostałe miały md5 `28d236f5` (×4) i `95021308` (×2). `sync-playtest-bundles.cjs` zna **6 nazw** — `BITWA-DUZA` i `OBLEZENIE-DUZE` **nie odtworzy w ogóle**. | **OTWARTE — BLOKUJE bramkę `filter-repo`** | Nota N2 Evaluatora, potwierdzona odczytem kodu przez Final Control (§4d). Dziś treść żyje w historii Gita, więc utrata jest odwracalna. **Przepisanie historii uczyni ją nieodwracalną** — do rozstrzygnięcia z właścicielem PRZED tą bramką. |
+
+## ZAMKNIETE 2026-08-26 — R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1 (rekrutacja = tylko koszt zakupu)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1 | 2026-08-20, ponowione 2026-08-26 | „do rekrutacji system liczy nie tylko tyle surowca, ile jest konieczne do zrekrutowania, ale dolicza jeszcze koszt utrzymania z następnej tury… do rekrutacji bierzemy wyłącznie koszt zrekrutowania surowców". Zrzut: Wojownik 50 Drewna + 10/t utrzymania, gracz ma 57, rekrutacja zablokowana. | **ZINTEGROWANE do `main`** | **Dlaczego wracało: temat już raz przeszedł trzy role 2026-08-21 (Final Control PASS-WITH-NOTES) i NIGDY NIE ZOSTAŁ ZINTEGROWANY** — ostatnia linia tamtego raportu: „Brak integracji i brak commita". Praca żyła jako niescommitowane zmiany w katalogu `Civ-clean-main-2026-08-20`, którego już nie ma; `recruitment-no-upkeep-gate-test.cjs` nie istniał w repo. To nie był regres, tylko utrata. Teraz: bramka sprawdza wyłącznie `unitStockCost`. Scenariusz właściciela (57/50/10) **przechodzi**; kontrola odwrotna (49 Drewna, koszt 50) **nadal blokuje**. **Pobór utrzymania w następnej turze udowodniony niezależnie przez Evaluatora i Final Control jako bajt w bajt identyczny z bazą** (sonda 6 tur × 3 właścicieli) — rozdzielenie bramek nie wyłączyło poboru. Parytet gracz/AI/MP (bramka bez `ownerId`). `gra/src/main.ts` nietknięty (alias `@deprecated` chronił §2b przy równoległym temacie). Nowe bramki: `recruitment-no-upkeep-gate-test` 36/0, `recruit-card-stock-chip-real-render-test` 15/0 (żywe Chromium, `getComputedStyle`). 5 mutacji Operatora + 2 Evaluatora + 3 Final Control. |
+| R-AI-RECRUIT-UPKEEP-GATE | 2026-08-06 → **WYCOFANA 2026-08-26** | Decyzja nakazująca doliczanie rezerwy 1 tury utrzymania do bramki rekrutacji. | **WYCOFANA — zastąpiona przez `R-REKRUTACJA-SUROWIEC-BEZ-UPKEEP-Q1`** | `docs/decyzje/R-AI-RECRUIT-UPKEEP-GATE.md` dostał nagłówek statusu i sekcję WYCOFANIE; **treść historyczna nietknięta**. Powód jawnego oznaczenia: bez tego ktoś przeczytałby tamtą decyzję i „naprawił" to z powrotem. |
+| P-REKRUT-DRIFT-TESTY-X1-X5-Q1 | 2026-08-26 | `unit-stock-cost-test` 41/17 FAILED i `unit-resource-upkeep-test` 3/4 FAILED — czerwone **PRE-ISTNIEJĄCO**, drift oczekiwań ×1 vs dane FALI 300 ×5. | **OTWARTE — dług testowy** | Zmierzone na czystym `main` PRZED tematem i po nim: bez zmiany, bez pogorszenia. Świadomie NIE naprawiane w tym temacie (poza GOAL). |
+| P-REKRUT-ALIAS-DEPRECATED-MAIN-Q1 | 2026-08-26 | 5 wywołań `@deprecated` aliasu `canAffordUnitRecruitFull` w `main.ts` do przemianowania na `canAffordUnitRecruitStock`. | **OTWARTE — dług, kosmetyczne** | Alias był świadomą decyzją zakresową chroniącą §2b (zero ruchu w `main.ts` przy trzech równoległych tematach). |
+| P-REKRUT-KARTA-ETYKIETA-MIECZNIK-Q1 | 2026-08-26 | Nagłówek karty rekrutacji pokazuje „Miecznik · Kamień" przy definicji Wojownika. | **OTWARTE — etykietowanie, poza allowlistą** | Znalezisko Evaluatora na zrzutach dowodowych. `unitRecruitCard.ts`. |
+| P-REKRUT-KOMENTARZ-AI-PROD-FALLBACK-Q1 | 2026-08-26 | `ai-prod-fallback-test.cjs:271` — komentarz „12 brąz: 10 rekrutacja + 2 rezerwa" opisuje wycofaną decyzję. Bramka zielona 17/0, plik nietknięty. | **OTWARTE — kosmetyczne** | Do sprzątnięcia przy okazji. |
+
+## ZAMKNIETE 2026-08-26 — R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 (wlasciwa warstwa w panelu budowy)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1 | 2026-08-26 | „system źle identyfikuje parametr, ile ma być automatycznie rozdzielane pracy. W tym miejscu podział pracy nie jest potrzebny, bo jest dublowany już w pool imperium… W tym miejscu tylko powinno się wskazywać, czy ma być ręczna budowa, czy automatyczna, i ile z automatycznej… ma iść do automatycznej pracy, a ile ma być zostawione w puli na inne prace ręczne." | **ZINTEGROWANE do `main`** | **Duplikat potwierdzony co do znaku:** `buildModeHud.ts:364-392` i `empireDetailPanel.ts:1304-1377` czytały i pisały DOKŁADNIE to samo pole (`ownerDefaultPodzialPracy` owner 0 → `CityPodzialPracy.procentBudynki`), ten sam zakres 0–50%, ten sam tekst. **Przyczyna wrażenia „system źle identyfikuje parametr":** sterowanie warstwą (c) (`pracaAutoPercent`) ISTNIAŁO w tym samym panelu, ale renderowało się wyłącznie przy `tryb === 'auto'`, a domyślnym trybem nowej gry jest `'reczny'` (`cities.ts:203`) — więc na starcie widoczna była tylko zdublowana warstwa (a), a właściwa (c) wcale. Po zmianie: blok (a) usunięty z panelu budowy, suwak (c) widoczny w OBU trybach (przy `reczny` wyszarzony z wyjaśnieniem), etykieta „Z puli imperium na pracę automatyczną". Dowód liczbowy (prawdziwy `pickAutoImprovements`, pula 5 000): **10% → 12 ulepszeń (480 P), 50% → 62 ulepszenia (2 480 P)**; Evaluator zmierzył inaczej — w P: 0/480/1240/2480/3720/5000, każdy ≤ `pct%×pula`. Warstwa (a) nadal działa w swoich prawowitych miejscach — pomiar: imperium 70→60 i MAX→50, miasto 70→90; `empireDetailPanel.ts` i `cityPanel.ts` mają **zero linii diffu**. Cztery istniejące bramki zaktualizowane z uzasadnieniem, bilans rośnie (634→637, 36→37, 11→13); nowa bramka 28/0. |
+| R-PRACA-MIASTO-SPLIT-BUDZET-AUTOMAT-Q1 | 2026-08-20 | To samo zgłoszenie pod wcześniejszym ID („czy blok budżetu usunąć, czy zastąpić właściwym sterowaniem 0–100% trybu automatyzacji"). | **DUPLIKAT — zamknięty razem z `R-PRACA-PANEL-BUDOWY-WLASCIWA-WARSTWA-Q1`** | Dispatchowany 2026-08-21 (Operator + Evaluator, brak Final Control), **nigdy niezintegrowany**. Nie prowadzić osobnego retry pod tym ID. Błąd orkiestratora: nowe ID nadane 2026-08-26 bez sprawdzenia rejestru. |
+| P-PRACA-MARTWE-PROCENT-PULI-IMPERIUM-FOR-OWNER-Q1 | 2026-08-26 | `main.ts:4808` `procentPuliImperiumForOwner()` martwe po usunięciu `getEmpirePracaSplit`. | **OTWARTE — porządkowe** | Znalezisko Evaluatora, poza allowlistą tematu. |
+| P-PRACA-KOMENTARZ-WARSTWA-B-MAIN-Q1 | 2026-08-26 | `main.ts:19391` — komentarz nadal nazywa warstwę (c) „pole (b)", a warstwa (b) już nie istnieje. | **OTWARTE — kosmetyczne, mylące na przyszłość** | Dokładnie ta klasa nazewnictwa, która wywołała osiem fal nawrotów. |
+
+## AUDYT ZAMKNIETY 2026-08-27 — P-DYPLO-WOJNY-KAMIEN-NIE-WIDAC-Q1 (wojny epoki Kamienia nie wybuchaja)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-DYPLO-WOJNY-KAMIEN-NIE-WIDAC-Q1 | 2026-08-26 | „cywilizacje w epoce kamienia nadal nie wypowiadają sobie wojen, chociaż po 20 turach miałyby je wypowiadać… nie widzę efektu, żeby ktoś wypowiedział mi wojnę". | **ZINTEGROWANE do `main` — AUDYT, zero zmian w mechanice** | Trzy niezależne narzędzia, 5 map, **ponad 500 tur rozgrywki: ZERO wypowiedzeń wojny między kimkolwiek**. Mechanizm `forced-war-stone.ts` jest napisany dokładnie wg decyzji `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` (start tura 20, koniec po 2 miastach, 20 tur odpoczynku) i ma **zielone bramki 32/0 + 18/0** — ale ani razu się nie uruchamia. **To jest wzorcowy przykład, dlaczego zielona bramka nie jest dowodem zachowania w rozgrywce (§13a).** Zero zmian w `gra/src` i `gra/data` — dowód w diffie. |
+| **R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1** | 2026-08-27 | **PRZYCZYNA GŁÓWNA.** Gdy AI zdobędzie pierwsze miasto należące wcześniej do miasta-państwa (tura **6–8**, u **wszystkich sześciu** cywilizacji, w **każdej** sprawdzonej grze), gra traktuje **ją samą** jak miasto-państwo **na stałe**, a wyzwalacz wojny miasta-państwa pomija (`isOwnerClusterCityState` w filtrze `main.ts:28020`). Do tury 20 wszyscy kandydaci są już trwale wykreśleni. Flaga jest kasowana **tylko przy pokojowym wchłonięciu, nigdy przy zdobyciu siłą**. | **OTWARTE — WYMAGA DECYZJI WŁAŚCICIELA, priorytet wysoki** | Właściciel przypuszczał, że to opóźnienie („dłużej zajmuje im przejęcie miast-państw… tak w sumie powinno być"). **Hipoteza trafiła w przyczynę, ale skutek jest odwrotny:** to nie opóźnienie, po którym wojna przyjdzie, tylko trwałe wykluczenie. Nie jest to zaprojektowane zachowanie — jest to błąd. |
+| **P-DYPLO-RELACJA-I-SILA-TA-SAMA-LICZBA-Q1** | 2026-08-27 | Zwykła ścieżka wypowiedzenia wojny **graczowi** jest arytmetycznie niemożliwa przy ustawieniach domyślnych: ta sama liczba opisuje jednocześnie „jak silne jest AI wobec gracza" i „jak dobre są z graczem stosunki", więc **im AI silniejsze, tym dalej mu do wojny**. 585 pomiarów: najgorsza zanotowana relacja **77 punktów**, wojna wymaga zejścia **poniżej 30**. | **OTWARTE — WYMAGA DECYZJI WŁAŚCICIELA** | Jedyna droga, którą ktokolwiek może dziś wypowiedzieć graczowi wojnę w Kamieniu, otwiera się dopiero na poziomie trudności **Trudny**; na **Normalnym** nie może tego zrobić nikt. |
+| P-DYPLO-WOJNY-AI-AI-NIEWIDOCZNE-Q1 | 2026-08-27 | Nawet gdyby wojny między AI wybuchały, gracz **nie dostaje o nich żadnej karty w Wydarzeniach**. Jedyny ślad to lista „Wojny znane (wywiad)" w panelu dyplomacji, którą trzeba samemu otworzyć. | **OTWARTE — UX, nieblokujące** | Znalezisko z punktu 5 dispatchu. Ma znaczenie praktyczne: nawet po naprawie przyczyny głównej właściciel mógłby nadal „nie widzieć efektu". |
+| P-DYPLO-WYMUSZONA-WOJNA-OMIJA-GRACZA-Q1 | 2026-08-27 | Wymuszona wojna Kamienia **nigdy nie celuje w gracza** — filtr `oid > 0` w `main.ts:28063-28069`. | **ZAMKNIETE — zgodne z decyzją, nie defekt** | Decyzja `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` Q2 mówi wprost: „cel ma być najbliższą terytorialnie cywilizacją AI". Odnotowane, bo tłumaczy część obserwacji właściciela, ale zmiana wymagałaby nowego ECHO. |
+
+## ZAMKNIETE 2026-08-27 — R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (oboz wylacznie w lesie)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 | 2026-08-26 | „Obozy łowieckie raczej powinny być budowane w lasach. I tylko w lasach… niezależnie, czy to jest las na wzgórzu, czy na innym terenie, ale tylko w lesie." | **ZINTEGROWANE do `main`** | **2 rundy.** Runda 1: Operator PASS, ale **Evaluator i Final Control dały FAIL** — znaleźli dziurę, której Operator nie objął. Runda 2: Operator PASS, FC PASS. Reguła zawężona z `Las LUB złoże` do **`tylko Las`** w 7 punktach egzekwowania (gracz, automat, AI, tooltip, `galleryTerrainEligible`, migracja, commit). Wariant „Las I złoże" **odrzucony pomiarem: 0 pól na 5 mapach** — `Nakladka` to jedno pole, a `Las` nie należy do `NAKLADKI_ZWIERZECZE`; ulepszenie byłoby martwe. Pułapka „p-LAS-kie" (`normTerrain('Plaskie (rownina/laka)')` dosłownie zawiera podciąg `las`) sprawdzona osobnymi asercjami przez wszystkie trzy role. Bramka tematu **71/0 → 91/0**, `map-improvement-qualify` 112/0, `auto-improvements` 45/0 bez pogorszenia. `main.ts`, `ai.ts`, `auto-improvements.ts` **nietknięte**. |
+| **P-ULEPSZENIA-WYRAB-ZOSTAWIAL-OBOZ-Q1** | 2026-08-27 | **Znalezisko Evaluatora (P7), przyczyna FAIL rundy 1.** `stripImprovementsWhenForestRemoved` (`improvement-build.ts:165`) była **pustym przelotem** (`return [...layers]`) mimo docstringu obiecującego filtrowanie ulepszeń zależnych od nakładki Las. Skutek: wyrąb lasu pod obozem zostawiał obóz na polu bez lasu — u gracza i u AI. Skarga właściciela wracała innymi drzwiami. | **ZAMKNIETE razem z tematem — ECHO wariant A** | Pytanie ABC zadane właścicielowi, odpowiedź: **„A: obóz znika przy wyrębie"** (praca nie wraca, tartak zostaje — kanon). Dowód: **obóz został poza lasem 0/200** (przed naprawą **200/200**). Sonda Evaluatora 87/1 → 88/0, sonda FC 4/1 → 5/0. Evaluator zmierzył to **inną metodą niż Operator** — wyciął dosłowny tekst z `main.ts` i uruchomił: 754 heksy z Lasem na 5 ziarnach, obóz poza lasem 0 razy, tartak został 754/754. |
+| P-ULEPSZENIA-FARMA-NA-WZGORZU-PO-WYREBIE-Q1 | 2026-08-27 | Farma na Wzgórzu **wymaga** nakładki Las (`isFarmBaseTerrain(Wzgorza,Las)=true`, `(Wzgorza,Brak)=false`). Po wyrębie lasu pod taką farmą warunek przestaje być spełniony, ale farma **zostaje** — filtr celowo jej nie usuwa. | **OTWARTE — wymaga decyzji właściciela** | Znalezisko N3. Operator świadomie NIE usunął farmy: kasowanie cudzego ulepszenia to osobna decyzja, nie skutek uboczny tego tematu. Mutacja „filtr za szeroki" (dorzucenie farmy i tartaku) zapaliła 5 asercji tematu i złamała kanon `map-improvement-qualify` do 111/1 — dowód, że szerszy filtr byłby błędem. |
+| P-ULEPSZENIA-CREATEQUALIFIER-BRAK-DOWODU-Q1 | 2026-08-27 | `createQualifier` w izolacji: mutacja nie zapala żadnej asercji (0 FAIL) — gate commitu `computeImprovementBuildImpact` maskuje gate panelu. | **OTWARTE — dług testowy, nie luka** | Zgłoszone jawnie przez Operatora (§13a), potwierdzone niezależnie przez Evaluatora i Final Control. Obrona w głąb: dwa redundantne gate'y, nie dziura. |
+| **P-AI-WAGI-OBOZ-VS-PASTWISKO-Q1** | 2026-08-27 | „Cywilizacja, zamiast na przykład budować owcę, często buduje obóz łowiecki." **Zawężenie terenu tego NIE naprawiło.** | **OTWARTE — przeniesione do `R-AI-WYRAB-PRZY-RZECE-FARMY-Q1`** | Pomiar 3 ziarna × 40 tur: **99 obozów / 56 pastwisk przed zawężeniem i 99/56 po** — identycznie co do jednego pola. Evaluator na innych ziarnach: **83/62 przed i po**. Obozów poza lasem prawie nie było (791→790 pól na 5 mapach), więc zawężenie nie miało czego zmienić. To, co właściciel widział na wzgórzach, to **lasy na wzgórzach** — przypadek, który miał działać i działa. Przyczyną są **wagi wyboru ulepszeń w AI**. |
+| P-PROC-BRAMKA-NIE-LAPIE-USUNIECIA-HOOKA-Q1 | 2026-08-27 | Usunięcie hooka ze ścieżki AI w `main.ts` zostawia bramkę tematu 91/0 i sondę 88/0 **zielone** — łapią to dopiero sondy wycinające dosłowny tekst z `main.ts` (26/4 i 20/2). | **OTWARTE — lekcja procesowa (wzorzec C-046)** | Znalezisko N1 Evaluatora, odtworzone niezależnie przez Final Control (M-FC-3). Wniosek: bramka testująca funkcję nie chroni przed usunięciem jej **wywołania**. Sondy są w commitach i muszą jechać razem z bramką. |
+
+## ZAMKNIETE 2026-08-27 — P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 (klik w zdarzenie + karta obok karty)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| P-WYDARZENIA-ZBADANO-KLIK-KARTA-TECH-Q1 | 2026-08-26 | (A) „Komunikat, na przykład zbadano rolnictwo; jeżeli się naciśnie, powinno przekierowywać do karty technologii, która została zbadana, a niestety się nie dzieje." (B) „naciskam na szczegóły… ekran się wytwarza, ale nie pojawia się obok, tylko pod spodem… gracz może nie wiedzieć, co się stało". | **ZINTEGROWANE do `main`** | **(A) przyczyna:** to nie był `SidePanelEvent` z tożsamością, tylko **generyczny hint** — `showHintMessage` → `deferredEotHints` → `DeferredEotHint{msg,durationMs}` **gubi kontekst technologii**; karta dostawała `data-id=eot-hint-<tura>-<i>`, klasę `sp-no-link`, `cursor:default`, klik nie robił nic. Teraz emiter tworzy `tech-done-<tura>-<slug>` w `warEventLog` wzorem `era-*`, z pigułką „Karta technologii →" zgodną z konwencją audytu przekierowań. **Dwie technologie w jednej turze → każda otwiera SWOJĄ kartę** (osobna asercja — `main.ts:26212` używał `step.completed[length-1]`, co było dokładnie tym ryzykiem). **(B) przyczyna:** karta ulepszenia lądowała w **innym hoście o niższym z-index** (`.entity-card-backdrop` 520 vs host karty technologii 940) — karta technologii **nie była zamykana, tylko przykryta**. Teraz obie w jednym hoście `.tdn-stage`, obok siebie; poniżej **1160 px** układ pionowy, obie widoczne. Zamknięcie satelity wraca do karty technologii, klik w tło zamyka obie bez sierot. **Dowód:** `getBoundingClientRect` + `elementFromPoint` w **7 rozmiarach okna**, realny `page.mouse.click`, hit-test każdej karty. Bramka tematu **77/0**; **16 bramek obszaru** kart/wydarzeń/CivPedii zmierzone PRZED i PO — identyczne. `renderer.ts`, `buildingAdapter.ts`, `sidePanelHud.ts` **nietknięte**. |
+| P-WYDARZENIA-BRAK-DOWODU-EMITER-ZYWA-GRA-Q1 | 2026-08-27 | **BRAK DOWODU** na przebieg emitera `tech-done-*` w żywej rozgrywce: `?playtest=mapa` kończy się zwycięstwem w turze 2 albo blokadą `canPlayerInitiateEndTurn()===false`; jedyny hak wymusza awans epoki. | **OTWARTE — dług dowodowy, zgłoszony jawnie (§13a)** | Operator zgłosił to sam zamiast raportować jako zielone; Evaluator potwierdził niezależnie (25 `endTurn` bez ruchu). Pokryte kotwicą źródłową, klikiem w kartę o tym samym id i sprawdzeniem 32 slugów. Potrzebny playtest-hak pozwalający dojść do tury z ukończonym badaniem bez awansu epoki. |
+| P-WYDARZENIA-LIMIT-8-WPISOW-WARLOG-Q1 | 2026-08-27 | `warEventLog` trzyma limit 8 wpisów — karta „Zbadano" (`main.ts:26302`) może zostać wypchnięta przez hinty końca tury (`:29531`), zanim gracz zdąży w nią kliknąć. | **OTWARTE — realne ryzyko UX** | Nota Evaluatora. Im więcej zdarzeń w turze, tym większa szansa, że nowa funkcja stanie się niewidoczna. |
+| P-WYDARZENIA-RESOLVER-W-MAIN-ZAMIAST-MODULU-Q1 | 2026-08-27 | Resolver `tech-done-*` (`techDoneEventTechName` / `LinkFor` / `openTechDoneEventLink`) trafił do `main.ts` zamiast do `side-panel-event-link.ts`, gdzie mieszkają pozostałe resolvery. | **OTWARTE — dług architektoniczny** | Jedno z trzech jawnie ujawnionych odstępstw od allowlisty; Operator opisał je w §5 raportu zamiast ukryć. |
+| P-PROC-OUTDIR-KOLIZJA-ROWNOLEGLE-TEMATY-Q1 | 2026-08-27 | Katalog `/tmp/civ-dist-ev` został nadpisany przez równolegle biegnący temat — dwa Evaluatory budowały do tej samej ścieżki. | **OTWARTE — higiena procesu** | Wniosek: `--outDir` musi być unikalny **per TEMAT**, nie per rola. Do wpisania do kanonu C-001. |
+
+## ECHO 2026-08-27 — odpowiedzi wlasciciela na pytania ABC turnieju C-018 (pytania 1 i 2)
+
+| ID | Data | Odpowiedz wlasciciela | Status | Uwagi |
+|---|---|---|---|---|
+| **R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1** | 2026-08-27 | **ECHO = A** — „oznaczenie miasta-panstwa znika przy KAZDYM przejeciu miasta-panstwa, takze zbrojnym". | **ZAREJESTROWANE — do dispatchu** | Zgodne z rekomendacja turnieju (typowana A, wzorzec §3.2). Skutek uboczny przyjety swiadomie: od tury 20 rywale zaczynaja wojowac miedzy soba, a cywilizacja po podboju wraca na liste poteg i odzyskuje portret wladcy w dyplomacji. |
+| **R-DYPLO-WYMUSZONA-WOJNA-POZA-OGOLNYMI-REGULAMI-Q1** | 2026-08-27 | **DYSPOZYCJA (nie litera A/B/C):** „wymuszone wojny w kazdej epoce powinny byc wylaczone calkowicie z ogolnych regul prowadzenia wojny. Inaczej nigdy nie nastapilaby wojna pomiedzy cywilizacjami". | **ZAREJESTROWANE — w czesci JUZ SPELNIONE w kodzie, reszta do dispatchu** | **Weryfikacja u zrodla przed dispatchem (`ai.ts:4113-4173`): wszystkie trzy istniejace mechanizmy wojny wymuszonej — krag miast-panstw, Braz i Kamien — JUZ dzis wracaja `wypowiedz_wojne` wczesnym `return`, PRZED `loadDefaultAIDiplomacyProgs` i przed warunkiem `rw >= PROG_WOJNA_SILA && score < progMinimalnyRelacja`.** Dyspozycja jest wiec dla Kamienia i Brazu spelniona co do znaku; **nie to blokowalo wojny**. Blokada byla jedna: znacznik miasta-panstwa (`R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1`). Do wykonania zostaja dwie rzeczy nazwane ta dyspozycja: (1) **epoka Zelaza nie ma wojny wymuszonej wcale** — `KOLEJNOSC_EPOK = ['Kamien','Braz','Zelazo']` (`research.ts:323`), a moduly istnieja tylko dla Kamienia i Brazu; (2) **zapis kanonu**, ze zwolnienie z ogolnych regul jest swiadoma i trwala wlasnoscia wojny wymuszonej, a nie skutkiem ubocznym kolejnosci `if`-ow. |
+| **P-DYPLO-ZELAZO-BRAK-WOJNY-WYMUSZONEJ-Q1** | 2026-08-27 | Znalezisko z weryfikacji dyspozycji powyzej: w epoce **Zelaza** nie istnieje zaden mechanizm wojny wymuszonej — `gra/src/game/` zawiera wylacznie `forced-war-stone.ts` i `forced-war-bronze.ts` (plus wspolny `forced-war-common.ts`). | **OTWARTE — wynika wprost z dyspozycji „w kazdej epoce"** | Wlasciciel powiedzial „w kazdej epoce"; dzis trzecia epoka jej nie ma. Nie zgadujemy parametrow (tura startu, warunek konca, odpoczynek) — Kamien i Braz maja wlasne, rozne wartosci, wiec Zelazo wymaga wlasnego ECHO albo jawnej zgody na skopiowanie parametrow Brazu. |
+| **P-DYPLO-RELACJA-I-SILA-TA-SAMA-LICZBA-Q1** | 2026-08-27 | Wlasciciel **nie wybral litery**; odpowiedzial dyspozycja o wojnach wymuszonych, ktora tego pytania nie dotyka. | **NADAL OTWARTE — zawezone** | Dyspozycja rozwiazuje wojne **miedzy cywilizacjami**. Nie rozwiazuje wojny **przeciw graczowi**: kandydaci wojny wymuszonej sa filtrowani `oid > 0` (`main.ts:28180-28186`), a gracz ma `ownerId === 0`, wiec zadna wojna wymuszona nigdy w gracza nie celuje (odnotowane juz jako `P-DYPLO-WYMUSZONA-WOJNA-OMIJA-GRACZA-Q1`, zgodne z decyzja `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` Q2). Dla gracza pozostaje wylacznie sciezka ogolna, a ta jest arytmetycznie niemozliwa na poziomie Normalnym. **Pytanie wraca do wlasciciela w postaci zawezonej** (nowy turniej C-018) — patrz `PYTANIA-OTWARTE.md`. |
+
+## ECHO 2026-08-27 — odpowiedz wlasciciela na pytanie ABC nr 3 (farmy a las)
+
+| ID | Data | Odpowiedz wlasciciela | Status | Uwagi |
+|---|---|---|---|---|
+| **R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1** | 2026-08-27 | **DYSPOZYCJA (nie litera A/B/C):** „w lesie nie powinno byc mozliwosci budowania farm zarowno na wzgorzach, jak i na innych terenach, bo to sie wyklucza. W lesie mozna wybudowac tylko tartak i ewentualnie obozowisko, i tego sie trzymajmy." | **ZAREJESTROWANE — do dispatchu; UCHYLA decyzje z 2026-07-21** | Wlasciciel nie wybral zadnego z wariantow pytania 3 — **usunal przeslanke pytania**. Pytanie brzmialo „co sie dzieje z farma na wzgorzu PO wyrebie"; odpowiedz brzmi: takiej farmy nie powinno tam byc w ogole. Stan zastany (`isFarmBaseTerrain`, `improvement-build.ts:199`, komentarz „Maciej 2026-07-21: farma bez wycinki lasu"): **Laka/Rownina → farma dozwolona ZAWSZE, takze przy nakladce Las** (bez wyrebu); **Wzgorza → farma dozwolona WYLACZNIE przy nakladce Las**. Nowa regula: farma wymaga BRAKU lasu. **Trzy skutki, kazdy wprost z dyspozycji:** (1) na Lace/Rowninie z lasem farma znika z listy dozwolonych — zeby postawic farme, trzeba najpierw wyciac las; (2) na Wzgorzach z lasem farma znika; (3) **farma na Wzgorzach staje sie niemozliwa calkowicie**, bo Wzgorza bez lasu nie sa i nigdy nie byly terenem farmowym (`FLAT_FARM` = Laka, Rownina). Punkt (3) jest konsekwencja, nie wyborem — jesli wlasciciel chce, zeby Wzgorza bez lasu stalo sie terenem farmowym, wymaga to osobnego ECHO. |
+| **P-ULEPSZENIA-FARMY-JUZ-STOJACE-W-LESIE-Q1** | 2026-08-27 | Co ma sie stac z farmami, ktore **juz stoja** na heksach z lasem (postawionymi legalnie wg reguly z 2026-07-21) w zapisanych rozgrywkach i w trwajacych partiach. | **OTWARTE — wymaga decyzji wlasciciela (turniej C-018 w toku)** | Dyspozycja rozstrzyga, czego **nie wolno zbudowac**; nie rozstrzyga, co zrobic z tym, co juz stoi. Precedens obozu lowieckiego („znika przy wyrebie") nie przenosi sie wprost — tam znikniecie bylo skutkiem czynu gracza, tu byloby skutkiem zmiany reguly. |
+| **P-ULEPSZENIA-FARMA-W-LESIE-WPLYW-NA-TEMAT-AI-Q1** | 2026-08-27 | **Kolizja z `R-AI-WYRAB-PRZY-RZECE-FARMY-Q1` (runda 3, niezintegrowana).** Caly pomiar rundy 3 zakladal, ze AI moze postawic farme na zalesionym heksie z rzeka **bez wyrebu**. Po tej dyspozycji wyrab staje sie **jedyna** droga do farmy na takim heksie. | **OTWARTE — blokuje domkniecie tematu AI** | Liczby rundy 3 (odzysk 42/43/46 %, `wyrab` 72/71) zostaly zmierzone na starej regule i **przestaja opisywac docelowa gre**. Kolejnosc prac musi byc: najpierw regula farmy, potem ponowny pomiar AI. Odwrotna kolejnosc = pomiar wyrzucony do kosza. |
+| **P-ULEPSZENIA-FARMA-NA-WZGORZU-PO-WYREBIE-Q1** | 2026-08-27 | Pytanie ABC nr 3 w postaci zadanej wlascicielowi. | **ZAMKNIETE BEZ WYBORU LITERY — zastapione przez `R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1`** | Nie prowadzic osobnego tematu pod tym ID. |
+
+## ECHO 2026-08-27 — odpowiedzi wlasciciela na pytania ABC turnieju AI-R4
+
+| ID | Data | Odpowiedz wlasciciela | Status | Uwagi |
+|---|---|---|---|---|
+| **R-AI-WYRAB-PRZY-RZECE-FARMY-R4-Q1** | 2026-08-27 | **Nie litera czysta — start od B, znaczaco rozbudowana wlasna dyspozycja (cytat pelny):** „AI powinno budowac mniej wiecej wszystkie ulepszenia poza zywnoscia, tylko w miare potrzeby, czyli surowcowe, wtedy kiedy brakuje surowcow, a nie budowac na zapas, nie wiadomo po co. Brakuje drewna — trzeba wybudowac surowiec drewna. Brakuje brazu — trzeba wybudowac braz. To powinno byc sygnalem do wybudowania pozostalych ulepszen. W innych wypadkach powinna byc tylko i wylacznie inwestycja w zywnosc. [...] to jest dla AI z cywilizacji oraz dla parametru dla gracza, kiedy wybierze zrownowazony. [...] AI, zarowno w cywilizacji, jak i w ludzkich domach, powinno domyslnie budowac ulepszenia tam, gdzie sa obywatele. [...] z wylaczeniem surowcow, ktore moga znajdowac sie w roznych miejscach wedlug potrzeby. Gracz musi nacisnac przycisk «buduj» tylko w miejscach, gdzie sa obywatele. [...] jezeli AI widzi, ze nie ma zapotrzebowania na surowce, bo sa w nadmiarze, i nie ma potrzeby ulepszac terenu w miejscach, gdzie pracuja obywatele, powinna przestac budowac dla sztuki i przesunac srodki. Jesli w przypadku cywilizacji AI srodki przeznaczone sa bardziej na budynki, a w przypadku czlowieka lub gracza gracz sam zauwazy, ze ma za duzo zapasow na ulepszenia, moze odpowiednio przesunac suwak na rzecz budynkow." | **ZAREJESTROWANE — WYMAGA NOWEGO SCOPINGU PRZED DISPATCHEM, nie dispatchowane teraz** | To NIE jest wybor litery A/B/C z pytania R4-Q1 — odpowiedz zaczyna sie od „b", ale zastepuje tresc wariantu B wlasna, bardziej precyzyjna regula. Rozklad na trzy odrebne, mozliwe do osobnego wdrozenia zasady: **(1) budowanie napedzane popytem** — ulepszenia poza zywnoscia (surowcowe: drewno, braz, itd.) buduje sie TYLKO gdy danego surowca brakuje, nie na zapas; w przeciwnym razie caly budzet idzie w zywnosc; dotyczy AI CYWILIZACJI oraz AI GRACZA na ustawieniu „zrownowazone" (obie strony nazwane wprost — zgodne z regula stala wlasciciela o rozroznianiu dwoch AI). **(2) budowanie tylko przy obywatelach** — domyslnie ulepszenia stawiane wylacznie na heksach, gdzie realnie pracuja obywatele miasta; wyjatek: zloza surowcow moga byc gdziekolwiek wedlug potrzeby; dla gracza — przycisk „buduj" ma dzialac tylko w takich miejscach. **(3) przekierowanie nadwyzki** — gdy nie ma niedoboru surowcow ANI potrzeby ulepszen przy obywatelach, AI CYWILIZACJI przesuwa srodki na budynki, a AI GRACZA (automat) sygnalizuje graczowi nadmiar, by mogl sam przesunac suwak w strone budynkow. **Kolizja wprost z rekomendacja i z wynikami rundy 3:** dotychczasowy pomiar rundy 3 (42/43/46% odzysku zywnosci) mierzyl model, w ktorym AI buduje rowno wsrod WSZYSTKICH ulepszen — ta dyspozycja go zastepuje regula popytowa, wiec **cala runda 3 wymaga ponownego zaprojektowania, nie tylko przestrojenia liczb**. Nie dispatchowane teraz — wlasciciel wstrzymal prace autonomiczna na godzine (2026-08-27). Do dispatchu jako kolejna runda `R-AI-WYRAB-PRZY-RZECE-FARMY-Q1` po wznowieniu. |
+| **R-AI-WYRAB-PRZY-RZECE-FARMY-R4-Q2** | 2026-08-27 | Wlasciciel odpowiedzial najpierw **„a"**, po czym w kolejnej wiadomosci sprostowal: **„C — przelacznik przy ustawieniach automatu «wolno wycinac las». Dla gracza jednak zmienmy na C."** **ECHO finalne = C** (przelacznik w panelu ustawien automatu gracza, per miasto/per panstwo). | **ZAREJESTROWANE — do dispatchu po wznowieniu** | Dotyczy wylacznie automatu budujacego w miastach GRACZA (Q2 nigdy nie pytalo o AI cywilizacji — ta juz wycina od rundy 3). Wartosc domyslna przelacznika NIE zostala okreslona przez wlasciciela — wymaga jednej dodatkowej decyzji przy dispatchu (domyslnie wylaczony = zachowanie identyczne z dzisiejszym, zgodne z §14 „nie poszerzaj zakresu ponad to, co powiedziano"). |
+
+## ZAMKNIETE 2026-08-27 — R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 (farma nie w lesie)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 | 2026-08-27 | „w lesie nie powinno być możliwości budowania farm zarówno na wzgórzach, jak i na innych terenach... w lesie można wybudować tylko tartak i ewentualnie obozowisko." | **ZINTEGROWANE do `main`** | Uchyla decyzję 2026-07-21 (farma bez wyrębu). Skutek: Wzgórza bez lasu przestają być terenem farmowym całkowicie (były jedynym terenem farmowym na Wzgórzach tylko z lasem). Bramka tematu 136/0, `map-improvement-qualify` 117/0, `auto-improvements` 45/0 bez pogorszenia. Punkt egzekwowania w `main.ts:11709` domknięty sterowaniem danymi (`FOREST_BLOCKED_IMPROVEMENT_KEYS`), bez tknięcia zakazanego pliku. |
+| P-BRAMKA-FARMA-TOOLTIP-STRAZE-WZAJEMNIE-MASKUJACE-Q1 | 2026-08-27 | Znalezisko Final Control: `hexContextTooltip.ts:459` i `:474` maskują się wzajemnie — każda osobno wystarcza dla Łąka/Równina+Las, więc usunięcie linii 474 przejdzie bramkę na zielono mimo że linia jest dziś behawioralnie martwa. | **OTWARTE — dług dowodowy (limit pokrycia bramki)** | Nie defekt produktu. Do wpisania jako lekcja C-046 (bramka funkcji nie chroni przed usunięciem redundantnej straży). |
+| P-BRAMKA-FARMA-MAINTS-OSIAGALNOSC-Q1 | 2026-08-27 | `main.ts:11709` zmienia zachowanie (toast blokady) po wpisaniu `farma` do `FOREST_BLOCKED_IMPROVEMENT_KEYS`, ale `main.ts` nie jest bundlowany przez żadną bramkę — osiągalność tej gałęzi nie ma dowodu. | **OTWARTE — luka dowodowa (§13a), zgłoszona jawnie przez Final Control** | Sam tekst hintu jest asercjonowany; brakuje dowodu, że gracz faktycznie tam trafia w żywej rozgrywce. |
+
+## ECHO 2026-08-27 — Pytanie 1: farmy juz stojace w lesie — wlasciciel odrzuca pytanie jako bezzasadne
+
+| ID | Data | Odpowiedz wlasciciela | Status | Uwagi |
+|---|---|---|---|---|
+| **P-ULEPSZENIA-FARMY-JUZ-STOJACE-W-LESIE-Q1** | 2026-08-27 | **Wlasciciel NIE wybral litery — odrzucil sama forme pytania (cytat pelny):** „Juz odpowiadalem na to pytanie. Pytanie jest niezasadne. W ogole nie powinno byc farm w lesie; farm nie wolno stawiac w lesie. Mowilem, ze zmieniam te regule, zakaz stawiania farm w lasach. Dlatego pytanie, co sie stanie z lasem, jesli go wykarczujemy, i co sie stanie z farma, jest bezzasadne, bo w lesie nie powinno byc farm." | **ZAREJESTROWANE — rozstrzygniete jako WARIANT C, do dispatchu** | **Interpretacja, nie zgadywanie:** wlasciciel odrzuca sama Sytuacje pytania jako fasywe rozroznienie miedzy „zakazem budowy" a „losem juz stojacych". Jego regula „w lesie nie powinno byc farm" jest **niewarunkowa** — dotyczy stanu, nie tylko czynnosci budowania. Skoro problem jest FARMA-w-lesie (nie las-pod-farma), naprawa idzie po stronie farmy: **wariant C turnieju** — farma znika, las zostaje — nie wariant B (las znika, farma zostaje), bo wariant B zostawilby dokladnie to, czego wlasciciel wlasnie zakazal (farme, ktora dalej istnieje jako skutek stanu sprzed zmiany). Rozstrzyga to takze przypadek Wzgorz bez dodatkowej reguly: farma na Wzgorzu bez lasu i tak nie ma pod soba terenu rolnego, wiec znika identycznie jak wszedzie indziej — C jest jedynym wariantem bez wyjatku terenowego. Jesli ta interpretacja jest bledna, wlasciciel poprawi przy nastepnej turze ECHO — zapisane jawnie jako interpretacja, nie jako jego doslowny wybor litery. |
+
+## KOREKTA 2026-08-27 — P-DYPLO-RELACJA-I-SILA-TA-SAMA-LICZBA-Q1 BYLO JUZ ODPOWIEDZIANE
+
+| ID | Data | Korekta | Status | Uwagi |
+|---|---|---|---|---|
+| **P-DYPLO-RELACJA-I-SILA-TA-SAMA-LICZBA-Q1** | 2026-08-27 | **Wlasciciel poprawil orkiestratora: odpowiedz z tej samej tury co Pytanie 1 byla numerowana „1a / 2 <tekst>" — „2" oznaczalo odpowiedz na TO pytanie, nie tylko dyspozycje o wojnach wymuszonych.** Orkiestrator bledne zarejestrowal to jako „nie wybral litery, nie dotyczy". | **ZAMKNIETE — odpowiedziane, interpretacja: C (ogolna sciezka wobec gracza NIETKNIETA)** | **Ponowna lektura pelnego cytatu:** „wymuszone wojny w kazdej epoce powinny byc wylaczone calkowicie z ogolnych regul prowadzenia wojny. Inaczej nigdy nie nastapilaby wojna pomiedzy cywilizacjami" — caly tekst mowi wylacznie o wojnie MIEDZY CYWILIZACJAMI, ani razu nie wspomina gracza. Interpretacja: wlasciciel odpowiedzial na pytanie „dlaczego wojna nie wybucha" tak, ze **rozwiazaniem jest wydzielenie mechanizmow wymuszonych z ogolnych regul** — co juz w calosci zrealizowano (`R-DYPLO-WYMUSZONA-WOJNA-POZA-OGOLNYMI-REGULAMI-Q1`, `R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1` w toku). Mechanizmy wymuszone SA i POZOSTAJA strukturalnie wylaczone od gracza (filtr `oid > 0`, decyzja `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` Q2 — cel to najblizszy sasiad AI, nie gracz). Skoro odpowiedz wlasciciela nie zada nowego mechanizmu celujacego w gracza, a mowi wylacznie o cywilizacjach — **ogolna sciezka wojny (arytmetycznie niemozliwa na Normalnym) zostaje NIETKNIETA**, co odpowiada literze **C** oryginalnego pytania („zostawic tak jak jest — na normalnym gracz nie bywa atakowany"). Jesli ta interpretacja jest bledna, prosze o jawna korekte — nie bedzie ponownie zadawane jako otwarte pytanie bez wyraznego sygnalu wlasciciela. |
+
+## ZNALEZISKO ORKIESTRATORA 2026-08-27 — decyzja wlasciciela nigdy niezdispatchowana
+
+| ID | Data | Znalezisko | Status | Uwagi |
+|---|---|---|---|---|
+| **R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1** | 2026-08-27 (decyzja z wczesniejszej tury sesji) | Wlasciciel odpowiedzial „Tak, odwracamy — wszystkie trzy" na pytanie o cofniecie zakazu budowy hodowli (owce, bydlo/Trzoda, lama) na nakladce Las — decyzja `Maciej 2026-07-29` (`isLivestockImprovementBlockedOnForest`, `improvement-build.ts:225-227`). **Ta decyzja nigdy nie zostala zdispatchowana ani zaimplementowana** — kod dzis nadal blokuje wszystkie trzy na lesie, zero wzmianki w rejestrze do tej pory. | **ZAREJESTROWANE TERAZ — dispatch wypchniety** | Blad orkiestratora: decyzja padla, zapisana w kontekscie sesji, ale nigdy nie trafila do REJESTR-PROSB-I-ZADAN.md ani do dispatchu. Naprawione teraz przy okazji przegladu wszystkich tematow z „wyrazna odpowiedzia, ktore nie zostaly odpalone". |
+
+## ZAMKNIETE 2026-08-27 — R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 (usuniecie istniejacych farm w lesie)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 | 2026-08-27 | Implementacja wariantu C dla `P-ULEPSZENIA-FARMY-JUZ-STOJACE-W-LESIE-Q1` — zaden stan gry nie ma zawierac farmy na heksie z lasem. | **ZINTEGROWANE do `main`** | Zywy Chromium na realnym bundlu: 5301 heksow zasianych, granica tury usuwa 1372 farmy z lasu, zero bledow konsoli, powtorzone 3x. Bramka tematu 143/0, farma-nie-w-lesie 136/0, map-improvement-qualify 117/0 (przed nastepnym tematem) bez pogorszenia. Praca NIE wraca (wzorzec obozu lowieckiego). |
+| P-DEMOKEYSFORHEX-SIEJE-FARMY-W-LESIE-Q1 | 2026-08-27 | `demoKeysForHex` (`main.ts`, tryb `?demo=ulepszenia`) nadal siewa farmy na lesie mimo zakazu z tego samego dnia — zmierzone 1372 heksy. | **OTWARTE — poza allowlista tematu, do osobnego reconu** | Znalezisko Evaluatora U1, potwierdzone przez Final Control. Wplywa wylacznie na tryb demonstracyjny, nie na normalna rozgrywke. |
+| P-FARMA-COFNIJ-ZWRACA-PRACE-NIEAKTUALNY-WPIS-Q1 | 2026-08-27 | Nieaktualny wpis „cofnij" w kolejce budowy zwraca Prace za farme, ktora ta sama zmiana wlasnie usunela z mapy. | **OTWARTE — wylom w kryterium 2 tematu, nie w GOAL** | Znalezisko Final Control. Gracz moze odzyskac Prace za ulepszenie, ktorego juz nie ma. |
+
+## ZAMKNIETE 2026-08-27 — R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (odblokowanie hodowli w lesie)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 | 2026-08-27 | Cofniecie zakazu z 2026-07-29: owce, bydlo, lama znow moga byc budowane na lesie. Decyzja wlasciciela „Tak, odwracamy — wszystkie trzy" sprzed tej sesji, nigdy niezdispatchowana. | **ZINTEGROWANE do `main`** | Pomiar 5 ziaren (777 heksow z lasem): owce 0→52, bydlo 0→725, lama 0→52. Kontrola regresji: 44 pola (22 klucze × 2 profile), zmienilo sie wylacznie 5 — te trzy klucze na lesie; „bez lasu" identyczne dla wszystkich 22. Dowod mutacyjny: 33 mutacje, pokrycie 100/100. Bramka tematu 100/0, map-improvement-qualify 126/0, oboz-lowiecki-las 91/0, farma-nie-w-lesie 136/0 bez pogorszenia. |
+| **P-STADNINA-LAS-NIEROZSTRZYGNIETE-Q1** | 2026-08-27 | Zakaz lasu dla stadniny (`surowiecOdblokowany='kon'`) wpadl w regule z 2026-07-29 jako **pochodna definicji**, nie osobna decyzja — ECHO „wszystkie trzy" wymienia wylacznie owce/bydlo/lame. Operator swiadomie zostawil stadnine zabronioną zamiast zgadywac. Odblokowanie byloby skutkiem realnym: **725 nowych pol na 5 mapach** (kazdy zalesiony heks Laki/Rowniny po odblokowaniu Konia). | **OTWARTE — wymaga decyzji wlasciciela** | Pytanie: czy stadnina rowniez ma wejsc do lasu, czy zostaje zabroniona jak dzis? |
+| P-HODOWLA-LAS-BRAK-DOWODU-WIZUALNEGO-Q1 | 2026-08-27 | Nikt (Operator, Evaluator, Final Control) nie obejrzal w zywej przegladarce zalesionego heksa z hodowla. `foodOnForest` (`main.ts`) obejmuje tylko `farma` i `bydlo` — bydlo na lesie chowa kepe lasu, owce i lama NIE (inna sciezka, `preservesHillRelief`). Render trzech hodowli bedzie niejednolity. | **OTWARTE — brak dowodu (§13a), poza allowlista** | `main.ts` poza allowlista tematu, wiec nikt nie mogl tego naprawic w tej rundzie. |
+| P-HODOWLA-LAS-TOOLTIP-LUKA-POSZERZONA-Q1 | 2026-08-27 | Luka tooltip↔silnik (tooltip heksu nie pokazuje hodowli bez zloza) istniala przed tematem, ale **poszerzyla sie** — doszlo 777 zalesionych heksow, na ktorych silnik teraz dopuszcza hodowle, a tooltip jej nie pokaze. | **OTWARTE — dlug UX, nie regres tego tematu** | Zmierzone PRZED i PO jako identyczne co do przyczyny, ale zakres skutkow rosnie. |
+| P-HODOWLA-DEMOKEYSFORHEX-NIEZNANE-Q1 | 2026-08-27 | `demoKeysForHex` (`main.ts:12031`) nie zna hodowli na lesie. | **OTWARTE — poza allowlista, ta sama klasa co P-DEMOKEYSFORHEX-SIEJE-FARMY-W-LESIE-Q1** | Warto naprawic razem z tamtym znaleziskiem, jeden temat porzadkowy dla `?demo=ulepszenia`. |
+| P-HODOWLA-BRAMKA-KRUCHA-ASERCJA-JSON-Q1 | 2026-08-27 | Krucha asercja w bramce tematu dotyczaca pol JSON — szczegoly w `03-final-control.md`. | **OTWARTE — dlug testowy** | Nota Final Control, nie blokuje integracji. |
+| P-BALANS-HODOWLA-3-WARSTWY-NA-HEKSIE-Q1 | 2026-08-27 | **Skutek balansowy zmierzony po raz pierwszy przez Final Control:** automat gracza i AI cywilizacji kladly na ulepszanym heksie lesnym 2 warstwy, teraz kazdy 3 (342/342 heksow) — bydlo na mapie wiecej niz sie podwaja. Tartak i oboz lowiecki NIE sa wypychane (rozne sektory). To skutek decyzji wlasciciela, nie usterka, ale warto znac liczby przy ocenie balansu po zagraniu. | **OTWARTE — informacyjne, do wiadomosci** | Ograniczenie pomiaru: sonda to syntetyczny pulap (1 miasto, praca 1e8) — przenosi sie PROPORCJA, nie liczby bezwzgledne. |
+
+## ZAMKNIETE 2026-08-27/28 — R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1 (wojna wymuszona epoki Zelaza)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-EPOKA-ZELAZO-WYMUSZONA-WOJNA-Q1 | 2026-08-27 | Trzecia epoka (Zelazo) dostaje mechanizm wojny wymuszonej, wzorem Brazu — wyzwalacz to awans do epoki, progi 2 miasta/20 tur odpoczynku/20 tur cooldownu identyczne z Brazem. | **ZINTEGROWANE do `main`** | Final Control zrobil probne scalenie z `main` PRZED integracja orkiestratora — zero konfliktow, wszystkie bramki zielone na scaleniu. Bramki: stone 32/32, bronze 44/44, iron 46/46, plus trzy testy main-guard (18/0, 25/0, 29/0). Miasta-panstwa i gracz wylaczeni identycznie jak w Kamieniu/Brazie. |
+| **P-WOJNA-JUZ-W-WOJNIE-LICZY-BARBARZYNCOW-Q1** | 2026-08-28 | **Znalezisko Final Control (F1), dotyczy WSZYSTKICH TRZECH epok naraz:** bramka „czy cywilizacja jest juz w jakiejs wojnie" (blokujaca wejscie w nowa wojne wymuszona) liczy takze wojne z barbarzyncami posiadajacymi miasto. Cywilizacja stale skonfliktowana z barbarzyncami nigdy nie kwalifikuje sie do wojny wymuszonej Kamienia, Brazu ani Zelaza. | **OTWARTE — trzecia zidentyfikowana przyczyna ciszy w wojnach, wymaga decyzji wlasciciela** | Dolacza do juz znanych dwoch przyczyn (flaga miasta-panstwa — naprawiona; arytmetyczna niemozliwosc wojny przeciw graczowi — swiadomie zostawiona jako C). Nie naprawiane w tym temacie — poza zakresem dispatchu. |
+| P-WOJNA-BRAZ-NIE-CZYSCI-REJESTROW-NOWA-GRA-Q1 | 2026-08-28 | Nota (e) Evaluatora: mechanizm Brazu nie czysci swoich rejestrow (aktywne wojny, cooldowny) przy starcie nowej gry. | **OTWARTE — dlug sprzed tego tematu, poza zakresem** | Nie wplywa na Zelazo (nowy mechanizm, wlasne rejestry). |
+| P-WOJNA-ZELAZO-BRAK-DOWODU-ROZGRYWKA-Q1 | 2026-08-28 | **BRAK DOWODU (§13a):** auto-pokoj po 2 miastach, 20 tur odpoczynku i 20 tur cooldownu NIE zaobserwowane w realnej rozgrywce (playtest nie doszedl do pelnego cyklu); tempo naturalnego dojscia do epoki Zelaza nie zmierzone. | **OTWARTE — dlug dowodowy, zgloszony jawnie przez Final Control** | Bramka `forced-war-iron-main-guard-test.cjs` jest bramka TEKSTOWA (regex nad `main.ts`), uczciwie zadeklarowana jako slabszy dowod niz behawioralny. |
+
+## ZAMKNIETE 2026-08-28 — R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 (flaga miasta-panstwa)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-DYPLO-FLAGA-MIASTO-PANSTWO-NIE-GASNIE-Q1 | 2026-08-27 | ECHO wlasciciela = A: oznaczenie miasta-panstwa gasnie przy kazdym przejeciu, takze sila. | **ZINTEGROWANE do `main`** | Final Control zrobil probne scalenie z `main` przed integracja orkiestratora — zero konfliktow. Bramka tematu 31/0, forced-war-stone 32/0, forced-war-bronze 44/0 bez pogorszenia. Mutacja: usuniecie `markCityStateDirty()` NIE zaczerwienia bramki (dziura odnotowana), no-op `clearCityStateFlagOnCapture` daje 22/9 FAIL (kontrola pozytywna). |
+| **P-WOJNA-PRE-CONTACT-BLOKUJE-AI-AI-Q1** | 2026-08-28 | **Znalezisko Operatora, potwierdzone przez Evaluatora i Final Control — czwarta zidentyfikowana przyczyna ciszy wojen.** Warstwa mgly wojny `pre_contact` kasuje komende `wypowiedz_wojne` miedzy dwiema AI CYWILIZACJI, gdy CZLOWIEK (gracz) nie odkryl napastnika we mgle wojny — mimo ze to wojna miedzy dwoma komputerowymi rywalami, niezwiazana z widocznoscia dla gracza. Pomiar: **1 wypowiedzenie na 3 ziarna** zamiast wielu. Naprawa miesci sie w calosci w `gra/src/main.ts` (juz w allowlistcie tematu), ale wymaga osobnej decyzji wlasciciela — nie naprawiane w tej rundzie. | **OTWARTE — WYMAGA DECYZJI WLASCICIELA, priorytet wysoki** | Blokuje ostatnia klauzule GOAL-a tematu flagi („wojna wymuszona faktycznie wybucha w rozgrywce") mimo ze sam kod flagi jest poprawny i zintegrowany. |
+| P-FLAGA-BRAK-MIGRACJI-ISTNIEJACYCH-SEJWOW-Q1 | 2026-08-28 | Sejw zapisany PRZED ta naprawa, po wczytaniu PO naprawie, nadal oznacza zdobywce jako miasto-panstwo — sonda Final Control to potwierdza. Brak migracji dla juz istniejacych zapisow. | **OTWARTE — wymaga decyzji wlasciciela** | Analogiczne pytanie do tego, ktore juz rozstrzygnieto dla farm w lesie (tam ECHO bylo „C" via interpretacje) — ale to inny mechanizm (flaga miasta-panstwa, nie ulepszenie terenu), wiec wymaga wlasnej odpowiedzi, nie automatycznego przeniesienia tamtej decyzji. |
+| P-FLAGA-MARKCITYSTATEDIRTY-BRAK-ASERCJI-Q1 | 2026-08-28 | `markCityStateDirty()` dziala poprawnie, ale nie ma wlasnej asercji w bramce — usuniecie tego wywolania nie zaczerwienia bramki tematu (31/0 bez zmian). | **OTWARTE — dlug testowy, dziura w pokryciu** | Znalezisko Final Control, potwierdzone wlasna mutacja. |
+| P-FLAGA-ONOWNERCHANGED-RYZYKO-ODDALONE-Q1 | 2026-08-28 | Rozwazono ryzyko trwalej degradacji prawdziwego miasta-panstwa przez wspolny hak `onOwnerChanged` przy wyzwoleniu miasta. | **ZAMKNIETE — ryzyko oddalone** | Final Control potwierdzil: mechaniki wyzwalania miast nie ma dzis w `gra/src/`. Nic do zrobienia. |
+
+## RUNDA 4/5 (BLOCK) — R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (budowanie napedzane popytem itd.)
+
+| ID | Data | Znalezisko | Status | Uwagi |
+|---|---|---|---|---|
+| **R-AI-WYRAB-PRZY-RZECE-FARMY-Q1** | 2026-08-28 | Runda 4/5 zakonczona werdyktem Final Control: **GOTOWOSC DO INTEGRACJI: NIE**, cztery blokady. Temat wraca do Operatora na runde 5 — OSTATNIA dozwolona. | **BLOCK — nie zintegrowane** | Zaimplementowano Zasady 1-3 (popyt, tylko-przy-obywatelach, przekierowanie nadwyzki) + R4-Q2. Bramki: `ai4-popyt-obywatele-test` 48/0, `ai2-heks-po-heksie-test` 35/0, bez pogorszenia auto-improvements 45/0, ai-improvements 52/0, map-improvement-qualify 117/0, farma-nie-w-lesie 136/0, oboz-lowiecki-las 91/0. Zastany czerwony `ai-praca-split-parity-test` 21/1 potwierdzony jako NIE-regres (identyczny na swiezym `main`). |
+| **P-AI-R4-Z3-SURPLUS-NIE-PERSISTOWANY-Q1** | 2026-08-28 | **Blokada 1 (do naprawy w kodzie, bez ABC).** `aiSurplusRedirectedOwners` (`main.ts:7495`) nie jest zapisywany w sejwie, a `ownerDefaultPodzialPracy` (blok Zasady 3) JEST. Po save/load w turze z nadwyzka AI CYWILIZACJI moze zostac trwale na `procentBudynki=100` → zero Pracy do puli imperium → zero ulepszen terenu NA STALE. | **DO NAPRAWY W RUNDZIE 5** | Trwala regresja stanu gry, nie kosmetyka. |
+| **P-AI-R4-FC2-ZASADA3-DOTYKA-MIASTA-PANSTWA-Q1** | 2026-08-28 | **Blokada 4 (do naprawy w kodzie, bez ABC).** Blok Zasady 3 (`main.ts:28482`) nie wylacza `defensiveCopy`, wiec przesuwa Prace na budynki takze miastom-panstwom — sasiedni blok CUDA-AI wyklucza kopie obronne jawnie, ten nie. Poszerzenie zakresu wobec §14 (miasta-panstwa nie byly czescia tematu). | **DO NAPRAWY W RUNDZIE 5** | |
+| **P-AI-R4-Z1-ONLYWORKED-WSZYSTKIE-PROFILE-Q1** | 2026-08-28 | **Blokada 2 — WYMAGA DECYZJI WLASCICIELA (Pytanie 3).** `DEFAULT_ULEPSZENIA_ONLY_WORKED=true` jest stala GLOBALNA — zmienia zachowanie WSZYSTKICH CZTERECH profili automatu gracza (zywnosc, surowce, infrastruktura, zrownowazone), nie tylko „zrownowazone", jak wymagal dispatch. Dodatkowo profil „infrastruktura" ma efekt uboczny: przeniesienie licznikow FAZY 0 na `radiusHexes`. | **OTWARTE — Pytanie 3 do wlasciciela** | Operator zglosil czesc `onlyWorked` w NOCIE pod kryterium 5; czesc `radiusHexes` zgloszona nie byla — Final Control to sprostowal. |
+| **P-AI-R4-FC1-RECZNY-PRZYCISK-BUDUJ-Q1** | 2026-08-28 | **Blokada 3 — WYMAGA DECYZJI WLASCICIELA (Pytanie 4).** Reczny przycisk „buduj" gracza (`applyBuildRequest`, `main.ts:11650`) NIE jest zabramkowany do hesow z obywatelami — dziala wszedzie jak dzis. ECHO wlasciciela mowilo wprost „Gracz musi nacisnac przycisk «buduj» tylko w miejscach, gdzie sa obywatele", ale zaden z dwoch raportow (Operator/Evaluator) tego nie zauwazyl — znalezisko WLASNE Final Control. | **OTWARTE — Pytanie 4 do wlasciciela** | |
+| P-AI-R4-FC3-ZLOZA-ZYWNOSCIOWE-W-WYJATKU-Q1 | 2026-08-28 | Wyjatek zlozowy (Zasada 2 — zloza moga byc gdziekolwiek) obejmuje takze zloza ZYWNOSCIOWE (bydlo/owce/lama/oboz_lowiecki), a ECHO mowilo o „surowcach". | **OTWARTE — obserwacja, nie blokuje** | Final Control, nie wymaga natychmiastowej decyzji. |
+| P-AI-R4-BRAK-DOWODU-ROZGRYWKA-Q1 | 2026-08-28 | BRAK DOWODU (§13a): efekt Zasady 3 w kolejce produkcji prawdziwej rozgrywki niezmierzony; wplyw Zasady 2 na sile AI CYWILIZACJI w dluzszej grze niezmierzony; czestosc pustej kolejki (Z-6) w rozgrywce niezmierzona. | **OTWARTE — dlug dowodowy** | Zgloszone jawnie przez Final Control. |
+
+## CZESCIOWO ZAMKNIETE 2026-08-28 — R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 (rundy 2-5 zintegrowane, temat NIE domkniety)
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-AI-WYRAB-PRZY-RZECE-FARMY-Q1 | 2026-08-28 | 5 rund Operator→Evaluator→Final Control: AI kompleksowosc heks-po-heksie, wyrab lasu przy rzece, budowanie popytowe (Zasada 1), tylko-przy-obywatelach (Zasada 2), przekierowanie nadwyzki (Zasada 3), R4-Q2=C (przelacznik wyrebu automatu gracza), naprawa Z-3+FC-2 w rundzie 5. | **ZINTEGROWANE do `main` (kod), TEMAT NIE ZAMKNIETY** | Limit 5 rund WYCZERPANY. Final Control rundy 5: „GOTOWOSC DO INTEGRACJI: TAK dla zakresu rundy 5" ale „ZAMKNIECIE TEMATU: NIE". Bramki: ai4-popyt-obywatele-test 50/0, ai2-heks-po-heksie-test 35/0, bez pogorszenia auto-improvements 45/0, map-improvement-qualify 126/0, farma-nie-w-lesie 136/0, oboz-lowiecki-las 91/0, hodowla-las 100/0. Zastany regres `ai-praca-split-parity-test` 21/1 potwierdzony niezmieniony na czystym `main` PRZED integracja. |
+| P-AI-R5-FC3-CLEANUP-OWNERID-REUSE-Q1 | 2026-08-28 | Final Control rundy 5: blok sprzatania po eliminacji ownera nie usuwa wpisu z `aiSurplusRedirectedOwners` mimo ze zbior jest juz trwaly (ta sama klasa przeoczenia co Z-3). Skutek praktyczny dzis martwy (reuse ownerId trafia do sciezki miasta-panstwa, gdzie blok jest pomijany). | **OTWARTE — backlog, nie bloker** | |
+| P-AI-R5-FC4-SLIDER-STATE-NIE-PERSISTOWANY-Q1 | 2026-08-28 | `aiSliderStateByOwner` nie jest w sejwie; na sciezce wznowienia po komendzie (`isCommandResume`) powrot moze jednorazowo trafic w wartosc domyslna 70 zamiast wlasnego wyboru AI. | **OTWARTE — backlog, poza zakresem rundy 5** | |
+| P-AI-BRAK-DOWODU-ROZGRYWKA-ZBIORCZE-Q1 | 2026-08-28 | Zbiorcza lista brakow dowodu (§13a) z rund 2-5: zero pomiaru w realnej przegladarce (wszystkie dowody dzialaja na wycietym tekscie `main.ts` poza petla tury); zero realnego save/load przez UI; nieznana czestosc wpadania AI CYWILIZACJI w stan nadwyzki w normalnej partii; skutek strategiczny Zasady 2 dla sily AI CYWILIZACJI w dluzszej grze niezmierzony. | **OTWARTE — dlug dowodowy zbiorczy, jawnie zgloszony przez wszystkie trzy role przez 4 rundy** | Potrzebny playtest-hak dochodzacy do pelnej rozgrywki, podobnie jak w temacie wydarzen (`P-WYDARZENIA-BRAK-DOWODU-EMITER-ZYWA-GRA-Q1`). |
+| **P-AI-R4-Z1-ONLYWORKED-WSZYSTKIE-PROFILE-Q1** i **P-AI-R4-FC1-RECZNY-PRZYCISK-BUDUJ-Q1** | 2026-08-28 | Patrz wpisy w sekcji „RUNDA 4/5 (BLOCK)" wyzej. | **NADAL OTWARTE — Pytania 3 i 4 zadane wlascicielowi, oczekuja odpowiedzi** | Po ECHO dalsza praca (jesli wymagana) idzie pod NOWYM ID tematu — ten (`R-AI-WYRAB-PRZY-RZECE-FARMY-Q1`) ma wyczerpany limit 5 rund. |

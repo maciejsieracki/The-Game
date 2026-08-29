@@ -1,346 +1,60 @@
 ---
-description: TWARDA REGUŁA — KAŻDA praca wyłącznie w systemie AutoBot. Maciej 2026-08-05. NIENEGOCJOWALNE.
-globs:
-  - "**/*"
+description: AutoBot — Operator → Evaluator → Final Control → integracja → READY_FOR_DEPLOY.
 alwaysApply: true
 ---
 
-# AutoBot — KAŻDA PRACA TYLKO TĘDY (NIENEGOCJOWALNE)
-
-**Decyzja Maciej 2026-08-05 (`R-PROC-AUTOBOT`):**  
-**Każda praca, którą wykonuje agent (kod, fix, docs procesu, audyt, deploy-prep), MUSI iść przez system AutoBot.**  
-Bez wyjątku „to tylko drobiazg” / „zrobię sam poza pętlą”.
-
-Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · scaffold: `dyspozycje/autobot/` · playbook: `dyspozycje/autobot/playbook.json`
-
----
-
-## Obowiązek (od tej pory — zawsze)
-
-| Krok | Rola AutoBot | Kto u nas | Wymagane |
-|------|----------------|-----------|----------|
-| **1** | **Operator** | `composer-2.5` (implementer) | Czyta `playbook.json` + zadanie → wykonuje akcję w guardrails |
-| **2** | **Evaluator** | Osobny `composer-2.5` (adwokat diabła) + twarde metryki | Score z KPI (nie self-grade), postmortem, win/loss playbook, prune |
-| **3** | **Final / Gate** | Grok 4.5 | Kontrola #1+#2; dopiero potem „gotowe” / czekaj na `deploy` |
-
-**ZAKAZ:**
-
-- ❌ Wykonać paczkę kodu / docs bez Operatora — **wyjątek doprecyzowany (Maciej 2026-08-08,
-  R-SKILL-LEAN-LOOP-CIVAUTOBOT=B):** dozwolone bez osobnego Operatora WYŁĄCZNIE 1–3 linie
-  czysto tekstowe, WYŁĄCZNIE w plikach dokumentacji/notatek (NIGDY w `gra/src`), i WYŁĄCZNIE
-  jako dopisek do paczki, która już przeszła przez Evaluatora w tej samej sesji — nie jako
-  samodzielna, nieoceniona zmiana. Zawsze z wpisem w `KANAL-PRACA.md` lub treści commita.
-- ❌ Zamknąć „gotowe w kodzie” / prosić `deploy` bez Evaluator + final Groka
-- ❌ Omijać `playbook.json` / guardrails „na skróty”
-- ❌ Self-grade bez twardej metryki (testy, typecheck, playtest OK/BUG, md5)
-
-**Wyjątek wąski (tylko):** czysta rozmowa ABC / zapis decyzji Macieja bez zmiany `gra/src` — wtedy Operator nie koduje, ale Grok i tak trzyma reguły playbooka (NUMER→ABC, deploy gate).
-
----
-
-## Dwa rdzenie (przypomnienie)
-
-| Agent | Robi | Nie robi |
-|-------|------|----------|
-| **Operator** | Task + playbook + akcja (kod/testy/docs) | Merge `main`, deploy, kanon/finalna |
-| **Evaluator** | Hard metrics → delta → postmortem → update playbook + **SCOPE/regresja** | Ocena „na czuja” / 10/10 bez KPI · PASS bez sprawdzenia diffu |
-
-Potrójna warstwa (`R-PROC-POTROJNA-WARSTWA`) = **wbudowana** w kroki 1–3 AutoBot — nie osobny opcjonalny rytuał.
-
----
-
-## Pytanie ABC — obowiązkowy turniej dwóch projektów (Maciej 2026-08-08)
-
-Kanon: `docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md` · playbook `C-018` (`playbook.md`) / `rule_126` (`dyspozycje/autobot/playbook.json`)
-
-**Każde NOWE pytanie ABC** (temat, na który właściciel jeszcze nie odpowiedział literą) — zanim trafi do właściciela:
-
-1. Proponent 1 (orkiestrator/Operator, kto natrafił na temat) pisze pełny projekt ABC **oraz wskazuje własny „typ"** (którą literę uważa za najlepszą) z uzasadnieniem odwołującym się do `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md`.
-2. Proponent 2 — NIEZALEŻNY agent, bez podglądu projektu 1, pisze własny osobny projekt, z własnym „typem" na tych samych zasadach.
-3. Sędzia (rola Evaluatora) ocenia dwuwarstwowo: Warstwa 1 (dominująca) — trafność zastosowania wzorca z profilu w uzasadnieniu „typu"; Warstwa 2 (niuanse, tiebreaker) — zgodność z danymi, kompletność wariantów. Wydaje werdykt lub syntetyzuje finalną wersję. Do właściciela idzie zwycięska/zsyntetyzowana wersja **z jawną adnotacją „wg profilu: typowana X, bo …"** przy Rekomendacji — zawsze obok pełnego A/B/C, nigdy jako zamiennik wyboru (`R-PROFIL-TURNIEJ-PUNKTACJA-Q1`, Maciej 2026-08-08).
-
-**Gdy profil nie ma dziś wzorca pasującego do kategorii tematu** (np. temat spoza §3.1–3.5 `PROFIL-DECYZYJNY-MACIEJ.md`): „typ" pozostaje obowiązkowy, ale uzasadnienie wprost stwierdza „profil nie ma dziś pasującego wzorca — typ oparty wyłącznie na analizie inżynierskiej tematu". To nie blokuje turnieju.
-
-**„Typ" a „Rekomendacja":** to nie dwa osobne pola — „typ" JEST literą wpisaną w pole `Rekomendacja` projektu ABC; adnotacja „wg profilu: …" to dopisek uzasadnienia tej samej rekomendacji, nie druga, konkurencyjna wskazówka.
-
-**Nie dotyczy:** tematów, na które właściciel już odpowiedział literą (tylko ECHO + zapis), czysto inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza, ani bezpośrednich ustaleń wypracowanych żywą rozmową z właścicielem (właściciel sam kształtuje projekt w dialogu, turniej broni przed ślepym kątem jednego autora — tu autorów efektywnie jest już dwóch).
-
----
-
-## Evaluator — obowiązkowy SCOPE + regresja (Maciej 2026-08-05)
-
-Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`  
-**Twardość werdyktów (od 2026-08-05):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · playbook `rule_106`  
-**STRICT-EDGE (happy-path-only → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` · playbook `rule_107`  
-**STRICT-PARITY (asymetria gracz/AI/MP → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md` · playbook `rule_108`  
-**STRICT-SAVE (luki save/load → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md` · playbook `rule_109`
-
-**Evaluator MUSI** przed werdyktem sprawdzić:
-
-1. **SCOPE** — każda zmiana w diffie wynika wprost z problemu / błędu / AC tematu (nie „przy okazji”).
-2. **NO-SIDE-EFFECT** — paczka nie rusza niezwiązanych plików/funkcji bez uzasadnionego kontraktu.
-3. **NO-REGRESSION** — fix nie cofa wcześniejszych usprawnień ani nie psuje innych tematów.
-4. **STRICT (R-PROC-AUTOBOT-EVAL-STRICT)** — luki testów / brak asercji AC / czerwone testy tematu / `tsc≠0` / SCOPE gameplay bez handoffu → **FAIL** (nie NOTES).
-5. **STRICT-EDGE (R-PROC-AUTOBOT-EVAL-STRICT-EDGE)** — testy tematu tylko happy-path bez edge/negacji/repro buga → **FAIL #7** (nie NOTES).
-6. **STRICT-PARITY (R-PROC-AUTOBOT-EVAL-STRICT-PARITY)** — asymetria gracz/AI/MP (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub bez testu parytetu → **FAIL #8** (nie NOTES).
-7. **STRICT-SAVE (R-PROC-AUTOBOT-EVAL-STRICT-SAVE)** — nowe trwałe pole bez snapshot/restore lub restore bez `?? default`; Operator bez roundtrip → **FAIL #9** (nie NOTES).
-
-**PASS-WITH-NOTES** tylko wąska lista: pre-existing baseline poza tematem (dowód `main`), docs drift nieblokujący, cross-lane z handoffem, GATE=A wizual, drobny drift procesu.
-
-**Przy NIE (SCOPE lub STRICT):** **FAIL** — **ZAKAZ** czystego PASS i PASS-WITH-NOTES „bo brakuje testu, ale wygląda OK”.
-
-Grok wkleja do promptu Evaluatora szablon 5 pytań z decision doc (sekcja „SCOPE + regresja + STRICT”).
-
----
-
-## Playbook + pruning + guardrails
-
-- Reguły: `win_count` / `fail_count` / `win_rate`; próg **min. 10 zastosowań** (v2, 2026-08-07); `< 30%` → `RETIRED`, `30–60%` → `QUARANTINE` (nadal stosowana), `> 60%` → `ACTIVE`, `PROTECTED` (CHRONIONA) nadaje wyłącznie Maciej — poza licznikami
-- Feature pruning: atrybuty z \|corr\| < 0.05 poza kontekstem Operatora
-- Guardrails w **kodzie**: bez merge→main; deploy tylko hasło Macieja; HITL; delay 48h **lub** N≥1000 przed winnerem
-
-**Protokół błędu (v2, R-PROC-AUTOBOT-BLAD)** — po KAŻDYM błędzie (Maciej poprawił/odrzucił, liczba nie przeszła weryfikacji, coś do przeróbki): NAPRAW → przyczyna nie winny → sprawdź wstecz inne miejsca → zapisz do `errorLog` w `playbook.json` → przekuj w regułę (`ACTIVE`, licznik 0/0). Recydywa (powtórka z `errorLog`) = incydent krytyczny, zgłoś Maciejowi wprost. Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` §„v2 — Protokół AutoBot".
-
-## Weryfikacja odpowiedzi na pytania właściciela (C-023, C-024 — Maciej 2026-08-08)
-
-Nie tylko zmiana w repo wymaga pętli — **każda odpowiedź orkiestratora na pytanie
-właściciela też**, po incydencie z przestarzałym statusem `BUG-TOOLTIP-MOC-NIEPELNA`
-(plik mówił „OTWARTE", naprawa była wdrożona od FALA 260).
-
-- **C-023** — pytanie „czy jest jeszcze coś do zrobienia/nienaprawionego" → ZAWSZE świeży
-  przegląd `PYTANIA-OTWARTE.md` + `REJESTR-PROSB-I-ZADAN.md` + realny stan w kodzie dla
-  pozycji oznaczonych jako naprawione. Status w pliku bywa przestarzały — sama etykieta
-  „zamknięte" bez sprawdzenia kodu to wciąż odpowiadanie z pamięci pliku, nie ze stanu
-  faktycznego.
-- **C-024** — KAŻDA odpowiedź na pytanie właściciela (nie tylko zmiana w repo) przechodzi
-  przed wysłaniem przez osobnego Evaluatora, który sprawdza jej poprawność wobec realnego
-  stanu plików/kodu. Jego słowa: *„jeżeli o coś pytam i Ty odpowiadasz, to ponownie
-  sprawdzić sobie przez ewaluatora, czy Twoja odpowiedź jest prawidłowa."*
-
-## Zakres naprawy błędu — zero regresji „przy okazji" (C-025, C-026 — Maciej 2026-08-08)
-
-Po serii regresji, gdzie naprawa jednego miejsca psuła inne bez wykrycia przed playtestem
-(`BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE`, `BUG-TRAKTAT-KOSZYK-REGRESJA`,
-`BUG-RZEKI-MEDIUM-FOW-REGRESJA`, 4-rundowa naprawa `R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1`).
-Jego słowa: *„70% mojego czasu to jest spędzanie nad poprawkami które już kiedyś były
-naprawione... kompletnie tego nie rozumiem."*
-
-- **C-025** — zlecenie Operatora naprawiającego zgłoszony błąd ma zakres = **TYLKO ten błąd**.
-  Zakaz „przy okazji"/„skoro już tu jestem": refaktorów, sprzątania stylu, zmian poza tym, co
-  wynika wprost z przyczyny błędu — nawet jeśli wyglądają jak ulepszenie. Prompt zlecenia MUSI
-  wypisać granicę zakresu (konkretne pliki/funkcje) i wprost zakazać zmian poza nią. Jego
-  słowa: *„jeżeli jest jakiś błąd, to agent powinien się zająć tylko i wyłącznie poprawieniem
-  tego błędu, a nie kopać w kodzie i psuć czegoś innego."*
-- **C-026** — gdy naprawa MUSI dotknąć kodu współdzielonego z innymi ekranami/funkcjami (bo to
-  jedyny poprawny zakres), Operator PRZED zmianą wypisuje wszystkie miejsca użycia (grep) i PO
-  zmianie weryfikuje KAŻDE z osobna — „to powinno nadal działać" bez sprawdzenia jest
-  zakazane. Evaluator sprawdza, czy ta lista w ogóle powstała, nie tylko czy diff wygląda
-  bezpiecznie. Jego słowa: *„jeżeli zmienia daną rzecz, a ma ona wpływ na inne kwestie, to
-  powinien to przemyśleć i przewidzieć."*
-
-## Rejestracja → ABC lub natychmiastowy subagent — zero zaległości (C-027 — Maciej 2026-08-08)
-
-Po skardze, że zgłoszenia „siedzą w rejestrze" bez ruchu: *„a myślisz, że po co Ci zgłaszam te
-problemy? Żeby sobie siedziały w rejestrze?"* i *„tak właśnie gubią się tematy, które ci
-zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie robicie z tym nic."*
-
-**C-027** — każde zgłoszenie, w tej samej turze, bez przerwy:
-1. rejestracja w `PYTANIA-OTWARTE.md` + `REJESTR-PROSB-I-ZADAN.md`;
-2. wymaga realnego wyboru kompromisu (balans/gameplay/UX z alternatywami) → **pytanie ABC od
-   razu**, nie odłożone na później;
-3. NIE wymaga ABC (błąd do naprawienia, prośba z jasno opisanym oczekiwanym zachowaniem) →
-   **odpal subagenta Sonnet 5 od razu, w tej samej turze**, w pętli Operator → Evaluator —
-   „zarejestrowane, zajmę się później" jest zakazane. Jego słowa: *„jeżeli coś jest zgłoszone
-   rejestrujesz dane zadanie, jeżeli trzeba zadać pytanie ABC to zadajesz, jeżeli nie to
-   odpalasz subagenta Sonet od razu do rozwiązania tego problemu... to jest najważniejsze,
-   żeby sprawy szły do przodu i nic nie zostało zapomniane."*
-
-## Dwie techniczne pułapki wykryte w tej sesji (C-028, C-029 — Maciej 2026-08-08)
-
-Po jego pytaniu „to wszystkie błędy, które zauważyłeś, warto dołożyć do autobota" —
-dwa konkretne, powtarzalne mechanizmy zawodne w tej sesji, nie jednorazowe pomyłki:
-
-- **C-029 (recydywa ≥5×)** — worktree bez `gra/node_modules` sprawia, że `npx tsc` po cichu
-  uruchamia globalny, niepinowany TypeScript zamiast wersji projektu (5.9.3), dając mylący
-  wynik w obie strony (fałszywe „0 błędów" albo fałszywy błąd kompilacji niebędący błędem
-  projektu). Przed zaufaniem KAŻDEMU wynikowi `tsc` w worktree: symlink `node_modules` z
-  drzewa głównego + `npx tsc --version` musi pokazać `5.9.3`. Symlink nigdy nie trafia do
-  commita (usuwać po pracy, `git add -A` by go złapał mimo `.gitignore` — nazwa katalogu
-  zgodna z wpisem, ale symlink to nie katalog).
-- **C-028** — `git add` z listą kilku ścieżek, gdy jedna nie istnieje (typowo: plik usunięty
-  przez `git apply`, jeszcze nie w indeksie) — kończy się `fatal: ... did not match any
-  files`, a pozostałe ścieżki z TEGO SAMEGO wywołania mogą zostać po cichu pominięte.
-  `git status --short` PRZED każdym commitem po `git add` z więcej niż jedną ścieżką;
-  usunięte pliki dodawać osobnym wywołaniem.
-
-## C-030 — przegląd całej listy, nie tylko najnowszego zgłoszenia (Maciej 2026-08-08)
-
-C-027 mówi „każde zgłoszenie od razu do subagenta" — ale w praktyce stosowane było punktowo
-(dla zgłoszenia właśnie rejestrowanego), nie jako przegląd całej listy. Skutek: 4 zgłoszenia
-z jednego dnia zostały zarejestrowane, ale nigdy nie dostały subagenta — wykryte dopiero na
-pytanie właściciela wprost. **Po KAŻDEJ serii rejestracji w `PYTANIA-OTWARTE.md`, przed
-przejściem do innego tematu**: `grep` całego pliku po dzisiejszej dacie + `STATUS: **OTWARTE**`
-(sam status, nie „ZDECYDOWANE"/„W REALIZACJI"/„NAPRAWIONE") i potwierdzić dla każdego trafienia
-subagenta w locie, pytanie ABC, albo jawny powód odłożenia. Jego słowa: *„to jest jakaś
-notoryczna skleroza… co mam kazać ci gdzie zapisać żebyś nie zapominał o błędach, które
-zgłaszam, i wszystkie od razu realizował przez subagentów."*
-
-## C-031 — krytyczna komenda żyje TAKŻE w CLAUDE.md, nie tylko tutaj (Maciej 2026-08-08)
-
-C-030 istniała jako reguła od godzin tej samej sesji, a mimo to nie została zastosowana
-proaktywnie ani razu, dopóki właściciel wprost nie zapytał, gdzie to zapisać, żeby się nie
-powtarzało. Przyczyna: ten plik i `playbook.md` NIE są wstrzykiwane do kontekstu automatycznie
-w Claude Code (w Cursorze ten plik JEST auto-ładowany dzięki `alwaysApply: true` — zastrzeżenie
-dodane po rundzie 1 Evaluatora) — wymagają świadomego `Read`, a po kompaktowaniu długiej sesji
-znikają z pola widzenia bez świadomej decyzji o pominięciu. `CLAUDE.md` NATOMIAST jest ładowany
-do kontekstu KAŻDEJ tury w Claude Code — ale jako migawka z początku sesji, nie odczyt co turę;
-zmiana w `CLAUDE.md` w trakcie bieżącej sesji zaczyna realnie działać dopiero w NOWEJ sesji.
-**Poprawka:** sama komenda z C-030, BEZ kotwicy `^## ` (kotwica gubi nagłówki `### ` — realna
-utrata trafienia wykazana przez Evaluatora rundy 1: `grep -n 'STATUS: \*\*OTWARTE'
-dyspozycje/PYTANIA-OTWARTE.md`) zduplikowana w `CLAUDE.md` §0c — nie tylko odwołanie do reguły,
-tam gdzie orkiestrator ją faktycznie zawsze zobaczy. Druga, niezależna od pamięci warstwa:
-**[2026-08-08, ZASTĄPIONE tego samego dnia]** druga warstwa BYŁA stałym godzinowym Routine —
-usunięta na polecenie Macieja po ~20+ jałowych wywołaniach/dobę niezależnie od realnej pracy.
-Zastąpiona jednorazowym, samo-uzbrajającym się `run_once_at` triggerem: uzbrajany TYLKO gdy nowe
-zgłoszenie nie da się domknąć w tej samej turze, odpala tę samą komendę za ~1h, re-uzbraja
-kolejny jeśli coś nadal czeka, kończy się cicho bez re-uzbrojenia gdy wszystko domknięte. Pełny
-opis: `CLAUDE.md` §0c.
-Ryzyko rozjazdu 4 kopii tej samej komendy (CLAUDE.md/playbook.md/.mdc/SKILL.md) świadomie
-zaakceptowane na razie, bez mechanicznego zabezpieczenia (jak generator `playbook.json`) — do
-rozważenia później. Zasada ogólna: każda reguła oznaczona jako krytyczna (0/0a/0b/0c) powinna
-mieć swoją mechaniczną komendę zduplikowaną w pliku zawsze ładowanym do kontekstu, nie tylko w
-playbooku/regułach `.cursor`. Jego słowa: *„przygotuj rozwiązanie żeby o takich rzeczach nie
-zapominać, gdzie to powinno być zapisane, procedura żeby to się już nie powtarzało."*
-
-## C-032 — sprzątaj dysk PRZED każdą nową partią Operatorów, nie tylko po zamknięciu zlecenia (Maciej 2026-08-09)
-
-RECYDYWA C-014/C-015 (worktree usuwaj jako ostatni krok zamknięcia zlecenia; zakładaj przez
-sparse-checkout). Reguła istniała, ale stosowana była punktowo — dla zlecenia właśnie zamykanego,
-nie jako okresowy audyt całego `.claude/worktrees/`. W wielogodzinnej sesji z dziesiątkami zleceń
-26 martwych worktree (dawno scalona/porzucona praca, ~770-830 MB każdy, razem ~24 GB) uśpiło się
-bez sprzątania, aż dysk doszedł do 99% (485 MB wolnego) — 4 z 6 równolegle wysłanych Operatorów
-padło natychmiast z `No space left on device`, zanim zaczęli pracę.
-
-**Poprawka mechaniczna:** PRZED wysłaniem KAŻDEJ nowej partii Operatorów (nie tylko po zamknięciu
-jednego zlecenia) — `git worktree list` + `du -sh .claude/worktrees/*`; usuń KAŻDY worktree bez
-blokady (`locked`), który nie jest przypisany do aktualnie działającego (`running`) agenta. Kod
-scalonej pracy jest bezpieczny w historii gita/GitHubie po `commit`+`push` — lokalna kopia robocza
-ma wtedy zerową wartość i jest czystym marnotrawstwem miejsca.
-
-Jego słowa (2026-08-09): *„zawsze po zdeployowaniu danych zagadnień powinieneś czyścić drzewa i
-dysk"* oraz *„kiedy zrobisz commit, zabezpieczasz go na GitHubie. Nie ma potrzeby już chyba
-trzymania tych danych"* — potwierdzone jako reguła stała, nie jednorazowa uwaga.
-
-## Integracja z Ultracode/Workflow (Maciej 2026-08-12)
-
-Polecenie Macieja: *„przeczytaj jeszcze raz całe zasady autobots i dostosuj je do pracy
-ultracode tak żeby się uzupełniały i razem usprawniały pracę oraz generowało jak najmniej
-błędów."*
-
-**Zasada nadrzędna tej sekcji:** Workflow (Ultracode) to **NARZĘDZIE wykonawcze** — skrypt
-orkiestrujący subagentów z wbudowaną współbieżnością, izolacją i wzorcami weryfikacji.
-AutoBot (ta reguła + cały kanon powyżej) to **REGUŁY procesu** — kto co robi, w jakiej
-kolejności, jakie warunki muszą być spełnione przed „gotowe"/`deploy`. Workflow ma
-**automatyzować i egzekwować** istniejące reguły AutoBota — **NIE zastępuje** ani Operatora,
-ani Evaluatora, ani żadnego z zakazów wyżej. Skrypt Workflow, który pomija Evaluatora albo
-commituje/deployuje sam, łamie tę regułę dokładnie tak samo jak ręczny dispatch, który to robi.
-
-### Kiedy Workflow zamiast ręcznego dispatchu (Agent tool)
-
-Używaj Workflow, gdy: **≥3 niezależne tematy naraz** (Workflow ma wbudowany limit
-współbieżności ~10–16 agentów i kolejkuje resztę — adresuje realny incydent tej sesji:
-ręczne odpalanie kilkunastu subagentów naraz przez orkiestratora prowadziło do chaosu i
-wyczerpania zasobów) **LUB** użytkownik/tryb ultracode tego wprost wymaga. Dla 1–2 tematów
-ręczny dispatch (`Task`/`Agent` z `isolation:"worktree"`) pozostaje w pełni poprawny —
-Workflow nie jest obowiązkowe dla każdej pojedynczej paczki.
-
-### Mapowanie ról AutoBot → Workflow
-
-| Rola AutoBot | Krok Workflow | Model |
-|---|---|---|
-| **Operator** | `phase('Operator')` → `agent(prompt, opts)` | domyślny model sesji (Sonnet 5, per CLAUDE.md §4) |
-| **Evaluator** | `phase('Evaluator')` → `agent(prompt, {model:'opus', effort:'high'})` | Opus 5 (per CLAUDE.md §4) |
-
-**WYMÓG TWARDY:** obie fazy żyją w **JEDNYM skrypcie Workflow**, Operator → Evaluator jako
-dwa kroki sekwencyjne tego samego przebiegu — **NIGDY jako dwa osobne, niezależnie
-zlecane uruchomienia**. Powód wprost: incydent tej sesji, w którym orkiestrator scalił i
-skomitował serię ~11 zmian Operatora **bezpośrednio, bez pośredniego Evaluatora**, łamiąc
-regułę 0a/0b — wykryte dopiero na wyraźne pytanie właściciela. Faza Evaluate zaszyta w tym
-samym skrypcie co faza Operatora strukturalnie utrudnia to pominięcie (nie eliminuje —
-patrz „Co zostaje poza Workflow" niżej, scalanie ręczne wymaga tego samego reżimu mimo że
-nie idzie przez Workflow).
-
-### `pipeline()` zamiast ręcznego sekwencjonowania
-
-`pipeline(items, stageOperator, stageEvaluator)` przepuszcza KAŻDY temat przez obie fazy
-**niezależnie** — temat A może być już u Evaluatora, gdy temat B jeszcze pracuje u
-Operatora, bez ręcznego zarządzania kolejnością przez orkiestratora. To zastępuje dzisiejsze
-ręczne „poczekaj na Operatora → scal → dopiero teraz zleć Evaluatora" jednym wywołaniem,
-bez utraty gwarancji, że KAŻDY temat przeszedł przez obie warstwy przed „gotowe".
-
-### KROK 0 — weryfikacja bazy worktree (obowiązkowy pierwszy akapit KAŻDEGO promptu `agent()` z `isolation:'worktree'`)
-
-Recydywa tej sesji (dziesiątki wystąpień): worktree zakładany przez `isolation:'worktree'`
-(czy to `Agent` tool, czy Workflow) czasem opiera się na starym/złym commicie (np. `main`
-sprzed setek commitów zamiast czubka gałęzi roboczej) — subagent widzi kod „sprzed" jakiejś
-funkcji i błędnie raportuje, że „funkcja nie istnieje" (patrz też C-035 w `playbook.md`,
-identyczny mechanizm). Wklej dosłownie jako pierwszy akapit KAŻDEGO promptu `agent()` z
-`isolation:'worktree'`, w Workflow i poza nim jednakowo:
-
-```
-KROK 0 — WERYFIKACJA BAZY WORKTREE (wykonaj PRZED jakąkolwiek analizą):
-Uruchom: grep -rn "<SYMBOL_KTÓRY_MUSI_ISTNIEĆ>" <ścieżka/do/pliku>
-(podstaw za <SYMBOL_KTÓRY_MUSI_ISTNIEĆ> nazwę funkcji/typu/stałej dodanej NAJPÓŹNIEJ na
-gałęzi roboczej — musi być widoczna, jeśli worktree stoi na właściwej bazie).
-Jeśli grep NIE znajdzie trafienia: ZATRZYMAJ SIĘ. NIE próbuj ręcznie odtwarzać brakującego
-kodu, NIE zgaduj że „pewnie jeszcze nie scalone". Zgłoś dokładnie: jakiego symbolu
-szukałeś, w jakim pliku, i że baza worktree wygląda na nieaktualną — czekaj na decyzję
-orkiestratora. Dopiero po potwierdzeniu obecności symbolu przechodź do właściwego zadania.
+# AutoBot — jedyny aktywny obieg
+
+Każdy temat ma pełne ID, `GOAL`, kryteria końca, allowlistę i izolowany worktree.
+Obowiązuje:
+
+```text
+Operator GPT-5.6 Luna High
+→ Evaluator GPT-5.6 Luna High
+→ Final Control GPT-5.6 Luna High (osobny subagent)
+→ integracja głównego orkiestratora GPT-5.6 Luna Medium
+→ READY_FOR_DEPLOY
+→ osobna bramka deploy/push
 ```
 
-Gdy się zdarzy: orkiestrator ręcznie zakłada poprawny worktree
-(`git worktree add ... origin/<branch>` albo bieżąca gałąź sesji) i redispatchuje —
-nie próbuje naprawiać tego wewnątrz złego worktree.
+## Kontrakt modelu dla dispatchu Codex
 
-### Adversarialna weryfikacja (N niezależnych Evaluatorów) — kiedy 1, kiedy 3
+Przy użyciu `multi_agent_v1` każdy dispatch Operatora i Evaluatora musi jawnie
+ustawić `model: "gpt-5.6-luna"` oraz `reasoning_effort: "high"`. Dziedziczenie
+modelu po orkiestratorze jest niedozwolone. Final Control również używa Luna High;
+integracja orkiestratora używa Luna Medium. Raport i `00-dispatch.md` zapisują
+żądany model oraz effort.
 
-Domyślnie **1 Evaluator wystarcza** (Opus 5, `effort:'high'`, adwokat diabła jak w reszcie
-tej reguły). **3 niezależnych Evaluatorów głosujących (większość musi się zgodzić, żeby
-werdykt PASS przetrwał)** dla zmian wysokiego ryzyka — dotykających:
-- silnika bitwy (`gra/src/**/combat*`, `battle*`, moc jednostek, wynik starcia),
-- zapisu/wczytania gry (save/load, snapshot/restore, migracja formatu zapisu),
-- migracji/zmiany struktury danych kanonicznych (`gra/data/**`, format pól przetrwałych
-  między turami).
+Raport Operatora uruchamia Evaluatora bez czekania. Jedna runda to jeden faktyczny
+dispatch Operatora i przypisany Evaluator; runda początkowa oraz każda korekta są
+liczone jawnie, a licznik zwiększa się przed dispatchiem. Po `PASS` uruchom Final Control;
+po jego pozytywnym wyniku orkiestrator integruje wyłącznie zatwierdzoną allowlistę.
+Żadna rola poza orkiestratorem po integracji nie wystawia `READY_FOR_DEPLOY`.
 
-Ten wzorzec to dokładnie to, co Evaluator AutoBota dziś robi ręcznie w roli „adwokata
-diabła" (Warstwa 2 potrójnej warstwy) — Workflow go automatyzuje jako wbudowany wzorzec
-(„adversarial verify"/„judge panel"), nie wprowadza nowej reguły procesu.
+`FAIL`, techniczny `BLOCK`, `TIMEOUT`, `INFRA`, `ZWIS` albo niegotowość Final Control
+wracają do `Operator → Evaluator → Final Control` z tym samym pełnym ID, ale tylko
+jeżeli następna runda ma numer ≤5. Po piątej nieudanej/niezamkniętej rundzie blokada
+przed kolejnym dispatchiem jest obowiązkowa: raportuj
+`LIMIT-5-EXCEEDED`, liczbę rund, ostatni werdykt, blokadę
+i decyzję wymaganą od orkiestratora/właściciela. To dodatkowa bramka, nie zamiennik
+statusu BLOCK/TIMEOUT/INFRA/ZWIS. `ABC-OCZEKUJE` przed dispatchiem nie zwiększa
+licznika. Wznowienie/nowy cykl wymaga jawnej decyzji, zachowuje ID i nie resetuje
+licznika bez wyraźnej zgody. `ZWIS` nie anuluje tematu: watchdog sprawdza stan, a orkiestrator przejmuje wykonanie. ABC
+rezerwuje tylko temat wymagający decyzji właściciela. C-043: decyzje właściciela są
+wyłącznie w głównym czacie orkiestratora.
 
-### Co ZOSTAJE poza Workflow — zawsze ręczne, zawsze orkiestrator
+Raporty zapisuj w `dyspozycje/autobot/runs/<ID>/` jako `00-dispatch.md` do
+`04-integration.md`. Nie uznawaj samego raportu, statusu, brancha, worktree, UI ani
+commita za zakończenie. Każdy dispatch ma dokładnie jeden rekord ledgeru z polami:
+`agent_id`, `temat`, `rola`, `runda`, `start`, `oczekiwany_artefakt`, `ostatni_status`,
+`timestamp_zakonczenia`, `routing_nastepnego_kroku`. Rekord przechodzi jawnie przez
+`pending → running → completed|interrupted|timeout|not_found|BLOCK|CLOSED` (brak raportu
+nie może zostać pustym przebiegiem). Watchdog sprawdza każdy aktywny rekord co minutę;
+`not_found` bez dowodu raportu klasyfikuje jako `BLOCK`, ciszę jako `ZWIS`, a przekroczenie
+limitu jako `TIMEOUT`. `FAIL`/`BLOCK` automatycznie routuje do tego samego ID i Operatora
+po guardzie rundy. Przy nieznanym statusie nie wolno tworzyć duplikatu ani dispatchować
+równoległej kopii — rekord pozostaje zablokowany do rozstrzygnięcia. Watchdog kończy
+monitoring po `READY_FOR_DEPLOY`, jawnym `BLOCK` albo `ABC-OCZEKUJE`. Deploy/push wymaga
+osobnego polecenia.
 
-Workflow kończy robotę na **„kod zatwierdzony przez Evaluatora"** — nigdy nie commituje ani
-nie deployuje samo. Zawsze poza Workflow, zawsze ręką orkiestratora:
-- `git commit` / `git push`,
-- wpisy do `dyspozycje/PYTANIA-OTWARTE.md` / `dyspozycje/WERSJE.md` /
-  `dyspozycje/REJESTR-PROSB-I-ZADAN.md` / `dyspozycje/_handoff/KANAL-PRACA.md`,
-- CAŁY deploy (hasło `deploy`, wyłącznie Opus 5, per CLAUDE.md §4).
-
-**Reguła 0b obowiązuje TAKŻE przy ręcznym scalaniu konfliktów.** Gdy orkiestrator sam
-rozwiązuje konflikt scalenia (`git apply -3` z konfliktem, ręczny merge trójstronny), to
-**TEŻ jest zmiana zapisana do repozytorium** — idzie do kolejki Evaluatora jak każda inna,
-„to tylko scalanie" nie jest zwolnieniem. Dokładnie to zostało przeoczone realnie w tej
-sesji (reguła 0b istniała, a mimo to konflikt rozwiązany ręcznie przeszedł bez Evaluatora) —
-traktować jako pełnoprawny incydent klasy C-0xx, nie wyjątek proceduralny.
-
-## Logging
-
-Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.
-
-## Self-check przed „gotowe”
-
-1. Czy był **Operator** (osobny przebieg implementacji / jasny przebieg Autobot)?  
-2. Czy był **Evaluator** (adwokat + metryki)?  
-3. Czy **Grok** zrobił final?  
-4. Czy playbook / guardrails uszanowane?  
-
-**Choć jedno NIE → nie zamykaj paczki.**
+Pełny opis i routing artefaktów: [`INDEX-PROCESU.md`](../../docs/procesy/INDEX-PROCESU.md).

@@ -1,0 +1,57 @@
+=== FC5 — sonda strukturalna main.ts (skaner klamr, bez indexOf) ===
+OK   liczba `meta: {` w kodzie  [24909]
+OK   klucz aiSurplusRedirectedOwners jest kluczem na GLEBOKOSCI 1 literalu `meta:`  [meta: { w linii 24909, klucz w linii 24995, koniec literalu linia 25044]
+OK   sasiad eliminatedOwners tez na glebokosci 1 tego samego literalu  [linia 25009]
+OK   sasiad typCityCopyOwners tez na glebokosci 1 tego samego literalu  [linia 25029]
+OK   sasiad aiPracaPoolByOwner tez na glebokosci 1 tego samego literalu  [linia 24984]
+OK   sasiad zdobyczePowerByOwner tez na glebokosci 1 tego samego literalu  [linia 24996]
+OK   restoreGameFromSave zdefiniowana dokladnie raz  [linie: 31872]
+OK   odczyt saved.meta?.aiSurplusRedirectedOwners wewnatrz restoreGameFromSave  [cialo linie 31872..32575]
+OK   bezwarunkowy aiSurplusRedirectedOwners.clear() wewnatrz restoreGameFromSave
+OK   clear() poprzedza add() w restore  [clear@14226 add@14455]
+OK   restoreGameFromSave ma dokladnie 1 wywolanie  [linie: 31808]
+OK   kotwica bloku ZASADY 3 znaleziona  [linia 28551]
+OK   blok ZASADY 3 leczy WEWNATRZ if (!opts.defensiveCopy)  [straznik otwarty w linii 28524]
+OK   sasiedni blok CUDA-AI uzywa dokladnie tego samego warunku  [CUDA-AI linia 28555]
+OK   defensiveCopy = typCityCopyOwners.has(ownerId) (miasta-panstwa)  [linie: 27519,27637]
+OK   clear() na starcie nowej gry obok eliminatedOwners.clear()  [pierwszy clear w linii 7910]
+
+WYNIK: 16/16 OK, 0 BLAD
+
+=== FC5 — sonda OSI CZASU (tools/fc5-timeline-kontrola.cjs) ===
+  [OK] straznik FC-2 `if (!opts.defensiveCopy) {` otacza blok ZASADY 3  — linia 28524
+  [OK] wyciety blok ZASADY 3 zawiera obie galezie (add/delete znacznika)  — linie 28524..28553
+  [OK] linia ZAPISU do sejwu wycieta doslownie ze zrodla  — aiSurplusRedirectedOwners: Array.from(aiSurplusRedirectedOwners),
+  [OK] blok ODCZYTU z sejwu wyciety doslownie ze zrodla
+
+--- Z-3: os czasu T1 nadwyzka -> SAVE -> NOWA SESJA -> T2/T3 bez nadwyzki ---
+  PRZED: T1 100,100,100 | meta={} | poLoad 100,100,100 znacznik=[] | T2 100,100,100 | T3 100,100,100
+  PO   : T1 100,100,100 | meta={"aiSurplusRedirectedOwners":[11]} | poLoad 100,100,100 znacznik=[11] | T2 40,40,40 | T3 40,40,40
+  [OK] T1 (obie kolumny): nadwyzka podnosi AI CYWILIZACJI do 100% budynkow  — PRZED 100,100,100 / PO 100,100,100
+  [OK] PRZED: znacznik NIE trafia do sejwu (meta puste)  — {}
+  [OK] PO: znacznik trafia do sejwu jako plaska tablica ownerId i PRZEZYWA JSON  — [11]
+  [OK] PRZED: po wczytaniu znacznik PUSTY -> galaz powrotu martwa  — []
+  [OK] PO: po wczytaniu znacznik ODTWORZONY  — [11]
+  [OK] PRZED: T2 po ustaniu nadwyzki AI CYWILIZACJI ZOSTAJE na 100% (regres Z-3)  — 100,100,100
+  [OK] PRZED: T3 — regres TRWALY, nie jednorazowy  — 100,100,100
+  [OK] PO: T2 po ustaniu nadwyzki AI CYWILIZACJI WRACA z 100%  — 40,40,40
+  [OK] PRZED: pula imperium ownera 11 zostaje na 0% -> zero Pracy na ulepszenia terenu  — pula 0%
+  [OK] PO: pula imperium ownera 11 wraca > 0%  — pula 60%
+  [OK] owner 12 (NIGDY nadwyzki) nietkniety w obu kolumnach na calej osi czasu  — PRZED T2 70,70 / PO T2 70,70
+  [OK] STARY sejw bez pola nie wywala odczytu i daje pusty zbior (kompatybilnosc wstecz)
+
+--- FC-2: miasta-panstwa vs AI CYWILIZACJI, 3 rostery, wszyscy w nadwyzce ---
+  roster 1: PRZED mp=4/4 civ=3/3 znacznikMP=1 | PO mp=0/4 civ=3/3 znacznikMP=0
+  [OK] roster 1: PRZED miasta-panstwa DOSTAWALY przekierowanie  — 4/4
+  [OK] roster 1: PO miasta-panstwa NIE dostaja przekierowania (0/N) i nie dostaja znacznika  — 0/4, znacznikMP=0
+  [OK] roster 1: AI CYWILIZACJI dostaje przekierowanie w OBU kolumnach (naprawa nie zwezila zakresu)  — PRZED 3/3 / PO 3/3
+  roster 2: PRZED mp=7/7 civ=2/2 znacznikMP=2 | PO mp=0/7 civ=2/2 znacznikMP=0
+  [OK] roster 2: PRZED miasta-panstwa DOSTAWALY przekierowanie  — 7/7
+  [OK] roster 2: PO miasta-panstwa NIE dostaja przekierowania (0/N) i nie dostaja znacznika  — 0/7, znacznikMP=0
+  [OK] roster 2: AI CYWILIZACJI dostaje przekierowanie w OBU kolumnach (naprawa nie zwezila zakresu)  — PRZED 2/2 / PO 2/2
+  roster 3: PRZED mp=1/1 civ=5/5 znacznikMP=1 | PO mp=0/1 civ=5/5 znacznikMP=0
+  [OK] roster 3: PRZED miasta-panstwa DOSTAWALY przekierowanie  — 1/1
+  [OK] roster 3: PO miasta-panstwa NIE dostaja przekierowania (0/N) i nie dostaja znacznika  — 0/1, znacznikMP=0
+  [OK] roster 3: AI CYWILIZACJI dostaje przekierowanie w OBU kolumnach (naprawa nie zwezila zakresu)  — PRZED 5/5 / PO 5/5
+
+fc5-timeline-kontrola: 25 passed, 0 failed

@@ -4,9 +4,9 @@
  */
 
 import type { City } from './cities';
-import { keyOf } from '../units/setup';
+import { hexDistance, keyOf } from '../units/setup';
 
-export type CityHexRef = Pick<City, 'q' | 'r' | 'ownerId'>;
+export type CityHexRef = Pick<City, 'q' | 'r' | 'ownerId'> & { maMur?: boolean };
 
 export function cityAtHex(
   q: number,
@@ -29,6 +29,27 @@ export function canUnitOccupyCityHex(
   const city = cityAtHex(q, r, cities);
   if (!city) return true;
   return city.ownerId === unitOwnerId;
+}
+
+/**
+ * Zwykłe AI może wejść na obce miasto tylko z sąsiedniego heksu i tylko wtedy,
+ * gdy przejęcie bez bitwy jest dozwolone. Mury są osobną blokadą: samo
+ * `canCaptureCityWithoutBattle` opisuje obrońców, ale nie zastępuje bramki
+ * fortyfikacji.
+ */
+export function canAiEnterEmptyEnemyCity(
+  unitOwnerId: number,
+  unitQ: number,
+  unitR: number,
+  city: CityHexRef,
+  cityBuiltIds: readonly string[],
+  hasDefenders: boolean,
+): boolean {
+  if (city.ownerId === unitOwnerId) return false;
+  if (hexDistance(unitQ, unitR, city.q, city.r) !== 1) return false;
+  if (hasDefenders) return false;
+  if (city.maMur === true) return false;
+  return !cityBuiltIds.some(id => id === 'palisada' || id === 'mury' || id === 'fort' || id === 'baszta');
 }
 
 /** Heksy miast, których właścicielem NIE jest dana frakcja — do blokady pathfindingu. */

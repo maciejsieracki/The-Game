@@ -1,5 +1,5 @@
 /**
- * triumph-city-state-test.cjs — triumf po zjednoczeniu miast-państw (P-TRIUMPH-CS-Q1=B).
+ * triumph-city-state-test.cjs — triumf po zjednoczeniu miast-państw (P-PODBOJ-MIAST-PANSTW-TRIUMF-POPUP-Q1=A).
  */
 'use strict';
 
@@ -88,10 +88,19 @@ assert(
   'brak triumfu gdy siostra 3 nadal ma miasto',
 );
 
+assert(
+  !shouldShowPlayerTriumphCityStateUnification(baseInput({
+    cities: [{ ownerId: 0 }, { ownerId: 2 }],
+  })),
+  'brak triumfu gdy przejęty owner ma jeszcze aktywne miasto',
+);
+
 const msg = buildTriumphCityStateUnificationMessage('Grecy', 'Sparta');
 assert(msg.includes('TRIUMF'), 'komunikat zawiera TRIUMF');
 assert(msg.includes('Sparta'), 'komunikat zawiera nazwę miasta');
 assert(msg.includes('Grecy'), 'komunikat zawiera etykietę cywilizacji');
+assert(msg.includes('Zjednoczyłeś całą kulturę Grecy'), 'komunikat ma ceremonialną treść kultury');
+assert(msg.includes('Ostatnie miasto-państwo — Sparta — znalazło się pod Twoją władzą.'), 'komunikat wskazuje ostatnie miasto i władzę gracza');
 assert(TRIUMPH_CS_HINT_MS >= 9000 && TRIUMPH_CS_HINT_MS <= 10000, 'czas hintu 9–10 s');
 
 console.log(`\n${passed} passed, ${failed} failed`);

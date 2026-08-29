@@ -33,6 +33,14 @@ import { daninaLabelGenitive } from '../game/danina-nazwa';
 import { HANDEL_PCT_STEP, MAX_PROCENT_NAUKA, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
 import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
 import {
+  MAX_PROCENT_PULI_IMPERIUM,
+  procentPuliImperiumZBudynkow,
+  podzialPracyZProcentuPuli,
+  PODZIAL_PRACY_PULA_LBL,
+  PODZIAL_PRACY_PULA_LBL_PELNA,
+  PODZIAL_PRACY_PULA_TIP,
+} from '../game/cities';
+import {
   WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
   type PoziomRacji,
 } from '../game/population-growth-v85';
@@ -119,52 +127,21 @@ function wireDefaultHandelSplitInputs(
 export interface EmpireGlobalDefaultsUiConfig {
   getOwnerDefaultPodzialPracy?: (ownerId: number) => CityPodzialPracy | null;
   onOwnerDefaultPodzialPracyChange?: (ownerId: number, split: CityPodzialPracy) => void;
+  // R-PRACA-JEDEN-PODZIAL-Q1: `getOwnerDefaultPracaSplit`/`onOwnerDefaultPracaSplitChange`
+  // USUNIETE — byly DRUGIM, niezaleznym suwakiem tej samej Pracy. Globalny podzial
+  // czyta i zapisuje wylacznie `getOwnerDefaultPodzialPracy`/`onOwnerDefaultPodzialPracyChange`.
   getOwnerDefaultPoziomRacji?: (ownerId: number) => PoziomRacji | null;
   onOwnerDefaultPoziomRacjiChange?: (ownerId: number, poziom: PoziomRacji) => void;
+  // P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: jednorazowa akcja "ustaw teraz" — dla
+  // WSZYSTKICH miast ownera BEZ poziomRacjiOverride ustawia city.autoWyzywienie = true.
+  // Nie jest stanem trwałym/toggle (spójne z broadcastPoziomRacjiToOwnerCities).
+  onOwnerSetAutoWyzywienieForAll?: (ownerId: number) => void;
 }
 
 let empireGlobalDefaultsUi: EmpireGlobalDefaultsUiConfig = {};
 
 export function configureEmpireGlobalDefaults(cfg: EmpireGlobalDefaultsUiConfig): void {
   empireGlobalDefaultsUi = { ...empireGlobalDefaultsUi, ...cfg };
-}
-
-function renderDefaultPodzialPracySection(): string {
-  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
-  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
-  if (!getDef || !onChange) return '';
-  const split = getDef(0) ?? { procentBudynki: 70 };
-  const id = 'emp-praca-split';
-  const pctB = split.procentBudynki;
-  const pctU = 100 - pctB;
-  let h = `<div class="civ-emp-sect" data-section="ekonomia-praca-split" id="${id}">`
-    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ PRACY</div>`
-    + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten podział.</div>`;
-  h += `<div class="civ-emp-mini" style="margin-top:8px">`
-    + `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
-    + `<label style="font-size:12px"><span class="gold">Budynki</span> / <span class="blue">Do puli imperium</span></label>`
-    + `<span data-praca-pct><b>${pctB}% / ${pctU}%</b></span></div>`
-    + `<input type="range" min="0" max="100" step="${HANDEL_PCT_STEP}" value="${pctB}" `
-    + `data-praca-key="procentBudynki" style="width:100%;margin:0 0 6px" /></div>`
-    + `<div class="civ-emp-foot">Kroki ${HANDEL_PCT_STEP}% · w lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.</div></div>`;
-  queueMicrotask(() => wireDefaultPodzialPracyInputs(pctB, onChange));
-  return h;
-}
-
-function wireDefaultPodzialPracyInputs(
-  initialPct: number,
-  onChange: (ownerId: number, split: CityPodzialPracy) => void,
-): void {
-  const host = document.getElementById('emp-praca-split');
-  if (!host) return;
-  const inp = host.querySelector<HTMLInputElement>('input[data-praca-key="procentBudynki"]');
-  if (!inp) return;
-  inp.addEventListener('input', () => {
-    const pctB = snapHandelPct(Number(inp.value));
-    onChange(0, { procentBudynki: pctB });
-    const lbl = host.querySelector('[data-praca-pct] b');
-    if (lbl) lbl.textContent = `${pctB}% / ${100 - pctB}%`;
-  });
 }
 
 function renderDefaultPoziomRacjiSection(): string {
@@ -191,16 +168,38 @@ function renderDefaultPoziomRacjiSection(): string {
     + `<input type="range" class="civ-emp-slider green" min="${minSteps}" max="${maxSteps}" step="1" `
     + `value="${steps}" style="${sliderFillStyle(fillPct, '#4e9a3f', '#78c95a')}" `
     + `data-racje-key="poziom" /></div>`
-    + `<div class="civ-emp-foot">Miasta z lokalnym limitem Spichlerza poniżej tego poziomu i tak obniżą go automatycznie na koniec tury (bez zmiany globalnego ustawienia).</div></div>`;
-  queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange));
+    + `<div class="civ-emp-foot">Miasta z lokalnym limitem Spichlerza poniżej tego poziomu i tak obniżą go automatycznie na koniec tury (bez zmiany globalnego ustawienia).</div>`;
+  const onSetAutoWyzywienieForAll = empireGlobalDefaultsUi.onOwnerSetAutoWyzywienieForAll;
+  if (onSetAutoWyzywienieForAll) {
+    // P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1 (Maciej): na przycisku ma stać SAMA nazwa
+    // funkcji, cały zakres i zastrzeżenia idą do tooltipa. Czasownik „Włącz" zostaje w etykiecie
+    // — bez niego „Auto-Żywienie" nie mówi, czy przycisk włącza czy wyłącza (przycisk jest
+    // jednorazową akcją „ustaw teraz", nie przełącznikiem stanu). Tooltip natywny `title`, tak
+    // jak sąsiednie przyciski tej sekcji (`civ-emp-praca-split-end` MIN/MAX) — bez budowania
+    // osobnego komponentu dla jednego elementu.
+    // EN: label = feature name only; scope + caveats moved into the native `title` tooltip.
+    const autofeedTip = 'Włącza Auto-Żywienie we wszystkich miastach bez indywidualnego '
+      + 'ustawienia poziomu Racji. Miasta z własnym ustawieniem („Indywidualne") pozostają '
+      + 'bez zmian. Akcja jednorazowa — ustawia stan teraz, nie jest trwałym przełącznikiem.';
+    h += `<button type="button" class="civ-emp-autofeed-btn" data-autofeed-all-btn `
+      + `title="${esc(autofeedTip).replace(/"/g, '&quot;')}">`
+      + `Włącz Auto-Żywienie</button>`;
+  }
+  h += `</div>`;
+  queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange, onSetAutoWyzywienieForAll));
   return h;
 }
 
 function wireDefaultPoziomRacjiInputs(
   onChange: (ownerId: number, poziom: PoziomRacji) => void,
+  onSetAutoWyzywienieForAll?: (ownerId: number) => void,
 ): void {
   const host = document.getElementById('emp-zywnosc-racje');
   if (!host) return;
+  const autofeedBtn = host.querySelector<HTMLButtonElement>('button[data-autofeed-all-btn]');
+  if (autofeedBtn && onSetAutoWyzywienieForAll) {
+    autofeedBtn.addEventListener('click', () => onSetAutoWyzywienieForAll(0));
+  }
   const inp = host.querySelector<HTMLInputElement>('input[data-racje-key="poziom"]');
   if (!inp) return;
   const minSteps = WYZYWIENIE_MIN / WYZYWIENIE_STEP;
@@ -337,6 +336,16 @@ function ensureStyles(): void {
   background:#171e2a;color:#9aa4b2;font-size:11px;font-weight:600;cursor:pointer;text-align:center;}
 .civ-emp-mocview-btn:hover{border-color:#3a4657;color:#cfd5de;}
 .civ-emp-mocview-btn.active{background:rgba(217,164,65,0.16);border-color:#d9a441;color:#d9a441;}
+/* P-SPICHLERZ-AUTO-ZYWIENIE-MASOWY-PRZYCISK-Q1: przycisk jednorazowej akcji "ustaw teraz"
+   (nie toggle stanu) — wzorem broadcastPoziomRacjiToOwnerCities, ale dla autoWyzywienie. */
+/* P-SPICHLERZ-AUTO-ZYWIENIE-PRZYCISK-TEKST-Q1: etykieta skrócona do samej nazwy funkcji, więc
+   font 11.5px (dobrany pod DWUWIERSZOWY długi tekst) był teraz optycznie za drobny na pełną
+   szerokość — 12.5px + line-height 1.2 + min-height trzymają tę samą wysokość przycisku co
+   wcześniej, bez zmiany rytmu sekcji. */
+.civ-emp-autofeed-btn{width:100%;margin-top:8px;padding:8px 10px;border-radius:6px;
+  border:1px solid #2b3543;background:#171e2a;color:#78c95a;font-size:12.5px;font-weight:700;
+  line-height:1.2;min-height:34px;cursor:pointer;text-align:center;}
+.civ-emp-autofeed-btn:hover{border-color:#4e9a3f;background:rgba(78,154,63,0.14);}
 .civ-emp-resp{margin:12px 0 4px;padding:11px 14px;border-radius:8px;background:#1c2431;
   border:1px solid #2b3543;font-size:12.5px;color:#cfd5de;}
 .civ-emp-resp b{color:#e8ebf0;}
@@ -429,6 +438,16 @@ function ensureStyles(): void {
 .civ-emp-res-flag-note{font-size:10px;line-height:1.3;font-weight:600;margin-top:-2px;}
 .civ-emp-res-flag-note.warn{color:#d9a441;}
 .civ-emp-res-flag-note.bad{color:#e07a7a;}
+/* — T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): druga linia komórki DOCHÓD w tabelach tras —
+   składnik 5% za budynek handlowy pokazany OSOBNO od składnika dystansowego. Typografia
+   1:1 z .civ-emp-res-flag-note wyżej (10px / 1.3 / 600) i te same dwa kolory stanu,
+   których panel używa wszędzie: #78c95a = naliczone teraz, #d9a441 = czeka/ostrzeżenie.
+   / EN: second line of the DOCHÓD cell — the 5% component shown apart from the distance
+   one; typography and state colours reuse the panel's existing pair. */
+.civ-emp-route-split{display:block;font-size:10px;line-height:1.3;font-weight:600;margin-top:1px;
+  white-space:normal;overflow-wrap:anywhere;}
+.civ-emp-route-split.on{color:#78c95a;}
+.civ-emp-route-split.off{color:#d9a441;}
 .civ-emp-res-bar{height:6px;border-radius:999px;background:#1f2733;overflow:hidden;}
 .civ-emp-res-bar>span{display:block;height:100%;border-radius:999px;}
 .civ-emp-res-bar.good>span{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
@@ -547,6 +566,23 @@ function ensureStyles(): void {
 .civ-emp-slider-label.gold{color:#d9a441;}
 .civ-emp-slider-label.blue{color:#8ec5ff;}
 .civ-emp-slider-label.neutral{color:#cfd5de;}
+/* P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1 (Maciej 2026-08-22) — „PODZIAŁ PRACY" jako JEDEN suwak pełnej
+   szerokości: wiersz etykiet nad torem (Ulepszenia po lewej / Budynki po prawej, po tej samej
+   stronie co ich odcinek gradientu) i klikalne znaczniki krańców pod torem. Wszystko zakresowane
+   pod .civ-emp-praca-split-*, żeby nie ruszyć pozostałych suwaków panelu.
+   EN: "LABOR SPLIT" as ONE full-width slider — label row above the track (Upgrades left /
+   Buildings right, each on the side of its own gradient segment) and clickable end markers below
+   it. Everything scoped under .civ-emp-praca-split-* so no other slider in the panel is affected. */
+.civ-emp-praca-split-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  margin:0 0 7px;font-size:12px;font-weight:600;}
+.civ-emp-praca-split-head b{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;}
+.civ-emp-praca-split-ends{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.civ-emp-praca-split-end{-webkit-appearance:none;appearance:none;font:inherit;font-size:10px;
+  font-weight:700;letter-spacing:0.5px;line-height:1.2;font-variant-numeric:tabular-nums;
+  padding:3px 9px;border-radius:999px;border:1px solid #2b3543;background:#1a2230;color:#8a93a4;
+  cursor:pointer;}
+.civ-emp-praca-split-end:hover{background:#222c3c;border-color:#5a6879;color:#e8ebf0;}
+.civ-emp-praca-split-end.on{background:#222c3c;border-color:#5a6879;color:#e8ebf0;}
 /* — R-DESIGN-11-ZAKLADEK klatka 4 (Maciej 2026-08-13) — SPICHLERZ CENTRALNY, oba stany makiety
    (A: zapas zdrowy, B: realny deficyt). Wszystko zakresowane pod .civ-emp-sp-*, żeby reskin
    tej jednej zakładki nie ruszył pozostałych sekcji panelu.
@@ -739,6 +775,87 @@ function miniHeader(cols: MiniColHeader[], grid: string): string {
 function miniRow(cells: string[], grid: string): string {
   const c = cells.map(x => `<div>${x}</div>`).join('');
   return `<div class="civ-emp-mini-r" style="grid-template-columns:${grid}">${c}</div>`;
+}
+
+/** Atrybut `title="…"` z bezpiecznym cudzysłowem — ten sam wzorzec co przycisk Auto-Żywienia. */
+function tipAttr(text: string): string {
+  return ` title="${esc(text).replace(/"/g, '&quot;')}"`;
+}
+
+/**
+ * T6 — kwota składnika 5% do wyświetlenia: ze znakiem, jedno miejsce po przecinku.
+ *
+ * `Math.round(n * 10) / 10` PRZED `signedPl()` (a nie samo `signedPl`, które opiera się na
+ * `toFixed`) — bo premia jest z natury ułamkowa (0,05 × dochód dystansowy) i trafia dokładnie
+ * na granicę „,x5" częściej niż cokolwiek innego w tym panelu, a `toFixed` na tej granicy
+ * schodzi w dół przez reprezentację IEEE-754 (`(0.35).toFixed(1) === '0.3'`). Ten sam zabieg
+ * i z tego samego powodu robi już `formatRawCount()` wyżej w tym pliku oraz odwracanie bonusu
+ * cudów w `renderHandelSection`. Wyłącznie prezentacja — silnik liczy dalej na pełnej wartości.
+ */
+function splitAmountTxt(n: number): string {
+  return signedPl(Math.round(n * 10) / 10);
+}
+
+/**
+ * T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1) — druga linia komórki DOCHÓD dla JEDNEJ trasy:
+ * składnik 5% za budynek handlowy, pokazany OSOBNO od składnika dystansowego (pierwsza
+ * linia). Od T3 budynek NIE warunkuje istnienia trasy — dochód dystansowy leci od
+ * zawarcia umowy — więc gracz widzący tu „0" bez wyjaśnienia nie miałby jak zgadnąć, że
+ * brakuje mu Targowiska/Portu. Dlatego wariant bez budynku NIE drukuje kwoty 0, tylko
+ * mówi WPROST, na co ta premia czeka (`budynekOdblokowany === false`, pole przekazane
+ * z `TradeRoute` przez snapshot, patrz `EmpireTradeRouteRow.budynekOdblokowany`).
+ *
+ * Kolor niesie stan, ale NIGDY sam: obie gałęzie mają też słowo („5%" / „brak budynku")
+ * — ta sama zasada co `.civ-emp-res-flag-pill` w sekcji Surowce.
+ *
+ * / EN: second line of the DOCHÓD cell for ONE route — the 5% building component shown
+ * apart from the distance component. Since T3 the building no longer gates the route's
+ * existence, so a bare "0" would be unexplainable; the locked branch names what it waits
+ * for instead. Colour never carries state alone — both branches carry words too.
+ */
+function routeBonusSplitHtml(premiaBudynku: number, budynekOdblokowany: boolean): string {
+  if (!budynekOdblokowany) {
+    const tip = 'Premia 5% z tej trasy czeka na budynek handlowy (Targowisko / Port / Port wielki) '
+      + 'po obu stronach trasy (Twoje miasto i miasto partnera). Dochód dystansowy obok naliczasz już '
+      + 'teraz — od zawarcia Umowy Handlowej, bez żadnego budynku. Po wybudowaniu po obu stronach '
+      + 'doliczy się dodatkowo 5% dochodu dystansowego TEJ trasy do Podatku tego miasta.';
+    return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak budynku</span>`;
+  }
+  const tip = 'Premia 5% za budynek handlowy po obu stronach trasy: 5% dochodu dystansowego TEJ trasy, '
+    + 'doliczone addytywnie do Podatku tego miasta (nie wprost do skarbca — przechodzi jeszcze '
+    + 'przez korupcję i podział suwakami Nauka/Skarb/Zamożność).';
+  return `<span class="civ-emp-route-split on"${tipAttr(tip)}>${splitAmountTxt(premiaBudynku)} · 5% budynek</span>`;
+}
+
+/**
+ * T6 — ta sama druga linia, ale dla WIERSZA MIASTA (zakładka Miasto, „Handel — szlaki per
+ * miasto") i dla wiersza podsumowania: składnik 5% zsumowany po trasach tego zakresu plus
+ * — gdy któraś trasa nie ma pokrycia budynkowego — jawna liczba tras czekających na budynek.
+ * Suma liczona przez wołającego z TYCH SAMYCH `premiaBudynku`, które niesie snapshot, więc
+ * nie może rozjechać się z rozpiską per trasa w zakładce Handel.
+ *
+ * `brakBudynku > 0` przy zerowej premii to najczęstszy przypadek początku gry (są trasy,
+ * nie ma jeszcze Targowiska) — i dokładnie ten, w którym gołe „0" nie mówiłoby nic.
+ */
+function cityBonusSplitHtml(premia: number, brakBudynku: number): string {
+  if (brakBudynku > 0) {
+    const word = brakBudynku === 1 ? 'trasa' : brakBudynku >= 2 && brakBudynku <= 4 ? 'trasy' : 'tras';
+    const tip = `${brakBudynku} ${word} bez budynku handlowego (Targowisko/Port) — dochód dystansowy `
+      + 'naliczasz z nich normalnie, ale premia 5% czeka na budynek.';
+    // Gdy ŻADNA trasa tego zakresu nie ma budynku, premia jest dokładnie 0 (najmniejsza możliwa
+    // niezerowa to 0,05×5 = 0,25, więc zero nie może tu wyjść z zaokrąglenia) — wtedy zamiast
+    // „0 · 5%" mówimy to samo, co wiersz pojedynczej trasy: „5% — brak budynku". Jedno brzmienie
+    // w obu tabelach, zero milczącego zera. / EN: with no building-backed route the bonus is
+    // exactly 0, so both tables say the same thing instead of printing a bare "0".
+    if (premia === 0) {
+      return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak budynku</span>`;
+    }
+    return `<span class="civ-emp-route-split off"${tipAttr(tip)}>`
+      + `${splitAmountTxt(premia)} · 5% (${brakBudynku} bez budynku)</span>`;
+  }
+  const tip = 'Premia 5% za budynek handlowy: 5% dochodu dystansowego każdej trasy tego zakresu, '
+    + 'doliczone do Podatku miasta (nie wprost do skarbca).';
+  return `<span class="civ-emp-route-split on"${tipAttr(tip)}>${splitAmountTxt(premia)} · 5% budynek</span>`;
 }
 
 /** Delta netto skarbca — 0 jako „0", nie „—". */
@@ -1052,13 +1169,25 @@ function split2BarHtml(
     + `<span style="width:${b}%;background:linear-gradient(90deg,${colorFromB},${colorToB})"></span></div>`;
 }
 
-/** Tor suwaka `.civ-emp-slider` z DWOMA odcinkami gradientu po obu stronach wartości `pctA` (%) —
- *  odpowiednik `sliderFillStyle()` dla suwaka reprezentującego DWA strumienie na raz (Budynki
- *  0..pctA w złocie, Pula imperium pctA..100 w błękicie), nie „wartość + puste tło" jak przy
- *  pojedynczym zasobie (suwak podatku Skarbca). */
-function laborSliderFillStyle(pctBudynki: number): string {
-  const p = Math.max(0, Math.min(100, pctBudynki));
-  return `linear-gradient(90deg,#6a4010 0%,#d9a441 ${p}%,#3a4657 ${p}%,#8ec5ff 100%)`;
+/** Tor suwaka `.civ-emp-slider` z DWOMA odcinkami gradientu po obu stronach uchwytu —
+ *  odpowiednik `sliderFillStyle()` dla suwaka reprezentującego DWA strumienie na raz, nie
+ *  „wartość + puste tło" jak przy pojedynczym zasobie (suwak podatku Skarbca).
+ *
+ *  P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1 (Maciej 2026-08-22, czysto wizualne): funkcja była martwym
+ *  kodem od czasu rozbicia „PODZIAŁ PRACY" na dwa boksy — wraca do użycia w JEDNYM suwaku
+ *  „Ulepszenia / Budynki". Kolejność odcinków jest ODWRÓCONA względem pierwotnej wersji
+ *  (błękit → złoto zamiast złoto → błękit), bo suwak steruje procentem ULEPSZEŃ (`min=0`,
+ *  `max=50` — bez zmian): przesunięcie uchwytu w prawo MUSI powiększać odcinek Ulepszeń, więc
+ *  Ulepszenia (błękit) są odcinkiem lewym, a Budynki (złoto) resztą toru. Sama para kolorów bez
+ *  zmian — złoto = Budynki, błękit = Ulepszenia, dokładnie jak etykiety
+ *  `.civ-emp-slider-label gold/blue`.
+ *
+ *  Parametr to POZYCJA UCHWYTU na torze w procentach szerokości toru (0–100), a NIE wartość
+ *  procentu podziału: dla suwaka 0–50 jest to `pctUlepszenia * 2`. Dzięki temu granica kolorów
+ *  leży dokładnie pod uchwytem, zamiast żyć własnym życiem w innej skali. */
+function laborSliderFillStyle(pctUlepszeniaTrack: number): string {
+  const p = Math.max(0, Math.min(100, pctUlepszeniaTrack));
+  return `linear-gradient(90deg,#3a4657 0%,#8ec5ff ${p}%,#6a4010 ${p}%,#d9a441 100%)`;
 }
 
 /**
@@ -1085,8 +1214,6 @@ function renderPracaSection(
   let sumPula = 0;
   for (const c of rows) { sumBudynki += c.pracaBudynki; sumPula += c.pracaPula; }
   const total = sumBudynki + sumPula;
-  const pctBudynki = total > 0 ? Math.round((sumBudynki / total) * 100) : 0;
-  const pctPula = 100 - pctBudynki;
   const upkeep = Math.round(economy.pracaUpkeep ?? 0);
   const stock = Math.round(economy.praca ?? 0);
   const rate = Math.round(economy.pracaRate ?? 0);
@@ -1095,11 +1222,20 @@ function renderPracaSection(
     + `<div class="civ-emp-hero-sub"><b>${sumBudynki}</b> do budynków · <b>${sumPula}</b> do puli imperium · `
     + `${rows.length} ${miastoCountWord(rows.length)}</div>`;
 
-  h += split2BarHtml(pctBudynki, '#6a4010', '#d9a441', pctPula, '#2c4a6b', '#8ec5ff');
-  h += '<div style="display:flex;gap:8px;margin-top:6px;font-size:11px">'
-    + `<span style="flex:1" class="civ-emp-slider-label gold">Budynki ${pctBudynki}% · ${sumBudynki}</span>`
-    + `<span class="civ-emp-slider-label blue">Pula imperium ${pctPula}% · ${sumPula}</span></div>`;
-
+  // R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek A): tu wcześniej stał drugi,
+  // NIEINTERAKTYWNY pasek (`split2BarHtml`) plus wiersz etykiet „Budynki X% / Pula
+  // imperium Y%" stylowany DOKŁADNIE tymi samymi klasami (`.civ-emp-slider-label
+  // gold/blue`) co prawdziwy, interaktywny suwak niżej w tej sekcji
+  // (`renderEmpirePracaBudgetSplitSection`, „PODZIAŁ PRACY: BUDYNKI / ULEPSZENIA").
+  // To był rzeczywisty duplikat z perspektywy gracza: dwa identycznie nazwane i
+  // ostylowane odczyty procentowe Budynki/Pula w jednym panelu, które mogły (i
+  // legalnie mogą) pokazywać RÓŻNE liczby, bo ten usunięty pasek sumował REALNY,
+  // per-miastowy wynik tej tury (zależny też od lokalnych override'ów miast —
+  // Wątek C), a suwak niżej pokazuje NOMINALNE ustawienie na kolejne tury. Sama
+  // treść (sumBudynki/sumPula) nie ginie — zostaje w `hero-sub` wyżej (opisowo,
+  // bez slider-owego stylu) i w wierszu SUMA tabeli per-miasto niżej (dokładne
+  // liczby). Regres po R-PRACA-JEDEN-SUWAK-UI-Q1 (który usuwał DRUGI <input>, nie
+  // ten nieinteraktywny banner) — ten temat usuwa właśnie ten banner.
   h += '<div class="civ-emp-two">'
     + `<div class="civ-emp-box"><div class="k">PULA IMPERIUM</div><div class="v">${stock} ${deltaHtml(rate)}</div></div>`
     + `<div class="civ-emp-box"><div class="k">UTRZYMANIE ULEPSZEŃ</div>`
@@ -1126,56 +1262,118 @@ function renderPracaSection(
     h += `<div class="civ-emp-foot">Ulepszenia (utrzymanie): −${upkeep} Praca/turę z puli — imperium płaci za każde zbudowane ulepszenie surowcowe.</div>`;
   }
 
-  h += renderPracaSplitSection();
+  h += renderEmpirePracaBudgetSplitSection();
   h += '</div>';
   return h;
 }
 
 /**
- * Suwak „Domyślny podział pracy" w nowym stylu `.civ-emp-slider` (Klatka 2 §C zlecenia) — WŁASNA
- * funkcja, analogicznie do `renderSkarbiecTaxSplitSection` dla Skarbca (faza 1). NIE modyfikuje
- * `renderDefaultPodzialPracySection()` wyżej, która nadal obsługuje ten sam suwak wewnątrz
- * filtrowanego wiersza „Praca" w bloku `ekonomia` (pełny przegląd, gdy activeSection===null) —
- * ten sam mechanizm danych (`empireGlobalDefaultsUi`), inny markup: tor suwaka dwukolorowy
- * (złoto=Budynki, błękit=Pula imperium) przez `laborSliderFillStyle()`.
+ * R-PRACA-JEDEN-PODZIAL-Q1 (runda 2/F2): JEDYNY podzial Pracy MIASTA — nie „nadrzedny
+ * split calej puli" (tak brzmial ten naglowek, gdy istnial drugi podzial, dzielacy sama
+ * pule po raz drugi; ten drugi podzial zostal USUNIETY). Suwakiem jest udzial trafiajacy
+ * do puli imperium („Ulepszenia (pula)", 0–50%); Budynki sa dopelnieniem 100% − ten udzial.
+ * Ten sam kontrakt i ten sam cap obowiazuja globalnie i w miescie. Nie mieszac z budzetem
+ * automatu ulepszen (`pracaAutoPercent`, 0–100%, osobne pole).
+ *
+ * Historyczne akapity nizej opisuja UX tej sekcji i zostaja bez zmian; wystepujace w nich
+ * slowo „Ulepszenia" oznacza ten sam strumien, dzis nazwany w UI `PODZIAL_PRACY_PULA_LBL`.
+ *
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek B, 2026-08-21): nazewnictwo Budynki/Ulepszenia
+ * (zamiast dawnej „Pula Pracy", mylącej z realną PULA IMPERIUM) — patrz `docs/decyzje/...md`.
+ *
+ * R-PRACA-SUWAKI-DUPLIKAT-I-CAP-MIASTO-Q1 (Wątek F): sygnał „Ulepszenia N%" na samej górze sekcji
+ * (był dopiero w wierszu opisowym niżej suwaka) — zostaje.
+ *
+ * P-PRACA-SPLIT-UI-JEDEN-SUWAK-Q1 (Maciej 2026-08-22, CZYSTY UX — logika procentów, zakres 0–50%
+ * i pojedynczy `input` handler bez zmian): Wątek F rozbił tę sekcję na DWA boksy `.civ-emp-two`
+ * — lewy „BUDYNKI" był samym odczytem tekstowym bez żadnej kontrolki, prawy „ULEPSZENIA" niósł
+ * jedyny faktyczny `<input type="range">` zwężony do połowy szerokości panelu. Właściciel prosi
+ * o powrót do JEDNEGO suwaka pełnej szerokości (świadoma, ponowna zmiana zdania wobec Wątku F,
+ * nie renegocjacja tamtej decyzji):
+ * - jeden tor na całą szerokość, dwukolorowy przez `laborSliderFillStyle()` — błękitny odcinek
+ *   Ulepszeń rośnie w prawo razem z uchwytem, złoty odcinek Budynków to reszta toru, granica
+ *   kolorów leży dokładnie pod uchwytem (stąd `pctU * 2` — tor 0–100% przy zakresie 0–50);
+ * - etykieta „Ulepszenia" po lewej (błękit) i „Budynki" po prawej (złoto), obie z procentem
+ *   przeliczanym NA ŻYWO przy przeciąganiu, po tej samej stronie co odpowiadający im odcinek;
+ * - klikalne znaczniki MIN/MAX na krańcach toru — ustawiają wartość skrajną (0% / 50%) bez
+ *   przeciągania, przez ten sam handler co drag (`input.value = X` + `dispatchEvent('input')`),
+ *   więc nie ma drugiej ścieżki zapisu podziału.
+ * Uchwyt celowo `neutral`, a nie `blue`/`gold` — jest granicą MIĘDZY dwoma strumieniami, więc nie
+ * bierze koloru żadnego z nich.
  */
-function renderPracaSplitSection(): string {
+function renderEmpirePracaBudgetSplitSection(): string {
+  // R-PRACA-JEDEN-PODZIAL-Q1: ten suwak steruje JEDYNYM podzialem Pracy — tym samym
+  // polem (`CityPodzialPracy.procentBudynki`), ktore ustawia suwak w miescie. Wczesniej
+  // czytal osobny `EmpirePracaSplit.procentUlepszenia`, wiec dwa suwaki dzielily te sama
+  // Prace dwa razy i mogly pokazac stan nie sumujacy sie do 100% („100 i 50").
   const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
   const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
   if (!getDef || !onChange) return '';
-  const split = getDef(0) ?? { procentBudynki: 70 };
-  const id = 'emp-praca-tab-split';
-  const pctB = split.procentBudynki;
-  const pctU = 100 - pctB;
+  const pctU = procentPuliImperiumZBudynkow(getDef(0)?.procentBudynki);
+  const pctB = 100 - pctU;
+  const id = 'emp-praca-empire-budget-split';
+  // R-PRACA-JEDEN-PODZIAL-Q1 (pkt 6, runda 2/F2): tooltip mowil „Nadrzedny podzial CALEJ
+  // PULI Pracy imperium" — opisywal USUNIETY drugi podzial (`splitEmpirePracaBudget`),
+  // ktory dzielil sama pule jeszcze raz. Ten suwak dzieli Prace MIASTA na budynki i pule,
+  // dokladnie raz, tak samo globalnie i w miescie. Nazwa strumienia jest jedna dla calego
+  // UI (`PODZIAL_PRACY_PULA_LBL*` z `game/cities.ts`) — wczesniej ten panel byl trzecia,
+  // rozjechana nazwa tej samej liczby („Ulepszenia" bez kwalifikatora).
+  const tip = `Jeden podział Pracy miasta: ${PODZIAL_PRACY_PULA_LBL_PELNA} `
+    + `0–${MAX_PROCENT_PULI_IMPERIUM}%, Budynki = reszta do 100%. `
+    + 'Ten sam suwak działa globalnie i w mieście. '
+    + PODZIAL_PRACY_PULA_TIP
+    + ' To nie jest budżet automatu ulepszeń (osobne pole, 0–100%).';
+  const tipMin = `Kliknij, aby ustawić minimum: ${PODZIAL_PRACY_PULA_LBL} 0% — cała Praca do Budynków.`;
+  const tipMax = `Kliknij, aby ustawić maksimum: ${PODZIAL_PRACY_PULA_LBL} ${MAX_PROCENT_PULI_IMPERIUM}%`
+    + ' — połowa Pracy miasta do puli imperium.';
   let h = `<div class="civ-emp-sect" style="margin-top:2px;border-top:1px solid #242c3a;padding-top:16px" id="${id}">`
-    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ PRACY</div>`
-    + '<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten podział.</div>';
-  h += '<div class="civ-emp-mini" style="margin-top:8px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:7px">'
-    + '<div style="display:flex;align-items:baseline;gap:8px">'
-    + '<span style="flex:1;font-size:12px"><b class="civ-emp-slider-label gold">Budynki</b> / '
-    + '<b class="civ-emp-slider-label blue">Do puli imperium</b></span>'
-    + `<span style="font-size:13px;font-weight:700;color:#e8ebf0" data-praca-pct>${pctB}% / ${pctU}%</span></div>`
-    + `<input type="range" class="civ-emp-slider gold" min="0" max="100" step="${HANDEL_PCT_STEP}" `
-    + `value="${pctB}" style="background:${laborSliderFillStyle(pctB)}" data-praca-key="procentBudynki" /></div>`;
-  h += `<div class="civ-emp-foot">Kroki ${HANDEL_PCT_STEP}% · w lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.</div></div>`;
-  queueMicrotask(() => wirePracaSplitInputs(onChange));
-  return h;
-}
-
-function wirePracaSplitInputs(
-  onChange: (ownerId: number, split: CityPodzialPracy) => void,
-): void {
-  const host = document.getElementById('emp-praca-tab-split');
-  if (!host) return;
-  const inp = host.querySelector<HTMLInputElement>('input[data-praca-key="procentBudynki"]');
-  if (!inp) return;
-  inp.addEventListener('input', () => {
-    const pctB = snapHandelPct(Number(inp.value));
-    onChange(0, { procentBudynki: pctB });
-    inp.style.background = laborSliderFillStyle(pctB);
-    const lbl = host.querySelector('[data-praca-pct]');
-    if (lbl) lbl.textContent = `${pctB}% / ${100 - pctB}%`;
+    + `<div class="civ-emp-eyebrow" title="${esc(tip)}">PODZIAŁ PRACY</div>`
+    + `<div class="civ-emp-hero" style="margin:2px 0 10px;font-size:20px" data-praca-empire-split-hero>${PODZIAL_PRACY_PULA_LBL} ${pctU}%</div>`
+    + '<div class="civ-emp-praca-split-head">'
+    + `<span class="civ-emp-slider-label blue">${PODZIAL_PRACY_PULA_LBL} `
+    + `<b data-praca-empire-split-upgrades>${pctU}%</b></span>`
+    + '<span class="civ-emp-slider-label gold">Budynki '
+    + `<b data-praca-empire-split-buildings>${pctB}%</b></span>`
+    + '</div>'
+    + `<input type="range" class="civ-emp-slider neutral" min="0" max="${MAX_PROCENT_PULI_IMPERIUM}" step="1" value="${pctU}" `
+    + `style="width:100%;background:${laborSliderFillStyle(pctU * 2)}" `
+    + `data-praca-empire-split title="${esc(tip)}" />`
+    + '<div class="civ-emp-praca-split-ends">'
+    + `<button type="button" class="civ-emp-praca-split-end${pctU === 0 ? ' on' : ''}" `
+    + `data-praca-empire-split-min title="${esc(tipMin)}">MIN 0%</button>`
+    + `<button type="button" class="civ-emp-praca-split-end${pctU === MAX_PROCENT_PULI_IMPERIUM ? ' on' : ''}" `
+    + `data-praca-empire-split-max title="${esc(tipMax)}">MAX ${MAX_PROCENT_PULI_IMPERIUM}%</button>`
+    + '</div></div>';
+  queueMicrotask(() => {
+    const host = document.getElementById(id);
+    const input = host?.querySelector<HTMLInputElement>('input[data-praca-empire-split]');
+    if (!input) return;
+    const btnMin = host?.querySelector<HTMLButtonElement>('[data-praca-empire-split-min]');
+    const btnMax = host?.querySelector<HTMLButtonElement>('[data-praca-empire-split-max]');
+    input.addEventListener('input', () => {
+      const pctU = Math.max(0, Math.min(MAX_PROCENT_PULI_IMPERIUM, Math.round(Number(input.value))));
+      onChange(0, podzialPracyZProcentuPuli(pctU));
+      input.style.background = laborSliderFillStyle(pctU * 2);
+      const hero = host?.querySelector('[data-praca-empire-split-hero]');
+      if (hero) hero.textContent = `${PODZIAL_PRACY_PULA_LBL} ${pctU}%`;
+      const upgrades = host?.querySelector('[data-praca-empire-split-upgrades]');
+      if (upgrades) upgrades.textContent = `${pctU}%`;
+      const buildings = host?.querySelector('[data-praca-empire-split-buildings]');
+      if (buildings) buildings.textContent = `${100 - pctU}%`;
+      btnMin?.classList.toggle('on', pctU === 0);
+      btnMax?.classList.toggle('on', pctU === MAX_PROCENT_PULI_IMPERIUM);
+    });
+    // Klik w znacznik krańca = dokładnie to samo, co przeciągnięcie uchwytu do końca toru:
+    // ustawiamy `value` i odpalamy TEN SAM event `input`, żeby zapis podziału i odświeżenie
+    // etykiet/gradientu miały jedną jedyną ścieżkę (handler wyżej).
+    const jumpTo = (value: number) => {
+      input.value = String(value);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    btnMin?.addEventListener('click', () => jumpTo(0));
+    btnMax?.addEventListener('click', () => jumpTo(MAX_PROCENT_PULI_IMPERIUM));
   });
+  return h;
 }
 
 /**
@@ -1907,18 +2105,33 @@ export function renderMiastoSection(
   // `cityId`, patrz JSDoc pola w empireDetailTypes.ts) —
   h += subHdr('Handel — szlaki per miasto');
   {
-    const grid = '1fr 0.6fr 0.95fr';
+    // T6: kolumna DOCHÓD dostaje drugą linię ze składnikiem 5% (albo z informacją, ile tras
+    // tego miasta czeka na budynek handlowy) — ten sam rozkład i te same dane co tabela tras
+    // w zakładce Handel, tylko zagregowane per miasto. Kolumna SZLAKI (tylko licznik) zostaje
+    // wąska, szerokość idzie do DOCHODU, który niesie teraz dwa składniki.
+    const grid = '1fr 0.55fr 1.15fr';
     h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'SZLAKI', 'DOCHÓD'], grid)}`;
     let anyRoutes = false;
     let sRoutes = 0;
     let sIncome = 0;
+    let sPremia = 0;
+    let sBrakBudynku = 0;
     for (const { pob } of paired) {
       const cityRoutes = trade.routes.filter(r => r.cityId === pob.cityId);
       if (cityRoutes.length > 0) anyRoutes = true;
       sRoutes += cityRoutes.length;
       const income = cityRoutes.reduce((s, r) => s + r.income, 0);
       sIncome += income;
-      h += miniRow([esc(pob.name), String(cityRoutes.length), treasuryBalanceSignedTxt(Math.round(income))], grid);
+      const premia = cityRoutes.reduce((s, r) => s + r.premiaBudynku, 0);
+      sPremia += premia;
+      const brakBudynku = cityRoutes.filter(r => !r.budynekOdblokowany).length;
+      sBrakBudynku += brakBudynku;
+      h += miniRow([
+        esc(pob.name),
+        String(cityRoutes.length),
+        treasuryBalanceSignedTxt(Math.round(income))
+          + (cityRoutes.length > 0 ? cityBonusSplitHtml(premia, brakBudynku) : ''),
+      ], grid);
     }
     // Naprawa N3 (runda 2, Evaluator FAIL 6366e81e): SZLAKI w wierszu podsumowania MUSI liczyć
     // się z `sRoutes` (suma po `paired`, ten sam zakres co DOCHÓD obok), NIE z
@@ -1930,12 +2143,15 @@ export function renderMiastoSection(
     // the scope switch) — matches the pattern used by the sections above.
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
       + `<div>CAŁA CYWILIZACJA</div><div>${sRoutes}</div>`
-      + `<div>${treasuryBalanceSignedTxt(Math.round(sIncome))}</div></div>`;
+      + `<div>${treasuryBalanceSignedTxt(Math.round(sIncome))}`
+      + `${sRoutes > 0 ? cityBonusSplitHtml(sPremia, sBrakBudynku) : ''}</div></div>`;
     h += '</div>';
     h += anyRoutes
-      ? '<div class="civ-emp-foot">SZLAKI = liczba aktywnych tras handlowych tego miasta · DOCHÓD = suma '
-        + 'dochodu tych tras (pkt Pieniądza/turę). Rozpiska tras (partner, medium, dystans) — zakładka '
-        + 'Handel.</div>'
+      ? '<div class="civ-emp-foot">SZLAKI = liczba aktywnych tras handlowych tego miasta · DOCHÓD = dochód '
+        + 'DYSTANSOWY tych tras (pkt Pieniądza/turę, wprost do skarbca), a pod nim osobno składnik <b>5% za '
+        + 'budynek handlowy</b> — naliczany tylko z tras, które mają Targowisko/Port po obu stronach, i wchodzący do '
+        + 'Podatku miasta, nie wprost do skarbca. Rozpiska tras (partner, medium, dystans, rozkład per trasa) '
+        + '— zakładka Handel.</div>'
       : '<div class="civ-emp-empty">Brak aktywnych tras handlowych w zakresie.</div>';
   }
 
@@ -2219,11 +2435,20 @@ function cityPoborMiniRekruci(
   // R-DESIGN-11-ZAKLADEK / Armia: zakładka „Armia" pokazuje DOKŁADNIE te same liczby w hero
   // (jednostki na mapie) + podpisie (pula rekrutów, werb, koszt/szt.) i we własnym pasku NAD
   // tabelą, zgodnie z klatką 7 makiety — dlatego tam nagłówek tej funkcji jest pomijany, żeby
-  // nie dublować pary „notatka + pasek". Domyślne wywołanie (blok ZASOBY IMPERIUM) bez zmian.
+  // nie dublować pary „notatka + pasek". To JEDYNA różnica między dwoma wywołaniami: sama
+  // TABELA (naprawa N11 Evaluatora, runda 2 — poprzedni komentarz mówił „domyślne wywołanie
+  // bez zmian", co było nieścisłe) jest wspólna dla obu wywołań i zmienia się identycznie w
+  // OBU — klasa `civ-emp-armia-rekr-tbl` wyrównuje kolumny liczbowe (nagłówek + wiersze) do
+  // prawej, a wiersz RAZEM dostaje pogrubiony styl `.civ-emp-mini-summary` — także w domyślnym
+  // wywołaniu (blok ZASOBY IMPERIUM).
   // / EN: the "Armia" tab renders the very same numbers in its hero (units on map) + subtitle
   // (recruit pool, recruitable units, cost/unit) and its own bar ABOVE the table, per mockup
-  // frame 7 — so the header is skipped there to avoid duplicating the note+bar pair. The
-  // default call (EMPIRE RESOURCES block) is unchanged.
+  // frame 7 — so the header is skipped there to avoid duplicating the note+bar pair. That is the
+  // ONLY difference between the two call sites: the TABLE itself (fixed comment, N11, round 2 —
+  // the previous comment claimed "the default call is unchanged", which was inaccurate) is
+  // shared by, and changes identically in, BOTH calls — the `civ-emp-armia-rekr-tbl` class
+  // right-aligns the numeric columns (header + rows) and the RAZEM row gets the bold
+  // `.civ-emp-mini-summary` style — including in the default call (EMPIRE RESOURCES block).
   if (!opts?.skipHero) {
     h += `<div class="civ-emp-note">Pula rekrutów imperium: <b style="color:#d9a441">${esc(p.rekruciLabel)}</b> / `
       + `<b style="color:#d9a441">${esc(p.rekruciMaxLabel)}</b> · można werbować: <b>${p.rekrutEkw}</b> jedn. `
@@ -2952,8 +3177,18 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   // / EN: the sign is printed by `signedPl()` instead of a hardcoded "+" — the `neg` branch above
   // assumes `totalIncome` can go negative, which the literal "+" would render as "+-5". The sum
   // is non-negative today, so this was an internal inconsistency rather than a live bug.
+  // Naprawa N12 (Evaluator, runda 2): makieta ma ikonę przy eyebrow w KAŻDEJ z 11 zakładek, ale
+  // dziś ją renderowały tylko Surowce (`chip-crate`, `.civ-emp-res-hdr-ic`/`-row`). Handel/Armia/
+  // Kultura wzorem tego samego, ogólnego (nie surowcowego) wzorca `.civ-emp-res-hdr-row` — tu z
+  // `cp-trade`, tym samym brand-iconem, którego już używa chip HUD „Handel" (iconRegistry.ts
+  // `res-trade`).
+  // / EN: the mockup has an eyebrow icon in EVERY one of the 11 tabs, but only Surowce rendered
+  // one (`chip-crate`, `.civ-emp-res-hdr-ic`/`-row`). Handel/Armia/Kultura now reuse the same
+  // generic (non-resource-specific) `.civ-emp-res-hdr-row` pattern — here with `cp-trade`, the
+  // same brand icon already used by the HUD "Handel" chip (iconRegistry.ts `res-trade`).
   let h = `<div class="civ-emp-sect sep" data-section="handel">`
-    + `<div class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</div>`
+    + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-trade', 14)}</span>`
+    + `<span class="civ-emp-eyebrow">HANDEL — SZLAKI HANDLOWE</span></div>`
     + `<div class="civ-emp-hero ${heroCls}">${signedPl(t.totalIncome)} złota / turę</div>`
     + `<div class="civ-emp-hero-sub"><b>${t.routes.length}</b> ${routeCountWord(t.routes.length)} · `
     + `<b>${t.activeDeals.length}</b> ${dealCountWord(t.activeDeals.length)}</div>`;
@@ -2965,9 +3200,34 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
   const cudaSub = wonderPct > 0
     ? `<span style="font-size:11px;color:#78c95a;font-weight:600">+${wonderPct}% cuda</span>`
     : '';
+  // Naprawa N5 (Evaluator, runda 2): box pokazywał `t.totalIncome` — DOKŁADNIE tę samą liczbę
+  // co hero powyżej — mimo że bonus cudów już stoi obok jako `cudaSub` (%). Makieta oczekiwała
+  // dwóch RÓŻNYCH liczb: bazy (bez bonusu cudów) i sumy (hero). `t` (EmpireDetailSnap['trade'])
+  // nie niesie osobnego pola „baza" per trasę (main.ts liczy `base` lokalnie i odrzuca je,
+  // zostawiając tylko `income` już PO bonusie — poza allowlistą tego zgłoszenia), więc bazę
+  // odtwarzamy tu z tego, co snapshot już ma: `income` każdej trasy odwracamy przez bonus %
+  // właściwy dla jej medium (ląd/morze) — zaokrąglone (patrz komentarz przy `Math.round` niżej),
+  // nie `Math.floor` jak forward w main.ts. Przy braku bonusu (0%) baza = income, więc box i
+  // hero legalnie pokazują tę samą liczbę — to nie regresja, tylko brak różnicy do pokazania.
+  // EN: the box showed `t.totalIncome` — the EXACT same number as the hero above — even though
+  // the wonder bonus already sits next to it as `cudaSub` (%). The mockup expected two DIFFERENT
+  // numbers: base (no wonder bonus) and total (hero). The snapshot has no per-route "base" field
+  // (main.ts computes and discards it), so we reconstruct it here from what the snapshot already
+  // carries: each route's `income` is reversed through its medium's bonus % — rounded (see the
+  // `Math.round` comment below), not `Math.floor` like the forward direction in main.ts. With no
+  // bonus the base equals the total, so box and hero legitimately show the same number then — not
+  // a regression, just nothing to differ.
+  const tradeBase = t.routes.reduce((sum, r) => {
+    const bonusPct = r.medium === 'morze' ? t.wonderBonusMorzePct : t.wonderBonusLadPct;
+    // Math.round (nie Math.floor) tutaj — floor-po-floor odwrotności `main.ts` bywa niestabilny
+    // na błędach zaokrągleń IEEE-754 (np. 110/1.1 = 99.99999999999999 w JS, floor dałby 99
+    // zamiast realnej bazy 100). Round jest odporne na ten konkretny błąd zmiennoprzecinkowy,
+    // a to i tak wartość informacyjna (etykieta boxa), nie pole używane do bilansu skarbca.
+    return sum + (bonusPct > 0 ? Math.round(r.income / (1 + bonusPct / 100)) : r.income);
+  }, 0);
   h += `<div class="civ-emp-two">`
-    + `<div class="civ-emp-box"><div class="k">DOCHÓD SZLAKÓW</div>`
-    + `<div class="v">${signedPl(t.totalIncome)} ${cudaSub}</div></div>`
+    + `<div class="civ-emp-box"><div class="k">DOCHÓD SZLAKÓW (BAZA)</div>`
+    + `<div class="v">${signedPl(tradeBase)} ${cudaSub}</div></div>`
     + `<div class="civ-emp-box"><div class="k">SUROWCE Z WYMIANY</div>`
     + `<div class="v">${t.resourceGrants.length} ${typCountWord(t.resourceGrants.length)}</div></div>`
     + `</div>`;
@@ -3005,14 +3265,35 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     // ~74px, inaczej łamie się w środku wyrazu; „Morze · 14 heks." (11px) ~88px.
     // EN: widths measured on the real 404px render: the "DOCHÓD/TURĘ" header needs ~74px or it
     // breaks mid-word; the "Morze · 14 heks." cell needs ~88px.
-    const grid = '0.95fr 0.9fr 1.1fr 0.95fr';
+    // T6 (R-HANDEL-SZLAKI-PRZEBUDOWA-Q1): ostatnia kolumna niesie teraz DWA składniki
+    // (dystans + 5%), więc potrzebuje więcej miejsca. Podział zmierzony na realnym renderze
+    // 404px (tools/empire-trade-route-split-real-render-test.cjs sekcja D, pomiar
+    // scrollWidth-clientWidth per komórka), NIE dobrany na oko:
+    //   MIASTO   0,80fr ≈ 76px — tyle samo co przed T6,
+    //   PARTNER  0,90fr ≈ 85px — SZERZEJ niż przed T6 (było 72px i „(Sumerowie)" wystawało
+    //            o 4px; ta zmiana kasuje pre-istniejące przepełnienie),
+    //   MEDIUM   0,90fr ≈ 85px — 2px mniej niż przed T6, ale mierzone przepełnienie = 0,
+    //            bo twarda spacja niżej trzyma „20 heks." w całości i łamie po „Morze ·",
+    //   DOCHÓD   1,25fr ≈ 119px — miejsce na drugą linię rozkładu bez łamania w środku wyrazu.
+    // / EN: column widths measured on the real 404px render (per-cell overflow), not guessed;
+    // PARTNER actually gets WIDER than before, fixing a pre-existing 4px overflow.
+    const grid = '0.8fr 0.9fr 0.9fr 1.25fr';
     h += `<div class="civ-emp-mini">${miniHeader(['TWOJE MIASTO', 'PARTNER', 'MEDIUM · DYSTANS', 'DOCHÓD/TURĘ'], grid)}`;
     for (const r of t.routes) {
       h += miniRow([
         esc(r.cityName),
         `${esc(r.partnerCityName)} (${esc(r.partnerOwnerLabel)})`,
-        `<span style="font-size:11px;color:#9aa4b2">${r.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.dystans} heks.</span>`,
-        `<span style="color:#78c95a">+${r.income}</span>`,
+        // Twarda spacja między liczbą a jednostką: po zwężeniu kolumny (T6) „12 heks." potrafiło
+        // się złamać na „12" / „heks.", co czytało się jak osobna wartość. Wolno się złamać po
+        // „Morze ·", nigdy w środku pomiaru. / EN: nbsp keeps the number and its unit together.
+        `<span style="font-size:11px;color:#9aa4b2">${r.medium === 'morze' ? 'Morze' : 'Ląd'} · ${r.dystans}&nbsp;heks.</span>`,
+        // Linia 1 = dochód DYSTANSOWY (wprost do skarbca), linia 2 = składnik 5% albo
+        // wprost powiedziane, że czeka na budynek. Nie sumujemy ich w jedną liczbę:
+        // trafiają do DWÓCH różnych strumieni (skarbiec vs Podatek miasta, economy.ts
+        // Step 4) — jedna liczba byłaby czwartą, nieprawdziwą wersją tego dochodu.
+        `<span style="color:#78c95a"${tipAttr('Dochód dystansowy tej trasy — wpływa do skarbca wprost, '
+          + 'co turę, niezależnie od budynków (od T3 handel działa od zawarcia umowy).')}>+${r.income}</span>`
+        + routeBonusSplitHtml(r.premiaBudynku, r.budynekOdblokowany),
       ], grid);
     }
     // Wiersz SUMA — `totalIncome` to dokładnie suma income wszystkich tras (main.ts), więc gracz
@@ -3024,12 +3305,30 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     // „+-5" tutaj i „−5" w hero łamałoby dokładnie tę weryfikowalność.
     // / EN: same sign fix as the hero — the SUM row exists to let the player verify the hero
     // number, so it must format it identically.
+    // T6: wiersz SUMA sumuje KAŻDY składnik osobno w tej samej kolumnie, w której stoi —
+    // suma 5% liczona TU, z tych samych `r.premiaBudynku`, które widać w wierszach wyżej
+    // (nie z osobnego pola snapshotu), więc z definicji nie może się z nimi rozjechać.
+    // Liczba tras czekających na budynek stoi obok, żeby zerowa/niska suma 5% miała
+    // widoczne wytłumaczenie także w podsumowaniu, nie tylko w pojedynczym wierszu.
+    const sumaPremii = t.routes.reduce((s, r) => s + r.premiaBudynku, 0);
+    const brakBudynku = t.routes.filter(r => !r.budynekOdblokowany).length;
+    const sumaSplit = brakBudynku > 0
+      ? `<span class="civ-emp-route-split off"${tipAttr('Tyle tras nie ma jeszcze budynku handlowego '
+        + '(Targowisko/Port) po obu stronach trasy — ich premia 5% nie jest naliczana.')}>`
+        + `${splitAmountTxt(sumaPremii)} · 5% (${brakBudynku} bez budynku)</span>`
+      : `<span class="civ-emp-route-split on">${splitAmountTxt(sumaPremii)} · 5%</span>`;
     h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
-      + `<div>SUMA</div><div></div><div></div><div>${signedPl(t.totalIncome)}</div></div>`;
+      + `<div>SUMA</div><div></div><div></div><div>${signedPl(t.totalIncome)}${sumaSplit}</div></div>`;
     h += `</div>`;
   } else {
-    h += `<div class="civ-emp-empty">Brak aktywnych tras handlowych. Wymagany: budynek handlowy `
-      + `(Targowisko/Port) w mieście + zawarta Umowa Handlowa z obcą cywilizacją w zasięgu (bez wojny).</div>`;
+    // T3 (zintegrowane): budynek handlowy PRZESTAŁ warunkować istnienie trasy — stary
+    // tekst „Wymagany: budynek handlowy (Targowisko/Port)" wysyłał gracza budować coś,
+    // co nie odblokuje mu ani jednej trasy. Warunki niżej to faktyczne warunki
+    // `refreshTradeRoutes` po T2b/T3.
+    h += `<div class="civ-emp-empty">Brak aktywnych tras handlowych. Wymagane: Umowa Handlowa `
+      + `(szlaków) z obcą cywilizacją, brak wojny z nią i łączność między miastami — lądowa, `
+      + `albo morska, jeśli lądowej nie ma (morska wymaga Portu po OBU stronach). Budynek `
+      + `handlowy nie jest już potrzebny do powstania trasy — odblokowuje wyłącznie premię 5%.</div>`;
   }
 
   // DYSPOZYCJA 85 (Maciej 2026-07-26): bonus cudów świata "handel_procent" (Petra,
@@ -3061,8 +3360,21 @@ function renderHandelSection(t: EmpireDetailSnap['trade']): string {
     h += `</div>`;
   }
 
-  h += `<div class="civ-emp-foot">Dochód trasy = max(podłoga, bazowy − dystans×współczynnik), kredytowany w pełnej kwocie `
-    + `OBU miastom trasy. Każda aktywna trasa dodaje też +5% ${daninaLabelGenitive(t.daninaLabel)} z pól tego miasta (osobno od Targowiska, nie w tej sumie). `
+  // T6: ten podpis opisywał stan sprzed T1/T2/T4 — wzór dystansowy był już wtedy odwrócony
+  // (im dalej, tym więcej; osobny zasięg dla lądu i morza; morze ×2), a „+5% Podatku z pól"
+  // zastąpiła w T4 premia liczona od dochodu KONKRETNEJ trasy i tylko dla tras z budynkiem.
+  // Zostawiony bez zmian byłby CZWARTYM, nieprawdziwym opisem tej samej mechaniki obok
+  // trzech policzonych już zgodnie (skarbiec, chip HUD, tabela wyżej) —
+  // patrz P-HANDEL-SZLAKI-WZOR-DUPLIKAT-Q1.
+  // / EN: this caption still described the pre-T1/T2/T4 mechanics; left alone it would be a
+  // fourth, untrue description of a number the other three places already agree on.
+  h += `<div class="civ-emp-foot">Dochód trasy ma DWA składniki, pokazane osobno w kolumnie DOCHÓD/TURĘ. `
+    + `(1) <b>Dystans</b> — im dalej, tym więcej (ląd i morze mają osobne zasięgi, trasa morska ×2); `
+    + `kredytowany w pełnej kwocie OBU miastom trasy i wpływa do skarbca wprost, od zawarcia umowy, `
+    + `bez żadnego budynku. (2) <b>5% za budynek</b> — 5% dochodu dystansowego TEJ trasy, naliczane `
+    + `wyłącznie gdy miasto ma budynek handlowy (Targowisko/Port); dolicza się do ${daninaLabelGenitive(t.daninaLabel)} `
+    + `tego miasta (a więc jeszcze przez korupcję i suwaki), nie wprost do skarbca — dlatego nie sumujemy `
+    + `obu składników w jedną liczbę. Trasa bez budynku ma to jawnie napisane w swoim wierszu. `
     + `Szczegóły i warunki per miasto — panel miasta → Plony i ${t.daninaLabel.toLowerCase()} → Podział ${daninaLabelGenitive(t.daninaLabel)}.</div>`;
   h += `</div>`;
   return h;
@@ -3321,7 +3633,6 @@ function render(): void {
   // intact — only these two slider calls, outside the loop, are affected.
   const sliderVis = econSliderVisibilityForOnlyEconId(onlyEconId);
   if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();
-  if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — SKARBIEC (R-DESIGN-11-ZAKLADEK faza 1, Maciej 2026-08-13) — hero „Netto ±N / turę",
@@ -3368,8 +3679,14 @@ function render(): void {
   const glodTeraz = !!e.glodWojska;
   const glodZaTur = e.zywnoscKarencjaZaTur != null && e.zywnoscKarencjaZaTur > 0;
   const magazynCls = glodTeraz || glodZaTur ? 'neg' : 'pos';
+  // Naprawa N12 (Evaluator, runda 2, patrz komentarz w renderHandelSection) — ikona eyebrow
+  // `tb-army` (już używana przez chip toolbara Armii, hud.ts/armyListHud.ts), ten sam wzorzec
+  // `.civ-emp-res-hdr-row` co Surowce/Handel.
+  // / EN: eyebrow icon `tb-army` (already used by the Army toolbar chip), same
+  // `.civ-emp-res-hdr-row` pattern as Surowce/Handel.
   let armia = `<div class="civ-emp-sect sep" data-section="armia">`
-    + `<div class="civ-emp-eyebrow">ARMIA</div>`
+    + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('tb-army', 14)}</span>`
+    + `<span class="civ-emp-eyebrow">ARMIA</span></div>`
     + `<div class="civ-emp-hero">${p.unitsOnMap} jednostek na mapie</div>`
     + `<div class="civ-emp-hero-sub">Rekruci <b>${esc(p.rekruciLabel)}</b> / <b>${esc(p.rekruciMaxLabel)}</b>`
     + ` · można werbować <b>${p.rekrutEkw}</b> jedn. (${p.kosztJednostki} rekr./szt.)</div>`
@@ -3409,10 +3726,21 @@ function render(): void {
       + `${cityPoborMiniRekruci(cp, p, { skipHero: true })}</div>`;
   }
   armia += renderArmiaProdukcjaMini(snap.armiaProdukcja);
+  // Naprawa N9 (Evaluator, runda 2): plakietka drukowała `<span class="d neg">−0 / turę</span>`
+  // nawet przy ZEROWYM koszcie — czerwony kolor + minus czytają się jak ostrzeżenie/koszt, mimo
+  // że koszt zero oznacza „nic nie kosztuje". Konwencja już istnieje w tym pliku: box
+  // ZAOPATRZENIE tuż powyżej (`zywTxt`) i `treasuryDeltaHtml()` pokazują 0 NEUTRALNIE (bez
+  // koloru, bez minusa) i czerwień/minus WYŁĄCZNIE dla wartości > 0 — ten wiersz teraz robi to
+  // samo, ponownie używając `zywTxt`/`kosztWojska` policzonych wyżej zamiast liczyć osobno.
+  // / EN: the badge printed `<span class="d neg">−0 / turę</span>` even at ZERO cost — red +
+  // minus read like a warning/cost even though zero means "costs nothing". The convention
+  // already exists in this file: the ZAOPATRZENIE box right above (`zywTxt`) and
+  // `treasuryDeltaHtml()` show 0 NEUTRALLY (no color, no minus) and red/minus ONLY for values > 0
+  // — this row now matches, reusing `zywTxt`/`kosztWojska` computed above instead of re-deriving.
   armia += `<div class="civ-emp-res-lbl civ-emp-lbl-ic">Zaopatrzenie wojska`
     + `<span class="civ-emp-mini-h-ic" aria-hidden="true">${brandIconSvg('res-food', 12)}</span></div>`
     + `<div class="civ-emp-zrow brd"><span class="lbl">Koszt żywności armii</span>`
-    + `<span class="val"><span class="d neg">−${kosztWojska} / turę</span></span></div>`
+    + `<span class="val"><span class="d ${kosztWojska > 0 ? 'neg' : 'z'}">${zywTxt} / turę</span></span></div>`
     + `<div class="civ-emp-zrow"><span class="lbl">Magazyn państwa</span>`
     + `<span class="val"><span class="d ${magazynCls}">${esc(e.zywnoscLabel)}${maxZywnPart}</span></span></div>`;
   if (glodTeraz) {
@@ -3454,8 +3782,14 @@ function render(): void {
   // / EN: three cases, not two — a ZERO rate used to render green, and since `signedTxt(0)`
   // prints "—", the result was a green dash reading like growth. Zero is no change, not success.
   const kultRateColor = k.rate < 0 ? '#e07a7a' : (k.rate > 0 ? '#78c95a' : '#9aa4b2');
+  // Naprawa N12 (Evaluator, runda 2, patrz komentarz w renderHandelSection) — ikona eyebrow
+  // `cp-culture`, ten sam brand-icon co chip „Kultura" panelu miasta (cityPanel.ts), ten sam
+  // wzorzec `.civ-emp-res-hdr-row` co Surowce/Handel/Armia.
+  // / EN: eyebrow icon `cp-culture`, the same brand icon as the city panel's "Kultura" chip,
+  // same `.civ-emp-res-hdr-row` pattern as Surowce/Handel/Armia.
   let kult = `<div class="civ-emp-sect sep" data-section="kultura">`
-    + `<div class="civ-emp-eyebrow">KULTURA IMPERIUM</div>`
+    + `<div class="civ-emp-res-hdr-row"><span class="civ-emp-res-hdr-ic" aria-hidden="true">${brandIconSvg('cp-culture', 14)}</span>`
+    + `<span class="civ-emp-eyebrow">KULTURA IMPERIUM</span></div>`
     + `<div class="civ-emp-hero ${k.rate < 0 ? 'neg' : 'pos'}">${k.total} kultury</div>`
     + `<div class="civ-emp-hero-sub">Przyrost <b style="color:${kultRateColor}">${signedTxt(k.rate)}</b>`
     + ` / turę · ${k.cities.length} ${miastoCountWord(k.cities.length)}</div>`;

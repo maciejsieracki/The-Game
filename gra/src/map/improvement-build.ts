@@ -29,7 +29,6 @@ import {
 import {
   improvementDisplayName,
   improvementKeysForHex,
-  isLivestockImprovementKey,
   normalizeImprovementKey,
 } from '../game/terrain-improvements';
 import { hexHasRoad, isRoadImprovementKey } from './road-movement';
@@ -161,9 +160,183 @@ const TARTAK_TERENY = new Set<TerenBazowy>([
   TerenBazowy.Pustynia,
 ]);
 
+/**
+ * Ulepszenia, dla których nakładka Las jest warunkiem KONIECZNYM istnienia — po wyrębie
+ * tracą podstawę i znikają z heksa.
+ *
+ * R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1, runda 2, ECHO właściciela 2026-08-27 (wariant A):
+ * „obóz znika przy wyrębie" — skoro obóz może istnieć wyłącznie w lesie, zniknięcie lasu
+ * znosi warunek jego istnienia. Praca NIE jest zwracana (świadoma decyzja właściciela).
+ * Bez tego wyrąb spod obozu zostawiał `["oboz_lowiecki"]` przy `nakladka = Brak`, czyli
+ * obóz poza lasem powstający normalną rozgrywką (gracz i AI) — dziura P7 znaleziona przez
+ * Evaluatora i Final Control rundy 1.
+ *
+ * Świadomie POZA tym zbiorem (nie dopisywać bez decyzji właściciela):
+ *  • `tartak`   — kanon wprost: las zostaje przy tartaku (asercja
+ *                 tools/map-improvement-qualify-test.cjs: „tartak stays when forest removed").
+ *  • `farma`    — od 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1) farma w ogóle nie
+ *                 kwalifikuje się na heksie z lasem, więc Las nie jest jej warunkiem —
+ *                 jest jej przeszkodą. Farma JUŻ STOJĄCA na lesie (postawiona legalnie wg
+ *                 reguły z 2026-07-21) zostaje na heksie po wyrębie; jej ewentualne
+ *                 usunięcie to otwarte pytanie właściciela
+ *                 (P-ULEPSZENIA-FARMY-JUZ-STOJACE-W-LESIE-Q1), nie ten temat.
+ *  • `glinianka`— warunkiem jest złoże gliny (hexHasClayDeposit), nie las.
+ *  • `wyrab`    — akcja, nigdy trwała warstwa heksa.
+ */
+const FOREST_DEPENDENT_IMPROVEMENT_KEYS = new Set<string>([
+  'oboz_lowiecki',
+]);
+
 /** Po usunięciu lasu z heksa — odfiltruj ulepszenia zależne od nakładki Las (tartak NIE — kanon: las zostaje przy tartaku). */
 export function stripImprovementsWhenForestRemoved(layers: readonly string[]): string[] {
-  return [...layers];
+  return layers.filter(key => !FOREST_DEPENDENT_IMPROVEMENT_KEYS.has(key));
+}
+
+// ---------------------------------------------------------------------------
+// R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1 (ECHO właściciela 2026-08-27,
+// wariant C turnieju): SPRZĄTANIE ISTNIEJĄCEGO STANU — farmy postawione
+// legalnie wg uchylonej reguły z 2026-07-21 („farma MOŻE na lesie") znikają
+// z każdego heksa z nakładką Las. Cytat właściciela: „W ogóle nie powinno być
+// farm w lesie; farm nie wolno stawiać w lesie (...) w lesie nie powinno być
+// farm." Reguła jest NIEWARUNKOWA — dotyczy STANU, nie tylko czynności
+// budowania, więc nie wystarczy zablokowanie kwalifikacji
+// (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1, ten sam dzień).
+//
+// Skutek zdefiniowany jawnie (wzorzec z decyzji o obozie łowieckim, ten sam
+// dzień): praca włożona w farmę NIE wraca, heks wraca do stanu „las, bez
+// ulepszenia", las ZOSTAJE nietknięty. Miasto traci żywność z tej farmy od
+// kolejnej tury (przeliczenie ekonomii następnej tury czyta już czysty heks).
+// Dotyczy też farm na Wzgórzach — te są farmami leśnymi z definicji starej
+// reguły (jedyna droga na Wzgórza wiodła przez `nakladka === Las`), więc
+// znikają identycznie, bez wyjątku terenowego.
+//
+// DLACZEGO OSOBNO OD `stripImprovementsWhenForestRemoved` (wyżej), a nie
+// przez dopisanie 'farma' do FOREST_DEPENDENT_IMPROVEMENT_KEYS: tamten zbiór
+// odpowiada na PRZECIWNE pytanie — „co znika, gdy znika LAS" (las jest
+// warunkiem koniecznym istnienia obozu łowieckiego). Tu las jest PRZESZKODĄ,
+// nie warunkiem: znika farma, a las zostaje. Zlanie tych dwóch reguł w jedną
+// listę kasowałoby farmę przy wyrębie — dokładnie odwrotnie niż kanon
+// („wyrąb zostaje jedyną drogą do farmy na zalesionym heksie").
+//
+// ZAKRES (§14 — nie poszerzać): WYŁĄCZNIE `farma` na `Nakladka.Las`. Tartak i
+// obóz łowiecki mają własne, odrębne zasady; irygacja/tarasy na lesie to
+// osobny, nieotwarty temat.
+// ---------------------------------------------------------------------------
+
+/**
+ * Czy warstwa `key` na heksie o nakładce `nakladka` to farma-relikt starej
+ * reguły (farma stojąca w lesie). Jedyne miejsce, w którym ta reguła jest
+ * wyrażona dla ŻYWEGO stanu gry.
+ *
+ * `normalizeImprovementKey` — bo w zapisach żyją aliasy legacy; farma nie ma
+ * dziś aliasu, ale przejście przez normalizację jest odporne na przyszły.
+ */
+export function isLegacyFarmOnForestLayer(key: string, nakladka: Nakladka): boolean {
+  if (nakladka !== Nakladka.Las) return false;
+  return normalizeImprovementKey(key) === 'farma';
+}
+
+/** Warstwy heksa BEZ farmy-reliktu (gdy heks nie jest lasem — kopia bez zmian). */
+export function stripLegacyFarmOnForest(
+  layers: readonly string[],
+  nakladka: Nakladka,
+): string[] {
+  if (nakladka !== Nakladka.Las) return [...layers];
+  return layers.filter(key => !isLegacyFarmOnForestLayer(key, nakladka));
+}
+
+/**
+ * Minimalny widok heksa wymagany przez sprzątanie — celowo NIE `Hex`, żeby
+ * bramka tematu mogła podać syntetyk bez budowania pełnej mapy.
+ * `ulepszenie`/`ulepszenia` to pola czytane przez `improvementKeysForHex`
+ * (game/terrain-improvements.ts) — TO one, a nie `placedImprovements`, są
+ * źródłem plonów w turn-economy.ts, więc sprzątanie musi je widzieć.
+ */
+export interface LegacyFarmHexView {
+  nakladka: Nakladka;
+  ulepszenie?: unknown;
+  ulepszenia?: readonly string[] | null;
+}
+
+/** Jeden heks do posprzątania: warstwy przed i po usunięciu farmy. */
+export interface LegacyFarmOnForestChange {
+  hexKey: string;
+  before: string[];
+  after: string[];
+  /**
+   * true = warstwy pochodziły z rejestru `placedImprovements` (wtedy wołający
+   * ma go zaktualizować). false = heks miał farmę WYŁĄCZNIE w polach
+   * `hex.ulepszenie`/`hex.ulepszenia` (np. z mapSnapshotu zapisu, bez wpisu w
+   * `meta.placedImprovements`) — wtedy rejestru NIE dopisujemy, żeby
+   * sprzątanie nie tworzyło wpisów, których wcześniej nie było.
+   */
+  fromPlaced: boolean;
+}
+
+export interface LegacyFarmOnForestReport {
+  changes: LegacyFarmOnForestChange[];
+  /** Ile heksów straciło farmę (= changes.length). */
+  removed: number;
+  /** Ile heksów przejrzano — kontrola istotności pomiaru (0 = nic nie badano). */
+  scanned: number;
+  /** Ile farm stoi na heksach BEZ lasu (Łąka/Równina) — dowód, że naprawa nie jest za szeroka. */
+  farmsOnOpenTerrain: number;
+}
+
+/**
+ * PLAN sprzątania — czysta funkcja, ZERO mutacji. Zwraca listę heksów, na
+ * których stoi farma-relikt, oraz licznik farm na otwartym terenie (te MUSZĄ
+ * przetrwać — kontrola „naprawa nie jest za szeroka").
+ */
+export function planLegacyFarmOnForestRemoval(
+  hexes: Readonly<Record<string, LegacyFarmHexView | undefined>>,
+  placed?: ReadonlyMap<string, readonly string[]>,
+): LegacyFarmOnForestReport {
+  const changes: LegacyFarmOnForestChange[] = [];
+  let scanned = 0;
+  let farmsOnOpenTerrain = 0;
+  for (const hexKey of Object.keys(hexes)) {
+    const hex = hexes[hexKey];
+    if (!hex) continue;
+    scanned++;
+    const fromPlacedLayers = placed?.get(hexKey);
+    const before = fromPlacedLayers ? [...fromPlacedLayers] : improvementKeysForHex(hex);
+    if (before.length === 0) continue;
+    if (hex.nakladka !== Nakladka.Las) {
+      if (before.some(k => normalizeImprovementKey(k) === 'farma')) farmsOnOpenTerrain++;
+      continue;
+    }
+    const after = stripLegacyFarmOnForest(before, hex.nakladka);
+    if (after.length === before.length) continue;
+    changes.push({ hexKey, before, after, fromPlaced: fromPlacedLayers !== undefined });
+  }
+  return { changes, removed: changes.length, scanned, farmsOnOpenTerrain };
+}
+
+/**
+ * Wykonuje sprzątanie: aktualizuje rejestr `placed` i zgłasza każdy zmieniony
+ * heks przez `onHexChanged`, żeby wołający zsynchronizował pola heksa
+ * (main.ts::syncHexUlepszenieFields) i render. Sam NIE dotyka obiektów heksów
+ * — mapowanie warstwa→`Ulepszenie` żyje w main.ts i nie jest tu powielane.
+ *
+ * IDEMPOTENTNA z konstrukcji: drugie wywołanie na tym samym stanie nie
+ * znajduje już żadnej farmy na lesie, więc zwraca `removed: 0`, nie mutuje
+ * niczego i nie woła `onHexChanged` ani razu.
+ */
+export function removeLegacyFarmsOnForest(
+  hexes: Readonly<Record<string, LegacyFarmHexView | undefined>>,
+  placed: Map<string, string[]>,
+  onHexChanged?: (hexKey: string, layers: string[]) => void,
+): LegacyFarmOnForestReport {
+  const report = planLegacyFarmOnForestRemoval(hexes, placed);
+  for (const ch of report.changes) {
+    if (ch.fromPlaced) {
+      if (ch.after.length > 0) placed.set(ch.hexKey, ch.after);
+      else placed.delete(ch.hexKey);
+    }
+    onHexChanged?.(ch.hexKey, ch.after);
+  }
+  return report;
 }
 
 const FLAT_FARM = new Set<TerenBazowy>([TerenBazowy.Laka, TerenBazowy.Rownina]);
@@ -171,25 +344,73 @@ const FLAT_IRR = new Set<TerenBazowy>([
   TerenBazowy.Laka, TerenBazowy.Rownina, TerenBazowy.Pustynia,
 ]);
 
-/** Maciej 2026-07-21: farma bez wycinki lasu — Łąka/Równina zawsze; Wzgórza gdy nakładka Las. */
+/**
+ * Farma — WYŁĄCZNIE Łąka/Równina BEZ nakładki Las.
+ *
+ * R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1, ECHO właściciela 2026-08-27: „w lesie nie powinno być
+ * możliwości budowania farm zarówno na wzgórzach, jak i na innych terenach, bo to się wyklucza.
+ * W lesie można wybudować tylko tartak i ewentualnie obozowisko, i tego się trzymajmy."
+ *
+ * Ta decyzja UCHYLA regułę z 2026-07-21 („farma MOŻE na lesie — bez wyrębu; Łąka/Równina
+ * zawsze, Wzgórza gdy nakładka Las"). Ślad uchylonej reguły zostaje tu świadomie — historia
+ * decyzji nie jest wymazywana, tylko zastępowana.
+ *
+ * Skutek uboczny wprost nazwany w dyspozycji: farma na Wzgórzach staje się niemożliwa
+ * CAŁKOWICIE, bo Wzgórza nigdy nie należały do `FLAT_FARM`, a jedyna droga na Wzgórza wiodła
+ * przez `nakladka === Las`. Dopisanie Wzgórz do terenów farmowych byłoby poszerzeniem zakresu
+ * (§14) i wymaga osobnego ECHO właściciela — NIE robić tego „przy okazji".
+ *
+ * Wyrąb zostaje jedyną drogą do farmy na zalesionym heksie (skutek odnotowany jako
+ * P-ULEPSZENIA-FARMA-W-LESIE-WPLYW-NA-TEMAT-AI-Q1).
+ */
 export function isFarmBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boolean {
-  if (FLAT_FARM.has(teren)) return true;
-  return nakladka === Nakladka.Las && teren === TerenBazowy.Wzgorza;
+  if (nakladka === Nakladka.Las) return false;
+  return FLAT_FARM.has(teren);
 }
 
-/** Hodowla zwierzęca z terrain-improvements.json — zakaz na Nakladka.Las (Maciej 2026-07-29). */
-export function isLivestockImprovementBlockedOnForest(key: string, nakladka: Nakladka): boolean {
-  return nakladka === Nakladka.Las && isLivestockImprovementKey(key);
+/**
+ * Stadnina na nakładce Las — JEDYNA pozostałość zakazu „hodowla nie w lesie"
+ * (Maciej 2026-07-29).
+ *
+ * R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (ECHO właściciela 2026-08-27: „Tak, odwracamy —
+ * wszystkie trzy"): zakaz z 2026-07-29 zostaje COFNIĘTY dla `owce`, `bydlo` i `lama` —
+ * kwalifikują się na heksie z Lasem dokładnie wg własnej reguły terenu bazowego
+ * (Wzgórza dla owiec, Łąka/Równina dla bydła, Wzgórza/Góry dla lamy).
+ *
+ * Dlaczego funkcja nie znika całkowicie, tylko zwęża się do `stadnina`: poprzedni predykat
+ * pytał `isLivestockImprovementKey()`, a ten zwraca `true` także dla `stadnina`
+ * (`terrain-improvements.json`: `stadnina.surowiecOdblokowany === 'kon'`, a `kon` należy do
+ * `LIVESTOCK_SUROWIEC_KEYS`). Stadnina zagarnęła się do zakazu POCHODNĄ definicji, nie
+ * decyzją — i NIE ma jej w ECHO właściciela („wszystkie trzy" = owce, bydło, lama).
+ * Zdjęcie zakazu także ze stadniny byłoby czwartą, niezamówioną zmianą reguły terenu (§14),
+ * i byłoby realnie obserwowalne w rozgrywce: stadnina po imperialnym odblokowaniu `kon`
+ * (`isLivestockUnlockedForPlacement`) nie wymaga już złoża konia na heksie, więc zacząłby ją
+ * przepuszczać każdy zalesiony heks Łąki/Równiny. Zostaje jak było; pytanie „czy stadnina
+ * też ma wejść do lasu" jest zgłoszone właścicielowi osobno.
+ */
+export function isStadninaBlockedOnForest(key: string, nakladka: Nakladka): boolean {
+  return nakladka === Nakladka.Las && key === 'stadnina';
 }
 
 /**
  * Ulepszenia które MOGĄ stać na nakładce Las bez wyrębu (kanon).
- * farma — Maciej 2026-07-21: Łąka/Równina; Wzgórza z lasem (kępa schowana wizualnie).
  * tartak / obóz łowiecki — ulepszenia leśne (tartak: las zostaje przy tartaku).
  * glinianka — złoże gliny pod lasem (placeDeposits: nakladka=Las, zloze='glina').
+ *
+ * `farma` USUNIĘTA stąd 2026-08-27 (R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1, ECHO właściciela:
+ * „w lesie można wybudować tylko tartak i ewentualnie obozowisko") — była tu od 2026-07-21
+ * i przeszła do `FOREST_BLOCKED_IMPROVEMENT_KEYS` niżej.
+ *
+ * `owce`/`bydlo`/`lama` DOPISANE 2026-08-27 (R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1, ECHO
+ * właściciela „Tak, odwracamy — wszystkie trzy", uchyla zakaz z 2026-07-29). Wpis jest tu
+ * jawny, a nie „przez brak w zbiorze zakazanych", żeby ten zbiór pozostał czytelnym kanonem
+ * tego, co wolno postawić w lesie. Zachowanie `isImprovementBlockedOnForest` jest dla tych
+ * trzech kluczy identyczne w obu wariantach (przed dopisaniem wpadały w końcowe
+ * `FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key) === false`).
  */
 const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
-  'farma', 'tartak', 'oboz_lowiecki', 'glinianka',
+  'tartak', 'oboz_lowiecki', 'glinianka',
+  'owce', 'bydlo', 'lama',
 ]);
 
 /**
@@ -199,6 +420,12 @@ const FOREST_COEXIST_IMPROVEMENT_KEYS = new Set<string>([
 const FOREST_BLOCKED_IMPROVEMENT_KEYS = new Set<string>([
   'irygacja',
   'tarasy',
+  // R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 (ECHO właściciela 2026-08-27, uchyla 2026-07-21):
+  // farma nie stoi w lesie na żadnym terenie bazowym. To DRUGI, niezależny gate za
+  // `qualifies()` — `applyBuildRequest` (main.ts) nie powtarza `qualifies()`, więc bez
+  // tego wpisu farmę dałoby się zacommitować ścieżką pomijającą panel budowy (dokładnie
+  // ta dziura, którą temat obozu łowieckiego znalazł jako P7).
+  'farma',
 ]);
 
 /** Budowa na Nakladka.Las zabroniona — bez automatycznego usuwania lasu. */
@@ -206,30 +433,42 @@ export function isImprovementBlockedOnForest(key: string, nakladka: Nakladka): b
   if (nakladka !== Nakladka.Las) return false;
   if (FOREST_COEXIST_IMPROVEMENT_KEYS.has(key)) return false;
   if (key === 'wyrab') return false;
-  if (isLivestockImprovementBlockedOnForest(key, nakladka)) return true;
+  if (isStadninaBlockedOnForest(key, nakladka)) return true;
   return FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key);
 }
 
-/** Podpowiedź przy próbie budowy na lesie (styl istniejących hintów w main.ts). */
+/**
+ * Podpowiedź przy próbie budowy na lesie (styl istniejących hintów w main.ts).
+ *
+ * R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): gałąź „hodowla → postaw obóz
+ * łowiecki" USUNIĘTA. Po cofnięciu zakazu owce/bydło/lama nigdy już nie trafiają do tej
+ * funkcji (`isImprovementBlockedOnForest` zwraca dla nich `false`), więc tekst byłby martwy
+ * i — gorzej — kłamałby, gdyby ktoś zawołał go wprost. Jedyna hodowlana pozostałość to
+ * `stadnina`, dla której wyrąb JEST poprawną radą (po wyrębie kwalifikuje się na
+ * Łące/Równinie), czyli obsługuje ją zdanie ogólne niżej.
+ */
 export function getImprovementForestBlockHint(key: string): string {
   const name = improvementDisplayName(key);
-  if (isLivestockImprovementKey(key)) {
-    return `${name} na lesie zabroniona — postaw ${improvementDisplayName('oboz_lowiecki')}, albo wybierz otwarte pole`;
-  }
   return `${name} na lesie zabroniona — najpierw wyrąb las (Wyrąb w panelu ulepszeń).`;
 }
 
-/** @deprecated alias testów — używaj isLivestockImprovementBlockedOnForest */
-export const isAnimalFarmBlockedOnForest = isLivestockImprovementBlockedOnForest;
-
 /**
- * Owce — solo na otwartym Wzgórzu (bez Las) lub pierwsze pastwisko na złożu owiec (nakładka, nie las).
- * Kanon: nie na lesie (hodowla zwierzęca zablokowana — obóz łowiecki / tartak OK).
+ * Owce — solo na Wzgórzu (otwartym LUB zalesionym) albo pierwsze pastwisko na złożu owiec.
+ *
+ * R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (ECHO właściciela 2026-08-27 „Tak, odwracamy —
+ * wszystkie trzy"): linia `if (nakladka === Nakladka.Las) return false;` USUNIĘTA, a Las
+ * dopisany jawnie jako dozwolona nakładka — sam brak tej linii NIE wystarczał, bo funkcja
+ * kończy się `return nakladka === Nakladka.Brak`, więc Las i tak wypadłby przez ostatni
+ * warunek. Ślad uchylonej reguły z 2026-07-29 („nie na lesie — obóz łowiecki / tartak OK")
+ * zostaje tu świadomie; historia decyzji nie jest wymazywana, tylko zastępowana.
+ *
+ * Reszta reguły BEZ ZMIAN: teren bazowy musi być Wzgórzami, a nakładki inne niż
+ * Brak/Las/ZłożeOwiec (np. złoże gliny, rudy, konia) nadal wykluczają owce.
  */
 export function isOwceBaseTerrain(teren: TerenBazowy, nakladka: Nakladka): boolean {
   if (teren !== TerenBazowy.Wzgorza) return false;
   if (nakladka === Nakladka.ZlozeOwiec) return true;
-  if (nakladka === Nakladka.Las) return false;
+  if (nakladka === Nakladka.Las) return true;
   return nakladka === Nakladka.Brak;
 }
 
@@ -327,7 +566,8 @@ function existingAfterSimulatedRemoval(
 }
 
 /**
- * Skutek budowy na heksie z istniejącymi warstwami — null = twarda blokada (np. owce na lesie).
+ * Skutek budowy na heksie z istniejącymi warstwami — null = twarda blokada (np. irygacja na
+ * lesie, obóz łowiecki poza lasem).
  * Nie usuwa farma+irygacja (kanon) — wtedy qualifies() zwraca false bez impactu.
  */
 export function computeImprovementBuildImpact(
@@ -337,6 +577,13 @@ export function computeImprovementBuildImpact(
 ): ImprovementBuildImpact | null {
   if (isImprovementBlockedOnForest(key, hex.nakladka)) return null;
   if (key === 'owce' && !isOwceBaseTerrain(hex.terenBazowy, hex.nakladka)) {
+    return null;
+  }
+  // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: twarda blokada commitu (drugi, niezależny gate
+  // za `qualifies()`/`canBuild` — ta sama rola co gałąź `owce` wyżej). `applyBuildRequest`
+  // (main.ts) nie powtarza `qualifies()`, więc bez tego warunku obóz poza lasem dałoby się
+  // zacommitować ścieżką pomijającą panel budowy. Dokładne porównanie enumu, nie podciąg.
+  if (key === 'oboz_lowiecki' && hex.nakladka !== Nakladka.Las) {
     return null;
   }
 
@@ -496,8 +743,10 @@ export function depositAllowsPlayerImprovement(
       return nakladka === Nakladka.ZlozeLamy;
     case 'stadnina':
       return hex.nakladka === Nakladka.ZlozeKonia;
+    // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: obóz przestaje być wyjątkiem rezerwy złoża
+    // na złożu zwierzęcym BEZ lasu — wyjątkiem jest wyłącznie las (dowolny teren pod nim).
     case 'oboz_lowiecki':
-      return nakladka === Nakladka.Las || hasAnimalDeposit(nakladka);
+      return nakladka === Nakladka.Las;
     default:
       return false;
   }
@@ -706,9 +955,11 @@ function createQualifier(state: ImprovementBuildState) {
           && inPlayerTerritory(q, r)
           && isRiverAdjacent(q, r);
         break;
+      // R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): `!isLivestockImprovementBlocked
+      // OnForest(key, nakladka)` USUNIĘTE — bydło kwalifikuje się na Łące/Równinie niezależnie
+      // od nakładki Las (ECHO właściciela „Tak, odwracamy — wszystkie trzy").
       case 'bydlo':
         terrainOk = FLAT_FARM.has(teren)
-          && !isLivestockImprovementBlockedOnForest(key, nakladka)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
@@ -719,17 +970,20 @@ function createQualifier(state: ImprovementBuildState) {
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
         break;
+      // R-ULEPSZENIA-HODOWLA-LAS-ODBLOKOWANA-Q1 (2026-08-27): jw. — lama kwalifikuje się na
+      // Wzgórzach/Górach niezależnie od nakładki Las (bramka cywilizacji Inków bez zmian).
       case 'lama':
         terrainOk = teren !== TerenBazowy.Pustynia
-          && !isLivestockImprovementBlockedOnForest(key, nakladka)
           && (TERRAIN_ALLOW.lama?.has(teren) ?? false)
           && inPlayerTerritory(q, r)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
         break;
+      // Stadnina ZOSTAJE zabroniona na lesie — patrz `isStadninaBlockedOnForest`
+      // (poza ECHO właściciela z 2026-08-27, które objęło wyłącznie owce/bydło/lamę).
       case 'stadnina':
         terrainOk = inPlayerTerritory(q, r)
-          && !isLivestockImprovementBlockedOnForest(key, nakladka)
+          && !isStadninaBlockedOnForest(key, nakladka)
           && (teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina)
           && isLivestockAllowed(playerCivArchetype, key, playerEra)
           && (hex.nakladka === Nakladka.ZlozeKonia
@@ -789,9 +1043,14 @@ function createQualifier(state: ImprovementBuildState) {
           && nakladka === Nakladka.Las
           && TARTAK_TERENY.has(teren);
         break;
+      // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1 (Maciej): obóz łowiecki WYŁĄCZNIE na
+      // nakładce Las — dowolny teren POD lasem (łąka, równina, WZGÓRZE), nigdy poza lasem.
+      // Było: `Las LUB złoże zwierzęce` — stąd obozy poza lasem (złoże koni na równinie).
+      // Dokładne porównanie enumu `Nakladka.Las`, NIGDY dopasowanie po podciągu nazwy terenu:
+      // `normTerrain('Plaskie (rownina/laka)')` zawiera podciąg „las" (udowodniony błąd,
+      // combat.ts:638-646). Bramka tematu: tools/oboz-lowiecki-las-test.cjs.
       case 'oboz_lowiecki':
-        terrainOk = inPlayerTerritory(q, r)
-          && (nakladka === Nakladka.Las || hasAnimalDeposit(nakladka));
+        terrainOk = inPlayerTerritory(q, r) && nakladka === Nakladka.Las;
         break;
       case 'warzelnia_soli':
         terrainOk = inPlayerTerritory(q, r)
@@ -853,7 +1112,12 @@ export function buildImprovementQualifier(state: ImprovementBuildState): (
 export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy): boolean {
   switch (key) {
     case 'farma':
-      return FLAT_FARM.has(teren) || teren === TerenBazowy.Wzgorza;
+      // R-ULEPSZENIA-FARMA-NIE-W-LESIE-Q1 (2026-08-27): `|| teren === Wzgorza` USUNIĘTE.
+      // Wzgórza były tu wpuszczane WYŁĄCZNIE po to, by „Wzgórza z lasem" (reguła 2026-07-21)
+      // przeszły przez tę wstępną bramkę do warstwy `isFarmBaseTerrain`. Po uchyleniu tamtej
+      // reguły Wzgórza nie mają już ŻADNEJ drogi do farmy, więc galeria 3D i tooltip nie mogą
+      // obiecywać więcej niż silnik.
+      return FLAT_FARM.has(teren);
     case 'bydlo':
       return FLAT_FARM.has(teren);
     // N5 (P-HEX-TOOLTIP-MOZLIWE-ULEPSZENIA-BRAK-FILTRA-ZLOZA, Maciej 2026-08-14): stadnina i
@@ -891,8 +1155,15 @@ export function galleryTerrainEligible(key: ImprovementKey, teren: TerenBazowy):
         || teren === TerenBazowy.Wzgorza;
     case 'glinianka':
       return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina;
+    // R-ULEPSZENIA-OBOZ-LOWIECKI-TYLKO-LAS-Q1: jedynym warunkiem obozu jest nakładka Las —
+    // teren POD lasem jest bez znaczenia (Maciej: „niezależnie, czy to jest las na wzgórzu,
+    // czy na innym terenie"). Poprzednie `Łąka|Równina` gubiło LAS NA WZGÓRZU: ta funkcja
+    // jest pierwszym filtrem listy w tooltipie heksu (hexContextTooltip), więc obóz nie
+    // pojawiał się na zalesionym wzgórzu mimo że budowa była dozwolona — asymetria
+    // tooltip↔`qualifies()`. Ta funkcja nie widzi nakładki; warunek lasu egzekwuje
+    // wywołujący (tooltip) i `createQualifier`. Wykluczamy tylko wodę.
     case 'oboz_lowiecki':
-      return teren === TerenBazowy.Laka || teren === TerenBazowy.Rownina;
+      return teren !== TerenBazowy.Morze && teren !== TerenBazowy.Wybrzeze;
     case 'warzelnia_soli':
       return teren === TerenBazowy.Wybrzeze || teren === TerenBazowy.Rownina;
     case 'droga':

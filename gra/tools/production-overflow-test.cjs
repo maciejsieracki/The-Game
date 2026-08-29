@@ -63,7 +63,7 @@ console.log('\n1. Pusta kolejka: doBudynkow trafia do overflowToPool');
 
 console.log('\n2. Scenariusz Macieja: 13 Pracy, 70% budynki, brak budynku');
 {
-  const { doBudynkow, doPuli } = M.splitPraca(13, 0.7);
+  const { doBudynkow, doPuli: doPuli } = M.splitPraca(13, 0.7);
   eq(doBudynkow, 9, 'doBudynkow = 9');
   eq(doPuli, 4, 'doPuli = 4 (suwak ulepszenia)');
 
@@ -130,6 +130,108 @@ console.log('\n7. HUD preview: 100% budowa, pusta kolejka → brutto = cała Pra
     { queueEmpty: [false], paused: [false] },
   );
   eq(hudWithBuild, 0, 'z budynkiem w kolejce → tylko doPuli (0)');
+}
+
+// R-PRACA-JEDEN-PODZIAL-Q1 — PRZEPISANE BLOKI 8-13 (uzasadnienie w 01-operator.md):
+//   CO PILNOWALY: ze DRUGI podzial (`splitEmpirePracaBudget`) dzieli cala pule na
+//     ulepszenia/budynki, ze jego budynkowy remainder jest realnie wydawany przez
+//     `allocateEmpirePracaToBuildings`, i ze main.ts jest do tego podpiety.
+//   DLACZEGO STARY WARUNEK PRZESTAL BYC PRAWDA: to bylo DRUGIE dzielenie tej samej
+//     Pracy — dokladnie blad, ktory ten temat usuwa. Przy domyslnych ustawieniach
+//     dawalo ulepszeniom 0 Pracy. Obie funkcje zostaly usuniete z `production.ts`.
+//   CO PILNUJE TERAZ: ze drugiego podzialu JUZ NIE MA (nie da sie go zaimportowac
+//     ani znalezc w zrodle) i ze pula imperium nie oddaje Pracy z powrotem do budynkow.
+console.log('\n8. Zero podwójnego liczenia: drugi podział NIE istnieje w silniku');
+{
+  eq(typeof M.splitEmpirePracaBudget, 'undefined', 'splitEmpirePracaBudget usunięty z production.ts');
+  eq(typeof M.allocateEmpirePracaToBuildings, 'undefined', 'allocateEmpirePracaToBuildings usunięty z production.ts');
+  const prodSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'game', 'production.ts'), 'utf8');
+  ok(!/^export function splitEmpirePracaBudget/m.test(prodSrc), 'brak definicji splitEmpirePracaBudget');
+  ok(!/^export function allocateEmpirePracaToBuildings/m.test(prodSrc), 'brak definicji allocateEmpirePracaToBuildings');
+}
+
+console.log('\n9. Jedyny podział: udział puli = dokładnie 100% − %budynki, suma zawsze = total');
+{
+  for (const total of [3, 6, 7, 10, 13, 20, 100, 1000]) {
+    for (const pctB of [50, 60, 70, 80, 90, 100]) {
+      const r = M.splitPraca(total, pctB / 100);
+      eq(r.doBudynkow + r.doPuli, r.total, `suma = total (praca=${total}, budynki=${pctB}%)`);
+      eq(r.total, total, `total zachowany (praca=${total}, budynki=${pctB}%)`);
+      eq(r.doBudynkow, Math.round(total * pctB / 100), `doBudynkow = round(total × %B) (${total}/${pctB})`);
+    }
+  }
+}
+
+console.log('\n10. Cap: pula (ulepszenia) nigdy > 50% Pracy, budynki nigdy < 50%');
+{
+  // Twarda postac capu, W JEDNOSTKACH Pracy (ostrzejsza niz porownanie procentow):
+  // 2 × doPuli <= total ORAZ 2 × doBudynkow >= total. Przy remisie zaokraglenia (.5)
+  // nadwyzka idzie do BUDYNKOW — w strone wymagana przez wlasciciela, nigdy odwrotnie.
+  for (const total of [1, 2, 3, 5, 7, 9, 10, 13, 99, 1000, 1001]) {
+    const r = M.splitPraca(total, 0.5);
+    ok(2 * r.doPuli <= r.total, `pula ≤ 50% co do jednostki Pracy (praca=${total}: ${r.doPuli})`);
+    ok(2 * r.doBudynkow >= r.total, `budynki ≥ 50% co do jednostki Pracy (praca=${total}: ${r.doBudynkow})`);
+  }
+}
+
+console.log('\n11. Pula imperium NIE oddaje Pracy z powrotem do kolejek budynków (main.ts)');
+{
+  const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  // Liczy sie KOD, nie komentarz-nagrobek opisujacy usunieta warstwe: zdejmujemy
+  // linie `//` i bloki `/* */` przed sprawdzeniem, inaczej wlasny opis zmiany
+  // falszywie czerwienil test.
+  const mainCode = mainSrc
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n').filter(l => !/^\s*(\/\/|\*)/.test(l)).join('\n');
+  ok(!/\bapplyEmpireBuildingBudget\s*\(/.test(mainCode), 'brak wywołania applyEmpireBuildingBudget');
+  ok(!/\bsplitEmpirePracaBudget\s*\(/.test(mainCode), 'brak wywołania splitEmpirePracaBudget');
+  // RUNDA 2 (F3): USUNIETY „dowod nietautologicznosci" polegajacy na dopisaniu szukanego
+  // wzorca do badanego stringu — swiecil niezaleznie od stanu kodu. Nietautologicznosc obu
+  // asercji negatywnych wyzej dowodzi sie uruchomieniem bramki na zmutowanej KOPII zrodla
+  // (raportowanym przez Operatora), nie udawana mutacja wewnatrz pliku.
+}
+
+console.log('\n12. Budżet automatu ulepszeń = % SKUMULOWANEJ puli, nie przyrostu tury (main.ts)');
+{
+  // R-PRACA-JEDEN-PODZIAL-Q1 RUNDA 2 (F1) — AKTUALIZACJA SEKCJI 12 i USUNIĘCIE SEKCJI 13,
+  // jawnie uzasadnione:
+  //   CO PILNOWAŁY (po rundzie 1): (12) że gracz i AI biorą budżet ulepszeń z mapy
+  //     `pracaPoolInflowByOwner` (tegoroczny wpływ do puli); (13) że do tej mapy trafiają OBA
+  //     strumienie wpływu (poolGain + overflowToPool).
+  //   DLACZEGO STARE WARUNKI PRZESTAŁY BYĆ PRAWDĄ: budżet liczony z przyrostu jednej tury dawał
+  //     próg ~40 Pracy/turę, poniżej którego automat ulepszeń budował ZERO — niezależnie od
+  //     wielkości skumulowanej puli — wbrew udokumentowanej decyzji właściciela
+  //     R-AUTO-PRACA-BUDZET-PROCENT-Q1=B („od SKUMULOWANEJ puli, NIE od przyrostu"). Mapa
+  //     `pracaPoolInflowByOwner` istniała WYŁĄCZNIE po to i została usunięta razem z tym
+  //     wiringiem, więc sekcja 13 pinowała już nieistniejący kod (pomocnicza księgowość, nie
+  //     zachowanie gry: sam wpływ do puli nadal idzie tymi samymi dwoma strumieniami i jest
+  //     pilnowany przez sekcje 1-10 tego pliku, na PRAWDZIWYCH funkcjach).
+  //   CO PILNUJE TERAZ: ta sama własność w obowiązującej semantyce — silnik nie podaje żadnego
+  //     absolutnego capu z przyrostu, bazą procentu jest skumulowana pula, a AI dostaje kopertę
+  //     z tej samej formuły co gracz (parytet). Trzy asercje negatywne + trzy pozytywne zamiast
+  //     jednej koniunkcji: pokrycie się zacieśniło, nie rozluźniło.
+  const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src', 'main.ts'), 'utf8');
+  const mainCode = mainSrc
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n').filter(l => !/^\s*(\/\/|\*)/.test(l)).join('\n');
+  const hasWiring = code =>
+    /pracaBudgetPercent:\s*playerUlepszeniaPolicy\.pracaAutoPercent/.test(code)
+      && /pracaAvailable:\s*playerPracaPool/.test(code)
+      && /aiImprovementBudgetByOwner\.set\(ownerId, Math\.floor\(aiPool \* aiPct \/ 100\)\)/.test(code)
+      && !/pracaPoolInflowByOwner/.test(code);
+  ok(hasWiring(mainCode), 'gracz i AI liczą budżet ulepszeń z % SKUMULOWANEJ puli (Q1=B)');
+  // Dowod nietautologicznosci — JEDNA mutacja na asercje.
+  const mutA = mainCode.replace('pracaBudgetPercent: playerUlepszeniaPolicy.pracaAutoPercent', 'pracaBudgetPercent: 100');
+  ok(!hasWiring(mutA), 'mutant wyłączający procentowy pułap pickera zostaje wykryty');
+  const mutB = mainCode.replace('pracaAvailable: playerPracaPool', 'pracaAvailable: pracaPoolInflowThisTurn');
+  ok(!hasWiring(mutB), 'mutant podmieniający bazę procentu na przyrost tury zostaje wykryty');
+  const mutC = mainCode.replace('aiImprovementBudgetByOwner.set(ownerId, Math.floor(aiPool * aiPct / 100))', 'aiImprovementBudgetByOwner.set(ownerId, aiInflow)');
+  ok(!hasWiring(mutC), 'mutant zrywający parytet koperty AI zostaje wykryty');
+  // Wywolanie pickera gracza NIE MOZE podawac absolutnego capu — powrot capu = powrot progu.
+  const i = mainCode.indexOf('const picks = pickAutoImprovements({');
+  const blok = i > -1 ? mainCode.slice(i, mainCode.indexOf('\n                });', i)) : '';
+  ok(i > -1 && !/improvementBudgetCap/.test(blok),
+    'wywołanie pickera gracza nie podaje absolutnego capu (pułap liczy picker od salda)');
 }
 
 console.log('\n--- production-overflow-test: ' + passed + ' OK, ' + failed + ' FAIL ---');

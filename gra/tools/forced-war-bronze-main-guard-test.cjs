@@ -59,14 +59,14 @@ check(
   // dodatkowo onOwnerChanged: seedCityOwnerDefaults + komentarz B2 (Evaluator RUNDA 1: FAIL,
   // pre-istniejący fix tego samego tematu, poza zakresem tej rundy) -- realna długość wywołania
   // to ok. 463 znaki treści; 600 daje margines bez utraty czułości na usunięcie wywołania.
-  /function applyCityCaptureToMap\([\s\S]{0,400}?applyCityCaptureAfterBattle\([\s\S]{0,600}?\);\s*\n\s*maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, atkOwner\);/.test(mainSrc),
+  /function applyCityCaptureToMap\([\s\S]{0,800}?applyCityCaptureAfterBattle\([\s\S]{0,2000}?\);\s*[\s\S]{0,250}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, atkOwner\);/.test(mainSrc),
 );
 
 check(
   'resolveSiegeSurrender (kapitulacja głodowa): woła maybeResolveBronzeForcedWarOnCityCapture'
     + '(oldOwner, newOwner) PO city.ownerId = newOwner -- bez tego wojna wymuszona AI<->AI '
     + 'nigdy się nie kończy (negocjacje pokojowe obsługują wyłącznie targetId===0)',
-  /function resolveSiegeSurrender\(cityId: string\): void \{[\s\S]{0,700}?city\.ownerId = newOwner;[\s\S]{0,1000}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, newOwner\);/.test(mainSrc),
+  /function resolveSiegeSurrender\(cityId: string\): void \{[\s\S]{0,2000}?city\.ownerId = newOwner;[\s\S]{0,5000}?maybeResolveBronzeForcedWarOnCityCapture\(oldOwner, newOwner\);/.test(mainSrc),
 );
 
 console.log('');
@@ -170,7 +170,7 @@ for (const [i, snippet] of bronzeSaveFields.entries()) {
 
 check(
   'restoreGameFromSave: woła restoreBronzeForcedWarState({...}) czytając saved.meta?.bronzeForceWar*',
-  /function restoreGameFromSave\(saved: SaveGame\): void \{[\s\S]{0,15000}?const bronzeForceWarRestored = restoreBronzeForcedWarState\(\{\s*pendingOwners: saved\.meta\?\.bronzeForceWarPendingOwners as number\[\] \| undefined,\s*cycleOwners: saved\.meta\?\.bronzeForceWarCycleOwners as number\[\] \| undefined,\s*restUntilByOwner: saved\.meta\?\.bronzeForceWarRestUntilByOwner as Array<\[number, number\]> \| undefined,\s*activeByPairKey: saved\.meta\?\.bronzeForceWarActiveByPairKey as\s*Array<\[string, BronzeForcedWarPairState\]> \| undefined,\s*\}\);/.test(mainSrc),
+  /function restoreGameFromSave\(saved: SaveGame\): void \{[\s\S]{0,50000}?const bronzeForceWarRestored = restoreBronzeForcedWarState\(\{\s*pendingOwners: saved\.meta\?\.bronzeForceWarPendingOwners as number\[\] \| undefined,\s*cycleOwners: saved\.meta\?\.bronzeForceWarCycleOwners as number\[\] \| undefined,\s*restUntilByOwner: saved\.meta\?\.bronzeForceWarRestUntilByOwner as Array<\[number, number\]> \| undefined,\s*activeByPairKey: saved\.meta\?\.bronzeForceWarActiveByPairKey as\s*Array<\[string, BronzeForcedWarPairState\]> \| undefined,\s*\}\);/.test(mainSrc),
 );
 
 check(

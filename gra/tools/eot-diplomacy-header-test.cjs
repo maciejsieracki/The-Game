@@ -60,13 +60,18 @@ const diploWygaslaMsg = 'Dyplomacja: propozycja wygasła — wojna';
 // showHintMessage(`${labelA} handluje z ${labelB}`, …) z applyAiAiHandelSurowiecCmd — jedyny
 // dotychczasowy „nie-nasz" typ hintu, już naprawiony wcześniej (R-WYDARZENIA-FILTR-KATEGORII).
 const aiAiTradeMsg = 'Ateny handluje z Sparta';
-// Kontrolny wpis NIE-dyplomatyczny — musi zostać przy dotychczasowym „Koniec tury" / kind:'info'.
+// Kontrolny wpis NIE-dyplomatyczny — musi zostać przy domyślnej gałęzi fallbacku / kind:'info'.
+// P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1: ta gałąź daje dziś PUSTY `title` (`''`), a nie
+// dawny generyczny placeholder „Koniec tury" — asercje niżej zaktualizowane, intencja
+// (dyplomacja ≠ fallback) bez zmian.
 const nonDiploMsg = 'Ukończono: <b>Piramida</b> @ 3,4';
 // N2 (Evaluator PASS-WITH-NOTES 7b02eb2d): prefiks „Dyplomacja:” NIE na początku zdania —
-// musi dostać domyślny nagłówek „Koniec tury”. Łapie mutację startsWith→includes (bez tego
-// przypadku ta mutacja przechodziła 15/15, bo żaden istniejący wpis nie miał prefiksu w środku).
-// EN: "Dyplomacja:" prefix NOT at the start of the message — must keep the default "Koniec
-// tury" header. Catches a startsWith→includes mutation (previously undetected: 15/15 passed).
+// musi wpaść w domyślną gałąź fallbacku (dziś: pusty `title`, dawniej „Koniec tury”). Łapie
+// mutację startsWith→includes (bez tego przypadku ta mutacja przechodziła 15/15, bo żaden
+// istniejący wpis nie miał prefiksu w środku).
+// EN: "Dyplomacja:" prefix NOT at the start of the message — must fall into the default branch
+// (today: empty `title`, formerly "Koniec tury"). Catches a startsWith→includes mutation
+// (previously undetected: 15/15 passed).
 const midSentenceDiploMsg = 'Coś tam Dyplomacja: coś tam';
 
 const evs = B.deferredHintsToSidePanelEvents(
@@ -99,15 +104,16 @@ ok(evAiAi.title === 'Dyplomacja', `handel AI↔AI → title 'Dyplomacja' (got '$
 ok(evAiAi.kind === 'diplo', `handel AI↔AI → kind 'diplo' (got '${evAiAi.kind}')`);
 ok(evAiAi.origin === 'other-civs', 'handel AI↔AI → origin other-civs (bez regresji filtra 🌍)');
 
-// Brak regresji: wpisy NIE-dyplomatyczne zachowują dotychczasowy nagłówek/kind.
-ok(evNonDiplo.title === 'Koniec tury', `nie-dyplomacja → title 'Koniec tury' bez zmian (got '${evNonDiplo.title}')`);
+// Brak regresji: wpisy NIE-dyplomatyczne wpadają w domyślną gałąź (pusty title) i kind 'info'.
+ok(evNonDiplo.title === '', `nie-dyplomacja → title PUSTY '' (P-WYDARZENIA-NAGLOWEK-KONIEC-TURY-ZBEDNY-Q1; got '${evNonDiplo.title}')`);
+ok(evNonDiplo.title !== 'Koniec tury', 'nie-dyplomacja → generyczny placeholder „Koniec tury" NIE wraca');
 ok(evNonDiplo.kind === 'info', `nie-dyplomacja → kind 'info' bez zmian (got '${evNonDiplo.kind}')`);
 ok(evNonDiplo.origin === undefined, 'nie-dyplomacja → bez origin');
 ok(!evNonDiplo.subtitle.includes('<'), 'nie-dyplomacja → subtitle bez HTML (bez regresji istniejącego strippingu)');
 
-// N2: prefiks „Dyplomacja:” w ŚRODKU zdania (nie na początku) → nagłówek MUSI zostać
-// domyślny „Koniec tury” (startsWith, nie includes).
-ok(evMidSentence.title === 'Koniec tury', `„Dyplomacja:” w środku zdania → title 'Koniec tury' (got '${evMidSentence.title}')`);
+// N2: prefiks „Dyplomacja:” w ŚRODKU zdania (nie na początku) → MUSI wpaść w domyślną
+// gałąź fallbacku, czyli pusty `title` (startsWith, nie includes).
+ok(evMidSentence.title === '', `„Dyplomacja:” w środku zdania → title PUSTY '' (got '${evMidSentence.title}')`);
 ok(evMidSentence.kind === 'info', `„Dyplomacja:” w środku zdania → kind 'info' (got '${evMidSentence.kind}')`);
 ok(evMidSentence.origin === undefined, '„Dyplomacja:” w środku zdania → bez origin');
 
