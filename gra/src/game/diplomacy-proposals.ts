@@ -54,7 +54,7 @@ import {
 import {
   aiOfferPwSurplusTolerance,
   aiOfferTargetsZeroBalance,
-  aiProposalPlayerBenefitSurplus,
+  playerBenefitSurplusByRole,
   trimProposalForZeroBalance,
 } from './diplomacy-ai-offer-balance';
 import { BARBARIAN_COOPERATION_TURNS } from './diplomacy-barbarian-cooperation';
@@ -2246,18 +2246,30 @@ export function generateCounterOffer(
   const tryPayload = (p: ProposalPayload): boolean =>
     evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
 
-  // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1 (GOAL b, recon jawny w raporcie Operatora): generator
-  // (diplomacy-ai-offer-balance.ts) dostał opcjonalny `fairness` (multiplier/treatyBasePn),
-  // ta sama matematyka co handelRequiredPn/treatyBaseFairnessGap. CELOWO NIE wpięty tutaj:
-  // `aiProposalPlayerBenefitSurplus`/`responderPwSurplus` zakładają STRUKTURALNIE
-  // proposerOwnerId=AI (patrz ich własny docstring — "Nadwyżka korzyści dla RESPONDENTA
-  // (gracz)"), a `generateCounterOffer` jest wołana z FIKSOWANYMI proposerOwnerId/
-  // responderOwnerId propozycji, które gdy inicjatorem był gracz, są ODWROTNE — podanie tu
-  // realnego mnożnika/bazy zmieniłoby próg przycinania w kierunku, którego NIE zweryfikowałem
-  // (rozjazd ról proponent/respondent w tej funkcji jest osobnym, głębszym, przedistniejącym
-  // problemem, poza zakresem tego dispatchu — zgłoszony w BLOKADY raportu, nie ukryty). Zamiast
-  // ryzykować niezweryfikowaną zmianę zachowania realnej kontroferty AI, `finalizePayload`
-  // zostaje BEZ zmian (fairness pominięty = zachowanie bit-identyczne).
+  // R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1-C (GOAL b): `entry.proposerOwnerId` jest stałe od rundy 1
+  // (patrz komentarz przy `resolveNegotiationAsResponder`) i bywa GRACZEM (gracz zainicjował
+  // negocjację, AI odpowiada kontrofertą tutaj) — wtedy payload.giveItems/goldPerTurn itd.
+  // reprezentują "co daje/żąda GRACZ", nie AI. `playerBenefitSurplusByRole` (nowa, w
+  // diplomacy-ai-offer-balance.ts) jest jedynym punktem, który to rozróżnia poprawnie: dla
+  // `proposerIsPlayer=false` (AI proponent — dzisiejsza jedyna zweryfikowana ścieżka, np.
+  // AI negocjuje własną wcześniejszą ofertę) deleguje BIT-IDENTYCZNIE do dawnego
+  // `aiProposalPlayerBenefitSurplus` (zero zmiany zachowania); dla `proposerIsPlayer=true`
+  // (NOWA poprawka: gracz zainicjował, AI kontruje) liczy odwrotnie — matematyka opisana
+  // w docstringu tamtej funkcji. `fairness` (multiplier/treatyBasePn) nadal CELOWO pominięty
+  // (nieużywany dziś przez żadne wywołanie tej funkcji) — patrz osobny komentarz przy
+  // `finalizePayload` niżej, który z tego samego powodu zostaje bez zmian.
+  const proposerIsPlayer = proposal.proposerOwnerId === 0;
+  const playerBenefitSurplus = (p: ProposalPayload): number =>
+    playerBenefitSurplusByRole(p, relTotal, proposerIsPlayer, pnOpts);
+
+  // `finalizePayload`/`trimProposalForZeroBalance` operują WYŁĄCZNIE na payload.giveItems
+  // (złoto/surowiec w koszyku) — żadna z akcji obsługiwanych przez pętlę `moneyField` niżej
+  // (trybut_oferta/tech/namow_wojne/ultimatum/handel-bez-koszyka) nie wypełnia koszyka, więc
+  // to wywołanie jest tu no-op niezależnie od roli (zweryfikowane: `trimProposalGoldForZeroBalance`
+  // wraca payload bez zmian gdy `goldIdx<0`, `trimResourcePaymentTradeForZeroBalance` wraca
+  // bez zmian gdy `!hasResourcePaymentTrade`) — rozjazd ról w JEGO wewnętrznym użyciu
+  // `aiProposalPlayerBenefitSurplus` pozostaje więc martwym kodem na tej ścieżce, poza
+  // zakresem tego dispatchu (GOAL b dotyczy `generateCounterOffer`, nie tych helperów).
   const finalizePayload = (p: ProposalPayload): ProposalPayload =>
     aiOfferTargetsZeroBalance(difficulty)
       ? trimProposalForZeroBalance(p, relTotal, difficulty, pnOpts)
@@ -2326,9 +2338,9 @@ export function generateCounterOffer(
       for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
         const up = withMoneyField(payload, moneyField, base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
         if (tryPayload(up)) {
-          const surplus = aiProposalPlayerBenefitSurplus(up, relTotal, pnOpts);
+          const surplus = playerBenefitSurplus(up);
           if (surplus <= tolerance) {
-            if (!bestUp || surplus < aiProposalPlayerBenefitSurplus(bestUp.payload, relTotal, pnOpts)) {
+            if (!bestUp || surplus < playerBenefitSurplus(bestUp.payload)) {
               bestUp = { payload: finalizePayload(up), note: `podbita oferta (${getMoneyField(up, moneyField)})` };
             }
           } else if (!aiOfferTargetsZeroBalance(difficulty)) {
@@ -2338,9 +2350,9 @@ export function generateCounterOffer(
         if (actionId === 'trybut_oferta') {
           const down = withMoneyField(payload, moneyField, base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
           if (getMoneyField(down, moneyField) > 0 && tryPayload(down)) {
-            const surplus = aiProposalPlayerBenefitSurplus(down, relTotal, pnOpts);
+            const surplus = playerBenefitSurplus(down);
             if (surplus <= tolerance) {
-              if (!bestDown || surplus < aiProposalPlayerBenefitSurplus(bestDown.payload, relTotal, pnOpts)) {
+              if (!bestDown || surplus < playerBenefitSurplus(bestDown.payload)) {
                 bestDown = {
                   payload: finalizePayload(down),
                   note: `obniżona oferta (${getMoneyField(down, moneyField)})`,

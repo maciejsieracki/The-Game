@@ -160,6 +160,50 @@ export function aiProposalPlayerBenefitSurplus(
   return -responderPwSurplus(givePn, receivePn, relTotal, fairness);
 }
 
+/**
+ * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1-C (GOAL b): `aiProposalPlayerBenefitSurplus` liczy
+ * poprawnie surowe {givePn, receivePn} z payloadu, ale zakłada STRUKTURALNIE, że
+ * payload.giveItems/goldPerTurn itd. reprezentują "co daje AI" (proposer=AI, responder=gracz)
+ * — bo dawniej `generateCounterOffer` był wołany WYŁĄCZNIE w tym układzie. Funkcja jest
+ * generycznie "surplus dla payloadowego RESPONDENTA" (kto NIE jest właścicielem giveItems),
+ * niezależnie od tego, kim ten respondent faktycznie jest — nazwa/dokumentacja mówi "gracz"
+ * tylko dlatego, że dotąd żaden kod nie wołał jej z odwrotnym układem ról.
+ *
+ * `generateCounterOffer` (diplomacy-proposals.ts) jest wołana też z PendingNegotiation, gdzie
+ * `entry.proposerOwnerId` jest stałe od rundy 1 (patrz komentarz przy `resolveNegotiationAsResponder`)
+ * i bywa GRACZEM (gracz zainicjował, AI odpowiada kontrofertą) — wtedy payload.giveItems
+ * reprezentuje "co daje GRACZ", nie AI, więc wywołanie `aiProposalPlayerBenefitSurplus` wprost
+ * fałszywie liczyłoby "surplus AI" pod etykietą "surplus gracza" (bramka tolerancji
+ * `aiOfferPwSurplusTolerance` w `generateCounterOffer` sprawdzałaby wtedy WŁASNY apetyt AI
+ * zamiast korzyści gracza — odwrócona logika, nie tylko odwrócona etykieta).
+ *
+ * Ta funkcja jest jedynym poprawnym punktem wejścia dla `generateCounterOffer`: zawsze zwraca
+ * surplus PRAWDZIWEGO gracza (ownerId 0), niezależnie od tego, czy w payloadzie strukturalnym
+ * proponentem jest AI (`proposerIsPlayer=false`, deleguje bit-identycznie do
+ * `aiProposalPlayerBenefitSurplus` — zero zmiany zachowania na dzisiejszej, zweryfikowanej
+ * ścieżce) czy gracz (`proposerIsPlayer=true`, NOWA ścieżka: matematyka odwrócona — swap
+ * givePn/receivePn przed `responderPwSurplus`, oraz osobny check jednostronnego daru OD gracza,
+ * którego wartość jest kosztem [-givePn], nie korzyścią [+givePn], jak przy darze OD AI).
+ */
+export function playerBenefitSurplusByRole(
+  payload: ProposalPayload,
+  relTotal: number,
+  proposerIsPlayer: boolean,
+  pnOpts?: ResolveProposalPnOptions,
+  fairness?: AiOfferFairnessOpts,
+): number {
+  if (!proposerIsPlayer) {
+    return aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts, fairness);
+  }
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const isOneSidedGiftFromPlayer =
+    givePn > 0
+    && receivePn <= 0
+    && !(payload.receiveItems?.length);
+  if (isOneSidedGiftFromPlayer) return -givePn;
+  return -responderPwSurplus(receivePn, givePn, relTotal, fairness);
+}
+
 function pnToPaymentAmount(paymentTyp: 'zloto' | 'praca', targetPn: number): number {
   if (targetPn <= 0) return 0;
   if (paymentTyp === 'zloto') {
