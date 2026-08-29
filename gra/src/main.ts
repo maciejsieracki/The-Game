@@ -9787,6 +9787,23 @@ async function boot(): Promise<void> {
      *  w UI (panel Bilans/ZASOBY IMPERIUM); odjęcie samo dzieje się raz, w bloku
      *  po pętli per-miasto (patrz econ.pracaUpkeepByOwner). */
     let _lastPracaUpkeep: number = 0;
+    /** P-PRACA-IMPERIUM-AI-ULEPSZENIA-MIESZANE-Q1 (Maciej 2026-08-29): suma
+     *  `pick.kosztPraca` ze WSZYSTKICH auto-postawionych ulepszeń gracza
+     *  (auto-ulepszenia terenu, "tryb: auto") w OSTATNIEJ turze -- civ-wide,
+     *  wyłącznie do wyświetlenia w UI (panel „PULA IMPERIUM" / tooltip HUD),
+     *  analogicznie do `_lastPracaUpkeep`. Zgłoszenie właściciela: ten drenaż
+     *  (4. z 4 składników `_lastPracaRate`, patrz komentarz REGRES2 niżej)
+     *  wchodził dotąd WYŁĄCZNIE w saldo netto na głównym żetonie HUD ("Praca 39
+     *  -10"), myląc się z brutto przyrostem z 8 miast (+80) -- właściciel:
+     *  „nie powinno się tak rozliczać (...) powinno to pojawić się gdzieś w
+     *  podsumowaniu, a nie na głównym żetonie". Ten licznik jest zapisywany w
+     *  TEJ SAMEJ pętli (auto-ulepszenia gracza w `triggerPlayerEndTurn`), przy
+     *  KAŻDYM odjęciu `pick.kosztPraca` od `_lastPracaRate` (patrz oba miejsca
+     *  „auto-ulepszenia zużywają pulę" niżej) -- NIE jest osobnym
+     *  przybliżeniem. `_lastPracaRate` (arytmetyka Wątku D) pozostaje BEZ
+     *  ZMIANY -- to pole tylko DOKUMENTUJE jeden z jego istniejących
+     *  składników, nie zmienia sumy. */
+    let _lastPracaAutoUlepszeniaKoszt: number = 0;
     let _lastKultura: number = 0;
     let _lastPracaRate: number = 0;
     /** P-PRACA-IMPERIUM-PULA-NIE-AKUMULUJE-REGRES2-Q1 (Maciej 2026-08-22): koniec tury
@@ -16140,6 +16157,7 @@ async function boot(): Promise<void> {
         praca: Math.round(_lastPraca),
         pracaRate: Math.round(_lastPracaRate),
         pracaUpkeep: Math.round(_lastPracaUpkeep),
+        pracaAutoUlepszeniaKoszt: Math.round(_lastPracaAutoUlepszeniaKoszt),
         nauka: Math.floor(player.nauka),
         naukaRate: Math.floor(_lastNaukaRate),
         kultura: Math.floor(_lastKultura),
@@ -26279,6 +26297,7 @@ async function boot(): Promise<void> {
           const playerEcon = sumEconomyForPlayerCities(econ, cities);
           const playerCityCount = cities.filter(c => c.ownerId === 0).length;
           _lastPracaRate = 0;
+          _lastPracaAutoUlepszeniaKoszt = 0;
           _lastPieniadzRate = playerEcon.pieniadz;
           _lastNaukaRate = playerEcon.nauka;
           _lastKulturaRate = playerEcon.kultura;
@@ -27533,6 +27552,7 @@ async function boot(): Promise<void> {
                     playerPracaPool -= pick.kosztPraca;
                     _lastPraca = playerPracaPool;
                     _lastPracaRate -= pick.kosztPraca;
+                    _lastPracaAutoUlepszeniaKoszt += pick.kosztPraca;
                     const clrAuto = freshClearingState(pick.key, 0);
                     if (clrAuto) hexClearingStates.set(hexKey, clrAuto);
                     spawnClearingMesh(hexKey);
@@ -27546,6 +27566,7 @@ async function boot(): Promise<void> {
                   // auto-ulepszenia zużywają pulę TEJ SAMEJ tury bez odjęcia od
                   // wyświetlanej stawki.
                   _lastPracaRate -= pick.kosztPraca;
+                  _lastPracaAutoUlepszeniaKoszt += pick.kosztPraca;
                   const nextLayers: PlacedLayers = [...prevLayers, pick.key];
                   placedImprovements.set(hexKey, nextLayers);
                   workingPlaced.set(hexKey, nextLayers);
@@ -31133,6 +31154,7 @@ async function boot(): Promise<void> {
       _lastPraca = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
+      _lastPracaAutoUlepszeniaKoszt = 0;
       _lastPieniadzRate = 0;
       _lastBogactwoRate = 0;
       _lastBogactwoHandel = 0;
@@ -32725,6 +32747,7 @@ async function boot(): Promise<void> {
       _lastPieniadzRate = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
+      _lastPracaAutoUlepszeniaKoszt = 0;
       _lastBogactwoRate = 0;
       _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0;

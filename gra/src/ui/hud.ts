@@ -91,6 +91,11 @@ export interface HudState {
   /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z puli za utrzymanie ulepszeń
    *  surowcowych (civ-wide) w ostatniej turze — do rozbicia w panelu Bilans/ZASOBY IMPERIUM. */
   pracaUpkeep?: number;
+  /** P-PRACA-IMPERIUM-AI-ULEPSZENIA-MIESZANE-Q1 (Maciej 2026-08-29): civ-wide
+   *  suma `pick.kosztPraca` ze WSZYSTKICH auto-postawionych ulepszeń gracza w
+   *  ostatniej turze — już wliczona (odjęta) w `pracaRate`, do rozbicia osobno
+   *  w tooltipie/panelu (nie na głównym żetonie, patrz zgłoszenie właściciela). */
+  pracaAutoUlepszeniaKoszt?: number;
   /** B5 — zapasy państwa (wojsko), nie magazyn miasta. */
   zywnoscLabel: string;
   /** B5-SP — max zapasów (100 × Spichlerze); 0 = brak magazynu armii. */
@@ -795,15 +800,25 @@ function skarbiecChipTitle(s: HudState): string {
  * NAPRAWA HUD-PRACA (Maciej 2026-07-26, ten sam wzorzec/zgłoszenie co Skarbiec):
  * tooltip chipu „Praca" rozbija „+N" na wpływ brutto do puli imperium minus
  * utrzymanie ulepszeń surowcowych (civ-wide/turę). pracaRate jest już NETTO
- * (main.ts), więc brutto = pracaRate + pracaUpkeep.
+ * (main.ts).
+ *
+ * P-PRACA-IMPERIUM-AI-ULEPSZENIA-MIESZANE-Q1 (Maciej 2026-08-29): dochodzi
+ * TRZECI składnik — koszt auto-postawionych ulepszeń AI gracza w ostatniej
+ * turze (`pracaAutoUlepszeniaKoszt`), więc brutto = pracaRate + pracaUpkeep +
+ * pracaAutoUlepszeniaKoszt. Zgłoszenie właściciela: ten drenaż wcześniej
+ * wchodził WYŁĄCZNIE do salda netto na głównym żetonie, mylnie się z nim
+ * łącząc ("Praca 39 -10" zamiast +80 do puli) -- teraz to osobna, podpisana
+ * pozycja w rozbiciu tooltipu, tak jak `pracaUpkeep`.
  */
 function pracaChipTitle(s: HudState): string {
   const base = 'Praca — bilans na turę';
   const netto = s.pracaRate ?? 0;
   const utrzymanie = s.pracaUpkeep ?? 0;
-  const wplywBrutto = netto + utrzymanie;
+  const autoUlepszenia = s.pracaAutoUlepszeniaKoszt ?? 0;
+  const wplywBrutto = netto + utrzymanie + autoUlepszenia;
   return `${base}: Wpływ do puli imperium: ${signed(wplywBrutto)} pkt Pracy`
     + ` · Utrzymanie ulepszeń surowcowych: ${signed(-utrzymanie)} pkt Pracy`
+    + ` · Auto-ulepszenia AI (gracz): ${signed(-autoUlepszenia)} pkt Pracy`
     + ` · Razem netto: ${signed(netto)} pkt Pracy. Kliknij po szczegóły.`;
 }
 
