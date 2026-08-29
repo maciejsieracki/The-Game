@@ -32,14 +32,20 @@ Operator GPT-5.6 Luna High
 
 | Etap | Odpowiedzialność | Zakaz |
 |---|---|---|
-| Operator | Wykonuje jeden temat w izolacji, zgodnie z GOAL i allowlistą; zapisuje artefakt, testy i raport | Nie ocenia własnej pracy, nie integruje, nie deployuje, nie pushuje |
-| Evaluator | Niezależnie sprawdza SCOPE, regresję, testy, dowody i blokady; wydaje werdykt. Dla kodu obowiązują dodatkowo trzy twarde FAIL-e domeny gry (happy-path bez brzegów, asymetria gracz/AI/MP, luka save/load) — pełne kryteria w [`R-PROC-AUTOBOT-EVAL-STRICT.md`](R-PROC-AUTOBOT-EVAL-STRICT.md), [`-EDGE`](R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md), [`-PARITY`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md), [`-SAVE`](R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md) i [`-SCOPE`](R-PROC-AUTOBOT-EVAL-SCOPE.md) | Nie zastępuje Operatora i nie publikuje |
-| Final Control | Kontroluje kompletność śladu, zgodność z GOAL i gotowość do integracji | Nie integruje i nie wystawia samodzielnie `READY_FOR_DEPLOY` |
+| Operator | Wykonuje jeden temat w izolacji, zgodnie z GOAL i allowlistą; zapisuje artefakt, testy i raport. Gdy Evaluator zwróci zarzuty (§3c) — wraca **w tej samej roli** jako Obrona | Nie ocenia własnej pracy, nie integruje, nie deployuje, nie pushuje |
+| Evaluator | Niezależnie sprawdza SCOPE, regresję, testy, dowody i blokady; wydaje **ponumerowane zarzuty** (§3c), nie jeden werdykt wprost — pusta lista zarzutów idzie od razu do Final Control jak dziś. Dla kodu obowiązują dodatkowo trzy twarde FAIL-e domeny gry (happy-path bez brzegów, asymetria gracz/AI/MP, luka save/load) — pełne kryteria w [`R-PROC-AUTOBOT-EVAL-STRICT.md`](R-PROC-AUTOBOT-EVAL-STRICT.md), [`-EDGE`](R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md), [`-PARITY`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md), [`-SAVE`](R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md) i [`-SCOPE`](R-PROC-AUTOBOT-EVAL-SCOPE.md) | Nie zastępuje Operatora, nie publikuje, nie wydaje ostatecznego werdyktu (to robi Final Control, po obronie) |
+| Final Control | **Sędzia**: dostaje zarzuty i obronę **neutralnie, bez etykiet kto (jaka rola) co napisał**, orzeka **per zarzut** — `NAPRAW`/`ODDAL`/`DO DECYZJI CZŁOWIEKA` (§3c) — i kontroluje kompletność śladu, zgodność z GOAL i gotowość do integracji | Nie integruje i nie wystawia samodzielnie `READY_FOR_DEPLOY` |
 | Orkiestrator | Weryfikuje faktyczny Git i integruje wyłącznie zatwierdzoną allowlistę | Nie omija raportów ani bramek |
 | Deploy/push | Publikuje po `READY_FOR_DEPLOY` i osobnej autoryzacji | Nie wynika z commita ani raportu |
 
 Final Control jest — dokładnie jak Operator i Evaluator — zawsze osobnym subagentem;
 nigdy nie jest wykonywany bezpośrednio przez głównego/orkiestrującego agenta.
+
+**Model zarzuty→obrona→werdykt (§3c, od 2026-08-29) obowiązuje dla nowych dispatchy
+od tej daty** — wcześniejsze rundy zamknięte pod starym modelem (Evaluator wydaje
+jeden werdykt wprost) pozostają ważne, nie wymagają powtórki. Źródło: uniwersalny
+szablon `nagents-autobot` (upload właściciela, 2026-08-29) — mechanizm przeniesiony
+1:1 na role tego projektu, nazwy plików/placeholdery przykładu `nAgents` pominięte.
 
 ### 1a. Jawny model dispatchu Codex
 
@@ -131,13 +137,15 @@ jedną rundę; nie wolno obchodzić limitu przez ponawianie techniczne. `ABC-OCZ
 przed dispatchiem nie zwiększa licznika.
 
 ```text
-Operator → Evaluator → Final Control → integracja → READY_FOR_DEPLOY
-   ↑            │              │
-   └────────────┴──────────────┘  FAIL / BLOCK / TIMEOUT / INFRA / ZWIS / niegotowość
+Operator → Evaluator (zarzuty) → Operator (obrona) → Final Control (werdykt/zarzut) → integracja → READY_FOR_DEPLOY
+   ↑              │                     │                      │
+   └──────────────┴─────────────────────┴──────────────────────┘  FAIL / BLOCK / TIMEOUT / INFRA / ZWIS / niegotowość
 ```
 
-Po raporcie Operatora Evaluator uruchamia się automatycznie. `PASS` prowadzi do Final
-Control, następnie do integracji. Każdy wymieniony wynik negatywny wraca bez czekania do
+Po raporcie Operatora Evaluator uruchamia się automatycznie. Lista zarzutów **pusta**
+prowadzi do Final Control od razu, jak dziś; lista **niepusta** uruchamia rundę Obrony
+(§3c) i dopiero potem Final Control. Werdykt Final Control bez żadnego `NAPRAW` prowadzi
+do integracji. Każdy wymieniony wynik negatywny wraca bez czekania do
 Operatora, Evaluatora i Final Control z tym samym ID **tylko dopóty, dopóki kolejna
 runda ma numer ≤5**. Gdy po piątej rundzie potrzebna byłaby kolejna próba, nie wolno
 dispatchować Operatora: zgłoś `LIMIT-5-EXCEEDED`, podaj
@@ -184,6 +192,80 @@ Kończy proces wyłącznie wtedy, gdy uwagi są kosmetyczne **i zostały zapisan
 osobny temat w rejestrze** — nie zostawione w raporcie jako wolna uwaga, której
 nikt później nie znajdzie. Final Control ma to sprawdzić jawnie (§16).
 
+### 3c. Zarzuty, obrona, werdykt per zarzut (sędzia) — obowiązuje od 2026-08-29
+
+Zmienia się **forma** wyniku Evaluatora i sposób, w jaki Final Control orzeka — nie
+zakres tego, co Evaluator sprawdza (nadal te same 10 punktów §16a). Cel: jeden
+nieodparcie brzmiący głos Evaluatora nie staje się automatycznie werdyktem — rozstrzyga
+strona trzecia, która widziała też obronę.
+
+**1. Evaluator wydaje ponumerowane zarzuty, nie jeden werdykt.** Każde niespełnienie
+punktu z §16a to osobny zarzut: numer, dokładne miejsce (plik + linia/funkcja/pozycja
+allowlisty), co dokładnie nie zgadza się z którym punktem, i dlaczego ma znaczenie dla
+`GOAL` albo granic §9. Zarzut bez wskazanego miejsca w wytworze jest niekompletny — Evaluator
+go uzupełnia, zanim pójdzie do obrony. Lista **pusta** (po realnym sprawdzeniu wszystkich
+10 punktów, nie po pobieżnym spojrzeniu) idzie od razu do Final Control jak w §3.
+
+**2. Obrona — ten sam Operator, drugie wywołanie.** Nie jest to nowa rola do osobnego
+kalibrowania modelu — Operator odpowiada na **każdy** zarzut z osobna:
+
+- **PRZYJMUJĘ** — zarzut trafny, wraca do poprawy w tej samej rundzie — albo
+- **ODRZUCAM** — zarzut nietrafny —
+
+w obu przypadkach z **dowodem z wytworu**: cytat, numer linii, fragment pliku, wynik
+bramki/testu. Odpowiedź bez dowodu jest nieważna — samo „to działa poprawnie" albo „to
+było zamierzone" nie jest obroną, Final Control traktuje to jak brak odpowiedzi.
+**Brak odpowiedzi na zarzut liczy się jak PRZYJMUJĘ.** Gdy zarzut zależy wyłącznie od
+intencji, której wytwór sam nie rozstrzyga (świadoma decyzja projektowa, o której
+Evaluator nie wiedział) — obrona wskazuje to wprost i zostawia rozstrzygnięcie jako
+kandydata do `DO DECYZJI CZŁOWIEKA`, zamiast na siłę dowodzić z materiału, którego tam nie ma.
+
+**3. Final Control orzeka per zarzut, neutralnie.** Dostaje listę zarzutów i odpowiedzi
+obrony **ponumerowane, bez etykiet wskazujących która rola co napisała** — orzeka na
+podstawie treści i dowodu, nie autorytetu strony (wystarczy nie podpisywać materiału
+„wg Evaluatora"/„wg Operatora" w tym, co dostaje do ręki). Punktem odniesienia jest zawsze
+**wytwór w worktree, sprawdzony bezpośrednio** — nie same raporty, które są deklaracją.
+Dla **każdego** zarzutu jeden werdykt:
+
+- **NAPRAW** — zarzut trafny, obrona nie obaliła go dowodem z wytworu; Final Control
+  wskazuje dokładnie co i gdzie poprawić — temat wraca do Operatora jak przy `FAIL` (§3);
+- **ODDAL** — obrona obaliła zarzut dowodem z wytworu; zarzut zamknięty, nie wraca;
+- **DO DECYZJI CZŁOWIEKA** — rozstrzygnięcie zależy od intencji, priorytetu albo czegoś,
+  czego wytwór sam nie rozstrzyga — nie od tego, czy Final Control się „zgadza", tylko
+  czy istnieje dowód rozstrzygający w którąkolwiek stronę. Brak takiego dowodu = domyślnie
+  ten werdykt, nie zgadywanie na wyczucie.
+
+**Agregacja ustala `STATUS` raportu Final Control:** choć jeden `NAPRAW` → `FAIL` (wraca
+do Operatora, zużywa rundę); brak `NAPRAW`, choć jeden `DO DECYZJI CZŁOWIEKA` →
+`DECISION_REQUIRED` (temat **nie** wraca do Operatora — do właściciela idą wyłącznie te
+pozycje, reszta tematu stoi gotowa do integracji po jego odpowiedzi); same `ODDAL` → `PASS`.
+
+**4. Ślad dla właściciela — jedna tabela, nie trzy dokumenty.** Gdy Evaluator zwrócił
+choć jeden zarzut, orkiestrator składa zarzuty+obronę+werdykt w jedną tabelę zamiast
+trzech osobnych raportów do samodzielnego zestawienia:
+
+```text
+| # | Zarzut (Evaluator) | Obrona (Operator) | Werdykt (Final Control) | Status |
+|---|---|---|---|---|
+| 1 | <miejsce + treść>  | PRZYJMUJĘ/ODRZUCAM + dowód | NAPRAW/ODDAL/DO DECYZJI CZŁOWIEKA | naprawiono / oddalono / czeka na Ciebie |
+```
+
+Pod tabelą rozwinięte **wyłącznie** pozycje `DO DECYZJI CZŁOWIEKA` — jedyne, które
+naprawdę wymagają właściciela; `NAPRAW` już wróciło do Operatora i zostało poprawione
+albo temat nadal trwa, `ODDAL` jest zamknięte. Numeracja zarzutów jest **stała przez
+wszystkie rundy tego samego tematu** — nowy zarzut w kolejnej rundzie dostaje kolejny
+numer, nie nadpisuje poprzedniego.
+
+**5. Przy temacie dzielonym na węzły (§12)** — zarzut przypisany jest zawsze do
+**dokładnie jednego** węzła; węzły bez zarzutów nie wracają razem z wadliwym. Final
+Control nadal ustala, który węzeł był najsłabszy (§16b pkt 7), teraz na podstawie tego,
+który dostał choć jeden `NAPRAW` albo wymagał najwięcej rund.
+
+**6. Nie dotyczy retroaktywnie.** Rundy zamknięte przed 2026-08-29 pod starym modelem
+(Evaluator → jeden werdykt wprost, bez formalnej Obrony) pozostają ważne — nie wymaga
+się ich powtórki. Model z tego paragrafu obowiązuje dla każdego **nowego** dispatchu
+Evaluatora od tej daty, także w temacie już otwartym wcześniej.
+
 ## 4. Rejestry i artefakty
 
 - `dyspozycje/REJESTR-PROSB-I-ZADAN.md` — jeden aktualny status tematu;
@@ -212,7 +294,10 @@ DEPLOY/PUSH: WYKONANO albo NIE WYKONANO
 
 `DECISION_REQUIRED` sygnalizuje konflikt dispatch/kod/testy dla tego samego ID — patrz
 playbook C-054. Nie zwiększa licznika rund, wstrzymuje Evaluatora i Final Control do decyzji
-właściciela (i turnieju C-018, jeśli dotyczy gameplay/UX). `INTEGRATION_PENDING` sygnalizuje
+właściciela (i turnieju C-018, jeśli dotyczy gameplay/UX). Od 2026-08-29 `DECISION_REQUIRED`
+powstaje też jako agregat werdyktów Final Control per zarzut, gdy choć jeden jest
+`DO DECYZJI CZŁOWIEKA` bez żadnego `NAPRAW` (§3c) — do właściciela idą wyłącznie te
+konkretne pozycje, w tabeli §3c pkt 4, nie cały temat. `INTEGRATION_PENDING` sygnalizuje
 kod gotowy, którego nie da się jeszcze bezpiecznie zintegrować (współdzielony plik) — patrz
 playbook C-059; nie jest to `BLOCK`.
 
@@ -655,6 +740,12 @@ tego projektu** (`playbook.md`), nie z teorii. Pełny szablon promptu i tabela
 
 ### 16a. Evaluator
 
+**Format wyniku od 2026-08-29 (§3c): ponumerowane zarzuty, nie jeden werdykt.**
+Każde niespełnienie punktu niżej = osobny zarzut z numerem, dokładnym miejscem
+(plik+linia) i wskazaniem, który punkt narusza. Lista może być pusta (idzie
+od razu do Final Control) albo niepusta (idzie do Obrony Operatora, §3c pkt 2).
+Sama lista dziesięciu punktów kontroli — bez zmian:
+
 1. Czy diff mieści się w allowliście — co do pliku;
 2. Czy nie narusza żadnej granicy z §9;
 3. Czy bramki i testy tematu **faktycznie** przechodzą — nie czy raport tak
@@ -678,16 +769,31 @@ tego projektu** (`playbook.md`), nie z teorii. Pełny szablon promptu i tabela
 
 ### 16b. Final Control
 
+**Sędzia (§3c) — dostaje zarzuty Evaluatora i odpowiedzi Obrony Operatora
+ponumerowane, bez etykiet wskazujących która rola co napisała.** Dla każdego
+zarzutu z osobna wydaje jeden werdykt: `NAPRAW` / `ODDAL` / `DO DECYZJI CZŁOWIEKA`
+(pełne kryteria każdego werdyktu — §3c pkt 3). Gdy lista zarzutów była pusta
+(Evaluator nie znalazł nic), poniższa checklista nadal obowiązuje w całości —
+zmienia się tylko obecność rundy zarzut/obrona do przejrzenia w pkt 3 niżej:
+
 1. Czy istnieje `00-dispatch.md` i czy `GOAL` nie zmienił się po drodze;
 2. Czy ID jest to samo we wszystkich rundach;
-3. Czy werdykt Evaluatora opiera się na artefaktach, nie na deklaracjach;
-4. Czy `PASS-WITH-NOTES` nie ukrywa uwagi dotyczącej GOAL, dowodu, zakresu,
+3. Czy **każdy** zarzut Evaluatora ma odpowiedź Obrony i werdykt — zarzut bez
+   jednego z dwóch nie jest zamknięty, niezależnie od tego, jak wypadła reszta;
+   przy pustej liście zarzutów — czy Evaluator faktycznie sprawdził wszystkie
+   10 punktów §16a, nie tylko zadeklarował brak zastrzeżeń;
+4. Czy `PASS-WITH-NOTES`/`ODDAL` nie ukrywa uwagi dotyczącej GOAL, dowodu, zakresu,
    granic §9 ani gotowości do integracji (§3b) — a jeśli uwagi są kosmetyczne,
    czy zostały **zapisane jako osobny temat**, nie zostawione w raporcie;
-5. Czy licznik rund się zgadza i **nie został po cichu zresetowany** (§3a);
+5. Czy licznik rund się zgadza i **nie został po cichu zresetowany** (§3a) —
+   runda Obrony NIE jest osobną rundą, tylko częścią tej samej rundy Operator→Evaluator;
 6. Czy `REJESTR-PROSB-I-ZADAN.md` odzwierciedla stan faktyczny;
-7. Przy temacie dzielonym na węzły — który węzeł był najsłabszy (§12);
-8. Werdykt: „gotowość do integracji: TAK/NIE".
+7. Przy temacie dzielonym na węzły — który węzeł był najsłabszy: dostał choć
+   jeden `NAPRAW` albo wymagał najwięcej rund (§12, §3c pkt 5);
+8. Agregat: choć jeden `NAPRAW` → `FAIL`; brak `NAPRAW`, choć jeden
+   `DO DECYZJI CZŁOWIEKA` → `DECISION_REQUIRED`; same `ODDAL` → `PASS`. To
+   zastępuje dawne pojedyncze „gotowość do integracji: TAK/NIE" — werdykt
+   agregatu JEST odpowiedzią na to pytanie.
 
 Final Control pracuje **na wytworze w worktree, sprawdzonym bezpośrednio** — nie
 na samych raportach Operatora i Evaluatora, które są deklaracją, nie dowodem.

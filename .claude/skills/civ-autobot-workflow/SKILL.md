@@ -48,6 +48,14 @@ incydentu, który to ujawnił: `playbook.md` C-061.
 - Nie resetuje ani nie prowadzi samodzielnie licznika rund (C-050) ani ledgeru
   dispatchu (C-051) — to prowadzi orkiestrator, poza samym skryptem.
 
+**Od 2026-08-29 (`R-PROC-AUTOBOT.md` §3c) skrypt ma TRZY fazy, nie dwie, gdy
+Evaluator zwróci zarzuty:** Operator → Evaluator (zarzuty, lista może być pusta)
+→ Operator, ta sama rola, drugie wywołanie `agent()` (Obrona — TYLKO gdy lista
+niepusta) → koniec skryptu, Final Control nadal osobnym wywołaniem Workflow poza
+tym skryptem, jak dotąd. Obrona NIE zwiększa licznika rund — jest częścią tej
+samej rundy Operator→Evaluator. Gdy lista zarzutów jest pusta, skrypt kończy się
+po dwóch fazach jak w wersji sprzed 2026-08-29.
+
 ## 3. Szkielet skryptu — PRZYBLIŻONY, wymaga potwierdzenia w realnym środowisku
 
 **Zastrzeżenie:** dokładna składnia narzędzia Workflow (nazwa modułu do importu,
@@ -249,7 +257,7 @@ docs/decyzje/R-PROC-AUTOBOT.md, playbook.md,
 dyspozycje/_handoff/HANDOFF-AKTUALNY.md, dyspozycje/autobot/runs/<ID>/00-dispatch.md
 Civ „The Game" to gra 4X. Ten temat dotyczy <GAME | PROCESS | INFRA | INFORMATIONAL>.
 
-TWOJA ROLA: Operator | Evaluator | Final Control
+TWOJA ROLA: Operator | Evaluator | Operator (obrona) | Final Control
 TEMAT:      <PEŁNE ID>[-<litera węzła>]
 RUNDA:      <n>/5
 MODEL+EFFORT: <model>, effort <medium|high>   ← zapisz też w raporcie (C-052)
@@ -307,7 +315,46 @@ OGRANICZENIA WYJŚCIA
 FORMAT ODPOWIEDZI
 STATUS / DOMAIN / TEMAT / GOAL / ZMIANY-COMMIT / TESTY / BLOKADY / RUNDY / NASTĘPNY KROK
 DEPLOY/PUSH: NIE WYKONANO
+
+<gdy ROLA = Evaluator — dopisz PRZED „FORMAT ODPOWIEDZI" powyżej>
+Nie wydajesz jednego werdyktu PASS/FAIL. Wypisz KAŻDE niespełnienie punktu z
+checklisty (R-PROC-AUTOBOT.md §16a) jako osobny, PONUMEROWANY zarzut: numer,
+dokładne miejsce (plik+linia/funkcja/pozycja allowlisty), co narusza i dlaczego
+ma znaczenie dla GOAL albo granic §9. Lista może być PUSTA (po realnym
+sprawdzeniu wszystkich 10 punktów — nie zadeklarowaniu braku zastrzeżeń).
+Nie wydajesz werdyktu — to robi Final Control, po obronie (§3c).
+Pole FORMAT ODPOWIEDZI dostaje dodatkowo: ZARZUTY: <lista ponumerowana albo „brak">
+
+<gdy ROLA = Operator (obrona) — druga runda tego samego Operatora, NIE nowa
+kalibracja modelu/effort>
+Dostajesz pełną listę zarzutów Evaluatora. Odpowiedz na KAŻDY z osobna:
+PRZYJMUJĘ (trafny, poprawiam w tej samej rundzie) albo ODRZUCAM (nietrafny) —
+zawsze z DOWODEM z wytworu (cytat, linia, wynik bramki/testu). Zapewnienie
+„to działa poprawnie"/„to było zamierzone" bez dowodu NIE jest obroną — Final
+Control potraktuje to jak brak odpowiedzi. Brak odpowiedzi na zarzut liczy się
+jak PRZYJMUJĘ. Gdy zarzut zależy wyłącznie od intencji, której wytwór sam nie
+rozstrzyga — wskaż to wprost jako kandydata do DO DECYZJI CZŁOWIEKA, zamiast
+na siłę dowodzić z materiału, którego tam nie ma.
+Pole FORMAT ODPOWIEDZI dostaje dodatkowo: OBRONA: <numer zarzutu> →
+PRZYJMUJĘ/ODRZUCAM + dowód, dla każdej pozycji z listy Evaluatora.
+
+<gdy ROLA = Final Control>
+Dostajesz zarzuty i odpowiedzi obrony PONUMEROWANE i BEZ ETYKIET wskazujących
+która rola co napisała (orkiestrator ma obowiązek usunąć nagłówki
+„wg Evaluatora"/„wg Operatora" przy składaniu tego promptu — zostaw samą
+numerację). Orzekaj na podstawie treści i dowodu z wytworu w worktree, nie
+autorytetu strony. Dla KAŻDEGO zarzutu jeden werdykt: NAPRAW (trafny, obrona
+nie obaliła dowodem — wskaż co i gdzie poprawić) / ODDAL (obrona obaliła
+dowodem) / DO DECYZJI CZŁOWIEKA (zależy od intencji, której wytwór sam nie
+rozstrzyga — brak dowodu w którąkolwiek stronę = domyślnie ten werdykt).
+Agregat: choć jeden NAPRAW → FAIL; brak NAPRAW, choć jeden DO DECYZJI
+CZŁOWIEKA → DECISION_REQUIRED; same ODDAL → PASS.
+Pole FORMAT ODPOWIEDZI dostaje dodatkowo: WERDYKTY: <numer zarzutu> →
+NAPRAW/ODDAL/DO DECYZJI CZŁOWIEKA, dla każdej pozycji.
 ```
+
+Pełny opis mechanizmu (kiedy runda Obrony w ogóle się uruchamia, jak liczy się
+do limitu 5 rund, format tabeli śladu dla właściciela): `R-PROC-AUTOBOT.md` §3c.
 
 ### 6a. Czego w prompcie nie może zabraknąć
 
