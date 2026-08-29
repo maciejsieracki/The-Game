@@ -1248,11 +1248,13 @@ function renderPracaSection(
     + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>'
     + '</div>';
   if (autoUlepszeniaKoszt > 0) {
-    h += '<div class="civ-emp-two">'
-      + `<div class="civ-emp-box"><div class="k">AUTO-ULEPSZENIA (AI)</div>`
+    // OBRONA runda 2 (zarzut #1): pojedynczy box jako JEDYNE dziecko `.civ-emp-two`
+    // (grid 1fr 1fr) renderował się na połowie szerokości z pustą drugą kolumną —
+    // ten box nie ma pary, więc renderuje się jako pełnoszerokościowy `.civ-emp-box`
+    // bez kontenera grid (margin-top:12px zachowany 1:1 z `.civ-emp-two`).
+    h += `<div class="civ-emp-box" style="margin-top:12px"><div class="k">AUTO-ULEPSZENIA (AI)</div>`
       + `<div class="v" style="color:#e07a7a">−${autoUlepszeniaKoszt} `
-      + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>'
-      + '</div>';
+      + '<span style="font-size:11px;color:#7d8798;font-weight:600">z puli</span></div></div>';
   }
 
   const grid = '1fr 1fr 1fr';
