@@ -30,7 +30,7 @@
       "Wymaga (prereq)": "—",
       "Odblokowuje surowiec.": "cegła, glina, sol",
       "Odblokowuje budynek": "Spichlerz; Garncarnia; Cegielnia",
-      "Koszt nauki": 20,
+      "Koszt nauki": 40,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Glinianka, Warzelnia soli"
     },
@@ -43,7 +43,7 @@
       "Wymaga (prereq)": "—",
       "Odblokowuje surowiec.": "kamien, ruda",
       "Odblokowuje budynek": "Warsztat kamieniarski; Stela / Pomnik",
-      "Koszt nauki": 28,
+      "Koszt nauki": 56,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Kamieniołom, Posterunek (Strażnica)"
     },
@@ -82,7 +82,7 @@
       "Wymaga (prereq)": "Łowiectwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Jednostki: Łucznik, Łucznik egipski, Łucznik sumeryjski, Łucznik akadyjski",
-      "Koszt nauki": 28,
+      "Koszt nauki": 56,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -108,7 +108,7 @@
       "Wymaga (prereq)": "—",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Kamienne kręgi",
-      "Koszt nauki": 20,
+      "Koszt nauki": 40,
       "Uwagi": "T-TECH-8: pierwszy poziom kultu — upgrade do Świątyni po Religii",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -121,7 +121,7 @@
       "Wymaga (prereq)": "Garncarstwo + Rolnictwo + Oswojenie zwierząt",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Targowisko (Rynek)",
-      "Koszt nauki": 32,
+      "Koszt nauki": 64,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -134,7 +134,7 @@
       "Wymaga (prereq)": "Rolnictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Studnia",
-      "Koszt nauki": 36,
+      "Koszt nauki": 72,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Irygacja"
     },
@@ -147,7 +147,7 @@
       "Wymaga (prereq)": "Oswojenie zwierząt",
       "Odblokowuje surowiec.": "krowa/byk",
       "Odblokowuje budynek": "Jednostki: Rydwan (woły)",
-      "Koszt nauki": 44,
+      "Koszt nauki": 88,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Droga"
     },
@@ -160,7 +160,7 @@
       "Wymaga (prereq)": "Garncarstwo + Murarstwo + Obróbka drewna",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Odlewnia brązu; Kuźnia brązu; Jednostki: Włócznik, Wojownik z mieczem i tarczą, Impi, Wojownik z toporem, Wojownik z khopesh, Włócznik sumeryjski, Wojownik mykeński, Wojownik Sherden, Halabardnik Shang, Wieża oblężnicza, Wojownik tyrreński, Wojownik szekelesz",
-      "Koszt nauki": 90,
+      "Koszt nauki": 180,
       "Uwagi": "kończy Epokę 1; ABC-7: Popalnia brązu na mapie",
       "Odblokowuje ulepszenie terenu": null,
       "awansDoEpoki": 2
@@ -174,7 +174,7 @@
       "Wymaga (prereq)": "Obróbka drewna",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Port handlowy; Jednostki: Galera",
-      "Koszt nauki": 80,
+      "Koszt nauki": 160,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Łodzie rybackie",
       "wymagane ulepszenie": "Tartak"
@@ -188,7 +188,7 @@
       "Wymaga (prereq)": "Garncarstwo + Wymiana",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Biblioteka",
-      "Koszt nauki": 90,
+      "Koszt nauki": 180,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -201,7 +201,7 @@
       "Wymaga (prereq)": "Garncarstwo + Mistycyzm",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Świątynia (upgrade kręgów)",
-      "Koszt nauki": 96,
+      "Koszt nauki": 192,
       "Uwagi": "T-TECH-8: upgrade kamienne_kregi → swiatynia (suma bonusów w JSON)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -214,7 +214,7 @@
       "Wymaga (prereq)": "Koło + Brązownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Jednostki: Konnica, Jeździec chiński, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan mykeński, Rydwan Shang",
-      "Koszt nauki": 112,
+      "Koszt nauki": 224,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -227,7 +227,7 @@
       "Wymaga (prereq)": "Brązownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Koszary",
-      "Koszt nauki": 104,
+      "Koszt nauki": 208,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Fort"
     },
@@ -240,7 +240,7 @@
       "Wymaga (prereq)": "Pismo + Wymiana",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
-      "Koszt nauki": 136,
+      "Koszt nauki": 272,
       "Uwagi": "Maciej 2026-06-30: usunięto luksus/plantację z gry",
       "Odblokowuje ulepszenie terenu": "—"
     },
@@ -253,7 +253,7 @@
       "Wymaga (prereq)": "Pismo + Żegluga",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Magazyn",
-      "Koszt nauki": 148,
+      "Koszt nauki": 296,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -266,7 +266,7 @@
       "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Trybunał; Dwór Zarządcy",
-      "Koszt nauki": 124,
+      "Koszt nauki": 248,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": null
     },
@@ -279,7 +279,7 @@
       "Wymaga (prereq)": "Matematyka + Murarstwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Mury; Akwedukt",
-      "Koszt nauki": 170,
+      "Koszt nauki": 340,
       "Uwagi": "T-TECH-6: Akwedukt v1.0",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -292,7 +292,7 @@
       "Wymaga (prereq)": "Handel + Matematyka",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Mennica",
-      "Koszt nauki": 200,
+      "Koszt nauki": 400,
       "Uwagi": "kończy Epokę 2 (Pieniądz); T-TECH-6: Mennica v1.0; ZLOTO 2026-07-25: Mennica dodatkowo wymaga dostępu do Złota (Kopalnia złota) + Targowiska w mieście",
       "Odblokowuje ulepszenie terenu": "Kopalnia złota"
     },
@@ -305,7 +305,7 @@
       "Wymaga (prereq)": "Matematyka + Religia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Biblioteka: poziom Obserwatorium+ (poz. 6)",
-      "Koszt nauki": 220,
+      "Koszt nauki": 440,
       "Uwagi": "3a: Astronomia = bramka rozwoju Biblioteki do poziomu 6 (Obserwatorium) i wyzej; nie osobny budynek. prereq Matematyka+Mistycyzm",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -318,7 +318,7 @@
       "Wymaga (prereq)": "Brązownictwo",
       "Odblokowuje surowiec.": "żelazo",
       "Odblokowuje budynek": "Odlewnia żelaza; Kuźnia żelaza; Jednostki: Hastati, Falanga, Drużynnik, Garnizon Harappy, Gwardia hetycka, Piechota neobabilońska, Tyrski miecznik, Gwardia Tyreńska, Thorakites, iButho z iklwa, Wojownik z żelaznym khopesh, Mur tarcz (Sargonid), Miecznik galijski, Rydwan celtycki, Konnica lancowa asyryjska, Konnica łucznicza asyryjska, Jeździec z oszczepami",
-      "Koszt nauki": 240,
+      "Koszt nauki": 480,
       "Uwagi": "kończy Epokę 2 / otwiera Epokę 3; Odlewnia żelaza = upgrade Odlewni brązu (brąz+żelazo); Kuźnia żelaza = łańcuch pancerza (osobny slot)",
       "Odblokowuje ulepszenie terenu": null,
       "awansDoEpoki": 3
@@ -332,7 +332,7 @@
       "Wymaga (prereq)": "Budownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Fort; Cytadela; Baszta",
-      "Koszt nauki": 260,
+      "Koszt nauki": 520,
       "Uwagi": "Fort = NOWY budynek (obrona terenu, zasięg 10, +100% obrona przy obozowaniu — zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniejącego Akweduktu. Baszta (decyzja 41B, 2026-07-25) -- trzeci budynek obronny miasta, obok Cytadeli, ta sama technologia.",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -345,7 +345,7 @@
       "Wymaga (prereq)": "Matematyka + Wojskowość",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Warsztat oblężniczy; Jednostki: Katapulta",
-      "Koszt nauki": 280,
+      "Koszt nauki": 560,
       "Uwagi": "jednostki: Katapulta, Taran, Wieża oblężnicza (część już w UNITS — weryfikacja przez UNITS); Warsztat oblężniczy = NOWY budynek dla EKONOMIA; Katapulta wymaga tego tech (aktualizacja Tech w units.json przez UNITS)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -358,7 +358,7 @@
       "Wymaga (prereq)": "Pismo + Religia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Akademia; Teatr",
-      "Koszt nauki": 300,
+      "Koszt nauki": 600,
       "Uwagi": "Akademia = NOWY budynek (nauka++); Teatr = NOWY budynek (kultura++, zadowolenie++); oba dla EKONOMIA",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -371,7 +371,7 @@
       "Wymaga (prereq)": "Kodeks + Filozofia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Sąd; Pretorium",
-      "Koszt nauki": 310,
+      "Koszt nauki": 620,
       "Uwagi": "Sąd = NOWY budynek (administracja, zadowolenie+, korupcja-); Pretorium = NOWY budynek (administracja, bonus do utrzymania porządku); oba dla EKONOMIA",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -384,7 +384,7 @@
       "Wymaga (prereq)": "Inżynieria + Budownictwo",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": null,
-      "Koszt nauki": 340,
+      "Koszt nauki": 680,
       "Uwagi": "T-TECH-9: ulepszenie Droga brukowana (+2 ruch, upgrade z Drogi)",
       "Odblokowuje ulepszenie terenu": "Droga brukowana"
     },
@@ -397,7 +397,7 @@
       "Wymaga (prereq)": "Filozofia",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Łaźnia publiczna; Lazaret",
-      "Koszt nauki": 324,
+      "Koszt nauki": 648,
       "Uwagi": "Łaźnia publiczna = NOWY budynek (zadowolenie++, zdrowie++); Lazaret = NOWY budynek (odnawianie HP jednostek w mieście); oba dla EKONOMIA; styk z UNITS (regeneracja)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -410,7 +410,7 @@
       "Wymaga (prereq)": "Hutnictwo żelaza + Drogi brukowane",
       "Odblokowuje surowiec.": "stal (prereq)",
       "Odblokowuje budynek": "Wielka odlewnia; Wielka Kuźnia; Jednostki: Gaesatae, Soldurii, Wojownik germański, Berserker germański",
-      "Koszt nauki": 370,
+      "Koszt nauki": 740,
       "Uwagi": "Wielka odlewnia = produkcja stal+metale (brąz+żelazo+stal); Wielka Kuźnia = tylko pancerz +45% łańcuch kuźni; stal = NOWY surowiec dla DANE (prereq dalszych epok)",
       "Odblokowuje ulepszenie terenu": null
     },
@@ -423,7 +423,7 @@
       "Wymaga (prereq)": "Oblężnictwo + Obróbka żelaza",
       "Odblokowuje surowiec.": null,
       "Odblokowuje budynek": "Akademia wojskowa",
-      "Koszt nauki": 400,
+      "Koszt nauki": 800,
       "Uwagi": "kończy Epokę 3 (cap v0.1); Akademia wojskowa = NOWY budynek (mnoznik sily i exp jednostek ++, prereq elitarnych jednostek żelaznych); UNITS definiuje jednostki top-tier Żelaza; EKONOMIA dodaje budynek",
       "Odblokowuje ulepszenie terenu": null
     }
