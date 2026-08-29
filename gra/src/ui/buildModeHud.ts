@@ -692,13 +692,20 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
         + ' title="' + (locked && hint ? hint : t.label) + '">'
         + '<span class="ic">' + ic + '</span>'
         + '<span>' + t.label + '</span>'
+        // Etykieta kosztu: SAM koszt („40 P" / „FREE"), bez prefiksu ery „E{epoka} · "
+        // (P-ULEPSZENIA-INFO-IKONA-POZYCJA-ETYKIETA-KOSZTU-Q1). Gałąź `locked` (ikonka
+        // technologii + lockHint) bez zmian. `.meta` ma `margin-left:auto` — to ona spycha
+        // resztę wiersza na prawą krawędź.
+        + '<span class="meta">' + (locked && hint ? (hintTechIcWrap + hint) : (costLabel + techHint)) + '</span>'
         // Osobna, zawsze widoczna ikonka info — niezależna strefa klikalna od wyboru typu
         // budowy (T7b KARTA-ULEPSZENIA-TERENU): klik reszty wiersza (wybór typu) bez zmian,
         // klik TEJ ikonki otwiera kartę encji ulepszenia, z własnym stopPropagation (wzorem
         // `.ttv-info-ic` w techTreeView.ts, R-FEATURE-KARTY-ENCYKLOPEDIA-CIVPEDIA-Q1 faza 1).
+        // POZYCJA: na SAMYM KOŃCU wiersza, za etykietą kosztu — zgłoszenie właściciela
+        // (P-ULEPSZENIA-INFO-IKONA-POZYCJA-ETYKIETA-KOSZTU-Q1): tuż po nazwie ikonka leżała
+        // w zasięgu naturalnego kliku w nazwę ulepszenia i łapała przypadkowe trafienia.
         + '<span class="civ-build-info-ic" role="button" tabindex="0" title="Podgląd karty ulepszenia"'
-        + ' aria-label="Podgląd karty: ' + t.label + '">ⓘ</span>'
-        + '<span class="meta">' + (locked && hint ? (hintTechIcWrap + hint) : ('E' + t.epoka + ' · ' + costLabel + techHint)) + '</span></div>';
+        + ' aria-label="Podgląd karty: ' + t.label + '">ⓘ</span></div>';
     }
 
     el.innerHTML = html;
