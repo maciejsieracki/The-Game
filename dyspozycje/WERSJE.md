@@ -13,6 +13,19 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA c21f811f - 2026-08-30 18:39 UTC - FALA 326: 9 nowych utworów muzycznych epoki Kamień (16→25)
+
+|- md5 (pełne): c21f811f7b5967a7f04239c6d617e227 · stempel: ROBOCZA · label c21f811f · źródłowy commit integracji: `14a16157`
+|- `R-MUZYKA-KAMIEN-9-NOWYCH-UTWOROW-Q1` (`gra/src/audio/utwory/kamien/*.mp3`) — 9 nowych plików mp3 dostarczonych przez właściciela w dwóch rzutach (zapowiedziane jako 8, faktycznie 9 — potwierdzone unikalne md5, brak duplikatów): Beneath_the_High_Ridge, Bone_and_Branch, Embers_at_Nightfall, First_Light_in_the_Basin, First_Light_of_the_Valley, Mist_on_the_Water, Mud_and_Bone, Ochre_and_Ash, Valley_Awakening. Playlista kamienia rośnie 16→25 utworów.
+|- **Zero zmian w kodzie.** Katalog `kamien/` czytany automatycznie przez `import.meta.glob` w `filePlayer.ts` — `KAMIEN_URLS` przelicza się z 16→25 wpisów przy buildzie, `kamienPlaylist = createPlaylist(KAMIEN_URLS, 3)` obejmuje nowe pliki tą samą, niezmienioną regułą: shuffle + każdy utwór 3× pod rząd, zabezpieczenie przed sklejeniem tego samego utworu na styku dwóch tasowań, crossfade equal-power 1,5 s. Reguła i mechanizm zweryfikowane reconem PRZED dołożeniem plików — zgodne z ustaleniami właściciela z `374c1067` (2026-07-20).
+|- 16 istniejących utworów w `kamien/` (z 20.07.2026) potwierdzone jako już zaimplementowane PRZED tym tematem — porównanie nazw plików z historią generowania właściciela 1:1 zgodne, brak duplikatów względem nowych 9.
+|- `tsc --noEmit`: 0 błędów. Pięć bramek referencyjnych zielone bez pogorszenia (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) — sanity check, temat nie dotyka logiki.
+|- Bundle: 849→858 modułów, `Gra-ROBOCZA.html` 37,4→46,3 MB (+~8,9 MB, zgodne z przewidywaniem reconu ~+7-9 MB dla 9 plików mp3 po base64). `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — scena oblężenia nie odwołuje się do `filePlayer.ts`/`muzyka-antyczna.ts`, więc plik z FALI 325 pozostaje aktualny bez zmian.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK. `stamp match: WARN` oczekiwany (jak w poprzednich falach — osadzony hash z definicji nie może równać się md5 pliku PO osadzeniu).
+|- **Odstępstwo techniczne (jak w FALACH 324/325):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 17888226 - 2026-08-30 07:07 UTC - FALA 325: sześć tematów po FALI 324 — koszt badań +100% (poza pierwszymi czterema), podział przychodu handlu ÷5, unifikacja bilansu dyplomacji (własna+incoming+kontroferty), rozbicie „Pula Pracy" o koszt auto-ulepszeń AI, pozycja ikonki info w panelu ulepszeń terenu
 
 |- md5 (pełne): 17888226e5b303c89eb8f80d6149e277 · stempel: ROBOCZA · label 17888226 · źródłowy commit integracji: `39a3b31e`
@@ -26,7 +39,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + `Gra-ROBOCZA-POLE-BITWY.html` (świeży build z `vite.oblezenie-bitwa.config.ts`) + manifest. `VERIFY OK`, manifest match OK. Zero playtest bundli generowanych w tej publikacji (nie żądano).
 |- **Odstępstwo techniczne (jak w FALI 324):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku; `publish-robocza-snapshot.ps1` i `inject-build-stamp.ps1` odwzorowane krok po kroku przez `gra/tools/inject-build-stamp.cjs`. `stamp match: WARN` w `verify-robocza-bundle.cjs` jest oczekiwany z tego samego powodu co w FALI 324 (osadzony hash z definicji nie może równać się md5 pliku PO osadzeniu) — wiążący jest md5 pliku = manifest = label.
 |- Szczegóły: `dyspozycje/autobot/runs/<ID>/` dla każdego tematu. Rejestr pełny w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ c21f811f, FALA 326)
 
 ## ROBOCZA e4e69366 - 2026-08-28 04:56 UTC - FALA 324: czternaście tematów po FALI 323 — reguły ulepszeń w lesie (farma / obóz / hodowla), wojna wymuszona Żelaza, flaga miasta-państwa, AI heks-po-heksie, rekrutacja, panel budowy, wydarzenia, sprzątanie repo (−592 MB)
 |- md5 (pełne): e4e69366930995d24816449452a4592e · stempel: ROBOCZA · label e4e69366 · źródłowy commit integracji: `60dc58d6`
