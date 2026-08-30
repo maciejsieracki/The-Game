@@ -157,9 +157,9 @@ try {
     'pusta pula kandydatów → null',
   );
 
-  console.log('--- miasta-państwa i gracz nigdy nie są CELEM (pula już odfiltrowana w main.ts) ---');
-  // main.ts buduje pulę z aiOwnerList z filtrem `oid > 0 && !isOwnerClusterCityState(oid)`;
-  // tu pinujemy kontrakt czystej funkcji: nie dokłada NICZEGO spoza podanej puli.
+  console.log('--- czysta funkcja pickera nie dokłada celów spoza podanej puli (filtr puli żyje w main.ts) ---');
+  // main.ts buduje pulę z `oid >= 0` (gracz oid 0 JEST w puli od tej naprawy) i wyklucza
+  // wyłącznie miasta-państwa; tu pinujemy kontrakt czystej funkcji: nie dokłada NICZEGO spoza podanej puli.
   eq(
     pickIronForcedWarTargetId([{ ownerId: 6, q: 5, r: 5 }], { q: 0, r: 0 }, distance),
     6,
