@@ -13,6 +13,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA daa50734 - 2026-08-30 20:49 UTC - FALA 328: krok handlu surowców w dyplomacji 5→10 szt. (R-DYPLO-CENNIK-KROK10-Q1)
+
+|- md5 (pełne): daa507341a1614fece1cba96db35688e · stempel: ROBOCZA · label daa50734 · źródłowy commit integracji: `dd9fe018`
+|- `R-DYPLO-CENNIK-KROK10-Q1` (`gra/src/game/diplomacy-value-catalog.ts`, `gra/data/econ-params.json`) — właściciel: „zamiast pięciu sztuk, żeby było za 10 sztuk, wtedy cena wzrośnie dwukrotnie za jeden punkt wymiany". Minimalny krok/wielokrotność wymiany handlowej dla 13 surowców dotkniętych wcześniejszym ×5 rebalansem produkcji (drewno, glina, kamień, ruda, ruda_zelaza, ruda_cyny, cegła, sól, koń, ceramika, braz, żelazo, stal) podniesiony z 5 na 10 sztuk. `cena_*` w `econ-params.json` NUMERYCZNIE bez zmian (ten sam wzorzec co poprzedni rebalans krok1→5, R-DYPLO-CENNIK-SKALA-5X-Q1, 2026-08-13) — efekt: ta sama liczba PN kupuje dziś dwukrotnie więcej surowca. Złoto/Węgiel (krok=1) świadomie nietknięte — nie były częścią pierwotnego ×5 rebalansu.
+|- Jeden choke-point: `HANDEL_SUROWCE_KROK5` → `HANDEL_SUROWCE_KROK10`, `diplomacyHandelSurowiecKrok()` zwraca 10 zamiast 5 — wszyscy wywołujący (UI koszyka `diplomacyTradeBasket.ts`, generatory ofert AI `diplomacy-ai-offer-balance.ts`/`diplomacy-ai-balance.ts`, silnik PN `diplomacy-pn-engine.ts`) przechodzą przez tę jedną funkcję, zero zmian poza `diplomacy-value-catalog.ts`.
+|- **Realny efekt uboczny ujawniony przez Playwright** (`diplomacy-basket-duplicate-ui-test.cjs`, realna przeglądarka): fallback `|| krok` w chip-switch handlerze (`diplomacyTradeBasket.ts`) aktywuje się częściej niż przy kroku 5, bo `floor(7/10)=0` jest teraz falsy (dawniej `floor(7/5)=5` nie było) — scalanie wierszy koszyka po przełączeniu surowca daje dziś 50 zamiast dawnych 45 w tym samym scenariuszu. Udokumentowane w kodzie testu, nie ukryte.
+|- Jeden scenariusz testowy (kotwica domyślnej ilości `Math.min(10, maxQty)` w Szybkiej umowie, `diplomacy-pn-engine.ts`) skolidował z nowym krokiem=10 — pasmo „częściowy floor, niezerowy wynik" stało się strukturalnie niemożliwe do odtworzenia (kotwica i krok to dziś ta sama liczba). Test świadomie usunięty z jawnym wyjaśnieniem w kodzie, nie po cichu wyciszony.
+|- 9 plików testowych zaktualizowanych (7 z przeliczoną ręcznie i zweryfikowaną arytmetyką floor-do-bloku, w tym Playwright): `diplomacy-value-catalog-test.cjs` (82/82), `diplomacy-resource-values-x5-regression-test.cjs` (76/76), `diplomacy-basket-duplicate-test.cjs` (21/21), `diplomacy-basket-duplicate-ui-test.cjs` (31/31, realna przeglądarka), `diplomacy-acceptance-points-test.cjs` (254/254), `diplomacy-ai-balance-test.cjs` (31/31), `diplomacy-resource-trade-pick-test.cjs` (13/13), `diplomacy-ai-offer-balance-test.cjs` (29/29), `diplomacy-resource-cyclic-trade-test.cjs` (46/46).
+|- `tsc --noEmit`: 0 błędów. Pięć bramek referencyjnych + pełny zestaw testów dyplomacji/ekonomii (18 plików) zielone bez pogorszenia. `ekonomia-5x-inwariant-test.cjs` ma 2 PRZEDISTNIEJĄCE awarie (plony terenu Równina, niezwiązane z tym tematem) — potwierdzone `git stash` PRZED zmianami z tej fali, poza zakresem.
+|- Bundle: 881 modułów (bez zmian liczby — to zmiana logiki, nie assetów), `Gra-ROBOCZA.html` 69,0 MB (bez istotnej zmiany rozmiaru). `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — scena oblężenia nie korzysta z dyplomacji.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
+|- **Odstępstwo techniczne (jak w FALACH 324-327):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 0ff16ed4 - 2026-08-30 19:31 UTC - FALA 327: playlista plikowa epoki Brązu (23 utwory, nowa — dotąd wyłącznie synteza)
 
 |- md5 (pełne): 0ff16ed465124c15cdf08d54e5da4f74 · stempel: ROBOCZA · label 0ff16ed4 · źródłowy commit integracji: `64356b59`
@@ -26,7 +41,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK. `stamp match: WARN` oczekiwany (jak w poprzednich falach).
 |- **Odstępstwo techniczne (jak w FALACH 324-326):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ daa50734, FALA 328)
 
 ## ROBOCZA c21f811f - 2026-08-30 18:39 UTC - FALA 326: 9 nowych utworów muzycznych epoki Kamień (16→25)
 
