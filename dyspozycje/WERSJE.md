@@ -13,6 +13,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 0ff16ed4 - 2026-08-30 19:31 UTC - FALA 327: playlista plikowa epoki Brązu (23 utwory, nowa — dotąd wyłącznie synteza)
+
+|- md5 (pełne): 0ff16ed465124c15cdf08d54e5da4f74 · stempel: ROBOCZA · label 0ff16ed4 · źródłowy commit integracji: `64356b59`
+|- `R-MUZYKA-BRAZ-23-UTWORY-Q1` (`gra/src/audio/utwory/braz/*.mp3`, `gra/src/audio/filePlayer.ts`, `gra/src/audio/muzyka-antyczna.ts`) — epoka Brąz (era>=2 wewnętrznie, `Era=1|2` w `muzyka-antyczna.ts`) dostaje realną playlistę plikową zamiast wyłącznie proceduralnej syntezy (lira/kithara, aulos, dron, bęben ramowy). **To NIE był zwykły dopisek plików jak w FALI 326** — katalog `braz/` nie istniał wcześniej, mechanizm wymagał realnych zmian w kodzie. Dwie decyzje właściciela przez ABC PRZED implementacją: (1) zakres — playlista obejmuje erę 2 i wszystko co dziś gra brązem jako placeholder (era>=3 = Żelazo itd., zgodnie z `DYSPOZYCJA-MUZYKA.md`: „epoki ≥3 na razie grają brązem") — bez zmian kodu dodatkowych, bo `Era` już zwęża wszystko do wartości `1|2`; (2) reguła powtarzalności identyczna z Kamieniem (shuffle + 3× pod rząd, crossfade 1,5 s, mood bez wpływu).
+|- `filePlayer.ts`: nowy `import.meta.glob('./utwory/braz/*.mp3')` + `brazPlaylist = createPlaylist(BRAZ_URLS, 3)` — mirror bloku kamienia, zero zmian w mechanizmie samej playlisty.
+|- `muzyka-antyczna.ts`: nowa `activeFilePlaylist(era)` routuje kamień/brąz; `usesFilePlayer()` zgeneralizowana; `setEra()` dostaje nową gałąź „playlista plikowa → INNA playlista plikowa" (kamień↔brąz, oba katalogi mają utwory) — przełączenie natychmiastowe bez crossfade próbek, spójne z pozostałymi przejściami cross-mode w tej funkcji; `setMusicVolume`/`stopMusic` zaktualizowane.
+|- Nowy test `muzyka-braz-era-playlist-test.cjs` (26/26) — realna egzekucja (nie regex) wszystkich czterech gałęzi `setEra()` (plik→plik, plik→synteza fallback, synteza→plik, synteza→synteza) + routingu `activeFilePlaylist`/`usesFilePlayer`, z atrapami playlist rejestrującymi wywołania. Istniejący live Playwright test `era-change-toast-live-test.cjs` potwierdził realnie w przeglądarce, że przejście epoki Kamień→Brąz nadal działa poprawnie (sekcje A-E zielone; awarie sekcji F/G dotyczą kart technologii CivPedia, niezwiązane z tym tematem, poza zakresem — pre-existing staleness po migracji CivPedia).
+|- 23 pliki mp3 dostarczone przez właściciela jako `.rar` (`unrar` doinstalowany w tym środowisku — brakował). Jeden plik (`The_Smith's_Measure.mp3`) miał obciętą nazwę po apostrofie na skutek błędu `unrar 7.00` przy ekstrakcji (`The_Smith` bez rozszerzenia) — zweryfikowany jako poprawny mp3 (magic bytes, ID3 2.3.0) i poprawiony ręcznie na `The_Smiths_Measure.mp3` po porównaniu z listingiem archiwum (`unrar lb`). Wszystkie 23 pliki potwierdzone jako unikalne (md5, zero duplikatów).
+|- `tsc --noEmit`: 0 błędów. Pięć bramek referencyjnych zielone bez pogorszenia (213/213, 19/19, 33/33, 13/13, 6/6).
+|- Bundle: 858→881 modułów (dokładnie +23, zgodnie z liczbą nowych plików), `Gra-ROBOCZA.html` 46,3→69,0 MB (+~22,7 MB). `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — scena oblężenia nie odwołuje się do `filePlayer.ts`/`muzyka-antyczna.ts`.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK. `stamp match: WARN` oczekiwany (jak w poprzednich falach).
+|- **Odstępstwo techniczne (jak w FALACH 324-326):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA c21f811f - 2026-08-30 18:39 UTC - FALA 326: 9 nowych utworów muzycznych epoki Kamień (16→25)
 
 |- md5 (pełne): c21f811f7b5967a7f04239c6d617e227 · stempel: ROBOCZA · label c21f811f · źródłowy commit integracji: `14a16157`
@@ -24,7 +39,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK. `stamp match: WARN` oczekiwany (jak w poprzednich falach — osadzony hash z definicji nie może równać się md5 pliku PO osadzeniu).
 |- **Odstępstwo techniczne (jak w FALACH 324/325):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 0ff16ed4, FALA 327)
 
 ## ROBOCZA 17888226 - 2026-08-30 07:07 UTC - FALA 325: sześć tematów po FALI 324 — koszt badań +100% (poza pierwszymi czterema), podział przychodu handlu ÷5, unifikacja bilansu dyplomacji (własna+incoming+kontroferty), rozbicie „Pula Pracy" o koszt auto-ulepszeń AI, pozycja ikonki info w panelu ulepszeń terenu
 
