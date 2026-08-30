@@ -330,6 +330,7 @@ import {
   barbarianWarRelation,
   diplomacyLayerForOwner,
   filterDiplomacyCommandsForLayer,
+  partitionDiplomacyCommandsForPlayerFog,
   filterCityStateTributeCommands,
   filterDiplomacyCommandsForEstablishedContact,
   playerDiplomacyActionAllowed,
@@ -1096,6 +1097,7 @@ import {
   restoreIronForcedWarState,
   type IronForcedWarPairState,
 } from './game/forced-war-iron';
+import { countActiveWarsExcluding } from './game/forced-war-common';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
@@ -17138,6 +17140,22 @@ async function boot(): Promise<void> {
       return n;
     }
 
+    // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (a): WYŁĄCZNIE dla bramki wymuszonej wojny
+    // (Kamień/Brąz/Żelazo, trzy wywołania niżej) — barbarzyńcy (C-BARB-Q1) są
+    // STRUKTURALNIE zawsze 'wojna' dla każdego ownera, więc `countActiveWarsForOwner`
+    // dawał `alreadyAtWarAnyRole = true` niemal zawsze, blokując wymuszoną wojnę we
+    // wszystkich trzech epokach. `countActiveWarsForOwner` samo w sobie NIE JEST
+    // zmieniane — nadal używane w `buildAllianceWarObligationCtx` (main.ts wyżej),
+    // gdzie wojna z barbarzyńcami MA pozostać powodem odmowy sojusznika.
+    function countActiveWarsForOwnerExcludingBarbarians(ownerId: number): number {
+      return countActiveWarsExcluding(
+        ownerId,
+        allPowerOwnerIds(),
+        (a, b) => getDiploRelation(a, b).status === 'wojna',
+        isBarbarian,
+      );
+    }
+
     function peacefulArchetypeForOwner(ownerId: number): boolean {
       if (ownerId === 0) return false;
       const aiTyp = (aiOwnerCivMap.get(ownerId) ?? 'grecy') as TypCywilizacji;
@@ -20027,6 +20045,49 @@ async function boot(): Promise<void> {
       }),
       isEndTurnInProgress: () => endTurnInProgress,
       getWorldState: () => ({ citiesLen: cities.length, unitsLen: units.length, turn }),
+      // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c), kryteria końca 4+6 (dispatch: zakaz
+      // zamknięcia ich SAMYM testem jednostkowym — wymagana realna weryfikacja w
+      // headless Chromium). Wzorem `prepareOneTechFromBronze()` wyżej: inscenizuje
+      // REALNY scenariusz „AI osiąga próg Brązu, gracz jest najbliższym kandydatem,
+      // zero wojen poza barbarzyńcami" bez rozgrywania dziesiątek tur — REALNA ścieżka
+      // silnika (`decideAIDiplomacy`, `filterDiplomacyCommandsForLayer`,
+      // `pickBronzeForcedWarTargetId`, komenda `wypowiedz_wojne`) uruchamiana przez
+      // `endTurn()` (ta sama funkcja co przycisk „Zakończ turę"), NIE reimplementowana.
+      // Jedyne co jest "oszukane": (1) który AI ma pending wpis Brązu (normalnie ustawia
+      // to awans epoki), (2) że gracz jest już "odkryty" przez tę AI — normalnie ustawia
+      // to widoczność na mapie, tu wymagane, bo inaczej naprawa (b)/D3-Q2 słusznie
+      // zablokowałaby komendę DOW skierowaną NA gracza (mgła gracza nadal gate'uje
+      // komendy Z UDZIAŁEM gracza, patrz naprawa (b) — to jest ZAMIERZONE, nie obejście).
+      forceBronzeForcedWarOnPlayer: (): { attackerId: number } => {
+        const attacker = cities.find(c =>
+          c.ownerId > 0
+          && !typCityCopyOwners.has(c.ownerId)
+          && !isBarbarian(c.ownerId)
+          && !eliminatedOwners.has(c.ownerId)
+          && !isOwnerClusterCityState(c.ownerId, ownerCityStateOpts()),
+        );
+        if (!attacker) throw new Error('forceBronzeForcedWarOnPlayer: brak eligible AI ownera w tym świecie');
+        const attackerId = attacker.ownerId;
+        for (const oid of allPowerOwnerIds()) {
+          if (oid === attackerId || isBarbarian(oid)) continue;
+          const rel = getDiploRelation(attackerId, oid);
+          if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
+        }
+        bronzeForceWarPendingOwners.add(attackerId);
+        bronzeForceWarCycleOwners.delete(attackerId);
+        for (const [key, st] of [...bronzeForceWarActiveByPairKey.entries()]) {
+          if (st.attackerId === attackerId) bronzeForceWarActiveByPairKey.delete(key);
+        }
+        // Ta sama trwała mapa co `getDiplomaticContacts()` — realny "kontakt na mapie"
+        // z perspektywy gracza; bez tego relacjeDip (main.ts) nie zbudowałaby wpisu
+        // partnerId='0', a `dipLayer` (patrz naprawa b) byłby 'pre_contact' dla komend
+        // DOTYCZĄCYCH gracza, słusznie kasując DOW na niego (D3-Q2, bez regresji).
+        diplomaticallyDiscoveredOwners.add(attackerId);
+        const playerCity = cities.find(c => c.ownerId === 0);
+        if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
+        return { attackerId };
+      },
+      getRelationStatus: (a: number, b: number): string => getDiploRelation(a, b).status,
     };
 
     // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug` wyżej /
@@ -28442,7 +28503,7 @@ async function boot(): Promise<void> {
                   && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
                 ) {
                   const wasPending = bronzeForceWarPendingOwners.has(ownerId);
-                  const alreadyAtWarAnyRole = countActiveWarsForOwner(ownerId) > 0;
+                  const alreadyAtWarAnyRole = countActiveWarsForOwnerExcludingBarbarians(ownerId) > 0;
                   const hasActiveForcedWarAsAttacker = [...bronzeForceWarActiveByPairKey.values()]
                     .some(st => st.attackerId === ownerId);
                   const searchingAfterRest = !wasPending
@@ -28455,10 +28516,18 @@ async function boot(): Promise<void> {
                     : searchingAfterRest;
                   if (shouldSearch) {
                     const refCity = cities.find(c => c.ownerId === ownerId);
-                    const bronzeCandidates = aiOwnerList
+                    // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c), NOWA DECYZJA właściciela
+                    // (2026-08-30, zastępuje Q2 z R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1): gracz
+                    // (ownerId 0) wchodzi do puli kandydatów NA RÓWNI z AI — dawny filtr
+                    // `oid > 0` wykluczał go wtórnie, mimo że `aiOwnerList` (budowany z
+                    // `u.ownerId > 0`/`c.ownerId > 0`, main.ts ok. linii 27636) wyklucza go
+                    // już STRUKTURALNIE u źródła. `[0, ...aiOwnerList]` dokłada go jawnie do
+                    // źródła tej konkretnej puli; `oid >= 0` (zamiast `oid > 0`) przepuszcza
+                    // 0, barbarzyńcy nadal wykluczeni przez `!isBarbarian(oid)` niżej.
+                    const bronzeCandidates = [0, ...aiOwnerList]
                       .filter(oid =>
                         oid !== ownerId
-                        && oid > 0
+                        && oid >= 0
                         && !typCityCopyOwners.has(oid)
                         && !isBarbarian(oid)
                         && !eliminatedOwners.has(oid)
@@ -28516,7 +28585,7 @@ async function boot(): Promise<void> {
                   && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
                 ) {
                   const wasPending = stoneForceWarPendingOwners.has(ownerId);
-                  const alreadyAtWarAnyRole = countActiveWarsForOwner(ownerId) > 0;
+                  const alreadyAtWarAnyRole = countActiveWarsForOwnerExcludingBarbarians(ownerId) > 0;
                   const hasActiveForcedWarAsAttacker = [...stoneForceWarActiveByPairKey.values()]
                     .some(st => st.attackerId === ownerId);
                   const searchingAfterRest = !wasPending
@@ -28538,10 +28607,12 @@ async function boot(): Promise<void> {
                     : searchingAfterRest;
                   if (shouldSearch) {
                     const refCity = cities.find(c => c.ownerId === ownerId);
-                    const stoneCandidates = aiOwnerList
+                    // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c) — patrz komentarz analogiczny
+                    // przy bronzeCandidates wyżej.
+                    const stoneCandidates = [0, ...aiOwnerList]
                       .filter(oid =>
                         oid !== ownerId
-                        && oid > 0
+                        && oid >= 0
                         && !typCityCopyOwners.has(oid)
                         && !isBarbarian(oid)
                         && !eliminatedOwners.has(oid)
@@ -28574,14 +28645,21 @@ async function boot(): Promise<void> {
                 // z sąsiadem terytorialnym — (a) jednorazowo przy AWANSIE do Żelaza
                 // (ironForceWarPendingOwners, ustawione w syncOwnerEraFromResearch przez
                 // isIronEraEntry), (b) cyklicznie po odpoczynku od poprzedniej wojny
-                // wymuszonej Żelaza. Struktura 1:1 jak Brąz. Gracz (ownerId 0) i
-                // miasta-państwa/kopie/barbarzyńcy są wykluczeni PO OBU STRONACH: napastnik
-                // przez `ownerId > 0` + `isOwnerClusterCityState(ownerId, …)` tutaj, cel
-                // przez `oid > 0` + `isOwnerClusterCityState(oid, …)` w puli kandydatów.
+                // wymuszonej Żelaza. Struktura 1:1 jak Brąz. Napastnik jest zawsze AI
+                // (`ownerId > 0` + `isOwnerClusterCityState(ownerId, …)` tutaj) — miasta-
+                // państwa/kopie/barbarzyńcy wykluczeni z roli napastnika. Cel: miasta-
+                // państwa/kopie/barbarzyńcy/wyeliminowani wykluczeni tak samo w puli
+                // kandydatów, ALE gracz (ownerId 0) od P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1
+                // (2026-08-30, NOWA DECYZJA właściciela, zastępuje Q2 z R-EPOKA-KAMIEN-
+                // WYMUSZONA-WOJNA-Q1 „cel to najbliższy sąsiad AI, NIE gracz") jest w tej
+                // puli NA RÓWNI z AI — patrz `oid >= 0` w budowie ironCandidates niżej.
                 // `wasPending` jest TYLKO ODCZYTEM — pending konsumuje dopiero faktyczny
                 // sukces w bloku wypowiedz_wojne niżej.
                 // EN: Iron-era forced war — one-shot on the Iron advance, then cyclic after
-                // rest. Player and city-states excluded on BOTH sides.
+                // rest. City-states/copies/barbarians excluded from both attacker and
+                // target roles; the PLAYER is now (2026-08-30 decision) INCLUDED as an
+                // eligible target on equal footing with AI, superseding the earlier
+                // "never the player" rule.
                 if (
                   ownerId > 0
                   && !typCityCopyOwners.has(ownerId)
@@ -28590,7 +28668,7 @@ async function boot(): Promise<void> {
                   && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
                 ) {
                   const wasPending = ironForceWarPendingOwners.has(ownerId);
-                  const alreadyAtWarAnyRole = countActiveWarsForOwner(ownerId) > 0;
+                  const alreadyAtWarAnyRole = countActiveWarsForOwnerExcludingBarbarians(ownerId) > 0;
                   const hasActiveForcedWarAsAttacker = [...ironForceWarActiveByPairKey.values()]
                     .some(st => st.attackerId === ownerId);
                   const searchingAfterRest = !wasPending
@@ -28609,10 +28687,12 @@ async function boot(): Promise<void> {
                     : searchingAfterRest;
                   if (shouldSearch) {
                     const refCity = cities.find(c => c.ownerId === ownerId);
-                    const ironCandidates = aiOwnerList
+                    // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c) — patrz komentarz analogiczny
+                    // przy bronzeCandidates wyżej.
+                    const ironCandidates = [0, ...aiOwnerList]
                       .filter(oid =>
                         oid !== ownerId
-                        && oid > 0
+                        && oid >= 0
                         && !typCityCopyOwners.has(oid)
                         && !isBarbarian(oid)
                         && !eliminatedOwners.has(oid)
@@ -28664,11 +28744,28 @@ async function boot(): Promise<void> {
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
                   effectiveGameDifficultyForOwner(ownerId),
                 );
-                const dipCmdsLayered = filterCityStateTributeCommands(
-                  filterDiplomacyCommandsForLayer(
+                // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (b): `wypowiedz_wojne` AI↔AI (target
+                // różny od gracza) NIE przechodzi przez `dipLayer` — ta warstwa mierzy
+                // WYŁĄCZNIE mgłę GRACZA (`contactedOwners`), niezwiązaną z widocznością
+                // między dwiema AI. `dipLayerIgnoringPlayerFog` to ten sam
+                // `diplomacyLayerForOwner` wołany bez `contactedOwners` (overload
+                // 2-argumentowy, diplomacy-layers.ts) — zachowuje rozróżnienie
+                // simplified/full (miasto-państwo vs pełna cywilizacja), tylko bez bramki
+                // pre_contact. Komendy DOTYCZĄCE gracza (target===0) idą jak dotychczas
+                // przez `dipLayer` z pełną bramką D3-Q2 — bez zmian.
+                const dipLayerIgnoringPlayerFog = diplomacyLayerForOwner(
+                  ownerId,
+                  simplifiedDiplomacyOwners,
+                );
+                const { playerFacing: dipCmdsPlayerFacing, aiToAiWar: dipCmdsAiToAiWar } =
+                  partitionDiplomacyCommandsForPlayerFog(
                     Array.isArray(dipCmdsRaw) ? dipCmdsRaw : [],
-                    dipLayer,
-                  ),
+                  );
+                const dipCmdsLayered = filterCityStateTributeCommands(
+                  [
+                    ...filterDiplomacyCommandsForLayer(dipCmdsPlayerFacing, dipLayer),
+                    ...filterDiplomacyCommandsForLayer(dipCmdsAiToAiWar, dipLayerIgnoringPlayerFog),
+                  ],
                   isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
                 );
                 for (const cmd of dipCmdsLayered) {

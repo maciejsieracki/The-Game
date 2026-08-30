@@ -206,10 +206,14 @@ try {
   assert(!ironCommand({ hasNapTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'NAP blokuje DOW');
   assert(!ironCommand({ hasAllianceTreaty: true }).some(c => c.type === 'wypowiedz_wojne'), 'sojusz z celem blokuje DOW');
 
-  console.log('--- gracz (partnerId 0) nie jest celem wymuszonej wojny Żelaza ---');
-  // main.ts nigdy nie ustawi ironForceWarTargetId = 0 (pula ma filtr oid > 0). Gdyby
-  // jednak ustawił, guard relacji i tak wymaga relacji z partnerem o tym id — pinujemy,
-  // że brak dopasowanej relacji nie produkuje DOW (żadnego, także wobec gracza).
+  console.log('--- ironForceWarTargetId bez pasującej relacji (żaden target, w tym gracz) ---');
+  // P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c) (2026-08-30): od tej decyzji main.ts MOŻE
+  // ustawić ironForceWarTargetId = 0 (gracz jest teraz w puli kandydatów na równi z AI —
+  // main.ts `[0, ...aiOwnerList]` + `oid >= 0`). Ten test pinuje coś innego, nadal
+  // prawdziwego bez zmian: `decideAIDiplomacy` samo w sobie wymaga relacji z partnerem
+  // o pasującym id (main.ts buduje ją zawsze, gdy AI ma z tym ownerem realny kontakt) —
+  // brak dopasowanej relacji nie produkuje DOW, niezależnie od tego, czy targetem jest
+  // gracz czy inna AI.
   const noPlayerRel = decideAIDiplomacy({
     myPlayerId: '1',
     relacje: [{ ...rel }],

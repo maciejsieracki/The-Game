@@ -59,6 +59,32 @@ export function shouldEndForcedWarByCityCount(
   return citiesCapturedByAttacker >= threshold || citiesCapturedByDefender >= threshold;
 }
 
+/**
+ * P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (a): licznik aktywnych wojen danego ownera, z
+ * dowolnym wykluczeniem (np. barbarzyńców) i dowolnym predykatem "czy w wojnie" —
+ * czysty, testowalny odpowiednik `countActiveWarsForOwner` w main.ts. Barbarzyńcy
+ * (C-BARB-Q1) są STRUKTURALNIE zawsze 'wojna' dla każdego ownera — bez tego
+ * wykluczenia praktycznie każda cywilizacja wygląda jak "już w wojnie", co blokowało
+ * bramkę wymuszonej wojny (Kamień/Brąz/Żelazo) niezależnie od realnych wojen.
+ * WYŁĄCZNIE do bramki wymuszonej wojny — main.ts `countActiveWarsForOwner` (użyty też
+ * w `buildAllianceWarObligationCtx`, gdzie wojna z barbarzyńcami MA się liczyć) zostaje
+ * osobną, niezmienioną funkcją.
+ */
+export function countActiveWarsExcluding(
+  ownerId: number,
+  allOwnerIds: ReadonlyArray<number>,
+  isAtWar: (a: number, b: number) => boolean,
+  excludeOwnerId: (oid: number) => boolean,
+): number {
+  let n = 0;
+  for (const oid of allOwnerIds) {
+    if (oid === ownerId) continue;
+    if (excludeOwnerId(oid)) continue;
+    if (isAtWar(ownerId, oid)) n++;
+  }
+  return n;
+}
+
 export function isRestingFromForcedWar(
   currentTurn: number,
   restUntilTurn: number | undefined,

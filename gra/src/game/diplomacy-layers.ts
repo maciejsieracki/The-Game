@@ -268,6 +268,43 @@ export function filterDiplomacyCommandsForLayer(
 }
 
 /**
+ * P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (b): `filterDiplomacyCommandsForLayer` z warstwą
+ * `pre_contact` kasuje WSZYSTKIE komendy danego ownera, w tym `wypowiedz_wojne` między
+ * dwiema AI — mimo że `pre_contact` mierzy WYŁĄCZNIE widoczność GRACZA-CZŁOWIEKA
+ * (`contactedOwners` = `diplomaticallyDiscoveredOwners`, budowane z `currentVisible()`
+ * gracza), niezwiązaną z tym, czy dwie AI widzą się nawzajem. Skutek: AI(X) nie mogła
+ * wypowiedzieć wojny AI(Y), jeśli TY nie odkryłeś AI(X) na mapie.
+ *
+ * Rozdziela komendy jednego ownera na dwie grupy: `aiToAiWar` — `wypowiedz_wojne` z
+ * targetem RÓŻNYM od gracza (żadna strona tej konkretnej wojny nie jest graczem) —
+ * i `playerFacing` — reszta, w tym KAŻDA komenda dotycząca gracza (`wypowiedz_wojne`
+ * na gracza też, bo target===playerOwnerId). Wołający filtruje `aiToAiWar` przez
+ * `filterDiplomacyCommandsForLayer` z warstwą policzoną BEZ mgły gracza (2-argumentowe
+ * wywołanie `diplomacyLayerForOwner`, patrz jego overload wyżej), a `playerFacing` przez
+ * warstwę zwykłą (z mgłą) — D3-Q2 (2026-07-21, „brak odkrycia w mgle → brak dyplomacji
+ * AI/UI") zostaje NIETKNIĘTE dla WSZYSTKICH komend z udziałem gracza, w tym wypowiedzenia
+ * wojny JEMU. Żadna istniejąca sygnatura (`diplomacyLayerForOwner`,
+ * `filterDiplomacyCommandsForLayer`) nie jest zmieniana.
+ */
+export function partitionDiplomacyCommandsForPlayerFog(
+  cmds: AIDiplomacyCommand[] | null | undefined,
+  playerOwnerId = 0,
+): { playerFacing: AIDiplomacyCommand[]; aiToAiWar: AIDiplomacyCommand[] } {
+  const list = cmds ?? [];
+  const playerFacing: AIDiplomacyCommand[] = [];
+  const aiToAiWar: AIDiplomacyCommand[] = [];
+  for (const c of list) {
+    const targetIsPlayer = parseInt(c.targetId, 10) === playerOwnerId;
+    if (c.type === 'wypowiedz_wojne' && !targetIsPlayer) {
+      aiToAiWar.push(c);
+    } else {
+      playerFacing.push(c);
+    }
+  }
+  return { playerFacing, aiToAiWar };
+}
+
+/**
  * Miasta-państwa (klaster, kopie typu) nie oferują ani nie żądają trybutu —
  * spójnie z audiencją (action 8 = „Niedostępne u miasta-państwa").
  */

@@ -39,10 +39,15 @@ import {
  * czyli tym samym mechanizmem co zwykły `PEACE_TREATY_LOCK_TURNS`, tylko z inną liczbą
  * tur dla tej konkretnej pary).
  *
- * Miasta-państwa i gracz NIGDY nie są celem ani napastnikiem — dokładnie jak w Kamieniu
- * i Brązie: napastnik przechodzi przez `isOwnerClusterCityState(ownerId, …)` + `ownerId > 0`
- * w main.ts, a pula kandydatów jest filtrowana tym samym `isOwnerClusterCityState(oid, …)`
- * + `oid > 0` (gracz to ownerId 0, więc nie trafia do `aiOwnerList`-owej puli celów).
+ * Miasta-państwa NIGDY nie są celem ani napastnikiem: napastnik przechodzi przez
+ * `isOwnerClusterCityState(ownerId, …)` + `ownerId > 0` w main.ts, a pula kandydatów jest
+ * filtrowana tym samym `isOwnerClusterCityState(oid, …)`. NAPASTNIK jest zawsze AI
+ * (`ownerId > 0`) — to się nie zmieniło. CEL natomiast, od P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1
+ * (2026-08-30, NOWA DECYZJA właściciela, zastępuje wcześniejsze „gracz to ownerId 0, więc
+ * nie trafia do puli celów"), MOŻE być graczem — pula kandydatów w main.ts dokłada `0` do
+ * źródła jawnie (`[0, ...aiOwnerList]`) i filtruje `oid >= 0` zamiast `oid > 0`, więc gracz
+ * konkuruje o bycie celem na równi z resztą AI (najbliższy geograficznie wygrywa, tak jak
+ * każdy inny kandydat).
  *
  * Sojusze/pakty z INNYMI cywilizacjami niż cel tej wojny NIE są zrywane — silnik używa
  * tego samego kanału wypowiadania wojny co reaktywna dyplomacja AI (`decideAIDiplomacy` →
@@ -54,9 +59,11 @@ import {
  * EN: Iron-era forced war — the third and last era of the game, previously the only one
  * without a forced-war mechanism. Trigger is the ERA ADVANCE into Iron (like Bronze), not
  * a turn threshold (like Stone), because Iron is reached at wildly different turns per civ.
- * All other parameters match Bronze 1:1. City-states and the player are never attacker nor
- * target. Alliances/pacts with uninvolved third civs survive; an alliance with the target
- * itself excludes that target from the candidate pool.
+ * All other parameters match Bronze 1:1. City-states are never attacker nor target; the
+ * attacker is always AI. The PLAYER, however, is now (2026-08-30 decision) an eligible
+ * target on equal footing with AI — superseding the earlier "player never a target" rule.
+ * Alliances/pacts with uninvolved third civs survive; an alliance with the target itself
+ * excludes that target from the candidate pool.
  *
  * Wszystkie funkcje w tym pliku są CZYSTE (bez DOM/mutacji) — stanowe wiązanie (mapy per
  * owner/para, hak przy przejęciu miasta, hak przy awansie epoki) żyje w main.ts.

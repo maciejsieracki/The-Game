@@ -85,11 +85,14 @@ check(
 );
 
 // ---------------------------------------------------------------------------
-// 3. Cel: gracz i miasta-państwa nigdy nie trafiają do puli kandydatów.
+// 3. Cel: miasta-państwa/kopie/barbarzyńcy/wyeliminowani nigdy nie trafiają do puli
+//    kandydatów; GRACZ (ownerId 0) natomiast, od P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1
+//    (2026-08-30, zastępuje Q2 z R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1), TAK — na równi z AI.
 // ---------------------------------------------------------------------------
 check(
-  'pula kandydatów Żelaza wyklucza gracza (oid > 0), kopie, barbarzyńców, wyeliminowanych i miasta-państwa',
-  /const ironCandidates = aiOwnerList\s*\n\s*\.filter\(oid =>\s*\n\s*oid !== ownerId\s*\n\s*&& oid > 0\s*\n\s*&& !typCityCopyOwners\.has\(oid\)\s*\n\s*&& !isBarbarian\(oid\)\s*\n\s*&& !eliminatedOwners\.has\(oid\)\s*\n\s*&& !isOwnerClusterCityState\(oid, ownerCityStateOpts\(\)\),/.test(main),
+  'pula kandydatów Żelaza WŁĄCZA gracza (oid >= 0, źródło [0, ...aiOwnerList]) — '
+    + 'wyklucza wyłącznie kopie, barbarzyńców, wyeliminowanych i miasta-państwa',
+  /const ironCandidates = \[0, \.\.\.aiOwnerList\]\s*\n\s*\.filter\(oid =>\s*\n\s*oid !== ownerId\s*\n\s*&& oid >= 0\s*\n\s*&& !typCityCopyOwners\.has\(oid\)\s*\n\s*&& !isBarbarian\(oid\)\s*\n\s*&& !eliminatedOwners\.has\(oid\)\s*\n\s*&& !isOwnerClusterCityState\(oid, ownerCityStateOpts\(\)\),/.test(main),
 );
 check(
   'Iron target filtruje NAP, blokadę pokoju i sojusz z celem',

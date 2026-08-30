@@ -332,10 +332,14 @@ const MUTATIONS = [
                     && !isRestingFromIronForcedWar(`,
     replace: `                    && !hasActiveForcedWarAsAttacker
                     && !isRestingFromIronForcedWar(` },
-  { id: 'M42-main-gracz-w-puli', file: 'main', gates: [GUARD], why: 'GRACZ (ownerId 0) dopuszczony do puli celów',
-    find: `                      .filter(oid =>
+  { id: 'M42-main-gracz-wykluczony-z-puli', file: 'main', gates: [GUARD],
+    why: 'P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1 (c), 2026-08-30: GRACZ z powrotem wykluczony '
+      + 'z puli celów (regresja do wcześniejszej, ODWRÓCONEJ decyzji Q2 z '
+      + 'R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1) — asercja main-guard musi to złapać',
+    find: `                    const ironCandidates = [0, ...aiOwnerList]
+                      .filter(oid =>
                         oid !== ownerId
-                        && oid > 0
+                        && oid >= 0
                         && !typCityCopyOwners.has(oid)
                         && !isBarbarian(oid)
                         && !eliminatedOwners.has(oid)
@@ -347,8 +351,10 @@ const MUTATIONS = [
                       })
                       .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
                     const ironBlockedOwnerIds`,
-    replace: `                      .filter(oid =>
+    replace: `                    const ironCandidates = aiOwnerList
+                      .filter(oid =>
                         oid !== ownerId
+                        && oid > 0
                         && !typCityCopyOwners.has(oid)
                         && !isBarbarian(oid)
                         && !eliminatedOwners.has(oid)
