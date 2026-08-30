@@ -201,7 +201,8 @@ ok(
   ok(receiveBelowKrok.giveItems.some(i => i.typ === 'zloto'),
     'Szybka umowa: bez wycenialnego surowca partnera -> fallback gest złota');
 
-  // Dopełniacz z NASZYCH surowców (giveItems) — pętla przyrasta o krok, qty zawsze wielokrotnością 5.
+  // Dopełniacz z NASZYCH surowców (giveItems) — pętla przyrasta o krok, qty zawsze wielokrotnością
+  // kroku (10 od R-DYPLO-CENNIK-KROK10-Q1, 2026-08-30 — dawniej 5).
   const giveFiller = M.computeQuickDealBasket({
     relacjaTotal: 100,
     ourGoldAvailable: 0,
@@ -211,8 +212,8 @@ ok(
     theirQuantityResourceOptions: [{ id: 'zelazo', label: 'Żelazo', maxQty: 50 }],
   });
   const drewnoGive = giveFiller.giveItems.find(i => i.id === 'drewno');
-  ok(drewnoGive != null && drewnoGive.ilosc % 5 === 0 && drewnoGive.ilosc > 0,
-    `Szybka umowa: dopełniacz drewna wielokrotnością 5, >0 (got ${drewnoGive?.ilosc})`);
+  ok(drewnoGive != null && drewnoGive.ilosc % 10 === 0 && drewnoGive.ilosc > 0,
+    `Szybka umowa: dopełniacz drewna wielokrotnością 10, >0 (got ${drewnoGive?.ilosc})`);
 
   // N1 (Evaluator 2026-08-13, domknięcie luki pokrycia P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI):
   // powyższa asercja "wielokrotność 5, >0" NIE łapie błędu WIELKOŚCI — 40 szt. "zepsute" (5×
