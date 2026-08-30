@@ -730,92 +730,92 @@
       "easy": 1,
       "normal": 1,
       "hard": 1,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; korekta semantyki R-DYPLO-CENNIK-SKALA-5X-Q1: 1 PN za blok 5 szt. Drewna (surowiec_ilosc). Wartość pozycji = liczba sztuk ÷ 5 × cena bloku. Ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; korekta semantyki R-DYPLO-CENNIK-SKALA-5X-Q1: 1 PN za blok Drewna (surowiec_ilosc). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — wartość pozycji = liczba sztuk ÷ 10 × cena bloku. Ta sama cena na wszystkich trudnościach."
     },
     "cena_glina": {
       "easy": 2,
       "normal": 2,
       "hard": 2,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 2 PN za blok 5 szt. Gliny — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 2 PN za blok Gliny. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_kamien": {
       "easy": 3,
       "normal": 3,
       "hard": 3,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 3 PN za blok 5 szt. Kamienia — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 3 PN za blok Kamienia. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_ruda": {
       "easy": 5,
       "normal": 5,
       "hard": 5,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok 5 szt. Rudy miedzi (klucz magazynu: ruda) — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok Rudy miedzi (klucz magazynu: ruda). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_ruda_zelaza": {
       "easy": 10,
       "normal": 10,
       "hard": 10,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 10 PN za blok 5 szt. Rudy żelaza (klucz magazynu: ruda_zelaza) — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 10 PN za blok Rudy żelaza (klucz magazynu: ruda_zelaza). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_ruda_cyny": {
       "easy": 10,
       "normal": 10,
       "hard": 10,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-08-13; R-DYPLO-CENNIK-SKALA-5X-Q1: 10 PN za blok 5 szt. Rudy cyny (klucz magazynu: ruda_cyny). Cena analogiczna do rudy żelaza; ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-08-13; R-DYPLO-CENNIK-SKALA-5X-Q1: 10 PN za blok Rudy cyny (klucz magazynu: ruda_cyny). Cena analogiczna do rudy żelaza. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_cegla": {
       "easy": 5,
       "normal": 5,
       "hard": 5,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok 5 szt. Cegły — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok Cegły. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_sol": {
       "easy": 2,
       "normal": 2,
       "hard": 2,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 2 PN za blok 5 szt. Soli — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 2 PN za blok Soli. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_kon": {
       "easy": 5,
       "normal": 5,
       "hard": 5,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok 5 szt. Konia — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok Konia. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_ceramika": {
       "easy": 5,
       "normal": 5,
       "hard": 5,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok 5 szt. Ceramiki — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 5 PN za blok Ceramiki. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_braz": {
       "easy": 15,
       "normal": 15,
       "hard": 15,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 15 PN za blok 5 szt. Brązu (przetworzonego) — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 15 PN za blok Brązu (przetworzonego). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_zelazo": {
       "easy": 20,
       "normal": 20,
       "hard": 20,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 20 PN za blok 5 szt. Żelaza przetworzonego — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 20 PN za blok Żelaza przetworzonego. R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_stal": {
       "easy": 25,
       "normal": 25,
       "hard": 25,
-      "jednostka": "PN/blok 5 szt.",
-      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 25 PN za blok 5 szt. Stali (przetworzonej) — ta sama cena na wszystkich trudnościach."
+      "jednostka": "PN/blok 10 szt.",
+      "opis": "Maciej 2026-07-29; R-DYPLO-CENNIK-SKALA-5X-Q1: 25 PN za blok Stali (przetworzonej). R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): blok powiększony z 5 na 10 szt., cena liczbowo bez zmian — ta sama cena na wszystkich trudnościach."
     },
     "cena_zloto": {
       "easy": 50,

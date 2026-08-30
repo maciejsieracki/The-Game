@@ -295,22 +295,30 @@ function readHandelSurowceParam(rowKey: string, fallback: number): number {
 // cena_* by 5 (fractions again). Instead cena_* stays numerically unchanged and the minimum
 // trade increment becomes 5 units for resources actually touched by ×5 — Gold and Coal (never
 // touched by ×5) keep step 1.
+//
+// R-DYPLO-CENNIK-KROK10-Q1 (Maciej 2026-08-30): krok rośnie DALEJ, z 5 szt. na 10 szt., dla
+// TYCH SAMYCH 13 surowców — `cena_*` w econ-params.json zostaje NUMERYCZNIE bez zmian (ten sam
+// wzorzec co przy 5X-Q1: nie dzielimy ceny, tylko powiększamy blok). Efekt: ta sama liczba PN
+// kupuje teraz DWA RAZY WIĘCEJ surowca niż przy kroku 5 — właściciel wprost: „cena wzrośnie
+// dwukrotnie za jeden punkt wymiany" (czyli: potrzeba 2× więcej sztuk surowca na 1 PW). Złoto/
+// Węgiel NIE są tu dotknięte (nie były częścią ×5 rebalansu, zostają przy kroku 1, jak dotąd).
 // ---------------------------------------------------------------------------
 
-/** Surowce ilościowe dotknięte ×5 rebalansem produkcji — krok handlu 5 szt. (patrz wyżej). */
-const HANDEL_SUROWCE_KROK5: ReadonlySet<string> = new Set([
+/** Surowce ilościowe dotknięte ×5 rebalansem produkcji — krok handlu 10 szt. (patrz wyżej). */
+const HANDEL_SUROWCE_KROK10: ReadonlySet<string> = new Set([
   'drewno', 'glina', 'kamien', 'ruda', 'ruda_zelaza', 'ruda_cyny', 'cegla', 'sol', 'kon',
   'ceramika', 'braz', 'zelazo', 'stal',
 ]);
 
 /**
  * Minimalny krok/wielokrotność wymiany handlowej (szt.) dla danego surowca ilościowego.
- * 5 dla surowców fizycznych dotkniętych ×5 (patrz `HANDEL_SUROWCE_KROK5`), 1 dla
- * Złota/Węgla (świadomie wyłączone z ×5) i dla wszystkiego spoza katalogu (bezpieczny
- * fallback — brak krotności = brak ograniczenia).
+ * 10 dla surowców fizycznych dotkniętych ×5 rebalansem produkcji (patrz `HANDEL_SUROWCE_KROK10`
+ * — krok podniesiony z 5 na 10 przez R-DYPLO-CENNIK-KROK10-Q1), 1 dla Złota/Węgla (świadomie
+ * wyłączone z ×5) i dla wszystkiego spoza katalogu (bezpieczny fallback — brak krotności =
+ * brak ograniczenia).
  */
 export function diplomacyHandelSurowiecKrok(surowiecKey: string): number {
-  return HANDEL_SUROWCE_KROK5.has(surowiecKey.trim().toLowerCase()) ? 5 : 1;
+  return HANDEL_SUROWCE_KROK10.has(surowiecKey.trim().toLowerCase()) ? 10 : 1;
 }
 
 /**
@@ -380,8 +388,9 @@ export function diplomacyHandelSurowiecCenaZaBlok(surowiecKey: string): number |
  * R-DYP-PAKIET-USUN (2026-08-08): `iloscSztuk` to SZTUKI wprost — spójne z polem
  * `ilosc` w BasketItem (dawniej „pakiety", usunięte na życzenie właściciela: „podajemy
  * sztuki. Jeden, dziesięć, sto — żadnych pakietów").
- * R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): `iloscSztuk` przechodzi PRZEZ
- * `diplomacyNormalizeSurowiecIlosc` — floor do wielokrotności kroku handlu (5 szt. dla
+ * R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13), krok podniesiony do 10 szt. przez
+ * R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): `iloscSztuk` przechodzi PRZEZ
+ * `diplomacyNormalizeSurowiecIlosc` — floor do wielokrotności kroku handlu (10 szt. dla
  * surowców dotkniętych ×5, patrz wyżej) — ZANIM policzona zostanie cena. To jest jedyny
  * choke-point, przez który przechodzi KAŻDA wycena PN pozycji surowiec_ilosc (UI koszyka,
  * generatory ofert AI, Szybka umowa, walidacja przy zatwierdzeniu) — więc dowolna ilość

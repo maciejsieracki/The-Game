@@ -45,10 +45,14 @@ const price = (key, p) => p * 5;
 
 console.log('diplomacy-resource-trade-pick-test');
 
-// R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): drewno/glina/kamien mają krok handlu 5 szt.
+// R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13), krok podniesiony 5→10 przez
+// R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): drewno/glina/kamien mają krok handlu 10 szt.
 // (diplomacyHandelSurowiecKrok) — buildOffer floruje `pakiety` do tej wielokrotności PRZED
-// wyceną, więc `maxPakietyPerTura`/`maxQty` niżej muszą być ≥5, żeby oferta się nie zerowała.
-// Osobne przypadki brzegowe dla samego mechanizmu kroku:
+// wyceną, więc `maxPakietyPerTura`/`maxQty` niżej muszą być ≥10, żeby oferta się nie
+// zerowała. Osobne przypadki brzegowe dla samego mechanizmu kroku (obie liczby niżej, 3 i
+// 23, dają IDENTYCZNY wynik co przy dawnym kroku 5 — zbieg okoliczności, nie dowód braku
+// zmiany: 3 był i jest poniżej progu, 23 mieści się w [20,30) tak samo jak mieściło się w
+// [20,25)):
 ok(
   pickResourceDeficitForOwnerPair({
     buyerOwnerId: 1,
@@ -58,10 +62,10 @@ ok(
     sellerOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 10 }],
     pricedKeys: priced,
     pakietWielkosc: pakiet,
-    maxPakietyPerTura: 3, // < krok(5) -> floruje do 0 -> brak oferty (null), nie 3 szt.
+    maxPakietyPerTura: 3, // < krok(10) -> floruje do 0 -> brak oferty (null), nie 3 szt.
     pricePerPakiet: price,
   }) === null,
-  'krok5: maxPakietyPerTura=3 (< krok 5) floruje do 0 -> brak oferty (nie 3 szt. wycenione jak 3)',
+  'krok10: maxPakietyPerTura=3 (< krok 10) floruje do 0 -> brak oferty (nie 3 szt. wycenione jak 3)',
 );
 ok(
   pickResourceDeficitForOwnerPair({
@@ -69,13 +73,13 @@ ok(
     sellerOwnerId: 0,
     goodsBuyer: [{ key: 'drewno', label: 'Drewno', ilosc: 0 }],
     goodsSeller: [{ key: 'drewno', label: 'Drewno', ilosc: 100 }],
-    sellerOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 23 }], // zapas NIE jest wielokrotnością 5
+    sellerOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 23 }], // zapas NIE jest wielokrotnością 10
     pricedKeys: priced,
     pakietWielkosc: pakiet,
     maxPakietyPerTura: 30,
     pricePerPakiet: price,
   })?.pakietyPerTura === 20,
-  'krok5: maxQty=23 (nie wielokrotność 5) -> oferta floruje do 20 szt., nie 23',
+  'krok10: maxQty=23 (nie wielokrotność 10) -> oferta floruje do 20 szt., nie 23',
 );
 
 ok(
@@ -87,6 +91,9 @@ ok(
   'deficyt: drewno 2 < pakiet 10',
 );
 
+// R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): maxPakietyPerTura podniesione z 5 na 10 — 5 samo
+// w sobie floruje do 0 przy kroku 10 (drewno objęte krokiem), co dawałoby null zamiast
+// oferty i psuło wszystkie asercje niżej zależne od deficitPick.
 const deficitPick = pickResourceTradeBetweenOwners({
   ownerA: 1,
   ownerB: 0,
@@ -96,7 +103,7 @@ const deficitPick = pickResourceTradeBetweenOwners({
   sellerOptionsB: [{ id: 'drewno', label: 'Drewno ×10', maxQty: 10 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
-  maxPakietyPerTura: 5,
+  maxPakietyPerTura: 10,
   pricePerPakiet: price,
 });
 ok(deficitPick?.powod === 'deficyt', 'priorytet deficyt');
@@ -107,6 +114,7 @@ ok(
   'kierunek zakup dla AI-proponenta',
 );
 
+// R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): maxPakietyPerTura podniesione z 5 na 10 (jak wyżej).
 const deficitDirect = pickResourceDeficitForOwnerPair({
   buyerOwnerId: 1,
   sellerOwnerId: 0,
@@ -115,7 +123,7 @@ const deficitDirect = pickResourceDeficitForOwnerPair({
   sellerOptions: [{ id: 'glina', label: 'Glina ×10', maxQty: 10 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
-  maxPakietyPerTura: 5,
+  maxPakietyPerTura: 10,
   pricePerPakiet: price,
 });
 ok(deficitDirect?.powod === 'deficyt' && deficitDirect.surowiecKey === 'glina', 'pickResourceDeficitForOwnerPair: glina 0 -> kupno');
@@ -124,16 +132,19 @@ ok(
   'pickResourceDeficitForOwnerPair: kierunek zakup',
 );
 
+// R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): maxQty 8→10 i maxPakietyPerTura 5→10 — obie dawne
+// wartości floorują do 0 przy kroku 10 (drewno/glina objęte krokiem), co dawałoby null
+// zamiast realnej oferty nadwyżkowej.
 const surplusPick = pickResourceTradeBetweenOwners({
   ownerA: 2,
   ownerB: 3,
   goodsA: [{ key: 'glina', label: 'Glina', ilosc: 80 }],
   goodsB: [{ key: 'glina', label: 'Glina', ilosc: 80 }],
-  sellerOptionsA: [{ id: 'glina', label: 'Glina ×10', maxQty: 8 }],
-  sellerOptionsB: [{ id: 'glina', label: 'Glina ×10', maxQty: 8 }],
+  sellerOptionsA: [{ id: 'glina', label: 'Glina ×10', maxQty: 10 }],
+  sellerOptionsB: [{ id: 'glina', label: 'Glina ×10', maxQty: 10 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
-  maxPakietyPerTura: 5,
+  maxPakietyPerTura: 10,
   pricePerPakiet: price,
 });
 ok(surplusPick?.powod === 'nadwyzka', 'bez deficytu -> nadwyzka');

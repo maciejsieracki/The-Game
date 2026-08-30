@@ -303,20 +303,23 @@ async function main() {
       `edycja bez kolizji: nowa ilość złota 77 widoczna w koszyku (widoczne ilości: ${rowQtyValues().join(',')})`);
   }
 
-  // 8) R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): koszyk „+ Dodaj propozycję" dla surowiec_ilosc
-  // — krok 5 wymuszony w PRAWDZIWYM DOM (nie tylko na czystej funkcji), z realnymi kliknięciami
-  // chipów jak scenariusze 1-7 wyżej.
+  // 8) R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13), krok podniesiony 5→10 przez
+  // R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): koszyk „+ Dodaj propozycję" dla surowiec_ilosc
+  // — krok 10 wymuszony w PRAWDZIWYM DOM (nie tylko na czystej funkcji), z realnymi
+  // kliknięciami chipów jak scenariusze 1-7 wyżej.
   {
-    // 8a) Wybór surowca dotkniętego ×5 (drewno) — pole ilości domyślnie startuje na 5 (kroku),
-    // nie na 1, i ma atrybuty min/step=5 (natywny spinner nie schodzi poniżej bloku).
+    // 8a) Wybór surowca dotkniętego ×5 (drewno) — pole ilości domyślnie startuje na 10
+    // (kroku), nie na 1, i ma atrybuty min/step=10 (natywny spinner nie schodzi poniżej bloku).
     selectResourceChip('drewno');
     const inp = resQtyInput();
-    ok(inp.value === '5', `surowiec_ilosc (drewno): domyślna ilość = krok (5), nie 1 (got ${inp.value})`);
-    ok(inp.min === '5' && inp.step === '5',
-      `surowiec_ilosc (drewno): input min=5 step=5 (got min=${inp.min}, step=${inp.step})`);
+    ok(inp.value === '10', `surowiec_ilosc (drewno): domyślna ilość = krok (10), nie 1 (got ${inp.value})`);
+    ok(inp.min === '10' && inp.step === '10',
+      `surowiec_ilosc (drewno): input min=10 step=10 (got min=${inp.min}, step=${inp.step})`);
 
     // 8b) Wpisanie ilości NIEBĘDĄCEJ wielokrotnością kroku (23) i kliknięcie "Dodaj" —
-    // silnik floruje w dół do 20 (nie odrzuca cicho 23, nie zaokrągla w górę do 25).
+    // silnik floruje w dół do 20 (nie odrzuca cicho 23, nie zaokrągla w górę do 30). Ta sama
+    // wartość 20 co przy dawnym kroku 5 — zbieg okoliczności (23 mieści się w [20,30) tak samo
+    // jak mieściło się w [20,25) przy kroku 5), nie dowód braku zmiany kroku.
     const beforeLen = giveRows().length;
     addResource('drewno', 23);
     ok(giveRows().length === beforeLen + 1, `surowiec_ilosc: "Dodaj" z ilością 23 tworzy 1 nowy wiersz (got ${giveRows().length - beforeLen})`);
@@ -324,7 +327,7 @@ async function main() {
       `surowiec_ilosc: 23 szt. drewna floruje do 20 szt. w koszyku (got ${giveRowQty(beforeLen)})`);
 
     // 8c) Dodanie tego samego surowca ponownie SUMUJE (merge, jak złoto/żywność wyżej) i floruje
-    // sumę: 20 + 23(→floor 20) = 40, wielokrotność 5 — bez zmiany liczby wierszy.
+    // sumę: 20 + 23(→floor 20) = 40, wielokrotność 10 — bez zmiany liczby wierszy.
     addResource('drewno', 23);
     ok(giveRows().length === beforeLen + 1, `surowiec_ilosc: drugie dodanie tego samego surowca SCALA, nie tworzy wiersza (got ${giveRows().length - beforeLen})`);
     ok(giveRowQty(beforeLen) === '40',
@@ -332,7 +335,7 @@ async function main() {
 
     // 8d) Węgiel (krok=1, wyłączony z ×5) — chip switch NIE resetuje wartości do minimum
     // (spójne z dotychczasowym zachowaniem chipów ilości — patrz `max` clamp bez resetu
-    // wyżej), tylko przestawia min/step na 1 (bez wymogu wielokrotności 5).
+    // wyżej), tylko przestawia min/step na 1 (bez wymogu wielokrotności 10).
     selectResourceChip('wegiel');
     const inpW = resQtyInput();
     ok(inpW.min === '1', `surowiec_ilosc (wegiel): input min=1, bez wymogu wielokrotności 5 (got ${inpW.min})`);
@@ -347,8 +350,11 @@ async function main() {
   // ZBEDNY. Reużywa wierszy drewna (40) i węgla (7) z kroku 8: edytuj wiersz węgla → przełącz
   // chip surowca na "drewno" (koliduje z już istniejącym wierszem drewna) → Zapisz. Przełączenie
   // chipa przelicza ilość na najbliższą wielokrotność KROKU NOWEGO surowca (R-DYPLO-CENNIK-
-  // SKALA-5X-Q1: drewno krok=5) z BIEŻĄCEJ wartości pola (7) — floor(7/5)×5=5 — więc scalenie
-  // daje 40+5=45, nie 40+7.
+  // KROK10-Q1: drewno krok=10) z BIEŻĄCEJ wartości pola (7) — floor(7/10)×10=0, a 0 jest
+  // falsy, więc `diplomacyTradeBasket.ts` (chip-switch handler) spada na fallback `|| krok` =
+  // 10 (nigdy nie pokazuje 0 sztuk jako "poprawną" wartość) — więc scalenie daje 40+10=50,
+  // nie 40+7 ani 40+0. To realna zmiana zachowania względem kroku 5 (tam floor(7/5)×5=5,
+  // liczba dodatnia, fallback się nie uruchamiał — dawało 45).
   {
     const beforeMerge = giveRows().length;
     const drewnoIdx = giveRows().findIndex(r => r.querySelector('.cdb-row-qty-inp')?.value === '40');
@@ -362,8 +368,8 @@ async function main() {
 
     ok(giveRows().length === beforeMerge - 1,
       `scalanie (surowiec_ilosc): edytowany wiersz węgla zniknął jako osobna pozycja (${beforeMerge}→${beforeMerge - 1}, got ${giveRows().length})`);
-    ok(rowQtyValues().includes('45'),
-      `scalanie: drewno pokazuje zsumowane 40+floor(7/5)*5(=5)=45 (widoczne ilości: ${rowQtyValues().join(',')})`);
+    ok(rowQtyValues().includes('50'),
+      `scalanie: drewno pokazuje zsumowane 40+(floor(7/10)*10=0, fallback||krok=10)=50 (widoczne ilości: ${rowQtyValues().join(',')})`);
   }
 
   for (const f of [ENTRY, BUNDLE, LEADER_STUB, BRAND_STUB]) {

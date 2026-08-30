@@ -173,17 +173,18 @@ async function main() {
     ok(give.length === 2, 'surowiec_ilosc: inny surowiec (inny id) → osobna pozycja');
   }
 
-  // --- 7b. R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13): suma przycięta do maxQty NIEBĘDĄCEGO
-  // wielokrotnością kroku (5 szt.) floruje w dół dodatkowo, po przycięciu — 137 (nie 135/140).
+  // --- 7b. R-DYPLO-CENNIK-SKALA-5X-Q1 (2026-08-13), krok podniesiony 5→10 przez
+  // R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): suma przycięta do maxQty NIEBĘDĄCEGO
+  // wielokrotnością kroku (10 szt.) floruje w dół dodatkowo, po przycięciu — 137 (nie 130/140).
   {
     const ctx = baseCtx({
       giveQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 137 }],
     });
     let give = addOrMergeBasketItem([], { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 100 }, 'give', ctx);
     give = addOrMergeBasketItem(give, { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 100 }, 'give', ctx);
-    ok(give.length === 1, 'surowiec_ilosc krok5: 2x dodanie → 1 pozycja');
-    ok(give[0].ilosc === 135,
-      'surowiec_ilosc krok5: suma 100+100=200 przycięta do maxQty 137, floor do 135 (got ' + give[0].ilosc + ')');
+    ok(give.length === 1, 'surowiec_ilosc krok10: 2x dodanie → 1 pozycja');
+    ok(give[0].ilosc === 130,
+      'surowiec_ilosc krok10: suma 100+100=200 przycięta do maxQty 137, floor do 130 (got ' + give[0].ilosc + ')');
   }
 
   // --- 8) zywnosc: P-DYPLO-HANDEL-ZYWNOSC-WYBOR-MIASTA-ZBEDNY (Maciej 2026-08-14) — bez

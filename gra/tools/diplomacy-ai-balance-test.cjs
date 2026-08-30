@@ -139,9 +139,32 @@ const baseCmd = {
 
 
 // per_turn: magazyn nie podbija stawki — tylko produkcja
-// R-DYPLO-CENNIK-KROK5-Q1 runda 2: production(75)/pakiet(10)=7 pakietów, poniżej żądania (20)
-// -> produkcja jest wiążącym ograniczeniem (nie zapas 500), a wynik 7 floruje dodatkowo
-// do kroku 5 (drewno objęte krokiem 5) — test pokazuje oba mechanizmy naraz.
+// R-DYPLO-CENNIK-KROK5-Q1 runda 2, wartości zaktualizowane po R-DYPLO-CENNIK-KROK10-Q1
+// (2026-08-30, krok 5→10): production(150)/pakiet(10)=15 pakietów, poniżej żądania (20)
+// -> produkcja jest wiążącym ograniczeniem (nie zapas 500), a wynik 15 floruje dodatkowo
+// do kroku 10 (drewno objęte krokiem 10) — test pokazuje oba mechanizmy naraz. UWAGA
+// balansowa: dawna wartość testu (75) dawała 7 pakietów, co przy kroku 10 floruje do 0 ->
+// AI z produkcją 75 szt./turę NIE MOŻE już zaproponować handlu tym surowcem (realny,
+// zamierzony efekt uboczny podniesienia kroku — mniejsi producenci wypadają z oferowania).
+
+{
+
+  const ctx = { ...baseCtx, aiStock: { drewno: 500 }, aiResourceRates: { drewno: 150 } };
+
+  const cmd = { ...baseCmd, pakietyPerTura: 20 };
+
+  const out = B.clampAiResourceTradeCommand(cmd, ctx);
+
+  ok(out != null && out.pakietyPerTura === 10,
+
+    `per_turn cap from production (15 pakietów), floored to step 10 (got ${out?.pakietyPerTura}, want 10)`);
+
+}
+
+// R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): produkcja PONIŻEJ nowego progu (krok 10 × pakiet
+// AI 10 = potrzeba >=100 szt./turę, żeby cokolwiek zaoferować) teraz zwraca null zamiast
+// wcześniej poprawnej małej oferty — dokładnie scenariusz, który dawny test (production=75)
+// niechcący przestał pokrywać. Jawna asercja, żeby ta zmiana zachowania miała własny dowód.
 
 {
 
@@ -151,9 +174,9 @@ const baseCmd = {
 
   const out = B.clampAiResourceTradeCommand(cmd, ctx);
 
-  ok(out != null && out.pakietyPerTura === 5,
+  ok(out === null,
 
-    `per_turn cap from production (7 pakietów), floored to step 5 (got ${out?.pakietyPerTura}, want 5)`);
+    `production(75)/pakiet(10)=7 pakietów floruje do 0 przy kroku 10 -> null (got ${JSON.stringify(out)})`);
 
 }
 
@@ -174,12 +197,21 @@ const baseCmd = {
 
 
 // clamp reduces zaplata when buyer poor gold over 10 turns
+// R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): zarówno production/pakiet JAK I samo
+// cmd.pakietyPerTura (baseCmd domyślnie 5) muszą dawać >=1 blok kroku 10 po
+// Math.min(cmd.pakietyPerTura, maxPakietyPerTura), inaczej clampAiResourceTradeCommand
+// zwraca null (test przestałby w ogóle sprawdzać zaplatę) — 5 samo w sobie floruje do 0
+// przy kroku 10, więc cmd.pakietyPerTura podniesione do 10, production do 150/10=15
+// pakietów (>=10, więc min(10,15)=10 nietknięte) — niezwiązane z tym, co ten test
+// faktycznie bada (klamrowanie zapłaty, nie ilość surowca).
 
 {
 
-  const ctx = { ...baseCtx, partnerGold: 50, aiResourceRates: { drewno: 50 } };
+  const ctx = { ...baseCtx, partnerGold: 50, aiResourceRates: { drewno: 150 } };
 
-  const out = B.clampAiResourceTradeCommand(baseCmd, ctx);
+  const cmd = { ...baseCmd, pakietyPerTura: 10 };
+
+  const out = B.clampAiResourceTradeCommand(cmd, ctx);
 
   ok(out != null && out.zaplataPerTura <= 5,
 
@@ -260,8 +292,10 @@ const baseCmd = {
 
 
 // per_turn: production enables offer without relying on stock
-// R-DYPLO-CENNIK-KROK5-Q1 runda 2: production(90)/pakiet(10)=9 pakietów mimo zerowego
-// zapasu; wynik 9 floruje dodatkowo do kroku 5 (jak wyżej — oba mechanizmy naraz).
+// R-DYPLO-CENNIK-KROK5-Q1 runda 2, zaktualizowane po R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30):
+// production(150)/pakiet(10)=15 pakietów mimo zerowego zapasu; wynik 15 floruje dodatkowo
+// do kroku 10 (jak wyżej — oba mechanizmy naraz). Dawna wartość testu (90) dawałaby 9
+// pakietów, co przy kroku 10 floruje do 0 (patrz jawna asercja tego przypadku wyżej).
 
 {
 
@@ -271,7 +305,7 @@ const baseCmd = {
 
     aiStock: { drewno: 0 },
 
-    aiResourceRates: { drewno: 90 },
+    aiResourceRates: { drewno: 150 },
 
   };
 
@@ -279,9 +313,9 @@ const baseCmd = {
 
   const out = B.clampAiResourceTradeCommand(cmd, ctx);
 
-  ok(out != null && out.pakietyPerTura === 5,
+  ok(out != null && out.pakietyPerTura === 10,
 
-    `production enables 9 pakietów bez zapasu, floored to step 5 (got ${out?.pakietyPerTura})`);
+    `production enables 15 pakietów bez zapasu, floored to step 10 (got ${out?.pakietyPerTura})`);
 
 }
 
@@ -455,9 +489,9 @@ const baseCmd = {
 // / EN: exact reproduction of the Evaluator's blocking-gap scenario — production rate not
 // a multiple of the trade step must be floored INSIDE this function, unconditionally
 // (no difficulty gate), so the deal's own quantity always matches what gets delivered.
-console.log('R-DYPLO-CENNIK-KROK5-Q1 runda 2 — clampAiResourceTradeCommand floor do kroku 5');
+console.log('R-DYPLO-CENNIK-KROK5-Q1 runda 2 — clampAiResourceTradeCommand floor do kroku (10 od R-DYPLO-CENNIK-KROK10-Q1, 2026-08-30)');
 
-for (const rawRate of [7, 9]) {
+for (const rawRate of [17, 19]) {
   // Konfiguracja realna z main.ts buildAiResourceTradeClampCtx: pakietWielkosc=1
   // (R-DYP-PAKIET-USUN — pakietyPerTura to dziś sztuki wprost, bez mnożnika pakietu).
   const ctx = {
@@ -467,15 +501,16 @@ for (const rawRate of [7, 9]) {
     aiResourceRates: { drewno: rawRate },
   };
   // AI oferuje całą swoją produkcję (typowy handel nadwyżką) — żądanie = stawka surowa,
-  // NIEBĘDĄCA wielokrotnością kroku 5, dokładnie jak w rejestrze Evaluatora.
+  // NIEBĘDĄCA wielokrotnością kroku 10, dokładnie jak w rejestrze Evaluatora (przeskalowane
+  // z dawnego kroku 5: 7/9 -> 17/19, żeby dalej mieścić się PONAD jednym blokiem kroku 10).
   const cmd = { ...baseCmd, pakietyPerTura: rawRate };
   const out = B.clampAiResourceTradeCommand(cmd, ctx);
 
   ok(out != null, `easy: produkcja ${rawRate} szt./turę -> oferta nie jest null (got ${JSON.stringify(out)})`);
-  ok(out != null && out.pakietyPerTura === 5,
-    `easy: produkcja ${rawRate} szt./turę floruje do kroku 5 (got ${out?.pakietyPerTura}, want 5)`);
-  ok(out != null && out.pakietyPerTura % 5 === 0,
-    `wynikowa ilość jest wielokrotnością kroku 5 (got ${out?.pakietyPerTura})`);
+  ok(out != null && out.pakietyPerTura === 10,
+    `easy: produkcja ${rawRate} szt./turę floruje do kroku 10 (got ${out?.pakietyPerTura}, want 10)`);
+  ok(out != null && out.pakietyPerTura % 10 === 0,
+    `wynikowa ilość jest wielokrotnością kroku 10 (got ${out?.pakietyPerTura})`);
 
   // Pokazana ilość == dostarczana ilość: diplomacyNormalizeSurowiecIlosc to TEN SAM
   // mechanizm, który stosuje transfer wykonawczy przy realnej dostawie surowca (patrz
@@ -485,28 +520,29 @@ for (const rawRate of [7, 9]) {
   ok(out != null && reFloored === out.pakietyPerTura,
     `pokazana ilość == dostarczana ilość, brak rozjazdu (${out?.pakietyPerTura} -> ${reFloored})`);
 
-  // Cena/PN liczona dla TEJ SAMEJ już zflorowanej ilości (5), nie dla surowej ${rawRate}:
+  // Cena/PN liczona dla TEJ SAMEJ już zflorowanej ilości (10), nie dla surowej ${rawRate}:
   // cmd.pakietyPerTura zwrócone przez clampAiResourceTradeCommand jest JEDYNYM polem ilości,
   // które aiCommandToPendingProposal (diplomacy-proposals.ts) wstawia do payloadu
   // (receiveItems/giveItems ilosc: cmd.pakietyPerTura) — więc cokolwiek dalej liczy
-  // cenę/PN z tego payloadu, robi to już z ilości 5, nigdy z surowej ${rawRate}.
+  // cenę/PN z tego payloadu, robi to już z ilości 10, nigdy z surowej ${rawRate}.
   // NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): PN = BLOKI × cena/blok
-  // (ECHO f838b599) — 5 szt. = 1 blok kroku 5, więc want = 1×cena, nie 5×cena.
+  // (ECHO f838b599) — 10 szt. = 1 blok kroku 10, więc want = 1×cena, nie 10×cena.
   const cena = B.diplomacyHandelSurowiecCenaZaBlok('drewno');
   const pnDlaZflorowanej = out != null ? B.diplomacyPnSurowiecIlosc('drewno', out.pakietyPerTura) : null;
   ok(cena != null && cena > 0, 'drewno ma dodatnią cenę jednostkową w cenniku (przesłanka do sensownej asercji)');
-  ok(pnDlaZflorowanej === Math.round((5 / 5) * (cena ?? 0)),
-    `PN payloadu liczone dla dostarczanej ilości 5 = 1 blok (got ${pnDlaZflorowanej}, want ${Math.round((5 / 5) * (cena ?? 0))})`);
+  ok(pnDlaZflorowanej === Math.round((10 / 10) * (cena ?? 0)),
+    `PN payloadu liczone dla dostarczanej ilości 10 = 1 blok (got ${pnDlaZflorowanej}, want ${Math.round((10 / 10) * (cena ?? 0))})`);
 }
 
 // Guard <=0 (linia ok. 289) domyka oferty PONIŻEJ jednego kroku (floor do 0) zamiast
 // wysyłać wadliwą propozycję "0 szt./turę" — zweryfikowane realnym kodem, nie założone.
+// Wartość 4 nadal poniżej kroku 10 (jak wcześniej poniżej kroku 5) — bez zmian.
 {
   const ctx = { ...baseCtx, pakietWielkosc: 1, aiStock: { drewno: 500 }, aiResourceRates: { drewno: 4 } };
   const cmd = { ...baseCmd, pakietyPerTura: 4 };
   const out = B.clampAiResourceTradeCommand(cmd, ctx);
   ok(out === null,
-    `produkcja 4 szt./turę (< krok 5) floruje do 0 -> guard zwraca null (got ${JSON.stringify(out)})`);
+    `produkcja 4 szt./turę (< krok 10) floruje do 0 -> guard zwraca null (got ${JSON.stringify(out)})`);
 }
 // ---------------------------------------------------------------------------
 

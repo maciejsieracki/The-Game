@@ -57,20 +57,24 @@ const blockPrices = {
   zelazo: 20,
   stal: 25,
 };
+// R-DYPLO-CENNIK-KROK10-Q1 (Maciej 2026-08-30): krok podniesiony 5→10 dla tych samych
+// surowców, cena_* liczbowo bez zmian — oracle floor-uje do najbliższej wielokrotności 10
+// (nie dzieli już wprost przez 5, bo nie każda testowana ilość jest wielokrotnością 10).
 for (const [resource, pricePerBlock] of Object.entries(blockPrices)) {
-  eq(D.diplomacyHandelSurowiecKrok(resource), 5, `${resource}: krok 5`);
+  eq(D.diplomacyHandelSurowiecKrok(resource), 10, `${resource}: krok 10`);
   for (const quantity of [5, 20, 105, 205]) {
     eq(
       D.diplomacyPnSurowiecIlosc(resource, quantity),
-      (quantity / 5) * pricePerBlock,
-      `${resource}: ${quantity} szt. = bloki × cena`,
+      Math.floor(quantity / 10) * pricePerBlock,
+      `${resource}: ${quantity} szt. = bloki × cena (krok 10)`,
     );
   }
 }
 
 // Boundary/negative cases: never round a short or partial request upward.
 eq(D.diplomacyPnSurowiecIlosc('drewno', 4), 0, '4 drewna: poniżej bloku');
-eq(D.diplomacyPnSurowiecIlosc('drewno', 9), 1, '9 drewna: floor do jednego bloku');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 9), 0, '9 drewna: nadal poniżej bloku (krok 10)');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 19), 1, '19 drewna: floor do jednego bloku (krok 10)');
 eq(D.diplomacyPnSurowiecIlosc('drewno', 0), 0, '0 drewna: brak wartości');
 eq(D.diplomacyPnSurowiecIlosc('drewno', -5), 0, '-5 drewna: brak wartości');
 
@@ -80,16 +84,17 @@ eq(D.diplomacyHandelSurowiecKrok('wegiel'), 1, 'węgiel: krok 1');
 eq(D.diplomacyPnSurowiecIlosc('zloto', 3), 150, '3 złota: bez ×5');
 eq(D.diplomacyPnSurowiecIlosc('wegiel', 3), 60, '3 węgla: bez ×5');
 
-// Exact owner-reported repro: old PR-style arithmetic yielded 515, canonical = 103.
+// Exact owner-reported repro: old PR-style arithmetic yielded 515; canonical przy kroku 5
+// było 103, przy dzisiejszym kroku 10 (R-DYPLO-CENNIK-KROK10-Q1) jest 50.
 const mixed = D.diplomacySumPn([
   { typ: 'surowiec_ilosc', id: 'glina', ilosc: 205 },
   { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 105 },
 ]);
-eq(mixed, 103, '205 gliny + 105 drewna = 103 PW, nie 515');
+eq(mixed, 50, '205 gliny + 105 drewna = 50 PW (krok 10), nie 515');
 eq(D.diplomacySumPn([
   { typ: 'surowiec_ilosc', id: 'glina', ilosc: 205 },
   { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 105 },
-], { proposerOwnerId: 0, playerOwnerId: 7 }), 103, 'parytet owner 0/7');
+], { proposerOwnerId: 0, playerOwnerId: 7 }), 50, 'parytet owner 0/7');
 
 try { fs.unlinkSync(BUNDLE); } catch (_) {}
 

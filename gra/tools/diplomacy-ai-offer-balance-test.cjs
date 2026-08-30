@@ -106,12 +106,13 @@ ok(minGold === 50, `minimal sweetener: 50¤ nie 500¤ (${minGold})`);
 // — `ilosc: 10` odtwarzało scenariusz „10 PN drewna vs 1 PN złota”, który przed usunięciem
 // pakietów dawało `ilosc: 1` (1 pakiet × 10 szt. × 1 PN/szt.).
 // NAPRAWA P-DYPLO-PW-BRAK-KROKU-5-EDYCJA-PROPOZYCJI (2026-08-13): PN surowca ilościowego
-// liczy się teraz BLOKAMI (krok 5), nie sztukami wprost — 10 szt. drewna = 2 bloki = 2 PN,
-// za mało, by odtworzyć oryginalny scenariusz „10 PN drewna”. `ilosc: 50` (10 bloków × 1
-// PN/blok = 10 PN, jak dawne 10 szt. × 1 PN/szt. przed R-DYPLO-CENNIK-SKALA-5X-Q1) zachowuje
-// TĘ SAMĄ wartość PN co oryginalny scenariusz — liczba sztuk rośnie ×5, PN scenariusza bez zmian.
+// liczy się teraz BLOKAMI (krok 5→10 od R-DYPLO-CENNIK-KROK10-Q1, 2026-08-30), nie sztukami
+// wprost — za mało, by odtworzyć oryginalny scenariusz „10 PN drewna”. `ilosc: 100` (10
+// bloków kroku 10 × 1 PN/blok = 10 PN, jak dawne 10 szt. × 1 PN/szt. przed
+// R-DYPLO-CENNIK-SKALA-5X-Q1) zachowuje TĘ SAMĄ wartość PN co oryginalny scenariusz —
+// liczba sztuk rośnie ×10 względem oryginału, PN scenariusza bez zmian.
 const cyclicRaw = {
-  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 50 }],
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 100 }],
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
   resourceTradeMode: 'per_turn',
   turns: 10,
@@ -121,7 +122,7 @@ const cyclicTrimmed = M.trimProposalForZeroBalance(cyclicRaw, 100, 'normal');
 const cyclicSurplusAfter = M.aiProposalPlayerBenefitSurplus(cyclicTrimmed, 100);
 const cyclicGold = cyclicTrimmed.receiveItems?.find(i => i.typ === 'zloto')?.ilosc ?? 0;
 const cyclicWood = cyclicTrimmed.giveItems?.find(i => i.typ === 'surowiec_ilosc')?.ilosc ?? 0;
-ok(cyclicSurplusBefore >= 8, `scenariusz zrzutu: 50 szt. drewna/turę (10 bloków) + 1¤ → nadwyżka ≥8 (${cyclicSurplusBefore})`);
+ok(cyclicSurplusBefore >= 8, `scenariusz zrzutu: 100 szt. drewna/turę (10 bloków kroku 10) + 1¤ → nadwyżka ≥8 (${cyclicSurplusBefore})`);
 ok(
   cyclicSurplusAfter <= 5 || (!cyclicTrimmed.giveItems?.length && !cyclicTrimmed.receiveItems?.length),
   `normal: nadwyżka ≤5 lub oferta wycofana (${cyclicSurplusAfter})`,
@@ -141,7 +142,7 @@ ok(
 
 const cyclicEasy = M.trimProposalForZeroBalance(cyclicRaw, 100, 'easy');
 ok(
-  cyclicEasy.giveItems[0].ilosc === 50 && cyclicEasy.receiveItems[0].ilosc === 1,
+  cyclicEasy.giveItems[0].ilosc === 100 && cyclicEasy.receiveItems[0].ilosc === 1,
   'easy: bez trimu cyklicznego',
 );
 
@@ -173,22 +174,21 @@ ok(
     theirQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 200 }],
   });
   ok(receiveDrewno.receiveItems.length === 1 && receiveDrewno.receiveItems[0].id === 'drewno',
-    `Szybka umowa: drewno (krok 5) NIE znika z propozycji (got ${JSON.stringify(receiveDrewno.receiveItems)})`);
+    `Szybka umowa: drewno (krok 10) NIE znika z propozycji (got ${JSON.stringify(receiveDrewno.receiveItems)})`);
   ok(receiveDrewno.receiveItems[0].ilosc === 10,
     `Szybka umowa: seedQty drewna = min(10, maxQty) = 10, już wielokrotność kroku (got ${receiveDrewno.receiveItems[0].ilosc})`);
 
-  // Partner ma TYLKO 7 szt. (poniżej kotwicy 10, ale powyżej kroku 5) -> floor do 5.
-  const receiveLowStock = M.computeQuickDealBasket({
-    relacjaTotal: 60,
-    ourGoldAvailable: 500,
-    ourResourceOptions: [],
-    theirResourceOptions: [],
-    theirQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 7 }],
-  });
-  ok(receiveLowStock.receiveItems[0]?.ilosc === 5,
-    `Szybka umowa: partner ma 7 szt. -> min(10,7)=7 floruje do 5 (got ${receiveLowStock.receiveItems[0]?.ilosc})`);
+  // R-DYPLO-CENNIK-KROK10-Q1 (2026-08-30): kotwica seedQty (diplomacy-pn-engine.ts,
+  // Math.min(10, pick.maxQty)) jest STAŁĄ liczbą 10 — dawniej WIĘKSZĄ niż krok(5), co
+  // zostawiało pasmo (5,10) do przetestowania „częściowego floora, ale nie zera" (np.
+  // maxQty=7 -> floor do 5). Krok podniesiony do 10 KOLIDUJE z tą samą stałą kotwicą —
+  // pasmo (krok,kotwica) staje się puste (każde maxQty<10 floruje teraz od razu do 0,
+  // każde maxQty>=10 daje kotwicę 10 bez potrzeby floorowania). Scenariusz „częściowy
+  // floor, niezerowy wynik" jest więc dla tego zestawu progów STRUKTURALNIE NIEMOŻLIWY do
+  // odtworzenia — usunięty świadomie, nie przeoczony (patrz test poniżej dla wciąż
+  // aktualnego przypadku „poniżej kroku -> 0 -> fallback złoto").
 
-  // Partner ma TYLKO 3 szt. (poniżej kroku 5) -> brak oferty surowcowej, fallback do gestu złota.
+  // Partner ma TYLKO 3 szt. (poniżej kroku 10) -> brak oferty surowcowej, fallback do gestu złota.
   const receiveBelowKrok = M.computeQuickDealBasket({
     relacjaTotal: 60,
     ourGoldAvailable: 500,
@@ -197,7 +197,7 @@ ok(
     theirQuantityResourceOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 3 }],
   });
   ok(receiveBelowKrok.receiveItems.length === 0,
-    `Szybka umowa: partner ma 3 szt. (< krok 5) -> brak pozycji surowcowej (got ${JSON.stringify(receiveBelowKrok.receiveItems)})`);
+    `Szybka umowa: partner ma 3 szt. (< krok 10) -> brak pozycji surowcowej (got ${JSON.stringify(receiveBelowKrok.receiveItems)})`);
   ok(receiveBelowKrok.giveItems.some(i => i.typ === 'zloto'),
     'Szybka umowa: bez wycenialnego surowca partnera -> fallback gest złota');
 
