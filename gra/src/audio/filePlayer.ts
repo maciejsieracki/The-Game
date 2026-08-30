@@ -523,6 +523,13 @@ const kamienModules = import.meta.glob('./utwory/kamien/*.mp3', {
 const KAMIEN_URLS: readonly string[] = Object.keys(kamienModules).sort()
   .map((k) => kamienModules[k] as string);
 
+const brazModules = import.meta.glob('./utwory/braz/*.mp3', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+const BRAZ_URLS: readonly string[] = Object.keys(brazModules).sort()
+  .map((k) => brazModules[k] as string);
+
 const introModules = import.meta.glob('./utwory/intro/*.mp3', {
   eager: true,
   import: 'default',
@@ -626,6 +633,10 @@ const PORAZKA_URLS: readonly string[] = Object.keys(porazkaModules).sort()
 /** Kamień: shuffle + 3x pod rząd (~90 s/utwór), z crossfade 1,5 s na każdym
  *  przejściu (także między powtórzeniami). */
 export const kamienPlaylist: FilePlaylist = createPlaylist(KAMIEN_URLS, 3);
+
+/** Brąz (era>=2, dopóki kolejne epoki nie dostaną własnej playlisty): ten sam
+ *  mechanizm co Kamień — shuffle + 3x pod rząd, crossfade 1,5 s. */
+export const brazPlaylist: FilePlaylist = createPlaylist(BRAZ_URLS, 3);
 
 /** Intro (ekrany przed rozgrywką): shuffle + 1x, z crossfade 1,5 s. */
 export const introPlaylist: FilePlaylist = createPlaylist(INTRO_URLS, 1, 'stala');

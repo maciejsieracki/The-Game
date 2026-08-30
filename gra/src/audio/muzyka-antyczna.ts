@@ -98,7 +98,7 @@
 // ============================================================================
 
 import {
-  kamienPlaylist, introPlaylist, dyplomacjaPlaylist, preBattlePlaylist,
+  kamienPlaylist, brazPlaylist, introPlaylist, dyplomacjaPlaylist, preBattlePlaylist,
   bitwaPlaylist, zwyciestwoPlaylist, porazkaPlaylist,
   diplomacyPlaylistForCiv, allDiplomacyPlaylists,
 } from './filePlayer';
@@ -1403,11 +1403,17 @@ let eraNow: Era = 1; // gra zaczyna w epoce kamienia
 
 function volCurve(v: number): number { return Math.pow(Math.max(0, Math.min(1, v)), 1.6); }
 
-/** Czy dana epoka gra z prawdziwych plików (kamień) zamiast syntezy poniżej.
- *  false gdy katalog utwory/kamien/ jest pusty => automatyczny fallback na
- *  syntezę composeKamien() (decyzja właściciela: "rozłącz, nie kasuj"). */
+/** Playlista plikowa właściwa dla danej epoki (1=kamień, 2=brąz i dalsze —
+ *  Era zwęża wszystkie epoki >=2 do 2, patrz setEra()). */
+function activeFilePlaylist(era: Era): FilePlaylist {
+  return era === 1 ? kamienPlaylist : brazPlaylist;
+}
+
+/** Czy dana epoka gra z prawdziwych plików zamiast syntezy poniżej. false gdy
+ *  odpowiedni katalog utwory/kamien/ lub utwory/braz/ jest pusty => automatyczny
+ *  fallback na syntezę (decyzja właściciela: "rozłącz, nie kasuj"). */
 function usesFilePlayer(era: Era): boolean {
-  return era === 1 && kamienPlaylist.hasTracks();
+  return activeFilePlaylist(era).hasTracks();
 }
 
 function buildGraf(ac: AudioContext): Graf {
@@ -1583,11 +1589,12 @@ export function startMusic(mood: Mood = 'mapa'): void {
   if (usesFilePlayer(eraNow)) {
     if (!playing) {
       playing = true;
-      kamienPlaylist.setVolume(volume);
-      kamienPlaylist.start();
+      const pl = activeFilePlaylist(eraNow);
+      pl.setVolume(volume);
+      pl.start();
     }
-    // mood nie ma efektu dźwiękowego w kamieniu-plikowym — ta sama playlista
-    // niezależnie od mapa/bitwa (decyzja właściciela Q2=A).
+    // mood nie ma efektu dźwiękowego w playlistach plikowych (kamień/brąz) —
+    // ta sama playlista niezależnie od mapa/bitwa (decyzja właściciela Q2=A).
     return;
   }
   if (ctx === null) {
@@ -1659,13 +1666,15 @@ export function setMood(mood: Mood): void {
 export function setEra(era: number): void {
   const e: Era = era >= 2 ? 2 : 1;
   if (e === eraNow) return;
+  const prevPlaylist = activeFilePlaylist(eraNow);
   const wasFilePlayer = usesFilePlayer(eraNow);
   eraNow = e;
   if (!playing) return; // tylko zapamiętaj epokę startową, bez efektu dźwiękowego
+  const nextPlaylist = activeFilePlaylist(eraNow);
   const nowFilePlayer = usesFilePlayer(eraNow);
   if (wasFilePlayer && !nowFilePlayer) {
-    // kamień(pliki) -> brąz+(synteza)
-    kamienPlaylist.stop();
+    // playlista plikowa -> synteza
+    prevPlaylist.stop();
     if (ctx === null) {
       const w = window as unknown as { AudioContext?: typeof AudioContext;
         webkitAudioContext?: typeof AudioContext };
@@ -1679,11 +1688,20 @@ export function setEra(era: number): void {
     return;
   }
   if (!wasFilePlayer && nowFilePlayer) {
-    // brąz+(synteza) -> kamień(pliki)
+    // synteza -> playlista plikowa
     for (const eng of engines) eng.fadeOutAndDispose(ERA_XFADE);
     engines = [];
-    kamienPlaylist.setVolume(volume);
-    kamienPlaylist.start();
+    nextPlaylist.setVolume(volume);
+    nextPlaylist.start();
+    return;
+  }
+  if (wasFilePlayer && nowFilePlayer) {
+    // playlista plikowa -> INNA playlista plikowa (kamień<->brąz) —
+    // przełączenie natychmiastowe, bez crossfade próbek (jak w pozostałych
+    // przejściach cross-mode powyżej — inny tor odtwarzania niż respawn()).
+    prevPlaylist.stop();
+    nextPlaylist.setVolume(volume);
+    nextPlaylist.start();
     return;
   }
   if (!nowFilePlayer) respawn(ERA_XFADE); // oba w syntezie
@@ -1700,6 +1718,7 @@ export function setMusicVolume(v: number): void {
     graf.sum.gain.setTargetAtTime(volCurve(volume), ctx.currentTime, 0.05);
   }
   kamienPlaylist.setVolume(volume);
+  brazPlaylist.setVolume(volume);
   introPlaylist.setVolume(volume);
   for (const pl of allDiplomacyPlaylists()) pl.setVolume(volume);
   preBattlePlaylist.setVolume(volume);
@@ -1714,7 +1733,7 @@ export function setMusicVolume(v: number): void {
 export function stopMusic(): void {
   if (!playing) return;
   playing = false;
-  kamienPlaylist.stop();
+  activeFilePlaylist(eraNow).stop();
   for (const e of engines) e.fadeOutAndDispose(1.0);
   engines = [];
 }
