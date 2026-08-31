@@ -755,6 +755,7 @@ import type { BattleResult, BattleUnit, BattleOpts } from './battle/battleScene'
 import type { WorldTerrainInput } from './battle/battle-terrain';
 import {
   startMusic, stopMusic, setMood, setEra, setMusicVolume, getMood,
+  getEra as getMusicEra, isMusicPlaying,
   startIntroMusic, startIntroMusicWithFadeIn, stopIntroMusic,
   startAmbience, stopAmbience, setAmbienceVolume, setAmbienceWaterView,
   startMarch, stopMarch, setMarchVolume, playMarchAccent,
@@ -20150,6 +20151,31 @@ async function boot(): Promise<void> {
         document.getElementById('civ-elim-notice-host')?.remove();
         refreshD1bHud();
       },
+    };
+
+    // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug` wyżej) —
+    // wołany WYŁĄCZNIE z Playwright w `tools/muzyka-era-live-e2e-test.cjs`
+    // (R-MUZYKA-ERA-LIVE-E2E-Q1, retro-audyt P-AUDYT-RETRO-MUZYKA-BRAZ-KROK10-Q1 Zarzut #1).
+    // Pozwala Playwright sterować REALNYM `setEra()` silnika muzyki (audio/muzyka-antyczna.ts)
+    // w OBIE strony (Kamień<->Brąz) w żywej, zbudowanej grze i odczytać faktyczny stan
+    // odtwarzania (`getEra()`/`isMusicPlaying()`) — dokładnie te same, już istniejące,
+    // eksportowane funkcje silnika co wywołuje `startGameMusic()` w tym pliku. Hak WYŁĄCZNIE
+    // woła te funkcje i odczytuje ich zwrot — nie reimplementuje `setEra`/`activeFilePlaylist`
+    // (zakaz w dispatchu tego tematu). Rozróżnienie „który plik/playlista faktycznie gra"
+    // (poziom szczegółowości poza tym, co eksportuje moduł muzyki) test uzyskuje OSOBNO,
+    // instrumentując konstruktor `Audio` z poziomu Playwright (`page.addInitScript`) PRZED
+    // załadowaniem gry — bez zmiany logiki filePlayer.ts/muzyka-antyczna.ts (zakazane
+    // bezwzględnie w allowlist tego tematu).
+    // EN: test hook (same pattern/rationale as `__eraTestDebug` above) — called ONLY from
+    // Playwright in `tools/muzyka-era-live-e2e-test.cjs`. Lets the test drive the REAL music
+    // engine `setEra()` in both directions in the live built game and read back real playback
+    // state via the already-exported `getEra()`/`isMusicPlaying()`.
+    (window as any).__musicEraTestDebug = {
+      getEra: (): number => getMusicEra(),
+      isMusicPlaying: (): boolean => isMusicPlaying(),
+      getMood: (): string => getMood(),
+      setEra: (era: number): void => setEra(era),
+      startMusic: (mood?: 'mapa' | 'bitwa'): void => startMusic(mood),
     };
 
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---

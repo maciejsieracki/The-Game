@@ -16,6 +16,9 @@
  *  C. setEra(): playlista plikowa -> INNA playlista plikowa (kamień<->brąz,
  *     oba katalogi mają utwory) — poprzednia .stop(), następna .setVolume()+.start(),
  *     ZERO wywołań spawnEngine/respawn (nowa gałąź tego tematu).
+ *  C'. Lustrzany kierunek C: brąz -> kamień (ta sama gałąź plik->plik), dodane
+ *     R-MUZYKA-ERA-LIVE-E2E-Q1 po retro-audycie P-AUDYT-RETRO-MUZYKA-BRAZ-KROK10-Q1
+ *     (Zarzut #2) — scenariusz C testował WYŁĄCZNIE kamień(1)->brąz(2).
  *  D. setEra(): playlista plikowa -> synteza (fallback, gdy katalog docelowy
  *     pusty — "rozłącz, nie kasuj") — spawnEngine wołane, cel .start() NIE.
  *  E. setEra(): synteza -> playlista plikowa — engines czyszczone (fadeOut),
@@ -166,6 +169,22 @@ function runScenario({ eraStart, playing, kamienHasTracks, brazHasTracks, setEra
   assert('C. brąz.setVolume+start wołane', brazPlaylist.calls.includes('setVolume:0.8') && brazPlaylist.calls.includes('start'), brazPlaylist.calls);
   assert('C. ZERO spawnEngine (nie ma syntezy w tym przejściu)', spawnEngineCalls.length === 0, spawnEngineCalls);
   assert('C. ZERO respawn (nie ma syntezy w tym przejściu)', respawnCalls.length === 0, respawnCalls);
+}
+
+// --- C': plik -> INNY plik, lustrzany kierunek (brąz -> kamień), oba katalogi
+// mają utwory. Ta sama gałąź kodu co C ("playlista plikowa -> INNA playlista
+// plikowa"), dotąd niepokryta w tym kierunku (P-AUDYT-RETRO-MUZYKA-BRAZ-KROK10-Q1
+// Zarzut #2) ---
+{
+  const { result, kamienPlaylist, brazPlaylist, spawnEngineCalls, respawnCalls } = runScenario({
+    eraStart: 2, playing: true, kamienHasTracks: true, brazHasTracks: true, setEraArg: 1,
+  });
+  assert("C'. era faktycznie 1 po setEra(1)", result.eraNow === 1, result);
+  assert("C'. brąz.stop() wołane", brazPlaylist.calls.includes('stop'), brazPlaylist.calls);
+  assert("C'. brąz.start() NIE wołane", !brazPlaylist.calls.includes('start'), brazPlaylist.calls);
+  assert("C'. kamień.setVolume+start wołane", kamienPlaylist.calls.includes('setVolume:0.8') && kamienPlaylist.calls.includes('start'), kamienPlaylist.calls);
+  assert("C'. ZERO spawnEngine (nie ma syntezy w tym przejściu)", spawnEngineCalls.length === 0, spawnEngineCalls);
+  assert("C'. ZERO respawn (nie ma syntezy w tym przejściu)", respawnCalls.length === 0, respawnCalls);
 }
 
 // --- D: plik -> synteza (fallback, katalog docelowy pusty) ---
