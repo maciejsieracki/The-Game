@@ -20132,6 +20132,36 @@ async function boot(): Promise<void> {
         if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
         return { attackerId };
       },
+      // R-WOJNA-ZELAZO-DOWOD-ROZGRYWKA-Q1: lustro `forceBronzeForcedWarOnPlayer` wyżej,
+      // 1:1 te same zasady, dla Żelaza. Hak WYŁĄCZNIE steruje danymi wejściowymi (kto ma
+      // pending wpis Żelaza, kto jest odkryty, gdzie stoi miasto gracza) — sama decyzja i
+      // komenda `wypowiedz_wojne` idą normalną ścieżką silnika przez `endTurn()`
+      // (`decideAIDiplomacy` → `pickIronForcedWarTargetId` → komenda), NIE reimplementowaną.
+      forceIronForcedWarOnPlayer: (): { attackerId: number } => {
+        const attacker = cities.find(c =>
+          c.ownerId > 0
+          && !typCityCopyOwners.has(c.ownerId)
+          && !isBarbarian(c.ownerId)
+          && !eliminatedOwners.has(c.ownerId)
+          && !isOwnerClusterCityState(c.ownerId, ownerCityStateOpts()),
+        );
+        if (!attacker) throw new Error('forceIronForcedWarOnPlayer: brak eligible AI ownera w tym świecie');
+        const attackerId = attacker.ownerId;
+        for (const oid of allPowerOwnerIds()) {
+          if (oid === attackerId || isBarbarian(oid)) continue;
+          const rel = getDiploRelation(attackerId, oid);
+          if (rel.status === 'wojna') setDiploRelation(attackerId, oid, { ...rel, status: 'neutralni' });
+        }
+        ironForceWarPendingOwners.add(attackerId);
+        ironForceWarCycleOwners.delete(attackerId);
+        for (const [key, st] of [...ironForceWarActiveByPairKey.entries()]) {
+          if (st.attackerId === attackerId) ironForceWarActiveByPairKey.delete(key);
+        }
+        diplomaticallyDiscoveredOwners.add(attackerId);
+        const playerCity = cities.find(c => c.ownerId === 0);
+        if (playerCity) { playerCity.q = attacker.q; playerCity.r = attacker.r; }
+        return { attackerId };
+      },
       getRelationStatus: (a: number, b: number): string => getDiploRelation(a, b).status,
     };
 
