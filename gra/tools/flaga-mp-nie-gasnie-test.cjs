@@ -260,6 +260,24 @@ assert(main.includes('clearCityStateFlagOnCapture'),
     'T14: w main.ts zostaly dokladnie 2 reczne przypisania startCityState (oba to spawn), jest ' + przypisania);
 }
 
+// ── T15. Luka Final Control (R-AI-DLUG-PORZADKI-Q1, poz. c): T11/T12 wyzej lapia
+// TYLKO zniknięcie wołania clearCityStateFlagOnCapture(...) — NIE lapia zniknięcia
+// TOWARZYSZĄCEGO mu markCityStateDirty() (bez niego wygaszona flaga nie przelicza
+// ekonomii/HUD do najbliższej innej okazji). Sprawdź PAROWANIE w obu sciezkach
+// zbrojnych naraz — usuniecie ktoregokolwiek `markCityStateDirty()` po
+// `clearCityStateFlagOnCapture(...)` w ktoryms z dwoch blokow ma zaczerwienic ta asercje.
+{
+  const fnBattle = sliceFn(main,
+    'function applyCityCaptureToMap(',
+    '\n    function refreshMapAfterCityCapture(');
+  const fnSiege = sliceFn(main,
+    'function resolveSiegeSurrender(cityId: string): void {',
+    '\n    function endMapSiege(cityId: string): void {');
+  const pairPattern = /clearCityStateFlagOnCapture\([^)]*\)\)\s*markCityStateDirty\(\);/;
+  assert(pairPattern.test(fnBattle) && pairPattern.test(fnSiege),
+    'T15: markCityStateDirty() bezposrednio po clearCityStateFlagOnCapture(...) w OBU sciezkach zbrojnych (applyCityCaptureToMap + resolveSiegeSurrender)');
+}
+
 console.log('\nWynik: ' + passed + ' PASS, ' + failed + ' FAIL');
 try { fs.unlinkSync(entry); fs.unlinkSync(bundle); } catch (e) { /* sprzatanie */ }
 process.exit(failed === 0 ? 0 : 1);

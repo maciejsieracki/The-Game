@@ -24086,6 +24086,11 @@ async function boot(): Promise<void> {
       diplomaticallyDiscoveredOwners.delete(ownerId);
       diplomaticDiscoveryPopupShown.delete(ownerId);
       battlePowerPtsByOwner.delete(ownerId);
+      // P-AI-R5-FC3-CLEANUP-OWNERID-REUSE-Q1: cywilizacja skasowana — usuń ją też
+      // ze stanu AI-suwaków i przekierowania nadwyżki, żeby reuse ownerId nie
+      // odziedziczył stanu po poprzedniej, skasowanej cywilizacji.
+      aiSurplusRedirectedOwners.delete(ownerId);
+      aiSliderStateByOwner.delete(ownerId);
       // Follow-up „przenieś stolicę"/„Power-zdobycze": cywilizacja skasowana, jej
       // wyznaczenie stolicy i (ew. własne) zdobycze nie mają już znaczenia. Zdobycze
       // pokonanego zostały już przejęte przez zwycięzcę WCZEŚNIEJ, w runCapitalCapturePlunder
@@ -25294,6 +25299,13 @@ async function boot(): Promise<void> {
           // do puli imperium -> zero ulepszen terenu) NA STALE. Format jak
           // `eliminatedOwners`/`typCityCopyOwners` nizej: plaska tablica ownerId.
           aiSurplusRedirectedOwners: Array.from(aiSurplusRedirectedOwners),
+          // P-AI-R5-FC4-SLIDER-STATE-NIE-PERSISTOWANY-Q1: stan AI-suwaków ekonomii
+          // (procentBudynki/lastChangeTurn) NIE był zapisywany — powrót po komendzie
+          // (isCommandResume) mógł jednorazowo trafić w wartość domyślną zamiast
+          // własnego wyboru AI. Wzorem `aiSkarbiecByOwner` wyżej — plaska tablica par
+          // [ownerId, stan]. Stary zapis (bez tego pola) wczytuje się z pustym stanem,
+          // patrz restoreGameFromSave niżej.
+          aiSliderStateByOwner: Array.from(aiSliderStateByOwner.entries()),
           zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
           // B5 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): 4 struktury stanu
           // wojny wymuszonej Brązu — bez tego wpisu/odtworzenia licznik miast, cykl i
@@ -32568,6 +32580,17 @@ async function boot(): Promise<void> {
       const savedSurplusRedirected = saved.meta?.aiSurplusRedirectedOwners as number[] | undefined;
       if (savedSurplusRedirected?.length) {
         for (const oid of savedSurplusRedirected) aiSurplusRedirectedOwners.add(oid);
+      }
+      // P-AI-R5-FC4-SLIDER-STATE-NIE-PERSISTOWANY-Q1: odtworz stan AI-suwakow
+      // (wzorem aiSurplusRedirectedOwners wyzej). `clear()` bezwarunkowo — stary
+      // zapis sprzed tej naprawy nie ma pola -> pusty stan (identyczne zachowanie
+      // jak dzis: decideAIEconomySliders liczy od zera), zero bledu na starych zapisach.
+      aiSliderStateByOwner.clear();
+      const savedSliderState = saved.meta?.aiSliderStateByOwner as
+        | Array<[number, AiSliderSettings & { lastChangeTurn: number | null }]>
+        | undefined;
+      if (savedSliderState?.length) {
+        for (const [oid, st] of savedSliderState) aiSliderStateByOwner.set(oid, st);
       }
       aiTargetMemoryByOwner.clear();
       const restoredAiTargetMemory = restoreAiTargetMemory(saved.meta?.aiTargetMemoryByOwner ?? []);
