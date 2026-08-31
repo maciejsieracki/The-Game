@@ -13,6 +13,23 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA b2a7e2cd - 2026-08-31 18:59 UTC - FALA 329: naprawa wojen wymuszonych (barbarzyńcy+pre_contact+gracz jako cel), E2E dowód muzyki era-transition, 4 tematy porządkowe
+
+|- md5 (pełne): b2a7e2cd4d92e9b4bc0f19b53c8b38b5 · stempel: ROBOCZA · label b2a7e2cd · źródłowy commit integracji: `839771ae`
+|- **`P-WOJNA-WYMUSZONA-TRZY-NAPRAWY-Q1`** (`948712b1`, `88b294a7`) — dlaczego wymuszone wojny (Kamień/Brąz/Żelazo) nigdy się nie zdarzały: (a) `countActiveWarsForOwnerExcludingBarbarians` wyklucza barbarzyńców z bramki „już w wojnie" dla wszystkich 3 epok; (b) `partitionDiplomacyCommandsForPlayerFog` przepuszcza `wypowiedz_wojne` AI-AI bez mgły gracza (mgła nadal gate'uje komendy Z UDZIAŁEM gracza); (c) gracz w źródłowej puli kandydatów wymuszonej wojny — **nowa decyzja właściciela zastępująca Q2** z `R-EPOKA-KAMIEN-WYMUSZONA-WOJNA-Q1` („gracz musi być liczony tak samo jak wszystkie cywilizacje"). Potwierdzone realnym Playwright (`forced-war-player-target-live-test.cjs`, 11/11) — realne wypowiedzenie wojny AI→gracz w przeglądarce.
+|- **`R-DYPLO-CENNIK-KROK10-Q1` obrona** (`b7a86d53`) — poprawka kosmetyczna komentarza/asercji w `diplomacy-ai-offer-balance-test.cjs` (Zarzut #3 audytu retro).
+|- **`R-WOJNA-BRAZ-CZYSZCZENIE-NOWA-GRA-Q1`** (`a3c8ffa8`) — blok „nowa gra" czyści też rejestry wymuszonej wojny Brązu (wcześniej tylko Kamień/Żelazo — ownerId reużywane między grami, stary stan Brązu przeciekał).
+|- **`R-MUZYKA-ERA-LIVE-E2E-Q1`** (`ceb69af2`) — nowy hak `__musicEraTestDebug` + realny Playwright test czytający stan `<audio>` PRZED/PO przejściu epoki w OBU kierunkach (Kamień↔Brąz), domyka lukę z retro-audytu `P-AUDYT-RETRO-MUZYKA-BRAZ-KROK10-Q1` (zarzut #1 NAPRAW + #2 scenariusz C' brąz→kamień w teście jednostkowym).
+|- **`R-AI-DLUG-PORZADKI-Q1`** (`077b71d1`) — trzy poprawki długu: `eliminateOwner()` czyści `aiSurplusRedirectedOwners`/`aiSliderStateByOwner`; `aiSliderStateByOwner` persystowany w sejwie; nowa asercja mutacyjna w bramce flagi miasta-państwa.
+|- **`R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1`** (`e1e7bd6f`) — ręczny przycisk „buduj" gracza ograniczony do heksów z obywatelami/złóż, tym samym predykatem co automat AI (naprawa Pytania 4 z audytu AI-przy-rzece).
+|- **`R-WOJNA-ZELAZO-DOWOD-ROZGRYWKA-Q1`** (`839771ae`) — nowy hak `forceIronForcedWarOnPlayer` + realny Playwright dowód wymuszonej wojny Żelaza na gracza, kopia wzorca Brązu.
+|- Wszystkie 7 tematów: pełny cykl Operator→Evaluator→(Obrona)→Final Control przez Workflow, PASS. `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic 213/213, tech-tree 19/19, research 33/33, unit-replace 13/13, combat 6/6) bez regresu po każdej integracji.
+|- Bundle: 881 modułów (bez zmian liczby), `Gra-ROBOCZA.html` 69,0 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden z tematów nie dotyka `units.json`/`battleScene`.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp match WARN — znany, nieszkodliwy artefakt samoreferencyjnego hasha, patrz FALA 301).
+|- **Odstępstwo techniczne (jak w FALACH 324-328):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA daa50734 - 2026-08-30 20:49 UTC - FALA 328: krok handlu surowców w dyplomacji 5→10 szt. (R-DYPLO-CENNIK-KROK10-Q1)
 
 |- md5 (pełne): daa507341a1614fece1cba96db35688e · stempel: ROBOCZA · label daa50734 · źródłowy commit integracji: `dd9fe018`
@@ -26,7 +43,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
 |- **Odstępstwo techniczne (jak w FALACH 324-327):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ b2a7e2cd, FALA 329)
 
 ## ROBOCZA 0ff16ed4 - 2026-08-30 19:31 UTC - FALA 327: playlista plikowa epoki Brązu (23 utwory, nowa — dotąd wyłącznie synteza)
 
