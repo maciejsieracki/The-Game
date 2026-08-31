@@ -31295,6 +31295,12 @@ async function boot(): Promise<void> {
       ironForceWarCycleOwners.clear();
       ironForceWarRestUntilByOwner.clear();
       ironForceWarActiveByPairKey.clear();
+      // R-WOJNA-BRAZ-CZYSZCZENIE-NOWA-GRA-Q1: nowa gra bez przeładowania strony nie może
+      // dziedziczyć rejestrów Brązu z poprzedniej rozgrywki (ownerId są reużywane).
+      bronzeForceWarPendingOwners.clear();
+      bronzeForceWarCycleOwners.clear();
+      bronzeForceWarRestUntilByOwner.clear();
+      bronzeForceWarActiveByPairKey.clear();
       barbCamps = [];
       clearedBarbCampHexes.clear();
       // Audyt #43: cityRelig/autoManageCities przezywaly restart (id 'cityN'
