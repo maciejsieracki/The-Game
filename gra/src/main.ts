@@ -719,10 +719,11 @@ import {
   isMineImprovementKey,
   // R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1: sprzątanie farm-reliktów stojących w lesie.
   removeLegacyFarmsOnForest,
-  // R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1: te dwie funkcje SĄ wyjątkiem złożowym
-  // Zasady 2 — `auto-improvements.ts::hexAllowsKey` (Zasada 2, komentarz tamże) woła
-  // DOKŁADNIE te same dwie funkcje. `applyBuildRequest` niżej odtwarza `hexAllowsKey`
-  // wołając te same funkcje, zamiast kopiować ich wewnętrzną logikę.
+  // P-AI-PRZYCISK-BUDUJ-REGRES-OBYWATELE-Q1: ręczny przycisk „buduj" NIE używa już tych
+  // funkcji do bramkowania (cofnięta R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1 — bramka
+  // „tylko obywatele" obowiązuje wyłącznie w automacie AI, auto-improvements.ts). Zostają
+  // zaimportowane, bo `window.__buildRequestTestDebug` (niżej) nadal ich używa do
+  // wyszukiwania testowych heksów Z/BEZ obywateli w teście regresyjnym.
   hexHasDepositReserve,
   depositAllowsPlayerImprovement,
   type ImprovementBuildImpact,
@@ -11742,34 +11743,6 @@ async function boot(): Promise<void> {
       return false;
     }
 
-    /**
-     * R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1: Zasada 2, sam predykat co automat AI —
-     * NIE kopia jego logiki. Automat definiuje „heks z obywatelami" w
-     * `auto-improvements.ts::pickAutoImprovements` przez `getWorkedHexKeys`, wołane z
-     * TĄ SAMĄ funkcją co panel miasta (`getWorkedTiles` wyżej, linia ~6663):
-     * `workedHexCoordsForCity(city, map, territoryNodes, excludeHexKeys)`
-     * (game/turn-economy.ts). Wyjątek złożowy Zasady 2 (`hexAllowsKey`,
-     * auto-improvements.ts, komentarz „ZASADA 2" tamże) to DOKŁADNIE:
-     *   `hexHasDepositReserve(hex) && depositAllowsPlayerImprovement(key, hex)`
-     * — te same dwie funkcje z map/improvement-build.ts, zaimportowane wyżej i wołane
-     * tu bez zmian. Jedyny nowy kod to spięcie tych trzech gotowych funkcji dla
-     * ręcznego przycisku gracza (auto-improvements.ts nie jest w tej rundzie tykane —
-     * allowlista rundy dopuszcza wyłącznie main.ts + gra/tools/**).
-     */
-    function isCitizenOrDepositHexForBuild(q: number, r: number, key: ImprovementKey): boolean {
-      const hex = map.hexes[`${q},${r}`];
-      if (hex && hexHasDepositReserve(hex) && depositAllowsPlayerImprovement(key, hex)) {
-        return true;
-      }
-      const nodes = buildAllTerritoryNodes();
-      for (const city of cities) {
-        if (city.ownerId !== 0) continue;
-        const worked = workedHexCoordsForCity(city, map, nodes, siblingClaimedHexKeysForCity(city));
-        if (worked.some(c => c.q === q && c.r === r)) return true;
-      }
-      return false;
-    }
-
     function applyBuildRequest(req: ImprovementBuildRequest): void {
       if (pendingImprovementsTurn.has(req.hexKey, req.key)) {
         undoPendingBuildRequest(req);
@@ -11781,16 +11754,6 @@ async function boot(): Promise<void> {
 
       if (!pendingImprovementsTurn.has(req.hexKey, req.key)
         && !assertPlayerTerritoryForBuild(req.q, req.r, req.key)) {
-        return;
-      }
-
-      // R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1 (Zasada 2, ta sama funkcja co automat AI —
-      // patrz dowód w komentarzu `isCitizenOrDepositHexForBuild` wyżej): ręczny przycisk
-      // gracza odrzuca budowę na heksie bez obywateli, z wyjątkiem złóż, dokładnie jak
-      // automat gracza (`getOnlyWorked`/`getWorkedHexKeys` przy `pickAutoImprovements`,
-      // linia ~27581 niżej w tym pliku).
-      if (!isCitizenOrDepositHexForBuild(req.q, req.r, req.key)) {
-        showHintMessage('Buduj tylko tam, gdzie pracują obywatele (wyjątek: złoża)', 3000);
         return;
       }
 
@@ -20167,14 +20130,16 @@ async function boot(): Promise<void> {
 
     // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__eraTestDebug` wyżej) —
     // wołany WYŁĄCZNIE z Playwright w `tools/build-request-obywatele-live-test.cjs`
-    // (R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1, kryterium końca 5). Woła REALNY
-    // `applyBuildRequest` (ten sam, pod tym samym przyciskiem „buduj" w panelu budowy) i
-    // czyta REALNY stan (`placedImprovements`, `map.hexes`) — jedyne co hak "oszukuje" to
-    // (a) dobór współrzędnych heksa Z/BEZ obywateli (przez te same REALNE funkcje co
-    // `isCitizenOrDepositHexForBuild` wyżej: `workedHexCoordsForCity`,
+    // (P-AI-PRZYCISK-BUDUJ-REGRES-OBYWATELE-Q1, test regresyjny o odwróconym sensie: dowodzi,
+    // że ręczny przycisk „buduj" DZIAŁA na heksie BEZ obywateli, bo bramka „tylko obywatele"
+    // z R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1 została z niego cofnięta i obowiązuje już
+    // wyłącznie w automacie AI). Woła REALNY `applyBuildRequest` (ten sam, pod tym samym
+    // przyciskiem „buduj" w panelu budowy) i czyta REALNY stan (`placedImprovements`,
+    // `map.hexes`) — jedyne co hak "oszukuje" to (a) dobór współrzędnych heksa Z/BEZ
+    // obywateli (przez te same REALNE funkcje co dawna bramka: `workedHexCoordsForCity`,
     // `hexHasDepositReserve` — nie zgadywanie), (b) odblokowanie wszystkich technologii i
-    // puli Pracy, żeby test mierzył WYŁĄCZNIE bramkę Zasady 2, nie inne, niezwiązane bramki
-    // (koszt/technologia) które i tak stoją PRZED nią w `applyBuildRequest`.
+    // puli Pracy, żeby test mierzył WYŁĄCZNIE zachowanie `applyBuildRequest`, nie inne,
+    // niezwiązane bramki (koszt/technologia) które i tak stoją PRZED nim w kodzie.
     (window as any).__buildRequestTestDebug = {
       findTestHexes: (): {
         workedHex: { q: number; r: number } | null;
@@ -20204,6 +20169,30 @@ async function boot(): Promise<void> {
         }
         return { workedHex: workedPick, unworkedHex: unworkedPick };
       },
+      // P-AI-PRZYCISK-BUDUJ-REGRES-OBYWATELE-Q1: drugi, ŚWIEŻY heks BEZ obywateli, bez
+      // złoża i bez postawionych ulepszeń — potrzebny bo test wykorzystuje `unworkedHex`
+      // z `findTestHexes` do scenariusza ulepszenia surowcowego (kryterium 3a) i musi
+      // przetestować wycinkę lasu (kryterium 3b) na ODDZIELNYM heksie.
+      findFreshUnworkedHex: (): { q: number; r: number } | null => {
+        const city = cities.find(c => c.ownerId === 0);
+        if (!city) return null;
+        const nodes = buildAllTerritoryNodes();
+        const workedCoords = workedHexCoordsForCity(city, map, nodes, siblingClaimedHexKeysForCity(city));
+        const workedSet = new Set(workedCoords.map(({ q, r }) => `${q},${r}`));
+        const radius = cityTerritoryRadius({ q: city.q, r: city.r, pop: city.population, level: 1 });
+        for (const key of hexKeysWithinRadius(city.q, city.r, radius, map)) {
+          if (workedSet.has(key)) continue;
+          const [qs, rs] = key.split(',');
+          const q = Number(qs), r = Number(rs);
+          if (!isTerritoryHexOwnedBy(q, r, 0, nodes)) continue;
+          const h = map.hexes[key];
+          if (!h || hexHasDepositReserve(h)) continue;
+          if ((placedImprovements.get(key) ?? []).length > 0) continue;
+          if (hexClearingStates.has(key)) continue;
+          return { q, r };
+        }
+        return null;
+      },
       // Wymusza złoże miedzi na WSKAZANYM heksie (bez obywateli) — REALNY test wyjątku
       // złożowego Zasady 2 (`depositAllowsPlayerImprovement('kopalnia_miedzi', hex)` ===
       // TA SAMA funkcja co `hexAllowsKey` automatu AI, auto-improvements.ts).
@@ -20213,6 +20202,19 @@ async function boot(): Promise<void> {
         (h as unknown as { zloze?: string }).zloze = 'miedz';
         return true;
       },
+      // Wymusza las (bez złoża) na WSKAZANYM heksie — REALNY test wycinki bez obywateli
+      // (kryterium 3b tego tematu): `applyBuildRequest` wymaga `nakladka === Nakladka.Las`
+      // (main.ts, blok `action === 'wycinka'`) niezależnie od obywateli.
+      forceForestNoDeposit: (q: number, r: number): boolean => {
+        const h = map.hexes[`${q},${r}`];
+        if (!h) return false;
+        (h as unknown as { zloze?: string }).zloze = undefined;
+        h.nakladka = Nakladka.Las;
+        return true;
+      },
+      // Czyta REALNY `hexClearingStates` (ten sam Map co w `applyBuildRequest`) — dowód,
+      // że wycinka faktycznie wystartowała (nie cichy no-op).
+      isClearing: (q: number, r: number): boolean => hexClearingStates.has(`${q},${r}`),
       unlockAllTech: (): void => {
         player.zbadane = new Set(data.tech.map(t => t.Technologia as string));
       },
