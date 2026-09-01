@@ -44,6 +44,7 @@
     "przyrostUtrzymania": 0,
     "wymagania": "Drewno w magazynie państwa (na koszt budowy i bramkę surowca)",
     "uwagi": "B-SUROW-BUD-03: bonus Pracy only — bez konwertera desek",
+    "historia": "Warsztat stolarski to jedno z najstarszych rzemiosł ludzkości, obecne już w osadach neolitycznych, gdzie drewno służyło do budowy domów, narzędzi, łodzi i mebli. W starożytnym Egipcie i Mezopotamii cieśle i stolarze tworzyli specjalizowane cechy, opracowując techniki łączenia drewna na czop i wpust bez użycia gwoździ. W średniowiecznej Europie warsztaty stolarskie skupiały się w miastach wokół cechów, które strzegły tajników rzemiosła i szkoliły kolejne pokolenia czeladników. Narzędzia takie jak piła, dłuto i strug pozwalały przekształcać surowe pnie w precyzyjne elementy konstrukcyjne, meble i detale architektoniczne. Do dziś ślady dawnych technik stolarskich można odnaleźć w zachowanych szkieletowych konstrukcjach dachów i XVII-wiecznych meblach, które przetrwały wieki bez jednego grama kleju.",
     "techUnlock": "Obróbka drewna",
     "koszt_surowce": {
       "drewno": 25
@@ -83,6 +84,7 @@
     "przyrostUtrzymania": 0,
     "wymagania": "Dostęp do Kamienia w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "uwagi": "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
+    "historia": "Warsztat kamieniarski to rzemiosło obróbki kamienia sięgające epoki kamienia, kiedy ludzie uczyli się łupać krzemień i formować głazy w narzędzia oraz elementy budowlane. Prawdziwy rozkwit kamieniarstwa nastąpił wraz z budową wielkich cywilizacji — egipskie piramidy, greckie świątynie i rzymskie akwedukty powstawały dzięki precyzyjnej pracy kamieniarzy, którzy potrafili ciąć, gładzić i dopasowywać bloki skalne bez zaprawy. Średniowieczni kamieniarze budujący katedry gotyckie tworzyli własne cechy i tajne znaki masonów, z których część dała początek późniejszemu ruchowi wolnomularskiemu. Praca wymagała nie tylko siły, ale ogromnej precyzji — błąd w cięciu bloku fundamentowego mógł oznaczać katastrofę całej budowli. Warsztaty kamieniarskie dostarczały materiał na mury obronne, place i pomniki, będąc podstawą trwałości każdej większej osady.",
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
       "drewno": 30
@@ -122,6 +124,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "Dostęp do Rudy (miedź) w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Kuźnia brązu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
+    "historia": "Kuźnia epoki brązu to miejsce, w którym kowale kuli gotowy metal na broń i uzbrojenie, nadając mieczom, grotom włóczni i tarczom kształt i twardość niezbędną na polu bitwy. Technologia stopu miedzi z cyną rozprzestrzeniła się z Bliskiego Wschodu i Anatolii około 3300 roku p.n.e., dając nazwę całej epoce w dziejach ludzkości i rewolucjonizując zarówno wojskowość, jak i rolnictwo. Kowal-zbrojmistrz musiał opanować sztukę kucia rozgrzanego metalu młotem na kowadle, hartowania i nadawania ostrza — umiejętności przekazywane zazwyczaj z ojca na syna w zamkniętych, cenionych bractwach. Dobrze wyposażona w broń z brązu drużyna dawała władcy realną przewagę militarną, dlatego kuźnie często pozostawały pod bezpośrednią kontrolą wodzów i królów. Ponieważ cyna i miedź rzadko występowały razem w jednym regionie, kuźnie brązownicze były ściśle powiązane z dalekosiężnym handlem surowcami, co czyniło je jednym z pierwszych ogniw międzykontynentalnej wymiany.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
       "drewno": 30,
@@ -162,6 +165,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "Ruda w magazynie państwa",
     "uwagi": "Odlewnia brązu (tier1 łańcucha odlewni); upgrade → Odlewnia żelaza. Dostęp brąz = Kopalnia miedzi (mapa) + ten budynek. Konwerter: ruda+drewno→brąz. Piec hutniczy = rezerwowana nazwa na przyszłe epoki (NIE ten budynek). LANCUCH W GORE: maksPoziom=1 — wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza.",
+    "historia": "Odlewnia brązu to miejsce, w którym rzemieślnicy opanowali sztukę odlewania metalu — wlewania roztopionego stopu miedzi i cyny do glinianych lub kamiennych form, by uzyskać przedmioty o kształtach niemożliwych do uzyskania samym kuciem. Technika ta, znana już w III tysiącleciu p.n.e. na Bliskim Wschodzie, pozwalała masowo wytwarzać narzędzia rolnicze, kotły, ozdoby i figury kultowe o powtarzalnej jakości. Szczególnie cenioną metodą był odlew na wosk tracony, w którym woskowy model pokrywano gliną, a następnie wytapiano wosk, pozostawiając pustą formę do zalania metalem — technika stosowana od starożytnych Chin po renesansowe warsztaty brązownicze we Florencji. Odlewnie brązu wymagały stałego dopływu rudy miedzi oraz drewna na opał pieców, co czyniło je zależnymi od handlu surowcami na duże odległości. Wyroby z odlewni — od monet po posągi bóstw — stały się jednym z najbardziej rozpoznawalnych świadectw dobrobytu i rzemieślniczego kunsztu starożytnych cywilizacji.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
       "drewno": 30,
@@ -202,6 +206,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Odlewni brązu",
     "uwagi": "Upgrade Odlewni brązu → Odlewnia żelaza. Produkuje BRĄZ (jak tier1) + ŻELAZO równolegle (dwa konwertery, jeden slot). Decyzja 42A (Maciej 2026-07-25): Praca 8→12 pkt/turę. LANCUCH W GORE: maksPoziom=1 — awans na Wielka odlewnia.",
+    "historia": "Odlewnia żelaza wyrosła z przełomu technologicznego epoki żelaza, gdy hutnicy nauczyli się osiągać w piecach temperatury wystarczające do wytopu żelaza z rudy — proces trudniejszy niż w przypadku brązu, ale dający surowiec twardszy, tańszy i znacznie powszechniej dostępny. Umiejętność ta rozpowszechniła się z Anatolii i Kaukazu około XII wieku p.n.e., docierając z czasem do Europy, Afryki i Azji, gdzie doprowadziła do stopniowego wyparcia broni i narzędzi brązowych. Wczesne piece dymarskie wymagały ciągłego dopływu węgla drzewnego i rudy oraz mieszków utrzymujących wysoką temperaturę, a wytworzoną gąbczastą masę żelaza — łupkę — trzeba było jeszcze przekuwać, by pozbyć się zanieczyszczeń. Powszechna dostępność żelaza sprawiła, że uzbrojenie i narzędzia rolnicze przestały być przywilejem elit, co miało głęboki wpływ na organizację społeczną i militarną starożytnych państw. Odlewnie żelaza stały się fundamentem gospodarczym cywilizacji na wiele kolejnych stuleci, aż do nadejścia rewolucji przemysłowej.",
     "techUnlock": "Hutnictwo żelaza",
     "upgradeFrom": "odlewnia_brazu",
     "koszt_surowce": {
@@ -244,6 +249,7 @@
     "wymagania": "upgrade Odlewni żelaza; dostęp do Stali w imperium (aktywne źródło lub zapas w magazynie państwa)",
     "wymaganySurowiec": "stal",
     "uwagi": "Upgrade Odlewnia żelaza → Wielka odlewnia. Produkuje BRĄZ + ŻELAZO + STAL (trzy konwertery, jeden slot). PARKOWANE: epokaWejscia=4. LANCUCH W GORE: maksPoziom=1 (koniec łańcucha odlewni). Wielka Kuźnia = tylko Pancerz, NIE stal.",
+    "historia": "Wielka odlewnia to symbol dojrzałego hutnictwa, zdolnego przetwarzać rudę w stal — stop żelaza z węglem o kontrolowanej zawartości, znacznie twardszy i bardziej elastyczny niż zwykłe żelazo kute. Choć prymitywne formy stali znano już w starożytnych Indiach (słynna stal wootz) i u kowali damasceńskich, dopiero rozwój wielkich pieców oraz technik takich jak proces pudlingowy w XVIII i XIX wieku pozwolił wytwarzać ją na skalę przemysłową. Wielkie huty, jak brytyjskie zakłady w Coalbrookdale czy późniejsze odlewnie Zagłębia Ruhry, stały się sercem rewolucji przemysłowej, dostarczając stal na szyny kolejowe, mosty, maszyny i okręty. Praca w takich zakładach była niebezpieczna i wyczerpująca — hutnicy pracowali w ekstremalnym żarze przy piecach buchających ogniem dniem i nocą. Skala produkcji takich odlewni decydowała często o potędze militarnej i gospodarczej całych państw, zwiastując nadejście epoki przemysłowej.",
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "odlewnia_zelaza",
     "koszt_surowce": {
@@ -296,6 +302,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "",
     "uwagi": "PYTANIE 20=A (Maciej 2026-07-26): dawny przyrost.mnoznik=3 przy baza.mnoznik=0 nigdy nie byl czytany przez silnik dla tego budynku (mnoznik zyje wylacznie dla 6 rozpoznanych budynkow sciezek Pancerz/Parametry, patrz unit-building-bonuses.ts) -- realny efekt handlowy Targowiska byl wiec zerowy na kazdym poziomie mimo widocznego chipu. Naprawa: zamierzony efekt przeniesiony do baza.pieniadz (3->5) i przyrost.pieniadz (2->3), mnoznik skasowany (oba pola = 0).",
+    "historia": "Targowisko to serce gospodarcze każdej dawnej osady — otwarty plac lub ulica, gdzie kupcy, rzemieślnicy i rolnicy spotykali się, by wymieniać towary jeszcze zanim powstał pieniądz w dzisiejszej postaci. Od starożytnych agor greckich, przez rzymskie fora, po średniowieczne rynki miast europejskich, targowisko pełniło funkcję nie tylko handlową, lecz i społeczną — tu ogłaszano ważne wieści, rozstrzygano spory, a czasem wymierzano publiczną sprawiedliwość. Regularne dni targowe, często wyznaczane co tydzień, przyciągały handlarzy z okolicznych wsi i dalekich krajów, czyniąc miasto węzłem wymiany dóbr i informacji. Wraz z rozwojem handlu targowiska ewoluowały w stałe hale targowe i giełdy, a wokół nich powstawały banki i domy kupieckie. Tętniący życiem rynek miejski był zwykle najlepszym wskaźnikiem dobrobytu i witalności całego miasta.",
     "techUnlock": "Wymiana",
     "koszt_surowce": {
       "drewno": 30
@@ -335,6 +342,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "Wybrzeże morskie lub rzeka w zasięgu tego miasta",
     "uwagi": "LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Port wielki. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    "historia": "Port handlowy to brama łącząca miasto ze światem — miejsce, gdzie od tysięcy lat cumowały statki wiozące towary, ludzi i idee między odległymi krainami. Fenicjanie, a później Grecy i Rzymianie, budowali rozbudowane systemy nabrzeży, magazynów i latarni morskich, czyniąc z portów takich jak Kartagina czy Ostia filary swoich imperiów handlowych. Port wymagał nie tylko dogodnego położenia przy wybrzeżu czy ujściu rzeki, lecz też infrastruktury do rozładunku, przechowywania towarów i ich dalszego transportu w głąb lądu. Miasta portowe często rozwijały się szybciej niż śródlądowe ośrodki, ponieważ handel morski był tańszy i szybszy niż transport lądowy, a kontakt z obcymi kulturami sprzyjał wymianie technologii i wierzeń. Kontrola nad ważnym portem bywała też źródłem konfliktów — wiele wojen starożytności i średniowiecza toczono właśnie o dostęp do kluczowych szlaków morskich.",
     "techUnlock": "Żegluga",
     "koszt_surowce": {
       "drewno": 60,
@@ -375,6 +383,7 @@
     "przyrostUtrzymania": 1,
     "wymagania": "upgrade Portu handlowego; wybrzeże morskie lub rzeka w zasięgu tego miasta",
     "uwagi": "ABC-20 B: suma bonusów Port + Port wielki w JSON. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. Budowla portowa epoki Żelaza -> drewno+kamień (nie drewno+cegła), zeby miasto bez zloza gliny nie zostalo bez portu.",
+    "historia": "Wielki port to rozbudowana forma dawnych przystani morskich, jaką widzieliśmy w metropoliach handlowych takich jak hellenistyczna Aleksandria ze słynną latarnią na wyspie Faros czy późniejsza Wenecja z jej rozległym Arsenałem i systemem doków. Takie porty potrafiły obsługiwać jednocześnie dziesiątki, a nawet setki statków, dysponując rozbudowanymi magazynami, nabrzeżami, stoczniami remontowymi i strażą portową chroniącą towary przed piratami. Wzrost skali handlu morskiego wymagał inwestycji w kamienne mola, doki suche oraz systemy celne kontrolujące przepływ towarów i podatki. Miasta posiadające wielki port, jak średniowieczna Genua czy hanzeatycka Lubeka, potrafiły zdominować całe regiony gospodarcze dzięki kontroli nad kluczowymi trasami morskimi. Rozbudowa portu bywała też inwestycją strategiczną — silna baza morska oznaczała możliwość wysłania floty wojennej daleko poza własne wybrzeże.",
     "techUnlock": "Inżynieria",
     "upgradeFrom": "port",
     "koszt_surowce": {
@@ -416,6 +425,7 @@
     "przyrostUtrzymania": 0,
     "wymagania": "Dostęp do Ceramiki w imperium (wybudowana Garncarnia gdziekolwiek w imperium ALBO zapas Ceramiki w puli państwa)",
     "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
+    "historia": "Spichlerz to budowla magazynowa służąca do przechowywania zboża i innych plonów, znana od czasów najwcześniejszych cywilizacji rolniczych Mezopotamii i Egiptu, gdzie nadwyżki żywności trzeba było zabezpieczyć przed gryzoniami, wilgocią i złodziejami. Egipskie spichlerze państwowe, opisywane już w biblijnej historii Józefa, pozwalały władcom gromadzić zapasy zboża na wypadek nieurodzaju i klęsk głodu, co czyniło kontrolę nad zapasami żywności realnym narzędziem władzy politycznej. Budowane zwykle na podwyższeniu, z drewnianą lub kamienną konstrukcją unoszącą podłogę nad ziemią, chroniły ziarno przed wilgocią i szkodnikami znacznie skuteczniej niż przechowywanie w domostwach. W średniowiecznej Europie spichlerze — szczególnie te budowane przez zakony i miasta hanzeatyckie w Gdańsku czy Toruniu — stały się symbolem zamożności i bezpieczeństwa żywnościowego całych regionów. Zdolność do gromadzenia i dystrybucji zapasów żywności była jednym z fundamentów, na których w ogóle mogły powstać duże, osiadłe społeczeństwa.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
       "drewno": 40
@@ -456,6 +466,7 @@
     "przyrostUtrzymania": 0,
     "wymagania": "Upgrade ze Spichlerza I + dostęp do Soli w imperium (aktywne źródło — warzelnia na złożu lub wybrzeżu)",
     "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
+    "historia": "Rozbudowany spichlerz to naturalny etap rozwoju magazynowania żywności, jaki obserwujemy w miastach, które dorobiły się nadwyżek na tyle dużych, że pojedynczy budynek przestawał wystarczać. Wraz z upowszechnieniem soli jako konserwantu — pozyskiwanej z warzelni nadmorskich lub kopalń takich jak te w Wieliczce — możliwe stało się przechowywanie nie tylko zboża, ale i solonego mięsa oraz ryb przez wiele miesięcy, co znacząco wydłużało okres bezpieczeństwa żywnościowego. Wielkie kompleksy spichrzowe, jak te zachowane do dziś w Gdańsku czy w hanzeatyckiej Lubece, potrafiły magazynować zapasy dla całych miast i regionów, stając się jednocześnie ważnym elementem miejskiej zabudowy i architektury. Sól, ceniona w starożytności niemal jak metal szlachetny, bywała też środkiem płatniczym — od niej pochodzi zresztą łacińskie słowo „salarium”, czyli żołd. Rozwinięte spichlerze solno-zbożowe świadczyły o dojrzałości gospodarczej miasta i jego zdolności do przetrwania długich okresów niepewności.",
     "techUnlock": "Warzelnia soli",
     "koszt_surowce": {
       "drewno": 40,
@@ -496,6 +507,7 @@
     "przyrostUtrzymania": 0,
     "wymagania": "Dostęp do Gliny w imperium (aktywne źródło lub zapas gliny w magazynie państwa); koszt drewna z magazynu państwa",
     "uwagi": "ABC-6: glina+drewno→ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
+    "historia": "Garncarstwo to jedno z najstarszych rzemiosł, sięgające epoki neolitu, gdy ludzie odkryli, że wypalana w ogniu glina zmienia się w trwałe, wodoodporne naczynia. Koło garncarskie, wynalezione w Mezopotamii około IV tysiąclecia p.n.e., zrewolucjonizowało produkcję, pozwalając rzemieślnikom kształtować symetryczne naczynia znacznie szybciej niż ręcznie lepioną metodą wałeczkową. Ceramika służyła nie tylko do przechowywania zboża, wody, wina i oliwy, lecz stała się też nośnikiem sztuki — greckie wazy czarnofigurowe i czerwonofigurowe do dziś są głównym źródłem wiedzy o codziennym życiu i mitologii starożytnej Hellady. Piece garncarskie, potrafiące osiągać wysokie temperatury, wymagały sporych ilości drewna opałowego i były zwykle lokowane na obrzeżach osad ze względu na dym i ryzyko pożaru. Wyroby garncarskie, choć kruche, przetrwały tysiąclecia w formie skorup, stając się dla archeologów jednym z najcenniejszych źródeł datowania i badania dawnych kultur.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
       "drewno": 30
@@ -535,6 +547,7 @@
     "przyrostUtrzymania": 0,
     "wymagania": "Dostęp do Gliny w imperium (aktywne źródło lub zapas gliny w magazynie państwa); koszt drewna i kamienia z magazynu państwa",
     "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
+    "historia": "Cegielnia produkuje cegły — formowane i wypalane bloki gliny, które od czasów starożytnej Mezopotamii i doliny Indusu umożliwiły budowę trwałych murów tam, gdzie brakowało naturalnego kamienia. Sumeryjczycy suszyli swoje pierwsze cegły na słońcu, lecz to wypalanie w piecu, znane już starożytnym Rzymianom, nadawało materiałowi twardość i odporność na wilgoć, dzięki czemu rzymskie mury i akwedukty przetrwały do naszych czasów. Produkcja cegieł wymagała dostępu do gliny o odpowiednim składzie oraz dużych ilości opału do wypału, co czyniło cegielnie zależnymi od bliskości złóż surowca i lasów. Ujednolicony rozmiar cegły pozwalał budowniczym planować konstrukcje z matematyczną precyzją i szybciej wznosić mury niż przy nieregularnym kamieniu. Rozwój cegielnictwa w średniowiecznej Europie północnej, gdzie brakowało kamienia budowlanego, dał początek charakterystycznemu stylowi gotyku ceglanego widocznemu do dziś w miastach nadbałtyckich.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
       "drewno": 30,
@@ -575,6 +588,7 @@
     "przyrostUtrzymania": 0,
     "wymagania": "",
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Świątynia stoi teraz obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie następca w upgradeFrom. WYJĄTEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali łamałby zgodność historyczną).",
+    "historia": "Kamienne kręgi to megalityczne budowle wznoszone przez społeczności neolityczne i wczesnej epoki brązu, z których najsłynniejszym przykładem pozostaje angielskie Stonehenge, wzniesione etapami między 3000 a 1500 rokiem p.n.e. Jeszcze starszym i równie zagadkowym stanowiskiem jest tureckie Göbekli Tepe, datowane na około 9600 rok p.n.e. — kompleks kamiennych kręgów uznawany za jedno z najstarszych znanych miejsc kultu na świecie, wzniesiony jeszcze przed wynalezieniem rolnictwa. Budowa takich konstrukcji, wymagająca transportu i ustawienia wielotonowych głazów bez użycia metalu czy koła, świadczy o zdolności prehistorycznych społeczności do zorganizowanej pracy zbiorowej na ogromną skalę. Wiele kręgów wykazuje precyzyjne wyrównanie względem przesileń słonecznych i wschodów gwiazd, co sugeruje ich rolę jako kalendarzy astronomicznych oraz miejsc obrzędów religijnych związanych z cyklem pór roku. Choć dokładne znaczenie i sposób użycia większości kamiennych kręgów pozostają przedmiotem naukowych sporów, ich monumentalna trwałość uczyniła je jednymi z najbardziej rozpoznawalnych świadectw duchowości pradawnych ludzi.",
     "techUnlock": "Mistycyzm",
     "koszt_surowce": {
       "kamien": 40
