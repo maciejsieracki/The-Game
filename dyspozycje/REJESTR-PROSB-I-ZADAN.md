@@ -3366,7 +3366,7 @@ FALA 1 tresci R-KARTY-HISTORIA-Q1 — status integracji (2026-09-01):
 - **B1 (14 budynkow): ZINTEGROWANE do `main` (f2e262a2)**. Pelny cykl, zero zarzutow Evaluatora, Final Control PASS.
 - **T1 (11 technologii): ZINTEGROWANE do `main` (8181c5a9 + 03f7b433)**. Evaluator 1 zarzut proceduralny (brakujace 4/5 bramek w raporcie) - Obrona uzupelnila, Final Control PASS.
 - **I1 (11 ulepszen terenu): ZINTEGROWANE do `main` (03ea4a1f)**. Zero zarzutow Evaluatora, Final Control PASS.
-- **U1 (13 jednostek): Operator PASS, Evaluator 1 zarzut proceduralny (status powinien byc PASS-WITH-NOTES, ta sama klasa fixture-driftu co B1/T1/I1) - Obrona PRZYJELA i skorygowala etykiete (commit `a04ff877`) — Final Control w toku.**
+- **U1 (13 jednostek): ZINTEGROWANE do `main` (28b04619)**. Evaluator 1 zarzut proceduralny (status powinien byc PASS-WITH-NOTES, ta sama klasa fixture-driftu co B1/T1/I1) - Obrona PRZYJELA i skorygowala etykiete, Final Control PASS-WITH-NOTES.
 - Wszystkie 3 zintegrowane batche (B1/T1/I1) zgodnie odslonily TEN SAM efekt uboczny: `gra/tools/entity-card-historia-section-test.cjs` (test z tematu INFRA) uzywal REALNYCH encji (stolarnia/Lowiectwo/farma) jako fixture "jeszcze pustych" - po integracji tresci te 2 asercje slusznie czerwienieja (test bledny, nie tresc). Zarejestrowany i dispatchowany osobny, maly temat naprawczy: `P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1` (patrz nizej).
 
 | ID | Data | Prośba | Status | Uwagi |
