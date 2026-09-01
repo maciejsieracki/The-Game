@@ -429,9 +429,39 @@ if (city) {
     return text.slice(bodyStart, bodyEnd);
   }
 
+  /**
+   * OBRONA RUNDA 3 (zarzut Final Control, PRZYJETY): poprzednia wersja szukala
+   * pozycji wywolania `text.indexOf(callName + "(")` na SUROWYM tekscie funkcji,
+   * PRZED usunieciem komentarzy -- dopiero PO znalezieniu pozycji stosowala
+   * stripComments do samych argumentow. Atak: martwy komentarz zawierajacy
+   * poprawnie wygladajace FIKCYJNE wywolanie `previewCityEconomy(...)`
+   * umieszczony PRZED prawdziwym (zregresowanym) kodem -- indexOf na surowym
+   * tekscie znajdowal pierwsze (falszywe) wystapienie WEWNATRZ komentarza,
+   * wiec guard walidowal atrape, nie prawdziwy zregresowany kod (falszywy PASS
+   * mimo realnego regresu w main.ts). Naprawa: budujemy tekst "tylko-kod"
+   * (bez komentarzy/stringow, tym samym tokenizerem `scanCode` co reszta pliku)
+   * WRAZ Z MAPA pozycji stripped->oryginal, szukamy `callName(` na tym
+   * oczyszczonym tekscie, po czym mapujemy znaleziona pozycje z powrotem na
+   * oryginalny tekst -- komentarz-atrapa jest w tym momencie juz usuniety
+   * z przeszukiwanego tekstu, wiec nie moze zostac dopasowany jako wywolanie.
+   */
+  function findRealCallIndex(text, callName) {
+    let stripped = '';
+    const indexMap = [];
+    scanCode(text, 0, (ch, i) => {
+      stripped += ch;
+      indexMap.push(i);
+      return true;
+    });
+    const needle = `${callName}(`;
+    const strippedIdx = stripped.indexOf(needle);
+    if (strippedIdx === -1) return -1;
+    return indexMap[strippedIdx];
+  }
+
   /** Rozbija argumenty wywolania `callName(` na top-level przecinkach. */
   function extractCallArgs(text, callName) {
-    const callIdx = text.indexOf(`${callName}(`);
+    const callIdx = findRealCallIndex(text, callName);
     if (callIdx === -1) {
       throw new Error(`checkRealFixSiteInMainTs: nie znaleziono wywolania ${callName}(...)`);
     }
@@ -586,6 +616,35 @@ if (city) {
     'ATAK Z RAPORTU EVALUATORA: fikcyjna nazwa-atrapa (substring obu nazw, brak realnego wywolania) NIE jest uznawana za prawdziwe obliczenie',
     !stubNameIsRealCalc,
     `stubName=${JSON.stringify(stubNameRaw)}`,
+  );
+
+  // --- (5) OBRONA RUNDA 3: dokladny atak z raportu Final Control -- martwy
+  // komentarz zawierajacy POPRAWNIE WYGLADAJACE FIKCYJNE wywolanie
+  // `previewCityEconomy(...)` (z prawdziwymi, nie-undefined wartosciami na
+  // pozycjach 10/11) UMIESZCZONY PRZED prawdziwym (zregresowanym, z literalnym
+  // `undefined,undefined`) wywolaniem. Poprzednia wersja `extractCallArgs()`
+  // szukala pozycji `text.indexOf(callName + "(")` na SUROWYM tekscie, PRZED
+  // usunieciem komentarzy -- wiec trafiala na pierwsze (falszywe) wystapienie
+  // WEWNATRZ komentarza i zwracala argumenty ATRAPY (wygladajace jak poprawka),
+  // ignorujac prawdziwy zregresowany kod ponizej -- falszywy PASS mimo realnego
+  // buga. Po naprawie (lokalizacja na tekscie JUZ oczyszczonym z komentarzy,
+  // z mapowaniem pozycji z powrotem na oryginal) guard MUSI znalezc DRUGIE
+  // (prawdziwe) wywolanie i wykryc regres. ---
+  const dummyCallInComment = `
+  // martwy kod, nigdy sie nie wykonuje -- ale wyglada jak prawdziwa poprawka:
+  // previewCityEconomy(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,tradeRouteBuildingBonusByCity,computeTradeRouteIncomeByCity(loadTradeRouteIncomeParams(city)));
+  previewCityEconomy(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,undefined,undefined);
+  `;
+  const commentAttackArgs = extractCallArgs(dummyCallInComment, 'previewCityEconomy');
+  checkRedLocal(
+    'ATAK Z RAPORTU FINAL CONTROL RUNDA 3: extractCallArgs() lokalizuje DRUGIE (prawdziwe) wywolanie, nie atrape z komentarza PRZED nim',
+    commentAttackArgs.length === 13,
+    `commentAttackArgs=${JSON.stringify(commentAttackArgs)}`,
+  );
+  assertFixApplied(
+    commentAttackArgs,
+    'ATAK Z RAPORTU FINAL CONTROL RUNDA 3 (fikcyjne wywolanie w komentarzu PRZED prawdziwym zregresowanym kodem)',
+    false,
   );
 })();
 
