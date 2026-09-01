@@ -501,14 +501,48 @@ export function marchTreatyLabel(borderMilitary?: boolean): string {
 }
 
 /**
+ * R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: traktaty o stałej bazie PW, które w UI
+ * (diplomacyNegotiationModal.ts::buildFormBody) faktycznie mają selektor czasu trwania
+ * (chipy 10/15/20/Bezterminowy + pole ręczne) — dziś WYŁĄCZNIE `nap` (case '2'). Sojusz
+ * (case '3') ma tam tylko wybór typu (pełny/defensywny), przemarsz (case '4') tylko
+ * checkbox prawa wojskowego, wasal (case '12') tylko trybut ¤/turę — żaden z nich nie
+ * wybiera czasu trwania traktatu, więc mnożnik się do nich NIE stosuje. `pokoj` poza
+ * zakresem z definicji (brak selektora w ogóle).
+ */
+const TREATY_DURATION_MULTIPLIER_ACTIONS: ReadonlySet<string> = new Set<string>(['nap']);
+
+/**
+ * R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: mnożnik bazy PW traktatu wg czasu trwania —
+ * geometryczny, kalibrowany na trzech punktach odniesienia właściciela: 10 tur → ×1,
+ * 15 tur → ×2, 20 tur → ×4, bezterminowy → ×8 (każdy próg dwa razy droższy od
+ * poprzedniego). Wzór wiążący (nie wolno zastąpić np. progowym zaokrągleniem):
+ *   turns <= 0  → 8
+ *   inaczej     → 2 ^ ((clamp(turns, 10, 20) - 10) / 5)
+ * Brak `payload.turns` (np. wywołania testowe bez kontekstu czasu — w realnej
+ * rozgrywce UI/AI zawsze wysyłają konkretną wartość) NIE amplifikuje bazy: traktowany
+ * jako dolna granica clampu (10 tur → ×1), żeby nie zmieniać istniejącej semantyki
+ * „baza traktatu" tam, gdzie czas trwania jest nieznany/nieistotny dla testu.
+ */
+export function treatyDurationPnMultiplier(actionId: string, payload: Pick<ProposalPayload, 'turns'>): number {
+  if (!TREATY_DURATION_MULTIPLIER_ACTIONS.has(actionId)) return 1;
+  const raw = payload.turns;
+  if (raw != null && raw <= 0) return 8;
+  const turns = clamp(raw ?? 10, 10, 20);
+  return Math.pow(2, (turns - 10) / 5);
+}
+
+/**
  * R-DYPLOMACJA-BILANS-UNIFIKACJA-Q1: eksportowana (była lokalna) — jedyne miejsce czytające
  * bazę traktatu z konfiguracji (`diplomacy-acceptance-points.json` „traktaty"), żeby
  * `enqueueNegotiationFromAiCmd` (main.ts) mogło przekazać ją do generatora oferty AI
  * zamiast duplikować odczyt configu.
+ * R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: `payload` opcjonalny — gdy podany, baza jest
+ * przemnożona przez `treatyDurationPnMultiplier` (efekt realny tylko dla `nap`, patrz tam).
  */
-export function treatyBasePnFromConfig(actionId: string): number {
+export function treatyBasePnFromConfig(actionId: string, payload?: Pick<ProposalPayload, 'turns'>): number {
   const t = (acceptancePointsJson.traktaty as Record<string, { punkty?: number } | undefined>);
-  return t[actionId]?.punkty ?? 0;
+  const base = t[actionId]?.punkty ?? 0;
+  return payload ? base * treatyDurationPnMultiplier(actionId, payload) : base;
 }
 
 /** Relacja do progu PN traktatu — w wojnie z podłogą score (spójne z clampRelationForWar / UI). */
@@ -551,7 +585,7 @@ function treatyPnGate(
   relation: Relation,
   pnOpts?: ResolveProposalPnOptions,
 ): ProposalEvalResult | null {
-  const basePn = treatyBasePnFromConfig(actionId);
+  const basePn = treatyBasePnFromConfig(actionId, payload);
   if (basePn <= 0) return null;
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
@@ -710,7 +744,7 @@ function proposerUnfairToPartnerGate(
   const hasBasket = givePn > 0 || receivePn > 0
     || (payload.giveItems?.length ?? 0) > 0
     || (payload.receiveItems?.length ?? 0) > 0;
-  const basePn = treatyBasePnFromConfig(actionId);
+  const basePn = treatyBasePnFromConfig(actionId, payload);
   if (basePn <= 0 && !hasBasket) return null;
   const relTotal = treatyEvalRelationTotal(relation);
   const playerTreaty = basePn > 0 ? effectiveTreatyPnRequired(basePn, relTotal) : 0;
@@ -1064,7 +1098,7 @@ export function evaluateProposal(
       // z dedykowanym komunikatem, żeby pokój dalej wymagał albo Relacji bliskiej
       // neutralnej, albo dopłaty koszykiem pokrywającej różnicę.
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const basePn = treatyBasePnFromConfig('pokoj');
+      const basePn = treatyBasePnFromConfig('pokoj', payload);
       const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
       if (proposerIsPlayer && basePn > 0) {
         const relTotal = treatyEvalRelationTotal(relation);
@@ -1223,7 +1257,7 @@ export function evaluateProposal(
       // proposerUnfairToPartnerGate; ta bramka przenosi tę samą matematykę
       // (treatyBaseFairnessGap) lokalnie, żeby traktat handlowy bez koszyka przy
       // niskiej Relacji dalej wymagał dopłaty zamiast przechodzić za darmo.
-      const treatyBasePn = treatyBasePnFromConfig(actionId);
+      const treatyBasePn = treatyBasePnFromConfig(actionId, payload);
       const proposerIsTreatyPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
       // P-DYPLO-BILANS-GATE-NIESPOJNY (Maciej 2026-08-14): `-gap` to JEDYNA liczba, którą
       // ta bramka realnie liczy — `pwBalance` musi być dokładnie nią, żeby wyświetlany

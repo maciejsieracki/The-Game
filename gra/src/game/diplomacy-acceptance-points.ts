@@ -6,7 +6,7 @@
 import acceptanceJson from '../../data/diplomacy-acceptance-points.json';
 import type { GameDifficulty } from './difficulty-cost';
 import type { ProposalActionId, ProposalPayload } from './diplomacy-proposals';
-import { sweetenerEasePoints } from './diplomacy-proposals';
+import { sweetenerEasePoints, treatyDurationPnMultiplier } from './diplomacy-proposals';
 import { diplomacyFairGivePn } from './diplomacy-value-catalog';
 import {
   effectiveTreatyPnRequired,
@@ -68,8 +68,15 @@ export function loadTreatyAcceptanceDef(actionId: string): TreatyAcceptanceDef |
   return t[actionId];
 }
 
-export function treatyBaseAcceptancePn(actionId: string): number {
-  return loadTreatyAcceptanceDef(actionId)?.punkty ?? 0;
+/**
+ * R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: `payload` opcjonalny — gdy podany, baza jest
+ * przemnożona przez `treatyDurationPnMultiplier` (helper wspólny z `treatyBasePnFromConfig`
+ * w diplomacy-proposals.ts — TA SAMA funkcja, nie duplikat wzoru; efekt realny tylko dla
+ * `nap`, jedynego traktatu z selektorem czasu trwania w UI).
+ */
+export function treatyBaseAcceptancePn(actionId: string, payload?: Pick<ProposalPayload, 'turns'>): number {
+  const base = loadTreatyAcceptanceDef(actionId)?.punkty ?? 0;
+  return payload ? base * treatyDurationPnMultiplier(actionId, payload) : base;
 }
 
 /** PW traktatu po stronie gracza (My) — z moda Relacji. */
@@ -361,7 +368,7 @@ export function computePlayerAcceptanceSides(
   };
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   const treatyDef = loadTreatyAcceptanceDef(actionId);
-  const treatyBase = treatyDef?.punkty ?? 0;
+  const treatyBase = treatyBaseAcceptancePn(actionId, payload);
   const relRequired = treatyDef?.prog_relacja;
   const isGift = incoming && isPlayerIncomingGift(payload);
 

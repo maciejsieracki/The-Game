@@ -24,7 +24,7 @@ export {
   bilateralTreatyDisplayPw,
   sideDisplayOfferPw,
 } from './game/diplomacy-acceptance-points';
-export { evaluateProposal } from './game/diplomacy-proposals';
+export { evaluateProposal, treatyBasePnFromConfig, treatyDurationPnMultiplier } from './game/diplomacy-proposals';
 export {
   diplomacyFairGivePn,
   diplomacyPnTech,
@@ -151,6 +151,61 @@ const napIncoming = mod.computePlayerAcceptanceSides('nap', {}, 100, true);
 ok(napIncoming.their.treatyEffectivePn === 200, 'incoming NAP: their side treaty 200 PW (baza)');
 ok(mod.sideDisplayOfferPw(napIncoming.my, 200) === 200, 'incoming: my display 200 PW');
 ok(mod.sideDisplayOfferPw(napIncoming.their, 200) === 200, 'incoming: their display 200 PW');
+
+// R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: mnożnik czasu trwania traktatu (NAP, baza 200 PW).
+// Kryterium 2: 10/15/20/bezterminowy → ×1/×2/×4/×8 (wzór wiążący z dispatchu), + 12 tur jako
+// wartość pośrednia bez zaokrąglania własnego (2^(2/5), nie próg).
+ok(mod.treatyDurationPnMultiplier('nap', { turns: 10 }) === 1, 'mnożnik czasu NAP @ 10 tur = ×1');
+ok(mod.treatyDurationPnMultiplier('nap', { turns: 15 }) === 2, 'mnożnik czasu NAP @ 15 tur = ×2');
+ok(mod.treatyDurationPnMultiplier('nap', { turns: 20 }) === 4, 'mnożnik czasu NAP @ 20 tur = ×4');
+ok(mod.treatyDurationPnMultiplier('nap', { turns: 0 }) === 8, 'mnożnik czasu NAP bezterminowy (turns=0) = ×8');
+ok(mod.treatyDurationPnMultiplier('nap', { turns: -3 }) === 8, 'mnożnik czasu NAP bezterminowy (turns<0) = ×8');
+const napMult12 = mod.treatyDurationPnMultiplier('nap', { turns: 12 });
+ok(Math.abs(napMult12 - Math.pow(2, 2 / 5)) < 1e-9, 'mnożnik czasu NAP @ 12 tur = dokładnie 2^(2/5) wg wzoru (bez zgadywania skali)');
+
+ok(mod.treatyBasePnFromConfig('nap', { turns: 10 }) === 200, 'engine (treatyBasePnFromConfig) baza NAP @ 10 tur = 200');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 15 }) === 400, 'engine baza NAP @ 15 tur = 400');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 20 }) === 800, 'engine baza NAP @ 20 tur = 800');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 0 }) === 1600, 'engine baza NAP bezterminowy = 1600');
+const engineBase12 = mod.treatyBasePnFromConfig('nap', { turns: 12 });
+ok(Math.abs(engineBase12 - 200 * Math.pow(2, 2 / 5)) < 1e-9, 'engine baza NAP @ 12 tur ≈ 200×2^(2/5) ≈ 263,9 (wartość pośrednia, wzór wiążący)');
+
+ok(mod.treatyBaseAcceptancePn('nap', { turns: 10 }) === 200, 'UI (treatyBaseAcceptancePn) baza NAP @ 10 tur = 200');
+ok(mod.treatyBaseAcceptancePn('nap', { turns: 15 }) === 400, 'UI baza NAP @ 15 tur = 400');
+ok(mod.treatyBaseAcceptancePn('nap', { turns: 20 }) === 800, 'UI baza NAP @ 20 tur = 800');
+ok(mod.treatyBaseAcceptancePn('nap', { turns: 0 }) === 1600, 'UI baza NAP bezterminowy = 1600');
+const uiBase12 = mod.treatyBaseAcceptancePn('nap', { turns: 12 });
+ok(uiBase12 === engineBase12, 'kryt. 1+3: UI i engine WOŁAJĄ TĘ SAMĄ funkcję (treatyDurationPnMultiplier) — @ 12 tur identyczna baza, nie dwie kopie wzoru');
+
+// Kryterium 3: UI (computePlayerAcceptanceSides → AcceptanceSideBalance.treatyBasePn) i engine
+// (treatyBasePnFromConfig, ten sam odczyt co treatyPnGate/evaluateProposal) zwracają TĘ SAMĄ
+// bazę dla tego samego payload.turns, na całym zakresie progów — dokładnie klasa błędu
+// (rozjazd UI/silnik), którą ten temat ma zapobiec powtórnie.
+for (const t of [10, 12, 15, 17, 20, 0]) {
+  const uiSide = mod.computePlayerAcceptanceSides('nap', { turns: t }, 100, false);
+  const engineBase = mod.treatyBasePnFromConfig('nap', { turns: t });
+  ok(uiSide.my.treatyBasePn === engineBase, `kryt. 3: UI treatyBasePn @ turns=${t} (${uiSide.my.treatyBasePn}) zgadza się z engine (${engineBase})`);
+}
+
+// Kryterium 4: oferta AI z NAP (game/ai.ts:4451 `turns: napIndefinite ? 0 : 15`) automatycznie
+// dostaje przemnożoną bazę BEZ ŻADNEJ zmiany w ai.ts — bo treatyPnGate/evaluateProposal
+// (silnik oceniający KAŻDĄ ofertę, także AI) czyta bazę przez treatyBasePnFromConfig,
+// czyli dokładnie tę samą ścieżkę zweryfikowaną wyżej. ai.ts NIE był edytowany w tej naprawie
+// (patrz allowlista commita) — a mimo to poniższe wartości są już przemnożone.
+ok(mod.treatyBasePnFromConfig('nap', { turns: 15 }) === 200 * 2, 'kryt. 4: oferta AI NAP terminowa (turns:15 jak w ai.ts) → silnik widzi bazę ×2 = 400, bez zmiany w ai.ts');
+ok(mod.treatyBasePnFromConfig('nap', { turns: 0 }) === 200 * 8, 'kryt. 4: oferta AI NAP bezterminowa (turns:0 jak w ai.ts) → silnik widzi bazę ×8 = 1600, bez zmiany w ai.ts');
+
+// Kryterium 5: pokój (brak selektora czasu w UI) i pozostałe traktaty bez selektora
+// (sojusz/granice/wasal — patrz komentarz przy TREATY_DURATION_MULTIPLIER_ACTIONS) mają bazę
+// NIEZMIENIONĄ niezależnie od payload.turns — mnożnik czasu się do nich nie stosuje.
+ok(mod.treatyBasePnFromConfig('pokoj') === 500, 'pokój: baza bez payload = 500 (kontrola — zachowanie sprzed naprawy)');
+ok(mod.treatyBasePnFromConfig('pokoj', { turns: 10 }) === 500, 'pokój @ turns=10: baza NIEZMIENIONA (brak selektora czasu w UI, poza zakresem)');
+ok(mod.treatyBasePnFromConfig('pokoj', { turns: 20 }) === 500, 'pokój @ turns=20: baza NIEZMIENIONA');
+ok(mod.treatyBasePnFromConfig('pokoj', { turns: 0 }) === 500, 'pokój @ turns=0 (bezterminowy): baza NIEZMIENIONA');
+ok(mod.treatyBaseAcceptancePn('pokoj', { turns: 15 }) === 500, 'UI: pokój @ turns=15: baza NIEZMIENIONA (brak selektora)');
+ok(mod.treatyBasePnFromConfig('sojusz_pelny', { turns: 20 }) === 500, 'sojusz_pelny @ turns=20: NIEZMIENIONY (formularz ma tylko wybór typu, bez czasu — diplomacyNegotiationModal.ts case 3)');
+ok(mod.treatyBasePnFromConfig('granice', { turns: 0 }) === 60, 'granice (przemarsz) @ turns=0: NIEZMIENIONY (formularz ma tylko checkbox prawa wojskowego, bez czasu — case 4)');
+ok(mod.treatyBasePnFromConfig('wasal', { turns: 20 }) === 350, 'wasal @ turns=20: NIEZMIENIONY (formularz ma tylko trybut ¤/turę, bez czasu — case 12)');
 
 // Wszystkie traktaty z bazą PW > 0 — wspólna ścieżka bilateralTreatyDisplayPw / sideDisplayOfferPw
 const TREATY_PW_BASE = [
