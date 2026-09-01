@@ -1957,8 +1957,24 @@ function ensureAmbGraph(): { ac: AudioContext; out: GainNode } | null {
   return ambOut ? { ac: ambCtx, out: ambOut } : null;
 }
 
-function ambSchedule(e: NoteEvent): void {
+/** `export` i `__testLog` istnieją WYŁĄCZNIE dla haka testowego
+ *  `window.__ambienceTestDebug` (main.ts, TEMAT R-AMBIENT-NATURA-TYLKO-
+ *  ZWIERZETA-Q1) — pozwalają Playwright odczytać listę FAKTYCZNIE
+ *  zaplanowanych `e.typ` z żywego AudioContext, bez reimplementacji tej
+ *  funkcji w teście. `__testLog`, jeśli obecny (ustawiony przez test na
+ *  tablicę), zbiera typ każdego zdarzenia, które przeszło przez normalne
+ *  planowanie (czyli NIE wiatr/liście/woda — te są odrzucane wcześniej).
+ *  Brak `__testLog` (produkcja) = zero narzutu, zero mutacji odtwarzania. */
+export function ambSchedule(e: NoteEvent): void {
   if (!ambCtx || !ambOut) return;
+  // TEMAT R-AMBIENT-NATURA-TYLKO-ZWIERZETA-Q1: kanał ambience ma odtwarzać
+  // wyłącznie odgłosy zwierząt (ptak/świerszcz/wycie i inne niewymienione
+  // niżej). Szum wiatru/liści/wody przeszkadzał właścicielowi — early return
+  // PRZED jakąkolwiek alokacją audio, żeby te zdarzenia nigdy nie zabrzmiały
+  // w ambience. Ścieżka onlyNature=false (muzyka mapy/bitwy epoki Kamień) nie
+  // woła tej funkcji i pozostaje nietknięta.
+  if (e.typ === 'wiatr' || e.typ === 'liscie' || e.typ === 'woda') return;
+  (ambSchedule as unknown as { __testLog?: string[] }).__testLog?.push(e.typ);
   const ac = ambCtx;
   const mono = renderEvent(ac.sampleRate, e);
   const buf = ac.createBuffer(1, mono.length, ac.sampleRate);
@@ -1969,10 +1985,10 @@ function ambSchedule(e: NoteEvent): void {
   g.gain.value = e.gain * LEVELS[e.typ];
   const pan = ac.createStereoPanner();
   pan.pan.value = e.pan;
-  // WODA (TEMAT #23): przez ambWaterOut, nie wprost do ambOut — patrz jego
-  // komentarz. Wszystkie inne typy (wiatr/liście/ptaki/…) jak dotychczas.
-  const dest = e.typ === 'woda' ? (ambWaterOut ?? ambOut) : ambOut;
-  src.connect(g); g.connect(pan); pan.connect(dest);
+  // 'woda' jest odrzucane wyżej (TEMAT R-AMBIENT-NATURA-TYLKO-ZWIERZETA-Q1),
+  // więc tu dociera już tylko 'ptak'/'swierszcz'/'wycie' (i inne niewymienione
+  // powyżej) — zawsze przez ambOut, jak dotychczas dla tych typów.
+  src.connect(g); g.connect(pan); pan.connect(ambOut);
   const when = Math.max(ac.currentTime + 0.02, ambT0 + e.t);
   ambActiveSources.push(src);
   src.onended = () => {

@@ -766,6 +766,7 @@ import {
   startIntroMusic, startIntroMusicWithFadeIn, stopIntroMusic,
   startAmbience, stopAmbience, setAmbienceVolume, setAmbienceWaterView,
   startMarch, stopMarch, setMarchVolume, playMarchAccent,
+  ambSchedule,
 } from './audio/muzyka-antyczna';
 import { UI_PARAMS } from './ui/uiParams';
 import { loadMusicPrefs, saveMusicPrefs } from './audio/musicPrefs';
@@ -20347,6 +20348,23 @@ async function boot(): Promise<void> {
       getMood: (): string => getMood(),
       setEra: (era: number): void => setEra(era),
       startMusic: (mood?: 'mapa' | 'bitwa'): void => startMusic(mood),
+    };
+
+    // Hak testowy (ten sam wzorzec i to samo uzasadnienie co `__musicEraTestDebug`
+    // wyżej) — wołany WYŁĄCZNIE z Playwright w
+    // `tools/ambience-natura-tylko-zwierzeta-test.cjs` (R-AMBIENT-NATURA-TYLKO-
+    // ZWIERZETA-Q1). Odczytuje `__testLog` przypięty do faktycznej, eksportowanej
+    // `ambSchedule()` silnika audio — jedyne, co ten hak robi, to czytanie/
+    // zerowanie tej tablicy (fixture-only, zero mutacji odtwarzania) — nie
+    // reimplementuje logiki planowania ambience.
+    (window as any).__ambienceTestDebug = {
+      resetLog: (): void => {
+        (ambSchedule as unknown as { __testLog?: string[] }).__testLog = [];
+      },
+      getLog: (): string[] =>
+        (ambSchedule as unknown as { __testLog?: string[] }).__testLog?.slice() ?? [],
+      startAmbience: (): void => startAmbience(),
+      stopAmbience: (): void => stopAmbience(),
     };
 
     // --- Konfiguracja pickera badań (przed hubem — getScienceHubSnapshot wymaga hooków) ---
