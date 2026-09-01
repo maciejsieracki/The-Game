@@ -3402,7 +3402,7 @@ Dispatch: `dyspozycje/autobot/runs/R-KARTY-HISTORIA-{B3,T3,U2}-Q1/00-dispatch.md
 FALA 3 — status integracji:
 - **T3 (10 technologii, OSTATNI batch): ZINTEGROWANE do `main` (ab00b118)**. Zero zarzutow Evaluatora, Final Control PASS. **KATEGORIA "TECHNOLOGIE" KOMPLETNA: 32/32.** entity-card-historia-section-test.cjs 31/31, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
 - **B3 (13 budynkow, OSTATNI batch): ZINTEGROWANE do `main` (c754e8ad)**. Zero zarzutow Evaluatora, Final Control PASS. **KATEGORIA "BUDYNKI" KOMPLETNA: 41/41.** entity-card-historia-section-test.cjs 31/31, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
-- **U2 (13 jednostek, 26/75): Operator+Evaluator PASS, zero zarzutow — Final Control w toku.**
+- **U2 (13 jednostek, 26/75): ZINTEGROWANE do `main` (08fd1e1b)**. Zero zarzutow Evaluatora, Final Control PASS. entity-card-historia-section-test.cjs 31/31, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
