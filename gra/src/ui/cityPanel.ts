@@ -5943,31 +5943,65 @@ function appendCityResourceStockStrip(mount: HTMLElement, city: City): void {
 }
 
 /**
- * SUROW-UI-B2 (Maciej 2026-07-24): pasek rekrutacji — TYLKO surowiec militarny epoki
- * (Brąz w epoce 2, Żelazo w epoce 3) — jedyny, którym płaci się za jednostki. Epoka
- * Kamienia (1) nie ma surowca militarnego jeszcze -> pasek pusty (nic nie renderuje).
+ * R-REKRUTACJA-PODGLAD-SUROWCOW-Q1 (2026-09-01): pasek rekrutacji — surowce
+ * faktycznie uczestniczące w koszcie (unitStockCost) i/lub utrzymaniu
+ * (unitResourceUpkeep) WSZYSTKICH jednostek zwracanych przez purchasableUnits(...)
+ * dla danego miasta/epoki. Zamienia poprzednią zahardkodowaną listę „jeden surowiec
+ * militarny epoki" (Brąz epoka 2 / Żelazo epoka 3, Kamień pomijana w ogóle), która
+ * gubiła np. Drewno (jedyny koszt epoki Kamień, i część jednostek Brązu takich jak
+ * Procarz). Renderuje tym samym mechanizmem chipów co appendCityResourceStockStrip
+ * (`.civ-cs-res-chip`, mapResourceIconSvg) — spójność wizualna z panelem budowy.
+ * Zero zmian w unitStockCost/unitResourceUpkeep/purchasableUnits — wyłącznie odczyt.
  */
-function appendRecruitMilitaryResourceStrip(mount: HTMLElement, city: City): void {
+export function appendRecruitMilitaryResourceStrip(
+  mount: HTMLElement,
+  city: City,
+  data: GameData,
+  units: readonly ProductionItem[],
+): void {
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
-  const key = epoch === 2 ? 'braz' : (epoch === 3 ? 'zelazo' : null);
-  if (!key) return;
+  const keysInOrder: string[] = [];
+  const seen = new Set<string>();
+  for (const item of units) {
+    if (item.kind !== 'jednostka') continue;
+    const udef = findUnitDef(data, item.id);
+    if (!udef) continue;
+    const cost = unitStockCost(udef);
+    const upkeep = unitResourceUpkeep(udef);
+    for (const k of [...Object.keys(cost), ...Object.keys(upkeep)]) {
+      if (!seen.has(k)) {
+        seen.add(k);
+        keysInOrder.push(k);
+      }
+    }
+  }
+  if (keysInOrder.length === 0) return;
+  // Kolejność wizualna: najpierw znane surowce magazynowe wg CS_RES_STRIP_ORDER
+  // (spójność z panelem budowy), potem ewentualne pozostałe klucze (np. 'kon')
+  // w kolejności napotkania.
+  const ordered = [
+    ...CS_RES_STRIP_ORDER.filter(k => seen.has(k)),
+    ...keysInOrder.filter(k => !(CS_RES_STRIP_ORDER as readonly string[]).includes(k)),
+  ];
   const pool = ownerSurowcePoolFor(city);
-  const qty = Math.floor(pool[key] ?? 0);
-  const label = stockResourceLabel(key);
   const eraName = EPOCH_NUMBER_TO_NAME[epoch] ?? `Epoka ${epoch}`;
   const strip = el('div', 'civ-cs-res-strip civ-cs-mil-strip');
   const eraTag = el('span', 'civ-cs-mil-era');
   eraTag.textContent = `Epoka ${eraName}`;
   strip.appendChild(eraTag);
-  const chip = el('span', 'civ-cs-res-chip');
-  chip.title = `${label} — pula państwa`;
-  const ic = el('span', 'civ-cs-res-chip-ic');
-  ic.innerHTML = mapResourceIconSvg(label, CS_RES_STRIP_ICON_PX);
-  chip.appendChild(ic);
-  const val = el('b');
-  val.textContent = String(qty);
-  chip.appendChild(val);
-  strip.appendChild(chip);
+  for (const key of ordered) {
+    const qty = Math.floor(pool[key] ?? 0);
+    const label = stockResourceLabel(key);
+    const chip = el('span', 'civ-cs-res-chip');
+    chip.title = `${label} — pula państwa`;
+    const ic = el('span', 'civ-cs-res-chip-ic');
+    ic.innerHTML = mapResourceIconSvg(label, CS_RES_STRIP_ICON_PX);
+    chip.appendChild(ic);
+    const val = el('b');
+    val.textContent = String(qty);
+    chip.appendChild(val);
+    strip.appendChild(chip);
+  }
   mount.appendChild(strip);
 }
 
@@ -8506,11 +8540,12 @@ function renderPurchasableUnits(
     mount.appendChild(el('div', 'muted', 'Miasto rywala — zakup niedostępny (podgląd).'));
     return;
   }
-  // SUROW-UI-B2: pasek TYLKO surowca militarnego epoki (Brąz/Żelazo) — patrz mockup
-  // „Surowce magazyn i formy v1" KLATKA B kontekst 3.
-  appendRecruitMilitaryResourceStrip(mount, city);
+  // R-REKRUTACJA-PODGLAD-SUROWCOW-Q1: pasek surowców faktycznie uczestniczących
+  // w koszcie/utrzymaniu jednostek dostępnych do rekrutacji w tym mieście/epoce
+  // (dynamicznie, patrz appendRecruitMilitaryResourceStrip).
   const techs = cfg.getUnlockedTechs?.(city.ownerId) ?? [];
   const units = purchasableUnits(city, data, techs, productionCtxForCity(city));
+  appendRecruitMilitaryResourceStrip(mount, city, data, units);
   const skarb = cfg.getTreasury?.(city.ownerId);
   const rqLen = getProd(city.id).rekrutacja?.length ?? 0;
 
