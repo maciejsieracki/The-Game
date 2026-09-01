@@ -351,6 +351,167 @@ if (city) {
 }
 
 // ---------------------------------------------------------------------------
+// OBRONA RUNDA 1 (zarzut Evaluatora, PRZYJETY): powyzsze asercje "mutacyjne"
+// (playerEconBuggy/playerEconFixed) NIE wolaja main.ts -- to dwa niezalezne
+// wywolania biblioteki `previewCityEconomy` wpisane recznie w TYM pliku
+// testowym, wiec przywrocenie realnego buga w gra/src/main.ts (`39ca04ed`)
+// nie czerwieni zadnej z nich (potwierdzone niezaleznie przez Evaluatora:
+// 17/17 PASS na starym main.ts). Ponizsza sekcja naprawia dokladnie ta luke:
+// czyta PRAWDZIWY tekst `gra/src/main.ts`, znajduje PRAWDZIWE miejsce
+// poprawki (wywolanie previewCityEconomy WEWNATRZ refreshLiveEmpireRatesUnsafe)
+// i sprawdza, ze pozycje 10/11 NIE sa literalnym `undefined`, tylko realnymi
+// wyrazeniami uzywajacymi `tradeRouteBuildingBonusByCity` / obliczenia
+// dochodu z tras. Jesli ktos w przyszlosci przywroci `undefined` w TYM
+// KONKRETNYM miejscu main.ts, ten test faktycznie czerwienieje -- bo czyta
+// zawartosc pliku na nowo przy kazdym uruchomieniu, nie duplikat logiki.
+(function checkRealFixSiteInMainTs() {
+  const MAIN_TS_PATH = path.resolve(__dirname, '..', 'src', 'main.ts');
+  const src = fs.readFileSync(MAIN_TS_PATH, 'utf-8');
+
+  /**
+   * Minimalny tokenizer JS/TS: przechodzi po `text` od `from`, pomija komentarze
+   * (`//`, `/* *​/`), stringi (`'`, `"`) i template literale (`` ` ``, bez
+   * rekurencji w `${}` -- wystarczajace, bo interesuja nas tylko top-level
+   * nawiasy/klamry poza literalami) i woła `onChar(ch, i)` dla kazdego "realnego"
+   * znaku kodu. Uzywane zarowno do znalezienia konca funkcji (liczenie `{`/`}`),
+   * jak i do rozbicia argumentow wywolania na przecinkach top-level.
+   */
+  function scanCode(text, from, onChar) {
+    let i = from;
+    while (i < text.length) {
+      const ch = text[i];
+      if (ch === '/' && text[i + 1] === '/') {
+        const nl = text.indexOf('\n', i);
+        i = nl === -1 ? text.length : nl + 1;
+        continue;
+      }
+      if (ch === '/' && text[i + 1] === '*') {
+        const end = text.indexOf('*/', i + 2);
+        i = end === -1 ? text.length : end + 2;
+        continue;
+      }
+      if (ch === "'" || ch === '"' || ch === '`') {
+        const quote = ch;
+        let j = i + 1;
+        while (j < text.length && text[j] !== quote) {
+          if (text[j] === '\\') j += 2; else j += 1;
+        }
+        i = j + 1;
+        continue;
+      }
+      const stop = onChar(ch, i);
+      if (stop === false) return i;
+      i += 1;
+    }
+    return i;
+  }
+
+  function findFunctionBody(text, fnName) {
+    const sig = `function ${fnName}(): void {`;
+    const sigIdx = text.indexOf(sig);
+    if (sigIdx === -1) {
+      throw new Error(`checkRealFixSiteInMainTs: nie znaleziono sygnatury '${sig}' w main.ts`);
+    }
+    const bodyStart = sigIdx + sig.length; // tuz po otwierajacej '{'
+    let depth = 1;
+    let bodyEnd = -1;
+    scanCode(text, bodyStart, (ch, i) => {
+      if (ch === '{') depth += 1;
+      else if (ch === '}') {
+        depth -= 1;
+        if (depth === 0) { bodyEnd = i; return false; }
+      }
+      return true;
+    });
+    if (bodyEnd === -1) {
+      throw new Error(`checkRealFixSiteInMainTs: nie znaleziono konca funkcji ${fnName} (niezbalansowane klamry)`);
+    }
+    return text.slice(bodyStart, bodyEnd);
+  }
+
+  /** Rozbija argumenty wywolania `callName(` na top-level przecinkach. */
+  function extractCallArgs(text, callName) {
+    const callIdx = text.indexOf(`${callName}(`);
+    if (callIdx === -1) {
+      throw new Error(`checkRealFixSiteInMainTs: nie znaleziono wywolania ${callName}(...)`);
+    }
+    const argsStart = callIdx + callName.length + 1;
+    let depth = 1;
+    let argsEnd = -1;
+    const commaIdxs = [];
+    scanCode(text, argsStart, (ch, i) => {
+      if (ch === '(' || ch === '[' || ch === '{') depth += 1;
+      else if (ch === ')' || ch === ']' || ch === '}') {
+        depth -= 1;
+        if (depth === 0) { argsEnd = i; return false; }
+      } else if (ch === ',' && depth === 1) {
+        commaIdxs.push(i);
+      }
+      return true;
+    });
+    if (argsEnd === -1) {
+      throw new Error(`checkRealFixSiteInMainTs: nie znaleziono konca wywolania ${callName}(...)`);
+    }
+    const argsText = text.slice(argsStart, argsEnd);
+    const bounds = [argsStart, ...commaIdxs, argsEnd];
+    const args = [];
+    for (let k = 0; k < bounds.length - 1; k++) {
+      const startAbs = k === 0 ? argsStart : bounds[k] + 1;
+      args.push(text.slice(startAbs, bounds[k + 1]).trim());
+    }
+    return args;
+  }
+
+  /** Ta sama asercja stosowana i do PRAWDZIWYCH, i do zmutowanych argumentow. */
+  function assertFixApplied(args, label, expectFixed) {
+    assert(
+      `${label}: previewCityEconomy(...) ma >= 11 argumentow (pozycje 10/11 istnieja)`,
+      args.length >= 11,
+      `args.length=${args.length}`,
+    );
+    // previewCityEconomy (turn-economy.ts:1840): pozycje 12/13 w sygnaturze
+    // (tradeRouteBuildingBonusByCity/tradeIncomeByCity) = indeksy 11/12
+    // w tablicy argumentow 0-indeksowanej (main.ts:15929-15930, wskazane
+    // wprost przez dispatch numerami linii).
+    const pos10 = args[11];
+    const pos11 = args[12];
+    const pos10IsRealVar = /tradeRouteBuildingBonusByCity/.test(pos10) && pos10 !== 'undefined';
+    const pos11IsRealCalc = pos11 !== 'undefined'
+      && /computeTradeRouteIncomeByCity/.test(pos11)
+      && /loadTradeRouteIncomeParams/.test(pos11);
+    if (expectFixed) {
+      assert(`${label}: pozycja 10 (tradeRouteBuildingBonusByCity) NIE jest literalnym undefined`,
+        pos10IsRealVar, `pos10=${JSON.stringify(pos10)}`);
+      assert(`${label}: pozycja 11 (tradeIncomeByCity) NIE jest literalnym undefined, liczy sie na zadanie`,
+        pos11IsRealCalc, `pos11=${JSON.stringify(pos11).slice(0, 120)}`);
+    } else {
+      checkRedLocal(`${label}: mutacja wraca do literalnego undefined na pozycji 10 (dowod nietautologicznosci)`,
+        !pos10IsRealVar, `pos10=${JSON.stringify(pos10)}`);
+      checkRedLocal(`${label}: mutacja wraca do literalnego undefined na pozycji 11 (dowod nietautologicznosci)`,
+        !pos11IsRealCalc, `pos11=${JSON.stringify(pos11).slice(0, 120)}`);
+    }
+  }
+  function checkRedLocal(name, cond, detail) { assert(name, cond, detail); }
+
+  // --- (1) PRAWDZIWY plik, PRAWDZIWE miejsce poprawki: to jest kryterium 4
+  // dispatchu. Jesli ktos przywroci `undefined, undefined,` w tym wywolaniu
+  // w gra/src/main.ts, ponizsze asercje CZERWIENIEJA przy nastepnym uruchomieniu. ---
+  const realFnBody = findFunctionBody(src, 'refreshLiveEmpireRatesUnsafe');
+  const realArgs = extractCallArgs(realFnBody, 'previewCityEconomy');
+  assertFixApplied(realArgs, 'MIEJSCE POPRAWKI (main.ts, refreshLiveEmpireRatesUnsafe)', true);
+
+  // --- (2) DOWOD NIETAUTOLOGICZNOSCI kontroli samej: bierzemy TA SAMA liste
+  // argumentow wydobyta z PRAWDZIWEGO main.ts i podmieniamy WYLACZNIE pozycje
+  // 10/11 na literalny `undefined` (stan sprzed poprawki, `39ca04ed`)
+  // WYLACZNIE w pamieci testu -- bez dotykania pliku w repo -- po czym
+  // wymagamy, zeby TA SAMA funkcja sprawdzajaca wykryla regres. ---
+  const mutatedArgs = realArgs.slice();
+  mutatedArgs[11] = 'undefined';
+  mutatedArgs[12] = 'undefined';
+  assertFixApplied(mutatedArgs, 'ZMUTOWANA REKONSTRUKCJA (undefined na poz. 10/11, jak przed poprawka)', false);
+})();
+
+// ---------------------------------------------------------------------------
 console.log('');
 console.log(`hud-skarbiec-test: ${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);
