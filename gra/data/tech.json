@@ -329,7 +329,8 @@
       "Odblokowuje budynek": "Biblioteka: poziom Obserwatorium+ (poz. 6)",
       "Koszt nauki": 440,
       "Uwagi": "3a: Astronomia = bramka rozwoju Biblioteki do poziomu 6 (Obserwatorium) i wyzej; nie osobny budynek. prereq Matematyka+Mistycyzm",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Obserwacja nieba towarzyszyła ludzkości od zarania cywilizacji, ale w systematyczną naukę zamieniła się dopiero w Mezopotamii, gdzie babilońscy kapłani-astronomowie prowadzili przez pokolenia zapiski ruchów Księżyca i planet, tworząc podstawy pierwszych kalendarzy. Egipcjanie wykorzystywali heliakalny wschód Syriusza do przewidywania corocznych wylewów Nilu, a greccy myśliciele, tacy jak Hipparchos, przekształcili te obserwacje w matematyczne modele ruchu ciał niebieskich. Wiedza astronomiczna miała ogromne znaczenie praktyczne — pozwalała ustalać pory siewu i żniw, wyznaczać święta religijne oraz orientować budowle według stron świata i cyklu słonecznego. Ciekawostka: budowniczowie Stonehenge, choć nie znali matematyki Babilończyków, ustawili głazy tak precyzyjnie względem przesileń, że monument do dziś służy jako naturalny kalendarz słoneczny."
     },
     {
       "Technologia": "Hutnictwo żelaza",
@@ -343,7 +344,8 @@
       "Koszt nauki": 480,
       "Uwagi": "kończy Epokę 2 / otwiera Epokę 3; Odlewnia żelaza = upgrade Odlewni brązu (brąz+żelazo); Kuźnia żelaza = łańcuch pancerza (osobny slot)",
       "Odblokowuje ulepszenie terenu": null,
-      "awansDoEpoki": 3
+      "awansDoEpoki": 3,
+      "Historia": "Wytop żelaza z rudy okazał się znacznie trudniejszy niż obróbka brązu, ponieważ wymagał temperatur trudnych do osiągnięcia w prostych piecach, co przez stulecia ograniczało tę technikę do nielicznych ośrodków, takich jak Anatolia w czasach Hetytów. Przełom nastąpił, gdy rzemieślnicy nauczyli się budować wyższe piece z miechami wymuszającymi dopływ powietrza, co pozwoliło uzyskać z rudy niekształtną, gąbczastą bryłę zwaną łupą, wymagającą dalszego przekuwania. Ponieważ złoża żelaza są znacznie powszechniejsze niż cyny potrzebnej do brązu, opanowanie hutnictwa uniezależniło społeczności od dalekosiężnego handlu surowcami i umożliwiło masowe uzbrojenie armii. Upadek imperiów epoki brązu i zerwanie szlaków handlowych cyną przyspieszyły rozpowszechnienie się tej umiejętności w całym basenie Morza Śródziemnego i na Bliskim Wschodzie. Ciekawostka: Hetyci przez długi czas traktowali sekret wytopu żelaza jako tajemnicę państwową i podobno wykorzystywali monopol na ten metal w dyplomacji z sąsiednimi władcami."
     },
     {
       "Technologia": "Inżynieria",
@@ -356,7 +358,8 @@
       "Odblokowuje budynek": "Fort; Cytadela; Baszta",
       "Koszt nauki": 520,
       "Uwagi": "Fort = NOWY budynek (obrona terenu, zasięg 10, +100% obrona przy obozowaniu — zob. civ-bonusy-obronne-mapa.md); Akwedukt ulepszony = rozszerzenie istniejącego Akweduktu. Baszta (decyzja 41B, 2026-07-25) -- trzeci budynek obronny miasta, obok Cytadeli, ta sama technologia.",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Starożytni budowniczowie wojskowi łączyli wiedzę geometryczną z doświadczeniem praktycznym, tworząc systemy fortyfikacji, które przez wieki decydowały o losach oblężeń — od murów Uruk po rzymskie obozowe kastra budowane według ścisłych, powtarzalnych planów. Rzymscy inżynierowie wojskowi, legioniści z korpusu fabri, potrafili w ciągu jednego dnia marszu wznieść warowny obóz otoczony wałem, fosą i palisadą, co dawało armii bezpieczne oparcie nawet głęboko na terytorium wroga. Rozwój tej dziedziny obejmował także budowę wież obserwacyjnych i strażnic wzdłuż granic, pozwalających wcześnie wykrywać najazdy i błyskawicznie przekazywać sygnały ogniem lub dymem. Wiedza inżynieryjna czerpała z doświadczeń zdobywanych podczas kolejnych kampanii i była pieczołowicie spisywana w traktatach wojskowych, by mogła być przekazywana następnym pokoleniom dowódców. Ciekawostka: rzymski obóz wojskowy był tak zestandaryzowany, że legionista przeniesiony z Brytanii do Syrii odnajdywał swój namiot w tym samym miejscu układu obozu, niezależnie od tego, na jakim krańcu imperium się znajdował."
     },
     {
       "Technologia": "Oblężnictwo",
@@ -369,7 +372,8 @@
       "Odblokowuje budynek": "Warsztat oblężniczy; Jednostki: Katapulta",
       "Koszt nauki": 560,
       "Uwagi": "jednostki: Katapulta, Taran, Wieża oblężnicza (część już w UNITS — weryfikacja przez UNITS); Warsztat oblężniczy = NOWY budynek dla EKONOMIA; Katapulta wymaga tego tech (aktualizacja Tech w units.json przez UNITS)",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Zdobywanie obwarowanych miast od najdawniejszych czasów wymagało odrębnej wiedzy technicznej, którą starożytni Asyryjczycy rozwinęli do rangi prawdziwej sztuki, budując tarany, ruchome wieże i rampy szturmowe zdolne pokonać nawet potężne mury. Grecy i Macedończycy udoskonalili tę dziedzinę o mechanikę napiętych ścięgien i skręconych lin, co dało początek katapultom i balistom miotającym pociski na duże odległości z siłą niedostępną łucznikom. Machiny oblężnicze były kosztowne w budowie i transporcie, dlatego armie często konstruowały je na miejscu, tuż pod murami wroga, korzystając z drewna pozyskanego z okolicznych lasów. Skuteczność oblężenia zależała nie tylko od samych maszyn, lecz również od inżynierów potrafiących obliczyć kąt rzutu, wytrzymałość konstrukcji i słabe punkty fortyfikacji przeciwnika. Ciekawostka: podczas oblężenia Syrakuz Rzymianie ponoć musieli się mierzyć z maszynami skonstruowanymi przez samego Archimedesa, w tym dźwigami zdolnymi unosić i przewracać okręty wroga wprost z wody."
     },
     {
       "Technologia": "Filozofia",
@@ -382,7 +386,8 @@
       "Odblokowuje budynek": "Akademia; Teatr",
       "Koszt nauki": 600,
       "Uwagi": "Akademia = NOWY budynek (nauka++); Teatr = NOWY budynek (kultura++, zadowolenie++); oba dla EKONOMIA",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "W miastach starożytnej Grecji, gdzie wolni obywatele dysponowali czasem na debaty publiczne, narodziła się tradycja systematycznego dociekania prawdy metodą pytań i argumentów, zapoczątkowana przez takich myślicieli jak Sokrates, Platon i Arystoteles. Filozofowie zakładali szkoły — Akademię i Liceum — w których uczniowie ćwiczyli logikę, etykę i dociekania o naturze wszechświata, tworząc fundamenty zachodniej myśli naukowej i politycznej. Podobne tradycje krytycznego namysłu rozwijały się niezależnie w Indiach i Chinach, gdzie konfucjaniści i taoiści spierali się o naturę porządku społecznego i harmonii ze światem. Filozofia dała narzędzia pojęciowe niezbędne do rozwoju prawa, matematyki i medycyny, ponieważ nauczyła oddzielać obserwację od przesądu i wymagać dowodu zamiast autorytetu. Ciekawostka: Sokrates nie zostawił po sobie ani jednego pisma — całą jego myśl znamy wyłącznie z relacji uczniów, przede wszystkim Platona, co samo w sobie stało się przedmiotem sporów filozofów po dziś dzień."
     },
     {
       "Technologia": "Prawo",
@@ -395,7 +400,8 @@
       "Odblokowuje budynek": "Sąd; Pretorium",
       "Koszt nauki": 620,
       "Uwagi": "Sąd = NOWY budynek (administracja, zadowolenie+, korupcja-); Pretorium = NOWY budynek (administracja, bonus do utrzymania porządku); oba dla EKONOMIA",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Pierwsze spisane kodeksy prawne, takie jak kodeks Hammurabiego z Babilonu, miały ambicję zastąpienia zwyczajowej samowoli jasnymi, publicznie znanymi zasadami odpowiedzialności i kary, wyrytymi na kamiennych stelach dla wszystkich mieszkańców. Rzymianie posunęli tę ideę znacznie dalej, tworząc rozbudowany system prawa cywilnego oparty na precedensach i interpretacjach jurystów, który do dziś stanowi fundament wielu współczesnych systemów prawnych Europy. Spisane prawo dawało władcom narzędzie do zarządzania rozległymi terytoriami bez konieczności osobistej obecności, ponieważ urzędnicy i sędziowie mogli powoływać się na te same, niezmienne zasady w każdym zakątku państwa. Rozwój sądownictwa szedł w parze z powstawaniem wyspecjalizowanej kadry prawników i pisarzy, zdolnych interpretować coraz bardziej skomplikowane przepisy handlowe, spadkowe i karne. Ciekawostka: kodeks Hammurabiego, choć słynie z zasady „oko za oko”, przewidywał w rzeczywistości bardzo zróżnicowane kary zależne od statusu społecznego sprawcy i ofiary, co czyniło go znacznie bardziej złożonym niż popularne uproszczenie sugeruje."
     },
     {
       "Technologia": "Drogi brukowane",
@@ -408,7 +414,8 @@
       "Odblokowuje budynek": null,
       "Koszt nauki": 680,
       "Uwagi": "T-TECH-9: ulepszenie Droga brukowana (+2 ruch, upgrade z Drogi)",
-      "Odblokowuje ulepszenie terenu": "Droga brukowana"
+      "Odblokowuje ulepszenie terenu": "Droga brukowana",
+      "Historia": "Rzymianie doprowadzili sztukę budowy dróg do perfekcji nieznanej wcześniej żadnej cywilizacji, układając wielowarstwową nawierzchnię ze żwiru, piasku i dopasowanych kamiennych płyt na starannie wyrównanym i odwodnionym podłożu. Sieć dróg takich jak Via Appia liczyła dziesiątki tysięcy kilometrów i łączyła najdalsze prowincje imperium, umożliwiając legionom marsz w tempie niedostępnym wcześniej żadnej armii świata starożytnego. Trwałość rzymskiego brukowania była tak wysoka, że fragmenty tych dróg przetrwały w użyciu przez całe średniowiecze, a niektóre odcinki są widoczne do dziś, ponad dwa tysiące lat po ich budowie. Drogi brukowane miały znaczenie nie tylko militarne, lecz również gospodarcze i administracyjne — przyspieszały handel, pocztę i przepływ informacji między odległymi regionami. Ciekawostka: przy głównych rzymskich traktach ustawiano kamienne słupy milowe, z których część oznaczała odległość dokładnie do samego Forum Romanum w Rzymie, symbolicznego środka całego imperium."
     },
     {
       "Technologia": "Medycyna",
@@ -421,7 +428,8 @@
       "Odblokowuje budynek": "Łaźnia publiczna; Lazaret",
       "Koszt nauki": 648,
       "Uwagi": "Łaźnia publiczna = NOWY budynek (zadowolenie++, zdrowie++); Lazaret = NOWY budynek (odnawianie HP jednostek w mieście); oba dla EKONOMIA; styk z UNITS (regeneracja)",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Starożytna medycyna łączyła obserwację objawów z religijnymi rytuałami uzdrawiania, lecz przełom nastąpił wraz z greckim lekarzem Hippokratesem, który odrzucił wyjaśnienia chorób jako kary bogów na rzecz przyczyn naturalnych i systematycznej obserwacji pacjenta. Jego następcy spisywali traktaty opisujące anatomię, dietetykę i przebieg chorób, tworząc korpus wiedzy zwany później Corpus Hippocraticum, z którego korzystano jeszcze wiele stuleci później. W Rzymie lekarz Galen rozwinął tę tradycję o systematyczne badania anatomiczne, a wojskowi medycy legionów opracowali metody leczenia ran, tamowania krwotoków i zapobiegania infekcjom na polu walki. Równolegle w Indiach i Chinach rozwijały się odrębne tradycje medyczne, oparte na ziołolecznictwie i teoriach równowagi organizmu, które przetrwały do czasów współczesnych jako odrębne systemy leczenia. Ciekawostka: przysięga Hippokratesa, choć w swej pierwotnej formie zawierała odniesienia do greckich bóstw, przetrwała w zmienionej postaci do dziś i wciąż bywa składana przez absolwentów medycyny na całym świecie."
     },
     {
       "Technologia": "Obróbka żelaza",
@@ -434,7 +442,8 @@
       "Odblokowuje budynek": "Wielka odlewnia; Wielka Kuźnia; Jednostki: Gaesatae, Soldurii, Wojownik germański, Berserker germański",
       "Koszt nauki": 740,
       "Uwagi": "Wielka odlewnia = produkcja stal+metale (brąz+żelazo+stal); Wielka Kuźnia = tylko pancerz +45% łańcuch kuźni; stal = NOWY surowiec dla DANE (prereq dalszych epok)",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Samo wytopienie żelaza z rudy dawało jedynie miękką, porowatą bryłę metalu, dlatego prawdziwa wartość tego surowca ujawniała się dopiero w rękach kowala, który wielokrotnym przekuwaniem, fałdowaniem i nagrzewaniem usuwał zanieczyszczenia i nadawał metalowi jednolitą, twardszą strukturę. Kowale odkryli również, że długotrwałe nagrzewanie żelaza w kontakcie z węglem drzewnym wzbogaca jego powierzchnię w węgiel, tworząc twardszą stal — proces zwany cementacją, znany już rzemieślnikom z Indii i Bliskiego Wschodu. Rozwinięte kuźnie potrafiły produkować broń i narzędzia o znacznie lepszych własnościach niż wcześniejsze wyroby z brązu, co wymagało jednak dostępu do dobrych dróg i szlaków handlowych umożliwiających sprowadzanie węgla drzewnego oraz zbywanie gotowych wyrobów. Umiejętności kowalskie przekazywano w zamkniętych cechach rzemieślniczych, a mistrzowie kowalstwa cieszyli się w wielu kulturach niemal magicznym prestiżem, wiązanym z opanowaniem żywiołu ognia. Ciekawostka: legendarna stal damasceńska, wytwarzana z indyjskiego wootzu, zawdzięczała swój charakterystyczny, falisty wzór mikroskopowej strukturze węglików, którą kowale odtwarzali metodą prób i błędów, nie rozumiejąc jeszcze jej naukowego podłoża."
     },
     {
       "Technologia": "Sztuka wojenna",
@@ -447,7 +456,8 @@
       "Odblokowuje budynek": "Akademia wojskowa",
       "Koszt nauki": 800,
       "Uwagi": "kończy Epokę 3 (cap v0.1); Akademia wojskowa = NOWY budynek (mnoznik sily i exp jednostek ++, prereq elitarnych jednostek żelaznych); UNITS definiuje jednostki top-tier Żelaza; EKONOMIA dodaje budynek",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Starożytne imperia, od Asyrii po Rzym, przekształciły prowadzenie wojny z chaotycznych starć w zdyscyplinowaną naukę, opartą na formacjach, logistyce i systematycznym szkoleniu żołnierzy jeszcze przed pierwszą bitwą. Rzymski legion, z jego podziałem na kohorty i centurie, ścisłą hierarchią dowodzenia oraz rygorystycznym drylem, stał się wzorem organizacji wojskowej naśladowanym przez kolejne stulecia w wielu częściach świata. Teoretycy wojskowości, tacy jak chiński strateg Sunzi, spisywali traktaty analizujące znaczenie wywiadu, terenu, zaopatrzenia i morale, dowodząc, że zwycięstwo rozstrzyga się często jeszcze przed starciem armii. Wyspecjalizowane szkoły i akademie wojskowe pozwalały gromadzić i przekazywać to doświadczenie kolejnym pokoleniom dowódców, zamiast polegać wyłącznie na indywidualnym talencie wodza. Ciekawostka: „Sztuka wojny” Sunzi, spisana prawdopodobnie w V wieku p.n.e., jest studiowana do dziś nie tylko przez wojskowych, lecz również przez teoretyków biznesu i strategii korporacyjnej na całym świecie."
     }
   ]
 }
