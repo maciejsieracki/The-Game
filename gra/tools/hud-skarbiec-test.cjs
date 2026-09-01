@@ -476,6 +476,19 @@ if (city) {
    * pozycji 11 (zlozone wyrazenie IIFE, gdzie `===` do calego tekstu nie ma
    * sensu) regex na oczyszczonym tekscie -- komentarz-atrapa juz nie istnieje,
    * wiec nie moze podszyc sie pod prawdziwe wywolanie.
+   *
+   * OBRONA RUNDA 2, ZARZUT 1 (Evaluator, PRZYJETY): sam regex-contains na
+   * pozycji 11 (`/computeTradeRouteIncomeByCity/.test(...)`) nadal lapal sie
+   * na FIKCYJNA NAZWE FUNKCJI zawierajaca oba podciagi jako substring, bez
+   * zadnego wywolania -- np. jedna atrapowa nazwa
+   * `xcomputeTradeRouteIncomeByCity_loadTradeRouteIncomeParamsSTUB()`.
+   * Naprawa: wymog REALNEJ SKLADNI WYWOLANIA obu funkcji -- kotwiczymy nazwe
+   * lookbehindem (`(?<![A-Za-z0-9_$])`, zeby nie dopasowac jej jako sufiksu
+   * innego identyfikatora, np. `xcomputeTradeRouteIncomeByCity`) i wymagamy,
+   * zeby BEZPOSREDNIO po nazwie (po ewentualnej bialej spacji) stal otwierajacy
+   * nawias wywolania `(` -- nie kolejne znaki identyfikatora. To odrzuca kazda
+   * nazwe-atrape, w ktorej obie nazwy sa tylko podciagiem wiekszego identyfikatora
+   * (doklejony prefiks/sufiks/`_`/`STUB` itp.), bo po nazwie funkcji nie stoi `(`.
    */
   function stripComments(text) {
     let out = '';
@@ -502,9 +515,14 @@ if (city) {
     // nazwa zmiennej `tradeRouteBuildingBonusByCity`, wiec po oczyszczeniu
     // z komentarzy MUSI byc dokladnie rowna tej nazwie -- zaden regex-contains.
     const pos10IsRealVar = pos10Clean === 'tradeRouteBuildingBonusByCity';
+    // Kotwiczone: nazwa NIE moze byc sufiksem/czescia wiekszego identyfikatora
+    // (lookbehind na znak nie-identyfikatorowy) i MUSI byc bezposrednio wywolana
+    // (po opcjonalnej bialej spacji stoi `(` -- nie kolejne znaki nazwy/`_`/etc.).
+    const REAL_CALL_INCOME = /(?<![A-Za-z0-9_$])computeTradeRouteIncomeByCity\s*\(/;
+    const REAL_CALL_PARAMS = /(?<![A-Za-z0-9_$])loadTradeRouteIncomeParams\s*\(/;
     const pos11IsRealCalc = pos11Clean !== 'undefined'
-      && /computeTradeRouteIncomeByCity/.test(pos11Clean)
-      && /loadTradeRouteIncomeParams/.test(pos11Clean);
+      && REAL_CALL_INCOME.test(pos11Clean)
+      && REAL_CALL_PARAMS.test(pos11Clean);
     if (expectFixed) {
       assert(`${label}: pozycja 10 (tradeRouteBuildingBonusByCity) NIE jest literalnym undefined`,
         pos10IsRealVar, `pos10=${JSON.stringify(pos10)}`);
@@ -548,6 +566,26 @@ if (city) {
     attackArgs,
     'ATAK Z RAPORTU FINAL CONTROL (undefined + komentarz-atrapa udajacy realna wartosc)',
     false,
+  );
+
+  // --- (4) OBRONA RUNDA 2, ZARZUT 1: dokladny atak z raportu Evaluatora --
+  // FIKCYJNA nazwa funkcji zawierajaca oba wymagane podciagi jako SUBSTRING
+  // (bez komentarzy, bez cudzyslowow, bez faktycznego wywolania zadnej
+  // z dwoch prawdziwych funkcji). Regex-contains z rundy 2 (przed ta poprawka)
+  // bledbie akceptowal to jako "prawdziwe obliczenie". Po kotwiczeniu +
+  // wymogu skladni wywolania (`(` bezposrednio po nazwie) guard MUSI odrzucic. ---
+  // Uwaga: ten atak mutuje WYLACZNIE pozycje 11 (pos10 zostaje realna, nietkniete),
+  // wiec nie uzywamy assertFixApplied (zaklada wspolna mutacje obu pozycji) --
+  // sprawdzamy wprost samo wykrycie atrapy na pozycji 11.
+  const stubNameRaw = 'xcomputeTradeRouteIncomeByCity_loadTradeRouteIncomeParamsSTUB()';
+  const stubNameClean = stripComments(stubNameRaw).trim();
+  const stubNameIsRealCalc = stubNameClean !== 'undefined'
+    && /(?<![A-Za-z0-9_$])computeTradeRouteIncomeByCity\s*\(/.test(stubNameClean)
+    && /(?<![A-Za-z0-9_$])loadTradeRouteIncomeParams\s*\(/.test(stubNameClean);
+  checkRedLocal(
+    'ATAK Z RAPORTU EVALUATORA: fikcyjna nazwa-atrapa (substring obu nazw, brak realnego wywolania) NIE jest uznawana za prawdziwe obliczenie',
+    !stubNameIsRealCalc,
+    `stubName=${JSON.stringify(stubNameRaw)}`,
   );
 })();
 
