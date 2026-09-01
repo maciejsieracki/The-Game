@@ -1,12 +1,21 @@
 'use strict';
 /**
- * R-MIASTA-LIMIT-PODBÓJ-Q1=A — limit dotyczy tylko miast założonych.
+ * R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1 — miasto zdobyte SIŁĄ (bitwa lub
+ * kapitulacja głodowa) LICZY SIĘ do limitu miast danej epoki nowego
+ * właściciela, dokładnie tak samo jak miasto założone osadnikiem. Odwrócenie
+ * wcześniejszej decyzji R-MIASTA-LIMIT-PODBÓJ-Q1=A (miasta podbite miały być
+ * WYJĘTE spod limitu) — na wyraźne, dwukrotnie potwierdzone życzenie
+ * właściciela.
  *
  * Kontrakt:
  * - limit blokuje kolejne foundingi po wyczerpaniu puli;
- * - miasto przejęte przez wojnę nie zużywa tej puli;
+ * - miasto przejęte przez wojnę (bitwa LUB kapitulacja głodowa) ZUŻYWA tę
+ *   samą pulę co miasto założone osadnikiem;
  * - gracz i AI używają tej samej bramki, a przejęcie gracz/AI/MP przechodzi
- *   przez wspólny mechanizm bez dodatkowej bramki foundingowej.
+ *   przez wspólny mechanizm bez dodatkowej bramki foundingowej;
+ * - `annexCityStateToOwner` (wchłonięcie dyplomatyczne) pozostaje nietknięte
+ *   — miasta wchłonięte ZACHOWUJĄ swoje `foundedByOwner` (zwykle `true`) i
+ *   już dziś liczą się do limitu, bez potrzeby jakiejkolwiek zmiany.
  *
  * Uruchomienie: z katalogu gra: node tools/city-limit-conquered-test.cjs
  */
@@ -25,6 +34,7 @@ export {
   foundCityAt,
   countsTowardCityFoundingLimit,
 } from '../src/game/cities';
+export { applyCityCaptureAfterBattle } from '../src/game/post-battle-map';
 `, 'utf8');
 
 try {
@@ -48,6 +58,7 @@ const {
   canFoundCity,
   foundCityAt,
   countsTowardCityFoundingLimit,
+  applyCityCaptureAfterBattle,
 } = require(BUNDLE_FILE);
 
 let passed = 0;
@@ -87,6 +98,18 @@ function makeCity(id, ownerId, q, r, foundedByOwner = true) {
   };
 }
 
+function makeAttackerUnit(id, ownerId, q, r) {
+  return {
+    id,
+    ownerId,
+    q,
+    r,
+    category: 'core',
+    typeId: 'wojownik',
+    ruchLeft: 2,
+  };
+}
+
 const map = makeMap();
 const foundingOpts = {
   ownerId: 0,
@@ -97,28 +120,17 @@ const foundedCities = [
   [0, 0], [0, 6], [6, 0], [6, 6], [12, 0],
   [0, 12], [12, 12], [18, 0], [0, 18], [18, 18],
 ].map(([q, r], i) => makeCity(`founded-${i}`, 0, q, r));
-const conqueredCity = makeCity('conquered', 0, 15, 15, false);
 
-console.log('\n-- czysta logika limitu --');
+console.log('\n-- czysta logika limitu (miasto ZDOBYTE liczy się jak założone) --');
 assert(
   countsTowardCityFoundingLimit(foundedCities[0]) === true,
   'miasto założone samodzielnie zużywa limit zakładania',
 );
-assert(
-  countsTowardCityFoundingLimit(conqueredCity) === false,
-  'miasto zdobyte nie zużywa limitu zakładania',
-);
 
-const atLimit = canFoundCity(29, 29, [...foundedCities, conqueredCity], map, foundingOpts);
+const atLimit = canFoundCity(29, 29, foundedCities, map, foundingOpts);
 assert(
   atLimit.ok === false && atLimit.reason === 'limit miast na tej epoce',
-  'limit blokuje founding po 10 miastach założonych, niezależnie od obecności zdobytego miasta',
-);
-
-const belowLimit = canFoundCity(29, 29, [...foundedCities.slice(0, 9), conqueredCity], map, foundingOpts);
-assert(
-  belowLimit.ok === true,
-  'zdobyte miasto nie zajmuje miejsca: dziewiąte założone miasto nadal pozwala na kolejny founding',
+  'limit blokuje founding po 10 miastach założonych',
 );
 
 const newCity = foundCityAt(29, 29, 0, [], map, 'Nowe miasto');
@@ -127,7 +139,47 @@ assert(
   'founding oznacza nowe miasto jako założone przez właściciela',
 );
 
-console.log('\n-- recon ścieżek gracz/AI/MP --');
+console.log('\n-- REALNY scenariusz właściciela: podbój bitewny -> próba założenia -> odrzucenie --');
+// Gracz (ownerId=0) jest DOKŁADNIE przy limicie epoki kamienia (9 miast
+// założonych, baza limitu = 10 => wolne jeszcze jedno miejsce), zdobywa w
+// bitwie JESZCZE JEDNO miasto wroga (ownerId=1). Realny
+// `applyCityCaptureAfterBattle` (bez przepisanej logiki) ma przenieść
+// własność i (po tej zmianie) NIE oznaczać miasta jako wyjętego spod limitu.
+const enemyCity = makeCity('enemy-captured', 1, 15, 15, true);
+const attackerRoster = [makeAttackerUnit('atk-1', 0, 14, 15)];
+const unitsOnMap = [makeAttackerUnit('atk-1', 0, 14, 15)];
+
+applyCityCaptureAfterBattle(enemyCity, attackerRoster, 0, unitsOnMap, 'atk-1');
+
+assert(
+  enemyCity.ownerId === 0,
+  'realny applyCityCaptureAfterBattle przenosi własność miasta na zdobywcę',
+);
+assert(
+  enemyCity.foundedByOwner === true,
+  'realny applyCityCaptureAfterBattle NIE ustawia foundedByOwner=false (miasto zdobyte siłą liczy się do limitu)',
+);
+assert(
+  countsTowardCityFoundingLimit(enemyCity) === true,
+  'miasto zdobyte w bitwie zużywa pulę miast zakładanych tak samo jak miasto założone',
+);
+
+const citiesAfterCapture = [...foundedCities.slice(0, 9), enemyCity];
+const foundingBlockedAfterCapture = canFoundCity(29, 29, citiesAfterCapture, map, foundingOpts);
+assert(
+  foundingBlockedAfterCapture.ok === false
+    && foundingBlockedAfterCapture.reason === 'limit miast na tej epoce',
+  'DOKŁADNY scenariusz właściciela: 9 miast założonych + 1 zdobyte siłą = limit 10 wyczerpany, '
+    + 'próba założenia NOWEGO miasta osadnikiem jest odrzucona przez canFoundCity',
+);
+
+const belowLimitBeforeCapture = canFoundCity(29, 29, foundedCities.slice(0, 9), map, foundingOpts);
+assert(
+  belowLimitBeforeCapture.ok === true,
+  'kontrola: przed zdobyciem (9/10) founding był jeszcze dozwolony -- to zdobycie, nie coś innego, zamyka pulę',
+);
+
+console.log('\n-- recon ścieżek gracz/AI/MP (podbój bitewny + kapitulacja głodowa) --');
 const mainSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src/main.ts'), 'utf8');
 const postBattleSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src/game/post-battle-map.ts'), 'utf8');
 const newGameSrc = fs.readFileSync(path.resolve(GRA_ROOT, 'src/ui/newGameFlow.ts'), 'utf8');
@@ -172,12 +224,12 @@ assert(
   'AI sprawdza ten sam limit w wykonaniu foundCityAt',
 );
 assert(
-  battleCapture.includes('city.foundedByOwner = false'),
-  'podbój po bitwie oznacza miasto jako zdobyte',
+  !battleCapture.includes('city.foundedByOwner = false'),
+  'podbój po bitwie NIE wyjmuje miasta spod limitu (foundedByOwner pozostaje niezmienione)',
 );
 assert(
-  surrender.includes('city.foundedByOwner = false'),
-  'kapitulacja z głodu oznacza miasto jako zdobyte',
+  !surrender.includes('city.foundedByOwner = false'),
+  'kapitulacja z głodu NIE wyjmuje miasta spod limitu (foundedByOwner pozostaje niezmienione)',
 );
 assert(
   emptyCapture.includes('applyCityCaptureToMap(')
@@ -188,6 +240,14 @@ assert(
   newGameSrc.includes("lbl: 'Limit miast zakładanych (baza)'")
     && newGameSrc.includes("['Limit miast zakładanych (baza)', cityLimitLabel]"),
   'UI używa etykiety „Limit miast zakładanych”',
+);
+
+console.log('\n-- kontrola zakresu: zero zmian w annexCityStateToOwner (wchłonięcie dyplomatyczne) --');
+const annexBody = functionBody(mainSrc, 'function annexCityStateToOwner(');
+assert(
+  annexBody.length > 0 && !annexBody.includes('foundedByOwner'),
+  'annexCityStateToOwner nie dotyka foundedByOwner -- wchłonięcie dyplomatyczne już dziś liczy '
+    + 'wchłonięte miasta do limitu (miasta zachowują swoje pierwotne foundedByOwner), zero zmian potrzebnych',
 );
 
 console.log(`\n=== city-limit-conquered-test: ${passed} passed, ${failed} failed ===`);

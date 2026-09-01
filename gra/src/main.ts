@@ -12624,9 +12624,10 @@ async function boot(): Promise<void> {
         // głodowa to DRUGA ścieżka przejęcia miasta — oznaczenie miasta-państwa gasi się
         // tak samo jak przy podboju bojowym, inaczej flaga wędruje do zdobywcy.
         if (clearCityStateFlagOnCapture(city)) markCityStateDirty();
-        // R-MIASTA-LIMIT-PODBÓJ-Q1=A: kapitulacja wojenna przejmuje miasto
-        // bez zużywania puli miast zakładanych przez nowego właściciela.
-        city.foundedByOwner = false;
+        // R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1: kapitulacja głodowa LICZY SIĘ
+        // do limitu miast danej epoki nowego właściciela (odwrócenie wcześniejszej
+        // decyzji R-MIASTA-LIMIT-PODBÓJ-Q1=A, na wyraźne życzenie właściciela).
+        // Flaga `foundedByOwner` pozostaje więc niezmieniona (zwykle `true`).
         // B1 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): kapitulacja głodowa
         // to DRUGIE (obok applyCityCaptureToMap) miejsce, gdzie city.ownerId się zmienia w
         // wyniku wojny — dla par AI↔AI to dziś JEDYNA droga zakończenia wojny poza tym

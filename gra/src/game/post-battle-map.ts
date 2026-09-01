@@ -483,9 +483,10 @@ export function applyCityCaptureAfterBattle(
   // prevents a premature `delete` at the barbarian capture step itself, nothing more.
   if (!isBarbarian(atkOwner)) applyPostCaptureLawOnCapture(city, atkOwner, prevOwner);
   city.ownerId = atkOwner;
-  // R-MIASTA-LIMIT-PODBÓJ-Q1=A: przejęte miasto nie zużywa puli miast
-  // zakładanych przez nowego właściciela.
-  city.foundedByOwner = false;
+  // R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1: przejęte siłą miasto LICZY SIĘ
+  // do limitu miast danej epoki nowego właściciela (odwrócenie wcześniejszej
+  // decyzji R-MIASTA-LIMIT-PODBÓJ-Q1=A, na wyraźne życzenie właściciela).
+  // Flaga `foundedByOwner` pozostaje więc niezmieniona (zwykle `true`).
   city.oblegane = false;
   if (city.rebelState) city.rebelState = false;
   // B2 (Evaluator RUNDA 1: FAIL) — patrz komentarz przy CityCaptureOpts.onOwnerChanged wyżej.
