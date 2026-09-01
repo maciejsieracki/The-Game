@@ -95,6 +95,17 @@ const IMPROVEMENT_NAME_TO_KEY: Record<string, string> = (() => {
 
 const ALL_TECHS = (techData as unknown as { technologie: RawTech[] }).technologie;
 
+/** `Historia` (capitalizowane, konwencja `tech.json` — zgodna z istniejącym
+ * `Uwagi`/`Technologia`) — pole NIE jest jeszcze zadeklarowane w `RawTech` (dodadzą
+ * je dopiero batche treści, T-KARTY-HISTORIA-INFRA-Q1 to wyłącznie infrastruktura),
+ * więc czytamy je bezpiecznie spoza typowanego kształtu. Zwraca `undefined` (nie
+ * pusty string) gdy pole brakuje lub jest puste. */
+function historicalNoteOf(tech: RawTech): string | undefined {
+  const v = (tech as unknown as Record<string, unknown>)['Historia'];
+  const t = typeof v === 'string' ? v.trim() : '';
+  return t !== '' ? t : undefined;
+}
+
 export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   const buildings = (buildingsData as BuildingRow[]).filter((b) => b.techUnlock === tech['Technologia']);
   const units = (unitsData as UnitRow[]).filter((u) => u.Tech === tech['Technologia']);
@@ -278,5 +289,6 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     // Paginacja jednostek (previewLimit) sprzęga się z kompaktowym nagłówkiem karty —
     // wzorem `tdn-card--compact`/`wireInteractions()` w `techDiscoveryNotice.ts` (T1b).
     compactHeaderOnExpand: true,
+    historicalNote: historicalNoteOf(tech),
   };
 };

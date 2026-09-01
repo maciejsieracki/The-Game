@@ -82,6 +82,18 @@ function isEmptyDataVal(v: unknown): boolean {
   return v == null || v === '' || v === '—' || v === '-';
 }
 
+/** `historia` (lowercase, konwencja `buildings.json` — zgodna z istniejącym
+ * `uwagi`/`wymagania`) — pole NIE jest jeszcze zadeklarowane w `BuildingDef`
+ * (dodadzą je dopiero batche treści, T-KARTY-HISTORIA-INFRA-Q1 to wyłącznie
+ * infrastruktura), więc czytamy je bezpiecznie spoza typowanego kształtu, wzorem
+ * `unitAdapter.ts::extra()`. Zwraca `undefined` (nie pusty string) gdy pole brakuje
+ * lub jest puste — `types.ts`/`renderer.ts` traktują to jako „sekcja nie istnieje". */
+function historicalNoteOf(building: BuildingDef): string | undefined {
+  const v = (building as unknown as Record<string, unknown>).historia;
+  const t = text(v);
+  return t !== '' ? t : undefined;
+}
+
 const YIELD_BRAND: { key: keyof BuildingDef['baza']; label: string }[] = [
   { key: 'praca', label: 'Praca' },
   { key: 'pieniadz', label: 'Pieniądz' },
@@ -238,6 +250,7 @@ export const buildingAdapter: EntityCardAdapter<BuildingDef> = (building, ctx) =
     medallion: { kind: 'icon', svg: buildingIconSvg(building, building.id) },
     sections,
     civpediaLink: { folder: 'budynki', slug: building.id },
+    historicalNote: historicalNoteOf(building),
   };
 };
 

@@ -37,6 +37,11 @@ interface ImprovementRowExtra {
   bonus_wymaga_obozowania?: boolean;
   cywilizacje?: string[];
   cywilizacje_uwaga?: string;
+  /** Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1) — lowercase, konwencja
+   * `terrain-improvements.json` zgodna z istniejącym `uwagi`/`cywilizacje_uwaga`. Pole
+   * NIE jest jeszcze zadeklarowane w danych (dodadzą je dopiero batche treści; tu
+   * wyłącznie infrastruktura karty). */
+  historia?: string;
   surowiecOdblokowany_uwaga?: string;
   surowiec_ilosc_tura?: number;
   tech_uwaga?: string;
@@ -120,16 +125,24 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
   const requirementRows: EntityCardRow[] = [
     { label: 'Teren', value: text(improvement.teren) },
     {
+      // T-KARTY-HISTORIA-INFRA-Q1 (c): `improvement.tech_uwaga` NIE jest już doklejane
+      // do wartości — czysta nazwa technologii, bez dev-adnotacji w nawiasie. Pole
+      // `tech_uwaga` w danych zostaje nietknięte (inne narzędzia mogą go używać), tylko
+      // przestaje być renderowane na karcie gracza.
       label: 'Technologia',
-      value: techName + (hasValue(improvement.tech_uwaga) ? ` (${text(improvement.tech_uwaga)})` : ''),
+      value: techName,
       linkTo: techLinkTo,
     },
     { label: 'Koszt (Praca)', value: hasValue(improvement.koszt_praca) ? `${text(improvement.koszt_praca)} P` : '' },
     { label: 'Warunek', value: text(improvement.warunek) },
     {
+      // T-KARTY-HISTORIA-INFRA-Q1 (c): `improvement.cywilizacje_uwaga` NIE jest już
+      // doklejane — czysta lista cywilizacji, bez dev-adnotacji w nawiasie. Pole
+      // `cywilizacje_uwaga` w danych zostaje nietknięte, tylko przestaje być
+      // renderowane na karcie gracza.
       label: 'Cywilizacje',
       value: Array.isArray(improvement.cywilizacje) && improvement.cywilizacje.length > 0
-        ? improvement.cywilizacje.join(', ') + (hasValue(improvement.cywilizacje_uwaga) ? ` (${text(improvement.cywilizacje_uwaga)})` : '')
+        ? improvement.cywilizacje.join(', ')
         : '',
     },
     { label: 'Ulepszenie bazowe', value: upgradeFromKey, linkTo: upgradeFromLinkTo },
@@ -162,13 +175,15 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
     key: 'resources', title: 'Surowce i terytorium', rows: resourceRows,
   };
 
-  // --- Odblokowuje / uwagi -----------------------------------------------------------------------
+  // --- Odblokowuje / dodatkowe informacje ------------------------------------------------------
+  // T-KARTY-HISTORIA-INFRA-Q1 (c): wiersz „Uwagi" (`improvement.uwagi`) TRWALE usunięty z
+  // karty — było to źródło wycieku surowego tekstu deweloperskiego wprost graczowi
+  // (zgłoszenie właściciela, karta „Tarasy uprawne"). Pole `uwagi` w danych NIE jest
+  // usuwane (może być używane przez inne narzędzia/dokumentację), przestaje być
+  // WYŁĄCZNIE renderowane tutaj.
   const unlockRows: EntityCardRow[] = [];
   if (hasValue(improvement.odblokowuje)) {
     unlockRows.push({ label: 'Odblokowuje', value: text(improvement.odblokowuje) });
-  }
-  if (hasValue(improvement.uwagi)) {
-    unlockRows.push({ label: 'Uwagi', value: text(improvement.uwagi) });
   }
   if (improvement.wycinka === true) {
     unlockRows.push({ label: 'Wycinka lasu', value: 'Tak — usuwa nakładkę Las' });
@@ -196,5 +211,6 @@ export const improvementAdapter: EntityCardAdapter<ImprovementRow> = (improvemen
     medallion: { kind: 'icon', svg: key ? improvementIconSvg(key, 34) : PLACEHOLDER_ICON_SVG },
     sections: [bonusSection, requirementsSection, resourceSection, unlockSection],
     civpediaLink: null,
+    historicalNote: hasValue(improvement.historia) ? text(improvement.historia) : undefined,
   };
 };

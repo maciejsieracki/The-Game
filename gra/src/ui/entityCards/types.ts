@@ -110,6 +110,16 @@ export interface EntityCardData {
    * patrz raport 14-operator-T1b.md, wymaga tego pola NA POZIOMIE karty + logiki w
    * rendererze, nie da się rozwiązać lokalnie w obrębie samej sekcji). */
   compactHeaderOnExpand?: boolean;
+  /** Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1, infrastruktura) — pojedynczy akapit
+   * prozy fabularnej/edukacyjnej (wzorem Civilopedii), renderowany przez `renderer.ts`
+   * na SAMYM KOŃCU karty, POD wszystkimi sekcjami mechanicznymi (`sections`) —
+   * stylistycznie odróżniony (kursywa, delikatny separator), bo to ciekawostka, nie
+   * dana do optymalizacji rozgrywki. `undefined`/pusty string = sekcja NIE istnieje w
+   * DOM (żadnej pustej/białej sekcji) — dopóki batche treści nie wypełnią pola
+   * źródłowego (`historia`/`Historia`) w danych, WSZYSTKIE karty dziś nie mają tej
+   * sekcji. Adapter jest odpowiedzialny za przycięcie białych znaków i przekazanie
+   * `undefined`, gdy pole źródłowe jest puste/nieustawione. */
+  historicalNote?: string;
 }
 
 /** Tryb otwarcia karty. `dialog` w T1 jest jedynym w pełni obsługiwanym przez renderer

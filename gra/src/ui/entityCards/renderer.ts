@@ -298,6 +298,24 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
   }
   card.appendChild(body);
 
+  // Rys historyczny (T-KARTY-HISTORIA-INFRA-Q1) — renderowany WYŁĄCZNIE gdy
+  // `data.historicalNote` jest niepuste (adapter przycina biały tekst i zwraca
+  // `undefined` dla braku danych, patrz `types.ts`), więc karty bez jeszcze
+  // dopisanej historii (100% dziś) NIE dostają pustej/białej sekcji w DOM — zero
+  // węzła `.entity-card-historia` zamiast pustego kontenera. Umieszczony PO
+  // wszystkich sekcjach mechanicznych (`body`), PRZED stopką civpedii/akcji —
+  // ciekawostka fabularna, nie dana do optymalizacji rozgrywki (patrz `types.ts`).
+  if (data.historicalNote) {
+    const historia = el('div', 'entity-card-historia');
+    const sep = el('div', 'entity-card-historia-sep');
+    sep.setAttribute('aria-hidden', 'true');
+    historia.appendChild(sep);
+    const p = el('p', 'entity-card-historia-text');
+    p.textContent = data.historicalNote;
+    historia.appendChild(p);
+    card.appendChild(historia);
+  }
+
   if (data.civpediaLink) {
     const link = data.civpediaLink;
     const footer = el('div', 'entity-card-footer');
@@ -623,4 +641,13 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
    KONCOWA dla mutacji w tools/entity-card-action-buttons-real-render-test.cjs (wycina
    dokladnie ten blok z arkusza i sprawdza, ze asercje wracaja na czerwono). Nie usuwaj jej
    przy dopisywaniu kolejnych regul — nowe reguly dopisuj PO niej. */
+/* T-KARTY-HISTORIA-INFRA-Q1: "Rys historyczny" — stylistycznie odrebna od sekcji
+   mechanicznych (kursywa, przyciszony kolor, delikatny separator w gorze) zgodnie z
+   dispatchem ("ciekawostka, nie dana do optymalizacji rozgrywki"). Renderowana tylko
+   gdy data.historicalNote jest niepuste (patrz renderEntityCard/types.ts). */
+.entity-card-historia{padding:2px 14px 12px;}
+.entity-card-historia-sep{height:1px;margin:0 0 8px;
+  background:linear-gradient(90deg,rgba(232,216,138,.32),rgba(232,216,138,0));}
+.entity-card-historia-text{margin:0;font-style:italic;font-size:12.5px;line-height:1.5;
+  color:var(--tg-text-muted,#a89f80);}
 `;

@@ -205,5 +205,11 @@ export const unitAdapter: EntityCardAdapter<UnitDef> = (unit) => {
     sections: [characteristicsSection, combatSection, economySection, requirementsSection, statusesSection],
     civpediaLink: null,
     statusBadges: isSuperUnit ? ['Super-jednostka'] : undefined,
+    // `Historia` (capitalizowane, konwencja `units.json` — zgodna z `Jednostka`/
+    // `Surowiec`) — pole NIE jest jeszcze zadeklarowane w `UnitDef` (dodadzą je
+    // dopiero batche treści, T-KARTY-HISTORIA-INFRA-Q1 to wyłącznie infrastruktura);
+    // `extra()` już bezpiecznie czyta pola spoza typowanego kształtu i zwraca ''
+    // (→ undefined tu) gdy brak/puste, patrz definicja `extra()` wyżej.
+    historicalNote: extra(unit, 'Historia') || undefined,
   };
 };
