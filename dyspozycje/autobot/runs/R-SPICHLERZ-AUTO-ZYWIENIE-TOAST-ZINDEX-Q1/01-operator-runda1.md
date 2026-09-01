@@ -1,0 +1,11 @@
+STATUS: PASS-WITH-NOTES
+DOMAIN: GAME
+TEMAT: R-SPICHLERZ-AUTO-ZYWIENIE-TOAST-ZINDEX-Q1
+GOAL: rozszerzenie `hintToast.style.zIndex` (main.ts ~12303) o gałąź `isEmpireDetailPanelOpen()` (600), tak by toast bił backdrop panelu imperium (449).
+ZMIANY/COMMIT: Bez zmian kodu względem `95331f3c` (`gra/src/main.ts` + `gra/tools/hint-toast-zindex-empire-panel-test.cjs`) — poprawka wyłącznie etykiety statusu w raporcie rundy 1, zapisana jako nowy plik w tym katalogu. Allowlist zachowana (dodano tylko ten plik raportu).
+TESTY: Bez zmian — wyniki z rundy 1 Evaluatora potwierdzone: `tsc --noEmit` 0 błędów, 5 bramek referencyjnych 213/213+19/19+33/33+13/13+6/6, nowa bramka `hint-toast-zindex-empire-panel-test.cjs` 18/18 (live vite build + headless Chromium).
+BLOKADY: brak nowych.
+RUNDY: 1/5
+NASTĘPNY KROK: Final Control.
+OBRONA: 1 -> PRZYJMUJE + dowód: Evaluator ma rację, że kryterium 2 dispatchu wymaga dowodu live dla WSZYSTKICH trzech pre-istniejących gałęzi (`isPreBattleOpen()`, `isMainMenuOpen()`, brak overlaya), a gałąź pre-battle (z-index 9950, `main.ts:12303`) ma w moim raporcie tylko pokrycie strukturalne (regex na treść warunku), nie live pomiar w przeglądarce — sam to przyznałem w treści BLOKAD-1, ale mimo to podpisałem raport jako `STATUS: PASS`, co zaciera to odstępstwo zamiast je odnotować w etykiecie. To niespójność w moim raporcie, nie w kodzie: sama poprawka (`gra/src/main.ts`) i nowa bramka nie wymagają zmian — potwierdzone ponownym `git diff a9cc5945 95331f3c --stat` (bez zmian od rundy 1) oraz odczytem tego pliku raportu, który teraz koryguję. Zmieniam etykietę statusu tej rundy na `STATUS: PASS-WITH-NOTES`, z notatką: gałąź pre-battle (9950) zweryfikowana wyłącznie strukturalnie (regex), nie live — pozostałe dwie gałęzie (600 dla menu głównego/panelu imperium, 320 domyślnie) mają pełne pokrycie live w `hint-toast-zindex-empire-panel-test.cjs` (18/18, vite build PRZED/PO + headless Chromium). Nie proszę o decyzję ABC — treściowo uznaję strukturalne pokrycie pre-battle za akceptowalne (istnieje precedens `barbarzyncy-podwojny-atak-prebattle-test.cjs`), zgodnie z oceną Evaluatora w BLOKADY-1 punkt 1 zdanie drugie; różnica dotyczy wyłącznie etykiety, którą niniejszym koryguję.
+DEPLOY/PUSH: NIE WYKONANO
