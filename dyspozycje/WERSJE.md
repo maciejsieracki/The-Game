@@ -13,6 +13,20 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 0ed50668 - 2026-09-01 18:52 UTC - FALA 330: PILNE — cofnięcie regresu, ręczne budowanie/wycinka znów działa wszędzie w terytorium
+
+|- md5 (pełne): 0ed50668628ae10576f3de069cf2930d · stempel: ROBOCZA · label 0ed50668 · źródłowy commit integracji: `f88cc1a4`
+|- **PILNE, gra była niegrywalna.** `P-AI-PRZYCISK-BUDUJ-REGRES-OBYWATELE-Q1` — naprawa `R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1` z FALI 329 błędnie zablokowała CAŁY ręczny przycisk „buduj" (nie tylko budynki, także surowce i wycinkę lasu) na heksach bez obywateli. Właściciel: „to jest totalny regres". **Rozstrzygnięcie właściciela:** bramka „tylko obywatele" ma istnieć WYŁĄCZNIE w automacie AI (cywilizacji i automatu gracza) — ręczna akcja gracza nigdy nie ma żadnego ograniczenia obywatelami, dla żadnego typu ulepszenia.
+|- Cofnięto wywołanie bramki w `applyBuildRequest` (main.ts) i usunięto martwą funkcję `isCitizenOrDepositHexForBuild` (zero trafień grepem po zmianie). Automat AI (Zasada 1-3, `auto-improvements.ts`) pozostał NIETKNIĘTY — potwierdzone identycznymi liczbami testów sprzed regresu (`ai4-popyt-obywatele-test.cjs` 50/50, `ai2-heks-po-heksie-test.cjs` 35/35).
+|- `gra/tools/build-request-obywatele-live-test.cjs` przebudowany na test regresyjny o odwróconym sensie: dowodzi że ręczne budowanie surowcowe i wycinka lasu BEZ obywateli działają (16/16, realny Playwright).
+|- Pełny cykl Operator→Evaluator→Obrona→Final Control przez Workflow, PILNIE. Evaluator zgłosił 2 zarzuty proceduralne (rozszerzenie haka testowego `__buildRequestTestDebug` ponad dosłowną allowlistę, konieczne do realnej weryfikacji wycinki) — Final Control: oba **ODDAL** (czysto testowe, zero mutacji logiki gry, nieosiągalne dla gracza).
+|- `tsc --noEmit` 0 błędów, 5 bramek referencyjnych bez regresu.
+|- Bundle: 881 modułów, `Gra-ROBOCZA.html` 69,0 MB.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
+|- **Odstępstwo techniczne (jak w FALACH 324-329):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA b2a7e2cd - 2026-08-31 18:59 UTC - FALA 329: naprawa wojen wymuszonych (barbarzyńcy+pre_contact+gracz jako cel), E2E dowód muzyki era-transition, 4 tematy porządkowe
 
 |- md5 (pełne): b2a7e2cd4d92e9b4bc0f19b53c8b38b5 · stempel: ROBOCZA · label b2a7e2cd · źródłowy commit integracji: `839771ae`
@@ -28,7 +42,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp match WARN — znany, nieszkodliwy artefakt samoreferencyjnego hasha, patrz FALA 301).
 |- **Odstępstwo techniczne (jak w FALACH 324-328):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 0ed50668, FALA 330 — cofnięcie regresu `R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1` z tej fali)
 
 ## ROBOCZA daa50734 - 2026-08-30 20:49 UTC - FALA 328: krok handlu surowców w dyplomacji 5→10 szt. (R-DYPLO-CENNIK-KROK10-Q1)
 
