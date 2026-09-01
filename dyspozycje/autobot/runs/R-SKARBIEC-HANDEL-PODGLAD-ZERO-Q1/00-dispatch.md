@@ -1,5 +1,5 @@
 TEMAT:  R-SKARBIEC-HANDEL-PODGLAD-ZERO-Q1
-RUNDA:  1/5
+RUNDA:  2/5 (runda 1 = NAPRAW na nowo znalezioną lukę w guardzie testu — patrz ECHO na końcu pliku)
 DATA:   2026-09-01
 DOMAIN: GAME
 ŚCIEŻKA: A (Workflow), model sędziego (R-PROC-AUTOBOT.md §3c)
@@ -145,3 +145,40 @@ dla żywego testu w przeglądarce, jeśli potrzebny). Zakaz `git add -A`.
 Operator → Evaluator (zarzuty, lista może być pusta) → Operator (Obrona,
 tylko gdy zarzuty niepuste) → Final Control (osobne wywołanie Workflow) →
 orkiestrator integruje allowlist-only i cutuje kolejną FALĘ ROBOCZA.
+
+## ECHO — RUNDA 2 (2026-09-01)
+
+Runda 1 (commit `73868d9b`, branch `autobot/R-SKARBIEC-HANDEL-PODGLAD-ZERO-Q1`)
+naprawiła fix w `main.ts` poprawnie, ALE Final Control znalazł nową lukę w
+guardzie regresyjnym dodanym w Obronie rundy 1: `checkRealFixSiteInMainTs()`
+(w `gra/tools/hud-skarbiec-test.cjs`) wycina tekst argumentów 10/11 z
+SUROWEGO źródła `main.ts` bez usuwania komentarzy z wyciętego fragmentu, i
+sprawdza go regexem/`.includes()` zamiast ścisłego dopasowania. Dowód Final
+Control: podmiana realnego wywołania na
+`undefined /* tradeRouteBuildingBonusByCity */, undefined /* computeTradeRouteIncomeByCity loadTradeRouteIncomeParams */,`
+(czyli PRZYWRÓCENIE buga — literalny `undefined` na obu pozycjach — z
+komentarzem zawierającym nazwy zmiennych tuż obok) przechodzi guard jako
+ZIELONY (23/23), mimo że to dokładnie ten sam regres, który temat miał
+wykryć.
+
+**GOAL rundy 2:** utwardź `checkRealFixSiteInMainTs()` w
+`gra/tools/hud-skarbiec-test.cjs`:
+1. Przed dopasowaniem USUŃ komentarze (`/* ... */` i `// ...`) z wyciętego
+   fragmentu argumentów (albo z całego pliku źródłowego przed parsowaniem).
+2. Dopasowanie ma być ŚCISŁE — porównanie wyekstrahowanego argumentu (po
+   `trim()`, po usunięciu komentarzy) do dokładnej oczekiwanej wartości
+   (np. `arg10 === 'tradeRouteBuildingBonusByCity'`), NIE regex-contains/
+   `.includes()` na surowym tekście z komentarzami.
+3. Dodaj NOWY przypadek testowy odtwarzający DOKŁADNIE ten atak z raportu
+   Final Control (literalny `undefined` + sąsiedni komentarz z nazwami
+   zmiennych) i pokaż że po utwardzeniu guard POPRAWNIE go odrzuca
+   (test czerwienieje na tej mutacji, tak jak powinien).
+
+**JAWNIE POZA ZAKRESEM:** żadna zmiana w `gra/src/main.ts` — fix z rundy 1
+jest merytorycznie poprawny (Final Control potwierdził empirycznie: prawdziwy
+`undefined, undefined,` bez komentarza poprawnie czerwienieje). Problem jest
+WYŁĄCZNIE w solidności guardu testowego.
+
+**Zaktualizowana ALLOWLISTA (runda 2):** WYŁĄCZNIE
+`gra/tools/hud-skarbiec-test.cjs`. `gra/src/main.ts` pozostaje NIETKNIĘTY w
+tej rundzie (już poprawny z rundy 1).
