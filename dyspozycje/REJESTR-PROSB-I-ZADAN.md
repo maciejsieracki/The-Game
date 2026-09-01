@@ -3399,6 +3399,11 @@ uThulwana, Wojownik z maczuga, Wojownik z toporem, Procarz Huaracoc,
 Oszczepnik Estolica, Krolewska Gwardia, Rydwan konny, Lucznik egipski).
 Dispatch: `dyspozycje/autobot/runs/R-KARTY-HISTORIA-{B3,T3,U2}-Q1/00-dispatch.md`.
 
+FALA 3 — status integracji:
+- **T3 (10 technologii, OSTATNI batch): ZINTEGROWANE do `main` (ab00b118)**. Zero zarzutow Evaluatora, Final Control PASS. **KATEGORIA "TECHNOLOGIE" KOMPLETNA: 32/32.** entity-card-historia-section-test.cjs 31/31, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
+- **B3 (13 budynkow, OSTATNI batch): Operator+Evaluator PASS, zero zarzutow — Final Control w toku. Po integracji: KATEGORIA "BUDYNKI" KOMPLETNA 41/41.**
+- **U2 (13 jednostek, 26/75): Operator+Evaluator PASS, zero zarzutow — Final Control w toku.**
+
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1 | 2026-09-01 | Naprawa `entity-card-historia-section-test.cjs` (temat INFRA), ktorego fixture "jeszcze pustych" encji (stolarnia/Lowiectwo/farma) uzywal REALNYCH danych produkcyjnych zamiast syntetycznych - kazdy kolejny batch tresci ktory wypelnia jedna z tych 3 encji powoduje falszywy FAIL. Dodatkowo sekcja [5] ma pokrewny blad: fixture "zla wielkosc liter" dziedziczy z prawdziwego wiersza, wiec po wypelnieniu poprawnego pola test przypadkiem przechodzi/nie przechodzi z innego powodu niz zamierzony. | **ZINTEGROWANE do `main` (4efd8db2)** | Pelny cykl Operator->Evaluator(zero zarzutow)->Final Control przez Workflow. Sekcja [4]: asercja WARUNKOWA (`historiaExists === fieldNonEmpty`) na realnym stanie pola zamiast twardego "nie istnieje". Sekcja [5]: destructuring usuwa poprawne pole z kopii wiersza przed wstrzyknieciem zlej wielkosci liter, dla wszystkich 4 adapterow. Test zweryfikowany na REALNYCH, dzisiejszych danych (B1/T1/I1/U1 juz zintegrowane) - 31/31 PASS, zero fixture-driftu na przyszlosc. tsc 0 bledow, 5 bramek referencyjnych bez regresu. |
