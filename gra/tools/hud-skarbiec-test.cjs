@@ -462,6 +462,27 @@ if (city) {
     return args;
   }
 
+  /**
+   * OBRONA RUNDA 2 (zarzut Final Control, PRZYJETY): poprzednia wersja uzywala
+   * regex-contains (`/tradeRouteBuildingBonusByCity/.test(pos10)`) na SUROWYM
+   * tekscie argumentu. Atak: `undefined /* tradeRouteBuildingBonusByCity *\/`
+   * -- to LITERALNY `undefined` z komentarzem-atrapa doklejonym za nim, a
+   * regex-contains i tak dopasowuje nazwe zmiennej WEWNATRZ tego komentarza,
+   * wiec guard bledbie uznawal to za "prawdziwa zmienna". Naprawa: najpierw
+   * usuwamy komentarze (`//`, `/* *\/`) z wycietego argumentu (uzywajac tego
+   * samego tokenizera `scanCode` co reszta pliku), DOPIERO na oczyszczonym
+   * tekscie robimy porownanie -- dla pozycji 10 SCISLE (`===` do dokladnej
+   * nazwy zmiennej, zero tolerancji na cokolwiek doklejone dookola), dla
+   * pozycji 11 (zlozone wyrazenie IIFE, gdzie `===` do calego tekstu nie ma
+   * sensu) regex na oczyszczonym tekscie -- komentarz-atrapa juz nie istnieje,
+   * wiec nie moze podszyc sie pod prawdziwe wywolanie.
+   */
+  function stripComments(text) {
+    let out = '';
+    scanCode(text, 0, (ch) => { out += ch; return true; });
+    return out;
+  }
+
   /** Ta sama asercja stosowana i do PRAWDZIWYCH, i do zmutowanych argumentow. */
   function assertFixApplied(args, label, expectFixed) {
     assert(
@@ -475,10 +496,15 @@ if (city) {
     // wprost przez dispatch numerami linii).
     const pos10 = args[11];
     const pos11 = args[12];
-    const pos10IsRealVar = /tradeRouteBuildingBonusByCity/.test(pos10) && pos10 !== 'undefined';
-    const pos11IsRealCalc = pos11 !== 'undefined'
-      && /computeTradeRouteIncomeByCity/.test(pos11)
-      && /loadTradeRouteIncomeParams/.test(pos11);
+    const pos10Clean = stripComments(pos10).trim();
+    const pos11Clean = stripComments(pos11).trim();
+    // SCISLE porownanie: pozycja 10 w realnym miejscu poprawki jest goma
+    // nazwa zmiennej `tradeRouteBuildingBonusByCity`, wiec po oczyszczeniu
+    // z komentarzy MUSI byc dokladnie rowna tej nazwie -- zaden regex-contains.
+    const pos10IsRealVar = pos10Clean === 'tradeRouteBuildingBonusByCity';
+    const pos11IsRealCalc = pos11Clean !== 'undefined'
+      && /computeTradeRouteIncomeByCity/.test(pos11Clean)
+      && /loadTradeRouteIncomeParams/.test(pos11Clean);
     if (expectFixed) {
       assert(`${label}: pozycja 10 (tradeRouteBuildingBonusByCity) NIE jest literalnym undefined`,
         pos10IsRealVar, `pos10=${JSON.stringify(pos10)}`);
@@ -509,6 +535,20 @@ if (city) {
   mutatedArgs[11] = 'undefined';
   mutatedArgs[12] = 'undefined';
   assertFixApplied(mutatedArgs, 'ZMUTOWANA REKONSTRUKCJA (undefined na poz. 10/11, jak przed poprawka)', false);
+
+  // --- (3) OBRONA RUNDA 2: dokladny atak z raportu Final Control -- literalny
+  // `undefined` z doklejonym za nim komentarzem-atrapa udajacym nazwe realnej
+  // zmiennej/wywolania. Regex-contains z rundy 1 dopasowywal to jako "prawdziwa
+  // wartosc" (fałszywy PASS na buggy stanie); po utwardzeniu (usuwanie
+  // komentarzy PRZED porownaniem + === dla pozycji 10) guard MUSI to odrzucic. ---
+  const attackArgs = realArgs.slice();
+  attackArgs[11] = 'undefined /* tradeRouteBuildingBonusByCity */';
+  attackArgs[12] = 'undefined /* computeTradeRouteIncomeByCity loadTradeRouteIncomeParams */';
+  assertFixApplied(
+    attackArgs,
+    'ATAK Z RAPORTU FINAL CONTROL (undefined + komentarz-atrapa udajacy realna wartosc)',
+    false,
+  );
 })();
 
 // ---------------------------------------------------------------------------
