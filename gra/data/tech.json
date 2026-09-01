@@ -19,7 +19,8 @@
       "Odblokowuje budynek": "Stolarnia; Palisada drewniana",
       "Koszt nauki": 5,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Tartak, Posterunek (Strażnica)"
+      "Odblokowuje ulepszenie terenu": "Tartak, Posterunek (Strażnica)",
+      "Historia": "Umiejętność systematycznego ścinania, ciosania i łączenia drewna należy do najstarszych ludzkich technik i wynaleziono ją niezależnie na wielu kontynentach już w epoce kamienia, gdy proste narzędzia z krzemienia i kości pozwoliły obrabiać pnie na opał, broń i szkielety szałasów. Z czasem powstały topory, dłuta i piły, a drewno stało się materiałem budowlanym numer jeden — z niego stawiano domy, mosty, wozy i pierwsze statki. Drewno miało też przewagę nad kamieniem: było lekkie, elastyczne i stosunkowo łatwe w obróbce nawet prostymi narzędziami, dzięki czemu społeczności mogły szybko rozbudowywać swoje osady. Ciekawostka: niektóre techniki łączenia drewna na tzw. jaskółczy ogon, bez użycia gwoździ, przetrwały w ciesielstwie niemal niezmienione od tysięcy lat."
     },
     {
       "Technologia": "Garncarstwo",
@@ -32,7 +33,8 @@
       "Odblokowuje budynek": "Spichlerz; Garncarnia; Cegielnia",
       "Koszt nauki": 40,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Glinianka, Warzelnia soli"
+      "Odblokowuje ulepszenie terenu": "Glinianka, Warzelnia soli",
+      "Historia": "Wypalanie gliny na trwałe naczynia pojawiło się niezależnie w wielu regionach świata w okresie neolitu, gdy osiadłe społeczności rolnicze potrzebowały sposobu na przechowywanie ziarna, wody i oliwy. Najstarsze znane naczynia gliniane datuje się na ponad 20 tysięcy lat wstecz, choć masowa produkcja garncarska rozwinęła się dopiero wraz z uprawą roślin i potrzebą magazynowania nadwyżek żywności. Wynalazek koła garncarskiego, które pojawiło się znacznie później, pozwolił rzemieślnikom formować naczynia symetryczne i w większej liczbie, co uczyniło garncarstwo jednym z pierwszych wyspecjalizowanych zawodów w historii. Skorupy ceramiczne są dziś jednym z najcenniejszych źródeł wiedzy archeologów, bo glina — w przeciwieństwie do drewna czy tkanin — przetrwała tysiąclecia niemal nienaruszona, pozwalając datować i odtwarzać życie dawnych kultur."
     },
     {
       "Technologia": "Murarstwo",
@@ -45,7 +47,8 @@
       "Odblokowuje budynek": "Warsztat kamieniarski; Stela / Pomnik",
       "Koszt nauki": 56,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Kamieniołom, Posterunek (Strażnica)"
+      "Odblokowuje ulepszenie terenu": "Kamieniołom, Posterunek (Strażnica)",
+      "Historia": "Układanie kamienia i suszonej lub wypalanej cegły w trwałe, nośne konstrukcje rozwinęło się w starożytnych cywilizacjach Mezopotamii, Egiptu i doliny Indusu, gdzie budowniczowie nauczyli się wiązać materiał zaprawą z gliny, wapna lub gipsu, by ściany wytrzymywały ciężar kolejnych warstw. Dzięki murarstwu ludzie mogli wznosić budowle znacznie wyższe i trwalsze niż drewniane konstrukcje — mury obronne, świątynie i pierwsze wielopiętrowe domy, które przetrwały do dziś jako ruiny liczące tysiące lat. Technika ta zrewolucjonizowała też obronność miast: grube kamienne mury skutecznie chroniły przed najazdami i pożarami, których drewniane palisady nie wytrzymywały. Ciekawostka: niektóre starożytne mury, jak te w Machu Picchu czy mykeńskie Lwia Brama, łączono kamienie tak precyzyjnie dopasowane, że nie potrzebowały żadnej zaprawy, a mimo to stoją do dziś."
     },
     {
       "Technologia": "Rolnictwo",
@@ -58,7 +61,8 @@
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Farma, Tarasy uprawne",
       "Koszt nauki": 5,
-      "Uwagi": "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie; tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)"
+      "Uwagi": "B1-Q2A Maciej 2026-06-29; T-TECH-4: Tarasy po Rolnictwie; tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)",
+      "Historia": "Udomowienie roślin uprawnych — pszenicy i jęczmienia na Bliskim Wschodzie, ryżu w Chinach, kukurydzy w Mezoameryce — nastąpiło niezależnie w kilku regionach świata około 10-12 tysięcy lat temu i uznawane jest za jedną z największych rewolucji w dziejach ludzkości. Przejście od zbieractwa do systematycznej uprawy pozwoliło społecznościom osiedlać się na stałe zamiast wędrować za pożywieniem, co z kolei umożliwiło powstanie wiosek, miast i pierwszych zorganizowanych państw. Nadwyżki żywności wyprodukowane przez rolników pozwoliły części populacji zająć się rzemiosłem, handlem czy administracją zamiast wyłącznie zdobywaniem pożywienia, co stało się fundamentem podziału pracy. Ciekawostka: badania genetyczne pokazują, że dzisiejsza pszenica jest efektem tysięcy lat selekcji przez rolników, którzy nieświadomie faworyzowali rośliny o większych, łatwiejszych do zbioru ziarnach."
     },
     {
       "Technologia": "Łowiectwo",
@@ -71,7 +75,8 @@
       "Odblokowuje budynek": null,
       "Odblokowuje ulepszenie terenu": "Obóz łowiecki",
       "Koszt nauki": 5,
-      "Uwagi": "B1-Q2A Maciej 2026-06-29; tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)"
+      "Uwagi": "B1-Q2A Maciej 2026-06-29; tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)",
+      "Historia": "Polowanie na dziką zwierzynę za pomocą prostych narzędzi — kijów, oszczepów, pułapek — towarzyszy ludziom i ich przodkom od milionów lat i rozwijało się niezależnie na wszystkich zamieszkanych kontynentach, na długo zanim pojawiło się rolnictwo. Mięso zdobyte w ten sposób dostarczało cennych białek i tłuszczów, a skóry, kości i ścięgna zwierząt wykorzystywano do produkcji odzieży, narzędzi i broni, co czyniło łowiectwo podstawą przetrwania społeczności zbieracko-łowieckich. Rozwój technik łowieckich — polowań grupowych, zasadzek czy wykorzystania ognia do spędzania zwierzyny — wymagał współpracy i planowania, co niektórzy badacze łączą z rozwojem języka i myślenia społecznego u ludzi. Ciekawostka: malowidła naskalne sprzed dziesiątek tysięcy lat, jak te w jaskini Lascaux we Francji, w większości przedstawiają właśnie sceny łowieckie, co pokazuje, jak centralne miejsce zajmowało polowanie w życiu i wyobraźni ludzi epoki kamienia."
     },
     {
       "Technologia": "Łucznictwo",
@@ -84,7 +89,8 @@
       "Odblokowuje budynek": "Jednostki: Łucznik, Łucznik egipski, Łucznik sumeryjski, Łucznik akadyjski",
       "Koszt nauki": 56,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Łuk i strzała, pozwalające razić cel z bezpiecznej odległości, pojawiły się w epoce kamienia — najstarsze znaleziska grotów strzał datuje się na dziesiątki tysięcy lat, a ich stosowanie potwierdzono na różnych kontynentach niezależnie od siebie. Broń ta zrewolucjonizowała zarówno łowiectwo, umożliwiając polowanie na szybką i płochliwą zwierzynę bez ryzyka bliskiego kontaktu, jak i wojskowość, dając możliwość rażenia przeciwnika z dystansu, zanim ten zdążył się zbliżyć. Wraz z rozwojem metalurgii pojawiły się coraz skuteczniejsze groty, a technika kompozytowa — łączenie drewna, rogu i ścięgien w jednym łuku — pozwoliła koczowniczym ludom stepowym, jak Scytowie czy Mongołowie, budować potężne armie łucznicze konnych. Ciekawostka: legendarny angielski długi łuk, używany choćby pod Azincourt, wymagał lat treningu od dzieciństwa, bo naciągnięcie go wymagało siły porównywalnej z podnoszeniem kilkudziesięciu kilogramów."
     },
     {
       "Technologia": "Oswojenie zwierząt",
@@ -97,7 +103,8 @@
       "Odblokowuje budynek": null,
       "Koszt nauki": 5,
       "Uwagi": "tier-1 Kamień: 5/10/20 PN (szybka/std/dluga)",
-      "Odblokowuje ulepszenie terenu": "Trzoda, Owce, Lama"
+      "Odblokowuje ulepszenie terenu": "Trzoda, Owce, Lama",
+      "Historia": "Udomowienie dzikich zwierząt — psów jako pierwszych towarzyszy łowców, potem owiec, kóz, bydła i świń — zachodziło niezależnie w wielu regionach świata na przestrzeni tysięcy lat, począwszy od schyłku epoki lodowcowej. Zwierzęta hodowlane dostarczały ludziom stałego źródła mięsa, mleka, wełny i skór bez konieczności polowania, a niektóre gatunki, jak woły czy konie, zaprzęgano do pracy przy uprawie roli i transporcie, co znacznie zwiększyło wydajność gospodarki. Bliski kontakt z udomowionymi zwierzętami miał też mroczniejszą stronę — to właśnie od nich ludzie przejęli wiele chorób odzwierzęcych, takich jak odra czy grypa, które później dziesiątkowały populacje niemające wcześniej z nimi kontaktu. Ciekawostka: genetyczne badania psów sugerują, że mogły zostać udomowione nawet kilkanaście tysięcy lat wcześniej niż jakiekolwiek inne zwierzę, prawdopodobnie zanim ludzie w ogóle zaczęli uprawiać ziemię."
     },
     {
       "Technologia": "Mistycyzm",
@@ -110,7 +117,8 @@
       "Odblokowuje budynek": "Kamienne kręgi",
       "Koszt nauki": 40,
       "Uwagi": "T-TECH-8: pierwszy poziom kultu — upgrade do Świątyni po Religii",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Wierzenia religijne i praktyki duchowe, w tym rytuały pogrzebowe, kult przodków i wiara w siły nadprzyrodzone, towarzyszą ludziom od dziesiątków tysięcy lat i rozwijały się niezależnie w każdej znanej kulturze, co sugeruje, że potrzeba nadania sensu światu jest głęboko zakorzeniona w naturze ludzkiej. Najstarsze ślady praktyk duchowych — celowe pochówki z darami grobowymi czy monumentalne sanktuaria jak tureckie Göbekli Tepe sprzed niemal 12 tysięcy lat — powstały jeszcze przed rozwojem rolnictwa i miast, co każe podejrzewać, że to właśnie wspólne rytuały mogły skłaniać ludzi do osiedlania się w jednym miejscu. Kapłani i szamani, jako pierwsi wyspecjalizowani „eksperci” społeczności, często pełnili też funkcje lekarzy, doradców i strażników tradycji, wiedzy astronomicznej czy kalendarza. Ciekawostka: budowa Göbekli Tepe wymagała skoordynowanej pracy setek ludzi na długo przed wynalezieniem pisma czy koła, co zmusiło archeologów do przemyślenia, co właściwie było motorem pierwszych wielkich cywilizacji."
     },
     {
       "Technologia": "Wymiana",
@@ -123,7 +131,8 @@
       "Odblokowuje budynek": "Targowisko (Rynek)",
       "Koszt nauki": 64,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Handel wymienny, czyli oddawanie jednych dóbr za inne bez pośrednictwa pieniądza, jest praktyką tak starą jak same kontakty między różnymi grupami ludzkimi i towarzyszył społecznościom na całym świecie na długo przed powstaniem pierwszych miast. Dzięki wymianie plemiona i osady mogły zdobywać surowce i wyroby niedostępne na własnym terenie — sól, obsydian, muszle czy metale — co budowało pierwsze sieci kontaktów sięgające setek, a nawet tysięcy kilometrów. Systematyczna wymiana dóbr wymuszała też powstawanie wspólnych „kursów” wartości między różnymi towarami oraz elementarnego zaufania między obcymi sobie grupami, co torowało drogę późniejszemu handlowi dalekosiężnemu i dyplomacji. Ciekawostka: archeolodzy znajdowali bałtycki bursztyn w grobowcach starożytnego Egiptu, a egipskie paciorki w Europie Północnej — dowód, że sieci wymiany towarów istniały na kontynentalną skalę na długo przed jakąkolwiek pisemną wzmianką o handlu."
     },
     {
       "Technologia": "Gospodarka wodna",
@@ -136,7 +145,8 @@
       "Odblokowuje budynek": "Studnia",
       "Koszt nauki": 72,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Irygacja"
+      "Odblokowuje ulepszenie terenu": "Irygacja",
+      "Historia": "Kontrolowanie wody za pomocą kanałów, tam i systemów irygacyjnych rozwinęło się niezależnie w wielkich dolinach rzecznych starożytnego świata — nad Nilem, Tygrysem i Eufratem oraz Żółtą Rzeką w Chinach — gdzie regularne, ale nieprzewidywalne wylewy rzek trzeba było okiełznać, by zapewnić stabilne plony. Sztuczne nawadnianie pól pozwoliło uprawiać znacznie większe obszary niż naturalna wilgotność gleby, co dawało nadwyżki żywności zdolne wyżywić rosnące miasta i finansować budowę pierwszych państw. Zarządzanie wspólnymi systemami irygacyjnymi wymagało koordynacji pracy wielu wsi naraz, co niektórzy historycy uważają za jeden z impulsów do powstania scentralizowanej administracji i biurokracji w starożytnych imperiach. Ciekawostka: część starożytnych kanałów irygacyjnych w Mezopotamii i Persji, jak podziemne kanaty, działała jeszcze w czasach współczesnych, ponad dwa tysiące lat po ich budowie."
     },
     {
       "Technologia": "Koło",
@@ -149,7 +159,8 @@
       "Odblokowuje budynek": "Jednostki: Rydwan (woły)",
       "Koszt nauki": 88,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Droga"
+      "Odblokowuje ulepszenie terenu": "Droga",
+      "Historia": "Koło, choć dziś wydaje się oczywistością, zostało wynalezione stosunkowo późno w dziejach ludzkości — najstarsze ślady kół używanych do transportu pochodzą z Europy Środkowej i Mezopotamii sprzed około 5-6 tysięcy lat, znacznie później niż rolnictwo czy garncarstwo. Pierwotnie koła stosowano w garncarstwie do formowania naczyń, a dopiero potem przystosowano je do wozów i rydwanów, co zrewolucjonizowało transport lądowy, pozwalając przewozić ciężkie ładunki znacznie szybciej niż na grzbietach zwierząt jucznych. Rydwany bojowe, ciągnięte przez konie, stały się na tysiąclecia jednym z najgroźniejszych narzędzi wojny starożytnego świata, od Egiptu po Chiny. Ciekawostka: niektóre zaawansowane cywilizacje przedkolumbijskie w Ameryce, choć znały zasadę koła i stosowały ją w zabawkach dla dzieci, nigdy nie wykorzystały jej do transportu — prawdopodobnie z powodu braku dużych zwierząt jucznych, które mogłyby ciągnąć wozy."
     },
     {
       "Technologia": "Brązownictwo",
