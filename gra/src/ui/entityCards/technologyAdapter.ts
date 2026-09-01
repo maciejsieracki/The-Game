@@ -102,7 +102,6 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   const improvementNames = list(tech['Odblokowuje ulepszenie terenu']);
   const resourceUnlocked = tech['Odblokowuje surowiec.'] || null;
   const requirements = list(tech['Wymaga (prereq)']);
-  const epokaLabel = tech['Epoka'] ? (tech['Epoka'] === 'Kamień' ? 'Kamienia' : tech['Epoka']) : null;
 
   // --- „Co możesz teraz zrobić" — PIERWSZA sekcja, przed Budynkami (odstępstwo świadome,
   // patrz nagłówek `techDiscoveryNotice.ts` pkt 2: szablony wypełnione realnymi nazwami). ---
@@ -151,8 +150,7 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
   // resztą tego zadania, nie zakładamy cichej niezmienności między plikami danych).
   const buildingsRows: EntityCardRow[] = buildings.map((b) => ({
     label: b.nazwa ?? b.id,
-    value: [epokaLabel ? `Epoka ${epokaLabel}` : null, b.wymagania ?? (buildingEffectText(b) || null)]
-      .filter((x): x is string => !!x).join(' · '),
+    value: '',
     icon: { kind: 'svg', svg: buildingIconSvg(undefined, b.id) },
     linkTo: resolveBuildingRow(b.id) != null ? { kind: 'building', id: b.id } : undefined,
   }));
@@ -166,7 +164,6 @@ export const technologyAdapter: EntityCardAdapter<RawTech> = (tech) => {
     return {
       label: u.Jednostka,
       value: '',
-      trailing: u['Rola (linia)'] ?? u.Typ ?? undefined,
       icon: { kind: 'svg', svg: unitIconSvg(undefined, u.Jednostka) },
       linkTo: resolveUnitRow(slug) != null ? { kind: 'unit', id: slug } : undefined,
     };
