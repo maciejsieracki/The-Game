@@ -101,6 +101,22 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
   if (row.linkTo) {
     val.setAttribute('data-entity-kind', row.linkTo.kind);
     val.setAttribute('data-entity-id', row.linkTo.id);
+    // RUNDA 2 (R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1, ECHO): gdy `row.value`
+    // jest puste (Budynki/Jednostki karty technologii od rundy 1 — usunięty opis po
+    // prawej), przycisk-link kurczy się do 0px szerokości i tylko klik w USTAWIONY
+    // wąski obszar przycisku otwierał kartę — etykieta po lewej (`key`, osobny `<span>`)
+    // nie reagowała. Naprawa: CAŁY wiersz (`rowEl`) dostaje te same atrybuty pod inną
+    // nazwą (`data-row-entity-*`, celowo różną od `data-entity-*` na `card` — patrz
+    // listener niżej) jako fallback hit-area, plus klasę do kursora. Nie zastępuje
+    // przycisku — `val` zostaje klikalnym `<button>` (test
+    // `entity-card-cross-links-nested-overlay-test.cjs` wciąż trafia weń przez
+    // `elementFromPoint` na jego środku, bo leży na wierzchu wewnątrz wiersza), więc
+    // zero zmiany zachowania w sekcjach z niepustym `value` (Ulepszenia terenu,
+    // Kolejne technologie, Zmiany ekonomiczne, karta jednostki) — tam klik nadal trafia
+    // w przycisk tak jak dotychczas, fallback po prostu nigdy się nie uruchamia.
+    rowEl.classList.add('entity-card-row--linked');
+    rowEl.setAttribute('data-row-entity-kind', row.linkTo.kind);
+    rowEl.setAttribute('data-row-entity-id', row.linkTo.id);
   }
   rowEl.append(key, val);
   if (row.trailing) {
@@ -329,9 +345,25 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
   card.addEventListener('click', (event) => {
     const target = event.target as HTMLElement | null;
     const btn = target?.closest('button[data-entity-kind]') as HTMLButtonElement | null;
-    if (btn == null) return;
-    const linkKind = btn.getAttribute('data-entity-kind') as EntityKind | null;
-    const linkId = btn.getAttribute('data-entity-id');
+    let linkKind: EntityKind | null = null;
+    let linkId: string | null = null;
+    if (btn != null) {
+      linkKind = btn.getAttribute('data-entity-kind') as EntityKind | null;
+      linkId = btn.getAttribute('data-entity-id');
+    } else {
+      // RUNDA 2 fallback (patrz komentarz w `buildGridRowEl` przy `data-row-entity-kind`):
+      // klik poza przyciskiem (np. w etykietę `.entity-card-row-key` gdy `value` jest
+      // puste) trafia tu zamiast w `button[data-entity-kind]` powyżej — atrybut
+      // `data-row-entity-*` żyje na `.entity-card-row`, NIE na `card` (który ma własne
+      // `data-entity-kind`/`data-entity-id` identyfikujące CAŁĄ kartę, linia 242-243
+      // wyżej), więc `closest()` nie może przypadkiem złapać korzenia karty i otworzyć
+      // jej samej w pętli.
+      const rowEl = target?.closest('.entity-card-row[data-row-entity-kind]') as HTMLElement | null;
+      if (rowEl != null) {
+        linkKind = rowEl.getAttribute('data-row-entity-kind') as EntityKind | null;
+        linkId = rowEl.getAttribute('data-row-entity-id');
+      }
+    }
     if (linkKind == null || linkId == null) return;
     event.stopImmediatePropagation();
     openEntityCard(linkKind, linkId, { mode: 'dialog' });
@@ -455,6 +487,10 @@ export const ENTITY_CARD_CSS = `
 .entity-card-section h3{margin:0 0 4px;font-size:13px;opacity:.8;}
 .entity-card-row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:2px 0;}
 .entity-card-row-emphasis{font-weight:600;}
+/* RUNDA 2 (R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1): kursor spojny z tym, ze
+   caly wiersz jest teraz klikalny (fallback data-row-entity-*, patrz renderEntityCard),
+   nie tylko przycisk value — najbardziej widoczne, gdy value jest puste. */
+.entity-card-row--linked{cursor:pointer;}
 /* P-CIVPEDIA-KARTY-LINKI-NIEOSTYLOWANE-REGRES-T10-Q1: brakujace od T1 (c1365bfa) reguly
    dla pary etykieta/wartosc wiersza siatki. Do T10 .entity-card-row-value renderowalo sie
    zawsze jako span — brak stylu byl niewidoczny (dziedziczony kolor otoczenia). T10
