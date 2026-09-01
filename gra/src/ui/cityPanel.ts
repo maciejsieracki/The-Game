@@ -7244,14 +7244,6 @@ function buildBuildingDetailCardViaEntityCard(def: BuildingDef, data: GameData, 
   const techBody = beginBuildingDetailTile(card, 'Technologie');
   appendTechDetailBlock(techBody, data, def.techUnlock);
 
-  const playerNote = playerFacingNote(def.uwagi);
-  if (playerNote) {
-    const noteBody = beginBuildingDetailTile(card, 'Uwagi');
-    const note = el('div', 'dc-note');
-    note.style.fontStyle = 'normal';
-    note.textContent = playerNote;
-    noteBody.appendChild(note);
-  }
   return card;
 }
 
@@ -7393,14 +7385,6 @@ function _legacyBuildBuildingDetailCard(def: BuildingDef, data: GameData, city?:
   const techBody = beginBuildingDetailTile(card, 'Technologie');
   appendTechDetailBlock(techBody, data, def.techUnlock);
 
-  const playerNote = playerFacingNote(def.uwagi);
-  if (playerNote) {
-    const noteBody = beginBuildingDetailTile(card, 'Uwagi');
-    const note = el('div', 'dc-note');
-    note.style.fontStyle = 'normal';
-    note.textContent = playerNote;
-    noteBody.appendChild(note);
-  }
   return card;
 }
 
@@ -7575,13 +7559,6 @@ function buildUnitDetailCardViaEntityCard(u: UnitDef, data: GameData): HTMLDivEl
   const techBody = beginBuildingDetailTile(card, 'Technologie');
   appendTechDetailBlock(techBody, data, u.Tech);
 
-  if (u.Uwagi && !isEmptyDataVal(u.Uwagi)) {
-    const noteBody = beginBuildingDetailTile(card, 'Uwagi');
-    const note = el('div', 'dc-note');
-    note.style.fontStyle = 'normal';
-    note.textContent = u.Uwagi;
-    noteBody.appendChild(note);
-  }
   return card;
 }
 
@@ -7675,11 +7652,6 @@ function _legacyBuildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement 
   appendDetailSection(card, 'Technologie');
   appendTechDetailBlock(card, data, u.Tech);
 
-  if (u.Uwagi && !isEmptyDataVal(u.Uwagi)) {
-    const note = el('div', 'dc-note');
-    note.textContent = u.Uwagi;
-    card.appendChild(note);
-  }
   return card;
 }
 
