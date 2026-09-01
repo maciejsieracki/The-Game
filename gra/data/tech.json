@@ -174,6 +174,7 @@
       "Koszt nauki": 180,
       "Uwagi": "kończy Epokę 1; ABC-7: Popalnia brązu na mapie",
       "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Odkrycie, że stop miedzi i cyny daje metal twardszy i trwalszy niż każdy z tych surowców osobno, zapoczątkowało epokę brązu na Bliskim Wschodzie i w Azji Środkowej na przełomie IV i III tysiąclecia p.n.e. Brąz nadawał się do odlewania w formach, co pozwoliło masowo wytwarzać ostrza, narzędzia rolnicze i ozdoby o powtarzalnej jakości, niedostępnej dla miedzi czy kamienia. Ponieważ cyna była rzadkim surowcem, jej poszukiwanie i transport na dalekie odległości uruchomiły jedne z pierwszych rozległych sieci wymiany handlowej w dziejach ludzkości. Broń i pancerze z brązu dały przewagę armiom, które potrafiły je zdobyć, i na wieki ukształtowały układ sił między ówczesnymi królestwami.",
       "awansDoEpoki": 2
     },
     {
@@ -188,6 +189,7 @@
       "Koszt nauki": 160,
       "Uwagi": null,
       "Odblokowuje ulepszenie terenu": "Łodzie rybackie",
+      "Historia": "Pierwsze łodzie zdolne do pływania po otwartym morzu, a nie tylko po rzekach i jeziorach, pojawiły się już w epoce kamienia — ślady rejsów na wyspy Morza Śródziemnego i do Australii liczą sobie dziesiątki tysięcy lat. Prawdziwy przełom przyniosło jednak połączenie stępki, żagla i steru, co pozwoliło Egipcjanom, Fenicjanom i ludom Pacyfiku pokonywać setki i tysiące kilometrów wody z ładunkiem i załogą. Żegluga umożliwiła handel dobrami, które lądem docierałyby miesiącami lub wcale, a zarazem otworzyła drogę do kolonizacji odległych wybrzeży i wysp. Znajomość gwiazd, prądów i wiatrów, przekazywana ustnie z pokolenia na pokolenie żeglarzy, przez tysiąclecia była równie cenna jak sam okręt.",
       "wymagane ulepszenie": "Tartak"
     },
     {
@@ -201,7 +203,8 @@
       "Odblokowuje budynek": "Biblioteka",
       "Koszt nauki": 180,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Najstarsze systemy pisma, sumeryjskie pismo klinowe i egipskie hieroglify, wyłoniły się nie z potrzeby opowiadania historii, lecz z konieczności prowadzenia rachunków — zapisywania ilości zboża, podatków i transakcji handlowych w rozrastających się miastach-państwach. Z prostych piktogramów wyrysowanych rylcem na glinianych tabliczkach stopniowo rozwinęły się znaki oznaczające dźwięki, co pozwoliło zapisać dowolne słowo, a nie tylko konkretny przedmiot. Umiejętność czytania i pisania przez tysiące lat pozostawała w rękach nielicznych skrybów i kapłanów, dając im ogromną władzę nad administracją i wiedzą. Pismo umożliwiło też coś, czego pamięć ludzka nigdy nie mogła zagwarantować: dokładne, niezmienne przekazywanie praw, umów i wiedzy kolejnym pokoleniom."
     },
     {
       "Technologia": "Religia",
@@ -214,7 +217,8 @@
       "Odblokowuje budynek": "Świątynia (upgrade kręgów)",
       "Koszt nauki": 192,
       "Uwagi": "T-TECH-8: upgrade kamienne_kregi → swiatynia (suma bonusów w JSON)",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Zorganizowane systemy wierzeń, ze świątyniami, kapłaństwem i wspólnymi obrzędami, wyłoniły się z wcześniejszych praktyk duchowych, gdy osiadłe społeczności rolnicze potrzebowały wspólnych rytuałów tłumaczących cykle natury, śmierć i miejsce człowieka we wszechświecie. Świątynie stawały się nie tylko ośrodkami kultu, ale też pierwszymi instytucjami gromadzącymi nadwyżki żywności, wiedzę astronomiczną i zasoby potrzebne do wielkich budowli. Kapłani, jako strażnicy rytuału i kalendarza, często pełnili też funkcje sędziów i doradców władców, spajając wspólnoty wspólnym systemem wartości i praw. Wiara w siły nadprzyrodzone i życie pozagrobowe kształtowała sztukę, prawo i architekturę niemal każdej starożytnej cywilizacji, od Mezopotamii po Mezoamerykę."
     },
     {
       "Technologia": "Jeździectwo",
@@ -227,7 +231,8 @@
       "Odblokowuje budynek": "Jednostki: Konnica, Jeździec chiński, Rydwan konny, Rydwan egipski, Rydwan sumeryjski, Rydwan mykeński, Rydwan Shang",
       "Koszt nauki": 224,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Udomowienie konia na stepach Eurazji około IV tysiąclecia p.n.e. najpierw służyło do transportu i pociągu, lecz z czasem ludy koczownicze nauczyły się dosiadać wierzchowców bezpośrednio, co dało im niespotykaną wcześniej mobilność. Jeźdźcy mogli przemierzać w ciągu dnia dystanse nieosiągalne dla pieszych, pilnować rozległych stad, a w razie potrzeby błyskawicznie przemieszczać wojowników i wiadomości. Ludy stepowe, takie jak Scytowie czy późniejsi Hunowie i Mongołowie, zbudowały na tej umiejętności potęgi militarne, które wielokrotnie zagrażały osiadłym cywilizacjom rolniczym. Wynalazek siodła i strzemion, choć pojawił się znacznie później, jeszcze bardziej zwiększył stabilność i skuteczność jeźdźca w boju i pracy."
     },
     {
       "Technologia": "Wojskowość",
@@ -240,7 +245,8 @@
       "Odblokowuje budynek": "Koszary",
       "Koszt nauki": 208,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": "Fort"
+      "Odblokowuje ulepszenie terenu": "Fort",
+      "Historia": "Przejście od doraźnie zbieranych grup wojowników do zorganizowanych armii z dowództwem, szeregami i podziałem na formacje dokonało się w starożytnych miastach-państwach Mezopotamii i doliny Nilu, gdzie wojna stała się na tyle częsta, że wymagała stałej organizacji. Sumeryjska falanga z włóczniami i tarczami, znana ze steli sępów, jest jednym z najstarszych udokumentowanych przykładów zdyscyplinowanej piechoty walczącej w zwartym szyku. Rozwój taktyki, hierarchii dowodzenia i szkolenia żołnierzy pozwalał mniejszym, lecz zorganizowanym siłom pokonywać liczniejszych, ale chaotycznych przeciwników. Z czasem wojskowość stała się osobną dziedziną wiedzy, przekazywaną w traktatach i szkołach, a nie tylko doświadczeniem zdobywanym na polu bitwy."
     },
     {
       "Technologia": "Matematyka",
@@ -253,7 +259,8 @@
       "Odblokowuje budynek": null,
       "Koszt nauki": 272,
       "Uwagi": "Maciej 2026-06-30: usunięto luksus/plantację z gry",
-      "Odblokowuje ulepszenie terenu": "—"
+      "Odblokowuje ulepszenie terenu": "—",
+      "Historia": "Potrzeba mierzenia pól uprawnych, rozliczania podatków i przewidywania wylewów rzek skłoniła pisarzy babilońskich i egipskich do opracowania systemów liczbowych i podstaw geometrii już w III tysiącleciu p.n.e. Babilończycy posługiwali się systemem sześćdziesiątkowym, którego ślady przetrwały do dziś w podziale godziny na 60 minut i koła na 360 stopni, a egipscy mierniczy potrafili precyzyjnie wytyczać kąty proste przy budowie piramid. Matematyka stała się też narzędziem astronomii — pozwoliła przewidywać zaćmienia i układać kalendarze niezbędne rolnictwu. Z czasem greccy myśliciele, tacy jak Pitagoras i Euklides, przekształcili praktyczne rachunki w system dowodów logicznych, kładąc podwaliny pod matematykę jako naukę teoretyczną."
     },
     {
       "Technologia": "Handel",
@@ -266,7 +273,8 @@
       "Odblokowuje budynek": "Magazyn",
       "Koszt nauki": 296,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Wymiana dóbr między odległymi społecznościami sięga epoki kamienia, gdy obsydian, muszle czy bursztyn wędrowały setki kilometrów od miejsca pochodzenia, lecz dopiero powstanie miast, pisma i standaryzowanych miar przekształciło ją w zorganizowany handel dalekosiężny. Karawany kupieckie przemierzające Mezopotamię, szlaki bursztynowe w Europie czy później Jedwabny Szlak łączący Chiny ze Śródziemnomorzem przenosiły nie tylko towary, ale i idee, technologie oraz choroby. Kupcy tworzyli sieci kontaktów, kredytu i zaufania, które wymagały nowych instytucji — umów, ważenia towaru i w końcu pieniądza. Miasta leżące na skrzyżowaniu szlaków handlowych, jak Ur, Tyr czy później Wenecja, potrafiły dzięki temu zdobyć bogactwo i wpływy niewspółmierne do swojej wielkości."
     },
     {
       "Technologia": "Kodeks",
@@ -279,7 +287,8 @@
       "Odblokowuje budynek": "Trybunał; Dwór Zarządcy",
       "Koszt nauki": 248,
       "Uwagi": null,
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Spisanie praw w jeden, publicznie dostępny zbiór, zamiast pozostawiania ich w gestii arbitralnej woli władcy czy zwyczaju plemiennego, było jednym z przełomowych momentów w dziejach organizacji społecznej. Kodeks Hammurabiego, wyryty na kamiennej steli w Babilonie około 1750 roku p.n.e., ustanawiał kary i zasady odpowiedzialności dla różnych warstw społecznych, jawnie widoczne dla każdego mieszkańca miasta. Podobne zbiory praw powstawały niezależnie w innych cywilizacjach, od starożytnych Chin po wczesny Rzym z jego Prawem XII Tablic, zawsze z podobnym celem: ograniczenia samowoli i wprowadzenia przewidywalności w rozstrzyganiu sporów. Spisane prawo dawało też władcom narzędzie legitymizacji rządów — ogłaszając kodeks, przedstawiali się jako źródło sprawiedliwości nadanej przez bogów lub rozum, a nie tylko siłę."
     },
     {
       "Technologia": "Budownictwo",
@@ -292,7 +301,8 @@
       "Odblokowuje budynek": "Mury; Akwedukt",
       "Koszt nauki": 340,
       "Uwagi": "T-TECH-6: Akwedukt v1.0",
-      "Odblokowuje ulepszenie terenu": null
+      "Odblokowuje ulepszenie terenu": null,
+      "Historia": "Rozwój technik wznoszenia trwałych, zaplanowanych konstrukcji — od fundamentów po dachy — pozwolił starożytnym cywilizacjom przejść od prostych chat do świątyń, pałaców i całych zaplanowanych miast. Egipscy i mezopotamscy budowniczowie opracowali metody transportu i podnoszenia ciężkich bloków, systemy rusztowań oraz podstawy geometrii stosowanej wprost na placu budowy, bez których niemożliwe byłyby piramidy czy zigguraty. Budownictwo publiczne — mury obronne, drogi, kanały irygacyjne — wymagało też organizacji pracy tysięcy ludzi i zasobów, co samo w sobie napędzało rozwój administracji państwowej. Wielkie inwestycje budowlane stały się jednocześnie manifestacją potęgi władców, którzy przez wieki rywalizowali o pozostawienie po sobie jak najbardziej okazałych budowli."
     },
     {
       "Technologia": "Waluta",
@@ -305,7 +315,8 @@
       "Odblokowuje budynek": "Mennica",
       "Koszt nauki": 400,
       "Uwagi": "kończy Epokę 2 (Pieniądz); T-TECH-6: Mennica v1.0; ZLOTO 2026-07-25: Mennica dodatkowo wymaga dostępu do Złota (Kopalnia złota) + Targowiska w mieście",
-      "Odblokowuje ulepszenie terenu": "Kopalnia złota"
+      "Odblokowuje ulepszenie terenu": "Kopalnia złota",
+      "Historia": "Zanim powstał pieniądz w dzisiejszym rozumieniu, ludzie posługiwali się wymianą barterową i przedmiotami o uznanej wartości — muszlami kauri, sztabkami metalu czy ziarnem — jako środkiem rozliczeń. Przełomem było wprowadzenie standaryzowanych monet o gwarantowanej wadze i próbie, co po raz pierwszy zrobiono w królestwie Lidii w Azji Mniejszej około VII wieku p.n.e. Monety znacznie ułatwiły handel, bo nie trzeba było już za każdym razem negocjować wartości wymienianych towarów ani sprawdzać jakości metalu. Wprowadzenie waluty dało też władcom nowe narzędzie kontroli gospodarczej — mogli bić monety ze swoim wizerunkiem, pobierać podatki w gotówce i finansować armie oraz budowle na skalę wcześniej nieosiągalną."
     },
     {
       "Technologia": "Astronomia",
