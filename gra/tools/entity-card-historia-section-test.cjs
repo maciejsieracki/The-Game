@@ -235,23 +235,36 @@ async function main() {
   await page.evaluate(() => { document.getElementById('root').innerHTML = ''; });
   const realCards = await page.evaluate(() => {
     const specs = [
-      ['unit', window.__unitToSlug('Wojownik')],
-      ['building', 'stolarnia'],
-      ['technology', window.__technologyIdFromName('Łowiectwo')],
-      ['improvement', 'farma'],
+      ['unit', window.__unitToSlug('Wojownik'), 'Historia', window.__resolveUnitRow],
+      ['building', 'stolarnia', 'historia', window.__resolveBuildingRow],
+      ['technology', window.__technologyIdFromName('Łowiectwo'), 'Historia', window.__resolveTechnologyRow],
+      ['improvement', 'farma', 'historia', window.__resolveImprovementRow],
     ];
-    return specs.map(([kind, id]) => {
+    return specs.map(([kind, id, sourceField, resolveRow]) => {
       const data = window.__buildEntityCardData(kind, id, {});
       if (!data) return { kind, id, found: false };
       const card = window.__renderEntityCard(data);
       document.getElementById('root').appendChild(card);
-      return { kind, id, found: true, historiaExists: card.querySelector('.entity-card-historia') !== null };
+      // Stan REALNY pola źródłowego w dzisiejszych danych (`historia`
+      // lowercase dla building/improvement, `Historia` dla technology/unit) —
+      // asercja niżej porównuje obecność sekcji z tym stanem, nie ze stałą
+      // wartością, więc test pozostaje prawdziwy zarówno przed, jak i po
+      // wypełnieniu pola treścią przez batche R-KARTY-HISTORIA-*.
+      const row = resolveRow(id);
+      const fieldValue = row ? row[sourceField] : undefined;
+      const fieldNonEmpty = typeof fieldValue === 'string' && fieldValue.trim().length > 0;
+      return {
+        kind, id, found: true,
+        historiaExists: card.querySelector('.entity-card-historia') !== null,
+        fieldNonEmpty,
+      };
     });
   });
   for (const r of realCards) {
     check(`[4] realna karta ${r.kind}/${r.id}: encja znaleziona`, r.found, r);
     if (r.found) {
-      check(`[4] realna karta ${r.kind}/${r.id}: BRAK sekcji "Rys historyczny" (pole źródłowe dziś puste)`, r.historiaExists === false, r);
+      check(`[4] realna karta ${r.kind}/${r.id}: sekcja "Rys historyczny" obecna WTEDY I TYLKO WTEDY, gdy pole źródłowe jest niepuste (dziś: ${r.fieldNonEmpty})`,
+        r.historiaExists === r.fieldNonEmpty, r);
     }
   }
 
@@ -262,25 +275,33 @@ async function main() {
   const fieldConventionResult = await page.evaluate(() => {
     const out = {};
 
-    // buildingAdapter <- buildings.json pole "historia" (lowercase).
+    // buildingAdapter <- buildings.json pole "historia" (lowercase). Kontrola
+    // złej wielkości liter USUWA najpierw prawdziwe pole "historia" z kopii
+    // wiersza (destructuring), żeby test sprawdzał WYŁĄCZNIE ignorowanie złej
+    // wielkości liter, a nie przypadkowo przechodził dzięki realnej treści
+    // pola "historia", jeśli batch treści już je wypełnił.
     const buildingRow = window.__resolveBuildingRow('stolarnia');
     out.buildingLower = window.__buildingAdapter({ ...buildingRow, historia: 'Historia budynku (test)' }, {}).historicalNote;
-    out.buildingWrongCase = window.__buildingAdapter({ ...buildingRow, Historia: 'Zła wielkość liter' }, {}).historicalNote;
+    const { historia: _bHistoria, ...buildingRowRest } = buildingRow;
+    out.buildingWrongCase = window.__buildingAdapter({ ...buildingRowRest, Historia: 'Zła wielkość liter' }, {}).historicalNote;
 
     // technologyAdapter <- tech.json pole "Historia" (capitalizowane).
     const techRow = window.__resolveTechnologyRow(window.__technologyIdFromName('Łowiectwo'));
     out.techUpper = window.__technologyAdapter({ ...techRow, Historia: 'Historia technologii (test)' }, {}).historicalNote;
-    out.techWrongCase = window.__technologyAdapter({ ...techRow, historia: 'Zła wielkość liter' }, {}).historicalNote;
+    const { Historia: _tHistoria, ...techRowRest } = techRow;
+    out.techWrongCase = window.__technologyAdapter({ ...techRowRest, historia: 'Zła wielkość liter' }, {}).historicalNote;
 
     // unitAdapter <- units.json pole "Historia" (capitalizowane).
     const unitRow = window.__resolveUnitRow(window.__unitToSlug('Wojownik'));
     out.unitUpper = window.__unitAdapter({ ...unitRow, Historia: 'Historia jednostki (test)' }, {}).historicalNote;
-    out.unitWrongCase = window.__unitAdapter({ ...unitRow, historia: 'Zła wielkość liter' }, {}).historicalNote;
+    const { Historia: _uHistoria, ...unitRowRest } = unitRow;
+    out.unitWrongCase = window.__unitAdapter({ ...unitRowRest, historia: 'Zła wielkość liter' }, {}).historicalNote;
 
     // improvementAdapter <- terrain-improvements.json pole "historia" (lowercase).
     const impRow = window.__resolveImprovementRow('farma');
     out.improvementLower = window.__improvementAdapter({ ...impRow, historia: 'Historia ulepszenia (test)' }, {}).historicalNote;
-    out.improvementWrongCase = window.__improvementAdapter({ ...impRow, Historia: 'Zła wielkość liter' }, {}).historicalNote;
+    const { historia: _iHistoria, ...impRowRest } = impRow;
+    out.improvementWrongCase = window.__improvementAdapter({ ...impRowRest, Historia: 'Zła wielkość liter' }, {}).historicalNote;
 
     return out;
   });
