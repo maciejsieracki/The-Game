@@ -36,6 +36,16 @@ const TRADE_KINDS: ReadonlySet<TreatyKind> = new Set<TreatyKind>([
 ]);
 
 /**
+ * R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1: pakt o nieagresji JEST reprezentowany
+ * jako ActiveDeal (RodzajTraktatu.PaktNieagresji = 'pakt_nieagresji', patrz
+ * types/diplomacy.ts) — analogiczny kanał do ALLIANCE_KINDS/TRADE_KINDS,
+ * osobna trzecia kategoria 'nap' w DealPartnerKind.
+ */
+const NAP_KINDS: ReadonlySet<TreatyKind> = new Set<TreatyKind>([
+  RodzajTraktatu.PaktNieagresji,
+]);
+
+/**
  * Partnerzy wojny danego `ownerId` — skanuje CAŁĄ mapę relacji (klucz
  * "mniejszyId_wiekszyId"), nie tylko pary z graczem (pop-up pokazuje wojny
  * KLIKNIĘTEJ cywilizacji z kimkolwiek, nie tylko z nami).
@@ -69,7 +79,7 @@ export function warPartnerIdsForOwner(
   return out;
 }
 
-export type DealPartnerKind = 'sojusz' | 'handel';
+export type DealPartnerKind = 'sojusz' | 'handel' | 'nap';
 
 /**
  * Partnerzy aktywnych traktatów danego `ownerId`, filtrowani po rodzaju:
@@ -86,7 +96,7 @@ export function dealPartnerIdsForOwner(
 ): number[] {
   const out: number[] = [];
   if (isBarbarian(ownerId)) return out;
-  const kindSet = kind === 'sojusz' ? ALLIANCE_KINDS : TRADE_KINDS;
+  const kindSet = kind === 'sojusz' ? ALLIANCE_KINDS : kind === 'handel' ? TRADE_KINDS : NAP_KINDS;
   const seen = new Set<number>();
   for (const deal of deals) {
     const [a, b] = deal.strony;

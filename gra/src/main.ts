@@ -1176,6 +1176,7 @@ import {
   showWarConsentModal,
   showAllianceObligationModal,
   type AudienceAction, type NegotiationPayload, type PendingNegotiationRow,
+  type AudienceOtherRelations, type AudienceRelationPartner,
 } from './ui/diplomacyAudience';
 import { civLeaderMedallionHtmlById } from './ui/diploUiSkin';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
@@ -6097,10 +6098,17 @@ async function boot(): Promise<void> {
      * z JEDNYM świadomym wyjątkiem: gracz (id===0) jest zawsze widoczny — patrz komentarz
      * przy `DiploPairSummaryPartner.isPlayer` w `ui/diplomacyPanel.ts` (decyzja B2).
      */
-    function buildDiploPairSummaryData(ownerId: number): DiploPairSummaryData | null {
+    function buildDiploPairSummaryData(ownerId: number, revealAll = false): DiploPairSummaryData | null {
       if (!isActiveDiploOwner(ownerId)) return null;
-      const isVisiblePartner = (id: number): boolean =>
-        id === 0 || (isActiveDiploOwner(id) && getDiplomaticContacts().has(id));
+      // R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1: `revealAll` (domyślnie false — pop-up
+      // showDiploPairSummary NIETKNIĘTY) pomija filtr mgły wojny WYŁĄCZNIE przy
+      // budowaniu stanu audiencji (patrz drugie wywołanie tej funkcji w
+      // openDiplomacyAudience) — docelowo ma to bramkować jednostka szpiega,
+      // na razie faza testowa bez bramki (decyzja właściciela, 00-dispatch.md).
+      const isVisiblePartner = revealAll
+        ? undefined
+        : (id: number): boolean =>
+            id === 0 || (isActiveDiploOwner(id) && getDiplomaticContacts().has(id));
       const toPartner = (id: number): DiploPairSummaryPartner => ({
         ownerId: id,
         name: ownerDiploLabel(id),
@@ -6119,6 +6127,31 @@ async function boot(): Promise<void> {
         wars,
         alliances,
         deals,
+      };
+    }
+
+    /**
+     * R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1: relacje rozmówcy (otherOwnerId) z INNYMI
+     * cywilizacjami dla nowej sekcji „Relacje z innymi" audiencji — BEZ filtra mgły
+     * wojny (revealAll, patrz buildDiploPairSummaryData) w odróżnieniu od pop-upu
+     * showDiploPairSummary. NAP osobno, bo DiploPairSummaryData (diplomacyPanel.ts,
+     * poza allowlistą tego tematu) nie niesie tej kategorii.
+     */
+    function buildAudienceOtherRelations(otherOwnerId: number): AudienceOtherRelations | undefined {
+      if (!isActiveDiploOwner(otherOwnerId)) return undefined;
+      const base = buildDiploPairSummaryData(otherOwnerId, true);
+      if (base === null) return undefined;
+      const toPartner = (id: number): AudienceRelationPartner => ({
+        ownerId: id,
+        name: ownerDiploLabel(id),
+        isPlayer: id === 0,
+      });
+      const naps = dealPartnerIdsForOwner(activeDeals, otherOwnerId, 'nap').map(toPartner);
+      return {
+        wars: base.wars,
+        alliances: base.alliances,
+        naps,
+        deals: base.deals,
       };
     }
 
@@ -18438,6 +18471,7 @@ async function boot(): Promise<void> {
             contactEstablished: diplomaticContactEstablished.has(ownerId),
             actions: audienceActionsList,
             pendingNegotiations: buildPendingNegotiationRows(ownerId, audienceActionsList),
+            otherRelations: buildAudienceOtherRelations(ownerId),
             relationBreakdown: getRelationBreakdown(0, ownerId),
             playerSkarbiec: Math.floor(player.skarbiec),
             playerZlotoPerTura: Math.floor(_lastPieniadzRate),

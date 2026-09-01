@@ -205,6 +205,39 @@ export interface DiplomacyAudienceState {
    * cywilizacji), z terminem ważności. SILNIK: getNegotiationsForPair (main.ts).
    */
   pendingNegotiations?: readonly PendingNegotiationRow[];
+
+  /**
+   * R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1 (Maciej 2026-09-01): relacje ROZMÓWCY
+   * (otherOwnerId) z INNYMI cywilizacjami (wojny / sojusze / pakty o nieagresji /
+   * handel), niezależnie od tego, czy gracz nawiązał z tymi stronami kontakt —
+   * SILNIK (main.ts) wypełnia to wywołaniem buildDiploPairSummaryData(otherOwnerId,
+   * { revealAll: true }), pomijając filtr mgły wojny `isVisiblePartner`. Odrębne od
+   * pop-upu `showDiploPairSummary` (diplomacyPanel.ts), który NADAL filtruje
+   * mgłą wojny — patrz GOAL R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1 pkt 2.
+   * `undefined` = silnik nie dostarczył danych (np. rozmówca poza aktywną dyplomacją).
+   */
+  otherRelations?: AudienceOtherRelations;
+}
+
+/** Jeden partner w sekcji „Relacje z innymi" — patrz `DiplomacyAudienceState.otherRelations`. */
+export interface AudienceRelationPartner {
+  ownerId: number;
+  name: string;
+  /** true = ten partner to gracz (id===0) — UI pokazuje „Ty" zamiast nazwy. */
+  isPlayer?: boolean;
+}
+
+/**
+ * Relacje rozmówcy z innymi stronami — wojny/sojusze/pakty NAP/handel, BEZ filtra
+ * widoczności gracza (R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1). Kształt lekki, własny
+ * temu plikowi (nie import z diplomacyPanel.ts) — plik ten zostaje DECOUPLED,
+ * zero importów game/ (i innych paneli UI), patrz nagłówek pliku.
+ */
+export interface AudienceOtherRelations {
+  wars: readonly AudienceRelationPartner[];
+  alliances: readonly AudienceRelationPartner[];
+  naps: readonly AudienceRelationPartner[];
+  deals: readonly AudienceRelationPartner[];
 }
 
 /** Jeden wiersz stołu „Oni oferują" — patrz DiplomacyAudienceState.pendingNegotiations. */
@@ -575,6 +608,10 @@ ${DIPLO_1E_SHARED_CSS}
   display:flex;align-items:center;gap:6px;margin-bottom:4px;}
 .da-sec-title::after{content:"";flex:1;height:1px;background:rgba(232,216,138,.18);}
 .da-sec-title svg{width:11px;height:11px;color:var(--tg-gold-primary,#e8d88a);flex:none;}
+.da-rel-partner-group{margin-bottom:6px;}
+.da-rel-partner-title{font-size:0.66em;color:#8a8070;margin-bottom:2px;}
+.da-rel-partner-row{font-size:0.74em;color:#e8e0c8;padding:1px 0 1px 8px;}
+.da-rel-partner-empty{font-size:0.74em;color:#8a8070;font-style:italic;padding:1px 0 1px 8px;}
 .da-attr-row{display:flex;align-items:baseline;justify-content:space-between;font-size:0.72em;margin-bottom:2px;color:#8a8070;}
 .da-attr-row .v{font-weight:700;font-variant-numeric:tabular-nums;color:#e8e0c8;}
 .da-abar{height:5px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:7px;border:1px solid rgba(0,0,0,.3);}
@@ -1308,8 +1345,14 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
   );
 }
 
-/** FAZA 2 pkt 1+5 — PRAWA karta (rozmówca): medalion, atrybuty, RELACJE (raz), dobra. */
-function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLite[]): string {
+/**
+ * FAZA 2 pkt 1+5 — PRAWA karta (rozmówca): medalion, atrybuty, RELACJE (raz), dobra.
+ * Eksport WYŁĄCZNIE do testu warstwy wiązania (R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1,
+ * `diplomacy-relacje-ai-ai-audiencja-test.cjs`) — potwierdza, że render faktycznie CZYTA
+ * `st.otherRelations` i renderuje sekcję „Relacje z innymi", nie tylko że silnik (main.ts)
+ * poprawnie oblicza dane w oderwaniu (pokrywa osobny test na diplomacy-pair-summary.ts).
+ */
+export function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLite[]): string {
   const maxPower = Math.max(st.playerPower ?? 0, st.otherPower ?? 0, 1);
   const powerPct = ((st.otherPower ?? 0) / maxPower) * 100;
   const potencjal = st.sojuszPotencjal;
@@ -1345,11 +1388,46 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
         '<div class="da-sec-title">Dobra handlowe</div>' +
         goodsCategoriesHtml(st.otherGoodsCats, 'other') +
       '</div>' +
+      otherRelationsSectionHtml(st.otherRelations) +
       cultureLineHtml(st) +
       personalityTagsHtml(st.personalityTags) +
       bonusListHtml(otherBon) +
     '</div>'
   );
+}
+
+/**
+ * R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1: sekcja „Relacje z innymi" na karcie
+ * rozmówcy — wojny/sojusze/pakty NAP/handel rozmówcy z TRZECIMI stronami,
+ * BEZ filtra mgły wojny gracza (silnik dostarcza już przefiltrowane/nieprzefiltrowane
+ * dane w `st.otherRelations`, patrz komentarz przy tym polu). Brak danych = pomiń
+ * sekcję całkowicie (rozmówca poza aktywną dyplomacją) — puste podlisty = "Brak.".
+ */
+function otherRelationsSectionHtml(rel: AudienceOtherRelations | undefined): string {
+  if (!rel) return '';
+  return (
+    '<div>' +
+      '<div class="da-sec-title">Relacje z innymi</div>' +
+      relationPartnerListHtml('W stanie wojny z', rel.wars) +
+      relationPartnerListHtml('W sojuszu z', rel.alliances) +
+      relationPartnerListHtml('Pakt o nieagresji z', rel.naps) +
+      relationPartnerListHtml('Handluje z', rel.deals) +
+    '</div>'
+  );
+}
+
+function relationPartnerListHtml(title: string, partners: readonly AudienceRelationPartner[]): string {
+  let html = '<div class="da-rel-partner-group">' +
+    '<div class="da-rel-partner-title">' + esc(title) + '</div>';
+  if (partners.length === 0) {
+    html += '<div class="da-rel-partner-empty">Brak.</div>';
+  } else {
+    for (const p of partners) {
+      html += '<div class="da-rel-partner-row">' + esc(p.isPlayer ? 'Ty' : p.name) + '</div>';
+    }
+  }
+  html += '</div>';
+  return html;
 }
 
 /** Suma Zaufanie + Respekt (0–200) — widoczna w panelu relacji audiencji. */
