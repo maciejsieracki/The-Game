@@ -19,8 +19,10 @@
  *   (A) zakładka HANDEL, tabela „Trasy": trasa Z budynkiem pokazuje w komórce DOCHÓD/TURĘ
  *       DWIE linie — dochód dystansowy ORAZ kwotę składnika 5%.
  *   (B) ta sama tabela: trasa BEZ budynku pokazuje dochód dystansowy ORAZ jawne, słowne
- *       „5% — brak budynku" — NIE gołe „0". To jest sedno zgłoszenia: gracz ma zrozumieć
- *       DLACZEGO nie dostaje 5%, a nie tylko zobaczyć, że nie dostaje.
+ *       „5% — brak: Targowisko" — NIE gołe „0" ani generyczne „brak budynku". To jest sedno
+ *       zgłoszenia (R-HANDEL-BRAK-BUDYNKU-NAZWA-Q1): gracz ma zrozumieć DLACZEGO nie dostaje
+ *       5% i JAKI KONKRETNIE budynek wystarczy dobudować (Targowisko — jedyny z trzech
+ *       kwalifikujących budynków budowalny w każdym mieście bez wyjątku).
  *   (C) zakładka MIASTO, tabela „Handel — szlaki per miasto": ten sam rozkład zagregowany
  *       per miasto (kwota 5% + liczba tras czekających na budynek).
  *   (D) LAYOUT na realnej szerokości panelu (404px): żadna komórka rozkładu nie przepełnia
@@ -28,7 +30,7 @@
  *       realnie WYŻSZY od nagłówka — czyli druga linia faktycznie się wyrenderowała, a nie
  *       została schowana przez `overflow`/zerową wysokość.
  *   (E) artefakt PRODUKCYJNY `vite build`: wersja, którą dostaje gracz, niesie klasę
- *       `.civ-emp-route-split` i frazę „brak budynku".
+ *       `.civ-emp-route-split` i frazę „brak: Targowisko".
  *
  * DLACZEGO PRAWDZIWA PRZEGLĄDARKA, NIE GREP ŹRÓDŁA / jsdom (R-PROC-AUTOBOT.md §9 poz. 6a):
  *   - „czy rozkład WIDAĆ" to pytanie o kaskadę CSS i layout, nie o obecność stringa: nowa
@@ -37,7 +39,7 @@
  *     niezerową wysokość, czy nie przepełnia kolumny i czy kolor stanu faktycznie się
  *     zastosował. jsdom nie ma layoutu i zwróciłby zera zarówno przed, jak i po zmianie.
  *   - kolumna DOCHÓD/TURĘ została w T6 poszerzona (grid 0.95fr → 1.25fr) właśnie po to, żeby
- *     dłuższy tekst „5% — brak budynku" nie łamał się w środku wyrazu przy 404px. Tego nie da
+ *     dłuższy tekst „5% — brak: Targowisko" nie łamał się w środku wyrazu przy 404px. Tego nie da
  *     się sprawdzić inaczej niż mierząc realny render.
  *
  * MUTACJA (F) — dowód nietautologiczności: ten sam plik buduje DRUGI bundel z ODWRÓCONĄ
@@ -206,7 +208,7 @@ async function launchBrowser() {
  * TĄ SAMĄ arytmetyką co `tradeRouteTotalDistanceIncome`, żeby zrzut pokazywał realistyczne
  * wartości, a nie okrągłe atrapy:
  *   Roma↔Ur   — ląd, 12 heks. → dochód dystansowy 40; budynek JEST → premia 0,05×40 = 2
- *   Roma↔Tyr  — morze, 20 heks. → 40 ×2 = 80; budynku BRAK → premia 0 („brak budynku")
+ *   Roma↔Tyr  — morze, 20 heks. → 40 ×2 = 80; budynku BRAK → premia 0 („brak: Targowisko")
  *   Ostia↔Kisz— ląd, 3 heks. → 5 + 3×2,9167 ≈ 13 (floor); budynku BRAK → premia 0
  */
 const ROUTES = [
@@ -426,8 +428,8 @@ async function main() {
   check('(B) trasa BEZ budynku: wiersz to Roma↔Tyr (morze)', (bb.text || '').includes('Tyr'), bb.text);
   check('(B) trasa BEZ budynku: dochód dystansowy NADAL widoczny („+80") — od T3 leci bez budynku',
     (bb.incomeText || '').includes('+80'), bb.incomeText);
-  check('(B) trasa BEZ budynku: druga linia mówi WPROST „brak budynku"',
-    (bb.splitText || '').includes('brak budynku'), bb.splitText);
+  check('(B) trasa BEZ budynku: druga linia mówi WPROST, jaki budynek dobudować („brak: Targowisko")',
+    (bb.splitText || '').includes('brak: Targowisko'), bb.splitText);
   check('(B) trasa BEZ budynku: druga linia nazywa składnik po imieniu („5%")',
     (bb.splitText || '').includes('5%'), bb.splitText);
   check('(B) trasa BEZ budynku: NIE pokazuje gołej kwoty „+0" bez wyjaśnienia',
@@ -442,7 +444,7 @@ async function main() {
     /już teraz/i.test(bb.splitTitle || ''), bb.splitTitle);
   check('(B) druga trasa bez budynku (Ostia↔Kisz) zachowuje się tak samo',
     (po.bezBudynku2 || {}).hasSplit === true
-    && ((po.bezBudynku2 || {}).splitText || '').includes('brak budynku'), po.bezBudynku2);
+    && ((po.bezBudynku2 || {}).splitText || '').includes('brak: Targowisko'), po.bezBudynku2);
 
   // --- (C) wiersz SUMA: składniki zsumowane osobno, każdy w swojej kolumnie ------------
   const su = po.suma || {};
@@ -471,8 +473,8 @@ async function main() {
     ((mi.roma || {}).splitClass || '').includes('off'), (mi.roma || {}).splitClass);
   // Miasto, w którym ŻADNA trasa nie ma budynku, dostaje dokładnie to samo brzmienie co wiersz
   // pojedynczej trasy w zakładce Handel — nigdy „0 · 5%" (milczące zero bez powodu).
-  check('(C3) Ostia (wszystkie trasy bez budynku): dokładnie „5% — brak budynku", nie „0 · 5%"',
-    (mi.ostia || {}).splitText === '5% — brak budynku', mi.ostia);
+  check('(C3) Ostia (wszystkie trasy bez budynku): dokładnie „5% — brak: Targowisko", nie „0 · 5%"',
+    (mi.ostia || {}).splitText === '5% — brak: Targowisko', mi.ostia);
   check('(C3) Ostia: dochód dystansowy nadal widoczny obok („+13")',
     ((mi.ostia || {}).text || '').includes('+13'), (mi.ostia || {}).text);
   check('(C3) linia rozkładu w zakładce Miasto jest FIZYCZNIE widoczna (wysokość > 0)',
@@ -506,7 +508,7 @@ async function main() {
     po.stageScrollWidth <= po.stageClientWidth + 1, { scroll: po.stageScrollWidth, client: po.stageClientWidth });
   check('(D) wiersz z rozkładem jest realnie WYŻSZY niż nagłówek — druga linia faktycznie zajmuje miejsce',
     zb.rowHeight > po.headerHeight, { row: zb.rowHeight, header: po.headerHeight });
-  check('(D) wiersz „brak budynku" mieści tekst bez dodatkowego, trzeciego złamania (wysokość ≤ 64px)',
+  check('(D) wiersz „brak: Targowisko" mieści tekst bez dodatkowego, trzeciego złamania (wysokość ≤ 64px)',
     bb.rowHeight <= 64, bb.rowHeight);
 
   // --- (F) MUTACJA: na kodzie sprzed T6 asercje (A)/(B) MUSZĄ być czerwone -------------
@@ -518,8 +520,8 @@ async function main() {
     (mzb.incomeText || '').includes('+40'), mzb.incomeText);
   checkRed('(F) asercja (A) czerwona na starym kodzie: BRAK drugiej linii dla trasy z budynkiem',
     mzb.hasSplit === true, mzb);
-  checkRed('(F) asercja (B) czerwona na starym kodzie: BRAK frazy „brak budynku" dla trasy bez budynku',
-    (mbb.splitText || '').includes('brak budynku'), mbb.splitText);
+  checkRed('(F) asercja (B) czerwona na starym kodzie: BRAK frazy „brak: Targowisko" dla trasy bez budynku',
+    (mbb.splitText || '').includes('brak: Targowisko'), mbb.splitText);
   checkRed('(F) asercja (C) czerwona na starym kodzie: SUMA bez składnika 5%',
     ((przed.suma || {}).splitText || '').includes('5%'), (przed.suma || {}).splitText);
 
@@ -537,7 +539,7 @@ async function main() {
     }
     const built = fs.readFileSync(dist, 'utf8');
     check('(E1) artefakt vite build niesie klasę rozkładu .civ-emp-route-split', built.includes('civ-emp-route-split'));
-    check('(E2) artefakt vite build niesie tekst stanu „brak budynku"', built.includes('brak budynku'));
+    check('(E2) artefakt vite build niesie tekst stanu „brak: Targowisko"', built.includes('brak: Targowisko'));
     check('(E3) artefakt vite build niesie etykietę składnika „5% budynek"', built.includes('5% budynek'));
     check('(E4) artefakt vite build NIE niesie już podpisu sprzed T1',
       !built.includes('max(podłoga, bazowy'));

@@ -819,7 +819,7 @@ function routeBonusSplitHtml(premiaBudynku: number, budynekOdblokowany: boolean)
       + 'po obu stronach trasy (Twoje miasto i miasto partnera). Dochód dystansowy obok naliczasz już '
       + 'teraz — od zawarcia Umowy Handlowej, bez żadnego budynku. Po wybudowaniu po obu stronach '
       + 'doliczy się dodatkowo 5% dochodu dystansowego TEJ trasy do Podatku tego miasta.';
-    return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak budynku</span>`;
+    return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak: Targowisko</span>`;
   }
   const tip = 'Premia 5% za budynek handlowy po obu stronach trasy: 5% dochodu dystansowego TEJ trasy, '
     + 'doliczone addytywnie do Podatku tego miasta (nie wprost do skarbca — przechodzi jeszcze '
@@ -848,7 +848,7 @@ function cityBonusSplitHtml(premia: number, brakBudynku: number): string {
     // w obu tabelach, zero milczącego zera. / EN: with no building-backed route the bonus is
     // exactly 0, so both tables say the same thing instead of printing a bare "0".
     if (premia === 0) {
-      return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak budynku</span>`;
+      return `<span class="civ-emp-route-split off"${tipAttr(tip)}>5% — brak: Targowisko</span>`;
     }
     return `<span class="civ-emp-route-split off"${tipAttr(tip)}>`
       + `${splitAmountTxt(premia)} · 5% (${brakBudynku} bez budynku)</span>`;
