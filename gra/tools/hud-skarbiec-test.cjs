@@ -446,6 +446,31 @@ if (city) {
    * z przeszukiwanego tekstu, wiec nie moze zostac dopasowany jako wywolanie.
    */
   function findRealCallIndex(text, callName) {
+    const all = findAllCallIndices(text, callName);
+    return all.length === 0 ? -1 : all[0];
+  }
+
+  /**
+   * OBRONA RUNDA 3, ZARZUT EVALUATORA (PRZYJETY): `findRealCallIndex()` (i tym
+   * samym poprzedni `extractCallArgs()`) zwracal TYLKO PIERWSZE wystapienie
+   * `callName(` na tekscie oczyszczonym z komentarzy/stringow. To odrzuca atak
+   * "atrapa w komentarzu", ale NIE atak "atrapa w martwym, lecz SKLADNIOWO
+   * PRAWDZIWYM kodzie" (np. `if (false) { previewCityEconomy(...dobre
+   * wartosci...); }` PRZED prawdziwym, zregresowanym wywolaniem) -- taki blok
+   * nie jest komentarzem ani stringiem, wiec `scanCode`/`stripped` go NIE
+   * usuwa, a szukanie PIERWSZEGO wystapienia trafia na atrape.
+   * Ogolna analiza nieosiagalnosci kodu (`if (false)`, kod po `return`, martwe
+   * funkcje strzalkowe, ...) wymagalaby pelnego parsera/AST -- poza zakresem
+   * tego narzedzia. Zamiast tego zamykamy CALA KLASE ataku "fikcyjne dodatkowe
+   * wywolanie obok prawdziwego": `findAllCallIndices()` zwraca WSZYSTKIE
+   * wystapienia `callName(` w oczyszczonym tekscie (nie tylko pierwsze), a
+   * wolajacy (patrz `extractAllCallArgs()` i sekcja (1) nizej) wymaga, zeby
+   * KAZDE znalezione wystapienie spelnialo `assertFixApplied` -- jesli
+   * gdziekolwiek w ciele funkcji (osiagalnym czy nie) istnieje wywolanie z
+   * literalnym `undefined` na pozycji 10/11, test CZERWIENIEJE, niezaleznie
+   * od tego, czy to jest "ten pierwszy", "ten ostatni", czy w martwym bloku.
+   */
+  function findAllCallIndices(text, callName) {
     let stripped = '';
     const indexMap = [];
     scanCode(text, 0, (ch, i) => {
@@ -454,17 +479,19 @@ if (city) {
       return true;
     });
     const needle = `${callName}(`;
-    const strippedIdx = stripped.indexOf(needle);
-    if (strippedIdx === -1) return -1;
-    return indexMap[strippedIdx];
+    const indices = [];
+    let from = 0;
+    for (;;) {
+      const strippedIdx = stripped.indexOf(needle, from);
+      if (strippedIdx === -1) break;
+      indices.push(indexMap[strippedIdx]);
+      from = strippedIdx + needle.length;
+    }
+    return indices;
   }
 
-  /** Rozbija argumenty wywolania `callName(` na top-level przecinkach. */
-  function extractCallArgs(text, callName) {
-    const callIdx = findRealCallIndex(text, callName);
-    if (callIdx === -1) {
-      throw new Error(`checkRealFixSiteInMainTs: nie znaleziono wywolania ${callName}(...)`);
-    }
+  /** Rozbija argumenty JEDNEGO wywolania `callName(` zaczynajacego sie w `callIdx`. */
+  function extractArgsAt(text, callIdx, callName) {
     const argsStart = callIdx + callName.length + 1;
     let depth = 1;
     let argsEnd = -1;
@@ -490,6 +517,24 @@ if (city) {
       args.push(text.slice(startAbs, bounds[k + 1]).trim());
     }
     return args;
+  }
+
+  /** Rozbija argumenty PIERWSZEGO wywolania `callName(` (kompatybilnosc wsteczna: uzywane przez syntetyczne testy-ataki na pojedynczym wywolaniu). */
+  function extractCallArgs(text, callName) {
+    const callIdx = findRealCallIndex(text, callName);
+    if (callIdx === -1) {
+      throw new Error(`checkRealFixSiteInMainTs: nie znaleziono wywolania ${callName}(...)`);
+    }
+    return extractArgsAt(text, callIdx, callName);
+  }
+
+  /**
+   * Rozbija argumenty WSZYSTKICH wywolan `callName(` w `text` (patrz komentarz
+   * przy `findAllCallIndices` -- to jest mechanizm zamykajacy atak "fikcyjne
+   * dodatkowe wywolanie w martwym, ale skladniowo poprawnym kodzie").
+   */
+  function extractAllCallArgs(text, callName) {
+    return findAllCallIndices(text, callName).map((callIdx) => extractArgsAt(text, callIdx, callName));
   }
 
   /**
@@ -571,8 +616,20 @@ if (city) {
   // dispatchu. Jesli ktos przywroci `undefined, undefined,` w tym wywolaniu
   // w gra/src/main.ts, ponizsze asercje CZERWIENIEJA przy nastepnym uruchomieniu. ---
   const realFnBody = findFunctionBody(src, 'refreshLiveEmpireRatesUnsafe');
-  const realArgs = extractCallArgs(realFnBody, 'previewCityEconomy');
-  assertFixApplied(realArgs, 'MIEJSCE POPRAWKI (main.ts, refreshLiveEmpireRatesUnsafe)', true);
+  // OBRONA RUNDA 3, ZARZUT EVALUATORA: sprawdzamy WSZYSTKIE wystapienia
+  // previewCityEconomy(...) w ciele funkcji, nie tylko pierwsze -- jesli
+  // ktokolwiek doda drugie (choc martwe/nieosiagalne) wywolanie z regresem
+  // gdziekolwiek w tym ciele, ponizsza petla to wykryje.
+  const realArgsList = extractAllCallArgs(realFnBody, 'previewCityEconomy');
+  assert(
+    'MIEJSCE POPRAWKI (main.ts, refreshLiveEmpireRatesUnsafe): dokladnie jedno wywolanie previewCityEconomy(...) w ciele funkcji',
+    realArgsList.length === 1,
+    `liczba wywolan=${realArgsList.length}`,
+  );
+  const realArgs = realArgsList[0];
+  realArgsList.forEach((args, idx) => {
+    assertFixApplied(args, `MIEJSCE POPRAWKI (main.ts, refreshLiveEmpireRatesUnsafe), wywolanie #${idx + 1}/${realArgsList.length}`, true);
+  });
 
   // --- (2) DOWOD NIETAUTOLOGICZNOSCI kontroli samej: bierzemy TA SAMA liste
   // argumentow wydobyta z PRAWDZIWEGO main.ts i podmieniamy WYLACZNIE pozycje
@@ -645,6 +702,43 @@ if (city) {
     commentAttackArgs,
     'ATAK Z RAPORTU FINAL CONTROL RUNDA 3 (fikcyjne wywolanie w komentarzu PRZED prawdziwym zregresowanym kodem)',
     false,
+  );
+
+  // --- (6) OBRONA RUNDA 3, ZARZUT EVALUATORA: dokladny atak z raportu --
+  // martwy, ale SKLADNIOWO PRAWDZIWY blok `if (false) { ... }` zawierajacy
+  // poprawnie wygladajace FIKCYJNE wywolanie previewCityEconomy(...) z
+  // realnymi wartosciami na pozycjach 10/11, umieszczony PRZED prawdziwym
+  // (zregresowanym) wywolaniem z literalnym `undefined,undefined`. To NIE
+  // jest komentarz ani string -- `scanCode` go nie usuwa. Stara wersja
+  // (jedno "prawdziwe" wywolanie = PIERWSZE dopasowanie) zwrocilaby argumenty
+  // ATRAPY i dala falszywy PASS. Po naprawie: `extractAllCallArgs()` widzi
+  // OBA wywolania, a wymog "wszystkie musza byc naprawione" wykrywa drugie
+  // (prawdziwe, zregresowane). ---
+  const deadCodeAttack = `
+  if (false) {
+    previewCityEconomy(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,tradeRouteBuildingBonusByCity,computeTradeRouteIncomeByCity(loadTradeRouteIncomeParams(city)));
+  }
+  previewCityEconomy(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,undefined,undefined);
+  `;
+  const deadCodeAttackArgsList = extractAllCallArgs(deadCodeAttack, 'previewCityEconomy');
+  checkRedLocal(
+    'ATAK Z RAPORTU EVALUATORA RUNDA 3: extractAllCallArgs() znajduje OBA wywolania (atrape w if(false) I prawdziwe ponizej), nie tylko pierwsze',
+    deadCodeAttackArgsList.length === 2,
+    `liczba wywolan=${deadCodeAttackArgsList.length}`,
+  );
+  const anyDeadCodeSiteUnfixed = deadCodeAttackArgsList.some((args) => {
+    const pos10Clean = stripComments(args[11]).trim();
+    const pos11Clean = stripComments(args[12]).trim();
+    const isFixed = pos10Clean === 'tradeRouteBuildingBonusByCity'
+      && pos11Clean !== 'undefined'
+      && /(?<![A-Za-z0-9_$])computeTradeRouteIncomeByCity\s*\(/.test(pos11Clean)
+      && /(?<![A-Za-z0-9_$])loadTradeRouteIncomeParams\s*\(/.test(pos11Clean);
+    return !isFixed;
+  });
+  checkRedLocal(
+    'ATAK Z RAPORTU EVALUATORA RUNDA 3: co najmniej jedno z wywolan (to prawdziwe, ponizej martwego if(false)) NIE jest naprawione -- guard "wszystkie musza byc naprawione" wykrywa regres mimo atrapy z realnymi wartosciami PRZED nim',
+    anyDeadCodeSiteUnfixed,
+    `args=${JSON.stringify(deadCodeAttackArgsList)}`,
   );
 })();
 
