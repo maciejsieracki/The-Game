@@ -1,6 +1,7 @@
 [
   {
     "Jednostka": "Wojownik",
+    "Historia": "Najstarszą formą zorganizowanej walki pieszej był prosty wojownik uzbrojony w to, co dawała najbliższa okolica — zaostrzony kij, kamienny topór, drewnianą maczugę czy nóż z krzemienia lub obsydianu. Takich bojowników spotykano niemal wszędzie w epoce kamienia: od plemion łowiecko-zbierackich Europy i Afryki, przez społeczności Ameryk, po pierwsze osady rolnicze Bliskiego Wschodu. Walczyli zwykle w luźnych grupach rodowych, bez sztywnej hierarchii dowodzenia, kierując się odwagą, siłą fizyczną i znajomością terenu bardziej niż wyćwiczoną taktyką. Konflikty toczyły się najczęściej o dostęp do wody, terenów łowieckich albo w odwecie za najazdy sąsiednich grup. Z czasem to właśnie z takich prostych, uniwersalnych wojowników wyrastały wszystkie późniejsze, wyspecjalizowane rodzaje piechoty.",
     "Epoka": "Kamień",
     "Kultura": null,
     "Tech": "-",
@@ -59,6 +60,7 @@
   },
   {
     "Jednostka": "Procarz",
+    "Historia": "Proca, czyli pasek ze skóry lub plecionej wełny do miotania kamieni, była jedną z najstarszych i najtańszych broni dystansowych ludzkości, znaną niezależnie na niemal każdym kontynencie już w epoce kamienia. Wprawny procarz potrafił razić cel z kilkudziesięciu metrów z siłą porównywalną do lekkiego pocisku, a same kamienne lub gliniane pociski znajdowano w wykopaliskach od Bliskiego Wschodu po Amerykę Południową. Broń ta nie wymagała kosztownych surowców ani długiego treningu kowalskiego — wystarczał pasek materiału i celne oko, dzięki czemu proca była dostępna nawet najuboższym społecznościom pasterskim i łowieckim. Procarze często wywodzili się z pasterzy, którzy przez lata odganiania drapieżników od stad rozwijali w tej broni niezwykłą precyzję. W wielu kulturach lekka piechota procarska poprzedzała pojawienie się bardziej wyspecjalizowanych łuczników.",
     "Epoka": "Brąz",
     "Kultura": null,
     "Tech": "-",
@@ -117,6 +119,7 @@
   },
   {
     "Jednostka": "Oszczepnik",
+    "Historia": "Oszczep, czyli lekka drzewcowa broń miotana, towarzyszył człowiekowi od zarania łowiectwa i był jedną z pierwszych broni, jakie udoskonalono przy użyciu narzędzi takich jak wyrzutnia atlatl, zwiększająca zasięg i siłę rzutu. Wojownicy uzbrojeni w oszczepy pojawiali się niezależnie w społecznościach epoki kamienia na wszystkich zamieszkanych kontynentach — od myśliwych paleolitycznej Europy, przez ludy Afryki, po pierwszych mieszkańców Ameryk. Oszczep pozwalał razić przeciwnika lub zwierzynę z bezpiecznej odległości, zanim doszło do starcia wręcz, co czyniło go równie cennym na polowaniu, jak i w konflikcie międzyplemiennym. W wielu kulturach oszczepnicy stanowili pierwszą linię starcia, osłabiającą szyk wroga gradem pocisków przed natarciem głównych sił. Prostota konstrukcji — zaostrzony i często hartowany w ogniu drzewiec — sprawiała, że broń tę można było wytwarzać masowo niemal wszędzie.",
     "Epoka": "Kamień",
     "Kultura": null,
     "Tech": "-",
@@ -175,6 +178,7 @@
   },
   {
     "Jednostka": "Łucznik",
+    "Historia": "Łuk, wynaleziony niezależnie w wielu regionach świata jeszcze w epoce kamienia, zrewolucjonizował polowanie i wojnę, pozwalając razić cel z dystansu wielokrotnie większego niż rzut oszczepem czy kamieniem. Ślady grotów strzał znajdowane są w warstwach archeologicznych sprzed kilkunastu tysięcy lat zarówno w Afryce, jak i w Europie oraz Azji, co świadczy o niezależnym rozwoju tej broni na różnych kontynentach. Wczesny łucznik musiał godzinami ćwiczyć celność i siłę naciągu, dzięki czemu w wielu społecznościach łowiecko-zbierackich cieszył się szczególnym prestiżem. Strzały z krzemiennymi lub kościanymi grotami skutecznie przebijały skórzane osłony i pozwalały polować na duże zwierzęta bez bezpośredniego kontaktu. Z czasem umiejętność łucznicza przenosiła się z polowania na pole bitwy, tworząc jedną z najtrwalszych tradycji wojskowych w historii ludzkości.",
     "Epoka": "Kamień",
     "Kultura": null,
     "Tech": "Łucznictwo",
@@ -233,6 +237,7 @@
   },
   {
     "Jednostka": "Zwiadowca",
+    "Historia": "Zanim powstały zorganizowane armie, każda grupa łowiecko-zbieracka potrzebowała ludzi zdolnych szybko i cicho rozpoznać teren — wypatrzeć zwierzynę, źródło wody czy zbliżające się niebezpieczeństwo ze strony sąsiednich plemion. Tacy zwiadowcy, wybierani zwykle spośród najsprawniejszych i najbardziej doświadczonych członków grupy, poruszali się lekko uzbrojeni, polegając na szybkości i znajomości okolicy bardziej niż na sile bojowej. Umiejętność czytania śladów, wiatru i ukształtowania terenu przekazywano z pokolenia na pokolenie jako wiedzę równie cenną jak polowanie czy uprawa ognia. W wielu kulturach epoki kamienia to właśnie zwiadowcy jako pierwsi nawiązywali kontakt z obcymi grupami, decydując czy dojdzie do wymiany, sojuszu czy konfliktu. Ich rola — oczu i uszu społeczności — pozostała fundamentem sztuki wojennej na tysiąclecia, na długo zanim pojawiły się mapy czy regularne oddziały rozpoznawcze.",
     "Epoka": "Kamień",
     "Kultura": null,
     "Tech": "-",
@@ -291,6 +296,7 @@
   },
   {
     "Jednostka": "Włócznik",
+    "Historia": "Włócznia, złożenie drzewca i zaostrzonego lub okutego grotu, była jedną z pierwszych broni pozwalających piechurowi utrzymać przeciwnika — czy to zwierzę, czy wroga — na dystans, zanim doszło do bezpośredniego starcia. Uzbrojeni w nią wojownicy pojawiali się niemal we wszystkich wczesnych społecznościach rolniczych i pasterskich świata, ponieważ broń ta była tania w produkcji, łatwa w użyciu i skuteczna zarówno w obronie, jak i w ataku. W przeciwieństwie do krótkiej broni siecznej włócznia pozwalała formować zwarte szyki, w których pierwsze szeregi wystawiały las grotów w stronę nacierającego przeciwnika. Taka prosta taktyka okazała się na tyle skuteczna, że włócznicy tworzyli trzon piechoty w wielu wczesnych cywilizacjach — od Mezopotamii po Europę — na długo przed pojawieniem się bardziej wyspecjalizowanych formacji. To właśnie z takich luźnych szyków włóczników wyrosły później ściślej zorganizowane formacje, jak grecka falanga.",
     "Epoka": "Brąz",
     "Kultura": null,
     "Tech": "Brązownictwo",
@@ -349,6 +355,7 @@
   },
   {
     "Jednostka": "Wojownik z mieczem i tarczą",
+    "Historia": "Wraz z rozwojem metalurgii brązu i żelaza piechota zyskała nową, uniwersalną broń — krótki lub średniej długości miecz, uzupełniony tarczą osłaniającą tors i ramię. Taki zestaw pozwalał wojownikowi łączyć ofensywę z obroną w sposób niedostępny dla uzbrojonych jedynie w drzewcową broń poprzedników, dając większą swobodę ruchu w zwarciu i skuteczność w walce jeden na jednego. Miecz, choć droższy w produkcji niż prosta włócznia, cięciem i pchnięciem zadawał rany trudniejsze do zatamowania, a tarcza pozwalała parować ciosy bez rezygnowania z możliwości kontrataku. Formacje mieczników z tarczami pojawiały się w wielu cywilizacjach epoki brązu i żelaza, od Bliskiego Wschodu po basen Morza Śródziemnego, często jako gwardia lub elita zamożniejszych wojowników, których stać było na kosztowne uzbrojenie. Ten model żołnierza — miecz i tarcza — stał się jednym z najbardziej rozpoznawalnych obrazów starożytnej piechoty w kolejnych tysiącleciach.",
     "Epoka": "Brąz",
     "Kultura": null,
     "Tech": "Brązownictwo",
@@ -407,6 +414,7 @@
   },
   {
     "Jednostka": "Rydwan (woły)",
+    "Historia": "Zaprzężony w woły wóz bojowy był jednym z najwcześniejszych sposobów wykorzystania siły pociągowej zwierząt na polu walki, choć jego powolność i niewielka zwrotność czyniły go bardziej platformą transportową i symbolem prestiżu niż narzędziem szybkiego manewru. Najstarsze wizerunki takich pojazdów, ciągniętych przez woły lub udomowione osły, pochodzą z Mezopotamii i pobliskich regionów sprzed kilku tysięcy lat, gdzie wykorzystywano je do przewozu dowódców i uzbrojonych wojowników na pole bitwy. W przeciwieństwie do późniejszych lekkich rydwanów konnych, wersje wołowe poruszały się w tempie marszu piechoty, dlatego służyły głównie do transportu, obrony obozu i podnoszenia morale, a nie do szarż. Sam fakt posiadania takiego pojazdu świadczył o zamożności i statusie władcy czy dowódcy, gdyż budowa wozu bojowego i utrzymanie zaprzęgu wymagały znacznych zasobów. To właśnie te wczesne, ociężałe konstrukcje utorowały drogę lżejszym i szybszym rydwanom bojowym kolejnych epok.",
     "Epoka": "Brąz",
     "Kultura": null,
     "Tech": "Koło",
@@ -465,6 +473,7 @@
   },
   {
     "Jednostka": "Konnica",
+    "Historia": "Udomowienie konia i nauczenie się jazdy wierzchem otworzyło przed wojną zupełnie nowy wymiar prędkości i zasięgu, jakiego nie dawała żadna dotychczasowa formacja piesza. Pierwsi jeźdźcy bojowi pojawili się na stepach Eurazji, gdzie koczownicze ludy pasterskie od dziecka spędzały czas w siodle, co naturalnie przekładało się na umiejętności bojowe całych społeczności. Konnica pozwalała błyskawicznie uderzać we flanki i tyły wroga, ścigać uciekających przeciwników oraz prowadzić rozpoznanie na obszarach niedostępnych dla piechoty w rozsądnym czasie. Sama obecność jeźdźców na polu bitwy potrafiła załamać morale przeciwnika jeszcze przed faktycznym starciem, ze względu na hałas, kurz i widoczną przewagę mobilności. Z czasem umiejętność stawiania i wykorzystywania konnicy stała się jednym z kluczowych wyznaczników potęgi militarnej starożytnych cywilizacji.",
     "Epoka": "Brąz",
     "Kultura": null,
     "Tech": "Jeździectwo",
@@ -523,6 +532,7 @@
   },
   {
     "Jednostka": "Galera",
+    "Historia": "Galera, wąska i długa jednostka pływająca napędzana głównie siłą wioseł, a wspomagana żaglem, była podstawą potęgi morskiej cywilizacji basenu Morza Śródziemnego już od epoki brązu. Jej konstrukcja pozwalała na dużą niezależność od wiatru — kluczową w walce morskiej, gdzie liczyła się możliwość szybkiego manewru i taranowania wrogich jednostek okutym dziobem. Załoga wioślarzy, często licząca kilkudziesięciu ludzi, wymagała ścisłej koordynacji rytmu wiosłowania, co samo w sobie stanowiło formę dyscypliny wojskowej. Galery służyły zarówno do transportu wojsk i towarów wzdłuż wybrzeży, jak i do bezpośrednich starć morskich, w których taran oraz abordaż decydowały o wyniku bitwy. Przez stulecia to właśnie zdolność budowy i utrzymania flot galer decydowała o tym, które miasta i państwa kontrolowały handel i wpływy na morzu.",
     "Epoka": "Brąz",
     "Kultura": null,
     "Tech": "Żegluga",
@@ -581,6 +591,7 @@
   },
   {
     "Jednostka": "Falanga",
+    "Historia": "Falanga hoplicka to ciężka piechota starożytnej Grecji, walcząca w zwartym, wielorzędowym szyku, w którym każdy hoplita osłaniał lewym bokiem tarczy (aspis) sąsiada stojącego po jego lewej stronie. Uzbrojeni w długą włócznię (dory) i krótki miecz, hoplici tworzyli ścianę tarcz i grotów, której siła leżała nie w indywidualnym kunszcie, lecz w utrzymaniu szyku i wzajemnym zaufaniu między obywatelami-żołnierzami greckich miast-państw. Skuteczność falangi zależała od dyscypliny — złamanie szeregu przez jednego wojownika mogło odsłonić całą formację na flankowy atak. To właśnie w takim szyku greccy hoplici stawili czoła perskiej inwazji pod Maratonem i Termopilami, a później falanga w zmodyfikowanej, jeszcze cięższej formie stała się podstawą armii macedońskiej Filipa II i Aleksandra Wielkiego. Waga zbroi i tarczy sprawiała, że hoplita był potężny w froncie, lecz podatny na ataki z boków i tyłu oraz mało mobilny na nierównym terenie.",
     "Epoka": "Żelazo",
     "Kultura": "Grecka",
     "Tech": "Hutnictwo żelaza",
@@ -639,6 +650,7 @@
   },
   {
     "Jednostka": "Hieros Lochos (Święty Zastęp)",
+    "Historia": "Hieros Lochos, czyli Święty Zastęp Teb, był elitarnym oddziałem trzystu hoplitów utworzonym w IV wieku p.n.e., którego wyjątkowość polegała na tym, że składał się ze stu pięćdziesięciu par kochanków. Zgodnie z zamysłem twórcy tej formacji każdy wojownik miał walczyć z pełnym oddaniem, chroniąc życie swojego towarzysza, co miało czynić oddział bardziej zwartym i odpornym na ucieczkę niż zwykłe jednostki obywatelskie. Święty Zastęp odegrał kluczową rolę w bitwie pod Leuktrami w 371 roku p.n.e., gdzie Tebańczycy przełamali dotąd niepokonaną falangę spartańską, kończąc okres dominacji Sparty w Grecji. Legenda głosi, że gdy w 338 roku p.n.e. pod Cheroneą oddział starł się z armią Filipa II Macedońskiego, żaden z jego członków nie cofnął się ani nie porzucił pozycji, a wszyscy trzystu polegli lub zostali ranni w miejscu, broniąc się do końca. Aleksander Wielki, syn Filipa, miał później okazać szacunek dla ich odwagi, wznosząc na polu bitwy pomnik lwa upamiętniający poległych.",
     "Epoka": "Żelazo",
     "Kultura": "Grecka",
     "Tech": "—",
@@ -697,6 +709,7 @@
   },
   {
     "Jednostka": "Hastati",
+    "Historia": "Hastati stanowili pierwszą linię wczesnej rzymskiej legii manipularnej — młodych, względnie niedoświadczonych obywateli, którzy rozpoczynali służbę wojskową właśnie w tej formacji, zanim z wiekiem i doświadczeniem awansowali do cięższych oddziałów princeps i triarii. Uzbrojeni w krótki miecz gladius, dużą tarczę scutum oraz charakterystyczny oszczep pilum, hastati otwierali starcie serią rzutów pilami, które miały zaklinować się w tarczach przeciwnika, czyniąc je bezużytecznymi, zanim doszło do walki wręcz. Formacja manipularna, w której hastati ustawieni byli w niewielkich, ruchliwych oddziałach zwanych maniplami, dawała rzymskiej armii elastyczność nieosiągalną dla sztywnych greckich falang, pozwalając reagować na nierówny teren i luki w szyku wroga. Jeśli natarcie hastati się załamało, mogli wycofać się przez szeregi cięższej piechoty stojącej za nimi, co było unikalnym rozwiązaniem taktycznym swojej epoki. Ten system rotacji linii pozwalał Republice Rzymskiej wchłaniać straty i utrzymywać ciągłość walki znacznie dłużej niż armie oparte na jednej, monolitycznej formacji.",
     "Epoka": "Żelazo",
     "Kultura": "Rzymska",
     "Tech": "Hutnictwo żelaza",
