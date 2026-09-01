@@ -3386,6 +3386,19 @@ FALA 2 — status integracji:
 - **T2 (11 technologii): ZINTEGROWANE do `main` (902c80ca)**. Zero zarzutow Evaluatora, Final Control PASS. 31/31.
 - **I2 (11 ulepszen, OSTATNI batch tej kategorii): ZINTEGROWANE do `main` (250b147a)**. "Tarasy uprawne" ma potwierdzony string-equal tekst wlasciciela (716/716 znakow) - zamkniecie petli od oryginalnego zgloszenia. Po drodze zablokowane przez DRUGI fixture-hardcode w entity-card-historia-section-test.cjs (sekcja [1], linia ~162) - naprawiony osobnym tematem `P-KARTY-HISTORIA-TEST-TARASY-HARDCODE-Q1` (zintegrowany jako `9ba3264f`, PRZED I2). **KATEGORIA "ULEPSZENIA TERENU" KOMPLETNA: 22/22 encji ma rys historyczny (I1+I2).** entity-card-historia-section-test.cjs w pelni zielony (31/31), tsc 0 bledow, 7 bramek (5 referencyjnych + map-improvement-qualify-test + hodowla-las-test) bez regresu.
 
+FALA 3 tresci R-KARTY-HISTORIA-Q1 (2026-09-01): B3 (13 budynkow, OSTATNI
+batch tej kategorii: wielka_kuznia, fort, baszta, warsztat_oblezniczy,
+akademia, teatr, sad, dom_starszyzny, dwor_zarzadcy, pretorium, trybunal,
+laznia_publiczna, akademia_wojskowa - po tym batchu kategoria "budynki"
+kompletna 41/41), T3 (10 technologii, OSTATNI batch tej kategorii:
+Astronomia, Hutnictwo zelaza, Inzynieria, Oblezenictwo, Filozofia, Prawo,
+Drogi brukowane, Medycyna, Obrobka zelaza, Sztuka wojenna - po tym batchu
+kategoria "technologie" kompletna 32/32), U2 (13 jednostek, drugi z szesciu
+batchy: Triari, Jezdziec chinski, Hu Ben Wei, Impi, Oszczepnik Zulu,
+uThulwana, Wojownik z maczuga, Wojownik z toporem, Procarz Huaracoc,
+Oszczepnik Estolica, Krolewska Gwardia, Rydwan konny, Lucznik egipski).
+Dispatch: `dyspozycje/autobot/runs/R-KARTY-HISTORIA-{B3,T3,U2}-Q1/00-dispatch.md`.
+
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1 | 2026-09-01 | Naprawa `entity-card-historia-section-test.cjs` (temat INFRA), ktorego fixture "jeszcze pustych" encji (stolarnia/Lowiectwo/farma) uzywal REALNYCH danych produkcyjnych zamiast syntetycznych - kazdy kolejny batch tresci ktory wypelnia jedna z tych 3 encji powoduje falszywy FAIL. Dodatkowo sekcja [5] ma pokrewny blad: fixture "zla wielkosc liter" dziedziczy z prawdziwego wiersza, wiec po wypelnieniu poprawnego pola test przypadkiem przechodzi/nie przechodzi z innego powodu niz zamierzony. | **ZINTEGROWANE do `main` (4efd8db2)** | Pelny cykl Operator->Evaluator(zero zarzutow)->Final Control przez Workflow. Sekcja [4]: asercja WARUNKOWA (`historiaExists === fieldNonEmpty`) na realnym stanie pola zamiast twardego "nie istnieje". Sekcja [5]: destructuring usuwa poprawne pole z kopii wiersza przed wstrzyknieciem zlej wielkosci liter, dla wszystkich 4 adapterow. Test zweryfikowany na REALNYCH, dzisiejszych danych (B1/T1/I1/U1 juz zintegrowane) - 31/31 PASS, zero fixture-driftu na przyszlosc. tsc 0 bledow, 5 bramek referencyjnych bez regresu. |
