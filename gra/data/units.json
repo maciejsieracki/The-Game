@@ -1589,7 +1589,8 @@
     "missileAttack": 5,
     "fieldPower": 53,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Lekki rydwan bojowy dotarł do Egiptu w okresie Drugiego Okresu Przejściowego, przejęty i udoskonalony po doświadczeniach z najazdem Hyksosów, którzy jako pierwsi wprowadzili nad Nil konie i pojazdy na kołach ze szprychami. W Nowym Państwie stał się podstawą egipskiej siły uderzeniowej — dwuosobowa załoga, złożona z woźnicy i łucznika, pozwalała manewrować wokół szyków piechoty i razić ją ostrzałem z bezpiecznego dystansu. Budowa takiego pojazdu, lekkiego dzięki drewnu akacjowemu i skórzanym pasom, wymagała wysoko wyspecjalizowanych rzemieślników, a jego posiadanie zarezerwowane było dla wojskowej arystokracji i samego faraona. To właśnie setki egipskich rydwanów starły się z siłami Hetytów pod Kadesz za panowania Ramzesa II, w jednej z największych bitew rydwanowych starożytności. Wizerunki faraona szarżującego rydwanem na wroga stały się jednym z najtrwalszych motywów propagandowych egipskiej sztuki monarchicznej."
   },
   {
     "Jednostka": "Wojownik z khopesh",
@@ -1647,7 +1648,8 @@
     "missileAttack": 0,
     "fieldPower": 33.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Khopesh, charakterystyczny zakrzywiony miecz z brązu przypominający sierp, wykształcił się w Egipcie i na Bliskim Wschodzie w epoce brązu, prawdopodobnie na bazie wcześniejszych narzędzi rolniczych i broni kananejskiej. Jego zagięte, jednostronnie naostrzone ostrze pozwalało nie tylko zadawać cięcia, lecz również zaczepiać i ściągać tarczę lub broń przeciwnika, otwierając drogę do kolejnego uderzenia. W egipskiej armii Nowego Państwa khopesz stał się bronią elitarnych oddziałów piechoty oraz oficerów, często wręczaną jako królewskie odznaczenie za odwagę na polu bitwy. Reliefy grobowe i świątynne, w tym przedstawienia Ramzesa II i innych władców, ukazują faraona dzierżącego khopesz jako symbol zwycięstwa nad wrogami Egiptu. Kosztowna produkcja z brązu sprawiała, że broń ta pozostawała poza zasięgiem zwykłego poborowego, umacniając jej status jako oznaki prestiżu wojskowego."
   },
   {
     "Jednostka": "Medżaj (Gwardia Faraona)",
@@ -1705,7 +1707,8 @@
     "missileAttack": 3,
     "fieldPower": 64.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Nazwa Medżaj pierwotnie odnosiła się do ludu zamieszkującego Nubię w rejonie Pustyni Wschodniej, którego wojownicy od Starego Państwa służyli Egipcjanom jako najemnicy i zwiadowcy cenieni za znajomość pustynnego terenu. W okresie Średniego Państwa termin ten zaczął oznaczać formację pełniącą funkcje policyjne i strażnicze — patrolowanie granic, pilnowanie karawan oraz ochronę nekropolii tebańskich przed rabusiami grobów. Z czasem, w Nowym Państwie, Medżaj przestał być określeniem etnicznym, a stał się nazwą elitarnej służby przybocznej i policyjnej podległej bezpośrednio administracji faraona, rekrutowanej już niezależnie od pochodzenia. Najbardziej zaufani spośród nich pełnili straż przy osobie władcy i w obrębie pałacu królewskiego, łącząc funkcję gwardii honorowej z zadaniami bezpieczeństwa wewnętrznego. Ta podwójna spuścizna — nubijskich zwiadowców i egipskiej gwardii faraona — uczyniła z Medżaj jedną z najbardziej charakterystycznych instytucji porządkowych starożytnego Egiptu."
   },
   {
     "Jednostka": "Łucznik nubijski",
@@ -1763,7 +1766,8 @@
     "missileAttack": 6,
     "fieldPower": 16,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Nubia, leżąca na południe od pierwszej katarakty Nilu, była przez Egipcjan nazywana Ta-Seti, czyli Krainą Łuku, co samo w sobie świadczyło o wieku i renomie tamtejszej tradycji łuczniczej. Nubijscy łucznicy, wyćwiczeni od dzieciństwa w posługiwaniu się prostym drewnianym łukiem, uchodzili w starożytnym świecie za jednych z najcelniejszych strzelców, cenionych zarówno w polowaniu, jak i na polu bitwy. Egipt regularnie wcielał ich do własnej armii jako najemników i oddziały pomocnicze, a wizerunki nubijskich łuczników pojawiają się na egipskich malowidłach grobowych już od Starego Państwa. Gdy w Nowym Państwie Nubia znalazła się pod egipską dominacją, jej łucznicy nadal stanowili ważny element sił zbrojnych faraonów, a później również armii niezależnego królestwa Kusz. Reputacja nubijskiego łucznictwa przetrwała stulecia i wpłynęła na to, jak starożytni sąsiedzi postrzegali militarną tożsamość całego regionu."
   },
   {
     "Jednostka": "Łucznik sumeryjski",
@@ -1821,7 +1825,8 @@
     "missileAttack": 4,
     "fieldPower": 12,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Łucznictwo w Sumerze, jednej z najstarszych cywilizacji miejskich Mezopotamii, rozwijało się równolegle z powstawaniem pierwszych zorganizowanych armii miast-państw takich jak Ur, Uruk czy Lagasz w trzecim tysiącleciu przed naszą erą. Znaleziska grotów strzał oraz przedstawienia na pieczęciach cylindrycznych i płaskorzeźbach świadczą o tym, że łuk, obok włóczni, należał do podstawowego wyposażenia sumeryjskich oddziałów pieszych. Sumeryjscy łucznicy działali zwykle jako lekka piechota dystansowa, osłaniająca cięższe formacje włóczników i przygotowująca pole przed starciem wręcz gradem strzał. Rywalizacja między miastami-państwami o żyzne ziemie wzdłuż Tygrysu i Eufratu sprawiała, że umiejętności łucznicze były stale doskonalone w niemal nieustających lokalnych konfliktach. Ta wczesna tradycja strzelecka Mezopotamii położyła fundamenty pod późniejsze, jeszcze bardziej rozwinięte armie akadyjskie i babilońskie."
   },
   {
     "Jednostka": "Rydwan sumeryjski",
@@ -1879,7 +1884,8 @@
     "missileAttack": 0,
     "fieldPower": 54.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Najstarsze znane wizerunki pojazdów bojowych na świecie pochodzą z Sumeru — ciężkie, czterokołowe wozy zaprzężone w onagry, czyli dzikie osły azjatyckie, ukazane na słynnym Sztandarze z Ur oraz na Steli Sępów upamiętniającej zwycięstwo Eannatuma, władcy Lagasz. W przeciwieństwie do późniejszych, lekkich rydwanów konnych, sumeryjskie wozy poruszały się powoli i miały pełne, drewniane koła bez szprych, co czyniło je bardziej ruchomą platformą dla władcy i oszczepników niż narzędziem błyskawicznego manewru. Załoga takiego wozu składała się zwykle z woźnicy oraz wojownika uzbrojonego w oszczepy, które ciskano w kierunku wroga podczas przejazdu wzdłuż linii bitwy. Sama obecność takich pojazdów na polu walki miała także wymiar propagandowy, podkreślając potęgę i zamożność władcy zdolnego wystawić i utrzymać zaprzęg bojowy. Te archaiczne konstrukcje sumeryjskie uznaje się za bezpośredniego przodka znacznie sprawniejszych rydwanów, jakie w epoce brązu rozpowszechniły się na całym Bliskim Wschodzie."
   },
   {
     "Jednostka": "Włócznik sumeryjski",
@@ -1937,7 +1943,8 @@
     "missileAttack": 0,
     "fieldPower": 41,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Stela Sępów, wzniesiona na cześć zwycięstwa Eannatuma, władcy Lagasz, nad sąsiednim miastem Umma w połowie trzeciego tysiąclecia przed naszą erą, zawiera jedno z najstarszych znanych przedstawień zwartej formacji zbrojnej w dziejach ludzkości. Ukazani na niej sumeryjscy włócznicy maszerują ramię w ramię w ścisłym szyku, osłaniając się dużymi prostokątnymi tarczami i wystawiając przed siebie las długich włóczni, w układzie zapowiadającym późniejszą grecką falangę. Taka formacja wymagała od żołnierzy zgrania kroku i utrzymania linii, co czyniło ją jedną z pierwszych udokumentowanych prób zdyscyplinowanej taktyki pola walki, a nie jedynie zbiorowego starcia pojedynczych wojowników. Sumeryjscy włócznicy rekrutowani byli spośród wolnych obywateli miast-państw, zobowiązanych do służby wojskowej na rzecz swojego władcy w czasie licznych sporów granicznych o kanały irygacyjne i żyzną ziemię. Wizerunek tej formacji, wyryty w kamieniu ponad cztery tysiące lat temu, pozostaje jednym z najstarszych świadectw zorganizowanej wojny w historii Mezopotamii."
   },
   {
     "Jednostka": "Gwardia Królewska Sumeru",
@@ -1995,7 +2002,8 @@
     "missileAttack": 0,
     "fieldPower": 63,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Świadectwem istnienia elitarnej straży przybocznej władców Sumeru są między innymi Królewskie Groby w Ur, odkryte w latach dwudziestych XX wieku, gdzie obok pochowanych władców i dworzan znaleziono szczątki uzbrojonych strażników złożonych w ofierze podczas pogrzebu swego pana. Tacy gwardziści, wyposażeni w hełmy i broń nierzadko wykonaną ze złota, srebra i lazurytu, świadczyli o bogactwie i randze zmarłego władcy, a ich obecność w grobie miała zapewnić mu ochronę również w zaświatach. Za życia panującego gwardia królewska pełniła straż przy pałacu i osobie władcy, towarzysząc mu podczas ceremonii religijnych oraz w czasie kampanii wojennych przeciw rywalizującym miastom-państwom, takim jak Umma czy Kisz. Rekrutowano ją spośród najbardziej zaufanych i najlepiej uzbrojonych wojowników, którzy w zamian za służbę cieszyli się szczególnymi przywilejami i bliskością dworu. Instytucja osobistej gwardii władcy, uświęcona religijnie i widoczna już w tak wczesnym okresie Mezopotamii, stała się wzorem naśladowanym przez kolejne cywilizacje regionu."
   },
   {
     "Jednostka": "Wojownik mykeński",
@@ -2053,7 +2061,8 @@
     "missileAttack": 0,
     "fieldPower": 34.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Wojownicy mykeńskiej Grecji epoki brązu, znani głównie z wykopalisk w Mykenach, Tirynsie i Pylos, walczyli w ciężkim uzbrojeniu obejmującym brązowe pancerze płytowe, jak słynna zbroja z Dendra, oraz charakterystyczne hełmy pokryte płytkami z kłów dzika, wspominane później przez Homera w Iliadzie. Podstawowym orężem były długie włócznie oraz miecze z brązu, a duże, często ośmiokątne lub wieżowe tarcze osłaniały niemal całe ciało wojownika podczas starcia. Tabliczki zapisane pismem linearnym B, odnalezione w mykeńskich pałacach, dokumentują drobiazgową administrację wojskową — spisy uzbrojenia, rydwanów i oddziałów podległych lokalnym władcom, wanaksom. Mykeńscy wojownicy uczestniczyli w licznych lokalnych konfliktach między pałacowymi ośrodkami władzy greckiego kontynentu, a echa ich wypraw, w tym legendarnej wyprawy przeciw Troi, przetrwały w greckiej tradycji ustnej na długie wieki po upadku cywilizacji mykeńskiej około 1200 roku przed naszą erą. Ich uzbrojenie i etos wojenny stały się później inspiracją dla poematów homeryckich, spisanych już w zupełnie innej epoce."
   },
   {
     "Jednostka": "Rydwan mykeński",
@@ -2111,7 +2120,8 @@
     "missileAttack": 0,
     "fieldPower": 52.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Tabliczki linearne B z pałaców w Knossos i Pylos zawierają szczegółowe inwentarze rydwanów bojowych, kół oraz uprzęży, świadcząc o tym, jak istotną rolę odgrywały te pojazdy w administracji i prestiżu mykeńskich władców. W przeciwieństwie do bliskowschodnich rydwanów wykorzystywanych jako mobilne platformy strzeleckie, mykeński rydwan służył przede wszystkim do szybkiego dowiezienia arystokratycznego wojownika na pole bitwy, gdzie — jak opisuje później Homer w Iliadzie — zsiadał, by stoczyć pojedynek pieszo włócznią i mieczem. Taki sposób walki, łączący mobilność rydwanu z pieszym pojedynkiem herosów, odzwierciedlał także społeczną strukturę mykeńskiej Grecji, w której wojna pozostawała domeną arystokratycznych wodzów i ich świty. Budowa i utrzymanie rydwanu, wymagające wyszkolonych koni oraz kunsztownej stolarki, pozostawały poza zasięgiem zwykłych wojowników, czyniąc go wyraźnym wyznacznikiem statusu społecznego. Po upadku pałacowej cywilizacji mykeńskiej pod koniec epoki brązu pamięć o takich rydwanach przetrwała głównie w warstwach poematów epickich, gdzie ich rola bojowa uległa już częściowej mitologizacji."
   },
   {
     "Jednostka": "Wojownik Sherden",
@@ -2169,7 +2179,8 @@
     "missileAttack": 0,
     "fieldPower": 35.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Sherden byli jednym z ludów wymienianych w egipskich źródłach wśród tak zwanych Ludów Morza — luźnego zjawiska migracji, najazdów i przesiedleń, które wstrząsnęło wschodnim basenem Morza Śródziemnego u schyłku epoki brązu, około XIII i XII wieku przed naszą erą, nie zaś jednolitym, zorganizowanym państwem. Charakterystycznym elementem ich uzbrojenia, znanym z reliefów świątynnych, był rogaty hełm zwieńczony metalowym dyskiem oraz okrągła tarcza i długi miecz, odróżniające ich sylwetkę od typowego egipskiego czy lewantyńskiego wojownika. Zanim Sherden pojawili się jako najeźdźcy, część z nich służyła jako najemnicy w armii egipskiej — wojownicy tego ludu walczyli między innymi w gwardii przybocznej Ramzesa II podczas bitwy pod Kadesz. Później, za panowania Ramzesa III, Sherden występują już po stronie koalicji Ludów Morza odpartej w wielkich bitwach lądowej i morskiej upamiętnionych na płaskorzeźbach świątyni w Medinet Habu. Los Sherden — od najemników po najeźdźców i osadników wchłoniętych przez lokalne ludności Kanaanu — dobrze ilustruje chaotyczny i wieloznaczny charakter całego zjawiska Ludów Morza."
   },
   {
     "Jednostka": "Halabardnik Shang",
@@ -2227,7 +2238,8 @@
     "missileAttack": 0,
     "fieldPower": 36,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Podstawową bronią drzewcową chińskiej dynastii Shang, panującej w dorzeczu Rzeki Żółtej w drugim tysiącleciu przed naszą erą, był ge — brązowa głownia w kształcie sierpa lub topora osadzona poprzecznie na drzewcu, pozwalająca zarówno na cięcie z zamachu, jak i na zaczepianie oraz ściąganie przeciwnika lub jego tarczy. Broń ta, dziś tłumaczona często jako rodzaj halabardy, wymagała dostępu do wytopu i odlewu brązu, technologii ściśle kontrolowanej przez shangowski dwór królewski i jego rzemieślników, co czyniło ge orężem zarezerwowanym dla zorganizowanych oddziałów, a nie chłopskiego pospolitego ruszenia. Inskrypcje na kościach wróżebnych, odnalezione w stolicy Yin koło dzisiejszego Anyang, wspominają o kampaniach wojennych prowadzonych przez władców Shang przeciw sąsiednim ludom przy użyciu takich uzbrojonych oddziałów. Halabardnicy uzbrojeni w ge często towarzyszyli rydwanom bojowym jako piesza eskorta chroniąca załogę wozu podczas starcia z wrogą piechotą. Ge pozostał charakterystyczną bronią chińskiej sztuki wojennej jeszcze długo po upadku dynastii Shang, ewoluując w kolejnych epokach w coraz bardziej złożone formy broni drzewcowej."
   },
   {
     "Jednostka": "Rydwan Shang",
@@ -2285,7 +2297,8 @@
     "missileAttack": 0,
     "fieldPower": 58,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Rydwan bojowy pojawił się w Chinach stosunkowo późno w porównaniu z Bliskim Wschodem, docierając do dorzecza Rzeki Żółtej dopiero w połowie drugiego tysiąclecia przed naszą erą, najprawdopodobniej za pośrednictwem kontaktów ze stepowymi ludami Azji Środkowej, choć dokładna droga tej wymiany technologicznej wciąż pozostaje przedmiotem badań archeologów. W stolicy dynastii Shang, Yin koło dzisiejszego Anyang, odnaleziono groby zawierające kompletne rydwany z kołami o drewnianych szprychach, wraz z końmi i woźnicami złożonymi w rytualnym pochówku obok zmarłego dostojnika. Typowa załoga rydwanu Shang liczyła trzy osoby — woźnicę, łucznika oraz wojownika uzbrojonego w drzewcową broń ge — co pozwalało łączyć ostrzał z bliskim starciem podczas przejazdu wzdłuż szyków wroga. Rydwany służyły władcom Shang nie tylko na wojnie, lecz również podczas wielkich polowań rytualnych, będących ważnym elementem królewskiej legitymizacji i pokazem sprawności militarnej dworu. Kosztowna technologia budowy i utrzymania takich pojazdów sprawiała, że pozostawały one wyłączną domeną królewskiego rodu i najwyższej arystokracji shangowskich Chin."
   },
   {
     "Jednostka": "Łucznik akadyjski",
