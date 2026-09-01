@@ -107,16 +107,23 @@ function buildGridRowEl(row: EntityCardData['sections'][number]['rows'][number])
     // wąski obszar przycisku otwierał kartę — etykieta po lewej (`key`, osobny `<span>`)
     // nie reagowała. Naprawa: CAŁY wiersz (`rowEl`) dostaje te same atrybuty pod inną
     // nazwą (`data-row-entity-*`, celowo różną od `data-entity-*` na `card` — patrz
-    // listener niżej) jako fallback hit-area, plus klasę do kursora. Nie zastępuje
-    // przycisku — `val` zostaje klikalnym `<button>` (test
-    // `entity-card-cross-links-nested-overlay-test.cjs` wciąż trafia weń przez
-    // `elementFromPoint` na jego środku, bo leży na wierzchu wewnątrz wiersza), więc
-    // zero zmiany zachowania w sekcjach z niepustym `value` (Ulepszenia terenu,
-    // Kolejne technologie, Zmiany ekonomiczne, karta jednostki) — tam klik nadal trafia
-    // w przycisk tak jak dotychczas, fallback po prostu nigdy się nie uruchamia.
-    rowEl.classList.add('entity-card-row--linked');
-    rowEl.setAttribute('data-row-entity-kind', row.linkTo.kind);
-    rowEl.setAttribute('data-row-entity-id', row.linkTo.id);
+    // listener niżej) jako fallback hit-area, plus klasę do kursora.
+    //
+    // RUNDA 2, POPRAWKA PO ZARZUCIE EVALUATORA: warunek `row.value === ''` PONIŻEJ jest
+    // konieczny, nie kosmetyczny — bez niego `rowEl.setAttribute` uruchamiał się dla
+    // KAŻDEGO wiersza z `linkTo`, więc fallback w listenerze (patrz niżej) łapał też
+    // klik w etykietę `key` w sekcjach z NIEPUSTYM `value` (Ulepszenia terenu, Kolejne
+    // technologie, Zmiany ekonomiczne, karta jednostki) — czyli poszerzał obszar
+    // klikalności tam, gdzie ECHO wymagało zera zmiany zachowania. Z tym warunkiem
+    // fallback istnieje WYŁĄCZNIE tam, gdzie przycisk `val` faktycznie ma zerową
+    // szerokość (Budynki/Jednostki po rundzie 1) — w pozostałych sekcjach `val` ma
+    // widoczny tekst i klik zawsze trafia w przycisk, więc atrybut fallbacku tam się
+    // w ogóle nie pojawia.
+    if (row.value === '') {
+      rowEl.classList.add('entity-card-row--linked');
+      rowEl.setAttribute('data-row-entity-kind', row.linkTo.kind);
+      rowEl.setAttribute('data-row-entity-id', row.linkTo.id);
+    }
   }
   rowEl.append(key, val);
   if (row.trailing) {
