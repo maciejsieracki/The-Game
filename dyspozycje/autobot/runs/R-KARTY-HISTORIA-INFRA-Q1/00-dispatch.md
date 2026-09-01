@@ -1,5 +1,5 @@
 TEMAT:  R-KARTY-HISTORIA-INFRA-Q1
-RUNDA:  1/5
+RUNDA:  2/5 (runda 1 = DECISION_REQUIRED, patrz ECHO RUNDA 2 na końcu pliku)
 DATA:   2026-09-01
 DOMAIN: GAME
 ŚCIEŻKA: A (Workflow), model sędziego (R-PROC-AUTOBOT.md §3c)
@@ -130,9 +130,16 @@ Pola te NIE MUSZĄ jeszcze istnieć w JSON (dodadzą je dopiero batche treści)
 `gra/src/ui/entityCards/technologyAdapter.ts`,
 `gra/src/ui/entityCards/unitAdapter.ts`,
 `gra/src/ui/entityCards/improvementAdapter.ts`, nowy plik testowy w
-`gra/tools/` (np. `entity-card-historia-section-test.cjs`). Zakazane
-bezwzględnie: `gra/src/ui/cityPanel.ts` (funkcja `playerFacingNote` i jej 3
-istniejące wywołania — NIE dotykać w tej rundzie), `gra/data/**` (żadnych
+`gra/tools/` (np. `entity-card-historia-section-test.cjs`). RUNDA 2 (patrz
+ECHO na końcu pliku): dodatkowo `gra/src/ui/cityPanel.ts` WYŁĄCZNIE w
+zakresie usunięcia miejsc wywołania, które doklejają kafelek/wiersz „Uwagi"
+do pełnej karty budynku/jednostki (`playerFacingNote(def.uwagi)` w obu
+budowniczych karty budynku, `u.Uwagi` w obu budowniczych karty jednostki) —
+sama funkcja `playerFacingNote`/`isDevOnlyPlayerText`/
+`stripInlineDevAnnotations` i jej pozostałe, niezwiązane wywołania (inline
+tooltip, inline blok technologii) zostają NIETKNIĘTE. Zakazane
+bezwzględnie: wszelkie INNE zmiany w `cityPanel.ts` poza tym jednym
+punktem, `gra/data/**` (żadnych
 zmian w danych — pola `historia`/`Historia` dodają dopiero batche treści),
 `gra/src/game/**`, `docs/decyzje/<ID>.md`, `.git/**`, `dyspozycje/WERSJE.md`,
 `gra-robocza/ROBOCZA-MANIFEST.json`, `playbook.json`.
@@ -166,3 +173,72 @@ Operator → Evaluator (zarzuty, lista może być pusta) → Operator (Obrona,
 tylko gdy zarzuty niepuste) → Final Control (osobne wywołanie Workflow) →
 orkiestrator integruje allowlist-only NATYCHMIAST (blokuje wszystkie
 kolejne 16 tematów treści w tej serii, priorytet wysoki).
+
+## ECHO / DECYZJA WŁAŚCICIELA — RUNDA 2 (2026-09-01)
+
+Runda 1 (commit `86c85ab0`, branch `autobot/R-KARTY-HISTORIA-INFRA-Q1`) zakończyła
+się DECISION_REQUIRED: Evaluator + Obrona (zgodnie) wykryli, że GOAL(c) i
+KRYTERIUM 2 wymagają CAŁKOWITEGO usunięcia wiersza „Uwagi" z kart budynków i
+jednostek, ale allowlista jednocześnie zakazywała dotykania `cityPanel.ts` —
+a to właśnie tam, PO wyrenderowaniu karty przez `renderEntityCard`, host
+doklejał dodatkowy kafelek „Uwagi":
+- `buildBuildingDetailCardViaEntityCard` (~linia 7247) i DRUGI, analogiczny
+  budowniczy karty budynku (~linia 7396) — `playerFacingNote(def.uwagi)`,
+  filtrowany, ale regexem zbyt wąskim (łapie `PYTANIE \d+`/`DECYZJA`/
+  `DEC-\d{8}`/`ABC-\d+:`, NIE łapie stylu `B-SUROW-BUD-03:`).
+- Karta jednostki (~linie 7578, 7678, dwa analogiczne budowniczy) — `u.Uwagi`
+  doklejane WPROST, BEZ ŻADNEGO filtra.
+- (Dodatkowo, informacyjnie: inline blok technologii ~linia 7134,
+  `techNote = playerFacingNote(t.Uwagi)`, osobna, NIE-entityCards ścieżka —
+  ten sam mechanizm co budynki, tylko dla technologii w innym kontekście UI.)
+
+Technologia (pełna karta przez `openEntityCard('technology',...)`) jest już
+DZIŚ czysta — nie ma żadnego host-doklejenia analogicznego do budynków/
+jednostek. Decyzja właściciela: doprowadzić budynki i jednostki do TEGO
+SAMEGO stanu (zero host-doklejanego wiersza „Uwagi" na pełnej karcie), NIE
+łatać regexów punktowo.
+
+**ROZSZERZENIE ALLOWLISTY (WYŁĄCZNIE to, nic więcej) na `gra/src/ui/cityPanel.ts`:**
+Usuń doklejanie kafelka/wiersza „Uwagi" (blok `const playerNote =
+playerFacingNote(def.uwagi); if (playerNote) { ... }` i jego odpowiednik dla
+`u.Uwagi`) z WSZYSTKICH budowniczych kart budynku i jednostki renderowanych
+przez `renderEntityCard`/`entityCards` (to obejmuje oba budowniczy budynku
+~7247/~7396 i oba budowniczy jednostki ~7578/~7678 — zweryfikuj grepem
+`playerFacingNote(def.uwagi)` i `u.Uwagi` w całym pliku, żeby złapać
+WSZYSTKIE wystąpienia, nie tylko te cztery numery linii, które mogły się
+przesunąć). Karta ma wyglądać dokładnie tak jak dziś wygląda karta
+technologii — bez sekcji „Uwagi" w ogóle, niezależnie od treści pola w JSON.
+
+**NIE DOTYKAJ:** funkcji `playerFacingNote()`/`isDevOnlyPlayerText()`/
+`stripInlineDevAnnotations()` SAMEJ W SOBIE (zero zmian w jej implementacji/
+regexie) — usuwasz WYŁĄCZNIE MIEJSCA WYWOŁANIA, które doklejają wynik jako
+osobny kafelek/wiersz na pełnej karcie budynku/jednostki. Inline blok
+technologii (~7134, `techNote`/„Uwagi tech") zostaje NIETKNIĘTY w tej rundzie
+(inny, mniejszy kontekst UI, poza zakresem — może dostać własny, przyszły
+temat, jeśli właściciel uzna że przecieka też tam).
+
+**Zaktualizowane KRYTERIUM 2** (zastępuje brzmienie z rundy 1): Dowolna
+pełna karta budynku (przez `buildBuildingDetailCardViaEntityCard` i przez
+drugiego budowniczego ~7396, oba wywoływane z REALNEJ ścieżki hover/klik w
+panelu miasta) i pełna karta jednostki (przez oba budowniczych ~7578/~7678,
+REALNA ścieżka rekrutacji/panelu miasta) z niepustym `uwagi`/`Uwagi` w danych
+(np. `stolarnia` dla budynku — `uwagi`: „B-SUROW-BUD-03: ...") NIE pokazuje
+ŻADNEGO wiersza/kafelka „Uwagi". Realny zrzut PRZED/PO z TEJ REALNEJ ścieżki
+(hover/klik w panelu miasta), NIE z izolowanej ścieżki `entityCards`
+wywołanej bezpośrednio w teście — to był dokładnie błąd metodologii dowodowej
+rundy 1 (Zarzut 2 Evaluatora).
+
+**Zaktualizowane KRYTERIUM 5**: 3 istniejące, NIEZWIĄZANE wywołania
+`playerFacingNote()` (inline tooltip ~7100, inline blok technologii ~7134 —
+to jest to samo miejsce co „3 inne wywołania" z rundy 1, licz je razem, nie
+osobno — oraz jeszcze jedno gdzieś w okolicach ~7362 jeśli nadal istnieje po
+Twoich zmianach) DZIAŁAJĄ IDENTYCZNIE jak przed zmianą — regex/funkcja
+nietknięta, jedyna zmiana to USUNIĘCIE wywołań w budowniczych kart
+budynku/jednostki. `citypanel-uwagi-abc-filter-test.cjs` zielony,
+IDENTYCZNA liczba asercji.
+
+Wszystkie pozostałe kryteria (1, 3, 4, 6, 7) i cała reszta dispatchu (RECON,
+GOAL a/b, IZOLACJA, REGUŁA PRZECIW SAMOOSZUKIWANIU, PROCEDURA NAPRAWCZA,
+GRANICE) zostają w mocy bez zmian. To jest RUNDA 2 na TYM SAMYM branchu
+(`autobot/R-KARTY-HISTORIA-INFRA-Q1`), kontynuacja od commitu `86c85ab0`, nie
+nowy temat od zera.
