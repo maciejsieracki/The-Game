@@ -221,7 +221,8 @@
       "inkowie"
     ],
     "cywilizacje_uwaga": "Pole ogólne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) — czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dostępne dla wszystkich cywilizacji.",
-    "uwagi": "C-TARASY-Q1 Maciej 2026-07-26: cofnięcie T-TECH-4 (2026-07-04, 'po Rolnictwie — wszystkie cywilizacje') — zgodność historyczna: chińskie tarasy ryżowe i andyjskie tarasy Inków. Od teraz WYŁĄCZNIE Chińczycy + Inkowie (po Rolnictwie)."
+    "uwagi": "C-TARASY-Q1 Maciej 2026-07-26: cofnięcie T-TECH-4 (2026-07-04, 'po Rolnictwie — wszystkie cywilizacje') — zgodność historyczna: chińskie tarasy ryżowe i andyjskie tarasy Inków. Od teraz WYŁĄCZNIE Chińczycy + Inkowie (po Rolnictwie).",
+    "historia": "Tarasy uprawne to system stopniowanych, murowanych poletek wykuwanych w zboczach gór, praktykowany od tysięcy lat w Andach, Azji Południowo-Wschodniej i na Bliskim Wschodzie. Najbardziej znane przykłady zostawili Inkowie w Peru (m.in. Moray i doliny wokół Machu Picchu, XV wiek), którzy w ten sposób zdobywali żyzną ziemię uprawną na stromym, górzystym terenie i jednocześnie zapobiegali erozji gleby. Każdy poziom tarasu miał własny mikroklimat, co pozwalało uprawiać różne rośliny na różnych wysokościach tego samego zbocza. Budowa wymagała ogromnego nakładu pracy zbiorowej — kamiennych murów oporowych, systemów drenażu i nawadniania — ale w zamian dawała stabilne plony tam, gdzie płaska ziemia była rzadkością."
   },
   "lodzie_rybackie": {
     "nazwa": "Łodzie rybackie",
@@ -237,7 +238,8 @@
     "warunek": "ławica ryb",
     "koszt_praca": 20,
     "tech": "Żegluga",
-    "odblokowuje": ""
+    "odblokowuje": "",
+    "historia": "Łodzie rybackie były jednym z najwcześniejszych narzędzi, dzięki którym człowiek wyszedł poza zbieractwo znad brzegu i sięgnął po zasoby otwartej wody. Już w epoce kamienia budowano proste dłubanki i tratwy trzcinowe, jak egipskie łodzie papirusowe znad Nilu czy skandynawskie łodzie z epoki brązu. Umożliwiały one połów sieciami i włócznią w miejscach niedostępnych z lądu, co dawało stały, przewidywalny dopływ pożywienia niezależny od plonów rolnych. Społeczności nadmorskie i nadrzeczne, takie jak mieszkańcy japońskiego okresu Jōmon czy ludy znad Morza Śródziemnego, budowały wokół rybołówstwa łodziowego całe systemy osadnicze i handlowe. Rozwój technik żeglarskich związanych z łodziami rybackimi stał się też pierwszym krokiem w stronę późniejszej żeglugi dalekomorskiej i handlu morskiego."
   },
   "warzelnia_soli": {
     "nazwa": "Warzelnia soli",
@@ -255,7 +257,8 @@
     "warunek": "sól — wyłącznie wybrzeże morskie (kanon: złoża soli przy brzegu) lub hex.zloze=sol",
     "koszt_praca": 20,
     "tech": "Garncarstwo",
-    "odblokowuje": "Sól"
+    "odblokowuje": "Sól",
+    "historia": "Sól była przez tysiące lat jednym z najcenniejszych towarów świata — niezbędna do konserwowania mięsa i ryb, długo przed epoką lodówek decydowała o przetrwaniu zapasów żywności przez zimę. Warzelnie, czyli miejsca odparowywania solanki z wody morskiej lub słonych źródeł w płytkich nieckach na słońcu bądź nad ogniem, działały już w starożytnym Egipcie, Chinach i wśród ludów celtyckich w Europie Środkowej. W średniowiecznej Europie handel solą morską prowadzony przez miasta takie jak Lüneburg czy Bourgneuf-en-Retz budował całe fortuny kupieckie, a szlaki solne stawały się ważnymi trasami handlowymi. Samo słowo „salariusz” (żołd) wywodzi się od łacińskiego sal — sól, którą rzymscy legioniści bywali częściowo opłacani. Kontrola nad warzelniami soli oznaczała realną władzę gospodarczą na długo przed erą przemysłową."
   },
   "fort": {
     "nazwa": "Fort",
@@ -272,7 +275,8 @@
     "koszt_praca": 25,
     "tech": "Wojskowość",
     "odblokowuje": "",
-    "uwagi": "ABC-10 Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 10; +100% Obrona obozowanie"
+    "uwagi": "ABC-10 Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 10; +100% Obrona obozowanie",
+    "historia": "Fortyfikacje polowe budowane w otwartym terenie, poza murami miast, towarzyszyły wojskom od starożytności — rzymskie obozy warowne (castra) wznoszone każdej nocy na marszu legionów są jednym z najbardziej znanych przykładów zdyscyplinowanej sztuki fortyfikacyjnej. Proste wały ziemne, palisady i rowy pozwalały niewielkim garnizonom skutecznie bronić się przed liczniejszym przeciwnikiem i kontrolować kluczowe przejścia, brody czy granice. W średniowieczu podobną rolę pełniły drewniano-ziemne grody i strażnice graniczne, jak choćby limes rzymski czy Wielki Mur Chiński z jego licznymi fortami wartowniczymi. Fort w terenie nie służył do zamieszkania na stałe, lecz jako punkt oporu i obserwacji, wzmacniający obronność szerszego obszaru bez konieczności budowy pełnego miasta warownego."
   },
   "droga": {
     "nazwa": "Droga",
@@ -286,7 +290,8 @@
     "koszt_praca": 15,
     "tech": "Koło",
     "odblokowuje": "",
-    "uwagi": "R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: Handel (plon heksa) 1→2/turę (było 1)"
+    "uwagi": "R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: Handel (plon heksa) 1→2/turę (było 1)",
+    "historia": "Najwcześniejsze drogi to zwykłe ubite ścieżki, wydeptane przez ludzi, zwierzęta juczne i pierwsze wozy, później utwardzane żwirem, drewnem lub warstwami ubitej gliny. Już w Mezopotamii i starożytnym Egipcie budowano proste trakty łączące osady i pola uprawne, a sieć dróg perskich (Droga Królewska, V wiek p.n.e.) umożliwiała szybki przepływ informacji i wojsk na tysiące kilometrów. Takie drogi nie miały jeszcze trwałej nawierzchni kamiennej, ale radykalnie skracały czas podróży i transportu towarów w porównaniu z marszem przez bezdroża. Ich budowa i utrzymanie — karczowanie, wyrównywanie terenu, usypywanie nasypów — było jednym z pierwszych wielkich przedsięwzięć infrastrukturalnych ludzkości, łączącym rozproszone osady w sieci wymiany handlowej."
   },
   "droga_brukowana": {
     "nazwa": "Droga brukowana",
@@ -304,7 +309,8 @@
     "koszt_praca": 25,
     "tech": "Drogi brukowane",
     "odblokowuje": "",
-    "uwagi": "T-TECH-9 Maciej 2026-07-04. R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: ruch z +2 (odejmowanie) na 5× szybszy (dzielenie); Handel (plon heksa) 2→3/turę (było 2)"
+    "uwagi": "T-TECH-9 Maciej 2026-07-04. R-DROGI-RUCH-HANDEL-Q1 Maciej 2026-08-14: ruch z +2 (odejmowanie) na 5× szybszy (dzielenie); Handel (plon heksa) 2→3/turę (było 2)",
+    "historia": "Drogi brukowane, budowane z dopasowanych kamiennych płyt układanych na warstwach żwiru i piasku, to jeden ze szczytowych osiągnięć starożytnej inżynierii — najsłynniejszy przykład to sieć dróg rzymskich, licząca w szczycie imperium ponad 80 tysięcy kilometrów, z Via Appia (312 p.n.e.) jako pierwszą wielką arterią. Rzymianie budowali je w warstwach: fundament z grubego kamienia, warstwy żwiru i piasku, a na wierzchu dopasowane płyty bazaltowe lub granitowe, co dawało nawierzchnię trwałą przez stulecia i odporną na deszcze. Podobne technologie brukowania rozwinęły niezależnie Chiny za dynastii Qin i Han, budując drogi cesarskie łączące odległe prowincje. Brukowana nawierzchnia pozwalała na szybki, całoroczny przejazd wozów i wojsk niezależnie od pogody, co czyniło ją kluczowym narzędziem kontroli i administracji rozległych imperiów."
   },
   "kopalnia_miedzi": {
     "nazwa": "Kopalnia miedzi",
@@ -321,7 +327,8 @@
     "koszt_praca": 22,
     "tech": "Brązownictwo",
     "odblokowuje": "Odlewnia brązu (budynek miejski)",
-    "uwagi": "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze złożem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy"
+    "uwagi": "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze złożem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy",
+    "historia": "Miedź była pierwszym metalem powszechnie wytapianym i obrabianym przez człowieka, co dało początek całej epoce chalkolitu (miedzi) już około 5000 lat p.n.e. na Bliskim Wschodzie i Bałkanach. Wczesne kopalnie, jak te w Wadi Faynan w dzisiejszej Jordanii czy na Cyprze — wyspie, której łacińska nazwa dała nazwę samemu metalowi (cuprum) — wydobywały rudę metodą odkrywkową i w płytkich sztolniach drążonych ręcznie lub ogniem. Miedź, choć miękka w czystej postaci, umożliwiła wytwarzanie pierwszych trwałych narzędzi i ozdób metalowych, zastępując kamień i kość. Prawdziwy przełom nastąpił jednak, gdy odkryto, że stopiona z cyną daje znacznie twardszy brąz — to właśnie zapotrzebowanie na miedź do produkcji brązu napędzało rozwój górnictwa i dalekosiężnego handlu surowcami w epoce brązu."
   },
   "kopalnia_zelaza": {
     "nazwa": "Kopalnia żelaza",
@@ -338,7 +345,8 @@
     "koszt_praca": 22,
     "tech": "Hutnictwo żelaza",
     "odblokowuje": "Odlewnia żelaza (budynek miejski)",
-    "uwagi": "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
+    "uwagi": "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia",
+    "historia": "Wydobycie i obróbka żelaza rozpowszechniły się na Bliskim Wschodzie i w Anatolii około 1200 roku p.n.e., dając początek epoce żelaza i stopniowo wypierając brąz jako główny metal narzędzi i broni. Ruda żelaza, znacznie bardziej powszechna w skorupie ziemskiej niż miedź czy cyna potrzebne do brązu, pozwoliła na demokratyzację metalu — narzędzia i broń żelazną mogły sobie pozwolić znacznie szersze warstwy społeczeństwa, nie tylko elity. Kopalnie odkrywkowe i płytkie szyby, jak te znane z terenów Hetytów czy później Celtów w Europie Środkowej (kultura lateńska), dostarczały rudy do prymitywnych pieców dymarkowych, gdzie w procesie redukcji otrzymywano gąbczaste żelazo zwane łupą. Obróbka żelaza wymagała wyższych temperatur niż brąz, co wymusiło rozwój technik kowalskich i lepszych systemów miechów, torując drogę późniejszej metalurgii stali."
   },
   "kopalnia_cyny": {
     "nazwa": "Kopalnia cyny",
@@ -355,7 +363,8 @@
     "koszt_praca": 22,
     "tech": "Brązownictwo",
     "odblokowuje": "",
-    "uwagi": "Maciej 2026-08-13: nowy surowiec Ruda cyny — GWARANTOWANY każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), złoże na Wzgórzach LUB Górach jak złoto (rzadkość = miedź/5). Reużywa technologii Brązownictwo, jak dziś Kopalnia miedzi."
+    "uwagi": "Maciej 2026-08-13: nowy surowiec Ruda cyny — GWARANTOWANY każdej cywilizacji (FAIR_PLAY_DEPOSIT_IDS), złoże na Wzgórzach LUB Górach jak złoto (rzadkość = miedź/5). Reużywa technologii Brązownictwo, jak dziś Kopalnia miedzi.",
+    "historia": "Cyna, mimo że sama w sobie miękka i mało przydatna, była przez tysiące lat jednym z najbardziej strategicznych surowców starożytności — niezbędna do wytopu brązu razem z miedzią. Złoża cyny występowały jednak bardzo nierównomiernie: liczyły się przede wszystkim Kornwalia w Wielkiej Brytanii, Półwysep Iberyjski oraz Azja Środkowa (dzisiejszy Afganistan i Uzbekistan), co wymuszało powstanie długodystansowych szlaków handlowych ciągnących się na tysiące kilometrów. Fenicjanie i później Rzymianie prowadzili regularną wymianę handlową po cynę z Wysp Kasyterydzkich (starożytna nazwa dla źródeł cyny brytyjskiej), a jej brak potrafił sparaliżować produkcję broni brązowej całych cywilizacji epoki brązu. To właśnie zależność od importowanej cyny bywa wskazywana jako jeden z czynników załamania się sieci handlowych późnej epoki brązu około 1200 roku p.n.e."
   },
   "kopalnia_zlota": {
     "nazwa": "Kopalnia złota",
@@ -372,7 +381,8 @@
     "koszt_praca": 22,
     "tech": "Waluta",
     "odblokowuje": "Mennica (Złoto w skarbcu + Targowisko w stolicy)",
-    "uwagi": "PYTANIE-84: złoto magazynowane (game/zloto-access.ts). Dodatkowe kopalnie → nadwyżka na handel/eksport (U-13)."
+    "uwagi": "PYTANIE-84: złoto magazynowane (game/zloto-access.ts). Dodatkowe kopalnie → nadwyżka na handel/eksport (U-13).",
+    "historia": "Złoto, dzięki swojej odporności na korozję, rzadkości i blaskowi, od zarania cywilizacji pełniło rolę nie tyle surowca użytkowego, co symbolu władzy, bogactwa i sacrum. Najstarsze udokumentowane kopalnie złota, takie jak egipskie wyrobiska w Nubii i na Pustyni Wschodniej sprzed ponad 4000 lat, zasilały skarbce faraonów i pozwalały na budowę monumentalnej architektury oraz finansowanie wypraw wojennych. Podobną rolę złoto odgrywało w Andach — inkaskie i przedinkaskie kultury traktowały je jako „pot słońca”, święty metal zarezerwowany dla władców i świątyń, co później stało się jedną z przyczyn hiszpańskiego podboju. Wydobycie odbywało się metodą płukania piasków rzecznych oraz drążenia płytkich szybów w żyłach kwarcowych, a samo posiadanie złota budowało prestiż polityczny na długo przed tym, zanim stało się ono podstawą systemów monetarnych i rezerw skarbowych państw."
   },
   "posterunek": {
     "nazwa": "Posterunek (Strażnica)",
@@ -389,7 +399,8 @@
     "tech": "-",
     "tech_uwaga": "T-TECH-3 Maciej 2026-06-26: bramka AND w kodzie — Obróbka drewna + Murarstwo (improvement-tech.ts IMPROVEMENT_MULTI_TECH_REQ)",
     "odblokowuje": "",
-    "uwagi": "Brąz (epoka 2); zasieg_terytorium=5; +50% Obrona w trybie obozowania (decyzja Naster 2026-06-25)"
+    "uwagi": "Brąz (epoka 2); zasieg_terytorium=5; +50% Obrona w trybie obozowania (decyzja Naster 2026-06-25)",
+    "historia": "Posterunki graniczne i strażnice towarzyszyły państwom niemal od zarania administracji terytorialnej — ich zadaniem było rozszerzanie kontroli poza mury miast, obserwacja szlaków i wczesne ostrzeganie przed najazdem. Rzymski limes, ciągnący się tysiącami kilometrów wzdłuż granic imperium, składał się właśnie z sieci niewielkich wież strażniczych (burgi) i fortów pomocniczych, utrzymujących łączność sygnałową między większymi garnizonami. Podobną funkcję pełniły chińskie wieże strażnicze wzdłuż Wielkiego Muru czy słowiańskie grody strażne na pograniczach wczesnośredniowiecznych księstw. Niewielka załoga posterunku nie mogła stawić czoła regularnej armii, ale dawała czas na mobilizację sił głównych i pozwalała kontrolować handel oraz przemieszczanie się ludzi na newralgicznych szlakach. Sieć takich placówek była tanim, ale skutecznym sposobem na utrzymanie władzy nad rozległym i słabo zaludnionym pograniczem."
   },
   "_miasto_zasieg_ref": {
     "_komentarz": "NOTA (nie ulepsz. terenu): miasto ma zasieg_terytorium=10 (stale, wg dyspozycji EKONOMIA 2026-06-25); helper: okolica.cityRangeForPopulation — pop<5 r5, pop>=5 r10, pop>=10 r15 (wg memory civ-zasieg-miasta-dynamiczny); zasieg_terytorium=10 to wartosc poczatkowa/bazowa dla zasladania kolejnych miast"
