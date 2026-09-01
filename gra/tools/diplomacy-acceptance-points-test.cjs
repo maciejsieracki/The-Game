@@ -195,6 +195,33 @@ for (const t of [10, 12, 15, 17, 20, 0]) {
 ok(mod.treatyBasePnFromConfig('nap', { turns: 15 }) === 200 * 2, 'kryt. 4: oferta AI NAP terminowa (turns:15 jak w ai.ts) → silnik widzi bazę ×2 = 400, bez zmiany w ai.ts');
 ok(mod.treatyBasePnFromConfig('nap', { turns: 0 }) === 200 * 8, 'kryt. 4: oferta AI NAP bezterminowa (turns:0 jak w ai.ts) → silnik widzi bazę ×8 = 1600, bez zmiany w ai.ts');
 
+// Runda 2 (obrona, zarzut Evaluatora): `trybut_zadanie`/`trybut_oferta` (case '8' w
+// diplomacyNegotiationModal.ts, jeden dropdown demand/offer + WSPÓLNY selektor czasu
+// `cdn-turns-trib`) mają selektor czasu w UI dokładnie jak `nap` — więc ten sam mnożnik
+// stosuje się do ich bazy PW (120/100) w OBU choke-pointach. Baza JSON `punkty` sama w
+// sobie się nie zmienia (data/diplomacy-acceptance-points.json poza allowlistą) — mnożnik
+// jest wyłącznie w kodzie.
+ok(mod.treatyBasePnFromConfig('trybut_zadanie', { turns: 10 }) === 120, 'engine baza trybut_zadanie @ 10 tur = 120 (×1)');
+ok(mod.treatyBasePnFromConfig('trybut_zadanie', { turns: 15 }) === 240, 'engine baza trybut_zadanie @ 15 tur = 240 (×2)');
+ok(mod.treatyBasePnFromConfig('trybut_zadanie', { turns: 20 }) === 480, 'engine baza trybut_zadanie @ 20 tur = 480 (×4)');
+ok(mod.treatyBasePnFromConfig('trybut_zadanie', { turns: 0 }) === 960, 'engine baza trybut_zadanie bezterminowy = 960 (×8)');
+ok(mod.treatyBaseAcceptancePn('trybut_zadanie', { turns: 15 }) === 240, 'UI baza trybut_zadanie @ 15 tur = 240 — zgadza się z engine');
+ok(mod.treatyBaseAcceptancePn('trybut_zadanie', { turns: 0 }) === 960, 'UI baza trybut_zadanie bezterminowy = 960 — zgadza się z engine');
+for (const t of [10, 12, 15, 17, 20, 0]) {
+  const uiSide = mod.computePlayerAcceptanceSides('trybut_zadanie', { turns: t }, 100, false);
+  const engineBase = mod.treatyBasePnFromConfig('trybut_zadanie', { turns: t });
+  ok(uiSide.my.treatyBasePn === engineBase, `trybut_zadanie: UI treatyBasePn @ turns=${t} (${uiSide.my.treatyBasePn}) zgadza się z engine (${engineBase})`);
+}
+ok(mod.treatyBasePnFromConfig('trybut_oferta', { turns: 10 }) === 100, 'engine baza trybut_oferta @ 10 tur = 100 (×1)');
+ok(mod.treatyBasePnFromConfig('trybut_oferta', { turns: 15 }) === 200, 'engine baza trybut_oferta @ 15 tur = 200 (×2)');
+ok(mod.treatyBasePnFromConfig('trybut_oferta', { turns: 20 }) === 400, 'engine baza trybut_oferta @ 20 tur = 400 (×4)');
+ok(mod.treatyBasePnFromConfig('trybut_oferta', { turns: 0 }) === 800, 'engine baza trybut_oferta bezterminowy = 800 (×8)');
+ok(mod.treatyBaseAcceptancePn('trybut_oferta', { turns: 20 }) === 400, 'UI baza trybut_oferta @ 20 tur = 400 — zgadza się z engine');
+// Bez payload (np. wywołania w TREATY_PW_BASE niżej z payload={}) baza pozostaje 120/100
+// niezmieniona — brak `payload.turns` traktowany jako dolna granica clampu (10 tur → ×1),
+// więc istniejący test „TREATY_PW_BASE" (payload={}) NIE jest naruszony tym rozszerzeniem.
+ok(mod.computePlayerAcceptanceSides('trybut_zadanie', {}, 100, false).my.treatyBasePn === 120, 'trybut_zadanie bez turns w payload: baza 120 NIEZMIENIONA (kontrola wstecznej zgodności)');
+
 // Kryterium 5: pokój (brak selektora czasu w UI) i pozostałe traktaty bez selektora
 // (sojusz/granice/wasal — patrz komentarz przy TREATY_DURATION_MULTIPLIER_ACTIONS) mają bazę
 // NIEZMIENIONĄ niezależnie od payload.turns — mnożnik czasu się do nich nie stosuje.

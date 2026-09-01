@@ -502,14 +502,43 @@ export function marchTreatyLabel(borderMilitary?: boolean): string {
 
 /**
  * R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: traktaty o stałej bazie PW, które w UI
- * (diplomacyNegotiationModal.ts::buildFormBody) faktycznie mają selektor czasu trwania
- * (chipy 10/15/20/Bezterminowy + pole ręczne) — dziś WYŁĄCZNIE `nap` (case '2'). Sojusz
- * (case '3') ma tam tylko wybór typu (pełny/defensywny), przemarsz (case '4') tylko
- * checkbox prawa wojskowego, wasal (case '12') tylko trybut ¤/turę — żaden z nich nie
- * wybiera czasu trwania traktatu, więc mnożnik się do nich NIE stosuje. `pokoj` poza
- * zakresem z definicji (brak selektora w ogóle).
+ * (diplomacyNegotiationModal.ts::buildFormBody) faktycznie mają selektor czasu trwania.
+ * `nap` (case '2'): chipy 10/15/20/Bezterminowy + pole ręczne. Sojusz (case '3') ma tam
+ * tylko wybór typu (pełny/defensywny), przemarsz (case '4') tylko checkbox prawa
+ * wojskowego, wasal (case '12') tylko trybut ¤/turę — żaden z tych trzech nie wybiera
+ * czasu trwania, więc mnożnik się do nich NIE stosuje.
+ * Runda 2 (obrona, zarzut Evaluatora): `trybut_zadanie` (case '8', tryb „Żądaj trybutu")
+ * MA własne pole „Czas (tur, 0 = bezterminowy)" (`cdn-turns-trib`,
+ * diplomacyNegotiationModal.ts ~330) i własną stałą bazę PW w tej samej tabeli config
+ * (`traktaty.trybut_zadanie.punkty=120`), czytaną przez ten sam choke-point
+ * (`treatyBaseAcceptancePn`/`computePlayerAcceptanceSides`) co `nap` — więc dołączony
+ * tutaj. Realny efekt jest WYŁĄCZNIE na WYŚWIETLANĄ bazę PW w panelu akceptacji stołu
+ * negocjacji: rzeczywista bramka akceptacji/odrzucenia żądania trybutu
+ * (`evaluateProposal` case `trybut_zadanie`, diplomacy-proposals.ts) liczy próg
+ * WYŁĄCZNIE z `payload.goldPerTurn` vs `progTrybutMinGoldPerTurn`/
+ * `progTrybutZadanieMaxGoldBase` — nie z `treatyBasePnFromConfig` — i `treatyPnGate`
+ * (jedyne miejsce, gdzie `basePn` trybutu wpływa na inny wynik niż samo wyświetlanie)
+ * używa `basePn` tylko jako bramki `if (basePn <= 0) return null` przed logiką
+ * specyficzną dla `pokoj`/koszyka — mnożnik nie zmienia tej bramki (basePn>0 zarówno
+ * przed, jak i po). Zatem rozszerzenie jest bezpieczne względem realnej mechaniki
+ * akceptacji trybutu — naprawia wyłącznie rozjazd UI (selektor czasu widoczny, baza PW
+ * w panelu go ignorująca), czyli dokładnie tę samą klasę usterki co zgłoszenie
+ * właściciela.
+ * `trybut_oferta` (tryb „Zaproponuj trybut" w TYM SAMYM case '8' — jeden dropdown
+ * `cdn-trib-mode` demand/offer, jeden współdzielony `numInput('cdn-turns-trib', ...)`,
+ * `readPayload` case '8' zwraca `turns` niezależnie od trybu, `pickActionIdForTribute`
+ * w diplomacyNegotiationModal.ts mapuje `tributeMode==='offer'→trybut_oferta`) ma
+ * DOKŁADNIE ten sam selektor czasu co `trybut_zadanie` — więc dołączony z tego samego
+ * powodu. `evaluateProposal` case `trybut_oferta` też liczy próg wyłącznie z
+ * `payload.goldPerTurn`/`goldOnce` vs `progTrybutOferta*` — nie z
+ * `treatyBasePnFromConfig` — więc identycznie bezpieczne (tylko display).
+ * `pokoj` poza zakresem z definicji (brak selektora w ogóle).
  */
-const TREATY_DURATION_MULTIPLIER_ACTIONS: ReadonlySet<string> = new Set<string>(['nap']);
+const TREATY_DURATION_MULTIPLIER_ACTIONS: ReadonlySet<string> = new Set<string>([
+  'nap',
+  'trybut_zadanie',
+  'trybut_oferta',
+]);
 
 /**
  * R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1: mnożnik bazy PW traktatu wg czasu trwania —
