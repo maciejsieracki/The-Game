@@ -145,12 +145,20 @@ async function main() {
     const rows = Array.from(card.querySelectorAll('.entity-card-row')).map((r) => r.textContent.trim());
     const civRow = rows.find((t) => t.startsWith('Cywilizacje')) || null;
     const techRow = rows.find((t) => t.startsWith('Technologia')) || null;
+    // Stan REALNY pola "historia" w dzisiejszych danych — asercja niżej
+    // porównuje obecność sekcji z tym stanem, nie ze stałą wartością, więc
+    // test pozostaje prawdziwy zarówno przed, jak i po wypełnieniu pola
+    // treścią przez batche R-KARTY-HISTORIA-* (analogicznie do sekcji [4]).
+    const row = window.__resolveImprovementRow('tarasy');
+    const historiaFieldValue = row ? row.historia : undefined;
+    const historiaFieldNonEmpty = typeof historiaFieldValue === 'string' && historiaFieldValue.trim().length > 0;
     return {
       found: true,
       civRow,
       techRow,
       uwagiRowExists: rows.some((t) => t.startsWith('Uwagi')),
       historiaExists: card.querySelector('.entity-card-historia') !== null,
+      historiaFieldNonEmpty,
     };
   });
   check('Tarasy uprawne: encja znaleziona', tarasy.found, tarasy);
@@ -159,8 +167,8 @@ async function main() {
   check('Tarasy uprawne: wiersz "Technologia" === "TechnologiaRolnictwo" (BEZ tech_uwaga w nawiasie)',
     tarasy.techRow === 'TechnologiaRolnictwo', tarasy.techRow);
   check('Tarasy uprawne: wiersz "Uwagi" NIE ISTNIEJE na karcie', tarasy.uwagiRowExists === false, tarasy);
-  check('Tarasy uprawne: sekcja "Rys historyczny" nie istnieje (pole "historia" jeszcze puste w danych)',
-    tarasy.historiaExists === false, tarasy);
+  check(`Tarasy uprawne: sekcja "Rys historyczny" obecna WTEDY I TYLKO WTEDY, gdy pole "historia" jest niepuste (dziś: ${tarasy.historiaFieldNonEmpty})`,
+    tarasy.historiaExists === tarasy.historiaFieldNonEmpty, tarasy);
 
   // ---------------------------------------------------------------------
   // [2] Karta technologii "Brązownictwo" — ma niepuste Uwagi w tech.json (regres
