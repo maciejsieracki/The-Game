@@ -1,5 +1,9 @@
 TEMAT:  R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1
-RUNDA:  1/5
+RUNDA:  2/5 (runda 1: DECISION_REQUIRED — Obrona zgłosiła konflikt zakresu,
+        klik w wiersz Budynki/Jednostki po usunięciu tekstu przestawał
+        otwierać kartę bo przycisk-link kurczył się do 0px; ECHO
+        właściciela 2026-09-01: „Rozszerz allowlistę, napraw klikalność
+        całego wiersza" — allowlista poniżej już zaktualizowana pod rundę 2)
 DATA:   2026-09-01
 DOMAIN: GAME
 ŚCIEŻKA: A (Workflow), model sędziego (R-PROC-AUTOBOT.md §3c)
@@ -48,13 +52,33 @@ Konkretnie (potwierdzone reconem, linie orientacyjne w `technologyAdapter.ts`
 5. `tsc --noEmit` 0 błędów + wszystkie 5 bramek referencyjnych + istniejące
    testy CivPedia/karty technologii (jeśli istnieją pod tym plikiem — sprawdź
    grepem `technologyAdapter` w `gra/tools/`) bez regresu.
+6. [RUNDA 2] Klik w DOWOLNYM miejscu wiersza Budynki/Jednostki (nie tylko w
+   pusty przycisk po prawej — także w widoczną etykietę po lewej) faktycznie
+   otwiera zagnieżdżoną kartę budynku/jednostki — realny dowód (headless
+   Chromium, symulacja kliknięcia na współrzędnych widocznego tekstu
+   etykiety, sprawdzenie że otworzyła się nowa karta z właściwym
+   `kind`/`id`). Zero regresu w `entity-card-cross-links-nested-overlay-test.cjs`
+   i innych sekcjach/kartach korzystających z tego samego renderera (Ulepszenia
+   terenu, Kolejne technologie, Zmiany ekonomiczne, karta jednostki) — te same
+   testy zielone PRZED i PO zmianie w `renderer.ts`.
 
-## ALLOWLISTA — nic poza tym
-`gra/src/ui/entityCards/technologyAdapter.ts` (wyłącznie `buildingsRows` i
-`unitsRows`, bez dotykania `renderer.ts` czy innych sekcji tego samego pliku).
-Zakazane bezwzględnie: `gra/src/game/**`, `gra/data/**`, `docs/decyzje/<ID>.md`,
-`.git/**`, `dyspozycje/WERSJE.md`, `gra-robocza/ROBOCZA-MANIFEST.json`,
-`playbook.json`.
+## ALLOWLISTA — nic poza tym (ROZSZERZONA w rundzie 2, ECHO 2026-09-01)
+`gra/src/ui/entityCards/technologyAdapter.ts` (`buildingsRows`/`unitsRows`,
+niezmienione względem rundy 1 — `value`/`trailing` już usunięte, commit
+`dcd091e1` na gałęzi tematu). DODATKOWO w rundzie 2: `gra/src/ui/entityCards/
+renderer.ts` — WYŁĄCZNIE chirurgiczna zmiana czyniącą CAŁY wiersz (etykieta +
+pusty przycisk `value`) klikalnym, gdy `row.linkTo` jest ustawione — np.
+przeniesienie `data-entity-kind`/`data-entity-id`/nasłuchu kliknięcia z
+samego `<button class="entity-card-row-value">` na wrapper `<div class=
+"entity-card-row">` obejmujący też `<span class="entity-card-row-key">`, LUB
+nadanie przyciskowi `value` minimalnej hit-area niezależnej od treści (np.
+`min-width`/rozciągnięcie na resztę wiersza) — Operator wybiera rozwiązanie
+NIE zmieniające zachowania dla WSZYSTKICH INNYCH sekcji/kart używających
+tego samego renderera (Ulepszenia terenu, Kolejne technologie, Zmiany
+ekonomiczne, karta jednostki, wszystkie inne miejsca wołające `renderer.ts`)
+— to jest teraz kryterium końca 6, patrz niżej. Zakazane bezwzględnie:
+`gra/src/game/**`, `gra/data/**`, `docs/decyzje/<ID>.md`, `.git/**`,
+`dyspozycje/WERSJE.md`, `gra-robocza/ROBOCZA-MANIFEST.json`, `playbook.json`.
 
 ## IZOLACJA
 worktree własny, gałąź `autobot/R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1`,
