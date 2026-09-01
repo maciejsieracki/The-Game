@@ -3384,7 +3384,7 @@ U2 (kolejny batch jednostek) czeka na dispatch po ustabilizowaniu tej fali.
 FALA 2 — status integracji:
 - **B2 (14 budynkow): ZINTEGROWANE do `main` (968f762a)**. Zero zarzutow Evaluatora, Final Control PASS. entity-card-historia-section-test.cjs w pelni zielony (31/31) po integracji na baze z juz zintegrowanym fixture-fix.
 - **T2 (11 technologii): ZINTEGROWANE do `main` (902c80ca)**. Zero zarzutow Evaluatora, Final Control PASS. 31/31.
-- **I2 (11 ulepszen, OSTATNI batch tej kategorii): Operator+Evaluator PASS, zero zarzutow — "Tarasy uprawne" ma potwierdzony string-equal tekst wlasciciela (716/716 znakow) — Final Control w toku.**
+- **I2 (11 ulepszen, OSTATNI batch tej kategorii): Operator+Evaluator PASS, zero zarzutow — "Tarasy uprawne" ma potwierdzony string-equal tekst wlasciciela (716/716 znakow) — ale Final Control znalazl DRUGI, dotad nieujawniony fixture-hardcode w entity-card-historia-section-test.cjs sekcja [1] (linia ~162, twarde `historiaExists===false` dla tarasy, poza zakresem poprzedniego fixture-fix). Osobny, maly temat naprawczy dispatchowany: `P-KARTY-HISTORIA-TEST-TARASY-HARDCODE-Q1`. I2 czeka na integracje tego fixa (merytorycznie juz PASS, blokada czysto proceduralna/testowa).**
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
