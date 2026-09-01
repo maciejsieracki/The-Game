@@ -12300,7 +12300,18 @@ async function boot(): Promise<void> {
       // stacking context. 600 clears .civ-menu/.civ-pause/.cm-toast -- checked
       // against every z-index in src/ (nearest fullscreen overlays above sit
       // at 650+, outside this particular collision).
-      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320');
+      // R-SPICHLERZ-AUTO-ZYWIENIE-TOAST-ZINDEX-Q1: panel imperium (.civ-emp-panel
+      // z-index 450) ma zawsze aktywny backdrop (.civ-emp-backdrop z-index 449)
+      // gdy jest otwarty -- domyślne 320 renderuje się POD tym backdropem,
+      // przyciemniając toast ~35% (rgba(0,0,0,.35)), potwierdzone elementFromPoint().
+      // 600 (ta sama wartość co dla menu głównego -- panel imperium i menu główne
+      // nie mogą być otwarte jednocześnie: menu główne to ekran startowy/pauzy,
+      // panel imperium wyłącznie w trakcie rozgrywki) bije backdrop 449.
+      // / EN: while the empire panel is mounted (.civ-emp-panel z-index 450), its
+      // backdrop (.civ-emp-backdrop z-index 449) is always active -- the default
+      // 320 renders underneath it, dimming the toast ~35%. 600 (same value as the
+      // main-menu branch -- the two panels cannot be open at once) clears it.
+      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : ((isMainMenuOpen() || isEmpireDetailPanelOpen()) ? '600' : '320');
       hintOverrideTimer = setTimeout(() => {
         hintToast.style.display = 'none';
         hintOverrideTimer = null;
