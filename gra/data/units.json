@@ -822,7 +822,8 @@
     "missileAttack": 0,
     "fieldPower": 62,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Triarii byli najstarszymi i najbardziej doświadczonymi żołnierzami republikańskiej legii rzymskiej, weteranami wielu kampanii, którzy w szyku manipularnym stanowili trzecią, ostatnią linię obrony. Uzbrojeni w długie włócznie hasta zamiast typowego dla lżejszej piechoty gladiusa, klękali na jedno kolano w oczekiwaniu na sygnał do wejścia do walki, oszczędzając siły do decydującego momentu bitwy. Rzymskie powiedzenie „res ad triarios venit” („sprawa dotarła do triariów”) oznaczało sytuację ostateczną, w której zawiodły już wszystkie inne środki i jedynie doświadczenie weteranów mogło odwrócić losy starcia. Ich obecność za liniami hastati i princeps działała też psychologicznie na młodszych żołnierzy, świadomych, że za ich plecami stoi niezawodna rezerwa. Formacja triariów przetrwała reformy Mariusza dopiero pod koniec II wieku p.n.e., gdy ujednolicona legia kohortowa zastąpiła dawny podział wiekowy rzymskiej piechoty."
   },
   {
     "Jednostka": "Jeździec chiński",
@@ -880,7 +881,8 @@
     "missileAttack": 0,
     "fieldPower": 45.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Konnica jako regularna formacja bojowa pojawiła się w Chinach później niż na stepach Azji Wewnętrznej, dokąd chińscy władcy wysyłali poselstwa właśnie po to, by przejąć umiejętności jeździeckie koczowniczych sąsiadów. Przełomem była reforma króla Wu Linga z państwa Zhao z IV wieku p.n.e., który wbrew sprzeciwowi konserwatywnych dworzan nakazał swoim wojownikom przyjąć strój koczowników stepowych — spodnie zamiast szat — aby móc w ogóle dosiąść konia i strzelać z łuku w jeździe. Chińska jazda epoki Walczących Królestw i wczesnych dynastii łączyła zwiadowczą szybkość z ostrzałem łuczniczym, uzupełniając ciężkie rydwany, które wcześniej dominowały na chińskich polach bitew. Hodowla koni bojowych stała się sprawą państwową, a sprowadzanie rasowych wierzchowców z zachodnich stepów, w tym legendarnych „niebiańskich koni” Fergany, traktowano jako priorytet strategiczny. Z czasem konnica stała się nieodzownym narzędziem obrony chińskiej granicy północnej przed najazdami koczowników."
   },
   {
     "Jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
@@ -938,7 +940,8 @@
     "missileAttack": 0,
     "fieldPower": 61,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Hu Ben, określani czasem jako „nieustraszeni niczym tygrysy”, byli elitarną formacją gwardii przybocznej cesarzy chińskich dynastii Han, powołaną do bezpośredniej ochrony władcy i najważniejszych obiektów stolicy. Nazwa nawiązywała do tygrysa jako symbolu odwagi i drapieżnej siły w chińskiej symbolice wojskowej, a przynależność do gwardii wymagała nie tylko sprawności bojowej, lecz również nieposzlakowanej lojalności wobec dworu cesarskiego. Żołnierze tej formacji byli starannie dobierani spośród najlepszych wojowników imperium i wyposażani w uzbrojenie najwyższej jakości, niedostępne przeciętnemu piechurowi regularnej armii. Gwardia tygrysia pełniła również funkcję ceremonialną podczas dworskich uroczystości, będąc widocznym symbolem potęgi i porządku dynastii. Podobne elitarne oddziały noszące imiona drapieżnych zwierząt powracały w chińskiej tradycji wojskowej przez kolejne stulecia jako wyraz szczególnego zaufania władcy."
   },
   {
     "Jednostka": "Impi",
@@ -996,7 +999,8 @@
     "missileAttack": 0,
     "fieldPower": 38.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Impi to zuluskie określenie oddziału zbrojnego, fundamentu systemu wojskowego zbudowanego przez króla Shakę na początku XIX wieku, który podzielił młodych mężczyzn swojego ludu na regimenty według wieku, zakwaterowane we wspólnych kraalach wojskowych zamiast rodzimych wiosek. Shaka zastąpił tradycyjny, długi oszczep rzucany z dystansu krótką, ciężką włócznią kłującą iklwa, zmuszając wojowników do walki wręcz i budując w ten sposób znacznie bardziej agresywny i zdyscyplinowany styl prowadzenia bitew. Charakterystyczna taktyka „rogów bawołu” polegała na okrążaniu przeciwnika przez szybkie skrzydła, podczas gdy centralna, najsilniejsza część impi wiązała wroga walką frontalną. System ten pozwolił niewielkiemu wcześniej ludowi Zulu w ciągu kilkunastu lat podbić lub podporządkować sobie sąsiednie ludy południowej Afryki, tworząc rozległe królestwo Zulu. Dyscyplina, szybkość marszu — impi potrafiły pokonywać dziesiątki kilometrów dziennie boso — oraz bezwzględne posłuszeństwo wobec dowódców uczyniły z tej formacji jedną z najgroźniejszych sił zbrojnych ówczesnej Afryki Południowej."
   },
   {
     "Jednostka": "Oszczepnik Zulu (Izijula)",
@@ -1054,7 +1058,8 @@
     "missileAttack": 4,
     "fieldPower": 16,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Izijula to zuluskie określenie lekkiego oszczepu miotanego, podstawowej broni dystansowej ludów południowoafrykańskich na długo przed reformami wojskowymi króla Shaki. Wojownicy uzbrojeni w kilka takich oszczepów potrafili razić przeciwnika z odległości kilkunastu metrów, zanim doszło do starcia wręcz, co czyniło ich cenną osłoną poprzedzającą główne natarcie regimentu. Po objęciu władzy Shaka celowo ograniczył znaczenie broni miotanej na rzecz krótkiej włóczni kłującej, uznając rzucanie oszczepów za marnotrawstwo, które pozbawiało wojownika broni już w pierwszej fazie starcia, jednak tradycyjni oszczepnicy nadal odgrywali rolę w harcowaniu i osłabianiu szyku wroga przed uderzeniem impi. Umiejętność celnego rzutu izijulą ćwiczono od dzieciństwa, często w formie polowań i zawodów między młodzieżą z sąsiednich kraalów. Ta starsza tradycja walki dystansowej pozostała żywa w pamięci ludu Zulu nawet po tym, jak włócznia kłująca zdominowała pole bitwy."
   },
   {
     "Jednostka": "uThulwana (Białe Tarcze)",
@@ -1112,7 +1117,8 @@
     "missileAttack": 0,
     "fieldPower": 61,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "uThulwana był jednym z najsłynniejszych regimentów królestwa Zulu, sformowanym w latach 70. XIX wieku za panowania króla Cetshwayo i wyróżniającym się charakterystycznymi tarczami w przeważającej mierze białej barwy, od których wzięła się jego popularna nazwa. Jako pułk starszych, żonatych już wojowników cieszył się szczególnym prestiżem i był uważany za jeden z najbardziej zaprawionych w boju oddziałów królewskich, często wystawiany w newralgicznych momentach kampanii. Regiment ten wziął udział w decydującej bitwie pod Isandlwaną w styczniu 1879 roku, gdzie siły Zulu zadały armii brytyjskiej jedną z najdotkliwszych klęsk kolonialnych XIX wieku. Żołnierze uThulwany walczyli również w kolejnych starciach wojny anglo-zuluskiej, w tym pod Kambulą, gdzie brytyjska przewaga ogniowa okazała się już nie do pokonania nawet dla tak doświadczonych regimentów. Los uThulwany odzwierciedlał losy całego królestwa Zulu — od szczytu potęgi militarnej po klęskę w starciu z nowoczesną armią kolonialną."
   },
   {
     "Jednostka": "Wojownik z maczugą (Chaska)",
@@ -1170,7 +1176,8 @@
     "missileAttack": 0,
     "fieldPower": 32,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Podstawową bronią obuchową andyjskich wojowników w epoce przedhiszpańskiej była maczuga zwana champi lub macana, drewniana lub kamienna pałka, często zakończona gwiaździstą głowicą z kamienia bądź metalu, zdolną skruszyć wrogi hełm i kości pod skórzaną osłoną. W wojskach Imperium Inków tego typu uzbrojenie noszyli zwykli poborowi wywodzący się z podbitych ludów, mobilizowani w ramach systemu mit'a nakładającego na wspólnoty obowiązek służby wojskowej na rzecz władcy. Broń obuchowa sprawdzała się szczególnie dobrze w górzystym, trudnym terenie Andów, gdzie starcia toczyły się często w bliskim kontakcie na wąskich górskich szlakach i tarasowatych zboczach. W przeciwieństwie do broni siecznej maczuga nie wymagała ostrzenia ani kosztownej obróbki metalu, co czyniło ją dostępną nawet dla najsłabiej wyposażonych oddziałów pomocniczych imperium. Tego rodzaju prosta, uderzeniowa broń stanowiła trzon andyjskiej piechoty na długo przed hiszpańskim podbojem i pozostała w użyciu równolegle z bardziej wyspecjalizowanym uzbrojeniem elitarnych jednostek."
   },
   {
     "Jednostka": "Wojownik z toporem",
@@ -1228,7 +1235,8 @@
     "missileAttack": 0,
     "fieldPower": 32.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Topór bojowy, w językach andyjskich określany często jako waman champi, łączył zaletę broni obuchowej z tnącą krawędzią ostrza, zwykle wykonanego z brązu lub miedzi osadzonej na drewnianym trzonku. W armii Inków topory trafiały w ręce zarówno regularnych żołnierzy, jak i oddziałów wystawianych przez podbite ludy prowincji Tawantinsuyu, których uzbrojenie i taktykę władcy z Cuzco często pozostawiali w dużej mierze nietknięte, dopóki wypełniały obowiązek służby wojskowej. Metalowe ostrze pozwalało zadawać rany cięte niedostępne dla prostej maczugi, jednocześnie zachowując siłę druzgocącego uderzenia charakterystyczną dla broni obuchowej regionu. Produkcja toporów wymagała dostępu do wytopu metalu, co czyniło je nieco droższym i bardziej prestiżowym uzbrojeniem niż powszechnie dostępna kamienna pałka. W andyjskich górach, gdzie walka toczyła się często na wąskich przełęczach i fortyfikowanych tarasach, topór sprawdzał się jako wszechstronna broń zarówno ataku, jak i przełamywania wrogiej obrony."
   },
   {
     "Jednostka": "Procarz (Huaracoc)",
@@ -1286,7 +1294,8 @@
     "missileAttack": 4,
     "fieldPower": 12,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Huaraca, andyjska proca pleciona z wełny lamy lub alpaki, była jedną z najbardziej rozpoznawalnych broni ludów Andów na długo przed powstaniem Imperium Inków, używaną zarówno do pasterskiej ochrony stad przed drapieżnikami, jak i w konfliktach międzyplemiennych. Wprawny procarz — huaracoc — potrafił razić przeciwnika kamiennym lub gliniano-wypalanym pociskiem z siłą zdolną ogłuszyć, a nawet zabić nieosłoniętego wojownika z odległości kilkudziesięciu metrów. W wojskach inkaskich procarze rekrutowani z ludów górskich i wyżynnych stanowili cenioną lekką piechotę dystansową, poprzedzającą główne natarcie i osłabiającą szyk wroga gradem pocisków. Umiejętność celnego rzutu z procy ćwiczono od najmłodszych lat podczas wypasu stad, dzięki czemu całe wspólnoty pasterskie dostarczały imperium gotowych, doświadczonych strzelców bez potrzeby kosztownego szkolenia wojskowego. Kolorowe, misternie tkane huaraki pełniły też funkcję odświętnego stroju i przedmiotu prestiżu, noszonego przez mężczyzn niezależnie od tego, czy trafiały akurat na pole bitwy."
   },
   {
     "Jednostka": "Oszczepnik (Estólica)",
@@ -1344,7 +1353,8 @@
     "missileAttack": 4,
     "fieldPower": 12,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Estólica, znana w regionie andyjskim również jako wyrzutnia typu atlatl, to drewniane narzędzie wydłużające ramię miotacza i pozwalające cisnąć lekki oszczep z siłą i zasięgiem niedostępnym przy zwykłym rzucie ręką. Broń ta była używana przez ludy andyjskie i przedandyjskie na długo przed powstaniem Imperium Inków, o czym świadczą znaleziska archeologiczne z wybrzeża i wyżyn dzisiejszego Peru oraz Kolumbii sięgające czasów przedceramicznych. Wyrzutnia składała się zwykle z krótkiego drzewca z zaczepem na tylny koniec pocisku oraz czasem z uchwytami na palce, co pozwalało utrzymać pełną kontrolę nad kierunkiem rzutu mimo dodanej siły. Oszczepnicy uzbrojeni w estólicę stanowili wartościowe uzupełnienie andyjskiej piechoty dystansowej, zdolne razić przeciwnika zanim ten zbliżył się na dystans walki wręcz, szczególnie skuteczne w otwartym terenie wybrzeża i wyżyn. Mimo że proca i łuk z czasem zyskały większą popularność w niektórych regionach, estólica przetrwała jako broń łowiecka i wojenna aż do czasów podboju hiszpańskiego."
   },
   {
     "Jednostka": "Królewska Gwardia",
@@ -1402,7 +1412,8 @@
     "missileAttack": 0,
     "fieldPower": 62,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Gwardia przyboczna władcy Inków rekrutowała się przede wszystkim spośród orejonów — arystokracji Cuzco noszącej ciężkie ozdoby uszu, od których Hiszpanie ukuli tę nazwę — oraz spośród najbliższych krewnych i zaufanych z panującego rodu Inków. Członkowie gwardii otrzymywali najlepsze dostępne uzbrojenie imperium, w tym metalowe topory, maczugi z brązu i tarcze, oraz przechodzili staranne przygotowanie bojowe niedostępne zwykłym poborowym z podbitych prowincji. Ich zadaniem była nie tylko bezpośrednia ochrona osoby Sapa Inki podczas pokoju i wojny, lecz również pilnowanie porządku w stolicy i eskortowanie władcy w podróżach po rozległym imperium Tawantinsuyu. Prestiż służby w gwardii królewskiej czynił z niej cel aspiracji młodych arystokratów, dla których była ona drogą do wysokich stanowisk administracyjnych i wojskowych. W czasie wojny domowej między Atahualpą a Huascarem oraz później, podczas hiszpańskiego podboju, to właśnie elitarna gwardia stanowiła ostatnią linię obrony słabnącej władzy inkaskiej."
   },
   {
     "Jednostka": "Rydwan konny",
@@ -1460,7 +1471,8 @@
     "missileAttack": 0,
     "fieldPower": 54,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Lekki rydwan ciągnięty przez konie, w odróżnieniu od powolnych, ciężkich wozów zaprzężonych w woły, pojawił się w epoce brązu na Bliskim Wschodzie i szybko rozprzestrzenił się wśród cywilizacji Egiptu, Mezopotamii, Anatolii oraz Grecji mykeńskiej jako symbol prestiżu i decydujące narzędzie na polu bitwy. Dwuosobowa załoga — woźnica oraz łucznik lub włócznik — pozwalała łączyć szybkość jazdy ze skutecznym ostrzałem, umożliwiając manewrowanie wokół szyków piechoty i uderzanie w ich najsłabsze punkty. Budowa rydwanu wymagała zaawansowanej stolarki, kół ze szprychami zamiast pełnych tarcz drewnianych oraz dobrze wyszkolonych koni, co czyniło tę broń dostępną wyłącznie dla zamożnych władców i arystokracji wojskowej. Wielkie starcia epoki brązu, takie jak bitwa pod Kadesz między Egiptem a Hetytami, rozstrzygały się w dużej mierze dzięki masowemu użyciu setek rydwanów po obu stronach. Wraz z upowszechnieniem się jazdy wierzchem w kolejnych stuleciach rydwan bojowy stopniowo tracił znaczenie militarne, pozostając jednak długo symbolem władzy i statusu w ceremoniale wielu kultur."
   },
   {
     "Jednostka": "Łucznik egipski",
@@ -1518,7 +1530,8 @@
     "missileAttack": 6,
     "fieldPower": 15,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Łucznictwo było jedną z najstarszych i najbardziej cenionych umiejętności wojskowych starożytnego Egiptu, praktykowaną już w okresie predynastycznym, na długo przed zjednoczeniem Górnego i Dolnego Egiptu pod władzą pierwszych faraonów. Wczesni egipscy łucznicy posługiwali się prostym łukiem drewnianym oraz strzałami z krzemiennymi lub kościanymi grotami, skutecznymi zarówno na polowaniu wzdłuż żyznych brzegów Nilu, jak i w starciach z sąsiednimi ludami pustyni oraz Nubii. Reliefy i malowidła grobowe z tego okresu przedstawiają oddziały łuczników maszerujące w zwartych szykach, co świadczy o wczesnym docenieniu wartości zorganizowanej siły ognia na polu bitwy. Umiejętność strzelania z łuku uchodziła w egipskiej kulturze za cnotę godną nawet samego władcy, a wizerunki faraonów jako łuczników miały podkreślać ich siłę i boskie namaszczenie. Ta wczesna tradycja łucznicza stała się fundamentem, na którym w kolejnych epokach Egipt zbudował jedne z najskuteczniejszych formacji strzeleckich starożytnego świata."
   },
   {
     "Jednostka": "Rydwan egipski",
