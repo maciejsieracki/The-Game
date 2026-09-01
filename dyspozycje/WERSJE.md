@@ -13,6 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 617e3679 - 2026-09-01 19:45 UTC - FALA 331: koszt PW traktatow rosnie z czasem trwania (NAP+trybut) + karta technologii bez zbednego opisu Budynki/Jednostki
+
+|- md5 (pełne): 617e367918387d2490b5c95551980cc4 · stempel: ROBOCZA · label 617e3679 · źródłowy commit integracji: `329730f4`
+|- **`R-DYPLO-KOSZT-CZAS-TRWANIA-TRAKTATU-Q1`** (`4c2a8d05`, `ef94600f`) — koszt PW traktatów ze stałą bazą i selektorem czasu trwania w UI (pakt o nieagresji, żądanie/oferta trybutu) rośnie geometrycznie z wybraną długością: 10 tur ×1, 15 tur ×2, 20 tur ×4, bezterminowy ×8. Jeden wspólny helper `treatyDurationPnMultiplier` czytany przez oba choke-pointy (silnik akceptacji + panel UI „PUNKTY WYMIANY"), zapobiegając rozjazdowi UI/silnik. Runda 1 objęła NAP; Evaluator złapał że trybut (żądanie i oferta) też ma selektor czasu w UI i nie był objęty — Obrona rozszerzyła, zweryfikowała że to bezpieczna poprawka (dotyczy wyłącznie wyświetlanej wartości, nie realnej bramki akceptacji trybutu opartej na złocie/turę). Handel surowcami cykliczny i traktat pokojowy świadomie poza zakresem (inny/brak mechanizmu czasu).
+|- **`R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1`** (`3ada37f8`, `b16235f3`, `329730f4`) — usunięty zbędny opisowy tekst po prawej stronie wierszy „Budynki"/„Jednostki" na karcie technologii (zaśmiecał kartę). Runda 1 ujawniła efekt uboczny: pusty tekst zredukował przycisk-link do 0px, klik przestał otwierać kartę budynku/jednostki — naprawione w rundzie 2 (klikalność całego wiersza), z zawężeniem do wierszy z pustym tekstem po zarzucie Evaluatora (żeby nie zmienić klikalności w innych, niezmienianych sekcjach karty). Final Control odnotował nieszkodliwy efekt uboczny w sekcji „Ulepszenia terenu" (też od zawsze miała pusty tekst, teraz też klikalna) — zaakceptowany przez właściciela.
+|- Oba tematy: pełny cykl Operator→Evaluator→Obrona→Final Control przez Workflow. `tsc --noEmit` 0 błędów. 5 bramek referencyjnych + testy tematów (diplomacy-acceptance-points-test 304/304, diplomacy-proposal-test 188/188, diplomacy-bilans-unifikacja-test 27/27, diplomacy-fairness-gate-package-q2-test 24/24, diplomacy-border-march-test 43/43, entity-card-cross-links-nested-overlay-test 24/24, entity-card-contract-test 75/75, entity-card-action-buttons-real-render-test 31/31, tech-unlock-units-test 41/41) bez regresu.
+|- Bundle: 881 modułów, `Gra-ROBOCZA.html` 69,0 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden z tematów nie dotyka `units.json`/`battleScene`.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
+|- **Odstępstwo techniczne (jak w FALACH 324-330):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 0ed50668 - 2026-09-01 18:52 UTC - FALA 330: PILNE — cofnięcie regresu, ręczne budowanie/wycinka znów działa wszędzie w terytorium
 
 |- md5 (pełne): 0ed50668628ae10576f3de069cf2930d · stempel: ROBOCZA · label 0ed50668 · źródłowy commit integracji: `f88cc1a4`
@@ -25,7 +37,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
 |- **Odstępstwo techniczne (jak w FALACH 324-329):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 617e3679, FALA 331)
 
 ## ROBOCZA b2a7e2cd - 2026-08-31 18:59 UTC - FALA 329: naprawa wojen wymuszonych (barbarzyńcy+pre_contact+gracz jako cel), E2E dowód muzyki era-transition, 4 tematy porządkowe
 
