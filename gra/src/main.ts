@@ -15938,8 +15938,29 @@ async function boot(): Promise<void> {
         orderMultMap,
         empireEpochForOwner,
         unlockedTechSetForOwner,
-        undefined,
-        undefined,
+        tradeRouteBuildingBonusByCity,
+        (() => {
+          // R-SKARBIEC-HANDEL-PODGLAD-ZERO-Q1: podglad HUD musi liczyc dochod z tras
+          // TYM SAMYM wzorcem co koniec tury (main.ts ~26238-26257) - czyste liczenie
+          // z aktualnego stanu tradeRoutes, bez mutacji stanu gry.
+          const tradeIncomeParamsPreview = loadTradeRouteIncomeParams(
+            data.econParams as unknown as Parameters<typeof loadTradeRouteIncomeParams>[0],
+            _menuDifficulty,
+          );
+          const tradeIncomeByCityPreview = computeTradeRouteIncomeByCity(
+            tradeRoutes, tradeIncomeParamsPreview, wonderTradeRouteBonusForOwner,
+          );
+          const seaTradeBonusIncomeByCityPreview = computeSeaTradeBonusIncomeByCity(
+            computeSeaTradeRouteCountByCity(tradeRoutes),
+          );
+          for (const [cityIdSeaPreview, bonusSeaPreview] of seaTradeBonusIncomeByCityPreview) {
+            tradeIncomeByCityPreview.set(
+              cityIdSeaPreview,
+              (tradeIncomeByCityPreview.get(cityIdSeaPreview) ?? 0) + bonusSeaPreview,
+            );
+          }
+          return tradeIncomeByCityPreview;
+        })(),
         buildAllTerritoryNodes(),
         undefined,
         buildWonderCityYieldsByOwnerMap([0]),
