@@ -3360,3 +3360,40 @@ niezdecyzyjnego backlogu.
 | R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1 | 2026-09-01 | Wlasciciel, zrzut karty technologii: wiersze Budynki (Stolarnia, Palisada) i Jednostki (Taran) maja zbedny opisowy tekst po prawej ("Epoka Kamienia · Drewno w magazynie panstwa...", "Obleznicza") - zasmieca karte, kto chce szczegolow wejdzie w budynek/jednostke. Doprecyzowanie: usunac w OBU sekcjach. | **ZINTEGROWANE do `main` (3ada37f8, b16235f3, 329730f4) + ZDEPLOYOWANE FALA 331** | Runda 1: usuniecie `value`/`trailing` w `technologyAdapter.ts`. Runda 1 wynik: DECISION_REQUIRED — puste `value` zredukowalo przycisk-link do 0px, klik w wiersz przestal otwierac karte. ECHO: rozszerz allowlist o `renderer.ts`, napraw klikalnosc calego wiersza. Runda 2: Operator dodal fallback klikalnosci na poziomie wiersza — Evaluator zlapal ze byl WLACZONY BEZWARUNKOWO dla kazdego wiersza z `linkTo` (nie tylko pustych), poszerzajac klikalnosc tez w innych sekcjach (Kolejne technologie, karta jednostki). Obrona PRZYJELA, zawezila do `row.value===''`, odtworzyla oba scenariusze z zarzutu i pokazala ze juz nie otwieraja karty. Final Control: PASS z jedna WLASNA notatka — sekcja „Ulepszenia terenu" (ktora od zawsze mala puste `value`, niezwiazane z tematem) tez stala sie klikalna jako efekt uboczny tego samego warunku; wlasciciel: „Zaakceptuj jako nieszkodliwy bonus". Wszystkie bramki tematu (entity-card-cross-links-nested-overlay-test 24/24, entity-card-contract-test 75/75, entity-card-action-buttons-real-render-test 31/31, tech-unlock-units-test 41/41) + 5 referencyjnych + tsc 0 bledow zielone po integracji. |
 | P-AI-PRZYCISK-BUDUJ-REGRES-OBYWATELE-Q1 | 2026-09-01 | **PILNE — gra zepsuta.** Wlasciciel: naprawa `R-AI-PRZYCISK-BUDUJ-TYLKO-OBYWATELE-Q1` (FALA 329) blednie zastosowala bramke „tylko heksy z obywatelami" do CALEGO recznego przycisku buduj — takze surowce (delegowana jednostka robocza, nie wymagaja obywatela) i wycinke lasu. „To jest totalny regres." **Rozstrzygniecie wlasciciela:** bramka „tylko obywatele" ma istniec WYLACZNIE w automacie AI (cywilizacji i automatu gracza) — reczna akcja gracza NIGDY nie ma zadnego ograniczenia obywatelami, dla zadnego typu ulepszenia. | **ZINTEGROWANE do `main` (5b8cfbb7) + ZDEPLOYOWANE FALA 330 (PILNIE)** | Pelny cykl Operator->Evaluator->Obrona->Final Control przez Workflow. Cofnieto wywolanie bramki w `applyBuildRequest`, usunieto martwa funkcje `isCitizenOrDepositHexForBuild` (zero trafien grepem). Automat AI potwierdzony NIETKNIETY identycznymi liczbami (ai4-popyt-obywatele-test 50/50, ai2-heks-po-heksie-test 35/35 — te same co przed regresem). Przebudowany test `build-request-obywatele-live-test.cjs` 16/16 dowodzi ze budowa surowcowa i wycinka BEZ obywateli dzialaja. Evaluator 2 zarzuty proceduralne (rozszerzenie haka debug ponad doslowna allowlist, konieczne do realnej weryfikacji wycinki) — Final Control oba ODDAL (czysto testowe, zero mutacji logiki, nieosiagalne dla gracza). tsc 0 bledow, 5 bramek bez regresu. |
 | R-REKRUTACJA-PODGLAD-SUROWCOW-Q1 | 2026-09-01 | Wlasciciel: panel budowy budynkow ma pasek podgladu surowcow, panel rekrutacji jednostek nie ma - "powinny byc tylko informacje o surowcach, ktore biora udzial w rekrutacji i utrzymaniu". | **W TOKU — dispatch zapisany, Workflow uruchomiony** | Dispatch: `dyspozycje/autobot/runs/R-REKRUTACJA-PODGLAD-SUROWCOW-Q1/00-dispatch.md`. Recon: `appendRecruitMilitaryResourceStrip` (cityPanel.ts ~5950-5972) ma zahardkodowana liste tylko Braz/Zelazo per epoka i JAWNIE nic nie renderuje dla epoki Kamien (`if (!key) return`) - dokladnie to na zrzucie. Dodatkowo zalozenie nieaktualne: Drewno uczestniczy w kosztach/utrzymaniu calej epoki Kamien i czesci Brazu (Procarz i in.), pomijane. Gotowe cegielki `unitStockCost`/`unitResourceUpkeep` do ponownego uzycia. |
+
+## OTWARTE 2026-09-01 — R-KARTY-HISTORIA-Q1: audyt tresci i rys historyczny wszystkich kart (seria ~17 tematow)
+
+Wlasciciel, zrzut karty "Tarasy uprawne": karta pokazuje surowy tekst deweloperski
+(nazwa tematu C-TARASY-Q1, imie/data decyzji, uzasadnienie implementacyjne z
+nazwami funkcji/plikow kodu) wprost graczowi. Zlecenie: (1) gruntowny audyt i
+czyszczenie WSZYSTKICH kart (budynki, jednostki, technologie, ulepszenia terenu,
+cuda) z niepotrzebnych/deweloperskich informacji, (2) dopisanie do KAZDEJ pozycji
+rysu historycznego (krotki tekst fabularny/edukacyjny, wzor Civilopedii z serii
+Civilization). Przyklady tonu zaakceptowane przez wlasciciela (Rolnictwo, Tarasy
+uprawne) - ~4-6 zdan, co/gdzie/kiedy/po co, bez suchych faktow encyklopedycznych
+i bez odniesien do mechaniki gry. Po fazie 1 (karty): faza 2 aktualizacja CivPedii
+zeby uwzgledniala nowe opisy, faza 3 przeglad wszystkich tooltipow/opisow w grze
+(duzo sie zmienilo). Wlasciciel: "do kazdej karty osobny operator, autobot
+workflow, dzialaj w petli az zalatwisz temat". Doprecyzowanie rozmiaru batcha:
+"wieksze batche ~10-15 kart na temat" (~15-18 tematow zamiast doslownie 189).
+
+Recon: skala 189 kart mechanicznych (41 budynkow, 75 jednostek, 32 technologie,
+22 ulepszenia terenu, 19 cudow - cuda to OSOBNY system renderowania poza wspolnym
+kontraktem kart entityCards/). Wyciek potwierdzony: ulepszenia terenu w ogole nie
+filtruja (`improvementAdapter.ts` renderuje `uwagi`/`cywilizacje_uwaga`/`tech_uwaga`
+1:1), budynki/technologie maja filtr `playerFacingNote()` (cityPanel.ts:6892) ale
+dziurawy (nie lapie stylu "C-TARASY-Q1 Maciej data:..."). Pole "Warunek" ulepszen
+ma tekst dev wtracony w srodek tresci mechanicznej - wymaga przepisania per-encja,
+nie da sie naprawic kodem. Brak dzis mechanizmu na tresc fabularna w kartach.
+
+Plan (17 tematow): T0 infrastruktura (mechanizm sekcji "Rys historyczny" w 4
+adapterach + trwale usuniecie wycieku dev-tekstu z kart) -> potem batche tresci:
+Budynki 3x (~14 encji), Technologie 3x (~11), Ulepszenia terenu 2x (~11, w tym
+przepisanie "Warunek"), Cuda 2x (~10, wlasna infrastruktura w ramach batcha),
+Jednostki 6x (~13). Kazdy batch pisze rys historyczny + usuwa lokalny dev-tekst
+dla swoich encji. Tematy dotykajace tego samego pliku JSON dispatchowane
+SEKWENCYJNIE (nie w tej samej fali).
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-KARTY-HISTORIA-INFRA-Q1 | 2026-09-01 | Temat 1/17: mechanizm sekcji "Rys historyczny" w types.ts/renderer.ts + 4 adaptery (building/technology/unit/improvement), trwale usuniecie renderowania `uwagi`/`cywilizacje_uwaga`/`tech_uwaga` na kartach (playerFacingNote() zostaje nietknieta dla swoich 3 innych wywolan w cityPanel.ts, poza zakresem). Zero tresci historycznej w tej rundzie - tylko mechanizm. | **W TOKU — dispatch zapisany, Workflow uruchomiony, blokuje kolejne 16 tematow** | Dispatch: `dyspozycje/autobot/runs/R-KARTY-HISTORIA-INFRA-Q1/00-dispatch.md`. |
