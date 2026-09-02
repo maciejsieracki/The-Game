@@ -13,6 +13,21 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA d6476a96 - 2026-09-02 01:05 UTC - FALA 333: rys historyczny jednostek dokonczony (U3-U6) — kategoria "jednostki" KOMPLETNA 75/75, wraz z budynkami/technologiami/ulepszeniami terenu WSZYSTKIE kategorie encji poza cudami maja pelna tresc historyczna
+
+|- md5 (pełne): d6476a9633bfe2c6e9561aeb6cca51a6 · stempel: ROBOCZA · label d6476a96 · źródłowy commit integracji: `44184d41`
+|- **`R-KARTY-HISTORIA-U3-Q1`** (`a48bdb32`) — 13 jednostek: Egipt (Rydwan egipski, Wojownik z khopesh, Medżaj, Łucznik nubijski), Sumer (Łucznik/Rydwan/Włócznik sumeryjski, Gwardia Królewska Sumeru), Mykeny (Wojownik/Rydwan mykeński), Wojownik Sherden (Ludy Morza), Shang (Halabardnik/Rydwan Shang). 39/75.
+|- **`R-KARTY-HISTORIA-U4-Q1`** (`c512e2fa`) — 13 jednostek: Łucznik akadyjski, Celtowie (Gaesatae, Soldurii, Rydwan celtycki), Germanie (Wojownik/Berserker germański), 4 machiny oblężnicze (Taran, Taran okuty, Katapulta, Wieża oblężnicza — każda odrębny tekst wg typu uzbrojenia), Ludy Morza/wczesnożelazna Anatolia-Egea (Wojownik tyrreński, Wojownik szekelesz), Konnica lancowa asyryjska. 52/75.
+|- **`R-KARTY-HISTORIA-U5-Q1`** (`310fb69a`) — 13 jednostek: Asyria (Konnica łucznicza, Łucznik), Słowianie (Drużynnik, Jeździec z oszczepami), dolina Indusu/Harappa (Strażnik bram, Piechota, Garnizon — świadomie ostrożny ton wobec nierozszyfrowanego pisma), Hetyci (Rydwan Kapadokijski, Piechota, Gwardia), Babilonia w dwóch okresach (Gwardia Ishtar, Wojownik babiloński, Piechota neobabilońska). 65/75.
+|- **`R-KARTY-HISTORIA-U6-Q1`** (`e83f25eb`, OSTATNI batch) — 10 jednostek: Fenicja/Tyr (Tyrski miecznik, Wojownik fenicki, Gwardia Tyreńska), Thorakites/Evocati (hellenistyczna vs rzymska formacja, odrębne), Zulu/Inka (iButho z iklwa, Gwardzista z champi), Wojownik z żelaznym khopesh, Mur tarcz Sargonid (opisany ogólnie, bez rozstrzygania nieudokumentowanego rozjazdu kultura/nazwa), Miecznik galijski. **75/75 — KATEGORIA KOMPLETNA.**
+|- **Kamień milowy projektu `R-KARTY-HISTORIA-Q1`:** wraz z wcześniej ukończonymi kategoriami budynki (41/41, FALA 332 i wcześniej), technologie (32/32), ulepszenia terenu (22/22) — WSZYSTKIE kategorie encji poza cudami (wonders) mają teraz pełny rys historyczny. Cuda renderują się osobnym systemem poza `entityCards/` i wymagają nowej infrastruktury — osobny, przyszły temat.
+|- Wszystkie 4 tematy: pełny cykl Operator→Evaluator(→Obrona)→Final Control przez Workflow, każdy z niezależną, żywą weryfikacją w headless Chromium na INNEJ jednostce niż poprzednia rola. `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) + `entity-card-historia-section-test.cjs` (31/31) bez regresu po każdej integracji. Zero duplikatów treści potwierdzone na WSZYSTKICH 75 jednostkach łącznie.
+|- Bundle: 881 modułów (bez zmian liczby — zmiany treści danych), `Gra-ROBOCZA.html` 69,2 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — pole `Historia` jest czysto opisowe, nie dotyka `battleScene.ts`/statystyk bojowych, karty encji nie renderują się w scenie oblężenia.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
+|- **Odstępstwo techniczne (jak w FALACH 324-332):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 64515106 - 2026-09-02 00:35 UTC - FALA 332: Auto-Żywienie toast, limit miast po podboju silą, "brak: Targowisko", handel w skarbcu HUD, ambience tylko zwierzęta, relacje AI-AI w audiencji, karty historyczne (rys historyczny) — budynki+technologie+ulepszenia terenu kompletne, jednostki 52/75
 
 |- md5 (pełne): 645151069e7cceb1076eca8c2f29d6df · stempel: ROBOCZA · label 64515106 · źródłowy commit integracji: `706a85dd`
@@ -28,7 +43,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
 |- **Odstępstwo techniczne (jak w FALACH 324-331):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ d6476a96, FALA 333)
 
 ## ROBOCZA 617e3679 - 2026-09-01 19:45 UTC - FALA 331: koszt PW traktatow rosnie z czasem trwania (NAP+trybut) + karta technologii bez zbednego opisu Budynki/Jednostki
 
