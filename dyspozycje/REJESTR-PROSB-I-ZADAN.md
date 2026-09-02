@@ -3416,7 +3416,36 @@ Rownolegle, ODZYSKANIE 2 tematow zgubionych w tej sesji (dispatchowane
 wczesniej, brak worktree/branchy/raportow - Workflow prawdopodobnie nigdy
 faktycznie nie wystartowal albo zginal przed/podczas kompaktowania sesji):
 `R-AMBIENT-NATURA-TYLKO-ZWIERZETA-Q1` i `R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1`,
-ponownie dispatchowane przez Workflow (`wf_8ada6d10-c99`), w toku.
+ponownie dispatchowane przez Workflow (`wf_8ada6d10-c99`).
+
+**R-AMBIENT-NATURA-TYLKO-ZWIERZETA-Q1: ZINTEGROWANE do `main` (667afef3)**.
+Zero zarzutow Evaluatora, Final Control PASS (niezalezna weryfikacja +
+tryb mutacyjny AMBIENCE_MUTATE=1 potwierdzajacy nietautologicznosc testu).
+Kanal ambience gra teraz WYLACZNIE odglosy zwierzat (ptak/swierszcz/wycie),
+wczesny return w ambSchedule() dla wiatr/liscie/woda; sciezka mapy/bitwy
+(onlyNature=false) dowodnie nietknieta. ambience-natura-tylko-zwierzeta-test.cjs
+8/8, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
+
+**R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1: ZINTEGROWANE do `main` (531014be +
+af542199)**. Evaluator zglosil 2 zarzuty: (1) KRYTYCZNY - brak zywego dowodu
+Playwright/Chromium (tylko test kontraktowy esbuild+Node), naruszenie
+R-PROC-AUTOBOT.md §9 pkt 6(a); (2) drobny - niezgodnosc komentarza JSDoc z
+realna sygnatura funkcji. Obrona PRZYJELA oba: dodala trwaly
+`diplomacy-relacje-ai-ai-audiencja-live-test.cjs` (realny vite build +
+headless Chromium) + poprawila komentarz. Final Control ODDAL oba zarzuty
+po niezaleznej weryfikacji (wlasny scenariusz Playwright z INNA para
+wlascicieli niz testy Operatora). Audiencja pokazuje teraz relacje
+rozmowcy (wojna/sojusz/pakt o nieagresji/handel) z trzecimi stronami,
+NIEZALEZNIE od mgly wojny gracza (faza testowa, docelowo bramkowane
+jednostka szpiega); pop-up `showDiploPairSummary` przed audiencja
+dowodnie nietkniety, nadal filtruje mgla wojny. Przy integracji jeden
+drobny konflikt scalania w `main.ts` (dwa niezalezne hooki testowe obok
+siebie, `__ambienceTestDebug` i `__audienceRelTestDebug`) - rozwiazany
+mechanicznie (oba bloki zachowane w calosci, zero zmiany logiki),
+zweryfikowany ponownie po scaleniu: tsc 0 bledow, 5 bramek referencyjnych,
+diplomacy-relacje-ai-ai-audiencja-test.cjs 20/20,
+diplomacy-relacje-ai-ai-audiencja-live-test.cjs 19/19 - wszystko zielone
+PO scaleniu obu tematow razem.
 
 FALA 4 — status integracji:
 - **U3 (13 jednostek, 39/75): ZINTEGROWANE do `main` (a48bdb32)**. Zero zarzutow Evaluatora (PASS-WITH-NOTES, jedna nieblokujaca uwaga o drobnej niescislosci raportu Operatora, bez wplywu na kryteria), Final Control PASS (niezalezna weryfikacja: inna jednostka niz Operator/Evaluator - "Wojownik Sherden"). entity-card-historia-section-test.cjs 31/31, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
