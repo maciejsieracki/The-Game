@@ -3741,8 +3741,15 @@ Runda 2 dispatchowana na TEJ SAMEJ galezi, budujaca na `8bdc9581`: Workflow
 `autobot/P-CITYPANEL-KORUPCJA-TEKST-DEWELOPERSKI-Q1-r2` — kanoniczna galaz
 bez `-r2` byla zajeta przez inny worktree, orkiestrator scali przy
 integracji). Nowy test 27/27 PASS (w tym asercja "zero placeholder w calym
-DOM"), tsc 0 bledow, 5 bramek referencyjnych bez regresu. Final Control
-dispatchowany: Workflow `wf_4238af33-9f2`.
+DOM"), tsc 0 bledow, 5 bramek referencyjnych bez regresu. Final Control PASS
+(Workflow `wf_4238af33-9f2`, wlasny niezalezny dowod mutacyjny). **ZINTEGROWANE
+do `main`** (cherry-pick obu commitow: `0f8b7fd7` runda 1 + `dc61e1da` runda 2).
+Po integracji: tsc 0 bledow, 27/27 nowy test, 5 bramek referencyjnych bez
+regresu.
+
+**Faza 3 — zamknieta na tym etapie.** Jedyne konkretne znalezisko szerokiego
+audytu tooltipow (karta korupcji w panelu miasta) naprawione i zintegrowane.
+Reszta gry sprawdzona i czysta (zero kolejnych wyciekow tekstu deweloperskiego).
 
 **Podsumowanie CivPedia Faza 2 (na dzien 2026-09-02, po tej fali)**: 6/6
 kategorii tresci zintegrowane (budynki 25/25, cuda 19/19, ulepszenia 17/17,
