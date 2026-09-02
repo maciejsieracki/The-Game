@@ -3515,10 +3515,41 @@ w `WERSJE.md` (FALA 333 oznaczona ZASTAPIONA). Push do `origin/main`
 (`b224478c`). `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany (zadien z
 tematow tej fali nie dotyka battleScene/logiki bitwy).
 
-Nastepne fazy projektu (swiadomie odlozone przez wlasciciela do czasu po
-zamknieciu Fazy 1): Faza 2 - aktualizacja CivPedia (`wikiBundle.json`) o
-nowe opisy historyczne; Faza 3 - szeroki audyt wszystkich tooltipow/opisow
-w grze. Obie gotowe do rozpoczecia na zyczenie wlasciciela.
+## FAZA 2 — R-CIVPEDIA-HISTORIA-Q1: przeniesienie rysu historycznego do CivPedii
+
+Wlasciciel (2026-09-02, po przebudzeniu): jednoznacznie skorygowal - Faza 2
+NIE mialа czekac na jego decyzje, mial byc realizowana autonomicznie od razu
+po zamknieciu Fazy 1, zgodnie z pierwotnym celem sesji. Ruszam natychmiast.
+
+Recon (Explore, przed dispatchem): CivPedia (`gra/src/data/wikiBundle.json`,
+168 hasel) to CALKOWICIE OSOBNY system od `entityCards/` - reczne pliki
+markdown w `docs/encyklopedia/**` (171 plikow, foldery budynki/jednostki/
+ulepszenia/cuda/cywilizacje/pojecia/technologie), pakowane skryptem
+`gra/tools/bundle-wiki-for-game.cjs` do JSON, renderowane przez
+`gra/src/ui/wikiHubHud.ts`. Zero automatycznego polaczenia z `gra/data/*.json`
+- to jest case (b) "osobno autorowana tresc", nie "juz dziala automatycznie".
+Istnieje juz podobnie nazwany, ale NIEZWIAZANY naglowek `## Historia / decyzje`
+(changelog strony wiki) - nowa sekcja tresci historycznej wymaga INNEJ nazwy
+(`## Rys historyczny`), zeby uniknac kolizji. Pokrycie CivPedii vs danych gry
+jest NIEPELNE: budynki 25/41, jednostki 49/75 (dane pol brakuje precyzyjnie),
+ulepszenia 17/22, technologie 32/32 (pelne), cuda 19/19 (pelne). Tworzenie
+NOWYCH stron dla brakujacych hasel to swiadomie ODDZIELNY, wiekszy temat -
+Faza 2 obejmuje WYLACZNIE kopiowanie juz zatwierdzonej tresci `historia`/
+`Historia` do ISTNIEJACYCH 168 hasel CivPedii.
+
+- **`R-CIVPEDIA-HISTORIA-INFRA-Q1`**: mechanizm (bez tresci) - rozszerzenie
+  bundlera o ekstrakcje sekcji `## Rys historyczny` do nowego pola `historia`
+  na kazdym wpisie encyklopedii, rozszerzenie `wikiHubHud.ts` o renderowanie
+  tej sekcji (widoczna w widoku "Haslo"/"Pelny artykul", NIE w "Skrot").
+  Zero zmian w `docs/encyklopedia/**` i `wikiBundle.json` w tej rundzie -
+  wylacznie kod. Dispatchowany przez Workflow (`wf_3bcbd351-1d5`), w toku.
+
+Po integracji: dispatch batchy tresci per kategoria (budynki 25, technologie
+32, ulepszenia terenu 17, jednostki 49 [2 batche], cuda 19) - kopiowanie
+JUZ NAPISANEGO i zatwierdzonego tekstu z `gra/data/*.json` do plikow `.md`
++ regeneracja `wikiBundle.json` w kazdym batchu. Po Fazie 2: Faza 3 (szeroki
+audyt wszystkich tooltipow/opisow w grze) - bez czekania na decyzje
+wlasciciela, kontynuowac automatycznie.
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
