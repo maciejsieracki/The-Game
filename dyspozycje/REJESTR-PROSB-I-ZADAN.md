@@ -3450,7 +3450,22 @@ PO scaleniu obu tematow razem.
 FALA 4 — status integracji:
 - **U3 (13 jednostek, 39/75): ZINTEGROWANE do `main` (a48bdb32)**. Zero zarzutow Evaluatora (PASS-WITH-NOTES, jedna nieblokujaca uwaga o drobnej niescislosci raportu Operatora, bez wplywu na kryteria), Final Control PASS (niezalezna weryfikacja: inna jednostka niz Operator/Evaluator - "Wojownik Sherden"). entity-card-historia-section-test.cjs 31/31, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
 - **U4 (13 jednostek, 52/75, czwarty z szesciu batchy): ZINTEGROWANE do `main` (c512e2fa)**. Zero zarzutow Evaluatora, Final Control PASS (niezalezna weryfikacja: karta "Gaesatae", potwierdzone ze pole Historia jest odrebne od istniejacego pola Uwagi/komentarzy modeli 3D dla 6 jednostek dzielacych rodowod z projektu R-ZELAZO). entity-card-historia-section-test.cjs 31/31, tsc 0 bledow, 5 bramek referencyjnych bez regresu.
-- **U5 (13 jednostek, piaty z szesciu batchy: Konnica lucznicza asyryjska, Lucznik asyryjski, Druzynnik, Jezdziec z oszczepami, Straznik bram Harappy, Piechota induska, Garnizon Harappy, Rydwan Kapadokijski, Piechota hetycka, Gwardia hetycka, Gwardia Ishtar, Wojownik babilonski, Piechota neobabilonska): dispatchowany przez Workflow (`wf_52276340-cf7`), w toku.**
+- **U5 (13 jednostek, piaty z szesciu batchy: Konnica lucznicza asyryjska, Lucznik asyryjski, Druzynnik, Jezdziec z oszczepami, Straznik bram Harappy, Piechota induska, Garnizon Harappy, Rydwan Kapadokijski, Piechota hetycka, Gwardia hetycka, Gwardia Ishtar, Wojownik babilonski, Piechota neobabilonska): Operator+Evaluator PASS, zero zarzutow — Final Control w toku.**
+
+### ZDEPLOYOWANE FALA 332 (2026-09-02, commit `3c052c02`)
+
+Pelny checklist nocnej kontroli AutoBot (trigger `trig_01FngsjSEihycrXtkgDESZ62`)
+zamkniety: R-SPICHLERZ-AUTO-ZYWIENIE-TOAST-ZINDEX-Q1, R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1,
+R-HANDEL-BRAK-BUDYNKU-NAZWA-Q1, R-SKARBIEC-HANDEL-PODGLAD-ZERO-Q1,
+R-AMBIENT-NATURA-TYLKO-ZWIERZETA-Q1, R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1 +
+R-KARTY-HISTORIA-Q1 falami 1-4 (budynki 41/41, technologie 32/32, ulepszenia
+terenu 22/22 KOMPLETNE, jednostki 52/75 po U1-U4). Build vite 881 modulow,
+`node gra/tools/inject-build-stamp.cjs` -> md5 `64515106...`, manifest
+zaktualizowany, `verify-robocza-bundle.cjs` -> VERIFY OK, nowy wpis FALA 332
+w `WERSJE.md` (FALA 331 oznaczona ZASTAPIONA). Push do `origin/main`
+(`3c052c02`). `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany (zmiany tej fali
+nie dotykaja battleScene/logiki bitwy). U5 (jednostki, w toku) i dalsze
+batchy (U6, cuda) doloacza kolejna fala.
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
