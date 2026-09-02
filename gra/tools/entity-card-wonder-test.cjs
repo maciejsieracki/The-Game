@@ -82,8 +82,13 @@ async function main() {
   const wonderWithUwagi = wondersRaw.cuda.find((w) => typeof w.uwagi === 'string' && w.uwagi.trim().length > 0);
   check('fixture: co najmniej jeden aktywny cud ma niepuste "uwagi" (dev-tekst do sprawdzenia wycieku)',
     !!wonderWithUwagi, wonderWithUwagi && wonderWithUwagi.id);
-  check('fixture: żaden aktywny cud (cuda[]) nie ma dziś niepustego "historia" (kontrola przytomności kryterium 4)',
-    wondersRaw.cuda.every((w) => typeof w.historia !== 'string' || w.historia.trim() === ''));
+  // Fixture-świadome (nie zakłada z góry "wszystkie puste" — po integracji treści
+  // historia dla części cudów to realny, oczekiwany stan, nie regres): jeśli pole
+  // "historia" istnieje, MUSI być stringiem — asercja niezmienna niezależnie od
+  // tego, ile cudów ma już wypełnioną treść.
+  const historiaFilled = wondersRaw.cuda.filter((w) => typeof w.historia === 'string' && w.historia.trim() !== '');
+  check(`fixture: pole "historia" (jeśli istnieje) jest zawsze stringiem — dziś wypełnione dla ${historiaFilled.length}/19 cudów`,
+    wondersRaw.cuda.every((w) => w.historia === undefined || typeof w.historia === 'string'));
 
   fs.writeFileSync(
     ENTRY,
@@ -135,7 +140,15 @@ async function main() {
   // ---------------------------------------------------------------------
   // [1] Karta encji dla wszystkich 19 cudów + [3]/[4] kontrole na TYCH SAMYCH kartach.
   // ---------------------------------------------------------------------
-  const allCards = await page.evaluate((ids) => {
+  // Realny stan pola "historia" per cud (z danych na dysku) — przekazywany do
+  // przeglądarki, żeby asercja [4] porównywała się z FAKTYCZNYM stanem tego
+  // konkretnego cudu, nie z zafiksowanym z góry "zawsze puste".
+  const historiaExpectedById = {};
+  for (const w of wondersRaw.cuda) {
+    historiaExpectedById[w.id] = typeof w.historia === 'string' && w.historia.trim() !== '';
+  }
+
+  const allCards = await page.evaluate(({ ids, historiaExpectedById }) => {
     return ids.map((id) => {
       const data = window.__buildEntityCardData('wonder', id, {});
       if (!data) return { id, found: false };
@@ -153,11 +166,12 @@ async function main() {
         sectionCount,
         uwagiRowExists: rowTexts.some((t) => t.startsWith('Uwagi')),
         historiaExists: card.querySelector('.entity-card-historia') !== null,
+        historiaExpected: !!historiaExpectedById[id],
       };
       card.remove();
       return result;
     });
-  }, activeWonderIds);
+  }, { ids: activeWonderIds, historiaExpectedById });
 
   for (const r of allCards) {
     check(`[1] openEntityCard/buildEntityCardData('wonder','${r.id}') znajduje encję`, r.found, r);
@@ -166,8 +180,8 @@ async function main() {
     check(`[1] karta cudu '${r.id}': ma tytuł niepusty`, typeof r.title === 'string' && r.title.length > 0, r.title);
     check(`[1] karta cudu '${r.id}': ma >0 sekcji i >0 wierszy (nie jest pustką)`, r.sectionCount > 0 && r.rowCount > 0, r);
     check(`[3] karta cudu '${r.id}': wiersz "Uwagi" NIE ISTNIEJE`, r.uwagiRowExists === false, r);
-    check(`[4] karta cudu '${r.id}': sekcja "Rys historyczny" NIEOBECNA (pole "historia" dziś puste dla WSZYSTKICH 19 cudów)`,
-      r.historiaExists === false, r);
+    check(`[4] karta cudu '${r.id}': sekcja "Rys historyczny" zgodna z realnym stanem pola "historia" w danych (${r.historiaExpected ? 'wypełnione' : 'puste'})`,
+      r.historiaExists === r.historiaExpected, r);
   }
   check('[1] dokładnie 19 cudów przetestowanych (pokrycie pełne, nie próbka)', allCards.length === 19, allCards.length);
 
@@ -180,8 +194,12 @@ async function main() {
     const fixtureText = 'To jest testowy rys historyczny cudu — WYŁĄCZNIE fixture testu, nie dane gry.';
     const realRow = window.__resolveWonderRow('piramidy');
     if (!realRow) return { realRowFound: false };
+    // "Przed" NIE polega na realnym stanie pola "historia" w danych (może być już
+    // wypełnione dla tego cudu po integracji treści) — jawnie czyścimy kopię, żeby
+    // kontrast "puste -> niepuste" był kontrolowany przez test, nie przez dane.
+    const clearedRow = { ...realRow, historia: '' };
     const mutatedRow = { ...realRow, historia: fixtureText };
-    const dataBefore = window.__wonderAdapter(realRow, {});
+    const dataBefore = window.__wonderAdapter(clearedRow, {});
     const dataAfter = window.__wonderAdapter(mutatedRow, {});
     const cardBefore = window.__renderEntityCard(dataBefore);
     const cardAfter = window.__renderEntityCard(dataAfter);
@@ -204,7 +222,7 @@ async function main() {
   });
   check('[4] mutacja: wiersz "piramidy" znaleziony w registry', mutation.realRowFound, mutation);
   if (mutation.realRowFound) {
-    check('[4] mutacja: PRZED wstrzyknięciem "historia" — sekcja nieobecna (dowód, że mechanizm nie renderuje na pusto)',
+    check('[4] mutacja: PRZED wstrzyknięciem "historia" (pole jawnie wyczyszczone na kopii) — sekcja nieobecna (dowód, że mechanizm nie renderuje na pusto)',
       mutation.beforeHasSection === false, mutation);
     check('[4] mutacja: PO wstrzyknięciu "historia" (WYŁĄCZNIE w pamięci testu) — sekcja SIĘ POJAWIA',
       mutation.afterHasSection === true, mutation);
