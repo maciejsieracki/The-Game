@@ -323,7 +323,8 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     const historiaBlock = entry.historia ? `\n\n## Rys historyczny\n\n${entry.historia}` : '';
     if (d === 's') return `## ${entry.title}\n\n${entry.wikiS}`;
     if (d === 'm') return `## ${entry.title}\n\n${entry.wikiM}${historiaBlock}`;
-    return `${entry.full}${historiaBlock}`;
+    const fullAlreadyHasHistoria = entry.full.includes('\n## Rys historyczny\n');
+    return `${entry.full}${fullAlreadyHasHistoria ? '' : historiaBlock}`;
   }
 
   function renderDetail(): void {
