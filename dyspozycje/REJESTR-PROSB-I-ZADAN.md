@@ -3672,9 +3672,16 @@ technologie 324, jednostki J1 161, J2 157, cuda 126, wikiHubHud-duplikacja 7),
 (napisany PRZED jakakolwiek trescia CivPedii) mial zaszyte zalozenie "zero
 wpisow ma dzis Rys historyczny" - falszywe po integracji 6 batchy tresci
 (168 wpisow, wiekszosc z realna trescia). Dispatch naprawczy
-`P-CIVPEDIA-INFRA-TEST-FIXTURE-DRIFT-Q1` w toku: Workflow `wf_162bdda8-4f9`
-(ten sam ustalony wzorzec naprawy - asercja warunkowa zamiast twardego
-"wszystko puste").
+`P-CIVPEDIA-INFRA-TEST-FIXTURE-DRIFT-Q1` (ten sam ustalony wzorzec naprawy -
+asercja warunkowa zamiast twardego "wszystko puste"): Operator+Evaluator PASS,
+zero zarzutow (commit `e687c48e`, scommitowany przez orkiestratora z worktree
+Operatora - Operator sam nie commitowal). Kryterium [4] podzielone na [4a]/[4b],
+czyta realny `wikiBundle.json` (168 wpisow, 142 z historia) i weryfikuje
+warunkowo per wpis. Dowod nietautologicznosci powtorzony niezaleznie przez
+Evaluatora (wlasna mutacja `pickEncyContentBlackBox`, test lapie regres na
+[4a], 142/142 zgloszone). `map-gen-regression-test.cjs` swiadomie pominiety
+jako poza zakresem (wolna bramka, niezwiazana ze zmienionym plikiem). Final
+Control dispatchowany: Workflow `wf_ba629b98-6f3`.
 
 **Podsumowanie CivPedia Faza 2 (na dzien 2026-09-02, po tej fali)**: 6/6
 kategorii tresci zintegrowane (budynki 25/25, cuda 19/19, ulepszenia 17/17,
