@@ -62,7 +62,7 @@ function resourceTriple(y) {
 }
 
 const expected = [
-  [M.TerenBazowy.Laka, [0, 0, 5], 'Łąka'],
+  [M.TerenBazowy.Laka, [0, 0, 2], 'Łąka'],
   [M.TerenBazowy.Rownina, [5, 2, 0], 'Równina'],
   [M.TerenBazowy.Wzgorza, [5, 5, 5], 'Wzgórza'],
   [M.TerenBazowy.Gory, [0, 10, 0], 'Góry'],
@@ -74,16 +74,24 @@ for (const [terrain, wanted, label] of expected) {
     `${label} bez ulepszenia/lasu/rzeki: Drewno/Kamień/Glina = ${wanted.join('/')}`);
 }
 
-// Edge case 1: rzeka jest osobnym modyfikatorem — tylko glina +10, bez zmiany
-// bazowego Drewna/Kamienia i bez przenikania do suchego pola.
+// Edge case 1: rzeka jest osobnym modyfikatorem — tylko glina +5 (R-BALANS-PAKT-NIEAGRESJI-
+// -I-GLINA-Q1, 2026-09-02: baza Łąki 5->2, bonus rzeki 10->5), bez zmiany bazowego
+// Drewna/Kamienia i bez przenikania do suchego pola.
 const dryMeadow = yields(M.TerenBazowy.Laka);
 const riverMeadow = yields(M.TerenBazowy.Laka, { maRzeke: true });
-ok(resourceTriple(dryMeadow).join(',') === '0,0,5',
-  'edge 1: sucha Łąka zachowuje bazę 0/0/5');
-ok(resourceTriple(riverMeadow).join(',') === '0,0,15',
-  'edge 1: Rzeka dodaje wyłącznie +10 Gliny (0/0/15)');
+ok(resourceTriple(dryMeadow).join(',') === '0,0,2',
+  'edge 1: sucha Łąka zachowuje bazę 0/0/2');
+ok(resourceTriple(riverMeadow).join(',') === '0,0,7',
+  'edge 1: Rzeka dodaje wyłącznie +5 Gliny (0/0/7)');
 ok(riverMeadow.drewno === dryMeadow.drewno && riverMeadow.kamien === dryMeadow.kamien,
   'edge 1: Rzeka nie zmienia Drewna ani Kamienia');
+
+// Edge case 1b (R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1, KRYTERIUM 4): Równina — teren
+// NIETKNIĘTY tym zleceniem — przy rzece nadal daje wyłącznie Glina=5 (0 bazy + 5 bonus rzeki),
+// dowód, że zmiana Łąki nie przecieka do innych terenów.
+const riverEquina = yields(M.TerenBazowy.Rownina, { maRzeke: true });
+ok(riverEquina.glina === 5,
+  'edge 1b: Równina przy rzece: Glina = 5 (0 baza równiny + 5 bonus rzeki), teren nietknięty');
 
 // Edge case 2: las i ulepszenie nie są częścią testu bazy, ale ich osobna
 // warstwa nadal działa addytywnie względem nowych wartości bazowych.

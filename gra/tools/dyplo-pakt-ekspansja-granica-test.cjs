@@ -96,12 +96,19 @@ const NARZUT = NAP_EKSPANSJA_RELACJA_NARZUT;
     ctx({ relation: rel(BASE, 0), ekspansjaPrzyGranicy: true }));
   ok(r.accepted, `A2b Relacja ${BASE} (goły próg) + maks. słodzik + ekspansja → pakt zawarty`);
 }
-// A3 — REGRESJA GŁÓWNA: dokładnie sytuacja ze zgłoszenia właściciela. Relacja 81/200,
-//      hojna oferta — przed naprawą odrzucane BEZWARUNKOWO, niezależnie od kwoty.
+// A3 — REGRESJA GŁÓWNA: sytuacja ze zgłoszenia właściciela (oryginalnie Relacja 81/200
+//      przy progNapRelacja=50), przed naprawą odrzucane BEZWARUNKOWO, niezależnie od kwoty.
+//      SKALOWANE (R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1, 2026-09-02): próg podniesiony 50->90
+//      (progNapRelacja w gra/data/diplomacy.json, WYROCZNIA runtime — gra/src/game/diplomacy.ts
+//      to tylko fallback nadpisywany przez ten JSON w getBaseDiplomacyParams(); oba zmienione
+//      w tym temacie). gold(300) daje ease=12 (300/25, sufit ease=20 wymaga >=500 PW — patrz A2),
+//      więc próg efektywny = 90+20(narzut ekspansji)-12 = 98. Zauf/Resp podniesione tak, by
+//      scenariusz dalej dowodził TEGO SAMEGO: brak strukturalnego weta — hojna oferta domyka
+//      lukę do progu (zmierzone realnym evaluateProposal, nie wyliczone na papierze).
 {
   const r = evaluateProposal(prop('nap', 0, 1, gold(300)),
-    ctx({ relation: rel(17, 64), ekspansjaPrzyGranicy: true }));
-  ok(r.accepted, 'A3 zgłoszenie właściciela (Zauf 17 + Resp 64 = Relacja 81, oferta 300 PW) → pakt zawarty');
+    ctx({ relation: rel(41, 64), ekspansjaPrzyGranicy: true }));
+  ok(r.accepted, 'A3 zgłoszenie właściciela, skalowane do progu 90 (Zauf 41 + Resp 64 = Relacja 105, oferta 300 PW) → pakt zawarty');
 }
 // A4 — dowód, że NIE MA już sufitu nieprzebijalności: maksymalna możliwa Relacja przechodzi.
 {

@@ -7,8 +7,8 @@
       "Podatek": 2,
       "Drewno": 0,
       "Kamień": 0,
-      "Glina": 5,
-      "Suma": 11,
+      "Glina": 2,
+      "Suma": 8,
       "Uwagi": "P-SUROWCE-BAZA-DREWNO-KAMIEŃ-GLINA-Q1=A (Maciej 2026-08-17): baza bez lasu, ulepszenia i rzeki."
     },
     {
@@ -97,8 +97,8 @@
       "Podatek": 3,
       "Drewno": 0,
       "Kamień": 0,
-      "Glina": 10,
-      "Suma": 18,
+      "Glina": 5,
+      "Suma": 13,
       "Uwagi": "Dodaje bonus do DOWOLNEGO pola z rzeką; +10 glina (szt./turę) przy rzece — plon produkcji (R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29); razem +18 z gliną. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 Runda 2 (Maciej 2026-08-13): Glina x5 (bylo 2) -- B1, plony terenowe pominiete w Rundzie 1."
     },
     {

@@ -622,6 +622,14 @@ const napIncoming61 = mod.computePlayerAcceptanceSides('nap', {}, 61, true);
 ok(napIncoming61.my.accepted === true, 'AI proponuje NAP @ rel 61: my.accepted true (nie sztuczny deficyt)');
 ok(napIncoming61.their.accepted === true, 'AI proponuje NAP @ rel 61: their.accepted true');
 ok(!napIncoming61.my.statusLabel.includes('Brakuje'), 'AI proponuje NAP @ rel 61: bez fałszywego "Brakuje"');
+// R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1 (2026-09-02): evaluateProposal.progNapRelacja poszedł
+// 50->90 (diplomacy.ts), ALE `gra/data/diplomacy-acceptance-points.json`.nap.prog_relacja (czytany
+// wyżej przez computePlayerAcceptanceSides — panel) ZOSTAŁ przy 50 — poza allowlistą tego tematu
+// (zmiana WYŁĄCZNIE progNapRelacja w diplomacy.ts, zero innych progów). Efekt: przy rel 61 panel
+// i silnik TERAZ się rozjeżdżają (panel nadal accepted=true, silnik accepted=false) — to jest
+// jawnie udokumentowana, ZNANA rozbieżność tego rundy, nie przeoczenie; naprawa wymagałaby zmiany
+// pliku spoza allowlisty, więc zostawiona jako follow-up. Ta asercja aktualizowana do REALNEGO
+// zachowania silnika po zmianie progu.
 const napEval61 = mod.evaluateProposal(
   { actionId: 'nap', proposerOwnerId: 1, responderOwnerId: 0, payload: {} },
   {
@@ -629,7 +637,7 @@ const napEval61 = mod.evaluateProposal(
     turn: 10, proposerWiarygodnosc: 60,
   },
 );
-ok(napEval61.accepted === true, 'kontrola silnika: evaluateProposal NAP @ rel 61 (AI proponent) = accepted');
+ok(napEval61.accepted === false, 'kontrola silnika: evaluateProposal NAP @ rel 61 (AI proponent) = odrzucone (próg podniesiony 50->90; rel 61<90) — ROZJAZD z panelem, zob. notatka wyżej');
 
 // 2) U2 (Evaluator, Maciej) — LUSTRZANA asymetria: GRACZ jest proponentem (own) tej samej
 // propozycji. Silnik (evaluateProposal, case 'nap') nie ma ŻADNEGO PW-fairness gate — ani dla
@@ -646,6 +654,9 @@ ok(napOwn61.my.accepted === true, 'U2: gracz proponuje NAP @ rel 61: my.accepted
 ok(napOwn61.their.accepted === true, 'U2: gracz proponuje NAP @ rel 61: their.accepted true');
 ok(!napOwn61.my.statusLabel.includes('Brakuje'), 'U2: gracz proponuje NAP @ rel 61: bez fałszywego "Brakuje"');
 ok(napOwn61.my.balancePn === -78, 'U2: gracz proponuje NAP @ rel 61: balancePn nadal informacyjnie −78 (122−200), ale nie blokuje');
+// R-BALANS-PAKT-NIEAGRESJI-I-GLINA-Q1 (2026-09-02): jak wyżej przy napEval61 — progNapRelacja
+// silnika = 90, ale diplomacy-acceptance-points.json.nap.prog_relacja (panel) zostaje przy 50,
+// poza allowlistą tego tematu. Asercja aktualizowana do REALNEGO zachowania silnika.
 const napEvalOwn61 = mod.evaluateProposal(
   { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
   {
@@ -653,7 +664,7 @@ const napEvalOwn61 = mod.evaluateProposal(
     turn: 10, proposerWiarygodnosc: 60,
   },
 );
-ok(napEvalOwn61.accepted === true, 'kontrola silnika: evaluateProposal NAP @ rel 61 (gracz proponent) = accepted (zgadza się z panelem)');
+ok(napEvalOwn61.accepted === false, 'kontrola silnika: evaluateProposal NAP @ rel 61 (gracz proponent) = odrzucone (próg 90>61) — ROZJAZD z panelem, zob. notatka wyżej');
 
 // 2a) U2 — gate PW dla umowa_handlowa/umowa_szlakow (own) MUSI zostać — to JEDYNE dwa typy,
 // gdzie evaluateProposal realnie gate'uje bazę PW `if (proposerIsTreatyPlayer)` (treatyBaseFairnessGap).

@@ -141,11 +141,11 @@ console.log('diplomacy-proposal-test');
 const dipNormal = getEffectiveDiplomacyParams('normal');
 const dipEasy = getEffectiveDiplomacyParams('easy');
 const dipHard = getEffectiveDiplomacyParams('hard');
-ok(dipNormal.progNapRelacja === 50, 'normal progNapRelacja 50');
+ok(dipNormal.progNapRelacja === 90, 'normal progNapRelacja 90');
 ok(dipNormal.progHandelRelacja === 0, 'normal progHandelRelacja 0');
-ok(dipEasy.progNapRelacja === 40, 'easy progNapRelacja 40');
+ok(dipEasy.progNapRelacja === 80, 'easy progNapRelacja 80');
 ok(dipEasy.progHandelRelacja === 0, 'easy progHandelRelacja 0');
-ok(dipHard.progNapRelacja === 60, 'hard progNapRelacja 60');
+ok(dipHard.progNapRelacja === 100, 'hard progNapRelacja 100');
 ok(dipHard.progHandelRelacja === 0, 'hard progHandelRelacja 0 (bez skali trudnosci)');
 
 // 1 NAP accept — Relacja >= 50 @ normal (bez progu Zaufania, Maciej 2026-07-21)

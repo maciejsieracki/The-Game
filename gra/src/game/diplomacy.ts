@@ -200,8 +200,8 @@ export const DIPLOMACY_PARAMS = {
   progPoboczneWojna:     15,
 
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
-  progNapRelacja:                  50,
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-09-02: 90 @ normal; tylko Rel, bez Zauf) */
+  progNapRelacja:                  90,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja:               0,
   /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
