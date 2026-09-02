@@ -11712,11 +11712,19 @@ async function boot(): Promise<void> {
       const pending = pendingImprovementsTurn.remove(req.hexKey, req.key);
       if (!pending) return;
 
+      // C-DISPATCH P-FARMA-COFNIJ-ZWRACA-PRACE-NIEAKTUALNY-WPIS-Q1: sprawdź PRZED
+      // mutacją, czy stan, który cofamy, faktycznie jeszcze istnieje — wpis w
+      // pendingImprovementsTurn mógł zostać osierocony przez inny mechanizm
+      // (np. sweepLegacyFarmsOnForest), który usunął instancję niezależnie od kolejki.
+      let stillExists: boolean;
+
       if (pending.action === 'wycinka') {
+        stillExists = hexClearingStates.has(req.hexKey);
         hexClearingStates.delete(req.hexKey);
         removeClearingMesh(req.hexKey);
       } else {
         const prev = placedImprovements.get(req.hexKey) ?? [];
+        stillExists = prev.includes(req.key);
         const nextLayers = prev.filter(k => k !== req.key);
         if (nextLayers.length) {
           placedImprovements.set(req.hexKey, nextLayers);
@@ -11730,7 +11738,7 @@ async function boot(): Promise<void> {
         unregisterFortNodeIfNeeded(req.key, req.q, req.r, 0);
       }
 
-      if (pending.kosztPraca > 0) {
+      if (stillExists && pending.kosztPraca > 0) {
         playerPracaPool += pending.kosztPraca;
         _lastPraca = playerPracaPool;
       }
@@ -11738,7 +11746,11 @@ async function boot(): Promise<void> {
       refreshBuildApi();
       refreshBuildHighlight();
       updateHud();
-      showHintMessage('Cofnięto — Praca zwrócona (' + pending.kosztPraca + ')', 2500);
+      if (stillExists) {
+        showHintMessage('Cofnięto — Praca zwrócona (' + pending.kosztPraca + ')', 2500);
+      } else {
+        showHintMessage('Cofnięto — ulepszenie już nie istnieje, Praca nie została zwrócona', 2500);
+      }
       console.log('[BuildMode] undo', req.key, req.hexKey);
     }
 
