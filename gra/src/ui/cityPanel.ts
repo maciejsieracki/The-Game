@@ -4442,7 +4442,7 @@ function appendPodzialHandlu(
     statChipBrand('chip-happiness', HANDEL_ZAMOZNOSC_LABEL, `+${est.zam} · ${split.procentLuksus}%`, 'happy')
       .replace('<span class="chip">', '<span class="chip handel-card-zam">') +
     statChipBrand('chip-warning', 'Korupcja', `−${est.korupcja} · ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%`, 'red')
-      .replace('<span class="chip">', '<span class="chip handel-korupcja-chip" title="Placeholder — docelowo pełny model korupcji">');
+      .replace('<span class="chip">', '<span class="chip handel-korupcja-chip" title="Korupcja — uproszczony model, pełniejszy planowany w przyszłej aktualizacji">');
   mount.appendChild(grid);
 
   const sliders = el('div', 'handel-w4-sliders');
@@ -10434,9 +10434,8 @@ function buildHandelDetailCard(
   const todo = el('div', 'dc-note');
   todo.style.cssText = 'font-style:normal;border-left:2px solid var(--gold);padding-left:0.45em;margin-top:0.35em;';
   todo.innerHTML =
-    '<b class="gold">Do rozkminienia (v2):</b> skąd bierze się korupcja (dystans od stolicy, liczba miast, epoka, porządek, tech?), ' +
-    'czy gracz może ją obniżać, czy pokazujemy ją per miasto czy imperium. ' +
-    `Na razie w UI: stałe <b>${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%</b> ${daninaLblGen} brutto — placeholder, nie wpływa jeszcze na silnik w prototypie.`;
+    `<b class="gold">Korupcja:</b> dziś to stały procent <b>${HANDEL_KORUPCJA_PCT_PLACEHOLDER}%</b> ${daninaLblGen} brutto. ` +
+    'W przyszłej aktualizacji ma zależeć też od odległości miasta od stolicy i liczby miast w imperium.';
   card.appendChild(todo);
 
   // PYTANIE 83=B: Mennica fizycznie stoi (nie burzymy jej), ale mnoznik SPI bez
@@ -10450,13 +10449,13 @@ function buildHandelDetailCard(
     card.appendChild(mennicaWarn);
   }
 
-  appendDetailSection(card, 'Korupcja (placeholder)');
+  appendDetailSection(card, 'Korupcja');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, `${daninaLbl} brutto (szac.)`, est.brutto ? `~${est.brutto}` : '—');
   gridDetailRow(g0, 'Strata korupcji', `−${est.korupcja} (${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto)`);
   gridDetailRow(g0, `${daninaLbl} netto`, est.netto ? `~${est.netto} → split suwaków` : '—');
   if (params) {
-    gridDetailRow(g0, 'Silnik (docelowo)', `dystans×${params.korupcjaWspolczynnikDystansu} + miasta×${params.korupcjaWspolczynnikMiast}, cap ${Math.round(params.korupcjaCap * 100)}%`);
+    gridDetailRow(g0, 'Planowane zmiany', `dystans×${params.korupcjaWspolczynnikDystansu} + miasta×${params.korupcjaWspolczynnikMiast}, cap ${Math.round(params.korupcjaCap * 100)}%`);
   }
   gridDetailRow(
     g0,
