@@ -13,6 +13,19 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA f7f0a3c1 - 2026-09-02 17:30 UTC - FALA 337: naprawa wycieku Pracy przy cofnieciu przestarzalego wpisu kolejki ulepszen terenu
+
+|- md5 (pełne): f7f0a3c19c6d5e427e2568f6cb93dcd6 · stempel: ROBOCZA · label f7f0a3c1 · źródłowy commit integracji: `2d9d8b2a`
+|- **`P-FARMA-COFNIJ-ZWRACA-PRACE-NIEAKTUALNY-WPIS-Q1`** (`2d9d8b2a`) — znalezisko Final Control z tematu `R-ULEPSZENIA-FARMA-LESIE-USUN-ISTNIEJACE-Q1` (2026-08-27), świadomie zostawione poza tamtym GOAL i zarejestrowane osobno, nigdy nie dispatchowane aż do dziś (kontynuacja pętli AutoBot po zamknięciu CivPedii Fazy 2/3). Bug: `undoPendingBuildRequest` (`gra/src/main.ts`) bezwarunkowo zwracał Pracę za cofnięty wpis kolejki, nawet gdy ulepszenie/wycinka której dotyczył zostały już usunięte niezależnym mechanizmem (np. sweep farm z lasu) — desynchronizacja między `pendingImprovementsTurn` a rzeczywistym stanem heksu pozwalała graczowi dostać Pracę za nic.
+|- Fix: przed zwrotem Pracy funkcja sprawdza czy cofane ulepszenie (`placedImprovements`) lub stan wycinki (`hexClearingStates`) faktycznie nadal istnieje. Istnieje → zachowanie identyczne jak dotąd (zero regresu normalnego cofnięcia w tej samej turze). Nie istnieje → wpis kolejki mimo to usuwany (porządkowanie stanu), ale Praca NIE wraca, toast uczciwie informuje że ulepszenie już nie istnieje.
+|- Pełny cykl Operator→Evaluator(zero zarzutów)→Final Control przez Workflow, niezależna, żywa weryfikacja w headless Chromium (desynchronizacja skonstruowana realnym mechanizmem silnika — zastąpienie ulepszenia w tym samym sektorze wykluczającym, nie sztuczny hak testowy). Kontrola negatywna (Evaluator i osobno Final Control, każdy własna): kod sprzed poprawki czerwienieje dokładnie na kryterium 1, z dowodem starego buga w logu. `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu. Nowy test `farma-cofnij-nieaktualny-wpis-test.cjs` 21/21.
+|- Diff ograniczony ściśle do allowlisty: `gra/src/main.ts` (wyłącznie funkcja `undoPendingBuildRequest`, +14/-2) + nowy plik testowy. Zero zmian w `pending-improvements.ts`, `improvement-build.ts`, `sweepLegacyFarmsOnForest`/`removeLegacyFarmsOnForest`.
+|- Bundle: 882 modułów (bez zmian liczby — fix logiki, nie nowy moduł źródłowy), `Gra-ROBOCZA.html` 69,5 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — temat nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
+|- **Odstępstwo techniczne (jak w FALACH 324-336):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA fca50ef6 - 2026-09-02 13:15 UTC - FALA 336: Faza 3 (audyt tooltipow) — naprawa wycieku tekstu deweloperskiego w karcie korupcji/podzialu handlu panelu miasta
 
 |- md5 (pełne): fca50ef61aeaa83295cd87b6c70869c0 · stempel: ROBOCZA · label fca50ef6 · źródłowy commit integracji: `dc61e1da`
@@ -23,7 +36,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
 |- **Odstępstwo techniczne (jak w FALACH 324-335):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ f7f0a3c1, FALA 337)
 
 ## ROBOCZA 15890072 - 2026-09-02 12:20 UTC - FALA 335: CivPedia dostaje "Rys historyczny" — infra + wszystkie 6 kategorii treści (budynki/cuda/ulepszenia/technologie/jednostki, 168 haseł), podgląd 3D jednostki uzupełniony w karcie miasta i linkach krzyżowych, 3 naprawy pochodne
 
