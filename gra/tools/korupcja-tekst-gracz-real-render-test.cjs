@@ -13,23 +13,27 @@
  * np. "handelBrutto = Σ...") to ŚWIADOMY, zaakceptowany wzorzec transparency-panelu i
  * ZOSTAJE bez zmian — patrz RECON w 00-dispatch.md tego tematu.
  *
- * ZNANA, UDOKUMENTOWANA SPRZECZNOŚĆ DYSPOZYCJI (zgłoszona przez Evaluatora, RUNDA 1,
- * potwierdzona tu jako prawdziwa, nie odrzucona): Kryterium końca [1] w swoim DOSŁOWNYM
- * brzmieniu zakazuje słowa "placeholder" GDZIEKOLWIEK w renderowanym DOM całej karty, ale
- * ALLOWLISTA/RECON tego samego dispatchu WPROST zakazuje dotykania appendDetailFormula/
- * appendDetailAlgo — a te dwie funkcje (linie ~10481, ~10499 cityPanel.ts) legalnie i
- * celowo niosą frazy "(placeholder UI)" / "placeholder X% brutto" jako część wzoru
- * silnika, który dispatch osobno (Kryterium 4) każe zostawić BAJT W BAJT nietknięty.
- * Dosłowne Kryterium 1 i dosłowne Kryterium 4 nie mogą być jednocześnie spełnione w 100%
- * — to SPRZECZNOŚĆ W DISPATCHU, nie błąd Operatora. Ten test dlatego:
- *   (a) pilnuje TWARDO, że wszystkie 4 fragmenty z ALLOWLISTY (i TYLKO te 4) zostały
- *       przepisane na ton gracza — zero "Do rozkminienia"/"(v2)"/"placeholder"/"Silnik"/
- *       "prototyp" w notatce, nagłówku sekcji, etykiecie wiersza i tooltipie żetonu;
- *   (b) pilnuje, że appendDetailFormula/appendDetailAlgo pozostały BAJT W BAJT — w tym
- *       (jawnie, nie przez przeoczenie) że NADAL niosą frazę "placeholder" tam, gdzie
- *       dispatch zakazał ich ruszania. To NIE jest luka w teście — to jest jedyny sposób
- *       jednoczesnego dowiedzenia (a) i Kryterium 4, dopóki ABC nie rozstrzygnie
- *       sprzeczności [1] vs allowlista/[4]. Rozstrzygnięcie ABC = osobna runda.
+ * ZNANA, UDOKUMENTOWANA SPRZECZNOŚĆ DYSPOZYCJI z RUNDY 1 (zgłoszona przez Evaluatora,
+ * potwierdzona jako prawdziwa) — ROZSTRZYGNIĘTA przez ECHO orkiestratora w RUNDZIE 2:
+ * Kryterium końca [1] w swoim DOSŁOWNYM brzmieniu zakazywało słowa "placeholder"
+ * GDZIEKOLWIEK w renderowanym DOM całej karty, a ALLOWLISTA/RECON RUNDY 1 WPROST
+ * zakazywała dotykania appendDetailFormula/appendDetailAlgo — te dwie funkcje (linie
+ * ~10480, ~10498 cityPanel.ts) legalnie i celowo niosły frazy "(placeholder UI)" /
+ * "placeholder X% brutto" jako część wzoru silnika. ECHO RUNDY 2 rozstrzygnęło na
+ * korzyść Kryterium [1] w PIERWOTNYM brzmieniu (zero placeholder w CAŁYM DOM) i
+ * rozszerzyło allowlistę WYŁĄCZNIE o te 2 konkretne linie: usunięto z nich literalny
+ * ciąg "placeholder", zachowując 100% reszty wzoru (struktura, zmienne,
+ * HANDEL_KORUPCJA_PCT_PLACEHOLDER jako NAZWA STAŁEJ nietknięta, kolejność kroków,
+ * wszystkie inne linie appendDetailFormula/appendDetailAlgo). Ten test dlatego:
+ *   (a) pilnuje TWARDO, że wszystkie 4 fragmenty z ALLOWLISTY RUNDY 1 (i TYLKO te 4)
+ *       zostały przepisane na ton gracza — zero "Do rozkminienia"/"(v2)"/"placeholder"/
+ *       "Silnik"/"prototyp" w notatce, nagłówku sekcji, etykiecie wiersza i tooltipie żetonu;
+ *   (b) pilnuje, że appendDetailFormula/appendDetailAlgo pozostały BAJT W BAJT poza
+ *       DOKŁADNIE tymi 2 literalnymi wystąpieniami słowa "placeholder" usuniętymi przez
+ *       ECHO RUNDY 2 (reszta wzoru, zmiennych i kolejności kroków — bez zmian);
+ *   (c) pilnuje TWARDO (Kryterium 1, RUNDA 2), że cały wyrenderowany DOM karty NIE
+ *       zawiera już ŻADNEGO literalnego "placeholder"/"Placeholder" — łącznie z
+ *       appendDetailFormula/appendDetailAlgo, po poprawce ECHO.
  *
  * DLACZEGO PRAWDZIWA PRZEGLĄDARKA (R-PROC-AUTOBOT.md §9 poz. 6a): karta otwiera się
  * REALNYM klikiem w przycisk "i szczegóły" (attachInteractiveDetail z hoverDetailDock.ts —
@@ -149,13 +153,15 @@ async function main() {
   check('(0) etykieta wiersza "Silnik (docelowo)" ZNIKNĘŁA ze źródła', !citySrc.includes("'Silnik (docelowo)'"), null);
   check('(0) tooltip żetonu "Placeholder — docelowo pełny model korupcji" ZNIKNĄŁ ze źródła',
     !citySrc.includes('Placeholder — docelowo pełny model korupcji'), null);
-  // Kontrola NEGATYWNA — dowód, że appendDetailFormula/appendDetailAlgo (poza allowlistą,
-  // Kryterium 4) zostały BAJT W BAJT, wliczając to, że NADAL niosą "placeholder" (patrz
-  // nagłówek pliku: sprzeczność Kryterium [1] vs allowlista/[4], zgłoszona ABC).
-  check('(0) appendDetailFormula strataKorupcji NIETKNIĘTA (Kryterium 4) — nadal niesie "placeholder" (zamierzone, poza allowlistą)',
-    citySrc.includes('strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)'), null);
-  check('(0) appendDetailAlgo krok "Odejmij korupcję" NIETKNIĘTY (Kryterium 4) — nadal niesie "placeholder" (zamierzone, poza allowlistą)',
-    citySrc.includes('Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.'), null);
+  // Kontrola RUNDY 2 (ECHO) — dowód, że appendDetailFormula/appendDetailAlgo zostały
+  // BAJT W BAJT poza DOKŁADNIE literalnym ciągiem "placeholder" w tych 2 liniach, który
+  // ECHO orkiestratora nakazało usunąć (reszta wzoru, zmiennych, kolejności — bez zmian).
+  check('(0) appendDetailFormula strataKorupcji: wzór/zmienne NIETKNIĘTE, ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
+    citySrc.includes('strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)')
+    && !/strataKorupcji = handelBrutto × \$\{HANDEL_KORUPCJA_PCT_PLACEHOLDER\}% \(placeholder/i.test(citySrc), null);
+  check('(0) appendDetailAlgo krok "Odejmij korupcję": struktura/kolejność NIETKNIĘTE, ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
+    citySrc.includes('Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.')
+    && !/Odejmij korupcję \(placeholder/i.test(citySrc), null);
 
   fs.writeFileSync(ENTRY, [
     "import { configureCityPanel } from '../src/ui/cityPanel.ts';",
@@ -310,15 +316,23 @@ async function main() {
       check('(3) karta nadal informuje o przyszłej zależności od LICZBY MIAST',
         /liczby miast|liczba miast/i.test(text), text.slice(0, 4000));
 
-      // --- (1c) reszta karty (appendDetailFormula/appendDetailAlgo, WZORY silnika) BAJT
-      // W BAJT zachowana — jedyny sposób jednoczesnego spełnienia Kryterium 4 i (1a)
-      // dopóki sprzeczność Kryterium 1 vs allowlista/4 nie zostanie rozstrzygnięta przez ABC.
+      // --- (1c) reszta karty (appendDetailFormula/appendDetailAlgo, WZORY silnika) zachowana
+      // BAJT W BAJT poza DOKŁADNIE literalnym ciągiem "placeholder" usuniętym przez ECHO
+      // runda 2 w tych 2 liniach — struktura wzoru, zmienne i kolejność kroków bez zmian.
       check('(4) wzór "handelBrutto = Σ" nietknięty (poza allowlistą)', /handelBrutto = Σ/.test(text), null);
-      check('(4) wzór "strataKorupcji = handelBrutto ×" nietknięty (poza allowlistą, NADAL niesie "placeholder")',
-        /strataKorupcji = handelBrutto ×.*placeholder UI/.test(text), text.slice(0, 4000));
-      check('(4) algorytm "Odejmij korupcję" nietknięty (poza allowlistą, NADAL niesie "placeholder")',
-        /Odejmij korupcję \(placeholder/.test(text), text.slice(0, 4000));
+      check('(4) wzór "strataKorupcji = handelBrutto ×" nietknięty, ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
+        /strataKorupcji = handelBrutto ×.*\(dziś: stały %\)/.test(text), text.slice(0, 4000));
+      check('(4) algorytm "Odejmij korupcję" nietknięty, ciąg "placeholder" USUNIĘTY (ECHO runda 2)',
+        /Odejmij korupcję \(dziś: stały \d+% brutto; docelowo: dystans, miasta, cap\)/.test(text), text.slice(0, 4000));
       check('(4) algorytm "Zbierz ... ze wszystkich obrabianych pól" nietknięty', /Zbierz .*obrabianych pól/.test(text), null);
+
+      // --- KRYTERIUM 1 (RUNDA 2, ECHO — brzmienie PIERWOTNE): cały wyrenderowany DOM karty
+      // NIE zawiera już ŻADNEGO literalnego "placeholder"/"Placeholder", wliczając
+      // appendDetailFormula/appendDetailAlgo po poprawce ECHO. Dozwolona jest wyłącznie
+      // nazwa stałej w kodzie źródłowym (HANDEL_KORUPCJA_PCT_PLACEHOLDER) — a ta nigdy nie
+      // trafia do renderowanego tekstu (interpoluje się jako liczba, np. "5%").
+      check('(1) KRYTERIUM 1: cały wyrenderowany DOM karty NIE zawiera "placeholder"/"Placeholder" (zero wyjątków, ECHO runda 2)',
+        !/placeholder/i.test(html) && !/placeholder/i.test(text), text.slice(0, 4000));
     }
 
     check('brak błędów konsoli/pageerror w trakcie renderu', consoleErrors.length === 0, consoleErrors);

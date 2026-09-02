@@ -10477,7 +10477,7 @@ function buildHandelDetailCard(
   appendDetailFormula(card, `handelBrutto = Σ ${daninaLblGen} pól`
     + (maTargowisko ? ' × (1 + bonus Targowiska)' : '')
     + (aktywneTrasyCount > 0 ? ' + premia tras handlowych (z budynkiem)' : ''));
-  appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (placeholder UI)`);
+  appendDetailFormula(card, `strataKorupcji = handelBrutto × ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% (dziś: stały %)`);
   appendDetailFormula(card, 'handelNetto = handelBrutto − strataKorupcji' + (
     mennicaAktywna
       ? ` × Waluta+Mennica (${mennicaMnoznikTxt})`
@@ -10495,7 +10495,7 @@ function buildHandelDetailCard(
     aktywneTrasyCount > 0
       ? `Trasy handlowe z budynkiem: +${Math.round(premiaTrasHandlowych)} do handelBrutto (${aktywneTrasyCount} aktywnych — szczegóły szlaków i partnerów w panelu Handel, żeton paska zasobów).`
       : 'Bez aktywnych tras handlowych z budynkiem — brak premii do handelBrutto.',
-    `Odejmij korupcję (placeholder ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
+    `Odejmij korupcję (dziś: stały ${HANDEL_KORUPCJA_PCT_PLACEHOLDER}% brutto; docelowo: dystans, miasta, cap) → handelNetto.`,
     'Waluta + Mennica RAZEM (decyzja 2026-07-25) mnożą całe handelNetto — Skarb, Naukę i ' + HANDEL_ZAMOZNOSC_LABEL + ' równocześnie. Sam tech Waluty już NIE wystarcza.',
     `Podziel handelNetto suwakami: Skarb / Nauka / ${HANDEL_ZAMOZNOSC_LABEL} (suma 100%).`,
     mennicaAktywna
