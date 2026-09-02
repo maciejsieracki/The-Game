@@ -3631,6 +3631,15 @@ Dispatch naprawczy `P-CIVPEDIA-TESTY-GIT-HEAD-SAMOODNOSZACE-Q1` dispatchowany
 `main`) na metode strukturalna bez zaleznosci od `git HEAD`, oraz dopisuje
 tresc + nowy test dla cuda (wciaz niezintegrowane).
 
+Operator+Evaluator PASS, zero zarzutow (commit `63409126`): testy J1/J2
+przepisane na metode strukturalna (pozycje indeksow naglowkow w pliku, wzorem
+budynki/ulepszenia/technologie), 161/157 PASS; nowy `civpedia-cuda-historia-test.cjs`
+126/126 PASS; tresc 19 plikow cuda bajt-w-bajt identyczna z wczesniej
+zweryfikowanym `4a4369c5`. Dowod nietautologicznosci: wszystkie 3 testy
+uruchomione TAKZE z `git worktree add --detach` w calkowicie osobnej
+lokalizacji, niezaleznej od historii gita ktoregokolwiek worktree - identyczny
+wynik. Final Control dispatchowany: Workflow `wf_bc3b5fe6-e7a`.
+
 **R-CIVPEDIA-TECHNOLOGIE-Q1: PASS-WITH-NOTES** — Operator, Evaluator i Final
 Control NIEZALEZNIE potwierdzili pre-istniejacy bug w
 `wikiHubHud.ts::pickEncyContent` (wprowadzony w infra `d6032099`, POZA
@@ -3641,6 +3650,11 @@ renderuje sie DWUKROTNIE w DOM, bo `entry.full` juz zawiera cala tresc pliku
 (kryterium wymagalo tylko wyrenderowania tresci, nie unikalnosci). Dispatch
 naprawczy `P-CIVPEDIA-WIKIHUBHUD-RYS-HISTORYCZNY-DUPLIKACJA-Q1` dispatchowany
 (Workflow `wf_03d25059-f8c`, razem z tematem naprawy testow git-HEAD powyzej).
+Operator+Evaluator PASS, zero zarzutow (commit `cae9540b`): guard
+`entry.full.includes('\n## Rys historyczny\n')` przed doklejeniem
+`historiaBlock` w galezi `depth==='full'`. Nowy test 7/7 PASS (zywy Chromium,
+w tym dowod mutacyjny - cofniecie fixu odtwarza duplikacje i test to lapie).
+Final Control dispatchowany razem z powyzszym: Workflow `wf_bc3b5fe6-e7a`.
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
