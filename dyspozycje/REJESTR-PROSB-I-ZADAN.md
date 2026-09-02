@@ -4002,24 +4002,49 @@ deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgod
   identyczne na czystym `origin/main`). Zintegrowane allowlist-only
   (`cityPanel.ts`, `entityCards/renderer.ts`, 2 pliki testowe), tsc+5 bramek+oba
   testy tematu ponownie zielone po integracji. Worktree i branch posprzątane.
+- **R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1** — **ZINTEGROWANE do `main`
+  (`9a2be640`)**. Evaluator PASS zero zarzutów (własny żywy dowód że AI↔AI nie
+  wywołuje efektu), Final Control PASS (własny checkout, merge-base scoped diff,
+  własny live test 10/10 + 5 bramek referencyjnych + diplomacy-proposal-test
+  188/188). Zintegrowane allowlist-only (`main.ts` punktowo w
+  `applyProposalOutcome`, nowy `dyplo-mapa-odkrycie-live-test.cjs`). Worktree i
+  branch posprzątane.
 - **R-WOJNA-WYMUSZONA-REGULY-Q1** — Operator PASS (`3a4be6a3`, 3 zasady: próg 25 tur,
   jeden przeciwnik naraz + limit gracza wg trudności, limit trwania 25 tur; Żelazo
-  nietknięte). **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
-- **R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1** — Evaluator w toku (żywe zrzuty
-  ekranu w trakcie generowania, worktree z modyfikowanymi PNG dowodowymi — proces
-  aktywny, celowo nietykany).
-- **R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1** — Evaluator w toku (Opus 5, effort
-  high), bez nowych commitów od Operatora (`aa0daba0`).
-- **R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1** — Operator w toku (worktree z aktywnymi
-  zmianami w `cities.ts`/`main.ts` i harnessami diagnostycznymi — proces aktywny).
+  nietknięte). Evaluator w toku (Sonnet 5, effort high).
+- **R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1** — Evaluator runda 1: **FAIL, 3
+  zarzuty** (w tym realny bug UX: czas traktatu wybrany przez gracza po cichu
+  nadpisywany przez częstotliwość wymiany koszyka, gdy oba pola współwystępują
+  w tym samym modalu). Obrona (`febd159f`) przyjęła wszystkie 3 zarzuty, ale
+  zatrzymała się na **DECISION_REQUIRED** — naprawa zarzutów 1 i 2 wymaga edycji
+  `diplomacyTradeBasket.ts`, poza allowlistą pierwotnego dispatchu (błędna
+  atrybucja pliku w recon — logika case '5' żyje w `diplomacyTradeBasket.ts`,
+  nie w `diplomacyAudience.ts`, który tylko re-eksportuje). Orkiestrator
+  **rozszerzył allowlistę** (`195b1970`, sekcja "ROZSZERZENIE RUNDA 1" w
+  dispatchu) i **redispatchował kontynuację Obrony** w tej samej rundzie/branchu
+  — w toku.
+- **R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1** — Operator PASS (`ccd5f6be`): diagnoza
+  żywą 5×80-turową symulacją potwierdziła realny problem (ZASADA 3 mogła
+  przekierować 100% puli ulepszeń na budynki, bez dolnej granicy), naprawa —
+  nowa stała `MIN_PROCENT_PULI_IMPERIUM_ZASADA3_NADWYZKA=10` jako podłoga.
+  Sufit 50% (`MAX_PROCENT_PULI_IMPERIUM`) już istniał i już obowiązywał
+  wszystkie AI — potwierdzone działającym bez zmian. Jedna bramka referencyjna
+  (`map-gen-regression-test.cjs`) nie zdążyła się dokończyć w budżecie
+  Operatora — jawnie zgłoszone, przekazane Evaluatorowi do dokończenia.
+  **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
 - **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — Operator w toku (worktree z
   aktywną zmianą w `main.ts`).
-- **R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1** — Operator w toku, wcześniejsza
-  kolizja dwóch równoległych procesów w tym samym worktree ustąpiła (git status
-  pokazuje teraz jeden spójny zestaw zmian: `main.ts` + nowy test
-  `oboz-lowiecki-las-znika-render-test.cjs`).
+- **R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1** — Operator PASS
+  (`af50ca3f`): Część A (POTWIERDZONA) naprawiona — `syncImprovementDecorForHex`
+  przestał kasować wizualnie kępę lasu pod `oboz_lowiecki` na wzgórzu/górze
+  (lista dwóch zahardkodowanych kluczy farma/bydlo rozszerzona do
+  `ULEPSZENIA_ZYWNOSCIOWE` przefiltrowanego przez `isImprovementBlockedOnForest`).
+  Część B (obozy na terenie bez lasu) — **NIE potwierdzona** żywo, zero zmian
+  kodu; wniosek Operatora: to również objaw Części A (zalesione wzgórze bez
+  widocznej kępy myli się z łąką). **Evaluator DISPATCHOWANY** (Opus 5, effort
+  high) — ma też sceptycznie ocenić wniosek Części B.
 
-Kolejna kontrola zaplanowana automatycznie (ScheduleWakeup); po zamknięciu
-wszystkich powyższych — integracja allowlist-only każdego PASS, potem pełny
-deploy ROBOCZA (build → stamp → manifest → weryfikacja → FALA w `WERSJE.md`) i
-raport końcowy dla właściciela.
+Kolejna kontrola zaplanowana automatycznie; po zamknięciu wszystkich powyższych
+— integracja allowlist-only każdego PASS, potem pełny deploy ROBOCZA (build →
+stamp → manifest → weryfikacja → FALA w `WERSJE.md`) i raport końcowy dla
+właściciela.
