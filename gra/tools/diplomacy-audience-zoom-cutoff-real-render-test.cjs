@@ -43,6 +43,15 @@
  *   (C) mechanizm (b) (CDP DPI/scale) jako kontrola: bez fixu i tak się mieści (brak regresu
  *       wymagany, ale nic tu nie testujemy destrukcyjnie — pomijamy, patrz RECON wyżej).
  *
+ * ZRZUTY EKRANU (real Chromium, page.screenshot — R-PROC-AUTOBOT.md §SS9 pkt 6a): zapisywane
+ * ZAWSZE (nie opt-in) do `dyspozycje/autobot/runs/P-UI-ZOOM-PRZEGLADARKI-PANELE-UCIETE-Q1/dowody/`
+ *   01-przed-zoom-przegladarki-125-uciete.png  — (A1) uciecie widoczne wizualnie, bez fixu
+ *   02-przed-zoom-ui-125-uciete.png            — (A2) uciecie widoczne wizualnie, bez fixu
+ *   03-po-zoom-przegladarki-125-gora.png       — (B1) po fixie, scroll do gory: naglowek widoczny
+ *   04-po-zoom-przegladarki-125-dol.png        — (B2) po fixie, scroll do dolu: przycisk widoczny
+ *   05-po-zoom-ui-125-gora.png                 — (B3) po fixie, zoom UI gry, scroll do gory
+ *   06-po-zoom-ui-125-dol.png                  — (B4) po fixie, zoom UI gry, scroll do dolu
+ *
  * Usage (z gra/): node tools/diplomacy-audience-zoom-cutoff-real-render-test.cjs
  */
 const fs = require('fs');
@@ -63,6 +72,16 @@ const BUNDLE_PO = path.resolve(__dirname, '.dza-bundle-po.js');
 const BUNDLE_PRZED = path.resolve(__dirname, '.dza-bundle-przed.js');
 const FALLBACK_CHROME = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const DIPLO_AUD = path.resolve(GRA, 'src', 'ui', 'diplomacyAudience.ts');
+const SHOT_DIR = path.resolve(
+  GRA, '..', 'dyspozycje', 'autobot', 'runs',
+  'P-UI-ZOOM-PRZEGLADARKI-PANELE-UCIETE-Q1', 'dowody',
+);
+async function shot(page, name) {
+  fs.mkdirSync(SHOT_DIR, { recursive: true });
+  const p = path.join(SHOT_DIR, name);
+  await page.screenshot({ path: p });
+  console.log('[diplomacy-audience-zoom-cutoff-real-render-test] zrzut: ' + p);
+}
 
 let pass = 0;
 let fail = 0;
@@ -324,12 +343,14 @@ async function main() {
     const przedBrowserZoom = await measureCutoff(page);
     check('(A1) PRZED + zoom przegladarki 125%: gorna LUB dolna krawedz boxa WYKRACZA poza viewport (reprodukcja realnego uciecia)',
       przedBrowserZoom.topCut || przedBrowserZoom.bottomCut, przedBrowserZoom);
+    await shot(page, '01-przed-zoom-przegladarki-125-uciete.png');
     await resetBrowserZoom(page);
 
     await applyUiZoom(page, 1.25);
     const przedUiZoom = await measureCutoff(page);
     check('(A2) PRZED + wewnetrzny zoom UI gry 125%: gorna LUB dolna krawedz boxa WYKRACZA poza viewport (reprodukcja realnego uciecia)',
       przedUiZoom.topCut || przedUiZoom.bottomCut, przedUiZoom);
+    await shot(page, '02-przed-zoom-ui-125-uciete.png');
     await resetUiZoom(page);
 
     // ===== (B) PO poprawce: ta sama tresc, te same zoomy — cala tresc osiagalna =====
@@ -340,38 +361,32 @@ async function main() {
       + '</style></head><body></body></html>',
     );
     await page.addScriptTag({ path: BUNDLE_PO });
-    await page.evaluate(() => {
-      window.showDiplomacyAudience({
-        ownerId: 1,
-        getState: () => ({
-          playerTitle: 'Gracz', playerCivName: 'Rzym', otherTitle: 'Rozmowca', otherCivName: 'Grecja',
-          zaufanie: 50, respekt: 50, tier: 1, layer: 'full', contactEstablished: true,
-          actions: Array.from({ length: 12 }, (_, i) => ({ id: String(i), label: 'Akcja ' + i, enabled: true })),
-          activeTreaties: Array.from({ length: 20 }, (_, i) => ({ label: 'Traktat ' + i, detail: 'Szczegoly ' + i })),
-          pendingNegotiations: [],
-        }),
-        onAction: () => {}, onBack: () => {},
-      });
-    });
+    await openAudienceWithFiller(page);
 
     const poBaseline = await measureCutoff(page);
     check('(B0) PO, bez zoomu: box mieści się (brak regresu przy 100%)',
       !poBaseline.topCut && !poBaseline.bottomCut, poBaseline);
 
     await applyBrowserZoom(page, 1.25);
+    await page.evaluate(() => document.querySelector('.civ-diplo-aud').scrollTo(0, 0));
+    await shot(page, '03-po-zoom-przegladarki-125-gora.png');
     const poBrowserZoomReach = await checkReach(page);
     check('(B1) PO + zoom przegladarki 125%: scrollTo(0,0) faktycznie pokazuje NAGLOWEK boxa w viewport',
       poBrowserZoomReach.topReachable, poBrowserZoomReach);
     check('(B2) PO + zoom przegladarki 125%: scrollTo(0,scrollHeight) faktycznie pokazuje DOL boxa w viewport',
       poBrowserZoomReach.bottomReachable, poBrowserZoomReach);
+    await shot(page, '04-po-zoom-przegladarki-125-dol.png'); // checkReach konczy przy scrollTo(bottom)
     await resetBrowserZoom(page);
 
     await applyUiZoom(page, 1.25);
+    await page.evaluate(() => document.querySelector('.civ-diplo-aud').scrollTo(0, 0));
+    await shot(page, '05-po-zoom-ui-125-gora.png');
     const poUiZoomReach = await checkReach(page);
     check('(B3) PO + wewnetrzny zoom UI gry 125%: scrollTo(0,0) faktycznie pokazuje NAGLOWEK boxa w viewport',
       poUiZoomReach.topReachable, poUiZoomReach);
     check('(B4) PO + wewnetrzny zoom UI gry 125%: scrollTo(0,scrollHeight) faktycznie pokazuje DOL boxa w viewport',
       poUiZoomReach.bottomReachable, poUiZoomReach);
+    await shot(page, '06-po-zoom-ui-125-dol.png'); // checkReach konczy przy scrollTo(bottom)
     await resetUiZoom(page);
 
     // ekstremalny zoom UI gry (max 1.5, hud.ts UI_ZOOM_MAX) — brzeg zakresu
