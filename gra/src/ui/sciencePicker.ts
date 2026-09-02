@@ -12,6 +12,7 @@
 
 import type {} from '../../data/tech.json';
 import techData from '../../data/tech.json';
+import buildingsData from '../../data/buildings.json';
 import { parseUnlockBuildings, unitsUnlockedByTech } from './techUnlockParse';
 import { terrainUnlockLabelsForTech } from '../game/improvement-tech';
 import type { TempoGry } from '../game/tech-tempo';
@@ -21,6 +22,21 @@ import { techIconSvg } from './techIcons';
 import type { ScienceHubEntry, ScienceHubPlanEntry, ScienceHubProgress } from './scienceHubHud';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { buildHubTechEntries } from './scienceHubSnapshotLogic';
+// Reużycie, nie druga kopia tej samej pętli: `IMPROVEMENT_NAME_TO_KEY` (nazwa ulepszenia
+// → ImprovementKey, zbudowana z terrain-improvements.json) już istnieje i działa w
+// `techDiscoveryNotice.ts`.
+//
+// Stan grafu importów, sprawdzony w źródle (obie krawędzie istnieją niezależnie od tej
+// zmiany, przed nią i po niej):
+//   sciencePicker → scienceHubHud (`refreshScienceHubIfOpen`, l. 22)
+//   scienceHubHud → techDiscoveryNotice (`showTechDiscoveryNotice`, scienceHubHud.ts:16)
+//   techDiscoveryNotice → entityCards/registry (`technologyIdFromName`, l. 55)
+//   entityCards/registry → sciencePicker (`techToSlug`, registry.ts:26)
+// czyli cykl przez te moduły ISTNIAŁ już w bazie (`origin/main` 1e58db44) — ten import
+// nie tworzy pierwszego cyklu, ale domyka dodatkowy, krótszy: sciencePicker ↔
+// techDiscoveryNotice. Bezpieczny, bo użycie mapy jest leniwe (w ciele funkcji), nie w
+// inicjalizacji modułu — tak samo jak w istniejącym, dłuższym cyklu.
+import { IMPROVEMENT_NAME_TO_KEY } from './techDiscoveryNotice';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 
@@ -217,18 +233,142 @@ export function techNameFromSlug(slug: string): string | null {
   return TECH_MAP.get(slug)?.nazwa ?? null;
 }
 
-/** Skrót odblokowań tech (hub badań). */
-export function techUnlockSummary(slug: string): string {
+// ---------------------------------------------------------------------------
+// Odblokowania technologii dla wiersza „Odblok." w hubie badań
+// (P-SCIENCEHUB-EMOJI-ZAMIAST-IKON-ODBLOKOWAN-Q1)
+//
+// Do 2026-09-02 `techUnlockSummary()` zwracała gotowy STRING z trzema generycznymi
+// emoji (jeden glif dla KAŻDEGO budynku, jeden dla KAŻDEGO surowca, jeden dla
+// KAŻDEGO ulepszenia terenu). Konsument (`scienceHubHud.ts`) wstawiał go przez
+// `textContent`, więc żadna ikona marki nie mogła się tam pojawić. Zgłoszenie
+// właściciela: „grafika … obóz łowiecki, drewno, tartak, trzoda, krowa, byk …
+// nie jest zgodna z brandbookiem … w panelu badań i rozwoju".
+//
+// Teraz zwracamy DANE (`TechUnlockItem[]`), a ikonę marki rozwiązuje render w
+// `scienceHubHud.ts` właściwym resolverem z `icons/brandAssets.ts`. Reguła doboru
+// pozycji (pierwsza etykieta z każdej z trzech kategorii) jest zachowana 1:1 —
+// zmienia się tylko ikona, nie treść ani liczba pozycji w wierszu.
+// ---------------------------------------------------------------------------
+
+/** Kategoria pozycji w wierszu „Odblok." — decyduje, którym resolverem marki idzie ikona. */
+export type TechUnlockKind = 'budynek' | 'surowiec' | 'ulepszenie';
+
+/**
+ * Jedna pozycja odblokowania. `label` to etykieta dla gracza (dokładnie ta sama,
+ * co przed zmianą), `iconKey` to klucz dla resolvera z `icons/brandAssets.ts`:
+ *   `budynek`    → id budynku z `buildings.json`  → `buildingIconSvg(def, iconKey)`
+ *   `surowiec`   → etykieta surowca               → `mapResourceIconSvg(iconKey)`
+ *   `ulepszenie` → `ImprovementKey`               → `improvementIconSvg(iconKey)`
+ *
+ * `iconCategory` (tylko `kind='budynek'`) niesie `kategoria` z `buildings.json`.
+ * Bez niej `buildingBldId(undefined, id)` — dla budynku, którego NIE MA w
+ * `building-icon-map.json` — nie może wejść w żadną gałąź kategorii i spada na
+ * `_default` (`bld-default`), podczas gdy `cityPanel.ts` woła ten sam resolver
+ * z pełnym `def` i dostaje ikonę kategorii (np. `trybunal` → `kategoria:
+ * "Administracja"` → `bld-admin`). Ta sama encja miałaby wtedy DWIE różne ikony
+ * w dwóch miejscach gry — dokładnie klasa błędu, którą ten temat usuwa.
+ */
+export interface TechUnlockItem {
+  kind: TechUnlockKind;
+  label: string;
+  iconKey: string;
+  /** `buildings.json` → `kategoria`; wypełniane wyłącznie dla `kind='budynek'`. */
+  iconCategory?: string;
+}
+
+/**
+ * Odwrotna mapa nazwa budynku → id, zbudowana z REALNYCH danych (`buildings.json`,
+ * pola `nazwa`/`id`) — nie z listy ID przepisanej z pamięci. Analogiczna do
+ * `IMPROVEMENT_NAME_TO_KEY` z `techDiscoveryNotice.ts`; osobna, bo źródłem jest
+ * inny plik danych. Posortowana malejąco po długości nazwy, żeby dopasowanie
+ * podciągiem wybierało najdłuższą (najbardziej szczegółową) nazwę.
+ */
+const BUILDING_NAME_TO_ID: ReadonlyArray<{ nazwa: string; id: string; kategoria: string }> =
+  (buildingsData as ReadonlyArray<{ id?: string; nazwa?: string; kategoria?: string }>)
+    .filter(b => typeof b?.id === 'string' && b.id !== '' && typeof b?.nazwa === 'string' && b.nazwa !== '')
+    .map(b => ({
+      nazwa: (b.nazwa as string).toLowerCase().trim(),
+      id: b.id as string,
+      kategoria: typeof b.kategoria === 'string' ? b.kategoria : '',
+    }))
+    .sort((a, b) => b.nazwa.length - a.nazwa.length);
+
+/**
+ * Etykieta budynku z `tech.json` → id budynku. Najpierw dopasowanie dokładne, potem
+ * podciąg (ten sam wzorzec exact-potem-substring co `mapResourceIconSvg` w
+ * `brandAssets.ts`) — bo `tech.json` bywa rozszerzona względem `buildings.json`:
+ * „Świątynia (upgrade kręgów)" → `swiatynia`, „Biblioteka: poziom Obserwatorium+
+ * (poz. 6)" → `biblioteka`. Brak dopasowania → zwracamy samą etykietę: `buildingIconSvg`
+ * sprawdzi ją jeszcze jako id w `building-icon-map.json` (np. „Fort" → `fort`),
+ * a w ostateczności da `bld-default` — nigdy nie wybucha i nie zostawia pustego slotu.
+ *
+ * Zwracamy też `kategoria` (gdy budynek znaleziony w `buildings.json`), bo to jej
+ * potrzebuje `buildingBldId` dla budynków spoza `building-icon-map.json` —
+ * inaczej hub badań i panel miasta pokazują dwie różne ikony tego samego budynku.
+ */
+function buildingIconRefForName(name: string): { id: string; kategoria: string } {
+  const n = name.toLowerCase().trim();
+  for (const b of BUILDING_NAME_TO_ID) if (b.nazwa === n) return { id: b.id, kategoria: b.kategoria };
+  for (const b of BUILDING_NAME_TO_ID) if (n.includes(b.nazwa)) return { id: b.id, kategoria: b.kategoria };
+  return { id: n, kategoria: '' };
+}
+
+/**
+ * `tech.json` opisuje złoże Trzody etykietą „krowa/byk", której NIE ma
+ * `resources-map-icon-map.json` (zna `bydło`/`bydlo`/`owce`/`lama` → `res-cattle`).
+ * Bez tego jednego aliasu `mapResourceIconSvg('krowa/byk')` spada na `_default`
+ * = `res-stone`, czyli KAMIEŃ zamiast bydła — dokładnie ta część regresji, którą
+ * właściciel zgłosił słowami „krowa, byk". Alias jest dowodliwy z danych, nie zgadnięty:
+ * `terrain-improvements.json` ma `bydlo.nazwa = "Trzoda"`, a `resource-access.ts`
+ * `SUROWIEC_KEY_LABEL.bydlo = "Trzoda (krowa/świnia)"` — to ten sam byt. Rozwiązane
+ * tutaj, bo pliki map ikon są poza allowlistą tego tematu.
+ */
+const RESOURCE_LABEL_ALIAS: Readonly<Record<string, string>> = {
+  'krowa/byk': 'bydlo',
+};
+
+/** Pierwsza etykieta z listy rozdzielonej przecinkami (reguła zachowana sprzed zmiany). */
+function firstLabel(raw: string): string {
+  return (raw.split(',')[0] ?? raw).trim();
+}
+
+/**
+ * „Brak odblokowania" zapisany w `tech.json` jako WIDOCZNY placeholder, nie jako
+ * pusty string — np. „Matematyka" ma `"Odblokowuje ulepszenie terenu": "—"`.
+ * Sam `.trim()` takiego pola nie odsiewa, więc przed zmianą powstawała pozycja o
+ * `label='—'`, a resolver marki nie znajdował klucza i spadał na `_default`
+ * (`improvementIconSvg('—')` → `imp-farm`): przy myślniku stała PRAWDZIWA ikona
+ * Farmy, czytelna jak „Matematyka odblokowuje Farmę". Stary render stawiał tam
+ * generyczny glif kategorii 🌾, który niczego nie udawał — nowa ikona marki
+ * udaje konkretną, inną encję, więc placeholder musi zniknąć razem z pozycją.
+ * Odsiewamy we WSZYSTKICH trzech kategoriach, nie tylko w ulepszeniach.
+ */
+function isPlaceholderLabel(label: string): boolean {
+  const s = label.trim().toLowerCase();
+  if (s === '') return true;
+  if (/^[-—–‒―_.·•]+$/.test(s)) return true;
+  return s === 'brak' || s === 'n/a' || s === 'nie dotyczy' || s === 'brak.';
+}
+
+/** Odblokowania tech jako dane do renderu z ikonami marki (hub badań, wiersz „Odblok."). */
+export function techUnlockItems(slug: string): TechUnlockItem[] {
   const node = TECH_MAP.get(slug);
-  if (!node) return '';
-  const parts: string[] = [];
-  const bud = node.odblokujeBudynek.trim();
-  if (bud) parts.push('\u{1F3DB} ' + (bud.split(',')[0]?.trim() ?? bud));
-  const sur = node.odblokujeSurowiec.trim();
-  if (sur) parts.push('\u{1F48E} ' + (sur.split(',')[0]?.trim() ?? sur));
-  const ter = node.odblokujeUlepszenie.trim();
-  if (ter) parts.push('\u{1F33E} ' + (ter.split(',')[0]?.trim() ?? ter));
-  return parts.join(' \u00B7 ');
+  if (!node) return [];
+  const items: TechUnlockItem[] = [];
+  const bud = firstLabel(node.odblokujeBudynek);
+  if (!isPlaceholderLabel(bud)) {
+    const ref = buildingIconRefForName(bud);
+    items.push({ kind: 'budynek', label: bud, iconKey: ref.id, iconCategory: ref.kategoria });
+  }
+  const sur = firstLabel(node.odblokujeSurowiec);
+  if (!isPlaceholderLabel(sur)) {
+    items.push({ kind: 'surowiec', label: sur, iconKey: RESOURCE_LABEL_ALIAS[sur.toLowerCase()] ?? sur });
+  }
+  const ter = firstLabel(node.odblokujeUlepszenie);
+  if (!isPlaceholderLabel(ter)) {
+    items.push({ kind: 'ulepszenie', label: ter, iconKey: IMPROVEMENT_NAME_TO_KEY[ter] ?? ter });
+  }
+  return items;
 }
 
 function prereqHint(node: TechNode): string {
@@ -270,12 +410,13 @@ export function getScienceHubSnapshot(ownerId: number): {
 
   const entries: ScienceHubEntry[] = drafts.map(d => {
     const node = TECH_MAP.get(d.id);
+    const unlocks = techUnlockItems(d.id);
     return {
       id: d.id,
       name: d.name,
       epoka: d.epoka,
       koszt: d.koszt,
-      unlockLine: techUnlockSummary(d.id) || undefined,
+      unlockItems: unlocks.length > 0 ? unlocks : undefined,
       locked: d.locked,
       isTarget: d.isTarget,
       lockHint: d.locked && node ? prereqHint(node) : undefined,

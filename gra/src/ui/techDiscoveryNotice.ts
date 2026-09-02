@@ -118,8 +118,13 @@ function list(raw: string | null | undefined): string[] {
  * = etykieta gracza) — ten sam wzorzec co poprawne użycie w buildModeHud.ts. Fallback na
  * samą nazwę (jak przed poprawką) zachowany dla nierozpoznanych etykiet — improvementIconSvg
  * i tak spadnie na `_default` (imp-farm), bez wyjątku w runtime.
+ *
+ * `export` (P-SCIENCEHUB-EMOJI-ZAMIAST-IKON-ODBLOKOWAN-Q1): tę samą mapę reużywa
+ * `sciencePicker.ts::techUnlockItems()` dla wiersza „Odblok." w hubie badań —
+ * jedno źródło zamiast drugiej kopii tej samej pętli. Zero zmian w logice/zachowaniu
+ * tego pliku: dodany jest wyłącznie modyfikator widoczności.
  */
-const IMPROVEMENT_NAME_TO_KEY: Record<string, ImprovementKey> = (() => {
+export const IMPROVEMENT_NAME_TO_KEY: Record<string, ImprovementKey> = (() => {
   const map: Record<string, ImprovementKey> = {};
   for (const [key, row] of Object.entries(terrainImprovementsData as Record<string, { nazwa?: string }>)) {
     if (key.startsWith('_')) continue;

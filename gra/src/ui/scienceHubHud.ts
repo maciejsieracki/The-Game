@@ -5,7 +5,9 @@
  */
 
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
-import { brandIconSvg } from './icons/brandAssets';
+import { brandIconSvg, buildingIconSvg, mapResourceIconSvg, improvementIconSvg } from './icons/brandAssets';
+import type { TechUnlockItem } from './sciencePicker';
+import type { BuildingDef } from '../data/loader';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { techIconSvg } from './techIcons';
@@ -29,10 +31,45 @@ export interface ScienceHubEntry {
   name: string;
   epoka: string;
   koszt: number;
-  unlockLine?: string;
+  /**
+   * Odblokowania do wiersza „Odblok." — DANE, nie gotowy tekst
+   * (P-SCIENCEHUB-EMOJI-ZAMIAST-IKON-ODBLOKOWAN-Q1). Poprzednik `unlockLine: string`
+   * niósł zaszyte, generyczne emoji, jedno na całą kategorię; ikonę marki per encja
+   * rozwiązuje teraz `unlockIconSvg()` niżej, przy renderze.
+   */
+  unlockItems?: TechUnlockItem[];
   locked: boolean;
   isTarget: boolean;
   lockHint?: string;
+}
+
+/**
+ * Ikona marki dla jednej pozycji „Odblok." — właściwy resolver z `icons/brandAssets.ts`
+ * per kategoria, ta sama funkcja co używa reszta gry dla tej samej encji:
+ * budynek → `buildingIconSvg` (jak `cityPanel.ts`/`techDiscoveryNotice.ts`),
+ * ulepszenie terenu → `improvementIconSvg` (jak `buildModeHud.ts`),
+ * surowiec → `mapResourceIconSvg` (kluczowany etykietą gry).
+ * Rozmiar nadaje CSS (`.sh-unlock-ic svg{width:100%;height:100%}`), więc wszystkie
+ * trzy resolvery mogą zwracać swój natywny rozmiar.
+ */
+function unlockIconSvg(item: TechUnlockItem): string {
+  switch (item.kind) {
+    // `def` z `kategoria` jest tu OBOWIĄZKOWE, nie kosmetyczne: dla budynku spoza
+    // `building-icon-map.json` (np. `trybunal` z technologii „Kodeks")
+    // `buildingBldId(undefined, id)` nie ma z czego wybrać gałęzi kategorii i
+    // zwraca `_default` = `bld-default`, podczas gdy `cityPanel.ts:6125` woła ten
+    // sam resolver z pełnym `def` (`kategoria: "Administracja"`) i dostaje
+    // `bld-admin` — ten sam budynek miałby DWIE różne ikony w dwóch miejscach gry.
+    // `buildingBldId` czyta z `def` wyłącznie `id` i `kategoria`, więc podajemy
+    // dokładnie te dwa pola; rzutowanie, bo `brandAssets.ts` jest poza allowlistą
+    // tematu i nie wolno tam poszerzyć sygnatury do `Pick<BuildingDef, …>`.
+    case 'budynek': return buildingIconSvg(
+      { id: item.iconKey, kategoria: item.iconCategory ?? '' } as unknown as BuildingDef,
+      item.iconKey,
+    );
+    case 'surowiec': return mapResourceIconSvg(item.iconKey, 16);
+    case 'ulepszenie': return improvementIconSvg(item.iconKey, 16);
+  }
 }
 
 /**
@@ -171,6 +208,9 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-item:hover:not(.locked) .sh-name{color:var(--gold-bright);}
 .civ-science-hub-hud .sh-cost{font-size:0.7em;color:var(--muted);margin-top:0.1em;font-variant-numeric:tabular-nums;}
 .civ-science-hub-hud .sh-unlock{font-size:0.68em;color:#9fb8d8;margin-top:0.1em;line-height:1.35;}
+.civ-science-hub-hud .sh-unlock-ic{display:inline-flex;align-items:center;justify-content:center;
+  width:1.25em;height:1.25em;vertical-align:-0.25em;margin-right:0.2em;flex:0 0 auto;}
+.civ-science-hub-hud .sh-unlock-ic svg{width:100%;height:100%;display:block;}
 .civ-science-hub-hud .sh-lock{font-size:0.66em;color:#c9a060;margin-top:0.1em;}
 .civ-science-hub-hud .sh-empty{font-size:0.78em;color:var(--muted);line-height:1.45;padding:0.15em 0;}
 .civ-science-hub-hud .sh-plan-act{flex-shrink:0;font-size:0.62em;font-weight:700;letter-spacing:.08em;
@@ -598,10 +638,33 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       cost.className = 'sh-cost';
       cost.textContent = e.koszt + ' PN · ' + e.epoka;
       body.appendChild(cost);
-      if (e.unlockLine) {
+      if (e.unlockItems && e.unlockItems.length > 0) {
+        // Węzły DOM zamiast jednego `textContent` — inaczej ikona SVG per encja nie
+        // miałaby gdzie zamieszkać (P-SCIENCEHUB-EMOJI-ZAMIAST-IKON-ODBLOKOWAN-Q1).
+        // Etykiety nadal przez `textContent` (bez wstrzyknięcia HTML z danych);
+        // `innerHTML` dostaje wyłącznie SVG z brandAssets.
         const ul = document.createElement('div');
         ul.className = 'sh-unlock';
-        ul.textContent = 'Odblok.: ' + e.unlockLine;
+        const lead = document.createElement('span');
+        lead.textContent = 'Odblok.: ';
+        ul.appendChild(lead);
+        e.unlockItems.forEach((item, idx) => {
+          if (idx > 0) {
+            const sep = document.createElement('span');
+            sep.textContent = ' · ';
+            ul.appendChild(sep);
+          }
+          const ic = document.createElement('span');
+          ic.className = 'sh-unlock-ic';
+          ic.setAttribute('data-unlock-kind', item.kind);
+          ic.setAttribute('data-unlock-icon-key', item.iconKey);
+          ic.innerHTML = unlockIconSvg(item);
+          ul.appendChild(ic);
+          const tx = document.createElement('span');
+          tx.className = 'sh-unlock-label';
+          tx.textContent = item.label;
+          ul.appendChild(tx);
+        });
         body.appendChild(ul);
       }
       if (e.lockHint) {
