@@ -170,6 +170,7 @@ import {
 } from './unitInfographic';
 import { buildUnitRecruitCard, UNIT_RECRUIT_CARD_CSS } from './unitRecruitCard';
 import { renderEntityCard, ENTITY_CARD_CSS } from './entityCards/renderer';
+import type { EntityCardData } from './entityCards/types';
 import { buildingAdapter, type BuildingCardCityState } from './entityCards/buildingAdapter';
 import { unitAdapter } from './entityCards/unitAdapter';
 import { brandIconSvg, buildingIconSvg, unitIconSvg, mapResourceIconSvg, type BrandIconSize } from './icons/brandAssets';
@@ -7553,7 +7554,17 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
 function buildUnitDetailCardViaEntityCard(u: UnitDef, data: GameData): HTMLDivElement {
   ensureEntityCardBuildingStyles();
   const built = unitAdapter(u, {});
-  const card = renderEntityCard(built) as HTMLDivElement;
+  // Podgląd 3D w medalionie nagłówka — wzorem `unitInfoCard.ts::buildUnitInfoCardViaEntityCard`
+  // (ten sam mechanizm `mountUnitMiniPreview`/`defaultOwnerColor`, R-KARTA-JEDNOSTKI-3D-PODGLAD-BRAKUJACY-Q1).
+  const cardData: EntityCardData = {
+    ...built,
+    medallion: {
+      kind: 'unit3d',
+      mount: (slot: HTMLElement) =>
+        mountUnitMiniPreview(slot, u, defaultOwnerColor(), 'Render 3D niedostępny w tym środowisku'),
+    },
+  };
+  const card = renderEntityCard(cardData) as HTMLDivElement;
   card.classList.add('unit-detail-card', 'bld-detail-card');
 
   const techBody = beginBuildingDetailTile(card, 'Technologie');

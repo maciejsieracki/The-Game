@@ -16,6 +16,7 @@ import { buildingAdapter } from './buildingAdapter';
 import { technologyAdapter } from './technologyAdapter';
 import { improvementAdapter } from './improvementAdapter';
 import { wonderAdapter } from './wonderAdapter';
+import { defaultOwnerColor, mountUnitMiniPreview } from '../unitMiniPreview';
 import type {
   EntityCardData,
   EntityCardCtx,
@@ -39,7 +40,21 @@ export function buildEntityCardData(kind: EntityKind, id: string, ctx: EntityCar
     switch (kind) {
       case 'unit': {
         const row = resolveUnitRow(id);
-        return row == null ? null : unitAdapter(row, ctx);
+        if (row == null) return null;
+        const built = unitAdapter(row, ctx);
+        // Podgląd 3D w medalionie nagłówka — wzorem `unitInfoCard.ts::buildUnitInfoCardViaEntityCard`
+        // (ten sam mechanizm `mountUnitMiniPreview`/`defaultOwnerColor`, jedyny call-site z realnym
+        // ownerColor to `unitInfoCard.ts`; `EntityCardCtx` nie niesie koloru właściciela na tym
+        // poziomie, więc fallback `defaultOwnerColor()`, R-KARTA-JEDNOSTKI-3D-PODGLAD-BRAKUJACY-Q1).
+        // Dotyczy WYŁĄCZNIE `kind: 'unit'` — pozostałe 4 kinds bez zmian.
+        return {
+          ...built,
+          medallion: {
+            kind: 'unit3d',
+            mount: (slot: HTMLElement) =>
+              mountUnitMiniPreview(slot, row, defaultOwnerColor(), 'Render 3D niedostępny w tym środowisku'),
+          },
+        };
       }
       case 'building': {
         const row = resolveBuildingRow(id);
