@@ -3977,3 +3977,42 @@ zadna nie zagraza bezposrednio miastu) nie jest dzis rozpoznawane.
 | R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1 | 2026-09-02 | Traktat handlowy powinien miec wybor czasu trwania w negocjacjach, tak jak pakt nieagresji (chipy+recznie+bezterminowy), zamiast dzisiejszego zahardkodowanego czasu. | **DISPATCHOWANE** | Domain GAME, wizualny/UX — Operator+Evaluator Opus 5, Final Control Sonnet 5. Recon: `diplomacyAudience.ts:2189-2193` omija modal wyboru czasu (ktory NAP juz ma) i hardkoduje `turns:20` dla akcji `umowa_szlakow` — silnik juz technicznie wspiera bezterminowy traktat. Rozbieznosc ze zrzutu wlasciciela ("wygasa za 5 tur" nie 20) NIEPOTWIERDZONA, Operator ma ustalic zywo przed zmiana kodu. Dispatch `00-dispatch.md`, commit `ca8eb4f3`. |
 | R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1 | 2026-09-02 | AI buduje bardzo malo ulepszen terenu (bylo: "zalewali wszystko"), byc moze przez przekierowanie na budynki; dodatkowo jawne zadanie: twardy sufit 50% Pracy na ulepszenia dla wszystkich AI. | **DISPATCHOWANE** | Domain GAME, logika AI/ekonomii — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Temat DIAGNOSTYCZNY w pierwszej kolejnosci — MAX_PROCENT_PULI_IMPERIUM=50 juz istnieje jako fallback, ale main.ts dokumentuje HISTORYCZNY bug o identycznym objawie (ZASADA 3 przekierowuje Prace na budynki, flaga gubila sie przy save/load, AI utykalo na 0% trwale) oznaczony jako naprawiony — Operator ma zweryfikowac zywa, wieloturowa symulacja czy problem faktycznie sie powtarza (moze sie NIE potwierdzic) przed jakakolwiek zmiana kodu. Dispatch `00-dispatch.md`, commit `ca8eb4f3`. |
 | R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1 | 2026-09-02 | Wlasciciel: Sumerowie przejeli jego miasto mimo aktywnego paktu nieagresji - podejrzewal bug w traktacie. | **DISPATCHOWANE** | Domain GAME — Operator+Evaluator+Final Control Sonnet 5, effort HIGH. Recon (bez subagenta, przed dispatchem): hasTreaty() symetryczna, brak bugu w bramce paktu; brak jakiegokolwiek mechanizmu "przejecia kulturalno-religijnego". Prawdziwy mechanizm: miasto gracza z wyczerpanym revoltGrace zmienia ownerId na REBEL_FACTION_OWNER_ID (main.ts:27429-27437) z JEDYNYM sladem w console.log - zero komunikatu w grze; sasiednia AI moze pozniej normalnie zdobyc juz-rebelianckie miasto (runCapitalCapturePlunder obsluguje ten przypadek jawnie), co nie wymaga wojny z graczem bo miasto juz nie jest jego. Pakt nigdy nie zostal zlamany - hipoteza NIEPOTWIERDZONA zywo, Operator ma zreprodukowac caly lancuch przed dodaniem powiadomien w obu punktach (bunt + przejecie przez sasiada), zero zmian w logice buntu. Dispatch `00-dispatch.md`, commit `cd25483d`. |
+
+## POSTĘP PĘTLI AUTOBOT 2026-09-02 wieczór — stan po kontroli kontenera (bez pauzy, cel: zamknięcie wszystkich tematów + deploy ROBOCZA)
+
+Właściciel poszedł spać z jawnym poleceniem dokończenia wszystkiego autonomicznie
+("dzialaj w petli az zamkniesz wszystkie tematy autobot worflow") i wykonania
+deployu ROBOCZA na końcu z raportem. Orkiestrator kontynuuje bez pytania o zgodę.
+
+- **P-SCIENCEHUB-EMOJI-ZAMIAST-IKON-ODBLOKOWAN-Q1** — już wcześniej **ZINTEGROWANE
+  (`a2c887e8`, Final Control PASS)**, potwierdzone ponownie jako ancestor `origin/main`.
+  Stare worktree/branch/Final-Control-worktree posprzątane (były nieaktualne, bez
+  wpływu na integrację).
+- **P-TECHDISCOVERY-BADGE-DUPLIKAT-NACHODZENIE-Q1** — Obrona PASS (`1009b347`, oba
+  zarzuty Evaluatora przyjęte, zero zmian w kodzie produkcyjnym od `912d4b86`,
+  bramka 63/63). **Final Control DISPATCHOWANY** (Sonnet 5, effort high).
+- **P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1** — Obrona PASS (`7dec516e`, oba
+  zarzuty Evaluatora przyjęte: klikalny obszar pigułek przeniesiony na
+  `button.entity-card-pill-text`, naprawiony predykat testu stylu). **Final Control
+  DISPATCHOWANY** (Sonnet 5, effort high).
+- **R-WOJNA-WYMUSZONA-REGULY-Q1** — Operator PASS (`3a4be6a3`, 3 zasady: próg 25 tur,
+  jeden przeciwnik naraz + limit gracza wg trudności, limit trwania 25 tur; Żelazo
+  nietknięte). **Evaluator DISPATCHOWANY** (Sonnet 5, effort high).
+- **R-DYPLO-MAPA-ODKRYCIE-PRZY-TRAKTACIE-Q1** — Evaluator w toku (żywe zrzuty
+  ekranu w trakcie generowania, worktree z modyfikowanymi PNG dowodowymi — proces
+  aktywny, celowo nietykany).
+- **R-DYPLO-TRAKTAT-HANDLOWY-WYBOR-CZASU-Q1** — Evaluator w toku (Opus 5, effort
+  high), bez nowych commitów od Operatora (`aa0daba0`).
+- **R-AI-ULEPSZENIA-MALO-BUDOWANE-Q1** — Operator w toku (worktree z aktywnymi
+  zmianami w `cities.ts`/`main.ts` i harnessami diagnostycznymi — proces aktywny).
+- **R-MIASTA-REBELIA-CICHA-BEZ-POWIADOMIENIA-Q1** — Operator w toku (worktree z
+  aktywną zmianą w `main.ts`).
+- **R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1** — Operator w toku, wcześniejsza
+  kolizja dwóch równoległych procesów w tym samym worktree ustąpiła (git status
+  pokazuje teraz jeden spójny zestaw zmian: `main.ts` + nowy test
+  `oboz-lowiecki-las-znika-render-test.cjs`).
+
+Kolejna kontrola zaplanowana automatycznie (ScheduleWakeup); po zamknięciu
+wszystkich powyższych — integracja allowlist-only każdego PASS, potem pełny
+deploy ROBOCZA (build → stamp → manifest → weryfikacja → FALA w `WERSJE.md`) i
+raport końcowy dla właściciela.
