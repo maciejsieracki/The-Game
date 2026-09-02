@@ -2356,7 +2356,8 @@
     "missileAttack": 5,
     "fieldPower": 15.5,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Imperium Akadyjskie, założone przez Sargona Wielkiego w XXIV wieku p.n.e., jako pierwsze w historii Mezopotamii zjednoczyło pod jedną władzą miasta-państwa sumeryjskie i uczyniło z łuku podstawę swej przewagi militarnej. Akadyjscy łucznicy posługiwali się łukiem kompozytowym, wykonanym z drewna, ścięgien i rogu, który dawał znacznie większą siłę i zasięg niż proste łuki wcześniejszych armii regionu. Wizerunki takich strzelców, w spiczastych hełmach i długich szatach, przetrwały na steli zwycięstwa Naram-Sina oraz na pieczęciach cylindrycznych epoki akadyjskiej. Łucznicy tworzyli zwarte szyki wsparcia dla piechoty włóczniczej, obsypując przeciwnika gradem strzał przed starciem wręcz. Zdolność Akadu do utrzymania stałej armii zawodowej, w tym oddziałów łuczniczych, uważana jest za jeden z fundamentów jego imperialnej ekspansji od Zatoki Perskiej po wschodnią Anatolię."
   },
   {
     "Jednostka": "Gaesatae",
@@ -2414,7 +2415,8 @@
     "missileAttack": 0,
     "fieldPower": 29.5,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Gaesatae byli celtyckimi najemnikami z terenów dzisiejszej południowej Francji i doliny Rodanu, których nazwa wywodzi się od galijskiego słowa oznaczającego włócznię lub oszczep. Antyczni autorzy, w tym Polibiusz opisujący bitwę pod Telamonem w 225 roku p.n.e., podkreślali, że wojownicy ci szli do walki nadzy lub niemal nadzy, licząc na to, że odsłonięte, wytatuowane ciało wzmocni wrażenie odwagi i wzbudzi grozę wśród wrogów. Uzbrojeni w długie miecze sieczne i owalne tarcze, nosili charakterystyczne naszyjniki torc, uznawane za oznakę statusu wojownika i przychylności bogów. Walczyli w pierwszej linii jako elitarna, dobrze opłacana siła uderzeniowa, wynajmowana przez galijskich wodzów do najważniejszych starć. Ich brawurowa, niemal rytualna szarża budziła respekt nawet u rzymskich legionistów, choć bywała też krytykowana jako mniej skuteczna wobec zdyscyplinowanej piechoty formacyjnej."
   },
   {
     "Epoka": "Żelazo",
@@ -2469,7 +2471,8 @@
     "meleeDefence": 2,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Soldurii, opisani przez Juliusza Cezara w \"Wojnie galijskiej\", stanowili elitarną gwardię przyboczną możnych wodzów celtyckich, zwłaszcza z terenów Akwitanii i zachodniej Galii. Wiązała ich z panem szczególna przysięga wierności, na mocy której dzielili z nim nie tylko dobrobyt i zaszczyty za życia, lecz również los w chwili śmierci — jeśli wódz ginął, jego soldurii mieli zginąć wraz z nim lub odebrać sobie życie. Ta więź, silniejsza niż zwykłe zobowiązania klientalne, czyniła z nich najbardziej zaufaną i lojalną siłę zbrojną w celtyckim społeczeństwie plemiennym. Uzbrojeni podobnie jak inni elitarni wojownicy galijscy, w miecze, tarcze i ozdobne torc, walczyli zawsze u boku swego wodza, osłaniając go w najcięższych momentach bitwy. Instytucja ta pokazuje, jak głęboko w kulturze celtyckiej zakorzenione były więzy osobistej wierności między patronem a jego zbrojną świtą."
   },
   {
     "Jednostka": "Rydwan celtycki",
@@ -2527,7 +2530,8 @@
     "missileAttack": 0,
     "fieldPower": 53,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Rydwan bojowy pozostawał w użyciu u ludów celtyckich znacznie dłużej niż w większości innych kultur żelaznej Europy, o czym świadczą liczne pochówki rydwanów odkrywane na terenach Brytanii, Galii oraz w kulturze lateńskiej. Grecki historyk Diodor Sycylijski i rzymski wódz Juliusz Cezar, opisujący podbój Brytanii, zauważali, że celtyccy wojownicy walczący z rydwanów łączyli szybkość manewru z możliwością zeskoczenia i walki pieszej, po czym woźnica odjeżdżał na bezpieczną odległość, by w razie potrzeby zabrać pana z powrotem. Lekka konstrukcja na dwóch kołach, ciągnięta zwykle przez parę koni, pozwalała harcować wzdłuż linii wroga, obrzucając go oszczepami i siejąc zamęt jeszcze przed starciem głównych sił piechoty. Rydwany służyły też jako mobilna platforma dla wodzów i arystokracji, podkreślając status jeźdźca na polu bitwy i podczas uroczystych przejazdów. W Brytanii ten sposób walki przetrwał aż do inwazji rzymskiej w I wieku n.e., budząc zdumienie legionistów przyzwyczajonych już do odejścia od rydwanów w wojnach śródziemnomorskich."
   },
   {
     "Jednostka": "Wojownik germański",
@@ -2585,7 +2589,8 @@
     "missileAttack": 4,
     "fieldPower": 37,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Ludy germańskie epoki żelaza, zamieszkujące lasy i bagna między Renem a Wisłą, wykształciły styl walki oparty na lekkim uzbrojeniu i znajomości trudnego terenu, co opisał rzymski historyk Tacyt w traktacie \"Germania\" z I wieku n.e. Podstawową bronią była framea — krótka, wąska włócznia zaostrzona z obu końców, którą można było równie dobrze pchać w zwarciu, jak i miotać na odległość, co czyniło ją bronią uniwersalną i tanią w produkcji. Wojownicy nosili niewiele lub wcale nie nosili pancerza, osłaniając się jedynie okrągłą lub sześciokątną tarczą z drewna obciągniętego skórą, a przed chłodem chroniły ich futrzane płaszcze. Tacyt podkreślał, że siła germańskich plemion tkwiła nie w uzbrojeniu, lecz w zaciekłości, znajomości puszcz oraz taktyce zasadzek, którą boleśnie odczuły legiony Warusa w lesie Teutoburskim w 9 roku n.e. Ten model lekkiej, ruchliwej piechoty pozostał charakterystyczny dla ludów germańskich przez całą epokę wędrówek ludów."
   },
   {
     "Jednostka": "Berserker germański",
@@ -2643,7 +2648,8 @@
     "missileAttack": 0,
     "fieldPower": 33,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Berserkowie, których nazwa według jednej z etymologii oznacza \"niedźwiedzią koszulę\", byli wojownikami germańskimi i skandynawskimi opisywanymi w źródłach staronordyckich jako walczący w stanie bojowego szału, określanego jako \"berserkergang\". Sagi islandzkie oraz kroniki wspominają, że tacy wojownicy szli do walki z odkrytą piersią lub w skórach wilka bądź niedźwiedzia, z łbem zwierzęcia nałożonym na głowę, licząc na przejęcie jego dzikiej siły i budząc grozę wśród przeciwników. Wchodząc w trans bojowy, mieli tracić wrażliwość na ból i przestawali dbać o własne bezpieczeństwo, atakując z furią, ale i porzucając rozwagę oraz zasady zwartego szyku. Walczyli zwykle bez tarczy, uzbrojeni w topór lub miecz, polegając na sile ciosu i strachu, jaki wzbudzali, bardziej niż na obronie. Współcześni badacze spierają się, czy stan ten wywoływały rytuały religijne, spożycie substancji psychoaktywnych, czy sama kulturowa tradycja wojenna, jednak sama legenda berserkerów przetrwała jako jeden z najbardziej rozpoznawalnych obrazów wojowniczości ludów północy."
   },
   {
     "Jednostka": "Taran",
@@ -2703,7 +2709,8 @@
     "fieldPower": 352.5,
     "siegePower": 85,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Taran należy do najstarszych machin oblężniczych znanych ludzkości, stosowanych już w II tysiącleciu p.n.e. przez armie asyryjskie i egipskie do kruszenia bram oraz murów obronnych miast. Podstawową jego formą był ciężki pień drzewa, czasem zaostrzony lub okuty na końcu, który załoga rozhuśtywała ręcznie lub zawieszała na prostej ramie, uderzając nim rytmicznie w tę samą część konstrukcji obronnej, aż do jej pęknięcia. Reliefy z pałaców asyryjskich w Niniwie i Nimrud przedstawiają takie tarany osłonięte prostym daszkiem, chroniącym obsługę przed pociskami i wrzątkiem lanym z murów przez obrońców. Skuteczność tarana zależała od czasu — długotrwałe, monotonne uderzenia wymagały cierpliwości oblegających i dobrej osłony, gdyż obrońcy nierzadko próbowali go podpalić lub zniszczyć wypadem. Mimo prostoty konstrukcji taran pozostawał podstawowym narzędziem zdobywania ufortyfikowanych miast przez tysiące lat, zanim zastąpiły go bardziej rozwinięte machiny oblężnicze."
   },
   {
     "Jednostka": "Taran okuty",
@@ -2763,7 +2770,8 @@
     "fieldPower": 377.5,
     "siegePower": 94,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Wraz z rozwojem metalurgii brązu machiny oblężnicze uległy istotnemu udoskonaleniu, a taran okuty stał się bardziej wytrzymałą i skuteczniejszą odmianą swego drewnianego poprzednika. Głowicę pnia wzmacniano teraz odlewaną osłoną z brązu, często formowaną na kształt zwierzęcej głowy, co pozwalało skupić siłę uderzenia oraz chronić drewno przed rozłupaniem przy wielokrotnych uderzeniach w kamienny mur. Machinę osadzano na prostych kołach lub płozach, ułatwiających przesuwanie ciężkiej konstrukcji pod mury oblężonego miasta, a obsługę osłaniał przenośny daszek pokryty skórami, chroniący przed strzałami i płonącymi pociskami obrońców. Tego rodzaju udoskonalone tarany pojawiają się na reliefach i w opisach kampanii oblężniczych władców Bliskiego Wschodu i wschodniej części basenu Morza Śródziemnego z epoki brązu i wczesnej epoki żelaza. Postęp ten odzwierciedlał szerszy trend militarny epoki — łączenie prostych, sprawdzonych rozwiązań z nowymi możliwościami, jakie dawała obróbka metalu."
   },
   {
     "Jednostka": "Katapulta",
@@ -2823,7 +2831,8 @@
     "fieldPower": 128,
     "siegePower": 45,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Wczesne machiny miotające, prekursorki katapulty w rozumieniu klasycznym, rozwijały się na Bliskim Wschodzie i w świecie egejskim jako odpowiedź na potrzebę rażenia obrońców i murów z bezpiecznej odległości, bez konieczności bezpośredniego szturmu. W przeciwieństwie do tarana, który musiał dotrzeć pod sam mur, konstrukcje miotające pozwalały posyłać pociski łukiem ponad fortyfikacjami, druzgocząc blanki, dachy budynków oraz morale obrońców ukrytych za murami. Takie urządzenia, oparte na sile naprężonych włókien, ścięgien lub giętkiego drewna, wymagały wprawnej obsługi i starannego strojenia, lecz w zamian dawały oblegającym przewagę zasięgu nieosiągalną dla piechoty. Ich konstrukcja była jednak stosunkowo delikatna, podatna na uszkodzenia podczas transportu oraz mało przydatna w starciu bezpośrednim, przez co zawsze wymagały osłony innych oddziałów. Rozwój takich machin miotających w epoce żelaza otworzył drogę do znacznie potężniejszych konstrukcji katapult i balist okresu klasycznego."
   },
   {
     "Jednostka": "Wieża oblężnicza",
@@ -2883,7 +2892,8 @@
     "fieldPower": 451,
     "siegePower": 97,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 15
+    "Utrzymanie surowiec (ilość)": 15,
+    "Historia": "Wieża oblężnicza, znana z reliefów asyryjskich oraz późniejszych opisów kampanii wojennych starożytnego Bliskiego Wschodu, rozwiązywała inny problem niż taran czy machiny miotające — nie burzyła murów, lecz pozwalała piechocie wejść na nie ponad głowami obrońców. Drewnianą konstrukcję, często wyższą niż otaczające ją fortyfikacje, popychano lub ciągnięto pod mur miasta, po czym opuszczano pomost łączący jej szczyt z koroną murów, umożliwiając szturmującym natarcie wprost na blanki. Załoga wieży była zwykle osłonięta wilgotnymi skórami chroniącymi przed ogniem oraz strzelcami zajmującymi górne piętra, którzy ostrzeliwali obrońców, zanim ruszał szturm. Budowa i przemieszczenie takiej wieży wymagały sporych nakładów pracy oraz płaskiego, stabilnego terenu pod murami, co czyniło ją bronią kosztowną, lecz decydującą przy zdobywaniu dobrze umocnionych miast. W połączeniu z taranami i machinami miotającymi wieże oblężnicze stanowiły jeden z filarów kompleksowej sztuki oblężniczej starożytnych imperiów Bliskiego Wschodu."
   },
   {
     "Jednostka": "Wojownik tyrreński",
@@ -2941,7 +2951,8 @@
     "missileAttack": 0,
     "fieldPower": 33.5,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Tyrsenowie, znani też jako Tursza lub Teresz, figurują w egipskich inskrypcjach z czasów Ramzesa II i Ramzesa III jako jeden z ludów uczestniczących w wielkich najazdach określanych zbiorczo mianem Ludów Morza, które w XIII i XII wieku p.n.e. wstrząsnęły wschodnią częścią basenu Morza Śródziemnego. Wielu historyków łączy ich z późniejszymi Etruskami z Italii, opierając się na podobieństwie nazw oraz starożytnej tradycji, według której lud ten miał przybyć do Italii drogą morską z rejonu wschodniej Anatolii lub Egei. Reliefy egipskie przedstawiają takich wojowników w charakterystycznych spiczastych hełmach, uzbrojonych w topory bądź krótkie miecze sieczne oraz okrągłe tarcze, walczących zarówno jako piechota lądowa, jak i załoga okrętów w słynnej bitwie na Delcie Nilu. Ludy Morza nie tworzyły jednego zorganizowanego państwa, lecz luźny konglomerat grup wojowników i osadników, których wspólną cechą była mobilność morska oraz gotowość do najazdu na słabnące potęgi schyłku epoki brązu. Ich starcia z Egiptem, choć ostatecznie przegrane, przyczyniły się do załamania systemu politycznego całego regionu wschodniośródziemnomorskiego."
   },
   {
     "Jednostka": "Wojownik szekelesz",
@@ -2999,7 +3010,8 @@
     "missileAttack": 0,
     "fieldPower": 32,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Szekelesz, wymieniani obok Tyrsenów, Peleset czy Denjen w egipskich zapiskach z okresu Nowego Państwa, byli kolejną z grup składających się na zjawisko Ludów Morza, które zdestabilizowało wschodnią część Morza Śródziemnego u schyłku epoki brązu. Ich pochodzenie pozostaje przedmiotem sporu — część badaczy wiąże ich z Sycylią lub południową Italią, inni wskazują na Anatolię lub Cypr jako punkt wyjścia ich wędrówek, co odzwierciedla ogólny chaos i przemieszczenia ludności tego burzliwego okresu. W inskrypcjach z Karnaku i Medinet Habu wojownicy ci przedstawiani są z włóczniami oraz okrągłymi tarczami, a ich hełmy zdobiły opaski z frędzlami, odróżniające ich od sąsiednich grup Ludów Morza o podobnym uzbrojeniu. Podobnie jak inne ludy tego ruchu, Szekelesz nie działali jako scentralizowane państwo, lecz jako sprzymierzone grupy wojowników i osadników poszukujących nowych ziem, gdy dotychczasowe ośrodki władzy w regionie egejsko-anatolijskim chwiały się pod naporem kryzysu. Ich udział w nieudanych najazdach na Egipt, odpartych przez Ramzesa III, jest jednym z niewielu bezpośrednich świadectw o tym enigmatycznym ludzie."
   },
   {
     "Epoka": "Żelazo",
@@ -3054,7 +3066,8 @@
     "meleeDefence": 5,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Imperium Asyryjskie w I tysiącleciu p.n.e. jako jedno z pierwszych rozwinęło regularną, dobrze wyszkoloną konnicę jako odrębny rodzaj wojsk, odchodząc od wcześniejszej dominacji rydwanów bojowych na rzecz szybszej i bardziej wszechstronnej jazdy. Reliefy z pałaców w Niniwie i Nimrud, zwłaszcza z czasów Aszurbanipala, przedstawiają jeźdźców uzbrojonych w długie lance, którzy w parach — jeden władający bronią, drugi osłaniający oba konie tarczą — atakowali zwarte szyki przeciwnika z impetem trudnym do powstrzymania dla lżejszej piechoty. Taka lancowa jazda szturmowa stanowiła szpicę armii asyryjskiej, wspierając natarcie piechoty i rydwanów oraz ścigając rozbite oddziały wroga po załamaniu się jego linii. Rozwój siodła i uprzęży, choć wciąż prymitywny w porównaniu z późniejszymi epokami, pozwolił Asyryjczykom utrzymać kontrolę nad koniem wystarczającą do walki lancą z grzbietu, co dawało im przewagę nad sąsiednimi ludami Bliskiego Wschodu. Ta innowacja militarna, obok żelaznej broni i rozbudowanej logistyki oblężniczej, tłumaczy w dużej mierze militarną dominację Asyrii nad regionem przez kilka stuleci."
   },
   {
     "Epoka": "Żelazo",
