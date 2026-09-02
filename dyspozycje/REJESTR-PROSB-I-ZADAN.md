@@ -3602,6 +3602,42 @@ JEDNOSTKI-J2 `0a772737` (w tym potwierdzona poprawna obsluga wyjatku
 Soldurii). Final Control dispatchowany dla wszystkich 6 rownolegle: Workflow
 `wf_99f5929f-dbc`.
 
+Wynik Final Control: 5/6 PASS/PASS-WITH-NOTES, 1 FAIL (tresc poprawna, blad
+wylacznie w nowym tescie). **ZINTEGROWANE do `main`**: BUDYNKI `3418c524`,
+ULEPSZENIA `2452429b`, TECHNOLOGIE `e9687a11` (PASS-WITH-NOTES - patrz nizej),
+JEDNOSTKI-J1 `3a44c234`, JEDNOSTKI-J2 `17f1ae17`; `wikiBundle.json`
+zregenerowany raz po wszystkich (`1eea5aa8`). Po integracji: tsc 0 bledow,
+5 bramek referencyjnych bez regresu (logic 213/213, tech-tree 19/19, research
+33/33, unit-replace 13/13, combat 6/6).
+
+**R-CIVPEDIA-CUDA-Q1: FAIL na Final Control** — WYLACZNIE w nowym tescie
+`civpedia-cuda-historia-test.cjs` (check [2]: porownanie tresci z `git show
+HEAD:<plik>`), NIE w tresci 19 plikow `.md` (Final Control niezaleznie
+potwierdzil ze tresc jest w 100% poprawna, zero nieautoryzowanych zmian, zywy
+render dziala). Przyczyna: test porownuje "tresc przed nowa sekcja" z `git
+show HEAD:<plik>`, ale po scommitowaniu HEAD JUZ zawiera nowa sekcje - test
+jest strukturalnie niespelnialny dla kazdego uruchomienia PO integracji
+(dziala tylko gdy ktos go odpali PRZED commitem). **Po integracji 5 dobrych
+batchy okazalo sie ze to SYSTEMOWY problem**: identyczny wzorzec (`git show
+HEAD`/zakres `git diff` jako punkt odniesienia) zepsul rowniez juz
+zintegrowane testy J1 (`civpedia-jednostki-j1-test.cjs`: 111/137, 26 fail,
+wszystkie check [2]) i J2 (`civpedia-jednostki-j2-test.cjs`: 132/133, 1 fail,
+check [4] zakres git diff zakladal izolacje od J1, ktora znikla po integracji
+obu do tej samej galezi). BUDYNKI/ULEPSZENIA/TECHNOLOGIE uzyly odpornej metody
+(bez zaleznosci od ruchomego `git HEAD`) i przeszly czysto (136/116/324).
+Dispatch naprawczy P-CIVPEDIA-TESTY-GIT-HEAD-SAMOODNOSZACE-Q1 w toku - patrz
+sekcja ponizej.
+
+**R-CIVPEDIA-TECHNOLOGIE-Q1: PASS-WITH-NOTES** — Operator, Evaluator i Final
+Control NIEZALEZNIE potwierdzili pre-istniejacy bug w
+`wikiHubHud.ts::pickEncyContent` (wprowadzony w infra `d6032099`, POZA
+allowlista tego tematu): przy `depth==='full'` sekcja "Rys historyczny"
+renderuje sie DWUKROTNIE w DOM, bo `entry.full` juz zawiera cala tresc pliku
+(wlacznie z nowa sekcja), a funkcja dokleja `historiaBlock` ponownie. Przy
+`depth==='m'` dziala poprawnie (jedna kopia). NIE blokuje tego tematu
+(kryterium wymagalo tylko wyrenderowania tresci, nie unikalnosci) ale
+wymaga osobnego tematu naprawczego w `wikiHubHud.ts` - patrz sekcja ponizej.
+
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1 | 2026-09-01 | Naprawa `entity-card-historia-section-test.cjs` (temat INFRA), ktorego fixture "jeszcze pustych" encji (stolarnia/Lowiectwo/farma) uzywal REALNYCH danych produkcyjnych zamiast syntetycznych - kazdy kolejny batch tresci ktory wypelnia jedna z tych 3 encji powoduje falszywy FAIL. Dodatkowo sekcja [5] ma pokrewny blad: fixture "zla wielkosc liter" dziedziczy z prawdziwego wiersza, wiec po wypelnieniu poprawnego pola test przypadkiem przechodzi/nie przechodzi z innego powodu niz zamierzony. | **ZINTEGROWANE do `main` (4efd8db2)** | Pelny cykl Operator->Evaluator(zero zarzutow)->Final Control przez Workflow. Sekcja [4]: asercja WARUNKOWA (`historiaExists === fieldNonEmpty`) na realnym stanie pola zamiast twardego "nie istnieje". Sekcja [5]: destructuring usuwa poprawne pole z kopii wiersza przed wstrzyknieciem zlej wielkosci liter, dla wszystkich 4 adapterow. Test zweryfikowany na REALNYCH, dzisiejszych danych (B1/T1/I1/U1 juz zintegrowane) - 31/31 PASS, zero fixture-driftu na przyszlosc. tsc 0 bledow, 5 bramek referencyjnych bez regresu. |
