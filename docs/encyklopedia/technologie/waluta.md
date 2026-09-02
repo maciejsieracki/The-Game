@@ -49,3 +49,7 @@ kończy Epokę 2 (Pieniądz); T-TECH-6: Mennica v1.0; ZLOTO 2026-07-25: Mennica 
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Zanim powstał pieniądz w dzisiejszym rozumieniu, ludzie posługiwali się wymianą barterową i przedmiotami o uznanej wartości — muszlami kauri, sztabkami metalu czy ziarnem — jako środkiem rozliczeń. Przełomem było wprowadzenie standaryzowanych monet o gwarantowanej wadze i próbie, co po raz pierwszy zrobiono w królestwie Lidii w Azji Mniejszej około VII wieku p.n.e. Monety znacznie ułatwiły handel, bo nie trzeba było już za każdym razem negocjować wartości wymienianych towarów ani sprawdzać jakości metalu. Wprowadzenie waluty dało też władcom nowe narzędzie kontroli gospodarczej — mogli bić monety ze swoim wizerunkiem, pobierać podatki w gotówce i finansować armie oraz budowle na skalę wcześniej nieosiągalną.

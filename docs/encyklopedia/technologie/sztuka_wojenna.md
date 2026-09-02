@@ -49,3 +49,7 @@ kończy Epokę 3 (cap v0.1); Akademia wojskowa = NOWY budynek (mnoznik sily i ex
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Starożytne imperia, od Asyrii po Rzym, przekształciły prowadzenie wojny z chaotycznych starć w zdyscyplinowaną naukę, opartą na formacjach, logistyce i systematycznym szkoleniu żołnierzy jeszcze przed pierwszą bitwą. Rzymski legion, z jego podziałem na kohorty i centurie, ścisłą hierarchią dowodzenia oraz rygorystycznym drylem, stał się wzorem organizacji wojskowej naśladowanym przez kolejne stulecia w wielu częściach świata. Teoretycy wojskowości, tacy jak chiński strateg Sunzi, spisywali traktaty analizujące znaczenie wywiadu, terenu, zaopatrzenia i morale, dowodząc, że zwycięstwo rozstrzyga się często jeszcze przed starciem armii. Wyspecjalizowane szkoły i akademie wojskowe pozwalały gromadzić i przekazywać to doświadczenie kolejnym pokoleniom dowódców, zamiast polegać wyłącznie na indywidualnym talencie wodza. Ciekawostka: „Sztuka wojny” Sunzi, spisana prawdopodobnie w V wieku p.n.e., jest studiowana do dziś nie tylko przez wojskowych, lecz również przez teoretyków biznesu i strategii korporacyjnej na całym świecie.

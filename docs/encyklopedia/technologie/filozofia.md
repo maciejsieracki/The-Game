@@ -49,3 +49,7 @@ Akademia = NOWY budynek (nauka++); Teatr = NOWY budynek (kultura++, zadowolenie+
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+W miastach starożytnej Grecji, gdzie wolni obywatele dysponowali czasem na debaty publiczne, narodziła się tradycja systematycznego dociekania prawdy metodą pytań i argumentów, zapoczątkowana przez takich myślicieli jak Sokrates, Platon i Arystoteles. Filozofowie zakładali szkoły — Akademię i Liceum — w których uczniowie ćwiczyli logikę, etykę i dociekania o naturze wszechświata, tworząc fundamenty zachodniej myśli naukowej i politycznej. Podobne tradycje krytycznego namysłu rozwijały się niezależnie w Indiach i Chinach, gdzie konfucjaniści i taoiści spierali się o naturę porządku społecznego i harmonii ze światem. Filozofia dała narzędzia pojęciowe niezbędne do rozwoju prawa, matematyki i medycyny, ponieważ nauczyła oddzielać obserwację od przesądu i wymagać dowodu zamiast autorytetu. Ciekawostka: Sokrates nie zostawił po sobie ani jednego pisma — całą jego myśl znamy wyłącznie z relacji uczniów, przede wszystkim Platona, co samo w sobie stało się przedmiotem sporów filozofów po dziś dzień.

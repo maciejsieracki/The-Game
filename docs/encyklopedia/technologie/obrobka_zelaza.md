@@ -50,3 +50,7 @@ Wielka odlewnia = produkcja stal+metale (brąz+żelazo+stal); Wielka Kuźnia = t
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Samo wytopienie żelaza z rudy dawało jedynie miękką, porowatą bryłę metalu, dlatego prawdziwa wartość tego surowca ujawniała się dopiero w rękach kowala, który wielokrotnym przekuwaniem, fałdowaniem i nagrzewaniem usuwał zanieczyszczenia i nadawał metalowi jednolitą, twardszą strukturę. Kowale odkryli również, że długotrwałe nagrzewanie żelaza w kontakcie z węglem drzewnym wzbogaca jego powierzchnię w węgiel, tworząc twardszą stal — proces zwany cementacją, znany już rzemieślnikom z Indii i Bliskiego Wschodu. Rozwinięte kuźnie potrafiły produkować broń i narzędzia o znacznie lepszych własnościach niż wcześniejsze wyroby z brązu, co wymagało jednak dostępu do dobrych dróg i szlaków handlowych umożliwiających sprowadzanie węgla drzewnego oraz zbywanie gotowych wyrobów. Umiejętności kowalskie przekazywano w zamkniętych cechach rzemieślniczych, a mistrzowie kowalstwa cieszyli się w wielu kulturach niemal magicznym prestiżem, wiązanym z opanowaniem żywiołu ognia. Ciekawostka: legendarna stal damasceńska, wytwarzana z indyjskiego wootzu, zawdzięczała swój charakterystyczny, falisty wzór mikroskopowej strukturze węglików, którą kowale odtwarzali metodą prób i błędów, nie rozumiejąc jeszcze jej naukowego podłoża.

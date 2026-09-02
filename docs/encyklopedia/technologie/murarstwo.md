@@ -46,3 +46,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Układanie kamienia i suszonej lub wypalanej cegły w trwałe, nośne konstrukcje rozwinęło się w starożytnych cywilizacjach Mezopotamii, Egiptu i doliny Indusu, gdzie budowniczowie nauczyli się wiązać materiał zaprawą z gliny, wapna lub gipsu, by ściany wytrzymywały ciężar kolejnych warstw. Dzięki murarstwu ludzie mogli wznosić budowle znacznie wyższe i trwalsze niż drewniane konstrukcje — mury obronne, świątynie i pierwsze wielopiętrowe domy, które przetrwały do dziś jako ruiny liczące tysiące lat. Technika ta zrewolucjonizowała też obronność miast: grube kamienne mury skutecznie chroniły przed najazdami i pożarami, których drewniane palisady nie wytrzymywały. Ciekawostka: niektóre starożytne mury, jak te w Machu Picchu czy mykeńskie Lwia Brama, łączono kamienie tak precyzyjnie dopasowane, że nie potrzebowały żadnej zaprawy, a mimo to stoją do dziś.

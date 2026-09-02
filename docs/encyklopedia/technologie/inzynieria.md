@@ -48,3 +48,7 @@ Fort = NOWY budynek (obrona terenu, zasięg 10, +100% obrona przy obozowaniu —
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Starożytni budowniczowie wojskowi łączyli wiedzę geometryczną z doświadczeniem praktycznym, tworząc systemy fortyfikacji, które przez wieki decydowały o losach oblężeń — od murów Uruk po rzymskie obozowe kastra budowane według ścisłych, powtarzalnych planów. Rzymscy inżynierowie wojskowi, legioniści z korpusu fabri, potrafili w ciągu jednego dnia marszu wznieść warowny obóz otoczony wałem, fosą i palisadą, co dawało armii bezpieczne oparcie nawet głęboko na terytorium wroga. Rozwój tej dziedziny obejmował także budowę wież obserwacyjnych i strażnic wzdłuż granic, pozwalających wcześnie wykrywać najazdy i błyskawicznie przekazywać sygnały ogniem lub dymem. Wiedza inżynieryjna czerpała z doświadczeń zdobywanych podczas kolejnych kampanii i była pieczołowicie spisywana w traktatach wojskowych, by mogła być przekazywana następnym pokoleniom dowódców. Ciekawostka: rzymski obóz wojskowy był tak zestandaryzowany, że legionista przeniesiony z Brytanii do Syrii odnajdywał swój namiot w tym samym miejscu układu obozu, niezależnie od tego, na jakim krańcu imperium się znajdował.

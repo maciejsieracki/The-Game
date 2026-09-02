@@ -46,3 +46,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Umiejętność systematycznego ścinania, ciosania i łączenia drewna należy do najstarszych ludzkich technik i wynaleziono ją niezależnie na wielu kontynentach już w epoce kamienia, gdy proste narzędzia z krzemienia i kości pozwoliły obrabiać pnie na opał, broń i szkielety szałasów. Z czasem powstały topory, dłuta i piły, a drewno stało się materiałem budowlanym numer jeden — z niego stawiano domy, mosty, wozy i pierwsze statki. Drewno miało też przewagę nad kamieniem: było lekkie, elastyczne i stosunkowo łatwe w obróbce nawet prostymi narzędziami, dzięki czemu społeczności mogły szybko rozbudowywać swoje osady. Ciekawostka: niektóre techniki łączenia drewna na tzw. jaskółczy ogon, bez użycia gwoździ, przetrwały w ciesielstwie niemal niezmienione od tysięcy lat.

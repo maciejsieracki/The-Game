@@ -45,3 +45,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Wymiana dóbr między odległymi społecznościami sięga epoki kamienia, gdy obsydian, muszle czy bursztyn wędrowały setki kilometrów od miejsca pochodzenia, lecz dopiero powstanie miast, pisma i standaryzowanych miar przekształciło ją w zorganizowany handel dalekosiężny. Karawany kupieckie przemierzające Mezopotamię, szlaki bursztynowe w Europie czy później Jedwabny Szlak łączący Chiny ze Śródziemnomorzem przenosiły nie tylko towary, ale i idee, technologie oraz choroby. Kupcy tworzyli sieci kontaktów, kredytu i zaufania, które wymagały nowych instytucji — umów, ważenia towaru i w końcu pieniądza. Miasta leżące na skrzyżowaniu szlaków handlowych, jak Ur, Tyr czy później Wenecja, potrafiły dzięki temu zdobyć bogactwo i wpływy niewspółmierne do swojej wielkości.

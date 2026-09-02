@@ -48,3 +48,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Obserwacja nieba towarzyszyła ludzkości od zarania cywilizacji, ale w systematyczną naukę zamieniła się dopiero w Mezopotamii, gdzie babilońscy kapłani-astronomowie prowadzili przez pokolenia zapiski ruchów Księżyca i planet, tworząc podstawy pierwszych kalendarzy. Egipcjanie wykorzystywali heliakalny wschód Syriusza do przewidywania corocznych wylewów Nilu, a greccy myśliciele, tacy jak Hipparchos, przekształcili te obserwacje w matematyczne modele ruchu ciał niebieskich. Wiedza astronomiczna miała ogromne znaczenie praktyczne — pozwalała ustalać pory siewu i żniw, wyznaczać święta religijne oraz orientować budowle według stron świata i cyklu słonecznego. Ciekawostka: budowniczowie Stonehenge, choć nie znali matematyki Babilończyków, ustawili głazy tak precyzyjnie względem przesileń, że monument do dziś służy jako naturalny kalendarz słoneczny.

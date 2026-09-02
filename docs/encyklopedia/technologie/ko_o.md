@@ -46,3 +46,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Koło, choć dziś wydaje się oczywistością, zostało wynalezione stosunkowo późno w dziejach ludzkości — najstarsze ślady kół używanych do transportu pochodzą z Europy Środkowej i Mezopotamii sprzed około 5-6 tysięcy lat, znacznie później niż rolnictwo czy garncarstwo. Pierwotnie koła stosowano w garncarstwie do formowania naczyń, a dopiero potem przystosowano je do wozów i rydwanów, co zrewolucjonizowało transport lądowy, pozwalając przewozić ciężkie ładunki znacznie szybciej niż na grzbietach zwierząt jucznych. Rydwany bojowe, ciągnięte przez konie, stały się na tysiąclecia jednym z najgroźniejszych narzędzi wojny starożytnego świata, od Egiptu po Chiny. Ciekawostka: niektóre zaawansowane cywilizacje przedkolumbijskie w Ameryce, choć znały zasadę koła i stosowały ją w zabawkach dla dzieci, nigdy nie wykorzystały jej do transportu — prawdopodobnie z powodu braku dużych zwierząt jucznych, które mogłyby ciągnąć wozy.

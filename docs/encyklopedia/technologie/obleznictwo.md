@@ -49,3 +49,7 @@ jednostki: Katapulta, Taran, Wieża oblężnicza (część już w UNITS — wery
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Zdobywanie obwarowanych miast od najdawniejszych czasów wymagało odrębnej wiedzy technicznej, którą starożytni Asyryjczycy rozwinęli do rangi prawdziwej sztuki, budując tarany, ruchome wieże i rampy szturmowe zdolne pokonać nawet potężne mury. Grecy i Macedończycy udoskonalili tę dziedzinę o mechanikę napiętych ścięgien i skręconych lin, co dało początek katapultom i balistom miotającym pociski na duże odległości z siłą niedostępną łucznikom. Machiny oblężnicze były kosztowne w budowie i transporcie, dlatego armie często konstruowały je na miejscu, tuż pod murami wroga, korzystając z drewna pozyskanego z okolicznych lasów. Skuteczność oblężenia zależała nie tylko od samych maszyn, lecz również od inżynierów potrafiących obliczyć kąt rzutu, wytrzymałość konstrukcji i słabe punkty fortyfikacji przeciwnika. Ciekawostka: podczas oblężenia Syrakuz Rzymianie ponoć musieli się mierzyć z maszynami skonstruowanymi przez samego Archimedesa, w tym dźwigami zdolnymi unosić i przewracać okręty wroga wprost z wody.

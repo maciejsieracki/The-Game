@@ -47,3 +47,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Pierwsze łodzie zdolne do pływania po otwartym morzu, a nie tylko po rzekach i jeziorach, pojawiły się już w epoce kamienia — ślady rejsów na wyspy Morza Śródziemnego i do Australii liczą sobie dziesiątki tysięcy lat. Prawdziwy przełom przyniosło jednak połączenie stępki, żagla i steru, co pozwoliło Egipcjanom, Fenicjanom i ludom Pacyfiku pokonywać setki i tysiące kilometrów wody z ładunkiem i załogą. Żegluga umożliwiła handel dobrami, które lądem docierałyby miesiącami lub wcale, a zarazem otworzyła drogę do kolonizacji odległych wybrzeży i wysp. Znajomość gwiazd, prądów i wiatrów, przekazywana ustnie z pokolenia na pokolenie żeglarzy, przez tysiąclecia była równie cenna jak sam okręt.

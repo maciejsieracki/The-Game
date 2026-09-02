@@ -48,3 +48,7 @@ Maciej 2026-06-30: usunięto luksus/plantację z gry
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Potrzeba mierzenia pól uprawnych, rozliczania podatków i przewidywania wylewów rzek skłoniła pisarzy babilońskich i egipskich do opracowania systemów liczbowych i podstaw geometrii już w III tysiącleciu p.n.e. Babilończycy posługiwali się systemem sześćdziesiątkowym, którego ślady przetrwały do dziś w podziale godziny na 60 minut i koła na 360 stopni, a egipscy mierniczy potrafili precyzyjnie wytyczać kąty proste przy budowie piramid. Matematyka stała się też narzędziem astronomii — pozwoliła przewidywać zaćmienia i układać kalendarze niezbędne rolnictwu. Z czasem greccy myśliciele, tacy jak Pitagoras i Euklides, przekształcili praktyczne rachunki w system dowodów logicznych, kładąc podwaliny pod matematykę jako naukę teoretyczną.

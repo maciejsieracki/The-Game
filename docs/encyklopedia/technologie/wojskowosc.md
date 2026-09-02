@@ -45,3 +45,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Przejście od doraźnie zbieranych grup wojowników do zorganizowanych armii z dowództwem, szeregami i podziałem na formacje dokonało się w starożytnych miastach-państwach Mezopotamii i doliny Nilu, gdzie wojna stała się na tyle częsta, że wymagała stałej organizacji. Sumeryjska falanga z włóczniami i tarczami, znana ze steli sępów, jest jednym z najstarszych udokumentowanych przykładów zdyscyplinowanej piechoty walczącej w zwartym szyku. Rozwój taktyki, hierarchii dowodzenia i szkolenia żołnierzy pozwalał mniejszym, lecz zorganizowanym siłom pokonywać liczniejszych, ale chaotycznych przeciwników. Z czasem wojskowość stała się osobną dziedziną wiedzy, przekazywaną w traktatach i szkołach, a nie tylko doświadczeniem zdobywanym na polu bitwy.

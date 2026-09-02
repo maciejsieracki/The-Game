@@ -46,3 +46,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Udomowienie konia na stepach Eurazji około IV tysiąclecia p.n.e. najpierw służyło do transportu i pociągu, lecz z czasem ludy koczownicze nauczyły się dosiadać wierzchowców bezpośrednio, co dało im niespotykaną wcześniej mobilność. Jeźdźcy mogli przemierzać w ciągu dnia dystanse nieosiągalne dla pieszych, pilnować rozległych stad, a w razie potrzeby błyskawicznie przemieszczać wojowników i wiadomości. Ludy stepowe, takie jak Scytowie czy późniejsi Hunowie i Mongołowie, zbudowały na tej umiejętności potęgi militarne, które wielokrotnie zagrażały osiadłym cywilizacjom rolniczym. Wynalazek siodła i strzemion, choć pojawił się znacznie później, jeszcze bardziej zwiększył stabilność i skuteczność jeźdźca w boju i pracy.

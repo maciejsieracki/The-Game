@@ -45,3 +45,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Handel wymienny, czyli oddawanie jednych dóbr za inne bez pośrednictwa pieniądza, jest praktyką tak starą jak same kontakty między różnymi grupami ludzkimi i towarzyszył społecznościom na całym świecie na długo przed powstaniem pierwszych miast. Dzięki wymianie plemiona i osady mogły zdobywać surowce i wyroby niedostępne na własnym terenie — sól, obsydian, muszle czy metale — co budowało pierwsze sieci kontaktów sięgające setek, a nawet tysięcy kilometrów. Systematyczna wymiana dóbr wymuszała też powstawanie wspólnych „kursów” wartości między różnymi towarami oraz elementarnego zaufania między obcymi sobie grupami, co torowało drogę późniejszemu handlowi dalekosiężnemu i dyplomacji. Ciekawostka: archeolodzy znajdowali bałtycki bursztyn w grobowcach starożytnego Egiptu, a egipskie paciorki w Europie Północnej — dowód, że sieci wymiany towarów istniały na kontynentalną skalę na długo przed jakąkolwiek pisemną wzmianką o handlu.

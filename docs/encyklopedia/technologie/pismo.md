@@ -47,3 +47,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Najstarsze systemy pisma, sumeryjskie pismo klinowe i egipskie hieroglify, wyłoniły się nie z potrzeby opowiadania historii, lecz z konieczności prowadzenia rachunków — zapisywania ilości zboża, podatków i transakcji handlowych w rozrastających się miastach-państwach. Z prostych piktogramów wyrysowanych rylcem na glinianych tabliczkach stopniowo rozwinęły się znaki oznaczające dźwięki, co pozwoliło zapisać dowolne słowo, a nie tylko konkretny przedmiot. Umiejętność czytania i pisania przez tysiące lat pozostawała w rękach nielicznych skrybów i kapłanów, dając im ogromną władzę nad administracją i wiedzą. Pismo umożliwiło też coś, czego pamięć ludzka nigdy nie mogła zagwarantować: dokładne, niezmienne przekazywanie praw, umów i wiedzy kolejnym pokoleniom.

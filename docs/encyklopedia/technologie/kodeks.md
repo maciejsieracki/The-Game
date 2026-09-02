@@ -45,3 +45,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Spisanie praw w jeden, publicznie dostępny zbiór, zamiast pozostawiania ich w gestii arbitralnej woli władcy czy zwyczaju plemiennego, było jednym z przełomowych momentów w dziejach organizacji społecznej. Kodeks Hammurabiego, wyryty na kamiennej steli w Babilonie około 1750 roku p.n.e., ustanawiał kary i zasady odpowiedzialności dla różnych warstw społecznych, jawnie widoczne dla każdego mieszkańca miasta. Podobne zbiory praw powstawały niezależnie w innych cywilizacjach, od starożytnych Chin po wczesny Rzym z jego Prawem XII Tablic, zawsze z podobnym celem: ograniczenia samowoli i wprowadzenia przewidywalności w rozstrzyganiu sporów. Spisane prawo dawało też władcom narzędzie legitymizacji rządów — ogłaszając kodeks, przedstawiali się jako źródło sprawiedliwości nadanej przez bogów lub rozum, a nie tylko siłę.

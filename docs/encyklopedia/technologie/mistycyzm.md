@@ -48,3 +48,7 @@ T-TECH-8: pierwszy poziom kultu — upgrade do Świątyni po Religii
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Wierzenia religijne i praktyki duchowe, w tym rytuały pogrzebowe, kult przodków i wiara w siły nadprzyrodzone, towarzyszą ludziom od dziesiątków tysięcy lat i rozwijały się niezależnie w każdej znanej kulturze, co sugeruje, że potrzeba nadania sensu światu jest głęboko zakorzeniona w naturze ludzkiej. Najstarsze ślady praktyk duchowych — celowe pochówki z darami grobowymi czy monumentalne sanktuaria jak tureckie Göbekli Tepe sprzed niemal 12 tysięcy lat — powstały jeszcze przed rozwojem rolnictwa i miast, co każe podejrzewać, że to właśnie wspólne rytuały mogły skłaniać ludzi do osiedlania się w jednym miejscu. Kapłani i szamani, jako pierwsi wyspecjalizowani „eksperci” społeczności, często pełnili też funkcje lekarzy, doradców i strażników tradycji, wiedzy astronomicznej czy kalendarza. Ciekawostka: budowa Göbekli Tepe wymagała skoordynowanej pracy setek ludzi na długo przed wynalezieniem pisma czy koła, co zmusiło archeologów do przemyślenia, co właściwie było motorem pierwszych wielkich cywilizacji.

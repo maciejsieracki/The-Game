@@ -53,3 +53,7 @@ kończy Epokę 2 / otwiera Epokę 3; Odlewnia żelaza = upgrade Odlewni brązu (
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Wytop żelaza z rudy okazał się znacznie trudniejszy niż obróbka brązu, ponieważ wymagał temperatur trudnych do osiągnięcia w prostych piecach, co przez stulecia ograniczało tę technikę do nielicznych ośrodków, takich jak Anatolia w czasach Hetytów. Przełom nastąpił, gdy rzemieślnicy nauczyli się budować wyższe piece z miechami wymuszającymi dopływ powietrza, co pozwoliło uzyskać z rudy niekształtną, gąbczastą bryłę zwaną łupą, wymagającą dalszego przekuwania. Ponieważ złoża żelaza są znacznie powszechniejsze niż cyny potrzebnej do brązu, opanowanie hutnictwa uniezależniło społeczności od dalekosiężnego handlu surowcami i umożliwiło masowe uzbrojenie armii. Upadek imperiów epoki brązu i zerwanie szlaków handlowych cyną przyspieszyły rozpowszechnienie się tej umiejętności w całym basenie Morza Śródziemnego i na Bliskim Wschodzie. Ciekawostka: Hetyci przez długi czas traktowali sekret wytopu żelaza jako tajemnicę państwową i podobno wykorzystywali monopol na ten metal w dyplomacji z sąsiednimi władcami.

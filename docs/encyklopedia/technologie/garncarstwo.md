@@ -46,3 +46,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Wypalanie gliny na trwałe naczynia pojawiło się niezależnie w wielu regionach świata w okresie neolitu, gdy osiadłe społeczności rolnicze potrzebowały sposobu na przechowywanie ziarna, wody i oliwy. Najstarsze znane naczynia gliniane datuje się na ponad 20 tysięcy lat wstecz, choć masowa produkcja garncarska rozwinęła się dopiero wraz z uprawą roślin i potrzebą magazynowania nadwyżek żywności. Wynalazek koła garncarskiego, które pojawiło się znacznie później, pozwolił rzemieślnikom formować naczynia symetryczne i w większej liczbie, co uczyniło garncarstwo jednym z pierwszych wyspecjalizowanych zawodów w historii. Skorupy ceramiczne są dziś jednym z najcenniejszych źródeł wiedzy archeologów, bo glina — w przeciwieństwie do drewna czy tkanin — przetrwała tysiąclecia niemal nienaruszona, pozwalając datować i odtwarzać życie dawnych kultur.

@@ -46,3 +46,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry (`gra/data/tech.json`) · T8 CivPedia — kategoria „Technologie", 2026-08-21.
+
+## Rys historyczny
+
+Łuk i strzała, pozwalające razić cel z bezpiecznej odległości, pojawiły się w epoce kamienia — najstarsze znaleziska grotów strzał datuje się na dziesiątki tysięcy lat, a ich stosowanie potwierdzono na różnych kontynentach niezależnie od siebie. Broń ta zrewolucjonizowała zarówno łowiectwo, umożliwiając polowanie na szybką i płochliwą zwierzynę bez ryzyka bliskiego kontaktu, jak i wojskowość, dając możliwość rażenia przeciwnika z dystansu, zanim ten zdążył się zbliżyć. Wraz z rozwojem metalurgii pojawiły się coraz skuteczniejsze groty, a technika kompozytowa — łączenie drewna, rogu i ścięgien w jednym łuku — pozwoliła koczowniczym ludom stepowym, jak Scytowie czy Mongołowie, budować potężne armie łucznicze konnych. Ciekawostka: legendarny angielski długi łuk, używany choćby pod Azincourt, wymagał lat treningu od dzieciństwa, bo naciągnięcie go wymagało siły porównywalnej z podnoszeniem kilkudziesięciu kilogramów.
