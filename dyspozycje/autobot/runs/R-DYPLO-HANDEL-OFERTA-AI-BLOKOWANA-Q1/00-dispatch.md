@@ -1,6 +1,23 @@
 TEMAT:  R-DYPLO-HANDEL-OFERTA-AI-BLOKOWANA-Q1
-RUNDA:  1/5
+RUNDA:  2/5
 DATA:   2026-09-02
+
+## RUNDA 2 — allowlista rozszerzona po DECISION_REQUIRED rundy 1
+Operator rundy 1 (commit `e4980969`, worktree `wt-dyplo-handel-blokowana`)
+ustalił PRZYCZYNĘ żywą reprodukcją: dla kierunku `zakup` (AI kupuje surowiec
+od gracza, płaci złotem) generator `pickResourceTradeRelOffer`
+(`gra/src/main.ts:16838-16926`) proponuje zapłatę PONIŻEJ progu
+`handelRequiredPn` (zmierzone: 24 PN zaproponowane vs ≥67 PN wymagane przy
+relTotal=60) — sama bramka `handelFairnessGate`/`handelRequiredPn` jest
+symetryczna i poprawna, NIE dotykaj jej. Dla kierunku `sprzedaz` (AI
+sprzedaje) ta sama funkcja jest matematycznie poprawna — problem dotyczy
+WYŁĄCZNIE ścieżki `zakup`. Podejrzane też (do sprawdzenia, POZA dawną
+allowlistą, ale w zakresie rundy 2): `gra/src/game/
+diplomacy-ai-offer-balance.ts::adjustZaplataPerTuraForZeroBalance`/
+`targetResourceTradePaymentPn`. Allowlista niżej już rozszerzona o oba
+pliki — Operator rundy 2 ma NAPRAWIĆ (nie tylko potwierdzić) `pickResourceTradeRelOffer`
+tak, by generowana zapłata dla kierunku `zakup` zawsze spełniała
+`handelRequiredPn` (AI nie proponuje sobie z góry nieuczciwej ceny).
 DOMAIN: GAME
 ŚCIEŻKA: A (Workflow), model sędziego (R-PROC-AUTOBOT.md §3c)
 MODEL + EFFORT per rola: temat LOGIKI GRY (nie wizualny — R-PROC-AUTOBOT.md
@@ -132,18 +149,19 @@ GRACZA (kierunek gracz→AI, `proposerIsPlayer`) — te mają zostać nietknięt
    nazwie, np. `*dyplo*`, `*handel*`, `*trade*`, `*negotiation*`) bez
    regresu + nowy/rozszerzony test dowodzący kryteriów 1, 3, 4, 5.
 
-## ALLOWLISTA — nic poza tym
+## ALLOWLISTA — nic poza tym (RUNDA 2: rozszerzona)
 `gra/src/game/diplomacy-proposals.ts`, `gra/src/game/diplomacy-pn-engine.ts`,
 `gra/src/ui/diplomacyAcceptanceBalance.ts`, `gra/src/game/diplomacy-
-acceptance-points.ts` — WYŁĄCZNIE w zakresie funkcji faktycznie
-zaangażowanych w przyczynę (nie edytuj plików z tej listy "na zapas"),
-nowy/rozszerzony plik testowy w `gra/tools/`. Jeśli po recon Operator
-ustali, że przyczyna leży W INNYM pliku (np. w `main.ts` przy generowaniu
-propozycji AI) — STOP, nie edytuj poza allowlistą, zgłoś to jako
-DECISION_REQUIRED z dokładnym wskazaniem miejsca, orkiestrator rozszerzy
-allowlistę w rundzie 2. Zakazane bezwzględnie: `gra/data/**`,
-`docs/decyzje/<ID>.md`, `.git/**`, `dyspozycje/WERSJE.md`,
-`gra-robocza/ROBOCZA-MANIFEST.json`, `playbook.json`.
+acceptance-points.ts`, `gra/src/main.ts` (WYŁĄCZNIE funkcja
+`pickResourceTradeRelOffer` i jej bezpośrednie zależności generujące
+zapłatę dla kierunku `zakup` — zero zmian w innych funkcjach main.ts),
+`gra/src/game/diplomacy-ai-offer-balance.ts` (WYŁĄCZNIE
+`adjustZaplataPerTuraForZeroBalance`/`targetResourceTradePaymentPn` jeśli
+recon rundy 2 potwierdzi ich udział) — WYŁĄCZNIE w zakresie funkcji
+faktycznie zaangażowanych w przyczynę (nie edytuj plików z tej listy "na
+zapas"), nowy/rozszerzony plik testowy w `gra/tools/`. Zakazane
+bezwzględnie: `gra/data/**`, `docs/decyzje/<ID>.md`, `.git/**`,
+`dyspozycje/WERSJE.md`, `gra-robocza/ROBOCZA-MANIFEST.json`, `playbook.json`.
 
 ## IZOLACJA
 worktree własny, gałąź `autobot/R-DYPLO-HANDEL-OFERTA-AI-BLOKOWANA-Q1`,
