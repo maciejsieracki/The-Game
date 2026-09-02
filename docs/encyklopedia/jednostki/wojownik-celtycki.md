@@ -66,3 +66,7 @@ Soldurii to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Celtow
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady). **Zaktualizowano 2026-07-23** (audyt CIVPEDII): stary „Wojownik celtycki" → Gaesatae (rename w danych); treść tego pliku przepisana na Soldurii.
+
+## Rys historyczny
+
+Soldurii, opisani przez Juliusza Cezara w "Wojnie galijskiej", stanowili elitarną gwardię przyboczną możnych wodzów celtyckich, zwłaszcza z terenów Akwitanii i zachodniej Galii. Wiązała ich z panem szczególna przysięga wierności, na mocy której dzielili z nim nie tylko dobrobyt i zaszczyty za życia, lecz również los w chwili śmierci — jeśli wódz ginął, jego soldurii mieli zginąć wraz z nim lub odebrać sobie życie. Ta więź, silniejsza niż zwykłe zobowiązania klientalne, czyniła z nich najbardziej zaufaną i lojalną siłę zbrojną w celtyckim społeczeństwie plemiennym. Uzbrojeni podobnie jak inni elitarni wojownicy galijscy, w miecze, tarcze i ozdobne torc, walczyli zawsze u boku swego wodza, osłaniając go w najcięższych momentach bitwy. Instytucja ta pokazuje, jak głęboko w kulturze celtyckiej zakorzenione były więzy osobistej wierności między patronem a jego zbrojną świtą.

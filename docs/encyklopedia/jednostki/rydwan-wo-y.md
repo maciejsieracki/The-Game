@@ -62,3 +62,7 @@ Rydwan (woły) to jednostka typu **Flanka** z epoki **Brąz**. Dostępna wielu c
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Zaprzężony w woły wóz bojowy był jednym z najwcześniejszych sposobów wykorzystania siły pociągowej zwierząt na polu walki, choć jego powolność i niewielka zwrotność czyniły go bardziej platformą transportową i symbolem prestiżu niż narzędziem szybkiego manewru. Najstarsze wizerunki takich pojazdów, ciągniętych przez woły lub udomowione osły, pochodzą z Mezopotamii i pobliskich regionów sprzed kilku tysięcy lat, gdzie wykorzystywano je do przewozu dowódców i uzbrojonych wojowników na pole bitwy. W przeciwieństwie do późniejszych lekkich rydwanów konnych, wersje wołowe poruszały się w tempie marszu piechoty, dlatego służyły głównie do transportu, obrony obozu i podnoszenia morale, a nie do szarż. Sam fakt posiadania takiego pojazdu świadczył o zamożności i statusie władcy czy dowódcy, gdyż budowa wozu bojowego i utrzymanie zaprzęgu wymagały znacznych zasobów. To właśnie te wczesne, ociężałe konstrukcje utorowały drogę lżejszym i szybszym rydwanom bojowym kolejnych epok.

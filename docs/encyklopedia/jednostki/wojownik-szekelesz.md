@@ -63,3 +63,7 @@ Wojownik szekelesz to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Szekelesz, wymieniani obok Tyrsenów, Peleset czy Denjen w egipskich zapiskach z okresu Nowego Państwa, byli kolejną z grup składających się na zjawisko Ludów Morza, które zdestabilizowało wschodnią część Morza Śródziemnego u schyłku epoki brązu. Ich pochodzenie pozostaje przedmiotem sporu — część badaczy wiąże ich z Sycylią lub południową Italią, inni wskazują na Anatolię lub Cypr jako punkt wyjścia ich wędrówek, co odzwierciedla ogólny chaos i przemieszczenia ludności tego burzliwego okresu. W inskrypcjach z Karnaku i Medinet Habu wojownicy ci przedstawiani są z włóczniami oraz okrągłymi tarczami, a ich hełmy zdobiły opaski z frędzlami, odróżniające ich od sąsiednich grup Ludów Morza o podobnym uzbrojeniu. Podobnie jak inne ludy tego ruchu, Szekelesz nie działali jako scentralizowane państwo, lecz jako sprzymierzone grupy wojowników i osadników poszukujących nowych ziem, gdy dotychczasowe ośrodki władzy w regionie egejsko-anatolijskim chwiały się pod naporem kryzysu. Ich udział w nieudanych najazdach na Egipt, odpartych przez Ramzesa III, jest jednym z niewielu bezpośrednich świadectw o tym enigmatycznym ludzie.

@@ -63,3 +63,7 @@ Wojownik Sherden to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Sherden byli jednym z ludów wymienianych w egipskich źródłach wśród tak zwanych Ludów Morza — luźnego zjawiska migracji, najazdów i przesiedleń, które wstrząsnęło wschodnim basenem Morza Śródziemnego u schyłku epoki brązu, około XIII i XII wieku przed naszą erą, nie zaś jednolitym, zorganizowanym państwem. Charakterystycznym elementem ich uzbrojenia, znanym z reliefów świątynnych, był rogaty hełm zwieńczony metalowym dyskiem oraz okrągła tarcza i długi miecz, odróżniające ich sylwetkę od typowego egipskiego czy lewantyńskiego wojownika. Zanim Sherden pojawili się jako najeźdźcy, część z nich służyła jako najemnicy w armii egipskiej — wojownicy tego ludu walczyli między innymi w gwardii przybocznej Ramzesa II podczas bitwy pod Kadesz. Później, za panowania Ramzesa III, Sherden występują już po stronie koalicji Ludów Morza odpartej w wielkich bitwach lądowej i morskiej upamiętnionych na płaskorzeźbach świątyni w Medinet Habu. Los Sherden — od najemników po najeźdźców i osadników wchłoniętych przez lokalne ludności Kanaanu — dobrze ilustruje chaotyczny i wieloznaczny charakter całego zjawiska Ludów Morza.

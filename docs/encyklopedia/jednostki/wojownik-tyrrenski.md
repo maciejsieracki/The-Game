@@ -62,3 +62,7 @@ Wojownik tyrreński to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Tyrsenowie, znani też jako Tursza lub Teresz, figurują w egipskich inskrypcjach z czasów Ramzesa II i Ramzesa III jako jeden z ludów uczestniczących w wielkich najazdach określanych zbiorczo mianem Ludów Morza, które w XIII i XII wieku p.n.e. wstrząsnęły wschodnią częścią basenu Morza Śródziemnego. Wielu historyków łączy ich z późniejszymi Etruskami z Italii, opierając się na podobieństwie nazw oraz starożytnej tradycji, według której lud ten miał przybyć do Italii drogą morską z rejonu wschodniej Anatolii lub Egei. Reliefy egipskie przedstawiają takich wojowników w charakterystycznych spiczastych hełmach, uzbrojonych w topory bądź krótkie miecze sieczne oraz okrągłe tarcze, walczących zarówno jako piechota lądowa, jak i załoga okrętów w słynnej bitwie na Delcie Nilu. Ludy Morza nie tworzyły jednego zorganizowanego państwa, lecz luźny konglomerat grup wojowników i osadników, których wspólną cechą była mobilność morska oraz gotowość do najazdu na słabnące potęgi schyłku epoki brązu. Ich starcia z Egiptem, choć ostatecznie przegrane, przyczyniły się do załamania systemu politycznego całego regionu wschodniośródziemnomorskiego.

@@ -63,3 +63,7 @@ Wojownik z mieczem i tarczą to jednostka typu **Wręcz** z epoki **Brąz**. Dos
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Wraz z rozwojem metalurgii brązu i żelaza piechota zyskała nową, uniwersalną broń — krótki lub średniej długości miecz, uzupełniony tarczą osłaniającą tors i ramię. Taki zestaw pozwalał wojownikowi łączyć ofensywę z obroną w sposób niedostępny dla uzbrojonych jedynie w drzewcową broń poprzedników, dając większą swobodę ruchu w zwarciu i skuteczność w walce jeden na jednego. Miecz, choć droższy w produkcji niż prosta włócznia, cięciem i pchnięciem zadawał rany trudniejsze do zatamowania, a tarcza pozwalała parować ciosy bez rezygnowania z możliwości kontrataku. Formacje mieczników z tarczami pojawiały się w wielu cywilizacjach epoki brązu i żelaza, od Bliskiego Wschodu po basen Morza Śródziemnego, często jako gwardia lub elita zamożniejszych wojowników, których stać było na kosztowne uzbrojenie. Ten model żołnierza — miecz i tarcza — stał się jednym z najbardziej rozpoznawalnych obrazów starożytnej piechoty w kolejnych tysiącleciach.

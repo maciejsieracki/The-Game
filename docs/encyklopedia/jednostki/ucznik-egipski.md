@@ -63,3 +63,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Łucznictwo było jedną z najstarszych i najbardziej cenionych umiejętności wojskowych starożytnego Egiptu, praktykowaną już w okresie predynastycznym, na długo przed zjednoczeniem Górnego i Dolnego Egiptu pod władzą pierwszych faraonów. Wczesni egipscy łucznicy posługiwali się prostym łukiem drewnianym oraz strzałami z krzemiennymi lub kościanymi grotami, skutecznymi zarówno na polowaniu wzdłuż żyznych brzegów Nilu, jak i w starciach z sąsiednimi ludami pustyni oraz Nubii. Reliefy i malowidła grobowe z tego okresu przedstawiają oddziały łuczników maszerujące w zwartych szykach, co świadczy o wczesnym docenieniu wartości zorganizowanej siły ognia na polu bitwy. Umiejętność strzelania z łuku uchodziła w egipskiej kulturze za cnotę godną nawet samego władcy, a wizerunki faraonów jako łuczników miały podkreślać ich siłę i boskie namaszczenie. Ta wczesna tradycja łucznicza stała się fundamentem, na którym w kolejnych epokach Egipt zbudował jedne z najskuteczniejszych formacji strzeleckich starożytnego świata.

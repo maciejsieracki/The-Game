@@ -63,3 +63,7 @@ Włócznik sumeryjski to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna d
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Stela Sępów, wzniesiona na cześć zwycięstwa Eannatuma, władcy Lagasz, nad sąsiednim miastem Umma w połowie trzeciego tysiąclecia przed naszą erą, zawiera jedno z najstarszych znanych przedstawień zwartej formacji zbrojnej w dziejach ludzkości. Ukazani na niej sumeryjscy włócznicy maszerują ramię w ramię w ścisłym szyku, osłaniając się dużymi prostokątnymi tarczami i wystawiając przed siebie las długich włóczni, w układzie zapowiadającym późniejszą grecką falangę. Taka formacja wymagała od żołnierzy zgrania kroku i utrzymania linii, co czyniło ją jedną z pierwszych udokumentowanych prób zdyscyplinowanej taktyki pola walki, a nie jedynie zbiorowego starcia pojedynczych wojowników. Sumeryjscy włócznicy rekrutowani byli spośród wolnych obywateli miast-państw, zobowiązanych do służby wojskowej na rzecz swojego władcy w czasie licznych sporów granicznych o kanały irygacyjne i żyzną ziemię. Wizerunek tej formacji, wyryty w kamieniu ponad cztery tysiące lat temu, pozostaje jednym z najstarszych świadectw zorganizowanej wojny w historii Mezopotamii.

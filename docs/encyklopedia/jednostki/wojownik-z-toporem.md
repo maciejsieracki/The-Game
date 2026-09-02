@@ -62,3 +62,7 @@ Wojownik z toporem to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Topór bojowy, w językach andyjskich określany często jako waman champi, łączył zaletę broni obuchowej z tnącą krawędzią ostrza, zwykle wykonanego z brązu lub miedzi osadzonej na drewnianym trzonku. W armii Inków topory trafiały w ręce zarówno regularnych żołnierzy, jak i oddziałów wystawianych przez podbite ludy prowincji Tawantinsuyu, których uzbrojenie i taktykę władcy z Cuzco często pozostawiali w dużej mierze nietknięte, dopóki wypełniały obowiązek służby wojskowej. Metalowe ostrze pozwalało zadawać rany cięte niedostępne dla prostej maczugi, jednocześnie zachowując siłę druzgocącego uderzenia charakterystyczną dla broni obuchowej regionu. Produkcja toporów wymagała dostępu do wytopu metalu, co czyniło je nieco droższym i bardziej prestiżowym uzbrojeniem niż powszechnie dostępna kamienna pałka. W andyjskich górach, gdzie walka toczyła się często na wąskich przełęczach i fortyfikowanych tarasach, topór sprawdzał się jako wszechstronna broń zarówno ataku, jak i przełamywania wrogiej obrony.

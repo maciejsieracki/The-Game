@@ -63,3 +63,7 @@ Włócznik to jednostka typu **Wręcz** z epoki **Brąz**. Dostępna wielu cywil
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Włócznia, złożenie drzewca i zaostrzonego lub okutego grotu, była jedną z pierwszych broni pozwalających piechurowi utrzymać przeciwnika — czy to zwierzę, czy wroga — na dystans, zanim doszło do bezpośredniego starcia. Uzbrojeni w nią wojownicy pojawiali się niemal we wszystkich wczesnych społecznościach rolniczych i pasterskich świata, ponieważ broń ta była tania w produkcji, łatwa w użyciu i skuteczna zarówno w obronie, jak i w ataku. W przeciwieństwie do krótkiej broni siecznej włócznia pozwalała formować zwarte szyki, w których pierwsze szeregi wystawiały las grotów w stronę nacierającego przeciwnika. Taka prosta taktyka okazała się na tyle skuteczna, że włócznicy tworzyli trzon piechoty w wielu wczesnych cywilizacjach — od Mezopotamii po Europę — na długo przed pojawieniem się bardziej wyspecjalizowanych formacji. To właśnie z takich luźnych szyków włóczników wyrosły później ściślej zorganizowane formacje, jak grecka falanga.

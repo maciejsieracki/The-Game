@@ -63,3 +63,7 @@ Wojownik z khopesh to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Khopesh, charakterystyczny zakrzywiony miecz z brązu przypominający sierp, wykształcił się w Egipcie i na Bliskim Wschodzie w epoce brązu, prawdopodobnie na bazie wcześniejszych narzędzi rolniczych i broni kananejskiej. Jego zagięte, jednostronnie naostrzone ostrze pozwalało nie tylko zadawać cięcia, lecz również zaczepiać i ściągać tarczę lub broń przeciwnika, otwierając drogę do kolejnego uderzenia. W egipskiej armii Nowego Państwa khopesz stał się bronią elitarnych oddziałów piechoty oraz oficerów, często wręczaną jako królewskie odznaczenie za odwagę na polu bitwy. Reliefy grobowe i świątynne, w tym przedstawienia Ramzesa II i innych władców, ukazują faraona dzierżącego khopesz jako symbol zwycięstwa nad wrogami Egiptu. Kosztowna produkcja z brązu sprawiała, że broń ta pozostawała poza zasięgiem zwykłego poborowego, umacniając jej status jako oznaki prestiżu wojskowego.

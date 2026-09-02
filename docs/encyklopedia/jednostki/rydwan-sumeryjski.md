@@ -62,3 +62,7 @@ Rydwan sumeryjski to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla *
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Najstarsze znane wizerunki pojazdów bojowych na świecie pochodzą z Sumeru — ciężkie, czterokołowe wozy zaprzężone w onagry, czyli dzikie osły azjatyckie, ukazane na słynnym Sztandarze z Ur oraz na Steli Sępów upamiętniającej zwycięstwo Eannatuma, władcy Lagasz. W przeciwieństwie do późniejszych, lekkich rydwanów konnych, sumeryjskie wozy poruszały się powoli i miały pełne, drewniane koła bez szprych, co czyniło je bardziej ruchomą platformą dla władcy i oszczepników niż narzędziem błyskawicznego manewru. Załoga takiego wozu składała się zwykle z woźnicy oraz wojownika uzbrojonego w oszczepy, które ciskano w kierunku wroga podczas przejazdu wzdłuż linii bitwy. Sama obecność takich pojazdów na polu walki miała także wymiar propagandowy, podkreślając potęgę i zamożność władcy zdolnego wystawić i utrzymać zaprzęg bojowy. Te archaiczne konstrukcje sumeryjskie uznaje się za bezpośredniego przodka znacznie sprawniejszych rydwanów, jakie w epoce brązu rozpowszechniły się na całym Bliskim Wschodzie.

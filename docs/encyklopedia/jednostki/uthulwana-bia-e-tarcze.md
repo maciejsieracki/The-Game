@@ -62,3 +62,7 @@ uThulwana (Białe Tarcze) to jednostka typu **Wręcz** z epoki **Brąz**. Unikal
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+uThulwana był jednym z najsłynniejszych regimentów królestwa Zulu, sformowanym w latach 70. XIX wieku za panowania króla Cetshwayo i wyróżniającym się charakterystycznymi tarczami w przeważającej mierze białej barwy, od których wzięła się jego popularna nazwa. Jako pułk starszych, żonatych już wojowników cieszył się szczególnym prestiżem i był uważany za jeden z najbardziej zaprawionych w boju oddziałów królewskich, często wystawiany w newralgicznych momentach kampanii. Regiment ten wziął udział w decydującej bitwie pod Isandlwaną w styczniu 1879 roku, gdzie siły Zulu zadały armii brytyjskiej jedną z najdotkliwszych klęsk kolonialnych XIX wieku. Żołnierze uThulwany walczyli również w kolejnych starciach wojny anglo-zuluskiej, w tym pod Kambulą, gdzie brytyjska przewaga ogniowa okazała się już nie do pokonania nawet dla tak doświadczonych regimentów. Los uThulwany odzwierciedlał losy całego królestwa Zulu — od szczytu potęgi militarnej po klęskę w starciu z nowoczesną armią kolonialną.

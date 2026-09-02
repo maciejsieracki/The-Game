@@ -63,3 +63,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Imperium Akadyjskie, założone przez Sargona Wielkiego w XXIV wieku p.n.e., jako pierwsze w historii Mezopotamii zjednoczyło pod jedną władzą miasta-państwa sumeryjskie i uczyniło z łuku podstawę swej przewagi militarnej. Akadyjscy łucznicy posługiwali się łukiem kompozytowym, wykonanym z drewna, ścięgien i rogu, który dawał znacznie większą siłę i zasięg niż proste łuki wcześniejszych armii regionu. Wizerunki takich strzelców, w spiczastych hełmach i długich szatach, przetrwały na steli zwycięstwa Naram-Sina oraz na pieczęciach cylindrycznych epoki akadyjskiej. Łucznicy tworzyli zwarte szyki wsparcia dla piechoty włóczniczej, obsypując przeciwnika gradem strzał przed starciem wręcz. Zdolność Akadu do utrzymania stałej armii zawodowej, w tym oddziałów łuczniczych, uważana jest za jeden z fundamentów jego imperialnej ekspansji od Zatoki Perskiej po wschodnią Anatolię.

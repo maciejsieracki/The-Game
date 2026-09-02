@@ -63,3 +63,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Łucznictwo w Sumerze, jednej z najstarszych cywilizacji miejskich Mezopotamii, rozwijało się równolegle z powstawaniem pierwszych zorganizowanych armii miast-państw takich jak Ur, Uruk czy Lagasz w trzecim tysiącleciu przed naszą erą. Znaleziska grotów strzał oraz przedstawienia na pieczęciach cylindrycznych i płaskorzeźbach świadczą o tym, że łuk, obok włóczni, należał do podstawowego wyposażenia sumeryjskich oddziałów pieszych. Sumeryjscy łucznicy działali zwykle jako lekka piechota dystansowa, osłaniająca cięższe formacje włóczników i przygotowująca pole przed starciem wręcz gradem strzał. Rywalizacja między miastami-państwami o żyzne ziemie wzdłuż Tygrysu i Eufratu sprawiała, że umiejętności łucznicze były stale doskonalone w niemal nieustających lokalnych konfliktach. Ta wczesna tradycja strzelecka Mezopotamii położyła fundamenty pod późniejsze, jeszcze bardziej rozwinięte armie akadyjskie i babilońskie.

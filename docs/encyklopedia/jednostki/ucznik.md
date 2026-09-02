@@ -63,3 +63,7 @@
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Łuk, wynaleziony niezależnie w wielu regionach świata jeszcze w epoce kamienia, zrewolucjonizował polowanie i wojnę, pozwalając razić cel z dystansu wielokrotnie większego niż rzut oszczepem czy kamieniem. Ślady grotów strzał znajdowane są w warstwach archeologicznych sprzed kilkunastu tysięcy lat zarówno w Afryce, jak i w Europie oraz Azji, co świadczy o niezależnym rozwoju tej broni na różnych kontynentach. Wczesny łucznik musiał godzinami ćwiczyć celność i siłę naciągu, dzięki czemu w wielu społecznościach łowiecko-zbierackich cieszył się szczególnym prestiżem. Strzały z krzemiennymi lub kościanymi grotami skutecznie przebijały skórzane osłony i pozwalały polować na duże zwierzęta bez bezpośredniego kontaktu. Z czasem umiejętność łucznicza przenosiła się z polowania na pole bitwy, tworząc jedną z najtrwalszych tradycji wojskowych w historii ludzkości.

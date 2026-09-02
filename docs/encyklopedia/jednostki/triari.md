@@ -63,3 +63,7 @@ Triari to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Rzymska*
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Triarii byli najstarszymi i najbardziej doświadczonymi żołnierzami republikańskiej legii rzymskiej, weteranami wielu kampanii, którzy w szyku manipularnym stanowili trzecią, ostatnią linię obrony. Uzbrojeni w długie włócznie hasta zamiast typowego dla lżejszej piechoty gladiusa, klękali na jedno kolano w oczekiwaniu na sygnał do wejścia do walki, oszczędzając siły do decydującego momentu bitwy. Rzymskie powiedzenie „res ad triarios venit” („sprawa dotarła do triariów”) oznaczało sytuację ostateczną, w której zawiodły już wszystkie inne środki i jedynie doświadczenie weteranów mogło odwrócić losy starcia. Ich obecność za liniami hastati i princeps działała też psychologicznie na młodszych żołnierzy, świadomych, że za ich plecami stoi niezawodna rezerwa. Formacja triariów przetrwała reformy Mariusza dopiero pod koniec II wieku p.n.e., gdy ujednolicona legia kohortowa zastąpiła dawny podział wiekowy rzymskiej piechoty.

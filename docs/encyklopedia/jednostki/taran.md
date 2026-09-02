@@ -61,3 +61,7 @@ Taran to jednostka typu **Oblężnicza** z epoki **Kamień**. Dostępna wielu cy
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Taran należy do najstarszych machin oblężniczych znanych ludzkości, stosowanych już w II tysiącleciu p.n.e. przez armie asyryjskie i egipskie do kruszenia bram oraz murów obronnych miast. Podstawową jego formą był ciężki pień drzewa, czasem zaostrzony lub okuty na końcu, który załoga rozhuśtywała ręcznie lub zawieszała na prostej ramie, uderzając nim rytmicznie w tę samą część konstrukcji obronnej, aż do jej pęknięcia. Reliefy z pałaców asyryjskich w Niniwie i Nimrud przedstawiają takie tarany osłonięte prostym daszkiem, chroniącym obsługę przed pociskami i wrzątkiem lanym z murów przez obrońców. Skuteczność tarana zależała od czasu — długotrwałe, monotonne uderzenia wymagały cierpliwości oblegających i dobrej osłony, gdyż obrońcy nierzadko próbowali go podpalić lub zniszczyć wypadem. Mimo prostoty konstrukcji taran pozostawał podstawowym narzędziem zdobywania ufortyfikowanych miast przez tysiące lat, zanim zastąpiły go bardziej rozwinięte machiny oblężnicze.

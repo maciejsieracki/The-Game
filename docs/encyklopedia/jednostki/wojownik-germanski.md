@@ -63,3 +63,7 @@ Wojownik germański to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna d
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Ludy germańskie epoki żelaza, zamieszkujące lasy i bagna między Renem a Wisłą, wykształciły styl walki oparty na lekkim uzbrojeniu i znajomości trudnego terenu, co opisał rzymski historyk Tacyt w traktacie "Germania" z I wieku n.e. Podstawową bronią była framea — krótka, wąska włócznia zaostrzona z obu końców, którą można było równie dobrze pchać w zwarciu, jak i miotać na odległość, co czyniło ją bronią uniwersalną i tanią w produkcji. Wojownicy nosili niewiele lub wcale nie nosili pancerza, osłaniając się jedynie okrągłą lub sześciokątną tarczą z drewna obciągniętego skórą, a przed chłodem chroniły ich futrzane płaszcze. Tacyt podkreślał, że siła germańskich plemion tkwiła nie w uzbrojeniu, lecz w zaciekłości, znajomości puszcz oraz taktyce zasadzek, którą boleśnie odczuły legiony Warusa w lesie Teutoburskim w 9 roku n.e. Ten model lekkiej, ruchliwej piechoty pozostał charakterystyczny dla ludów germańskich przez całą epokę wędrówek ludów.

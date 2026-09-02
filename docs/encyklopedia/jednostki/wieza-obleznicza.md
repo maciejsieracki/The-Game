@@ -61,3 +61,7 @@ Wieża oblężnicza to jednostka typu **Oblężnicza** z epoki **Brąz**. Dostę
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Wieża oblężnicza, znana z reliefów asyryjskich oraz późniejszych opisów kampanii wojennych starożytnego Bliskiego Wschodu, rozwiązywała inny problem niż taran czy machiny miotające — nie burzyła murów, lecz pozwalała piechocie wejść na nie ponad głowami obrońców. Drewnianą konstrukcję, często wyższą niż otaczające ją fortyfikacje, popychano lub ciągnięto pod mur miasta, po czym opuszczano pomost łączący jej szczyt z koroną murów, umożliwiając szturmującym natarcie wprost na blanki. Załoga wieży była zwykle osłonięta wilgotnymi skórami chroniącymi przed ogniem oraz strzelcami zajmującymi górne piętra, którzy ostrzeliwali obrońców, zanim ruszał szturm. Budowa i przemieszczenie takiej wieży wymagały sporych nakładów pracy oraz płaskiego, stabilnego terenu pod murami, co czyniło ją bronią kosztowną, lecz decydującą przy zdobywaniu dobrze umocnionych miast. W połączeniu z taranami i machinami miotającymi wieże oblężnicze stanowiły jeden z filarów kompleksowej sztuki oblężniczej starożytnych imperiów Bliskiego Wschodu.

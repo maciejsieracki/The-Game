@@ -63,3 +63,7 @@ Wojownik mykeński to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Wojownicy mykeńskiej Grecji epoki brązu, znani głównie z wykopalisk w Mykenach, Tirynsie i Pylos, walczyli w ciężkim uzbrojeniu obejmującym brązowe pancerze płytowe, jak słynna zbroja z Dendra, oraz charakterystyczne hełmy pokryte płytkami z kłów dzika, wspominane później przez Homera w Iliadzie. Podstawowym orężem były długie włócznie oraz miecze z brązu, a duże, często ośmiokątne lub wieżowe tarcze osłaniały niemal całe ciało wojownika podczas starcia. Tabliczki zapisane pismem linearnym B, odnalezione w mykeńskich pałacach, dokumentują drobiazgową administrację wojskową — spisy uzbrojenia, rydwanów i oddziałów podległych lokalnym władcom, wanaksom. Mykeńscy wojownicy uczestniczyli w licznych lokalnych konfliktach między pałacowymi ośrodkami władzy greckiego kontynentu, a echa ich wypraw, w tym legendarnej wyprawy przeciw Troi, przetrwały w greckiej tradycji ustnej na długie wieki po upadku cywilizacji mykeńskiej około 1200 roku przed naszą erą. Ich uzbrojenie i etos wojenny stały się później inspiracją dla poematów homeryckich, spisanych już w zupełnie innej epoce.

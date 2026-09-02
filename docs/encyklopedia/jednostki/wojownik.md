@@ -62,3 +62,7 @@ Wojownik to jednostka typu **Wręcz** z epoki **Kamień**. Dostępna wielu cywil
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Najstarszą formą zorganizowanej walki pieszej był prosty wojownik uzbrojony w to, co dawała najbliższa okolica — zaostrzony kij, kamienny topór, drewnianą maczugę czy nóż z krzemienia lub obsydianu. Takich bojowników spotykano niemal wszędzie w epoce kamienia: od plemion łowiecko-zbierackich Europy i Afryki, przez społeczności Ameryk, po pierwsze osady rolnicze Bliskiego Wschodu. Walczyli zwykle w luźnych grupach rodowych, bez sztywnej hierarchii dowodzenia, kierując się odwagą, siłą fizyczną i znajomością terenu bardziej niż wyćwiczoną taktyką. Konflikty toczyły się najczęściej o dostęp do wody, terenów łowieckich albo w odwecie za najazdy sąsiednich grup. Z czasem to właśnie z takich prostych, uniwersalnych wojowników wyrastały wszystkie późniejsze, wyspecjalizowane rodzaje piechoty.

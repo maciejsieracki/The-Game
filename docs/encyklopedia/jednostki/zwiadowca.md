@@ -61,3 +61,7 @@ Zwiadowca to jednostka typu **Wsparcie** z epoki **Kamień**. Dostępna wielu cy
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Zanim powstały zorganizowane armie, każda grupa łowiecko-zbieracka potrzebowała ludzi zdolnych szybko i cicho rozpoznać teren — wypatrzeć zwierzynę, źródło wody czy zbliżające się niebezpieczeństwo ze strony sąsiednich plemion. Tacy zwiadowcy, wybierani zwykle spośród najsprawniejszych i najbardziej doświadczonych członków grupy, poruszali się lekko uzbrojeni, polegając na szybkości i znajomości okolicy bardziej niż na sile bojowej. Umiejętność czytania śladów, wiatru i ukształtowania terenu przekazywano z pokolenia na pokolenie jako wiedzę równie cenną jak polowanie czy uprawa ognia. W wielu kulturach epoki kamienia to właśnie zwiadowcy jako pierwsi nawiązywali kontakt z obcymi grupami, decydując czy dojdzie do wymiany, sojuszu czy konfliktu. Ich rola — oczu i uszu społeczności — pozostała fundamentem sztuki wojennej na tysiąclecia, na długo zanim pojawiły się mapy czy regularne oddziały rozpoznawcze.

@@ -61,3 +61,7 @@ Wojownik z maczugą (Chaska) to jednostka typu **Wręcz** z epoki **Kamień**. U
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Podstawową bronią obuchową andyjskich wojowników w epoce przedhiszpańskiej była maczuga zwana champi lub macana, drewniana lub kamienna pałka, często zakończona gwiaździstą głowicą z kamienia bądź metalu, zdolną skruszyć wrogi hełm i kości pod skórzaną osłoną. W wojskach Imperium Inków tego typu uzbrojenie noszyli zwykli poborowi wywodzący się z podbitych ludów, mobilizowani w ramach systemu mit'a nakładającego na wspólnoty obowiązek służby wojskowej na rzecz władcy. Broń obuchowa sprawdzała się szczególnie dobrze w górzystym, trudnym terenie Andów, gdzie starcia toczyły się często w bliskim kontakcie na wąskich górskich szlakach i tarasowatych zboczach. W przeciwieństwie do broni siecznej maczuga nie wymagała ostrzenia ani kosztownej obróbki metalu, co czyniło ją dostępną nawet dla najsłabiej wyposażonych oddziałów pomocniczych imperium. Tego rodzaju prosta, uderzeniowa broń stanowiła trzon andyjskiej piechoty na długo przed hiszpańskim podbojem i pozostała w użyciu równolegle z bardziej wyspecjalizowanym uzbrojeniem elitarnych jednostek.
