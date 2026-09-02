@@ -3551,6 +3551,38 @@ JUZ NAPISANEGO i zatwierdzonego tekstu z `gra/data/*.json` do plikow `.md`
 audyt wszystkich tooltipow/opisow w grze) - bez czekania na decyzje
 wlasciciela, kontynuowac automatycznie.
 
+Recon (Explore, po integracji infra): mapowanie 5 kategorii dokladnie
+policzone. Budynki: `buildings.json`, klucz `id`, pole `historia` - 25/25
+plikow .md mapuje sie czysto. Cuda: `wonders.json[cuda]`, klucz `id`, pole
+`historia` - 19/19 czysto (najczystszy zbior). Ulepszenia:
+`terrain-improvements.json`, klucz `id`, pole `historia` - 16/17 czysto,
+WYJATEK `kopalnia.md` (1 plik dokumentuje 4 warianty: kopalnia_miedzi/
+zelaza/cyny/zlota przez wiersz `gra-id` w Metadanych - decyzja orkiestratora:
+wszystkie 4 teksty w jednej sekcji, kazdy pod podnaglowkiem z nazwa surowca).
+Technologie: `tech.json[technologie]`, BRAK pola id - dopasowanie po nazwie
+`Technologia`, pole `Historia` (Capitalized) - 32/32 czysto. Jednostki:
+`units.json`, BRAK pola id - dopasowanie po `Jednostka`, pole `Historia` -
+49/49 czysto poza 1 wyjatkiem: `wojownik-celtycki.md` ma `gra-id: soldurii`
+(prawdziwy tytul "Soldurii", stara tresc przeniesiona do `gaesatae.md`).
+Zero sekcji "## Rys historyczny" nigdzie dzis (potwierdzone grep) - nic nie
+zmigrowano. 143/171 plikow ma juz NIEZWIAZANY `## Historia / decyzje`
+(changelog wiki) - nowa sekcja idzie zawsze PO nim, na koncu pliku.
+
+Dispatch: 6 rownoleglych batchy (Operator->Evaluator->Obrona przez jeden
+polaczony Workflow, `wf_8349caeb-ee0`, limit fan-out=2 na tej maszynie
+[nproc=4]): `R-CIVPEDIA-BUDYNKI-Q1` (25), `R-CIVPEDIA-CUDA-Q1` (19),
+`R-CIVPEDIA-ULEPSZENIA-Q1` (17, w tym kopalnia 4-way), `R-CIVPEDIA-TECHNOLOGIE-Q1`
+(32), `R-CIVPEDIA-JEDNOSTKI-J1-Q1` (25, polowa alfabetyczna), 
+`R-CIVPEDIA-JEDNOSTKI-J2-Q1` (24, polowa alfabetyczna, w tym Soldurii).
+J1/J2 dziela folder `jednostki/` ale maja rozlaczne, jawnie wymienione
+zbiory plikow - zero konfliktu. WAZNE dla integracji: kazdy batch edytuje
+WYLACZNIE pliki `.md` + regeneruje `wikiBundle.json` do WLASNEGO testu, ale
+orkiestrator przy integracji cherry-pickuje WYLACZNIE diff plikow `.md`
+(bez `wikiBundle.json`) i regeneruje ten wspoldzielony plik generowany
+JEDEN raz, osobno, po zintegrowaniu wszystkich 6 batchy - zapobiega to
+konfliktom przy sekwencyjnej integracji generowanego pliku.
+Dispatche: `dyspozycje/autobot/runs/R-CIVPEDIA-{BUDYNKI,CUDA,ULEPSZENIA,TECHNOLOGIE,JEDNOSTKI-J1,JEDNOSTKI-J2}-Q1/00-dispatch.md`.
+
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1 | 2026-09-01 | Naprawa `entity-card-historia-section-test.cjs` (temat INFRA), ktorego fixture "jeszcze pustych" encji (stolarnia/Lowiectwo/farma) uzywal REALNYCH danych produkcyjnych zamiast syntetycznych - kazdy kolejny batch tresci ktory wypelnia jedna z tych 3 encji powoduje falszywy FAIL. Dodatkowo sekcja [5] ma pokrewny blad: fixture "zla wielkosc liter" dziedziczy z prawdziwego wiersza, wiec po wypelnieniu poprawnego pola test przypadkiem przechodzi/nie przechodzi z innego powodu niz zamierzony. | **ZINTEGROWANE do `main` (4efd8db2)** | Pelny cykl Operator->Evaluator(zero zarzutow)->Final Control przez Workflow. Sekcja [4]: asercja WARUNKOWA (`historiaExists === fieldNonEmpty`) na realnym stanie pola zamiast twardego "nie istnieje". Sekcja [5]: destructuring usuwa poprawne pole z kopii wiersza przed wstrzyknieciem zlej wielkosci liter, dla wszystkich 4 adapterow. Test zweryfikowany na REALNYCH, dzisiejszych danych (B1/T1/I1/U1 juz zintegrowane) - 31/31 PASS, zero fixture-driftu na przyszlosc. tsc 0 bledow, 5 bramek referencyjnych bez regresu. |
