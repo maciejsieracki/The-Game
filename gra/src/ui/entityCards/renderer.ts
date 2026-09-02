@@ -285,9 +285,25 @@ export function renderEntityCard(data: EntityCardData): HTMLElement {
   card.setAttribute('data-entity-kind', data.kind);
   card.setAttribute('data-entity-id', data.id);
 
-  const header = el('div', 'entity-card-header');
+  // R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 (Wariant A, ECHO właściciela): nagłówek karty
+  // to teraz pełnoszerokościowa DIORAMA (~190px) — ciemna scena z winietą, powiększony,
+  // wyśrodkowany podgląd (ten SAM medalion co dotąd: zamontowany snapshot 3D dla jednostek,
+  // płaski SVG dla pozostałych 4 rodzajów), elipsa „gruntu" pod nim i overlay tytułu w
+  // lewym dolnym rogu. Klasa `entity-card-header` MUSI zostać na tym elemencie — poza
+  // allowlistą tego tematu żyją dwa konsumenty, które dopinają do niej przycisk zamknięcia
+  // (`unitInfoCard.ts:98`, `techDiscoveryNotice.ts:610` przez `card.querySelector`).
+  // Medalion pozostaje POTOMKIEM `card` i jest dołączony do drzewa PRZED `mount()` niżej,
+  // więc kontrakt `unit-card-3d-preview-coverage-test`/`...-migration-test` (selektory
+  // `.entity-card-medallion canvas.unit-mini-canvas` liczone od korzenia karty) jest
+  // zachowany bez zmian w tamtych plikach.
+  const header = el('div', 'entity-card-header entity-card-diorama');
+  const stage = el('div', 'entity-card-diorama-stage');
+  const ground = el('div', 'entity-card-diorama-ground');
+  ground.setAttribute('aria-hidden', 'true');
+  stage.appendChild(ground);
   const medallionEl = buildMedallionEl(data);
-  header.appendChild(medallionEl);
+  stage.appendChild(medallionEl);
+  header.appendChild(stage);
 
   const titleWrap = el('div', 'entity-card-title-wrap');
   const titleRow = el('div', 'entity-card-title-row');
@@ -671,4 +687,71 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
   background:linear-gradient(90deg,rgba(232,216,138,.32),rgba(232,216,138,0));}
 .entity-card-historia-text{margin:0;font-style:italic;font-size:12.5px;line-height:1.5;
   color:var(--tg-text-muted,#a89f80);}
+/* R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — DIORAMA (Wariant A z zaakceptowanej makiety).
+   Reguły .entity-card-header/.entity-card-medallion/.entity-card-title-wrap WYŻEJ zostają
+   nietknięte i pełnią teraz rolę BAZY dla trybu kompaktowego; ten blok nadpisuje je dla
+   normalnego (non-compact) nagłówka przez klasę .entity-card-diorama (ta sama specyficzność,
+   późniejsza pozycja w arkuszu), a blok kompaktowy na samym końcu przywraca stary,
+   mały layout z wyższą specyficznością (.entity-card--compact ...). Dzięki temu przełączanie
+   jest czysto CSS-owe — klasa .entity-card--compact dochodzi do karty DOPIERO po kliknięciu
+   „Pokaż pozostałe N" (renderEntityCard/buildSectionEl), a nie w chwili renderu, więc DOM
+   musi być jeden dla obu trybów. KOTWICA POCZĄTKOWA mutacji (entity-card-diorama-real-render-test). */
+.entity-card-diorama{display:block;position:relative;height:190px;padding:0;gap:0;
+  overflow:hidden;border-bottom:1px solid rgba(232,216,138,.28);
+  background:radial-gradient(120% 80% at 50% 22%,rgba(88,108,140,.35),rgba(0,0,0,0) 70%),
+    linear-gradient(180deg,#232c39 0%,#161d27 55%,#0c1017 100%);}
+/* Winieta — przyciemnia krawędzie i dół sceny, żeby overlay tytułu był czytelny nad
+   dowolnie jasnym podglądem (canvas 3D ma jasnoniebieskie tło nieba, 0x87ceeb). */
+.entity-card-diorama::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:radial-gradient(115% 92% at 50% 34%,rgba(0,0,0,0) 42%,rgba(0,0,0,.5) 100%),
+    linear-gradient(180deg,rgba(0,0,0,0) 54%,rgba(6,8,12,.72) 100%);}
+.entity-card-diorama-stage{position:absolute;inset:0;z-index:1;display:flex;
+  align-items:center;justify-content:center;padding-bottom:26px;}
+.entity-card-diorama-ground{position:absolute;left:50%;bottom:27px;transform:translateX(-50%);
+  width:172px;height:30px;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(0,0,0,.72),rgba(0,0,0,.32) 58%,rgba(0,0,0,0) 100%);}
+.entity-card-diorama .entity-card-medallion{position:relative;width:120px;height:120px;flex:none;
+  border-radius:14px;overflow:hidden;border:1px solid rgba(232,216,138,.32);
+  box-shadow:0 14px 26px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;}
+/* Skalowanie ZAWARTOŚCI medalionu do nowego rozmiaru — SVG rodzajów „icon" bywa zapisany z
+   własnymi atrybutami width/height (34px), a snapshot 3D jest canvasem 80x80 z
+   'unitMiniPreview.ts'. Reguła dla canvasa istnieje też lokalnie w 'unitInfoCard.ts'
+   (ta sama wartość, wyższa specyficzność) — tu jest po to, żeby ENTITY_CARD_CSS był
+   samowystarczalny także na ścieżkach cityPanel/techDiscoveryNotice. */
+.entity-card-diorama .entity-card-medallion > svg,
+.entity-card-diorama .entity-card-medallion .unit-mini-canvas{width:100%;height:100%;display:block;}
+.entity-card-diorama .entity-card-medallion.unit-mini-fallback{font-size:44px;
+  color:var(--tg-render-fallback,#e0a06a);}
+/* Overlay tytułu — lewy dolny róg sceny, nad winietą (z-index 3). */
+.entity-card-diorama .entity-card-title-wrap{position:absolute;left:14px;right:14px;bottom:11px;
+  z-index:3;flex:none;text-shadow:0 2px 6px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8);}
+.entity-card-diorama .entity-card-title-row h2{font-size:19px;}
+.entity-card-diorama .entity-card-subtitle{opacity:.88;}
+/* Cokolwiek DODATKOWEGO doczepionego do nagłówka przez konsumentów spoza allowlisty
+   (przycisk ✕ z 'unitInfoCard.ts'/'techDiscoveryNotice.ts') — nie może zostać w potoku
+   układu, bo diorama nie jest już flexem; ląduje w prawym górnym rogu sceny. */
+.entity-card-diorama > :not(.entity-card-diorama-stage):not(.entity-card-title-wrap){
+  position:absolute;top:10px;right:10px;z-index:4;}
+/* TRYB KOMPAKTOWY (.entity-card--compact, ustawiany przez 'technologyAdapter.ts' dla
+   zagnieżdżonej listy jednostek w karcie technologii) — ZERO diaromy, stary mały nagłówek
+   z medalionem 24px. Blok MUSI stać po blokach diaromy: równa specyficzność z
+   '.entity-card-diorama .entity-card-medallion' rozstrzyga się kolejnością. */
+.entity-card--compact .entity-card-header{display:flex;align-items:flex-start;gap:10px;
+  height:auto;padding:12px 14px;overflow:visible;
+  background:rgba(232,216,138,.06);border-bottom:1px solid rgba(232,216,138,.18);}
+.entity-card--compact .entity-card-header::after{display:none;}
+.entity-card--compact .entity-card-diorama-stage{position:static;display:block;
+  width:24px;height:24px;flex:none;padding:0;}
+.entity-card--compact .entity-card-diorama-ground{display:none;}
+.entity-card--compact .entity-card-medallion{position:static;width:24px;height:24px;
+  border:0;border-radius:0;box-shadow:none;display:block;}
+.entity-card--compact .entity-card-title-wrap{position:static;flex:1;min-width:0;
+  text-shadow:none;}
+.entity-card--compact .entity-card-title-row h2{font-size:17px;}
+.entity-card--compact .entity-card-header > :not(.entity-card-diorama-stage):not(.entity-card-title-wrap){
+  position:static;}
+/* KOTWICA KOŃCOWA bloku R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — mutacja w
+   tools/entity-card-diorama-real-render-test.cjs wycina dokładnie ten zakres. Nowe reguły
+   dopisuj PO tej linii. */
 `;
