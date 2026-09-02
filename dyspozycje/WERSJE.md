@@ -13,6 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 046d388a - 2026-09-02 21:15 UTC - FALA 339: diorama pelnej szerokosci na kartach encji (podglad 3D jednostki/ikona wyeksponowane, Wariant A)
+
+|- md5 (pełne): 046d388ac1c721790d66b0bd4adc0136 · stempel: ROBOCZA · label 046d388a · źródłowe commity integracji: `e32d150a` + `6cebf7c3`
+|- **`R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1`** (`e32d150a`+`6cebf7c3`) — właściciel, po obejrzeniu kart jednostek: podgląd 3D wyglądał płasko, mały box w rogu karty. Orkiestrator zbudował i opublikował makietę (artefakt claude.ai) z 3 wariantami; właściciel wybrał **Wariant A — diorama pełnej szerokości**. Dzisiejszy mały 34×34px medalion w nagłówku karty encji zastąpiony pełnoszerokościową dioramą (~190px) na samej górze karty: ciemna scena z winietą, ten sam zamontowany podgląd (3D dla jednostek, SVG dla pozostałych 4 rodzajów encji) powiększony i wyśrodkowany, jasny kontakt-światła jako "grunt" pod modelem, tytuł+podtytuł jako czytelny overlay w lewym dolnym rogu. Tryb `.entity-card--compact` (zagnieżdżona, paginowana lista jednostek w karcie technologii) świadomie bez zmian layoutu.
+|- Temat graficzny/wizualny (R-PROC-AUTOBOT.md §5a): Operator i Evaluator na Opus 5, Final Control na Sonnet 5, obowiązkowe żywe zrzuty `page.screenshot()`. Evaluator złapał 5 realnych, zmierzonych usterek w rundzie 1: regres pozycji przycisku zamknięcia w trybie compact (kolidująca reguła CSS), nieczytelny tekst fallbacku bez WebGL na obu ścieżkach, praktycznie niewidoczna elipsa "gruntu" z tautologiczną asercją, drobna niezamierzona zmiana rozmiaru ikony w compact (28→24px), brak pliku raportu rundy. Obrona przyjęła i naprawiła wszystkie 5 z pomiarami (m.in. porównanie pikselowe obrazów przez `canvas.getImageData`). Final Control niezależnie odtworzył wszystkie pomiary od zera we własnym, odłączonym worktree i potwierdził każdą naprawę.
+|- Pełny cykl Operator→Evaluator→Obrona→Final Control przez Workflow. `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu. Nowy `entity-card-diorama-real-render-test.cjs` 46/46. Wszystkie istniejące testy kart encji (historia-section, action-buttons, wonder, 3d-preview-coverage, entitycard-migration) bez regresu — `entity-card-historia-section-test.cjs` nietknięty w diffie. Dwie niezwiązane, zastane czerwone bramki (`entity-card-contract-test.cjs`, `entity-card-cross-links-nested-overlay-test.cjs`) potwierdzone identyczne na czystym `main` sprzed tematu — zarejestrowane jako osobny, przyszły temat, poza zakresem tej naprawy.
+|- Bundle: 882 modułów (bez zmian liczby — CSS/markup, nie nowe moduły źródłowe), `Gra-ROBOCZA.html` 69,5 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — temat nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
+|- **Odstępstwo techniczne (jak w FALACH 324-338):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 9068f87c - 2026-09-02 20:10 UTC - FALA 338: opis/rys historyczny nad statystykami na kartach encji + panel audiencji dyplomatycznej osiagalny przy zoomie
 
 |- md5 (pełne): 9068f87cdfaa96c515642bb0343dacce · stempel: ROBOCZA · label 9068f87c · źródłowe commity integracji: `5f9e8c41` + `5558c775`
@@ -23,7 +35,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
 |- **Odstępstwo techniczne (jak w FALACH 324-337):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 046d388a, FALA 339)
 
 ## ROBOCZA f7f0a3c1 - 2026-09-02 17:30 UTC - FALA 337: naprawa wycieku Pracy przy cofnieciu przestarzalego wpisu kolejki ulepszen terenu
 
