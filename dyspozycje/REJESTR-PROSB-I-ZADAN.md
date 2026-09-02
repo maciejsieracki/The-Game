@@ -3725,6 +3725,20 @@ znaleziska: `P-CITYPANEL-KORUPCJA-TEKST-DEWELOPERSKI-Q1`, Workflow
 `handelBrutto = Σ...` itd.) to swiadomy, zaakceptowany wzorzec
 transparency-panelu i NIE jest w zakresie.
 
+**Runda 1: DECISION_REQUIRED** — Operator i Evaluator NIEZALEZNIE zglosili
+te sama sprzecznosc we WLASNYM dispatchu: Kryterium 1 (zero "placeholder" w
+calym DOM) niespelnialne przy allowlisci zakazujacej ruszania
+`appendDetailFormula`/`appendDetailAlgo`, ktore same zawieraja doslowne
+slowo "placeholder" w 2 liniach (formula straty korupcji + krok algorytmu).
+4 fragmenty z RECON poprawnie naprawione i zweryfikowane (commit `8bdc9581`
+na galezi `autobot/P-CITYPANEL-KORUPCJA-TEKST-DEWELOPERSKI-Q1`, jeszcze NIE
+na `origin/main`), nowy test 22-26/26 PASS w zakresie mozliwym przy
+pierwotnym brzmieniu. ECHO orkiestratora (`01-echo-r2.md`): Kryterium 1
+zostaje w pierwotnym brzmieniu, allowlista rozszerzona WYLACZNIE o usuniecie
+slowa "placeholder" (poziom slowa, nie struktury) z tych 2 linii formul.
+Runda 2 dispatchowana na TEJ SAMEJ galezi, budujaca na `8bdc9581`: Workflow
+`wf_36c3cfca-ec6`.
+
 **Podsumowanie CivPedia Faza 2 (na dzien 2026-09-02, po tej fali)**: 6/6
 kategorii tresci zintegrowane (budynki 25/25, cuda 19/19, ulepszenia 17/17,
 technologie 32/32, jednostki 49/49), infra + 2 pochodne bledy naprawione.
