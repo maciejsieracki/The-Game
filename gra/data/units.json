@@ -3122,7 +3122,8 @@
     "meleeDefence": 2,
     "missileAttack": 6,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Konnica łucznicza pojawiła się w armii nowoasyryjskiej jako uzupełnienie ciężkiej jazdy z lancą, tworząc razem z nią wszechstronną formację zdolną zarówno do ostrzału z dystansu, jak i do szturmu na zwarty szyk. Płaskorzeźby pałacowe z Niniwy i Nimrud, zwłaszcza z czasów Aszurbanipala w VII wieku przed naszą erą, przedstawiają jeźdźców strzelających z łuku kompozytowego wprost z galopującego konia, co świadczy o wysokim poziomie wyszkolenia jeździeckiego. We wcześniejszym okresie łucznik dosiadał wierzchowca w parze z towarzyszem trzymającym wodze obu koni, lecz z czasem nauczono się samodzielnie panować nad koniem i bronią jednocześnie. Taka jazda strzelecka poprzedzała natarcie piechoty i cięższej konnicy, rozpraszając szyki przeciwnika gradem strzał, zanim doszło do starcia wręcz. Umiejętność łączenia jazdy konnej z łucznictwem, wywodząca się częściowo z kontaktów Asyryjczyków z ludami koczowniczymi Iranu i stepu, stała się jednym z filarów militarnej przewagi imperium nad sąsiadami."
   },
   {
     "Epoka": "Brąz",
@@ -3177,7 +3178,8 @@
     "meleeDefence": 3,
     "missileAttack": 4,
     "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Łucznictwo stanowiło jeden z fundamentów potęgi militarnej Asyrii, a łucznik uzbrojony w potężny łuk kompozytowy był podstawową jednostką dystansową jej regularnej armii. Liczne płaskorzeźby z pałaców w Niniwie, Nimrud i Chorsabad przedstawiają szeregi łuczników osłanianych przez towarzyszy z dużymi, prostokątnymi tarczami plecionymi z wikliny, co pozwalało im prowadzić ostrzał z bliska odległości bez narażania się na kontrę. Asyryjscy władcy, prowadząc kampanie na wielu frontach jednocześnie, potrzebowali licznych i dobrze zaopatrzonych oddziałów łuczniczych zarówno do walki w polu, jak i przy oblężeniach ufortyfikowanych miast. Ostrzał łuczniczy poprzedzał zwykle szturm piechoty i rydwanów, a jego celem było osłabienie i zdemoralizowanie obrońców jeszcze przed zwarciem. Rozbudowana, scentralizowana logistyka imperium umożliwiała utrzymanie takich oddziałów jako stałej, zawodowej części armii, a nie doraźnie zwoływanego pospolitego ruszenia."
   },
   {
     "Epoka": "Żelazo",
@@ -3232,7 +3234,8 @@
     "meleeDefence": 4,
     "missileAttack": 7,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Drużyna książęca była rdzeniem sił zbrojnych wczesnych władców słowiańskich — grupą wojowników związanych osobistą wiernością wobec księcia, utrzymywaną na jego dworze i wynagradzaną łupem oraz darami w zamian za służbę. Źródła bizantyjskie, takie jak przypisywany Maurycjuszowi Strategikon z przełomu VI i VII wieku, opisują Słowian jako wojowników dobrze obeznanych z walką w trudnym, zalesionym terenie, unikających otwartej bitwy na rzecz zasadzek i szybkich uderzeń. Z czasem, wraz z krzepnięciem wczesnych organizmów państwowych na ziemiach słowiańskich, drużyna przekształciła się w coraz lepiej uzbrojoną, zawodową gwardię przyboczną, wyposażoną w broń i pancerze wyraźnie przewyższające standard uzbrojenia pospolitego wojownika. Wykopaliska z terenów Wielkich Moraw oraz wczesnopiastowskiej Polski dostarczają licznych znalezisk broni i oporządzenia świadczących o istnieniu takiej elity wojskowej skupionej wokół władcy. Drużynnik był więc zarówno żołnierzem, jak i uczestnikiem dworskiego życia księcia, a jego lojalność stanowiła jeden z filarów władzy książęcej we wczesnym średniowieczu słowiańskim."
   },
   {
     "Epoka": "Żelazo",
@@ -3287,7 +3290,8 @@
     "meleeDefence": 4,
     "missileAttack": 7,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Obok pieszej drużyny wczesni Słowianie wystawiali także lekką jazdę uzbrojoną w krótkie oszczepy do rzutu, choć konnica ta poświadczona jest wyraźniej dopiero w młodszych warstwach źródeł niż piesza walka opisywana przez bizantyjski Strategikon. Rozwój takiej formacji wiąże się z bliskimi, wielopokoleniowymi kontaktami Słowian z kaganatem awarskim, od którego mieszkańcy Europy Środkowej przejęli między innymi strzemię i związane z nim techniki jazdy konnej. Odkrycia archeologiczne z wielkomorawskich Mikulčic, gdzie natrafiono na setki żelaznych ostróg, świadczą o istnieniu w IX i X wieku konnych orszaków zbrojnych związanych z powstającą władzą książęcą. Jeździec taki, uzbrojony w kilka lekkich oszczepów miotanych z siodła, pełnił rolę harcownika — nękał przeciwnika ostrzałem z dystansu, zanim doszło do starcia w zwarciu, unikając długotrwałej walki wręcz na koniu. Taka lekka jazda oszczepnicza uzupełniała pieszą drużynę książęcą, dając władcy środki do szybkiego reagowania i zwiadu na rozległych, zalesionych terytoriach."
   },
   {
     "Epoka": "Brąz",
@@ -3342,7 +3346,8 @@
     "meleeDefence": 9,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Cywilizacja doliny Indusu, której głównymi ośrodkami były Harappa i Mohendżo-Daro, pozostawiła po sobie starannie zaplanowane miasta otoczone murami obronnymi z suszonej i wypalanej cegły, z wąskimi, dobrze kontrolowanymi bramami wjazdowymi. Ponieważ pismo tej cywilizacji do dziś nie zostało odczytane, wiedza o jej organizacji militarnej opiera się niemal wyłącznie na dowodach archeologicznych — pozostałościach fortyfikacji, bramach flankowanych przez konstrukcje przypominające baszty oraz nielicznych przedstawieniach uzbrojonych postaci na pieczęciach steatytowych. Znajdowane groty i topory z miedzi i brązu wskazują, że straż pilnująca wejść do miasta dysponowała bronią odpowiednią do krótkiego starcia w ciasnym przejściu, a nie do walki w otwartym polu. Skala i regularność fortyfikacji sugeruje istnienie zorganizowanej władzy zdolnej do planowania i utrzymania takich konstrukcji, choć jej dokładny charakter polityczny pozostaje przedmiotem dyskusji badaczy. Strażnicy bram byli więc przede wszystkim strażą miejską, kontrolującą ruch ludzi i towarów wchodzących do jednego z największych ośrodków miejskich epoki brązu."
   },
   {
     "Epoka": "Brąz",
@@ -3397,7 +3402,8 @@
     "meleeDefence": 5,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "O uzbrojeniu mieszkańców cywilizacji doliny Indusu wiadomo znacznie mniej niż o sąsiednich cywilizacjach Mezopotamii czy Egiptu, ponieważ jej pismo pozostaje nierozszyfrowane, a wizerunki wojowników na pieczęciach i figurkach terakotowych są nieliczne i niejednoznaczne. Wykopaliska w Harappie i Mohendżo-Daro dostarczyły grotów włóczni, toporów oraz noży z miedzi i brązu, co wskazuje, że piesi wojownicy tej cywilizacji dysponowali bronią drzewcową i sieczną typową dla epoki brązu regionu. Brak w znaleziskach dużej liczby okazałych, ceremonialnych przedmiotów militarnych — w przeciwieństwie choćby do grobowców sumeryjskich — bywa odczytywany jako poszlaka wskazująca na stosunkowo niski status wojny w tej kulturze, choć wnioski takie pozostają ostrożnymi hipotezami, nie pewnikami. Standaryzowane odważniki i pieczęcie odnajdywane w licznych miastach doliny Indusu świadczą raczej o rozwiniętym handlu i administracji niż o rozbudowanym aparacie militarnym. Piechota tej cywilizacji pozostaje więc dla archeologów jedną z większych zagadek epoki brązu — widoczną w materiale, lecz niemą w źródłach pisanych."
   },
   {
     "Epoka": "Żelazo",
@@ -3452,7 +3458,8 @@
     "meleeDefence": 8,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Cytadele wznoszone na sztucznych, podniesionych platformach w Harappie i Mohendżo-Daro, oddzielone od reszty miasta murem i fosą, wskazują na istnienie w tej cywilizacji miejsc o znaczeniu obronnym lub administracyjnym, choć ich dokładna funkcja — czy była to siedziba władzy, spichlerz, czy jedno i drugie — pozostaje przedmiotem sporu badaczy wobec braku odczytanego pisma. W Harappie odkryto rzędy jednakowych, prostokątnych budowli interpretowanych jako koszary lub kwatery robotnicze, co sugeruje istnienie zorganizowanej, stałej grupy ludzi utrzymywanej przez władze miasta, potencjalnie związanej z jego ochroną. Znaleziska broni z miedzi i brązu w obrębie tych kompleksów, choć nieliczne, wspierają hipotezę o obecności uzbrojonej załogi pilnującej zapasów zboża i dostępu do centralnych części miasta. Zadziwiająca standaryzacja cegieł, miar i wag w całej cywilizacji doliny Indusu każe przypuszczać istnienie jakiejś formy scentralizowanej kontroli, zdolnej do utrzymania takiego garnizonu na przestrzeni pokoleń. Wobec milczenia źródeł pisanych pozostaje to jednak rekonstrukcja oparta wyłącznie na śladach materialnych, a nie na potwierdzonej historii politycznej czy wojskowej."
   },
   {
     "Epoka": "Brąz",
@@ -3507,7 +3514,8 @@
     "meleeDefence": 3,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Rydwany bojowe imperium Hetytów, którego centrum leżało na wyżynie Anatolii ze stolicą w Hattusie, wyróżniały się na tle rydwanów egipskich czy mykeńskich trzyosobową załogą — woźnicą, wojownikiem z włócznią lub łukiem oraz dodatkowym tarczownikiem osłaniającym obu towarzyszy. Taki układ dawał hetyckim rydwanom większą siłę uderzeniową w bezpośrednim starciu kosztem nieco mniejszej zwrotności niż lżejsze, dwuosobowe rydwany egipskie. Najlepiej udokumentowanym starciem z ich udziałem jest bitwa pod Kadesz stoczona około 1274 roku przed naszą erą przeciwko Egiptowi Ramzesa II, gdzie hetyckie rydwany odegrały kluczową rolę w pierwszej fazie starcia, przełamując szyk egipski nagłym atakiem z zaskoczenia. Archiwa klinowe odnalezione w Hattusie, w tym traktaty i korespondencja dyplomatyczna, potwierdzają wagę, jaką hetyccy władcy przywiązywali do utrzymania sprawnych oddziałów rydwanowych jako trzonu swojej armii. Rydwany budowano z lekkiego drewna wzmocnionego okuciami z brązu, a ich produkcja i utrzymanie wymagały rozwiniętego rzemiosła oraz stad koni hodowanych specjalnie na potrzeby wojska."
   },
   {
     "Epoka": "Brąz",
@@ -3562,7 +3570,8 @@
     "meleeDefence": 8,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Piechota stanowiła liczebny trzon armii hetyckiej, uzupełniając mniej liczne, lecz bardziej prestiżowe oddziały rydwanów, i składała się zarówno z wojsk rdzennie hetyckich, jak i kontyngentów dostarczanych przez liczne państwa wasalne podporządkowane Hattusie. Uzbrojenie pieszych wojowników obejmowało włócznie, topory sierpowate oraz krótkie miecze, a ochronę zapewniały tarcze i, w przypadku zamożniejszych żołnierzy, elementy zbroi z brązu. Archiwa klinowe z Hattusy wspominają o systemie poboru wojsk od podległych władców lokalnych, co pozwalało hetyckim królom wystawiać armie liczące, według relacji egipskich z bitwy pod Kadesz, nawet kilkanaście tysięcy pieszych. Piechota działała zwykle w ścisłej współpracy z rydwanami, osłaniając je podczas przegrupowań oraz dobijając dzieło zniszczenia po tym, jak natarcie rydwanów rozbiło szyk przeciwnika. Zróżnicowanie etniczne i uzbrojenia w ramach hetyckiej piechoty odzwierciedlało wielonarodowy, sfederowany charakter samego imperium, rozciągającego się od zachodniej Anatolii po północną Syrię."
   },
   {
     "Epoka": "Żelazo",
@@ -3617,7 +3626,8 @@
     "meleeDefence": 7,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Gwardia przyboczna króla Hetytów, znana ze źródeł klinowych pod nazwą mesedi, była elitarną formacją odpowiedzialną za bezpośrednią ochronę władcy podczas ceremonii dworskich, uroczystości religijnych oraz w czasie kampanii wojennych. Płaskorzeźby z hetyckiego sanktuarium w Alaca Höyük przedstawiają uzbrojonych wojowników w wyszukanych strojach, uznawanych przez badaczy za przedstawicieli tej właśnie gwardii królewskiej, wyróżniającej się wysoką jakością uzbrojenia i pancerza na tle zwykłej piechoty. Teksty z archiwum królewskiego w Hattusie opisują szczegółowe zasady ceremoniału dworskiego, w którym gwardziści pełnili ściśle określone role podczas audiencji i procesji, co świadczy o randze tej formacji w hierarchii dworskiej. Służba w gwardii była zwykle zarezerwowana dla wojowników szczególnie zaufanych, często związanych z rodziną królewską lub arystokracją, a jej dowódcy należeli do najbliższego otoczenia władcy. Obecność takiej wyspecjalizowanej straży przybocznej odzwierciedla rozbudowany ceremoniał i biurokrację, jakimi hetyccy królowie otaczali sprawowanie władzy w swoim imperium."
   },
   {
     "Epoka": "Brąz",
@@ -3672,7 +3682,8 @@
     "meleeDefence": 7,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "W okresie starobabilońskim, gdy Babilon wznosił się do rangi centrum politycznego i religijnego południowej Mezopotamii, kult bogini Isztar — patronki miłości i wojny zarazem — cieszył się szczególnym znaczeniem, a jej świątynie i związane z nimi instytucje otaczano ochroną na równi z pałacem władcy. Kodeks Hammurabiego, spisany w XVIII wieku przed naszą erą, wspomina o różnych kategoriach służby wojskowej i majątkach nadawanych żołnierzom w zamian za gotowość do stawienia się na wezwanie władcy, co wskazuje na istnienie zorganizowanej, choć jeszcze niewielkiej jak na późniejsze standardy, kadry wojskowej związanej z dworem. Straż przyboczna związana ze świątyniami i pałacem uczestniczyła zarówno w ceremoniach religijnych ku czci bogini, jak i w ochronie zgromadzonych w świątyniach zapasów i kosztowności. Uzbrojenie takich strażników — brązowe topory, sztylety i lekkie tarcze — odpowiadało standardowi epoki starobabilońskiej, poprzedzającej o ponad tysiąc lat później erę żelaza i imperium neobabilońskie. Bliski związek władzy świeckiej z kultem Isztar w tym wczesnym okresie historii Babilonu podkreślał sakralny wymiar panowania miejscowych królów."
   },
   {
     "Epoka": "Brąz",
@@ -3727,7 +3738,8 @@
     "meleeDefence": 5,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Brąz",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "W okresie starobabilońskim, którego najsłynniejszym władcą był panujący w XVIII wieku przed naszą erą Hammurabi, podstawą sił zbrojnych miasta-państwa, a później rozległego królestwa, byli piesi wojownicy uzbrojeni w brązowe topory, włócznie i proste tarcze plecione lub obite skórą. Kodeks Hammurabiego reguluje między innymi zasady nadawania ziemi w zamian za służbę wojskową oraz kary za dezercję, co świadczy o istnieniu zorganizowanego, choć wciąż w dużej mierze opartego na poborze, systemu wojskowego. Babilońskie wojsko tego okresu toczyło liczne wojny z sąsiednimi miastami-państwami Mezopotamii, takimi jak Larsa czy Mari, zanim Hammurabi zjednoczył region pod swoim panowaniem. Uzbrojenie i wyszkolenie takiego wojownika odpowiadały standardom epoki brązu Bliskiego Wschodu, wyraźnie różniąc się od uzbrojenia znacznie późniejszej, neobabilońskiej piechoty epoki żelaza. Ta wczesna, starobabilońska tradycja militarna stanowiła fundament, na którym w kolejnych stuleciach nadbudowywały się kolejne formy babilońskiej organizacji wojskowej."
   },
   {
     "Epoka": "Żelazo",
@@ -3782,7 +3794,8 @@
     "meleeDefence": 7,
     "missileAttack": 0,
     "Utrzymanie surowiec": "Żelazo",
-    "Utrzymanie surowiec (ilość)": 10
+    "Utrzymanie surowiec (ilość)": 10,
+    "Historia": "Odrodzenie potęgi Babilonu w VII i VI wieku przed naszą erą, po upadku Asyrii, wiąże się przede wszystkim z dynastią chaldejską i jej najsłynniejszym władcą, Nabuchodonozorem II, za którego panowania miasto rozrosło się do rangi jednej z największych metropolii starożytnego świata, otoczonej potężnymi murami obronnymi. Piechota neobabilońska, w przeciwieństwie do znacznie wcześniejszej, starobabilońskiej tradycji wojennej z czasów Hammurabiego, korzystała już z broni żelaznej i wzorowała swoją organizację częściowo na doświadczeniach podbitej niedawno Asyrii, której dziedzictwo militarne Babilończycy w dużej mierze przejęli. Kroniki babilońskie odnotowują liczne kampanie tego okresu, w tym podbój Jerozolimy i podporządkowanie Lewantu, prowadzone przy udziale rozbudowanej, dobrze zaopatrzonej armii pieszej. Monumentalne budowle Nabuchodonozora II, takie jak Brama Isztar zdobiona emaliowanymi płytkami z wizerunkami zwierząt, świadczą o bogactwie państwa zdolnego utrzymać stałe, liczne siły zbrojne. Neobabilońskie imperium, choć przetrwało jedynie kilka dekad przed podbojem perskim w 539 roku przed naszą erą, pozostawiło po sobie jeden z najbardziej rozpoznawalnych obrazów starożytnej Mezopotamii."
   },
   {
     "Epoka": "Żelazo",
