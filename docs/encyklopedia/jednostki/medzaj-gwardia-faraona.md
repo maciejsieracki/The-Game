@@ -63,3 +63,7 @@ Medżaj (Gwardia Faraona) to jednostka typu **Wręcz** z epoki **Brąz**. Unikal
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Nazwa Medżaj pierwotnie odnosiła się do ludu zamieszkującego Nubię w rejonie Pustyni Wschodniej, którego wojownicy od Starego Państwa służyli Egipcjanom jako najemnicy i zwiadowcy cenieni za znajomość pustynnego terenu. W okresie Średniego Państwa termin ten zaczął oznaczać formację pełniącą funkcje policyjne i strażnicze — patrolowanie granic, pilnowanie karawan oraz ochronę nekropolii tebańskich przed rabusiami grobów. Z czasem, w Nowym Państwie, Medżaj przestał być określeniem etnicznym, a stał się nazwą elitarnej służby przybocznej i policyjnej podległej bezpośrednio administracji faraona, rekrutowanej już niezależnie od pochodzenia. Najbardziej zaufani spośród nich pełnili straż przy osobie władcy i w obrębie pałacu królewskiego, łącząc funkcję gwardii honorowej z zadaniami bezpieczeństwa wewnętrznego. Ta podwójna spuścizna — nubijskich zwiadowców i egipskiej gwardii faraona — uczyniła z Medżaj jedną z najbardziej charakterystycznych instytucji porządkowych starożytnego Egiptu.

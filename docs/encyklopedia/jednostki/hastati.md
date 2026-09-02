@@ -64,3 +64,7 @@ Hastati to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Rzymska
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Hastati stanowili pierwszą linię wczesnej rzymskiej legii manipularnej — młodych, względnie niedoświadczonych obywateli, którzy rozpoczynali służbę wojskową właśnie w tej formacji, zanim z wiekiem i doświadczeniem awansowali do cięższych oddziałów princeps i triarii. Uzbrojeni w krótki miecz gladius, dużą tarczę scutum oraz charakterystyczny oszczep pilum, hastati otwierali starcie serią rzutów pilami, które miały zaklinować się w tarczach przeciwnika, czyniąc je bezużytecznymi, zanim doszło do walki wręcz. Formacja manipularna, w której hastati ustawieni byli w niewielkich, ruchliwych oddziałach zwanych maniplami, dawała rzymskiej armii elastyczność nieosiągalną dla sztywnych greckich falang, pozwalając reagować na nierówny teren i luki w szyku wroga. Jeśli natarcie hastati się załamało, mogli wycofać się przez szeregi cięższej piechoty stojącej za nimi, co było unikalnym rozwiązaniem taktycznym swojej epoki. Ten system rotacji linii pozwalał Republice Rzymskiej wchłaniać straty i utrzymywać ciągłość walki znacznie dłużej niż armie oparte na jednej, monolitycznej formacji.

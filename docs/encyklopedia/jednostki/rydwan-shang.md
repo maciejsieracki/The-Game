@@ -62,3 +62,7 @@ Rydwan Shang to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla **Chi�
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Rydwan bojowy pojawił się w Chinach stosunkowo późno w porównaniu z Bliskim Wschodem, docierając do dorzecza Rzeki Żółtej dopiero w połowie drugiego tysiąclecia przed naszą erą, najprawdopodobniej za pośrednictwem kontaktów ze stepowymi ludami Azji Środkowej, choć dokładna droga tej wymiany technologicznej wciąż pozostaje przedmiotem badań archeologów. W stolicy dynastii Shang, Yin koło dzisiejszego Anyang, odnaleziono groby zawierające kompletne rydwany z kołami o drewnianych szprychach, wraz z końmi i woźnicami złożonymi w rytualnym pochówku obok zmarłego dostojnika. Typowa załoga rydwanu Shang liczyła trzy osoby — woźnicę, łucznika oraz wojownika uzbrojonego w drzewcową broń ge — co pozwalało łączyć ostrzał z bliskim starciem podczas przejazdu wzdłuż szyków wroga. Rydwany służyły władcom Shang nie tylko na wojnie, lecz również podczas wielkich polowań rytualnych, będących ważnym elementem królewskiej legitymizacji i pokazem sprawności militarnej dworu. Kosztowna technologia budowy i utrzymania takich pojazdów sprawiała, że pozostawały one wyłączną domeną królewskiego rodu i najwyższej arystokracji shangowskich Chin.

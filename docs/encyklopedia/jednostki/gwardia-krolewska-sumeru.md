@@ -62,3 +62,7 @@ Gwardia Królewska Sumeru to jednostka typu **Wręcz** z epoki **Brąz**. Unikal
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Świadectwem istnienia elitarnej straży przybocznej władców Sumeru są między innymi Królewskie Groby w Ur, odkryte w latach dwudziestych XX wieku, gdzie obok pochowanych władców i dworzan znaleziono szczątki uzbrojonych strażników złożonych w ofierze podczas pogrzebu swego pana. Tacy gwardziści, wyposażeni w hełmy i broń nierzadko wykonaną ze złota, srebra i lazurytu, świadczyli o bogactwie i randze zmarłego władcy, a ich obecność w grobie miała zapewnić mu ochronę również w zaświatach. Za życia panującego gwardia królewska pełniła straż przy pałacu i osobie władcy, towarzysząc mu podczas ceremonii religijnych oraz w czasie kampanii wojennych przeciw rywalizującym miastom-państwom, takim jak Umma czy Kisz. Rekrutowano ją spośród najbardziej zaufanych i najlepiej uzbrojonych wojowników, którzy w zamian za służbę cieszyli się szczególnymi przywilejami i bliskością dworu. Instytucja osobistej gwardii władcy, uświęcona religijnie i widoczna już w tak wczesnym okresie Mezopotamii, stała się wzorem naśladowanym przez kolejne cywilizacje regionu.

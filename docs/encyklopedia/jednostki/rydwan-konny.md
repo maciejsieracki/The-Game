@@ -62,3 +62,7 @@ Rydwan konny to jednostka typu **Flanka** z epoki **Brąz**. Dostępna wielu cyw
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Lekki rydwan ciągnięty przez konie, w odróżnieniu od powolnych, ciężkich wozów zaprzężonych w woły, pojawił się w epoce brązu na Bliskim Wschodzie i szybko rozprzestrzenił się wśród cywilizacji Egiptu, Mezopotamii, Anatolii oraz Grecji mykeńskiej jako symbol prestiżu i decydujące narzędzie na polu bitwy. Dwuosobowa załoga — woźnica oraz łucznik lub włócznik — pozwalała łączyć szybkość jazdy ze skutecznym ostrzałem, umożliwiając manewrowanie wokół szyków piechoty i uderzanie w ich najsłabsze punkty. Budowa rydwanu wymagała zaawansowanej stolarki, kół ze szprychami zamiast pełnych tarcz drewnianych oraz dobrze wyszkolonych koni, co czyniło tę broń dostępną wyłącznie dla zamożnych władców i arystokracji wojskowej. Wielkie starcia epoki brązu, takie jak bitwa pod Kadesz między Egiptem a Hetytami, rozstrzygały się w dużej mierze dzięki masowemu użyciu setek rydwanów po obu stronach. Wraz z upowszechnieniem się jazdy wierzchem w kolejnych stuleciach rydwan bojowy stopniowo tracił znaczenie militarne, pozostając jednak długo symbolem władzy i statusu w ceremoniale wielu kultur.

@@ -62,3 +62,7 @@ Konnica to jednostka typu **Flanka** z epoki **Brąz**. Dostępna wielu cywiliza
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Udomowienie konia i nauczenie się jazdy wierzchem otworzyło przed wojną zupełnie nowy wymiar prędkości i zasięgu, jakiego nie dawała żadna dotychczasowa formacja piesza. Pierwsi jeźdźcy bojowi pojawili się na stepach Eurazji, gdzie koczownicze ludy pasterskie od dziecka spędzały czas w siodle, co naturalnie przekładało się na umiejętności bojowe całych społeczności. Konnica pozwalała błyskawicznie uderzać we flanki i tyły wroga, ścigać uciekających przeciwników oraz prowadzić rozpoznanie na obszarach niedostępnych dla piechoty w rozsądnym czasie. Sama obecność jeźdźców na polu bitwy potrafiła załamać morale przeciwnika jeszcze przed faktycznym starciem, ze względu na hałas, kurz i widoczną przewagę mobilności. Z czasem umiejętność stawiania i wykorzystywania konnicy stała się jednym z kluczowych wyznaczników potęgi militarnej starożytnych cywilizacji.

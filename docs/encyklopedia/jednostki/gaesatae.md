@@ -63,3 +63,7 @@ Gaesatae to jednostka typu **Wręcz** z epoki **Żelazo**. Unikalna dla **Celtow
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Gaesatae byli celtyckimi najemnikami z terenów dzisiejszej południowej Francji i doliny Rodanu, których nazwa wywodzi się od galijskiego słowa oznaczającego włócznię lub oszczep. Antyczni autorzy, w tym Polibiusz opisujący bitwę pod Telamonem w 225 roku p.n.e., podkreślali, że wojownicy ci szli do walki nadzy lub niemal nadzy, licząc na to, że odsłonięte, wytatuowane ciało wzmocni wrażenie odwagi i wzbudzi grozę wśród wrogów. Uzbrojeni w długie miecze sieczne i owalne tarcze, nosili charakterystyczne naszyjniki torc, uznawane za oznakę statusu wojownika i przychylności bogów. Walczyli w pierwszej linii jako elitarna, dobrze opłacana siła uderzeniowa, wynajmowana przez galijskich wodzów do najważniejszych starć. Ich brawurowa, niemal rytualna szarża budziła respekt nawet u rzymskich legionistów, choć bywała też krytykowana jako mniej skuteczna wobec zdyscyplinowanej piechoty formacyjnej.

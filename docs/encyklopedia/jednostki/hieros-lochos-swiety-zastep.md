@@ -64,3 +64,7 @@ Hieros Lochos (Święty Zastęp) to **super-jednostka** (jednorazowa, max 1 sztu
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Hieros Lochos, czyli Święty Zastęp Teb, był elitarnym oddziałem trzystu hoplitów utworzonym w IV wieku p.n.e., którego wyjątkowość polegała na tym, że składał się ze stu pięćdziesięciu par kochanków. Zgodnie z zamysłem twórcy tej formacji każdy wojownik miał walczyć z pełnym oddaniem, chroniąc życie swojego towarzysza, co miało czynić oddział bardziej zwartym i odpornym na ucieczkę niż zwykłe jednostki obywatelskie. Święty Zastęp odegrał kluczową rolę w bitwie pod Leuktrami w 371 roku p.n.e., gdzie Tebańczycy przełamali dotąd niepokonaną falangę spartańską, kończąc okres dominacji Sparty w Grecji. Legenda głosi, że gdy w 338 roku p.n.e. pod Cheroneą oddział starł się z armią Filipa II Macedońskiego, żaden z jego członków nie cofnął się ani nie porzucił pozycji, a wszyscy trzystu polegli lub zostali ranni w miejscu, broniąc się do końca. Aleksander Wielki, syn Filipa, miał później okazać szacunek dla ich odwagi, wznosząc na polu bitwy pomnik lwa upamiętniający poległych.

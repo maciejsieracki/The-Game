@@ -63,3 +63,7 @@ Impi to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **Zulusi**.
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Impi to zuluskie określenie oddziału zbrojnego, fundamentu systemu wojskowego zbudowanego przez króla Shakę na początku XIX wieku, który podzielił młodych mężczyzn swojego ludu na regimenty według wieku, zakwaterowane we wspólnych kraalach wojskowych zamiast rodzimych wiosek. Shaka zastąpił tradycyjny, długi oszczep rzucany z dystansu krótką, ciężką włócznią kłującą iklwa, zmuszając wojowników do walki wręcz i budując w ten sposób znacznie bardziej agresywny i zdyscyplinowany styl prowadzenia bitew. Charakterystyczna taktyka „rogów bawołu” polegała na okrążaniu przeciwnika przez szybkie skrzydła, podczas gdy centralna, najsilniejsza część impi wiązała wroga walką frontalną. System ten pozwolił niewielkiemu wcześniej ludowi Zulu w ciągu kilkunastu lat podbić lub podporządkować sobie sąsiednie ludy południowej Afryki, tworząc rozległe królestwo Zulu. Dyscyplina, szybkość marszu — impi potrafiły pokonywać dziesiątki kilometrów dziennie boso — oraz bezwzględne posłuszeństwo wobec dowódców uczyniły z tej formacji jedną z najgroźniejszych sił zbrojnych ówczesnej Afryki Południowej.

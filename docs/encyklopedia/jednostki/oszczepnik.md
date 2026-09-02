@@ -62,3 +62,7 @@ Oszczepnik to jednostka typu **Dystans** z epoki **Kamień**. Dostępna wielu cy
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Oszczep, czyli lekka drzewcowa broń miotana, towarzyszył człowiekowi od zarania łowiectwa i był jedną z pierwszych broni, jakie udoskonalono przy użyciu narzędzi takich jak wyrzutnia atlatl, zwiększająca zasięg i siłę rzutu. Wojownicy uzbrojeni w oszczepy pojawiali się niezależnie w społecznościach epoki kamienia na wszystkich zamieszkanych kontynentach — od myśliwych paleolitycznej Europy, przez ludy Afryki, po pierwszych mieszkańców Ameryk. Oszczep pozwalał razić przeciwnika lub zwierzynę z bezpiecznej odległości, zanim doszło do starcia wręcz, co czyniło go równie cennym na polowaniu, jak i w konflikcie międzyplemiennym. W wielu kulturach oszczepnicy stanowili pierwszą linię starcia, osłabiającą szyk wroga gradem pocisków przed natarciem głównych sił. Prostota konstrukcji — zaostrzony i często hartowany w ogniu drzewiec — sprawiała, że broń tę można było wytwarzać masowo niemal wszędzie.

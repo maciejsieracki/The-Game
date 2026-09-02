@@ -62,3 +62,7 @@ Katapulta to jednostka typu **Oblężnicza** z epoki **Żelazo**. Dostępna wiel
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Wczesne machiny miotające, prekursorki katapulty w rozumieniu klasycznym, rozwijały się na Bliskim Wschodzie i w świecie egejskim jako odpowiedź na potrzebę rażenia obrońców i murów z bezpiecznej odległości, bez konieczności bezpośredniego szturmu. W przeciwieństwie do tarana, który musiał dotrzeć pod sam mur, konstrukcje miotające pozwalały posyłać pociski łukiem ponad fortyfikacjami, druzgocząc blanki, dachy budynków oraz morale obrońców ukrytych za murami. Takie urządzenia, oparte na sile naprężonych włókien, ścięgien lub giętkiego drewna, wymagały wprawnej obsługi i starannego strojenia, lecz w zamian dawały oblegającym przewagę zasięgu nieosiągalną dla piechoty. Ich konstrukcja była jednak stosunkowo delikatna, podatna na uszkodzenia podczas transportu oraz mało przydatna w starciu bezpośrednim, przez co zawsze wymagały osłony innych oddziałów. Rozwój takich machin miotających w epoce żelaza otworzył drogę do znacznie potężniejszych konstrukcji katapult i balist okresu klasycznego.

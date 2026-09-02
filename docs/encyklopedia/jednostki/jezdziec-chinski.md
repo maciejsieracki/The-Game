@@ -62,3 +62,7 @@ Jeździec chiński to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Konnica jako regularna formacja bojowa pojawiła się w Chinach później niż na stepach Azji Wewnętrznej, dokąd chińscy władcy wysyłali poselstwa właśnie po to, by przejąć umiejętności jeździeckie koczowniczych sąsiadów. Przełomem była reforma króla Wu Linga z państwa Zhao z IV wieku p.n.e., który wbrew sprzeciwowi konserwatywnych dworzan nakazał swoim wojownikom przyjąć strój koczowników stepowych — spodnie zamiast szat — aby móc w ogóle dosiąść konia i strzelać z łuku w jeździe. Chińska jazda epoki Walczących Królestw i wczesnych dynastii łączyła zwiadowczą szybkość z ostrzałem łuczniczym, uzupełniając ciężkie rydwany, które wcześniej dominowały na chińskich polach bitew. Hodowla koni bojowych stała się sprawą państwową, a sprowadzanie rasowych wierzchowców z zachodnich stepów, w tym legendarnych „niebiańskich koni” Fergany, traktowano jako priorytet strategiczny. Z czasem konnica stała się nieodzownym narzędziem obrony chińskiej granicy północnej przed najazdami koczowników.

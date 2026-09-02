@@ -63,3 +63,7 @@ Rydwan egipski to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla **Eg
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Lekki rydwan bojowy dotarł do Egiptu w okresie Drugiego Okresu Przejściowego, przejęty i udoskonalony po doświadczeniach z najazdem Hyksosów, którzy jako pierwsi wprowadzili nad Nil konie i pojazdy na kołach ze szprychami. W Nowym Państwie stał się podstawą egipskiej siły uderzeniowej — dwuosobowa załoga, złożona z woźnicy i łucznika, pozwalała manewrować wokół szyków piechoty i razić ją ostrzałem z bezpiecznego dystansu. Budowa takiego pojazdu, lekkiego dzięki drewnu akacjowemu i skórzanym pasom, wymagała wysoko wyspecjalizowanych rzemieślników, a jego posiadanie zarezerwowane było dla wojskowej arystokracji i samego faraona. To właśnie setki egipskich rydwanów starły się z siłami Hetytów pod Kadesz za panowania Ramzesa II, w jednej z największych bitew rydwanowych starożytności. Wizerunki faraona szarżującego rydwanem na wroga stały się jednym z najtrwalszych motywów propagandowych egipskiej sztuki monarchicznej.

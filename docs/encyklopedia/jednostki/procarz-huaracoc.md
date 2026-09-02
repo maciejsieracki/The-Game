@@ -62,3 +62,7 @@ Procarz (Huaracoc) to jednostka typu **Dystans** z epoki **Brąz**. Unikalna dla
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Huaraca, andyjska proca pleciona z wełny lamy lub alpaki, była jedną z najbardziej rozpoznawalnych broni ludów Andów na długo przed powstaniem Imperium Inków, używaną zarówno do pasterskiej ochrony stad przed drapieżnikami, jak i w konfliktach międzyplemiennych. Wprawny procarz — huaracoc — potrafił razić przeciwnika kamiennym lub gliniano-wypalanym pociskiem z siłą zdolną ogłuszyć, a nawet zabić nieosłoniętego wojownika z odległości kilkudziesięciu metrów. W wojskach inkaskich procarze rekrutowani z ludów górskich i wyżynnych stanowili cenioną lekką piechotę dystansową, poprzedzającą główne natarcie i osłabiającą szyk wroga gradem pocisków. Umiejętność celnego rzutu z procy ćwiczono od najmłodszych lat podczas wypasu stad, dzięki czemu całe wspólnoty pasterskie dostarczały imperium gotowych, doświadczonych strzelców bez potrzeby kosztownego szkolenia wojskowego. Kolorowe, misternie tkane huaraki pełniły też funkcję odświętnego stroju i przedmiotu prestiżu, noszonego przez mężczyzn niezależnie od tego, czy trafiały akurat na pole bitwy.

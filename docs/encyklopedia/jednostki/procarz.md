@@ -62,3 +62,7 @@ Procarz to jednostka typu **Dystans** z epoki **Brąz**. Dostępna wielu cywiliz
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Proca, czyli pasek ze skóry lub plecionej wełny do miotania kamieni, była jedną z najstarszych i najtańszych broni dystansowych ludzkości, znaną niezależnie na niemal każdym kontynencie już w epoce kamienia. Wprawny procarz potrafił razić cel z kilkudziesięciu metrów z siłą porównywalną do lekkiego pocisku, a same kamienne lub gliniane pociski znajdowano w wykopaliskach od Bliskiego Wschodu po Amerykę Południową. Broń ta nie wymagała kosztownych surowców ani długiego treningu kowalskiego — wystarczał pasek materiału i celne oko, dzięki czemu proca była dostępna nawet najuboższym społecznościom pasterskim i łowieckim. Procarze często wywodzili się z pasterzy, którzy przez lata odganiania drapieżników od stad rozwijali w tej broni niezwykłą precyzję. W wielu kulturach lekka piechota procarska poprzedzała pojawienie się bardziej wyspecjalizowanych łuczników.

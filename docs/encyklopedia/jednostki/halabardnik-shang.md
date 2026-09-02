@@ -63,3 +63,7 @@ Halabardnik Shang to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla *
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Podstawową bronią drzewcową chińskiej dynastii Shang, panującej w dorzeczu Rzeki Żółtej w drugim tysiącleciu przed naszą erą, był ge — brązowa głownia w kształcie sierpa lub topora osadzona poprzecznie na drzewcu, pozwalająca zarówno na cięcie z zamachu, jak i na zaczepianie oraz ściąganie przeciwnika lub jego tarczy. Broń ta, dziś tłumaczona często jako rodzaj halabardy, wymagała dostępu do wytopu i odlewu brązu, technologii ściśle kontrolowanej przez shangowski dwór królewski i jego rzemieślników, co czyniło ge orężem zarezerwowanym dla zorganizowanych oddziałów, a nie chłopskiego pospolitego ruszenia. Inskrypcje na kościach wróżebnych, odnalezione w stolicy Yin koło dzisiejszego Anyang, wspominają o kampaniach wojennych prowadzonych przez władców Shang przeciw sąsiednim ludom przy użyciu takich uzbrojonych oddziałów. Halabardnicy uzbrojeni w ge często towarzyszyli rydwanom bojowym jako piesza eskorta chroniąca załogę wozu podczas starcia z wrogą piechotą. Ge pozostał charakterystyczną bronią chińskiej sztuki wojennej jeszcze długo po upadku dynastii Shang, ewoluując w kolejnych epokach w coraz bardziej złożone formy broni drzewcowej.

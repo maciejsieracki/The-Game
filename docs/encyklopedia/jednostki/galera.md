@@ -63,3 +63,7 @@ Galera to jednostka typu **Morska** z epoki **Brąz**. Dostępna wielu cywilizac
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Galera, wąska i długa jednostka pływająca napędzana głównie siłą wioseł, a wspomagana żaglem, była podstawą potęgi morskiej cywilizacji basenu Morza Śródziemnego już od epoki brązu. Jej konstrukcja pozwalała na dużą niezależność od wiatru — kluczową w walce morskiej, gdzie liczyła się możliwość szybkiego manewru i taranowania wrogich jednostek okutym dziobem. Załoga wioślarzy, często licząca kilkudziesięciu ludzi, wymagała ścisłej koordynacji rytmu wiosłowania, co samo w sobie stanowiło formę dyscypliny wojskowej. Galery służyły zarówno do transportu wojsk i towarów wzdłuż wybrzeży, jak i do bezpośrednich starć morskich, w których taran oraz abordaż decydowały o wyniku bitwy. Przez stulecia to właśnie zdolność budowy i utrzymania flot galer decydowała o tym, które miasta i państwa kontrolowały handel i wpływy na morzu.

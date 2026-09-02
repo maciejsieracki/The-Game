@@ -62,3 +62,7 @@ Oszczepnik Zulu (Izijula) to jednostka typu **Dystans** z epoki **Kamień**. Uni
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Izijula to zuluskie określenie lekkiego oszczepu miotanego, podstawowej broni dystansowej ludów południowoafrykańskich na długo przed reformami wojskowymi króla Shaki. Wojownicy uzbrojeni w kilka takich oszczepów potrafili razić przeciwnika z odległości kilkunastu metrów, zanim doszło do starcia wręcz, co czyniło ich cenną osłoną poprzedzającą główne natarcie regimentu. Po objęciu władzy Shaka celowo ograniczył znaczenie broni miotanej na rzecz krótkiej włóczni kłującej, uznając rzucanie oszczepów za marnotrawstwo, które pozbawiało wojownika broni już w pierwszej fazie starcia, jednak tradycyjni oszczepnicy nadal odgrywali rolę w harcowaniu i osłabianiu szyku wroga przed uderzeniem impi. Umiejętność celnego rzutu izijulą ćwiczono od dzieciństwa, często w formie polowań i zawodów między młodzieżą z sąsiednich kraalów. Ta starsza tradycja walki dystansowej pozostała żywa w pamięci ludu Zulu nawet po tym, jak włócznia kłująca zdominowała pole bitwy.

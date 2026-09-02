@@ -62,3 +62,7 @@ Falanga to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla **Grecka**.
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Falanga hoplicka to ciężka piechota starożytnej Grecji, walcząca w zwartym, wielorzędowym szyku, w którym każdy hoplita osłaniał lewym bokiem tarczy (aspis) sąsiada stojącego po jego lewej stronie. Uzbrojeni w długą włócznię (dory) i krótki miecz, hoplici tworzyli ścianę tarcz i grotów, której siła leżała nie w indywidualnym kunszcie, lecz w utrzymaniu szyku i wzajemnym zaufaniu między obywatelami-żołnierzami greckich miast-państw. Skuteczność falangi zależała od dyscypliny — złamanie szeregu przez jednego wojownika mogło odsłonić całą formację na flankowy atak. To właśnie w takim szyku greccy hoplici stawili czoła perskiej inwazji pod Maratonem i Termopilami, a później falanga w zmodyfikowanej, jeszcze cięższej formie stała się podstawą armii macedońskiej Filipa II i Aleksandra Wielkiego. Waga zbroi i tarczy sprawiała, że hoplita był potężny w froncie, lecz podatny na ataki z boków i tyłu oraz mało mobilny na nierównym terenie.

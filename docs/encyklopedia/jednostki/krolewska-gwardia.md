@@ -63,3 +63,7 @@ Królewska Gwardia to jednostka typu **Wręcz** z epoki **Brąz**. Unikalna dla 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Gwardia przyboczna władcy Inków rekrutowała się przede wszystkim spośród orejonów — arystokracji Cuzco noszącej ciężkie ozdoby uszu, od których Hiszpanie ukuli tę nazwę — oraz spośród najbliższych krewnych i zaufanych z panującego rodu Inków. Członkowie gwardii otrzymywali najlepsze dostępne uzbrojenie imperium, w tym metalowe topory, maczugi z brązu i tarcze, oraz przechodzili staranne przygotowanie bojowe niedostępne zwykłym poborowym z podbitych prowincji. Ich zadaniem była nie tylko bezpośrednia ochrona osoby Sapa Inki podczas pokoju i wojny, lecz również pilnowanie porządku w stolicy i eskortowanie władcy w podróżach po rozległym imperium Tawantinsuyu. Prestiż służby w gwardii królewskiej czynił z niej cel aspiracji młodych arystokratów, dla których była ona drogą do wysokich stanowisk administracyjnych i wojskowych. W czasie wojny domowej między Atahualpą a Huascarem oraz później, podczas hiszpańskiego podboju, to właśnie elitarna gwardia stanowiła ostatnią linię obrony słabnącej władzy inkaskiej.

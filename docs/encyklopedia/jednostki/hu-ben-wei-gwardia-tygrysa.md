@@ -62,3 +62,7 @@ Hu Ben Wei (Gwardia Tygrysa) to jednostka typu **Wręcz** z epoki **Brąz**. Uni
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Hu Ben, określani czasem jako „nieustraszeni niczym tygrysy”, byli elitarną formacją gwardii przybocznej cesarzy chińskich dynastii Han, powołaną do bezpośredniej ochrony władcy i najważniejszych obiektów stolicy. Nazwa nawiązywała do tygrysa jako symbolu odwagi i drapieżnej siły w chińskiej symbolice wojskowej, a przynależność do gwardii wymagała nie tylko sprawności bojowej, lecz również nieposzlakowanej lojalności wobec dworu cesarskiego. Żołnierze tej formacji byli starannie dobierani spośród najlepszych wojowników imperium i wyposażani w uzbrojenie najwyższej jakości, niedostępne przeciętnemu piechurowi regularnej armii. Gwardia tygrysia pełniła również funkcję ceremonialną podczas dworskich uroczystości, będąc widocznym symbolem potęgi i porządku dynastii. Podobne elitarne oddziały noszące imiona drapieżnych zwierząt powracały w chińskiej tradycji wojskowej przez kolejne stulecia jako wyraz szczególnego zaufania władcy.

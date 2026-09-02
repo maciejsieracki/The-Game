@@ -62,3 +62,7 @@ Rydwan mykeński to jednostka typu **Flanka** z epoki **Brąz**. Unikalna dla **
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Tabliczki linearne B z pałaców w Knossos i Pylos zawierają szczegółowe inwentarze rydwanów bojowych, kół oraz uprzęży, świadcząc o tym, jak istotną rolę odgrywały te pojazdy w administracji i prestiżu mykeńskich władców. W przeciwieństwie do bliskowschodnich rydwanów wykorzystywanych jako mobilne platformy strzeleckie, mykeński rydwan służył przede wszystkim do szybkiego dowiezienia arystokratycznego wojownika na pole bitwy, gdzie — jak opisuje później Homer w Iliadzie — zsiadał, by stoczyć pojedynek pieszo włócznią i mieczem. Taki sposób walki, łączący mobilność rydwanu z pieszym pojedynkiem herosów, odzwierciedlał także społeczną strukturę mykeńskiej Grecji, w której wojna pozostawała domeną arystokratycznych wodzów i ich świty. Budowa i utrzymanie rydwanu, wymagające wyszkolonych koni oraz kunsztownej stolarki, pozostawały poza zasięgiem zwykłych wojowników, czyniąc go wyraźnym wyznacznikiem statusu społecznego. Po upadku pałacowej cywilizacji mykeńskiej pod koniec epoki brązu pamięć o takich rydwanach przetrwała głównie w warstwach poematów epickich, gdzie ich rola bojowa uległa już częściowej mitologizacji.
