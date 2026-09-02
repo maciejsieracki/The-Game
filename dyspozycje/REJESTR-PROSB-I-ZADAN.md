@@ -3583,6 +3583,25 @@ JEDEN raz, osobno, po zintegrowaniu wszystkich 6 batchy - zapobiega to
 konfliktom przy sekwencyjnej integracji generowanego pliku.
 Dispatche: `dyspozycje/autobot/runs/R-CIVPEDIA-{BUDYNKI,CUDA,ULEPSZENIA,TECHNOLOGIE,JEDNOSTKI-J1,JEDNOSTKI-J2}-Q1/00-dispatch.md`.
 
+Wynik Operator->Evaluator (Workflow `wz6xdyvwc`): wszystkie 6 PASS, ZERO zarzutow
+kazdy (Obrona nie byla potrzebna nigdzie). Commity: BUDYNKI `5a4f409f`, CUDA
+`4a4369c5` (incydent: pierwszy przebieg omylkowo zapisal do wspoldzielonego
+glownego checkoutu zamiast do worktree - wykryte i w pelni cofniete PRZED
+commitem, orkiestrator dodatkowo potwierdzil i zabezpieczyl przez `git stash`
+w miedzyczasie, zero sladu w `main`), ULEPSZENIA `6dc14517` (Operator nie
+commitowal sam - orkiestrator scommitowal jego juz-zweryfikowana przez
+Evaluatora prace z worktree, zeby dac Final Control stabilny SHA),
+TECHNOLOGIE `b2a3eaf2` (**PASS-WITH-NOTES**: Operator i Evaluator NIEZALEZNIE
+odkryli pre-istniejacy bug w `wikiHubHud.ts::pickEncyContent` z infry
+`d6032099` - przy `depth='full'` sekcja "Rys historyczny" renderuje sie
+DWUKROTNIE, bo `entry.full` juz zawiera cala tresc pliku wlacznie z nowa
+sekcja, funkcja dokleja `historiaBlock` ponownie; przy `depth='m'` OK, tylko
+jedna kopia. Poza allowlista tego tematu, wymaga osobnego tematu naprawczego
+w `wikiHubHud.ts` - NIE blokuje integracji tresci), JEDNOSTKI-J1 `c35c98e8`,
+JEDNOSTKI-J2 `0a772737` (w tym potwierdzona poprawna obsluga wyjatku
+Soldurii). Final Control dispatchowany dla wszystkich 6 rownolegle: Workflow
+`wf_99f5929f-dbc`.
+
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | P-KARTY-HISTORIA-TEST-FIXTURE-REALNE-DANE-Q1 | 2026-09-01 | Naprawa `entity-card-historia-section-test.cjs` (temat INFRA), ktorego fixture "jeszcze pustych" encji (stolarnia/Lowiectwo/farma) uzywal REALNYCH danych produkcyjnych zamiast syntetycznych - kazdy kolejny batch tresci ktory wypelnia jedna z tych 3 encji powoduje falszywy FAIL. Dodatkowo sekcja [5] ma pokrewny blad: fixture "zla wielkosc liter" dziedziczy z prawdziwego wiersza, wiec po wypelnieniu poprawnego pola test przypadkiem przechodzi/nie przechodzi z innego powodu niz zamierzony. | **ZINTEGROWANE do `main` (4efd8db2)** | Pelny cykl Operator->Evaluator(zero zarzutow)->Final Control przez Workflow. Sekcja [4]: asercja WARUNKOWA (`historiaExists === fieldNonEmpty`) na realnym stanie pola zamiast twardego "nie istnieje". Sekcja [5]: destructuring usuwa poprawne pole z kopii wiersza przed wstrzyknieciem zlej wielkosci liter, dla wszystkich 4 adapterow. Test zweryfikowany na REALNYCH, dzisiejszych danych (B1/T1/I1/U1 juz zintegrowane) - 31/31 PASS, zero fixture-driftu na przyszlosc. tsc 0 bledow, 5 bramek referencyjnych bez regresu. |
