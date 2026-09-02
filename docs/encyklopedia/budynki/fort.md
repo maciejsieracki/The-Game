@@ -74,3 +74,7 @@ Koszt **70** pracy przy **10**/t ≈ **7 tur** budowy (bez surowców).
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — niezależny budynek obok Murów, obrona % (+100% dodatkowo).
+
+## Rys historyczny
+
+Cytadela to ufortyfikowany rdzeń miasta, odrębna twierdza wzniesiona wewnątrz lub obok murów miejskich, zdolna do samodzielnej obrony nawet po upadku reszty osady. Cytadela w Aleppo, wznosząca się na sztucznym wzgórzu ponad starym miastem, przetrwała oblężenia krzyżowców, Mongołów i licznych późniejszych najeźdźców dzięki potężnym murom i jedynej, starannie bronionej drodze dostępu. Podobną rolę pełniła cytadela kairska wzniesiona przez Saladyna, łącząca funkcje militarne z rezydencją władcy i skarbcem państwowym. Garnizony stacjonujące w cytadelach służyły też jako ostatnia linia kontroli nad zbuntowaną ludnością miejską, co czyniło te budowle równie użytecznymi przeciw wrogom zewnętrznym, co przeciw wewnętrznym niepokojom. Budowa cytadeli wymagała ogromnych nakładów kamienia i pracy, lecz jej istnienie potrafiło odstraszyć najeźdźcę jeszcze przed rozpoczęciem oblężenia.

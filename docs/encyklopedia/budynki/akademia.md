@@ -69,3 +69,7 @@ Koszt Akademii **70** pracy przy 10/t ≈ **7 tur**.
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — Nauka/Kultura lokalnie, niezależny obok Biblioteki.
+
+## Rys historyczny
+
+Akademia to nazwa wywodząca się od gaju poświęconego herosowi Akademosowi pod Atenami, gdzie w IV wieku p.n.e. Platon założył szkołę filozoficzną łączącą naukę o etyce, matematyce i polityce z życiem wspólnotowym uczniów. W przeciwieństwie do wcześniejszych, nieformalnych kręgów sofistów, Akademia Platońska posiadała ciągłość instytucjonalną, przetrwawszy pod kierownictwem kolejnych scholarchów niemal dziewięćset lat, aż do zamknięcia przez cesarza Justyniana w 529 roku. Nauczanie odbywało się poprzez dialog i wspólne dociekanie, a nie bierne przyswajanie gotowych twierdzeń, co czyniło Akademię wzorem dla późniejszych uniwersytetów średniowiecznej Europy. Wśród jej uczniów znalazł się Arystoteles, który spędził tam dwadzieścia lat, zanim założył własną szkołę, Liceum. Idea akademii jako miejsca systematycznego kształcenia elit intelektualnych odrodziła się w epoce renesansu we Florencji, gdzie na nowo połączono filozofię grecką z chrześcijańską teologią.

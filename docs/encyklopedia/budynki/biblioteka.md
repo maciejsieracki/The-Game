@@ -64,3 +64,7 @@ Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Biblioteka jako instytucja gromadząca wiedzę zapisaną na glinianych tabliczkach, zwojach papirusu czy pergaminie sięga starożytnej Mezopotamii, gdzie archiwa świątynne i pałacowe przechowywały teksty prawne, literackie i astronomiczne. Najsłynniejszym przykładem pozostaje Biblioteka Aleksandryjska, założona w III wieku p.n.e., która gromadziła setki tysięcy zwojów i przyciągała uczonych z całego basenu Morza Śródziemnego, stając się symbolem starożytnej nauki. Utrzymanie takiej instytucji wymagało armii skrybów kopiujących teksty ręcznie, ponieważ każdy egzemplarz trzeba było przepisać, by wiedza mogła się rozprzestrzeniać i przetrwać zniszczenie oryginału. Klasztory średniowiecznej Europy, jak irlandzkie skryptoria czy biblioteka klasztoru w Sankt Gallen, przejęły tę rolę po upadku Rzymu, ocalając teksty antyczne dla kolejnych pokoleń. Dopiero wynalazek druku w XV wieku uczynił wiedzę zawartą w bibliotekach dostępną na skalę niespotykaną wcześniej w dziejach ludzkości.

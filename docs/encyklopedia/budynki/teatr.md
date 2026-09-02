@@ -64,3 +64,7 @@ Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Teatr grecki narodził się z religijnych obrzędów ku czci boga Dionizosa, podczas których chóry recytowały hymny zwane dytyrambami, zanim Ajschylos, Sofokles i Eurypides przekształcili te występy w pełnoprawny dramat sceniczny rozgrywany przed tysiącami widzów. Amfiteatr w Epidauros, wzniesiony w IV wieku p.n.e., słynął z akustyki tak doskonałej, że widz siedzący w ostatnim, trzydziestym czwartym rzędzie słyszał szept aktora ze sceny bez żadnego wzmocnienia. Rzymianie przejęli grecką formę teatru, dodając bardziej rozbudowaną scenografię oraz kryte zadaszenia chroniące widzów przed słońcem, a przedstawienia komediowe Plauta i Terencjusza cieszyły się ogromną popularnością wśród wszystkich warstw społecznych. Teatr pełnił też funkcję polityczną — ateńskie przedstawienia tragiczne były okazją do publicznej debaty nad sprawami wspólnoty, a maski aktorskie pozwalały jednemu wykonawcy grać kilka ról bez ujawniania tożsamości. Tradycja teatralna przetrwała upadek Cesarstwa Rzymskiego w formie okrojonej, by w pełni odrodzić się dopiero w renesansowej Europie.

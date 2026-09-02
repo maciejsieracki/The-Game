@@ -64,3 +64,7 @@ Przy +2 złota/t, utrzymanie 2 ¤/t → netto **+0 ¤/t**. Koszt 55 pracy przy 1
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Instytucja sądu jako miejsca publicznego rozstrzygania sporów sięga starożytnej Mezopotamii, gdzie już Kodeks Hammurabiego z około 1750 roku p.n.e. spisywał precyzyjne kary za konkretne przewinienia, wymagając od sędziów jawnego uzasadnienia wyroków przed zgromadzoną społecznością. W klasycznych Atenach sądy przysięgłych, zwane heliaja, liczyły nawet kilkuset obywateli losowanych spośród mieszkańców miasta, co miało chronić wyroki przed przekupstwem pojedynczego sędziego. Rzymskie prawo cywilne, skodyfikowane później w prawie justyniańskim, wprowadziło rozróżnienie między prawem publicznym a prywatnym, tworząc podstawy terminologii prawniczej używanej w Europie przez kolejne stulecia. Średniowieczne sądy grodzkie łączyły często funkcję wymiaru sprawiedliwości z administracją lokalną, a sędzia bywał jednocześnie poborcą podatków i zarządcą miejskich zapasów. Powstanie stałych budynków sądowych, oddzielonych od siedziby władcy, oznaczało stopniowe wyodrębnianie się władzy sądowniczej jako niezależnej gałęzi rządzenia.

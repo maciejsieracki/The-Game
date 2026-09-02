@@ -64,3 +64,7 @@ Przy +5 złota/t, utrzymanie 2 ¤/t → netto **+3 ¤/t**. Koszt 30 pracy przy 1
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Port handlowy to brama łącząca miasto ze światem — miejsce, gdzie od tysięcy lat cumowały statki wiozące towary, ludzi i idee między odległymi krainami. Fenicjanie, a później Grecy i Rzymianie, budowali rozbudowane systemy nabrzeży, magazynów i latarni morskich, czyniąc z portów takich jak Kartagina czy Ostia filary swoich imperiów handlowych. Port wymagał nie tylko dogodnego położenia przy wybrzeżu czy ujściu rzeki, lecz też infrastruktury do rozładunku, przechowywania towarów i ich dalszego transportu w głąb lądu. Miasta portowe często rozwijały się szybciej niż śródlądowe ośrodki, ponieważ handel morski był tańszy i szybszy niż transport lądowy, a kontakt z obcymi kulturami sprzyjał wymianie technologii i wierzeń. Kontrola nad ważnym portem bywała też źródłem konfliktów — wiele wojen starożytności i średniowiecza toczono właśnie o dostęp do kluczowych szlaków morskich.

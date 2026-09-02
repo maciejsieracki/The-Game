@@ -69,3 +69,7 @@ Po **Murach** i opcjonalnie **Cytadeli** — Baszta przed spodziewanym oblężen
 ## Historia / decyzje
 
 Decyzja 41B (Maciej 2026-07-25) — nazwa **Baszta** zatwierdzona; +100% Obrony obok Murów (+200%) i Cytadeli (+100%). Wdrożenie: `buildings.json`, `miasto-params.json`, `city-defense.ts`, `building-resource-gate.ts` (prereq Mury).
+
+## Rys historyczny
+
+Baszta to wysunięta wieża obronna wbudowana w linię murów miejskich, pozwalająca obrońcom razić nieprzyjaciela ogniem bocznym wzdłuż całej kurtyny muru, a nie tylko wprost przed sobą. Średniowieczne miasta europejskie otaczały się wieńcami baszt rozmieszczonych w regularnych odstępach, każda zdolna do niezależnej obrony nawet po przełamaniu sąsiednich odcinków muru. Wewnątrz baszt często mieściły się cechy rzemieślnicze odpowiedzialne za ich utrzymanie i obronę w razie ataku, co widać do dziś w nazwach zachowanych wież, takich jak baszta krawiecka czy baszta rzeźnicza. Strzelnice, dostosowane najpierw do łuków, a później do broni palnej, ewoluowały wraz z rozwojem uzbrojenia oblężniczego. Wraz z upowszechnieniem artylerii prochowej wysokie, wąskie baszty straciły przewagę na rzecz niższych, grubszych bastionów zdolnych wchłonąć uderzenie kul armatnich.

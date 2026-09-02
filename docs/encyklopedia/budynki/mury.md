@@ -68,3 +68,7 @@ Jednostka z **50** pkt Obrony na murze z Mury → efektywnie **150** pkt (×3) w
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — model procentowy (+200%), max 2 poz., Cytadela/Baszta obok (nie upgrade).
+
+## Rys historyczny
+
+Mury obronne z kamienia lub cegły zastępowały drewniane palisady tam, gdzie osada rosła na tyle, by uzasadnić kosztowną, lecz znacznie trwalszą inwestycję w kamienną fortyfikację. Legendarne mury Babilonu, opisywane przez greckich historyków jako jeden z cudów świata, czy potężne mury Konstantynopola, które przez tysiąc lat odpierały najeźdźców, pokazują, jak decydującą rolę odgrywały fortyfikacje miejskie w przetrwaniu cywilizacji. Budowa takich murów angażowała tysiące robotników przez lata, a ich grubość i wysokość musiały nadążać za rozwojem technik oblężniczych — od taranów i wież oblężniczych po katapulty i machiny miotające kamienie. Miasta otoczone solidnymi murami mogły wytrzymać długotrwałe oblężenia, gromadząc zapasy żywności i wody, podczas gdy wróg tracił czas, zasoby i morale pod ich murami. Upadek wielu murów obronnych w erze prochu strzelniczego, gdy artyleria zaczęła kruszyć nawet najgrubsze kamienne bastiony, symbolicznie zamknął epokę, w której wysokie mury gwarantowały bezpieczeństwo miasta.

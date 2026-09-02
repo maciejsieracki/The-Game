@@ -68,3 +68,7 @@ Z **Akademią wojskową** w tym samym mieście: **+40%** miękkich (przed Warszt
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — ścieżka B parametry miękkie po wizycie, max 2 poz.
+
+## Rys historyczny
+
+Koszary jako stałe miejsce zakwaterowania i szkolenia żołnierzy pojawiły się wraz z profesjonalizacją wojska, gdy armie przestały być doraźnym pospolitym ruszeniem, a stały się stałą, zorganizowaną siłą państwa. Rzymskie legiony budowały rozbudowane obozy stałe — castra — z uporządkowaną siatką ulic, magazynami broni i kwaterami dowódców, które w wielu przypadkach dały początek europejskim miastom, jak York czy Kolonia. W koszarach żołnierze przechodzili codzienny trening musztry, władania bronią i taktyki, a życie skoszarowane sprzyjało budowaniu dyscypliny oraz więzi między towarzyszami broni niezbędnej na polu bitwy. Utrzymanie stałych koszar wymagało od państwa stabilnych dochodów podatkowych, ponieważ żołnierze zawodowi musieli otrzymywać regularny żołd, wyżywienie i wyposażenie niezależnie od tego, czy akurat toczyła się wojna. Rozwój koszarowego systemu wojskowego w nowożytnej Europie, szczególnie za czasów monarchii absolutnych, umożliwił władcom utrzymywanie licznych stałych armii gotowych do mobilizacji w każdej chwili.

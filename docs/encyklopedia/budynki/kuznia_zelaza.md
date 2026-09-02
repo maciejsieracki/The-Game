@@ -66,3 +66,7 @@ Koszt upgrade **60** pracy przy **10**/t ≈ **6 tur**.
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — upgrade z Kuźni brązu, ścieżka A Pancerz po wizycie.
+
+## Rys historyczny
+
+Kuźnia żelaza to warsztat kowalski wyspecjalizowany w obróbce żelaza na potrzeby wojska — metalu, który wraz z upowszechnieniem technik hutniczych zaczął wypierać brąz jako podstawowy surowiec na broń i uzbrojenie ochronne. W przeciwieństwie do brązu żelazo wymagało znacznie wyższych temperatur wytopu, lecz było surowcem szerzej dostępnym geograficznie, co uniezależniało kowali od dalekosiężnego handlu cyną i miedzią charakterystycznego dla wcześniejszych epok. Kowale-zbrojmistrzy pracujący przy takich kuźniach musieli opanować sztukę nawęglania i hartowania żelaza, by uzyskać ostrza wystarczająco twarde do przecinania zbroi przeciwnika, jednocześnie zachowując elastyczność zapobiegającą pękaniu w walce. Celtyckie i germańskie plemiona słynęły z wysokiej jakości mieczy żelaznych, budząc respekt nawet wśród zorganizowanych legionów rzymskich, które musiały dostosować własne uzbrojenie do tej konkurencji. Rozprzestrzenienie się kuźni żelaza po Europie i Azji w I tysiącleciu p.n.e. zdemokratyzowało dostęp do solidnego oręża, zmieniając trwale charakter wojen prowadzonych przez ówczesne ludy.

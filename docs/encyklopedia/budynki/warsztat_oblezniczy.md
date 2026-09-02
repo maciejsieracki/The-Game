@@ -67,3 +67,7 @@ Koszt **65** pracy przy 10/t ≈ **7 tur**.
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — katapulta + ścieżka B +10%, koszt kamień nie cegła.
+
+## Rys historyczny
+
+Warsztat oblężniczy to miejsce, w którym budowano i konserwowano wielkie machiny wojenne służące do zdobywania ufortyfikowanych miast — trebusze, katapulty, tarany oraz ruchome wieże oblężnicze. Asyryjscy inżynierowie już w IX wieku p.n.e. konstruowali okute metalem tarany zdolne kruszyć mury glinianych miast Bliskiego Wschodu, a rzymscy legioniści przy oblężeniu Masady w 73 roku n.e. wznieśli ziemną rampę i wieże oblężnicze o rozmiarach dotąd niespotykanych. Budowa trebusza kontrwagowego, zdolnego miotać kilkusetkilogramowe pociski na setki metrów, wymagała precyzyjnych obliczeń ciesielskich i była zadaniem dla wyspecjalizowanych rzemieślników towarzyszących armii w kampanii. Chińscy inżynierowie wojskowi już w czasach dynastii Song opisywali w traktatach szczegółowe plany budowy takich urządzeń, traktując oblężniczą inżynierię jako odrębną dziedzinę wiedzy. Upowszechnienie artylerii prochowej w XV wieku, symbolicznie przypieczętowane zdobyciem Konstantynopola przez armaty sułtana Mehmeda II, uczyniło tradycyjne machiny oblężnicze przestarzałymi w ciągu jednego pokolenia.

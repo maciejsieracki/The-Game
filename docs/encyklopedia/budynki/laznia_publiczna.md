@@ -66,3 +66,7 @@ Priorytet we **wczesnej grze**, jeśli bufor wzrostu stoi w miejscu. Łącz ze S
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Rzymskie termy publiczne były znacznie więcej niż miejscem higieny osobistej — stanowiły centra życia towarzyskiego, gdzie obywatele niezależnie od majątku spędzali długie godziny, przechodząc kolejno przez zimne, letnie i gorące baseny, korzystając z sal do ćwiczeń, bibliotek oraz ogrodów. Termy Karakalli w Rzymie, mogące jednocześnie pomieścić kilka tysięcy kąpiących się, wykorzystywały zaawansowany system hipokaustów — podłóg podgrzewanych gorącym powietrzem krążącym w podziemnych kanałach, technologię wymagającą stałej obsługi dbającej o piece. Wstęp do term był zazwyczaj bardzo tani lub darmowy, finansowany przez możnych patronów lub samo państwo, co czyniło je jedną z niewielu przestrzeni, gdzie senator i rzemieślnik dzielili tę samą przestrzeń publiczną. Podobną tradycję kąpieli publicznych rozwinęły osmańskie hammamy, łączące rzymskie dziedzictwo term z rytuałami czystości islamu, wciąż aktywnie działające w wielu miastach Bliskiego Wschodu. Upadek zachodniego Cesarstwa Rzymskiego i zerwanie sieci akweduktów doprowadziły do stopniowego zaniku wielkich term publicznych w średniowiecznej Europie na kolejne stulecia.

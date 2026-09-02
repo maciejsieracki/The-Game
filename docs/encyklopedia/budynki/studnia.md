@@ -64,3 +64,7 @@ Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Studnia to jedna z najstarszych form infrastruktury wodnej, pozwalająca osadom sięgać po wodę gruntową tam, gdzie brakowało rzeki czy jeziora na powierzchni. Już w epoce neolitu ludzie kopali głębokie szyby wzmacniane drewnem lub kamieniem, a najstarsze zachowane studnie, jak te odkryte w Cypr czy Izraelu, liczą sobie ponad osiem tysięcy lat. Dostęp do stałego źródła czystej wody decydował o tym, gdzie w ogóle mogła powstać trwała osada, a studnie publiczne stawały się naturalnym miejscem spotkań mieszkańców, wymiany plotek i lokalnych wieści. W starożytnym Rzymie i miastach islamskiego świata budowano studnie ozdobne z kamiennym cembrowaniem i mechanizmami wyciągowymi, traktując je jako element prestiżu miejskiego obok fontann. Utrzymanie studni w czystości było sprawą życia i śmierci — zanieczyszczona woda gruntowa bywała przyczyną epidemii dziesiątkujących całe miasta, co czyniło troskę o studnie jednym z pierwszych obowiązków władz lokalnych.

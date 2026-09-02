@@ -64,3 +64,7 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Warsztat stolarski to jedno z najstarszych rzemiosł ludzkości, obecne już w osadach neolitycznych, gdzie drewno służyło do budowy domów, narzędzi, łodzi i mebli. W starożytnym Egipcie i Mezopotamii cieśle i stolarze tworzyli specjalizowane cechy, opracowując techniki łączenia drewna na czop i wpust bez użycia gwoździ. W średniowiecznej Europie warsztaty stolarskie skupiały się w miastach wokół cechów, które strzegły tajników rzemiosła i szkoliły kolejne pokolenia czeladników. Narzędzia takie jak piła, dłuto i strug pozwalały przekształcać surowe pnie w precyzyjne elementy konstrukcyjne, meble i detale architektoniczne. Do dziś ślady dawnych technik stolarskich można odnaleźć w zachowanych szkieletowych konstrukcjach dachów i XVII-wiecznych meblach, które przetrwały wieki bez jednego grama kleju.

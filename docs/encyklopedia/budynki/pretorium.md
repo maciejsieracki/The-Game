@@ -73,3 +73,7 @@ Koszt **75** pracy przy 10/t ≈ **8 tur**.
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — usunięto fałszywą obronę i mnożnik podatkowy; Prawo regionalne.
+
+## Rys historyczny
+
+Pretorium to pierwotnie namiot lub kwatera dowódcy w rzymskim obozie wojskowym, ustawiana zawsze w centralnym punkcie obozu na przecięciu głównych dróg, skąd wódz mógł obserwować całość rozłożonych wokół legionów. Z czasem termin ten zaczął oznaczać także rezydencję namiestnika prowincji rzymskiej, budynek łączący funkcję sądową, administracyjną i reprezentacyjną — to właśnie w pretorium namiestnika Judei w Jerozolimie, według relacji ewangelicznych, odbył się proces Jezusa z Nazaretu. Archeolodzy odkryli pozostałości okazałych pretoriów w takich miastach jak Kartagina czy Trewir, gdzie mozaikowe posadzki i prywatne łaźnie świadczyły o wysokim statusie rezydujących tam urzędników. Pretorium pełniło również funkcję garnizonu, zapewniając namiestnikowi ochronę osobistą, zanim nazwa ta na stałe skojarzyła się ze słynną gwardią cesarską w samym Rzymie. Budynek ten symbolizował fizyczną obecność władzy imperialnej w odległych zakątkach rozległego państwa, przypominając mieszkańcom prowincji, komu podlegają.

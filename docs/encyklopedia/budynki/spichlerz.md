@@ -64,3 +64,7 @@ Priorytet we **wczesnej grze**, jeśli bufor wzrostu stoi w miejscu. Łącz ze S
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Spichlerz to budowla magazynowa służąca do przechowywania zboża i innych plonów, znana od czasów najwcześniejszych cywilizacji rolniczych Mezopotamii i Egiptu, gdzie nadwyżki żywności trzeba było zabezpieczyć przed gryzoniami, wilgocią i złodziejami. Egipskie spichlerze państwowe, opisywane już w biblijnej historii Józefa, pozwalały władcom gromadzić zapasy zboża na wypadek nieurodzaju i klęsk głodu, co czyniło kontrolę nad zapasami żywności realnym narzędziem władzy politycznej. Budowane zwykle na podwyższeniu, z drewnianą lub kamienną konstrukcją unoszącą podłogę nad ziemią, chroniły ziarno przed wilgocią i szkodnikami znacznie skuteczniej niż przechowywanie w domostwach. W średniowiecznej Europie spichlerze — szczególnie te budowane przez zakony i miasta hanzeatyckie w Gdańsku czy Toruniu — stały się symbolem zamożności i bezpieczeństwa żywnościowego całych regionów. Zdolność do gromadzenia i dystrybucji zapasów żywności była jednym z fundamentów, na których w ogóle mogły powstać duże, osiadłe społeczeństwa.

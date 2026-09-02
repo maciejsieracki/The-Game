@@ -66,3 +66,7 @@ Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. F 2026-07-24 (dopisano: budynek startowy, w praktyce bez kosztu surowcowego) · pierwotnie rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Pierwsze siedziby władzy w dziejach ludzkości bywały skromnymi domostwami wodzów plemiennych — drewnianymi lub glinianymi budowlami wyróżniającymi się z otoczenia jedynie rozmiarem i położeniem w centrum osady. To właśnie tam gromadzili się starsi rodu, by naradzać się w sprawach wojny, podziału łupów i sporów między klanami, a sam wódz musiał swą pozycję potwierdzać nie tyle przepychem budowli, co osobistym autorytetem i skutecznością w boju. Archeolodzy odnajdują ślady takich wczesnych „domów wodza” w osadach epoki brązu na terenie całej Europy i Bliskiego Wschodu — nieco większe fundamenty, ślady palenisk ceremonialnych i pozostałości darów składanych władcy przez poddanych. W społecznościach bez pisma to właśnie taki dom pełnił funkcję sądu, skarbca i miejsca przyjmowania obcych posłów jednocześnie, będąc namacalnym centrum władzy plemiennej. Z czasem coraz trwalsza pozycja wodzów przełożyła się na coraz ambitniejsze budowle, torując drogę ku prawdziwym pałacom epok późniejszych.

@@ -64,3 +64,7 @@ Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Świątynia jako budowla sakralna towarzyszy człowiekowi od zarania cywilizacji, będąc miejscem, gdzie społeczność gromadziła się, by oddawać cześć bóstwom, składać ofiary i szukać pocieszenia w obliczu nieznanego. Od sumeryjskich zigguratów, przez egipskie kompleksy w Karnaku, po greckie Partenony, świątynie łączyły funkcję religijną z rolą skarbca, archiwum i ośrodka administracyjnego państwa. Kapłani zarządzający świątyniami często dysponowali ogromnym majątkiem i wpływami politycznymi porównywalnymi z władzą monarchów, kontrolując dziesięciny, ziemię i zapasy zboża. Budowa świątyni bywała dziełem pokoleń — wymagała nie tylko środków, lecz i wiedzy astronomicznej, geometrycznej i inżynierskiej, by właściwie zorientować budowlę względem stron świata. Do dziś ruiny dawnych świątyń pozostają najtrwalszymi świadectwami duchowości i ambicji architektonicznych minionych cywilizacji.

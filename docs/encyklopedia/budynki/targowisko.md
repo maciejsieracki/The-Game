@@ -67,3 +67,7 @@ Wczesne miasto: Targowisko finansuje utrzymanie wojska i rush budowy. Awansuj do
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — efekt = pieniadz baza/przyrost, bez martwego mnożnika.
+
+## Rys historyczny
+
+Targowisko to serce gospodarcze każdej dawnej osady — otwarty plac lub ulica, gdzie kupcy, rzemieślnicy i rolnicy spotykali się, by wymieniać towary jeszcze zanim powstał pieniądz w dzisiejszej postaci. Od starożytnych agor greckich, przez rzymskie fora, po średniowieczne rynki miast europejskich, targowisko pełniło funkcję nie tylko handlową, lecz i społeczną — tu ogłaszano ważne wieści, rozstrzygano spory, a czasem wymierzano publiczną sprawiedliwość. Regularne dni targowe, często wyznaczane co tydzień, przyciągały handlarzy z okolicznych wsi i dalekich krajów, czyniąc miasto węzłem wymiany dóbr i informacji. Wraz z rozwojem handlu targowiska ewoluowały w stałe hale targowe i giełdy, a wokół nich powstawały banki i domy kupieckie. Tętniący życiem rynek miejski był zwykle najlepszym wskaźnikiem dobrobytu i witalności całego miasta.

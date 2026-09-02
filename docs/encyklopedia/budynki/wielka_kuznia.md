@@ -56,3 +56,7 @@ W v1 kończ łańcuch na **Kuźni żelaza**. Nie planuj Wielkiej Kuźni — nie 
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — oznaczenie PARKOWANE epoka 4; usunięto fałszywą „epokę Średniowiecze" jako aktywną.
+
+## Rys historyczny
+
+Wielka kuźnia to warsztat metalurgiczny zdolny do wytopu stali w skali przemysłowej — przełomu, który starożytni hutnicy osiągali dzięki takim technikom jak indyjski tygiel wootz czy chińskie piece dmuchawowe zdolne do osiągania temperatur pozwalających na płynny wytop żelaza. Stal, twardsza i bardziej elastyczna od zwykłego żelaza, wymagała precyzyjnej kontroli zawartości węgla oraz wielokrotnego przekuwania, umiejętności przekazywanej z mistrza na ucznia przez pokolenia w zamkniętych cechach kowalskich. Miecze z damasceńskiej stali, słynące z charakterystycznego falistego wzoru i legendarnej ostrości, budziły grozę krzyżowców spotykających się z nimi na Bliskim Wschodzie. Rozwój takich hut wymagał zorganizowanego zaplecza — stałych dostaw rudy, węgla drzewnego i wykwalifikowanej siły roboczej — co czyniło je jednymi z pierwszych ośrodków protoprzemysłowych w historii. Panowanie nad sekretami produkcji wysokiej jakości stali dawało realną przewagę militarną, zmieniając losy niejednej kampanii wojennej.

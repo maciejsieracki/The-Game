@@ -68,3 +68,7 @@ Koszt **30** pracy przy **10**/t ≈ **3 tur** budowy.
 ## Historia / decyzje
 
 rev. G2 2026-08-04 — ścieżka A Pancerz po wizycie, max 1 poz., bez fałszywego mnożnika „siły przy produkcji".
+
+## Rys historyczny
+
+Kuźnia epoki brązu to miejsce, w którym kowale kuli gotowy metal na broń i uzbrojenie, nadając mieczom, grotom włóczni i tarczom kształt i twardość niezbędną na polu bitwy. Technologia stopu miedzi z cyną rozprzestrzeniła się z Bliskiego Wschodu i Anatolii około 3300 roku p.n.e., dając nazwę całej epoce w dziejach ludzkości i rewolucjonizując zarówno wojskowość, jak i rolnictwo. Kowal-zbrojmistrz musiał opanować sztukę kucia rozgrzanego metalu młotem na kowadle, hartowania i nadawania ostrza — umiejętności przekazywane zazwyczaj z ojca na syna w zamkniętych, cenionych bractwach. Dobrze wyposażona w broń z brązu drużyna dawała władcy realną przewagę militarną, dlatego kuźnie często pozostawały pod bezpośrednią kontrolą wodzów i królów. Ponieważ cyna i miedź rzadko występowały razem w jednym regionie, kuźnie brązownicze były ściśle powiązane z dalekosiężnym handlem surowcami, co czyniło je jednym z pierwszych ogniw międzykontynentalnej wymiany.

@@ -64,3 +64,7 @@ Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Stela to pionowa płyta kamienna z rzeźbą lub inskrypcją, wznoszona od czasów najdawniejszych cywilizacji dla upamiętnienia zwycięstw, praw, granic czy zmarłych władców. Egipska Stela Rozetska, spisana w trzech systemach pisma, stała się w XIX wieku kluczem do odczytania hieroglifów i otworzyła nowoczesną egiptologię jako naukę. Mezopotamskie stele, jak Kodeks Hammurabiego wyryty na czarnym bazalcie, publicznie ogłaszały prawa państwa, umieszczając je w widocznych miejscach, by każdy poddany mógł — przynajmniej teoretycznie — poznać zasady, którymi rządziło się jego państwo. Stawianie steli było aktem politycznym równie istotnym jak samo wydarzenie, które upamiętniała — władcy wykorzystywali je do propagandy, przedstawiając siebie jako pogromców wrogów i ulubieńców bogów. Choć wiele stel uległo zniszczeniu lub zostało wtórnie wykorzystanych jako materiał budowlany, te, które przetrwały, stanowią dziś bezcenne źródło wiedzy o prawie, religii i polityce starożytnych społeczeństw.

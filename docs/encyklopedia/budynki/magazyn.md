@@ -72,3 +72,7 @@ Przy +1 złota/t, utrzymanie 1 ¤/t → netto **+0 ¤/t**. Koszt 20 pracy przy 1
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. F 2026-07-24 (dopisano drugi efekt: +100 pojemności magazynu surowców państwa za każdy zbudowany Magazyn, baza 100→500, model addytywny civ-wide — decyzja Macieja SUROW-CIV-01) · pierwotnie rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Magazyn państwowy to budowla służąca do gromadzenia zapasów surowców, broni i zaopatrzenia niezbędnych do funkcjonowania administracji i wojska w czasach pokoju i kryzysu. Starożytne imperia, od Egiptu po Chiny, budowały rozległe sieci magazynów wzdłuż szlaków handlowych i granic, by zaopatrywać garnizony i urzędników bez konieczności każdorazowego transportu towarów z odległych prowincji. Chińskie magazyny zbożowe funkcjonujące w ramach systemu „ping-cang” pozwalały władzom stabilizować ceny żywności, sprzedając zapasy w latach nieurodzaju i skupując nadwyżki w latach obfitych plonów. Zarządzanie magazynem wymagało sprawnej biurokracji — skrybowie i urzędnicy prowadzili szczegółowe rejestry przychodów i rozchodów, a kradzież z magazynu państwowego karano surowo jako przestępstwo przeciw całej wspólnocie. Sprawnie działające magazyny były jednym z filarów stabilności państwa, pozwalając przetrwać wojny, klęski żywiołowe i długie kampanie wojskowe bez załamania zaopatrzenia.

@@ -64,3 +64,7 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+## Rys historyczny
+
+Warsztat kamieniarski to rzemiosło obróbki kamienia sięgające epoki kamienia, kiedy ludzie uczyli się łupać krzemień i formować głazy w narzędzia oraz elementy budowlane. Prawdziwy rozkwit kamieniarstwa nastąpił wraz z budową wielkich cywilizacji — egipskie piramidy, greckie świątynie i rzymskie akwedukty powstawały dzięki precyzyjnej pracy kamieniarzy, którzy potrafili ciąć, gładzić i dopasowywać bloki skalne bez zaprawy. Średniowieczni kamieniarze budujący katedry gotyckie tworzyli własne cechy i tajne znaki masonów, z których część dała początek późniejszemu ruchowi wolnomularskiemu. Praca wymagała nie tylko siły, ale ogromnej precyzji — błąd w cięciu bloku fundamentowego mógł oznaczać katastrofę całej budowli. Warsztaty kamieniarskie dostarczały materiał na mury obronne, place i pomniki, będąc podstawą trwałości każdej większej osady.
