@@ -100,8 +100,8 @@ function walkMd(dir, rel = '') {
   return out;
 }
 
-function bundleEncyklopedia() {
-  const files = walkMd(ENCY_DIR);
+function bundleEncyklopedia(dir = ENCY_DIR) {
+  const files = walkMd(dir);
   return files.map(({ full, rel }) => {
     const md = readUtf8(full);
     const parts = rel.split('/');
@@ -119,6 +119,7 @@ function bundleEncyklopedia() {
       : [];
     const wikiS = extractSection(md, ['Wiki‑S', 'Wiki-S']);
     const wikiM = extractSection(md, ['Wiki‑M', 'Wiki-M']);
+    const historia = extractSection(md, ['Rys historyczny']);
     const body = stripFrontMatter(md);
     return {
       id: `${folder}/${slug}`,
@@ -130,18 +131,32 @@ function bundleEncyklopedia() {
       wikiS: wikiS || title,
       wikiM: wikiM || body.slice(0, 1200),
       full: body,
+      historia: historia || '',
     };
   }).sort((a, b) => a.title.localeCompare(b.title, 'pl'));
 }
 
-const bundle = {
-  version: 'rev-civpedia-2026-08-05',
-  generated: new Date().toISOString().slice(0, 10),
-  poradnik: bundlePoradnik(),
-  encyklopedia: bundleEncyklopedia(),
-};
+function main() {
+  const bundle = {
+    version: 'rev-civpedia-2026-08-05',
+    generated: new Date().toISOString().slice(0, 10),
+    poradnik: bundlePoradnik(),
+    encyklopedia: bundleEncyklopedia(),
+  };
 
-fs.mkdirSync(path.dirname(OUT), { recursive: true });
-fs.writeFileSync(OUT, JSON.stringify(bundle), 'utf8');
-const kb = (Buffer.byteLength(JSON.stringify(bundle)) / 1024).toFixed(0);
-console.log(`wikiBundle.json: ${bundle.poradnik.length} rozdz. + ${bundle.encyklopedia.length} haseł (~${kb} KB)`);
+  fs.mkdirSync(path.dirname(OUT), { recursive: true });
+  fs.writeFileSync(OUT, JSON.stringify(bundle), 'utf8');
+  const kb = (Buffer.byteLength(JSON.stringify(bundle)) / 1024).toFixed(0);
+  console.log(`wikiBundle.json: ${bundle.poradnik.length} rozdz. + ${bundle.encyklopedia.length} haseł (~${kb} KB)`);
+}
+
+// R-CIVPEDIA-HISTORIA-INFRA-Q1: uruchomienie skryptu (i realny zapis do
+// wikiBundle.json) TYLKO gdy wywołany bezpośrednio (`node bundle-wiki-for-game.cjs`).
+// `require()` (np. z testu) NIE regeneruje pliku ani nie ma efektów ubocznych —
+// pozwala testom wywoływać extractSection()/bundleEncyklopedia() na fixture'ach
+// bez dotykania prawdziwego gra/src/data/wikiBundle.json.
+if (require.main === module) {
+  main();
+}
+
+module.exports = { extractSection, bundleEncyklopedia, bundlePoradnik, metaField, titleFromMd, stripFrontMatter };

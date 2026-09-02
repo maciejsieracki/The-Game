@@ -64,6 +64,9 @@ interface EncyEntry {
   wikiS: string;
   wikiM: string;
   full: string;
+  /** R-CIVPEDIA-HISTORIA-INFRA-Q1: rys historyczny (sekcja `## Rys historyczny`
+   * w źródłowym .md) — dopisywany na końcu widoku 'm'/'full', pominięty w 's'. */
+  historia: string;
 }
 
 const PORADNIK = wikiBundle.poradnik as PoradnikChapter[];
@@ -317,9 +320,10 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
   }
 
   function pickEncyContent(entry: EncyEntry, d: Depth): string {
+    const historiaBlock = entry.historia ? `\n\n## Rys historyczny\n\n${entry.historia}` : '';
     if (d === 's') return `## ${entry.title}\n\n${entry.wikiS}`;
-    if (d === 'm') return `## ${entry.title}\n\n${entry.wikiM}`;
-    return entry.full;
+    if (d === 'm') return `## ${entry.title}\n\n${entry.wikiM}${historiaBlock}`;
+    return `${entry.full}${historiaBlock}`;
   }
 
   function renderDetail(): void {
