@@ -3696,6 +3696,17 @@ cala fale. Nastepny krok: deploy ROBOCZA (nowa FALA) obejmujacy te fale
 plus R-CIVPEDIA-HISTORIA-INFRA-Q1 i R-KARTA-JEDNOSTKI-3D-PODGLAD-BRAKUJACY-Q1
 z wczesniejszej czesci sesji.
 
+**Faza 3 rozpoczeta autonomicznie (2026-09-02, po zamknieciu Fazy 2, bez
+czekania na decyzje wlasciciela — zgodnie z jego wczesniejsza korekta o
+autonomii):** szeroki audyt tooltipow/opisow w calej grze POZA entity cards
+i CivPedia (juz zaudytowane w Fazach 1-2). Recon (Explore, w toku) skanuje
+`gra/src/ui/**/*.ts` w poszukiwaniu hardkodowanych tooltipow/opisow,
+odrozniajac tresc GENEROWANA z juz zatwierdzonych pol `gra/data/*.json` od
+tresci wpisanej wprost w kodzie UI (ta druga kategoria jest poza zakresem
+Faz 1-2, wiec niezaudytowana), oraz flaguje ewentualne kolejne wycieki tekstu
+deweloperskiego (ta sama klasa bledu co pierwotne zgloszenie "Tarasy
+uprawne"). Wynik posluzy do rozpisania batchy AutoBot per obszar UI.
+
 **Podsumowanie CivPedia Faza 2 (na dzien 2026-09-02, po tej fali)**: 6/6
 kategorii tresci zintegrowane (budynki 25/25, cuda 19/19, ulepszenia 17/17,
 technologie 32/32, jednostki 49/49), infra + 2 pochodne bledy naprawione.
