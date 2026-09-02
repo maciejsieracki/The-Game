@@ -217,32 +217,66 @@ function pnToPaymentAmount(paymentTyp: 'zloto' | 'praca', targetPn: number): num
 }
 
 /**
- * Docelowa zapłata (PW) przy sprzedaży surowca przez proponenta — maksymalna akceptowalna
- * przy bilansie blisko 0 (minimalna nadwyżka dla respondenta).
+ * Docelowa zapłata (PW) w handlu surowcowym proponenta — kierunkowo świadoma
+ * (R-DYPLO-HANDEL-OFERTA-AI-BLOKOWANA-Q1, runda 2).
+ *
+ * `kierunek='sprzedaz'` (proponent DAJE surowiec o wartości `resourceGivePn`, DOSTAJE
+ * zapłatę) — zachowanie BIT-IDENTYCZNE ze stanem sprzed tej zmiany: maksymalna
+ * akceptowalna zapłata przy bilansie blisko 0 (minimalna nadwyżka dla respondenta),
+ * `Math.floor(resourceGivePn * rel / 100)` — odwrotność `diplomacyFairGivePn`, poprawna
+ * bo złoto jest RECEIVE proponenta (spada wraz z zaufaniem — mniej trzeba oddać
+ * surowca, żeby uzasadnić tę samą zapłatę odwrotnie licząc).
+ *
+ * `kierunek='zakup'` (proponent DAJE zapłatę, DOSTAJE surowiec o wartości
+ * `resourceGivePn`) — złoto jest GIVE proponenta, więc próg musi być MINIMALNY i
+ * ROSNĄCY wraz ze spadkiem zaufania, dokładnie `handelRequiredPn(receivePn=
+ * resourceGivePn, rel, multiplier=1)` — TA SAMA funkcja, której używa
+ * `handelFairnessGate`/`evaluateProposal` (JEDYNE źródło progu, patrz import wyżej),
+ * więc generator z definicji nie może wygenerować oferty poniżej własnej bramki.
+ * `multiplier=1` bo `handelWillingnessMultiplier` jest zawsze 1, gdy respondentem
+ * jest gracz (patrz komentarz `AiOfferFairnessOpts` wyżej) — jedyna dzisiejsza
+ * ścieżka wywołania tego kierunku.
  */
 export function targetResourceTradePaymentPn(
   resourceGivePn: number,
   relTotal: number,
   difficulty: GameDifficulty = 'normal',
+  kierunek: 'sprzedaz' | 'zakup' = 'sprzedaz',
 ): number {
   if (resourceGivePn <= 0) return 0;
   const rel = Math.min(100, Math.max(1, relTotal));
+  if (kierunek === 'zakup') {
+    // Floor bramki — difficulty-independent (evaluateProposal/handelFairnessGate nie
+    // zależą od trudności), więc stosowany ZAWSZE, także gdy aiOfferTargetsZeroBalance
+    // jest false (Łatwy) — inaczej generator wraca do niedopłaty na Łatwym.
+    const minFairPn = handelRequiredPn(resourceGivePn, rel, 1);
+    if (!aiOfferTargetsZeroBalance(difficulty)) return minFairPn;
+    // Symetria do „undershoot" po stronie sprzedaz: tam odejmowano od maksimum
+    // (mniej wymagająco dla proponenta-sprzedawcy), tu dodajemy do minimum
+    // (ten sam margines, ale w kierunku, który NIE może zejść poniżej progu bramki).
+    const overshoot = aiOfferPwUndershootAllowance(difficulty);
+    return minFairPn + overshoot;
+  }
   const maxAcceptedPn = Math.floor(resourceGivePn * rel / 100);
   if (!aiOfferTargetsZeroBalance(difficulty)) return maxAcceptedPn;
   const undershoot = aiOfferPwUndershootAllowance(difficulty);
   return Math.max(0, maxAcceptedPn - undershoot);
 }
 
-/** Dopasuj zaplataPerTura (¤ lub Praca) do bilansu PW ≈ 0 @ Relacji. */
+/** Dopasuj zaplataPerTura (¤ lub Praca) do bilansu PW ≈ 0 @ Relacji (kierunkowo świadome —
+ * patrz `targetResourceTradePaymentPn`). Dla `kierunek='zakup'` obliczenie odbywa się
+ * ZAWSZE (floor bramki jest difficulty-independent), nie tylko gdy `aiOfferTargetsZeroBalance`. */
 export function adjustZaplataPerTuraForZeroBalance(
   zaplataPerTura: number,
   zaplataTyp: 'zloto' | 'praca',
   resourceGivePn: number,
   relTotal: number,
   difficulty: GameDifficulty = 'normal',
+  kierunek: 'sprzedaz' | 'zakup' = 'sprzedaz',
 ): number {
-  if (!aiOfferTargetsZeroBalance(difficulty) || resourceGivePn <= 0) return zaplataPerTura;
-  const targetPn = targetResourceTradePaymentPn(resourceGivePn, relTotal, difficulty);
+  if (resourceGivePn <= 0) return zaplataPerTura;
+  if (kierunek !== 'zakup' && !aiOfferTargetsZeroBalance(difficulty)) return zaplataPerTura;
+  const targetPn = targetResourceTradePaymentPn(resourceGivePn, relTotal, difficulty, kierunek);
   const adjusted = pnToPaymentAmount(zaplataTyp, targetPn);
   return adjusted > 0 ? adjusted : zaplataPerTura;
 }

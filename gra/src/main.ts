@@ -16914,6 +16914,7 @@ async function boot(): Promise<void> {
         resourceGivePn,
         relationTotal(rel),
         difficulty,
+        kierunek,
       );
       return {
         surowiecKey: pick.surowiecKey,
