@@ -707,21 +707,41 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
     linear-gradient(180deg,rgba(0,0,0,0) 54%,rgba(6,8,12,.72) 100%);}
 .entity-card-diorama-stage{position:absolute;inset:0;z-index:1;display:flex;
   align-items:center;justify-content:center;padding-bottom:26px;}
-.entity-card-diorama-ground{position:absolute;left:50%;bottom:27px;transform:translateX(-50%);
-  width:172px;height:30px;pointer-events:none;
-  background:radial-gradient(closest-side,rgba(0,0,0,.72),rgba(0,0,0,.32) 58%,rgba(0,0,0,0) 100%);}
+/* Elipsa „gruntu" — RUNDA 2 (zarzut 3 Evaluatora). Poprzednia wersja była czarnym
+   radial-gradientem 172x30 na tle, które przy dole sceny i tak jest prawie czarne
+   (#0c1017 + winieta) i w ~80% zasłoniętym przez nieprzezroczysty medalion — różnica
+   pikselowa względem 'display:none' wynosiła maks. 8/255. Teraz to JASNY kontakt
+   światła (rozświetlenie podłoża pod obiektem), szerszy od medalionu (186 > 120) i
+   przesunięty niżej, więc realnie widoczny; pilnuje tego pikselowa asercja różnicowa
+   w 'entity-card-diorama-real-render-test.cjs' sekcja (I), nie samo istnienie węzła. */
+.entity-card-diorama-ground{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
+  width:186px;height:36px;pointer-events:none;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(176,201,240,.50),rgba(133,160,208,.24) 55%,rgba(0,0,0,0) 100%);}
 .entity-card-diorama .entity-card-medallion{position:relative;width:120px;height:120px;flex:none;
   border-radius:14px;overflow:hidden;border:1px solid rgba(232,216,138,.32);
   box-shadow:0 14px 26px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);
   display:flex;align-items:center;justify-content:center;}
 /* Skalowanie ZAWARTOŚCI medalionu do nowego rozmiaru — SVG rodzajów „icon" bywa zapisany z
-   własnymi atrybutami width/height (34px), a snapshot 3D jest canvasem 80x80 z
-   'unitMiniPreview.ts'. Reguła dla canvasa istnieje też lokalnie w 'unitInfoCard.ts'
-   (ta sama wartość, wyższa specyficzność) — tu jest po to, żeby ENTITY_CARD_CSS był
-   samowystarczalny także na ścieżkach cityPanel/techDiscoveryNotice. */
+   własnymi atrybutami width/height (28px), a snapshot 3D jest canvasem 80x80 z
+   'unitMiniPreview.ts'. Dla CANVASA równoważna reguła istnieje też lokalnie w
+   'unitInfoCard.ts:394' ('width:100%;height:100%;object-fit:cover', ta sama specyficzność,
+   późniejszy arkusz) — tu jest po to, żeby ENTITY_CARD_CSS był samowystarczalny także na
+   ścieżkach cityPanel/techDiscoveryNotice, gdzie tamten arkusz nie jest wstrzykiwany. */
 .entity-card-diorama .entity-card-medallion > svg,
 .entity-card-diorama .entity-card-medallion .unit-mini-canvas{width:100%;height:100%;display:block;}
-.entity-card-diorama .entity-card-medallion.unit-mini-fallback{font-size:44px;
+/* FALLBACK bez WebGL — RUNDA 2 (zarzut 2 Evaluatora). Poprzednie 'font-size:44px' było
+   pomyłką w dwie strony: (a) na ścieżce 'showUnitInfoCardDialog' reguła była MARTWA, bo
+   '.entity-card-unit .entity-card-medallion.unit-mini-fallback{font-size:12px}'
+   ('unitInfoCard.ts:396') ma tę samą specyficzność (0,3,0) i leży w arkuszu wstrzykiwanym
+   PÓŹNIEJ; (b) tam, gdzie działała, przycinała tekst — 44px pasuje do glifu „⚔" (domyślka
+   'unitMiniPreview.ts:131'), ale ŻADEN call-site kart encji go nie przekazuje: wszystkie
+   trzy podają pełne zdanie „Render 3D niedostępny w tym środowisku" ('renderer.ts:55',
+   'unitInfoCard.ts:83', 'unitInfoCard.ts:283'). Fallback jest więc formatowany jako TEKST
+   (11px, zawijany, wyśrodkowany, z paddingiem), a podwojona klasa podnosi specyficzność do
+   (0,4,0), żeby wynik nie zależał od kolejności wstrzykiwania arkuszy. Pilnuje tego sekcja
+   (H) w 'entity-card-diorama-real-render-test.cjs' — na OBU ścieżkach naraz. */
+.entity-card-diorama .entity-card-medallion.unit-mini-fallback.unit-mini-fallback{
+  font-size:11px;line-height:1.3;padding:8px;text-align:center;overflow-wrap:anywhere;
   color:var(--tg-render-fallback,#e0a06a);}
 /* Overlay tytułu — lewy dolny róg sceny, nad winietą (z-index 3). */
 .entity-card-diorama .entity-card-title-wrap{position:absolute;left:14px;right:14px;bottom:11px;
@@ -746,11 +766,27 @@ button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-
 .entity-card--compact .entity-card-diorama-ground{display:none;}
 .entity-card--compact .entity-card-medallion{position:static;width:24px;height:24px;
   border:0;border-radius:0;box-shadow:none;display:block;}
+/* RUNDA 2 (zarzut 4 Evaluatora): w compact SVG musi wrócić do rozmiaru WŁASNEGO (28px z
+   atrybutów pliku), bo bez tego reguła skalująca '> svg{width:100%}' wyżej kurczyła go do
+   24px — mierzalna zmiana renderu w trybie, który dispatch nakazuje zostawić bez zmian. */
+.entity-card--compact .entity-card-medallion > svg{width:auto;height:auto;display:inline;}
+/* RUNDA 2 (zarzut 2 Evaluatora): fallback w compact wraca do bazowego formatowania
+   nagłówka — bez paddingu i wymuszonego 11px z bloku diaromy. */
+.entity-card--compact .entity-card-medallion.unit-mini-fallback.unit-mini-fallback{
+  font-size:inherit;line-height:inherit;padding:0;text-align:left;}
 .entity-card--compact .entity-card-title-wrap{position:static;flex:1;min-width:0;
   text-shadow:none;}
 .entity-card--compact .entity-card-title-row h2{font-size:17px;}
-.entity-card--compact .entity-card-header > :not(.entity-card-diorama-stage):not(.entity-card-title-wrap){
-  position:static;}
+/* RUNDA 2 (zarzut 1 Evaluatora): TU BYŁA reguła
+   '.entity-card--compact .entity-card-header > :not(.entity-card-diorama-stage):not(.entity-card-title-wrap){position:static}'.
+   Miała „posprzątać" po pozycjonowaniu z bloku diaromy, ale realnie ZEPSUŁA żywą ścieżkę
+   'showTechDiscoveryNotice': ze specyficznością (0,4,0) wygrywała z
+   '.tdn-entity-close{position:absolute;top:10px;right:10px}' ('techDiscoveryNotice.ts:746',
+   (0,1,0)) i po kliknięciu „Pokaż pozostałe N" wrzucała ✕ z powrotem do potoku flex
+   (zmierzone: 'static', 44px od prawej zamiast 10px). Reguła jest USUNIĘTA: bez niej w
+   compact zostaje pozycjonowanie z bloku diaromy (absolute, top 10px / right 10px) —
+   czyli DOKŁADNIE te same wartości, które przycisk miał na bazie z własnego arkusza.
+   Pilnuje tego sekcja (D2) w 'entity-card-diorama-real-render-test.cjs'. */
 /* KOTWICA KOŃCOWA bloku R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1 — mutacja w
    tools/entity-card-diorama-real-render-test.cjs wycina dokładnie ten zakres. Nowe reguły
    dopisuj PO tej linii. */

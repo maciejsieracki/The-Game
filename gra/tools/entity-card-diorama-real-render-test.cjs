@@ -44,6 +44,20 @@
  *      flexem) nadal ląduje w prawym górnym rogu i przechodzi hit-test. Żadna inna bramka
  *      nie mierzy pozycji tego przycisku, więc bez (G) regres byłby niewidoczny.
  *
+ *  (D2) ŻYWA ŚCIEŻKA `showTechDiscoveryNotice` W COMPACT (runda 2, zarzut 1 Evaluatora):
+ *      ten plik dopina do `.entity-card-header` własny ✕ (`.tdn-entity-close`, position:absolute
+ *      o niskiej specyficzności 0,1,0). Mierzymy pozycję ✕ PRZED i PO kliknięciu „Pokaż
+ *      pozostałe N" — musi być identyczna i absolutna. Sekcja (G) tego nie łapie: dotyczy
+ *      wyłącznie `unitInfoCard` i wyłącznie trybu non-compact.
+ *
+ *  (H) FALLBACK BEZ WebGL (runda 2, zarzut 2): odtworzony 1:1 jak w `unitMiniPreview.ts:130-132`,
+ *      mierzony PO wstrzyknięciu arkusza `unitInfoCard` — czyli na ścieżce, gdzie reguła
+ *      z rundy 1 przegrywała kaskadę. Sprawdzamy rozmiar czcionki ORAZ brak przycięcia tekstu.
+ *
+ *  (I) ELIPSA „GRUNTU" REALNIE WIDOCZNA (runda 2, zarzut 3): dwa żywe zrzuty nagłówka
+ *      (z elipsą i z `display:none`) dekodowane w Chromium i porównane piksel po pikselu.
+ *      Samo istnienie węzła nie jest dowodem widoczności.
+ *
  *  Zrzuty PNG (żywy `page.screenshot()`) lądują w
  *  `dyspozycje/autobot/runs/R-KARTA-JEDNOSTKI-3D-EKSPOZYCJA-UX-Q1/dowody/`.
  *
@@ -250,9 +264,10 @@ async function main() {
     "import { unitToSlug, technologyIdFromName } from '../src/ui/entityCards/registry.ts';",
     "import { ensureBrandRootTokens } from '../src/ui/brandTokenVars.ts';",
     "import { showUnitInfoCardDialog, ensureUnitInfoCardStyles } from '../src/ui/unitInfoCard.ts';",
+    "import { showTechDiscoveryNotice } from '../src/ui/techDiscoveryNotice.ts';",
     "import { loadGameData } from '../src/data/loader.ts';",
     'window.__C = { buildEntityCardData, renderEntityCard, ENTITY_CARD_CSS, unitToSlug, technologyIdFromName,',
-    '  ensureBrandRootTokens, showUnitInfoCardDialog, ensureUnitInfoCardStyles, loadGameData };',
+    '  ensureBrandRootTokens, showUnitInfoCardDialog, ensureUnitInfoCardStyles, showTechDiscoveryNotice, loadGameData };',
     '',
   ].join('\n'), 'utf8');
 
@@ -398,7 +413,80 @@ async function main() {
       t.isCompact === true && isOldSmallHeader(t) && t.medW === 24 && t.medH === 24 && !isDiorama(t), t);
     check('(D) w trybie compact elipsa gruntu jest ukryta',
       t.groundVisible === 'no', t.groundVisible);
+    // RUNDA 2, zarzut 4 Evaluatora: reguła skalująca zawartość medalionu ('> svg{width:100%}')
+    // działała także w compact i kurczyła ikonę z 28px (rozmiar własny z atrybutów pliku SVG,
+    // stan bazy `3d9dd86c`) do 24px. Wymiar samego medalionu (24x24) tego nie łapał.
+    check('(D) w trybie compact ikona SVG ma SWÓJ rozmiar 28px (jak na bazie), a nie skurczone 24px',
+      t.hasSvg && t.svgW === 28, { hasSvg: t.hasSvg, svgW: t.svgW });
     await page.locator('#card-tech').screenshot({ path: path.join(SHOTS, '1c-karta-technologii-compact-bez-diaromy.png') });
+
+    // ------------------------------------------------------------------------------------
+    // (D2) ŻYWA ŚCIEŻKA `showTechDiscoveryNotice` W TRYBIE COMPACT — RUNDA 2, zarzut 1.
+    //      `techDiscoveryNotice.ts:610` dopina do `.entity-card-header` własny ✕
+    //      (`.tdn-entity-close{position:absolute;top:10px;right:10px}`, specyficzność 0,1,0).
+    //      Runda 1 dodała w bloku kompaktowym regułę `... > :not(...){position:static}`
+    //      (0,4,0), która ten ✕ wypychała do potoku flex PO kliknięciu „Pokaż pozostałe N".
+    //      Sekcja (G) tego nie łapała: mierzy ✕ tylko dla `unitInfoCard` i tylko non-compact.
+    // ------------------------------------------------------------------------------------
+    console.log('\n-- (D2) żywa ścieżka showTechDiscoveryNotice: ✕ w trybie compact --');
+    const tdn = await page.evaluate(async (techName) => {
+      window.__C.showTechDiscoveryNotice({ techName, eraIndex: 0, kind: 'preview' });
+      await new Promise((r) => setTimeout(r, 500));
+      const host = document.getElementById('civ-tech-discovery-notice-host');
+      if (!host) return { missing: 'host' };
+      const card = host.querySelector('.entity-card');
+      const btn = host.querySelector('.tdn-entity-close');
+      if (!card || !btn) return { missing: 'card-or-btn' };
+      const more = card.querySelector('button.entity-card-more');
+      if (!more) return { missing: 'more-button' };
+      const read = () => {
+        const header = card.querySelector('.entity-card-header');
+        const hr = header.getBoundingClientRect();
+        const br = btn.getBoundingClientRect();
+        const svg = card.querySelector('.entity-card-medallion > svg');
+        const hit = document.elementFromPoint(br.left + br.width / 2, br.top + br.height / 2);
+        return {
+          compact: card.classList.contains('entity-card--compact'),
+          btnPosition: getComputedStyle(btn).position,
+          btnFromRight: Math.round(hr.right - br.right),
+          btnFromTop: Math.round(br.top - hr.top),
+          btnInsideHeader: br.top >= hr.top - 1 && br.bottom <= hr.bottom + 1,
+          svgW: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
+          hitClass: hit ? String(hit.className) : null,
+        };
+      };
+      const before = read();
+      more.click();
+      await new Promise((r) => setTimeout(r, 150));
+      const after = read();
+      return { ok: true, before, after };
+    }, compactRes.tech);
+    console.log('[tdn]', JSON.stringify(tdn));
+    check('fixture (D2): showTechDiscoveryNotice wyrenderował kartę z ✕ i przyciskiem „Pokaż pozostałe N"',
+      tdn.ok === true, tdn);
+    check('(D2) klik „Pokaż pozostałe N" włącza compact na żywej ścieżce techDiscoveryNotice',
+      tdn.ok && tdn.before.compact === false && tdn.after.compact === true, tdn);
+    check('(D2) ✕ POZOSTAJE absolutnie pozycjonowany w compact (10px od prawej/góry — jak na bazie)',
+      tdn.ok && tdn.after.btnPosition === 'absolute' && tdn.after.btnInsideHeader === true
+      && tdn.after.btnFromRight >= 6 && tdn.after.btnFromRight <= 14
+      && tdn.after.btnFromTop >= 6 && tdn.after.btnFromTop <= 14, tdn.ok ? tdn.after : tdn);
+    check('(D2) pozycja ✕ jest IDENTYCZNA przed i po przejściu w compact (zero przeskoku)',
+      tdn.ok && tdn.before.btnFromRight === tdn.after.btnFromRight
+      && tdn.before.btnFromTop === tdn.after.btnFromTop,
+      tdn.ok ? { before: tdn.before, after: tdn.after } : tdn);
+    check('(D2) elementFromPoint na środku ✕ trafia w SAM przycisk także w compact',
+      tdn.ok && typeof tdn.after.hitClass === 'string' && tdn.after.hitClass.includes('tdn-entity-close'),
+      tdn.ok ? tdn.after.hitClass : tdn);
+    check('(D2) ikona SVG w compact na ścieżce techDiscoveryNotice ma 28px (jak na bazie)',
+      tdn.ok && tdn.after.svgW === 28, tdn.ok ? tdn.after.svgW : tdn);
+    if (tdn.ok) {
+      await page.locator('#civ-tech-discovery-notice-host .entity-card').first()
+        .screenshot({ path: path.join(SHOTS, '1c-tdn-compact-przycisk-zamkniecia.png') });
+    }
+    await page.evaluate(() => {
+      const h = document.getElementById('civ-tech-discovery-notice-host');
+      if (h) h.remove();
+    });
 
     // ------------------------------------------------------------------------------------
     // (E) druga szerokość viewportu — 380px
@@ -482,6 +570,121 @@ async function main() {
       typeof live.hitClass === 'string' && live.hitClass.includes('unit-info-card-close'), live.hitClass);
     await page.locator('.unit-info-card-backdrop .entity-card-unit').screenshot({
       path: path.join(SHOTS, '1a-zywa-sciezka-unitInfoCard-dialog.png'),
+    });
+
+    // ------------------------------------------------------------------------------------
+    // (H) FALLBACK BEZ WebGL — RUNDA 2, zarzut 2 Evaluatora. W tym środowisku WebGL DZIAŁA
+    //     (sekcja C mierzy `hasCanvas:true`), więc stanu bez rendera nie da się zaobserwować
+    //     biernie — odtwarzamy go DOKŁADNIE tak, jak robi to `unitMiniPreview.ts:130-132`
+    //     (`container.textContent = fallbackText; container.classList.add('unit-mini-fallback')`)
+    //     z tym samym zdaniem, które przekazują wszystkie trzy call-site'y kart encji.
+    //     Mierzymy PO sekcji (G), czyli gdy arkusz `unitInfoCard` JEST już wstrzyknięty —
+    //     to ta ścieżka, na której reguła z rundy 1 (`font-size:44px`, specyficzność 0,3,0)
+    //     przegrywała z `unitInfoCard.ts:396` i była martwa.
+    // ------------------------------------------------------------------------------------
+    // Dialog z (G) to pełnoekranowy backdrop — zostawiony przykryłby karty mierzone niżej
+    // (zrzuty elementów kapturują też to, co jest NA WIERZCHU), więc zamykamy go tutaj.
+    await page.evaluate(() => {
+      document.querySelectorAll('.unit-info-card-backdrop').forEach((b) => b.remove());
+    });
+    await page.waitForTimeout(120);
+
+    console.log('\n-- (H) fallback bez WebGL wewnątrz diaromy --');
+    const FALLBACK_TEXT = 'Render 3D niedostępny w tym środowisku';
+    const fb = await page.evaluate((text) => {
+      const sheets = Array.from(document.querySelectorAll('style')).map((s) => s.id || '(anon)');
+      const card = document.getElementById('card-unit');
+      const med = card.querySelector('.entity-card-medallion');
+      med.innerHTML = '';
+      med.textContent = text;
+      med.classList.add('unit-mini-fallback');
+      const cs = getComputedStyle(med);
+      const r = med.getBoundingClientRect();
+      return {
+        sheets,
+        hasUnitInfoCardSheet: sheets.some((id) => id.includes('unit-info-card')),
+        cardIsUnit: card.classList.contains('entity-card-unit'),
+        fontSize: cs.fontSize,
+        boxW: Math.round(r.width), boxH: Math.round(r.height),
+        scrollW: med.scrollWidth, scrollH: med.scrollHeight,
+        clientW: med.clientWidth, clientH: med.clientHeight,
+        text: (med.textContent || '').trim(),
+      };
+    }, FALLBACK_TEXT);
+    console.log('[fallback]', JSON.stringify(fb));
+    check('fixture (H): mierzymy na karcie .entity-card-unit z WSTRZYKNIĘTYM arkuszem unitInfoCard (ścieżka sporna)',
+      fb.cardIsUnit === true && fb.hasUnitInfoCardSheet === true, fb.sheets);
+    check('(H) fallback ma rozmiar czcionki z bloku diaromy (11px), a nie 12px z unitInfoCard.ts ani 44px z rundy 1',
+      fb.fontSize === '11px', fb.fontSize);
+    check('(H) tekst fallbacku MIEŚCI SIĘ w medalionie diaromy — zero przycięcia (scrollH <= clientH)',
+      fb.scrollH <= fb.clientH && fb.scrollW <= fb.clientW,
+      { scrollW: fb.scrollW, clientW: fb.clientW, scrollH: fb.scrollH, clientH: fb.clientH });
+    check('(H) fallback niesie PEŁNE zdanie z call-site\'ów kart encji', fb.text === FALLBACK_TEXT, fb.text);
+    await page.locator('#card-unit .entity-card-header').screenshot({
+      path: path.join(SHOTS, 'H-fallback-bez-webgl-w-diaromie.png'),
+    });
+
+    // ------------------------------------------------------------------------------------
+    // (I) ELIPSA „GRUNTU" JEST REALNIE WIDOCZNA — RUNDA 2, zarzut 3 Evaluatora. Poprzednia
+    //     asercja (`groundVisible === 'yes'`) sprawdzała wyłącznie ISTNIENIE i szerokość
+    //     węzła, więc przeszłaby też dla elipsy w 100% zakrytej albo o zerowym kontraście —
+    //     i faktycznie przechodziła: różnica pikselowa wobec `display:none` wynosiła 8/255.
+    //     Teraz porównujemy DWA ŻYWE ZRZUTY nagłówka (z elipsą i bez) piksel po pikselu,
+    //     dekodując je w Chromium przez <img> + canvas.getImageData.
+    // ------------------------------------------------------------------------------------
+    console.log('\n-- (I) różnica pikselowa: elipsa gruntu vs display:none --');
+    // Przywracamy nietknięty medalion (sekcja H nadpisała go fallbackiem).
+    await page.evaluate(() => { document.getElementById('card-unit').remove(); });
+    await page.evaluate((n) => window.__mount('unit', window.__C.unitToSlug(n), 'card-unit'), unitName);
+    await page.waitForTimeout(900);
+    const headerLoc = page.locator('#card-unit .entity-card-header');
+    const withGround = (await headerLoc.screenshot()).toString('base64');
+    await page.evaluate(() => {
+      document.querySelector('#card-unit .entity-card-diorama-ground').style.display = 'none';
+    });
+    await page.waitForTimeout(120);
+    const withoutGround = (await headerLoc.screenshot()).toString('base64');
+    await page.evaluate(() => {
+      document.querySelector('#card-unit .entity-card-diorama-ground').style.display = '';
+    });
+    const diff = await page.evaluate(async ([a, b]) => {
+      const load = (b64) => new Promise((res, rej) => {
+        const img = new Image();
+        img.onload = () => res(img);
+        img.onerror = rej;
+        img.src = 'data:image/png;base64,' + b64;
+      });
+      const [ia, ib] = await Promise.all([load(a), load(b)]);
+      if (ia.width !== ib.width || ia.height !== ib.height) {
+        return { sizeMismatch: [ia.width, ia.height, ib.width, ib.height] };
+      }
+      const px = (img) => {
+        const c = document.createElement('canvas');
+        c.width = img.width; c.height = img.height;
+        c.getContext('2d').drawImage(img, 0, 0);
+        return c.getContext('2d').getImageData(0, 0, img.width, img.height).data;
+      };
+      const da = px(ia), db = px(ib);
+      let maxDelta = 0, changed = 0;
+      for (let i = 0; i < da.length; i += 4) {
+        const d = Math.max(Math.abs(da[i] - db[i]), Math.abs(da[i + 1] - db[i + 1]), Math.abs(da[i + 2] - db[i + 2]));
+        if (d > maxDelta) maxDelta = d;
+        if (d >= 8) changed++;
+      }
+      return { w: ia.width, h: ia.height, total: da.length / 4, maxDelta, changed };
+    }, [withGround, withoutGround]);
+    console.log('[ground-diff]', JSON.stringify(diff));
+    check('(I) elipsa gruntu realnie zmienia obraz nagłówka — maks. różnica kanału >= 24/255 (runda 1: 8/255)',
+      !diff.sizeMismatch && diff.maxDelta >= 24, diff);
+    check('(I) elipsa gruntu pokrywa realną, niezasłoniętą powierzchnię — >= 2000 pikseli różnicy >= 8/255',
+      !diff.sizeMismatch && diff.changed >= 2000, diff);
+    await headerLoc.screenshot({ path: path.join(SHOTS, 'I-elipsa-gruntu-widoczna.png') });
+    await page.evaluate(() => {
+      document.querySelector('#card-unit .entity-card-diorama-ground').style.display = 'none';
+    });
+    await headerLoc.screenshot({ path: path.join(SHOTS, 'I-kontrola-elipsa-gruntu-ukryta.png') });
+    await page.evaluate(() => {
+      document.querySelector('#card-unit .entity-card-diorama-ground').style.display = '';
     });
 
     check('brak błędów konsoli/pageerror w trakcie renderu', consoleErrors.length === 0, consoleErrors);
