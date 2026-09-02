@@ -147,6 +147,7 @@ async function measure(page) {
       return {
         tag: el.tagName,
         bg: cs.backgroundColor,
+        bgImage: cs.backgroundImage,
         borderTopWidth: cs.borderTopWidth,
         color: cs.color,
         decoration: cs.textDecorationLine,
@@ -169,6 +170,9 @@ async function measure(page) {
     return {
       rowValue: linkStyle('#civ-test-card button.entity-card-row-value'),
       actionText: linkStyle('#civ-test-card button.entity-card-row-action-text'),
+      // Pudelkiem przycisku pigulki jest KONTENER .entity-card-pill, a zloty tekst zostaje
+      // na przycisku w srodku — dlatego dwa osobne pomiary.
+      pill: linkStyle('#civ-test-card .entity-card-pill'),
       pillText: linkStyle('#civ-test-card button.entity-card-pill-text'),
       civpediaLink: linkStyle('#civ-test-dock button.entity-card-civpedia-link'),
       techBtn: linkStyle('#civ-test-dock .dc-v-btn'),
@@ -192,9 +196,24 @@ function isNativeButtonLook(s) {
   // Natywny przycisk Chromium: niepusta ramka + wypełnione tło (buttonface).
   return !s.missing && s.borderTopWidth !== '0px' && s.bg !== 'rgba(0, 0, 0, 0)';
 }
-function isLinkLook(s) {
-  return !s.missing && s.borderTopWidth === '0px' && s.bg === 'rgba(0, 0, 0, 0)'
-    && s.color === GOLD && s.decoration.includes('underline') && s.cursor === 'pointer';
+/* P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1: jezyk wizualny linkow krzyzowych zmienil sie
+   ze "zloty podkreslony link" na PRZYCISK (obwodka + ciemne tlo, zero podkreslenia) — na
+   wprost zgloszenie wlasciciela ("przyciski wygladaja bardziej profesjonalnie niz linki").
+   Asercja pilnuje TEGO SAMEGO co przedtem: wspolnego jezyka wszystkich czterech wariantow
+   i braku natywnego przycisku przegladarki — zmienil sie wylacznie wzorzec docelowy.
+   Pelny dowod nowego stylu (hierarchia wobec akcji primary, trzy kopie .dc-v-btn, zrzuty):
+   tools/entity-card-cross-links-button-style-real-render-test.cjs. */
+/* RUNDA 1 OBRONA, zarzut 2: pierwsza wersja tej asercji przenosila z dawnego link-looku
+   warunek `s.bg === 'rgba(0, 0, 0, 0)'` — czyli WYMAGALA braku tla od elementu, ktoremu
+   GOAL kaze miec "stonowane tlo"; przechodzila tylko dlatego, ze wypelnienie jest
+   `background-image` (gradient), a nie `background-color`. Warunek jest teraz odwrocony
+   na wlasciwa strone: wymagamy OBECNOSCI wypelnienia, obojetnie ktora wlasciwoscia. */
+function hasFill(s) {
+  return s.bg !== 'rgba(0, 0, 0, 0)' || (typeof s.bgImage === 'string' && s.bgImage !== 'none');
+}
+function isNavButtonLook(s) {
+  return !s.missing && parseFloat(s.borderTopWidth) >= 1 && hasFill(s)
+    && s.color === GOLD && !s.decoration.includes('underline') && s.cursor === 'pointer';
 }
 
 async function main() {
@@ -297,14 +316,21 @@ async function main() {
     check('(A) wiersz grid: wartość z linkTo jest <button>', m.rowValue.tag === 'BUTTON', m.rowValue);
     check('(A) wiersz grid: link NIE wygląda jak natywny przycisk przeglądarki (brak ramki i tła)',
       !isNativeButtonLook(m.rowValue), m.rowValue);
-    check('(A) wiersz grid: link ma złoty kolor + podkreślenie + kursor pointer',
-      isLinkLook(m.rowValue), m.rowValue);
-    check('(B) wiersz z odznaką: link ma TEN SAM język wizualny', isLinkLook(m.actionText), m.actionText);
-    check('(B) pigułka: link ma TEN SAM język wizualny', isLinkLook(m.pillText), m.pillText);
+    check('(A) wiersz grid: link krzyzowy ma styl PRZYCISKU (obwodka, zloty tekst, bez podkreslenia)',
+      isNavButtonLook(m.rowValue), m.rowValue);
+    check('(B) wiersz z odznaką: link ma TEN SAM język wizualny', isNavButtonLook(m.actionText), m.actionText);
+    // RUNDA 1 OBRONA, zarzut 1: pudelko przycisku niesie KLIKALNY <button>, a nie
+    // nieklikalny kontener .entity-card-pill (delegacja lapie wylacznie
+    // button[data-entity-kind], wiec malowanie kontenera dawalo martwa strefe).
+    check('(B) pigułka: pudełko przycisku niesie sam <button> (ten sam element, który łapie klik)',
+      isNavButtonLook(m.pillText), m.pillText);
+    check('(B) pigułka: kontener NIE maluje już pudełka ani cursor:pointer (był nieklikalny)',
+      !m.pill.missing && parseFloat(m.pill.borderTopWidth) === 0
+      && m.pill.cursor !== 'pointer' && !hasFill(m.pill), m.pill);
     check('(B) link "Więcej informacji (Civpedia)" ma TEN SAM język wizualny',
-      isLinkLook(m.civpediaLink), m.civpediaLink);
+      isNavButtonLook(m.civpediaLink), m.civpediaLink);
     check('(C) link "Zobacz pełną kartę technologii →" w panelu budowy ma TEN SAM język wizualny',
-      isLinkLook(m.techBtn), m.techBtn);
+      isNavButtonLook(m.techBtn), m.techBtn);
 
     check('(C) sekcja "Technologie" karty w panelu budowy renderuje .dc-grid jako REALNĄ siatkę',
       m.grid && m.grid.display === 'grid', m.grid);

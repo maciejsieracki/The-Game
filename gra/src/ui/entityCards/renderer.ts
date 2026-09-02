@@ -578,25 +578,69 @@ export const ENTITY_CARD_CSS = `
    lewa krawedz. min-width NIE jest zerowane — inaczej etykieta moglaby sie sciesnic ponizej
    wlasnej tresci i nachodzic na wartosc. */
 .entity-card-row-value{overflow-wrap:anywhere;}
+/* P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1 — KOTWICA POCZATKOWA nowego jezyka wizualnego.
+   Zgloszenie wlasciciela: "wszystkie te skroty, ktore sa porobione tekstowe, powinny byc
+   zamienione na przyciski. Przyciski wygladaja bardziej profesjonalnie niz linki."
+   To SWIADOME odwrocenie czesci decyzji z P-CIVPEDIA-KARTY-AKCJE-PRZYCISKI-NIEOSTYLOWANE-Q1
+   (zloty podkreslony link = nawigacja): nawigacja dostaje teraz KSZTALT przycisku, ale
+   ZACHOWUJE nizsza wage wizualna niz prawdziwa akcja zmieniajaca stan gry. Hierarchia:
+     .entity-card-action-primary   — pelny zloty gradient, 700, uppercase, padding 7x18   (NAJCIEZSZY)
+     .entity-card-action-secondary — 2px zlota obwodka, ciemny gradient, 600, uppercase    (sredni)
+     linki krzyzowe (ten blok)     — 1px zlota obwodka, ten sam ciemny gradient, font wiersza,
+                                     bez uppercase/letter-spacing, mniejszy padding         (NAJLZEJSZY)
+   Wzorzec tla/obwodki jest 1:1 z .entity-card-action-secondary (nizej w tym arkuszu), wiec
+   nie wprowadzamy nowego jezyka — tylko trzeci, najlzejszy szczebel tej samej skali.
+   Zero zmian w DOM/atrybutach/listenerach — wylacznie CSS. */
 button.entity-card-row-value,
 button.entity-card-row-action-text,
 button.entity-card-pill-text,
-button.entity-card-civpedia-link{-webkit-appearance:none;appearance:none;background:none;border:0;
-  margin:0;padding:0;font:inherit;line-height:inherit;cursor:pointer;
-  color:var(--tg-gold-primary,#e8d88a);text-decoration:underline;text-underline-offset:2px;}
+button.entity-card-civpedia-link{-webkit-appearance:none;appearance:none;
+  margin:0;font:inherit;line-height:1.35;cursor:pointer;text-align:left;
+  color:var(--tg-gold-primary,#e8d88a);text-decoration:none;}
+/* Wszystkie CZTERY warianty niosa WLASNE pudelko przycisku — pudelko rysuje ten sam
+   element, ktory lapie klikniecie (delegacja target.closest('button[data-entity-kind]')
+   w renderEntityCard). RUNDA 1 OBRONA, zarzut 1: pierwsza wersja malowala pudelko
+   pigulki na KONTENERZE .entity-card-pill, ktory NIE jest klikalny — zmierzone na zywo
+   88,1x22,2 px pomalowanego "przycisku" wobec 52,0x16,2 px realnie klikalnego tekstu,
+   czyli ~41% szerokosci to byla martwa strefa z mylacym cursor:pointer. Pudelko MUSI
+   pokrywac sie z obszarem klikalnym, inaczej "przycisk" jest tylko obrazkiem przycisku. */
 button.entity-card-row-value,
 button.entity-card-row-action-text,
 button.entity-card-pill-text,
-button.entity-card-civpedia-link{text-align:left;}
+button.entity-card-civpedia-link{display:inline-block;padding:2px 10px;
+  border:1px solid rgba(232,216,138,.42);border-radius:var(--tg-radius-btn,8px);
+  background:linear-gradient(180deg,#161c28,#0a0d14);
+  box-shadow:inset 0 1px 0 rgba(232,216,138,.1);}
 button.entity-card-row-value:hover,
 button.entity-card-row-action-text:hover,
 button.entity-card-pill-text:hover,
-button.entity-card-civpedia-link:hover{color:#f4e6a8;}
+button.entity-card-civpedia-link:hover{border-color:var(--tg-gold-primary,#e8d88a);color:#f4e6a8;}
+/* Wiersz z odznaka: .entity-card-row-action-text ma flex:1 (regula nizej), co przy SPANIE
+   bylo niewidoczne, ale przy przycisku rozciagaloby ramke na cala szerokosc wiersza.
+   Przycisk ma sie kurczyc do tresci — jak kazdy inny przycisk karty. margin-right:auto
+   zachowuje przy tym DZISIEJSZE polozenie: przycisk zostaje tuz obok odznaki po lewej,
+   zamiast zostac odrzucony na prawa krawedz przez justify-content:space-between wiersza. */
+button.entity-card-row-action-text{flex:0 1 auto;margin-right:auto;}
+/* Wiersze Budynki/Jednostki karty technologii maja PUSTE row.value (ECHO
+   R-TECHNOLOGIA-KARTA-USUN-OPIS-BUDYNKI-JEDNOSTKI-Q1) — klikalny jest caly wiersz przez
+   fallback .entity-card-row--linked. Bez tego wyjatku pusty przycisk narysowalby sie jako
+   pusty, bezsensowny prostokacik z ramka. Zostaje niewidzialny, dokladnie jak dzis. */
+button.entity-card-row-value:empty{border:0;background:none;box-shadow:none;padding:0;}
+/* Pigulka LINKUJACA: kontener .entity-card-pill przestaje byc pudelkiem — zdejmujemy
+   z niego wlasne tlo, obwodke, padding i (kluczowe) cursor:pointer, zeby nie obiecywal
+   klikalnosci, ktorej nie ma. Pudelko przycisku niesie button.entity-card-pill-text
+   (regula wyzej), czyli dokladnie ten element, w ktory trafia delegacja klikniecia.
+   Checkmark .entity-card-pill-check zostaje SIOSTRA przycisku (DOM nietkniety), wiec
+   ladzie obok przycisku zamiast udawac jego czesc. Pigulki NIEKLIKALNE (bez button
+   w srodku) zachowuja dzisiejszy wyglad pigulki bez zmian — :has je omija. */
+.entity-card-pill:has(> button.entity-card-pill-text){
+  background:none;border:0;border-radius:0;padding:0;cursor:default;box-shadow:none;}
 button.entity-card-row-value:focus-visible,
 button.entity-card-row-action-text:focus-visible,
 button.entity-card-pill-text:focus-visible,
 button.entity-card-civpedia-link:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary,#e8d88a));
-  outline-offset:2px;border-radius:3px;}
+  outline-offset:2px;border-radius:var(--tg-radius-btn,8px);}
+/* KOTWICA KONCOWA P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1 */
 .entity-card-row-icon{width:15px;height:15px;flex:none;display:flex;align-items:center;
   justify-content:center;opacity:.9;}
 .entity-card-row-trailing{opacity:.7;font-size:12px;}

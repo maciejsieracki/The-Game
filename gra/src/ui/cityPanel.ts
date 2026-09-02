@@ -2564,9 +2564,16 @@ function ensureStyles(): void {
 .civ-detail-scope .detail-card .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.12em 0.5em;margin-top:0.15em;}
 .civ-detail-scope .detail-card .dc-l{color:var(--muted);}
 .civ-detail-scope .detail-card .dc-v{word-break:break-word;}
-.civ-detail-scope .detail-card .dc-v-btn{background:none;border:0;padding:0;margin:0;font:inherit;color:var(--gold);
-  text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
-.civ-detail-scope .detail-card .dc-v-btn:hover{color:#f4e6a8;}
+/* P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1 (kopia 1/3 .dc-v-btn) — ten sam trzeci,
+   najlzejszy szczebel skali przyciskow co linki krzyzowe w ENTITY_CARD_CSS: 1px zlota
+   obwodka + ciemne tlo, bez podkreslenia. KOTWICA MUTACJI. */
+.civ-detail-scope .detail-card .dc-v-btn{-webkit-appearance:none;appearance:none;
+  display:inline-block;justify-self:start;padding:0.1em 0.5em;margin:0;font:inherit;color:var(--gold);
+  text-align:left;cursor:pointer;text-decoration:none;
+  border:1px solid rgba(224,178,74,0.45);border-radius:5px;
+  background:linear-gradient(180deg,#1b212c,#0e1219);
+  box-shadow:inset 0 1px 0 rgba(224,178,74,0.10);}
+.civ-detail-scope .detail-card .dc-v-btn:hover{color:#f4e6a8;border-color:var(--gold);}
 .civ-detail-scope .detail-card .dc-section{font-size:0.68em;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
   color:#d4af5a;margin:0.55em 0 0.2em;padding-bottom:0.12em;border-bottom:1px solid rgba(212,175,90,0.18);}
 .civ-detail-scope .detail-card .dc-section:first-of-type{margin-top:0.15em;}
@@ -2652,9 +2659,17 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-cs .detail-card .dc-h .mini-thumb{width:1.85em;height:1.85em;font-size:0.95em;border-width:1px;}
 .civ-cs .detail-card .dc-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.12em 0.5em;margin-top:0.15em;}
 .civ-cs .detail-card .dc-l{color:var(--muted);}
-.civ-cs .detail-card .dc-v-btn{background:none;border:0;padding:0;margin:0;font:inherit;color:var(--gold);
-  text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
-.civ-cs .detail-card .dc-v-btn:hover{color:#f4e6a8;}
+/* P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1 (kopia 2/3 .dc-v-btn — TA KOPIA NIE BYLA
+   WYMIENIONA W RECONIE DISPATCHU; ten sam selektor konczacy sie na ".detail-card .dc-v-btn",
+   tylko inny korzen scope'u: ".civ-cs" zamiast ".civ-detail-scope". Pominiecie jej zostawiloby
+   ten sam przycisk jako zloty podkreslony link w drugim miejscu montowania karty). */
+.civ-cs .detail-card .dc-v-btn{-webkit-appearance:none;appearance:none;
+  display:inline-block;justify-self:start;padding:0.1em 0.5em;margin:0;font:inherit;color:var(--gold);
+  text-align:left;cursor:pointer;text-decoration:none;
+  border:1px solid rgba(224,178,74,0.45);border-radius:5px;
+  background:linear-gradient(180deg,#1b212c,#0e1219);
+  box-shadow:inset 0 1px 0 rgba(224,178,74,0.10);}
+.civ-cs .detail-card .dc-v-btn:hover{color:#f4e6a8;border-color:var(--gold);}
 .civ-cs .detail-card .dc-note{margin-top:0.25em;color:var(--muted);font-size:0.92em;font-style:italic;}
 .civ-cs .detail-card.bld-detail-card{padding:0.32em 0.38em;}
 .civ-cs .detail-card.bld-detail-card .dc-h{margin-bottom:0.3em;padding-bottom:0.24em;border-bottom:1px solid rgba(212,175,90,0.24);}
@@ -7207,14 +7222,18 @@ function ensureEntityCardBuildingStyles(): void {
 .entity-card.bld-detail-card .dc-v .civ-cs-chip-ic-wrap,
 .entity-card.bld-detail-card .dc-note .civ-cs-chip-ic-wrap{display:inline-flex;
   align-items:center;vertical-align:middle;margin-right:.08em;}
-/* Link "Zobacz pelna karte technologii ->" (T10) — ten sam zloty, podkreslony jezyk
-   wizualny co linki krzyzowe w ENTITY_CARD_CSS, zamiast natywnego przycisku. */
-.entity-card.bld-detail-card .dc-v-btn{-webkit-appearance:none;appearance:none;background:none;
-  border:0;margin:0;padding:0;font:inherit;line-height:inherit;text-align:left;cursor:pointer;
-  color:var(--tg-gold-primary,#e8d88a);text-decoration:underline;text-underline-offset:2px;}
-.entity-card.bld-detail-card .dc-v-btn:hover{color:#f4e6a8;}
+/* Link "Zobacz pelna karte technologii ->" (T10) — P-ENTITYCARD-LINKI-KRZYZOWE-NA-PRZYCISKI-Q1
+   (kopia 3/3 .dc-v-btn): ten sam jezyk wizualny co linki krzyzowe w ENTITY_CARD_CSS, czyli
+   od tego tematu PRZYCISK (1px zlota obwodka + ciemne tlo), nie zloty podkreslony link. */
+.entity-card.bld-detail-card .dc-v-btn{-webkit-appearance:none;appearance:none;
+  display:inline-block;justify-self:start;margin:0;padding:2px 10px;font:inherit;line-height:1.35;
+  text-align:left;cursor:pointer;color:var(--tg-gold-primary,#e8d88a);text-decoration:none;
+  border:1px solid rgba(232,216,138,.42);border-radius:var(--tg-radius-btn,8px);
+  background:linear-gradient(180deg,#161c28,#0a0d14);
+  box-shadow:inset 0 1px 0 rgba(232,216,138,.1);}
+.entity-card.bld-detail-card .dc-v-btn:hover{color:#f4e6a8;border-color:var(--tg-gold-primary,#e8d88a);}
 .entity-card.bld-detail-card .dc-v-btn:focus-visible{outline:2px solid var(--tg-focus-ring,var(--tg-gold-primary,#e8d88a));
-  outline-offset:2px;border-radius:3px;}
+  outline-offset:2px;}
 .entity-card.bld-detail-card .dc-note{margin-top:4px;font-size:12px;line-height:1.35;
   color:var(--tg-text-muted,#9aa6b6);}`;
   document.head.appendChild(style);
