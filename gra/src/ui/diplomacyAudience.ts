@@ -546,9 +546,22 @@ function ensureStyles(): void {
   const css = `
 ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-aud{position:fixed;inset:0;z-index:400;background:rgba(5,6,10,.88);
-  display:flex;align-items:center;justify-content:center;padding:14px;
+  display:flex;align-items:flex-start;justify-content:center;padding:14px;
+  /* P-UI-ZOOM-PRZEGLADARKI-PANELE-UCIETE-Q1 — fallback scrolla na poziomie backdropu, TYLKO
+     gdy audiencja jest otwarta (ten element istnieje wyłącznie w DOM podczas audiencji).
+     Przy zoomie przeglądarki (Chrome page zoom) i wewnętrznym zoomie UI gry (hud.ts,
+     body ma transform:scale(z)) jednostki vh w .civ-diplo-aud-box przestają się zgadzać z
+     realnym window.innerHeight — box bywa wyższy niż faktyczny viewport. Dawniej
+     align-items:center (tzw. "unsafe" centrowanie flex) obcinał nadmiar SYMETRYCZNIE u
+     góry i u dołu, bez żadnej ścieżki scrolla do obciętej treści (żywy dowód: Krok 1 tego
+     tematu). Teraz box centruje się przez margin:auto 0 na dziecku (patrz niżej) —
+     "bezpieczne" centrowanie: gdy brakuje miejsca, margines auto nigdy nie schodzi poniżej 0,
+     box przykleja się do góry (zgodnej z align-items:flex-start), a nadmiar zostaje pod spodem
+     — osiągalny scrollem backdropu (overflow-y:auto niżej). */
+  overflow-y:auto;
   font:14px 'Segoe UI',Tahoma,sans-serif;color:#e8e0c8;}
 .civ-diplo-aud-box{width:min(1720px,98vw);max-height:94vh;overflow:auto;position:relative;
+  margin:auto 0;
   /* FAZA 3 pkt 9 — tło granat 1E dokładnie wg makiety (NIE brąz), nie tokeny wspólne (przybliżenie). */
   background:
     radial-gradient(140% 100% at 50% -10%, rgba(55,50,32,.45) 0%, transparent 40%),
