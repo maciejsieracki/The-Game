@@ -54,3 +54,8 @@ Ulepszenie **Tartak** na polu w **twoim terytorium**. Teren: Ląd w terytorium (
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Cięcie drewna na regularne deski i belki od tysiącleci odbywało się ręcznie, piłami dwuręcznymi obsługiwanymi przez dwóch robotników — jednego stojącego nad pniem, drugiego w dole, w wykopanym rowie. Przełom przyniosło wynalezienie tartaku napędzanego siłą wody, znanego w Cesarstwie Rzymskim już w IV wieku (m.in. w Hierapolis w Azji Mniejszej), a szeroko rozpowszechnionego w średniowiecznej Europie od XIII wieku, gdzie koło wodne napędzało piłę ramową poruszającą się w górę i w dół. Mechanizacja cięcia drewna radykalnie przyspieszyła produkcję desek potrzebnych do budowy domów, młynów, a przede wszystkim statków — co miało kluczowe znaczenie dla epoki wielkich odkryć geograficznych i rozwoju flot handlowych. Tartaki wodne budowano zwykle nad szybkimi strumieniami lub rzekami, w pobliżu lasów, by ograniczyć koszt transportu surowca. W XVII wieku Holandia, uboga w lasy, ale bogata w kapitał i technologię, stała się potęgą tartaczną, importując drewno bałtyckie i przerabiając je na deski zaopatrujące stocznie całej Europy.

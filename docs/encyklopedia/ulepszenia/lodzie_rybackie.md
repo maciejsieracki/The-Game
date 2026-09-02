@@ -53,3 +53,8 @@ Ulepszenie **Łodzie rybackie** na polu w **twoim terytorium**. Teren: Wybrzeże
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Łodzie rybackie były jednym z najwcześniejszych narzędzi, dzięki którym człowiek wyszedł poza zbieractwo znad brzegu i sięgnął po zasoby otwartej wody. Już w epoce kamienia budowano proste dłubanki i tratwy trzcinowe, jak egipskie łodzie papirusowe znad Nilu czy skandynawskie łodzie z epoki brązu. Umożliwiały one połów sieciami i włócznią w miejscach niedostępnych z lądu, co dawało stały, przewidywalny dopływ pożywienia niezależny od plonów rolnych. Społeczności nadmorskie i nadrzeczne, takie jak mieszkańcy japońskiego okresu Jōmon czy ludy znad Morza Śródziemnego, budowały wokół rybołówstwa łodziowego całe systemy osadnicze i handlowe. Rozwój technik żeglarskich związanych z łodziami rybackimi stał się też pierwszym krokiem w stronę późniejszej żeglugi dalekomorskiej i handlu morskiego.

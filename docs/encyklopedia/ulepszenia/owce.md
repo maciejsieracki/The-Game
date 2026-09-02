@@ -54,3 +54,8 @@ Ulepszenie **Owce** na polu w **twoim terytorium**. Teren: Wzgórza.
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Owca była jednym z pierwszych zwierząt udomowionych przez człowieka, prawdopodobnie już około 10 000 lat temu na terenach dzisiejszej Anatolii i Iranu, gdzie żyły ich dzikie przodkinie, muflony. Początkowo hodowano je głównie dla mięsa i skóry, lecz z czasem — wraz z selekcją osobników o gęstszym runie — owca stała się też kluczowym źródłem wełny, surowca, który zrewolucjonizował włókiennictwo w całej Eurazji. Pasterstwo owiec dobrze sprawdzało się na terenach zbyt jałowych lub zbyt stromych pod uprawę, jak wzgórza czy stepy, co czyniło je uzupełnieniem, a nie konkurencją dla rolnictwa. W wielu kulturach, od starożytnej Mezopotamii po średniowieczną Europę, handel wełną i tkaninami wełnianymi stał się fundamentem bogactwa całych regionów i miast. Pasterze owiec, prowadzący stada między pastwiskami sezonowymi, ukształtowali też charakterystyczny, na wpół koczowniczy styl życia zwany transhumancją, praktykowany do dziś w wielu górzystych regionach świata.

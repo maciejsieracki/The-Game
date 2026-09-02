@@ -54,3 +54,8 @@ Ulepszenie **Kamieniołom** na polu w **twoim terytorium**. Teren: Wzgórza, Gó
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Wydobycie kamienia budowlanego towarzyszy człowiekowi od zarania cywilizacji — od prostych łomów krzemienia w neolicie, przez ogromne kamieniołomy wapienia i granitu zaopatrujące budowniczych piramid w starożytnym Egipcie, po marmurowe łomy Karrary czy greckiej wyspy Paros, z których czerpali rzeźbiarze i architekci antyku. Wydobywanie bloków skalnych bez nowoczesnych narzędzi wymagało żmudnych technik: wbijania drewnianych klinów namaczanych wodą, by pękały wzdłuż naturalnych szczelin skały, oraz transportu wielotonowych brył na saniach, wałkach czy barkach rzecznych. Egipskie kamieniołomy w Asuanie dostarczały różowego granitu na obeliski i sarkofagi, transportowane Nilem setki kilometrów do Teb czy Gizy. Rzymianie z kolei rozwinęli wydobycie na skalę przemysłową, zaopatrując budowy dróg, akweduktów i świątyń w całym imperium. Ślady dłut i klinów widoczne do dziś w ścianach starożytnych kamieniołomów pozwalają archeologom odtworzyć dokładne metody pracy sprzed tysięcy lat.

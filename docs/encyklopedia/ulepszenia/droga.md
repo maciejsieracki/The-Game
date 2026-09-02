@@ -54,3 +54,8 @@ Ulepszenie **Droga** na polu w **twoim terytorium**. Teren: każdy przejezdny he
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Najwcześniejsze drogi to zwykłe ubite ścieżki, wydeptane przez ludzi, zwierzęta juczne i pierwsze wozy, później utwardzane żwirem, drewnem lub warstwami ubitej gliny. Już w Mezopotamii i starożytnym Egipcie budowano proste trakty łączące osady i pola uprawne, a sieć dróg perskich (Droga Królewska, V wiek p.n.e.) umożliwiała szybki przepływ informacji i wojsk na tysiące kilometrów. Takie drogi nie miały jeszcze trwałej nawierzchni kamiennej, ale radykalnie skracały czas podróży i transportu towarów w porównaniu z marszem przez bezdroża. Ich budowa i utrzymanie — karczowanie, wyrównywanie terenu, usypywanie nasypów — było jednym z pierwszych wielkich przedsięwzięć infrastrukturalnych ludzkości, łączącym rozproszone osady w sieci wymiany handlowej.

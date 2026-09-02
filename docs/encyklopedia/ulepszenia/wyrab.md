@@ -53,3 +53,8 @@ Ulepszenie **Wyrąb** na polu w **twoim terytorium**. Teren: Las.
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Karczowanie lasu pod potrzeby rolnictwa i budownictwa to proces towarzyszący ekspansji rolniczych społeczności od neolitu — w Europie znany jako gospodarka żarowa, praktykowana też niezależnie w tropikalnych lasach Ameryki Środkowej i Azji Południowo-Wschodniej. Drewno wycięte z lasu było surowcem uniwersalnym: budulcem dla domów i statków, opałem, a po przetworzeniu na węgiel drzewny — paliwem potrzebnym do wytopu metali. Sam wyrąb, wykonywany kamiennymi, a później żelaznymi toporami, był pracą żmudną i czasochłonną, dlatego często wspomagano go ogniem, wypalając poszycie i mniejsze drzewa, by ułatwić dalsze karczowanie. Skala średniowiecznego wyrębu lasów w Europie Zachodniej, związana z rosnącą populacją i potrzebą nowych pól uprawnych, trwale zmieniła krajobraz kontynentu, zamieniając rozległe puszcze w mozaikę pól i wsi. W wielu regionach świata deforestacja pod uprawę pozostaje procesem kontrowersyjnym do dziś, co pokazuje, jak dawna praktyka gospodarcza wciąż kształtuje debaty współczesności.

@@ -54,3 +54,8 @@ Ulepszenie **Warzelnia soli** na polu w **twoim terytorium**. Teren: złoże sol
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Sól była przez tysiące lat jednym z najcenniejszych towarów świata — niezbędna do konserwowania mięsa i ryb, długo przed epoką lodówek decydowała o przetrwaniu zapasów żywności przez zimę. Warzelnie, czyli miejsca odparowywania solanki z wody morskiej lub słonych źródeł w płytkich nieckach na słońcu bądź nad ogniem, działały już w starożytnym Egipcie, Chinach i wśród ludów celtyckich w Europie Środkowej. W średniowiecznej Europie handel solą morską prowadzony przez miasta takie jak Lüneburg czy Bourgneuf-en-Retz budował całe fortuny kupieckie, a szlaki solne stawały się ważnymi trasami handlowymi. Samo słowo „salariusz” (żołd) wywodzi się od łacińskiego sal — sól, którą rzymscy legioniści bywali częściowo opłacani. Kontrola nad warzelniami soli oznaczała realną władzę gospodarczą na długo przed erą przemysłową.

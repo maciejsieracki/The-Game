@@ -53,3 +53,8 @@ Ulepszenie **Posterunek (Strażnica)** na polu w **twoim terytorium**. Teren: l�
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Posterunki graniczne i strażnice towarzyszyły państwom niemal od zarania administracji terytorialnej — ich zadaniem było rozszerzanie kontroli poza mury miast, obserwacja szlaków i wczesne ostrzeganie przed najazdem. Rzymski limes, ciągnący się tysiącami kilometrów wzdłuż granic imperium, składał się właśnie z sieci niewielkich wież strażniczych (burgi) i fortów pomocniczych, utrzymujących łączność sygnałową między większymi garnizonami. Podobną funkcję pełniły chińskie wieże strażnicze wzdłuż Wielkiego Muru czy słowiańskie grody strażne na pograniczach wczesnośredniowiecznych księstw. Niewielka załoga posterunku nie mogła stawić czoła regularnej armii, ale dawała czas na mobilizację sił głównych i pozwalała kontrolować handel oraz przemieszczanie się ludzi na newralgicznych szlakach. Sieć takich placówek była tanim, ale skutecznym sposobem na utrzymanie władzy nad rozległym i słabo zaludnionym pograniczem.

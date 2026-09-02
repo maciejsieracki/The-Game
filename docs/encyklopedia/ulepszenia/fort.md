@@ -53,3 +53,8 @@ Ulepszenie **Fort / umocnienia** na polu w **twoim terytorium**. Teren: dowolny 
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Fortyfikacje polowe budowane w otwartym terenie, poza murami miast, towarzyszyły wojskom od starożytności — rzymskie obozy warowne (castra) wznoszone każdej nocy na marszu legionów są jednym z najbardziej znanych przykładów zdyscyplinowanej sztuki fortyfikacyjnej. Proste wały ziemne, palisady i rowy pozwalały niewielkim garnizonom skutecznie bronić się przed liczniejszym przeciwnikiem i kontrolować kluczowe przejścia, brody czy granice. W średniowieczu podobną rolę pełniły drewniano-ziemne grody i strażnice graniczne, jak choćby limes rzymski czy Wielki Mur Chiński z jego licznymi fortami wartowniczymi. Fort w terenie nie służył do zamieszkania na stałe, lecz jako punkt oporu i obserwacji, wzmacniający obronność szerszego obszaru bez konieczności budowy pełnego miasta warownego.

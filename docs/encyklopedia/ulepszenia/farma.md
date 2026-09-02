@@ -53,3 +53,8 @@ Ulepszenie **Farma** na polu w **twoim terytorium**. Teren: Łąka, Równina.
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Przejście od zbieractwa do uprawy roślin to jedna z najgłębszych rewolucji w dziejach ludzkości — zaszło niezależnie w kilku regionach świata: na Żyznym Półksiężycu (pszenica, jęczmień, ok. 9500 p.n.e.), w dorzeczu Jangcy i Żółtej Rzeki w Chinach (ryż, proso), w Mezoameryce (kukurydza) oraz w Andach (ziemniak, komosa ryżowa). Zamiast wędrować za dziką roślinnością, ludzie zaczęli świadomie selekcjonować nasiona, przygotowywać glebę i pilnować pól przez cały cykl wegetacyjny. Ta zmiana pozwoliła na osiadły tryb życia, gromadzenie nadwyżek żywności i w konsekwencji na powstanie pierwszych wsi, a później miast. Archeolodzy szacują, że udomowienie pszenicy i jęczmienia zajęło setki, a nawet tysiące lat stopniowej selekcji odmian dających większe i trwalsze ziarna. Farma w tym sensie to nie pojedynczy wynalazek, lecz długi proces, który na zawsze odmienił relację człowieka z ziemią.

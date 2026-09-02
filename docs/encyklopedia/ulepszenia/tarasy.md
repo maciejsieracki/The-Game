@@ -53,3 +53,8 @@ Ulepszenie **Tarasy uprawne** na polu w **twoim terytorium**. Teren: Wzgórza.
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Tarasy uprawne to system stopniowanych, murowanych poletek wykuwanych w zboczach gór, praktykowany od tysięcy lat w Andach, Azji Południowo-Wschodniej i na Bliskim Wschodzie. Najbardziej znane przykłady zostawili Inkowie w Peru (m.in. Moray i doliny wokół Machu Picchu, XV wiek), którzy w ten sposób zdobywali żyzną ziemię uprawną na stromym, górzystym terenie i jednocześnie zapobiegali erozji gleby. Każdy poziom tarasu miał własny mikroklimat, co pozwalało uprawiać różne rośliny na różnych wysokościach tego samego zbocza. Budowa wymagała ogromnego nakładu pracy zbiorowej — kamiennych murów oporowych, systemów drenażu i nawadniania — ale w zamian dawała stabilne plony tam, gdzie płaska ziemia była rzadkością.

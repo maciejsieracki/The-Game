@@ -54,3 +54,8 @@ Ulepszenie **Bydło** na polu w **twoim terytorium**. Teren: Łąka, Równina.
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Udomowienie zwierząt hodowlanych — kóz i owiec na Bliskim Wschodzie, bydła w Afryce i Azji, świń w Chinach i Europie — przebiegało mniej więcej równolegle z udomowieniem roślin, tworząc razem podstawę neolitycznej rewolucji rolniczej. Zwierzęta hodowlane dawały nie tylko mięso, ale też mleko, skóry, wełnę i nawóz użyźniający pola, a z czasem także siłę pociągową. W przeciwieństwie do polowania, hodowla pozwalała trzymać zapas żywca na czas nieurodzaju czy suszy, działając jak bufor bezpieczeństwa całej wspólnoty. Archeolodzy odróżniają udomowione stada od dzikich populacji po zmianach w budowie kości i strukturze wieku ubijanych zwierząt, co pozwala datować pierwsze zagrody na kontynentach niezależnie od siebie. Trzoda hodowlana uczyniła też ludzi bardziej osiadłymi niż sami myśliwi-zbieracze, bo stada trzeba było paść i pilnować blisko osady. To właśnie bliski kontakt człowieka ze zwierzętami hodowlanymi uczynił z niego również nosiciela — i czasem ofiarę — chorób odzwierzęcych, które później odmieniły bieg historii.

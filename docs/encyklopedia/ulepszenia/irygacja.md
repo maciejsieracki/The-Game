@@ -53,3 +53,8 @@ Ulepszenie **Irygacja** na polu w **twoim terytorium**. Teren: Łąka, Równina,
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Sztuczne nawadnianie pól to jedna z najstarszych technologii inżynieryjnych, znana już w Mezopotamii między Tygrysem a Eufratem, gdzie sieci kanałów i grobli pozwalały rolnikom uprawiać zboża na terenach, które bez wody z rzeki pozostałyby jałowe. Podobne systemy rozwinęły się niezależnie w starożytnym Egipcie, wykorzystującym coroczne wylewy Nilu, oraz w Chinach i w Andach, gdzie budowano kamienne kanały prowadzące wodę z gór na tarasowe pola. Zarządzanie irygacją wymagało współpracy całych społeczności — kopania i utrzymania kanałów, ustalania kolejności poboru wody, rozstrzygania sporów o jej podział — co niektórzy historycy wiążą z narodzinami scentralizowanej administracji i pierwszych praw wodnych. Dzięki nawadnianiu urodzajność ziemi rosła wielokrotnie, a rolnicy mogli zbierać plony nawet w regionach o skąpych opadach. Ślady starożytnych kanałów irygacyjnych w Iraku i Iranie są widoczne z satelity do dziś, świadcząc o skali tych przedsięwzięć sprzed tysięcy lat.

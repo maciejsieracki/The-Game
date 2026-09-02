@@ -54,3 +54,8 @@ Ulepszenie **Glinianka** na polu w **twoim terytorium**. Teren: złoże Gliny.
 ## Historia / decyzje
 
 Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+
+
+## Rys historyczny
+
+Glina, pozyskiwana z odsłoniętych złóż w brzegach rzek czy jarach, była jednym z pierwszych surowców mineralnych świadomie eksploatowanych przez człowieka, jeszcze przed epoką metali. Już w neolicie ludzie kopali doły i miejsca wydobycia gliny, by formować z niej naczynia, cegły suszone na słońcu, a później wypalane, oraz figurki kultowe. Odkrycie, że wypalanie w ogniu utwardza i uszczelnia glinę, doprowadziło do narodzin garncarstwa — jednej z najstarszych technologii przetwórczych, znanej niezależnie w Azji Wschodniej, na Bliskim Wschodzie i w obu Amerykach. Gliniane cegły stały się podstawowym materiałem budowlanym w regionach ubogich w kamień i drewno, jak Mezopotamia, gdzie z suszonej i wypalanej cegły wznoszono zikkuraty i mury miejskie. Dobrej jakości złoża gliny bywały na tyle cenne, że osady lokowano w ich pobliżu, a szlaki wymiany gliny i gotowych naczyń ciągnęły się na setki kilometrów. Skorupy ceramiczne, dzięki swej trwałości, pozostają dziś jednym z najważniejszych źródeł wiedzy archeologów o dawnych kulturach.
