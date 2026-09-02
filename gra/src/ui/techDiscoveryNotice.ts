@@ -534,6 +534,16 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
     ? `Awans do epoki ${EPOCH_LABEL[opts.eraIndex] ?? opts.eraIndex}`
     : 'Ukończono badania';
   const statusWord = isPreview ? 'Informacja' : 'Ukończona';
+  /* P-TECHDISCOVERY-BADGE-DUPLIKAT-NACHODZENIE-Q1 — dla ZWYKŁEGO odkrycia (kind:'completion',
+   * jedyna gałąź, która nie jest ani awansem epoki, ani podglądem) `kick` i `statusWord`
+   * mówiły DOKŁADNIE to samo: „Ukończono badania" + „Ukończona" jako dwie osobne odznaki obok
+   * tytułu. Zgłoszenie właściciela (zrzut karty „Rolnictwo"): „ukończone badania, ukończona. To
+   * jest powtórzenie […] nie trzeba drugi raz pisać ukończona". Zostaje JEDNA odznaka — `kick`,
+   * bo to ona niesie zdarzenie („Ukończono badania"), zgodnie z jego opisem docelowego układu.
+   * Gałęzie 'era' i 'preview' ZOSTAJĄ z dwiema odznakami: tam niosą RÓŻNE informacje
+   * (co się stało: „Awans do epoki X" / „Podgląd technologii”; jaki to stan: „Ukończona" /
+   * „Informacja"), więc nie są duplikatem i dispatch jawnie zakazuje ich ruszać. */
+  const statusBadges = (isEraAdvance || isPreview) ? [kick, statusWord] : [kick];
   const milestoneEpoch = typeof tech.awansDoEpoki === 'number'
     ? (EPOCH_LABEL[tech.awansDoEpoki] ?? String(tech.awansDoEpoki)) : null;
   const metaParts = [
@@ -592,7 +602,7 @@ function showTechDiscoveryNoticeViaEntityCard(tech: TechRow, opts: ShowTechDisco
     ...cardData,
     sections: sectionsWithImprovementLinks,
     subtitle: subtitleText || cardData.subtitle,
-    statusBadges: [kick, statusWord],
+    statusBadges,
     actions,
   };
 
@@ -747,6 +757,33 @@ function ensureEntityCardOverrideStyles(): void {
   #${HOST_ID}.tdn-has-side .tdn-stage{flex-direction:column;gap:10px;overflow:auto;}
   #${HOST_ID}.tdn-has-side .entity-card{max-height:calc((100vh - 56px) / 2);}
 }
+/* P-TECHDISCOVERY-BADGE-DUPLIKAT-NACHODZENIE-Q1 — NACHODZENIE TEKSTU NA GRAFIKĘ DIAROMY.
+   Zreprodukowane żywym Chromium na kodzie z origin/main (85777982), 660 px, kind:'completion',
+   „Rolnictwo": overlay tytułu (.entity-card-title-wrap, absolute bottom:11px) zachodził
+   PROSTOKĄTNIE na medalion — odznaka „Ukończona" 80x6 px na medalionie i 80x18 px na elipsie
+   gruntu; dla dłuższego tytułu („Hutnictwo żelaza") 78x6 px. Przyczyna jest w PROPORCJACH
+   sceny, nie w szerokości: .entity-card-diorama ma 190 px wysokości, a -stage rezerwuje
+   pod tekst tylko padding-bottom:26px, gdy sam blok tytuł+odznaki+podtytuł mierzy ~50 px i
+   siedzi 11 px nad dnem — 122-pikselowy medalion nie ma się gdzie zmieścić bez kolizji.
+   ZAKRES NAPRAWY — świadomie WYŁĄCZNIE ta karta: selektor kotwiczy się w .tdn-entity-card-v2
+   (klasa nadawana tylko karcie technologii tego popupu, showTechDiscoveryNoticeViaEntityCard),
+   więc NIE dotyka ani renderer.ts, ani domyślnej karty 434 px, ani diaromy pozostałych 4
+   rodzajów encji (jednostki/budynki/ulepszenia/cuda), ani karty satelity .tdn-side-card,
+   która żyje w TYM SAMYM hoście i zostaje na domyślnych 434 px/190 px. Zmierzone, nie
+   założone: karta domyślna 434 px z odznaką („Triari", „Super-jednostka") NIE ma kolizji z
+   medalionem (0 px) — tylko z miękką poświatą gruntu — bo jej krótszy wiersz tytułu nie sięga
+   poziomo pod wyśrodkowany medalion. Kolizja jest więc realnie właściwością TEJ szerszej
+   karty i tu ją naprawiamy (C-025: naprawiamy zgłoszony błąd, nie wspólny mechanizm).
+   Sama naprawa duplikatu odznak NIE wystarcza: po niej „Rolnictwo" ma jeszcze 3x6 px, a
+   „Hutnictwo żelaza" — 78x6 px nachodzenia na medalion, więc ten blok nie jest ostrożnością
+   „na wszelki wypadek", tylko domknięciem zgłoszonej wady.
+   Zmieniamy trzy liczby, zero zmian w markupie/kolejności DOM/mechanizmie diaromy:
+   scena wyższa (190→226), głębsza rezerwa pod overlay tekstu (26→72) i elipsa „gruntu"
+   podniesiona razem z medalionem (22→63), żeby kontakt światła nadal padał pod obiekt,
+   a nie za tekstem. Wynik mierzy sekcja (B) w tools/tech-discovery-badge-diorama-test.cjs. */
+#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama{height:226px;}
+#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama-stage{padding-bottom:72px;}
+#${HOST_ID} .tdn-entity-card-v2 .entity-card-diorama-ground{bottom:63px;}
 #${HOST_ID} .entity-card-header{position:relative;padding-right:44px;}
 .tdn-entity-close{position:absolute;top:10px;right:10px;width:28px;height:28px;
   border-radius:var(--tg-radius-btn,8px);border:2px solid rgba(232,216,138,.4);
