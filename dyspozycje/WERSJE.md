@@ -13,6 +13,18 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA fca50ef6 - 2026-09-02 13:15 UTC - FALA 336: Faza 3 (audyt tooltipow) — naprawa wycieku tekstu deweloperskiego w karcie korupcji/podzialu handlu panelu miasta
+
+|- md5 (pełne): fca50ef61aeaa83295cd87b6c70869c0 · stempel: ROBOCZA · label fca50ef6 · źródłowy commit integracji: `dc61e1da`
+|- **`P-CITYPANEL-KORUPCJA-TEKST-DEWELOPERSKI-Q1`** (`0f8b7fd7`+`dc61e1da`) — Faza 3 zlecenia właściciela (szeroki przegląd tooltipów/opisów w całej grze, po zamknięciu Faz 1-2 projektu kart historycznych): recon (Explore, ~49 plików UI z tooltipami) znalazł jeden konkretny przypadek tej samej klasy błędu co pierwotne zgłoszenie o karcie "Tarasy uprawne" — karta "Podział &lt;daniny&gt; — szczegóły" w panelu miasta (sekcja Handel, `cityPanel.ts`) zawierała surową notatkę projektową wprost widoczną dla gracza: "Do rozkminienia (v2): skąd bierze się korupcja...", nagłówek sekcji "Korupcja (placeholder)", etykietę wiersza "Silnik (docelowo)" i tooltip "Placeholder — docelowo pełny model korupcji". Przepisano na ton dla gracza, zachowując merytorykę (korupcja dziś = stały %, w przyszłości ma zależeć od dystansu/liczby miast). Runda 1 poprawnie zgłosiła DECISION_REQUIRED — pierwotne kryterium "zero słowa placeholder w DOM" kolidowało z allowlistą zakazującą ruszania formuł silnika (`appendDetailFormula`/`appendDetailAlgo`), które same zawierały to słowo w 2 liniach; orkiestrator rozstrzygnął ECHO (usunięcie wyłącznie słowa, nie struktury formuł), runda 2 dokończyła. Reszta karty (wzory algorytmu pokazywane graczowi jako świadomy transparency-panel) — bez zmian.
+|- Reszta gry po recon Fazy 3 (civs.json, ui-params.json, pozostałe ~49 plików UI z tooltipami) — sprawdzona, czysta, zero kolejnych wycieków tekstu deweloperskiego. Faza 3 zamknięta na tym jednym, potwierdzonym znalezisku.
+|- Pełny cykl Operator→Evaluator→(Obrona/DECISION_REQUIRED→ECHO→runda 2)→Final Control przez Workflow, niezależna, żywa weryfikacja w headless Chromium (w tym dowód mutacyjny: cofnięcie fixu odtwarza "placeholder" w DOM, test to łapie). `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) bez regresu. Nowy test `korupcja-tekst-gracz-real-render-test.cjs` 27/27.
+|- Bundle: 882 modułów (bez zmian liczby — zmiana treści UI, nie nowy moduł), `Gra-ROBOCZA.html` 69,5 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — temat nie dotyka `battleScene.ts`/logiki bitwy.
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
+|- **Odstępstwo techniczne (jak w FALACH 324-335):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 15890072 - 2026-09-02 12:20 UTC - FALA 335: CivPedia dostaje "Rys historyczny" — infra + wszystkie 6 kategorii treści (budynki/cuda/ulepszenia/technologie/jednostki, 168 haseł), podgląd 3D jednostki uzupełniony w karcie miasta i linkach krzyżowych, 3 naprawy pochodne
 
 |- md5 (pełne): 15890072e390e172a90b6583b91996ab · stempel: ROBOCZA · label 15890072 · źródłowy commit integracji: `87ce67ed`
@@ -25,7 +37,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK (stamp md5 WARN kosmetyczny, znany, nieblokujący).
 |- **Odstępstwo techniczne (jak w FALACH 324-334):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ fca50ef6, FALA 336)
 
 ## ROBOCZA 875b02cd - 2026-09-02 02:35 UTC - FALA 334: KAMIEŃ MILOWY — projekt R-KARTY-HISTORIA-Q1 KOMPLETNY (17/17): cuda świata dostają kartę encji (nowy EntityKind) + rys historyczny 19/19, zamyka serię obejmującą wszystkie 5 kategorii encji
 
