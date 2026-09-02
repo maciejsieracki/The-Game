@@ -3948,3 +3948,26 @@ niezalezny od workerow).
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
 | R-ULEPSZENIA-OBOZ-LOWIECKI-LAS-ZNIKA-I-TEREN-Q1 | 2026-09-02 | (A) Las znika wizualnie po zbudowaniu ulepszenia (np. obozu lowieckiego) na wzgorzu/gorze z lasem. (B, do weryfikacji) obozy lowieckie widziane na terenie bez lasu. | **DISPATCHOWANE** | Domain GAME, wizualny/UX (R-PROC-AUTOBOT.md §5a) — Operator+Evaluator Opus 5, Final Control Sonnet 5. Czesc A ma dokladnie wskazana przyczyne (main.ts:11991-12014, `foodOnForest` sprawdza tylko 'farma'/'bydlo'), do naprawy generycznie wzgledem istniejacego zbioru ulepszen zgodnych z lasem. Czesc B jawnie warunkowa — Operator MUSI zweryfikowac zywo przed jakakolwiek zmiana kodu commitu. Dispatch `00-dispatch.md`, commit `ed11294d`. |
+
+## OTWARTE 2026-09-02 — AI ma rozdrobnione armie zamiast jednej skoncentrowanej
+
+Wlasciciel, zrzut mapy (rejon Elefantyna/Lothal/Harappa/Sais, kilka rozproszonych
+grup 1-3 jednostek AI): "AI nadal unika generowania duzych armii [...] na
+rzecz rozproszonych wielu armii. Powinien [...] starac sie skupiac cala
+armie w jednym miejscu [...] Dodatkowo wszystko zalezy od tego, z ilu stron
+jest atakowany. Jesli jest atakowany z dwoch stron, musi podzielic armie na
+dwie czesci [...] ale powinien starac sie polaczyc wszystkie mniejsze armie
+w jedna duza."
+
+Recon (Read/Grep bez subagenta): mechanizm koncentracji JUZ ISTNIEJE
+(`game/army-concentration.ts::planArmyConcentration`, wolany z `ai.ts:2597`
+dla `isMajorAiOwner`), ale laczy WYLACZNIE jeden, juz bliski (promien 4)
+klaster >=3 jednostek na ture — nie próbuje laczyc odleglych od siebie grup,
+stad trwale rozdrobnienie. Obrona miast pod bezposrednim atakiem juz
+poprawnie wylaczona z koncentracji (`homeDefenderAssignments`), ale
+ogolniejsze pojecie "wielu frontow" (odlegle od siebie wrogie armie w polu,
+zadna nie zagraza bezposrednio miastu) nie jest dzis rozpoznawane.
+
+| ID | Data | Prośba | Status | Uwagi |
+|---|---|---|---|---|
+| R-AI-KONCENTRACJA-ARMII-WIELE-KLASTROW-Q1 | 2026-09-02 | AI ma laczyc rozproszone male armie w jedna duza, z wyjatkiem uzasadnionego podzialu gdy jest atakowane z wielu stron. | **DISPATCHOWANE** | Domain GAME, logika AI — Operator+Evaluator+Final Control Sonnet 5, effort HIGH na obu pierwszych rolach (podniesiony z domyslnego Medium — zmiana dotyka rdzenia `ai.ts`, wysokie ryzyko regresji balansu). GOAL dwuczesciowy: (1) rozpoznanie liczby aktywnych frontow zagrozenia, (2) laczenie oddalonych klastrow w ich kierunku gdy liczba frontow < liczby dzisiejszych skupisk. Weryfikacja przez rozszerzenie istniejacego `army-concentration-test.cjs` (symulacja tur, nie zrzuty ekranu — to nie jest temat wizualny). Dispatch `00-dispatch.md`, commit `b7416c19`. |
