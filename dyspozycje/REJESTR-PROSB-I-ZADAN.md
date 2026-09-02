@@ -3625,8 +3625,11 @@ wszystkie check [2]) i J2 (`civpedia-jednostki-j2-test.cjs`: 132/133, 1 fail,
 check [4] zakres git diff zakladal izolacje od J1, ktora znikla po integracji
 obu do tej samej galezi). BUDYNKI/ULEPSZENIA/TECHNOLOGIE uzyly odpornej metody
 (bez zaleznosci od ruchomego `git HEAD`) i przeszly czysto (136/116/324).
-Dispatch naprawczy P-CIVPEDIA-TESTY-GIT-HEAD-SAMOODNOSZACE-Q1 w toku - patrz
-sekcja ponizej.
+Dispatch naprawczy `P-CIVPEDIA-TESTY-GIT-HEAD-SAMOODNOSZACE-Q1` dispatchowany
+(Workflow `wf_03d25059-f8c`, razem z `P-CIVPEDIA-WIKIHUBHUD-RYS-HISTORYCZNY-DUPLIKACJA-Q1`
+- rozlaczne pliki, ta sama fala). Ten pierwszy naprawia testy J1/J2 (juz na
+`main`) na metode strukturalna bez zaleznosci od `git HEAD`, oraz dopisuje
+tresc + nowy test dla cuda (wciaz niezintegrowane).
 
 **R-CIVPEDIA-TECHNOLOGIE-Q1: PASS-WITH-NOTES** — Operator, Evaluator i Final
 Control NIEZALEZNIE potwierdzili pre-istniejacy bug w
@@ -3635,8 +3638,9 @@ allowlista tego tematu): przy `depth==='full'` sekcja "Rys historyczny"
 renderuje sie DWUKROTNIE w DOM, bo `entry.full` juz zawiera cala tresc pliku
 (wlacznie z nowa sekcja), a funkcja dokleja `historiaBlock` ponownie. Przy
 `depth==='m'` dziala poprawnie (jedna kopia). NIE blokuje tego tematu
-(kryterium wymagalo tylko wyrenderowania tresci, nie unikalnosci) ale
-wymaga osobnego tematu naprawczego w `wikiHubHud.ts` - patrz sekcja ponizej.
+(kryterium wymagalo tylko wyrenderowania tresci, nie unikalnosci). Dispatch
+naprawczy `P-CIVPEDIA-WIKIHUBHUD-RYS-HISTORYCZNY-DUPLIKACJA-Q1` dispatchowany
+(Workflow `wf_03d25059-f8c`, razem z tematem naprawy testow git-HEAD powyzej).
 
 | ID | Data | Prośba | Status | Uwagi |
 |---|---|---|---|---|
