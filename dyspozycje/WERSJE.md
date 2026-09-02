@@ -13,6 +13,23 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 > Pakiet 3 z 2026-08-20 jest docs-only i nie tworzy wpisu ROBOCZA/KANON/FINALNA;
 > ten plik pozostaje wyłącznie rejestrem publikacji bundli.
 
+## ROBOCZA 64515106 - 2026-09-02 00:35 UTC - FALA 332: Auto-Żywienie toast, limit miast po podboju silą, "brak: Targowisko", handel w skarbcu HUD, ambience tylko zwierzęta, relacje AI-AI w audiencji, karty historyczne (rys historyczny) — budynki+technologie+ulepszenia terenu kompletne, jednostki 52/75
+
+|- md5 (pełne): 645151069e7cceb1076eca8c2f29d6df · stempel: ROBOCZA · label 64515106 · źródłowy commit integracji: `706a85dd`
+|- **`R-SPICHLERZ-AUTO-ZYWIENIE-TOAST-ZINDEX-Q1`** (`3dc1b31f`, `3e6325ce`) — toast potwierdzenia Auto-Żywienia nie był przyciemniany przez tło panelu Imperium (z-index podniesiony z uwzględnieniem stanu panelu).
+|- **`R-MIASTA-LIMIT-PODBOJ-SILA-LICZY-SIE-Q1`** (`2a95f7dd`) — cofnięcie regresu: miasta zdobyte SIŁĄ (bitwa/kapitulacja) ponownie liczą się do limitu miast na epokę (usunięte błędne `foundedByOwner=false` w dwóch miejscach). Wchłonięcie dyplomatyczne bez zmian (już liczyło poprawnie).
+|- **`R-HANDEL-BRAK-BUDYNKU-NAZWA-Q1`** (`15442464`) — tabela tras handlowych pokazuje konkretną nazwę brakującego budynku ("brak: Targowisko") zamiast generycznego "brak budynku".
+|- **`R-SKARBIEC-HANDEL-PODGLAD-ZERO-Q1`** (`db6d2f9a`+5 kolejnych) — podgląd HUD Skarbca Imperium wcześniej zawsze liczył dochód z handlu jako 0 (dwa literalne `undefined` zamiast realnych map tras) — naprawione, silnik na końcu tury był zawsze poprawny, bug dotyczył wyłącznie podglądu.
+|- **`R-AMBIENT-NATURA-TYLKO-ZWIERZETA-Q1`** (`667afef3`) — kanał tła "odgłosy natury" gra teraz wyłącznie odgłosy zwierząt (ptak/świerszcz/wycie), bez szumu wiatru/liści/wody. Muzyka mapy/bitwy epoki Kamień nietknięta.
+|- **`R-DYPLO-RELACJE-AI-AI-AUDIENCJA-Q1`** (`531014be`+`af542199`) — karta rozmówcy w audiencji dyplomatycznej pokazuje teraz jego wojny/sojusze/pakty o nieagresji/handel z innymi cywilizacjami, niezależnie od mgły wojny gracza (faza testowa, docelowo bramkowane jednostką szpiega). Pop-up przed audiencją bez zmian (nadal filtruje mgłą wojny).
+|- **`R-KARTY-HISTORIA-Q1`** (seria, 12 z 17 tematów tej fali) — sekcja "Rys historyczny" na kartach encji: **budynki 41/41 KOMPLETNE**, **technologie 32/32 KOMPLETNE**, **ulepszenia terenu 22/22 KOMPLETNE**, jednostki 52/75 (U1-U4, U5 w kolejce). Wonders (cuda) nie rozpoczęte — wymagają osobnej infrastruktury renderowania. Infra mechanizmu (`entityCards`) + usunięcie przecieku tekstu deweloperskiego "Uwagi" z kart budynku/jednostki.
+|- Wszystkie tematy: pełny cykl Operator→Evaluator(→Obrona)→Final Control przez Workflow (Ścieżka A), każdy z niezależną, żywą weryfikacją w headless Chromium. `tsc --noEmit` 0 błędów. 5 bramek referencyjnych (logic-test 213/213, tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13, combat-test 6/6) + wszystkie testy tematów bez regresu po każdej integracji.
+|- Bundle: 881 modułów (bez zmian liczby — zmiany treści danych, nie nowe moduły), `Gra-ROBOCZA.html` 69,2 MB. `Gra-ROBOCZA-POLE-BITWY.html` NIE przebudowany — żaden z tematów tej fali nie dotyka `battleScene.ts`/logiki bitwy (pole `Historia` jest czysto opisowe, karty encji nie renderują się w scenie oblężenia).
+|- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
+|- **Odstępstwo techniczne (jak w FALACH 324-331):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
+|- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
+|- **AKTUALNA**
+
 ## ROBOCZA 617e3679 - 2026-09-01 19:45 UTC - FALA 331: koszt PW traktatow rosnie z czasem trwania (NAP+trybut) + karta technologii bez zbednego opisu Budynki/Jednostki
 
 |- md5 (pełne): 617e367918387d2490b5c95551980cc4 · stempel: ROBOCZA · label 617e3679 · źródłowy commit integracji: `329730f4`
@@ -23,7 +40,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 |- Publikacja: `gra-robocza/Gra-ROBOCZA.html` + manifest. `VERIFY OK`, manifest match OK.
 |- **Odstępstwo techniczne (jak w FALACH 324-330):** publikacja odtworzona ręcznie w bashu/Node — `pwsh` nie istnieje w tym środowisku.
 |- Szczegóły: rejestr w `REJESTR-PROSB-I-ZADAN.md`.
-|- **AKTUALNA**
+|- **ZASTĄPIONA** (→ 64515106, FALA 332)
 
 ## ROBOCZA 0ed50668 - 2026-09-01 18:52 UTC - FALA 330: PILNE — cofnięcie regresu, ręczne budowanie/wycinka znów działa wszędzie w terytorium
 
